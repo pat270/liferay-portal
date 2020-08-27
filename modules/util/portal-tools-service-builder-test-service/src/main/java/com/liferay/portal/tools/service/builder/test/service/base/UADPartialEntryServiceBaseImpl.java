@@ -43,7 +43,7 @@ import javax.sql.DataSource;
  */
 public abstract class UADPartialEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements UADPartialEntryService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, UADPartialEntryService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -180,8 +180,8 @@ public abstract class UADPartialEntryServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

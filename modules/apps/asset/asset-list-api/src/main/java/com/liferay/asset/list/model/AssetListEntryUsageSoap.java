@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AssetListEntryUsageSoap implements Serializable {
 
 	public static AssetListEntryUsageSoap toSoapModel(
@@ -36,6 +35,8 @@ public class AssetListEntryUsageSoap implements Serializable {
 
 		AssetListEntryUsageSoap soapModel = new AssetListEntryUsageSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setAssetListEntryUsageId(model.getAssetListEntryUsageId());
 		soapModel.setGroupId(model.getGroupId());
@@ -109,6 +110,22 @@ public class AssetListEntryUsageSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setAssetListEntryUsageId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public String getUuid() {
@@ -215,6 +232,8 @@ public class AssetListEntryUsageSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
 	private long _assetListEntryUsageId;
 	private long _groupId;

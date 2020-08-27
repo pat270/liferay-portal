@@ -22,15 +22,14 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.subscriptions.test.BaseSubscriptionContainerModelTestCase;
+import com.liferay.subscription.test.util.BaseSubscriptionContainerModelTestCase;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
-import com.liferay.wiki.util.test.WikiTestUtil;
+import com.liferay.wiki.test.util.WikiTestUtil;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,25 +48,21 @@ public class WikiSubscriptionContainerModelTest
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(), SynchronousMailTestRule.INSTANCE);
 
-	@Ignore
 	@Override
 	@Test
 	public void testSubscriptionContainerModelWhenAddingBaseModelInRootContainerModel() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSubscriptionContainerModelWhenAddingBaseModelInSubcontainerModel() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSubscriptionContainerModelWhenUpdatingBaseModelInRootContainerModel() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSubscriptionContainerModelWhenUpdatingBaseModelInSubcontainerModel() {

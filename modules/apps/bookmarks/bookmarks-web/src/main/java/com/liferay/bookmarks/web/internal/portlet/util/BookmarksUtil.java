@@ -14,9 +14,9 @@
 
 package com.liferay.bookmarks.web.internal.portlet.util;
 
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.model.BookmarksFolder;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksEntryLocalServiceUtil;
 import com.liferay.bookmarks.service.BookmarksFolderLocalServiceUtil;
 import com.liferay.bookmarks.util.comparator.EntryCreateDateComparator;
@@ -24,7 +24,6 @@ import com.liferay.bookmarks.util.comparator.EntryModifiedDateComparator;
 import com.liferay.bookmarks.util.comparator.EntryNameComparator;
 import com.liferay.bookmarks.util.comparator.EntryPriorityComparator;
 import com.liferay.bookmarks.util.comparator.EntryURLComparator;
-import com.liferay.bookmarks.util.comparator.EntryVisitsComparator;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -37,6 +36,7 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -44,7 +44,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -146,10 +145,9 @@ public class BookmarksUtil {
 			return;
 		}
 
-		BookmarksFolder folder = BookmarksFolderLocalServiceUtil.getFolder(
-			folderId);
-
-		addPortletBreadcrumbEntries(folder, httpServletRequest, renderResponse);
+		addPortletBreadcrumbEntries(
+			BookmarksFolderLocalServiceUtil.getFolder(folderId),
+			httpServletRequest, renderResponse);
 	}
 
 	public static Map<String, String> getEmailDefinitionTerms(
@@ -159,46 +157,47 @@ public class BookmarksUtil {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Map<String, String> definitionTerms = new LinkedHashMap<>();
-
-		definitionTerms.put(
+		return LinkedHashMapBuilder.put(
 			"[$BOOKMARKS_ENTRY_USER_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-user-who-added-the-bookmark-entry"));
-		definitionTerms.put(
+				"the-user-who-added-the-bookmark-entry")
+		).put(
 			"[$BOOKMARKS_ENTRY_STATUS_BY_USER_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-user-who-updated-the-bookmark-entry"));
-		definitionTerms.put(
+				"the-user-who-updated-the-bookmark-entry")
+		).put(
 			"[$BOOKMARKS_ENTRY_URL$]",
-			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-bookmark-entry-url"));
-		definitionTerms.put(
-			"[$FROM_ADDRESS$]", HtmlUtil.escape(emailFromAddress));
-		definitionTerms.put("[$FROM_NAME$]", HtmlUtil.escape(emailFromName));
+			LanguageUtil.get(themeDisplay.getLocale(), "the-bookmark-entry-url")
+		).put(
+			"[$FROM_ADDRESS$]", HtmlUtil.escape(emailFromAddress)
+		).put(
+			"[$FROM_NAME$]", HtmlUtil.escape(emailFromName)
+		).put(
+			"[$PORTAL_URL$]",
+			() -> {
+				Company company = themeDisplay.getCompany();
 
-		Company company = themeDisplay.getCompany();
+				return company.getVirtualHostname();
+			}
+		).put(
+			"[$PORTLET_NAME$]",
+			() -> {
+				PortletDisplay portletDisplay =
+					themeDisplay.getPortletDisplay();
 
-		definitionTerms.put("[$PORTAL_URL$]", company.getVirtualHostname());
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		definitionTerms.put(
-			"[$PORTLET_NAME$]", HtmlUtil.escape(portletDisplay.getTitle()));
-
-		definitionTerms.put(
+				return HtmlUtil.escape(portletDisplay.getTitle());
+			}
+		).put(
 			"[$TO_ADDRESS$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(),
-				"the-address-of-the-email-recipient"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-address-of-the-email-recipient")
+		).put(
 			"[$TO_NAME$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-name-of-the-email-recipient"));
-
-		return definitionTerms;
+				themeDisplay.getLocale(), "the-name-of-the-email-recipient")
+		).build();
 	}
 
 	public static List<Object> getEntries(Hits hits) {
@@ -210,28 +209,27 @@ public class BookmarksUtil {
 				document.get(Field.ENTRY_CLASS_PK));
 
 			try {
-				Object obj = null;
+				Object object = null;
 
 				if (entryClassName.equals(BookmarksEntry.class.getName())) {
-					obj = BookmarksEntryLocalServiceUtil.getEntry(entryClassPK);
+					object = BookmarksEntryLocalServiceUtil.getEntry(
+						entryClassPK);
 				}
 				else if (entryClassName.equals(
 							BookmarksFolder.class.getName())) {
 
-					obj = BookmarksFolderLocalServiceUtil.getFolder(
+					object = BookmarksFolderLocalServiceUtil.getFolder(
 						entryClassPK);
 				}
 
-				entries.add(obj);
+				entries.add(object);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Bookmarks search index is stale and contains entry " +
 							entryClassPK);
 				}
-
-				continue;
 			}
 		}
 
@@ -263,9 +261,6 @@ public class BookmarksUtil {
 		}
 		else if (orderByCol.equals("url")) {
 			orderByComparator = new EntryURLComparator(orderByAsc);
-		}
-		else if (orderByCol.equals("visits")) {
-			orderByComparator = new EntryVisitsComparator(orderByAsc);
 		}
 
 		return orderByComparator;

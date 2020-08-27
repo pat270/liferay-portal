@@ -47,8 +47,8 @@ public class DefaultLandingPageAction extends Action {
 		try {
 			doRun(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			throw new ActionException(e);
+		catch (Exception exception) {
+			throw new ActionException(exception);
 		}
 	}
 
@@ -57,10 +57,9 @@ public class DefaultLandingPageAction extends Action {
 			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		long companyId = PortalUtil.getCompanyId(httpServletRequest);
-
 		String path = PrefsPropsUtil.getString(
-			companyId, PropsKeys.DEFAULT_LANDING_PAGE_PATH);
+			PortalUtil.getCompanyId(httpServletRequest),
+			PropsKeys.DEFAULT_LANDING_PAGE_PATH);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(

@@ -21,8 +21,6 @@ import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.constants.WikiWebKeys;
 import com.liferay.wiki.exception.NoSuchNodeException;
 import com.liferay.wiki.exception.NoSuchPageException;
-import com.liferay.wiki.model.WikiNode;
-import com.liferay.wiki.model.WikiPage;
 
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
@@ -51,25 +49,23 @@ public class EditPageAttachmentsMVCRenderCommand implements MVCRenderCommand {
 		throws PortletException {
 
 		try {
-			WikiNode node = ActionUtil.getNode(renderRequest);
+			renderRequest.setAttribute(
+				WikiWebKeys.WIKI_NODE, ActionUtil.getNode(renderRequest));
 
-			renderRequest.setAttribute(WikiWebKeys.WIKI_NODE, node);
-
-			WikiPage page = ActionUtil.getPage(renderRequest);
-
-			renderRequest.setAttribute(WikiWebKeys.WIKI_PAGE, page);
+			renderRequest.setAttribute(
+				WikiWebKeys.WIKI_PAGE, ActionUtil.getPage(renderRequest));
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchNodeException ||
-				e instanceof NoSuchPageException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchNodeException ||
+				exception instanceof NoSuchPageException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/wiki/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/wiki/edit_page_attachment.jsp";

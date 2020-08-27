@@ -17,7 +17,11 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect", String.valueOf(renderResponse.createRenderURL()));
+String redirect = PortalUtil.escapeRedirect(ParamUtil.getString(request, "redirect"));
+
+if (Validator.isNull(redirect)) {
+	redirect = String.valueOf(renderResponse.createRenderURL());
+}
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
@@ -28,16 +32,10 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "search-
 
 <portlet:renderURL var="viewURL" />
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems='<%= appManagerDisplayContext.getNavigationItems(viewURL, "search") %>'
-/>
-
 <%
-AppManagerSearchResultsManagementToolbarDisplayContext
-	appManagerSearchResultsManagementToolbarDisplayContext = new AppManagerSearchResultsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request);
+AppManagerSearchResultsManagementToolbarDisplayContext appManagerSearchResultsManagementToolbarDisplayContext = new AppManagerSearchResultsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse);
 
-SearchContainer searchContainer = appManagerSearchResultsManagementToolbarDisplayContext.getSearchContainer();
+SearchContainer<Object> searchContainer = appManagerSearchResultsManagementToolbarDisplayContext.getSearchContainer();
 %>
 
 <clay:management-toolbar
@@ -52,7 +50,7 @@ SearchContainer searchContainer = appManagerSearchResultsManagementToolbarDispla
 	sortingURL="<%= appManagerSearchResultsManagementToolbarDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid container-fluid-max-xl">
+<clay:container-fluid>
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
@@ -97,4 +95,4 @@ SearchContainer searchContainer = appManagerSearchResultsManagementToolbarDispla
 			resultRowSplitter="<%= new MarketplaceAppManagerResultRowSplitter() %>"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

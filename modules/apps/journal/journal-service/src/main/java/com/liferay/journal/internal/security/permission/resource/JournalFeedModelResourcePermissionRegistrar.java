@@ -41,13 +41,14 @@ import org.osgi.service.component.annotations.Reference;
 public class JournalFeedModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", JournalFeed.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<JournalFeed>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				JournalFeed.class, JournalFeed::getId,
 				_journalFeedLocalService::getJournalFeed,
@@ -60,7 +61,7 @@ public class JournalFeedModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -72,7 +73,8 @@ public class JournalFeedModelResourcePermissionRegistrar {
 	)
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<JournalFeed>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

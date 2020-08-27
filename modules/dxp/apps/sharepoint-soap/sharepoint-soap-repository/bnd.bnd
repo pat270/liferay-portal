@@ -1,0 +1,28 @@
+Bundle-Name: Liferay Sharepoint SOAP Repository
+Bundle-SymbolicName: com.liferay.sharepoint.soap.repository
+Bundle-Version: 1.0.10
+Import-Package:\
+	!com.ibm.wsdl.util.xml.*,\
+	\
+	!com.sun.javadoc.*,\
+	!com.sun.tools.javadoc.*,\
+	\
+	!net.sf.saxon.*,\
+	\
+	!org.apache.axis2.jaxws.description.*,\
+	!org.apache.axis2.jaxws.i18n.*,\
+	!org.apache.axis2.jaxws.server.config.*,\
+	!org.apache.axis2.jaxws.util.*,\
+	!org.apache.axis2.wsdl.codegen.*,\
+	!org.apache.axis2.wsdl.databinding.*,\
+	!org.apache.http.*,\
+	!org.apache.james.mime4j.*,\
+	!org.apache.neethi.*,\
+	\
+	*
+-fixupmessages: Classes found in the wrong directory: ...;is:=ignore
+-includeresource:\
+	lib/copy-ws.jar;lib:=true,\
+	lib/lists-ws.jar;lib:=true,\
+	lib/search-ws.jar;lib:=true,\
+	lib/versions-ws.jar;lib:=true

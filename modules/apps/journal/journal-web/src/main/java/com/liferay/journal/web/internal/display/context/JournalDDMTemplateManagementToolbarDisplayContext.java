@@ -14,12 +14,13 @@
 
 package com.liferay.journal.web.internal.display.context;
 
+import com.liferay.dynamic.data.mapping.configuration.DDMWebConfiguration;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.web.internal.security.permission.resource.DDMTemplatePermission;
@@ -53,33 +54,33 @@ public class JournalDDMTemplateManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public JournalDDMTemplateManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			JournalDDMTemplateDisplayContext journalDDMTemplateDisplayContext)
 		throws Exception {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			journalDDMTemplateDisplayContext.getDDMTemplateSearch());
+
+		_ddmWebConfiguration =
+			(DDMWebConfiguration)httpServletRequest.getAttribute(
+				DDMWebConfiguration.class.getName());
 
 		_journalDDMTemplateDisplayContext = journalDDMTemplateDisplayContext;
 	}
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteDDMTemplates");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteDDMTemplates");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getAvailableActions(DDMTemplate ddmTemplate)
@@ -204,7 +205,8 @@ public class JournalDDMTemplateManagementToolbarDisplayContext
 		}
 
 		try {
-			if (DDMTemplatePermission.containsAddTemplatePermission(
+			if (_ddmWebConfiguration.enableTemplateCreation() &&
+				DDMTemplatePermission.containsAddTemplatePermission(
 					themeDisplay.getPermissionChecker(),
 					themeDisplay.getScopeGroupId(),
 					PortalUtil.getClassNameId(DDMStructure.class),
@@ -213,7 +215,7 @@ public class JournalDDMTemplateManagementToolbarDisplayContext
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;
@@ -251,6 +253,7 @@ public class JournalDDMTemplateManagementToolbarDisplayContext
 				allowedTemplateLanguageTypes, templateLanguageType));
 	}
 
+	private final DDMWebConfiguration _ddmWebConfiguration;
 	private final JournalDDMTemplateDisplayContext
 		_journalDDMTemplateDisplayContext;
 

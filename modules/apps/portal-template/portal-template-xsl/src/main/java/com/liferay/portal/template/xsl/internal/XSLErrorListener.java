@@ -40,21 +40,21 @@ public class XSLErrorListener implements ErrorListener {
 	}
 
 	@Override
-	public void error(TransformerException exception)
+	public void error(TransformerException transformerException)
 		throws TransformerException {
 
-		setLocation(exception);
+		setLocation(transformerException);
 
-		throw exception;
+		throw transformerException;
 	}
 
 	@Override
-	public void fatalError(TransformerException exception)
+	public void fatalError(TransformerException transformerException)
 		throws TransformerException {
 
-		setLocation(exception);
+		setLocation(transformerException);
 
-		throw exception;
+		throw transformerException;
 	}
 
 	public int getColumnNumber() {
@@ -77,41 +77,52 @@ public class XSLErrorListener implements ErrorListener {
 		return _message + " " + _location;
 	}
 
-	public void setLocation(Throwable exception) {
+	public void setLocation(Throwable throwable) {
 		SourceLocator locator = null;
-		Throwable cause = exception;
-		Throwable rootCause = null;
+		Throwable causeThrowable = throwable;
+		Throwable rootCauseThrowable = null;
 
-		while (cause != null) {
-			if (cause instanceof SAXParseException) {
-				locator = new SAXSourceLocator((SAXParseException)cause);
-				rootCause = cause;
+		while (causeThrowable != null) {
+			if (causeThrowable instanceof SAXParseException) {
+				locator = new SAXSourceLocator(
+					(SAXParseException)causeThrowable);
+				rootCauseThrowable = causeThrowable;
 			}
-			else if (cause instanceof TransformerException) {
-				SourceLocator causeLocator =
-					((TransformerException)cause).getLocator();
+			else if (causeThrowable instanceof TransformerException) {
+				TransformerException transformerException =
+					(TransformerException)causeThrowable;
+
+				SourceLocator causeLocator = transformerException.getLocator();
 
 				if (causeLocator != null) {
 					locator = causeLocator;
-					rootCause = cause;
+					rootCauseThrowable = causeThrowable;
 				}
 			}
 
-			if (cause instanceof TransformerException) {
-				cause = ((TransformerException)cause).getCause();
+			if (causeThrowable instanceof TransformerException) {
+				TransformerException transformerException =
+					(TransformerException)causeThrowable;
+
+				causeThrowable = transformerException.getCause();
 			}
-			else if (cause instanceof WrappedRuntimeException) {
-				cause = ((WrappedRuntimeException)cause).getException();
+			else if (causeThrowable instanceof WrappedRuntimeException) {
+				WrappedRuntimeException wrappedRuntimeException =
+					(WrappedRuntimeException)causeThrowable;
+
+				causeThrowable = wrappedRuntimeException.getException();
 			}
-			else if (cause instanceof SAXException) {
-				cause = ((SAXException)cause).getException();
+			else if (causeThrowable instanceof SAXException) {
+				SAXException saxException = (SAXException)causeThrowable;
+
+				causeThrowable = saxException.getException();
 			}
 			else {
-				cause = null;
+				causeThrowable = null;
 			}
 		}
 
-		_message = rootCause.getMessage();
+		_message = rootCauseThrowable.getMessage();
 
 		if (locator != null) {
 			_lineNumber = locator.getLineNumber();
@@ -136,12 +147,12 @@ public class XSLErrorListener implements ErrorListener {
 	}
 
 	@Override
-	public void warning(TransformerException exception)
+	public void warning(TransformerException transformerException)
 		throws TransformerException {
 
-		setLocation(exception);
+		setLocation(transformerException);
 
-		throw exception;
+		throw transformerException;
 	}
 
 	private int _columnNumber;

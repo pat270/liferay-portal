@@ -14,15 +14,16 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.lang.reflect.Field;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +32,11 @@ import java.util.regex.Pattern;
  * @author Hugo Huijser
  */
 public class JavaDeprecatedJavadocCheck extends BaseFileCheck {
+
+	@Override
+	public boolean isLiferaySourceCheck() {
+		return true;
+	}
 
 	@Override
 	protected String doProcess(
@@ -116,6 +122,27 @@ public class JavaDeprecatedJavadocCheck extends BaseFileCheck {
 					content, s, StringUtil.toLowerCase(s), matcher.start(7));
 			}
 
+			if (deprecatedInfo.matches(", since [0-9.]+(, [\\S\\s]*)?")) {
+				int x = deprecatedInfo.indexOf(CharPool.COMMA, 1);
+
+				if (x == -1) {
+					return StringUtil.replaceFirst(
+						content, deprecatedInfo, StringPool.BLANK,
+						matcher.start(7));
+				}
+
+				String s = deprecatedInfo.substring(0, x);
+
+				return StringUtil.replaceFirst(
+					content, s, StringPool.BLANK, matcher.start(7));
+			}
+
+			if (deprecatedInfo.equals(", unused")) {
+				return StringUtil.replaceFirst(
+					content, deprecatedInfo, StringPool.BLANK,
+					matcher.start(7));
+			}
+
 			if (deprecatedInfo.endsWith(StringPool.PERIOD) &&
 				!deprecatedInfo.matches("[\\S\\s]*\\.[ \n][\\S\\s]*")) {
 
@@ -166,16 +193,21 @@ public class JavaDeprecatedJavadocCheck extends BaseFileCheck {
 			"(.*?)\n\\s*\\*( @|/))?",
 		Pattern.DOTALL);
 	private static final Map<String, String> _releaseInfoMap =
-		new HashMap<String, String>() {
-			{
-				put("Bunyan", "6.0.x");
-				put("Judson", "7.1.x");
-				put("Mueller", "7.2.x");
-				put("Newton", "6.2.x");
-				put("Paton", "6.1.x");
-				put("Wilberforce", "7.0.x");
-			}
-		};
+		HashMapBuilder.put(
+			"Athanasius", "7.3.x"
+		).put(
+			"Bunyan", "6.0.x"
+		).put(
+			"Judson", "7.1.x"
+		).put(
+			"Mueller", "7.2.x"
+		).put(
+			"Newton", "6.2.x"
+		).put(
+			"Paton", "6.1.x"
+		).put(
+			"Wilberforce", "7.0.x"
+		).build();
 
 	private String _nextReleaseCodeName;
 	private String _nextReleaseVersion;

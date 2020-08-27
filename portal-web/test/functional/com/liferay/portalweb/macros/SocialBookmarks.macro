@@ -1,4 +1,5 @@
 definition {
+
 	macro viewBookmarkIcons {
 		for (var socialBookmark : list "${socialBookmarks}") {
 			AssertElementPresent(
@@ -8,7 +9,7 @@ definition {
 	}
 
 	macro viewBookmarkMenuItems {
-		Click(locator1 = "Icon#SHARE");
+		Click.pauseClickAt(locator1 = "Icon#SHARE");
 
 		for (var socialBookmark : list "${socialBookmarks}") {
 			MenuItem.viewPresent(menuItem = "${socialBookmark}");
@@ -36,4 +37,5 @@ definition {
 	macro viewShareIconNotPresent {
 		AssertElementNotPresent(locator1 = "Icon#SHARE");
 	}
+
 }

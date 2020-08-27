@@ -1,5 +1,6 @@
 @component-name = "portal-permissions"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Roles";
@@ -21,7 +22,7 @@ definition {
 
 			PortalSettings.tearDownCP();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Role.tearDownCP();
 
@@ -66,7 +67,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsPortlet.viewNoPermissionCP();
@@ -113,9 +113,9 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsPortlet.viewNoPermissionCP();
 	}
+
 }

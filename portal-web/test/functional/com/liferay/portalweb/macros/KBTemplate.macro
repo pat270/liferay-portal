@@ -1,12 +1,15 @@
 definition {
+
 	macro addCP {
 		Navigator.gotoNavItem(navItem = "Templates");
 
 		LexiconEntry.gotoAdd();
 
-		AlloyEditor.addTitleAndContent(
-			content = "${kbTemplateContent}",
-			title = "${kbTemplateTitle}");
+		Type(
+			locator1 = "KnowledgeBaseTemplate#TEMPLATE_TITLE_INPUT",
+			value1 = "${kbTemplateTitle}");
+
+		CKEditor.addContent(content = "${kbTemplateContent}");
 
 		PortletEntry.publish();
 	}
@@ -24,7 +27,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Knowledge Base");
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Templates");
@@ -59,12 +61,15 @@ definition {
 
 		AssertTextEquals(
 			key_editor = "title",
-			locator1 = "AlloyEditor#EDITOR",
+			locator1 = "TextInput#TITLE",
 			value1 = "${kbTemplateTitle}");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
 		AssertTextEquals(
 			key_editor = "content",
-			locator1 = "AlloyEditor#EDITOR",
+			locator1 = "CKEditor#BODY",
 			value1 = "${kbTemplateContent}");
 	}
+
 }

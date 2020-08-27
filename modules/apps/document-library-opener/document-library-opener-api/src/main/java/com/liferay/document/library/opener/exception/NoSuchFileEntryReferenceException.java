@@ -16,12 +16,9 @@ package com.liferay.document.library.opener.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchFileEntryReferenceException extends NoSuchModelException {
 
 	public NoSuchFileEntryReferenceException() {
@@ -31,12 +28,12 @@ public class NoSuchFileEntryReferenceException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchFileEntryReferenceException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchFileEntryReferenceException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchFileEntryReferenceException(Throwable cause) {
-		super(cause);
+	public NoSuchFileEntryReferenceException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

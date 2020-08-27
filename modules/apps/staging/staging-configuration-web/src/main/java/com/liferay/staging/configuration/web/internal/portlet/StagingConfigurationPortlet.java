@@ -14,11 +14,13 @@
 
 package com.liferay.staging.configuration.web.internal.portlet;
 
+import com.liferay.change.tracking.model.CTPreferences;
+import com.liferay.change.tracking.service.CTPreferencesLocalService;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
+import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchBackgroundTaskException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -73,8 +75,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + StagingConfigurationPortletKeys.STAGING_CONFIGURATION,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -92,18 +93,18 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 
 			sendRedirect(actionRequest, actionResponse);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchBackgroundTaskException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchBackgroundTaskException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(e, e);
+					_log.debug(exception, exception);
 				}
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}
@@ -117,11 +118,23 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		int stagingType = ParamUtil.getInteger(actionRequest, "stagingType");
+
+		if (stagingType != StagingConstants.TYPE_NOT_STAGED) {
+			CTPreferences ctPreferences =
+				_ctPreferencesLocalService.fetchCTPreferences(
+					themeDisplay.getCompanyId(), 0);
+
+			if (ctPreferences != null) {
+				SessionErrors.add(actionRequest, "publicationsEnabled");
+
+				return;
+			}
+		}
+
 		long liveGroupId = ParamUtil.getLong(actionRequest, "liveGroupId");
 
 		Group liveGroup = _groupLocalService.getGroup(liveGroupId);
-
-		int stagingType = ParamUtil.getInteger(actionRequest, "stagingType");
 
 		boolean branchingPublic = ParamUtil.getBoolean(
 			actionRequest, "branchingPublic");
@@ -141,8 +154,8 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 					themeDisplay.getUserId(), liveGroup, branchingPublic,
 					branchingPrivate, serviceContext);
 			}
-			catch (Exception e) {
-				SessionErrors.add(actionRequest, Exception.class, e);
+			catch (Exception exception) {
+				SessionErrors.add(actionRequest, Exception.class, exception);
 			}
 		}
 		else if (stagingType == StagingConstants.TYPE_REMOTE_STAGING) {
@@ -168,12 +181,20 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 					branchingPrivate, remoteAddress, remotePort,
 					remotePathContext, secureConnection, remoteGroupId,
 					serviceContext);
+
+				boolean overrideRemoteSiteURL = ParamUtil.getBoolean(
+					actionRequest, "overrideRemoteSiteURL");
+				String remoteSiteURL = ParamUtil.getString(
+					actionRequest, "remoteSiteURL");
+
+				_staging.setRemoteSiteURL(
+					liveGroup, overrideRemoteSiteURL, remoteSiteURL);
 			}
-			catch (Exception e) {
-				SessionErrors.add(actionRequest, Exception.class, e);
+			catch (Exception exception) {
+				SessionErrors.add(actionRequest, Exception.class, exception);
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(e, e);
+					_log.debug(exception, exception);
 				}
 			}
 		}
@@ -262,12 +283,12 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof LocaleException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof LocaleException) {
 			return true;
 		}
 
-		return super.isSessionErrorException(cause);
+		return super.isSessionErrorException(throwable);
 	}
 
 	@Reference
@@ -302,6 +323,9 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 
 	@Reference
 	private BackgroundTaskManager _backgroundTaskManager;
+
+	@Reference
+	private CTPreferencesLocalService _ctPreferencesLocalService;
 
 	private GroupLocalService _groupLocalService;
 

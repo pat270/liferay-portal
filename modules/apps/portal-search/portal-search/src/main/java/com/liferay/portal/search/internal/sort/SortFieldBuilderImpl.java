@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.search.contributor.ContributorConstants;
+import com.liferay.portal.search.contributor.constants.ContributorConstants;
 import com.liferay.portal.search.contributor.sort.SortFieldNameTranslator;
 import com.liferay.portal.search.sort.SortFieldBuilder;
 
@@ -97,17 +97,13 @@ public class SortFieldBuilderImpl implements SortFieldBuilder {
 		SortFieldNameTranslator sortFieldNameTranslator =
 			_sortFieldNameTranslators.get(entityClassName);
 
-		String sortFieldName = orderByCol;
-
 		if (sortFieldNameTranslator == null) {
 			Indexer<?> indexer = indexerRegistry.getIndexer(entityClassName);
 
 			return indexer.getSortField(orderByCol);
 		}
 
-		sortFieldName = sortFieldNameTranslator.getSortFieldName(orderByCol);
-
-		return sortFieldName;
+		return sortFieldNameTranslator.getSortFieldName(orderByCol);
 	}
 
 	protected void removeSortFieldNameTranslator(

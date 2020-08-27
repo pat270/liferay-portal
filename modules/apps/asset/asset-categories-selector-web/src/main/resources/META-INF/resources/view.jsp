@@ -16,19 +16,9 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-Map<String, Object> context = new HashMap<>();
+<liferay-ui:success key="categoryAdded" message='<%= GetterUtil.getString(MultiSessionMessages.get(renderRequest, "categoryAdded")) %>' />
 
-context.put("itemSelectorSaveEvent", HtmlUtil.escapeJS(assetCategoriesSelectorDisplayContext.getEventName()));
-context.put("multiSelection", !assetCategoriesSelectorDisplayContext.isSingleSelect());
-context.put("namespace", liferayPortletResponse.getNamespace());
-context.put("nodes", assetCategoriesSelectorDisplayContext.getCategoriesJSONArray());
-context.put("pathThemeImages", themeDisplay.getPathThemeImages());
-context.put("viewType", "tree");
-%>
-
-<soy:component-renderer
-	context="<%= context %>"
+<react:component
 	module="js/SelectCategory.es"
-	templateNamespace="com.liferay.asset.categories.selector.web.SelectCategory.render"
+	props="<%= assetCategoriesSelectorDisplayContext.getData() %>"
 />

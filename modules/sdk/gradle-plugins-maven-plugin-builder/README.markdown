@@ -5,7 +5,7 @@ The Maven Plugin Builder Gradle Plugin lets you generate the
 for any [Mojos](https://maven.apache.org/general.html#What_is_a_Mojo) found in
 your project.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -14,7 +14,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.maven.plugin.builder", version: "1.2.3"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.maven.plugin.builder", version: "1.2.7"
 	}
 
 	repositories {
@@ -109,7 +109,7 @@ Property Name | Type | Default Value | Description
 <a name="pomgroupid"></a>`pomGroupId` | `String` | `null` | The universally unique identifier for the project. It sets the value of the [`project.groupId`](http://maven.apache.org/ref/3.3.3/maven-model/maven.html#class_project) element in the generated `pom.xml` file.
 `pomRepositories` | `Map<String, Object>` | `["liferay-public": "http://repository.liferay.com/nexus/content/groups/public"]` | The name and URL of the remote repositories. It adds [`repositories.repository`](http://maven.apache.org/ref/3.3.3/maven-model/maven.html#class_repository) elements in the generated `pom.xml` file.
 <a name="pomversion"></a>`pomVersion` | `String` | `null` | The version of the artifact produced by this project. It sets the value of the [`project.version`](http://maven.apache.org/ref/3.3.3/maven-model/maven.html#class_project) element in the generated `pom.xml` file.
-<a name="sourcedir"></a>`sourceDir` | `String` | `null` | The directory that contains the source files.  It sets the value of the [`build.sourceDirectory`](http://maven.apache.org/ref/3.3.9/maven-model/maven.html#class_build) element in the generated `pom.xml` file.
+<a name="sourcedir"></a>`sourceDir` | `String` | `null` | The directory that contains the source files. It sets the value of the [`build.sourceDirectory`](http://maven.apache.org/ref/3.3.9/maven-model/maven.html#class_build) element in the generated `pom.xml` file.
 `useSetterComments` | `boolean` | `true` | Whether to allow [Mojo Javadoc Tags](https://maven.apache.org/plugin-tools/maven-plugin-tools-java/) in the setter methods of the Mojo.
 
 The properties of type `File` support any type that can be resolved by

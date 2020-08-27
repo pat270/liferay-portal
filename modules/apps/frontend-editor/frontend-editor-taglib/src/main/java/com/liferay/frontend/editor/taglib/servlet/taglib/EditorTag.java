@@ -14,7 +14,7 @@
 
 package com.liferay.frontend.editor.taglib.servlet.taglib;
 
-import com.liferay.frontend.editor.api.EditorRenderer;
+import com.liferay.frontend.editor.EditorRenderer;
 import com.liferay.frontend.editor.taglib.internal.EditorRendererUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
@@ -46,7 +46,6 @@ import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -361,11 +360,9 @@ public class EditorTag extends BaseValidatorTagSupport {
 			httpServletRequest, "onInitMethod", _onInitMethod);
 
 		if (Validator.isNull(_placeholder)) {
-			ResourceBundle resourceBundle =
-				TagResourceBundleUtil.getResourceBundle(pageContext);
-
 			_placeholder = LanguageUtil.get(
-				resourceBundle, "write-your-content-here");
+				TagResourceBundleUtil.getResourceBundle(pageContext),
+				"write-your-content-here");
 		}
 
 		setNamespacedAttribute(httpServletRequest, "placeholder", _placeholder);

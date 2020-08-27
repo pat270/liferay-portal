@@ -15,8 +15,10 @@
 package com.liferay.document.library.preview.image.internal;
 
 import com.liferay.document.library.constants.DLFileVersionPreviewConstants;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
+import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
-import com.liferay.document.library.kernel.util.ImageProcessorUtil;
+import com.liferay.document.library.kernel.util.ImageProcessor;
 import com.liferay.document.library.preview.DLPreviewRenderer;
 import com.liferay.document.library.preview.DLPreviewRendererProvider;
 import com.liferay.document.library.preview.exception.DLFileEntryPreviewGenerationException;
@@ -27,59 +29,59 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+
 /**
  * @author Alejandro Tardín
  */
+@Component(service = DLPreviewRendererProvider.class)
 public class ImageDLPreviewRendererProvider
 	implements DLPreviewRendererProvider {
 
-	public ImageDLPreviewRendererProvider(
-		DLFileVersionPreviewLocalService dlFileVersionPreviewLocalService,
-		ServletContext servletContext) {
-
-		_dlFileVersionPreviewLocalService = dlFileVersionPreviewLocalService;
-		_servletContext = servletContext;
+	@Override
+	public Set<String> getMimeTypes() {
+		return _imageProcessor.getImageMimeTypes();
 	}
 
 	@Override
-	public Optional<DLPreviewRenderer> getPreviewDLPreviewRendererOptional(
+	public DLPreviewRenderer getPreviewDLPreviewRenderer(
 		FileVersion fileVersion) {
 
 		if (!DLProcessorRegistryUtil.isPreviewableSize(fileVersion)) {
-			return Optional.of(
-				(httpServletRequest, httpServletResponse) -> {
-					throw new DLPreviewSizeException();
-				});
+			return (httpServletRequest, httpServletResponse) -> {
+				throw new DLPreviewSizeException();
+			};
 		}
 
-		if (!ImageProcessorUtil.isImageSupported(fileVersion)) {
-			return Optional.empty();
+		if (!_imageProcessor.isImageSupported(fileVersion)) {
+			return null;
 		}
 
-		return Optional.of(
-			(request, response) -> {
-				checkForPreviewGenerationExceptions(fileVersion);
+		return (request, response) -> {
+			checkForPreviewGenerationExceptions(fileVersion);
 
-				RequestDispatcher requestDispatcher =
-					_servletContext.getRequestDispatcher("/preview/view.jsp");
+			RequestDispatcher requestDispatcher =
+				_servletContext.getRequestDispatcher("/preview/view.jsp");
 
-				request.setAttribute(
-					WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, fileVersion);
+			request.setAttribute(
+				WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, fileVersion);
 
-				requestDispatcher.include(request, response);
-			});
+			requestDispatcher.include(request, response);
+		};
 	}
 
 	@Override
-	public Optional<DLPreviewRenderer> getThumbnailDLPreviewRendererOptional(
+	public DLPreviewRenderer getThumbnailDLPreviewRenderer(
 		FileVersion fileVersion) {
 
-		return Optional.empty();
+		return null;
 	}
 
 	protected void checkForPreviewGenerationExceptions(FileVersion fileVersion)
@@ -92,13 +94,28 @@ public class ImageDLPreviewRendererProvider
 			throw new DLFileEntryPreviewGenerationException();
 		}
 
-		if (!ImageProcessorUtil.hasImages(fileVersion)) {
+		if (!_imageProcessor.hasImages(fileVersion)) {
 			throw new DLPreviewGenerationInProcessException();
 		}
 	}
 
-	private final DLFileVersionPreviewLocalService
-		_dlFileVersionPreviewLocalService;
-	private final ServletContext _servletContext;
+	@Reference(
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(type=" + DLProcessorConstants.IMAGE_PROCESSOR + ")",
+		unbind = "-"
+	)
+	protected void setDLProcessor(DLProcessor dlProcessor) {
+		_imageProcessor = (ImageProcessor)dlProcessor;
+	}
+
+	@Reference
+	private DLFileVersionPreviewLocalService _dlFileVersionPreviewLocalService;
+
+	private ImageProcessor _imageProcessor;
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.document.library.preview.image)"
+	)
+	private ServletContext _servletContext;
 
 }

@@ -56,11 +56,10 @@ public abstract class DDLRecordSetFinderBaseImpl
 
 	@Override
 	@Reference(
-		target = DDLPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = DDLPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
 	}
 
 	@Override
@@ -86,5 +85,14 @@ public abstract class DDLRecordSetFinderBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDLRecordSetFinderBaseImpl.class);
+
+	static {
+		try {
+			Class.forName(DDLPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

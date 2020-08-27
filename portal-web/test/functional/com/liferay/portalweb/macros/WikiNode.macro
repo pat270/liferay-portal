@@ -1,4 +1,5 @@
 definition {
+
 	var assetType = "Wiki Node";
 
 	macro addCP {
@@ -18,11 +19,36 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		if (IsElementNotPresent(locator1 = "Wiki#NODE_TABLE")) {
 			WikiNode.addCP(wikiNodeName = "Main");
+		}
+	}
+
+	macro configureEmailCP {
+		Click(locator1 = "Portlet#OPTIONS_ICON");
+
+		MenuItem.click(menuItem = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		if (isSet(pageAddedEmail)) {
+			AssertClick(
+				locator1 = "Configuration#NAVIGATION_PAGE_ADDED_EMAIL",
+				value1 = "Page Added Email");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+			Type(
+				locator1 = "CKEditor#BODY",
+				value1 = "${bodyContent}");
+
+			SelectFrame(value1 = "relative=top");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			PortletEntry.save();
 		}
 	}
 
@@ -39,7 +65,7 @@ definition {
 
 		PortletEntry.clickMoveToRecycleBin();
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
 		RecycleBin.emptyCP();
 	}
@@ -73,7 +99,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		while (IsElementPresent(locator1 = "Wiki#NODE_TABLE_ACTIONS_GENERIC_DROPDOWN_2")) {
@@ -81,9 +106,9 @@ definition {
 
 			PortletEntry.clickMoveToRecycleBin();
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
 		RecycleBin.emptyCP();
@@ -118,4 +143,5 @@ definition {
 
 		AssertElementNotPresent(locator1 = "Wiki#NODE_TABLE_WIKI_GENERIC_2");
 	}
+
 }

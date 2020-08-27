@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -41,6 +42,10 @@ public class ExpectedLogTestRule implements TestRule {
 
 	public static ExpectedLogTestRule none() {
 		return new ExpectedLogTestRule(null, null);
+	}
+
+	public static ExpectedLogTestRule with(Class<?> clazz, Level level) {
+		return new ExpectedLogTestRule(clazz.getName(), level);
 	}
 
 	public static ExpectedLogTestRule with(String name, Level level) {
@@ -95,16 +100,11 @@ public class ExpectedLogTestRule implements TestRule {
 	}
 
 	public void verify() {
-		if (_captureHandler == null) {
-			return;
-		}
-
 		if (!_matcherBuilder.isAnythingExpected()) {
 			return;
 		}
 
-		Assert.assertThat(
-			_captureHandler.getLogRecords(), _matcherBuilder.build());
+		Assert.assertThat(getLogRecords(), _matcherBuilder.build());
 	}
 
 	protected void closeCaptureHandler() {
@@ -115,6 +115,14 @@ public class ExpectedLogTestRule implements TestRule {
 		_captureHandler.close();
 
 		_captureHandler = null;
+	}
+
+	protected List<LogRecord> getLogRecords() {
+		if (_captureHandler != null) {
+			return _captureHandler.getLogRecords();
+		}
+
+		return Collections.emptyList();
 	}
 
 	protected void openCaptureHandler(String name, Level level) {

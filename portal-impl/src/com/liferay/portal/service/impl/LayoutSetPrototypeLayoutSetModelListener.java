@@ -51,7 +51,7 @@ public class LayoutSetPrototypeLayoutSetModelListener
 	protected void updateLayoutSetPrototype(
 		LayoutSet layoutSet, Date modifiedDate) {
 
-		if ((layoutSet == null) || !layoutSet.isHead()) {
+		if (layoutSet == null) {
 			return;
 		}
 
@@ -64,12 +64,12 @@ public class LayoutSetPrototypeLayoutSetModelListener
 				return;
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return;
@@ -82,15 +82,15 @@ public class LayoutSetPrototypeLayoutSetModelListener
 
 			layoutSetPrototype.setModifiedDate(modifiedDate);
 
-			UnicodeProperties settingsProperties =
+			UnicodeProperties settingsUnicodeProperties =
 				layoutSet.getSettingsProperties();
 
-			settingsProperties.remove("merge-fail-count");
+			settingsUnicodeProperties.remove("merge-fail-count");
 
 			LayoutSetPrototypeUtil.update(layoutSetPrototype);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.announcements.service.http.AnnouncementsFlagServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AnnouncementsFlagSoap implements Serializable {
 
 	public static AnnouncementsFlagSoap toSoapModel(AnnouncementsFlag model) {
 		AnnouncementsFlagSoap soapModel = new AnnouncementsFlagSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setFlagId(model.getFlagId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
@@ -101,6 +101,14 @@ public class AnnouncementsFlagSoap implements Serializable {
 		setFlagId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
 	public long getFlagId() {
 		return _flagId;
 	}
@@ -149,6 +157,7 @@ public class AnnouncementsFlagSoap implements Serializable {
 		_value = value;
 	}
 
+	private long _mvccVersion;
 	private long _flagId;
 	private long _companyId;
 	private long _userId;

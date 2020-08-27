@@ -1,0 +1,63 @@
+definition {
+
+	macro enableSectionCustomizableCP {
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "${pageName}");
+
+		Navigator.gotoNavTab(navTab = "Advanced");
+
+		Panel.expandPanel(panel = "Customization Settings");
+
+		Check.checkToggleSwitch(locator1 = "SitePagesEditPage#CUSTOMIZATION_SETTINGS_SHOW_CUSTOMIZABLE_SECTIONS");
+
+		if (isSet(columnIdList)) {
+			for (var columnId : list "${columnIdList}") {
+				Check.toggleSwitch(
+					key_columnId = "${columnId}",
+					locator1 = "SitePagesEditPage#CUSTOMIZATION_SETTINGS_CUSTOMIZABLE_COLUMN_CHECKBOX");
+			}
+		}
+		else {
+			Check.toggleSwitch(
+				key_columnId = "${columnId}",
+				locator1 = "SitePagesEditPage#CUSTOMIZATION_SETTINGS_CUSTOMIZABLE_COLUMN_CHECKBOX");
+		}
+
+		Button.clickSave();
+	}
+
+	macro gotoCustomizedPageInfo {
+		Click(locator1 = "Icon#PAGE_CUSTOMIZATION_ELLIPSIS");
+
+		if (isSet(viewDefaultPage)) {
+			var key_menuItem = "View Page without my customizations";
+
+			MenuItem.click(menuItem = "View Page without my customizations");
+		}
+		else {
+			var key_menuItem = "Reset My Customizations";
+
+			MenuItem.clickNoError(menuItem = "Reset My Customizations");
+
+			AssertConfirm(value1 = "Are you sure you want to reset your customizations to default?");
+		}
+	}
+
+	macro viewCustomizablePagePG {
+		Click(locator1 = "Icon#PAGE_CUSTOMIZATION_ELLIPSIS");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Home#PAGE_CUSTOMIZATION_MESSAGE_INFO",
+			value1 = "You can customize this page.");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_CUSTOMIZATION_VIEW_DEFAULT_PAGE",
+			value1 = "View Page without my customizations");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_CUSTOMIZATION_RESET_MY_CUSTOMIZATIONS",
+			value1 = "Reset My Customizations");
+	}
+
+}

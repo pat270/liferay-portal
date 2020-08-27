@@ -30,7 +30,9 @@ OAuth2Application oAuth2Application = oAuth2ConnectedApplicationsPortletDisplayC
 renderResponse.setTitle(oAuth2Application.getName());
 %>
 
-<div class="container-fluid-1280 view-application">
+<clay:container-fluid
+	cssClass="view-application"
+>
 	<portlet:actionURL name="/connected_applications/revoke_oauth2_authorizations" var="revokeOAuth2AuthorizationURL" />
 
 	<aui:form action="<%= revokeOAuth2AuthorizationURL %>" method="post" name="fm">
@@ -79,21 +81,23 @@ renderResponse.setTitle(oAuth2Application.getName());
 
 					<%
 					for (String applicationName : assignableScopes.getApplicationNames()) {
-						String applicationScopeDescription = StringUtil.merge(assignableScopes.getApplicationScopeDescription(applicationName), ", ");
+						String applicationScopeDescription = StringUtil.merge(assignableScopes.getApplicationScopeDescription(themeDisplay.getCompanyId(), applicationName), ", ");
 					%>
 
 						<li class="list-group-item list-group-item-flex">
-							<div class="autofit-col">
+							<clay:content-col>
 								<clay:icon
 									symbol="check"
 								/>
-							</div>
+							</clay:content-col>
 
-							<div class="autofit-col autofit-col-expand">
+							<clay:content-col
+								expand="<%= true %>"
+							>
 								<h4 class="list-group-title text-truncate"><%= HtmlUtil.escape(assignableScopes.getApplicationDescription(applicationName)) %></h4>
 
 								<p class="list-group-subtitle text-truncate"><%= applicationScopeDescription %></p>
-							</div>
+							</clay:content-col>
 						</li>
 
 					<%
@@ -121,6 +125,19 @@ renderResponse.setTitle(oAuth2Application.getName());
 					<%= HtmlUtil.escape(oAuth2Authorization.getRemoteIPInfo()) %>, <%= HtmlUtil.escape(oAuth2Authorization.getRemoteHostInfo()) %>
 				</p>
 
+				<%
+				Date expirationDate = oAuth2Authorization.getRefreshTokenExpirationDate();
+
+				if (expirationDate == null) {
+					expirationDate = oAuth2Authorization.getAccessTokenExpirationDate();
+				}
+				%>
+
+				<p class="authorization text-truncate">
+					<span><liferay-ui:message key="expiration" /></span>:
+					<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(locale, Math.abs(System.currentTimeMillis() - expirationDate.getTime()), true) %>" key='<%= expirationDate.before(new Date()) ? "x-ago" : "within-x" %>' translateArguments="<%= false %>" />
+				</p>
+
 				<p class="buttons">
 					<aui:button cssClass="remove-access" id="removeAccess" value="remove-access" />
 					<aui:button href="<%= PortalUtil.escapeRedirect(redirect) %>" value="cancel" />
@@ -128,19 +145,22 @@ renderResponse.setTitle(oAuth2Application.getName());
 			</div>
 		</aui:fieldset-group>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <script>
-	var removeAccessButton = document.getElementById('<portlet:namespace />removeAccess');
+	var removeAccessButton = document.getElementById(
+		'<portlet:namespace />removeAccess'
+	);
 
 	if (removeAccessButton) {
-		removeAccessButton.addEventListener(
-			'click',
-			function() {
-				if (confirm('<%= UnicodeLanguageUtil.format(request, "x-will-no-longer-have-access-to-your-account-removed-access-cannot-be-recovered", new String[] {oAuth2Application.getName()}) %>')) {
-					submitForm(document.<portlet:namespace/>fm);
-				}
+		removeAccessButton.addEventListener('click', function () {
+			if (
+				confirm(
+					'<%= UnicodeLanguageUtil.format(request, "x-will-no-longer-have-access-to-your-account-removed-access-cannot-be-recovered", new String[] {oAuth2Application.getName()}) %>'
+				)
+			) {
+				submitForm(document.<portlet:namespace/>fm);
 			}
-		);
+		});
 	}
 </script>

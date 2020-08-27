@@ -15,16 +15,17 @@
 package com.liferay.portal.osgi.web.portlet.container.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.URLCodec;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.log.CaptureAppender;
 import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 import com.liferay.portlet.SecurityPortletContainerWrapper;
 
 import java.io.IOException;
@@ -71,13 +72,11 @@ public class RenderRequestPortletContainerTest
 
 	@Test
 	public void testInvalidPortletId() throws Exception {
-		HttpServletRequest httpServletRequest =
-			PortletContainerTestUtil.getHttpServletRequest(group, layout);
-
-		String url =
-			layout.getRegularURL(httpServletRequest) + "?p_p_id=" +
-				URLCodec.encodeURL("'\"><script>alert(1)</script>") +
-					"&p_p_lifecycle=0&p_p_state=exclusive";
+		String url = StringBundler.concat(
+			layout.getRegularURL(
+				PortletContainerTestUtil.getHttpServletRequest(group, layout)),
+			"?p_p_id=", URLCodec.encodeURL("'\"><script>alert(1)</script>"),
+			"&p_p_lifecycle=0&p_p_state=exclusive");
 
 		try (CaptureAppender captureAppender =
 				Log4JLoggerTestUtil.configureLog4JLogger(
@@ -197,12 +196,9 @@ public class RenderRequestPortletContainerTest
 			testPortlet, new HashMapDictionary<String, Object>(),
 			TEST_PORTLET_ID);
 
-		HttpServletRequest httpServletRequest =
-			PortletContainerTestUtil.getHttpServletRequest(group, layout);
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			httpServletRequest, TEST_PORTLET_ID, layout.getPlid(),
-			PortletRequest.RENDER_PHASE);
+			PortletContainerTestUtil.getHttpServletRequest(group, layout),
+			TEST_PORTLET_ID, layout.getPlid(), PortletRequest.RENDER_PHASE);
 
 		PortletContainerTestUtil.Response response =
 			PortletContainerTestUtil.request(portletURL.toString());
@@ -235,12 +231,9 @@ public class RenderRequestPortletContainerTest
 			testPortlet, new HashMapDictionary<String, Object>(),
 			TEST_PORTLET_ID);
 
-		HttpServletRequest httpServletRequest =
-			PortletContainerTestUtil.getHttpServletRequest(group, layout);
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			httpServletRequest, TEST_PORTLET_ID, layout.getPlid(),
-			PortletRequest.RENDER_PHASE);
+			PortletContainerTestUtil.getHttpServletRequest(group, layout),
+			TEST_PORTLET_ID, layout.getPlid(), PortletRequest.RENDER_PHASE);
 
 		TestPortlet testRuntimePortlet = new TestPortlet();
 		String testRuntimePortletId = "testRuntimePortletId";

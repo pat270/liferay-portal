@@ -34,8 +34,6 @@ import com.liferay.portal.kernel.settings.SettingsDescriptor;
 import com.liferay.portal.kernel.settings.SettingsException;
 import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.settings.SettingsLocator;
-import com.liferay.portal.kernel.settings.SettingsLocatorHelper;
-import com.liferay.portal.kernel.settings.SettingsLocatorHelperUtil;
 import com.liferay.portal.kernel.settings.definition.ConfigurationBeanDeclaration;
 import com.liferay.portal.kernel.settings.definition.ConfigurationPidMapping;
 
@@ -69,12 +67,11 @@ public class SettingsFactoryImpl implements SettingsFactory {
 		throws SettingsException {
 
 		try {
-			PortletItem portletItem = getPortletItem(groupId, portletId, name);
-
-			return new ArchivedSettingsImpl(portletItem);
+			return new ArchivedSettingsImpl(
+				getPortletItem(groupId, portletId, name));
 		}
-		catch (PortalException pe) {
-			throw new SettingsException(pe);
+		catch (PortalException portalException) {
+			throw new SettingsException(portalException);
 		}
 	}
 
@@ -97,26 +94,12 @@ public class SettingsFactoryImpl implements SettingsFactory {
 		return archivedSettingsList;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             SettingsLocatorHelperImpl#getServerSettings(String)}
-	 */
-	@Deprecated
-	@Override
-	public Settings getServerSettings(String settingsId) {
-		SettingsLocatorHelper settingsLocatorHelper =
-			SettingsLocatorHelperUtil.getSettingsLocatorHelper();
-
-		return settingsLocatorHelper.getServerSettings(settingsId);
-	}
-
 	@Override
 	public Settings getSettings(SettingsLocator settingsLocator)
 		throws SettingsException {
 
-		Settings settings = settingsLocator.getSettings();
-
-		return applyFallbackKeys(settingsLocator.getSettingsId(), settings);
+		return applyFallbackKeys(
+			settingsLocator.getSettingsId(), settingsLocator.getSettings());
 	}
 
 	@Override
@@ -164,8 +147,8 @@ public class SettingsFactoryImpl implements SettingsFactory {
 
 			return group.getCompanyId();
 		}
-		catch (PortalException pe) {
-			throw new SettingsException(pe);
+		catch (PortalException portalException) {
+			throw new SettingsException(portalException);
 		}
 	}
 
@@ -179,18 +162,17 @@ public class SettingsFactoryImpl implements SettingsFactory {
 			portletItem = _portletItemLocalService.getPortletItem(
 				groupId, name, portletId, PortletPreferences.class.getName());
 		}
-		catch (NoSuchPortletItemException nspie) {
+		catch (NoSuchPortletItemException noSuchPortletItemException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nspie, nspie);
+				_log.debug(
+					noSuchPortletItemException, noSuchPortletItemException);
 			}
 
-			long userId = PrincipalThreadLocal.getUserId();
-
 			portletItem = _portletItemLocalService.updatePortletItem(
-				userId, groupId, name, portletId,
+				PrincipalThreadLocal.getUserId(), groupId, name, portletId,
 				PortletPreferences.class.getName());
 		}
 
@@ -238,13 +220,10 @@ public class SettingsFactoryImpl implements SettingsFactory {
 
 		String settingsId = configurationPidMapping.getConfigurationPid();
 
-		Class<?> configurationBeanClass =
-			configurationPidMapping.getConfigurationBeanClass();
-
 		ConfigurationBeanClassSettingsDescriptor
 			configurationBeanClassSettingsDescriptor =
 				new ConfigurationBeanClassSettingsDescriptor(
-					configurationBeanClass);
+					configurationPidMapping.getConfigurationBeanClass());
 
 		register(settingsId, configurationBeanClassSettingsDescriptor, null);
 	}
@@ -270,11 +249,8 @@ public class SettingsFactoryImpl implements SettingsFactory {
 	protected void unsetConfigurationBeanDeclaration(
 		ConfigurationBeanDeclaration configurationBeanDeclaration) {
 
-		Class<?> configurationBeanClass =
-			configurationBeanDeclaration.getConfigurationBeanClass();
-
 		String settingsId = ConfigurationPidUtil.getConfigurationPid(
-			configurationBeanClass);
+			configurationBeanDeclaration.getConfigurationBeanClass());
 
 		unregister(settingsId);
 	}

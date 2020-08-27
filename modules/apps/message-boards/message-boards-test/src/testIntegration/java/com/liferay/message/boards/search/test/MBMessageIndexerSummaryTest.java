@@ -17,14 +17,16 @@ package com.liferay.message.boards.search.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.test.util.MBTestUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.rule.Sync;
+import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.search.test.util.SummaryFixture;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -40,6 +42,7 @@ import org.junit.runner.RunWith;
  * @author Adam Brandizzi
  */
 @RunWith(Arquillian.class)
+@Sync
 public class MBMessageIndexerSummaryTest {
 
 	@ClassRule
@@ -47,16 +50,17 @@ public class MBMessageIndexerSummaryTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(),
-			PermissionCheckerMethodTestRule.INSTANCE);
+			PermissionCheckerMethodTestRule.INSTANCE,
+			SynchronousDestinationTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
 		indexerFixture = new IndexerFixture<>(MBMessage.class);
 
-		Group group = _groupLocalService.getGroup(TestPropsValues.getGroupId());
-
 		summaryFixture = new SummaryFixture<>(
-			MBMessage.class, group, LocaleUtil.US, TestPropsValues.getUser());
+			MBMessage.class,
+			_groupLocalService.getGroup(TestPropsValues.getGroupId()),
+			LocaleUtil.US, TestPropsValues.getUser());
 	}
 
 	@Test
@@ -113,6 +117,9 @@ public class MBMessageIndexerSummaryTest {
 		summaryFixture.assertSummary(
 			"MB Thread Message Subject", "MB Thread Message Body", document);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected IndexerFixture<MBMessage> indexerFixture;
 

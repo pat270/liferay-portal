@@ -15,6 +15,7 @@
 package com.liferay.fragment.service;
 
 import com.liferay.fragment.model.FragmentCollection;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -40,6 +41,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -51,7 +53,7 @@ public interface FragmentCollectionService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link FragmentCollectionServiceUtil} to access the fragment collection remote service. Add custom service methods to <code>com.liferay.fragment.service.impl.FragmentCollectionServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.fragment.service.impl.FragmentCollectionServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the fragment collection remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link FragmentCollectionServiceUtil} if injection and service tracking are not available.
 	 */
 	public FragmentCollection addFragmentCollection(
 			long groupId, String name, String description,
@@ -79,6 +81,15 @@ public interface FragmentCollectionService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FragmentCollection> getFragmentCollections(
+		long groupId, boolean includeSystem);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentCollection> getFragmentCollections(
+		long groupId, boolean includeSystem, int start, int end,
+		OrderByComparator<FragmentCollection> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentCollection> getFragmentCollections(
 		long groupId, int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -88,14 +99,45 @@ public interface FragmentCollectionService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FragmentCollection> getFragmentCollections(
+		long groupId, String name, boolean includeSystem, int start, int end,
+		OrderByComparator<FragmentCollection> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentCollection> getFragmentCollections(
 		long groupId, String name, int start, int end,
+		OrderByComparator<FragmentCollection> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentCollection> getFragmentCollections(long[] groupIds);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentCollection> getFragmentCollections(
+		long[] groupIds, int start, int end,
+		OrderByComparator<FragmentCollection> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentCollection> getFragmentCollections(
+		long[] groupIds, String name, int start, int end,
 		OrderByComparator<FragmentCollection> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getFragmentCollectionsCount(long groupId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFragmentCollectionsCount(long groupId, boolean includeSystem);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getFragmentCollectionsCount(long groupId, String name);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFragmentCollectionsCount(
+		long groupId, String name, boolean includeSystem);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFragmentCollectionsCount(long[] groupIds);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFragmentCollectionsCount(long[] groupIds, String name);
 
 	/**
 	 * Returns the OSGi service identifier.

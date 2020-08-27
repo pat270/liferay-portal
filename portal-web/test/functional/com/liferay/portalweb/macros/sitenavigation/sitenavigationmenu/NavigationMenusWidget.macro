@@ -1,0 +1,77 @@
+definition {
+
+	macro chooseMenu {
+		Click(locator1 = "Radio#CHOOSE_MENU");
+
+		Click.pauseClickAt(locator1 = "Button#SELECT");
+
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame.selectSecondFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Click(
+			key_rowEntry = "${menuName}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextEquals(
+			locator1 = "NavigationMenusWidget#CHOOSE_MENU_SELECTED_MENU_NAME",
+			value1 = "${menuName}");
+	}
+
+	macro gotoEditNavigationMenuEntry {
+		MouseOver.mouseOverNotVisible(locator1 = "Icon#EDIT_PENCIL");
+
+		Click.waitForMenuToggleJSClick(locator1 = "Icon#EDIT_PENCIL");
+
+		MenuItem.click(menuItem = "Edit");
+	}
+
+	macro gotoNavigationMenuWidgetConfig {
+		Portlet.gotoPortletOptions(
+			portletName = "Navigation Menu",
+			portletOption = "Configuration");
+
+		IFrame.selectModalFrame();
+	}
+
+	macro gotoSublevel {
+		if ("${type}" == "Drop Down") {
+			WaitForElementPresent(locator1 = "//script[contains(@src,'/o/frontend-js-aui-web/liferay/menu_toggle.js')]");
+
+			MouseOver(
+				key_pageName = "${pageName}",
+				locator1 = "Home#PAGE");
+
+			Click(
+				key_itemName = "${itemName}",
+				locator1 = "NavigationMenusWidget#DROPDOWN_MENU_ITEM");
+		}
+		else if ("${type}" == "List") {
+			NavItem.click(navItem = "${itemName}");
+		}
+	}
+
+	macro selectDisplayTemplate {
+		Select(
+			locator1 = "Select#DISPLAY_TEMPLATE",
+			value1 = "${templateName}");
+	}
+
+	macro selectLevelsToDisplay {
+		Select(
+			key_selectFieldLabel = "Levels to Display",
+			locator1 = "Select#ANY",
+			value1 = "${levels}");
+	}
+
+	macro selectNavigation {
+		Select(
+			locator1 = "NavigationMenusWidget#SELECT_NAVIGATION",
+			value1 = "${menuType}");
+	}
+
+}

@@ -15,11 +15,19 @@
 package com.liferay.portal.search.test.util.groupby;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.GroupBy;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.QueryConfig;
+import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.search.groupby.GroupByRequest;
+import com.liferay.portal.search.groupby.GroupByRequestFactory;
+import com.liferay.portal.search.groupby.GroupByResponse;
+import com.liferay.portal.search.internal.groupby.GroupByRequestFactoryImpl;
 import com.liferay.portal.search.test.util.AssertUtils;
 import com.liferay.portal.search.test.util.indexing.BaseIndexingTestCase;
 import com.liferay.portal.search.test.util.indexing.DocumentCreationHelpers;
@@ -28,11 +36,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -57,11 +65,11 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
-					hits -> assertFieldNames(
+					hits -> assertGroupedHitsFieldNames(
 						"one",
 						Arrays.asList(
 							"companyId", "entryClassName", "entryClassPK",
-							"groupId", "uid", "userName"),
+							"groupId", SORT_FIELD, "uid", "userName"),
 						hits, indexingTestHelper));
 			});
 	}
@@ -79,7 +87,7 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
-					hits -> assertFieldNames(
+					hits -> assertGroupedHitsFieldNames(
 						"one", getFieldNames(hits), hits, indexingTestHelper));
 			});
 	}
@@ -104,7 +112,7 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
-					hits -> assertFieldNames(
+					hits -> assertGroupedHitsFieldNames(
 						"one", getFieldNames(hits), hits, indexingTestHelper));
 			});
 	}
@@ -130,38 +138,85 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
-					hits -> assertFieldNames(
+					hits -> assertGroupedHitsFieldNames(
 						"one", Arrays.asList(fieldNames), hits,
 						indexingTestHelper));
 			});
 	}
 
 	@Test
-	public void testGroupBy() throws Exception {
-		Map<String, Integer> map1 = new HashMap<String, Integer>() {
-			{
-				put("sixteen", 16);
-				put("three", 3);
-				put("two", 2);
-			}
-		};
+	public void testGroupByDocsSize() throws Exception {
+		indexDuplicates("five", 5);
+
+		assertSearch(
+			indexingTestHelper -> {
+				indexingTestHelper.define(
+					searchContext -> {
+						GroupBy groupBy = new GroupBy(GROUP_FIELD);
+
+						groupBy.setSize(4);
+
+						searchContext.setGroupBy(groupBy);
+					});
+
+				indexingTestHelper.search();
+
+				indexingTestHelper.verify(
+					hits -> assertGroups(
+						toMap("five", "5|4"), hits, indexingTestHelper));
+			});
+	}
+
+	@Test
+	public void testGroupByDocsSortsScoreFieldAsc() throws Exception {
+		assertGroupByDocsSortsScoreField(false);
+	}
+
+	@Test
+	public void testGroupByDocsSortsScoreFieldDesc() throws Exception {
+		assertGroupByDocsSortsScoreField(true);
+	}
+
+	@Test
+	public void testGroupByDocsSortsSortFieldAsc() throws Exception {
+		assertGroupByDocsSortsSortField(false);
+	}
+
+	@Test
+	public void testGroupByDocsSortsSortFieldDesc() throws Exception {
+		assertGroupByDocsSortsSortField(true);
+	}
+
+	@Test
+	public void testGroupByDocsStart() throws Exception {
+		Map<String, Integer> map1 = HashMapBuilder.put(
+			"one", 1
+		).put(
+			"two", 2
+		).build();
 
 		map1.forEach((key, value) -> indexDuplicates(key, value));
 
 		Set<Map.Entry<String, Integer>> entries = map1.entrySet();
 
-		Map<String, String> map2 = entries.stream(
-		).collect(
+		Stream<Map.Entry<String, Integer>> stream = entries.stream();
+
+		Map<String, String> map2 = stream.collect(
 			Collectors.toMap(
 				Map.Entry::getKey,
-				entry -> getCountPairString(entry.getValue(), entry.getValue()))
-		);
+				entry -> getCountPairString(
+					entry.getValue(), entry.getValue() - 1)));
 
 		assertSearch(
 			indexingTestHelper -> {
 				indexingTestHelper.define(
-					searchContext -> searchContext.setGroupBy(
-						new GroupBy(GROUP_FIELD)));
+					searchContext -> {
+						GroupBy groupBy = new GroupBy(GROUP_FIELD);
+
+						groupBy.setStart(1);
+
+						searchContext.setGroupBy(groupBy);
+					});
 
 				indexingTestHelper.search();
 
@@ -171,56 +226,190 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 	}
 
 	@Test
-	public void testStartAndEnd() throws Exception {
-		indexDuplicates("sixteen", 16);
+	public void testGroupByTermsSizeDefault() throws Exception {
+		Map<String, Integer> map1 = HashMapBuilder.put(
+			"eight", 2
+		).put(
+			"eleven", 2
+		).put(
+			"five", 2
+		).put(
+			"four", 2
+		).put(
+			"nine", 2
+		).put(
+			"one", 1
+		).put(
+			"seven", 2
+		).put(
+			"six", 2
+		).put(
+			"ten", 2
+		).put(
+			"three", 2
+		).put(
+			"two", 2
+		).build();
+
+		map1.forEach((key, value) -> indexDuplicates(key, value));
+
+		map1.remove("one", 1);
+
+		Set<Map.Entry<String, Integer>> entries = map1.entrySet();
+
+		Stream<Map.Entry<String, Integer>> stream = entries.stream();
+
+		Map<String, String> map2 = stream.collect(
+			Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> getCountPairString(
+					entry.getValue(), entry.getValue())));
 
 		assertSearch(
 			indexingTestHelper -> {
-				indexingTestHelper.define(
-					searchContext -> {
-						searchContext.setEnd(9);
-						searchContext.setGroupBy(new GroupBy(GROUP_FIELD));
-						searchContext.setStart(4);
+				indexingTestHelper.defineRequest(
+					searchRequestBuilder -> {
+						GroupByRequest groupByRequest =
+							groupByRequestFactory.getGroupByRequest(
+								GROUP_FIELD);
+
+						setTermsSortsAndDocsSize(groupByRequest);
+
+						searchRequestBuilder.groupByRequests(groupByRequest);
+					});
+
+				indexingTestHelper.search();
+
+				indexingTestHelper.verify(
+					hits -> assertGroups(map2, hits, indexingTestHelper));
+			});
+	}
+
+	@Test
+	public void testGroupByTermsSizeLessThanDefault() throws Exception {
+		indexDuplicates("one", 1);
+		indexDuplicates("two", 2);
+
+		assertSearch(
+			indexingTestHelper -> {
+				indexingTestHelper.defineRequest(
+					searchRequestBuilder -> {
+						GroupByRequest groupByRequest =
+							groupByRequestFactory.getGroupByRequest(
+								GROUP_FIELD);
+
+						groupByRequest.setTermsSize(1);
+
+						setTermsSortsAndDocsSize(groupByRequest);
+
+						searchRequestBuilder.groupByRequests(groupByRequest);
 					});
 
 				try {
 					indexingTestHelper.search();
 				}
-				catch (RuntimeException re) {
-					if (_shouldIgnoreSearchEngineGlitchAndRetry(re)) {
-						Assert.fail(re.getMessage());
+				catch (RuntimeException runtimeException) {
+					if (_shouldIgnoreSearchEngineGlitchAndRetry(
+							runtimeException)) {
+
+						Assert.fail(runtimeException.getMessage());
 					}
 
-					throw re;
+					throw runtimeException;
 				}
 
 				indexingTestHelper.verify(
 					hits -> assertGroups(
-						toMap("sixteen", "16|5"), hits, indexingTestHelper));
+						toMap("two", "2|2"), hits, indexingTestHelper));
 			});
 	}
 
 	@Test
-	public void testStartAndSize() throws Exception {
-		indexDuplicates("sixteen", 16);
+	public void testGroupByTermsSizeMoreThanDefault() throws Exception {
+		Map<String, Integer> map1 = HashMapBuilder.put(
+			"eight", 2
+		).put(
+			"eleven", 2
+		).put(
+			"five", 2
+		).put(
+			"four", 2
+		).put(
+			"nine", 2
+		).put(
+			"one", 1
+		).put(
+			"seven", 2
+		).put(
+			"six", 2
+		).put(
+			"ten", 2
+		).put(
+			"three", 2
+		).put(
+			"two", 2
+		).build();
+
+		map1.forEach((key, value) -> indexDuplicates(key, value));
+
+		Set<Map.Entry<String, Integer>> entries = map1.entrySet();
+
+		Stream<Map.Entry<String, Integer>> stream = entries.stream();
+
+		Map<String, String> map2 = stream.collect(
+			Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> getCountPairString(
+					entry.getValue(), entry.getValue())));
 
 		assertSearch(
 			indexingTestHelper -> {
-				indexingTestHelper.define(
-					searchContext -> {
-						GroupBy groupBy = new GroupBy(GROUP_FIELD);
+				indexingTestHelper.defineRequest(
+					searchRequestBuilder -> {
+						GroupByRequest groupByRequest =
+							groupByRequestFactory.getGroupByRequest(
+								GROUP_FIELD);
 
-						groupBy.setSize(3);
-						groupBy.setStart(8);
+						groupByRequest.setTermsSize(11);
 
-						searchContext.setGroupBy(groupBy);
+						setTermsSortsAndDocsSize(groupByRequest);
+
+						searchRequestBuilder.groupByRequests(groupByRequest);
+					});
+
+				indexingTestHelper.search();
+
+				indexingTestHelper.verify(
+					hits -> assertGroups(map2, hits, indexingTestHelper));
+			});
+	}
+
+	@Test
+	public void testGroupByTermsStart() throws Exception {
+		indexDuplicates("one", 1);
+		indexDuplicates("two", 2);
+
+		assertSearch(
+			indexingTestHelper -> {
+				indexingTestHelper.defineRequest(
+					searchRequestBuilder -> {
+						GroupByRequest groupByRequest =
+							groupByRequestFactory.getGroupByRequest(
+								GROUP_FIELD);
+
+						groupByRequest.setTermsSorts(
+							new Sort(SORT_FIELD, Sort.STRING_TYPE, true));
+
+						groupByRequest.setTermsStart(1);
+
+						searchRequestBuilder.groupByRequests(groupByRequest);
 					});
 
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
 					hits -> assertGroups(
-						toMap("sixteen", "16|3"), hits, indexingTestHelper));
+						toMap("one", "1|1"), hits, indexingTestHelper));
 			});
 	}
 
@@ -232,17 +421,88 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 		return list.toString();
 	}
 
-	protected void assertFieldNames(
-		String key, Collection<String> fieldNames, Hits hits1,
+	protected void assertGroupByDocsSortsScoreField(boolean desc)
+		throws Exception {
+
+		indexDuplicates("one", 1);
+		indexDuplicates("two", 2);
+		indexDuplicates("three", 3);
+
+		assertSearch(
+			indexingTestHelper -> {
+				indexingTestHelper.define(
+					searchContext -> {
+						Sort[] sorts = new Sort[1];
+
+						sorts[0] = new Sort(
+							"scoreField", Sort.SCORE_TYPE, desc);
+
+						GroupBy groupBy = new GroupBy(GROUP_FIELD);
+
+						groupBy.setSize(3);
+						groupBy.setSorts(sorts);
+
+						searchContext.setGroupBy(groupBy);
+					});
+
+				BooleanQueryImpl booleanQueryImpl = new BooleanQueryImpl();
+
+				booleanQueryImpl.addExactTerm(SORT_FIELD, "3");
+				booleanQueryImpl.addExactTerm(SORT_FIELD, "2");
+
+				booleanQueryImpl.add(
+					getDefaultQuery(), BooleanClauseOccur.MUST);
+
+				indexingTestHelper.setQuery(booleanQueryImpl);
+
+				indexingTestHelper.search();
+
+				indexingTestHelper.verify(
+					hits -> assertGroupsSorted(hits, true, 3));
+			});
+	}
+
+	protected void assertGroupByDocsSortsSortField(boolean desc)
+		throws Exception {
+
+		indexDuplicates("one", 2);
+		indexDuplicates("two", 2);
+		indexDuplicates("three", 3);
+
+		assertSearch(
+			indexingTestHelper -> {
+				indexingTestHelper.define(
+					searchContext -> {
+						Sort[] sorts = new Sort[1];
+
+						sorts[0] = new Sort(SORT_FIELD, Sort.STRING_TYPE, desc);
+
+						GroupBy groupBy = new GroupBy(GROUP_FIELD);
+
+						groupBy.setSize(3);
+						groupBy.setSorts(sorts);
+
+						searchContext.setGroupBy(groupBy);
+					});
+
+				indexingTestHelper.search();
+
+				indexingTestHelper.verify(
+					hits -> assertGroupsSorted(hits, desc, 3));
+			});
+	}
+
+	protected void assertGroupedHitsFieldNames(
+		String key, Collection<String> expectedFieldNames, Hits hits,
 		IndexingTestHelper indexingTestHelper) {
 
-		Map<String, Hits> hitsMap = hits1.getGroupedHits();
+		Map<String, Hits> groupedHitsMap = hits.getGroupedHits();
 
-		Hits hits2 = hitsMap.get(key);
+		Hits groupedHits = groupedHitsMap.get(key);
 
 		Assert.assertEquals(
-			indexingTestHelper.getRequestString(), sort(fieldNames),
-			sort(getFieldNames(hits2)));
+			indexingTestHelper.getRequestString(), sort(expectedFieldNames),
+			sort(getFieldNames(groupedHits)));
 	}
 
 	protected void assertGroups(
@@ -253,16 +513,84 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 
 		Collection<Map.Entry<String, Hits>> entries = hitsMap.entrySet();
 
-		Map<String, String> actualCountsMap = entries.stream(
-		).collect(
+		Stream<Map.Entry<String, Hits>> stream = entries.stream();
+
+		Map<String, String> actualCountsMap = stream.collect(
 			Collectors.toMap(
 				Map.Entry::getKey,
-				entry -> getCountPairString(entry.getValue()))
-		);
+				entry -> getCountPairString(entry.getValue())));
 
 		AssertUtils.assertEquals(
 			indexingTestHelper.getRequestString(), expectedCountsMap,
 			actualCountsMap);
+	}
+
+	protected void assertGroupsOrdered(
+		List<String> expectedCountsList, Map<String, Hits> hitsMap,
+		IndexingTestHelper indexingTestHelper) {
+
+		List<String> actualCountsList = new ArrayList<>();
+
+		for (Map.Entry<String, Hits> entry : hitsMap.entrySet()) {
+			actualCountsList.add(
+				getCountPairString(entry.getKey(), entry.getValue()));
+		}
+
+		AssertUtils.assertEquals(
+			indexingTestHelper.getRequestString(), expectedCountsList,
+			actualCountsList);
+	}
+
+	protected void assertGroupsSorted(
+		Hits hits, boolean desc, int minDocCount) {
+
+		Map<String, Hits> groupedHits = hits.getGroupedHits();
+
+		int maxDocCount = 0;
+
+		for (Map.Entry<String, Hits> entry : groupedHits.entrySet()) {
+			Hits groupHits = entry.getValue();
+
+			Document[] documents = groupHits.getDocs();
+
+			if (documents.length > maxDocCount) {
+				maxDocCount = documents.length;
+			}
+
+			for (int i = 0; i < documents.length; i++) {
+				Document document = documents[i];
+
+				String sortFieldValue = document.get(SORT_FIELD);
+
+				if (desc) {
+					Assert.assertEquals(
+						document.toString(),
+						String.valueOf(documents.length - i), sortFieldValue);
+				}
+				else {
+					Assert.assertEquals(
+						document.toString(), String.valueOf(i + 1),
+						sortFieldValue);
+				}
+			}
+		}
+
+		Assert.assertEquals(maxDocCount, minDocCount);
+	}
+
+	protected void assertMultipleGroupsOrdered(
+		Map<String, List<String>> expectedCountsMap,
+		List<GroupByResponse> groupByResponses,
+		IndexingTestHelper indexingTestHelper) {
+
+		for (GroupByResponse groupByResponse : groupByResponses) {
+			List<String> expectedCountsList = expectedCountsMap.get(
+				groupByResponse.getField());
+
+			assertGroupsOrdered(
+				expectedCountsList, groupByResponse.getHitsMap(),
+				indexingTestHelper);
+		}
 	}
 
 	protected String getCountPairString(Hits hits) {
@@ -273,6 +601,13 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 
 	protected String getCountPairString(int hitsCount, int docsCount) {
 		return hitsCount + StringPool.PIPE + docsCount;
+	}
+
+	protected String getCountPairString(String key, Hits hits) {
+		Document[] docs = hits.getDocs();
+
+		return key + StringPool.PIPE +
+			getCountPairString(hits.getLength(), docs.length);
 	}
 
 	protected Collection<String> getFieldNames(Hits hits) {
@@ -294,27 +629,42 @@ public abstract class BaseGroupByTestCase extends BaseIndexingTestCase {
 
 		for (int i = 1; i <= count; i++) {
 			try {
-				addDocument(DocumentCreationHelpers.singleKeyword(field, name));
+				addDocument(
+					DocumentCreationHelpers.twoKeywords(
+						field, name, SORT_FIELD, String.valueOf(i)));
 			}
-			catch (RuntimeException re) {
-				throw re;
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
 			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
 			}
 		}
 	}
 
+	protected void setTermsSortsAndDocsSize(GroupByRequest groupByRequest) {
+		groupByRequest.setTermsSorts(
+			new Sort(SORT_FIELD, Sort.STRING_TYPE, true));
+
+		groupByRequest.setDocsSize(2);
+	}
+
 	protected static final String GROUP_FIELD = Field.USER_NAME;
 
+	protected static final String SORT_FIELD =
+		Field.USER_ID + StringPool.UNDERLINE + Field.SORTABLE_FIELD_SUFFIX;
+
+	protected final GroupByRequestFactory groupByRequestFactory =
+		new GroupByRequestFactoryImpl();
+
 	private boolean _shouldIgnoreSearchEngineGlitchAndRetry(
-		RuntimeException re) {
+		RuntimeException runtimeException) {
 
-		Throwable t1 = re.getCause();
+		Throwable throwable1 = runtimeException.getCause();
 
-		Throwable t2 = t1.getCause();
+		Throwable throwable2 = throwable1.getCause();
 
-		String message = t2.getMessage();
+		String message = throwable2.getMessage();
 
 		if (message.equals(
 				"numHits must be > 0; please use TotalHitCountCollector if " +

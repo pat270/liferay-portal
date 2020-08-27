@@ -17,11 +17,11 @@ package com.liferay.headless.delivery.client.serdes.v1_0;
 import com.liferay.headless.delivery.client.dto.v1_0.ParentKnowledgeBaseFolder;
 import com.liferay.headless.delivery.client.json.BaseJSONParser;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.Generated;
 
@@ -103,7 +103,7 @@ public class ParentKnowledgeBaseFolderSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		if (parentKnowledgeBaseFolder.getFolderId() == null) {
 			map.put("folderId", null);
@@ -126,42 +126,7 @@ public class ParentKnowledgeBaseFolderSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class ParentKnowledgeBaseFolderJSONParser
+	public static class ParentKnowledgeBaseFolderJSONParser
 		extends BaseJSONParser<ParentKnowledgeBaseFolder> {
 
 		@Override
@@ -197,6 +162,75 @@ public class ParentKnowledgeBaseFolderSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

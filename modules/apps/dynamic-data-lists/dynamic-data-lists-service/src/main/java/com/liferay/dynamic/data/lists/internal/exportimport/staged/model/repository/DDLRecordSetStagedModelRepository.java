@@ -14,8 +14,8 @@
 
 package com.liferay.dynamic.data.lists.internal.exportimport.staged.model.repository;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
-import com.liferay.dynamic.data.lists.model.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
 import com.liferay.dynamic.data.lists.util.comparator.DDLRecordSetNameComparator;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -25,6 +25,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryHelper;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -135,6 +136,12 @@ public class DDLRecordSetStagedModelRepository
 	}
 
 	@Override
+	public DDLRecordSet fetchMissingReference(String uuid, long groupId) {
+		return _stagedModelRepositoryHelper.fetchMissingReference(
+			uuid, groupId, this);
+	}
+
+	@Override
 	public DDLRecordSet fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
@@ -242,5 +249,8 @@ public class DDLRecordSetStagedModelRepository
 
 	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Reference
+	private StagedModelRepositoryHelper _stagedModelRepositoryHelper;
 
 }

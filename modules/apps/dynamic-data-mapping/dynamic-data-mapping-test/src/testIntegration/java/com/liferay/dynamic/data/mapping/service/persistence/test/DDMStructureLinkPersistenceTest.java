@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -123,6 +124,10 @@ public class DDMStructureLinkPersistenceTest {
 
 		DDMStructureLink newDDMStructureLink = _persistence.create(pk);
 
+		newDDMStructureLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMStructureLink.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMStructureLink.setCompanyId(RandomTestUtil.nextLong());
 
 		newDDMStructureLink.setClassNameId(RandomTestUtil.nextLong());
@@ -136,6 +141,12 @@ public class DDMStructureLinkPersistenceTest {
 		DDMStructureLink existingDDMStructureLink =
 			_persistence.findByPrimaryKey(newDDMStructureLink.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMStructureLink.getMvccVersion(),
+			newDDMStructureLink.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMStructureLink.getCtCollectionId(),
+			newDDMStructureLink.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMStructureLink.getStructureLinkId(),
 			newDDMStructureLink.getStructureLinkId());
@@ -151,13 +162,6 @@ public class DDMStructureLinkPersistenceTest {
 		Assert.assertEquals(
 			existingDDMStructureLink.getStructureId(),
 			newDDMStructureLink.getStructureId());
-	}
-
-	@Test
-	public void testCountByClassNameId() throws Exception {
-		_persistence.countByClassNameId(RandomTestUtil.nextLong());
-
-		_persistence.countByClassNameId(0L);
 	}
 
 	@Test
@@ -209,8 +213,9 @@ public class DDMStructureLinkPersistenceTest {
 
 	protected OrderByComparator<DDMStructureLink> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMStructureLink", "structureLinkId", true, "companyId", true,
-			"classNameId", true, "classPK", true, "structureId", true);
+			"DDMStructureLink", "mvccVersion", true, "ctCollectionId", true,
+			"structureLinkId", true, "companyId", true, "classNameId", true,
+			"classPK", true, "structureId", true);
 	}
 
 	@Test
@@ -433,30 +438,76 @@ public class DDMStructureLinkPersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMStructureLink existingDDMStructureLink =
-			_persistence.findByPrimaryKey(newDDMStructureLink.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDDMStructureLink.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMStructureLink newDDMStructureLink = addDDMStructureLink();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMStructureLink.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"structureLinkId", newDDMStructureLink.getStructureLinkId()));
+
+		List<DDMStructureLink> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMStructureLink ddmStructureLink) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructureLink.getClassNameId()),
+			Long.valueOf(ddmStructureLink.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructureLink, "getOriginalClassNameId",
-				new Class<?>[0]));
+				ddmStructureLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructureLink.getClassPK()),
+			Long.valueOf(ddmStructureLink.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructureLink, "getOriginalClassPK",
-				new Class<?>[0]));
+				ddmStructureLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructureLink.getStructureId()),
+			Long.valueOf(ddmStructureLink.getStructureId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructureLink, "getOriginalStructureId",
-				new Class<?>[0]));
+				ddmStructureLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "structureId"));
 	}
 
 	protected DDMStructureLink addDDMStructureLink() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMStructureLink ddmStructureLink = _persistence.create(pk);
+
+		ddmStructureLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmStructureLink.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmStructureLink.setCompanyId(RandomTestUtil.nextLong());
 

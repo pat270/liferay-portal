@@ -19,16 +19,30 @@
 <%
 String namespace = StringUtil.randomId() + StringPool.UNDERLINE;
 
-boolean expanded = (boolean)request.getAttribute("liferay-product-navigation:personal-menu:expanded");
+long color = (long)request.getAttribute("liferay-product-navigation:personal-menu:color");
 String label = (String)request.getAttribute("liferay-product-navigation:personal-menu:label");
+String size = (String)request.getAttribute("liferay-product-navigation:personal-menu:size");
+User user2 = (User)request.getAttribute("liferay-product-navigation:personal-menu:user");
+
+String userStickerCssClasses = "sticker";
+
+if (size != null) {
+	userStickerCssClasses += " sticker-" + size;
+}
+
+String impersonateStickerCssClasses = "sticker";
+
+if (size != null) {
+	impersonateStickerCssClasses += " sticker-sm";
+}
 %>
 
 <style type="text/css">
-	#clay_dropdown_portal .dropdown-menu-personal-menu {
+	.dropdown-menu-personal-menu {
 		max-height: none;
 	}
 
-	#clay_dropdown_portal .dropdown-menu-personal-menu .dropdown-item-indicator {
+	.dropdown-menu-personal-menu .dropdown-item-indicator {
 		padding-right: 0.5rem;
 	}
 
@@ -42,102 +56,57 @@ String label = (String)request.getAttribute("liferay-product-navigation:personal
 </style>
 
 <div class="personal-menu-dropdown" id="<%= namespace + "personal_menu_dropdown" %>">
-	<button aria-expanded="true" aria-haspopup="true" class="btn btn-unstyled dropdown-toggle" id="<%= namespace + "personal_menu_dropdown_toggle" %>" ref="triggerButton" type="button">
-		<%= label %>
-	</button>
-</div>
+	<c:choose>
+		<c:when test="<%= Validator.isNotNull(label) %>">
+			<div><%= label %></div>
+		</c:when>
+		<c:otherwise>
+			<button aria-expanded="true" aria-haspopup="true" class="btn btn-unstyled dropdown-toggle" id="<%= namespace + "personal_menu_dropdown_toggle" %>" ref="triggerButton" type="button">
+				<span class="<%= userStickerCssClasses %>">
+					<liferay-ui:user-portrait
+						cssClass="sticker-user-icon"
+						size="<%= size %>"
+						user="<%= user2 %>"
+					/>
 
-<%
-ResourceURL resourceURL = PortletURLFactoryUtil.create(request, PersonalMenuPortletKeys.PERSONAL_MENU, PortletRequest.RESOURCE_PHASE);
+					<c:if test="<%= themeDisplay.isImpersonated() %>">
+						<span class="<%= impersonateStickerCssClasses + " sticker-bottom-right sticker-circle sticker-outside sticker-user-icon" %>" id="impersonate-user-sticker">
+							<span class="sticker-overlay">
+								<aui:icon id="impersonate-user-icon" image="user" markupView="lexicon" />
+							</span>
+						</span>
+					</c:if>
+				</span>
+			</button>
+		</c:otherwise>
+	</c:choose>
 
-resourceURL.setParameter("currentURL", themeDisplay.getURLCurrent());
-resourceURL.setParameter("portletId", themeDisplay.getPpid());
-resourceURL.setResourceID("/get_personal_menu_items");
-%>
+	<%
+	ResourceURL resourceURL = PortletURLFactoryUtil.create(request, PersonalMenuPortletKeys.PERSONAL_MENU, PortletRequest.RESOURCE_PHASE);
 
-<aui:script require="clay-dropdown/src/ClayDropdown as ClayDropdown,metal-dom/src/dom as dom, metal-position/src/Position">
-	var toggle = document.getElementById('<%= namespace + "personal_menu_dropdown_toggle" %>');
+	resourceURL.setParameter("currentURL", themeDisplay.getURLCurrent());
+	resourceURL.setParameter("portletId", themeDisplay.getPpid());
+	resourceURL.setResourceID("/get_personal_menu_items");
 
-	if (toggle) {
-		dom.once(
-			toggle,
-			'click',
-			function(event) {
-				fetch(
-					'<%= resourceURL.toString() %>',
-					{
-						credentials: 'include',
-						method: 'GET'
-					}
-				).then(
-					function(response) {
-						return response.json();
-					}
-				).then(
-					function(personalMenuItems) {
-						var personalMenu = new ClayDropdown.default(
-							{
-								element: '#<%= namespace + "personal_menu_dropdown_toggle" %>',
-								events: {
-									'willAttach': function(event) {
-										if (<%= expanded %>) {
-											this.expanded = true;
-										}
+	Map<String, Object> props = HashMapBuilder.<String, Object>put(
+		"color", color
+	).put(
+		"isImpersonated", themeDisplay.isImpersonated()
+	).put(
+		"itemsURL", resourceURL.toString()
+	).put(
+		"label", label
+	).put(
+		"size", size
+	).build();
 
-										var toggleButton = this.element.querySelector('button');
-
-										toggleButton.focus();
-
-										var dropdown = this;
-
-										this.refs.dropdown.refs.portal.on(
-											'menuExpanded',
-											function(event) {
-												var Position = metalPositionSrcPosition.default;
-
-												var menu = this.element;
-												var menuRegion = Position.getRegion(menu);
-
-												if (menuRegion.top < 0) {
-													var body = document.querySelector('body');
-													var bodyRegion = Position.getRegion(body);
-
-													menu.style.top = bodyRegion.top + 'px';
-												}
-											}
-										);
-
-										this.refs.dropdown.refs.portal.on(
-											'rendered',
-											function(event) {
-												if (dropdown.expanded) {
-													this.element.classList.add('dropdown-menu-personal-menu');
-													this.element.classList.remove('dropdown-menu-indicator-start');
-
-													this.emit('menuExpanded', event);
-												}
-											}
-										);
-									}
-								},
-								items: personalMenuItems,
-								itemsIconAlignment: 'right',
-								label: toggle.innerHTML,
-								showToggleIcon: false,
-								spritemap: '<%= themeDisplay.getPathThemeImages().concat("/clay/icons.svg") %>'
-							},
-							'#<%= namespace + "personal_menu_dropdown" %>'
-						);
-
-						Liferay.once(
-							'beforeNavigate',
-							function(event) {
-								personalMenu.refs.dropdown.refs.portal.detach();
-							}
-						);
-					}
-				);
-			}
-		);
+	if (user2.getPortraitId() > 0) {
+		props.put("userPortraitURL", user2.getPortraitURL(themeDisplay));
 	}
-</aui:script>
+	%>
+
+	<react:component
+		module="personal_menu/js/PersonalMenu.es"
+		props="<%= props %>"
+	/>
+</div>

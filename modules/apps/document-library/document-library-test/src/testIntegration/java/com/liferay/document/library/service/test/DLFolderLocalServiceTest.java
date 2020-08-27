@@ -16,11 +16,11 @@ package com.liferay.document.library.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.service.DLAppServiceUtil;
-import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
+import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
@@ -62,37 +63,75 @@ public class DLFolderLocalServiceTest {
 	}
 
 	@Test
+	public void testDeleteAllByGroup() throws Exception {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId());
+
+		Folder parentFolder = _dlAppService.addFolder(
+			_group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			serviceContext);
+
+		_dlAppService.addFolder(
+			_group.getGroupId(), parentFolder.getFolderId(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			serviceContext);
+
+		Assert.assertEquals(
+			2,
+			_dlFolderLocalService.getRepositoryFoldersCount(
+				_group.getGroupId()));
+
+		_dlFolderLocalService.deleteAllByGroup(_group.getGroupId());
+
+		Assert.assertEquals(
+			0,
+			_dlFolderLocalService.getRepositoryFoldersCount(
+				_group.getGroupId()));
+	}
+
+	@Test
 	public void testGetNoAssetEntries() throws Exception {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId());
 
-		Folder folder = DLAppServiceUtil.addFolder(
+		Folder folder = _dlAppService.addFolder(
 			_group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			serviceContext);
 
-		DLFolder dlFolder = DLFolderLocalServiceUtil.getDLFolder(
+		DLFolder dlFolder = _dlFolderLocalService.getDLFolder(
 			folder.getFolderId());
 
-		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
+		AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
 			DLFolder.class.getName(), dlFolder.getFolderId());
 
 		Assert.assertNotNull(assetEntry);
 
 		List<DLFolder> noAssetDLFolders =
-			DLFolderLocalServiceUtil.getNoAssetFolders();
+			_dlFolderLocalService.getNoAssetFolders();
 
-		AssetEntryLocalServiceUtil.deleteAssetEntry(assetEntry);
+		_assetEntryLocalService.deleteAssetEntry(assetEntry);
 
 		List<DLFolder> dlFolders = new ArrayList<>(
-			DLFolderLocalServiceUtil.getNoAssetFolders());
+			_dlFolderLocalService.getNoAssetFolders());
 
 		dlFolders.removeAll(noAssetDLFolders);
 
 		Assert.assertEquals(dlFolders.toString(), 1, dlFolders.size());
 		Assert.assertEquals(dlFolder, dlFolders.get(0));
 	}
+
+	@Inject
+	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Inject
+	private DLAppService _dlAppService;
+
+	@Inject
+	private DLFolderLocalService _dlFolderLocalService;
 
 	@DeleteAfterTestRun
 	private Group _group;

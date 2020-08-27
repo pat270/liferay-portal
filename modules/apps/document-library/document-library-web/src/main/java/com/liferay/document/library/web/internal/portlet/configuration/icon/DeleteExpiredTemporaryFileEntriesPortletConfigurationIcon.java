@@ -16,6 +16,10 @@ package com.liferay.document.library.web.internal.portlet.configuration.icon;
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
+import com.liferay.document.library.web.internal.util.DLFolderUtil;
+import com.liferay.document.library.web.internal.util.DLPortletConfigurationIconUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
@@ -43,7 +47,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 		"path=/document_library/view_folder"
@@ -66,30 +69,32 @@ public class DeleteExpiredTemporaryFileEntriesPortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = _portal.getControlPanelPortletURL(
-			portletRequest, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
-			PortletRequest.ACTION_PHASE);
-
-		portletURL.setParameter(
-			ActionRequest.ACTION_NAME, "/document_library/edit_folder");
-		portletURL.setParameter(
-			Constants.CMD, "deleteExpiredTemporaryFileEntries");
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
-
 		try {
+			PortletURL portletURL = _portal.getControlPanelPortletURL(
+				portletRequest, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
+				PortletRequest.ACTION_PHASE);
+
+			portletURL.setParameter(
+				ActionRequest.ACTION_NAME, "/document_library/edit_folder");
+			portletURL.setParameter(
+				Constants.CMD, "deleteExpiredTemporaryFileEntries");
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
+
 			Folder folder = ActionUtil.getFolder(portletRequest);
 
 			portletURL.setParameter(
 				"repositoryId", String.valueOf(folder.getRepositoryId()));
-		}
-		catch (Exception e) {
-		}
 
-		return portletURL.toString();
+			return portletURL.toString();
+		}
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
+		}
 	}
 
 	@Override
@@ -99,27 +104,27 @@ public class DeleteExpiredTemporaryFileEntriesPortletConfigurationIcon
 
 	@Override
 	public boolean isShow(PortletRequest portletRequest) {
-		try {
-			Folder folder = ActionUtil.getFolder(portletRequest);
+		return DLPortletConfigurationIconUtil.runWithDefaultValueOnError(
+			false,
+			() -> {
+				Folder folder = ActionUtil.getFolder(portletRequest);
 
-			if (!folder.isMountPoint()) {
+				if (!DLFolderUtil.isRepositoryRoot(folder)) {
+					return false;
+				}
+
+				LocalRepository localRepository =
+					RepositoryProviderUtil.getLocalRepository(
+						folder.getRepositoryId());
+
+				if (localRepository.isCapabilityProvided(
+						TemporaryFileEntriesCapability.class)) {
+
+					return true;
+				}
+
 				return false;
-			}
-
-			LocalRepository localRepository =
-				RepositoryProviderUtil.getLocalRepository(
-					folder.getRepositoryId());
-
-			if (localRepository.isCapabilityProvided(
-					TemporaryFileEntriesCapability.class)) {
-
-				return true;
-			}
-		}
-		catch (Exception e) {
-		}
-
-		return false;
+			});
 	}
 
 	@Override

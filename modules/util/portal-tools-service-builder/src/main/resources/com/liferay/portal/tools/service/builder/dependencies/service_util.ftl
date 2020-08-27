@@ -1,7 +1,5 @@
 package ${apiPackagePath}.service;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
 
@@ -46,8 +44,6 @@ import org.osgi.util.tracker.ServiceTracker;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}${sessionTypeName}ServiceUtil {
 
 	/*
@@ -65,7 +61,7 @@ public class ${entity.name}${sessionTypeName}ServiceUtil {
 			</#if>
 			public static
 
-			<#if method.name = "dynamicQuery" && (serviceBuilder.getTypeGenericsName(method.returns) == "java.util.List<T>")>
+			<#if (method.name = "dslQuery" && (serviceBuilder.getTypeGenericsName(method.returns) == "T")) || (method.name = "dynamicQuery" && (serviceBuilder.getTypeGenericsName(method.returns) == "java.util.List<T>"))>
 				<T>
 			</#if>
 

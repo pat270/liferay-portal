@@ -14,8 +14,11 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.source.formatter.BNDSettings;
-import com.liferay.source.formatter.checks.util.JavaSourceUtil;
+import com.liferay.source.formatter.checks.util.BNDSourceUtil;
+import com.liferay.source.formatter.parser.JavaClass;
+import com.liferay.source.formatter.parser.JavaTerm;
 
 import java.io.IOException;
 
@@ -24,38 +27,67 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class JavaInternalPackageCheck extends BaseFileCheck {
+public class JavaInternalPackageCheck extends BaseJavaTermCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
 	@Override
 	protected String doProcess(
-			String fileName, String absolutePath, String content)
+			String fileName, String absolutePath, JavaTerm javaTerm,
+			String fileContent)
 		throws IOException {
 
-		if (!absolutePath.contains("/modules/apps/") ||
-			!absolutePath.contains("-web/src/") ||
-			absolutePath.contains("/test/") ||
-			absolutePath.contains("/testIntegration/")) {
+		JavaClass javaClass = (JavaClass)javaTerm;
 
-			return content;
+		if (javaClass.hasAnnotation("Deprecated")) {
+			return javaClass.getContent();
 		}
 
-		String packageName = JavaSourceUtil.getPackageName(content);
+		String packageName = javaClass.getPackageName();
 
-		if (packageName.contains(".internal.") ||
+		if (packageName == null) {
+			return javaClass.getContent();
+		}
+
+		if (packageName.contains(".impl.") || packageName.endsWith(".impl")) {
+			_checkImplPackageName(fileName, packageName);
+
+			return javaClass.getContent();
+		}
+
+		if (absolutePath.contains("/test/") ||
+			absolutePath.contains("/testIntegration/") ||
+			packageName.contains(".internal.") ||
 			packageName.endsWith(".internal")) {
 
-			return content;
+			return javaClass.getContent();
 		}
+
+		if (absolutePath.contains("-service/src/")) {
+			_checkServiceClasses(fileName, packageName);
+		}
+		else if (absolutePath.contains("-web/src/")) {
+			_checkExportedClasses(fileName, packageName);
+		}
+
+		return javaClass.getContent();
+	}
+
+	@Override
+	protected String[] getCheckableJavaTermNames() {
+		return new String[] {JAVA_CLASS};
+	}
+
+	private void _checkExportedClasses(String fileName, String packageName)
+		throws IOException {
 
 		BNDSettings bndSettings = getBNDSettings(fileName);
 
 		if (bndSettings == null) {
-			return content;
+			return;
 		}
 
 		List<String> exportPackageNames = bndSettings.getExportPackageNames();
@@ -66,8 +98,50 @@ public class JavaInternalPackageCheck extends BaseFileCheck {
 				"Classes that are not exported should be in 'internal' " +
 					"package");
 		}
+	}
 
-		return content;
+	private void _checkImplPackageName(String fileName, String packageName)
+		throws IOException {
+
+		BNDSettings bndSettings = getBNDSettings(fileName);
+
+		if (bndSettings == null) {
+			return;
+		}
+
+		String bundleSymbolicName = BNDSourceUtil.getDefinitionValue(
+			bndSettings.getContent(), "Bundle-SymbolicName");
+
+		if (bundleSymbolicName.endsWith(".impl") &&
+			packageName.contains(bundleSymbolicName)) {
+
+			addMessage(
+				fileName,
+				"Use 'internal' instead of 'impl' in package '" + packageName +
+					"'");
+		}
+	}
+
+	private void _checkServiceClasses(String fileName, String packageName)
+		throws IOException {
+
+		BNDSettings bndSettings = getBNDSettings(fileName);
+
+		if ((bndSettings == null) ||
+			!GetterUtil.getBoolean(
+				BNDSourceUtil.getDefinitionValue(
+					bndSettings.getContent(), "Liferay-Service"))) {
+
+			return;
+		}
+
+		if (!packageName.matches(
+				".*\\.(model|service)\\.(impl|persistence).*")) {
+
+			addMessage(
+				fileName,
+				"Classes in service modules should be in 'internal' package");
+		}
 	}
 
 }

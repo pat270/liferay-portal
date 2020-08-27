@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TrashVersion
  * @generated
  */
-@ProviderType
 public class TrashVersionWrapper
 	extends BaseModelWrapper<TrashVersion>
-	implements TrashVersion, ModelWrapper<TrashVersion> {
+	implements ModelWrapper<TrashVersion>, TrashVersion {
 
 	public TrashVersionWrapper(TrashVersion trashVersion) {
 		super(trashVersion);
@@ -44,6 +43,8 @@ public class TrashVersionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("versionId", getVersionId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("entryId", getEntryId());
@@ -57,6 +58,18 @@ public class TrashVersionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long versionId = (Long)attributes.get("versionId");
 
 		if (versionId != null) {
@@ -141,6 +154,16 @@ public class TrashVersionWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this trash version.
+	 *
+	 * @return the ct collection ID of this trash version
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the entry ID of this trash version.
 	 *
 	 * @return the entry ID of this trash version
@@ -148,6 +171,16 @@ public class TrashVersionWrapper
 	@Override
 	public long getEntryId() {
 		return model.getEntryId();
+	}
+
+	/**
+	 * Returns the mvcc version of this trash version.
+	 *
+	 * @return the mvcc version of this trash version
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -248,6 +281,16 @@ public class TrashVersionWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this trash version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this trash version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the entry ID of this trash version.
 	 *
 	 * @param entryId the entry ID of this trash version
@@ -255,6 +298,16 @@ public class TrashVersionWrapper
 	@Override
 	public void setEntryId(long entryId) {
 		model.setEntryId(entryId);
+	}
+
+	/**
+	 * Sets the mvcc version of this trash version.
+	 *
+	 * @param mvccVersion the mvcc version of this trash version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -290,9 +343,9 @@ public class TrashVersionWrapper
 	@Override
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties) {
+			typeSettingsUnicodeProperties) {
 
-		model.setTypeSettingsProperties(typeSettingsProperties);
+		model.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 	}
 
 	/**
@@ -303,6 +356,20 @@ public class TrashVersionWrapper
 	@Override
 	public void setVersionId(long versionId) {
 		model.setVersionId(versionId);
+	}
+
+	@Override
+	public Map<String, Function<TrashVersion, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<TrashVersion, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

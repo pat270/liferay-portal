@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DecimalInput should render type decimal number 1`] = `
+exports[`DecimalInput renders type decimal number 1`] = `
 <DocumentFragment>
   <input
     class="criterion-input form-control"
@@ -9,5 +9,46 @@ exports[`DecimalInput should render type decimal number 1`] = `
     type="number"
     value="1.23"
   />
+</DocumentFragment>
+`;
+
+exports[`DecimalInput renders type decimal number with options 1`] = `
+<DocumentFragment>
+  <select
+    class="form-control criterion-input form-control"
+    data-testid="options-decimal"
+  >
+    <option
+      value="1.00"
+    >
+      1.00
+    </option>
+    <option
+      value="2.00"
+    >
+      2.00
+    </option>
+  </select>
+</DocumentFragment>
+`;
+
+exports[`DecimalInput renders type decimal number with options disabled 1`] = `
+<DocumentFragment>
+  <select
+    class="form-control criterion-input form-control"
+    data-testid="options-decimal"
+  >
+    <option
+      disabled=""
+      value="1.00"
+    >
+      1.00
+    </option>
+    <option
+      value="2.00"
+    >
+      2.00
+    </option>
+  </select>
 </DocumentFragment>
 `;

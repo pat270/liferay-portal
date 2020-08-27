@@ -1,0 +1,2183 @@
+definition {
+
+	macro addComment {
+		Pause(locator1 = "10000");
+
+		PageEditor.gotoTab(tabName = "Comments");
+
+		Pause(locator1 = "3000");
+
+		if (IsElementNotPresent(key_fragmentName = "${fragmentName}", locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_SECTION_NAME")) {
+			Click(
+				key_content = "${content}",
+				key_fragmentClass = "${fragmentClass}",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		AssertElementPresent(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_SECTION_NAME");
+
+		Click.clickAt(locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS");
+
+		if (isSet(mentionsUserScreenName)) {
+			var key_mentionsUserScreenName = "${mentionsUserScreenName}";
+
+			Type.sendKeys(
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS",
+				value1 = "${fragmentComment} @${mentionsUserScreenName}");
+
+			Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
+		}
+
+		else {
+			Type(
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS",
+				value1 = "${fragmentComment}");
+		}
+
+		Button.clickComment();
+
+		AssertElementNotPresent(
+			key_fragmentComment = "${fragmentComment}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_ENTRY_INPUT");
+	}
+
+	macro addCommentViaFragment {
+		PageEditor.gotoCommentViaFragment(
+			fragmentName = "${fragmentName}",
+			key_content = "${content}",
+			key_fragmentClass = "${fragmentClass}",
+			key_position = "${position}");
+
+		AssertElementPresent(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_SECTION_NAME");
+
+		Click.clickAt(locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS");
+
+		Type(
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS",
+			value1 = "${fragmentComment}");
+
+		Button.clickComment();
+
+		AssertElementNotPresent(
+			key_fragmentComment = "${fragmentComment}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_ENTRY_INPUT");
+	}
+
+	macro addElementToColumn {
+		if (!(isSet(position))) {
+			var position = "1";
+		}
+
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+		if ("${navTab}" == "Fragments") {
+			Navigator.gotoNavTab(navTab = "${navTab}");
+
+			PageEditor.expandFragmentCollection(collectionName = "${collectionName}");
+
+			if (isSet(targetFragmentName)) {
+				DragAndDrop.javaScriptDragAndDropToBottom(
+					key_collectionName = "${collectionName}",
+					key_fragmentName = "${fragmentName}",
+					key_targetFragmentName = "${targetFragmentName}",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+					locator2 = "PageEditor#ANY_NESTED_FRAGMENT_DROP_TARGET",
+					value1 = "");
+			}
+			else {
+				DragAndDrop.javaScriptDragAndDropToObject(
+					key_collectionName = "${collectionName}",
+					key_columnNumber = "${columnNumber}",
+					key_fragmentName = "${fragmentName}",
+					key_position = "${position}",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+					locator2 = "PageEditor#GRID_COLUMN",
+					value1 = "");
+			}
+
+			PageEditor.waitForAutoSave();
+
+			AssertElementPresent(
+				key_columnNumber = "${columnNumber}",
+				key_elementHeader = "//li[contains(@class,'topper__title') and contains(.,'${fragmentName}')]",
+				key_position = "${position}",
+				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
+		}
+		else if ("${navTab}" == "Widgets") {
+			Navigator.gotoNavTab(navTab = "${navTab}");
+
+			Type.sendKeysApplicationSearch(
+				locator1 = "PageEditor#WIDGETS_APPLICATION_SEARCH_FIELD",
+				value1 = "${portletName}");
+
+			if (isSet(targetFragmentName)) {
+				DragAndDrop.javaScriptDragAndDropToBottom(
+					key_fragmentName = "${portletName}",
+					key_targetFragmentName = "${targetFragmentName}",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+					locator2 = "PageEditor#ANY_NESTED_FRAGMENT_DROP_TARGET",
+					value1 = "");
+			}
+			else {
+				DragAndDrop.javaScriptDragAndDropToObject(
+					key_columnNumber = "${columnNumber}",
+					key_portletName = "${portletName}",
+					key_position = "${position}",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_WIDGET",
+					locator2 = "PageEditor#GRID_COLUMN",
+					value1 = "${portletName}");
+			}
+
+			Pause(locator1 = "5000");
+
+			PageEditor.waitForAutoSave();
+
+			AssertElementPresent(
+				key_columnNumber = "${columnNumber}",
+				key_elementHeader = "//li[contains(@class,'topper__title') and contains(.,'${portletName}')]",
+				key_position = "${position}",
+				locator1 = "PageEditor#GRID_COLUMN_NESTED_ELEMENT");
+
+			PageEditor.gotoTab(tabName = "Contents");
+
+			PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+			PageEditor.closeSidebar(tabName = "Fragments and Widgets");
+		}
+	}
+
+	macro addExperience {
+		var key_experienceName = "${experienceName}";
+
+		AssertTextEquals(
+			locator1 = "PageEditor#EXPERIENCE_LABEL",
+			value1 = "Experience");
+
+		Click(locator1 = "PageEditor#EXPERIENCE_DEFAULT_BUTTON_NAME");
+
+		Click(
+			key_text = "New Experience",
+			locator1 = "Button#ANY");
+
+		Type(
+			locator1 = "PageEditor#EXPERIENCE_NAME",
+			value1 = "${experienceName}");
+
+		Click(locator1 = "Button#SAVE");
+
+		AssertClick(
+			locator1 = "PageEditor#EXPERIENCE_BUTTON_NAME",
+			value1 = "${experienceName}");
+
+		AssertElementPresent(
+			key_experienceName = "${experienceName}",
+			locator1 = "PageEditor#EXPERIENCE_SELECT_ITEM");
+	}
+
+	macro addFragment {
+		Pause(locator1 = "10000");
+
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+		Navigator.gotoNavTab(navTab = "Fragments");
+
+		PageEditor.expandFragmentCollection(collectionName = "${collectionName}");
+
+		if ("${scope}" == "Master") {
+			if ("${dropTarget}" == "Header") {
+				DragAndDrop.javaScriptDragAndDropToUp(
+					key_collectionName = "${collectionName}",
+					key_fragmentName = "${fragmentName}",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+					locator2 = "PageEditor#HEADER_DROP_TARGET",
+					value1 = "");
+			}
+			else if ("${dropTarget}" == "Footer") {
+				DragAndDrop.javaScriptDragAndDropToBottom(
+					key_collectionName = "${collectionName}",
+					key_fragmentName = "${fragmentName}",
+					key_targetFragmentName = "Drop Zone",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+					locator2 = "PageEditor#ANY_FRAGMENT_DROP_TARGET",
+					value1 = "");
+			}
+		}
+		else if (isSet(targetFragmentName)) {
+			DragAndDrop.javaScriptDragAndDropToBottom(
+				key_collectionName = "${collectionName}",
+				key_fragmentName = "${fragmentName}",
+				key_targetFragmentName = "${targetFragmentName}",
+				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+				locator2 = "PageEditor#ANY_FRAGMENT_DROP_TARGET",
+				value1 = "");
+		}
+		else {
+			DragAndDrop.javaScriptDragAndDropToObject(
+				key_collectionName = "${collectionName}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+				locator2 = "PageEditor#FRAGMENT_DROP_TARGET",
+				value1 = "");
+		}
+
+		PageEditor.waitForAutoSave();
+
+		if ("${collectionName}" == "Layout Elements") {
+			if ("${fragmentName}" == "Grid") {
+				if (isSet(position)) {
+					var key_position = "${position}";
+				}
+				else {
+					var key_position = "1";
+				}
+
+				AssertElementPresent(
+					key_elementType = "${fragmentName}",
+					locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
+			}
+			else if ("${fragmentName}" == "Container") {
+				if (isSet(position)) {
+					var key_position = "${position}";
+				}
+				else {
+					var key_position = "1";
+				}
+
+				AssertElementPresent(
+					key_elementType = "${fragmentName}",
+					locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
+			}
+		}
+		else if ("${collectionName}" == "Content Display") {
+			if ("${fragmentName}" == "Collection Display") {
+				AssertElementPresent(
+					key_fragmentName = "${fragmentName}",
+					key_message = "No Collection Selected Yet",
+					locator1 = "Fragment#NOT_COLLECTION_SELECTED_MESSAGE");
+			}
+			else if ("${fragmentName}" == "Content") {
+				AssertElementPresent(
+					key_fragmentName = "${fragmentName}",
+					key_messageIfo = "The selected content will be shown here.",
+					locator1 = "Fragment#MESSAGE_INFO");
+			}
+			else if ("${fragmentName}" == "Display Page Content") {
+				AssertElementPresent(
+					key_fragmentName = "${fragmentName}",
+					key_messageIfo = "The display page content will be shown here.",
+					locator1 = "Fragment#MESSAGE_INFO");
+			}
+			else {
+				AssertElementPresent(
+					key_fragmentName = "${fragmentName}",
+					locator1 = "Fragment#FRAGMENT_HEADER");
+			}
+		}
+		else if ("${composition}" == "true") {
+			echo("## Adding a composition of fragments");
+		}
+		else {
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+	}
+
+	macro addFragmentToCollectionDisplay {
+		Pause(locator1 = "10000");
+
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+		Navigator.gotoNavTab(navTab = "Fragments");
+
+		PageEditor.expandFragmentCollection(collectionName = "${collectionName}");
+
+		if (isSet(targetFragmentName)) {
+			DragAndDrop.javaScriptDragAndDropToBottom(
+				key_collectionName = "${collectionName}",
+				key_fragmentName = "${fragmentName}",
+				key_targetFragmentName = "${targetFragmentName}",
+				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+				locator2 = "PageEditor#ANY_NESTED_FRAGMENT_DROP_TARGET",
+				value1 = "");
+		}
+		else {
+			DragAndDrop.javaScriptDragAndDropToObject(
+				key_collectionName = "${collectionName}",
+				key_entryTitle = "${entryTitle}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+				locator2 = "PageEditor#COLLECTION_CELL",
+				value1 = "");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro addVideoFragmentURL {
+		FormFields.editText(
+			fieldName = "url",
+			fieldValue = "${videoLink}");
+
+		Click(
+			key_sidebarButton = "Selection",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro addWidget {
+		Pause(locator1 = "10000");
+
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+		Navigator.gotoNavTab(navTab = "Widgets");
+
+		Type.sendKeysApplicationSearch(
+			locator1 = "PageEditor#WIDGETS_APPLICATION_SEARCH_FIELD",
+			value1 = "${portletName}");
+
+		var key_portletName = "${portletName}";
+
+		if ("${scope}" == "Master") {
+			if ("${dropTarget}" == "Header") {
+				DragAndDrop.javaScriptDragAndDropToUp(
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_WIDGET",
+					locator2 = "PageEditor#HEADER_DROP_TARGET",
+					value1 = "");
+			}
+			else if ("${dropTarget}" == "Footer") {
+				DragAndDrop.javaScriptDragAndDropToBottom(
+					key_targetFragmentName = "Drop Zone",
+					locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_WIDGET",
+					locator2 = "PageEditor#ANY_FRAGMENT_DROP_TARGET",
+					value1 = "");
+			}
+		}
+		else if (isSet(targetFragmentName)) {
+			DragAndDrop.javaScriptDragAndDropToBottom(
+				key_targetFragmentName = "${targetFragmentName}",
+				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_WIDGET",
+				locator2 = "PageEditor#ANY_FRAGMENT_DROP_TARGET",
+				value1 = "${portletName}");
+		}
+		else {
+			DragAndDrop.javaScriptDragAndDropToObject(
+				locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_WIDGET",
+				locator2 = "PageEditor#FRAGMENT_DROP_TARGET",
+				value1 = "${portletName}");
+		}
+
+		Pause(locator1 = "5000");
+
+		AssertElementPresent(
+			key_fragmentName = "${portletName}",
+			locator1 = "Fragment#FRAGMENT_HEADER");
+
+		PageEditor.gotoTab(tabName = "Contents");
+
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+		PageEditor.closeSidebar(tabName = "Fragments and Widgets");
+	}
+
+	macro assertFragmentSidebarLoaded {
+		Pause(locator1 = "5000");
+
+		AssertVisible(locator1 = "PageEditor#FRAGMENT_SIDEBAR_LOADED");
+	}
+
+	macro changeExperience {
+		var key_experienceName = "${newExperience}";
+
+		Click(locator1 = "PageEditor#EXPERIENCE_LABEL");
+
+		Click(locator1 = "PageEditor#EXPERIENCE_SELECT_ITEM");
+
+		Click(locator1 = "PageEditor#FRAGMENT_SIDEBAR");
+
+		AssertElementPresent(locator1 = "PageEditor#EXPERIENCE_BUTTON_NAME");
+	}
+
+	macro clickBack {
+		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
+	}
+
+	macro clickConfigurableField {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+	}
+
+	macro clickDiscardDraft {
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "chrome") {
+			MetalComponent.waitForLayout();
+		}
+
+		Click(
+			key_pageName = "${pageName}",
+			locator1 = "SitePages#LIST_GROUP_ITEM_ELLIPSIS_ICON");
+
+		MenuItem.clickNoError(menuItem = "Discard Draft");
+
+		AssertConfirm(value1 = "Are you sure you want to discard current draft and apply latest published changes?");
+
+		if (isSet(failure)) {
+			if (IsElementPresent(locator1 = "Message#ERROR_2")) {
+				Alert.viewRequestFailedToComplete();
+
+				AssertTextEquals(
+					locator1 = "Message#ERROR_2",
+					value1 = "${failure}");
+			}
+			else {
+				AssertTextEquals(
+					locator1 = "Message#ERROR",
+					value1 = "${failure}");
+			}
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro clickEditableField {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		if ("${contributed}" == "false") {
+			Click(locator1 = "Fragment#EDITABLE_FIELD");
+		}
+		else {
+			Click(locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD");
+		}
+	}
+
+	macro clickPublish {
+		Button.click(button = "Publish");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro closeSidebar {
+		var key_tabName = "${tabName}";
+
+		Click.clickNoMouseOver(locator1 = "PageEditor#FRAGMENT_SIDEBAR_TAB_BUTTON");
+
+		AssertElementPresent(locator1 = "PageEditor#FRAGMENT_SIDEBAR_TAB_COLLAPSED");
+	}
+
+	macro configureFragment {
+		if (isSet(alignment)) {
+			Select(
+				key_fieldLabel = "Text Align",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${alignment}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(borderColor)) {
+			Click(
+				key_borderBottom = "Border Color",
+				key_paletteItem = "${borderColor}",
+				locator1 = "Button#BORDER_BOTTOM_PALETTE_ITEM");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(borderRadius)) {
+			Select(
+				key_fieldLabel = "Border Radius",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${borderRadius}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(bottomSpacing)) {
+			Select(
+				key_fieldLabel = "Bottom Spacing",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${bottomSpacing}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(boxShadow)) {
+			Select(
+				key_fieldLabel = "Shadow",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${boxShadow}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(headingLevel)) {
+			Select(
+				key_fieldLabel = "Heading Level",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${headingLevel}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(height)) {
+			Select(
+				key_fieldLabel = "Height",
+				locator1 = "PageEditor#CUSTOM_STYLES_SELECT_FIELD",
+				value1 = "${height}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(imageSize)) {
+			Select(
+				key_fieldLabel = "Image Size",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${imageSize}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(marginBottom)) {
+			Select(
+				key_borderBottom = "Margin",
+				key_fieldLabel = "Bottom",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${marginBottom}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(marginLeft)) {
+			Select(
+				key_borderBottom = "Margin",
+				key_fieldLabel = "Left",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${marginLeft}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(marginRight)) {
+			Select(
+				key_borderBottom = "Margin",
+				key_fieldLabel = "Right",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${marginRight}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(marginTop)) {
+			Select(
+				key_borderBottom = "Margin",
+				key_fieldLabel = "Top",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${marginTop}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(numberOfTabs)) {
+			Type(
+				key_fieldLabel = "Number Of Tabs",
+				locator1 = "FormFields#NUMBER_FIELD",
+				value1 = "${numberOfTabs}");
+
+			Click(
+				key_sidebarButton = "Selection",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+			AssertTextEquals(
+				key_fieldLabel = "Number Of Tabs",
+				locator1 = "FormFields#NUMBER_FIELD",
+				value1 = "${numberOfTabs}");
+		}
+
+		if (isSet(paddingBottom)) {
+			Select(
+				key_borderBottom = "Padding",
+				key_fieldLabel = "Bottom",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${paddingBottom}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(paddingLeft)) {
+			Select(
+				key_borderBottom = "Padding",
+				key_fieldLabel = "Left",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${paddingLeft}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(paddingRight)) {
+			Select(
+				key_borderBottom = "Padding",
+				key_fieldLabel = "Right",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${paddingRight}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(paddingTop)) {
+			Select(
+				key_borderBottom = "Padding",
+				key_fieldLabel = "Top",
+				locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+				value1 = "${paddingTop}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(size)) {
+			Select(
+				key_fieldLabel = "Size",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${size}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(textColor)) {
+			Click(
+				key_borderBottom = "Text Body",
+				key_paletteItem = "${textColor}",
+				locator1 = "Button#BORDER_BOTTOM_PALETTE_ITEM");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(type)) {
+			Select(
+				key_fieldLabel = "Type",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${type}");
+
+			Pause(locator1 = "3000");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro deleteComment {
+		MouseOver(locator1 = "PageEditor#FRAGMENT_SIDEBAR_ELLIPSIS");
+
+		Click(locator1 = "PageEditor#FRAGMENT_SIDEBAR_ELLIPSIS");
+
+		AssertClickNoError(
+			key_menuItem = "Delete",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Delete");
+
+		Click(locator1 = "Button#DELETE_FRAGMENT_COMMENT");
+
+		AssertTextNotPresent(value1 = "${fragmentComment}");
+	}
+
+	macro editCollectionDisplay {
+		var key_fragmentName = "${fragmentName}";
+
+		Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		Click(locator1 = "PageEditor#PLUS_ICON_BUTTON");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		if (isSet(assetListName)) {
+			NavItem.click(navItem = "Collections");
+
+			LexiconCard.clickCard(card = "${assetListName}");
+
+			AssertElementPresent(
+				key_contentName = "${assetListName}",
+				locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT");
+
+			if (isSet(layout)) {
+				Select(
+					key_fieldLabel = "Layout",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${layout}");
+
+				Pause(locator1 = "3000");
+
+				AssertSelectedLabel(
+					key_fieldLabel = "Layout",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${layout}");
+			}
+
+			if (isSet(maxNumberOfItems)) {
+				Type(
+					key_fieldLabel = "Max Number Of Items",
+					locator1 = "FormFields#NUMBER_FIELD",
+					value1 = "${maxNumberOfItems}");
+
+				AssertTextEquals(
+					key_fieldLabel = "Max Number Of Items",
+					locator1 = "FormFields#NUMBER_FIELD",
+					value1 = "${maxNumberOfItems}");
+			}
+		}
+
+		if (isSet(infoListProviderName)) {
+			NavItem.click(navItem = "Collection Providers");
+
+			LexiconCard.clickCard(card = "${infoListProviderName}");
+
+			AssertElementPresent(
+				key_contentName = "${infoListProviderName}",
+				locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT");
+		}
+
+		Pause(locator1 = "1000");
+	}
+
+	macro editComment {
+		MouseOver(locator1 = "PageEditor#FRAGMENT_SIDEBAR_ELLIPSIS");
+
+		Click(locator1 = "PageEditor#FRAGMENT_SIDEBAR_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Edit");
+
+		Click.clickAt(locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS_EDITOR");
+
+		Type(
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENTS_EDITOR",
+			value1 = "${fragmentCommentEdit}");
+
+		Click(locator1 = "Button#UPDATE");
+	}
+
+	macro editContentDisplay {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		if (isSet(inCollectionDisplay)) {
+			Select(
+				key_fieldLabel = "Template",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${templateOption}");
+
+			Pause(locator1 = "3000");
+
+			AssertSelectedLabel(
+				key_fieldLabel = "Template",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${templateOption}");
+		}
+		else {
+			Click(locator1 = "PageEditor#PLUS_ICON_BUTTON");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			if (isSet(documentandmedia)) {
+				NavItem.click(navItem = "Documents and Media");
+
+				LexiconCard.clickCard(card = "${imageFileName}");
+
+				AssertElementPresent(
+					key_contentName = "${imageFileName}",
+					locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT");
+
+				var key_imageName = StringUtil.replace("${imageFileName}", " ", "+");
+
+				AssertElementPresent(
+					key_fragmentName = "${fragmentName}",
+					key_imageName = "${key_imageName}",
+					locator1 = "Fragment#FRAGMENT_CONTENT_BACKGROUND_IMAGE");
+			}
+
+			if (isSet(blogs)) {
+				NavItem.click(navItem = "Blogs");
+
+				LexiconCard.clickCard(card = "${entryTitle}");
+
+				AssertElementPresent(
+					key_contentName = "${entryTitle}",
+					locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT");
+
+				AssertTextEquals(
+					locator1 = "Fragment#FRAGMENT_BODY",
+					value1 = "${entryContent}");
+			}
+
+			if (isSet(webcontent)) {
+				NavItem.click(navItem = "Web Content");
+
+				if (isSet(depotName)) {
+					var key_contentName = "${webContentTitle}";
+
+					AssertClick(
+						key_breadcrumbName = "Sites and Libraries",
+						locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+						value1 = "Sites and Libraries");
+
+					AssertClick(
+						key_groupTab = "Asset Library",
+						locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+						value1 = "Asset Library");
+
+					LexiconCard.clickCard(card = "${depotName}");
+
+					Click(locator1 = "ItemSelector#SELECT_FILE_WEB_CONTENT");
+				}
+
+				else {
+					LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+					LexiconCard.clickCard(card = "${webContentTitle}");
+				}
+
+				if (isSet(customWebcontenttemplate)) {
+					Select(
+						locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_FIELD_SELECT",
+						value1 = "${customWebcontenttemplate}");
+
+					AssertElementPresent(
+						key_contentName = "${webContentTitle}",
+						locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT");
+
+					AssertElementPresent(
+						key_contentName = "${customWebcontenttemplate}",
+						locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_FIELD_SELECT");
+
+					AssertTextEquals(
+						locator1 = "Fragment#FRAGMENT_BODY",
+						value1 = "${webContentContent}");
+				}
+				else {
+					AssertElementPresent(
+						key_contentName = "${webContentTitle}",
+						locator1 = "PageEditor#ITEM_SELECTOR_CONTENT_INPUT");
+
+					AssertTextEquals(
+						locator1 = "Fragment#FRAGMENT_BODY",
+						value1 = "${webContentContent}");
+				}
+			}
+		}
+	}
+
+	macro editFragmentHTML {
+		PageEditor.gotoEditableFieldEdit(
+			fragmentName = "${fragmentName}",
+			id = "${editableId}");
+
+		var content = TestCase.getFileContent(fileName = "${fileName}");
+
+		Type.typeAceEditorNoError(
+			locator1 = "Fragment#EDITABLE_HTML_FRAGMENT_FIELD",
+			value1 = "${content}");
+
+		Click.pauseClickAt(locator1 = "//button[normalize-space(text())='Save']");
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro editFragmentImage {
+		PageEditor.clickEditableField(
+			contributed = "${contributed}",
+			fragmentName = "${fragmentName}",
+			id = "${id}");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "Image",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "Image");
+
+		Button.clickSelect();
+
+		if (isSet(imageFileName)) {
+			ItemSelector.selectDMImage(
+				imageFileName = "${imageFileName}",
+				navTab = "Documents and Media");
+		}
+		else {
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			AssertElementPresent.assertVisible(locator1 = "Button#SELECT_FILE");
+
+			UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+				locator1 = "TextInput#FILE",
+				value1 = "${fileName}");
+
+			Pause(locator1 = "3000");
+
+			Button.clickAdd();
+		}
+
+		PageEditor.waitForAutoSave();
+
+		if (isSet(imageDescription)) {
+			Pause(locator1 = "3000");
+
+			Type(
+				locator1 = "TextInput#IMAGE_DESCRIPTION",
+				value1 = "${imageDescription}");
+
+			Pause(locator1 = "3000");
+
+			AssertTextEquals.assertValue(
+				locator1 = "TextInput#IMAGE_DESCRIPTION",
+				value1 = "${imageDescription}");
+
+			Click(
+				key_sidebarButton = "Selection",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+			PageEditor.waitForAutoSave();
+		}
+	}
+
+	macro editFragmentText {
+		PageEditor.gotoEditableFieldEdit(
+			contributed = "${contributed}",
+			fragmentName = "${fragmentName}",
+			id = "${id}");
+
+		if ("${contributed}" == "false") {
+			Type(
+				id = "${id}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#EDITABLE_FIELD_CK_EDITOR",
+				value1 = "${text}");
+		}
+		else {
+			Type(
+				id = "${id}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD_CK_EDITOR",
+				value1 = "${text}");
+		}
+
+		Click(locator1 = "PageEditor#MANAGEMENT_BAR");
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro editLayoutContainer {
+		var key_elementType = "Container";
+		var key_position = "1";
+
+		if (IsNotVisible(locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		if ("${panel}" == "Styles") {
+			AssertClick(
+				key_navItem = "Styles",
+				locator1 = "PageEditor#NAV_ITEM_BUTTON",
+				value1 = "Styles");
+
+			if (isSet(backgroundColor)) {
+				Click(
+					key_borderBottom = "Background Color",
+					key_paletteItem = "${backgroundColor}",
+					locator1 = "Button#BORDER_BOTTOM_PALETTE_ITEM");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(backgroundImage)) {
+				Select(
+					key_fieldLabel = "Image Source",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${backgroundImage}");
+
+				if ("${backgroundImage}" == "Content Mapping") {
+					PageEditorMapping.mapEditableFieldToAsset(
+						entryTitle = "${entryTitle}",
+						navItem = "${navItem}");
+
+					if ("${navItem}" == "Documents and Media") {
+						Select(
+							locator1 = "PageEditorEditableLink#LAYOUT_BACKGROUND_IMAGE_FIELD",
+							value1 = "${fieldName}");
+					}
+					else {
+						Select(
+							locator1 = "PageEditorEditableLink#LAYOUT_BACKGROUND_IMAGE_FIELD",
+							value1 = "Image");
+					}
+
+					SelectFrame(value1 = "relative=top");
+				}
+
+				if ("${backgroundImage}" == "Manual Selection") {
+					AssertClick(
+						locator1 = "Button#SELECT",
+						value1 = "Select");
+
+					if (isSet(depotName)) {
+						ItemSelector.selectRepositoryImage(
+							depotName = "${depotName}",
+							imageFileName = "${imageFileName}",
+							navTab = "Documents and Media");
+					}
+
+					else {
+						if (isSet(uploadFileName)) {
+							ItemSelector.uploadFile(
+								navTab = "Documents and Media",
+								uploadFileName = "${uploadFileName}");
+						}
+						else if (isSet(imageSourceURL)) {
+							ItemSelector.addFromURL(
+								imageSourceURL = "${imageSourceURL}",
+								navTab = "URL");
+						}
+						else {
+							SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+							Click(
+								key_card = "${entryTitle}",
+								locator1 = "Card#CARD_TITLE");
+						}
+					}
+
+					SelectFrame(value1 = "relative=top");
+				}
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(borderColor)) {
+				Click(
+					key_borderBottom = "Border Color",
+					key_paletteItem = "${borderColor}",
+					locator1 = "Button#BORDER_BOTTOM_PALETTE_ITEM");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(borderRadius)) {
+				Select(
+					key_fieldLabel = "Border Radius",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${borderRadius}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(borderWidth)) {
+				Type(
+					key_fieldLabel = "Border Width",
+					locator1 = "FormFields#NUMBER_FIELD",
+					value1 = "${borderWidth}");
+
+				AssertTextEquals(
+					key_fieldLabel = "Border Width",
+					locator1 = "FormFields#NUMBER_FIELD",
+					value1 = "${borderWidth}");
+
+				Click(
+					key_sidebarButton = "Selection",
+					locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(containerWidth)) {
+				Select(
+					key_fieldLabel = "Container Width",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${containerWidth}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(contentDisplay)) {
+				Select(
+					key_fieldLabel = "Content Display",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${contentDisplay}");
+
+				Pause(locator1 = "3000");
+
+				if ("${contentDisplay}" == "Flex") {
+					if (isSet(horizontalAlign)) {
+						Select(
+							key_fieldLabel = "Horizontal Align",
+							locator1 = "Select#GENERIC_SELECT_FIELD",
+							value1 = "${horizontalAlign}");
+
+						Pause(locator1 = "3000");
+					}
+
+					if (isSet(verticalAlign)) {
+						Select(
+							key_fieldLabel = "Vertical Align",
+							locator1 = "Select#GENERIC_SELECT_FIELD",
+							value1 = "${verticalAlign}");
+
+						Pause(locator1 = "3000");
+					}
+				}
+			}
+
+			if (isSet(dropShadow)) {
+				Select(
+					key_fieldLabel = "Drop Shadow",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${dropShadow}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(marginBottom)) {
+				Select(
+					key_borderBottom = "Margin",
+					key_fieldLabel = "Bottom",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${marginBottom}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(marginLeft)) {
+				Select(
+					key_borderBottom = "Margin",
+					key_fieldLabel = "Left",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${marginLeft}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(marginRight)) {
+				Select(
+					key_borderBottom = "Margin",
+					key_fieldLabel = "Right",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${marginRight}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(marginTop)) {
+				Select(
+					key_borderBottom = "Margin",
+					key_fieldLabel = "Top",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${marginTop}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(opacity)) {
+				Type(
+					key_fieldLabel = "Opacity",
+					locator1 = "FormFields#NUMBER_FIELD",
+					value1 = "${opacity}");
+
+				AssertTextEquals(
+					key_fieldLabel = "Opacity",
+					locator1 = "FormFields#NUMBER_FIELD",
+					value1 = "${opacity}");
+
+				Click(
+					key_sidebarButton = "Selection",
+					locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(paddingBottom)) {
+				Select(
+					key_borderBottom = "Padding",
+					key_fieldLabel = "Bottom",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${paddingBottom}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(paddingLeft)) {
+				Select(
+					key_borderBottom = "Padding",
+					key_fieldLabel = "Left",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${paddingLeft}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(paddingRight)) {
+				Select(
+					key_borderBottom = "Padding",
+					key_fieldLabel = "Right",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${paddingRight}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(paddingTop)) {
+				Select(
+					key_borderBottom = "Padding",
+					key_fieldLabel = "Top",
+					locator1 = "Select#BORDER_BOTTOM_SELECT_FIELD",
+					value1 = "${paddingTop}");
+
+				Pause(locator1 = "3000");
+			}
+		}
+
+		if ("${panel}" == "Link") {
+			AssertClick(
+				key_navItem = "Link",
+				locator1 = "PageEditor#NAV_ITEM_BUTTON",
+				value1 = "Link");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro editLayoutGrid {
+		var key_elementType = "Grid";
+		var key_position = "1";
+
+		if (IsNotVisible(locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		if ("${panel}" == "General") {
+			AssertClick(
+				key_navItem = "General",
+				locator1 = "PageEditor#NAV_ITEM_BUTTON",
+				value1 = "General");
+
+			if (isSet(columnCount)) {
+				Select(
+					key_fieldLabel = "Number of Modules",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${columnCount}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if ("${spaceBetweenColumns}" == "true") {
+				while (IsNotChecked.isNotCheckedNotVisible(checkboxName = "Show Gutter", locator1 = "Checkbox#ANY_CHECKBOX")) {
+					Click.clickAtNotVisible(
+						checkboxName = "Show Gutter",
+						locator1 = "Checkbox#ANY_CHECKBOX");
+				}
+			}
+
+			if ("${spaceBetweenColumns}" == "false") {
+				while (IsChecked(checkboxName = "Show Gutter", locator1 = "Checkbox#ANY_CHECKBOX")) {
+					Click.clickAtNotVisible(
+						checkboxName = "Show Gutter",
+						locator1 = "Checkbox#ANY_CHECKBOX");
+				}
+			}
+		}
+		else if ("${panel}" == "Styles") {
+			AssertClick(
+				key_navItem = "Styles",
+				locator1 = "PageEditor#NAV_ITEM_BUTTON",
+				value1 = "Styles");
+
+			if (isSet(layout)) {
+				Select(
+					key_fieldLabel = "Layout",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${layout}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if (isSet(verticalAlignment)) {
+				Select(
+					key_fieldLabel = "Vertical Alignment",
+					locator1 = "Select#GENERIC_SELECT_FIELD",
+					value1 = "${verticalAlignment}");
+
+				Pause(locator1 = "3000");
+			}
+
+			if ("${inverseOrder}" == "true") {
+				if (IsNotChecked.isNotCheckedNotVisible(checkboxName = "Inverse order", locator1 = "Checkbox#ANY_CHECKBOX")) {
+					Click.clickAtNotVisible(
+						key_fieldLabel = "Inverse order",
+						locator1 = "Checkbox#CHECKBOX_LABEL");
+				}
+
+				Pause(locator1 = "3000");
+			}
+
+			if ("${inverseOrder}" == "false") {
+				if (IsChecked(checkboxName = "Inverse order", locator1 = "Checkbox#ANY_CHECKBOX")) {
+					Click.clickAtNotVisible(
+						key_fieldLabel = "Inverse order",
+						locator1 = "Checkbox#CHECKBOX_LABEL");
+				}
+
+				Pause(locator1 = "3000");
+			}
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro expandFragmentCollection {
+		PageEditor.gotoTab(tabName = "Fragments and Widgets");
+
+		Navigator.gotoNavTab(navTab = "Fragments");
+
+		AssertVisible(
+			key_collectionName = "${collectionName}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COLLECTION_PANEL");
+
+		if (IsElementPresent(locator1 = "PageEditor#FRAGMENT_SIDEBAR_COLLECTION_PANEL_COLLAPSED", key_collectionName = "${collectionName}")) {
+			AssertClick(
+				key_collectionName = "${collectionName}",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_COLLECTION_PANEL_COLLAPSED",
+				value1 = "${collectionName}");
+		}
+
+		AssertElementPresent(
+			key_collectionName = "${collectionName}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COLLECTION_PANEL_EXPANDED");
+	}
+
+	macro gotoCommentList {
+		Click.pauseClickAt(locator1 = "PageEditor#FRAGMENT_SIDEBAR_BACK");
+
+		AssertTextEquals(
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_LIST_TITLE",
+			value1 = "Comments");
+	}
+
+	macro gotoCommentViaFragment {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_COMMENT_ICON")) {
+			Click(
+				key_content = "${content}",
+				key_fragmentClass = "${fragmentClass}",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		Click(locator1 = "Fragment#FRAGMENT_COMMENT_ICON");
+
+		Pause(locator1 = "3000");
+
+		if (IsElementNotPresent(locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_SECTION_NAME")) {
+			Click(
+				key_content = "${content}",
+				key_fragmentClass = "${fragmentClass}",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	macro gotoConfiguration {
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertElementPresent(
+			key_nodeName = "${fragmentName}",
+			locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_ACTIVE");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+	}
+
+	macro gotoContentConfiguration {
+		if (isSet(entryContent)) {
+			Click.clickNoMouseOver(
+				key_colPosition = "${colPosition}",
+				key_entryContent = "${entryContent}",
+				key_fragmentName = "${fragmentName}",
+				key_rowPosition = "${rowPosition}",
+				locator1 = "Fragment#CONTENT_DISPLAY_FRAGMENT_BODY");
+		}
+		else {
+			Click(
+				key_fragmentName = "${fragmentName}",
+				key_rowPosition = "${rowPosition}",
+				locator1 = "Fragment#CONTENT_FRAGMENT_BODY");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+	}
+
+	macro gotoDuplicate {
+		var key_fragmentName = "${fragmentName}";
+
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		Click.waitForMenuToggleJSClick(locator1 = "Fragment#FRAGMENT_HEADER_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Duplicate");
+	}
+
+	macro gotoEditableFieldEdit {
+		id = "${id}";
+		key_fragmentName = "${fragmentName}";
+
+		PageEditor.clickEditableField(
+			contributed = "${contributed}",
+			fragmentName = "${fragmentName}",
+			id = "${id}");
+
+		if ("${contributed}" == "false") {
+			DoubleClick(locator1 = "Fragment#EDITABLE_FIELD");
+		}
+		else {
+			DoubleClick(locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD");
+		}
+	}
+
+	macro gotoSaveAsFragment {
+		key_fragmentName = "${fragmentName}";
+
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		Click.waitForMenuToggleJSClick(locator1 = "Fragment#FRAGMENT_HEADER_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Save Composition");
+	}
+
+	macro gotoSelectPanel {
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		Click(locator1 = "PageEditor#PLUS_ICON_BUTTON");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
+
+	macro gotoStyle {
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertElementPresent(
+			key_nodeName = "${fragmentName}",
+			locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_ACTIVE");
+
+		AssertClick(
+			key_navItem = "Styles",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "Styles");
+	}
+
+	macro gotoTab {
+		Pause(locator1 = "3000");
+
+		if (IsElementNotPresent(key_sidebarButton = "${tabName}", locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE")) {
+			Click.clickNoMouseOver(
+				key_tabName = "${tabName}",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_TAB_BUTTON");
+		}
+	}
+
+	macro gotoTabsFragmentNavItem {
+		var key_navItem = "${navItem}";
+
+		Click.javaScriptClick(
+			locator1 = "Fragment#NAV_ITEM_TAB",
+			value1 = "${navItem}");
+
+		AssertElementPresent(locator1 = "Fragment#ACTIVE_NAV_ITEM_TAB");
+	}
+
+	macro removeFragment {
+		var key_fragmentName = "${fragmentName}";
+
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		Click.waitForMenuToggleJSClick(locator1 = "Fragment#FRAGMENT_HEADER_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Delete");
+
+		if (!(isSet(duplicateFragment))) {
+			AssertElementNotPresent(
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro removeFragmentViaPageStructure {
+		PageEditor.gotoTab(tabName = "Selection");
+
+		if (IsElementNotPresent(key_nodeName = "${fragmentName}", locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_ACTIVE")) {
+			Click(
+				key_nodeName = "${fragmentName}",
+				locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE");
+		}
+
+		Click.clickNoWaitForVisible(
+			key_nodeName = "${fragmentName}",
+			locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_DELETE");
+
+		if (!(isSet(duplicateFragment))) {
+			AssertElementNotPresent(
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro reopenResolvedComment {
+		AssertNotChecked.assertNotCheckedNotVisible(locator1 = "PageEditor#FRAGMENT_SIDEBAR_SHOW_RESOLVED_COMMENTS_CHECKBOX_UNCHECKED");
+
+		MouseOver(locator1 = "PageEditor#FRAGMENT_SIDEBAR_SHOW_RESOLVED_COMMENTS_LABEL");
+
+		Click(locator1 = "PageEditor#FRAGMENT_SIDEBAR_SHOW_RESOLVED_COMMENTS_LABEL");
+
+		AssertTextEquals(
+			key_fragmentComment = "${fragmentComment}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_RESOLVED_COMMENTS_ENTRY",
+			value1 = "${fragmentComment}");
+
+		AssertTextEquals(
+			key_commentReply = "${commentReply}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_REPLY_RESOLVED_COMMENTS_ENTRY",
+			value1 = "${commentReply}");
+
+		AssertElementPresent(locator1 = "Button#REPLY_DISABLED");
+
+		Click.clickNoMouseOver(locator1 = "Button#REOPEN");
+
+		AssertElementPresent(locator1 = "PageEditor#FRAGMENT_SIDEBAR_SHOW_RESOLVED_COMMENTS_CHECKBOX_DISABLED");
+	}
+
+	macro replyToComment {
+		AssertClick(
+			locator1 = "Button#REPLY",
+			value1 = "Reply");
+
+		Type(
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_REPLY_COMMENTS_EDITOR",
+			value1 = "${commentReply}");
+
+		AssertClick(
+			locator1 = "Button#REPLY",
+			value1 = "Reply");
+	}
+
+	macro resizeConfigurationPanel {
+		PageEditor.clickConfigurableField(fragmentName = "${fragmentName}");
+
+		AssertElementPresent(
+			key_tabName = "Selection",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_TAB_BUTTON_ACTIVE");
+
+		AssertElementPresent(
+			key_nodeName = "${fragmentName}",
+			locator1 = "Treeview#PAGE_STRUCTURE_TREE_NODE_ACTIVE");
+
+		var defaultHeight = selenium.getElementHeight("PageEditor#CONFIGURATION_PANEL_CONFIGURATION");
+
+		echo("### The default height of item configuration panel is ${defaultHeight}");
+
+		DragAndDrop.dragAndDrop(
+			locator1 = "PageEditor#CONFIGURATION_PANEL_HANDLE",
+			value1 = "${position}");
+
+		Pause(locator1 = "3000");
+
+		var updatedHeight = selenium.getElementHeight("PageEditor#CONFIGURATION_PANEL_CONFIGURATION");
+
+		echo("### The updated height of item configuration panel is ${updatedHeight}");
+
+		TestUtils.assertNotEquals(
+			actual = "${updatedHeight}",
+			expected = "${defaultHeight}");
+	}
+
+	macro resolveComment {
+		AssertElementPresent(locator1 = "PageEditor#FRAGMENT_SIDEBAR_SHOW_RESOLVED_COMMENTS_CHECKBOX_DISABLED");
+
+		Click.clickNoMouseOver(locator1 = "Button#RESOLVE");
+
+		AssertTextNotPresent(value1 = "${fragmentComment}");
+	}
+
+	macro searchFragmentViaSidebar {
+		Pause(locator1 = "10000");
+
+		PageEditor.gotoTab(tabName = "Fragments");
+
+		Type(
+			locator1 = "PageEditor#WIDGETS_APPLICATION_SEARCH_FIELD",
+			value1 = "${fragmentName}");
+	}
+
+	macro viewAutoSaveMessage {
+		AssertTextEquals.assertPartialText(
+			locator1 = "PageEditor#AUTOSAVE_MESSAGE",
+			value1 = "Saved");
+	}
+
+	macro viewCannotAddFragmentToOutsideOfDropZone {
+		Pause(locator1 = "10000");
+
+		PageEditor.gotoTab(tabName = "Fragments");
+
+		PageEditor.expandFragmentCollection(collectionName = "${collectionName}");
+
+		DragAndDrop(
+			key_collectionName = "${collectionName}",
+			key_fragmentName = "${fragmentName}",
+			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+			locator2 = "PageEditor#OUTSIDE_OF_DROP_ZONE",
+			value1 = "");
+
+		AssertElementNotPresent(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "Fragment#FRAGMENT_HEADER");
+	}
+
+	macro viewCollectionNotPresent {
+		AssertElementNotPresent(
+			key_collectionName = "${collectionName}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COLLECTION_PANEL");
+	}
+
+	macro viewComment {
+		if (isSet(fragmentComment)) {
+			if (isSet(fromNotifications)) {
+				AssertTextEquals(
+					key_fragmentComment = "${fragmentComment}",
+					locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_ENTRY_HIGHLIGHTED",
+					value1 = "${fragmentComment}");
+			}
+
+			else if (isSet(mentionsUserScreenName)) {
+				AssertTextEquals(
+					key_fragmentComment = "${fragmentComment}",
+					locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_ENTRY",
+					value1 = "${fragmentComment}@${mentionsUserScreenName}");
+
+				Mentions.viewMentionTagLink(
+					mentionsUserFullName = "${mentionsUserFullName}",
+					mentionsUserScreenName = "${mentionsUserScreenName}");
+			}
+
+			else {
+				AssertTextEquals(
+					key_fragmentComment = "${fragmentComment}",
+					locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_ENTRY",
+					value1 = "${fragmentComment}");
+			}
+		}
+
+		else {
+			AssertTextEquals(
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_SECTION_TITLE",
+				value1 = "Comments");
+
+			AssertTextEquals(
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_CENTER_TEXT",
+				value1 = "There are no comments yet.");
+
+			AssertTextEquals(
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_SECONDARY_TEXT",
+				value1 = "Select a fragment to add a comment.");
+		}
+
+		if (isSet(key_fragmentName)) {
+			AssertElementPresent(
+				key_fragmentName = "Rich Text",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_SECTION_NAME");
+		}
+	}
+
+	macro viewCommentList {
+		AssertTextEquals(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_LIST_HEADING",
+			value1 = "${fragmentName}");
+
+		AssertTextEquals(
+			key_commentCount = "${commentCount}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_LIST_SECONDARY_TEXT",
+			value1 = "${commentCount}");
+
+		if (isSet(openComment)) {
+			Click(
+				key_fragmentName = "${fragmentName}",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_COMMENT_LIST_HEADING");
+		}
+	}
+
+	macro viewCommentReply {
+		if (isSet(fromNotifications)) {
+			AssertTextEquals(
+				key_commentReply = "${commentReply}",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_REPLY_COMMENTS_ENTRY_HIGHLIGHTED",
+				value1 = "${commentReply}");
+		}
+
+		else {
+			AssertTextEquals(
+				key_commentReply = "${commentReply}",
+				locator1 = "PageEditor#FRAGMENT_SIDEBAR_REPLY_COMMENTS_ENTRY",
+				value1 = "${commentReply}");
+		}
+
+		AssertTextEquals(
+			key_commentReply = "${commentReply}",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_REPLY_COMMENTS_ENTRY_AUTHOR",
+			value1 = "${user}");
+	}
+
+	macro viewContainerStyle {
+		if (isSet(backgroundColor)) {
+			AssertElementPresent(
+				key_paletteItem = "${backgroundColor}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_BACKGROUND_COLOR");
+		}
+
+		if (isSet(backgroundImage)) {
+			AssertElementPresent(
+				key_imageName = "${backgroundImage}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_BACKGROUND_IMAGE");
+		}
+
+		if (isSet(borderColor)) {
+			AssertElementPresent(
+				key_paletteItem = "${borderColor}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_BORDER_COLOR");
+		}
+
+		if (isSet(borderRadius)) {
+			AssertElementPresent(
+				key_borderRadius = "${borderRadius}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_BORDER_RADIUS");
+		}
+
+		if (isSet(borderWidth)) {
+			AssertElementPresent(
+				key_borderWidth = "${borderWidth}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_BORDER_WIDTH");
+		}
+
+		if (isSet(containerWidth)) {
+			if ("${containerWidth}" == "Fixed Width") {
+				AssertElementNotPresent(
+					key_marginLeft = "",
+					key_position = "${position}",
+					locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_LEFT");
+
+				AssertElementNotPresent(
+					key_marginRight = "",
+					key_position = "${position}",
+					locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_RIGHT");
+			}
+			else if ("${containerWidth}" == "Fluid") {
+				AssertElementPresent(
+					key_marginLeft = "",
+					key_position = "${position}",
+					locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_LEFT");
+
+				AssertElementPresent(
+					key_marginRight = "",
+					key_position = "${position}",
+					locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_RIGHT");
+			}
+		}
+
+		if (isSet(contentDisplay)) {
+			AssertElementPresent(
+				key_contentDisplay = "${contentDisplay}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_CONTENT_DISPLAY");
+		}
+
+		if (isSet(dropShadow)) {
+			AssertElementPresent(
+				key_dropShadow = "${dropShadow}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_DROP_SHADOW");
+		}
+
+		if (isSet(horizontalAlign)) {
+			AssertElementPresent(
+				key_horizontalAlign = "${horizontalAlign}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_HORIZONTAL_ALIGN");
+		}
+
+		if (isSet(marginBottom)) {
+			AssertElementPresent(
+				key_marginBottom = "${marginBottom}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_BOTTOM");
+		}
+
+		if (isSet(marginLeft)) {
+			AssertElementPresent(
+				key_marginLeft = "${marginLeft}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_LEFT");
+		}
+
+		if (isSet(marginRight)) {
+			AssertElementPresent(
+				key_marginRight = "${marginRight}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_RIGHT");
+		}
+
+		if (isSet(marginTop)) {
+			AssertElementPresent(
+				key_marginTop = "${marginTop}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_MARGIN_TOP");
+		}
+
+		if (isSet(opacity)) {
+			AssertElementPresent(
+				key_opacity = "${opacity}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_OPACITY");
+		}
+
+		if (isSet(paddingBottom)) {
+			AssertElementPresent(
+				key_paddingBottom = "${paddingBottom}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_PADDING_BOTTOM");
+		}
+
+		if (isSet(paddingLeft)) {
+			AssertElementPresent(
+				key_paddingLeft = "${paddingLeft}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_PADDING_LEFT");
+		}
+
+		if (isSet(paddingRight)) {
+			AssertElementPresent(
+				key_paddingRight = "${paddingRight}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_PADDING_RIGHT");
+		}
+
+		if (isSet(paddingTop)) {
+			AssertElementPresent(
+				key_paddingTop = "${paddingTop}",
+				key_position = "${position}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_PADDING_TOP");
+		}
+
+		if (isSet(verticalAlign)) {
+			AssertElementPresent(
+				key_position = "${position}",
+				key_verticalAlign = "${verticalAlign}",
+				locator1 = "PageEditor#CONTAINER_CONFIGURATION_VERTICAL_ALIGN");
+		}
+	}
+
+	macro viewDuplicateFragment {
+		AssertElementPresent(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "Fragment#FRAGMENT_HEADER_2");
+	}
+
+	macro viewEditorEmpty {
+		AssertElementPresent(locator1 = "PageEditor#EMPTY_MESSAGE");
+	}
+
+	macro viewFragment {
+		AssertElementPresent(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "Fragment#FRAGMENT_HEADER");
+	}
+
+	macro viewFragmentEditableImage {
+		if ("${contributed}" == "false") {
+			AssertVisible(
+				key_fragmentClass = "${fragmentClass}",
+				key_image = "${imageFileName}",
+				locator1 = "Fragment#PAGE_EDITOR_FRAGMENT_IMAGE");
+		}
+		else {
+			AssertVisible(
+				id = "${id}",
+				key_image = "${imageFileName}",
+				key_imageDescription = "${imageDescription}",
+				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD_IMAGE_PROPERTIES");
+		}
+	}
+
+	macro viewFragmentEditableText {
+		if ("${contributed}" == "false") {
+			AssertTextEquals(
+				id = "${id}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#EDITABLE_FIELD",
+				value1 = "${editableText}");
+		}
+		else {
+			AssertTextEquals(
+				id = "${id}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD",
+				value1 = "${editableText}");
+		}
+	}
+
+	macro viewFragmentOrder {
+		AssertElementPresent(
+			key_fragmentName = "${fragmentName}",
+			key_position = "${position}",
+			locator1 = "Fragment#FRAGMENT_HEADER_POSITION");
+	}
+
+	macro viewFragmentStyle {
+		if (isSet(alignment)) {
+			var fragmentName = StringUtil.upperCaseFirstLetter("${fragmentName}");
+
+			AssertElementPresent(
+				key_alignment = "${alignment}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_ALIGNMENT");
+		}
+
+		if (isSet(borderColor)) {
+			var fragmentName = StringUtil.upperCaseFirstLetter("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_paletteItem = "${borderColor}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_BORDER_COLOR");
+		}
+
+		if (isSet(borderRadius)) {
+			var fragmentName = StringUtil.upperCaseFirstLetter("${fragmentName}");
+
+			AssertElementPresent(
+				key_borderRadius = "${borderRadius}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_BORDER_RADIUS");
+		}
+
+		if (isSet(bottomSpacing)) {
+			var fragmentName = StringUtil.lowerCase("${fragmentName}");
+
+			AssertElementPresent(
+				key_bottomSpacing = "${bottomSpacing}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_BOTTOM_SPACING");
+		}
+
+		if (isSet(boxShadow)) {
+			var fragmentName = StringUtil.upperCaseFirstLetter("${fragmentName}");
+
+			AssertElementPresent(
+				key_boxShadow = "${boxShadow}",
+				key_fragmentName = "${fragmentName}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_BOX_SHADOW");
+		}
+
+		if (isSet(headingLevel)) {
+			var fragmentName = StringUtil.lowerCase("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_headingLevel = "${headingLevel}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_HEADER");
+		}
+
+		if (isSet(height)) {
+			AssertElementPresent(
+				key_height = "${height}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_HEIGHT");
+		}
+
+		if (isSet(imageSize)) {
+			var fragmentName = StringUtil.lowerCase("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_imageSize = "${imageSize}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_IMAGE_SIZE");
+		}
+
+		if (isSet(marginBottom)) {
+			var fragmentName = StringUtil.upperCaseFirstLetter("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_marginBottom = "${marginBottom}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_MARGIN_BOTTOM");
+		}
+
+		if (isSet(size)) {
+			var fragmentName = StringUtil.lowerCase("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_size = "${size}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_SIZE");
+		}
+
+		if (isSet(textColor)) {
+			var fragmentName = StringUtil.upperCaseFirstLetter("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_textColor = "${textColor}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_TEXT_COLOR");
+		}
+
+		if (isSet(type)) {
+			var fragmentName = StringUtil.lowerCase("${fragmentName}");
+
+			AssertElementPresent(
+				key_fragmentName = "${fragmentName}",
+				key_type = "${type}",
+				locator1 = "Fragment#FRAGMENT_CONFIGURATION_TYPE");
+		}
+	}
+
+	macro viewGridStyle {
+		if (isSet(columnCount)) {
+			var i = "0";
+
+			while ("${i}" != "${columnCount}") {
+				var columnNumber = ${i} + 1;
+
+				AssertElementPresent(
+					key_columnNumber = "${columnNumber}",
+					key_position = "${position}",
+					locator1 = "PageEditor#GRID_COLUMN");
+			}
+
+			var columnNumber = ${columnCount} + 1;
+
+			AssertElementNotPresent(
+				key_columnNumber = "${columnNumber}",
+				key_position = "${position}",
+				locator1 = "PageEditor#GRID_COLUMN");
+		}
+
+		if (isSet(inverseOrder)) {
+			AssertElementPresent(
+				key_position = "${position}",
+				locator1 = "PageEditor#GRID_CONFIGURATION_INVERSE_ORDER");
+		}
+
+		if (isSet(layout)) {
+			AssertElementPresent(
+				key_layout = "${layout}",
+				key_position = "${position}",
+				locator1 = "PageEditor#GRID_CONFIGURATION_LAYOUT");
+		}
+
+		if (isSet(spaceBetweenColumns)) {
+			if ("${spaceBetweenColumns}" == "true") {
+				AssertElementNotPresent(
+					key_position = "${position}",
+					locator1 = "PageEditor#GRID_CONFIGURATION_COLUMNS_NO_GUTTER");
+			}
+			else if ("${spaceBetweenColumns}" == "false") {
+				AssertElementPresent(
+					key_position = "${position}",
+					locator1 = "PageEditor#GRID_CONFIGURATION_COLUMNS_NO_GUTTER");
+			}
+		}
+
+		if ("${verticalAlignment}" == "Top") {
+			AssertElementPresent(
+				key_position = "${position}",
+				key_verticalAlignment = "",
+				locator1 = "PageEditor#GRID_CONFIGURATION_VERTICAL_ALIGNMENT");
+		}
+		else if ("${verticalAlignment}" == "Middle") {
+			AssertElementPresent(
+				key_position = "${position}",
+				key_verticalAlignment = "middle",
+				locator1 = "PageEditor#GRID_CONFIGURATION_VERTICAL_ALIGNMENT");
+		}
+		else if ("${verticalAlignment}" == "Bottom") {
+			AssertElementPresent(
+				key_position = "${position}",
+				key_verticalAlignment = "bottom",
+				locator1 = "PageEditor#GRID_CONFIGURATION_VERTICAL_ALIGNMENT");
+		}
+	}
+
+	macro viewNoFragment {
+		AssertElementNotPresent(
+			key_fragmentName = "${fragmentName}",
+			locator1 = "Fragment#FRAGMENT_HEADER");
+	}
+
+	macro waitForAutoSave {
+		Pause(locator1 = "1000");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "PageEditor#AUTOSAVE_MESSAGE",
+			value1 = "Saved");
+	}
+
+}

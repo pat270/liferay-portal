@@ -14,6 +14,8 @@
 
 package com.liferay.portal.search.elasticsearch6.internal.connection;
 
+import com.liferay.portal.kernel.util.HashMapBuilder;
+
 import java.util.HashMap;
 
 import org.junit.Assert;
@@ -41,11 +43,10 @@ public class ElasticsearchConnectionManagerTest {
 
 	@Test
 	public void testActivateMustNotOpenAnyConnection() {
-		HashMap<String, Object> properties = new HashMap<>();
-
-		properties.put("operationMode", OperationMode.EMBEDDED.name());
-
-		_elasticsearchConnectionManager.activate(properties);
+		_elasticsearchConnectionManager.activate(
+			HashMapBuilder.<String, Object>put(
+				"operationMode", OperationMode.EMBEDDED.name()
+			).build());
 
 		verifyNeverCloseNeverConnect(_embeddedElasticsearchConnection);
 		verifyNeverCloseNeverConnect(_remoteElasticsearchConnection);
@@ -53,11 +54,10 @@ public class ElasticsearchConnectionManagerTest {
 
 	@Test
 	public void testActivateThenConnect() {
-		HashMap<String, Object> properties = new HashMap<>();
-
-		properties.put("operationMode", OperationMode.EMBEDDED.name());
-
-		_elasticsearchConnectionManager.activate(properties);
+		_elasticsearchConnectionManager.activate(
+			HashMapBuilder.<String, Object>put(
+				"operationMode", OperationMode.EMBEDDED.name()
+			).build());
 
 		_elasticsearchConnectionManager.connect();
 
@@ -91,15 +91,16 @@ public class ElasticsearchConnectionManagerTest {
 
 			Assert.fail();
 		}
-		catch (ElasticsearchConnectionNotInitializedException ecnie) {
+		catch (ElasticsearchConnectionNotInitializedException
+					elasticsearchConnectionNotInitializedException) {
 		}
 	}
 
 	@Test
 	public void testSetModifiedOperationModeResetsConnection() {
-		HashMap<String, Object> properties = new HashMap<>();
-
-		properties.put("operationMode", OperationMode.EMBEDDED.name());
+		HashMap<String, Object> properties = HashMapBuilder.<String, Object>put(
+			"operationMode", OperationMode.EMBEDDED.name()
+		).build();
 
 		_elasticsearchConnectionManager.activate(properties);
 
@@ -128,8 +129,8 @@ public class ElasticsearchConnectionManagerTest {
 
 			Assert.fail();
 		}
-		catch (MissingOperationModeException mome) {
-			String message = mome.getMessage();
+		catch (MissingOperationModeException missingOperationModeException) {
+			String message = missingOperationModeException.getMessage();
 
 			Assert.assertTrue(
 				message,
@@ -213,7 +214,7 @@ public class ElasticsearchConnectionManagerTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 
 		Assert.assertSame(

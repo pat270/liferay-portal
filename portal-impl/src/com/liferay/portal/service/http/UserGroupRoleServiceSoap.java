@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.service.UserGroupRoleServiceUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>UserGroupRoleServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see UserGroupRoleServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class UserGroupRoleServiceSoap {
 
 	public static void addUserGroupRoles(
@@ -72,10 +71,10 @@ public class UserGroupRoleServiceSoap {
 			UserGroupRoleServiceUtil.addUserGroupRoles(
 				userId, groupId, roleIds);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -87,10 +86,10 @@ public class UserGroupRoleServiceSoap {
 			UserGroupRoleServiceUtil.addUserGroupRoles(
 				userIds, groupId, roleId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -102,10 +101,10 @@ public class UserGroupRoleServiceSoap {
 			UserGroupRoleServiceUtil.deleteUserGroupRoles(
 				userId, groupId, roleIds);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -117,10 +116,10 @@ public class UserGroupRoleServiceSoap {
 			UserGroupRoleServiceUtil.deleteUserGroupRoles(
 				userIds, groupId, roleId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -133,10 +132,10 @@ public class UserGroupRoleServiceSoap {
 			UserGroupRoleServiceUtil.updateUserGroupRoles(
 				userId, groupId, addedRoleIds, deletedRoleIds);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

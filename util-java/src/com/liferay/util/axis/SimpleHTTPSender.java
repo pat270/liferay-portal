@@ -95,8 +95,8 @@ public class SimpleHTTPSender extends HTTPSender {
 			_writeToConnection(urlConnection, messageContext);
 			_readFromConnection(urlConnection, messageContext);
 		}
-		catch (Exception e) {
-			throw AxisFault.makeFault(e);
+		catch (Exception exception) {
+			throw AxisFault.makeFault(exception);
 		}
 		finally {
 			Authenticator.setDefault(null);
@@ -117,12 +117,12 @@ public class SimpleHTTPSender extends HTTPSender {
 
 		inputStream = new UnsyncBufferedInputStream(inputStream, 8192);
 
-		String contentType = urlConnection.getContentType();
 		String contentLocation = urlConnection.getHeaderField(
 			"Content-Location");
 
 		Message message = new Message(
-			inputStream, false, contentType, contentLocation);
+			inputStream, false, urlConnection.getContentType(),
+			contentLocation);
 
 		message.setMessageType(Message.RESPONSE);
 

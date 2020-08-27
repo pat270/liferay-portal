@@ -54,7 +54,7 @@ import javax.sql.DataSource;
  */
 public abstract class UserGroupServiceBaseImpl
 	extends BaseServiceImpl
-	implements UserGroupService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, UserGroupService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -736,8 +736,8 @@ public abstract class UserGroupServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

@@ -50,7 +50,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class TeamServiceBaseImpl
-	extends BaseServiceImpl implements TeamService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, TeamService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -540,8 +540,8 @@ public abstract class TeamServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

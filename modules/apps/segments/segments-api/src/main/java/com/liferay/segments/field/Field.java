@@ -14,20 +14,21 @@
 
 package com.liferay.segments.field;
 
+import com.liferay.portal.kernel.util.CollatorUtil;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
+
 import java.io.Serializable;
+
+import java.text.Collator;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Represents a segments criteria field.
  *
  * @author Eduardo García
- * @review
  */
-@ProviderType
 public final class Field implements Comparable<Field>, Serializable {
 
 	public Field() {
@@ -46,11 +47,14 @@ public final class Field implements Comparable<Field>, Serializable {
 		_type = type;
 		_options = options;
 		_selectEntity = selectEntity;
+
+		_collator = CollatorUtil.getInstance(
+			LocaleThreadLocal.getThemeDisplayLocale());
 	}
 
 	@Override
 	public int compareTo(Field field) {
-		return _name.compareTo(field._name);
+		return _collator.compare(_label, field._label);
 	}
 
 	public String getLabel() {
@@ -133,6 +137,7 @@ public final class Field implements Comparable<Field>, Serializable {
 
 	}
 
+	private Collator _collator;
 	private String _label;
 	private String _name;
 	private List<Option> _options;

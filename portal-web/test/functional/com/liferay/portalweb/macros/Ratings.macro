@@ -1,0 +1,230 @@
+definition {
+
+	macro configureRatingType {
+		if (isSet(siteName)) {
+			Site.openSiteSettingsAdmin(siteURLKey = "${siteName}");
+		}
+		else {
+			Site.openSiteSettingsAdmin(siteURLKey = "guest");
+		}
+
+		Navigator.gotoNavTab(navTab = "Social");
+
+		Select(
+			key_applications = "${applications}",
+			locator1 = "Select#APPLICATIONS_RATING",
+			value1 = "${ratingType}");
+
+		AssertClickNoError(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertConfirm(value1 = "Existing ratings data values will be adapted to match the new ratings type even though it may not be accurate. Do you want to continue?");
+
+		AssertSelectedLabel(
+			key_applications = "${applications}",
+			locator1 = "Select#APPLICATIONS_RATING",
+			value1 = "${ratingType}");
+	}
+
+	macro rateLike {
+		Click(locator1 = "Ratings#LIKE");
+
+		AssertElementPresent(locator1 = "Ratings#YOUR_RATING_LIKE_RESULT");
+	}
+
+	macro rateStackedStars {
+		Click(
+			key_ratingStarCount = "${ratingStarCount}",
+			locator1 = "Ratings#YOUR_RATING_STACKED_STAR_COUNT");
+
+		var count = "0";
+
+		while ("${count}" != "${ratingStarCount}") {
+			var index = ${count} + 1;
+
+			AssertElementPresent(
+				key_ratingStarCount = "${index}",
+				locator1 = "Ratings#YOUR_RATING_STACKED_STAR_RESULT");
+
+			var count = ${count} + 1;
+		}
+	}
+
+	macro rateStar {
+		Click(locator1 = "Ratings#YOUR_RATING_STAR");
+
+		if (isSet(checkDeleteButton)) {
+			AssertElementPresent(locator1 = "Ratings#YOUR_RATING_STAR_DELETE_DISABLE");
+		}
+
+		Click.clickNoMouseOver(
+			key_ratingStarCount = "${ratingStarCount}",
+			locator1 = "Ratings#YOUR_RATING_STAR_COUNT");
+
+		AssertElementPresent(
+			key_ratingStarCount = "${ratingStarCount}",
+			locator1 = "Ratings#YOUR_RATING_STAR_RESULT");
+	}
+
+	macro rateStarCollectionItem {
+		Click(
+			key_colPosition = "${colPosition}",
+			key_rowPosition = "${rowPosition}",
+			locator1 = "PageEditor#COLLECTION_ITEM_YOUR_RATING_STAR");
+
+		if (isSet(checkDeleteButton)) {
+			AssertElementPresent(locator1 = "PageEditor#COLLECTION_ITEM_YOUR_RATING_STAR_DELETE_DISABLE");
+		}
+
+		Click.clickNoMouseOver(
+			key_ratingStarCount = "${ratingStarCount}",
+			locator1 = "PageEditor#COLLECTION_ITEM_YOUR_RATING_STAR_COUNT");
+
+		AssertElementPresent(
+			key_colPosition = "${colPosition}",
+			key_ratingStarCount = "${ratingStarCount}",
+			key_rowPosition = "${rowPosition}",
+			locator1 = "PageEditor#COLLECTION_ITEM_YOUR_RATING_STAR_RESULT");
+	}
+
+	macro rateThumb {
+		if (isSet(blogCommentRating)) {
+			Click.mouseOverClick(
+				key_ratingResult = "${ratingResult}",
+				locator1 = "Ratings#COMMENT_RATING_THUMB");
+		}
+
+		else if (isSet(blogRating)) {
+			Pause(locator1 = "2000");
+
+			Click.javaScriptClick(
+				key_ratingResult = "${ratingResult}",
+				locator1 = "Ratings#THUMB");
+		}
+
+		else if (isSet(commentRating)) {
+			Click.clickNoMouseOver(
+				key_ratingResult = "${ratingResult}",
+				locator1 = "Ratings#COMMENT_RATING_THUMB");
+		}
+
+		else if (isSet(replyRating)) {
+			Click.mouseOverClick(
+				key_ratingResult = "${ratingResult}",
+				key_threadSubject = "${threadSubject}",
+				locator1 = "Ratings#REPLY_RATING_THUMB");
+		}
+
+		else {
+			Click(
+				key_ratingResult = "${ratingResult}",
+				locator1 = "Ratings#THUMB");
+		}
+	}
+
+	macro revokeStackedStarsRating {
+		Click(locator1 = "Icon#DELETE");
+
+		AssertElementNotPresent(locator1 = "Icon#DELETE");
+	}
+
+	macro revokeStarsRating {
+		Click(locator1 = "Ratings#YOUR_RATING_STAR");
+
+		Click.clickNoMouseOver(locator1 = "Ratings#YOUR_RATING_STAR_DELETE");
+
+		AssertElementPresent(locator1 = "Ratings#YOUR_RATING_STAR_EMPTY");
+	}
+
+	macro viewNoRateStackedStar {
+		for (var ratingStarCount : list "1,2,3,4,5") {
+			AssertElementNotPresent(
+				key_ratingStarCount = "${ratingStarCount}",
+				locator1 = "Ratings#YOUR_RATING_STACKED_STAR_RESULT");
+		}
+
+		AssertElementPresent(
+			key_averageStarCount = "${averageStarCount}",
+			locator1 = "Ratings#AVERAGE_STACKED_STAR_RESULT");
+	}
+
+	macro viewRateLike {
+		AssertElementPresent(locator1 = "Ratings#YOUR_RATING_LIKE_RESULT");
+
+		AssertTextEquals(
+			locator1 = "Ratings#YOUR_RATING_LIKE_COUNT",
+			value1 = "${ratingLikeCount}");
+	}
+
+	macro viewRateStackedStar {
+		var count = "0";
+
+		while ("${count}" != "${ratingStarCount}") {
+			var index = ${count} + 1;
+
+			AssertElementPresent(
+				key_ratingStarCount = "${index}",
+				locator1 = "Ratings#YOUR_RATING_STACKED_STAR_RESULT");
+
+			var count = ${count} + 1;
+		}
+
+		AssertElementPresent(
+			key_averageStarCount = "${averageStarCount}",
+			locator1 = "Ratings#AVERAGE_STACKED_STAR_RESULT");
+	}
+
+	macro viewRateStar {
+		AssertElementPresent(
+			key_ratingStarCount = "${ratingStarCount}",
+			locator1 = "Ratings#YOUR_RATING_STAR_RESULT");
+
+		AssertTextEquals(
+			key_ratingStarCount = "${ratingStarCount}",
+			locator1 = "Ratings#YOUR_RATING_STAR_RESULT_COUNT",
+			value1 = "${ratingStarCount}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Ratings#AVERAGE_STAR_RESULT",
+			value1 = "${averageRatingStarCount}");
+	}
+
+	macro viewRateStarReadOnly {
+		AssertElementNotPresent(locator1 = "Ratings#YOUR_RATING_STAR_EMPTY");
+
+		AssertElementPresent(locator1 = "Ratings#YOUR_RATING_STAR_DISABLE");
+		AssertElementPresent(locator1 = "Ratings#AVERAGE_STAR");
+	}
+
+	macro viewRateThumb {
+		if (isSet(ratingResult)) {
+			if (isSet(commentRating)) {
+				AssertTextEquals(
+					key_ratingResult = "${ratingResult}",
+					locator1 = "Ratings#COMMENT_RATING_THUMB",
+					value1 = "${voteCount}");
+			}
+			else {
+				AssertTextEquals(
+					key_ratingResult = "${ratingResult}",
+					locator1 = "Ratings#THUMB",
+					value1 = "${voteCount}");
+			}
+		}
+	}
+
+	macro viewRateThumbReadOnly {
+		AssertElementNotPresent(
+			key_ratingResult = "Rate this as good",
+			locator1 = "Ratings#THUMB");
+
+		AssertElementNotPresent(
+			key_ratingResult = "Rate this as bad",
+			locator1 = "Ratings#THUMB");
+
+		AssertElementPresent(locator1 = "Ratings#THUMB_UP_OFF");
+		AssertElementPresent(locator1 = "Ratings#THUMB_DOWN_OFF");
+	}
+
+}

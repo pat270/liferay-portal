@@ -14,11 +14,11 @@
 
 package com.liferay.dynamic.data.mapping.template;
 
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
@@ -56,10 +56,8 @@ public class DDMTemplateVariableCodeHandler
 		String templateId = getTemplateId(
 			templateVariableDefinition.getDataType());
 
-		Template template = getTemplate(templateId);
-
 		String content = getTemplateContent(
-			template, templateVariableDefinition, language);
+			getTemplate(templateId), templateVariableDefinition, language);
 
 		if (templateVariableDefinition.isRepeatable()) {
 			content = handleRepeatableField(

@@ -56,8 +56,7 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/edit_site.jsp",
 		"javax.portlet.name=" + SiteAdminPortletKeys.SITE_SETTINGS,
-		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.resource-bundle=content.Language"
 	},
 	service = Portlet.class
 )
@@ -81,8 +80,8 @@ public class SiteSettingsPortlet extends SiteAdminPortlet {
 			GroupPermissionUtil.check(
 				themeDisplay.getPermissionChecker(), groupId, ActionKeys.VIEW);
 		}
-		catch (PortalException pe) {
-			SessionErrors.add(renderRequest, pe.getClass());
+		catch (PortalException portalException) {
+			SessionErrors.add(renderRequest, portalException.getClass());
 		}
 
 		super.doDispatch(renderRequest, renderResponse);

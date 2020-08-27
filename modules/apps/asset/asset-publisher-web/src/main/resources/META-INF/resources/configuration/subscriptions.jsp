@@ -17,10 +17,10 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String emailFromName = ParamUtil.getString(request, "preferences--emailFromName--", assetPublisherWebUtil.getEmailFromName(portletPreferences, company.getCompanyId()));
-String emailFromAddress = ParamUtil.getString(request, "preferences--emailFromAddress--", assetPublisherWebUtil.getEmailFromAddress(portletPreferences, company.getCompanyId()));
+String emailFromName = ParamUtil.getString(request, "preferences--emailFromName--", assetPublisherWebHelper.getEmailFromName(portletPreferences, company.getCompanyId()));
+String emailFromAddress = ParamUtil.getString(request, "preferences--emailFromAddress--", assetPublisherWebHelper.getEmailFromAddress(portletPreferences, company.getCompanyId()));
 
-boolean emailAssetEntryAddedEnabled = ParamUtil.getBoolean(request, "preferences--emailAssetEntryAddedEnabled--", assetPublisherWebUtil.getEmailAssetEntryAddedEnabled(portletPreferences));
+boolean emailAssetEntryAddedEnabled = ParamUtil.getBoolean(request, "preferences--emailAssetEntryAddedEnabled--", assetPublisherWebHelper.getEmailAssetEntryAddedEnabled(portletPreferences));
 %>
 
 <liferay-ui:error key="emailAssetEntryAddedBody" message="please-enter-a-valid-body" />
@@ -37,7 +37,7 @@ boolean emailAssetEntryAddedEnabled = ParamUtil.getBoolean(request, "preferences
 
 	<liferay-frontend:email-notification-settings
 		emailBodyLocalizedValuesMap="<%= assetPublisherDisplayContext.getEmailAssetEntryAddedBody() %>"
-		emailDefinitionTerms="<%= assetPublisherWebUtil.getEmailDefinitionTerms(renderRequest, emailFromAddress, emailFromName) %>"
+		emailDefinitionTerms="<%= assetPublisherWebHelper.getEmailDefinitionTerms(renderRequest, emailFromAddress, emailFromName) %>"
 		emailEnabled="<%= emailAssetEntryAddedEnabled %>"
 		emailParam="emailAssetEntryAdded"
 		emailSubjectLocalizedValuesMap="<%= assetPublisherDisplayContext.getEmailAssetEntryAddedSubject() %>"
@@ -46,5 +46,8 @@ boolean emailAssetEntryAddedEnabled = ParamUtil.getBoolean(request, "preferences
 </div>
 
 <aui:script sandbox="<%= true %>">
-	Liferay.Util.toggleBoxes('<portlet:namespace />enableEmailSubscription', '<portlet:namespace />emailSubscriptionSettings');
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />enableEmailSubscription',
+		'<portlet:namespace />emailSubscriptionSettings'
+	);
 </aui:script>

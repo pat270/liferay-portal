@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoDefinition in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoDefinitionCacheModel
 	implements CacheModel<KaleoDefinition>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoDefinitionCacheModel)) {
+		if (!(object instanceof KaleoDefinitionCacheModel)) {
 			return false;
 		}
 
 		KaleoDefinitionCacheModel kaleoDefinitionCacheModel =
-			(KaleoDefinitionCacheModel)obj;
+			(KaleoDefinitionCacheModel)object;
 
 		if ((kaleoDefinitionId ==
 				kaleoDefinitionCacheModel.kaleoDefinitionId) &&
@@ -81,7 +78,7 @@ public class KaleoDefinitionCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(29);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -107,6 +104,8 @@ public class KaleoDefinitionCacheModel
 		sb.append(description);
 		sb.append(", content=");
 		sb.append(content);
+		sb.append(", scope=");
+		sb.append(scope);
 		sb.append(", version=");
 		sb.append(version);
 		sb.append(", active=");
@@ -175,6 +174,13 @@ public class KaleoDefinitionCacheModel
 			kaleoDefinitionImpl.setContent(content);
 		}
 
+		if (scope == null) {
+			kaleoDefinitionImpl.setScope("");
+		}
+		else {
+			kaleoDefinitionImpl.setScope(scope);
+		}
+
 		kaleoDefinitionImpl.setVersion(version);
 		kaleoDefinitionImpl.setActive(active);
 
@@ -184,7 +190,9 @@ public class KaleoDefinitionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoDefinitionId = objectInput.readLong();
@@ -200,7 +208,8 @@ public class KaleoDefinitionCacheModel
 		name = objectInput.readUTF();
 		title = objectInput.readUTF();
 		description = objectInput.readUTF();
-		content = objectInput.readUTF();
+		content = (String)objectInput.readObject();
+		scope = objectInput.readUTF();
 
 		version = objectInput.readInt();
 
@@ -251,10 +260,17 @@ public class KaleoDefinitionCacheModel
 		}
 
 		if (content == null) {
+			objectOutput.writeObject("");
+		}
+		else {
+			objectOutput.writeObject(content);
+		}
+
+		if (scope == null) {
 			objectOutput.writeUTF("");
 		}
 		else {
-			objectOutput.writeUTF(content);
+			objectOutput.writeUTF(scope);
 		}
 
 		objectOutput.writeInt(version);
@@ -274,6 +290,7 @@ public class KaleoDefinitionCacheModel
 	public String title;
 	public String description;
 	public String content;
+	public String scope;
 	public int version;
 	public boolean active;
 

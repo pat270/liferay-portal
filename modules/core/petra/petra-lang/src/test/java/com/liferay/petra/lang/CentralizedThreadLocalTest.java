@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -38,19 +39,26 @@ public class CentralizedThreadLocalTest {
 
 	@ClassRule
 	public static final CodeCoverageAssertor codeCoverageAssertor =
-		CodeCoverageAssertor.INSTANCE;
+		new CodeCoverageAssertor() {
+
+			@Override
+			public void appendAssertClasses(List<Class<?>> assertClasses) {
+				assertClasses.add(SafeClosable.class);
+			}
+
+		};
 
 	@Test
 	public void testCopy() {
 
 		// No copy
 
-		Object obj = new Object();
+		Object object = new Object();
 
 		CentralizedThreadLocal<Object> centralizedThreadLocal =
 			new CentralizedThreadLocal<>(false);
 
-		centralizedThreadLocal.set(obj);
+		centralizedThreadLocal.set(object);
 
 		Map<CentralizedThreadLocal<?>, Object> longLivedThreadLocals =
 			CentralizedThreadLocal.getLongLivedThreadLocals();
@@ -72,7 +80,7 @@ public class CentralizedThreadLocalTest {
 		centralizedThreadLocal = new CentralizedThreadLocal<>(
 			null, null, Function.identity(), false);
 
-		centralizedThreadLocal.set(obj);
+		centralizedThreadLocal.set(object);
 
 		longLivedThreadLocals =
 			CentralizedThreadLocal.getLongLivedThreadLocals();
@@ -85,7 +93,7 @@ public class CentralizedThreadLocalTest {
 		CentralizedThreadLocal.setThreadLocals(
 			longLivedThreadLocals, shortLivedThreadLocals);
 
-		Assert.assertSame(obj, centralizedThreadLocal.get());
+		Assert.assertSame(object, centralizedThreadLocal.get());
 
 		centralizedThreadLocal.remove();
 
@@ -188,9 +196,10 @@ public class CentralizedThreadLocalTest {
 			shortLivedHashCode + hashIncrement,
 			shortLivedCentralizedThreadLocal.hashCode());
 		Assert.assertEquals(
-			longLivedHashCode + hashIncrement * 2, longLivedNextHasCode.get());
+			longLivedHashCode + (hashIncrement * 2),
+			longLivedNextHasCode.get());
 		Assert.assertEquals(
-			shortLivedHashCode + hashIncrement * 2,
+			shortLivedHashCode + (hashIncrement * 2),
 			shortLivedNextHasCode.get());
 	}
 
@@ -199,27 +208,28 @@ public class CentralizedThreadLocalTest {
 
 		// By override
 
-		Object obj = new Object();
+		Object object = new Object();
 
 		CentralizedThreadLocal<?> centralizedThreadLocal =
 			new CentralizedThreadLocal<Object>(false) {
 
 				@Override
 				protected Object initialValue() {
-					return obj;
+					return object;
 				}
 
 			};
 
-		Assert.assertSame(obj, centralizedThreadLocal.get());
+		Assert.assertSame(object, centralizedThreadLocal.get());
 
 		centralizedThreadLocal.remove();
 
 		// By Supplier
 
-		centralizedThreadLocal = new CentralizedThreadLocal<>(null, () -> obj);
+		centralizedThreadLocal = new CentralizedThreadLocal<>(
+			null, () -> object);
 
-		Assert.assertSame(obj, centralizedThreadLocal.get());
+		Assert.assertSame(object, centralizedThreadLocal.get());
 
 		centralizedThreadLocal.remove();
 
@@ -230,6 +240,40 @@ public class CentralizedThreadLocalTest {
 		Assert.assertNull(centralizedThreadLocal.get());
 
 		centralizedThreadLocal.remove();
+	}
+
+	@Test
+	public void testSetWithClosable() {
+		String initialValue = "initialValue";
+
+		CentralizedThreadLocal<String> centralizedThreadLocal =
+			new CentralizedThreadLocal<>("test", () -> initialValue);
+
+		String value1 = "value1";
+
+		try (SafeClosable safeClosable =
+				centralizedThreadLocal.setWithSafeClosable(value1)) {
+
+			Assert.assertSame(value1, centralizedThreadLocal.get());
+		}
+
+		Assert.assertSame(initialValue, centralizedThreadLocal.get());
+
+		String value2 = "value2";
+
+		try (SafeClosable safeClosable1 =
+				centralizedThreadLocal.setWithSafeClosable(value1)) {
+
+			try (SafeClosable safeClosable2 =
+					centralizedThreadLocal.setWithSafeClosable(value2)) {
+
+				Assert.assertSame(value2, centralizedThreadLocal.get());
+			}
+
+			Assert.assertSame(value1, centralizedThreadLocal.get());
+		}
+
+		Assert.assertSame(initialValue, centralizedThreadLocal.get());
 	}
 
 	@Test

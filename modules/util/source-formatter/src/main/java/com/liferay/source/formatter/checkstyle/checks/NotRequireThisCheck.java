@@ -14,8 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -33,14 +31,12 @@ public class NotRequireThisCheck extends BaseCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		List<DetailAST> thisDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> thisDetailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.LITERAL_THIS);
 
 		outerLoop:
 		for (DetailAST thisDetailAST : thisDetailASTList) {
-			if (_isMethodCall(thisDetailAST) ||
-				(thisDetailAST.getPreviousSibling() != null)) {
-
+			if (thisDetailAST.getPreviousSibling() != null) {
 				continue;
 			}
 
@@ -55,10 +51,9 @@ public class NotRequireThisCheck extends BaseCheck {
 
 			String name = nameDetailAST.getText();
 
-			List<DetailAST> definitionDetailASTList =
-				DetailASTUtil.getAllChildTokens(
-					detailAST, true, TokenTypes.PARAMETER_DEF,
-					TokenTypes.VARIABLE_DEF);
+			List<DetailAST> definitionDetailASTList = getAllChildTokens(
+				detailAST, true, TokenTypes.PARAMETER_DEF,
+				TokenTypes.VARIABLE_DEF);
 
 			for (DetailAST definitionDetailAST : definitionDetailASTList) {
 				DetailAST definitionNameDetailAST =
@@ -70,22 +65,6 @@ public class NotRequireThisCheck extends BaseCheck {
 			}
 
 			log(thisDetailAST, _MSG_VARIABLE_THIS_NOT_REQUIRED, name);
-		}
-	}
-
-	private boolean _isMethodCall(DetailAST detailAST) {
-		DetailAST parentDetailAST = detailAST.getParent();
-
-		while (true) {
-			if (parentDetailAST.getType() == TokenTypes.METHOD_CALL) {
-				return true;
-			}
-
-			if (parentDetailAST.getType() != TokenTypes.DOT) {
-				return false;
-			}
-
-			parentDetailAST = parentDetailAST.getParent();
 		}
 	}
 

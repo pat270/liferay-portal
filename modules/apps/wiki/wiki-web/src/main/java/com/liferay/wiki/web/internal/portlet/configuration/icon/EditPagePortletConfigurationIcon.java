@@ -74,7 +74,7 @@ public class EditPagePortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -91,12 +91,11 @@ public class EditPagePortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		try {
-			WikiPage page = ActionUtil.getPage(portletRequest);
-
 			return _wikiPageModelResourcePermission.contains(
-				themeDisplay.getPermissionChecker(), page, ActionKeys.UPDATE);
+				themeDisplay.getPermissionChecker(),
+				ActionUtil.getPage(portletRequest), ActionKeys.UPDATE);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

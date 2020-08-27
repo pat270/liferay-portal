@@ -47,6 +47,8 @@ import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.service.permission.RolePermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -63,7 +65,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -190,20 +191,18 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 	@Override
 	public void disableStaging(long groupId) throws PortalException {
-		Group group = groupLocalService.getGroup(groupId);
-
 		GroupPermissionUtil.check(
-			getPermissionChecker(), group, ActionKeys.UPDATE);
+			getPermissionChecker(), groupLocalService.getGroup(groupId),
+			ActionKeys.UPDATE);
 
 		groupLocalService.disableStaging(groupId);
 	}
 
 	@Override
 	public void enableStaging(long groupId) throws PortalException {
-		Group group = groupLocalService.getGroup(groupId);
-
 		GroupPermissionUtil.check(
-			getPermissionChecker(), group, ActionKeys.UPDATE);
+			getPermissionChecker(), groupLocalService.getGroup(groupId),
+			ActionKeys.UPDATE);
 
 		groupLocalService.enableStaging(groupId);
 	}
@@ -427,11 +426,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			int size)
 		throws PortalException {
 
-		PermissionChecker permissionChecker = getPermissionChecker();
-
-		if (!permissionChecker.isCompanyAdmin(companyId)) {
-			throw new PrincipalException.MustBeCompanyAdmin(permissionChecker);
-		}
+		GroupPermissionUtil.check(getPermissionChecker(), ActionKeys.VIEW);
 
 		return groupPersistence.findByG_C_P_S(
 			gtGroupId, companyId, parentGroupId, site, 0, size,
@@ -457,13 +452,12 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		PermissionChecker permissionChecker = getPermissionChecker();
 
 		if (permissionChecker.isCompanyAdmin()) {
-			LinkedHashMap<String, Object> params = new LinkedHashMap<>();
-
-			params.put("site", Boolean.TRUE);
-
 			return ListUtil.unique(
 				groupLocalService.search(
-					permissionChecker.getCompanyId(), null, null, null, params,
+					permissionChecker.getCompanyId(), null, null, null,
+					LinkedHashMapBuilder.<String, Object>put(
+						"site", Boolean.TRUE
+					).build(),
 					true, 0, max));
 		}
 
@@ -471,10 +465,10 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		List<Group> userSitesGroups = getUserSitesGroups(null, max);
 
-		Iterator<Group> itr = userSitesGroups.iterator();
+		Iterator<Group> iterator = userSitesGroups.iterator();
 
-		while (itr.hasNext()) {
-			Group group = itr.next();
+		while (iterator.hasNext()) {
+			Group group = iterator.next();
 
 			if (group.isSite() &&
 				PortletPermissionUtil.hasControlPanelAccessPermission(
@@ -578,6 +572,16 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		return getUserSitesGroups(null, QueryUtil.ALL_POS);
 	}
 
+	@Override
+	public List<Group> getUserSitesGroups(long userId, int start, int end)
+		throws PortalException {
+
+		List<Group> groups = groupLocalService.getUserSitesGroups(
+			userId, start, end);
+
+		return filterGroups(groups);
+	}
+
 	/**
 	 * Returns the user's groups &quot;sites&quot; associated with the group
 	 * entity class names, including the Control Panel group if the user is
@@ -642,19 +646,18 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			};
 		}
 
-		if (ArrayUtil.contains(classNames, User.class.getName())) {
-			if (PropsValues.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED ||
-				PropsValues.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED) {
+		if (ArrayUtil.contains(classNames, User.class.getName()) &&
+			(PropsValues.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED ||
+			 PropsValues.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED)) {
 
-				userSiteGroups.add(user.getGroup());
+			userSiteGroups.add(user.getGroup());
 
-				if (userSiteGroups.size() == max) {
-					if (checkPermissions) {
-						return filterGroups(new ArrayList<>(userSiteGroups));
-					}
-
-					return new ArrayList<>(userSiteGroups);
+			if (userSiteGroups.size() == max) {
+				if (checkPermissions) {
+					return filterGroups(new ArrayList<>(userSiteGroups));
 				}
+
+				return new ArrayList<>(userSiteGroups);
 			}
 		}
 
@@ -682,18 +685,15 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			if (ArrayUtil.contains(classNames, Group.class.getName())) {
 				for (Group group : userBag.getUserGroups()) {
 					if (groupLocalService.isLiveGroupActive(group) &&
-						group.isSite()) {
+						group.isSite() && userSiteGroups.add(group) &&
+						(userSiteGroups.size() == max)) {
 
-						if (userSiteGroups.add(group) &&
-							(userSiteGroups.size() == max)) {
-
-							if (checkPermissions) {
-								return filterGroups(
-									new ArrayList<>(userSiteGroups));
-							}
-
-							return new ArrayList<>(userSiteGroups);
+						if (checkPermissions) {
+							return filterGroups(
+								new ArrayList<>(userSiteGroups));
 						}
+
+						return new ArrayList<>(userSiteGroups);
 					}
 				}
 			}
@@ -701,18 +701,15 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			if (ArrayUtil.contains(classNames, Organization.class.getName())) {
 				for (Group group : userBag.getUserOrgGroups()) {
 					if (groupLocalService.isLiveGroupActive(group) &&
-						group.isSite()) {
+						group.isSite() && userSiteGroups.add(group) &&
+						(userSiteGroups.size() == max)) {
 
-						if (userSiteGroups.add(group) &&
-							(userSiteGroups.size() == max)) {
-
-							if (checkPermissions) {
-								return filterGroups(
-									new ArrayList<>(userSiteGroups));
-							}
-
-							return new ArrayList<>(userSiteGroups);
+						if (checkPermissions) {
+							return filterGroups(
+								new ArrayList<>(userSiteGroups));
 						}
+
+						return new ArrayList<>(userSiteGroups);
 					}
 				}
 			}
@@ -800,12 +797,12 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			UserPermissionUtil.check(
 				getPermissionChecker(), userId, ActionKeys.VIEW);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 
 			GroupPermissionUtil.check(
@@ -819,11 +816,12 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	public List<Group> search(
 			long companyId, long[] classNameIds, String keywords,
 			LinkedHashMap<String, Object> params, int start, int end,
-			OrderByComparator<Group> obc)
+			OrderByComparator<Group> orderByComparator)
 		throws PortalException {
 
 		List<Group> groups = groupLocalService.search(
-			companyId, classNameIds, keywords, params, start, end, obc);
+			companyId, classNameIds, keywords, params, start, end,
+			orderByComparator);
 
 		return filterGroups(groups);
 	}
@@ -833,12 +831,12 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			long companyId, long[] classNameIds, String name,
 			String description, LinkedHashMap<String, Object> params,
 			boolean andOperator, int start, int end,
-			OrderByComparator<Group> obc)
+			OrderByComparator<Group> orderByComparator)
 		throws PortalException {
 
 		List<Group> groups = groupLocalService.search(
 			companyId, classNameIds, name, description, params, andOperator,
-			start, end, obc);
+			start, end, orderByComparator);
 
 		return filterGroups(groups);
 	}
@@ -891,6 +889,15 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			companyId, name, description, paramsObj, true, start, end);
 
 		return filterGroups(groups);
+	}
+
+	@Override
+	public int searchCount(
+		long companyId, long[] classNameIds, String keywords,
+		LinkedHashMap<String, Object> params) {
+
+		return groupLocalService.searchCount(
+			companyId, classNameIds, keywords, params);
 	}
 
 	/**
@@ -1059,17 +1066,18 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		if (group.isSite()) {
 			Group oldGroup = group;
 
-			UnicodeProperties oldTypeSettingsProperties =
+			UnicodeProperties oldTypeSettingsUnicodeProperties =
 				oldGroup.getTypeSettingsProperties();
 
 			group = groupLocalService.updateGroup(groupId, typeSettings);
 
 			RatingsDataTransformerUtil.transformGroupRatingsData(
-				groupId, oldTypeSettingsProperties,
+				groupId, oldTypeSettingsUnicodeProperties,
 				group.getTypeSettingsProperties());
 
 			SiteMembershipPolicyUtil.verifyPolicy(
-				group, oldGroup, null, null, null, oldTypeSettingsProperties);
+				group, oldGroup, null, null, null,
+				oldTypeSettingsUnicodeProperties);
 
 			return group;
 		}
@@ -1087,11 +1095,11 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		GroupPermissionUtil.check(
 			getPermissionChecker(), group, ActionKeys.UPDATE);
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getTypeSettingsProperties();
 
 		for (Map.Entry<String, String> entry : stagedPortletIds.entrySet()) {
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				StagingUtil.getStagedPortletId(entry.getKey()),
 				entry.getValue());
 		}
@@ -1118,11 +1126,9 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	}
 
 	protected Map<Locale, String> getLocalizationMap(String value) {
-		Map<Locale, String> map = new HashMap<>();
-
-		map.put(LocaleUtil.getDefault(), value);
-
-		return map;
+		return HashMapBuilder.put(
+			LocaleUtil.getDefault(), value
+		).build();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

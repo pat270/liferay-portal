@@ -70,7 +70,7 @@ public class AnnouncementsEntryUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<AnnouncementsEntry> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -93,9 +93,11 @@ public class AnnouncementsEntryUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_announcementsEntryLocalService.fetchAnnouncementsEntry(
-				baseModelPK) == null) {
+		AnnouncementsEntry announcementsEntry =
+			_announcementsEntryLocalService.fetchAnnouncementsEntry(
+				baseModelPK);
 
+		if (announcementsEntry == null) {
 			return true;
 		}
 
@@ -113,6 +115,6 @@ public class AnnouncementsEntryUADAnonymizerTest
 	private ClassNameLocalService _classNameLocalService;
 
 	@Inject(filter = "component.name=*.AnnouncementsEntryUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<AnnouncementsEntry> _uadAnonymizer;
 
 }

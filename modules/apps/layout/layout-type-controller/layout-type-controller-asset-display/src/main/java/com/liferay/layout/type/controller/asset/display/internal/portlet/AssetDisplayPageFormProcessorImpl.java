@@ -82,7 +82,7 @@ public class AssetDisplayPageFormProcessorImpl
 
 		if (assetDisplayPageEntry == null) {
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				className, portletRequest);
+				portletRequest);
 
 			_assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(
 				themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
@@ -101,14 +101,14 @@ public class AssetDisplayPageFormProcessorImpl
 			String className, long classPK, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		InfoDisplayContributor infoDisplayContributor =
+		InfoDisplayContributor<?> infoDisplayContributor =
 			_infoDisplayContributorTracker.getInfoDisplayContributor(className);
 
 		if (infoDisplayContributor == null) {
 			return 0;
 		}
 
-		InfoDisplayObjectProvider infoDisplayObjectProvider =
+		InfoDisplayObjectProvider<?> infoDisplayObjectProvider =
 			infoDisplayContributor.getInfoDisplayObjectProvider(classPK);
 
 		if (infoDisplayObjectProvider == null) {

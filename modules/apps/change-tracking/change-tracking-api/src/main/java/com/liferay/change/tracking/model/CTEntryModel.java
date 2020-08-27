@@ -14,9 +14,8 @@
 
 package com.liferay.change.tracking.model;
 
-import com.liferay.portal.kernel.bean.AutoEscape;
-import com.liferay.portal.kernel.model.AuditedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 
 import java.util.Date;
@@ -36,7 +35,7 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface CTEntryModel
-	extends AuditedModel, BaseModel<CTEntry>, ShardedModel {
+	extends BaseModel<CTEntry>, MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -57,6 +56,22 @@ public interface CTEntryModel
 	 * @param primaryKey the primary key of this ct entry
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this ct entry.
+	 *
+	 * @return the mvcc version of this ct entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this ct entry.
+	 *
+	 * @param mvccVersion the mvcc version of this ct entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the ct entry ID of this ct entry.
@@ -93,7 +108,6 @@ public interface CTEntryModel
 	 *
 	 * @return the user ID of this ct entry
 	 */
-	@Override
 	public long getUserId();
 
 	/**
@@ -101,7 +115,6 @@ public interface CTEntryModel
 	 *
 	 * @param userId the user ID of this ct entry
 	 */
-	@Override
 	public void setUserId(long userId);
 
 	/**
@@ -109,7 +122,6 @@ public interface CTEntryModel
 	 *
 	 * @return the user uuid of this ct entry
 	 */
-	@Override
 	public String getUserUuid();
 
 	/**
@@ -117,32 +129,13 @@ public interface CTEntryModel
 	 *
 	 * @param userUuid the user uuid of this ct entry
 	 */
-	@Override
 	public void setUserUuid(String userUuid);
-
-	/**
-	 * Returns the user name of this ct entry.
-	 *
-	 * @return the user name of this ct entry
-	 */
-	@AutoEscape
-	@Override
-	public String getUserName();
-
-	/**
-	 * Sets the user name of this ct entry.
-	 *
-	 * @param userName the user name of this ct entry
-	 */
-	@Override
-	public void setUserName(String userName);
 
 	/**
 	 * Returns the create date of this ct entry.
 	 *
 	 * @return the create date of this ct entry
 	 */
-	@Override
 	public Date getCreateDate();
 
 	/**
@@ -150,7 +143,6 @@ public interface CTEntryModel
 	 *
 	 * @param createDate the create date of this ct entry
 	 */
-	@Override
 	public void setCreateDate(Date createDate);
 
 	/**
@@ -158,7 +150,6 @@ public interface CTEntryModel
 	 *
 	 * @return the modified date of this ct entry
 	 */
-	@Override
 	public Date getModifiedDate();
 
 	/**
@@ -166,22 +157,21 @@ public interface CTEntryModel
 	 *
 	 * @param modifiedDate the modified date of this ct entry
 	 */
-	@Override
 	public void setModifiedDate(Date modifiedDate);
 
 	/**
-	 * Returns the original ct collection ID of this ct entry.
+	 * Returns the ct collection ID of this ct entry.
 	 *
-	 * @return the original ct collection ID of this ct entry
+	 * @return the ct collection ID of this ct entry
 	 */
-	public long getOriginalCTCollectionId();
+	public long getCtCollectionId();
 
 	/**
-	 * Sets the original ct collection ID of this ct entry.
+	 * Sets the ct collection ID of this ct entry.
 	 *
-	 * @param originalCTCollectionId the original ct collection ID of this ct entry
+	 * @param ctCollectionId the ct collection ID of this ct entry
 	 */
-	public void setOriginalCTCollectionId(long originalCTCollectionId);
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the model class name ID of this ct entry.
@@ -212,18 +202,18 @@ public interface CTEntryModel
 	public void setModelClassPK(long modelClassPK);
 
 	/**
-	 * Returns the model resource prim key of this ct entry.
+	 * Returns the model mvcc version of this ct entry.
 	 *
-	 * @return the model resource prim key of this ct entry
+	 * @return the model mvcc version of this ct entry
 	 */
-	public long getModelResourcePrimKey();
+	public long getModelMvccVersion();
 
 	/**
-	 * Sets the model resource prim key of this ct entry.
+	 * Sets the model mvcc version of this ct entry.
 	 *
-	 * @param modelResourcePrimKey the model resource prim key of this ct entry
+	 * @param modelMvccVersion the model mvcc version of this ct entry
 	 */
-	public void setModelResourcePrimKey(long modelResourcePrimKey);
+	public void setModelMvccVersion(long modelMvccVersion);
 
 	/**
 	 * Returns the change type of this ct entry.
@@ -238,40 +228,5 @@ public interface CTEntryModel
 	 * @param changeType the change type of this ct entry
 	 */
 	public void setChangeType(int changeType);
-
-	/**
-	 * Returns the collision of this ct entry.
-	 *
-	 * @return the collision of this ct entry
-	 */
-	public boolean getCollision();
-
-	/**
-	 * Returns <code>true</code> if this ct entry is collision.
-	 *
-	 * @return <code>true</code> if this ct entry is collision; <code>false</code> otherwise
-	 */
-	public boolean isCollision();
-
-	/**
-	 * Sets whether this ct entry is collision.
-	 *
-	 * @param collision the collision of this ct entry
-	 */
-	public void setCollision(boolean collision);
-
-	/**
-	 * Returns the status of this ct entry.
-	 *
-	 * @return the status of this ct entry
-	 */
-	public int getStatus();
-
-	/**
-	 * Sets the status of this ct entry.
-	 *
-	 * @param status the status of this ct entry
-	 */
-	public void setStatus(int status);
 
 }

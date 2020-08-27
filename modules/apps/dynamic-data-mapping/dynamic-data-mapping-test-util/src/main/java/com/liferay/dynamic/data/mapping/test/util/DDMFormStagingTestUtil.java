@@ -17,8 +17,8 @@ package com.liferay.dynamic.data.mapping.test.util;
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -27,8 +27,8 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.persistence.GroupUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.util.PropsValues;
 
 import java.lang.reflect.Field;
@@ -90,7 +90,7 @@ public class DDMFormStagingTestUtil {
 		addStagingAttribute(
 			serviceContext, PortletDataHandlerKeys.PORTLET_SETUP_ALL, false);
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		StagingLocalServiceUtil.enableRemoteStaging(
 			TestPropsValues.getUserId(), remoteStagingGroup, false, false,
@@ -104,10 +104,9 @@ public class DDMFormStagingTestUtil {
 	protected static void addStagingAttribute(
 		ServiceContext serviceContext, String key, Object value) {
 
-		String affixedKey =
-			StagingConstants.STAGED_PREFIX + key + StringPool.DOUBLE_DASH;
-
-		serviceContext.setAttribute(affixedKey, String.valueOf(value));
+		serviceContext.setAttribute(
+			StagingConstants.STAGED_PREFIX + key + StringPool.DOUBLE_DASH,
+			String.valueOf(value));
 	}
 
 	protected static void setPortalProperty(String propertyName, Object value)

@@ -1,5 +1,6 @@
 @component-name = "portal-permissions"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Roles";
@@ -22,7 +23,7 @@ definition {
 				userLoginEmailAddress = "test@liferay.com",
 				userLoginFullName = "Test Test");
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Role.tearDownCP();
 
@@ -74,4 +75,5 @@ definition {
 
 		AssertElementNotPresent(locator1 = "ControlMenu#SIMULATION");
 	}
+
 }

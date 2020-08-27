@@ -1,5 +1,6 @@
 @component-name = "portal-test-plugins"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Test Plugins";
@@ -17,7 +18,6 @@ definition {
 	test ViewJSR {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test JSR 286 PLT.26.6 Page");
@@ -42,4 +42,5 @@ definition {
 
 		AssertElementNotPresent(locator1 = "TestJSR#TEST_PORTLET_BODY_FAILED");
 	}
+
 }

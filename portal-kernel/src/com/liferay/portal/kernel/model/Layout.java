@@ -74,6 +74,8 @@ public interface Layout extends LayoutModel, PersistedModel {
 
 		};
 
+	public Layout fetchDraftLayout();
+
 	/**
 	 * Returns all layouts that are direct or indirect children of the current
 	 * layout.
@@ -412,6 +414,10 @@ public interface Layout extends LayoutModel, PersistedModel {
 	 */
 	public boolean isSupportsEmbeddedPortlets();
 
+	public boolean isTypeAssetDisplay();
+
+	public boolean isTypeContent();
+
 	public boolean isTypeControlPanel();
 
 	public boolean isTypeEmbedded();
@@ -421,12 +427,6 @@ public interface Layout extends LayoutModel, PersistedModel {
 	public boolean isTypePanel();
 
 	public boolean isTypePortlet();
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public boolean isTypeSharedPortlet();
 
 	public boolean isTypeURL();
 
@@ -438,6 +438,6 @@ public interface Layout extends LayoutModel, PersistedModel {
 
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties);
+			typeSettingsUnicodeProperties);
 
 }

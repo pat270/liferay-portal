@@ -19,10 +19,10 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.upload.FileItem;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadServletRequestImpl;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,7 @@ public class UploadServletRequestWhenGettingParameterValuesTest {
 
 		mockHttpServletRequest.addParameter(parameter, parameter);
 
-		UploadServletRequestImpl uploadServletRequest =
+		UploadServletRequestImpl uploadServletRequestImpl =
 			new UploadServletRequestImpl(
 				(HttpServletRequest)liferayServletRequest.getRequest(),
 				fileParameters, regularParameters);
@@ -82,31 +82,23 @@ public class UploadServletRequestWhenGettingParameterValuesTest {
 		for (Map.Entry<String, List<String>> entry :
 				regularParameters.entrySet()) {
 
-			String key = entry.getKey();
-
-			String[] parameterValues = uploadServletRequest.getParameterValues(
-				key);
-
 			List<String> parameterValuesList = ListUtil.fromArray(
-				parameterValues);
+				uploadServletRequestImpl.getParameterValues(entry.getKey()));
 
 			Assert.assertTrue(
 				parameterValuesList.containsAll(entry.getValue()));
 		}
 
 		String[] requestParameterValues =
-			uploadServletRequest.getParameterValues(parameter);
+			uploadServletRequestImpl.getParameterValues(parameter);
 
 		ArrayUtil.contains(requestParameterValues, parameter);
 
 		for (Map.Entry<String, FileItem[]> entry : fileParameters.entrySet()) {
 			String key = entry.getKey();
 
-			String[] parameterValues = uploadServletRequest.getParameterValues(
-				key);
-
 			List<String> parameterValuesList = ListUtil.fromArray(
-				parameterValues);
+				uploadServletRequestImpl.getParameterValues(key));
 
 			Assert.assertFalse(
 				parameterValuesList.toString(),

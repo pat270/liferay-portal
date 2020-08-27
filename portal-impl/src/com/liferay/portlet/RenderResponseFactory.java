@@ -23,13 +23,10 @@ import javax.portlet.filter.RenderRequestWrapper;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Neil Griffin
  */
-@ProviderType
 public class RenderResponseFactory {
 
 	public static LiferayRenderResponse create() {
@@ -37,7 +34,7 @@ public class RenderResponseFactory {
 	}
 
 	public static LiferayRenderResponse create(
-		RenderRequest renderRequest, HttpServletResponse httpServletResponse) {
+		HttpServletResponse httpServletResponse, RenderRequest renderRequest) {
 
 		while (renderRequest instanceof RenderRequestWrapper) {
 			RenderRequestWrapper renderRequestWrapper =
@@ -52,6 +49,17 @@ public class RenderResponseFactory {
 			(RenderRequestImpl)renderRequest, httpServletResponse);
 
 		return renderResponseImpl;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #create(HttpServletResponse, RenderRequest)}
+	 */
+	@Deprecated
+	public static LiferayRenderResponse create(
+		RenderRequest renderRequest, HttpServletResponse httpServletResponse) {
+
+		return create(httpServletResponse, renderRequest);
 	}
 
 }

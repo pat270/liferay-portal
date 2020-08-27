@@ -35,7 +35,6 @@ import com.liferay.portlet.exportimport.service.base.StagingServiceBaseImpl;
 import java.io.Serializable;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Michael C. Han
@@ -56,15 +55,15 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 
 			stagingLocalService.cleanUpStagingRequest(stagingRequestId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"StagingServiceImpl#cleanUpStagingRequest(" +
 						stagingRequestId + ")",
-					pe);
+					portalException);
 			}
 
-			throw pe;
+			throw portalException;
 		}
 		finally {
 			ExportImportThreadLocal.setStagingInProcessOnRemoteLive(
@@ -89,16 +88,16 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 			return stagingLocalService.createStagingRequest(
 				getUserId(), groupId, checksum);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
 						"StagingServiceImpl#createStagingRequest(", groupId,
 						", ", checksum, ")"),
-					pe);
+					portalException);
 			}
 
-			throw pe;
+			throw portalException;
 		}
 		finally {
 			ExportImportThreadLocal.setStagingInProcessOnRemoteLive(
@@ -118,16 +117,16 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 
 			return layoutLocalService.hasLayout(uuid, groupId, privateLayout);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
 						"StagingServiceImpl#hasRemoteLayout(", uuid, ", ",
 						groupId, ", ", privateLayout, ")"),
-					pe);
+					portalException);
 			}
 
-			throw pe;
+			throw portalException;
 		}
 	}
 
@@ -165,7 +164,7 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 				code, processFlag, processId,
 				arguments.toArray(new Serializable[0]));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				StringBundler sb = new StringBundler(9);
 
@@ -180,27 +179,11 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 				sb.append(arguments);
 				sb.append(StringPool.CLOSE_PARENTHESIS);
 
-				_log.debug(sb.toString(), pe);
+				_log.debug(sb.toString(), portalException);
 			}
 
-			throw pe;
+			throw portalException;
 		}
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public MissingReferences publishStagingRequest(
-			long stagingRequestId, boolean privateLayout,
-			Map<String, String[]> parameterMap)
-		throws PortalException {
-
-		checkPermission(stagingRequestId);
-
-		return stagingLocalService.publishStagingRequest(
-			getUserId(), stagingRequestId, privateLayout, parameterMap);
 	}
 
 	@Override
@@ -220,16 +203,16 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 			return stagingLocalService.publishStagingRequest(
 				getUserId(), stagingRequestId, exportImportConfiguration);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
 						"StagingServiceImpl#publishStagingRequest(",
 						stagingRequestId, ", ", exportImportConfiguration, ")"),
-					pe);
+					portalException);
 			}
 
-			throw pe;
+			throw portalException;
 		}
 		finally {
 			ExportImportThreadLocal.setStagingInProcessOnRemoteLive(
@@ -253,45 +236,17 @@ public class StagingServiceImpl extends StagingServiceBaseImpl {
 			stagingLocalService.updateStagingRequest(
 				getUserId(), stagingRequestId, fileName, bytes);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
 						"StagingServiceImpl#updateStagingRequest(",
 						stagingRequestId, ", ", fileName, ", ", bytes.length,
 						"bytes)"),
-					pe);
+					portalException);
 			}
 
-			throw pe;
-		}
-		finally {
-			ExportImportThreadLocal.setStagingInProcessOnRemoteLive(
-				stagingInProcessOnLive);
-		}
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #publishStagingRequest(long, boolean, Map)}
-	 */
-	@Deprecated
-	@Override
-	public MissingReferences validateStagingRequest(
-			long stagingRequestId, boolean privateLayout,
-			Map<String, String[]> parameterMap)
-		throws PortalException {
-
-		boolean stagingInProcessOnLive =
-			ExportImportThreadLocal.isStagingInProcessOnRemoteLive();
-
-		ExportImportThreadLocal.setStagingInProcessOnRemoteLive(true);
-
-		try {
-			checkPermission(stagingRequestId);
-
-			return stagingLocalService.validateStagingRequest(
-				getUserId(), stagingRequestId, privateLayout, parameterMap);
+			throw portalException;
 		}
 		finally {
 			ExportImportThreadLocal.setStagingInProcessOnRemoteLive(

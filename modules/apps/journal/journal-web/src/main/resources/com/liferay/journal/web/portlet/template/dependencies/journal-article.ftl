@@ -5,13 +5,16 @@
 	variableFriendlyUrl = name + ".getFriendlyUrl()"
 />
 
-<#if repeatable>
-	<#assign
-		variableData = "cur_" + variableData
-		variableFriendlyUrl = "cur_" + variableFriendlyUrl
-	/>
+<#if stringUtil.equals(language, "ftl")>
+${r"<#assign"}
+	webContentData = jsonFactoryUtil.createJSONObject(${variableData})
+${r"/>"}
+<#else>
+#set ($webContentData = $jsonFactoryUtil.createJSONObject($${variableData}))
 </#if>
 
-<a href="${getVariableReferenceCode(variableFriendlyUrl)}">
-	${getVariableReferenceCode(variableData)}
-</a>
+<#if webContentData?? && webContentData.title>
+	<a href="${getVariableReferenceCode(variableFriendlyUrl)}">
+		${r"${webContentData.title}"}
+	</a>
+</#if>

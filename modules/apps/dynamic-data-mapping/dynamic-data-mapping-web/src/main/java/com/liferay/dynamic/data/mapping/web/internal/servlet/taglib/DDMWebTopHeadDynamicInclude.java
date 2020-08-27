@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.web.internal.servlet.taglib;
 
 import com.liferay.dynamic.data.mapping.web.internal.portlet.DDMPortlet;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.servlet.taglib.BaseDynamicInclude;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -38,18 +39,6 @@ import org.osgi.service.component.annotations.Reference;
 @Component(immediate = true, service = DynamicInclude.class)
 public class DDMWebTopHeadDynamicInclude extends BaseDynamicInclude {
 
-	@Activate
-	public void activate() {
-		_postfix = _portal.getPathProxy();
-
-		if (_postfix.isEmpty()) {
-			_postfix = _servletContext.getContextPath();
-		}
-		else {
-			_postfix = _postfix.concat(_servletContext.getContextPath());
-		}
-	}
-
 	@Override
 	public void include(
 			HttpServletRequest httpServletRequest,
@@ -62,15 +51,10 @@ public class DDMWebTopHeadDynamicInclude extends BaseDynamicInclude {
 
 		PrintWriter printWriter = httpServletResponse.getWriter();
 
-		String cdnBaseURL = themeDisplay.getCDNBaseURL();
-
 		String staticResourceURL = _portal.getStaticResourceURL(
 			httpServletRequest,
-			cdnBaseURL.concat(
-				_postfix
-			).concat(
-				"/css/main.css"
-			));
+			StringBundler.concat(
+				themeDisplay.getCDNBaseURL(), _postfix, "/css/main.css"));
 
 		String content = "<link href=\"".concat(staticResourceURL);
 
@@ -82,6 +66,20 @@ public class DDMWebTopHeadDynamicInclude extends BaseDynamicInclude {
 	public void register(DynamicIncludeRegistry dynamicIncludeRegistry) {
 		dynamicIncludeRegistry.register(
 			DDMPortlet.class.getName() + "#formRendered");
+		dynamicIncludeRegistry.register(
+			"com.liferay.dynamic.data.mapping.taglib#/html/start.jsp#pre");
+	}
+
+	@Activate
+	protected void activate() {
+		_postfix = _portal.getPathProxy();
+
+		if (_postfix.isEmpty()) {
+			_postfix = _servletContext.getContextPath();
+		}
+		else {
+			_postfix = _postfix.concat(_servletContext.getContextPath());
+		}
 	}
 
 	@Reference

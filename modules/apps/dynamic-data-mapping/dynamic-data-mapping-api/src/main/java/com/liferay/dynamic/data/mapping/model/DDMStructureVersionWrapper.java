@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMStructureVersion
  * @generated
  */
-@ProviderType
 public class DDMStructureVersionWrapper
 	extends BaseModelWrapper<DDMStructureVersion>
 	implements DDMStructureVersion, ModelWrapper<DDMStructureVersion> {
@@ -45,6 +44,8 @@ public class DDMStructureVersionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("structureVersionId", getStructureVersionId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -69,6 +70,18 @@ public class DDMStructureVersionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long structureVersionId = (Long)attributes.get("structureVersionId");
 
 		if (structureVersionId != null) {
@@ -203,6 +216,16 @@ public class DDMStructureVersionWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this ddm structure version.
+	 *
+	 * @return the ct collection ID of this ddm structure version
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public DDMForm getDDMForm() {
 		return model.getDDMForm();
@@ -314,6 +337,16 @@ public class DDMStructureVersionWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this ddm structure version.
+	 *
+	 * @return the mvcc version of this ddm structure version
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -669,6 +702,16 @@ public class DDMStructureVersionWrapper
 		model.setCreateDate(createDate);
 	}
 
+	/**
+	 * Sets the ct collection ID of this ddm structure version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm structure version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
 	@Override
 	public void setDDMForm(DDMForm ddmForm) {
 		model.setDDMForm(ddmForm);
@@ -759,6 +802,16 @@ public class DDMStructureVersionWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm structure version.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm structure version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -972,6 +1025,20 @@ public class DDMStructureVersionWrapper
 	@Override
 	public void setVersion(String version) {
 		model.setVersion(version);
+	}
+
+	@Override
+	public Map<String, Function<DDMStructureVersion, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMStructureVersion, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

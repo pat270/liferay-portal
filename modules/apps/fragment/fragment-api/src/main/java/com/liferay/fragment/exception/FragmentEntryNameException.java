@@ -16,12 +16,9 @@ package com.liferay.fragment.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class FragmentEntryNameException extends PortalException {
 
 	public FragmentEntryNameException() {
@@ -31,12 +28,12 @@ public class FragmentEntryNameException extends PortalException {
 		super(msg);
 	}
 
-	public FragmentEntryNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public FragmentEntryNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public FragmentEntryNameException(Throwable cause) {
-		super(cause);
+	public FragmentEntryNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

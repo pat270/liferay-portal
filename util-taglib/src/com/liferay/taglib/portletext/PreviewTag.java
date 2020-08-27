@@ -68,13 +68,13 @@ public class PreviewTag extends IncludeTag {
 		try {
 			doTag(
 				getPage(), _portletName, _queryString, _showBorders, _width,
-				servletContext, request,
+				getServletContext(), getRequest(),
 				PipingServletResponse.createPipingServletResponse(pageContext));
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

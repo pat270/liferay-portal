@@ -15,27 +15,26 @@
 package com.liferay.portal.configuration.persistence.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.petra.string.StringPool;
-
-import java.io.IOException;
+import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Dictionary;
-import java.util.Hashtable;
 
 import org.apache.felix.cm.PersistenceManager;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * @author Raymond Augé
@@ -43,33 +42,13 @@ import org.osgi.util.tracker.ServiceTracker;
 @RunWith(Arquillian.class)
 public class ConfigurationPersistenceManagerTest {
 
-	@Before
-	public void setUp() throws Exception {
-		Bundle bundle = FrameworkUtil.getBundle(
-			ConfigurationPersistenceManagerTest.class);
-
-		_configurationAdminServiceTracker = ServiceTrackerFactory.open(
-			bundle, ConfigurationAdmin.class);
-
-		_configurationAdmin = _configurationAdminServiceTracker.waitForService(
-			5000);
-
-		_persistenceManagerServiceTracker = ServiceTrackerFactory.open(
-			bundle, PersistenceManager.class);
-
-		_persistenceManager = _persistenceManagerServiceTracker.waitForService(
-			5000);
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		_configurationAdminServiceTracker.close();
-
-		_persistenceManagerServiceTracker.close();
-	}
+	@ClassRule
+	@Rule
+	public static AggregateTestRule aggregateTestRule =
+		new LiferayIntegrationTestRule();
 
 	@Test
-	public void testConfigurationPersistenceManager() throws Exception {
+	public void testConfigurationPersistenceManager() {
 		Class<?> clazz = _persistenceManager.getClass();
 
 		Assert.assertEquals(
@@ -80,69 +59,64 @@ public class ConfigurationPersistenceManagerTest {
 
 	@Test
 	public void testCreateFactoryConfiguration() throws Exception {
-		Configuration configuration =
-			_configurationAdmin.createFactoryConfiguration(
-				"test.pid", StringPool.QUESTION);
-
-		assertConfiguration(configuration);
-	}
-
-	@Test
-	public void testExists() throws Exception {
-		Configuration configuration = _configurationAdmin.getConfiguration(
-			"test.pid", StringPool.QUESTION);
-
-		Assert.assertTrue(_persistenceManager.exists("test.pid"));
-
-		configuration.delete();
-
-		Assert.assertFalse(_persistenceManager.exists("test.pid"));
+		_assertConfiguration(true);
 	}
 
 	@Test
 	public void testGetConfiguration() throws Exception {
-		Configuration configuration = _configurationAdmin.getConfiguration(
-			"test.pid");
-
-		assertConfiguration(configuration);
+		_assertConfiguration(false);
 	}
 
-	protected void assertConfiguration(Configuration configuration)
-		throws IOException {
+	@Test
+	public void testWhiteSpacedFelixFileInstallFileName() throws Exception {
+		ReflectionTestUtil.invoke(
+			_persistenceManager, "_verifyDictionary",
+			new Class<?>[] {String.class, String.class}, "whitespace.pid",
+			"felix.fileinstall.filename=\"file:/whitespace path/file.config\"");
+	}
+
+	private void _assertConfiguration(boolean factory) throws Exception {
+		Configuration configuration = null;
+
+		if (factory) {
+			configuration = _configurationAdmin.getConfiguration("test.pid");
+
+			Assert.assertTrue(_persistenceManager.exists("test.pid"));
+		}
+		else {
+			configuration = _configurationAdmin.createFactoryConfiguration(
+				"test.pid", StringPool.QUESTION);
+		}
 
 		String pid = configuration.getPid();
 
-		Dictionary<String, Object> properties = new Hashtable<>();
-
-		properties.put("foo", "bar");
-
-		configuration.update(properties);
+		ConfigurationTestUtil.saveConfiguration(
+			configuration, MapUtil.singletonDictionary("foo", "bar"));
 
 		Assert.assertTrue(_persistenceManager.exists(pid));
 
-		properties = _persistenceManager.load(pid);
+		Dictionary<String, Object> properties = _persistenceManager.load(pid);
 
 		Assert.assertEquals("bar", properties.get("foo"));
 
 		properties.put("fee", "fum");
 
-		configuration.update(properties);
+		ConfigurationTestUtil.saveConfiguration(configuration, properties);
 
 		properties = _persistenceManager.load(pid);
 
 		Assert.assertEquals("bar", properties.get("foo"));
 		Assert.assertEquals("fum", properties.get("fee"));
 
-		configuration.delete();
+		ConfigurationTestUtil.deleteConfiguration(configuration);
 
 		Assert.assertFalse(_persistenceManager.exists(pid));
 	}
 
-	private ConfigurationAdmin _configurationAdmin;
-	private ServiceTracker<ConfigurationAdmin, ConfigurationAdmin>
-		_configurationAdminServiceTracker;
-	private PersistenceManager _persistenceManager;
-	private ServiceTracker<PersistenceManager, PersistenceManager>
-		_persistenceManagerServiceTracker;
+	@Inject
+	private static ConfigurationAdmin _configurationAdmin;
+
+	@Inject
+	private static PersistenceManager _persistenceManager;
 
 }

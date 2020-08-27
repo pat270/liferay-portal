@@ -39,11 +39,11 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.TrashHelper;
 import com.liferay.wiki.configuration.WikiGroupServiceOverriddenConfiguration;
 import com.liferay.wiki.constants.WikiConstants;
+import com.liferay.wiki.constants.WikiPageConstants;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.constants.WikiWebKeys;
 import com.liferay.wiki.engine.WikiEngineRenderer;
 import com.liferay.wiki.model.WikiPage;
-import com.liferay.wiki.model.WikiPageConstants;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.wiki.web.internal.security.permission.resource.WikiPagePermission;
 
@@ -111,8 +111,8 @@ public class WikiPageAssetRenderer
 						new GroupServiceSettingsLocator(
 							_page.getGroupId(), WikiConstants.SERVICE_NAME));
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 
 				return null;
 			}
@@ -161,8 +161,8 @@ public class WikiPageAssetRenderer
 			return HtmlUtil.extractText(
 				_wikiEngineRenderer.convert(_page, null, null, null));
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return _page.getContent();
 		}
@@ -303,9 +303,7 @@ public class WikiPageAssetRenderer
 			(ThemeDisplay)liferayPortletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		long groupId = _page.getGroupId();
-
-		if (!_hasViewInContextGroupLayout(groupId, themeDisplay)) {
+		if (!_hasViewInContextGroupLayout(_page.getGroupId(), themeDisplay)) {
 			return null;
 		}
 
@@ -391,9 +389,9 @@ public class WikiPageAssetRenderer
 
 			return true;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return false;

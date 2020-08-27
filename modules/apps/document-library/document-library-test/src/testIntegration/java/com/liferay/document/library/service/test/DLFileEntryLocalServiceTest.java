@@ -36,6 +36,7 @@ import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalServi
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashLocalServiceUtil;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
+import com.liferay.document.library.test.util.DLTestUtil;
 import com.liferay.dynamic.data.mapping.kernel.DDMForm;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormField;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
@@ -63,22 +64,22 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portlet.documentlibrary.util.test.DLTestUtil;
 import com.liferay.portlet.dynamicdatamapping.util.test.DDMStructureTestUtil;
 
 import java.io.ByteArrayInputStream;
@@ -161,12 +162,10 @@ public class DLFileEntryLocalServiceTest {
 			long fileEntryTypeId = populateServiceContextFileEntryType(
 				serviceContext);
 
-			Map<String, Serializable> expandoBridgeAttributes = new HashMap<>();
-
-			expandoBridgeAttributes.put(
-				"ExpandoAttributeName", "ExpandoAttributeValue");
-
-			serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
+			serviceContext.setExpandoBridgeAttributes(
+				HashMapBuilder.<String, Serializable>put(
+					"ExpandoAttributeName", "ExpandoAttributeValue"
+				).build());
 
 			FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(),
@@ -388,29 +387,29 @@ public class DLFileEntryLocalServiceTest {
 
 		byte[] bytes = TestDataConstants.TEST_BYTE_ARRAY;
 
-		InputStream is = new ByteArrayInputStream(bytes);
+		InputStream inputStream = new ByteArrayInputStream(bytes);
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(dlFolder.getGroupId());
 
-		DLAppLocalServiceUtil.addFileEntry(
+		FileEntry assetFileEntry = DLAppLocalServiceUtil.addFileEntry(
 			TestPropsValues.getUserId(), dlFolder.getRepositoryId(),
 			dlFolder.getFolderId(), RandomTestUtil.randomString(),
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
-			StringPool.BLANK, StringPool.BLANK, is, bytes.length,
+			StringPool.BLANK, StringPool.BLANK, inputStream, bytes.length,
 			serviceContext);
 
-		is = new ByteArrayInputStream(bytes);
+		inputStream = new ByteArrayInputStream(bytes);
 
-		FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
+		FileEntry noAssetFileEntry = DLAppLocalServiceUtil.addFileEntry(
 			TestPropsValues.getUserId(), dlFolder.getRepositoryId(),
 			dlFolder.getFolderId(), RandomTestUtil.randomString(),
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
-			StringPool.BLANK, StringPool.BLANK, is, bytes.length,
+			StringPool.BLANK, StringPool.BLANK, inputStream, bytes.length,
 			serviceContext);
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
-			DLFileEntry.class.getName(), fileEntry.getFileEntryId());
+			DLFileEntry.class.getName(), noAssetFileEntry.getFileEntryId());
 
 		Assert.assertNotNull(assetEntry);
 
@@ -419,12 +418,8 @@ public class DLFileEntryLocalServiceTest {
 		List<DLFileEntry> dlFileEntries =
 			DLFileEntryLocalServiceUtil.getNoAssetFileEntries();
 
-		Assert.assertEquals(dlFileEntries.toString(), 1, dlFileEntries.size());
-
-		DLFileEntry dlFileEntry = dlFileEntries.get(0);
-
-		Assert.assertEquals(
-			fileEntry.getFileEntryId(), dlFileEntry.getFileEntryId());
+		Assert.assertFalse(dlFileEntries.contains(assetFileEntry.getModel()));
+		Assert.assertTrue(dlFileEntries.contains(noAssetFileEntry.getModel()));
 	}
 
 	@Test
@@ -446,7 +441,9 @@ public class DLFileEntryLocalServiceTest {
 
 		FileEntry fileEntry = DLAppServiceUtil.updateFileEntry(
 			dlFileEntry.getFileEntryId(), "file.pdf", null, "file.pdf",
-			StringPool.BLANK, StringPool.BLANK, false, null, 0, serviceContext);
+			StringPool.BLANK, StringPool.BLANK,
+			DLVersionNumberIncrease.fromMajorVersion(false), null, 0,
+			serviceContext);
 
 		Assert.assertEquals(
 			content, StringUtil.read(fileEntry.getContentStream()));
@@ -456,6 +453,83 @@ public class DLFileEntryLocalServiceTest {
 		Assert.assertEquals("file.pdf.txt", fileEntry.getFileName());
 
 		Assert.assertEquals(ContentTypes.TEXT_PLAIN, fileEntry.getMimeType());
+	}
+
+	@Test
+	public void testMoveFileEntryToFolderNotEmpty() throws Exception {
+		DLFolder originDLFolder = DLTestUtil.addDLFolder(_group.getGroupId());
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+
+		DLFileEntry dlFileEntry = DLFileEntryLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), originDLFolder.getGroupId(),
+			originDLFolder.getRepositoryId(), originDLFolder.getFolderId(),
+			StringUtil.randomString(), ContentTypes.TEXT_PLAIN,
+			StringUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
+			new HashMap<String, DDMFormValues>(), null,
+			new ByteArrayInputStream(new byte[0]), 0, serviceContext);
+
+		DLFolder destinationDLFolder = DLTestUtil.addDLFolder(
+			_group.getGroupId());
+
+		DLFileEntryLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), destinationDLFolder.getGroupId(),
+			destinationDLFolder.getRepositoryId(),
+			destinationDLFolder.getFolderId(), StringUtil.randomString(),
+			ContentTypes.TEXT_PLAIN, StringUtil.randomString(),
+			StringPool.BLANK, StringPool.BLANK,
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
+			new HashMap<String, DDMFormValues>(), null,
+			new ByteArrayInputStream(new byte[0]), 0, serviceContext);
+
+		DLFileEntryLocalServiceUtil.moveFileEntry(
+			TestPropsValues.getUserId(), dlFileEntry.getFileEntryId(),
+			destinationDLFolder.getFolderId(), serviceContext);
+
+		dlFileEntry = DLFileEntryLocalServiceUtil.getDLFileEntry(
+			dlFileEntry.getFileEntryId());
+
+		DLFolder dlFileEntryFolder = dlFileEntry.getFolder();
+
+		Assert.assertEquals(
+			dlFileEntryFolder.getFolderId(), destinationDLFolder.getFolderId());
+	}
+
+	@Test(expected = DuplicateFileEntryException.class)
+	public void testMoveFileEntryToFolderWithSameFileName() throws Exception {
+		DLFolder originDLFolder = DLTestUtil.addDLFolder(_group.getGroupId());
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+
+		String title = StringUtil.randomString();
+
+		DLFileEntry dlFileEntry = DLFileEntryLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), originDLFolder.getGroupId(),
+			originDLFolder.getRepositoryId(), originDLFolder.getFolderId(),
+			StringUtil.randomString(), ContentTypes.TEXT_PLAIN, title,
+			StringPool.BLANK, StringPool.BLANK,
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
+			new HashMap<String, DDMFormValues>(), null,
+			new ByteArrayInputStream(new byte[0]), 0, serviceContext);
+
+		DLFolder destinationDLFolder = DLTestUtil.addDLFolder(
+			_group.getGroupId());
+
+		DLFileEntryLocalServiceUtil.addFileEntry(
+			TestPropsValues.getUserId(), destinationDLFolder.getGroupId(),
+			destinationDLFolder.getRepositoryId(),
+			destinationDLFolder.getFolderId(), StringUtil.randomString(),
+			ContentTypes.TEXT_PLAIN, title, StringPool.BLANK, StringPool.BLANK,
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT,
+			new HashMap<String, DDMFormValues>(), null,
+			new ByteArrayInputStream(new byte[0]), 0, serviceContext);
+
+		DLFileEntryLocalServiceUtil.moveFileEntry(
+			TestPropsValues.getUserId(), dlFileEntry.getFileEntryId(),
+			destinationDLFolder.getFolderId(), serviceContext);
 	}
 
 	@Test(expected = NoSuchFolderException.class)

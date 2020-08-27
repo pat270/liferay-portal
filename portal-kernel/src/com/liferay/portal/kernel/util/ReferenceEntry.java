@@ -29,6 +29,7 @@ public class ReferenceEntry {
 
 	public ReferenceEntry(Object object, Field field) {
 		_object = object;
+
 		_field = field;
 
 		_field.setAccessible(true);
@@ -50,12 +51,8 @@ public class ReferenceEntry {
 
 	@Override
 	public String toString() {
-		return _object.toString(
-		).concat(
-			StringPool.POUND
-		).concat(
-			_field.toString()
-		);
+		return StringBundler.concat(
+			_object.toString(), StringPool.POUND, _field.toString());
 	}
 
 	private final Field _field;

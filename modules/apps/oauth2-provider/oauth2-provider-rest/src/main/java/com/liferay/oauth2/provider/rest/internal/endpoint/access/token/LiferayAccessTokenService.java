@@ -56,6 +56,18 @@ public class LiferayAccessTokenService extends AccessTokenService {
 	protected Client authenticateClientIfNeeded(
 		MultivaluedMap<String, String> params) {
 
+		String clientId = params.getFirst("client_id");
+
+		if ((clientId != null) && clientId.isEmpty()) {
+			reportInvalidClient();
+		}
+
+		String clientSecret = params.getFirst("client_secret");
+
+		if ((clientSecret != null) && clientSecret.isEmpty()) {
+			params.remove("client_secret");
+		}
+
 		Client client = super.authenticateClientIfNeeded(params);
 
 		Map<String, String> properties = client.getProperties();
@@ -75,7 +87,7 @@ public class LiferayAccessTokenService extends AccessTokenService {
 
 			remoteHost = inetAddress.getCanonicalHostName();
 		}
-		catch (UnknownHostException uhe) {
+		catch (UnknownHostException unknownHostException) {
 		}
 
 		properties.put(
@@ -86,6 +98,10 @@ public class LiferayAccessTokenService extends AccessTokenService {
 			remoteHost);
 
 		return client;
+	}
+
+	@Override
+	protected void injectContextIntoOAuthProviders() {
 	}
 
 }

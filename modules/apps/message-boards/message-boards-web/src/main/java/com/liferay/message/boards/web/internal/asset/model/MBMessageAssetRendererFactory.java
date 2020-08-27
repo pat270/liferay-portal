@@ -62,11 +62,10 @@ public class MBMessageAssetRendererFactory
 	public AssetRenderer<MBMessage> getAssetRenderer(long classPK, int type)
 		throws PortalException {
 
-		MBMessage message = _mbMessageLocalService.getMessage(classPK);
-
 		MBMessageAssetRenderer mbMessageAssetRenderer =
 			new MBMessageAssetRenderer(
-				message, _messageModelResourcePermission);
+				_mbMessageLocalService.getMessage(classPK),
+				_messageModelResourcePermission);
 
 		mbMessageAssetRenderer.setAssetDisplayPageFriendlyURLProvider(
 			_assetDisplayPageFriendlyURLProvider);
@@ -102,7 +101,7 @@ public class MBMessageAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 
 		return liferayPortletURL;

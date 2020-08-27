@@ -1,7 +1,8 @@
 Bundle-Name: Liferay Asset Info Display API
 Bundle-SymbolicName: com.liferay.asset.info.display.api
-Bundle-Version: 3.0.0
+Bundle-Version: 3.0.10
 Export-Package:\
 	com.liferay.asset.info.display.contributor,\
 	com.liferay.asset.info.display.contributor.util,\
+	com.liferay.asset.info.display.field,\
 	com.liferay.asset.info.display.url.provider

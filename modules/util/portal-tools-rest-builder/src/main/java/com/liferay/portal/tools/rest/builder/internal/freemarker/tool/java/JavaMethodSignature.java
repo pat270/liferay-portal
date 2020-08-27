@@ -15,8 +15,8 @@
 package com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java;
 
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.FreeMarkerTool;
-import com.liferay.portal.vulcan.yaml.openapi.Operation;
-import com.liferay.portal.vulcan.yaml.openapi.PathItem;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Operation;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.PathItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +32,17 @@ public class JavaMethodSignature {
 		Set<String> requestBodyMediaTypes, String schemaName,
 		List<JavaMethodParameter> javaMethodParameters, String methodName,
 		String returnType) {
+
+		this(
+			path, pathItem, operation, requestBodyMediaTypes, schemaName,
+			javaMethodParameters, methodName, returnType, null);
+	}
+
+	public JavaMethodSignature(
+		String path, PathItem pathItem, Operation operation,
+		Set<String> requestBodyMediaTypes, String schemaName,
+		List<JavaMethodParameter> javaMethodParameters, String methodName,
+		String returnType, String parentSchemaName) {
 
 		_path = path;
 		_pathItem = pathItem;
@@ -51,6 +62,8 @@ public class JavaMethodSignature {
 				_pathJavaMethodParameters.add(javaMethodParameter);
 			}
 		}
+
+		_parentSchemaName = parentSchemaName;
 	}
 
 	public List<JavaMethodParameter> getJavaMethodParameters() {
@@ -63,6 +76,10 @@ public class JavaMethodSignature {
 
 	public Operation getOperation() {
 		return _operation;
+	}
+
+	public String getParentSchemaName() {
+		return _parentSchemaName;
 	}
 
 	public String getPath() {
@@ -92,6 +109,7 @@ public class JavaMethodSignature {
 	private final List<JavaMethodParameter> _javaMethodParameters;
 	private final String _methodName;
 	private final Operation _operation;
+	private final String _parentSchemaName;
 	private final String _path;
 	private final PathItem _pathItem;
 	private List<JavaMethodParameter> _pathJavaMethodParameters =

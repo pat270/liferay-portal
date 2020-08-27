@@ -96,8 +96,6 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 		String password1 = null;
 		String password2 = null;
 		boolean autoScreenName = false;
-		long facebookId = 0;
-		String openId = StringPool.BLANK;
 		String middleName = StringPool.BLANK;
 		long prefixId = 0;
 		long suffixId = 0;
@@ -115,10 +113,10 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 
 		return _userLocalService.addUser(
 			creatorUserId, companyId, autoPassword, password1, password2,
-			autoScreenName, screenName, emailAddress, facebookId, openId,
-			locale, firstName, middleName, lastName, prefixId, suffixId, male,
-			birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
-			organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+			autoScreenName, screenName, emailAddress, locale, firstName,
+			middleName, lastName, prefixId, suffixId, male, birthdayMonth,
+			birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds,
+			roleIds, userGroupIds, sendEmail, serviceContext);
 	}
 
 	protected void checkAddUser(long companyId, String emailAddress)
@@ -208,18 +206,18 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 						companyId, emailAddress, StringPool.BLANK);
 				}
 			}
-			catch (SystemException se) {
+			catch (SystemException systemException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(se, se);
+					_log.debug(systemException, systemException);
 				}
 			}
 		}
 		else {
 			if (Validator.isNull(emailAddress)) {
-				return handleException(
+				return doHandleException(
 					httpServletRequest, httpServletResponse,
 					new Exception("Email address is null"));
 			}
@@ -256,22 +254,23 @@ public class OpenSSOAutoLogin extends BaseAutoLogin {
 					companyId, firstName, lastName, emailAddress, screenName,
 					locale);
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						StringBundler.concat(
 							"Failed to import OpenSSO user '",
-							openSSOScreenName, "': ", pe.getMessage()),
-						pe);
+							openSSOScreenName, "': ",
+							portalException.getMessage()),
+						portalException);
 				}
 
-				if (pe instanceof ContactNameException) {
+				if (portalException instanceof ContactNameException) {
 					httpServletRequest.setAttribute(
 						OpenSSOWebKeys.OPEN_SSO_ERROR,
 						ContactNameException.class.getSimpleName());
 				}
 				else {
-					Class<?> clazz = pe.getClass();
+					Class<?> clazz = portalException.getClass();
 
 					httpServletRequest.setAttribute(
 						OpenSSOWebKeys.OPEN_SSO_ERROR, clazz.getSimpleName());

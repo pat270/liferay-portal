@@ -19,7 +19,7 @@ import com.liferay.petra.string.StringBundler;
 /**
  * @author Hugo Huijser
  */
-public class JavaTernaryOperator extends JavaExpression {
+public class JavaTernaryOperator extends BaseJavaExpression {
 
 	public JavaTernaryOperator(
 		JavaExpression conditionJavaExpression,
@@ -32,6 +32,15 @@ public class JavaTernaryOperator extends JavaExpression {
 	}
 
 	@Override
+	public boolean hasSurroundingParentheses() {
+		if (getChainedJavaExpression() != null) {
+			return true;
+		}
+
+		return super.hasSurroundingParentheses();
+	}
+
+	@Override
 	protected String getString(
 		String indent, String prefix, String suffix, int maxLineLength,
 		boolean forceLineBreak) {
@@ -39,23 +48,19 @@ public class JavaTernaryOperator extends JavaExpression {
 		StringBundler sb = new StringBundler();
 
 		sb.append(indent);
-		sb.append(prefix);
 
-		append(sb, _conditionJavaExpression, indent, "", " ? ", maxLineLength);
-		append(sb, _trueValueJavaExpression, indent, "", " : ", maxLineLength);
+		indent = "\t" + indent;
+
+		indent = append(
+			sb, _conditionJavaExpression, indent, prefix, " ? ", maxLineLength);
+
+		indent = append(
+			sb, _trueValueJavaExpression, indent, "", " : ", maxLineLength);
+
 		append(
 			sb, _falseValueJavaExpression, indent, "", suffix, maxLineLength);
 
 		return sb.toString();
-	}
-
-	@Override
-	protected boolean hasSurroundingParentheses() {
-		if (getChainedJavaExpression() != null) {
-			return true;
-		}
-
-		return super.hasSurroundingParentheses();
 	}
 
 	private final JavaExpression _conditionJavaExpression;

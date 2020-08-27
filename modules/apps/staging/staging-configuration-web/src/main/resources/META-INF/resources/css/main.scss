@@ -1,8 +1,7 @@
-@import "mixins";
-@import "bourbon";
+@import 'atlas-variables';
 
 @mixin default-label {
-	color: #869CAD;
+	color: #869cad;
 	font-size: 14px;
 }
 

@@ -24,6 +24,21 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANSWER_LOCALIZED</td>
+	<td>//div[label[contains(.,'${key_localizedAnswer}')]]/input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY</td>
+	<td>//div[label[contains(.,'${key_text}')]]//input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_PRIORITY</td>
+	<td>//input[contains(@id,'assetPriority')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BLOGS_ENTRY_URL</td>
 	<td>//input[contains(@id,'_urlTitle')]</td>
 	<td></td>
@@ -39,8 +54,48 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CUSTOM_CANONICAL_URL</td>
+	<td>//input[@type='text' and contains(@id,'canonicalURL')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CUSTOM_FIELD</td>
 	<td>//input[@type='text' and contains(@name,'ExpandoAttribute')] | //textarea[contains(@name,'ExpandoAttribute')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_CONTENT</td>
+	<td>//div[label[contains(.,'Content')]]/input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_CONTENT_EDITOR</td>
+	<td>//div[label[contains(.,'Content')]]/input[@type='text' and @value='${key_customContent}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_LAST_CONTENT</td>
+	<td>xpath=(//div[label[contains(.,'Content')]]/input[@type='text'])[last()]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_LAST_PROPERTY</td>
+	<td>xpath=(//div[label[contains(.,'Property')]]/input[@type='text'])[last()]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_PROPERTY</td>
+	<td>//div[label[contains(.,'Property')]]/input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_PROPERTY_DISABLED</td>
+	<td>//div[label[contains(.,'Property')]]/input[@type='text' and @disabled]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_META_TAGS_PROPERTY_EDITOR</td>
+	<td>//div[label[contains(.,'Property')]]/input[@type='text' and @value='${key_customProperty}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,6 +106,11 @@
 <tr>
 	<td>DATA_DEFINITION</td>
 	<td>//div[label[contains(.,'Data Definition')]]/input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_UNNAMED_DEFAULT_TITLE</td>
+	<td>//input[contains(@value,'${key_unnamedTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -134,6 +194,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EMAIL_VERIFICATION_CODE</td>
+	<td>//div[label[contains(.,'Email Verification Code')]]/input</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENTER_AGAIN</td>
 	<td>//div[label[contains(.,'Enter Again')]]/input</td>
 	<td></td>
@@ -169,13 +234,33 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FRIENDLY_URL_SITE_SETTINGS</td>
+	<td>//input[contains(@id,'FriendlyURL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GENERIC_NUMBER_INPUT</td>
+	<td>//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='number']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>GENERIC_TEXT_INPUT</td>
-	<td>//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='text']</td>
+	<td>//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='text'] | //div[contains(@class,'ddm-field') and contains(.,'${key_fieldLabel}')]//input[@type='text']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>GOOGLE_ANALYTICS_ID</td>
 	<td>//input[contains(@id,'googleAnalyticsId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GRACE_LIMIT</td>
+	<td>//div[label[contains(.,'Grace Limit')]]//input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IMAGE_DESCRIPTION</td>
+	<td>//label[contains(.,'Image Description')]/following-sibling::input</td>
 	<td></td>
 </tr>
 <tr>
@@ -294,8 +379,48 @@
 	<td></td>
 </tr>
 <tr>
+	<td>OPEN_GRAPH_CUSTOM_TITLE</td>
+	<td>//div[input[contains(@id,'openGraphTitle')]]//input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>OPEN_GRAPH_CUSTOM_IMAGE_INPUT</td>
+	<td>//div[label[contains(.,'Image')]]//input[contains(@value,'${key_dmDocumentURL}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>OPEN_GRAPH_CUSTOM_IMAGE_DEFAULT_VALUE</td>
+	<td>//div[label[contains(.,'Image')]]//input[@value='']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>OPEN_GRAPH_IMAGE_ALT_DESCRIPTION</td>
+	<td>//div[input[contains(@id,'openGraphImageAlt')]]//input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>OPEN_GRAPH_IMAGE_ALT_DESCRIPTION_DISABLED</td>
+	<td>//input[contains(@id,'${key_text}') and contains(@class,'disabled')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PASSWORD</td>
 	<td>//div[label[contains(.,'Password')]]/input | //div[label[contains(.,'Contraseña')]]/input | //div[label[contains(.,'パスワード')]]/input | //div[label[contains(.,'密码')]]/input | //div[contains(.,'Kennwort')]//input[@type='password']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PASSWORD_1</td>
+	<td>//input[contains(@id,'password1')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PASSWORD_2</td>
+	<td>//input[contains(@id,'password2')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PASSWORD_CONFIRM</td>
+	<td>//div[label[contains(.,'Your Password')]]/input[not(contains(@type,'hidden')) and not(contains(@class,'hide'))]</td>
 	<td></td>
 </tr>
 <tr>
@@ -334,6 +459,26 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REDIRECT_DESTINATION_URL</td>
+	<td>//input[contains(@id,'destinationURL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REDIRECT_SOURCE_URL</td>
+	<td>//input[contains(@id,'sourceURL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REDIRECT_SOURCE_URL_PREFIX</td>
+	<td>//div[contains(@class,'form-text')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REMINDER_QUERY</td>
+	<td>//input[contains(@id,'reminderQueryAnswer')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SAML_METADATA_URL_FIELD</td>
 	<td>//input[contains(@id,'SamlAdminPortlet_metadataUrl')]</td>
 	<td></td>
@@ -341,6 +486,11 @@
 <tr>
 	<td>SAML_NAME_FIELD</td>
 	<td>//input[contains(@id,'SamlAdminPortlet_name')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>STRUCTURE_KEY_FIELD</td>
+	<td>//input[contains(@id,'structureKey')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -355,7 +505,7 @@
 </tr>
 <tr>
 	<td>REQUIRED_ALERT</td>
-	<td>//div[contains(@class,'has-error')] | //div[contains(@class,'has-error') and contains(.,'key_fieldName')]</td>
+	<td>//div[contains(@class,'has-error')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -379,6 +529,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SEO_MAPPED_FIELD</td>
+	<td>//div[contains(@class,'form-group') and contains(.,'${key_mappedField}')]//input[contains(@id,'mapped')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SETUP_XML_URL</td>
 	<td>//input[contains(@id,'xmlUrl')]</td>
 	<td></td>
@@ -394,6 +549,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FRAGMENTS_SEARCH</td>
+	<td>//div[contains(@class,'modal-content')]//input[contains(@placeholder,'Search')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SKYPE</td>
 	<td>//div[label[contains(.,'Skype')]]/input</td>
 	<td></td>
@@ -404,6 +564,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SPECIFIC_FIELD_REQUIRED_ALERT</td>
+	<td>//div[@data-fieldname='${key_fieldName}']//div[@class='required']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>STREET_1</td>
 	<td>//div[label[contains(.,'Street 1')]]//input[@type='text']</td>
 	<td></td>
@@ -411,6 +576,11 @@
 <tr>
 	<td>SUBJECT</td>
 	<td>//input[contains(@id,'subject')] | //input[contains(@id,'Subject')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TARGET_PAGE_FRIENDLY_URL</td>
+	<td>//input[contains(@id,'targetLayoutFriendlyUrl')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -426,6 +596,11 @@
 <tr>
 	<td>TRACKBACKS</td>
 	<td>//input[contains(@id,'trackbacks')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TRANSLATIONS_TARGET_FIELD</td>
+	<td>//input[contains(@id,'${key_fieldName}') and (not(contains(@readonly,'true')))]</td>
 	<td></td>
 </tr>
 <tr>

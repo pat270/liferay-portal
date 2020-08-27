@@ -31,8 +31,9 @@ if (role != null) {
 	roleName = role.getName();
 }
 
-int type = ParamUtil.getInteger(request, "type");
 String subtype = BeanParamUtil.getString(role, request, "subtype");
+
+RoleTypeContributor currentRoleTypeContributor = RoleTypeContributorRetrieverUtil.getCurrentRoleTypeContributor(request);
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(backURL);
@@ -40,11 +41,11 @@ portletDisplay.setURLBack(backURL);
 renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") : role.getTitle(locale));
 %>
 
-<liferay-util:include page="/edit_role_tabs.jsp" servletContext="<%= application %>" />
-
 <c:if test="<%= role != null %>">
+	<liferay-util:include page="/edit_role_tabs.jsp" servletContext="<%= application %>" />
+
 	<c:choose>
-		<c:when test="<%= role.getType() == RoleConstants.TYPE_REGULAR %>">
+		<c:when test="<%= currentRoleTypeContributor.getType() == RoleConstants.TYPE_REGULAR %>">
 			<liferay-ui:success key="roleCreated" message='<%= LanguageUtil.format(request, "x-was-created-successfully.-you-can-now-define-its-permissions-and-assign-users", HtmlUtil.escape(roleName)) %>' />
 		</c:when>
 		<c:otherwise>
@@ -63,7 +64,7 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") :
 	<portlet:param name="tabs1" value="details" />
 	<portlet:param name="backURL" value="<%= backURL %>" />
 	<portlet:param name="roleId" value="<%= String.valueOf(roleId) %>" />
-	<portlet:param name="type" value="<%= String.valueOf(type) %>" />
+	<portlet:param name="roleType" value="<%= String.valueOf(currentRoleTypeContributor.getType()) %>" />
 </portlet:renderURL>
 
 <aui:form action="<%= editRoleURL %>" cssClass="container-fluid container-fluid-max-xl container-form-view" method="post" name="fm">
@@ -78,48 +79,39 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") :
 	<aui:fieldset-group markupView="lexicon">
 		<aui:fieldset>
 			<c:choose>
-				<c:when test="<%= (role == null) && (type == 0) %>">
-					<aui:select name="type">
-						<aui:option label="regular" value="<%= RoleConstants.TYPE_REGULAR %>" />
-						<aui:option label="site" value="<%= RoleConstants.TYPE_SITE %>" />
-						<aui:option label="organization" value="<%= RoleConstants.TYPE_ORGANIZATION %>" />
+				<c:when test="<%= role == null %>">
+					<aui:select label="type" name="roleType">
+
+						<%
+						List<RoleTypeContributor> roleTypeContributors = RoleTypeContributorRetrieverUtil.getRoleTypeContributors(request);
+
+						for (RoleTypeContributor roleTypeContributor : roleTypeContributors) {
+						%>
+
+							<aui:option label="<%= roleTypeContributor.getName() %>" value="<%= roleTypeContributor.getType() %>" />
+
+						<%
+						}
+						%>
+
 					</aui:select>
 				</c:when>
-				<c:when test="<%= role == null %>">
-					<aui:input label="type" name="typeLabel" type="resource" value="<%= LanguageUtil.get(request, RoleConstants.getTypeLabel(type)) %>" />
-
-					<aui:input name="type" type="hidden" value="<%= String.valueOf(type) %>" />
-				</c:when>
 				<c:otherwise>
-					<aui:input label="type" name="typeLabel" type="resource" value="<%= LanguageUtil.get(request, role.getTypeLabel()) %>" />
+					<aui:input label="type" name="typeLabel" type="resource" value="<%= LanguageUtil.get(request, currentRoleTypeContributor.getName()) %>" />
+
+					<c:if test="<%= role == null %>">
+						<aui:input name="roleType" type="hidden" value="<%= String.valueOf(currentRoleTypeContributor.getType()) %>" />
+					</c:if>
 				</c:otherwise>
 			</c:choose>
 
-			<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" name="title">
-				<c:if test="<%= (role == null) || !role.isSystem() %>">
-					<aui:validator name="required" />
-				</c:if>
-			</aui:input>
-
+			<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" helpMessage="title-field-help" name="title" />
 			<aui:input name="description" />
 
 			<c:if test="<%= role != null %>">
 
 				<%
-				String[] subtypes = null;
-
-				if (role.getType() == RoleConstants.TYPE_ORGANIZATION) {
-					subtypes = PropsValues.ROLES_ORGANIZATION_SUBTYPES;
-				}
-				else if (role.getType() == RoleConstants.TYPE_REGULAR) {
-					subtypes = PropsValues.ROLES_REGULAR_SUBTYPES;
-				}
-				else if (role.getType() == RoleConstants.TYPE_SITE) {
-					subtypes = PropsValues.ROLES_SITE_SUBTYPES;
-				}
-				else {
-					subtypes = new String[0];
-				}
+				String[] subtypes = currentRoleTypeContributor.getSubtypes();
 				%>
 
 				<c:if test="<%= subtypes.length > 0 %>">
@@ -156,6 +148,7 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") :
 
 			<c:choose>
 				<c:when test="<%= (role != null) && role.isSystem() %>">
+					<aui:input disabled="<%= true %>" helpMessage="key-field-help" label="key" name="viewNameField" type="text" value="<%= roleName %>" />
 					<aui:input name="name" type="hidden" value="<%= roleName %>" />
 				</c:when>
 				<c:otherwise>
@@ -196,33 +189,27 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "new-role") :
 </aui:form>
 
 <c:if test="<%= role == null %>">
-	<aui:script require="metal-debounce/src/debounce">
-		const form = document.getElementById('<portlet:namespace />fm');
+	<aui:script require="frontend-js-web/liferay/debounce/debounce.es as debounceModule">
+		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
-			const nameInput = form.querySelector('#<portlet:namespace />name');
-			const titleInput = form.querySelector('#<portlet:namespace />title');
+			var nameInput = form.querySelector('#<portlet:namespace />name');
+			var titleInput = form.querySelector('#<portlet:namespace />title');
 
 			if (nameInput && titleInput) {
-				const debounce = metalDebounceSrcDebounce.default;
+				var debounce = debounceModule.default;
 
-				const handleOnTitleInput = function(event) {
-					let value = event.target.value;
+				var handleOnTitleInput = function (event) {
+					var value = event.target.value;
 
 					if (nameInput.hasAttribute('maxLength')) {
-						value = value.substring(
-							0,
-							nameInput.getAttribute('maxLength')
-						);
+						value = value.substring(0, nameInput.getAttribute('maxLength'));
 					}
 
 					nameInput.value = value;
 				};
 
-				titleInput.addEventListener(
-					'input',
-					debounce(handleOnTitleInput, 200)
-				);
+				titleInput.addEventListener('input', debounce(handleOnTitleInput, 200));
 			}
 		}
 	</aui:script>

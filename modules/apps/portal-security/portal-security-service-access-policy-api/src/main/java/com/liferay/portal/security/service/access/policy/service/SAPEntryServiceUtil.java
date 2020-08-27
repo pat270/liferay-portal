@@ -14,7 +14,6 @@
 
 package com.liferay.portal.security.service.access.policy.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see SAPEntryService
  * @generated
  */
-@ProviderType
 public class SAPEntryServiceUtil {
 
 	/*
@@ -93,9 +91,10 @@ public class SAPEntryServiceUtil {
 				long companyId, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.portal.security.service.access.policy.model.
-						SAPEntry> obc) {
+						SAPEntry> orderByComparator) {
 
-		return getService().getCompanySAPEntries(companyId, start, end, obc);
+		return getService().getCompanySAPEntries(
+			companyId, start, end, orderByComparator);
 	}
 
 	public static int getCompanySAPEntriesCount(long companyId) {

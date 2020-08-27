@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -176,12 +177,12 @@ public class DDMRESTDataProviderSettingsTest {
 		DDMFormFieldOptions ddmFormFieldOptions =
 			inputParameterTypeDDMFormField.getDDMFormFieldOptions();
 
-		Set<String> optionValues = ddmFormFieldOptions.getOptionsValues();
+		Set<String> optionsValues = ddmFormFieldOptions.getOptionsValues();
 
 		Assert.assertTrue(
-			optionValues.toString(), optionValues.contains("text"));
+			optionsValues.toString(), optionsValues.contains("text"));
 		Assert.assertTrue(
-			optionValues.toString(), optionValues.contains("number"));
+			optionsValues.toString(), optionsValues.contains("number"));
 
 		// Required
 
@@ -206,7 +207,7 @@ public class DDMRESTDataProviderSettingsTest {
 			ddmFormField.getNestedDDMFormFieldsMap();
 
 		Assert.assertEquals(
-			nestedDDMFormFieldsMap.toString(), 3,
+			nestedDDMFormFieldsMap.toString(), 4,
 			nestedDDMFormFieldsMap.size());
 
 		// Name
@@ -263,12 +264,12 @@ public class DDMRESTDataProviderSettingsTest {
 		DDMFormFieldOptions ddmFormFieldOptions =
 			outputParameterTypeDDMFormField.getDDMFormFieldOptions();
 
-		Set<String> optionValues = ddmFormFieldOptions.getOptionsValues();
+		Set<String> optionsValues = ddmFormFieldOptions.getOptionsValues();
 
 		Assert.assertTrue(
-			optionValues.toString(), optionValues.contains("text"));
+			optionsValues.toString(), optionsValues.contains("text"));
 		Assert.assertTrue(
-			optionValues.toString(), optionValues.contains("number"));
+			optionsValues.toString(), optionsValues.contains("number"));
 	}
 
 	protected void assertPagination(DDMFormField ddmFormField) {
@@ -322,9 +323,12 @@ public class DDMRESTDataProviderSettingsTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			ddmFormField.getDDMFormFieldValidation();
 
+		DDMFormFieldValidationExpression ddmFormFieldValidationExpression =
+			ddmFormFieldValidation.getDDMFormFieldValidationExpression();
+
 		Assert.assertEquals(
 			"(timeout >= 1000) && (timeout <= 30000)",
-			ddmFormFieldValidation.getExpression());
+			ddmFormFieldValidationExpression.getValue());
 
 		Assert.assertEquals("numeric", ddmFormField.getType());
 	}

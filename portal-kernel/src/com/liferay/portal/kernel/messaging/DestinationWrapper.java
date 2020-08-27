@@ -55,12 +55,17 @@ public class DestinationWrapper implements Destination {
 
 	@Override
 	public void destroy() {
-		this.destination.destroy();
+		destination.destroy();
 	}
 
 	@Override
 	public DestinationStatistics getDestinationStatistics() {
 		return destination.getDestinationStatistics();
+	}
+
+	@Override
+	public String getDestinationType() {
+		return destination.getDestinationType();
 	}
 
 	@Override

@@ -14,10 +14,10 @@
 
 package com.liferay.portal.kernel.service.persistence.impl;
 
-import com.liferay.portal.kernel.internal.service.persistence.CachelessTableMapperImpl;
-import com.liferay.portal.kernel.internal.service.persistence.ReverseTableMapper;
 import com.liferay.portal.kernel.internal.service.persistence.TableMapperImpl;
+import com.liferay.portal.kernel.internal.service.persistence.change.tracking.CTTableMapper;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -29,12 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Shuyang Zhou
  */
-@ProviderType
 public class TableMapperFactory {
 
 	public static <L extends BaseModel<L>, R extends BaseModel<R>>
@@ -81,27 +78,25 @@ public class TableMapperFactory {
 		TableMapper<?, ?> tableMapper = _tableMappers.get(tableMapperKey);
 
 		if (tableMapper == null) {
-			TableMapperImpl<L, R> tableMapperImpl = null;
+			Class<L> leftModelClass = leftPersistence.getModelClass();
+			Class<R> rightModelClass = rightPersistence.getModelClass();
 
-			if (_cachelessMappingTableNames.contains(tableName)) {
-				tableMapperImpl = new CachelessTableMapperImpl<>(
+			if (CTModel.class.isAssignableFrom(leftModelClass) &&
+				CTModel.class.isAssignableFrom(rightModelClass)) {
+
+				tableMapper = new CTTableMapper<>(
 					tableName, companyColumnName, leftColumnName,
-					rightColumnName, leftPersistence.getModelClass(),
-					rightPersistence.getModelClass(), leftPersistence,
-					rightPersistence);
+					rightColumnName, leftModelClass, rightModelClass,
+					leftPersistence, rightPersistence,
+					_cachelessMappingTableNames.contains(tableName));
 			}
 			else {
-				tableMapperImpl = new TableMapperImpl<>(
+				tableMapper = new TableMapperImpl<>(
 					tableName, companyColumnName, leftColumnName,
-					rightColumnName, leftPersistence.getModelClass(),
-					rightPersistence.getModelClass(), leftPersistence,
-					rightPersistence);
+					rightColumnName, leftModelClass, rightModelClass,
+					leftPersistence, rightPersistence,
+					_cachelessMappingTableNames.contains(tableName));
 			}
-
-			tableMapperImpl.setReverseTableMapper(
-				new ReverseTableMapper<>(tableMapperImpl));
-
-			tableMapper = tableMapperImpl;
 
 			_tableMappers.put(tableMapperKey, tableMapper);
 		}

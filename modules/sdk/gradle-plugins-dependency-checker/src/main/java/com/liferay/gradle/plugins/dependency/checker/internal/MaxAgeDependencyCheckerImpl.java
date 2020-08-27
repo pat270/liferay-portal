@@ -21,7 +21,6 @@ import groovy.json.JsonSlurper;
 
 import groovy.time.Duration;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.Date;
@@ -141,7 +140,7 @@ public class MaxAgeDependencyCheckerImpl extends BaseDependencyCheckerImpl {
 
 	private VersionInfo _getVersionInfo(
 			String group, String name, String version)
-		throws MalformedURLException {
+		throws Exception {
 
 		URL url = _getVersionInfoURL(group, name, version);
 
@@ -190,7 +189,7 @@ public class MaxAgeDependencyCheckerImpl extends BaseDependencyCheckerImpl {
 	}
 
 	private URL _getVersionInfoURL(String group, String name, String version)
-		throws MalformedURLException {
+		throws Exception {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -233,16 +232,16 @@ public class MaxAgeDependencyCheckerImpl extends BaseDependencyCheckerImpl {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
+		public boolean equals(Object object) {
+			if (this == object) {
 				return true;
 			}
 
-			if (!(obj instanceof VersionInfo)) {
+			if (!(object instanceof VersionInfo)) {
 				return false;
 			}
 
-			VersionInfo versionInfo = (VersionInfo)obj;
+			VersionInfo versionInfo = (VersionInfo)object;
 
 			if ((timestamp == versionInfo.timestamp) &&
 				version.equals(versionInfo.version)) {

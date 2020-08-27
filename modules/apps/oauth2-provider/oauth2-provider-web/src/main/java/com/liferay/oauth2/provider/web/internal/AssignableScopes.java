@@ -14,9 +14,9 @@
 
 package com.liferay.oauth2.provider.web.internal;
 
-import com.liferay.oauth2.provider.scope.liferay.ApplicationDescriptorLocator;
 import com.liferay.oauth2.provider.scope.liferay.LiferayOAuth2Scope;
-import com.liferay.oauth2.provider.scope.liferay.ScopeDescriptorLocator;
+import com.liferay.oauth2.provider.scope.liferay.spi.ApplicationDescriptorLocator;
+import com.liferay.oauth2.provider.scope.liferay.spi.ScopeDescriptorLocator;
 import com.liferay.oauth2.provider.scope.spi.application.descriptor.ApplicationDescriptor;
 import com.liferay.oauth2.provider.scope.spi.scope.descriptor.ScopeDescriptor;
 import com.liferay.petra.string.StringUtil;
@@ -93,16 +93,16 @@ public class AssignableScopes {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AssignableScopes)) {
+		if (!(object instanceof AssignableScopes)) {
 			return false;
 		}
 
-		AssignableScopes assignableScopes = (AssignableScopes)obj;
+		AssignableScopes assignableScopes = (AssignableScopes)object;
 
 		if (Objects.equals(
 				_liferayOAuth2Scopes,
@@ -153,14 +153,17 @@ public class AssignableScopes {
 		return applicationNames;
 	}
 
-	public Set<String> getApplicationScopeDescription(String applicationName) {
+	public Set<String> getApplicationScopeDescription(
+		long companyId, String applicationName) {
+
 		Stream<LiferayOAuth2Scope> stream = _liferayOAuth2Scopes.stream();
 
 		return stream.filter(
 			liferayOAuth2Scope -> applicationName.equals(
 				liferayOAuth2Scope.getApplicationName())
 		).map(
-			this::getScopeDescription
+			liferayOAuth2Scope -> getScopeDescription(
+				companyId, liferayOAuth2Scope)
 		).collect(
 			Collectors.toSet()
 		);
@@ -170,10 +173,12 @@ public class AssignableScopes {
 		return _liferayOAuth2Scopes;
 	}
 
-	public String getScopeDescription(LiferayOAuth2Scope liferayOAuth2Scope) {
+	public String getScopeDescription(
+		long companyId, LiferayOAuth2Scope liferayOAuth2Scope) {
+
 		ScopeDescriptor scopeDescriptor =
 			_scopeDescriptorLocator.getScopeDescriptor(
-				liferayOAuth2Scope.getApplicationName());
+				companyId, liferayOAuth2Scope.getApplicationName());
 
 		if (scopeDescriptor == null) {
 			return liferayOAuth2Scope.getScope();

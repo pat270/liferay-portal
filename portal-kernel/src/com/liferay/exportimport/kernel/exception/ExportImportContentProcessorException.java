@@ -16,12 +16,9 @@ package com.liferay.exportimport.kernel.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Gergely Mathe
  */
-@ProviderType
 public class ExportImportContentProcessorException extends PortalException {
 
 	public static final int ARTICLE_NOT_FOUND = 2;
@@ -35,12 +32,14 @@ public class ExportImportContentProcessorException extends PortalException {
 		_className = className;
 	}
 
-	public ExportImportContentProcessorException(String msg, Throwable cause) {
-		super(msg, cause);
+	public ExportImportContentProcessorException(
+		String msg, Throwable throwable) {
+
+		super(msg, throwable);
 	}
 
-	public ExportImportContentProcessorException(Throwable cause) {
-		super(cause);
+	public ExportImportContentProcessorException(Throwable throwable) {
+		super(throwable);
 	}
 
 	public String getClassName() {

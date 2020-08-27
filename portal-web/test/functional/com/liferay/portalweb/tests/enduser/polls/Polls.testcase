@@ -1,5 +1,6 @@
 @component-name = "portal-polls"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Polls";
@@ -21,7 +22,6 @@ definition {
 
 			ProductMenu.gotoPortlet(
 				category = "Content &amp; Data",
-				panel = "Site Administration",
 				portlet = "Polls");
 
 			Polls.tearDownCP();
@@ -39,7 +39,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		Polls.addPollCPWithExpirationDate(
@@ -69,6 +68,7 @@ definition {
 
 	@priority = "4"
 	test AddPollsQuestionWithSpecialCharacters {
+		property portal.upstream = "true";
 
 		var pollsQuestionChoiceA = '''"Black"''';
 
@@ -87,7 +87,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		Polls.addPollCP(
@@ -109,7 +108,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Polls Page");
@@ -144,7 +142,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		Polls.addPollCP(
@@ -173,7 +170,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Polls Page");
@@ -211,11 +207,12 @@ definition {
 
 	@priority = "4"
 	test ViewChart {
+		property portal.upstream = "true";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		Polls.addPollCP(
@@ -237,7 +234,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Polls Page");
@@ -260,7 +256,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		Polls.viewPollChartArea(pollsQuestionTitle = "Color");
@@ -268,11 +263,12 @@ definition {
 
 	@priority = "4"
 	test VotePollsQuestionWithGuestPermissions {
+		property portal.upstream = "true";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		Polls.addPollCP(
@@ -294,7 +290,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Polls Page");
@@ -334,7 +329,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Polls");
 
 		PermissionsInline.gotoPollPermissionsCP(pollsQuestionTitle = "Favorite Liferay Portlet");
@@ -361,4 +355,5 @@ definition {
 
 		User.loginPG();
 	}
+
 }

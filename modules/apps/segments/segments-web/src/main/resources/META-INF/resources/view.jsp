@@ -14,11 +14,15 @@
  */
 --%>
 
+<%@ include file="/init.jsp" %>
+
 <%
 SegmentsDisplayContext segmentsDisplayContext = (SegmentsDisplayContext)request.getAttribute(SegmentsWebKeys.SEGMENTS_DISPLAY_CONTEXT);
-%>
 
-<%@ include file="/init.jsp" %>
+String eventName = liferayPortletResponse.getNamespace() + "assignSiteRoles";
+
+request.setAttribute("view.jsp-eventName", eventName);
+%>
 
 <clay:management-toolbar
 	actionDropdownItems="<%= segmentsDisplayContext.getActionDropdownItems() %>"
@@ -57,52 +61,42 @@ SegmentsDisplayContext segmentsDisplayContext = (SegmentsDisplayContext)request.
 		>
 
 			<%
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", segmentsDisplayContext.getAvailableActions(segmentsEntry));
+			Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+				"actions", segmentsDisplayContext.getAvailableActions(segmentsEntry)
+			).build();
 
 			row.setData(rowData);
 			%>
 
-			<portlet:renderURL var="rowURL">
-				<portlet:param name="mvcRenderCommandName" value="editSegmentsEntry" />
-				<portlet:param name="redirect" value="<%= currentURL %>" />
-				<portlet:param name="segmentsEntryId" value="<%= String.valueOf(segmentsEntry.getSegmentsEntryId()) %>" />
-				<portlet:param name="showInEditMode" value="<%= Boolean.FALSE.toString() %>" />
-			</portlet:renderURL>
-
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand table-title"
-				href="<%= rowURL %>"
+				href="<%= segmentsDisplayContext.getSegmentsEntryURL(segmentsEntry) %>"
 				name="name"
+				target="<%= segmentsDisplayContext.getSegmentsEntryURLTarget(segmentsEntry) %>"
 				value="<%= HtmlUtil.escape(segmentsEntry.getName(locale)) %>"
 			/>
 
-			<liferay-ui:search-container-column-text
-				cssClass="table-cell-expand-smallest table-cell-minw-150"
-				name="active"
-				value='<%= LanguageUtil.get(request, segmentsEntry.isActive() ? "yes" : "no") %>'
-			/>
-
-			<liferay-ui:search-container-column-text
-				cssClass="table-cell-expand-smallest table-cell-minw-150"
-				name="source"
-			>
-				<c:choose>
-					<c:when test="<%= Objects.equals(segmentsEntry.getSource(), SegmentsConstants.SOURCE_ASAH_FARO_BACKEND) %>">
-						<liferay-ui:icon
-							message="source.analytics-cloud"
-							src='<%= PortalUtil.getPathContext(request) + "/assets/ac-icon.svg" %>'
-						/>
-					</c:when>
-					<c:otherwise>
-						<liferay-ui:icon
-							message="source.dxp"
-							src='<%= PortalUtil.getPathContext(request) + "/assets/dxp-icon.svg" %>'
-						/>
-					</c:otherwise>
-				</c:choose>
-			</liferay-ui:search-container-column-text>
+			<c:if test="<%= segmentsDisplayContext.isAsahEnabled(themeDisplay.getCompanyId()) %>">
+				<liferay-ui:search-container-column-text
+					cssClass="table-cell-expand-smallest table-cell-minw-150"
+					name="source"
+				>
+					<c:choose>
+						<c:when test="<%= Objects.equals(segmentsEntry.getSource(), SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND) %>">
+							<liferay-ui:icon
+								message="source.analytics-cloud"
+								src='<%= PortalUtil.getPathContext(request) + "/assets/ac-icon.svg" %>'
+							/>
+						</c:when>
+						<c:otherwise>
+							<liferay-ui:icon
+								message="source.dxp"
+								src='<%= PortalUtil.getPathContext(request) + "/assets/dxp-icon.svg" %>'
+							/>
+						</c:otherwise>
+					</c:choose>
+				</liferay-ui:search-container-column-text>
+			</c:if>
 
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand-smallest table-cell-minw-150"
@@ -140,28 +134,74 @@ SegmentsDisplayContext segmentsDisplayContext = (SegmentsDisplayContext)request.
 </aui:form>
 
 <aui:script sandbox="<%= true %>">
-	var deleteSegmentsEntries = function() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>')) {
-			submitForm(document.querySelector('#<portlet:namespace />fmSegmentsEntries'));
+	var deleteSegmentsEntries = function () {
+		if (
+			confirm(
+				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>'
+			)
+		) {
+			submitForm(
+				document.querySelector('#<portlet:namespace />fmSegmentsEntries')
+			);
 		}
 	};
 
 	var ACTIONS = {
-		'deleteSegmentsEntries': deleteSegmentsEntries
+		deleteSegmentsEntries: deleteSegmentsEntries,
 	};
 
-	Liferay.componentReady('segmentsEntriesManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'actionItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	Liferay.componentReady('segmentsEntriesManagementToolbar').then(function (
+		managementToolbar
+	) {
+		managementToolbar.on('actionItemClicked', function (event) {
+			var itemData = event.data.item.data;
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action]();
-					}
-				}
-			);
-		}
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action]();
+			}
+		});
+	});
+</aui:script>
+
+<portlet:actionURL name="updateSegmentsEntrySiteRoles" var="updateSegmentsEntrySiteRolesURL">
+	<portlet:param name="redirect" value="<%= currentURL %>" />
+</portlet:actionURL>
+
+<aui:form action="<%= updateSegmentsEntrySiteRolesURL %>" cssClass="hide" method="post" name="updateSegmentsEntrySiteRolesFm">
+	<aui:input name="segmentsEntryId" type="hidden" />
+	<aui:input name="siteRoleIds" type="hidden" />
+</aui:form>
+
+<aui:script require="metal-dom/src/all/dom as dom, frontend-js-web/liferay/ItemSelectorDialog.es as ItemSelectorDialog">
+	var form = document.getElementById(
+		'<portlet:namespace/>updateSegmentsEntrySiteRolesFm'
 	);
+
+	dom.delegate(document, 'click', '.assign-site-roles-link', function (event) {
+		var link = dom.closest(event.target, '.assign-site-roles-link');
+
+		var itemSelectorURL = link.dataset.itemselectorurl;
+		var segmentsEntryId = link.dataset.segmentsentryid;
+
+		var itemSelectorDialog = new ItemSelectorDialog.default({
+			eventName: '<%= eventName %>',
+			title: '<liferay-ui:message key="assign-site-roles" />',
+			url: itemSelectorURL,
+		});
+
+		itemSelectorDialog.on('selectedItemChange', function (event) {
+			var selectedItem = event.selectedItem;
+
+			if (selectedItem) {
+				var data = {
+					segmentsEntryId: segmentsEntryId,
+					siteRoleIds: selectedItem.value,
+				};
+
+				Liferay.Util.postForm(form, {data: data});
+			}
+		});
+
+		itemSelectorDialog.open();
+	});
 </aui:script>

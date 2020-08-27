@@ -26,31 +26,28 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DLOpenerFileEntryReference in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DLOpenerFileEntryReferenceCacheModel
 	implements CacheModel<DLOpenerFileEntryReference>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DLOpenerFileEntryReferenceCacheModel)) {
+		if (!(object instanceof DLOpenerFileEntryReferenceCacheModel)) {
 			return false;
 		}
 
 		DLOpenerFileEntryReferenceCacheModel
 			dlOpenerFileEntryReferenceCacheModel =
-				(DLOpenerFileEntryReferenceCacheModel)obj;
+				(DLOpenerFileEntryReferenceCacheModel)object;
 
 		if (dlOpenerFileEntryReferenceId ==
 				dlOpenerFileEntryReferenceCacheModel.
@@ -69,7 +66,7 @@ public class DLOpenerFileEntryReferenceCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(21);
+		StringBundler sb = new StringBundler(23);
 
 		sb.append("{dlOpenerFileEntryReferenceId=");
 		sb.append(dlOpenerFileEntryReferenceId);
@@ -87,6 +84,8 @@ public class DLOpenerFileEntryReferenceCacheModel
 		sb.append(modifiedDate);
 		sb.append(", referenceKey=");
 		sb.append(referenceKey);
+		sb.append(", referenceType=");
+		sb.append(referenceType);
 		sb.append(", fileEntryId=");
 		sb.append(fileEntryId);
 		sb.append(", type=");
@@ -136,6 +135,13 @@ public class DLOpenerFileEntryReferenceCacheModel
 			dlOpenerFileEntryReferenceImpl.setReferenceKey(referenceKey);
 		}
 
+		if (referenceType == null) {
+			dlOpenerFileEntryReferenceImpl.setReferenceType("");
+		}
+		else {
+			dlOpenerFileEntryReferenceImpl.setReferenceType(referenceType);
+		}
+
 		dlOpenerFileEntryReferenceImpl.setFileEntryId(fileEntryId);
 		dlOpenerFileEntryReferenceImpl.setType(type);
 
@@ -157,6 +163,7 @@ public class DLOpenerFileEntryReferenceCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 		referenceKey = objectInput.readUTF();
+		referenceType = objectInput.readUTF();
 
 		fileEntryId = objectInput.readLong();
 
@@ -190,6 +197,13 @@ public class DLOpenerFileEntryReferenceCacheModel
 			objectOutput.writeUTF(referenceKey);
 		}
 
+		if (referenceType == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(referenceType);
+		}
+
 		objectOutput.writeLong(fileEntryId);
 
 		objectOutput.writeInt(type);
@@ -203,6 +217,7 @@ public class DLOpenerFileEntryReferenceCacheModel
 	public long createDate;
 	public long modifiedDate;
 	public String referenceKey;
+	public String referenceType;
 	public long fileEntryId;
 	public int type;
 

@@ -32,7 +32,6 @@ import java.io.Serializable;
 
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -52,7 +51,6 @@ import org.osgi.service.component.annotations.Reference;
 	},
 	service = LayoutsLocalPublisherMessageListener.class
 )
-@ProviderType
 public class LayoutsLocalPublisherMessageListener
 	extends BasePublisherMessageListener {
 
@@ -129,7 +127,7 @@ public class LayoutsLocalPublisherMessageListener
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.exportimport.service)(release.schema.version=1.0.0))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.exportimport.service)(release.schema.version=1.0.1))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

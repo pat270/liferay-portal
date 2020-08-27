@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DDLRecordSet in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDLRecordSetCacheModel
 	implements CacheModel<DDLRecordSet>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDLRecordSetCacheModel)) {
+		if (!(object instanceof DDLRecordSetCacheModel)) {
 			return false;
 		}
 
 		DDLRecordSetCacheModel ddlRecordSetCacheModel =
-			(DDLRecordSetCacheModel)obj;
+			(DDLRecordSetCacheModel)object;
 
 		if ((recordSetId == ddlRecordSetCacheModel.recordSetId) &&
 			(mvccVersion == ddlRecordSetCacheModel.mvccVersion)) {
@@ -259,7 +256,7 @@ public class DDLRecordSetCacheModel
 		minDisplayRows = objectInput.readInt();
 
 		scope = objectInput.readInt();
-		settings = objectInput.readUTF();
+		settings = (String)objectInput.readObject();
 		lastPublishDate = objectInput.readLong();
 
 		_ddmFormValues =
@@ -340,10 +337,10 @@ public class DDLRecordSetCacheModel
 		objectOutput.writeInt(scope);
 
 		if (settings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(settings);
+			objectOutput.writeObject(settings);
 		}
 
 		objectOutput.writeLong(lastPublishDate);

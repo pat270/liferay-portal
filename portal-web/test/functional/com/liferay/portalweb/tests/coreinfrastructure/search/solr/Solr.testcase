@@ -1,8 +1,9 @@
 @component-name = "portal-search"
 definition {
+
 	property osgi.app.includes = "portal-search-solr7";
 	property osgi.module.configuration.file.names = "com.liferay.portal.bundle.blacklist.internal.BundleBlacklistConfiguration.config";
-	property osgi.module.configurations = "blacklistBundleSymbolicNames=&quot;com.liferay.portal.mobile.device.detection.fiftyonedegrees.api,com.liferay.portal.mobile.device.detection.fiftyonedegrees.enterprise,com.liferay.portal.mobile.device.detection.fiftyonedegrees.enterprise.test.data,com.liferay.portal.mobile.device.detection.fiftyonedegrees,com.liferay.portal.search.elasticsearch6.api,com.liferay.portal.search.elasticsearch6.impl,com.liferay.portal.search.elasticsearch6.xpack.security.impl,com.liferay.portal.search.elasticsearch6.xpack.monitoring.web&quot;";
+	property osgi.module.configurations = "blacklistBundleSymbolicNames=&quot;com.liferay.portal.search.elasticsearch7.api,com.liferay.portal.search.elasticsearch7.impl,com.liferay.portal.search.elasticsearch7.spi,com.liferay.portal.search.elasticsearch6.xpack.monitoring.web&quot;";
 	property portal.release = "true";
 	property portal.suite.search.engine = "solr";
 	property portal.upstream = "true";
@@ -16,7 +17,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Solr Page");
@@ -31,7 +31,9 @@ definition {
 	}
 
 	test AssertSearchAdmin {
-		ProductMenu.gotoPortlet(
+		property test.name.skip.portal.instance = "Solr#AssertSearchAdmin";
+
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -40,6 +42,83 @@ definition {
 			clientVersion = "7.5.0",
 			engineVendor = "Solr",
 			serverVersion = "7.5.0");
+	}
+
+	@priority = "4"
+	test AssertSearchInsightsExplain {
+		property test.name.skip.portal.instance = "Solr#AssertSearchInsightsExplain";
+
+		JSONWebcontent.addWebContent(
+			content = "WC Content",
+			groupName = "Guest",
+			title = "apple");
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/guest/search");
+
+		Portlet.addPG(portletName = "Search Insights");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Search Insights",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		AssertChecked(
+			checkboxName = "Enable Score Explanation",
+			locator1 = "Checkbox#ANY_CHECKBOX");
+
+		IFrame.closeFrame();
+
+		SearchPortlets.searchEmbedded(searchTerm = "apple");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_STRING_QUERY",
+			value1 = "debugQuery=true");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_RESPONSE_QUERY",
+			value1 = "buckets");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_RESPONSE_QUERY",
+			value1 = "explain");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Search Insights",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		Uncheck(
+			checkboxName = "Enable Score Explanation",
+			locator1 = "Checkbox#ANY_CHECKBOX");
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+
+		SearchPortlets.searchEmbedded(searchTerm = "apple");
+
+		AssertTextNotEquals.assertNotPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_STRING_QUERY",
+			value1 = "debugQuery=true");
+
+		AssertTextNotEquals.assertNotPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_RESPONSE_QUERY",
+			value1 = "explain");
+	}
+
+	@priority = "3"
+	test AssertSearchTuningDisabled {
+		ApplicationsMenuHelper.openApplicationsMenu();
+
+		Navigator.gotoNavTab(navTab = "Control Panel");
+
+		AssertElementNotPresent(
+			key_panel = "Search Tuning",
+			locator1 = "ApplicationsMenu#PORTLET");
 	}
 
 	@description = "This smoke test is to ensure that Liferay is successfully running on a remote Solr by asserting the Solr administration dashboard and performing searches in portal. Note by default, an embedded Elasticsearch is deployed in portal."
@@ -51,7 +130,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.addCP(
@@ -62,7 +140,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMDocument.addCP(
@@ -70,7 +147,7 @@ definition {
 			dmDocumentFile = "Document_1.txt",
 			dmDocumentTitle = "Apple");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -102,24 +179,31 @@ definition {
 			searchAssetType = "Message Boards Message");
 	}
 
-	@description = "This smoke test is to ensure that Liferay is successfully running on a remote SolrCloud with 2 nodes by asserting console logging for ZooKeeper and performing searches in portal. Note by default, an embedded Elasticsearch is deployed in portal."
+	@description = "This smoke test is to ensure that Liferay is successfully running on a remote SolrCloud with 2 nodes by asserting console logging for ZooKeeper and performing searches in portal."
 	@priority = "4"
 	test SolrWithSolrCloudSmokeTest {
 		property dummy.socket.proxy.disabled = "true";
 		property solr.solrcloud.enabled = "true";
 		property test.name.skip.portal.instance = "Solr#SolrWithSolrCloudSmokeTest";
 
-		// LRQA-44617
+		AssertConsoleTextPresent(value1 = "zkClient has connected");
 
-		// <execute macro="Solr#viewSolrwithSolrCloudEnabledInConsole" />
+		AssertConsoleTextPresent(value1 = "Updated live nodes from ZooKeeper");
 
-		Solr.viewLiferayCloudDashboard(cloudCollectionName = "liferay");
+		AssertConsoleTextPresent(value1 = "Cluster at localhost:9983 ready");
+
+		Navigator.openSpecificURL(url = "http://localhost:8983/solr/#/~cloud");
+
+		AssertVisible(locator1 = "SolrAdminDashboard#MENU_CLOUD");
+
+		AssertVisible(
+			key_cloudCollectionName = "liferay",
+			locator1 = "SolrAdminDashboard#CLOUD_COLLECTION");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.addCP(
@@ -130,7 +214,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMDocument.addCP(
@@ -138,7 +221,7 @@ definition {
 			dmDocumentFile = "Document_1.txt",
 			dmDocumentTitle = "Apple");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -180,7 +263,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.addCP(
@@ -191,7 +273,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMDocument.addCP(
@@ -199,7 +280,7 @@ definition {
 			dmDocumentFile = "Document_1.txt",
 			dmDocumentTitle = "Apple");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -230,4 +311,5 @@ definition {
 			searchAssetTitle = "Apple",
 			searchAssetType = "Message Boards Message");
 	}
+
 }

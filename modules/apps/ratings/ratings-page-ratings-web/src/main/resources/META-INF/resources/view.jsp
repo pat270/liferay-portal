@@ -22,13 +22,13 @@ long classPK = layout.getPlid();
 
 AssetEntry assetEntry = (AssetEntry)request.getAttribute(WebKeys.LAYOUT_ASSET_ENTRY);
 
-if ((assetEntry != null) && Objects.equals(layout.getType(), LayoutConstants.TYPE_ASSET_DISPLAY)) {
+if ((assetEntry != null) && layout.isTypeAssetDisplay()) {
 	className = assetEntry.getClassName();
 	classPK = assetEntry.getClassPK();
 }
 %>
 
-<liferay-ui:ratings
+<liferay-ratings:ratings
 	className="<%= className %>"
 	classPK="<%= classPK %>"
 	inTrash="<%= false %>"

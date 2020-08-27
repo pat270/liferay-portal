@@ -1,5 +1,8 @@
 @component-name = "portal-social-networking"
+@ignore = "true"
 definition {
+
+	property osgi.app.includes = "directory-web";
 	property portal.upstream = "true";
 	property custom.properties = "default.layout.template.id=1_column";
 	property testray.main.component.name = "Social Networking";
@@ -13,7 +16,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
@@ -38,7 +40,7 @@ definition {
 			PortalInstances.tearDownCP();
 		}
 		else {
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Page.tearDownCP();
 		}
@@ -46,7 +48,7 @@ definition {
 
 	@priority = "4"
 	test SearchPortalDirectory {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -153,4 +155,5 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 	}
+
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -25,7 +26,7 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -63,7 +64,7 @@ public class ResourceActionLocalServiceImpl
 			resourceAction.setActionId(actionId);
 			resourceAction.setBitwiseValue(bitwiseValue);
 
-			resourceActionPersistence.update(resourceAction);
+			resourceAction = resourceActionPersistence.update(resourceAction);
 		}
 
 		return resourceAction;
@@ -92,142 +93,152 @@ public class ResourceActionLocalServiceImpl
 	public void checkResourceActions(
 		String name, List<String> actionIds, boolean addDefaultActions) {
 
-		if ((actionIds.size() > Long.SIZE) ||
-			((actionIds.size() == Long.SIZE) &&
-			 !actionIds.contains(ActionKeys.VIEW))) {
+		synchronized (name.intern()) {
+			if ((actionIds.size() > Long.SIZE) ||
+				((actionIds.size() == Long.SIZE) &&
+				 !actionIds.contains(ActionKeys.VIEW))) {
 
-			throw new SystemException(
-				"There are too many actions for resource " + name);
-		}
-
-		long availableBits = -2;
-		Map<String, ResourceAction> resourceActionMap = new HashMap<>();
-
-		List<ResourceAction> resourceActions = getResourceActions(name);
-
-		for (ResourceAction resourceAction : resourceActions) {
-			availableBits &= ~resourceAction.getBitwiseValue();
-
-			resourceActionMap.put(resourceAction.getActionId(), resourceAction);
-		}
-
-		List<Object[]> keyActionIdAndBitwiseValues = null;
-
-		for (String actionId : actionIds) {
-			String key = encodeKey(name, actionId);
-
-			ResourceAction resourceAction = _resourceActions.get(key);
-
-			if (resourceAction != null) {
-				continue;
+				throw new SystemException(
+					"There are too many actions for resource " + name);
 			}
 
-			resourceAction = resourceActionMap.get(actionId);
+			long availableBits = -2;
+			Map<String, ResourceAction> resourceActionsMap = null;
 
-			if (resourceAction == null) {
-				long bitwiseValue = 1;
+			List<Object[]> keyActionIdAndBitwiseValues = null;
 
-				if (!actionId.equals(ActionKeys.VIEW)) {
-					bitwiseValue = Long.lowestOneBit(availableBits);
+			for (String actionId : actionIds) {
+				String key = encodeKey(name, actionId);
 
-					availableBits ^= bitwiseValue;
+				if (_resourceActions.get(key) != null) {
+					continue;
 				}
 
-				if (keyActionIdAndBitwiseValues == null) {
-					keyActionIdAndBitwiseValues = new ArrayList<>();
+				if (resourceActionsMap == null) {
+					resourceActionsMap = new HashMap<>();
+
+					List<ResourceAction> resourceActions = getResourceActions(
+						name);
+
+					for (ResourceAction resourceAction : resourceActions) {
+						availableBits &= ~resourceAction.getBitwiseValue();
+
+						resourceActionsMap.put(
+							resourceAction.getActionId(), resourceAction);
+					}
 				}
 
-				keyActionIdAndBitwiseValues.add(
-					new Object[] {key, actionId, bitwiseValue});
+				ResourceAction resourceAction = resourceActionsMap.get(
+					actionId);
+
+				if (resourceAction == null) {
+					long bitwiseValue = 1;
+
+					if (!actionId.equals(ActionKeys.VIEW)) {
+						bitwiseValue = Long.lowestOneBit(availableBits);
+
+						availableBits ^= bitwiseValue;
+					}
+
+					if (keyActionIdAndBitwiseValues == null) {
+						keyActionIdAndBitwiseValues = new ArrayList<>();
+					}
+
+					keyActionIdAndBitwiseValues.add(
+						new Object[] {key, actionId, bitwiseValue});
+				}
+				else {
+					_resourceActions.put(key, resourceAction);
+				}
 			}
-			else {
+
+			if (keyActionIdAndBitwiseValues == null) {
+				return;
+			}
+
+			long batchCounter = counterLocalService.increment(
+				ResourceAction.class.getName(),
+				keyActionIdAndBitwiseValues.size());
+
+			batchCounter -= keyActionIdAndBitwiseValues.size();
+
+			for (Object[] keyActionIdAndBitwiseValue :
+					keyActionIdAndBitwiseValues) {
+
+				String key = (String)keyActionIdAndBitwiseValue[0];
+				String actionId = (String)keyActionIdAndBitwiseValue[1];
+				long bitwiseValue = (long)keyActionIdAndBitwiseValue[2];
+
+				ResourceAction resourceAction = null;
+
+				try {
+					resourceAction = resourceActionPersistence.create(
+						++batchCounter);
+
+					resourceAction.setName(name);
+					resourceAction.setActionId(actionId);
+					resourceAction.setBitwiseValue(bitwiseValue);
+
+					resourceAction = resourceActionPersistence.update(
+						resourceAction);
+				}
+				catch (Throwable throwable) {
+					resourceAction =
+						resourceActionLocalService.addResourceAction(
+							name, actionId, bitwiseValue);
+				}
+
 				_resourceActions.put(key, resourceAction);
 			}
-		}
 
-		if (keyActionIdAndBitwiseValues == null) {
-			return;
-		}
-
-		long batchCounter = counterLocalService.increment(
-			ResourceAction.class.getName(), keyActionIdAndBitwiseValues.size());
-
-		batchCounter -= keyActionIdAndBitwiseValues.size();
-
-		for (Object[] keyActionIdAndBitwiseValue :
-				keyActionIdAndBitwiseValues) {
-
-			String key = (String)keyActionIdAndBitwiseValue[0];
-			String actionId = (String)keyActionIdAndBitwiseValue[1];
-			long bitwiseValue = (long)keyActionIdAndBitwiseValue[2];
-
-			ResourceAction resourceAction = null;
-
-			try {
-				resourceAction = resourceActionPersistence.create(
-					++batchCounter);
-
-				resourceAction.setName(name);
-				resourceAction.setActionId(actionId);
-				resourceAction.setBitwiseValue(bitwiseValue);
-
-				resourceActionPersistence.update(resourceAction);
-			}
-			catch (Throwable t) {
-				resourceAction = resourceActionLocalService.addResourceAction(
-					name, actionId, bitwiseValue);
+			if (!addDefaultActions) {
+				return;
 			}
 
-			_resourceActions.put(key, resourceAction);
-		}
+			List<String> groupDefaultActions =
+				ResourceActionsUtil.getModelResourceGroupDefaultActions(name);
 
-		if (!addDefaultActions) {
-			return;
-		}
+			List<String> guestDefaultActions =
+				ResourceActionsUtil.getModelResourceGuestDefaultActions(name);
 
-		List<String> groupDefaultActions =
-			ResourceActionsUtil.getModelResourceGroupDefaultActions(name);
+			long guestBitwiseValue = 0;
+			long ownerBitwiseValue = 0;
+			long siteMemberBitwiseValue = 0;
 
-		List<String> guestDefaultActions =
-			ResourceActionsUtil.getModelResourceGuestDefaultActions(name);
+			for (Object[] keyActionIdAndBitwiseValue :
+					keyActionIdAndBitwiseValues) {
 
-		long guestBitwiseValue = 0;
-		long ownerBitwiseValue = 0;
-		long siteMemberBitwiseValue = 0;
+				String actionId = (String)keyActionIdAndBitwiseValue[1];
+				long bitwiseValue = (long)keyActionIdAndBitwiseValue[2];
 
-		for (Object[] keyActionIdAndBitwiseValue :
-				keyActionIdAndBitwiseValues) {
+				if (guestDefaultActions.contains(actionId)) {
+					guestBitwiseValue |= bitwiseValue;
+				}
 
-			String actionId = (String)keyActionIdAndBitwiseValue[1];
-			long bitwiseValue = (long)keyActionIdAndBitwiseValue[2];
+				ownerBitwiseValue |= bitwiseValue;
 
-			if (guestDefaultActions.contains(actionId)) {
-				guestBitwiseValue |= bitwiseValue;
+				if (groupDefaultActions.contains(actionId)) {
+					siteMemberBitwiseValue |= bitwiseValue;
+				}
 			}
 
-			ownerBitwiseValue |= bitwiseValue;
-
-			if (groupDefaultActions.contains(actionId)) {
-				siteMemberBitwiseValue |= bitwiseValue;
+			if (guestBitwiseValue > 0) {
+				resourcePermissionLocalService.addResourcePermissions(
+					name, RoleConstants.GUEST,
+					ResourceConstants.SCOPE_INDIVIDUAL, guestBitwiseValue);
 			}
-		}
 
-		if (guestBitwiseValue > 0) {
-			resourcePermissionLocalService.addResourcePermissions(
-				name, RoleConstants.GUEST, ResourceConstants.SCOPE_INDIVIDUAL,
-				guestBitwiseValue);
-		}
+			if (ownerBitwiseValue > 0) {
+				resourcePermissionLocalService.addResourcePermissions(
+					name, RoleConstants.OWNER,
+					ResourceConstants.SCOPE_INDIVIDUAL, ownerBitwiseValue);
+			}
 
-		if (ownerBitwiseValue > 0) {
-			resourcePermissionLocalService.addResourcePermissions(
-				name, RoleConstants.OWNER, ResourceConstants.SCOPE_INDIVIDUAL,
-				ownerBitwiseValue);
-		}
-
-		if (siteMemberBitwiseValue > 0) {
-			resourcePermissionLocalService.addResourcePermissions(
-				name, RoleConstants.SITE_MEMBER,
-				ResourceConstants.SCOPE_INDIVIDUAL, siteMemberBitwiseValue);
+			if (siteMemberBitwiseValue > 0) {
+				resourcePermissionLocalService.addResourcePermissions(
+					name, RoleConstants.SITE_MEMBER,
+					ResourceConstants.SCOPE_INDIVIDUAL, siteMemberBitwiseValue);
+			}
 		}
 	}
 
@@ -276,8 +287,8 @@ public class ResourceActionLocalServiceImpl
 			try {
 				actionableDynamicQuery.performActions();
 			}
-			catch (PortalException pe) {
-				throw new SystemException(pe);
+			catch (PortalException portalException) {
+				throw new SystemException(portalException);
 			}
 		}
 
@@ -326,11 +337,7 @@ public class ResourceActionLocalServiceImpl
 	}
 
 	protected String encodeKey(String name, String actionId) {
-		return name.concat(
-			StringPool.POUND
-		).concat(
-			actionId
-		);
+		return StringBundler.concat(name, StringPool.POUND, actionId);
 	}
 
 	private static final Map<String, ResourceAction> _resourceActions =

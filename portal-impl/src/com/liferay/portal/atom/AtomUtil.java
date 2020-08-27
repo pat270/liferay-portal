@@ -82,7 +82,7 @@ public class AtomUtil {
 
 			portletTitle = company.getName();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 
@@ -104,7 +104,7 @@ public class AtomUtil {
 		try {
 			company = getCompany();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return StringPool.BLANK;
 		}
 
@@ -122,9 +122,8 @@ public class AtomUtil {
 	}
 
 	public static Company getCompany() throws PortalException {
-		long companyId = CompanyThreadLocal.getCompanyId();
-
-		return CompanyLocalServiceUtil.getCompanyById(companyId);
+		return CompanyLocalServiceUtil.getCompanyById(
+			CompanyThreadLocal.getCompanyId());
 	}
 
 	public static AtomPager getPager(RequestContext requestContext) {

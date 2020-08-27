@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class GradleTestDependencyVersionCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -39,6 +39,7 @@ public class GradleTestDependencyVersionCheck extends BaseFileCheck {
 		String fileName, String absolutePath, String content) {
 
 		if (!absolutePath.contains("/modules/apps/") &&
+			!absolutePath.contains("/modules/dxp/apps/") &&
 			!absolutePath.contains("/modules/private/apps/")) {
 
 			return content;
@@ -110,15 +111,14 @@ public class GradleTestDependencyVersionCheck extends BaseFileCheck {
 			}
 
 			if (dependencyName.startsWith("com.liferay.") &&
+				!dependencyName.startsWith("com.liferay.portletmvc4spring") &&
 				!line.contains("project(\"") &&
 				!allowedDependencyNames.contains(dependencyName)) {
-
-				int lineNumber = getLineNumber(content, content.indexOf(line));
 
 				addMessage(
 					fileName,
 					"Use a project dependency instead of a module dependency",
-					lineNumber);
+					getLineNumber(content, content.indexOf(line)));
 			}
 
 			sb.append(line);

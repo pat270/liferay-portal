@@ -25,6 +25,7 @@ taglib uri="http://liferay.com/tld/expando" prefix="liferay-expando" %><%@
 taglib uri="http://liferay.com/tld/export-import-changeset" prefix="liferay-export-import-changeset" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/ratings" prefix="liferay-ratings" %><%@
 taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/trash" prefix="liferay-trash" %><%@
@@ -40,6 +41,7 @@ page import="com.liferay.asset.kernel.service.AssetEntryServiceUtil" %><%@
 page import="com.liferay.asset.kernel.service.persistence.AssetEntryQuery" %><%@
 page import="com.liferay.bookmarks.configuration.BookmarksGroupServiceOverriddenConfiguration" %><%@
 page import="com.liferay.bookmarks.constants.BookmarksConstants" %><%@
+page import="com.liferay.bookmarks.constants.BookmarksFolderConstants" %><%@
 page import="com.liferay.bookmarks.constants.BookmarksPortletKeys" %><%@
 page import="com.liferay.bookmarks.constants.BookmarksWebKeys" %><%@
 page import="com.liferay.bookmarks.exception.EntryURLException" %><%@
@@ -48,7 +50,6 @@ page import="com.liferay.bookmarks.exception.NoSuchEntryException" %><%@
 page import="com.liferay.bookmarks.exception.NoSuchFolderException" %><%@
 page import="com.liferay.bookmarks.model.BookmarksEntry" %><%@
 page import="com.liferay.bookmarks.model.BookmarksFolder" %><%@
-page import="com.liferay.bookmarks.model.BookmarksFolderConstants" %><%@
 page import="com.liferay.bookmarks.search.BookmarksSearcher" %><%@
 page import="com.liferay.bookmarks.service.BookmarksEntryServiceUtil" %><%@
 page import="com.liferay.bookmarks.service.BookmarksFolderLocalServiceUtil" %><%@
@@ -82,6 +83,7 @@ page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.KeyValuePair" %><%@
 page import="com.liferay.portal.kernel.util.KeyValuePairComparator" %><%@
@@ -101,13 +103,13 @@ page import="com.liferay.subscription.service.SubscriptionLocalServiceUtil" %>
 
 <%@ page import="java.util.ArrayList" %><%@
 page import="java.util.Arrays" %><%@
-page import="java.util.HashMap" %><%@
 page import="java.util.List" %><%@
 page import="java.util.Map" %><%@
 page import="java.util.Objects" %><%@
 page import="java.util.Set" %>
 
-<%@ page import="javax.portlet.PortletURL" %><%@
+<%@ page import="javax.portlet.PortletRequest" %><%@
+page import="javax.portlet.PortletURL" %><%@
 page import="javax.portlet.WindowState" %>
 
 <liferay-frontend:defineObjects />

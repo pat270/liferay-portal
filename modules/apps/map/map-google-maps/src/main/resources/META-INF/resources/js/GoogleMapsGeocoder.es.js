@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import State from 'metal-state';
 
 /**
@@ -20,7 +34,7 @@ class GoogleMapsGeocoder extends State {
 	/**
 	 * Handles the server response of a successfull address/location resolution
 	 * @param {function} callback Callback that will be executed on success
-  	 * @param {Object} location Raw location information
+	 * @param {Object} location Raw location information
 	 * @param {Object} response Server response
 	 * @param {Object} status Server response status
 	 * @protected
@@ -29,7 +43,7 @@ class GoogleMapsGeocoder extends State {
 	_handleGeocoderResponse(callback, location, response, status) {
 		const result = {
 			data: {},
-			err: status === google.maps.GeocoderStatus.OK ? null : status
+			err: status === google.maps.GeocoderStatus.OK ? null : status,
 		};
 
 		if (!result.err) {
@@ -40,14 +54,14 @@ class GoogleMapsGeocoder extends State {
 				address: geocoderResult.formatted_address,
 				location: {
 					lat: geolocation.lat(),
-					lng: geolocation.lng()
-				}
+					lng: geolocation.lng(),
+				},
 			};
 		}
 		else {
 			result.data = {
 				address: '',
-				location: location
+				location,
 			};
 		}
 
@@ -62,7 +76,7 @@ class GoogleMapsGeocoder extends State {
 	 */
 	forward(query, callback) {
 		const payload = {
-			address: query
+			address: query,
 		};
 
 		this._geocoder.geocode(
@@ -79,7 +93,7 @@ class GoogleMapsGeocoder extends State {
 	 */
 	reverse(location, callback) {
 		const payload = {
-			location
+			location,
 		};
 
 		this._geocoder.geocode(

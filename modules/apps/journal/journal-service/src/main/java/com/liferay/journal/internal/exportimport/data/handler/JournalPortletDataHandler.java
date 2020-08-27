@@ -33,7 +33,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
@@ -54,7 +54,6 @@ import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
@@ -111,7 +110,10 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.journal.configuration.JournalServiceConfiguration",
-	property = "javax.portlet.name=" + JournalPortletKeys.JOURNAL,
+	property = {
+		"javax.portlet.name=" + JournalPortletKeys.JOURNAL,
+		"schema.version=" + JournalPortletDataHandler.SCHEMA_VERSION
+	},
 	service = PortletDataHandler.class
 )
 public class JournalPortletDataHandler extends BasePortletDataHandler {
@@ -135,6 +137,11 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 	}
 
 	@Override
+	public String getResourceName() {
+		return JournalConstants.RESOURCE_NAME;
+	}
+
+	@Override
 	public String getSchemaVersion() {
 		return SCHEMA_VERSION;
 	}
@@ -154,8 +161,8 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 
 			return journalServiceConfiguration.publishToLiveByDefaultEnabled();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return true;
@@ -279,11 +286,11 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			// Export DDM structure default values
 
 			ActionableDynamicQuery
-				ddmStructureDefaultValueActionableDynamicQuery =
+				ddmStructureDefaultValuesActionableDynamicQuery =
 					getDDMStructureDefaultValuesActionableDynamicQuery(
 						portletDataContext);
 
-			ddmStructureDefaultValueActionableDynamicQuery.performActions();
+			ddmStructureDefaultValuesActionableDynamicQuery.performActions();
 		}
 
 		if (portletDataContext.getBooleanParameter(NAMESPACE, "templates")) {
@@ -358,7 +365,8 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			// Importing DDM structure default values
 
 			for (Element articleElement : articleElements) {
-				String className = articleElement.attributeValue("class-name");
+				String className = articleElement.attributeValue(
+					"attached-class-name");
 
 				if (Validator.isNotNull(className) &&
 					className.equals(DDMStructure.class.getName())) {
@@ -527,9 +535,9 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 				Property classNameIdProperty = PropertyFactoryUtil.forName(
 					"classNameId");
 
-				long classNameId = _portal.getClassNameId(JournalArticle.class);
-
-				dynamicQuery.add(classNameIdProperty.eq(classNameId));
+				dynamicQuery.add(
+					classNameIdProperty.eq(
+						_portal.getClassNameId(JournalArticle.class)));
 			});
 
 		exportActionableDynamicQuery.setStagedModelType(
@@ -671,8 +679,8 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 
 			return journalServiceConfiguration.versionHistoryByDefaultEnabled();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return true;
@@ -680,7 +688,7 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 
 	private void _populateJournalArticleLastPublishDateCounts(
 			PortletDataContext portletDataContext)
-		throws PortalException {
+		throws Exception {
 
 		ManifestSummary manifestSummary =
 			portletDataContext.getManifestSummary();

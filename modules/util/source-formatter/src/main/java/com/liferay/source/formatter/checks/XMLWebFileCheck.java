@@ -33,7 +33,7 @@ import java.util.TreeSet;
 public class XMLWebFileCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -115,7 +115,7 @@ public class XMLWebFileCheck extends BaseFileCheck {
 
 		y = newContent.lastIndexOf("</url-pattern>", y) + 15;
 
-		sb = new StringBundler(3 * urlPatterns.size() + 1);
+		sb = new StringBundler((3 * urlPatterns.size()) + 1);
 
 		sb.append("\t\t\t<url-pattern>/c/portal/protected</url-pattern>\n");
 
@@ -125,11 +125,8 @@ public class XMLWebFileCheck extends BaseFileCheck {
 			sb.append("/c/portal/protected</url-pattern>\n");
 		}
 
-		newContent =
-			newContent.substring(0, x) + sb.toString() +
-				newContent.substring(y);
-
-		return newContent;
+		return newContent.substring(0, x) + sb.toString() +
+			newContent.substring(y);
 	}
 
 }

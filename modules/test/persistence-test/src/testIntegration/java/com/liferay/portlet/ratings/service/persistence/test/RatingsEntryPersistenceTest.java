@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -123,6 +124,10 @@ public class RatingsEntryPersistenceTest {
 
 		RatingsEntry newRatingsEntry = _persistence.create(pk);
 
+		newRatingsEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		newRatingsEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newRatingsEntry.setUuid(RandomTestUtil.randomString());
 
 		newRatingsEntry.setCompanyId(RandomTestUtil.nextLong());
@@ -146,6 +151,12 @@ public class RatingsEntryPersistenceTest {
 		RatingsEntry existingRatingsEntry = _persistence.findByPrimaryKey(
 			newRatingsEntry.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingRatingsEntry.getMvccVersion(),
+			newRatingsEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingRatingsEntry.getCtCollectionId(),
+			newRatingsEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingRatingsEntry.getUuid(), newRatingsEntry.getUuid());
 		Assert.assertEquals(
@@ -248,10 +259,10 @@ public class RatingsEntryPersistenceTest {
 
 	protected OrderByComparator<RatingsEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"RatingsEntry", "uuid", true, "entryId", true, "companyId", true,
-			"userId", true, "userName", true, "createDate", true,
-			"modifiedDate", true, "classNameId", true, "classPK", true, "score",
-			true);
+			"RatingsEntry", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "entryId", true, "companyId", true, "userId", true,
+			"userName", true, "createDate", true, "modifiedDate", true,
+			"classNameId", true, "classPK", true, "score", true);
 	}
 
 	@Test
@@ -469,28 +480,76 @@ public class RatingsEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		RatingsEntry existingRatingsEntry = _persistence.findByPrimaryKey(
-			newRatingsEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newRatingsEntry.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		RatingsEntry newRatingsEntry = addRatingsEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			RatingsEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"entryId", newRatingsEntry.getEntryId()));
+
+		List<RatingsEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(RatingsEntry ratingsEntry) {
 		Assert.assertEquals(
-			Long.valueOf(existingRatingsEntry.getUserId()),
+			Long.valueOf(ratingsEntry.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRatingsEntry, "getOriginalUserId", new Class<?>[0]));
+				ratingsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
 		Assert.assertEquals(
-			Long.valueOf(existingRatingsEntry.getClassNameId()),
+			Long.valueOf(ratingsEntry.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRatingsEntry, "getOriginalClassNameId",
-				new Class<?>[0]));
+				ratingsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingRatingsEntry.getClassPK()),
+			Long.valueOf(ratingsEntry.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRatingsEntry, "getOriginalClassPK", new Class<?>[0]));
+				ratingsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 	}
 
 	protected RatingsEntry addRatingsEntry() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		RatingsEntry ratingsEntry = _persistence.create(pk);
+
+		ratingsEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		ratingsEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ratingsEntry.setUuid(RandomTestUtil.randomString());
 

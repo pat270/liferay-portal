@@ -19,35 +19,27 @@ ProcessSummaryDisplayContext processSummaryDisplayContext = new ProcessSummaryDi
 
 boolean settingsMapPrivateLayout = MapUtil.getBoolean(exportImportConfigurationSettingsMap, "privateLayout");
 
-String publicPagesDescription = (settingsMapPrivateLayout) ? LanguageUtil.get(request, "private-pages") : LanguageUtil.get(request, "public-pages");
+String publicPagesDescription = settingsMapPrivateLayout ? LanguageUtil.get(request, "private-pages") : LanguageUtil.get(request, "public-pages");
 
-long layoutSetBranchId = MapUtil.getLong(parameterMap, "layoutSetBranchId");
+LayoutSetBranch layoutSetBranch = LayoutSetBranchLocalServiceUtil.fetchLayoutSetBranch(MapUtil.getLong(parameterMap, "layoutSetBranchId"));
 
-LayoutSetBranch layoutSetBranch = null;
+long[] selectedLayoutIds = GetterUtil.getLongValues(exportImportConfigurationSettingsMap.get("layoutIds"));
 
-long[] selectedLayoutIds = null;
-
-List<String> pageNames = new ArrayList<>();
-
-if (Validator.isNotNull(MapUtil.getString(parameterMap, "layoutSetBranchId"))) {
-	layoutSetBranch = LayoutSetBranchLocalServiceUtil.getLayoutSetBranch(layoutSetBranchId);
-
-	selectedLayoutIds = GetterUtil.getLongValues(exportImportConfigurationSettingsMap.get("layoutIds"));
-
-	String layoutsJSONString = LayoutsTreeUtil.getLayoutsJSON(request, groupId, settingsMapPrivateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, selectedLayoutIds, false, "asd");
-
-	JSONObject layoutsJSONObject = JSONFactoryUtil.createJSONObject(layoutsJSONString);
-
-	JSONArray layoutsJSONArray = layoutsJSONObject.getJSONArray("layouts");
-
-	pageNames = processSummaryDisplayContext.getPageNames(layoutsJSONArray);
-}
+List<String> pageNames = processSummaryDisplayContext.getPageNames(groupId, settingsMapPrivateLayout, selectedLayoutIds, themeDisplay.getLanguageId());
 
 boolean deleteMissingLayouts = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_MISSING_LAYOUTS);
 boolean layoutSetSettings = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.LAYOUT_SET_SETTINGS);
 boolean layoutSetPrototypeSettings = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS);
 boolean logo = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.LOGO);
 boolean themeSettings = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.THEME_REFERENCE);
+
+long pageDeletions = 0;
+
+if (modelDeletionCounters.containsKey(Layout.class.getName())) {
+	LongWrapper pageDeletionsLongWrapper = modelDeletionCounters.get(Layout.class.getName());
+
+	pageDeletions = pageDeletionsLongWrapper.getValue();
+}
 %>
 
 <div class="process-summary-section">
@@ -112,6 +104,18 @@ boolean themeSettings = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.
 			<c:if test="<%= deleteMissingLayouts %>">
 				<div>- <liferay-ui:message key="delete-missing-layouts" /></div>
 			</c:if>
+		</div>
+	</c:if>
+
+	<c:if test="<%= pageDeletions > 0 %>">
+		<div class="process-summary-subsection">
+			<label class="process-summary-label">
+				<liferay-ui:message key="page-deletions" />:
+			</label>
+		</div>
+
+		<div>
+			<%= LanguageUtil.format(resourceBundle, "x-items-deleted", pageDeletions) %>
 		</div>
 	</c:if>
 </div>

@@ -52,7 +52,7 @@ public class AsyncBrokerTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		NoticeableFuture<String> noticeableFuture = asyncBroker.post(_KEY);
@@ -120,22 +120,6 @@ public class AsyncBrokerTest {
 		Assert.assertTrue(
 			defaultNoticeableFutures.toString(),
 			defaultNoticeableFutures.isEmpty());
-
-		DefaultNoticeableFuture<String> defaultNoticeableFuture =
-			new DefaultNoticeableFuture<>();
-
-		Assert.assertNull(asyncBroker.post(_KEY, defaultNoticeableFuture));
-		Assert.assertSame(
-			defaultNoticeableFuture, defaultNoticeableFutures.get(_KEY));
-		Assert.assertSame(defaultNoticeableFuture, asyncBroker.post(_KEY));
-
-		Assert.assertEquals(
-			defaultNoticeableFutures.toString(), 1,
-			defaultNoticeableFutures.size());
-		Assert.assertTrue(defaultNoticeableFuture.cancel(true));
-		Assert.assertTrue(
-			defaultNoticeableFutures.toString(),
-			defaultNoticeableFutures.isEmpty());
 	}
 
 	@Test
@@ -195,8 +179,8 @@ public class AsyncBrokerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(exception, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(exception, executionException.getCause());
 		}
 
 		Assert.assertTrue(

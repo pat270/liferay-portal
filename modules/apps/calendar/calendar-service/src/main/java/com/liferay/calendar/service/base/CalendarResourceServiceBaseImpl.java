@@ -50,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class CalendarResourceServiceBaseImpl
 	extends BaseServiceImpl
-	implements CalendarResourceService, AopService, IdentifiableOSGiService {
+	implements AopService, CalendarResourceService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -106,8 +106,8 @@ public abstract class CalendarResourceServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

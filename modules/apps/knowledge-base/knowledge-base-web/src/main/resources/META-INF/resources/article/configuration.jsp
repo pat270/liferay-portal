@@ -103,19 +103,21 @@ kbArticlePortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBArtic
 </liferay-frontend:edit-form>
 
 <aui:script>
-	var <portlet:namespace />form = document.querySelector('#<portlet:namespace />fm');
+	var <portlet:namespace />form = document.getElementById(
+		'<portlet:namespace />fm'
+	);
 
 	if (<portlet:namespace />form) {
-		<portlet:namespace />form.querySelector('#<portlet:namespace />selectKBArticleButton').addEventListener(
-			'click',
-			function(event) {
+		document
+			.getElementById('<portlet:namespace />selectKBArticleButton')
+			.addEventListener('click', function (event) {
 				Liferay.Util.selectEntity(
 					{
 						dialog: {
 							constrain: true,
 							destroyOnHide: true,
 							modal: true,
-							width: 600
+							width: 600,
 						},
 						id: '<portlet:namespace />selectKBObject',
 						title: '<liferay-ui:message key="select-article" />',
@@ -129,20 +131,22 @@ kbArticlePortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBArtic
 							<portlet:param name="selectableClassNameIds" value="<%= String.valueOf(PortalUtil.getClassNameId(KBArticleConstants.getClassName())) %>" />
 						</liferay-portlet:renderURL>
 
-						uri: '<%= HtmlUtil.escapeJS(selectKBObjectURL) %>'
+						uri: '<%= HtmlUtil.escapeJS(selectKBObjectURL) %>',
 					},
-					function(event) {
+					function (event) {
 						var kbArticleData = {
 							idString: 'resourcePrimKey',
 							idValue: event.resourceprimkey,
 							nameString: 'configurationKBObject',
-							nameValue: event.title
+							nameValue: event.title,
 						};
 
-						Liferay.Util.selectFolder(kbArticleData, '<portlet:namespace />');
+						Liferay.Util.selectFolder(
+							kbArticleData,
+							'<portlet:namespace />'
+						);
 					}
 				);
-			}
-		);
+			});
 	}
 </aui:script>

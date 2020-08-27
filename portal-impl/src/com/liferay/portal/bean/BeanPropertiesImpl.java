@@ -55,8 +55,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 			beanCopy.copy();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -71,8 +71,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 			beanCopy.copy();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -87,40 +87,30 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 			beanCopy.copy();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
 	@Override
 	public <T> T deepCopyProperties(Object source) throws Exception {
-		ObjectInputStream objectInputStream = null;
-		ObjectOutputStream objectOutputStream = null;
-
-		try {
-			UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
+		try (UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 				new UnsyncByteArrayOutputStream();
-
-			objectOutputStream = new ObjectOutputStream(
-				unsyncByteArrayOutputStream);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(
+				unsyncByteArrayOutputStream)) {
 
 			objectOutputStream.writeObject(source);
 
 			objectOutputStream.flush();
 
-			UnsyncByteArrayInputStream unsyncByteArrayInputStream =
-				new UnsyncByteArrayInputStream(
-					unsyncByteArrayOutputStream.toByteArray());
+			try (UnsyncByteArrayInputStream unsyncByteArrayInputStream =
+					new UnsyncByteArrayInputStream(
+						unsyncByteArrayOutputStream.toByteArray());
+				ObjectInputStream objectInputStream = new ObjectInputStream(
+					unsyncByteArrayInputStream)) {
 
-			objectInputStream = new ObjectInputStream(
-				unsyncByteArrayInputStream);
-
-			return (T)objectInputStream.readObject();
-		}
-		finally {
-			objectInputStream.close();
-
-			objectOutputStream.close();
+				return (T)objectInputStream.readObject();
+			}
 		}
 	}
 
@@ -139,8 +129,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toBooleanValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -164,7 +154,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toBooleanValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -186,8 +176,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toByteValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -209,7 +199,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toByteValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -231,8 +221,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toDoubleValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -256,7 +246,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toDoubleValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -278,8 +268,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toFloatValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -301,7 +291,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toFloatValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -323,8 +313,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toIntValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -346,7 +336,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toIntValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -368,8 +358,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toLongValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -391,7 +381,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toLongValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -411,8 +401,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 			try {
 				beanValue = BeanUtil.getProperty(bean, param);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -438,7 +428,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 			try {
 				beanValue = BeanUtil.getProperty(bean, param);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -464,8 +454,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 			try {
 				beanType = BeanUtil.getPropertyType(bean, param);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -491,7 +481,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 			try {
 				beanType = BeanUtil.getPropertyType(bean, param);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -517,8 +507,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toShortValue(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -540,7 +530,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toShortValue(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -562,8 +552,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toString(value, defaultValue);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -587,7 +577,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 
 				beanValue = Convert.toString(value, defaultValue);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -606,10 +596,11 @@ public class BeanPropertiesImpl implements BeanProperties {
 		Object bean, HttpServletRequest httpServletRequest,
 		String[] ignoreProperties) {
 
-		Enumeration<String> enu = httpServletRequest.getParameterNames();
+		Enumeration<String> enumeration =
+			httpServletRequest.getParameterNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			if (ArrayUtil.contains(ignoreProperties, name)) {
 				continue;
@@ -655,8 +646,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 		try {
 			BeanUtil.setProperty(bean, param, value);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -694,12 +685,12 @@ public class BeanPropertiesImpl implements BeanProperties {
 			return PortalUtil.getDate(
 				month, day, year, hour, minute, user.getTimeZone(), null);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return null;

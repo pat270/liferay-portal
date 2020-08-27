@@ -14,7 +14,9 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.model.PortletPreferences;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link PortletPreferencesLocalService}.
@@ -23,7 +25,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PortletPreferencesLocalService
  * @generated
  */
-@ProviderType
 public class PortletPreferencesLocalServiceWrapper
 	implements PortletPreferencesLocalService,
 			   ServiceWrapper<PortletPreferencesLocalService> {
@@ -35,11 +36,10 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		addPortletPreferences(
-			long companyId, long ownerId, int ownerType, long plid,
-			String portletId, com.liferay.portal.kernel.model.Portlet portlet,
-			String defaultPreferences) {
+	public PortletPreferences addPortletPreferences(
+		long companyId, long ownerId, int ownerType, long plid,
+		String portletId, com.liferay.portal.kernel.model.Portlet portlet,
+		String defaultPreferences) {
 
 		return _portletPreferencesLocalService.addPortletPreferences(
 			companyId, ownerId, ownerType, plid, portletId, portlet,
@@ -49,17 +49,31 @@ public class PortletPreferencesLocalServiceWrapper
 	/**
 	 * Adds the portlet preferences to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletPreferences the portlet preferences
 	 * @return the portlet preferences that was added
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		addPortletPreferences(
-			com.liferay.portal.kernel.model.PortletPreferences
-				portletPreferences) {
+	public PortletPreferences addPortletPreferences(
+		PortletPreferences portletPreferences) {
 
 		return _portletPreferencesLocalService.addPortletPreferences(
 			portletPreferences);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _portletPreferencesLocalService.createPersistedModel(
+			primaryKeyObj);
 	}
 
 	/**
@@ -69,8 +83,8 @@ public class PortletPreferencesLocalServiceWrapper
 	 * @return the new portlet preferences
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		createPortletPreferences(long portletPreferencesId) {
+	public PortletPreferences createPortletPreferences(
+		long portletPreferencesId) {
 
 		return _portletPreferencesLocalService.createPortletPreferences(
 			portletPreferencesId);
@@ -91,13 +105,17 @@ public class PortletPreferencesLocalServiceWrapper
 	/**
 	 * Deletes the portlet preferences with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletPreferencesId the primary key of the portlet preferences
 	 * @return the portlet preferences that was removed
 	 * @throws PortalException if a portlet preferences with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-			deletePortletPreferences(long portletPreferencesId)
+	public PortletPreferences deletePortletPreferences(
+			long portletPreferencesId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletPreferencesLocalService.deletePortletPreferences(
@@ -124,14 +142,16 @@ public class PortletPreferencesLocalServiceWrapper
 	/**
 	 * Deletes the portlet preferences from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletPreferences the portlet preferences
 	 * @return the portlet preferences that was removed
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		deletePortletPreferences(
-			com.liferay.portal.kernel.model.PortletPreferences
-				portletPreferences) {
+	public PortletPreferences deletePortletPreferences(
+		PortletPreferences portletPreferences) {
 
 		return _portletPreferencesLocalService.deletePortletPreferences(
 			portletPreferences);
@@ -146,6 +166,11 @@ public class PortletPreferencesLocalServiceWrapper
 	@Override
 	public void deletePortletPreferencesByPlid(long plid) {
 		_portletPreferencesLocalService.deletePortletPreferencesByPlid(plid);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _portletPreferencesLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -170,7 +195,7 @@ public class PortletPreferencesLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -191,7 +216,7 @@ public class PortletPreferencesLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -240,17 +265,16 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		fetchPortletPreferences(long portletPreferencesId) {
+	public PortletPreferences fetchPortletPreferences(
+		long portletPreferencesId) {
 
 		return _portletPreferencesLocalService.fetchPortletPreferences(
 			portletPreferencesId);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		fetchPortletPreferences(
-			long ownerId, int ownerType, long plid, String portletId) {
+	public PortletPreferences fetchPortletPreferences(
+		long ownerId, int ownerType, long plid, String portletId) {
 
 		return _portletPreferencesLocalService.fetchPortletPreferences(
 			ownerId, ownerType, plid, portletId);
@@ -307,6 +331,9 @@ public class PortletPreferencesLocalServiceWrapper
 		return _portletPreferencesLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -330,15 +357,13 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferences() {
-
+	public java.util.List<PortletPreferences> getPortletPreferences() {
 		return _portletPreferencesLocalService.getPortletPreferences();
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferences(int ownerType, long plid, String portletId) {
+	public java.util.List<PortletPreferences> getPortletPreferences(
+		int ownerType, long plid, String portletId) {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
 			ownerType, plid, portletId);
@@ -352,8 +377,7 @@ public class PortletPreferencesLocalServiceWrapper
 	 * @throws PortalException if a portlet preferences with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-			getPortletPreferences(long portletPreferencesId)
+	public PortletPreferences getPortletPreferences(long portletPreferencesId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
@@ -361,17 +385,16 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferences(long ownerId, int ownerType, long plid) {
+	public java.util.List<PortletPreferences> getPortletPreferences(
+		long ownerId, int ownerType, long plid) {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
 			ownerId, ownerType, plid);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-			getPortletPreferences(
-				long ownerId, int ownerType, long plid, String portletId)
+	public PortletPreferences getPortletPreferences(
+			long ownerId, int ownerType, long plid, String portletId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
@@ -379,9 +402,8 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-			getPortletPreferences(
-				long companyId, long ownerId, int ownerType, String portletId)
+	public java.util.List<PortletPreferences> getPortletPreferences(
+			long companyId, long ownerId, int ownerType, String portletId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
@@ -389,34 +411,33 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferences(
-			long companyId, long groupId, long ownerId, int ownerType,
-			String portletId, boolean privateLayout) {
+	public java.util.List<PortletPreferences> getPortletPreferences(
+		long companyId, long groupId, long ownerId, int ownerType,
+		String portletId, boolean privateLayout) {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
 			companyId, groupId, ownerId, ownerType, portletId, privateLayout);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferences(long plid, String portletId) {
+	public java.util.List<PortletPreferences> getPortletPreferences(
+		long plid, String portletId) {
 
 		return _portletPreferencesLocalService.getPortletPreferences(
 			plid, portletId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferencesByOwnerId(long ownerId) {
+	public java.util.List<PortletPreferences> getPortletPreferencesByOwnerId(
+		long ownerId) {
 
 		return _portletPreferencesLocalService.getPortletPreferencesByOwnerId(
 			ownerId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferencesByPlid(long plid) {
+	public java.util.List<PortletPreferences> getPortletPreferencesByPlid(
+		long plid) {
 
 		return _portletPreferencesLocalService.getPortletPreferencesByPlid(
 			plid);
@@ -459,7 +480,7 @@ public class PortletPreferencesLocalServiceWrapper
 	 * Returns a range of all the portlet preferenceses.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of portlet preferenceses
@@ -467,8 +488,8 @@ public class PortletPreferencesLocalServiceWrapper
 	 * @return the range of portlet preferenceses
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.PortletPreferences>
-		getPortletPreferenceses(int start, int end) {
+	public java.util.List<PortletPreferences> getPortletPreferenceses(
+		int start, int end) {
 
 		return _portletPreferencesLocalService.getPortletPreferenceses(
 			start, end);
@@ -542,21 +563,23 @@ public class PortletPreferencesLocalServiceWrapper
 	/**
 	 * Updates the portlet preferences in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletPreferencesLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletPreferences the portlet preferences
 	 * @return the portlet preferences that was updated
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences
-		updatePortletPreferences(
-			com.liferay.portal.kernel.model.PortletPreferences
-				portletPreferences) {
+	public PortletPreferences updatePortletPreferences(
+		PortletPreferences portletPreferences) {
 
 		return _portletPreferencesLocalService.updatePortletPreferences(
 			portletPreferences);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences updatePreferences(
+	public PortletPreferences updatePreferences(
 		long ownerId, int ownerType, long plid, String portletId,
 		javax.portlet.PortletPreferences portletPreferences) {
 
@@ -565,11 +588,31 @@ public class PortletPreferencesLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.PortletPreferences updatePreferences(
+	public PortletPreferences updatePreferences(
 		long ownerId, int ownerType, long plid, String portletId, String xml) {
 
 		return _portletPreferencesLocalService.updatePreferences(
 			ownerId, ownerType, plid, portletId, xml);
+	}
+
+	@Override
+	public CTPersistence<PortletPreferences> getCTPersistence() {
+		return _portletPreferencesLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<PortletPreferences> getModelClass() {
+		return _portletPreferencesLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<PortletPreferences>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _portletPreferencesLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

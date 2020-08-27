@@ -54,13 +54,6 @@ public class DLFileEntryTypeFinderImpl
 	public static final String FIND_BY_C_F_G_N_D_S =
 		DLFileEntryTypeFinder.class.getName() + ".findByC_F_G_N_D_S";
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String JOIN_BY_FILE_ENTRY_TYPE =
-		DLFileEntryTypeFinder.class.getName() + ".joinByFileEntryType";
-
 	@Override
 	public int countByKeywords(
 		long companyId, long[] groupIds, String keywords,
@@ -234,28 +227,28 @@ public class DLFileEntryTypeFinderImpl
 				sql = sql.concat(StringPool.CLOSE_PARENTHESIS);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (includeBasicFileEntryType) {
-				qPos.add(names, 2);
-				qPos.add(descriptions, 2);
+				queryPos.add(names, 2);
+				queryPos.add(descriptions, 2);
 			}
 
-			qPos.add(companyId);
-			qPos.add(groupIds);
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(companyId);
+			queryPos.add(groupIds);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
 			int countValue = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long count = itr.next();
+			while (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					countValue += count.intValue();
@@ -264,8 +257,8 @@ public class DLFileEntryTypeFinderImpl
 
 			return countValue;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -289,10 +282,9 @@ public class DLFileEntryTypeFinderImpl
 			String sql = CustomSQLUtil.get(COUNT_BY_C_F_G_N_D_S);
 
 			if (inherited) {
-				sql = StringUtil.replace(
-					sql, _INNER_JOIN_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _INNER_JOIN_SQL);
 
-				sql = StringUtil.replace(sql, _WHERE_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _WHERE_SQL);
 			}
 
 			if (inlineSQLHelper) {
@@ -318,33 +310,33 @@ public class DLFileEntryTypeFinderImpl
 				sql = sql.concat(StringPool.CLOSE_PARENTHESIS);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (includeBasicFileEntryType) {
-				qPos.add(names, 2);
-				qPos.add(descriptions, 2);
+				queryPos.add(names, 2);
+				queryPos.add(descriptions, 2);
 			}
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (!inherited) {
-				qPos.add(folderId);
+				queryPos.add(folderId);
 			}
 
-			qPos.add(groupIds);
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(groupIds);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
 			int countValue = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long count = itr.next();
+			while (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					countValue += count.intValue();
@@ -353,8 +345,8 @@ public class DLFileEntryTypeFinderImpl
 
 			return countValue;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -400,27 +392,27 @@ public class DLFileEntryTypeFinderImpl
 				sql = sql.concat(StringPool.CLOSE_PARENTHESIS);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("DLFileEntryType", DLFileEntryTypeImpl.class);
+			sqlQuery.addEntity("DLFileEntryType", DLFileEntryTypeImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (includeBasicFileEntryType) {
-				qPos.add(names, 2);
-				qPos.add(descriptions, 2);
+				queryPos.add(names, 2);
+				queryPos.add(descriptions, 2);
 			}
 
-			qPos.add(companyId);
-			qPos.add(groupIds);
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(companyId);
+			queryPos.add(groupIds);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
 			return (List<DLFileEntryType>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -444,10 +436,9 @@ public class DLFileEntryTypeFinderImpl
 			String sql = CustomSQLUtil.get(FIND_BY_C_F_G_N_D_S);
 
 			if (inherited) {
-				sql = StringUtil.replace(
-					sql, _INNER_JOIN_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _INNER_JOIN_SQL);
 
-				sql = StringUtil.replace(sql, _WHERE_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _WHERE_SQL);
 			}
 
 			if (inlineSQLHelper) {
@@ -473,32 +464,32 @@ public class DLFileEntryTypeFinderImpl
 				sql = sql.concat(StringPool.CLOSE_PARENTHESIS);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("DLFileEntryType", DLFileEntryTypeImpl.class);
+			sqlQuery.addEntity("DLFileEntryType", DLFileEntryTypeImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (includeBasicFileEntryType) {
-				qPos.add(names, 2);
-				qPos.add(descriptions, 2);
+				queryPos.add(names, 2);
+				queryPos.add(descriptions, 2);
 			}
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (!inherited) {
-				qPos.add(folderId);
+				queryPos.add(folderId);
 			}
 
-			qPos.add(groupIds);
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(groupIds);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
 			return (List<DLFileEntryType>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

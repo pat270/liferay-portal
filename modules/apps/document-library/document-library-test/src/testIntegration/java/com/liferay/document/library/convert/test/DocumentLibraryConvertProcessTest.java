@@ -15,23 +15,20 @@
 package com.liferay.document.library.convert.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
-import com.liferay.document.library.content.service.DLContentLocalServiceUtil;
+import com.liferay.counter.kernel.service.CounterLocalService;
+import com.liferay.document.library.content.service.DLContentLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.model.DLProcessorConstants;
-import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
-import com.liferay.document.library.kernel.service.DLAppServiceUtil;
-import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.document.library.kernel.service.DLAppService;
+import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.store.Store;
-import com.liferay.document.library.kernel.util.DLPreviewableProcessor;
-import com.liferay.document.library.kernel.util.DLProcessor;
-import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
+import com.liferay.document.library.kernel.util.DLProcessorRegistry;
 import com.liferay.document.library.kernel.util.ImageProcessorUtil;
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBMessage;
-import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
+import com.liferay.message.boards.service.MBMessageLocalService;
 import com.liferay.message.boards.test.util.MBTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.convert.ConvertProcess;
@@ -41,14 +38,14 @@ import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
-import com.liferay.portal.kernel.service.ImageLocalServiceUtil;
+import com.liferay.portal.kernel.service.ImageLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -56,11 +53,11 @@ import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.store.StoreFactory;
-import com.liferay.portlet.documentlibrary.util.ImageProcessorImpl;
 
 import java.io.InputStream;
 
@@ -146,7 +143,7 @@ public class DocumentLibraryConvertProcessTest {
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId());
 
-		Folder folder = DLAppServiceUtil.addFolder(
+		Folder folder = _dlAppService.addFolder(
 			_group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			serviceContext);
@@ -165,8 +162,7 @@ public class DocumentLibraryConvertProcessTest {
 
 		_convertProcess.convert();
 
-		DLContentLocalServiceUtil.getContent(
-			0, 0, _image.getImageId() + ".jpg");
+		_dlContentLocalService.getContent(0, 0, _image.getImageId() + ".jpg");
 	}
 
 	@Test
@@ -181,7 +177,7 @@ public class DocumentLibraryConvertProcessTest {
 
 		Assert.assertTrue(title.endsWith(".docx"));
 
-		DLContentLocalServiceUtil.getContent(
+		_dlContentLocalService.getContent(
 			dlFileEntry.getCompanyId(),
 			DLFolderConstants.getDataRepositoryId(
 				dlFileEntry.getRepositoryId(), dlFileEntry.getFolderId()),
@@ -203,14 +199,14 @@ public class DocumentLibraryConvertProcessTest {
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId());
 
-		return DLAppLocalServiceUtil.addFileEntry(
+		return _dlAppLocalService.addFileEntry(
 			TestPropsValues.getUserId(), _group.getGroupId(), folderId,
 			fileName, mimeType, bytes, serviceContext);
 	}
 
 	protected Image addImage() throws Exception {
-		return ImageLocalServiceUtil.updateImage(
-			CounterLocalServiceUtil.increment(),
+		return _imageLocalService.updateImage(
+			_counterLocalService.increment(),
 			FileUtil.getBytes(getClass(), "dependencies/liferay.jpg"));
 	}
 
@@ -224,7 +220,7 @@ public class DocumentLibraryConvertProcessTest {
 
 		User user = TestPropsValues.getUser();
 
-		return MBMessageLocalServiceUtil.addMessage(
+		return _mbMessageLocalService.addMessage(
 			user.getUserId(), user.getFullName(), _group.getGroupId(),
 			MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID, "Subject", "Body",
 			MBMessageConstants.DEFAULT_FORMAT, objectValuePairs, false, 0,
@@ -235,14 +231,16 @@ public class DocumentLibraryConvertProcessTest {
 		List<FileEntry> fileEntries = new ArrayList<>();
 
 		if (object instanceof MBMessage) {
-			fileEntries = ((MBMessage)object).getAttachmentsFileEntries(0, 1);
+			MBMessage mbMessage = (MBMessage)object;
+
+			fileEntries = mbMessage.getAttachmentsFileEntries(0, 1);
 		}
 
 		Assert.assertFalse(fileEntries.toString(), fileEntries.isEmpty());
 
 		FileEntry fileEntry = fileEntries.get(0);
 
-		return DLFileEntryLocalServiceUtil.getDLFileEntry(
+		return _dlFileEntryLocalService.getDLFileEntry(
 			fileEntry.getFileEntryId());
 	}
 
@@ -261,7 +259,7 @@ public class DocumentLibraryConvertProcessTest {
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId());
 
-		Folder folder = DLAppServiceUtil.addFolder(
+		Folder folder = _dlAppService.addFolder(
 			_group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			serviceContext);
@@ -282,37 +280,25 @@ public class DocumentLibraryConvertProcessTest {
 			_sourceStore.hasFile(
 				rootDLFileEntry.getCompanyId(),
 				rootDLFileEntry.getDataRepositoryId(),
-				rootDLFileEntry.getName()));
+				rootDLFileEntry.getName(), Store.VERSION_DEFAULT));
 
 		DLFileEntry folderDLFileEntry = (DLFileEntry)folderFileEntry.getModel();
-
-		DLProcessor imageProcessor = DLProcessorRegistryUtil.getDLProcessor(
-			DLProcessorConstants.IMAGE_PROCESSOR);
-
-		if (imageProcessor instanceof ImageProcessorImpl) {
-			Assert.assertNotEquals(
-				delete,
-				_sourceStore.hasDirectory(
-					folderDLFileEntry.getCompanyId(),
-					DLPreviewableProcessor.REPOSITORY_ID,
-					DLPreviewableProcessor.THUMBNAIL_PATH));
-		}
 
 		Assert.assertNotEquals(
 			delete,
 			_sourceStore.hasFile(
 				folderDLFileEntry.getCompanyId(),
 				folderDLFileEntry.getDataRepositoryId(),
-				folderDLFileEntry.getName()));
+				folderDLFileEntry.getName(), Store.VERSION_DEFAULT));
 
-		DLContentLocalServiceUtil.getContent(
+		_dlContentLocalService.getContent(
 			folderDLFileEntry.getCompanyId(),
 			DLFolderConstants.getDataRepositoryId(
 				folderDLFileEntry.getRepositoryId(),
 				folderDLFileEntry.getFolderId()),
 			folderDLFileEntry.getName());
 
-		DLContentLocalServiceUtil.getContent(
+		_dlContentLocalService.getContent(
 			rootDLFileEntry.getCompanyId(),
 			DLFolderConstants.getDataRepositoryId(
 				rootDLFileEntry.getRepositoryId(),
@@ -329,7 +315,7 @@ public class DocumentLibraryConvertProcessTest {
 
 		DLFileEntry dlFileEntry = (DLFileEntry)fileEntry.getModel();
 
-		DLContentLocalServiceUtil.getContent(
+		_dlContentLocalService.getContent(
 			dlFileEntry.getCompanyId(),
 			DLFolderConstants.getDataRepositoryId(
 				dlFileEntry.getRepositoryId(), dlFileEntry.getFolderId()),
@@ -346,11 +332,35 @@ public class DocumentLibraryConvertProcessTest {
 
 	private ConvertProcess _convertProcess;
 
+	@Inject
+	private CounterLocalService _counterLocalService;
+
+	@Inject
+	private DLAppLocalService _dlAppLocalService;
+
+	@Inject
+	private DLAppService _dlAppService;
+
+	@Inject
+	private DLContentLocalService _dlContentLocalService;
+
+	@Inject
+	private DLFileEntryLocalService _dlFileEntryLocalService;
+
+	@Inject
+	private DLProcessorRegistry _dlProcessorRegistry;
+
 	@DeleteAfterTestRun
 	private Group _group;
 
 	@DeleteAfterTestRun
 	private Image _image;
+
+	@Inject
+	private ImageLocalService _imageLocalService;
+
+	@Inject
+	private MBMessageLocalService _mbMessageLocalService;
 
 	private Store _sourceStore;
 

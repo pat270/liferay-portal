@@ -187,7 +187,7 @@ public class QuartzSchedulerEngineTest {
 		schedulerResponses = _quartzSchedulerEngine.getScheduledJobs();
 
 		Assert.assertEquals(
-			schedulerResponses.toString(), 2 * _DEFAULT_JOB_NUMBER + 1,
+			schedulerResponses.toString(), (2 * _DEFAULT_JOB_NUMBER) + 1,
 			schedulerResponses.size());
 
 		_quartzSchedulerEngine.delete(
@@ -588,9 +588,7 @@ public class QuartzSchedulerEngineTest {
 
 		JobState jobState = (JobState)message.get(SchedulerEngine.JOB_STATE);
 
-		TriggerState triggerState = jobState.getTriggerState();
-
-		Assert.assertEquals(expectedTriggerState, triggerState);
+		Assert.assertEquals(expectedTriggerState, jobState.getTriggerState());
 	}
 
 	protected JSONFactory setUpJSONFactory() {
@@ -609,11 +607,13 @@ public class QuartzSchedulerEngineTest {
 
 					byte[] bytes = Base64.decode(base64);
 
-					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+					ByteArrayInputStream byteArrayInputStream =
+						new ByteArrayInputStream(bytes);
 
-					ObjectInputStream ois = new ObjectInputStream(bais);
+					ObjectInputStream objectInputStream = new ObjectInputStream(
+						byteArrayInputStream);
 
-					return ois.readObject();
+					return objectInputStream.readObject();
 				}
 
 			}
@@ -628,17 +628,19 @@ public class QuartzSchedulerEngineTest {
 				public String answer(InvocationOnMock invocationOnMock)
 					throws Throwable {
 
-					Object obj = invocationOnMock.getArguments()[0];
+					Object object = invocationOnMock.getArguments()[0];
 
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					ByteArrayOutputStream byteArrayOutputStream =
+						new ByteArrayOutputStream();
 
-					ObjectOutputStream oos = new ObjectOutputStream(baos);
+					ObjectOutputStream objectOutputStream =
+						new ObjectOutputStream(byteArrayOutputStream);
 
-					oos.writeObject(obj);
+					objectOutputStream.writeObject(object);
 
-					byte[] bytes = baos.toByteArray();
+					byte[] bytes = byteArrayOutputStream.toByteArray();
 
-					oos.close();
+					objectOutputStream.close();
 
 					return Base64.encode(bytes);
 				}

@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -41,7 +42,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -128,6 +128,9 @@ public class FriendlyURLEntryLocalizationPersistenceTest {
 		newFriendlyURLEntryLocalization.setMvccVersion(
 			RandomTestUtil.nextLong());
 
+		newFriendlyURLEntryLocalization.setCtCollectionId(
+			RandomTestUtil.nextLong());
+
 		newFriendlyURLEntryLocalization.setCompanyId(RandomTestUtil.nextLong());
 
 		newFriendlyURLEntryLocalization.setFriendlyURLEntryId(
@@ -156,6 +159,9 @@ public class FriendlyURLEntryLocalizationPersistenceTest {
 		Assert.assertEquals(
 			existingFriendlyURLEntryLocalization.getMvccVersion(),
 			newFriendlyURLEntryLocalization.getMvccVersion());
+		Assert.assertEquals(
+			existingFriendlyURLEntryLocalization.getCtCollectionId(),
+			newFriendlyURLEntryLocalization.getCtCollectionId());
 		Assert.assertEquals(
 			existingFriendlyURLEntryLocalization.
 				getFriendlyURLEntryLocalizationId(),
@@ -212,6 +218,17 @@ public class FriendlyURLEntryLocalizationPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_C_C_L() throws Exception {
+		_persistence.countByG_C_C_L(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), "");
+
+		_persistence.countByG_C_C_L(0L, 0L, 0L, "null");
+
+		_persistence.countByG_C_C_L(0L, 0L, 0L, (String)null);
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		FriendlyURLEntryLocalization newFriendlyURLEntryLocalization =
 			addFriendlyURLEntryLocalization();
@@ -243,9 +260,10 @@ public class FriendlyURLEntryLocalizationPersistenceTest {
 
 		return OrderByComparatorFactoryUtil.create(
 			"FriendlyURLEntryLocalization", "mvccVersion", true,
-			"friendlyURLEntryLocalizationId", true, "companyId", true,
-			"friendlyURLEntryId", true, "languageId", true, "urlTitle", true,
-			"groupId", true, "classNameId", true, "classPK", true);
+			"ctCollectionId", true, "friendlyURLEntryLocalizationId", true,
+			"companyId", true, "friendlyURLEntryId", true, "languageId", true,
+			"urlTitle", true, "groupId", true, "classNameId", true, "classPK",
+			true);
 	}
 
 	@Test
@@ -474,39 +492,83 @@ public class FriendlyURLEntryLocalizationPersistenceTest {
 
 		_persistence.clearCache();
 
-		FriendlyURLEntryLocalization existingFriendlyURLEntryLocalization =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newFriendlyURLEntryLocalization.getPrimaryKey());
+				newFriendlyURLEntryLocalization.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		FriendlyURLEntryLocalization newFriendlyURLEntryLocalization =
+			addFriendlyURLEntryLocalization();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			FriendlyURLEntryLocalization.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"friendlyURLEntryLocalizationId",
+				newFriendlyURLEntryLocalization.
+					getFriendlyURLEntryLocalizationId()));
+
+		List<FriendlyURLEntryLocalization> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		FriendlyURLEntryLocalization friendlyURLEntryLocalization) {
 
 		Assert.assertEquals(
-			Long.valueOf(
-				existingFriendlyURLEntryLocalization.getFriendlyURLEntryId()),
+			Long.valueOf(friendlyURLEntryLocalization.getFriendlyURLEntryId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFriendlyURLEntryLocalization,
-				"getOriginalFriendlyURLEntryId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingFriendlyURLEntryLocalization.getLanguageId(),
-				ReflectionTestUtil.invoke(
-					existingFriendlyURLEntryLocalization,
-					"getOriginalLanguageId", new Class<?>[0])));
+				friendlyURLEntryLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "friendlyURLEntryId"));
+		Assert.assertEquals(
+			friendlyURLEntryLocalization.getLanguageId(),
+			ReflectionTestUtil.invoke(
+				friendlyURLEntryLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "languageId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingFriendlyURLEntryLocalization.getGroupId()),
+			Long.valueOf(friendlyURLEntryLocalization.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFriendlyURLEntryLocalization, "getOriginalGroupId",
-				new Class<?>[0]));
+				friendlyURLEntryLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingFriendlyURLEntryLocalization.getClassNameId()),
+			Long.valueOf(friendlyURLEntryLocalization.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFriendlyURLEntryLocalization, "getOriginalClassNameId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingFriendlyURLEntryLocalization.getUrlTitle(),
-				ReflectionTestUtil.invoke(
-					existingFriendlyURLEntryLocalization, "getOriginalUrlTitle",
-					new Class<?>[0])));
+				friendlyURLEntryLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
+		Assert.assertEquals(
+			friendlyURLEntryLocalization.getUrlTitle(),
+			ReflectionTestUtil.invoke(
+				friendlyURLEntryLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "urlTitle"));
 	}
 
 	protected FriendlyURLEntryLocalization addFriendlyURLEntryLocalization()
@@ -518,6 +580,9 @@ public class FriendlyURLEntryLocalizationPersistenceTest {
 			_persistence.create(pk);
 
 		friendlyURLEntryLocalization.setMvccVersion(RandomTestUtil.nextLong());
+
+		friendlyURLEntryLocalization.setCtCollectionId(
+			RandomTestUtil.nextLong());
 
 		friendlyURLEntryLocalization.setCompanyId(RandomTestUtil.nextLong());
 

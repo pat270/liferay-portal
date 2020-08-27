@@ -29,19 +29,19 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.DefaultLayoutPrototypesUtil;
 import com.liferay.portal.kernel.util.DefaultLayoutSetPrototypesUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.wiki.constants.WikiPortletKeys;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import javax.servlet.ServletContext;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -99,15 +99,15 @@ public class AddLayoutSetPrototypePortalInstanceLifecycleListener
 		portletId = DefaultLayoutPrototypesUtil.addPortletId(
 			homeLayout, AssetPublisherPortletKeys.ASSET_PUBLISHER, "column-2");
 
-		Map<String, String> preferences = new HashMap<>();
-
-		preferences.put("anyAssetType", Boolean.FALSE.toString());
-		preferences.put(
-			"portletSetupTitle_" + LocaleUtil.getDefault(), "Recent Content");
-		preferences.put("portletSetupUseCustomTitle", Boolean.TRUE.toString());
-
 		DefaultLayoutPrototypesUtil.updatePortletSetup(
-			homeLayout, portletId, preferences);
+			homeLayout, portletId,
+			HashMapBuilder.put(
+				"anyAssetType", Boolean.FALSE.toString()
+			).put(
+				"portletSetupTitle_" + LocaleUtil.getDefault(), "Recent Content"
+			).put(
+				"portletSetupUseCustomTitle", Boolean.TRUE.toString()
+			).build());
 
 		// Wiki layout
 
@@ -169,11 +169,6 @@ public class AddLayoutSetPrototypePortalInstanceLifecycleListener
 	protected void setMessageBoardsPortlet(Portlet portlet) {
 	}
 
-	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
-	protected void setModuleServiceLifecycle(
-		ModuleServiceLifecycle moduleServiceLifecycle) {
-	}
-
 	@Reference(
 		target = "(javax.portlet.name=" + PollsPortletKeys.POLLS_DISPLAY + ")",
 		unbind = "-"
@@ -194,6 +189,12 @@ public class AddLayoutSetPrototypePortalInstanceLifecycleListener
 	}
 
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
+
+	@Reference(
+		target = "(&(original.bean=true)(bean.id=javax.servlet.ServletContext))"
+	)
+	private ServletContext _servletContext;
+
 	private UserLocalService _userLocalService;
 
 }

@@ -1,0 +1,56 @@
+.add-result-modal-root {
+	.add-result-container {
+		padding-left: 2rem;
+		padding-right: 2rem;
+	}
+
+	.add-result-scroller {
+		background-color: $lightBackground;
+		max-height: calc(100vh - 280px);
+		min-height: 400px;
+		overflow: auto;
+
+		.add-result-sheet {
+			margin: 1.5rem;
+			padding: 0;
+		}
+	}
+
+	.list-group {
+		margin-bottom: 0;
+	}
+
+	.modal-body {
+		padding: 0;
+	}
+
+	.modal-title-help-icon {
+		color: $mainLighten28;
+		font-size: 1rem;
+
+		// Temporary workaround to allow tooltip to activate on entire icon
+		// https://github.com/liferay/clay/issues/2640
+
+		svg * {
+			pointer-events: none;
+		}
+	}
+
+	.management-bar {
+		margin: 0;
+
+		.navbar-text {
+			font-weight: 600;
+		}
+	}
+
+	.pagination-bar {
+		margin-bottom: 1rem;
+	}
+}
+
+.modal-dialog {
+	&.modal-lg {
+		max-width: 800px;
+	}
+}

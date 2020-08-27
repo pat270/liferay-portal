@@ -23,8 +23,6 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 DDLRecord record = (DDLRecord)request.getAttribute(DDLWebKeys.DYNAMIC_DATA_LISTS_RECORD);
 
-long recordId = BeanParamUtil.getLong(record, request, "recordId");
-
 long recordSetId = BeanParamUtil.getLong(record, request, "recordSetId");
 
 DDLRecordSet recordSet = DDLRecordSetServiceUtil.getRecordSet(recordSetId);
@@ -51,7 +49,7 @@ else {
 }
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<c:if test="<%= recordVersion != null %>">
 		<aui:model-context bean="<%= recordVersion %>" model="<%= DDLRecordVersion.class %>" />
 
@@ -87,14 +85,6 @@ else {
 			requestedLocale="<%= locale %>"
 		/>
 
-		<%
-		boolean pending = false;
-
-		if (recordVersion != null) {
-			pending = recordVersion.isPending();
-		}
-		%>
-
 		<aui:button-row>
 			<c:if test="<%= editable && DDLRecordSetPermission.contains(permissionChecker, record.getRecordSet(), ActionKeys.UPDATE) && version.equals(latestRecordVersion.getVersion()) %>">
 				<portlet:renderURL var="editRecordURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
@@ -110,7 +100,7 @@ else {
 			<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
 		</aui:button-row>
 	</aui:fieldset>
-</div>
+</clay:container-fluid>
 
 <%
 PortletURL portletURL = renderResponse.createRenderURL();

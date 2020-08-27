@@ -1,0 +1,83 @@
+@component-name = "portal-forms-and-workflow-ee"
+definition {
+
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property test.run.environment = "EE";
+	property testray.main.component.name = "Rules";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test ViewWebContentInSampleDrools {
+		property portal.acceptance = "true";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		property osgi.modules.includes = "portal-rules-engine-sample-web";
+
+		Navigator.openURL();
+
+		Navigator.gotoAccountSettings();
+
+		UserNavigator.gotoContact();
+
+		User.addAddressViaMyAccount(
+			userAddressCity = "Diamond Bar",
+			userAddressCountry = "United States",
+			userAddressPostalCode = "91765",
+			userAddressRegion = "California",
+			userAddressStreet1 = "1400 Montefino Ave",
+			userAddressType = "Personal");
+
+		ProductMenu.gotoPortlet(
+			category = "Categorization",
+			portlet = "Tags",
+			site = "${siteName}");
+
+		Tag.addCP(tagName = "americas");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddCP();
+
+		WebContent.addWithTagCP(
+			tagNameList = "americas",
+			webContentContent = "Web Content Content",
+			webContentTitle = "Web Content Title");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Drools Page");
+
+		Navigator.gotoPage(pageName = "Drools Page");
+
+		Portlet.addPG(portletName = "Sample Drools");
+
+		Drools.viewContentPG(
+			droolsContent = "Web Content Title",
+			welcomeMessage = "Welcome Test Test!");
+	}
+
+}

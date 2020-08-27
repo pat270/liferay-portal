@@ -14,6 +14,8 @@
 
 package com.liferay.portal.search.web.internal.custom.facet.portlet;
 
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.util.Portal;
@@ -37,6 +39,8 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -49,6 +53,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-custom-facet",
 		"com.liferay.portlet.display-category=category.search",
+		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/search.png",
 		"com.liferay.portlet.instanceable=true",
 		"com.liferay.portlet.layout-cacheable=true",
@@ -63,8 +68,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/custom/facet/view.jsp",
 		"javax.portlet.name=" + CustomFacetPortletKeys.CUSTOM_FACET,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=guest,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -79,7 +83,8 @@ public class CustomFacetPortlet extends MVCPortlet {
 			portletSharedSearchRequest.search(renderRequest);
 
 		CustomFacetDisplayContext customFacetDisplayContext =
-			buildDisplayContext(portletSharedSearchResponse, renderRequest);
+			createCustomFacetDisplayContext(
+				portletSharedSearchResponse, renderRequest);
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, customFacetDisplayContext);
@@ -93,11 +98,12 @@ public class CustomFacetPortlet extends MVCPortlet {
 	}
 
 	protected CustomFacetDisplayContext buildDisplayContext(
-		PortletSharedSearchResponse portletSharedSearchResponse,
-		RenderRequest renderRequest) {
+			PortletSharedSearchResponse portletSharedSearchResponse,
+			RenderRequest renderRequest)
+		throws ConfigurationException {
 
 		CustomFacetDisplayBuilder customFacetDisplayBuilder =
-			new CustomFacetDisplayBuilder();
+			new CustomFacetDisplayBuilder(getHttpServletRequest(renderRequest));
 
 		CustomFacetPortletPreferences customFacetPortletPreferences =
 			new CustomFacetPortletPreferencesImpl(
@@ -133,6 +139,19 @@ public class CustomFacetPortlet extends MVCPortlet {
 		).build();
 	}
 
+	protected CustomFacetDisplayContext createCustomFacetDisplayContext(
+		PortletSharedSearchResponse portletSharedSearchResponse,
+		RenderRequest renderRequest) {
+
+		try {
+			return buildDisplayContext(
+				portletSharedSearchResponse, renderRequest);
+		}
+		catch (ConfigurationException configurationException) {
+			throw new RuntimeException(configurationException);
+		}
+	}
+
 	protected Facet getFacet(
 		PortletSharedSearchResponse portletSharedSearchResponse,
 		CustomFacetPortletPreferences customFacetPortletPreferences,
@@ -144,6 +163,15 @@ public class CustomFacetPortlet extends MVCPortlet {
 
 		return searchResponse.withFacetContextGet(
 			facetContext -> facetContext.getFacet(getPortletId(renderRequest)));
+	}
+
+	protected HttpServletRequest getHttpServletRequest(
+		RenderRequest renderRequest) {
+
+		LiferayPortletRequest liferayPortletRequest =
+			_portal.getLiferayPortletRequest(renderRequest);
+
+		return liferayPortletRequest.getHttpServletRequest();
 	}
 
 	protected String getParameterName(

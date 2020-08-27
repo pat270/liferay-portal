@@ -18,6 +18,7 @@ import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing CTCollection in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class CTCollectionCacheModel
-	implements CacheModel<CTCollection>, Externalizable {
+	implements CacheModel<CTCollection>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof CTCollectionCacheModel)) {
+		if (!(object instanceof CTCollectionCacheModel)) {
 			return false;
 		}
 
 		CTCollectionCacheModel ctCollectionCacheModel =
-			(CTCollectionCacheModel)obj;
+			(CTCollectionCacheModel)object;
 
-		if (ctCollectionId == ctCollectionCacheModel.ctCollectionId) {
+		if ((ctCollectionId == ctCollectionCacheModel.ctCollectionId) &&
+			(mvccVersion == ctCollectionCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,21 +60,33 @@ public class CTCollectionCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, ctCollectionId);
+		int hashCode = HashUtil.hash(0, ctCollectionId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(23);
 
-		sb.append("{ctCollectionId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
 		sb.append(ctCollectionId);
 		sb.append(", companyId=");
 		sb.append(companyId);
 		sb.append(", userId=");
 		sb.append(userId);
-		sb.append(", userName=");
-		sb.append(userName);
 		sb.append(", createDate=");
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
@@ -87,8 +99,6 @@ public class CTCollectionCacheModel
 		sb.append(status);
 		sb.append(", statusByUserId=");
 		sb.append(statusByUserId);
-		sb.append(", statusByUserName=");
-		sb.append(statusByUserName);
 		sb.append(", statusDate=");
 		sb.append(statusDate);
 		sb.append("}");
@@ -100,16 +110,10 @@ public class CTCollectionCacheModel
 	public CTCollection toEntityModel() {
 		CTCollectionImpl ctCollectionImpl = new CTCollectionImpl();
 
+		ctCollectionImpl.setMvccVersion(mvccVersion);
 		ctCollectionImpl.setCtCollectionId(ctCollectionId);
 		ctCollectionImpl.setCompanyId(companyId);
 		ctCollectionImpl.setUserId(userId);
-
-		if (userName == null) {
-			ctCollectionImpl.setUserName("");
-		}
-		else {
-			ctCollectionImpl.setUserName(userName);
-		}
 
 		if (createDate == Long.MIN_VALUE) {
 			ctCollectionImpl.setCreateDate(null);
@@ -142,13 +146,6 @@ public class CTCollectionCacheModel
 		ctCollectionImpl.setStatus(status);
 		ctCollectionImpl.setStatusByUserId(statusByUserId);
 
-		if (statusByUserName == null) {
-			ctCollectionImpl.setStatusByUserName("");
-		}
-		else {
-			ctCollectionImpl.setStatusByUserName(statusByUserName);
-		}
-
 		if (statusDate == Long.MIN_VALUE) {
 			ctCollectionImpl.setStatusDate(null);
 		}
@@ -163,12 +160,13 @@ public class CTCollectionCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
 		ctCollectionId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
 
 		userId = objectInput.readLong();
-		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 		name = objectInput.readUTF();
@@ -177,25 +175,18 @@ public class CTCollectionCacheModel
 		status = objectInput.readInt();
 
 		statusByUserId = objectInput.readLong();
-		statusByUserName = objectInput.readUTF();
 		statusDate = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		objectOutput.writeLong(ctCollectionId);
 
 		objectOutput.writeLong(companyId);
 
 		objectOutput.writeLong(userId);
-
-		if (userName == null) {
-			objectOutput.writeUTF("");
-		}
-		else {
-			objectOutput.writeUTF(userName);
-		}
-
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
@@ -216,28 +207,19 @@ public class CTCollectionCacheModel
 		objectOutput.writeInt(status);
 
 		objectOutput.writeLong(statusByUserId);
-
-		if (statusByUserName == null) {
-			objectOutput.writeUTF("");
-		}
-		else {
-			objectOutput.writeUTF(statusByUserName);
-		}
-
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
 	public long ctCollectionId;
 	public long companyId;
 	public long userId;
-	public String userName;
 	public long createDate;
 	public long modifiedDate;
 	public String name;
 	public String description;
 	public int status;
 	public long statusByUserId;
-	public String statusByUserName;
 	public long statusDate;
 
 }

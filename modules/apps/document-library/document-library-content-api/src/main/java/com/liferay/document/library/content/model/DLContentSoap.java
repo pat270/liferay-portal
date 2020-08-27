@@ -21,20 +21,21 @@ import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DLContentSoap implements Serializable {
 
 	public static DLContentSoap toSoapModel(DLContent model) {
 		DLContentSoap soapModel = new DLContentSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setContentId(model.getContentId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -94,6 +95,22 @@ public class DLContentSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setContentId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public long getContentId() {
@@ -160,6 +177,8 @@ public class DLContentSoap implements Serializable {
 		_size = size;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _contentId;
 	private long _groupId;
 	private long _companyId;

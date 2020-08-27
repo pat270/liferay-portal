@@ -48,15 +48,14 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=guest,power-user,user",
 		"javax.portlet.supported-public-render-parameter=resetCur",
-		"javax.portlet.supported-public-render-parameter=tag",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.supported-public-render-parameter=tag"
 	},
 	service = Portlet.class
 )
 public class AssetTagsCloudPortlet extends MVCPortlet {
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.asset.tags.navigation.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))"
+		target = "(&(release.bundle.symbolic.name=com.liferay.asset.tags.navigation.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))"
 	)
 	private Release _release;
 

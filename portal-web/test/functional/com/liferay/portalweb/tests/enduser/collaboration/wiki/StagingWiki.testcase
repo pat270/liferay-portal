@@ -1,9 +1,9 @@
-@component-name = "portal-staging"
+@component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.component.names = "Wiki";
-	property testray.main.component.name = "Staging";
+	property testray.main.component.name = "Wiki";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -12,19 +12,11 @@ definition {
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
-		ProductMenu.gotoSite(site = "Site Name");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Staging Test Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "Staging Test Page");
-
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		Staging.activateStagingCP(siteName = "Site Name");
 	}
@@ -190,7 +182,6 @@ definition {
 	}
 
 	@description = "This is a use case for LPS-73471."
-	@ignore = "true"
 	@priority = "5"
 	test RenameChildPageNameCP {
 		Navigator.gotoStagedSitePage(
@@ -199,7 +190,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -210,7 +200,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -223,11 +212,12 @@ definition {
 
 		WikiEntry.addPageContent(wikiPageContent = "Child Page Content");
 
+		SelectFrame(value1 = "relative=top");
+
 		PortletEntry.publish();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -236,18 +226,20 @@ definition {
 
 		WikiPage.renameWikiPageCP(
 			wikiPageTitle = "Child Page Title",
-			wikiPageTitleRename = "Child Page Title Rename");
+			wikiPageTitleRename = "Rename Page Title");
 
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
 
-		Staging.publishCustomPublication();
+		Staging.gotoPublishToLive();
+
+		Staging.configurePublishToLive(checkContentNameList = "Wiki");
+
+		Staging.publishToLive();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -256,26 +248,29 @@ definition {
 
 		WikiPage.renameWikiPageCP(
 			wikiPageTitle = "Child Page Title",
-			wikiPageTitleRename = "Child Page Title Rename 1");
+			wikiPageTitleRename = "Rename Page Title 1");
 
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
 
-		Staging.publishCustomPublication();
+		Staging.gotoPublishToLive();
 
-		ProductMenu.gotoLiveSite();
+		Staging.configurePublishToLive(checkContentNameList = "Wiki");
+
+		Staging.publishToLive();
+
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
-		for (var wikiPageTitle : list "Child Page Title,Child Page Title Rename,Child Page Title Rename 1") {
+		for (var wikiPageTitle : list "Child Page Title,Rename Page Title,Rename Page Title 1") {
 			LexiconEntry.viewEntryName(rowEntry = "${wikiPageTitle}");
 		}
 	}
+
 }

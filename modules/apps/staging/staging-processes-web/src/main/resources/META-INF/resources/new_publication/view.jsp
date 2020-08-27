@@ -16,6 +16,8 @@
 
 <%@ include file="/init.jsp" %>
 
-<div class="container-fluid-1280" id="<portlet:namespace />newPublicationContainer">
+<clay:container-fluid
+	id='<%= liferayPortletResponse.getNamespace() + "newPublicationContainer" %>'
+>
 	<liferay-util:include page="/new_publication/publish_layouts.jsp" servletContext="<%= application %>" />
-</div>
+</clay:container-fluid>

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.time.LocalDateTime;
@@ -29,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -62,21 +62,24 @@ public abstract class BaseDDMFormMVCResourceCommand
 			DDMFormInstance formInstance)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)resourceRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		Map<String, Object> response = new HashMap<>();
-
-		response.put("ddmStructureId", formInstance.getStructureId());
-		response.put("formInstanceId", formInstance.getFormInstanceId());
-
-		User user = themeDisplay.getUser();
-
-		response.put(
+		Map<String, Object> response = HashMapBuilder.<String, Object>put(
+			"ddmStructureId", formInstance.getStructureId()
+		).put(
+			"formInstanceId", formInstance.getFormInstanceId()
+		).put(
 			"modifiedDate",
-			formatDate(
-				formInstance.getModifiedDate(), user.getLocale(),
-				user.getTimeZoneId()));
+			() -> {
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)resourceRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
+
+				User user = themeDisplay.getUser();
+
+				return formatDate(
+					formInstance.getModifiedDate(), user.getLocale(),
+					user.getTimeZoneId());
+			}
+		).build();
 
 		JSONSerializer jsonSerializer = jsonFactory.createJSONSerializer();
 

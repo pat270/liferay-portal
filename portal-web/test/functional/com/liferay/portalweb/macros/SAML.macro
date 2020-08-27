@@ -1,6 +1,8 @@
 definition {
+
 	@description = "Configures Liferay SAML as the IdP and Liferay SAML as the SP."
 	macro configureLiferaySAMLAsIdP {
+
 		// Configure IdP (Identity Provider) on specific Portal URL or default to current URL
 
 		if (isSet(idpURL)) {
@@ -12,8 +14,8 @@ definition {
 			Navigator.openSpecificURL(url = "${idpURL}");
 		}
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "Security",
 			panel = "Control Panel",
 			portlet = "SAML Admin");
 
@@ -50,8 +52,8 @@ definition {
 
 		Navigator.openSpecificURL(url = "${spURL}");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "Security",
 			panel = "Control Panel",
 			portlet = "SAML Admin");
 
@@ -73,37 +75,40 @@ definition {
 		}
 
 		SAML.connectSPAndIdP(
-			attributes = "${attributes}",
+			idpAttributes = "${idpAttributes}",
 			idpEntityID = "samlidp",
 			idpKeepAliveURL = "${idpKeepAliveURL}",
 			idpURL = "http://localhost:8080",
 			nameIdentifierAttributeName = "${nameIdentifierAttributeName}",
 			nameIdentifierFormat = "${nameIdentifierFormat}",
+			spAttributes = "${spAttributes}",
 			spEntityID = "${samlEntityID}",
 			spKeepAliveURL = "${spKeepAliveURL}",
 			spURL = "${spURL}");
 	}
 
 	macro connectSPAndIdP {
+
 		// Add a configured IdP connection to an SP
 
 		Navigator.openSpecificURL(url = "${spURL}");
 
-		if (IsElementNotPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) {
+		if (IsElementNotPresent(locator1 = "UserBar#USER_AVATAR_IMAGE")) {
 			User.loginPG(
 				password = "test",
 				specificURL = "${spURL}",
 				userEmailAddress = "test@liferay.com");
 		}
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "Security",
 			panel = "Control Panel",
 			portlet = "SAML Admin");
 
 		SAMLNavigation.gotoIdentityProviderConnections();
 
 		SAMLPortlet.addIdentityProviderConnection(
+			idpAttributes = "${idpAttributes}",
 			idpEntityID = "${idpEntityID}",
 			idpKeepAliveURL = "${idpKeepAliveURL}",
 			idpMetadataURL = "${idpURL}/c/portal/saml/metadata",
@@ -120,24 +125,24 @@ definition {
 
 		Navigator.openSpecificURL(url = "${idpURL}");
 
-		if (IsElementNotPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) {
+		if (IsElementNotPresent(locator1 = "UserBar#USER_AVATAR_IMAGE")) {
 			User.loginPG(
 				password = "test",
 				specificURL = "${idpURL}",
 				userEmailAddress = "test@liferay.com");
 		}
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "Security",
 			panel = "Control Panel",
 			portlet = "SAML Admin");
 
 		SAMLNavigation.gotoServiceProviderConnection();
 
 		SAMLPortlet.addServiceProviderConnection(
-			attributes = "${attributes}",
 			nameIdentifierAttributeName = "${nameIdentifierAttributeName}",
 			nameIdentifierFormat = "${nameIdentifierFormat}",
+			spAttributes = "${spAttributes}",
 			spEntityID = "${spEntityID}",
 			spKeepAliveURL = "${spKeepAliveURL}",
 			spMetadataURL = "${spURL}/c/portal/saml/metadata",
@@ -148,7 +153,7 @@ definition {
 	macro executeIdPInitiatedSSO {
 
 		if ("${autoLogin}" == "true") {
-			Navigator.openSpecificURL(url = "${idpInitiatedSSOURL}");
+			Open.openNoError(locator1 = "${idpInitiatedSSOURL}");
 
 			AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
 		}
@@ -160,7 +165,7 @@ definition {
 				userEmailAddress = "${userEmailAddress}");
 		}
 
-		Pause(locator1 = "2000");
+		Pause(locator1 = "1000");
 
 		AssertLocation.assertPartialLocation(value1 = "${spURL}");
 	}
@@ -182,8 +187,9 @@ definition {
 				userEmailAddress = "test@liferay.com");
 		}
 
-		Pause(locator1 = "2000");
+		Pause(locator1 = "1000");
 
 		AssertLocation.assertPartialLocation(value1 = "${specificURL}");
 	}
+
 }

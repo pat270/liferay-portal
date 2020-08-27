@@ -35,9 +35,6 @@ public class ActionUtil {
 	public static BlogsEntry getEntry(PortletRequest portletRequest)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		long entryId = ParamUtil.getLong(portletRequest, "entryId");
 
 		String urlTitle = ParamUtil.getString(portletRequest, "urlTitle");
@@ -50,11 +47,15 @@ public class ActionUtil {
 		else if (Validator.isNotNull(urlTitle) &&
 				 SessionErrors.isEmpty(portletRequest)) {
 
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
 			try {
 				entry = BlogsEntryServiceUtil.getEntry(
 					themeDisplay.getScopeGroupId(), urlTitle);
 			}
-			catch (NoSuchEntryException nsee) {
+			catch (NoSuchEntryException noSuchEntryException) {
 				if (urlTitle.indexOf(CharPool.UNDERLINE) != -1) {
 
 					// Check another URL title for backwards compatibility. See
@@ -67,7 +68,7 @@ public class ActionUtil {
 						themeDisplay.getScopeGroupId(), urlTitle);
 				}
 				else {
-					throw nsee;
+					throw noSuchEntryException;
 				}
 			}
 		}

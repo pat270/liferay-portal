@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
 import com.liferay.user.associated.data.test.util.BaseUADAnonymizerTestCase;
 
@@ -45,7 +46,9 @@ public class LayoutSetPrototypeUADAnonymizerTest
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Override
 	protected LayoutSetPrototype addBaseModel(long userId) throws Exception {
@@ -73,7 +76,7 @@ public class LayoutSetPrototypeUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<LayoutSetPrototype> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -97,9 +100,11 @@ public class LayoutSetPrototypeUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_layoutSetPrototypeLocalService.fetchLayoutSetPrototype(
-				baseModelPK) == null) {
+		LayoutSetPrototype layoutSetPrototype =
+			_layoutSetPrototypeLocalService.fetchLayoutSetPrototype(
+				baseModelPK);
 
+		if (layoutSetPrototype == null) {
 			return true;
 		}
 
@@ -114,6 +119,6 @@ public class LayoutSetPrototypeUADAnonymizerTest
 		new ArrayList<>();
 
 	@Inject(filter = "component.name=*.LayoutSetPrototypeUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<LayoutSetPrototype> _uadAnonymizer;
 
 }

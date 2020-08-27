@@ -1,5 +1,6 @@
 @component-name = "portal-security"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Permissions";
@@ -25,29 +26,52 @@ definition {
 
 	@priority = "5"
 	test ViewBlogsPortletAsGuestPG {
-		property app.server.types = "jboss,resin,tcserver,tomcat,weblogic,websphere,wildfly";
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
-		property portal.acceptance = "true";
+		property portal.acceptance = "false";
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Blogs Page");
 
-		Navigator.gotoPage(pageName = "Blogs Page");
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "safari") {
+			Navigator.openSpecificURL(url = "http://localhost:8080/web/guest/blogs-page");
+		}
+		else {
+			Navigator.gotoPage(pageName = "Blogs Page");
+		}
 
 		Portlet.addPG(portletName = "Blogs");
 
-		Navigator.gotoPage(pageName = "Blogs Page");
+		if ("${browserType}" == "safari") {
+			Navigator.openSpecificURL(url = "http://localhost:8080/web/guest/blogs-page");
+		}
+		else {
+			Navigator.gotoPage(pageName = "Blogs Page");
+		}
 
 		Blogs.viewControlsPG();
 
 		User.logoutPG();
 
-		Navigator.gotoPage(pageName = "Blogs Page");
+		if ("${browserType}" == "safari") {
+			Navigator.openSpecificURL(url = "http://localhost:8080/web/guest/blogs-page");
+		}
+		else {
+			Navigator.gotoPage(pageName = "Blogs Page");
+		}
+
+		var browserType = PropsUtil.get("browser.type");
+		var key_portletName = "Blogs";
+
+		if (("${browserType}" == "internetexplorer") && (IsElementNotPresent(locator1 = "Home#PORTLET"))) {
+			Refresh();
+		}
 
 		BlogsConfiguration.viewNoPermissionPG();
 	}
@@ -63,7 +87,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "testxxx");
@@ -80,4 +103,5 @@ definition {
 			locator1 = "Message#ERROR",
 			value1 = "You do not have the roles required to access this portlet.");
 	}
+
 }

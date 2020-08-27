@@ -21,16 +21,17 @@ import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.util.DDMTemplateHelper;
 import com.liferay.journal.configuration.JournalFileUploadsConfiguration;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.web.configuration.JournalWebConfiguration;
-import com.liferay.journal.web.internal.util.JournalChangeTrackingHelperUtil;
+import com.liferay.journal.web.internal.configuration.JournalWebConfiguration;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
@@ -149,6 +150,22 @@ public class JournalEditDDMTemplateDisplayContext {
 		return "velocity";
 	}
 
+	public String[] getExtendedTemplateLanguageTypes() {
+		DDMTemplate ddmTemplate = getDDMTemplate();
+
+		String[] extendedTemplateLanguageTypes = getTemplateLanguageTypes();
+
+		if ((ddmTemplate != null) &&
+			!ArrayUtil.contains(
+				extendedTemplateLanguageTypes, ddmTemplate.getLanguage())) {
+
+			extendedTemplateLanguageTypes = ArrayUtil.append(
+				extendedTemplateLanguageTypes, ddmTemplate.getLanguage());
+		}
+
+		return extendedTemplateLanguageTypes;
+	}
+
 	public long getGroupId() {
 		if (_groupId != null) {
 			return _groupId;
@@ -185,20 +202,6 @@ public class JournalEditDDMTemplateDisplayContext {
 		_redirect = ParamUtil.getString(_httpServletRequest, "redirect");
 
 		return _redirect;
-	}
-
-	public String getSaveButtonLabel() throws PortalException {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		if (JournalChangeTrackingHelperUtil.hasActiveCTCollection(
-				themeDisplay.getCompanyId(), themeDisplay.getUserId())) {
-
-			return "publish-to-change-list";
-		}
-
-		return "save";
 	}
 
 	public String getScript() {
@@ -292,6 +295,25 @@ public class JournalEditDDMTemplateDisplayContext {
 			themeDisplay.getLocale());
 	}
 
+	public String getTemplateLanguageTypeLabel(String templateLanguageType) {
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(
+			LanguageUtil.get(
+				_httpServletRequest, templateLanguageType + "[stands-for]"));
+		sb.append(StringPool.SPACE);
+		sb.append(StringPool.OPEN_PARENTHESIS);
+		sb.append(StringPool.PERIOD);
+		sb.append(templateLanguageType);
+		sb.append(StringPool.CLOSE_PARENTHESIS);
+
+		return sb.toString();
+	}
+
+	public String[] getTemplateLanguageTypes() {
+		return _journalWebConfiguration.journalDDMTemplateLanguageTypes();
+	}
+
 	public Collection<TemplateVariableGroup> getTemplateVariableGroups()
 		throws Exception {
 
@@ -354,6 +376,22 @@ public class JournalEditDDMTemplateDisplayContext {
 		return _cacheable;
 	}
 
+	public boolean isShowSpecificLanguageType() {
+		DDMTemplate ddmTemplate = getDDMTemplate();
+
+		String[] templateLanguageTypes = getTemplateLanguageTypes();
+
+		if ((templateLanguageTypes.length == 1) &&
+			((ddmTemplate == null) ||
+			 Objects.equals(
+				 templateLanguageTypes[0], ddmTemplate.getLanguage()))) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public boolean isSmallImage() {
 		if (_smallImage != null) {
 			return _smallImage;
@@ -363,6 +401,10 @@ public class JournalEditDDMTemplateDisplayContext {
 			getDDMTemplate(), _httpServletRequest, "smallImage");
 
 		return _smallImage;
+	}
+
+	public void setLanguage(String language) {
+		_language = language;
 	}
 
 	public long smallImageMaxSize() {

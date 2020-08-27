@@ -18,7 +18,7 @@ import com.liferay.portal.kernel.nio.intraband.BaseIntraband;
 import com.liferay.portal.kernel.nio.intraband.ChannelContext;
 import com.liferay.portal.kernel.nio.intraband.CompletionHandler;
 import com.liferay.portal.kernel.nio.intraband.Datagram;
-import com.liferay.portal.kernel.nio.intraband.DatagramHelper;
+import com.liferay.portal.kernel.nio.intraband.DatagramUtil;
 import com.liferay.portal.kernel.nio.intraband.IntrabandTestUtil;
 import com.liferay.portal.kernel.nio.intraband.RecordCompletionHandler;
 import com.liferay.portal.kernel.nio.intraband.blocking.ExecutorIntraband.ReadingCallable;
@@ -188,8 +188,9 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Channel is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Channel is null", nullPointerException.getMessage());
 		}
 
 		// Channel is not of type GatheringByteChannel
@@ -200,10 +201,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Channel is not of type GatheringByteChannel",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		// Channel is not of type ScatteringByteChannel
@@ -215,10 +216,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Channel is not of type ScatteringByteChannel",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		// Channel is of type SelectableChannel and configured in nonblocking
@@ -236,11 +237,11 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Channel is of type SelectableChannel and configured in " +
 					"nonblocking mode",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 	}
 
@@ -319,9 +320,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Gathering byte channel is null", npe.getMessage());
+				"Gathering byte channel is null",
+				nullPointerException.getMessage());
 		}
 
 		// Scattering byte channel is null
@@ -334,9 +336,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Scattering byte channel is null", npe.getMessage());
+				"Scattering byte channel is null",
+				nullPointerException.getMessage());
 		}
 
 		// Scattering byte channel is of type SelectableChannel and configured
@@ -352,11 +355,11 @@ public class ExecutorIntrabandTest {
 		try {
 			_executorIntraband.registerChannel(sourceChannel, sinkChannel);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Scattering byte channel is of type SelectableChannel and " +
 					"configured in nonblocking mode",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		// Gathering byte channel is of type SelectableChannel and configured in
@@ -368,11 +371,11 @@ public class ExecutorIntrabandTest {
 		try {
 			_executorIntraband.registerChannel(sourceChannel, sinkChannel);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Gathering byte channel is of type SelectableChannel and " +
 					"configured in nonblocking mode",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 	}
 
@@ -570,12 +573,12 @@ public class ExecutorIntrabandTest {
 		sendingQueue.put(datagram2);
 
 		Assert.assertTrue(
-			DatagramHelper.readFrom(
-				DatagramHelper.createReceiveDatagram(), sourceChannel));
+			DatagramUtil.readFrom(
+				DatagramUtil.createReceiveDatagram(), sourceChannel));
 
 		Assert.assertTrue(
-			DatagramHelper.readFrom(
-				DatagramHelper.createReceiveDatagram(), sourceChannel));
+			DatagramUtil.readFrom(
+				DatagramUtil.createReceiveDatagram(), sourceChannel));
 
 		// Interrupt on blocking take
 
@@ -597,6 +600,7 @@ public class ExecutorIntrabandTest {
 		pipe = Pipe.open();
 
 		sourceChannel = pipe.source();
+
 		sinkChannel = pipe.sink();
 
 		writingCallable = _executorIntraband.new WritingCallable(
@@ -637,6 +641,7 @@ public class ExecutorIntrabandTest {
 		pipe = Pipe.open();
 
 		sourceChannel = pipe.source();
+
 		sinkChannel = pipe.sink();
 
 		writingCallable = _executorIntraband.new WritingCallable(
@@ -677,6 +682,7 @@ public class ExecutorIntrabandTest {
 		pipe = Pipe.open();
 
 		sourceChannel = pipe.source();
+
 		sinkChannel = pipe.sink();
 
 		sinkChannel.configureBlocking(false);
@@ -709,10 +715,11 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable cause = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
-			Assert.assertEquals(IllegalStateException.class, cause.getClass());
+			Assert.assertEquals(
+				IllegalStateException.class, throwable.getClass());
 		}
 
 		writingThread.join();

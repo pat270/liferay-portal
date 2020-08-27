@@ -24,40 +24,24 @@ String currentURL = PortalUtil.getCurrentURL(request);
 
 	<%
 	Locale userLocale = user.getLocale();
-
-	String userLocaleLanguageDir = LanguageUtil.get(userLocale, "lang.dir");
 	%>
 
-	<div dir="<%= userLocaleLanguageDir %>">
+	<div dir="<%= LanguageUtil.get(userLocale, "lang.dir") %>">
 		<div class="d-block">
 			<button aria-label="<%= LanguageUtil.get(request, "close") %>" class="close" id="ignoreUserLocaleOptions" type="button">&times;</button>
 
 			<%= LanguageUtil.format(userLocale, "this-page-is-displayed-in-x", locale.getDisplayName(userLocale)) %>
 		</div>
 
-		<c:if test="<%= LanguageUtil.isAvailableLocale(userLocale) %>">
-
-			<%
-			String displayPreferredLanguageURLString = themeDisplay.getPathMain() + "/portal/update_language?p_l_id=" + themeDisplay.getPlid() + "&redirect=" + URLCodec.encodeURL(currentURL) + "&languageId=" + user.getLanguageId() + "&persistState=false&showUserLocaleOptionsMessage=false";
-			%>
-
-			<aui:a cssClass="d-block" href="<%= displayPreferredLanguageURLString %>">
+		<c:if test="<%= LanguageUtil.isAvailableLocale(themeDisplay.getSiteGroupId(), user.getLocale()) %>">
+			<aui:a cssClass="d-block" href='<%= themeDisplay.getPathMain() + "/portal/update_language?p_l_id=" + themeDisplay.getPlid() + "&redirect=" + URLCodec.encodeURL(currentURL) + "&languageId=" + user.getLanguageId() + "&persistState=false&showUserLocaleOptionsMessage=false" %>'>
 				<%= LanguageUtil.format(userLocale, "display-the-page-in-x", userLocale.getDisplayName(userLocale)) %>
 			</aui:a>
 		</c:if>
 	</div>
 
-	<%
-	String requestLanguageDir = LanguageUtil.get(request, "lang.dir");
-	%>
-
-	<div dir="<%= requestLanguageDir %>">
-
-		<%
-		String changePreferredLanguageURLString = themeDisplay.getPathMain() + "/portal/update_language?p_l_id=" + themeDisplay.getPlid() + "&redirect=" + URLCodec.encodeURL(currentURL) + "&languageId=" + themeDisplay.getLanguageId() + "&showUserLocaleOptionsMessage=false";
-		%>
-
-		<aui:a cssClass="d-block" href="<%= changePreferredLanguageURLString %>">
+	<div dir="<%= LanguageUtil.get(request, "lang.dir") %>">
+		<aui:a cssClass="d-block" href='<%= themeDisplay.getPathMain() + "/portal/update_language?p_l_id=" + themeDisplay.getPlid() + "&redirect=" + URLCodec.encodeURL(currentURL) + "&languageId=" + themeDisplay.getLanguageId() + "&showUserLocaleOptionsMessage=false" %>'>
 			<%= LanguageUtil.format(locale, "set-x-as-your-preferred-language", locale.getDisplayName(locale)) %>
 		</aui:a>
 	</div>
@@ -68,12 +52,8 @@ String currentURL = PortalUtil.getCurrentURL(request);
 		ignoreUserLocaleOptionsNode.on(
 			'click',
 			function() {
-				Liferay.Store(
-					{
-						ignoreUserLocaleOptions: true,
-						useHttpSession: true
-					}
-				);
+				Liferay.Util.Session.set('ignoreUserLocaleOptions', true);
+				Liferay.Util.Session.set('useHttpSession', true);
 			}
 		);
 	</aui:script>

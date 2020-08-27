@@ -30,7 +30,8 @@ String editorName = (String)request.getAttribute(AlloyEditorConstants.ATTRIBUTE_
 	%>
 
 	<script data-senna-track="temporary" type="text/javascript">
-		window.ALLOYEDITOR_BASEPATH = '<%= PortalUtil.getPathProxy() + application.getContextPath() %>/alloyeditor/';
+		window.ALLOYEDITOR_BASEPATH =
+			'<%= PortalUtil.getPathProxy() + application.getContextPath() %>/alloyeditor/';
 	</script>
 
 	<script data-senna-track="temporary" id="<%= namespace %>ckEditorScript" src="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR_CKEDITOR) + "/ckeditor/ckeditor.js", javaScriptLastModified)) %>" type="text/javascript"></script>
@@ -45,36 +46,44 @@ String editorName = (String)request.getAttribute(AlloyEditorConstants.ATTRIBUTE_
 		var alloyEditorDisposeResources = false;
 		var alloyEditorInstances = 0;
 
-		var cleanupAlloyEditorResources = function() {
+		var cleanupAlloyEditorResources = function () {
 			if (!alloyEditorInstances && alloyEditorDisposeResources) {
 				window.AlloyEditor = undefined;
-				window.CKEDITOR = undefined;
 
 				alloyEditorInstances = 0;
 				alloyEditorDisposeResources = false;
+
+				if (
+					window.CKEDITOR &&
+					Object.keys(window.CKEDITOR.instances).length === 0
+				) {
+					delete window.CKEDITOR;
+				}
 			}
 		};
 
 		Liferay.namespace('EDITORS').alloyEditor = {
-			addInstance: function() {
+			addInstance: function () {
 				alloyEditorInstances++;
 			},
-			removeInstance: function() {
+			removeInstance: function () {
 				alloyEditorInstances--;
 
 				cleanupAlloyEditorResources();
-			}
+			},
 		};
 
-		CKEDITOR.scriptLoader.loadScripts = function(scripts, success, failure) {
+		CKEDITOR.scriptLoader.loadScripts = function (scripts, success, failure) {
 			CKEDITOR.scriptLoader.load(scripts, success, failure);
 		};
 
-		CKEDITOR.getNextZIndex = function() {
-			return CKEDITOR.dialog._.currentZIndex ? CKEDITOR.dialog._.currentZIndex + 10 : Liferay.zIndex.WINDOW + 10;
+		CKEDITOR.getNextZIndex = function () {
+			return CKEDITOR.dialog._.currentZIndex
+				? CKEDITOR.dialog._.currentZIndex + 10
+				: Liferay.zIndex.WINDOW + 10;
 		};
 
-		var destroyGlobalAlloyEditor = function() {
+		var destroyGlobalAlloyEditor = function () {
 			alloyEditorDisposeResources = true;
 
 			cleanupAlloyEditorResources();

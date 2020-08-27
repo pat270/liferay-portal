@@ -21,7 +21,10 @@ import com.liferay.poshi.runner.util.Validator;
 
 import java.io.IOException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -121,7 +124,7 @@ public class VarPoshiElement extends PoshiElement {
 		if (value.startsWith("new ")) {
 			addAttribute("from", getDoubleQuotedContent(value));
 
-			value = value.replace("new ", "");
+			value = StringUtil.replace(value, "new ", "");
 
 			int index = value.indexOf("(");
 
@@ -178,11 +181,25 @@ public class VarPoshiElement extends PoshiElement {
 			String content = getParentheticalContent(value);
 
 			if (!content.equals("")) {
-				value = value.replace(
-					content, swapParameterQuotations(content));
+				value = StringUtil.replace(
+					value, content, swapParameterQuotations(content));
 			}
 
 			addAttribute("method", value);
+
+			return;
+		}
+
+		Matcher matcher = _varValueMathExpressionPattern.matcher(value);
+
+		if (matcher.find()) {
+			String mathOperation = _mathOperatorsMap.get(matcher.group(2));
+
+			String mathUtilValue = StringUtil.combine(
+				"MathUtil#", mathOperation, "('", matcher.group(1), "', '",
+				matcher.group(3), "')");
+
+			addAttribute("method", mathUtilValue);
 		}
 	}
 
@@ -205,13 +222,11 @@ public class VarPoshiElement extends PoshiElement {
 			sb.append(" ");
 		}
 
-		if (Validator.isNotNull(valueAttributeName)) {
-			if (valueAttributeName.equals("from")) {
-				if (attribute("type") != null) {
-					sb.append(attributeValue("type"));
-					sb.append(" ");
-				}
-			}
+		if (Validator.isNotNull(valueAttributeName) &&
+			valueAttributeName.equals("from") && (attribute("type") != null)) {
+
+			sb.append(attributeValue("type"));
+			sb.append(" ");
 		}
 
 		String name = attributeValue("name");
@@ -230,7 +245,8 @@ public class VarPoshiElement extends PoshiElement {
 					String newInnerValue = StringUtil.combine(
 						innerValue, ".hash('", attributeValue("hash"), "')");
 
-					value = value.replace(innerValue, newInnerValue);
+					value = StringUtil.replace(
+						value, innerValue, newInnerValue);
 
 					value = doubleQuoteContent(value);
 				}
@@ -240,7 +256,8 @@ public class VarPoshiElement extends PoshiElement {
 					String newInnerValue = StringUtil.combine(
 						innerValue, "[", attributeValue("index"), "]");
 
-					value = value.replace(innerValue, newInnerValue);
+					value = StringUtil.replace(
+						value, innerValue, newInnerValue);
 
 					value = doubleQuoteContent(value);
 				}
@@ -258,8 +275,8 @@ public class VarPoshiElement extends PoshiElement {
 					String content = getParentheticalContent(value);
 
 					if (!content.equals("")) {
-						value = value.replace(
-							content, swapParameterQuotations(content));
+						value = StringUtil.replace(
+							value, content, swapParameterQuotations(content));
 					}
 				}
 			}
@@ -280,6 +297,7 @@ public class VarPoshiElement extends PoshiElement {
 	}
 
 	protected VarPoshiElement() {
+		this(_ELEMENT_NAME);
 	}
 
 	protected VarPoshiElement(Element element) {
@@ -295,6 +313,10 @@ public class VarPoshiElement extends PoshiElement {
 		throws PoshiScriptParserException {
 
 		this(_ELEMENT_NAME, parentPoshiElement, poshiScript);
+	}
+
+	protected VarPoshiElement(String name) {
+		super(name);
 	}
 
 	protected VarPoshiElement(String name, Element element) {
@@ -350,8 +372,9 @@ public class VarPoshiElement extends PoshiElement {
 			throw new IllegalArgumentException(
 				"Invalid variable element " + Dom4JUtil.format(element));
 		}
-		catch (IOException ioe) {
-			throw new IllegalArgumentException("Invalid variable element", ioe);
+		catch (IOException ioException) {
+			throw new IllegalArgumentException(
+				"Invalid variable element", ioException);
 		}
 	}
 
@@ -374,16 +397,16 @@ public class VarPoshiElement extends PoshiElement {
 			if (singleQuote) {
 				parameter = getSingleQuotedContent(parameter);
 
-				parameter = parameter.replace("\\\'", "'");
-				parameter = parameter.replace("\"", "&quot;");
+				parameter = StringUtil.replace(parameter, "\\\'", "'");
+				parameter = StringUtil.replace(parameter, "\"", "&quot;");
 
 				parameter = doubleQuoteContent(parameter);
 			}
 			else {
 				parameter = getDoubleQuotedContent(parameter);
 
-				parameter = parameter.replace("'", "\\\'");
-				parameter = parameter.replace("&quot;", "\"");
+				parameter = StringUtil.replace(parameter, "'", "\\\'");
+				parameter = StringUtil.replace(parameter, "&quot;", "\"");
 
 				parameter = singleQuoteContent(parameter);
 			}
@@ -412,12 +435,48 @@ public class VarPoshiElement extends PoshiElement {
 
 	private static final String _ELEMENT_NAME = "var";
 
-	private static final String _VAR_VALUE_REGEX =
-		"(\".*?\"|'''.*?'''|(new[\\s]*|)[\\w\\.]*\\(.*?\\))";
+	private static final String _VAR_VALUE_MATH_EXPRESSION_REGEX;
 
-	private static final Pattern _statementPattern = Pattern.compile(
-		"^" + VAR_NAME_REGEX + ASSIGNMENT_REGEX + _VAR_VALUE_REGEX +
-			VAR_STATEMENT_END_REGEX,
-		Pattern.DOTALL);
+	private static final String _VAR_VALUE_MATH_VALUE_REGEX =
+		"[\\s]*(\\$\\{[\\w]*\\}|[\\d]*)[\\s]*";
+
+	private static final String _VAR_VALUE_MULTILINE_REGEX = "'''.*?'''";
+
+	private static final String _VAR_VALUE_OBJECT_REGEX =
+		"(new[\\s]*|)[\\w\\.]*\\(.*?\\)";
+
+	private static final String _VAR_VALUE_REGEX;
+
+	private static final String _VAR_VALUE_STRING_REGEX = "\".*?\"";
+
+	private static final Map<String, String> _mathOperatorsMap =
+		new HashMap<String, String>() {
+			{
+				put("*", "product");
+				put("+", "sum");
+				put("-", "difference");
+				put("/", "quotient");
+			}
+		};
+	private static final Pattern _statementPattern;
+	private static final Pattern _varValueMathExpressionPattern;
+
+	static {
+		_VAR_VALUE_MATH_EXPRESSION_REGEX =
+			_VAR_VALUE_MATH_VALUE_REGEX + "([\\+\\-\\*\\/])" +
+				_VAR_VALUE_MATH_VALUE_REGEX;
+
+		_VAR_VALUE_REGEX = StringUtil.combine(
+			"(", _VAR_VALUE_STRING_REGEX, "|", _VAR_VALUE_MATH_EXPRESSION_REGEX,
+			"|", _VAR_VALUE_MULTILINE_REGEX, "|", _VAR_VALUE_OBJECT_REGEX, ")");
+
+		_statementPattern = Pattern.compile(
+			"^" + VAR_NAME_REGEX + ASSIGNMENT_REGEX + _VAR_VALUE_REGEX +
+				VAR_STATEMENT_END_REGEX,
+			Pattern.DOTALL);
+
+		_varValueMathExpressionPattern = Pattern.compile(
+			_VAR_VALUE_MATH_EXPRESSION_REGEX);
+	}
 
 }

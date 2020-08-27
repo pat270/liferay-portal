@@ -24,8 +24,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Alejandro Tardín
  */
 @ExtendedObjectClassDefinition(
-	category = "documents-and-media",
-	scope = ExtendedObjectClassDefinition.Scope.COMPANY
+	category = "assets", scope = ExtendedObjectClassDefinition.Scope.COMPANY
 )
 @Meta.OCD(
 	description = "microsoft-cognitive-services-asset-auto-tag-provider-description",
@@ -68,7 +67,9 @@ public interface MSCognitiveServicesAssetAutoTagProviderCompanyConfiguration {
 	 * Enables auto tagging of images using the Microsoft Cognitive Services
 	 * API.
 	 */
-	@Meta.AD(name = "enabled", required = false)
+	@Meta.AD(
+		description = "enabled-description", name = "enabled", required = false
+	)
 	public boolean enabled();
 
 }

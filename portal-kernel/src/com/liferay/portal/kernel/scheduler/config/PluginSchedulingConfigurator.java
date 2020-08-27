@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.scheduler.config;
 
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -41,11 +42,9 @@ public class PluginSchedulingConfigurator {
 
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-		boolean forceSync = ProxyModeThreadLocal.isForceSync();
+		try (SafeClosable safeClosable =
+				ProxyModeThreadLocal.setWithSafeClosable(true)) {
 
-		ProxyModeThreadLocal.setForceSync(true);
-
-		try {
 			ClassLoader portalClassLoader =
 				PortalClassLoaderUtil.getClassLoader();
 
@@ -66,14 +65,13 @@ public class PluginSchedulingConfigurator {
 						schedulerEntry.getEventListenerClass(),
 						messageListener);
 				}
-				catch (Exception e) {
-					_log.error("Unable to schedule " + schedulerEntry, e);
+				catch (Exception exception) {
+					_log.error(
+						"Unable to schedule " + schedulerEntry, exception);
 				}
 			}
 		}
 		finally {
-			ProxyModeThreadLocal.setForceSync(forceSync);
-
 			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowDefinitionLinkException;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
@@ -128,6 +129,8 @@ public class WorkflowDefinitionLinkPersistenceTest {
 
 		newWorkflowDefinitionLink.setMvccVersion(RandomTestUtil.nextLong());
 
+		newWorkflowDefinitionLink.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newWorkflowDefinitionLink.setGroupId(RandomTestUtil.nextLong());
 
 		newWorkflowDefinitionLink.setCompanyId(RandomTestUtil.nextLong());
@@ -162,6 +165,9 @@ public class WorkflowDefinitionLinkPersistenceTest {
 		Assert.assertEquals(
 			existingWorkflowDefinitionLink.getMvccVersion(),
 			newWorkflowDefinitionLink.getMvccVersion());
+		Assert.assertEquals(
+			existingWorkflowDefinitionLink.getCtCollectionId(),
+			newWorkflowDefinitionLink.getCtCollectionId());
 		Assert.assertEquals(
 			existingWorkflowDefinitionLink.getWorkflowDefinitionLinkId(),
 			newWorkflowDefinitionLink.getWorkflowDefinitionLinkId());
@@ -276,10 +282,10 @@ public class WorkflowDefinitionLinkPersistenceTest {
 
 	protected OrderByComparator<WorkflowDefinitionLink> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"WorkflowDefinitionLink", "mvccVersion", true,
-			"workflowDefinitionLinkId", true, "groupId", true, "companyId",
-			true, "userId", true, "userName", true, "createDate", true,
-			"modifiedDate", true, "classNameId", true, "classPK", true,
+			"WorkflowDefinitionLink", "mvccVersion", true, "ctCollectionId",
+			true, "workflowDefinitionLinkId", true, "groupId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "classNameId", true, "classPK", true,
 			"typePK", true, "workflowDefinitionName", true,
 			"workflowDefinitionVersion", true);
 	}
@@ -527,35 +533,81 @@ public class WorkflowDefinitionLinkPersistenceTest {
 
 		_persistence.clearCache();
 
-		WorkflowDefinitionLink existingWorkflowDefinitionLink =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newWorkflowDefinitionLink.getPrimaryKey());
+				newWorkflowDefinitionLink.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		WorkflowDefinitionLink newWorkflowDefinitionLink =
+			addWorkflowDefinitionLink();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			WorkflowDefinitionLink.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"workflowDefinitionLinkId",
+				newWorkflowDefinitionLink.getWorkflowDefinitionLinkId()));
+
+		List<WorkflowDefinitionLink> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		WorkflowDefinitionLink workflowDefinitionLink) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingWorkflowDefinitionLink.getGroupId()),
+			Long.valueOf(workflowDefinitionLink.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWorkflowDefinitionLink, "getOriginalGroupId",
-				new Class<?>[0]));
+				workflowDefinitionLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingWorkflowDefinitionLink.getCompanyId()),
+			Long.valueOf(workflowDefinitionLink.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWorkflowDefinitionLink, "getOriginalCompanyId",
-				new Class<?>[0]));
+				workflowDefinitionLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 		Assert.assertEquals(
-			Long.valueOf(existingWorkflowDefinitionLink.getClassNameId()),
+			Long.valueOf(workflowDefinitionLink.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWorkflowDefinitionLink, "getOriginalClassNameId",
-				new Class<?>[0]));
+				workflowDefinitionLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingWorkflowDefinitionLink.getClassPK()),
+			Long.valueOf(workflowDefinitionLink.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWorkflowDefinitionLink, "getOriginalClassPK",
-				new Class<?>[0]));
+				workflowDefinitionLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 		Assert.assertEquals(
-			Long.valueOf(existingWorkflowDefinitionLink.getTypePK()),
+			Long.valueOf(workflowDefinitionLink.getTypePK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWorkflowDefinitionLink, "getOriginalTypePK",
-				new Class<?>[0]));
+				workflowDefinitionLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "typePK"));
 	}
 
 	protected WorkflowDefinitionLink addWorkflowDefinitionLink()
@@ -566,6 +618,8 @@ public class WorkflowDefinitionLinkPersistenceTest {
 		WorkflowDefinitionLink workflowDefinitionLink = _persistence.create(pk);
 
 		workflowDefinitionLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		workflowDefinitionLink.setCtCollectionId(RandomTestUtil.nextLong());
 
 		workflowDefinitionLink.setGroupId(RandomTestUtil.nextLong());
 

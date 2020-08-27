@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>MultiFactorAuthentication</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">MultiFactorAuthentication</td></tr>
+</thead>
+<tbody>
+<!--EMAIL_OTP_CONFIGURATION-->
+<tr>
+	<td>EMAIL_OTP_CONFIG_FIELD</td>
+	<td>//div[contains(@data-field-name,'${key_fieldName}')]//input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_CONFIG_TEXT</td>
+	<td>//div[contains(@data-field-name,'${key_fieldName}')]//span[contains(@class,'form-text')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_DISABLE</td>
+	<td>//span[@class='form-text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--EMAIL_OTP_SENDER-->
+<tr>
+	<td>EMAIL_OTP_SENDER_ADDRESS_FIELD</td>
+	<td>//textarea[contains(@name,'emailFromAddress')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_SENDER_NAME_FIELD</td>
+	<td>//textarea[contains(@name,'emailFromName')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_TEMPLATE_FIELD</td>
+	<td>//div[contains(@data-field-name,'${key_fieldName}')]//div//textarea</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--EMAIL_OTP_VERIFY-->
+<tr>
+	<td>EMAIL_OTP_VERIFY_INFO_MESSAGE</td>
+	<td>//div[@class='portlet-msg-info']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_VERIFY_SEND_EMAIL_BUTTON</td>
+	<td>//button[contains(@id,'sendEmailButton')]//span[contains(.,'Send')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_VERIFY_FAILED_MESSAGE</td>
+	<td>//div[contains(@class,'alert alert-dismissible alert-danger')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_VERIFY_FIELD</td>
+	<td>//div[label[contains(.,'Enter the one-time password from the email')]]/input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMAIL_OTP_VERIFY_SUCCESS_MESSAGE</td>
+	<td>//span[contains(@class,'alert') and contains(@class,'alert-success')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--IP_ADDRESS_CONFIGURATION-->
+<tr>
+	<td>IP_ADDRESS_CONFIGURATION_ALLOWED_IP_FIELD_1</td>
+	<td>xpath=(//textarea[contains(@name,'allowedIPAddress')])[1]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

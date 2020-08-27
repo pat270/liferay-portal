@@ -83,13 +83,15 @@ public class InitBundleMojo extends AbstractLiferayMojo {
 			initBundleCommand.setPassword(password);
 			initBundleCommand.setStripComponents(stripComponents);
 			initBundleCommand.setToken(token);
+			initBundleCommand.setTokenFile(tokenFile);
 			initBundleCommand.setUrl(url);
 			initBundleCommand.setUserName(userName);
 
 			initBundleCommand.execute();
 		}
-		catch (Exception e) {
-			throw new MojoExecutionException("Unable to initialize bundle", e);
+		catch (Exception exception) {
+			throw new MojoExecutionException(
+				"Unable to initialize bundle", exception);
 		}
 		finally {
 			if (proxy != null) {

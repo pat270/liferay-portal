@@ -37,7 +37,7 @@ iteratorURL.setParameter("messageId", String.valueOf(messageId));
 String trashEntriesMaxAgeTimeDescription = LanguageUtil.getTimeDescription(locale, trashHelper.getMaxAge(themeDisplay.getScopeGroup()) * Time.MINUTE, true);
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<liferay-trash:empty
 		confirmMessage="are-you-sure-you-want-to-remove-the-attachments-for-this-message"
 		emptyMessage="remove-the-attachments-for-this-message"
@@ -89,7 +89,7 @@ String trashEntriesMaxAgeTimeDescription = LanguageUtil.getTimeDescription(local
 			<liferay-ui:search-container-column-text
 				href="<%= rowHREF %>"
 				name="size"
-				value="<%= TextFormatter.formatStorageSize(fileEntry.getSize(), locale) %>"
+				value="<%= LanguageUtil.formatStorageSize(fileEntry.getSize(), locale) %>"
 			/>
 
 			<liferay-ui:search-container-column-jsp
@@ -103,4 +103,4 @@ String trashEntriesMaxAgeTimeDescription = LanguageUtil.getTimeDescription(local
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

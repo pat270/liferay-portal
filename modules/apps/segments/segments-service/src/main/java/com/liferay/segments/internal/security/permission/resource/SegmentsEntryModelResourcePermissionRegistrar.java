@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.service.SegmentsEntryLocalService;
@@ -44,24 +45,26 @@ import org.osgi.service.component.annotations.Reference;
 public class SegmentsEntryModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", SegmentsEntry.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<SegmentsEntry>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				SegmentsEntry.class, SegmentsEntry::getSegmentsEntryId,
 				_segmentsEntryLocalService::getSegmentsEntry,
 				_portletResourcePermission,
 				(modelResourcePermission, consumer) -> consumer.accept(
-					new StagedModelPermissionLogic(_stagingPermission))),
+					new StagedModelResourcePermissionLogic(
+						_stagingPermission))),
 			properties);
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -73,12 +76,13 @@ public class SegmentsEntryModelResourcePermissionRegistrar {
 	@Reference
 	private SegmentsEntryLocalService _segmentsEntryLocalService;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<SegmentsEntry>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;
 
-	private static class StagedModelPermissionLogic
+	private static class StagedModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<SegmentsEntry> {
 
 		@Override
@@ -87,9 +91,8 @@ public class SegmentsEntryModelResourcePermissionRegistrar {
 				SegmentsEntry segmentsEntry, String actionId)
 			throws PortalException {
 
-			if ((actionId.equals(ActionKeys.DELETE) ||
-				 actionId.equals(ActionKeys.UPDATE)) &&
-				!SegmentsConstants.SOURCE_DEFAULT.equals(
+			if (actionId.equals(ActionKeys.UPDATE) &&
+				SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND.equals(
 					segmentsEntry.getSource())) {
 
 				return false;
@@ -102,7 +105,7 @@ public class SegmentsEntryModelResourcePermissionRegistrar {
 				SegmentsPortletKeys.SEGMENTS, actionId);
 		}
 
-		private StagedModelPermissionLogic(
+		private StagedModelResourcePermissionLogic(
 			StagingPermission stagingPermission) {
 
 			_stagingPermission = stagingPermission;

@@ -51,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Máté Thurzó
  */
-@Component(immediate = true, service = StagedModelDataHandler.class)
+@Component(service = StagedModelDataHandler.class)
 public class FileShortcutStagedModelDataHandler
 	extends BaseStagedModelDataHandler<FileShortcut> {
 
@@ -92,9 +92,9 @@ public class FileShortcutStagedModelDataHandler
 
 			return new LiferayFileShortcut(dlFileShortcut);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return null;
@@ -108,7 +108,7 @@ public class FileShortcutStagedModelDataHandler
 		List<DLFileShortcut> dlFileShortcuts =
 			_dlFileShortcutLocalService.getDLFileShortcutsByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<DLFileShortcut>());
+				new StagedModelModifiedDateComparator<>());
 
 		List<FileShortcut> fileShortcuts = new ArrayList<>();
 
@@ -134,6 +134,13 @@ public class FileShortcutStagedModelDataHandler
 			PortletDataContext portletDataContext, FileShortcut fileShortcut)
 		throws Exception {
 
+		FileEntry fileEntry = _dlAppLocalService.getFileEntry(
+			fileShortcut.getToFileEntryId());
+
+		if (fileEntry.hasLock() || fileEntry.isCheckedOut()) {
+			return;
+		}
+
 		if (fileShortcut.getFolderId() !=
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
@@ -141,9 +148,6 @@ public class FileShortcutStagedModelDataHandler
 				portletDataContext, fileShortcut, fileShortcut.getFolder(),
 				PortletDataContext.REFERENCE_TYPE_PARENT);
 		}
-
-		FileEntry fileEntry = _dlAppLocalService.getFileEntry(
-			fileShortcut.getToFileEntryId());
 
 		StagedModelDataHandlerUtil.exportReferenceStagedModel(
 			portletDataContext, fileShortcut, fileEntry,
@@ -186,16 +190,9 @@ public class FileShortcutStagedModelDataHandler
 			fileEntryIds, fileShortcut.getToFileEntryId(),
 			fileShortcut.getToFileEntryId());
 
-		FileEntry importedFileEntry = null;
+		FileEntry importedFileEntry = _fetchFileEntry(fileEntryId);
 
-		try {
-			importedFileEntry = _dlAppLocalService.getFileEntry(fileEntryId);
-		}
-		catch (PortalException pe) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to fetch file entry " + fileEntryId, pe);
-			}
-
+		if (importedFileEntry == null) {
 			return;
 		}
 
@@ -270,22 +267,27 @@ public class FileShortcutStagedModelDataHandler
 		}
 	}
 
-	@Reference(unbind = "-")
-	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
-	}
+	private FileEntry _fetchFileEntry(long fileEntryId) {
+		try {
+			return _dlAppLocalService.getFileEntry(fileEntryId);
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to get file entry " + fileEntryId, portalException);
+			}
 
-	@Reference(unbind = "-")
-	protected void setDLFileShortcutLocalService(
-		DLFileShortcutLocalService dlFileShortcutLocalService) {
-
-		_dlFileShortcutLocalService = dlFileShortcutLocalService;
+			return null;
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FileShortcutStagedModelDataHandler.class);
 
+	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
 	private DLFileShortcutLocalService _dlFileShortcutLocalService;
 
 	@Reference

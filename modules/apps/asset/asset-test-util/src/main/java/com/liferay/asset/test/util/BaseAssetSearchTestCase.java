@@ -41,9 +41,11 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.registry.Registry;
@@ -57,7 +59,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1002,12 +1003,12 @@ public abstract class BaseAssetSearchTestCase {
 		List<Map<Locale, String>> titleMaps = new ArrayList<>();
 
 		for (int i = 0; i < defaultTitles.length; i++) {
-			Map<Locale, String> titleMap = new HashMap<>();
-
-			titleMap.put(LocaleUtil.getDefault(), defaultTitles[i]);
-			titleMap.put(LocaleUtil.FRANCE, frenchTitles[i]);
-
-			titleMaps.add(titleMap);
+			titleMaps.add(
+				HashMapBuilder.put(
+					LocaleUtil.getDefault(), defaultTitles[i]
+				).put(
+					LocaleUtil.FRANCE, frenchTitles[i]
+				).build());
 		}
 
 		String[] defaultOrderedTitles = {
@@ -1021,9 +1022,9 @@ public abstract class BaseAssetSearchTestCase {
 		List<Map<Locale, String>> orderedTitleMaps = new ArrayList<>();
 
 		for (int i = 0; i < defaultOrderedTitles.length; i++) {
-			Map<Locale, String> titleMap = new HashMap<>();
-
-			titleMap.put(LocaleUtil.getDefault(), defaultOrderedTitles[i]);
+			Map<Locale, String> titleMap = HashMapBuilder.put(
+				LocaleUtil.getDefault(), defaultOrderedTitles[i]
+			).build();
 
 			String orderedTitle = frenchOrderedTitles[i];
 
@@ -1058,12 +1059,12 @@ public abstract class BaseAssetSearchTestCase {
 		List<Map<Locale, String>> titleMaps = new ArrayList<>();
 
 		for (int i = 0; i < defaultTitles.length; i++) {
-			Map<Locale, String> titleMap = new HashMap<>();
-
-			titleMap.put(LocaleUtil.getDefault(), defaultTitles[i]);
-			titleMap.put(LocaleUtil.FRANCE, frenchTitles[i]);
-
-			titleMaps.add(titleMap);
+			titleMaps.add(
+				HashMapBuilder.put(
+					LocaleUtil.getDefault(), defaultTitles[i]
+				).put(
+					LocaleUtil.FRANCE, frenchTitles[i]
+				).build());
 		}
 
 		String[] defaultOrderedTitles = {
@@ -1077,9 +1078,9 @@ public abstract class BaseAssetSearchTestCase {
 		List<Map<Locale, String>> orderedTitleMaps = new ArrayList<>();
 
 		for (int i = 0; i < defaultOrderedTitles.length; i++) {
-			Map<Locale, String> titleMap = new HashMap<>();
-
-			titleMap.put(LocaleUtil.getDefault(), defaultOrderedTitles[i]);
+			Map<Locale, String> titleMap = HashMapBuilder.put(
+				LocaleUtil.getDefault(), defaultOrderedTitles[i]
+			).build();
 
 			String orderedTitle = frenchOrderedTitles[i];
 
@@ -1129,6 +1130,9 @@ public abstract class BaseAssetSearchTestCase {
 
 		testPaginationType(assetEntryQuery, 5);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected abstract BaseModel<?> addBaseModel(
 			BaseModel<?> parentBaseModel, Map<Locale, String> titleMap,
@@ -1223,7 +1227,8 @@ public abstract class BaseAssetSearchTestCase {
 
 		for (int i = 0; i < size; i++) {
 			Date date = new Date(
-				startDate.getTime() + (RandomUtil.nextInt(365) + 1) * Time.DAY);
+				startDate.getTime() +
+					((RandomUtil.nextInt(365) + 1) * Time.DAY));
 
 			Calendar calendar = new GregorianCalendar();
 

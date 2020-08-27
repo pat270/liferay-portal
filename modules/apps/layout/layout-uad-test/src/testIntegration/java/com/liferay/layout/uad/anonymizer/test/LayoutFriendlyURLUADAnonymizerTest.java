@@ -83,7 +83,7 @@ public class LayoutFriendlyURLUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<LayoutFriendlyURL> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -107,9 +107,10 @@ public class LayoutFriendlyURLUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_layoutFriendlyURLLocalService.fetchLayoutFriendlyURL(
-				baseModelPK) == null) {
+		LayoutFriendlyURL layoutFriendlyURL =
+			_layoutFriendlyURLLocalService.fetchLayoutFriendlyURL(baseModelPK);
 
+		if (layoutFriendlyURL == null) {
 			return true;
 		}
 
@@ -127,6 +128,6 @@ public class LayoutFriendlyURLUADAnonymizerTest
 	private LayoutLocalService _layoutLocalService;
 
 	@Inject(filter = "component.name=*.LayoutFriendlyURLUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<LayoutFriendlyURL> _uadAnonymizer;
 
 }

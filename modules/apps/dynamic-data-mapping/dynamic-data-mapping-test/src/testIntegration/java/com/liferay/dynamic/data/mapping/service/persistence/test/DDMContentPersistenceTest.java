@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class DDMContentPersistenceTest {
 
 		DDMContent newDDMContent = _persistence.create(pk);
 
+		newDDMContent.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMContent.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMContent.setUuid(RandomTestUtil.randomString());
 
 		newDDMContent.setGroupId(RandomTestUtil.nextLong());
@@ -150,6 +154,12 @@ public class DDMContentPersistenceTest {
 		DDMContent existingDDMContent = _persistence.findByPrimaryKey(
 			newDDMContent.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMContent.getMvccVersion(),
+			newDDMContent.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMContent.getCtCollectionId(),
+			newDDMContent.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMContent.getUuid(), newDDMContent.getUuid());
 		Assert.assertEquals(
@@ -243,9 +253,10 @@ public class DDMContentPersistenceTest {
 
 	protected OrderByComparator<DDMContent> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMContent", "uuid", true, "contentId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "name", true, "description", true);
+			"DDMContent", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "contentId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "name", true, "description", true);
 	}
 
 	@Test
@@ -460,24 +471,71 @@ public class DDMContentPersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMContent existingDDMContent = _persistence.findByPrimaryKey(
-			newDDMContent.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDDMContent.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMContent.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDDMContent, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMContent newDDMContent = addDDMContent();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMContent.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"contentId", newDDMContent.getContentId()));
+
+		List<DDMContent> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMContent ddmContent) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMContent.getGroupId()),
+			ddmContent.getUuid(),
+			ReflectionTestUtil.invoke(
+				ddmContent, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(ddmContent.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMContent, "getOriginalGroupId", new Class<?>[0]));
+				ddmContent, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected DDMContent addDDMContent() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMContent ddmContent = _persistence.create(pk);
+
+		ddmContent.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmContent.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmContent.setUuid(RandomTestUtil.randomString());
 

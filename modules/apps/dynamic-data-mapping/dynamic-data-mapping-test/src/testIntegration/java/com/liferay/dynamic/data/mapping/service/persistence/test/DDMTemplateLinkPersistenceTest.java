@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -123,6 +124,10 @@ public class DDMTemplateLinkPersistenceTest {
 
 		DDMTemplateLink newDDMTemplateLink = _persistence.create(pk);
 
+		newDDMTemplateLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMTemplateLink.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMTemplateLink.setCompanyId(RandomTestUtil.nextLong());
 
 		newDDMTemplateLink.setClassNameId(RandomTestUtil.nextLong());
@@ -136,6 +141,12 @@ public class DDMTemplateLinkPersistenceTest {
 		DDMTemplateLink existingDDMTemplateLink = _persistence.findByPrimaryKey(
 			newDDMTemplateLink.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMTemplateLink.getMvccVersion(),
+			newDDMTemplateLink.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMTemplateLink.getCtCollectionId(),
+			newDDMTemplateLink.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMTemplateLink.getTemplateLinkId(),
 			newDDMTemplateLink.getTemplateLinkId());
@@ -151,13 +162,6 @@ public class DDMTemplateLinkPersistenceTest {
 		Assert.assertEquals(
 			existingDDMTemplateLink.getTemplateId(),
 			newDDMTemplateLink.getTemplateId());
-	}
-
-	@Test
-	public void testCountByClassNameId() throws Exception {
-		_persistence.countByClassNameId(RandomTestUtil.nextLong());
-
-		_persistence.countByClassNameId(0L);
 	}
 
 	@Test
@@ -200,8 +204,9 @@ public class DDMTemplateLinkPersistenceTest {
 
 	protected OrderByComparator<DDMTemplateLink> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMTemplateLink", "templateLinkId", true, "companyId", true,
-			"classNameId", true, "classPK", true, "templateId", true);
+			"DDMTemplateLink", "mvccVersion", true, "ctCollectionId", true,
+			"templateLinkId", true, "companyId", true, "classNameId", true,
+			"classPK", true, "templateId", true);
 	}
 
 	@Test
@@ -424,25 +429,71 @@ public class DDMTemplateLinkPersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMTemplateLink existingDDMTemplateLink = _persistence.findByPrimaryKey(
-			newDDMTemplateLink.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDDMTemplateLink.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMTemplateLink newDDMTemplateLink = addDDMTemplateLink();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMTemplateLink.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"templateLinkId", newDDMTemplateLink.getTemplateLinkId()));
+
+		List<DDMTemplateLink> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMTemplateLink ddmTemplateLink) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMTemplateLink.getClassNameId()),
+			Long.valueOf(ddmTemplateLink.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMTemplateLink, "getOriginalClassNameId",
-				new Class<?>[0]));
+				ddmTemplateLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDDMTemplateLink.getClassPK()),
+			Long.valueOf(ddmTemplateLink.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMTemplateLink, "getOriginalClassPK",
-				new Class<?>[0]));
+				ddmTemplateLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 	}
 
 	protected DDMTemplateLink addDDMTemplateLink() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMTemplateLink ddmTemplateLink = _persistence.create(pk);
+
+		ddmTemplateLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmTemplateLink.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmTemplateLink.setCompanyId(RandomTestUtil.nextLong());
 

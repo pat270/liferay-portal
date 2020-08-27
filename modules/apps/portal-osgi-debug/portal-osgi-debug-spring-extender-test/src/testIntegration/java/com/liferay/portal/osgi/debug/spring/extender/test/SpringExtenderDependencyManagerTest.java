@@ -180,9 +180,9 @@ public class SpringExtenderDependencyManagerTest {
 				sb.append(StringPool.NEW_LINE);
 			}
 
-			sb.append("\t\tServiceDependency[interface ");
+			sb.append("\t\tservice dependency [");
 			sb.append(_SPRING_EXTENDER_TEST_COMPONENT_REFERENCE_CLASS_NAME);
-			sb.append(" null]");
+			sb.append("]");
 
 			Assert.assertTrue(message, message.contains(sb.toString()));
 
@@ -235,8 +235,8 @@ public class SpringExtenderDependencyManagerTest {
 						_unavailableComponentScannerConfiguration.update(
 							new HashMapDictionary<String, Object>());
 					}
-					catch (IOException ioe) {
-						ReflectionUtil.throwException(ioe);
+					catch (IOException ioException) {
+						ReflectionUtil.throwException(ioException);
 					}
 
 					Thread thread = Thread.currentThread();
@@ -279,7 +279,7 @@ public class SpringExtenderDependencyManagerTest {
 		}
 	}
 
-	private InputStream _createBundle() throws IOException {
+	private InputStream _createBundle() throws Exception {
 		try (UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 				new UnsyncByteArrayOutputStream()) {
 

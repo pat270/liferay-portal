@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -62,7 +63,7 @@ public class JournalArticleAtomCollectionProvider
 
 	@Override
 	public List<String> getEntryAuthors(JournalArticle journalArticle) {
-		return ListUtil.toList(journalArticle.getUserName());
+		return ListUtil.fromArray(journalArticle.getUserName());
 	}
 
 	@Override
@@ -132,13 +133,11 @@ public class JournalArticleAtomCollectionProvider
 			AtomRequestContext atomRequestContext)
 		throws Exception {
 
-		List<JournalArticle> journalArticles = new ArrayList<>();
-
 		long companyId = CompanyThreadLocal.getCompanyId();
 		long groupId = atomRequestContext.getLongParameter("groupId");
 
 		if ((companyId <= 0) || (groupId <= 0)) {
-			return journalArticles;
+			return new ArrayList<>();
 		}
 
 		List<Long> folderIds = Collections.emptyList();
@@ -152,7 +151,8 @@ public class JournalArticleAtomCollectionProvider
 		int status = WorkflowConstants.STATUS_APPROVED;
 		Date reviewDate = null;
 
-		OrderByComparator<JournalArticle> obc = new ArticleVersionComparator();
+		OrderByComparator<JournalArticle> orderByComparator =
+			new ArticleVersionComparator();
 
 		int count = _journalArticleService.searchCount(
 			companyId, groupId, folderIds, classNameId, keywords, version,
@@ -163,13 +163,11 @@ public class JournalArticleAtomCollectionProvider
 
 		AtomUtil.saveAtomPagerInRequest(atomRequestContext, atomPager);
 
-		journalArticles = _journalArticleService.search(
+		return _journalArticleService.search(
 			companyId, groupId, folderIds, classNameId, keywords, version,
 			ddmStructureKey, ddmTemplateKey, displayDateGT, displayDateLT,
 			status, reviewDate, atomPager.getStart(), atomPager.getEnd() + 1,
-			obc);
-
-		return journalArticles;
+			orderByComparator);
 	}
 
 	@Override
@@ -185,11 +183,9 @@ public class JournalArticleAtomCollectionProvider
 		String articleId = StringPool.BLANK;
 		boolean autoArticleId = true;
 
-		Locale locale = LocaleUtil.getDefault();
-
-		Map<Locale, String> titleMap = new HashMap<>();
-
-		titleMap.put(locale, title);
+		Map<Locale, String> titleMap = HashMapBuilder.put(
+			LocaleUtil.getDefault(), title
+		).build();
 
 		Map<Locale, String> descriptionMap = new HashMap<>();
 
@@ -242,11 +238,9 @@ public class JournalArticleAtomCollectionProvider
 
 		int status = WorkflowConstants.STATUS_APPROVED;
 
-		journalArticle = _journalArticleService.updateStatus(
+		return _journalArticleService.updateStatus(
 			groupId, journalArticle.getArticleId(), version, status, articleURL,
 			serviceContext);
-
-		return journalArticle;
 	}
 
 	@Override

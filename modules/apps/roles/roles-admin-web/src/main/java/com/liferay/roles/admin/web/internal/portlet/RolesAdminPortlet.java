@@ -19,19 +19,29 @@ import com.liferay.application.list.PanelCategoryRegistry;
 import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.application.list.constants.PanelCategoryKeys;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
+import com.liferay.application.list.display.context.logic.PersonalMenuEntryHelper;
+import com.liferay.depot.configuration.DepotConfiguration;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
+import com.liferay.petra.lang.SafeClosable;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.DuplicateRoleException;
+import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.exception.NoSuchRoleException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RequiredRoleException;
 import com.liferay.portal.kernel.exception.RoleAssignmentException;
 import com.liferay.portal.kernel.exception.RoleNameException;
 import com.liferay.portal.kernel.exception.RolePermissionsException;
 import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
-import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocalCloseable;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -58,10 +68,18 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.product.navigation.personal.menu.PersonalMenuEntry;
 import com.liferay.roles.admin.constants.RolesAdminPortletKeys;
+import com.liferay.roles.admin.constants.RolesAdminWebKeys;
+import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
+import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
+import com.liferay.segments.service.SegmentsEntryRoleLocalService;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,7 +95,11 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -105,8 +127,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + RolesAdminPortletKeys.ROLES_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -161,7 +182,12 @@ public class RolesAdminPortlet extends MVCPortlet {
 
 		long roleId = ParamUtil.getLong(actionRequest, "roleId");
 
-		_roleService.deleteRole(roleId);
+		try {
+			_roleService.deleteRole(roleId);
+		}
+		catch (ModelListenerException modelListenerException) {
+			throw (Exception)modelListenerException.getCause();
+		}
 	}
 
 	public void deleteRoles(
@@ -171,8 +197,13 @@ public class RolesAdminPortlet extends MVCPortlet {
 		long[] deleteRoleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "deleteRoleIds"), 0L);
 
-		for (long roleId : deleteRoleIds) {
-			_roleService.deleteRole(roleId);
+		try {
+			for (long roleId : deleteRoleIds) {
+				_roleService.deleteRole(roleId);
+			}
+		}
+		catch (ModelListenerException modelListenerException) {
+			throw (Exception)modelListenerException.getCause();
 		}
 	}
 
@@ -196,11 +227,14 @@ public class RolesAdminPortlet extends MVCPortlet {
 			// Add role
 
 			int type = ParamUtil.getInteger(
-				actionRequest, "type", RoleConstants.TYPE_REGULAR);
+				actionRequest, "roleType", RoleConstants.TYPE_REGULAR);
+
+			RoleTypeContributor roleTypeContributor =
+				_roleTypeContributorProvider.getRoleTypeContributor(type);
 
 			Role role = _roleService.addRole(
-				null, 0, name, titleMap, descriptionMap, type, subtype,
-				serviceContext);
+				roleTypeContributor.getClassName(), 0, name, titleMap,
+				descriptionMap, type, subtype, serviceContext);
 
 			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
@@ -223,12 +257,12 @@ public class RolesAdminPortlet extends MVCPortlet {
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
-			Role role = _roleLocalService.getRole(roleId);
 			boolean manageSubgroups = ParamUtil.getBoolean(
 				actionRequest, "manageSubgroups");
 
 			updateAction(
-				role, themeDisplay.getScopeGroupId(), Group.class.getName(),
+				_roleLocalService.getRole(roleId),
+				themeDisplay.getScopeGroupId(), Group.class.getName(),
 				ActionKeys.MANAGE_SUBGROUPS, manageSubgroups,
 				ResourceConstants.SCOPE_GROUP_TEMPLATE, new String[0]);
 		}
@@ -259,13 +293,16 @@ public class RolesAdminPortlet extends MVCPortlet {
 		if (!ArrayUtil.isEmpty(addUserIds) ||
 			!ArrayUtil.isEmpty(removeUserIds)) {
 
-			try (ProxyModeThreadLocalCloseable proxyModeThreadLocalCloseable =
-					new ProxyModeThreadLocalCloseable()) {
-
-				ProxyModeThreadLocal.setForceSync(true);
+			try (SafeClosable safeClosable =
+					ProxyModeThreadLocal.setWithSafeClosable(true)) {
 
 				_userService.addRoleUsers(roleId, addUserIds);
 				_userService.unsetRoleUsers(roleId, removeUserIds);
+			}
+			catch (RequiredRoleException.MustNotRemoveLastAdministator |
+				   RequiredRoleException.MustNotRemoveUserRole exception) {
+
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
 		}
 
@@ -280,6 +317,47 @@ public class RolesAdminPortlet extends MVCPortlet {
 			_groupService.addRoleGroups(roleId, addGroupIds);
 			_groupService.unsetRoleGroups(roleId, removeGroupIds);
 		}
+
+		long[] addSegmentsEntryIds = StringUtil.split(
+			ParamUtil.getString(actionRequest, "addSegmentsEntryIds"), 0L);
+
+		if (ArrayUtil.isNotEmpty(addSegmentsEntryIds)) {
+			try (SafeClosable safeClosable =
+					ProxyModeThreadLocal.setWithSafeClosable(true)) {
+
+				for (long segmentsEntryId : addSegmentsEntryIds) {
+					_segmentsEntryRoleLocalService.addSegmentsEntryRole(
+						segmentsEntryId, roleId,
+						ServiceContextFactory.getInstance(
+							Role.class.getName(), actionRequest));
+				}
+			}
+		}
+
+		long[] removeSegmentsEntryIds = StringUtil.split(
+			ParamUtil.getString(actionRequest, "removeSegmentsEntryIds"), 0L);
+
+		if (ArrayUtil.isNotEmpty(removeSegmentsEntryIds)) {
+			try (SafeClosable safeClosable =
+					ProxyModeThreadLocal.setWithSafeClosable(true)) {
+
+				for (long segmentsEntryId : removeSegmentsEntryIds) {
+					_segmentsEntryRoleLocalService.deleteSegmentsEntryRole(
+						segmentsEntryId, roleId);
+				}
+			}
+		}
+	}
+
+	public List<PersonalMenuEntry> getPersonalMenuEntries() {
+		List<PersonalMenuEntry> personalMenuEntries = new ArrayList<>(
+			_serviceTrackerList.size());
+
+		for (PersonalMenuEntry personalMenuEntry : _serviceTrackerList) {
+			personalMenuEntries.add(personalMenuEntry);
+		}
+
+		return personalMenuEntries;
 	}
 
 	@Override
@@ -375,11 +453,14 @@ public class RolesAdminPortlet extends MVCPortlet {
 				String[] groupIds = StringUtil.split(
 					ParamUtil.getString(actionRequest, "groupIds" + target));
 
-				groupIds = ArrayUtil.distinct(groupIds);
+				groupIds = ArrayUtil.distinct(
+					ArrayUtil.filter(groupIds, Validator::isNotNull));
 
 				int scope = ResourceConstants.SCOPE_COMPANY;
 
-				if ((role.getType() == RoleConstants.TYPE_ORGANIZATION) ||
+				if ((role.getType() == RoleConstants.TYPE_ACCOUNT) ||
+					(role.getType() == RoleConstants.TYPE_DEPOT) ||
+					(role.getType() == RoleConstants.TYPE_ORGANIZATION) ||
 					(role.getType() == RoleConstants.TYPE_PROVIDER) ||
 					(role.getType() == RoleConstants.TYPE_SITE)) {
 
@@ -428,6 +509,27 @@ public class RolesAdminPortlet extends MVCPortlet {
 		}
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		Comparator<ServiceReference<PersonalMenuEntry>> groupComparator =
+			new PropertyServiceReferenceComparator<>(
+				"product.navigation.personal.menu.group");
+
+		Comparator<ServiceReference<PersonalMenuEntry>> entryOrderComparator =
+			new PropertyServiceReferenceComparator<>(
+				"product.navigation.personal.menu.entry.order");
+
+		_serviceTrackerList = ServiceTrackerListFactory.open(
+			bundleContext, PersonalMenuEntry.class,
+			Collections.reverseOrder(
+				groupComparator.thenComparing(entryOrderComparator)));
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerList.close();
+	}
+
 	@Override
 	protected void doDispatch(
 			RenderRequest renderRequest, RenderResponse renderResponse)
@@ -437,9 +539,14 @@ public class RolesAdminPortlet extends MVCPortlet {
 
 		long roleId = ParamUtil.getLong(renderRequest, "roleId");
 
+		String mvcPath = ParamUtil.getString(renderRequest, "mvcPath");
+
 		if (SessionErrors.contains(
 				renderRequest, RequiredRoleException.class.getName()) &&
-			(roleId < 1)) {
+			((roleId < 1) ||
+			 (Validator.isNotNull(mvcPath) && mvcPath.equals("/view.jsp")))) {
+
+			hideDefaultErrorMessage(renderRequest);
 
 			include("/view.jsp", renderRequest, renderResponse);
 		}
@@ -457,6 +564,14 @@ public class RolesAdminPortlet extends MVCPortlet {
 				 SessionErrors.contains(
 					 renderRequest, PrincipalException.getNestedClasses()) ||
 				 SessionErrors.contains(
+					 renderRequest,
+					 RequiredRoleException.MustNotRemoveLastAdministator.class.
+						 getName()) ||
+				 SessionErrors.contains(
+					 renderRequest,
+					 RequiredRoleException.MustNotRemoveUserRole.class.
+						 getName()) ||
+				 SessionErrors.contains(
 					 renderRequest, RoleAssignmentException.class.getName()) ||
 				 SessionErrors.contains(
 					 renderRequest, RolePermissionsException.class.getName())) {
@@ -469,14 +584,14 @@ public class RolesAdminPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof DuplicateRoleException ||
-			cause instanceof NoSuchRoleException ||
-			cause instanceof PrincipalException ||
-			cause instanceof RequiredRoleException ||
-			cause instanceof RoleAssignmentException ||
-			cause instanceof RoleNameException ||
-			cause instanceof RolePermissionsException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof DuplicateRoleException ||
+			throwable instanceof NoSuchRoleException ||
+			throwable instanceof PrincipalException ||
+			throwable instanceof RequiredRoleException ||
+			throwable instanceof RoleAssignmentException ||
+			throwable instanceof RoleNameException ||
+			throwable instanceof RolePermissionsException) {
 
 			return true;
 		}
@@ -497,6 +612,32 @@ public class RolesAdminPortlet extends MVCPortlet {
 		portletRequest.setAttribute(
 			ApplicationListWebKeys.PANEL_CATEGORY_REGISTRY,
 			_panelCategoryRegistry);
+
+		PersonalMenuEntryHelper personalMenuEntryHelper =
+			new PersonalMenuEntryHelper(getPersonalMenuEntries());
+
+		portletRequest.setAttribute(
+			ApplicationListWebKeys.PERSONAL_MENU_ENTRY_HELPER,
+			personalMenuEntryHelper);
+
+		long roleId = ParamUtil.getLong(portletRequest, "roleId");
+		int type = ParamUtil.getInteger(
+			portletRequest, "roleType", RoleConstants.TYPE_REGULAR);
+
+		Role role = _roleLocalService.fetchRole(roleId);
+
+		if (role != null) {
+			type = role.getType();
+		}
+
+		portletRequest.setAttribute(
+			RolesAdminWebKeys.CURRENT_ROLE_TYPE,
+			_roleTypeContributorProvider.getRoleTypeContributor(type));
+		portletRequest.setAttribute(
+			RolesAdminWebKeys.ITEM_SELECTOR, _itemSelector);
+		portletRequest.setAttribute(
+			RolesAdminWebKeys.ROLE_TYPES,
+			_roleTypeContributorProvider.getRoleTypeContributors());
 	}
 
 	@Reference(unbind = "-")
@@ -601,8 +742,10 @@ public class RolesAdminPortlet extends MVCPortlet {
 		String selResource = null;
 		String actionId = null;
 
-		if (panelCategoryHelper.containsPortlet(
-				portletId, PanelCategoryKeys.CONTROL_PANEL) &&
+		if ((panelCategoryHelper.containsPortlet(
+				portletId, PanelCategoryKeys.APPLICATIONS_MENU) ||
+			 panelCategoryHelper.containsPortlet(
+				 portletId, PanelCategoryKeys.CONTROL_PANEL)) &&
 			(role.getType() == RoleConstants.TYPE_REGULAR)) {
 
 			selResource = PortletKeys.PORTAL;
@@ -610,6 +753,16 @@ public class RolesAdminPortlet extends MVCPortlet {
 		}
 		else if (panelCategoryHelper.containsPortlet(
 					portletId, PanelCategoryKeys.SITE_ADMINISTRATION)) {
+
+			if (_depotConfiguration.isEnabled()) {
+				updateAction(
+					role, scopeGroupId, DepotEntry.class.getName(),
+					ActionKeys.VIEW_SITE_ADMINISTRATION, true, scope,
+					ArrayUtil.filter(
+						groupIds,
+						groupId -> _isDepotGroup(
+							role.getCompanyId(), groupId)));
+			}
 
 			selResource = Group.class.getName();
 			actionId = ActionKeys.VIEW_SITE_ADMINISTRATION;
@@ -642,10 +795,31 @@ public class RolesAdminPortlet extends MVCPortlet {
 		}
 	}
 
+	private boolean _isDepotGroup(long companyId, String groupKey) {
+		try {
+			Group group = _groupService.getGroup(companyId, groupKey);
+
+			if (group.getType() == GroupConstants.TYPE_DEPOT) {
+				return true;
+			}
+
+			return false;
+		}
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
+		}
+	}
+
+	@Reference
+	private DepotConfiguration _depotConfiguration;
+
 	private GroupService _groupService;
 
 	@Reference
 	private Http _http;
+
+	@Reference
+	private ItemSelector _itemSelector;
 
 	private PanelAppRegistry _panelAppRegistry;
 	private PanelCategoryRegistry _panelCategoryRegistry;
@@ -659,6 +833,15 @@ public class RolesAdminPortlet extends MVCPortlet {
 	private ResourcePermissionService _resourcePermissionService;
 	private RoleLocalService _roleLocalService;
 	private RoleService _roleService;
+
+	@Reference
+	private RoleTypeContributorProvider _roleTypeContributorProvider;
+
+	@Reference
+	private SegmentsEntryRoleLocalService _segmentsEntryRoleLocalService;
+
+	private ServiceTrackerList<PersonalMenuEntry, PersonalMenuEntry>
+		_serviceTrackerList;
 	private UserService _userService;
 
 }

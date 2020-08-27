@@ -22,6 +22,18 @@ import org.junit.Test;
 public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
+	public void testAttributeOrder() throws Exception {
+		test("AttributeOrder.testjava",
+			new String[] {
+				"Attribute 'dataDefinitionId' should come after attribute " +
+					"'appDeployments'",
+				"Attribute 'type' should come after attribute 'settings'",
+				"Attribute 'type' should come after attribute 'settings'"
+			},
+			new Integer[] {29, 33, 45});
+	}
+
+	@Test
 	public void testAnnotationParameterImports() throws Exception {
 		test("AnnotationParameterImports.testjava");
 	}
@@ -92,12 +104,26 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testExceptionVariableName() throws Exception {
-		test("ExceptionVariableName.testjava");
+		test(
+			"ExceptionVariableName.testjava",
+			new String[] {
+				"Rename exception variable 'e' to 'configurationException'",
+				"Rename exception variable 'e' to 'configurationException'",
+				"Rename exception variable 're' to 'exception'",
+				"Rename exception variable 'ioe' to 'ioException1'",
+				"Rename exception variable 'oie' to 'ioException2'",
+				"Rename exception variable 'ioe1' to 'ioException1'",
+				"Rename exception variable 'ioe2' to 'ioException2'",
+				"Rename exception variable 'ioe1' to 'ioException'",
+				"Rename exception variable 'ioe2' to 'ioException'"
+			},
+			new Integer[] {37, 50, 61, 66, 70, 81, 85, 96, 102});
 	}
 
 	@Test
 	public void testFormatAnnotations() throws Exception {
-		test("FormatAnnotations.testjava");
+		test("FormatAnnotations1.testjava");
+		test("FormatAnnotations2.testjava");
 	}
 
 	@Test
@@ -141,11 +167,6 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testIncorrectIfStatement() throws Exception {
-		//test("IncorrectIfStatement.testjava", "Incorrect if statement", 23);
-	}
-
-	@Test
 	public void testIncorrectImports() throws Exception {
 		test("IncorrectImports1.testjava");
 		test(
@@ -183,7 +204,8 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 			},
 			new Integer[] {
 				53, 57, 61, 97, 101, 105, 141, 145, 149, 185, 189, 193, 229,
-				233, 237, 273, 277, 281});
+				233, 237, 273, 277, 281
+			});
 		}
 
 	@Test
@@ -252,10 +274,6 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test("JavaTermDividers.testjava");
 	}
 
-	public void testJavaTermMetadataIncorrectLineBreaks() throws Exception {
-		test("JavaTermMetadataIncorrectLineBreaks.testjava");
-	}
-
 	@Test
 	public void testJavaVariableFinalableFields1() throws Exception {
 		test("JavaVariableFinalableFields1.testjava");
@@ -291,6 +309,54 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	@Test
 	public void testMissingEmptyLines() throws Exception {
 		test("MissingEmptyLines.testjava");
+	}
+
+	@Test
+	public void testMissingEmptyLinesAfterMethodCalls() throws Exception {
+		test(
+			"MissingEmptyLinesAfterMethodCalls.testjava",
+			new String[] {
+				"There should be an empty line after 'registry.register'",
+				"There should be an empty line after 'registry.register'",
+				"There should be an empty line after 'registry.register'"
+			},
+			new Integer[] {23, 24, 34});
+	}
+
+	@Test
+	public void testMissingDiamondOperator() throws Exception {
+		test("MissingDiamondOperator.testjava",
+			new String[] {
+				"Missing diamond operator '<>' for type 'ArrayList'",
+				"Missing generic types '<String, String>' for type 'ArrayList'",
+				"Missing diamond operator '<>' for type 'ConcurrentHashMap'",
+				"Missing diamond operator '<>' for type " +
+					"'ConcurrentSkipListMap'",
+				"Missing diamond operator '<>' for type " +
+					"'ConcurrentSkipListSet'",
+				"Missing diamond operator '<>' for type 'CopyOnWriteArraySet'",
+				"Missing generic types '<Position, String>' for type 'EnumMap'",
+				"Missing diamond operator '<>' for type 'HashMap'",
+				"Missing generic types '<String, String>' for type 'HashMap'",
+				"Missing diamond operator '<>' for type 'HashSet'",
+				"Missing diamond operator '<>' for type 'Hashtable'",
+				"Missing diamond operator '<>' for type 'IdentityHashMap'",
+				"Missing diamond operator '<>' for type 'LinkedHashMap'",
+				"Missing diamond operator '<>' for type 'LinkedHashSet'",
+				"Missing diamond operator '<>' for type 'LinkedList'",
+				"Missing diamond operator '<>' for type 'Stack'",
+				"Missing diamond operator '<>' for type 'TreeMap'",
+				"Missing diamond operator '<>' for type 'TreeSet'",
+				"Missing diamond operator '<>' for type 'Vector'",
+				"Missing generic types '<Map<String, String>>' for type " +
+					"'ArrayList'",
+				"Missing generic types '<String, String>' for type 'HashMap'",
+				"Missing generic types '<String, String>' for type 'HashMap'"
+			},
+			new Integer[] {
+				45, 47, 53, 55, 57, 59, 61, 68, 70, 76, 78, 80, 83, 85, 87, 89,
+				91, 93, 95, 97, 99, 110
+			});
 	}
 
 	@Test
@@ -332,6 +398,18 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 			"Use SecureRandomUtil or com.liferay.portal.kernel.security." +
 				"SecureRandom instead of java.security.SecureRandom, see " +
 					"LPS-39058");
+	}
+
+	@Test
+	public void testSingleStatementClause() throws Exception {
+		test(
+			"SingleStatementClause.testjava",
+			new String[] {
+				"Use braces around if-statement clause",
+				"Use braces around while-statement clause",
+				"Use braces around for-statement clause"
+			},
+			new Integer[] {23, 28, 31});
 	}
 
 	@Test
@@ -380,6 +458,17 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	@Test
 	public void testUnusedParameter() throws Exception {
 		test("UnusedParameter.testjava", "Parameter 'color' is unused", 26);
+	}
+
+	@Test
+	public void testUnusedVariable() throws Exception {
+		test(
+			"UnusedVariable.testjava",
+			new String[] {
+				"Variable 'matcher' is unused", "Variable 'hello' is unused",
+				"Variable '_s' is unused"
+			},
+			new Integer[] {26, 29, 41});
 	}
 
 }

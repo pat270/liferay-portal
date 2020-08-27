@@ -16,10 +16,12 @@ package com.liferay.push.notifications.service.impl;
 
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.push.notifications.constants.PushNotificationsDestinationNames;
@@ -32,14 +34,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Silvio Santos
  * @author Bruno Farache
  */
+@Component(
+	property = "model.class.name=com.liferay.push.notifications.model.PushNotificationsDevice",
+	service = AopService.class
+)
 public class PushNotificationsDeviceLocalServiceImpl
 	extends PushNotificationsDeviceLocalServiceBaseImpl {
 
@@ -62,22 +70,8 @@ public class PushNotificationsDeviceLocalServiceImpl
 		pushNotificationsDevice.setPlatform(platform);
 		pushNotificationsDevice.setToken(token);
 
-		pushNotificationsDevicePersistence.update(pushNotificationsDevice);
-
-		return pushNotificationsDevice;
-	}
-
-	@Override
-	public void afterPropertiesSet() {
-		super.afterPropertiesSet();
-
-		Bundle bundle = FrameworkUtil.getBundle(
-			PushNotificationsDeviceLocalServiceImpl.class);
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, PushNotificationsSender.class, "platform");
+		return pushNotificationsDevicePersistence.update(
+			pushNotificationsDevice);
 	}
 
 	@Override
@@ -90,13 +84,6 @@ public class PushNotificationsDeviceLocalServiceImpl
 		pushNotificationsDevicePersistence.remove(pushNotificationsDevice);
 
 		return pushNotificationsDevice;
-	}
-
-	@Override
-	public void destroy() {
-		super.destroy();
-
-		_serviceTrackerMap.close();
 	}
 
 	@Override
@@ -146,27 +133,31 @@ public class PushNotificationsDeviceLocalServiceImpl
 			return;
 		}
 
-		Exception exception = null;
+		Exception exception1 = null;
 
 		try {
 			pushNotificationsSender.send(tokens, payloadJSONObject);
 		}
-		catch (PortalException pe) {
-			exception = pe;
+		catch (PortalException portalException) {
+			exception1 = portalException;
 
-			throw pe;
+			throw portalException;
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception exception2) {
+			exception1 = exception2;
 
-			throw new PortalException(e);
+			throw new PortalException(exception2);
 		}
 		finally {
-			if (exception != null) {
-				MessageBusUtil.sendMessage(
+			if (exception1 != null) {
+				Message message = new Message();
+
+				message.setPayload(new BaseResponse(platform, exception1));
+
+				_messageBus.sendMessage(
 					PushNotificationsDestinationNames.
 						PUSH_NOTIFICATION_RESPONSE,
-					new BaseResponse(platform, exception));
+					message);
 			}
 		}
 	}
@@ -187,6 +178,20 @@ public class PushNotificationsDeviceLocalServiceImpl
 				oldPushNotificationsDevice.getPlatform(), newToken);
 		}
 	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, PushNotificationsSender.class, "platform");
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
+	}
+
+	@Reference
+	private MessageBus _messageBus;
 
 	private ServiceTrackerMap<String, PushNotificationsSender>
 		_serviceTrackerMap;

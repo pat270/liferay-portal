@@ -19,8 +19,11 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedAuditedModel;
+import com.liferay.portal.kernel.model.TypedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -41,8 +44,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDMStructureLayoutModel
-	extends BaseModel<DDMStructureLayout>, GroupedModel, LocalizedModel,
-			ShardedModel, StagedAuditedModel {
+	extends BaseModel<DDMStructureLayout>, CTModel<DDMStructureLayout>,
+			GroupedModel, LocalizedModel, MVCCModel, ShardedModel,
+			StagedAuditedModel, TypedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -55,6 +59,7 @@ public interface DDMStructureLayoutModel
 	 *
 	 * @return the primary key of this ddm structure layout
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -62,7 +67,40 @@ public interface DDMStructureLayoutModel
 	 *
 	 * @param primaryKey the primary key of this ddm structure layout
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this ddm structure layout.
+	 *
+	 * @return the mvcc version of this ddm structure layout
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this ddm structure layout.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm structure layout
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddm structure layout.
+	 *
+	 * @return the ct collection ID of this ddm structure layout
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddm structure layout.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm structure layout
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this ddm structure layout.
@@ -207,6 +245,46 @@ public interface DDMStructureLayoutModel
 	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate);
+
+	/**
+	 * Returns the fully qualified class name of this ddm structure layout.
+	 *
+	 * @return the fully qualified class name of this ddm structure layout
+	 */
+	@Override
+	public String getClassName();
+
+	public void setClassName(String className);
+
+	/**
+	 * Returns the class name ID of this ddm structure layout.
+	 *
+	 * @return the class name ID of this ddm structure layout
+	 */
+	@Override
+	public long getClassNameId();
+
+	/**
+	 * Sets the class name ID of this ddm structure layout.
+	 *
+	 * @param classNameId the class name ID of this ddm structure layout
+	 */
+	@Override
+	public void setClassNameId(long classNameId);
+
+	/**
+	 * Returns the structure layout key of this ddm structure layout.
+	 *
+	 * @return the structure layout key of this ddm structure layout
+	 */
+	public String getStructureLayoutKey();
+
+	/**
+	 * Sets the structure layout key of this ddm structure layout.
+	 *
+	 * @param structureLayoutKey the structure layout key of this ddm structure layout
+	 */
+	public void setStructureLayoutKey(String structureLayoutKey);
 
 	/**
 	 * Returns the structure version ID of this ddm structure layout.

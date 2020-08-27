@@ -14,17 +14,17 @@
 
 package com.liferay.headless.admin.taxonomy.internal.jaxrs.exception.mapper;
 
-import com.liferay.asset.kernel.exception.AssetTagNameException;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.asset.kernel.exception.AssetTagException;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import org.osgi.service.component.annotations.Component;
 
 /**
- * Converts any {@code AssetTagNameException} to a {@code 400} error.
+ * Converts any {@code AssetTagException} to a {@code 400} error.
  *
  * @author Víctor Galán
  */
@@ -37,17 +37,14 @@ import org.osgi.service.component.annotations.Component;
 	service = ExceptionMapper.class
 )
 public class KeywordNameExceptionMapper
-	implements ExceptionMapper<AssetTagNameException> {
+	extends BaseExceptionMapper<AssetTagException> {
 
 	@Override
-	public Response toResponse(AssetTagNameException atne) {
-		return Response.status(
-			400
-		).type(
-			MediaType.TEXT_PLAIN
-		).entity(
-			StringUtil.replace(atne.getMessage(), "Tag", "Keyword")
-		).build();
+	protected Problem getProblem(AssetTagException assetTagException) {
+		return new Problem(
+			Response.Status.BAD_REQUEST,
+			"Keyword name is too long or contains invalid characters: " +
+				assetTagException.getMessage());
 	}
 
 }

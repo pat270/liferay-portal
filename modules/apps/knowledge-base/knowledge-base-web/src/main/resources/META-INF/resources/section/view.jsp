@@ -29,8 +29,14 @@ String kbArticleDisplayStyle = kbSectionPortletInstanceConfiguration.kbArticleDi
 			<portlet:param name="mvcPath" value="/section/view.jsp" />
 		</liferay-portlet:renderURL>
 
+		<%
+		KBObjectsSearch kbObjectsSearch = new KBObjectsSearch(renderRequest, iteratorURL);
+
+		kbObjectsSearch.setOrderByComparator(new KBOrderByComparatorAdapter<>(KBUtil.getKBArticleOrderByComparator(kbObjectsSearch.getOrderByCol(), kbObjectsSearch.getOrderByType())));
+		%>
+
 		<liferay-ui:search-container
-			searchContainer="<%= new KBObjectsSearch(renderRequest, iteratorURL) %>"
+			searchContainer="<%= kbObjectsSearch %>"
 			total="<%= KBArticleServiceUtil.getSectionsKBArticlesCount(scopeGroupId, kbArticlesSections, WorkflowConstants.STATUS_APPROVED) %>"
 		>
 			<liferay-ui:search-container-results
@@ -72,8 +78,9 @@ String kbArticleDisplayStyle = kbSectionPortletInstanceConfiguration.kbArticleDi
 						%>
 
 						<liferay-ui:icon
-							iconCssClass="icon-file-alt"
+							icon="document"
 							label="<%= true %>"
+							markupView="lexicon"
 							message="<%= HtmlUtil.escape(kbArticle.getTitle()) %>"
 							method="get"
 							url="<%= viewKBArticleURL.toString() %>"

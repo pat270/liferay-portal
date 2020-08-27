@@ -19,7 +19,6 @@ import com.liferay.portal.search.aggregation.AggregationResult;
 import com.liferay.portal.search.aggregation.bucket.Bucket;
 import com.liferay.portal.search.aggregation.bucket.HistogramAggregation;
 import com.liferay.portal.search.aggregation.bucket.HistogramAggregationResult;
-import com.liferay.portal.search.aggregation.metrics.SumAggregation;
 import com.liferay.portal.search.aggregation.pipeline.SerialDiffPipelineAggregation;
 import com.liferay.portal.search.aggregation.pipeline.SerialDiffPipelineAggregationResult;
 import com.liferay.portal.search.test.util.indexing.BaseIndexingTestCase;
@@ -45,15 +44,8 @@ public abstract class BaseSerialDiffPipelineAggregationTestCase
 				DocumentCreationHelpers.singleNumber(Field.PRIORITY, i));
 		}
 
-		HistogramAggregation histogramAggregation = aggregations.histogram(
-			"histogram", Field.PRIORITY);
-
-		histogramAggregation.setInterval(5.0);
-		histogramAggregation.setMinDocCount(1L);
-
-		SumAggregation sumAggregation = aggregations.sum("sum", Field.PRIORITY);
-
-		histogramAggregation.addChildAggregation(sumAggregation);
+		HistogramAggregation histogramAggregation =
+			aggregationFixture.getDefaultHistogramAggregation();
 
 		SerialDiffPipelineAggregation serialDiffPipelineAggregation =
 			aggregations.serialDiff("serial_diff", "sum");
@@ -95,15 +87,15 @@ public abstract class BaseSerialDiffPipelineAggregationTestCase
 		Assert.assertEquals(expectedKey, bucket.getKey());
 		Assert.assertEquals(expectedCount, bucket.getDocCount());
 
-		Map<String, AggregationResult> childrenAggregationResults =
-			bucket.getChildrenAggregationResults();
-
-		SerialDiffPipelineAggregationResult
-			serialDiffPipelineAggregationResult =
-				(SerialDiffPipelineAggregationResult)
-					childrenAggregationResults.get("serial_diff");
-
 		if (serialDiffValue != null) {
+			Map<String, AggregationResult> childrenAggregationResults =
+				bucket.getChildrenAggregationResults();
+
+			SerialDiffPipelineAggregationResult
+				serialDiffPipelineAggregationResult =
+					(SerialDiffPipelineAggregationResult)
+						childrenAggregationResults.get("serial_diff");
+
 			Assert.assertNotNull(serialDiffPipelineAggregationResult);
 
 			Assert.assertEquals(

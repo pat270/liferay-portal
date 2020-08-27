@@ -16,12 +16,9 @@ package com.liferay.asset.display.page.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchDisplayPageEntryException extends NoSuchModelException {
 
 	public NoSuchDisplayPageEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchDisplayPageEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchDisplayPageEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchDisplayPageEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchDisplayPageEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchDisplayPageEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

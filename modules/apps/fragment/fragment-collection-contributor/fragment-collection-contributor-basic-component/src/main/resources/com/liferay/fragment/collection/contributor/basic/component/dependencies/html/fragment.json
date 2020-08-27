@@ -1,0 +1,8 @@
+{
+	"cacheable": true,
+	"fragmentEntryKey": "html",
+	"icon": "code",
+	"name": "html",
+	"thumbnail": "html.png",
+	"type": "component"
+}

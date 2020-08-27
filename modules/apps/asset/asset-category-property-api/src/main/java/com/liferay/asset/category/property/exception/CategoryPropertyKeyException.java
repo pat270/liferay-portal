@@ -16,12 +16,9 @@ package com.liferay.asset.category.property.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class CategoryPropertyKeyException extends PortalException {
 
 	public CategoryPropertyKeyException() {
@@ -31,12 +28,12 @@ public class CategoryPropertyKeyException extends PortalException {
 		super(msg);
 	}
 
-	public CategoryPropertyKeyException(String msg, Throwable cause) {
-		super(msg, cause);
+	public CategoryPropertyKeyException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public CategoryPropertyKeyException(Throwable cause) {
-		super(cause);
+	public CategoryPropertyKeyException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

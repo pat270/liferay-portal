@@ -20,6 +20,7 @@ import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoValue;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -44,8 +45,8 @@ import com.liferay.portal.odata.normalizer.Normalizer;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.portlet.expando.util.test.ExpandoTestUtil;
+import com.liferay.portletmvc4spring.test.mock.web.portlet.MockPortletRequest;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -74,7 +75,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.portlet.MockPortletRequest;
 
 /**
  * @author Eduardo García
@@ -154,7 +154,7 @@ public class UserSegmentsCriteriaContributorTest {
 		Set<String> complexEntityFieldNames = stream.filter(
 			field -> StringUtil.startsWith(field.getName(), "customField/")
 		).map(
-			field -> StringUtil.replace(field.getName(), "customField/", "")
+			field -> StringUtil.removeSubstring(field.getName(), "customField/")
 		).collect(
 			Collectors.toSet()
 		);
@@ -228,10 +228,9 @@ public class UserSegmentsCriteriaContributorTest {
 
 		Assert.assertEquals("id", field.getType());
 
-		Field.SelectEntity selectEntity = field.getSelectEntity();
-
 		Assert.assertNotNull(
-			"ID type fields must contain a select entity,", selectEntity);
+			"ID type fields must contain a select entity,",
+			field.getSelectEntity());
 	}
 
 	private ExpandoColumn _addExpandoColumn(

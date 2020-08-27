@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link UserIdMapper}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserIdMapper
  * @generated
  */
-@ProviderType
 public class UserIdMapperWrapper
 	extends BaseModelWrapper<UserIdMapper>
-	implements UserIdMapper, ModelWrapper<UserIdMapper> {
+	implements ModelWrapper<UserIdMapper>, UserIdMapper {
 
 	public UserIdMapperWrapper(UserIdMapper userIdMapper) {
 		super(userIdMapper);

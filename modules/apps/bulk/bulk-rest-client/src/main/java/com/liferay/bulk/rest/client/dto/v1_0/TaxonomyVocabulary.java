@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class TaxonomyVocabulary {
+public class TaxonomyVocabulary implements Cloneable {
+
+	public static TaxonomyVocabulary toDTO(String json) {
+		return TaxonomyVocabularySerDes.toDTO(json);
+	}
 
 	public Boolean getMultiValued() {
 		return multiValued;
@@ -131,6 +135,11 @@ public class TaxonomyVocabulary {
 	}
 
 	protected Long taxonomyVocabularyId;
+
+	@Override
+	public TaxonomyVocabulary clone() throws CloneNotSupportedException {
+		return (TaxonomyVocabulary)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

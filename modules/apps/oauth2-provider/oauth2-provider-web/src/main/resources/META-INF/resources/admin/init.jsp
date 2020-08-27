@@ -20,6 +20,7 @@
 page import="com.liferay.oauth2.provider.constants.ClientProfile" %><%@
 page import="com.liferay.oauth2.provider.constants.GrantType" %><%@
 page import="com.liferay.oauth2.provider.exception.DuplicateOAuth2ApplicationClientIdException" %><%@
+page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationClientCredentialUserIdException" %><%@
 page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationClientGrantTypeException" %><%@
 page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationHomePageURLException" %><%@
 page import="com.liferay.oauth2.provider.exception.OAuth2ApplicationHomePageURLSchemeException" %><%@
@@ -36,22 +37,26 @@ page import="com.liferay.oauth2.provider.service.OAuth2AuthorizationServiceUtil"
 page import="com.liferay.oauth2.provider.web.internal.AssignableScopes" %><%@
 page import="com.liferay.oauth2.provider.web.internal.constants.OAuth2ProviderWebKeys" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.AssignScopesDisplayContext" %><%@
+page import="com.liferay.oauth2.provider.web.internal.display.context.AssignScopesTreeDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2AdminPortletDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2ApplicationsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.OAuth2AuthorizationsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.SelectUsersDisplayContext" %><%@
 page import="com.liferay.oauth2.provider.web.internal.display.context.SelectUsersManagementToolbarDisplayContext" %><%@
+page import="com.liferay.oauth2.provider.web.internal.tree.Tree" %><%@
+page import="com.liferay.petra.string.StringBundler" %><%@
+page import="com.liferay.petra.string.StringPool" %><%@
 page import="com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker" %><%@
 page import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
-page import="com.liferay.portal.kernel.util.StringBundler" %><%@
-page import="com.liferay.portal.kernel.util.StringPool" %><%@
-page import="com.liferay.portal.kernel.util.StringUtil" %>
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@
+page import="com.liferay.portal.kernel.util.Validator" %>
 
 <%@ page import="java.util.ArrayList" %><%@
+page import="java.util.Collection" %><%@
 page import="java.util.Collections" %><%@
 page import="java.util.Date" %><%@
-page import="java.util.HashMap" %><%@
 page import="java.util.HashSet" %><%@
 page import="java.util.Iterator" %>
 
@@ -59,4 +64,5 @@ page import="java.util.Iterator" %>
 
 <%
 OAuth2AdminPortletDisplayContext oAuth2AdminPortletDisplayContext = (OAuth2AdminPortletDisplayContext)request.getAttribute(OAuth2ProviderWebKeys.OAUTH2_ADMIN_PORTLET_DISPLAY_CONTEXT);
+AssignScopesTreeDisplayContext assignScopesTreeDisplayContext = (AssignScopesTreeDisplayContext)request.getAttribute(OAuth2ProviderWebKeys.ASSIGN_SCOPES_TREE_DISPLAY_CONTEXT);
 %>

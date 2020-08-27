@@ -16,7 +16,10 @@ package com.liferay.message.boards.internal.search.spi.model.index.contributor;
 
 import com.liferay.message.boards.model.MBDiscussion;
 import com.liferay.message.boards.model.MBMessage;
+import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBDiscussionLocalService;
+import com.liferay.message.boards.service.MBThreadLocalService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.comment.Comment;
 import com.liferay.portal.kernel.comment.CommentManager;
@@ -32,6 +35,7 @@ import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistryUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
 
 import java.util.List;
@@ -68,13 +72,17 @@ public class MBMessageModelDocumentContributor
 				mbMessage.getSubject());
 		}
 
-		document.addKeyword("parentMessageId", mbMessage.getParentMessageId());
 		document.addKeyword(
 			Field.ROOT_ENTRY_CLASS_PK, mbMessage.getRootMessageId());
+		document.addKeyword(
+			Field.TREE_PATH,
+			StringUtil.split(mbMessage.getTreePath(), CharPool.SLASH));
 
 		if (mbMessage.isAnonymous()) {
 			document.remove(Field.USER_NAME);
 		}
+
+		document.addKeywordSortable("answer", mbMessage.isAnswer());
 
 		MBDiscussion discussion =
 			mbDiscussionLocalService.fetchThreadDiscussion(
@@ -87,31 +95,43 @@ public class MBMessageModelDocumentContributor
 			document.addKeyword("discussion", true);
 		}
 
+		document.addKeyword("parentMessageId", mbMessage.getParentMessageId());
+
+		if (mbMessage.getMessageId() == mbMessage.getRootMessageId()) {
+			MBThread mbThread = mbThreadLocalService.fetchMBThread(
+				mbMessage.getThreadId());
+
+			document.addKeyword("question", mbThread.isQuestion());
+		}
+
 		document.addKeyword("threadId", mbMessage.getThreadId());
+		document.addKeywordSortable("urlSubject", mbMessage.getUrlSubject());
 
-		if (mbMessage.isDiscussion()) {
-			List<RelatedEntryIndexer> relatedEntryIndexers =
-				RelatedEntryIndexerRegistryUtil.getRelatedEntryIndexers(
-					mbMessage.getClassName());
+		if (!mbMessage.isDiscussion()) {
+			return;
+		}
 
-			if (relatedEntryIndexers != null) {
-				for (RelatedEntryIndexer relatedEntryIndexer :
-						relatedEntryIndexers) {
+		List<RelatedEntryIndexer> relatedEntryIndexers =
+			RelatedEntryIndexerRegistryUtil.getRelatedEntryIndexers(
+				mbMessage.getClassName());
 
-					Comment comment = commentManager.fetchComment(
-						mbMessage.getMessageId());
+		if (relatedEntryIndexers != null) {
+			for (RelatedEntryIndexer relatedEntryIndexer :
+					relatedEntryIndexers) {
 
-					if (comment != null) {
-						try {
-							relatedEntryIndexer.addRelatedEntryFields(
-								document, comment);
-						}
-						catch (Exception e) {
-							throw new SystemException(e);
-						}
+				Comment comment = commentManager.fetchComment(
+					mbMessage.getMessageId());
 
-						document.addKeyword(Field.RELATED_ENTRY, true);
+				if (comment != null) {
+					try {
+						relatedEntryIndexer.addRelatedEntryFields(
+							document, comment);
 					}
+					catch (Exception exception) {
+						throw new SystemException(exception);
+					}
+
+					document.addKeyword(Field.RELATED_ENTRY, true);
 				}
 			}
 		}
@@ -125,17 +145,15 @@ public class MBMessageModelDocumentContributor
 				content = BBCodeTranslatorUtil.getHTML(content);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				StringBundler.concat(
 					"Unable to parse message ", message.getMessageId(), ": ",
-					e.getMessage()),
-				e);
+					exception.getMessage()),
+				exception);
 		}
 
-		content = HtmlUtil.extractText(content);
-
-		return content;
+		return HtmlUtil.extractText(content);
 	}
 
 	@Reference
@@ -143,6 +161,9 @@ public class MBMessageModelDocumentContributor
 
 	@Reference
 	protected MBDiscussionLocalService mbDiscussionLocalService;
+
+	@Reference
+	protected MBThreadLocalService mbThreadLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MBMessageModelDocumentContributor.class);

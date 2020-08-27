@@ -37,19 +37,17 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HashMapDictionary;
-import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.notifications.test.util.BaseUserNotificationTestCase;
 import com.liferay.portal.test.mail.MailServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.notifications.test.BaseUserNotificationTestCase;
 
 import java.util.Dictionary;
 import java.util.List;
 
-import javax.portlet.PortletPreferences;
-
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,6 +66,7 @@ public class CommentUserNotificationTest extends BaseUserNotificationTestCase {
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(), SynchronousMailTestRule.INSTANCE);
 
+	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
@@ -94,8 +93,7 @@ public class CommentUserNotificationTest extends BaseUserNotificationTestCase {
 				Assert.assertEquals(0, MailServiceTestUtil.getInboxSize());
 
 				List<JSONObject> userNotificationEventsJSONObjects =
-					getUserNotificationEventsJSONObjects(
-						user.getUserId(), (Long)baseModel.getPrimaryKeyObj());
+					getUserNotificationEventsJSONObjects(user.getUserId());
 
 				Assert.assertEquals(
 					userNotificationEventsJSONObjects.toString(), 1,
@@ -126,14 +124,12 @@ public class CommentUserNotificationTest extends BaseUserNotificationTestCase {
 
 				subscribeToContainer();
 
-				BaseModel<?> updatedBasemodel = updateBaseModel(baseModel);
+				updateBaseModel(baseModel);
 
 				Assert.assertEquals(0, MailServiceTestUtil.getInboxSize());
 
 				List<JSONObject> userNotificationEventsJSONObjects =
-					getUserNotificationEventsJSONObjects(
-						user.getUserId(),
-						(Long)updatedBasemodel.getPrimaryKeyObj());
+					getUserNotificationEventsJSONObjects(user.getUserId());
 
 				Assert.assertEquals(
 					userNotificationEventsJSONObjects.toString(), 1,
@@ -207,16 +203,6 @@ public class CommentUserNotificationTest extends BaseUserNotificationTestCase {
 		}
 
 		return true;
-	}
-
-	protected void restorePortletPreferences(
-			PortletPreferences portletPreferences)
-		throws Exception {
-
-		portletPreferences.reset(
-			PropsKeys.DISCUSSION_EMAIL_COMMENTS_ADDED_ENABLED);
-
-		portletPreferences.store();
 	}
 
 	@Override

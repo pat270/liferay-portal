@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CriteriaBuilder should render 1`] = `
+exports[`CriteriaBuilder renders 1`] = `
 <DocumentFragment>
   <div
     class="criteria-builder-root"
@@ -10,6 +10,21 @@ exports[`CriteriaBuilder should render 1`] = `
     >
       x-with-property-x
     </h4>
+    <div
+      class="criteria-group-item-root color--user"
+    >
+      <div
+        class="empty-drop-zone-root empty-drop-zone-dashed border-primary rounded"
+      >
+        <div
+          class="drop-zone-target p-5"
+        >
+          <div
+            class="empty-drop-zone-indicator"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </DocumentFragment>
 `;

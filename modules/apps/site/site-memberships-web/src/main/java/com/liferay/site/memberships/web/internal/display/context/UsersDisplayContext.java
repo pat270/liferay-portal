@@ -16,17 +16,26 @@ package com.liferay.site.memberships.web.internal.display.context;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.usersadmin.search.UserSearch;
 import com.liferay.portlet.usersadmin.search.UserSearchTerms;
+import com.liferay.site.memberships.web.internal.util.GroupUtil;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -185,7 +194,9 @@ public class UsersDisplayContext {
 		return _role;
 	}
 
-	public SearchContainer getUserSearchContainer() {
+	public SearchContainer<User> getUserSearchContainer()
+		throws PortalException {
+
 		if (_userSearch != null) {
 			return _userSearch;
 		}
@@ -197,7 +208,15 @@ public class UsersDisplayContext {
 		UserSearch userSearch = new UserSearch(_renderRequest, getPortletURL());
 
 		userSearch.setEmptyResultsMessage(
-			"no-user-was-found-that-is-a-direct-member-of-this-site");
+			LanguageUtil.format(
+				ResourceBundleUtil.getBundle(
+					themeDisplay.getLocale(), getClass()),
+				"no-user-was-found-that-is-a-direct-member-of-this-x",
+				StringUtil.toLowerCase(
+					GroupUtil.getGroupTypeLabel(
+						_groupId, themeDisplay.getLocale())),
+				false));
+
 		userSearch.setOrderByCol(getOrderByCol());
 		userSearch.setOrderByType(getOrderByType());
 		userSearch.setRowChecker(new EmptyOnClickRowChecker(_renderResponse));
@@ -205,10 +224,12 @@ public class UsersDisplayContext {
 		UserSearchTerms searchTerms =
 			(UserSearchTerms)userSearch.getSearchTerms();
 
-		LinkedHashMap<String, Object> userParams = new LinkedHashMap<>();
-
-		userParams.put("inherit", Boolean.TRUE);
-		userParams.put("usersGroups", Long.valueOf(getGroupId()));
+		LinkedHashMap<String, Object> userParams =
+			LinkedHashMapBuilder.<String, Object>put(
+				"inherit", Boolean.TRUE
+			).put(
+				"usersGroups", Long.valueOf(getGroupId())
+			).build();
 
 		Role role = getRole();
 
@@ -220,18 +241,25 @@ public class UsersDisplayContext {
 				});
 		}
 
-		int usersCount = UserLocalServiceUtil.searchCount(
-			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
-			searchTerms.getStatus(), userParams);
+		int usersCount = 0;
+		List<User> users = Collections.emptyList();
 
-		userSearch.setTotal(usersCount);
+		if (GroupPermissionUtil.contains(
+				themeDisplay.getPermissionChecker(), getGroupId(),
+				ActionKeys.VIEW_MEMBERS)) {
 
-		List<User> users = UserLocalServiceUtil.search(
-			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
-			searchTerms.getStatus(), userParams, userSearch.getStart(),
-			userSearch.getEnd(), userSearch.getOrderByComparator());
+			usersCount = UserLocalServiceUtil.searchCount(
+				themeDisplay.getCompanyId(), searchTerms.getKeywords(),
+				searchTerms.getStatus(), userParams);
+
+			users = UserLocalServiceUtil.search(
+				themeDisplay.getCompanyId(), searchTerms.getKeywords(),
+				searchTerms.getStatus(), userParams, userSearch.getStart(),
+				userSearch.getEnd(), userSearch.getOrderByComparator());
+		}
 
 		userSearch.setResults(users);
+		userSearch.setTotal(usersCount);
 
 		_userSearch = userSearch;
 

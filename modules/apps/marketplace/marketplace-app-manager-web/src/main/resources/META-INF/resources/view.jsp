@@ -17,17 +17,12 @@
 <%@ include file="/init.jsp" %>
 
 <%
-ViewAppsManagerManagementToolbarDisplayContext viewAppsManagerManagementToolbarDisplayContext = new ViewAppsManagerManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request);
+ViewAppsManagerManagementToolbarDisplayContext viewAppsManagerManagementToolbarDisplayContext = new ViewAppsManagerManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse);
 
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "app-manager"), null);
 %>
 
 <portlet:renderURL var="viewURL" />
-
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems='<%= appManagerDisplayContext.getNavigationItems(viewURL, "apps") %>'
-/>
 
 <clay:management-toolbar
 	clearResultsURL="<%= viewAppsManagerManagementToolbarDisplayContext.getClearResultsURL() %>"
@@ -43,7 +38,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "app-man
 	sortingURL="<%= viewAppsManagerManagementToolbarDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid container-fluid-max-xl">
+<clay:container-fluid>
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
@@ -69,4 +64,4 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "app-man
 			resultRowSplitter="<%= new MarketplaceAppManagerResultRowSplitter() %>"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

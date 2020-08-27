@@ -15,7 +15,7 @@
 package com.liferay.portal.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -28,9 +28,10 @@ import com.liferay.portal.kernel.exception.NoSuchPortletPreferencesException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PortletPreferences;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.model.PortletPreferencesTable;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -42,12 +43,16 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.Set;
 
 /**
  * The persistence implementation for the portlet preferences service.
@@ -59,7 +64,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PortletPreferencesPersistenceImpl
 	extends BasePersistenceImpl<PortletPreferences>
 	implements PortletPreferencesPersistence {
@@ -101,7 +105,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where ownerId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -120,7 +124,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -141,47 +145,50 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByOwnerId(
 		long ownerId, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByOwnerId;
-			finderArgs = new Object[] {ownerId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByOwnerId;
+				finderArgs = new Object[] {ownerId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByOwnerId;
 			finderArgs = new Object[] {ownerId, start, end, orderByComparator};
 		}
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (PortletPreferences portletPreferences : list) {
-					if ((ownerId != portletPreferences.getOwnerId())) {
+					if (ownerId != portletPreferences.getOwnerId()) {
 						list = null;
 
 						break;
@@ -191,62 +198,52 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_OWNERID_OWNERID_2);
+			sb.append(_FINDER_COLUMN_OWNERID_OWNERID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -277,16 +274,16 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerId=");
-		msg.append(ownerId);
+		sb.append("ownerId=");
+		sb.append(ownerId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -331,16 +328,16 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerId=");
-		msg.append(ownerId);
+		sb.append("ownerId=");
+		sb.append(ownerId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -405,8 +402,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -418,102 +415,102 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_OWNERID_OWNERID_2);
+		sb.append(_FINDER_COLUMN_OWNERID_OWNERID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(ownerId);
+		queryPos.add(ownerId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -546,41 +543,51 @@ public class PortletPreferencesPersistenceImpl
 	 */
 	@Override
 	public int countByOwnerId(long ownerId) {
-		FinderPath finderPath = _finderPathCountByOwnerId;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {ownerId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByOwnerId;
+
+			finderArgs = new Object[] {ownerId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_OWNERID_OWNERID_2);
+			sb.append(_FINDER_COLUMN_OWNERID_OWNERID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -612,7 +619,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -629,7 +636,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -650,47 +657,50 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByPlid(
 		long plid, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByPlid;
-			finderArgs = new Object[] {plid};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByPlid;
+				finderArgs = new Object[] {plid};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByPlid;
 			finderArgs = new Object[] {plid, start, end, orderByComparator};
 		}
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (PortletPreferences portletPreferences : list) {
-					if ((plid != portletPreferences.getPlid())) {
+					if (plid != portletPreferences.getPlid()) {
 						list = null;
 
 						break;
@@ -700,62 +710,52 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_PLID_PLID_2);
+			sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -785,16 +785,16 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -838,16 +838,16 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -912,8 +912,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -925,102 +925,102 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_PLID_PLID_2);
+		sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1052,41 +1052,51 @@ public class PortletPreferencesPersistenceImpl
 	 */
 	@Override
 	public int countByPlid(long plid) {
-		FinderPath finderPath = _finderPathCountByPlid;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {plid};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByPlid;
+
+			finderArgs = new Object[] {plid};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_PLID_PLID_2);
+			sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1119,7 +1129,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param portletId the portlet ID
@@ -1138,7 +1148,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param portletId the portlet ID
@@ -1159,36 +1169,39 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param portletId the portlet ID
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByPortletId(
 		String portletId, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByPortletId;
-			finderArgs = new Object[] {portletId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByPortletId;
+				finderArgs = new Object[] {portletId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByPortletId;
 			finderArgs = new Object[] {
 				portletId, start, end, orderByComparator
@@ -1197,7 +1210,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -1213,73 +1226,63 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_PORTLETID_PORTLETID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1310,16 +1313,16 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("portletId=");
-		msg.append(portletId);
+		sb.append("portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -1365,16 +1368,16 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("portletId=");
-		msg.append(portletId);
+		sb.append("portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -1444,8 +1447,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1458,28 +1461,28 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
 		boolean bindPortletId = false;
 
 		if (portletId.isEmpty()) {
-			query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
+			sb.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 		}
 		else {
 			bindPortletId = true;
 
-			query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_2);
+			sb.append(_FINDER_COLUMN_PORTLETID_PORTLETID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -1487,72 +1490,72 @@ public class PortletPreferencesPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindPortletId) {
-			qPos.add(portletId);
+			queryPos.add(portletId);
 		}
 
 		if (orderByComparator != null) {
@@ -1560,11 +1563,11 @@ public class PortletPreferencesPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1599,52 +1602,62 @@ public class PortletPreferencesPersistenceImpl
 	public int countByPortletId(String portletId) {
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathCountByPortletId;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {portletId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByPortletId;
+
+			finderArgs = new Object[] {portletId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_PORTLETID_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_PORTLETID_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_PORTLETID_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1681,7 +1694,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where ownerType = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerType the owner type
@@ -1701,7 +1714,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerType = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerType the owner type
@@ -1724,7 +1737,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerType = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerType the owner type
@@ -1732,29 +1745,32 @@ public class PortletPreferencesPersistenceImpl
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByO_P(
 		int ownerType, String portletId, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByO_P;
-			finderArgs = new Object[] {ownerType, portletId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByO_P;
+				finderArgs = new Object[] {ownerType, portletId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByO_P;
 			finderArgs = new Object[] {
 				ownerType, portletId, start, end, orderByComparator
@@ -1763,7 +1779,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -1781,77 +1797,67 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_P_OWNERTYPE_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_P_PORTLETID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1883,19 +1889,19 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerType=");
-		msg.append(ownerType);
+		sb.append("ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -1943,19 +1949,19 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerType=");
-		msg.append(ownerType);
+		sb.append("ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -2027,8 +2033,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2041,30 +2047,30 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_O_P_OWNERTYPE_2);
+		sb.append(_FINDER_COLUMN_O_P_OWNERTYPE_2);
 
 		boolean bindPortletId = false;
 
 		if (portletId.isEmpty()) {
-			query.append(_FINDER_COLUMN_O_P_PORTLETID_3);
+			sb.append(_FINDER_COLUMN_O_P_PORTLETID_3);
 		}
 		else {
 			bindPortletId = true;
 
-			query.append(_FINDER_COLUMN_O_P_PORTLETID_2);
+			sb.append(_FINDER_COLUMN_O_P_PORTLETID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -2072,74 +2078,74 @@ public class PortletPreferencesPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(ownerType);
+		queryPos.add(ownerType);
 
 		if (bindPortletId) {
-			qPos.add(portletId);
+			queryPos.add(portletId);
 		}
 
 		if (orderByComparator != null) {
@@ -2147,11 +2153,11 @@ public class PortletPreferencesPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2189,56 +2195,66 @@ public class PortletPreferencesPersistenceImpl
 	public int countByO_P(int ownerType, String portletId) {
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathCountByO_P;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {ownerType, portletId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByO_P;
+
+			finderArgs = new Object[] {ownerType, portletId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_P_OWNERTYPE_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_P_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2278,7 +2294,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where plid = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -2298,7 +2314,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where plid = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -2320,7 +2336,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where plid = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -2328,29 +2344,32 @@ public class PortletPreferencesPersistenceImpl
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByP_P(
 		long plid, String portletId, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByP_P;
-			finderArgs = new Object[] {plid, portletId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByP_P;
+				finderArgs = new Object[] {plid, portletId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByP_P;
 			finderArgs = new Object[] {
 				plid, portletId, start, end, orderByComparator
@@ -2359,7 +2378,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -2377,77 +2396,67 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_P_P_PLID_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_P_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_P_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_P_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_P_P_PORTLETID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2479,19 +2488,19 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -2539,19 +2548,19 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -2623,8 +2632,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2637,30 +2646,30 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_P_P_PLID_2);
+		sb.append(_FINDER_COLUMN_P_P_PLID_2);
 
 		boolean bindPortletId = false;
 
 		if (portletId.isEmpty()) {
-			query.append(_FINDER_COLUMN_P_P_PORTLETID_3);
+			sb.append(_FINDER_COLUMN_P_P_PORTLETID_3);
 		}
 		else {
 			bindPortletId = true;
 
-			query.append(_FINDER_COLUMN_P_P_PORTLETID_2);
+			sb.append(_FINDER_COLUMN_P_P_PORTLETID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -2668,74 +2677,74 @@ public class PortletPreferencesPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (bindPortletId) {
-			qPos.add(portletId);
+			queryPos.add(portletId);
 		}
 
 		if (orderByComparator != null) {
@@ -2743,11 +2752,11 @@ public class PortletPreferencesPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2785,56 +2794,66 @@ public class PortletPreferencesPersistenceImpl
 	public int countByP_P(long plid, String portletId) {
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathCountByP_P;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {plid, portletId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByP_P;
+
+			finderArgs = new Object[] {plid, portletId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_P_P_PLID_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_P_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_P_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_P_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_P_P_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2878,7 +2897,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -2899,7 +2918,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -2923,7 +2942,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerId = &#63; and ownerType = &#63; and plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -2932,27 +2951,30 @@ public class PortletPreferencesPersistenceImpl
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByO_O_P(
 		long ownerId, int ownerType, long plid, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByO_O_P;
-			finderArgs = new Object[] {ownerId, ownerType, plid};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByO_O_P;
+				finderArgs = new Object[] {ownerId, ownerType, plid};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByO_O_P;
 			finderArgs = new Object[] {
 				ownerId, ownerType, plid, start, end, orderByComparator
@@ -2961,7 +2983,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -2980,70 +3002,60 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_O_P_OWNERID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_O_P_OWNERTYPE_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_PLID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3076,22 +3088,22 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerId=");
-		msg.append(ownerId);
+		sb.append("ownerId=");
+		sb.append(ownerId);
 
-		msg.append(", ownerType=");
-		msg.append(ownerType);
+		sb.append(", ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -3141,22 +3153,22 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerId=");
-		msg.append(ownerId);
+		sb.append("ownerId=");
+		sb.append(ownerId);
 
-		msg.append(", ownerType=");
-		msg.append(ownerType);
+		sb.append(", ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -3228,8 +3240,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3242,110 +3254,110 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_O_O_P_OWNERID_2);
+		sb.append(_FINDER_COLUMN_O_O_P_OWNERID_2);
 
-		query.append(_FINDER_COLUMN_O_O_P_OWNERTYPE_2);
+		sb.append(_FINDER_COLUMN_O_O_P_OWNERTYPE_2);
 
-		query.append(_FINDER_COLUMN_O_O_P_PLID_2);
+		sb.append(_FINDER_COLUMN_O_O_P_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(ownerId);
+		queryPos.add(ownerId);
 
-		qPos.add(ownerType);
+		queryPos.add(ownerType);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3383,49 +3395,59 @@ public class PortletPreferencesPersistenceImpl
 	 */
 	@Override
 	public int countByO_O_P(long ownerId, int ownerType, long plid) {
-		FinderPath finderPath = _finderPathCountByO_O_P;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {ownerId, ownerType, plid};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByO_O_P;
+
+			finderArgs = new Object[] {ownerId, ownerType, plid};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_O_P_OWNERID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_O_P_OWNERTYPE_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_PLID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3469,7 +3491,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -3490,7 +3512,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -3514,7 +3536,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerId = &#63; and ownerType = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerId the owner ID
@@ -3523,29 +3545,32 @@ public class PortletPreferencesPersistenceImpl
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByO_O_PI(
 		long ownerId, int ownerType, String portletId, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByO_O_PI;
-			finderArgs = new Object[] {ownerId, ownerType, portletId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByO_O_PI;
+				finderArgs = new Object[] {ownerId, ownerType, portletId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByO_O_PI;
 			finderArgs = new Object[] {
 				ownerId, ownerType, portletId, start, end, orderByComparator
@@ -3554,7 +3579,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -3573,81 +3598,71 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_O_PI_OWNERID_2);
+			sb.append(_FINDER_COLUMN_O_O_PI_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_O_O_PI_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_O_PI_OWNERTYPE_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_O_PI_PORTLETID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3680,22 +3695,22 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerId=");
-		msg.append(ownerId);
+		sb.append("ownerId=");
+		sb.append(ownerId);
 
-		msg.append(", ownerType=");
-		msg.append(ownerType);
+		sb.append(", ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -3745,22 +3760,22 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerId=");
-		msg.append(ownerId);
+		sb.append("ownerId=");
+		sb.append(ownerId);
 
-		msg.append(", ownerType=");
-		msg.append(ownerType);
+		sb.append(", ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -3835,8 +3850,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3849,32 +3864,32 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_O_O_PI_OWNERID_2);
+		sb.append(_FINDER_COLUMN_O_O_PI_OWNERID_2);
 
-		query.append(_FINDER_COLUMN_O_O_PI_OWNERTYPE_2);
+		sb.append(_FINDER_COLUMN_O_O_PI_OWNERTYPE_2);
 
 		boolean bindPortletId = false;
 
 		if (portletId.isEmpty()) {
-			query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
+			sb.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
 		}
 		else {
 			bindPortletId = true;
 
-			query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_2);
+			sb.append(_FINDER_COLUMN_O_O_PI_PORTLETID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -3882,76 +3897,76 @@ public class PortletPreferencesPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(ownerId);
+		queryPos.add(ownerId);
 
-		qPos.add(ownerType);
+		queryPos.add(ownerType);
 
 		if (bindPortletId) {
-			qPos.add(portletId);
+			queryPos.add(portletId);
 		}
 
 		if (orderByComparator != null) {
@@ -3959,11 +3974,11 @@ public class PortletPreferencesPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4003,60 +4018,70 @@ public class PortletPreferencesPersistenceImpl
 	public int countByO_O_PI(long ownerId, int ownerType, String portletId) {
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathCountByO_O_PI;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {ownerId, ownerType, portletId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByO_O_PI;
+
+			finderArgs = new Object[] {ownerId, ownerType, portletId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_O_PI_OWNERID_2);
+			sb.append(_FINDER_COLUMN_O_O_PI_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_O_O_PI_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_O_PI_OWNERTYPE_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_O_PI_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_O_PI_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_O_PI_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4103,7 +4128,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where ownerType = &#63; and plid = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerType the owner type
@@ -4124,7 +4149,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerType = &#63; and plid = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerType the owner type
@@ -4148,7 +4173,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where ownerType = &#63; and plid = &#63; and portletId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param ownerType the owner type
@@ -4157,29 +4182,32 @@ public class PortletPreferencesPersistenceImpl
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findByO_P_P(
 		int ownerType, long plid, String portletId, int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByO_P_P;
-			finderArgs = new Object[] {ownerType, plid, portletId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByO_P_P;
+				finderArgs = new Object[] {ownerType, plid, portletId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByO_P_P;
 			finderArgs = new Object[] {
 				ownerType, plid, portletId, start, end, orderByComparator
@@ -4188,7 +4216,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -4207,81 +4235,71 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_P_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_P_P_OWNERTYPE_2);
 
-			query.append(_FINDER_COLUMN_O_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_O_P_P_PLID_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_P_P_PORTLETID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4314,22 +4332,22 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerType=");
-		msg.append(ownerType);
+		sb.append("ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -4379,22 +4397,22 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("ownerType=");
-		msg.append(ownerType);
+		sb.append("ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", plid=");
-		msg.append(plid);
+		sb.append(", plid=");
+		sb.append(plid);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletId=");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -4469,8 +4487,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4483,32 +4501,32 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_O_P_P_OWNERTYPE_2);
+		sb.append(_FINDER_COLUMN_O_P_P_OWNERTYPE_2);
 
-		query.append(_FINDER_COLUMN_O_P_P_PLID_2);
+		sb.append(_FINDER_COLUMN_O_P_P_PLID_2);
 
 		boolean bindPortletId = false;
 
 		if (portletId.isEmpty()) {
-			query.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
+			sb.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
 		}
 		else {
 			bindPortletId = true;
 
-			query.append(_FINDER_COLUMN_O_P_P_PORTLETID_2);
+			sb.append(_FINDER_COLUMN_O_P_P_PORTLETID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -4516,76 +4534,76 @@ public class PortletPreferencesPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(ownerType);
+		queryPos.add(ownerType);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (bindPortletId) {
-			qPos.add(portletId);
+			queryPos.add(portletId);
 		}
 
 		if (orderByComparator != null) {
@@ -4593,11 +4611,11 @@ public class PortletPreferencesPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4637,60 +4655,70 @@ public class PortletPreferencesPersistenceImpl
 	public int countByO_P_P(int ownerType, long plid, String portletId) {
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathCountByO_P_P;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {ownerType, plid, portletId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByO_P_P;
+
+			finderArgs = new Object[] {ownerType, plid, portletId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_P_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_P_P_OWNERTYPE_2);
 
-			query.append(_FINDER_COLUMN_O_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_O_P_P_PLID_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_P_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_P_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_P_P_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4737,7 +4765,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses where companyId = &#63; and ownerId = &#63; and ownerType = &#63; and portletId LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4761,7 +4789,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where companyId = &#63; and ownerId = &#63; and ownerType = &#63; and portletId LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4788,7 +4816,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses where companyId = &#63; and ownerId = &#63; and ownerType = &#63; and portletId LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -4798,7 +4826,7 @@ public class PortletPreferencesPersistenceImpl
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlet preferenceses
 	 */
 	@Override
@@ -4806,11 +4834,13 @@ public class PortletPreferencesPersistenceImpl
 		long companyId, long ownerId, int ownerType, String portletId,
 		int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -4822,7 +4852,7 @@ public class PortletPreferencesPersistenceImpl
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -4844,85 +4874,75 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					6 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(6);
+				sb = new StringBundler(6);
 			}
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERID_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERTYPE_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4956,25 +4976,25 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", ownerId=");
-		msg.append(ownerId);
+		sb.append(", ownerId=");
+		sb.append(ownerId);
 
-		msg.append(", ownerType=");
-		msg.append(ownerType);
+		sb.append(", ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletIdLIKE");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -5026,25 +5046,25 @@ public class PortletPreferencesPersistenceImpl
 			return portletPreferences;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", ownerId=");
-		msg.append(ownerId);
+		sb.append(", ownerId=");
+		sb.append(ownerId);
 
-		msg.append(", ownerType=");
-		msg.append(ownerType);
+		sb.append(", ownerType=");
+		sb.append(ownerType);
 
-		msg.append(", portletId=");
-		msg.append(portletId);
+		sb.append(", portletIdLIKE");
+		sb.append(portletId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchPortletPreferencesException(msg.toString());
+		throw new NoSuchPortletPreferencesException(sb.toString());
 	}
 
 	/**
@@ -5123,8 +5143,8 @@ public class PortletPreferencesPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5137,34 +5157,34 @@ public class PortletPreferencesPersistenceImpl
 		OrderByComparator<PortletPreferences> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				7 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(6);
+			sb = new StringBundler(6);
 		}
 
-		query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+		sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-		query.append(_FINDER_COLUMN_C_O_O_LIKEP_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_C_O_O_LIKEP_COMPANYID_2);
 
-		query.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERID_2);
+		sb.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERID_2);
 
-		query.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERTYPE_2);
+		sb.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERTYPE_2);
 
 		boolean bindPortletId = false;
 
 		if (portletId.isEmpty()) {
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
 		}
 		else {
 			bindPortletId = true;
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -5172,78 +5192,78 @@ public class PortletPreferencesPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
+			sb.append(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
-		qPos.add(ownerId);
+		queryPos.add(ownerId);
 
-		qPos.add(ownerType);
+		queryPos.add(ownerType);
 
 		if (bindPortletId) {
-			qPos.add(portletId);
+			queryPos.add(portletId);
 		}
 
 		if (orderByComparator != null) {
@@ -5251,11 +5271,11 @@ public class PortletPreferencesPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						portletPreferences)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<PortletPreferences> list = q.list();
+		List<PortletPreferences> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -5301,66 +5321,76 @@ public class PortletPreferencesPersistenceImpl
 
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathWithPaginationCountByC_O_O_LikeP;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {
-			companyId, ownerId, ownerType, portletId
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathWithPaginationCountByC_O_O_LikeP;
+
+			finderArgs = new Object[] {
+				companyId, ownerId, ownerType, portletId
+			};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERID_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_C_O_O_LIKEP_OWNERTYPE_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_C_O_O_LIKEP_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5407,29 +5437,29 @@ public class PortletPreferencesPersistenceImpl
 			ownerId, ownerType, plid, portletId);
 
 		if (portletPreferences == null) {
-			StringBundler msg = new StringBundler(10);
+			StringBundler sb = new StringBundler(10);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("ownerId=");
-			msg.append(ownerId);
+			sb.append("ownerId=");
+			sb.append(ownerId);
 
-			msg.append(", ownerType=");
-			msg.append(ownerType);
+			sb.append(", ownerType=");
+			sb.append(ownerType);
 
-			msg.append(", plid=");
-			msg.append(plid);
+			sb.append(", plid=");
+			sb.append(plid);
 
-			msg.append(", portletId=");
-			msg.append(portletId);
+			sb.append(", portletId=");
+			sb.append(portletId);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchPortletPreferencesException(msg.toString());
+			throw new NoSuchPortletPreferencesException(sb.toString());
 		}
 
 		return portletPreferences;
@@ -5458,23 +5488,28 @@ public class PortletPreferencesPersistenceImpl
 	 * @param ownerType the owner type
 	 * @param plid the plid
 	 * @param portletId the portlet ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching portlet preferences, or <code>null</code> if a matching portlet preferences could not be found
 	 */
 	@Override
 	public PortletPreferences fetchByO_O_P_P(
 		long ownerId, int ownerType, long plid, String portletId,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		Object[] finderArgs = new Object[] {
-			ownerId, ownerType, plid, portletId
-		};
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {ownerId, ownerType, plid, portletId};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByO_O_P_P, finderArgs, this);
 		}
@@ -5492,53 +5527,55 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			query.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_SELECT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_O_P_P_OWNERID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_P_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_O_P_P_OWNERTYPE_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_P_PLID_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				List<PortletPreferences> list = q.list();
+				List<PortletPreferences> list = query.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByO_O_P_P, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByO_O_P_P, finderArgs, list);
+					}
 				}
 				else {
 					PortletPreferences portletPreferences = list.get(0);
@@ -5548,11 +5585,8 @@ public class PortletPreferencesPersistenceImpl
 					cacheResult(portletPreferences);
 				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathFetchByO_O_P_P, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5602,66 +5636,74 @@ public class PortletPreferencesPersistenceImpl
 
 		portletId = Objects.toString(portletId, "");
 
-		FinderPath finderPath = _finderPathCountByO_O_P_P;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
 
-		Object[] finderArgs = new Object[] {
-			ownerId, ownerType, plid, portletId
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByO_O_P_P;
+
+			finderArgs = new Object[] {ownerId, ownerType, plid, portletId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
+			sb.append(_SQL_COUNT_PORTLETPREFERENCES_WHERE);
 
-			query.append(_FINDER_COLUMN_O_O_P_P_OWNERID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_P_OWNERID_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_P_OWNERTYPE_2);
+			sb.append(_FINDER_COLUMN_O_O_P_P_OWNERTYPE_2);
 
-			query.append(_FINDER_COLUMN_O_O_P_P_PLID_2);
+			sb.append(_FINDER_COLUMN_O_O_P_P_PLID_2);
 
 			boolean bindPortletId = false;
 
 			if (portletId.isEmpty()) {
-				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_3);
+				sb.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_3);
 			}
 			else {
 				bindPortletId = true;
 
-				query.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_2);
+				sb.append(_FINDER_COLUMN_O_O_P_P_PORTLETID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(ownerId);
+				queryPos.add(ownerId);
 
-				qPos.add(ownerType);
+				queryPos.add(ownerType);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindPortletId) {
-					qPos.add(portletId);
+					queryPos.add(portletId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5691,7 +5733,8 @@ public class PortletPreferencesPersistenceImpl
 
 		setModelImplClass(PortletPreferencesImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(PortletPreferencesTable.INSTANCE);
 	}
 
 	/**
@@ -5701,8 +5744,11 @@ public class PortletPreferencesPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(PortletPreferences portletPreferences) {
+		if (portletPreferences.getCtCollectionId() != 0) {
+			return;
+		}
+
 		EntityCacheUtil.putResult(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
 			PortletPreferencesImpl.class, portletPreferences.getPrimaryKey(),
 			portletPreferences);
 
@@ -5714,8 +5760,6 @@ public class PortletPreferencesPersistenceImpl
 				portletPreferences.getPortletId()
 			},
 			portletPreferences);
-
-		portletPreferences.resetOriginalValues();
 	}
 
 	/**
@@ -5726,15 +5770,15 @@ public class PortletPreferencesPersistenceImpl
 	@Override
 	public void cacheResult(List<PortletPreferences> portletPreferenceses) {
 		for (PortletPreferences portletPreferences : portletPreferenceses) {
+			if (portletPreferences.getCtCollectionId() != 0) {
+				continue;
+			}
+
 			if (EntityCacheUtil.getResult(
-					PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
 					PortletPreferencesImpl.class,
 					portletPreferences.getPrimaryKey()) == null) {
 
 				cacheResult(portletPreferences);
-			}
-			else {
-				portletPreferences.resetOriginalValues();
 			}
 		}
 	}
@@ -5765,7 +5809,6 @@ public class PortletPreferencesPersistenceImpl
 	@Override
 	public void clearCache(PortletPreferences portletPreferences) {
 		EntityCacheUtil.removeResult(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
 			PortletPreferencesImpl.class, portletPreferences.getPrimaryKey());
 
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
@@ -5782,12 +5825,23 @@ public class PortletPreferencesPersistenceImpl
 
 		for (PortletPreferences portletPreferences : portletPreferenceses) {
 			EntityCacheUtil.removeResult(
-				PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
 				PortletPreferencesImpl.class,
 				portletPreferences.getPrimaryKey());
 
 			clearUniqueFindersCache(
 				(PortletPreferencesModelImpl)portletPreferences, true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			EntityCacheUtil.removeResult(
+				PortletPreferencesImpl.class, primaryKey);
 		}
 	}
 
@@ -5828,10 +5882,10 @@ public class PortletPreferencesPersistenceImpl
 			 _finderPathFetchByO_O_P_P.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				portletPreferencesModelImpl.getOriginalOwnerId(),
-				portletPreferencesModelImpl.getOriginalOwnerType(),
-				portletPreferencesModelImpl.getOriginalPlid(),
-				portletPreferencesModelImpl.getOriginalPortletId()
+				portletPreferencesModelImpl.getColumnOriginalValue("ownerId"),
+				portletPreferencesModelImpl.getColumnOriginalValue("ownerType"),
+				portletPreferencesModelImpl.getColumnOriginalValue("plid"),
+				portletPreferencesModelImpl.getColumnOriginalValue("portletId")
 			};
 
 			FinderCacheUtil.removeResult(_finderPathCountByO_O_P_P, args);
@@ -5852,7 +5906,7 @@ public class PortletPreferencesPersistenceImpl
 		portletPreferences.setNew(true);
 		portletPreferences.setPrimaryKey(portletPreferencesId);
 
-		portletPreferences.setCompanyId(companyProvider.getCompanyId());
+		portletPreferences.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return portletPreferences;
 	}
@@ -5902,11 +5956,11 @@ public class PortletPreferencesPersistenceImpl
 
 			return remove(portletPreferences);
 		}
-		catch (NoSuchPortletPreferencesException nsee) {
-			throw nsee;
+		catch (NoSuchPortletPreferencesException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5916,6 +5970,10 @@ public class PortletPreferencesPersistenceImpl
 	@Override
 	protected PortletPreferences removeImpl(
 		PortletPreferences portletPreferences) {
+
+		if (!CTPersistenceHelperUtil.isRemove(portletPreferences)) {
+			return portletPreferences;
+		}
 
 		Session session = null;
 
@@ -5932,8 +5990,8 @@ public class PortletPreferencesPersistenceImpl
 				session.delete(portletPreferences);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5977,7 +6035,13 @@ public class PortletPreferencesPersistenceImpl
 		try {
 			session = openSession();
 
-			if (portletPreferences.isNew()) {
+			if (CTPersistenceHelperUtil.isInsert(portletPreferences)) {
+				if (!isNew) {
+					session.evict(
+						PortletPreferencesImpl.class,
+						portletPreferences.getPrimaryKeyObj());
+				}
+
 				session.save(portletPreferences);
 
 				portletPreferences.setNew(false);
@@ -5987,20 +6051,22 @@ public class PortletPreferencesPersistenceImpl
 					portletPreferences);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
+		if (portletPreferences.getCtCollectionId() != 0) {
+			portletPreferences.resetOriginalValues();
+
+			return portletPreferences;
+		}
+
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!PortletPreferencesModelImpl.COLUMN_BITMASK_ENABLED) {
-			FinderCacheUtil.clearCache(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				portletPreferencesModelImpl.getOwnerId()
 			};
@@ -6080,7 +6146,8 @@ public class PortletPreferencesPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalOwnerId()
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByOwnerId, args);
@@ -6099,7 +6166,7 @@ public class PortletPreferencesPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalPlid()
+					portletPreferencesModelImpl.getColumnOriginalValue("plid")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByPlid, args);
@@ -6118,7 +6185,8 @@ public class PortletPreferencesPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalPortletId()
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"portletId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByPortletId, args);
@@ -6139,8 +6207,10 @@ public class PortletPreferencesPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalOwnerType(),
-					portletPreferencesModelImpl.getOriginalPortletId()
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerType"),
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"portletId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByO_P, args);
@@ -6162,8 +6232,9 @@ public class PortletPreferencesPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalPlid(),
-					portletPreferencesModelImpl.getOriginalPortletId()
+					portletPreferencesModelImpl.getColumnOriginalValue("plid"),
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"portletId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByP_P, args);
@@ -6185,9 +6256,11 @@ public class PortletPreferencesPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalOwnerId(),
-					portletPreferencesModelImpl.getOriginalOwnerType(),
-					portletPreferencesModelImpl.getOriginalPlid()
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerId"),
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerType"),
+					portletPreferencesModelImpl.getColumnOriginalValue("plid")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByO_O_P, args);
@@ -6210,9 +6283,12 @@ public class PortletPreferencesPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalOwnerId(),
-					portletPreferencesModelImpl.getOriginalOwnerType(),
-					portletPreferencesModelImpl.getOriginalPortletId()
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerId"),
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerType"),
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"portletId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByO_O_PI, args);
@@ -6235,9 +6311,11 @@ public class PortletPreferencesPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					portletPreferencesModelImpl.getOriginalOwnerType(),
-					portletPreferencesModelImpl.getOriginalPlid(),
-					portletPreferencesModelImpl.getOriginalPortletId()
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"ownerType"),
+					portletPreferencesModelImpl.getColumnOriginalValue("plid"),
+					portletPreferencesModelImpl.getColumnOriginalValue(
+						"portletId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByO_P_P, args);
@@ -6257,7 +6335,6 @@ public class PortletPreferencesPersistenceImpl
 		}
 
 		EntityCacheUtil.putResult(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
 			PortletPreferencesImpl.class, portletPreferences.getPrimaryKey(),
 			portletPreferences, false);
 
@@ -6311,12 +6388,127 @@ public class PortletPreferencesPersistenceImpl
 	/**
 	 * Returns the portlet preferences with the primary key or returns <code>null</code> if it could not be found.
 	 *
+	 * @param primaryKey the primary key of the portlet preferences
+	 * @return the portlet preferences, or <code>null</code> if a portlet preferences with the primary key could not be found
+	 */
+	@Override
+	public PortletPreferences fetchByPrimaryKey(Serializable primaryKey) {
+		if (CTPersistenceHelperUtil.isProductionMode(
+				PortletPreferences.class)) {
+
+			return super.fetchByPrimaryKey(primaryKey);
+		}
+
+		PortletPreferences portletPreferences = null;
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			portletPreferences = (PortletPreferences)session.get(
+				PortletPreferencesImpl.class, primaryKey);
+
+			if (portletPreferences != null) {
+				cacheResult(portletPreferences);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return portletPreferences;
+	}
+
+	/**
+	 * Returns the portlet preferences with the primary key or returns <code>null</code> if it could not be found.
+	 *
 	 * @param portletPreferencesId the primary key of the portlet preferences
 	 * @return the portlet preferences, or <code>null</code> if a portlet preferences with the primary key could not be found
 	 */
 	@Override
 	public PortletPreferences fetchByPrimaryKey(long portletPreferencesId) {
 		return fetchByPrimaryKey((Serializable)portletPreferencesId);
+	}
+
+	@Override
+	public Map<Serializable, PortletPreferences> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		if (CTPersistenceHelperUtil.isProductionMode(
+				PortletPreferences.class)) {
+
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
+		if (primaryKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Serializable, PortletPreferences> map =
+			new HashMap<Serializable, PortletPreferences>();
+
+		if (primaryKeys.size() == 1) {
+			Iterator<Serializable> iterator = primaryKeys.iterator();
+
+			Serializable primaryKey = iterator.next();
+
+			PortletPreferences portletPreferences = fetchByPrimaryKey(
+				primaryKey);
+
+			if (portletPreferences != null) {
+				map.put(primaryKey, portletPreferences);
+			}
+
+			return map;
+		}
+
+		StringBundler sb = new StringBundler(primaryKeys.size() * 2 + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
+
+		for (Serializable primaryKey : primaryKeys) {
+			sb.append((long)primaryKey);
+
+			sb.append(",");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query query = session.createQuery(sql);
+
+			for (PortletPreferences portletPreferences :
+					(List<PortletPreferences>)query.list()) {
+
+				map.put(
+					portletPreferences.getPrimaryKeyObj(), portletPreferences);
+
+				cacheResult(portletPreferences);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return map;
 	}
 
 	/**
@@ -6333,7 +6525,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns a range of all the portlet preferenceses.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of portlet preferenceses
@@ -6349,7 +6541,7 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of portlet preferenceses
@@ -6369,65 +6561,66 @@ public class PortletPreferencesPersistenceImpl
 	 * Returns an ordered range of all the portlet preferenceses.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>PortletPreferencesModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of portlet preferenceses
 	 * @param end the upper bound of the range of portlet preferenceses (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of portlet preferenceses
 	 */
 	@Override
 	public List<PortletPreferences> findAll(
 		int start, int end,
 		OrderByComparator<PortletPreferences> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<PortletPreferences> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<PortletPreferences>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_PORTLETPREFERENCES);
+				sb.append(_SQL_SELECT_PORTLETPREFERENCES);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_PORTLETPREFERENCES;
 
-				if (pagination) {
-					sql = sql.concat(PortletPreferencesModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(PortletPreferencesModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -6435,29 +6628,19 @@ public class PortletPreferencesPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<PortletPreferences>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<PortletPreferences>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6485,8 +6668,15 @@ public class PortletPreferencesPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			PortletPreferences.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)FinderCacheUtil.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -6494,18 +6684,18 @@ public class PortletPreferencesPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_PORTLETPREFERENCES);
+				Query query = session.createQuery(
+					_SQL_COUNT_PORTLETPREFERENCES);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6531,8 +6721,68 @@ public class PortletPreferencesPersistenceImpl
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.get(ctColumnResolutionType);
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return PortletPreferencesModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "PortletPreferences";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctIgnoreColumnNames = new HashSet<String>();
+		Set<String> ctMergeColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("ownerId");
+		ctStrictColumnNames.add("ownerType");
+		ctStrictColumnNames.add("plid");
+		ctStrictColumnNames.add("portletId");
+		ctStrictColumnNames.add("preferences");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
+		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK,
+			Collections.singleton("portletPreferencesId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
+
+		_uniqueIndexColumnNames.add(
+			new String[] {"ownerId", "ownerType", "plid", "portletId"});
 	}
 
 	/**
@@ -6540,27 +6790,19 @@ public class PortletPreferencesPersistenceImpl
 	 */
 	public void afterPropertiesSet() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByOwnerId = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByOwnerId",
 			new String[] {
@@ -6569,22 +6811,16 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByOwnerId = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByOwnerId",
 			new String[] {Long.class.getName()},
-			PortletPreferencesModelImpl.OWNERID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("ownerId"));
 
 		_finderPathCountByOwnerId = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByOwnerId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByOwnerId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByPlid = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
 			new String[] {
@@ -6593,22 +6829,16 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByPlid = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
 			new String[] {Long.class.getName()},
-			PortletPreferencesModelImpl.PLID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("plid"));
 
 		_finderPathCountByPlid = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByPlid", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByPortletId = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPortletId",
 			new String[] {
@@ -6617,22 +6847,16 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByPortletId = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPortletId",
 			new String[] {String.class.getName()},
-			PortletPreferencesModelImpl.PORTLETID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("portletId"));
 
 		_finderPathCountByPortletId = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPortletId",
-			new String[] {String.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByPortletId", new String[] {String.class.getName()});
 
 		_finderPathWithPaginationFindByO_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_P",
 			new String[] {
@@ -6642,23 +6866,17 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByO_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_P",
 			new String[] {Integer.class.getName(), String.class.getName()},
-			PortletPreferencesModelImpl.OWNERTYPE_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PORTLETID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("ownerType") |
+			PortletPreferencesModelImpl.getColumnBitmask("portletId"));
 
 		_finderPathCountByO_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P",
 			new String[] {Integer.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByP_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_P",
 			new String[] {
@@ -6668,23 +6886,17 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByP_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_P",
 			new String[] {Long.class.getName(), String.class.getName()},
-			PortletPreferencesModelImpl.PLID_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PORTLETID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("plid") |
+			PortletPreferencesModelImpl.getColumnBitmask("portletId"));
 
 		_finderPathCountByP_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_P",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByO_O_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_O_P",
 			new String[] {
@@ -6694,30 +6906,25 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByO_O_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_O_P",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Long.class.getName()
 			},
-			PortletPreferencesModelImpl.OWNERID_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.OWNERTYPE_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PLID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("ownerId") |
+			PortletPreferencesModelImpl.getColumnBitmask("ownerType") |
+			PortletPreferencesModelImpl.getColumnBitmask("plid"));
 
 		_finderPathCountByO_O_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByO_O_P",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Long.class.getName()
 			});
 
 		_finderPathWithPaginationFindByO_O_PI = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_O_PI",
 			new String[] {
@@ -6727,30 +6934,25 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByO_O_PI = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_O_PI",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				String.class.getName()
 			},
-			PortletPreferencesModelImpl.OWNERID_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.OWNERTYPE_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PORTLETID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("ownerId") |
+			PortletPreferencesModelImpl.getColumnBitmask("ownerType") |
+			PortletPreferencesModelImpl.getColumnBitmask("portletId"));
 
 		_finderPathCountByO_O_PI = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_PI",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByO_O_PI",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationFindByO_P_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByO_P_P",
 			new String[] {
@@ -6760,30 +6962,25 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByO_P_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByO_P_P",
 			new String[] {
 				Integer.class.getName(), Long.class.getName(),
 				String.class.getName()
 			},
-			PortletPreferencesModelImpl.OWNERTYPE_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PLID_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PORTLETID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("ownerType") |
+			PortletPreferencesModelImpl.getColumnBitmask("plid") |
+			PortletPreferencesModelImpl.getColumnBitmask("portletId"));
 
 		_finderPathCountByO_P_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_P_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByO_P_P",
 			new String[] {
 				Integer.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationFindByC_O_O_LikeP = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_O_O_LikeP",
 			new String[] {
@@ -6794,32 +6991,28 @@ public class PortletPreferencesPersistenceImpl
 			});
 
 		_finderPathWithPaginationCountByC_O_O_LikeP = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_O_O_LikeP",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countByC_O_O_LikeP",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), String.class.getName()
 			});
 
 		_finderPathFetchByO_O_P_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED,
 			PortletPreferencesImpl.class, FINDER_CLASS_NAME_ENTITY,
 			"fetchByO_O_P_P",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Long.class.getName(), String.class.getName()
 			},
-			PortletPreferencesModelImpl.OWNERID_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.OWNERTYPE_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PLID_COLUMN_BITMASK |
-			PortletPreferencesModelImpl.PORTLETID_COLUMN_BITMASK);
+			PortletPreferencesModelImpl.getColumnBitmask("ownerId") |
+			PortletPreferencesModelImpl.getColumnBitmask("ownerType") |
+			PortletPreferencesModelImpl.getColumnBitmask("plid") |
+			PortletPreferencesModelImpl.getColumnBitmask("portletId"));
 
 		_finderPathCountByO_O_P_P = new FinderPath(
-			PortletPreferencesModelImpl.ENTITY_CACHE_ENABLED,
-			PortletPreferencesModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByO_O_P_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByO_O_P_P",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Long.class.getName(), String.class.getName()
@@ -6832,9 +7025,6 @@ public class PortletPreferencesPersistenceImpl
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
-
-	@BeanReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
 
 	private static final String _SQL_SELECT_PORTLETPREFERENCES =
 		"SELECT portletPreferences FROM PortletPreferences portletPreferences";

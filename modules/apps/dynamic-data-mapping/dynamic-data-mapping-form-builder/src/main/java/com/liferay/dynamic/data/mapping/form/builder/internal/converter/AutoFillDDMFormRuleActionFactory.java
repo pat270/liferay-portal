@@ -15,9 +15,9 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter;
 
 import com.liferay.dynamic.data.mapping.expression.model.Expression;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DDMFormRuleAction;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action.AutoFillDDMFormRuleAction;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.visitor.ActionExpressionVisitor;
+import com.liferay.dynamic.data.mapping.spi.converter.model.SPIDDMFormRuleAction;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class AutoFillDDMFormRuleActionFactory {
 
-	public static DDMFormRuleAction create(
+	public static SPIDDMFormRuleAction create(
 		List<Expression> expressions,
 		ActionExpressionVisitor actionExpressionVisitor) {
 

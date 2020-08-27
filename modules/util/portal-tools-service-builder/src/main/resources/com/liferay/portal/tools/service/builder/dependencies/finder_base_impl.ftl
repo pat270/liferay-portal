@@ -57,9 +57,9 @@ public <#if dependencyInjectorDS>abstract </#if>class ${entity.name}FinderBaseIm
 
 					field.set(this, dbColumnNames);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isDebugEnabled()) {
-						_log.debug(e, e);
+						_log.debug(exception, exception);
 					}
 				}
 			<#else>
@@ -113,6 +113,17 @@ public <#if dependencyInjectorDS>abstract </#if>class ${entity.name}FinderBaseIm
 
 	<#if entity.badEntityColumns?size != 0>
 		private static final Log _log = LogFactoryUtil.getLog(${entity.name}FinderBaseImpl.class);
+	</#if>
+
+	<#if dependencyInjectorDS>
+		static {
+			try {
+				Class.forName(${portletShortName}PersistenceConstants.class.getName());
+			}
+			catch (ClassNotFoundException classNotFoundException) {
+				throw new ExceptionInInitializerError(classNotFoundException);
+			}
+		}
 	</#if>
 
 }

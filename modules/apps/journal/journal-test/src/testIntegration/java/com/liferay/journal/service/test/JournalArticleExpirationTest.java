@@ -19,9 +19,9 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.journal.constants.JournalArticleConstants;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -44,7 +45,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -94,14 +94,13 @@ public class JournalArticleExpirationTest {
 	protected JournalArticle addArticle(long groupId, boolean approved)
 		throws Exception {
 
-		Map<Locale, String> titleMap = new HashMap<>();
+		Map<Locale, String> titleMap = HashMapBuilder.put(
+			LocaleUtil.getDefault(), RandomTestUtil.randomString()
+		).build();
 
-		titleMap.put(LocaleUtil.getDefault(), RandomTestUtil.randomString());
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(
-			LocaleUtil.getDefault(), RandomTestUtil.randomString());
+		Map<Locale, String> descriptionMap = HashMapBuilder.put(
+			LocaleUtil.getDefault(), RandomTestUtil.randomString()
+		).build();
 
 		String content = DDMStructureTestUtil.getSampleStructuredContent();
 
@@ -132,7 +131,7 @@ public class JournalArticleExpirationTest {
 		return JournalArticleLocalServiceUtil.addArticle(
 			TestPropsValues.getUserId(), groupId,
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			JournalArticleConstants.CLASSNAME_ID_DEFAULT, 0, StringPool.BLANK,
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, 0, StringPool.BLANK,
 			true, JournalArticleConstants.VERSION_DEFAULT, titleMap,
 			descriptionMap, content, ddmStructure.getStructureKey(),
 			ddmTemplate.getTemplateKey(), null,
@@ -155,7 +154,7 @@ public class JournalArticleExpirationTest {
 		Calendar calendar = new GregorianCalendar();
 
 		calendar.setTime(
-			new Date(System.currentTimeMillis() + timeUnit * timeValue));
+			new Date(System.currentTimeMillis() + (timeUnit * timeValue)));
 
 		User user = UserLocalServiceUtil.getUser(TestPropsValues.getUserId());
 

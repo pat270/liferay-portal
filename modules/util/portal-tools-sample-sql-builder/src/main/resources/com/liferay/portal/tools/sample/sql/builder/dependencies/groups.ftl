@@ -1,23 +1,16 @@
-<#assign layoutModel = dataFactory.newLayoutModel(dataFactory.guestGroupModel.groupId, "welcome", "com_liferay_login_web_portlet_LoginPortlet,", "com_liferay_hello_world_web_portlet_HelloWorldPortlet,") />
+<#assign guestGroupModel = dataFactory.newGuestGroupModel() />
 
-<@insertLayout _layoutModel=layoutModel />
+<#include "default_user.ftl">
 
-<@insertGroup
-	_groupModel=dataFactory.globalGroupModel
-	_publicPageCount=1
-/>
+<@insertLayout _layoutModel=dataFactory.newLayoutModel(guestGroupModel.groupId, "welcome", "com_liferay_login_web_portlet_LoginPortlet,", "com_liferay_hello_world_web_portlet_HelloWorldPortlet,") />
 
-<@insertGroup
-	_groupModel=dataFactory.guestGroupModel
-	_publicPageCount=1
-/>
+<@insertGroup _groupModel=dataFactory.newGlobalGroupModel() />
 
-<@insertGroup
-	_groupModel=dataFactory.userPersonalSiteGroupModel
-	_publicPageCount=1
-/>
+<@insertGroup _groupModel=guestGroupModel />
 
-<#list dataFactory.groupModels as groupModel>
+<@insertGroup _groupModel=dataFactory.newUserPersonalSiteGroupModel() />
+
+<#list dataFactory.newGroupModels() as groupModel>
 	<#assign groupId = groupModel.groupId />
 
 	<#include "asset_publisher.ftl">
@@ -27,6 +20,8 @@
 	<#include "ddl.ftl">
 
 	<#include "journal_article.ftl">
+
+	<#include "fragment.ftl">
 
 	<#include "mb.ftl">
 
@@ -47,12 +42,7 @@
 		<@insertLayout _layoutModel=publicLayoutModel />
 	</#list>
 
-	<#assign publicPageCount = publicLayoutModels?size + dataFactory.maxDDLRecordSetCount + dataFactory.maxJournalArticleCount />
+	<@insertGroup _groupModel=groupModel />
 
-	<@insertGroup
-		_groupModel=groupModel
-		_publicPageCount=publicPageCount
-	/>
-
-	${dataFactory.getCSVWriter("repository").write(groupId + ", " + groupModel.name + "\n")}
+	${csvFileWriter.write("repository", groupId + ", " + groupModel.name + "\n")}
 </#list>

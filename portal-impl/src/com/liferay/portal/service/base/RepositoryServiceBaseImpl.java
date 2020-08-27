@@ -53,7 +53,7 @@ import javax.sql.DataSource;
  */
 public abstract class RepositoryServiceBaseImpl
 	extends BaseServiceImpl
-	implements RepositoryService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, RepositoryService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -687,8 +687,8 @@ public abstract class RepositoryServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

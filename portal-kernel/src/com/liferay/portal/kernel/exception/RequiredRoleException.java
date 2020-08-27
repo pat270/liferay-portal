@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.exception;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Roberto Díaz
  */
 public class RequiredRoleException extends PortalException {
 
@@ -26,12 +27,51 @@ public class RequiredRoleException extends PortalException {
 		super(msg);
 	}
 
-	public RequiredRoleException(String msg, Throwable cause) {
-		super(msg, cause);
+	public RequiredRoleException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public RequiredRoleException(Throwable cause) {
-		super(cause);
+	public RequiredRoleException(Throwable throwable) {
+		super(throwable);
+	}
+
+	public static class MustNotRemoveLastAdministator
+		extends RequiredRoleException {
+
+		public MustNotRemoveLastAdministator() {
+		}
+
+		public MustNotRemoveLastAdministator(String msg) {
+			super(msg);
+		}
+
+		public MustNotRemoveLastAdministator(String msg, Throwable throwable) {
+			super(msg, throwable);
+		}
+
+		public MustNotRemoveLastAdministator(Throwable throwable) {
+			super(throwable);
+		}
+
+	}
+
+	public static class MustNotRemoveUserRole extends RequiredRoleException {
+
+		public MustNotRemoveUserRole() {
+		}
+
+		public MustNotRemoveUserRole(String msg) {
+			super(msg);
+		}
+
+		public MustNotRemoveUserRole(String msg, Throwable throwable) {
+			super(msg, throwable);
+		}
+
+		public MustNotRemoveUserRole(Throwable throwable) {
+			super(throwable);
+		}
+
 	}
 
 }

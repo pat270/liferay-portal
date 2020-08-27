@@ -7,8 +7,8 @@ Cody Hoag (GitHub handle: codyhoag).
 
 ## Text Styles
 
-Title, phrase, and sentence are the three types of text styles used in Liferay's
-language keys. They're described below.
+Title and sentence are the two types of text styles used in Liferay's language
+keys. They're described below.
 
 ### Title
 
@@ -18,15 +18,6 @@ language keys. They're described below.
 - Examples:
     - *Account Created Notification*
     - *Private Pages*
-
-### Phrase
-
-- Capitalize only its first word and all proper nouns.
-- Omit any trailing period; use a question mark if it's a question.
-- Examples:
-    - *Reset preview and thumbnail files for Documents and Media portlet*
-    - *Maximum file size*
-    - *How do users authenticate?*
 
 ### Sentence
 
@@ -44,16 +35,13 @@ language keys.
 
 ### 1. Radio/Checkbox/Selectors/Text Fields
 
-Typically, use titles. Use a phrase, however, if the key starts with an action
-word.
-
-For consistency in a page, if a selector/field requires a phrase, use phrases
-for the remaining selectors/fields.
+Typically, use titles. Use a sentence, however, if the key starts with an action
+word followed by long descriptive text.
 
 **Example 1:**
 
-The *Instance Settings* &rarr; *Authentication* &rarr; *General* page
-consistently uses phrases (in this case, question phrases) for all of its
+The *Instance Settings* &rarr; *User Authentication* &rarr; *General* page
+consistently uses sentences (in this case, question sentences) for all of its
 checkboxes:
 
 ![ ](./images/language/authentication_checkboxes.png)
@@ -71,19 +59,19 @@ include:
 - *Membership Type*
 - *Trash Entries Max Age*
 
-More examples of radio/checkbox/selector/text field labels that are phrases
+More examples of radio/checkbox/selector/text field labels that are sentences
 include:
 
-- *Allow subsites to display content from this site*
-- *Use the default language options*
+- *Allow subsites to display content from this site.*
+- *Use the default language options.*
 
 If a radio or checkbox provides more options when selecting it, make that
 obvious by starting its label with an action word. For example, a checkbox using
 one of the labels below hints that selecting it brings up more options:
 
-- *Define social interactions for users*
+- *Define social interactions for users.*
 - *Define a custom default language and additional available languages for this
-  site*
+  site.*
 
 There are cases that require mixing text styles. For example, the mid-sentence
 *inline* text fields in the Social Activity portlet mix text styles to improve
@@ -93,23 +81,23 @@ readability. If you need to mix text styles, do so cautiously.
 
 Use present tense when describing actions that do something:
 
-- *Enable* this functionality
-- *Require* this functionality
+- *Enable* this functionality.
+- *Require* this functionality.
 
 Use past tense, when applicable, to describe state:
 
 - *Required*
-- *Enabled* by default
+- *Enabled* by Default
 
-**Avoid** using past tense action words at the end of phrases.
+**Avoid** using past tense action words at the end of sentences.
 
 Incorrect way:
 
-*CDN dynamic resources enabled*
+*CDN dynamic resources enabled.*
 
 Correct way:
 
-*Enable CDN dynamic resources*
+*Enable CDN dynamic resources.*
 
 **Avoid** using future tense anywhere.
 
@@ -146,9 +134,9 @@ button, selector, or field.
 **Examples:**
 
 - *Please enter JDBC information for new database.*
-- *Migrate documents from one repository to another.*
+- *Select the maps API provider to use when displaying geolocalized assets.*
 
-    ![ ](./images/language/data_migration_instructions.png)
+    ![ ](./images/language/maps_api_instructions.png)
 
 ### 5. UI Component Labels
 
@@ -156,8 +144,8 @@ Use titles to label UI components. Labels are defined in a JSP as *label=""*.
 
 **Example:**
 
-The UI label for *Maximum Items to Display* is
-*label="maximum-items-to-display"*
+The UI label for *Number of Items to Display* is
+*label="number-of-items-to-display"*
 
 ![ ](./images/language/max_items_to_display.png)
 
@@ -167,7 +155,7 @@ Use titles to label menus and high level tabs.
 
 ![ ](./images/language/menu_example.png)
 
-![ ](./images/language/server_admin_options.png)
+![ ](./images/language/web_content_menu.png)
 
 ### 7. Section and Text Area Descriptions
 
@@ -201,8 +189,8 @@ remove/replace:
 
 ### 9. Consider Other Languages
 
-To accommodate languages that arrange words differently in a phrase/sentence,
-use complete phrases/sentences.
+To accommodate languages that arrange words differently in a sentence, use
+complete sentences.
 
 **Example:** Assume you'd like to create a language key that displays this:
 *You have attempted [number] times.*

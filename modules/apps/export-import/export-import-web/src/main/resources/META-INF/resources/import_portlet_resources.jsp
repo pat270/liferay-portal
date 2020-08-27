@@ -50,7 +50,7 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 	<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
 
 	<div class="export-dialog-tree">
-		<div class="container-fluid-1280">
+		<clay:container-fluid>
 			<aui:fieldset-group markupView="lexicon">
 				<aui:fieldset cssClass="options-group" label="file">
 					<dl class="import-file-details options">
@@ -69,7 +69,7 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 							Date exportDate = manifestSummary.getExportDate();
 							%>
 
-							<span onmouseover="Liferay.Portal.ToolTip.show(this, '<%= HtmlUtil.escapeJS(dateFormatDateTime.format(exportDate)) %>')">
+							<span class="lfr-portal-tooltip" title="<%= HtmlUtil.escape(dateFormatDateTime.format(exportDate)) %>">
 								<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - exportDate.getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
 							</span>
 						</dd>
@@ -83,7 +83,7 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 							<liferay-ui:message key="size" />
 						</dt>
 						<dd>
-							<%= TextFormatter.formatStorageSize(fileEntry.getSize(), locale) %>
+							<%= LanguageUtil.formatStorageSize(fileEntry.getSize(), locale) %>
 						</dd>
 					</dl>
 				</aui:fieldset>
@@ -134,9 +134,9 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 												<span class="selected-labels" id="<portlet:namespace />selectedConfiguration_<%= selPortlet.getRootPortletId() %>"></span>
 
 												<%
-												Map<String, Object> data = new HashMap<String, Object>();
-
-												data.put("portletid", selPortlet.getRootPortletId());
+												Map<String, Object> data = HashMapBuilder.<String, Object>put(
+													"portletid", selPortlet.getRootPortletId()
+												).build();
 												%>
 
 												<aui:a cssClass="configuration-link modify-link" data="<%= data %>" href="javascript:;" label="change" method="get" />
@@ -144,7 +144,10 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 										</ul>
 
 										<aui:script>
-											Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>', '<portlet:namespace />showChangeConfiguration<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>');
+											Liferay.Util.toggleBoxes(
+												'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>',
+												'<portlet:namespace />showChangeConfiguration<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>'
+											);
 										</aui:script>
 									</li>
 								</ul>
@@ -245,9 +248,9 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 													<span class="selected-labels" id="<portlet:namespace />selectedContent_<%= selPortlet.getRootPortletId() %>"></span>
 
 													<%
-													Map<String, Object> data = new HashMap<String, Object>();
-
-													data.put("portletid", selPortlet.getRootPortletId());
+													Map<String, Object> data = HashMapBuilder.<String, Object>put(
+														"portletid", selPortlet.getRootPortletId()
+													).build();
 													%>
 
 													<aui:a cssClass="content-link modify-link" data="<%= data %>" href="javascript:;" id='<%= "contentLink_" + selPortlet.getRootPortletId() %>' label="change" method="get" />
@@ -255,7 +258,10 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 											</ul>
 
 											<aui:script>
-												Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>', '<portlet:namespace />showChangeContent<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>');
+												Liferay.Util.toggleBoxes(
+													'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>',
+													'<portlet:namespace />showChangeContent<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>'
+												);
 											</aui:script>
 
 										<%
@@ -307,13 +313,13 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 					<aui:input checked="<%= true %>" data-name='<%= LanguageUtil.get(request, "mirror") %>' id="mirror" label="<%= taglibMirrorLabel %>" name="<%= PortletDataHandlerKeys.DATA_STRATEGY %>" type="radio" value="<%= PortletDataHandlerKeys.DATA_STRATEGY_MIRROR %>" />
 
 					<%
-					String taglibMirrorWithOverwritingLabel = LanguageUtil.get(request, "mirror-with-overwriting") + ": <span style='font-weight: normal'>" + LanguageUtil.get(request, (portletDataHandler.isSupportsDataStrategyMirrorWithOverwriting() ? "import-data-strategy-mirror-with-overwriting-help" : "import-data-strategy-mirror-with-overwriting-is-not-available-help")) + "</span>";
+					String taglibMirrorWithOverwritingLabel = LanguageUtil.get(request, "mirror-with-overwriting") + ": <span style='font-weight: normal'>" + LanguageUtil.get(request, portletDataHandler.isSupportsDataStrategyMirrorWithOverwriting() ? "import-data-strategy-mirror-with-overwriting-help" : "import-data-strategy-mirror-with-overwriting-is-not-available-help") + "</span>";
 					%>
 
 					<aui:input data-name='<%= LanguageUtil.get(request, "mirror-with-overwriting") %>' disabled="<%= !portletDataHandler.isSupportsDataStrategyMirrorWithOverwriting() %>" id="mirrorWithOverwriting" label="<%= taglibMirrorWithOverwritingLabel %>" name="<%= PortletDataHandlerKeys.DATA_STRATEGY %>" type="radio" value="<%= PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE %>" />
 
 					<%
-					String taglibCopyAsNewLabel = LanguageUtil.get(request, "copy-as-new") + ": <span style='font-weight: normal'>" + LanguageUtil.get(request, (portletDataHandler.isSupportsDataStrategyCopyAsNew() ? "import-data-strategy-copy-as-new-help" : "not-supported")) + "</span>";
+					String taglibCopyAsNewLabel = LanguageUtil.get(request, "copy-as-new") + ": <span style='font-weight: normal'>" + LanguageUtil.get(request, portletDataHandler.isSupportsDataStrategyCopyAsNew() ? "import-data-strategy-copy-as-new-help" : "not-supported") + "</span>";
 					%>
 
 					<aui:input data-name='<%= LanguageUtil.get(request, "copy-as-new") %>' disabled="<%= !portletDataHandler.isSupportsDataStrategyCopyAsNew() %>" id="copyAsNew" label="<%= taglibCopyAsNewLabel %>" name="<%= PortletDataHandlerKeys.DATA_STRATEGY %>" type="radio" value="<%= PortletDataHandlerKeys.DATA_STRATEGY_COPY_AS_NEW %>" />
@@ -334,7 +340,7 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 					<aui:input data-name='<%= LanguageUtil.get(request, "always-use-my-user-id") %>' id="alwaysCurrentUserId" label="<%= taglibUseTheCurrentUserAsAuthorLabel %>" name="<%= PortletDataHandlerKeys.USER_ID_STRATEGY %>" type="radio" value="<%= UserIdStrategy.ALWAYS_CURRENT_USER_ID %>" />
 				</aui:fieldset>
 			</aui:fieldset-group>
-		</div>
+		</clay:container-fluid>
 	</div>
 
 	<aui:button-row>
@@ -352,15 +358,13 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(them
 </aui:form>
 
 <aui:script use="liferay-export-import-export-import">
-	new Liferay.ExportImport(
-		{
-			commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
-			deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
-			form: document.<portlet:namespace />fm1,
-			locale: '<%= locale.toLanguageTag() %>',
-			namespace: '<portlet:namespace />',
-			ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>',
-			timeZoneOffset: <%= timeZoneOffset %>
-		}
-	);
+	new Liferay.ExportImport({
+		commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
+		deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
+		form: document.<portlet:namespace />fm1,
+		locale: '<%= locale.toLanguageTag() %>',
+		namespace: '<portlet:namespace />',
+		ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>',
+		timeZoneOffset: <%= timeZoneOffset %>,
+	});
 </aui:script>

@@ -25,29 +25,26 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Region in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class RegionCacheModel
 	implements CacheModel<Region>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RegionCacheModel)) {
+		if (!(object instanceof RegionCacheModel)) {
 			return false;
 		}
 
-		RegionCacheModel regionCacheModel = (RegionCacheModel)obj;
+		RegionCacheModel regionCacheModel = (RegionCacheModel)object;
 
 		if ((regionId == regionCacheModel.regionId) &&
 			(mvccVersion == regionCacheModel.mvccVersion)) {

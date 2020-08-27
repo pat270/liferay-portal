@@ -21,11 +21,11 @@ import com.liferay.exportimport.kernel.lar.MissingReference;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatus;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusRegistryUtil;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.log.Log;
@@ -110,14 +110,14 @@ public abstract class BaseStagingBackgroundTaskExecutor
 		getExportImportServiceConfiguration() {
 
 		try {
-			long companyId = CompanyThreadLocal.getCompanyId();
-
 			return ConfigurationProviderUtil.getCompanyConfiguration(
-				ExportImportServiceConfiguration.class, companyId);
+				ExportImportServiceConfiguration.class,
+				CompanyThreadLocal.getCompanyId());
 		}
-		catch (ConfigurationException ce) {
+		catch (ConfigurationException configurationException) {
 			_log.error(
-				"Unable to load export import service configuration", ce);
+				"Unable to load export import service configuration",
+				configurationException);
 		}
 
 		return null;

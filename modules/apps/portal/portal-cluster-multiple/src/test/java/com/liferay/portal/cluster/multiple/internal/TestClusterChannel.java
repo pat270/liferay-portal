@@ -67,15 +67,15 @@ public class TestClusterChannel implements ClusterChannel {
 	}
 
 	public TestClusterChannel(
-		String channelLogicName, String channelProperties, String clusterName,
-		ClusterReceiver clusterReceiver) {
+		String channelLogicName, String channelPropertiesLocation,
+		String clusterName, ClusterReceiver clusterReceiver) {
 
 		_clusterName = clusterName;
 		_clusterReceiver = clusterReceiver;
 
 		_bindInetAddress = InetAddress.getLoopbackAddress();
 
-		_localAddress = new TestAddress(_COUNTER.getAndIncrement());
+		_localAddress = new TestAddress(_atomicInteger.getAndIncrement());
 
 		SortedMap<Address, TestClusterChannel> clusterChannels = _clusters.get(
 			_clusterName);
@@ -135,8 +135,7 @@ public class TestClusterChannel implements ClusterChannel {
 		_unicastMessages.add(new ObjectValuePair<>(message, address));
 	}
 
-	private static final AtomicInteger _COUNTER = new AtomicInteger();
-
+	private static final AtomicInteger _atomicInteger = new AtomicInteger();
 	private static final Map<String, SortedMap<Address, TestClusterChannel>>
 		_clusters = new HashMap<>();
 	private static final List<Serializable> _multicastMessages =

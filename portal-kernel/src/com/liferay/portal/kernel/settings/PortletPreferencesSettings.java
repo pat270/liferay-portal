@@ -50,10 +50,10 @@ public class PortletPreferencesSettings extends BaseModifiableSettings {
 	public Collection<String> getModifiedKeys() {
 		Set<String> keys = new HashSet<>();
 
-		Enumeration<String> names = _portletPreferences.getNames();
+		Enumeration<String> enumeration = _portletPreferences.getNames();
 
-		while (names.hasMoreElements()) {
-			keys.add(names.nextElement());
+		while (enumeration.hasMoreElements()) {
+			keys.add(enumeration.nextElement());
 		}
 
 		return keys;
@@ -68,11 +68,11 @@ public class PortletPreferencesSettings extends BaseModifiableSettings {
 		try {
 			_portletPreferences.reset(key);
 		}
-		catch (ReadOnlyException roe) {
+		catch (ReadOnlyException readOnlyException) {
 			_log.error(
 				"Portlet preferences used to persist settings should never " +
 					"be read only",
-				roe);
+				readOnlyException);
 		}
 	}
 
@@ -81,11 +81,11 @@ public class PortletPreferencesSettings extends BaseModifiableSettings {
 		try {
 			_portletPreferences.setValue(key, value);
 		}
-		catch (ReadOnlyException roe) {
+		catch (ReadOnlyException readOnlyException) {
 			_log.error(
 				"Portlet preferences used to persist settings should never " +
 					"be read only",
-				roe);
+				readOnlyException);
 		}
 
 		return this;
@@ -96,11 +96,11 @@ public class PortletPreferencesSettings extends BaseModifiableSettings {
 		try {
 			_portletPreferences.setValues(key, values);
 		}
-		catch (ReadOnlyException roe) {
+		catch (ReadOnlyException readOnlyException) {
 			_log.error(
 				"Portlet preferences used to persist settings should never " +
 					"be read only",
-				roe);
+				readOnlyException);
 		}
 
 		return this;

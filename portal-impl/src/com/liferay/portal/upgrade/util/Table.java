@@ -122,7 +122,7 @@ public class Table {
 		try {
 			value = getValue(rs, name, type);
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 			if (name.equals("uuid_")) {
 				sb.append(PortalUUIDUtil.generate());
 			}
@@ -140,20 +140,12 @@ public class Table {
 	}
 
 	public void generateTempFile() throws Exception {
-		Connection con = DataAccess.getConnection();
-
-		try {
+		try (Connection con = DataAccess.getConnection()) {
 			generateTempFile(con);
-		}
-		finally {
-			DataAccess.cleanUp(con);
 		}
 	}
 
 	public void generateTempFile(Connection con) throws Exception {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-
 		boolean empty = true;
 
 		Path tempFilePath = Files.createTempFile(
@@ -172,13 +164,10 @@ public class Table {
 					"Starting backup of ", _tableName, " to ", tempFileName));
 		}
 
-		UnsyncBufferedWriter unsyncBufferedWriter = new UnsyncBufferedWriter(
-			new FileWriter(tempFileName));
-
-		try {
-			ps = getSelectPreparedStatement(con);
-
-			rs = ps.executeQuery();
+		try (UnsyncBufferedWriter unsyncBufferedWriter =
+				new UnsyncBufferedWriter(new FileWriter(tempFileName));
+			PreparedStatement ps = getSelectPreparedStatement(con);
+			ResultSet rs = ps.executeQuery()) {
 
 			while (rs.next()) {
 				String data = null;
@@ -192,12 +181,12 @@ public class Table {
 
 					empty = false;
 				}
-				catch (StagnantRowException sre) {
+				catch (StagnantRowException stagnantRowException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							StringBundler.concat(
 								"Skipping stagnant data in ", _tableName, ": ",
-								sre.getMessage()));
+								stagnantRowException.getMessage()));
 					}
 				}
 			}
@@ -209,15 +198,10 @@ public class Table {
 						" in ", stopWatch.getTime(), " ms"));
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			FileUtil.delete(tempFileName);
 
-			throw e;
-		}
-		finally {
-			DataAccess.cleanUp(ps, rs);
-
-			unsyncBufferedWriter.close();
+			throw exception;
 		}
 
 		if (!empty) {
@@ -368,7 +352,7 @@ public class Table {
 			try {
 				value = GetterUtil.getLong(rs.getLong(name));
 			}
-			catch (SQLException sqle) {
+			catch (SQLException sqlException) {
 				value = GetterUtil.getLong(rs.getString(name));
 			}
 		}
@@ -426,7 +410,7 @@ public class Table {
 					}
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 
 				// If the database doesn't allow CLOB types for the column
 				// value, then try retrieving it as a String
@@ -438,7 +422,7 @@ public class Table {
 			try {
 				value = rs.getBigDecimal(name);
 			}
-			catch (SQLException sqle) {
+			catch (SQLException sqlException) {
 				value = rs.getString(name);
 			}
 
@@ -466,7 +450,7 @@ public class Table {
 			try {
 				value = rs.getTimestamp(name);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			if (value == null) {
@@ -488,13 +472,8 @@ public class Table {
 	}
 
 	public void populateTable() throws Exception {
-		Connection con = DataAccess.getConnection();
-
-		try {
+		try (Connection con = DataAccess.getConnection()) {
 			populateTable(con);
-		}
-		finally {
-			DataAccess.cleanUp(con);
 		}
 	}
 
@@ -664,9 +643,6 @@ public class Table {
 	public void updateColumnValue(
 		String columnName, String oldValue, String newValue) {
 
-		Connection con = null;
-		PreparedStatement ps = null;
-
 		StringBundler sb = new StringBundler(7);
 
 		sb.append("update ");
@@ -679,23 +655,19 @@ public class Table {
 
 		String sql = sb.toString();
 
-		try {
-			con = DataAccess.getConnection();
-
-			ps = con.prepareStatement(sql);
+		try (Connection con = DataAccess.getConnection();
+			PreparedStatement ps = con.prepareStatement(sql)) {
 
 			ps.setString(1, newValue);
 			ps.setString(2, oldValue);
 
 			ps.executeUpdate();
 		}
-		catch (SQLException sqle) {
-			_log.error(sqle, sqle);
+		catch (SQLException sqlException) {
+			_log.error(sqlException, sqlException);
 
-			throw new RuntimeException("Unable to execute " + sql, sqle);
-		}
-		finally {
-			DataAccess.cleanUp(con, ps);
+			throw new RuntimeException(
+				"Unable to execute " + sql, sqlException);
 		}
 	}
 

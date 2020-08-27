@@ -132,6 +132,11 @@ public class LockLocalServiceTest {
 				expectedType = ExpectedType.PREFIX
 			),
 			@ExpectedLog(
+				expectedDBType = ExpectedDBType.SQLSERVER,
+				expectedLog = "Cannot insert duplicate key row in object",
+				expectedType = ExpectedType.PREFIX
+			),
+			@ExpectedLog(
 				expectedDBType = ExpectedDBType.SYBASE,
 				expectedLog = "Attempt to insert duplicate key row",
 				expectedType = ExpectedType.CONTAINS
@@ -176,12 +181,12 @@ public class LockLocalServiceTest {
 
 			Assert.fail();
 		}
-		catch (DuplicateLockException dle) {
+		catch (DuplicateLockException duplicateLockException) {
 		}
 
 		// Set lock to be expired
 
-		expirationDate = new Date(System.currentTimeMillis() - 10 * Time.DAY);
+		expirationDate = new Date(System.currentTimeMillis() - (10 * Time.DAY));
 
 		lock.setExpirationDate(expirationDate);
 
@@ -212,9 +217,9 @@ public class LockLocalServiceTest {
 		final CountDownLatch createdCountDownLatch = new CountDownLatch(1);
 		final CountDownLatch continueCountDownLatch = new CountDownLatch(1);
 
-		ServiceRegistration<ModelListener> serviceRegistration =
+		ServiceRegistration<ModelListener<Lock>> serviceRegistration =
 			bundleContext.registerService(
-				ModelListener.class,
+				(Class<ModelListener<Lock>>)(Class<?>)ModelListener.class,
 				new BaseModelListener<Lock>() {
 
 					@Override
@@ -225,8 +230,9 @@ public class LockLocalServiceTest {
 							try {
 								continueCountDownLatch.await();
 							}
-							catch (InterruptedException ie) {
-								ReflectionUtil.throwException(ie);
+							catch (InterruptedException interruptedException) {
+								ReflectionUtil.throwException(
+									interruptedException);
 							}
 						}
 					}
@@ -246,7 +252,7 @@ public class LockLocalServiceTest {
 
 			});
 
-		Thread lockCreateThread = new Thread(futureTask, "Lock create thread");
+		Thread lockCreateThread = new Thread(futureTask, "Lock Create Thread");
 
 		lockCreateThread.start();
 
@@ -266,8 +272,8 @@ public class LockLocalServiceTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertSame(
 				ConstraintViolationException.class, throwable.getClass());
@@ -324,6 +330,11 @@ public class LockLocalServiceTest {
 			@ExpectedLog(
 				expectedDBType = ExpectedDBType.POSTGRESQL,
 				expectedLog = "ERROR: duplicate key value violates unique constraint ",
+				expectedType = ExpectedType.PREFIX
+			),
+			@ExpectedLog(
+				expectedDBType = ExpectedDBType.SQLSERVER,
+				expectedLog = "Cannot insert duplicate key row in object",
 				expectedType = ExpectedType.PREFIX
 			),
 			@ExpectedLog(
@@ -416,22 +427,22 @@ public class LockLocalServiceTest {
 
 								break;
 							}
-							catch (RuntimeException re) {
-								if (_isExpectedException(re)) {
+							catch (RuntimeException runtimeException) {
+								if (_isExpectedException(runtimeException)) {
 									continue;
 								}
 
-								throw re;
+								throw runtimeException;
 							}
 						}
 					}
 				}
-				catch (RuntimeException re) {
-					if (_isExpectedException(re)) {
+				catch (RuntimeException runtimeException) {
+					if (_isExpectedException(runtimeException)) {
 						continue;
 					}
 
-					throw re;
+					throw runtimeException;
 				}
 			}
 		}
@@ -446,19 +457,21 @@ public class LockLocalServiceTest {
 			_requiredSuccessCount = requiredSuccessCount;
 		}
 
-		private boolean _isExpectedException(RuntimeException re) {
-			Throwable cause = re.getCause();
+		private boolean _isExpectedException(
+			RuntimeException runtimeException) {
+
+			Throwable throwable = runtimeException.getCause();
 
 			DB db = DBManagerUtil.getDB();
 
 			if ((db.getDBType() == DBType.SYBASE) &&
-				(cause instanceof GenericJDBCException)) {
+				(throwable instanceof GenericJDBCException)) {
 
-				cause = cause.getCause();
+				throwable = throwable.getCause();
 
-				String message = cause.getMessage();
+				String message = throwable.getMessage();
 
-				if ((cause instanceof BatchUpdateException) &&
+				if ((throwable instanceof BatchUpdateException) &&
 					message.contains(
 						"Attempt to insert duplicate key row in object " +
 							"'Lock_' with unique index 'IX_228562AD'\n")) {

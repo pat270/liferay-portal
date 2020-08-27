@@ -63,6 +63,9 @@ public class SearchResultsPortletSharedSearchContributor
 
 			searchRequestBuilder.highlightFields(fieldsToDisplay);
 		}
+
+		searchRequestBuilder.paginationStartParameterName(
+			searchResultsPortletPreferences.getPaginationStartParameterName());
 	}
 
 	protected void paginate(
@@ -83,12 +86,10 @@ public class SearchResultsPortletSharedSearchContributor
 			() -> paginationStartParameterValueOptional.map(Integer::valueOf),
 			portletSharedSearchSettings::setPaginationStart);
 
-		String paginationDeltaParameterName =
-			searchResultsPortletPreferences.getPaginationDeltaParameterName();
-
 		Optional<String> paginationDeltaParameterValueOptional =
 			portletSharedSearchSettings.getParameterOptional(
-				paginationDeltaParameterName);
+				searchResultsPortletPreferences.
+					getPaginationDeltaParameterName());
 
 		Optional<Integer> paginationDeltaOptional =
 			paginationDeltaParameterValueOptional.map(Integer::valueOf);

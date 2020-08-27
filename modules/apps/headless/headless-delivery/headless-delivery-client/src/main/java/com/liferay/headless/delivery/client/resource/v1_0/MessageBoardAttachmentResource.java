@@ -17,10 +17,13 @@ package com.liferay.headless.delivery.client.resource.v1_0;
 import com.liferay.headless.delivery.client.dto.v1_0.MessageBoardAttachment;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
+import com.liferay.headless.delivery.client.problem.Problem;
 import com.liferay.headless.delivery.client.serdes.v1_0.MessageBoardAttachmentSerDes;
 
 import java.io.File;
 
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,215 +35,799 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class MessageBoardAttachmentResource {
+public interface MessageBoardAttachmentResource {
+
+	public static Builder builder() {
+		return new Builder();
+	}
 
 	public void deleteMessageBoardAttachment(Long messageBoardAttachmentId)
-		throws Exception {
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public HttpInvoker.HttpResponse deleteMessageBoardAttachmentHttpResponse(
+			Long messageBoardAttachmentId)
+		throws Exception;
 
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+	public void deleteMessageBoardAttachmentBatch(
+			String callbackURL, Object object)
+		throws Exception;
 
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/message-board-attachments/{messageBoardAttachmentId}",
-			messageBoardAttachmentId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-	}
+	public HttpInvoker.HttpResponse
+			deleteMessageBoardAttachmentBatchHttpResponse(
+				String callbackURL, Object object)
+		throws Exception;
 
 	public MessageBoardAttachment getMessageBoardAttachment(
 			Long messageBoardAttachmentId)
-		throws Exception {
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/message-board-attachments/{messageBoardAttachmentId}",
-			messageBoardAttachmentId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return MessageBoardAttachmentSerDes.toDTO(content);
-		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
-
-			throw e;
-		}
-	}
+	public HttpInvoker.HttpResponse getMessageBoardAttachmentHttpResponse(
+			Long messageBoardAttachmentId)
+		throws Exception;
 
 	public Page<MessageBoardAttachment>
 			getMessageBoardMessageMessageBoardAttachmentsPage(
 				Long messageBoardMessageId)
-		throws Exception {
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/message-board-messages/{messageBoardMessageId}/message-board-attachments",
-			messageBoardMessageId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		return Page.of(content, MessageBoardAttachmentSerDes::toDTO);
-	}
+	public HttpInvoker.HttpResponse
+			getMessageBoardMessageMessageBoardAttachmentsPageHttpResponse(
+				Long messageBoardMessageId)
+		throws Exception;
 
 	public MessageBoardAttachment postMessageBoardMessageMessageBoardAttachment(
 			Long messageBoardMessageId,
 			MessageBoardAttachment messageBoardAttachment,
-			Map<String, File> files)
-		throws Exception {
+			Map<String, File> multipartFiles)
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public HttpInvoker.HttpResponse
+			postMessageBoardMessageMessageBoardAttachmentHttpResponse(
+				Long messageBoardMessageId,
+				MessageBoardAttachment messageBoardAttachment,
+				Map<String, File> multipartFiles)
+		throws Exception;
 
-		httpInvoker.multipart();
+	public void postMessageBoardMessageMessageBoardAttachmentBatch(
+			Long messageBoardMessageId,
+			MessageBoardAttachment messageBoardAttachment,
+			Map<String, File> multipartFiles, String callbackURL, Object object)
+		throws Exception;
 
-		httpInvoker.part(
-			"messageBoardAttachment",
-			MessageBoardAttachmentSerDes.toJSON(messageBoardAttachment));
-
-		for (Map.Entry<String, File> entry : files.entrySet()) {
-			httpInvoker.part(entry.getKey(), entry.getValue());
-		}
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/message-board-messages/{messageBoardMessageId}/message-board-attachments",
-			messageBoardMessageId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return MessageBoardAttachmentSerDes.toDTO(content);
-		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
-
-			throw e;
-		}
-	}
+	public HttpInvoker.HttpResponse
+			postMessageBoardMessageMessageBoardAttachmentBatchHttpResponse(
+				Long messageBoardMessageId,
+				MessageBoardAttachment messageBoardAttachment,
+				Map<String, File> multipartFiles, String callbackURL,
+				Object object)
+		throws Exception;
 
 	public Page<MessageBoardAttachment>
 			getMessageBoardThreadMessageBoardAttachmentsPage(
 				Long messageBoardThreadId)
-		throws Exception {
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/message-board-attachments",
-			messageBoardThreadId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		return Page.of(content, MessageBoardAttachmentSerDes::toDTO);
-	}
+	public HttpInvoker.HttpResponse
+			getMessageBoardThreadMessageBoardAttachmentsPageHttpResponse(
+				Long messageBoardThreadId)
+		throws Exception;
 
 	public MessageBoardAttachment postMessageBoardThreadMessageBoardAttachment(
 			Long messageBoardThreadId,
 			MessageBoardAttachment messageBoardAttachment,
-			Map<String, File> files)
-		throws Exception {
+			Map<String, File> multipartFiles)
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public HttpInvoker.HttpResponse
+			postMessageBoardThreadMessageBoardAttachmentHttpResponse(
+				Long messageBoardThreadId,
+				MessageBoardAttachment messageBoardAttachment,
+				Map<String, File> multipartFiles)
+		throws Exception;
 
-		httpInvoker.multipart();
+	public void postMessageBoardThreadMessageBoardAttachmentBatch(
+			Long messageBoardThreadId,
+			MessageBoardAttachment messageBoardAttachment,
+			Map<String, File> multipartFiles, String callbackURL, Object object)
+		throws Exception;
 
-		httpInvoker.part(
-			"messageBoardAttachment",
-			MessageBoardAttachmentSerDes.toJSON(messageBoardAttachment));
+	public HttpInvoker.HttpResponse
+			postMessageBoardThreadMessageBoardAttachmentBatchHttpResponse(
+				Long messageBoardThreadId,
+				MessageBoardAttachment messageBoardAttachment,
+				Map<String, File> multipartFiles, String callbackURL,
+				Object object)
+		throws Exception;
 
-		for (Map.Entry<String, File> entry : files.entrySet()) {
-			httpInvoker.part(entry.getKey(), entry.getValue());
+	public static class Builder {
+
+		public Builder authentication(String login, String password) {
+			_login = login;
+			_password = password;
+
+			return this;
 		}
 
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/message-board-attachments",
-			messageBoardThreadId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return MessageBoardAttachmentSerDes.toDTO(content);
+		public MessageBoardAttachmentResource build() {
+			return new MessageBoardAttachmentResourceImpl(this);
 		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
 
-			throw e;
+		public Builder endpoint(String host, int port, String scheme) {
+			_host = host;
+			_port = port;
+			_scheme = scheme;
+
+			return this;
 		}
+
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
+		public Builder locale(Locale locale) {
+			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
+
+			return this;
+		}
+
+		private Builder() {
+		}
+
+		private Map<String, String> _headers = new LinkedHashMap<>();
+		private String _host = "localhost";
+		private Locale _locale;
+		private String _login = "";
+		private String _password = "";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
+		private int _port = 8080;
+		private String _scheme = "http";
+
 	}
 
-	private static final Logger _logger = Logger.getLogger(
-		MessageBoardAttachmentResource.class.getName());
+	public static class MessageBoardAttachmentResourceImpl
+		implements MessageBoardAttachmentResource {
+
+		public void deleteMessageBoardAttachment(Long messageBoardAttachmentId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteMessageBoardAttachmentHttpResponse(
+					messageBoardAttachmentId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				deleteMessageBoardAttachmentHttpResponse(
+					Long messageBoardAttachmentId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-attachments/{messageBoardAttachmentId}",
+				messageBoardAttachmentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void deleteMessageBoardAttachmentBatch(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteMessageBoardAttachmentBatchHttpResponse(
+					callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				deleteMessageBoardAttachmentBatchHttpResponse(
+					String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-attachments/batch");
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public MessageBoardAttachment getMessageBoardAttachment(
+				Long messageBoardAttachmentId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getMessageBoardAttachmentHttpResponse(messageBoardAttachmentId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return MessageBoardAttachmentSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse getMessageBoardAttachmentHttpResponse(
+				Long messageBoardAttachmentId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-attachments/{messageBoardAttachmentId}",
+				messageBoardAttachmentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<MessageBoardAttachment>
+				getMessageBoardMessageMessageBoardAttachmentsPage(
+					Long messageBoardMessageId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getMessageBoardMessageMessageBoardAttachmentsPageHttpResponse(
+					messageBoardMessageId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, MessageBoardAttachmentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getMessageBoardMessageMessageBoardAttachmentsPageHttpResponse(
+					Long messageBoardMessageId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-messages/{messageBoardMessageId}/message-board-attachments",
+				messageBoardMessageId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public MessageBoardAttachment
+				postMessageBoardMessageMessageBoardAttachment(
+					Long messageBoardMessageId,
+					MessageBoardAttachment messageBoardAttachment,
+					Map<String, File> multipartFiles)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postMessageBoardMessageMessageBoardAttachmentHttpResponse(
+					messageBoardMessageId, messageBoardAttachment,
+					multipartFiles);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return MessageBoardAttachmentSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				postMessageBoardMessageMessageBoardAttachmentHttpResponse(
+					Long messageBoardMessageId,
+					MessageBoardAttachment messageBoardAttachment,
+					Map<String, File> multipartFiles)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.multipart();
+
+			httpInvoker.part(
+				"messageBoardAttachment",
+				MessageBoardAttachmentSerDes.toJSON(messageBoardAttachment));
+
+			for (Map.Entry<String, File> entry : multipartFiles.entrySet()) {
+				httpInvoker.part(entry.getKey(), entry.getValue());
+			}
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-messages/{messageBoardMessageId}/message-board-attachments",
+				messageBoardMessageId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postMessageBoardMessageMessageBoardAttachmentBatch(
+				Long messageBoardMessageId,
+				MessageBoardAttachment messageBoardAttachment,
+				Map<String, File> multipartFiles, String callbackURL,
+				Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postMessageBoardMessageMessageBoardAttachmentBatchHttpResponse(
+					messageBoardMessageId, messageBoardAttachment,
+					multipartFiles, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postMessageBoardMessageMessageBoardAttachmentBatchHttpResponse(
+					Long messageBoardMessageId,
+					MessageBoardAttachment messageBoardAttachment,
+					Map<String, File> multipartFiles, String callbackURL,
+					Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-messages/{messageBoardMessageId}/message-board-attachments/batch",
+				messageBoardMessageId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<MessageBoardAttachment>
+				getMessageBoardThreadMessageBoardAttachmentsPage(
+					Long messageBoardThreadId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getMessageBoardThreadMessageBoardAttachmentsPageHttpResponse(
+					messageBoardThreadId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, MessageBoardAttachmentSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getMessageBoardThreadMessageBoardAttachmentsPageHttpResponse(
+					Long messageBoardThreadId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/message-board-attachments",
+				messageBoardThreadId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public MessageBoardAttachment
+				postMessageBoardThreadMessageBoardAttachment(
+					Long messageBoardThreadId,
+					MessageBoardAttachment messageBoardAttachment,
+					Map<String, File> multipartFiles)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postMessageBoardThreadMessageBoardAttachmentHttpResponse(
+					messageBoardThreadId, messageBoardAttachment,
+					multipartFiles);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return MessageBoardAttachmentSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				postMessageBoardThreadMessageBoardAttachmentHttpResponse(
+					Long messageBoardThreadId,
+					MessageBoardAttachment messageBoardAttachment,
+					Map<String, File> multipartFiles)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.multipart();
+
+			httpInvoker.part(
+				"messageBoardAttachment",
+				MessageBoardAttachmentSerDes.toJSON(messageBoardAttachment));
+
+			for (Map.Entry<String, File> entry : multipartFiles.entrySet()) {
+				httpInvoker.part(entry.getKey(), entry.getValue());
+			}
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/message-board-attachments",
+				messageBoardThreadId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void postMessageBoardThreadMessageBoardAttachmentBatch(
+				Long messageBoardThreadId,
+				MessageBoardAttachment messageBoardAttachment,
+				Map<String, File> multipartFiles, String callbackURL,
+				Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postMessageBoardThreadMessageBoardAttachmentBatchHttpResponse(
+					messageBoardThreadId, messageBoardAttachment,
+					multipartFiles, callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse
+				postMessageBoardThreadMessageBoardAttachmentBatchHttpResponse(
+					Long messageBoardThreadId,
+					MessageBoardAttachment messageBoardAttachment,
+					Map<String, File> multipartFiles, String callbackURL,
+					Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(object.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/message-board-attachments/batch",
+				messageBoardThreadId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		private MessageBoardAttachmentResourceImpl(Builder builder) {
+			_builder = builder;
+		}
+
+		private static final Logger _logger = Logger.getLogger(
+			MessageBoardAttachmentResource.class.getName());
+
+		private Builder _builder;
+
+	}
 
 }

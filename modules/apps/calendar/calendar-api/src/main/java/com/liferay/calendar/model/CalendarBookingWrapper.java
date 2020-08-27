@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link CalendarBooking}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CalendarBooking
  * @generated
  */
-@ProviderType
 public class CalendarBookingWrapper
 	extends BaseModelWrapper<CalendarBooking>
 	implements CalendarBooking, ModelWrapper<CalendarBooking> {
@@ -46,6 +43,7 @@ public class CalendarBookingWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("calendarBookingId", getCalendarBookingId());
 		attributes.put("groupId", getGroupId());
@@ -82,6 +80,12 @@ public class CalendarBookingWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -510,6 +514,16 @@ public class CalendarBookingWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this calendar booking.
+	 *
+	 * @return the mvcc version of this calendar booking
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	@Override
@@ -1171,6 +1185,16 @@ public class CalendarBookingWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this calendar booking.
+	 *
+	 * @param mvccVersion the mvcc version of this calendar booking
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -1,4 +1,38 @@
 definition {
+
+	macro configureLookAndFeelCustomCSS {
+		Type(
+			key_text = "regularCss",
+			locator1 = "TextArea#ANY",
+			value1 = "${cssText}");
+	}
+
+	macro configureLookAndFeelShowFooter {
+		if ("${showFooter}" == "true") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Show Footer",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${showFooter}" == "false") {
+			Uncheck.uncheckToggleSwitch(
+				key_toggleSwitchLabel = "Show Footer",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+	}
+
+	macro configureLookAndFeelShowHeader {
+		if ("${showHeader}" == "true") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Show Header",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${showHeader}" == "false") {
+			Uncheck.uncheckToggleSwitch(
+				key_toggleSwitchLabel = "Show Header",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+	}
+
 	macro configureLookAndFeelShowHeaderSearch {
 		if ("${showHeaderSearch}" == "true") {
 			Check.checkToggleSwitch(
@@ -29,12 +63,47 @@ definition {
 		Click(locator1 = "Radio#SPECIFIC_LOOK");
 	}
 
+	macro configureLookAndFeelWrapWidgetPageContent {
+		if ("${wrapWidgetPageContent}" == "true") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Wrap Widget Page Content",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${wrapWidgetPageContent}" == "false") {
+			Uncheck.uncheckToggleSwitch(
+				key_toggleSwitchLabel = "Wrap Widget Page Content",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+	}
+
+	macro deployThemeWar {
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "deploy-dependency-war -Dliferay.dependency.war=${themeName}.war");
+
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "copy-log-file");
+
+		var projectDir = PropsUtil.get("project.dir");
+		var logContent = FileUtil.read("${projectDir}/log");
+
+		while (!(contains("${logContent}", "STARTED ${themeName}"))) {
+			Pause(locator1 = "3000");
+
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "copy-log-file");
+
+			var logContent = FileUtil.read("${projectDir}/log");
+		}
+	}
+
 	macro viewMaxPortletOption {
 		AssertTextEquals(
 			key_menuItem = "Maximize",
 			locator1 = "MenuItem#ANY_MENU_ITEM",
 			value1 = "Maximize");
-
 	}
 
 	macro viewMinPortlet {
@@ -54,4 +123,5 @@ definition {
 
 		Refresh();
 	}
+
 }

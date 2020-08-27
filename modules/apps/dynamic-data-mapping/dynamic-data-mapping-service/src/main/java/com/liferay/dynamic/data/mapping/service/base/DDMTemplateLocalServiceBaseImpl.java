@@ -25,7 +25,9 @@ import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -46,13 +48,13 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
-import com.liferay.portal.kernel.service.persistence.ImagePersistence;
-import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -60,7 +62,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the ddm template local service.
@@ -73,10 +75,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.dynamic.data.mapping.service.impl.DDMTemplateLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class DDMTemplateLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements DDMTemplateLocalService, IdentifiableOSGiService {
+	implements AopService, DDMTemplateLocalService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -86,6 +87,10 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 
 	/**
 	 * Adds the ddm template to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddmTemplate the ddm template
 	 * @return the ddm template that was added
@@ -113,6 +118,10 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	/**
 	 * Deletes the ddm template with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param templateId the primary key of the ddm template
 	 * @return the ddm template that was removed
 	 * @throws PortalException if a ddm template with the primary key could not be found
@@ -128,6 +137,10 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	/**
 	 * Deletes the ddm template from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmTemplate the ddm template
 	 * @return the ddm template that was removed
 	 */
@@ -135,6 +148,11 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	@Override
 	public DDMTemplate deleteDDMTemplate(DDMTemplate ddmTemplate) {
 		return ddmTemplatePersistence.remove(ddmTemplate);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return ddmTemplatePersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -160,7 +178,7 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -180,7 +198,7 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -393,6 +411,15 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return ddmTemplatePersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -401,6 +428,13 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 			(DDMTemplate)persistedModel);
 	}
 
+	public BasePersistence<DDMTemplate> getBasePersistence() {
+		return ddmTemplatePersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -460,7 +494,7 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	 * Returns a range of all the ddm templates.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm templates
@@ -485,6 +519,10 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 	/**
 	 * Updates the ddm template in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmTemplate the ddm template
 	 * @return the ddm template that was updated
 	 */
@@ -494,286 +532,17 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 		return ddmTemplatePersistence.update(ddmTemplate);
 	}
 
-	/**
-	 * Returns the ddm template local service.
-	 *
-	 * @return the ddm template local service
-	 */
-	public DDMTemplateLocalService getDDMTemplateLocalService() {
-		return ddmTemplateLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			DDMTemplateLocalService.class, IdentifiableOSGiService.class,
+			CTService.class, PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Sets the ddm template local service.
-	 *
-	 * @param ddmTemplateLocalService the ddm template local service
-	 */
-	public void setDDMTemplateLocalService(
-		DDMTemplateLocalService ddmTemplateLocalService) {
-
-		this.ddmTemplateLocalService = ddmTemplateLocalService;
-	}
-
-	/**
-	 * Returns the ddm template persistence.
-	 *
-	 * @return the ddm template persistence
-	 */
-	public DDMTemplatePersistence getDDMTemplatePersistence() {
-		return ddmTemplatePersistence;
-	}
-
-	/**
-	 * Sets the ddm template persistence.
-	 *
-	 * @param ddmTemplatePersistence the ddm template persistence
-	 */
-	public void setDDMTemplatePersistence(
-		DDMTemplatePersistence ddmTemplatePersistence) {
-
-		this.ddmTemplatePersistence = ddmTemplatePersistence;
-	}
-
-	/**
-	 * Returns the ddm template finder.
-	 *
-	 * @return the ddm template finder
-	 */
-	public DDMTemplateFinder getDDMTemplateFinder() {
-		return ddmTemplateFinder;
-	}
-
-	/**
-	 * Sets the ddm template finder.
-	 *
-	 * @param ddmTemplateFinder the ddm template finder
-	 */
-	public void setDDMTemplateFinder(DDMTemplateFinder ddmTemplateFinder) {
-		this.ddmTemplateFinder = ddmTemplateFinder;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the image local service.
-	 *
-	 * @return the image local service
-	 */
-	public com.liferay.portal.kernel.service.ImageLocalService
-		getImageLocalService() {
-
-		return imageLocalService;
-	}
-
-	/**
-	 * Sets the image local service.
-	 *
-	 * @param imageLocalService the image local service
-	 */
-	public void setImageLocalService(
-		com.liferay.portal.kernel.service.ImageLocalService imageLocalService) {
-
-		this.imageLocalService = imageLocalService;
-	}
-
-	/**
-	 * Returns the image persistence.
-	 *
-	 * @return the image persistence
-	 */
-	public ImagePersistence getImagePersistence() {
-		return imagePersistence;
-	}
-
-	/**
-	 * Sets the image persistence.
-	 *
-	 * @param imagePersistence the image persistence
-	 */
-	public void setImagePersistence(ImagePersistence imagePersistence) {
-		this.imagePersistence = imagePersistence;
-	}
-
-	/**
-	 * Returns the resource local service.
-	 *
-	 * @return the resource local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceLocalService
-		getResourceLocalService() {
-
-		return resourceLocalService;
-	}
-
-	/**
-	 * Sets the resource local service.
-	 *
-	 * @param resourceLocalService the resource local service
-	 */
-	public void setResourceLocalService(
-		com.liferay.portal.kernel.service.ResourceLocalService
-			resourceLocalService) {
-
-		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the user local service.
-	 *
-	 * @return the user local service
-	 */
-	public com.liferay.portal.kernel.service.UserLocalService
-		getUserLocalService() {
-
-		return userLocalService;
-	}
-
-	/**
-	 * Sets the user local service.
-	 *
-	 * @param userLocalService the user local service
-	 */
-	public void setUserLocalService(
-		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
-
-		this.userLocalService = userLocalService;
-	}
-
-	/**
-	 * Returns the user persistence.
-	 *
-	 * @return the user persistence
-	 */
-	public UserPersistence getUserPersistence() {
-		return userPersistence;
-	}
-
-	/**
-	 * Sets the user persistence.
-	 *
-	 * @param userPersistence the user persistence
-	 */
-	public void setUserPersistence(UserPersistence userPersistence) {
-		this.userPersistence = userPersistence;
-	}
-
-	/**
-	 * Returns the ddm template link local service.
-	 *
-	 * @return the ddm template link local service
-	 */
-	public com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService
-		getDDMTemplateLinkLocalService() {
-
-		return ddmTemplateLinkLocalService;
-	}
-
-	/**
-	 * Sets the ddm template link local service.
-	 *
-	 * @param ddmTemplateLinkLocalService the ddm template link local service
-	 */
-	public void setDDMTemplateLinkLocalService(
-		com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService
-			ddmTemplateLinkLocalService) {
-
-		this.ddmTemplateLinkLocalService = ddmTemplateLinkLocalService;
-	}
-
-	/**
-	 * Returns the ddm template link persistence.
-	 *
-	 * @return the ddm template link persistence
-	 */
-	public DDMTemplateLinkPersistence getDDMTemplateLinkPersistence() {
-		return ddmTemplateLinkPersistence;
-	}
-
-	/**
-	 * Sets the ddm template link persistence.
-	 *
-	 * @param ddmTemplateLinkPersistence the ddm template link persistence
-	 */
-	public void setDDMTemplateLinkPersistence(
-		DDMTemplateLinkPersistence ddmTemplateLinkPersistence) {
-
-		this.ddmTemplateLinkPersistence = ddmTemplateLinkPersistence;
-	}
-
-	/**
-	 * Returns the ddm template version local service.
-	 *
-	 * @return the ddm template version local service
-	 */
-	public
-		com.liferay.dynamic.data.mapping.service.DDMTemplateVersionLocalService
-			getDDMTemplateVersionLocalService() {
-
-		return ddmTemplateVersionLocalService;
-	}
-
-	/**
-	 * Sets the ddm template version local service.
-	 *
-	 * @param ddmTemplateVersionLocalService the ddm template version local service
-	 */
-	public void setDDMTemplateVersionLocalService(
-		com.liferay.dynamic.data.mapping.service.DDMTemplateVersionLocalService
-			ddmTemplateVersionLocalService) {
-
-		this.ddmTemplateVersionLocalService = ddmTemplateVersionLocalService;
-	}
-
-	/**
-	 * Returns the ddm template version persistence.
-	 *
-	 * @return the ddm template version persistence
-	 */
-	public DDMTemplateVersionPersistence getDDMTemplateVersionPersistence() {
-		return ddmTemplateVersionPersistence;
-	}
-
-	/**
-	 * Sets the ddm template version persistence.
-	 *
-	 * @param ddmTemplateVersionPersistence the ddm template version persistence
-	 */
-	public void setDDMTemplateVersionPersistence(
-		DDMTemplateVersionPersistence ddmTemplateVersionPersistence) {
-
-		this.ddmTemplateVersionPersistence = ddmTemplateVersionPersistence;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.dynamic.data.mapping.model.DDMTemplate",
-			ddmTemplateLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.dynamic.data.mapping.model.DDMTemplate");
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		ddmTemplateLocalService = (DDMTemplateLocalService)aopProxy;
 	}
 
 	/**
@@ -786,8 +555,23 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 		return DDMTemplateLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<DDMTemplate> getCTPersistence() {
+		return ddmTemplatePersistence;
+	}
+
+	@Override
+	public Class<DDMTemplate> getModelClass() {
 		return DDMTemplate.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DDMTemplate>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(ddmTemplatePersistence);
 	}
 
 	protected String getModelClassName() {
@@ -813,72 +597,39 @@ public abstract class DDMTemplateLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
-	@BeanReference(type = DDMTemplateLocalService.class)
 	protected DDMTemplateLocalService ddmTemplateLocalService;
 
-	@BeanReference(type = DDMTemplatePersistence.class)
+	@Reference
 	protected DDMTemplatePersistence ddmTemplatePersistence;
 
-	@BeanReference(type = DDMTemplateFinder.class)
+	@Reference
 	protected DDMTemplateFinder ddmTemplateFinder;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.ImageLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.ImageLocalService
 		imageLocalService;
 
-	@ServiceReference(type = ImagePersistence.class)
-	protected ImagePersistence imagePersistence;
-
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.ResourceLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.ResourceLocalService
 		resourceLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.UserLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.UserLocalService
 		userLocalService;
 
-	@ServiceReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-
-	@BeanReference(
-		type = com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService.class
-	)
-	protected
-		com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService
-			ddmTemplateLinkLocalService;
-
-	@BeanReference(type = DDMTemplateLinkPersistence.class)
+	@Reference
 	protected DDMTemplateLinkPersistence ddmTemplateLinkPersistence;
 
-	@BeanReference(
-		type = com.liferay.dynamic.data.mapping.service.DDMTemplateVersionLocalService.class
-	)
-	protected
-		com.liferay.dynamic.data.mapping.service.DDMTemplateVersionLocalService
-			ddmTemplateVersionLocalService;
-
-	@BeanReference(type = DDMTemplateVersionPersistence.class)
+	@Reference
 	protected DDMTemplateVersionPersistence ddmTemplateVersionPersistence;
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

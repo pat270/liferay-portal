@@ -14,9 +14,10 @@
 
 package com.liferay.asset.list.service;
 
+import com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetListEntrySegmentsEntryRelLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetListEntrySegmentsEntryRelLocalService
  * @generated
  */
-@ProviderType
 public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	implements AssetListEntrySegmentsEntryRelLocalService,
 			   ServiceWrapper<AssetListEntrySegmentsEntryRelLocalService> {
@@ -41,25 +41,26 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	/**
 	 * Adds the asset list entry segments entry rel to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntrySegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntrySegmentsEntryRel the asset list entry segments entry rel
 	 * @return the asset list entry segments entry rel that was added
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-		addAssetListEntrySegmentsEntryRel(
-			com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-				assetListEntrySegmentsEntryRel) {
+	public AssetListEntrySegmentsEntryRel addAssetListEntrySegmentsEntryRel(
+		AssetListEntrySegmentsEntryRel assetListEntrySegmentsEntryRel) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			addAssetListEntrySegmentsEntryRel(assetListEntrySegmentsEntryRel);
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-			addAssetListEntrySegmentsEntryRel(
-				long userId, long groupId, long assetListEntryId,
-				long segmentsEntryId, String typeSettings,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public AssetListEntrySegmentsEntryRel addAssetListEntrySegmentsEntryRel(
+			long userId, long groupId, long assetListEntryId,
+			long segmentsEntryId, String typeSettings,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
@@ -75,9 +76,8 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @return the new asset list entry segments entry rel
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-		createAssetListEntrySegmentsEntryRel(
-			long assetListEntrySegmentsEntryRelId) {
+	public AssetListEntrySegmentsEntryRel createAssetListEntrySegmentsEntryRel(
+		long assetListEntrySegmentsEntryRelId) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			createAssetListEntrySegmentsEntryRel(
@@ -85,16 +85,30 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetListEntrySegmentsEntryRelLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the asset list entry segments entry rel from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntrySegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param assetListEntrySegmentsEntryRel the asset list entry segments entry rel
 	 * @return the asset list entry segments entry rel that was removed
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-		deleteAssetListEntrySegmentsEntryRel(
-			com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-				assetListEntrySegmentsEntryRel) {
+	public AssetListEntrySegmentsEntryRel deleteAssetListEntrySegmentsEntryRel(
+		AssetListEntrySegmentsEntryRel assetListEntrySegmentsEntryRel) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			deleteAssetListEntrySegmentsEntryRel(
@@ -104,14 +118,17 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	/**
 	 * Deletes the asset list entry segments entry rel with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntrySegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntrySegmentsEntryRelId the primary key of the asset list entry segments entry rel
 	 * @return the asset list entry segments entry rel that was removed
 	 * @throws PortalException if a asset list entry segments entry rel with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-			deleteAssetListEntrySegmentsEntryRel(
-				long assetListEntrySegmentsEntryRelId)
+	public AssetListEntrySegmentsEntryRel deleteAssetListEntrySegmentsEntryRel(
+			long assetListEntrySegmentsEntryRelId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
@@ -138,6 +155,15 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 				assetListEntryId);
 	}
 
+	@Override
+	public void deleteAssetListEntrySegmentsEntryRelBySegmentsEntryId(
+		long segmentsEntryId) {
+
+		_assetListEntrySegmentsEntryRelLocalService.
+			deleteAssetListEntrySegmentsEntryRelBySegmentsEntryId(
+				segmentsEntryId);
+	}
+
 	/**
 	 * @throws PortalException
 	 */
@@ -148,6 +174,11 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 
 		return _assetListEntrySegmentsEntryRelLocalService.deletePersistedModel(
 			persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetListEntrySegmentsEntryRelLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -173,7 +204,7 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntrySegmentsEntryRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntrySegmentsEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -194,7 +225,7 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntrySegmentsEntryRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntrySegmentsEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -244,9 +275,8 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-		fetchAssetListEntrySegmentsEntryRel(
-			long assetListEntrySegmentsEntryRelId) {
+	public AssetListEntrySegmentsEntryRel fetchAssetListEntrySegmentsEntryRel(
+		long assetListEntrySegmentsEntryRelId) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			fetchAssetListEntrySegmentsEntryRel(
@@ -254,9 +284,8 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-		fetchAssetListEntrySegmentsEntryRel(
-			long assetListEntryId, long segmentsEntryId) {
+	public AssetListEntrySegmentsEntryRel fetchAssetListEntrySegmentsEntryRel(
+		long assetListEntryId, long segmentsEntryId) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			fetchAssetListEntrySegmentsEntryRel(
@@ -271,7 +300,7 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @return the matching asset list entry segments entry rel, or <code>null</code> if a matching asset list entry segments entry rel could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
+	public AssetListEntrySegmentsEntryRel
 		fetchAssetListEntrySegmentsEntryRelByUuidAndGroupId(
 			String uuid, long groupId) {
 
@@ -295,9 +324,8 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @throws PortalException if a asset list entry segments entry rel with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-			getAssetListEntrySegmentsEntryRel(
-				long assetListEntrySegmentsEntryRelId)
+	public AssetListEntrySegmentsEntryRel getAssetListEntrySegmentsEntryRel(
+			long assetListEntrySegmentsEntryRelId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
@@ -305,9 +333,8 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-			getAssetListEntrySegmentsEntryRel(
-				long assetListEntryId, long segmentsEntryId)
+	public AssetListEntrySegmentsEntryRel getAssetListEntrySegmentsEntryRel(
+			long assetListEntryId, long segmentsEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
@@ -324,7 +351,7 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @throws PortalException if a matching asset list entry segments entry rel could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
+	public AssetListEntrySegmentsEntryRel
 			getAssetListEntrySegmentsEntryRelByUuidAndGroupId(
 				String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -337,7 +364,7 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * Returns a range of all the asset list entry segments entry rels.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntrySegmentsEntryRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntrySegmentsEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset list entry segments entry rels
@@ -345,19 +372,17 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @return the range of asset list entry segments entry rels
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel>
-			getAssetListEntrySegmentsEntryRels(int start, int end) {
+	public java.util.List<AssetListEntrySegmentsEntryRel>
+		getAssetListEntrySegmentsEntryRels(int start, int end) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			getAssetListEntrySegmentsEntryRels(start, end);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel>
-			getAssetListEntrySegmentsEntryRels(
-				long assetListEntryId, int start, int end) {
+	public java.util.List<AssetListEntrySegmentsEntryRel>
+		getAssetListEntrySegmentsEntryRels(
+			long assetListEntryId, int start, int end) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			getAssetListEntrySegmentsEntryRels(assetListEntryId, start, end);
@@ -371,10 +396,9 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @return the matching asset list entry segments entry rels, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel>
-			getAssetListEntrySegmentsEntryRelsByUuidAndCompanyId(
-				String uuid, long companyId) {
+	public java.util.List<AssetListEntrySegmentsEntryRel>
+		getAssetListEntrySegmentsEntryRelsByUuidAndCompanyId(
+			String uuid, long companyId) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			getAssetListEntrySegmentsEntryRelsByUuidAndCompanyId(
@@ -392,13 +416,11 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	 * @return the range of matching asset list entry segments entry rels, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel>
-			getAssetListEntrySegmentsEntryRelsByUuidAndCompanyId(
-				String uuid, long companyId, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.asset.list.model.
-						AssetListEntrySegmentsEntryRel> orderByComparator) {
+	public java.util.List<AssetListEntrySegmentsEntryRel>
+		getAssetListEntrySegmentsEntryRelsByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<AssetListEntrySegmentsEntryRel> orderByComparator) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			getAssetListEntrySegmentsEntryRelsByUuidAndCompanyId(
@@ -451,6 +473,9 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 			getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -463,14 +488,16 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	/**
 	 * Updates the asset list entry segments entry rel in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntrySegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntrySegmentsEntryRel the asset list entry segments entry rel
 	 * @return the asset list entry segments entry rel that was updated
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-		updateAssetListEntrySegmentsEntryRel(
-			com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
-				assetListEntrySegmentsEntryRel) {
+	public AssetListEntrySegmentsEntryRel updateAssetListEntrySegmentsEntryRel(
+		AssetListEntrySegmentsEntryRel assetListEntrySegmentsEntryRel) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			updateAssetListEntrySegmentsEntryRel(
@@ -478,13 +505,33 @@ public class AssetListEntrySegmentsEntryRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel
+	public AssetListEntrySegmentsEntryRel
 		updateAssetListEntrySegmentsEntryRelTypeSettings(
 			long assetListEntryId, long segmentsEntryId, String typeSettings) {
 
 		return _assetListEntrySegmentsEntryRelLocalService.
 			updateAssetListEntrySegmentsEntryRelTypeSettings(
 				assetListEntryId, segmentsEntryId, typeSettings);
+	}
+
+	@Override
+	public CTPersistence<AssetListEntrySegmentsEntryRel> getCTPersistence() {
+		return _assetListEntrySegmentsEntryRelLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetListEntrySegmentsEntryRel> getModelClass() {
+		return _assetListEntrySegmentsEntryRelLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetListEntrySegmentsEntryRel>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _assetListEntrySegmentsEntryRelLocalService.
+			updateWithUnsafeFunction(updateUnsafeFunction);
 	}
 
 	@Override

@@ -25,18 +25,21 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             com.liferay.layout.admin.kernel.util.SitemapUtil}
  */
+@Deprecated
 public class SitemapUtil {
 
 	public static void addURLElement(
-		Element element, String url, UnicodeProperties typeSettingsProperties,
-		Date modifiedDate, String canonicalURL,
-		Map<Locale, String> alternateURLs) {
+		Element element, String url,
+		UnicodeProperties typeSettingsUnicodeProperties, Date modifiedDate,
+		String canonicalURL, Map<Locale, String> alternateURLs) {
 
 		getSitemap().addURLElement(
-			element, url, typeSettingsProperties, modifiedDate, canonicalURL,
-			alternateURLs);
+			element, url, typeSettingsUnicodeProperties, modifiedDate,
+			canonicalURL, alternateURLs);
 	}
 
 	public static String encodeXML(String input) {

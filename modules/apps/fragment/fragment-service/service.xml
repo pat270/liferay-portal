@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
-<service-builder auto-import-default-references="false" auto-namespace-tables="false" dependency-injector="ds" package-path="com.liferay.fragment">
+<service-builder auto-import-default-references="false" auto-namespace-tables="false" change-tracking-enabled="true" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.fragment">
 	<namespace>Fragment</namespace>
 	<entity local-service="true" name="FragmentCollection" remote-service="true" uuid="true">
 
@@ -37,24 +37,101 @@
 		<!-- Finder methods -->
 
 		<finder name="GroupId" return-type="Collection">
-			<finder-column name="groupId" />
+			<finder-column arrayable-operator="OR" name="groupId" />
 		</finder>
 		<finder name="G_FCK" return-type="FragmentCollection" unique="true">
 			<finder-column name="groupId" />
 			<finder-column name="fragmentCollectionKey" />
 		</finder>
 		<finder name="G_LikeN" return-type="Collection">
-			<finder-column name="groupId" />
+			<finder-column arrayable-operator="OR" name="groupId" />
 			<finder-column comparator="LIKE" name="name" />
 		</finder>
 
 		<!-- References -->
 
+		<reference entity="FragmentComposition" package-path="com.liferay.fragment" />
 		<reference entity="FragmentEntry" package-path="com.liferay.fragment" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 	</entity>
-	<entity local-service="true" name="FragmentEntry" remote-service="true" uuid="true">
+	<entity local-service="true" name="FragmentComposition" remote-service="true" uuid="true">
+
+		<!-- PK fields -->
+
+		<column name="fragmentCompositionId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="fragmentCollectionId" type="long" />
+		<column name="fragmentCompositionKey" type="String" />
+		<column name="name" type="String" />
+		<column name="description" type="String" />
+		<column name="data" type="String" />
+		<column name="previewFileEntryId" type="long" />
+		<column name="lastPublishDate" type="Date" />
+		<column name="status" type="int" />
+		<column name="statusByUserId" type="long" />
+		<column name="statusByUserName" type="String" />
+		<column name="statusDate" type="Date" />
+
+		<!-- Order -->
+
+		<order by="asc">
+			<order-column name="name" />
+		</order>
+
+		<!-- Finder methods -->
+
+		<finder name="GroupId" return-type="Collection">
+			<finder-column name="groupId" />
+		</finder>
+		<finder name="FragmentCollectionId" return-type="Collection">
+			<finder-column name="fragmentCollectionId" />
+		</finder>
+		<finder name="G_FCI" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="fragmentCollectionId" />
+		</finder>
+		<finder name="G_FCK" return-type="FragmentComposition" unique="true">
+			<finder-column name="groupId" />
+			<finder-column name="fragmentCompositionKey" />
+		</finder>
+		<finder name="G_FCI_LikeN" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="fragmentCollectionId" />
+			<finder-column comparator="LIKE" name="name" />
+		</finder>
+		<finder name="G_FCI_S" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="fragmentCollectionId" />
+			<finder-column name="status" />
+		</finder>
+		<finder name="G_FCI_LikeN_S" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="fragmentCollectionId" />
+			<finder-column comparator="LIKE" name="name" />
+			<finder-column name="status" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="Resource" package-path="com.liferay.portal" />
+		<reference entity="User" package-path="com.liferay.portal" />
+	</entity>
+	<entity local-service="true" name="FragmentEntry" remote-service="true" uuid="true" versioned="true">
 
 		<!-- PK fields -->
 
@@ -80,7 +157,10 @@
 		<column name="css" type="String" />
 		<column name="html" type="String" />
 		<column name="js" type="String" />
+		<column name="cacheable" type="boolean" />
+		<column name="configuration" type="String" />
 		<column name="previewFileEntryId" type="long" />
+		<column name="readOnly" type="boolean" />
 		<column name="type" type="int" />
 		<column name="lastPublishDate" type="Date" />
 		<column name="status" type="int" />
@@ -140,11 +220,12 @@
 
 		<!-- References -->
 
+		<reference entity="FragmentCollection" package-path="com.liferay.fragment" />
 		<reference entity="FragmentEntryLink" package-path="com.liferay.fragment" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 	</entity>
-	<entity local-service="true" name="FragmentEntryLink" remote-service="false" uuid="true">
+	<entity local-service="true" name="FragmentEntryLink" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
 
@@ -166,11 +247,14 @@
 
 		<column name="originalFragmentEntryLinkId" type="long" />
 		<column name="fragmentEntryId" type="long" />
+		<column name="segmentsExperienceId" type="long" />
 		<column name="classNameId" type="long" />
 		<column name="classPK" type="long" />
+		<column name="plid" type="long" />
 		<column name="css" type="String" />
 		<column name="html" type="String" />
 		<column name="js" type="String" />
+		<column name="configuration" type="String" />
 		<column name="editableValues" type="String" />
 		<column name="namespace" type="String" />
 		<column name="position" type="int" />
@@ -191,14 +275,34 @@
 		<finder name="GroupId" return-type="Collection">
 			<finder-column name="groupId" />
 		</finder>
+		<finder name="FragmentEntryId" return-type="Collection">
+			<finder-column name="fragmentEntryId" />
+		</finder>
+		<finder name="RendererKey" return-type="Collection">
+			<finder-column name="rendererKey" />
+		</finder>
 		<finder name="G_F" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="fragmentEntryId" />
+		</finder>
+		<finder name="G_P" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="plid" />
 		</finder>
 		<finder name="G_F_C" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="fragmentEntryId" />
 			<finder-column name="classNameId" />
+		</finder>
+		<finder name="G_F_P" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="fragmentEntryId" />
+			<finder-column name="plid" />
+		</finder>
+		<finder name="G_S_P" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="segmentsExperienceId" />
+			<finder-column name="plid" />
 		</finder>
 		<finder name="G_C_C" return-type="Collection">
 			<finder-column name="groupId" />
@@ -211,18 +315,28 @@
 			<finder-column name="classNameId" />
 			<finder-column name="classPK" />
 		</finder>
+		<finder name="G_S_C_C" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="segmentsExperienceId" />
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+		</finder>
 
 		<!-- References -->
 
+		<reference entity="FragmentCollection" package-path="com.liferay.fragment" />
 		<reference entity="FragmentEntry" package-path="com.liferay.fragment" />
 		<reference entity="User" package-path="com.liferay.portal" />
 	</entity>
 	<exceptions>
 		<exception>DuplicateFragmentCollection</exception>
 		<exception>DuplicateFragmentCollectionKey</exception>
+		<exception>DuplicateFragmentCompositionKey</exception>
 		<exception>DuplicateFragmentEntry</exception>
 		<exception>DuplicateFragmentEntryKey</exception>
 		<exception>FragmentCollectionName</exception>
+		<exception>FragmentCompositionName</exception>
+		<exception>FragmentEntryConfiguration</exception>
 		<exception>FragmentEntryContent</exception>
 		<exception>FragmentEntryName</exception>
 		<exception>InvalidFile</exception>

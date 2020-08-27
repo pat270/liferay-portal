@@ -1,0 +1,295 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+	<module name="TreeWalker">
+		<property name="tabWidth" value="4" />
+		<module name="ArrayTypeStyleCheck">
+			<property name="description" value="Checks the style of array type definitions." />
+			<property name="documentationLocation" value="config_misc.html#ArrayTypeStyle" />
+		</module>
+		<module name="AvoidNestedBlocksCheck">
+			<property name="description" value="Finds nested blocks (blocks that are used freely in the code)." />
+			<property name="documentationLocation" value="config_blocks.html#AvoidNestedBlocks" />
+		</module>
+		<module name="DefaultComesLastCheck">
+			<property name="description" value="Check that the default is after all the cases in a switch statement." />
+			<property name="documentationLocation" value="config_coding.html#DefaultComesLast" />
+		</module>
+		<module name="LocalFinalVariableNameCheck">
+			<property name="description" value="Checks that local final variable names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#LocalFinalVariableName" />
+			<property name="format" value="^[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Local final variable ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="LocalVariableNameCheck">
+			<property name="description" value="Checks that local, non-final variable names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#LocalVariableName" />
+			<property name="format" value="^[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Local non-final variable ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="MemberNameCheck">
+			<property name="applyToPackage" value="false" />
+			<property name="applyToPrivate" value="false" />
+			<property name="description" value="Checks that instance variable names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#MemberName" />
+			<property name="format" value="^[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Protected or public non-static field ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="MemberNameCheck">
+			<property name="applyToProtected" value="false" />
+			<property name="applyToPublic" value="false" />
+			<property name="description" value="Checks that instance variable names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#MemberName" />
+			<property name="format" value="^_[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Private non-static field ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="MethodNameCheck">
+			<property name="applyToPackage" value="false" />
+			<property name="applyToPrivate" value="false" />
+			<property name="description" value="Checks that method names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#MethodName" />
+			<property name="format" value="^[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Protected or public method ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="MethodNameCheck">
+			<property name="applyToProtected" value="false" />
+			<property name="applyToPublic" value="false" />
+			<property name="description" value="Checks that method names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#MethodName" />
+			<property name="format" value="^_[a-z0-9][_a-zA-Z0-9]*$|readObject|writeObject" />
+			<message key="name.invalidPattern" value="Private method ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="MethodParamPadCheck">
+			<property name="description" value="Checks the padding between the identifier of a method definition, constructor definition, method call, or constructor invocation; and the left parenthesis of the parameter list." />
+			<property name="documentationLocation" value="config_whitespace.html#MethodParamPad" />
+		</module>
+		<module name="ModifierOrderCheck">
+			<property name="description" value="Checks that the order of modifiers conforms to the suggestions in the Java Language specification, § 8.1.1, 8.3.1, 8.4.3 and 9.4." />
+			<property name="documentationLocation" value="config_modifier.html#ModifierOrder" />
+		</module>
+		<module name="MultipleVariableDeclarationsCheck">
+			<property name="description" value="Checks that each variable declaration is in its own statement and on its own line." />
+			<property name="documentationLocation" value="config_coding.html#MultipleVariableDeclarations" />
+		</module>
+		<module name="NoLineWrapCheck">
+			<property name="description" value="Checks that chosen statements are not line-wrapped." />
+			<property name="documentationLocation" value="config_whitespace.html#NoLineWrap" />
+		</module>
+		<module name="NoWhitespaceAfterCheck">
+			<property name="description" value="Checks that there is no whitespace after a token." />
+			<property name="documentationLocation" value="config_whitespace.html#NoWhitespaceAfter" />
+			<property name="tokens" value="ARRAY_DECLARATOR, ARRAY_INIT, BNOT, DEC, DOT, INC, INDEX_OP, LNOT, TYPECAST, UNARY_MINUS, UNARY_PLUS" />
+		</module>
+		<module name="NoWhitespaceBeforeCheck">
+			<property name="description" value="Checks that there is no whitespace before a token." />
+			<property name="documentationLocation" value="config_whitespace.html#NoWhitespaceBefore" />
+		</module>
+		<module name="OneStatementPerLineCheck">
+			<property name="description" value="Checks that there is only one statement per line." />
+			<property name="documentationLocation" value="config_coding.html#OneStatementPerLine" />
+		</module>
+		<module name="OperatorWrapCheck">
+			<property name="description" value="Checks the policy on how to wrap lines on operators." />
+			<property name="documentationLocation" value="config_whitespace.html#OperatorWrap" />
+			<property name="option" value="eol" />
+			<property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND" />
+		</module>
+		<module name="ParameterNameCheck">
+			<property name="description" value="Checks that method parameter names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#ParameterName" />
+			<message key="name.invalidPattern" value="Parameter ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="StaticVariableNameCheck">
+			<property name="applyToPackage" value="false" />
+			<property name="applyToPrivate" value="false" />
+			<property name="description" value="Checks that static, non-final variable names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#StaticVariableName" />
+			<property name="format" value="^[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Protected or public static non-final field ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="StaticVariableNameCheck">
+			<property name="applyToProtected" value="false" />
+			<property name="applyToPublic" value="false" />
+			<property name="description" value="Checks that static, non-final variable names conform to a specified pattern." />
+			<property name="documentationLocation" value="config_naming.html#StaticVariableName" />
+			<property name="format" value="^_[a-z0-9][_a-zA-Z0-9]*$" />
+			<message key="name.invalidPattern" value="Private static non-final field ''{0}'' must match pattern ''{1}''" />
+		</module>
+		<module name="StringLiteralEqualityCheck">
+			<property name="description" value="Checks that string literals are not used with == or !=." />
+			<property name="documentationLocation" value="config_coding.html#StringLiteralEquality" />
+		</module>
+		<module name="UnnecessaryParenthesesCheck">
+			<property name="description" value="Checks if unnecessary parentheses are used in a statement or expression." />
+			<property name="documentationLocation" value="config_coding.html#UnnecessaryParentheses" />
+		</module>
+		<module name="WhitespaceAfterCheck">
+			<property name="description" value="Checks that a token is followed by whitespace, with the exception that it does not check for whitespace after the semicolon of an empty for iterator." />
+			<property name="documentationLocation" value="config_whitespace.html#WhitespaceAfter" />
+			<property name="tokens" value="COMMA, SEMI" />
+		</module>
+		<module name="WhitespaceAroundCheck">
+			<property name="allowEmptyTypes" value="true" />
+			<property name="description" value="Checks that a token is surrounded by whitespace." />
+			<property name="documentationLocation" value="config_whitespace.html#WhitespaceAround" />
+		</module>
+
+		<!-- Custom checks -->
+
+		<module name="com.liferay.source.formatter.checkstyle.checks.AppendCheck">
+			<message key="end.character.invalid" value="When appending multiple literal strings, only the last literal string can end with ''{0}''" />
+			<message key="line.break.incorrect" value="Avoid using line break when appending multiple literal strings" />
+			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="plus.incorrect" value="Incorrect use of ''+'' inside StringBundler" />
+			<message key="start.character.invalid" value="When appending multiple literal strings, only the first literal string can start with ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.CamelCaseNameCheck">
+			<property name="enabled" value="false" />
+			<message key="following.underscore.incorrect" value="''{0}'' should not be followed by ''_'' for variable ''{1}''" />
+			<message key="following.uppercase.incorrect" value="''{0}'' should not be followed by an uppercase character for {1} ''{2}''" />
+			<message key="preceding.underscore.required" value="''{0}'' should be preceded by ''_'' for variable ''{1}''" />
+			<message key="starting.uppercase.required" value="''{0}'' should start with an uppercase character for {1} ''{2}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ChainingCheck">
+			<property name="allowConcatChain" value="true" />
+			<property name="allowedClassNames" value="ActionSemantics,.*[Bb]uilder(s)?,Assertions,Awaitility,.*Consumer,CreationMenuBuilder,DSL.+FactoryUtil,EasyMock,Either,Filter,FormNavigatorEntryConfigurationRetriever,GenericUtil,InfoFieldSet,InfoForm,InfoFormValues,JSONUtil,List,MemberMatcher,Option,Optional,Response,RestAssured,(Double|Int|Long)?Stream,.+Table,Try,Validation" />
+			<property name="allowedMethodNames" value="bind,builder,newBuilder" />
+			<property name="allowedMockitoMethodNames" value="doAnswer,doCallRealMethod,doNothing,doReturn,doThrow,field,replace,stub,verify,verifyPrivate,when" />
+			<property name="allowedVariableTypeNames" value="^(?!String).+Builder(Impl)?,Column,CompletableFuture,.*Consumer,ContactsEngineClient,Dataset,Description,ExecuteActionRequest,(FormsEventDataset)?Filter,.*Function[0-9]*,HttpSecurity,InOrder,JSONArray,JSONObject,JsonPath,.*Mapper,NestedRepresentor.*,Optional,Predicate,RequestSpecification,Response,SoyContext,.+Step,(Double|Int|Long)?Stream,Try,UpdateFieldPropertyRequest,ValidatableResponse,WebTarget" />
+			<property name="applyToTypeCast" value="true" />
+			<property name="category" value="Styling" />
+			<property name="description" value="Checks that chaining is only applied on certain types and methods" />
+			<message key="chaining.allowed" value="Chaining is allowed on ''{0}''" />
+			<message key="chaining.avoid.method" value="Avoid chaining on method ''{0}''" />
+			<message key="chaining.avoid.new.instance" value="Avoid chaining on new class instantiation" />
+			<message key="chaining.avoid.parentheses" value="Avoid chaining on expressions with parentheses" />
+			<message key="chaining.avoid.type.cast" value="Avoid chaining on Type Cast" />
+			<message key="chaining.required" value="Chaining on ''{0}'' is preferred" />
+			<message key="concat.avoid.too.many" value="Avoid chaining on method 'concat'. Use StringBundler when there are more than 3 parts" />
+			<message key="response.unsorted" value="Method calls between ''Response.status'' and ''Response.build'' should be sorted" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ConcatCheck">
+			<message key="end.character.invalid" value="When concatenating multiple literal strings, only the last literal string can end with ''{0}''" />
+			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="plus.incorrect" value="Do not use ''+'' inside ''StringBundler.concat''" />
+			<message key="start.character.invalid" value="When concatenating multiple literal strings, only the first literal string can start with ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ConstantNameCheck">
+			<property name="camelCaseTypeNames" value="AggregateTestRule,CodeCoverageAssertor,LiferayIntegrationTestRule,Log,Pattern,TestRule" />
+			<property name="immutableFieldTypes" value="boolean,byte,char,double,float,int,long,short,Boolean,Byte,Character,Class,Double,Float,Int,Long,Number,Short,String" />
+			<message key="name.invalidConstantPattern" value="{0} constant ''{1}'' must match pattern ''{2}''" />
+			<message key="name.invalidConstantTypePattern" value="{0} constant ''{1}'' of type ''{2}'' must match pattern ''{3}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ContractionsCheck">
+			<message key="contraction.avoid" value="Avoid using contraction ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ExceptionMessageCheck">
+			<message key="message.incorrect" value="Incorrect exception message" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.FactoryCheck">
+			<message key="factory.use" value="Use ''{0}'' to create new instance of ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.GenericTypeCheck">
+			<property name="enabled" value="false" />
+			<property name="populateTypeNames" value="false" />
+			<message key="generic.type.parameterize" value="Parameterize the generic {0} for ''{1}'" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.InstanceofOrderCheck">
+			<message key="instanceof.order" value="''{0}'' should come before ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.JSONNamingCheck">
+			<message key="variable.name.reserved" value="{0} name ending with ''{1}'' is reserved for object ''{2}''" />
+			<message key="variable.rename" value="Rename {0} ''{1}'' to ''{2}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.JSONUtilCheck">
+			<message key="json.util.put.all.use" value="Use ''JSONUtil.putAll'' instead of chaining on ''JSONUtil.put''" />
+			<message key="json.util.put.use" value="Combine calls ''{0}'' ({1}) and ''{2}'' ({3}) into single call ''{4}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LambdaCheck">
+			<message key="lambda.simplify" value="Simplify lambda statement with single statement" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LineBreakAfterCommaCheck">
+			<message key="line.break.incorrect" value="There should be a line break after ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LineBreakBeforeGenericStartCheck">
+			<message key="line.break.incorrect" value="There should be a line break after ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LineEndCharacterCheck">
+			<message key="end.line.character.incorrect" value="Line should not end with ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ListUtilCheck">
+			<message key="array.unneeded" value="Pass arguments directly to ''ListUtil.fromArray'' instead of passing new array" />
+			<message key="list.util.use" value="Use ''ListUtil.fromArray'' to simplify code" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.LiteralStringEqualsCheck">
+			<message key="objects.equals.use.1" value="Use ''Objects.equals'' instead of calling ''equals'' on a literal String" />
+			<message key="objects.equals.use.2" value="Either use ''{0}'' or use ''Objects.equals'' if ''{1}'' can have a ''null'' value, instead of calling ''equals'' on a literal String" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.MapBuilderCheck">
+			<property name="enabled" value="false" />
+			<message key="builder.include" value="Include method call ''{0}'' ({1}) in ''{2}'' ({3})" />
+			<message key="builder.use" value="Use ''{0}'' ({1}, {2})" />
+			<message key="builder.use.instead" value="Use ''{0}'' instead of new instance of ''{1}''" />
+			<message key="null.value.incorrect" value="Null values are not allowed in ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.MapIterationCheck">
+			<message key="entry.set.use" value="Use Map.entrySet() to retrieve values" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.MethodNamingCheck">
+			<message key="method.rename" value="Rename method ''{0}'' to ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.MissingDiamondOperatorCheck">
+			<property name="enforceDiamondOperatorClassNames" value="" />
+			<message key="diamond.operator.missing" value="Missing diamond operator ''&lt;&gt;'' for type ''{0}''" />
+			<message key="generic.types.missing" value="Missing generic types ''{0}'' for type ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.MissingParenthesesCheck">
+			<message key="parentheses.missing.1" value="Missing parentheses between the ''{0}'' operator and the ''{1}'' operator" />
+			<message key="parentheses.missing.2" value="Missing parentheses around the {0} hand side argument of the ''{1}'' operator" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.NestedIfStatementCheck">
+			<message key="if.statements.combine" value="Combine nested if-statements" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.NumberSuffixCheck">
+			<message key="suffix.incorrect" value="Use uppercase ''{0}'' as suffix for the type ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.OperatorOperandCheck">
+			<property name="enabled" value="false" />
+			<message key="readability.improve" value="Create a new variable for the {0} hand side operand of the ''{1}'' operator for better readability" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ParsePrimitiveTypeCheck">
+			<message key="getter.util.method.use" value="Use ''GetterUtil.{0}'' or properly catch ''NumberFormatException'' when calling ''{1}.{2}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.PersistenceCallCheck">
+			<message key="persistence.call.illegal" value="Illegal call to class ''{0}'', see LPS-68923" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.PlusStatementCheck">
+			<message key="end.character.invalid" value="When concatenating multiple literal strings using '+', only the last literal string can end with ''{0}''" />
+			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="start.character.invalid" value="When concatenating multiple literal strings using '+', only the first literal string can start with ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.SemiColonCheck">
+			<message key="semi.colon.unnecessary" value="Unnecessary semi colon" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.StringBundlerNamingCheck">
+			<message key="variable.name.incorrect" value="StringBundler {0} ''{1}'' should end with either ''sb'' or ''SB''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.StringCastCheck">
+			<message key="string.cast.unneeded" value="No need to call ''.toString()'' on type String" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.TernaryOperatorCheck">
+			<message key="ternary.operator.avoid" value="Use if-else-statement instead of ternary conditional operator for better readability" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.UnnecessaryTypeCastCheck">
+			<message key="type.cast.unnecessary" value="No need to apply Type Cast to method ''{0}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.ValidatorIsNullCheck">
+			<message key="method.invalidName" value="Avoid using method ''{0}''" />
+			<message key="method.reserved" value="Method ''{0}'' should only be used for type ''Long'', ''Serializable'' or ''String''" />
+		</module>
+	</module>
+</module>

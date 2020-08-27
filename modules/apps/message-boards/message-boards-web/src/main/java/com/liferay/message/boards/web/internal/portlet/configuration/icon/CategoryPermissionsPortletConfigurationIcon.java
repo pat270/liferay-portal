@@ -78,7 +78,7 @@ public class CategoryPermissionsPortletConfigurationIcon
 				resourcePrimKey, LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return url;
@@ -104,15 +104,14 @@ public class CategoryPermissionsPortletConfigurationIcon
 			themeDisplay.getPermissionChecker();
 
 		try {
-			MBCategory category = ActionUtil.getCategory(portletRequest);
-
 			if (!_categoryModelResourcePermission.contains(
-					permissionChecker, category, ActionKeys.PERMISSIONS)) {
+					permissionChecker, ActionUtil.getCategory(portletRequest),
+					ActionKeys.PERMISSIONS)) {
 
 				return false;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 

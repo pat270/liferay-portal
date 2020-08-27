@@ -47,44 +47,6 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class AsyncAdvice extends ChainableMethodAdvice {
 
-	@Activate
-	@Modified
-	public void activate(Map<String, String> properties) {
-		_asyncAdviceConfiguration = ConfigurableUtil.createConfigurable(
-			AsyncAdviceConfiguration.class, properties);
-
-		String[] targetClassNamesToDestinationNames =
-			_asyncAdviceConfiguration.targetClassNamesToDestinationNames();
-
-		if (targetClassNamesToDestinationNames != null) {
-			Map<String, String> destinationNames = new HashMap<>();
-
-			for (String targetClassNameToDestinationName :
-					targetClassNamesToDestinationNames) {
-
-				int index = targetClassNameToDestinationName.indexOf(
-					CharPool.EQUAL);
-
-				if (index <= 0) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"Invalid target class name to destination name \"" +
-								targetClassNameToDestinationName + "\"");
-					}
-				}
-				else {
-					destinationNames.put(
-						targetClassNameToDestinationName.substring(0, index),
-						targetClassNameToDestinationName.substring(index + 1));
-				}
-			}
-
-			if (!destinationNames.isEmpty()) {
-				_destinationNames = destinationNames;
-			}
-		}
-	}
-
 	@Override
 	public Object createMethodContext(
 		Class<?> targetClass, Method method,
@@ -117,6 +79,46 @@ public class AsyncAdvice extends ChainableMethodAdvice {
 		}
 
 		return destinationName;
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, String> properties) {
+		_asyncAdviceConfiguration = ConfigurableUtil.createConfigurable(
+			AsyncAdviceConfiguration.class, properties);
+
+		String[] targetClassNamesToDestinationNames =
+			_asyncAdviceConfiguration.targetClassNamesToDestinationNames();
+
+		if (targetClassNamesToDestinationNames == null) {
+			return;
+		}
+
+		Map<String, String> destinationNames = new HashMap<>();
+
+		for (String targetClassNameToDestinationName :
+				targetClassNamesToDestinationNames) {
+
+			int index = targetClassNameToDestinationName.indexOf(
+				CharPool.EQUAL);
+
+			if (index <= 0) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Invalid target class name to destination name \"" +
+							targetClassNameToDestinationName + "\"");
+				}
+			}
+			else {
+				destinationNames.put(
+					targetClassNameToDestinationName.substring(0, index),
+					targetClassNameToDestinationName.substring(index + 1));
+			}
+		}
+
+		if (!destinationNames.isEmpty()) {
+			_destinationNames = destinationNames;
+		}
 	}
 
 	@Override

@@ -16,9 +16,9 @@ package com.liferay.users.admin.web.internal.portlet;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -55,8 +55,7 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + UsersAdminPortletKeys.MY_ORGANIZATIONS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -75,17 +74,28 @@ public class MyOrganizationsPortlet extends UsersAdminPortlet {
 					renderRequest, "organizationId");
 
 				if (organizationId == 0) {
-					PortalPermissionUtil.check(
-						PermissionThreadLocal.getPermissionChecker(),
-						ActionKeys.ADD_ORGANIZATION);
+					long parentOrganizationId = ParamUtil.getLong(
+						renderRequest,
+						"parentOrganizationSearchContainerPrimaryKeys");
+
+					if (parentOrganizationId > 0) {
+						OrganizationPermissionUtil.check(
+							PermissionThreadLocal.getPermissionChecker(),
+							parentOrganizationId, ActionKeys.ADD_ORGANIZATION);
+					}
+					else {
+						PortalPermissionUtil.check(
+							PermissionThreadLocal.getPermissionChecker(),
+							ActionKeys.ADD_ORGANIZATION);
+					}
 				}
 			}
-			catch (PrincipalException pe) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(exception, exception);
 				}
 
-				SessionErrors.add(renderRequest, pe.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				path = "/error.jsp";
 			}

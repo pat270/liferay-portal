@@ -104,7 +104,7 @@ public class CalendarLocalServiceImpl extends CalendarLocalServiceBaseImpl {
 		calendar.setEnableComments(enableComments);
 		calendar.setEnableRatings(enableRatings);
 
-		calendarPersistence.update(calendar);
+		calendar = calendarPersistence.update(calendar);
 
 		// Resources
 
@@ -228,12 +228,12 @@ public class CalendarLocalServiceImpl extends CalendarLocalServiceBaseImpl {
 
 			return true;
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsge, nsge);
+				_log.debug(noSuchGroupException, noSuchGroupException);
 			}
 
 			return false;
@@ -307,7 +307,7 @@ public class CalendarLocalServiceImpl extends CalendarLocalServiceBaseImpl {
 
 		calendar.setDefaultCalendar(defaultCalendar);
 
-		calendarPersistence.update(calendar);
+		calendar = calendarPersistence.update(calendar);
 
 		updateDefaultCalendar(calendar);
 	}
@@ -355,7 +355,7 @@ public class CalendarLocalServiceImpl extends CalendarLocalServiceBaseImpl {
 		calendar.setEnableComments(enableComments);
 		calendar.setEnableRatings(enableRatings);
 
-		calendarPersistence.update(calendar);
+		calendar = calendarPersistence.update(calendar);
 
 		// Calendar
 
@@ -378,9 +378,7 @@ public class CalendarLocalServiceImpl extends CalendarLocalServiceBaseImpl {
 		calendar.setModifiedDate(serviceContext.getModifiedDate(null));
 		calendar.setColor(color);
 
-		calendarPersistence.update(calendar);
-
-		return calendar;
+		return calendarPersistence.update(calendar);
 	}
 
 	protected void updateDefaultCalendar(Calendar calendar)
@@ -405,11 +403,9 @@ public class CalendarLocalServiceImpl extends CalendarLocalServiceBaseImpl {
 	protected void validate(Map<Locale, String> nameMap)
 		throws PortalException {
 
-		Locale locale = LocaleUtil.getDefault();
+		Locale locale = LocaleUtil.getSiteDefault();
 
-		String name = nameMap.get(locale);
-
-		if (Validator.isNull(name)) {
+		if (nameMap.isEmpty() || Validator.isNull(nameMap.get(locale))) {
 			throw new CalendarNameException();
 		}
 	}

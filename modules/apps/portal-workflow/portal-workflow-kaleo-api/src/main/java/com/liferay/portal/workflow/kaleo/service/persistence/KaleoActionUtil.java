@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -41,7 +40,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see KaleoActionPersistence
  * @generated
  */
-@ProviderType
 public class KaleoActionUtil {
 
 	/*
@@ -139,7 +137,7 @@ public class KaleoActionUtil {
 	 * Returns a range of all the kaleo actions where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -157,7 +155,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -178,23 +176,23 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
 	 * @param start the lower bound of the range of kaleo actions
 	 * @param end the upper bound of the range of kaleo actions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo actions
 	 */
 	public static List<KaleoAction> findByCompanyId(
 		long companyId, int start, int end,
 		OrderByComparator<KaleoAction> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByCompanyId(
-			companyId, start, end, orderByComparator, retrieveFromCache);
+			companyId, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -314,7 +312,7 @@ public class KaleoActionUtil {
 	 * Returns a range of all the kaleo actions where kaleoDefinitionVersionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoDefinitionVersionId the kaleo definition version ID
@@ -333,7 +331,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where kaleoDefinitionVersionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoDefinitionVersionId the kaleo definition version ID
@@ -354,24 +352,24 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where kaleoDefinitionVersionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoDefinitionVersionId the kaleo definition version ID
 	 * @param start the lower bound of the range of kaleo actions
 	 * @param end the upper bound of the range of kaleo actions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo actions
 	 */
 	public static List<KaleoAction> findByKaleoDefinitionVersionId(
 		long kaleoDefinitionVersionId, int start, int end,
 		OrderByComparator<KaleoAction> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId, start, end, orderByComparator,
-			retrieveFromCache);
+			useFinderCache);
 	}
 
 	/**
@@ -501,7 +499,7 @@ public class KaleoActionUtil {
 	 * Returns a range of all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -521,7 +519,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -543,7 +541,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -551,17 +549,17 @@ public class KaleoActionUtil {
 	 * @param start the lower bound of the range of kaleo actions
 	 * @param end the upper bound of the range of kaleo actions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo actions
 	 */
 	public static List<KaleoAction> findByKCN_KCPK(
 		String kaleoClassName, long kaleoClassPK, int start, int end,
 		OrderByComparator<KaleoAction> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByKCN_KCPK(
 			kaleoClassName, kaleoClassPK, start, end, orderByComparator,
-			retrieveFromCache);
+			useFinderCache);
 	}
 
 	/**
@@ -680,6 +678,218 @@ public class KaleoActionUtil {
 	}
 
 	/**
+	 * Returns all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @return the matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK(
+		long companyId, String kaleoClassName, long kaleoClassPK) {
+
+		return getPersistence().findByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK);
+	}
+
+	/**
+	 * Returns a range of all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param start the lower bound of the range of kaleo actions
+	 * @param end the upper bound of the range of kaleo actions (not inclusive)
+	 * @return the range of matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK(
+		long companyId, String kaleoClassName, long kaleoClassPK, int start,
+		int end) {
+
+		return getPersistence().findByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param start the lower bound of the range of kaleo actions
+	 * @param end the upper bound of the range of kaleo actions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK(
+		long companyId, String kaleoClassName, long kaleoClassPK, int start,
+		int end, OrderByComparator<KaleoAction> orderByComparator) {
+
+		return getPersistence().findByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param start the lower bound of the range of kaleo actions
+	 * @param end the upper bound of the range of kaleo actions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK(
+		long companyId, String kaleoClassName, long kaleoClassPK, int start,
+		int end, OrderByComparator<KaleoAction> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK, start, end,
+			orderByComparator, useFinderCache);
+	}
+
+	/**
+	 * Returns the first kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching kaleo action
+	 * @throws NoSuchActionException if a matching kaleo action could not be found
+	 */
+	public static KaleoAction findByC_KCN_KCPK_First(
+			long companyId, String kaleoClassName, long kaleoClassPK,
+			OrderByComparator<KaleoAction> orderByComparator)
+		throws com.liferay.portal.workflow.kaleo.exception.
+			NoSuchActionException {
+
+		return getPersistence().findByC_KCN_KCPK_First(
+			companyId, kaleoClassName, kaleoClassPK, orderByComparator);
+	}
+
+	/**
+	 * Returns the first kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching kaleo action, or <code>null</code> if a matching kaleo action could not be found
+	 */
+	public static KaleoAction fetchByC_KCN_KCPK_First(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		OrderByComparator<KaleoAction> orderByComparator) {
+
+		return getPersistence().fetchByC_KCN_KCPK_First(
+			companyId, kaleoClassName, kaleoClassPK, orderByComparator);
+	}
+
+	/**
+	 * Returns the last kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching kaleo action
+	 * @throws NoSuchActionException if a matching kaleo action could not be found
+	 */
+	public static KaleoAction findByC_KCN_KCPK_Last(
+			long companyId, String kaleoClassName, long kaleoClassPK,
+			OrderByComparator<KaleoAction> orderByComparator)
+		throws com.liferay.portal.workflow.kaleo.exception.
+			NoSuchActionException {
+
+		return getPersistence().findByC_KCN_KCPK_Last(
+			companyId, kaleoClassName, kaleoClassPK, orderByComparator);
+	}
+
+	/**
+	 * Returns the last kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching kaleo action, or <code>null</code> if a matching kaleo action could not be found
+	 */
+	public static KaleoAction fetchByC_KCN_KCPK_Last(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		OrderByComparator<KaleoAction> orderByComparator) {
+
+		return getPersistence().fetchByC_KCN_KCPK_Last(
+			companyId, kaleoClassName, kaleoClassPK, orderByComparator);
+	}
+
+	/**
+	 * Returns the kaleo actions before and after the current kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param kaleoActionId the primary key of the current kaleo action
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next kaleo action
+	 * @throws NoSuchActionException if a kaleo action with the primary key could not be found
+	 */
+	public static KaleoAction[] findByC_KCN_KCPK_PrevAndNext(
+			long kaleoActionId, long companyId, String kaleoClassName,
+			long kaleoClassPK, OrderByComparator<KaleoAction> orderByComparator)
+		throws com.liferay.portal.workflow.kaleo.exception.
+			NoSuchActionException {
+
+		return getPersistence().findByC_KCN_KCPK_PrevAndNext(
+			kaleoActionId, companyId, kaleoClassName, kaleoClassPK,
+			orderByComparator);
+	}
+
+	/**
+	 * Removes all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; from the database.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 */
+	public static void removeByC_KCN_KCPK(
+		long companyId, String kaleoClassName, long kaleoClassPK) {
+
+		getPersistence().removeByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK);
+	}
+
+	/**
+	 * Returns the number of kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @return the number of matching kaleo actions
+	 */
+	public static int countByC_KCN_KCPK(
+		long companyId, String kaleoClassName, long kaleoClassPK) {
+
+		return getPersistence().countByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK);
+	}
+
+	/**
 	 * Returns all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -698,7 +908,7 @@ public class KaleoActionUtil {
 	 * Returns a range of all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -720,7 +930,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -744,7 +954,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions where kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -753,17 +963,17 @@ public class KaleoActionUtil {
 	 * @param start the lower bound of the range of kaleo actions
 	 * @param end the upper bound of the range of kaleo actions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo actions
 	 */
 	public static List<KaleoAction> findByKCN_KCPK_ET(
 		String kaleoClassName, long kaleoClassPK, String executionType,
 		int start, int end, OrderByComparator<KaleoAction> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByKCN_KCPK_ET(
 			kaleoClassName, kaleoClassPK, executionType, start, end,
-			orderByComparator, retrieveFromCache);
+			orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -893,6 +1103,243 @@ public class KaleoActionUtil {
 	}
 
 	/**
+	 * Returns all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @return the matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK_ET(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType) {
+
+		return getPersistence().findByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType);
+	}
+
+	/**
+	 * Returns a range of all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param start the lower bound of the range of kaleo actions
+	 * @param end the upper bound of the range of kaleo actions (not inclusive)
+	 * @return the range of matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK_ET(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType, int start, int end) {
+
+		return getPersistence().findByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param start the lower bound of the range of kaleo actions
+	 * @param end the upper bound of the range of kaleo actions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK_ET(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType, int start, int end,
+		OrderByComparator<KaleoAction> orderByComparator) {
+
+		return getPersistence().findByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param start the lower bound of the range of kaleo actions
+	 * @param end the upper bound of the range of kaleo actions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching kaleo actions
+	 */
+	public static List<KaleoAction> findByC_KCN_KCPK_ET(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType, int start, int end,
+		OrderByComparator<KaleoAction> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType, start, end,
+			orderByComparator, useFinderCache);
+	}
+
+	/**
+	 * Returns the first kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching kaleo action
+	 * @throws NoSuchActionException if a matching kaleo action could not be found
+	 */
+	public static KaleoAction findByC_KCN_KCPK_ET_First(
+			long companyId, String kaleoClassName, long kaleoClassPK,
+			String executionType,
+			OrderByComparator<KaleoAction> orderByComparator)
+		throws com.liferay.portal.workflow.kaleo.exception.
+			NoSuchActionException {
+
+		return getPersistence().findByC_KCN_KCPK_ET_First(
+			companyId, kaleoClassName, kaleoClassPK, executionType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the first kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching kaleo action, or <code>null</code> if a matching kaleo action could not be found
+	 */
+	public static KaleoAction fetchByC_KCN_KCPK_ET_First(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType,
+		OrderByComparator<KaleoAction> orderByComparator) {
+
+		return getPersistence().fetchByC_KCN_KCPK_ET_First(
+			companyId, kaleoClassName, kaleoClassPK, executionType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the last kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching kaleo action
+	 * @throws NoSuchActionException if a matching kaleo action could not be found
+	 */
+	public static KaleoAction findByC_KCN_KCPK_ET_Last(
+			long companyId, String kaleoClassName, long kaleoClassPK,
+			String executionType,
+			OrderByComparator<KaleoAction> orderByComparator)
+		throws com.liferay.portal.workflow.kaleo.exception.
+			NoSuchActionException {
+
+		return getPersistence().findByC_KCN_KCPK_ET_Last(
+			companyId, kaleoClassName, kaleoClassPK, executionType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the last kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching kaleo action, or <code>null</code> if a matching kaleo action could not be found
+	 */
+	public static KaleoAction fetchByC_KCN_KCPK_ET_Last(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType,
+		OrderByComparator<KaleoAction> orderByComparator) {
+
+		return getPersistence().fetchByC_KCN_KCPK_ET_Last(
+			companyId, kaleoClassName, kaleoClassPK, executionType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the kaleo actions before and after the current kaleo action in the ordered set where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param kaleoActionId the primary key of the current kaleo action
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next kaleo action
+	 * @throws NoSuchActionException if a kaleo action with the primary key could not be found
+	 */
+	public static KaleoAction[] findByC_KCN_KCPK_ET_PrevAndNext(
+			long kaleoActionId, long companyId, String kaleoClassName,
+			long kaleoClassPK, String executionType,
+			OrderByComparator<KaleoAction> orderByComparator)
+		throws com.liferay.portal.workflow.kaleo.exception.
+			NoSuchActionException {
+
+		return getPersistence().findByC_KCN_KCPK_ET_PrevAndNext(
+			kaleoActionId, companyId, kaleoClassName, kaleoClassPK,
+			executionType, orderByComparator);
+	}
+
+	/**
+	 * Removes all the kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63; from the database.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 */
+	public static void removeByC_KCN_KCPK_ET(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType) {
+
+		getPersistence().removeByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType);
+	}
+
+	/**
+	 * Returns the number of kaleo actions where companyId = &#63; and kaleoClassName = &#63; and kaleoClassPK = &#63; and executionType = &#63;.
+	 *
+	 * @param companyId the company ID
+	 * @param kaleoClassName the kaleo class name
+	 * @param kaleoClassPK the kaleo class pk
+	 * @param executionType the execution type
+	 * @return the number of matching kaleo actions
+	 */
+	public static int countByC_KCN_KCPK_ET(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType) {
+
+		return getPersistence().countByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType);
+	}
+
+	/**
 	 * Caches the kaleo action in the entity cache if it is enabled.
 	 *
 	 * @param kaleoAction the kaleo action
@@ -975,7 +1422,7 @@ public class KaleoActionUtil {
 	 * Returns a range of all the kaleo actions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo actions
@@ -990,7 +1437,7 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo actions
@@ -1008,21 +1455,21 @@ public class KaleoActionUtil {
 	 * Returns an ordered range of all the kaleo actions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoActionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo actions
 	 * @param end the upper bound of the range of kaleo actions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of kaleo actions
 	 */
 	public static List<KaleoAction> findAll(
 		int start, int end, OrderByComparator<KaleoAction> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findAll(
-			start, end, orderByComparator, retrieveFromCache);
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**

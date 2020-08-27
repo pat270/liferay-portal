@@ -17,7 +17,6 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
 String returnToFullPageURL = ParamUtil.getString(request, "returnToFullPageURL");
 
 Set<String> allPortletModes = selPortlet.getAllPortletModes();
@@ -39,7 +38,7 @@ Set<String> allPortletModes = selPortlet.getAllPortletModes();
 				<liferay-util:param name="tabs1" value="supported-clients" />
 			</liferay-util:include>
 
-			<div class="container-fluid-1280">
+			<clay:container-fluid>
 				<aui:fieldset-group markupView="lexicon">
 
 					<%
@@ -64,7 +63,7 @@ Set<String> allPortletModes = selPortlet.getAllPortletModes();
 					%>
 
 				</aui:fieldset-group>
-			</div>
+			</clay:container-fluid>
 		</div>
 
 		<aui:button-row>

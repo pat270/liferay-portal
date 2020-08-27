@@ -41,11 +41,7 @@ public class PortletQNameImpl implements PortletQName {
 
 	@Override
 	public String getKey(String uri, String localPart) {
-		return uri.concat(
-			_KEY_SEPARATOR
-		).concat(
-			localPart
-		);
+		return StringBundler.concat(uri, _KEY_SEPARATOR, localPart);
 	}
 
 	@Override
@@ -171,9 +167,7 @@ public class PortletQNameImpl implements PortletQName {
 			sb.append(StringPool.UNDERLINE);
 		}
 
-		String namespaceURI = qName.getNamespaceURI();
-
-		if (!Validator.isBlank(namespaceURI)) {
+		if (!Validator.isBlank(qName.getNamespaceURI())) {
 			sb.append(qName.getNamespaceURI());
 			sb.append(StringPool.UNDERLINE);
 		}

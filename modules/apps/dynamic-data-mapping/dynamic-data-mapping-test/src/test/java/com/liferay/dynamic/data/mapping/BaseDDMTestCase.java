@@ -18,13 +18,13 @@ import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldRenderer;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeSettings;
+import com.liferay.dynamic.data.mapping.internal.io.DDMFormJSONDeserializer;
+import com.liferay.dynamic.data.mapping.internal.io.DDMFormJSONSerializer;
 import com.liferay.dynamic.data.mapping.internal.util.DDMImpl;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
 import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.internal.DDMFormJSONDeserializer;
-import com.liferay.dynamic.data.mapping.io.internal.DDMFormJSONSerializer;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayoutColumn;
@@ -51,6 +51,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -498,18 +499,17 @@ public abstract class BaseDDMTestCase extends PowerMockito {
 			_defaultDDMFormFieldType
 		);
 
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put("ddm.form.field.type.icon", "my-icon");
-		properties.put(
-			"ddm.form.field.type.js.class.name", "myJavaScriptClass");
-		properties.put("ddm.form.field.type.js.module", "myJavaScriptModule");
-
 		when(
 			ddmFormFieldTypeServicesTracker.getDDMFormFieldTypeProperties(
 				Matchers.anyString())
 		).thenReturn(
-			properties
+			HashMapBuilder.<String, Object>put(
+				"ddm.form.field.type.icon", "my-icon"
+			).put(
+				"ddm.form.field.type.js.class.name", "myJavaScriptClass"
+			).put(
+				"ddm.form.field.type.js.module", "myJavaScriptModule"
+			).build()
 		);
 
 		return ddmFormFieldTypeServicesTracker;
@@ -519,7 +519,7 @@ public abstract class BaseDDMTestCase extends PowerMockito {
 		try {
 			return DDMStructureLocalServiceUtil.getStructure(structureId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -528,7 +528,7 @@ public abstract class BaseDDMTestCase extends PowerMockito {
 		try {
 			return DDMStructureLocalServiceUtil.getStructureDDMForm(structure);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -537,7 +537,7 @@ public abstract class BaseDDMTestCase extends PowerMockito {
 		try {
 			return DDMTemplateLocalServiceUtil.getTemplate(templateId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -841,18 +841,18 @@ public abstract class BaseDDMTestCase extends PowerMockito {
 	protected void setUpSAXReaderUtil() {
 		SAXReaderUtil saxReaderUtil = new SAXReaderUtil();
 
-		SAXReaderImpl secureSAXReader = new SAXReaderImpl();
+		SAXReaderImpl secureSAXReaderImpl = new SAXReaderImpl();
 
-		secureSAXReader.setSecure(true);
+		secureSAXReaderImpl.setSecure(true);
 
-		saxReaderUtil.setSAXReader(secureSAXReader);
+		saxReaderUtil.setSAXReader(secureSAXReaderImpl);
 
 		UnsecureSAXReaderUtil unsecureSAXReaderUtil =
 			new UnsecureSAXReaderUtil();
 
-		SAXReaderImpl unsecureSAXReader = new SAXReaderImpl();
+		SAXReaderImpl unsecureSAXReaderImpl = new SAXReaderImpl();
 
-		unsecureSAXReaderUtil.setSAXReader(unsecureSAXReader);
+		unsecureSAXReaderUtil.setSAXReader(unsecureSAXReaderImpl);
 	}
 
 	protected void whenLanguageGet(

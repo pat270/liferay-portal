@@ -16,13 +16,13 @@ package com.liferay.site.admin.web.internal.servlet.taglib.clay;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.site.admin.web.internal.constants.SiteAdminConstants;
 import com.liferay.site.admin.web.internal.util.SiteInitializerItem;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -50,40 +50,46 @@ public class SelectSiteInitializerVerticalCard implements VerticalCard {
 
 	@Override
 	public Map<String, String> getData() {
-		long parentGroupId = ParamUtil.getLong(
-			_httpServletRequest, "parentGroupId");
+		return HashMapBuilder.put(
+			"add-site-url",
+			() -> {
+				PortletURL addSiteURL = _renderResponse.createActionURL();
 
-		Map<String, String> data = new HashMap<>();
+				addSiteURL.setParameter(ActionRequest.ACTION_NAME, "addGroup");
 
-		PortletURL addSiteURL = _renderResponse.createActionURL();
+				addSiteURL.setParameter(
+					"mvcPath", "/select_layout_set_prototype_entry.jsp");
 
-		addSiteURL.setParameter(ActionRequest.ACTION_NAME, "addGroup");
+				long parentGroupId = ParamUtil.getLong(
+					_httpServletRequest, "parentGroupId");
 
-		addSiteURL.setParameter(
-			"mvcPath", "/select_layout_set_prototype_entry.jsp");
-		addSiteURL.setParameter("parentGroupId", String.valueOf(parentGroupId));
-		addSiteURL.setParameter("creationType", _siteInitializerItem.getType());
-		addSiteURL.setParameter(
-			"siteInitializerKey", _siteInitializerItem.getSiteInitializerKey());
+				addSiteURL.setParameter(
+					"parentGroupId", String.valueOf(parentGroupId));
 
-		data.put("add-site-url", addSiteURL.toString());
+				addSiteURL.setParameter(
+					"creationType", _siteInitializerItem.getType());
+				addSiteURL.setParameter(
+					"siteInitializerKey",
+					_siteInitializerItem.getSiteInitializerKey());
 
-		String checkboxFieldName = StringPool.BLANK;
+				return addSiteURL.toString();
+			}
+		).put(
+			"checkbox-field-name",
+			() -> {
+				if (Objects.equals(
+						_siteInitializerItem.getType(),
+						SiteAdminConstants.CREATION_TYPE_SITE_TEMPLATE)) {
 
-		if (Objects.equals(
-				_siteInitializerItem.getType(),
-				SiteAdminConstants.CREATION_TYPE_SITE_TEMPLATE)) {
+					return "layoutSetVisibilityPrivate";
+				}
 
-			checkboxFieldName = "layoutSetVisibilityPrivate";
-		}
-
-		data.put("checkbox-field-name", checkboxFieldName);
-
-		data.put(
+				return StringPool.BLANK;
+			}
+		).put(
 			"layout-set-prototype-id",
-			String.valueOf(_siteInitializerItem.getLayoutSetPrototypeId()));
-
-		return data;
+			String.valueOf(_siteInitializerItem.getLayoutSetPrototypeId())
+		).build();
 	}
 
 	@Override

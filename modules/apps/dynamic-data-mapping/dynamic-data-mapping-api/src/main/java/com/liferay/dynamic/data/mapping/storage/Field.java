@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.storage;
 
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -94,16 +95,16 @@ public class Field implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Field)) {
+		if (!(object instanceof Field)) {
 			return false;
 		}
 
-		Field field = (Field)obj;
+		Field field = (Field)object;
 
 		if ((_ddmStructureId == field._ddmStructureId) &&
 			Objects.equals(_name, field._name) &&
@@ -162,9 +163,7 @@ public class Field implements Serializable {
 	}
 
 	public Serializable getValue() {
-		Locale defaultLocale = getDefaultLocale();
-
-		return getValue(defaultLocale);
+		return getValue(getDefaultLocale());
 	}
 
 	public Serializable getValue(Locale locale) {
@@ -187,8 +186,8 @@ public class Field implements Serializable {
 
 			return values.get(0);
 		}
-		catch (Exception e) {
-			_log.error("Unable to extract field value", e);
+		catch (Exception exception) {
+			_log.error("Unable to extract field value", exception);
 		}
 
 		return null;
@@ -229,7 +228,7 @@ public class Field implements Serializable {
 
 			return false;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 	}

@@ -11,7 +11,6 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -33,10 +32,12 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"com.liferay.portlet.display-category=category.hidden",
+		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.instanceable=true",
+		"javax.portlet.display-name=${className}",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
-		"javax.portlet.name=" + ${className}PortletKeys.${className},
+		"javax.portlet.name=" + ${className}PortletKeys.${className.toUpperCase()},
 		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
@@ -61,10 +62,10 @@ public class ${className}Portlet extends MVCPortlet {
 					renderRequest, portletId);
 
 			String className = preferences.getValue(
-				"className", StringPool.BLANK);
+				"className", null);
 
 			long classPK = GetterUtil.getLong(
-				preferences.getValue("classPK", StringPool.BLANK));
+				preferences.getValue("classPK", null));
 
 			if (Validator.isNotNull(className) && (classPK > 0)) {
 				AssetEntry assetEntry = _assetEntryLocalService.getEntry(

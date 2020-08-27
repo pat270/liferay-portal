@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
-<service-builder auto-namespace-tables="false" mvcc-enabled="true" package-path="com.liferay.friendly.url">
+<service-builder auto-namespace-tables="false" change-tracking-enabled="true" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.friendly.url">
 	<namespace>FURL</namespace>
 	<entity local-service="true" name="FriendlyURLEntry" remote-service="false" uuid="true">
 
@@ -39,6 +39,12 @@
 				<finder-column name="classNameId" />
 				<finder-column name="urlTitle" />
 			</finder>
+			<finder name="G_C_C_L" return-type="Collection">
+				<finder-column name="groupId" />
+				<finder-column name="classNameId" />
+				<finder-column name="classPK" />
+				<finder-column name="languageId" />
+			</finder>
 		</localized-entity>
 
 		<!-- Finder methods -->
@@ -54,6 +60,10 @@
 		<!-- PK fields -->
 
 		<column name="friendlyURLEntryMappingId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
 
 		<!-- Other fields -->
 

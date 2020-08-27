@@ -30,13 +30,13 @@ import java.util.Set;
 public class LegacyDataArchivePortalVersion {
 
 	public LegacyDataArchivePortalVersion(
-		LegacyDataArchiveUtil legacyDataArchiveUtil, String portalVersion) {
+		LegacyDataArchiveHelper legacyDataArchiveHelper, String portalVersion) {
 
-		_legacyDataArchiveUtil = legacyDataArchiveUtil;
+		_legacyDataArchiveHelper = legacyDataArchiveHelper;
 		_portalVersion = portalVersion;
 
 		_legacyGitWorkingDirectory =
-			_legacyDataArchiveUtil.getLegacyGitWorkingDirectory();
+			_legacyDataArchiveHelper.getLegacyGitWorkingDirectory();
 
 		_portalVersionDirectory = new File(
 			_legacyGitWorkingDirectory.getWorkingDirectory(), _portalVersion);
@@ -67,8 +67,8 @@ public class LegacyDataArchivePortalVersion {
 		return _legacyDataArchiveGroups;
 	}
 
-	public LegacyDataArchiveUtil getLegacyDataArchiveUtil() {
-		return _legacyDataArchiveUtil;
+	public LegacyDataArchiveHelper getLegacyDataArchiveHelper() {
+		return _legacyDataArchiveHelper;
 	}
 
 	public String getPortalVersion() {
@@ -104,7 +104,7 @@ public class LegacyDataArchivePortalVersion {
 
 	private List<String> _getDatabaseNames() {
 		Properties buildProperties =
-			_legacyDataArchiveUtil.getBuildProperties();
+			_legacyDataArchiveHelper.getBuildProperties();
 
 		String legacyDataArchiveDatabaseNames = buildProperties.getProperty(
 			"legacy.data.archive.database.names");
@@ -155,7 +155,7 @@ public class LegacyDataArchivePortalVersion {
 	private final List<String> _databaseNames;
 	private final LocalGitCommit _latestTestLocalGitCommit;
 	private final List<LegacyDataArchiveGroup> _legacyDataArchiveGroups;
-	private final LegacyDataArchiveUtil _legacyDataArchiveUtil;
+	private final LegacyDataArchiveHelper _legacyDataArchiveHelper;
 	private final GitWorkingDirectory _legacyGitWorkingDirectory;
 	private final String _portalVersion;
 	private final File _portalVersionDirectory;

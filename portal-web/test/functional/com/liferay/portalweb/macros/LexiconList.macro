@@ -1,12 +1,22 @@
 definition {
+
 	macro clickEllipsis {
-		Click(
-			key_listEntry = "${listEntry}",
-			locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
+		if ("${userRole}" == "Guest") {
+			Click(
+				key_listEntry = "${listEntry}",
+				locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
+		}
+		else {
+			Click.waitForMenuToggleJSClick(
+				key_listEntry = "${listEntry}",
+				locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
+		}
 	}
 
 	macro clickEllipsisItem {
-		LexiconList.clickEllipsis(listEntry = "${listEntry}");
+		LexiconList.clickEllipsis(
+			listEntry = "${listEntry}",
+			userRole = "${userRole}");
 
 		MenuItem.clickNoError(menuItem = "${item}");
 	}
@@ -53,4 +63,12 @@ definition {
 			locator1 = "LexiconList#LIST_ENTRY_TITLE",
 			value1 = "${listEntry}");
 	}
+
+	macro viewListEntryTitleLink {
+		AssertTextEquals(
+			key_listEntry = "${listEntry}",
+			locator1 = "LexiconList#LIST_ENTRY_TITLE_LINK",
+			value1 = "${listEntry}");
+	}
+
 }

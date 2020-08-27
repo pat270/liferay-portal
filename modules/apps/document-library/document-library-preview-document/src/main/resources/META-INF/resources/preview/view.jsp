@@ -37,12 +37,13 @@ previewFileURLs[0] = DLURLHelperUtil.getPreviewURL(fileVersion.getFileEntry(), f
 
 String previewFileURL = previewFileURLs[0];
 
-Map<String, Object> context = new HashMap<>();
-
-context.put("baseImageURL", previewFileURL);
-context.put("currentPage", 1);
-context.put("spritemap", themeDisplay.getPathThemeImages() + "/lexicon/icons.svg");
-context.put("totalPages", previewFileCount);
+Map<String, Object> props = HashMapBuilder.<String, Object>put(
+	"baseImageURL", previewFileURL
+).put(
+	"initialPage", 1
+).put(
+	"totalPages", previewFileCount
+).build();
 %>
 
 <liferay-util:html-top
@@ -51,9 +52,9 @@ context.put("totalPages", previewFileCount);
 	<link href="<%= PortalUtil.getStaticResourceURL(request, application.getContextPath() + "/preview/css/main.css") %>" rel="stylesheet" type="text/css" />
 </liferay-util:html-top>
 
-<soy:component-renderer
-	componentId='<%= renderResponse.getNamespace() + randomNamespace + "previewDocument" %>'
-	context="<%= context %>"
-	module="preview/js/DocumentPreviewer.es"
-	templateNamespace="com.liferay.document.library.preview.DocumentPreviewer.render"
-/>
+<div id="<portlet:namespace /><%= randomNamespace %>previewDocument">
+	<react:component
+		module="preview/js/DocumentPreviewer.es"
+		props="<%= props %>"
+	/>
+</div>

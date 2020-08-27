@@ -15,11 +15,11 @@
 package com.liferay.asset.list.web.internal.portlet.action;
 
 import com.liferay.asset.kernel.exception.DuplicateQueryRuleException;
-import com.liferay.asset.kernel.model.AssetQueryRule;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.asset.list.constants.AssetListPortletKeys;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryService;
+import com.liferay.asset.publisher.util.AssetQueryRule;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -38,6 +38,9 @@ import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+
+import org.apache.commons.lang.text.StrMatcher;
+import org.apache.commons.lang.text.StrTokenizer;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -75,28 +78,32 @@ public class UpdateAssetListEntryDynamicMVCActionCommand
 			actionRequest, "segmentsEntryId");
 
 		try {
-			UnicodeProperties properties = new UnicodeProperties(true);
+			UnicodeProperties unicodeProperties = new UnicodeProperties(true);
 
-			properties.fastLoad(
+			unicodeProperties.fastLoad(
 				assetListEntry.getTypeSettings(segmentsEntryId));
 
-			updateQueryLogic(actionRequest, properties);
+			updateQueryLogic(actionRequest, unicodeProperties);
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				PropertiesParamUtil.getProperties(
 					actionRequest, "TypeSettingsProperties--");
 
-			properties.putAll(typeSettingsProperties);
+			unicodeProperties.putAll(typeSettingsUnicodeProperties);
 
 			_assetListEntryService.updateAssetListEntryTypeSettings(
-				assetListEntryId, segmentsEntryId, properties.toString());
+				assetListEntryId, segmentsEntryId,
+				unicodeProperties.toString());
 		}
-		catch (DuplicateQueryRuleException dqre) {
+		catch (DuplicateQueryRuleException duplicateQueryRuleException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(dqre, dqre);
+				_log.debug(
+					duplicateQueryRuleException, duplicateQueryRuleException);
 			}
 
-			SessionErrors.add(actionRequest, dqre.getClass(), dqre);
+			SessionErrors.add(
+				actionRequest, duplicateQueryRuleException.getClass(),
+				duplicateQueryRuleException);
 		}
 	}
 
@@ -116,6 +123,16 @@ public class UpdateAssetListEntryDynamicMVCActionCommand
 			values = ParamUtil.getStringValues(
 				actionRequest, "queryTagNames" + index);
 		}
+		else if (name.equals("keywords")) {
+			StrTokenizer strTokenizer = new StrTokenizer(
+				ParamUtil.getString(actionRequest, "keywords" + index));
+
+			strTokenizer.setQuoteMatcher(StrMatcher.quoteMatcher());
+
+			List<String> valuesList = (List<String>)strTokenizer.getTokenList();
+
+			values = valuesList.toArray(new String[0]);
+		}
 		else {
 			values = ParamUtil.getStringValues(
 				actionRequest, "queryCategoryIds" + index);
@@ -125,7 +142,7 @@ public class UpdateAssetListEntryDynamicMVCActionCommand
 	}
 
 	protected void updateQueryLogic(
-			ActionRequest actionRequest, UnicodeProperties properties)
+			ActionRequest actionRequest, UnicodeProperties unicodeProperties)
 		throws Exception {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
@@ -149,13 +166,13 @@ public class UpdateAssetListEntryDynamicMVCActionCommand
 
 			queryRules.add(queryRule);
 
-			properties.put(
+			unicodeProperties.put(
 				"queryContains" + i, String.valueOf(queryRule.isContains()));
-			properties.put(
+			unicodeProperties.put(
 				"queryAndOperator" + i,
 				String.valueOf(queryRule.isAndOperator()));
-			properties.put("queryName" + i, queryRule.getName());
-			properties.put(
+			unicodeProperties.put("queryName" + i, queryRule.getName());
+			unicodeProperties.put(
 				"queryValues" + i, StringUtil.merge(queryRule.getValues()));
 
 			i++;
@@ -163,17 +180,17 @@ public class UpdateAssetListEntryDynamicMVCActionCommand
 
 		// Clear previous preferences that are now blank
 
-		String value = properties.getProperty("queryValues" + i);
+		String value = unicodeProperties.getProperty("queryValues" + i);
 
 		while (Validator.isNotNull(value)) {
-			properties.remove("queryContains" + i);
-			properties.remove("queryAndOperator" + i);
-			properties.remove("queryName" + i);
-			properties.remove("queryValues" + i);
+			unicodeProperties.remove("queryContains" + i);
+			unicodeProperties.remove("queryAndOperator" + i);
+			unicodeProperties.remove("queryName" + i);
+			unicodeProperties.remove("queryValues" + i);
 
 			i++;
 
-			value = properties.getProperty("queryValues" + i);
+			value = unicodeProperties.getProperty("queryValues" + i);
 		}
 	}
 

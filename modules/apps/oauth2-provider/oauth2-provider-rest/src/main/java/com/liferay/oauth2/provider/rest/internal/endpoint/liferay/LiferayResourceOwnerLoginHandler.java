@@ -68,8 +68,8 @@ public class LiferayResourceOwnerLoginHandler
 
 			return userSubject;
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return null;
 		}
@@ -78,9 +78,8 @@ public class LiferayResourceOwnerLoginHandler
 	protected User authenticateUser(String login, String password) {
 		int authResult = Authenticator.FAILURE;
 
-		Long companyId = CompanyThreadLocal.getCompanyId();
-
-		Company company = _companyLocalService.fetchCompany(companyId);
+		Company company = _companyLocalService.fetchCompany(
+			CompanyThreadLocal.getCompanyId());
 
 		String authType = company.getAuthType();
 
@@ -103,8 +102,8 @@ public class LiferayResourceOwnerLoginHandler
 					Collections.emptyMap(), Collections.emptyMap(), resultsMap);
 			}
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return null;
 		}

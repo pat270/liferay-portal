@@ -19,19 +19,25 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManagerUtil;
+import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.constants.WorkflowWebKeys;
 import com.liferay.portal.workflow.portlet.tab.BaseWorkflowPortletTab;
 import com.liferay.portal.workflow.portlet.tab.WorkflowPortletTab;
 import com.liferay.portal.workflow.web.internal.configuration.WorkflowInstanceWebConfiguration;
+import com.liferay.portal.workflow.web.internal.display.context.MyWorkflowInstanceViewDisplayContext;
+import com.liferay.portal.workflow.web.internal.display.context.WorkflowInstanceViewDisplayContext;
 import com.liferay.portal.workflow.web.internal.request.prepocessor.WorkflowPreprocessorHelper;
 
 import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -80,7 +86,8 @@ public class WorkflowInstancePortletTab extends BaseWorkflowPortletTab {
 
 	@Override
 	public void prepareProcessAction(
-		ActionRequest actionRequest, ActionResponse actionResponse) {
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws PortletException {
 
 		String actionName = ParamUtil.getString(
 			actionRequest, ActionRequest.ACTION_NAME);
@@ -96,21 +103,23 @@ public class WorkflowInstancePortletTab extends BaseWorkflowPortletTab {
 		throws PortletException {
 
 		try {
+			setWorkflowInstanceDisplayContextRenderRequestAttribute(
+				renderRequest, renderResponse);
 			setWorkflowInstanceRenderRequestAttribute(renderRequest);
 		}
-		catch (Exception e) {
-			if (workflowPreprocessorHelper.isSessionErrorException(e)) {
+		catch (Exception exception) {
+			if (workflowPreprocessorHelper.isSessionErrorException(exception)) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 
 				workflowPreprocessorHelper.hideDefaultErrorMessage(
 					renderRequest);
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 			}
 			else {
-				throw new PortletException(e);
+				throw new PortletException(exception);
 			}
 		}
 	}
@@ -136,6 +145,34 @@ public class WorkflowInstancePortletTab extends BaseWorkflowPortletTab {
 		super.setServletContext(servletContext);
 	}
 
+	protected void setWorkflowInstanceDisplayContextRenderRequestAttribute(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws PortalException {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		if (Objects.equals(
+				portletDisplay.getPortletName(),
+				WorkflowPortletKeys.USER_WORKFLOW)) {
+
+			renderRequest.setAttribute(
+				WebKeys.PORTLET_DISPLAY_CONTEXT,
+				new MyWorkflowInstanceViewDisplayContext(
+					portal.getLiferayPortletRequest(renderRequest),
+					portal.getLiferayPortletResponse(renderResponse)));
+		}
+		else {
+			renderRequest.setAttribute(
+				WebKeys.PORTLET_DISPLAY_CONTEXT,
+				new WorkflowInstanceViewDisplayContext(
+					portal.getLiferayPortletRequest(renderRequest),
+					portal.getLiferayPortletResponse(renderResponse)));
+		}
+	}
+
 	protected void setWorkflowInstanceRenderRequestAttribute(
 			RenderRequest renderRequest)
 		throws PortalException {
@@ -155,6 +192,9 @@ public class WorkflowInstancePortletTab extends BaseWorkflowPortletTab {
 
 		renderRequest.setAttribute(WebKeys.WORKFLOW_INSTANCE, workflowInstance);
 	}
+
+	@Reference
+	protected Portal portal;
 
 	protected volatile WorkflowInstanceWebConfiguration
 		workflowInstanceWebConfiguration;

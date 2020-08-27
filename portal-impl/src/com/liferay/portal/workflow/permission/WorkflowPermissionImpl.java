@@ -40,8 +40,8 @@ public class WorkflowPermissionImpl implements WorkflowPermission {
 			return doHasPermission(
 				permissionChecker, groupId, className, classPK, actionId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return null;
@@ -54,9 +54,7 @@ public class WorkflowPermissionImpl implements WorkflowPermission {
 
 		long companyId = permissionChecker.getCompanyId();
 
-		if (permissionChecker.isCompanyAdmin() ||
-			permissionChecker.isGroupAdmin(groupId)) {
-
+		if (permissionChecker.isContentReviewer(companyId, groupId)) {
 			return Boolean.TRUE;
 		}
 

@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.test.FinalizeManagerUtil;
 import com.liferay.portal.kernel.test.GCUtil;
 import com.liferay.portal.kernel.upload.FileItem;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -33,7 +35,6 @@ import com.liferay.portal.util.PortalImpl;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -100,13 +101,10 @@ public class JSONWebServiceServiceActionTest
 	public void testInvokerNullCall() throws Exception {
 		registerActionClass(FooService.class);
 
-		Map<String, Object> map = new LinkedHashMap<>();
-
-		Map<String, Object> params = new LinkedHashMap<>();
-
-		map.put("/foo/null-return", params);
-
-		String json = toJSON(map);
+		String json = toJSON(
+			LinkedHashMapBuilder.<String, Object>put(
+				"/foo/null-return", new LinkedHashMap<>()
+			).build());
 
 		MockHttpServletRequest mockHttpServletRequest =
 			createInvokerHttpServletRequest(json);
@@ -124,11 +122,11 @@ public class JSONWebServiceServiceActionTest
 	public void testInvokerSimpleCall() throws Exception {
 		registerActionClass(FooService.class);
 
-		Map<String, Object> map = new LinkedHashMap<>();
-
 		Map<String, Object> params = new LinkedHashMap<>();
 
-		map.put("/foo/hello-world", params);
+		Map<String, Object> map = LinkedHashMapBuilder.<String, Object>put(
+			"/foo/hello-world", params
+		).build();
 
 		params.put("userId", 173);
 		params.put("worldName", "Jupiter");
@@ -151,10 +149,10 @@ public class JSONWebServiceServiceActionTest
 	public void testMultipartRequest() throws Exception {
 		registerActionClass(FooService.class);
 
-		Map<String, FileItem[]> fileParams = new HashMap<>();
-
-		fileParams.put(
-			"fileName", new FileItem[] {createLiferayFileItem("aaa")});
+		Map<String, FileItem[]> fileParams =
+			HashMapBuilder.<String, FileItem[]>put(
+				"fileName", new FileItem[] {createLiferayFileItem("aaa")}
+			).build();
 
 		HttpServletRequest httpServletRequest = new UploadServletRequestImpl(
 			createHttpRequest("/foo/add-file"), fileParams, null) {
@@ -181,19 +179,17 @@ public class JSONWebServiceServiceActionTest
 	public void testMultipartRequestFilesUpload() throws Exception {
 		registerActionClass(FooService.class);
 
-		Map<String, FileItem[]> fileParams = new HashMap<>();
-
-		fileParams.put(
-			"firstFile", new FileItem[] {createLiferayFileItem("aaa")});
-
-		fileParams.put(
-			"otherFiles",
-			new FileItem[] {
-				createLiferayFileItem("bbb"), createLiferayFileItem("ccc")
-			});
-
 		HttpServletRequest httpServletRequest = new UploadServletRequestImpl(
-			createHttpRequest("/foo/upload-files"), fileParams, null);
+			createHttpRequest("/foo/upload-files"),
+			HashMapBuilder.<String, FileItem[]>put(
+				"firstFile", new FileItem[] {createLiferayFileItem("aaa")}
+			).put(
+				"otherFiles",
+				new FileItem[] {
+					createLiferayFileItem("bbb"), createLiferayFileItem("ccc")
+				}
+			).build(),
+			null);
 
 		JSONWebServiceAction jsonWebServiceAction = lookupJSONWebServiceAction(
 			httpServletRequest);
@@ -277,11 +273,11 @@ public class JSONWebServiceServiceActionTest
 
 		registerActionClass(FooService.class, contextName);
 
-		Map<String, Object> map = new LinkedHashMap<>();
-
 		Map<String, Object> params = new LinkedHashMap<>();
 
-		map.put(query, params);
+		Map<String, Object> map = LinkedHashMapBuilder.<String, Object>put(
+			query, params
+		).build();
 
 		params.put("userId", 173);
 		params.put("worldName", "Jupiter");

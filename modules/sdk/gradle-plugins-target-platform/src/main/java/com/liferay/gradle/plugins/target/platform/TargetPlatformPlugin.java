@@ -17,28 +17,33 @@ package com.liferay.gradle.plugins.target.platform;
 import com.liferay.gradle.plugins.target.platform.extensions.TargetPlatformExtension;
 import com.liferay.gradle.plugins.target.platform.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.target.platform.internal.util.TargetPlatformPluginUtil;
+import com.liferay.gradle.plugins.target.platform.tasks.DependencyManagementTask;
 import com.liferay.gradle.plugins.target.platform.tasks.ResolveTask;
 
 import groovy.lang.Closure;
 
-import io.spring.gradle.dependencymanagement.DependencyManagementPlugin;
-
 import java.io.File;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.plugins.HelpTasksPlugin;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskOutputs;
+import org.gradle.util.VersionNumber;
 
 /**
  * @author Gregory Amerson
@@ -46,6 +51,9 @@ import org.gradle.api.tasks.TaskContainer;
  * @author Raymond Augé
  */
 public class TargetPlatformPlugin implements Plugin<Project> {
+
+	public static final String DEPENDENCY_MANAGEMENT_TASK_NAME =
+		"dependencyManagement";
 
 	public static final String PLATFORM_BNDRUN_FILE_NAME = "platform.bndrun";
 
@@ -62,7 +70,15 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 	@Override
 	@SuppressWarnings("serial")
 	public void apply(final Project project) {
-		GradleUtil.applyPlugin(project, DependencyManagementPlugin.class);
+		Gradle gradle = project.getGradle();
+
+		VersionNumber versionNumber = VersionNumber.parse(
+			gradle.getGradleVersion());
+
+		if (versionNumber.getMajor() < 5) {
+			throw new GradleException(
+				"This plugin requires Gradle 5.0 or greater");
+		}
 
 		final TargetPlatformExtension targetPlatformExtension =
 			GradleUtil.addExtension(
@@ -74,6 +90,11 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 		final Configuration targetPlatformDistroConfiguration =
 			_addConfigurationTargetPlatformDistro(project);
 
+		DependencyManagementTask dependencyManagementTask =
+			_addTaskDependencyManagement(project);
+
+		_configureTaskDependencyManagement(dependencyManagementTask);
+
 		PluginContainer pluginContainer = project.getPlugins();
 
 		pluginContainer.withType(
@@ -82,37 +103,15 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					TargetPlatformPluginUtil.configureDependencyManagement(
-						project, targetPlatformBomsConfiguration,
-						_configurationNames);
+					TargetPlatformPluginUtil.configureTargetPlatform(
+						project, _configurationNames,
+						targetPlatformBomsConfiguration);
 				}
 
 			});
 
-		final Spec<Project> spec = targetPlatformExtension.getOnlyIf();
-
 		final Set<Project> subprojects =
 			targetPlatformExtension.getSubprojects();
-
-		for (final Project subproject : subprojects) {
-			PluginContainer subprojectPluginContainer = subproject.getPlugins();
-
-			subprojectPluginContainer.withType(
-				JavaPlugin.class,
-				new Action<JavaPlugin>() {
-
-					@Override
-					public void execute(JavaPlugin javaPlugin) {
-						if (spec.isSatisfiedBy(subproject)) {
-							GradleUtil.applyPlugin(
-								subproject, DependencyManagementPlugin.class);
-						}
-					}
-
-				});
-		}
-
-		Gradle gradle = project.getGradle();
 
 		gradle.afterProject(
 			new Closure<Void>(project) {
@@ -164,6 +163,20 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
+	private DependencyManagementTask _addTaskDependencyManagement(
+		Project project) {
+
+		DependencyManagementTask dependencyManagementTask = GradleUtil.addTask(
+			project, DEPENDENCY_MANAGEMENT_TASK_NAME,
+			DependencyManagementTask.class);
+
+		dependencyManagementTask.setDescription(
+			"Displays the target platform dependencies for the project.");
+		dependencyManagementTask.setGroup(HelpTasksPlugin.HELP_GROUP);
+
+		return dependencyManagementTask;
+	}
+
 	private ResolveTask _addTaskResolve(Project project) {
 		final ResolveTask resolveTask = GradleUtil.addTask(
 			project, RESOLVE_TASK_NAME, ResolveTask.class);
@@ -193,8 +206,8 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 			return;
 		}
 
-		TargetPlatformPluginUtil.configureDependencyManagement(
-			afterProject, targetPlatformBomsConfiguration, _configurationNames);
+		TargetPlatformPluginUtil.configureTargetPlatform(
+			afterProject, _configurationNames, targetPlatformBomsConfiguration);
 
 		Spec<Project> resolveSpec = targetPlatformExtension.getResolveOnlyIf();
 
@@ -215,6 +228,22 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 		}
 	}
 
+	private void _configureTaskDependencyManagement(
+		DependencyManagementTask dependencyManagementTask) {
+
+		TaskOutputs taskOutputs = dependencyManagementTask.getOutputs();
+
+		taskOutputs.upToDateWhen(
+			new Spec<Task>() {
+
+				@Override
+				public boolean isSatisfiedBy(Task task) {
+					return false;
+				}
+
+			});
+	}
+
 	private void _configureTaskResolve(
 		Project project, ResolveTask resolveTask, File bndrunFile,
 		Configuration targetPlatformDistroConfiguration) {
@@ -232,12 +261,13 @@ public class TargetPlatformPlugin implements Plugin<Project> {
 		resolveTask.setReportOptional(false);
 	}
 
-	private static final Iterable<String> _configurationNames = Arrays.asList(
+	private static final List<String> _configurationNames = Arrays.asList(
 		"compile", "compileClasspath", "compileInclude", "compileOnly",
-		"default", "implementation", "originalModule", "parentThemes",
-		"portalCommonCSS", "runtime", "runtimeClasspath",
-		"runtimeImplementation", "runtimeOnly", "testCompileClasspath",
-		"testCompileOnly", "testIntegration", "testImplementation",
-		"testRuntime", "testRuntimeClasspath", "testRuntimeOnly");
+		"default", "implementation", "jsCompile", "originalModule",
+		"parentThemes", "portalCommonCSS", "providedModules", "runtime",
+		"runtimeClasspath", "runtimeImplementation", "runtimeOnly",
+		"testCompileClasspath", "testCompileOnly", "testImplementation",
+		"testIntegration", "testRuntime", "testRuntimeClasspath",
+		"testRuntimeOnly");
 
 }

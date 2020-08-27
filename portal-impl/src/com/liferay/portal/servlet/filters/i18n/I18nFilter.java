@@ -130,7 +130,7 @@ public class I18nFilter extends BasePortalFilter {
 		String requestURI = httpServletRequest.getRequestURI();
 
 		if (Validator.isNotNull(contextPath) &&
-			requestURI.contains(contextPath)) {
+			requestURI.startsWith(contextPath)) {
 
 			requestURI = requestURI.substring(contextPath.length());
 		}
@@ -177,10 +177,8 @@ public class I18nFilter extends BasePortalFilter {
 				friendlyURLStart, friendlyURLEnd);
 		}
 
-		long companyId = PortalUtil.getCompanyId(httpServletRequest);
-
 		Group friendlyURLGroup = GroupLocalServiceUtil.fetchFriendlyURLGroup(
-			companyId, groupFriendlyURL);
+			PortalUtil.getCompanyId(httpServletRequest), groupFriendlyURL);
 
 		if ((friendlyURLGroup != null) &&
 			!LanguageUtil.isAvailableLocale(
@@ -260,9 +258,9 @@ public class I18nFilter extends BasePortalFilter {
 
 			return LocaleUtil.toLanguageId(siteDefaultLocale);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe.getMessage(), pe);
+				_log.debug(portalException.getMessage(), portalException);
 			}
 
 			return StringPool.BLANK;

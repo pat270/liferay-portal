@@ -17,115 +17,158 @@
 <%@ include file="/admin/init.jsp" %>
 
 <%
-String displayStyle = ddmFormAdminDisplayContext.getDisplayStyle();
 PortletURL portletURL = ddmFormAdminDisplayContext.getPortletURL();
 
 FormInstancePermissionCheckerHelper formInstancePermissionCheckerHelper = ddmFormAdminDisplayContext.getPermissionCheckerHelper();
 %>
 
-<div class="container-fluid-1280" id="<portlet:namespace />formContainer">
+<div class="lfr-alert-container">
+	<clay:container-fluid className="lfr-alert-wrapper"></clay:container-fluid>
+</div>
+
+<clay:container-fluid
+	id='<%= liferayPortletResponse.getNamespace() + "formContainer" %>'
+>
 	<aui:form action="<%= portletURL.toString() %>" method="post" name="searchContainerForm">
 		<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
 		<aui:input name="deleteFormInstanceIds" type="hidden" />
 
-		<liferay-ui:search-container
-			id="<%= ddmFormAdminDisplayContext.getSearchContainerId() %>"
-			searchContainer="<%= ddmFormAdminDisplayContext.getSearch() %>"
-		>
-			<liferay-ui:search-container-row
-				className="com.liferay.dynamic.data.mapping.model.DDMFormInstance"
-				cssClass="entry-display-style"
-				keyProperty="formInstanceId"
-				modelVar="formInstance"
-			>
-				<portlet:renderURL var="rowURL">
-					<portlet:param name="mvcRenderCommandName" value="/admin/edit_form_instance" />
-					<portlet:param name="redirect" value="<%= currentURL %>" />
-					<portlet:param name="formInstanceId" value="<%= String.valueOf(formInstance.getFormInstanceId()) %>" />
-					<portlet:param name="displayStyle" value="<%= displayStyle %>" />
-				</portlet:renderURL>
+		<c:choose>
+			<c:when test="<%= ddmFormAdminDisplayContext.hasResults() %>">
+				<liferay-ui:search-container
+					id="<%= ddmFormAdminDisplayContext.getSearchContainerId() %>"
+					rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
+					searchContainer="<%= ddmFormAdminDisplayContext.getSearch() %>"
+				>
+					<liferay-ui:search-container-row
+						className="com.liferay.dynamic.data.mapping.model.DDMFormInstance"
+						cssClass="entry-display-style"
+						keyProperty="formInstanceId"
+						modelVar="formInstance"
+					>
+						<portlet:renderURL var="rowURL">
+							<portlet:param name="mvcRenderCommandName" value="/admin/edit_form_instance" />
+							<portlet:param name="redirect" value="<%= currentURL %>" />
+							<portlet:param name="formInstanceId" value="<%= String.valueOf(formInstance.getFormInstanceId()) %>" />
+							<portlet:param name="displayStyle" value="<%= displayStyle %>" />
+						</portlet:renderURL>
 
-				<%
-				if (!formInstancePermissionCheckerHelper.isShowEditIcon(formInstance)) {
-					rowURL = null;
-				}
-				%>
+						<%
+						if (!formInstancePermissionCheckerHelper.isShowEditIcon(formInstance)) {
+							rowURL = null;
+						}
+						%>
 
-				<c:choose>
-					<c:when test='<%= displayStyle.equals("descriptive") %>'>
-						<liferay-ui:search-container-column-icon
-							cssClass="asset-icon"
-							icon="forms"
-						/>
+						<c:choose>
+							<c:when test='<%= displayStyle.equals("descriptive") %>'>
+								<liferay-ui:search-container-column-icon
+									cssClass="asset-icon"
+									icon="forms"
+								/>
 
-						<liferay-ui:search-container-column-jsp
-							colspan="<%= 2 %>"
-							href="<%= rowURL %>"
-							path="/admin/view_form_instance_descriptive.jsp"
-						/>
+								<liferay-ui:search-container-column-jsp
+									colspan="<%= 2 %>"
+									href="<%= rowURL %>"
+									path="/admin/view_form_instance_descriptive.jsp"
+								/>
 
-						<liferay-ui:search-container-column-jsp
-							path="/admin/form_instance_action.jsp"
-						/>
-					</c:when>
-					<c:otherwise>
-						<liferay-ui:search-container-column-text
-							cssClass="table-cell-expand table-title"
-							href="<%= rowURL %>"
-							name="name"
-							value="<%= HtmlUtil.escape(formInstance.getName(locale)) %>"
-						/>
+								<liferay-ui:search-container-column-jsp
+									path="/admin/form_instance_action.jsp"
+								/>
+							</c:when>
+							<c:otherwise>
+								<liferay-ui:search-container-column-text
+									cssClass="table-cell-expand table-title"
+									href="<%= rowURL %>"
+									name="name"
+									value="<%= HtmlUtil.escape(formInstance.getName(locale)) %>"
+								/>
 
-						<liferay-ui:search-container-column-text
-							cssClass="table-cell-expand"
-							name="description"
-							value="<%= HtmlUtil.escape(formInstance.getDescription(locale)) %>"
-						/>
+								<liferay-ui:search-container-column-text
+									cssClass="table-cell-expand"
+									name="description"
+									value="<%= HtmlUtil.escape(formInstance.getDescription(locale)) %>"
+								/>
 
-						<liferay-ui:search-container-column-date
-							cssClass="table-cell-expand-smaller"
-							name="modified-date"
-							value="<%= formInstance.getModifiedDate() %>"
-						/>
+								<liferay-ui:search-container-column-date
+									cssClass="table-cell-expand-smaller"
+									name="modified-date"
+									value="<%= formInstance.getModifiedDate() %>"
+								/>
 
-						<liferay-ui:search-container-column-jsp
-							path="/admin/form_instance_action.jsp"
-						/>
-					</c:otherwise>
-				</c:choose>
-			</liferay-ui:search-container-row>
+								<liferay-ui:search-container-column-jsp
+									path="/admin/form_instance_action.jsp"
+								/>
+							</c:otherwise>
+						</c:choose>
+					</liferay-ui:search-container-row>
 
-			<liferay-ui:search-iterator
-				displayStyle="<%= displayStyle %>"
-				markupView="lexicon"
-			/>
-		</liferay-ui:search-container>
+					<liferay-ui:search-iterator
+						displayStyle="<%= displayStyle %>"
+						markupView="lexicon"
+					/>
+				</liferay-ui:search-container>
+			</c:when>
+			<c:otherwise>
+				<liferay-frontend:empty-result-message
+					actionDropdownItems="<%= ddmFormAdminDisplayContext.getEmptyResultMessageActionItemsDropdownItems() %>"
+					animationType="<%= ddmFormAdminDisplayContext.getEmptyResultMessageAnimationType() %>"
+					buttonCssClass="secondary"
+					description="<%= ddmFormAdminDisplayContext.getEmptyResultMessageDescription() %>"
+					title="<%= ddmFormAdminDisplayContext.getEmptyResultsMessage() %>"
+				/>
+			</c:otherwise>
+		</c:choose>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
-<aui:script require='<%= mainRequire + "/admin/js/components/ShareFormPopover/ShareFormPopover.es as ShareFormPopover" %>'>
-	var spritemap = themeDisplay.getPathThemeImages() + '/lexicon/icons.svg';
+<aui:script require='<%= "metal-dom/src/all/dom as dom, " + mainRequire + "/admin/js/components/ShareFormModal/ShareFormModal.es as ShareFormModal" %>'>
+	var spritemap = themeDisplay.getPathThemeImages() + '/clay/icons.svg';
+
+	var afterOpenShareFormModal = function (data) {
+		Liferay.namespace('DDM').FormSettings = {
+			portletNamespace: '<portlet:namespace />',
+			spritemap: spritemap,
+		};
+
+		var shareFormModal = new ShareFormModal.default({
+			autocompleteUserURL:
+				'<%= ddmFormAdminDisplayContext.getAutocompleteUserURL() %>',
+			events: {
+				shareFormModalClosed: function (event) {
+					event.preventDefault();
+					event.stopPropagation();
+
+					var overlayElement = document.querySelector('.modal-backdrop');
+					dom.exitDocument(overlayElement);
+
+					shareFormModal.dispose();
+				},
+			},
+			localizedName: data.localizedName,
+			portletNamespace: '<portlet:namespace />',
+			shareFormInstanceURL: data.shareFormInstanceURL,
+			spritemap: spritemap,
+			url: data.url,
+		});
+
+		shareFormModal.open();
+	};
 
 	Liferay.after(
-		'<portlet:namespace />copyFormURL',
-		function({url}) {
-			var trigger = Liferay.Menu._INSTANCE._activeTrigger;
-
-			var popover = new ShareFormPopover.default(
-				{
-					alignElement: trigger.getDOM(),
-					events: {
-						popoverClosed: function() {
-							popover.dispose();
-						}
-					},
-					spritemap,
-					url,
-					visible: true
-				}
-			);
-		}
+		'<portlet:namespace />openShareFormModal',
+		afterOpenShareFormModal
 	);
+
+	function handleDestroyPortlet() {
+		Liferay.detach(
+			'<portlet:namespace />openShareFormModal',
+			afterOpenShareFormModal
+		);
+		Liferay.detach('destroyPortlet', handleDestroyPortlet);
+	}
+
+	Liferay.on('destroyPortlet', handleDestroyPortlet);
 </aui:script>
 
 <%@ include file="/admin/copy_form_publish_url.jspf" %>

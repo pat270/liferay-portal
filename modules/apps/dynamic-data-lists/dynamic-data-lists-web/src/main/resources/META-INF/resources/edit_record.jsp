@@ -19,6 +19,8 @@
 <%
 String redirect = ParamUtil.getString(request, "redirect");
 
+String portletResource = ParamUtil.getString(request, "portletResource");
+
 DDLRecord record = (DDLRecord)request.getAttribute(DDLWebKeys.DYNAMIC_DATA_LISTS_RECORD);
 
 long recordId = BeanParamUtil.getLong(record, request, "recordId");
@@ -54,6 +56,21 @@ else if (Validator.isNull(defaultLanguageId)) {
 
 String languageId = ParamUtil.getString(request, "languageId", defaultLanguageId);
 
+Locale defaultEditLocale = LocaleUtil.fromLanguageId(ddmStructure.getDefaultLanguageId());
+
+if (ddmFormValues != null) {
+	defaultEditLocale = ddmFormValues.getDefaultLocale();
+
+	String[] ddmFormValuesAvailableLocales = LocaleUtil.toLanguageIds(ddmFormValues.getAvailableLocales());
+
+	if (ArrayUtil.contains(ddmFormValuesAvailableLocales, themeDisplay.getLanguageId())) {
+		defaultEditLocale = themeDisplay.getLocale();
+	}
+	else if (ArrayUtil.contains(ddmFormValuesAvailableLocales, user.getLanguageId())) {
+		defaultEditLocale = user.getLocale();
+	}
+}
+
 boolean translating = false;
 
 if (!defaultLanguageId.equals(languageId)) {
@@ -88,18 +105,21 @@ else {
 <c:if test="<%= record != null %>">
 	<clay:management-toolbar
 		infoPanelId="infoPanelId"
-		namespace="<%= renderResponse.getNamespace() %>"
-		selectable="false"
-		showSearch="false"
+		namespace="<%= liferayPortletResponse.getNamespace() %>"
+		selectable="<%= false %>"
+		showSearch="<%= false %>"
 	/>
 </c:if>
 
-<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<c:if test="<%= recordVersion != null %>">
 		<div class="sidenav-menu-slider">
 			<div class="sidebar sidebar-default sidenav-menu">
 				<div class="sidebar-header">
-					<aui:icon cssClass="icon-monospaced sidenav-close text-default visible-xs-inline-block" image="times" markupView="lexicon" url="javascript:;" />
+					<aui:icon cssClass="d-inline-block d-sm-none icon-monospaced sidenav-close text-default" image="times" markupView="lexicon" url="javascript:;" />
 				</div>
 
 				<liferay-ui:tabs
@@ -121,7 +141,9 @@ else {
 							</div>
 
 							<div>
-								<h5><strong><liferay-ui:message key="created" /></strong></h5>
+								<h5>
+									<strong><liferay-ui:message key="created" /></strong>
+								</h5>
 
 								<p>
 
@@ -150,6 +172,7 @@ else {
 	<div class="sidenav-content">
 		<aui:form action="<%= (record == null) ? addRecordURL : updateRecordURL %>" cssClass="container-fluid-1280" enctype="multipart/form-data" method="post" name="fm">
 			<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
+			<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
 			<aui:input name="recordId" type="hidden" value="<%= recordId %>" />
 			<aui:input name="groupId" type="hidden" value="<%= recordSet.getGroupId() %>" />
 			<aui:input name="recordSetId" type="hidden" value="<%= recordSetId %>" />
@@ -162,7 +185,7 @@ else {
 				<liferay-ui:error exception="<%= DuplicateFileEntryException.class %>" message="a-file-with-that-name-already-exists" />
 
 				<liferay-ui:error exception="<%= FileSizeException.class %>">
-					<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(DLValidatorUtil.getMaxAllowableSize(), locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(DLValidatorUtil.getMaxAllowableSize(), locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
 				</liferay-ui:error>
 
 				<liferay-ui:error exception="<%= StorageFieldRequiredException.class %>" message="please-fill-out-all-required-fields" />
@@ -185,9 +208,12 @@ else {
 							classNameId="<%= classNameId %>"
 							classPK="<%= classPK %>"
 							ddmFormValues="<%= ddmFormValues %>"
+							defaultEditLocale="<%= defaultEditLocale %>"
+							defaultLocale="<%= LocaleUtil.fromLanguageId(defaultLanguageId) %>"
 							groupId="<%= recordSet.getGroupId() %>"
 							repeatable="<%= translating ? false : true %>"
 							requestedLocale="<%= locale %>"
+							showLanguageSelector="<%= false %>"
 						/>
 					</c:when>
 					<c:otherwise>
@@ -197,6 +223,8 @@ else {
 									classNameId="<%= classNameId %>"
 									classPK="<%= classPK %>"
 									ddmFormValues="<%= ddmFormValues %>"
+									defaultEditLocale="<%= defaultEditLocale %>"
+									defaultLocale="<%= LocaleUtil.fromLanguageId(defaultLanguageId) %>"
 									groupId="<%= recordSet.getGroupId() %>"
 									repeatable="<%= translating ? false : true %>"
 									requestedLocale="<%= locale %>"
@@ -242,11 +270,11 @@ else {
 				%>
 
 				<c:if test="<%= ddlDisplayContext.isShowSaveRecordButton() %>">
-					<aui:button name="saveButton" onClick='<%= renderResponse.getNamespace() + "setWorkflowAction(true);" %>' primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
+					<aui:button name="saveButton" onClick='<%= liferayPortletResponse.getNamespace() + "setWorkflowAction(true);" %>' primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
 				</c:if>
 
 				<c:if test="<%= ddlDisplayContext.isShowPublishRecordButton() %>">
-					<aui:button disabled="<%= pending %>" name="publishButton" onClick='<%= renderResponse.getNamespace() + "setWorkflowAction(false);" %>' type="submit" value="<%= publishButtonLabel %>" />
+					<aui:button disabled="<%= pending %>" name="publishButton" onClick='<%= liferayPortletResponse.getNamespace() + "setWorkflowAction(false);" %>' type="submit" value="<%= publishButtonLabel %>" />
 				</c:if>
 
 				<c:if test="<%= ddlDisplayContext.isShowCancelButton() %>">
@@ -255,7 +283,7 @@ else {
 			</aui:button-row>
 		</aui:form>
 	</div>
-</div>
+</clay:container-fluid>
 
 <aui:script>
 	function <portlet:namespace />setWorkflowAction(draft) {

@@ -16,12 +16,9 @@ package com.liferay.message.boards.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class LockedThreadException extends PortalException {
 
 	public LockedThreadException() {
@@ -31,12 +28,12 @@ public class LockedThreadException extends PortalException {
 		super(msg);
 	}
 
-	public LockedThreadException(String msg, Throwable cause) {
-		super(msg, cause);
+	public LockedThreadException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public LockedThreadException(Throwable cause) {
-		super(cause);
+	public LockedThreadException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

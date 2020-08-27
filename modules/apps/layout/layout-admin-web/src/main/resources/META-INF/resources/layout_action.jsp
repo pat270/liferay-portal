@@ -40,7 +40,7 @@ Layout curLayout = (Layout)row.getObject();
 
 	<c:if test="<%= Validator.isNotNull(editLayoutURL) %>">
 		<liferay-ui:icon
-			message="edit"
+			message='<%= layoutsAdminDisplayContext.isConversionDraft(layout) ? "edit-conversion-draft" : "edit" %>'
 			url="<%= editLayoutURL %>"
 		/>
 	</c:if>
@@ -61,7 +61,7 @@ Layout curLayout = (Layout)row.getObject();
 
 	<c:if test="<%= layoutsAdminDisplayContext.isShowCopyLayoutAction(curLayout) %>">
 		<liferay-ui:icon
-			cssClass="copy-layout-action-option"
+			cssClass='<%= liferayPortletResponse.getNamespace() + "copy-layout-action-option" %>'
 			message="copy-page"
 			url="javascript:;"
 		/>
@@ -83,40 +83,67 @@ Layout curLayout = (Layout)row.getObject();
 		/>
 	</c:if>
 
+	<c:if test="<%= layoutsAdminDisplayContext.isShowConvertLayoutAction(curLayout) %>">
+		<liferay-ui:icon
+			message="convert-to-content-page..."
+			url="<%= layoutsAdminDisplayContext.getConvertLayoutURL(curLayout) %>"
+		/>
+	</c:if>
+
 	<c:if test="<%= layoutsAdminDisplayContext.isShowDeleteAction(curLayout) %>">
 		<liferay-ui:icon-delete
 			url="<%= layoutsAdminDisplayContext.getDeleteLayoutURL(curLayout) %>"
 		/>
 	</c:if>
+
+	<c:if test="<%= layoutsAdminDisplayContext.isShowDiscardDraftAction(curLayout) %>">
+		<liferay-ui:icon
+			message="discard-draft"
+			url="<%= layoutsAdminDisplayContext.getDiscardDraftURL(curLayout) %>"
+		/>
+	</c:if>
+
+	<c:if test="<%= layoutsAdminDisplayContext.isShowViewCollectionItemsAction(curLayout) %>">
+		<liferay-ui:icon
+			cssClass='<%= liferayPortletResponse.getNamespace() + "view-collection-items-action-option" %>'
+			message="view-collection-items"
+			url="javascript:;"
+		/>
+	</c:if>
 </liferay-ui:icon-menu>
 
-<aui:script require="metal-dom/src/all/dom as dom,frontend-js-web/liferay/modal/commands/OpenSimpleInputModal.es as modalCommands">
-	var addLayoutPrototypeActionOptionQueryClickHandler = dom.delegate(
+<aui:script require="metal-dom/src/all/dom as dom">
+	var copyLayoutActionOptionQueryClickHandler = dom.delegate(
 		document.body,
 		'click',
 		'.<portlet:namespace />copy-layout-action-option',
-		function(event) {
-			Liferay.Util.openWindow(
-				{
-					dialog: {
-						destroyOnHide: true,
-						height: 480,
-						resizable: false,
-						width: 640
-					},
-					dialogIframe: {
-						bodyCssClass: 'dialog-with-footer'
-					},
-					id: '<portlet:namespace />copyLayoutDialog',
-					title: '<liferay-ui:message key="copy-page" />',
-					uri: '<%= layoutsAdminDisplayContext.getCopyLayoutRenderURL(layout) %>'
-				}
-			);
+		function (event) {
+			Liferay.Util.openModal({
+				id: '<portlet:namespace />addLayoutDialog',
+				title: '<liferay-ui:message key="copy-page" />',
+				url:
+					'<%= layoutsAdminDisplayContext.getCopyLayoutRenderURL(curLayout) %>',
+			});
+		}
+	);
+
+	var viewCollectionItemsActionOptionQueryClickHandler = dom.delegate(
+		document.body,
+		'click',
+		'.<portlet:namespace />view-collection-items-action-option',
+		function (event) {
+			Liferay.Util.openModal({
+				id: '<portlet:namespace />viewCollectionItemsDialog',
+				title: '<liferay-ui:message key="collection-items" />',
+				url:
+					'<%= layoutsAdminDisplayContext.getViewCollectionItemsURL(curLayout) %>',
+			});
 		}
 	);
 
 	function handleDestroyPortlet() {
-		addLayoutPrototypeActionOptionQueryClickHandler.removeListener();
+		copyLayoutActionOptionQueryClickHandler.removeListener();
+		viewCollectionItemsActionOptionQueryClickHandler.removeListener();
 
 		Liferay.detach('destroyPortlet', handleDestroyPortlet);
 	}

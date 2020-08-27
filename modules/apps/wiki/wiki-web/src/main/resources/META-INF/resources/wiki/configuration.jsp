@@ -24,7 +24,7 @@
 	action="<%= configurationActionURL %>"
 	method="post"
 	name="fm"
-	onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveConfiguration();" %>'
+	onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveConfiguration();" %>'
 >
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
@@ -46,12 +46,7 @@
 				<aui:input label="enable-ratings-for-comments" name="preferences--enableCommentRatings--" type="checkbox" value="<%= wikiPortletInstanceSettingsHelper.isEnableCommentRatings() %>" />
 
 				<aui:input name="preferences--enableHighlighting--" type="checkbox" value="<%= wikiPortletInstanceSettingsHelper.isEnableHighlighting() %>" />
-			</liferay-frontend:fieldset>
 
-			<liferay-frontend:fieldset
-				collapsible="<%= true %>"
-				label="templates"
-			>
 				<div class="display-template">
 					<liferay-ddm:template-selector
 						className="<%= WikiPage.class.getName() %>"
@@ -102,10 +97,8 @@
 				List<KeyValuePair> rightList = new ArrayList<KeyValuePair>();
 
 				for (String folderColumn : hiddenNodes) {
-					if (currentVisibleNodes.contains(folderColumn)) {
-						if (Arrays.binarySearch(visibleNodeNames, folderColumn) < 0) {
-							rightList.add(new KeyValuePair(folderColumn, HtmlUtil.escape(LanguageUtil.get(request, folderColumn))));
-						}
+					if (currentVisibleNodes.contains(folderColumn) && (Arrays.binarySearch(visibleNodeNames, folderColumn) < 0)) {
+						rightList.add(new KeyValuePair(folderColumn, HtmlUtil.escape(LanguageUtil.get(request, folderColumn))));
 					}
 				}
 
@@ -136,19 +129,22 @@
 	function <portlet:namespace />saveConfiguration() {
 		var form = document.<portlet:namespace />fm;
 
-		var availableVisibleNodes = Liferay.Util.getFormElement(form, 'availableVisibleNodes');
-		var currentVisibleNodes = Liferay.Util.getFormElement(form, 'currentVisibleNodes');
+		var availableVisibleNodes = Liferay.Util.getFormElement(
+			form,
+			'availableVisibleNodes'
+		);
+		var currentVisibleNodes = Liferay.Util.getFormElement(
+			form,
+			'currentVisibleNodes'
+		);
 
 		if (availableVisibleNodes && currentVisibleNodes) {
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						hiddenNodes: Liferay.Util.listSelect(availableVisibleNodes),
-						visibleNodes: Liferay.Util.listSelect(currentVisibleNodes)
-					}
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					hiddenNodes: Liferay.Util.listSelect(availableVisibleNodes),
+					visibleNodes: Liferay.Util.listSelect(currentVisibleNodes),
+				},
+			});
 		}
 	}
 </script>

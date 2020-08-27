@@ -14,20 +14,31 @@
 
 package com.liferay.layout.admin.web.internal.display.context;
 
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.layout.admin.web.internal.util.LayoutPageTemplatePortletUtil;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypeController;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.util.LayoutTypeControllerTracker;
+import com.liferay.style.book.model.StyleBookEntry;
+import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
+import com.liferay.style.book.util.comparator.StyleBookEntryNameComparator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,6 +56,22 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 
 		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+	}
+
+	public String getBackURL() {
+		if (_backURL != null) {
+			return _backURL;
+		}
+
+		String backURL = ParamUtil.getString(_httpServletRequest, "backURL");
+
+		if (Validator.isNull(backURL)) {
+			backURL = getRedirect();
+		}
+
+		_backURL = backURL;
+
+		return _backURL;
 	}
 
 	public List<LayoutPageTemplateEntry> getGlobalLayoutPageTemplateEntries() {
@@ -95,28 +122,65 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 				WorkflowConstants.STATUS_APPROVED);
 	}
 
-	public List<String> getPrimaryTypes() {
-		if (_primaryTypes != null) {
-			return _primaryTypes;
+	public StyleBookEntry getLayoutStyleBookEntry(Layout layout) {
+		StyleBookEntry styleBookEntry = null;
+
+		if (layout.getStyleBookEntryId() > 0) {
+			styleBookEntry = StyleBookEntryLocalServiceUtil.fetchStyleBookEntry(
+				layout.getStyleBookEntryId());
 		}
 
-		_primaryTypes = ListUtil.filter(
-			ListUtil.fromArray(LayoutTypeControllerTracker.getTypes()),
-			type -> {
-				LayoutTypeController layoutTypeController =
-					LayoutTypeControllerTracker.getLayoutTypeController(type);
+		if ((styleBookEntry == null) && (layout.getMasterLayoutPlid() > 0)) {
+			Layout masterLayout = LayoutLocalServiceUtil.fetchLayout(
+				layout.getMasterLayoutPlid());
 
-				return layoutTypeController.isInstanceable() &&
-					   layoutTypeController.isPrimaryType();
-			});
+			styleBookEntry = StyleBookEntryLocalServiceUtil.fetchStyleBookEntry(
+				masterLayout.getStyleBookEntryId());
+		}
 
-		return _primaryTypes;
+		if (styleBookEntry == null) {
+			styleBookEntry =
+				StyleBookEntryLocalServiceUtil.fetchDefaultStyleBookEntry(
+					StagingUtil.getLiveGroupId(layout.getGroupId()));
+		}
+
+		return styleBookEntry;
 	}
 
-	public int getPrimaryTypesCount() {
-		List<String> types = getPrimaryTypes();
+	public List<LayoutPageTemplateEntry> getMasterLayoutPageTemplateEntries() {
+		List<LayoutPageTemplateEntry> masterLayoutPageTemplateEntries =
+			new ArrayList<>();
 
-		return types.size();
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateEntryLocalServiceUtil.
+				createLayoutPageTemplateEntry(0);
+
+		layoutPageTemplateEntry.setName(
+			LanguageUtil.get(_httpServletRequest, "blank"));
+		layoutPageTemplateEntry.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+		masterLayoutPageTemplateEntries.add(layoutPageTemplateEntry);
+
+		Group scopeGroup = _themeDisplay.getScopeGroup();
+
+		long scopeGroupId = _themeDisplay.getScopeGroupId();
+
+		if (scopeGroup.isLayoutPrototype()) {
+			LayoutPageTemplateEntry layoutPrototypeLayoutPageTemplateEntry =
+				LayoutPageTemplateEntryLocalServiceUtil.
+					fetchFirstLayoutPageTemplateEntry(scopeGroup.getClassPK());
+
+			scopeGroupId = layoutPrototypeLayoutPageTemplateEntry.getGroupId();
+		}
+
+		masterLayoutPageTemplateEntries.addAll(
+			LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntries(
+				scopeGroupId,
+				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT,
+				WorkflowConstants.STATUS_APPROVED, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, null));
+
+		return masterLayoutPageTemplateEntries;
 	}
 
 	public String getRedirect() {
@@ -135,9 +199,16 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 		}
 
 		_selectedTab = ParamUtil.getString(
-			_httpServletRequest, "selectedTab", "basic-pages");
+			_httpServletRequest, "selectedTab", "basic-templates");
 
 		return _selectedTab;
+	}
+
+	public List<StyleBookEntry> getStyleBookEntries() {
+		return StyleBookEntryLocalServiceUtil.getStyleBookEntries(
+			StagingUtil.getLiveGroupId(_themeDisplay.getScopeGroupId()),
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StyleBookEntryNameComparator(true));
 	}
 
 	public List<String> getTypes() {
@@ -164,12 +235,12 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 		return types.size();
 	}
 
-	public boolean isBasicPages() {
+	public boolean isBasicTemplates() {
 		if (getLayoutPageTemplateCollectionId() != 0) {
 			return false;
 		}
 
-		if (!Objects.equals(getSelectedTab(), "basic-pages")) {
+		if (!Objects.equals(getSelectedTab(), "basic-templates")) {
 			return false;
 		}
 
@@ -196,9 +267,9 @@ public class SelectLayoutPageTemplateEntryDisplayContext {
 		return true;
 	}
 
+	private String _backURL;
 	private final HttpServletRequest _httpServletRequest;
 	private Long _layoutPageTemplateCollectionId;
-	private List<String> _primaryTypes;
 	private String _redirect;
 	private String _selectedTab;
 	private final ThemeDisplay _themeDisplay;

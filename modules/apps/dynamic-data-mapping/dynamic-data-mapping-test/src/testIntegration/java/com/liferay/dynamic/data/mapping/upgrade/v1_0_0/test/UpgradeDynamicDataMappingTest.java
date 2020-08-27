@@ -15,15 +15,16 @@
 package com.liferay.dynamic.data.mapping.upgrade.v1_0_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.counter.kernel.service.CounterLocalService;
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMContent;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStorageLink;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplateVersion;
 import com.liferay.dynamic.data.mapping.service.DDMContentLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalServiceUtil;
@@ -60,6 +61,7 @@ import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.registry.Registry;
@@ -76,8 +78,8 @@ import java.util.Objects;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,7 +90,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
  * @author Marcellus Tavares
  * @author Inácio Nery
  */
-@Ignore
 @RunWith(Arquillian.class)
 public class UpgradeDynamicDataMappingTest {
 
@@ -96,6 +97,11 @@ public class UpgradeDynamicDataMappingTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		setUpDDMStructureTable();
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -110,15 +116,15 @@ public class UpgradeDynamicDataMappingTest {
 
 	@After
 	public void tearDown() throws Exception {
-		deleteStructure(_structureId);
-
-		deleteStructure(_parentStructureId);
-
 		deleteTemplate(_templateId);
 
 		deleteContent(_contentId);
 
 		deleteStorageLink(_storageLinkId);
+
+		deleteStructure(_structureId);
+
+		deleteStructure(_parentStructureId);
 	}
 
 	@Test
@@ -1226,6 +1232,12 @@ public class UpgradeDynamicDataMappingTest {
 		JSONAssert.assertEquals(expectedData, actualData, false);
 	}
 
+	protected static void setUpDDMStructureTable() throws Exception {
+		DB db = DBManagerUtil.getDB();
+
+		db.runSQL("delete from DDMStructure where userName is NOT NULL");
+	}
+
 	protected void addContent(long contentId, String data) throws Exception {
 		StringBundler sb = new StringBundler(4);
 
@@ -1591,8 +1603,9 @@ public class UpgradeDynamicDataMappingTest {
 
 		if (structureModelResourceName == null) {
 			throw new UpgradeException(
-				"Model " + className + " does not support dynamic data " +
-					"mapping structure permission checking");
+				StringBundler.concat(
+					"Model ", className, " does not support dynamic data ",
+					"mapping structure permission checking"));
 		}
 
 		return structureModelResourceName;
@@ -1616,8 +1629,9 @@ public class UpgradeDynamicDataMappingTest {
 
 		if (templateModelResourceName == null) {
 			throw new UpgradeException(
-				"Model " + className + " does not support dynamic data " +
-					"mapping template permission checking");
+				StringBundler.concat(
+					"Model ", className, " does not support dynamic data ",
+					"mapping template permission checking"));
 		}
 
 		return templateModelResourceName;
@@ -1710,32 +1724,23 @@ public class UpgradeDynamicDataMappingTest {
 	}
 
 	protected void setUpPrimaryKeys() {
-		_structureId = RandomTestUtil.randomLong();
-		_parentStructureId = RandomTestUtil.randomLong();
-		_templateId = RandomTestUtil.randomLong();
-		_storageLinkId = RandomTestUtil.randomLong();
-		_contentId = RandomTestUtil.randomLong();
+		_structureId = _counterLocalService.increment();
+		_parentStructureId = _counterLocalService.increment();
+		_templateId = _counterLocalService.increment();
+		_storageLinkId = _counterLocalService.increment();
+		_contentId = _counterLocalService.increment();
 	}
 
 	protected void setUpUpgradeDynamicDataMapping() {
 		Registry registry = RegistryUtil.getRegistry();
 
 		UpgradeStepRegistrator upgradeStepRegistror = registry.getService(
-			"com.liferay.dynamic.data.mapping.internal.upgrade." +
-				"DDMServiceUpgrade");
+			registry.getServiceReference(
+				"com.liferay.dynamic.data.mapping.internal.upgrade." +
+					"DDMServiceUpgrade"));
 
 		upgradeStepRegistror.register(
 			new UpgradeStepRegistrator.Registry() {
-
-				@Override
-				public void register(
-					String bundleSymbolicName, String fromSchemaVersionString,
-					String toSchemaVersionString, UpgradeStep... upgradeSteps) {
-
-					register(
-						fromSchemaVersionString, toSchemaVersionString,
-						upgradeSteps);
-				}
 
 				@Override
 				public void register(
@@ -1764,6 +1769,9 @@ public class UpgradeDynamicDataMappingTest {
 	private long _classNameIdDDMStructure;
 	private long _classNameIdExpandoStorageAdapter;
 	private long _contentId;
+
+	@Inject
+	private CounterLocalService _counterLocalService;
 
 	@DeleteAfterTestRun
 	private Group _group;

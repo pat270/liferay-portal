@@ -160,10 +160,9 @@ public class TaskCacheApplicator {
 	}
 
 	protected Copy createRestoreCacheTask(TaskCache taskCache) {
-		Project project = taskCache.getProject();
-
 		Copy copy = GradleUtil.addTask(
-			project, taskCache.getRestoreCacheTaskName(), Copy.class);
+			taskCache.getProject(), taskCache.getRestoreCacheTaskName(),
+			Copy.class);
 
 		copy.exclude(DIGEST_FILE_NAME);
 		copy.from(taskCache.getCacheDir());
@@ -205,8 +204,9 @@ public class TaskCacheApplicator {
 				Files.readAllBytes(digestFile.toPath()),
 				StandardCharsets.UTF_8);
 		}
-		catch (IOException ioe) {
-			throw new GradleException("Unable to read digest file", ioe);
+		catch (IOException ioException) {
+			throw new GradleException(
+				"Unable to read digest file", ioException);
 		}
 	}
 
@@ -275,8 +275,9 @@ public class TaskCacheApplicator {
 				logger.info("Updated digest file to " + digest);
 			}
 		}
-		catch (IOException ioe) {
-			throw new GradleException("Unable to write digest file", ioe);
+		catch (IOException ioException) {
+			throw new GradleException(
+				"Unable to write digest file", ioException);
 		}
 	}
 

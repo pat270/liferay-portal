@@ -1,67 +1,63 @@
+create table CTAutoResolutionInfo (
+	mvccVersion LONG default 0 not null,
+	ctAutoResolutionInfoId LONG not null primary key,
+	companyId LONG,
+	createDate DATE null,
+	ctCollectionId LONG,
+	modelClassNameId LONG,
+	sourceModelClassPK LONG,
+	targetModelClassPK LONG,
+	conflictIdentifier VARCHAR(500) null
+);
+
 create table CTCollection (
+	mvccVersion LONG default 0 not null,
 	ctCollectionId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
-	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
 	name VARCHAR(75) null,
-	description VARCHAR(75) null,
+	description VARCHAR(200) null,
 	status INTEGER,
 	statusByUserId LONG,
-	statusByUserName VARCHAR(75) null,
 	statusDate DATE null
 );
 
-create table CTCollection_CTEntryAggregate (
-	companyId LONG not null,
-	ctCollectionId LONG not null,
-	ctEntryAggregateId LONG not null,
-	primary key (ctCollectionId, ctEntryAggregateId)
-);
-
-create table CTCollections_CTEntries (
-	companyId LONG not null,
-	ctCollectionId LONG not null,
-	ctEntryId LONG not null,
-	primary key (ctCollectionId, ctEntryId)
-);
-
 create table CTEntry (
+	mvccVersion LONG default 0 not null,
 	ctEntryId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
-	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
-	originalCTCollectionId LONG,
+	ctCollectionId LONG,
 	modelClassNameId LONG,
 	modelClassPK LONG,
-	modelResourcePrimKey LONG,
-	changeType INTEGER,
-	collision BOOLEAN,
-	status INTEGER
+	modelMvccVersion LONG,
+	changeType INTEGER
 );
 
-create table CTEntryAggregate (
-	ctEntryAggregateId LONG not null primary key,
+create table CTMessage (
+	mvccVersion LONG default 0 not null,
+	ctMessageId LONG not null primary key,
+	companyId LONG,
+	ctCollectionId LONG,
+	messageContent TEXT null
+);
+
+create table CTPreferences (
+	mvccVersion LONG default 0 not null,
+	ctPreferencesId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	ownerCTEntryId LONG,
-	status INTEGER
-);
-
-create table CTEntryAggregates_CTEntries (
-	companyId LONG not null,
-	ctEntryId LONG not null,
-	ctEntryAggregateId LONG not null,
-	primary key (ctEntryId, ctEntryAggregateId)
+	ctCollectionId LONG,
+	previousCtCollectionId LONG,
+	confirmationEnabled BOOLEAN
 );
 
 create table CTProcess (
+	mvccVersion LONG default 0 not null,
 	ctProcessId LONG not null primary key,
 	companyId LONG,
 	userId LONG,

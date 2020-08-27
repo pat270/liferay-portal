@@ -17,16 +17,15 @@ package com.liferay.portal.security.membership.policy.site.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.expando.kernel.service.ExpandoTableLocalServiceUtil;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.membershippolicy.MembershipPolicyException;
 import com.liferay.portal.kernel.service.RoleServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupRoleServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.kernel.service.persistence.UserGroupRolePK;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -86,18 +85,18 @@ public class SiteMembershipPolicyRolesTest
 		long[] userIds = addUsers();
 		long[] forbiddenRoleIds = addForbiddenRoles();
 
-		UserGroupRolePK userGroupRolePK = new UserGroupRolePK(
-			userIds[0], group.getGroupId(), forbiddenRoleIds[0]);
-
 		UserGroupRole userGroupRole =
-			UserGroupRoleLocalServiceUtil.createUserGroupRole(userGroupRolePK);
+			UserGroupRoleLocalServiceUtil.createUserGroupRole(0);
+
+		userGroupRole.setUserId(userIds[0]);
+		userGroupRole.setGroupId(group.getGroupId());
+		userGroupRole.setRoleId(forbiddenRoleIds[0]);
 
 		userGroupRoles.add(userGroupRole);
 
-		User user = UserLocalServiceUtil.getUser(userIds[0]);
-
 		MembershipPolicyTestUtil.updateUser(
-			user, null, null, null, null, userGroupRoles);
+			UserLocalServiceUtil.getUser(userIds[0]), null, null, null, null,
+			userGroupRoles);
 	}
 
 	@Test(expected = MembershipPolicyException.class)
@@ -115,18 +114,18 @@ public class SiteMembershipPolicyRolesTest
 		long[] userIds = addUsers();
 		long[] standardRoleIds = addStandardRoles();
 
-		UserGroupRolePK userGroupRolePK = new UserGroupRolePK(
-			userIds[0], group.getGroupId(), standardRoleIds[0]);
-
 		UserGroupRole userGroupRole =
-			UserGroupRoleLocalServiceUtil.createUserGroupRole(userGroupRolePK);
+			UserGroupRoleLocalServiceUtil.createUserGroupRole(0);
+
+		userGroupRole.setUserId(userIds[0]);
+		userGroupRole.setGroupId(group.getGroupId());
+		userGroupRole.setRoleId(standardRoleIds[0]);
 
 		userGroupRoles.add(userGroupRole);
 
-		User user = UserLocalServiceUtil.getUser(userIds[0]);
-
 		MembershipPolicyTestUtil.updateUser(
-			user, null, null, null, null, userGroupRoles);
+			UserLocalServiceUtil.getUser(userIds[0]), null, null, null, null,
+			userGroupRoles);
 
 		Assert.assertTrue(isPropagateRoles());
 	}
@@ -189,10 +188,10 @@ public class SiteMembershipPolicyRolesTest
 		List<UserGroupRole> initialUserGroupRoles =
 			UserGroupRoleLocalServiceUtil.getUserGroupRoles(user.getUserId());
 
-		List<UserGroupRole> emptyNonAbstractList = new ArrayList<>();
+		List<UserGroupRole> emptyNonabstractList = new ArrayList<>();
 
 		MembershipPolicyTestUtil.updateUser(
-			user, null, null, null, null, emptyNonAbstractList);
+			user, null, null, null, null, emptyNonabstractList);
 
 		List<UserGroupRole> currentUserGroupRoles =
 			UserGroupRoleLocalServiceUtil.getUserGroupRoles(user.getUserId());

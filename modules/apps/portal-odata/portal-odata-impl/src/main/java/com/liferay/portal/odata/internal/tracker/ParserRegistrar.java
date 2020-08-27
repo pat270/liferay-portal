@@ -47,7 +47,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 public class ParserRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		_serviceTracker = ServiceTrackerFactory.open(
 			bundleContext, EntityModel.class,
 			new EntityModelTrackerCustomizer(
@@ -91,12 +91,12 @@ public class ParserRegistrar {
 					_bundleContext, SortParser.class,
 					_sortParserProvider.provide(entityModel));
 			}
-			catch (Throwable t) {
+			catch (Throwable throwable) {
 				parserServiceRegistrations.unregister();
 
 				_bundleContext.ungetService(serviceReference);
 
-				throw t;
+				throw throwable;
 			}
 
 			return parserServiceRegistrations;

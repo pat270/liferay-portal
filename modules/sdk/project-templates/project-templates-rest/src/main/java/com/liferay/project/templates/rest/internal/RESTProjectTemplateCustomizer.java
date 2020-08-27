@@ -14,8 +14,8 @@
 
 package com.liferay.project.templates.rest.internal;
 
-import com.liferay.project.templates.ProjectTemplateCustomizer;
-import com.liferay.project.templates.ProjectTemplatesArgs;
+import com.liferay.project.templates.extensions.ProjectTemplateCustomizer;
+import com.liferay.project.templates.extensions.ProjectTemplatesArgs;
 
 import java.io.File;
 
@@ -31,6 +31,11 @@ public class RESTProjectTemplateCustomizer
 	implements ProjectTemplateCustomizer {
 
 	@Override
+	public String getTemplateName() {
+		return "rest";
+	}
+
+	@Override
 	public void onAfterGenerateProject(
 			ProjectTemplatesArgs projectTemplatesArgs, File destinationDir,
 			ArchetypeGenerationResult archetypeGenerationResult)
@@ -39,7 +44,8 @@ public class RESTProjectTemplateCustomizer
 		String liferayVersion = projectTemplatesArgs.getLiferayVersion();
 
 		if (liferayVersion.startsWith("7.1") ||
-			liferayVersion.startsWith("7.2")) {
+			liferayVersion.startsWith("7.2") ||
+			liferayVersion.startsWith("7.3")) {
 
 			String cxfConfig =
 				"com.liferay.portal.remote.cxf.common.configuration." +

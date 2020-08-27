@@ -181,6 +181,8 @@ public interface PortletDataHandler {
 
 	public int getRank();
 
+	public String getResourceName();
+
 	/**
 	 * Returns the schema version for this data handler, which represents the
 	 * staging and export/import aspect of a component. The schema version is
@@ -323,16 +325,6 @@ public interface PortletDataHandler {
 
 	public void prepareManifestSummary(
 			PortletDataContext portletDataContext,
-			PortletPreferences portletPreferences)
-		throws PortletDataException;
-
-	public PortletPreferences processExportPortletPreferences(
-			PortletDataContext portletDataContext, String portletId,
-			PortletPreferences portletPreferences)
-		throws PortletDataException;
-
-	public PortletPreferences processImportPortletPreferences(
-			PortletDataContext portletDataContext, String portletId,
 			PortletPreferences portletPreferences)
 		throws PortletDataException;
 

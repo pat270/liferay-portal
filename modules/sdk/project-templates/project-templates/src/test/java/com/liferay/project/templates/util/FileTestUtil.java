@@ -15,6 +15,7 @@
 package com.liferay.project.templates.util;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -125,7 +126,9 @@ public class FileTestUtil {
 
 					String fileName = fileNamePath.toString();
 
-					if (fileName.startsWith(PROJECT_TEMPLATE_DIR_PREFIX)) {
+					if (fileName.startsWith(PROJECT_TEMPLATE_DIR_PREFIX) &&
+						!fileName.endsWith("-extensions")) {
+
 						return true;
 					}
 
@@ -135,10 +138,10 @@ public class FileTestUtil {
 			});
 	}
 
-	public static String read(String name) throws IOException {
-		StringBuilder sb = new StringBuilder();
+	public static String read(ClassLoader classLoader, String name)
+		throws IOException {
 
-		ClassLoader classLoader = FileTestUtil.class.getClassLoader();
+		StringBuilder sb = new StringBuilder();
 
 		try (BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(classLoader.getResourceAsStream(name)))) {
@@ -155,6 +158,29 @@ public class FileTestUtil {
 		}
 
 		return sb.toString();
+	}
+
+	public static String read(String name) throws IOException {
+		return read(FileTestUtil.class.getClassLoader(), name);
+	}
+
+	public static byte[] readAllBytes(String resource) throws IOException {
+		ClassLoader classLoader = FileTestUtil.class.getClassLoader();
+
+		InputStream inputStream = classLoader.getResourceAsStream(resource);
+
+		byte[] buffer = new byte[0xFFFF];
+
+		ByteArrayOutputStream byteArrayOutputStream =
+			new ByteArrayOutputStream();
+
+		for (int length = inputStream.read(buffer); length != -1;
+			 length = inputStream.read(buffer)) {
+
+			byteArrayOutputStream.write(buffer, 0, length);
+		}
+
+		return byteArrayOutputStream.toByteArray();
 	}
 
 	public static Properties readProperties(File file) throws IOException {

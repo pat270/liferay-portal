@@ -20,6 +20,7 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -30,6 +31,7 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
@@ -37,11 +39,11 @@ import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -49,7 +51,7 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.trash.TrashHelper;
 import com.liferay.trash.model.TrashEntry;
 import com.liferay.trash.service.TrashEntryLocalServiceUtil;
@@ -57,7 +59,6 @@ import com.liferay.trash.test.util.TrashTestUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -81,7 +82,9 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -189,11 +192,9 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 		Group group = updateTrashEntriesMaxAge(createGroup(companyId), 2);
 		User user = UserTestUtil.getAdminUser(companyId);
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group, user.getUserId());
-
 		StagingLocalServiceUtil.enableLocalStaging(
-			user.getUserId(), group, false, false, serviceContext);
+			user.getUserId(), group, false, false,
+			ServiceContextTestUtil.getServiceContext(group, user.getUserId()));
 
 		group = createLayoutGroup(group.getStagingGroup());
 
@@ -207,15 +208,11 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 		Group group = TrashTestUtil.disableTrash(createGroup(companyId));
 		User user = UserTestUtil.getAdminUser(companyId);
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group, user.getUserId());
-
 		StagingLocalServiceUtil.enableLocalStaging(
-			user.getUserId(), group, false, false, serviceContext);
+			user.getUserId(), group, false, false,
+			ServiceContextTestUtil.getServiceContext(group, user.getUserId()));
 
-		Group stagingGroup = group.getStagingGroup();
-
-		createFileEntryTrashEntry(stagingGroup, false);
+		createFileEntryTrashEntry(group.getStagingGroup(), false);
 
 		TrashEntryLocalServiceUtil.checkEntries();
 
@@ -261,7 +258,7 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 
 			trashEntry.setCreateDate(
 				new Date(
-					createDate.getTime() - maxAge * Time.MINUTE - Time.DAY));
+					createDate.getTime() - (maxAge * Time.MINUTE) - Time.DAY));
 
 			TrashEntryLocalServiceUtil.updateTrashEntry(trashEntry);
 		}
@@ -281,16 +278,16 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 
 	protected Group createLayoutGroup(Group group) throws Exception {
 		User user = UserTestUtil.getAdminUser(group.getCompanyId());
+
 		Layout layout = LayoutTestUtil.addLayout(group);
-
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.getDefault(), String.valueOf(layout.getPlid()));
 
 		return GroupLocalServiceUtil.addGroup(
 			user.getUserId(), GroupConstants.DEFAULT_PARENT_GROUP_ID,
 			Layout.class.getName(), layout.getPlid(),
-			GroupConstants.DEFAULT_LIVE_GROUP_ID, nameMap,
+			GroupConstants.DEFAULT_LIVE_GROUP_ID,
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), String.valueOf(layout.getPlid())
+			).build(),
 			(Map<Locale, String>)null, 0, true,
 			GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null, false, true,
 			null);
@@ -329,7 +326,7 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 	protected Group updateTrashEntriesMaxAge(Group group, int days)
 		throws Exception {
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getParentLiveGroupTypeSettingsProperties();
 
 		int companyTrashEntriesMaxAge = PrefsPropsUtil.getInteger(
@@ -340,19 +337,19 @@ public class TrashEntryLocalServiceCheckEntriesTest {
 		}
 		else {
 			days = GetterUtil.getInteger(
-				typeSettingsProperties.getProperty("trashEntriesMaxAge"),
+				typeSettingsUnicodeProperties.getProperty("trashEntriesMaxAge"),
 				companyTrashEntriesMaxAge);
 		}
 
 		if (days != companyTrashEntriesMaxAge) {
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"trashEntriesMaxAge", String.valueOf(days));
 		}
 		else {
-			typeSettingsProperties.remove("trashEntriesMaxAge");
+			typeSettingsUnicodeProperties.remove("trashEntriesMaxAge");
 		}
 
-		group.setTypeSettingsProperties(typeSettingsProperties);
+		group.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 		return GroupLocalServiceUtil.updateGroup(group);
 	}

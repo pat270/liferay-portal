@@ -113,14 +113,17 @@ public class JSBundleConfigServlet extends HttpServlet {
 							"var MODULE_PATH = '", _portal.getPathProxy(),
 							servletContext.getContextPath(), "';"));
 
-					printWriter.print(StringUtil.read(inputStream));
+					printWriter.println(
+						StringUtil.removeSubstring(
+							StringUtil.read(inputStream),
+							"//# sourceMappingURL=config.js.map"));
 
 					printWriter.println("} catch (error) {");
 					printWriter.println("console.error(error);");
 					printWriter.println("}");
 				}
-				catch (Exception e) {
-					_log.error("Unable to open resource", e);
+				catch (Exception exception) {
+					_log.error("Unable to open resource", exception);
 				}
 			}
 

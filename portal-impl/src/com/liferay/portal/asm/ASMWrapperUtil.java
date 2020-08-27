@@ -17,6 +17,7 @@ package com.liferay.portal.asm;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -62,10 +63,10 @@ public class ASMWrapperUtil {
 					asmWrapperClass = classLoader.loadClass(
 						asmWrapperClassName);
 				}
-				catch (ClassNotFoundException cnfe) {
+				catch (ClassNotFoundException classNotFoundException) {
 					byte[] classData = _generateASMWrapperClassData(
-						asmWrapperClassName.replace('.', '/'), interfaceClass,
-						delegateObject, defaultObject);
+						StringUtil.replace(asmWrapperClassName, '.', '/'),
+						interfaceClass, delegateObject, defaultObject);
 
 					asmWrapperClass = (Class<?>)_defineClassMethod.invoke(
 						classLoader, asmWrapperClassName, classData, 0,
@@ -81,8 +82,8 @@ public class ASMWrapperUtil {
 				return (T)constructor.newInstance(
 					delegateObject, defaultObject);
 			}
-			catch (Throwable t) {
-				throw new RuntimeException(t);
+			catch (Throwable throwable) {
+				throw new RuntimeException(throwable);
 			}
 		}
 	}
@@ -172,7 +173,7 @@ public class ASMWrapperUtil {
 					"_delegate", delegateObjectClassDescriptor,
 					_getClassBinaryName(delegateObjectClass));
 			}
-			catch (NoSuchMethodException nsme) {
+			catch (NoSuchMethodException noSuchMethodException) {
 				_generateMethod(
 					classWriter, method, asmWrapperClassBinaryName, "_default",
 					defaultObjectClassDescriptor,
@@ -249,7 +250,7 @@ public class ASMWrapperUtil {
 	private static String _getClassBinaryName(Class<?> clazz) {
 		String className = clazz.getName();
 
-		return className.replace('.', '/');
+		return StringUtil.replace(className, '.', '/');
 	}
 
 	private ASMWrapperUtil() {
@@ -272,8 +273,8 @@ public class ASMWrapperUtil {
 			_toStringMethod = ReflectionUtil.getDeclaredMethod(
 				Object.class, "toString");
 		}
-		catch (Throwable t) {
-			throw new ExceptionInInitializerError(t);
+		catch (Throwable throwable) {
+			throw new ExceptionInInitializerError(throwable);
 		}
 	}
 

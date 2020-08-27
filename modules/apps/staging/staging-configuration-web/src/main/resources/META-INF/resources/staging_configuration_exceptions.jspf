@@ -20,7 +20,7 @@
 		type="WARNING"
 	>
 		<liferay-ui:message key='<%= LanguageUtil.get(request, "live-group-remote-staging-alert") %>' />
-		<liferay-ui:message arguments='<%= "javascript:" + renderResponse.getNamespace() + "saveGroup(true);" %>' key="you-can-also-forcibly-disable-remote-staging" />
+		<liferay-ui:message arguments='<%= "javascript:" + liferayPortletResponse.getNamespace() + "saveGroup(true);" %>' key="you-can-also-forcibly-disable-remote-staging" />
 	</liferay-staging:alert>
 </c:if>
 
@@ -59,33 +59,30 @@
 	</liferay-staging:alert>
 
 	<script>
-		(function() {
-			var publishProcessesLink = document.getElementById('<portlet:namespace />publishProcessesLink');
+		(function () {
+			var publishProcessesLink = document.getElementById(
+				'<portlet:namespace />publishProcessesLink'
+			);
 
 			if (publishProcessesLink) {
-				publishProcessesLink.addEventListener(
-					'click',
-					function(event) {
-						Liferay.Util.openWindow(
-							{
-								id: 'publishProcesses',
-								title: '<liferay-ui:message key="initial-publication" />',
+				publishProcessesLink.addEventListener('click', function (event) {
+					Liferay.Util.openWindow({
+						id: 'publishProcesses',
+						title: '<liferay-ui:message key="initial-publication" />',
 
-								<liferay-portlet:renderURL portletName="<%= PortletKeys.EXPORT_IMPORT %>" var="publishProcessesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-									<portlet:param name="mvcRenderCommandName" value="publishLayouts" />
-									<portlet:param name="<%= Constants.CMD %>" value="view_processes" />
-									<portlet:param name="<%= SearchContainer.DEFAULT_CUR_PARAM %>" value="<%= ParamUtil.getString(request, SearchContainer.DEFAULT_CUR_PARAM) %>" />
-									<portlet:param name="<%= SearchContainer.DEFAULT_DELTA_PARAM %>" value="<%= ParamUtil.getString(request, SearchContainer.DEFAULT_DELTA_PARAM) %>" />
-									<portlet:param name="groupId" value="<%= String.valueOf(stagingGroupId) %>" />
-									<portlet:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
-									<portlet:param name="localPublishing" value="<%= String.valueOf(stagedLocally) %>" />
-								</liferay-portlet:renderURL>
+						<liferay-portlet:renderURL portletName="<%= PortletKeys.EXPORT_IMPORT %>" var="publishProcessesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+							<portlet:param name="mvcRenderCommandName" value="publishLayouts" />
+							<portlet:param name="<%= Constants.CMD %>" value="view_processes" />
+							<portlet:param name="<%= SearchContainer.DEFAULT_CUR_PARAM %>" value="<%= ParamUtil.getString(request, SearchContainer.DEFAULT_CUR_PARAM) %>" />
+							<portlet:param name="<%= SearchContainer.DEFAULT_DELTA_PARAM %>" value="<%= ParamUtil.getString(request, SearchContainer.DEFAULT_DELTA_PARAM) %>" />
+							<portlet:param name="groupId" value="<%= String.valueOf(stagingGroupId) %>" />
+							<portlet:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
+							<portlet:param name="localPublishing" value="<%= String.valueOf(stagedLocally) %>" />
+						</liferay-portlet:renderURL>
 
-								uri: '<%= HtmlUtil.escapeJS(publishProcessesURL.toString()) %>'
-							}
-						);
-					}
-				);
+						uri: '<%= HtmlUtil.escapeJS(publishProcessesURL.toString()) %>',
+					});
+				});
 			}
 		})();
 	</script>
@@ -142,3 +139,5 @@
 
 	<liferay-ui:message key="<%= se.getMessage() %>" />
 </liferay-ui:error>
+
+<liferay-ui:error key="publicationsEnabled" message="publications-are-enabled-for-the-current-virtual-instance" />

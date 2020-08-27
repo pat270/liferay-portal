@@ -18,8 +18,6 @@ import aQute.bnd.annotation.metatype.Meta;
 
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author David Arques
  */
@@ -29,10 +27,19 @@ import org.osgi.annotation.versioning.ProviderType;
 	localization = "content/Language",
 	name = "segments-service-configuration-name"
 )
-@ProviderType
 public interface SegmentsServiceConfiguration {
 
-	@Meta.AD(deflt = "true", name = "segmentation-enabled", required = false)
+	@Meta.AD(
+		deflt = "true", description = "segmentation-enabled-description",
+		name = "segmentation-enabled-name", required = false
+	)
 	public boolean segmentationEnabled();
+
+	@Meta.AD(
+		deflt = "120",
+		description = "segments-preview-check-interval-description",
+		name = "segments-preview-check-interval", required = false
+	)
+	public int segmentsPreviewCheckInterval();
 
 }

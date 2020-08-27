@@ -14,10 +14,10 @@
 
 package com.liferay.journal.web.internal.portlet.action;
 
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.journal.constants.JournalPortletKeys;
@@ -66,6 +66,8 @@ public class UpdateDDMStructureMVCActionCommand extends BaseMVCActionCommand {
 			LocalizationUtil.getLocalizationMap(actionRequest, "description");
 
 		DDMForm ddmForm = _ddm.getDDMForm(actionRequest);
+
+		ActionUtil.validateFieldNames(ddmForm);
 
 		DDMFormLayout ddmFormLayout = _ddm.getDefaultDDMFormLayout(ddmForm);
 

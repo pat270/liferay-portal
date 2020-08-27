@@ -142,7 +142,7 @@ public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 
 	private Upload _addTaskInstall(Project project) {
 		Upload upload = GradleUtil.addTask(
-			project, MavenPlugin.INSTALL_TASK_NAME, Upload.class, true);
+			project, MavenPlugin.INSTALL_TASK_NAME, Upload.class);
 
 		Configuration configuration = GradleUtil.getConfiguration(
 			project, Dependency.ARCHIVES_CONFIGURATION);
@@ -197,10 +197,7 @@ public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureProject(Project project) {
-		String group = GradleUtil.getGradlePropertiesValue(
-			project, "project.group", _GROUP);
-
-		project.setGroup(group);
+		project.setGroup(GradleUtil.getProjectGroup(project, _GROUP));
 	}
 
 	private void _configureTaskUploadArchives(

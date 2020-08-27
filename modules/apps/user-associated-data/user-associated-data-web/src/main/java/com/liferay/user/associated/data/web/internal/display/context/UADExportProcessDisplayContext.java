@@ -15,7 +15,7 @@
 package com.liferay.user.associated.data.web.internal.display.context;
 
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
@@ -145,14 +145,13 @@ public class UADExportProcessDisplayContext {
 			PortalUtil.getLiferayPortletRequest(portletRequest),
 			PortalUtil.getLiferayPortletResponse(portletResponse));
 
-		portletURL.setParameter(
-			"mvcRenderCommandName", "/view_uad_export_processes");
-
 		User selectedUser = PortalUtil.getSelectedUser(_httpServletRequest);
 
 		portletURL.setParameter(
 			"p_u_i_d", String.valueOf(selectedUser.getUserId()));
 
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/view_uad_export_processes");
 		portletURL.setParameter("navigation", getNavigation());
 		portletURL.setParameter("orderByCol", getOrderByCol());
 		portletURL.setParameter("orderByType", getOrderByType());
@@ -160,7 +159,9 @@ public class UADExportProcessDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getSearchContainer() throws PortalException {
+	public SearchContainer<BackgroundTask> getSearchContainer()
+		throws PortalException {
+
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
@@ -169,7 +170,7 @@ public class UADExportProcessDisplayContext {
 			(PortletRequest)_httpServletRequest.getAttribute(
 				JavaConstants.JAVAX_PORTLET_REQUEST);
 
-		SearchContainer searchContainer = new SearchContainer(
+		SearchContainer<BackgroundTask> searchContainer = new SearchContainer(
 			portletRequest, getPortletURL(), null,
 			"no-personal-data-export-processes-were-found");
 
@@ -235,6 +236,6 @@ public class UADExportProcessDisplayContext {
 	private String _orderByCol;
 	private String _orderByType;
 	private final RenderResponse _renderResponse;
-	private SearchContainer _searchContainer;
+	private SearchContainer<BackgroundTask> _searchContainer;
 
 }

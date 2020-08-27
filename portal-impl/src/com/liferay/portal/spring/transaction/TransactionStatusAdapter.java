@@ -14,7 +14,8 @@
 
 package com.liferay.portal.spring.transaction;
 
-import org.springframework.transaction.PlatformTransactionManager;
+import com.liferay.petra.reflect.ReflectionUtil;
+
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionStatus;
@@ -40,15 +41,6 @@ public class TransactionStatusAdapter
 	@Override
 	public void flush() {
 		_transactionStatus.flush();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public PlatformTransactionManager getPlatformTransactionManager() {
-		return null;
 	}
 
 	public TransactionStatus getTransactionStatus() {
@@ -80,6 +72,17 @@ public class TransactionStatusAdapter
 		_transactionStatus.releaseSavepoint(savepoint);
 	}
 
+	void reportLifecycleListenerThrowables(Throwable throwable) {
+		if (_lifecycleListenerThrowable != null) {
+			if (throwable == null) {
+				ReflectionUtil.throwException(_lifecycleListenerThrowable);
+			}
+			else {
+				throwable.addSuppressed(_lifecycleListenerThrowable);
+			}
+		}
+	}
+
 	@Override
 	public void rollbackToSavepoint(Object savepoint)
 		throws TransactionException {
@@ -92,6 +95,17 @@ public class TransactionStatusAdapter
 		_transactionStatus.setRollbackOnly();
 	}
 
+	@Override
+	public void suppressLifecycleListenerThrowable(Throwable throwable) {
+		if (_lifecycleListenerThrowable == null) {
+			_lifecycleListenerThrowable = throwable;
+		}
+		else {
+			_lifecycleListenerThrowable.addSuppressed(throwable);
+		}
+	}
+
+	private Throwable _lifecycleListenerThrowable;
 	private final TransactionStatus _transactionStatus;
 
 }

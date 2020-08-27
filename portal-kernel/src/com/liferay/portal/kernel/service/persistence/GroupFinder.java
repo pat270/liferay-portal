@@ -42,31 +42,21 @@ public interface GroupFinder {
 			long companyId, java.util.LinkedHashMap<String, Object> params,
 			int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Group> obc);
+				<com.liferay.portal.kernel.model.Group> orderByComparator);
 
 	public java.util.List<com.liferay.portal.kernel.model.Group> findByLayouts(
 		long companyId, long parentGroupId, boolean site, Boolean active,
 		int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.portal.kernel.model.Group> obc);
-
-	public java.util.List<com.liferay.portal.kernel.model.Group> findByLayouts(
-		long companyId, long parentGroupId, boolean site, int start, int end);
+			<com.liferay.portal.kernel.model.Group> orderByComparator);
 
 	public java.util.List<com.liferay.portal.kernel.model.Group> findByLayouts(
 		long companyId, long parentGroupId, boolean site, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.portal.kernel.model.Group> obc);
+			<com.liferay.portal.kernel.model.Group> orderByComparator);
 
 	public java.util.List<com.liferay.portal.kernel.model.Group>
 		findByLiveGroups();
-
-	public java.util.List<com.liferay.portal.kernel.model.Group>
-		findByNoLayouts(
-			long classNameId, boolean privateLayout, int start, int end);
-
-	public java.util.List<com.liferay.portal.kernel.model.Group>
-		findByNullFriendlyURL();
 
 	public java.util.List<com.liferay.portal.kernel.model.Group> findBySystem(
 		long companyId);
@@ -77,6 +67,8 @@ public interface GroupFinder {
 	public com.liferay.portal.kernel.model.Group findByC_GK(
 			long companyId, String groupKey)
 		throws com.liferay.portal.kernel.exception.NoSuchGroupException;
+
+	public java.util.List<Long> findByC_A(long companyId, boolean active);
 
 	public java.util.List<com.liferay.portal.kernel.model.Group>
 		findByL_TS_S_RSGC(
@@ -90,6 +82,6 @@ public interface GroupFinder {
 			java.util.LinkedHashMap<String, Object> params, boolean andOperator,
 			int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Group> obc);
+				<com.liferay.portal.kernel.model.Group> orderByComparator);
 
 }

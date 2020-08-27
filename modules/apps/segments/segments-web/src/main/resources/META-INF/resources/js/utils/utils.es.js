@@ -1,6 +1,21 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import dateFns from 'date-fns';
-import {CONJUNCTIONS} from 'utils/constants.es';
 import {getUid} from 'metal';
+
+import {CONJUNCTIONS} from './constants.es';
 
 const GROUP_ID_NAMESPACE = 'group_';
 
@@ -11,10 +26,10 @@ const SPLIT_REGEX = /({\d+})/g;
  * @param {Array} items The items to add to the new group.
  * @return {Object} The new group object.
  */
-export const createNewGroup = items => ({
+export const createNewGroup = (items) => ({
 	conjunctionName: CONJUNCTIONS.AND,
 	groupId: generateGroupId(),
-	items
+	items,
 });
 
 /**
@@ -51,14 +66,11 @@ export function getChildGroupIds(criteria) {
 	let childGroupIds = [];
 
 	if (criteria.items && criteria.items.length) {
-		childGroupIds = criteria.items.reduce(
-			(groupIdList, item) => {
-				return item.groupId ?
-					[...groupIdList, item.groupId, ...getChildGroupIds(item)] :
-					groupIdList;
-			},
-			[]
-		);
+		childGroupIds = criteria.items.reduce((groupIdList, item) => {
+			return item.groupId
+				? [...groupIdList, item.groupId, ...getChildGroupIds(item)]
+				: groupIdList;
+		}, []);
 	}
 
 	return childGroupIds;
@@ -73,13 +85,11 @@ export function getChildGroupIds(criteria) {
  * @param {string} type The type to get the supported operators for.
  */
 export function getSupportedOperatorsFromType(operators, propertyTypes, type) {
-	return operators.filter(
-		operator => {
-			const validOperators = propertyTypes[type];
+	return operators.filter((operator) => {
+		const validOperators = propertyTypes[type];
 
-			return validOperators && validOperators.includes(operator.name);
-		}
-	);
+		return validOperators && validOperators.includes(operator.name);
+	});
 }
 
 /**
@@ -101,11 +111,9 @@ export function insertAtIndex(item, list, index) {
 export function objectToFormData(dataObject) {
 	const formData = new FormData();
 
-	Object.keys(dataObject).forEach(
-		key => {
-			formData.set(key, dataObject[key]);
-		}
-	);
+	Object.keys(dataObject).forEach((key) => {
+		formData.set(key, dataObject[key]);
+	});
 
 	return formData;
 }
@@ -117,9 +125,7 @@ export function objectToFormData(dataObject) {
  * @return {Array}
  */
 export function removeAtIndex(list, index) {
-	return list.filter(
-		(fItem, fIndex) => fIndex !== index
-	);
+	return list.filter((fItem, fIndex) => fIndex !== index);
 }
 
 /**
@@ -130,12 +136,9 @@ export function removeAtIndex(list, index) {
  * @return {Array}
  */
 export function replaceAtIndex(item, list, index) {
-	return Object.assign(
-		list,
-		{
-			[index]: item
-		}
-	);
+	return Object.assign(list, {
+		[index]: item,
+	});
 }
 
 /**
@@ -154,7 +157,9 @@ export function replaceAtIndex(item, list, index) {
  * @return {(string|Array)}
  */
 export function sub(langKey, args, join = true) {
-	const keyArray = langKey.split(SPLIT_REGEX).filter(val => val.length !== 0);
+	const keyArray = langKey
+		.split(SPLIT_REGEX)
+		.filter((val) => val.length !== 0);
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -182,7 +187,7 @@ export function dateToInternationalHuman(
 	const options = {
 		day: 'numeric',
 		month: 'long',
-		year: 'numeric'
+		year: 'numeric',
 	};
 
 	const intl = new Intl.DateTimeFormat(localeKey, options);
@@ -200,5 +205,6 @@ export function dateToInternationalHuman(
  */
 export function jsDatetoYYYYMMDD(dateJsObject) {
 	const DATE_FORMAT = 'YYYY-MM-DD';
+
 	return dateFns.format(dateJsObject, DATE_FORMAT);
 }

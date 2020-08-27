@@ -14,9 +14,10 @@
 
 package com.liferay.asset.display.page.service;
 
+import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetDisplayPageEntryLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetDisplayPageEntryLocalService
  * @generated
  */
-@ProviderType
 public class AssetDisplayPageEntryLocalServiceWrapper
 	implements AssetDisplayPageEntryLocalService,
 			   ServiceWrapper<AssetDisplayPageEntryLocalService> {
@@ -39,25 +39,26 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	/**
 	 * Adds the asset display page entry to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetDisplayPageEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetDisplayPageEntry the asset display page entry
 	 * @return the asset display page entry that was added
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		addAssetDisplayPageEntry(
-			com.liferay.asset.display.page.model.AssetDisplayPageEntry
-				assetDisplayPageEntry) {
+	public AssetDisplayPageEntry addAssetDisplayPageEntry(
+		AssetDisplayPageEntry assetDisplayPageEntry) {
 
 		return _assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(
 			assetDisplayPageEntry);
 	}
 
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-			addAssetDisplayPageEntry(
-				long userId, long groupId, long classNameId, long classPK,
-				long layoutPageTemplateEntryId, int type,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public AssetDisplayPageEntry addAssetDisplayPageEntry(
+			long userId, long groupId, long classNameId, long classPK,
+			long layoutPageTemplateEntryId, int type,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(
@@ -66,11 +67,10 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-			addAssetDisplayPageEntry(
-				long userId, long groupId, long classNameId, long classPK,
-				long layoutPageTemplateEntryId,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public AssetDisplayPageEntry addAssetDisplayPageEntry(
+			long userId, long groupId, long classNameId, long classPK,
+			long layoutPageTemplateEntryId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(
@@ -85,24 +85,38 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @return the new asset display page entry
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		createAssetDisplayPageEntry(long assetDisplayPageEntryId) {
+	public AssetDisplayPageEntry createAssetDisplayPageEntry(
+		long assetDisplayPageEntryId) {
 
 		return _assetDisplayPageEntryLocalService.createAssetDisplayPageEntry(
 			assetDisplayPageEntryId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetDisplayPageEntryLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the asset display page entry from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetDisplayPageEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param assetDisplayPageEntry the asset display page entry
 	 * @return the asset display page entry that was removed
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		deleteAssetDisplayPageEntry(
-			com.liferay.asset.display.page.model.AssetDisplayPageEntry
-				assetDisplayPageEntry) {
+	public AssetDisplayPageEntry deleteAssetDisplayPageEntry(
+		AssetDisplayPageEntry assetDisplayPageEntry) {
 
 		return _assetDisplayPageEntryLocalService.deleteAssetDisplayPageEntry(
 			assetDisplayPageEntry);
@@ -111,13 +125,17 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	/**
 	 * Deletes the asset display page entry with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetDisplayPageEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetDisplayPageEntryId the primary key of the asset display page entry
 	 * @return the asset display page entry that was removed
 	 * @throws PortalException if a asset display page entry with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-			deleteAssetDisplayPageEntry(long assetDisplayPageEntryId)
+	public AssetDisplayPageEntry deleteAssetDisplayPageEntry(
+			long assetDisplayPageEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetDisplayPageEntryLocalService.deleteAssetDisplayPageEntry(
@@ -146,6 +164,11 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetDisplayPageEntryLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _assetDisplayPageEntryLocalService.dynamicQuery();
 	}
@@ -167,7 +190,7 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.display.page.model.impl.AssetDisplayPageEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.display.page.model.impl.AssetDisplayPageEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -188,7 +211,7 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.display.page.model.impl.AssetDisplayPageEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.display.page.model.impl.AssetDisplayPageEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -238,17 +261,16 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		fetchAssetDisplayPageEntry(long assetDisplayPageEntryId) {
+	public AssetDisplayPageEntry fetchAssetDisplayPageEntry(
+		long assetDisplayPageEntryId) {
 
 		return _assetDisplayPageEntryLocalService.fetchAssetDisplayPageEntry(
 			assetDisplayPageEntryId);
 	}
 
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		fetchAssetDisplayPageEntry(
-			long groupId, long classNameId, long classPK) {
+	public AssetDisplayPageEntry fetchAssetDisplayPageEntry(
+		long groupId, long classNameId, long classPK) {
 
 		return _assetDisplayPageEntryLocalService.fetchAssetDisplayPageEntry(
 			groupId, classNameId, classPK);
@@ -262,8 +284,8 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @return the matching asset display page entry, or <code>null</code> if a matching asset display page entry could not be found
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		fetchAssetDisplayPageEntryByUuidAndGroupId(String uuid, long groupId) {
+	public AssetDisplayPageEntry fetchAssetDisplayPageEntryByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _assetDisplayPageEntryLocalService.
 			fetchAssetDisplayPageEntryByUuidAndGroupId(uuid, groupId);
@@ -280,7 +302,7 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * Returns a range of all the asset display page entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.display.page.model.impl.AssetDisplayPageEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.display.page.model.impl.AssetDisplayPageEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset display page entries
@@ -288,19 +310,17 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @return the range of asset display page entries
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.display.page.model.AssetDisplayPageEntry>
-			getAssetDisplayPageEntries(int start, int end) {
+	public java.util.List<AssetDisplayPageEntry> getAssetDisplayPageEntries(
+		int start, int end) {
 
 		return _assetDisplayPageEntryLocalService.getAssetDisplayPageEntries(
 			start, end);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.asset.display.page.model.AssetDisplayPageEntry>
-			getAssetDisplayPageEntriesByLayoutPageTemplateEntryId(
-				long layoutPageTemplateEntryId) {
+	public java.util.List<AssetDisplayPageEntry>
+		getAssetDisplayPageEntriesByLayoutPageTemplateEntryId(
+			long layoutPageTemplateEntryId) {
 
 		return _assetDisplayPageEntryLocalService.
 			getAssetDisplayPageEntriesByLayoutPageTemplateEntryId(
@@ -315,10 +335,9 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @return the matching asset display page entries, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.display.page.model.AssetDisplayPageEntry>
-			getAssetDisplayPageEntriesByUuidAndCompanyId(
-				String uuid, long companyId) {
+	public java.util.List<AssetDisplayPageEntry>
+		getAssetDisplayPageEntriesByUuidAndCompanyId(
+			String uuid, long companyId) {
 
 		return _assetDisplayPageEntryLocalService.
 			getAssetDisplayPageEntriesByUuidAndCompanyId(uuid, companyId);
@@ -335,13 +354,11 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @return the range of matching asset display page entries, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.display.page.model.AssetDisplayPageEntry>
-			getAssetDisplayPageEntriesByUuidAndCompanyId(
-				String uuid, long companyId, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.asset.display.page.model.AssetDisplayPageEntry>
-						orderByComparator) {
+	public java.util.List<AssetDisplayPageEntry>
+		getAssetDisplayPageEntriesByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<AssetDisplayPageEntry> orderByComparator) {
 
 		return _assetDisplayPageEntryLocalService.
 			getAssetDisplayPageEntriesByUuidAndCompanyId(
@@ -376,8 +393,8 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @throws PortalException if a asset display page entry with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-			getAssetDisplayPageEntry(long assetDisplayPageEntryId)
+	public AssetDisplayPageEntry getAssetDisplayPageEntry(
+			long assetDisplayPageEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetDisplayPageEntryLocalService.getAssetDisplayPageEntry(
@@ -393,8 +410,8 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	 * @throws PortalException if a matching asset display page entry could not be found
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-			getAssetDisplayPageEntryByUuidAndGroupId(String uuid, long groupId)
+	public AssetDisplayPageEntry getAssetDisplayPageEntryByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetDisplayPageEntryLocalService.
@@ -429,6 +446,9 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 		return _assetDisplayPageEntryLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -441,28 +461,49 @@ public class AssetDisplayPageEntryLocalServiceWrapper
 	/**
 	 * Updates the asset display page entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetDisplayPageEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetDisplayPageEntry the asset display page entry
 	 * @return the asset display page entry that was updated
 	 */
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-		updateAssetDisplayPageEntry(
-			com.liferay.asset.display.page.model.AssetDisplayPageEntry
-				assetDisplayPageEntry) {
+	public AssetDisplayPageEntry updateAssetDisplayPageEntry(
+		AssetDisplayPageEntry assetDisplayPageEntry) {
 
 		return _assetDisplayPageEntryLocalService.updateAssetDisplayPageEntry(
 			assetDisplayPageEntry);
 	}
 
 	@Override
-	public com.liferay.asset.display.page.model.AssetDisplayPageEntry
-			updateAssetDisplayPageEntry(
-				long assetDisplayPageEntryId, long layoutPageTemplateEntryId,
-				int type)
+	public AssetDisplayPageEntry updateAssetDisplayPageEntry(
+			long assetDisplayPageEntryId, long layoutPageTemplateEntryId,
+			int type)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetDisplayPageEntryLocalService.updateAssetDisplayPageEntry(
 			assetDisplayPageEntryId, layoutPageTemplateEntryId, type);
+	}
+
+	@Override
+	public CTPersistence<AssetDisplayPageEntry> getCTPersistence() {
+		return _assetDisplayPageEntryLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetDisplayPageEntry> getModelClass() {
+		return _assetDisplayPageEntryLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetDisplayPageEntry>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _assetDisplayPageEntryLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.service.LayoutBranchServiceUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>LayoutBranchServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see LayoutBranchServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class LayoutBranchServiceSoap {
 
 	public static com.liferay.portal.kernel.model.LayoutBranchSoap
@@ -80,10 +79,10 @@ public class LayoutBranchServiceSoap {
 			return com.liferay.portal.kernel.model.LayoutBranchSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -93,10 +92,10 @@ public class LayoutBranchServiceSoap {
 		try {
 			LayoutBranchServiceUtil.deleteLayoutBranch(layoutBranchId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -114,10 +113,10 @@ public class LayoutBranchServiceSoap {
 			return com.liferay.portal.kernel.model.LayoutBranchSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

@@ -18,6 +18,7 @@ import com.liferay.message.boards.model.MBThreadFlag;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MBThreadFlag in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class MBThreadFlagCacheModel
-	implements CacheModel<MBThreadFlag>, Externalizable {
+	implements CacheModel<MBThreadFlag>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MBThreadFlagCacheModel)) {
+		if (!(object instanceof MBThreadFlagCacheModel)) {
 			return false;
 		}
 
 		MBThreadFlagCacheModel mbThreadFlagCacheModel =
-			(MBThreadFlagCacheModel)obj;
+			(MBThreadFlagCacheModel)object;
 
-		if (threadFlagId == mbThreadFlagCacheModel.threadFlagId) {
+		if ((threadFlagId == mbThreadFlagCacheModel.threadFlagId) &&
+			(mvccVersion == mbThreadFlagCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class MBThreadFlagCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, threadFlagId);
+		int hashCode = HashUtil.hash(0, threadFlagId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(21);
+		StringBundler sb = new StringBundler(25);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", threadFlagId=");
 		sb.append(threadFlagId);
@@ -95,6 +111,9 @@ public class MBThreadFlagCacheModel
 	@Override
 	public MBThreadFlag toEntityModel() {
 		MBThreadFlagImpl mbThreadFlagImpl = new MBThreadFlagImpl();
+
+		mbThreadFlagImpl.setMvccVersion(mvccVersion);
+		mbThreadFlagImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			mbThreadFlagImpl.setUuid("");
@@ -145,6 +164,9 @@ public class MBThreadFlagCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		threadFlagId = objectInput.readLong();
@@ -164,6 +186,10 @@ public class MBThreadFlagCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -193,6 +219,8 @@ public class MBThreadFlagCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long threadFlagId;
 	public long groupId;

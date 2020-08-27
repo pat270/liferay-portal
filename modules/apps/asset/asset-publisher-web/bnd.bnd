@@ -1,13 +1,9 @@
 Bundle-Name: Liferay Asset Publisher Web
 Bundle-SymbolicName: com.liferay.asset.publisher.web
-Bundle-Version: 4.0.0
+Bundle-Version: 4.0.31
 Import-Package:\
-	com.liferay.portal.kernel.portlet;version="[9.0.0,9.1)",\
+	com.liferay.portal.kernel.portlet;version="[10.1.0,10.2)",\
 	\
 	*
-Provide-Capability:\
-	soy;\
-		type="asset-publisher-web";\
-		version:Version="${Bundle-Version}"
 Web-ContextPath: /asset-publisher-web
 -dsannotations-options: inherit

@@ -37,8 +37,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.template.BaseTemplate;
 import com.liferay.portal.template.soy.SoyTemplateResource;
+import com.liferay.portal.template.soy.SoyTemplateResourceFactory;
 
-import java.io.Reader;
 import java.io.Writer;
 
 import java.util.ArrayList;
@@ -68,19 +68,22 @@ public class SoyTemplate extends BaseTemplate {
 	public SoyTemplate(
 		SoyTemplateResource soyTemplateResource, Map<String, Object> context,
 		SoyTemplateContextHelper templateContextHelper,
-		SoyTofuCacheHandler soyTofuCacheHandler) {
+		SoyTofuCacheHandler soyTofuCacheHandler,
+		SoyTemplateResourceFactory soyTemplateResourceFactory,
+		boolean restricted) {
 
-		super(soyTemplateResource, null, templateContextHelper);
+		super(soyTemplateResource, null, templateContextHelper, restricted);
 
 		if (ListUtil.isEmpty(soyTemplateResource.getTemplateResources())) {
 			throw new IllegalArgumentException("Template resource is null");
 		}
 
 		_templateContextHelper = templateContextHelper;
+		_soyTofuCacheHandler = soyTofuCacheHandler;
+		_soyTemplateResourceFactory = soyTemplateResourceFactory;
 
 		_soyContextImpl = new SoyContextImpl(
 			context, templateContextHelper.getRestrictedVariables());
-		_soyTofuCacheHandler = soyTofuCacheHandler;
 
 		_setBaseContext();
 	}
@@ -191,9 +194,9 @@ public class SoyTemplate extends BaseTemplate {
 
 			templateIds.add(templateResource.getTemplateId());
 
-			String templateContent = getTemplateContent(templateResource);
-
-			builder.add(templateContent, templateResource.getTemplateId());
+			builder.add(
+				getTemplateContent(templateResource),
+				templateResource.getTemplateId());
 		}
 
 		return builder.build();
@@ -223,19 +226,20 @@ public class SoyTemplate extends BaseTemplate {
 	}
 
 	protected SoyTofuCacheBag getSoyTofuCacheBag(
-			List<TemplateResource> templateResources)
+			SoyTemplateResource soyTemplateResource)
 		throws Exception {
 
 		SoyTofuCacheBag soyTofuCacheBag = _soyTofuCacheHandler.get(
-			templateResources);
+			soyTemplateResource.getTemplateId());
 
 		if (soyTofuCacheBag == null) {
-			SoyFileSet soyFileSet = getSoyFileSet(templateResources);
+			SoyFileSet soyFileSet = getSoyFileSet(
+				soyTemplateResource.getTemplateResources());
 
 			SoyTofu soyTofu = soyFileSet.compileToTofu();
 
 			soyTofuCacheBag = _soyTofuCacheHandler.add(
-				templateResources, soyFileSet, soyTofu);
+				soyTemplateResource.getTemplateId(), soyFileSet, soyTofu);
 		}
 
 		return soyTofuCacheBag;
@@ -244,19 +248,17 @@ public class SoyTemplate extends BaseTemplate {
 	protected String getTemplateContent(TemplateResource templateResource)
 		throws Exception {
 
-		Reader reader = templateResource.getReader();
-
-		return CharStreams.toString(reader);
+		return CharStreams.toString(templateResource.getReader());
 	}
 
 	@Override
 	protected void handleException(
 			TemplateResource templateResource,
-			TemplateResource errorTemplateResource, Exception exception,
+			TemplateResource errorTemplateResource, Exception exception1,
 			Writer writer)
 		throws TemplateException {
 
-		put("exception", exception.getMessage());
+		put("exception", exception1.getMessage());
 
 		SoyTemplateResource soyTemplateResource =
 			(SoyTemplateResource)templateResource;
@@ -279,11 +281,11 @@ public class SoyTemplate extends BaseTemplate {
 		try {
 			processTemplate(errorTemplateResource, writer);
 		}
-		catch (Exception e) {
+		catch (Exception exception2) {
 			throw new TemplateException(
 				"Unable to process Soy template " +
 					errorTemplateResource.getTemplateId(),
-				e);
+				exception2);
 		}
 	}
 
@@ -299,19 +301,19 @@ public class SoyTemplate extends BaseTemplate {
 			throw new TemplateException("Namespace is not specified");
 		}
 
-		List<TemplateResource> templateResources;
+		SoyTemplateResource soyTemplateResource = null;
 
 		if (templateResource instanceof SoyTemplateResource) {
-			SoyTemplateResource soyTemplateResource =
-				(SoyTemplateResource)templateResource;
-
-			templateResources = soyTemplateResource.getTemplateResources();
+			soyTemplateResource = (SoyTemplateResource)templateResource;
 		}
 		else {
-			templateResources = Collections.singletonList(templateResource);
+			soyTemplateResource =
+				_soyTemplateResourceFactory.createSoyTemplateResource(
+					Collections.singletonList(templateResource));
 		}
 
-		SoyTofuCacheBag soyTofuCacheBag = getSoyTofuCacheBag(templateResources);
+		SoyTofuCacheBag soyTofuCacheBag = getSoyTofuCacheBag(
+			soyTemplateResource);
 
 		SoyTofu soyTofu = soyTofuCacheBag.getSoyTofu();
 
@@ -320,10 +322,9 @@ public class SoyTemplate extends BaseTemplate {
 		renderer.setData(_soyContextImpl.createSoyTemplateRecord());
 		renderer.setIjData(_soyContextImpl.createInjectedSoyTemplateRecord());
 
-		SoyFileSet soyFileSet = soyTofuCacheBag.getSoyFileSet();
-
 		Optional<SoyMsgBundle> soyMsgBundle = getSoyMsgBundle(
-			templateResources, soyFileSet, soyTofuCacheBag);
+			soyTemplateResource.getTemplateResources(),
+			soyTofuCacheBag.getSoyFileSet(), soyTofuCacheBag);
 
 		if (soyMsgBundle.isPresent()) {
 			renderer.setMsgBundle(soyMsgBundle.get());
@@ -345,7 +346,7 @@ public class SoyTemplate extends BaseTemplate {
 	private ResourceBundle _getLanguageResourceBundle(
 		List<TemplateResource> templateResources, Locale locale) {
 
-		List<ResourceBundleLoader> resourceBundleLoaders = new ArrayList<>();
+		Set<Bundle> templateResourceBundles = new HashSet<>();
 
 		for (TemplateResource templateResource : templateResources) {
 			try {
@@ -353,23 +354,28 @@ public class SoyTemplate extends BaseTemplate {
 					SoyProviderCapabilityBundleRegister.getTemplateBundle(
 						templateResource.getTemplateId());
 
-				BundleWiring bundleWiring = templateResourceBundle.adapt(
-					BundleWiring.class);
-
-				resourceBundleLoaders.add(
-					new ClassResourceBundleLoader(
-						"content.Language", bundleWiring.getClassLoader()));
+				templateResourceBundles.add(templateResourceBundle);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					String templateId = templateResource.getTemplateId();
-
 					_log.debug(
 						"Unable to get language resource bundle for template " +
-							StringUtil.quote(templateId),
-						e);
+							StringUtil.quote(templateResource.getTemplateId()),
+						exception);
 				}
 			}
+		}
+
+		List<ResourceBundleLoader> resourceBundleLoaders = new ArrayList<>(
+			templateResourceBundles.size() + 1);
+
+		for (Bundle templateResourceBundle : templateResourceBundles) {
+			BundleWiring bundleWiring = templateResourceBundle.adapt(
+				BundleWiring.class);
+
+			resourceBundleLoaders.add(
+				new ClassResourceBundleLoader(
+					"content.Language", bundleWiring.getClassLoader()));
 		}
 
 		resourceBundleLoaders.add(LanguageUtil.getPortalResourceBundleLoader());
@@ -396,6 +402,7 @@ public class SoyTemplate extends BaseTemplate {
 	private static final Log _log = LogFactoryUtil.getLog(SoyTemplate.class);
 
 	private final SoyContextImpl _soyContextImpl;
+	private final SoyTemplateResourceFactory _soyTemplateResourceFactory;
 	private final SoyTofuCacheHandler _soyTofuCacheHandler;
 	private final SoyTemplateContextHelper _templateContextHelper;
 

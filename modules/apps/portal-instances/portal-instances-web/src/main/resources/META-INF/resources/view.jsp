@@ -24,32 +24,14 @@ PortletURL portletURL = renderResponse.createRenderURL();
 portletURL.setParameter("mvcRenderCommandName", "/portal_instances/view");
 %>
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems='<%=
-		new JSPNavigationItemList(pageContext) {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(StringPool.BLANK);
-						navigationItem.setLabel(LanguageUtil.get(request, "instances"));
-					});
-			}
-		}
-	%>'
-/>
-
 <clay:management-toolbar
 	creationMenu='<%=
 		new JSPCreationMenu(pageContext) {
 			{
 				addDropdownItem(
 					dropdownItem -> {
-						dropdownItem.setHref(
-							renderResponse.createRenderURL(), "mvcRenderCommandName", "/portal_instances/edit_instance", "redirect", PortalUtil.getCurrentURL(request));
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "add"));
+						dropdownItem.setHref(renderResponse.createRenderURL(), "mvcRenderCommandName", "/portal_instances/edit_instance", "redirect", PortalUtil.getCurrentURL(request));
+						dropdownItem.setLabel(LanguageUtil.get(request, "add"));
 					});
 			}
 		}

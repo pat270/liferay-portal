@@ -106,9 +106,7 @@ public class NewEnvTestRule implements TestRule {
 			new LocalProcessLauncher.ShutdownHook() {
 
 				@Override
-				public boolean shutdown(
-					int shutdownCode, Throwable shutdownThrowable) {
-
+				public boolean shutdown(int shutdownCode, Throwable throwable) {
 					System.exit(shutdownCode);
 
 					return true;
@@ -207,8 +205,8 @@ public class NewEnvTestRule implements TestRule {
 			return new URLClassLoader(
 				ClassPathUtil.getClassPathURLs(CLASS_PATH), null);
 		}
-		catch (MalformedURLException murle) {
-			throw new RuntimeException(murle);
+		catch (MalformedURLException malformedURLException) {
+			throw new RuntimeException(malformedURLException);
 		}
 	}
 
@@ -401,8 +399,8 @@ public class NewEnvTestRule implements TestRule {
 					invoke(contextClassLoader, afterMethodKey, object);
 				}
 			}
-			catch (Exception e) {
-				throw new ProcessException(e);
+			catch (Exception exception) {
+				throw new ProcessException(exception);
 			}
 
 			return StringPool.BLANK;
@@ -479,8 +477,8 @@ public class NewEnvTestRule implements TestRule {
 					invoke(_newClassLoader, afterMethodKey, object);
 				}
 			}
-			catch (InvocationTargetException ite) {
-				throw ite.getTargetException();
+			catch (InvocationTargetException invocationTargetException) {
+				throw invocationTargetException.getTargetException();
 			}
 			finally {
 				if (quiet == null) {
@@ -544,16 +542,16 @@ public class NewEnvTestRule implements TestRule {
 			try {
 				future.get();
 			}
-			catch (ExecutionException ee) {
-				Throwable cause = ee.getCause();
+			catch (ExecutionException executionException) {
+				Throwable throwable = executionException.getCause();
 
-				while (cause instanceof InvocationTargetException ||
-					   cause instanceof ProcessException) {
+				while (throwable instanceof InvocationTargetException ||
+					   throwable instanceof ProcessException) {
 
-					cause = cause.getCause();
+					throwable = throwable.getCause();
 				}
 
-				throw cause;
+				throw throwable;
 			}
 		}
 

@@ -1,0 +1,151 @@
+$black: #272833;
+$blue: #80acff;
+$gray: #869cad;
+$light-gray: #e7e7ed;
+$white: #fff;
+
+@mixin treeview-box-shadow {
+	border-radius: 0.25rem;
+	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #80acff;
+	transition: box-shadow ease 0.3s;
+}
+
+.lfr-treeview {
+	&-label input:focus + label {
+		@include treeview-box-shadow;
+	}
+
+	&-node-list {
+		border-left: 2px solid $gray;
+		outline: 0;
+
+		.form-check-card {
+			margin-bottom: 0;
+
+			&:hover .card {
+				box-shadow: none;
+			}
+
+			&.form-check-middle-left .card-horizontal > .card-body {
+				padding-left: 1rem;
+			}
+		}
+
+		.lfr-treeview-node-list {
+			border-left-style: dashed;
+			border-left-width: 1px;
+		}
+	}
+
+	&-node-list-item {
+		margin-bottom: 16px;
+		padding-left: 16px;
+		position: relative;
+
+		@media (min-width: 768px) {
+			margin-bottom: 24px;
+			padding-left: 24px;
+		}
+
+		&:focus {
+			outline: none;
+
+			.card-type-directory {
+				@include treeview-box-shadow;
+			}
+		}
+
+		&:not(:first-child) {
+			margin-top: 0.25em;
+		}
+
+		&__button {
+			border-width: 0;
+			left: 0;
+			margin-left: -8px;
+			margin-top: -6px;
+			padding: 0;
+			position: absolute;
+			top: 50%;
+
+			&:focus {
+				outline: 0;
+			}
+
+			&:focus &-icon {
+				@include treeview-box-shadow;
+			}
+
+			&-icon {
+				background-color: $gray;
+				border-radius: 3px;
+				color: $white;
+				display: block;
+				height: 14px;
+				padding: 3px;
+				width: 14px;
+			}
+		}
+
+		&__children {
+			padding-left: 15px;
+
+			@media (min-width: 768px) {
+				padding-left: 54px;
+			}
+		}
+
+		.card-type-directory {
+			&.disabled .card {
+				&,
+				&:hover {
+					background-color: $light-gray;
+					border: 1px solid $light-gray;
+					box-shadow: none;
+					cursor: not-allowed;
+					outline: none;
+				}
+
+				.card-title {
+					color: $black;
+				}
+			}
+
+			&.selected .card {
+				&,
+				&:hover {
+					background-color: $blue;
+					border-color: $blue;
+				}
+
+				.card-title {
+					color: $black;
+				}
+			}
+
+			.card {
+				border: 1px solid $light-gray;
+				box-shadow: none;
+				cursor: pointer;
+				margin-bottom: 0;
+
+				&:hover {
+					background-color: #f7f8f9;
+					border-color: #cdced9;
+
+					.card-title {
+						color: $black;
+					}
+				}
+
+				.card-title {
+					color: #6b6c7e;
+				}
+
+				.sticker {
+					font-size: 1em;
+				}
+			}
+		}
+	}
+}

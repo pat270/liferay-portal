@@ -29,7 +29,9 @@ import java.util.TreeSet;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class SortedProperties extends Properties {
 
 	public SortedProperties() {
@@ -105,10 +107,10 @@ public class SortedProperties extends Properties {
 	public void list(PrintStream out) {
 		System.out.println("-- listing properties --");
 
-		Enumeration<String> enu = propertyNames();
+		Enumeration<String> enumeration = propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			out.println(name + StringPool.EQUAL + getProperty(name));
 		}
@@ -118,10 +120,10 @@ public class SortedProperties extends Properties {
 	public void list(PrintWriter out) {
 		System.out.println("-- listing properties --");
 
-		Enumeration<String> enu = propertyNames();
+		Enumeration<String> enumeration = propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			out.println(name + StringPool.EQUAL + getProperty(name));
 		}

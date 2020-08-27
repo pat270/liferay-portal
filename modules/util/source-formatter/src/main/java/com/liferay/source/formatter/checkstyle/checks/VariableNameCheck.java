@@ -14,12 +14,12 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
@@ -40,12 +40,12 @@ public class VariableNameCheck extends BaseCheck {
 		return new int[] {TokenTypes.PARAMETER_DEF, TokenTypes.VARIABLE_DEF};
 	}
 
-	public void setCheckTypeName(boolean checkTypeName) {
-		_checkTypeName = checkTypeName;
-	}
-
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
+		if (detailAST.findFirstToken(TokenTypes.ELLIPSIS) != null) {
+			return;
+		}
+
 		DetailAST modifiersDetailAST = detailAST.findFirstToken(
 			TokenTypes.MODIFIERS);
 
@@ -55,33 +55,114 @@ public class VariableNameCheck extends BaseCheck {
 			return;
 		}
 
-		DetailAST nameDetailAST = detailAST.findFirstToken(TokenTypes.IDENT);
-
-		String name = nameDetailAST.getText();
+		String name = _getVariableName(detailAST);
 
 		_checkCaps(detailAST, name);
+		_checkCountVariableName(detailAST, name);
 		_checkIsVariableName(detailAST, name);
 
 		DetailAST typeDetailAST = detailAST.findFirstToken(TokenTypes.TYPE);
 
 		DetailAST firstChildDetailAST = typeDetailAST.getFirstChild();
 
-		if ((firstChildDetailAST == null) ||
-			(firstChildDetailAST.getType() != TokenTypes.IDENT)) {
-
+		if (firstChildDetailAST == null) {
 			return;
 		}
 
-		String typeName = firstChildDetailAST.getText();
+		if (firstChildDetailAST.getType() == TokenTypes.IDENT) {
+			String typeName = firstChildDetailAST.getText();
 
-		if (_checkTypeName) {
-			_checkTypeName(detailAST, name, typeName, "DetailAST");
-			_checkTypeName(detailAST, name, typeName, "HttpServletRequest");
-			_checkTypeName(detailAST, name, typeName, "HttpServletResponse");
+			_checkExceptionVariableName(detailAST, name, typeName);
+			_checkInstanceVariableName(detailAST, name, typeName);
+			_checkTypeName(detailAST, name, typeName);
+			_checkTypo(detailAST, name, typeName);
 		}
 
-		_checkTypo(detailAST, name, typeName);
+		DetailAST parentDetailAST = getParentWithTokenType(
+			detailAST, TokenTypes.CLASS_DEF, TokenTypes.CTOR_DEF,
+			TokenTypes.METHOD_DEF);
+
+		if (parentDetailAST == null) {
+			return;
+		}
+
+		List<DetailAST> assignDetailASTList = getAllChildTokens(
+			parentDetailAST, true, TokenTypes.ASSIGN);
+
+		for (DetailAST assignDetailAST : assignDetailASTList) {
+			firstChildDetailAST = assignDetailAST.getFirstChild();
+
+			if (firstChildDetailAST == null) {
+				continue;
+			}
+
+			String methodName = StringPool.BLANK;
+
+			if (equals(assignDetailAST.getParent(), detailAST)) {
+				if (firstChildDetailAST.getType() != TokenTypes.EXPR) {
+					continue;
+				}
+
+				firstChildDetailAST = firstChildDetailAST.getFirstChild();
+
+				if (firstChildDetailAST.getType() == TokenTypes.METHOD_CALL) {
+					methodName = getMethodName(firstChildDetailAST);
+				}
+			}
+			else if ((firstChildDetailAST.getType() == TokenTypes.IDENT) &&
+					 name.equals(firstChildDetailAST.getText())) {
+
+				DetailAST nextSiblingDetailAST =
+					firstChildDetailAST.getNextSibling();
+
+				if (nextSiblingDetailAST.getType() == TokenTypes.METHOD_CALL) {
+					methodName = getMethodName(nextSiblingDetailAST);
+				}
+			}
+
+			if (methodName.matches("get[A-Z].*")) {
+				_checkTypo(detailAST, name, methodName.substring(3));
+			}
+		}
 	}
+
+	protected String getExpectedVariableName(String typeName) {
+		if (StringUtil.isUpperCase(typeName) || typeName.matches("[A-Z]+s")) {
+			return StringUtil.toLowerCase(typeName);
+		}
+
+		if (typeName.startsWith("IDf")) {
+			return StringUtil.replaceFirst(typeName, "IDf", "idf");
+		}
+
+		if (typeName.startsWith("OSGi")) {
+			return StringUtil.replaceFirst(typeName, "OSGi", "osgi");
+		}
+
+		for (int i = 0; i < typeName.length(); i++) {
+			char c = typeName.charAt(i);
+
+			if (!Character.isLowerCase(c)) {
+				continue;
+			}
+
+			if (i == 0) {
+				return typeName;
+			}
+
+			if (i == 1) {
+				return StringUtil.toLowerCase(typeName.substring(0, 1)) +
+					typeName.substring(1);
+			}
+
+			return StringUtil.toLowerCase(typeName.substring(0, i - 1)) +
+				typeName.substring(i - 1);
+		}
+
+		return StringUtil.toLowerCase(typeName);
+	}
+
+	protected static final String MSG_RENAME_VARIABLE = "variable.rename";
 
 	private void _checkCaps(DetailAST detailAST, String name) {
 		for (String[] array : _ALL_CAPS_STRINGS) {
@@ -107,8 +188,117 @@ public class VariableNameCheck extends BaseCheck {
 				String newName =
 					name.substring(0, x) + array[0] + name.substring(y);
 
-				log(detailAST, _MSG_RENAME_VARIABLE, name, newName);
+				log(detailAST, MSG_RENAME_VARIABLE, name, newName);
 			}
+		}
+	}
+
+	private void _checkCountVariableName(DetailAST detailAST, String name) {
+		Matcher matcher = _countVariableNamePattern.matcher(name);
+
+		if (!matcher.find()) {
+			return;
+		}
+
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		if (parentDetailAST.getType() != TokenTypes.OBJBLOCK) {
+			return;
+		}
+
+		List<DetailAST> variableDefinitionDetailASTList = getAllChildTokens(
+			parentDetailAST, false, TokenTypes.VARIABLE_DEF);
+
+		String match = matcher.group(1);
+
+		for (DetailAST variableDefinitionDetailAST :
+				variableDefinitionDetailASTList) {
+
+			if (match.equals(_getVariableName(variableDefinitionDetailAST))) {
+				log(detailAST, MSG_RENAME_VARIABLE, match, match + "1");
+
+				return;
+			}
+		}
+	}
+
+	private void _checkExceptionVariableName(
+		DetailAST detailAST, String name, String typeName) {
+
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		if ((parentDetailAST.getType() == TokenTypes.LITERAL_CATCH) ||
+			(detailAST.getType() != TokenTypes.PARAMETER_DEF) ||
+			!typeName.endsWith("Exception")) {
+
+			return;
+		}
+
+		String absolutePath = getAbsolutePath();
+
+		if (absolutePath.endsWith("ExceptionMapper.java")) {
+			String expectedName = getExpectedVariableName(typeName);
+
+			if (!name.equals(expectedName)) {
+				log(detailAST, MSG_RENAME_VARIABLE, name, expectedName);
+			}
+		}
+	}
+
+	private void _checkInstanceVariableName(
+		DetailAST detailAST, String name, String typeName) {
+
+		if (!name.contentEquals("_instance")) {
+			return;
+		}
+
+		DetailAST parentDetailAST = detailAST.getParent();
+
+		while (true) {
+			if (parentDetailAST == null) {
+				return;
+			}
+
+			if (parentDetailAST.getType() != TokenTypes.CLASS_DEF) {
+				parentDetailAST = parentDetailAST.getParent();
+
+				continue;
+			}
+
+			DetailAST identDetailAST = parentDetailAST.findFirstToken(
+				TokenTypes.IDENT);
+
+			if (!typeName.equals(identDetailAST.getText())) {
+				return;
+			}
+
+			DetailAST grandParentDetailAST = parentDetailAST.getParent();
+
+			if (grandParentDetailAST != null) {
+				return;
+			}
+
+			String expectedVariableName = _getExpectedVariableName(
+				typeName, "_", "");
+
+			List<DetailAST> variableDeclarationDetailASTList =
+				getAllChildTokens(
+					parentDetailAST, true, TokenTypes.VARIABLE_DEF);
+
+			for (DetailAST variableDeclarationDetailAST :
+					variableDeclarationDetailASTList) {
+
+				identDetailAST = variableDeclarationDetailAST.findFirstToken(
+					TokenTypes.IDENT);
+
+				if (expectedVariableName.equals(identDetailAST.getText())) {
+					return;
+				}
+			}
+
+			log(detailAST, MSG_RENAME_VARIABLE, name, expectedVariableName);
+
+			return;
 		}
 	}
 
@@ -142,20 +332,66 @@ public class VariableNameCheck extends BaseCheck {
 		}
 
 		if (!_classHasVariableWithName(detailAST, newName)) {
-			log(detailAST, _MSG_RENAME_VARIABLE, name, newName);
+			log(detailAST, MSG_RENAME_VARIABLE, name, newName);
 		}
 	}
 
 	private void _checkTypeName(
-		DetailAST detailAST, String variableName, String typeName,
-		String... typeNames) {
+		DetailAST detailAST, String variableName, String typeName) {
 
-		if (ArrayUtil.contains(typeNames, typeName) &&
-			!variableName.matches("(?i).*" + typeName + "[0-9]*")) {
+		if (variableName.matches("(?i).*" + typeName + "[0-9]*") ||
+			(typeName.equals("Object") &&
+			 !variableName.matches("(o|obj|(.*Obj))[0-9]*"))) {
 
+			return;
+		}
+
+		String expectedVariableName = getExpectedVariableName(typeName);
+
+		if (StringUtil.isUpperCase(variableName)) {
+			expectedVariableName = StringUtil.toUpperCase(
+				StringUtil.replace(
+					TextFormatter.format(expectedVariableName, TextFormatter.K),
+					CharPool.DASH, CharPool.UNDERLINE));
+
+			if (variableName.matches(
+					"(.*_)?" + expectedVariableName + "(_[0-9]+)?")) {
+
+				return;
+			}
+
+			if (variableName.matches(
+					"(.*_)?" + expectedVariableName + "[0-9]+")) {
+
+				log(
+					detailAST, MSG_RENAME_VARIABLE, variableName,
+					StringUtil.replaceLast(
+						variableName, expectedVariableName,
+						expectedVariableName + "_"));
+
+				return;
+			}
+		}
+
+		if (typeName.endsWith("Impl")) {
 			log(
 				detailAST, _MSG_INCORRECT_ENDING_VARIABLE, typeName,
-				_getExpectedVariableName(typeName));
+				expectedVariableName);
+
+			return;
+		}
+
+		List<String> enforceTypeNames = getAttributeValues(
+			_ENFORCE_TYPE_NAMES_KEY);
+
+		for (String enforceTypeName : enforceTypeNames) {
+			if (typeName.matches(enforceTypeName)) {
+				log(
+					detailAST, _MSG_INCORRECT_ENDING_VARIABLE, typeName,
+					expectedVariableName);
+
+				return;
+			}
 		}
 	}
 
@@ -165,6 +401,13 @@ public class VariableNameCheck extends BaseCheck {
 		if (StringUtil.isUpperCase(variableName) ||
 			typeName.contains(StringPool.UNDERLINE)) {
 
+			return;
+		}
+
+		List<String> allowedVariableNames = getAttributeValues(
+			_ALLOWED_VARIABLE_NAMES_KEY);
+
+		if (allowedVariableNames.contains(variableName)) {
 			return;
 		}
 
@@ -186,7 +429,7 @@ public class VariableNameCheck extends BaseCheck {
 		String trimmedTypeName = StringUtil.replaceLast(
 			typeName, typeNameTrailingDigits, StringPool.BLANK);
 
-		String expectedName = _getExpectedVariableName(trimmedTypeName);
+		String expectedName = getExpectedVariableName(trimmedTypeName);
 
 		if (StringUtil.equals(trimmedName, expectedName)) {
 			return;
@@ -282,7 +525,7 @@ public class VariableNameCheck extends BaseCheck {
 
 			if (parentDetailAST.getType() == TokenTypes.METHOD_DEF) {
 				definitionDetailASTList.addAll(
-					DetailASTUtil.getAllChildTokens(
+					getAllChildTokens(
 						parentDetailAST, true, TokenTypes.PARAMETER_DEF,
 						TokenTypes.VARIABLE_DEF));
 			}
@@ -292,7 +535,7 @@ public class VariableNameCheck extends BaseCheck {
 					TokenTypes.OBJBLOCK);
 
 				definitionDetailASTList.addAll(
-					DetailASTUtil.getAllChildTokens(
+					getAllChildTokens(
 						objBlockDetailAST, false, TokenTypes.VARIABLE_DEF));
 			}
 
@@ -321,47 +564,11 @@ public class VariableNameCheck extends BaseCheck {
 		return Arrays.equals(chars1, chars2);
 	}
 
-	private String _getExpectedVariableName(String typeName) {
-		if (StringUtil.isUpperCase(typeName)) {
-			return StringUtil.toLowerCase(typeName);
-		}
-
-		if (typeName.startsWith("IDf")) {
-			return StringUtil.replaceFirst(typeName, "IDf", "idf");
-		}
-
-		if (typeName.startsWith("OSGi")) {
-			return StringUtil.replaceFirst(typeName, "OSGi", "osgi");
-		}
-
-		for (int i = 0; i < typeName.length(); i++) {
-			char c = typeName.charAt(i);
-
-			if (!Character.isLowerCase(c)) {
-				continue;
-			}
-
-			if (i == 0) {
-				return typeName;
-			}
-
-			if (i == 1) {
-				return StringUtil.toLowerCase(typeName.substring(0, 1)) +
-					typeName.substring(1);
-			}
-
-			return StringUtil.toLowerCase(typeName.substring(0, i - 1)) +
-				typeName.substring(i - 1);
-		}
-
-		return StringUtil.toLowerCase(typeName);
-	}
-
 	private String _getExpectedVariableName(
 		String typeName, String leadingUnderline, String trailingDigits) {
 
 		return StringBundler.concat(
-			leadingUnderline, _getExpectedVariableName(typeName),
+			leadingUnderline, getExpectedVariableName(typeName),
 			trailingDigits);
 	}
 
@@ -378,6 +585,13 @@ public class VariableNameCheck extends BaseCheck {
 		}
 
 		return digits;
+	}
+
+	private String _getVariableName(DetailAST variableDefinitionDetailAST) {
+		DetailAST nameDetailAST = variableDefinitionDetailAST.findFirstToken(
+			TokenTypes.IDENT);
+
+		return nameDetailAST.getText();
 	}
 
 	private boolean _isBooleanType(DetailAST typeDetailAST) {
@@ -406,16 +620,19 @@ public class VariableNameCheck extends BaseCheck {
 		{"DDL", "Ddl"}, {"DDM", "Ddm"}, {"DL", "Dl"}, {"PK", "Pk"}
 	};
 
+	private static final String _ALLOWED_VARIABLE_NAMES_KEY =
+		"allowedVariableNames";
+
+	private static final String _ENFORCE_TYPE_NAMES_KEY = "enforceTypeNames";
+
 	private static final String _MSG_INCORRECT_ENDING_VARIABLE =
 		"variable.incorrect.ending";
 
-	private static final String _MSG_RENAME_VARIABLE = "variable.rename";
-
 	private static final String _MSG_TYPO_VARIABLE = "variable.typo";
 
+	private static final Pattern _countVariableNamePattern = Pattern.compile(
+		"^(\\w+?)[0-9]+$");
 	private static final Pattern _isVariableNamePattern = Pattern.compile(
 		"(_?)(is|IS_)([A-Z])(.*)");
-
-	private boolean _checkTypeName;
 
 }

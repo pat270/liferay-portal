@@ -17,123 +17,49 @@
 <%@ include file="/portlet/init.jsp" %>
 
 <%
-String productMenuState = SessionClicks.get(request, ProductNavigationProductMenuWebKeys.PRODUCT_NAVIGATION_PRODUCT_MENU_STATE, "closed");
+String productMenuState = SessionClicks.get(request, "com.liferay.product.navigation.product.menu.web_productMenuState", "closed");
+String pagesTreeState = SessionClicks.get(request, "com.liferay.product.navigation.product.menu.web_pagesTreeState", "closed");
+
+ApplicationsMenuInstanceConfiguration applicationsMenuInstanceConfiguration = ConfigurationProviderUtil.getCompanyConfiguration(ApplicationsMenuInstanceConfiguration.class, themeDisplay.getCompanyId());
 %>
 
-<div class="lfr-product-menu-sidebar" id="productMenuSidebar">
-	<div class="sidebar-header">
-		<h1 class="sr-only"><liferay-ui:message key="product-admin-menu" /></h1>
+<div class="lfr-product-menu-sidebar <%= applicationsMenuInstanceConfiguration.enableApplicationsMenu() ? "lfr-applications-menu" : "" %>" id="productMenuSidebar">
+	<c:if test="<%= !applicationsMenuInstanceConfiguration.enableApplicationsMenu() %>">
+		<div class="sidebar-header">
+			<h1 class="sr-only"><liferay-ui:message key="product-admin-menu" /></h1>
 
-		<div class="autofit-row">
-			<div class="autofit-col autofit-col-expand">
-				<a href="<%= PortalUtil.addPreservedParameters(themeDisplay, themeDisplay.getURLPortal(), false, true) %>">
-					<span class="company-details truncate-text">
-						<img alt="" class="company-logo" src="<%= themeDisplay.getPathImage() + "/company_logo?img_id=" + company.getLogoId() + "&t=" + WebServerServletTokenUtil.getToken(company.getLogoId()) %>" />
+			<clay:content-row>
+				<clay:content-col
+					expand="<%= true %>"
+				>
+					<a href="<%= PortalUtil.addPreservedParameters(themeDisplay, themeDisplay.getURLPortal(), false, true) %>">
+						<span class="company-details text-truncate">
+							<img alt="" class="company-logo" src="<%= themeDisplay.getPathImage() + "/company_logo?img_id=" + company.getLogoId() + "&t=" + WebServerServletTokenUtil.getToken(company.getLogoId()) %>" />
 
-						<span class="company-name"><%= HtmlUtil.escape(company.getName()) %></span>
-					</span>
-				</a>
-			</div>
+							<span class="company-name"><%= HtmlUtil.escape(company.getName()) %></span>
+						</span>
+					</a>
+				</clay:content-col>
 
-			<div class="autofit-col">
-				<aui:icon cssClass="d-inline-block d-md-none icon-monospaced sidenav-close" image="times" markupView="lexicon" url="javascript:;" />
-			</div>
+				<clay:content-col>
+					<aui:icon cssClass="d-inline-block d-md-none icon-monospaced sidenav-close" image="times" markupView="lexicon" url="javascript:;" />
+				</clay:content-col>
+			</clay:content-row>
 		</div>
-	</div>
+	</c:if>
 
 	<div class="sidebar-body">
-		<c:if test='<%= Objects.equals(productMenuState, "open") %>'>
-			<liferay-util:include page="/portlet/product_menu.jsp" servletContext="<%= application %>" />
-		</c:if>
+		<c:choose>
+			<c:when test='<%= Objects.equals(productMenuState, "open") && !Objects.equals(pagesTreeState, "open") %>'>
+				<liferay-util:include page="/portlet/product_menu.jsp" servletContext="<%= application %>" />
+			</c:when>
+			<c:when test='<%= Objects.equals(productMenuState, "open") && Objects.equals(pagesTreeState, "open") %>'>
+				<div class="pages-tree">
+					<liferay-util:include page="/portlet/pages_tree.jsp" servletContext="<%= application %>">
+						<liferay-util:param name="redirect" value="<%= themeDisplay.getURLCurrent() %>" />
+					</liferay-util:include>
+				</div>
+			</c:when>
+		</c:choose>
 	</div>
 </div>
-
-<aui:script use="liferay-store,io-request,parse-content">
-	var sidenavToggle = $('#<portlet:namespace />sidenavToggleId');
-
-	sidenavToggle.sideNavigation();
-
-	Liferay.once(
-		'screenLoad',
-		function() {
-			var sideNavigation = sidenavToggle.data('lexicon.sidenav');
-
-			if (sideNavigation) {
-				sideNavigation.destroy();
-			}
-		}
-	);
-
-	var sidenavSlider = $('#<portlet:namespace />sidenavSliderId');
-
-	sidenavSlider.on(
-		'closed.lexicon.sidenav',
-		function(event) {
-			Liferay.Store('<%= ProductNavigationProductMenuWebKeys.PRODUCT_NAVIGATION_PRODUCT_MENU_STATE %>', 'closed');
-		}
-	);
-
-	sidenavSlider.on(
-		'open.lexicon.sidenav',
-		function(event) {
-			Liferay.Store('<%= ProductNavigationProductMenuWebKeys.PRODUCT_NAVIGATION_PRODUCT_MENU_STATE %>', 'open');
-		}
-	);
-
-	if (Liferay.Util.isPhone() && ($('body').hasClass('open'))) {
-		sidenavToggle.sideNavigation('hide');
-	}
-
-	<c:if test="<%= productMenuDisplayContext.hasUserPanelCategory() %>">
-		Liferay.on(
-			'ProductMenu:openUserMenu',
-			function(event) {
-				var userCollapseSelector = '#<portlet:namespace /><%= AUIUtil.normalizeId(PanelCategoryKeys.USER) %>Collapse';
-
-				var showUserCollapse = function() {
-					var userCollapse = $(userCollapseSelector);
-
-					userCollapse.collapse(
-						{
-							parent: '#<portlet:namespace />Accordion',
-							show: true
-						}
-					);
-
-					userCollapse.collapse('show');
-				};
-
-				if ($('body').hasClass('open')) {
-					if ($(userCollapseSelector).hasClass('in')) {
-						sidenavToggle.sideNavigation('hide');
-					}
-					else {
-						showUserCollapse();
-					}
-				}
-				else {
-					sidenavToggle.sideNavigation('show');
-
-					if (!sidenavToggle.attr('data-url')) {
-						showUserCollapse();
-					}
-					else {
-						var urlLoadedState = sidenavSlider.data('url-loaded') ? sidenavSlider.data('url-loaded').state() : '';
-
-						if (urlLoadedState === 'resolved') {
-							showUserCollapse();
-						}
-						else {
-							sidenavSlider.on(
-								'urlLoaded.lexicon.sidenav',
-								function(event) {
-									showUserCollapse();
-								}
-							);
-						}
-					}
-				}
-			}
-		);
-	</c:if>
-</aui:script>

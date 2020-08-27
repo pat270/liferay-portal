@@ -15,10 +15,16 @@
 package com.liferay.portal.security.auth;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.AccessControlContext;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifier;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.model.impl.UserImpl;
+import com.liferay.portal.service.impl.UserLocalServiceImpl;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -44,6 +50,21 @@ public class AuthVerifierPipelineTest {
 		RegistryUtil.setRegistry(new BasicRegistryImpl());
 
 		Registry registry = RegistryUtil.getRegistry();
+
+		ReflectionTestUtil.setFieldValue(
+			UserLocalServiceUtil.class, "_service",
+			new UserLocalServiceImpl() {
+
+				@Override
+				public User fetchUser(long userId) {
+					User user = new UserImpl();
+
+					user.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+					return user;
+				}
+
+			});
 
 		AuthVerifierResult authVerifierResult = new AuthVerifierResult();
 

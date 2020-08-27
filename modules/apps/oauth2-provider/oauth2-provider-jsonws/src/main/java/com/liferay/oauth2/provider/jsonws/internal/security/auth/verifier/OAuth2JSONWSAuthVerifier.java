@@ -19,15 +19,16 @@ import com.liferay.oauth2.provider.jsonws.internal.service.access.policy.scope.S
 import com.liferay.oauth2.provider.jsonws.internal.service.access.policy.scope.SAPEntryScopeDescriptorFinderRegistrator;
 import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
+import com.liferay.oauth2.provider.model.OAuth2ScopeGrant;
 import com.liferay.oauth2.provider.rest.spi.bearer.token.provider.BearerTokenProvider;
 import com.liferay.oauth2.provider.rest.spi.bearer.token.provider.BearerTokenProviderAccessor;
-import com.liferay.oauth2.provider.scope.liferay.LiferayOAuth2Scope;
-import com.liferay.oauth2.provider.scope.liferay.OAuth2ProviderScopeLiferayConstants;
 import com.liferay.oauth2.provider.scope.liferay.ScopeLocator;
+import com.liferay.oauth2.provider.scope.liferay.constants.OAuth2ProviderScopeLiferayConstants;
 import com.liferay.oauth2.provider.scope.spi.scope.finder.ScopeFinder;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationScopeAliasesLocalService;
 import com.liferay.oauth2.provider.service.OAuth2AuthorizationLocalService;
+import com.liferay.oauth2.provider.service.OAuth2ScopeGrantLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -36,23 +37,23 @@ import com.liferay.portal.kernel.security.auth.AccessControlContext;
 import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifier;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
-import com.liferay.portal.kernel.security.service.access.policy.ServiceAccessPolicyThreadLocal;
+import com.liferay.portal.kernel.security.service.access.policy.ServiceAccessPolicy;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -84,9 +85,12 @@ public class OAuth2JSONWSAuthVerifier implements AuthVerifier {
 
 		AuthVerifierResult authVerifierResult = new AuthVerifierResult();
 
+		OAuth2Authorization oAuth2Authorization = getOAuth2Authorization(
+			accessControlContext);
+
 		try {
 			BearerTokenProvider.AccessToken accessToken = getAccessToken(
-				accessControlContext);
+				oAuth2Authorization);
 
 			if (accessToken == null) {
 				return authVerifierResult;
@@ -109,31 +113,34 @@ public class OAuth2JSONWSAuthVerifier implements AuthVerifier {
 				return authVerifierResult;
 			}
 
-			Set<String> scopes = new HashSet<>();
+			List<OAuth2ScopeGrant> oAuth2AuthorizationOAuth2ScopeGrants =
+				_oAuth2ScopeGrantLocalService.
+					getOAuth2AuthorizationOAuth2ScopeGrants(
+						oAuth2Authorization.getOAuth2AuthorizationId());
 
-			for (String scope : accessToken.getScopes()) {
-				for (String jaxRsApplicationName : _jaxRsApplicationNames) {
-					Collection<LiferayOAuth2Scope> liferayOAuth2Scopes =
-						_scopeLocator.getLiferayOAuth2Scopes(
-							companyId, scope, jaxRsApplicationName);
+			Stream<OAuth2ScopeGrant> stream =
+				oAuth2AuthorizationOAuth2ScopeGrants.stream();
 
-					for (LiferayOAuth2Scope liferayOAuth2Scope :
-							liferayOAuth2Scopes) {
-
-						scopes.add(liferayOAuth2Scope.getScope());
-					}
-				}
-			}
+			List<String> scopes = stream.filter(
+				oAuth2ScopeGrant -> _jaxRsApplicationNames.contains(
+					oAuth2ScopeGrant.getApplicationName())
+			).map(
+				OAuth2ScopeGrant::getScope
+			).collect(
+				Collectors.toList()
+			);
 
 			List<SAPEntryScope> sapEntryScopes =
 				_sapEntryScopeDescriptorFinderRegistrator.
 					getRegisteredSAPEntryScopes(companyId);
 
+			List<String> serviceAccessPolicyNames = new ArrayList<>(
+				sapEntryScopes.size());
+
 			for (SAPEntryScope sapEntryScope : sapEntryScopes) {
 				if (scopes.contains(sapEntryScope.getScope())) {
-					ServiceAccessPolicyThreadLocal.
-						addActiveServiceAccessPolicyName(
-							sapEntryScope.getSapEntryName());
+					serviceAccessPolicyNames.add(
+						sapEntryScope.getSAPEntryName());
 				}
 			}
 
@@ -141,15 +148,18 @@ public class OAuth2JSONWSAuthVerifier implements AuthVerifier {
 
 			settings.put(
 				BearerTokenProvider.AccessToken.class.getName(), accessToken);
+			settings.put(
+				ServiceAccessPolicy.SERVICE_ACCESS_POLICY_NAMES,
+				serviceAccessPolicyNames);
 
 			authVerifierResult.setState(AuthVerifierResult.State.SUCCESS);
 			authVerifierResult.setUserId(accessToken.getUserId());
 
 			return authVerifierResult;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to verify OAuth2 access token", e);
+				_log.debug("Unable to verify OAuth2 access token", exception);
 			}
 
 			return authVerifierResult;
@@ -171,36 +181,8 @@ public class OAuth2JSONWSAuthVerifier implements AuthVerifier {
 	}
 
 	protected BearerTokenProvider.AccessToken getAccessToken(
-			AccessControlContext accessControlContext)
+			OAuth2Authorization oAuth2Authorization)
 		throws PortalException {
-
-		HttpServletRequest httpServletRequest =
-			accessControlContext.getRequest();
-
-		String authorization = httpServletRequest.getHeader(
-			HttpHeaders.AUTHORIZATION);
-
-		if (Validator.isBlank(authorization)) {
-			return null;
-		}
-
-		String[] authorizationParts = authorization.split("\\s");
-
-		String scheme = authorizationParts[0];
-
-		if (!StringUtil.equalsIgnoreCase(scheme, _TOKEN_KEY)) {
-			return null;
-		}
-
-		String token = authorizationParts[1];
-
-		if (Validator.isBlank(token)) {
-			return null;
-		}
-
-		OAuth2Authorization oAuth2Authorization =
-			_oAuth2AuthorizationLocalService.
-				fetchOAuth2AuthorizationByAccessTokenContent(token);
 
 		if (oAuth2Authorization == null) {
 			return null;
@@ -245,6 +227,37 @@ public class OAuth2JSONWSAuthVerifier implements AuthVerifier {
 			oAuth2Authorization.getUserName());
 	}
 
+	protected OAuth2Authorization getOAuth2Authorization(
+		AccessControlContext accessControlContext) {
+
+		HttpServletRequest httpServletRequest =
+			accessControlContext.getRequest();
+
+		String authorization = httpServletRequest.getHeader(
+			HttpHeaders.AUTHORIZATION);
+
+		if (Validator.isBlank(authorization)) {
+			return null;
+		}
+
+		String[] authorizationParts = authorization.split("\\s");
+
+		String scheme = authorizationParts[0];
+
+		if (!StringUtil.equalsIgnoreCase(scheme, _TOKEN_KEY)) {
+			return null;
+		}
+
+		String token = authorizationParts[1];
+
+		if (Validator.isBlank(token)) {
+			return null;
+		}
+
+		return _oAuth2AuthorizationLocalService.
+			fetchOAuth2AuthorizationByAccessTokenContent(token);
+	}
+
 	protected void removeJaxRsApplicationName(
 		ServiceReference<ScopeFinder> serviceReference) {
 
@@ -276,6 +289,9 @@ public class OAuth2JSONWSAuthVerifier implements AuthVerifier {
 
 	@Reference
 	private OAuth2AuthorizationLocalService _oAuth2AuthorizationLocalService;
+
+	@Reference
+	private OAuth2ScopeGrantLocalService _oAuth2ScopeGrantLocalService;
 
 	@Reference
 	private SAPEntryScopeDescriptorFinderRegistrator

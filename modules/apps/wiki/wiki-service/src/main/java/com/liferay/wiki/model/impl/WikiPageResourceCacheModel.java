@@ -17,6 +17,7 @@ package com.liferay.wiki.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.wiki.model.WikiPageResource;
 
 import java.io.Externalizable;
@@ -24,32 +25,31 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing WikiPageResource in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class WikiPageResourceCacheModel
-	implements CacheModel<WikiPageResource>, Externalizable {
+	implements CacheModel<WikiPageResource>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof WikiPageResourceCacheModel)) {
+		if (!(object instanceof WikiPageResourceCacheModel)) {
 			return false;
 		}
 
 		WikiPageResourceCacheModel wikiPageResourceCacheModel =
-			(WikiPageResourceCacheModel)obj;
+			(WikiPageResourceCacheModel)object;
 
-		if (resourcePrimKey == wikiPageResourceCacheModel.resourcePrimKey) {
+		if ((resourcePrimKey == wikiPageResourceCacheModel.resourcePrimKey) &&
+			(mvccVersion == wikiPageResourceCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -58,14 +58,28 @@ public class WikiPageResourceCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, resourcePrimKey);
+		int hashCode = HashUtil.hash(0, resourcePrimKey);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(13);
+		StringBundler sb = new StringBundler(15);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", resourcePrimKey=");
 		sb.append(resourcePrimKey);
@@ -85,6 +99,8 @@ public class WikiPageResourceCacheModel
 	@Override
 	public WikiPageResource toEntityModel() {
 		WikiPageResourceImpl wikiPageResourceImpl = new WikiPageResourceImpl();
+
+		wikiPageResourceImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			wikiPageResourceImpl.setUuid("");
@@ -112,6 +128,7 @@ public class WikiPageResourceCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		resourcePrimKey = objectInput.readLong();
@@ -126,6 +143,8 @@ public class WikiPageResourceCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -149,6 +168,7 @@ public class WikiPageResourceCacheModel
 		}
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long resourcePrimKey;
 	public long groupId;

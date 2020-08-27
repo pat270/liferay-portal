@@ -1,4 +1,5 @@
 definition {
+
 	test AddBlogsEntries {
 
 		echo("This is a message.");
@@ -36,7 +37,7 @@ definition {
 
 		ProductMenu.gotoControlPanelUsers(portlet = "Users and Organizations");
 
-		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
 
 		MultiParametersOneLine(
 			locator1 = "ItemSelector#ADD_BUTTON",
@@ -48,6 +49,9 @@ definition {
 			userLastName = "${userLastName}",
 			userScreenName = "${userScreenName}");
 
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Text Fragment Example");
 	}
 
 	@priority = "5"
@@ -73,6 +77,8 @@ definition {
 		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
 
 		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+
+		PageEditorConfiguration.restoreConfigValues(fragmentName = "Text Fragment Example");
 	}
 
 }

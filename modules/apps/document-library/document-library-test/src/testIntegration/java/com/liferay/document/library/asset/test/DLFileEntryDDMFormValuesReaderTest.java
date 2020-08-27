@@ -35,20 +35,20 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portlet.documentlibrary.asset.DLFileEntryDDMFormValuesReader;
 
 import java.io.ByteArrayInputStream;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,10 +82,8 @@ public class DLFileEntryDDMFormValuesReaderTest {
 			new DLFileEntryDDMFormValuesReader(
 				_fileEntry, _fileEntry.getFileVersion());
 
-		DDMFormValues expectedDDMFormValues = getExpectedDDMFormValues();
-
 		Assert.assertEquals(
-			expectedDDMFormValues, ddmFormValuesReader.getDDMFormValues());
+			getExpectedDDMFormValues(), ddmFormValuesReader.getDDMFormValues());
 	}
 
 	protected DLFileEntryType addDLFileEntryType(ServiceContext serviceContext)
@@ -166,15 +164,9 @@ public class DLFileEntryDDMFormValuesReaderTest {
 			DDMStructure ddmStructure)
 		throws Exception {
 
-		Map<String, DDMFormValues> ddmFormValuesMap = new HashMap<>();
-
-		DDMForm ddmForm = createDDMForm();
-
-		DDMFormValues ddmFormValues = createDDMFormValues(ddmForm);
-
-		ddmFormValuesMap.put(ddmStructure.getStructureKey(), ddmFormValues);
-
-		return ddmFormValuesMap;
+		return HashMapBuilder.<String, DDMFormValues>put(
+			ddmStructure.getStructureKey(), createDDMFormValues(createDDMForm())
+		).build();
 	}
 
 	protected DDMFormField createTextDDMFormField(String name) {

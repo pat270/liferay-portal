@@ -42,8 +42,10 @@ import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 
 /**
- * @author Andrea Di Giorgi
+ * @author     Andrea Di Giorgi
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class SoyPlugin implements Plugin<Project> {
 
 	public static final String BUILD_SOY_TASK_NAME = "buildSoy";

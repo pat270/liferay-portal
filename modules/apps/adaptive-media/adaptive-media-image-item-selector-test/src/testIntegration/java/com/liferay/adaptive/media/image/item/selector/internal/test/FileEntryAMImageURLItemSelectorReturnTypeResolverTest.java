@@ -35,15 +35,14 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,7 +69,7 @@ public class FileEntryAMImageURLItemSelectorReturnTypeResolverTest {
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		Collection<AMImageConfigurationEntry> amImageConfigurationEntries =
 			_amImageConfigurationHelper.getAMImageConfigurationEntries(
@@ -537,14 +536,13 @@ public class FileEntryAMImageURLItemSelectorReturnTypeResolverTest {
 			String name, String uuid, int height, int width)
 		throws Exception {
 
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", String.valueOf(height));
-		properties.put("max-width", String.valueOf(width));
-
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), name, StringPool.BLANK, uuid,
-			properties);
+			HashMapBuilder.put(
+				"max-height", String.valueOf(height)
+			).put(
+				"max-width", String.valueOf(width)
+			).build());
 	}
 
 	private void _assertAttibutes(
@@ -581,12 +579,14 @@ public class FileEntryAMImageURLItemSelectorReturnTypeResolverTest {
 		}
 
 		Assert.assertTrue(
-			"Could not find expected max-width of '" + expectedMaxWidth +
-				"' in '" + sourceJSONObject.toString() + "'",
+			StringBundler.concat(
+				"Could not find expected max-width of '", expectedMaxWidth,
+				"' in '", sourceJSONObject.toString(), "'"),
 			(expectedMaxWidth == 0) || assertedMaxWidth);
 		Assert.assertTrue(
-			"Could not find expected min-width of '" + expectedMinWidth +
-				"' in '" + sourceJSONObject.toString() + "'",
+			StringBundler.concat(
+				"Could not find expected min-width of '", expectedMinWidth,
+				"' in '", sourceJSONObject.toString(), "'"),
 			(expectedMinWidth == 0) || assertedMinWidth);
 	}
 
@@ -628,8 +628,9 @@ public class FileEntryAMImageURLItemSelectorReturnTypeResolverTest {
 		Matcher matcher = _pattern.matcher(srcSource);
 
 		Assert.assertEquals(
-			"/o/adaptive-media/image/" + fileEntryId + "/" +
-				configurationEntryUuid + "/" + title,
+			StringBundler.concat(
+				"/o/adaptive-media/image/", fileEntryId, "/",
+				configurationEntryUuid, "/", title),
 			matcher.replaceFirst(StringPool.BLANK));
 	}
 
@@ -656,6 +657,7 @@ public class FileEntryAMImageURLItemSelectorReturnTypeResolverTest {
 	@Inject(
 		filter = "component.name=*.FileEntryAMImageURLItemSelectorReturnTypeResolver"
 	)
-	private ItemSelectorReturnTypeResolver _itemSelectorReturnTypeResolver;
+	private ItemSelectorReturnTypeResolver<?, FileEntry>
+		_itemSelectorReturnTypeResolver;
 
 }

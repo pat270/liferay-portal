@@ -104,9 +104,15 @@ public class WarsProjectConfigurator extends BaseProjectConfigurator {
 						Path dirPath, BasicFileAttributes basicFileAttributes)
 					throws IOException {
 
-					if (Files.isDirectory(dirPath.resolve("src"))) {
+					if (Files.isDirectory(dirPath.resolve("src/main/webapp"))) {
 						projectDirs.add(dirPath.toFile());
 
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+
+					Path dirNamePath = dirPath.getFileName();
+
+					if (isExcludedDirName(dirNamePath.toString())) {
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 
@@ -144,6 +150,7 @@ public class WarsProjectConfigurator extends BaseProjectConfigurator {
 		return copy;
 	}
 
+	@SuppressWarnings("serial")
 	private void _configureRootTaskDistBundle(final War war) {
 		Project project = war.getProject();
 

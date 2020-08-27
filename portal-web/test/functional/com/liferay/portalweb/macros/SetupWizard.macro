@@ -1,4 +1,5 @@
 definition {
+
 	macro configureAdministratorUserPG {
 		Type(
 			locator1 = "TextInput#FIRST_NAME",
@@ -21,7 +22,9 @@ definition {
 		}
 
 		if (isSet(databaseName)) {
-			var jdbcURL = StringUtil.replace("${jdbcURL}", "lportal", "${databaseName}");
+			var originalDatabaseName = PropsUtil.get("database.mysql.schema");
+
+			var jdbcURL = StringUtil.replace("${jdbcURL}", "${originalDatabaseName}", "${databaseName}");
 		}
 
 		Select(
@@ -45,10 +48,20 @@ definition {
 			value1 = "${databasePassword}");
 	}
 
+	macro configureDefaultLanguagePG {
+		Select(
+			locator1 = "SetupWizard#DEFAULT_LANGUAGE",
+			value1 = "${defaultLanguage}");
+	}
+
 	macro configureDefaultPG {
 		SetupWizard.viewDefaultPortalNamePG();
 
 		SetupWizard.viewDefaultAdministratorUserPG();
+
+		Type(
+			locator1 = "TextInput#EMAIL",
+			value1 = "test@liferay.com");
 
 		SetupWizard.viewDefaultDatabasePG();
 
@@ -169,19 +182,32 @@ definition {
 	}
 
 	macro viewConfigurationSavedPG {
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		if ((isSet(localization)) && ("${localization}" == "ES")) {
+			Alert.viewSuccessMessageText(successMessage = "La configuración fue guardada con éxito.");
 
-		AssertTextEquals.assertPartialText(
-			locator1 = "SetupWizard#CONFIGURATION_SAVE_MESSAGE",
-			value1 = "The configuration was saved in");
+			AssertTextEquals.assertPartialText(
+				locator1 = "SetupWizard#CONFIGURATION_SAVE_MESSAGE",
+				value1 = "Se ha guardado la configuración en");
 
-		AssertTextEquals.assertPartialText(
-			locator1 = "SetupWizard#CONFIGURATION_SAVE_LOCATION",
-			value1 = "portal-setup-wizard.properties");
+			AssertTextEquals.assertPartialText(
+				locator1 = "SetupWizard#CONFIGURATION_SAVE_LOCATION",
+				value1 = "portal-setup-wizard.properties");
 
-		AssertTextEquals(
-			locator1 = "Message#INFO",
-			value1 = "Changes will take effect once the portal is restarted. Please restart the portal now.");
+			Alert.viewInfoMessageSpecific(infoMessage = "Los cambios surtirán efecto en cuanto el portal sea reiniciado. Por favor, reinicie el portal ahora.");
+		}
+		else {
+			Alert.viewSuccessMessageText(successMessage = "Your configuration was saved successfully.");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "SetupWizard#CONFIGURATION_SAVE_MESSAGE",
+				value1 = "The configuration was saved in");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "SetupWizard#CONFIGURATION_SAVE_LOCATION",
+				value1 = "portal-setup-wizard.properties");
+
+			Alert.viewInfoMessageSpecific(infoMessage = "Changes will take effect once the portal is restarted. Please restart the portal now.");
+		}
 	}
 
 	macro viewConfiguredDatabaseInConsole {
@@ -223,7 +249,7 @@ definition {
 
 		AssertTextEquals.assertValue(
 			locator1 = "TextInput#EMAIL",
-			value1 = "test@liferay.com");
+			value1 = "");
 	}
 
 	macro viewDefaultDatabasePG {
@@ -289,14 +315,14 @@ definition {
 	macro viewPopulatedSampleData {
 		AssertConsoleTextPresent(value1 = "Finished adding data");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
 
 		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -339,7 +365,7 @@ definition {
 			locator1 = "UsersAndOrganizationsOrganization#SUBORGANIZATION_TABLE_TYPE",
 			value1 = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -361,4 +387,5 @@ definition {
 			fail("Fail to save the Sample Data property in portal-setup-wizard.properties.");
 		}
 	}
+
 }

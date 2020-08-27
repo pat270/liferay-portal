@@ -24,19 +24,17 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.io.File;
 import java.io.InputStream;
 
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eudaldo Alonso
  * @author Alexander Chow
  */
-@ProviderType
 public class PortletFileRepositoryUtil {
 
 	public static void addPortletFileEntries(
@@ -197,28 +195,30 @@ public class PortletFileRepositoryUtil {
 
 	public static List<FileEntry> getPortletFileEntries(
 			long groupId, long folderId, int status, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getPortletFileRepository().getPortletFileEntries(
-			groupId, folderId, status, start, end, obc);
+			groupId, folderId, status, start, end, orderByComparator);
 	}
 
 	public static List<FileEntry> getPortletFileEntries(
-			long groupId, long folderId, OrderByComparator<FileEntry> obc)
+			long groupId, long folderId,
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getPortletFileRepository().getPortletFileEntries(
-			groupId, folderId, obc);
+			groupId, folderId, orderByComparator);
 	}
 
 	public static List<FileEntry> getPortletFileEntries(
 			long groupId, long folderId, String[] mimeTypes, int status,
-			int start, int end, OrderByComparator<FileEntry> obc)
+			int start, int end, OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getPortletFileRepository().getPortletFileEntries(
-			groupId, folderId, mimeTypes, status, start, end, obc);
+			groupId, folderId, mimeTypes, status, start, end,
+			orderByComparator);
 	}
 
 	public static int getPortletFileEntriesCount(long groupId, long folderId)
@@ -361,12 +361,19 @@ public class PortletFileRepositoryUtil {
 			repositoryId, searchContext);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setPortletFileRepository(
 		PortletFileRepository portletFileRepository) {
 
 		_portletFileRepository = portletFileRepository;
 	}
 
-	private static PortletFileRepository _portletFileRepository;
+	private static volatile PortletFileRepository _portletFileRepository =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			PortletFileRepository.class, PortletFileRepositoryUtil.class,
+			"_portletFileRepository", false);
 
 }

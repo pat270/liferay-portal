@@ -1,0 +1,6 @@
+{
+    "ignore": [
+        "**/config.js",
+        "**/control_menu/**/*"
+    ]
+}

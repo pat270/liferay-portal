@@ -27,7 +27,13 @@ String searchContainerId = ParamUtil.getString(request, "searchContainerId");
 %>
 
 <div id="<portlet:namespace />exportProcessesSearchContainer">
-	<div class="container-fluid-1280" id="<portlet:namespace />processesContainer">
+	<clay:container-fluid
+		id='<%= liferayPortletResponse.getNamespace() + "processesContainer" %>'
+	>
+		<liferay-ui:breadcrumb
+			showLayout="<%= false %>"
+		/>
+
 		<liferay-util:include page="/export/processes_list/export_layouts_processes.jsp" servletContext="<%= application %>">
 			<liferay-util:param name="groupId" value="<%= String.valueOf(liveGroupId) %>" />
 			<liferay-util:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
@@ -37,5 +43,5 @@ String searchContainerId = ParamUtil.getString(request, "searchContainerId");
 			<liferay-util:param name="orderByType" value="<%= orderByType %>" />
 			<liferay-util:param name="searchContainerId" value="<%= searchContainerId %>" />
 		</liferay-util:include>
-	</div>
+	</clay:container-fluid>
 </div>

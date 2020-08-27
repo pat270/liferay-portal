@@ -1,0 +1,282 @@
+definition {
+
+	macro _addItemPage {
+		IFrame.selectConfigurationFrame();
+
+		if (contains("${privacy}", "{privacy}")) {
+			var privacy = "Public Pages";
+		}
+
+		Navigator.gotoNavItem(navItem = "${privacy}");
+
+		Portlet.expandTree();
+
+		for (var pageName : list "${pageNames}") {
+			Portlet.selectTreeNode(nodeName = "${pageName}");
+		}
+	}
+
+	macro _addItemSubmenu {
+		PortletEntry.inputName(name = "${submenuName}");
+	}
+
+	macro _addItemURL {
+		PortletEntry.inputName(name = "${urlName}");
+
+		Type(
+			locator1 = "TextInput#URL",
+			value1 = "${url}");
+	}
+
+	macro _editItemPage {
+		Check.checkToggleSwitch(locator1 = "SiteNavigationMenu#USE_CUSTOM_NAME_CHECKBOX");
+
+		if (isSet(name)) {
+			Type(
+				locator1 = "TextInput#NAME",
+				value1 = "${name}");
+		}
+	}
+
+	macro _editItemSubmenu {
+		if (isSet(name)) {
+			Type(
+				locator1 = "TextInput#NAME",
+				value1 = "${name}");
+		}
+	}
+
+	macro _editItemURL {
+		if (isSet(name)) {
+			Type(
+				locator1 = "TextInput#NAME",
+				value1 = "${name}");
+		}
+		else if (isSet(url)) {
+			Type(
+				locator1 = "TextInput#URL",
+				value1 = "${URL}");
+		}
+	}
+
+	macro addItem {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		LexiconEntry.gotoAddMenuItem(menuItem = "${item}");
+
+		Pause(locator1 = "1000");
+
+		IFrame.selectConfigurationFrame();
+
+		if ("${item}" == "Page") {
+			NavigationMenusAdmin._addItemPage(
+				pageNames = "${pageNames}",
+				privacy = "${privacy}");
+		}
+		else if ("${item}" == "Submenu") {
+			NavigationMenusAdmin._addItemSubmenu(submenuName = "${submenuName}");
+		}
+		else if ("${item}" == "URL") {
+			NavigationMenusAdmin._addItemURL(
+				url = "${url}",
+				urlName = "${urlName}");
+		}
+
+		MouseOver(
+			key_text = "Add",
+			locator1 = "Button#ANY");
+
+		Button.clickAdd();
+
+		IFrame.selectTopFrame();
+	}
+
+	macro addMenu {
+		LexiconEntry.gotoAdd();
+
+		PortletEntry.inputName(name = "${menuName}");
+
+		Modal.save();
+	}
+
+	macro addTranslation {
+		NavigationMenusAdmin.openItemSidebar(itemName = "${itemName}");
+
+		Pause(locator1 = "3000");
+
+		if (IsElementPresent(locator1 = "SiteNavigationMenu#USE_CUSTOM_NAME_CHECKBOX")) {
+			Check.checkToggleSwitch(locator1 = "SiteNavigationMenu#USE_CUSTOM_NAME_CHECKBOX");
+		}
+
+		PortletEntry.changeLocale(
+			fieldName = "Name",
+			locale = "${locale}");
+
+		PortletEntry.inputName(name = "${translation}");
+
+		Button.clickSave();
+	}
+
+	macro configureMenuType {
+		if ("${menuType}" == "Primary Navigation") {
+			LexiconEntry.gotoEntryMenuItemNoError(
+				menuItem = "${menuType}",
+				rowEntry = "${navigationMenu}");
+
+			if (isSet(oldPrimaryNavigationMenu)) {
+				AssertConfirm(value1 = "Do you want to replace ${navigationMenu} for ${oldPrimaryNavigationMenu} as primary navigation? This action will affect all the pages using primary navigation.");
+			}
+		}
+		else {
+			LexiconEntry.gotoEntryMenuItem(
+				menuItem = "${menuType}",
+				rowEntry = "${navigationMenu}");
+		}
+
+		AssertVisible(
+			key_rowEntry = "${navigationMenu}",
+			key_rowText = "${menuType}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_TEXT");
+	}
+
+	macro deleteItem {
+		Click(
+			key_itemName = "${itemName}",
+			locator1 = "SiteNavigationMenu#ITEM_ENTRY_CLOSE");
+	}
+
+	macro editItem {
+		NavigationMenusAdmin.openItemSidebar(itemName = "${itemName}");
+
+		if ("${item}" == "Page") {
+			if (isSet(pageNames)) {
+				Click(locator1 = "Button#CHOOSE");
+
+				Pause(locator1 = "1000");
+
+				IFrame.selectConfigurationFrame();
+
+				Portlet.expandTree();
+
+				for (var pageName : list "${pageNames}") {
+					Portlet.selectTreeNode(nodeName = "${pageName}");
+				}
+
+				SelectFrameTop();
+
+				Button.clickAdd();
+
+				IFrame.selectTopFrame();
+
+			}
+			else {
+				NavigationMenusAdmin._editItemPage(name = "${name}");
+			}
+		}
+		else if ("${item}" == "Submenu") {
+			NavigationMenusAdmin._editItemSubmenu(submenuName = "${submenuName}");
+		}
+		else if ("${item}" == "URL") {
+			NavigationMenusAdmin._editItemURL(
+				name = "${name}",
+				url = "${url}");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro markAsPrimaryNavigation {
+		LexiconEntry.gotoEntryMenuItemNoError(
+			menuItem = "Primary Navigation",
+			rowEntry = "${newMenuName}");
+
+		AssertConfirm(value1 = "Do you want to replace ${newMenuName} for ${oldMenuName} as primary navigation? This action will affect all the pages using primary navigation.");
+	}
+
+	macro openItemSidebar {
+		Refresh();
+
+		Click(
+			key_itemName = "${itemName}",
+			locator1 = "SiteNavigationMenu#ITEM_LINK");
+
+		AssertTextEquals(
+			key_itemName = "${itemName}",
+			locator1 = "SiteNavigationMenu#SIDEBAR_ITEM_NAME",
+			value1 = "${itemName}");
+
+		AssertElementPresent(locator1 = "SiteNavigationMenu#SIDEBAR");
+	}
+
+	macro openNavigationMenusAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_site_navigation_admin_web_portlet_SiteNavigationAdminPortlet");
+	}
+
+	macro toggleAutomaticallyAddNewPagesToMenu {
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "chrome") {
+			MetalComponent.waitForManagementBar();
+		}
+
+		Click(locator1 = "SiteNavigationMenu#SIDEBAR_COG");
+
+		if ("${toggleValue}" == "enable") {
+			Check(
+				checkboxName = "When creating a new page, the page will be automatically added to this menu unless the user deselects it.",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+		else if ("${toggleValue}" == "disable") {
+			Uncheck(
+				checkboxName = "When creating a new page, the page will be automatically added to this menu unless the user deselects it.",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+		else {
+			fail("Set ${toggleValue} to enable or disable");
+		}
+
+		Button.clickSave();
+	}
+
+	macro viewItem {
+		AssertElementPresent(
+			key_itemName = "${itemName}",
+			locator1 = "SiteNavigationMenu#ITEM_ENTRY");
+	}
+
+	macro viewItemNested {
+		AssertElementPresent(
+			key_itemName = "${itemName}",
+			key_parentItemName = "${parentItemName}",
+			locator1 = "SiteNavigationMenu#ITEM_ENTRY_NESTED");
+	}
+
+	macro viewItemNotNested {
+		AssertElementNotPresent(
+			key_itemName = "${itemName}",
+			key_parentItemName = "${parentItemName}",
+			locator1 = "SiteNavigationMenu#ITEM_ENTRY_NESTED");
+	}
+
+	macro viewItemOrder {
+		AssertTextEquals.assertPartialText(
+			key_index = "${index}",
+			locator1 = "SiteNavigationMenu#ITEM_ENTRY_N",
+			value1 = "${itemName}");
+	}
+
+	macro viewMenuType {
+		AssertTextEquals(
+			key_markedAs = "${menuType}",
+			key_rowEntry = "${rowEntry}",
+			locator1 = "SiteNavigationMenu#MENU_MARKED_AS",
+			value1 = "${menuType}");
+	}
+
+	macro viewNoItem {
+		AssertElementNotPresent(
+			key_itemName = "${itemName}",
+			locator1 = "SiteNavigationMenu#ITEM_ENTRY");
+	}
+
+}

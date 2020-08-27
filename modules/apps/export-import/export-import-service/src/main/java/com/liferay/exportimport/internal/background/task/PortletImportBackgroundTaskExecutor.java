@@ -19,9 +19,9 @@ import com.liferay.exportimport.kernel.exception.ExportImportIOException;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -89,22 +89,27 @@ public class PortletImportBackgroundTaskExecutor
 					transactionConfig,
 					new PortletImportCallable(exportImportConfiguration, file));
 			}
-			catch (IOException ioe) {
-				ExportImportIOException eiioe = new ExportImportIOException(
-					LayoutImportBackgroundTaskExecutor.class.getName(), ioe);
+			catch (IOException ioException) {
+				ExportImportIOException exportImportIOException =
+					new ExportImportIOException(
+						LayoutImportBackgroundTaskExecutor.class.getName(),
+						ioException);
 
 				if (Validator.isNotNull(attachmentsFileEntry.getFileName())) {
-					eiioe.setFileName(attachmentsFileEntry.getFileName());
-					eiioe.setType(ExportImportIOException.PORTLET_IMPORT_FILE);
+					exportImportIOException.setFileName(
+						attachmentsFileEntry.getFileName());
+					exportImportIOException.setType(
+						ExportImportIOException.PORTLET_IMPORT_FILE);
 				}
 				else {
-					eiioe.setType(ExportImportIOException.PORTLET_IMPORT);
+					exportImportIOException.setType(
+						ExportImportIOException.PORTLET_IMPORT);
 				}
 
-				throw eiioe;
+				throw exportImportIOException;
 			}
-			catch (Throwable t) {
-				throw new SystemException(t);
+			catch (Throwable throwable) {
+				throw new SystemException(throwable);
 			}
 			finally {
 				FileUtil.delete(file);

@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -77,6 +76,36 @@ public class ScopeLocatorImpl implements ScopeLocator {
 			serviceReferenceServiceTuple.getServiceReference());
 
 		return new LiferayOAuth2ScopeImpl(applicationName, bundle, scope);
+	}
+
+	@Override
+	public Collection<LiferayOAuth2Scope> getLiferayOAuth2Scopes(
+		long companyId) {
+
+		Collection<LiferayOAuth2Scope> liferayOAuth2Scopes = new ArrayList<>();
+
+		for (String key : _scopeFinderByNameServiceTrackerMap.keySet()) {
+			ScopeFinder scopeFinder =
+				_scopeFindersScopedServiceTrackerMap.getService(companyId, key);
+
+			ServiceReferenceServiceTuple<?, ScopeFinder>
+				serviceReferenceServiceTuple =
+					_scopeFinderByNameServiceTrackerMap.getService(key);
+
+			if (scopeFinder == null) {
+				scopeFinder = serviceReferenceServiceTuple.getService();
+			}
+
+			Bundle bundle = getBundle(
+				serviceReferenceServiceTuple.getServiceReference());
+
+			for (String scope : scopeFinder.findScopes()) {
+				liferayOAuth2Scopes.add(
+					new LiferayOAuth2ScopeImpl(key, bundle, scope));
+			}
+		}
+
+		return liferayOAuth2Scopes;
 	}
 
 	@Override
@@ -122,7 +151,7 @@ public class ScopeLocatorImpl implements ScopeLocator {
 
 		Bundle bundle = getBundle(serviceReference);
 
-		Set<LiferayOAuth2Scope> locatedScopes = new HashSet<>(scopes.size());
+		Set<LiferayOAuth2Scope> locatedScopes = new HashSet<>();
 
 		Map<String, Set<String>> mappedScopeToUnmappedScopes = new HashMap<>();
 		Map<String, Boolean> matchCache = new HashMap<>();
@@ -161,7 +190,7 @@ public class ScopeLocatorImpl implements ScopeLocator {
 		ScopeLocatorConfiguration scopeLocatorConfiguration =
 			scopeLocatorConfigurationProvider.getScopeLocatorConfiguration();
 
-		Set<String> processedScopes = new HashSet<>(queue.size());
+		Set<String> processedScopes = new HashSet<>();
 
 		for (String scope = queue.poll(); scope != null; scope = queue.poll()) {
 			processedScopes.add(scope);
@@ -226,6 +255,10 @@ public class ScopeLocatorImpl implements ScopeLocator {
 			serviceReferenceServiceTuple =
 				_scopeFinderByNameServiceTrackerMap.getService(applicationName);
 
+		if (serviceReferenceServiceTuple == null) {
+			return Collections.emptyList();
+		}
+
 		PrefixHandlerFactory prefixHandlerFactory =
 			_prefixHandlerFactoriesScopedServiceTrackerMap.getService(
 				companyId, applicationName);
@@ -258,7 +291,6 @@ public class ScopeLocatorImpl implements ScopeLocator {
 		return scopesAliases;
 	}
 
-	@ProviderType
 	public interface ScopeLocatorConfigurationProvider {
 
 		public ScopeLocatorConfiguration getScopeLocatorConfiguration();

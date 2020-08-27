@@ -26,28 +26,25 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing App in entity cache.
  *
  * @author Ryan Park
  * @generated
  */
-@ProviderType
 public class AppCacheModel implements CacheModel<App>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AppCacheModel)) {
+		if (!(object instanceof AppCacheModel)) {
 			return false;
 		}
 
-		AppCacheModel appCacheModel = (AppCacheModel)obj;
+		AppCacheModel appCacheModel = (AppCacheModel)object;
 
 		if (appId == appCacheModel.appId) {
 			return true;

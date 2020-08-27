@@ -31,10 +31,11 @@ import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.service.permission.TeamPermissionUtil;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.service.base.PermissionServiceBaseImpl;
 import com.liferay.registry.collections.ServiceTrackerCollections;
@@ -59,6 +60,7 @@ public class PermissionServiceImpl extends PermissionServiceBaseImpl {
 	 */
 	@JSONWebService(mode = JSONWebServiceMode.IGNORE)
 	@Override
+	@Transactional(readOnly = true)
 	public void checkPermission(long groupId, String name, long primKey)
 		throws PortalException {
 
@@ -74,6 +76,7 @@ public class PermissionServiceImpl extends PermissionServiceBaseImpl {
 	 * @param primKey the primary key of the service
 	 */
 	@Override
+	@Transactional(readOnly = true)
 	public void checkPermission(long groupId, String name, String primKey)
 		throws PortalException {
 
@@ -111,7 +114,7 @@ public class PermissionServiceImpl extends PermissionServiceBaseImpl {
 				return true;
 			}
 
-			ModelResourcePermissionHelper.check(
+			ModelResourcePermissionUtil.check(
 				modelResourcePermission, permissionChecker, groupId, classPK,
 				actionId);
 
@@ -173,7 +176,7 @@ public class PermissionServiceImpl extends PermissionServiceBaseImpl {
 						return;
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 				}
 			}
 
@@ -183,11 +186,9 @@ public class PermissionServiceImpl extends PermissionServiceBaseImpl {
 					ResourceConstants.SCOPE_INDIVIDUAL, primKey,
 					permissionChecker.getOwnerRoleId());
 
-			long ownerId = resourcePermission.getOwnerId();
-
 			if (permissionChecker.hasOwnerPermission(
-					permissionChecker.getCompanyId(), name, primKey, ownerId,
-					ActionKeys.PERMISSIONS)) {
+					permissionChecker.getCompanyId(), name, primKey,
+					resourcePermission.getOwnerId(), ActionKeys.PERMISSIONS)) {
 
 				return;
 			}
@@ -227,8 +228,10 @@ public class PermissionServiceImpl extends PermissionServiceBaseImpl {
 		_baseModelPermissionCheckers =
 			ServiceTrackerCollections.openSingleValueMap(
 				BaseModelPermissionChecker.class, "model.class.name");
-	private static final ServiceTrackerMap<String, ModelResourcePermission>
+	private static final ServiceTrackerMap<String, ModelResourcePermission<?>>
 		_modelPermissions = ServiceTrackerCollections.openSingleValueMap(
-			ModelResourcePermission.class, "model.class.name");
+			(Class<ModelResourcePermission<?>>)
+				(Class<?>)ModelResourcePermission.class,
+			"model.class.name");
 
 }

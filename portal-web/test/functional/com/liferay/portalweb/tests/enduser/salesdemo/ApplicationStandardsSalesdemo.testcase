@@ -1,6 +1,7 @@
-@component-name = "portal-application-standards"
+@component-name = "portal-wcm"
 @ignore = "true"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Application Standards";
@@ -26,7 +27,6 @@ definition {
 	test WebProxyDemo {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
@@ -56,4 +56,5 @@ definition {
 
 		SikuliAssertElementPresent(locator1 = "WebProxy#SCREENSHOTS_GOOGLE_IMAGES_PNG");
 	}
+
 }

@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Address in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AddressCacheModel
 	implements CacheModel<Address>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AddressCacheModel)) {
+		if (!(object instanceof AddressCacheModel)) {
 			return false;
 		}
 
-		AddressCacheModel addressCacheModel = (AddressCacheModel)obj;
+		AddressCacheModel addressCacheModel = (AddressCacheModel)object;
 
 		if ((addressId == addressCacheModel.addressId) &&
 			(mvccVersion == addressCacheModel.mvccVersion)) {

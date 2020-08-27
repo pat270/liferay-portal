@@ -20,14 +20,13 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
+import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.service.test.BaseDLAppTestCase;
 
 import java.util.Date;
 
@@ -54,14 +53,12 @@ public class DLAppServiceWhenUpdatingAndCheckingInAFileEntryTest
 		FileEntry fileEntry = DLAppServiceTestUtil.addFileEntry(
 			group.getGroupId(), parentFolder.getFolderId());
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		fileEntry = DLAppServiceUtil.updateFileEntryAndCheckIn(
 			fileEntry.getFileEntryId(), fileEntry.getFileName(),
 			fileEntry.getMimeType(), fileEntry.getTitle(),
 			RandomTestUtil.randomString(), StringPool.BLANK,
-			DLVersionNumberIncrease.MINOR, null, serviceContext);
+			DLVersionNumberIncrease.MINOR, null,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
 			DLFileEntryConstants.getClassName(), fileEntry.getFileEntryId());

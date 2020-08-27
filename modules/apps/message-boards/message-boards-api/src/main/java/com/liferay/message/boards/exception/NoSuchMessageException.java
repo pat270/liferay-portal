@@ -16,12 +16,9 @@ package com.liferay.message.boards.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchMessageException extends NoSuchModelException {
 
 	public NoSuchMessageException() {
@@ -31,12 +28,12 @@ public class NoSuchMessageException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchMessageException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchMessageException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchMessageException(Throwable cause) {
-		super(cause);
+	public NoSuchMessageException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

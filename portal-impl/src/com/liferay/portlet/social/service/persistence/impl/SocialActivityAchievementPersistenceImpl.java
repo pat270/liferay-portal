@@ -15,7 +15,7 @@
 package com.liferay.portlet.social.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -26,8 +26,8 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -35,18 +35,23 @@ import com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl;
 import com.liferay.portlet.social.model.impl.SocialActivityAchievementModelImpl;
 import com.liferay.social.kernel.exception.NoSuchActivityAchievementException;
 import com.liferay.social.kernel.model.SocialActivityAchievement;
+import com.liferay.social.kernel.model.SocialActivityAchievementTable;
 import com.liferay.social.kernel.service.persistence.SocialActivityAchievementPersistence;
 
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.Set;
 
 /**
  * The persistence implementation for the social activity achievement service.
@@ -58,7 +63,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SocialActivityAchievementPersistenceImpl
 	extends BasePersistenceImpl<SocialActivityAchievement>
 	implements SocialActivityAchievementPersistence {
@@ -100,7 +104,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns a range of all the social activity achievements where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -119,7 +123,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -140,41 +144,44 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param start the lower bound of the range of social activity achievements
 	 * @param end the upper bound of the range of social activity achievements (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching social activity achievements
 	 */
 	@Override
 	public List<SocialActivityAchievement> findByGroupId(
 		long groupId, int start, int end,
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByGroupId;
-			finderArgs = new Object[] {groupId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByGroupId;
+				finderArgs = new Object[] {groupId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByGroupId;
 			finderArgs = new Object[] {groupId, start, end, orderByComparator};
 		}
 
 		List<SocialActivityAchievement> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<SocialActivityAchievement>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -182,7 +189,7 @@ public class SocialActivityAchievementPersistenceImpl
 				for (SocialActivityAchievement socialActivityAchievement :
 						list) {
 
-					if ((groupId != socialActivityAchievement.getGroupId())) {
+					if (groupId != socialActivityAchievement.getGroupId()) {
 						list = null;
 
 						break;
@@ -192,62 +199,52 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				if (!pagination) {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SocialActivityAchievement>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -278,16 +275,16 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -333,16 +330,16 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -411,8 +408,8 @@ public class SocialActivityAchievementPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -425,102 +422,102 @@ public class SocialActivityAchievementPersistenceImpl
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+		sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-		query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						socialActivityAchievement)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SocialActivityAchievement> list = q.list();
+		List<SocialActivityAchievement> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -553,41 +550,51 @@ public class SocialActivityAchievementPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		FinderPath finderPath = _finderPathCountByGroupId;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
 
-		Object[] finderArgs = new Object[] {groupId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByGroupId;
+
+			finderArgs = new Object[] {groupId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -623,7 +630,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns a range of all the social activity achievements where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -643,7 +650,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -665,7 +672,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -673,27 +680,30 @@ public class SocialActivityAchievementPersistenceImpl
 	 * @param start the lower bound of the range of social activity achievements
 	 * @param end the upper bound of the range of social activity achievements (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching social activity achievements
 	 */
 	@Override
 	public List<SocialActivityAchievement> findByG_U(
 		long groupId, long userId, int start, int end,
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_U;
-			finderArgs = new Object[] {groupId, userId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_U;
+				finderArgs = new Object[] {groupId, userId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByG_U;
 			finderArgs = new Object[] {
 				groupId, userId, start, end, orderByComparator
@@ -702,7 +712,7 @@ public class SocialActivityAchievementPersistenceImpl
 
 		List<SocialActivityAchievement> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<SocialActivityAchievement>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -722,66 +732,56 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_U_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_U_USERID_2);
+			sb.append(_FINDER_COLUMN_G_U_USERID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
-				if (!pagination) {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SocialActivityAchievement>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -813,19 +813,19 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", userId=");
-		msg.append(userId);
+		sb.append(", userId=");
+		sb.append(userId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -873,19 +873,19 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", userId=");
-		msg.append(userId);
+		sb.append(", userId=");
+		sb.append(userId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -956,8 +956,8 @@ public class SocialActivityAchievementPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -970,106 +970,106 @@ public class SocialActivityAchievementPersistenceImpl
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+		sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_U_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_U_USERID_2);
+		sb.append(_FINDER_COLUMN_G_U_USERID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(userId);
+		queryPos.add(userId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						socialActivityAchievement)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SocialActivityAchievement> list = q.list();
+		List<SocialActivityAchievement> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1105,45 +1105,55 @@ public class SocialActivityAchievementPersistenceImpl
 	 */
 	@Override
 	public int countByG_U(long groupId, long userId) {
-		FinderPath finderPath = _finderPathCountByG_U;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
 
-		Object[] finderArgs = new Object[] {groupId, userId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_U;
+
+			finderArgs = new Object[] {groupId, userId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_U_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_U_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_U_USERID_2);
+			sb.append(_FINDER_COLUMN_G_U_USERID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1182,7 +1192,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns a range of all the social activity achievements where groupId = &#63; and name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1202,7 +1212,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1224,7 +1234,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and name = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1232,29 +1242,32 @@ public class SocialActivityAchievementPersistenceImpl
 	 * @param start the lower bound of the range of social activity achievements
 	 * @param end the upper bound of the range of social activity achievements (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching social activity achievements
 	 */
 	@Override
 	public List<SocialActivityAchievement> findByG_N(
 		long groupId, String name, int start, int end,
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		name = Objects.toString(name, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_N;
-			finderArgs = new Object[] {groupId, name};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_N;
+				finderArgs = new Object[] {groupId, name};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByG_N;
 			finderArgs = new Object[] {
 				groupId, name, start, end, orderByComparator
@@ -1263,7 +1276,7 @@ public class SocialActivityAchievementPersistenceImpl
 
 		List<SocialActivityAchievement> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<SocialActivityAchievement>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -1283,77 +1296,67 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_N_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_N_GROUPID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_NAME_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
-				if (!pagination) {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SocialActivityAchievement>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1385,19 +1388,19 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", name=");
-		msg.append(name);
+		sb.append(", name=");
+		sb.append(name);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -1445,19 +1448,19 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", name=");
-		msg.append(name);
+		sb.append(", name=");
+		sb.append(name);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -1530,8 +1533,8 @@ public class SocialActivityAchievementPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1544,30 +1547,30 @@ public class SocialActivityAchievementPersistenceImpl
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+		sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_N_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_N_GROUPID_2);
 
 		boolean bindName = false;
 
 		if (name.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_N_NAME_3);
+			sb.append(_FINDER_COLUMN_G_N_NAME_3);
 		}
 		else {
 			bindName = true;
 
-			query.append(_FINDER_COLUMN_G_N_NAME_2);
+			sb.append(_FINDER_COLUMN_G_N_NAME_2);
 		}
 
 		if (orderByComparator != null) {
@@ -1575,74 +1578,74 @@ public class SocialActivityAchievementPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (bindName) {
-			qPos.add(name);
+			queryPos.add(name);
 		}
 
 		if (orderByComparator != null) {
@@ -1650,11 +1653,11 @@ public class SocialActivityAchievementPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						socialActivityAchievement)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SocialActivityAchievement> list = q.list();
+		List<SocialActivityAchievement> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1692,56 +1695,66 @@ public class SocialActivityAchievementPersistenceImpl
 	public int countByG_N(long groupId, String name) {
 		name = Objects.toString(name, "");
 
-		FinderPath finderPath = _finderPathCountByG_N;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
 
-		Object[] finderArgs = new Object[] {groupId, name};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_N;
+
+			finderArgs = new Object[] {groupId, name};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_N_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_N_GROUPID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_NAME_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1783,7 +1796,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns a range of all the social activity achievements where groupId = &#63; and firstInGroup = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1803,7 +1816,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and firstInGroup = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1826,7 +1839,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and firstInGroup = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1834,27 +1847,30 @@ public class SocialActivityAchievementPersistenceImpl
 	 * @param start the lower bound of the range of social activity achievements
 	 * @param end the upper bound of the range of social activity achievements (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching social activity achievements
 	 */
 	@Override
 	public List<SocialActivityAchievement> findByG_F(
 		long groupId, boolean firstInGroup, int start, int end,
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_F;
-			finderArgs = new Object[] {groupId, firstInGroup};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_F;
+				finderArgs = new Object[] {groupId, firstInGroup};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByG_F;
 			finderArgs = new Object[] {
 				groupId, firstInGroup, start, end, orderByComparator
@@ -1863,7 +1879,7 @@ public class SocialActivityAchievementPersistenceImpl
 
 		List<SocialActivityAchievement> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<SocialActivityAchievement>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -1884,66 +1900,56 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_F_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_F_FIRSTINGROUP_2);
+			sb.append(_FINDER_COLUMN_G_F_FIRSTINGROUP_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(firstInGroup);
+				queryPos.add(firstInGroup);
 
-				if (!pagination) {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SocialActivityAchievement>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1975,19 +1981,19 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", firstInGroup=");
-		msg.append(firstInGroup);
+		sb.append(", firstInGroup=");
+		sb.append(firstInGroup);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -2035,19 +2041,19 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", firstInGroup=");
-		msg.append(firstInGroup);
+		sb.append(", firstInGroup=");
+		sb.append(firstInGroup);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -2118,8 +2124,8 @@ public class SocialActivityAchievementPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2132,106 +2138,106 @@ public class SocialActivityAchievementPersistenceImpl
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+		sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_F_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_F_FIRSTINGROUP_2);
+		sb.append(_FINDER_COLUMN_G_F_FIRSTINGROUP_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(firstInGroup);
+		queryPos.add(firstInGroup);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						socialActivityAchievement)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SocialActivityAchievement> list = q.list();
+		List<SocialActivityAchievement> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2267,45 +2273,55 @@ public class SocialActivityAchievementPersistenceImpl
 	 */
 	@Override
 	public int countByG_F(long groupId, boolean firstInGroup) {
-		FinderPath finderPath = _finderPathCountByG_F;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
 
-		Object[] finderArgs = new Object[] {groupId, firstInGroup};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_F;
+
+			finderArgs = new Object[] {groupId, firstInGroup};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_F_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_F_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_F_FIRSTINGROUP_2);
+			sb.append(_FINDER_COLUMN_G_F_FIRSTINGROUP_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(firstInGroup);
+				queryPos.add(firstInGroup);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2342,26 +2358,26 @@ public class SocialActivityAchievementPersistenceImpl
 			groupId, userId, name);
 
 		if (socialActivityAchievement == null) {
-			StringBundler msg = new StringBundler(8);
+			StringBundler sb = new StringBundler(8);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("groupId=");
-			msg.append(groupId);
+			sb.append("groupId=");
+			sb.append(groupId);
 
-			msg.append(", userId=");
-			msg.append(userId);
+			sb.append(", userId=");
+			sb.append(userId);
 
-			msg.append(", name=");
-			msg.append(name);
+			sb.append(", name=");
+			sb.append(name);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchActivityAchievementException(msg.toString());
+			throw new NoSuchActivityAchievementException(sb.toString());
 		}
 
 		return socialActivityAchievement;
@@ -2388,20 +2404,27 @@ public class SocialActivityAchievementPersistenceImpl
 	 * @param groupId the group ID
 	 * @param userId the user ID
 	 * @param name the name
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching social activity achievement, or <code>null</code> if a matching social activity achievement could not be found
 	 */
 	@Override
 	public SocialActivityAchievement fetchByG_U_N(
-		long groupId, long userId, String name, boolean retrieveFromCache) {
+		long groupId, long userId, String name, boolean useFinderCache) {
 
 		name = Objects.toString(name, "");
 
-		Object[] finderArgs = new Object[] {groupId, userId, name};
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {groupId, userId, name};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByG_U_N, finderArgs, this);
 		}
@@ -2419,49 +2442,51 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_U_N_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_U_N_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_U_N_USERID_2);
+			sb.append(_FINDER_COLUMN_G_U_N_USERID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_U_N_NAME_3);
+				sb.append(_FINDER_COLUMN_G_U_N_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_U_N_NAME_2);
+				sb.append(_FINDER_COLUMN_G_U_N_NAME_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
-				List<SocialActivityAchievement> list = q.list();
+				List<SocialActivityAchievement> list = query.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByG_U_N, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByG_U_N, finderArgs, list);
+					}
 				}
 				else {
 					SocialActivityAchievement socialActivityAchievement =
@@ -2472,11 +2497,8 @@ public class SocialActivityAchievementPersistenceImpl
 					cacheResult(socialActivityAchievement);
 				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathFetchByG_U_N, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2522,60 +2544,70 @@ public class SocialActivityAchievementPersistenceImpl
 	public int countByG_U_N(long groupId, long userId, String name) {
 		name = Objects.toString(name, "");
 
-		FinderPath finderPath = _finderPathCountByG_U_N;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
 
-		Object[] finderArgs = new Object[] {groupId, userId, name};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_U_N;
+
+			finderArgs = new Object[] {groupId, userId, name};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_U_N_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_U_N_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_U_N_USERID_2);
+			sb.append(_FINDER_COLUMN_G_U_N_USERID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_U_N_NAME_3);
+				sb.append(_FINDER_COLUMN_G_U_N_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_U_N_NAME_2);
+				sb.append(_FINDER_COLUMN_G_U_N_NAME_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2622,7 +2654,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns a range of all the social activity achievements where groupId = &#63; and userId = &#63; and firstInGroup = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2643,7 +2675,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and userId = &#63; and firstInGroup = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2667,7 +2699,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements where groupId = &#63; and userId = &#63; and firstInGroup = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2676,27 +2708,30 @@ public class SocialActivityAchievementPersistenceImpl
 	 * @param start the lower bound of the range of social activity achievements
 	 * @param end the upper bound of the range of social activity achievements (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching social activity achievements
 	 */
 	@Override
 	public List<SocialActivityAchievement> findByG_U_F(
 		long groupId, long userId, boolean firstInGroup, int start, int end,
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_U_F;
-			finderArgs = new Object[] {groupId, userId, firstInGroup};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_U_F;
+				finderArgs = new Object[] {groupId, userId, firstInGroup};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByG_U_F;
 			finderArgs = new Object[] {
 				groupId, userId, firstInGroup, start, end, orderByComparator
@@ -2705,7 +2740,7 @@ public class SocialActivityAchievementPersistenceImpl
 
 		List<SocialActivityAchievement> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<SocialActivityAchievement>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -2727,70 +2762,60 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_U_F_USERID_2);
+			sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
 
-			query.append(_FINDER_COLUMN_G_U_F_FIRSTINGROUP_2);
+			sb.append(_FINDER_COLUMN_G_U_F_FIRSTINGROUP_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
-				qPos.add(firstInGroup);
+				queryPos.add(firstInGroup);
 
-				if (!pagination) {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SocialActivityAchievement>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2824,22 +2849,22 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", userId=");
-		msg.append(userId);
+		sb.append(", userId=");
+		sb.append(userId);
 
-		msg.append(", firstInGroup=");
-		msg.append(firstInGroup);
+		sb.append(", firstInGroup=");
+		sb.append(firstInGroup);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -2889,22 +2914,22 @@ public class SocialActivityAchievementPersistenceImpl
 			return socialActivityAchievement;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", userId=");
-		msg.append(userId);
+		sb.append(", userId=");
+		sb.append(userId);
 
-		msg.append(", firstInGroup=");
-		msg.append(firstInGroup);
+		sb.append(", firstInGroup=");
+		sb.append(firstInGroup);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchActivityAchievementException(msg.toString());
+		throw new NoSuchActivityAchievementException(sb.toString());
 	}
 
 	/**
@@ -2978,8 +3003,8 @@ public class SocialActivityAchievementPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2992,110 +3017,110 @@ public class SocialActivityAchievementPersistenceImpl
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+		sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_U_F_USERID_2);
+		sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
 
-		query.append(_FINDER_COLUMN_G_U_F_FIRSTINGROUP_2);
+		sb.append(_FINDER_COLUMN_G_U_F_FIRSTINGROUP_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
+			sb.append(SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(userId);
+		queryPos.add(userId);
 
-		qPos.add(firstInGroup);
+		queryPos.add(firstInGroup);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						socialActivityAchievement)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SocialActivityAchievement> list = q.list();
+		List<SocialActivityAchievement> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3133,49 +3158,59 @@ public class SocialActivityAchievementPersistenceImpl
 	 */
 	@Override
 	public int countByG_U_F(long groupId, long userId, boolean firstInGroup) {
-		FinderPath finderPath = _finderPathCountByG_U_F;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
 
-		Object[] finderArgs = new Object[] {groupId, userId, firstInGroup};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_U_F;
+
+			finderArgs = new Object[] {groupId, userId, firstInGroup};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
+			sb.append(_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_U_F_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_U_F_USERID_2);
+			sb.append(_FINDER_COLUMN_G_U_F_USERID_2);
 
-			query.append(_FINDER_COLUMN_G_U_F_FIRSTINGROUP_2);
+			sb.append(_FINDER_COLUMN_G_U_F_FIRSTINGROUP_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
-				qPos.add(firstInGroup);
+				queryPos.add(firstInGroup);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3199,8 +3234,8 @@ public class SocialActivityAchievementPersistenceImpl
 
 		setModelImplClass(SocialActivityAchievementImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(SocialActivityAchievementTable.INSTANCE);
 	}
 
 	/**
@@ -3212,8 +3247,11 @@ public class SocialActivityAchievementPersistenceImpl
 	public void cacheResult(
 		SocialActivityAchievement socialActivityAchievement) {
 
+		if (socialActivityAchievement.getCtCollectionId() != 0) {
+			return;
+		}
+
 		EntityCacheUtil.putResult(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			socialActivityAchievement.getPrimaryKey(),
 			socialActivityAchievement);
@@ -3226,8 +3264,6 @@ public class SocialActivityAchievementPersistenceImpl
 				socialActivityAchievement.getName()
 			},
 			socialActivityAchievement);
-
-		socialActivityAchievement.resetOriginalValues();
 	}
 
 	/**
@@ -3242,15 +3278,15 @@ public class SocialActivityAchievementPersistenceImpl
 		for (SocialActivityAchievement socialActivityAchievement :
 				socialActivityAchievements) {
 
+			if (socialActivityAchievement.getCtCollectionId() != 0) {
+				continue;
+			}
+
 			if (EntityCacheUtil.getResult(
-					SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
 					SocialActivityAchievementImpl.class,
 					socialActivityAchievement.getPrimaryKey()) == null) {
 
 				cacheResult(socialActivityAchievement);
-			}
-			else {
-				socialActivityAchievement.resetOriginalValues();
 			}
 		}
 	}
@@ -3283,7 +3319,6 @@ public class SocialActivityAchievementPersistenceImpl
 		SocialActivityAchievement socialActivityAchievement) {
 
 		EntityCacheUtil.removeResult(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			socialActivityAchievement.getPrimaryKey());
 
@@ -3306,13 +3341,24 @@ public class SocialActivityAchievementPersistenceImpl
 				socialActivityAchievements) {
 
 			EntityCacheUtil.removeResult(
-				SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
 				SocialActivityAchievementImpl.class,
 				socialActivityAchievement.getPrimaryKey());
 
 			clearUniqueFindersCache(
 				(SocialActivityAchievementModelImpl)socialActivityAchievement,
 				true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			EntityCacheUtil.removeResult(
+				SocialActivityAchievementImpl.class, primaryKey);
 		}
 	}
 
@@ -3351,9 +3397,12 @@ public class SocialActivityAchievementPersistenceImpl
 			 _finderPathFetchByG_U_N.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				socialActivityAchievementModelImpl.getOriginalGroupId(),
-				socialActivityAchievementModelImpl.getOriginalUserId(),
-				socialActivityAchievementModelImpl.getOriginalName()
+				socialActivityAchievementModelImpl.getColumnOriginalValue(
+					"groupId"),
+				socialActivityAchievementModelImpl.getColumnOriginalValue(
+					"userId"),
+				socialActivityAchievementModelImpl.getColumnOriginalValue(
+					"name")
 			};
 
 			FinderCacheUtil.removeResult(_finderPathCountByG_U_N, args);
@@ -3375,7 +3424,8 @@ public class SocialActivityAchievementPersistenceImpl
 		socialActivityAchievement.setNew(true);
 		socialActivityAchievement.setPrimaryKey(activityAchievementId);
 
-		socialActivityAchievement.setCompanyId(companyProvider.getCompanyId());
+		socialActivityAchievement.setCompanyId(
+			CompanyThreadLocal.getCompanyId());
 
 		return socialActivityAchievement;
 	}
@@ -3425,11 +3475,11 @@ public class SocialActivityAchievementPersistenceImpl
 
 			return remove(socialActivityAchievement);
 		}
-		catch (NoSuchActivityAchievementException nsee) {
-			throw nsee;
+		catch (NoSuchActivityAchievementException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3439,6 +3489,10 @@ public class SocialActivityAchievementPersistenceImpl
 	@Override
 	protected SocialActivityAchievement removeImpl(
 		SocialActivityAchievement socialActivityAchievement) {
+
+		if (!CTPersistenceHelperUtil.isRemove(socialActivityAchievement)) {
+			return socialActivityAchievement;
+		}
 
 		Session session = null;
 
@@ -3456,8 +3510,8 @@ public class SocialActivityAchievementPersistenceImpl
 				session.delete(socialActivityAchievement);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3503,7 +3557,13 @@ public class SocialActivityAchievementPersistenceImpl
 		try {
 			session = openSession();
 
-			if (socialActivityAchievement.isNew()) {
+			if (CTPersistenceHelperUtil.isInsert(socialActivityAchievement)) {
+				if (!isNew) {
+					session.evict(
+						SocialActivityAchievementImpl.class,
+						socialActivityAchievement.getPrimaryKeyObj());
+				}
+
 				session.save(socialActivityAchievement);
 
 				socialActivityAchievement.setNew(false);
@@ -3514,20 +3574,22 @@ public class SocialActivityAchievementPersistenceImpl
 						socialActivityAchievement);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
+		if (socialActivityAchievement.getCtCollectionId() != 0) {
+			socialActivityAchievement.resetOriginalValues();
+
+			return socialActivityAchievement;
+		}
+
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!SocialActivityAchievementModelImpl.COLUMN_BITMASK_ENABLED) {
-			FinderCacheUtil.clearCache(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				socialActivityAchievementModelImpl.getGroupId()
 			};
@@ -3584,7 +3646,8 @@ public class SocialActivityAchievementPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					socialActivityAchievementModelImpl.getOriginalGroupId()
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"groupId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByGroupId, args);
@@ -3605,8 +3668,10 @@ public class SocialActivityAchievementPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					socialActivityAchievementModelImpl.getOriginalGroupId(),
-					socialActivityAchievementModelImpl.getOriginalUserId()
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"groupId"),
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"userId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByG_U, args);
@@ -3628,8 +3693,10 @@ public class SocialActivityAchievementPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					socialActivityAchievementModelImpl.getOriginalGroupId(),
-					socialActivityAchievementModelImpl.getOriginalName()
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"groupId"),
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"name")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByG_N, args);
@@ -3651,8 +3718,10 @@ public class SocialActivityAchievementPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					socialActivityAchievementModelImpl.getOriginalGroupId(),
-					socialActivityAchievementModelImpl.getOriginalFirstInGroup()
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"groupId"),
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"firstInGroup")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByG_F, args);
@@ -3674,9 +3743,12 @@ public class SocialActivityAchievementPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					socialActivityAchievementModelImpl.getOriginalGroupId(),
-					socialActivityAchievementModelImpl.getOriginalUserId(),
-					socialActivityAchievementModelImpl.getOriginalFirstInGroup()
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"groupId"),
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"userId"),
+					socialActivityAchievementModelImpl.getColumnOriginalValue(
+						"firstInGroup")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByG_U_F, args);
@@ -3696,7 +3768,6 @@ public class SocialActivityAchievementPersistenceImpl
 		}
 
 		EntityCacheUtil.putResult(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			socialActivityAchievement.getPrimaryKey(),
 			socialActivityAchievement, false);
@@ -3753,6 +3824,46 @@ public class SocialActivityAchievementPersistenceImpl
 	/**
 	 * Returns the social activity achievement with the primary key or returns <code>null</code> if it could not be found.
 	 *
+	 * @param primaryKey the primary key of the social activity achievement
+	 * @return the social activity achievement, or <code>null</code> if a social activity achievement with the primary key could not be found
+	 */
+	@Override
+	public SocialActivityAchievement fetchByPrimaryKey(
+		Serializable primaryKey) {
+
+		if (CTPersistenceHelperUtil.isProductionMode(
+				SocialActivityAchievement.class)) {
+
+			return super.fetchByPrimaryKey(primaryKey);
+		}
+
+		SocialActivityAchievement socialActivityAchievement = null;
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			socialActivityAchievement = (SocialActivityAchievement)session.get(
+				SocialActivityAchievementImpl.class, primaryKey);
+
+			if (socialActivityAchievement != null) {
+				cacheResult(socialActivityAchievement);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return socialActivityAchievement;
+	}
+
+	/**
+	 * Returns the social activity achievement with the primary key or returns <code>null</code> if it could not be found.
+	 *
 	 * @param activityAchievementId the primary key of the social activity achievement
 	 * @return the social activity achievement, or <code>null</code> if a social activity achievement with the primary key could not be found
 	 */
@@ -3761,6 +3872,84 @@ public class SocialActivityAchievementPersistenceImpl
 		long activityAchievementId) {
 
 		return fetchByPrimaryKey((Serializable)activityAchievementId);
+	}
+
+	@Override
+	public Map<Serializable, SocialActivityAchievement> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		if (CTPersistenceHelperUtil.isProductionMode(
+				SocialActivityAchievement.class)) {
+
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
+		if (primaryKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Serializable, SocialActivityAchievement> map =
+			new HashMap<Serializable, SocialActivityAchievement>();
+
+		if (primaryKeys.size() == 1) {
+			Iterator<Serializable> iterator = primaryKeys.iterator();
+
+			Serializable primaryKey = iterator.next();
+
+			SocialActivityAchievement socialActivityAchievement =
+				fetchByPrimaryKey(primaryKey);
+
+			if (socialActivityAchievement != null) {
+				map.put(primaryKey, socialActivityAchievement);
+			}
+
+			return map;
+		}
+
+		StringBundler sb = new StringBundler(primaryKeys.size() * 2 + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
+
+		for (Serializable primaryKey : primaryKeys) {
+			sb.append((long)primaryKey);
+
+			sb.append(",");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query query = session.createQuery(sql);
+
+			for (SocialActivityAchievement socialActivityAchievement :
+					(List<SocialActivityAchievement>)query.list()) {
+
+				map.put(
+					socialActivityAchievement.getPrimaryKeyObj(),
+					socialActivityAchievement);
+
+				cacheResult(socialActivityAchievement);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return map;
 	}
 
 	/**
@@ -3777,7 +3966,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns a range of all the social activity achievements.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activity achievements
@@ -3793,7 +3982,7 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activity achievements
@@ -3813,66 +4002,67 @@ public class SocialActivityAchievementPersistenceImpl
 	 * Returns an ordered range of all the social activity achievements.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SocialActivityAchievementModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activity achievements
 	 * @param end the upper bound of the range of social activity achievements (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of social activity achievements
 	 */
 	@Override
 	public List<SocialActivityAchievement> findAll(
 		int start, int end,
 		OrderByComparator<SocialActivityAchievement> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<SocialActivityAchievement> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<SocialActivityAchievement>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT);
+				sb.append(_SQL_SELECT_SOCIALACTIVITYACHIEVEMENT);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_SOCIALACTIVITYACHIEVEMENT;
 
-				if (pagination) {
-					sql = sql.concat(
-						SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(
+					SocialActivityAchievementModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -3880,29 +4070,19 @@ public class SocialActivityAchievementPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SocialActivityAchievement>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SocialActivityAchievement>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3930,8 +4110,15 @@ public class SocialActivityAchievementPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SocialActivityAchievement.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)FinderCacheUtil.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -3939,19 +4126,18 @@ public class SocialActivityAchievementPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(
+				Query query = session.createQuery(
 					_SQL_COUNT_SOCIALACTIVITYACHIEVEMENT);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3977,8 +4163,67 @@ public class SocialActivityAchievementPersistenceImpl
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.get(ctColumnResolutionType);
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return SocialActivityAchievementModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "SocialActivityAchievement";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctIgnoreColumnNames = new HashSet<String>();
+		Set<String> ctMergeColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("groupId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("userId");
+		ctStrictColumnNames.add("createDate");
+		ctStrictColumnNames.add("name");
+		ctStrictColumnNames.add("firstInGroup");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
+		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK,
+			Collections.singleton("activityAchievementId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
+
+		_uniqueIndexColumnNames.add(new String[] {"groupId", "userId", "name"});
 	}
 
 	/**
@@ -3986,27 +4231,19 @@ public class SocialActivityAchievementPersistenceImpl
 	 */
 	public void afterPropertiesSet() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
 			new String[] {
@@ -4015,22 +4252,16 @@ public class SocialActivityAchievementPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
 			new String[] {Long.class.getName()},
-			SocialActivityAchievementModelImpl.GROUPID_COLUMN_BITMASK);
+			SocialActivityAchievementModelImpl.getColumnBitmask("groupId"));
 
 		_finderPathCountByGroupId = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByGroupId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByG_U = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U",
 			new String[] {
@@ -4040,23 +4271,17 @@ public class SocialActivityAchievementPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_U = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U",
 			new String[] {Long.class.getName(), Long.class.getName()},
-			SocialActivityAchievementModelImpl.GROUPID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.USERID_COLUMN_BITMASK);
+			SocialActivityAchievementModelImpl.getColumnBitmask("groupId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask("userId"));
 
 		_finderPathCountByG_U = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U",
 			new String[] {Long.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByG_N = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_N",
 			new String[] {
@@ -4066,23 +4291,17 @@ public class SocialActivityAchievementPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_N = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_N",
 			new String[] {Long.class.getName(), String.class.getName()},
-			SocialActivityAchievementModelImpl.GROUPID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.NAME_COLUMN_BITMASK);
+			SocialActivityAchievementModelImpl.getColumnBitmask("groupId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask("name"));
 
 		_finderPathCountByG_N = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_N",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_N",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByG_F = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_F",
 			new String[] {
@@ -4092,45 +4311,37 @@ public class SocialActivityAchievementPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_F = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_F",
 			new String[] {Long.class.getName(), Boolean.class.getName()},
-			SocialActivityAchievementModelImpl.GROUPID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.FIRSTINGROUP_COLUMN_BITMASK);
+			SocialActivityAchievementModelImpl.getColumnBitmask("groupId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask(
+				"firstInGroup"));
 
 		_finderPathCountByG_F = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_F",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_F",
 			new String[] {Long.class.getName(), Boolean.class.getName()});
 
 		_finderPathFetchByG_U_N = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class, FINDER_CLASS_NAME_ENTITY,
 			"fetchByG_U_N",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			},
-			SocialActivityAchievementModelImpl.GROUPID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.USERID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.NAME_COLUMN_BITMASK);
+			SocialActivityAchievementModelImpl.getColumnBitmask("groupId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask("userId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask("name"));
 
 		_finderPathCountByG_U_N = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_N",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_U_N",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationFindByG_U_F = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_U_F",
 			new String[] {
@@ -4140,22 +4351,20 @@ public class SocialActivityAchievementPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_U_F = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED,
 			SocialActivityAchievementImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_U_F",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Boolean.class.getName()
 			},
-			SocialActivityAchievementModelImpl.GROUPID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.USERID_COLUMN_BITMASK |
-			SocialActivityAchievementModelImpl.FIRSTINGROUP_COLUMN_BITMASK);
+			SocialActivityAchievementModelImpl.getColumnBitmask("groupId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask("userId") |
+			SocialActivityAchievementModelImpl.getColumnBitmask(
+				"firstInGroup"));
 
 		_finderPathCountByG_U_F = new FinderPath(
-			SocialActivityAchievementModelImpl.ENTITY_CACHE_ENABLED,
-			SocialActivityAchievementModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_U_F",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_U_F",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Boolean.class.getName()
@@ -4169,9 +4378,6 @@ public class SocialActivityAchievementPersistenceImpl
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
-
-	@BeanReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
 
 	private static final String _SQL_SELECT_SOCIALACTIVITYACHIEVEMENT =
 		"SELECT socialActivityAchievement FROM SocialActivityAchievement socialActivityAchievement";

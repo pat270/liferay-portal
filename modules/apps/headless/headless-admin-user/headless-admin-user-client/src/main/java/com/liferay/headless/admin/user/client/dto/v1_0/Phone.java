@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class Phone {
+public class Phone implements Cloneable {
+
+	public static Phone toDTO(String json) {
+		return PhoneSerDes.toDTO(json);
+	}
 
 	public String getExtension() {
 		return extension;
@@ -130,6 +134,11 @@ public class Phone {
 	}
 
 	protected Boolean primary;
+
+	@Override
+	public Phone clone() throws CloneNotSupportedException {
+		return (Phone)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

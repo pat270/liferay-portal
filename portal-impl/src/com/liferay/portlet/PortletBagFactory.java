@@ -50,6 +50,7 @@ import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -78,7 +79,6 @@ import com.liferay.social.kernel.model.impl.SocialActivityInterpreterImpl;
 import com.liferay.social.kernel.model.impl.SocialRequestInterpreterImpl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -115,9 +115,9 @@ public class PortletBagFactory {
 
 		_validate();
 
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put("javax.portlet.name", portlet.getPortletName());
+		Map<String, Object> properties = HashMapBuilder.<String, Object>put(
+			"javax.portlet.name", portlet.getPortletName()
+		).build();
 
 		Registry registry = RegistryUtil.getRegistry();
 
@@ -210,8 +210,8 @@ public class PortletBagFactory {
 			PortletInstanceFactoryUtil.create(
 				portlet, _servletContext, destroyPrevious);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return portletBag;
@@ -277,15 +277,15 @@ public class PortletBagFactory {
 	}
 
 	private javax.portlet.Portlet _getPortletInstance(Portlet portlet)
-		throws IllegalAccessException, InstantiationException {
+		throws Exception {
 
 		Class<?> portletClass = null;
 
 		try {
 			portletClass = _classLoader.loadClass(portlet.getPortletClass());
 		}
-		catch (Throwable t) {
-			_log.error(t, t);
+		catch (Throwable throwable) {
+			_log.error(throwable, throwable);
 
 			PortletLocalServiceUtil.destroyPortlet(portlet);
 
@@ -588,32 +588,33 @@ public class PortletBagFactory {
 			List<ServiceRegistration<?>> serviceRegistrations)
 		throws Exception {
 
-		if (Validator.isNotNull(portlet.getPreferencesValidator())) {
-			PreferencesValidator preferencesValidatorInstance = _newInstance(
-				PreferencesValidator.class, portlet.getPreferencesValidator());
-
-			try {
-				if (PropsValues.PREFERENCE_VALIDATE_ON_STARTUP) {
-					preferencesValidatorInstance.validate(
-						PortletPreferencesFactoryUtil.fromDefaultXML(
-							portlet.getDefaultPreferences()));
-				}
-			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Portlet with the name " + portlet.getPortletId() +
-							" does not have valid default preferences");
-				}
-			}
-
-			ServiceRegistration<?> serviceRegistration =
-				registry.registerService(
-					PreferencesValidator.class, preferencesValidatorInstance,
-					properties);
-
-			serviceRegistrations.add(serviceRegistration);
+		if (Validator.isNull(portlet.getPreferencesValidator())) {
+			return;
 		}
+
+		PreferencesValidator preferencesValidatorInstance = _newInstance(
+			PreferencesValidator.class, portlet.getPreferencesValidator());
+
+		try {
+			if (PropsValues.PREFERENCE_VALIDATE_ON_STARTUP) {
+				preferencesValidatorInstance.validate(
+					PortletPreferencesFactoryUtil.fromDefaultXML(
+						portlet.getDefaultPreferences()));
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Portlet with the name " + portlet.getPortletId() +
+						" does not have valid default preferences");
+			}
+		}
+
+		ServiceRegistration<?> serviceRegistration = registry.registerService(
+			PreferencesValidator.class, preferencesValidatorInstance,
+			properties);
+
+		serviceRegistrations.add(serviceRegistration);
 	}
 
 	private void _registerSchedulerEventMessageListeners(
@@ -863,14 +864,13 @@ public class PortletBagFactory {
 			WebDAVStorage webDAVStorageInstance = _newInstance(
 				WebDAVStorage.class, portlet.getWebDAVStorageClass());
 
-			Map<String, Object> webDAVProperties = new HashMap<>();
-
-			webDAVProperties.put("javax.portlet.name", portlet.getPortletId());
-			webDAVProperties.put(
-				"webdav.storage.token", portlet.getWebDAVStorageToken());
-
 			registry.registerService(
-				WebDAVStorage.class, webDAVStorageInstance, webDAVProperties);
+				WebDAVStorage.class, webDAVStorageInstance,
+				HashMapBuilder.<String, Object>put(
+					"javax.portlet.name", portlet.getPortletId()
+				).put(
+					"webdav.storage.token", portlet.getWebDAVStorageToken()
+				).build());
 		}
 	}
 

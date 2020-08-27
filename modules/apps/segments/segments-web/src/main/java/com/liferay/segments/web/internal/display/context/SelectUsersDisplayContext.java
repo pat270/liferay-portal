@@ -15,7 +15,7 @@
 package com.liferay.segments.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.petra.string.StringPool;
@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -59,6 +60,9 @@ public class SelectUsersDisplayContext {
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 		_userLocalService = userLocalService;
+
+		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	public String getClearResultsURL() {
@@ -93,26 +97,21 @@ public class SelectUsersDisplayContext {
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "filter-by-navigation"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(
+						_httpServletRequest, "filter-by-navigation"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public long getGroupId() {
@@ -120,13 +119,9 @@ public class SelectUsersDisplayContext {
 			return _groupId;
 		}
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
 		_groupId = ParamUtil.getLong(
 			_httpServletRequest, "groupId",
-			themeDisplay.getSiteGroupIdOrLiveGroupId());
+			_themeDisplay.getSiteGroupIdOrLiveGroupId());
 
 		return _groupId;
 	}
@@ -203,6 +198,10 @@ public class SelectUsersDisplayContext {
 		return searchActionURL.toString();
 	}
 
+	public String getSearchContainerId() {
+		return "selectSegmentsEntryUsers";
+	}
+
 	public String getSortingURL() {
 		PortletURL sortingURL = getPortletURL();
 
@@ -214,22 +213,20 @@ public class SelectUsersDisplayContext {
 	}
 
 	public int getTotalItems() throws PortalException {
-		SearchContainer userSearchContainer = getUserSearchContainer();
+		SearchContainer<User> userSearchContainer = getUserSearchContainer();
 
 		return userSearchContainer.getTotal();
 	}
 
-	public SearchContainer getUserSearchContainer() throws PortalException {
+	public SearchContainer<User> getUserSearchContainer() {
 		if (_userSearchContainer != null) {
 			return _userSearchContainer;
 		}
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		SearchContainer userSearchContainer = new UserSearch(
+		SearchContainer<User> userSearchContainer = new UserSearch(
 			_renderRequest, getPortletURL());
+
+		userSearchContainer.setId(getSearchContainerId());
 
 		OrderByComparator<User> orderByComparator =
 			UsersAdminUtil.getUserOrderByComparator(
@@ -245,18 +242,19 @@ public class SelectUsersDisplayContext {
 		UserSearchTerms searchTerms =
 			(UserSearchTerms)userSearchContainer.getSearchTerms();
 
-		LinkedHashMap<String, Object> userParams = new LinkedHashMap<>();
-
-		userParams.put("inherit", Boolean.TRUE);
+		LinkedHashMap<String, Object> userParams =
+			LinkedHashMapBuilder.<String, Object>put(
+				"inherit", Boolean.TRUE
+			).build();
 
 		int usersCount = _userLocalService.searchCount(
-			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
+			_themeDisplay.getCompanyId(), searchTerms.getKeywords(),
 			searchTerms.getStatus(), userParams);
 
 		userSearchContainer.setTotal(usersCount);
 
 		List<User> users = _userLocalService.search(
-			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
+			_themeDisplay.getCompanyId(), searchTerms.getKeywords(),
 			searchTerms.getStatus(), userParams, userSearchContainer.getStart(),
 			userSearchContainer.getEnd(),
 			userSearchContainer.getOrderByComparator());
@@ -306,44 +304,36 @@ public class SelectUsersDisplayContext {
 	}
 
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(true);
-						dropdownItem.setHref(getPortletURL());
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "all"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(true);
+				dropdownItem.setHref(getPortletURL());
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "all"));
 			}
-		};
+		).build();
 	}
 
 	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "first-name"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "first-name");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "first-name"));
-					});
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "screen-name"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "screen-name");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "screen-name"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "first-name"));
+				dropdownItem.setHref(
+					getPortletURL(), "orderByCol", "first-name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "first-name"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "screen-name"));
+				dropdownItem.setHref(
+					getPortletURL(), "orderByCol", "screen-name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "screen-name"));
+			}
+		).build();
 	}
 
 	private String _displayStyle;
@@ -355,7 +345,8 @@ public class SelectUsersDisplayContext {
 	private String _orderByType;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
+	private final ThemeDisplay _themeDisplay;
 	private final UserLocalService _userLocalService;
-	private SearchContainer _userSearchContainer;
+	private SearchContainer<User> _userSearchContainer;
 
 }

@@ -56,19 +56,19 @@ public class AssetCategoryPropertyFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_G_K);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(key);
+			queryPos.add(groupId);
+			queryPos.add(key);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -77,8 +77,8 @@ public class AssetCategoryPropertyFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -101,22 +101,22 @@ public class AssetCategoryPropertyFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_G_K);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("categoryPropertyValue", Type.STRING);
+			sqlQuery.addScalar("categoryPropertyValue", Type.STRING);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(key);
+			queryPos.add(groupId);
+			queryPos.add(key);
 
 			List<AssetCategoryProperty> categoryProperties = new ArrayList<>();
 
-			Iterator<String> itr = (Iterator<String>)QueryUtil.iterate(
-				q, getDialect(), start, end);
+			Iterator<String> iterator = (Iterator<String>)QueryUtil.iterate(
+				sqlQuery, getDialect(), start, end);
 
-			while (itr.hasNext()) {
-				String value = itr.next();
+			while (iterator.hasNext()) {
+				String value = iterator.next();
 
 				AssetCategoryProperty categoryProperty =
 					new AssetCategoryPropertyImpl();
@@ -129,8 +129,8 @@ public class AssetCategoryPropertyFinderImpl
 
 			return categoryProperties;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

@@ -29,7 +29,7 @@ public final class DDMDataProviderResponse implements Serializable {
 		Object value = _ddmDataProviderResponseOutputs.get(name);
 
 		if (value == null) {
-			return null;
+			return Optional.empty();
 		}
 
 		Class<?> valueClass = value.getClass();

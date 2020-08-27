@@ -14,8 +14,8 @@
 
 package com.liferay.bookmarks.web.internal.portlet.action;
 
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.constants.BookmarksPortletKeys;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksFolderLocalService;
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.portal.kernel.log.Log;
@@ -84,12 +84,12 @@ public class BookmarksAdminConfigurationAction
 			try {
 				_bookmarksFolderLocalService.getFolder(rootFolderId);
 			}
-			catch (NoSuchFolderException nsfe) {
+			catch (NoSuchFolderException noSuchFolderException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsfe, nsfe);
+					_log.debug(noSuchFolderException, noSuchFolderException);
 				}
 
 				SessionErrors.add(actionRequest, "rootFolderIdInvalid");

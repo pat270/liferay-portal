@@ -56,12 +56,12 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(new Capability[] {_exportCapability});
+		return ListUtil.fromArray(_exportCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(new Capability[] {_importCapability});
+		return ListUtil.fromArray(_importCapability);
 	}
 
 	@Override
@@ -75,11 +75,11 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 				portletDataContext, portletPreferences,
 				portletDataContext.getPortletId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new PortletDataException(
 				"Unable to update asset categories navigation portlet " +
 					"preferences during export",
-				e);
+				exception);
 		}
 	}
 
@@ -93,11 +93,11 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 			return updateImportPortletPreferences(
 				portletDataContext, portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new PortletDataException(
 				"Unable to update asset categories navigation portlet " +
 					"preferences during import",
-				e);
+				exception);
 		}
 	}
 
@@ -151,8 +151,6 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 		String[] oldValues = StringUtil.split(
 			portletPreferencesOldValue, StringPool.POUND);
 
-		String uuid = oldValues[0];
-
 		long groupId = portletDataContext.getScopeGroupId();
 
 		if (oldValues.length > 1) {
@@ -165,6 +163,8 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 		}
 
 		if (className.equals(AssetVocabulary.class.getName())) {
+			String uuid = oldValues[0];
+
 			AssetVocabulary assetVocabulary =
 				_assetVocabularyLocalService.
 					fetchAssetVocabularyByUuidAndGroupId(uuid, groupId);
@@ -185,10 +185,10 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 		Portlet portlet = _portletLocalService.getPortletById(
 			portletDataContext.getCompanyId(), portletId);
 
-		Enumeration<String> enu = portletPreferences.getNames();
+		Enumeration<String> enumeration = portletPreferences.getNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			if (name.equals("assetVocabularyIds")) {
 				updateExportPortletPreferencesClassPKs(
@@ -210,10 +210,10 @@ public class AssetCategoriesNavigationPortletPreferencesProcessor
 
 		Group companyGroup = company.getGroup();
 
-		Enumeration<String> enu = portletPreferences.getNames();
+		Enumeration<String> enumeration = portletPreferences.getNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			if (name.equals("assetVocabularyIds")) {
 				updateImportPortletPreferencesClassPKs(

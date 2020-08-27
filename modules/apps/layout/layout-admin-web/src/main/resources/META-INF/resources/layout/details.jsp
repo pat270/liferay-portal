@@ -23,6 +23,7 @@ Layout selLayout = layoutsAdminDisplayContext.getSelLayout();
 LayoutType selLayoutType = selLayout.getLayoutType();
 
 Locale defaultLocale = LocaleUtil.getDefault();
+
 String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
 %>
 
@@ -34,22 +35,13 @@ String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
 <aui:model-context bean="<%= selLayout %>" model="<%= Layout.class %>" />
 
 <%
-StringBuilder friendlyURLBase = new StringBuilder();
+String friendlyURLBase = StringPool.BLANK;
 %>
 
-<c:if test="<%= !group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsAdminDisplayContext.isDraft() %>">
+<c:if test="<%= !group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsAdminDisplayContext.isDraft() && !selLayout.isSystem() %>">
 
 	<%
-	friendlyURLBase.append(themeDisplay.getPortalURL());
-
-	LayoutSet layoutSet = selLayout.getLayoutSet();
-
-	String virtualHostname = layoutSet.getVirtualHostname();
-
-	if (Validator.isNull(virtualHostname) || (friendlyURLBase.indexOf(virtualHostname) == -1)) {
-		friendlyURLBase.append(group.getPathFriendlyURL(layoutsAdminDisplayContext.isPrivateLayout(), themeDisplay));
-		friendlyURLBase.append(group.getFriendlyURL());
-	}
+	friendlyURLBase = layoutsAdminDisplayContext.getFriendlyURLBase();
 	%>
 
 	<liferay-ui:error exception="<%= LayoutFriendlyURLException.class %>" focusField="friendlyURL">
@@ -87,8 +79,8 @@ StringBuilder friendlyURLBase = new StringBuilder();
 
 <c:choose>
 	<c:when test="<%= !group.isLayoutPrototype() %>">
-		<c:if test="<%= !layoutsAdminDisplayContext.isDraft() %>">
-			<aui:input name="name" />
+		<c:if test="<%= !layoutsAdminDisplayContext.isDraft() && !selLayout.isSystem() %>">
+			<aui:input ignoreRequestValue="<%= SessionErrors.isEmpty(liferayPortletRequest) %>" name="name" />
 
 			<div class="form-group">
 				<aui:input helpMessage="hidden-from-navigation-menu-widget-help-message" label="hidden-from-navigation-menu-widget" name="hidden" type="toggle-switch" value="<%= selLayout.isHidden() %>" />
@@ -96,12 +88,47 @@ StringBuilder friendlyURLBase = new StringBuilder();
 		</c:if>
 
 		<c:choose>
-			<c:when test="<%= selLayoutType.isURLFriendliable() && !layoutsAdminDisplayContext.isDraft() %>">
+			<c:when test="<%= selLayoutType.isURLFriendliable() && !layoutsAdminDisplayContext.isDraft() && !selLayout.isSystem() %>">
+				<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/layout/get_friendly_url_entry_localizations" var="friendlyURLEntryLocalizationsURL">
+					<portlet:param name="plid" value="<%= String.valueOf(selLayout.getPlid()) %>" />
+				</liferay-portlet:resourceURL>
+
+				<portlet:actionURL name="/layout/delete_friendly_url_entry_localization" var="deleteFriendlyURLEntryLocalizationURL">
+					<portlet:param name="plid" value="<%= String.valueOf(selLayout.getPlid()) %>" />
+				</portlet:actionURL>
+
+				<portlet:actionURL name="/layout/restore_friendly_url_entry_localization" var="restoreFriendlyURLEntryLocalizationURL">
+					<portlet:param name="plid" value="<%= String.valueOf(selLayout.getPlid()) %>" />
+				</portlet:actionURL>
+
+				<div class="btn-url-history-wrapper">
+
+					<%
+					User defaultUser = company.getDefaultUser();
+					%>
+
+					<react:component
+						module="js/friendly_url_history/FriendlyURLHistory"
+						props='<%=
+							HashMapBuilder.<String, Object>put(
+								"defaultLanguageId", LocaleUtil.toLanguageId(defaultUser.getLocale())
+							).put(
+								"deleteFriendlyURLEntryLocalizationURL", deleteFriendlyURLEntryLocalizationURL
+							).put(
+								"friendlyURLEntryLocalizationsURL", friendlyURLEntryLocalizationsURL
+							).put(
+								"restoreFriendlyURLEntryLocalizationURL", restoreFriendlyURLEntryLocalizationURL
+							).build()
+						%>'
+					/>
+				</div>
+
 				<div class="form-group friendly-url">
 					<label for="<portlet:namespace />friendlyURL"><liferay-ui:message key="friendly-url" /> <liferay-ui:icon-help message='<%= LanguageUtil.format(request, "for-example-x", "<em>/news</em>", false) %>' /></label>
 
 					<liferay-ui:input-localized
 						defaultLanguageId="<%= LocaleUtil.toLanguageId(themeDisplay.getSiteDefaultLocale()) %>"
+						ignoreRequestValue="<%= SessionErrors.isEmpty(liferayPortletRequest) %>"
 						inputAddon="<%= friendlyURLBase.toString() %>"
 						name="friendlyURL"
 						xml="<%= HttpUtil.decodeURL(selLayout.getFriendlyURLsXML()) %>"
@@ -119,10 +146,9 @@ StringBuilder friendlyURLBase = new StringBuilder();
 			LayoutSetPrototype layoutSetPrototype = LayoutSetPrototypeLocalServiceUtil.getLayoutSetPrototype(group.getClassPK());
 
 			boolean layoutSetPrototypeUpdateable = GetterUtil.getBoolean(layoutSetPrototype.getSettingsProperty("layoutsUpdateable"), true);
-			boolean layoutUpdateable = GetterUtil.getBoolean(selLayoutType.getTypeSettingsProperty("layoutUpdateable"), true);
 			%>
 
-			<aui:input disabled="<%= !layoutSetPrototypeUpdateable %>" helpMessage="allow-site-administrators-to-modify-this-page-for-their-site-help" label="allow-site-administrators-to-modify-this-page-for-their-site" name="TypeSettingsProperties--layoutUpdateable--" type="checkbox" value="<%= layoutUpdateable %>" />
+			<aui:input disabled="<%= !layoutSetPrototypeUpdateable %>" helpMessage="allow-site-administrators-to-modify-this-page-for-their-site-help" label="allow-site-administrators-to-modify-this-page-for-their-site" name="TypeSettingsProperties--layoutUpdateable--" type="checkbox" value='<%= GetterUtil.getBoolean(selLayoutType.getTypeSettingsProperty("layoutUpdateable"), true) %>' />
 		</c:if>
 	</c:when>
 	<c:otherwise>
@@ -165,44 +191,64 @@ StringBuilder friendlyURLBase = new StringBuilder();
 	</liferay-util:include>
 </div>
 
-<aui:script require="metal-dom/src/dom as dom">
-	Liferay.Util.toggleBoxes('<portlet:namespace />layoutPrototypeLinkEnabled', '<portlet:namespace />layoutPrototypeMergeAlert');
-	Liferay.Util.toggleBoxes('<portlet:namespace />layoutPrototypeLinkEnabled', '<portlet:namespace />typeOptions', true);
+<c:if test="<%= !selLayout.isTypeAssetDisplay() %>">
+	<clay:sheet-section>
+		<h3 class="sheet-subtitle"><liferay-ui:message key="categorization" /></h3>
 
-	var layoutPrototypeLinkEnabled = document.getElementById('<portlet:namespace />layoutPrototypeLinkEnabled');
+		<liferay-util:include page="/layout/categorization.jsp" servletContext="<%= application %>" />
+	</clay:sheet-section>
+</c:if>
+
+<aui:script require="metal-dom/src/dom as dom">
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />layoutPrototypeLinkEnabled',
+		'<portlet:namespace />layoutPrototypeMergeAlert'
+	);
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />layoutPrototypeLinkEnabled',
+		'<portlet:namespace />typeOptions',
+		true
+	);
+
+	var layoutPrototypeLinkEnabled = document.getElementById(
+		'<portlet:namespace />layoutPrototypeLinkEnabled'
+	);
 
 	if (layoutPrototypeLinkEnabled) {
-		layoutPrototypeLinkEnabled.addEventListener(
-			'change',
-			function(event) {
-				var layoutPrototypeLinkChecked = event.currentTarget.checked;
+		layoutPrototypeLinkEnabled.addEventListener('change', function (event) {
+			var layoutPrototypeLinkChecked = event.currentTarget.checked;
 
-				var layoutPrototypeInfoMessage = document.querySelector('.layout-prototype-info-message');
+			var layoutPrototypeInfoMessage = document.querySelector(
+				'.layout-prototype-info-message'
+			);
 
-				var applyLayoutPrototype = document.getElementById('<portlet:namespace />applyLayoutPrototype');
+			var applyLayoutPrototype = document.getElementById(
+				'<portlet:namespace />applyLayoutPrototype'
+			);
 
-				if (layoutPrototypeInfoMessage) {
-					if (layoutPrototypeLinkChecked) {
-						layoutPrototypeInfoMessage.classList.remove('hide');
+			if (layoutPrototypeInfoMessage) {
+				if (layoutPrototypeLinkChecked) {
+					layoutPrototypeInfoMessage.classList.remove('hide');
 
-						applyLayoutPrototype.value = '<%= true %>';
-					}
-					else {
-						layoutPrototypeInfoMessage.classList.add('hide');
-
-						applyLayoutPrototype.value = '<%= false %>';
-					}
+					applyLayoutPrototype.value = '<%= true %>';
 				}
+				else {
+					layoutPrototypeInfoMessage.classList.add('hide');
 
-				var propagatableFields = document.querySelectorAll('#<portlet:namespace />editLayoutFm .propagatable-field');
-
-				Array.prototype.forEach.call(
-					propagatableFields,
-					function(field, index) {
-						Liferay.Util.toggleDisabled(field, layoutPrototypeLinkChecked);
-					}
-				);
+					applyLayoutPrototype.value = '<%= false %>';
+				}
 			}
-		);
+
+			var propagatableFields = document.querySelectorAll(
+				'#<portlet:namespace />editLayoutFm .propagatable-field'
+			);
+
+			Array.prototype.forEach.call(propagatableFields, function (
+				field,
+				index
+			) {
+				Liferay.Util.toggleDisabled(field, layoutPrototypeLinkChecked);
+			});
+		});
 	}
 </aui:script>

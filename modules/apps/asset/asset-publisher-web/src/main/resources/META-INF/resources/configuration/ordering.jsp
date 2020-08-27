@@ -16,14 +16,13 @@
 
 <%@ include file="/init.jsp" %>
 
-<aui:row id="ordering">
-	<aui:col width="<%= 50 %>">
-
-		<%
-		String orderByColumn1 = assetPublisherDisplayContext.getOrderByColumn1();
-		%>
-
-		<aui:select label="order-by" name="preferences--orderByColumn1--" value="<%= orderByColumn1 %>" wrapperCssClass="field-inline w80">
+<clay:row
+	id='<%= liferayPortletResponse.getNamespace() + "ordering" %>'
+>
+	<clay:col
+		md="6"
+	>
+		<aui:select label="order-by" name="preferences--orderByColumn1--" value="<%= assetPublisherDisplayContext.getOrderByColumn1() %>" wrapperCssClass="field-inline w80">
 			<c:if test="<%= assetPublisherDisplayContext.isOrderingByTitleEnabled() %>">
 				<aui:option label="title" />
 			</c:if>
@@ -65,9 +64,11 @@
 
 			<aui:input cssClass="order-by-type-field" name="preferences--orderByType1--" type="hidden" value="<%= orderByType1 %>" />
 		</aui:field-wrapper>
-	</aui:col>
+	</clay:col>
 
-	<aui:col width="<%= 50 %>">
+	<clay:col
+		md="6"
+	>
 
 		<%
 		String orderByColumn2 = assetPublisherDisplayContext.getOrderByColumn2();
@@ -112,16 +113,18 @@
 
 			<aui:input cssClass="order-by-type-field" name="preferences--orderByType2--" type="hidden" value="<%= orderByType2 %>" />
 		</aui:field-wrapper>
-	</aui:col>
-</aui:row>
+	</clay:col>
+</clay:row>
 
 <aui:script use="aui-base">
 	A.one('#<portlet:namespace />ordering').delegate(
 		'click',
-		function(event) {
+		function (event) {
 			var currentTarget = event.currentTarget;
 
-			var orderByTypeContainer = currentTarget.ancestor('.order-by-type-container');
+			var orderByTypeContainer = currentTarget.ancestor(
+				'.order-by-type-container'
+			);
 
 			orderByTypeContainer.all('.icon').toggleClass('hide');
 

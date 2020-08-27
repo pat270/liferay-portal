@@ -16,13 +16,13 @@ package com.liferay.exportimport.kernel.configuration;
 
 import com.liferay.petra.string.StringPool;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * @author Daniel Kocsis
- * @author Akos Thurzo
+ * @author     Daniel Kocsis
+ * @author     Akos Thurzo
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants}
  */
-@ProviderType
+@Deprecated
 public class ExportImportConfigurationConstants {
 
 	public static final int TYPE_EXPORT_LAYOUT = 0;

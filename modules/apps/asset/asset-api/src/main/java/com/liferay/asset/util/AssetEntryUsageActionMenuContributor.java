@@ -22,8 +22,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Pavel Savinov
+ * @author     Pavel Savinov
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.layout.util.LayoutClassedModelUsageActionMenuContributor}
  */
+@Deprecated
 public interface AssetEntryUsageActionMenuContributor {
 
 	public List<DropdownItem> getAssetEntryUsageActionMenu(

@@ -1,0 +1,28 @@
+definition {
+
+	@summary = "Add a user group"
+	macro addUserGroup {
+		Variables.assertDefined(parameterList = "${userGroupName}");
+
+		JSONUserGroupAPI._addUserGroup(
+			userGroupDescription = "${userGroupDescription}",
+			userGroupName = "${userGroupName}");
+	}
+
+	@summary = "Add user group with a group role"
+	macro assignGroupRoleToUserGroup {
+		Variables.assertDefined(parameterList = "${groupName},${roleTitle},${userGroupName}");
+
+		var groupId = JSONGroupSetter.setGroupId(groupName = "${groupName}");
+
+		var roleId = JSONRoleAPI._getRoleIdByName(name = "${roleTitle}");
+
+		var userGroupId = JSONUserGroupAPI._getUserGroupIdByName(userGroupName = "${userGroupName}");
+
+		JSONUserGroupAPI._assignGroupRoleToUserGroup(
+			groupId = "${groupId}",
+			roleId = "${roleId}",
+			userGroupId = "${userGroupId}");
+	}
+
+}

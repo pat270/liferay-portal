@@ -215,8 +215,8 @@ public class DeclarativeServiceDependencyManagerTest {
 						_unsatisfiedComponentScannerConfiguration.update(
 							new HashMapDictionary<String, Object>());
 					}
-					catch (IOException ioe) {
-						ReflectionUtil.throwException(ioe);
+					catch (IOException ioException) {
+						ReflectionUtil.throwException(ioException);
 					}
 
 					Thread thread = Thread.currentThread();
@@ -259,7 +259,7 @@ public class DeclarativeServiceDependencyManagerTest {
 		}
 	}
 
-	private InputStream _createBundle() throws IOException {
+	private InputStream _createBundle() throws Exception {
 		try (UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 				new UnsyncByteArrayOutputStream()) {
 
@@ -343,11 +343,8 @@ public class DeclarativeServiceDependencyManagerTest {
 
 		StreamUtil.transfer(
 			classLoader.getResourceAsStream(
-				packagePath.concat(
-					"/dependencies/"
-				).concat(
-					_TEST_COMPONENT_FILE_NAME
-				)),
+				StringBundler.concat(
+					packagePath, "/dependencies/", _TEST_COMPONENT_FILE_NAME)),
 			jarOutputStream, false);
 	}
 

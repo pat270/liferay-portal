@@ -191,15 +191,6 @@ public class SchedulerEngineHelperUtil {
 			groupName, storageType);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #_getSchedulerEngineHelper()}
-	 */
-	@Deprecated
-	public static SchedulerEngineHelper getSchedulerEngineHelper() {
-		return _getSchedulerEngineHelper();
-	}
-
 	public static Date getStartTime(SchedulerResponse schedulerResponse) {
 		return _getSchedulerEngineHelper().getStartTime(schedulerResponse);
 	}
@@ -324,12 +315,12 @@ public class SchedulerEngineHelperUtil {
 	}
 
 	private static SchedulerEngineHelper _getSchedulerEngineHelper() {
-		return _instance;
+		return _schedulerEngineHelper;
 	}
 
-	private static volatile SchedulerEngineHelper _instance =
+	private static volatile SchedulerEngineHelper _schedulerEngineHelper =
 		ServiceProxyFactory.newServiceTrackedInstance(
 			SchedulerEngineHelper.class, SchedulerEngineHelperUtil.class,
-			"_instance", false);
+			"_schedulerEngineHelper", false);
 
 }

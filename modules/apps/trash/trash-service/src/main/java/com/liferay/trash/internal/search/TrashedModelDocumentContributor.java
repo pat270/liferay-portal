@@ -39,10 +39,13 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(immediate = true, service = DocumentContributor.class)
-public class TrashedModelDocumentContributor implements DocumentContributor {
+public class TrashedModelDocumentContributor
+	implements DocumentContributor<TrashedModel> {
 
 	@Override
-	public void contribute(Document document, BaseModel baseModel) {
+	public void contribute(
+		Document document, BaseModel<TrashedModel> baseModel) {
+
 		if ((baseModel == null) || !(baseModel instanceof TrashedModel)) {
 			return;
 		}
@@ -58,9 +61,11 @@ public class TrashedModelDocumentContributor implements DocumentContributor {
 		try {
 			trashEntry = trashedModel.getTrashEntry();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to get trash entry for " + trashedModel, pe);
+				_log.debug(
+					"Unable to get trash entry for " + trashedModel,
+					portalException);
 			}
 		}
 
@@ -78,12 +83,12 @@ public class TrashedModelDocumentContributor implements DocumentContributor {
 					document.addKeyword(
 						Field.REMOVED_BY_USER_NAME, user.getFullName(), true);
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isDebugEnabled()) {
 						_log.debug(
 							"Unable to locate user " +
 								serviceContext.getUserId(),
-							pe);
+							portalException);
 					}
 				}
 			}
@@ -117,12 +122,12 @@ public class TrashedModelDocumentContributor implements DocumentContributor {
 				document.addKeyword(Field.TYPE, trashRenderer.getType(), true);
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Unable to get trash renderer for " +
 						trashEntry.getClassName(),
-					pe);
+					portalException);
 			}
 		}
 	}

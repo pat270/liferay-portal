@@ -33,11 +33,11 @@ import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestHelper;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -46,13 +46,14 @@ import com.liferay.portal.kernel.test.util.SearchContextTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +82,8 @@ public class DDMFormInstanceRecordSearchTest {
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
-		_user = UserTestUtil.addUser();
+
+		_user = UserTestUtil.addGroupAdminUser(_group);
 
 		CompanyThreadLocal.setCompanyId(TestPropsValues.getCompanyId());
 
@@ -98,10 +100,21 @@ public class DDMFormInstanceRecordSearchTest {
 	}
 
 	@Test
-	public void testBasicSearchWithDefaultUser() throws Exception {
-		long companyId = TestPropsValues.getCompanyId();
+	public void testBasicSearchWithGroupUser() throws Exception {
+		User user = UserTestUtil.addGroupUser(
+			_group, RoleConstants.SITE_MEMBER);
 
-		User user = UserLocalServiceUtil.getDefaultUser(companyId);
+		addDDMFormInstanceRecord("Joe Bloggs", "Simple description");
+
+		_searchContext.setKeywords("Simple description");
+		_searchContext.setUserId(user.getUserId());
+
+		assertSearch("description", 1);
+	}
+
+	@Test
+	public void testBasicSearchWithGuestUser() throws Exception {
+		User user = UserTestUtil.addUser();
 
 		addDDMFormInstanceRecord("Joe Bloggs", "Simple description");
 
@@ -109,7 +122,7 @@ public class DDMFormInstanceRecordSearchTest {
 
 		_searchContext.setUserId(user.getUserId());
 
-		assertSearch("description", 1);
+		assertSearch("description", 0);
 	}
 
 	@Test
@@ -148,11 +161,13 @@ public class DDMFormInstanceRecordSearchTest {
 
 		ddmForm.addDDMFormField(nameDDMFormField);
 
-		DDMFormField notIndexableDDMFormField =
+		DDMFormField descriptionDDMFormField =
 			DDMFormTestUtil.createTextDDMFormField(
-				"notIndexable", true, false, false);
+				"description", true, false, false);
 
-		notIndexableDDMFormField.setIndexType("");
+		descriptionDDMFormField.setIndexType("");
+
+		ddmForm.addDDMFormField(descriptionDDMFormField);
 
 		DDMFormInstanceTestHelper ddmFormInstanceTestHelper =
 			new DDMFormInstanceTestHelper(_group);
@@ -185,6 +200,9 @@ public class DDMFormInstanceRecordSearchTest {
 
 		assertSearch("Another The Example", 1);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected static SearchContext getSearchContext(
 			Group group, User user, DDMFormInstance ddmFormInstance)
@@ -244,15 +262,13 @@ public class DDMFormInstanceRecordSearchTest {
 	protected void addDDMFormInstanceRecord(String name, String description)
 		throws Exception {
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.US, name);
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(LocaleUtil.US, description);
-
-		addDDMFormInstanceRecord(nameMap, descriptionMap);
+		addDDMFormInstanceRecord(
+			HashMapBuilder.put(
+				LocaleUtil.US, name
+			).build(),
+			HashMapBuilder.put(
+				LocaleUtil.US, description
+			).build());
 	}
 
 	protected void assertSearch(String keywords, int length) throws Exception {

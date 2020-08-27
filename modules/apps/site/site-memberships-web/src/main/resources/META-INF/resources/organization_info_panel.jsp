@@ -34,10 +34,11 @@ List<Organization> organizations = (List<Organization>)request.getAttribute(Site
 			<h5><liferay-ui:message key="num-of-organizations" /></h5>
 
 			<%
-			LinkedHashMap<String, Object> organizationParams = new LinkedHashMap<String, Object>();
-
-			organizationParams.put("groupOrganization", Long.valueOf(siteMembershipsDisplayContext.getGroupId()));
-			organizationParams.put("organizationsGroups", Long.valueOf(siteMembershipsDisplayContext.getGroupId()));
+			LinkedHashMap<String, Object> organizationParams = LinkedHashMapBuilder.<String, Object>put(
+				"groupOrganization", Long.valueOf(siteMembershipsDisplayContext.getGroupId())
+			).put(
+				"organizationsGroups", Long.valueOf(siteMembershipsDisplayContext.getGroupId())
+			).build();
 
 			int organizationsCount = OrganizationLocalServiceUtil.searchCount(company.getCompanyId(), OrganizationConstants.ANY_PARENT_ORGANIZATION_ID, StringPool.BLANK, StringPool.BLANK, null, null, organizationParams);
 			%>
@@ -72,7 +73,7 @@ List<Organization> organizations = (List<Organization>)request.getAttribute(Site
 				</p>
 
 				<p class="h6 text-muted">
-					<liferay-ui:message arguments="<%= organization.getName() %>" key="all-users-of-x-are-automatically-members-of-the-site" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= new String[] {organization.getName(), StringUtil.toLowerCase(GroupUtil.getGroupTypeLabel(group, locale)), GroupUtil.getGroupTypeLabel(group, locale)} %>" key="all-users-of-x-are-automatically-members-of-the-x" translateArguments="<%= false %>" />
 				</p>
 			</c:if>
 		</div>
@@ -89,7 +90,9 @@ List<Organization> organizations = (List<Organization>)request.getAttribute(Site
 			</p>
 
 			<%
-			String city = organization.getAddress().getCity();
+			Address address = organization.getAddress();
+
+			String city = address.getCity();
 			%>
 
 			<c:if test="<%= Validator.isNotNull(city) %>">

@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalArticleLocalization
  * @generated
  */
-@ProviderType
 public class JournalArticleLocalizationWrapper
 	extends BaseModelWrapper<JournalArticleLocalization>
 	implements JournalArticleLocalization,
@@ -47,6 +46,8 @@ public class JournalArticleLocalizationWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("articleLocalizationId", getArticleLocalizationId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("articlePK", getArticlePK());
@@ -59,6 +60,18 @@ public class JournalArticleLocalizationWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long articleLocalizationId = (Long)attributes.get(
 			"articleLocalizationId");
 
@@ -128,6 +141,16 @@ public class JournalArticleLocalizationWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this journal article localization.
+	 *
+	 * @return the ct collection ID of this journal article localization
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the description of this journal article localization.
 	 *
 	 * @return the description of this journal article localization
@@ -145,6 +168,16 @@ public class JournalArticleLocalizationWrapper
 	@Override
 	public String getLanguageId() {
 		return model.getLanguageId();
+	}
+
+	/**
+	 * Returns the mvcc version of this journal article localization.
+	 *
+	 * @return the mvcc version of this journal article localization
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -198,6 +231,16 @@ public class JournalArticleLocalizationWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this journal article localization.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal article localization
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this journal article localization.
 	 *
 	 * @param description the description of this journal article localization
@@ -218,6 +261,16 @@ public class JournalArticleLocalizationWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this journal article localization.
+	 *
+	 * @param mvccVersion the mvcc version of this journal article localization
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the primary key of this journal article localization.
 	 *
 	 * @param primaryKey the primary key of this journal article localization
@@ -235,6 +288,20 @@ public class JournalArticleLocalizationWrapper
 	@Override
 	public void setTitle(String title) {
 		model.setTitle(title);
+	}
+
+	@Override
+	public Map<String, Function<JournalArticleLocalization, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<JournalArticleLocalization, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

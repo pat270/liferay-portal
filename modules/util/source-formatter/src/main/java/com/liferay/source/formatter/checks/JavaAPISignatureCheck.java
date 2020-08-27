@@ -37,7 +37,7 @@ import java.util.List;
 public class JavaAPISignatureCheck extends BaseJavaTermCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -52,13 +52,7 @@ public class JavaAPISignatureCheck extends BaseJavaTermCheck {
 			String fileContent)
 		throws IOException {
 
-		if (javaTerm.hasAnnotation("Override")) {
-			return javaTerm.getContent();
-		}
-
-		String accessModifier = javaTerm.getAccessModifier();
-
-		if (!accessModifier.equals(JavaTerm.ACCESS_MODIFIER_PUBLIC)) {
+		if (!javaTerm.isPublic() || javaTerm.hasAnnotation("Override")) {
 			return javaTerm.getContent();
 		}
 
@@ -95,8 +89,7 @@ public class JavaAPISignatureCheck extends BaseJavaTermCheck {
 				addMessage(
 					fileName,
 					"Do not use type '" + parameterType +
-						"' in API method signature",
-					"api_method_signatures.markdown");
+						"' in API method signature");
 			}
 
 			if (illegalAPIParameterTypes.contains(parameterType) &&
@@ -107,8 +100,7 @@ public class JavaAPISignatureCheck extends BaseJavaTermCheck {
 				addMessage(
 					fileName,
 					"Do not use type '" + parameterType +
-						"' in API method signature",
-					"api_method_signatures.markdown");
+						"' in API method signature");
 			}
 		}
 
@@ -215,7 +207,8 @@ public class JavaAPISignatureCheck extends BaseJavaTermCheck {
 	private static final String[] _PACKAGE_NAME_WHITELIST = {
 		".*\\.alloy\\.mvc(\\..*)?", ".*\\.auth(\\..*)?", ".*\\.axis(\\..*)?",
 		".*\\.display\\.context(\\..*)?", ".*\\.http(\\..*)?",
-		".*\\.jsp(\\..*)?", ".*\\.layoutconfiguration\\.util(\\..*)?",
+		".*\\.jaxrs(\\..*)?", ".*\\.jsp(\\..*)?",
+		".*\\.layoutconfiguration\\.util(\\..*)?",
 		".*\\.portal\\.action(\\..*)?", ".*\\.portal\\.events(\\..*)?",
 		".*\\.portlet(\\..*)?", ".*\\.server\\.manager(\\..*)?",
 		".*\\.servlet(\\..*)?", ".*\\.spi\\.agent(\\..*)?", ".*\\.sso(\\..*)?",

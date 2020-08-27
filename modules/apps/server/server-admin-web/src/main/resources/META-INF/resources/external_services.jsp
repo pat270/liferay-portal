@@ -41,10 +41,9 @@
 					Properties resourceLimitsProperties = ImageMagickUtil.getResourceLimitsProperties();
 
 					for (String label : _IMAGEMAGICK_RESOURCE_LIMIT_LABELS) {
-						String name = "imageMagickLimit" + StringUtil.upperCaseFirstLetter(label);
 					%>
 
-						<aui:input cssClass="lfr-input-text-container" label="<%= label %>" name="<%= name %>" type="text" value="<%= resourceLimitsProperties.getProperty(label) %>" />
+						<aui:input cssClass="lfr-input-text-container" label="<%= label %>" name='<%= "imageMagickLimit" + StringUtil.upperCaseFirstLetter(label) %>' type="text" value="<%= resourceLimitsProperties.getProperty(label) %>" />
 
 					<%
 					}
@@ -67,7 +66,7 @@
 					XugglerInstallException xie = (XugglerInstallException)errorException;
 					%>
 
-					<liferay-ui:message arguments="<%= xie.getMessage() %>" key="an-unexpected-error-occurred-while-installing-xuggler-x" translateArguments="<%= false %>" />
+					<liferay-ui:message arguments="<%= HtmlUtil.escape(xie.getMessage()) %>" key="an-unexpected-error-occurred-while-installing-xuggler-x" translateArguments="<%= false %>" />
 				</liferay-ui:error>
 
 				<c:choose>
@@ -90,19 +89,19 @@
 
 						String[] xugglerOptions = PropsUtil.getArray(PropsKeys.XUGGLER_JAR_OPTIONS);
 
-						String bitmode = OSDetector.getBitmode();
+						String bitMode = OSDetector.getBitMode();
 
 						String guess = StringPool.BLANK;
 
-						if (Validator.isNotNull(bitmode) && (bitmode.equals("32") || bitmode.equals("64"))) {
+						if (Validator.isNotNull(bitMode) && (bitMode.equals("32") || bitMode.equals("64"))) {
 							if (OSDetector.isApple()) {
-								guess = bitmode + "-mac";
+								guess = bitMode + "-mac";
 							}
 							else if (OSDetector.isLinux()) {
-								guess = bitmode + "-linux";
+								guess = bitMode + "-linux";
 							}
 							else if (OSDetector.isWindows()) {
-								guess = bitmode + "-win";
+								guess = bitMode + "-win";
 							}
 
 							if (Validator.isNotNull(guess)) {

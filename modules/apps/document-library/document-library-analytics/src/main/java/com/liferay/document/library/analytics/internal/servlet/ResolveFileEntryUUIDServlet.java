@@ -40,7 +40,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = {
 		"osgi.http.whiteboard.servlet.name=com.liferay.document.library.analytics.internal.servlet.ResolveFileEntryUUIDServlet",
 		"osgi.http.whiteboard.servlet.pattern=" + DocumentLibraryAnalyticsConstants.PATH_RESOLVE_FILE_ENTRY,
@@ -60,11 +59,11 @@ public class ResolveFileEntryUUIDServlet extends HttpServlet {
 				httpServletResponse,
 				_getFileEntryByUuidAndGroupId(httpServletRequest));
 		}
-		catch (PrincipalException pe) {
-			_sendError(httpServletResponse, 403, pe);
+		catch (PrincipalException principalException) {
+			_sendError(httpServletResponse, 403, principalException);
 		}
-		catch (Exception e) {
-			_sendError(httpServletResponse, 500, e);
+		catch (Exception exception) {
+			_sendError(httpServletResponse, 500, exception);
 		}
 	}
 
@@ -92,8 +91,8 @@ public class ResolveFileEntryUUIDServlet extends HttpServlet {
 
 			httpServletResponse.setStatus(status);
 		}
-		catch (IOException ioe) {
-			_log.error(ioe, ioe);
+		catch (IOException ioException) {
+			_log.error(ioException, ioException);
 
 			httpServletResponse.setStatus(500);
 		}

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.base;
 
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -35,13 +37,14 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.service.persistence.RolePersistence;
 import com.liferay.portal.kernel.service.persistence.UserGroupFinder;
 import com.liferay.portal.kernel.service.persistence.UserGroupGroupRoleFinder;
-import com.liferay.portal.kernel.service.persistence.UserGroupGroupRolePK;
 import com.liferay.portal.kernel.service.persistence.UserGroupGroupRolePersistence;
 import com.liferay.portal.kernel.service.persistence.UserGroupPersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -51,8 +54,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.sql.DataSource;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the base implementation for the user group group role local service.
@@ -65,10 +66,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.portal.service.impl.UserGroupGroupRoleLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements UserGroupGroupRoleLocalService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, UserGroupGroupRoleLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -78,6 +78,10 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 
 	/**
 	 * Adds the user group group role to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserGroupGroupRoleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param userGroupGroupRole the user group group role
 	 * @return the user group group role that was added
@@ -95,35 +99,43 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 	/**
 	 * Creates a new user group group role with the primary key. Does not add the user group group role to the database.
 	 *
-	 * @param userGroupGroupRolePK the primary key for the new user group group role
+	 * @param userGroupGroupRoleId the primary key for the new user group group role
 	 * @return the new user group group role
 	 */
 	@Override
 	@Transactional(enabled = false)
 	public UserGroupGroupRole createUserGroupGroupRole(
-		UserGroupGroupRolePK userGroupGroupRolePK) {
+		long userGroupGroupRoleId) {
 
-		return userGroupGroupRolePersistence.create(userGroupGroupRolePK);
+		return userGroupGroupRolePersistence.create(userGroupGroupRoleId);
 	}
 
 	/**
 	 * Deletes the user group group role with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
-	 * @param userGroupGroupRolePK the primary key of the user group group role
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserGroupGroupRoleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
+	 * @param userGroupGroupRoleId the primary key of the user group group role
 	 * @return the user group group role that was removed
 	 * @throws PortalException if a user group group role with the primary key could not be found
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	public UserGroupGroupRole deleteUserGroupGroupRole(
-			UserGroupGroupRolePK userGroupGroupRolePK)
+			long userGroupGroupRoleId)
 		throws PortalException {
 
-		return userGroupGroupRolePersistence.remove(userGroupGroupRolePK);
+		return userGroupGroupRolePersistence.remove(userGroupGroupRoleId);
 	}
 
 	/**
 	 * Deletes the user group group role from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserGroupGroupRoleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param userGroupGroupRole the user group group role
 	 * @return the user group group role that was removed
@@ -134,6 +146,11 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 		UserGroupGroupRole userGroupGroupRole) {
 
 		return userGroupGroupRolePersistence.remove(userGroupGroupRole);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return userGroupGroupRolePersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -159,7 +176,7 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -179,7 +196,7 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -226,26 +243,25 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 
 	@Override
 	public UserGroupGroupRole fetchUserGroupGroupRole(
-		UserGroupGroupRolePK userGroupGroupRolePK) {
+		long userGroupGroupRoleId) {
 
 		return userGroupGroupRolePersistence.fetchByPrimaryKey(
-			userGroupGroupRolePK);
+			userGroupGroupRoleId);
 	}
 
 	/**
 	 * Returns the user group group role with the primary key.
 	 *
-	 * @param userGroupGroupRolePK the primary key of the user group group role
+	 * @param userGroupGroupRoleId the primary key of the user group group role
 	 * @return the user group group role
 	 * @throws PortalException if a user group group role with the primary key could not be found
 	 */
 	@Override
-	public UserGroupGroupRole getUserGroupGroupRole(
-			UserGroupGroupRolePK userGroupGroupRolePK)
+	public UserGroupGroupRole getUserGroupGroupRole(long userGroupGroupRoleId)
 		throws PortalException {
 
 		return userGroupGroupRolePersistence.findByPrimaryKey(
-			userGroupGroupRolePK);
+			userGroupGroupRoleId);
 	}
 
 	@Override
@@ -259,9 +275,7 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 		actionableDynamicQuery.setModelClass(UserGroupGroupRole.class);
 
 		actionableDynamicQuery.setPrimaryKeyPropertyName(
-			"primaryKey.userGroupId");
-
-		actionableDynamicQuery.setGroupIdPropertyName("primaryKey.groupId");
+			"userGroupGroupRoleId");
 
 		return actionableDynamicQuery;
 	}
@@ -279,10 +293,7 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 		indexableActionableDynamicQuery.setModelClass(UserGroupGroupRole.class);
 
 		indexableActionableDynamicQuery.setPrimaryKeyPropertyName(
-			"primaryKey.userGroupId");
-
-		indexableActionableDynamicQuery.setGroupIdPropertyName(
-			"primaryKey.groupId");
+			"userGroupGroupRoleId");
 
 		return indexableActionableDynamicQuery;
 	}
@@ -296,9 +307,17 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 		actionableDynamicQuery.setModelClass(UserGroupGroupRole.class);
 
 		actionableDynamicQuery.setPrimaryKeyPropertyName(
-			"primaryKey.userGroupId");
+			"userGroupGroupRoleId");
+	}
 
-		actionableDynamicQuery.setGroupIdPropertyName("primaryKey.groupId");
+	/**
+	 * @throws PortalException
+	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return userGroupGroupRolePersistence.create(
+			((Long)primaryKeyObj).longValue());
 	}
 
 	/**
@@ -312,6 +331,13 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 			(UserGroupGroupRole)persistedModel);
 	}
 
+	public BasePersistence<UserGroupGroupRole> getBasePersistence() {
+		return userGroupGroupRolePersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -323,7 +349,7 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 	 * Returns a range of all the user group group roles.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of user group group roles
@@ -347,6 +373,10 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 
 	/**
 	 * Updates the user group group role in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserGroupGroupRoleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param userGroupGroupRole the user group group role
 	 * @return the user group group role that was updated
@@ -582,8 +612,23 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 		return UserGroupGroupRoleLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<UserGroupGroupRole> getCTPersistence() {
+		return userGroupGroupRolePersistence;
+	}
+
+	@Override
+	public Class<UserGroupGroupRole> getModelClass() {
 		return UserGroupGroupRole.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<UserGroupGroupRole>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(userGroupGroupRolePersistence);
 	}
 
 	protected String getModelClassName() {
@@ -610,8 +655,8 @@ public abstract class UserGroupGroupRoleLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

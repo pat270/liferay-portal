@@ -61,8 +61,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + AssetTagsAdminPortletKeys.ASSET_TAGS_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -167,12 +166,12 @@ public class AssetTagsAdminPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof AssetTagException ||
-			cause instanceof AssetTagNameException ||
-			cause instanceof DuplicateTagException ||
-			cause instanceof NoSuchTagException ||
-			cause instanceof PrincipalException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof AssetTagException ||
+			throwable instanceof AssetTagNameException ||
+			throwable instanceof DuplicateTagException ||
+			throwable instanceof NoSuchTagException ||
+			throwable instanceof PrincipalException) {
 
 			return true;
 		}

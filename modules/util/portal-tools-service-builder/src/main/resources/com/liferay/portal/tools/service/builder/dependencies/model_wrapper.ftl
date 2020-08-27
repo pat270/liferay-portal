@@ -1,7 +1,5 @@
 package ${apiPackagePath}.model;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
@@ -19,6 +17,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -36,8 +36,6 @@ import java.util.Objects;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}Wrapper
 	<#assign entityFieldName = "model" />
 
@@ -176,22 +174,34 @@ public class ${entity.name}Wrapper
 
 	<#if serviceBuilder.isVersionLTE_7_1_0()>
 		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
+		public boolean equals(Object object) {
+			if (this == object) {
 				return true;
 			}
 
-			if (!(obj instanceof ${entity.name}Wrapper)) {
+			if (!(object instanceof ${entity.name}Wrapper)) {
 				return false;
 			}
 
-			${entity.name}Wrapper ${entity.varName}Wrapper = (${entity.name}Wrapper)obj;
+			${entity.name}Wrapper ${entity.varName}Wrapper = (${entity.name}Wrapper)object;
 
 			if (Objects.equals(${entityFieldName}, ${entity.varName}Wrapper.${entityFieldName})) {
 				return true;
 			}
 
 			return false;
+		}
+	</#if>
+
+	<#if entity.isChangeTrackingEnabled()>
+		@Override
+		public Map<String, Function<${entity.name}, Object>> getAttributeGetterFunctions() {
+			return ${entityFieldName}.getAttributeGetterFunctions();
+		}
+
+		@Override
+		public Map<String, BiConsumer<${entity.name}, Object>> getAttributeSetterBiConsumers() {
+			return ${entityFieldName}.getAttributeSetterBiConsumers();
 		}
 	</#if>
 

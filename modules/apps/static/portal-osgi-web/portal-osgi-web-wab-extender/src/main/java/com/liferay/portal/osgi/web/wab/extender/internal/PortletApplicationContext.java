@@ -123,16 +123,16 @@ public class PortletApplicationContext extends XmlWebApplicationContext {
 			try {
 				xmlBeanDefinitionReader.loadBeanDefinitions(configLocation);
 			}
-			catch (Exception e) {
-				Throwable cause = e.getCause();
+			catch (Exception exception) {
+				Throwable throwable = exception.getCause();
 
-				if (cause instanceof FileNotFoundException) {
+				if (throwable instanceof FileNotFoundException) {
 					if (_log.isDebugEnabled()) {
-						_log.debug(cause.getMessage());
+						_log.debug(throwable.getMessage());
 					}
 				}
 				else {
-					_log.error(cause, cause);
+					_log.error(throwable, throwable);
 				}
 			}
 		}

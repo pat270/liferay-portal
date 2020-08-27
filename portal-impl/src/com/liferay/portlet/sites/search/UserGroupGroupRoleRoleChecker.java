@@ -39,16 +39,16 @@ public class UserGroupGroupRoleRoleChecker extends EmptyOnClickRowChecker {
 	}
 
 	@Override
-	public boolean isChecked(Object obj) {
-		Role role = (Role)obj;
+	public boolean isChecked(Object object) {
+		Role role = (Role)object;
 
 		try {
 			return UserGroupGroupRoleLocalServiceUtil.hasUserGroupGroupRole(
 				_userGroup.getUserGroupId(), _group.getGroupId(),
 				role.getRoleId());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return false;
 		}

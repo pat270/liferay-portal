@@ -1,6 +1,0 @@
-@default = "waitForElementPresent"
-definition {
-	function waitForElementPresent {
-		selenium.waitForElementPresent();
-	}
-}

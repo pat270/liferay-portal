@@ -56,10 +56,6 @@
 			.divider {
 				background-color: $multi-step-progress-bar-active-color;
 				color: $multi-step-progress-bar-active-color;
-
-				&:after {
-					content: $multi-step-progress-bar-active-icon;
-				}
 			}
 		}
 
@@ -72,20 +68,8 @@
 
 				@if (variable-exists(atlas-theme)) {
 					margin-left: 18px;
-				}
-				@else {
+				} @else {
 					margin-left: 15px;
-				}
-
-				&:after {
-					content: $multi-step-progress-bar-complete-icon;
-
-					@if (variable-exists(atlas-theme)) {
-						left: -16px;
-					}
-					@else {
-						left: -14px;
-					}
 				}
 			}
 		}
@@ -97,23 +81,21 @@
 
 			@if (variable-exists(atlas-theme)) {
 				margin: 20px 0 20px 12px;
-			}
-			@else {
+			} @else {
 				margin: 10px 0 10px 12px;
 			}
 
 			position: relative;
 
-			&:after {
-				content: $multi-step-progress-bar-icon;
-				display: block;
-				font-family: 'fontawesome-alloy';
+			.lexicon-icon {
+				font-size: 12px;
 				left: -12px;
 				position: absolute;
-				top: 50%;
+				top: -2px;
 
-				-ms-transform: translateY(-50%);
-				transform: translateY(-50%);
+				&.lexicon-icon-check {
+					left: -16px;
+				}
 			}
 		}
 

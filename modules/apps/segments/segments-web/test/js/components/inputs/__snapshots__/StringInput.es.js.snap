@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`StringInput should render type string with options 1`] = `
+exports[`StringInput renders type string with options 1`] = `
 <DocumentFragment>
   <select
     class="form-control criterion-input form-control"
@@ -20,7 +20,28 @@ exports[`StringInput should render type string with options 1`] = `
 </DocumentFragment>
 `;
 
-exports[`StringInput should render type string with value 1`] = `
+exports[`StringInput renders type string with options disabled 1`] = `
+<DocumentFragment>
+  <select
+    class="form-control criterion-input form-control"
+    data-testid="options-string"
+  >
+    <option
+      disabled=""
+      value="defaultValue"
+    >
+      Default Value
+    </option>
+    <option
+      value="Liferay"
+    >
+      LIFERAY
+    </option>
+  </select>
+</DocumentFragment>
+`;
+
+exports[`StringInput renders type string with value 1`] = `
 <DocumentFragment>
   <input
     class="criterion-input form-control"
@@ -31,7 +52,7 @@ exports[`StringInput should render type string with value 1`] = `
 </DocumentFragment>
 `;
 
-exports[`StringInput should render with type string 1`] = `
+exports[`StringInput renders with type string 1`] = `
 <DocumentFragment>
   <input
     class="criterion-input form-control"

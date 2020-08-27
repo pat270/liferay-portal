@@ -17,9 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(renderRequest, renderResponse, request);
+SiteTeamsDisplayContext siteTeamsDisplayContext = new SiteTeamsDisplayContext(request, renderRequest, renderResponse);
 
-SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContext = new SiteTeamsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteTeamsDisplayContext);
+SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContext = new SiteTeamsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteTeamsDisplayContext);
 %>
 
 <clay:management-toolbar
@@ -52,9 +52,9 @@ SiteTeamsManagementToolbarDisplayContext siteTeamsManagementToolbarDisplayContex
 				rowURL.setParameter("teamId", String.valueOf(team.getTeamId()));
 			}
 
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", siteTeamsManagementToolbarDisplayContext.getAvailableActions(team));
+			Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+				"actions", siteTeamsManagementToolbarDisplayContext.getAvailableActions(team)
+			).build();
 
 			row.setData(rowData);
 			%>

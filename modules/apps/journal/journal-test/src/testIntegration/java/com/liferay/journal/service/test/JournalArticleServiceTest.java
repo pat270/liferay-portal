@@ -23,16 +23,15 @@ import com.liferay.dynamic.data.mapping.exception.StructureDefinitionException;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.journal.constants.JournalArticleConstants;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalArticleServiceUtil;
@@ -52,6 +51,8 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -59,7 +60,6 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -69,7 +69,6 @@ import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,7 +118,7 @@ public class JournalArticleServiceTest {
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, "Version 1",
 			"This is a test article.");
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		PortalPreferences portalPreferenceces =
 			PortletPreferencesFactoryUtil.getPortalPreferences(
@@ -161,25 +160,22 @@ public class JournalArticleServiceTest {
 
 	@Test(expected = StorageFieldRequiredException.class)
 	public void testAddArticleWithEmptyRequiredHTMLField() throws Exception {
-		Map<String, String> requiredFields = new HashMap<>();
-
-		requiredFields.put("HTML2030", "");
-
 		testAddArticleRequiredFields(
 			"test-ddm-structure-html-required-field.xml",
 			"test-journal-content-html-empty-required-field.xml",
-			requiredFields);
+			HashMapBuilder.put(
+				"HTML2030", ""
+			).build());
 	}
 
 	@Test
 	public void testAddArticleWithNotEmptyRequiredHTMLField() throws Exception {
-		Map<String, String> requiredFields = new HashMap<>();
-
-		requiredFields.put("HTML2030", "<p>Hello.</p>");
-
 		testAddArticleRequiredFields(
 			"test-ddm-structure-html-required-field.xml",
-			"test-journal-content-html-required-field.xml", requiredFields);
+			"test-journal-content-html-required-field.xml",
+			HashMapBuilder.put(
+				"HTML2030", "<p>Hello.</p>"
+			).build());
 	}
 
 	@Test(expected = StructureDefinitionException.class)
@@ -247,7 +243,7 @@ public class JournalArticleServiceTest {
 
 			Assert.fail();
 		}
-		catch (RequiredTemplateException rte) {
+		catch (RequiredTemplateException requiredTemplateException) {
 		}
 	}
 
@@ -642,8 +638,8 @@ public class JournalArticleServiceTest {
 
 		return JournalArticleLocalServiceUtil.searchCount(
 			TestPropsValues.getCompanyId(), _group.getGroupId(),
-			ListUtil.toList(JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID),
-			JournalArticleConstants.CLASSNAME_ID_DEFAULT, null, null, null,
+			ListUtil.fromArray(JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID),
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, null, null, null,
 			null, keyword, "", "", null, null, status, null, true);
 	}
 
@@ -694,8 +690,8 @@ public class JournalArticleServiceTest {
 
 		return JournalArticleLocalServiceUtil.search(
 			TestPropsValues.getCompanyId(), _group.getGroupId(),
-			ListUtil.toList(JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID),
-			JournalArticleConstants.CLASSNAME_ID_DEFAULT, null, null, null,
+			ListUtil.fromArray(JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID),
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, null, null, null,
 			null, keyword, "", "", null, null, status, null, false,
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
@@ -715,10 +711,9 @@ public class JournalArticleServiceTest {
 			ddmFormDeserializerDeserializeResponse =
 				_ddmFormDeserializer.deserialize(builder.build());
 
-		DDMForm ddmForm = ddmFormDeserializerDeserializeResponse.getDDMForm();
-
 		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
-			_group.getGroupId(), JournalArticle.class.getName(), ddmForm);
+			_group.getGroupId(), JournalArticle.class.getName(),
+			ddmFormDeserializerDeserializeResponse.getDDMForm());
 
 		DDMTemplate ddmTemplate = DDMTemplateTestUtil.addTemplate(
 			_group.getGroupId(), ddmStructure.getStructureId(),
@@ -737,7 +732,7 @@ public class JournalArticleServiceTest {
 
 		JournalTestUtil.addArticleWithXMLContent(
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			JournalArticleConstants.CLASSNAME_ID_DEFAULT, xmlContent,
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, xmlContent,
 			ddmStructure.getStructureKey(), ddmTemplate.getTemplateKey(),
 			LocaleUtil.fromLanguageId(ddmStructure.getDefaultLanguageId()),
 			serviceContext);

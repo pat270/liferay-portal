@@ -28,16 +28,13 @@ import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
 import javax.portlet.annotations.PortletSerializable;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DummyPortletURL implements PortletURL {
 
 	public static DummyPortletURL getInstance() {
-		return _instance;
+		return _dummyPortletURL;
 	}
 
 	@Override
@@ -128,6 +125,7 @@ public class DummyPortletURL implements PortletURL {
 	private DummyPortletURL() {
 	}
 
-	private static final DummyPortletURL _instance = new DummyPortletURL();
+	private static final DummyPortletURL _dummyPortletURL =
+		new DummyPortletURL();
 
 }

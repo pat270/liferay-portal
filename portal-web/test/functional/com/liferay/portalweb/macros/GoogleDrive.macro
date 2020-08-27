@@ -1,4 +1,5 @@
 definition {
+
 	macro gotoDrive {
 		AssertElementPresent(locator1 = "Button#SELECT_FILE");
 
@@ -36,11 +37,17 @@ definition {
 			Pause(locator1 = "3000");
 		}
 
-		if (IsElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) {
-			Click.clickNoSPARefresh(locator1 = "ProductMenu#TOGGLE");
+		if (IsElementNotPresent(locator1 = "GoogleDrive#GOOGLE_DRIVE_IFRAME")) {
+			Refresh();
+
+			AssertClick(
+				locator1 = "Button#SELECT_FILE",
+				value1 = "Select File");
+
+			SelectWindow.selectWindowNoSPARefresh(locator1 = "title=${windowTitle}");
 		}
 
-		SelectFrame(locator1 = "GoogleDrive#GOOGLE_DRIVE_IFRAME");
+		SelectFrame.selectFrameNoLoading(locator1 = "GoogleDrive#GOOGLE_DRIVE_IFRAME");
 	}
 
 	macro selectDocument {
@@ -62,4 +69,5 @@ definition {
 			locator1 = "DocumentsAndMediaEntry#SELECTED_DOCUMENT_TITLE",
 			value1 = "${googleDocName}");
 	}
+
 }

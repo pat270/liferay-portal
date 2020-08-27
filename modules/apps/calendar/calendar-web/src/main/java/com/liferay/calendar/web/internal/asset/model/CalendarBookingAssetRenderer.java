@@ -58,10 +58,10 @@ public class CalendarBookingAssetRenderer
 
 	public CalendarBookingAssetRenderer(
 		CalendarBooking calendarBooking,
-		ModelResourcePermission<Calendar> modelResourcePermission) {
+		ModelResourcePermission<Calendar> calendarModelResourcePermission) {
 
 		_calendarBooking = calendarBooking;
-		_calendarModelResourcePermission = modelResourcePermission;
+		_calendarModelResourcePermission = calendarModelResourcePermission;
 	}
 
 	@Override
@@ -114,9 +114,8 @@ public class CalendarBookingAssetRenderer
 	public String getSummary(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		Locale locale = getLocale(portletRequest);
-
-		String summary = _calendarBooking.getDescription(locale);
+		String summary = _calendarBooking.getDescription(
+			getLocale(portletRequest));
 
 		return StringUtil.shorten(HtmlUtil.stripHtml(summary), 200);
 	}
@@ -172,14 +171,17 @@ public class CalendarBookingAssetRenderer
 
 			portletURL.setParameter("mvcPath", "/view_calendar_booking.jsp");
 			portletURL.setParameter(
+				"returnToFullPageURL",
+				PortalUtil.getCurrentURL(liferayPortletRequest));
+			portletURL.setParameter(
 				"calendarBookingId",
 				String.valueOf(_calendarBooking.getCalendarBookingId()));
 			portletURL.setWindowState(WindowState.MAXIMIZED);
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
-			_log.error("Unable to get view in context URL", e);
+		catch (Exception exception) {
+			_log.error("Unable to get view in context URL", exception);
 		}
 
 		return null;
@@ -236,8 +238,8 @@ public class CalendarBookingAssetRenderer
 
 			return calendar.isEnableComments();
 		}
-		catch (Exception e) {
-			_log.error("Unable to check commentable", e);
+		catch (Exception exception) {
+			_log.error("Unable to check commentable", exception);
 		}
 
 		return false;
@@ -255,8 +257,8 @@ public class CalendarBookingAssetRenderer
 
 			return calendar.isEnableRatings();
 		}
-		catch (Exception e) {
-			_log.error("Unable to check ratable", e);
+		catch (Exception exception) {
+			_log.error("Unable to check ratable", exception);
 		}
 
 		return false;

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Dictionary;
@@ -345,11 +346,9 @@ public class ObjectServiceTrackerMapTest {
 	public void testGetServiceWithCustomServiceReferenceMapper() {
 		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
 			_bundleContext, TrackedOne.class, "(&(other=*)(target=*))",
-			(serviceReference, keys) -> {
-				keys.emit(
-					serviceReference.getProperty("other") + " - " +
-						serviceReference.getProperty("target"));
-			});
+			(serviceReference, keys) -> keys.emit(
+				serviceReference.getProperty("other") + " - " +
+					serviceReference.getProperty("target")));
 
 		Dictionary<String, String> properties = new Hashtable<>();
 
@@ -370,7 +369,7 @@ public class ObjectServiceTrackerMapTest {
 			ServiceTrackerMapBuilder.SelectorFactory.newSelector(
 				_bundleContext, TrackedOne.class
 			).newSelector(
-				"(&(other=*)(target=*))"
+				"(&(other=*)(target=*)(!(forbidden=*)))"
 			);
 
 		ServiceTrackerMapBuilder.Mapper<String, TrackedOne, TrackedOne, ?>
@@ -396,6 +395,19 @@ public class ObjectServiceTrackerMapTest {
 
 		Assert.assertNotNull(
 			_serviceTrackerMap.getService("aProperty - aTarget"));
+
+		properties = new Hashtable<>();
+
+		properties.put("forbidden", "true");
+		properties.put("other", "aProperty2");
+		properties.put("target", "aTarget2");
+
+		_serviceRegistrations.add(
+			_bundleContext.registerService(
+				TrackedOne.class, new TrackedOne(), properties));
+
+		Assert.assertNull(
+			_serviceTrackerMap.getService("aProperty2 - aTarget2"));
 	}
 
 	@Test
@@ -407,6 +419,19 @@ public class ObjectServiceTrackerMapTest {
 			registerService(new TrackedOne(), "anotherTarget"));
 
 		Assert.assertNull(serviceTrackerMap.getService("aTarget"));
+	}
+
+	@Test
+	public void testGetServiceWithListProperty() {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			_bundleContext, null, "target");
+
+		_serviceRegistrations.add(
+			registerService(
+				new TrackedOne(), Arrays.asList("target1", "target2")));
+
+		Assert.assertNotNull(_serviceTrackerMap.getService("target1"));
+		Assert.assertNotNull(_serviceTrackerMap.getService("target2"));
 	}
 
 	@Test
@@ -859,7 +884,7 @@ public class ObjectServiceTrackerMapTest {
 	}
 
 	protected ServiceRegistration<TrackedOne> registerService(
-		TrackedOne trackedOne, int ranking, String target) {
+		TrackedOne trackedOne, int ranking, Object target) {
 
 		Dictionary<String, Object> properties = new Hashtable<>();
 
@@ -871,7 +896,7 @@ public class ObjectServiceTrackerMapTest {
 	}
 
 	protected ServiceRegistration<TrackedOne> registerService(
-		TrackedOne trackedOne, String target) {
+		TrackedOne trackedOne, Object target) {
 
 		Dictionary<String, Object> properties = new Hashtable<>();
 

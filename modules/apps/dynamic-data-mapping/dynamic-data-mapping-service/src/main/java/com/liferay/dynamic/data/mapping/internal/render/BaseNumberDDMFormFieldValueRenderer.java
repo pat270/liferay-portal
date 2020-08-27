@@ -34,7 +34,7 @@ public abstract class BaseNumberDDMFormFieldValueRenderer
 	extends BaseDDMFormFieldValueRenderer {
 
 	@Override
-	protected ValueAccessor getValueAcessor(Locale locale) {
+	protected ValueAccessor getValueAccessor(Locale locale) {
 		return new ValueAccessor(locale) {
 
 			@Override
@@ -52,9 +52,9 @@ public abstract class BaseNumberDDMFormFieldValueRenderer
 					try {
 						number = numberFormat.parse(valueString);
 					}
-					catch (ParseException pe) {
+					catch (ParseException parseException) {
 						if (_log.isWarnEnabled()) {
-							_log.warn(pe, pe);
+							_log.warn(parseException, parseException);
 						}
 					}
 				}

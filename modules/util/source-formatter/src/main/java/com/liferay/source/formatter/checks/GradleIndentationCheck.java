@@ -37,6 +37,7 @@ public class GradleIndentationCheck extends BaseFileCheck {
 	}
 
 	private String _checkIndentation(String content) throws IOException {
+		boolean insideIfStatement = false;
 		boolean insideQuotes = false;
 		int tabCount = 0;
 
@@ -48,7 +49,7 @@ public class GradleIndentationCheck extends BaseFileCheck {
 			String line = null;
 
 			while ((line = unsyncBufferedReader.readLine()) != null) {
-				if (!insideQuotes &&
+				if (!insideIfStatement && !insideQuotes &&
 					!line.matches("^\\s*['\"].*['\"].*[\\)\\+]$")) {
 
 					line = _checkIndentation(line, tabCount);
@@ -58,7 +59,24 @@ public class GradleIndentationCheck extends BaseFileCheck {
 
 				sb.append("\n");
 
-				tabCount = _getTabCount(line, insideQuotes, tabCount);
+				String trimmedLine = StringUtil.trim(line);
+
+				if ((trimmedLine.startsWith("else if (") ||
+					 trimmedLine.startsWith("if (")) &&
+					!line.endsWith("{")) {
+
+					insideIfStatement = true;
+				}
+				else if (insideIfStatement) {
+					if (line.endsWith("{")) {
+						insideIfStatement = false;
+
+						tabCount++;
+					}
+				}
+				else {
+					tabCount = _getTabCount(line, insideQuotes, tabCount);
+				}
 
 				if (line.indexOf(_getQuoteString(line)) != -1) {
 					insideQuotes = !insideQuotes;
@@ -130,6 +148,16 @@ public class GradleIndentationCheck extends BaseFileCheck {
 			text.matches("^\\s*Pattern\\s+.*")) {
 
 			return tabCount;
+		}
+
+		if (text.contains(" ==~ /")) {
+			int x = text.indexOf(" ==~ /");
+
+			int y = text.indexOf("/", x + 6);
+
+			if (y != -1) {
+				text = text.substring(0, x) + text.substring(y + 1);
+			}
 		}
 
 		tabCount += getLevel(text, "([{", "}])");

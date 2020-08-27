@@ -64,7 +64,8 @@ public abstract class BaseJavaTerm implements JavaTerm {
 	@Override
 	public String toString() {
 		return toString(
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, -1);
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			_FORCE_SINGLE_LINE);
 	}
 
 	@Override
@@ -398,7 +399,9 @@ public abstract class BaseJavaTerm implements JavaTerm {
 							maxLineLength);
 					}
 					else {
-						appendNewLine(sb, javaTerm, indent, prefix, suffix, -1);
+						appendNewLine(
+							sb, javaTerm, indent, prefix, suffix,
+							_FORCE_SINGLE_LINE);
 					}
 				}
 
@@ -427,7 +430,7 @@ public abstract class BaseJavaTerm implements JavaTerm {
 				else {
 					appendNewLine(
 						sb, javaTerm, indent, prefix,
-						StringUtil.trimTrailing(delimeter), -1);
+						StringUtil.trimTrailing(delimeter), _FORCE_SINGLE_LINE);
 				}
 
 				sb.append("\n");
@@ -545,7 +548,9 @@ public abstract class BaseJavaTerm implements JavaTerm {
 
 			lastLine = StringUtil.trim(lastLine);
 
-			if (getLineLength(s) > maxLineLength) {
+			if ((getLineLength(s) > maxLineLength) &&
+				(maxLineLength != NO_MAX_LINE_LENGTH)) {
+
 				appendNewLine(
 					sb, javaTerm, "\t" + indent, prefix, suffix, maxLineLength);
 			}
@@ -558,7 +563,17 @@ public abstract class BaseJavaTerm implements JavaTerm {
 					sb, javaTerm, "\t" + indent, prefix, suffix, maxLineLength);
 			}
 			else {
-				sb.append(javaTermContent);
+				int level = ToolsUtil.getLevel(
+					firstLineJavaTermContent, "<", ">");
+
+				if (level > 0) {
+					appendNewLine(
+						sb, javaTerm, "\t" + indent, prefix, suffix,
+						maxLineLength);
+				}
+				else {
+					sb.append(javaTermContent);
+				}
 			}
 		}
 
@@ -630,11 +645,14 @@ public abstract class BaseJavaTerm implements JavaTerm {
 		}
 	}
 
+	protected static final int NO_MAX_LINE_LENGTH =
+		JavaParserUtil.NO_MAX_LINE_LENGTH;
+
 	private boolean _appendSingleLine(
 		StringBundler sb, String s, String prefix, String suffix,
 		int maxLineLength) {
 
-		if (s.contains("\n") && (maxLineLength != -1)) {
+		if (s.contains("\n") && (maxLineLength != _FORCE_SINGLE_LINE)) {
 			return false;
 		}
 
@@ -644,7 +662,8 @@ public abstract class BaseJavaTerm implements JavaTerm {
 		sb.append(s);
 		sb.append(suffix);
 
-		if ((maxLineLength == -1) ||
+		if ((maxLineLength == _FORCE_SINGLE_LINE) ||
+			(maxLineLength == NO_MAX_LINE_LENGTH) ||
 			(getLineLength(getLastLine(sb)) <= maxLineLength)) {
 
 			return true;
@@ -726,6 +745,8 @@ public abstract class BaseJavaTerm implements JavaTerm {
 			sb.setIndex(sb.index() - 1);
 		}
 	}
+
+	private static final int _FORCE_SINGLE_LINE = -2;
 
 	private Position _endPosition;
 	private Position _startPosition;

@@ -1,0 +1,154 @@
+<html>
+<head>
+<title>MyWorkflowTasks</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">MyWorkflowTasks</td></tr>
+</thead>
+<tbody>
+<tr>
+	<td>ASSIGNED_TO_ME_ACTIVE</td>
+	<td>//*[contains(@class,'nav-link active') and contains(.,'Assigned to Me')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--TABLE_GENERIC-->
+<tr>
+	<td>TABLE_GENERIC_ASSET_TITLE</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[1]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--ASSIGNED_TO_ME_TABLE-->
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_ASSET_TITLE_2</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')][2]/td[1]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_ASSET_TYPE</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[2]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_TASK</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[3]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_LAST_ACTIVITY_DATE</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[4]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_DUE_DATE</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[5]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_END_DATE</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[6]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_ME_TABLE_ACTIONS</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[6]//div/a</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--ASSIGNED_TO_MY_ROLES_TABLE-->
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_ASSET_TITLE</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')]/td[1]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_ASSET_TITLE_DUPLICATE</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')][2]/td[1]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_ASSET_TYPE</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')]/td[2]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_TASK</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')]/td[3]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_LAST_ACTIVITY_DATE</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')]/td[4]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_DUE_DATE</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')]/td[5]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGNED_TO_MY_ROLES_TABLE_ACTIONS</td>
+	<td>//tr[contains(.,'${key_workflowTask}') and contains(.,'${key_workflowAssetTitle}')]/td[6]//div/a</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--DIALOG_BOX-->
+<tr>
+	<td>DIALOG_BOX_DUE_DATE</td>
+	<td>//input[contains(@id,'_dueDate')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DIALOG_BOX_DUE_DATE_TIME</td>
+	<td>//input[contains(@id,'_dueDateTime')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DIALOG_BOX_COMMENT_FIELD</td>
+	<td>//textarea[contains(@id,'_comment')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DIALOG_BOX_ASSIGN_TO_SELECT</td>
+	<td>//select[contains(@id,'MyWorkflowTaskPortlet_assigneeUserId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DIALOG_BOX_ASSIGN_TO_VALUE</td>
+	<td>//option[contains(text(),'${key_user}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--COMPLETED_TABLE-->
+<tr>
+	<td>COMPLETED_TABLE_ASSET_TITLE</td>
+	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td//a</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

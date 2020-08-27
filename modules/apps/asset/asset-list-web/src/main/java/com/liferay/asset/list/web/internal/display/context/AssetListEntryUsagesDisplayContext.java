@@ -163,15 +163,15 @@ public class AssetListEntryUsagesDisplayContext {
 		return _redirect;
 	}
 
-	public SearchContainer getSearchContainer() {
+	public SearchContainer<AssetListEntryUsage> getSearchContainer() {
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
 
-		SearchContainer assetListEntryUsagesSearchContainer =
-			new SearchContainer(
+		SearchContainer<AssetListEntryUsage>
+			assetListEntryUsagesSearchContainer = new SearchContainer(
 				_renderRequest, _renderResponse.createRenderURL(), null,
-				"there-are-no-content-set-usages");
+				"there-are-no-collection-usages");
 
 		boolean orderByAsc = false;
 
@@ -274,6 +274,6 @@ public class AssetListEntryUsagesDisplayContext {
 	private String _redirect;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
-	private SearchContainer _searchContainer;
+	private SearchContainer<AssetListEntryUsage> _searchContainer;
 
 }

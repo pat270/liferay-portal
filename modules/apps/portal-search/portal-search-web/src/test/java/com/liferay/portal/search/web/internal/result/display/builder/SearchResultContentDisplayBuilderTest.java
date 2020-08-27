@@ -17,13 +17,16 @@ package com.liferay.portal.search.web.internal.result.display.builder;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.asset.util.AssetRendererFactoryLookup;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.web.internal.result.display.context.SearchResultContentDisplayContext;
 import com.liferay.portlet.internal.MutableRenderParametersImpl;
 
@@ -57,6 +60,7 @@ public class SearchResultContentDisplayBuilderTest {
 		setUpAssetRendererFactory();
 		setUpPortal();
 		setUpRenderResponse();
+		setUpThemeDisplay();
 	}
 
 	@Test
@@ -227,8 +231,7 @@ public class SearchResultContentDisplayBuilderTest {
 		).when(
 			_assetRenderer
 		).getURLEdit(
-			Mockito.anyObject(), Mockito.anyObject(), Mockito.anyObject(),
-			Mockito.any(PortletURL.class)
+			Mockito.anyObject(), Mockito.anyObject()
 		);
 
 		Mockito.doReturn(
@@ -296,6 +299,18 @@ public class SearchResultContentDisplayBuilderTest {
 		).when(
 			_renderPortletURL
 		).getRenderParameters();
+	}
+
+	protected void setUpThemeDisplay() {
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setURLCurrent("http://example.com");
+
+		Mockito.when(
+			(ThemeDisplay)_renderRequest.getAttribute(WebKeys.THEME_DISPLAY)
+		).thenReturn(
+			themeDisplay
+		);
 	}
 
 	@Mock

@@ -1,0 +1,99 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Pages Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@priority = "3"
+	test AddPageMultiplePagesToSite {
+		property testray.component.names = "Site Pages Administration";
+
+		SitePages.addPublicPage(pageName = "Site Page 1");
+
+		SitePages.addPublicPage(pageName = "Site Page 2");
+
+		SitePages.addPublicPage(pageName = "Site Page 3");
+
+		Page.view(
+			pageName = "Site Page 1",
+			privacy = "Public Pages");
+
+		Page.view(
+			pageName = "Site Page 2",
+			privacy = "Public Pages");
+
+		Page.view(
+			pageName = "Site Page 3",
+			privacy = "Public Pages");
+	}
+
+	@priority = "4"
+	test AddSitePrivatePage {
+		property testray.component.names = "Site Pages Administration";
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.addPrivatePage(pageName = "Site Page");
+
+		Page.view(
+			pageName = "Site Page",
+			privacy = "Private Pages");
+	}
+
+	@priority = "5"
+	test AddSitePublicChildPage {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Pages Administration";
+
+		SitePages.addPublicPage(pageName = "Site Page");
+
+		SitePages.addPublicChildPage(
+			childPageName = "Site Child Page",
+			parentPageName = "Site Page");
+
+		Page.view(
+			depth = "2",
+			pageName = "Site Child Page",
+			privacy = "Public Pages");
+	}
+
+	@priority = "5"
+	test AddThenDeleteWidgetFromPage {
+		property portal.acceptance = "true";
+		property testray.component.names = "Web Content Display,Training";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Test Site Name");
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		Portlet.deletePG(portletName = "Web Content Display");
+	}
+
+}

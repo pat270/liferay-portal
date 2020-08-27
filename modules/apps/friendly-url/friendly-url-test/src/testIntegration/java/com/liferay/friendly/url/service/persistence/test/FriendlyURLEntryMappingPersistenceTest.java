@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -126,6 +127,10 @@ public class FriendlyURLEntryMappingPersistenceTest {
 
 		newFriendlyURLEntryMapping.setMvccVersion(RandomTestUtil.nextLong());
 
+		newFriendlyURLEntryMapping.setCtCollectionId(RandomTestUtil.nextLong());
+
+		newFriendlyURLEntryMapping.setCompanyId(RandomTestUtil.nextLong());
+
 		newFriendlyURLEntryMapping.setClassNameId(RandomTestUtil.nextLong());
 
 		newFriendlyURLEntryMapping.setClassPK(RandomTestUtil.nextLong());
@@ -144,8 +149,14 @@ public class FriendlyURLEntryMappingPersistenceTest {
 			existingFriendlyURLEntryMapping.getMvccVersion(),
 			newFriendlyURLEntryMapping.getMvccVersion());
 		Assert.assertEquals(
+			existingFriendlyURLEntryMapping.getCtCollectionId(),
+			newFriendlyURLEntryMapping.getCtCollectionId());
+		Assert.assertEquals(
 			existingFriendlyURLEntryMapping.getFriendlyURLEntryMappingId(),
 			newFriendlyURLEntryMapping.getFriendlyURLEntryMappingId());
+		Assert.assertEquals(
+			existingFriendlyURLEntryMapping.getCompanyId(),
+			newFriendlyURLEntryMapping.getCompanyId());
 		Assert.assertEquals(
 			existingFriendlyURLEntryMapping.getClassNameId(),
 			newFriendlyURLEntryMapping.getClassNameId());
@@ -195,9 +206,9 @@ public class FriendlyURLEntryMappingPersistenceTest {
 		getOrderByComparator() {
 
 		return OrderByComparatorFactoryUtil.create(
-			"FriendlyURLEntryMapping", "mvccVersion", true,
-			"friendlyURLEntryMappingId", true, "classNameId", true, "classPK",
-			true, "friendlyURLEntryId", true);
+			"FriendlyURLEntryMapping", "mvccVersion", true, "ctCollectionId",
+			true, "friendlyURLEntryMappingId", true, "companyId", true,
+			"classNameId", true, "classPK", true, "friendlyURLEntryId", true);
 	}
 
 	@Test
@@ -416,20 +427,66 @@ public class FriendlyURLEntryMappingPersistenceTest {
 
 		_persistence.clearCache();
 
-		FriendlyURLEntryMapping existingFriendlyURLEntryMapping =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newFriendlyURLEntryMapping.getPrimaryKey());
+				newFriendlyURLEntryMapping.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		FriendlyURLEntryMapping newFriendlyURLEntryMapping =
+			addFriendlyURLEntryMapping();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			FriendlyURLEntryMapping.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"friendlyURLEntryMappingId",
+				newFriendlyURLEntryMapping.getFriendlyURLEntryMappingId()));
+
+		List<FriendlyURLEntryMapping> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		FriendlyURLEntryMapping friendlyURLEntryMapping) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingFriendlyURLEntryMapping.getClassNameId()),
+			Long.valueOf(friendlyURLEntryMapping.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFriendlyURLEntryMapping, "getOriginalClassNameId",
-				new Class<?>[0]));
+				friendlyURLEntryMapping, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingFriendlyURLEntryMapping.getClassPK()),
+			Long.valueOf(friendlyURLEntryMapping.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFriendlyURLEntryMapping, "getOriginalClassPK",
-				new Class<?>[0]));
+				friendlyURLEntryMapping, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 	}
 
 	protected FriendlyURLEntryMapping addFriendlyURLEntryMapping()
@@ -441,6 +498,10 @@ public class FriendlyURLEntryMappingPersistenceTest {
 			pk);
 
 		friendlyURLEntryMapping.setMvccVersion(RandomTestUtil.nextLong());
+
+		friendlyURLEntryMapping.setCtCollectionId(RandomTestUtil.nextLong());
+
+		friendlyURLEntryMapping.setCompanyId(RandomTestUtil.nextLong());
 
 		friendlyURLEntryMapping.setClassNameId(RandomTestUtil.nextLong());
 

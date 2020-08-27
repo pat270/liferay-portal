@@ -28,8 +28,8 @@ public class FunctionalPortalTestBatch
 		try {
 			executeBatch();
 		}
-		catch (AntException ae) {
-			throw new RuntimeException(ae);
+		catch (AntException antException) {
+			throw new RuntimeException(antException);
 		}
 		finally {
 			publishResults();
@@ -57,7 +57,7 @@ public class FunctionalPortalTestBatch
 			String poshiResultsDirName = poshiResultsDir.getName();
 
 			for (String test : portalBatchBuildData.getTestList()) {
-				if (!poshiResultsDirName.contains(test.replace("#", "_"))) {
+				if (!poshiResultsDirName.contains(test.replace('#', '_'))) {
 					continue;
 				}
 
@@ -68,8 +68,8 @@ public class FunctionalPortalTestBatch
 							portalBatchBuildData.getArtifactDir(),
 							poshiResultsDirName));
 				}
-				catch (IOException ioe) {
-					throw new RuntimeException(ioe);
+				catch (IOException ioException) {
+					throw new RuntimeException(ioException);
 				}
 			}
 		}
@@ -89,7 +89,7 @@ public class FunctionalPortalTestBatch
 		sb.append("<ul>");
 
 		for (String test : portalBatchBuildData.getTestList()) {
-			String testName = test.replace("#", "_");
+			String testName = test.replace('#', '_');
 
 			if (!testName.matches("[^\\.]+\\.[^_]+_.+")) {
 				testName = "LocalFile." + testName;

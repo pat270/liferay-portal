@@ -21,8 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SynchronousQueue;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class SPISynchronousQueueUtil {
 
 	public static SynchronousQueue<SPI> createSynchronousQueue(String spiUUID) {

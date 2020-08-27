@@ -16,8 +16,9 @@ package com.liferay.site.navigation.admin.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -45,13 +46,13 @@ public class SiteNavigationAdminManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public SiteNavigationAdminManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		SiteNavigationAdminDisplayContext siteNavigationAdminDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			siteNavigationAdminDisplayContext.getSearchContainer());
 
 		_siteNavigationAdminDisplayContext = siteNavigationAdminDisplayContext;
@@ -59,19 +60,15 @@ public class SiteNavigationAdminManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData(
-							"action", "deleteSelectedSiteNavigationMenus");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData(
+					"action", "deleteSelectedSiteNavigationMenus");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getAvailableActions(SiteNavigationMenu siteNavigationMenu)
@@ -120,18 +117,15 @@ public class SiteNavigationAdminManagementToolbarDisplayContext
 		addSiteNavigationMenuURL.setParameter(
 			"redirect", themeDisplay.getURLCurrent());
 
-		return new CreationMenu() {
-			{
-				addDropdownItem(
-					dropdownItem -> {
-						dropdownItem.putData("action", "addSiteNavigationMenu");
-						dropdownItem.putData(
-							"addSiteNavigationMenuURL",
-							addSiteNavigationMenuURL.toString());
-						dropdownItem.setLabel(LanguageUtil.get(request, "add"));
-					});
+		return CreationMenuBuilder.addDropdownItem(
+			dropdownItem -> {
+				dropdownItem.putData("action", "addSiteNavigationMenu");
+				dropdownItem.putData(
+					"addSiteNavigationMenuURL",
+					addSiteNavigationMenuURL.toString());
+				dropdownItem.setLabel(LanguageUtil.get(request, "add"));
 			}
-		};
+		).build();
 	}
 
 	@Override

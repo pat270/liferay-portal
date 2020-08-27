@@ -1,6 +1,8 @@
 create table MBBan (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	banId LONG not null primary key,
+	banId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -8,12 +10,15 @@ create table MBBan (
 	createDate DATE null,
 	modifiedDate DATE null,
 	banUserId LONG,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (banId, ctCollectionId)
 );
 
 create table MBCategory (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	categoryId LONG not null primary key,
+	categoryId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -24,19 +29,19 @@ create table MBCategory (
 	name VARCHAR(75) null,
 	description STRING null,
 	displayStyle VARCHAR(75) null,
-	threadCount INTEGER,
-	messageCount INTEGER,
-	lastPostDate DATE null,
 	lastPublishDate DATE null,
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
-	statusDate DATE null
+	statusDate DATE null,
+	primary key (categoryId, ctCollectionId)
 );
 
 create table MBDiscussion (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	discussionId LONG not null primary key,
+	discussionId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -46,12 +51,15 @@ create table MBDiscussion (
 	classNameId LONG,
 	classPK LONG,
 	threadId LONG,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (discussionId, ctCollectionId)
 );
 
 create table MBMailingList (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	mailingListId LONG not null primary key,
+	mailingListId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -75,12 +83,15 @@ create table MBMailingList (
 	outUserName VARCHAR(75) null,
 	outPassword VARCHAR(75) null,
 	allowAnonymous BOOLEAN,
-	active_ BOOLEAN
+	active_ BOOLEAN,
+	primary key (mailingListId, ctCollectionId)
 );
 
 create table MBMessage (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	messageId LONG not null primary key,
+	messageId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -93,7 +104,9 @@ create table MBMessage (
 	threadId LONG,
 	rootMessageId LONG,
 	parentMessageId LONG,
+	treePath STRING null,
 	subject VARCHAR(75) null,
+	urlSubject VARCHAR(255) null,
 	body TEXT null,
 	format VARCHAR(75) null,
 	anonymous BOOLEAN,
@@ -104,21 +117,27 @@ create table MBMessage (
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
-	statusDate DATE null
+	statusDate DATE null,
+	primary key (messageId, ctCollectionId)
 );
 
 create table MBStatsUser (
-	statsUserId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	statsUserId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
 	messageCount INTEGER,
-	lastPostDate DATE null
+	lastPostDate DATE null,
+	primary key (statsUserId, ctCollectionId)
 );
 
 create table MBThread (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	threadId LONG not null primary key,
+	threadId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -129,8 +148,6 @@ create table MBThread (
 	rootMessageId LONG,
 	rootMessageUserId LONG,
 	title VARCHAR(75) null,
-	messageCount INTEGER,
-	viewCount INTEGER,
 	lastPostByUserId LONG,
 	lastPostDate DATE null,
 	priority DOUBLE,
@@ -139,12 +156,15 @@ create table MBThread (
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
-	statusDate DATE null
+	statusDate DATE null,
+	primary key (threadId, ctCollectionId)
 );
 
 create table MBThreadFlag (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	threadFlagId LONG not null primary key,
+	threadFlagId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -152,5 +172,6 @@ create table MBThreadFlag (
 	createDate DATE null,
 	modifiedDate DATE null,
 	threadId LONG,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (threadFlagId, ctCollectionId)
 );

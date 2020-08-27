@@ -55,8 +55,19 @@
 		]>
 	}
 	{@param actionTypes: list<[
-			value: string,
-			name: string
+			label: string,
+			value: string
+		]>
+	}
+	{@param actionsFieldOptions: list<[
+			label: string,
+			name: string,
+			options: list<[
+				label: string,
+				value: string
+			]>,
+			type: string,
+			value: string
 		]>
 	}
 	{@param calculatorFunctions: list<[
@@ -86,23 +97,14 @@
 				dataType: string,
 				type: string,
 				label: string,
+				optionValue: string,
 				value: string
 			]>,
 			operator: string,
-			operators: list<[
-				name: string,
-				parameterTypes: list<string>,
-				returnType: string,
-				value: string
-			]>
+			operators: ?
 		]>
 	}
-	{@param? dataProvider: list<[
-			id: string,
-			name: string
-		]>
-	}
-	{@param fieldOptions: list<[
+	{@param conditionsFieldOptions: list<[
 			label: string,
 			name: string,
 			options: list<[
@@ -111,6 +113,11 @@
 			]>,
 			type: string,
 			value: string
+		]>
+	}
+	{@param? dataProvider: list<[
+			id: string,
+			name: string
 		]>
 	}
 	{@param fixedOptions: list<[
@@ -123,8 +130,10 @@
 			value: string
 		]>
 	}
+	{@param? handleRuleAdded: any}
 	{@param invalidRule: bool}
 	{@param logicalOperator: string}
+	{@param logicalOperators: list<[label: string, value: string]>}
 	{@param pageOptions: list<[
 			label: string,
 			name: string,
@@ -133,9 +142,8 @@
 	}
 	{@param readOnly: bool}
 	{@param spritemap: string}
-	{@param? _handleActionSelection: any}
 	{@param? _handleActionAdded: any}
-	{@param? _handleCancelRule: any}
+	{@param? _handleActionSelection: any}
 	{@param? _handleConditionAdded: any}
 	{@param? _handleDataProviderInputEdited: any}
 	{@param? _handleDataProviderOutputEdited: any}
@@ -144,24 +152,26 @@
 	{@param? _handleEditExpression: any}
 	{@param? _handleFirstOperandFieldEdited: any}
 	{@param? _handleLogicalOperationChange: any}
+	{@param? _handleModalButtonClicked: any}
 	{@param? _handleOperatorEdited: any}
-	{@param? _handleRuleAdded: any}
+	{@param? _handleRuleCancelled: any}
 	{@param? _handleSecondOperandFieldEdited: any}
 	{@param? _handleSecondOperandTypeEdited: any}
 	{@param? _handleSecondOperandValueEdited: any}
 	{@param? _handleTargetSelection: any}
-	{@param? _handleModalButtonClicked: any}
 	{@param? roles: list<[
 		label: string,
 		value: string
 	]>}
 
 	<div class="form-builder-rule-builder liferay-ddm-form-builder-rule-builder-content">
-		<h2 class="form-builder-section-title text-default">
-			{msg desc=""}rule{/msg}
-		</h2>
+		<div class="liferay-ddm-form-rule-builder-header">
+			<h2 class="form-builder-section-title text-default">
+				{msg desc=""}rule{/msg}
+			</h2>
 
-		<h4 class="text-default">{msg desc=""}define-condition-and-action-to-change-fields-and-elements-on-the-form{/msg}</h4>
+			<h4 class="text-default">{msg desc=""}define-condition-and-action-to-change-fields-and-elements-on-the-form{/msg}</h4>
+		</div>
 
 		<ul class="liferay-ddm-form-builder-rule-condition-list liferay-ddm-form-rule-builder-timeline timeline {length($conditions) > 1 ? 'can-remove-item' : ''}">
 			{let $enableLogicalOperator: (length($conditions) > 1) ? true : false /}
@@ -172,6 +182,8 @@
 						{param _handleLogicalOperationChange: $_handleLogicalOperationChange /}
 						{param enableLogicalOperator: $enableLogicalOperator /}
 						{param logicalOperator: $logicalOperator /}
+						{param logicalOperators: $logicalOperators /}
+						{param spritemap: $spritemap /}
 					{/call}
 				{/param}
 				{param title kind="text"}
@@ -188,9 +200,9 @@
 					{param _handleSecondOperandTypeEdited: $_handleSecondOperandTypeEdited /}
 					{param _handleSecondOperandValueEdited: $_handleSecondOperandValueEdited /}
 					{param binaryOperator: $condition.binaryOperator /}
-					{param fieldOptions: $fieldOptions /}
-					{param firstOperandType: $condition.operands[0].type /}
+					{param fieldOptions: $conditionsFieldOptions /}
 					{param firstOperandOptions: $condition.firstOperandOptions /}
+					{param firstOperandType: $condition.operands[0].type /}
 					{param firstOperandValueSelected: $condition.operands[0].value /}
 					{param fixedOptions: $fixedOptions /}
 					{param index: index($condition) /}
@@ -200,6 +212,7 @@
 					{param roles: $roles /}
 					{param secondOperandDataType: isNonnull($condition.operands[1]) ? $condition.operands[1].dataType : '' /}
 					{param secondOperandFieldName: '' /}
+					{param secondOperandOptionValue: isNonnull($condition.operands[1]) ? $condition.operands[1].optionValue : '' /}
 					{param secondOperandType: isNonnull($condition.operands[1]) ? $condition.operands[1].type : '' /}
 					{param secondOperandValue: isNonnull($condition.operands[1]) ? $condition.operands[1].value : '' /}
 					{param selectedOperator: $condition.operator /}
@@ -229,16 +242,16 @@
 					{param _handleDeleteAction: $_handleDeleteAction /}
 					{param _handleEditExpression: $_handleEditExpression /}
 					{param _handleTargetSelection: $_handleTargetSelection /}
+					{param actionExpression: $action.expression /}
 					{param actionInputs: $action.inputs /}
 					{param actionOutputs: $action.outputs /}
 					{param actionSelected: $action.action /}
-					{param actionExpression: $action.expression /}
 					{param actionTypes: $actionTypes /}
-					{param calculatorFunctions: $calculatorFunctions /}
 					{param calculatorFields: $action.calculatorFields /}
+					{param calculatorFunctions: $calculatorFunctions /}
 					{param calculatorResultOptions: $calculatorResultOptions /}
 					{param dataProvider: $dataProvider /}
-					{param fieldOptions: $fieldOptions /}
+					{param fieldOptions: $actionsFieldOptions /}
 					{param hasRequiredInputs: $action.hasRequiredInputs /}
 					{param index: index($action) /}
 					{param pageOptions: $pageOptions /}
@@ -281,7 +294,7 @@
 		<div class="liferay-ddm-form-rule-builder-footer">
 			{call ClayButton.render}
 				{param events: [
-					'click': $_handleRuleAdded
+					'click': $handleRuleAdded
 				] /}
 				{param disabled: $invalidRule /}
 				{param label kind="text"}
@@ -294,7 +307,7 @@
 
 			{call ClayButton.render}
 				{param events: [
-					'click': $_handleCancelRule
+					'click': $_handleRuleCancelled
 				] /}
 				{param label kind="text"}
 					{msg desc=""}cancel{/msg}
@@ -309,9 +322,9 @@
 
 {template .renderModal}
 	{@param question: string}
+	{@param spritemap: string}
 	{@param title: string}
 	{@param type: string}
-	{@param spritemap: string}
 	{@param? _handleModalButtonClicked: any}
 
 	{let $deleteLabel kind="text"}
@@ -352,8 +365,8 @@
 
 {template .renderAction}
 	{@param actionTypes: list<[
-			value: string,
-			name: string
+			label: string,
+			value: string
 		]>
 	}
 	{@param calculatorFields: list<[
@@ -449,8 +462,8 @@
 			name: string
 		]>
 	}
-	{@param? targetSelected: string}
 	{@param? hasRequiredInputs: bool}
+	{@param? targetSelected: string}
 
 	<li action-index="{$index}" class="action form-builder-rule-action-container-{$index} timeline-item">
 		<div class="panel panel-default">
@@ -465,10 +478,12 @@
 					</div>
 
 					<div action-type-index="{$index}" class="action-type form-group-item">
-						{delcall PageRenderer.RegisterFieldType variant="'select'"}
+						{call ReactFieldAdapter.render}
 							{param events: [
 								'fieldEdited': $_handleActionSelection
 							] /}
+							{param fieldType: 'select' /}
+							{param name: 'action' + $index /}
 							{param options: $actionTypes /}
 							{param placeholder kind="text"}
 								{msg desc=""}choose-an-option{/msg}
@@ -476,7 +491,7 @@
 							{param ref: 'action' + $index /}
 							{param spritemap: $spritemap /}
 							{param value: [$actionSelected] /}
-						{/delcall}
+						{/call}
 					</div>
 
 					{let $showTargetDefault: $actionSelected and (($actionSelected == 'show') or ($actionSelected == 'enable') or ($actionSelected == 'require')) /}
@@ -568,24 +583,26 @@
 
 {template .renderActionTarget}
 	{@param index: int}
-	{@param options: any}
 	{@param ref: string}
 	{@param spritemap: string}
 	{@param? _handleTargetSelection: any}
+	{@param? options: list<?>}
 	{@param? placeholder: string}
 	{@param? value: string}
 
 	<div class="form-group-item target-action" target-action-index="{$index}">
-		{delcall PageRenderer.RegisterFieldType variant="'select'"}
+		{call ReactFieldAdapter.render}
 			{param events: [
 				'fieldEdited': $_handleTargetSelection
 			] /}
+			{param fieldType: 'select' /}
+			{param name: $ref /}
 			{param options: $options /}
 			{param placeholder: $placeholder /}
 			{param ref: $ref /}
 			{param spritemap: $spritemap /}
 			{param value: [$value] /}
-		{/delcall}
+		{/call}
 	</div>
 {/template}
 
@@ -611,25 +628,21 @@
 	{@param? _handleSecondOperandTypeEdited: any}
 	{@param? _handleSecondOperandValueEdited: any}
 	{@param? firstOperandType: string}
-	{@param? firstOperandValueSelected: string}
 	{@param? firstOperandOptions: list<[
 		label: string,
 		value: string
 	]>}
+	{@param? firstOperandValueSelected: string}
 	{@param? fixedOptions: any}
 	{@param? logicalOperator: string}
-	{@param? operators:  list<[
-		name: string,
-		parameterTypes: list<string>,
-		returnType: string,
-		value: string
-	]>}
+	{@param? operators: ?}
 	{@param? roles: list<[
 		label: string,
 		value: string
 	]>}
 	{@param? secondOperandDataType: string}
 	{@param? secondOperandFieldName: string}
+	{@param? secondOperandOptionValue: any}
 	{@param? secondOperandType: string}
 	{@param? secondOperandValue: any}
 	{@param? selectedOperator: string}
@@ -647,19 +660,21 @@
 					</div>
 
 					<div class="condition-if form-group-item" condition-if-index="{$index}">
-						{delcall PageRenderer.RegisterFieldType variant="'select'"}
+						{call ReactFieldAdapter.render}
 							{param events: [
 								'fieldEdited': $_handleFirstOperandFieldEdited
 							] /}
+							{param fieldType: 'select' /}
 							{param fixedOptions: $fixedOptions /}
+							{param name: 'firstOperand' + $index /}
 							{param options: $fieldOptions /}
 							{param placeholder kind="text"}
 								{msg desc=""}choose-an-option{/msg}
 							{/param}
 							{param ref: 'firstOperand' + $index /}
 							{param spritemap: $spritemap /}
-							{param value: [$firstOperandValueSelected]   /}
-						{/delcall}
+							{param value: [$firstOperandValueSelected] /}
+						{/call}
 					</div>
 
 					{call .renderConditionOperators}
@@ -683,52 +698,56 @@
 								{/call}
 
 								{let $fieldHasOptions:
-									($secondOperandType == 'select' or
-									$secondOperandType == 'checkbox_multiple' or
-									$secondOperandType == 'radio')
+									($secondOperandType == 'checkbox_multiple' or
+									$secondOperandType == 'radio' or
+									$secondOperandType == 'select')
 								/}
 
 								<div class="condition-type-value form-group-item" condition-type-value-index="{$index}">
 									{if $fieldHasOptions}
-										{delcall PageRenderer.RegisterFieldType variant="'select'"}
+										{call ReactFieldAdapter.render}
 											{param events: [
 												'fieldEdited': $_handleSecondOperandValueEdited
 											] /}
+											{param fieldType: 'select' /}
 											{param name: $secondOperandFieldName /}
 											{param options: $firstOperandOptions /}
 											{param placeholder kind="text"}
 												{msg desc=""}choose-an-option{/msg}
 											{/param}
 											{param readOnly: $readOnly /}
-											{param ref: 'secondOperand' + $index /}
+											{param ref: 'secondOperandField' + $index /}
 											{param spritemap: $spritemap /}
-											{param value: [$secondOperandValue] /}
-										{/delcall}
+											{param value: [$secondOperandOptionValue] /}
+										{/call}
 									{elseif $secondOperandType == 'field'}
-										{delcall PageRenderer.RegisterFieldType variant="'select'"}
+										{call ReactFieldAdapter.render}
 											{param events: [
 												'fieldEdited': $_handleSecondOperandValueEdited
 											] /}
+											{param fieldType: 'select' /}
+											{param name: 'secondOperand' + $index /}
 											{param options: $fieldOptions /}
 											{param placeholder kind="text"}
 												{msg desc=""}choose-an-option{/msg}
 											{/param}
-											{param ref: 'secondOperand' + $index /}
+											{param ref: 'secondOperandField' + $index /}
 											{param spritemap: $spritemap /}
 											{param value: [$secondOperandValue] /}
-										{/delcall}
-									{else}
-										{delcall PageRenderer.RegisterFieldType variant="$secondOperandType"}
+										{/call}
+									{elseif $secondOperandType != ''}
+										{call ReactFieldAdapter.render}
 											{param dataType: $secondOperandDataType /}
 											{param events: [
 												'fieldEdited': $_handleSecondOperandValueEdited
 											] /}
+											{param fieldType: $secondOperandType /}
 											{param name: $secondOperandFieldName /}
 											{param readOnly: $readOnly /}
-											{param ref: 'secondOperand' + $index /}
+											{param ref: 'secondOperandValue' + $index /}
 											{param spritemap: $spritemap /}
 											{param value: $secondOperandValue /}
-										{/delcall}
+										{/call}
 									{/if}
 								</div>
 							{/if}
@@ -738,7 +757,7 @@
 									{param _handleSecondOperandFieldEdited: $_handleSecondOperandFieldEdited /}
 									{param index: $index /}
 									{param selectedOperator: $selectedOperator /}
-									{param roles: $roles  /}
+									{param roles: $roles /}
 									{param secondOperandValue: $secondOperandValue /}
 									{param spritemap: $spritemap /}
 								{/call}
@@ -785,22 +804,18 @@
 	{@param spritemap: string}
 	{@param? _handleOperatorEdited: any}
 	{@param? firstOperandType: string}
-	{@param? operators:  list<[
-			value: string,
-			name: string,
-			parameterTypes: list<string>,
-			returnType: string
-		]>
-	}
+	{@param? operators: ?}
 	{@param? selectedOperator: string}
 
 	{let $readOnly: $firstOperandType ? false : true /}
 
 	<div class="condition-operator form-group-item" condition-operator-index="{$index}">
-		{delcall PageRenderer.RegisterFieldType variant="'select'"}
+		{call ReactFieldAdapter.render}
 			{param events: [
 				'fieldEdited': $_handleOperatorEdited
 			] /}
+			{param fieldType: 'select' /}
+			{param name: 'conditionOperator' + $index /}
 			{param options: $operators /}
 			{param placeholder kind="text"}
 				{msg desc=""}choose-an-option{/msg}
@@ -809,7 +824,7 @@
 			{param ref: 'conditionOperator' + $index /}
 			{param spritemap: $spritemap /}
 			{param value: [$selectedOperator] /}
-		{/delcall}
+		{/call}
 	</div>
 {/template}
 
@@ -844,10 +859,12 @@
 
 	{if $visible}
 		<div class="condition-type form-group-item" condition-type-index="{$index}">
-			{delcall PageRenderer.RegisterFieldType variant="'select'"}
+			{call ReactFieldAdapter.render}
 				{param events: [
 					'fieldEdited': $_handleSecondOperandTypeEdited
 				] /}
+				{param fieldType: 'select' /}
+				{param name: 'secondOperandTypeSelector' + $index /}
 				{param options: $options /}
 				{param placeholder kind="text"}
 					{msg desc=""}choose-an-option{/msg}
@@ -856,7 +873,7 @@
 				{param spritemap: $spritemap /}
 				{param value: [$value] /}
 				{param visible: $visible /}
-			{/delcall}
+			{/call}
 		</div>
 	{/if}
 {/template}
@@ -876,17 +893,19 @@
 	{let $visible: $selectedOperator ? true : false /}
 
 	<div class="condition-user-role form-group-item {if not $visible}hide{/if}" condition-user-role-index="{$index}">
-		{delcall PageRenderer.RegisterFieldType variant="'select'"}
+		{call ReactFieldAdapter.render}
 			{param events: [
 				'fieldEdited': $_handleSecondOperandFieldEdited
 			] /}
+			{param fieldType: 'select' /}
+			{param name: 'roleSelector' + $index /}
 			{param options: $roles /}
 			{param placeholder kind="text"}
 				{msg desc=""}choose-an-option{/msg}
 			{/param}
 			{param spritemap: $spritemap /}
 			{param value: [$secondOperandValue] /}
-		{/delcall}
+		{/call}
 	</div>
 {/template}
 
@@ -897,20 +916,18 @@
 	{@param _handleLogicalOperationChange: any}
 	{@param? enableLogicalOperator: bool}
 	{@param? logicalOperator: string}
+	{@param? logicalOperators: list<?>}
+	{@param spritemap: string}
 
-	{let $attributes kind="attributes"}
-		class="btn btn-default dropdown-toggle dropdown-toggle-operator text-uppercase"
-		data-toggle="dropdown"
-		ref="logicalOperatorDropDownButton"
-		type="button"
-
-		{if not $enableLogicalOperator}
-			disabled
-		{/if}
-	{/let}
-
-	<div class="btn-group dropdown" style="block">
-		<button {$attributes}>
+	{call ClayDropdownBase.render}
+		{param events: [
+			'itemClicked': $_handleLogicalOperationChange
+		] /}
+		{param contentRenderer: 'contentConditionLogicalOperatorDropdown' /}
+		{param disabled: $enableLogicalOperator ? false : true /}
+		{param elementClasses: 'btn-group btn-group-item dropdown' /}
+		{param items: $logicalOperators ? $logicalOperators : [] /}
+		{param label kind="html"}
 			<span class="dropdown-toggle-selected-value">
 				{if $logicalOperator == 'and'}
 					{msg desc=""}and{/msg}
@@ -919,18 +936,13 @@
 				{/if}
 			</span>
 			<span class="caret"></span>
-		</button>
-
-		<ul class="dropdown-menu" data-onclick="{$_handleLogicalOperationChange}">
-			<li class="logic-operator text-uppercase" ref="globalOrOperator">
-				<a data-value="or">{msg desc=""}or{/msg}</a>
-			</li>
-			<li class="divider"></li>
-			<li class="logic-operator text-uppercase" ref="globalAndOperator">
-				<a data-value="and">{msg desc=""}and{/msg}</a>
-			</li>
-		</ul>
-	</div>
+		{/param}
+		{param preferredAlign: 'BottomRight' /}
+		{param ref: 'logicalOperatorDropDownButton' /}
+		{param spritemap: $spritemap /}
+		{param style: 'secondary' /}
+		{param triggerClasses: 'dropdown-toggle-operator text-uppercase' /}
+	{/call}
 {/template}
 
 /**
@@ -961,8 +973,8 @@
  * Prints the add condition button.
  */
 {template .renderAddItemButton}
-	{@param? _handleItemAdded: any}
 	{@param spritemap: string}
+	{@param? _handleItemAdded: any}
 	{@param? type: string}
 
 	<div class="addbutton-timeline-item">
@@ -1073,10 +1085,12 @@
 						</div>
 						{let $index: index($input) /}
 						<div class="col-md-9 container-input-field container-input-field-{$index}" container-input-field-index="{$index}">
-							{delcall PageRenderer.RegisterFieldType variant="'select'"}
+							{call ReactFieldAdapter.render}
 								{param events: [
 									'fieldEdited': $_handleDataProviderInputEdited
 								] /}
+								{param fieldType: 'select' /}
+								{param name: 'action' + $actionIndex + 'dataProviderInput' + $index /}
 								{param options: $input.fieldOptions /}
 								{param placeholder kind="text"}
 									{msg desc=""}choose-an-option{/msg}
@@ -1084,7 +1098,7 @@
 								{param ref: 'action' + $actionIndex + 'dataProviderInput' + $index /}
 								{param spritemap: $spritemap /}
 								{param value: [$input.value] /}
-							{/delcall}
+							{/call}
 						</div>
 					{/foreach}
 				</div>
@@ -1105,10 +1119,12 @@
 						</div>
 						{let $index: index($output) /}
 						<div class="col-md-9 container-output-field container-output-field-{$index}" container-output-field-index="{$index}">
-							{delcall PageRenderer.RegisterFieldType variant="'select'"}
+							{call ReactFieldAdapter.render}
 								{param events: [
 									'fieldEdited': $_handleDataProviderOutputEdited
 								] /}
+								{param fieldType: 'select' /}
+								{param name: 'action' + $actionIndex + 'dataProviderOutput' + $index /}
 								{param options: $output.fieldOptions /}
 								{param placeholder kind="text"}
 									{msg desc=""}choose-an-option{/msg}
@@ -1116,7 +1132,7 @@
 								{param ref: 'action' + $actionIndex + 'dataProviderOutput' + $index /}
 								{param spritemap: $spritemap /}
 								{param value: [$output.value] /}
-							{/delcall}
+							{/call}
 						</div>
 					{/foreach}
 				</div>
@@ -1124,3 +1140,42 @@
 		{/if}
 	</div>
 {/template}
+
+{deltemplate ClayDropdownItem.Item variant="'itemConditionLogicalOperatorDropdown'"}
+	{@param label: string}
+	{@param? _handleItemClick: any}
+	{@param? active: bool}
+	{@param? checked: bool}
+
+	{let $itemAttributes kind="attributes"}
+		class="dropdown-item logic-operator text-uppercase
+			{if $active or $checked}
+				{sp}active
+			{/if}
+		"
+
+		data-onclick="{$_handleItemClick}"
+	{/let}
+
+	<li {$itemAttributes} data-option-value="{$label}">
+		{$label}
+	</li>
+{/deltemplate}
+
+{deltemplate ClayDropdownBase.Content variant="'contentConditionLogicalOperatorDropdown'"}
+	{@param? _handleItemClick: any}
+	{@param? contentRenderer: string}
+	{@param? items: list<?>}
+	{@param? spritemap: string}
+
+	{if $items}
+		<ul class="list-unstyled">
+			{call ClayDropdownBase.items}
+				{param _handleItemClick: $_handleItemClick /}
+				{param contentRenderer: 'itemConditionLogicalOperatorDropdown' /}
+				{param items: $items /}
+				{param spritemap: $spritemap /}
+			{/call}
+		</ul>
+	{/if}
+{/deltemplate}

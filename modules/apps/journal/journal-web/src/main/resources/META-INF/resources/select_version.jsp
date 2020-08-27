@@ -20,7 +20,7 @@
 long groupId = ParamUtil.getLong(request, "groupId");
 String articleId = ParamUtil.getString(request, "articleId");
 double sourceVersion = ParamUtil.getDouble(request, "sourceVersion");
-String eventName = ParamUtil.getString(request, "eventName", renderResponse.getNamespace() + "selectVersionFm");
+String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectVersionFm");
 
 PortletURL portletURL = renderResponse.createRenderURL();
 
@@ -58,14 +58,19 @@ portletURL.setParameter("sourceVersion", String.valueOf(sourceVersion));
 					curTargetVersion = curSourceVersion;
 					curSourceVersion = tempVersion;
 				}
-
-				Map<String, Object> data = new HashMap<String, Object>();
-
-				data.put("sourceversion", curSourceVersion);
-				data.put("targetversion", curTargetVersion);
 				%>
 
-				<aui:a cssClass="selector-button" data="<%= data %>" href="javascript:;">
+				<aui:a
+					cssClass="selector-button"
+					data='<%=
+						HashMapBuilder.<String, Object>put(
+							"sourceversion", curSourceVersion
+						).put(
+							"targetversion", curTargetVersion
+						).build()
+					%>'
+					href="javascript:;"
+				>
 					<%= String.valueOf(curArticle.getVersion()) %>
 				</aui:a>
 			</liferay-ui:search-container-column-text>
@@ -84,5 +89,8 @@ portletURL.setParameter("sourceVersion", String.valueOf(sourceVersion));
 </aui:form>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectVersionFm', '<%= HtmlUtil.escapeJS(eventName) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectVersionFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>'
+	);
 </aui:script>

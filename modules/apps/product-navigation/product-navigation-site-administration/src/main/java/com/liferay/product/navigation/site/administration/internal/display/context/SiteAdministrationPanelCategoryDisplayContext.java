@@ -59,8 +59,6 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * @author Julio Camarero
  */
@@ -148,16 +146,12 @@ public class SiteAdministrationPanelCategoryDisplayContext {
 
 		_groupURL = StringPool.BLANK;
 
-		Group group = getGroup();
-
-		return _groupURLProvider.getGroupURL(group, _portletRequest);
+		return _groupURLProvider.getGroupURL(getGroup(), _portletRequest);
 	}
 
 	public String getGroupURL(boolean privateLayout) {
-		Group group = getGroup();
-
 		return _groupURLProvider.getGroupLayoutsURL(
-			group, privateLayout, _portletRequest);
+			getGroup(), privateLayout, _portletRequest);
 	}
 
 	public String getLiveGroupLabel() {
@@ -186,24 +180,28 @@ public class SiteAdministrationPanelCategoryDisplayContext {
 				_liveGroupURL = StagingUtil.getRemoteSiteURL(
 					group, layout.isPrivateLayout());
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to get live group URL", pe);
+					_log.debug("Unable to get live group URL", portalException);
 				}
 
-				_log.error("Unable to get live group URL: " + pe.getMessage());
+				_log.error(
+					"Unable to get live group URL: " +
+						portalException.getMessage());
 			}
-			catch (SystemException se) {
-				Throwable cause = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				if (!(cause instanceof ConnectException)) {
-					throw se;
+				if (!(throwable instanceof ConnectException)) {
+					throw systemException;
 				}
 
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to connect to remote live: " +
-							cause.getMessage());
+				_log.error(
+					"Unable to connect to remote live: " +
+						systemException.getMessage());
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(systemException, systemException);
 				}
 
 				throw new RemoteExportException(
@@ -352,25 +350,23 @@ public class SiteAdministrationPanelCategoryDisplayContext {
 	}
 
 	public boolean isDisplaySiteLink() {
-		Group group = getGroup();
+		Layout layout = _getFirstLayout();
 
-		Layout layout = LayoutLocalServiceUtil.fetchFirstLayout(
-			group.getGroupId(), false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
-			false);
-
-		if ((layout != null) && !layout.isHidden()) {
-			return true;
-		}
-
-		layout = LayoutLocalServiceUtil.fetchFirstLayout(
-			group.getGroupId(), true, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
-			false);
-
-		if ((layout != null) && !layout.isHidden()) {
+		if (layout != null) {
 			return true;
 		}
 
 		return false;
+	}
+
+	public boolean isFirstLayout() {
+		Layout layout = _getFirstLayout();
+
+		if ((layout == null) || (layout.getPlid() != _themeDisplay.getPlid())) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isShowSiteAdministration() throws PortalException {
@@ -391,12 +387,9 @@ public class SiteAdministrationPanelCategoryDisplayContext {
 	}
 
 	public boolean isShowSiteSelector() throws PortalException {
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(_portletRequest);
-
 		List<Group> mySites = getMySites();
 		List<Group> recentSites = _recentGroupManager.getRecentGroups(
-			httpServletRequest);
+			PortalUtil.getHttpServletRequest(_portletRequest));
 
 		if (mySites.isEmpty() && recentSites.isEmpty()) {
 			return false;
@@ -481,18 +474,41 @@ public class SiteAdministrationPanelCategoryDisplayContext {
 			return;
 		}
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(_portletRequest);
+		_groupProvider.setGroup(
+			PortalUtil.getHttpServletRequest(_portletRequest), _group);
+	}
 
-		_recentGroupManager.addRecentGroup(httpServletRequest, groupId);
+	private Layout _getFirstLayout() {
+		if (_firstLayout != null) {
+			return _firstLayout;
+		}
 
-		_groupProvider.setGroup(httpServletRequest, _group);
+		Group group = getGroup();
+
+		Layout layout = LayoutLocalServiceUtil.fetchFirstLayout(
+			group.getGroupId(), false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
+			false);
+
+		if ((layout != null) && !layout.isHidden()) {
+			return layout;
+		}
+
+		layout = LayoutLocalServiceUtil.fetchFirstLayout(
+			group.getGroupId(), true, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
+			false);
+
+		if ((layout != null) && !layout.isHidden()) {
+			return layout;
+		}
+
+		return null;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SiteAdministrationPanelCategoryDisplayContext.class);
 
 	private Boolean _collapsedPanel;
+	private Layout _firstLayout;
 	private Group _group;
 	private String _groupName;
 	private final GroupProvider _groupProvider;

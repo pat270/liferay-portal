@@ -35,7 +35,6 @@ import java.util.List;
 
 import javax.portlet.PortletPreferences;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -46,7 +45,6 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true, property = "name=ReferencedStagedModelImporter",
 	service = {Capability.class, ReferencedStagedModelImporterCapability.class}
 )
-@ProviderType
 public class ReferencedStagedModelImporterCapability implements Capability {
 
 	@Override
@@ -92,7 +90,7 @@ public class ReferencedStagedModelImporterCapability implements Capability {
 						portletDataContext.setScopeGroupId(
 							scopeGroup.getGroupId());
 					}
-					catch (PortalException pe) {
+					catch (PortalException portalException) {
 						StringBundler sb = new StringBundler(9);
 
 						sb.append("Unable to import the layout scoped ");
@@ -106,14 +104,15 @@ public class ReferencedStagedModelImporterCapability implements Capability {
 						sb.append(portletDataContext.getGroupId());
 
 						if (_log.isDebugEnabled()) {
-							_log.debug(sb.toString(), pe);
+							_log.debug(sb.toString(), portalException);
 						}
 
-						if (pe instanceof NoSuchLayoutException) {
+						if (portalException instanceof NoSuchLayoutException) {
 							continue;
 						}
 
-						throw new PortletDataException(sb.toString(), pe);
+						throw new PortletDataException(
+							sb.toString(), portalException);
 					}
 				}
 

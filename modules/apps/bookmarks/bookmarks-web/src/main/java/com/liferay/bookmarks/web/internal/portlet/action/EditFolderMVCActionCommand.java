@@ -25,18 +25,19 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.service.TrashEntryService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -89,11 +90,11 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		if (moveToTrash && !trashedModels.isEmpty()) {
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("trashedModels", trashedModels);
-
-			addDeleteSuccessData(actionRequest, data);
+			addDeleteSuccessData(
+				actionRequest,
+				HashMapBuilder.<String, Object>put(
+					"trashedModels", trashedModels
+				).build());
 		}
 	}
 
@@ -123,21 +124,31 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 			else if (cmd.equals(Constants.UNSUBSCRIBE)) {
 				unsubscribeFolder(actionRequest);
 			}
-		}
-		catch (Exception e) {
-			if (e instanceof NoSuchFolderException ||
-				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+			String portletResource = ParamUtil.getString(
+				actionRequest, "portletResource");
+
+			if (Validator.isNotNull(portletResource)) {
+				hideDefaultSuccessMessage(actionRequest);
+
+				MultiSessionMessages.add(
+					actionRequest, portletResource + "requestProcessed");
+			}
+		}
+		catch (Exception exception) {
+			if (exception instanceof NoSuchFolderException ||
+				exception instanceof PrincipalException) {
+
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter(
 					"mvcPath", "/bookmarks/error.jsp");
 			}
-			else if (e instanceof FolderNameException) {
-				SessionErrors.add(actionRequest, e.getClass());
+			else if (exception instanceof FolderNameException) {
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}

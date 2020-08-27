@@ -16,10 +16,10 @@ package com.liferay.bookmarks.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.exception.FolderNameException;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.model.BookmarksFolder;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksEntryLocalService;
 import com.liferay.bookmarks.service.base.BookmarksFolderLocalServiceBaseImpl;
 import com.liferay.bookmarks.util.comparator.FolderIdComparator;
@@ -103,7 +103,7 @@ public class BookmarksFolderLocalServiceImpl
 		folder.setDescription(description);
 		folder.setExpandoBridgeAttributes(serviceContext);
 
-		bookmarksFolderPersistence.update(folder);
+		folder = bookmarksFolderPersistence.update(folder);
 
 		// Resources
 
@@ -164,7 +164,7 @@ public class BookmarksFolderLocalServiceImpl
 
 		// Entries
 
-		_blogsEntryLocalService.deleteEntries(
+		_bookmarksEntryLocalService.deleteEntries(
 			folder.getGroupId(), folder.getFolderId(), includeTrashedEntries);
 
 		// Asset
@@ -305,10 +305,10 @@ public class BookmarksFolderLocalServiceImpl
 	@Override
 	public List<Object> getFoldersAndEntries(
 		long groupId, long folderId, int status, int start, int end,
-		OrderByComparator obc) {
+		OrderByComparator<?> orderByComparator) {
 
 		QueryDefinition<?> queryDefinition = new QueryDefinition<>(
-			status, start, end, obc);
+			status, start, end, orderByComparator);
 
 		return bookmarksFolderFinder.findF_E_ByG_F(
 			groupId, folderId, queryDefinition);
@@ -385,7 +385,7 @@ public class BookmarksFolderLocalServiceImpl
 		folder.setParentFolderId(parentFolderId);
 		folder.setTreePath(folder.buildTreePath());
 
-		bookmarksFolderPersistence.update(folder);
+		folder = bookmarksFolderPersistence.update(folder);
 
 		rebuildTree(
 			folder.getCompanyId(), folderId, folder.getTreePath(), true);
@@ -523,7 +523,7 @@ public class BookmarksFolderLocalServiceImpl
 						long parentPrimaryKey, String treePath)
 					throws PortalException {
 
-					_blogsEntryLocalService.setTreePaths(
+					_bookmarksEntryLocalService.setTreePaths(
 						parentPrimaryKey, treePath, false);
 				}
 
@@ -620,40 +620,6 @@ public class BookmarksFolderLocalServiceImpl
 			AssetLinkConstants.TYPE_RELATED);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #updateFolder(long, long, long, String, String,
-	 *             ServiceContext)} and {@link #mergeFolders(long, long)}
-	 */
-	@Deprecated
-	@Indexable(type = IndexableType.REINDEX)
-	@Override
-	public BookmarksFolder updateFolder(
-			long userId, long folderId, long parentFolderId, String name,
-			String description, boolean mergeWithParentFolder,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		// Merge folders
-
-		BookmarksFolder folder = bookmarksFolderPersistence.findByPrimaryKey(
-			folderId);
-
-		parentFolderId = getParentFolderId(folder, parentFolderId);
-
-		if (mergeWithParentFolder && (folderId != parentFolderId)) {
-			mergeFolders(folder, parentFolderId);
-
-			return folder;
-		}
-
-		// Folder
-
-		return updateFolder(
-			userId, folderId, parentFolderId, name, description,
-			serviceContext);
-	}
-
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public BookmarksFolder updateFolder(
@@ -679,7 +645,7 @@ public class BookmarksFolderLocalServiceImpl
 		folder.setDescription(description);
 		folder.setExpandoBridgeAttributes(serviceContext);
 
-		bookmarksFolderPersistence.update(folder);
+		folder = bookmarksFolderPersistence.update(folder);
 
 		// Asset
 
@@ -711,7 +677,7 @@ public class BookmarksFolderLocalServiceImpl
 		folder.setStatusByUserName(user.getFullName());
 		folder.setStatusDate(new Date());
 
-		bookmarksFolderPersistence.update(folder);
+		folder = bookmarksFolderPersistence.update(folder);
 
 		// Asset
 
@@ -803,7 +769,7 @@ public class BookmarksFolderLocalServiceImpl
 			entry.setFolderId(toFolderId);
 			entry.setTreePath(entry.buildTreePath());
 
-			bookmarksEntryPersistence.update(entry);
+			entry = bookmarksEntryPersistence.update(entry);
 
 			Indexer<BookmarksEntry> indexer =
 				IndexerRegistryUtil.nullSafeGetIndexer(BookmarksEntry.class);
@@ -833,7 +799,7 @@ public class BookmarksFolderLocalServiceImpl
 
 				entry.setStatus(WorkflowConstants.STATUS_IN_TRASH);
 
-				bookmarksEntryPersistence.update(entry);
+				entry = bookmarksEntryPersistence.update(entry);
 
 				// Trash
 
@@ -876,7 +842,7 @@ public class BookmarksFolderLocalServiceImpl
 
 				folder.setStatus(WorkflowConstants.STATUS_IN_TRASH);
 
-				bookmarksFolderPersistence.update(folder);
+				folder = bookmarksFolderPersistence.update(folder);
 
 				// Trash
 
@@ -936,7 +902,7 @@ public class BookmarksFolderLocalServiceImpl
 
 				entry.setStatus(oldStatus);
 
-				bookmarksEntryPersistence.update(entry);
+				entry = bookmarksEntryPersistence.update(entry);
 
 				// Trash
 
@@ -982,7 +948,7 @@ public class BookmarksFolderLocalServiceImpl
 
 				folder.setStatus(oldStatus);
 
-				bookmarksFolderPersistence.update(folder);
+				folder = bookmarksFolderPersistence.update(folder);
 
 				// Folders and entries
 
@@ -1024,7 +990,7 @@ public class BookmarksFolderLocalServiceImpl
 	}
 
 	@Reference
-	private BookmarksEntryLocalService _blogsEntryLocalService;
+	private BookmarksEntryLocalService _bookmarksEntryLocalService;
 
 	@Reference
 	private SubscriptionLocalService _subscriptionLocalService;

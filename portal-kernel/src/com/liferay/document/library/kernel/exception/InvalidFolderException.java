@@ -25,13 +25,10 @@ import com.liferay.portal.kernel.repository.model.Folder;
 
 import java.util.Locale;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Hugo Huijser
  */
-@ProviderType
 public class InvalidFolderException extends PortalException {
 
 	public static final int CANNOT_MOVE_INTO_CHILD_FOLDER = 1;
@@ -57,9 +54,9 @@ public class InvalidFolderException extends PortalException {
 
 			return folder.getName();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 
 			return StringPool.BLANK;

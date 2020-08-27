@@ -14,12 +14,17 @@
 
 package com.liferay.headless.delivery.client.resource.v1_0;
 
+import com.liferay.headless.delivery.client.aggregation.Aggregation;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentStructure;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.problem.Problem;
 import com.liferay.headless.delivery.client.serdes.v1_0.ContentStructureSerDes;
 
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,84 +35,368 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class ContentStructureResource {
+public interface ContentStructureResource {
+
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public Page<ContentStructure> getAssetLibraryContentStructuresPage(
+			Long assetLibraryId, String search, Aggregation aggregation,
+			String filterString, Pagination pagination, String sortString)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getAssetLibraryContentStructuresPageHttpResponse(
+				Long assetLibraryId, String search, Aggregation aggregation,
+				String filterString, Pagination pagination, String sortString)
+		throws Exception;
 
 	public ContentStructure getContentStructure(Long contentStructureId)
-		throws Exception {
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/content-structures/{contentStructureId}",
-			contentStructureId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return ContentStructureSerDes.toDTO(content);
-		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
-
-			throw e;
-		}
-	}
+	public HttpInvoker.HttpResponse getContentStructureHttpResponse(
+			Long contentStructureId)
+		throws Exception;
 
 	public Page<ContentStructure> getSiteContentStructuresPage(
-			Long siteId, String search, String filterString,
-			Pagination pagination, String sortString)
-		throws Exception {
+			Long siteId, String search, Aggregation aggregation,
+			String filterString, Pagination pagination, String sortString)
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public HttpInvoker.HttpResponse getSiteContentStructuresPageHttpResponse(
+			Long siteId, String search, Aggregation aggregation,
+			String filterString, Pagination pagination, String sortString)
+		throws Exception;
 
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+	public static class Builder {
 
-		if (filterString != null) {
-			httpInvoker.parameter("filter", filterString);
+		public Builder authentication(String login, String password) {
+			_login = login;
+			_password = password;
+
+			return this;
 		}
 
-		if (pagination != null) {
-			httpInvoker.parameter("page", String.valueOf(pagination.getPage()));
-			httpInvoker.parameter(
-				"pageSize", String.valueOf(pagination.getPageSize()));
+		public ContentStructureResource build() {
+			return new ContentStructureResourceImpl(this);
 		}
 
-		if (sortString != null) {
-			httpInvoker.parameter("sort", sortString);
+		public Builder endpoint(String host, int port, String scheme) {
+			_host = host;
+			_port = port;
+			_scheme = scheme;
+
+			return this;
 		}
 
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/content-structures",
-			siteId);
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
 
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
+			return this;
+		}
 
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+		public Builder locale(Locale locale) {
+			_locale = locale;
 
-		String content = httpResponse.getContent();
+			return this;
+		}
 
-		_logger.fine("HTTP response content: " + content);
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
 
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
+			return this;
+		}
 
-		return Page.of(content, ContentStructureSerDes::toDTO);
+		private Builder() {
+		}
+
+		private Map<String, String> _headers = new LinkedHashMap<>();
+		private String _host = "localhost";
+		private Locale _locale;
+		private String _login = "";
+		private String _password = "";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
+		private int _port = 8080;
+		private String _scheme = "http";
+
 	}
 
-	private static final Logger _logger = Logger.getLogger(
-		ContentStructureResource.class.getName());
+	public static class ContentStructureResourceImpl
+		implements ContentStructureResource {
+
+		public Page<ContentStructure> getAssetLibraryContentStructuresPage(
+				Long assetLibraryId, String search, Aggregation aggregation,
+				String filterString, Pagination pagination, String sortString)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getAssetLibraryContentStructuresPageHttpResponse(
+					assetLibraryId, search, aggregation, filterString,
+					pagination, sortString);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, ContentStructureSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getAssetLibraryContentStructuresPageHttpResponse(
+					Long assetLibraryId, String search, Aggregation aggregation,
+					String filterString, Pagination pagination,
+					String sortString)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if ((aggregation != null) &&
+				(aggregation.getAggregationTerms() != null)) {
+
+				Map<String, String> aggregationTerms =
+					aggregation.getAggregationTerms();
+
+				httpInvoker.parameter(
+					"aggregationTerms",
+					String.join(",", aggregationTerms.values()));
+			}
+
+			if (filterString != null) {
+				httpInvoker.parameter("filter", filterString);
+			}
+
+			if (pagination != null) {
+				httpInvoker.parameter(
+					"page", String.valueOf(pagination.getPage()));
+				httpInvoker.parameter(
+					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/content-structures",
+				assetLibraryId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public ContentStructure getContentStructure(Long contentStructureId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getContentStructureHttpResponse(contentStructureId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return ContentStructureSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse getContentStructureHttpResponse(
+				Long contentStructureId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/content-structures/{contentStructureId}",
+				contentStructureId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<ContentStructure> getSiteContentStructuresPage(
+				Long siteId, String search, Aggregation aggregation,
+				String filterString, Pagination pagination, String sortString)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getSiteContentStructuresPageHttpResponse(
+					siteId, search, aggregation, filterString, pagination,
+					sortString);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, ContentStructureSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getSiteContentStructuresPageHttpResponse(
+					Long siteId, String search, Aggregation aggregation,
+					String filterString, Pagination pagination,
+					String sortString)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (search != null) {
+				httpInvoker.parameter("search", String.valueOf(search));
+			}
+
+			if ((aggregation != null) &&
+				(aggregation.getAggregationTerms() != null)) {
+
+				Map<String, String> aggregationTerms =
+					aggregation.getAggregationTerms();
+
+				httpInvoker.parameter(
+					"aggregationTerms",
+					String.join(",", aggregationTerms.values()));
+			}
+
+			if (filterString != null) {
+				httpInvoker.parameter("filter", filterString);
+			}
+
+			if (pagination != null) {
+				httpInvoker.parameter(
+					"page", String.valueOf(pagination.getPage()));
+				httpInvoker.parameter(
+					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			if (sortString != null) {
+				httpInvoker.parameter("sort", sortString);
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/sites/{siteId}/content-structures",
+				siteId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		private ContentStructureResourceImpl(Builder builder) {
+			_builder = builder;
+		}
+
+		private static final Logger _logger = Logger.getLogger(
+			ContentStructureResource.class.getName());
+
+		private Builder _builder;
+
+	}
 
 }

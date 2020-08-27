@@ -18,6 +18,12 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
+import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -27,6 +33,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.personal.menu.util.PersonalApplicationURLUtil;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -36,13 +43,11 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Provides a skeletal implementation of the {@link PersonalMenuEntry} to
- * minimize the effort required to implement this interface.
- *
- * To implement a user personal menu entry, this class should be extended and
- * {@link #getPortletId()} and {@link#setPortlet(Portlet)} should be overridden.
+ * minimize the effort required to implement this interface. To implement a user
+ * personal menu entry, this class should be extended and {@link
+ * #getPortletId()} should be overridden.
  *
  * @author Pei-Jung Lan
- * @review
  */
 public abstract class BasePersonalMenuEntry implements PersonalMenuEntry {
 
@@ -53,6 +58,13 @@ public abstract class BasePersonalMenuEntry implements PersonalMenuEntry {
 			JavaConstants.JAVAX_PORTLET_TITLE + StringPool.PERIOD +
 				getPortletId());
 	}
+
+	/**
+	 * Returns the portlet's ID associated with the user personal menu entry.
+	 *
+	 * @return the portlet's ID associated with the user personal menu entry
+	 */
+	public abstract String getPortletId();
 
 	@Override
 	public String getPortletURL(HttpServletRequest httpServletRequest)
@@ -89,16 +101,44 @@ public abstract class BasePersonalMenuEntry implements PersonalMenuEntry {
 		return false;
 	}
 
-	/**
-	 * Returns the portlet's ID associated with the user personal menu entry.
-	 *
-	 * @return the portlet's ID associated with the user personal menu entry
-	 * @review
-	 */
-	protected abstract String getPortletId();
+	@Override
+	public boolean isShow(
+			PortletRequest portletRequest, PermissionChecker permissionChecker)
+		throws PortalException {
+
+		try {
+			return hasAccessPermission(
+				permissionChecker,
+				PortletLocalServiceUtil.getPortletById(getPortletId()));
+		}
+		catch (PortalException | RuntimeException exception) {
+			throw exception;
+		}
+		catch (Exception exception) {
+			throw new PortalException(exception);
+		}
+	}
 
 	protected ResourceBundle getResourceBundle(Locale locale) {
 		return ResourceBundleUtil.getBundle(locale, getClass());
+	}
+
+	protected boolean hasAccessPermission(
+			PermissionChecker permissionChecker, Portlet portlet)
+		throws Exception {
+
+		List<String> actions = ResourceActionsUtil.getResourceActions(
+			portlet.getPortletId());
+
+		if (actions.contains(ActionKeys.ACCESS_IN_CONTROL_PANEL) &&
+			PortletPermissionUtil.contains(
+				permissionChecker, 0, portlet.getRootPortletId(),
+				ActionKeys.ACCESS_IN_CONTROL_PANEL, true)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

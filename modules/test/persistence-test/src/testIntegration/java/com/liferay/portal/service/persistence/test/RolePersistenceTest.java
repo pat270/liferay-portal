@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchRoleException;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,8 @@ public class RolePersistenceTest {
 
 		newRole.setMvccVersion(RandomTestUtil.nextLong());
 
+		newRole.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newRole.setUuid(RandomTestUtil.randomString());
 
 		newRole.setCompanyId(RandomTestUtil.nextLong());
@@ -158,6 +160,8 @@ public class RolePersistenceTest {
 
 		Assert.assertEquals(
 			existingRole.getMvccVersion(), newRole.getMvccVersion());
+		Assert.assertEquals(
+			existingRole.getCtCollectionId(), newRole.getCtCollectionId());
 		Assert.assertEquals(existingRole.getUuid(), newRole.getUuid());
 		Assert.assertEquals(existingRole.getRoleId(), newRole.getRoleId());
 		Assert.assertEquals(
@@ -280,6 +284,23 @@ public class RolePersistenceTest {
 	}
 
 	@Test
+	public void testCountByC_C_C_T() throws Exception {
+		_persistence.countByC_C_C_T(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
+
+		_persistence.countByC_C_C_T(0L, 0L, 0L, 0);
+	}
+
+	@Test
+	public void testCountByC_C_C_TArrayable() throws Exception {
+		_persistence.countByC_C_C_T(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			new long[] {RandomTestUtil.nextLong(), 0L},
+			RandomTestUtil.nextInt());
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		Role newRole = addRole();
 
@@ -304,11 +325,11 @@ public class RolePersistenceTest {
 
 	protected OrderByComparator<Role> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"Role_", "mvccVersion", true, "uuid", true, "roleId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "classNameId", true, "classPK", true,
-			"name", true, "title", true, "description", true, "type", true,
-			"subtype", true);
+			"Role_", "mvccVersion", true, "ctCollectionId", true, "uuid", true,
+			"roleId", true, "companyId", true, "userId", true, "userName", true,
+			"createDate", true, "modifiedDate", true, "classNameId", true,
+			"classPK", true, "name", true, "title", true, "description", true,
+			"type", true, "subtype", true);
 	}
 
 	@Test
@@ -515,31 +536,96 @@ public class RolePersistenceTest {
 
 		_persistence.clearCache();
 
-		Role existingRole = _persistence.findByPrimaryKey(
-			newRole.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newRole.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		Role newRole = addRole();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Role.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("roleId", newRole.getRoleId()));
+
+		List<Role> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(Role role) {
+		Assert.assertEquals(
+			Long.valueOf(role.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
+		Assert.assertEquals(
+			role.getName(),
+			ReflectionTestUtil.invoke(
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"name"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingRole.getCompanyId()),
+			Long.valueOf(role.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRole, "getOriginalCompanyId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingRole.getName(),
-				ReflectionTestUtil.invoke(
-					existingRole, "getOriginalName", new Class<?>[0])));
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
+		Assert.assertEquals(
+			Long.valueOf(role.getClassNameId()),
+			ReflectionTestUtil.<Long>invoke(
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classNameId"));
+		Assert.assertEquals(
+			Long.valueOf(role.getClassPK()),
+			ReflectionTestUtil.<Long>invoke(
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classPK"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingRole.getCompanyId()),
+			Long.valueOf(role.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRole, "getOriginalCompanyId", new Class<?>[0]));
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
 		Assert.assertEquals(
-			Long.valueOf(existingRole.getClassNameId()),
+			Long.valueOf(role.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRole, "getOriginalClassNameId", new Class<?>[0]));
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingRole.getClassPK()),
+			Long.valueOf(role.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRole, "getOriginalClassPK", new Class<?>[0]));
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classPK"));
+		Assert.assertEquals(
+			Integer.valueOf(role.getType()),
+			ReflectionTestUtil.<Integer>invoke(
+				role, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"type_"));
 	}
 
 	protected Role addRole() throws Exception {
@@ -548,6 +634,8 @@ public class RolePersistenceTest {
 		Role role = _persistence.create(pk);
 
 		role.setMvccVersion(RandomTestUtil.nextLong());
+
+		role.setCtCollectionId(RandomTestUtil.nextLong());
 
 		role.setUuid(RandomTestUtil.randomString());
 

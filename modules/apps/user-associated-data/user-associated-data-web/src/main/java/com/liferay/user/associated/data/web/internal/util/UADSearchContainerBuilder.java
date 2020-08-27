@@ -66,17 +66,18 @@ import org.osgi.service.component.annotations.Reference;
 @Component(immediate = true, service = UADSearchContainerBuilder.class)
 public class UADSearchContainerBuilder {
 
-	public SearchContainer<UADEntity> getSearchContainer(
-			RenderRequest renderRequest,
+	public SearchContainer<UADEntity<?>> getSearchContainer(
 			LiferayPortletResponse liferayPortletResponse,
-			PortletURL currentURL,
+			RenderRequest renderRequest, PortletURL currentURL,
 			List<UADApplicationSummaryDisplay> uadApplicationSummaryDisplays)
 		throws PortletException {
 
-		SearchContainer<UADEntity> searchContainer = _constructSearchContainer(
-			renderRequest, currentURL, "name", new String[] {"name", "count"});
+		SearchContainer<UADEntity<?>> searchContainer =
+			_constructSearchContainer(
+				renderRequest, currentURL, "name",
+				new String[] {"name", "count"});
 
-		List<UADEntity> uadEntities = new ArrayList<>();
+		List<UADEntity<?>> uadEntities = new ArrayList<>();
 
 		for (UADApplicationSummaryDisplay uadApplicationSummaryDisplay :
 				uadApplicationSummaryDisplays) {
@@ -92,13 +93,13 @@ public class UADSearchContainerBuilder {
 
 			uadEntities.add(
 				_constructUADEntity(
-					renderRequest, liferayPortletResponse, currentURL,
+					liferayPortletResponse, renderRequest, currentURL,
 					uadApplicationSummaryDisplay));
 		}
 
-		Stream<UADEntity> uadEntitiesStream = uadEntities.stream();
+		Stream<UADEntity<?>> uadEntitiesStream = uadEntities.stream();
 
-		List<UADEntity> results = uadEntitiesStream.sorted(
+		List<UADEntity<?>> results = uadEntitiesStream.sorted(
 			_getComparator(
 				searchContainer.getOrderByCol(),
 				searchContainer.getOrderByType())
@@ -119,19 +120,20 @@ public class UADSearchContainerBuilder {
 		return searchContainer;
 	}
 
-	public SearchContainer<UADEntity> getSearchContainer(
-		RenderRequest renderRequest,
-		LiferayPortletResponse liferayPortletResponse, PortletURL currentURL,
-		long[] groupIds, User selectedUser, UADDisplay uadDisplay) {
+	public SearchContainer<UADEntity<?>> getSearchContainer(
+		LiferayPortletResponse liferayPortletResponse,
+		RenderRequest renderRequest, PortletURL currentURL, long[] groupIds,
+		User selectedUser, UADDisplay<UADEntity<?>> uadDisplay) {
 
-		SearchContainer<UADEntity> searchContainer = _constructSearchContainer(
-			renderRequest, currentURL, "modifiedDate",
-			uadDisplay.getSortingFieldNames());
+		SearchContainer<UADEntity<?>> searchContainer =
+			_constructSearchContainer(
+				renderRequest, currentURL, "modifiedDate",
+				uadDisplay.getSortingFieldNames());
 
 		try {
 			DisplayTerms displayTerms = searchContainer.getDisplayTerms();
 
-			List entities = uadDisplay.search(
+			List<UADEntity<?>> entities = uadDisplay.search(
 				selectedUser.getUserId(), groupIds, displayTerms.getKeywords(),
 				searchContainer.getOrderByCol(),
 				searchContainer.getOrderByType(), searchContainer.getStart(),
@@ -140,9 +142,9 @@ public class UADSearchContainerBuilder {
 			LiferayPortletRequest liferayPortletRequest =
 				_portal.getLiferayPortletRequest(renderRequest);
 
-			List<UADEntity> uadEntities = new ArrayList<>();
+			List<UADEntity<?>> uadEntities = new ArrayList<>();
 
-			for (Object entity : entities) {
+			for (UADEntity<?> entity : entities) {
 				uadEntities.add(
 					_constructUADEntity(
 						liferayPortletRequest, liferayPortletResponse, entity,
@@ -156,9 +158,9 @@ public class UADSearchContainerBuilder {
 					selectedUser.getUserId(), groupIds,
 					displayTerms.getKeywords()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
 			searchContainer.setResults(Collections.emptyList());
@@ -173,16 +175,17 @@ public class UADSearchContainerBuilder {
 		return searchContainer;
 	}
 
-	public SearchContainer<UADEntity> getSearchContainer(
-		RenderRequest renderRequest,
-		LiferayPortletResponse liferayPortletResponse, String applicationKey,
+	public SearchContainer<UADEntity<?>> getSearchContainer(
+		LiferayPortletResponse liferayPortletResponse,
+		RenderRequest renderRequest, String applicationKey,
 		PortletURL currentURL, long[] groupIds, Class<?> parentContainerClass,
 		Serializable parentContainerId, User selectedUser,
 		UADHierarchyDisplay uadHierarchyDisplay) {
 
-		SearchContainer<UADEntity> searchContainer = _constructSearchContainer(
-			renderRequest, currentURL, "name",
-			uadHierarchyDisplay.getSortingFieldNames());
+		SearchContainer<UADEntity<?>> searchContainer =
+			_constructSearchContainer(
+				renderRequest, currentURL, "name",
+				uadHierarchyDisplay.getSortingFieldNames());
 
 		try {
 			DisplayTerms displayTerms = searchContainer.getDisplayTerms();
@@ -209,7 +212,7 @@ public class UADSearchContainerBuilder {
 			LiferayPortletRequest liferayPortletRequest =
 				_portal.getLiferayPortletRequest(renderRequest);
 
-			List<UADEntity> uadEntities = new ArrayList<>();
+			List<UADEntity<?>> uadEntities = new ArrayList<>();
 
 			for (Object entity : entities) {
 				uadEntities.add(
@@ -219,9 +222,9 @@ public class UADSearchContainerBuilder {
 						uadHierarchyDisplay));
 			}
 
-			Stream<UADEntity> uadEntitiesStream = uadEntities.stream();
+			Stream<UADEntity<?>> uadEntitiesStream = uadEntities.stream();
 
-			List<UADEntity> results = uadEntitiesStream.sorted(
+			List<UADEntity<?>> results = uadEntitiesStream.sorted(
 				_getComparator(
 					searchContainer.getOrderByCol(),
 					searchContainer.getOrderByType())
@@ -237,9 +240,9 @@ public class UADSearchContainerBuilder {
 
 			searchContainer.setTotal(entities.size());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
 			searchContainer.setResults(Collections.emptyList());
@@ -254,7 +257,7 @@ public class UADSearchContainerBuilder {
 		return searchContainer;
 	}
 
-	private SearchContainer<UADEntity> _constructSearchContainer(
+	private SearchContainer<UADEntity<?>> _constructSearchContainer(
 		RenderRequest renderRequest, PortletURL currentURL,
 		String defaultOrderByCol, String[] sortingFieldNames) {
 
@@ -264,7 +267,7 @@ public class UADSearchContainerBuilder {
 			renderRequest, SearchContainer.DEFAULT_CUR_PARAM,
 			SearchContainer.DEFAULT_CUR);
 
-		SearchContainer<UADEntity> searchContainer = new SearchContainer<>(
+		SearchContainer<UADEntity<?>> searchContainer = new SearchContainer<>(
 			renderRequest, displayTerms, displayTerms,
 			SearchContainer.DEFAULT_CUR_PARAM, cur,
 			SearchContainer.DEFAULT_DELTA, currentURL, null,
@@ -318,6 +321,7 @@ public class UADSearchContainerBuilder {
 		UADEntity<T> uadEntity = new UADEntity(
 			uadHierarchyDisplay.unwrap(entity),
 			uadHierarchyDisplay.getPrimaryKey(entity), editURL,
+			uadHierarchyDisplay.isInTrash(entity),
 			uadHierarchyDisplay.getTypeClass(entity),
 			uadHierarchyDisplay.isUserOwned(entity, selectedUserId), viewURL);
 
@@ -343,7 +347,8 @@ public class UADSearchContainerBuilder {
 			entity, uadDisplay.getPrimaryKey(entity),
 			uadDisplay.getEditURL(
 				entity, liferayPortletRequest, liferayPortletResponse),
-			uadDisplay.getTypeClass(), true, null);
+			uadDisplay.isInTrash(entity), uadDisplay.getTypeClass(), true,
+			null);
 
 		Map<String, Object> columnFieldValues = uadDisplay.getFieldValues(
 			entity, uadDisplay.getColumnFieldNames(),
@@ -360,9 +365,8 @@ public class UADSearchContainerBuilder {
 	}
 
 	private <T> UADEntity<T> _constructUADEntity(
-			RenderRequest renderRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			PortletURL currentURL,
+			RenderRequest renderRequest, PortletURL currentURL,
 			UADApplicationSummaryDisplay uadApplicationSummaryDisplay)
 		throws PortletException {
 
@@ -376,8 +380,8 @@ public class UADSearchContainerBuilder {
 			"applicationKey", uadApplicationSummaryDisplay.getApplicationKey());
 
 		UADEntity<T> uadEntity = new UADEntity(
-			null, uadApplicationSummaryDisplay.getApplicationKey(), null, null,
-			true, viewURL.toString());
+			null, uadApplicationSummaryDisplay.getApplicationKey(), null, false,
+			null, true, viewURL.toString());
 
 		uadEntity.addColumnEntry(
 			"name",
@@ -391,10 +395,10 @@ public class UADSearchContainerBuilder {
 		return uadEntity;
 	}
 
-	private Comparator<UADEntity> _getComparator(
+	private Comparator<UADEntity<?>> _getComparator(
 		String orderByColumn, String orderByType) {
 
-		Comparator<UADEntity> comparator = Comparator.comparing(
+		Comparator<UADEntity<?>> comparator = Comparator.comparing(
 			uadEntity -> {
 				Object entry = uadEntity.getColumnEntry(orderByColumn);
 
@@ -413,7 +417,7 @@ public class UADSearchContainerBuilder {
 					try {
 						return Long.valueOf((String)entry);
 					}
-					catch (NumberFormatException nfe) {
+					catch (NumberFormatException numberFormatException) {
 						return 0L;
 					}
 				});

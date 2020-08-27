@@ -23,8 +23,9 @@
 			padding: 6px 8px;
 		}
 
-		.browse-folder, .nav-item-label {
-			@include ellipsis;
+		.browse-folder,
+		.nav-item-label {
+			@include text-truncate();
 
 			vertical-align: middle;
 		}
@@ -46,7 +47,7 @@
 				margin: 0;
 				padding: 11px 14px;
 
-				@include md {
+				@include media-breakpoint-up(md) {
 					padding: 11px;
 				}
 			}

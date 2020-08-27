@@ -18,8 +18,12 @@
 
 <div id="<portlet:namespace />simulationDeviceContainer">
 	<div class="list-group-panel">
-		<div class="container-fluid devices">
-			<div class="default-devices row">
+		<clay:container-fluid
+			cssClass="devices"
+		>
+			<clay:row
+				cssClass="default-devices"
+			>
 				<button class="btn btn-unstyled col-4 d-lg-block d-none lfr-device-item selected text-center" data-device="desktop" type="button">
 					<aui:icon cssClass="icon icon-monospaced" image="desktop" markupView="lexicon" />
 
@@ -53,70 +57,70 @@
 
 					<small><liferay-ui:message key="custom" /></small>
 				</button>
-			</div>
+			</clay:row>
 
-			<div class="custom-devices d-lg-flex d-none hide row" id="<portlet:namespace />customDeviceContainer">
+			<clay:row
+				cssClass="custom-devices d-lg-flex d-none hide"
+				id='<%= liferayPortletResponse.getNamespace() + "customDeviceContainer" %>'
+			>
 				<aui:input cssClass="input-sm" inlineField="<%= true %>" label='<%= LanguageUtil.get(request, "height") + " (px):" %>' name="height" size="4" value="600" wrapperCssClass="col-6" />
 
 				<aui:input cssClass="input-sm" inlineField="<%= true %>" label='<%= LanguageUtil.get(request, "width") + " (px):" %>' name="width" size="4" value="600" wrapperCssClass="col-6" />
-			</div>
-		</div>
+			</clay:row>
+		</clay:container-fluid>
 	</div>
 </div>
 
 <aui:script use="liferay-product-navigation-simulation-device">
-	var simulationDevice = new Liferay.SimulationDevice(
-		{
-			devices: {
-				autosize: {
-					skin: 'autosize'
-				},
-				custom: {
-					height: '#<portlet:namespace />height',
-					resizable: true,
-					width: '#<portlet:namespace />width'
-				},
-				desktop: {
-					height: 1050,
-					selected: true,
-					width: 1300
-				},
-				smartphone: {
-					height: 640,
-					preventTransition: true,
-					rotation: true,
-					skin: 'smartphone',
-					width: 400
-				},
-				tablet: {
-					height: 900,
-					preventTransition: true,
-					rotation: true,
-					skin: 'tablet',
-					width: 760
-				}
+	var simulationDevice = new Liferay.SimulationDevice({
+		devices: {
+			autosize: {
+				skin: 'autosize',
 			},
-			inputHeight: '#<portlet:namespace />height',
-			inputWidth: '#<portlet:namespace />width',
-			namespace: '<portlet:namespace />'
-		}
-	);
+			custom: {
+				height: '#<portlet:namespace />height',
+				resizable: true,
+				width: '#<portlet:namespace />width',
+			},
+			desktop: {
+				height: 1050,
+				selected: true,
+				width: 1300,
+			},
+			smartphone: {
+				height: 640,
+				preventTransition: true,
+				rotation: true,
+				skin: 'smartphone',
+				width: 400,
+			},
+			tablet: {
+				height: 900,
+				preventTransition: true,
+				rotation: true,
+				skin: 'tablet',
+				width: 760,
+			},
+		},
+		inputHeight: '#<portlet:namespace />height',
+		inputWidth: '#<portlet:namespace />width',
+		namespace: '<portlet:namespace />',
+	});
 
-	Liferay.once(
-		'screenLoad',
-		function() {
-			simulationDevice.destroy();
-		}
-	);
+	Liferay.once('screenLoad', function () {
+		simulationDevice.destroy();
+	});
 
 	A.one('.devices').delegate(
 		'click',
-		function(event) {
+		function (event) {
 			var currentTarget = event.currentTarget;
 
 			var dataDevice = currentTarget.attr('data-device');
 
-			var customDeviceContainer = A.one('#<portlet:namespace />customDeviceContainer');
+			var customDeviceContainer = A.one(
+				'#<portlet:namespace />customDeviceContainer'
+			);
 
 			if (dataDevice === 'custom') {
 				customDeviceContainer.show();

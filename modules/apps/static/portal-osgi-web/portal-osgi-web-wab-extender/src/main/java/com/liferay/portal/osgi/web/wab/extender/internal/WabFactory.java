@@ -22,7 +22,6 @@ import com.liferay.portal.osgi.web.servlet.JSPServletFactory;
 import com.liferay.portal.osgi.web.servlet.JSPTaglibHelper;
 import com.liferay.portal.osgi.web.servlet.context.helper.ServletContextHelperFactory;
 import com.liferay.portal.osgi.web.wab.extender.internal.configuration.WabExtenderConfiguration;
-import com.liferay.portal.osgi.web.wab.extender.internal.event.EventUtil;
 import com.liferay.portal.profile.PortalProfile;
 
 import java.util.Dictionary;
@@ -93,13 +92,13 @@ public class WabFactory
 					_wabExtenderConfiguration.stopTimeout(),
 					TimeUnit.MILLISECONDS);
 			}
-			catch (InterruptedException ie) {
+			catch (InterruptedException interruptedException) {
 				_log.error(
 					String.format(
 						"The wait for bundle {0}/{1} to start before " +
 							"destroying was interrupted",
 						_bundle.getSymbolicName(), _bundle.getBundleId()),
-					ie);
+					interruptedException);
 			}
 
 			if (_serviceRegistration != null) {
@@ -128,8 +127,6 @@ public class WabFactory
 	protected void activate(ComponentContext componentContext) {
 		BundleContext bundleContext = componentContext.getBundleContext();
 
-		_eventUtil = new EventUtil(bundleContext);
-
 		Dictionary<String, Object> properties =
 			componentContext.getProperties();
 
@@ -137,8 +134,7 @@ public class WabFactory
 			WabExtenderConfiguration.class, properties);
 
 		_webBundleDeployer = new WebBundleDeployer(
-			bundleContext, _jspServletFactory, _jspTaglibHelper, properties,
-			_eventUtil);
+			bundleContext, _jspServletFactory, _jspTaglibHelper, properties);
 
 		_bundleTracker = new BundleTracker<>(
 			bundleContext, Bundle.ACTIVE | Bundle.STARTING, this);
@@ -150,10 +146,6 @@ public class WabFactory
 	protected void deactivate() {
 		_bundleTracker.close();
 
-		_eventUtil.close();
-
-		_eventUtil = null;
-
 		_webBundleDeployer.close();
 
 		_webBundleDeployer = null;
@@ -162,7 +154,6 @@ public class WabFactory
 	private static final Log _log = LogFactoryUtil.getLog(WabFactory.class);
 
 	private BundleTracker<?> _bundleTracker;
-	private EventUtil _eventUtil;
 
 	@Reference
 	private JSPServletFactory _jspServletFactory;

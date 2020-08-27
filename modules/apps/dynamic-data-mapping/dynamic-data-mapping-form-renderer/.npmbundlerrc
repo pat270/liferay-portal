@@ -1,5 +1,12 @@
 {
-    "ignore": [
-		"**/js/*.js"
+	"config": {
+		"imports": {
+			"dynamic-data-mapping-form-field-type": {
+				"/": ">=5.0.0"
+			}
+		}
+	},
+  "ignore": [
+		"**/__tests__/*.js"
 	]
 }

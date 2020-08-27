@@ -31,21 +31,23 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.rule.Sync;
+import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.SearchContextTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -57,12 +59,15 @@ import org.junit.runner.RunWith;
  * @author Yasuyuki Takeo
  */
 @RunWith(Arquillian.class)
+@Sync
 public class MBMessageIndexerLocalizedTest {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			SynchronousDestinationTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -70,7 +75,7 @@ public class MBMessageIndexerLocalizedTest {
 
 		_indexer = _indexerRegistry.getIndexer(MBMessage.class);
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		CompanyThreadLocal.setCompanyId(TestPropsValues.getCompanyId());
 
@@ -95,14 +100,11 @@ public class MBMessageIndexerLocalizedTest {
 
 		Document document = _search(searchTerm, LocaleUtil.JAPAN);
 
-		Map<String, String> titleStrings = new HashMap<String, String>() {
-			{
-				put(Field.CONTENT + "_ja_JP", "諸行無常");
-			}
-		};
-
 		FieldValuesAssert.assertFieldValues(
-			titleStrings, Field.CONTENT + "_ja_JP", document, searchTerm);
+			HashMapBuilder.put(
+				Field.CONTENT + "_ja_JP", "諸行無常"
+			).build(),
+			Field.CONTENT + "_ja_JP", document, searchTerm);
 	}
 
 	@Test
@@ -123,15 +125,15 @@ public class MBMessageIndexerLocalizedTest {
 
 		Document document = _search(searchTerm, LocaleUtil.JAPAN);
 
-		Map<String, String> titleStrings = new HashMap<String, String>() {
-			{
-				put(Field.TITLE + "_ja_JP", "東京都");
-			}
-		};
-
 		FieldValuesAssert.assertFieldValues(
-			titleStrings, Field.TITLE + "_ja_JP", document, searchTerm);
+			HashMapBuilder.put(
+				Field.TITLE + "_ja_JP", "東京都"
+			).build(),
+			Field.TITLE + "_ja_JP", document, searchTerm);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	private SearchContext _getSearchContext(String searchTerm, Locale locale)
 		throws Exception {
@@ -168,11 +170,11 @@ public class MBMessageIndexerLocalizedTest {
 
 			return _getSingleDocument(searchTerm, hits);
 		}
-		catch (RuntimeException re) {
-			throw re;
+		catch (RuntimeException runtimeException) {
+			throw runtimeException;
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 

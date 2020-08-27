@@ -1,4 +1,5 @@
 definition {
+
 	macro _applyChanges {
 		AssertClick(
 			locator1 = "Button#APPLY_EFFECTS",
@@ -46,7 +47,11 @@ definition {
 
 		Pause(locator1 = "1000");
 
-		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
+		Click(locator1 = "Icon#EYE_PREVIEW");
+
+		SelectFrameTop(value1 = "relative=top");
+
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
 		Click(locator1 = "Icon#EDIT_PENCIL");
 
@@ -79,4 +84,5 @@ definition {
 
 		AssertVisible(locator1 = "Button#COLOR_EFFECT");
 	}
+
 }

@@ -16,13 +16,10 @@ package com.liferay.asset.kernel.service.persistence;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetTagFinderUtil {
 
 	public static int countByG_N(long groupId, String name) {
@@ -39,10 +36,10 @@ public class AssetTagFinderUtil {
 		findByG_C_N(
 			long groupId, long classNameId, String name, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetTag> obc) {
+				<com.liferay.asset.kernel.model.AssetTag> orderByComparator) {
 
 		return getFinder().findByG_C_N(
-			groupId, classNameId, name, start, end, obc);
+			groupId, classNameId, name, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.asset.kernel.model.AssetTag>

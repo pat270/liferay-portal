@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing FriendlyURLEntryMapping in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class FriendlyURLEntryMappingCacheModel
 	implements CacheModel<FriendlyURLEntryMapping>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof FriendlyURLEntryMappingCacheModel)) {
+		if (!(object instanceof FriendlyURLEntryMappingCacheModel)) {
 			return false;
 		}
 
 		FriendlyURLEntryMappingCacheModel friendlyURLEntryMappingCacheModel =
-			(FriendlyURLEntryMappingCacheModel)obj;
+			(FriendlyURLEntryMappingCacheModel)object;
 
 		if ((friendlyURLEntryMappingId ==
 				friendlyURLEntryMappingCacheModel.friendlyURLEntryMappingId) &&
@@ -79,12 +76,16 @@ public class FriendlyURLEntryMappingCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(11);
+		StringBundler sb = new StringBundler(15);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", friendlyURLEntryMappingId=");
 		sb.append(friendlyURLEntryMappingId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 		sb.append(", classNameId=");
 		sb.append(classNameId);
 		sb.append(", classPK=");
@@ -102,8 +103,10 @@ public class FriendlyURLEntryMappingCacheModel
 			new FriendlyURLEntryMappingImpl();
 
 		friendlyURLEntryMappingImpl.setMvccVersion(mvccVersion);
+		friendlyURLEntryMappingImpl.setCtCollectionId(ctCollectionId);
 		friendlyURLEntryMappingImpl.setFriendlyURLEntryMappingId(
 			friendlyURLEntryMappingId);
+		friendlyURLEntryMappingImpl.setCompanyId(companyId);
 		friendlyURLEntryMappingImpl.setClassNameId(classNameId);
 		friendlyURLEntryMappingImpl.setClassPK(classPK);
 		friendlyURLEntryMappingImpl.setFriendlyURLEntryId(friendlyURLEntryId);
@@ -117,7 +120,11 @@ public class FriendlyURLEntryMappingCacheModel
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
 
+		ctCollectionId = objectInput.readLong();
+
 		friendlyURLEntryMappingId = objectInput.readLong();
+
+		companyId = objectInput.readLong();
 
 		classNameId = objectInput.readLong();
 
@@ -130,7 +137,11 @@ public class FriendlyURLEntryMappingCacheModel
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
+		objectOutput.writeLong(ctCollectionId);
+
 		objectOutput.writeLong(friendlyURLEntryMappingId);
+
+		objectOutput.writeLong(companyId);
 
 		objectOutput.writeLong(classNameId);
 
@@ -140,7 +151,9 @@ public class FriendlyURLEntryMappingCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public long friendlyURLEntryMappingId;
+	public long companyId;
 	public long classNameId;
 	public long classPK;
 	public long friendlyURLEntryId;

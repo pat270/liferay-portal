@@ -14,12 +14,19 @@
 
 package com.liferay.sync.security.servlet.filter;
 
+import com.liferay.portal.kernel.security.access.control.AccessControlUtil;
+import com.liferay.portal.kernel.security.auth.AccessControlContext;
+import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.security.service.access.policy.ServiceAccessPolicyThreadLocal;
+import com.liferay.portal.kernel.security.service.access.policy.ServiceAccessPolicy;
 import com.liferay.sync.security.service.access.policy.SyncSAPEntryActivator;
 
 import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -57,9 +64,24 @@ public class SyncAuthFilter implements Filter {
 			PermissionThreadLocal.getPermissionChecker();
 
 		if ((permissionChecker != null) && permissionChecker.isSignedIn()) {
-			ServiceAccessPolicyThreadLocal.addActiveServiceAccessPolicyName(
-				String.valueOf(
-					SyncSAPEntryActivator.SAP_ENTRY_OBJECT_ARRAYS[1][0]));
+			AccessControlContext accessControlContext =
+				AccessControlUtil.getAccessControlContext();
+
+			AuthVerifierResult authVerifierResult =
+				accessControlContext.getAuthVerifierResult();
+
+			if (authVerifierResult != null) {
+				Map<String, Object> settings = authVerifierResult.getSettings();
+
+				List<String> serviceAccessPolicyNames =
+					(List<String>)settings.computeIfAbsent(
+						ServiceAccessPolicy.SERVICE_ACCESS_POLICY_NAMES,
+						value -> new ArrayList<>());
+
+				serviceAccessPolicyNames.add(
+					String.valueOf(
+						SyncSAPEntryActivator.SAP_ENTRY_OBJECT_ARRAYS[1][0]));
+			}
 		}
 
 		filterChain.doFilter(servletRequest, servletResponse);

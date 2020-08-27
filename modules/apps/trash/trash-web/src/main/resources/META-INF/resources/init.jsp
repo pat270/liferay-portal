@@ -40,6 +40,7 @@ page import="com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil" %><%@
 page import="com.liferay.portal.kernel.trash.TrashRenderer" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
@@ -59,7 +60,8 @@ page import="com.liferay.trash.web.internal.display.context.TrashDisplayContext"
 page import="com.liferay.trash.web.internal.display.context.TrashManagementToolbarDisplayContext" %><%@
 page import="com.liferay.trash.web.internal.servlet.taglib.clay.TrashContentHorizontalCard" %><%@
 page import="com.liferay.trash.web.internal.servlet.taglib.clay.TrashContentVerticalCard" %><%@
-page import="com.liferay.trash.web.internal.servlet.taglib.clay.TrashEntryVerticalCard" %>
+page import="com.liferay.trash.web.internal.servlet.taglib.clay.TrashEntryVerticalCard" %><%@
+page import="com.liferay.trash.web.internal.servlet.taglib.util.TrashContainerActionDropdownItemsProvider" %>
 
 <%@ page import="java.text.Format" %>
 

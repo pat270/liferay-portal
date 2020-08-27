@@ -17,25 +17,24 @@
 <%
 String p_u_i_d = ParamUtil.getString(request, "p_u_i_d");
 String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectRegularRole");
-String syncEntitiesEventName = ParamUtil.getString(request, "syncEntitiesEventName", liferayPortletResponse.getNamespace() + "syncRegularRoles");
 
 User selUser = PortalUtil.getSelectedUser(request);
 
-SelectRoleManagementToolbarDisplayContext SelectRoleManagementToolbarDisplayContext = new SelectRoleManagementToolbarDisplayContext(request, renderRequest, renderResponse, eventName);
+SelectRoleManagementToolbarDisplayContext selectRoleManagementToolbarDisplayContext = new SelectRoleManagementToolbarDisplayContext(request, renderRequest, renderResponse, eventName);
 
-PortletURL portletURL = SelectRoleManagementToolbarDisplayContext.getPortletURL();
+PortletURL portletURL = selectRoleManagementToolbarDisplayContext.getPortletURL();
 
-SearchContainer roleSearchContainer = SelectRoleManagementToolbarDisplayContext.getRoleSearchContainer(filterManageableRoles);
+SearchContainer<Role> roleSearchContainer = selectRoleManagementToolbarDisplayContext.getRoleSearchContainer(filterManageableRoles);
 %>
 
 <clay:management-toolbar
-	clearResultsURL="<%= SelectRoleManagementToolbarDisplayContext.getClearResultsURL() %>"
+	clearResultsURL="<%= selectRoleManagementToolbarDisplayContext.getClearResultsURL() %>"
 	itemsTotal="<%= roleSearchContainer.getTotal() %>"
-	searchActionURL="<%= SelectRoleManagementToolbarDisplayContext.getSearchActionURL() %>"
+	searchActionURL="<%= selectRoleManagementToolbarDisplayContext.getSearchActionURL() %>"
 	searchFormName="searchFm"
 	selectable="<%= false %>"
 	showSearch="<%= true %>"
-	viewTypeItems="<%= SelectRoleManagementToolbarDisplayContext.getViewTypeItems() %>"
+	viewTypeItems="<%= selectRoleManagementToolbarDisplayContext.getViewTypeItems() %>"
 />
 
 <aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid container-fluid-max-xl container-form-lg" method="post" name="selectRegularRoleFm">
@@ -58,12 +57,15 @@ SearchContainer roleSearchContainer = SelectRoleManagementToolbarDisplayContext.
 				<c:if test="<%= Validator.isNull(p_u_i_d) || RoleMembershipPolicyUtil.isRoleAllowed((selUser != null) ? selUser.getUserId() : 0, role.getRoleId()) %>">
 
 					<%
-					Map<String, Object> data = new HashMap<String, Object>();
-
-					data.put("entityid", role.getRoleId());
-					data.put("entityname", role.getTitle(locale));
-					data.put("iconcssclass", RolesAdminUtil.getIconCssClass(role));
-					data.put("searchcontainername", "roles");
+					Map<String, Object> data = HashMapBuilder.<String, Object>put(
+						"entityid", role.getRoleId()
+					).put(
+						"entityname", role.getTitle(locale)
+					).put(
+						"iconcssclass", RolesAdminUtil.getIconCssClass(role)
+					).put(
+						"searchcontainername", "roles"
+					).build();
 
 					long[] defaultRoleIds = (selUser != null) ? selUser.getRoleIds() : new long[0];
 
@@ -84,16 +86,8 @@ SearchContainer roleSearchContainer = SelectRoleManagementToolbarDisplayContext.
 </aui:form>
 
 <aui:script use="aui-base">
-	var Util = Liferay.Util;
-
-	var openingLiferay = Util.getOpener().Liferay;
-
-	openingLiferay.fire(
-		'<%= HtmlUtil.escape(syncEntitiesEventName) %>',
-		{
-			selectors: A.all('.selector-button:disabled')
-		}
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectRegularRoleFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>'
 	);
-
-	Util.selectEntityHandler('#<portlet:namespace />selectRegularRoleFm', '<%= HtmlUtil.escapeJS(eventName) %>');
 </aui:script>

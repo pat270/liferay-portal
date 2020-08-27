@@ -14,55 +14,58 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
+import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.resource.v1_0.PostalAddressResource;
 import com.liferay.headless.admin.user.client.serdes.v1_0.PostalAddressSerDes;
-import com.liferay.headless.admin.user.resource.v1_0.PostalAddressResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 
@@ -96,10 +99,19 @@ public abstract class BasePostalAddressResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-user/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_postalAddressResource.setContextCompany(testCompany);
+
+		PostalAddressResource.Builder builder = PostalAddressResource.builder();
+
+		postalAddressResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -113,10 +125,16 @@ public abstract class BasePostalAddressResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -134,9 +152,15 @@ public abstract class BasePostalAddressResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -150,10 +174,47 @@ public abstract class BasePostalAddressResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		PostalAddress postalAddress = randomPostalAddress();
+
+		postalAddress.setAddressCountry(regex);
+		postalAddress.setAddressLocality(regex);
+		postalAddress.setAddressRegion(regex);
+		postalAddress.setAddressType(regex);
+		postalAddress.setPostalCode(regex);
+		postalAddress.setStreetAddressLine1(regex);
+		postalAddress.setStreetAddressLine2(regex);
+		postalAddress.setStreetAddressLine3(regex);
+
+		String json = PostalAddressSerDes.toJSON(postalAddress);
+
+		Assert.assertFalse(json.contains(regex));
+
+		postalAddress = PostalAddressSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, postalAddress.getAddressCountry());
+		Assert.assertEquals(regex, postalAddress.getAddressLocality());
+		Assert.assertEquals(regex, postalAddress.getAddressRegion());
+		Assert.assertEquals(regex, postalAddress.getAddressType());
+		Assert.assertEquals(regex, postalAddress.getPostalCode());
+		Assert.assertEquals(regex, postalAddress.getStreetAddressLine1());
+		Assert.assertEquals(regex, postalAddress.getStreetAddressLine2());
+		Assert.assertEquals(regex, postalAddress.getStreetAddressLine3());
+	}
+
+	@Test
 	public void testGetOrganizationPostalAddressesPage() throws Exception {
-		Long organizationId =
+		Page<PostalAddress> page =
+			postalAddressResource.getOrganizationPostalAddressesPage(
+				testGetOrganizationPostalAddressesPage_getOrganizationId());
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		String organizationId =
 			testGetOrganizationPostalAddressesPage_getOrganizationId();
-		Long irrelevantOrganizationId =
+		String irrelevantOrganizationId =
 			testGetOrganizationPostalAddressesPage_getIrrelevantOrganizationId();
 
 		if ((irrelevantOrganizationId != null)) {
@@ -161,7 +222,7 @@ public abstract class BasePostalAddressResourceTestCase {
 				testGetOrganizationPostalAddressesPage_addPostalAddress(
 					irrelevantOrganizationId, randomIrrelevantPostalAddress());
 
-			Page<PostalAddress> page = invokeGetOrganizationPostalAddressesPage(
+			page = postalAddressResource.getOrganizationPostalAddressesPage(
 				irrelevantOrganizationId);
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -180,7 +241,7 @@ public abstract class BasePostalAddressResourceTestCase {
 			testGetOrganizationPostalAddressesPage_addPostalAddress(
 				organizationId, randomPostalAddress());
 
-		Page<PostalAddress> page = invokeGetOrganizationPostalAddressesPage(
+		page = postalAddressResource.getOrganizationPostalAddressesPage(
 			organizationId);
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -193,67 +254,25 @@ public abstract class BasePostalAddressResourceTestCase {
 
 	protected PostalAddress
 			testGetOrganizationPostalAddressesPage_addPostalAddress(
-				Long organizationId, PostalAddress postalAddress)
+				String organizationId, PostalAddress postalAddress)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetOrganizationPostalAddressesPage_getOrganizationId()
+	protected String testGetOrganizationPostalAddressesPage_getOrganizationId()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long
+	protected String
 			testGetOrganizationPostalAddressesPage_getIrrelevantOrganizationId()
 		throws Exception {
 
 		return null;
-	}
-
-	protected Page<PostalAddress> invokeGetOrganizationPostalAddressesPage(
-			Long organizationId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/postal-addresses",
-					organizationId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, PostalAddressSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetOrganizationPostalAddressesPageResponse(
-			Long organizationId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/postal-addresses",
-					organizationId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
@@ -261,7 +280,7 @@ public abstract class BasePostalAddressResourceTestCase {
 		PostalAddress postPostalAddress =
 			testGetPostalAddress_addPostalAddress();
 
-		PostalAddress getPostalAddress = invokeGetPostalAddress(
+		PostalAddress getPostalAddress = postalAddressResource.getPostalAddress(
 			postPostalAddress.getId());
 
 		assertEquals(postPostalAddress, getPostalAddress);
@@ -275,53 +294,60 @@ public abstract class BasePostalAddressResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected PostalAddress invokeGetPostalAddress(Long postalAddressId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetPostalAddress() throws Exception {
+		PostalAddress postalAddress =
+			testGraphQLPostalAddress_addPostalAddress();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/postal-addresses/{postalAddressId}", postalAddressId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return PostalAddressSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				postalAddress,
+				PostalAddressSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"postalAddress",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"postalAddressId",
+											postalAddress.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/postalAddress"))));
 	}
 
-	protected Http.Response invokeGetPostalAddressResponse(Long postalAddressId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetPostalAddressNotFound() throws Exception {
+		Long irrelevantPostalAddressId = RandomTestUtil.randomLong();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/postal-addresses/{postalAddressId}", postalAddressId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"postalAddress",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"postalAddressId",
+									irrelevantPostalAddressId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Test
 	public void testGetUserAccountPostalAddressesPage() throws Exception {
+		Page<PostalAddress> page =
+			postalAddressResource.getUserAccountPostalAddressesPage(
+				testGetUserAccountPostalAddressesPage_getUserAccountId());
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		Long userAccountId =
 			testGetUserAccountPostalAddressesPage_getUserAccountId();
 		Long irrelevantUserAccountId =
@@ -332,7 +358,7 @@ public abstract class BasePostalAddressResourceTestCase {
 				testGetUserAccountPostalAddressesPage_addPostalAddress(
 					irrelevantUserAccountId, randomIrrelevantPostalAddress());
 
-			Page<PostalAddress> page = invokeGetUserAccountPostalAddressesPage(
+			page = postalAddressResource.getUserAccountPostalAddressesPage(
 				irrelevantUserAccountId);
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -351,7 +377,7 @@ public abstract class BasePostalAddressResourceTestCase {
 			testGetUserAccountPostalAddressesPage_addPostalAddress(
 				userAccountId, randomPostalAddress());
 
-		Page<PostalAddress> page = invokeGetUserAccountPostalAddressesPage(
+		page = postalAddressResource.getUserAccountPostalAddressesPage(
 			userAccountId);
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -385,53 +411,19 @@ public abstract class BasePostalAddressResourceTestCase {
 		return null;
 	}
 
-	protected Page<PostalAddress> invokeGetUserAccountPostalAddressesPage(
-			Long userAccountId)
+	protected PostalAddress testGraphQLPostalAddress_addPostalAddress()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/user-accounts/{userAccountId}/postal-addresses",
-					userAccountId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, PostalAddressSerDes::toDTO);
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
-	protected Http.Response invokeGetUserAccountPostalAddressesPageResponse(
-			Long userAccountId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/user-accounts/{userAccountId}/postal-addresses",
-					userAccountId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -479,7 +471,7 @@ public abstract class BasePostalAddressResourceTestCase {
 		}
 	}
 
-	protected void assertValid(PostalAddress postalAddress) {
+	protected void assertValid(PostalAddress postalAddress) throws Exception {
 		boolean valid = true;
 
 		if (postalAddress.getId() == null) {
@@ -491,6 +483,16 @@ public abstract class BasePostalAddressResourceTestCase {
 
 			if (Objects.equals("addressCountry", additionalAssertFieldName)) {
 				if (postalAddress.getAddressCountry() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"addressCountry_i18n", additionalAssertFieldName)) {
+
+				if (postalAddress.getAddressCountry_i18n() == null) {
 					valid = false;
 				}
 
@@ -578,7 +580,7 @@ public abstract class BasePostalAddressResourceTestCase {
 	protected void assertValid(Page<PostalAddress> page) {
 		boolean valid = false;
 
-		Collection<PostalAddress> postalAddresses = page.getItems();
+		java.util.Collection<PostalAddress> postalAddresses = page.getItems();
 
 		int size = postalAddresses.size();
 
@@ -596,6 +598,59 @@ public abstract class BasePostalAddressResourceTestCase {
 		return new String[0];
 	}
 
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.user.dto.v1_0.PostalAddress.
+						class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[0];
+	}
+
 	protected boolean equals(
 		PostalAddress postalAddress1, PostalAddress postalAddress2) {
 
@@ -610,6 +665,19 @@ public abstract class BasePostalAddressResourceTestCase {
 				if (!Objects.deepEquals(
 						postalAddress1.getAddressCountry(),
 						postalAddress2.getAddressCountry())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"addressCountry_i18n", additionalAssertFieldName)) {
+
+				if (!equals(
+						(Map)postalAddress1.getAddressCountry_i18n(),
+						(Map)postalAddress2.getAddressCountry_i18n())) {
 
 					return false;
 				}
@@ -729,7 +797,33 @@ public abstract class BasePostalAddressResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_postalAddressResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -750,12 +844,15 @@ public abstract class BasePostalAddressResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -780,6 +877,11 @@ public abstract class BasePostalAddressResourceTestCase {
 			sb.append("'");
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("addressCountry_i18n")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("addressLocality")) {
@@ -852,19 +954,64 @@ public abstract class BasePostalAddressResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected PostalAddress randomPostalAddress() throws Exception {
 		return new PostalAddress() {
 			{
-				addressCountry = RandomTestUtil.randomString();
-				addressLocality = RandomTestUtil.randomString();
-				addressRegion = RandomTestUtil.randomString();
-				addressType = RandomTestUtil.randomString();
+				addressCountry = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				addressLocality = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				addressRegion = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				addressType = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				postalCode = RandomTestUtil.randomString();
+				postalCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				primary = RandomTestUtil.randomBoolean();
-				streetAddressLine1 = RandomTestUtil.randomString();
-				streetAddressLine2 = RandomTestUtil.randomString();
-				streetAddressLine3 = RandomTestUtil.randomString();
+				streetAddressLine1 = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				streetAddressLine2 = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				streetAddressLine3 = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 			}
 		};
 	}
@@ -879,76 +1026,80 @@ public abstract class BasePostalAddressResourceTestCase {
 		return randomPostalAddress();
 	}
 
+	protected PostalAddressResource postalAddressResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -969,8 +1120,7 @@ public abstract class BasePostalAddressResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private PostalAddressResource _postalAddressResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.admin.user.resource.v1_0.PostalAddressResource
+		_postalAddressResource;
 
 }

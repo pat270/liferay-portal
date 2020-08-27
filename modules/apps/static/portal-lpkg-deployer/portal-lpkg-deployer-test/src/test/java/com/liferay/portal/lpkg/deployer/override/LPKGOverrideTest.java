@@ -16,9 +16,9 @@ package com.liferay.portal.lpkg.deployer.override;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.util.ReleaseInfo;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -81,11 +81,11 @@ public class LPKGOverrideTest {
 
 			for (Path lpkgPath : directoryStream) {
 				try (ZipFile zipFile = new ZipFile(lpkgPath.toFile())) {
-					Enumeration<? extends ZipEntry> zipEntries =
+					Enumeration<? extends ZipEntry> enumeration =
 						zipFile.entries();
 
-					while (zipEntries.hasMoreElements()) {
-						ZipEntry zipEntry = zipEntries.nextElement();
+					while (enumeration.hasMoreElements()) {
+						ZipEntry zipEntry = enumeration.nextElement();
 
 						String name = zipEntry.getName();
 
@@ -133,8 +133,8 @@ public class LPKGOverrideTest {
 							if (name.endsWith(".war")) {
 								String fileName = matcher.group(1);
 
-								fileName = fileName.replace(
-									"-dxp", StringPool.BLANK);
+								fileName = StringUtil.removeSubstring(
+									fileName, "-dxp");
 
 								overrides.put("war.".concat(fileName), null);
 
@@ -169,8 +169,9 @@ public class LPKGOverrideTest {
 		String staticLPKGBundleSymbolicNames = SystemProperties.get(
 			"static.lpkg.bundle.symbolic.names");
 
-		List<String> staticLPKGBundleSymbolicNameList = StringUtil.split(
-			staticLPKGBundleSymbolicNames);
+		List<String> staticLPKGBundleSymbolicNameList =
+			com.liferay.petra.string.StringUtil.split(
+				staticLPKGBundleSymbolicNames);
 
 		String name = ReleaseInfo.getName();
 

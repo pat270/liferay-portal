@@ -34,7 +34,7 @@ boolean helpful = BeanParamUtil.getBoolean(kbComment, request, "helpful", true);
 
 <c:if test="<%= themeDisplay.isSignedIn() %>">
 	<div class="kb-template-comments">
-		<aui:form method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "updateKBComment();" %>'>
+		<aui:form method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "updateKBComment();" %>'>
 			<aui:input name="<%= Constants.CMD %>" type="hidden" />
 			<aui:input name="kbCommentId" type="hidden" value="<%= kbCommentId %>" />
 			<aui:input name="classNameId" type="hidden" value="<%= PortalUtil.getClassNameId(KBTemplate.class) %>" />
@@ -48,14 +48,14 @@ boolean helpful = BeanParamUtil.getBoolean(kbComment, request, "helpful", true);
 				<c:if test="<%= themeDisplay.isSignedIn() %>">
 					<liferay-ui:panel-container
 						extended="<%= false %>"
-						id='<%= renderResponse.getNamespace() + "Template" + kbTemplate.getKbTemplateId() + "CommentsPanelContainer" %>'
+						id='<%= liferayPortletResponse.getNamespace() + "Template" + kbTemplate.getKbTemplateId() + "CommentsPanelContainer" %>'
 						persistState="<%= true %>"
 					>
 						<liferay-ui:panel
 							collapsible="<%= true %>"
 							defaultState="closed"
 							extended="<%= true %>"
-							id='<%= renderResponse.getNamespace() + "Template" + kbTemplate.getKbTemplateId() + "CommentsPanel" %>'
+							id='<%= liferayPortletResponse.getNamespace() + "Template" + kbTemplate.getKbTemplateId() + "CommentsPanel" %>'
 							persistState="<%= true %>"
 							title="comments"
 						>
@@ -134,22 +134,33 @@ boolean helpful = BeanParamUtil.getBoolean(kbComment, request, "helpful", true);
 
 	<aui:script>
 		function <portlet:namespace />deleteKBComment(kbCommentId) {
-			var form = document.querySelector('#<portlet:namespace />fm');
+			var form = document.getElementById('<portlet:namespace />fm');
 
 			if (form) {
-				form.querySelector('#<portlet:namespace />kbCommentId').value = kbCommentId;
+				document.getElementById(
+					'<portlet:namespace />kbCommentId'
+				).value = kbCommentId;
 
-				submitForm(form, '<liferay-portlet:actionURL name="deleteKBComment"><portlet:param name="mvcPath" value='<%= templatePath + "view_template.jsp" %>' /><portlet:param name="redirect" value="<%= redirect %>" /><portlet:param name="kbTemplateId" value="<%= String.valueOf(kbTemplate.getKbTemplateId()) %>" /></liferay-portlet:actionURL>');
+				submitForm(
+					form,
+					'<liferay-portlet:actionURL name="deleteKBComment"><portlet:param name="mvcPath" value='<%= templatePath + "view_template.jsp" %>' /><portlet:param name="redirect" value="<%= redirect %>" /><portlet:param name="kbTemplateId" value="<%= String.valueOf(kbTemplate.getKbTemplateId()) %>" /></liferay-portlet:actionURL>'
+				);
 			}
 		}
 
 		function <portlet:namespace />updateKBComment() {
-			var form = document.querySelector('#<portlet:namespace />fm');
+			var form = document.getElementById('<portlet:namespace />fm');
 
 			if (form) {
-				form.querySelector('#<portlet:namespace /><%= Constants.CMD %>').value = '<%= (kbComment == null) ? Constants.ADD : Constants.UPDATE %>';
+				document.getElementById(
+					'<portlet:namespace /><%= Constants.CMD %>'
+				).value =
+					'<%= (kbComment == null) ? Constants.ADD : Constants.UPDATE %>';
 
-				submitForm(form, '<liferay-portlet:actionURL name="updateKBComment"><portlet:param name="mvcPath" value='<%= templatePath + "view_template.jsp" %>' /><portlet:param name="redirect" value="<%= redirect %>" /><portlet:param name="kbTemplateId" value="<%= String.valueOf(kbTemplate.getKbTemplateId()) %>" /></liferay-portlet:actionURL>');
+				submitForm(
+					form,
+					'<liferay-portlet:actionURL name="updateKBComment"><portlet:param name="mvcPath" value='<%= templatePath + "view_template.jsp" %>' /><portlet:param name="redirect" value="<%= redirect %>" /><portlet:param name="kbTemplateId" value="<%= String.valueOf(kbTemplate.getKbTemplateId()) %>" /></liferay-portlet:actionURL>'
+				);
 			}
 		}
 	</aui:script>

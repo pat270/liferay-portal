@@ -26,7 +26,7 @@
 	%>
 
 		<div class="panel panel-secondary">
-			<a aria-controls="<portlet:namespace />appsAccordion<%= applicationNameHtmlId %>" aria-expanded="false" class="collapse-icon collapsed panel-header panel-header-link" data-parent="#<portlet:namespace />appsAccordion" data-toggle="collapse" href="#<portlet:namespace />appsAccordion<%= applicationNameHtmlId %>" id="<portlet:namespace />appsAccordionHeading<%= applicationNameHtmlId %>" role="tab">
+			<a aria-controls="<portlet:namespace />appsAccordion<%= applicationNameHtmlId %>" aria-expanded="false" class="collapse-icon collapsed panel-header panel-header-link" data-toggle="liferay-collapse" href="#<portlet:namespace />appsAccordion<%= applicationNameHtmlId %>" id="<portlet:namespace />appsAccordionHeading<%= applicationNameHtmlId %>" role="tab">
 				<span class="panel-title"><%= HtmlUtil.escape(applicationNameDescriptionEntry.getValue()) %></span>
 
 				<span class="collapse-icon-closed">
@@ -52,20 +52,21 @@
 							AssignScopesDisplayContext.Relations relations = applicationAssignableScopesRelationsEntry.getValue();
 
 							Set<String> assignedScopeAliases = relations.getAssignedScopeAliases();
-							Set<String> scopeAliases = relations.getScopeAliases();
 
 							Set<String> globalScopeAliases = relations.getGlobalScopeAliases();
 
-							String globalScopeAliasesString = StringUtil.merge(globalScopeAliases, StringPool.SPACE);
-
-							Map<String, Object> data = new HashMap<>();
-
-							data.put("slave", globalScopeAliasesString);
+							Map<String, Object> data = HashMapBuilder.<String, Object>put(
+								"slave", StringUtil.merge(globalScopeAliases, StringPool.SPACE)
+							).build();
 
 							String id = "scopeAlias" + StringUtil.randomId();
+
+							Set<String> scopeAliases = relations.getScopeAliases();
+
+							boolean removedScope = scopeAliases.isEmpty() && globalScopeAliases.isEmpty();
 						%>
 
-							<li class="list-group-item list-group-item-flex<c:if test="<%= scopeAliases.isEmpty() && globalScopeAliases.isEmpty() %>"> removed-scope</c:if>">
+							<li class="list-group-item list-group-item-flex<c:if test="<%= removedScope %>"> removed-scope</c:if>">
 								<div class="autofit-col">
 									<c:choose>
 										<c:when test="<%= assignedScopeAliases.isEmpty() && scopeAliases.isEmpty() %>">
@@ -74,10 +75,17 @@
 										<c:otherwise>
 
 											<%
-											String scopeAliasesString = StringUtil.merge(scopeAliases, StringPool.SPACE);
+											String scopeAliasesString = null;
+
+											if (removedScope) {
+												scopeAliasesString = StringUtil.merge(assignedScopeAliases, StringPool.SPACE);
+											}
+											else {
+												scopeAliasesString = StringUtil.merge(scopeAliases, StringPool.SPACE);
+											}
 											%>
 
-											<aui:input checked="<%= !assignedScopeAliases.isEmpty() %>" data="<%= data %>" id="<%= id %>" label="" name="scopeAliases" onChange='<%= renderResponse.getNamespace() + "recalculateDependants(this)" %>' title="<%= scopeAliasesString %>" type="checkbox" value="<%= scopeAliasesString %>" />
+											<aui:input checked="<%= !assignedScopeAliases.isEmpty() %>" data="<%= data %>" id="<%= id %>" label="" name="scopeAliases" onChange='<%= liferayPortletResponse.getNamespace() + "recalculateDependants(this)" %>' title="<%= scopeAliasesString %>" type="checkbox" value="<%= scopeAliasesString %>" />
 										</c:otherwise>
 									</c:choose>
 								</div>
@@ -104,7 +112,9 @@
 												AssignableScopes newAssignableScopes = assignableScopes.subtract(assignedAssignableScopes);
 												AssignableScopes removedAssignableScopes = assignedAssignableScopes.subtract(assignableScopes);
 
-												AssignableScopes unchangedAssignableScopes = assignableScopes.subtract(newAssignableScopes).subtract(removedAssignableScopes);
+												AssignableScopes subtractAssignableScopes = assignableScopes.subtract(newAssignableScopes);
+
+												AssignableScopes unchangedAssignableScopes = subtractAssignableScopes.subtract(removedAssignableScopes);
 
 												String applicationScopeDescription = assignScopesDisplayContext.getApplicationScopeDescription(applicationName, unchangedAssignableScopes, "<br />+ ");
 												%>
@@ -124,7 +134,7 @@
 															<c:if test="<%= !firstLine %>">+ </c:if>
 
 															<%
-															firstLine = firstLine && applicationScopeDescription.length() == 0;
+															firstLine = firstLine && (applicationScopeDescription.length() == 0);
 															%>
 
 															<%= applicationScopeDescription %>
@@ -146,7 +156,7 @@
 										</c:choose>
 									</h4>
 
-									<c:if test="<%= globalScopeAliasesString.length() > 0 %>">
+									<c:if test="<%= !globalScopeAliases.isEmpty() %>">
 										<c:choose>
 											<c:when test="<%= !scopeAliases.isEmpty() %>">
 												<span>
@@ -193,6 +203,10 @@
 									</div>
 
 								</div>
+
+								<c:if test="<%= removedScope %>">
+									<div class="autofit-col"><liferay-ui:message key="this-scope-is-no-longer-available" /></div>
+								</c:if>
 							</li>
 
 						<%

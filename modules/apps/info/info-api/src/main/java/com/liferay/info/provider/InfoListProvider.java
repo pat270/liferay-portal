@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * @author Jorge Ferrer
+ * @author     Jorge Ferrer
+ * @deprecated As of Mueller (7.2.x), moved to {@link
+ *             com.liferay.info.list.provider.InfoListProvider}
  */
+@Deprecated
 public interface InfoListProvider<T> {
 
 	public List<T> getInfoList(InfoListProviderContext infoListProviderContext);

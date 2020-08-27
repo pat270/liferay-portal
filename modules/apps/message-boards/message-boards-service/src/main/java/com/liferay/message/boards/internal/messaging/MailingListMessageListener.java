@@ -98,13 +98,13 @@ public class MailingListMessageListener extends BaseMessageListener {
 					folder.setFlags(
 						messages, new Flags(Flags.Flag.DELETED), true);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 				}
 
 				try {
 					folder.close(true);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 				}
 			}
 
@@ -112,7 +112,7 @@ public class MailingListMessageListener extends BaseMessageListener {
 				try {
 					store.close();
 				}
-				catch (MessagingException me) {
+				catch (MessagingException messagingException) {
 				}
 			}
 		}
@@ -170,7 +170,9 @@ public class MailingListMessageListener extends BaseMessageListener {
 			Address address = addresses[0];
 
 			if (address instanceof InternetAddress) {
-				from = ((InternetAddress)address).getAddress();
+				InternetAddress internetAddress = (InternetAddress)address;
+
+				from = internetAddress.getAddress();
 			}
 			else {
 				from = address.toString();
@@ -178,7 +180,6 @@ public class MailingListMessageListener extends BaseMessageListener {
 		}
 
 		long companyId = mailingListRequest.getCompanyId();
-		long groupId = mailingListRequest.getGroupId();
 
 		long categoryId = mailingListRequest.getCategoryId();
 
@@ -233,6 +234,7 @@ public class MailingListMessageListener extends BaseMessageListener {
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
 
+		long groupId = mailingListRequest.getGroupId();
 		String portletId = PortletProviderUtil.getPortletId(
 			MBMessage.class.getName(), PortletProvider.Action.VIEW);
 
@@ -264,9 +266,9 @@ public class MailingListMessageListener extends BaseMessageListener {
 
 				try (InputStream inputStream = inputStreamOVP.getValue()) {
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
+						_log.warn(ioException, ioException);
 					}
 				}
 			}

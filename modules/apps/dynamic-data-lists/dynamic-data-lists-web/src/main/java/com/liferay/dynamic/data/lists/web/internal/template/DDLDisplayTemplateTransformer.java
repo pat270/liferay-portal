@@ -25,15 +25,13 @@ import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil;
-import com.liferay.portal.kernel.template.TemplateManager;
-import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.templateparser.Transformer;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.RenderRequest;
@@ -56,23 +54,6 @@ public class DDLDisplayTemplateTransformer {
 	public String transform() throws Exception {
 		Transformer transformer = TransformerHolder.getTransformer();
 
-		Map<String, Object> contextObjects = new HashMap<>();
-
-		contextObjects.put(
-			DDLConstants.RESERVED_DDM_STRUCTURE_ID,
-			_recordSet.getDDMStructureId());
-		contextObjects.put(
-			DDLConstants.RESERVED_DDM_TEMPLATE_ID, _ddmTemplateId);
-		contextObjects.put(
-			DDLConstants.RESERVED_RECORD_SET_DESCRIPTION,
-			_recordSet.getDescription(_themeDisplay.getLocale()));
-		contextObjects.put(
-			DDLConstants.RESERVED_RECORD_SET_ID, _recordSet.getRecordSetId());
-		contextObjects.put(
-			DDLConstants.RESERVED_RECORD_SET_NAME,
-			_recordSet.getName(_themeDisplay.getLocale()));
-		contextObjects.put(TemplateConstants.TEMPLATE_ID, _ddmTemplateId);
-
 		String viewMode = Constants.VIEW;
 
 		if (_renderRequest != null) {
@@ -80,7 +61,24 @@ public class DDLDisplayTemplateTransformer {
 				_renderRequest, "viewMode", Constants.VIEW);
 		}
 
-		contextObjects.put("viewMode", viewMode);
+		Map<String, Object> contextObjects = HashMapBuilder.<String, Object>put(
+			DDLConstants.RESERVED_DDM_STRUCTURE_ID,
+			_recordSet.getDDMStructureId()
+		).put(
+			DDLConstants.RESERVED_DDM_TEMPLATE_ID, _ddmTemplateId
+		).put(
+			DDLConstants.RESERVED_RECORD_SET_DESCRIPTION,
+			_recordSet.getDescription(_themeDisplay.getLocale())
+		).put(
+			DDLConstants.RESERVED_RECORD_SET_ID, _recordSet.getRecordSetId()
+		).put(
+			DDLConstants.RESERVED_RECORD_SET_NAME,
+			_recordSet.getName(_themeDisplay.getLocale())
+		).put(
+			TemplateConstants.TEMPLATE_ID, _ddmTemplateId
+		).put(
+			"viewMode", viewMode
+		).build();
 
 		DDMTemplate ddmTemplate = DDMTemplateLocalServiceUtil.getTemplate(
 			_ddmTemplateId);
@@ -88,23 +86,17 @@ public class DDLDisplayTemplateTransformer {
 		contextObjects.put(
 			TemplateConstants.CLASS_NAME_ID, ddmTemplate.getClassNameId());
 
-		TemplateManager templateManager =
-			TemplateManagerUtil.getTemplateManager(ddmTemplate.getLanguage());
-
 		TemplateHandler templateHandler =
 			TemplateHandlerRegistryUtil.getTemplateHandler(
 				DDLRecordSet.class.getName());
 
-		templateManager.addContextObjects(
-			contextObjects, templateHandler.getCustomContextObjects());
-
-		templateManager.addTaglibSupport(
-			contextObjects, PortalUtil.getHttpServletRequest(_renderRequest),
-			_themeDisplay.getResponse());
+		contextObjects.putAll(templateHandler.getCustomContextObjects());
 
 		return transformer.transform(
 			_themeDisplay, contextObjects, ddmTemplate.getScript(),
-			ddmTemplate.getLanguage(), new UnsyncStringWriter());
+			ddmTemplate.getLanguage(), new UnsyncStringWriter(),
+			PortalUtil.getHttpServletRequest(_renderRequest),
+			_themeDisplay.getResponse());
 	}
 
 	private final long _ddmTemplateId;

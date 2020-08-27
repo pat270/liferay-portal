@@ -18,8 +18,8 @@ import com.liferay.dynamic.data.lists.model.DDLRecord;
 import com.liferay.dynamic.data.lists.model.DDLRecordVersion;
 import com.liferay.dynamic.data.mapping.exception.StorageException;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
@@ -47,7 +47,6 @@ import java.io.Serializable;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -72,11 +71,15 @@ public interface DDLRecordLocalService
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DDLRecordLocalServiceUtil} to access the ddl record local service. Add custom service methods to <code>com.liferay.dynamic.data.lists.service.impl.DDLRecordLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.dynamic.data.lists.service.impl.DDLRecordLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the ddl record local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DDLRecordLocalServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**
 	 * Adds the ddl record to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddlRecord the ddl record
 	 * @return the ddl record that was added
@@ -107,59 +110,19 @@ public interface DDLRecordLocalService
 		throws PortalException;
 
 	/**
-	 * Adds a record that's based on the fields object and that references the
-	 * record set.
-	 *
-	 * @param userId the primary key of the record's creator/owner
-	 * @param groupId the primary key of the record's group
-	 * @param recordSetId the primary key of the record set
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view.
-	 * @param fields the record values. See the dynamic-data-mapping-api
-	 module's Fields class for more information.
-	 * @param serviceContext the service context to be applied. This can
-	 set the UUID, guest permissions, and group permissions for
-	 the record.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addRecord(long, long, int, DDMFormValues, ServiceContext)}
+	 * @deprecated As of Athanasius (7.3.x)
 	 */
 	@Deprecated
+	@Indexable(type = IndexableType.REINDEX)
 	public DDLRecord addRecord(
-			long userId, long groupId, long recordSetId, int displayIndex,
-			Fields fields, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * Adds a record that's based on the fields map and that references the
-	 * record set.
-	 *
-	 * @param userId the primary key of the record's creator/owner
-	 * @param groupId the primary key of the record's group
-	 * @param recordSetId the primary key of the record set
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view
-	 * @param fieldsMap the record values. The fieldsMap is a map of field
-	 names and their serializable values.
-	 * @param serviceContext the service context to be applied. This can
-	 set the UUID, guest permissions, and group permissions for
-	 the record.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addRecord(long, long, int, DDMFormValues, ServiceContext)}
-	 */
-	@Deprecated
-	public DDLRecord addRecord(
-			long userId, long groupId, long recordSetId, int displayIndex,
-			Map<String, Serializable> fieldsMap, ServiceContext serviceContext)
+			long userId, long groupId, long ddmStorageId, long ddlRecordSetId,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	@Indexable(type = IndexableType.REINDEX)
 	public DDLRecord addRecord(
 			long userId, long groupId, long ddmStorageId, long ddlRecordSetId,
-			ServiceContext serviceContext)
+			String className, long classPK, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -172,7 +135,17 @@ public interface DDLRecordLocalService
 	public DDLRecord createDDLRecord(long recordId);
 
 	/**
+	 * @throws PortalException
+	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException;
+
+	/**
 	 * Deletes the ddl record from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddlRecord the ddl record
 	 * @return the ddl record that was removed
@@ -182,6 +155,10 @@ public interface DDLRecordLocalService
 
 	/**
 	 * Deletes the ddl record with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param recordId the primary key of the ddl record
 	 * @return the ddl record that was removed
@@ -220,24 +197,6 @@ public interface DDLRecordLocalService
 	public void deleteRecord(long recordId) throws PortalException;
 
 	/**
-	 * Disassociates the locale from the record.
-	 *
-	 * @param recordId the primary key of the record
-	 * @param locale the locale of the record values to be removed
-	 * @param serviceContext the service context to be applied. This can
-	 set the record modified date.
-	 * @return the affected record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateRecord(long, boolean, int, DDMFormValues,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public DDLRecord deleteRecordLocale(
-			long recordId, Locale locale, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
 	 * Deletes all the record set's records.
 	 *
 	 * @param recordSetId the primary key of the record set from which to
@@ -245,6 +204,9 @@ public interface DDLRecordLocalService
 	 * @throws PortalException if a portal exception occurred
 	 */
 	public void deleteRecords(long recordSetId) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
@@ -262,7 +224,7 @@ public interface DDLRecordLocalService
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -278,7 +240,7 @@ public interface DDLRecordLocalService
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -324,6 +286,9 @@ public interface DDLRecordLocalService
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DDLRecord fetchDDLRecordByUuidAndGroupId(String uuid, long groupId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public DDLRecord fetchFirstRecord(String className, long classPK);
 
 	/**
 	 * Returns the record with the ID.
@@ -411,7 +376,7 @@ public interface DDLRecordLocalService
 	 * Returns a range of all the ddl records.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddl records
@@ -474,15 +439,6 @@ public interface DDLRecordLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getLatestRecordVersion(long)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public DDLRecordVersion getLatestRecordVersion(long recordId)
-		throws PortalException;
-
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Long[] getMinAndMaxCompanyRecordIds(
 		long companyId, int status, int scope);
@@ -499,6 +455,9 @@ public interface DDLRecordLocalService
 	 */
 	public String getOSGiServiceIdentifier();
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
@@ -553,7 +512,8 @@ public interface DDLRecordLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<DDLRecord> getRecords(
-		long recordSetId, int start, int end, OrderByComparator<DDLRecord> obc);
+		long recordSetId, int start, int end,
+		OrderByComparator<DDLRecord> orderByComparator);
 
 	/**
 	 * Returns all the records matching the record set ID and user ID.
@@ -568,7 +528,7 @@ public interface DDLRecordLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<DDLRecord> getRecords(
 		long recordSetId, long userId, int start, int end,
-		OrderByComparator<DDLRecord> obc);
+		OrderByComparator<DDLRecord> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getRecordsCount(long recordSetId);
@@ -590,46 +550,6 @@ public interface DDLRecordLocalService
 	public int getRecordsCount(long recordSetId, long userId);
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersion(
-	 long)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public DDLRecordVersion getRecordVersion(long recordVersionId)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersion(
-	 long, String)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public DDLRecordVersion getRecordVersion(long recordId, String version)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersions(
-	 long, int, int, OrderByComparator)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<DDLRecordVersion> getRecordVersions(
-		long recordId, int start, int end,
-		OrderByComparator<DDLRecordVersion> orderByComparator);
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersionsCount(
-	 long)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getRecordVersionsCount(long recordId);
-
-	/**
 	 * Reverts the record to the given version.
 	 *
 	 * @param userId the primary key of the user who is reverting the record
@@ -640,16 +560,6 @@ public interface DDLRecordLocalService
 	 * @throws PortalException if a portal exception occurred
 	 */
 	public void revertRecord(
-			long userId, long recordId, String version,
-			ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #revertRecord(long, long, String, ServiceContext)}
-	 */
-	@Deprecated
-	public void revertRecordVersion(
 			long userId, long recordId, String version,
 			ServiceContext serviceContext)
 		throws PortalException;
@@ -701,6 +611,10 @@ public interface DDLRecordLocalService
 	/**
 	 * Updates the ddl record in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddlRecord the ddl record
 	 * @return the ddl record that was updated
 	 */
@@ -727,59 +641,6 @@ public interface DDLRecordLocalService
 	public DDLRecord updateRecord(
 			long userId, long recordId, boolean majorVersion, int displayIndex,
 			DDMFormValues ddmFormValues, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * Updates a record, replacing its display index and values.
-	 *
-	 * @param userId the primary key of the user updating the record
-	 * @param recordId the primary key of the record
-	 * @param majorVersion whether this update is a major change. A major
-	 change increments the record's major version number
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view.
-	 * @param fields the record values. See <code>Fields</code> in the
-	 <code>dynamic.data.mapping.api</code> module.
-	 * @param mergeFields whether to merge the new fields with the existing
-	 ones; otherwise replace the existing fields
-	 * @param serviceContext the service context to be applied. This can
-	 set the record modified date.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateRecord(long, long, boolean, int, DDMFormValues,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public DDLRecord updateRecord(
-			long userId, long recordId, boolean majorVersion, int displayIndex,
-			Fields fields, boolean mergeFields, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * Updates a record, replacing its display index and values.
-	 *
-	 * @param userId the primary key of the user updating the record
-	 * @param recordId the primary key of the record
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view
-	 * @param fieldsMap the record values. The fieldsMap is a map of field
-	 names and its Serializable values.
-	 * @param mergeFields whether to merge the new fields with the existing
-	 ones; otherwise replace the existing fields
-	 * @param serviceContext the service context to be applied. This can
-	 set the record modified date.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateRecord(long, long, boolean, int, DDMFormValues,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public DDLRecord updateRecord(
-			long userId, long recordId, int displayIndex,
-			Map<String, Serializable> fieldsMap, boolean mergeFields,
-			ServiceContext serviceContext)
 		throws PortalException;
 
 	@Indexable(type = IndexableType.REINDEX)

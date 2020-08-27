@@ -17,8 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-long previewAssetEntryId = ParamUtil.getLong(request, "previewAssetEntryId");
-int previewAssetEntryType = ParamUtil.getInteger(request, "previewAssetEntryType");
+long previewClassNameId = ParamUtil.getLong(request, "previewClassNameId");
+long previewClassPK = ParamUtil.getLong(request, "previewClassPK");
+int previewType = ParamUtil.getInteger(request, "previewType");
 
 AssetEntryResult assetEntryResult = (AssetEntryResult)request.getAttribute("view.jsp-assetEntryResult");
 
@@ -29,16 +30,16 @@ if (stageableGroup.isLayout()) {
 }
 %>
 
-<div class="sheet">
+<clay:sheet>
 	<c:if test="<%= Validator.isNotNull(assetEntryResult.getTitle()) %>">
-		<div class="sheet-header">
+		<clay:sheet-header>
 			<h4 class="sheet-title">
 				<%= assetEntryResult.getTitle() %>
 			</h4>
-		</div>
+		</clay:sheet-header>
 	</c:if>
 
-	<div class="sheet-section">
+	<clay:sheet-section>
 		<div class="table-responsive">
 			<table class="table table-autofit">
 				<thead>
@@ -78,8 +79,8 @@ if (stageableGroup.isLayout()) {
 						AssetRenderer<?> assetRenderer = null;
 
 						try {
-							if (previewAssetEntryId == assetEntry.getEntryId()) {
-								assetRenderer = assetRendererFactory.getAssetRenderer(assetEntry.getClassPK(), previewAssetEntryType);
+							if ((previewClassNameId == assetEntry.getClassNameId()) && (previewClassPK == assetEntry.getClassPK())) {
+								assetRenderer = assetRendererFactory.getAssetRenderer(assetEntry.getClassPK(), previewType);
 							}
 							else {
 								assetRenderer = assetRendererFactory.getAssetRenderer(assetEntry.getClassPK());
@@ -91,7 +92,7 @@ if (stageableGroup.isLayout()) {
 							}
 						}
 
-						if ((assetRenderer == null) || (!assetRenderer.isDisplayable() && (previewAssetEntryId <= 0))) {
+						if ((assetRenderer == null) || (!assetRenderer.isDisplayable() && (previewClassPK <= 0))) {
 							continue;
 						}
 
@@ -99,9 +100,15 @@ if (stageableGroup.isLayout()) {
 
 						request.setAttribute("view.jsp-assetEntry", assetEntry);
 						request.setAttribute("view.jsp-assetRenderer", assetRenderer);
+
+						Map<String, Object> fragmentsEditorData = HashMapBuilder.<String, Object>put(
+							"fragments-editor-item-id", PortalUtil.getClassNameId(assetRenderer.getClassName()) + "-" + assetRenderer.getClassPK()
+						).put(
+							"fragments-editor-item-type", "fragments-editor-mapped-item"
+						).build();
 					%>
 
-						<tr class="<%= (previewAssetEntryId == assetEntry.getEntryId()) ? "table-active" : StringPool.BLANK %>">
+						<tr class="<%= ((previewClassNameId == assetEntry.getClassNameId()) && (previewClassPK == assetEntry.getClassPK())) ? "table-active" : StringPool.BLANK %>" <%= AUIUtil.buildData(fragmentsEditorData) %>>
 							<td class="table-cell-expand table-title">
 								<span class="asset-anchor lfr-asset-anchor" id="<%= assetEntry.getEntryId() %>"></span>
 
@@ -209,8 +216,8 @@ if (stageableGroup.isLayout()) {
 				</tbody>
 			</table>
 		</div>
-	</div>
-</div>
+	</clay:sheet-section>
+</clay:sheet>
 
 <%!
 private static Log _log = LogFactoryUtil.getLog("com_liferay_asset_publisher_web.view_asset_entries_table_jsp");

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,8 @@ public class AnnouncementsDeliveryPersistenceTest {
 		AnnouncementsDelivery newAnnouncementsDelivery = _persistence.create(
 			pk);
 
+		newAnnouncementsDelivery.setMvccVersion(RandomTestUtil.nextLong());
+
 		newAnnouncementsDelivery.setCompanyId(RandomTestUtil.nextLong());
 
 		newAnnouncementsDelivery.setUserId(RandomTestUtil.nextLong());
@@ -145,6 +147,9 @@ public class AnnouncementsDeliveryPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newAnnouncementsDelivery.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingAnnouncementsDelivery.getMvccVersion(),
+			newAnnouncementsDelivery.getMvccVersion());
 		Assert.assertEquals(
 			existingAnnouncementsDelivery.getDeliveryId(),
 			newAnnouncementsDelivery.getDeliveryId());
@@ -166,6 +171,13 @@ public class AnnouncementsDeliveryPersistenceTest {
 		Assert.assertEquals(
 			existingAnnouncementsDelivery.isWebsite(),
 			newAnnouncementsDelivery.isWebsite());
+	}
+
+	@Test
+	public void testCountByCompanyId() throws Exception {
+		_persistence.countByCompanyId(RandomTestUtil.nextLong());
+
+		_persistence.countByCompanyId(0L);
 	}
 
 	@Test
@@ -212,9 +224,9 @@ public class AnnouncementsDeliveryPersistenceTest {
 
 	protected OrderByComparator<AnnouncementsDelivery> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AnnouncementsDelivery", "deliveryId", true, "companyId", true,
-			"userId", true, "type", true, "email", true, "sms", true, "website",
-			true);
+			"AnnouncementsDelivery", "mvccVersion", true, "deliveryId", true,
+			"companyId", true, "userId", true, "type", true, "email", true,
+			"sms", true, "website", true);
 	}
 
 	@Test
@@ -455,21 +467,65 @@ public class AnnouncementsDeliveryPersistenceTest {
 
 		_persistence.clearCache();
 
-		AnnouncementsDelivery existingAnnouncementsDelivery =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newAnnouncementsDelivery.getPrimaryKey());
+				newAnnouncementsDelivery.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AnnouncementsDelivery newAnnouncementsDelivery =
+			addAnnouncementsDelivery();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AnnouncementsDelivery.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"deliveryId", newAnnouncementsDelivery.getDeliveryId()));
+
+		List<AnnouncementsDelivery> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		AnnouncementsDelivery announcementsDelivery) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingAnnouncementsDelivery.getUserId()),
+			Long.valueOf(announcementsDelivery.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAnnouncementsDelivery, "getOriginalUserId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAnnouncementsDelivery.getType(),
-				ReflectionTestUtil.invoke(
-					existingAnnouncementsDelivery, "getOriginalType",
-					new Class<?>[0])));
+				announcementsDelivery, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
+		Assert.assertEquals(
+			announcementsDelivery.getType(),
+			ReflectionTestUtil.invoke(
+				announcementsDelivery, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "type_"));
 	}
 
 	protected AnnouncementsDelivery addAnnouncementsDelivery()
@@ -478,6 +534,8 @@ public class AnnouncementsDeliveryPersistenceTest {
 		long pk = RandomTestUtil.nextLong();
 
 		AnnouncementsDelivery announcementsDelivery = _persistence.create(pk);
+
+		announcementsDelivery.setMvccVersion(RandomTestUtil.nextLong());
 
 		announcementsDelivery.setCompanyId(RandomTestUtil.nextLong());
 

@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.BaseBodyTagSupport;
@@ -34,7 +33,6 @@ import com.liferay.taglib.util.PortalIncludeUtil;
 import com.liferay.taglib.util.TagResourceBundleUtil;
 
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -86,31 +84,29 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 		try {
 			return processEndTag();
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_cssClass = null;
-				_data = null;
-				_direction = "left";
-				_endPage = null;
-				_extended = true;
-				_icon = null;
-				_id = null;
-				_localizeMessage = true;
-				_maxDisplayItems = _DEFAULT_MAX_DISPLAY_ITEMS;
-				_message = "actions";
-				_scroll = false;
-				_select = false;
-				_showArrow = true;
-				_showExpanded = false;
-				_showWhenSingleIcon = false;
-				_startPage = null;
-				_triggerCssClass = null;
-				_triggerLabel = null;
-				_triggerType = null;
-			}
+			_cssClass = null;
+			_data = null;
+			_direction = "left";
+			_endPage = null;
+			_extended = true;
+			_icon = null;
+			_id = null;
+			_localizeMessage = true;
+			_maxDisplayItems = _DEFAULT_MAX_DISPLAY_ITEMS;
+			_message = "actions";
+			_scroll = false;
+			_select = false;
+			_showArrow = true;
+			_showExpanded = false;
+			_showWhenSingleIcon = false;
+			_startPage = null;
+			_triggerCssClass = null;
+			_triggerLabel = null;
+			_triggerType = null;
 		}
 	}
 
@@ -342,7 +338,7 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 					}
 
 					if (_extended) {
-						jspWriter.write(" btn btn-default");
+						jspWriter.write(" btn btn-secondary");
 					}
 
 					if (_select) {
@@ -356,11 +352,10 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 					String message = _message;
 
 					if (_localizeMessage) {
-						ResourceBundle resourceBundle =
+						message = LanguageUtil.get(
 							TagResourceBundleUtil.getResourceBundle(
-								pageContext);
-
-						message = LanguageUtil.get(resourceBundle, _message);
+								pageContext),
+							_message);
 					}
 
 					jspWriter.write("\" href=\"javascript:;\" id=\"");
@@ -486,10 +481,8 @@ public class IconMenuTag extends BaseBodyTagSupport implements BodyTag {
 		String message = _message;
 
 		if (_localizeMessage) {
-			ResourceBundle resourceBundle =
-				TagResourceBundleUtil.getResourceBundle(pageContext);
-
-			message = LanguageUtil.get(resourceBundle, _message);
+			message = LanguageUtil.get(
+				TagResourceBundleUtil.getResourceBundle(pageContext), _message);
 		}
 
 		httpServletRequest.setAttribute(

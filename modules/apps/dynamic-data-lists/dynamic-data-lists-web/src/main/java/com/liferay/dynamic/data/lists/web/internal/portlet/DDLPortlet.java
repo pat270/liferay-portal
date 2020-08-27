@@ -73,6 +73,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 		"com.liferay.portlet.header-portlet-javascript=/js/main.js",
 		"com.liferay.portlet.icon=/icons/dynamic_data_lists.png",
 		"com.liferay.portlet.preferences-owned-by-group=true",
+		"com.liferay.portlet.preferences-unique-per-layout=false",
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
 		"com.liferay.portlet.render-weight=50",
@@ -86,8 +87,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + DDLPortletKeys.DYNAMIC_DATA_LISTS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -122,17 +122,17 @@ public class DDLPortlet extends MVCPortlet {
 			renderRequest.setAttribute(
 				WebKeys.PORTLET_DISPLAY_CONTEXT, ddlDisplayContext);
 		}
-		catch (NoSuchRecordException | NoSuchRecordSetException e) {
+		catch (NoSuchRecordException | NoSuchRecordSetException exception) {
 
 			// Let this slide because the user can manually input an record set
 			// key for a new record set that does not yet exist
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
-		catch (PortalException pe) {
-			SessionErrors.add(renderRequest, pe.getClass());
+		catch (PortalException portalException) {
+			SessionErrors.add(renderRequest, portalException.getClass());
 		}
 
 		super.render(renderRequest, renderResponse);

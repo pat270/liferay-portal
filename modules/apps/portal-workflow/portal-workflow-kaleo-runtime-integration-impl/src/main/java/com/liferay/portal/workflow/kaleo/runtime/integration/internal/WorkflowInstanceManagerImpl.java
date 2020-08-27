@@ -14,13 +14,18 @@
 
 package com.liferay.portal.workflow.kaleo.runtime.integration.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
 import com.liferay.portal.kernel.workflow.WorkflowInstanceManager;
+import com.liferay.portal.kernel.workflow.search.WorkflowModelSearchResult;
+import com.liferay.portal.lock.service.LockLocalService;
 import com.liferay.portal.workflow.kaleo.runtime.WorkflowEngine;
+import com.liferay.portal.workflow.kaleo.runtime.integration.internal.util.WorkflowLockUtil;
 
 import java.io.Serializable;
 
@@ -66,8 +71,11 @@ public class WorkflowInstanceManagerImpl implements WorkflowInstanceManager {
 			return _workflowEngine.getNextTransitionNames(
 				workflowInstanceId, serviceContext);
 		}
-		catch (Exception e) {
-			throw new WorkflowException(e);
+		catch (WorkflowException workflowException) {
+			throw workflowException;
+		}
+		catch (Exception exception) {
+			throw new WorkflowException(exception);
 		}
 	}
 
@@ -79,6 +87,20 @@ public class WorkflowInstanceManagerImpl implements WorkflowInstanceManager {
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setCompanyId(companyId);
+
+		return _workflowEngine.getWorkflowInstance(
+			workflowInstanceId, serviceContext);
+	}
+
+	@Override
+	public WorkflowInstance getWorkflowInstance(
+			long companyId, long userId, long workflowInstanceId)
+		throws WorkflowException {
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(companyId);
+		serviceContext.setUserId(userId);
 
 		return _workflowEngine.getWorkflowInstance(
 			workflowInstanceId, serviceContext);
@@ -244,6 +266,24 @@ public class WorkflowInstanceManagerImpl implements WorkflowInstanceManager {
 	}
 
 	@Override
+	public WorkflowModelSearchResult<WorkflowInstance> searchWorkflowInstances(
+			long companyId, Long userId, String assetClassName,
+			String assetTitle, String assetDescription, String nodeName,
+			String kaleoDefinitionName, Boolean completed, int start, int end,
+			OrderByComparator<WorkflowInstance> orderByComparator)
+		throws WorkflowException {
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(companyId);
+
+		return _workflowEngine.searchWorkflowInstances(
+			userId, assetClassName, assetTitle, assetDescription, nodeName,
+			kaleoDefinitionName, completed, start, end, orderByComparator,
+			serviceContext);
+	}
+
+	@Override
 	public WorkflowInstance signalWorkflowInstance(
 			long companyId, long userId, long workflowInstanceId,
 			String transitionName, Map<String, Serializable> workflowContext)
@@ -265,6 +305,18 @@ public class WorkflowInstanceManagerImpl implements WorkflowInstanceManager {
 			String workflowDefinitionName, Integer workflowDefinitionVersion,
 			String transitionName, Map<String, Serializable> workflowContext)
 		throws WorkflowException {
+
+		String className = WorkflowDefinition.class.getName();
+		String key = WorkflowLockUtil.encodeKey(
+			workflowDefinitionName, workflowDefinitionVersion);
+
+		if (_lockLocalService.isLocked(className, key)) {
+			throw new WorkflowException(
+				StringBundler.concat(
+					"Workflow definition name ", workflowDefinitionName,
+					" and version ", workflowDefinitionVersion,
+					" is being undeployed"));
+		}
 
 		ServiceContext serviceContext = (ServiceContext)workflowContext.get(
 			WorkflowConstants.CONTEXT_SERVICE_CONTEXT);
@@ -291,6 +343,9 @@ public class WorkflowInstanceManagerImpl implements WorkflowInstanceManager {
 		return _workflowEngine.updateContext(
 			workflowInstanceId, workflowContext, serviceContext);
 	}
+
+	@Reference
+	private LockLocalService _lockLocalService;
 
 	@Reference
 	private WorkflowEngine _workflowEngine;

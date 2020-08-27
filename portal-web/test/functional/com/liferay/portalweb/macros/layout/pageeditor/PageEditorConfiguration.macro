@@ -1,0 +1,95 @@
+definition {
+
+	macro changeConfigColor {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		Click(
+			colorPalette = "${colorPalette}",
+			locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_PALETTE_SELECT");
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro changeConfigSelection {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		while (!IsTextEqual(locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_FIELD_SELECT", value1 = "${optionValue}")) {
+			Select(
+				locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_TOOLBAR_FIELD_SELECT",
+				value1 = "${optionValue}");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro changeConfigText {
+		var key_fragmentName = "${fragmentName}";
+
+		if (IsNotVisible(locator1 = "Fragment#FRAGMENT_HEADER")) {
+			Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+		}
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		FormFields.editText(
+			fieldName = "${textConfigName}",
+			fieldValue = "${editableText}");
+
+		Pause(locator1 = "3000");
+
+		Click(locator1 = "PageEditor#MANAGEMENT_BAR");
+
+		PageEditor.waitForAutoSave();
+	}
+
+	macro checkConfigCheckbox {
+		var key_fragmentName = "${fragmentName}";
+
+		Click(locator1 = "PageEditor#CONTENT_PAGE_DISABLED_HEADER");
+
+		Click.clickNoWaitForVisible(locator1 = "Fragment#FRAGMENT_HEADER");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "General",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+
+		while (IsNotChecked.isNotCheckedNotVisible(checkboxName = "${checkboxName}", locator1 = "Checkbox#ANY_CHECKBOX")) {
+			Click.clickAtNotVisible(
+				checkboxName = "${checkboxName}",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		PageEditor.waitForAutoSave();
+	}
+
+}

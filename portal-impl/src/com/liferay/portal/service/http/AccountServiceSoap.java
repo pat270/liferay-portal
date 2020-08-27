@@ -14,8 +14,6 @@
 
 package com.liferay.portal.service.http;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>com.liferay.portal.kernel.service.AccountServiceUtil</code> service
@@ -53,8 +51,9 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see AccountServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AccountServiceSoap {
 }

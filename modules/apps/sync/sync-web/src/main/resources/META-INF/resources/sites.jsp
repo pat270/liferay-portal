@@ -67,26 +67,26 @@ portletURL.setParameter("delta", String.valueOf(delta));
 
 	<liferay-frontend:management-bar-action-buttons>
 		<liferay-frontend:management-bar-button
-			href='<%= "javascript:" + renderResponse.getNamespace() + "enableSites();" %>'
-			iconCssClass="icon-ok"
+			href='<%= "javascript:" + liferayPortletResponse.getNamespace() + "enableSites();" %>'
+			icon="check"
 			label="enable-sync-sites"
 		/>
 
 		<liferay-frontend:management-bar-button
-			href='<%= "javascript:" + renderResponse.getNamespace() + "disableSites();" %>'
-			iconCssClass="icon-remove"
+			href='<%= "javascript:" + liferayPortletResponse.getNamespace() + "disableSites();" %>'
+			icon="times"
 			label="disable-sync-sites"
 		/>
 
 		<liferay-frontend:management-bar-button
-			href='<%= "javascript:" + renderResponse.getNamespace() + "editSitesDefaultFilePermissions();" %>'
-			iconCssClass="icon-lock"
+			href='<%= "javascript:" + liferayPortletResponse.getNamespace() + "editSitesDefaultFilePermissions();" %>'
+			icon="lock"
 			label="default-file-permissions"
 		/>
 	</liferay-frontend:management-bar-action-buttons>
 </liferay-frontend:management-bar>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form method="post" name="fm">
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 		<aui:input name="enabled" type="hidden" />
@@ -94,10 +94,11 @@ portletURL.setParameter("delta", String.valueOf(delta));
 		<aui:input name="permissions" type="hidden" />
 
 		<%
-		LinkedHashMap<String, Object> groupParams = new LinkedHashMap<String, Object>();
-
-		groupParams.put("active", true);
-		groupParams.put("site", true);
+		LinkedHashMap<String, Object> groupParams = LinkedHashMapBuilder.<String, Object>put(
+			"active", true
+		).put(
+			"site", true
+		).build();
 
 		List<Group> groups = GroupLocalServiceUtil.search(themeDisplay.getCompanyId(), keywords, groupParams, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
@@ -106,7 +107,7 @@ portletURL.setParameter("delta", String.valueOf(delta));
 		List<String> localizedResourceActions = new ArrayList<String>(resourceActions.size());
 
 		for (String resourceAction : resourceActions) {
-			localizedResourceActions.add(LanguageUtil.get(request, ResourceActionsUtil.getActionNamePrefix() + resourceAction));
+			localizedResourceActions.add(ResourceActionsUtil.getAction(request, resourceAction));
 		}
 
 		String fullAccessPermissionsDescription = LanguageUtil.format(request, "full-access-x", StringUtil.merge(localizedResourceActions, StringPool.COMMA_AND_SPACE));
@@ -119,7 +120,7 @@ portletURL.setParameter("delta", String.valueOf(delta));
 			localizedResourceActions = new ArrayList<String>(resourceActions.size());
 
 			for (String resourceAction : resourceActions) {
-				localizedResourceActions.add(LanguageUtil.get(request, ResourceActionsUtil.getActionNamePrefix() + resourceAction));
+				localizedResourceActions.add(ResourceActionsUtil.getAction(request, resourceAction));
 			}
 
 			defaultPermissionsDescription = StringUtil.merge(localizedResourceActions, StringPool.COMMA_AND_SPACE);
@@ -203,59 +204,90 @@ portletURL.setParameter("delta", String.valueOf(delta));
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
 	function <portlet:namespace />disableSites() {
 		var form = document.querySelector('#document.<portlet:namespace />fm');
 
 		if (form) {
-			var groupIds = Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds');
+			var groupIds = Liferay.Util.listCheckedExcept(
+				form,
+				'<portlet:namespace />allRowIds'
+			);
 
-			if (groupIds && confirm('<liferay-ui:message key="disabling-a-sync-site-will-delete-all-associated-files-from-all-clients" />')) {
-				form.querySelector('#<portlet:namespace />groupIds').value = groupIds;
+			if (
+				groupIds &&
+				confirm(
+					'<liferay-ui:message key="disabling-a-sync-site-will-delete-all-associated-files-from-all-clients" />'
+				)
+			) {
+				form.querySelector(
+					'#<portlet:namespace />groupIds'
+				).value = groupIds;
 				form.querySelector('#<portlet:namespace />enabled').value = false;
 
-				submitForm(form, '<liferay-portlet:actionURL name="updateSites" />');
+				submitForm(
+					form,
+					'<liferay-portlet:actionURL name="updateSites" />'
+				);
 			}
 		}
 	}
 
 	function <portlet:namespace />editSitesDefaultFilePermissions() {
-		var A = AUI();
-
 		var form = document.querySelector('#<portlet:namespace />fm');
 
 		if (form) {
-			var groupIds = Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds');
+			var groupIds = Liferay.Util.listCheckedExcept(
+				form,
+				'<portlet:namespace />allRowIds'
+			);
 
 			if (groupIds) {
-				Liferay.Util.openWindow(
+
+				<%
+				String selectEventName = liferayPortletResponse.getNamespace() + "itemSelected";
+				%>
+
+				<portlet:renderURL var="editSitesDefaultFilePermissionsURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+					<portlet:param name="mvcPath" value="/edit_default_file_permissions.jsp" />
+					<portlet:param name="groupIds" value="{groupIds}" />
+					<portlet:param name="selectEventName" value="<%= selectEventName %>" />
+				</portlet:renderURL>
+
+				var url = Liferay.Util.sub(
+					decodeURIComponent('<%= editSitesDefaultFilePermissionsURL %>'),
 					{
-						dialog: {
-							destroyOnHide: true,
-							on: {
-								destroy: function() {
-									Liferay.Portlet.refresh('#p_p_id<portlet:namespace />');
-								}
-							}
-						},
-						id: '<portlet:namespace />editDefaultFilePermissionsDialog',
-						title: '<liferay-ui:message key="default-file-permissions" />',
-
-						<portlet:renderURL var="editSitesDefaultFilePermissionsURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-							<portlet:param name="groupIds" value="{groupIds}" />
-							<portlet:param name="mvcPath" value="/edit_default_file_permissions.jsp" />
-						</portlet:renderURL>
-
-						uri: A.Lang.sub(
-							decodeURIComponent('<%= editSitesDefaultFilePermissionsURL %>'),
-							{
-								groupIds: groupIds
-							}
-						)
+						groupIds: groupIds,
 					}
 				);
+
+				Liferay.Util.openModal({
+					id: '<portlet:namespace />editDefaultFilePermissionsDialog',
+					onSelect: function (selectedItem) {
+						Liferay.Util.fetch(selectedItem.uri, {method: 'POST'})
+							.then(function (response) {
+								return response.text();
+							})
+							.then(function () {
+								Liferay.Portlet.refresh(
+									'#p_p_id<portlet:namespace />'
+								);
+							})
+							.catch(function (error) {
+								Liferay.Util.openToast({
+									message: Liferay.Language.get(
+										'an-unexpected-system-error-occurred'
+									),
+									type: 'danger',
+								});
+							});
+					},
+					selectEventName: '<%= selectEventName %>',
+					title: '<liferay-ui:message key="default-file-permissions" />',
+					url: url,
+				});
 			}
 		}
 	}
@@ -264,13 +296,21 @@ portletURL.setParameter("delta", String.valueOf(delta));
 		var form = document.querySelector('#<portlet:namespace />fm');
 
 		if (form) {
-			var groupIds = Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds');
+			var groupIds = Liferay.Util.listCheckedExcept(
+				form,
+				'<portlet:namespace />allRowIds'
+			);
 
 			if (groupIds) {
-				form.querySelector('#<portlet:namespace />groupIds').value = groupIds;
+				form.querySelector(
+					'#<portlet:namespace />groupIds'
+				).value = groupIds;
 				form.querySelector('#<portlet:namespace />enabled').value = true;
 
-				submitForm(form, '<liferay-portlet:actionURL name="updateSites" />');
+				submitForm(
+					form,
+					'<liferay-portlet:actionURL name="updateSites" />'
+				);
 			}
 		}
 	}

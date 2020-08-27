@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -123,6 +123,10 @@ public class AssetVocabularyPersistenceTest {
 
 		AssetVocabulary newAssetVocabulary = _persistence.create(pk);
 
+		newAssetVocabulary.setMvccVersion(RandomTestUtil.nextLong());
+
+		newAssetVocabulary.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newAssetVocabulary.setUuid(RandomTestUtil.randomString());
 
 		newAssetVocabulary.setExternalReferenceCode(
@@ -148,6 +152,8 @@ public class AssetVocabularyPersistenceTest {
 
 		newAssetVocabulary.setSettings(RandomTestUtil.randomString());
 
+		newAssetVocabulary.setVisibilityType(RandomTestUtil.nextInt());
+
 		newAssetVocabulary.setLastPublishDate(RandomTestUtil.nextDate());
 
 		_assetVocabularies.add(_persistence.update(newAssetVocabulary));
@@ -155,6 +161,12 @@ public class AssetVocabularyPersistenceTest {
 		AssetVocabulary existingAssetVocabulary = _persistence.findByPrimaryKey(
 			newAssetVocabulary.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingAssetVocabulary.getMvccVersion(),
+			newAssetVocabulary.getMvccVersion());
+		Assert.assertEquals(
+			existingAssetVocabulary.getCtCollectionId(),
+			newAssetVocabulary.getCtCollectionId());
 		Assert.assertEquals(
 			existingAssetVocabulary.getUuid(), newAssetVocabulary.getUuid());
 		Assert.assertEquals(
@@ -191,6 +203,9 @@ public class AssetVocabularyPersistenceTest {
 		Assert.assertEquals(
 			existingAssetVocabulary.getSettings(),
 			newAssetVocabulary.getSettings());
+		Assert.assertEquals(
+			existingAssetVocabulary.getVisibilityType(),
+			newAssetVocabulary.getVisibilityType());
 		Assert.assertEquals(
 			Time.getShortTimestamp(
 				existingAssetVocabulary.getLastPublishDate()),
@@ -301,11 +316,12 @@ public class AssetVocabularyPersistenceTest {
 
 	protected OrderByComparator<AssetVocabulary> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AssetVocabulary", "uuid", true, "externalReferenceCode", true,
-			"vocabularyId", true, "groupId", true, "companyId", true, "userId",
-			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"name", true, "title", true, "description", true, "settings", true,
-			"lastPublishDate", true);
+			"AssetVocabulary", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "externalReferenceCode", true, "vocabularyId", true,
+			"groupId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true, "name", true,
+			"title", true, "description", true, "settings", true,
+			"visibilityType", true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -528,50 +544,93 @@ public class AssetVocabularyPersistenceTest {
 
 		_persistence.clearCache();
 
-		AssetVocabulary existingAssetVocabulary = _persistence.findByPrimaryKey(
-			newAssetVocabulary.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newAssetVocabulary.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetVocabulary.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingAssetVocabulary, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AssetVocabulary newAssetVocabulary = addAssetVocabulary();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AssetVocabulary.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"vocabularyId", newAssetVocabulary.getVocabularyId()));
+
+		List<AssetVocabulary> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(AssetVocabulary assetVocabulary) {
 		Assert.assertEquals(
-			Long.valueOf(existingAssetVocabulary.getGroupId()),
+			assetVocabulary.getUuid(),
+			ReflectionTestUtil.invoke(
+				assetVocabulary, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(assetVocabulary.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetVocabulary, "getOriginalGroupId",
-				new Class<?>[0]));
+				assetVocabulary, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetVocabulary.getGroupId()),
+			Long.valueOf(assetVocabulary.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetVocabulary, "getOriginalGroupId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetVocabulary.getName(),
-				ReflectionTestUtil.invoke(
-					existingAssetVocabulary, "getOriginalName",
-					new Class<?>[0])));
+				assetVocabulary, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			assetVocabulary.getName(),
+			ReflectionTestUtil.invoke(
+				assetVocabulary, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetVocabulary.getCompanyId()),
+			Long.valueOf(assetVocabulary.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetVocabulary, "getOriginalCompanyId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetVocabulary.getExternalReferenceCode(),
-				ReflectionTestUtil.invoke(
-					existingAssetVocabulary, "getOriginalExternalReferenceCode",
-					new Class<?>[0])));
+				assetVocabulary, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
+		Assert.assertEquals(
+			assetVocabulary.getExternalReferenceCode(),
+			ReflectionTestUtil.invoke(
+				assetVocabulary, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "externalReferenceCode"));
 	}
 
 	protected AssetVocabulary addAssetVocabulary() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		AssetVocabulary assetVocabulary = _persistence.create(pk);
+
+		assetVocabulary.setMvccVersion(RandomTestUtil.nextLong());
+
+		assetVocabulary.setCtCollectionId(RandomTestUtil.nextLong());
 
 		assetVocabulary.setUuid(RandomTestUtil.randomString());
 
@@ -596,6 +655,8 @@ public class AssetVocabularyPersistenceTest {
 		assetVocabulary.setDescription(RandomTestUtil.randomString());
 
 		assetVocabulary.setSettings(RandomTestUtil.randomString());
+
+		assetVocabulary.setVisibilityType(RandomTestUtil.nextInt());
 
 		assetVocabulary.setLastPublishDate(RandomTestUtil.nextDate());
 

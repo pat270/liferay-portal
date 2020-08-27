@@ -15,6 +15,7 @@
 package com.liferay.portal.workflow.kaleo.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -22,33 +23,39 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.workflow.kaleo.exception.NoSuchTaskAssignmentInstanceException;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignmentInstance;
+import com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignmentInstanceTable;
 import com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskAssignmentInstanceImpl;
 import com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskAssignmentInstanceModelImpl;
 import com.liferay.portal.workflow.kaleo.service.persistence.KaleoTaskAssignmentInstancePersistence;
+import com.liferay.portal.workflow.kaleo.service.persistence.impl.constants.KaleoPersistenceConstants;
 
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The persistence implementation for the kaleo task assignment instance service.
@@ -60,7 +67,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
+@Component(service = KaleoTaskAssignmentInstancePersistence.class)
 public class KaleoTaskAssignmentInstancePersistenceImpl
 	extends BasePersistenceImpl<KaleoTaskAssignmentInstance>
 	implements KaleoTaskAssignmentInstancePersistence {
@@ -102,7 +109,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -121,7 +128,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -142,34 +149,34 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findByCompanyId(
 		long companyId, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByCompanyId;
-			finderArgs = new Object[] {companyId};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByCompanyId;
+				finderArgs = new Object[] {companyId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByCompanyId;
 			finderArgs = new Object[] {
 				companyId, start, end, orderByComparator
@@ -178,7 +185,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -186,8 +193,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				for (KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance :
 						list) {
 
-					if ((companyId !=
-							kaleoTaskAssignmentInstance.getCompanyId())) {
+					if (companyId !=
+							kaleoTaskAssignmentInstance.getCompanyId()) {
 
 						list = null;
 
@@ -198,63 +205,52 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -285,16 +281,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -340,16 +336,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -418,8 +414,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -432,102 +428,102 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-		query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -567,33 +563,31 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -630,7 +624,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where kaleoDefinitionVersionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoDefinitionVersionId the kaleo definition version ID
@@ -650,7 +644,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where kaleoDefinitionVersionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoDefinitionVersionId the kaleo definition version ID
@@ -672,35 +666,35 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where kaleoDefinitionVersionId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoDefinitionVersionId the kaleo definition version ID
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findByKaleoDefinitionVersionId(
 		long kaleoDefinitionVersionId, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath =
-				_finderPathWithoutPaginationFindByKaleoDefinitionVersionId;
-			finderArgs = new Object[] {kaleoDefinitionVersionId};
+			if (useFinderCache) {
+				finderPath =
+					_finderPathWithoutPaginationFindByKaleoDefinitionVersionId;
+				finderArgs = new Object[] {kaleoDefinitionVersionId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath =
 				_finderPathWithPaginationFindByKaleoDefinitionVersionId;
 			finderArgs = new Object[] {
@@ -710,7 +704,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -718,9 +712,9 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				for (KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance :
 						list) {
 
-					if ((kaleoDefinitionVersionId !=
+					if (kaleoDefinitionVersionId !=
 							kaleoTaskAssignmentInstance.
-								getKaleoDefinitionVersionId())) {
+								getKaleoDefinitionVersionId()) {
 
 						list = null;
 
@@ -731,64 +725,53 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(
+			sb.append(
 				_FINDER_COLUMN_KALEODEFINITIONVERSIONID_KALEODEFINITIONVERSIONID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(kaleoDefinitionVersionId);
+				queryPos.add(kaleoDefinitionVersionId);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -820,16 +803,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoDefinitionVersionId=");
-		msg.append(kaleoDefinitionVersionId);
+		sb.append("kaleoDefinitionVersionId=");
+		sb.append(kaleoDefinitionVersionId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -876,16 +859,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoDefinitionVersionId=");
-		msg.append(kaleoDefinitionVersionId);
+		sb.append("kaleoDefinitionVersionId=");
+		sb.append(kaleoDefinitionVersionId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -957,8 +940,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -973,20 +956,20 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 			boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-		query.append(
+		sb.append(
 			_FINDER_COLUMN_KALEODEFINITIONVERSIONID_KALEODEFINITIONVERSIONID_2);
 
 		if (orderByComparator != null) {
@@ -994,82 +977,82 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(kaleoDefinitionVersionId);
+		queryPos.add(kaleoDefinitionVersionId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1112,34 +1095,32 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(
+			sb.append(
 				_FINDER_COLUMN_KALEODEFINITIONVERSIONID_KALEODEFINITIONVERSIONID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(kaleoDefinitionVersionId);
+				queryPos.add(kaleoDefinitionVersionId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1175,7 +1156,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where kaleoInstanceId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoInstanceId the kaleo instance ID
@@ -1194,7 +1175,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where kaleoInstanceId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoInstanceId the kaleo instance ID
@@ -1216,34 +1197,34 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where kaleoInstanceId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoInstanceId the kaleo instance ID
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findByKaleoInstanceId(
 		long kaleoInstanceId, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByKaleoInstanceId;
-			finderArgs = new Object[] {kaleoInstanceId};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByKaleoInstanceId;
+				finderArgs = new Object[] {kaleoInstanceId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByKaleoInstanceId;
 			finderArgs = new Object[] {
 				kaleoInstanceId, start, end, orderByComparator
@@ -1252,7 +1233,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1260,8 +1241,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				for (KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance :
 						list) {
 
-					if ((kaleoInstanceId !=
-							kaleoTaskAssignmentInstance.getKaleoInstanceId())) {
+					if (kaleoInstanceId !=
+							kaleoTaskAssignmentInstance.getKaleoInstanceId()) {
 
 						list = null;
 
@@ -1272,63 +1253,52 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(_FINDER_COLUMN_KALEOINSTANCEID_KALEOINSTANCEID_2);
+			sb.append(_FINDER_COLUMN_KALEOINSTANCEID_KALEOINSTANCEID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(kaleoInstanceId);
+				queryPos.add(kaleoInstanceId);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1359,16 +1329,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoInstanceId=");
-		msg.append(kaleoInstanceId);
+		sb.append("kaleoInstanceId=");
+		sb.append(kaleoInstanceId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -1414,16 +1384,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoInstanceId=");
-		msg.append(kaleoInstanceId);
+		sb.append("kaleoInstanceId=");
+		sb.append(kaleoInstanceId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -1492,8 +1462,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1507,102 +1477,102 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-		query.append(_FINDER_COLUMN_KALEOINSTANCEID_KALEOINSTANCEID_2);
+		sb.append(_FINDER_COLUMN_KALEOINSTANCEID_KALEOINSTANCEID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(kaleoInstanceId);
+		queryPos.add(kaleoInstanceId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1643,33 +1613,31 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(_FINDER_COLUMN_KALEOINSTANCEID_KALEOINSTANCEID_2);
+			sb.append(_FINDER_COLUMN_KALEOINSTANCEID_KALEOINSTANCEID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(kaleoInstanceId);
+				queryPos.add(kaleoInstanceId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1707,7 +1675,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
@@ -1727,7 +1695,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
@@ -1749,35 +1717,35 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findBykaleoTaskInstanceTokenId(
 		long kaleoTaskInstanceTokenId, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath =
-				_finderPathWithoutPaginationFindBykaleoTaskInstanceTokenId;
-			finderArgs = new Object[] {kaleoTaskInstanceTokenId};
+			if (useFinderCache) {
+				finderPath =
+					_finderPathWithoutPaginationFindBykaleoTaskInstanceTokenId;
+				finderArgs = new Object[] {kaleoTaskInstanceTokenId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath =
 				_finderPathWithPaginationFindBykaleoTaskInstanceTokenId;
 			finderArgs = new Object[] {
@@ -1787,7 +1755,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1795,9 +1763,9 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				for (KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance :
 						list) {
 
-					if ((kaleoTaskInstanceTokenId !=
+					if (kaleoTaskInstanceTokenId !=
 							kaleoTaskAssignmentInstance.
-								getKaleoTaskInstanceTokenId())) {
+								getKaleoTaskInstanceTokenId()) {
 
 						list = null;
 
@@ -1808,64 +1776,53 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(
+			sb.append(
 				_FINDER_COLUMN_KALEOTASKINSTANCETOKENID_KALEOTASKINSTANCETOKENID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(kaleoTaskInstanceTokenId);
+				queryPos.add(kaleoTaskInstanceTokenId);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1897,16 +1854,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoTaskInstanceTokenId=");
-		msg.append(kaleoTaskInstanceTokenId);
+		sb.append("kaleoTaskInstanceTokenId=");
+		sb.append(kaleoTaskInstanceTokenId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -1953,16 +1910,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoTaskInstanceTokenId=");
-		msg.append(kaleoTaskInstanceTokenId);
+		sb.append("kaleoTaskInstanceTokenId=");
+		sb.append(kaleoTaskInstanceTokenId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -2034,8 +1991,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2050,20 +2007,20 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 			boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-		query.append(
+		sb.append(
 			_FINDER_COLUMN_KALEOTASKINSTANCETOKENID_KALEOTASKINSTANCETOKENID_2);
 
 		if (orderByComparator != null) {
@@ -2071,82 +2028,82 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(kaleoTaskInstanceTokenId);
+		queryPos.add(kaleoTaskInstanceTokenId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2189,34 +2146,32 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(
+			sb.append(
 				_FINDER_COLUMN_KALEOTASKINSTANCETOKENID_KALEOTASKINSTANCETOKENID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(kaleoTaskInstanceTokenId);
+				queryPos.add(kaleoTaskInstanceTokenId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2252,7 +2207,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where assigneeClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param assigneeClassName the assignee class name
@@ -2271,7 +2226,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where assigneeClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param assigneeClassName the assignee class name
@@ -2293,36 +2248,37 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where assigneeClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param assigneeClassName the assignee class name
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findByassigneeClassName(
 		String assigneeClassName, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		assigneeClassName = Objects.toString(assigneeClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByassigneeClassName;
-			finderArgs = new Object[] {assigneeClassName};
+			if (useFinderCache) {
+				finderPath =
+					_finderPathWithoutPaginationFindByassigneeClassName;
+				finderArgs = new Object[] {assigneeClassName};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByassigneeClassName;
 			finderArgs = new Object[] {
 				assigneeClassName, start, end, orderByComparator
@@ -2331,7 +2287,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -2352,76 +2308,63 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
 			boolean bindAssigneeClassName = false;
 
 			if (assigneeClassName.isEmpty()) {
-				query.append(
-					_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_3);
+				sb.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_3);
 			}
 			else {
 				bindAssigneeClassName = true;
 
-				query.append(
-					_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_2);
+				sb.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindAssigneeClassName) {
-					qPos.add(assigneeClassName);
+					queryPos.add(assigneeClassName);
 				}
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2453,16 +2396,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("assigneeClassName=");
-		msg.append(assigneeClassName);
+		sb.append("assigneeClassName=");
+		sb.append(assigneeClassName);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -2508,16 +2451,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("assigneeClassName=");
-		msg.append(assigneeClassName);
+		sb.append("assigneeClassName=");
+		sb.append(assigneeClassName);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -2588,8 +2531,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2603,28 +2546,28 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
 		boolean bindAssigneeClassName = false;
 
 		if (assigneeClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_3);
+			sb.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_3);
 		}
 		else {
 			bindAssigneeClassName = true;
 
-			query.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_2);
+			sb.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_2);
 		}
 
 		if (orderByComparator != null) {
@@ -2632,72 +2575,72 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindAssigneeClassName) {
-			qPos.add(assigneeClassName);
+			queryPos.add(assigneeClassName);
 		}
 
 		if (orderByComparator != null) {
@@ -2705,11 +2648,11 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2752,46 +2695,42 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
 			boolean bindAssigneeClassName = false;
 
 			if (assigneeClassName.isEmpty()) {
-				query.append(
-					_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_3);
+				sb.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_3);
 			}
 			else {
 				bindAssigneeClassName = true;
 
-				query.append(
-					_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_2);
+				sb.append(_FINDER_COLUMN_ASSIGNEECLASSNAME_ASSIGNEECLASSNAME_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindAssigneeClassName) {
-					qPos.add(assigneeClassName);
+					queryPos.add(assigneeClassName);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2833,7 +2772,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where groupId = &#63; and assigneeClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2853,7 +2792,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where groupId = &#63; and assigneeClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2876,7 +2815,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where groupId = &#63; and assigneeClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2884,27 +2823,27 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findByG_ACPK(
 		long groupId, long assigneeClassPK, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_ACPK;
-			finderArgs = new Object[] {groupId, assigneeClassPK};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_ACPK;
+				finderArgs = new Object[] {groupId, assigneeClassPK};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_ACPK;
 			finderArgs = new Object[] {
 				groupId, assigneeClassPK, start, end, orderByComparator
@@ -2913,7 +2852,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -2934,67 +2873,56 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(_FINDER_COLUMN_G_ACPK_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_ACPK_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2);
+			sb.append(_FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(assigneeClassPK);
+				queryPos.add(assigneeClassPK);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3026,19 +2954,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", assigneeClassPK=");
-		msg.append(assigneeClassPK);
+		sb.append(", assigneeClassPK=");
+		sb.append(assigneeClassPK);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -3086,19 +3014,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", assigneeClassPK=");
-		msg.append(assigneeClassPK);
+		sb.append(", assigneeClassPK=");
+		sb.append(assigneeClassPK);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -3170,8 +3098,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3185,106 +3113,106 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-		query.append(_FINDER_COLUMN_G_ACPK_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_ACPK_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2);
+		sb.append(_FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(assigneeClassPK);
+		queryPos.add(assigneeClassPK);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3327,37 +3255,35 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
-			query.append(_FINDER_COLUMN_G_ACPK_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_ACPK_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2);
+			sb.append(_FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(assigneeClassPK);
+				queryPos.add(assigneeClassPK);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3372,6 +3298,622 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 	private static final String _FINDER_COLUMN_G_ACPK_ASSIGNEECLASSPK_2 =
 		"kaleoTaskAssignmentInstance.assigneeClassPK = ?";
+
+	private FinderPath _finderPathWithPaginationFindByKTITI_ACN;
+	private FinderPath _finderPathWithoutPaginationFindByKTITI_ACN;
+	private FinderPath _finderPathCountByKTITI_ACN;
+
+	/**
+	 * Returns all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @return the matching kaleo task assignment instances
+	 */
+	@Override
+	public List<KaleoTaskAssignmentInstance> findByKTITI_ACN(
+		long kaleoTaskInstanceTokenId, String assigneeClassName) {
+
+		return findByKTITI_ACN(
+			kaleoTaskInstanceTokenId, assigneeClassName, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
+	 * </p>
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param start the lower bound of the range of kaleo task assignment instances
+	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
+	 * @return the range of matching kaleo task assignment instances
+	 */
+	@Override
+	public List<KaleoTaskAssignmentInstance> findByKTITI_ACN(
+		long kaleoTaskInstanceTokenId, String assigneeClassName, int start,
+		int end) {
+
+		return findByKTITI_ACN(
+			kaleoTaskInstanceTokenId, assigneeClassName, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
+	 * </p>
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param start the lower bound of the range of kaleo task assignment instances
+	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching kaleo task assignment instances
+	 */
+	@Override
+	public List<KaleoTaskAssignmentInstance> findByKTITI_ACN(
+		long kaleoTaskInstanceTokenId, String assigneeClassName, int start,
+		int end,
+		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator) {
+
+		return findByKTITI_ACN(
+			kaleoTaskInstanceTokenId, assigneeClassName, start, end,
+			orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
+	 * </p>
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param start the lower bound of the range of kaleo task assignment instances
+	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching kaleo task assignment instances
+	 */
+	@Override
+	public List<KaleoTaskAssignmentInstance> findByKTITI_ACN(
+		long kaleoTaskInstanceTokenId, String assigneeClassName, int start,
+		int end,
+		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
+		boolean useFinderCache) {
+
+		assigneeClassName = Objects.toString(assigneeClassName, "");
+
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+			(orderByComparator == null)) {
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByKTITI_ACN;
+				finderArgs = new Object[] {
+					kaleoTaskInstanceTokenId, assigneeClassName
+				};
+			}
+		}
+		else if (useFinderCache) {
+			finderPath = _finderPathWithPaginationFindByKTITI_ACN;
+			finderArgs = new Object[] {
+				kaleoTaskInstanceTokenId, assigneeClassName, start, end,
+				orderByComparator
+			};
+		}
+
+		List<KaleoTaskAssignmentInstance> list = null;
+
+		if (useFinderCache) {
+			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
+				finderPath, finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance :
+						list) {
+
+					if ((kaleoTaskInstanceTokenId !=
+							kaleoTaskAssignmentInstance.
+								getKaleoTaskInstanceTokenId()) ||
+						!assigneeClassName.equals(
+							kaleoTaskAssignmentInstance.
+								getAssigneeClassName())) {
+
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler sb = null;
+
+			if (orderByComparator != null) {
+				sb = new StringBundler(
+					4 + (orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				sb = new StringBundler(4);
+			}
+
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+
+			sb.append(_FINDER_COLUMN_KTITI_ACN_KALEOTASKINSTANCETOKENID_2);
+
+			boolean bindAssigneeClassName = false;
+
+			if (assigneeClassName.isEmpty()) {
+				sb.append(_FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_3);
+			}
+			else {
+				bindAssigneeClassName = true;
+
+				sb.append(_FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_2);
+			}
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+			}
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(kaleoTaskInstanceTokenId);
+
+				if (bindAssigneeClassName) {
+					queryPos.add(assigneeClassName);
+				}
+
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
+
+				cacheResult(list);
+
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first kaleo task assignment instance in the ordered set where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching kaleo task assignment instance
+	 * @throws NoSuchTaskAssignmentInstanceException if a matching kaleo task assignment instance could not be found
+	 */
+	@Override
+	public KaleoTaskAssignmentInstance findByKTITI_ACN_First(
+			long kaleoTaskInstanceTokenId, String assigneeClassName,
+			OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator)
+		throws NoSuchTaskAssignmentInstanceException {
+
+		KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance =
+			fetchByKTITI_ACN_First(
+				kaleoTaskInstanceTokenId, assigneeClassName, orderByComparator);
+
+		if (kaleoTaskAssignmentInstance != null) {
+			return kaleoTaskAssignmentInstance;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("kaleoTaskInstanceTokenId=");
+		sb.append(kaleoTaskInstanceTokenId);
+
+		sb.append(", assigneeClassName=");
+		sb.append(assigneeClassName);
+
+		sb.append("}");
+
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
+	}
+
+	/**
+	 * Returns the first kaleo task assignment instance in the ordered set where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching kaleo task assignment instance, or <code>null</code> if a matching kaleo task assignment instance could not be found
+	 */
+	@Override
+	public KaleoTaskAssignmentInstance fetchByKTITI_ACN_First(
+		long kaleoTaskInstanceTokenId, String assigneeClassName,
+		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator) {
+
+		List<KaleoTaskAssignmentInstance> list = findByKTITI_ACN(
+			kaleoTaskInstanceTokenId, assigneeClassName, 0, 1,
+			orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last kaleo task assignment instance in the ordered set where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching kaleo task assignment instance
+	 * @throws NoSuchTaskAssignmentInstanceException if a matching kaleo task assignment instance could not be found
+	 */
+	@Override
+	public KaleoTaskAssignmentInstance findByKTITI_ACN_Last(
+			long kaleoTaskInstanceTokenId, String assigneeClassName,
+			OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator)
+		throws NoSuchTaskAssignmentInstanceException {
+
+		KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance =
+			fetchByKTITI_ACN_Last(
+				kaleoTaskInstanceTokenId, assigneeClassName, orderByComparator);
+
+		if (kaleoTaskAssignmentInstance != null) {
+			return kaleoTaskAssignmentInstance;
+		}
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		sb.append("kaleoTaskInstanceTokenId=");
+		sb.append(kaleoTaskInstanceTokenId);
+
+		sb.append(", assigneeClassName=");
+		sb.append(assigneeClassName);
+
+		sb.append("}");
+
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
+	}
+
+	/**
+	 * Returns the last kaleo task assignment instance in the ordered set where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching kaleo task assignment instance, or <code>null</code> if a matching kaleo task assignment instance could not be found
+	 */
+	@Override
+	public KaleoTaskAssignmentInstance fetchByKTITI_ACN_Last(
+		long kaleoTaskInstanceTokenId, String assigneeClassName,
+		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator) {
+
+		int count = countByKTITI_ACN(
+			kaleoTaskInstanceTokenId, assigneeClassName);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<KaleoTaskAssignmentInstance> list = findByKTITI_ACN(
+			kaleoTaskInstanceTokenId, assigneeClassName, count - 1, count,
+			orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the kaleo task assignment instances before and after the current kaleo task assignment instance in the ordered set where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskAssignmentInstanceId the primary key of the current kaleo task assignment instance
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next kaleo task assignment instance
+	 * @throws NoSuchTaskAssignmentInstanceException if a kaleo task assignment instance with the primary key could not be found
+	 */
+	@Override
+	public KaleoTaskAssignmentInstance[] findByKTITI_ACN_PrevAndNext(
+			long kaleoTaskAssignmentInstanceId, long kaleoTaskInstanceTokenId,
+			String assigneeClassName,
+			OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator)
+		throws NoSuchTaskAssignmentInstanceException {
+
+		assigneeClassName = Objects.toString(assigneeClassName, "");
+
+		KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance =
+			findByPrimaryKey(kaleoTaskAssignmentInstanceId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			KaleoTaskAssignmentInstance[] array =
+				new KaleoTaskAssignmentInstanceImpl[3];
+
+			array[0] = getByKTITI_ACN_PrevAndNext(
+				session, kaleoTaskAssignmentInstance, kaleoTaskInstanceTokenId,
+				assigneeClassName, orderByComparator, true);
+
+			array[1] = kaleoTaskAssignmentInstance;
+
+			array[2] = getByKTITI_ACN_PrevAndNext(
+				session, kaleoTaskAssignmentInstance, kaleoTaskInstanceTokenId,
+				assigneeClassName, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected KaleoTaskAssignmentInstance getByKTITI_ACN_PrevAndNext(
+		Session session,
+		KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance,
+		long kaleoTaskInstanceTokenId, String assigneeClassName,
+		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
+		boolean previous) {
+
+		StringBundler sb = null;
+
+		if (orderByComparator != null) {
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			sb = new StringBundler(4);
+		}
+
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+
+		sb.append(_FINDER_COLUMN_KTITI_ACN_KALEOTASKINSTANCETOKENID_2);
+
+		boolean bindAssigneeClassName = false;
+
+		if (assigneeClassName.isEmpty()) {
+			sb.append(_FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_3);
+		}
+		else {
+			bindAssigneeClassName = true;
+
+			sb.append(_FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				sb.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(WHERE_GREATER_THAN);
+					}
+					else {
+						sb.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			sb.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						sb.append(ORDER_BY_ASC);
+					}
+					else {
+						sb.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = sb.toString();
+
+		Query query = session.createQuery(sql);
+
+		query.setFirstResult(0);
+		query.setMaxResults(2);
+
+		QueryPos queryPos = QueryPos.getInstance(query);
+
+		queryPos.add(kaleoTaskInstanceTokenId);
+
+		if (bindAssigneeClassName) {
+			queryPos.add(assigneeClassName);
+		}
+
+		if (orderByComparator != null) {
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(
+						kaleoTaskAssignmentInstance)) {
+
+				queryPos.add(orderByConditionValue);
+			}
+		}
+
+		List<KaleoTaskAssignmentInstance> list = query.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63; from the database.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 */
+	@Override
+	public void removeByKTITI_ACN(
+		long kaleoTaskInstanceTokenId, String assigneeClassName) {
+
+		for (KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance :
+				findByKTITI_ACN(
+					kaleoTaskInstanceTokenId, assigneeClassName,
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+
+			remove(kaleoTaskAssignmentInstance);
+		}
+	}
+
+	/**
+	 * Returns the number of kaleo task assignment instances where kaleoTaskInstanceTokenId = &#63; and assigneeClassName = &#63;.
+	 *
+	 * @param kaleoTaskInstanceTokenId the kaleo task instance token ID
+	 * @param assigneeClassName the assignee class name
+	 * @return the number of matching kaleo task assignment instances
+	 */
+	@Override
+	public int countByKTITI_ACN(
+		long kaleoTaskInstanceTokenId, String assigneeClassName) {
+
+		assigneeClassName = Objects.toString(assigneeClassName, "");
+
+		FinderPath finderPath = _finderPathCountByKTITI_ACN;
+
+		Object[] finderArgs = new Object[] {
+			kaleoTaskInstanceTokenId, assigneeClassName
+		};
+
+		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+
+		if (count == null) {
+			StringBundler sb = new StringBundler(3);
+
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+
+			sb.append(_FINDER_COLUMN_KTITI_ACN_KALEOTASKINSTANCETOKENID_2);
+
+			boolean bindAssigneeClassName = false;
+
+			if (assigneeClassName.isEmpty()) {
+				sb.append(_FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_3);
+			}
+			else {
+				bindAssigneeClassName = true;
+
+				sb.append(_FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_2);
+			}
+
+			String sql = sb.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query query = session.createQuery(sql);
+
+				QueryPos queryPos = QueryPos.getInstance(query);
+
+				queryPos.add(kaleoTaskInstanceTokenId);
+
+				if (bindAssigneeClassName) {
+					queryPos.add(assigneeClassName);
+				}
+
+				count = (Long)query.uniqueResult();
+
+				finderCache.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception exception) {
+				throw processException(exception);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String
+		_FINDER_COLUMN_KTITI_ACN_KALEOTASKINSTANCETOKENID_2 =
+			"kaleoTaskAssignmentInstance.kaleoTaskInstanceTokenId = ? AND ";
+
+	private static final String _FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_2 =
+		"kaleoTaskAssignmentInstance.assigneeClassName = ?";
+
+	private static final String _FINDER_COLUMN_KTITI_ACN_ASSIGNEECLASSNAME_3 =
+		"(kaleoTaskAssignmentInstance.assigneeClassName IS NULL OR kaleoTaskAssignmentInstance.assigneeClassName = '')";
 
 	private FinderPath _finderPathWithPaginationFindByACN_ACPK;
 	private FinderPath _finderPathWithoutPaginationFindByACN_ACPK;
@@ -3397,7 +3939,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances where assigneeClassName = &#63; and assigneeClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param assigneeClassName the assignee class name
@@ -3418,7 +3960,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where assigneeClassName = &#63; and assigneeClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param assigneeClassName the assignee class name
@@ -3442,7 +3984,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances where assigneeClassName = &#63; and assigneeClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param assigneeClassName the assignee class name
@@ -3450,29 +3992,29 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findByACN_ACPK(
 		String assigneeClassName, long assigneeClassPK, int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		assigneeClassName = Objects.toString(assigneeClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByACN_ACPK;
-			finderArgs = new Object[] {assigneeClassName, assigneeClassPK};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByACN_ACPK;
+				finderArgs = new Object[] {assigneeClassName, assigneeClassPK};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByACN_ACPK;
 			finderArgs = new Object[] {
 				assigneeClassName, assigneeClassPK, start, end,
@@ -3482,7 +4024,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -3505,78 +4047,67 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
 			boolean bindAssigneeClassName = false;
 
 			if (assigneeClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_3);
+				sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_3);
 			}
 			else {
 				bindAssigneeClassName = true;
 
-				query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_2);
+				sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSPK_2);
+			sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSPK_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindAssigneeClassName) {
-					qPos.add(assigneeClassName);
+					queryPos.add(assigneeClassName);
 				}
 
-				qPos.add(assigneeClassPK);
+				queryPos.add(assigneeClassPK);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3609,19 +4140,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("assigneeClassName=");
-		msg.append(assigneeClassName);
+		sb.append("assigneeClassName=");
+		sb.append(assigneeClassName);
 
-		msg.append(", assigneeClassPK=");
-		msg.append(assigneeClassPK);
+		sb.append(", assigneeClassPK=");
+		sb.append(assigneeClassPK);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -3670,19 +4201,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			return kaleoTaskAssignmentInstance;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("assigneeClassName=");
-		msg.append(assigneeClassName);
+		sb.append("assigneeClassName=");
+		sb.append(assigneeClassName);
 
-		msg.append(", assigneeClassPK=");
-		msg.append(assigneeClassPK);
+		sb.append(", assigneeClassPK=");
+		sb.append(assigneeClassPK);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTaskAssignmentInstanceException(msg.toString());
+		throw new NoSuchTaskAssignmentInstanceException(sb.toString());
 	}
 
 	/**
@@ -3757,8 +4288,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3772,117 +4303,117 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+		sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
 		boolean bindAssigneeClassName = false;
 
 		if (assigneeClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_3);
+			sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_3);
 		}
 		else {
 			bindAssigneeClassName = true;
 
-			query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_2);
+			sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSPK_2);
+		sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSPK_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindAssigneeClassName) {
-			qPos.add(assigneeClassName);
+			queryPos.add(assigneeClassName);
 		}
 
-		qPos.add(assigneeClassPK);
+		queryPos.add(assigneeClassPK);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						kaleoTaskAssignmentInstance)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTaskAssignmentInstance> list = q.list();
+		List<KaleoTaskAssignmentInstance> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3929,48 +4460,46 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
+			sb.append(_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE_WHERE);
 
 			boolean bindAssigneeClassName = false;
 
 			if (assigneeClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_3);
+				sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_3);
 			}
 			else {
 				bindAssigneeClassName = true;
 
-				query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_2);
+				sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSPK_2);
+			sb.append(_FINDER_COLUMN_ACN_ACPK_ASSIGNEECLASSPK_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindAssigneeClassName) {
-					qPos.add(assigneeClassName);
+					queryPos.add(assigneeClassName);
 				}
 
-				qPos.add(assigneeClassPK);
+				queryPos.add(assigneeClassPK);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3994,8 +4523,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		setModelImplClass(KaleoTaskAssignmentInstanceImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(KaleoTaskAssignmentInstanceTable.INSTANCE);
 	}
 
 	/**
@@ -4008,12 +4537,9 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance) {
 
 		entityCache.putResult(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			kaleoTaskAssignmentInstance.getPrimaryKey(),
 			kaleoTaskAssignmentInstance);
-
-		kaleoTaskAssignmentInstance.resetOriginalValues();
 	}
 
 	/**
@@ -4029,14 +4555,10 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				kaleoTaskAssignmentInstances) {
 
 			if (entityCache.getResult(
-					KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
 					KaleoTaskAssignmentInstanceImpl.class,
 					kaleoTaskAssignmentInstance.getPrimaryKey()) == null) {
 
 				cacheResult(kaleoTaskAssignmentInstance);
-			}
-			else {
-				kaleoTaskAssignmentInstance.resetOriginalValues();
 			}
 		}
 	}
@@ -4069,7 +4591,6 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		KaleoTaskAssignmentInstance kaleoTaskAssignmentInstance) {
 
 		entityCache.removeResult(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			kaleoTaskAssignmentInstance.getPrimaryKey());
 
@@ -4088,9 +4609,20 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				kaleoTaskAssignmentInstances) {
 
 			entityCache.removeResult(
-				KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
 				KaleoTaskAssignmentInstanceImpl.class,
 				kaleoTaskAssignmentInstance.getPrimaryKey());
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(
+				KaleoTaskAssignmentInstanceImpl.class, primaryKey);
 		}
 	}
 
@@ -4112,7 +4644,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			kaleoTaskAssignmentInstanceId);
 
 		kaleoTaskAssignmentInstance.setCompanyId(
-			companyProvider.getCompanyId());
+			CompanyThreadLocal.getCompanyId());
 
 		return kaleoTaskAssignmentInstance;
 	}
@@ -4163,11 +4695,11 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 			return remove(kaleoTaskAssignmentInstance);
 		}
-		catch (NoSuchTaskAssignmentInstanceException nsee) {
-			throw nsee;
+		catch (NoSuchTaskAssignmentInstanceException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4194,8 +4726,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				session.delete(kaleoTaskAssignmentInstance);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4281,8 +4813,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 						kaleoTaskAssignmentInstance);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4290,10 +4822,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!KaleoTaskAssignmentInstanceModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				kaleoTaskAssignmentInstanceModelImpl.getCompanyId()
 			};
@@ -4350,6 +4879,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 				_finderPathWithoutPaginationFindByG_ACPK, args);
 
 			args = new Object[] {
+				kaleoTaskAssignmentInstanceModelImpl.
+					getKaleoTaskInstanceTokenId(),
+				kaleoTaskAssignmentInstanceModelImpl.getAssigneeClassName()
+			};
+
+			finderCache.removeResult(_finderPathCountByKTITI_ACN, args);
+			finderCache.removeResult(
+				_finderPathWithoutPaginationFindByKTITI_ACN, args);
+
+			args = new Object[] {
 				kaleoTaskAssignmentInstanceModelImpl.getAssigneeClassName(),
 				kaleoTaskAssignmentInstanceModelImpl.getAssigneeClassPK()
 			};
@@ -4368,7 +4907,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.getOriginalCompanyId()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"companyId")
 				};
 
 				finderCache.removeResult(_finderPathCountByCompanyId, args);
@@ -4389,8 +4929,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalKaleoDefinitionVersionId()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"kaleoDefinitionVersionId")
 				};
 
 				finderCache.removeResult(
@@ -4416,8 +4956,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalKaleoInstanceId()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"kaleoInstanceId")
 				};
 
 				finderCache.removeResult(
@@ -4440,8 +4980,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalKaleoTaskInstanceTokenId()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"kaleoTaskInstanceTokenId")
 				};
 
 				finderCache.removeResult(
@@ -4467,8 +5007,8 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalAssigneeClassName()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"assigneeClassName")
 				};
 
 				finderCache.removeResult(
@@ -4491,9 +5031,10 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.getOriginalGroupId(),
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalAssigneeClassPK()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"groupId"),
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"assigneeClassPK")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_ACPK, args);
@@ -4511,14 +5052,40 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			}
 
 			if ((kaleoTaskAssignmentInstanceModelImpl.getColumnBitmask() &
+				 _finderPathWithoutPaginationFindByKTITI_ACN.
+					 getColumnBitmask()) != 0) {
+
+				Object[] args = new Object[] {
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"kaleoTaskInstanceTokenId"),
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"assigneeClassName")
+				};
+
+				finderCache.removeResult(_finderPathCountByKTITI_ACN, args);
+				finderCache.removeResult(
+					_finderPathWithoutPaginationFindByKTITI_ACN, args);
+
+				args = new Object[] {
+					kaleoTaskAssignmentInstanceModelImpl.
+						getKaleoTaskInstanceTokenId(),
+					kaleoTaskAssignmentInstanceModelImpl.getAssigneeClassName()
+				};
+
+				finderCache.removeResult(_finderPathCountByKTITI_ACN, args);
+				finderCache.removeResult(
+					_finderPathWithoutPaginationFindByKTITI_ACN, args);
+			}
+
+			if ((kaleoTaskAssignmentInstanceModelImpl.getColumnBitmask() &
 				 _finderPathWithoutPaginationFindByACN_ACPK.
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalAssigneeClassName(),
-					kaleoTaskAssignmentInstanceModelImpl.
-						getOriginalAssigneeClassPK()
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"assigneeClassName"),
+					kaleoTaskAssignmentInstanceModelImpl.getColumnOriginalValue(
+						"assigneeClassPK")
 				};
 
 				finderCache.removeResult(_finderPathCountByACN_ACPK, args);
@@ -4537,7 +5104,6 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		}
 
 		entityCache.putResult(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			kaleoTaskAssignmentInstance.getPrimaryKey(),
 			kaleoTaskAssignmentInstance, false);
@@ -4615,7 +5181,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns a range of all the kaleo task assignment instances.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo task assignment instances
@@ -4631,7 +5197,7 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo task assignment instances
@@ -4651,66 +5217,64 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	 * Returns an ordered range of all the kaleo task assignment instances.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTaskAssignmentInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo task assignment instances
 	 * @param end the upper bound of the range of kaleo task assignment instances (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of kaleo task assignment instances
 	 */
 	@Override
 	public List<KaleoTaskAssignmentInstance> findAll(
 		int start, int end,
 		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<KaleoTaskAssignmentInstance> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTaskAssignmentInstance>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE);
+				sb.append(_SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE;
 
-				if (pagination) {
-					sql = sql.concat(
-						KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(
+					KaleoTaskAssignmentInstanceModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -4718,29 +5282,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTaskAssignmentInstance>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4779,19 +5333,16 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(
+				Query query = session.createQuery(
 					_SQL_COUNT_KALEOTASKASSIGNMENTINSTANCE);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4824,29 +5375,22 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 	/**
 	 * Initializes the kaleo task assignment instance persistence.
 	 */
-	public void afterPropertiesSet() {
+	@Activate
+	public void activate() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
 			new String[] {
@@ -4855,23 +5399,17 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
 			new String[] {Long.class.getName()},
-			KaleoTaskAssignmentInstanceModelImpl.COMPANYID_COLUMN_BITMASK);
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask("companyId"));
 
 		_finderPathCountByCompanyId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByCompanyId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByKaleoDefinitionVersionId =
 			new FinderPath(
-				KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-				KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 				KaleoTaskAssignmentInstanceImpl.class,
 				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 				"findByKaleoDefinitionVersionId",
@@ -4882,25 +5420,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		_finderPathWithoutPaginationFindByKaleoDefinitionVersionId =
 			new FinderPath(
-				KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-				KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 				KaleoTaskAssignmentInstanceImpl.class,
 				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 				"findByKaleoDefinitionVersionId",
 				new String[] {Long.class.getName()},
-				KaleoTaskAssignmentInstanceModelImpl.
-					KALEODEFINITIONVERSIONID_COLUMN_BITMASK);
+				KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+					"kaleoDefinitionVersionId"));
 
 		_finderPathCountByKaleoDefinitionVersionId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByKaleoDefinitionVersionId",
 			new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByKaleoInstanceId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByKaleoInstanceId",
 			new String[] {
@@ -4909,24 +5441,18 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByKaleoInstanceId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByKaleoInstanceId",
 			new String[] {Long.class.getName()},
-			KaleoTaskAssignmentInstanceModelImpl.
-				KALEOINSTANCEID_COLUMN_BITMASK);
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"kaleoInstanceId"));
 
 		_finderPathCountByKaleoInstanceId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByKaleoInstanceId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindBykaleoTaskInstanceTokenId =
 			new FinderPath(
-				KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-				KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 				KaleoTaskAssignmentInstanceImpl.class,
 				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 				"findBykaleoTaskInstanceTokenId",
@@ -4937,25 +5463,19 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 		_finderPathWithoutPaginationFindBykaleoTaskInstanceTokenId =
 			new FinderPath(
-				KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-				KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 				KaleoTaskAssignmentInstanceImpl.class,
 				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 				"findBykaleoTaskInstanceTokenId",
 				new String[] {Long.class.getName()},
-				KaleoTaskAssignmentInstanceModelImpl.
-					KALEOTASKINSTANCETOKENID_COLUMN_BITMASK);
+				KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+					"kaleoTaskInstanceTokenId"));
 
 		_finderPathCountBykaleoTaskInstanceTokenId = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countBykaleoTaskInstanceTokenId",
 			new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByassigneeClassName = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByassigneeClassName",
 			new String[] {
@@ -4964,23 +5484,17 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByassigneeClassName = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"findByassigneeClassName", new String[] {String.class.getName()},
-			KaleoTaskAssignmentInstanceModelImpl.
-				ASSIGNEECLASSNAME_COLUMN_BITMASK);
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"assigneeClassName"));
 
 		_finderPathCountByassigneeClassName = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByassigneeClassName", new String[] {String.class.getName()});
 
 		_finderPathWithPaginationFindByG_ACPK = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_ACPK",
 			new String[] {
@@ -4990,25 +5504,42 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_ACPK = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_ACPK",
 			new String[] {Long.class.getName(), Long.class.getName()},
-			KaleoTaskAssignmentInstanceModelImpl.GROUPID_COLUMN_BITMASK |
-			KaleoTaskAssignmentInstanceModelImpl.
-				ASSIGNEECLASSPK_COLUMN_BITMASK);
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask("groupId") |
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"assigneeClassPK"));
 
 		_finderPathCountByG_ACPK = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByG_ACPK",
 			new String[] {Long.class.getName(), Long.class.getName()});
 
+		_finderPathWithPaginationFindByKTITI_ACN = new FinderPath(
+			KaleoTaskAssignmentInstanceImpl.class,
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByKTITI_ACN",
+			new String[] {
+				Long.class.getName(), String.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			});
+
+		_finderPathWithoutPaginationFindByKTITI_ACN = new FinderPath(
+			KaleoTaskAssignmentInstanceImpl.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByKTITI_ACN",
+			new String[] {Long.class.getName(), String.class.getName()},
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"kaleoTaskInstanceTokenId") |
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"assigneeClassName"));
+
+		_finderPathCountByKTITI_ACN = new FinderPath(
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByKTITI_ACN",
+			new String[] {Long.class.getName(), String.class.getName()});
+
 		_finderPathWithPaginationFindByACN_ACPK = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByACN_ACPK",
 			new String[] {
@@ -5018,25 +5549,22 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByACN_ACPK = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			KaleoTaskAssignmentInstanceImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByACN_ACPK",
 			new String[] {String.class.getName(), Long.class.getName()},
-			KaleoTaskAssignmentInstanceModelImpl.
-				ASSIGNEECLASSNAME_COLUMN_BITMASK |
-			KaleoTaskAssignmentInstanceModelImpl.
-				ASSIGNEECLASSPK_COLUMN_BITMASK);
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"assigneeClassName") |
+			KaleoTaskAssignmentInstanceModelImpl.getColumnBitmask(
+				"assigneeClassPK"));
 
 		_finderPathCountByACN_ACPK = new FinderPath(
-			KaleoTaskAssignmentInstanceModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTaskAssignmentInstanceModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByACN_ACPK",
 			new String[] {String.class.getName(), Long.class.getName()});
 	}
 
-	public void destroy() {
+	@Deactivate
+	public void deactivate() {
 		entityCache.removeCache(
 			KaleoTaskAssignmentInstanceImpl.class.getName());
 		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
@@ -5044,13 +5572,36 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@ServiceReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
+	@Override
+	@Reference(
+		target = KaleoPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
+	public void setConfiguration(Configuration configuration) {
+	}
 
-	@ServiceReference(type = EntityCache.class)
+	@Override
+	@Reference(
+		target = KaleoPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+	}
+
+	@Override
+	@Reference(
+		target = KaleoPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		super.setSessionFactory(sessionFactory);
+	}
+
+	@Reference
 	protected EntityCache entityCache;
 
-	@ServiceReference(type = FinderCache.class)
+	@Reference
 	protected FinderCache finderCache;
 
 	private static final String _SQL_SELECT_KALEOTASKASSIGNMENTINSTANCE =
@@ -5076,5 +5627,14 @@ public class KaleoTaskAssignmentInstancePersistenceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		KaleoTaskAssignmentInstancePersistenceImpl.class);
+
+	static {
+		try {
+			Class.forName(KaleoPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

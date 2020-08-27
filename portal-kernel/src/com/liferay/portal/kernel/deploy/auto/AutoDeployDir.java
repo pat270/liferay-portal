@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.deploy.auto;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.log.Log;
@@ -23,11 +24,11 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerList;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,17 +55,22 @@ public class AutoDeployDir {
 			List<AutoDeployListener> autoDeployListeners)
 		throws AutoDeployException {
 
-		AutoDeployListener autoDeployListener = _serviceTracker.getService();
+		if (_serviceTrackerList != null) {
+			Iterator<AutoDeployListener> iterator =
+				_serviceTrackerList.iterator();
 
-		if (autoDeployListener != null) {
-			if (autoDeployListener.isDeployable(autoDeploymentContext)) {
-				autoDeployListener.deploy(autoDeploymentContext);
+			while (iterator.hasNext()) {
+				AutoDeployListener autoDeployListener = iterator.next();
 
-				File file = autoDeploymentContext.getFile();
+				if (autoDeployListener.isDeployable(autoDeploymentContext)) {
+					autoDeployListener.deploy(autoDeploymentContext);
 
-				file.delete();
+					File file = autoDeploymentContext.getFile();
 
-				return;
+					file.delete();
+
+					return;
+				}
 			}
 		}
 
@@ -89,6 +98,9 @@ public class AutoDeployDir {
 					break;
 				}
 			}
+		}
+		else if (StringUtil.endsWith(fileName, ".jar") && !_isModule(file)) {
+			throw new AutoDeployException(fileName + " is an invalid module");
 		}
 		else if (StringUtil.endsWith(fileName, ".lpkg")) {
 			for (String curDirName : dirNames) {
@@ -193,12 +205,10 @@ public class AutoDeployDir {
 					_log.info("Auto deploy scanner started for " + _deployDir);
 				}
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 
 				stop();
-
-				return;
 			}
 		}
 		else {
@@ -213,7 +223,7 @@ public class AutoDeployDir {
 			_autoDeployScanner.pause();
 		}
 
-		_serviceTracker.close();
+		_serviceTrackerList.close();
 	}
 
 	public void unregisterListener(AutoDeployListener autoDeployListener) {
@@ -269,8 +279,8 @@ public class AutoDeployDir {
 
 			return;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -330,21 +340,45 @@ public class AutoDeployDir {
 		}
 	}
 
+	private static boolean _isModule(File file) throws AutoDeployException {
+		Manifest manifest = null;
+
+		try (JarFile jarFile = new JarFile(file)) {
+			manifest = jarFile.getManifest();
+		}
+		catch (IOException ioException) {
+			throw new AutoDeployException(ioException);
+		}
+
+		if (manifest == null) {
+			return false;
+		}
+
+		Attributes attributes = manifest.getMainAttributes();
+
+		String bundleSymbolicName = attributes.getValue("Bundle-SymbolicName");
+
+		if (bundleSymbolicName == null) {
+			return false;
+		}
+
+		int index = bundleSymbolicName.indexOf(CharPool.SEMICOLON);
+
+		if (index != -1) {
+			bundleSymbolicName = bundleSymbolicName.substring(0, index);
+		}
+
+		return !bundleSymbolicName.isEmpty();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(AutoDeployDir.class);
 
 	private static AutoDeployScanner _autoDeployScanner;
-	private static final ServiceTracker<AutoDeployListener, AutoDeployListener>
-		_serviceTracker;
+	private static final ServiceTrackerList<AutoDeployListener>
+		_serviceTrackerList = ServiceTrackerCollections.openList(
+			AutoDeployListener.class);
 	private static final Pattern _versionPattern = Pattern.compile(
 		"-[\\d]+((\\.[\\d]+)+(-.+)*)\\.war$");
-
-	static {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(AutoDeployListener.class);
-
-		_serviceTracker.open();
-	}
 
 	private final List<AutoDeployListener> _autoDeployListeners;
 	private final Map<String, Long> _blacklistFileTimestamps;

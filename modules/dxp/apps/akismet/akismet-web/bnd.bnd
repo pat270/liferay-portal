@@ -1,0 +1,4 @@
+Bundle-Name: Liferay Akismet Web
+Bundle-SymbolicName: com.liferay.akismet.web
+Bundle-Version: 1.0.0
+Web-ContextPath: /akismet-web

@@ -14,7 +14,6 @@
 
 package com.liferay.asset.list.web.internal.display.context;
 
-import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.list.constants.AssetListActionKeys;
 import com.liferay.asset.list.constants.AssetListEntryTypeConstants;
@@ -24,8 +23,11 @@ import com.liferay.asset.list.service.AssetListEntryLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntryServiceUtil;
 import com.liferay.asset.list.util.AssetListPortletUtil;
 import com.liferay.asset.list.web.internal.security.permission.resource.AssetListPermission;
+import com.liferay.asset.util.AssetRendererFactoryClassProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
@@ -39,7 +41,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsEntryConstants;
 
 import java.util.List;
 
@@ -56,8 +58,10 @@ import javax.servlet.http.HttpServletRequest;
 public class AssetListDisplayContext {
 
 	public AssetListDisplayContext(
+		AssetRendererFactoryClassProvider assetRendererFactoryClassProvider,
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
+		_assetRendererFactoryClassProvider = assetRendererFactoryClassProvider;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 
@@ -70,46 +74,15 @@ public class AssetListDisplayContext {
 	}
 
 	public List<DropdownItem> getAddAssetListEntryDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					_getAddAssetListEntryDropdownItemUnsafeConsumer(
-						AssetListEntryTypeConstants.TYPE_MANUAL_LABEL,
-						"manual-selection",
-						AssetListEntryTypeConstants.TYPE_MANUAL));
-				add(
-					_getAddAssetListEntryDropdownItemUnsafeConsumer(
-						AssetListEntryTypeConstants.TYPE_DYNAMIC_LABEL,
-						"dynamic-selection",
-						AssetListEntryTypeConstants.TYPE_DYNAMIC));
-			}
-		};
-	}
-
-	public SearchContainer<AssetEntry> getAssetListContentSearchContainer() {
-		if (_assetListContentSearchContainer != null) {
-			return _assetListContentSearchContainer;
-		}
-
-		SearchContainer searchContainer = new SearchContainer(
-			_renderRequest, _renderResponse.createRenderURL(), null,
-			"there-are-no-asset-entries");
-
-		AssetListEntry assetListEntry = getAssetListEntry();
-
-		List<AssetEntry> assetEntries = assetListEntry.getAssetEntries(
-			getSegmentsEntryId());
-
-		searchContainer.setResults(assetEntries);
-
-		int totalCount = assetListEntry.getAssetEntriesCount(
-			getSegmentsEntryId());
-
-		searchContainer.setTotal(totalCount);
-
-		_assetListContentSearchContainer = searchContainer;
-
-		return _assetListContentSearchContainer;
+		return DropdownItemListBuilder.add(
+			_getAddAssetListEntryDropdownItemUnsafeConsumer(
+				AssetListEntryTypeConstants.TYPE_MANUAL_LABEL,
+				"manual-selection", AssetListEntryTypeConstants.TYPE_MANUAL)
+		).add(
+			_getAddAssetListEntryDropdownItemUnsafeConsumer(
+				AssetListEntryTypeConstants.TYPE_DYNAMIC_LABEL,
+				"dynamic-selection", AssetListEntryTypeConstants.TYPE_DYNAMIC)
+		).build();
 	}
 
 	public int getAssetListEntriesCount() {
@@ -124,14 +97,17 @@ public class AssetListDisplayContext {
 		return _assetListEntriesCount;
 	}
 
-	public SearchContainer getAssetListEntriesSearchContainer() {
+	public SearchContainer<AssetListEntry>
+		getAssetListEntriesSearchContainer() {
+
 		if (_assetListEntriesSearchContainer != null) {
 			return _assetListEntriesSearchContainer;
 		}
 
-		SearchContainer assetListEntriesSearchContainer = new SearchContainer(
-			_renderRequest, _renderResponse.createRenderURL(), null,
-			"there-are-no-content-sets");
+		SearchContainer<AssetListEntry> assetListEntriesSearchContainer =
+			new SearchContainer(
+				_renderRequest, _renderResponse.createRenderURL(), null,
+				"there-are-no-collections");
 
 		assetListEntriesSearchContainer.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
@@ -210,12 +186,12 @@ public class AssetListDisplayContext {
 		if (getAssetListEntryType() ==
 				AssetListEntryTypeConstants.TYPE_DYNAMIC) {
 
-			title = "new-dynamic-content-set";
+			title = "new-dynamic-collection";
 		}
 		else if (getAssetListEntryType() ==
 					AssetListEntryTypeConstants.TYPE_MANUAL) {
 
-			title = "new-manual-content-set";
+			title = "new-manual-collection";
 		}
 
 		return LanguageUtil.get(_httpServletRequest, title);
@@ -241,7 +217,8 @@ public class AssetListDisplayContext {
 	}
 
 	public String getClassName(AssetRendererFactory<?> assetRendererFactory) {
-		Class<?> clazz = assetRendererFactory.getClass();
+		Class<? extends AssetRendererFactory> clazz =
+			_assetRendererFactoryClassProvider.getClass(assetRendererFactory);
 
 		String className = clazz.getName();
 
@@ -258,6 +235,28 @@ public class AssetListDisplayContext {
 		}
 
 		return StringPool.BLANK;
+	}
+
+	public List<NavigationItem> getNavigationItems(String currentItem) {
+		return NavigationItemListBuilder.add(
+			navigationItem -> {
+				navigationItem.setActive(currentItem.equals("collections"));
+				navigationItem.setHref(_renderResponse.createRenderURL());
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "collections"));
+			}
+		).add(
+			navigationItem -> {
+				navigationItem.setActive(
+					currentItem.equals("collection-providers"));
+				navigationItem.setHref(
+					_renderResponse.createRenderURL(), "mvcPath",
+					"/view_info_list_providers.jsp");
+				navigationItem.setLabel(
+					LanguageUtil.get(
+						_httpServletRequest, "collection-providers"));
+			}
+		).build();
 	}
 
 	public String getOrderByCol() {
@@ -341,7 +340,7 @@ public class AssetListDisplayContext {
 
 		_segmentsEntryId = ParamUtil.getLong(
 			_httpServletRequest, "segmentsEntryId",
-			SegmentsConstants.SEGMENTS_ENTRY_ID_DEFAULT);
+			SegmentsEntryConstants.ID_DEFAULT);
 
 		return _segmentsEntryId;
 	}
@@ -362,7 +361,6 @@ public class AssetListDisplayContext {
 			dropdownItem.putData(
 				"addAssetListEntryURL", _getAddAssetListEntryURL(type));
 			dropdownItem.putData("title", _getAddAssetListTitle(title));
-			dropdownItem.setHref("#");
 			dropdownItem.setLabel(LanguageUtil.get(_httpServletRequest, label));
 		};
 	}
@@ -379,7 +377,7 @@ public class AssetListDisplayContext {
 
 	private String _getAddAssetListTitle(String title) {
 		return LanguageUtil.format(
-			_httpServletRequest, "add-x-content-set", title, true);
+			_httpServletRequest, "add-x-collection", title, true);
 	}
 
 	private String _getKeywords() {
@@ -411,12 +409,13 @@ public class AssetListDisplayContext {
 		return false;
 	}
 
-	private SearchContainer _assetListContentSearchContainer;
 	private Integer _assetListEntriesCount;
-	private SearchContainer _assetListEntriesSearchContainer;
+	private SearchContainer<AssetListEntry> _assetListEntriesSearchContainer;
 	private AssetListEntry _assetListEntry;
 	private Long _assetListEntryId;
 	private Integer _assetListEntryType;
+	private final AssetRendererFactoryClassProvider
+		_assetRendererFactoryClassProvider;
 	private final HttpServletRequest _httpServletRequest;
 	private String _keywords;
 	private String _orderByCol;

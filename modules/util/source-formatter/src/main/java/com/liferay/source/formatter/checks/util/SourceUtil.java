@@ -16,6 +16,7 @@ package com.liferay.source.formatter.checks.util;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -27,6 +28,11 @@ import java.io.File;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -127,7 +133,46 @@ public class SourceUtil {
 		return x + 1;
 	}
 
-	public static String getTitleCase(String s, String[] exceptions) {
+	public static int[] getMultiLinePositions(
+		String content, Pattern multiLinePattern) {
+
+		List<Integer> multiLinePositions = new ArrayList<>();
+
+		Matcher matcher = multiLinePattern.matcher(content);
+
+		while (matcher.find()) {
+			multiLinePositions.add(getLineNumber(content, matcher.start()));
+			multiLinePositions.add(getLineNumber(content, matcher.end() - 1));
+		}
+
+		return ArrayUtil.toIntArray(multiLinePositions);
+	}
+
+	public static String getRootDirName(String absolutePath) {
+		while (true) {
+			int x = absolutePath.lastIndexOf(CharPool.SLASH);
+
+			if (x == -1) {
+				return StringPool.BLANK;
+			}
+
+			absolutePath = absolutePath.substring(0, x);
+
+			File file = new File(absolutePath + "/portal-impl");
+
+			if (file.exists()) {
+				return absolutePath;
+			}
+		}
+	}
+
+	public static String getTitleCase(
+		String s, boolean allowDash, String... exceptions) {
+
+		if (!allowDash) {
+			s = StringUtil.replace(s, CharPool.DASH, CharPool.SPACE);
+		}
+
 		String[] words = s.split("\\s+");
 
 		if (ArrayUtil.isEmpty(words)) {
@@ -182,13 +227,29 @@ public class SourceUtil {
 		return sb.toString();
 	}
 
+	public static boolean isInsideMultiLines(
+		int lineNumber, int[] multiLinePositions) {
+
+		for (int i = 0; i < (multiLinePositions.length - 1); i += 2) {
+			if (lineNumber < multiLinePositions[i]) {
+				return false;
+			}
+
+			if (lineNumber <= multiLinePositions[i + 1]) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static boolean isXML(String content) {
 		try {
 			readXML(content);
 
 			return true;
 		}
-		catch (DocumentException de) {
+		catch (DocumentException documentException) {
 			return false;
 		}
 	}

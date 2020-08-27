@@ -74,7 +74,7 @@ if (selUser != null) {
 boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(permissionChecker, ActionKeys.UNLINK_LAYOUT_SET_PROTOTYPE);
 %>
 
-<div class="sheet-section">
+<clay:sheet-section>
 	<h3 class="sheet-subtitle"><liferay-ui:message key="profile" /></h3>
 
 	<c:choose>
@@ -151,9 +151,9 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 			</aui:field-wrapper>
 		</c:otherwise>
 	</c:choose>
-</div>
+</clay:sheet-section>
 
-<div class="sheet-section">
+<clay:sheet-section>
 	<h3 class="sheet-subtitle"><liferay-ui:message key="dashboard" /></h3>
 
 	<c:choose>
@@ -230,7 +230,7 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 			</aui:field-wrapper>
 		</c:otherwise>
 	</c:choose>
-</div>
+</clay:sheet-section>
 
 <%
 if ((selUser == null) && layoutSetPrototypes.isEmpty()) {
@@ -243,6 +243,14 @@ if ((selUser == null) && layoutSetPrototypes.isEmpty()) {
 		return currentValue != '';
 	}
 
-	Liferay.Util.toggleSelectBox('<portlet:namespace />publicLayoutSetPrototypeId', <portlet:namespace />isVisible, '<portlet:namespace />publicLayoutSetPrototypeIdOptions');
-	Liferay.Util.toggleSelectBox('<portlet:namespace />privateLayoutSetPrototypeId', <portlet:namespace />isVisible, '<portlet:namespace />privateLayoutSetPrototypeIdOptions');
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />publicLayoutSetPrototypeId',
+		<portlet:namespace />isVisible,
+		'<portlet:namespace />publicLayoutSetPrototypeIdOptions'
+	);
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />privateLayoutSetPrototypeId',
+		<portlet:namespace />isVisible,
+		'<portlet:namespace />privateLayoutSetPrototypeIdOptions'
+	);
 </aui:script>

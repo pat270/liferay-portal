@@ -14,9 +14,10 @@
 
 package com.liferay.message.boards.service;
 
+import com.liferay.message.boards.model.MBStatsUser;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link MBStatsUserLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBStatsUserLocalService
  * @generated
  */
-@ProviderType
 public class MBStatsUserLocalServiceWrapper
 	implements MBStatsUserLocalService,
 			   ServiceWrapper<MBStatsUserLocalService> {
@@ -39,20 +39,20 @@ public class MBStatsUserLocalServiceWrapper
 	/**
 	 * Adds the message boards stats user to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBStatsUserLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbStatsUser the message boards stats user
 	 * @return the message boards stats user that was added
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser addMBStatsUser(
-		com.liferay.message.boards.model.MBStatsUser mbStatsUser) {
-
+	public MBStatsUser addMBStatsUser(MBStatsUser mbStatsUser) {
 		return _mbStatsUserLocalService.addMBStatsUser(mbStatsUser);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser addStatsUser(
-		long groupId, long userId) {
-
+	public MBStatsUser addStatsUser(long groupId, long userId) {
 		return _mbStatsUserLocalService.addStatsUser(groupId, userId);
 	}
 
@@ -63,22 +63,34 @@ public class MBStatsUserLocalServiceWrapper
 	 * @return the new message boards stats user
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser createMBStatsUser(
-		long statsUserId) {
-
+	public MBStatsUser createMBStatsUser(long statsUserId) {
 		return _mbStatsUserLocalService.createMBStatsUser(statsUserId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbStatsUserLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the message boards stats user with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBStatsUserLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param statsUserId the primary key of the message boards stats user
 	 * @return the message boards stats user that was removed
 	 * @throws PortalException if a message boards stats user with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser deleteMBStatsUser(
-			long statsUserId)
+	public MBStatsUser deleteMBStatsUser(long statsUserId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbStatsUserLocalService.deleteMBStatsUser(statsUserId);
@@ -87,13 +99,15 @@ public class MBStatsUserLocalServiceWrapper
 	/**
 	 * Deletes the message boards stats user from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBStatsUserLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbStatsUser the message boards stats user
 	 * @return the message boards stats user that was removed
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser deleteMBStatsUser(
-		com.liferay.message.boards.model.MBStatsUser mbStatsUser) {
-
+	public MBStatsUser deleteMBStatsUser(MBStatsUser mbStatsUser) {
 		return _mbStatsUserLocalService.deleteMBStatsUser(mbStatsUser);
 	}
 
@@ -116,9 +130,7 @@ public class MBStatsUserLocalServiceWrapper
 	}
 
 	@Override
-	public void deleteStatsUser(
-		com.liferay.message.boards.model.MBStatsUser statsUser) {
-
+	public void deleteStatsUser(MBStatsUser statsUser) {
 		_mbStatsUserLocalService.deleteStatsUser(statsUser);
 	}
 
@@ -130,6 +142,11 @@ public class MBStatsUserLocalServiceWrapper
 	@Override
 	public void deleteStatsUsersByUserId(long userId) {
 		_mbStatsUserLocalService.deleteStatsUsersByUserId(userId);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _mbStatsUserLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -154,7 +171,7 @@ public class MBStatsUserLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBStatsUserModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBStatsUserModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -174,7 +191,7 @@ public class MBStatsUserLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBStatsUserModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBStatsUserModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -223,9 +240,7 @@ public class MBStatsUserLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser fetchMBStatsUser(
-		long statsUserId) {
-
+	public MBStatsUser fetchMBStatsUser(long statsUserId) {
 		return _mbStatsUserLocalService.fetchMBStatsUser(statsUserId);
 	}
 
@@ -257,8 +272,7 @@ public class MBStatsUserLocalServiceWrapper
 	 * @throws PortalException if a message boards stats user with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser getMBStatsUser(
-			long statsUserId)
+	public MBStatsUser getMBStatsUser(long statsUserId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbStatsUserLocalService.getMBStatsUser(statsUserId);
@@ -268,7 +282,7 @@ public class MBStatsUserLocalServiceWrapper
 	 * Returns a range of all the message boards stats users.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBStatsUserModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBStatsUserModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of message boards stats users
@@ -276,9 +290,7 @@ public class MBStatsUserLocalServiceWrapper
 	 * @return the range of message boards stats users
 	 */
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBStatsUser>
-		getMBStatsUsers(int start, int end) {
-
+	public java.util.List<MBStatsUser> getMBStatsUsers(int start, int end) {
 		return _mbStatsUserLocalService.getMBStatsUsers(start, end);
 	}
 
@@ -312,6 +324,9 @@ public class MBStatsUserLocalServiceWrapper
 		return _mbStatsUserLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -321,15 +336,13 @@ public class MBStatsUserLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser getStatsUser(
-		long groupId, long userId) {
-
+	public MBStatsUser getStatsUser(long groupId, long userId) {
 		return _mbStatsUserLocalService.getStatsUser(groupId, userId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBStatsUser>
-			getStatsUsersByGroupId(long groupId, int start, int end)
+	public java.util.List<MBStatsUser> getStatsUsersByGroupId(
+			long groupId, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbStatsUserLocalService.getStatsUsersByGroupId(
@@ -344,34 +357,40 @@ public class MBStatsUserLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBStatsUser>
-		getStatsUsersByUserId(long userId) {
-
+	public java.util.List<MBStatsUser> getStatsUsersByUserId(long userId) {
 		return _mbStatsUserLocalService.getStatsUsersByUserId(userId);
+	}
+
+	@Override
+	public String[] getUserRank(long groupId, String languageId, long userId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbStatsUserLocalService.getUserRank(
+			groupId, languageId, userId);
 	}
 
 	/**
 	 * Updates the message boards stats user in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBStatsUserLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbStatsUser the message boards stats user
 	 * @return the message boards stats user that was updated
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser updateMBStatsUser(
-		com.liferay.message.boards.model.MBStatsUser mbStatsUser) {
-
+	public MBStatsUser updateMBStatsUser(MBStatsUser mbStatsUser) {
 		return _mbStatsUserLocalService.updateMBStatsUser(mbStatsUser);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser updateStatsUser(
-		long groupId, long userId) {
-
+	public MBStatsUser updateStatsUser(long groupId, long userId) {
 		return _mbStatsUserLocalService.updateStatsUser(groupId, userId);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser updateStatsUser(
+	public MBStatsUser updateStatsUser(
 		long groupId, long userId, java.util.Date lastPostDate) {
 
 		return _mbStatsUserLocalService.updateStatsUser(
@@ -379,12 +398,32 @@ public class MBStatsUserLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBStatsUser updateStatsUser(
+	public MBStatsUser updateStatsUser(
 		long groupId, long userId, int messageCount,
 		java.util.Date lastPostDate) {
 
 		return _mbStatsUserLocalService.updateStatsUser(
 			groupId, userId, messageCount, lastPostDate);
+	}
+
+	@Override
+	public CTPersistence<MBStatsUser> getCTPersistence() {
+		return _mbStatsUserLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<MBStatsUser> getModelClass() {
+		return _mbStatsUserLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<MBStatsUser>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _mbStatsUserLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

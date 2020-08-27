@@ -14,55 +14,58 @@
 
 package com.liferay.bulk.rest.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.bulk.rest.client.dto.v1_0.TaxonomyCategory;
-import com.liferay.bulk.rest.client.dto.v1_0.TaxonomyCategoryBulkSelection;
+import com.liferay.bulk.rest.client.http.HttpInvoker;
 import com.liferay.bulk.rest.client.pagination.Page;
+import com.liferay.bulk.rest.client.resource.v1_0.TaxonomyCategoryResource;
 import com.liferay.bulk.rest.client.serdes.v1_0.TaxonomyCategorySerDes;
-import com.liferay.bulk.rest.resource.v1_0.TaxonomyCategoryResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 
@@ -96,9 +99,20 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL("http://localhost:8080/o/bulk-rest/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_taxonomyCategoryResource.setContextCompany(testCompany);
+
+		TaxonomyCategoryResource.Builder builder =
+			TaxonomyCategoryResource.builder();
+
+		taxonomyCategoryResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -112,10 +126,16 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -133,9 +153,15 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -149,92 +175,28 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	}
 
 	@Test
-	public void testPatchTaxonomyCategoryBatch() throws Exception {
-		Assert.assertTrue(true);
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		TaxonomyCategory taxonomyCategory = randomTaxonomyCategory();
+
+		taxonomyCategory.setTaxonomyCategoryName(regex);
+
+		String json = TaxonomyCategorySerDes.toJSON(taxonomyCategory);
+
+		Assert.assertFalse(json.contains(regex));
+
+		taxonomyCategory = TaxonomyCategorySerDes.toDTO(json);
+
+		Assert.assertEquals(regex, taxonomyCategory.getTaxonomyCategoryName());
 	}
 
-	protected void invokePatchTaxonomyCategoryBatch(
-			TaxonomyCategoryBulkSelection taxonomyCategoryBulkSelection)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location = _resourceURL + _toPath("/taxonomy-categories/batch");
-
-		options.setLocation(location);
-
-		options.setPatch(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-	}
-
-	protected Http.Response invokePatchTaxonomyCategoryBatchResponse(
-			TaxonomyCategoryBulkSelection taxonomyCategoryBulkSelection)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location = _resourceURL + _toPath("/taxonomy-categories/batch");
-
-		options.setLocation(location);
-
-		options.setPatch(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	@Test
-	public void testPutTaxonomyCategoryBatch() throws Exception {
-		Assert.assertTrue(true);
-	}
-
-	protected void invokePutTaxonomyCategoryBatch(
-			TaxonomyCategoryBulkSelection taxonomyCategoryBulkSelection)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location = _resourceURL + _toPath("/taxonomy-categories/batch");
-
-		options.setLocation(location);
-
-		options.setPut(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-	}
-
-	protected Http.Response invokePutTaxonomyCategoryBatchResponse(
-			TaxonomyCategoryBulkSelection taxonomyCategoryBulkSelection)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location = _resourceURL + _toPath("/taxonomy-categories/batch");
-
-		options.setLocation(location);
-
-		options.setPut(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -285,7 +247,9 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		}
 	}
 
-	protected void assertValid(TaxonomyCategory taxonomyCategory) {
+	protected void assertValid(TaxonomyCategory taxonomyCategory)
+		throws Exception {
+
 		boolean valid = true;
 
 		for (String additionalAssertFieldName :
@@ -322,7 +286,8 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	protected void assertValid(Page<TaxonomyCategory> page) {
 		boolean valid = false;
 
-		Collection<TaxonomyCategory> taxonomyCategories = page.getItems();
+		java.util.Collection<TaxonomyCategory> taxonomyCategories =
+			page.getItems();
 
 		int size = taxonomyCategories.size();
 
@@ -337,6 +302,58 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	}
 
 	protected String[] getAdditionalAssertFieldNames() {
+		return new String[0];
+	}
+
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.bulk.rest.dto.v1_0.TaxonomyCategory.class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
 		return new String[0];
 	}
 
@@ -385,7 +402,33 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_taxonomyCategoryResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -406,12 +449,15 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -449,11 +495,49 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected TaxonomyCategory randomTaxonomyCategory() throws Exception {
 		return new TaxonomyCategory() {
 			{
 				taxonomyCategoryId = RandomTestUtil.randomLong();
-				taxonomyCategoryName = RandomTestUtil.randomString();
+				taxonomyCategoryName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 			}
 		};
 	}
@@ -471,76 +555,80 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		return randomTaxonomyCategory();
 	}
 
+	protected TaxonomyCategoryResource taxonomyCategoryResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -561,8 +649,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private TaxonomyCategoryResource _taxonomyCategoryResource;
-
-	private URL _resourceURL;
+	private com.liferay.bulk.rest.resource.v1_0.TaxonomyCategoryResource
+		_taxonomyCategoryResource;
 
 }

@@ -32,20 +32,19 @@ import com.liferay.portal.kernel.messaging.DestinationFactory;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.HotDeployMessageListener;
 import com.liferay.portal.kernel.messaging.Message;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageListener;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 
@@ -138,13 +137,11 @@ public class ResourcesImporterHotDeployMessageListener
 		PluginPackageProperties pluginPackageProperties =
 			new PluginPackageProperties(servletContext);
 
-		String resourcesDir = pluginPackageProperties.getResourcesDir();
-
 		if ((servletContext.getResource(ImporterFactory.RESOURCES_DIR) ==
 				null) &&
 			(servletContext.getResource(ImporterFactory.TEMPLATES_DIR) ==
 				null) &&
-			Validator.isNull(resourcesDir)) {
+			Validator.isNull(pluginPackageProperties.getResourcesDir())) {
 
 			return;
 		}
@@ -192,7 +189,7 @@ public class ResourcesImporterHotDeployMessageListener
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.exportimport.service)(release.schema.version=1.0.0))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.exportimport.service)(release.schema.version=1.0.1))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
@@ -260,22 +257,21 @@ public class ResourcesImporterHotDeployMessageListener
 			message.put("targetClassPK", importer.getTargetClassPK());
 
 			if (Validator.isNotNull(messageResponseId)) {
-				Map<String, Object> responseMap = new HashMap<>();
-
-				responseMap.put("groupId", importer.getTargetClassPK());
-
-				message.setPayload(responseMap);
+				message.setPayload(
+					HashMapBuilder.<String, Object>put(
+						"groupId", importer.getTargetClassPK()
+					).build());
 
 				message.setResponseId(messageResponseId);
 			}
 
-			MessageBusUtil.sendMessage("liferay/resources_importer", message);
+			_messageBus.sendMessage("liferay/resources_importer", message);
 		}
-		catch (ImporterException ie) {
+		catch (ImporterException importerException) {
 			Message message = new Message();
 
 			message.put("companyId", company.getCompanyId());
-			message.put("error", ie.getMessage());
+			message.put("error", importerException.getMessage());
 			message.put(
 				"servletContextName", servletContext.getServletContextName());
 			message.put(
@@ -283,7 +279,7 @@ public class ResourcesImporterHotDeployMessageListener
 				pluginPackageProperties.getTargetClassName());
 			message.put("targetClassPK", 0);
 
-			MessageBusUtil.sendMessage("liferay/resources_importer", message);
+			_messageBus.sendMessage("liferay/resources_importer", message);
 		}
 		finally {
 			CompanyThreadLocal.setCompanyId(companyId);
@@ -301,6 +297,10 @@ public class ResourcesImporterHotDeployMessageListener
 	private DestinationFactory _destinationFactory;
 
 	private ImporterFactory _importerFactory;
+
+	@Reference
+	private MessageBus _messageBus;
+
 	private ServiceRegistration<Destination> _serviceRegistration;
 	private ServiceTrackerMap<String, ServletContext> _serviceTrackerMap;
 

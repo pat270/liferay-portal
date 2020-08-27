@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
 
 /**
  * @author Michael Young
@@ -46,15 +45,6 @@ public class PortalSessionDestroyer extends BasePortalLifecycle {
 		_httpSession = httpSession;
 
 		registerPortalLifecycle(METHOD_INIT);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #PortalSessionDestroyer(HttpSession)}
-	 */
-	@Deprecated
-	public PortalSessionDestroyer(HttpSessionEvent httpSessionEvent) {
-		this(httpSessionEvent.getSession());
 	}
 
 	@Override
@@ -123,14 +113,14 @@ public class PortalSessionDestroyer extends BasePortalLifecycle {
 				}
 			}
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Please upgrade to a Servlet 2.4 compliant container");
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		// Process session destroyed events
@@ -140,8 +130,8 @@ public class PortalSessionDestroyer extends BasePortalLifecycle {
 				PropsKeys.SERVLET_SESSION_DESTROY_EVENTS,
 				PropsValues.SERVLET_SESSION_DESTROY_EVENTS, _httpSession);
 		}
-		catch (ActionException ae) {
-			_log.error(ae, ae);
+		catch (ActionException actionException) {
+			_log.error(actionException, actionException);
 		}
 	}
 

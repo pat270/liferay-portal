@@ -24,8 +24,6 @@ import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>SAPEntryServiceUtil</code> service
@@ -63,9 +61,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see SAPEntryServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class SAPEntryServiceSoap {
 
 	public static
@@ -90,10 +89,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -109,10 +108,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -132,10 +131,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -152,10 +151,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -174,10 +173,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -187,7 +186,7 @@ public class SAPEntryServiceSoap {
 					long companyId, int start, int end,
 					com.liferay.portal.kernel.util.OrderByComparator
 						<com.liferay.portal.security.service.access.policy.
-							model.SAPEntry> obc)
+							model.SAPEntry> orderByComparator)
 			throws RemoteException {
 
 		try {
@@ -195,15 +194,15 @@ public class SAPEntryServiceSoap {
 				<com.liferay.portal.security.service.access.policy.model.
 					SAPEntry> returnValue =
 						SAPEntryServiceUtil.getCompanySAPEntries(
-							companyId, start, end, obc);
+							companyId, start, end, orderByComparator);
 
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -216,10 +215,10 @@ public class SAPEntryServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -235,10 +234,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -254,10 +253,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -283,10 +282,10 @@ public class SAPEntryServiceSoap {
 			return com.liferay.portal.security.service.access.policy.model.
 				SAPEntrySoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

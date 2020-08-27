@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>LayoutSetServiceUtil</code> service
@@ -51,7 +49,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetServiceSoap
  * @generated
  */
-@ProviderType
 public class LayoutSetServiceHttp {
 
 	public static void updateLayoutSetPrototypeLinkEnabled(
@@ -73,28 +70,30 @@ public class LayoutSetServiceHttp {
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static void updateLogo(
 			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
-			boolean logo, byte[] bytes)
+			boolean hasLogo, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -103,33 +102,35 @@ public class LayoutSetServiceHttp {
 				_updateLogoParameterTypes1);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, groupId, privateLayout, logo, bytes);
+				methodKey, groupId, privateLayout, hasLogo, bytes);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static void updateLogo(
 			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
-			boolean logo, java.io.File file)
+			boolean hasLogo, java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -138,33 +139,35 @@ public class LayoutSetServiceHttp {
 				_updateLogoParameterTypes2);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, groupId, privateLayout, logo, file);
+				methodKey, groupId, privateLayout, hasLogo, file);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static void updateLogo(
 			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
-			boolean logo, java.io.InputStream inputStream)
+			boolean hasLogo, java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -173,33 +176,35 @@ public class LayoutSetServiceHttp {
 				_updateLogoParameterTypes3);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, groupId, privateLayout, logo, inputStream);
+				methodKey, groupId, privateLayout, hasLogo, inputStream);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static void updateLogo(
 			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
-			boolean logo, java.io.InputStream inputStream,
+			boolean hasLogo, java.io.InputStream inputStream,
 			boolean cleanUpStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -209,28 +214,30 @@ public class LayoutSetServiceHttp {
 				_updateLogoParameterTypes4);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, groupId, privateLayout, logo, inputStream,
+				methodKey, groupId, privateLayout, hasLogo, inputStream,
 				cleanUpStream);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -252,24 +259,26 @@ public class LayoutSetServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.portal.kernel.model.LayoutSet)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -291,30 +300,32 @@ public class LayoutSetServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.portal.kernel.model.LayoutSet)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static com.liferay.portal.kernel.model.LayoutSet updateVirtualHost(
 			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
-			String virtualHost)
+			String virtualHostname)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
@@ -323,31 +334,74 @@ public class LayoutSetServiceHttp {
 				_updateVirtualHostParameterTypes7);
 
 			MethodHandler methodHandler = new MethodHandler(
-				methodKey, groupId, privateLayout, virtualHost);
+				methodKey, groupId, privateLayout, virtualHostname);
 
 			Object returnObj = null;
 
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.portal.kernel.model.LayoutSet)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	public static com.liferay.portal.kernel.model.LayoutSet updateVirtualHosts(
+			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
+			java.util.TreeMap<String, String> virtualHostnames)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				LayoutSetServiceUtil.class, "updateVirtualHosts",
+				_updateVirtualHostsParameterTypes8);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, privateLayout, virtualHostnames);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (com.liferay.portal.kernel.model.LayoutSet)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -378,5 +432,7 @@ public class LayoutSetServiceHttp {
 		new Class[] {long.class, boolean.class, String.class};
 	private static final Class<?>[] _updateVirtualHostParameterTypes7 =
 		new Class[] {long.class, boolean.class, String.class};
+	private static final Class<?>[] _updateVirtualHostsParameterTypes8 =
+		new Class[] {long.class, boolean.class, java.util.TreeMap.class};
 
 }

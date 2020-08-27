@@ -15,7 +15,6 @@
 package com.liferay.document.library.internal.search;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.search.spi.model.index.contributor.ModelIndexerWriterContributor;
 import com.liferay.portal.search.spi.model.registrar.ModelSearchRegistrarHelper;
@@ -32,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = {})
+@Component(service = {})
 public class DLFileEntrySearchRegistrar {
 
 	@Activate
@@ -62,7 +61,7 @@ public class DLFileEntrySearchRegistrar {
 	@Reference(
 		target = "(indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry)"
 	)
-	protected ModelIndexerWriterContributor<DLFolder>
+	protected ModelIndexerWriterContributor<DLFileEntry>
 		modelIndexWriterContributor;
 
 	@Reference

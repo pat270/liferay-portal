@@ -95,17 +95,12 @@
 </tr>
 <tr>
 	<td>SITE_NAME</td>
-	<td>//a[contains(@class,'logo')]//h1</td>
+	<td>//a[contains(@class,'logo')]//h2</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SITE_WRAPPER</td>
 	<td>//div[contains(@id,'wrapper')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>USER_NAME_HEADER</td>
-	<td>//a[contains(@title,'Go to')]/h1 | //div[@id='heading']//div[contains(@class,'site-name')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -135,12 +130,12 @@
 </tr>
 <tr>
 	<td>ERROR_MESSAGE_EXPIRED_SESSION</td>
-	<td>//div[contains(@class,'liferayalert')]//div</td>
+	<td>//div[contains(@class,'liferayalert')]//div | //div[contains(@class,'autofit-section')]//div</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ERROR_MESSAGE_ALERT_ERROR</td>
-	<td>//section[@id='content']/h3[contains(@class, 'alert-danger')] | //div[@class='portlet-content']/h3[contains(@class, 'alert-danger')]</td>
+	<td>//section[@id='content']//h3[contains(@class, 'alert-danger')] | //div[@class='portlet-content']/h3[contains(@class, 'alert-danger')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -233,7 +228,7 @@
 </tr>
 <tr>
 	<td>PAGE_ACTIVE</td>
-	<td>//div[contains(@id,'navbar')]/ul//*[contains(@class,'active')][contains(.,'${key_pageName}')]</td>
+	<td>//div[contains(@id,'navbar')]/ul//*[contains(@class,'selected active')][contains(.,'${key_pageName}')]</td>
 	<td>Page</td>
 </tr>
 <tr>
@@ -243,7 +238,7 @@
 </tr>
 <tr>
 	<td>PAGE_1</td>
-	<td>//div[contains(@id,'navbar')]/ul/li[1]/a</td>
+	<td>//section[@class='portlet']//div[contains(@id,'navbar')]/ul/li[1]/a</td>
 	<td>1st Page</td>
 </tr>
 <tr>
@@ -278,7 +273,7 @@
 </tr>
 <tr>
 	<td>PAGE_2</td>
-	<td>//div[contains(@id,'navbar')]/ul/li[2]/a</td>
+	<td>//section[@class='portlet']//div[contains(@id,'navbar')]/ul/li[2]/a</td>
 	<td>2nd Page</td>
 </tr>
 <tr>
@@ -305,6 +300,11 @@
 	<td>PAGE_3_STAGING_LIVE</td>
 	<td>//ul/li[@id='layout_3']/a</td>
 	<td></td>
+</tr>
+<tr>
+	<td>PAGE_4</td>
+	<td>//div[contains(@id,'navbar')]/ul/li[4]/a</td>
+	<td>4th Page</td>
 </tr>
 <tr>
 	<td>PAGE_TEMPLATE_3</td>
@@ -379,6 +379,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PAGE_COLUMN_3</td>
+	<td>//div[@id='layout-column_column-3']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PAGE_COLUMN_1_LAYOUT_1_COLUMN</td>
 	<td>//div[contains(@class,'portlet-layout')]/div[@id='column-1' and contains(@class,'col-md-12')]</td>
 	<td></td>
@@ -420,6 +425,12 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PAGE_COLUMN_PORTLET_COLUMN_3_PORTLET_TITLE</td>
+	<td>//div[@id='column-3']//h2[contains(.,'${key_portletTitleName}')]</td>
+	//div[@id='layout-column_column-3']
+	<td></td>
+</tr>
+<tr>
 	<td>PAGE_COLUMN_PORTLET_COLUMN_1_PORTLET_HEADER</td>
 	<td>//div[@id='column-1']//header[contains(.,'${key_portletTitleName}')]/div/span</td>
 	<td></td>
@@ -427,6 +438,16 @@
 <tr>
 	<td>PAGE_COLUMN_PORTLET_COLUMN_2_PORTLET_HEADER</td>
 	<td>//div[@id='column-2']//header[contains(.,'${key_portletTitleName}')]/div/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_COLUMN_PORTLET_COLUMN_3_PORTLET_HEADER</td>
+	<td>//div[@id='column-3']//header[contains(.,'${key_portletTitleName}')]/div/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_COLUMN_PORTLET_HEADER_ELLIPSIS</td>
+	<td>//div[@id='column-${key_columnNumber}']//header[@class='portlet-topper' and contains(.,'${key_portletName}')]//div[contains(@class,'portlet-options')]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -463,22 +484,22 @@
 <!--PORTLET_COLUMN-->
 <tr>
 	<td>PORTLET_COLUMN_1</td>
-	<td>//div[contains(@class,'col-md-6 portlet-column portlet-column-first')]</td>
+	<td>//div[contains(@class,'col-md-6 portlet-column portlet-column-first')]/div</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PORTLET_COLUMN_2</td>
-	<td>//div[contains(@class,'col-md-6 portlet-column portlet-column-last')]//div[contains(@id,'NestedPortletsPortlet') and contains(@class,'portlet-dropzone empty portlet-column-content portlet-column-content-last')]</td>
+	<td>//div[contains(@class,'col-md-6 portlet-column portlet-column-last')]/div</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PORTLET_COLUMN_1_NESTED_PORTLET_TITLE</td>
-	<td>//div[contains(@id,'column-1')]//h2[contains(@class,'portlet-title') and contains(.,'${key_portletTitleName}')]</td>
+	<td>//section[contains(@id,'NestedPortlets')]//div[contains(@id,'column-1')]//h2[contains(@class,'portlet-title') and contains(.,'${key_portletTitleName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PORTLET_COLUMN_2_NESTED_PORTLET_TITLE</td>
-	<td>//div[contains(@id,'column-2')]//h1[@class='portlet-title' and contains(.,'${key_portletTitleName}')]/span</td>
+	<td>//section[contains(@id,'NestedPortlets')]//div[contains(@id,'column-2')]//h2[contains(@class,'portlet-title') and contains(.,'${key_portletTitleName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -510,7 +531,7 @@
 </tr>
 <tr>
 	<td>PORTLET</td>
-	<td>//section//h2[contains(.,'${key_portletName}')] | //div[contains(@class,'portlet-borderless')]/span[contains(.,'${key_portletName}')]</td>
+	<td>//section[contains(@class,'portlet')]//h2[contains(.,'${key_portletName}')] | //div[contains(@class,'portlet-borderless')]/span[contains(.,'${key_portletName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -546,6 +567,11 @@
 <tr>
 	<td>PAGE_COLUMN_2_SIGN_IN_PORTLET</td>
 	<td>//div[@id='column-2']//section/header/h1[contains(.,'Sign In')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PORTLET_HEADER</td>
+	<td>//section[contains(@id, '${key_portletTitleName}')]//header[@class='portlet-topper']</td>
 	<td></td>
 </tr>
 <tr>
@@ -607,7 +633,7 @@
 </tr>
 <tr>
 	<td>SITE_ADMINISTRATION_PORTLET_TITLE</td>
-	<td>//*[@class='header-title' and contains(.,'${key_portletTitle}')] | //*[@data-qa-id='headerTitle' and contains(.,'${key_portletTitle}')]</td>
+	<td>//*[@class='header-title' and contains(.,'${key_portletTitle}')] | //*[@data-qa-id='headerTitle' and contains(.,'${key_portletTitle}')] | //*[@class='portlet-title-text' and contains(.,'${key_portletTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -638,7 +664,7 @@
 <!--SITE_LOCALIZATION-->
 <tr>
 	<td>PORTAL_LOCALIZATION_DEFAULT_LANGUAGE_MESSAGE</td>
-	<td>//div[@id='portalMessageContainer']//div[1]/a[contains(.,'${key_pageLocale}')]</td>
+	<td>//div[contains(@class,'alert-info')]//div[1]/a[contains(.,'${key_pageLocale}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -648,12 +674,12 @@
 </tr>
 <tr>
 	<td>PORTAL_LOCALIZATION_PREFERRED_LANGUAGE_MESSAGE</td>
-	<td>//div[@id='portalMessageContainer']//div[2]</td>
+	<td>//div[contains(@class,'alert-info')]//div[2]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PORTAL_LOCALIZATION_TRANSLATION_LANGUAGE_MESSAGE</td>
-	<td>//div[@id='portalMessageContainer']/div/div/div</td>
+	<td>//div[contains(@class,'alert-info')]//div[contains(@class,'d-block')]</td>
 	<td></td>
 </tr>
 </tbody>

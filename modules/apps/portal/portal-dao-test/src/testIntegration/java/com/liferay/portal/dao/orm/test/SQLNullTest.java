@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.TransactionalTestRule;
@@ -531,9 +532,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(StringPool.BLANK);
+			queryPos.add(StringPool.BLANK);
 
 			List<Object> list = sqlQuery.list();
 
@@ -557,9 +558,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(StringPool.BLANK);
+			queryPos.add(StringPool.BLANK);
 
 			List<Object> list = sqlQuery.list();
 
@@ -588,9 +589,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(StringPool.BLANK);
+			queryPos.add(StringPool.BLANK);
 
 			List<Object> list = sqlQuery.list();
 
@@ -619,9 +620,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(StringPool.BLANK);
+			queryPos.add(StringPool.BLANK);
 
 			List<Object> list = sqlQuery.list();
 
@@ -648,9 +649,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(StringPool.BLANK);
+			queryPos.add(StringPool.BLANK);
 
 			List<Object> list = sqlQuery.list();
 
@@ -679,9 +680,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(StringPool.BLANK);
+			queryPos.add(StringPool.BLANK);
 
 			List<Object> list = sqlQuery.list();
 
@@ -713,9 +714,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add((Object)null);
+			queryPos.add((Object)null);
 
 			List<Object> list = sqlQuery.list();
 
@@ -744,9 +745,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add((Object)null);
+			queryPos.add((Object)null);
 
 			List<Object> list = sqlQuery.list();
 
@@ -770,9 +771,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add((Object)null);
+			queryPos.add((Object)null);
 
 			List<Object> list = sqlQuery.list();
 
@@ -796,9 +797,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add((Object)null);
+			queryPos.add((Object)null);
 
 			List<Object> list = sqlQuery.list();
 
@@ -825,9 +826,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add((Object)null);
+			queryPos.add((Object)null);
 
 			List<Object> list = sqlQuery.list();
 
@@ -851,9 +852,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add((Object)null);
+			queryPos.add((Object)null);
 
 			List<Object> list = sqlQuery.list();
 
@@ -882,9 +883,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(0);
+			queryPos.add(0);
 
 			List<Object> list = sqlQuery.list();
 
@@ -903,9 +904,9 @@ public class SQLNullTest {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
 				_SQL_IS_NOT_NULL);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(0);
+			queryPos.add(0);
 
 			List<Object> list = sqlQuery.list();
 
@@ -924,9 +925,9 @@ public class SQLNullTest {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
 				_SQL_IS_NULL);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(0);
+			queryPos.add(0);
 
 			List<Object> list = sqlQuery.list();
 
@@ -956,9 +957,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(0);
+			queryPos.add(0);
 
 			List<Object> list = sqlQuery.list();
 
@@ -982,9 +983,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(0);
+			queryPos.add(0);
 
 			List<Object> list = sqlQuery.list();
 
@@ -1019,9 +1020,9 @@ public class SQLNullTest {
 		try {
 			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(0);
+			queryPos.add(0);
 
 			List<Object> list = sqlQuery.list();
 
@@ -1064,15 +1065,15 @@ public class SQLNullTest {
 	}
 
 	protected String transformHypersonicSQL(String sql) {
-		return sql.replace("NULL", "CAST_TEXT(NULL)");
+		return StringUtil.replace(sql, "NULL", "CAST_TEXT(NULL)");
 	}
 
 	protected String transformPostgreSQL(String sql) {
-		return sql.replace("?", "CAST(? AS VARCHAR)");
+		return StringUtil.replace(sql, '?', "CAST(? AS VARCHAR)");
 	}
 
 	protected String transformSybaseSQL(String sql) {
-		return sql.replace("?", "CONVERT(VARCHAR, ?)");
+		return StringUtil.replace(sql, '?', "CONVERT(VARCHAR, ?)");
 	}
 
 	private static final String _SQL_EQUALS_NULL =

@@ -14,90 +14,37 @@
 
 package com.liferay.fragment.web.internal.servlet.taglib.clay;
 
-import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.web.internal.constants.FragmentWebKeys;
-import com.liferay.fragment.web.internal.servlet.taglib.util.FragmentEntryActionDropdownItemsProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.BaseBaseClayCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
 import com.liferay.portal.kernel.dao.search.RowChecker;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
  */
-public class FragmentEntryVerticalCard
+public abstract class FragmentEntryVerticalCard
 	extends BaseBaseClayCard implements VerticalCard {
 
 	public FragmentEntryVerticalCard(
-		BaseModel<?> baseModel, RenderRequest renderRequest,
-		RenderResponse renderResponse, RowChecker rowChecker) {
+		FragmentEntry fragmentEntry, RenderRequest renderRequest,
+		RowChecker rowChecker) {
 
-		super(baseModel, rowChecker);
+		super(fragmentEntry, rowChecker);
 
-		_renderRequest = renderRequest;
-		_renderResponse = renderResponse;
-
-		_fragmentEntry = (FragmentEntry)baseModel;
-		_httpServletRequest = PortalUtil.getHttpServletRequest(renderRequest);
-		_themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+		this.fragmentEntry = fragmentEntry;
+		themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
-	}
-
-	@Override
-	public List<DropdownItem> getActionDropdownItems() {
-		FragmentEntryActionDropdownItemsProvider
-			fragmentEntryActionDropdownItemsProvider =
-				new FragmentEntryActionDropdownItemsProvider(
-					_fragmentEntry, _renderRequest, _renderResponse);
-
-		try {
-			return fragmentEntryActionDropdownItemsProvider.
-				getActionDropdownItems();
-		}
-		catch (Exception e) {
-		}
-
-		return null;
 	}
 
 	@Override
 	public String getDefaultEventHandler() {
 		return FragmentWebKeys.FRAGMENT_ENTRY_DROPDOWN_DEFAULT_EVENT_HANDLER;
-	}
-
-	@Override
-	public String getHref() {
-		PortletURL editFragmentEntryURL = _renderResponse.createRenderURL();
-
-		editFragmentEntryURL.setParameter(
-			"mvcRenderCommandName", "/fragment/edit_fragment_entry");
-		editFragmentEntryURL.setParameter(
-			"redirect", _themeDisplay.getURLCurrent());
-		editFragmentEntryURL.setParameter(
-			"fragmentCollectionId",
-			String.valueOf(_fragmentEntry.getFragmentCollectionId()));
-		editFragmentEntryURL.setParameter(
-			"fragmentEntryId",
-			String.valueOf(_fragmentEntry.getFragmentEntryId()));
-
-		return editFragmentEntryURL.toString();
 	}
 
 	@Override
@@ -107,60 +54,35 @@ public class FragmentEntryVerticalCard
 
 	@Override
 	public String getImageSrc() {
-		return _fragmentEntry.getImagePreviewURL(_themeDisplay);
+		return fragmentEntry.getImagePreviewURL(themeDisplay);
 	}
 
 	@Override
-	public List<LabelItem> getLabels() {
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> {
-						labelItem.setStatus(_fragmentEntry.getStatus());
-					});
-			}
-		};
+	public String getInputName() {
+		return rowChecker.getRowIds() + FragmentEntry.class.getSimpleName();
+	}
+
+	@Override
+	public String getInputValue() {
+		return String.valueOf(fragmentEntry.getFragmentEntryId());
 	}
 
 	@Override
 	public String getStickerCssClass() {
-		if (_fragmentEntry.getType() == FragmentConstants.TYPE_COMPONENT) {
-			return "file-icon-color-4";
-		}
-
-		return "file-icon-color-2";
+		return "fragment-entry-sticker";
 	}
 
 	@Override
 	public String getStickerIcon() {
-		if (_fragmentEntry.getType() == FragmentConstants.TYPE_COMPONENT) {
-			return "cards2";
-		}
-
-		return "cards-full";
-	}
-
-	@Override
-	public String getSubtitle() {
-		Date statusDate = _fragmentEntry.getStatusDate();
-
-		String statusDateDescription = LanguageUtil.getTimeDescription(
-			_httpServletRequest,
-			System.currentTimeMillis() - statusDate.getTime(), true);
-
-		return LanguageUtil.format(
-			_httpServletRequest, "x-ago", statusDateDescription);
+		return getIcon();
 	}
 
 	@Override
 	public String getTitle() {
-		return _fragmentEntry.getName();
+		return HtmlUtil.escape(fragmentEntry.getName());
 	}
 
-	private final FragmentEntry _fragmentEntry;
-	private final HttpServletRequest _httpServletRequest;
-	private final RenderRequest _renderRequest;
-	private final RenderResponse _renderResponse;
-	private final ThemeDisplay _themeDisplay;
+	protected final FragmentEntry fragmentEntry;
+	protected final ThemeDisplay themeDisplay;
 
 }

@@ -16,10 +16,14 @@ package com.liferay.dynamic.data.mapping.service.persistence.impl;
 
 import com.liferay.dynamic.data.mapping.exception.NoSuchStructureVersionException;
 import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
+import com.liferay.dynamic.data.mapping.model.DDMStructureVersionTable;
 import com.liferay.dynamic.data.mapping.model.impl.DDMStructureVersionImpl;
 import com.liferay.dynamic.data.mapping.model.impl.DDMStructureVersionModelImpl;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMStructureVersionPersistence;
+import com.liferay.dynamic.data.mapping.service.persistence.impl.constants.DDMPersistenceConstants;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
+import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -27,28 +31,37 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The persistence implementation for the ddm structure version service.
@@ -60,7 +73,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
+@Component(service = DDMStructureVersionPersistence.class)
 public class DDMStructureVersionPersistenceImpl
 	extends BasePersistenceImpl<DDMStructureVersion>
 	implements DDMStructureVersionPersistence {
@@ -102,7 +115,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns a range of all the ddm structure versions where structureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -121,7 +134,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm structure versions where structureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -143,34 +156,37 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm structure versions where structureId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
 	 * @param start the lower bound of the range of ddm structure versions
 	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching ddm structure versions
 	 */
 	@Override
 	public List<DDMStructureVersion> findByStructureId(
 		long structureId, int start, int end,
 		OrderByComparator<DDMStructureVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByStructureId;
-			finderArgs = new Object[] {structureId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByStructureId;
+				finderArgs = new Object[] {structureId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByStructureId;
 			finderArgs = new Object[] {
 				structureId, start, end, orderByComparator
@@ -179,13 +195,13 @@ public class DDMStructureVersionPersistenceImpl
 
 		List<DDMStructureVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMStructureVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (DDMStructureVersion ddmStructureVersion : list) {
-					if ((structureId != ddmStructureVersion.getStructureId())) {
+					if (structureId != ddmStructureVersion.getStructureId()) {
 						list = null;
 
 						break;
@@ -195,62 +211,52 @@ public class DDMStructureVersionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_STRUCTUREID_STRUCTUREID_2);
+			sb.append(_FINDER_COLUMN_STRUCTUREID_STRUCTUREID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(structureId);
+				queryPos.add(structureId);
 
-				if (!pagination) {
-					list = (List<DDMStructureVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMStructureVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMStructureVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -281,16 +287,16 @@ public class DDMStructureVersionPersistenceImpl
 			return ddmStructureVersion;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("structureId=");
-		msg.append(structureId);
+		sb.append("structureId=");
+		sb.append(structureId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchStructureVersionException(msg.toString());
+		throw new NoSuchStructureVersionException(sb.toString());
 	}
 
 	/**
@@ -336,16 +342,16 @@ public class DDMStructureVersionPersistenceImpl
 			return ddmStructureVersion;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("structureId=");
-		msg.append(structureId);
+		sb.append("structureId=");
+		sb.append(structureId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchStructureVersionException(msg.toString());
+		throw new NoSuchStructureVersionException(sb.toString());
 	}
 
 	/**
@@ -413,8 +419,8 @@ public class DDMStructureVersionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -427,102 +433,102 @@ public class DDMStructureVersionPersistenceImpl
 		OrderByComparator<DDMStructureVersion> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
+		sb.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
 
-		query.append(_FINDER_COLUMN_STRUCTUREID_STRUCTUREID_2);
+		sb.append(_FINDER_COLUMN_STRUCTUREID_STRUCTUREID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
+			sb.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(structureId);
+		queryPos.add(structureId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						ddmStructureVersion)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DDMStructureVersion> list = q.list();
+		List<DDMStructureVersion> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -555,40 +561,50 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Override
 	public int countByStructureId(long structureId) {
-		FinderPath finderPath = _finderPathCountByStructureId;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
 
-		Object[] finderArgs = new Object[] {structureId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByStructureId;
+
+			finderArgs = new Object[] {structureId};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_STRUCTUREID_STRUCTUREID_2);
+			sb.append(_FINDER_COLUMN_STRUCTUREID_STRUCTUREID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(structureId);
+				queryPos.add(structureId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -620,23 +636,23 @@ public class DDMStructureVersionPersistenceImpl
 			structureId, version);
 
 		if (ddmStructureVersion == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("structureId=");
-			msg.append(structureId);
+			sb.append("structureId=");
+			sb.append(structureId);
 
-			msg.append(", version=");
-			msg.append(version);
+			sb.append(", version=");
+			sb.append(version);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchStructureVersionException(msg.toString());
+			throw new NoSuchStructureVersionException(sb.toString());
 		}
 
 		return ddmStructureVersion;
@@ -659,20 +675,27 @@ public class DDMStructureVersionPersistenceImpl
 	 *
 	 * @param structureId the structure ID
 	 * @param version the version
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching ddm structure version, or <code>null</code> if a matching ddm structure version could not be found
 	 */
 	@Override
 	public DDMStructureVersion fetchByS_V(
-		long structureId, String version, boolean retrieveFromCache) {
+		long structureId, String version, boolean useFinderCache) {
 
 		version = Objects.toString(version, "");
 
-		Object[] finderArgs = new Object[] {structureId, version};
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {structureId, version};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
 				_finderPathFetchByS_V, finderArgs, this);
 		}
@@ -689,45 +712,47 @@ public class DDMStructureVersionPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_S_V_STRUCTUREID_2);
+			sb.append(_FINDER_COLUMN_S_V_STRUCTUREID_2);
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_S_V_VERSION_3);
+				sb.append(_FINDER_COLUMN_S_V_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_S_V_VERSION_2);
+				sb.append(_FINDER_COLUMN_S_V_VERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(structureId);
+				queryPos.add(structureId);
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
-				List<DDMStructureVersion> list = q.list();
+				List<DDMStructureVersion> list = query.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(
-						_finderPathFetchByS_V, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						finderCache.putResult(
+							_finderPathFetchByS_V, finderArgs, list);
+					}
 				}
 				else {
 					DDMStructureVersion ddmStructureVersion = list.get(0);
@@ -737,10 +762,8 @@ public class DDMStructureVersionPersistenceImpl
 					cacheResult(ddmStructureVersion);
 				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(_finderPathFetchByS_V, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -783,55 +806,65 @@ public class DDMStructureVersionPersistenceImpl
 	public int countByS_V(long structureId, String version) {
 		version = Objects.toString(version, "");
 
-		FinderPath finderPath = _finderPathCountByS_V;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
 
-		Object[] finderArgs = new Object[] {structureId, version};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByS_V;
+
+			finderArgs = new Object[] {structureId, version};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_S_V_STRUCTUREID_2);
+			sb.append(_FINDER_COLUMN_S_V_STRUCTUREID_2);
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_S_V_VERSION_3);
+				sb.append(_FINDER_COLUMN_S_V_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_S_V_VERSION_2);
+				sb.append(_FINDER_COLUMN_S_V_VERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(structureId);
+				queryPos.add(structureId);
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -871,7 +904,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns a range of all the ddm structure versions where structureId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -891,7 +924,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm structure versions where structureId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -914,7 +947,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm structure versions where structureId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param structureId the structure ID
@@ -922,27 +955,30 @@ public class DDMStructureVersionPersistenceImpl
 	 * @param start the lower bound of the range of ddm structure versions
 	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching ddm structure versions
 	 */
 	@Override
 	public List<DDMStructureVersion> findByS_S(
 		long structureId, int status, int start, int end,
 		OrderByComparator<DDMStructureVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByS_S;
-			finderArgs = new Object[] {structureId, status};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByS_S;
+				finderArgs = new Object[] {structureId, status};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByS_S;
 			finderArgs = new Object[] {
 				structureId, status, start, end, orderByComparator
@@ -951,7 +987,7 @@ public class DDMStructureVersionPersistenceImpl
 
 		List<DDMStructureVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMStructureVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -969,66 +1005,56 @@ public class DDMStructureVersionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_S_S_STRUCTUREID_2);
+			sb.append(_FINDER_COLUMN_S_S_STRUCTUREID_2);
 
-			query.append(_FINDER_COLUMN_S_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_S_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(structureId);
+				queryPos.add(structureId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<DDMStructureVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMStructureVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMStructureVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1060,19 +1086,19 @@ public class DDMStructureVersionPersistenceImpl
 			return ddmStructureVersion;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("structureId=");
-		msg.append(structureId);
+		sb.append("structureId=");
+		sb.append(structureId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchStructureVersionException(msg.toString());
+		throw new NoSuchStructureVersionException(sb.toString());
 	}
 
 	/**
@@ -1120,19 +1146,19 @@ public class DDMStructureVersionPersistenceImpl
 			return ddmStructureVersion;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("structureId=");
-		msg.append(structureId);
+		sb.append("structureId=");
+		sb.append(structureId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchStructureVersionException(msg.toString());
+		throw new NoSuchStructureVersionException(sb.toString());
 	}
 
 	/**
@@ -1202,8 +1228,8 @@ public class DDMStructureVersionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1216,106 +1242,106 @@ public class DDMStructureVersionPersistenceImpl
 		OrderByComparator<DDMStructureVersion> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
+		sb.append(_SQL_SELECT_DDMSTRUCTUREVERSION_WHERE);
 
-		query.append(_FINDER_COLUMN_S_S_STRUCTUREID_2);
+		sb.append(_FINDER_COLUMN_S_S_STRUCTUREID_2);
 
-		query.append(_FINDER_COLUMN_S_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_S_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
+			sb.append(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(structureId);
+		queryPos.add(structureId);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						ddmStructureVersion)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DDMStructureVersion> list = q.list();
+		List<DDMStructureVersion> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1351,44 +1377,54 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Override
 	public int countByS_S(long structureId, int status) {
-		FinderPath finderPath = _finderPathCountByS_S;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
 
-		Object[] finderArgs = new Object[] {structureId, status};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByS_S;
+
+			finderArgs = new Object[] {structureId, status};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMSTRUCTUREVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_S_S_STRUCTUREID_2);
+			sb.append(_FINDER_COLUMN_S_S_STRUCTUREID_2);
 
-			query.append(_FINDER_COLUMN_S_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_S_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(structureId);
+				queryPos.add(structureId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1405,18 +1441,18 @@ public class DDMStructureVersionPersistenceImpl
 		"ddmStructureVersion.status = ?";
 
 	public DDMStructureVersionPersistenceImpl() {
-		setModelClass(DDMStructureVersion.class);
-
-		setModelImplClass(DDMStructureVersionImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("type", "type_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(DDMStructureVersion.class);
+
+		setModelImplClass(DDMStructureVersionImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(DDMStructureVersionTable.INSTANCE);
 	}
 
 	/**
@@ -1426,8 +1462,11 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(DDMStructureVersion ddmStructureVersion) {
+		if (ddmStructureVersion.getCtCollectionId() != 0) {
+			return;
+		}
+
 		entityCache.putResult(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
 			DDMStructureVersionImpl.class, ddmStructureVersion.getPrimaryKey(),
 			ddmStructureVersion);
 
@@ -1438,8 +1477,6 @@ public class DDMStructureVersionPersistenceImpl
 				ddmStructureVersion.getVersion()
 			},
 			ddmStructureVersion);
-
-		ddmStructureVersion.resetOriginalValues();
 	}
 
 	/**
@@ -1450,15 +1487,15 @@ public class DDMStructureVersionPersistenceImpl
 	@Override
 	public void cacheResult(List<DDMStructureVersion> ddmStructureVersions) {
 		for (DDMStructureVersion ddmStructureVersion : ddmStructureVersions) {
+			if (ddmStructureVersion.getCtCollectionId() != 0) {
+				continue;
+			}
+
 			if (entityCache.getResult(
-					DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
 					DDMStructureVersionImpl.class,
 					ddmStructureVersion.getPrimaryKey()) == null) {
 
 				cacheResult(ddmStructureVersion);
-			}
-			else {
-				ddmStructureVersion.resetOriginalValues();
 			}
 		}
 	}
@@ -1489,7 +1526,6 @@ public class DDMStructureVersionPersistenceImpl
 	@Override
 	public void clearCache(DDMStructureVersion ddmStructureVersion) {
 		entityCache.removeResult(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
 			DDMStructureVersionImpl.class, ddmStructureVersion.getPrimaryKey());
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
@@ -1506,12 +1542,22 @@ public class DDMStructureVersionPersistenceImpl
 
 		for (DDMStructureVersion ddmStructureVersion : ddmStructureVersions) {
 			entityCache.removeResult(
-				DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
 				DDMStructureVersionImpl.class,
 				ddmStructureVersion.getPrimaryKey());
 
 			clearUniqueFindersCache(
 				(DDMStructureVersionModelImpl)ddmStructureVersion, true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(DDMStructureVersionImpl.class, primaryKey);
 		}
 	}
 
@@ -1547,8 +1593,9 @@ public class DDMStructureVersionPersistenceImpl
 			 _finderPathFetchByS_V.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				ddmStructureVersionModelImpl.getOriginalStructureId(),
-				ddmStructureVersionModelImpl.getOriginalVersion()
+				ddmStructureVersionModelImpl.getColumnOriginalValue(
+					"structureId"),
+				ddmStructureVersionModelImpl.getColumnOriginalValue("version")
 			};
 
 			finderCache.removeResult(_finderPathCountByS_V, args);
@@ -1569,7 +1616,7 @@ public class DDMStructureVersionPersistenceImpl
 		ddmStructureVersion.setNew(true);
 		ddmStructureVersion.setPrimaryKey(structureVersionId);
 
-		ddmStructureVersion.setCompanyId(companyProvider.getCompanyId());
+		ddmStructureVersion.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return ddmStructureVersion;
 	}
@@ -1619,11 +1666,11 @@ public class DDMStructureVersionPersistenceImpl
 
 			return remove(ddmStructureVersion);
 		}
-		catch (NoSuchStructureVersionException nsee) {
-			throw nsee;
+		catch (NoSuchStructureVersionException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1633,6 +1680,10 @@ public class DDMStructureVersionPersistenceImpl
 	@Override
 	protected DDMStructureVersion removeImpl(
 		DDMStructureVersion ddmStructureVersion) {
+
+		if (!ctPersistenceHelper.isRemove(ddmStructureVersion)) {
+			return ddmStructureVersion;
+		}
 
 		Session session = null;
 
@@ -1649,8 +1700,8 @@ public class DDMStructureVersionPersistenceImpl
 				session.delete(ddmStructureVersion);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1694,7 +1745,13 @@ public class DDMStructureVersionPersistenceImpl
 		try {
 			session = openSession();
 
-			if (ddmStructureVersion.isNew()) {
+			if (ctPersistenceHelper.isInsert(ddmStructureVersion)) {
+				if (!isNew) {
+					session.evict(
+						DDMStructureVersionImpl.class,
+						ddmStructureVersion.getPrimaryKeyObj());
+				}
+
 				session.save(ddmStructureVersion);
 
 				ddmStructureVersion.setNew(false);
@@ -1704,19 +1761,22 @@ public class DDMStructureVersionPersistenceImpl
 					ddmStructureVersion);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
+		if (ddmStructureVersion.getCtCollectionId() != 0) {
+			ddmStructureVersion.resetOriginalValues();
+
+			return ddmStructureVersion;
+		}
+
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!DDMStructureVersionModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				ddmStructureVersionModelImpl.getStructureId()
 			};
@@ -1744,7 +1804,8 @@ public class DDMStructureVersionPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					ddmStructureVersionModelImpl.getOriginalStructureId()
+					ddmStructureVersionModelImpl.getColumnOriginalValue(
+						"structureId")
 				};
 
 				finderCache.removeResult(_finderPathCountByStructureId, args);
@@ -1765,8 +1826,10 @@ public class DDMStructureVersionPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					ddmStructureVersionModelImpl.getOriginalStructureId(),
-					ddmStructureVersionModelImpl.getOriginalStatus()
+					ddmStructureVersionModelImpl.getColumnOriginalValue(
+						"structureId"),
+					ddmStructureVersionModelImpl.getColumnOriginalValue(
+						"status")
 				};
 
 				finderCache.removeResult(_finderPathCountByS_S, args);
@@ -1785,7 +1848,6 @@ public class DDMStructureVersionPersistenceImpl
 		}
 
 		entityCache.putResult(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
 			DDMStructureVersionImpl.class, ddmStructureVersion.getPrimaryKey(),
 			ddmStructureVersion, false);
 
@@ -1839,12 +1901,124 @@ public class DDMStructureVersionPersistenceImpl
 	/**
 	 * Returns the ddm structure version with the primary key or returns <code>null</code> if it could not be found.
 	 *
+	 * @param primaryKey the primary key of the ddm structure version
+	 * @return the ddm structure version, or <code>null</code> if a ddm structure version with the primary key could not be found
+	 */
+	@Override
+	public DDMStructureVersion fetchByPrimaryKey(Serializable primaryKey) {
+		if (ctPersistenceHelper.isProductionMode(DDMStructureVersion.class)) {
+			return super.fetchByPrimaryKey(primaryKey);
+		}
+
+		DDMStructureVersion ddmStructureVersion = null;
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			ddmStructureVersion = (DDMStructureVersion)session.get(
+				DDMStructureVersionImpl.class, primaryKey);
+
+			if (ddmStructureVersion != null) {
+				cacheResult(ddmStructureVersion);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return ddmStructureVersion;
+	}
+
+	/**
+	 * Returns the ddm structure version with the primary key or returns <code>null</code> if it could not be found.
+	 *
 	 * @param structureVersionId the primary key of the ddm structure version
 	 * @return the ddm structure version, or <code>null</code> if a ddm structure version with the primary key could not be found
 	 */
 	@Override
 	public DDMStructureVersion fetchByPrimaryKey(long structureVersionId) {
 		return fetchByPrimaryKey((Serializable)structureVersionId);
+	}
+
+	@Override
+	public Map<Serializable, DDMStructureVersion> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		if (ctPersistenceHelper.isProductionMode(DDMStructureVersion.class)) {
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
+		if (primaryKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Serializable, DDMStructureVersion> map =
+			new HashMap<Serializable, DDMStructureVersion>();
+
+		if (primaryKeys.size() == 1) {
+			Iterator<Serializable> iterator = primaryKeys.iterator();
+
+			Serializable primaryKey = iterator.next();
+
+			DDMStructureVersion ddmStructureVersion = fetchByPrimaryKey(
+				primaryKey);
+
+			if (ddmStructureVersion != null) {
+				map.put(primaryKey, ddmStructureVersion);
+			}
+
+			return map;
+		}
+
+		StringBundler sb = new StringBundler(primaryKeys.size() * 2 + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
+
+		for (Serializable primaryKey : primaryKeys) {
+			sb.append((long)primaryKey);
+
+			sb.append(",");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query query = session.createQuery(sql);
+
+			for (DDMStructureVersion ddmStructureVersion :
+					(List<DDMStructureVersion>)query.list()) {
+
+				map.put(
+					ddmStructureVersion.getPrimaryKeyObj(),
+					ddmStructureVersion);
+
+				cacheResult(ddmStructureVersion);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return map;
 	}
 
 	/**
@@ -1861,7 +2035,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns a range of all the ddm structure versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm structure versions
@@ -1877,7 +2051,7 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm structure versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm structure versions
@@ -1897,66 +2071,66 @@ public class DDMStructureVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm structure versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMStructureVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm structure versions
 	 * @param end the upper bound of the range of ddm structure versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of ddm structure versions
 	 */
 	@Override
 	public List<DDMStructureVersion> findAll(
 		int start, int end,
 		OrderByComparator<DDMStructureVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<DDMStructureVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMStructureVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_DDMSTRUCTUREVERSION);
+				sb.append(_SQL_SELECT_DDMSTRUCTUREVERSION);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_DDMSTRUCTUREVERSION;
 
-				if (pagination) {
-					sql = sql.concat(
-						DDMStructureVersionModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(DDMStructureVersionModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -1964,29 +2138,19 @@ public class DDMStructureVersionPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<DDMStructureVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMStructureVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMStructureVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2014,8 +2178,15 @@ public class DDMStructureVersionPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMStructureVersion.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)finderCache.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -2023,18 +2194,18 @@ public class DDMStructureVersionPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_DDMSTRUCTUREVERSION);
+				Query query = session.createQuery(
+					_SQL_COUNT_DDMSTRUCTUREVERSION);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				if (productionMode) {
+					finderCache.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2065,36 +2236,99 @@ public class DDMStructureVersionPersistenceImpl
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.get(ctColumnResolutionType);
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return DDMStructureVersionModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "DDMStructureVersion";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctIgnoreColumnNames = new HashSet<String>();
+		Set<String> ctMergeColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("groupId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("userId");
+		ctStrictColumnNames.add("userName");
+		ctStrictColumnNames.add("createDate");
+		ctStrictColumnNames.add("structureId");
+		ctStrictColumnNames.add("version");
+		ctStrictColumnNames.add("parentStructureId");
+		ctStrictColumnNames.add("name");
+		ctStrictColumnNames.add("description");
+		ctStrictColumnNames.add("definition");
+		ctStrictColumnNames.add("storageType");
+		ctStrictColumnNames.add("type_");
+		ctStrictColumnNames.add("status");
+		ctStrictColumnNames.add("statusByUserId");
+		ctStrictColumnNames.add("statusByUserName");
+		ctStrictColumnNames.add("statusDate");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
+		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK,
+			Collections.singleton("structureVersionId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
+
+		_uniqueIndexColumnNames.add(new String[] {"structureId", "version"});
 	}
 
 	/**
 	 * Initializes the ddm structure version persistence.
 	 */
-	public void afterPropertiesSet() {
+	@Activate
+	public void activate() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByStructureId = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByStructureId",
 			new String[] {
@@ -2103,37 +2337,27 @@ public class DDMStructureVersionPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByStructureId = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByStructureId",
 			new String[] {Long.class.getName()},
-			DDMStructureVersionModelImpl.STRUCTUREID_COLUMN_BITMASK);
+			DDMStructureVersionModelImpl.getColumnBitmask("structureId"));
 
 		_finderPathCountByStructureId = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByStructureId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByStructureId", new String[] {Long.class.getName()});
 
 		_finderPathFetchByS_V = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class, FINDER_CLASS_NAME_ENTITY,
 			"fetchByS_V",
 			new String[] {Long.class.getName(), String.class.getName()},
-			DDMStructureVersionModelImpl.STRUCTUREID_COLUMN_BITMASK |
-			DDMStructureVersionModelImpl.VERSION_COLUMN_BITMASK);
+			DDMStructureVersionModelImpl.getColumnBitmask("structureId") |
+			DDMStructureVersionModelImpl.getColumnBitmask("version"));
 
 		_finderPathCountByS_V = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_V",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_V",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByS_S = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByS_S",
 			new String[] {
@@ -2143,35 +2367,58 @@ public class DDMStructureVersionPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByS_S = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMStructureVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByS_S",
 			new String[] {Long.class.getName(), Integer.class.getName()},
-			DDMStructureVersionModelImpl.STRUCTUREID_COLUMN_BITMASK |
-			DDMStructureVersionModelImpl.STATUS_COLUMN_BITMASK);
+			DDMStructureVersionModelImpl.getColumnBitmask("structureId") |
+			DDMStructureVersionModelImpl.getColumnBitmask("status"));
 
 		_finderPathCountByS_S = new FinderPath(
-			DDMStructureVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMStructureVersionModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_S",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByS_S",
 			new String[] {Long.class.getName(), Integer.class.getName()});
 	}
 
-	public void destroy() {
+	@Deactivate
+	public void deactivate() {
 		entityCache.removeCache(DDMStructureVersionImpl.class.getName());
 		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@ServiceReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
+	@Override
+	@Reference(
+		target = DDMPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
+	public void setConfiguration(Configuration configuration) {
+	}
 
-	@ServiceReference(type = EntityCache.class)
+	@Override
+	@Reference(
+		target = DDMPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+	}
+
+	@Override
+	@Reference(
+		target = DDMPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		super.setSessionFactory(sessionFactory);
+	}
+
+	@Reference
+	protected CTPersistenceHelper ctPersistenceHelper;
+
+	@Reference
 	protected EntityCache entityCache;
 
-	@ServiceReference(type = FinderCache.class)
+	@Reference
 	protected FinderCache finderCache;
 
 	private static final String _SQL_SELECT_DDMSTRUCTUREVERSION =
@@ -2199,5 +2446,14 @@ public class DDMStructureVersionPersistenceImpl
 
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"type"});
+
+	static {
+		try {
+			Class.forName(DDMPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

@@ -18,10 +18,12 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ContainerModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -40,8 +42,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface MBThreadModel
-	extends BaseModel<MBThread>, ContainerModel, ShardedModel,
-			StagedGroupedModel, TrashedModel, WorkflowedModel {
+	extends BaseModel<MBThread>, ContainerModel, CTModel<MBThread>, MVCCModel,
+			ShardedModel, StagedGroupedModel, TrashedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -54,6 +56,7 @@ public interface MBThreadModel
 	 *
 	 * @return the primary key of this message boards thread
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -61,7 +64,40 @@ public interface MBThreadModel
 	 *
 	 * @param primaryKey the primary key of this message boards thread
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this message boards thread.
+	 *
+	 * @return the mvcc version of this message boards thread
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this message boards thread.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards thread
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this message boards thread.
+	 *
+	 * @return the ct collection ID of this message boards thread
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this message boards thread.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards thread
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this message boards thread.
@@ -277,34 +313,6 @@ public interface MBThreadModel
 	 * @param title the title of this message boards thread
 	 */
 	public void setTitle(String title);
-
-	/**
-	 * Returns the message count of this message boards thread.
-	 *
-	 * @return the message count of this message boards thread
-	 */
-	public int getMessageCount();
-
-	/**
-	 * Sets the message count of this message boards thread.
-	 *
-	 * @param messageCount the message count of this message boards thread
-	 */
-	public void setMessageCount(int messageCount);
-
-	/**
-	 * Returns the view count of this message boards thread.
-	 *
-	 * @return the view count of this message boards thread
-	 */
-	public int getViewCount();
-
-	/**
-	 * Sets the view count of this message boards thread.
-	 *
-	 * @param viewCount the view count of this message boards thread
-	 */
-	public void setViewCount(int viewCount);
 
 	/**
 	 * Returns the last post by user ID of this message boards thread.

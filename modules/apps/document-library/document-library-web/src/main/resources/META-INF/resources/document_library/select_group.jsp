@@ -18,31 +18,32 @@
 
 <%
 String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectGroup");
+
+PortletURL portletURL = renderResponse.createRenderURL();
+
+portletURL.setParameter("mvcPath", "/document_library/select_group.jsp");
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
+	<clay:management-toolbar
+		clearResultsURL="<%= portletURL.toString() %>"
+		searchActionURL="<%= portletURL.toString() %>"
+		selectable="<%= false %>"
+	/>
+
 	<aui:form method="post" name="selectGroupFm">
-
-		<%
-		PortletURL portletURL = renderResponse.createRenderURL();
-
-		portletURL.setParameter("mvcPath", "/document_library/select_group.jsp");
-		%>
-
 		<liferay-ui:search-container
-			searchContainer="<%= new GroupSearch(renderRequest, portletURL) %>"
+			searchContainer="<%= new GroupSearch(renderRequest, PortletURLUtil.clone(portletURL, liferayPortletResponse)) %>"
 		>
-			<liferay-ui:input-search />
-
-			<div class="separator"><!-- --></div>
 
 			<%
 			GroupSearchTerms searchTerms = (GroupSearchTerms)searchContainer.getSearchTerms();
 
-			LinkedHashMap<String, Object> groupParams = new LinkedHashMap<String, Object>();
-
-			groupParams.put("active", true);
-			groupParams.put("usersGroups", user.getUserId());
+			LinkedHashMap<String, Object> groupParams = LinkedHashMapBuilder.<String, Object>put(
+				"active", true
+			).put(
+				"usersGroups", user.getUserId()
+			).build();
 			%>
 
 			<liferay-ui:search-container-results>
@@ -80,9 +81,9 @@ String eventName = ParamUtil.getString(request, "eventName", liferayPortletRespo
 
 				int end = searchContainer.getEnd() - additionalSites;
 
-				List<Group> sites = GroupServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start, end, searchContainer.getOrderByComparator());
+				List<Group> siteGroups = GroupServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start, end, searchContainer.getOrderByComparator());
 
-				results.addAll(sites);
+				results.addAll(siteGroups);
 
 				searchContainer.setResults(results);
 				%>
@@ -110,25 +111,29 @@ String eventName = ParamUtil.getString(request, "eventName", liferayPortletRespo
 				%>
 
 				<liferay-ui:search-container-column-text
+					cssClass="table-cell-expand table-cell-minw-200 table-title"
 					name="name"
 					value="<%= HtmlUtil.escape(groupDescriptiveName) %>"
 				/>
 
 				<liferay-ui:search-container-column-text
+					cssClass="table-cell-expand-smaller table-cell-minw-150"
 					name="type"
 					value="<%= LanguageUtil.get(request, group.getTypeLabel()) %>"
 				/>
 
 				<liferay-ui:search-container-column-text>
-
-					<%
-					Map<String, Object> data = new HashMap<String, Object>();
-
-					data.put("groupdescriptivename", groupDescriptiveName);
-					data.put("groupid", group.getGroupId());
-					%>
-
-					<aui:button cssClass="selector-button" data="<%= data %>" value="choose" />
+					<aui:button
+						cssClass="selector-button"
+						data='<%=
+							HashMapBuilder.<String, Object>put(
+								"groupdescriptivename", groupDescriptiveName
+							).put(
+								"groupid", group.getGroupId()
+							).build()
+						%>'
+						value="select"
+					/>
 				</liferay-ui:search-container-column-text>
 			</liferay-ui:search-container-row>
 
@@ -137,8 +142,11 @@ String eventName = ParamUtil.getString(request, "eventName", liferayPortletRespo
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectGroupFm', '<%= HtmlUtil.escapeJS(eventName) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectGroupFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>'
+	);
 </aui:script>

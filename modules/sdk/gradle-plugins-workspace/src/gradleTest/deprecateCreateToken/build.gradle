@@ -1,0 +1,30 @@
+task runGradleTest
+
+LogListener logListener = new LogListener()
+
+createToken {
+	doFirst {
+		logging.addStandardOutputListener(logListener)
+	}
+
+	emailAddress = "test@liferay.com"
+	force = true
+}
+
+runGradleTest {
+	dependsOn createToken
+
+	doLast {
+		assert logListener.log.contains("The CreateTokenTask is deprecated")
+	}
+}
+
+class LogListener implements StandardOutputListener {
+
+	void onOutput(CharSequence charSequence) {
+		log = log + charSequence
+	}
+
+	String log = ""
+
+}

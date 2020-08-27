@@ -50,6 +50,7 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 	}
 
 	protected ConditionPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected ConditionPoshiElement(Element element) {
@@ -90,6 +91,10 @@ public class ConditionPoshiElement extends ExecutePoshiElement {
 
 	private boolean _isElementType(
 		PoshiElement parentPoshiElement, String poshiScript) {
+
+		if (isNestedCondition(poshiScript)) {
+			return false;
+		}
 
 		return isConditionElementType(parentPoshiElement, poshiScript);
 	}

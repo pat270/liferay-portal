@@ -326,12 +326,14 @@ public class KBArticleStagedModelDataHandler
 					importedKBArticle.getAttachmentsFolderId(), inputStream,
 					fileEntry.getFileName(), fileEntry.getMimeType(), true);
 			}
-			catch (DuplicateFileEntryException dfee) {
+			catch (DuplicateFileEntryException duplicateFileEntryException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(dfee, dfee);
+					_log.debug(
+						duplicateFileEntryException,
+						duplicateFileEntryException);
 				}
 			}
 		}
@@ -386,7 +388,7 @@ public class KBArticleStagedModelDataHandler
 			long userId, long parentResourceClassNameId,
 			long parentResourcePrimKey, KBArticle kbArticle, String[] sections,
 			ServiceContext serviceContext)
-		throws PortalException {
+		throws Exception {
 
 		KBArticle importedKBArticle = _kbArticleLocalService.addKBArticle(
 			userId, parentResourceClassNameId, parentResourcePrimKey,
@@ -459,12 +461,12 @@ public class KBArticleStagedModelDataHandler
 			try {
 				return FileEntryUtil.getContentStream(fileEntry);
 			}
-			catch (NoSuchFileException nsfe) {
+			catch (NoSuchFileException noSuchFileException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsfe, nsfe);
+					_log.debug(noSuchFileException, noSuchFileException);
 				}
 
 				return null;
@@ -478,7 +480,7 @@ public class KBArticleStagedModelDataHandler
 			long userId, long resourcePrimKey, long parentResourceClassNameId,
 			long parentResourcePrimKey, KBArticle kbArticle, String[] sections,
 			ServiceContext serviceContext)
-		throws PortalException {
+		throws Exception {
 
 		_kbArticleLocalService.updateKBArticle(
 			userId, resourcePrimKey, kbArticle.getTitle(),

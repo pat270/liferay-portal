@@ -16,6 +16,7 @@ package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.BNDSettings;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.io.IOException;
 public class PackageinfoBNDExportPackageCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isModulesCheck() {
+	public boolean isModuleSourceCheck() {
 		return true;
 	}
 
@@ -54,7 +55,8 @@ public class PackageinfoBNDExportPackageCheck extends BaseFileCheck {
 		for (String exportPackageName : bndSettings.getExportPackageNames()) {
 			String suffix = StringBundler.concat(
 				"/src/main/resources/",
-				exportPackageName.replace(CharPool.PERIOD, CharPool.SLASH),
+				StringUtil.replace(
+					exportPackageName, CharPool.PERIOD, CharPool.SLASH),
 				"/packageinfo");
 
 			if (fileName.endsWith(suffix)) {

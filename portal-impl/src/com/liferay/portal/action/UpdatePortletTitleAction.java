@@ -73,6 +73,23 @@ public class UpdatePortletTitleAction extends JSONAction {
 
 		portletSetup.store();
 
+		if (layout.isTypeContent()) {
+			Layout draftLayout = layout.fetchDraftLayout();
+
+			if (draftLayout != null) {
+				PortletPreferences draftLayoutPortletSetup =
+					themeDisplay.getStrictLayoutPortletSetup(
+						draftLayout, portletId);
+
+				draftLayoutPortletSetup.setValue(
+					"portletSetupTitle_" + languageId, title);
+				draftLayoutPortletSetup.setValue(
+					"portletSetupUseCustomTitle", "true");
+
+				draftLayoutPortletSetup.store();
+			}
+		}
+
 		InvokerPortletUtil.clearResponse(
 			session, layout.getPrimaryKey(), portletId,
 			LanguageUtil.getLanguageId(httpServletRequest));

@@ -43,8 +43,8 @@ public class ConfigurationModelConfigurationEntry
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		ConfigurationEntry configurationEntry = (ConfigurationEntry)obj;
+	public boolean equals(Object object) {
+		ConfigurationEntry configurationEntry = (ConfigurationEntry)object;
 
 		return Objects.equals(getKey(), configurationEntry.getKey());
 	}
@@ -67,9 +67,7 @@ public class ConfigurationModelConfigurationEntry
 		portletURL.setParameter(
 			"factoryPid", _configurationModel.getFactoryPid());
 
-		if (_configurationModel.isFactory() &&
-			!_configurationModel.isCompanyFactory()) {
-
+		if (_configurationModel.isFactory()) {
 			portletURL.setParameter(
 				"mvcRenderCommandName", "/view_factory_instances");
 		}

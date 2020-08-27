@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -32,7 +31,6 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Máté Thurzó
  */
-@ProviderType
 public class ModelValidatorRegistryUtil {
 
 	public static <T extends ClassedModel> ModelValidator<T> getModelValidator(
@@ -44,7 +42,7 @@ public class ModelValidatorRegistryUtil {
 	public static <T extends ClassedModel> ModelValidator<T> getModelValidator(
 		String className) {
 
-		return _instance._getModelValidator(className);
+		return _modelValidatorRegistryUtil._getModelValidator(className);
 	}
 
 	public static <T extends ClassedModel, U extends ModelValidator<T>> U
@@ -76,8 +74,8 @@ public class ModelValidatorRegistryUtil {
 		return (ModelValidator<T>)_modelvalidators.get(className);
 	}
 
-	private static final ModelValidatorRegistryUtil _instance =
-		new ModelValidatorRegistryUtil();
+	private static final ModelValidatorRegistryUtil
+		_modelValidatorRegistryUtil = new ModelValidatorRegistryUtil();
 
 	private final BundleContext _bundleContext;
 	private final Map<String, ModelValidator<?>> _modelvalidators =

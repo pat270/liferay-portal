@@ -26,29 +26,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SyncDevice in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SyncDeviceCacheModel
 	implements CacheModel<SyncDevice>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SyncDeviceCacheModel)) {
+		if (!(object instanceof SyncDeviceCacheModel)) {
 			return false;
 		}
 
-		SyncDeviceCacheModel syncDeviceCacheModel = (SyncDeviceCacheModel)obj;
+		SyncDeviceCacheModel syncDeviceCacheModel =
+			(SyncDeviceCacheModel)object;
 
 		if (syncDeviceId == syncDeviceCacheModel.syncDeviceId) {
 			return true;

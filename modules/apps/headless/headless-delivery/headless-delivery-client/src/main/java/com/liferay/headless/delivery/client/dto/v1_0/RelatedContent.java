@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class RelatedContent {
+public class RelatedContent implements Cloneable {
+
+	public static RelatedContent toDTO(String json) {
+		return RelatedContentSerDes.toDTO(json);
+	}
 
 	public String getContentType() {
 		return contentType;
@@ -88,6 +92,11 @@ public class RelatedContent {
 	}
 
 	protected String title;
+
+	@Override
+	public RelatedContent clone() throws CloneNotSupportedException {
+		return (RelatedContent)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

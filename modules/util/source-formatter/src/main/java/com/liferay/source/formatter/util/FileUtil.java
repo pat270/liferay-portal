@@ -39,13 +39,23 @@ public class FileUtil {
 	}
 
 	public static String read(File file) throws IOException {
+		return read(file, true);
+	}
+
+	public static String read(File file, boolean escapeReturnCharacter)
+		throws IOException {
+
 		try {
 			String s = FileUtils.readFileToString(file, StringPool.UTF8);
+
+			if (!escapeReturnCharacter) {
+				return s;
+			}
 
 			return StringUtil.replace(
 				s, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
 		}
-		catch (FileNotFoundException fnfe) {
+		catch (FileNotFoundException fileNotFoundException) {
 			return null;
 		}
 	}

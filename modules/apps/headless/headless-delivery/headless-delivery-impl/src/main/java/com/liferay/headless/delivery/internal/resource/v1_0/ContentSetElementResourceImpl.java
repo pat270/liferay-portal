@@ -15,29 +15,27 @@
 package com.liferay.headless.delivery.internal.resource.v1_0;
 
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.list.asset.entry.provider.AssetListAssetEntryProvider;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryService;
 import com.liferay.headless.delivery.dto.v1_0.ContentSetElement;
-import com.liferay.headless.delivery.dto.v1_0.converter.DTOConverter;
-import com.liferay.headless.delivery.dto.v1_0.converter.DefaultDTOConverterContext;
-import com.liferay.headless.delivery.internal.dto.v1_0.converter.DTOConverterRegistry;
 import com.liferay.headless.delivery.resource.v1_0.ContentSetElementResource;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.segments.provider.SegmentsEntryProvider;
+import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+import com.liferay.segments.context.Context;
+import com.liferay.segments.provider.SegmentsEntryProviderRegistry;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
+import java.util.Enumeration;
+import java.util.HashMap;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -54,14 +52,32 @@ public class ContentSetElementResourceImpl
 	extends BaseContentSetElementResourceImpl {
 
 	@Override
+	public Page<ContentSetElement>
+			getAssetLibraryContentSetByKeyContentSetElementsPage(
+				Long assetLibraryId, String key, Pagination pagination)
+		throws Exception {
+
+		return getSiteContentSetByKeyContentSetElementsPage(
+			assetLibraryId, key, pagination);
+	}
+
+	@Override
+	public Page<ContentSetElement>
+			getAssetLibraryContentSetByUuidContentSetElementsPage(
+				Long assetLibraryId, String uuid, Pagination pagination)
+		throws Exception {
+
+		return getSiteContentSetByUuidContentSetElementsPage(
+			assetLibraryId, uuid, pagination);
+	}
+
+	@Override
 	public Page<ContentSetElement> getContentSetContentSetElementsPage(
 			Long contentSetId, Pagination pagination)
 		throws Exception {
 
-		AssetListEntry assetListEntry =
-			_assetListEntryService.getAssetListEntry(contentSetId);
-
-		return _getContentSetContentSetElementsPage(assetListEntry, pagination);
+		return _getContentSetContentSetElementsPage(
+			_assetListEntryService.getAssetListEntry(contentSetId), pagination);
 	}
 
 	@Override
@@ -69,10 +85,8 @@ public class ContentSetElementResourceImpl
 			Long siteId, String key, Pagination pagination)
 		throws Exception {
 
-		AssetListEntry assetListEntry =
-			_assetListEntryService.getAssetListEntry(siteId, key);
-
-		return _getContentSetContentSetElementsPage(assetListEntry, pagination);
+		return _getContentSetContentSetElementsPage(
+			_assetListEntryService.getAssetListEntry(siteId, key), pagination);
 	}
 
 	@Override
@@ -88,50 +102,42 @@ public class ContentSetElementResourceImpl
 		return _getContentSetContentSetElementsPage(assetListEntry, pagination);
 	}
 
-	private com.liferay.segments.context.Context _createSegmentsContext() {
-		com.liferay.segments.context.Context context =
-			new com.liferay.segments.context.Context();
+	private Context _createSegmentsContext() {
+		Context context = new Context();
 
-		MultivaluedMap<String, String> multivaluedMap =
-			_httpHeaders.getRequestHeaders();
+		Enumeration<String> enumeration =
+			contextHttpServletRequest.getHeaderNames();
 
-		for (Map.Entry<String, List<String>> entry :
-				multivaluedMap.entrySet()) {
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
-			String key = StringUtil.toLowerCase(entry.getKey());
-
-			List<String> values = entry.getValue();
-
-			String value = values.get(0);
+			String value = contextHttpServletRequest.getHeader(key);
 
 			if (key.equals("accept-language")) {
 				context.put(
-					com.liferay.segments.context.Context.LANGUAGE_ID,
-					value.replace("-", "_"));
+					Context.LANGUAGE_ID, StringUtil.replace(value, '-', '_'));
 			}
 			else if (key.equals("host")) {
-				context.put(com.liferay.segments.context.Context.URL, value);
+				context.put(Context.URL, value);
 			}
 			else if (key.equals("referer")) {
-				context.put(
-					com.liferay.segments.context.Context.REFERRER_URL, value);
+				context.put(Context.REFERRER_URL, value);
 			}
 			else if (key.equals("user-agent")) {
-				context.put(
-					com.liferay.segments.context.Context.USER_AGENT, value);
+				context.put(Context.USER_AGENT, value);
 			}
 			else if (key.startsWith("x-")) {
 				context.put(
-					CamelCaseUtil.toCamelCase(key.replace("x-", "")), value);
+					CamelCaseUtil.toCamelCase(
+						StringUtil.removeSubstring(key, "x-")),
+					value);
 			}
 			else {
 				context.put(key, value);
 			}
 		}
 
-		context.put(
-			com.liferay.segments.context.Context.LOCAL_DATE,
-			LocalDate.from(ZonedDateTime.now()));
+		context.put(Context.LOCAL_DATE, LocalDate.from(ZonedDateTime.now()));
 
 		return context;
 	}
@@ -140,21 +146,24 @@ public class ContentSetElementResourceImpl
 			AssetListEntry assetListEntry, Pagination pagination)
 		throws Exception {
 
-		long[] segmentsEntryIds = _segmentsEntryProvider.getSegmentsEntryIds(
-			assetListEntry.getGroupId(), _user.getModelClassName(),
-			_user.getPrimaryKey(), _createSegmentsContext());
+		long[] segmentsEntryIds =
+			_segmentsEntryProviderRegistry.getSegmentsEntryIds(
+				assetListEntry.getGroupId(), contextUser.getModelClassName(),
+				contextUser.getPrimaryKey(), _createSegmentsContext());
 
 		return Page.of(
 			transform(
-				assetListEntry.getAssetEntries(
-					segmentsEntryIds, pagination.getStartPosition(),
-					pagination.getEndPosition()),
+				_assetListAssetEntryProvider.getAssetEntries(
+					assetListEntry, segmentsEntryIds,
+					pagination.getStartPosition(), pagination.getEndPosition()),
 				this::_toContentSetElement),
-			pagination, assetListEntry.getAssetEntriesCount(segmentsEntryIds));
+			pagination,
+			_assetListAssetEntryProvider.getAssetEntriesCount(
+				assetListEntry, segmentsEntryIds));
 	}
 
 	private ContentSetElement _toContentSetElement(AssetEntry assetEntry) {
-		DTOConverter dtoConverter = DTOConverterRegistry.getDTOConverter(
+		DTOConverter<?, ?> dtoConverter = _dtoConverterRegistry.getDTOConverter(
 			assetEntry.getClassName());
 
 		return new ContentSetElement() {
@@ -162,6 +171,9 @@ public class ContentSetElementResourceImpl
 				id = assetEntry.getClassPK();
 				title = assetEntry.getTitle(
 					contextAcceptLanguage.getPreferredLocale());
+				title_i18n = LocalizedMapUtil.getI18nMap(
+					contextAcceptLanguage.isAcceptAllLanguages(),
+					assetEntry.getTitleMap());
 
 				setContent(
 					() -> {
@@ -171,8 +183,12 @@ public class ContentSetElementResourceImpl
 
 						return dtoConverter.toDTO(
 							new DefaultDTOConverterContext(
+								contextAcceptLanguage.isAcceptAllLanguages(),
+								new HashMap<>(), _dtoConverterRegistry,
+								contextHttpServletRequest,
+								assetEntry.getClassPK(),
 								contextAcceptLanguage.getPreferredLocale(),
-								assetEntry.getClassPK(), contextUriInfo));
+								contextUriInfo, contextUser));
 					});
 				setContentType(
 					() -> {
@@ -187,15 +203,15 @@ public class ContentSetElementResourceImpl
 	}
 
 	@Reference
-	private AssetListEntryService _assetListEntryService;
-
-	@Context
-	private HttpHeaders _httpHeaders;
+	private AssetListAssetEntryProvider _assetListAssetEntryProvider;
 
 	@Reference
-	private SegmentsEntryProvider _segmentsEntryProvider;
+	private AssetListEntryService _assetListEntryService;
 
-	@Context
-	private User _user;
+	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
+	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;
 
 }

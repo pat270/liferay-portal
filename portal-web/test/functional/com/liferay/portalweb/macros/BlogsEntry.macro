@@ -1,4 +1,5 @@
 definition {
+
 	var entryAuthorFullName = "Test Test";
 
 	macro addContent {
@@ -36,7 +37,7 @@ definition {
 			BlogsEntry.addSubtitle(entrySubtitle = "${entrySubtitle}");
 		}
 
-		BlogsEntry.addContent(entryContent = "${entryContent}");
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		if (isSet(embedVideo)) {
 			AlloyEditor.clickContentField();
@@ -111,13 +112,17 @@ definition {
 	}
 
 	macro addSubtitle {
-		AlloyEditor.typeEditor(
-			content = "${entrySubtitle}",
-			editor = "subtitle");
+		Type(
+			key_text = "Subtitle",
+			locator1 = "TextArea#ANY",
+			value1 = "${entrySubtitle}");
 	}
 
 	macro addTitle {
-		AlloyEditor.addTitle(title = "${entryTitle}");
+		Type(
+			key_text = "Title",
+			locator1 = "TextArea#ANY",
+			value1 = "${entryTitle}");
 	}
 
 	macro addWithTrackbackURLPG {
@@ -224,7 +229,7 @@ definition {
 		var displayDateDay = selenium.getElementValue("TextInput#DISPLAY_DATE_DAY");
 		var displayDateMonth = selenium.getElementValue("TextInput#DISPLAY_DATE_MONTH");
 		var displayDateYear = DateUtil.getCurrentYear();
-		var displayDateYear = MathUtil.sum("${displayDateYear}", "1");
+		var displayDateYear = ${displayDateYear} + 1;
 		var displayDate = "${displayDateMonth}/${displayDateDay}/${displayDateYear}";
 
 		Type(
@@ -272,22 +277,20 @@ definition {
 
 	macro editSubtitle {
 		AssertTextEquals(
-			key_editor = "subtitle",
-			locator1 = "AlloyEditor#EDITOR",
+			key_text = "Subtitle",
+			locator1 = "TextArea#ANY",
 			value1 = "${entrySubtitle}");
 
-		AlloyEditor.typeEditor(
-			content = "${entrySubtitleEdit}",
-			editor = "subtitle");
+		BlogsEntry.addSubtitle(entrySubtitle = "${entrySubtitleEdit}");
 	}
 
 	macro editTitle {
 		AssertTextEquals(
-			key_editor = "title",
-			locator1 = "AlloyEditor#EDITOR",
+			key_text = "Title",
+			locator1 = "TextArea#ANY",
 			value1 = "${entryTitle}");
 
-		AlloyEditor.addTitle(title = "${entryTitleEdit}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitleEdit}");
 	}
 
 	macro entryAddPermissions {
@@ -313,6 +316,8 @@ definition {
 
 	macro flagPG {
 		var key_entryTitle = "${entryTitle}";
+
+		AssertElementPresent(locator1 = "BlogsEntry#FLAG_LINK");
 
 		Click(locator1 = "BlogsEntry#FLAG_LINK");
 
@@ -356,8 +361,6 @@ definition {
 			key_menuItem = "Move to Recycle Bin",
 			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 
-		AssertConfirm(value1 = "Are you sure you want to move this to the Recycle Bin?");
-
 		Alert.viewSuccessMessage();
 	}
 
@@ -377,8 +380,6 @@ definition {
 		ClickNoError(
 			key_menuItem = "Move to Recycle Bin",
 			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
-
-		AssertConfirm(value1 = "Are you sure you want to move this to the Recycle Bin?");
 
 		Alert.viewSuccessMessage();
 	}
@@ -405,7 +406,7 @@ definition {
 			entryTitle = "${entryTitle}",
 			item = "Move to Recycle Bin");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
 		AssertElementNotPresent(locator1 = "BlogsEntry#TITLE");
 
@@ -429,7 +430,7 @@ definition {
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "BlogsEntry#TITLE_FIELD_HELPER",
-			value1 = "This field is required to publish the entry.");
+			value1 = "This field is required.");
 
 		AssertElementNotPresent(locator1 = "Message#SUCCESS");
 	}
@@ -454,26 +455,6 @@ definition {
 			value1 = "Submit for Publication");
 
 		Alert.viewSuccessMessage();
-	}
-
-	macro rateThumbsDown {
-		var key_entryTitle = "${entryTitle}";
-
-		AssertTextEquals(
-			locator1 = "BlogsEntry#TITLE",
-			value1 = "${entryTitle}");
-
-		Click(locator1 = "Ratings#THUMB_DOWN");
-	}
-
-	macro rateThumbsUp {
-		var key_entryTitle = "${entryTitle}";
-
-		AssertTextEquals(
-			locator1 = "BlogsEntry#TITLE",
-			value1 = "${entryTitle}");
-
-		Click(locator1 = "Ratings#THUMB_UP");
 	}
 
 	macro removeSmallImage {
@@ -522,7 +503,7 @@ definition {
 	macro scheduleBlogEntry {
 		var displayDateDay = selenium.getElementValue("TextInput#DISPLAY_DATE_DAY");
 		var displayDateMonth = selenium.getElementValue("TextInput#DISPLAY_DATE_MONTH");
-		var displayDateMonth = MathUtil.sum("${displayDateMonth}", "1");
+		var displayDateMonth = ${displayDateMonth} + 1;
 		var displayDateYear = selenium.getElementValue("TextInput#DISPLAY_DATE_YEAR");
 		var displayDate = "${displayDateMonth}/${displayDateDay}/${displayDateYear}";
 
@@ -538,7 +519,7 @@ definition {
 		}
 
 		var displayDateMinute = selenium.getElementValue("TextInput#DISPLAY_DATE_MINUTE");
-		var displayDateMinuteFuture = MathUtil.sum("${displayDateMinute}", "3");
+		var displayDateMinuteFuture = ${displayDateMinute} + 3;
 		var displayDateMinuteFutureLength = StringUtil.length("${displayDateMinuteFuture}");
 
 		if ("${displayDateMinuteFutureLength}" == "1") {
@@ -594,7 +575,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		if (IsVisible(locator1 = "Message#EMPTY_INFO", value1 = "No entries were found.")) {
@@ -605,14 +585,13 @@ definition {
 
 			Click(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();
@@ -656,6 +635,17 @@ definition {
 			value1 = "${relatedAssetTitle}");
 	}
 
+	macro viewAutoTag {
+		var key_entryTitle = "${entryTitle}";
+		var tagName = StringUtil.lowerCase("${tagName}");
+
+		var key_tagName = "${tagName}";
+
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TAG",
+			value1 = "${tagName}");
+	}
+
 	macro viewContent {
 		var key_entryTitle = "${entryTitle}";
 
@@ -672,7 +662,112 @@ definition {
 		AssertElementNotPresent(locator1 = "Blogs#ENTRY_TABLE_TITLE");
 	}
 
-	macro viewEntry {
+	macro viewEntryAsWorkflowAsset {
+		SiteAdmin.viewPortletTitle(portletTitle = "${entryTitle}");
+
+		var key_entryContent = "${entryContent}";
+
+		AssertTextEquals(
+			locator1 = "BlogsEntry#CONTENT",
+			value1 = "${entryContent}");
+	}
+
+	macro viewEntryAuthorCP {
+		var entryAuthorFullName = "${entryAuthorFullName}";
+		var key_entryTitle = "${entryTitle}";
+
+		AssertTextEquals(
+			locator1 = "Blogs#ENTRY_TABLE_AUTHOR",
+			value1 = "${entryAuthorFullName}");
+	}
+
+	macro viewEntryCP {
+		var key_entryContent = "${entryContent}";
+		var key_entrySubtitle = "${entrySubtitle}";
+		var key_entryTitle = "${entryTitle}";
+
+		Pause(locator1 = "3000");
+
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "safari") {
+			AssertTextEquals.assertValue(
+				key_text = "Title",
+				locator1 = "TextArea#ANY",
+				value1 = "${entryTitle}");
+		}
+		else {
+			AssertTextEquals(
+				key_text = "Title",
+				locator1 = "TextArea#ANY",
+				value1 = "${entryTitle}");
+		}
+
+		if (isSet(entrySubtitle)) {
+			AssertTextEquals(
+				key_text = "Subtitle",
+				locator1 = "TextArea#ANY",
+				value1 = "${entrySubtitle}");
+		}
+
+		if (isSet(uploadFileName)) {
+			AssertElementPresent(
+				key_uploadFileName = "${uploadFileName}",
+				locator1 = "BlogsEntry#ENTRY_COVER_IMAGE");
+		}
+
+		if (isSet(embedVideo)) {
+			AssertElementPresent(
+				key_service = "youtube",
+				locator1 = "BlogsEntry#CONTENT_VIDEO");
+		}
+
+		if (isSet(entryContent)) {
+			AssertTextEquals(
+				locator1 = "BlogsEntry#CONTENT",
+				value1 = "${entryContent}");
+		}
+
+		if (isSet(entryContentBold)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "BlogsEntry#CONTENT_HTML_BOLD",
+				value1 = "${entryContentBold}");
+		}
+
+		if (isSet(entryContentItalics)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "BlogsEntry#CONTENT_HTML_ITALICS",
+				value1 = "${entryContentItalics}");
+		}
+
+		if (isSet(entryExternalURL)) {
+			AssertClick(
+				locator1 = "BlogsEntry#CONTENT_LINK",
+				value1 = "${entryContent}");
+
+			AssertLocation(value1 = "${entryExternalURL}/");
+		}
+
+		if (isSet(entryInlineImage)) {
+			BlogsEntry.viewInlineImage(uploadFileName = "${entryInlineImage}");
+		}
+	}
+
+	macro viewEntryExternalURL {
+		BlogsNavigator.gotoEditCP(entryTitle = "${entryTitle}");
+
+		DoubleClick(
+			key_entryContent = "${entryContent}",
+			locator1 = "BlogsEntry#CONTENT_LINK_IN_EDIT");
+
+		Click(locator1 = "AlloyEditor#TEXT_FORMATTING_LINK");
+
+		AssertTextEquals(
+			locator1 = "AlloyEditor#TEXT_FORMATTING_LINK_INPUT",
+			value1 = "${entryExternalURL}");
+	}
+
+	macro viewEntryPG {
 		var key_entryContent = "${entryContent}";
 		var key_entrySubtitle = "${entrySubtitle}";
 		var key_entryTitle = "${entryTitle}";
@@ -730,39 +825,6 @@ definition {
 		if (isSet(entryInlineImage)) {
 			BlogsEntry.viewInlineImage(uploadFileName = "${entryInlineImage}");
 		}
-	}
-
-	macro viewEntryAsWorkflowAsset {
-		SiteAdmin.viewPortletTitle(portletTitle = "${entryTitle}");
-
-		var key_entryContent = "${entryContent}";
-
-		AssertTextEquals(
-			locator1 = "BlogsEntry#CONTENT",
-			value1 = "${entryContent}");
-	}
-
-	macro viewEntryAuthorCP {
-		var entryAuthorFullName = "${entryAuthorFullName}";
-		var key_entryTitle = "${entryTitle}";
-
-		AssertTextEquals(
-			locator1 = "Blogs#ENTRY_TABLE_AUTHOR",
-			value1 = "${entryAuthorFullName}");
-	}
-
-	macro viewEntryExternalURL {
-		BlogsNavigator.gotoEditCP(entryTitle = "${entryTitle}");
-
-		DoubleClick(
-			key_entryContent = "${entryContent}",
-			locator1 = "BlogsEntry#CONTENT_LINK_IN_EDIT");
-
-		Click(locator1 = "AlloyEditor#TEXT_FORMATTING_LINK");
-
-		AssertTextEquals(
-			locator1 = "AlloyEditor#TEXT_FORMATTING_LINK_INPUT",
-			value1 = "${entryExternalURL}");
 	}
 
 	macro viewEntryTable {
@@ -846,20 +908,30 @@ definition {
 			locator1 = "BlogsEntry#TITLE");
 	}
 
+	macro viewNoRelatedAssetPG {
+		var key_assetTitle = "${assetTitle}";
+
+		AssertElementNotPresent(locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_TITLE");
+
+		AssertElementNotPresent(locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_REMOVE_LINK");
+	}
+
 	macro viewNoTag {
 		var key_entryTitle = "${entryTitle}";
 
 		if (isSet(tagNameList)) {
 			for (var tagName : list "${tagNameList}") {
 				AssertElementNotPresent(
-					key_tagName = StringUtil.lowerCase("${tagName}"),
-					locator1 = "BlogsEntry#TAG");
+					key_tagName = "${tagName}",
+					locator1 = "BlogsEntry#TAG",
+					tagName = StringUtil.lowerCase("${tagName}"));
 			}
 		}
 		else {
 			AssertElementNotPresent(
-				key_tagName = StringUtil.lowerCase("${tagName}"),
-				locator1 = "BlogsEntry#TAG");
+				key_tagName = "${tagName}",
+				locator1 = "BlogsEntry#TAG",
+				tagName = StringUtil.lowerCase("${tagName}"));
 		}
 	}
 
@@ -887,9 +959,17 @@ definition {
 		var key_entryContent = "${entryContent}";
 		var key_entryTitle = "${entryTitle}";
 
-		AssertTextEquals(
-			locator1 = "BlogsEntry#TITLE",
-			value1 = "${entryTitle}");
+		if (isSet(entryCardTitle)) {
+			AssertTextEquals(
+				key_entryTitle = "${entryCardTitle}",
+				locator1 = "BlogsEntry#TITLE_CARD",
+				value1 = "${entryCardTitle}");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "BlogsEntry#TITLE",
+				value1 = "${entryTitle}");
+		}
 
 		if (isSet(entrySubtitle)) {
 			AssertTextEquals(
@@ -929,8 +1009,6 @@ definition {
 		AssertClick(
 			locator1 = "AP#ASSET_ABSTRACT_TITLE",
 			value1 = "${entryTitle}");
-
-		AssertVisible(locator1 = "Icon#SHARE");
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "APAsset#ASSET_TITLE_HEADER",
@@ -992,6 +1070,34 @@ definition {
 			value1 = "${entryContent}");
 	}
 
+	macro viewSharedAsset {
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Shared Content");
+
+		if ("${contentSharingPermission}" == "View") {
+			AssertElementNotPresent(locator1 = "Button#EDIT");
+		}
+
+		else if ("${contentSharingPermission}" == "Comment") {
+			AssertElementNotPresent(locator1 = "Button#EDIT");
+		}
+
+		else {
+			AssertElementPresent(locator1 = "Comments#COMMENT_FIELD");
+		}
+
+		var key_entryTitle = "${entryTitle}";
+
+		AssertTextEquals(
+			locator1 = "Sharing#BLOGS_CONTENT",
+			value1 = "${entryContent}");
+
+		AssertTextEquals(
+			locator1 = "Sharing#BLOGS_TITLE",
+			value1 = "${entryTitle}");
+	}
+
 	macro viewStatus {
 		AssertTextEquals(
 			locator1 = "AssetWorkflow#WORKFLOW_STATUS",
@@ -1040,7 +1146,8 @@ definition {
 				value1 = "Entries with tag ${tagName}");
 
 			AssertTextEquals(
-				locator1 = "BlogsEntry#TITLE",
+				key_text = "Title",
+				locator1 = "TextArea#ANY",
 				value1 = "${entryTitle}");
 		}
 	}
@@ -1084,35 +1191,12 @@ definition {
 		}
 	}
 
-	macro viewThumbsDown {
-		var key_entryTitle = "${entryTitle}";
-
-		AssertTextEquals(
-			locator1 = "BlogsEntry#TITLE",
-			value1 = "${entryTitle}");
-
-		AssertTextEquals(
-			locator1 = "Ratings#THUMB_DOWN",
-			value1 = "${voteCount}");
-	}
-
-	macro viewThumbsUp {
-		var key_entryTitle = "${entryTitle}";
-
-		AssertTextEquals(
-			locator1 = "BlogsEntry#TITLE",
-			value1 = "${entryTitle}");
-
-		AssertTextEquals(
-			locator1 = "Ratings#THUMB_UP",
-			value1 = "${voteCount}");
-	}
-
 	macro viewTitle {
 		var key_entryTitle = "${entryTitle}";
 
 		AssertTextEquals(
-			locator1 = "BlogsEntry#TITLE",
+			key_text = "Title",
+			locator1 = "TextArea#ANY",
 			value1 = "${entryTitle}");
 	}
 
@@ -1125,11 +1209,13 @@ definition {
 			locator1 = "BlogsEntry#TITLE_LINK",
 			value1 = "${entryTitle}");
 
-		Navigator.gotoPage(pageName = "${pageName}");
+		Pause(locator1 = "3000");
 
-		AssertClick(
-			locator1 = "BlogsEntry#TITLE_LINK",
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TITLE",
 			value1 = "${entryTitle}");
+
+		Navigator.gotoPage(pageName = "${pageName}");
 
 		var entryViewCount = selenium.getText("BlogsEntry#ENTRY_VIEW_COUNT");
 		var entryViewCount = StringUtil.extractLast("${entryViewCount}", "-");
@@ -1152,11 +1238,41 @@ definition {
 			locator1 = "BlogsEntry#TITLE_LINK",
 			value1 = "${entryTitle}");
 
-		var entryViewCount = MathUtil.sum("${entryViewCount}", "1");
+		Pause(locator1 = "3000");
 
-		AssertTextEquals.assertPartialText(
-			locator1 = "BlogsEntry#ENTRY_VIEW_COUNT",
-			value1 = "${entryViewCount} Views");
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TITLE",
+			value1 = "${entryTitle}");
+
+		var entryViewCount = selenium.getText("BlogsEntry#ENTRY_VIEW_COUNT");
+		var entryViewCount = StringUtil.extractLast("${entryViewCount}", "-");
+		var entryViewCount = StringUtil.extractDigits("${entryViewCount}");
+
+		if ("${entryViewCount}" == "1") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "BlogsEntry#ENTRY_VIEW_COUNT",
+				value1 = "${entryViewCount} View");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "BlogsEntry#ENTRY_VIEW_COUNT",
+				value1 = "${entryViewCount} Views");
+		}
+
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		if ("${entryViewCount}" == "1") {
+			var entryViewCount = ${entryViewCount} + 1;
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "BlogsEntry#ENTRY_VIEW_COUNT",
+				value1 = "${entryViewCount} View");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "BlogsEntry#ENTRY_VIEW_COUNT",
+				value1 = "${entryViewCount} Views");
+		}
 	}
 
 	macro viewWithAbstractDisplayTemplatePG {
@@ -1258,4 +1374,5 @@ definition {
 
 		AssertElementNotPresent(locator1 = "AP#ASSET_ABSTRACT_TITLE");
 	}
+
 }

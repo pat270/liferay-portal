@@ -16,7 +16,6 @@ package com.liferay.fragment.web.internal.portlet.action;
 
 import com.liferay.fragment.constants.FragmentPortletKeys;
 import com.liferay.fragment.exception.RequiredFragmentEntryException;
-import com.liferay.fragment.service.FragmentCollectionService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
@@ -27,7 +26,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eudaldo Alonso
@@ -66,16 +64,14 @@ public class DeleteFragmentCollectionResourcesMVCActionCommand
 					curFileEntryId);
 			}
 		}
-		catch (RequiredFragmentEntryException rfee) {
-			SessionErrors.add(actionRequest, rfee.getClass());
+		catch (RequiredFragmentEntryException requiredFragmentEntryException) {
+			SessionErrors.add(
+				actionRequest, requiredFragmentEntryException.getClass());
 
 			hideDefaultErrorMessage(actionRequest);
 
 			sendRedirect(actionRequest, actionResponse);
 		}
 	}
-
-	@Reference
-	private FragmentCollectionService _fragmentCollectionService;
 
 }

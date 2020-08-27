@@ -46,54 +46,9 @@ public class InvokerPortletFactoryImpl implements InvokerPortletFactory {
 				invokerFilterContainer, checkAuthToken, facesPortlet,
 				headerPortlet);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #create(com.liferay.portal.kernel.model.Portlet, Portlet,
-	 *             PortletConfig, PortletContext, InvokerFilterContainer,
-	 *             boolean, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public InvokerPortlet create(
-			com.liferay.portal.kernel.model.Portlet portletModel,
-			Portlet portlet, PortletConfig portletConfig,
-			PortletContext portletContext,
-			InvokerFilterContainer invokerFilterContainer,
-			boolean checkAuthToken, boolean facesPortlet, boolean strutsPortlet,
-			boolean strutsBridgePortlet)
-		throws PortletException {
-
-		return create(
-			portletModel, portlet, portletConfig, portletContext,
-			invokerFilterContainer, checkAuthToken, facesPortlet, false);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #create(com.liferay.portal.kernel.model.Portlet, Portlet,
-	 *             PortletConfig, PortletContext, InvokerFilterContainer,
-	 *             boolean, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public InvokerPortlet create(
-			com.liferay.portal.kernel.model.Portlet portletModel,
-			Portlet portlet, PortletConfig portletConfig,
-			PortletContext portletContext,
-			InvokerFilterContainer invokerFilterContainer,
-			boolean checkAuthToken, boolean facesPortlet, boolean headerPortlet,
-			boolean strutsPortlet, boolean strutsBridgePortlet)
-		throws PortletException {
-
-		return create(
-			portletModel, portlet, portletConfig, portletContext,
-			invokerFilterContainer, checkAuthToken, facesPortlet,
-			headerPortlet);
 	}
 
 	@Override
@@ -107,8 +62,8 @@ public class InvokerPortletFactoryImpl implements InvokerPortletFactory {
 			return new InvokerPortletImpl(
 				portletModel, portlet, portletContext, invokerFilterContainer);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 

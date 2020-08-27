@@ -15,6 +15,7 @@
 package com.liferay.ratings.internal.page.ratings.exportimport.data.handler;
 
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
+import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportProcessCallbackRegistry;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -71,6 +72,7 @@ public class PageRatingsPortletDataHandler extends BasePortletDataHandler {
 	@Activate
 	protected void activate() {
 		setDataAlwaysStaged(true);
+		setDataLevel(DataLevel.PORTLET_INSTANCE);
 		setDeletionSystemEventStagedModelTypes(
 			new StagedModelType(RatingsEntry.class));
 		setExportControls(
@@ -151,9 +153,10 @@ public class PageRatingsPortletDataHandler extends BasePortletDataHandler {
 			persistedModel = persistedModelLocalService.getPersistedModel(
 				ratingsEntry.getClassPK());
 		}
-		catch (NoSuchModelException nsme) {
+		catch (NoSuchModelException noSuchModelException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsme.getMessage(), nsme);
+				_log.debug(
+					noSuchModelException.getMessage(), noSuchModelException);
 			}
 
 			return GroupConstants.DEFAULT_PARENT_GROUP_ID;
@@ -209,10 +212,8 @@ public class PageRatingsPortletDataHandler extends BasePortletDataHandler {
 				ManifestSummary manifestSummary =
 					portletDataContext.getManifestSummary();
 
-				StagedModelType stagedModelType =
-					exportActionableDynamicQuery.getStagedModelType();
-
-				manifestSummary.incrementModelAdditionCount(stagedModelType);
+				manifestSummary.incrementModelAdditionCount(
+					exportActionableDynamicQuery.getStagedModelType());
 			});
 		exportActionableDynamicQuery.setPerformCountMethod(
 			new ActionableDynamicQuery.PerformCountMethod() {

@@ -15,10 +15,11 @@
 package com.liferay.portal.tools.propertiesdoc;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.freemarker.FreeMarkerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ArgumentsUtil;
@@ -33,7 +34,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +49,8 @@ public class PropertiesDocBuilder {
 		try {
 			new PropertiesDocBuilder(arguments);
 		}
-		catch (Exception e) {
-			ArgumentsUtil.processMainException(arguments, e);
+		catch (Exception exception) {
+			ArgumentsUtil.processMainException(arguments, exception);
 		}
 	}
 
@@ -64,20 +64,6 @@ public class PropertiesDocBuilder {
 
 		File propertiesFile = new File(propertiesFileName);
 
-		Map<String, Object> context = new HashMap<>();
-
-		String title = GetterUtil.getString(arguments.get("properties.title"));
-
-		context.put("pageTitle", title);
-
-		int pos = propertiesFileName.lastIndexOf(StringPool.SLASH);
-
-		if (pos != -1) {
-			propertiesFileName = propertiesFileName.substring(pos + 1);
-		}
-
-		context.put("propertiesFileName", propertiesFileName);
-
 		List<PropertiesSection> propertiesSections = getPropertiesSections(
 			propertiesFile);
 
@@ -85,11 +71,21 @@ public class PropertiesDocBuilder {
 			return;
 		}
 
-		context.put("sections", propertiesSections);
+		int pos = propertiesFileName.lastIndexOf(StringPool.SLASH);
 
-		boolean toc = GetterUtil.getBoolean(arguments.get("properties.toc"));
+		if (pos != -1) {
+			propertiesFileName = propertiesFileName.substring(pos + 1);
+		}
 
-		context.put("toc", toc);
+		Map<String, Object> context = HashMapBuilder.<String, Object>put(
+			"pageTitle", GetterUtil.getString(arguments.get("properties.title"))
+		).put(
+			"propertiesFileName", propertiesFileName
+		).put(
+			"sections", propertiesSections
+		).put(
+			"toc", GetterUtil.getBoolean(arguments.get("properties.toc"))
+		).build();
 
 		try {
 			StringBundler sb = new StringBundler(4);
@@ -120,14 +116,14 @@ public class PropertiesDocBuilder {
 						"/properties.ftl",
 					context, writer);
 			}
-			catch (Exception e) {
-				e.printStackTrace();
+			catch (Exception exception) {
+				exception.printStackTrace();
 			}
 
 			writer.flush();
 		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
+		catch (IOException ioException) {
+			ioException.printStackTrace();
 		}
 	}
 
@@ -338,7 +334,7 @@ public class PropertiesDocBuilder {
 	protected List<PropertiesSection> getPropertiesSections(File propertiesFile)
 		throws IOException {
 
-		String content = _fileUtil.read(propertiesFile);
+		String content = _fileImpl.read(propertiesFile);
 
 		String[] sections = content.split("\n\n");
 
@@ -403,6 +399,6 @@ public class PropertiesDocBuilder {
 
 	protected static final String INDENT = StringPool.FOUR_SPACES;
 
-	private static final FileImpl _fileUtil = FileImpl.getInstance();
+	private static final FileImpl _fileImpl = FileImpl.getInstance();
 
 }

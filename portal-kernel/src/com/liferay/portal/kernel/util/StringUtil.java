@@ -17,7 +17,6 @@ package com.liferay.portal.kernel.util;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.security.RandomUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -227,7 +226,7 @@ public class StringUtil {
 
 		for (int i = 0; i < bytes.length; i++) {
 			chars[i * 2] = HEX_DIGITS[(bytes[i] & 0xFF) >> 4];
-			chars[i * 2 + 1] = HEX_DIGITS[bytes[i] & 0x0F];
+			chars[(i * 2) + 1] = HEX_DIGITS[bytes[i] & 0x0F];
 		}
 
 		return new String(chars);
@@ -292,11 +291,7 @@ public class StringUtil {
 			s = s.concat(delimiter);
 		}
 
-		String dtd = delimiter.concat(
-			text
-		).concat(
-			delimiter
-		);
+		String dtd = StringBundler.concat(delimiter, text, delimiter);
 
 		int pos = s.indexOf(dtd);
 
@@ -587,40 +582,6 @@ public class StringUtil {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Returns the substring of each character instance in string <code>s</code>
-	 * that is found in the character array <code>chars</code>. The substring of
-	 * characters returned maintain their original order.
-	 *
-	 * @param      s the string from which to extract characters
-	 * @param      chars the characters to extract from the string
-	 * @return     the substring of each character instance in string
-	 *             <code>s</code> that is found in the character array
-	 *             <code>chars</code>, or an empty string if the given string is
-	 *             <code>null</code>
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String extract(String s, char[] chars) {
-		if (s == null) {
-			return StringPool.BLANK;
-		}
-
-		StringBundler sb = new StringBundler();
-
-		for (char c1 : s.toCharArray()) {
-			for (char c2 : chars) {
-				if (c1 == c2) {
-					sb.append(c1);
-
-					break;
-				}
-			}
-		}
-
-		return sb.toString();
 	}
 
 	/**
@@ -1151,11 +1112,7 @@ public class StringUtil {
 		String prefix = s.substring(0, offset);
 		String postfix = s.substring(offset);
 
-		return prefix.concat(
-			insert
-		).concat(
-			postfix
-		);
+		return StringBundler.concat(prefix, insert, postfix);
 	}
 
 	/**
@@ -1670,7 +1627,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -1719,7 +1676,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -1773,7 +1730,9 @@ public class StringUtil {
 			sb.append(delimiter);
 		}
 
-		sb.setIndex(sb.index() - 1);
+		if (!delimiter.isEmpty()) {
+			sb.setIndex(sb.index() - 1);
+		}
 
 		return sb.toString();
 	}
@@ -1815,7 +1774,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -1864,7 +1823,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -1913,7 +1872,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -1962,7 +1921,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -2011,7 +1970,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -2062,7 +2021,7 @@ public class StringUtil {
 			return String.valueOf(array[0]);
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			if (i != 0) {
@@ -2150,11 +2109,7 @@ public class StringUtil {
 			return null;
 		}
 
-		return quote.concat(
-			s
-		).concat(
-			quote
-		);
+		return StringBundler.concat(quote, s, quote);
 	}
 
 	/**
@@ -2163,30 +2118,24 @@ public class StringUtil {
 	 * @return a randomized string of four lower case, alphabetic characters
 	 */
 	public static String randomId() {
+		return randomId(4);
+	}
+
+	/**
+	 * Returns a randomized string with the length informed and only alphabetic characters.
+	 *
+	 * @return a randomized string with the length informed and only alphabetic characters.
+	 */
+	public static String randomId(int length) {
 		Random random = new Random();
 
-		char[] chars = new char[4];
+		char[] chars = new char[length];
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < length; i++) {
 			chars[i] = (char)(CharPool.LOWER_CASE_A + random.nextInt(26));
 		}
 
 		return new String(chars);
-	}
-
-	/**
-	 * Pseudorandomly permutes the characters of the string.
-	 *
-	 * @param      s the string whose characters are to be randomized
-	 * @return     a string of the same length as the string whose characters
-	 *             represent a pseudorandom permutation of the characters of the
-	 *             string
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             RandomUtil#shuffle(String)}
-	 */
-	@Deprecated
-	public static String randomize(String s) {
-		return RandomUtil.shuffle(s);
 	}
 
 	/**
@@ -2226,8 +2175,8 @@ public class StringUtil {
 		try (InputStream inputStream = clazz.getResourceAsStream(name)) {
 			return read(inputStream);
 		}
-		catch (IOException ioe) {
-			return ReflectionUtil.throwException(ioe);
+		catch (IOException ioException) {
+			return ReflectionUtil.throwException(ioException);
 		}
 	}
 
@@ -2243,10 +2192,10 @@ public class StringUtil {
 		if (all) {
 			StringBundler sb = new StringBundler();
 
-			Enumeration<URL> enu = classLoader.getResources(name);
+			Enumeration<URL> enumeration = classLoader.getResources(name);
 
-			while (enu.hasMoreElements()) {
-				URL url = enu.nextElement();
+			while (enumeration.hasMoreElements()) {
+				URL url = enumeration.nextElement();
 
 				try (InputStream is = url.openStream()) {
 					String s = read(is);
@@ -2275,20 +2224,21 @@ public class StringUtil {
 		}
 	}
 
-	public static String read(InputStream is) throws IOException {
-		String s = _read(is);
+	public static String read(InputStream inputStream) throws IOException {
+		String s = _read(inputStream);
 
 		s = replace(s, "\r\n", StringPool.NEW_LINE);
 
-		s = s.replace(CharPool.RETURN, CharPool.NEW_LINE);
+		s = replace(s, CharPool.RETURN, CharPool.NEW_LINE);
 
 		return s.trim();
 	}
 
-	public static void readLines(InputStream is, Collection<String> lines)
+	public static void readLines(
+			InputStream inputStream, Collection<String> lines)
 		throws IOException {
 
-		_splitLines(_read(is), lines);
+		_splitLines(_read(inputStream), lines);
 	}
 
 	public static String removeChar(String s, char oldSub) {
@@ -2424,11 +2374,7 @@ public class StringUtil {
 			s += delimiter;
 		}
 
-		String drd = delimiter.concat(
-			element
-		).concat(
-			delimiter
-		);
+		String drd = StringBundler.concat(delimiter, element, delimiter);
 
 		String rd = element.concat(delimiter);
 
@@ -2954,13 +2900,8 @@ public class StringUtil {
 		int y = s.indexOf(oldSub, fromIndex);
 
 		if (y >= 0) {
-			return s.substring(
-				0, y
-			).concat(
-				newSub
-			).concat(
-				s.substring(y + oldSub.length())
-			);
+			return StringBundler.concat(
+				s.substring(0, y), newSub, s.substring(y + oldSub.length()));
 		}
 
 		return s;
@@ -3064,13 +3005,8 @@ public class StringUtil {
 		int y = s.lastIndexOf(oldSub);
 
 		if (y >= 0) {
-			return s.substring(
-				0, y
-			).concat(
-				newSub
-			).concat(
-				s.substring(y + oldSub.length())
-			);
+			return StringBundler.concat(
+				s.substring(0, y), newSub, s.substring(y + oldSub.length()));
 		}
 
 		return s;
@@ -3157,7 +3093,7 @@ public class StringUtil {
 			return new StringBundler(s);
 		}
 
-		StringBundler sb = new StringBundler(values.size() * 2 + 1);
+		StringBundler sb = new StringBundler((values.size() * 2) + 1);
 
 		int pos = 0;
 
@@ -3255,55 +3191,6 @@ public class StringUtil {
 		}
 
 		return sb;
-	}
-
-	/**
-	 * Reverses the order of the characters of the string.
-	 *
-	 * @param      s the original string
-	 * @return     a string representing the original string with characters in
-	 *             reverse order
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String reverse(String s) {
-		if (s == null) {
-			return null;
-		}
-
-		char[] chars = s.toCharArray();
-
-		char[] reverse = new char[chars.length];
-
-		for (int i = 0; i < chars.length; i++) {
-			reverse[i] = chars[chars.length - i - 1];
-		}
-
-		return new String(reverse);
-	}
-
-	/**
-	 * Replaces all double slashes of the string with single slashes.
-	 *
-	 * <p>
-	 * Example:
-	 * </p>
-	 *
-	 * <p>
-	 * <pre>
-	 * <code>
-	 * safePath("http://www.liferay.com") returns "http:/www.liferay.com"
-	 * </code>
-	 * </pre></p>
-	 *
-	 * @param      path the original string
-	 * @return     a string representing the original string with all double
-	 *             slashes replaced with single slashes
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String safePath(String path) {
-		return replace(path, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 	}
 
 	/**
@@ -3714,7 +3601,7 @@ public class StringUtil {
 
 				value = booleanValue.booleanValue();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			newArray[i] = value;
@@ -3747,7 +3634,7 @@ public class StringUtil {
 			try {
 				value = Double.parseDouble(array[i]);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			newArray[i] = value;
@@ -3779,7 +3666,7 @@ public class StringUtil {
 			try {
 				value = Float.parseFloat(array[i]);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			newArray[i] = value;
@@ -3811,7 +3698,7 @@ public class StringUtil {
 			try {
 				value = Integer.parseInt(array[i]);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			newArray[i] = value;
@@ -3843,7 +3730,7 @@ public class StringUtil {
 			try {
 				value = Long.parseLong(array[i]);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			newArray[i] = value;
@@ -3875,7 +3762,7 @@ public class StringUtil {
 			try {
 				value = Short.parseShort(array[i]);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			newArray[i] = value;
@@ -3989,64 +3876,6 @@ public class StringUtil {
 		}
 
 		return i;
-	}
-
-	/**
-	 * Returns a string representing the string <code>s</code> with all
-	 * occurrences of the specified character removed.
-	 *
-	 * <p>
-	 * Example:
-	 * </p>
-	 *
-	 * <p>
-	 * <pre>
-	 * <code>
-	 * strip("Mississipi", 'i') returns "Mssssp"
-	 * </code>
-	 * </pre></p>
-	 *
-	 * @param      s the string from which to strip all occurrences of the
-	 *             character
-	 * @param      remove the character to strip from the string
-	 * @return     a string representing the string <code>s</code> with all
-	 *             occurrences of the specified character removed, or
-	 *             <code>null</code> if <code>s</code> is <code>null</code>
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #removeChar(String,
-	 *             char)}
-	 */
-	@Deprecated
-	public static String strip(String s, char remove) {
-		return removeChar(s, remove);
-	}
-
-	/**
-	 * Returns a string representing the string <code>s</code> with all
-	 * occurrences of the specified characters removed.
-	 *
-	 * <p>
-	 * Example:
-	 * </p>
-	 *
-	 * <p>
-	 * <pre>
-	 * <code>
-	 * strip("Hello World", {' ', 'l', 'd'}) returns "HeoWor"
-	 * </code>
-	 * </pre></p>
-	 *
-	 * @param      s the string from which to strip all occurrences the
-	 *             characters
-	 * @param      remove the characters to strip from the string
-	 * @return     a string representing the string <code>s</code> with all
-	 *             occurrences of the specified characters removed, or
-	 *             <code>null</code> if <code>s</code> is <code>null</code>
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #removeChars(String,
-	 *             char...)}
-	 */
-	@Deprecated
-	public static String strip(String s, char[] remove) {
-		return removeChars(s, remove);
 	}
 
 	/**
@@ -4294,19 +4123,23 @@ public class StringUtil {
 	 * <code>Integer</code> or <code>Long</code> object type. If the object is
 	 * not an instance of these types, the object's original value is returned.
 	 *
-	 * @param  obj the object to convert
+	 * @param  object the object to convert
 	 * @return a string representing the hexidecimal character code of the
 	 *         object
 	 */
-	public static String toHexString(Object obj) {
-		if (obj instanceof Integer) {
-			return toHexString(((Integer)obj).intValue());
+	public static String toHexString(Object object) {
+		if (object instanceof Integer) {
+			Integer integerObj = (Integer)object;
+
+			return toHexString(integerObj.intValue());
 		}
-		else if (obj instanceof Long) {
-			return toHexString(((Long)obj).longValue());
+		else if (object instanceof Long) {
+			Long longObj = (Long)object;
+
+			return toHexString(longObj.longValue());
 		}
 
-		return String.valueOf(obj);
+		return String.valueOf(object);
 	}
 
 	/**
@@ -4829,19 +4662,6 @@ public class StringUtil {
 	}
 
 	/**
-	 * Returns the string value of the object.
-	 *
-	 * @param      obj the object whose string value is to be returned
-	 * @return     the string value of the object
-	 * @see        String#valueOf(Object obj)
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String valueOf(Object obj) {
-		return String.valueOf(obj);
-	}
-
-	/**
 	 * Returns <code>true</code> if the string matches the wildcard pattern.
 	 *
 	 * <p>
@@ -5007,99 +4827,6 @@ public class StringUtil {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Wraps the text when it exceeds the <code>80</code> column width limit,
-	 * using a {@link StringPool#NEW_LINE} to break each wrapped line.
-	 *
-	 * @param      text the text to wrap
-	 * @return     the wrapped text following the column width limit, or
-	 *             <code>null</code> if the text is <code>null</code>
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String wrap(String text) {
-		return wrap(text, 80, StringPool.NEW_LINE);
-	}
-
-	/**
-	 * Wraps the text when it exceeds the column width limit, using the line
-	 * separator to break each wrapped line.
-	 *
-	 * @param      text the text to wrap
-	 * @param      width the column width limit for the text
-	 * @param      lineSeparator the string to use in breaking each wrapped line
-	 * @return     the wrapped text and line separators, following the column
-	 *             width limit, or <code>null</code> if the text is
-	 *             <code>null</code>
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String wrap(String text, int width, String lineSeparator) {
-		if (text == null) {
-			return null;
-		}
-
-		StringBundler sb = new StringBundler();
-
-		for (String line : splitLines(text)) {
-			if (line.isEmpty()) {
-				sb.append(lineSeparator);
-
-				continue;
-			}
-
-			int lineLength = 0;
-
-			for (String token : split(line, CharPool.SPACE)) {
-				if ((lineLength + token.length() + 1) > width) {
-					if (lineLength > 0) {
-						sb.append(lineSeparator);
-					}
-
-					if (token.length() > width) {
-						int pos = token.indexOf(CharPool.OPEN_PARENTHESIS);
-
-						if (pos != -1) {
-							sb.append(token.substring(0, pos + 1));
-							sb.append(lineSeparator);
-
-							token = token.substring(pos + 1);
-
-							sb.append(token);
-
-							lineLength = token.length();
-						}
-						else {
-							sb.append(token);
-
-							lineLength = token.length();
-						}
-					}
-					else {
-						sb.append(token);
-
-						lineLength = token.length();
-					}
-				}
-				else {
-					if (lineLength > 0) {
-						sb.append(StringPool.SPACE);
-
-						lineLength++;
-					}
-
-					sb.append(token);
-
-					lineLength += token.length();
-				}
-			}
-
-			sb.append(lineSeparator);
-		}
-
-		return sb.toString();
 	}
 
 	protected static final char[] HEX_DIGITS = {

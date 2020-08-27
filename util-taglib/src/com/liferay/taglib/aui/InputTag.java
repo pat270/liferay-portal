@@ -108,9 +108,7 @@ public class InputTag extends BaseInputTag {
 
 		Class<?> model = getModel();
 
-		String type = getType();
-
-		if ((model != null) && Validator.isNull(type)) {
+		if ((model != null) && Validator.isNull(getType())) {
 			String fieldParam = getFieldParam();
 
 			if (Validator.isNotNull(fieldParam)) {
@@ -185,17 +183,15 @@ public class InputTag extends BaseInputTag {
 				"aui:model-context:defaultLanguageId");
 		}
 
-		if (Validator.isNull(defaultLanguageId)) {
-			if ((model != null) &&
-				ModelHintsUtil.hasField(model.getName(), "groupId")) {
+		if (Validator.isNull(defaultLanguageId) && (model != null) &&
+			ModelHintsUtil.hasField(model.getName(), "groupId")) {
 
-				ThemeDisplay themeDisplay =
-					(ThemeDisplay)httpServletRequest.getAttribute(
-						WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
-				defaultLanguageId = LocaleUtil.toLanguageId(
-					themeDisplay.getSiteDefaultLocale());
-			}
+			defaultLanguageId = LocaleUtil.toLanguageId(
+				themeDisplay.getSiteDefaultLocale());
 		}
 
 		if (Validator.isNull(defaultLanguageId)) {
@@ -320,8 +316,11 @@ public class InputTag extends BaseInputTag {
 			return;
 		}
 
-		List<String> checkboxNames = (List<String>)request.getAttribute(
-			"LIFERAY_SHARED_aui:form:checkboxNames");
+		HttpServletRequest httpServletRequest = getRequest();
+
+		List<String> checkboxNames =
+			(List<String>)httpServletRequest.getAttribute(
+				"LIFERAY_SHARED_aui:form:checkboxNames");
 
 		if (checkboxNames != null) {
 			String inputName = getInputName();

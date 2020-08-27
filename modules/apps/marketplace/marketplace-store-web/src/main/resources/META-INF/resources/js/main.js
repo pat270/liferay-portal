@@ -1,10 +1,28 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-marketplace-messenger',
-	function(A) {
-		var NATIVE_MSG = !!(window.postMessage);
+	(A) => {
+		var NATIVE_MSG = !!window.postMessage;
 
 		var MarketplaceMessenger = {
-			init: function(options, initMessage) {
+			_messages: [],
+			_targetFrame: null,
+			_targetURI: null,
+
+			init(options, initMessage) {
 				var instance = this;
 
 				if (A.Lang.isString(options)) {
@@ -23,22 +41,30 @@ AUI.add(
 				}
 			},
 
-			postMessage: function(message) {
+			postMessage(message) {
 				var instance = this;
 
 				if (NATIVE_MSG) {
-					A.postMessage(message, instance._targetURI, instance._targetFrame);
+					A.postMessage(
+						message,
+						instance._targetURI,
+						instance._targetFrame
+					);
 				}
 				else {
 					instance._messages.push(message);
 
 					if (instance._messages.length == 1) {
-						A.postMessage(message, instance._targetURI, instance._targetFrame);
+						A.postMessage(
+							message,
+							instance._targetURI,
+							instance._targetFrame
+						);
 					}
 				}
 			},
 
-			receiveMessage: function(callback, validator) {
+			receiveMessage(callback, validator) {
 				var instance = this;
 
 				validator = validator || instance._targetURI;
@@ -47,7 +73,7 @@ AUI.add(
 					A.receiveMessage(callback, validator);
 				}
 				else {
-					var wrappedCallback = function(event) {
+					var wrappedCallback = function (event) {
 						var response = event.responseData;
 
 						callback(event);
@@ -61,12 +87,16 @@ AUI.add(
 						}
 						else if (!response.empty) {
 							message = {
-								empty: true
+								empty: true,
 							};
 						}
 
 						if (message) {
-							A.postMessage(message, instance._targetURI, instance._targetFrame);
+							A.postMessage(
+								message,
+								instance._targetURI,
+								instance._targetFrame
+							);
 						}
 					};
 
@@ -74,51 +104,44 @@ AUI.add(
 				}
 			},
 
-			setTargetFrame: function(targetFrame) {
+			setTargetFrame(targetFrame) {
 				this._targetFrame = targetFrame;
 			},
 
-			setTargetURI: function(targetURI) {
+			setTargetURI(targetURI) {
 				this._targetURI = targetURI;
 			},
-
-			_messages: [],
-			_targetFrame: null,
-			_targetURI: null
 		};
 
 		Liferay.MarketplaceMessenger = MarketplaceMessenger;
 	},
 	'',
 	{
-		requires: ['aui-messaging']
+		requires: ['aui-messaging'],
 	}
 );
 
 AUI.add(
 	'liferay-marketplace-util',
-	function(A) {
+	(A) => {
 		var MarketplaceUtil = {
-			namespaceObject: function(namespace, object) {
+			namespaceObject(namespace, object) {
 				var returnObject = {};
 
 				var keys = A.Object.keys(object);
 
-				A.Array.each(
-					keys,
-					function(key) {
-						returnObject[namespace + key] = object[key];
-					}
-				);
+				A.Array.each(keys, (key) => {
+					returnObject[namespace + key] = object[key];
+				});
 
 				return returnObject;
-			}
+			},
 		};
 
 		Liferay.MarketplaceUtil = MarketplaceUtil;
 	},
 	'',
 	{
-		requires: ['aui-base']
+		requires: ['aui-base'],
 	}
 );

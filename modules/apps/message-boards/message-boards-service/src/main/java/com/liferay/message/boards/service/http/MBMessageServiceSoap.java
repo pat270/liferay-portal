@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>MBMessageServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see MBMessageServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class MBMessageServiceSoap {
 
 	public static com.liferay.message.boards.model.MBMessageSoap
@@ -80,10 +79,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -106,10 +105,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -126,10 +125,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -151,10 +150,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -164,10 +163,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.deleteDiscussionMessage(messageId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -175,10 +174,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.deleteMessage(messageId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -188,10 +187,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.deleteMessageAttachment(messageId, fileName);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -201,10 +200,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.deleteMessageAttachments(messageId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -216,10 +215,10 @@ public class MBMessageServiceSoap {
 			MBMessageServiceUtil.deleteTempAttachment(
 				groupId, categoryId, folderName, fileName);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -229,10 +228,29 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.emptyMessageAttachments(messageId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.message.boards.model.MBMessageSoap
+			fetchMBMessageByUrlSubject(long groupId, String urlSubject)
+		throws RemoteException {
+
+		try {
+			com.liferay.message.boards.model.MBMessage returnValue =
+				MBMessageServiceUtil.fetchMBMessageByUrlSubject(
+					groupId, urlSubject);
+
+			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -249,10 +267,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -266,10 +284,10 @@ public class MBMessageServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -282,10 +300,10 @@ public class MBMessageServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -300,10 +318,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -317,10 +335,10 @@ public class MBMessageServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -334,10 +352,10 @@ public class MBMessageServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -355,10 +373,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -372,10 +390,10 @@ public class MBMessageServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -387,10 +405,10 @@ public class MBMessageServiceSoap {
 			MBMessageServiceUtil.moveMessageAttachmentToTrash(
 				messageId, fileName);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -402,10 +420,10 @@ public class MBMessageServiceSoap {
 			MBMessageServiceUtil.restoreMessageAttachmentFromTrash(
 				messageId, fileName);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -413,10 +431,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.subscribeMessage(messageId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -426,10 +444,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.unsubscribeMessage(messageId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -440,10 +458,10 @@ public class MBMessageServiceSoap {
 		try {
 			MBMessageServiceUtil.updateAnswer(messageId, answer, cascade);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -463,10 +481,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -488,41 +506,10 @@ public class MBMessageServiceSoap {
 			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
-	 String, String, List, double, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.message.boards.model.MBMessageSoap updateMessage(
-			long messageId, String subject, String body,
-			java.util.List
-				<com.liferay.portal.kernel.util.ObjectValuePair
-					<String, java.io.InputStream>> inputStreamOVPs,
-			java.util.List<String> existingFiles, double priority,
-			boolean allowPingbacks,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws RemoteException {
-
-		try {
-			com.liferay.message.boards.model.MBMessage returnValue =
-				MBMessageServiceUtil.updateMessage(
-					messageId, subject, body, inputStreamOVPs, existingFiles,
-					priority, allowPingbacks, serviceContext);
-
-			return com.liferay.message.boards.model.MBMessageSoap.toSoapModel(
-				returnValue);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

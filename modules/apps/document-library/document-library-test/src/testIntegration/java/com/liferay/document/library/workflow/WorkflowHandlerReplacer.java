@@ -14,8 +14,11 @@
 
 package com.liferay.document.library.workflow;
 
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
-import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceRegistration;
 
 /**
  * @author Adolfo Pérez
@@ -25,21 +28,21 @@ public class WorkflowHandlerReplacer<T> implements AutoCloseable {
 	public WorkflowHandlerReplacer(
 		String className, WorkflowHandler<T> replacementWorkflowHandler) {
 
-		_originalWorkflowHandler =
-			WorkflowHandlerRegistryUtil.getWorkflowHandler(className);
-		_replacementWorkflowHandler = replacementWorkflowHandler;
+		Registry registry = RegistryUtil.getRegistry();
 
-		WorkflowHandlerRegistryUtil.unregister(_originalWorkflowHandler);
-		WorkflowHandlerRegistryUtil.register(_replacementWorkflowHandler);
+		_serviceRegistration = registry.registerService(
+			(Class<WorkflowHandler<?>>)(Class<?>)WorkflowHandler.class,
+			replacementWorkflowHandler,
+			HashMapBuilder.<String, Object>put(
+				"service.ranking", Integer.MAX_VALUE
+			).build());
 	}
 
 	@Override
-	public void close() throws Exception {
-		WorkflowHandlerRegistryUtil.unregister(_replacementWorkflowHandler);
-		WorkflowHandlerRegistryUtil.register(_originalWorkflowHandler);
+	public void close() {
+		_serviceRegistration.unregister();
 	}
 
-	private final WorkflowHandler<T> _originalWorkflowHandler;
-	private final WorkflowHandler<T> _replacementWorkflowHandler;
+	private final ServiceRegistration<WorkflowHandler<?>> _serviceRegistration;
 
 }

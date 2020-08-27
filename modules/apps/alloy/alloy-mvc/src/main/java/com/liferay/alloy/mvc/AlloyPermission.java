@@ -17,10 +17,7 @@ package com.liferay.alloy.mvc;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
-import com.liferay.portal.kernel.exception.NoSuchResourceActionException;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -29,6 +26,8 @@ import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.StringUtil;
+
+import java.util.List;
 
 /**
  * @author Ethan Bustad
@@ -74,14 +73,10 @@ public class AlloyPermission {
 		PermissionChecker permissionChecker, long groupId, String name,
 		long primKey, String actionId, long ownerId) {
 
-		try {
-			ResourceActionsUtil.checkAction(name, actionId);
-		}
-		catch (NoSuchResourceActionException nsrae) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(nsrae, nsrae);
-			}
+		List<String> resourceActions = ResourceActionsUtil.getResourceActions(
+			name);
 
+		if (!resourceActions.contains(actionId)) {
 			return true;
 		}
 
@@ -193,13 +188,10 @@ public class AlloyPermission {
 
 			baseModel = alloyServiceInvoker.fetchModel(classPK);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return BeanPropertiesUtil.getLongSilent(baseModel, "userId");
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		AlloyPermission.class);
 
 }

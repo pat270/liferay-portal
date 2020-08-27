@@ -21,6 +21,7 @@ import com.liferay.marketplace.service.ModuleLocalService;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Release;
@@ -33,6 +34,8 @@ import com.liferay.portal.lpkg.deployer.LPKGDeployer;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,21 +61,40 @@ import org.osgi.service.component.annotations.Reference;
 public class LPKGDeployerRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) throws Exception {
+	protected void activate(BundleContext bundleContext) throws Exception {
 		bundleContext.addBundleListener(_bundleListener);
 
 		Map<Bundle, List<Bundle>> deployedLPKGBundles =
 			_lpkgDeployer.getDeployedLPKGBundles();
 
-		for (Map.Entry<Bundle, List<Bundle>> entry :
-				deployedLPKGBundles.entrySet()) {
+		Map<Long, App> apps = new HashMap<>();
 
-			_register(entry.getKey());
+		for (App app :
+				_appLocalService.getApps(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS)) {
+
+			apps.put(app.getRemoteAppId(), app);
+		}
+
+		Map<Long, List<Module>> modules = new HashMap<>();
+
+		for (Module module :
+				_moduleLocalService.getModules(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS)) {
+
+			List<Module> appModules = modules.computeIfAbsent(
+				module.getAppId(), key -> new ArrayList<>());
+
+			appModules.add(module);
+		}
+
+		for (Bundle bundle : deployedLPKGBundles.keySet()) {
+			_register(bundle, apps, modules);
 		}
 	}
 
 	@Deactivate
-	public void deactivate(BundleContext bundleContext) {
+	protected void deactivate(BundleContext bundleContext) {
 		bundleContext.removeBundleListener(_bundleListener);
 	}
 
@@ -83,7 +105,11 @@ public class LPKGDeployerRegistrar {
 	protected void setRelease(Release release) {
 	}
 
-	private void _doRegister(Bundle lpkgBundle) throws Exception {
+	private void _doRegister(
+			Bundle lpkgBundle, Map<Long, App> apps,
+			Map<Long, List<Module>> modules)
+		throws Exception {
+
 		URL url = lpkgBundle.getEntry("liferay-marketplace.properties");
 
 		if (url == null) {
@@ -108,17 +134,23 @@ public class LPKGDeployerRegistrar {
 		boolean required = GetterUtil.getBoolean(
 			properties.getProperty("required"));
 
-		App app = _appLocalService.fetchRemoteApp(remoteAppId);
+		App app = null;
 
-		if (app != null) {
-			if (!Objects.equals(title, app.getTitle()) ||
-				!Objects.equals(description, app.getDescription()) ||
-				!Objects.equals(category, app.getCategory()) ||
-				!Objects.equals(iconURL, app.getIconURL()) ||
-				(required != app.isRequired())) {
+		if (apps == null) {
+			app = _appLocalService.fetchRemoteApp(remoteAppId);
+		}
+		else {
+			app = apps.get(remoteAppId);
+		}
 
-				app = null;
-			}
+		if ((app != null) &&
+			(!Objects.equals(title, app.getTitle()) ||
+			 !Objects.equals(description, app.getDescription()) ||
+			 !Objects.equals(category, app.getCategory()) ||
+			 !Objects.equals(iconURL, app.getIconURL()) ||
+			 (required != app.isRequired()))) {
+
+			app = null;
 		}
 
 		if (app == null) {
@@ -129,7 +161,17 @@ public class LPKGDeployerRegistrar {
 
 		Set<Tuple> oldTuples = new HashSet<>();
 
-		for (Module module : _moduleLocalService.getModules(app.getAppId())) {
+		List<Module> oldModules = null;
+
+		if (modules == null) {
+			oldModules = _moduleLocalService.getModules(app.getAppId());
+		}
+		else {
+			oldModules = modules.getOrDefault(
+				app.getAppId(), Collections.emptyList());
+		}
+
+		for (Module module : oldModules) {
 			oldTuples.add(
 				new Tuple(
 					module.getModuleId(), module.getBundleSymbolicName(),
@@ -167,7 +209,11 @@ public class LPKGDeployerRegistrar {
 		}
 
 		for (Tuple tuple : oldTuples) {
-			_moduleLocalService.deleteModule(tuple._moduleId);
+			Module module = _moduleLocalService.fetchModule(tuple._moduleId);
+
+			if (module != null) {
+				_moduleLocalService.deleteModule(tuple._moduleId);
+			}
 		}
 
 		for (Tuple tuple : newTuples) {
@@ -177,15 +223,18 @@ public class LPKGDeployerRegistrar {
 		}
 	}
 
-	private void _register(Bundle lpkgBundle) {
+	private void _register(
+		Bundle lpkgBundle, Map<Long, App> apps,
+		Map<Long, List<Module>> modules) {
+
 		try {
-			_doRegister(lpkgBundle);
+			_doRegister(lpkgBundle, apps, modules);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				"Unable to track installed app " +
 					lpkgBundle.getSymbolicName() + " with Marketplace",
-				e);
+				exception);
 		}
 	}
 
@@ -201,7 +250,7 @@ public class LPKGDeployerRegistrar {
 			@Override
 			public void bundleChanged(BundleEvent bundleEvent) {
 				if (bundleEvent.getType() == BundleEvent.STARTED) {
-					_register(bundleEvent.getBundle());
+					_register(bundleEvent.getBundle(), null, null);
 				}
 			}
 
@@ -216,8 +265,8 @@ public class LPKGDeployerRegistrar {
 	private static class Tuple {
 
 		@Override
-		public boolean equals(Object obj) {
-			Tuple tuple = (Tuple)obj;
+		public boolean equals(Object object) {
+			Tuple tuple = (Tuple)object;
 
 			if (Objects.equals(_symbolicName, tuple._symbolicName) &&
 				Objects.equals(_version, tuple._version) &&

@@ -19,6 +19,17 @@
 <%
 String emailFromName = ParamUtil.getString(request, "preferences--emailFromName--", LoginUtil.getEmailFromName(portletPreferences, company.getCompanyId()));
 String emailFromAddress = ParamUtil.getString(request, "preferences--emailFromAddress--", LoginUtil.getEmailFromAddress(portletPreferences, company.getCompanyId()));
+
+String emailPasswordResetSubject = LoginUtil.getEmailTemplateXML(portletPreferences, renderRequest, company.getCompanyId(), "emailPasswordResetSubject", "adminEmailPasswordResetSubject", PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_SUBJECT);
+String emailPasswordResetBody = LoginUtil.getEmailTemplateXML(portletPreferences, renderRequest, company.getCompanyId(), "emailPasswordResetBody", "adminEmailPasswordResetBody", PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_BODY);
+String emailPasswordSentSubject = LocalizationUtil.getLocalizationXmlFromPreferences(portletPreferences, renderRequest, "emailPasswordSentSubject", "preferences", StringPool.BLANK);
+String emailPasswordSentBody = LocalizationUtil.getLocalizationXmlFromPreferences(portletPreferences, renderRequest, "emailPasswordSentBody", "preferences", StringPool.BLANK);
+
+String passwordChangedNotification = StringPool.BLANK;
+
+if (Validator.isNotNull(emailPasswordSentSubject) || Validator.isNotNull(emailPasswordSentBody)) {
+	passwordChangedNotification = "password-changed-notification,";
+}
 %>
 
 <liferay-portlet:actionURL portletConfiguration="<%= true %>" var="configurationActionURL" />
@@ -35,7 +46,7 @@ String emailFromAddress = ParamUtil.getString(request, "preferences--emailFromAd
 
 	<liferay-frontend:edit-form-body>
 		<liferay-ui:tabs
-			names="general,email-from,password-changed-notification,password-reset-notification"
+			names='<%= "general,email-from," + passwordChangedNotification + "password-reset-notification" %>'
 			refresh="<%= false %>"
 		>
 			<liferay-ui:error key="emailFromAddress" message="please-enter-a-valid-email-address" />
@@ -60,6 +71,48 @@ String emailFromAddress = ParamUtil.getString(request, "preferences--emailFromAd
 				</liferay-frontend:fieldset>
 			</liferay-ui:section>
 
+			<c:if test="<%= Validator.isNotNull(emailPasswordSentSubject) || Validator.isNotNull(emailPasswordSentBody) %>">
+				<liferay-ui:section>
+					<liferay-frontend:fieldset
+						collapsed="<%= true %>"
+						collapsible="<%= true %>"
+						label="legacy-template-no-longer-used"
+						markupView="lexicon"
+					>
+						<aui:input checked="<%= false %>" label="discard" name="discardLegacyKey" type="checkbox" value="emailPasswordSentSubject,emailPasswordSentBody" />
+
+						<div class="alert alert-info">
+							<liferay-ui:message key="sending-of-passwords-by-email-is-no-longer-supported-the-template-below-is-not-used-and-can-be-discarded" />
+						</div>
+
+						<c:if test="<%= Validator.isNotNull(emailPasswordSentSubject) %>">
+							<aui:field-wrapper label="subject">
+								<liferay-ui:input-localized
+									fieldPrefix="settings"
+									fieldPrefixSeparator="--"
+									name="emailPasswordSentSubject"
+									readonly="<%= true %>"
+									xml="<%= emailPasswordSentSubject %>"
+								/>
+							</aui:field-wrapper>
+						</c:if>
+
+						<c:if test="<%= Validator.isNotNull(emailPasswordSentBody) %>">
+							<aui:field-wrapper label="body">
+								<liferay-ui:input-localized
+									fieldPrefix="settings"
+									fieldPrefixSeparator="--"
+									name="emailPasswordSentBody"
+									readonly="<%= true %>"
+									type="textarea"
+									xml="<%= emailPasswordSentBody %>"
+								/>
+							</aui:field-wrapper>
+						</c:if>
+					</liferay-frontend:fieldset>
+				</liferay-ui:section>
+			</c:if>
+
 			<liferay-ui:section>
 				<div class="alert alert-info">
 					<liferay-ui:message key="enter-custom-values-or-leave-it-blank-to-use-the-default-portal-settings" />
@@ -67,26 +120,10 @@ String emailFromAddress = ParamUtil.getString(request, "preferences--emailFromAd
 
 				<liferay-frontend:fieldset>
 					<liferay-frontend:email-notification-settings
-						emailBody='<%= LocalizationUtil.getLocalizationXmlFromPreferences(portletPreferences, renderRequest, "emailPasswordSentBody", "preferences", ContentUtil.get(PortalClassLoaderUtil.getClassLoader(), PropsValues.ADMIN_EMAIL_PASSWORD_SENT_BODY)) %>'
-						emailDefinitionTerms="<%= LoginUtil.getEmailDefinitionTerms(renderRequest, emailFromAddress, emailFromName, false) %>"
-						emailParam="emailPasswordSent"
-						emailSubject='<%= LocalizationUtil.getLocalizationXmlFromPreferences(portletPreferences, renderRequest, "emailPasswordSentSubject", "preferences", ContentUtil.get(PortalClassLoaderUtil.getClassLoader(), PropsValues.ADMIN_EMAIL_PASSWORD_SENT_SUBJECT)) %>'
-						showEmailEnabled="<%= false %>"
-					/>
-				</liferay-frontend:fieldset>
-			</liferay-ui:section>
-
-			<liferay-ui:section>
-				<div class="alert alert-info">
-					<liferay-ui:message key="enter-custom-values-or-leave-it-blank-to-use-the-default-portal-settings" />
-				</div>
-
-				<liferay-frontend:fieldset>
-					<liferay-frontend:email-notification-settings
-						emailBody='<%= LocalizationUtil.getLocalizationXmlFromPreferences(portletPreferences, renderRequest, "emailPasswordResetBody", "preferences", ContentUtil.get(PortalClassLoaderUtil.getClassLoader(), PropsValues.ADMIN_EMAIL_PASSWORD_RESET_BODY)) %>'
+						emailBody="<%= emailPasswordResetBody %>"
 						emailDefinitionTerms="<%= LoginUtil.getEmailDefinitionTerms(renderRequest, emailFromAddress, emailFromName, true) %>"
 						emailParam="emailPasswordReset"
-						emailSubject='<%= LocalizationUtil.getLocalizationXmlFromPreferences(portletPreferences, renderRequest, "emailPasswordResetSubject", "preferences", ContentUtil.get(PortalClassLoaderUtil.getClassLoader(), PropsValues.ADMIN_EMAIL_PASSWORD_RESET_SUBJECT)) %>'
+						emailSubject="<%= emailPasswordResetSubject %>"
 						showEmailEnabled="<%= false %>"
 					/>
 				</liferay-frontend:fieldset>

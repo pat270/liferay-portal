@@ -20,8 +20,6 @@
 String tabs1 = ParamUtil.getString(request, "tabs1");
 String tabs2 = ParamUtil.getString(request, "tabs2", "users");
 
-String redirect = ParamUtil.getString(request, "redirect");
-
 long passwordPolicyId = ParamUtil.getLong(request, "passwordPolicyId");
 
 PasswordPolicy passwordPolicy = PasswordPolicyLocalServiceUtil.fetchPasswordPolicy(passwordPolicyId);
@@ -41,7 +39,7 @@ String eventName = ParamUtil.getString(request, "eventName", liferayPortletRespo
 
 EditPasswordPolicyAssignmentsManagementToolbarDisplayContext editPasswordPolicyAssignmentsManagementToolbarDisplayContext = new EditPasswordPolicyAssignmentsManagementToolbarDisplayContext(request, renderRequest, renderResponse, displayStyle, "/select_members.jsp");
 
-SearchContainer searchContainer = editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getSearchContainer();
+SearchContainer<?> searchContainer = editPasswordPolicyAssignmentsManagementToolbarDisplayContext.getSearchContainer();
 %>
 
 <clay:navigation-bar
@@ -85,26 +83,27 @@ SearchContainer searchContainer = editPasswordPolicyAssignmentsManagementToolbar
 </aui:form>
 
 <aui:script use="liferay-search-container">
-	var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />' + 'passwordPolicyMembers');
-
-	searchContainer.on(
-		'rowToggled',
-		function(event) {
-			var selectedItems = event.elements.allSelectedElements;
-
-			var result = {};
-
-			if (selectedItems.size()) {
-				result = {
-					data: {
-						item: selectedItems.attr('value').join(','),
-						memberType: '<%= HtmlUtil.escapeJS(tabs2) %>'
-					}
-				};
-			}
-
-			Liferay.Util.getOpener().Liferay.fire(
-				'<%= HtmlUtil.escapeJS(eventName) %>', result);
-		}
+	var searchContainer = Liferay.SearchContainer.get(
+		'<portlet:namespace />' + 'passwordPolicyMembers'
 	);
+
+	searchContainer.on('rowToggled', function (event) {
+		var selectedItems = event.elements.allSelectedElements;
+
+		var result = {};
+
+		if (selectedItems.size()) {
+			result = {
+				data: {
+					item: selectedItems.attr('value').join(','),
+					memberType: '<%= HtmlUtil.escapeJS(tabs2) %>',
+				},
+			};
+		}
+
+		Liferay.Util.getOpener().Liferay.fire(
+			'<%= HtmlUtil.escapeJS(eventName) %>',
+			result
+		);
+	});
 </aui:script>

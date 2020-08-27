@@ -14,8 +14,8 @@
 
 package com.liferay.bookmarks.uad.test;
 
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.model.BookmarksFolder;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksFolderLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -51,10 +51,8 @@ public class BookmarksFolderUADTestUtil {
 		BookmarksFolder bookmarksFolder = addBookmarksFolder(
 			bookmarksFolderLocalService, userId);
 
-		bookmarksFolder = bookmarksFolderLocalService.updateStatus(
+		return bookmarksFolderLocalService.updateStatus(
 			statusByUserId, bookmarksFolder, WorkflowConstants.STATUS_APPROVED);
-
-		return bookmarksFolder;
 	}
 
 }

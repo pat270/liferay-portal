@@ -28,7 +28,6 @@
 		}
 	},
 	"ignore": [
-		"**/document_library/js/*.js"
-	],
-	"output": "classes/META-INF/resources"
+		"**/document_library/js/legacy/*.js"
+	]
 }

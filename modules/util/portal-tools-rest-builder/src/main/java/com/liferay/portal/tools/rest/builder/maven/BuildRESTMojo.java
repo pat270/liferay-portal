@@ -37,8 +37,8 @@ public class BuildRESTMojo extends AbstractMojo {
 
 			restBuilder.build();
 		}
-		catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+		catch (Exception exception) {
+			throw new MojoExecutionException(exception.getMessage(), exception);
 		}
 	}
 
@@ -47,6 +47,16 @@ public class BuildRESTMojo extends AbstractMojo {
 	 */
 	public void setCopyrightFile(File copyrightFile) {
 		_restBuilderArgs.setCopyrightFile(copyrightFile);
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setForceClientVersionDescription(
+		Boolean forceClientVersionDescription) {
+
+		_restBuilderArgs.setForceClientVersionDescription(
+			forceClientVersionDescription);
 	}
 
 	/**

@@ -14,9 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
+import com.liferay.dynamic.data.mapping.model.DDMTemplateVersion;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link DDMTemplateVersionLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMTemplateVersionLocalService
  * @generated
  */
-@ProviderType
 public class DDMTemplateVersionLocalServiceWrapper
 	implements DDMTemplateVersionLocalService,
 			   ServiceWrapper<DDMTemplateVersionLocalService> {
@@ -39,14 +39,16 @@ public class DDMTemplateVersionLocalServiceWrapper
 	/**
 	 * Adds the ddm template version to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmTemplateVersion the ddm template version
 	 * @return the ddm template version that was added
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-		addDDMTemplateVersion(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-				ddmTemplateVersion) {
+	public DDMTemplateVersion addDDMTemplateVersion(
+		DDMTemplateVersion ddmTemplateVersion) {
 
 		return _ddmTemplateVersionLocalService.addDDMTemplateVersion(
 			ddmTemplateVersion);
@@ -59,24 +61,36 @@ public class DDMTemplateVersionLocalServiceWrapper
 	 * @return the new ddm template version
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-		createDDMTemplateVersion(long templateVersionId) {
-
+	public DDMTemplateVersion createDDMTemplateVersion(long templateVersionId) {
 		return _ddmTemplateVersionLocalService.createDDMTemplateVersion(
 			templateVersionId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ddmTemplateVersionLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the ddm template version from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddmTemplateVersion the ddm template version
 	 * @return the ddm template version that was removed
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-		deleteDDMTemplateVersion(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-				ddmTemplateVersion) {
+	public DDMTemplateVersion deleteDDMTemplateVersion(
+		DDMTemplateVersion ddmTemplateVersion) {
 
 		return _ddmTemplateVersionLocalService.deleteDDMTemplateVersion(
 			ddmTemplateVersion);
@@ -85,13 +99,16 @@ public class DDMTemplateVersionLocalServiceWrapper
 	/**
 	 * Deletes the ddm template version with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param templateVersionId the primary key of the ddm template version
 	 * @return the ddm template version that was removed
 	 * @throws PortalException if a ddm template version with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-			deleteDDMTemplateVersion(long templateVersionId)
+	public DDMTemplateVersion deleteDDMTemplateVersion(long templateVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateVersionLocalService.deleteDDMTemplateVersion(
@@ -116,6 +133,11 @@ public class DDMTemplateVersionLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _ddmTemplateVersionLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _ddmTemplateVersionLocalService.dynamicQuery();
 	}
@@ -137,7 +159,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -158,7 +180,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -207,9 +229,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-		fetchDDMTemplateVersion(long templateVersionId) {
-
+	public DDMTemplateVersion fetchDDMTemplateVersion(long templateVersionId) {
 		return _ddmTemplateVersionLocalService.fetchDDMTemplateVersion(
 			templateVersionId);
 	}
@@ -229,8 +249,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	 * @throws PortalException if a ddm template version with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-			getDDMTemplateVersion(long templateVersionId)
+	public DDMTemplateVersion getDDMTemplateVersion(long templateVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateVersionLocalService.getDDMTemplateVersion(
@@ -241,7 +260,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	 * Returns a range of all the ddm template versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm template versions
@@ -249,9 +268,8 @@ public class DDMTemplateVersionLocalServiceWrapper
 	 * @return the range of ddm template versions
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMTemplateVersion>
-			getDDMTemplateVersions(int start, int end) {
+	public java.util.List<DDMTemplateVersion> getDDMTemplateVersions(
+		int start, int end) {
 
 		return _ddmTemplateVersionLocalService.getDDMTemplateVersions(
 			start, end);
@@ -276,8 +294,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-			getLatestTemplateVersion(long templateId)
+	public DDMTemplateVersion getLatestTemplateVersion(long templateId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateVersionLocalService.getLatestTemplateVersion(
@@ -294,6 +311,9 @@ public class DDMTemplateVersionLocalServiceWrapper
 		return _ddmTemplateVersionLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -303,8 +323,7 @@ public class DDMTemplateVersionLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-			getTemplateVersion(long templateVersionId)
+	public DDMTemplateVersion getTemplateVersion(long templateVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateVersionLocalService.getTemplateVersion(
@@ -312,8 +331,8 @@ public class DDMTemplateVersionLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-			getTemplateVersion(long templateId, String version)
+	public DDMTemplateVersion getTemplateVersion(
+			long templateId, String version)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateVersionLocalService.getTemplateVersion(
@@ -321,21 +340,17 @@ public class DDMTemplateVersionLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMTemplateVersion>
-			getTemplateVersions(long templateId) {
+	public java.util.List<DDMTemplateVersion> getTemplateVersions(
+		long templateId) {
 
 		return _ddmTemplateVersionLocalService.getTemplateVersions(templateId);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMTemplateVersion>
-			getTemplateVersions(
-				long templateId, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.dynamic.data.mapping.model.DDMTemplateVersion>
-						orderByComparator) {
+	public java.util.List<DDMTemplateVersion> getTemplateVersions(
+		long templateId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMTemplateVersion>
+			orderByComparator) {
 
 		return _ddmTemplateVersionLocalService.getTemplateVersions(
 			templateId, start, end, orderByComparator);
@@ -350,17 +365,39 @@ public class DDMTemplateVersionLocalServiceWrapper
 	/**
 	 * Updates the ddm template version in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmTemplateVersion the ddm template version
 	 * @return the ddm template version that was updated
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-		updateDDMTemplateVersion(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateVersion
-				ddmTemplateVersion) {
+	public DDMTemplateVersion updateDDMTemplateVersion(
+		DDMTemplateVersion ddmTemplateVersion) {
 
 		return _ddmTemplateVersionLocalService.updateDDMTemplateVersion(
 			ddmTemplateVersion);
+	}
+
+	@Override
+	public CTPersistence<DDMTemplateVersion> getCTPersistence() {
+		return _ddmTemplateVersionLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<DDMTemplateVersion> getModelClass() {
+		return _ddmTemplateVersionLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DDMTemplateVersion>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _ddmTemplateVersionLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

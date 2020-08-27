@@ -16,6 +16,7 @@ package com.liferay.wiki.engine.creole;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.util.HtmlImpl;
@@ -46,7 +47,8 @@ public class XhtmlTranslationVisitorTest {
 
 	@After
 	public void tearDown() {
-		_wikiEngineCreoleComponentProvider.deactivate();
+		ReflectionTestUtil.invoke(
+			_wikiEngineCreoleComponentProvider, "deactivate", new Class<?>[0]);
 	}
 
 	@Test
@@ -268,24 +270,27 @@ public class XhtmlTranslationVisitorTest {
 	@Test
 	public void testParseCorrectlyNoWikiBlockWithBraces() {
 		Assert.assertEquals(
-			"<pre>{" + _NEW_LINE + "foo" + _NEW_LINE + "}" + _NEW_LINE +
-				"</pre>",
+			StringBundler.concat(
+				"<pre>{", _NEW_LINE, "foo", _NEW_LINE, "}", _NEW_LINE,
+				"</pre>"),
 			toUnix(translate("nowikiblock-7.creole")));
 	}
 
 	@Test
 	public void testParseCorrectlyNoWikiBlockWithMultipleAndText() {
 		Assert.assertEquals(
-			"<pre>public interface Foo {" + _NEW_LINE + "void foo();" +
-				_NEW_LINE + "}" + _NEW_LINE + "</pre><p>Outside preserve </p>",
+			StringBundler.concat(
+				"<pre>public interface Foo {", _NEW_LINE, "void foo();",
+				_NEW_LINE, "}", _NEW_LINE, "</pre><p>Outside preserve </p>"),
 			toUnix(translate("nowikiblock-9.creole")));
 	}
 
 	@Test
 	public void testParseCorrectlyNoWikiBlockWithMultipleBraces() {
 		Assert.assertEquals(
-			"<pre>public interface Foo {" + _NEW_LINE + "void foo();" +
-				_NEW_LINE + "}" + _NEW_LINE + "</pre>",
+			StringBundler.concat(
+				"<pre>public interface Foo {", _NEW_LINE, "void foo();",
+				_NEW_LINE, "}", _NEW_LINE, "</pre>"),
 			toUnix(translate("nowikiblock-8.creole")));
 	}
 

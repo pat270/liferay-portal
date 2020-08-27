@@ -15,12 +15,18 @@
 package com.liferay.portal.vulcan.yaml.openapi;
 
 /**
- * @author Peter Shin
+ * @author     Peter Shin
+ * @deprecated As of Athanasius (7.3.x)
  */
+@Deprecated
 public class Info {
 
 	public String getDescription() {
 		return _description;
+	}
+
+	public License getLicense() {
+		return _license;
 	}
 
 	public String getTitle() {
@@ -35,6 +41,10 @@ public class Info {
 		_description = description;
 	}
 
+	public void setLicense(License license) {
+		_license = license;
+	}
+
 	public void setTitle(String title) {
 		_title = title;
 	}
@@ -44,6 +54,7 @@ public class Info {
 	}
 
 	private String _description;
+	private License _license;
 	private String _title;
 	private String _version;
 

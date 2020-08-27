@@ -14,63 +14,72 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.pagination.Pagination;
+import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.headless.admin.user.client.serdes.v1_0.UserAccountSerDes;
-import com.liferay.headless.admin.user.resource.v1_0.UserAccountResource;
+import com.liferay.petra.function.UnsafeTriConsumer;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.test.log.CaptureAppender;
+import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
+import java.lang.reflect.Method;
 
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.log4j.Level;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -102,10 +111,19 @@ public abstract class BaseUserAccountResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-user/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_userAccountResource.setContextCompany(testCompany);
+
+		UserAccountResource.Builder builder = UserAccountResource.builder();
+
+		userAccountResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -119,10 +137,16 @@ public abstract class BaseUserAccountResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -140,9 +164,15 @@ public abstract class BaseUserAccountResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -156,10 +186,49 @@ public abstract class BaseUserAccountResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		UserAccount userAccount = randomUserAccount();
+
+		userAccount.setAdditionalName(regex);
+		userAccount.setAlternateName(regex);
+		userAccount.setDashboardURL(regex);
+		userAccount.setEmailAddress(regex);
+		userAccount.setFamilyName(regex);
+		userAccount.setGivenName(regex);
+		userAccount.setHonorificPrefix(regex);
+		userAccount.setHonorificSuffix(regex);
+		userAccount.setImage(regex);
+		userAccount.setJobTitle(regex);
+		userAccount.setName(regex);
+		userAccount.setProfileURL(regex);
+
+		String json = UserAccountSerDes.toJSON(userAccount);
+
+		Assert.assertFalse(json.contains(regex));
+
+		userAccount = UserAccountSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, userAccount.getAdditionalName());
+		Assert.assertEquals(regex, userAccount.getAlternateName());
+		Assert.assertEquals(regex, userAccount.getDashboardURL());
+		Assert.assertEquals(regex, userAccount.getEmailAddress());
+		Assert.assertEquals(regex, userAccount.getFamilyName());
+		Assert.assertEquals(regex, userAccount.getGivenName());
+		Assert.assertEquals(regex, userAccount.getHonorificPrefix());
+		Assert.assertEquals(regex, userAccount.getHonorificSuffix());
+		Assert.assertEquals(regex, userAccount.getImage());
+		Assert.assertEquals(regex, userAccount.getJobTitle());
+		Assert.assertEquals(regex, userAccount.getName());
+		Assert.assertEquals(regex, userAccount.getProfileURL());
+	}
+
+	@Test
 	public void testGetMyUserAccount() throws Exception {
 		UserAccount postUserAccount = testGetMyUserAccount_addUserAccount();
 
-		UserAccount getUserAccount = invokeGetMyUserAccount();
+		UserAccount getUserAccount = userAccountResource.getMyUserAccount();
 
 		assertEquals(postUserAccount, getUserAccount);
 		assertValid(getUserAccount);
@@ -172,48 +241,43 @@ public abstract class BaseUserAccountResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected UserAccount invokeGetMyUserAccount() throws Exception {
-		Http.Options options = _createHttpOptions();
+	@Test
+	public void testGraphQLGetMyUserAccount() throws Exception {
+		UserAccount userAccount = testGraphQLUserAccount_addUserAccount();
 
-		String location = _resourceURL + "/my-user-account";
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return UserAccountSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				userAccount,
+				UserAccountSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"myUserAccount",
+								new HashMap<String, Object>() {
+									{
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/myUserAccount"))));
 	}
 
-	protected Http.Response invokeGetMyUserAccountResponse() throws Exception {
-		Http.Options options = _createHttpOptions();
-
-		String location = _resourceURL + "/my-user-account";
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+	@Test
+	public void testGraphQLGetMyUserAccountNotFound() throws Exception {
+		Assert.assertTrue(true);
 	}
 
 	@Test
 	public void testGetOrganizationUserAccountsPage() throws Exception {
-		Long organizationId =
+		Page<UserAccount> page =
+			userAccountResource.getOrganizationUserAccountsPage(
+				testGetOrganizationUserAccountsPage_getOrganizationId(),
+				RandomTestUtil.randomString(), null, Pagination.of(1, 2), null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		String organizationId =
 			testGetOrganizationUserAccountsPage_getOrganizationId();
-		Long irrelevantOrganizationId =
+		String irrelevantOrganizationId =
 			testGetOrganizationUserAccountsPage_getIrrelevantOrganizationId();
 
 		if ((irrelevantOrganizationId != null)) {
@@ -221,7 +285,7 @@ public abstract class BaseUserAccountResourceTestCase {
 				testGetOrganizationUserAccountsPage_addUserAccount(
 					irrelevantOrganizationId, randomIrrelevantUserAccount());
 
-			Page<UserAccount> page = invokeGetOrganizationUserAccountsPage(
+			page = userAccountResource.getOrganizationUserAccountsPage(
 				irrelevantOrganizationId, null, null, Pagination.of(1, 2),
 				null);
 
@@ -241,7 +305,7 @@ public abstract class BaseUserAccountResourceTestCase {
 			testGetOrganizationUserAccountsPage_addUserAccount(
 				organizationId, randomUserAccount());
 
-		Page<UserAccount> page = invokeGetOrganizationUserAccountsPage(
+		page = userAccountResource.getOrganizationUserAccountsPage(
 			organizationId, null, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -250,6 +314,10 @@ public abstract class BaseUserAccountResourceTestCase {
 			Arrays.asList(userAccount1, userAccount2),
 			(List<UserAccount>)page.getItems());
 		assertValid(page);
+
+		userAccountResource.deleteUserAccount(userAccount1.getId());
+
+		userAccountResource.deleteUserAccount(userAccount2.getId());
 	}
 
 	@Test
@@ -263,7 +331,7 @@ public abstract class BaseUserAccountResourceTestCase {
 			return;
 		}
 
-		Long organizationId =
+		String organizationId =
 			testGetOrganizationUserAccountsPage_getOrganizationId();
 
 		UserAccount userAccount1 = randomUserAccount();
@@ -272,10 +340,11 @@ public abstract class BaseUserAccountResourceTestCase {
 			organizationId, userAccount1);
 
 		for (EntityField entityField : entityFields) {
-			Page<UserAccount> page = invokeGetOrganizationUserAccountsPage(
-				organizationId, null,
-				getFilterString(entityField, "between", userAccount1),
-				Pagination.of(1, 2), null);
+			Page<UserAccount> page =
+				userAccountResource.getOrganizationUserAccountsPage(
+					organizationId, null,
+					getFilterString(entityField, "between", userAccount1),
+					Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(userAccount1),
@@ -294,7 +363,7 @@ public abstract class BaseUserAccountResourceTestCase {
 			return;
 		}
 
-		Long organizationId =
+		String organizationId =
 			testGetOrganizationUserAccountsPage_getOrganizationId();
 
 		UserAccount userAccount1 =
@@ -307,10 +376,11 @@ public abstract class BaseUserAccountResourceTestCase {
 				organizationId, randomUserAccount());
 
 		for (EntityField entityField : entityFields) {
-			Page<UserAccount> page = invokeGetOrganizationUserAccountsPage(
-				organizationId, null,
-				getFilterString(entityField, "eq", userAccount1),
-				Pagination.of(1, 2), null);
+			Page<UserAccount> page =
+				userAccountResource.getOrganizationUserAccountsPage(
+					organizationId, null,
+					getFilterString(entityField, "eq", userAccount1),
+					Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(userAccount1),
@@ -322,7 +392,7 @@ public abstract class BaseUserAccountResourceTestCase {
 	public void testGetOrganizationUserAccountsPageWithPagination()
 		throws Exception {
 
-		Long organizationId =
+		String organizationId =
 			testGetOrganizationUserAccountsPage_getOrganizationId();
 
 		UserAccount userAccount1 =
@@ -337,15 +407,17 @@ public abstract class BaseUserAccountResourceTestCase {
 			testGetOrganizationUserAccountsPage_addUserAccount(
 				organizationId, randomUserAccount());
 
-		Page<UserAccount> page1 = invokeGetOrganizationUserAccountsPage(
-			organizationId, null, null, Pagination.of(1, 2), null);
+		Page<UserAccount> page1 =
+			userAccountResource.getOrganizationUserAccountsPage(
+				organizationId, null, null, Pagination.of(1, 2), null);
 
 		List<UserAccount> userAccounts1 = (List<UserAccount>)page1.getItems();
 
 		Assert.assertEquals(userAccounts1.toString(), 2, userAccounts1.size());
 
-		Page<UserAccount> page2 = invokeGetOrganizationUserAccountsPage(
-			organizationId, null, null, Pagination.of(2, 2), null);
+		Page<UserAccount> page2 =
+			userAccountResource.getOrganizationUserAccountsPage(
+				organizationId, null, null, Pagination.of(2, 2), null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -353,18 +425,215 @@ public abstract class BaseUserAccountResourceTestCase {
 
 		Assert.assertEquals(userAccounts2.toString(), 1, userAccounts2.size());
 
+		Page<UserAccount> page3 =
+			userAccountResource.getOrganizationUserAccountsPage(
+				organizationId, null, null, Pagination.of(1, 3), null);
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(userAccount1, userAccount2, userAccount3),
-			new ArrayList<UserAccount>() {
-				{
-					addAll(userAccounts1);
-					addAll(userAccounts2);
-				}
-			});
+			(List<UserAccount>)page3.getItems());
 	}
 
 	@Test
 	public void testGetOrganizationUserAccountsPageWithSortDateTime()
+		throws Exception {
+
+		testGetOrganizationUserAccountsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, userAccount1, userAccount2) -> {
+				BeanUtils.setProperty(
+					userAccount1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
+
+	@Test
+	public void testGetOrganizationUserAccountsPageWithSortInteger()
+		throws Exception {
+
+		testGetOrganizationUserAccountsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, userAccount1, userAccount2) -> {
+				BeanUtils.setProperty(userAccount1, entityField.getName(), 0);
+				BeanUtils.setProperty(userAccount2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetOrganizationUserAccountsPageWithSortString()
+		throws Exception {
+
+		testGetOrganizationUserAccountsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, userAccount1, userAccount2) -> {
+				Class<?> clazz = userAccount1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetOrganizationUserAccountsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer<EntityField, UserAccount, UserAccount, Exception>
+				unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		String organizationId =
+			testGetOrganizationUserAccountsPage_getOrganizationId();
+
+		UserAccount userAccount1 = randomUserAccount();
+		UserAccount userAccount2 = randomUserAccount();
+
+		for (EntityField entityField : entityFields) {
+			unsafeTriConsumer.accept(entityField, userAccount1, userAccount2);
+		}
+
+		userAccount1 = testGetOrganizationUserAccountsPage_addUserAccount(
+			organizationId, userAccount1);
+
+		userAccount2 = testGetOrganizationUserAccountsPage_addUserAccount(
+			organizationId, userAccount2);
+
+		for (EntityField entityField : entityFields) {
+			Page<UserAccount> ascPage =
+				userAccountResource.getOrganizationUserAccountsPage(
+					organizationId, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":asc");
+
+			assertEquals(
+				Arrays.asList(userAccount1, userAccount2),
+				(List<UserAccount>)ascPage.getItems());
+
+			Page<UserAccount> descPage =
+				userAccountResource.getOrganizationUserAccountsPage(
+					organizationId, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":desc");
+
+			assertEquals(
+				Arrays.asList(userAccount2, userAccount1),
+				(List<UserAccount>)descPage.getItems());
+		}
+	}
+
+	protected UserAccount testGetOrganizationUserAccountsPage_addUserAccount(
+			String organizationId, UserAccount userAccount)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String testGetOrganizationUserAccountsPage_getOrganizationId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetOrganizationUserAccountsPage_getIrrelevantOrganizationId()
+		throws Exception {
+
+		return null;
+	}
+
+	@Test
+	public void testGetSiteUserAccountsPage() throws Exception {
+		Page<UserAccount> page = userAccountResource.getSiteUserAccountsPage(
+			testGetSiteUserAccountsPage_getSiteId(),
+			RandomTestUtil.randomString(), null, Pagination.of(1, 2), null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		Long siteId = testGetSiteUserAccountsPage_getSiteId();
+		Long irrelevantSiteId =
+			testGetSiteUserAccountsPage_getIrrelevantSiteId();
+
+		if ((irrelevantSiteId != null)) {
+			UserAccount irrelevantUserAccount =
+				testGetSiteUserAccountsPage_addUserAccount(
+					irrelevantSiteId, randomIrrelevantUserAccount());
+
+			page = userAccountResource.getSiteUserAccountsPage(
+				irrelevantSiteId, null, null, Pagination.of(1, 2), null);
+
+			Assert.assertEquals(1, page.getTotalCount());
+
+			assertEquals(
+				Arrays.asList(irrelevantUserAccount),
+				(List<UserAccount>)page.getItems());
+			assertValid(page);
+		}
+
+		UserAccount userAccount1 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		UserAccount userAccount2 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		page = userAccountResource.getSiteUserAccountsPage(
+			siteId, null, null, Pagination.of(1, 2), null);
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(userAccount1, userAccount2),
+			(List<UserAccount>)page.getItems());
+		assertValid(page);
+
+		userAccountResource.deleteUserAccount(userAccount1.getId());
+
+		userAccountResource.deleteUserAccount(userAccount2.getId());
+	}
+
+	@Test
+	public void testGetSiteUserAccountsPageWithFilterDateTimeEquals()
 		throws Exception {
 
 		List<EntityField> entityFields = getEntityFields(
@@ -374,45 +643,28 @@ public abstract class BaseUserAccountResourceTestCase {
 			return;
 		}
 
-		Long organizationId =
-			testGetOrganizationUserAccountsPage_getOrganizationId();
+		Long siteId = testGetSiteUserAccountsPage_getSiteId();
 
 		UserAccount userAccount1 = randomUserAccount();
-		UserAccount userAccount2 = randomUserAccount();
+
+		userAccount1 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, userAccount1);
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				userAccount1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		userAccount1 = testGetOrganizationUserAccountsPage_addUserAccount(
-			organizationId, userAccount1);
-
-		userAccount2 = testGetOrganizationUserAccountsPage_addUserAccount(
-			organizationId, userAccount2);
-
-		for (EntityField entityField : entityFields) {
-			Page<UserAccount> ascPage = invokeGetOrganizationUserAccountsPage(
-				organizationId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
+			Page<UserAccount> page =
+				userAccountResource.getSiteUserAccountsPage(
+					siteId, null,
+					getFilterString(entityField, "between", userAccount1),
+					Pagination.of(1, 2), null);
 
 			assertEquals(
-				Arrays.asList(userAccount1, userAccount2),
-				(List<UserAccount>)ascPage.getItems());
-
-			Page<UserAccount> descPage = invokeGetOrganizationUserAccountsPage(
-				organizationId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(userAccount2, userAccount1),
-				(List<UserAccount>)descPage.getItems());
+				Collections.singletonList(userAccount1),
+				(List<UserAccount>)page.getItems());
 		}
 	}
 
 	@Test
-	public void testGetOrganizationUserAccountsPageWithSortString()
+	public void testGetSiteUserAccountsPageWithFilterStringEquals()
 		throws Exception {
 
 		List<EntityField> entityFields = getEntityFields(
@@ -422,35 +674,178 @@ public abstract class BaseUserAccountResourceTestCase {
 			return;
 		}
 
-		Long organizationId =
-			testGetOrganizationUserAccountsPage_getOrganizationId();
+		Long siteId = testGetSiteUserAccountsPage_getSiteId();
+
+		UserAccount userAccount1 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		UserAccount userAccount2 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		for (EntityField entityField : entityFields) {
+			Page<UserAccount> page =
+				userAccountResource.getSiteUserAccountsPage(
+					siteId, null,
+					getFilterString(entityField, "eq", userAccount1),
+					Pagination.of(1, 2), null);
+
+			assertEquals(
+				Collections.singletonList(userAccount1),
+				(List<UserAccount>)page.getItems());
+		}
+	}
+
+	@Test
+	public void testGetSiteUserAccountsPageWithPagination() throws Exception {
+		Long siteId = testGetSiteUserAccountsPage_getSiteId();
+
+		UserAccount userAccount1 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		UserAccount userAccount2 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		UserAccount userAccount3 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, randomUserAccount());
+
+		Page<UserAccount> page1 = userAccountResource.getSiteUserAccountsPage(
+			siteId, null, null, Pagination.of(1, 2), null);
+
+		List<UserAccount> userAccounts1 = (List<UserAccount>)page1.getItems();
+
+		Assert.assertEquals(userAccounts1.toString(), 2, userAccounts1.size());
+
+		Page<UserAccount> page2 = userAccountResource.getSiteUserAccountsPage(
+			siteId, null, null, Pagination.of(2, 2), null);
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<UserAccount> userAccounts2 = (List<UserAccount>)page2.getItems();
+
+		Assert.assertEquals(userAccounts2.toString(), 1, userAccounts2.size());
+
+		Page<UserAccount> page3 = userAccountResource.getSiteUserAccountsPage(
+			siteId, null, null, Pagination.of(1, 3), null);
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(userAccount1, userAccount2, userAccount3),
+			(List<UserAccount>)page3.getItems());
+	}
+
+	@Test
+	public void testGetSiteUserAccountsPageWithSortDateTime() throws Exception {
+		testGetSiteUserAccountsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, userAccount1, userAccount2) -> {
+				BeanUtils.setProperty(
+					userAccount1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
+
+	@Test
+	public void testGetSiteUserAccountsPageWithSortInteger() throws Exception {
+		testGetSiteUserAccountsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, userAccount1, userAccount2) -> {
+				BeanUtils.setProperty(userAccount1, entityField.getName(), 0);
+				BeanUtils.setProperty(userAccount2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetSiteUserAccountsPageWithSortString() throws Exception {
+		testGetSiteUserAccountsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, userAccount1, userAccount2) -> {
+				Class<?> clazz = userAccount1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetSiteUserAccountsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer<EntityField, UserAccount, UserAccount, Exception>
+				unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Long siteId = testGetSiteUserAccountsPage_getSiteId();
 
 		UserAccount userAccount1 = randomUserAccount();
 		UserAccount userAccount2 = randomUserAccount();
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(userAccount1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(userAccount2, entityField.getName(), "Bbb");
+			unsafeTriConsumer.accept(entityField, userAccount1, userAccount2);
 		}
 
-		userAccount1 = testGetOrganizationUserAccountsPage_addUserAccount(
-			organizationId, userAccount1);
+		userAccount1 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, userAccount1);
 
-		userAccount2 = testGetOrganizationUserAccountsPage_addUserAccount(
-			organizationId, userAccount2);
+		userAccount2 = testGetSiteUserAccountsPage_addUserAccount(
+			siteId, userAccount2);
 
 		for (EntityField entityField : entityFields) {
-			Page<UserAccount> ascPage = invokeGetOrganizationUserAccountsPage(
-				organizationId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
+			Page<UserAccount> ascPage =
+				userAccountResource.getSiteUserAccountsPage(
+					siteId, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":asc");
 
 			assertEquals(
 				Arrays.asList(userAccount1, userAccount2),
 				(List<UserAccount>)ascPage.getItems());
 
-			Page<UserAccount> descPage = invokeGetOrganizationUserAccountsPage(
-				organizationId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
+			Page<UserAccount> descPage =
+				userAccountResource.getSiteUserAccountsPage(
+					siteId, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":desc");
 
 			assertEquals(
 				Arrays.asList(userAccount2, userAccount1),
@@ -458,119 +853,38 @@ public abstract class BaseUserAccountResourceTestCase {
 		}
 	}
 
-	protected UserAccount testGetOrganizationUserAccountsPage_addUserAccount(
-			Long organizationId, UserAccount userAccount)
+	protected UserAccount testGetSiteUserAccountsPage_addUserAccount(
+			Long siteId, UserAccount userAccount)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetOrganizationUserAccountsPage_getOrganizationId()
-		throws Exception {
-
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+	protected Long testGetSiteUserAccountsPage_getSiteId() throws Exception {
+		return testGroup.getGroupId();
 	}
 
-	protected Long
-			testGetOrganizationUserAccountsPage_getIrrelevantOrganizationId()
+	protected Long testGetSiteUserAccountsPage_getIrrelevantSiteId()
 		throws Exception {
 
-		return null;
-	}
-
-	protected Page<UserAccount> invokeGetOrganizationUserAccountsPage(
-			Long organizationId, String search, String filterString,
-			Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/user-accounts",
-					organizationId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, UserAccountSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetOrganizationUserAccountsPageResponse(
-			Long organizationId, String search, String filterString,
-			Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/user-accounts",
-					organizationId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		return irrelevantGroup.getGroupId();
 	}
 
 	@Test
 	public void testGetUserAccountsPage() throws Exception {
+		Page<UserAccount> page = userAccountResource.getUserAccountsPage(
+			RandomTestUtil.randomString(), null, Pagination.of(1, 2), null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		UserAccount userAccount1 = testGetUserAccountsPage_addUserAccount(
 			randomUserAccount());
 
 		UserAccount userAccount2 = testGetUserAccountsPage_addUserAccount(
 			randomUserAccount());
 
-		Page<UserAccount> page = invokeGetUserAccountsPage(
+		page = userAccountResource.getUserAccountsPage(
 			null, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -579,6 +893,10 @@ public abstract class BaseUserAccountResourceTestCase {
 			Arrays.asList(userAccount1, userAccount2),
 			(List<UserAccount>)page.getItems());
 		assertValid(page);
+
+		userAccountResource.deleteUserAccount(userAccount1.getId());
+
+		userAccountResource.deleteUserAccount(userAccount2.getId());
 	}
 
 	@Test
@@ -597,7 +915,7 @@ public abstract class BaseUserAccountResourceTestCase {
 		userAccount1 = testGetUserAccountsPage_addUserAccount(userAccount1);
 
 		for (EntityField entityField : entityFields) {
-			Page<UserAccount> page = invokeGetUserAccountsPage(
+			Page<UserAccount> page = userAccountResource.getUserAccountsPage(
 				null, getFilterString(entityField, "between", userAccount1),
 				Pagination.of(1, 2), null);
 
@@ -626,7 +944,7 @@ public abstract class BaseUserAccountResourceTestCase {
 			randomUserAccount());
 
 		for (EntityField entityField : entityFields) {
-			Page<UserAccount> page = invokeGetUserAccountsPage(
+			Page<UserAccount> page = userAccountResource.getUserAccountsPage(
 				null, getFilterString(entityField, "eq", userAccount1),
 				Pagination.of(1, 2), null);
 
@@ -647,14 +965,14 @@ public abstract class BaseUserAccountResourceTestCase {
 		UserAccount userAccount3 = testGetUserAccountsPage_addUserAccount(
 			randomUserAccount());
 
-		Page<UserAccount> page1 = invokeGetUserAccountsPage(
+		Page<UserAccount> page1 = userAccountResource.getUserAccountsPage(
 			null, null, Pagination.of(1, 2), null);
 
 		List<UserAccount> userAccounts1 = (List<UserAccount>)page1.getItems();
 
 		Assert.assertEquals(userAccounts1.toString(), 2, userAccounts1.size());
 
-		Page<UserAccount> page2 = invokeGetUserAccountsPage(
+		Page<UserAccount> page2 = userAccountResource.getUserAccountsPage(
 			null, null, Pagination.of(2, 2), null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
@@ -663,61 +981,93 @@ public abstract class BaseUserAccountResourceTestCase {
 
 		Assert.assertEquals(userAccounts2.toString(), 1, userAccounts2.size());
 
+		Page<UserAccount> page3 = userAccountResource.getUserAccountsPage(
+			null, null, Pagination.of(1, 3), null);
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(userAccount1, userAccount2, userAccount3),
-			new ArrayList<UserAccount>() {
-				{
-					addAll(userAccounts1);
-					addAll(userAccounts2);
-				}
-			});
+			(List<UserAccount>)page3.getItems());
 	}
 
 	@Test
 	public void testGetUserAccountsPageWithSortDateTime() throws Exception {
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
+		testGetUserAccountsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, userAccount1, userAccount2) -> {
+				BeanUtils.setProperty(
+					userAccount1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
 
-		if (entityFields.isEmpty()) {
-			return;
-		}
-
-		UserAccount userAccount1 = randomUserAccount();
-		UserAccount userAccount2 = randomUserAccount();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				userAccount1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		userAccount1 = testGetUserAccountsPage_addUserAccount(userAccount1);
-
-		userAccount2 = testGetUserAccountsPage_addUserAccount(userAccount2);
-
-		for (EntityField entityField : entityFields) {
-			Page<UserAccount> ascPage = invokeGetUserAccountsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(userAccount1, userAccount2),
-				(List<UserAccount>)ascPage.getItems());
-
-			Page<UserAccount> descPage = invokeGetUserAccountsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(userAccount2, userAccount1),
-				(List<UserAccount>)descPage.getItems());
-		}
+	@Test
+	public void testGetUserAccountsPageWithSortInteger() throws Exception {
+		testGetUserAccountsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, userAccount1, userAccount2) -> {
+				BeanUtils.setProperty(userAccount1, entityField.getName(), 0);
+				BeanUtils.setProperty(userAccount2, entityField.getName(), 1);
+			});
 	}
 
 	@Test
 	public void testGetUserAccountsPageWithSortString() throws Exception {
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
+		testGetUserAccountsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, userAccount1, userAccount2) -> {
+				Class<?> clazz = userAccount1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						userAccount1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						userAccount2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetUserAccountsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer<EntityField, UserAccount, UserAccount, Exception>
+				unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
 
 		if (entityFields.isEmpty()) {
 			return;
@@ -727,8 +1077,7 @@ public abstract class BaseUserAccountResourceTestCase {
 		UserAccount userAccount2 = randomUserAccount();
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(userAccount1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(userAccount2, entityField.getName(), "Bbb");
+			unsafeTriConsumer.accept(entityField, userAccount1, userAccount2);
 		}
 
 		userAccount1 = testGetUserAccountsPage_addUserAccount(userAccount1);
@@ -736,7 +1085,7 @@ public abstract class BaseUserAccountResourceTestCase {
 		userAccount2 = testGetUserAccountsPage_addUserAccount(userAccount2);
 
 		for (EntityField entityField : entityFields) {
-			Page<UserAccount> ascPage = invokeGetUserAccountsPage(
+			Page<UserAccount> ascPage = userAccountResource.getUserAccountsPage(
 				null, null, Pagination.of(1, 2),
 				entityField.getName() + ":asc");
 
@@ -744,9 +1093,10 @@ public abstract class BaseUserAccountResourceTestCase {
 				Arrays.asList(userAccount1, userAccount2),
 				(List<UserAccount>)ascPage.getItems());
 
-			Page<UserAccount> descPage = invokeGetUserAccountsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
+			Page<UserAccount> descPage =
+				userAccountResource.getUserAccountsPage(
+					null, null, Pagination.of(1, 2),
+					entityField.getName() + ":desc");
 
 			assertEquals(
 				Arrays.asList(userAccount2, userAccount1),
@@ -762,85 +1112,128 @@ public abstract class BaseUserAccountResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Page<UserAccount> invokeGetUserAccountsPage(
-			String search, String filterString, Pagination pagination,
-			String sortString)
-		throws Exception {
+	@Test
+	public void testGraphQLGetUserAccountsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"userAccounts",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 2);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
 
-		Http.Options options = _createHttpOptions();
+		JSONObject userAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccounts");
 
-		String location = _resourceURL + _toPath("/user-accounts");
+		Assert.assertEquals(0, userAccountsJSONObject.get("totalCount"));
 
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
+		UserAccount userAccount1 = testGraphQLUserAccount_addUserAccount();
+		UserAccount userAccount2 = testGraphQLUserAccount_addUserAccount();
 
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
+		userAccountsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/userAccounts");
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
+		Assert.assertEquals(2, userAccountsJSONObject.get("totalCount"));
 
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, UserAccountSerDes::toDTO);
+		assertEqualsIgnoringOrder(
+			Arrays.asList(userAccount1, userAccount2),
+			Arrays.asList(
+				UserAccountSerDes.toDTOs(
+					userAccountsJSONObject.getString("items"))));
 	}
 
-	protected Http.Response invokeGetUserAccountsPageResponse(
-			String search, String filterString, Pagination pagination,
-			String sortString)
+	@Test
+	public void testPostUserAccount() throws Exception {
+		UserAccount randomUserAccount = randomUserAccount();
+
+		UserAccount postUserAccount = testPostUserAccount_addUserAccount(
+			randomUserAccount);
+
+		assertEquals(randomUserAccount, postUserAccount);
+		assertValid(postUserAccount);
+	}
+
+	protected UserAccount testPostUserAccount_addUserAccount(
+			UserAccount userAccount)
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
 
-		String location = _resourceURL + _toPath("/user-accounts");
+	@Test
+	public void testDeleteUserAccount() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		UserAccount userAccount = testDeleteUserAccount_addUserAccount();
 
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
+		assertHttpResponseStatusCode(
+			204,
+			userAccountResource.deleteUserAccountHttpResponse(
+				userAccount.getId()));
+
+		assertHttpResponseStatusCode(
+			404,
+			userAccountResource.getUserAccountHttpResponse(
+				userAccount.getId()));
+
+		assertHttpResponseStatusCode(
+			404, userAccountResource.getUserAccountHttpResponse(0L));
+	}
+
+	protected UserAccount testDeleteUserAccount_addUserAccount()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLDeleteUserAccount() throws Exception {
+		UserAccount userAccount = testGraphQLUserAccount_addUserAccount();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteUserAccount",
+						new HashMap<String, Object>() {
+							{
+								put("userAccountId", userAccount.getId());
+							}
+						})),
+				"JSONObject/data", "Object/deleteUserAccount"));
+
+		try (CaptureAppender captureAppender =
+				Log4JLoggerTestUtil.configureLog4JLogger(
+					"graphql.execution.SimpleDataFetcherExceptionHandler",
+					Level.WARN)) {
+
+			JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"userAccount",
+						new HashMap<String, Object>() {
+							{
+								put("userAccountId", userAccount.getId());
+							}
+						},
+						new GraphQLField("id"))),
+				"JSONArray/errors");
+
+			Assert.assertTrue(errorsJSONArray.length() > 0);
 		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
 	public void testGetUserAccount() throws Exception {
 		UserAccount postUserAccount = testGetUserAccount_addUserAccount();
 
-		UserAccount getUserAccount = invokeGetUserAccount(
+		UserAccount getUserAccount = userAccountResource.getUserAccount(
 			postUserAccount.getId());
 
 		assertEquals(postUserAccount, getUserAccount);
@@ -852,397 +1245,117 @@ public abstract class BaseUserAccountResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected UserAccount invokeGetUserAccount(Long userAccountId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetUserAccount() throws Exception {
+		UserAccount userAccount = testGraphQLUserAccount_addUserAccount();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/user-accounts/{userAccountId}", userAccountId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return UserAccountSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokeGetUserAccountResponse(Long userAccountId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/user-accounts/{userAccountId}", userAccountId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertTrue(
+			equals(
+				userAccount,
+				UserAccountSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"userAccount",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"userAccountId",
+											userAccount.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/userAccount"))));
 	}
 
 	@Test
-	public void testGetWebSiteUserAccountsPage() throws Exception {
-		Long webSiteId = testGetWebSiteUserAccountsPage_getWebSiteId();
-		Long irrelevantWebSiteId =
-			testGetWebSiteUserAccountsPage_getIrrelevantWebSiteId();
-
-		if ((irrelevantWebSiteId != null)) {
-			UserAccount irrelevantUserAccount =
-				testGetWebSiteUserAccountsPage_addUserAccount(
-					irrelevantWebSiteId, randomIrrelevantUserAccount());
-
-			Page<UserAccount> page = invokeGetWebSiteUserAccountsPage(
-				irrelevantWebSiteId, null, null, Pagination.of(1, 2), null);
-
-			Assert.assertEquals(1, page.getTotalCount());
-
-			assertEquals(
-				Arrays.asList(irrelevantUserAccount),
-				(List<UserAccount>)page.getItems());
-			assertValid(page);
-		}
-
-		UserAccount userAccount1 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		UserAccount userAccount2 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		Page<UserAccount> page = invokeGetWebSiteUserAccountsPage(
-			webSiteId, null, null, Pagination.of(1, 2), null);
-
-		Assert.assertEquals(2, page.getTotalCount());
-
-		assertEqualsIgnoringOrder(
-			Arrays.asList(userAccount1, userAccount2),
-			(List<UserAccount>)page.getItems());
-		assertValid(page);
-	}
-
-	@Test
-	public void testGetWebSiteUserAccountsPageWithFilterDateTimeEquals()
-		throws Exception {
-
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
-
-		if (entityFields.isEmpty()) {
-			return;
-		}
-
-		Long webSiteId = testGetWebSiteUserAccountsPage_getWebSiteId();
-
-		UserAccount userAccount1 = randomUserAccount();
-
-		userAccount1 = testGetWebSiteUserAccountsPage_addUserAccount(
-			webSiteId, userAccount1);
-
-		for (EntityField entityField : entityFields) {
-			Page<UserAccount> page = invokeGetWebSiteUserAccountsPage(
-				webSiteId, null,
-				getFilterString(entityField, "between", userAccount1),
-				Pagination.of(1, 2), null);
-
-			assertEquals(
-				Collections.singletonList(userAccount1),
-				(List<UserAccount>)page.getItems());
-		}
-	}
-
-	@Test
-	public void testGetWebSiteUserAccountsPageWithFilterStringEquals()
-		throws Exception {
-
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
-
-		if (entityFields.isEmpty()) {
-			return;
-		}
-
-		Long webSiteId = testGetWebSiteUserAccountsPage_getWebSiteId();
-
-		UserAccount userAccount1 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		@SuppressWarnings("PMD.UnusedLocalVariable")
-		UserAccount userAccount2 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		for (EntityField entityField : entityFields) {
-			Page<UserAccount> page = invokeGetWebSiteUserAccountsPage(
-				webSiteId, null,
-				getFilterString(entityField, "eq", userAccount1),
-				Pagination.of(1, 2), null);
-
-			assertEquals(
-				Collections.singletonList(userAccount1),
-				(List<UserAccount>)page.getItems());
-		}
-	}
-
-	@Test
-	public void testGetWebSiteUserAccountsPageWithPagination()
-		throws Exception {
-
-		Long webSiteId = testGetWebSiteUserAccountsPage_getWebSiteId();
-
-		UserAccount userAccount1 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		UserAccount userAccount2 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		UserAccount userAccount3 =
-			testGetWebSiteUserAccountsPage_addUserAccount(
-				webSiteId, randomUserAccount());
-
-		Page<UserAccount> page1 = invokeGetWebSiteUserAccountsPage(
-			webSiteId, null, null, Pagination.of(1, 2), null);
-
-		List<UserAccount> userAccounts1 = (List<UserAccount>)page1.getItems();
-
-		Assert.assertEquals(userAccounts1.toString(), 2, userAccounts1.size());
-
-		Page<UserAccount> page2 = invokeGetWebSiteUserAccountsPage(
-			webSiteId, null, null, Pagination.of(2, 2), null);
-
-		Assert.assertEquals(3, page2.getTotalCount());
-
-		List<UserAccount> userAccounts2 = (List<UserAccount>)page2.getItems();
-
-		Assert.assertEquals(userAccounts2.toString(), 1, userAccounts2.size());
-
-		assertEqualsIgnoringOrder(
-			Arrays.asList(userAccount1, userAccount2, userAccount3),
-			new ArrayList<UserAccount>() {
-				{
-					addAll(userAccounts1);
-					addAll(userAccounts2);
-				}
-			});
-	}
-
-	@Test
-	public void testGetWebSiteUserAccountsPageWithSortDateTime()
-		throws Exception {
-
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
-
-		if (entityFields.isEmpty()) {
-			return;
-		}
-
-		Long webSiteId = testGetWebSiteUserAccountsPage_getWebSiteId();
-
-		UserAccount userAccount1 = randomUserAccount();
-		UserAccount userAccount2 = randomUserAccount();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				userAccount1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		userAccount1 = testGetWebSiteUserAccountsPage_addUserAccount(
-			webSiteId, userAccount1);
-
-		userAccount2 = testGetWebSiteUserAccountsPage_addUserAccount(
-			webSiteId, userAccount2);
-
-		for (EntityField entityField : entityFields) {
-			Page<UserAccount> ascPage = invokeGetWebSiteUserAccountsPage(
-				webSiteId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(userAccount1, userAccount2),
-				(List<UserAccount>)ascPage.getItems());
-
-			Page<UserAccount> descPage = invokeGetWebSiteUserAccountsPage(
-				webSiteId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(userAccount2, userAccount1),
-				(List<UserAccount>)descPage.getItems());
-		}
-	}
-
-	@Test
-	public void testGetWebSiteUserAccountsPageWithSortString()
-		throws Exception {
-
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
-
-		if (entityFields.isEmpty()) {
-			return;
-		}
-
-		Long webSiteId = testGetWebSiteUserAccountsPage_getWebSiteId();
-
-		UserAccount userAccount1 = randomUserAccount();
-		UserAccount userAccount2 = randomUserAccount();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(userAccount1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(userAccount2, entityField.getName(), "Bbb");
-		}
-
-		userAccount1 = testGetWebSiteUserAccountsPage_addUserAccount(
-			webSiteId, userAccount1);
-
-		userAccount2 = testGetWebSiteUserAccountsPage_addUserAccount(
-			webSiteId, userAccount2);
-
-		for (EntityField entityField : entityFields) {
-			Page<UserAccount> ascPage = invokeGetWebSiteUserAccountsPage(
-				webSiteId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(userAccount1, userAccount2),
-				(List<UserAccount>)ascPage.getItems());
-
-			Page<UserAccount> descPage = invokeGetWebSiteUserAccountsPage(
-				webSiteId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(userAccount2, userAccount1),
-				(List<UserAccount>)descPage.getItems());
-		}
-	}
-
-	protected UserAccount testGetWebSiteUserAccountsPage_addUserAccount(
-			Long webSiteId, UserAccount userAccount)
-		throws Exception {
-
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
-	}
-
-	protected Long testGetWebSiteUserAccountsPage_getWebSiteId()
-		throws Exception {
-
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
-	}
-
-	protected Long testGetWebSiteUserAccountsPage_getIrrelevantWebSiteId()
-		throws Exception {
-
-		return null;
-	}
-
-	protected Page<UserAccount> invokeGetWebSiteUserAccountsPage(
-			Long webSiteId, String search, String filterString,
-			Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/web-sites/{webSiteId}/user-accounts", webSiteId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, UserAccountSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetWebSiteUserAccountsPageResponse(
-			Long webSiteId, String search, String filterString,
-			Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/web-sites/{webSiteId}/user-accounts", webSiteId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	public void testGraphQLGetUserAccountNotFound() throws Exception {
+		Long irrelevantUserAccountId = RandomTestUtil.randomLong();
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"userAccount",
+						new HashMap<String, Object>() {
+							{
+								put("userAccountId", irrelevantUserAccountId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	@Test
+	public void testPatchUserAccount() throws Exception {
+		UserAccount postUserAccount = testPatchUserAccount_addUserAccount();
+
+		UserAccount randomPatchUserAccount = randomPatchUserAccount();
+
+		UserAccount patchUserAccount = userAccountResource.patchUserAccount(
+			postUserAccount.getId(), randomPatchUserAccount);
+
+		UserAccount expectedPatchUserAccount = postUserAccount.clone();
+
+		_beanUtilsBean.copyProperties(
+			expectedPatchUserAccount, randomPatchUserAccount);
+
+		UserAccount getUserAccount = userAccountResource.getUserAccount(
+			patchUserAccount.getId());
+
+		assertEquals(expectedPatchUserAccount, getUserAccount);
+		assertValid(getUserAccount);
+	}
+
+	protected UserAccount testPatchUserAccount_addUserAccount()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testPutUserAccount() throws Exception {
+		UserAccount postUserAccount = testPutUserAccount_addUserAccount();
+
+		UserAccount randomUserAccount = randomUserAccount();
+
+		UserAccount putUserAccount = userAccountResource.putUserAccount(
+			postUserAccount.getId(), randomUserAccount);
+
+		assertEquals(randomUserAccount, putUserAccount);
+		assertValid(putUserAccount);
+
+		UserAccount getUserAccount = userAccountResource.getUserAccount(
+			putUserAccount.getId());
+
+		assertEquals(randomUserAccount, getUserAccount);
+		assertValid(getUserAccount);
+	}
+
+	protected UserAccount testPutUserAccount_addUserAccount() throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
+	protected UserAccount testGraphQLUserAccount_addUserAccount()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
+
+		Assert.assertEquals(
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -1287,7 +1400,7 @@ public abstract class BaseUserAccountResourceTestCase {
 		}
 	}
 
-	protected void assertValid(UserAccount userAccount) {
+	protected void assertValid(UserAccount userAccount) throws Exception {
 		boolean valid = true;
 
 		if (userAccount.getDateCreated() == null) {
@@ -1304,6 +1417,14 @@ public abstract class BaseUserAccountResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("actions", additionalAssertFieldName)) {
+				if (userAccount.getActions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals("additionalName", additionalAssertFieldName)) {
 				if (userAccount.getAdditionalName() == null) {
@@ -1329,10 +1450,8 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals(
-					"contactInformation", additionalAssertFieldName)) {
-
-				if (userAccount.getContactInformation() == null) {
+			if (Objects.equals("customFields", additionalAssertFieldName)) {
+				if (userAccount.getCustomFields() == null) {
 					valid = false;
 				}
 
@@ -1453,6 +1572,17 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"userAccountContactInformation",
+					additionalAssertFieldName)) {
+
+				if (userAccount.getUserAccountContactInformation() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -1464,7 +1594,7 @@ public abstract class BaseUserAccountResourceTestCase {
 	protected void assertValid(Page<UserAccount> page) {
 		boolean valid = false;
 
-		Collection<UserAccount> userAccounts = page.getItems();
+		java.util.Collection<UserAccount> userAccounts = page.getItems();
 
 		int size = userAccounts.size();
 
@@ -1482,6 +1612,59 @@ public abstract class BaseUserAccountResourceTestCase {
 		return new String[0];
 	}
 
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.user.dto.v1_0.UserAccount.
+						class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[0];
+	}
+
 	protected boolean equals(
 		UserAccount userAccount1, UserAccount userAccount2) {
 
@@ -1491,6 +1674,17 @@ public abstract class BaseUserAccountResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("actions", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)userAccount1.getActions(),
+						(Map)userAccount2.getActions())) {
+
+					return false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals("additionalName", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
@@ -1525,12 +1719,10 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals(
-					"contactInformation", additionalAssertFieldName)) {
-
+			if (Objects.equals("customFields", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						userAccount1.getContactInformation(),
-						userAccount2.getContactInformation())) {
+						userAccount1.getCustomFields(),
+						userAccount2.getCustomFields())) {
 
 					return false;
 				}
@@ -1724,6 +1916,20 @@ public abstract class BaseUserAccountResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"userAccountContactInformation",
+					additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						userAccount1.getUserAccountContactInformation(),
+						userAccount2.getUserAccountContactInformation())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -1732,7 +1938,33 @@ public abstract class BaseUserAccountResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_userAccountResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -1753,12 +1985,15 @@ public abstract class BaseUserAccountResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -1776,6 +2011,11 @@ public abstract class BaseUserAccountResourceTestCase {
 		sb.append(" ");
 		sb.append(operator);
 		sb.append(" ");
+
+		if (entityFieldName.equals("actions")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
 
 		if (entityFieldName.equals("additionalName")) {
 			sb.append("'");
@@ -1824,7 +2064,7 @@ public abstract class BaseUserAccountResourceTestCase {
 			return sb.toString();
 		}
 
-		if (entityFieldName.equals("contactInformation")) {
+		if (entityFieldName.equals("customFields")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1999,29 +2239,82 @@ public abstract class BaseUserAccountResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("userAccountContactInformation")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
+	}
+
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
 	}
 
 	protected UserAccount randomUserAccount() throws Exception {
 		return new UserAccount() {
 			{
-				additionalName = RandomTestUtil.randomString();
-				alternateName = RandomTestUtil.randomString();
+				additionalName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				alternateName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				birthDate = RandomTestUtil.nextDate();
-				dashboardURL = RandomTestUtil.randomString();
+				dashboardURL = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
-				emailAddress = RandomTestUtil.randomString();
-				familyName = RandomTestUtil.randomString();
-				givenName = RandomTestUtil.randomString();
-				honorificPrefix = RandomTestUtil.randomString();
-				honorificSuffix = RandomTestUtil.randomString();
+				emailAddress =
+					StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+						"@liferay.com";
+				familyName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				givenName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				honorificPrefix = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				honorificSuffix = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				image = RandomTestUtil.randomString();
-				jobTitle = RandomTestUtil.randomString();
-				name = RandomTestUtil.randomString();
-				profileURL = RandomTestUtil.randomString();
+				image = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				jobTitle = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				profileURL = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 			}
 		};
 	}
@@ -2036,76 +2329,80 @@ public abstract class BaseUserAccountResourceTestCase {
 		return randomUserAccount();
 	}
 
+	protected UserAccountResource userAccountResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -2126,8 +2423,7 @@ public abstract class BaseUserAccountResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private UserAccountResource _userAccountResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.admin.user.resource.v1_0.UserAccountResource
+		_userAccountResource;
 
 }

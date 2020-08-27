@@ -30,11 +30,13 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 }
 %>
 
-<div class="closed consent container-fluid-1280">
+<clay:container-fluid
+	cssClass="closed consent"
+>
 	<aui:form action="<%= replyTo %>" data-senna-off="true" method="post" name="fm">
 		<aui:fieldset-group markupView="lexicon">
 			<div class="panel-body">
-				<div class="app-icon aspect-ratio-bg-cover" style="background-image:url('<%= HtmlUtil.escapeAttribute(oAuth2AuthorizePortletDisplayContext.getThumbnailURL()) %>')"></div>
+				<div class="app-icon aspect-ratio-bg-cover" style="background-image: url('<%= HtmlUtil.escapeAttribute(oAuth2AuthorizePortletDisplayContext.getThumbnailURL()) %>');"></div>
 
 				<liferay-ui:user-portrait
 					user="<%= user %>"
@@ -68,9 +70,10 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 
 								messageArguments[0] = StringPool.BLANK;
 
-								for (String getApplicationScopeDescription : assignableScopes.getApplicationScopeDescription(applicationName)) {
+								for (String getApplicationScopeDescription : assignableScopes.getApplicationScopeDescription(themeDisplay.getCompanyId(), applicationName)) {
 									if (Validator.isBlank(messageArguments[0])) {
 										messageArguments[0] = getApplicationScopeDescription;
+
 										continue;
 									}
 
@@ -83,15 +86,17 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 							%>
 
 								<li class="list-group-item list-group-item-flex">
-									<div class="autofit-col">
+									<clay:content-col>
 										<clay:icon
 											symbol="check"
 										/>
-									</div>
+									</clay:content-col>
 
-									<div class="autofit-col autofit-col-expand">
+									<clay:content-col
+										expand="<%= true %>"
+									>
 										<liferay-ui:message arguments="<%= messageArguments %>" key="for-x-y" />
-									</div>
+									</clay:content-col>
 								</li>
 
 							<%
@@ -135,29 +140,19 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 								var allowButton = document.getElementById('<portlet:namespace />allow');
 
 								if (allowButton) {
-									allowButton.addEventListener(
-										'click',
-										function() {
-											document.getElementById('oauthDecision').value = 'allow';
-											Liferay.Util.postForm(
-												document.<portlet:namespace/>fm
-											);
-										}
-									);
+									allowButton.addEventListener('click', function () {
+										document.getElementById('oauthDecision').value = 'allow';
+										Liferay.Util.postForm(document.<portlet:namespace/>fm);
+									});
 								}
 
 								var cancelButton = document.getElementById('<portlet:namespace />cancel');
 
 								if (cancelButton) {
-									cancelButton.addEventListener(
-										'click',
-										function() {
-											document.getElementById('oauthDecision').value = 'deny';
-											Liferay.Util.postForm(
-												document.<portlet:namespace/>fm
-											);
-										}
-									);
+									cancelButton.addEventListener('click', function () {
+										document.getElementById('oauthDecision').value = 'deny';
+										Liferay.Util.postForm(document.<portlet:namespace/>fm);
+									});
 								}
 							</script>
 						</div>
@@ -166,4 +161,4 @@ if (Validator.isNotNull(replyTo) && !replyTo.startsWith(PortalUtil.getPortalURL(
 			</div>
 		</aui:fieldset-group>
 	</aui:form>
-</div>
+</clay:container-fluid>

@@ -1,15 +1,27 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-layout-column',
-	function(A) {
+	(A) => {
 		var DDM = A.DD.DDM;
 
 		var Layout = Liferay.Layout;
 
 		var CSS_DRAGGING = 'dragging';
 
-		Layout.getLastPortletNode = function(column) {
-			var instance = this;
-
+		Layout.getLastPortletNode = function (column) {
 			var portlets = column.all(Layout.options.portletBoundary);
 
 			var lastIndex = portlets.size() - 1;
@@ -17,7 +29,7 @@ AUI.add(
 			return portlets.item(lastIndex);
 		};
 
-		Layout.findSiblingPortlet = function(portletNode, siblingPos) {
+		Layout.findSiblingPortlet = function (portletNode, siblingPos) {
 			var dragNodes = Layout.options.dragNodes;
 			var sibling = portletNode.get(siblingPos);
 
@@ -28,179 +40,224 @@ AUI.add(
 			return sibling;
 		};
 
-		var ColumnLayout = A.Component.create(
-			{
-				ATTRS: {
-					proxyNode: {
-						value: Layout.PROXY_NODE
+		var ColumnLayout = A.Component.create({
+			ATTRS: {
+				proxyNode: {
+					value: Layout.PROXY_NODE,
+				},
+			},
+
+			EXTENDS: A.SortableLayout,
+
+			NAME: 'ColumnLayout',
+
+			prototype: {
+				_positionNode(event) {
+					var portalLayout = event.currentTarget;
+
+					var activeDrop =
+						portalLayout.lastAlignDrop || portalLayout.activeDrop;
+
+					if (activeDrop) {
+						var dropNode = activeDrop.get('node');
+						var isStatic = dropNode.isStatic;
+
+						if (isStatic) {
+							var start = isStatic == 'start';
+
+							portalLayout.quadrant = start ? 4 : 1;
+						}
+
+						ColumnLayout.superclass._positionNode.apply(
+							this,
+							arguments
+						);
 					}
 				},
 
-				EXTENDS: A.SortableLayout,
+				_syncProxyNodeSize() {
+					var instance = this;
 
-				NAME: 'ColumnLayout',
+					var dragNode = DDM.activeDrag.get('dragNode');
+					var proxyNode = instance.get('proxyNode');
 
-				prototype: {
-					dragItem: 0,
+					if (proxyNode && dragNode) {
+						dragNode.set('offsetHeight', 30);
+						dragNode.set('offsetWidth', 200);
 
-					_positionNode: function(event) {
-						var instance = this;
-
-						var portalLayout = event.currentTarget;
-
-						var activeDrop = portalLayout.lastAlignDrop || portalLayout.activeDrop;
-
-						if (activeDrop) {
-							var dropNode = activeDrop.get('node');
-							var isStatic = dropNode.isStatic;
-
-							if (isStatic) {
-								var start = (isStatic == 'start');
-
-								portalLayout.quadrant = (start ? 4 : 1);
-							}
-
-							ColumnLayout.superclass._positionNode.apply(this, arguments);
-						}
-					},
-
-					_syncProxyNodeSize: function() {
-						var instance = this;
-
-						var dragNode = DDM.activeDrag.get('dragNode');
-						var proxyNode = instance.get('proxyNode');
-
-						if (proxyNode && dragNode) {
-							dragNode.set('offsetHeight', 30);
-							dragNode.set('offsetWidth', 200);
-
-							proxyNode.set('offsetHeight', 30);
-							proxyNode.set('offsetWidth', 200);
-						}
+						proxyNode.set('offsetHeight', 30);
+						proxyNode.set('offsetWidth', 200);
 					}
 				},
 
-				register: function() {
-					var columnLayoutDefaults = A.merge(
-						Layout.DEFAULT_LAYOUT_OPTIONS,
-						{
-							after: {
-								'drag:end': function(event) {
-									Layout._columnContainer.removeClass(CSS_DRAGGING);
-								},
+				dragItem: 0,
+			},
 
-								'drag:start': function(event) {
-									var node = DDM.activeDrag.get('node');
-									var nodeId = node.get('id');
-
-									Layout.PORTLET_TOPPER.html(Layout._getPortletTitle(nodeId));
-
-									if (Liferay.Data.isCustomizationView()) {
-										Layout.DEFAULT_LAYOUT_OPTIONS.dropNodes.addClass('customizable');
-									}
-
-									Layout._columnContainer.addClass(CSS_DRAGGING);
-								}
+			register() {
+				var columnLayoutDefaults = A.merge(
+					Layout.DEFAULT_LAYOUT_OPTIONS,
+					{
+						after: {
+							'drag:end'() {
+								Layout._columnContainer.removeClass(
+									CSS_DRAGGING
+								);
 							},
-							on: {
-								'drag:start': function(event) {
-									Liferay.fire('portletDragStart');
-								},
 
-								'drop:enter': function(event) {
-									Liferay.Layout.updateOverNestedPortletInfo();
-								},
+							'drag:start'() {
+								var node = DDM.activeDrag.get('node');
+								var nodeId = node.get('id');
 
-								'drop:exit': function(event) {
-									Liferay.Layout.updateOverNestedPortletInfo();
-								},
-								placeholderAlign: function(event) {
-									var portalLayout = event.currentTarget;
+								Layout.PORTLET_TOPPER.html(
+									Layout._getPortletTitle(nodeId)
+								);
 
-									var activeDrop = portalLayout.activeDrop;
-									var lastActiveDrop = portalLayout.lastActiveDrop;
+								if (Liferay.Data.isCustomizationView()) {
+									Layout.DEFAULT_LAYOUT_OPTIONS.dropNodes.addClass(
+										'customizable'
+									);
+								}
 
-									if (lastActiveDrop) {
-										var activeDropNode = activeDrop.get('node');
-										var lastActiveDropNode = lastActiveDrop.get('node');
+								Layout._columnContainer.addClass(CSS_DRAGGING);
+							},
+						},
+						on: {
+							'drag:start'() {
+								Liferay.fire('portletDragStart');
+							},
 
-										var isStatic = activeDropNode.isStatic;
-										var quadrant = portalLayout.quadrant;
+							'drop:enter'() {
+								Liferay.Layout.updateOverNestedPortletInfo();
+							},
 
-										if (isStatic) {
-											var start = (isStatic == 'start');
+							'drop:exit'() {
+								Liferay.Layout.updateOverNestedPortletInfo();
+							},
+							placeholderAlign(event) {
+								var portalLayout = event.currentTarget;
 
-											var siblingPos = (start ? 'nextSibling' : 'previousSibling');
+								var activeDrop = portalLayout.activeDrop;
+								var lastActiveDrop =
+									portalLayout.lastActiveDrop;
 
-											var siblingPortlet = Layout.findSiblingPortlet(activeDropNode, siblingPos);
-											var staticSibling = (siblingPortlet && (siblingPortlet.isStatic == isStatic));
+								if (lastActiveDrop) {
+									var activeDropNode = activeDrop.get('node');
+									var lastActiveDropNode = lastActiveDrop.get(
+										'node'
+									);
 
-											if (staticSibling ||
-												(start && (quadrant <= 2)) ||
-												(!start && (quadrant >= 3))) {
+									var isStatic = activeDropNode.isStatic;
+									var quadrant = portalLayout.quadrant;
 
-												event.halt();
-											}
-										}
+									if (isStatic) {
+										var start = isStatic == 'start';
 
-										var overColumn = !activeDropNode.drop;
+										var siblingPos = start
+											? 'nextSibling'
+											: 'previousSibling';
 
-										if (!Layout.OVER_NESTED_PORTLET && overColumn) {
-											var activeDropNodeId = activeDropNode.get('id');
-											var emptyColumn = Layout.EMPTY_COLUMNS[activeDropNodeId];
+										var siblingPortlet = Layout.findSiblingPortlet(
+											activeDropNode,
+											siblingPos
+										);
+										var staticSibling =
+											siblingPortlet &&
+											siblingPortlet.isStatic == isStatic;
 
-											if (!emptyColumn) {
-												if (activeDropNode != lastActiveDropNode) {
-													var referencePortlet = Layout.getLastPortletNode(activeDropNode);
-
-													if (referencePortlet && referencePortlet.isStatic) {
-														var options = Layout.options;
-
-														var dropColumn = activeDropNode.one(options.dropContainer);
-														var foundReferencePortlet = Layout.findReferencePortlet(dropColumn);
-
-														if (foundReferencePortlet) {
-															referencePortlet = foundReferencePortlet;
-														}
-													}
-
-													var drop = A.DD.DDM.getDrop(referencePortlet);
-
-													if (drop) {
-														portalLayout.quadrant = 4;
-														portalLayout.activeDrop = drop;
-														portalLayout.lastAlignDrop = drop;
-													}
-
-													portalLayout._syncPlaceholderUI();
-												}
-
-												event.halt();
-											}
-										}
-
-										if (Layout.OVER_NESTED_PORTLET && (activeDropNode == lastActiveDropNode)) {
+										if (
+											staticSibling ||
+											(start && quadrant <= 2) ||
+											(!start && quadrant >= 3)
+										) {
 											event.halt();
 										}
 									}
+
+									var overColumn = !activeDropNode.drop;
+
+									if (
+										!Layout.OVER_NESTED_PORTLET &&
+										overColumn
+									) {
+										var activeDropNodeId = activeDropNode.get(
+											'id'
+										);
+										var emptyColumn =
+											Layout.EMPTY_COLUMNS[
+												activeDropNodeId
+											];
+
+										if (!emptyColumn) {
+											if (
+												activeDropNode !=
+												lastActiveDropNode
+											) {
+												var referencePortlet = Layout.getLastPortletNode(
+													activeDropNode
+												);
+
+												if (
+													referencePortlet &&
+													referencePortlet.isStatic
+												) {
+													var options =
+														Layout.options;
+
+													var dropColumn = activeDropNode.one(
+														options.dropContainer
+													);
+													var foundReferencePortlet = Layout.findReferencePortlet(
+														dropColumn
+													);
+
+													if (foundReferencePortlet) {
+														referencePortlet = foundReferencePortlet;
+													}
+												}
+
+												var drop = A.DD.DDM.getDrop(
+													referencePortlet
+												);
+
+												if (drop) {
+													portalLayout.quadrant = 4;
+													portalLayout.activeDrop = drop;
+													portalLayout.lastAlignDrop = drop;
+												}
+
+												portalLayout._syncPlaceholderUI();
+											}
+
+											event.halt();
+										}
+									}
+
+									if (
+										Layout.OVER_NESTED_PORTLET &&
+										activeDropNode == lastActiveDropNode
+									) {
+										event.halt();
+									}
 								}
-							}
-						}
-					);
+							},
+						},
+					}
+				);
 
-					Layout._columnContainer = A.all(Layout._layoutContainer);
+				Layout._columnContainer = A.all(Layout._layoutContainer);
 
-					Layout.layoutHandler = new Layout.ColumnLayout(columnLayoutDefaults);
+				Layout.layoutHandler = new Layout.ColumnLayout(
+					columnLayoutDefaults
+				);
 
-					Layout.syncDraggableClassUI();
-				}
-			}
-		);
+				Layout.syncDraggableClassUI();
+			},
+		});
 
 		Layout.ColumnLayout = ColumnLayout;
 	},
 	'',
 	{
-		requires: ['aui-sortable-layout', 'dd']
+		requires: ['aui-sortable-layout', 'dd'],
 	}
 );

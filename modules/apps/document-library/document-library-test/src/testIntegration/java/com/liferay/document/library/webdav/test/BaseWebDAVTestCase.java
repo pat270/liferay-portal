@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
@@ -61,8 +62,8 @@ public class BaseWebDAVTestCase {
 
 		WebDAVServlet webDAVServlet = new WebDAVServlet();
 
-		String requestURI =
-			_CONTEXT_PATH + _SERVLET_PATH + _PATH_INFO_PREFACE + path;
+		String requestURI = StringBundler.concat(
+			_CONTEXT_PATH, _SERVLET_PATH, _PATH_INFO_PREFACE, path);
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest(method, requestURI);
@@ -75,7 +76,7 @@ public class BaseWebDAVTestCase {
 			mockHttpServletRequest.setRemoteUser(
 				String.valueOf(TestPropsValues.getUserId()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			Assert.fail("User ID cannot be initialized");
 		}
 
@@ -88,8 +89,8 @@ public class BaseWebDAVTestCase {
 		try {
 			throw new Exception();
 		}
-		catch (Exception e) {
-			StackTraceElement[] stackTraceElements = e.getStackTrace();
+		catch (Exception exception) {
+			StackTraceElement[] stackTraceElements = exception.getStackTrace();
 
 			for (StackTraceElement stackTraceElement : stackTraceElements) {
 				String methodName = stackTraceElement.getMethodName();
@@ -106,8 +107,9 @@ public class BaseWebDAVTestCase {
 
 					headers.put(
 						"X-Litmus",
-						testName + ": (" + stackTraceElement.getMethodName() +
-							":" + stackTraceElement.getLineNumber() + ")");
+						StringBundler.concat(
+							testName, ": (", stackTraceElement.getMethodName(),
+							":", stackTraceElement.getLineNumber(), ")"));
 
 					break;
 				}
@@ -128,10 +130,7 @@ public class BaseWebDAVTestCase {
 		}
 
 		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-
-			mockHttpServletRequest.addHeader(key, value);
+			mockHttpServletRequest.addHeader(entry.getKey(), entry.getValue());
 		}
 
 		try {
@@ -154,8 +153,8 @@ public class BaseWebDAVTestCase {
 
 			return new Tuple(statusCode, responseBody, responseHeaders);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 
 		return null;
@@ -194,9 +193,9 @@ public class BaseWebDAVTestCase {
 		Map<String, String> headers = null;
 
 		if (Validator.isNotNull(lock)) {
-			headers = new HashMap<>();
-
-			headers.put("If", "<opaquelocktoken:" + lock + ">");
+			headers = HashMapBuilder.put(
+				"If", "<opaquelocktoken:" + lock + ">"
+			).build();
 		}
 
 		return serviceCopyOrMove(method, path, headers, destination, 0, false);
@@ -235,9 +234,9 @@ public class BaseWebDAVTestCase {
 		Map<String, String> headers = null;
 
 		if (Validator.isNotNull(lock)) {
-			headers = new HashMap<>();
-
-			headers.put("If", "<opaquelocktoken:" + lock + ">");
+			headers = HashMapBuilder.put(
+				"If", "<opaquelocktoken:" + lock + ">"
+			).build();
 		}
 
 		return service(Method.PUT, name, headers, data);
@@ -247,9 +246,9 @@ public class BaseWebDAVTestCase {
 		Map<String, String> headers = null;
 
 		if (Validator.isNotNull(lock)) {
-			headers = new HashMap<>();
-
-			headers.put("Lock-Token", "<opaquelocktoken:" + lock + ">");
+			headers = HashMapBuilder.put(
+				"Lock-Token", "<opaquelocktoken:" + lock + ">"
+			).build();
 		}
 
 		return service(Method.UNLOCK, path, headers, null);
@@ -333,8 +332,8 @@ public class BaseWebDAVTestCase {
 
 	private static final String _LOCK_XML;
 
-	private static final String _PATH_INFO_PREFACE =
-		_GROUP_FRIENDLY_URL + "/document_library/" + _FOLDER_NAME + "/";
+	private static final String _PATH_INFO_PREFACE = StringBundler.concat(
+		_GROUP_FRIENDLY_URL, "/document_library/", _FOLDER_NAME, "/");
 
 	private static final String _PROPFIND_XML;
 

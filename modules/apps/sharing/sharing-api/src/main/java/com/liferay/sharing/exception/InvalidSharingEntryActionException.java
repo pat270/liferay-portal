@@ -16,12 +16,9 @@ package com.liferay.sharing.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class InvalidSharingEntryActionException extends PortalException {
 
 	public InvalidSharingEntryActionException() {
@@ -31,12 +28,12 @@ public class InvalidSharingEntryActionException extends PortalException {
 		super(msg);
 	}
 
-	public InvalidSharingEntryActionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public InvalidSharingEntryActionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public InvalidSharingEntryActionException(Throwable cause) {
-		super(cause);
+	public InvalidSharingEntryActionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

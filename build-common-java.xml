@@ -11,6 +11,7 @@
 	</condition>
 
 	<target name="clean">
+		<delete dir="build" />
 		<delete dir="classes" />
 		<delete dir="test-classes" />
 		<delete dir="test-coverage" />
@@ -123,11 +124,7 @@
 
 				<if>
 					<not>
-						<or>
-							<equals arg1="${baseline.jar.report.level}" arg2="off" />
-							<equals arg1="${jar.file}" arg2="portal-test-integration" />
-							<equals arg1="${jar.file}" arg2="support-tomcat" />
-						</or>
+						<equals arg1="${baseline.jar.report.level}" arg2="off" />
 					</not>
 					<then>
 						<gradle-execute forcedcacheenabled="false" task="baseline" />

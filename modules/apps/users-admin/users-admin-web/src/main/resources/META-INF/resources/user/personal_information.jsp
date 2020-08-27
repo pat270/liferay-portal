@@ -37,15 +37,19 @@ String organizationIdsString = ParamUtil.getString(request, "organizationsSearch
 
 <aui:model-context bean="<%= selUser %>" model="<%= User.class %>" />
 
-<div class="row">
-	<div class="col-md-6">
+<clay:row>
+	<clay:col
+		md="6"
+	>
 		<liferay-ui:user-name-fields
 			contact="<%= selContact %>"
 			user="<%= selUser %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-5">
+	<clay:col
+		md="5"
+	>
 		<aui:input disabled='<%= !UsersAdminUtil.hasUpdateFieldPermission(permissionChecker, user, selUser, "jobTitle") %>' name="jobTitle" />
 
 		<c:choose>
@@ -88,20 +92,19 @@ String organizationIdsString = ParamUtil.getString(request, "organizationsSearch
 		<c:if test="<%= lockedOut %>">
 			<aui:button-row>
 				<clay:alert
-					message='<%= LanguageUtil.get(request, "this-user-account-has-been-locked-due-to-excessive-failed-login-attempts") %>'
-					style="warning"
-					title='<%= LanguageUtil.get(request, "warning") + ":" %>'
+					displayType="warning"
+					message="this-user-account-has-been-locked-due-to-excessive-failed-login-attempts"
 				/>
 
 				<%
-				String taglibOnClick = renderResponse.getNamespace() + "saveUser('unlock');";
+				String taglibOnClick = liferayPortletResponse.getNamespace() + "saveUser('unlock');";
 				%>
 
 				<aui:button onClick="<%= taglibOnClick %>" value="unlock" />
 			</aui:button-row>
 		</c:if>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <aui:script>
 	function <portlet:namespace />saveUser(cmd) {

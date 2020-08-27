@@ -17,8 +17,13 @@
 <%@ include file="/init.jsp" %>
 
 <%
-AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContext = new AssetListManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, assetListDisplayContext);
+AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContext = new AssetListManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, assetListDisplayContext);
 %>
+
+<clay:navigation-bar
+	inverted="<%= true %>"
+	navigationItems='<%= assetListDisplayContext.getNavigationItems("collections") %>'
+/>
 
 <clay:management-toolbar
 	displayContext="<%= assetListManagementToolbarDisplayContext %>"
@@ -29,6 +34,10 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 </portlet:actionURL>
 
 <aui:form action="<%= deleteAssetListEntryURL %>" cssClass="container-fluid-1280" name="fm">
+	<liferay-ui:breadcrumb
+		showLayout="<%= false %>"
+	/>
+
 	<c:choose>
 		<c:when test="<%= assetListDisplayContext.getAssetListEntriesCount() > 0 %>">
 			<liferay-ui:search-container
@@ -54,9 +63,9 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 						editURL = editAssetListEntryURL.toString();
 					}
 
-					Map<String, Object> rowData = new HashMap<>();
-
-					rowData.put("actions", assetListManagementToolbarDisplayContext.getAvailableActions(assetListEntry));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", assetListManagementToolbarDisplayContext.getAvailableActions(assetListEntry)
+					).build();
 
 					row.setData(rowData);
 					%>
@@ -77,6 +86,31 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 						<h6 class="text-default">
 							<strong><liferay-ui:message key="<%= HtmlUtil.escape(assetListEntry.getTypeLabel()) %>" /></strong>
 						</h6>
+
+						<c:if test="<%= Validator.isNotNull(assetListEntry.getAssetEntryType()) %>">
+
+							<%
+							String assetEntryTypeLabel = ResourceActionsUtil.getModelResource(locale, assetListEntry.getAssetEntryType());
+
+							long classTypeId = GetterUtil.getLong(assetListEntry.getAssetEntrySubtype());
+
+							if (classTypeId > 0) {
+								AssetRendererFactory<?> assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(assetListEntry.getAssetEntryType());
+
+								if ((assetRendererFactory != null) && assetRendererFactory.isSupportsClassTypes()) {
+									ClassTypeReader classTypeReader = assetRendererFactory.getClassTypeReader();
+
+									ClassType classType = classTypeReader.getClassType(classTypeId, locale);
+
+									assetEntryTypeLabel = assetEntryTypeLabel + " - " + classType.getName();
+								}
+							}
+							%>
+
+							<h6 class="text-default">
+								<strong><%= HtmlUtil.escape(assetEntryTypeLabel) %></strong>
+							</h6>
+						</c:if>
 
 						<%
 						Date statusDate = assetListEntry.getCreateDate();
@@ -109,7 +143,7 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 				componentId="emptyResultMessageComponent"
 				defaultEventHandler="emptyResultMessageComponentDefaultEventHandler"
 				description="<%= assetListDisplayContext.getEmptyResultMessageDescription() %>"
-				elementType='<%= LanguageUtil.get(request, "content-sets") %>'
+				elementType='<%= LanguageUtil.get(request, "collections") %>'
 			/>
 		</c:otherwise>
 	</c:choose>

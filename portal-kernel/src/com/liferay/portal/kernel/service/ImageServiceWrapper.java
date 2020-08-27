@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.model.Image;
 
 /**
  * Provides a wrapper for {@link ImageService}.
@@ -23,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ImageService
  * @generated
  */
-@ProviderType
 public class ImageServiceWrapper
 	implements ImageService, ServiceWrapper<ImageService> {
 
@@ -32,7 +31,7 @@ public class ImageServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image getImage(long imageId)
+	public Image getImage(long imageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageService.getImage(imageId);

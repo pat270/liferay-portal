@@ -16,6 +16,7 @@ package com.liferay.adaptive.media.document.library.thumbnails.internal.processo
 
 import com.liferay.adaptive.media.AMAttribute;
 import com.liferay.adaptive.media.AdaptiveMedia;
+import com.liferay.adaptive.media.document.library.thumbnails.internal.configuration.AMSystemImagesConfiguration;
 import com.liferay.adaptive.media.image.finder.AMImageFinder;
 import com.liferay.adaptive.media.image.mime.type.AMImageMimeTypeProvider;
 import com.liferay.adaptive.media.image.processor.AMImageAttribute;
@@ -26,14 +27,20 @@ import com.liferay.adaptive.media.processor.AMAsyncProcessorLocator;
 import com.liferay.document.library.kernel.model.DLProcessorConstants;
 import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.ImageProcessor;
+import com.liferay.document.library.security.io.InputStreamSanitizer;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.repository.model.FileEntryWrapper;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.repository.model.FileVersionWrapper;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portlet.documentlibrary.util.ImageProcessorImpl;
 
@@ -42,30 +49,33 @@ import java.io.InputStream;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Adolfo Pérez
+ * @author Roberto Díaz
  */
 @Component(
-	immediate = true, property = "service.ranking:Integer=100",
+	configurationPid = "com.liferay.adaptive.media.document.library.thumbnails.internal.configuration.AMSystemImagesConfiguration",
+	immediate = true,
+	property = {
+		"service.ranking:Integer=100",
+		"type=" + DLProcessorConstants.IMAGE_PROCESSOR
+	},
 	service = {AMImageEntryProcessor.class, DLProcessor.class}
 )
 public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
-	@Activate
-	public void activate() throws Exception {
-		afterPropertiesSet();
-	}
-
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		_imageProcessor = new ImageProcessorImpl();
 	}
 
@@ -90,8 +100,7 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
 	@Override
 	public void generateImages(
-			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
-		throws Exception {
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
 	}
 
 	@Override
@@ -105,7 +114,13 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 		throws Exception {
 
 		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
-			_getPreviewAdaptiveMedia(fileVersion);
+			_getAdaptiveMediaStream(
+				fileVersion,
+				_amSystemImagesConfiguration.previewAMConfiguration(),
+				PrefsPropsUtil.getInteger(
+					PropsKeys.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_WIDTH),
+				PrefsPropsUtil.getInteger(
+					PropsKeys.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_HEIGHT));
 
 		Optional<AdaptiveMedia<AMImageProcessor>> adaptiveMediaOptional =
 			adaptiveMediaStream.findFirst();
@@ -125,7 +140,13 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 	@Override
 	public long getPreviewFileSize(FileVersion fileVersion) throws Exception {
 		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
-			_getPreviewAdaptiveMedia(fileVersion);
+			_getAdaptiveMediaStream(
+				fileVersion,
+				_amSystemImagesConfiguration.previewAMConfiguration(),
+				PrefsPropsUtil.getInteger(
+					PropsKeys.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_WIDTH),
+				PrefsPropsUtil.getInteger(
+					PropsKeys.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_HEIGHT));
 
 		Optional<AdaptiveMedia<AMImageProcessor>> adaptiveMediaOptional =
 			adaptiveMediaStream.findFirst();
@@ -152,7 +173,7 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 		throws Exception {
 
 		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
-			_getThumbnailAdaptiveMedia(fileVersion);
+			_getThumbnailAdaptiveMedia(fileVersion, index);
 
 		Optional<AdaptiveMedia<AMImageProcessor>> adaptiveMediaOptional =
 			adaptiveMediaStream.findFirst();
@@ -173,7 +194,7 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 		throws Exception {
 
 		Stream<AdaptiveMedia<AMImageProcessor>> adaptiveMediaStream =
-			_getThumbnailAdaptiveMedia(fileVersion);
+			_getThumbnailAdaptiveMedia(fileVersion, index);
 
 		Optional<AdaptiveMedia<AMImageProcessor>> adaptiveMediaOptional =
 			adaptiveMediaStream.findFirst();
@@ -217,9 +238,9 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
 			return false;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 
 			return false;
@@ -228,9 +249,8 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
 	@Override
 	public void importGeneratedFiles(
-			PortletDataContext portletDataContext, FileEntry fileEntry,
-			FileEntry importedFileEntry, Element fileEntryElement)
-		throws Exception {
+		PortletDataContext portletDataContext, FileEntry fileEntry,
+		FileEntry importedFileEntry, Element fileEntryElement) {
 	}
 
 	@Override
@@ -255,10 +275,9 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 
 	@Override
 	public void storeThumbnail(
-			long companyId, long groupId, long fileEntryId, long fileVersionId,
-			long custom1ImageId, long custom2ImageId, InputStream is,
-			String type)
-		throws Exception {
+		long companyId, long groupId, long fileEntryId, long fileVersionId,
+		long custom1ImageId, long custom2ImageId, InputStream inputStream,
+		String type) {
 	}
 
 	@Override
@@ -266,21 +285,36 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
 	}
 
-	private Stream<AdaptiveMedia<AMImageProcessor>> _getPreviewAdaptiveMedia(
-			FileVersion fileVersion)
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		afterPropertiesSet();
+
+		_amSystemImagesConfiguration = ConfigurableUtil.createConfigurable(
+			AMSystemImagesConfiguration.class, properties);
+	}
+
+	private Stream<AdaptiveMedia<AMImageProcessor>> _getAdaptiveMediaStream(
+			FileVersion fileVersion, String configurationUuid, int defaultWidth,
+			int defaultHeight)
 		throws PortalException {
+
+		if (Validator.isNotNull(configurationUuid)) {
+			return _amImageFinder.getAdaptiveMediaStream(
+				amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
+					fileVersion
+				).forConfiguration(
+					configurationUuid
+				).done());
+		}
 
 		return _amImageFinder.getAdaptiveMediaStream(
 			amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
 				fileVersion
 			).with(
-				AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH,
-				PrefsPropsUtil.getInteger(
-					PropsKeys.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_WIDTH)
+				AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH, defaultWidth
 			).with(
-				AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT,
-				PrefsPropsUtil.getInteger(
-					PropsKeys.DL_FILE_ENTRY_PREVIEW_DOCUMENT_MAX_HEIGHT)
+				AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT, defaultHeight
 			).done());
 	}
 
@@ -288,18 +322,40 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 			FileVersion fileVersion)
 		throws PortalException {
 
-		return _amImageFinder.getAdaptiveMediaStream(
-			amImageQueryBuilder -> amImageQueryBuilder.forFileVersion(
-				fileVersion
-			).with(
-				AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH,
+		return _getThumbnailAdaptiveMedia(fileVersion, 0);
+	}
+
+	private Stream<AdaptiveMedia<AMImageProcessor>> _getThumbnailAdaptiveMedia(
+			FileVersion fileVersion, int index)
+		throws PortalException {
+
+		if (index == _THUMBNAIL_INDEX_CUSTOM_1) {
+			return _getAdaptiveMediaStream(
+				fileVersion,
+				_amSystemImagesConfiguration.thumbnailCustom1AMConfiguration(),
 				PrefsPropsUtil.getInteger(
-					PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH)
-			).with(
-				AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT,
+					PropsKeys.DL_FILE_ENTRY_THUMBNAIL_CUSTOM_1_MAX_WIDTH),
 				PrefsPropsUtil.getInteger(
-					PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT)
-			).done());
+					PropsKeys.DL_FILE_ENTRY_THUMBNAIL_CUSTOM_1_MAX_HEIGHT));
+		}
+
+		if (index == _THUMBNAIL_INDEX_CUSTOM_2) {
+			return _getAdaptiveMediaStream(
+				fileVersion,
+				_amSystemImagesConfiguration.thumbnailCustom2AMConfiguration(),
+				PrefsPropsUtil.getInteger(
+					PropsKeys.DL_FILE_ENTRY_THUMBNAIL_CUSTOM_2_MAX_WIDTH),
+				PrefsPropsUtil.getInteger(
+					PropsKeys.DL_FILE_ENTRY_THUMBNAIL_CUSTOM_2_MAX_HEIGHT));
+		}
+
+		return _getAdaptiveMediaStream(
+			fileVersion,
+			_amSystemImagesConfiguration.thumbnailAMConfiguration(),
+			PrefsPropsUtil.getInteger(
+				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH),
+			PrefsPropsUtil.getInteger(
+				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT));
 	}
 
 	private boolean _isMimeTypeSupported(String mimeType) {
@@ -316,15 +372,20 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 				_amAsyncProcessorLocator.locateForClass(FileVersion.class);
 
 			amAsyncProcessor.triggerProcess(
-				fileVersion, String.valueOf(fileVersion.getFileVersionId()));
+				new SafeFileVersion(fileVersion),
+				String.valueOf(fileVersion.getFileVersionId()));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				"Unable to create lazy adaptive media for file version " +
 					fileVersion.getFileVersionId(),
-				pe);
+				portalException);
 		}
 	}
+
+	private static final int _THUMBNAIL_INDEX_CUSTOM_1 = 1;
+
+	private static final int _THUMBNAIL_INDEX_CUSTOM_2 = 2;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AMImageEntryProcessor.class);
@@ -341,6 +402,80 @@ public class AMImageEntryProcessor implements DLProcessor, ImageProcessor {
 	@Reference
 	private AMImageValidator _amImageValidator;
 
+	private AMSystemImagesConfiguration _amSystemImagesConfiguration;
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
+
 	private ImageProcessor _imageProcessor;
+
+	@Reference
+	private InputStreamSanitizer _inputStreamSanitizer;
+
+	private class SafeFileEntry extends FileEntryWrapper {
+
+		public SafeFileEntry(FileEntry fileEntry) {
+			super(fileEntry);
+		}
+
+		@Override
+		public InputStream getContentStream() throws PortalException {
+			return _inputStreamSanitizer.sanitize(super.getContentStream());
+		}
+
+		@Override
+		public InputStream getContentStream(String version)
+			throws PortalException {
+
+			return _inputStreamSanitizer.sanitize(
+				super.getContentStream(version));
+		}
+
+		@Override
+		public FileVersion getFileVersion() throws PortalException {
+			return new SafeFileVersion(super.getFileVersion());
+		}
+
+		@Override
+		public FileVersion getFileVersion(String version)
+			throws PortalException {
+
+			return new SafeFileVersion(super.getFileVersion(version));
+		}
+
+		@Override
+		public FileVersion getLatestFileVersion() throws PortalException {
+			return new SafeFileVersion(super.getLatestFileVersion());
+		}
+
+		@Override
+		public FileVersion getLatestFileVersion(boolean trusted)
+			throws PortalException {
+
+			return new SafeFileVersion(super.getLatestFileVersion(trusted));
+		}
+
+	}
+
+	private class SafeFileVersion extends FileVersionWrapper {
+
+		public SafeFileVersion(FileVersion fileVersion) {
+			super(fileVersion);
+		}
+
+		@Override
+		public InputStream getContentStream(boolean incrementCounter)
+			throws PortalException {
+
+			return _inputStreamSanitizer.sanitize(
+				super.getContentStream(incrementCounter));
+		}
+
+		@Override
+		public FileEntry getFileEntry() throws PortalException {
+			return new SafeFileEntry(super.getFileEntry());
+		}
+
+	}
 
 }

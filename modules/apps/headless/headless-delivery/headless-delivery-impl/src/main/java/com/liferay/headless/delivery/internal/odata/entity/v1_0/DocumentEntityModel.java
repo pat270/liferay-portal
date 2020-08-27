@@ -14,12 +14,15 @@
 
 package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 
+import com.liferay.headless.common.spi.odata.entity.EntityFieldsMapFactory;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.CollectionEntityField;
+import com.liferay.portal.odata.entity.ComplexEntityField;
 import com.liferay.portal.odata.entity.DateTimeEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
@@ -27,24 +30,23 @@ import com.liferay.portal.odata.entity.IdEntityField;
 import com.liferay.portal.odata.entity.IntegerEntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
 
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Sarai Díaz
  */
 public class DocumentEntityModel implements EntityModel {
 
-	public DocumentEntityModel() {
-		_entityFieldsMap = Stream.of(
+	public DocumentEntityModel(List<EntityField> entityFields) {
+		_entityFieldsMap = EntityFieldsMapFactory.create(
 			new CollectionEntityField(
 				new IntegerEntityField(
 					"taxonomyCategoryIds", locale -> "assetCategoryIds")),
 			new CollectionEntityField(
 				new StringEntityField(
 					"keywords", locale -> "assetTagNames.raw")),
+			new ComplexEntityField("customFields", entityFields),
 			new DateTimeEntityField(
 				"dateCreated",
 				locale -> Field.getSortableFieldName(Field.CREATE_DATE),
@@ -61,8 +63,8 @@ public class DocumentEntityModel implements EntityModel {
 				mimeType -> {
 					String encodingFormat = String.valueOf(mimeType);
 
-					return encodingFormat.replace(
-						StringPool.SLASH, StringPool.UNDERLINE);
+					return StringUtil.replace(
+						encodingFormat, CharPool.SLASH, CharPool.UNDERLINE);
 				}),
 			new IntegerEntityField("creatorId", locale -> Field.USER_ID),
 			new IntegerEntityField(
@@ -75,22 +77,13 @@ public class DocumentEntityModel implements EntityModel {
 			new StringEntityField(
 				"title",
 				locale -> Field.getSortableFieldName(
-					"localized_title_".concat(LocaleUtil.toLanguageId(locale))))
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+					"localized_title_".concat(
+						LocaleUtil.toLanguageId(locale)))));
 	}
 
 	@Override
 	public Map<String, EntityField> getEntityFieldsMap() {
 		return _entityFieldsMap;
-	}
-
-	@Override
-	public String getName() {
-		String name = DocumentEntityModel.class.getName();
-
-		return name.replace(CharPool.PERIOD, CharPool.UNDERLINE);
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

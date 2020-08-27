@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -60,7 +60,7 @@ public class OrderByComparatorFactoryUtil {
 					try {
 						columnInstance = columnClass.newInstance();
 					}
-					catch (Exception e) {
+					catch (Exception exception) {
 					}
 				}
 
@@ -112,7 +112,7 @@ public class OrderByComparatorFactoryUtil {
 
 		@Override
 		public String getOrderBy() {
-			StringBundler sb = new StringBundler(5 * _columns.length - 1);
+			StringBundler sb = new StringBundler((5 * _columns.length) - 1);
 
 			for (int i = 0; i < _columns.length; i += 2) {
 				if (i != 0) {
@@ -179,18 +179,23 @@ public class OrderByComparatorFactoryUtil {
 		private static final String _ORDER_BY_DESC = " DESC";
 
 		private static final Map<Class<?>, Object> _primitiveObjects =
-			new HashMap<Class<?>, Object>() {
-				{
-					put(boolean.class, Boolean.TRUE);
-					put(byte.class, Byte.valueOf("0"));
-					put(char.class, Character.valueOf('0'));
-					put(double.class, Double.valueOf(0));
-					put(float.class, Float.valueOf(0));
-					put(int.class, Integer.valueOf(0));
-					put(long.class, Long.valueOf(0));
-					put(short.class, Short.valueOf("0"));
-				}
-			};
+			HashMapBuilder.<Class<?>, Object>put(
+				boolean.class, Boolean.TRUE
+			).put(
+				byte.class, Byte.valueOf("0")
+			).put(
+				char.class, Character.valueOf('0')
+			).put(
+				double.class, Double.valueOf(0)
+			).put(
+				float.class, Float.valueOf(0)
+			).put(
+				int.class, Integer.valueOf(0)
+			).put(
+				long.class, Long.valueOf(0)
+			).put(
+				short.class, Short.valueOf("0")
+			).build();
 
 		private final Object[] _columns;
 		private final String _tableName;

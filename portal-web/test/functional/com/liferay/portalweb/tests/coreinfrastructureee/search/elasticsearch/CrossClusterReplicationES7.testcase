@@ -1,0 +1,554 @@
+@component-name = "portal-search-ee"
+definition {
+
+	property osgi.app.includes = "portal-search-elasticsearch-cross-cluster-replication";
+	property portal.release = "true";
+	property portal.suite.search.engine = "elasticsearch7";
+	property portal.upstream = "true";
+	property remote.elasticsearch.clusters.enabled = "true";
+	property remote.elasticsearch.enabled = "true";
+	property test.run.environment = "EE";
+	property testray.main.component.name = "Elasticsearch Impl";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			MessageboardsThread.tearDownCP();
+
+			DMDocument.tearDownCP();
+
+			Page.tearDownCP();
+		}
+	}
+
+	test AssertReplicationAfterReindex {
+		property portal.upstream = "quarantine";
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#AssertReplicationAfterReindex";
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Description",
+			dmDocumentTitle = "Apple1",
+			groupName = "Guest");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config",
+			OSGiConfigs = "operationMode=&quot;REMOTE&quot;,logExceptionsOnly=&quot;true&quot;");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-default_ccr.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;ccr&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "create-follower-indices");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Cross-Cluster Replication",
+			configurationScope = "System Scope");
+
+		SystemSettings.configureCrossClusterReplication(ccrLocalClusterConnectionID = "ccr");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Apple1",
+			searchAssetType = "Document");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Description",
+			dmDocumentTitle = "Apple2",
+			groupName = "Guest");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+
+		SearchResultPortlet.viewMultipleSearchResults(
+			resultsList = "Apple1/Document,Apple2/Document",
+			searchTerm = "Apple");
+	}
+
+	test BreakWorkflowSLA {
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#BreakWorkflowSLA";
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config",
+			OSGiConfigs = "operationMode=&quot;REMOTE&quot;,logExceptionsOnly=&quot;true&quot;");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-default_ccr.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;ccr&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Cross-Cluster Replication",
+			configurationScope = "System Scope");
+
+		SystemSettings.configureCrossClusterReplication(ccrLocalClusterConnectionID = "ccr");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
+
+		Click(locator1 = "WorkflowMetricsSLA#ADD_NEW_SLA_BUTTON");
+
+		WorkflowMetrics.fillSLAForm(
+			slaDefinitionDays = "0",
+			slaDefinitionDescription = "SLA Description",
+			slaDefinitionEnd = "Process Ends: Approved",
+			slaDefinitionHours = "00:02",
+			slaDefinitionName = "SLA Name",
+			slaDefinitionStart = "Enters Task: Review");
+
+		Button.clickSave();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+
+		WorkflowMetrics.waitForSLA(
+			key_expectedValue = "0",
+			key_status = "ONTIME");
+
+		WorkflowMetrics.checkPendingWorkflowValues(
+			key_ontime = "1",
+			key_overdue = "0",
+			key_pending = "1",
+			key_untracked = "0");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow");
+
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+
+		WorkflowMetrics.waitForSLA(
+			key_expectedValue = "0",
+			key_status = "OVERDUE");
+
+		WorkflowMetrics.checkPendingWorkflowValues(
+			key_ontime = "0",
+			key_overdue = "1",
+			key_pending = "1",
+			key_untracked = "0");
+	}
+
+	test CreateBlogsEntryWithNewWorkflow {
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#CreateBlogsEntryWithNewWorkflow";
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config",
+			OSGiConfigs = "operationMode=&quot;REMOTE&quot;,logExceptionsOnly=&quot;true&quot;");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-default_ccr.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;ccr&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Cross-Cluster Replication",
+			configurationScope = "System Scope");
+
+		SystemSettings.configureCrossClusterReplication(ccrLocalClusterConnectionID = "ccr");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.duplicateSingleApproverWorkflow(workflowName = "CCR Single Approver");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "CCR Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Blogs.addWithWorkflow(
+			entryContent = "Blogs Entry Content",
+			entrySubtitle = "Subtitle",
+			entryTitle = "Blogs Entry Title");
+
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "Blogs");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Blogs Entry Title",
+			searchAssetType = "Blogs Entry",
+			searchTerm = "Blogs");
+	}
+
+	test HotDeployApp {
+		property hot.deploy.osgi.app.includes = "portal-search-elasticsearch-cross-cluster-replication";
+		property test.assert.warning.exceptions = "true";
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#HotDeployApp";
+
+		var appName = "Liferay Cross-Cluster Replication for Elasticsearch";
+
+		AssertConsoleTextNotPresent(value1 = "The portal instance needs to be restarted");
+
+		AssertConsoleTextPresent(value1 = "STARTED ${appName}");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "App Manager");
+
+		AppManager.viewAppCP(
+			appName = "${appName}",
+			appStatus = "Active",
+			searchTerm = "Replication");
+
+		AppManager.deactivateAppCP(appName = "${appName}");
+
+		AppManager.viewAppCP(
+			appName = "${appName}",
+			appStatus = "Resolved",
+			searchTerm = "Replication");
+
+		AssertConsoleTextPresent(value1 = "STOPPED com.liferay.portal.search.elasticsearch.cross.cluster.replication.impl");
+
+		AppManager.activateAppCP(appName = "${appName}");
+
+		AssertConsoleTextPresent(value1 = "STARTED com.liferay.portal.search.elasticsearch.cross.cluster.replication.impl");
+
+		AssertConsoleTextNotPresent(value1 = "The portal instance needs to be restarted");
+	}
+
+	test SearchWithResultRankings {
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#SearchWithResultRankings";
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config",
+			OSGiConfigs = "operationMode=&quot;REMOTE&quot;,logExceptionsOnly=&quot;true&quot;");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-default_ccr.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;ccr&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Cross-Cluster Replication",
+			configurationScope = "System Scope");
+
+		SystemSettings.configureCrossClusterReplication(ccrLocalClusterConnectionID = "ccr");
+
+		JSONWebcontent.addWebContent(
+			content = "",
+			groupName = "Guest",
+			title = "WC Title 1");
+
+		JSONWebcontent.addWebContent(
+			content = "",
+			groupName = "Guest",
+			title = "WC Title 2");
+
+		JSONWebcontent.addWebContent(
+			content = "",
+			groupName = "Guest",
+			title = "WC Title 3");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Search Tuning",
+			panel = "Applications",
+			portlet = "Result Rankings");
+
+		SearchTuning.addResultRanking(searchQuery = "WC Title");
+
+		SearchTuning.pinResult(assetTitle = "WC Title 3");
+
+		SearchTuning.hideResult(assetTitle = "WC Title 2");
+
+		Button.clickSave();
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+
+		SearchResultPortlet.viewSearchResultsSpecificOrder(resultsList = "WC Title 3,WC Title 1");
+
+		SearchResultPortlet.viewSearchResultNotPresent(
+			searchAssetTitle = "WC Title 2",
+			searchAssetType = "Web Content Article");
+	}
+
+	test SearchWithSynonyms {
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#SearchWithSynonyms";
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config",
+			OSGiConfigs = "operationMode=&quot;REMOTE&quot;,logExceptionsOnly=&quot;true&quot;");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-default_ccr.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;ccr&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "create-follower-indices");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Cross-Cluster Replication",
+			configurationScope = "System Scope");
+
+		SystemSettings.configureCrossClusterReplication(ccrLocalClusterConnectionID = "ccr");
+
+		for (var title : list "banana,red apple") {
+			JSONWebcontent.addWebContent(
+				content = "WC Content",
+				groupName = "Guest",
+				title = "${title}");
+		}
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Search Tuning",
+			panel = "Applications",
+			portlet = "Synonyms");
+
+		SearchTuning.addSynonymSet(synonyms = "banana,red apple,fruit");
+
+		AssertElementPresent(
+			key_synonyms = "banana, red apple, fruit",
+			locator1 = "SearchTuning#SYNONYMS_ENTRY");
+
+		Navigator.openURL();
+
+		Pause(locator1 = "70000");
+
+		var searchTerms = "banana,red apple,fruit";
+
+		for (var searchTerm : list "${searchTerms}") {
+			SearchPortlets.searchEmbedded(searchTerm = "${searchTerm}");
+
+			SearchResultPortlet.viewMultipleSearchResults(
+				resultsList = "banana/Web Content Article,red apple/Web Content Article",
+				searchTerm = "${searchTerm}");
+		}
+	}
+
+	@priority = "5"
+	test Smoke {
+		property osgi.module.configuration.file.names = "com.liferay.portal.bundle.blacklist.internal.BundleBlacklistConfiguration.config";
+		property osgi.module.configurations = "blacklistBundleSymbolicNames=&quot;com.liferay.portal.search.tuning.rankings.web&quot;";
+		property portal.upstream = "quarantine";
+		property test.name.skip.portal.instance = "CrossClusterReplicationES7#Smoke";
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Description",
+			dmDocumentTitle = "DM Title 1",
+			groupName = "Guest");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config",
+			OSGiConfigs = "operationMode=&quot;REMOTE&quot;,logExceptionsOnly=&quot;true&quot;");
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-default_ccr.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;ccr&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "create-follower-indices");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Cross-Cluster Replication",
+			configurationScope = "System Scope");
+
+		SystemSettings.configureCrossClusterReplication(ccrLocalClusterConnectionID = "ccr");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Search");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "__REMOTE__",
+			locator1 = "SearchAdmin#CLUSTER_NAME",
+			value1 = "LiferayElasticsearchCluster");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "ccr",
+			locator1 = "SearchAdmin#CLUSTER_NAME",
+			value1 = "LiferayElasticsearchClusterTwo");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "DM");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "DM Title 1",
+			searchAssetType = "Document");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "stop-elasticsearch");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Search");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "ccr",
+			locator1 = "SearchAdmin#CLUSTER_NAME",
+			value1 = "LiferayElasticsearchClusterTwo");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR",
+			value1 = "Connection refused");
+
+		AssertElementNotPresent(
+			key_connectionID = "__REMOTE__",
+			locator1 = "SearchAdmin#CLUSTER_NAME");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "DM");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "DM Title 1",
+			searchAssetType = "Document");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "start-elasticsearch-node -Dremote.elasticsearch.cluster.size=1");
+
+		Pause(locator1 = "30000");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "stop-elasticsearch-local-cluster");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Search");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "__REMOTE__",
+			locator1 = "SearchAdmin#CLUSTER_NAME",
+			value1 = "LiferayElasticsearchCluster");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR",
+			value1 = "Connection refused");
+
+		AssertElementNotPresent(
+			key_connectionID = "ccr",
+			locator1 = "SearchAdmin#CLUSTER_NAME");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "DM");
+
+		SearchResultPortlet.viewSearchResultNotPresent(searchTerm = "DM");
+	}
+
+}

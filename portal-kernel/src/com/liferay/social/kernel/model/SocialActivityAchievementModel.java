@@ -16,7 +16,9 @@ package com.liferay.social.kernel.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -33,7 +35,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface SocialActivityAchievementModel
-	extends BaseModel<SocialActivityAchievement>, ShardedModel {
+	extends BaseModel<SocialActivityAchievement>,
+			CTModel<SocialActivityAchievement>, MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -46,6 +49,7 @@ public interface SocialActivityAchievementModel
 	 *
 	 * @return the primary key of this social activity achievement
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -53,7 +57,40 @@ public interface SocialActivityAchievementModel
 	 *
 	 * @param primaryKey the primary key of this social activity achievement
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this social activity achievement.
+	 *
+	 * @return the mvcc version of this social activity achievement
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this social activity achievement.
+	 *
+	 * @param mvccVersion the mvcc version of this social activity achievement
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this social activity achievement.
+	 *
+	 * @return the ct collection ID of this social activity achievement
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this social activity achievement.
+	 *
+	 * @param ctCollectionId the ct collection ID of this social activity achievement
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the activity achievement ID of this social activity achievement.

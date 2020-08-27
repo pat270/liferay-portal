@@ -15,8 +15,12 @@
 package com.liferay.layout.page.template.internal.upgrade.v1_1_0;
 
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -26,15 +30,16 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.sql.PreparedStatement;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Pavel Savinov
@@ -71,16 +76,18 @@ public class UpgradeLayoutPrototype extends UpgradeProcess {
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection, sb.toString())) {
 
+			Set<String> existingNames = new HashSet<>();
+
 			List<LayoutPrototype> layoutPrototypes =
 				_layoutPrototypeLocalService.getLayoutPrototypes(
 					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 			for (LayoutPrototype layoutPrototype : layoutPrototypes) {
-				long companyId = layoutPrototype.getCompanyId();
 				Date createDate = layoutPrototype.getCreateDate();
 				String nameXML = layoutPrototype.getName();
 
-				Company company = _companyLocalService.getCompany(companyId);
+				Company company = _companyLocalService.getCompany(
+					layoutPrototype.getCompanyId());
 
 				Map<Locale, String> nameMap =
 					LocalizationUtil.getLocalizationMap(nameXML);
@@ -88,7 +95,22 @@ public class UpgradeLayoutPrototype extends UpgradeProcess {
 				Locale defaultLocale = LocaleUtil.fromLanguageId(
 					LocalizationUtil.getDefaultLanguageId(nameXML));
 
-				ps.setString(1, PortalUUIDUtil.generate());
+				String name = nameMap.get(defaultLocale);
+
+				if (existingNames.contains(name)) {
+					name = _generateNewName(name, existingNames);
+
+					nameMap.put(defaultLocale, name);
+
+					layoutPrototype.setNameMap(nameMap);
+
+					_layoutPrototypeLocalService.updateLayoutPrototype(
+						layoutPrototype);
+				}
+
+				existingNames.add(name);
+
+				ps.setString(1, layoutPrototype.getUuid());
 				ps.setLong(2, increment());
 				ps.setLong(3, company.getGroupId());
 				ps.setLong(4, layoutPrototype.getCompanyId());
@@ -97,7 +119,7 @@ public class UpgradeLayoutPrototype extends UpgradeProcess {
 				ps.setDate(7, new java.sql.Date(createDate.getTime()));
 				ps.setDate(8, new java.sql.Date(createDate.getTime()));
 				ps.setLong(9, 0);
-				ps.setString(10, nameMap.get(defaultLocale));
+				ps.setString(10, name);
 				ps.setInt(
 					11, LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE);
 				ps.setLong(12, layoutPrototype.getLayoutPrototypeId());
@@ -115,8 +137,45 @@ public class UpgradeLayoutPrototype extends UpgradeProcess {
 			UpgradeLayoutPrototype.class.getResourceAsStream(
 				"dependencies/update.sql"));
 
-		runSQLTemplateString(template, false, false);
+		runSQLTemplateString(template, false);
 	}
+
+	private String _generateNewName(String name, Set<String> existingNames) {
+		int i = 1;
+
+		while (true) {
+			String suffix = StringPool.DASH + i;
+
+			String newName = name + suffix;
+
+			if (newName.length() > _MAX_NAME_LENGTH) {
+				String prefix = name.substring(
+					0, _MAX_NAME_LENGTH - suffix.length());
+
+				newName = prefix + suffix;
+			}
+
+			if (existingNames.contains(newName)) {
+				i++;
+
+				continue;
+			}
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Renaming duplicate layout prototype name \"", name,
+						"\" to \"", newName, "\""));
+			}
+
+			return newName;
+		}
+	}
+
+	private static final int _MAX_NAME_LENGTH = 75;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpgradeLayoutPrototype.class);
 
 	private final CompanyLocalService _companyLocalService;
 	private final LayoutPrototypeLocalService _layoutPrototypeLocalService;

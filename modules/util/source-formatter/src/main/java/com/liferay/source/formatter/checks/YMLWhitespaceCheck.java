@@ -39,19 +39,64 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 			String fileName, String absolutePath, String content)
 		throws IOException {
 
-		content = StringUtil.replace(
-			content, CharPool.TAB, StringPool.FOUR_SPACES);
+		List<String> contentBlocks = YMLSourceUtil.getContentBlocks(
+			content, _styleBlockPattern);
 
-		content = _formatDefinitions(fileName, content, StringPool.BLANK, 0);
+		StringBundler sb = new StringBundler(contentBlocks.size() * 2);
+
+		for (int i = 0; i < contentBlocks.size(); i++) {
+			String contentBlock = contentBlocks.get(i);
+
+			if ((i % 2) != 0) {
+				sb.append(contentBlock);
+				sb.append(StringPool.NEW_LINE);
+
+				continue;
+			}
+
+			contentBlock = contentBlock.replaceAll(
+				"(\\{\\{)(?!(-| [^ ])[^\\}]*[^ ] \\}\\})( *)(?!-)(.*?) *(\\}" +
+					"\\})",
+				"$1 $4 $5");
+
+			contentBlock = StringUtil.replace(
+				contentBlock, CharPool.TAB, StringPool.FOUR_SPACES);
+
+			contentBlock = super.doProcess(
+				fileName, absolutePath, contentBlock);
+
+			if (contentBlock.startsWith("---")) {
+				contentBlock = StringPool.NEW_LINE + contentBlock;
+			}
+
+			sb.append(contentBlock);
+
+			sb.append(StringPool.NEW_LINE);
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		content = _formatDefinitions(
+			fileName, sb.toString(), StringPool.BLANK, 0);
 
 		content = _formatSequencesAndMappings(content);
 
-		return super.doProcess(fileName, absolutePath, content);
+		if (isAllowTrailingEmptyLines(fileName, absolutePath) &&
+			content.endsWith("\n")) {
+
+			return content;
+		}
+
+		if (content.endsWith("\n")) {
+			content = content.substring(0, content.length() - 1);
+		}
+
+		return content;
 	}
 
 	private String _formatDefinition(
-		String fileName, String definition, String indent, int level,
-		boolean hasNestedDefinitions) {
+		String fileName, String definition, String[] definitionLines,
+		String indent, int level, boolean hasNestedDefinitions) {
 
 		String expectedIndent = StringPool.BLANK;
 
@@ -69,13 +114,25 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 			return newDefinition;
 		}
 
-		String[] lines = StringUtil.splitLines(newDefinition);
+		if (definitionLines[0].endsWith("|-")) {
+			StringBundler sb = new StringBundler(definitionLines.length * 3);
 
-		if (lines.length <= 1) {
+			for (String line : definitionLines) {
+				sb.append(expectedIndent);
+				sb.append(line.substring(indent.length()));
+				sb.append("\n");
+			}
+
+			sb.setIndex(sb.index() - 1);
+
+			return sb.toString();
+		}
+
+		if (definitionLines.length <= 1) {
 			return newDefinition;
 		}
 
-		String firstLine = lines[1];
+		String firstLine = definitionLines[1];
 
 		String newNestedContent = StringPool.BLANK;
 		String oldNestedContent = StringPool.BLANK;
@@ -86,8 +143,8 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 			nestedIndent = StringPool.BLANK;
 		}
 
-		for (int j = 1; j < lines.length; j++) {
-			String line = lines[j];
+		for (int j = 1; j < definitionLines.length; j++) {
+			String line = definitionLines[j];
 
 			if (j > 1) {
 				newNestedContent = newNestedContent + StringPool.NEW_LINE;
@@ -119,15 +176,14 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 		}
 
 		if (!newNestedContent.equals(oldNestedContent)) {
-			if (!_hasMapInsideList(lines)) {
+			if (!_hasMapInsideList(definitionLines)) {
 				newDefinition = StringUtil.replaceFirst(
 					newDefinition, oldNestedContent, newNestedContent);
 			}
 			else {
 				String message = StringBundler.concat(
-					"Incorrect whitespace, expected '",
-					expectedIndent + StringPool.FOUR_SPACES, "'\n",
-					oldNestedContent);
+					"Incorrect whitespace, expected '", expectedIndent,
+					StringPool.FOUR_SPACES, "'\n", oldNestedContent);
 
 				addMessage(fileName, message);
 			}
@@ -147,6 +203,22 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 		int pos = lines[0].length();
 
 		for (String definition : definitions) {
+			lines = definition.split("\n");
+
+			if ((lines.length != 0) && lines[0].endsWith("|-")) {
+				String newDefinition = _formatDefinition(
+					fileName, definition, lines, indent, level, false);
+
+				if (!newDefinition.equals(definition)) {
+					content = StringUtil.replaceFirst(
+						content, definition, newDefinition, pos);
+				}
+
+				pos = pos + newDefinition.length();
+
+				continue;
+			}
+
 			String nestedDefinitionIndent =
 				YMLSourceUtil.getNestedDefinitionIndent(definition);
 
@@ -167,8 +239,10 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 				}
 			}
 
+			lines = definition.split("\n");
+
 			String newDefinition = _formatDefinition(
-				fileName, definition, indent, level,
+				fileName, definition, lines, indent, level,
 				!nestedDefinitions.isEmpty());
 
 			if (!newDefinition.equals(definition)) {
@@ -247,5 +321,7 @@ public class YMLWhitespaceCheck extends WhitespaceCheck {
 
 	private static final Pattern _mappingEntryPattern = Pattern.compile(
 		"^( *)- *?(\n|\\Z)((\\1 +.+)(\n|\\Z)+)+", Pattern.MULTILINE);
+	private static final Pattern _styleBlockPattern = Pattern.compile(
+		"(?<=\\|-)(?: *\n)(( +).*(\n\\2.*)*)");
 
 }

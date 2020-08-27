@@ -14,7 +14,7 @@
 
 package com.liferay.asset.auto.tagger.opennlp.internal;
 
-import com.liferay.asset.auto.tagger.opennlp.api.OpenNLPDocumentAssetAutoTagger;
+import com.liferay.asset.auto.tagger.opennlp.OpenNLPDocumentAssetAutoTagger;
 import com.liferay.asset.auto.tagger.opennlp.internal.configuration.OpenNLPDocumentAssetAutoTaggerCompanyConfiguration;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,7 +51,12 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Cristina González
  */
-@Component(service = OpenNLPDocumentAssetAutoTagger.class)
+@Component(
+	service = {
+		OpenNLPDocumentAssetAutoTagger.class,
+		OpenNLPDocumentAssetAutoTaggerImpl.class
+	}
+)
 public class OpenNLPDocumentAssetAutoTaggerImpl
 	implements OpenNLPDocumentAssetAutoTagger {
 
@@ -59,20 +65,26 @@ public class OpenNLPDocumentAssetAutoTaggerImpl
 			long companyId, String content, Locale locale, String mimeType)
 		throws Exception {
 
+		return getTagNames(companyId, () -> content, locale, mimeType);
+	}
+
+	@Override
+	public Collection<String> getTagNames(
+			long companyId, String content, String mimeType)
+		throws Exception {
+
+		return getTagNames(companyId, content, null, mimeType);
+	}
+
+	public Collection<String> getTagNames(
+			long companyId, Supplier<String> textSupplier, Locale locale,
+			String mimeType)
+		throws Exception {
+
 		if (Objects.nonNull(locale) &&
 			!Objects.equals(
 				locale.getLanguage(), LocaleUtil.ENGLISH.getLanguage())) {
 
-			return Collections.emptyList();
-		}
-
-		OpenNLPDocumentAssetAutoTaggerCompanyConfiguration
-			openNLPDocumentAssetAutoTaggerCompanyConfiguration =
-				_configurationProvider.getCompanyConfiguration(
-					OpenNLPDocumentAssetAutoTaggerCompanyConfiguration.class,
-					companyId);
-
-		if (!openNLPDocumentAssetAutoTaggerCompanyConfiguration.enabled()) {
 			return Collections.emptyList();
 		}
 
@@ -89,8 +101,14 @@ public class OpenNLPDocumentAssetAutoTaggerImpl
 		List<TokenNameFinderModel> tokenNameFinderModels =
 			_tokenNameFinderModelsHolder.getModels();
 
+		OpenNLPDocumentAssetAutoTaggerCompanyConfiguration
+			openNLPDocumentAssetAutoTaggerCompanyConfiguration =
+				_configurationProvider.getCompanyConfiguration(
+					OpenNLPDocumentAssetAutoTaggerCompanyConfiguration.class,
+					companyId);
+
 		return Stream.of(
-			sentenceDetectorME.sentDetect(content)
+			sentenceDetectorME.sentDetect(textSupplier.get())
 		).map(
 			tokenizerME::tokenize
 		).map(
@@ -103,14 +121,6 @@ public class OpenNLPDocumentAssetAutoTaggerImpl
 		).collect(
 			Collectors.toSet()
 		);
-	}
-
-	@Override
-	public Collection<String> getTagNames(
-			long companyId, String content, String mimeType)
-		throws Exception {
-
-		return getTagNames(companyId, content, null, mimeType);
 	}
 
 	@Activate
@@ -177,8 +187,7 @@ public class OpenNLPDocumentAssetAutoTaggerImpl
 				if (_sentenceModel == null) {
 					_sentenceModel = new SentenceModel(
 						_bundle.getResource(
-							"/lib/org.apache.opennlp.model.en.sent-1.5.0-" +
-								"bin.bin"));
+							"org.apache.opennlp.model.en.sent.bin"));
 				}
 
 				return _sentenceModel;
@@ -207,8 +216,7 @@ public class OpenNLPDocumentAssetAutoTaggerImpl
 				if (_tokenizerModel == null) {
 					_tokenizerModel = new TokenizerModel(
 						_bundle.getResource(
-							"/lib/org.apache.opennlp.model.en.token-1.5.0-" +
-								"bin.bin"));
+							"org.apache.opennlp.model.en.token.bin"));
 				}
 
 				return _tokenizerModel;
@@ -239,16 +247,15 @@ public class OpenNLPDocumentAssetAutoTaggerImpl
 					_tokenNameFinderModels = Arrays.asList(
 						new TokenNameFinderModel(
 							_bundle.getResource(
-								"/lib/org.apache.opennlp.model.en.ner." +
-									"location-1.5.0-bin.bin")),
+								"org.apache.opennlp.model.en.ner.location." +
+									"bin")),
 						new TokenNameFinderModel(
 							_bundle.getResource(
-								"/lib/org.apache.opennlp.model.en.ner." +
-									"organization-1.5.0-bin.bin")),
+								"org.apache.opennlp.model.en.ner." +
+									"organization.bin")),
 						new TokenNameFinderModel(
 							_bundle.getResource(
-								"/lib/org.apache.opennlp.model.en.ner.person-" +
-									"1.5.0-bin.bin")));
+								"org.apache.opennlp.model.en.ner.person.bin")));
 				}
 
 				return _tokenNameFinderModels;

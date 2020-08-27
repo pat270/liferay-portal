@@ -29,28 +29,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eduardo García
  * @author Raymond Augé
  */
-@ProviderType
 public class FriendlyURLResolverRegistryUtil {
 
 	public static FriendlyURLResolver getFriendlyURLResolver(
 		String urlSeparator) {
 
 		return _serviceTrackerMap.getService(urlSeparator);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getFriendlyURLResolversAsCollection()}
-	 */
-	@Deprecated
-	public static List<FriendlyURLResolver> getFriendlyURLResolvers() {
-		return new ArrayList<>(getFriendlyURLResolversAsCollection());
 	}
 
 	public static Collection<FriendlyURLResolver>

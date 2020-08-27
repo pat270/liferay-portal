@@ -50,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class CalendarBookingServiceBaseImpl
 	extends BaseServiceImpl
-	implements CalendarBookingService, AopService, IdentifiableOSGiService {
+	implements AopService, CalendarBookingService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -106,8 +106,8 @@ public abstract class CalendarBookingServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

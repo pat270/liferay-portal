@@ -16,8 +16,6 @@ package com.liferay.screens.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link ScreensDDLRecordService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ScreensDDLRecordService
  * @generated
  */
-@ProviderType
 public class ScreensDDLRecordServiceWrapper
 	implements ScreensDDLRecordService,
 			   ServiceWrapper<ScreensDDLRecordService> {
@@ -48,11 +45,12 @@ public class ScreensDDLRecordServiceWrapper
 	public com.liferay.portal.kernel.json.JSONArray getDDLRecords(
 			long ddlRecordSetId, java.util.Locale locale, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.lists.model.DDLRecord> obc)
+				<com.liferay.dynamic.data.lists.model.DDLRecord>
+					orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _screensDDLRecordService.getDDLRecords(
-			ddlRecordSetId, locale, start, end, obc);
+			ddlRecordSetId, locale, start, end, orderByComparator);
 	}
 
 	@Override
@@ -60,11 +58,12 @@ public class ScreensDDLRecordServiceWrapper
 			long ddlRecordSetId, long userId, java.util.Locale locale,
 			int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.lists.model.DDLRecord> obc)
+				<com.liferay.dynamic.data.lists.model.DDLRecord>
+					orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _screensDDLRecordService.getDDLRecords(
-			ddlRecordSetId, userId, locale, start, end, obc);
+			ddlRecordSetId, userId, locale, start, end, orderByComparator);
 	}
 
 	@Override

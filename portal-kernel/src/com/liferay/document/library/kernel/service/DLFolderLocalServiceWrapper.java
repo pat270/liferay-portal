@@ -14,9 +14,10 @@
 
 package com.liferay.document.library.kernel.service;
 
+import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link DLFolderLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFolderLocalService
  * @generated
  */
-@ProviderType
 public class DLFolderLocalServiceWrapper
 	implements DLFolderLocalService, ServiceWrapper<DLFolderLocalService> {
 
@@ -37,8 +37,7 @@ public class DLFolderLocalServiceWrapper
 
 	@Override
 	public void addDLFileEntryTypeDLFolder(
-		long fileEntryTypeId,
-		com.liferay.document.library.kernel.model.DLFolder dlFolder) {
+		long fileEntryTypeId, DLFolder dlFolder) {
 
 		_dlFolderLocalService.addDLFileEntryTypeDLFolder(
 			fileEntryTypeId, dlFolder);
@@ -54,9 +53,7 @@ public class DLFolderLocalServiceWrapper
 
 	@Override
 	public void addDLFileEntryTypeDLFolders(
-		long fileEntryTypeId,
-		java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-			dlFolders) {
+		long fileEntryTypeId, java.util.List<DLFolder> dlFolders) {
 
 		_dlFolderLocalService.addDLFileEntryTypeDLFolders(
 			fileEntryTypeId, dlFolders);
@@ -73,18 +70,20 @@ public class DLFolderLocalServiceWrapper
 	/**
 	 * Adds the document library folder to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFolderLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlFolder the document library folder
 	 * @return the document library folder that was added
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder addDLFolder(
-		com.liferay.document.library.kernel.model.DLFolder dlFolder) {
-
+	public DLFolder addDLFolder(DLFolder dlFolder) {
 		return _dlFolderLocalService.addDLFolder(dlFolder);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder addFolder(
+	public DLFolder addFolder(
 			long userId, long groupId, long repositoryId, boolean mountPoint,
 			long parentFolderId, String name, String description,
 			boolean hidden,
@@ -108,22 +107,19 @@ public class DLFolderLocalServiceWrapper
 	 * @return the new document library folder
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder createDLFolder(
-		long folderId) {
-
+	public DLFolder createDLFolder(long folderId) {
 		return _dlFolderLocalService.createDLFolder(folderId);
 	}
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #deleteAllByGroup(long)}
+	 * @throws PortalException
 	 */
-	@Deprecated
 	@Override
-	public void deleteAll(long groupId)
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_dlFolderLocalService.deleteAll(groupId);
+		return _dlFolderLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	@Override
@@ -142,8 +138,7 @@ public class DLFolderLocalServiceWrapper
 
 	@Override
 	public void deleteDLFileEntryTypeDLFolder(
-		long fileEntryTypeId,
-		com.liferay.document.library.kernel.model.DLFolder dlFolder) {
+		long fileEntryTypeId, DLFolder dlFolder) {
 
 		_dlFolderLocalService.deleteDLFileEntryTypeDLFolder(
 			fileEntryTypeId, dlFolder);
@@ -159,9 +154,7 @@ public class DLFolderLocalServiceWrapper
 
 	@Override
 	public void deleteDLFileEntryTypeDLFolders(
-		long fileEntryTypeId,
-		java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-			dlFolders) {
+		long fileEntryTypeId, java.util.List<DLFolder> dlFolders) {
 
 		_dlFolderLocalService.deleteDLFileEntryTypeDLFolders(
 			fileEntryTypeId, dlFolders);
@@ -178,43 +171,46 @@ public class DLFolderLocalServiceWrapper
 	/**
 	 * Deletes the document library folder from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFolderLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlFolder the document library folder
 	 * @return the document library folder that was removed
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteDLFolder(
-		com.liferay.document.library.kernel.model.DLFolder dlFolder) {
-
+	public DLFolder deleteDLFolder(DLFolder dlFolder) {
 		return _dlFolderLocalService.deleteDLFolder(dlFolder);
 	}
 
 	/**
 	 * Deletes the document library folder with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFolderLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param folderId the primary key of the document library folder
 	 * @return the document library folder that was removed
 	 * @throws PortalException if a document library folder with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteDLFolder(
-			long folderId)
+	public DLFolder deleteDLFolder(long folderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.deleteDLFolder(folderId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteFolder(
-			com.liferay.document.library.kernel.model.DLFolder dlFolder)
+	public DLFolder deleteFolder(DLFolder dlFolder)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.deleteFolder(dlFolder);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteFolder(
-			com.liferay.document.library.kernel.model.DLFolder dlFolder,
-			boolean includeTrashedEntries)
+	public DLFolder deleteFolder(
+			DLFolder dlFolder, boolean includeTrashedEntries)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.deleteFolder(
@@ -222,16 +218,14 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteFolder(
-			long folderId)
+	public DLFolder deleteFolder(long folderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.deleteFolder(folderId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteFolder(
-			long folderId, boolean includeTrashedEntries)
+	public DLFolder deleteFolder(long folderId, boolean includeTrashedEntries)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.deleteFolder(
@@ -239,7 +233,7 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder deleteFolder(
+	public DLFolder deleteFolder(
 			long userId, long folderId, boolean includeTrashedEntries)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -256,6 +250,11 @@ public class DLFolderLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.deletePersistedModel(persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _dlFolderLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -280,7 +279,7 @@ public class DLFolderLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -300,7 +299,7 @@ public class DLFolderLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -349,9 +348,7 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder fetchDLFolder(
-		long folderId) {
-
+	public DLFolder fetchDLFolder(long folderId) {
 		return _dlFolderLocalService.fetchDLFolder(folderId);
 	}
 
@@ -363,31 +360,25 @@ public class DLFolderLocalServiceWrapper
 	 * @return the matching document library folder, or <code>null</code> if a matching document library folder could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder
-		fetchDLFolderByUuidAndGroupId(String uuid, long groupId) {
-
+	public DLFolder fetchDLFolderByUuidAndGroupId(String uuid, long groupId) {
 		return _dlFolderLocalService.fetchDLFolderByUuidAndGroupId(
 			uuid, groupId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder fetchFolder(
-		long folderId) {
-
+	public DLFolder fetchFolder(long folderId) {
 		return _dlFolderLocalService.fetchFolder(folderId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder fetchFolder(
+	public DLFolder fetchFolder(
 		long groupId, long parentFolderId, String name) {
 
 		return _dlFolderLocalService.fetchFolder(groupId, parentFolderId, name);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder fetchFolder(
-		String uuid, long groupId) {
-
+	public DLFolder fetchFolder(String uuid, long groupId) {
 		return _dlFolderLocalService.fetchFolder(uuid, groupId);
 	}
 
@@ -399,8 +390,8 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getCompanyFolders(long companyId, int start, int end) {
+	public java.util.List<DLFolder> getCompanyFolders(
+		long companyId, int start, int end) {
 
 		return _dlFolderLocalService.getCompanyFolders(companyId, start, end);
 	}
@@ -411,28 +402,26 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getDLFileEntryTypeDLFolders(long fileEntryTypeId) {
+	public java.util.List<DLFolder> getDLFileEntryTypeDLFolders(
+		long fileEntryTypeId) {
 
 		return _dlFolderLocalService.getDLFileEntryTypeDLFolders(
 			fileEntryTypeId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getDLFileEntryTypeDLFolders(long fileEntryTypeId, int start, int end) {
+	public java.util.List<DLFolder> getDLFileEntryTypeDLFolders(
+		long fileEntryTypeId, int start, int end) {
 
 		return _dlFolderLocalService.getDLFileEntryTypeDLFolders(
 			fileEntryTypeId, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getDLFileEntryTypeDLFolders(
-			long fileEntryTypeId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFolder>
-					orderByComparator) {
+	public java.util.List<DLFolder> getDLFileEntryTypeDLFolders(
+		long fileEntryTypeId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
 
 		return _dlFolderLocalService.getDLFileEntryTypeDLFolders(
 			fileEntryTypeId, start, end, orderByComparator);
@@ -463,8 +452,7 @@ public class DLFolderLocalServiceWrapper
 	 * @throws PortalException if a document library folder with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder getDLFolder(
-			long folderId)
+	public DLFolder getDLFolder(long folderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.getDLFolder(folderId);
@@ -479,8 +467,7 @@ public class DLFolderLocalServiceWrapper
 	 * @throws PortalException if a matching document library folder could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder
-			getDLFolderByUuidAndGroupId(String uuid, long groupId)
+	public DLFolder getDLFolderByUuidAndGroupId(String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.getDLFolderByUuidAndGroupId(uuid, groupId);
@@ -490,7 +477,7 @@ public class DLFolderLocalServiceWrapper
 	 * Returns a range of all the document library folders.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFolderModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library folders
@@ -498,9 +485,7 @@ public class DLFolderLocalServiceWrapper
 	 * @return the range of document library folders
 	 */
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getDLFolders(int start, int end) {
-
+	public java.util.List<DLFolder> getDLFolders(int start, int end) {
 		return _dlFolderLocalService.getDLFolders(start, end);
 	}
 
@@ -512,8 +497,8 @@ public class DLFolderLocalServiceWrapper
 	 * @return the matching document library folders, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getDLFoldersByUuidAndCompanyId(String uuid, long companyId) {
+	public java.util.List<DLFolder> getDLFoldersByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _dlFolderLocalService.getDLFoldersByUuidAndCompanyId(
 			uuid, companyId);
@@ -530,12 +515,10 @@ public class DLFolderLocalServiceWrapper
 	 * @return the range of matching document library folders, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getDLFoldersByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFolder>
-					orderByComparator) {
+	public java.util.List<DLFolder> getDLFoldersByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
 
 		return _dlFolderLocalService.getDLFoldersByUuidAndCompanyId(
 			uuid, companyId, start, end, orderByComparator);
@@ -580,16 +563,14 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder getFolder(
-			long folderId)
+	public DLFolder getFolder(long folderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.getFolder(folderId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder getFolder(
-			long groupId, long parentFolderId, String name)
+	public DLFolder getFolder(long groupId, long parentFolderId, String name)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.getFolder(groupId, parentFolderId, name);
@@ -600,68 +581,71 @@ public class DLFolderLocalServiceWrapper
 		return _dlFolderLocalService.getFolderId(companyId, folderId);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getGroupFolderIds(long, long)}
-	 */
-	@Deprecated
 	@Override
-	public java.util.List<Long> getFolderIds(
+	public java.util.List<DLFolder> getFolders(
 		long groupId, long parentFolderId) {
-
-		return _dlFolderLocalService.getFolderIds(groupId, parentFolderId);
-	}
-
-	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getFolders(long groupId, long parentFolderId) {
 
 		return _dlFolderLocalService.getFolders(groupId, parentFolderId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getFolders(
-			long groupId, long parentFolderId, boolean includeMountfolders) {
+	public java.util.List<DLFolder> getFolders(
+		long groupId, long parentFolderId, boolean includeMountfolders) {
 
 		return _dlFolderLocalService.getFolders(
 			groupId, parentFolderId, includeMountfolders);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getFolders(
-			long groupId, long parentFolderId, boolean includeMountfolders,
-			int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFolder> obc) {
+	public java.util.List<DLFolder> getFolders(
+		long groupId, long parentFolderId, boolean includeMountfolders,
+		int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
 
 		return _dlFolderLocalService.getFolders(
-			groupId, parentFolderId, includeMountfolders, start, end, obc);
+			groupId, parentFolderId, includeMountfolders, status, start, end,
+			orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getFolders(
-			long groupId, long parentFolderId, int status,
-			boolean includeMountfolders, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFolder> obc) {
+	public java.util.List<DLFolder> getFolders(
+		long groupId, long parentFolderId, boolean includeMountfolders,
+		int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
+
+		return _dlFolderLocalService.getFolders(
+			groupId, parentFolderId, includeMountfolders, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #getFolders(long, long, boolean, int, int,
+	 OrderByComparator)}
+	 */
+	@Deprecated
+	@Override
+	public java.util.List<DLFolder> getFolders(
+		long groupId, long parentFolderId, int status,
+		boolean includeMountfolders, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
 
 		return _dlFolderLocalService.getFolders(
 			groupId, parentFolderId, status, includeMountfolders, start, end,
-			obc);
+			orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getFolders(
-			long groupId, long parentFolderId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFolder> obc) {
+	public java.util.List<DLFolder> getFolders(
+		long groupId, long parentFolderId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
 
 		return _dlFolderLocalService.getFolders(
-			groupId, parentFolderId, start, end, obc);
+			groupId, parentFolderId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -701,6 +685,20 @@ public class DLFolderLocalServiceWrapper
 
 	@Override
 	public int getFoldersCount(
+		long groupId, long parentFolderId, boolean includeMountfolders,
+		int status) {
+
+		return _dlFolderLocalService.getFoldersCount(
+			groupId, parentFolderId, includeMountfolders, status);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #getFoldersCount(long, long, boolean, int)}
+	 */
+	@Deprecated
+	@Override
+	public int getFoldersCount(
 		long groupId, long parentFolderId, int status,
 		boolean includeMountfolders) {
 
@@ -731,22 +729,20 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder getMountFolder(
-			long repositoryId)
+	public DLFolder getMountFolder(long repositoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.getMountFolder(repositoryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getMountFolders(
-			long groupId, long parentFolderId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFolder> obc) {
+	public java.util.List<DLFolder> getMountFolders(
+		long groupId, long parentFolderId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DLFolder>
+			orderByComparator) {
 
 		return _dlFolderLocalService.getMountFolders(
-			groupId, parentFolderId, start, end, obc);
+			groupId, parentFolderId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -756,9 +752,7 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getNoAssetFolders() {
-
+	public java.util.List<DLFolder> getNoAssetFolders() {
 		return _dlFolderLocalService.getNoAssetFolders();
 	}
 
@@ -772,6 +766,9 @@ public class DLFolderLocalServiceWrapper
 		return _dlFolderLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -789,8 +786,8 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.document.library.kernel.model.DLFolder>
-		getRepositoryFolders(long repositoryId, int start, int end) {
+	public java.util.List<DLFolder> getRepositoryFolders(
+		long repositoryId, int start, int end) {
 
 		return _dlFolderLocalService.getRepositoryFolders(
 			repositoryId, start, end);
@@ -807,18 +804,6 @@ public class DLFolderLocalServiceWrapper
 
 		_dlFolderLocalService.getRepositorySubfolderIds(
 			folderIds, repositoryId, folderId);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getGroupSubfolderIds(List, long, long)}
-	 */
-	@Deprecated
-	@Override
-	public void getSubfolderIds(
-		java.util.List<Long> folderIds, long groupId, long folderId) {
-
-		_dlFolderLocalService.getSubfolderIds(folderIds, groupId, folderId);
 	}
 
 	@Override
@@ -873,7 +858,7 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder moveFolder(
+	public DLFolder moveFolder(
 			long userId, long folderId, long parentFolderId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -926,37 +911,20 @@ public class DLFolderLocalServiceWrapper
 	/**
 	 * Updates the document library folder in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFolderLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlFolder the document library folder
 	 * @return the document library folder that was updated
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder updateDLFolder(
-		com.liferay.document.library.kernel.model.DLFolder dlFolder) {
-
+	public DLFolder updateDLFolder(DLFolder dlFolder) {
 		return _dlFolderLocalService.updateDLFolder(dlFolder);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateFolder(long, long, String, String, long, List, int,
-	 ServiceContext)}
-	 */
-	@Deprecated
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder updateFolder(
-			long folderId, long parentFolderId, String name, String description,
-			long defaultFileEntryTypeId, java.util.List<Long> fileEntryTypeIds,
-			boolean overrideFileEntryTypes,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _dlFolderLocalService.updateFolder(
-			folderId, parentFolderId, name, description, defaultFileEntryTypeId,
-			fileEntryTypeIds, overrideFileEntryTypes, serviceContext);
-	}
-
-	@Override
-	public com.liferay.document.library.kernel.model.DLFolder updateFolder(
+	public DLFolder updateFolder(
 			long folderId, long parentFolderId, String name, String description,
 			long defaultFileEntryTypeId, java.util.List<Long> fileEntryTypeIds,
 			int restrictionType,
@@ -968,27 +936,8 @@ public class DLFolderLocalServiceWrapper
 			fileEntryTypeIds, restrictionType, serviceContext);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced {@link
-	 #updateFolder(long, long, String, String, long, List, int,
-	 ServiceContext)}
-	 */
-	@Deprecated
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder updateFolder(
-			long folderId, String name, String description,
-			long defaultFileEntryTypeId, java.util.List<Long> fileEntryTypeIds,
-			boolean overrideFileEntryTypes,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _dlFolderLocalService.updateFolder(
-			folderId, name, description, defaultFileEntryTypeId,
-			fileEntryTypeIds, overrideFileEntryTypes, serviceContext);
-	}
-
-	@Override
-	public com.liferay.document.library.kernel.model.DLFolder updateFolder(
+	public DLFolder updateFolder(
 			long folderId, String name, String description,
 			long defaultFileEntryTypeId, java.util.List<Long> fileEntryTypeIds,
 			int restrictionType,
@@ -1000,35 +949,12 @@ public class DLFolderLocalServiceWrapper
 			fileEntryTypeIds, restrictionType, serviceContext);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #
-	 updateFolderAndFileEntryTypes(long, long, long, String,
-	 String, long, List, int, ServiceContext)}
-	 */
-	@Deprecated
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder
-			updateFolderAndFileEntryTypes(
-				long userId, long folderId, long parentFolderId, String name,
-				String description, long defaultFileEntryTypeId,
-				java.util.List<Long> fileEntryTypeIds,
-				boolean overrideFileEntryTypes,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _dlFolderLocalService.updateFolderAndFileEntryTypes(
-			userId, folderId, parentFolderId, name, description,
-			defaultFileEntryTypeId, fileEntryTypeIds, overrideFileEntryTypes,
-			serviceContext);
-	}
-
-	@Override
-	public com.liferay.document.library.kernel.model.DLFolder
-			updateFolderAndFileEntryTypes(
-				long userId, long folderId, long parentFolderId, String name,
-				String description, long defaultFileEntryTypeId,
-				java.util.List<Long> fileEntryTypeIds, int restrictionType,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public DLFolder updateFolderAndFileEntryTypes(
+			long userId, long folderId, long parentFolderId, String name,
+			String description, long defaultFileEntryTypeId,
+			java.util.List<Long> fileEntryTypeIds, int restrictionType,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.updateFolderAndFileEntryTypes(
@@ -1045,7 +971,7 @@ public class DLFolderLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFolder updateStatus(
+	public DLFolder updateStatus(
 			long userId, long folderId, int status,
 			java.util.Map<String, java.io.Serializable> workflowContext,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -1060,6 +986,25 @@ public class DLFolderLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFolderLocalService.verifyInheritableLock(folderId, lockUuid);
+	}
+
+	@Override
+	public CTPersistence<DLFolder> getCTPersistence() {
+		return _dlFolderLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<DLFolder> getModelClass() {
+		return _dlFolderLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DLFolder>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return _dlFolderLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

@@ -41,10 +41,10 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -192,10 +192,10 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 					}
 				}
 			}
-			catch (SystemException se) {
+			catch (SystemException systemException) {
 				throw new SearchException(
 					"Unable to determine folder {folderId=" + folderId + "}",
-					se);
+					systemException);
 			}
 		}
 		else if (field.equals(Field.USER_ID)) {
@@ -211,15 +211,15 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 					getCmisField(field), screenName,
 					cmisSimpleExpressionOperator);
 			}
-			catch (Exception e) {
-				if (e instanceof SearchException) {
-					throw (SearchException)e;
+			catch (Exception exception) {
+				if (exception instanceof SearchException) {
+					throw (SearchException)exception;
 				}
 
 				throw new SearchException(
 					StringBundler.concat(
 						"Unable to determine user {", field, "=", value, "}"),
-					e);
+					exception);
 			}
 		}
 		else {
@@ -333,11 +333,10 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 				return;
 			}
 
-			String field = queryTerm.getField();
 			String value = queryTerm.getValue();
 
 			value = CMISParameterValueUtil.formatParameterValue(
-				field, value, false, queryConfig);
+				queryTerm.getField(), value, false, queryConfig);
 
 			CMISContainsValueExpression cmisContainsValueExpression =
 				new CMISContainsValueExpression(value);
@@ -369,9 +368,6 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 			}
 
 			cmisJunction.add(cmisConjunction);
-		}
-		else if (query instanceof TermRangeQuery) {
-			return;
 		}
 	}
 
@@ -504,17 +500,19 @@ public class BaseCmisSearchQueryBuilder implements CMISSearchQueryBuilder {
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseCmisSearchQueryBuilder.class);
 
-	private static final Map<String, String> _cmisFields =
-		new HashMap<String, String>() {
-			{
-				put(Field.CREATE_DATE, "cmis:creationDate");
-				put(Field.MODIFIED_DATE, "cmis:lastModificationDate");
-				put(Field.NAME, "cmis:name");
-				put(Field.TITLE, "cmis:name");
-				put(Field.USER_ID, "cmis:createdBy");
-				put(Field.USER_NAME, "cmis:createdBy");
-			}
-		};
+	private static final Map<String, String> _cmisFields = HashMapBuilder.put(
+		Field.CREATE_DATE, "cmis:creationDate"
+	).put(
+		Field.MODIFIED_DATE, "cmis:lastModificationDate"
+	).put(
+		Field.NAME, "cmis:name"
+	).put(
+		Field.TITLE, "cmis:name"
+	).put(
+		Field.USER_ID, "cmis:createdBy"
+	).put(
+		Field.USER_NAME, "cmis:createdBy"
+	).build();
 	private static final Set<String> _supportedFields = new HashSet<>(
 		Arrays.asList(
 			Field.CREATE_DATE, Field.FOLDER_ID, Field.MODIFIED_DATE, Field.NAME,

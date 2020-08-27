@@ -15,9 +15,7 @@
 package com.liferay.portal.tools.upgrade.table.builder;
 
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ArgumentsUtil;
 
 import java.io.BufferedReader;
@@ -57,32 +55,34 @@ public class UpgradeTableBuilder {
 		boolean osgiModule = GetterUtil.getBoolean(
 			arguments.get("upgrade.osgi.module"),
 			UpgradeTableBuilderArgs.OSGI_MODULE);
-		String releaseInfoFileName = arguments.get("upgrade.release.info.file");
+		String releaseInfoVersion = arguments.get(
+			"upgrade.release.info.version");
 		String upgradeTableDirName = arguments.get("upgrade.table.dir");
 
 		try {
 			new UpgradeTableBuilder(
-				baseDirName, osgiModule, releaseInfoFileName,
+				baseDirName, osgiModule, releaseInfoVersion,
 				upgradeTableDirName);
 		}
-		catch (Exception e) {
-			ArgumentsUtil.processMainException(arguments, e);
+		catch (Exception exception) {
+			ArgumentsUtil.processMainException(arguments, exception);
 		}
 	}
 
 	public UpgradeTableBuilder(
-			String baseDirName, boolean osgiModule, String releaseInfoFileName,
+			String baseDirName, boolean osgiModule, String releaseInfoVersion,
 			String upgradeTableDirName)
 		throws Exception {
 
 		_baseDirName = baseDirName;
+
 		_osgiModule = osgiModule;
 
 		if (_osgiModule) {
 			_releaseInfoVersion = null;
 		}
 		else {
-			_releaseInfoVersion = _getReleaseInfoVersion(releaseInfoFileName);
+			_releaseInfoVersion = releaseInfoVersion;
 		}
 
 		_upgradeTableDirName = upgradeTableDirName;
@@ -124,12 +124,12 @@ public class UpgradeTableBuilder {
 	private void _buildUpgradeTable(Path path) throws IOException {
 		String pathString = path.toString();
 
-		pathString = pathString.replace('\\', '/');
+		pathString = StringUtil.replace(pathString, '\\', '/');
 
 		String upgradeFileVersion = pathString.replaceFirst(
 			".*/upgrade/v(.+)/util.*", "$1");
 
-		upgradeFileVersion = upgradeFileVersion.replace('_', '.');
+		upgradeFileVersion = StringUtil.replace(upgradeFileVersion, '_', '.');
 
 		if (upgradeFileVersion.contains("to")) {
 			upgradeFileVersion = upgradeFileVersion.replaceFirst(
@@ -275,14 +275,14 @@ public class UpgradeTableBuilder {
 
 		content = content.substring(x, y + 1);
 
-		content = content.replace("\t", "");
-		content = content.replace("{ \"", "{\"");
-		content = content.replace("new Integer(Types.", "Types.");
-		content = content.replace(") }", "}");
-		content = content.replace(" }", "}");
+		content = StringUtil.removeSubstring(content, "\t");
+		content = StringUtil.replace(content, "{ \"", "{\"");
+		content = StringUtil.replace(content, "new Integer(Types.", "Types.");
+		content = StringUtil.replace(content, ") }", "}");
+		content = StringUtil.replace(content, " }", "}");
 
 		while (content.contains("\n\n")) {
-			content = content.replace("\n\n", "\n");
+			content = StringUtil.replace(content, "\n\n", "\n");
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -404,23 +404,6 @@ public class UpgradeTableBuilder {
 		return null;
 	}
 
-	private String _getReleaseInfoVersion(String fileName) throws IOException {
-		if (Validator.isNull(fileName)) {
-			return ReleaseInfo.getVersion();
-		}
-
-		String releaseInfo = _read(Paths.get(fileName));
-
-		Matcher matcher = _releaseInfoVersionPattern.matcher(releaseInfo);
-
-		if (!matcher.find()) {
-			throw new IOException(
-				"Unable to get release info version from " + fileName);
-		}
-
-		return matcher.group(1);
-	}
-
 	private String _getSchemaVersion() throws IOException {
 		Properties properties = new Properties();
 
@@ -465,15 +448,13 @@ public class UpgradeTableBuilder {
 	private String _read(Path path) throws IOException {
 		String s = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 
-		return s.replace("\r\n", "\n");
+		return StringUtil.replace(s, "\r\n", "\n");
 	}
 
 	private static final String _AUTHOR = "Brian Wing Shun Chan";
 
 	private static final Pattern _packagePathPattern = Pattern.compile(
 		"package (.+?);");
-	private static final Pattern _releaseInfoVersionPattern = Pattern.compile(
-		"private static final String _VERSION = \"(.+)\";");
 
 	private final String _baseDirName;
 	private final boolean _osgiModule;

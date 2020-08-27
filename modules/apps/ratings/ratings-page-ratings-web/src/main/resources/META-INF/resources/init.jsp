@@ -14,15 +14,12 @@
  */
 --%>
 
-<%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+<%@ taglib uri="http://liferay.com/tld/ratings" prefix="liferay-ratings" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 
 <%@ page import="com.liferay.asset.kernel.model.AssetEntry" %><%@
 page import="com.liferay.portal.kernel.model.Layout" %><%@
-page import="com.liferay.portal.kernel.model.LayoutConstants" %><%@
 page import="com.liferay.portal.kernel.util.WebKeys" %>
-
-<%@ page import="java.util.Objects" %>
 
 <liferay-theme:defineObjects />
 

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -122,6 +122,10 @@ public class ExpandoTablePersistenceTest {
 
 		ExpandoTable newExpandoTable = _persistence.create(pk);
 
+		newExpandoTable.setMvccVersion(RandomTestUtil.nextLong());
+
+		newExpandoTable.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newExpandoTable.setCompanyId(RandomTestUtil.nextLong());
 
 		newExpandoTable.setClassNameId(RandomTestUtil.nextLong());
@@ -133,6 +137,12 @@ public class ExpandoTablePersistenceTest {
 		ExpandoTable existingExpandoTable = _persistence.findByPrimaryKey(
 			newExpandoTable.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingExpandoTable.getMvccVersion(),
+			newExpandoTable.getMvccVersion());
+		Assert.assertEquals(
+			existingExpandoTable.getCtCollectionId(),
+			newExpandoTable.getCtCollectionId());
 		Assert.assertEquals(
 			existingExpandoTable.getTableId(), newExpandoTable.getTableId());
 		Assert.assertEquals(
@@ -188,8 +198,9 @@ public class ExpandoTablePersistenceTest {
 
 	protected OrderByComparator<ExpandoTable> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"ExpandoTable", "tableId", true, "companyId", true, "classNameId",
-			true, "name", true);
+			"ExpandoTable", "mvccVersion", true, "ctCollectionId", true,
+			"tableId", true, "companyId", true, "classNameId", true, "name",
+			true);
 	}
 
 	@Test
@@ -407,29 +418,76 @@ public class ExpandoTablePersistenceTest {
 
 		_persistence.clearCache();
 
-		ExpandoTable existingExpandoTable = _persistence.findByPrimaryKey(
-			newExpandoTable.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newExpandoTable.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		ExpandoTable newExpandoTable = addExpandoTable();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			ExpandoTable.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"tableId", newExpandoTable.getTableId()));
+
+		List<ExpandoTable> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(ExpandoTable expandoTable) {
 		Assert.assertEquals(
-			Long.valueOf(existingExpandoTable.getCompanyId()),
+			Long.valueOf(expandoTable.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingExpandoTable, "getOriginalCompanyId", new Class<?>[0]));
+				expandoTable, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 		Assert.assertEquals(
-			Long.valueOf(existingExpandoTable.getClassNameId()),
+			Long.valueOf(expandoTable.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingExpandoTable, "getOriginalClassNameId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingExpandoTable.getName(),
-				ReflectionTestUtil.invoke(
-					existingExpandoTable, "getOriginalName", new Class<?>[0])));
+				expandoTable, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
+		Assert.assertEquals(
+			expandoTable.getName(),
+			ReflectionTestUtil.invoke(
+				expandoTable, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
 	}
 
 	protected ExpandoTable addExpandoTable() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		ExpandoTable expandoTable = _persistence.create(pk);
+
+		expandoTable.setMvccVersion(RandomTestUtil.nextLong());
+
+		expandoTable.setCtCollectionId(RandomTestUtil.nextLong());
 
 		expandoTable.setCompanyId(RandomTestUtil.nextLong());
 

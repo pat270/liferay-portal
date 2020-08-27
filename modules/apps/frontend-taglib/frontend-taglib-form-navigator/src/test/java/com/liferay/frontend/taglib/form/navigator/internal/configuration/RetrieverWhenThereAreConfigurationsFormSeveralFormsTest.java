@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -30,6 +31,7 @@ import org.junit.Test;
 public class RetrieverWhenThereAreConfigurationsFormSeveralFormsTest
 	extends BaseFormNavigatorEntryConfigurationRetrieverTestCase {
 
+	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();

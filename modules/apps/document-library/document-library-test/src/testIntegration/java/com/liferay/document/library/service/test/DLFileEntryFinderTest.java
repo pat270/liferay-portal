@@ -26,6 +26,7 @@ import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashServiceUtil;
+import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.model.Group;
@@ -36,12 +37,12 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.spring.orm.LastSessionRecorderHelperUtil;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -53,7 +54,6 @@ import com.liferay.portal.repository.liferayrepository.LiferayRepository;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portlet.documentlibrary.util.test.DLAppTestUtil;
 
 import java.io.Serializable;
 
@@ -64,7 +64,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,11 +138,10 @@ public class DLFileEntryFinderTest {
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_APPROVED);
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_group.getGroupId()});
+		List<Long> repositoryIds = ListUtil.fromArray(_group.getGroupId());
 
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {DLFolderConstants.DEFAULT_PARENT_FOLDER_ID});
+		List<Long> folderIds = ListUtil.fromArray(
+			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 		Assert.assertEquals(
 			1,
@@ -983,11 +981,10 @@ public class DLFileEntryFinderTest {
 
 		queryDefinition.setStatus(WorkflowConstants.STATUS_APPROVED);
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_group.getGroupId()});
+		List<Long> repositoryIds = ListUtil.fromArray(_group.getGroupId());
 
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {DLFolderConstants.DEFAULT_PARENT_FOLDER_ID});
+		List<Long> folderIds = ListUtil.fromArray(
+			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 		List<DLFileEntry> dlFileEntries = doFindBy_G_U_R_F_M(
 			_user.getUserId(), repositoryIds, folderIds, null, queryDefinition);
@@ -1254,7 +1251,6 @@ public class DLFileEntryFinderTest {
 		Assert.assertEquals("FE1.txt-NewRepository", dlFileEntry.getTitle());
 	}
 
-	@Ignore
 	@Test
 	public void testFindByNoAssets() throws Exception {
 		AssetEntryLocalServiceUtil.deleteEntry(
@@ -1295,8 +1291,8 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
+		List<Long> folderIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getFolderId());
 
 		String[] mimeTypes = null;
 
@@ -1329,16 +1325,12 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getRepositoryId(),
-				_newRepositoryFolder.getRepositoryId()
-			});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getFolderId(),
-				_newRepositoryFolder.getFolderId()
-			});
+		List<Long> repositoryIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getRepositoryId(),
+			_newRepositoryFolder.getRepositoryId());
+		List<Long> folderIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getFolderId(),
+			_newRepositoryFolder.getFolderId());
 
 		return doCountBy_G_U_R_F_M(
 			userId, repositoryIds, folderIds, mimeType, queryDefinition);
@@ -1349,10 +1341,10 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
+		List<Long> repositoryIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getRepositoryId());
+		List<Long> folderIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getFolderId());
 
 		return doCountBy_G_U_R_F_M(
 			userId, repositoryIds, folderIds, mimeType, queryDefinition);
@@ -1375,10 +1367,10 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getFolderId()});
+		List<Long> repositoryIds = ListUtil.fromArray(
+			_newRepositoryFolder.getRepositoryId());
+		List<Long> folderIds = ListUtil.fromArray(
+			_newRepositoryFolder.getFolderId());
 
 		return doCountBy_G_U_R_F_M(
 			userId, repositoryIds, folderIds, mimeType, queryDefinition);
@@ -1389,8 +1381,8 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
+		List<Long> folderIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getFolderId());
 
 		String[] mimeTypes = null;
 
@@ -1423,16 +1415,12 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getRepositoryId(),
-				_newRepositoryFolder.getRepositoryId()
-			});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {
-				_defaultRepositoryFolder.getFolderId(),
-				_newRepositoryFolder.getFolderId()
-			});
+		List<Long> repositoryIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getRepositoryId(),
+			_newRepositoryFolder.getRepositoryId());
+		List<Long> folderIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getFolderId(),
+			_newRepositoryFolder.getFolderId());
 
 		return doFindBy_G_U_R_F_M(
 			userId, repositoryIds, folderIds, mimeType, queryDefinition);
@@ -1443,10 +1431,10 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_defaultRepositoryFolder.getFolderId()});
+		List<Long> repositoryIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getRepositoryId());
+		List<Long> folderIds = ListUtil.fromArray(
+			_defaultRepositoryFolder.getFolderId());
 
 		return doFindBy_G_U_R_F_M(
 			userId, repositoryIds, folderIds, mimeType, queryDefinition);
@@ -1469,10 +1457,10 @@ public class DLFileEntryFinderTest {
 			QueryDefinition<DLFileEntry> queryDefinition)
 		throws Exception {
 
-		List<Long> repositoryIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getRepositoryId()});
-		List<Long> folderIds = ListUtil.toList(
-			new long[] {_newRepositoryFolder.getFolderId()});
+		List<Long> repositoryIds = ListUtil.fromArray(
+			_newRepositoryFolder.getRepositoryId());
+		List<Long> folderIds = ListUtil.fromArray(
+			_newRepositoryFolder.getFolderId());
 
 		return doFindBy_G_U_R_F_M(
 			userId, repositoryIds, folderIds, mimeType, queryDefinition);
@@ -1531,9 +1519,8 @@ public class DLFileEntryFinderTest {
 			DLVersionNumberIncrease.MINOR, TestDataConstants.TEST_BYTE_ARRAY,
 			serviceContext);
 
-		liferayFileEntry = (LiferayFileEntry)fileEntry;
-
-		dlFileEntry = liferayFileEntry.getDLFileEntry();
+		dlFileEntry = DLFileEntryLocalServiceUtil.getFileEntry(
+			fileEntry.getFileEntryId());
 
 		dlFileEntry.setDescription("FE3.txt");
 

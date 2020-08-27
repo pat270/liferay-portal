@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Wiki";
@@ -24,15 +25,10 @@ definition {
 	}
 
 	@priority = "5"
-	test AddWikiFrontPage {
+	test AddFrontPage {
 		property portal.acceptance = "true";
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -42,12 +38,7 @@ definition {
 			wikiFrontPageContent = "Wiki FrontPage Content",
 			wikiNodeName = "Main");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -60,22 +51,12 @@ definition {
 	}
 
 	@priority = "4"
-	test AddWikiNode {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+	test AddNode {
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.addCP(wikiNodeName = "Wiki Node Name");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.viewCP(
 			numberOfWikiPages = "0",
@@ -83,22 +64,12 @@ definition {
 	}
 
 	@priority = "5"
-	test AddWikiPageToNode {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+	test AddPageToNode {
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.addCP(wikiNodeName = "Wiki Node Name");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Wiki Node Name");
 
@@ -108,12 +79,7 @@ definition {
 			wikiPageContent = "Wiki Page Content",
 			wikiPageTitle = "Wiki Page Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.viewCP(
 			numberOfWikiPages = "2",
@@ -126,11 +92,50 @@ definition {
 			wikiPageTitle = "Wiki Page Title");
 	}
 
+	@description = "This test covers LPS-89884. It ensures that a DL image can be added to a wiki page via URL."
+	@priority = "5"
+	test AddPageWithDMImageViaURL {
+		property test.name.skip.portal.instance = "CPWiki#AddPageWithDMImageViaURL";
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_2.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpg");
+
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		LexiconEntry.gotoAdd();
+
+		WikiEntry.addPageTitle(wikiPageTitle = "New Wiki Page Title");
+
+		ItemSelector.gotoItemSelectorViaCKEditor();
+
+		ItemSelector.addFromURL(
+			imageSourceURL = "http://localhost:8080/webdav/guest/document_library/Document_2.jpg",
+			navTab = "URL",
+			wikiAdmin = "true");
+
+		CKEditor.viewEntryContentImage(contentImageName = "Document_2.jpg");
+
+		PortletEntry.publish();
+
+		WikiNavigator.gotoCP(wikiPageTitle = "New Wiki Page Title");
+
+		AssertElementPresent(
+			key_contentImageName = "Document_2.jpg",
+			locator1 = "Wiki#CONTENT_IMAGE_NAME");
+	}
+
 	@priority = "5"
 	test CKEditorSmoke {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "CPWiki#CKEditorSmoke";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -150,12 +155,7 @@ definition {
 
 		PortletEntry.save();
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -177,13 +177,8 @@ definition {
 	}
 
 	@priority = "4"
-	test CompareVersionsWikiPage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+	test ComparePageVersions {
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -193,12 +188,7 @@ definition {
 			wikiPageContent = "Wiki Page Content",
 			wikiPageTitle = "Wiki Page Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -209,12 +199,7 @@ definition {
 			wikiPageContentEdit = "Wiki Page Content Edit",
 			wikiPageTitle = "Wiki Page Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -224,12 +209,7 @@ definition {
 			wikiPageContent = "Wiki Page Content Edit",
 			wikiPageTitle = "Wiki Page Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -244,15 +224,57 @@ definition {
 	}
 
 	@priority = "5"
-	test DeleteWikiNode {
-		property portal.acceptance = "true";
+	test DeleteFrontPage {
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiNavigator.gotoCP(wikiPageTitle = "FrontPage");
+
+		WikiPage.addFrontPageCP(
+			wikiFrontPageContent = "Wiki FrontPage Content",
+			wikiNodeName = "Main");
+
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiPage.moveToRecycleBinCP(
+			wikiNodeName = "Main",
+			wikiPageTitle = "FrontPage");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+			category = "Recycle Bin",
+			portlet = "Recycle Bin");
+
+		RecycleBin.deleteCP(
+			assetName = "FrontPage",
+			assetType = "Wiki Page");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Recycle Bin",
+			portlet = "Recycle Bin");
+
+		RecycleBin.viewDefaultCP(assetName = "FrontPage");
+
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiNavigator.gotoCP(wikiPageTitle = "FrontPage");
+
+		WikiPage.viewFrontPageDefaultCP(wikiPageTitle = "FrontPage");
+	}
+
+	@priority = "5"
+	test DeleteNode {
+		property portal.acceptance = "true";
+
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.addCP(wikiNodeName = "Wiki Node Name");
 
@@ -262,7 +284,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.viewCP(
@@ -270,27 +291,17 @@ definition {
 			assetType = "Wiki Node",
 			deleteUser = "Test Test");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.viewMainNode(wikiNodeName = "Main");
 	}
 
 	@priority = "5"
-	test EditWikiNode {
+	test EditNode {
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.addCP(wikiNodeName = "Wiki Node Name");
 
@@ -300,12 +311,7 @@ definition {
 			wikiNodeName = "Wiki Node Name",
 			wikiNodeNameEdit = "Wiki Node Name Edit");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNode.viewCP(
 			numberOfWikiPages = "0",
@@ -313,29 +319,25 @@ definition {
 	}
 
 	@priority = "5"
-	test ImportLarAddWikiPageType {
+	test ImportLarAndViewPages {
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		JSONGroup.addGroup(groupName = "Site Name");
 
-		Site.addBlankCP(siteName = "Site Name");
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Wiki");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		LAR.importPortlet(
+			initializeLiferayEvent = "true",
 			larFileName = "space-history-wiki.lar",
 			uploadFrom = "dependencies");
 
@@ -362,12 +364,7 @@ definition {
 
 	@priority = "5"
 	test MovePageUnderNewParentPage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -375,12 +372,7 @@ definition {
 			wikiPageContent = "Wiki Page Content 1",
 			wikiPageTitle = "Wiki Page 1");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -388,12 +380,7 @@ definition {
 			wikiPageContent = "Wiki Page Content 2",
 			wikiPageTitle = "Wiki Page 2");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -403,12 +390,7 @@ definition {
 
 		WikiPage.selectNewParent(wikiParentName = "Wiki Page 1");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -429,61 +411,9 @@ definition {
 		WikiEntry.viewPageContentBody(wikiPageContent = "Wiki Page Content 2");
 	}
 
-	@priority = "4"
-	test MoveToRecycleBinFrontPage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiNavigator.gotoCP(wikiPageTitle = "FrontPage");
-
-		WikiPage.addFrontPageCP(
-			wikiFrontPageContent = "Wiki FrontPage Content",
-			wikiNodeName = "Main");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiPage.moveToRecycleBinCP(
-			wikiFrontPageContent = "Wiki FrontPage Content",
-			wikiNodeName = "Main",
-			wikiPageTitle = "FrontPage");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiNavigator.gotoCP(wikiPageTitle = "FrontPage");
-
-		WikiPage.viewFrontPageDefaultCP(
-			wikiFrontPageContent = "Wiki FrontPage Content",
-			wikiNodeName = "Main");
-	}
-
 	@priority = "5"
 	test RestoreDeletedPage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -491,23 +421,13 @@ definition {
 			wikiPageContent = "Wiki Page Content 1",
 			wikiPageTitle = "Wiki Page 1 Original");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
 		WikiTable.deleteEntry(wikiPageTitle = "Wiki Page 1 Original");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -519,8 +439,12 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
+
+		RecycleBin.viewCP(
+			assetName = "Wiki Page 1 Original",
+			assetType = "Wiki Page",
+			deleteUser = "Test Test");
 
 		LexiconTable.clickEllipsisItem(
 			item = "Restore",
@@ -532,12 +456,7 @@ definition {
 
 		Button.clickSave();
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -554,13 +473,13 @@ definition {
 		WikiEntry.viewPageContentBody(wikiPageContent = "Wiki Page Content 1");
 	}
 
+	@ignore = "true"
 	@priority = "4"
-	test ViewWikiEntryRSS {
+	test ViewPageRSS {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -573,7 +492,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -583,9 +501,11 @@ definition {
 		WikiEntry.viewPageContentBody(wikiPageContent = "Wiki Page Content");
 
 		WikiPage.viewRSS(
+			site = "Guest",
 			version = "1.0",
 			wikiNodeName = "Main",
 			wikiPageContent = "Wiki Page Content",
 			wikiPageTitle = "Wiki Page RSS");
 	}
+
 }

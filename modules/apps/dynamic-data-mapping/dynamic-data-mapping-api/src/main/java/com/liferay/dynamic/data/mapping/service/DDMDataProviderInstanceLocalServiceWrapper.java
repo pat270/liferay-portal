@@ -14,9 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
+import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link DDMDataProviderInstanceLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMDataProviderInstanceLocalService
  * @generated
  */
-@ProviderType
 public class DDMDataProviderInstanceLocalServiceWrapper
 	implements DDMDataProviderInstanceLocalService,
 			   ServiceWrapper<DDMDataProviderInstanceLocalService> {
@@ -39,15 +39,14 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			addDataProviderInstance(
-				long userId, long groupId,
-				java.util.Map<java.util.Locale, String> nameMap,
-				java.util.Map<java.util.Locale, String> descriptionMap,
-				com.liferay.dynamic.data.mapping.storage.DDMFormValues
-					ddmFormValues,
-				String type,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public DDMDataProviderInstance addDataProviderInstance(
+			long userId, long groupId,
+			java.util.Map<java.util.Locale, String> nameMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			com.liferay.dynamic.data.mapping.storage.DDMFormValues
+				ddmFormValues,
+			String type,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.addDataProviderInstance(
@@ -58,14 +57,16 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	/**
 	 * Adds the ddm data provider instance to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMDataProviderInstanceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmDataProviderInstance the ddm data provider instance
 	 * @return the ddm data provider instance that was added
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		addDDMDataProviderInstance(
-			com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-				ddmDataProviderInstance) {
+	public DDMDataProviderInstance addDDMDataProviderInstance(
+		DDMDataProviderInstance ddmDataProviderInstance) {
 
 		return _ddmDataProviderInstanceLocalService.addDDMDataProviderInstance(
 			ddmDataProviderInstance);
@@ -78,17 +79,28 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @return the new ddm data provider instance
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		createDDMDataProviderInstance(long dataProviderInstanceId) {
+	public DDMDataProviderInstance createDDMDataProviderInstance(
+		long dataProviderInstanceId) {
 
 		return _ddmDataProviderInstanceLocalService.
 			createDDMDataProviderInstance(dataProviderInstanceId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ddmDataProviderInstanceLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
 	@Override
 	public void deleteDataProviderInstance(
-			com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-				dataProviderInstance)
+			DDMDataProviderInstance dataProviderInstance)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_ddmDataProviderInstanceLocalService.deleteDataProviderInstance(
@@ -114,14 +126,16 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	/**
 	 * Deletes the ddm data provider instance from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMDataProviderInstanceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmDataProviderInstance the ddm data provider instance
 	 * @return the ddm data provider instance that was removed
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		deleteDDMDataProviderInstance(
-			com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-				ddmDataProviderInstance) {
+	public DDMDataProviderInstance deleteDDMDataProviderInstance(
+		DDMDataProviderInstance ddmDataProviderInstance) {
 
 		return _ddmDataProviderInstanceLocalService.
 			deleteDDMDataProviderInstance(ddmDataProviderInstance);
@@ -130,13 +144,17 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	/**
 	 * Deletes the ddm data provider instance with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMDataProviderInstanceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dataProviderInstanceId the primary key of the ddm data provider instance
 	 * @return the ddm data provider instance that was removed
 	 * @throws PortalException if a ddm data provider instance with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			deleteDDMDataProviderInstance(long dataProviderInstanceId)
+	public DDMDataProviderInstance deleteDDMDataProviderInstance(
+			long dataProviderInstanceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.
@@ -153,6 +171,11 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 
 		return _ddmDataProviderInstanceLocalService.deletePersistedModel(
 			persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _ddmDataProviderInstanceLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -177,7 +200,7 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -198,7 +221,7 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -248,24 +271,24 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		fetchDataProviderInstance(long dataProviderInstanceId) {
+	public DDMDataProviderInstance fetchDataProviderInstance(
+		long dataProviderInstanceId) {
 
 		return _ddmDataProviderInstanceLocalService.fetchDataProviderInstance(
 			dataProviderInstanceId);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		fetchDataProviderInstanceByUuid(String uuid) {
+	public DDMDataProviderInstance fetchDataProviderInstanceByUuid(
+		String uuid) {
 
 		return _ddmDataProviderInstanceLocalService.
 			fetchDataProviderInstanceByUuid(uuid);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		fetchDDMDataProviderInstance(long dataProviderInstanceId) {
+	public DDMDataProviderInstance fetchDDMDataProviderInstance(
+		long dataProviderInstanceId) {
 
 		return _ddmDataProviderInstanceLocalService.
 			fetchDDMDataProviderInstance(dataProviderInstanceId);
@@ -279,9 +302,8 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @return the matching ddm data provider instance, or <code>null</code> if a matching ddm data provider instance could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		fetchDDMDataProviderInstanceByUuidAndGroupId(
-			String uuid, long groupId) {
+	public DDMDataProviderInstance fetchDDMDataProviderInstanceByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _ddmDataProviderInstanceLocalService.
 			fetchDDMDataProviderInstanceByUuidAndGroupId(uuid, groupId);
@@ -295,8 +317,8 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			getDataProviderInstance(long dataProviderInstanceId)
+	public DDMDataProviderInstance getDataProviderInstance(
+			long dataProviderInstanceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.getDataProviderInstance(
@@ -304,8 +326,7 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			getDataProviderInstanceByUuid(String uuid)
+	public DDMDataProviderInstance getDataProviderInstanceByUuid(String uuid)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.
@@ -313,31 +334,26 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-			getDataProviderInstances(long[] groupIds) {
+	public java.util.List<DDMDataProviderInstance> getDataProviderInstances(
+		long[] groupIds) {
 
 		return _ddmDataProviderInstanceLocalService.getDataProviderInstances(
 			groupIds);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-			getDataProviderInstances(long[] groupIds, int start, int end) {
+	public java.util.List<DDMDataProviderInstance> getDataProviderInstances(
+		long[] groupIds, int start, int end) {
 
 		return _ddmDataProviderInstanceLocalService.getDataProviderInstances(
 			groupIds, start, end);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-			getDataProviderInstances(
-				long[] groupIds, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.dynamic.data.mapping.model.
-						DDMDataProviderInstance> orderByComparator) {
+	public java.util.List<DDMDataProviderInstance> getDataProviderInstances(
+		long[] groupIds, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator
+			<DDMDataProviderInstance> orderByComparator) {
 
 		return _ddmDataProviderInstanceLocalService.getDataProviderInstances(
 			groupIds, start, end, orderByComparator);
@@ -351,8 +367,8 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @throws PortalException if a ddm data provider instance with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			getDDMDataProviderInstance(long dataProviderInstanceId)
+	public DDMDataProviderInstance getDDMDataProviderInstance(
+			long dataProviderInstanceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.getDDMDataProviderInstance(
@@ -368,9 +384,8 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @throws PortalException if a matching ddm data provider instance could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			getDDMDataProviderInstanceByUuidAndGroupId(
-				String uuid, long groupId)
+	public DDMDataProviderInstance getDDMDataProviderInstanceByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.
@@ -381,7 +396,7 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * Returns a range of all the ddm data provider instances.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMDataProviderInstanceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm data provider instances
@@ -389,9 +404,8 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @return the range of ddm data provider instances
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-			getDDMDataProviderInstances(int start, int end) {
+	public java.util.List<DDMDataProviderInstance> getDDMDataProviderInstances(
+		int start, int end) {
 
 		return _ddmDataProviderInstanceLocalService.getDDMDataProviderInstances(
 			start, end);
@@ -405,10 +419,9 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @return the matching ddm data provider instances, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-			getDDMDataProviderInstancesByUuidAndCompanyId(
-				String uuid, long companyId) {
+	public java.util.List<DDMDataProviderInstance>
+		getDDMDataProviderInstancesByUuidAndCompanyId(
+			String uuid, long companyId) {
 
 		return _ddmDataProviderInstanceLocalService.
 			getDDMDataProviderInstancesByUuidAndCompanyId(uuid, companyId);
@@ -425,13 +438,11 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	 * @return the range of matching ddm data provider instances, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-			getDDMDataProviderInstancesByUuidAndCompanyId(
-				String uuid, long companyId, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.dynamic.data.mapping.model.
-						DDMDataProviderInstance> orderByComparator) {
+	public java.util.List<DDMDataProviderInstance>
+		getDDMDataProviderInstancesByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<DDMDataProviderInstance> orderByComparator) {
 
 		return _ddmDataProviderInstanceLocalService.
 			getDDMDataProviderInstancesByUuidAndCompanyId(
@@ -477,6 +488,9 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 		return _ddmDataProviderInstanceLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -487,26 +501,21 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance> search(
-			long companyId, long[] groupIds, String keywords, int start,
-			int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-					orderByComparator) {
+	public java.util.List<DDMDataProviderInstance> search(
+		long companyId, long[] groupIds, String keywords, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator
+			<DDMDataProviderInstance> orderByComparator) {
 
 		return _ddmDataProviderInstanceLocalService.search(
 			companyId, groupIds, keywords, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance> search(
-			long companyId, long[] groupIds, String name, String description,
-			boolean andOperator, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance>
-					orderByComparator) {
+	public java.util.List<DDMDataProviderInstance> search(
+		long companyId, long[] groupIds, String name, String description,
+		boolean andOperator, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator
+			<DDMDataProviderInstance> orderByComparator) {
 
 		return _ddmDataProviderInstanceLocalService.search(
 			companyId, groupIds, name, description, andOperator, start, end,
@@ -529,14 +538,13 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-			updateDataProviderInstance(
-				long userId, long dataProviderInstanceId,
-				java.util.Map<java.util.Locale, String> nameMap,
-				java.util.Map<java.util.Locale, String> descriptionMap,
-				com.liferay.dynamic.data.mapping.storage.DDMFormValues
-					ddmFormValues,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public DDMDataProviderInstance updateDataProviderInstance(
+			long userId, long dataProviderInstanceId,
+			java.util.Map<java.util.Locale, String> nameMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			com.liferay.dynamic.data.mapping.storage.DDMFormValues
+				ddmFormValues,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmDataProviderInstanceLocalService.updateDataProviderInstance(
@@ -547,17 +555,39 @@ public class DDMDataProviderInstanceLocalServiceWrapper
 	/**
 	 * Updates the ddm data provider instance in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMDataProviderInstanceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmDataProviderInstance the ddm data provider instance
 	 * @return the ddm data provider instance that was updated
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-		updateDDMDataProviderInstance(
-			com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance
-				ddmDataProviderInstance) {
+	public DDMDataProviderInstance updateDDMDataProviderInstance(
+		DDMDataProviderInstance ddmDataProviderInstance) {
 
 		return _ddmDataProviderInstanceLocalService.
 			updateDDMDataProviderInstance(ddmDataProviderInstance);
+	}
+
+	@Override
+	public CTPersistence<DDMDataProviderInstance> getCTPersistence() {
+		return _ddmDataProviderInstanceLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<DDMDataProviderInstance> getModelClass() {
+		return _ddmDataProviderInstanceLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DDMDataProviderInstance>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _ddmDataProviderInstanceLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

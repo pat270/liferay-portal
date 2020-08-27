@@ -156,8 +156,9 @@ public class SplitPackagesTest {
 			}
 
 			Assert.assertFalse(
-				"Detected split packages " + duplicateExportPackage + " in " +
-					previousBundle + " and " + currentBundle,
+				StringBundler.concat(
+					"Detected split packages ", duplicateExportPackage, " in ",
+					previousBundle, " and ", currentBundle),
 				hasSplitPackages);
 		}
 	}
@@ -165,8 +166,8 @@ public class SplitPackagesTest {
 	private class ExportPackage {
 
 		@Override
-		public boolean equals(Object obj) {
-			ExportPackage exportPackage = (ExportPackage)obj;
+		public boolean equals(Object object) {
+			ExportPackage exportPackage = (ExportPackage)object;
 
 			if (Objects.equals(_name, exportPackage._name) &&
 				Objects.equals(_version, exportPackage._version)) {

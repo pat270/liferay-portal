@@ -27,10 +27,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.elasticsearch.ResourceAlreadyExistsException;
-import org.elasticsearch.action.admin.indices.create.CreateIndexAction;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import org.osgi.service.component.annotations.Component;
@@ -139,8 +140,12 @@ public class IndexSynchronizerImpl implements IndexSynchronizer {
 
 		Client client = _elasticsearchClientResolver.getClient();
 
+		AdminClient adminClient = client.admin();
+
+		IndicesAdminClient indicesAdminClient = adminClient.indices();
+
 		CreateIndexRequestBuilder createIndexRequestBuilder =
-			CreateIndexAction.INSTANCE.newRequestBuilder(client);
+			indicesAdminClient.prepareCreate(null);
 
 		createIndexRequestBuilderConsumer.accept(createIndexRequestBuilder);
 
@@ -149,13 +154,17 @@ public class IndexSynchronizerImpl implements IndexSynchronizer {
 				createIndexRequestBuilder.get();
 
 			LogUtil.logActionResponse(_log, createIndexResponse);
+
+			if (_log.isInfoEnabled()) {
+				_log.info("Index created: " + createIndexResponse.index());
+			}
 		}
-		catch (ResourceAlreadyExistsException raee) {
+		catch (ResourceAlreadyExistsException resourceAlreadyExistsException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Skipping index creation because it already exists: " +
-						raee.getIndex(),
-					raee);
+						resourceAlreadyExistsException.getIndex(),
+					resourceAlreadyExistsException);
 			}
 		}
 	}

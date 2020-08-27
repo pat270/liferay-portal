@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.io;
 
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.portal.kernel.io.constants.SerializationConstants;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -190,9 +191,8 @@ public class Serializer {
 		else if (serializable instanceof Class) {
 			Class<?> clazz = (Class<?>)serializable;
 
-			ClassLoader classLoader = clazz.getClassLoader();
-
-			String contextName = ClassLoaderPool.getContextName(classLoader);
+			String contextName = ClassLoaderPool.getContextName(
+				clazz.getClassLoader());
 
 			writeByte(SerializationConstants.TC_CLASS);
 			writeString(contextName);
@@ -242,10 +242,10 @@ public class Serializer {
 
 			objectOutputStream.flush();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
 				"Unable to write ordinary serializable object " + serializable,
-				ioe);
+				ioException);
 		}
 	}
 
@@ -286,7 +286,7 @@ public class Serializer {
 			}
 		}
 		else {
-			byte[] buffer = getBuffer(length * 2 + 5);
+			byte[] buffer = getBuffer((length * 2) + 5);
 
 			BigEndianCodec.putBoolean(buffer, index++, asciiCode);
 
@@ -513,9 +513,7 @@ public class Serializer {
 
 		@Override
 		public void write(byte[] bytes, int offset, int length) {
-			byte[] buffer = getBuffer(length);
-
-			System.arraycopy(bytes, offset, buffer, index, length);
+			System.arraycopy(bytes, offset, getBuffer(length), index, length);
 
 			index += length;
 		}

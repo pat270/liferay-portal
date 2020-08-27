@@ -105,7 +105,7 @@ public class LiferayVideoConverter extends LiferayConverter {
 				tempFile.renameTo(videoFile);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn("Unable to move MOOV atom to front of MP4 file");
 			}
@@ -180,7 +180,7 @@ public class LiferayVideoConverter extends LiferayConverter {
 		}
 
 		boolean keyPacketFound = false;
-		int nonKeyAfterKeyCount = 0;
+		int nonkeyAfterKeyCount = 0;
 		boolean onlyDecodeKeyPackets = false;
 		int previousPacketSize = -1;
 
@@ -194,8 +194,6 @@ public class LiferayVideoConverter extends LiferayConverter {
 
 			int streamIndex = inputIPacket.getStreamIndex();
 
-			IStreamCoder inputIStreamCoder = inputIStreamCoders[streamIndex];
-
 			IStreamCoder outputIStreamCoder = outputIStreamCoders[streamIndex];
 
 			if (outputIStreamCoder == null) {
@@ -205,6 +203,8 @@ public class LiferayVideoConverter extends LiferayConverter {
 			IStream iStream = _inputIContainer.getStream(streamIndex);
 
 			long timeStampOffset = getStreamTimeStampOffset(iStream);
+
+			IStreamCoder inputIStreamCoder = inputIStreamCoders[streamIndex];
 
 			if (inputIStreamCoder.getCodecType() ==
 					ICodec.Type.CODEC_TYPE_AUDIO) {
@@ -222,12 +222,12 @@ public class LiferayVideoConverter extends LiferayConverter {
 
 				keyPacketFound = isKeyPacketFound(inputIPacket, keyPacketFound);
 
-				nonKeyAfterKeyCount = countNonKeyAfterKey(
-					inputIPacket, keyPacketFound, nonKeyAfterKeyCount);
+				nonkeyAfterKeyCount = countNonKeyAfterKey(
+					inputIPacket, keyPacketFound, nonkeyAfterKeyCount);
 
 				if (isStartDecoding(
 						inputIPacket, inputIStreamCoder, keyPacketFound,
-						nonKeyAfterKeyCount, onlyDecodeKeyPackets)) {
+						nonkeyAfterKeyCount, onlyDecodeKeyPackets)) {
 
 					int value = decodeVideo(
 						iVideoResamplers[streamIndex],

@@ -1,7 +1,20 @@
-import State, {Config} from 'metal-state';
-import {toElement} from 'metal-dom';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
 import {isInputNode} from 'map-common/js/validators.es';
+import {toElement} from 'metal-dom';
+import State, {Config} from 'metal-state';
 
 /**
  * GoogleMapsSearch
@@ -28,11 +41,9 @@ class GoogleMapsSearch extends State {
 	 * @review
 	 */
 	destructor() {
-		this._eventHandlers.forEach(
-			item => {
-				google.maps.event.removeListener(item);
-			}
-		);
+		this._eventHandlers.forEach((item) => {
+			google.maps.event.removeListener(item);
+		});
 	}
 
 	/**
@@ -48,7 +59,7 @@ class GoogleMapsSearch extends State {
 				this._autocomplete,
 				'place_changed',
 				this._handlePlaceChanged
-			)
+			),
 		];
 	}
 
@@ -64,18 +75,15 @@ class GoogleMapsSearch extends State {
 		if (place && typeof place === 'object' && place.geometry) {
 			const geolocation = place.geometry.location;
 
-			this.emit(
-				'search',
-				{
-					position: {
-						address: place.formatted_address,
-						location: {
-							lat: geolocation.lat(),
-							lng: geolocation.lng()
-						}
-					}
-				}
-			);
+			this.emit('search', {
+				position: {
+					address: place.formatted_address,
+					location: {
+						lat: geolocation.lat(),
+						lng: geolocation.lng(),
+					},
+				},
+			});
 		}
 	}
 }
@@ -93,7 +101,7 @@ GoogleMapsSearch.STATE = {
 	 * @review
 	 * @type {HTMLInputElement}
 	 */
-	inputNode: Config.validator(isInputNode).value(null)
+	inputNode: Config.validator(isInputNode).value(null),
 };
 
 export default GoogleMapsSearch;

@@ -242,16 +242,12 @@
 		</init-param>
 	</filter>
 	<filter>
-		<filter-name>Password Modified Filter</filter-name>
-		<filter-class>com.liferay.portal.servlet.filters.password.modified.PasswordModifiedFilter</filter-class>
+		<filter-name>Lockout Filter</filter-name>
+		<filter-class>com.liferay.portal.servlet.filters.lockout.LockoutFilter</filter-class>
 	</filter>
 	<filter>
-		<filter-name>Remoting Servlet Filter</filter-name>
-		<filter-class>com.liferay.portal.servlet.filters.authverifier.AuthVerifierFilter</filter-class>
-		<init-param>
-			<param-name>portal_property_prefix</param-name>
-			<param-value>spring.remoting.servlet.</param-value>
-		</init-param>
+		<filter-name>Password Modified Filter</filter-name>
+		<filter-class>com.liferay.portal.servlet.filters.password.modified.PasswordModifiedFilter</filter-class>
 	</filter>
 	<filter>
 		<filter-name>Secure Friendly URL Servlet Filter</filter-name>
@@ -354,10 +350,6 @@
 		<filter-class>com.liferay.portal.servlet.filters.unsyncprintwriterpool.UnsyncPrintWriterPoolFilter</filter-class>
 	</filter>
 	<filter>
-		<filter-name>Upload Servlet Request Filter</filter-name>
-		<filter-class>com.liferay.portal.servlet.filters.uploadservletrequest.UploadServletRequestFilter</filter-class>
-	</filter>
-	<filter>
 		<filter-name>URL Rewrite Filter</filter-name>
 		<filter-class>com.liferay.portal.servlet.filters.urlrewrite.UrlRewriteFilter</filter-class>
 		<init-param>
@@ -443,11 +435,6 @@
 		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
-		<filter-name>Thread Local Filter</filter-name>
-		<url-pattern>/c/portal/resiliency</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
 		<filter-name>Char Buffer Pool Filter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
@@ -506,6 +493,12 @@
 	<filter-mapping>
 		<filter-name>SSO Open SSO Filter</filter-name>
 		<url-pattern>/c/portal/logout</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>Auto Login Filter</filter-name>
+		<url-pattern>/c/document_library/get_file/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
@@ -782,6 +775,12 @@
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
+		<filter-name>Lockout Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
 		<filter-name>Password Modified Filter</filter-name>
 		<url-pattern>/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
@@ -998,13 +997,6 @@
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
-		<filter-name>Remoting Servlet Filter</filter-name>
-		<url-pattern>/api/spring/*</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>INCLUDE</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
 		<filter-name>Tunnel Servlet Filter</filter-name>
 		<url-pattern>/api/liferay/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
@@ -1035,12 +1027,6 @@
 		<url-pattern>/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>INCLUDE</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>Upload Servlet Request Filter</filter-name>
-		<url-pattern>/*</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 </web-app>

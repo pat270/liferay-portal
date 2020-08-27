@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.test.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManagerUtil;
 import com.liferay.portal.kernel.model.BaseModel;
@@ -41,17 +42,18 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.test.randomizerbumpers.BBCodeRandomizerBumper;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -85,13 +87,14 @@ public abstract class BaseSearchTestCase {
 		BaseModel<?> parentBaseModel = getParentBaseModel(
 			group, serviceContext);
 
-		Map<Locale, String> keywordsMap = new HashMap<>();
-
-		keywordsMap.put(LocaleUtil.getDefault(), "entity title");
-		keywordsMap.put(LocaleUtil.HUNGARY, "entitas neve");
-
 		baseModel = addBaseModelWithWorkflow(
-			parentBaseModel, true, keywordsMap, serviceContext);
+			parentBaseModel, true,
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), "entity title"
+			).put(
+				LocaleUtil.HUNGARY, "entitas neve"
+			).build(),
+			serviceContext);
 
 		assertBaseModelsCount(initialBaseModelsSearchCount + 1, searchContext);
 
@@ -196,6 +199,9 @@ public abstract class BaseSearchTestCase {
 	public void testSearchWithinDDMStructure() throws Exception {
 		searchWithinDDMStructure();
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void addAttachment(ClassedModel classedModel) throws Exception {
 	}
@@ -625,9 +631,9 @@ public abstract class BaseSearchTestCase {
 		String keyword6 = getSearchKeywords() + 6;
 		String keyword7 = getSearchKeywords() + 7;
 
-		String combinedKeywords =
-			keyword1 + " " + keyword2 + " " + keyword3 + " " + keyword4 + " " +
-				keyword5 + " " + keyword6 + " " + keyword7;
+		String combinedKeywords = StringBundler.concat(
+			keyword1, " ", keyword2, " ", keyword3, " ", keyword4, " ",
+			keyword5, " ", keyword6, " ", keyword7);
 
 		searchContext.setKeywords(combinedKeywords);
 
@@ -646,21 +652,24 @@ public abstract class BaseSearchTestCase {
 		searchContext = SearchContextTestUtil.getSearchContext(
 			group.getGroupId());
 
-		searchContext.setKeywords("\"" + keyword1 + " " + keyword2 + "\"");
+		searchContext.setKeywords(
+			StringBundler.concat("\"", keyword1, " ", keyword2, "\""));
 
 		assertBaseModelsCount(initialBaseModelsSearchCount + 1, searchContext);
 
 		searchContext = SearchContextTestUtil.getSearchContext(
 			group.getGroupId());
 
-		searchContext.setKeywords("\"" + keyword2 + " " + keyword1 + "\"");
+		searchContext.setKeywords(
+			StringBundler.concat("\"", keyword2, " ", keyword1, "\""));
 
 		assertBaseModelsCount(initialBaseModelsSearchCount, searchContext);
 
 		searchContext = SearchContextTestUtil.getSearchContext(
 			group.getGroupId());
 
-		searchContext.setKeywords("\"" + keyword2 + " " + keyword4 + "\"");
+		searchContext.setKeywords(
+			StringBundler.concat("\"", keyword2, " ", keyword4, "\""));
 
 		assertBaseModelsCount(initialBaseModelsSearchCount, searchContext);
 
@@ -668,7 +677,8 @@ public abstract class BaseSearchTestCase {
 			group.getGroupId());
 
 		searchContext.setKeywords(
-			keyword1 + " \"" + keyword2 + " " + keyword3 + "\"");
+			StringBundler.concat(
+				keyword1, " \"", keyword2, " ", keyword3, "\""));
 
 		assertBaseModelsCount(initialBaseModelsSearchCount + 1, searchContext);
 
@@ -676,14 +686,16 @@ public abstract class BaseSearchTestCase {
 			group.getGroupId());
 
 		searchContext.setKeywords(
-			RandomTestUtil.randomString() + " \"" + keyword2 + " " + keyword3 +
-				"\" " + keyword5);
+			StringBundler.concat(
+				RandomTestUtil.randomString(), " \"", keyword2, " ", keyword3,
+				"\" ", keyword5));
 
 		assertBaseModelsCount(initialBaseModelsSearchCount + 1, searchContext);
 
 		searchContext.setKeywords(
-			RandomTestUtil.randomString() + " \"" + keyword2 + " " + keyword5 +
-				"\" " + RandomTestUtil.randomString());
+			StringBundler.concat(
+				RandomTestUtil.randomString(), " \"", keyword2, " ", keyword5,
+				"\" ", RandomTestUtil.randomString()));
 
 		assertBaseModelsCount(initialBaseModelsSearchCount, searchContext);
 	}

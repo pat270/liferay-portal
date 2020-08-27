@@ -24,30 +24,14 @@ import java.util.Set;
  */
 public class PortalCacheConfiguration {
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #PORTAL_CACHE_NAME_DEFAULT}
-	 */
-	@Deprecated
-	public static final String DEFAULT_PORTAL_CACHE_NAME = "default";
-
 	public static final String PORTAL_CACHE_LISTENER_PROPERTIES_KEY_SCOPE =
 		"PORTAL_CACHE_LISTENER_PROPERTIES_KEY_SCOPE";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #PORTAL_CACHE_LISTENER_PROPERTIES_KEY_SCOPE}
-	 */
-	@Deprecated
-	public static final String PORTAL_CACHE_LISTENER_SCOPE =
-		"PORTAL_CACHE_LISTENER_SCOPE";
 
 	public static final String PORTAL_CACHE_NAME_DEFAULT = "default";
 
 	public PortalCacheConfiguration(
 		String portalCacheName,
-		Set<Properties> portalCacheListenerPropertiesSet,
-		Properties portalCacheBootstrapLoaderProperties) {
+		Set<Properties> portalCacheListenerPropertiesSet) {
 
 		if (portalCacheName == null) {
 			throw new NullPointerException("Portal cache name is null");
@@ -62,13 +46,6 @@ public class PortalCacheConfiguration {
 			_portalCacheListenerPropertiesSet = new HashSet<>(
 				portalCacheListenerPropertiesSet);
 		}
-
-		_portalCacheBootstrapLoaderProperties =
-			portalCacheBootstrapLoaderProperties;
-	}
-
-	public Properties getPortalCacheBootstrapLoaderProperties() {
-		return _portalCacheBootstrapLoaderProperties;
 	}
 
 	public Set<Properties> getPortalCacheListenerPropertiesSet() {
@@ -83,18 +60,9 @@ public class PortalCacheConfiguration {
 		String portalCacheName) {
 
 		return new PortalCacheConfiguration(
-			portalCacheName, _portalCacheListenerPropertiesSet,
-			_portalCacheBootstrapLoaderProperties);
+			portalCacheName, _portalCacheListenerPropertiesSet);
 	}
 
-	public void setPortalCacheBootstrapLoaderProperties(
-		Properties portalCacheBootstrapLoaderProperties) {
-
-		_portalCacheBootstrapLoaderProperties =
-			portalCacheBootstrapLoaderProperties;
-	}
-
-	private Properties _portalCacheBootstrapLoaderProperties;
 	private final Set<Properties> _portalCacheListenerPropertiesSet;
 	private final String _portalCacheName;
 

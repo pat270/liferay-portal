@@ -60,7 +60,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class RoleServiceBaseImpl
-	extends BaseServiceImpl implements RoleService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, RoleService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -1018,8 +1018,8 @@ public abstract class RoleServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

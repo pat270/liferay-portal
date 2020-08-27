@@ -16,8 +16,6 @@ package com.liferay.site.navigation.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SiteNavigationMenuService}.
  *
@@ -25,15 +23,25 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SiteNavigationMenuService
  * @generated
  */
-@ProviderType
 public class SiteNavigationMenuServiceWrapper
-	implements SiteNavigationMenuService,
-			   ServiceWrapper<SiteNavigationMenuService> {
+	implements ServiceWrapper<SiteNavigationMenuService>,
+			   SiteNavigationMenuService {
 
 	public SiteNavigationMenuServiceWrapper(
 		SiteNavigationMenuService siteNavigationMenuService) {
 
 		_siteNavigationMenuService = siteNavigationMenuService;
+	}
+
+	@Override
+	public com.liferay.site.navigation.model.SiteNavigationMenu
+			addSiteNavigationMenu(
+				long groupId, String name, int type, boolean auto,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _siteNavigationMenuService.addSiteNavigationMenu(
+			groupId, name, type, auto, serviceContext);
 	}
 
 	@Override
@@ -98,7 +106,8 @@ public class SiteNavigationMenuServiceWrapper
 		getSiteNavigationMenus(
 			long groupId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				orderByComparator) {
+				<com.liferay.site.navigation.model.SiteNavigationMenu>
+					orderByComparator) {
 
 		return _siteNavigationMenuService.getSiteNavigationMenus(
 			groupId, start, end, orderByComparator);
@@ -109,10 +118,35 @@ public class SiteNavigationMenuServiceWrapper
 		getSiteNavigationMenus(
 			long groupId, String keywords, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				orderByComparator) {
+				<com.liferay.site.navigation.model.SiteNavigationMenu>
+					orderByComparator) {
 
 		return _siteNavigationMenuService.getSiteNavigationMenus(
 			groupId, keywords, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.site.navigation.model.SiteNavigationMenu>
+		getSiteNavigationMenus(
+			long[] groupIds, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.site.navigation.model.SiteNavigationMenu>
+					orderByComparator) {
+
+		return _siteNavigationMenuService.getSiteNavigationMenus(
+			groupIds, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.site.navigation.model.SiteNavigationMenu>
+		getSiteNavigationMenus(
+			long[] groupIds, String keywords, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.site.navigation.model.SiteNavigationMenu>
+					orderByComparator) {
+
+		return _siteNavigationMenuService.getSiteNavigationMenus(
+			groupIds, keywords, start, end, orderByComparator);
 	}
 
 	@Override
@@ -124,6 +158,17 @@ public class SiteNavigationMenuServiceWrapper
 	public int getSiteNavigationMenusCount(long groupId, String keywords) {
 		return _siteNavigationMenuService.getSiteNavigationMenusCount(
 			groupId, keywords);
+	}
+
+	@Override
+	public int getSiteNavigationMenusCount(long[] groupIds) {
+		return _siteNavigationMenuService.getSiteNavigationMenusCount(groupIds);
+	}
+
+	@Override
+	public int getSiteNavigationMenusCount(long[] groupIds, String keywords) {
+		return _siteNavigationMenuService.getSiteNavigationMenusCount(
+			groupIds, keywords);
 	}
 
 	@Override

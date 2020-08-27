@@ -126,11 +126,11 @@ public class AlloyControllerInvokerManager {
 
 			_alloyControllerInvokers.put(controller, alloyControllerInvoker);
 		}
-		catch (NoClassNecessaryException ncne) {
+		catch (NoClassNecessaryException noClassNecessaryException) {
 			return;
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 
 		for (Method method : alloyControllerInvokerClass.getDeclaredMethods()) {
@@ -171,9 +171,6 @@ public class AlloyControllerInvokerManager {
 		String alloyControllerInvokerClassName =
 			getAlloyControllerInvokerClassName(controllerClass);
 
-		Class<? extends AlloyControllerInvoker> alloyControllerInvokerClass =
-			null;
-
 		synchronized (classLoader) {
 			try {
 				Method defineClassMethod = ReflectionUtil.getDeclaredMethod(
@@ -203,8 +200,8 @@ public class AlloyControllerInvokerManager {
 
 								return uri.toURL();
 							}
-							catch (Exception e) {
-								throw new RuntimeException(e);
+							catch (Exception exception) {
+								throw new RuntimeException(exception);
 							}
 						}
 
@@ -213,19 +210,16 @@ public class AlloyControllerInvokerManager {
 
 				};
 
-				alloyControllerInvokerClass =
-					(Class<? extends AlloyControllerInvoker>)
-						defineClassMethod.invoke(
-							customClassLoader, alloyControllerInvokerClassName,
-							classData, 0, classData.length);
-
-				return alloyControllerInvokerClass;
+				return (Class<? extends AlloyControllerInvoker>)
+					defineClassMethod.invoke(
+						customClassLoader, alloyControllerInvokerClassName,
+						classData, 0, classData.length);
 			}
-			catch (NoClassNecessaryException ncne) {
-				throw ncne;
+			catch (NoClassNecessaryException noClassNecessaryException) {
+				throw noClassNecessaryException;
 			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
 			}
 		}
 	}
@@ -317,7 +311,7 @@ public class AlloyControllerInvokerManager {
 			methodVisitor.visitLdcInsn(jsonWebServiceMethod.lifecycle());
 
 			methodVisitor.visitIntInsn(
-				Opcodes.BIPUSH, parameterTypes.length * 2 + 2);
+				Opcodes.BIPUSH, (parameterTypes.length * 2) + 2);
 			methodVisitor.visitTypeInsn(
 				Opcodes.ANEWARRAY, getClassBinaryName(Object.class.getName()));
 
@@ -340,7 +334,7 @@ public class AlloyControllerInvokerManager {
 				methodVisitor.visitInsn(Opcodes.AASTORE);
 
 				methodVisitor.visitInsn(Opcodes.DUP);
-				methodVisitor.visitIntInsn(Opcodes.BIPUSH, (i + 1) * 2 + 1);
+				methodVisitor.visitIntInsn(Opcodes.BIPUSH, ((i + 1) * 2) + 1);
 				methodVisitor.visitVarInsn(Opcodes.ALOAD, i + 1);
 				methodVisitor.visitInsn(Opcodes.AASTORE);
 			}
@@ -383,8 +377,8 @@ public class AlloyControllerInvokerManager {
 		if (enclosingClass != null) {
 			prefix = enclosingClass.getName();
 
-			String name = StringUtil.replace(
-				enclosingClass.getSimpleName(), "005f", StringPool.BLANK);
+			String name = StringUtil.removeSubstring(
+				enclosingClass.getSimpleName(), "005f");
 
 			int trimIndex = name.indexOf("_controller");
 
@@ -430,7 +424,7 @@ public class AlloyControllerInvokerManager {
 	}
 
 	protected String getClassBinaryName(String className) {
-		return className.replace('.', '/');
+		return StringUtil.replace(className, '.', '/');
 	}
 
 	protected class NoClassNecessaryException extends Exception {

@@ -41,7 +41,7 @@
 </tr>
 <tr>
 	<td>PAGE_TYPE_PANEL_CHECKBOX_INPUT</td>
-	<td>//span[contains(.,'${key_componentOrPortletName}')]/../span[contains(@class,'tree-node-checkbox')]/input</td>
+	<td>//input[@type="hidden"][contains(@id,'panelSelectedPortlets')][contains(@value,'${key_componentOrPortletName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -59,6 +59,52 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--SEO-->
+<tr>
+	<td>PREVIEW_DESCRIPTION</td>
+	<td>//div[contains(@class,'preview-seo-description')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_IMAGE</td>
+	<td>//div[contains(@class,'preview-seo-image')]//img[contains(@src,'${key_imageName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_SERP</td>
+	<td>//div[contains(@class,'preview-seo-serp')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_TITLE</td>
+	<td>//div[contains(@class,'preview-seo-title text-truncate')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_TITLE_ELLIPSES</td>
+	<td>portal/screenshots/page/preview_title_ellipses.png</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_TITLE_ELLIPSES_OG</td>
+	<td>portal/screenshots/page/preview_title_ellipses_og.png</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_URL</td>
+	<td>//div[contains(@class,'preview-seo-url text-truncate')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_URL_ELLIPSES</td>
+	<td>portal/screenshots/page/preview_url_ellipses.png</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_URL_ELLIPSES_OG</td>
+	<td>portal/screenshots/page/preview_url_ellipses_og.png</td>
+	<td></td>
+</tr>
 <!--LOOK_AND_FEEL-->
 <tr>
 	<td>CHANGE_CURRENT_THEME_BUTTON</td>
@@ -66,8 +112,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MASTER_LAYOUT_NAME</td>
+	<td>//div[@class='sheet-section']//span[contains(@id,'masterLayoutName')][contains(.,'${key_masterLayoutName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REGULAR_UNIQUE_LOOK_AND_FEEL</td>
 	<td>//input[contains(@id,'regularUniqueLookAndFeel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SECTION_TITLE</td>
+	<td>//div[@class='sheet-section']/h3[contains(.,'${key_sectionTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>STYLE_BOOK_NAME</td>
+	<td>//div[@class='sheet-section']//span[contains(@id,'styleBookName')][contains(.,'${key_styleBookName}')]</td>
 	<td></td>
 </tr>
 <tr>

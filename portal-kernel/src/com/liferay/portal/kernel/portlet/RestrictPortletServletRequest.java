@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.servlet.RequestDispatcherAttributeNames;
 import com.liferay.portal.kernel.util.Mergeable;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -29,7 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -109,23 +107,7 @@ public class RestrictPortletServletRequest
 	}
 
 	public void mergeSharedAttributes() {
-		ServletRequest servletRequest = getRequest();
-
-		Lock lock = (Lock)servletRequest.getAttribute(
-			WebKeys.PARALLEL_RENDERING_MERGE_LOCK);
-
-		if (lock != null) {
-			lock.lock();
-		}
-
-		try {
-			doMergeSharedAttributes(servletRequest);
-		}
-		finally {
-			if (lock != null) {
-				lock.unlock();
-			}
-		}
+		doMergeSharedAttributes(getRequest());
 	}
 
 	@Override
@@ -155,9 +137,8 @@ public class RestrictPortletServletRequest
 	protected void doMergeSharedAttributes(ServletRequest servletRequest) {
 		for (Map.Entry<String, Object> entry : _attributes.entrySet()) {
 			String name = entry.getKey();
-			Object value = entry.getValue();
 
-			doMergeSharedAttributes(servletRequest, name, value);
+			doMergeSharedAttributes(servletRequest, name, entry.getValue());
 		}
 	}
 

@@ -14,10 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action;
 
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DDMFormRuleAction;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.AutoFillDDMFormRuleActionSerializer;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.DDMFormRuleActionSerializer;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.DDMFormRuleSerializerContext;
+import com.liferay.dynamic.data.mapping.spi.converter.model.SPIDDMFormRuleAction;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleActionSerializer;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.portal.kernel.json.JSON;
 
@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * @author Rafael Praxedes
  */
-public class AutoFillDDMFormRuleAction implements DDMFormRuleAction {
+public class AutoFillDDMFormRuleAction implements SPIDDMFormRuleAction {
 
 	public AutoFillDDMFormRuleAction() {
 	}
@@ -43,17 +43,17 @@ public class AutoFillDDMFormRuleAction implements DDMFormRuleAction {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AutoFillDDMFormRuleAction)) {
+		if (!(object instanceof AutoFillDDMFormRuleAction)) {
 			return false;
 		}
 
 		AutoFillDDMFormRuleAction autoFillDDMFormRuleAction =
-			(AutoFillDDMFormRuleAction)obj;
+			(AutoFillDDMFormRuleAction)object;
 
 		if (Objects.equals(
 				_ddmDataProviderInstanceUUID,
@@ -100,13 +100,13 @@ public class AutoFillDDMFormRuleAction implements DDMFormRuleAction {
 
 	@Override
 	public String serialize(
-		DDMFormRuleSerializerContext ddmFormRuleSerializerContext) {
+		SPIDDMFormRuleSerializerContext spiDDMFormRuleSerializerContext) {
 
-		DDMFormRuleActionSerializer ddmFormRuleActionSerializer =
+		SPIDDMFormRuleActionSerializer spiDDMFormRuleActionSerializer =
 			new AutoFillDDMFormRuleActionSerializer(this);
 
-		return ddmFormRuleActionSerializer.serialize(
-			ddmFormRuleSerializerContext);
+		return spiDDMFormRuleActionSerializer.serialize(
+			spiDDMFormRuleSerializerContext);
 	}
 
 	public void setDDMDataProviderInstanceUUID(

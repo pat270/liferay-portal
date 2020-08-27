@@ -14,7 +14,8 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
-import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.scheduler.TriggerFactory;
 import com.liferay.portal.kernel.scheduler.TriggerFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.workflow.kaleo.definition.DelayDuration;
 import com.liferay.portal.workflow.kaleo.definition.DurationScale;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
@@ -50,9 +50,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Marcellus Tavares
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoTimerInstanceToken",
+	service = AopService.class
+)
 public class KaleoTimerInstanceTokenLocalServiceImpl
 	extends KaleoTimerInstanceTokenLocalServiceBaseImpl {
 
@@ -78,7 +85,7 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 			kaleoTimerInstanceTokenPersistence.create(
 				kaleoTimerInstanceTokenId);
 
-		long groupId = StagingUtil.getLiveGroupId(
+		long groupId = _staging.getLiveGroupId(
 			serviceContext.getScopeGroupId());
 
 		kaleoTimerInstanceToken.setGroupId(groupId);
@@ -91,6 +98,8 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 		kaleoTimerInstanceToken.setKaleoClassName(
 			kaleoTimer.getKaleoClassName());
 		kaleoTimerInstanceToken.setKaleoClassPK(kaleoTimer.getKaleoClassPK());
+		kaleoTimerInstanceToken.setKaleoDefinitionId(
+			kaleoInstanceToken.getKaleoDefinitionId());
 		kaleoTimerInstanceToken.setKaleoDefinitionVersionId(
 			kaleoInstanceToken.getKaleoDefinitionVersionId());
 		kaleoTimerInstanceToken.setKaleoInstanceId(
@@ -105,7 +114,8 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 		kaleoTimerInstanceToken.setWorkflowContext(
 			WorkflowContextUtil.convert(workflowContext));
 
-		kaleoTimerInstanceTokenPersistence.update(kaleoTimerInstanceToken);
+		kaleoTimerInstanceToken = kaleoTimerInstanceTokenPersistence.update(
+			kaleoTimerInstanceToken);
 
 		scheduleTimer(kaleoTimerInstanceToken, kaleoTimer);
 
@@ -161,7 +171,8 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 		kaleoTimerInstanceToken.setCompleted(true);
 		kaleoTimerInstanceToken.setCompletionDate(new Date());
 
-		kaleoTimerInstanceTokenPersistence.update(kaleoTimerInstanceToken);
+		kaleoTimerInstanceToken = kaleoTimerInstanceTokenPersistence.update(
+			kaleoTimerInstanceToken);
 
 		deleteScheduledTimer(kaleoTimerInstanceToken);
 
@@ -225,10 +236,11 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 			try {
 				deleteScheduledTimer(kaleoTimerInstanceToken);
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to unschedule " + kaleoTimerInstanceToken, pe);
+						"Unable to unschedule " + kaleoTimerInstanceToken,
+						portalException);
 				}
 			}
 
@@ -290,8 +302,7 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 
 		DelayDuration delayDuration = new DelayDuration(
 			kaleoTimer.getDuration(),
-			DurationScale.valueOf(
-				StringUtil.toUpperCase(kaleoTimer.getScale())));
+			DurationScale.parse(kaleoTimer.getScale()));
 
 		Date dueDate = _dueDateCalculator.getDueDate(new Date(), delayDuration);
 
@@ -301,8 +312,7 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 		if (kaleoTimer.isRecurring()) {
 			DelayDuration recurrenceDelayDuration = new DelayDuration(
 				kaleoTimer.getRecurrenceDuration(),
-				DurationScale.valueOf(
-					StringUtil.toUpperCase(kaleoTimer.getRecurrenceScale())));
+				DurationScale.parse(kaleoTimer.getRecurrenceScale()));
 
 			interval = (int)recurrenceDelayDuration.getDuration();
 
@@ -318,6 +328,7 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 
 		Message message = new Message();
 
+		message.put("companyId", kaleoTimerInstanceToken.getCompanyId());
 		message.put(
 			"kaleoTimerInstanceTokenId",
 			kaleoTimerInstanceToken.getKaleoTimerInstanceTokenId());
@@ -330,13 +341,16 @@ public class KaleoTimerInstanceTokenLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		KaleoTimerInstanceTokenLocalServiceImpl.class);
 
-	@ServiceReference(type = DueDateCalculator.class)
+	@Reference
 	private DueDateCalculator _dueDateCalculator;
 
-	@ServiceReference(type = SchedulerEngineHelper.class)
+	@Reference
 	private SchedulerEngineHelper _schedulerEngineHelper;
 
-	@ServiceReference(type = TriggerFactory.class)
+	@Reference
+	private Staging _staging;
+
+	@Reference
 	private TriggerFactory _triggerFactory;
 
 }

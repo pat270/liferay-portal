@@ -14,20 +14,17 @@
 
 package com.liferay.digital.signature.exception;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class NoSuchSessionException extends DSSignatureException {
 
 	public NoSuchSessionException(String message) {
 		super(message);
 	}
 
-	public NoSuchSessionException(String message, Throwable cause) {
-		super(message, cause);
+	public NoSuchSessionException(String message, Throwable throwable) {
+		super(message, throwable);
 	}
 
 }

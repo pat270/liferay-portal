@@ -20,7 +20,12 @@
 </tr>
 <tr>
 	<td>CHECKOUT_SUCCESS</td>
-	<td>//div[contains(@class,'content')]/div[contains(@class,'alert-success')]</td>
+	<td>//div[contains(@class,'content')]/div[contains(@class,'alert-info')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONVERSION_ALERT_MESSAGE</td>
+	<td>//div[contains(@class,'conversion-messages')]/div[contains(@class,'alert-${key_type}')][contains(.,'${key_alertMessage}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -29,8 +34,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DANGER_INFO</td>
+	<td>//*[contains(@class,'danger-info')][contains(.,'${key_dangerInfo}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DRAFT_AUTO_SAVE</td>
 	<td>//div/small[contains(@id,'saveStatus') and contains(.,'Draft Saved at')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMPTY_DEPOT_ROLE</td>
+	<td>//div[contains(@id,'depotRoles')]/p[contains(@class,'text-muted')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -44,8 +59,28 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EMPTY_INFO_DEPOT</td>
+	<td>//p[contains(@class,'text-muted')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMPTY_INFO_DEPOT_HIDE</td>
+	<td>//div[not(contains(@class,'hide'))]//p[contains(@class,'text-muted')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EMPTY_INFO_TAGLIB</td>
 	<td>//div[contains(@class,'taglib-empty-result-message')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMPTY_INFO_TAGLIB_TITLE</td>
+	<td>//div/h1[contains(@class,'taglib-empty-result-message-title')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMPTY_INFO_TAGLIB_DESCRIPTION</td>
+	<td>//div/p[contains(@class,'taglib-empty-result-message-description')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -129,6 +164,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ERROR_ENTER_A_VALID_VALUE</td>
+	<td>//div[@role='alert' and contains(.,'${key_alertMessage}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR_ENTER_A_UNIQUE_FOLDER</td>
 	<td>//div[contains(@class,'alert-danger') and contains(.,'Please enter a unique folder name')]</td>
 	<td></td>
@@ -145,7 +185,7 @@
 </tr>
 <tr>
 	<td>ERROR_FORM_FIELD_REQUIRED</td>
-	<td>//div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
+	<td>//div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-item')] | //div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -160,22 +200,27 @@
 </tr>
 <tr>
 	<td>ERROR_REQUEST_FAILED</td>
-	<td>//div[contains(@class,'alert-danger')][contains(@class,'alert-dismissible')][contains(@class,'show')]</td>
+	<td>//div[contains(@class,'alert-danger')][contains(@class,'alert-dismissible')][contains(.,'Your request failed to complete.')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ERROR_SPECIFIC_FORM_FIELD_REQUIRED</td>
-	<td>//div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'help-block')] | //div[contains(@data-fieldname,'${key_fieldName}')]/../../div[contains(@class,'has-error')]//div[contains(@class,'form-feedback-indicator')]</td>
+	<td>//div[contains(@data-field-name,'${key_fieldName}')]//div[contains(@class,'form-feedback-item')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ERROR_MODAL_CONTENT</td>
-	<td>//div[contains(@class,'modal-content')]//form[contains(@class,'form-feedback')]</td>
+	<td>//div[contains(@class,'modal-content')]//div[contains(@class,'form-feedback')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ERROR_MOVE_DUPLICATE_CONTENT</td>
 	<td>//div[contains(@class,'alert-danger') and contains(.,'The folder you selected already has an entry with this name. Please select a different folder')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ERROR_SELECT_VALID_DATE_RANGE</td>
+	<td>//div[@role='alert' and contains(.,'Please select a valid date range.')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -226,6 +271,11 @@
 <tr>
 	<td>INFO_EXPLANATION_POST</td>
 	<td>//div[contains(@id,'explanationPost')]/div[@class='alert alert-info']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>INFO_MAIN_CONTENT</td>
+	<td>//*[@id="main-content"]//div[contains(@class,'alert alert-info') and not(contains(@class,'hide'))]</td>
 	<td></td>
 </tr>
 <tr>
@@ -310,7 +360,7 @@
 </tr>
 <tr>
 	<td>TOOLTIP</td>
-	<td>//div[contains(@class,'tooltip-content')]</td>
+	<td>//div[contains(@class,'tooltip') and contains(@class,'show')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -326,6 +376,11 @@
 <tr>
 	<td>USER_BLOCKED</td>
 	<td>//div[contains(@class,'alert-block')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WARNING_INFO</td>
+	<td>//*[contains(@class,'warning-info')][contains(.,'${key_warningInfo}')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -15,6 +15,7 @@
 package com.liferay.portal.security.ldap.internal.verify.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
@@ -25,7 +26,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.security.ldap.PortalLDAP;
+import com.liferay.portal.security.ldap.SafePortalLDAP;
 import com.liferay.portal.security.ldap.authenticator.configuration.LDAPAuthConfiguration;
 import com.liferay.portal.security.ldap.configuration.LDAPServerConfiguration;
 import com.liferay.portal.security.ldap.configuration.SystemLDAPConfiguration;
@@ -91,8 +92,8 @@ public class LDAPPropertiesVerifyProcessTest extends BaseVerifyProcessTestCase {
 		_configurationAdmin = _bundleContext.getService(
 			configurationAdminServiceReference);
 
-		ServiceReference<PortalLDAP> serviceReference =
-			_bundleContext.getServiceReference(PortalLDAP.class);
+		ServiceReference<SafePortalLDAP> serviceReference =
+			_bundleContext.getServiceReference(SafePortalLDAP.class);
 
 		bundle = serviceReference.getBundle();
 
@@ -141,55 +142,56 @@ public class LDAPPropertiesVerifyProcessTest extends BaseVerifyProcessTestCase {
 	}
 
 	protected void addLDAPServer(
-		UnicodeProperties properties, long ldapServerId) {
+		UnicodeProperties unicodeProperties, long ldapServerId) {
 
 		String postfix = LDAPSettingsUtil.getPropertyPostfix(ldapServerId);
 
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_AUTH_SEARCH_FILTER + postfix,
 			"(mail=@email_address@)");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_BASE_DN + postfix, "dc=liferay,dc=com");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_BASE_PROVIDER_URL + postfix,
 			"ldap://liferay.com:10389");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_CONTACT_CUSTOM_MAPPINGS + postfix, "");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_CONTACT_MAPPINGS + postfix,
 			"birthday=\r\ncountry=\r\n");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_GROUP_DEFAULT_OBJECT_CLASSES + postfix,
 			"top,groupOfUniqueNames");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_GROUPS_DN + postfix,
 			"ou=groups,dc=example,dc=com");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_GROUP_MAPPINGS + postfix,
 			"description=description\ngroupName=cn\nuser=uniqueMember");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_IMPORT_GROUP_SEARCH_FILTER + postfix,
 			"(objectClass=groupOfUniqueNames)");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_IMPORT_USER_SEARCH_FILTER + postfix,
 			"(objectClass=inetOrgPerson)");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_SECURITY_CREDENTIALS + postfix, "secret");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_SECURITY_PRINCIPAL + postfix,
 			"uid=admin,ou=system");
-		properties.put(LegacyLDAPPropsKeys.LDAP_SERVER_NAME + postfix, "test");
-		properties.put(
+		unicodeProperties.put(
+			LegacyLDAPPropsKeys.LDAP_SERVER_NAME + postfix, "test");
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_USER_CUSTOM_MAPPINGS + postfix, "");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_USER_DEFAULT_OBJECT_CLASSES + postfix,
 			"top,person,inetOrgPerson,organizationalPerson");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_USER_MAPPINGS + postfix,
 			"emailAddress=mail\nfirstName=givenName\ngroup=groupMembership\n" +
 				"jobTitle=title\nlastName=sn\npassword=userPassword\n" +
 					"screenName=cn\nuuid=uuid\n");
-		properties.put(
+		unicodeProperties.put(
 			LegacyLDAPPropsKeys.LDAP_USERS_DN + postfix,
 			"ou=users,dc=example,dc=com");
 	}
@@ -281,8 +283,8 @@ public class LDAPPropertiesVerifyProcessTest extends BaseVerifyProcessTestCase {
 
 			return null;
 		}
-		catch (Exception e) {
-			throw new IllegalStateException(e);
+		catch (Exception exception) {
+			throw new IllegalStateException(exception);
 		}
 	}
 
@@ -323,8 +325,8 @@ public class LDAPPropertiesVerifyProcessTest extends BaseVerifyProcessTestCase {
 
 			return null;
 		}
-		catch (Exception e) {
-			throw new IllegalStateException(e);
+		catch (Exception exception) {
+			throw new IllegalStateException(exception);
 		}
 	}
 
@@ -334,9 +336,10 @@ public class LDAPPropertiesVerifyProcessTest extends BaseVerifyProcessTestCase {
 			ServiceReference<?>[] serviceReferences =
 				_bundleContext.getAllServiceReferences(
 					VerifyProcess.class.getName(),
-					"(&(objectClass=" + VerifyProcess.class.getName() +
-						")(verify.process.name=" +
-							"com.liferay.portal.security.ldap))");
+					StringBundler.concat(
+						"(&(objectClass=", VerifyProcess.class.getName(),
+						")(verify.process.name=",
+						"com.liferay.portal.security.ldap))"));
 
 			if (ArrayUtil.isEmpty(serviceReferences)) {
 				throw new IllegalStateException("Unable to get verify process");
@@ -345,44 +348,49 @@ public class LDAPPropertiesVerifyProcessTest extends BaseVerifyProcessTestCase {
 			return (VerifyProcess)_bundleContext.getService(
 				serviceReferences[0]);
 		}
-		catch (InvalidSyntaxException ise) {
+		catch (InvalidSyntaxException invalidSyntaxException) {
 			throw new IllegalStateException("Unable to get verify process");
 		}
 	}
 
 	protected void setUpProperties() {
 		try {
-			UnicodeProperties properties = new UnicodeProperties();
+			UnicodeProperties unicodeProperties = new UnicodeProperties();
 
-			properties.put(LegacyLDAPPropsKeys.LDAP_AUTH_ENABLED, "true");
-			properties.put(LegacyLDAPPropsKeys.LDAP_AUTH_REQUIRED, "true");
-			properties.put(LegacyLDAPPropsKeys.LDAP_EXPORT_ENABLED, "true");
-			properties.put(
+			unicodeProperties.put(
+				LegacyLDAPPropsKeys.LDAP_AUTH_ENABLED, "true");
+			unicodeProperties.put(
+				LegacyLDAPPropsKeys.LDAP_AUTH_REQUIRED, "true");
+			unicodeProperties.put(
+				LegacyLDAPPropsKeys.LDAP_EXPORT_ENABLED, "true");
+			unicodeProperties.put(
 				LegacyLDAPPropsKeys.LDAP_FACTORY_INITIAL,
 				"com.sun.jndi.ldap.LdapCtxFactory");
-			properties.put(LegacyLDAPPropsKeys.LDAP_IMPORT_ENABLED, "true");
-			properties.put(LegacyLDAPPropsKeys.LDAP_IMPORT_ON_STARTUP, "true");
-			properties.put(
+			unicodeProperties.put(
+				LegacyLDAPPropsKeys.LDAP_IMPORT_ENABLED, "true");
+			unicodeProperties.put(
+				LegacyLDAPPropsKeys.LDAP_IMPORT_ON_STARTUP, "true");
+			unicodeProperties.put(
 				LegacyLDAPPropsKeys.LDAP_IMPORT_USER_PASSWORD_AUTOGENERATED,
 				"true");
-			properties.put(
+			unicodeProperties.put(
 				LegacyLDAPPropsKeys.LDAP_PASSWORD_POLICY_ENABLED, "true");
 
-			addLDAPServer(properties, 0L);
-			addLDAPServer(properties, 1L);
+			addLDAPServer(unicodeProperties, 0L);
+			addLDAPServer(unicodeProperties, 1L);
 
-			properties.put("ldap.server.ids", "0,1");
+			unicodeProperties.put("ldap.server.ids", "0,1");
 
 			List<Company> companies = CompanyLocalServiceUtil.getCompanies(
 				false);
 
 			for (Company company : companies) {
 				CompanyLocalServiceUtil.updatePreferences(
-					company.getCompanyId(), properties);
+					company.getCompanyId(), unicodeProperties);
 			}
 		}
-		catch (Exception e) {
-			throw new IllegalStateException(e);
+		catch (Exception exception) {
+			throw new IllegalStateException(exception);
 		}
 	}
 

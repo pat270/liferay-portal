@@ -66,8 +66,8 @@ public class JSONWebServiceInvokerAction implements JSONWebServiceAction {
 			try {
 				command = ServletUtil.readRequestBody(httpServletRequest);
 			}
-			catch (IOException ioe) {
-				throw new IllegalArgumentException(ioe);
+			catch (IOException ioException) {
+				throw new IllegalArgumentException(ioException);
 			}
 		}
 
@@ -321,7 +321,7 @@ public class JSONWebServiceInvokerAction implements JSONWebServiceAction {
 		Class<?> componentType = clazz.getComponentType();
 
 		if (!componentType.isPrimitive()) {
-			return ListUtil.toList((Object[])object);
+			return ListUtil.fromArray((Object[])object);
 		}
 
 		List<Object> list = new ArrayList<>();
@@ -458,7 +458,7 @@ public class JSONWebServiceInvokerAction implements JSONWebServiceAction {
 
 		Map<String, Object> map = _convertObjectToMap(statement, result, null);
 
-		Map<String, Object> whitelistMap = new HashMap<>(whitelist.length);
+		Map<String, Object> whitelistMap = new HashMap<>();
 
 		for (String key : whitelist) {
 			Object value = map.get(key);
@@ -507,8 +507,7 @@ public class JSONWebServiceInvokerAction implements JSONWebServiceAction {
 			statement.setMethod(StringUtil.trim(assignment.substring(x + 1)));
 		}
 
-		HashMap<String, Object> parameterMap = new HashMap<>(
-			statementBody.size());
+		HashMap<String, Object> parameterMap = new HashMap<>();
 
 		statement.setParameterMap(parameterMap);
 
@@ -551,9 +550,8 @@ public class JSONWebServiceInvokerAction implements JSONWebServiceAction {
 				variableStatements.add(variableStatement);
 			}
 			else {
-				Object value = entry.getValue();
-
-				parameterMap.put(CamelCaseUtil.normalizeCamelCase(key), value);
+				parameterMap.put(
+					CamelCaseUtil.normalizeCamelCase(key), entry.getValue());
 			}
 		}
 

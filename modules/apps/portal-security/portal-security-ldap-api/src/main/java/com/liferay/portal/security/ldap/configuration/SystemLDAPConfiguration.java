@@ -22,11 +22,9 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Michael C. Han
  */
 @ExtendedObjectClassDefinition(
-	category = "ldap", factoryInstanceLabelAttribute = "companyId",
-	scope = ExtendedObjectClassDefinition.Scope.COMPANY
+	category = "ldap", scope = ExtendedObjectClassDefinition.Scope.COMPANY
 )
 @Meta.OCD(
-	factory = true,
 	id = "com.liferay.portal.security.ldap.configuration.SystemLDAPConfiguration",
 	localization = "content/Language", name = "system-ldap-configuration-name"
 )
@@ -44,6 +42,7 @@ public interface SystemLDAPConfiguration extends CompanyScopedConfiguration {
 
 	@Meta.AD(
 		deflt = "follow", name = "referral",
+		optionLabels = {"follow", "ignore", "throws"},
 		optionValues = {"follow", "ignore", "throws"}, required = false
 	)
 	public String referral();

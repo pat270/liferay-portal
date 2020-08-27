@@ -16,12 +16,9 @@ package com.liferay.trash.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchVersionException extends NoSuchModelException {
 
 	public NoSuchVersionException() {
@@ -31,12 +28,12 @@ public class NoSuchVersionException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchVersionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchVersionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchVersionException(Throwable cause) {
-		super(cause);
+	public NoSuchVersionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

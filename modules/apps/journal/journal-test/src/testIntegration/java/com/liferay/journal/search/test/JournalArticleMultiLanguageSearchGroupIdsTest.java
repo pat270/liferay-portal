@@ -36,10 +36,11 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.users.admin.test.util.search.GroupBlueprint;
@@ -72,7 +73,7 @@ public class JournalArticleMultiLanguageSearchGroupIdsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_indexer = _indexerRegistry.getIndexer(JournalArticle.class);
 
@@ -189,6 +190,9 @@ public class JournalArticleMultiLanguageSearchGroupIdsTest {
 		Assert.assertEquals(documents.toString(), 2, documents.size());
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected Group addGroup(Locale locale) throws Exception, PortalException {
 		return _userSearchFixture.addGroup(
 			new GroupBlueprint() {
@@ -304,8 +308,8 @@ public class JournalArticleMultiLanguageSearchGroupIdsTest {
 
 			return searchContext;
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -315,8 +319,8 @@ public class JournalArticleMultiLanguageSearchGroupIdsTest {
 
 			return hits.toList();
 		}
-		catch (SearchException se) {
-			throw new RuntimeException(se);
+		catch (SearchException searchException) {
+			throw new RuntimeException(searchException);
 		}
 	}
 

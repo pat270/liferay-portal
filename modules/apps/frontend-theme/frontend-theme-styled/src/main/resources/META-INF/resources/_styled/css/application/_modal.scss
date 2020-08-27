@@ -1,5 +1,6 @@
-.dialog-iframe-popup {
-	#main-content, #wrapper {
+.dialog-iframe-popup:not(.article-preview) {
+	#main-content,
+	#wrapper {
 		bottom: 0;
 		left: 0;
 		overflow: auto;
@@ -7,8 +8,7 @@
 		position: absolute;
 		right: 0;
 		top: 0;
-
-		@include prefixer(overflow-scrolling, touch, 'webkit');
+		-webkit-overflow-scrolling: touch;
 	}
 }
 
@@ -29,21 +29,21 @@
 }
 
 .modal-dialog {
-	@include sm {
+	@include media-breakpoint-up(sm) {
 		max-width: none;
 	}
 
 	&.modal-dialog-sm {
 		max-width: $modal-md;
 	}
+
+	.yui3-resize-handles-wrapper {
+		pointer-events: all;
+	}
 }
 
 .modal-hidden {
 	display: none;
-}
-
-.modal-open .modal {
-	overflow: hidden;
 }
 
 .portal-popup {

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,10 @@ public class SocialActivitySettingPersistenceTest {
 		SocialActivitySetting newSocialActivitySetting = _persistence.create(
 			pk);
 
+		newSocialActivitySetting.setMvccVersion(RandomTestUtil.nextLong());
+
+		newSocialActivitySetting.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newSocialActivitySetting.setGroupId(RandomTestUtil.nextLong());
 
 		newSocialActivitySetting.setCompanyId(RandomTestUtil.nextLong());
@@ -145,6 +149,12 @@ public class SocialActivitySettingPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newSocialActivitySetting.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingSocialActivitySetting.getMvccVersion(),
+			newSocialActivitySetting.getMvccVersion());
+		Assert.assertEquals(
+			existingSocialActivitySetting.getCtCollectionId(),
+			newSocialActivitySetting.getCtCollectionId());
 		Assert.assertEquals(
 			existingSocialActivitySetting.getActivitySettingId(),
 			newSocialActivitySetting.getActivitySettingId());
@@ -239,9 +249,10 @@ public class SocialActivitySettingPersistenceTest {
 
 	protected OrderByComparator<SocialActivitySetting> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"SocialActivitySetting", "activitySettingId", true, "groupId", true,
-			"companyId", true, "classNameId", true, "activityType", true,
-			"name", true, "value", true);
+			"SocialActivitySetting", "mvccVersion", true, "ctCollectionId",
+			true, "activitySettingId", true, "groupId", true, "companyId", true,
+			"classNameId", true, "activityType", true, "name", true, "value",
+			true);
 	}
 
 	@Test
@@ -484,31 +495,76 @@ public class SocialActivitySettingPersistenceTest {
 
 		_persistence.clearCache();
 
-		SocialActivitySetting existingSocialActivitySetting =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newSocialActivitySetting.getPrimaryKey());
+				newSocialActivitySetting.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		SocialActivitySetting newSocialActivitySetting =
+			addSocialActivitySetting();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			SocialActivitySetting.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"activitySettingId",
+				newSocialActivitySetting.getActivitySettingId()));
+
+		List<SocialActivitySetting> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		SocialActivitySetting socialActivitySetting) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivitySetting.getGroupId()),
+			Long.valueOf(socialActivitySetting.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivitySetting, "getOriginalGroupId",
-				new Class<?>[0]));
+				socialActivitySetting, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivitySetting.getClassNameId()),
+			Long.valueOf(socialActivitySetting.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivitySetting, "getOriginalClassNameId",
-				new Class<?>[0]));
+				socialActivitySetting, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivitySetting.getActivityType()),
+			Integer.valueOf(socialActivitySetting.getActivityType()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivitySetting, "getOriginalActivityType",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingSocialActivitySetting.getName(),
-				ReflectionTestUtil.invoke(
-					existingSocialActivitySetting, "getOriginalName",
-					new Class<?>[0])));
+				socialActivitySetting, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "activityType"));
+		Assert.assertEquals(
+			socialActivitySetting.getName(),
+			ReflectionTestUtil.invoke(
+				socialActivitySetting, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
 	}
 
 	protected SocialActivitySetting addSocialActivitySetting()
@@ -517,6 +573,10 @@ public class SocialActivitySettingPersistenceTest {
 		long pk = RandomTestUtil.nextLong();
 
 		SocialActivitySetting socialActivitySetting = _persistence.create(pk);
+
+		socialActivitySetting.setMvccVersion(RandomTestUtil.nextLong());
+
+		socialActivitySetting.setCtCollectionId(RandomTestUtil.nextLong());
 
 		socialActivitySetting.setGroupId(RandomTestUtil.nextLong());
 

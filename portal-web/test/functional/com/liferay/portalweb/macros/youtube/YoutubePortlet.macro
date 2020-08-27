@@ -1,0 +1,29 @@
+definition {
+
+	macro addVideoId {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Type(
+			locator1 = "TextInput#URL",
+			value1 = "${videoId}");
+	}
+
+	macro assertVideoTitle {
+		SelectFrame.selectFrameNoLoading(locator1 = "YoutubePortlet#VIDEO_IFRAME");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "YoutubePortlet#VIDEO_TITLE",
+			value1 = "${videoTitle}");
+
+		SelectFrameTop();
+	}
+
+	macro viewPortletConfiguration {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextEquals(
+			locator1 = "TextInput#URL",
+			value1 = "${videoId}");
+	}
+
+}

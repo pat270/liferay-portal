@@ -21,11 +21,9 @@ import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -69,17 +67,13 @@ public class DDLRecordStagedModelDataHandler
 	}
 
 	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
-		DDMFormValuesDeserializer ddmFormValuesDeserializer =
-			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				"json");
-
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
 
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
-				ddmFormValuesDeserializer.deserialize(builder.build());
+				_jsonDDMFormValuesDeserializer.deserialize(builder.build());
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -153,6 +147,7 @@ public class DDLRecordStagedModelDataHandler
 				portletDataContext, importedRecord, ddmFormValues);
 		}
 		else {
+			importedRecord.setMvccVersion(existingRecord.getMvccVersion());
 			importedRecord.setRecordId(existingRecord.getRecordId());
 
 			importedRecord = _ddlRecordStagedModelRepository.updateStagedModel(
@@ -214,16 +209,13 @@ public class DDLRecordStagedModelDataHandler
 	}
 
 	protected String serialize(DDMFormValues ddmFormValues) {
-		DDMFormValuesSerializer ddmFormValuesSerializer =
-			_ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
-
 		DDMFormValuesSerializerSerializeRequest.Builder builder =
 			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
 				ddmFormValues);
 
 		DDMFormValuesSerializerSerializeResponse
 			ddmFormValuesSerializerSerializeResponse =
-				ddmFormValuesSerializer.serialize(builder.build());
+				_jsonDDMFormValuesSerializer.serialize(builder.build());
 
 		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
@@ -245,13 +237,6 @@ public class DDLRecordStagedModelDataHandler
 		_ddlRecordStagedModelRepository = ddlRecordStagedModelRepository;
 	}
 
-	@Reference(unbind = "-")
-	protected void setDDMFormValuesDeserializerTracker(
-		DDMFormValuesDeserializerTracker ddmFormValuesDeserializerTracker) {
-
-		_ddmFormValuesDeserializerTracker = ddmFormValuesDeserializerTracker;
-	}
-
 	@Reference(
 		target = "(model.class.name=com.liferay.dynamic.data.mapping.storage.DDMFormValues)",
 		unbind = "-"
@@ -262,13 +247,6 @@ public class DDLRecordStagedModelDataHandler
 
 		_ddmFormValuesExportImportContentProcessor =
 			ddmFormValuesExportImportContentProcessor;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMFormValuesSerializerTracker(
-		DDMFormValuesSerializerTracker ddmFormValuesSerializerTracker) {
-
-		_ddmFormValuesSerializerTracker = ddmFormValuesSerializerTracker;
 	}
 
 	@Reference(unbind = "-")
@@ -286,31 +264,38 @@ public class DDLRecordStagedModelDataHandler
 		try {
 			status = record.getStatus();
 		}
-		catch (Exception e) {
-			throw new PortletDataException(e);
+		catch (Exception exception) {
+			throw new PortletDataException(exception);
 		}
 
 		if (!portletDataContext.isInitialPublication() &&
 			!ArrayUtil.contains(getExportableStatuses(), status)) {
 
-			PortletDataException pde = new PortletDataException(
-				PortletDataException.STATUS_UNAVAILABLE);
+			PortletDataException portletDataException =
+				new PortletDataException(
+					PortletDataException.STATUS_UNAVAILABLE);
 
-			pde.setStagedModelDisplayName(record.getUuid());
-			pde.setStagedModelClassName(record.getModelClassName());
-			pde.setStagedModelClassPK(
+			portletDataException.setStagedModelDisplayName(record.getUuid());
+			portletDataException.setStagedModelClassName(
+				record.getModelClassName());
+			portletDataException.setStagedModelClassPK(
 				GetterUtil.getString(record.getRecordId()));
 
-			throw pde;
+			throw portletDataException;
 		}
 	}
 
 	private DDLRecordSetLocalService _ddlRecordSetLocalService;
 	private DDLRecordStagedModelRepository _ddlRecordStagedModelRepository;
-	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
 	private ExportImportContentProcessor<DDMFormValues>
 		_ddmFormValuesExportImportContentProcessor;
-	private DDMFormValuesSerializerTracker _ddmFormValuesSerializerTracker;
+
+	@Reference(target = "(ddm.form.values.deserializer.type=json)")
+	private DDMFormValuesDeserializer _jsonDDMFormValuesDeserializer;
+
+	@Reference(target = "(ddm.form.values.serializer.type=json)")
+	private DDMFormValuesSerializer _jsonDDMFormValuesSerializer;
+
 	private StorageEngine _storageEngine;
 
 }

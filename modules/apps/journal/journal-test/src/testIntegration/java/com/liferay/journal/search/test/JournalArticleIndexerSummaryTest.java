@@ -37,8 +37,8 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.search.test.util.SummaryFixture;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -76,7 +76,7 @@ public class JournalArticleIndexerSummaryTest {
 
 		_journalArticles = _journalArticleSearchFixture.getJournalArticles();
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		CompanyThreadLocal.setCompanyId(TestPropsValues.getCompanyId());
 
@@ -96,9 +96,8 @@ public class JournalArticleIndexerSummaryTest {
 		String content = "test content";
 		String title = "test title";
 
-		Document document = getDocument(title, content);
-
-		_summaryFixture.assertSummary(title, content, document);
+		_summaryFixture.assertSummary(
+			title, content, getDocument(title, content));
 	}
 
 	@Test
@@ -159,6 +158,9 @@ public class JournalArticleIndexerSummaryTest {
 		_summaryFixture.assertSummary(
 			staleHighlightedTitle, highlightedContent, document);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected Document getDocument(String title, String content)
 		throws Exception {

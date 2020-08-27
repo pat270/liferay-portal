@@ -16,7 +16,7 @@ package com.liferay.layout.type.controller.content.internal.product.navigation.c
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
-import com.liferay.layout.type.controller.content.internal.controller.ContentLayoutTypeController;
+import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
 import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -28,13 +28,15 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
+import com.liferay.portal.kernel.service.permission.LayoutPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.product.navigation.control.menu.BaseProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
@@ -98,10 +100,14 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 					themeDisplay);
 			}
 			else {
-				Layout draftLayout = _layoutLocalService.fetchLayout(
-					_portal.getClassNameId(Layout.class), layout.getPlid());
+				Layout draftLayout = layout.fetchDraftLayout();
 
 				if (draftLayout == null) {
+					UnicodeProperties unicodeProperties =
+						layout.getTypeSettingsProperties();
+
+					unicodeProperties.put("published", "true");
+
 					ServiceContext serviceContext =
 						ServiceContextFactory.getInstance(httpServletRequest);
 
@@ -112,10 +118,16 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 						layout.getNameMap(), layout.getTitleMap(),
 						layout.getDescriptionMap(), layout.getKeywordsMap(),
 						layout.getRobotsMap(), layout.getType(),
-						layout.getTypeSettings(), true, true,
-						Collections.emptyMap(), serviceContext);
+						unicodeProperties.toString(), true, true,
+						layout.getMasterLayoutPlid(), Collections.emptyMap(),
+						serviceContext);
 
-					_layoutCopyHelper.copyLayout(layout, draftLayout);
+					draftLayout = _layoutCopyHelper.copyLayout(
+						layout, draftLayout);
+
+					_layoutLocalService.updateStatus(
+						draftLayout.getUserId(), draftLayout.getPlid(),
+						WorkflowConstants.STATUS_APPROVED, serviceContext);
 				}
 
 				redirect = _portal.getLayoutFullURL(draftLayout, themeDisplay);
@@ -126,7 +138,7 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 
 			return _http.setParameter(redirect, "p_l_mode", Constants.EDIT);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -157,10 +169,6 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 			return false;
 		}
 
-		if (!(layoutTypeController instanceof ContentLayoutTypeController)) {
-			return false;
-		}
-
 		String className = (String)httpServletRequest.getAttribute(
 			ContentPageEditorWebKeys.CLASS_NAME);
 
@@ -170,9 +178,30 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 			return false;
 		}
 
-		return LayoutPermissionUtil.contains(
-			themeDisplay.getPermissionChecker(), themeDisplay.getLayout(),
-			ActionKeys.UPDATE);
+		Layout layout = themeDisplay.getLayout();
+
+		if (!layout.isTypeContent()) {
+			return false;
+		}
+
+		if (layout.isSystem() && layout.isTypeContent()) {
+			layout = _layoutLocalService.getLayout(layout.getClassPK());
+		}
+
+		if (_layoutPermission.contains(
+				themeDisplay.getPermissionChecker(), layout,
+				ActionKeys.UPDATE) ||
+			_layoutPermission.contains(
+				themeDisplay.getPermissionChecker(), layout,
+				ActionKeys.UPDATE_LAYOUT_CONTENT) ||
+			_modelResourcePermission.contains(
+				themeDisplay.getPermissionChecker(), layout.getPlid(),
+				ActionKeys.UPDATE)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Reference
@@ -183,6 +212,12 @@ public class EditLayoutModeProductNavigationControlMenuEntry
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutPermission _layoutPermission;
+
+	@Reference
+	private LayoutContentModelResourcePermission _modelResourcePermission;
 
 	@Reference
 	private Portal _portal;

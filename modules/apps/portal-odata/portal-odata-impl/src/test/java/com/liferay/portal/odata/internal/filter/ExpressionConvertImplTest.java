@@ -15,6 +15,7 @@
 package com.liferay.portal.odata.internal.filter;
 
 import com.liferay.portal.kernel.search.filter.TermFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
@@ -26,12 +27,14 @@ import com.liferay.portal.odata.entity.StringEntityField;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 import com.liferay.portal.odata.filter.expression.LambdaFunctionExpression;
+import com.liferay.portal.odata.filter.expression.ListExpression;
 import com.liferay.portal.odata.filter.expression.LiteralExpression;
 import com.liferay.portal.odata.filter.expression.MemberExpression;
 import com.liferay.portal.odata.internal.filter.expression.BinaryExpressionImpl;
 import com.liferay.portal.odata.internal.filter.expression.CollectionPropertyExpressionImpl;
 import com.liferay.portal.odata.internal.filter.expression.LambdaFunctionExpressionImpl;
 import com.liferay.portal.odata.internal.filter.expression.LambdaVariableExpressionImpl;
+import com.liferay.portal.odata.internal.filter.expression.ListExpressionImpl;
 import com.liferay.portal.odata.internal.filter.expression.LiteralExpressionImpl;
 import com.liferay.portal.odata.internal.filter.expression.MemberExpressionImpl;
 import com.liferay.portal.odata.internal.filter.expression.PrimitivePropertyExpressionImpl;
@@ -76,11 +79,33 @@ public class ExpressionConvertImplTest {
 			BinaryExpression.Operation.EQ,
 			new LiteralExpressionImpl("test", LiteralExpression.Type.STRING));
 
-		TermFilter termFilter = (TermFilter)_expressionConvert.convert(
+		TermFilter termFilter = (TermFilter)_expressionConvertImpl.convert(
 			binaryExpression, LocaleUtil.getDefault(), _entityModel);
 
 		Assert.assertEquals("title", termFilter.getField());
 		Assert.assertEquals("test", termFilter.getValue());
+	}
+
+	@Test
+	public void testConvertListExpressionWithInOnPrimitiveField()
+		throws ExpressionVisitException {
+
+		ListExpression listExpression = new ListExpressionImpl(
+			new MemberExpressionImpl(
+				new PrimitivePropertyExpressionImpl("title")),
+			ListExpression.Operation.IN,
+			Collections.singletonList(
+				new LiteralExpressionImpl(
+					"test", LiteralExpression.Type.STRING)));
+
+		TermsFilter termsFilter = (TermsFilter)_expressionConvertImpl.convert(
+			listExpression, LocaleUtil.getDefault(), _entityModel);
+
+		Assert.assertEquals("title", termsFilter.getField());
+
+		String[] values = termsFilter.getValues();
+
+		Assert.assertEquals("test", values[0]);
 	}
 
 	@Test
@@ -99,7 +124,7 @@ public class ExpressionConvertImplTest {
 						new LiteralExpressionImpl(
 							"'keyword1'", LiteralExpression.Type.STRING)))));
 
-		TermFilter termFilter = (TermFilter)_expressionConvert.convert(
+		TermFilter termFilter = (TermFilter)_expressionConvertImpl.convert(
 			memberExpression, LocaleUtil.getDefault(), _entityModel);
 
 		Assert.assertNotNull(termFilter);
@@ -128,7 +153,7 @@ public class ExpressionConvertImplTest {
 
 	};
 
-	private final ExpressionConvertImpl _expressionConvert =
+	private final ExpressionConvertImpl _expressionConvertImpl =
 		new ExpressionConvertImpl();
 
 }

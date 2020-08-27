@@ -16,10 +16,10 @@ package com.liferay.dynamic.data.lists.web.internal.display.context;
 
 import com.liferay.dynamic.data.lists.constants.DDLActionKeys;
 import com.liferay.dynamic.data.lists.constants.DDLPortletKeys;
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.constants.DDLWebKeys;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
-import com.liferay.dynamic.data.lists.model.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
 import com.liferay.dynamic.data.lists.util.DDL;
 import com.liferay.dynamic.data.lists.util.comparator.DDLRecordSetCreateDateComparator;
@@ -40,10 +40,11 @@ import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.dynamic.data.mapping.util.DDMDisplay;
 import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.petra.function.UnsafeConsumer;
@@ -104,10 +105,8 @@ public class DDLDisplayContext {
 		_ddmTemplateLocalService = ddmTemplateLocalService;
 		_storageEngine = storageEngine;
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(_renderRequest);
-
-		_ddlRequestHelper = new DDLRequestHelper(httpServletRequest);
+		_ddlRequestHelper = new DDLRequestHelper(
+			PortalUtil.getHttpServletRequest(_renderRequest));
 
 		if (Validator.isNotNull(getPortletResource())) {
 			return;
@@ -126,19 +125,15 @@ public class DDLDisplayContext {
 	}
 
 	public List<DropdownItem> getActionItemsDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteRecordSets");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_ddlRequestHelper.getRequest(), "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteRecordSets");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_ddlRequestHelper.getRequest(), "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getAddDDMTemplateTitle() throws PortalException {
@@ -178,22 +173,17 @@ public class DDLDisplayContext {
 			return null;
 		}
 
-		return new CreationMenu() {
-			{
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							_renderResponse.createRenderURL(), "mvcPath",
-							"/edit_record_set.jsp", "redirect",
-							PortalUtil.getCurrentURL(
-								_ddlRequestHelper.getRequest()));
+		return CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref(
+					_renderResponse.createRenderURL(), "mvcPath",
+					"/edit_record_set.jsp", "redirect",
+					PortalUtil.getCurrentURL(_ddlRequestHelper.getRequest()));
 
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_ddlRequestHelper.getRequest(), "add"));
-					});
+				dropdownItem.setLabel(
+					LanguageUtil.get(_ddlRequestHelper.getRequest(), "add"));
 			}
-		};
+		).build();
 	}
 
 	public String getCSVExport() {
@@ -302,26 +292,21 @@ public class DDLDisplayContext {
 	public List<DropdownItem> getFilterItemsDropdownItems() {
 		HttpServletRequest httpServletRequest = _ddlRequestHelper.getRequest();
 
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(
-								httpServletRequest, "filter-by-navigation"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(
+						httpServletRequest, "filter-by-navigation"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public long getFormDDMTemplateId() {
@@ -331,20 +316,18 @@ public class DDLDisplayContext {
 	}
 
 	public List<NavigationItem> getNavigationItems() {
-		HttpServletRequest httpServletRequest = _ddlRequestHelper.getRequest();
+		return NavigationItemListBuilder.add(
+			navigationItem -> {
+				navigationItem.setActive(true);
 
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(StringPool.BLANK);
-						navigationItem.setLabel(
-							HtmlUtil.escape(
-								LanguageUtil.get(httpServletRequest, "lists")));
-					});
+				HttpServletRequest httpServletRequest =
+					_ddlRequestHelper.getRequest();
+
+				navigationItem.setLabel(
+					HtmlUtil.escape(
+						LanguageUtil.get(httpServletRequest, "lists")));
 			}
-		};
+		).build();
 	}
 
 	public String getOrderByCol() {
@@ -739,21 +722,16 @@ public class DDLDisplayContext {
 	}
 
 	protected List<DropdownItem> getFilterNavigationDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(true);
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(true);
 
-						dropdownItem.setHref(
-							getPortletURL(), "navigation", "all");
+				dropdownItem.setHref(getPortletURL(), "navigation", "all");
 
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_ddlRequestHelper.getRequest(), "all"));
-					});
+				dropdownItem.setLabel(
+					LanguageUtil.get(_ddlRequestHelper.getRequest(), "all"));
 			}
-		};
+		).build();
 	}
 
 	protected String getKeywords() {
@@ -780,13 +758,13 @@ public class DDLDisplayContext {
 	}
 
 	protected List<DropdownItem> getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(getOrderByDropdownItem("create-date"));
-				add(getOrderByDropdownItem("modified-date"));
-				add(getOrderByDropdownItem("name"));
-			}
-		};
+		return DropdownItemListBuilder.add(
+			getOrderByDropdownItem("create-date")
+		).add(
+			getOrderByDropdownItem("modified-date")
+		).add(
+			getOrderByDropdownItem("name")
+		).build();
 	}
 
 	protected PermissionChecker getPermissionChecker() {
@@ -826,9 +804,11 @@ public class DDLDisplayContext {
 
 		_hasAddRecordPermission = false;
 
-		if (_recordSet != null) {
+		DDLRecordSet recordSet = getRecordSet();
+
+		if (recordSet != null) {
 			_hasAddRecordPermission = DDLRecordSetPermission.contains(
-				getPermissionChecker(), _recordSet, DDLActionKeys.ADD_RECORD);
+				getPermissionChecker(), recordSet, DDLActionKeys.ADD_RECORD);
 		}
 
 		return _hasAddRecordPermission;

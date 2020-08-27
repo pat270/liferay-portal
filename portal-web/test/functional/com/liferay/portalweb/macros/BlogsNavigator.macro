@@ -1,4 +1,5 @@
 definition {
+
 	macro gotoAddEntry {
 		if (IsElementPresent(locator1 = "Blogs#ADD_BLOGS_ENTRY")) {
 			Click(locator1 = "Blogs#ADD_BLOGS_ENTRY");
@@ -17,15 +18,17 @@ definition {
 	macro gotoBlogsEntriesPermissionsCP {
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Entries Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoBlogsEntryPermissionsCP {
-		LexiconList.clickEllipsisItem(
-			item = "Permissions",
-			listEntry = "${entryTitle}");
+		Pause(locator = "1000");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		LexiconCard.clickEllipsisItem(
+			card = "${entryTitle}",
+			item = "Permissions");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoBlogsEntryPermissionsPG {
@@ -35,7 +38,7 @@ definition {
 			entryTitle = "${entryTitle}",
 			item = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoBrowseImage {
@@ -49,7 +52,7 @@ definition {
 	macro gotoConfigurationSetupPG {
 		Portlet.gotoPortletOptions(portletOption = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoEditCP {
@@ -68,8 +71,8 @@ definition {
 		AssertElementPresent(locator1 = "Icon#BACK");
 
 		AssertVisible(
-			key_editor = "title",
-			locator1 = "AlloyEditor#EDITOR");
+			key_text = "Title",
+			locator1 = "TextArea#ANY");
 	}
 
 	macro gotoEditPG {
@@ -160,9 +163,19 @@ definition {
 	}
 
 	macro gotoSelectFile {
+		Pause(locator1 = "5000");
+
 		AssertClick(
 			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE",
 			value1 = "Select File");
+	}
+
+	macro gotoShare {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Share",
+			rowEntry = "${entryTitle}");
 	}
 
 	macro moveToRecycleBinCP {
@@ -180,8 +193,11 @@ definition {
 			key_menuItem = "Move to Recycle Bin",
 			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 
-		AssertConfirm(value1 = "Are you sure you want to move this to the Recycle Bin?");
-
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
+
+	macro openBlogsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_blogs_web_portlet_BlogsAdminPortlet");
+	}
+
 }

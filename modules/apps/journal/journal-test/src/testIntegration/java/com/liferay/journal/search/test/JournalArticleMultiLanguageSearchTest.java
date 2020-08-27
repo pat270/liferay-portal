@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.test.util.DocumentsAssert;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
@@ -167,6 +168,9 @@ public class JournalArticleMultiLanguageSearchTest {
 		assertSearchMatchesAllArticles(LocaleUtil.NETHERLANDS, US_TITLE);
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected void addArticlesWithEnglishWordsInUsAndNlTranslations() {
 		addJournalArticle(
 			new JournalArticleContent() {
@@ -286,8 +290,8 @@ public class JournalArticleMultiLanguageSearchTest {
 
 			return searchContext;
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -303,8 +307,8 @@ public class JournalArticleMultiLanguageSearchTest {
 		try {
 			return _indexer.search(searchContext);
 		}
-		catch (SearchException se) {
-			throw new RuntimeException(se);
+		catch (SearchException searchException) {
+			throw new RuntimeException(searchException);
 		}
 	}
 

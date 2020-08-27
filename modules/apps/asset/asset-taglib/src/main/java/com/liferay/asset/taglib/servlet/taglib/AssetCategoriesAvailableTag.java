@@ -16,7 +16,6 @@ package com.liferay.asset.taglib.servlet.taglib;
 
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.service.AssetCategoryServiceUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.taglib.TagSupport;
 
 import java.util.ArrayList;
@@ -41,14 +40,12 @@ public class AssetCategoriesAvailableTag<R> extends TagSupport {
 
 			return SKIP_BODY;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_className = null;
-				_classPK = 0;
-			}
+			_className = null;
+			_classPK = 0;
 		}
 	}
 

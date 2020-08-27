@@ -14,12 +14,12 @@
 
 package com.liferay.calendar.internal.exportimport.data.handler;
 
+import com.liferay.calendar.constants.CalendarBookingConstants;
 import com.liferay.calendar.constants.CalendarPortletKeys;
 import com.liferay.calendar.model.Calendar;
 import com.liferay.calendar.model.CalendarBooking;
-import com.liferay.calendar.model.CalendarBookingConstants;
 import com.liferay.calendar.service.CalendarBookingLocalService;
-import com.liferay.calendar.workflow.CalendarBookingWorkflowConstants;
+import com.liferay.calendar.workflow.constants.CalendarBookingWorkflowConstants;
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -51,7 +51,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = "javax.portlet.name=" + CalendarPortletKeys.CALENDAR,
+	property = "javax.portlet.name=" + CalendarPortletKeys.CALENDAR_ADMIN,
 	service = StagedModelDataHandler.class
 )
 public class CalendarBookingStagedModelDataHandler
@@ -292,7 +292,7 @@ public class CalendarBookingStagedModelDataHandler
 					calendarBooking.getSecondReminderType(), serviceContext);
 		}
 
-		_calendarBookingLocalService.updateStatus(
+		importedCalendarBooking = _calendarBookingLocalService.updateStatus(
 			userId, importedCalendarBooking, calendarBooking.getStatus(),
 			serviceContext);
 

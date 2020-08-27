@@ -70,7 +70,7 @@ public class DocumentLibraryConvertProcess extends BaseConvertProcess {
 
 		String[] storeTypes = storeFactory.getStoreTypes();
 
-		StringBundler sb = new StringBundler(storeTypes.length * 2 + 2);
+		StringBundler sb = new StringBundler((storeTypes.length * 2) + 2);
 
 		sb.append(PropsKeys.DL_STORE_IMPL);
 		sb.append(StringPool.EQUAL);
@@ -107,8 +107,6 @@ public class DocumentLibraryConvertProcess extends BaseConvertProcess {
 		migrateDLStoreConvertProcesses(
 			storeFactory.getStore(),
 			storeFactory.getStore(targetStoreClassName));
-
-		storeFactory.setStore(targetStoreClassName);
 
 		MaintenanceUtil.appendStatus(
 			StringBundler.concat(
@@ -164,8 +162,8 @@ public class DocumentLibraryConvertProcess extends BaseConvertProcess {
 
 			return registry.getServices(DLStoreConvertProcess.class, null);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

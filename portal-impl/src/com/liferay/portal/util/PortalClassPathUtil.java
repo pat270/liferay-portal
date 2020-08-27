@@ -57,11 +57,9 @@ public class PortalClassPathUtil {
 
 		String classpath = _buildClassPath(classes);
 
-		classpath = classpath.concat(
-			File.pathSeparator
-		).concat(
-			_portalProcessConfig.getBootstrapClassPath()
-		);
+		classpath = StringBundler.concat(
+			classpath, File.pathSeparator,
+			_portalProcessConfig.getBootstrapClassPath());
 
 		builder.setBootstrapClassPath(classpath);
 
@@ -225,8 +223,9 @@ public class PortalClassPathUtil {
 
 				url = (URL)getLocalURLMethod.invoke(urlConnection);
 			}
-			catch (Exception e) {
-				_log.error("Unable to resolve local URL from bundle", e);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to resolve local URL from bundle", exception);
 
 				return null;
 			}

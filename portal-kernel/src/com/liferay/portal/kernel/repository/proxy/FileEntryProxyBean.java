@@ -16,11 +16,8 @@ package com.liferay.portal.kernel.repository.proxy;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.capabilities.Capability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
@@ -36,12 +33,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Mika Koivisto
  */
-@ProviderType
 public class FileEntryProxyBean
 	extends RepositoryModelProxyBean implements FileEntry {
 
@@ -103,10 +97,8 @@ public class FileEntryProxyBean
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		ExpandoBridge expandoBridge = _fileEntry.getExpandoBridge();
-
 		return (ExpandoBridge)newProxyInstance(
-			expandoBridge, ExpandoBridge.class);
+			_fileEntry.getExpandoBridge(), ExpandoBridge.class);
 	}
 
 	@Override
@@ -131,23 +123,17 @@ public class FileEntryProxyBean
 
 	@Override
 	public FileVersion getFileVersion() throws PortalException {
-		FileVersion fileVersion = _fileEntry.getFileVersion();
-
-		return newFileVersionProxyBean(fileVersion);
+		return newFileVersionProxyBean(_fileEntry.getFileVersion());
 	}
 
 	@Override
 	public FileVersion getFileVersion(String version) throws PortalException {
-		FileVersion fileVersion = _fileEntry.getFileVersion(version);
-
-		return newFileVersionProxyBean(fileVersion);
+		return newFileVersionProxyBean(_fileEntry.getFileVersion(version));
 	}
 
 	@Override
 	public List<FileVersion> getFileVersions(int status) {
-		List<FileVersion> fileVersions = _fileEntry.getFileVersions(status);
-
-		return toFileVersionProxyBeans(fileVersions);
+		return toFileVersionProxyBeans(_fileEntry.getFileVersions(status));
 	}
 
 	@Override
@@ -157,9 +143,7 @@ public class FileEntryProxyBean
 
 	@Override
 	public Folder getFolder() {
-		Folder folder = _fileEntry.getFolder();
-
-		return newFolderProxyBean(folder);
+		return newFolderProxyBean(_fileEntry.getFolder());
 	}
 
 	@Override
@@ -205,9 +189,7 @@ public class FileEntryProxyBean
 
 	@Override
 	public Lock getLock() {
-		Lock lock = _fileEntry.getLock();
-
-		return (Lock)newProxyInstance(lock, Lock.class);
+		return (Lock)newProxyInstance(_fileEntry.getLock(), Lock.class);
 	}
 
 	@Override
@@ -251,7 +233,7 @@ public class FileEntryProxyBean
 	}
 
 	@Override
-	public int getReadCount() {
+	public long getReadCount() {
 		return _fileEntry.getReadCount();
 	}
 
@@ -305,69 +287,6 @@ public class FileEntryProxyBean
 	@Override
 	public String getVersion() {
 		return _fileEntry.getVersion();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             FileVersionProxyBean#getUserId()}
-	 */
-	@Deprecated
-	@Override
-	public long getVersionUserId() {
-		long versionUserId = 0;
-
-		try {
-			FileVersion fileVersion = _fileEntry.getFileVersion();
-
-			versionUserId = fileVersion.getUserId();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return versionUserId;
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             FileVersionProxyBean#getUserName()}
-	 */
-	@Deprecated
-	@Override
-	public String getVersionUserName() {
-		String versionUserName = StringPool.BLANK;
-
-		try {
-			FileVersion fileVersion = _fileEntry.getFileVersion();
-
-			versionUserName = fileVersion.getUserName();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return versionUserName;
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             FileVersionProxyBean#getUserUuid()}
-	 */
-	@Deprecated
-	@Override
-	public String getVersionUserUuid() {
-		String versionUserUuid = StringPool.BLANK;
-
-		try {
-			FileVersion fileVersion = _fileEntry.getFileVersion();
-
-			versionUserUuid = fileVersion.getUserUuid();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return versionUserUuid;
 	}
 
 	@Override
@@ -490,9 +409,6 @@ public class FileEntryProxyBean
 
 		return newFileEntryProxyBean(fileEntry);
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		FileEntryProxyBean.class);
 
 	private final FileEntry _fileEntry;
 

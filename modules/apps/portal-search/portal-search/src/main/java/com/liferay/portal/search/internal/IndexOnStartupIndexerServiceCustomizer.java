@@ -50,10 +50,12 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
  */
 @Component(immediate = true, service = ServiceTrackerCustomizer.class)
 public class IndexOnStartupIndexerServiceCustomizer
-	implements ServiceTrackerCustomizer<Indexer, Indexer> {
+	implements ServiceTrackerCustomizer<Indexer<?>, Indexer<?>> {
 
 	@Override
-	public Indexer addingService(ServiceReference<Indexer> serviceReference) {
+	public Indexer<?> addingService(
+		ServiceReference<Indexer<?>> serviceReference) {
+
 		Indexer<?> indexer = _bundleContext.getService(serviceReference);
 
 		boolean indexerIndexOnStartup = GetterUtil.getBoolean(
@@ -95,12 +97,12 @@ public class IndexOnStartupIndexerServiceCustomizer
 
 	@Override
 	public void modifiedService(
-		ServiceReference<Indexer> serviceReference, Indexer indexer) {
+		ServiceReference<Indexer<?>> serviceReference, Indexer<?> indexer) {
 	}
 
 	@Override
 	public void removedService(
-		ServiceReference<Indexer> serviceReference, Indexer indexer) {
+		ServiceReference<Indexer<?>> serviceReference, Indexer<?> indexer) {
 
 		synchronized (_serviceRegistrations) {
 			ServiceRegistration<PortalInstanceLifecycleListener>
@@ -118,7 +120,7 @@ public class IndexOnStartupIndexerServiceCustomizer
 		_bundleContext = bundleContext;
 
 		_serviceTracker = new ServiceTracker<>(
-			bundleContext, Indexer.class, this);
+			bundleContext, (Class<Indexer<?>>)(Class<?>)Indexer.class, this);
 
 		_serviceTracker.open();
 	}
@@ -152,7 +154,7 @@ public class IndexOnStartupIndexerServiceCustomizer
 		}
 	}
 
-	protected boolean isBaseSearcher(Class indexerClass) {
+	protected boolean isBaseSearcher(Class<?> indexerClass) {
 		while ((indexerClass != null) && !Object.class.equals(indexerClass)) {
 			if (indexerClass.equals(BaseSearcher.class)) {
 				return true;
@@ -190,6 +192,6 @@ public class IndexOnStartupIndexerServiceCustomizer
 	private final Map
 		<String, ServiceRegistration<PortalInstanceLifecycleListener>>
 			_serviceRegistrations = new HashMap<>();
-	private ServiceTracker<Indexer, Indexer> _serviceTracker;
+	private ServiceTracker<Indexer<?>, Indexer<?>> _serviceTracker;
 
 }

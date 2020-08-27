@@ -18,9 +18,9 @@ import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.BaseAssetRendererFactory;
 import com.liferay.bookmarks.constants.BookmarksConstants;
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.constants.BookmarksPortletKeys;
 import com.liferay.bookmarks.model.BookmarksEntry;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksEntryLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -70,11 +70,10 @@ public class BookmarksEntryAssetRendererFactory
 			long classPK, int type)
 		throws PortalException {
 
-		BookmarksEntry entry = _bookmarksEntryLocalService.getEntry(classPK);
-
 		BookmarksEntryAssetRenderer bookmarksEntryAssetRenderer =
 			new BookmarksEntryAssetRenderer(
-				entry, _bookmarksEntryModelResourcePermission);
+				_bookmarksEntryLocalService.getEntry(classPK),
+				_bookmarksEntryModelResourcePermission);
 
 		bookmarksEntryAssetRenderer.setAssetRendererType(type);
 		bookmarksEntryAssetRenderer.setServletContext(_servletContext);
@@ -128,7 +127,7 @@ public class BookmarksEntryAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 
 		return liferayPortletURL;
@@ -136,8 +135,7 @@ public class BookmarksEntryAssetRendererFactory
 
 	@Override
 	public boolean hasAddPermission(
-			PermissionChecker permissionChecker, long groupId, long classTypeId)
-		throws Exception {
+		PermissionChecker permissionChecker, long groupId, long classTypeId) {
 
 		return _portletResourcePermission.contains(
 			permissionChecker, groupId, ActionKeys.ADD_ENTRY);
@@ -146,7 +144,7 @@ public class BookmarksEntryAssetRendererFactory
 	@Override
 	public boolean hasPermission(
 			PermissionChecker permissionChecker, long classPK, String actionId)
-		throws Exception {
+		throws PortalException {
 
 		return _bookmarksEntryModelResourcePermission.contains(
 			permissionChecker, classPK, actionId);

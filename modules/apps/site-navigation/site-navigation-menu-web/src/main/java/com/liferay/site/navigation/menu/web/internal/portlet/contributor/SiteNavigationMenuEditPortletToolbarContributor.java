@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.toolbar.contributor.PortletToolbarContributor;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.taglib.ui.Menu;
 import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
@@ -32,6 +33,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.navigation.menu.web.internal.constants.SiteNavigationMenuPortletKeys;
 import com.liferay.site.navigation.menu.web.internal.display.context.SiteNavigationMenuDisplayContext;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
+import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -120,8 +122,15 @@ public class SiteNavigationMenuEditPortletToolbarContributor
 			LanguageUtil.get(
 				_portal.getHttpServletRequest(portletRequest), "edit"));
 
+		SiteNavigationMenu siteNavigationMenu =
+			_siteNavigationMenuLocalService.getSiteNavigationMenu(
+				siteNavigationMenuId);
+
+		Group group = _groupLocalService.getGroup(
+			siteNavigationMenu.getGroupId());
+
 		PortletURL portletURL = PortletProviderUtil.getPortletURL(
-			portletRequest, SiteNavigationMenu.class.getName(),
+			portletRequest, group, SiteNavigationMenu.class.getName(),
 			PortletProvider.Action.EDIT);
 
 		portletURL.setParameter("mvcPath", "/edit_site_navigation_menu.jsp");
@@ -156,9 +165,10 @@ public class SiteNavigationMenuEditPortletToolbarContributor
 
 			return Collections.singletonList(menuItem);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
-				"Unable to set edit site navigation menu to menu item", e);
+				"Unable to set edit site navigation menu to menu item",
+				exception);
 
 			return Collections.emptyList();
 		}
@@ -168,6 +178,12 @@ public class SiteNavigationMenuEditPortletToolbarContributor
 		SiteNavigationMenuEditPortletToolbarContributor.class);
 
 	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private Portal _portal;
+
+	@Reference
+	private SiteNavigationMenuLocalService _siteNavigationMenuLocalService;
 
 }

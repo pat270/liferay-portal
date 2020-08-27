@@ -23,8 +23,8 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Locale;
@@ -32,7 +32,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,30 +50,26 @@ public class BlogsEntryAssetSearchTest extends BaseAssetSearchTestCase {
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		super.setUp();
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testClassTypeIds1() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testClassTypeIds2() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testOrderByExpirationDateAsc() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testOrderByExpirationDateDesc() {

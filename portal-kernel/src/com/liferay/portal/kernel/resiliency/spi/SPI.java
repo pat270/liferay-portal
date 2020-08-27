@@ -24,8 +24,10 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public interface SPI extends Remote, Serializable {
 
 	public static final String SPI_INSTANCE_PUBLICATION_KEY =

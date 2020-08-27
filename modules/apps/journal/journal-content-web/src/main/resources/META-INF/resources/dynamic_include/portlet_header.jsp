@@ -20,8 +20,11 @@
 JournalArticle article = journalContentDisplayContext.getArticle();
 %>
 
+<liferay-ui:success key='<%= JournalContentPortletKeys.JOURNAL_CONTENT + "requestProcessed" %>' message="your-request-completed-successfully" />
+
 <div class="visible-interaction">
 	<liferay-ui:icon-menu
+		cssClass="btn btn-monospaced btn-sm"
 		direction="left-side"
 		icon="<%= StringPool.BLANK %>"
 		markupView="lexicon"
@@ -33,11 +36,13 @@ JournalArticle article = journalContentDisplayContext.getArticle();
 			<%
 			JournalArticle latestArticle = journalContentDisplayContext.getLatestArticle();
 
-			Map<String, Object> data = new HashMap<String, Object>();
-
-			data.put("destroyOnHide", true);
-			data.put("id", HtmlUtil.escape(portletDisplay.getNamespace()) + "editAsset");
-			data.put("title", HtmlUtil.escape(latestArticle.getTitle(locale)));
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"destroyOnHide", true
+			).put(
+				"id", HtmlUtil.escape(portletDisplay.getNamespace()) + "editAsset"
+			).put(
+				"title", HtmlUtil.escape(latestArticle.getTitle(locale))
+			).build();
 			%>
 
 			<liferay-ui:icon
@@ -78,11 +83,13 @@ JournalArticle article = journalContentDisplayContext.getArticle();
 			<%
 			JournalArticle latestArticle = journalContentDisplayContext.getLatestArticle();
 
-			Map<String, Object> data = new HashMap<String, Object>();
-
-			data.put("destroyOnHide", true);
-			data.put("id", HtmlUtil.escape(portletDisplay.getNamespace()) + "editAsset");
-			data.put("title", HtmlUtil.escape(latestArticle.getTitle(locale)));
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"destroyOnHide", true
+			).put(
+				"id", HtmlUtil.escape(portletDisplay.getNamespace()) + "editAsset"
+			).put(
+				"title", HtmlUtil.escape(latestArticle.getTitle(locale))
+			).build();
 			%>
 
 			<liferay-ui:icon
@@ -90,7 +97,6 @@ JournalArticle article = journalContentDisplayContext.getArticle();
 				id="basicViewHistoryIcon"
 				message="view-history"
 				url="<%= journalContentDisplayContext.getURLViewHistory() %>"
-				useDialog="<%= true %>"
 			/>
 		</c:if>
 	</liferay-ui:icon-menu>

@@ -46,7 +46,7 @@ import javax.sql.DataSource;
  */
 public abstract class PluginSettingServiceBaseImpl
 	extends BaseServiceImpl
-	implements PluginSettingService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, PluginSettingService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -404,8 +404,8 @@ public abstract class PluginSettingServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

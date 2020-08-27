@@ -18,6 +18,7 @@ import com.liferay.blogs.constants.BlogsConstants;
 import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
@@ -49,14 +50,12 @@ public class BlogsExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {_blogsPortletDisplayTemplateExportCapability});
+		return ListUtil.fromArray(_blogsPortletDisplayTemplateExportCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {_blogsPortletDisplayTemplateImportCapability});
+		return ListUtil.fromArray(_blogsPortletDisplayTemplateImportCapability);
 	}
 
 	@Override
@@ -65,23 +64,26 @@ public class BlogsExportImportPortletPreferencesProcessor
 			PortletPreferences portletPreferences)
 		throws PortletDataException {
 
+		if (!_exportImportHelper.isExportPortletData(portletDataContext) ||
+			!portletDataContext.getBooleanParameter(
+				_blogsPortletDataHandler.getNamespace(), "entries")) {
+
+			return portletPreferences;
+		}
+
 		try {
 			portletDataContext.addPortletPermissions(
 				BlogsConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(BlogsPortletKeys.BLOGS);
-			pde.setType(PortletDataException.EXPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(BlogsPortletKeys.BLOGS);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
-		}
-
-		if (!portletDataContext.getBooleanParameter(
-				_blogsPortletDataHandler.getNamespace(), "entries")) {
-
-			return portletPreferences;
+			throw portletDataException;
 		}
 
 		String portletId = portletDataContext.getPortletId();
@@ -98,13 +100,15 @@ public class BlogsExportImportPortletPreferencesProcessor
 		try {
 			actionableDynamicQuery.performActions();
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(BlogsPortletKeys.BLOGS);
-			pde.setType(PortletDataException.EXPORT_PORTLET_DATA);
+			portletDataException.setPortletId(BlogsPortletKeys.BLOGS);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_DATA);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		return portletPreferences;
@@ -126,13 +130,15 @@ public class BlogsExportImportPortletPreferencesProcessor
 			portletDataContext.importPortletPermissions(
 				BlogsConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(BlogsPortletKeys.BLOGS);
-			pde.setType(PortletDataException.IMPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(BlogsPortletKeys.BLOGS);
+			portletDataException.setType(
+				PortletDataException.IMPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		Element entriesElement = portletDataContext.getImportDataGroupElement(
@@ -171,5 +177,8 @@ public class BlogsExportImportPortletPreferencesProcessor
 
 	@Reference(target = "(name=BlogsImportCapability)")
 	private Capability _blogsPortletDisplayTemplateImportCapability;
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
 
 }

@@ -25,12 +25,9 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceVersionLocalServi
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DDMFormInstanceRecordVersionImpl
 	extends DDMFormInstanceRecordVersionBaseImpl {
 
@@ -48,8 +45,12 @@ public class DDMFormInstanceRecordVersionImpl
 
 	@Override
 	public DDMFormValues getDDMFormValues() throws PortalException {
+		DDMFormInstance ddmFormInstance =
+			DDMFormInstanceLocalServiceUtil.getFormInstance(
+				getFormInstanceId());
+
 		return DDMFormInstanceRecordLocalServiceUtil.getDDMFormValues(
-			getStorageId(), getDDMForm());
+			getDDMForm(), getStorageId(), ddmFormInstance.getStorageType());
 	}
 
 	@Override

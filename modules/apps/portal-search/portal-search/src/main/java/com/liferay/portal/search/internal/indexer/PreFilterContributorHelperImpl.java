@@ -24,8 +24,6 @@ import com.liferay.portal.kernel.search.SearchPermissionChecker;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.search.permission.SearchPermissionFilterContributor;
-import com.liferay.portal.search.spi.model.query.contributor.ModelPreFilterContributor;
-import com.liferay.portal.search.spi.model.query.contributor.QueryPreFilterContributor;
 import com.liferay.portal.search.spi.model.registrar.ModelSearchSettings;
 
 import java.util.List;
@@ -76,11 +74,8 @@ public class PreFilterContributorHelperImpl
 		BooleanFilter booleanFilter, ModelSearchSettings modelSearchSettings,
 		SearchContext searchContext) {
 
-		Stream<ModelPreFilterContributor> stream =
-			modelPreFilterContributorsHolder.getByModel(
-				modelSearchSettings.getClassName());
-
-		stream.forEach(
+		modelPreFilterContributorsHolder.forEach(
+			modelSearchSettings.getClassName(),
 			modelPreFilterContributor -> modelPreFilterContributor.contribute(
 				booleanFilter, modelSearchSettings, searchContext));
 	}
@@ -113,11 +108,11 @@ public class PreFilterContributorHelperImpl
 					booleanFilter, searchContext);
 			}
 		}
-		catch (RuntimeException re) {
-			throw re;
+		catch (RuntimeException runtimeException) {
+			throw runtimeException;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -143,10 +138,7 @@ public class PreFilterContributorHelperImpl
 	private void _addPreFilters(
 		BooleanFilter booleanFilter, SearchContext searchContext) {
 
-		Stream<QueryPreFilterContributor> stream =
-			queryPreFilterContributorsHolder.getAll();
-
-		stream.forEach(
+		queryPreFilterContributorsHolder.forEach(
 			queryPreFilterContributor -> queryPreFilterContributor.contribute(
 				booleanFilter, searchContext));
 	}
@@ -172,7 +164,7 @@ public class PreFilterContributorHelperImpl
 		return booleanFilter;
 	}
 
-	private ModelSearchSettings _getModelSearchSettings(Indexer indexer) {
+	private ModelSearchSettings _getModelSearchSettings(Indexer<?> indexer) {
 		ModelSearchSettingsImpl modelSearchSettingsImpl =
 			new ModelSearchSettingsImpl(indexer.getClassName());
 

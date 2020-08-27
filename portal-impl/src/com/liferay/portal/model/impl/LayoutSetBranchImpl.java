@@ -72,12 +72,12 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 
 			return _layoutSet;
 		}
-		catch (PortalException | SystemException e) {
+		catch (PortalException | SystemException exception) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 
@@ -106,34 +106,34 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 
 	@Override
 	public String getSettings() {
-		if (_settingsProperties == null) {
+		if (_settingsUnicodeProperties == null) {
 			return super.getSettings();
 		}
 
-		return _settingsProperties.toString();
+		return _settingsUnicodeProperties.toString();
 	}
 
 	@Override
 	public UnicodeProperties getSettingsProperties() {
-		if (_settingsProperties == null) {
-			_settingsProperties = new UnicodeProperties(true);
+		if (_settingsUnicodeProperties == null) {
+			_settingsUnicodeProperties = new UnicodeProperties(true);
 
 			try {
-				_settingsProperties.load(super.getSettings());
+				_settingsUnicodeProperties.load(super.getSettings());
 			}
-			catch (IOException ioe) {
-				_log.error(ioe, ioe);
+			catch (IOException ioException) {
+				_log.error(ioException, ioException);
 			}
 		}
 
-		return _settingsProperties;
+		return _settingsUnicodeProperties;
 	}
 
 	@Override
 	public String getSettingsProperty(String key) {
-		UnicodeProperties settingsProperties = getSettingsProperties();
+		UnicodeProperties settingsUnicodeProperties = getSettingsProperties();
 
-		return settingsProperties.getProperty(key);
+		return settingsUnicodeProperties.getProperty(key);
 	}
 
 	@Override
@@ -143,9 +143,9 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 
 	@Override
 	public String getThemeSetting(String key, String device) {
-		UnicodeProperties settingsProperties = getSettingsProperties();
+		UnicodeProperties settingsUnicodeProperties = getSettingsProperties();
 
-		String value = settingsProperties.getProperty(
+		String value = settingsUnicodeProperties.getProperty(
 			ThemeSettingImpl.namespaceProperty(device, key));
 
 		if (value != null) {
@@ -161,7 +161,7 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 
 			controlPanel = group.isControlPanel();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		if (controlPanel) {
@@ -175,9 +175,7 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 			theme = getTheme();
 		}
 
-		value = theme.getSetting(key);
-
-		return value;
+		return theme.getSetting(key);
 	}
 
 	@Override
@@ -198,22 +196,24 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 
 	@Override
 	public void setSettings(String settings) {
-		_settingsProperties = null;
+		_settingsUnicodeProperties = null;
 
 		super.setSettings(settings);
 	}
 
 	@Override
-	public void setSettingsProperties(UnicodeProperties settingsProperties) {
-		_settingsProperties = settingsProperties;
+	public void setSettingsProperties(
+		UnicodeProperties settingsUnicodeProperties) {
 
-		super.setSettings(_settingsProperties.toString());
+		_settingsUnicodeProperties = settingsUnicodeProperties;
+
+		super.setSettings(_settingsUnicodeProperties.toString());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutSetBranchImpl.class);
 
 	private LayoutSet _layoutSet;
-	private UnicodeProperties _settingsProperties;
+	private UnicodeProperties _settingsUnicodeProperties;
 
 }

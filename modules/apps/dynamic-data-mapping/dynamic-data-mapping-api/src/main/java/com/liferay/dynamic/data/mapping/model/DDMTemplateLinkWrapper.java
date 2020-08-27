@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMTemplateLink
  * @generated
  */
-@ProviderType
 public class DDMTemplateLinkWrapper
 	extends BaseModelWrapper<DDMTemplateLink>
 	implements DDMTemplateLink, ModelWrapper<DDMTemplateLink> {
@@ -44,6 +43,8 @@ public class DDMTemplateLinkWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("templateLinkId", getTemplateLinkId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("classNameId", getClassNameId());
@@ -55,6 +56,18 @@ public class DDMTemplateLinkWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long templateLinkId = (Long)attributes.get("templateLinkId");
 
 		if (templateLinkId != null) {
@@ -124,6 +137,26 @@ public class DDMTemplateLinkWrapper
 	@Override
 	public long getCompanyId() {
 		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the ct collection ID of this ddm template link.
+	 *
+	 * @return the ct collection ID of this ddm template link
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
+	 * Returns the mvcc version of this ddm template link.
+	 *
+	 * @return the mvcc version of this ddm template link
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -204,6 +237,26 @@ public class DDMTemplateLinkWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this ddm template link.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm template link
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm template link.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm template link
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the primary key of this ddm template link.
 	 *
 	 * @param primaryKey the primary key of this ddm template link
@@ -231,6 +284,20 @@ public class DDMTemplateLinkWrapper
 	@Override
 	public void setTemplateLinkId(long templateLinkId) {
 		model.setTemplateLinkId(templateLinkId);
+	}
+
+	@Override
+	public Map<String, Function<DDMTemplateLink, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMTemplateLink, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

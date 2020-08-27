@@ -1,0 +1,64 @@
+{
+	"active": true,
+	"defaultSku": "3 pcs",
+	"description": {
+		"en_US": "Description of DXP Subscription",
+		"hr_HR": "Opis DXP pretplate"
+	},
+	"externalReferenceCode": "ext-123",
+	"id": 19770709,
+	"images": [
+		{
+			"attachment": "U29tZXRleHQsIHRoaXMgaXMgbm90IGltYWdl",
+			"id": 1977,
+			"title": {
+				"en_US": "Image of me",
+				"hr_HR": "Moja slika"
+			}
+		},
+		{
+			"attachment": "U29tZXRleHQsIHRoaXMgaXMgbm90IGltYWdl",
+			"id": 1979,
+			"title": {
+				"en_US": "Image of you",
+				"hr_HR": "Tvoja slika"
+			}
+		},
+		{
+			"attachment": "U29tZXRleHQsIHRoaXMgaXMgbm90IGltYWdl",
+			"id": 1981,
+			"title": {
+				"en_US": "Image of us",
+				"hr_HR": "Naša slika"
+			}
+		}
+	],
+	"metaDescription": {
+		"en_US": "Meta Description",
+		"hr_HR": "Meta opis"
+	},
+	"metaKeyword": {
+		"en_US": "this goes to page head keywords meta tag",
+		"hr_HR": "ključne riječi za head meta tag na nivou stranice"
+	},
+	"metaTitle": {
+		"en_US": "this goes to page head title meta tag",
+		"hr_HR": "naslov za head title meta tag za nivo stranice"
+	},
+	"name": {
+		"en_US": "DXP Subscription",
+		"hr_HR": "DXP pretplata"
+	},
+	"productId": 20111101,
+	"productType": "subscription",
+	"shortDescription": {
+		"en_US": "DXP Subscription is minimum enterprise customer needs",
+		"hr_HR": "DXP pretplata je minimum za veće kupce"
+	},
+	"siteId": 377809,
+	"tags": [
+		"subscription",
+		"enterprise",
+		"sales"
+	]
+}

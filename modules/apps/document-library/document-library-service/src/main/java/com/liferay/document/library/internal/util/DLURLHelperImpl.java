@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
@@ -54,7 +55,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = DLURLHelper.class)
+@Component(service = DLURLHelper.class)
 public class DLURLHelperImpl implements DLURLHelper {
 
 	@Override
@@ -119,6 +120,7 @@ public class DLURLHelperImpl implements DLURLHelper {
 		return portletURL.toString();
 	}
 
+	@Override
 	public String getImagePreviewURL(
 		FileEntry fileEntry, FileVersion fileVersion,
 		ThemeDisplay themeDisplay) {
@@ -145,7 +147,11 @@ public class DLURLHelperImpl implements DLURLHelper {
 			previewQueryString = StringPool.BLANK;
 		}
 
-		if (ImageProcessorUtil.isSupported(fileVersion.getMimeType())) {
+		if (ImageProcessorUtil.isSupported(fileVersion.getMimeType()) ||
+			ArrayUtil.contains(
+				PropsValues.DL_FILE_ENTRY_PREVIEW_IMAGE_MIME_TYPES,
+				fileEntry.getMimeType())) {
+
 			previewQueryString = previewQueryString.concat("&imagePreview=1");
 		}
 		else if (PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED) {

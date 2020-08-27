@@ -34,12 +34,9 @@ import com.liferay.util.dao.orm.CustomSQLUtil;
 import java.util.Iterator;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class ExportImportConfigurationFinderImpl
 	extends ExportImportConfigurationFinderBaseImpl
 	implements ExportImportConfigurationFinder {
@@ -269,26 +266,26 @@ public class ExportImportConfigurationFinderImpl
 
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(groupId);
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
-			qPos.add(type);
+			queryPos.add(companyId);
+			queryPos.add(groupId);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
+			queryPos.add(type);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -297,8 +294,8 @@ public class ExportImportConfigurationFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -340,30 +337,30 @@ public class ExportImportConfigurationFinderImpl
 
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity(
+			sqlQuery.addEntity(
 				"ExportImportConfiguration",
 				ExportImportConfigurationImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(groupId);
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
-			qPos.add(type);
+			queryPos.add(companyId);
+			queryPos.add(groupId);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
+			queryPos.add(type);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
 			return (List<ExportImportConfiguration>)QueryUtil.list(
-				q, getDialect(), queryDefinition.getStart(),
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

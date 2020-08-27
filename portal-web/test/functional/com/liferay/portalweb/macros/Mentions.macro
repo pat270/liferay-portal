@@ -1,4 +1,5 @@
 definition {
+
 	macro addMentionViaBlogsEntry {
 		var key_entryContent = "${entryContent}";
 		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
@@ -48,8 +49,10 @@ definition {
 			locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON",
 			value1 = "Reply");
 
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
 		Type.sendKeys(
-			locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR",
+			locator1 = "CKEditor#BODY",
 			value1 = "${threadBody} @${mentionsUserScreenName}");
 
 		SelectFrame.selectFrameTop();
@@ -70,10 +73,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
 		Type.sendKeys(
-			key_editor = "body",
-			locator1 = "AlloyEditor#EDITOR",
+			locator1 = "CKEditor#BODY",
 			value1 = "@${mentionsUserScreenName}");
+
+		SelectFrame.selectFrameTop();
 
 		Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
 
@@ -85,20 +91,15 @@ definition {
 
 		MenuItem.click(menuItem = "Edit");
 
-		Type(
-			locator1 = "TextInput#SUBJECT",
-			value1 = "${threadSubject}");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-		Click(
-			key_editor = "body",
-			locator1 = "AlloyEditor#EDITOR");
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody} @${mentionsUserScreenName}");
+
+		SelectFrame(value1 = "relative=top");
 
 		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
-
-		Type.sendKeys(
-			key_editor = "body",
-			locator1 = "AlloyEditor#EDITOR",
-			value1 = " @${mentionsUserScreenName}");
 
 		Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
 
@@ -116,9 +117,13 @@ definition {
 
 		ProductMenuHelper.openProductMenu();
 
-		AssertTextEquals.assertPartialText(
-			locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME",
-			value1 = "${mentionsUserFullName}");
+		// Disabling assertion for Test Test until LPS-108776 is fixed.
+
+		if ("${mentionsUserFullName}" != "Test Test") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME",
+				value1 = "${mentionsUserFullName}");
+		}
 	}
 
 	macro viewMentionTagLink {
@@ -135,4 +140,5 @@ definition {
 			locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME",
 			value1 = "${mentionsUserFullName}");
 	}
+
 }

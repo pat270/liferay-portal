@@ -14,7 +14,6 @@
 
 package com.liferay.message.boards.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see MBCategoryService
  * @generated
  */
-@ProviderType
 public class MBCategoryServiceUtil {
 
 	/*
@@ -179,10 +177,10 @@ public class MBCategoryServiceUtil {
 
 	public static java.util.List<Object> getCategoriesAndThreads(
 		long groupId, long categoryId, int status, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
 
 		return getService().getCategoriesAndThreads(
-			groupId, categoryId, status, start, end, obc);
+			groupId, categoryId, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<Object> getCategoriesAndThreads(

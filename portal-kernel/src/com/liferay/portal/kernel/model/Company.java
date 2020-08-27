@@ -64,6 +64,8 @@ public interface Company extends CompanyModel, PersistedModel {
 
 	public String getAuthType();
 
+	public CompanyInfo getCompanyInfo();
+
 	public User getDefaultUser()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
@@ -77,6 +79,8 @@ public interface Company extends CompanyModel, PersistedModel {
 	public long getGroupId()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
+	public String getKey();
+
 	public java.security.Key getKeyObj();
 
 	public java.util.Locale getLocale()
@@ -87,6 +91,9 @@ public interface Company extends CompanyModel, PersistedModel {
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public String getPortalURL(long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public String getPortalURL(long groupId, boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public String getShortName()
@@ -101,6 +108,10 @@ public interface Company extends CompanyModel, PersistedModel {
 
 	public boolean isAutoLogin();
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public boolean isSendPassword();
 
 	public boolean isSendPasswordResetLink();
@@ -112,6 +123,8 @@ public interface Company extends CompanyModel, PersistedModel {
 	public boolean isStrangersVerify();
 
 	public boolean isStrangersWithMx();
+
+	public void setKey(String key);
 
 	public void setKeyObj(java.security.Key keyObj);
 

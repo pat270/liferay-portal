@@ -17,6 +17,7 @@ package com.liferay.poshi.runner.elements;
 import com.liferay.poshi.runner.PoshiRunnerContext;
 import com.liferay.poshi.runner.script.PoshiScriptParserException;
 import com.liferay.poshi.runner.util.RegexUtil;
+import com.liferay.poshi.runner.util.StringUtil;
 import com.liferay.poshi.runner.util.Validator;
 
 import java.util.ArrayList;
@@ -115,15 +116,17 @@ public class ExecutePoshiElement extends PoshiElement {
 
 			String namespace = executeCommandName.substring(0, index);
 
-			executeCommandName = executeCommandName.replace(
-				namespace + ".", "");
+			executeCommandName = StringUtil.replace(
+				executeCommandName, namespace + ".", "");
 
-			executeCommandName = executeCommandName.replace(".", "#");
+			executeCommandName = StringUtil.replace(
+				executeCommandName, '.', '#');
 
 			executeCommandName = namespace + "." + executeCommandName;
 		}
 		else {
-			executeCommandName = executeCommandName.replace(".", "#");
+			executeCommandName = StringUtil.replace(
+				executeCommandName, '.', '#');
 		}
 
 		if (fileExtension.equals("function") ||
@@ -135,7 +138,7 @@ public class ExecutePoshiElement extends PoshiElement {
 			addAttribute("macro", executeCommandName);
 
 			if (poshiScript.startsWith("var ")) {
-				PoshiNode returnPoshiNode = PoshiNodeFactory.newPoshiNode(
+				PoshiNode<?, ?> returnPoshiNode = PoshiNodeFactory.newPoshiNode(
 					this, poshiScript);
 
 				if (returnPoshiNode instanceof ReturnPoshiElement) {
@@ -237,6 +240,7 @@ public class ExecutePoshiElement extends PoshiElement {
 	}
 
 	protected ExecutePoshiElement() {
+		this(_ELEMENT_NAME);
 	}
 
 	protected ExecutePoshiElement(Element element) {
@@ -254,6 +258,10 @@ public class ExecutePoshiElement extends PoshiElement {
 		throws PoshiScriptParserException {
 
 		super("execute", parentPoshiElement, poshiScript);
+	}
+
+	protected ExecutePoshiElement(String name) {
+		super(name);
 	}
 
 	protected ExecutePoshiElement(String name, Element element) {
@@ -281,7 +289,7 @@ public class ExecutePoshiElement extends PoshiElement {
 
 		sb.append("\n\n");
 		sb.append(pad);
-		sb.append(blockName.replace("#", "."));
+		sb.append(StringUtil.replace(blockName, '#', '.'));
 		sb.append("(");
 
 		boolean multilineSnippet = false;

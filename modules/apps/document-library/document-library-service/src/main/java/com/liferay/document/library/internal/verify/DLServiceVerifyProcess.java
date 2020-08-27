@@ -24,6 +24,7 @@ import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalServi
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -53,8 +54,6 @@ import java.util.Objects;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import org.springframework.context.ApplicationContext;
-
 /**
  * @author     Raymond Augé
  * @author     Douglas Wong
@@ -62,7 +61,6 @@ import org.springframework.context.ApplicationContext;
  * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
 @Component(
-	immediate = true,
 	property = "verify.process.name=com.liferay.document.library.service",
 	service = VerifyProcess.class
 )
@@ -163,16 +161,16 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 								dlFileEntry);
 						}
 					}
-					catch (PortalException pe) {
+					catch (PortalException portalException) {
 						if (_log.isWarnEnabled()) {
 							_log.warn(
 								"Unable to get file entry " +
 									dlFileVersion.getFileEntryId(),
-								pe);
+								portalException);
 						}
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						DLFileEntry dlFileEntry =
 							_dlFileEntryLocalService.fetchDLFileEntry(
@@ -183,7 +181,7 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 								"Unable to find file entry associated with " +
 									"file version " +
 										dlFileVersion.getFileVersionId(),
-								e);
+								exception);
 						}
 						else {
 							StringBundler sb = new StringBundler(4);
@@ -193,7 +191,7 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 							sb.append(" for file entry ");
 							sb.append(dlFileEntry.getName());
 
-							_log.warn(sb.toString(), e);
+							_log.warn(sb.toString(), exception);
 						}
 					}
 				}
@@ -243,14 +241,6 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 		updateFolderAssets();
 	}
 
-	@Reference(
-		target = "(org.springframework.context.service.name=com.liferay.dynamic.data.mapping.service)",
-		unbind = "-"
-	)
-	protected void setApplicationContext(
-		ApplicationContext applicationContext) {
-	}
-
 	@Reference(unbind = "-")
 	protected void setDLAppHelperLocalService(
 		DLAppHelperLocalService dlAppHelperLocalService) {
@@ -287,7 +277,7 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.document.library.service)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.2.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.document.library.service)(&(release.schema.version>=3.0.0)(!(release.schema.version>=4.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
@@ -299,11 +289,11 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 				"update DLFileEntry set classNameId = 0 where classNameId is " +
 					"null");
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to fix file entries where class name ID is null",
-					e);
+					exception);
 			}
 		}
 	}
@@ -329,13 +319,13 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 						dlFileEntry.getUserId(), fileEntry, fileVersion, null,
 						null, null);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							StringBundler.concat(
 								"Unable to update asset for file entry ",
 								dlFileEntry.getFileEntryId(), ": ",
-								e.getMessage()));
+								exception.getMessage()));
 					}
 				}
 			}
@@ -364,12 +354,13 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 					_dlAppHelperLocalService.updateAsset(
 						dlFolder.getUserId(), folder, null, null, null);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							StringBundler.concat(
 								"Unable to update asset for folder ",
-								dlFolder.getFolderId(), ": ", e.getMessage()));
+								dlFolder.getFolderId(), ": ",
+								exception.getMessage()));
 					}
 				}
 			}
@@ -385,6 +376,9 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLServiceVerifyProcess.class);
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
 
 	private DLAppHelperLocalService _dlAppHelperLocalService;
 	private DLFileEntryLocalService _dlFileEntryLocalService;

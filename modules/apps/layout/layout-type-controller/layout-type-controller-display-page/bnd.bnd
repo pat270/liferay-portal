@@ -1,8 +1,8 @@
 Bundle-Name: Liferay Layout Type Controller Display Page
 Bundle-SymbolicName: com.liferay.layout.type.controller.display.page
-Bundle-Version: 2.0.0
+Bundle-Version: 2.0.18
 Import-Package:\
-	com.liferay.portal.kernel.portlet;version="[9.0.0,9.1)",\
+	com.liferay.portal.kernel.portlet;version="[10.1.0,10.2)",\
 	\
 	*
 Web-ContextPath: /layout-type-controller-display-page

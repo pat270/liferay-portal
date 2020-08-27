@@ -20,6 +20,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.configuration.ConfigurationFactoryImpl;
 import com.liferay.portal.dao.db.DBManagerImpl;
+import com.liferay.portal.dao.init.DBInitUtil;
 import com.liferay.portal.dao.jdbc.DataSourceFactoryImpl;
 import com.liferay.portal.kernel.bean.BeanLocator;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
@@ -32,6 +33,7 @@ import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.util.BasePortalLifecycle;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -48,6 +50,7 @@ import com.liferay.portal.log.Log4jLogFactoryImpl;
 import com.liferay.portal.module.framework.ModuleFrameworkUtilAdapter;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
 import com.liferay.portal.spring.bean.LiferayBeanFactory;
+import com.liferay.portal.spring.compat.CompatBeanDefinitionRegistryPostProcessor;
 import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
 import com.liferay.portal.spring.context.ArrayApplicationContext;
 import com.liferay.portal.xml.SAXReaderImpl;
@@ -59,9 +62,7 @@ import com.sun.syndication.io.XmlReader;
 
 import java.lang.reflect.Field;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -91,8 +92,8 @@ public class InitUtil {
 				}
 			}
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 
 		StopWatch stopWatch = new StopWatch();
@@ -123,8 +124,8 @@ public class InitUtil {
 			PortalClassLoaderUtil.setClassLoader(
 				currentThread.getContextClassLoader());
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 
 		// Properties
@@ -136,9 +137,7 @@ public class InitUtil {
 		if (GetterUtil.getBoolean(
 				SystemProperties.get("log4j.configure.on.startup"), true)) {
 
-			ClassLoader classLoader = InitUtil.class.getClassLoader();
-
-			Log4JUtil.configureLog4J(classLoader);
+			Log4JUtil.configureLog4J(InitUtil.class.getClassLoader());
 		}
 
 		// Shared log
@@ -146,8 +145,8 @@ public class InitUtil {
 		try {
 			LogFactoryUtil.setLogFactory(new Log4jLogFactoryImpl());
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 
 		// Log sanitizer
@@ -217,6 +216,8 @@ public class InitUtil {
 				ModuleFrameworkUtilAdapter.initFramework();
 			}
 
+			DBInitUtil.init();
+
 			ApplicationContext infrastructureApplicationContext =
 				new ArrayApplicationContext(
 					PropsValues.SPRING_INFRASTRUCTURE_CONFIGS);
@@ -254,6 +255,9 @@ public class InitUtil {
 					configurableApplicationContext);
 			}
 
+			configurableApplicationContext.addBeanFactoryPostProcessor(
+				new CompatBeanDefinitionRegistryPostProcessor());
+
 			configurableApplicationContext.refresh();
 
 			BeanLocator beanLocator = new BeanLocatorImpl(
@@ -274,8 +278,8 @@ public class InitUtil {
 
 			registerSpringInitialized();
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 
 		_initialized = true;
@@ -294,19 +298,19 @@ public class InitUtil {
 	public static void registerSpringInitialized() {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put("module.service.lifecycle", "spring.initialized");
-		properties.put("service.vendor", ReleaseInfo.getVendor());
-		properties.put("service.version", ReleaseInfo.getVersion());
-
 		final ServiceRegistration<ModuleServiceLifecycle>
 			moduleServiceLifecycleServiceRegistration =
 				registry.registerService(
 					ModuleServiceLifecycle.class,
 					new ModuleServiceLifecycle() {
 					},
-					properties);
+					HashMapBuilder.<String, Object>put(
+						"module.service.lifecycle", "spring.initialized"
+					).put(
+						"service.vendor", ReleaseInfo.getVendor()
+					).put(
+						"service.version", ReleaseInfo.getVersion()
+					).build());
 
 		PortalLifecycleUtil.register(
 			new BasePortalLifecycle() {
@@ -328,8 +332,8 @@ public class InitUtil {
 		try {
 			ModuleFrameworkUtilAdapter.stopFramework(0);
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
@@ -337,8 +341,8 @@ public class InitUtil {
 		try {
 			ModuleFrameworkUtilAdapter.stopRuntime();
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 

@@ -45,7 +45,7 @@ public interface PermissionService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link PermissionServiceUtil} to access the permission remote service. Add custom service methods to <code>com.liferay.portal.service.impl.PermissionServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.PermissionServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the permission remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link PermissionServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**
@@ -56,6 +56,7 @@ public interface PermissionService extends BaseService {
 	 * @param primKey the primary key of the service
 	 */
 	@JSONWebService(mode = JSONWebServiceMode.IGNORE)
+	@Transactional(readOnly = true)
 	public void checkPermission(long groupId, String name, long primKey)
 		throws PortalException;
 
@@ -66,6 +67,7 @@ public interface PermissionService extends BaseService {
 	 * @param name the service name
 	 * @param primKey the primary key of the service
 	 */
+	@Transactional(readOnly = true)
 	public void checkPermission(long groupId, String name, String primKey)
 		throws PortalException;
 

@@ -16,8 +16,6 @@ package com.liferay.document.library.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the local service utility for DLAppHelper. This utility wraps
  * <code>com.liferay.portlet.documentlibrary.service.impl.DLAppHelperLocalServiceImpl</code> and
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLAppHelperLocalService
  * @generated
  */
-@ProviderType
 public class DLAppHelperLocalServiceUtil {
 
 	/*
@@ -151,19 +148,6 @@ public class DLAppHelperLocalServiceUtil {
 		getService().moveDependentsToTrash(dlFolder);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #moveDependentsToTrash(DLFolder)}
-	 */
-	@Deprecated
-	public static void moveDependentsToTrash(
-			java.util.List<Object> dlFileEntriesAndDLFolders, long trashEntryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().moveDependentsToTrash(
-			dlFileEntriesAndDLFolders, trashEntryId);
-	}
-
 	public static com.liferay.portal.kernel.repository.model.FileEntry
 			moveFileEntryFromTrash(
 				long userId,
@@ -264,37 +248,20 @@ public class DLAppHelperLocalServiceUtil {
 		getService().restoreDependentsFromTrash(dlFolder);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #restoreDependentsFromTrash(DLFolder)}
-	 */
-	@Deprecated
-	public static void restoreDependentsFromTrash(
-			java.util.List<Object> dlFileEntriesAndDLFolders)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().restoreDependentsFromTrash(dlFileEntriesAndDLFolders);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #restoreDependentsFromTrash(List)}
-	 */
-	@Deprecated
-	public static void restoreDependentsFromTrash(
-			java.util.List<Object> dlFileEntriesAndDLFolders, long trashEntryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().restoreDependentsFromTrash(
-			dlFileEntriesAndDLFolders, trashEntryId);
-	}
-
 	public static void restoreFileEntryFromTrash(
 			long userId,
 			com.liferay.portal.kernel.repository.model.FileEntry fileEntry)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().restoreFileEntryFromTrash(userId, fileEntry);
+	}
+
+	public static void restoreFileEntryFromTrash(
+			long userId, long newFolderId,
+			com.liferay.portal.kernel.repository.model.FileEntry fileEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().restoreFileEntryFromTrash(userId, newFolderId, fileEntry);
 	}
 
 	public static void restoreFileShortcutFromTrash(

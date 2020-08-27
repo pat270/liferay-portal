@@ -19,23 +19,18 @@ import com.liferay.calendar.model.Calendar;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
-import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
-import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,25 +38,17 @@ import org.junit.runner.RunWith;
  * @author Wade Cao
  * @author André de Oliveira
  */
+@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 @Sync
 public class CalendarIndexerLocalizedContentTest
 	extends BaseCalendarIndexerTestCase {
-
-	@ClassRule
-	@Rule
-	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			PermissionCheckerMethodTestRule.INSTANCE,
-			SynchronousDestinationTestRule.INSTANCE);
 
 	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 
-		setGroup(calendarFixture.addGroup());
 		setIndexerClass(Calendar.class);
 	}
 
@@ -87,21 +74,21 @@ public class CalendarIndexerLocalizedContentTest
 				}
 			});
 
-		Map<String, String> nameMap = new HashMap<String, String>() {
-			{
-				put("name", originalName);
-				put("name_en_US", originalName);
-				put("name_ja_JP", japaneseName);
-			}
-		};
+		Map<String, String> nameMap = HashMapBuilder.put(
+			"name", originalName
+		).put(
+			"name_en_US", originalName
+		).put(
+			"name_ja_JP", japaneseName
+		).build();
 
-		Map<String, String> descriptionMap = new HashMap<String, String>() {
-			{
-				put("description", description);
-				put("description_en_US", description);
-				put("description_ja_JP", description);
-			}
-		};
+		Map<String, String> descriptionMap = HashMapBuilder.put(
+			"description", description
+		).put(
+			"description_en_US", description
+		).put(
+			"description_ja_JP", description
+		).build();
 
 		String word1 = "新規";
 		String word2 = "作成";
@@ -112,8 +99,7 @@ public class CalendarIndexerLocalizedContentTest
 			word1, word2, prefix1, prefix2
 		).forEach(
 			keywords -> {
-				Document document = calendarSearchFixture.searchOnlyOne(
-					keywords, LocaleUtil.JAPAN);
+				Document document = searchOnlyOne(keywords, LocaleUtil.JAPAN);
 
 				FieldValuesAssert.assertFieldValues(
 					nameMap, "name", document, keywords);
@@ -139,30 +125,28 @@ public class CalendarIndexerLocalizedContentTest
 		Stream.of(
 			full, partial1, partial2
 		).forEach(
-			name -> {
-				addCalendar(
-					new LocalizedValuesMap() {
-						{
-							put(LocaleUtil.US, originalName);
-							put(LocaleUtil.JAPAN, name);
-						}
-					},
-					new LocalizedValuesMap() {
-						{
-							put(LocaleUtil.US, description);
-							put(LocaleUtil.JAPAN, description);
-						}
-					});
-			}
+			name -> addCalendar(
+				new LocalizedValuesMap() {
+					{
+						put(LocaleUtil.US, originalName);
+						put(LocaleUtil.JAPAN, name);
+					}
+				},
+				new LocalizedValuesMap() {
+					{
+						put(LocaleUtil.US, description);
+						put(LocaleUtil.JAPAN, description);
+					}
+				})
 		);
 
-		Map<String, String> nameMap = new HashMap<String, String>() {
-			{
-				put("name", originalName);
-				put("name_en_US", originalName);
-				put("name_ja_JP", full);
-			}
-		};
+		Map<String, String> nameMap = HashMapBuilder.put(
+			"name", originalName
+		).put(
+			"name_en_US", originalName
+		).put(
+			"name_ja_JP", full
+		).build();
 
 		String word1 = "新規";
 		String word2 = "作成";
@@ -171,8 +155,7 @@ public class CalendarIndexerLocalizedContentTest
 			word1, word2
 		).forEach(
 			keywords -> {
-				Document document = calendarSearchFixture.searchOnlyOne(
-					keywords, LocaleUtil.JAPAN);
+				Document document = searchOnlyOne(keywords, LocaleUtil.JAPAN);
 
 				FieldValuesAssert.assertFieldValues(
 					nameMap, "name", document, keywords);
@@ -184,11 +167,10 @@ public class CalendarIndexerLocalizedContentTest
 		LocalizedValuesMap nameMap, LocalizedValuesMap descriptionMap) {
 
 		try {
-			return calendarFixture.addCalendar(
-				nameMap, descriptionMap, calendarFixture.getServiceContext());
+			return addCalendar(nameMap, descriptionMap, getServiceContext());
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 

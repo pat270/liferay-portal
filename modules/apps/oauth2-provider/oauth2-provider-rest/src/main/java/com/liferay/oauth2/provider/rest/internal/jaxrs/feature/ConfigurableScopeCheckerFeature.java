@@ -24,6 +24,7 @@ import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -80,8 +80,39 @@ import org.osgi.service.component.annotations.ServiceScope;
 @Provider
 public class ConfigurableScopeCheckerFeature implements Feature {
 
+	@Override
+	public boolean configure(FeatureContext context) {
+		if (_checkPatterns.isEmpty()) {
+			return false;
+		}
+
+		context.register(
+			new ConfigurableContainerScopeCheckerContainerRequestFilter(),
+			HashMapBuilder.<Class<?>, Integer>put(
+				ContainerRequestFilter.class, Priorities.AUTHORIZATION - 8
+			).build());
+
+		Configuration configuration = context.getConfiguration();
+
+		Stream<CheckPattern> stream = _checkPatterns.stream();
+
+		_serviceRegistration = _bundleContext.registerService(
+			ScopeFinder.class,
+			new CollectionScopeFinder(
+				stream.flatMap(
+					c -> Arrays.stream(c.getScopes())
+				).filter(
+					Validator::isNotNull
+				).collect(
+					Collectors.toSet()
+				)),
+			buildProperties(configuration));
+
+		return true;
+	}
+
 	@Activate
-	public void activate(
+	protected void activate(
 		BundleContext bundleContext, Map<String, Object> properties) {
 
 		_bundleContext = bundleContext;
@@ -121,46 +152,13 @@ public class ConfigurableScopeCheckerFeature implements Feature {
 						Pattern.compile(methodPatternString),
 						Pattern.compile(urlPatternString), scopes));
 			}
-			catch (PatternSyntaxException pse) {
-				_log.error("Invalid pattern " + pattern, pse);
+			catch (PatternSyntaxException patternSyntaxException) {
+				_log.error(
+					"Invalid pattern " + pattern, patternSyntaxException);
 
-				throw new IllegalArgumentException(pse);
+				throw new IllegalArgumentException(patternSyntaxException);
 			}
 		}
-	}
-
-	@Override
-	public boolean configure(FeatureContext context) {
-		if (_checkPatterns.isEmpty()) {
-			return false;
-		}
-
-		Map<Class<?>, Integer> contracts = new HashMap<>();
-
-		contracts.put(
-			ContainerRequestFilter.class, Priorities.AUTHORIZATION - 8);
-
-		context.register(
-			new ConfigurableContainerScopeCheckerContainerRequestFilter(),
-			contracts);
-
-		Configuration configuration = context.getConfiguration();
-
-		Stream<CheckPattern> stream = _checkPatterns.stream();
-
-		_serviceRegistration = _bundleContext.registerService(
-			ScopeFinder.class,
-			new CollectionScopeFinder(
-				stream.flatMap(
-					c -> Arrays.stream(c.getScopes())
-				).filter(
-					Validator::isNotNull
-				).collect(
-					Collectors.toSet()
-				)),
-			buildProperties(configuration));
-
-		return true;
 	}
 
 	protected Dictionary<String, Object> buildProperties(
@@ -202,9 +200,10 @@ public class ConfigurableScopeCheckerFeature implements Feature {
 		public CheckPattern(
 			Pattern methodPattern, Pattern urlPattern, String[] scopes) {
 
+			_scopes = scopes;
+
 			_methodPatternPredicate = methodPattern.asPredicate();
 			_urlPatternPredicate = urlPattern.asPredicate();
-			_scopes = scopes;
 		}
 
 		public Predicate<String> getMethodPatternPredicate() {
@@ -233,7 +232,7 @@ public class ConfigurableScopeCheckerFeature implements Feature {
 			ContainerRequestContext containerRequestContext) {
 
 			boolean anyMatch = false;
-			String path = StringPool.SLASH + _uriInfo.getPath();
+			String path = _getPath();
 			Request request = containerRequestContext.getRequest();
 
 			for (CheckPattern checkPattern : _checkPatterns) {
@@ -327,13 +326,21 @@ public class ConfigurableScopeCheckerFeature implements Feature {
 				return true;
 			}
 
-			if (scopes.length == 1) {
-				if (Validator.isNull(scopes[0])) {
-					return true;
-				}
+			if ((scopes.length == 1) && Validator.isNull(scopes[0])) {
+				return true;
 			}
 
 			return false;
+		}
+
+		private String _getPath() {
+			String uriInfoPath = _uriInfo.getPath();
+
+			if (uriInfoPath.startsWith("/")) {
+				return uriInfoPath;
+			}
+
+			return StringPool.SLASH + uriInfoPath;
 		}
 
 		@Context

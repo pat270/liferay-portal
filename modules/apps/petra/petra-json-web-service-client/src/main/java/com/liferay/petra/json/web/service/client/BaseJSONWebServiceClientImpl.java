@@ -156,8 +156,8 @@ public abstract class BaseJSONWebServiceClientImpl
 				_logger.debug(sb.toString());
 			}
 		}
-		catch (Exception e) {
-			_logger.error("Unable to configure client", e);
+		catch (Exception exception) {
+			_logger.error("Unable to configure client", exception);
 		}
 	}
 
@@ -167,8 +167,8 @@ public abstract class BaseJSONWebServiceClientImpl
 			try {
 				_asyncHttpClient.close();
 			}
-			catch (IOException ioe) {
-				_logger.error("Unable to close client", ioe);
+			catch (IOException ioException) {
+				_logger.error("Unable to close client", ioException);
 			}
 
 			_asyncHttpClient = null;
@@ -212,27 +212,6 @@ public abstract class BaseJSONWebServiceClientImpl
 		addHeaders(httpDelete, headers);
 
 		return execute(httpDelete);
-	}
-
-	@Override
-	public String doDelete(String url, Map<String, String> parameters)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doDelete(
-			url, toNameValuePairs(parameters),
-			Collections.<NameValuePair>emptyList());
-	}
-
-	@Override
-	public String doDelete(
-			String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doDelete(
-			url, toNameValuePairs(parameters), toNameValuePairs(headers));
 	}
 
 	@Override
@@ -286,25 +265,6 @@ public abstract class BaseJSONWebServiceClientImpl
 	}
 
 	@Override
-	public String doGet(String url, Map<String, String> parameters)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doGet(url, parameters, Collections.<String, String>emptyMap());
-	}
-
-	@Override
-	public String doGet(
-			String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doGet(
-			url, toNameValuePairs(parameters), toNameValuePairs(headers));
-	}
-
-	@Override
 	public String doGet(String url, String... parametersArray)
 		throws JSONWebServiceInvocationException,
 			   JSONWebServiceTransportException {
@@ -338,22 +298,9 @@ public abstract class BaseJSONWebServiceClientImpl
 
 			return _objectMapper.readValue(json, javaType);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
-	}
-
-	@Override
-	public <V, T> List<V> doGetToList(
-			Class<T> clazz, String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceSerializeException,
-			   JSONWebServiceTransportException {
-
-		return doGetToList(
-			clazz, url, toNameValuePairs(parameters),
-			toNameValuePairs(headers));
 	}
 
 	@Override
@@ -384,7 +331,7 @@ public abstract class BaseJSONWebServiceClientImpl
 		try {
 			return _objectMapper.readValue(json, clazz);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
 	}
@@ -422,27 +369,6 @@ public abstract class BaseJSONWebServiceClientImpl
 	}
 
 	@Override
-	public String doPost(String url, Map<String, String> parameters)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doPost(
-			url, toNameValuePairs(parameters),
-			Collections.<NameValuePair>emptyList());
-	}
-
-	@Override
-	public String doPost(
-			String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doPost(
-			url, toNameValuePairs(parameters), toNameValuePairs(headers));
-	}
-
-	@Override
 	public String doPost(String url, String... parametersArray)
 		throws JSONWebServiceInvocationException,
 			   JSONWebServiceTransportException {
@@ -463,7 +389,7 @@ public abstract class BaseJSONWebServiceClientImpl
 
 			return doPostAsJSON(url, json);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw _getJSONWebServiceSerializeException(object);
 		}
 	}
@@ -473,7 +399,7 @@ public abstract class BaseJSONWebServiceClientImpl
 		throws JSONWebServiceInvocationException,
 			   JSONWebServiceTransportException {
 
-		return doPostAsJSON(url, json, Collections.<String, String>emptyMap());
+		return doPostAsJSON(url, json, Collections.<NameValuePair>emptyList());
 	}
 
 	@Override
@@ -496,15 +422,6 @@ public abstract class BaseJSONWebServiceClientImpl
 	}
 
 	@Override
-	public String doPostAsJSON(
-			String url, String json, Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doPostAsJSON(url, json, toNameValuePairs(headers));
-	}
-
-	@Override
 	public <T> T doPostToObject(
 			Class<T> clazz, String url, List<NameValuePair> parameters,
 			List<NameValuePair> headers)
@@ -521,22 +438,9 @@ public abstract class BaseJSONWebServiceClientImpl
 		try {
 			return _objectMapper.readValue(json, clazz);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
-	}
-
-	@Override
-	public <T> T doPostToObject(
-			Class<T> clazz, String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceSerializeException,
-			   JSONWebServiceTransportException {
-
-		return doPostToObject(
-			clazz, url, toNameValuePairs(parameters),
-			toNameValuePairs(headers));
 	}
 
 	@Override
@@ -555,7 +459,7 @@ public abstract class BaseJSONWebServiceClientImpl
 		try {
 			return _objectMapper.readValue(json, clazz);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
 	}
@@ -590,27 +494,6 @@ public abstract class BaseJSONWebServiceClientImpl
 		httpPut.setEntity(httpEntity);
 
 		return execute(httpPut);
-	}
-
-	@Override
-	public String doPut(String url, Map<String, String> parameters)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doPut(
-			url, toNameValuePairs(parameters),
-			Collections.<NameValuePair>emptyList());
-	}
-
-	@Override
-	public String doPut(
-			String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceTransportException {
-
-		return doPut(
-			url, toNameValuePairs(parameters), toNameValuePairs(headers));
 	}
 
 	@Override
@@ -651,41 +534,7 @@ public abstract class BaseJSONWebServiceClientImpl
 		try {
 			return _objectMapper.readValue(json, clazz);
 		}
-		catch (IOException ioe) {
-			throw _getJSONWebServiceSerializeException(json, clazz);
-		}
-	}
-
-	@Override
-	public <T> T doPutToObject(
-			Class<T> clazz, String url, Map<String, String> parameters)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceSerializeException,
-			   JSONWebServiceTransportException {
-
-		return doPutToObject(
-			clazz, url, toNameValuePairs(parameters),
-			Collections.<NameValuePair>emptyList());
-	}
-
-	@Override
-	public <T> T doPutToObject(
-			Class<T> clazz, String url, Map<String, String> parameters,
-			Map<String, String> headers)
-		throws JSONWebServiceInvocationException,
-			   JSONWebServiceSerializeException,
-			   JSONWebServiceTransportException {
-
-		String json = doPut(url, parameters, headers);
-
-		if (json == null) {
-			return null;
-		}
-
-		try {
-			return _objectMapper.readValue(json, clazz);
-		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw _getJSONWebServiceSerializeException(json, clazz);
 		}
 	}
@@ -761,8 +610,8 @@ public abstract class BaseJSONWebServiceClientImpl
 		try {
 			afterPropertiesSet();
 		}
-		catch (IOReactorException iore) {
-			_logger.error(iore.getMessage());
+		catch (IOReactorException ioReactorException) {
+			_logger.error(ioReactorException.getMessage());
 		}
 	}
 
@@ -981,17 +830,19 @@ public abstract class BaseJSONWebServiceClientImpl
 			throw new JSONWebServiceTransportException.CommunicationFailure(
 				sb.toString(), statusCode);
 		}
-		catch (ExecutionException ee) {
+		catch (ExecutionException executionException) {
 			throw new JSONWebServiceTransportException.CommunicationFailure(
-				"Unable to transmit request to " + _hostName, ee);
+				"Unable to transmit request to " + _hostName,
+				executionException);
 		}
-		catch (InterruptedException ie) {
+		catch (InterruptedException interruptedException) {
 			throw new JSONWebServiceTransportException.CommunicationFailure(
-				"Unable to transmit request to " + _hostName, ie);
+				"Unable to transmit request to " + _hostName,
+				interruptedException);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new JSONWebServiceTransportException.CommunicationFailure(
-				"Unable to transmit request to " + _hostName, ioe);
+				"Unable to transmit request to " + _hostName, ioException);
 		}
 		finally {
 			httpRequestBase.releaseConnection();
@@ -1055,8 +906,8 @@ public abstract class BaseJSONWebServiceClientImpl
 			sslContext.init(
 				null, new TrustManager[] {new X509TrustManagerImpl()}, null);
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 
 		String[] httpProtocols = _split(System.getProperty("https.protocols"));
@@ -1133,30 +984,6 @@ public abstract class BaseJSONWebServiceClientImpl
 
 	protected abstract void signRequest(HttpRequestBase httpRequestBase)
 		throws JSONWebServiceTransportException.SigningFailure;
-
-	protected List<NameValuePair> toNameValuePairs(
-		Map<String, String> parameters) {
-
-		List<NameValuePair> nameValuePairs = new LinkedList<NameValuePair>();
-
-		for (Map.Entry<String, String> entry : parameters.entrySet()) {
-			String key = entry.getKey();
-
-			String value = entry.getValue();
-
-			if (value == null) {
-				key = "-" + key;
-
-				value = "";
-			}
-
-			NameValuePair nameValuePair = new BasicNameValuePair(key, value);
-
-			nameValuePairs.add(nameValuePair);
-		}
-
-		return nameValuePairs;
-	}
 
 	protected String updateJSON(String json)
 		throws JSONWebServiceInvocationException {

@@ -14,7 +14,8 @@
 
 package com.liferay.jenkins.results.parser;
 
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 
@@ -88,24 +89,33 @@ public class GitRepositoryFactory {
 		return new DefaultRemoteGitRepository(gitRemote);
 	}
 
+	public static RemoteGitRepository getRemoteGitRepository(String remoteURL) {
+		Matcher matcher = GitRemote.getRemoteURLMatcher(remoteURL);
+
+		if ((matcher == null) || !matcher.find()) {
+			throw new RuntimeException("Invalid remote URL " + remoteURL);
+		}
+
+		Pattern pattern = matcher.pattern();
+
+		String patternString = pattern.toString();
+
+		String username = "liferay";
+
+		if (patternString.contains("(?<username>")) {
+			username = matcher.group("username");
+		}
+
+		return getRemoteGitRepository(
+			matcher.group("hostname"), matcher.group("gitRepositoryName"),
+			username);
+	}
+
 	public static RemoteGitRepository getRemoteGitRepository(
 		String hostname, String gitRepositoryName, String username) {
 
 		if (hostname.equalsIgnoreCase("github.com")) {
 			return new GitHubRemoteGitRepository(gitRepositoryName, username);
-		}
-
-		if (hostname.contains("github-dev")) {
-			List<String> gitHubDevNodeHostnames =
-				GitHubDevSyncUtil.getGitHubDevNodeHostnames();
-
-			hostname = gitHubDevNodeHostnames.get(
-				JenkinsResultsParserUtil.getRandomValue(
-					0, gitHubDevNodeHostnames.size() - 1));
-
-			if (hostname.startsWith("slave-")) {
-				hostname = hostname.substring(6);
-			}
 		}
 
 		return new DefaultRemoteGitRepository(

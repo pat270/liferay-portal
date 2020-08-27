@@ -149,45 +149,47 @@ public abstract class BaseSalesforceClientImpl implements SalesforceClient {
 			_connectorConfig.setUsername(_userName);
 		}
 
-		if (_debugEnabled) {
-			_connectorConfig.setPrettyPrintXml(true);
-			_connectorConfig.setTraceMessage(true);
+		if (!_debugEnabled) {
+			return;
+		}
 
-			String baseDirName = System.getProperty("default.liferay.home");
+		_connectorConfig.setPrettyPrintXml(true);
+		_connectorConfig.setTraceMessage(true);
 
-			if (baseDirName == null) {
-				baseDirName = System.getProperty("user.dir");
-			}
+		String baseDirName = System.getProperty("default.liferay.home");
 
-			String filePathName = baseDirName + "/logs/salesforce.log";
+		if (baseDirName == null) {
+			baseDirName = System.getProperty("user.dir");
+		}
 
-			if (_logger.isInfoEnabled()) {
-				_logger.info("Salesforce log file: {}", filePathName);
-			}
+		String filePathName = baseDirName + "/logs/salesforce.log";
 
-			Path filePath = Paths.get(filePathName);
+		if (_logger.isInfoEnabled()) {
+			_logger.info("Salesforce log file: {}", filePathName);
+		}
 
-			if (!Files.exists(filePath)) {
-				try {
-					Path parentFilePath = filePath.getParent();
+		Path filePath = Paths.get(filePathName);
 
-					if (!Files.exists(parentFilePath)) {
-						Files.createDirectories(parentFilePath);
-					}
-
-					Files.createFile(filePath);
-				}
-				catch (IOException ioe) {
-					_logger.error("Unable to create log file", ioe);
-				}
-			}
-
+		if (!Files.exists(filePath)) {
 			try {
-				_connectorConfig.setTraceFile(filePathName);
+				Path parentFilePath = filePath.getParent();
+
+				if (!Files.exists(parentFilePath)) {
+					Files.createDirectories(parentFilePath);
+				}
+
+				Files.createFile(filePath);
 			}
-			catch (FileNotFoundException fnfe) {
-				_logger.error("File not found", fnfe);
+			catch (IOException ioException) {
+				_logger.error("Unable to create log file", ioException);
 			}
+		}
+
+		try {
+			_connectorConfig.setTraceFile(filePathName);
+		}
+		catch (FileNotFoundException fileNotFoundException) {
+			_logger.error("File not found", fileNotFoundException);
 		}
 	}
 
@@ -240,7 +242,7 @@ public abstract class BaseSalesforceClientImpl implements SalesforceClient {
 						sessionSecondsValid);
 				}
 			}
-			catch (ConnectionException ce) {
+			catch (ConnectionException connectionException) {
 				if (_logger.isInfoEnabled()) {
 					_logger.info("Session has expired and will be renewed now");
 				}
@@ -256,7 +258,7 @@ public abstract class BaseSalesforceClientImpl implements SalesforceClient {
 
 			return _partnerConnection;
 		}
-		catch (ConnectionException ce1) {
+		catch (ConnectionException connectionException1) {
 			for (int i = 0; i < _SALESFORCE_CONNECTION_RETRY_COUNT; i++) {
 				if (_logger.isInfoEnabled()) {
 					_logger.info("Retrying new connection: {}", i + 1);
@@ -268,14 +270,14 @@ public abstract class BaseSalesforceClientImpl implements SalesforceClient {
 
 					return _partnerConnection;
 				}
-				catch (ConnectionException ce2) {
+				catch (ConnectionException connectionException2) {
 					if ((i + 1) >= _SALESFORCE_CONNECTION_RETRY_COUNT) {
-						throw ce2;
+						throw connectionException2;
 					}
 				}
 			}
 
-			throw ce1;
+			throw connectionException1;
 		}
 	}
 

@@ -18,7 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureServiceUtil;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.web.configuration.JournalWebConfiguration;
+import com.liferay.journal.web.internal.configuration.JournalWebConfiguration;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -55,7 +55,9 @@ public class JournalDDMStructuresDisplayContext {
 				JournalWebConfiguration.class.getName());
 	}
 
-	public SearchContainer getDDMStructureSearch() throws Exception {
+	public SearchContainer<DDMStructure> getDDMStructureSearch()
+		throws Exception {
+
 		if (_ddmStructureSearch != null) {
 			return _ddmStructureSearch;
 		}
@@ -64,7 +66,7 @@ public class JournalDDMStructuresDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		SearchContainer ddmStructureSearch = new SearchContainer(
+		SearchContainer<DDMStructure> ddmStructureSearch = new SearchContainer(
 			_renderRequest, _getPortletURL(), null, "there-are-no-structures");
 
 		if (Validator.isNotNull(_getKeywords())) {
@@ -192,7 +194,7 @@ public class JournalDDMStructuresDisplayContext {
 		return portletURL;
 	}
 
-	private SearchContainer _ddmStructureSearch;
+	private SearchContainer<DDMStructure> _ddmStructureSearch;
 	private final HttpServletRequest _httpServletRequest;
 	private final JournalWebConfiguration _journalWebConfiguration;
 	private String _keywords;

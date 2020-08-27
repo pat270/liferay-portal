@@ -14,17 +14,15 @@
 
 package com.liferay.site.navigation.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.site.navigation.constants.SiteNavigationActionKeys;
 import com.liferay.site.navigation.constants.SiteNavigationConstants;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
@@ -32,11 +30,35 @@ import com.liferay.site.navigation.service.base.SiteNavigationMenuServiceBaseImp
 
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Pavel Savinov
  */
+@Component(
+	property = {
+		"json.web.service.context.name=sitenavigation",
+		"json.web.service.context.path=SiteNavigationMenu"
+	},
+	service = AopService.class
+)
 public class SiteNavigationMenuServiceImpl
 	extends SiteNavigationMenuServiceBaseImpl {
+
+	@Override
+	public SiteNavigationMenu addSiteNavigationMenu(
+			long groupId, String name, int type, boolean auto,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		_portletResourcePermission.check(
+			getPermissionChecker(), groupId,
+			SiteNavigationActionKeys.ADD_SITE_NAVIGATION_MENU);
+
+		return siteNavigationMenuLocalService.addSiteNavigationMenu(
+			getUserId(), groupId, name, type, auto, serviceContext);
+	}
 
 	@Override
 	public SiteNavigationMenu addSiteNavigationMenu(
@@ -94,32 +116,61 @@ public class SiteNavigationMenuServiceImpl
 
 	@Override
 	public List<SiteNavigationMenu> getSiteNavigationMenus(
-		long groupId, int start, int end, OrderByComparator orderByComparator) {
+		long groupId, int start, int end,
+		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
-		return siteNavigationMenuPersistence.filterFindByGroupId(
-			groupId, start, end, orderByComparator);
+		return getSiteNavigationMenus(
+			new long[] {groupId}, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<SiteNavigationMenu> getSiteNavigationMenus(
 		long groupId, String keywords, int start, int end,
-		OrderByComparator orderByComparator) {
+		OrderByComparator<SiteNavigationMenu> orderByComparator) {
+
+		return getSiteNavigationMenus(
+			new long[] {groupId}, keywords, start, end, orderByComparator);
+	}
+
+	@Override
+	public List<SiteNavigationMenu> getSiteNavigationMenus(
+		long[] groupIds, int start, int end,
+		OrderByComparator<SiteNavigationMenu> orderByComparator) {
+
+		return siteNavigationMenuPersistence.filterFindByGroupId(
+			groupIds, start, end, orderByComparator);
+	}
+
+	@Override
+	public List<SiteNavigationMenu> getSiteNavigationMenus(
+		long[] groupIds, String keywords, int start, int end,
+		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
 		return siteNavigationMenuPersistence.filterFindByG_LikeN(
-			groupId,
+			groupIds,
 			_customSQL.keywords(keywords, false, WildcardMode.SURROUND)[0],
 			start, end, orderByComparator);
 	}
 
 	@Override
 	public int getSiteNavigationMenusCount(long groupId) {
-		return siteNavigationMenuPersistence.filterCountByGroupId(groupId);
+		return getSiteNavigationMenusCount(new long[] {groupId});
 	}
 
 	@Override
 	public int getSiteNavigationMenusCount(long groupId, String keywords) {
+		return getSiteNavigationMenusCount(new long[] {groupId}, keywords);
+	}
+
+	@Override
+	public int getSiteNavigationMenusCount(long[] groupIds) {
+		return siteNavigationMenuPersistence.filterCountByGroupId(groupIds);
+	}
+
+	@Override
+	public int getSiteNavigationMenusCount(long[] groupIds, String keywords) {
 		return siteNavigationMenuPersistence.filterCountByG_LikeN(
-			groupId,
+			groupIds,
 			_customSQL.keywords(keywords, false, WildcardMode.SURROUND)[0]);
 	}
 
@@ -149,20 +200,18 @@ public class SiteNavigationMenuServiceImpl
 			getUserId(), siteNavigationMenuId, name, serviceContext);
 	}
 
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				SiteNavigationMenuServiceImpl.class,
-				"_portletResourcePermission",
-				SiteNavigationConstants.RESOURCE_NAME);
-	private static volatile ModelResourcePermission<SiteNavigationMenu>
-		_siteNavigationMenuModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				SiteNavigationMenuServiceImpl.class,
-				"_siteNavigationMenuModelResourcePermission",
-				SiteNavigationMenu.class);
-
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
+
+	@Reference(
+		target = "(resource.name=" + SiteNavigationConstants.RESOURCE_NAME + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.site.navigation.model.SiteNavigationMenu)"
+	)
+	private ModelResourcePermission<SiteNavigationMenu>
+		_siteNavigationMenuModelResourcePermission;
 
 }

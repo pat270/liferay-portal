@@ -1,0 +1,7 @@
+{
+	"dependencies": {
+		"@clayui/css": "3.4.0"
+	},
+	"name": "sample",
+	"version": "1.0.0"
+}

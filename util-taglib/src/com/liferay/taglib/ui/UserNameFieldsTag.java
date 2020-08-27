@@ -66,10 +66,10 @@ public class UserNameFieldsTag extends IncludeTag {
 	protected User getUser() {
 		if (_user == null) {
 			try {
-				return PortalUtil.getSelectedUser(request);
+				return PortalUtil.getSelectedUser(getRequest());
 			}
-			catch (PortalException pe) {
-				_log.error(pe, pe);
+			catch (PortalException portalException) {
+				_log.error(portalException, portalException);
 			}
 		}
 

@@ -62,8 +62,9 @@ public class JournalArticleSmallImageAssetDisplayContributorField
 		ThemeDisplay themeDisplay = getThemeDisplay();
 
 		if (themeDisplay != null) {
-			return JSONUtil.put(
-				"url", article.getArticleImageURL(themeDisplay));
+			String url = article.getArticleImageURL(themeDisplay);
+
+			return JSONUtil.put("url", (url != null) ? url : StringPool.BLANK);
 		}
 
 		return StringPool.BLANK;

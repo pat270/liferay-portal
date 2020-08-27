@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.TrashHelper;
 
-import java.util.Date;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
@@ -70,15 +69,6 @@ public class DLFolderAssetRenderer
 	@Override
 	public long getClassPK() {
 		return _folder.getPrimaryKey();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public Date getDisplayDate() {
-		return _folder.getModifiedDate();
 	}
 
 	@Override
@@ -126,9 +116,8 @@ public class DLFolderAssetRenderer
 
 	@Override
 	public PortletURL getURLEdit(
-			LiferayPortletRequest liferayPortletRequest,
-			LiferayPortletResponse liferayPortletResponse)
-		throws Exception {
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse) {
 
 		Group group = GroupLocalServiceUtil.fetchGroup(_folder.getGroupId());
 

@@ -14,10 +14,11 @@
 
 package com.liferay.gradle.plugins.internal;
 
-import com.liferay.gradle.plugins.BasePortalToolDefaultsPlugin;
+import com.liferay.gradle.plugins.BaseDefaultsPlugin;
 import com.liferay.gradle.plugins.css.builder.BuildCSSTask;
 import com.liferay.gradle.plugins.css.builder.CSSBuilderPlugin;
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.util.PortalTools;
 import com.liferay.gradle.util.Validator;
 
 import java.io.File;
@@ -31,37 +32,44 @@ import org.gradle.api.tasks.TaskContainer;
  * @author Andrea Di Giorgi
  */
 public class CSSBuilderDefaultsPlugin
-	extends BasePortalToolDefaultsPlugin<CSSBuilderPlugin> {
+	extends BaseDefaultsPlugin<CSSBuilderPlugin> {
 
 	public static final Plugin<Project> INSTANCE =
 		new CSSBuilderDefaultsPlugin();
 
 	@Override
-	protected void configureDefaults(
+	protected void applyPluginDefaults(
 		Project project, CSSBuilderPlugin cssBuilderPlugin) {
 
-		super.configureDefaults(project, cssBuilderPlugin);
+		// Dependencies
 
-		addPortalToolDependencies(
+		PortalTools.addPortalToolDependencies(
+			project, CSSBuilderPlugin.CSS_BUILDER_CONFIGURATION_NAME,
+			PortalTools.GROUP, _PORTAL_TOOL_NAME);
+
+		PortalTools.addPortalToolDependencies(
 			project, CSSBuilderPlugin.PORTAL_COMMON_CSS_CONFIGURATION_NAME,
-			_FRONTEND_COMMON_CSS_NAME);
+			PortalTools.GROUP, _FRONTEND_COMMON_CSS_NAME);
 
-		_configureTasksBuildCSS(project);
+		// Other
+
+		TaskContainer taskContainer = project.getTasks();
+
+		taskContainer.withType(
+			BuildCSSTask.class,
+			new Action<BuildCSSTask>() {
+
+				@Override
+				public void execute(BuildCSSTask buildCSSTask) {
+					_configureTaskBuildCSS(buildCSSTask);
+				}
+
+			});
 	}
 
 	@Override
 	protected Class<CSSBuilderPlugin> getPluginClass() {
 		return CSSBuilderPlugin.class;
-	}
-
-	@Override
-	protected String getPortalToolConfigurationName() {
-		return CSSBuilderPlugin.CSS_BUILDER_CONFIGURATION_NAME;
-	}
-
-	@Override
-	protected String getPortalToolName() {
-		return _PORTAL_TOOL_NAME;
 	}
 
 	private CSSBuilderDefaultsPlugin() {
@@ -95,21 +103,6 @@ public class CSSBuilderDefaultsPlugin
 			project, "sass.compiler.class.name", (String)null);
 
 		buildCSSTask.setSassCompilerClassName(sassCompilerClassName);
-	}
-
-	private void _configureTasksBuildCSS(Project project) {
-		TaskContainer taskContainer = project.getTasks();
-
-		taskContainer.withType(
-			BuildCSSTask.class,
-			new Action<BuildCSSTask>() {
-
-				@Override
-				public void execute(BuildCSSTask buildCSSTask) {
-					_configureTaskBuildCSS(buildCSSTask);
-				}
-
-			});
 	}
 
 	private static final String _FRONTEND_COMMON_CSS_NAME =

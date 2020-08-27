@@ -60,7 +60,7 @@ something like this to your `build.gradle`:
 
 ```gradle
 liferay {
-   deployDir = file("${liferayHome}/osgi/test")
+   deployDir = file("${liferayHome}/osgi/test")
 }
 ```
 
@@ -89,10 +89,8 @@ File Name | Description
 `.lfrbuild-portal-pre` | Builds the module during the `ant compile` execution in the `tmp/lib-pre` directory before building `portal-kernel`, `portal-impl`, etc.
 `.lfrbuild-portal-private` | Deploys the module during the `ant all` execution in a private branch. `-test` modules never have this file.
 `.lfrbuild-portal-public` | Deploys the module during the `ant all` execution in a public branch. `-test` modules never have this file.
+`.lfrbuild-portal-skip-deploy` | Skip deploying the module during the `ant all` execution.
 `.lfrbuild-portal` | Deploys the module during the `ant all` execution. `-test` modules never have this file.
-`.lfrbuild-slim-private` | Deploys the module during the `ant all` execution if building a Liferay Slim Runtime in a private branch.
-`.lfrbuild-slim-public` | Deploys the module during the `ant all` execution if building a Liferay Slim Runtime in a public branch.
-`.lfrbuild-slim` | Deploys the module during the `ant all` execution if building a Liferay Slim Runtime.
 
 ### Continuous Integration
 
@@ -128,6 +126,7 @@ File Name | Description
 
 File Name | Description
 --------- | -----------
+`.lfrbuild-app-portal-build-ignore` | Prevents the `syncAppProperties` task from updating the `app.portal.build` property in the `app.properties` file.
 `.lfrbuild-master-only` | Marks a module that should not be forked and deleted for release branches. If a `.lfrbuild-master-only` file is added to a parent directory, the whole subtree should not be forked.
 `.lfrbuild-release-src` | Includes the app's source code in the DXP release, when added to the root of an app.
 `.lfrbuild-releng-ignore` | Ignores checking the module for stale artifacts. An artifact is *stale* when the module has code that is different from the latest published release. This module can never be published. If a `.lfrbuild-releng-ignore` file is added to a parent directory, the whole subtree is ignored.

@@ -80,11 +80,11 @@ public class SearchLayoutFactoryImpl implements SearchLayoutFactory {
 				getSearchTitleLocalizationMap(),
 				getSearchDescriptionLocalizationMap());
 		}
-		catch (RuntimeException re) {
-			throw re;
+		catch (RuntimeException runtimeException) {
+			throw runtimeException;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -96,11 +96,11 @@ public class SearchLayoutFactoryImpl implements SearchLayoutFactory {
 
 			createSearchLayout(group, layoutPrototype, baseLayout);
 		}
-		catch (RuntimeException re) {
-			throw re;
+		catch (RuntimeException runtimeException) {
+			throw runtimeException;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -256,15 +256,15 @@ public class SearchLayoutFactoryImpl implements SearchLayoutFactory {
 			return false;
 		}
 
-		UnicodeProperties properties = group.getTypeSettingsProperties();
+		UnicodeProperties unicodeProperties = group.getTypeSettingsProperties();
 
-		if (properties.get("searchLayoutCreated") != null) {
+		if (unicodeProperties.get("searchLayoutCreated") != null) {
 			return false;
 		}
 
-		properties.put("searchLayoutCreated", "true");
+		unicodeProperties.put("searchLayoutCreated", "true");
 
-		group.setTypeSettingsProperties(properties);
+		group.setTypeSettingsProperties(unicodeProperties);
 
 		groupLocalService.updateGroup(group);
 

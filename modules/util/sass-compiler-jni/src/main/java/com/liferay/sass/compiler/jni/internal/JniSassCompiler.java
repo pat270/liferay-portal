@@ -99,9 +99,9 @@ public class JniSassCompiler implements SassCompiler {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new IOException(
-				"Unable to clean up BridJ's temporary directory", e);
+				"Unable to clean up BridJ's temporary directory", exception);
 		}
 	}
 
@@ -175,7 +175,7 @@ public class JniSassCompiler implements SassCompiler {
 
 					write(sourceMapFile, sourceMapOutputPointer.getCString());
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					System.out.println("Unable to create source map");
 				}
 			}
@@ -193,8 +193,8 @@ public class JniSassCompiler implements SassCompiler {
 						sassFileContextPointer);
 				}
 			}
-			catch (Throwable t) {
-				throw new JniSassCompilerException(t);
+			catch (Throwable throwable) {
+				throw new JniSassCompilerException(throwable);
 			}
 		}
 	}
@@ -277,8 +277,8 @@ public class JniSassCompiler implements SassCompiler {
 
 			return output;
 		}
-		catch (Throwable t) {
-			throw new JniSassCompilerException(t);
+		catch (Throwable throwable) {
+			throw new JniSassCompilerException(throwable);
 		}
 	}
 

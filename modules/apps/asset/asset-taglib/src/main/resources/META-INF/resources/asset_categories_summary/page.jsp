@@ -22,6 +22,7 @@ long classPK = GetterUtil.getLong((String)request.getAttribute("liferay-asset:as
 String displayStyle = GetterUtil.getString((String)request.getAttribute("liferay-asset:asset-categories-summary:displayStyle"), "default");
 String paramName = GetterUtil.getString((String)request.getAttribute("liferay-asset:asset-categories-summary:paramName"), "categoryId");
 PortletURL portletURL = (PortletURL)request.getAttribute("liferay-asset:asset-categories-summary:portletURL");
+int[] visibleTypes = (int[])request.getAttribute("liferay-asset:asset-categories-summary:visibleTypes");
 
 List<AssetCategory> categories = (List<AssetCategory>)request.getAttribute("liferay-asset:asset-categories-summary:assetCategories");
 
@@ -34,7 +35,7 @@ AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(className, classPK
 List<AssetVocabulary> vocabularies = AssetVocabularyServiceUtil.getGroupVocabularies(PortalUtil.getCurrentAndAncestorSiteGroupIds((assetEntry != null) ? assetEntry.getGroupId() : scopeGroupId));
 
 for (AssetVocabulary vocabulary : vocabularies) {
-	List<AssetCategory> curCategories = _filterCategories(categories, vocabulary);
+	List<AssetCategory> curCategories = _filterCategories(categories, vocabulary, visibleTypes);
 %>
 
 	<c:if test="<%= !curCategories.isEmpty() %>">
@@ -62,9 +63,11 @@ for (AssetVocabulary vocabulary : vocabularies) {
 							for (AssetCategory category : curCategories) {
 							%>
 
-								<span class="label label-dark label-lg text-uppercase">
-									<%= HtmlUtil.escape(category.getTitle(themeDisplay.getLocale())) %>
-								</span>
+								<clay:label
+									displayType="dark"
+									label="<%= HtmlUtil.escape(category.getTitle(themeDisplay.getLocale())) %>"
+									large="<%= true %>"
+								/>
 
 							<%
 							}
@@ -140,11 +143,11 @@ private String _buildCategoryPath(AssetCategory category, ThemeDisplay themeDisp
 	return sb.toString();
 }
 
-private List<AssetCategory> _filterCategories(List<AssetCategory> categories, AssetVocabulary vocabulary) {
+private List<AssetCategory> _filterCategories(List<AssetCategory> categories, AssetVocabulary vocabulary, int[] visibleTypes) {
 	List<AssetCategory> filteredCategories = new ArrayList<AssetCategory>();
 
 	for (AssetCategory category : categories) {
-		if (category.getVocabularyId() == vocabulary.getVocabularyId()) {
+		if ((category.getVocabularyId() == vocabulary.getVocabularyId()) && ArrayUtil.contains(visibleTypes, vocabulary.getVisibilityType())) {
 			filteredCategories.add(category);
 		}
 	}

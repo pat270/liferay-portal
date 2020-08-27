@@ -18,6 +18,7 @@ import com.liferay.asset.list.model.AssetListEntrySegmentsEntryRel;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,35 +27,35 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AssetListEntrySegmentsEntryRel in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetListEntrySegmentsEntryRelCacheModel
-	implements CacheModel<AssetListEntrySegmentsEntryRel>, Externalizable {
+	implements CacheModel<AssetListEntrySegmentsEntryRel>, Externalizable,
+			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AssetListEntrySegmentsEntryRelCacheModel)) {
+		if (!(object instanceof AssetListEntrySegmentsEntryRelCacheModel)) {
 			return false;
 		}
 
 		AssetListEntrySegmentsEntryRelCacheModel
 			assetListEntrySegmentsEntryRelCacheModel =
-				(AssetListEntrySegmentsEntryRelCacheModel)obj;
+				(AssetListEntrySegmentsEntryRelCacheModel)object;
 
-		if (assetListEntrySegmentsEntryRelId ==
+		if ((assetListEntrySegmentsEntryRelId ==
 				assetListEntrySegmentsEntryRelCacheModel.
-					assetListEntrySegmentsEntryRelId) {
+					assetListEntrySegmentsEntryRelId) &&
+			(mvccVersion ==
+				assetListEntrySegmentsEntryRelCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -64,14 +65,30 @@ public class AssetListEntrySegmentsEntryRelCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, assetListEntrySegmentsEntryRelId);
+		int hashCode = HashUtil.hash(0, assetListEntrySegmentsEntryRelId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(29);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", assetListEntrySegmentsEntryRelId=");
 		sb.append(assetListEntrySegmentsEntryRelId);
@@ -104,6 +121,9 @@ public class AssetListEntrySegmentsEntryRelCacheModel
 	public AssetListEntrySegmentsEntryRel toEntityModel() {
 		AssetListEntrySegmentsEntryRelImpl assetListEntrySegmentsEntryRelImpl =
 			new AssetListEntrySegmentsEntryRelImpl();
+
+		assetListEntrySegmentsEntryRelImpl.setMvccVersion(mvccVersion);
+		assetListEntrySegmentsEntryRelImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			assetListEntrySegmentsEntryRelImpl.setUuid("");
@@ -166,7 +186,12 @@ public class AssetListEntrySegmentsEntryRelCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		assetListEntrySegmentsEntryRelId = objectInput.readLong();
@@ -183,12 +208,16 @@ public class AssetListEntrySegmentsEntryRelCacheModel
 		assetListEntryId = objectInput.readLong();
 
 		segmentsEntryId = objectInput.readLong();
-		typeSettings = objectInput.readUTF();
+		typeSettings = (String)objectInput.readObject();
 		lastPublishDate = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -219,15 +248,17 @@ public class AssetListEntrySegmentsEntryRelCacheModel
 		objectOutput.writeLong(segmentsEntryId);
 
 		if (typeSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(typeSettings);
+			objectOutput.writeObject(typeSettings);
 		}
 
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long assetListEntrySegmentsEntryRelId;
 	public long groupId;

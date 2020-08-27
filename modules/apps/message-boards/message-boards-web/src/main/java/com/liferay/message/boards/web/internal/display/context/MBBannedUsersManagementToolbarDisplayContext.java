@@ -15,7 +15,7 @@
 package com.liferay.message.boards.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.message.boards.model.MBBan;
 import com.liferay.message.boards.web.internal.security.permission.MBResourcePermission;
@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -43,13 +42,13 @@ import javax.servlet.http.HttpServletRequest;
 public class MBBannedUsersManagementToolbarDisplayContext {
 
 	public MBBannedUsersManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest) {
+		LiferayPortletResponse liferayPortletResponse) {
 
+		_httpServletRequest = httpServletRequest;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
-		_httpServletRequest = httpServletRequest;
 
 		_portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(
 			liferayPortletRequest);
@@ -59,38 +58,29 @@ public class MBBannedUsersManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "unbanUser");
-						dropdownItem.setIcon("unlock");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "unban-user"));
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "unbanUser");
+				dropdownItem.setIcon("unlock");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "unban-user"));
 
-						dropdownItem.setQuickAction(true);
-					});
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
-	public List<String> getAvailableActionDropdownItems(MBBan ban)
-		throws PortalException {
-
-		List<String> availableActionDropdownItems = new ArrayList<>();
-
-		PermissionChecker permissionChecker =
-			_themeDisplay.getPermissionChecker();
+	public List<String> getAvailableActions(MBBan ban) throws PortalException {
+		List<String> availableActions = new ArrayList<>();
 
 		if (MBResourcePermission.contains(
-				permissionChecker, _themeDisplay.getScopeGroupId(),
-				ActionKeys.BAN_USER)) {
+				_themeDisplay.getPermissionChecker(),
+				_themeDisplay.getScopeGroupId(), ActionKeys.BAN_USER)) {
 
-			availableActionDropdownItems.add("unbanUser");
+			availableActions.add("unbanUser");
 		}
 
-		return availableActionDropdownItems;
+		return availableActions;
 	}
 
 	public String getDisplayStyle() {

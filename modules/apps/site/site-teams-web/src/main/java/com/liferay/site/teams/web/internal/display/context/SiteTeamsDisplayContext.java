@@ -16,6 +16,7 @@ package com.liferay.site.teams.web.internal.display.context;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.service.TeamServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -39,12 +40,12 @@ import javax.servlet.http.HttpServletRequest;
 public class SiteTeamsDisplayContext {
 
 	public SiteTeamsDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
+		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
-		_httpServletRequest = httpServletRequest;
 	}
 
 	public String getDisplayStyle() {
@@ -88,12 +89,12 @@ public class SiteTeamsDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getSearchContainer() {
+	public SearchContainer<Team> getSearchContainer() {
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		SearchContainer searchContainer = new TeamSearch(
+		SearchContainer<Team> searchContainer = new TeamSearch(
 			_renderRequest, getPortletURL());
 
 		searchContainer.setEmptyResultsMessage("there-are-no-teams");
@@ -110,7 +111,7 @@ public class SiteTeamsDisplayContext {
 
 		searchContainer.setTotal(total);
 
-		List results = TeamServiceUtil.search(
+		List<Team> results = TeamServiceUtil.search(
 			themeDisplay.getScopeGroupId(), getKeywords(), getKeywords(),
 			new LinkedHashMap<>(), searchContainer.getStart(),
 			searchContainer.getEnd(), searchContainer.getOrderByComparator());

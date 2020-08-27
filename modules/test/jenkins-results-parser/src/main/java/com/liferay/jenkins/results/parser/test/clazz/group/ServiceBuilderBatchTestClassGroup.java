@@ -38,7 +38,7 @@ public class ServiceBuilderBatchTestClassGroup
 
 	@Override
 	public int getAxisCount() {
-		if (testRelevantIntegrationUnitOnly) {
+		if (!isStableTestSuiteBatch() && testRelevantIntegrationUnitOnly) {
 			return 0;
 		}
 
@@ -136,20 +136,21 @@ public class ServiceBuilderBatchTestClassGroup
 
 				});
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
 				"Unable to get module marker files from " +
 					moduleBaseDir.getPath(),
-				ioe);
+				ioException);
 		}
 
 		return modulesProjectDirs;
 	}
 
 	protected ServiceBuilderBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 	}
 
 	@Override
@@ -175,7 +176,9 @@ public class ServiceBuilderBatchTestClassGroup
 		File portalModulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
-		if (testRelevantChanges) {
+		if (testRelevantChanges &&
+			!(includeStableTestSuite && isStableTestSuiteBatch())) {
+
 			List<File> modifiedFiles =
 				portalGitWorkingDirectory.getModifiedFilesList();
 
@@ -183,7 +186,7 @@ public class ServiceBuilderBatchTestClassGroup
 				JenkinsResultsParserUtil.getIncludedFiles(
 					null,
 					getPathMatchers(
-						"portal-tools-service-builder/**",
+						"util/portal-tools-service-builder/**",
 						portalModulesBaseDir),
 					modifiedFiles);
 
@@ -229,12 +232,12 @@ public class ServiceBuilderBatchTestClassGroup
 		}
 
 		for (File moduleDir : moduleDirsList) {
-			List<File> modulesProjectsDirs = getModulesProjectDirs(moduleDir);
+			List<File> modulesProjectDirs = getModulesProjectDirs(moduleDir);
 
-			if (!modulesProjectsDirs.isEmpty()) {
+			if (!modulesProjectDirs.isEmpty()) {
 				testClasses.add(
 					ServiceBuilderBatchTestClass.getInstance(
-						moduleDir, portalModulesBaseDir, modulesProjectsDirs));
+						moduleDir, portalModulesBaseDir, modulesProjectDirs));
 			}
 		}
 	}

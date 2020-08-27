@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.xuggler.XugglerUtil;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -63,10 +64,18 @@ public class JournalMediaEditorConfigContributor
 			addJSONObject = JSONFactoryUtil.createJSONObject();
 		}
 
-		JSONArray buttonsJSONArray = addJSONObject.getJSONArray("buttons");
+		JSONArray buttonsJSONArray = JSONFactoryUtil.createJSONArray();
 
-		if (buttonsJSONArray == null) {
-			buttonsJSONArray = JSONFactoryUtil.createJSONArray();
+		JSONArray currentButtonsJSONArray = addJSONObject.getJSONArray(
+			"buttons");
+
+		if (currentButtonsJSONArray != null) {
+			currentButtonsJSONArray.forEach(
+				button -> {
+					if (!Objects.equals(button, "embedVideo")) {
+						buttonsJSONArray.put(button);
+					}
+				});
 		}
 
 		buttonsJSONArray.put(

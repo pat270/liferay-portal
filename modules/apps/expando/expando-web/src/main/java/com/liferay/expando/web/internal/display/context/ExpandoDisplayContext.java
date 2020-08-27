@@ -16,12 +16,12 @@ package com.liferay.expando.web.internal.display.context;
 
 import com.liferay.expando.constants.ExpandoPortletKeys;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -49,70 +49,58 @@ public class ExpandoDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						PortletResponse portletResponse =
-							(PortletResponse)_httpServletRequest.getAttribute(
-								JavaConstants.JAVAX_PORTLET_RESPONSE);
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				PortletResponse portletResponse =
+					(PortletResponse)_httpServletRequest.getAttribute(
+						JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-						dropdownItem.setHref(
-							StringBundler.concat(
-								"javascript:", portletResponse.getNamespace(),
-								"deleteCustomFields();"));
+				dropdownItem.setHref(
+					StringBundler.concat(
+						"javascript:", portletResponse.getNamespace(),
+						"deleteCustomFields();"));
 
-						dropdownItem.setIcon("trash");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+				dropdownItem.setIcon("trash");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public CreationMenu getCreationMenu() throws PortalException {
-		return new CreationMenu() {
-			{
-				addDropdownItem(
-					dropdownItem -> {
-						PortletResponse portletResponse =
-							(PortletResponse)_httpServletRequest.getAttribute(
-								JavaConstants.JAVAX_PORTLET_RESPONSE);
+		return CreationMenuBuilder.addDropdownItem(
+			dropdownItem -> {
+				PortletResponse portletResponse =
+					(PortletResponse)_httpServletRequest.getAttribute(
+						JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-						LiferayPortletResponse liferayPortletResponse =
-							PortalUtil.getLiferayPortletResponse(
-								portletResponse);
+				LiferayPortletResponse liferayPortletResponse =
+					PortalUtil.getLiferayPortletResponse(portletResponse);
 
-						String modelResource = ParamUtil.getString(
-							_httpServletRequest, "modelResource");
+				String modelResource = ParamUtil.getString(
+					_httpServletRequest, "modelResource");
 
-						dropdownItem.setHref(
-							liferayPortletResponse.createRenderURL(), "mvcPath",
-							"/edit/select_field_type.jsp", "redirect",
-							PortalUtil.getCurrentURL(_httpServletRequest),
-							"modelResource", modelResource);
+				dropdownItem.setHref(
+					liferayPortletResponse.createRenderURL(), "mvcPath",
+					"/edit/select_field_type.jsp", "redirect",
+					PortalUtil.getCurrentURL(_httpServletRequest),
+					"modelResource", modelResource);
 
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "add-custom-field"));
-					});
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "add-custom-field"));
 			}
-		};
+		).build();
 	}
 
 	public List<NavigationItem> getNavigationItems(final String label) {
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(StringPool.BLANK);
-						navigationItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, label));
-					});
+		return NavigationItemListBuilder.add(
+			navigationItem -> {
+				navigationItem.setActive(true);
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, label));
 			}
-		};
+		).build();
 	}
 
 	public boolean showCreationMenu() throws PortalException {

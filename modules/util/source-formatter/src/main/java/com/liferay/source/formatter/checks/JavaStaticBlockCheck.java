@@ -42,9 +42,7 @@ public class JavaStaticBlockCheck extends BaseJavaTermCheck {
 			classContent = _sortStaticBlocks(classContent, childJavaTerms);
 		}
 
-		classContent = _combineStaticBlocks(classContent, childJavaTerms);
-
-		return classContent;
+		return _combineStaticBlocks(classContent, childJavaTerms);
 	}
 
 	@Override
@@ -194,8 +192,8 @@ public class JavaStaticBlockCheck extends BaseJavaTermCheck {
 				continue;
 			}
 
-			classContent = StringUtil.replace(
-				classContent, staticBlockContent + "\n", StringPool.BLANK);
+			classContent = StringUtil.removeSubstring(
+				classContent, staticBlockContent + "\n");
 
 			classContent = StringUtil.replace(
 				classContent, lastJavaTermContent,

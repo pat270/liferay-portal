@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.push.notifications.constants.PushNotificationsConstants;
 import com.liferay.push.notifications.exception.PushNotificationsException;
@@ -45,6 +46,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Silvio Santos
@@ -108,13 +110,13 @@ public class ApplePushNotificationsSender implements PushNotificationsSender {
 
 			appleServiceBuilder.withCert(inputStream, certificatePassword);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe, ioe);
+				_log.warn(ioException, ioException);
 			}
 		}
 
-		appleServiceBuilder.withDelegate(new AppleDelegate());
+		appleServiceBuilder.withDelegate(new AppleDelegate(_messageBus));
 
 		if (applePushNotificationsSenderConfiguration.sandbox()) {
 			appleServiceBuilder.withSandboxDestination();
@@ -247,7 +249,7 @@ public class ApplePushNotificationsSender implements PushNotificationsSender {
 		try {
 			return new FileInputStream(certificatePath);
 		}
-		catch (FileNotFoundException fnfe) {
+		catch (FileNotFoundException fileNotFoundException) {
 			ClassLoader classLoader =
 				ApplePushNotificationsSender.class.getClassLoader();
 
@@ -259,5 +261,8 @@ public class ApplePushNotificationsSender implements PushNotificationsSender {
 		ApplePushNotificationsSender.class);
 
 	private volatile ApnsService _apnsService;
+
+	@Reference
+	private MessageBus _messageBus;
 
 }

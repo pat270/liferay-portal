@@ -17,13 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
-
-if (Validator.isNull(redirect)) {
-	PortletURL portletURL = renderResponse.createRenderURL();
-
-	redirect = portletURL.toString();
-}
+String redirect = ParamUtil.getString(request, "redirect", assetCategoriesDisplayContext.getDefaultRedirect());
 
 long vocabularyId = ParamUtil.getLong(request, "vocabularyId");
 
@@ -36,7 +30,7 @@ if (vocabularyId > 0) {
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
 
-renderResponse.setTitle(((vocabulary == null) ? LanguageUtil.get(request, "add-vocabulary") : vocabulary.getTitle(locale)));
+renderResponse.setTitle((vocabulary == null) ? LanguageUtil.get(request, "add-vocabulary") : vocabulary.getTitle(locale));
 %>
 
 <portlet:actionURL name="editVocabulary" var="editVocabularyURL">
@@ -67,6 +61,8 @@ renderResponse.setTitle(((vocabulary == null) ? LanguageUtil.get(request, "add-v
 				<aui:input name="description" placeholder="description" />
 
 				<aui:input helpMessage="multi-valued-help" label="allow-multiple-categories" name="multiValued" type="toggle-switch" value="<%= (vocabulary != null) ? vocabulary.isMultiValued() : true %>" />
+
+				<aui:input helpMessage="for-internal-use-only-help" label="for-internal-use-only" name="internalUse" type="toggle-switch" value="<%= (vocabulary != null) ? (vocabulary.getVisibilityType() == AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL) : false %>" />
 			</liferay-frontend:fieldset>
 
 			<%@ include file="/edit_vocabulary_settings.jspf" %>

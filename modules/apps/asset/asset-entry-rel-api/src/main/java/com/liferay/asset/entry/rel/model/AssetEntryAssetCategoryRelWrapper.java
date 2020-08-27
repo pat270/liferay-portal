@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntryAssetCategoryRel
  * @generated
  */
-@ProviderType
 public class AssetEntryAssetCategoryRelWrapper
 	extends BaseModelWrapper<AssetEntryAssetCategoryRel>
 	implements AssetEntryAssetCategoryRel,
@@ -47,8 +46,11 @@ public class AssetEntryAssetCategoryRelWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put(
 			"assetEntryAssetCategoryRelId", getAssetEntryAssetCategoryRelId());
+		attributes.put("companyId", getCompanyId());
 		attributes.put("assetEntryId", getAssetEntryId());
 		attributes.put("assetCategoryId", getAssetCategoryId());
 		attributes.put("priority", getPriority());
@@ -58,11 +60,29 @@ public class AssetEntryAssetCategoryRelWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long assetEntryAssetCategoryRelId = (Long)attributes.get(
 			"assetEntryAssetCategoryRelId");
 
 		if (assetEntryAssetCategoryRelId != null) {
 			setAssetEntryAssetCategoryRelId(assetEntryAssetCategoryRelId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
 		}
 
 		Long assetEntryId = (Long)attributes.get("assetEntryId");
@@ -112,6 +132,36 @@ public class AssetEntryAssetCategoryRelWrapper
 	@Override
 	public long getAssetEntryId() {
 		return model.getAssetEntryId();
+	}
+
+	/**
+	 * Returns the company ID of this asset entry asset category rel.
+	 *
+	 * @return the company ID of this asset entry asset category rel
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the ct collection ID of this asset entry asset category rel.
+	 *
+	 * @return the ct collection ID of this asset entry asset category rel
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
+	 * Returns the mvcc version of this asset entry asset category rel.
+	 *
+	 * @return the mvcc version of this asset entry asset category rel
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -172,6 +222,36 @@ public class AssetEntryAssetCategoryRelWrapper
 	}
 
 	/**
+	 * Sets the company ID of this asset entry asset category rel.
+	 *
+	 * @param companyId the company ID of this asset entry asset category rel
+	 */
+	@Override
+	public void setCompanyId(long companyId) {
+		model.setCompanyId(companyId);
+	}
+
+	/**
+	 * Sets the ct collection ID of this asset entry asset category rel.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset entry asset category rel
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset entry asset category rel.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry asset category rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the primary key of this asset entry asset category rel.
 	 *
 	 * @param primaryKey the primary key of this asset entry asset category rel
@@ -189,6 +269,20 @@ public class AssetEntryAssetCategoryRelWrapper
 	@Override
 	public void setPriority(int priority) {
 		model.setPriority(priority);
+	}
+
+	@Override
+	public Map<String, Function<AssetEntryAssetCategoryRel, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<AssetEntryAssetCategoryRel, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

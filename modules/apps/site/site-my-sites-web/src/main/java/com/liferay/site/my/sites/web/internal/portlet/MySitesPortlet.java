@@ -64,8 +64,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + MySitesPortletKeys.MY_SITES,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -138,7 +137,7 @@ public class MySitesPortlet extends MVCPortlet {
 	protected long[] filterAddUserIds(long groupId, long[] userIds)
 		throws Exception {
 
-		Set<Long> filteredUserIds = new HashSet<>(userIds.length);
+		Set<Long> filteredUserIds = new HashSet<>();
 
 		for (long userId : userIds) {
 			if (!_userLocalService.hasGroupUser(groupId, userId)) {
@@ -152,7 +151,7 @@ public class MySitesPortlet extends MVCPortlet {
 	protected long[] filterRemoveUserIds(long groupId, long[] userIds)
 		throws Exception {
 
-		Set<Long> filteredUserIds = new HashSet<>(userIds.length);
+		Set<Long> filteredUserIds = new HashSet<>();
 
 		for (long userId : userIds) {
 			if (_userLocalService.hasGroupUser(groupId, userId)) {
@@ -164,10 +163,10 @@ public class MySitesPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof MembershipRequestCommentsException ||
-			cause instanceof PrincipalException ||
-			super.isSessionErrorException(cause)) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof MembershipRequestCommentsException ||
+			throwable instanceof PrincipalException ||
+			super.isSessionErrorException(throwable)) {
 
 			return true;
 		}
@@ -183,7 +182,7 @@ public class MySitesPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.site.my.sites.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.site.my.sites.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

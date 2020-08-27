@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
-import com.liferay.user.associated.data.test.util.BaseUADAnonymizerTestCase;
+import com.liferay.user.associated.data.test.util.BaseHasAssetEntryUADAnonymizerTestCase;
 import com.liferay.user.associated.data.test.util.WhenHasStatusByUserIdField;
 
 import java.util.ArrayList;
@@ -41,8 +41,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class MBMessageUADAnonymizerTest
-	extends BaseUADAnonymizerTestCase<MBMessage>
-	implements WhenHasStatusByUserIdField {
+	extends BaseHasAssetEntryUADAnonymizerTestCase<MBMessage>
+	implements WhenHasStatusByUserIdField<MBMessage> {
 
 	@ClassRule
 	@Rule
@@ -98,7 +98,7 @@ public class MBMessageUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<MBMessage> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -114,7 +114,9 @@ public class MBMessageUADAnonymizerTest
 		if ((mbMessage.getUserId() != user.getUserId()) &&
 			!userName.equals(user.getFullName()) &&
 			(mbMessage.getStatusByUserId() != user.getUserId()) &&
-			!statusByUserName.equals(user.getFullName())) {
+			!statusByUserName.equals(user.getFullName()) &&
+			isAssetEntryAutoAnonymized(
+				MBMessage.class.getName(), mbMessage.getMessageId(), user)) {
 
 			return true;
 		}
@@ -141,6 +143,6 @@ public class MBMessageUADAnonymizerTest
 	private final List<MBMessage> _mbMessages = new ArrayList<>();
 
 	@Inject(filter = "component.name=*.MBMessageUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<MBMessage> _uadAnonymizer;
 
 }

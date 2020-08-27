@@ -28,7 +28,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 	factory = true,
 	id = "com.liferay.oauth2.provider.rest.internal.jaxrs.feature.configuration.ConfigurableScopeCheckerFeatureConfiguration",
 	localization = "content/Language",
-	name = "oauth2-configurable-scope-checker-feature-configuration-name"
+	name = "configurable-scope-checker-feature-configuration-name"
 )
 public interface ConfigurableScopeCheckerFeatureConfiguration {
 

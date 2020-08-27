@@ -50,16 +50,16 @@ public class ArrayApplicationContext extends ClassPathXmlApplicationContext {
 			try {
 				reader.loadBeanDefinitions(configLocation);
 			}
-			catch (Exception e) {
-				Throwable cause = e.getCause();
+			catch (Exception exception) {
+				Throwable throwable = exception.getCause();
 
-				if (cause instanceof FileNotFoundException) {
+				if (throwable instanceof FileNotFoundException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(cause.getMessage());
+						_log.warn(throwable.getMessage());
 					}
 				}
 				else {
-					_log.error(e, e);
+					_log.error(exception, exception);
 				}
 			}
 		}

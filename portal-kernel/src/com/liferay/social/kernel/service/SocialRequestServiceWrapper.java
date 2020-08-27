@@ -15,8 +15,7 @@
 package com.liferay.social.kernel.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.social.kernel.model.SocialRequest;
 
 /**
  * Provides a wrapper for {@link SocialRequestService}.
@@ -25,9 +24,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialRequestService
  * @generated
  */
-@ProviderType
 public class SocialRequestServiceWrapper
-	implements SocialRequestService, ServiceWrapper<SocialRequestService> {
+	implements ServiceWrapper<SocialRequestService>, SocialRequestService {
 
 	public SocialRequestServiceWrapper(
 		SocialRequestService socialRequestService) {
@@ -46,7 +44,7 @@ public class SocialRequestServiceWrapper
 	}
 
 	@Override
-	public com.liferay.social.kernel.model.SocialRequest updateRequest(
+	public SocialRequest updateRequest(
 			long requestId, int status,
 			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
 		throws com.liferay.portal.kernel.exception.PortalException {

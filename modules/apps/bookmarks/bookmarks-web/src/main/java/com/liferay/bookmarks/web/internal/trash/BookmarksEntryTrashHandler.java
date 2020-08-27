@@ -24,11 +24,12 @@ import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.trash.TrashActionKeys;
 import com.liferay.portal.kernel.trash.TrashHandler;
+import com.liferay.trash.constants.TrashActionKeys;
 
 import javax.portlet.PortletRequest;
 
@@ -114,7 +115,7 @@ public class BookmarksEntryTrashHandler extends BookmarksBaseTrashHandler {
 		throws PortalException {
 
 		if (trashActionId.equals(TrashActionKeys.MOVE)) {
-			return ModelResourcePermissionHelper.contains(
+			return ModelResourcePermissionUtil.contains(
 				_bookmarksFolderModelResourcePermission, permissionChecker,
 				groupId, classPK, ActionKeys.ADD_ENTRY);
 		}
@@ -124,12 +125,39 @@ public class BookmarksEntryTrashHandler extends BookmarksBaseTrashHandler {
 	}
 
 	@Override
+	public boolean isMovable(long classPK) throws PortalException {
+		BookmarksEntry entry = _bookmarksEntryLocalService.getEntry(classPK);
+
+		if (entry.getFolderId() > 0) {
+			BookmarksFolder parentFolder =
+				_bookmarksFolderLocalService.fetchBookmarksFolder(
+					entry.getFolderId());
+
+			if ((parentFolder == null) || parentFolder.isInTrash()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isRestorable(long classPK) throws PortalException {
 		BookmarksEntry entry = _bookmarksEntryLocalService.getEntry(classPK);
 
-		if ((entry.getFolderId() > 0) &&
-			(_bookmarksFolderLocalService.fetchBookmarksFolder(
-				entry.getFolderId()) == null)) {
+		if (entry.getFolderId() > 0) {
+			BookmarksFolder bookmarksFolder =
+				_bookmarksFolderLocalService.fetchBookmarksFolder(
+					entry.getFolderId());
+
+			if (bookmarksFolder == null) {
+				return false;
+			}
+		}
+
+		if (!hasTrashPermission(
+				PermissionThreadLocal.getPermissionChecker(),
+				entry.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}
@@ -175,10 +203,9 @@ public class BookmarksEntryTrashHandler extends BookmarksBaseTrashHandler {
 			PermissionChecker permissionChecker, long classPK, String actionId)
 		throws PortalException {
 
-		BookmarksEntry entry = _bookmarksEntryLocalService.getEntry(classPK);
-
 		return _bookmarksEntryModelResourcePermission.contains(
-			permissionChecker, entry, actionId);
+			permissionChecker, _bookmarksEntryLocalService.getEntry(classPK),
+			actionId);
 	}
 
 	@Reference

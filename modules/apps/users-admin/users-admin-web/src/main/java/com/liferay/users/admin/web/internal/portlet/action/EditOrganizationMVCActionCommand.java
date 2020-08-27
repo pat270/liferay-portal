@@ -52,6 +52,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 
 import java.util.Collections;
@@ -115,43 +116,49 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 					organization.getOrganizationId());
 			}
 
-			sendRedirect(actionRequest, actionResponse, redirect);
+			actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
+
+			sendRedirect(actionRequest, actionResponse);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			String mvcPath = "/edit_organization.jsp";
 
-			if (e instanceof NoSuchOrganizationException ||
-				e instanceof PrincipalException) {
+			if (exception instanceof NoSuchOrganizationException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				mvcPath = "/error.jsp";
 			}
-			else if (e instanceof AssetCategoryException ||
-					 e instanceof AssetTagException) {
+			else if (exception instanceof AssetCategoryException ||
+					 exception instanceof AssetTagException) {
 
-				SessionErrors.add(actionRequest, e.getClass(), e);
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
 			}
-			else if (e instanceof DuplicateOrganizationException ||
-					 e instanceof NoSuchCountryException ||
-					 e instanceof NoSuchListTypeException ||
-					 e instanceof OrganizationNameException ||
-					 e instanceof OrganizationParentException ||
-					 e instanceof RequiredOrganizationException) {
+			else if (exception instanceof DuplicateOrganizationException ||
+					 exception instanceof NoSuchCountryException ||
+					 exception instanceof NoSuchListTypeException ||
+					 exception instanceof OrganizationNameException ||
+					 exception instanceof OrganizationParentException ||
+					 exception instanceof RequiredOrganizationException) {
 
-				if (e instanceof NoSuchListTypeException) {
-					NoSuchListTypeException nslte = (NoSuchListTypeException)e;
+				if (exception instanceof NoSuchListTypeException) {
+					NoSuchListTypeException noSuchListTypeException =
+						(NoSuchListTypeException)exception;
 
-					Class<?> clazz = e.getClass();
+					Class<?> clazz = exception.getClass();
 
 					SessionErrors.add(
-						actionRequest, clazz.getName() + nslte.getType());
+						actionRequest,
+						clazz.getName() + noSuchListTypeException.getType());
 				}
 				else {
-					SessionErrors.add(actionRequest, e.getClass(), e);
+					SessionErrors.add(
+						actionRequest, exception.getClass(), exception);
 				}
 
-				if (e instanceof RequiredOrganizationException) {
+				if (exception instanceof RequiredOrganizationException) {
 					String redirect = _portal.escapeRedirect(
 						ParamUtil.getString(actionRequest, "redirect"));
 
@@ -173,7 +180,7 @@ public class EditOrganizationMVCActionCommand extends BaseMVCActionCommand {
 				}
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 
 			actionResponse.setRenderParameter("mvcPath", mvcPath);

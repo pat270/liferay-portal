@@ -19,8 +19,7 @@ import com.liferay.gradle.util.StringUtil;
 
 import groovy.lang.Closure;
 
-import java.io.File;
-
+import org.gradle.api.Action;
 import org.gradle.api.AntBuilder;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -31,6 +30,10 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.ArtifactHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.BasePluginConvention;
+import org.gradle.api.plugins.Convention;
+import org.gradle.api.plugins.MavenPlugin;
+import org.gradle.api.tasks.Delete;
+import org.gradle.api.tasks.TaskProvider;
 
 /**
  * @author Andrea Di Giorgi
@@ -39,70 +42,83 @@ public class LiferayAntPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
+
+		// Plugins
+
 		GradleUtil.applyPlugin(project, BasePlugin.class);
+
+		// Ant
 
 		AntBuilder antBuilder = project.getAnt();
 
 		antBuilder.importBuild("build.xml", _antTaskNamer);
 
-		_configureArchivesBaseName(project, antBuilder);
-		_configureArtifacts(project, antBuilder);
-		_configureVersion(project, antBuilder);
+		// Conventions
 
-		_configureAntTask(project, BasePlugin.CLEAN_TASK_NAME);
-	}
+		Convention convention = project.getConvention();
 
-	private void _configureAntTask(Project project, String targetName) {
-		String antTaskName = _antTaskNamer.transform(targetName);
+		final BasePluginConvention basePluginConvention = convention.getPlugin(
+			BasePluginConvention.class);
 
-		if (targetName.equals(antTaskName)) {
-			return;
-		}
+		_configureConventionBasePlugin(antBuilder, basePluginConvention);
 
-		Task task = GradleUtil.getTask(project, targetName);
+		// Tasks
 
-		task.dependsOn(antTaskName);
-	}
+		TaskProvider<Delete> cleanTaskProvider = GradleUtil.getTaskProvider(
+			project, BasePlugin.CLEAN_TASK_NAME, Delete.class);
+		final TaskProvider<Task> warTaskProvider = GradleUtil.getTaskProvider(
+			project, _WAR_TASK_NAME);
 
-	private void _configureArchivesBaseName(
-		Project project, AntBuilder antBuilder) {
+		_configureTaskCleanProvider(cleanTaskProvider);
 
-		BasePluginConvention basePluginConvention = GradleUtil.getConvention(
-			project, BasePluginConvention.class);
+		// Other
 
-		basePluginConvention.setArchivesBaseName(
-			String.valueOf(antBuilder.getProperty("plugin.name")));
-	}
-
-	@SuppressWarnings("serial")
-	private void _configureArtifacts(
-		final Project project, AntBuilder antBuilder) {
+		_configureProject(project, antBuilder);
 
 		ArtifactHandler artifacts = project.getArtifacts();
 
-		File pluginFile = project.file(antBuilder.getProperty("plugin.file"));
-
 		artifacts.add(
-			Dependency.ARCHIVES_CONFIGURATION, pluginFile,
+			Dependency.ARCHIVES_CONFIGURATION,
+			project.file(antBuilder.getProperty("plugin.file")),
 			new Closure<Void>(project) {
 
 				@SuppressWarnings("unused")
 				public void doCall(
 					ConfigurablePublishArtifact configurablePublishArtifact) {
 
-					Task warTask = GradleUtil.getTask(project, _WAR_TASK_NAME);
-
-					configurablePublishArtifact.builtBy(warTask);
+					configurablePublishArtifact.builtBy(warTaskProvider.get());
 
 					configurablePublishArtifact.setName(
-						GradleUtil.getArchivesBaseName(project));
+						basePluginConvention.getArchivesBaseName());
 				}
 
 			});
 	}
 
-	private void _configureVersion(Project project, AntBuilder antBuilder) {
+	private void _configureConventionBasePlugin(
+		AntBuilder antBuilder, BasePluginConvention basePluginConvention) {
+
+		basePluginConvention.setArchivesBaseName(
+			String.valueOf(antBuilder.getProperty("plugin.name")));
+	}
+
+	private void _configureProject(Project project, AntBuilder antBuilder) {
 		project.setVersion(antBuilder.getProperty("plugin.full.version"));
+	}
+
+	private void _configureTaskCleanProvider(
+		TaskProvider<Delete> cleanTaskProvider) {
+
+		cleanTaskProvider.configure(
+			new Action<Delete>() {
+
+				@Override
+				public void execute(Delete cleanDelete) {
+					cleanDelete.dependsOn(
+						_antTaskNamer.transform(cleanDelete.getName()));
+				}
+
+			});
 	}
 
 	private static final String _WAR_TASK_NAME = "war";
@@ -112,7 +128,9 @@ public class LiferayAntPlugin implements Plugin<Project> {
 
 			@Override
 			public String transform(String targetName) {
-				if (targetName.equals(BasePlugin.CLEAN_TASK_NAME)) {
+				if (targetName.equals(BasePlugin.CLEAN_TASK_NAME) ||
+					targetName.equals(MavenPlugin.INSTALL_TASK_NAME)) {
+
 					targetName = "ant" + StringUtil.capitalize(targetName);
 				}
 

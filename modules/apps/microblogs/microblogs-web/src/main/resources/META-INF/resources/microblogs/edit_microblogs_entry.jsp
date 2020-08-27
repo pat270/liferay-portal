@@ -194,7 +194,7 @@ if (comment) {
 	%>
 
 	<div class="<%= rowCssClass %>">
-		<aui:button cssClass="microblogs-post pull-left" disabled="<%= !repost %>" type="submit" value="post" />
+		<aui:button cssClass="float-left microblogs-post" disabled="<%= !repost %>" type="submit" value="post" />
 
 		<c:if test="<%= repost %>">
 			<aui:button onClick="Liferay.Microblogs.closePopup();" type="cancel" />
@@ -210,7 +210,7 @@ if (comment) {
 			}
 			%>
 
-			<aui:select inlineLabel="<%= Boolean.TRUE.toString() %>" label="viewable-by" name="socialRelationType" onChange='<%= renderResponse.getNamespace() + "relationTypeOnChange(event);" %>' value="<%= socialRelationType %>">
+			<aui:select inlineLabel="<%= Boolean.TRUE.toString() %>" label="viewable-by" name="socialRelationType" onChange='<%= liferayPortletResponse.getNamespace() + "relationTypeOnChange(event);" %>' value="<%= socialRelationType %>">
 				<aui:option label="everyone" value="<%= MicroblogsEntryConstants.TYPE_EVERYONE %>" />
 				<aui:option label="connections" value="<%= SocialRelationConstants.TYPE_BI_CONNECTION %>" />
 				<aui:option label="followers" value="<%= SocialRelationConstants.TYPE_UNI_FOLLOWER %>" />
@@ -241,14 +241,14 @@ if (comment) {
 	</aui:script>
 </c:if>
 
-<aui:script use="aui-base,aui-event-input,aui-template-deprecated,aui-form-textarea-deprecated,autocomplete,autocomplete-filters">
+<aui:script use="aui-base,aui-event-input,aui-form-textarea-deprecated,aui-template-deprecated,autocomplete,autocomplete-filters">
 	var MAP_MATCHED_USERS = {
-		screenName: function(str, match) {
+		screenName: function (str, match) {
 			return '[@' + MAP_USERS[str] + ']';
 		},
-		userName: function(str, match) {
+		userName: function (str, match) {
 			return '<span>' + str + '</span>';
-		}
+		},
 	};
 
 	var MAP_USERS = {};
@@ -257,16 +257,16 @@ if (comment) {
 
 	var TPL_SEARCH_RESULTS =
 		'<div class="microblogs-autocomplete">' +
-			'<div class="thumbnail">' +
-				'<img alt="{fullName}" src="{portraitURL}" />' +
-			'</div>' +
-			'<div>' +
-				'<span class="user-name">{fullName}</span>' +
-				'<br />' +
-				'<span class="small">{emailAddress}</span>' +
-				'<br />' +
-				'<span class="job-title">{jobTitle}</span>' +
-			'</div>' +
+		'<div class="thumbnail">' +
+		'<img alt="{fullName}" src="{portraitURL}" />' +
+		'</div>' +
+		'<div>' +
+		'<span class="user-name">{fullName}</span>' +
+		'<br />' +
+		'<span class="small">{emailAddress}</span>' +
+		'<br />' +
+		'<span class="job-title">{jobTitle}</span>' +
+		'</div>' +
 		'</div>';
 
 	var autocompleteDiv;
@@ -274,7 +274,7 @@ if (comment) {
 	var form = A.one('#<portlet:namespace /><%= formName %>');
 
 	<c:if test="<%= !repost %>">
-		var countContent = function(event) {
+		var countContent = function (event) {
 			var content = event.currentTarget.val();
 
 			var countdown = form.one('.microblogs-countdown');
@@ -293,38 +293,40 @@ if (comment) {
 			countdown.toggleClass('microblogs-countdown-warned', disabled);
 		};
 
-		var createTextarea = function(divId) {
+		var createTextarea = function (divId) {
 			var autocomplete = A.one('#<portlet:namespace />autocomplete<%= formId %>');
-			var autocompleteContent = A.one('#<portlet:namespace />autocompleteContent<%= formId %>');
-			var highlighterContent = A.one('#<portlet:namespace />highlighterContent<%= formId %>');
+			var autocompleteContent = A.one(
+				'#<portlet:namespace />autocompleteContent<%= formId %>'
+			);
+			var highlighterContent = A.one(
+				'#<portlet:namespace />highlighterContent<%= formId %>'
+			);
 
-			var inputValue = '<%= ((microblogsEntry != null) && edit) ? StringUtil.replace(HtmlUtil.escapeJS(microblogsEntry.getContent()), "\'", "\\'") : StringPool.BLANK %>';
+			var inputValue =
+				'<%= ((microblogsEntry != null) && edit) ? StringUtil.replace(HtmlUtil.escapeJS(microblogsEntry.getContent()), "\'", "\\'") : StringPool.BLANK %>';
 
-			var textarea = new A.Textarea(
-				{
-					autoSize: true,
-					id: '<portlet:namespace />contentInput<%= formId %>'
-				}
-			).render(autocompleteContent);
+			var textarea = new A.Textarea({
+				autoSize: true,
+				id: '<portlet:namespace />contentInput<%= formId %>',
+			}).render(autocompleteContent);
 
 			var contentTextarea = autocompleteContent.one('textarea');
 
-			contentTextarea.on(
-				'focus',
-				function(contentTextarea) {
-					autocomplete.removeClass('inactive');
+			contentTextarea.on('focus', function (contentTextarea) {
+				autocomplete.removeClass('inactive');
 
-					var buttonContainer = form.one('.button-holder');
+				var buttonContainer = form.one('.button-holder');
 
-					buttonContainer.show();
+				buttonContainer.show();
 
-					var placeholderText = A.one('#<portlet:namespace />placeholderText<%= formId %>');
+				var placeholderText = A.one(
+					'#<portlet:namespace />placeholderText<%= formId %>'
+				);
 
-					if (placeholderText) {
-						placeholderText.remove();
-					}
+				if (placeholderText) {
+					placeholderText.remove();
 				}
-			);
+			});
 
 			var contextCountEvent = 'input';
 
@@ -332,14 +334,11 @@ if (comment) {
 				contextCountEvent = ['input', 'keydown'];
 			}
 
-			contentTextarea.on(
-				contextCountEvent,
-				function(contentTextarea) {
-					updateHighlightDivSize(contentTextarea);
+			contentTextarea.on(contextCountEvent, function (contentTextarea) {
+				updateHighlightDivSize(contentTextarea);
 
-					countContent(contentTextarea);
-				}
-			);
+				countContent(contentTextarea);
+			});
 
 			createAutocomplete(contentTextarea);
 
@@ -350,7 +349,7 @@ if (comment) {
 			return contentTextarea;
 		};
 
-		var replaceName = function(inputText, returnType) {
+		var replaceName = function (inputText, returnType) {
 			var matchedUsers = {};
 
 			var updatedText = inputText;
@@ -360,16 +359,16 @@ if (comment) {
 			var findNames = new RegExp('(' + users.join('|') + ')', 'g');
 
 			if (users.length > 0) {
-				updatedText = updatedText.replace(
-					findNames,
-					function(userName) {
-						if (userName !== '') {
-							matchedUsers[userName] = MAP_USERS[userName];
+				updatedText = updatedText.replace(findNames, function (userName) {
+					if (userName !== '') {
+						matchedUsers[userName] = MAP_USERS[userName];
 
-							return MAP_MATCHED_USERS[returnType](userName, MAP_USERS[userName]);
-						}
+						return MAP_MATCHED_USERS[returnType](
+							userName,
+							MAP_USERS[userName]
+						);
 					}
-				);
+				});
 			}
 
 			MAP_USERS = matchedUsers;
@@ -377,20 +376,20 @@ if (comment) {
 			return updatedText;
 		};
 
-		var resultFormatter = function(query, results) {
-			return results.map(
-				function(result) {
-					var userData = result.raw;
+		var resultFormatter = function (query, results) {
+			return results.map(function (result) {
+				var userData = result.raw;
 
-					return A.Lang.sub(TPL_SEARCH_RESULTS, userData);
-				}
-			);
+				return A.Lang.sub(TPL_SEARCH_RESULTS, userData);
+			});
 		};
 
-		var updateHighlightDivContent = function(event) {
+		var updateHighlightDivContent = function (event) {
 			var inputValue = event.inputValue;
 
-			var highlighterContent = A.one('#<portlet:namespace />highlighterContent<%= formId %>');
+			var highlighterContent = A.one(
+				'#<portlet:namespace />highlighterContent<%= formId %>'
+			);
 
 			var query = inputValue.match(REGEX_USER_NAME);
 
@@ -409,16 +408,18 @@ if (comment) {
 			highlighterContent.html('<div>' + updatedText + '</div>');
 		};
 
-		var updateHighlightDivSize = function(event) {
+		var updateHighlightDivSize = function (event) {
 			var contentInput = event.currentTarget;
 
 			var autocomplete = A.one('#<portlet:namespace />autocomplete<%= formId %>');
-			var highlighterContent = A.one('#<portlet:namespace />highlighterContent<%= formId %>');
+			var highlighterContent = A.one(
+				'#<portlet:namespace />highlighterContent<%= formId %>'
+			);
 
 			var contentInputHeight = contentInput.height();
 		};
 
-		var updateContentTextbox = function(event) {
+		var updateContentTextbox = function (event) {
 			event.preventDefault();
 
 			var rawResult = event.result.raw;
@@ -439,65 +440,59 @@ if (comment) {
 			autocompleteDiv.hide();
 		};
 
-		<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/microblogs/autocomplete_user_mentions" var="userIdURL">
-			<portlet:param name="userId" value="<%= String.valueOf(user.getUserId()) %>" />
-		</liferay-portlet:resourceURL>
+		<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/microblogs/autocomplete_user_mentions" var="userIdURL" />
 
-		var createAutocomplete = function(contentTextarea) {
-			fetch(
-				'<%= HtmlUtil.escapeJS(userIdURL.toString()) %>',
-				{
-					credentials: 'include'
-				}
-			).then(
-				function(response) {
+		var createAutocomplete = function (contentTextarea) {
+			Liferay.Util.fetch(
+				'<%= userIdURL.toString() %>&userId=<%= user.getUserId() %>'
+			)
+				.then(function (response) {
 					return response.json();
-				}
-			).then(
-				function(response) {
-					autocompleteDiv = new A.AutoComplete(
-						{
-							inputNode: contentTextarea,
-							maxResults: 5,
-								on: {
-									clear: function() {
-									var highlighterContent = A.one('#<portlet:namespace />highlighterContent<%= formId %>');
+				})
+				.then(function (response) {
+					autocompleteDiv = new A.AutoComplete({
+						inputNode: contentTextarea,
+						maxResults: 5,
+						on: {
+							clear: function () {
+								var highlighterContent = A.one(
+									'#<portlet:namespace />highlighterContent<%= formId %>'
+								);
 
-									highlighterContent.html('');
-								},
-								query: updateHighlightDivContent,
-								select: updateContentTextbox
-								},
-							resultFilters: 'phraseMatch',
-							resultFormatter: resultFormatter,
-							resultTextLocator: 'fullName',
-							source: response
-						}
-					).render();
-				}
-			);
+								highlighterContent.html('');
+							},
+							query: updateHighlightDivContent,
+							select: updateContentTextbox,
+						},
+						resultFilters: 'phraseMatch',
+						resultFormatter: resultFormatter,
+						resultTextLocator: 'fullName',
+						source: response,
+					}).render();
+				});
 		};
 
 		<c:choose>
 			<c:when test="<%= !edit %>">
 				var autocomplete = A.one('#<portlet:namespace />autocomplete<%= formId %>');
 
-				autocomplete.on(
-					'click',
-					function(event) {
-						var contentInput = A.one('#<portlet:namespace />autocompleteContent<%= formId %> textarea');
-						var highlighterContent = A.one('#<portlet:namespace />highlighterContent<%= formId %>');
+				autocomplete.on('click', function (event) {
+					var contentInput = A.one(
+						'#<portlet:namespace />autocompleteContent<%= formId %> textarea'
+					);
+					var highlighterContent = A.one(
+						'#<portlet:namespace />highlighterContent<%= formId %>'
+					);
 
-						if (!contentInput) {
-							highlighterContent.removeClass('textbox');
+					if (!contentInput) {
+						highlighterContent.removeClass('textbox');
 
-							createTextarea('#<portlet:namespace />autocompleteContent');
-						}
-						else {
-							contentInput.focus();
-						}
+						createTextarea('#<portlet:namespace />autocompleteContent');
 					}
-				);
+					else {
+						contentInput.focus();
+					}
+				});
 			</c:when>
 			<c:otherwise>
 				createTextarea('#<portlet:namespace />autocompleteContent');
@@ -505,35 +500,40 @@ if (comment) {
 		</c:choose>
 	</c:if>
 
-	form.on(
-		'submit',
-		function(event) {
-			event.halt(true);
+	form.on('submit', function (event) {
+		event.halt(true);
 
-			<c:if test="<%= !repost %>">
-				var content = form.one('input[name="<portlet:namespace />content"]');
-				var contentInput = A.one('#<portlet:namespace />autocompleteContent<%= formId %> textarea');
+		<c:if test="<%= !repost %>">
+			var content = form.one('input[name="<portlet:namespace />content"]');
+			var contentInput = A.one(
+				'#<portlet:namespace />autocompleteContent<%= formId %> textarea'
+			);
 
-				var contentInputValue = contentInput.val();
+			var contentInputValue = contentInput.val();
 
-				var updatedText = replaceName(contentInputValue, 'screenName');
+			var updatedText = replaceName(contentInputValue, 'screenName');
 
-				content.val(updatedText);
-			</c:if>
+			content.val(updatedText);
+		</c:if>
 
-			var url = form.one('input[name="<portlet:namespace />redirect"]');
+		var url = form.one('input[name="<portlet:namespace />redirect"]');
 
-			var updateContainer = A.one('#p_p_id<portlet:namespace /> .portlet-body');
+		var updateContainer = A.one('#p_p_id<portlet:namespace /> .portlet-body');
 
-			<c:if test="<%= comment %>">
-				updateContainer = A.one('#<portlet:namespace />commentsContainer<%= microblogsEntryId %>');
-			</c:if>
+		<c:if test="<%= comment %>">
+			updateContainer = A.one(
+				'#<portlet:namespace />commentsContainer<%= microblogsEntryId %>'
+			);
+		</c:if>
 
-			Liferay.Microblogs.updateMicroblogs(form, url.get('value'), updateContainer);
+		Liferay.Microblogs.updateMicroblogs(
+			form,
+			url.get('value'),
+			updateContainer
+		);
 
-			<c:if test="<%= repost %>">
-				Liferay.Microblogs.closePopup();
-			</c:if>
-		}
-	);
+		<c:if test="<%= repost %>">
+			Liferay.Microblogs.closePopup();
+		</c:if>
+	});
 </aui:script>

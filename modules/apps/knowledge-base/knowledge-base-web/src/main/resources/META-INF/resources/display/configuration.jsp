@@ -129,19 +129,21 @@ kbDisplayPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBDispl
 </liferay-frontend:edit-form>
 
 <aui:script>
-	var <portlet:namespace />form = document.querySelector('#<portlet:namespace />fm');
+	var <portlet:namespace />form = document.getElementById(
+		'<portlet:namespace />fm'
+	);
 
 	if (<portlet:namespace />form) {
-		<portlet:namespace />form.querySelector('#<portlet:namespace />selectKBObjectButton').addEventListener(
-			'click',
-			function(event) {
+		document
+			.getElementById('<portlet:namespace />selectKBObjectButton')
+			.addEventListener('click', function (event) {
 				Liferay.Util.selectEntity(
 					{
 						dialog: {
 							constrain: true,
 							destroyOnHide: true,
 							modal: true,
-							width: 600
+							width: 600,
 						},
 						id: '<portlet:namespace />selectKBObject',
 						title: '<liferay-ui:message key="select-entry" />',
@@ -154,22 +156,26 @@ kbDisplayPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBDispl
 							<portlet:param name="eventName" value='<%= liferayPortletResponse.getNamespace() + "selectKBObject" %>' />
 						</liferay-portlet:renderURL>
 
-						uri: '<%= HtmlUtil.escapeJS(selectKBObjectURL) %>'
+						uri: '<%= HtmlUtil.escapeJS(selectKBObjectURL) %>',
 					},
-					function(event) {
-						<portlet:namespace />form.querySelector('#<portlet:namespace />resourceClassNameId').value = event.resourceclassnameid;
+					function (event) {
+						document.getElementById(
+							'<portlet:namespace />resourceClassNameId'
+						).value = event.resourceclassnameid;
 
 						var kbObjectData = {
 							idString: 'resourcePrimKey',
 							idValue: event.resourceprimkey,
 							nameString: 'configurationKBObject',
-							nameValue: event.title
+							nameValue: event.title,
 						};
 
-						Liferay.Util.selectFolder(kbObjectData, '<portlet:namespace />');
+						Liferay.Util.selectFolder(
+							kbObjectData,
+							'<portlet:namespace />'
+						);
 					}
 				);
-			}
-		);
+			});
 	}
 </aui:script>

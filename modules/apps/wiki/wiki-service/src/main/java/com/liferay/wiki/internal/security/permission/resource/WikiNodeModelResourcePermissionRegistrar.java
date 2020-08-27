@@ -41,13 +41,14 @@ import org.osgi.service.component.annotations.Reference;
 public class WikiNodeModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", WikiNode.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<WikiNode>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				WikiNode.class, WikiNode::getNodeId,
 				_wikiNodeLocalService::getWikiNode, _portletResourcePermission,
@@ -59,14 +60,15 @@ public class WikiNodeModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
 	@Reference(target = "(resource.name=" + WikiConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<WikiNode>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

@@ -26,7 +26,7 @@ boolean geolocation = GetterUtil.getBoolean(request.getAttribute("liferay-map:ma
 double latitude = (Double)request.getAttribute("liferay-map:map:latitude");
 double longitude = (Double)request.getAttribute("liferay-map:map:longitude");
 String name = (String)request.getAttribute("liferay-map:map:name");
-String points =(String)request.getAttribute("liferay-map:map:points");
+String points = (String)request.getAttribute("liferay-map:map:points");
 
 name = namespace + name;
 %>
@@ -35,7 +35,7 @@ name = namespace + name;
 	outputKey="js_maps_google_skip_map_loading"
 >
 	<script>
-		Liferay.namespace('Maps').onGMapsReady = function(event) {
+		Liferay.namespace('Maps').onGMapsReady = function (event) {
 			Liferay.Maps.gmapsReady = true;
 
 			Liferay.fire('gmapsReady');
@@ -65,7 +65,13 @@ name = namespace + name;
 					controls: [MapControls.HOME, MapControls.SEARCH],
 				</c:when>
 				<c:otherwise>
-					controls: [MapControls.HOME, MapControls.PAN, MapControls.SEARCH, MapControls.TYPE, MapControls.ZOOM],
+					controls: [
+						MapControls.HOME,
+						MapControls.PAN,
+						MapControls.SEARCH,
+						MapControls.TYPE,
+						MapControls.ZOOM,
+					],
 				</c:otherwise>
 			</c:choose>
 		</c:if>
@@ -74,22 +80,26 @@ name = namespace + name;
 			data: <%= points %>,
 		</c:if>
 
-		geolocation: <%= geolocation %>
+		geolocation: <%= geolocation %>,
 
 		<c:if test="<%= Validator.isNotNull(latitude) && Validator.isNotNull(longitude) %>">
-			,position: {
+			position: {
 				location: {
 					lat: <%= latitude %>,
-					lng: <%= longitude %>
-				}
-			}
+					lng: <%= longitude %>,
+				},
+			},
 		</c:if>
 	};
 
-	var createMap = function() {
+	var createMap = function () {
 		var map = new MapGoogleMaps.default(mapConfig);
 
-		Liferay.MapBase.register('<%= HtmlUtil.escapeJS(name) %>', map, '<%= portletDisplay.getId() %>');
+		Liferay.MapBase.register(
+			'<%= HtmlUtil.escapeJS(name) %>',
+			map,
+			'<%= portletDisplay.getId() %>'
+		);
 	};
 
 	if (Liferay.Maps.gmapsReady) {

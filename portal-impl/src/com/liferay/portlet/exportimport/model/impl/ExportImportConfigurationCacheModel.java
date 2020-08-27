@@ -27,32 +27,29 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing ExportImportConfiguration in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class ExportImportConfigurationCacheModel
 	implements CacheModel<ExportImportConfiguration>, Externalizable,
 			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ExportImportConfigurationCacheModel)) {
+		if (!(object instanceof ExportImportConfigurationCacheModel)) {
 			return false;
 		}
 
 		ExportImportConfigurationCacheModel
 			exportImportConfigurationCacheModel =
-				(ExportImportConfigurationCacheModel)obj;
+				(ExportImportConfigurationCacheModel)object;
 
 		if ((exportImportConfigurationId ==
 				exportImportConfigurationCacheModel.
@@ -203,7 +200,9 @@ public class ExportImportConfigurationCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		exportImportConfigurationId = objectInput.readLong();
@@ -220,7 +219,7 @@ public class ExportImportConfigurationCacheModel
 		description = objectInput.readUTF();
 
 		type = objectInput.readInt();
-		settings = objectInput.readUTF();
+		settings = (String)objectInput.readObject();
 
 		status = objectInput.readInt();
 
@@ -268,10 +267,10 @@ public class ExportImportConfigurationCacheModel
 		objectOutput.writeInt(type);
 
 		if (settings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(settings);
+			objectOutput.writeObject(settings);
 		}
 
 		objectOutput.writeInt(status);

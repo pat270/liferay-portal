@@ -14,9 +14,9 @@
 
 package com.liferay.journal.model.impl;
 
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.exception.NoSuchFolderException;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 
@@ -40,12 +40,12 @@ public class JournalFolderImpl extends JournalFolderBaseImpl {
 
 				ancestorFolderIds.add(folder.getFolderId());
 			}
-			catch (NoSuchFolderException nsfe) {
+			catch (NoSuchFolderException noSuchFolderException) {
 				if (folder.isInTrash()) {
 					break;
 				}
 
-				throw nsfe;
+				throw noSuchFolderException;
 			}
 		}
 

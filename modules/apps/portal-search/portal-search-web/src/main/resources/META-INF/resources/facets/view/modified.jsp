@@ -83,10 +83,11 @@ int index = 0;
 					<li class="default facet-value">
 
 						<%
-						Map<String, Object> data = new HashMap<>();
-
-						data.put("selection", 0);
-						data.put("value", StringPool.BLANK);
+						Map<String, Object> data = HashMapBuilder.<String, Object>put(
+							"selection", 0
+						).put(
+							"value", StringPool.BLANK
+						).build();
 						%>
 
 						<aui:a cssClass='<%= (Validator.isNull(fieldParamSelection) || fieldParamSelection.equals("0")) ? "facet-term-selected" : "facet-term-unselected" %>' href="javascript:;">
@@ -101,7 +102,7 @@ int index = 0;
 						String label = HtmlUtil.escape(rangesJSONObject.getString("label"));
 						String range = rangesJSONObject.getString("range");
 
-						index = (i + 1);
+						index = i + 1;
 					%>
 
 						<li class="facet-value">
@@ -113,10 +114,11 @@ int index = 0;
 								rangeCssClass = "facet-term-selected";
 							}
 
-							data = new HashMap<>();
-
-							data.put("selection", index);
-							data.put("value", HtmlUtil.escape(range));
+							data = HashMapBuilder.<String, Object>put(
+								"selection", index
+							).put(
+								"value", HtmlUtil.escape(range)
+							).build();
 							%>
 
 							<aui:a cssClass="<%= rangeCssClass %>" data="<%= data %>" href="javascript:;">
@@ -167,7 +169,7 @@ int index = 0;
 					<%
 					Calendar fromCalendar = CalendarFactoryUtil.getCalendar(timeZone, locale);
 
-					if (Validator.isNotNull(fromDate)) {
+					if (fromDate != null) {
 						fromCalendar.setTime(fromDate);
 					}
 					else {
@@ -176,13 +178,16 @@ int index = 0;
 
 					Calendar toCalendar = CalendarFactoryUtil.getCalendar(timeZone, locale);
 
-					if (Validator.isNotNull(toDate)) {
+					if (toDate != null) {
 						toCalendar.setTime(toDate);
 					}
 					%>
 
 					<div class="<%= !fieldParamSelection.equals(String.valueOf(index + 1)) ? "hide" : StringPool.BLANK %> modified-custom-range" id="<%= randomNamespace %>customRange">
-						<div class="col-md-6" id="<%= randomNamespace %>customRangeFrom">
+						<clay:col
+							id='<%= randomNamespace + "customRangeFrom" %>'
+							md="6"
+						>
 							<aui:field-wrapper label="from">
 								<liferay-ui:input-date
 									dayParam='<%= HtmlUtil.escapeJS(facet.getFieldId()) + "dayFrom" %>'
@@ -196,9 +201,12 @@ int index = 0;
 									yearValue="<%= fromCalendar.get(Calendar.YEAR) %>"
 								/>
 							</aui:field-wrapper>
-						</div>
+						</clay:col>
 
-						<div class="col-md-6" id="<%= randomNamespace %>customRangeTo">
+						<clay:col
+							id='<%= randomNamespace + "customRangeTo" %>'
+							md="6"
+						>
 							<aui:field-wrapper label="to">
 								<liferay-ui:input-date
 									dayParam='<%= HtmlUtil.escapeJS(facet.getFieldId()) + "dayTo" %>'
@@ -212,10 +220,10 @@ int index = 0;
 									yearValue="<%= toCalendar.get(Calendar.YEAR) %>"
 								/>
 							</aui:field-wrapper>
-						</div>
+						</clay:col>
 
 						<%
-						String taglibSearchCustomRange = "window['" + renderResponse.getNamespace() + HtmlUtil.escapeJS(facet.getFieldId()) + "searchCustomRange'](" + (index + 1) + ");";
+						String taglibSearchCustomRange = "window['" + liferayPortletResponse.getNamespace() + HtmlUtil.escapeJS(facet.getFieldId()) + "searchCustomRange'](" + (index + 1) + ");";
 						%>
 
 						<aui:button disabled="<%= toCalendar.getTimeInMillis() < fromCalendar.getTimeInMillis() %>" name="searchCustomRangeButton" onClick="<%= taglibSearchCustomRange %>" value="search" />
@@ -229,15 +237,40 @@ int index = 0;
 <aui:script>
 	var form = document.<portlet:namespace />fm;
 
-	var dayFromInput = Liferay.Util.getFormElement(form, '<%= HtmlUtil.escapeJS(facet.getFieldId()) %>dayFrom');
-	var monthFromInput = Liferay.Util.getFormElement(form, '<%= HtmlUtil.escapeJS(facet.getFieldId()) %>monthFrom');
-	var yearFromInput = Liferay.Util.getFormElement(form, '<%= HtmlUtil.escapeJS(facet.getFieldId()) %>yearFrom');
+	var dayFromInput = Liferay.Util.getFormElement(
+		form,
+		'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>dayFrom'
+	);
+	var monthFromInput = Liferay.Util.getFormElement(
+		form,
+		'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>monthFrom'
+	);
+	var yearFromInput = Liferay.Util.getFormElement(
+		form,
+		'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>yearFrom'
+	);
 
-	var dayToInput = Liferay.Util.getFormElement(form, '<%= HtmlUtil.escapeJS(facet.getFieldId()) %>dayTo');
-	var monthToInput = Liferay.Util.getFormElement(form, '<%= HtmlUtil.escapeJS(facet.getFieldId()) %>monthTo');
-	var yearToInput = Liferay.Util.getFormElement(form, '<%= HtmlUtil.escapeJS(facet.getFieldId()) %>yearTo');
+	var dayToInput = Liferay.Util.getFormElement(
+		form,
+		'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>dayTo'
+	);
+	var monthToInput = Liferay.Util.getFormElement(
+		form,
+		'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>monthTo'
+	);
+	var yearToInput = Liferay.Util.getFormElement(
+		form,
+		'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>yearTo'
+	);
 
-	if (dayFromInput && monthFromInput && yearFromInput && dayToInput && monthToInput && yearToInput) {
+	if (
+		dayFromInput &&
+		monthFromInput &&
+		yearFromInput &&
+		dayToInput &&
+		monthToInput &&
+		yearToInput
+	) {
 		Liferay.Util.toggleDisabled(dayFromInput, true);
 		Liferay.Util.toggleDisabled(monthFromInput, true);
 		Liferay.Util.toggleDisabled(yearFromInput, true);
@@ -246,7 +279,9 @@ int index = 0;
 		Liferay.Util.toggleDisabled(monthToInput, true);
 		Liferay.Util.toggleDisabled(yearToInput, true);
 
-		function <portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>searchCustomRange(selection) {
+		function <portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>searchCustomRange(
+			selection
+		) {
 			var A = AUI();
 			var Lang = A.Lang;
 			var LString = Lang.String;
@@ -259,17 +294,25 @@ int index = 0;
 			var monthTo = Lang.toInt(monthToInput.value) + 1;
 			var yearTo = yearToInput.value;
 
-			var range = '[' + yearFrom + LString.padNumber(monthFrom, 2) + LString.padNumber(dayFrom, 2) + '000000 TO ' + yearTo + LString.padNumber(monthTo, 2) + LString.padNumber(dayTo, 2) + '235959]';
+			var range =
+				'[' +
+				yearFrom +
+				LString.padNumber(monthFrom, 2) +
+				LString.padNumber(dayFrom, 2) +
+				'000000 TO ' +
+				yearTo +
+				LString.padNumber(monthTo, 2) +
+				LString.padNumber(dayTo, 2) +
+				'235959]';
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>': range,
-						'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>selection': selection
-					}
-				}
-			);
+			var data = {};
+
+			data['<%= HtmlUtil.escapeJS(facet.getFieldId()) %>'] = range;
+			data[
+				'<%= HtmlUtil.escapeJS(facet.getFieldId()) %>selection'
+			] = selection;
+
+			Liferay.Util.postForm(form, {data: data});
 		}
 	}
 </aui:script>
@@ -277,25 +320,34 @@ int index = 0;
 <aui:script use="aui-form-validator">
 	var Util = Liferay.Util;
 
-	var customRangeFrom = Liferay.component('<%= renderResponse.getNamespace() %>modifiedfromDatePicker');
-	var customRangeTo = Liferay.component('<%= renderResponse.getNamespace() %>modifiedtoDatePicker');
+	var customRangeFrom = Liferay.component(
+		'<%= liferayPortletResponse.getNamespace() %>modifiedfromDatePicker'
+	);
+	var customRangeTo = Liferay.component(
+		'<%= liferayPortletResponse.getNamespace() %>modifiedtoDatePicker'
+	);
 	var searchButton = A.one('#<portlet:namespace />searchCustomRangeButton');
 
-	var preventKeyboardDateChange = function(event) {
+	var preventKeyboardDateChange = function (event) {
 		if (!event.isKey('TAB')) {
 			event.preventDefault();
 		}
 	};
 
-	A.one('#<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>from').on('keydown', preventKeyboardDateChange);
-	A.one('#<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>to').on('keydown', preventKeyboardDateChange);
+	A.one(
+		'#<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>from'
+	).on('keydown', preventKeyboardDateChange);
+	A.one(
+		'#<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>to'
+	).on('keydown', preventKeyboardDateChange);
 
 	var DEFAULTS_FORM_VALIDATOR = A.config.FormValidator;
 
 	A.mix(
 		DEFAULTS_FORM_VALIDATOR.STRINGS,
 		{
-			<portlet:namespace />dateRange: '<%= UnicodeLanguageUtil.get(request, "search-custom-range-invalid-date-range") %>'
+			<portlet:namespace />dateRange:
+				'<%= UnicodeLanguageUtil.get(request, "search-custom-range-invalid-date-range") %>',
 		},
 		true
 	);
@@ -303,49 +355,49 @@ int index = 0;
 	A.mix(
 		DEFAULTS_FORM_VALIDATOR.RULES,
 		{
-			<portlet:namespace />dateRange: function(val, fieldNode, ruleValue) {
-				return A.Date.isGreaterOrEqual(customRangeTo.getDate(), customRangeFrom.getDate());
-			}
+			<portlet:namespace />dateRange: function (val, fieldNode, ruleValue) {
+				return A.Date.isGreaterOrEqual(
+					customRangeTo.getDate(),
+					customRangeFrom.getDate()
+				);
+			},
 		},
 		true
 	);
 
-	var customRangeValidator = new A.FormValidator(
-		{
-			boundingBox: document.<portlet:namespace />fm,
-			fieldContainer: 'div',
-			on: {
-				errorField: function(event) {
-					Util.toggleDisabled(searchButton, true);
-				},
-				validField: function(event) {
-					Util.toggleDisabled(searchButton, false);
-				}
+	var customRangeValidator = new A.FormValidator({
+		boundingBox: document.<portlet:namespace />fm,
+		fieldContainer: 'div',
+		on: {
+			errorField: function (event) {
+				Util.toggleDisabled(searchButton, true);
 			},
-			rules: {
-				'<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>from': {
-					<portlet:namespace />dateRange: true
-				},
-				'<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>to': {
-					<portlet:namespace />dateRange: true
-				}
-			}
-		}
-	);
+			validField: function (event) {
+				Util.toggleDisabled(searchButton, false);
+			},
+		},
+		rules: {
+			<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>from: {
+				<portlet:namespace />dateRange: true,
+			},
+			<portlet:namespace /><%= HtmlUtil.escapeJS(facet.getFieldId()) %>to: {
+				<portlet:namespace />dateRange: true,
+			},
+		},
+	});
 
-	var onRangeSelectionChange = function(event) {
+	var onRangeSelectionChange = function (event) {
 		customRangeValidator.validate();
 	};
 
 	customRangeFrom.on('selectionChange', onRangeSelectionChange);
 	customRangeTo.on('selectionChange', onRangeSelectionChange);
 
-	A.one('.<%= randomNamespace %>custom-range-toggle').on(
-		'click',
-		function(event) {
-			event.halt();
+	A.one('.<%= randomNamespace %>custom-range-toggle').on('click', function (
+		event
+	) {
+		event.halt();
 
-			A.one('#<%= randomNamespace + "customRange" %>').toggle();
-		}
-	);
+		A.one('#<%= randomNamespace + "customRange" %>').toggle();
+	});
 </aui:script>

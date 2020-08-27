@@ -36,7 +36,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Máté Thurzó
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 		"mvc.command.name=/document_library/publish_file_shortcut"
@@ -67,9 +66,11 @@ public class PublishFileShortcutMVCActionCommand extends BaseMVCActionCommand {
 		try {
 			return _dlAppLocalService.getFileShortcut(fileShortcutId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to get file shortcut " + fileShortcutId, pe);
+				_log.debug(
+					"Unable to get file shortcut " + fileShortcutId,
+					portalException);
 			}
 		}
 

@@ -64,11 +64,11 @@ public class BufferedIncrementRunnable implements Runnable {
 			try {
 				bufferedIncreasableEntry.proceed();
 			}
-			catch (Throwable t) {
+			catch (Throwable throwable) {
 				_log.error(
 					"Unable to persist buffered increment value: " +
 						bufferedIncreasableEntry,
-					t);
+					throwable);
 			}
 
 			if (_bufferedIncrementConfiguration.isStandbyEnabled()) {
@@ -81,7 +81,7 @@ public class BufferedIncrementRunnable implements Runnable {
 				try {
 					Thread.sleep(standbyTime);
 				}
-				catch (InterruptedException ie) {
+				catch (InterruptedException interruptedException) {
 					break;
 				}
 			}

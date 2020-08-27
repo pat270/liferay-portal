@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link ResourceAction}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ResourceAction
  * @generated
  */
-@ProviderType
 public class ResourceActionWrapper
 	extends BaseModelWrapper<ResourceAction>
-	implements ResourceAction, ModelWrapper<ResourceAction> {
+	implements ModelWrapper<ResourceAction>, ResourceAction {
 
 	public ResourceActionWrapper(ResourceAction resourceAction) {
 		super(resourceAction);

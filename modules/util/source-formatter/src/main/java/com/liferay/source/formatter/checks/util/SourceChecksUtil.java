@@ -16,13 +16,9 @@ package com.liferay.source.formatter.checks.util;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.json.JSONArrayImpl;
 import com.liferay.portal.json.JSONObjectImpl;
-import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.SourceFormatterMessage;
 import com.liferay.source.formatter.checks.FileCheck;
 import com.liferay.source.formatter.checks.GradleFileCheck;
@@ -39,10 +35,10 @@ import com.liferay.source.formatter.parser.JavaClassParser;
 import com.liferay.source.formatter.parser.ParseException;
 import com.liferay.source.formatter.util.CheckType;
 import com.liferay.source.formatter.util.DebugUtil;
+import com.liferay.source.formatter.util.SourceFormatterCheckUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.lang.reflect.Constructor;
 
@@ -99,7 +95,7 @@ public class SourceChecksUtil {
 
 		for (SourceCheck sourceCheck : sourceChecks) {
 			if (!sourceCheck.isEnabled(absolutePath) ||
-				(sourceCheck.isModulesCheck() && !modulesFile)) {
+				(sourceCheck.isModuleSourceCheck() && !modulesFile)) {
 
 				continue;
 			}
@@ -138,12 +134,13 @@ public class SourceChecksUtil {
 						javaClass = JavaClassParser.parseJavaClass(
 							fileName, sourceChecksResult.getContent());
 					}
-					catch (ParseException pe) {
+					catch (ParseException parseException) {
 						sourceChecksResult.addSourceFormatterMessage(
 							new SourceFormatterMessage(
-								fileName, pe.getMessage(),
-								CheckType.SOURCE_CHECK, clazz.getSimpleName(),
-								null, -1));
+								fileName, parseException.getMessage(),
+								CheckType.SOURCE_CHECK,
+								JavaClassParser.class.getSimpleName(), null,
+								-1));
 
 						continue;
 					}
@@ -163,69 +160,36 @@ public class SourceChecksUtil {
 					clazz.getSimpleName(), endTime - startTime);
 			}
 
-			if (!content.equals(sourceChecksResult.getContent())) {
-				StringBundler sb = new StringBundler(7);
-
-				sb.append(file.toString());
-				sb.append(CharPool.SPACE);
-				sb.append(CharPool.OPEN_PARENTHESIS);
-
-				CheckType checkType = CheckType.SOURCE_CHECK;
-
-				sb.append(checkType.getValue());
-
-				sb.append(CharPool.COLON);
-				sb.append(clazz.getSimpleName());
-				sb.append(CharPool.CLOSE_PARENTHESIS);
-
-				modifiedMessages.add(sb.toString());
-
-				if (showDebugInformation) {
-					DebugUtil.printContentModifications(
-						clazz.getSimpleName(), fileName, content,
-						sourceChecksResult.getContent());
-				}
-
-				return sourceChecksResult;
+			if (content.equals(sourceChecksResult.getContent())) {
+				continue;
 			}
+
+			StringBundler sb = new StringBundler(7);
+
+			sb.append(file.toString());
+			sb.append(CharPool.SPACE);
+			sb.append(CharPool.OPEN_PARENTHESIS);
+
+			CheckType checkType = CheckType.SOURCE_CHECK;
+
+			sb.append(checkType.getValue());
+
+			sb.append(CharPool.COLON);
+			sb.append(clazz.getSimpleName());
+			sb.append(CharPool.CLOSE_PARENTHESIS);
+
+			modifiedMessages.add(sb.toString());
+
+			if (showDebugInformation) {
+				DebugUtil.printContentModifications(
+					clazz.getSimpleName(), fileName, content,
+					sourceChecksResult.getContent());
+			}
+
+			return sourceChecksResult;
 		}
 
 		return sourceChecksResult;
-	}
-
-	private static JSONObject _addPropertiesAttribute(
-		JSONObject attributesJSONObject, String key,
-		Map<String, Properties> propertiesMap) {
-
-		for (Map.Entry<String, Properties> entry : propertiesMap.entrySet()) {
-			JSONObject propertiesAttributesJSONObject = new JSONObjectImpl();
-
-			Properties properties = entry.getValue();
-
-			for (Object obj : properties.keySet()) {
-				if (!key.equals((String)obj)) {
-					continue;
-				}
-
-				JSONArray jsonArray = new JSONArrayImpl();
-
-				for (String value :
-						StringUtil.split(
-							properties.getProperty(key), StringPool.COMMA)) {
-
-					jsonArray.put(value);
-				}
-
-				propertiesAttributesJSONObject.put(key, jsonArray);
-			}
-
-			if (propertiesAttributesJSONObject.length() != 0) {
-				attributesJSONObject.put(
-					entry.getKey(), propertiesAttributesJSONObject);
-			}
-		}
-
-		return attributesJSONObject;
 	}
 
 	private static JSONObject _getAttributesJSONObject(
@@ -239,55 +203,17 @@ public class SourceChecksUtil {
 
 		if (configurationAttributesJSONObject.length() != 0) {
 			attributesJSONObject.put(
-				SourceFormatterUtil.CONFIGURATION_FILE_LOCATION,
+				SourceFormatterCheckUtil.CONFIGURATION_FILE_LOCATION,
 				configurationAttributesJSONObject);
 		}
 
-		attributesJSONObject = _addPropertiesAttribute(
-			attributesJSONObject, SourceFormatterUtil.GIT_LIFERAY_PORTAL_BRANCH,
-			propertiesMap);
+		attributesJSONObject = SourceFormatterCheckUtil.addPropertiesAttributes(
+			attributesJSONObject, propertiesMap,
+			SourceFormatterUtil.GIT_LIFERAY_PORTAL_BRANCH);
 
-		return SourceFormatterUtil.addPropertiesAttributes(
-			attributesJSONObject, CheckType.SOURCE_CHECK, checkName,
-			propertiesMap);
-	}
-
-	private static JSONObject _getExcludesJSONObject(
-		Map<String, Properties> propertiesMap) {
-
-		JSONObject excludesJSONObject = new JSONObjectImpl();
-
-		for (Map.Entry<String, Properties> entry : propertiesMap.entrySet()) {
-			JSONObject propertiesExcludesJSONObject = new JSONObjectImpl();
-
-			Properties properties = entry.getValue();
-
-			for (Object obj : properties.keySet()) {
-				String key = (String)obj;
-
-				if (!key.endsWith(".excludes")) {
-					continue;
-				}
-
-				JSONArray jsonArray = new JSONArrayImpl();
-
-				for (String value :
-						StringUtil.split(
-							properties.getProperty(key), StringPool.COMMA)) {
-
-					jsonArray.put(value);
-				}
-
-				propertiesExcludesJSONObject.put(key, jsonArray);
-			}
-
-			if (propertiesExcludesJSONObject.length() != 0) {
-				excludesJSONObject.put(
-					entry.getKey(), propertiesExcludesJSONObject);
-			}
-		}
-
-		return excludesJSONObject;
+		return SourceFormatterCheckUtil.addPropertiesAttributes(
+			attributesJSONObject, propertiesMap, CheckType.SOURCE_CHECK,
+			checkName);
 	}
 
 	private static List<SourceCheck> _getSourceChecks(
@@ -308,7 +234,8 @@ public class SourceChecksUtil {
 			return sourceChecks;
 		}
 
-		JSONObject excludesJSONObject = _getExcludesJSONObject(propertiesMap);
+		JSONObject excludesJSONObject =
+			SourceFormatterCheckUtil.getExcludesJSONObject(propertiesMap);
 
 		for (SourceCheckConfiguration sourceCheckConfiguration :
 				sourceCheckConfigurations) {
@@ -328,7 +255,7 @@ public class SourceChecksUtil {
 			try {
 				sourceCheckClass = Class.forName(sourceCheckName);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 				SourceFormatterUtil.printError(
 					"sourcechecks.xml",
 					"sourcechecks.xml: Class " + sourceCheckName +
@@ -349,8 +276,8 @@ public class SourceChecksUtil {
 			SourceCheck sourceCheck = (SourceCheck)instance;
 
 			if ((!portalSource && !subrepository &&
-				 sourceCheck.isPortalCheck()) ||
-				(!includeModuleChecks && sourceCheck.isModulesCheck())) {
+				 sourceCheck.isLiferaySourceCheck()) ||
+				(!includeModuleChecks && sourceCheck.isModuleSourceCheck())) {
 
 				continue;
 			}
@@ -401,7 +328,7 @@ public class SourceChecksUtil {
 			SourceChecksResult sourceChecksResult,
 			GradleFileCheck gradleFileCheck, GradleFile gradleFile,
 			String fileName, String absolutePath)
-		throws IOException {
+		throws Exception {
 
 		String content = gradleFileCheck.process(
 			fileName, absolutePath, gradleFile,

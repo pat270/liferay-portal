@@ -15,6 +15,7 @@
 package com.liferay.portlet.internal;
 
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.PortletConfigFactory;
 import com.liferay.portal.kernel.portlet.PortletContextFactory;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
@@ -49,16 +50,12 @@ public class PortletConfigFactoryImpl implements PortletConfigFactory {
 			_pool.put(portlet.getRootPortletId(), portletConfigs);
 		}
 
-		PortletConfig portletConfig = null;
+		PortletConfig portletConfig = portletConfigs.get(
+			portlet.getPortletId());
 
-		if (portlet.isUndeployedPortlet()) {
-			portletConfigs.remove(portlet.getPortletId());
-		}
-		else {
-			portletConfig = portletConfigs.get(portlet.getPortletId());
-		}
+		if ((portletConfig == null) ||
+			!_isSamePortletDeployedStatus(portlet, portletConfig)) {
 
-		if (portletConfig == null) {
 			PortletContext portletContext = _portletContextFactory.create(
 				portlet, servletContext);
 
@@ -111,13 +108,30 @@ public class PortletConfigFactoryImpl implements PortletConfigFactory {
 		PortletConfig portletConfig = portletConfigs.get(
 			portlet.getPortletId());
 
-		PortletContext portletContext = portletConfig.getPortletContext();
-
-		portletConfig = new PortletConfigImpl(portlet, portletContext);
+		portletConfig = new PortletConfigImpl(
+			portlet, portletConfig.getPortletContext());
 
 		portletConfigs.put(portlet.getPortletId(), portletConfig);
 
 		return portletConfig;
+	}
+
+	private boolean _isSamePortletDeployedStatus(
+		Portlet portlet, PortletConfig portletConfig) {
+
+		LiferayPortletConfig liferayPortletConfig =
+			(LiferayPortletConfig)portletConfig;
+
+		Portlet existingPortlet = liferayPortletConfig.getPortlet();
+
+		if ((existingPortlet != null) &&
+			(portlet.isUndeployedPortlet() ==
+				existingPortlet.isUndeployedPortlet())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private final Map<String, Map<String, PortletConfig>> _pool;

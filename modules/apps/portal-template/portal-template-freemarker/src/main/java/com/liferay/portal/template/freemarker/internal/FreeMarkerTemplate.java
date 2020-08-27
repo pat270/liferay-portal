@@ -14,6 +14,8 @@
 
 package com.liferay.portal.template.freemarker.internal;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateException;
@@ -25,6 +27,7 @@ import com.liferay.portal.template.TemplateResourceThreadLocal;
 
 import freemarker.core.ParseException;
 
+import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.util.WrapperTemplateModel;
 
 import freemarker.template.AdapterTemplateModel;
@@ -33,6 +36,7 @@ import freemarker.template.ObjectWrapper;
 import freemarker.template.SimpleCollection;
 import freemarker.template.Template;
 import freemarker.template.TemplateCollectionModel;
+import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateHashModelEx;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
@@ -46,6 +50,9 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @author Mika Koivisto
  * @author Tina Tian
@@ -56,12 +63,15 @@ public class FreeMarkerTemplate extends BaseTemplate {
 		TemplateResource templateResource, Map<String, Object> context,
 		Configuration configuration,
 		TemplateContextHelper templateContextHelper,
-		TemplateResourceCache templateResourceCache) {
+		TemplateResourceCache templateResourceCache, boolean restricted,
+		BeansWrapper beansWrapper, FreeMarkerManager freeMarkerManager) {
 
-		super(templateResource, context, templateContextHelper);
+		super(templateResource, context, templateContextHelper, restricted);
 
 		_configuration = configuration;
 		_templateResourceCache = templateResourceCache;
+		_beansWrapper = beansWrapper;
+		_freeMarkerManager = freeMarkerManager;
 
 		if (templateResourceCache.isEnabled()) {
 			cacheTemplateResource(templateResourceCache, templateResource);
@@ -69,9 +79,18 @@ public class FreeMarkerTemplate extends BaseTemplate {
 	}
 
 	@Override
+	public void prepareTaglib(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
+
+		_freeMarkerManager.addTaglibSupport(
+			context, httpServletRequest, httpServletResponse, _beansWrapper);
+	}
+
+	@Override
 	protected void handleException(
 			TemplateResource templateResource,
-			TemplateResource errorTemplateResource, Exception exception,
+			TemplateResource errorTemplateResource, Exception exception1,
 			Writer writer)
 		throws TemplateException {
 
@@ -80,10 +99,10 @@ public class FreeMarkerTemplate extends BaseTemplate {
 				_templateResourceCache, errorTemplateResource);
 		}
 
-		if (exception instanceof freemarker.template.TemplateException ||
-			exception instanceof ParseException) {
+		if (exception1 instanceof freemarker.template.TemplateException ||
+			exception1 instanceof ParseException) {
 
-			put("exception", exception.getMessage());
+			put("exception", exception1.getMessage());
 
 			if (templateResource instanceof StringTemplateResource) {
 				StringTemplateResource stringTemplateResource =
@@ -92,28 +111,28 @@ public class FreeMarkerTemplate extends BaseTemplate {
 				put("script", stringTemplateResource.getContent());
 			}
 
-			if (exception instanceof ParseException) {
-				ParseException pe = (ParseException)exception;
+			if (exception1 instanceof ParseException) {
+				ParseException parseException = (ParseException)exception1;
 
-				put("column", pe.getColumnNumber());
-				put("line", pe.getLineNumber());
+				put("column", parseException.getColumnNumber());
+				put("line", parseException.getLineNumber());
 			}
 
 			try {
 				processTemplate(errorTemplateResource, writer);
 			}
-			catch (Exception e) {
+			catch (Exception exception2) {
 				throw new TemplateException(
 					"Unable to process FreeMarker template " +
 						errorTemplateResource.getTemplateId(),
-					e);
+					exception2);
 			}
 		}
 		else {
 			throw new TemplateException(
 				"Unable to process FreeMarker template " +
 					templateResource.getTemplateId(),
-				exception);
+				exception1);
 		}
 	}
 
@@ -130,10 +149,10 @@ public class FreeMarkerTemplate extends BaseTemplate {
 				getTemplateResourceUUID(templateResource),
 				TemplateConstants.DEFAUT_ENCODING);
 
+			template.setObjectWrapper(_beansWrapper);
+
 			template.process(
-				new CachableDefaultMapAdapter(
-					context, template.getObjectWrapper()),
-				writer);
+				new CachableDefaultMapAdapter(context, _beansWrapper), writer);
 		}
 		finally {
 			TemplateResourceThreadLocal.setTemplateResource(
@@ -141,11 +160,35 @@ public class FreeMarkerTemplate extends BaseTemplate {
 		}
 	}
 
+	@Override
+	protected Object putClass(String key, Class<?> clazz) {
+		try {
+			TemplateHashModel templateHashModel =
+				_beansWrapper.getStaticModels();
+
+			return context.put(key, templateHashModel.get(clazz.getName()));
+		}
+		catch (TemplateModelException templateModelException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Variable " + key + " registration fail",
+					templateModelException);
+			}
+
+			return null;
+		}
+	}
+
 	private static final TemplateModel _NULL_TEMPLATE_MODEL =
 		new TemplateModel() {
 		};
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		FreeMarkerTemplate.class);
+
+	private final BeansWrapper _beansWrapper;
 	private final Configuration _configuration;
+	private final FreeMarkerManager _freeMarkerManager;
 	private final TemplateResourceCache _templateResourceCache;
 
 	private class CachableDefaultMapAdapter
@@ -189,8 +232,10 @@ public class FreeMarkerTemplate extends BaseTemplate {
 
 		@Override
 		public TemplateModel getAPI() throws TemplateModelException {
-			return ((ObjectWrapperWithAPISupport)_objectWrapper).wrapAsAPI(
-				_map);
+			ObjectWrapperWithAPISupport objectWrapperWithAPISupport =
+				(ObjectWrapperWithAPISupport)_objectWrapper;
+
+			return objectWrapperWithAPISupport.wrapAsAPI(_map);
 		}
 
 		@Override

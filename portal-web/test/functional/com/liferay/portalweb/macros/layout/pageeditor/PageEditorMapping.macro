@@ -1,0 +1,111 @@
+definition {
+
+	macro assertAssetTypeUnselectable {
+		PageEditor.gotoTab(tabName = "Mapping");
+
+		Button.viewNotPresent(button = "Select");
+	}
+
+	macro gotoEditableFieldMapping {
+		PageEditor.clickEditableField(
+			contributed = "${contributed}",
+			fragmentName = "${fragmentName}",
+			id = "${id}");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "Mapping",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "Mapping");
+	}
+
+	macro mapEditableFieldToAsset {
+		Click(locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_MAP_ASSET_SELECT_POPUP_BUTTON");
+
+		if (IsElementPresent(key_menuItem = "Select Content",locator1 = "MenuItem#ANY_MENU_ITEM")) {
+
+			if (isSet(contentItem)) {
+				DropdownMenuItem.click(menuItem = "${contentItem}");
+			}
+			else {
+				DropdownMenuItem.click(menuItem = "Select Content");
+			}
+		}
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		NavItem.click(navItem = "${navItem}");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		Click(
+			key_card = "${entryTitle}",
+			locator1 = "Card#CARD_TITLE");
+	}
+
+	macro mapEditableFieldToCollectionItems {
+		var lowerCase = StringUtil.lowerCase("${fragmentName}");
+
+		Click(locator1 = "PageEditor#CONTENT_PAGE_DISABLED_HEADER");
+
+		Click.clickNoWaitForVisible(
+			key_colPosition = "1",
+			key_element = "//div[contains(@class,'page-editor')]//li[contains(.,'${fragmentName}')]",
+			key_fragmentName = "Collection Display",
+			key_rowPosition = "1",
+			locator1 = "PageEditor#COLLECTION_CELL_NESTED_ELEMENT");
+
+		Click(
+			key_colPosition = "1",
+			key_element = "//*[contains(@class,'${lowerCase}') and contains(@data-lfr-editable-id,'${id}')]",
+			key_fragmentName = "Collection Display",
+			key_rowPosition = "1",
+			locator1 = "PageEditor#COLLECTION_CELL_NESTED_ELEMENT");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "Mapping",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "Mapping");
+
+		Pause(locator1 = "3000");
+
+		Select(
+			key_fieldLabel = "Field",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${field}");
+
+		PageEditor.waitForAutoSave();
+
+		AssertSelectedLabel(
+			key_fieldLabel = "Field",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${field}");
+	}
+
+	macro mapEditableTextToField {
+		PageEditorMapping.gotoEditableFieldMapping(
+			contributed = "${contributed}",
+			fragmentName = "${fragmentName}",
+			id = "${id}");
+
+		Select(
+			key_fieldLabel = "Source",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${source}");
+
+		Pause(locator1 = "3000");
+
+		Select(
+			key_fieldLabel = "Field",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${field}");
+
+		Pause(locator1 = "3000");
+
+		PageEditor.waitForAutoSave();
+	}
+
+}

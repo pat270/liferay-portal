@@ -62,7 +62,7 @@ public class FileEntryAtomCollectionAdapter
 
 	@Override
 	public List<String> getEntryAuthors(FileEntry fileEntry) {
-		return ListUtil.toList(fileEntry.getUserName());
+		return ListUtil.fromArray(fileEntry.getUserName());
 	}
 
 	@Override
@@ -108,8 +108,11 @@ public class FileEntryAtomCollectionAdapter
 		String portletId = PortletProviderUtil.getPortletId(
 			FileEntry.class.getName(), PortletProvider.Action.VIEW);
 
-		return AtomUtil.createFeedTitleFromPortletName(
-			atomRequestContext, portletId) + " files";
+		String feedTitleFromPortletName =
+			AtomUtil.createFeedTitleFromPortletName(
+				atomRequestContext, portletId);
+
+		return feedTitleFromPortletName + " files";
 	}
 
 	@Override
@@ -129,8 +132,8 @@ public class FileEntryAtomCollectionAdapter
 		try {
 			return fileEntry.getContentStream();
 		}
-		catch (Exception e) {
-			throw new AtomException(SC_INTERNAL_SERVER_ERROR, e);
+		catch (Exception exception) {
+			throw new AtomException(SC_INTERNAL_SERVER_ERROR, exception);
 		}
 	}
 
@@ -211,14 +214,14 @@ public class FileEntryAtomCollectionAdapter
 
 		byte[] contentDecoded = Base64.decode(content);
 
-		ByteArrayInputStream contentInputStream = new ByteArrayInputStream(
-			contentDecoded);
+		ByteArrayInputStream contentByteArrayInputStream =
+			new ByteArrayInputStream(contentDecoded);
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		return _dlAppService.addFileEntry(
 			repositoryId, folderId, title, mimeType, title, summary, null,
-			contentInputStream, contentDecoded.length, serviceContext);
+			contentByteArrayInputStream, contentDecoded.length, serviceContext);
 	}
 
 	@Override
@@ -250,14 +253,14 @@ public class FileEntryAtomCollectionAdapter
 
 		byte[] content = byteArrayOutputStream.toByteArray();
 
-		ByteArrayInputStream contentInputStream = new ByteArrayInputStream(
-			content);
+		ByteArrayInputStream contentByteArrayInputStream =
+			new ByteArrayInputStream(content);
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		return _dlAppService.addFileEntry(
 			repositoryId, folderId, title, mimeType, title, description, null,
-			contentInputStream, content.length, serviceContext);
+			contentByteArrayInputStream, content.length, serviceContext);
 	}
 
 	@Override
@@ -274,14 +277,14 @@ public class FileEntryAtomCollectionAdapter
 
 		byte[] contentDecoded = Base64.decode(content);
 
-		ByteArrayInputStream contentInputStream = new ByteArrayInputStream(
-			contentDecoded);
+		ByteArrayInputStream contentByteArrayInputStream =
+			new ByteArrayInputStream(contentDecoded);
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		_dlAppService.updateFileEntry(
 			fileEntry.getFileEntryId(), title, mimeType, title, summary, null,
-			DLVersionNumberIncrease.MAJOR, contentInputStream,
+			DLVersionNumberIncrease.MAJOR, contentByteArrayInputStream,
 			contentDecoded.length, serviceContext);
 	}
 
@@ -301,14 +304,14 @@ public class FileEntryAtomCollectionAdapter
 
 		byte[] content = byteArrayOutputStream.toByteArray();
 
-		ByteArrayInputStream contentInputStream = new ByteArrayInputStream(
-			content);
+		ByteArrayInputStream contentByteArrayInputStream =
+			new ByteArrayInputStream(content);
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		_dlAppService.updateFileEntry(
 			fileEntry.getFileEntryId(), slug, mimeType, title, description,
-			null, DLVersionNumberIncrease.MAJOR, contentInputStream,
+			null, DLVersionNumberIncrease.MAJOR, contentByteArrayInputStream,
 			content.length, serviceContext);
 	}
 

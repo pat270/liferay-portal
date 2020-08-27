@@ -44,7 +44,7 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.social.kernel.model.SocialActivity;
 import com.liferay.social.kernel.service.SocialActivityLocalServiceUtil;
@@ -80,7 +80,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		user = UserTestUtil.addUser(group.getGroupId());
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
@@ -182,7 +182,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		entry.setDisplayDate(displayDate.getTime());
 
-		BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
+		entry = BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			TestPropsValues.getUserId(), entry.getEntryId(),
@@ -190,6 +190,7 @@ public class BlogsEntryStatusTransitionTest {
 			new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
+
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
 
 		checkSocialActivity(BlogsActivityKeys.ADD_ENTRY, 1);
@@ -218,7 +219,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		entry.setDisplayDate(displayDate.getTime());
 
-		BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
+		entry = BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			TestPropsValues.getUserId(), entry.getEntryId(),
@@ -226,6 +227,7 @@ public class BlogsEntryStatusTransitionTest {
 			new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
+
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
 
 		checkSocialActivity(BlogsActivityKeys.UPDATE_ENTRY, 1);
@@ -255,7 +257,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		entry.setDisplayDate(displayDate.getTime());
 
-		BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
+		entry = BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
 
 		entry = BlogsEntryLocalServiceUtil.updateStatus(
 			TestPropsValues.getUserId(), entry.getEntryId(),
@@ -266,7 +268,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		entry.setDisplayDate(displayDate.getTime());
 
-		BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
+		entry = BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
 
 		BlogsEntryLocalServiceUtil.checkEntries();
 
@@ -289,7 +291,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		entry.setStatus(WorkflowConstants.STATUS_DRAFT);
 
-		BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
+		entry = BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
 
 		entry = BlogsEntryLocalServiceUtil.updateStatus(
 			TestPropsValues.getUserId(), entry.getEntryId(),
@@ -302,7 +304,7 @@ public class BlogsEntryStatusTransitionTest {
 
 		entry.setDisplayDate(displayDate.getTime());
 
-		BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
+		entry = BlogsEntryLocalServiceUtil.updateBlogsEntry(entry);
 
 		BlogsEntryLocalServiceUtil.checkEntries();
 
@@ -373,6 +375,9 @@ public class BlogsEntryStatusTransitionTest {
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void checkSocialActivity(int activityType, int expectedCount)
 		throws Exception {

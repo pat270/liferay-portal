@@ -18,8 +18,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
@@ -27,9 +27,7 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.admin.util.OmniadminUtil;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,17 +48,6 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 		return PermissionChecker.DEFAULT_ROLE_IDS;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public List<Long> getOwnerResourceBlockIds(
-		long companyId, long groupId, String name, String actionId) {
-
-		return Collections.emptyList();
-	}
-
 	@Override
 	public long getOwnerRoleId() {
 		return ownerRole.getRoleId();
@@ -69,18 +56,6 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 	@Override
 	public Map<Object, Object> getPermissionChecksMap() {
 		return _permissionChecksMap;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public List<Long> getResourceBlockIds(
-		long companyId, long groupId, long userId, String name,
-		String actionId) {
-
-		return Collections.emptyList();
 	}
 
 	@Override
@@ -144,8 +119,8 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 				defaultUserId = UserLocalServiceUtil.getDefaultUserId(
 					user.getCompanyId());
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			signedIn = true;
@@ -155,8 +130,8 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 			ownerRole = RoleLocalServiceUtil.getRole(
 				user.getCompanyId(), RoleConstants.OWNER);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

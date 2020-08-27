@@ -36,8 +36,6 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -60,13 +58,13 @@ public class NodeSubscriptionPortletConfigurationIcon
 		String key = "subscribe";
 
 		try {
-			WikiNode node = ActionUtil.getNode(portletRequest);
+			if (isSubscribed(
+					portletRequest, ActionUtil.getNode(portletRequest))) {
 
-			if (isSubscribed(portletRequest, node)) {
 				key = "unsubscribe";
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return LanguageUtil.get(
@@ -102,7 +100,7 @@ public class NodeSubscriptionPortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -118,22 +116,17 @@ public class NodeSubscriptionPortletConfigurationIcon
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			portletRequest);
-
 		WikiRequestHelper wikiRequestHelper = new WikiRequestHelper(
-			httpServletRequest);
+			_portal.getHttpServletRequest(portletRequest));
 
 		WikiGroupServiceOverriddenConfiguration
 			wikiGroupServiceOverriddenConfiguration =
 				wikiRequestHelper.getWikiGroupServiceOverriddenConfiguration();
 
 		try {
-			WikiNode node = ActionUtil.getNode(portletRequest);
-
 			if (_wikiNodeModelResourcePermission.contains(
-					themeDisplay.getPermissionChecker(), node,
-					ActionKeys.SUBSCRIBE) &&
+					themeDisplay.getPermissionChecker(),
+					ActionUtil.getNode(portletRequest), ActionKeys.SUBSCRIBE) &&
 				(wikiGroupServiceOverriddenConfiguration.
 					emailPageAddedEnabled() ||
 				 wikiGroupServiceOverriddenConfiguration.
@@ -142,7 +135,7 @@ public class NodeSubscriptionPortletConfigurationIcon
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

@@ -16,23 +16,20 @@ package com.liferay.exportimport.kernel.exception;
 
 import com.liferay.portal.kernel.exception.NestableRuntimeException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Gergely Mathe
  */
-@ProviderType
 public class ExportImportRuntimeException extends NestableRuntimeException {
 
 	public ExportImportRuntimeException() {
 	}
 
-	public ExportImportRuntimeException(String msg, Throwable cause) {
-		super(msg, cause);
+	public ExportImportRuntimeException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public ExportImportRuntimeException(Throwable cause) {
-		super(cause);
+	public ExportImportRuntimeException(Throwable throwable) {
+		super(throwable);
 	}
 
 	public String getClassName() {

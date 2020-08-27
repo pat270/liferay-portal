@@ -21,7 +21,7 @@ WikiNode node = (WikiNode)request.getAttribute(WikiWebKeys.WIKI_NODE);
 
 List<WikiNode> nodes = wikiPortletInstanceSettingsHelper.getAllPermittedNodes();
 
-boolean print = ParamUtil.getString(request, "viewMode").equals(Constants.PRINT);
+boolean print = Objects.equals(ParamUtil.getString(request, "viewMode"), Constants.PRINT);
 
 WikiURLHelper wikiURLHelper = new WikiURLHelper(wikiRequestHelper, renderResponse, wikiGroupServiceConfiguration);
 WikiVisualizationHelper wikiVisualizationHelper = new WikiVisualizationHelper(wikiRequestHelper, wikiPortletInstanceSettingsHelper, wikiGroupServiceConfiguration);
@@ -76,7 +76,7 @@ if (portletTitleBasedNavigation) {
 	</c:if>
 
 	<clay:navigation-bar
-		navigationItems="<%=
+		navigationItems='<%=
 			new JSPNavigationItemList(pageContext) {
 				{
 					add(
@@ -115,6 +115,6 @@ if (portletTitleBasedNavigation) {
 						});
 				}
 			}
-		%>"
+		%>'
 	/>
 </c:if>

@@ -1,10 +1,11 @@
 Bundle-Name: Liferay Marketplace API
 Bundle-SymbolicName: com.liferay.marketplace.api
-Bundle-Version: 7.0.0
+Bundle-Version: 7.2.6
 Export-Package:\
 	com.liferay.marketplace.bundle,\
 	com.liferay.marketplace.constants,\
 	com.liferay.marketplace.exception,\
 	com.liferay.marketplace.model,\
 	com.liferay.marketplace.service,\
-	com.liferay.marketplace.service.persistence
+	com.liferay.marketplace.service.persistence,\
+	com.liferay.marketplace.util.comparator

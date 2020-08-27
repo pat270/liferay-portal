@@ -17,7 +17,9 @@ package com.liferay.social.kernel.model;
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -34,7 +36,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface SocialActivityLimitModel
-	extends AttachedModel, BaseModel<SocialActivityLimit>, ShardedModel {
+	extends AttachedModel, BaseModel<SocialActivityLimit>,
+			CTModel<SocialActivityLimit>, MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -47,6 +50,7 @@ public interface SocialActivityLimitModel
 	 *
 	 * @return the primary key of this social activity limit
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -54,7 +58,40 @@ public interface SocialActivityLimitModel
 	 *
 	 * @param primaryKey the primary key of this social activity limit
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this social activity limit.
+	 *
+	 * @return the mvcc version of this social activity limit
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this social activity limit.
+	 *
+	 * @param mvccVersion the mvcc version of this social activity limit
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this social activity limit.
+	 *
+	 * @return the ct collection ID of this social activity limit
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this social activity limit.
+	 *
+	 * @param ctCollectionId the ct collection ID of this social activity limit
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the activity limit ID of this social activity limit.

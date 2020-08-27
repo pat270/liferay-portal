@@ -1,5 +1,6 @@
 @component-name = "portal-user-management-and-portal-configuration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property test.assert.warning.exceptions = "true";
@@ -20,7 +21,7 @@ definition {
 		else {
 			PortalSettings.tearDownCP();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Role.tearDownCP();
 
@@ -36,11 +37,95 @@ definition {
 		}
 	}
 
+	@description = "This is a use case for LPS-108998."
+	@priority = "4"
+	test AssertEmailVerificationIsRequiredByDefault {
+		property custom.properties = "jsonws.web.service.paths.excludes=${line.separator}company.security.strangers.verify=true${line.separator}mail.send.blacklist=noreply@liferay.com,noreply@domain.invalid,test@domain.invalid";
+		property test.name.skip.portal.instance = "CPPortalSettings#AssertEmailVerificationIsRequiredByDefault";
+		property test.smtp.server.enabled = "true";
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "User Authentication",
+			configurationName = "General",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewCheckboxChecked(fieldName = "strangers-verify");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Email",
+			configurationName = "Email Sender",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.configureEmailSender(
+			emailAddress = "test@liferay.com",
+			emailSenderName = "Joe Bloggs");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		for (var userNum : list "1,2") {
+			JSONUser.addUser(
+				userEmailAddress = "userea${userNum}@liferay.com",
+				userFirstName = "userfn${userNum}",
+				userLastName = "userln${userNum}",
+				userScreenName = "usersn${userNum}");
+
+			JSONUser.setFirstPassword(
+				agreeToTermsAndAnswerReminderQuery = "true",
+				requireReset = "false",
+				userEmailAddress = "userea${userNum}@liferay.com");
+		}
+
+		SignOut.signOut();
+
+		SignIn.signIn(userEmailAddress = "userea2@liferay.com");
+
+		User.verifyEmail(
+			portalURL = "${portalURL}",
+			recipient = "userfn2 userln2");
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		SignOut.signOut();
+
+		SignIn.signIn();
+
+		User.editEmailViaMyAccount(userEmailAddress = "edit@liferay.com");
+
+		MockMock.openBodyLink(
+			asset = "${portalURL}: Email Address Verification",
+			content = "Please verify your email address for ${portalURL}",
+			portalURL = "${portalURL}",
+			subject = "${portalURL}: Email Address Verification");
+
+		Button.clickVerifyButton();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.viewCP(
+			userEmailAddress = "edit@liferay.com",
+			userFirstName = "Test",
+			userLastName = "Test",
+			userScreenName = "test");
+	}
+
 	@priority = "5"
 	test EditDefaultUserAssociationsOrganizationSites {
 		property test.name.skip.portal.instance = "CPPortalSettings#EditDefaultUserAssociationsOrganizationSites";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -49,7 +134,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -62,18 +147,13 @@ definition {
 
 		PortalSettings.viewConfigurationUsersDefaultUserAssociationsOrganizationSitesCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.addCP(
+		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -89,7 +169,7 @@ definition {
 	test EditDefaultUserAssociationsRoles {
 		property test.name.skip.portal.instance = "CPPortalSettings#EditDefaultUserAssociationsRoles";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Roles");
@@ -100,18 +180,13 @@ definition {
 
 		PortalSettings.viewConfigurationUsersDefaultUserAssociationsRolesCP(roleTitle = "Roles Regrole Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.addCP(
+		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -125,7 +200,7 @@ definition {
 	test EditDefaultUserAssociationsSites {
 		property test.name.skip.portal.instance = "CPPortalSettings#EditDefaultUserAssociationsSites";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -136,18 +211,13 @@ definition {
 
 		PortalSettings.viewConfigurationUsersDefaultUserAssociationsSitesCP(siteName = "Site Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.addCP(
+		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -161,7 +231,7 @@ definition {
 	test EditDefaultUserAssociationsUserGroups {
 		property test.name.skip.portal.instance = "CPPortalSettings#EditDefaultUserAssociationsUserGroups";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "User Groups");
@@ -172,18 +242,13 @@ definition {
 
 		PortalSettings.viewConfigurationUsersDefaultUserAssociationsUserGroupsCP(userGroupName = "UG UserGroup Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.addCP(
+		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -200,7 +265,7 @@ definition {
 
 		PortalSettings.enterReservedEmailAddressCP(userEmailAddress = "userea@liferay.com");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -221,7 +286,7 @@ definition {
 
 		PortalSettings.enterReservedScreenNameCP(userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -237,6 +302,8 @@ definition {
 	test ViewContentSharingDisabledAcrossSitesViaAP {
 		property test.name.skip.portal.instance = "CPPortalSettings#ViewContentSharingDisabledAcrossSitesViaAP";
 
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Sharing",
 			configurationName = "Content Sharing",
@@ -246,43 +313,33 @@ definition {
 
 		PortalSettings.configureContentSharingSubSitesCP(subSites = "enabledByDefault");
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		JSONGroup.addGroup(groupName = "Site Name");
 
-		Site.addBlankCP(siteName = "Site Name");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "AP Test Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONGroup.addChildSite(
+			groupName = "Child SiteName",
+			parentGroupName = "Site Name");
 
-		SitePages.addPublicPage(pageName = "AP Test Page");
+		JSONLayout.addPublicLayout(
+			groupName = "Child SiteName",
+			layoutName = "WC Test Page",
+			parentGroupName = "Site Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "AP Test Page",
+			widgetName = "Asset Publisher");
 
-		Site.addBlankCP(
-			parentSiteName = "Site Name",
-			siteName = "Child SiteName");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "WC Test Page");
-
-		Navigator.openSiteURL(siteName = "Site Name");
-
-		Portlet.addPG(portletName = "Asset Publisher");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Child SiteName",
+			layoutName = "WC Test Page",
+			parentGroupName = "Site Name",
+			widgetName = "Web Content Display");
 
 		Navigator.openSiteURL(siteName = "Child SiteName");
-
-		Portlet.addPG(portletName = "Web Content Display");
 
 		WebContent.addPGViaWCD(
 			webContentContent = "WC WebContent Content",
@@ -301,9 +358,7 @@ definition {
 		AssetPublisherPortlet.viewConfigureSiteScopeContentSharingPG(
 			childSite = "true",
 			contentSharingAcrossSitesEnabled = "false",
-			globalSiteName = "Global",
-			globalSiteType = "Global",
-			liferaySiteName = "Liferay",
+			liferaySiteName = "${siteName}",
 			liferaySiteType = "Site");
 
 		Navigator.openSiteURL(siteName = "Site Name");
@@ -334,9 +389,7 @@ definition {
 		AssetPublisherPortlet.viewConfigureSiteScopeContentSharingPG(
 			childSite = "true",
 			contentSharingAcrossSitesEnabled = "false",
-			globalSiteName = "Global",
-			globalSiteType = "Global",
-			liferaySiteName = "Liferay",
+			liferaySiteName = "${siteName}",
 			liferaySiteType = "Site");
 
 		Navigator.openSiteURL(siteName = "Child SiteName");
@@ -363,7 +416,7 @@ definition {
 
 		PortalSettings.configureContentSharingSubSitesCP(subSites = "enabledByDefault");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -372,7 +425,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "AP Test Page");
@@ -385,8 +437,6 @@ definition {
 
 		AssetPublisherPortlet.viewConfigureSiteScopeContentSharingPG(
 			contentSharingAcrossSitesEnabled = "true",
-			globalSiteName = "Global",
-			globalSiteType = "Global",
 			liferaySiteName = "${siteName}",
 			liferaySiteType = "Site");
 
@@ -400,7 +450,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "AP Test Page");
@@ -414,9 +463,7 @@ definition {
 		AssetPublisherPortlet.viewConfigureSiteScopeContentSharingPG(
 			contentSharingAcrossSitesEnabled = "true",
 			currentSite = "true",
-			globalSiteName = "Global",
-			globalSiteType = "Global",
-			liferaySiteName = "Liferay",
+			liferaySiteName = "${siteName}",
 			liferaySiteType = "Current Site");
 
 		Navigator.gotoPage(pageName = "AP Test Page");
@@ -467,4 +514,45 @@ definition {
 
 		PortalSettings.viewEmailNotificationsSenderCP();
 	}
+
+	@description = "This is a use case for LPS-97907."
+	@priority = "5"
+	test ViewSystemSettingsSavedByKeyboard {
+		property test.name.skip.portal.instance = "CPPortalSettings#ViewSystemSettingsSavedByKeyboard";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Assets",
+			configurationName = "Asset Auto Tagging",
+			configurationScope = "System Scope");
+
+		SystemSettings.editTextSetting(
+			settingName = "Maximum Number of Tags",
+			settingValue = "2");
+
+		FormFields.editTextFieldWithEnterKey(fieldName = "maximumNumberOfTags");
+
+		Alert.viewSuccessMessage();
+
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Assets",
+			configurationName = "Asset Auto Tagging",
+			configurationScope = "System Scope");
+
+		FormFields.viewTextValue(
+			fieldName = "maximumNumberOfTags",
+			fieldValue = "2");
+	}
+
 }

@@ -71,6 +71,8 @@ public class TruncateLongLines
 				listWithFairlyLongName) {
 
 			stringWithAveryVeryVeryVeryVeryLongName = variable1;
+
+			listWithFairlyLongName.add(stringWithAveryVeryVeryVeryVeryLongName);
 		}
 	}
 
@@ -150,8 +152,6 @@ public class TruncateLongLines
 		if ((thisIsAnIntegerWithARatherLongName1 ==
 				thisIsAnIntegerWithARatherLongName2) &&
 			testString1.equals(testString2)) {
-
-			return;
 		}
 	}
 

@@ -1,5 +1,6 @@
 @component-name = "portal-web-forms-and-data-lists"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Dynamic Data Lists";
@@ -31,7 +32,6 @@ definition {
 	test Demo1 {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Company Picnic");
@@ -142,7 +142,7 @@ definition {
 
 		DDLRecord.viewStatusViaDDLDisplayTable(
 			fieldFieldLabel = "Status",
-			workflowStatus = "APPROVED");
+			workflowStatus = "Approved");
 
 		DDLRecord.viewViaDDLDisplayTable(
 			ddlRecordFieldData = "Test Test",
@@ -171,4 +171,5 @@ definition {
 			ddlRecordRow = "3",
 			fieldName = "WhatAreYouBringing");
 	}
+
 }

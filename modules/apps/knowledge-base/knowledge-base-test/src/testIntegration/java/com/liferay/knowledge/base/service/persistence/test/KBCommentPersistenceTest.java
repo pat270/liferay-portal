@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,8 @@ public class KBCommentPersistenceTest {
 
 		KBComment newKBComment = _persistence.create(pk);
 
+		newKBComment.setMvccVersion(RandomTestUtil.nextLong());
+
 		newKBComment.setUuid(RandomTestUtil.randomString());
 
 		newKBComment.setGroupId(RandomTestUtil.nextLong());
@@ -155,6 +157,8 @@ public class KBCommentPersistenceTest {
 		KBComment existingKBComment = _persistence.findByPrimaryKey(
 			newKBComment.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingKBComment.getMvccVersion(), newKBComment.getMvccVersion());
 		Assert.assertEquals(
 			existingKBComment.getUuid(), newKBComment.getUuid());
 		Assert.assertEquals(
@@ -296,11 +300,11 @@ public class KBCommentPersistenceTest {
 
 	protected OrderByComparator<KBComment> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"KBComment", "uuid", true, "kbCommentId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "classNameId", true, "classPK", true,
-			"content", true, "userRating", true, "lastPublishDate", true,
-			"status", true);
+			"KBComment", "mvccVersion", true, "uuid", true, "kbCommentId", true,
+			"groupId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true, "classNameId", true,
+			"classPK", true, "content", true, "userRating", true,
+			"lastPublishDate", true, "status", true);
 	}
 
 	@Test
@@ -518,24 +522,69 @@ public class KBCommentPersistenceTest {
 
 		_persistence.clearCache();
 
-		KBComment existingKBComment = _persistence.findByPrimaryKey(
-			newKBComment.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newKBComment.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingKBComment.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingKBComment, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		KBComment newKBComment = addKBComment();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBComment.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbCommentId", newKBComment.getKbCommentId()));
+
+		List<KBComment> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(KBComment kbComment) {
 		Assert.assertEquals(
-			Long.valueOf(existingKBComment.getGroupId()),
+			kbComment.getUuid(),
+			ReflectionTestUtil.invoke(
+				kbComment, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(kbComment.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingKBComment, "getOriginalGroupId", new Class<?>[0]));
+				kbComment, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected KBComment addKBComment() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		KBComment kbComment = _persistence.create(pk);
+
+		kbComment.setMvccVersion(RandomTestUtil.nextLong());
 
 		kbComment.setUuid(RandomTestUtil.randomString());
 

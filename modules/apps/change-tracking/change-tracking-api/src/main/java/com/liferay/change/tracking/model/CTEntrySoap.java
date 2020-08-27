@@ -20,33 +20,30 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class CTEntrySoap implements Serializable {
 
 	public static CTEntrySoap toSoapModel(CTEntry model) {
 		CTEntrySoap soapModel = new CTEntrySoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setCtEntryId(model.getCtEntryId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
-		soapModel.setUserName(model.getUserName());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
-		soapModel.setOriginalCTCollectionId(model.getOriginalCTCollectionId());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setModelClassNameId(model.getModelClassNameId());
 		soapModel.setModelClassPK(model.getModelClassPK());
-		soapModel.setModelResourcePrimKey(model.getModelResourcePrimKey());
+		soapModel.setModelMvccVersion(model.getModelMvccVersion());
 		soapModel.setChangeType(model.getChangeType());
-		soapModel.setCollision(model.isCollision());
-		soapModel.setStatus(model.getStatus());
 
 		return soapModel;
 	}
@@ -100,6 +97,14 @@ public class CTEntrySoap implements Serializable {
 		setCtEntryId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
 	public long getCtEntryId() {
 		return _ctEntryId;
 	}
@@ -124,14 +129,6 @@ public class CTEntrySoap implements Serializable {
 		_userId = userId;
 	}
 
-	public String getUserName() {
-		return _userName;
-	}
-
-	public void setUserName(String userName) {
-		_userName = userName;
-	}
-
 	public Date getCreateDate() {
 		return _createDate;
 	}
@@ -148,12 +145,12 @@ public class CTEntrySoap implements Serializable {
 		_modifiedDate = modifiedDate;
 	}
 
-	public long getOriginalCTCollectionId() {
-		return _originalCTCollectionId;
+	public long getCtCollectionId() {
+		return _ctCollectionId;
 	}
 
-	public void setOriginalCTCollectionId(long originalCTCollectionId) {
-		_originalCTCollectionId = originalCTCollectionId;
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public long getModelClassNameId() {
@@ -172,12 +169,12 @@ public class CTEntrySoap implements Serializable {
 		_modelClassPK = modelClassPK;
 	}
 
-	public long getModelResourcePrimKey() {
-		return _modelResourcePrimKey;
+	public long getModelMvccVersion() {
+		return _modelMvccVersion;
 	}
 
-	public void setModelResourcePrimKey(long modelResourcePrimKey) {
-		_modelResourcePrimKey = modelResourcePrimKey;
+	public void setModelMvccVersion(long modelMvccVersion) {
+		_modelMvccVersion = modelMvccVersion;
 	}
 
 	public int getChangeType() {
@@ -188,38 +185,16 @@ public class CTEntrySoap implements Serializable {
 		_changeType = changeType;
 	}
 
-	public boolean getCollision() {
-		return _collision;
-	}
-
-	public boolean isCollision() {
-		return _collision;
-	}
-
-	public void setCollision(boolean collision) {
-		_collision = collision;
-	}
-
-	public int getStatus() {
-		return _status;
-	}
-
-	public void setStatus(int status) {
-		_status = status;
-	}
-
+	private long _mvccVersion;
 	private long _ctEntryId;
 	private long _companyId;
 	private long _userId;
-	private String _userName;
 	private Date _createDate;
 	private Date _modifiedDate;
-	private long _originalCTCollectionId;
+	private long _ctCollectionId;
 	private long _modelClassNameId;
 	private long _modelClassPK;
-	private long _modelResourcePrimKey;
+	private long _modelMvccVersion;
 	private int _changeType;
-	private boolean _collision;
-	private int _status;
 
 }

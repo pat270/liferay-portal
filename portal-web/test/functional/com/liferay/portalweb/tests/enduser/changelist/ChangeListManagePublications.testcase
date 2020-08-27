@@ -1,0 +1,152 @@
+@component-name = "portal-change-list"
+definition {
+
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Change List";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Settings");
+
+		ChangeList.enableChangeList(gotoOverview = "true");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Settings");
+
+			ChangeList.disableChangeList();
+		}
+	}
+
+	@priority = "3"
+	test CancelPublicationCreation {
+		property test.name.skip.portal.instance = "ChangeListManagePublications#CancelPublicationCreation";
+
+		ChangeList.cancelPublicationCreation(publicationName = "Publication Name");
+
+		AssertElementNotPresent(
+			locator1 = "ChangeList#PUBLISHED_PUBLICATIONS_NAME",
+			value1 = "Publication Name");
+	}
+
+	@priority = "3"
+	test CreateNewPublicationWithLongName {
+		property test.name.skip.portal.instance = "ChangeListManagePublications#CreateNewPublicationWithLongName";
+
+		ChangeList.createNewPublication(
+			gotoManagePublications = "true",
+			publicationName = "Lopadotemachoselachogaleokranioleipsanodrimhypotrimmatosilphioparaomelitokatakechymenokichlepikossyphophattoperisteralektryonoptekephalliokigklopeleiolagoiosiraiobaphetraganopterygon");
+
+		Alert.viewLengthValidationField();
+	}
+
+	@priority = "3"
+	test CreateNewPublicationWithoutName {
+		property test.name.skip.portal.instance = "ChangeListManagePublications#CreateNewPublicationWithoutName";
+
+		ChangeList.createNewPublication(gotoManagePublications = "true");
+
+		Alert.viewRequiredField();
+	}
+
+	@priority = "5"
+	test DeletePublication {
+		property test.name.skip.portal.instance = "ChangeListManagePublications#DeletePublication";
+
+		ChangeList.createNewPublication(
+			gotoManagePublications = "true",
+			publicationDescription = "Publication Description",
+			publicationName = "Publication Name");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Manage Publications");
+
+		ChangeList.deletePublication(publicationName = "Publication Name");
+
+		AssertElementNotPresent(
+			key_publicationName = "Publication Name",
+			locator1 = "ChangeList#PUBLISHED_PUBLICATIONS_NAME");
+	}
+
+	@priority = "4"
+	test SwitchPublication {
+		property test.name.skip.portal.instance = "ChangeListManagePublications#SwitchPublication";
+
+		ChangeList.createNewPublication(publicationName = "Publication Name");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddCP();
+
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content 1",
+			webContentTitle = "Web Content Title 1");
+
+		PortletEntry.publish();
+
+		ChangeList.createNewPublication(publicationName = "Publication 2 Name");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddCP();
+
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content 2",
+			webContentTitle = "Web Content Title 2");
+
+		PortletEntry.publish();
+
+		ChangeList.selectPublication(publicationName = "Publication Name");
+
+		AssertElementPresent(
+			key_webContentTitle = "Web Content Title 1",
+			locator1 = "WC#ENTRY_LIST_TITLE");
+
+		AssertElementNotPresent(
+			key_webContentTitle = "Web Content Title 2",
+			locator1 = "WC#ENTRY_LIST_TITLE");
+
+		ChangeList.selectPublication(publicationName = "Publication 2 Name");
+
+		AssertElementPresent(
+			key_webContentTitle = "Web Content Title 2",
+			locator1 = "WC#ENTRY_LIST_TITLE");
+
+		AssertElementNotPresent(
+			key_webContentTitle = "Web Content Title 1",
+			locator1 = "WC#ENTRY_LIST_TITLE");
+
+		ChangeList.workOnProduction();
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No web content was found.");
+	}
+
+}

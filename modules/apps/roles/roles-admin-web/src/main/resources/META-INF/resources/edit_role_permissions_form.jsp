@@ -45,7 +45,7 @@ if (Validator.isNotNull(portletResource)) {
 	}
 }
 
-List modelResources = null;
+List<String> modelResources = null;
 
 if (Validator.isNotNull(portletResource)) {
 	modelResources = ResourceActionsUtil.getPortletModelResources(portletResource);
@@ -65,10 +65,10 @@ if (Validator.isNotNull(portletResource)) {
 	<aui:input name="selectedTargets" type="hidden" />
 	<aui:input name="unselectedTargets" type="hidden" />
 
-	<div class="sheet sheet-lg">
-		<div class="sheet-header">
+	<clay:sheet>
+		<clay:sheet-header>
 			<h3 class="sheet-title"><%= HtmlUtil.escape(portletResourceLabel) %></h3>
-		</div>
+		</clay:sheet-header>
 
 		<%
 		request.setAttribute("edit_role_permissions.jsp-curPortletResource", portletResource);
@@ -85,16 +85,16 @@ if (Validator.isNotNull(portletResource)) {
 		}
 		%>
 
-		<div class="sheet-section">
+		<clay:sheet-section>
 			<c:if test="<%= Validator.isNotNull(applicationPermissionsLabel) %>">
 				<h4 class="sheet-subtitle"><liferay-ui:message key="<%= applicationPermissionsLabel %>" /> <liferay-ui:icon-help message='<%= applicationPermissionsLabel + "-help" %>' /></h4>
 			</c:if>
 
 			<liferay-util:include page="/edit_role_permissions_resource.jsp" servletContext="<%= application %>" />
-		</div>
+		</clay:sheet-section>
 
 		<c:if test="<%= (modelResources != null) && !modelResources.isEmpty() %>">
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<h4 class="sheet-subtitle"><liferay-ui:message key="resource-permissions" /> <liferay-ui:icon-help message="resource-permissions-help" /></h4>
 
 				<div class="permission-group">
@@ -103,7 +103,7 @@ if (Validator.isNotNull(portletResource)) {
 					modelResources = ListUtil.sort(modelResources, new ModelResourceWeightComparator());
 
 					for (int i = 0; i < modelResources.size(); i++) {
-						String curModelResource = (String)modelResources.get(i);
+						String curModelResource = modelResources.get(i);
 
 						String curModelResourceName = ResourceActionsUtil.getModelResource(request, curModelResource);
 					%>
@@ -122,11 +122,11 @@ if (Validator.isNotNull(portletResource)) {
 					%>
 
 				</div>
-			</div>
+			</clay:sheet-section>
 		</c:if>
 
 		<c:if test="<%= portletResource.equals(PortletKeys.PORTLET_DISPLAY_TEMPLATE) %>">
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<h4 class="sheet-subtitle"><liferay-ui:message key="related-application-permissions" /></h4>
 
 				<div class="related-permissions">
@@ -139,11 +139,11 @@ if (Validator.isNotNull(portletResource)) {
 					headerNames.add("permissions");
 					headerNames.add("sites");
 
-					SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, liferayPortletResponse.createRenderURL(), headerNames, "there-are-no-applications-that-support-widget-templates");
+					SearchContainer<?> searchContainer = new SearchContainer(liferayPortletRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, liferayPortletResponse.createRenderURL(), headerNames, "there-are-no-applications-that-support-widget-templates");
 
 					searchContainer.setRowChecker(new ResourceActionRowChecker(liferayPortletResponse));
 
-					List resultRows = searchContainer.getResultRows();
+					List<com.liferay.portal.kernel.dao.search.ResultRow> resultRows = searchContainer.getResultRows();
 
 					List<TemplateHandler> templateHandlers = PortletDisplayTemplateUtil.getPortletDisplayTemplateHandlers();
 
@@ -170,18 +170,18 @@ if (Validator.isNotNull(portletResource)) {
 						}
 
 						if (role.getType() == RoleConstants.TYPE_REGULAR) {
-							LinkedHashMap<String, Object> groupParams = new LinkedHashMap<String, Object>();
-
 							RolePermissions rolePermissions = new RolePermissions(resource, ResourceConstants.SCOPE_GROUP, actionId, role.getRoleId());
 
-							groupParams.put("rolePermissions", rolePermissions);
+							LinkedHashMap<String, Object> groupParams = LinkedHashMapBuilder.<String, Object>put(
+								"rolePermissions", rolePermissions
+							).build();
 
-							groups = GroupLocalServiceUtil.search(company.getCompanyId(), new long[] {PortalUtil.getClassNameId(Company.class), PortalUtil.getClassNameId(Group.class), PortalUtil.getClassNameId(Organization.class), PortalUtil.getClassNameId(UserPersonalSite.class)}, null, null, groupParams, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+							groups = GroupLocalServiceUtil.search(company.getCompanyId(), GroupTypeContributorUtil.getClassNameIds(), null, null, groupParams, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 							groupIdsArray = new long[groups.size()];
 
 							for (int i = 0; i < groups.size(); i++) {
-								Group group = (Group)groups.get(i);
+								Group group = groups.get(i);
 
 								groupIdsArray[i] = group.getGroupId();
 
@@ -196,7 +196,7 @@ if (Validator.isNotNull(portletResource)) {
 							scope = ResourceConstants.SCOPE_GROUP_TEMPLATE;
 						}
 
-						ResultRow row = new ResultRow(new Object[] {role, actionId, resource, target, scope, supportsFilterByGroup, groups, groupIdsArray, groupNames}, target, relatedPortletResources.size());
+						ResultRow row = new ResultRow(new Object[] {role, actionId, resource, target, scope, supportsFilterByGroup, groups, groupIdsArray, groupNames, curPortlet.getPortletId()}, target, relatedPortletResources.size());
 
 						relatedPortletResources.add(curPortlet.getPortletId());
 
@@ -217,13 +217,13 @@ if (Validator.isNotNull(portletResource)) {
 						searchContainer="<%= searchContainer %>"
 					/>
 				</div>
-			</div>
+			</clay:sheet-section>
 		</c:if>
 
-		<div class="sheet-footer">
+		<clay:sheet-footer>
 			<aui:button cssClass="btn-primary" onClick='<%= liferayPortletResponse.getNamespace() + "updateActions();" %>' value="save" />
-		</div>
-	</div>
+		</clay:sheet-footer>
+	</clay:sheet>
 </aui:form>
 
 <%

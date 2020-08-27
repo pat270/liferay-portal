@@ -14,6 +14,7 @@
 
 package com.liferay.site.navigation.admin.web.internal.portlet.action;
 
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -22,8 +23,8 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKeys;
-import com.liferay.site.navigation.exception.SiteNavigationMenuItemNameException;
 import com.liferay.site.navigation.menu.item.util.SiteNavigationMenuItemUtil;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
 
 import javax.portlet.ActionRequest;
@@ -54,20 +55,23 @@ public class EditSiteNavigationMenuItemMVCActionCommand
 		long siteNavigationMenuItemId = ParamUtil.getLong(
 			actionRequest, "siteNavigationMenuItemId");
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			SiteNavigationMenuItemUtil.getSiteNavigationMenuItemProperties(
 				actionRequest, "TypeSettingsProperties--");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			actionRequest);
+			SiteNavigationMenuItem.class.getName(), actionRequest);
 
 		try {
 			_siteNavigationMenuItemService.updateSiteNavigationMenuItem(
-				siteNavigationMenuItemId, typeSettingsProperties.toString(),
-				serviceContext);
+				siteNavigationMenuItemId,
+				typeSettingsUnicodeProperties.toString(), serviceContext);
 		}
-		catch (SiteNavigationMenuItemNameException snmine) {
-			SessionErrors.add(actionRequest, snmine.getClass(), snmine);
+		catch (PortalException portalException) {
+			hideDefaultErrorMessage(actionRequest);
+
+			SessionErrors.add(
+				actionRequest, portalException.getClass(), portalException);
 
 			sendRedirect(actionRequest, actionResponse);
 		}

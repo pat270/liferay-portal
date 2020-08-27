@@ -1,0 +1,77 @@
+@component-name = "portal-server-administration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Server Administration";
+
+	setUp {
+		User.firstLoginPG();
+	}
+
+	@description = "This is a use case for LPS-111757"
+	@priority = "4"
+	test ViewGlobalLibDirectory {
+		property environment.acceptance = "true";
+
+		ServerAdministration.openServerAdmin();
+
+		var script = '''
+			import com.liferay.portal.kernel.util.PropsKeys;
+			import com.liferay.portal.util.PropsUtil;
+
+			out.println(PropsUtil.get(PropsKeys.${propsKey}));
+		''';
+
+		for (var propsKey : list "LIFERAY_LIB_GLOBAL_DIR,LIFERAY_LIB_PORTAL_DIR,LIFERAY_WEB_PORTAL_DIR") {
+			ServerAdministration.executeScript(
+				language = "Groovy",
+				script = "${script}");
+
+			if ("${propsKey}" == "LIFERAY_LIB_GLOBAL_DIR") {
+				var dirName = PropsUtil.get("liferay.app.server.global.lib.dir");
+			}
+			else if ("${propsKey}" == "LIFERAY_LIB_PORTAL_DIR") {
+				var dirName = PropsUtil.get("liferay.app.server.portal.lib.dir");
+			}
+			else {
+				var dirName = PropsUtil.get("liferay.app.server.portal.web.dir");
+			}
+
+			var dirEnding = StringUtil.endsWith("${dirName}", "/");
+
+			if ("${dirEnding}" == "true") {
+				AssertTextEquals(
+					locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+					value1 = "${dirName}");
+			}
+			else {
+				AssertTextEquals(
+					locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+					value1 = "${dirName}/");
+			}
+		}
+	}
+
+	@description = "This is a use case for LPS-102790"
+	@priority = "4"
+	test ViewSystemAndPortalProperties {
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Server Administration");
+
+		ServerAdministration.viewProperties(
+			propertyName = "catalina.home",
+			propertyTitle = "System Properties");
+
+		Pagination.changePagination(itemsPerPage = "20");
+
+		ServerAdministration.viewProperties(
+			propertyName = "admin.email.from.name",
+			propertyTitle = "Portal Properties");
+
+		Pagination.changePagination(itemsPerPage = "20");
+	}
+
+}

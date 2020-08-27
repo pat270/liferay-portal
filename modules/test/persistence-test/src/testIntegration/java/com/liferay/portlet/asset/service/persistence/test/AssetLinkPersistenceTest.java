@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -122,6 +123,10 @@ public class AssetLinkPersistenceTest {
 
 		AssetLink newAssetLink = _persistence.create(pk);
 
+		newAssetLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		newAssetLink.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newAssetLink.setCompanyId(RandomTestUtil.nextLong());
 
 		newAssetLink.setUserId(RandomTestUtil.nextLong());
@@ -143,6 +148,11 @@ public class AssetLinkPersistenceTest {
 		AssetLink existingAssetLink = _persistence.findByPrimaryKey(
 			newAssetLink.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingAssetLink.getMvccVersion(), newAssetLink.getMvccVersion());
+		Assert.assertEquals(
+			existingAssetLink.getCtCollectionId(),
+			newAssetLink.getCtCollectionId());
 		Assert.assertEquals(
 			existingAssetLink.getLinkId(), newAssetLink.getLinkId());
 		Assert.assertEquals(
@@ -236,9 +246,10 @@ public class AssetLinkPersistenceTest {
 
 	protected OrderByComparator<AssetLink> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AssetLink", "linkId", true, "companyId", true, "userId", true,
-			"userName", true, "createDate", true, "entryId1", true, "entryId2",
-			true, "type", true, "weight", true);
+			"AssetLink", "mvccVersion", true, "ctCollectionId", true, "linkId",
+			true, "companyId", true, "userId", true, "userName", true,
+			"createDate", true, "entryId1", true, "entryId2", true, "type",
+			true, "weight", true);
 	}
 
 	@Test
@@ -451,27 +462,75 @@ public class AssetLinkPersistenceTest {
 
 		_persistence.clearCache();
 
-		AssetLink existingAssetLink = _persistence.findByPrimaryKey(
-			newAssetLink.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newAssetLink.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AssetLink newAssetLink = addAssetLink();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AssetLink.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("linkId", newAssetLink.getLinkId()));
+
+		List<AssetLink> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(AssetLink assetLink) {
 		Assert.assertEquals(
-			Long.valueOf(existingAssetLink.getEntryId1()),
+			Long.valueOf(assetLink.getEntryId1()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetLink, "getOriginalEntryId1", new Class<?>[0]));
+				assetLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "entryId1"));
 		Assert.assertEquals(
-			Long.valueOf(existingAssetLink.getEntryId2()),
+			Long.valueOf(assetLink.getEntryId2()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetLink, "getOriginalEntryId2", new Class<?>[0]));
+				assetLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "entryId2"));
 		Assert.assertEquals(
-			Integer.valueOf(existingAssetLink.getType()),
+			Integer.valueOf(assetLink.getType()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingAssetLink, "getOriginalType", new Class<?>[0]));
+				assetLink, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "type_"));
 	}
 
 	protected AssetLink addAssetLink() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		AssetLink assetLink = _persistence.create(pk);
+
+		assetLink.setMvccVersion(RandomTestUtil.nextLong());
+
+		assetLink.setCtCollectionId(RandomTestUtil.nextLong());
 
 		assetLink.setCompanyId(RandomTestUtil.nextLong());
 

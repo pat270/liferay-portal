@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchLayoutFriendlyURLException;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLLocalServiceUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,8 @@ public class LayoutFriendlyURLPersistenceTest {
 
 		newLayoutFriendlyURL.setMvccVersion(RandomTestUtil.nextLong());
 
+		newLayoutFriendlyURL.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newLayoutFriendlyURL.setUuid(RandomTestUtil.randomString());
 
 		newLayoutFriendlyURL.setGroupId(RandomTestUtil.nextLong());
@@ -158,6 +160,9 @@ public class LayoutFriendlyURLPersistenceTest {
 		Assert.assertEquals(
 			existingLayoutFriendlyURL.getMvccVersion(),
 			newLayoutFriendlyURL.getMvccVersion());
+		Assert.assertEquals(
+			existingLayoutFriendlyURL.getCtCollectionId(),
+			newLayoutFriendlyURL.getCtCollectionId());
 		Assert.assertEquals(
 			existingLayoutFriendlyURL.getUuid(),
 			newLayoutFriendlyURL.getUuid());
@@ -321,10 +326,10 @@ public class LayoutFriendlyURLPersistenceTest {
 
 	protected OrderByComparator<LayoutFriendlyURL> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"LayoutFriendlyURL", "mvccVersion", true, "uuid", true,
-			"layoutFriendlyURLId", true, "groupId", true, "companyId", true,
-			"userId", true, "userName", true, "createDate", true,
-			"modifiedDate", true, "plid", true, "privateLayout", true,
+			"LayoutFriendlyURL", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "layoutFriendlyURLId", true, "groupId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "plid", true, "privateLayout", true,
 			"friendlyURL", true, "languageId", true, "lastPublishDate", true);
 	}
 
@@ -554,54 +559,95 @@ public class LayoutFriendlyURLPersistenceTest {
 
 		_persistence.clearCache();
 
-		LayoutFriendlyURL existingLayoutFriendlyURL =
-			_persistence.findByPrimaryKey(newLayoutFriendlyURL.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(
+				newLayoutFriendlyURL.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingLayoutFriendlyURL.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingLayoutFriendlyURL, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		LayoutFriendlyURL newLayoutFriendlyURL = addLayoutFriendlyURL();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			LayoutFriendlyURL.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"layoutFriendlyURLId",
+				newLayoutFriendlyURL.getLayoutFriendlyURLId()));
+
+		List<LayoutFriendlyURL> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(LayoutFriendlyURL layoutFriendlyURL) {
 		Assert.assertEquals(
-			Long.valueOf(existingLayoutFriendlyURL.getGroupId()),
+			layoutFriendlyURL.getUuid(),
+			ReflectionTestUtil.invoke(
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(layoutFriendlyURL.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingLayoutFriendlyURL, "getOriginalGroupId",
-				new Class<?>[0]));
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingLayoutFriendlyURL.getPlid()),
+			Long.valueOf(layoutFriendlyURL.getPlid()),
 			ReflectionTestUtil.<Long>invoke(
-				existingLayoutFriendlyURL, "getOriginalPlid", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingLayoutFriendlyURL.getLanguageId(),
-				ReflectionTestUtil.invoke(
-					existingLayoutFriendlyURL, "getOriginalLanguageId",
-					new Class<?>[0])));
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "plid"));
+		Assert.assertEquals(
+			layoutFriendlyURL.getLanguageId(),
+			ReflectionTestUtil.invoke(
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "languageId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingLayoutFriendlyURL.getGroupId()),
+			Long.valueOf(layoutFriendlyURL.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingLayoutFriendlyURL, "getOriginalGroupId",
-				new Class<?>[0]));
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Boolean.valueOf(existingLayoutFriendlyURL.getPrivateLayout()),
+			Boolean.valueOf(layoutFriendlyURL.getPrivateLayout()),
 			ReflectionTestUtil.<Boolean>invoke(
-				existingLayoutFriendlyURL, "getOriginalPrivateLayout",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingLayoutFriendlyURL.getFriendlyURL(),
-				ReflectionTestUtil.invoke(
-					existingLayoutFriendlyURL, "getOriginalFriendlyURL",
-					new Class<?>[0])));
-		Assert.assertTrue(
-			Objects.equals(
-				existingLayoutFriendlyURL.getLanguageId(),
-				ReflectionTestUtil.invoke(
-					existingLayoutFriendlyURL, "getOriginalLanguageId",
-					new Class<?>[0])));
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "privateLayout"));
+		Assert.assertEquals(
+			layoutFriendlyURL.getFriendlyURL(),
+			ReflectionTestUtil.invoke(
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "friendlyURL"));
+		Assert.assertEquals(
+			layoutFriendlyURL.getLanguageId(),
+			ReflectionTestUtil.invoke(
+				layoutFriendlyURL, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "languageId"));
 	}
 
 	protected LayoutFriendlyURL addLayoutFriendlyURL() throws Exception {
@@ -610,6 +656,8 @@ public class LayoutFriendlyURLPersistenceTest {
 		LayoutFriendlyURL layoutFriendlyURL = _persistence.create(pk);
 
 		layoutFriendlyURL.setMvccVersion(RandomTestUtil.nextLong());
+
+		layoutFriendlyURL.setCtCollectionId(RandomTestUtil.nextLong());
 
 		layoutFriendlyURL.setUuid(RandomTestUtil.randomString());
 

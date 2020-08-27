@@ -14,6 +14,7 @@
 
 package com.liferay.headless.admin.user.client.serdes.v1_0;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.CustomField;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.SiteBrief;
@@ -23,11 +24,11 @@ import com.liferay.headless.admin.user.client.json.BaseJSONParser;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -64,6 +65,16 @@ public class UserAccountSerDes {
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		if (userAccount.getActions() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(userAccount.getActions()));
+		}
 
 		if (userAccount.getAdditionalName() != null) {
 			if (sb.length() > 1) {
@@ -108,14 +119,24 @@ public class UserAccountSerDes {
 			sb.append("\"");
 		}
 
-		if (userAccount.getContactInformation() != null) {
+		if (userAccount.getCustomFields() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"contactInformation\": ");
+			sb.append("\"customFields\": ");
 
-			sb.append(String.valueOf(userAccount.getContactInformation()));
+			sb.append("[");
+
+			for (int i = 0; i < userAccount.getCustomFields().length; i++) {
+				sb.append(String.valueOf(userAccount.getCustomFields()[i]));
+
+				if ((i + 1) < userAccount.getCustomFields().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (userAccount.getDashboardURL() != null) {
@@ -385,6 +406,17 @@ public class UserAccountSerDes {
 			sb.append("]");
 		}
 
+		if (userAccount.getUserAccountContactInformation() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"userAccountContactInformation\": ");
+
+			sb.append(
+				String.valueOf(userAccount.getUserAccountContactInformation()));
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -402,10 +434,17 @@ public class UserAccountSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		if (userAccount.getActions() == null) {
+			map.put("actions", null);
+		}
+		else {
+			map.put("actions", String.valueOf(userAccount.getActions()));
+		}
 
 		if (userAccount.getAdditionalName() == null) {
 			map.put("additionalName", null);
@@ -425,17 +464,21 @@ public class UserAccountSerDes {
 				String.valueOf(userAccount.getAlternateName()));
 		}
 
-		map.put(
-			"birthDate",
-			liferayToJSONDateFormat.format(userAccount.getBirthDate()));
-
-		if (userAccount.getContactInformation() == null) {
-			map.put("contactInformation", null);
+		if (userAccount.getBirthDate() == null) {
+			map.put("birthDate", null);
 		}
 		else {
 			map.put(
-				"contactInformation",
-				String.valueOf(userAccount.getContactInformation()));
+				"birthDate",
+				liferayToJSONDateFormat.format(userAccount.getBirthDate()));
+		}
+
+		if (userAccount.getCustomFields() == null) {
+			map.put("customFields", null);
+		}
+		else {
+			map.put(
+				"customFields", String.valueOf(userAccount.getCustomFields()));
 		}
 
 		if (userAccount.getDashboardURL() == null) {
@@ -446,13 +489,23 @@ public class UserAccountSerDes {
 				"dashboardURL", String.valueOf(userAccount.getDashboardURL()));
 		}
 
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(userAccount.getDateCreated()));
+		if (userAccount.getDateCreated() == null) {
+			map.put("dateCreated", null);
+		}
+		else {
+			map.put(
+				"dateCreated",
+				liferayToJSONDateFormat.format(userAccount.getDateCreated()));
+		}
 
-		map.put(
-			"dateModified",
-			liferayToJSONDateFormat.format(userAccount.getDateModified()));
+		if (userAccount.getDateModified() == null) {
+			map.put("dateModified", null);
+		}
+		else {
+			map.put(
+				"dateModified",
+				liferayToJSONDateFormat.format(userAccount.getDateModified()));
+		}
 
 		if (userAccount.getEmailAddress() == null) {
 			map.put("emailAddress", null);
@@ -559,45 +612,19 @@ public class UserAccountSerDes {
 			map.put("siteBriefs", String.valueOf(userAccount.getSiteBriefs()));
 		}
 
+		if (userAccount.getUserAccountContactInformation() == null) {
+			map.put("userAccountContactInformation", null);
+		}
+		else {
+			map.put(
+				"userAccountContactInformation",
+				String.valueOf(userAccount.getUserAccountContactInformation()));
+		}
+
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class UserAccountJSONParser
+	public static class UserAccountJSONParser
 		extends BaseJSONParser<UserAccount> {
 
 		@Override
@@ -615,7 +642,14 @@ public class UserAccountSerDes {
 			UserAccount userAccount, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "additionalName")) {
+			if (Objects.equals(jsonParserFieldName, "actions")) {
+				if (jsonParserFieldValue != null) {
+					userAccount.setActions(
+						(Map)UserAccountSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "additionalName")) {
 				if (jsonParserFieldValue != null) {
 					userAccount.setAdditionalName((String)jsonParserFieldValue);
 				}
@@ -631,13 +665,16 @@ public class UserAccountSerDes {
 						toDate((String)jsonParserFieldValue));
 				}
 			}
-			else if (Objects.equals(
-						jsonParserFieldName, "contactInformation")) {
-
+			else if (Objects.equals(jsonParserFieldName, "customFields")) {
 				if (jsonParserFieldValue != null) {
-					userAccount.setContactInformation(
-						ContactInformationSerDes.toDTO(
-							(String)jsonParserFieldValue));
+					userAccount.setCustomFields(
+						Stream.of(
+							toStrings((Object[])jsonParserFieldValue)
+						).map(
+							object -> CustomFieldSerDes.toDTO((String)object)
+						).toArray(
+							size -> new CustomField[size]
+						));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "dashboardURL")) {
@@ -755,12 +792,90 @@ public class UserAccountSerDes {
 						));
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName, "userAccountContactInformation")) {
+
+				if (jsonParserFieldValue != null) {
+					userAccount.setUserAccountContactInformation(
+						UserAccountContactInformationSerDes.toDTO(
+							(String)jsonParserFieldValue));
+				}
+			}
 			else {
 				throw new IllegalArgumentException(
 					"Unsupported field name " + jsonParserFieldName);
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

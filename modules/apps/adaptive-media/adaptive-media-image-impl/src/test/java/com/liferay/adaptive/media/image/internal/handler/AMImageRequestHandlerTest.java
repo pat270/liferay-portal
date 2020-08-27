@@ -36,11 +36,11 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.io.InputStream;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -296,51 +296,56 @@ public class AMImageRequestHandlerTest {
 			AMImageConfigurationEntry amImageConfigurationEntry)
 		throws Exception {
 
-		Map<String, String> properties = new HashMap<>();
-
-		AMAttribute<Object, String> configurationUuidAMAttribute =
-			AMAttribute.getConfigurationUuidAMAttribute();
-
-		properties.put(
-			configurationUuidAMAttribute.getName(),
-			amImageConfigurationEntry.getUUID());
-
-		AMAttribute<Object, String> fileNameAMAttribute =
-			AMAttribute.getFileNameAMAttribute();
-
-		properties.put(
-			fileNameAMAttribute.getName(), fileVersion.getFileName());
-
-		AMAttribute<Object, String> contentTypeAMAttribute =
-			AMAttribute.getContentTypeAMAttribute();
-
-		properties.put(
-			contentTypeAMAttribute.getName(), fileVersion.getMimeType());
-
-		AMAttribute<Object, Long> contentLengthAMAttribute =
-			AMAttribute.getContentLengthAMAttribute();
-
-		properties.put(
-			contentLengthAMAttribute.getName(),
-			String.valueOf(fileVersion.getSize()));
-
 		Map<String, String> configurationEntryProperties =
 			amImageConfigurationEntry.getProperties();
 
-		properties.put(
-			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH.getName(),
-			configurationEntryProperties.get("max-width"));
-		properties.put(
+		Map<String, String> properties = HashMapBuilder.put(
+			() -> {
+				AMAttribute<Object, String> configurationUuidAMAttribute =
+					AMAttribute.getConfigurationUuidAMAttribute();
+
+				return configurationUuidAMAttribute.getName();
+			},
+			amImageConfigurationEntry.getUUID()
+		).put(
+			() -> {
+				AMAttribute<Object, Long> contentLengthAMAttribute =
+					AMAttribute.getContentLengthAMAttribute();
+
+				return contentLengthAMAttribute.getName();
+			},
+			String.valueOf(fileVersion.getSize())
+		).put(
+			() -> {
+				AMAttribute<Object, String> contentTypeAMAttribute =
+					AMAttribute.getContentTypeAMAttribute();
+
+				return contentTypeAMAttribute.getName();
+			},
+			fileVersion.getMimeType()
+		).put(
+			() -> {
+				AMAttribute<Object, String> fileNameAMAttribute =
+					AMAttribute.getFileNameAMAttribute();
+
+				return fileNameAMAttribute.getName();
+			},
+			fileVersion.getFileName()
+		).put(
 			AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT.getName(),
-			configurationEntryProperties.get("max-height"));
+			configurationEntryProperties.get("max-height")
+		).put(
+			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH.getName(),
+			configurationEntryProperties.get("max-width")
+		).build();
 
 		return new AMImage(
 			() -> {
 				try {
 					return fileVersion.getContentStream(false);
 				}
-				catch (PortalException pe) {
-					throw new AMRuntimeException(pe);
+				catch (PortalException portalException) {
+					throw new AMRuntimeException(portalException);
 				}
 			},
 			AMImageAttributeMapping.fromProperties(properties), null);
@@ -351,23 +356,25 @@ public class AMImageRequestHandlerTest {
 
 		String uuid = "testUuid" + Math.random();
 
-		final Map<String, String> properties = new HashMap<>();
-
-		properties.put("configuration-uuid", uuid);
-		properties.put("max-height", String.valueOf(height));
-		properties.put("max-width", String.valueOf(width));
-
-		AMImageConfigurationEntryImpl amImageConfigurationEntry =
-			new AMImageConfigurationEntryImpl(uuid, uuid, properties);
+		AMImageConfigurationEntryImpl amImageConfigurationEntryImpl =
+			new AMImageConfigurationEntryImpl(
+				uuid, uuid,
+				HashMapBuilder.put(
+					"configuration-uuid", uuid
+				).put(
+					"max-height", String.valueOf(height)
+				).put(
+					"max-width", String.valueOf(width)
+				).build());
 
 		Mockito.when(
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
-				companyId, amImageConfigurationEntry.getUUID())
+				companyId, amImageConfigurationEntryImpl.getUUID())
 		).thenReturn(
-			Optional.of(amImageConfigurationEntry)
+			Optional.of(amImageConfigurationEntryImpl)
 		);
 
-		return amImageConfigurationEntry;
+		return amImageConfigurationEntryImpl;
 	}
 
 	private HttpServletRequest _createRequestFor(
@@ -383,15 +390,16 @@ public class AMImageRequestHandlerTest {
 			"pathInfo"
 		);
 
-		Map<String, String> pathProperties = new HashMap<>();
-
-		pathProperties.put(
-			"configuration-uuid", amImageConfigurationEntry.getUUID());
-
 		Mockito.when(
 			_pathInterpreter.interpretPath(httpServletRequest.getPathInfo())
 		).thenReturn(
-			Optional.of(Tuple.of(fileVersion, pathProperties))
+			Optional.of(
+				Tuple.of(
+					fileVersion,
+					HashMapBuilder.put(
+						"configuration-uuid",
+						amImageConfigurationEntry.getUUID()
+					).build()))
 		);
 
 		return httpServletRequest;
@@ -443,14 +451,14 @@ public class AMImageRequestHandlerTest {
 			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
 		).thenAnswer(
 			invocation -> {
-				Function<AMImageQueryBuilder, AMQuery>
+				Function<AMImageQueryBuilder, AMQuery<?, ?>>
 					amImageQueryBuilderFunction = invocation.getArgumentAt(
 						0, Function.class);
 
 				AMImageQueryBuilderImpl amImageQueryBuilderImpl =
 					new AMImageQueryBuilderImpl();
 
-				AMQuery amQuery = amImageQueryBuilderFunction.apply(
+				AMQuery<?, ?> amQuery = amImageQueryBuilderFunction.apply(
 					amImageQueryBuilderImpl);
 
 				Map<AMAttribute<AMImageProcessor, ?>, Object> amAttributes =
@@ -496,14 +504,14 @@ public class AMImageRequestHandlerTest {
 			_amImageFinder.getAdaptiveMediaStream(Mockito.any(Function.class))
 		).thenAnswer(
 			invocation -> {
-				Function<AMImageQueryBuilder, AMQuery>
+				Function<AMImageQueryBuilder, AMQuery<?, ?>>
 					amImageQueryBuilderFunction = invocation.getArgumentAt(
 						0, Function.class);
 
 				AMImageQueryBuilderImpl amImageQueryBuilderImpl =
 					new AMImageQueryBuilderImpl();
 
-				AMQuery amQuery = amImageQueryBuilderFunction.apply(
+				AMQuery<?, ?> amQuery = amImageQueryBuilderFunction.apply(
 					amImageQueryBuilderImpl);
 
 				if (!AMImageQueryBuilderImpl.AM_QUERY.equals(amQuery)) {

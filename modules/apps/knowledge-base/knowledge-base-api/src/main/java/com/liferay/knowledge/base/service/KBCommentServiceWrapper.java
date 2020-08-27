@@ -16,8 +16,6 @@ package com.liferay.knowledge.base.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link KBCommentService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KBCommentService
  * @generated
  */
-@ProviderType
 public class KBCommentServiceWrapper
 	implements KBCommentService, ServiceWrapper<KBCommentService> {
 
@@ -70,11 +67,12 @@ public class KBCommentServiceWrapper
 			getKBComments(
 				long groupId, int status, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBComment> obc)
+					<com.liferay.knowledge.base.model.KBComment>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbCommentService.getKBComments(
-			groupId, status, start, end, obc);
+			groupId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -82,10 +80,12 @@ public class KBCommentServiceWrapper
 			getKBComments(
 				long groupId, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBComment> obc)
+					<com.liferay.knowledge.base.model.KBComment>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _kbCommentService.getKBComments(groupId, start, end, obc);
+		return _kbCommentService.getKBComments(
+			groupId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -105,11 +105,12 @@ public class KBCommentServiceWrapper
 				long groupId, String className, long classPK, int status,
 				int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBComment> obc)
+					<com.liferay.knowledge.base.model.KBComment>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbCommentService.getKBComments(
-			groupId, className, classPK, status, start, end, obc);
+			groupId, className, classPK, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -118,11 +119,12 @@ public class KBCommentServiceWrapper
 				long groupId, String className, long classPK, int start,
 				int end,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBComment> obc)
+					<com.liferay.knowledge.base.model.KBComment>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbCommentService.getKBComments(
-			groupId, className, classPK, start, end, obc);
+			groupId, className, classPK, start, end, orderByComparator);
 	}
 
 	@Override

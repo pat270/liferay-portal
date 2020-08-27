@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PasswordPolicy;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.util.comparator.PasswordPolicyDescriptionCompar
 import com.liferay.portal.kernel.util.comparator.PasswordPolicyNameComparator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,13 +49,11 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 			add("description");
 		}
 	};
-	public static Map<String, String> orderableHeaders =
-		new HashMap<String, String>() {
-			{
-				put("description", "description");
-				put("name", "name");
-			}
-		};
+	public static Map<String, String> orderableHeaders = HashMapBuilder.put(
+		"description", "description"
+	).put(
+		"name", "name"
+	).build();
 
 	public PasswordPolicySearch(
 		PortletRequest portletRequest, PortletURL iteratorURL) {
@@ -108,8 +106,9 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 			setOrderByType(orderByType);
 			setOrderByComparator(orderByComparator);
 		}
-		catch (Exception e) {
-			_log.error("Unable to initialize password policy search", e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to initialize password policy search", exception);
 		}
 	}
 

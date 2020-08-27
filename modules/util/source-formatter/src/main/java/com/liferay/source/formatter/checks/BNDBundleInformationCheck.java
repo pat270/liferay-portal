@@ -24,7 +24,7 @@ import com.liferay.source.formatter.checks.util.BNDSourceUtil;
 public class BNDBundleInformationCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isModulesCheck() {
+	public boolean isModuleSourceCheck() {
 		return true;
 	}
 
@@ -32,20 +32,28 @@ public class BNDBundleInformationCheck extends BaseFileCheck {
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
 
-		if (fileName.endsWith("/bnd.bnd") &&
-			!absolutePath.contains("/testIntegration/") &&
-			!absolutePath.contains("/third-party/")) {
+		if (!fileName.endsWith("/bnd.bnd") ||
+			absolutePath.contains("/testIntegration/") ||
+			absolutePath.contains("/third-party/")) {
 
-			_checkBundleName(fileName, absolutePath, content);
+			return content;
+		}
 
-			String bundleVersion = BNDSourceUtil.getDefinitionValue(
-				content, "Bundle-Version");
+		_checkBundleName(fileName, absolutePath, content);
 
-			if (bundleVersion == null) {
-				addMessage(
-					fileName, "Missing Bundle-Version",
-					"bnd_bundle_information.markdown");
-			}
+		String bundleVersion = BNDSourceUtil.getDefinitionValue(
+			content, "Bundle-Version");
+
+		if (bundleVersion == null) {
+			addMessage(fileName, "Missing Bundle-Version");
+		}
+		else if (absolutePath.endsWith("-test/bnd.bnd") &&
+				 !bundleVersion.equals("1.0.0")) {
+
+			addMessage(
+				fileName,
+				"'Bundle-Version' for *-test modules should always be " +
+					"'1.0.0', since we do not publish these");
 		}
 
 		return content;
@@ -77,14 +85,11 @@ public class BNDBundleInformationCheck extends BaseFileCheck {
 					strippedBundleName, expectedBundleName)) {
 
 				addMessage(
-					fileName, "Incorrect Bundle-Name '" + bundleName + "'",
-					"bnd_bundle_information.markdown");
+					fileName, "Incorrect Bundle-Name '" + bundleName + "'");
 			}
 		}
 		else {
-			addMessage(
-				fileName, "Missing Bundle-Name",
-				"bnd_bundle_information.markdown");
+			addMessage(fileName, "Missing Bundle-Name");
 		}
 
 		if (moduleName.endsWith("-import") || moduleName.contains("-import-") ||
@@ -97,23 +102,20 @@ public class BNDBundleInformationCheck extends BaseFileCheck {
 			content, "Bundle-SymbolicName");
 
 		if (bundleSymbolicName != null) {
-			String expectedBundleSymbolicName =
-				"com.liferay." +
-					StringUtil.replace(
-						moduleName, CharPool.DASH, CharPool.PERIOD);
+			moduleName = StringUtil.replace(
+				moduleName, CharPool.DASH, CharPool.PERIOD);
+
+			String expectedBundleSymbolicName = "com.liferay." + moduleName;
 
 			if (!bundleSymbolicName.equals(expectedBundleSymbolicName)) {
 				addMessage(
 					fileName,
 					"Incorrect Bundle-SymbolicName '" + bundleSymbolicName +
-						"'",
-					"bnd_bundle_information.markdown");
+						"'");
 			}
 		}
 		else {
-			addMessage(
-				fileName, "Missing Bundle-SymbolicName",
-				"bnd_bundle_information.markdown");
+			addMessage(fileName, "Missing Bundle-SymbolicName");
 		}
 	}
 

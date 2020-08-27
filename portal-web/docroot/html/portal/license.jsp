@@ -65,6 +65,10 @@ String buildInfo = StringUtil.replace(releaseInfoArray[1], ')', "");
 
 List<ClusterNode> clusterNodes = ClusterExecutorUtil.getClusterNodes();
 
+if (clusterNodes == null) {
+	clusterNodes = Collections.emptyList();
+}
+
 DateFormat dateFormatDateTime = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
 
 dateFormatDateTime.setTimeZone(timeZone);
@@ -448,38 +452,36 @@ dateFormatDateTime.setTimeZone(timeZone);
 
 							var A = AUI();
 
-							A.io.request(
-								url,
-								{
-									data: {
-										clusterNodeId: clusterNodeId,
-										<%= Constants.CMD %>: cmd
-									},
-									dataType: 'JSON',
-									on: {
-										failure: function() {
-											var errorMessage = A.Lang.sub('<liferay-ui:message key="error-contacting-x" />', [ip]);
+							var body = new URLSearchParams({
+								clusterNodeId: clusterNodeId,
+								<%= Constants.CMD %>: cmd
+							});
 
-											if (port != '-1') {
-												errorMessage += ':' + port;
-											}
+							Liferay.Util.fetch(url, {
+								body: body,
+								method: 'POST'
+							}).then(
+								function(response) {
+									return response.json();
+								}
+							).then(
+								function(data) {
+									A.one('#node_' + clusterNodeId + '_' + cmd).html('');
+									success(data);
+								}
+							).catch(
+								function() {
+									var errorMessage = A.Lang.sub('<liferay-ui:message key="error-contacting-x" />', [ip]);
 
-											A.one('#node_' + clusterNodeId + '_' + cmd).html('<div class="alert alert-danger">' + errorMessage + '</div>');
-										},
-										success: function(event, id, obj) {
-											var instance = this;
-
-											var message = instance.get('responseData');
-
-											A.one('#node_' + clusterNodeId + '_' + cmd).html('');
-
-											success(message);
-										}
+									if (port != '-1') {
+										errorMessage += ':' + port;
 									}
+
+									A.one('#node_' + clusterNodeId + '_' + cmd).html('<div class="alert alert-danger">' + errorMessage + '</div>');
 								}
 							);
 						},
-						['aui-base', 'aui-io-request']
+						['aui-base']
 					);
 
 					<%
@@ -540,8 +542,8 @@ dateFormatDateTime.setTimeZone(timeZone);
 
 									addColumn(row, productEntryName);
 									addColumn(row, getLicenseState(message[i].licenseState));
-									addColumn(row, LString.escapeHTML(message[i].owner));
-									addColumn(row, LString.escapeHTML(message[i].description));
+									addColumn(row, Liferay.Util.escapeHTML(message[i].owner));
+									addColumn(row, Liferay.Util.escapeHTML(message[i].description));
 									addColumn(row, message[i].type);
 
 									var maxProcessorCores = '';
@@ -709,12 +711,12 @@ dateFormatDateTime.setTimeZone(timeZone);
 
 		<c:choose>
 			<c:when test="<%= orderProducts != null %>">
-				<input class="btn btn-default" type="submit" value="<liferay-ui:message key="register" />" />
+				<input class="btn btn-secondary" type="submit" value="<liferay-ui:message key="register" />" />
 
 				<input onClick="location.href='<%= HtmlUtil.escapeJS(themeDisplay.getURLCurrent()) %>';" type="button" value="<liferay-ui:message key="cancel" />" />
 			</c:when>
 			<c:otherwise>
-				<input class="btn btn-default" type="submit" value="<liferay-ui:message key="query" />" />
+				<input class="btn btn-secondary" type="submit" value="<liferay-ui:message key="query" />" />
 			</c:otherwise>
 		</c:choose>
 	</form>

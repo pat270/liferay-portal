@@ -19,12 +19,13 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ResourcePermissionTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -126,6 +127,21 @@ public class RoleFinderTest {
 			"The method findByC_N_S_P_A should have returned the role " +
 				_arbitraryRole.getRoleId(),
 			roles.contains(_arbitraryRole));
+	}
+
+	@Test
+	public void testFindByU_G() {
+		long userId = RandomTestUtil.nextLong();
+
+		// See LPS-113146 for the magic number 2100
+
+		long[] groupIds = new long[2100];
+
+		for (int i = 0; i < groupIds.length; i++) {
+			groupIds[i] = RandomTestUtil.nextLong();
+		}
+
+		_roleFinder.findByU_G(userId, groupIds);
 	}
 
 	private static ResourceAction _arbitraryResourceAction;

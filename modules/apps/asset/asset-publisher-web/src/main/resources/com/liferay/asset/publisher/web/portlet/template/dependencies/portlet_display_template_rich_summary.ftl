@@ -20,7 +20,7 @@
 	/>
 
 	<div class="asset-abstract">
-		<div class="pull-right">
+		<div class="float-right">
 			<@getPrintIcon />
 
 			<@getFlagsIcon />
@@ -159,9 +159,10 @@
 		${printURL.setWindowState("pop_up")}
 
 		<@liferay_ui["icon"]
-			iconCssClass="icon-print"
+			icon="print"
+			markupView="lexicon"
 			message="print"
-			url="javascript:Liferay.Util.openWindow({id:'" + renderResponse.getNamespace() + "printAsset', title: '" + languageUtil.format(locale, "print-x-x", ["hide-accessible", entryTitle], false) + "', uri: '" + htmlUtil.escapeURL(printURL.toString()) + "'});"
+			url="javascript:Liferay.Util.openModal({headerHTML: '" + languageUtil.format(locale, "print-x-x", ["hide-accessible", entryTitle], false) + "', id:'" + renderResponse.getNamespace() + "printAsset', url: '" + htmlUtil.escapeURL(printURL.toString()) + "'});"
 		/>
 	</#if>
 </#macro>
@@ -193,6 +194,7 @@
 		displayStyle="${socialBookmarksDisplayStyle}"
 		target="_blank"
 		title=entry.getTitle(locale)
+		types="${socialBookmarksTypes}"
 		url=viewURL
 	/>
 </#macro>

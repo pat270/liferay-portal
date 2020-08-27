@@ -1,10 +1,9 @@
-@import "mixins";
-
 .navbar {
 	.navbar-collapse {
 		max-height: none;
 
-		&:after, &:before {
+		&:after,
+		&:before {
 			display: inline;
 		}
 	}
@@ -38,9 +37,11 @@
 	}
 }
 
-@include respond-to(phone, tablet) {
+@include media-breakpoint-down(md) {
 	.navbar {
-		.container, .container-fluid, .container-fluid-1280 {
+		.container,
+		.container-fluid,
+		.container-fluid-1280 {
 			.navbar-btn {
 				margin-bottom: 5px;
 				width: 45px;

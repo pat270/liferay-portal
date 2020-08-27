@@ -50,12 +50,12 @@ import javax.servlet.http.HttpServletRequest;
 public class LayoutPortletsDisplayContext {
 
 	public LayoutPortletsDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
+		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
-		_httpServletRequest = httpServletRequest;
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)_httpServletRequest.getAttribute(
@@ -117,8 +117,8 @@ public class LayoutPortletsDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getSearchContainer() {
-		SearchContainer searchContainer = new PortletSearch(
+	public SearchContainer<Portlet> getSearchContainer() {
+		SearchContainer<Portlet> searchContainer = new PortletSearch(
 			_renderRequest, getPortletURL());
 
 		searchContainer.setEmptyResultsMessage("there-are-no-widgets");
@@ -127,7 +127,7 @@ public class LayoutPortletsDisplayContext {
 		searchContainer.setOrderByType(getOrderByType());
 		searchContainer.setTotal(_layoutPortlets.size());
 
-		List results = ListUtil.sort(
+		List<Portlet> results = ListUtil.sort(
 			_layoutPortlets, searchContainer.getOrderByComparator());
 
 		results = ListUtil.subList(

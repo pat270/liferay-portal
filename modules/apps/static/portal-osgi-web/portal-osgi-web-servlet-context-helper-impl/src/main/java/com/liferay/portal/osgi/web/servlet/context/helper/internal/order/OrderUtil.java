@@ -56,10 +56,10 @@ public class OrderUtil {
 	private static String[] _appendAndSort(String[]... namesArray) {
 		Map<String, Integer> map = new HashMap<>();
 
-		if (namesArray[0] != null) {
-			if (Arrays.binarySearch(namesArray[0], Order.OTHERS) >= 0) {
-				map.put(Order.OTHERS, 1);
-			}
+		if ((namesArray[0] != null) &&
+			(Arrays.binarySearch(namesArray[0], Order.OTHERS) >= 0)) {
+
+			map.put(Order.OTHERS, 1);
 		}
 
 		for (String[] names : namesArray) {
@@ -226,9 +226,8 @@ public class OrderUtil {
 		Map<String, WebXMLDefinition> webXMLDefinitionsMap = new HashMap<>();
 
 		for (WebXMLDefinition webXMLDefinition : webXMLDefinitions) {
-			String fragmentName = webXMLDefinition.getFragmentName();
-
-			webXMLDefinitionsMap.put(fragmentName, webXMLDefinition);
+			webXMLDefinitionsMap.put(
+				webXMLDefinition.getFragmentName(), webXMLDefinition);
 		}
 
 		return webXMLDefinitionsMap;
@@ -479,9 +478,8 @@ public class OrderUtil {
 			_getWebXMLDefinitionsMap(webXMLDefinitions);
 
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
-			String key = entry.getKey();
-
-			preSortWebXMLDefinitions.add(webXMLDefinitionsMap.get(key));
+			preSortWebXMLDefinitions.add(
+				webXMLDefinitionsMap.get(entry.getKey()));
 		}
 
 		for (WebXMLDefinition webXMLDefinition : tempWebXMLDefinitions) {

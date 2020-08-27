@@ -18,6 +18,7 @@ import com.liferay.message.boards.model.MBBan;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,30 +27,30 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MBBan in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
-public class MBBanCacheModel implements CacheModel<MBBan>, Externalizable {
+public class MBBanCacheModel
+	implements CacheModel<MBBan>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MBBanCacheModel)) {
+		if (!(object instanceof MBBanCacheModel)) {
 			return false;
 		}
 
-		MBBanCacheModel mbBanCacheModel = (MBBanCacheModel)obj;
+		MBBanCacheModel mbBanCacheModel = (MBBanCacheModel)object;
 
-		if (banId == mbBanCacheModel.banId) {
+		if ((banId == mbBanCacheModel.banId) &&
+			(mvccVersion == mbBanCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -58,14 +59,30 @@ public class MBBanCacheModel implements CacheModel<MBBan>, Externalizable {
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, banId);
+		int hashCode = HashUtil.hash(0, banId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(21);
+		StringBundler sb = new StringBundler(25);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", banId=");
 		sb.append(banId);
@@ -93,6 +110,9 @@ public class MBBanCacheModel implements CacheModel<MBBan>, Externalizable {
 	@Override
 	public MBBan toEntityModel() {
 		MBBanImpl mbBanImpl = new MBBanImpl();
+
+		mbBanImpl.setMvccVersion(mvccVersion);
+		mbBanImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			mbBanImpl.setUuid("");
@@ -143,6 +163,9 @@ public class MBBanCacheModel implements CacheModel<MBBan>, Externalizable {
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		banId = objectInput.readLong();
@@ -162,6 +185,10 @@ public class MBBanCacheModel implements CacheModel<MBBan>, Externalizable {
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -191,6 +218,8 @@ public class MBBanCacheModel implements CacheModel<MBBan>, Externalizable {
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long banId;
 	public long groupId;

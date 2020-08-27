@@ -1,7 +1,7 @@
 @component-name = "portal-upgrades"
 definition {
-	property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
-	property ignore.errors = "Plugin security management is not enabled. Enable a security manager, then restart.";
+
+	property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Nested Portlets,Upgrades WEM";
@@ -12,7 +12,7 @@ definition {
 
 		Smoke.viewWelcomePage();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -72,4 +72,5 @@ definition {
 
 		Upgrade.viewStagingNestedPortlets();
 	}
+
 }

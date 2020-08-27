@@ -124,6 +124,10 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 			_backgroundTaskLocalService.amendBackgroundTask(
 				backgroundTaskId, taskContextMap, status, serviceContext);
 
+		if (backgroundTask == null) {
+			return null;
+		}
+
 		return new BackgroundTaskImpl(backgroundTask);
 	}
 
@@ -136,6 +140,10 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 			_backgroundTaskLocalService.amendBackgroundTask(
 				backgroundTaskId, taskContextMap, status, statusMessage,
 				serviceContext);
+
+		if (backgroundTask == null) {
+			return null;
+		}
 
 		return new BackgroundTaskImpl(backgroundTask);
 	}
@@ -251,10 +259,8 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 	public BackgroundTask getBackgroundTask(long backgroundTaskId)
 		throws PortalException {
 
-		com.liferay.portal.background.task.model.BackgroundTask backgroundTask =
-			_backgroundTaskLocalService.getBackgroundTask(backgroundTaskId);
-
-		return new BackgroundTaskImpl(backgroundTask);
+		return new BackgroundTaskImpl(
+			_backgroundTaskLocalService.getBackgroundTask(backgroundTaskId));
 	}
 
 	@Override
@@ -620,7 +626,7 @@ public class BackgroundTaskManagerImpl implements BackgroundTaskManager {
 
 		BackgroundTaskQueuingMessageListener
 			backgroundTaskQueuingMessageListener =
-				new BackgroundTaskQueuingMessageListener(this);
+				new BackgroundTaskQueuingMessageListener(this, _lockManager);
 
 		backgroundTaskStatusDestination.register(
 			backgroundTaskQueuingMessageListener);

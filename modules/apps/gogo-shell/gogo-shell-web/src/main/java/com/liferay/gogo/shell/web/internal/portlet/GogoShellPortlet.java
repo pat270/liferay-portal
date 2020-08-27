@@ -75,8 +75,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + GogoShellPortletKeys.GOGO_SHELL,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -149,10 +148,10 @@ public class GogoShellPortlet extends MVCPortlet {
 				throw new Exception(errorContent);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			hideDefaultErrorMessage(actionRequest);
 
-			SessionErrors.add(actionRequest, "gogo", e);
+			SessionErrors.add(actionRequest, "gogo", exception);
 		}
 		finally {
 			outputUnsyncByteArrayOutputStream.reset();

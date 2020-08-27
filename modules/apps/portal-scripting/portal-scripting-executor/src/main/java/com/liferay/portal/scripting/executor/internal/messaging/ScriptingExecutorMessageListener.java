@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.scripting.Scripting;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.scripting.executor.internal.ScriptingExecutorMessagingConstants;
+import com.liferay.portal.scripting.executor.internal.constants.ScriptingExecutorMessagingConstants;
 
 import java.io.InputStream;
 
@@ -69,9 +69,10 @@ public class ScriptingExecutorMessageListener extends BaseMessageListener {
 					null, new HashMap<String, Object>(), scriptingLanguage,
 					StringUtil.read(inputStream));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to execute script " + url.getFile(), e);
+					_log.warn(
+						"Unable to execute script " + url.getFile(), exception);
 				}
 			}
 			finally {

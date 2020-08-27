@@ -23,10 +23,10 @@ import com.liferay.portal.kernel.repository.RepositoryException;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,9 +53,10 @@ public abstract class ExtRepositoryObjectAdapter<T>
 			return _extRepositoryObject.containsPermission(
 				extRepositoryPermission);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			throw new RepositoryException(
-				"Unexpected permission action " + actionId, iae);
+				"Unexpected permission action " + actionId,
+				illegalArgumentException);
 		}
 	}
 
@@ -112,7 +113,7 @@ public abstract class ExtRepositoryObjectAdapter<T>
 
 		Folder parentFolder = extRepositoryAdapter.getParentFolder(this);
 
-		if (parentFolder.isRoot()) {
+		if ((parentFolder == null) || parentFolder.isRoot()) {
 			return DLAppLocalServiceUtil.getMountFolder(getRepositoryId());
 		}
 
@@ -147,12 +148,11 @@ public abstract class ExtRepositoryObjectAdapter<T>
 	}
 
 	private static final Map<String, Boolean> _unsupportedActionIds =
-		new HashMap<String, Boolean>() {
-			{
-				put(ActionKeys.OVERRIDE_CHECKOUT, Boolean.FALSE);
-				put(ActionKeys.SUBSCRIBE, Boolean.FALSE);
-			}
-		};
+		HashMapBuilder.put(
+			ActionKeys.OVERRIDE_CHECKOUT, Boolean.FALSE
+		).put(
+			ActionKeys.SUBSCRIBE, Boolean.FALSE
+		).build();
 
 	private final ExtRepositoryObject _extRepositoryObject;
 

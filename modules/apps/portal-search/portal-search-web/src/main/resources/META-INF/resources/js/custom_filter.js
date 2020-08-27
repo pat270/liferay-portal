@@ -1,85 +1,106 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-search-custom-filter',
-	function(A) {
+	(A) => {
 		var FacetUtil = Liferay.Search.FacetUtil;
 
-		var CustomFilter = function(form) {
+		var CustomFilter = function (form) {
+			if (!form) {
+				return;
+			}
+
 			var instance = this;
 
 			instance.form = form;
 
 			instance.form.on('submit', A.bind(instance._onSubmit, instance));
 
-			instance.filterValueInput = instance.form.one('.custom-filter-value-input');
+			instance.filterValueInput = instance.form.one(
+				'.custom-filter-value-input'
+			);
 
 			var applyButton = instance.form.one('.custom-filter-apply-button');
 
-			applyButton.on('click', A.bind(instance._onClick, instance));
+			if (applyButton) {
+				applyButton.on('click', A.bind(instance._onClick, instance));
+			}
 		};
 
-		A.mix(
-			CustomFilter.prototype,
-			{
-				getFilterValue: function() {
-					var instance = this;
+		A.mix(CustomFilter.prototype, {
+			_onClick() {
+				var instance = this;
 
-					var filterValue = instance.filterValueInput.val();
+				instance.search();
+			},
 
-					return filterValue;
-				},
+			_onSubmit(event) {
+				var instance = this;
 
-				search: function() {
-					var instance = this;
+				event.stopPropagation();
 
-					var searchURL = instance.form.get('action');
+				instance.search();
+			},
 
-					var queryString = instance.updateQueryString(document.location.search);
+			getFilterValue() {
+				var instance = this;
 
-					document.location.href = searchURL + queryString;
-				},
+				var filterValue = instance.filterValueInput.val();
 
-				updateQueryString: function(queryString) {
-					var instance = this;
+				return filterValue;
+			},
 
-					var hasQuestionMark = false;
+			search() {
+				var instance = this;
 
-					if (queryString[0] === '?') {
-						hasQuestionMark = true;
-					}
+				var searchURL = instance.form.get('action');
 
-					queryString = FacetUtil.updateQueryString(
-						instance.filterValueInput.get('name'),
-						[instance.getFilterValue()],
-						queryString
-					);
+				var queryString = instance.updateQueryString(
+					document.location.search
+				);
 
-					if (!hasQuestionMark) {
-						queryString = '?' + queryString;
-					}
+				document.location.href = searchURL + queryString;
+			},
 
-					return queryString;
-				},
+			updateQueryString(queryString) {
+				var instance = this;
 
-				_onClick: function(event) {
-					var instance = this;
+				var hasQuestionMark = false;
 
-					instance.search();
-				},
-
-				_onSubmit: function(event) {
-					var instance = this;
-
-					event.stopPropagation();
-
-					instance.search();
+				if (queryString[0] === '?') {
+					hasQuestionMark = true;
 				}
-			}
-		);
+
+				queryString = FacetUtil.updateQueryString(
+					instance.filterValueInput.get('name'),
+					[instance.getFilterValue()],
+					queryString
+				);
+
+				if (!hasQuestionMark) {
+					queryString = '?' + queryString;
+				}
+
+				return queryString;
+			},
+		});
 
 		Liferay.namespace('Search').CustomFilter = CustomFilter;
 	},
 	'',
 	{
-		requires: ['liferay-search-facet-util']
+		requires: ['liferay-search-facet-util'],
 	}
 );

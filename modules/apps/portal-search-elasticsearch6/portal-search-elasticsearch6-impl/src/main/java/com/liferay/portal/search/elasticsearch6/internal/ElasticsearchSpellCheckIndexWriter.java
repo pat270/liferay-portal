@@ -32,12 +32,12 @@ import com.liferay.portal.kernel.search.suggest.SuggestionConstants;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortalRunMode;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
 import com.liferay.portal.search.elasticsearch6.internal.util.DocumentTypes;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.document.BulkDocumentRequest;
 import com.liferay.portal.search.engine.adapter.document.DeleteByQueryDocumentRequest;
 import com.liferay.portal.search.engine.adapter.document.IndexDocumentRequest;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.suggest.BaseGenericSpellCheckIndexWriter;
 
 import java.util.Collection;
@@ -64,8 +64,9 @@ public class ElasticsearchSpellCheckIndexWriter
 			deleteDocuments(
 				searchContext, SuggestionConstants.TYPE_QUERY_SUGGESTION);
 		}
-		catch (Exception e) {
-			throw new SearchException("Unable to clear query suggestions", e);
+		catch (Exception exception) {
+			throw new SearchException(
+				"Unable to clear query suggestions", exception);
 		}
 	}
 
@@ -77,8 +78,9 @@ public class ElasticsearchSpellCheckIndexWriter
 			deleteDocuments(
 				searchContext, SuggestionConstants.TYPE_SPELL_CHECKER);
 		}
-		catch (Exception e) {
-			throw new SearchException("Unable to to clear spell checks", e);
+		catch (Exception exception) {
+			throw new SearchException(
+				"Unable to to clear spell checks", exception);
 		}
 	}
 
@@ -180,8 +182,8 @@ public class ElasticsearchSpellCheckIndexWriter
 
 			_searchEngineAdapter.execute(deleteByQueryDocumentRequest);
 		}
-		catch (ParseException pe) {
-			throw new SystemException(pe);
+		catch (ParseException parseException) {
+			throw new SystemException(parseException);
 		}
 	}
 

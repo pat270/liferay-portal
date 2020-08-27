@@ -115,7 +115,7 @@ public class PortalClientBuilder {
 	}
 
 	private HttpServlet _createAxisHttpServlet(final File docRootDir)
-		throws ServletException {
+		throws Exception {
 
 		AxisServlet axisServlet = new AxisServlet();
 
@@ -168,8 +168,8 @@ public class PortalClientBuilder {
 			_axisHttpServlet.service(
 				mockHttpServletRequest, mockHttpServletResponse);
 		}
-		catch (ServletException se) {
-			throw new IOException(se);
+		catch (ServletException servletException) {
+			throw new IOException(servletException);
 		}
 
 		return mockHttpServletResponse.getContentAsByteArray();

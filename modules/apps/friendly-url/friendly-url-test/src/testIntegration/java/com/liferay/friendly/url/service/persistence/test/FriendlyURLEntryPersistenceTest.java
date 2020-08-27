@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,8 @@ public class FriendlyURLEntryPersistenceTest {
 
 		newFriendlyURLEntry.setMvccVersion(RandomTestUtil.nextLong());
 
+		newFriendlyURLEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newFriendlyURLEntry.setUuid(RandomTestUtil.randomString());
 
 		newFriendlyURLEntry.setDefaultLanguageId(RandomTestUtil.randomString());
@@ -150,6 +152,9 @@ public class FriendlyURLEntryPersistenceTest {
 		Assert.assertEquals(
 			existingFriendlyURLEntry.getMvccVersion(),
 			newFriendlyURLEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingFriendlyURLEntry.getCtCollectionId(),
+			newFriendlyURLEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingFriendlyURLEntry.getUuid(), newFriendlyURLEntry.getUuid());
 		Assert.assertEquals(
@@ -239,10 +244,10 @@ public class FriendlyURLEntryPersistenceTest {
 
 	protected OrderByComparator<FriendlyURLEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"FriendlyURLEntry", "mvccVersion", true, "uuid", true,
-			"defaultLanguageId", true, "friendlyURLEntryId", true, "groupId",
-			true, "companyId", true, "createDate", true, "modifiedDate", true,
-			"classNameId", true, "classPK", true);
+			"FriendlyURLEntry", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "defaultLanguageId", true, "friendlyURLEntryId", true,
+			"groupId", true, "companyId", true, "createDate", true,
+			"modifiedDate", true, "classNameId", true, "classPK", true);
 	}
 
 	@Test
@@ -468,20 +473,62 @@ public class FriendlyURLEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		FriendlyURLEntry existingFriendlyURLEntry =
-			_persistence.findByPrimaryKey(newFriendlyURLEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newFriendlyURLEntry.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingFriendlyURLEntry.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingFriendlyURLEntry, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		FriendlyURLEntry newFriendlyURLEntry = addFriendlyURLEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			FriendlyURLEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"friendlyURLEntryId",
+				newFriendlyURLEntry.getFriendlyURLEntryId()));
+
+		List<FriendlyURLEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(FriendlyURLEntry friendlyURLEntry) {
 		Assert.assertEquals(
-			Long.valueOf(existingFriendlyURLEntry.getGroupId()),
+			friendlyURLEntry.getUuid(),
+			ReflectionTestUtil.invoke(
+				friendlyURLEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(friendlyURLEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFriendlyURLEntry, "getOriginalGroupId",
-				new Class<?>[0]));
+				friendlyURLEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected FriendlyURLEntry addFriendlyURLEntry() throws Exception {
@@ -490,6 +537,8 @@ public class FriendlyURLEntryPersistenceTest {
 		FriendlyURLEntry friendlyURLEntry = _persistence.create(pk);
 
 		friendlyURLEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		friendlyURLEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		friendlyURLEntry.setUuid(RandomTestUtil.randomString());
 

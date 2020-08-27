@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutPageTemplateCollection
  * @generated
  */
-@ProviderType
 public class LayoutPageTemplateCollectionWrapper
 	extends BaseModelWrapper<LayoutPageTemplateCollection>
 	implements LayoutPageTemplateCollection,
@@ -49,6 +48,8 @@ public class LayoutPageTemplateCollectionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put(
 			"layoutPageTemplateCollectionId",
@@ -59,6 +60,9 @@ public class LayoutPageTemplateCollectionWrapper
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put(
+			"layoutPageTemplateCollectionKey",
+			getLayoutPageTemplateCollectionKey());
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
 		attributes.put("lastPublishDate", getLastPublishDate());
@@ -68,6 +72,18 @@ public class LayoutPageTemplateCollectionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -117,6 +133,13 @@ public class LayoutPageTemplateCollectionWrapper
 			setModifiedDate(modifiedDate);
 		}
 
+		String layoutPageTemplateCollectionKey = (String)attributes.get(
+			"layoutPageTemplateCollectionKey");
+
+		if (layoutPageTemplateCollectionKey != null) {
+			setLayoutPageTemplateCollectionKey(layoutPageTemplateCollectionKey);
+		}
+
 		String name = (String)attributes.get("name");
 
 		if (name != null) {
@@ -154,6 +177,16 @@ public class LayoutPageTemplateCollectionWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this layout page template collection.
+	 *
+	 * @return the ct collection ID of this layout page template collection
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	/**
@@ -197,6 +230,16 @@ public class LayoutPageTemplateCollectionWrapper
 	}
 
 	/**
+	 * Returns the layout page template collection key of this layout page template collection.
+	 *
+	 * @return the layout page template collection key of this layout page template collection
+	 */
+	@Override
+	public String getLayoutPageTemplateCollectionKey() {
+		return model.getLayoutPageTemplateCollectionKey();
+	}
+
+	/**
 	 * Returns the modified date of this layout page template collection.
 	 *
 	 * @return the modified date of this layout page template collection
@@ -204,6 +247,16 @@ public class LayoutPageTemplateCollectionWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this layout page template collection.
+	 *
+	 * @return the mvcc version of this layout page template collection
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -292,6 +345,16 @@ public class LayoutPageTemplateCollectionWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this layout page template collection.
+	 *
+	 * @param ctCollectionId the ct collection ID of this layout page template collection
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this layout page template collection.
 	 *
 	 * @param description the description of this layout page template collection
@@ -334,6 +397,19 @@ public class LayoutPageTemplateCollectionWrapper
 	}
 
 	/**
+	 * Sets the layout page template collection key of this layout page template collection.
+	 *
+	 * @param layoutPageTemplateCollectionKey the layout page template collection key of this layout page template collection
+	 */
+	@Override
+	public void setLayoutPageTemplateCollectionKey(
+		String layoutPageTemplateCollectionKey) {
+
+		model.setLayoutPageTemplateCollectionKey(
+			layoutPageTemplateCollectionKey);
+	}
+
+	/**
 	 * Sets the modified date of this layout page template collection.
 	 *
 	 * @param modifiedDate the modified date of this layout page template collection
@@ -341,6 +417,16 @@ public class LayoutPageTemplateCollectionWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this layout page template collection.
+	 *
+	 * @param mvccVersion the mvcc version of this layout page template collection
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -401,6 +487,20 @@ public class LayoutPageTemplateCollectionWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<LayoutPageTemplateCollection, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<LayoutPageTemplateCollection, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

@@ -67,10 +67,18 @@ else {
 String redirect = ParamUtil.getString(request, "redirect", assetCategoriesDisplayContext.getEditCategoryRedirect());
 
 long vocabularyId = ParamUtil.getLong(request, "vocabularyId");
+
+portletDisplay.setShowBackIcon(true);
+portletDisplay.setURLBack(redirect);
+
+renderResponse.setTitle(category.getTitle(locale));
+
+String screenNavigationCategoryKey = ParamUtil.getString(request, "screenNavigationCategoryKey");
 %>
 
 <portlet:actionURL name="editProperties" var="editPropertiesURL">
 	<portlet:param name="mvcPath" value="/edit_category.jsp" />
+	<portlet:param name="screenNavigationCategoryKey" value="<%= screenNavigationCategoryKey %>" />
 	<portlet:param name="vocabularyId" value="<%= String.valueOf(vocabularyId) %>" />
 </portlet:actionURL>
 
@@ -96,11 +104,9 @@ long vocabularyId = ParamUtil.getLong(request, "vocabularyId");
 					<%
 					for (int i = 0; i < categoryPropertiesIndexes.length; i++) {
 						int categoryPropertiesIndex = categoryPropertiesIndexes[i];
-
-						AssetCategoryProperty categoryProperty = categoryProperties.get(i);
 					%>
 
-						<aui:model-context bean="<%= categoryProperty %>" model="<%= AssetCategoryProperty.class %>" />
+						<aui:model-context bean="<%= categoryProperties.get(i) %>" model="<%= AssetCategoryProperty.class %>" />
 
 						<div class="lfr-form-row lfr-form-row-inline">
 							<div class="row-fields">
@@ -129,15 +135,15 @@ long vocabularyId = ParamUtil.getLong(request, "vocabularyId");
 </liferay-frontend:edit-form>
 
 <aui:script use="liferay-auto-fields">
-	var autoFields = new Liferay.AutoFields(
-		{
-			contentBox: '#<portlet:namespace />categoryPropertiesId',
-			fieldIndexes: '<portlet:namespace />categoryPropertiesIndexes',
-			namespace: '<portlet:namespace />'
-		}
-	).render();
+	var autoFields = new Liferay.AutoFields({
+		contentBox: '#<portlet:namespace />categoryPropertiesId',
+		fieldIndexes: '<portlet:namespace />categoryPropertiesIndexes',
+		namespace: '<portlet:namespace />',
+	}).render();
 
-	var categoryPropertiesTrigger = A.one('#<portlet:namespace />categoryPropertiesId');
+	var categoryPropertiesTrigger = A.one(
+		'#<portlet:namespace />categoryPropertiesId'
+	);
 
 	if (categoryPropertiesTrigger) {
 		categoryPropertiesTrigger.setData('autoFieldsInstance', autoFields);

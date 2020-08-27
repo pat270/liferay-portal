@@ -14,18 +14,17 @@
 
 package com.liferay.segments.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.segments.constants.SegmentsActionKeys;
 import com.liferay.segments.constants.SegmentsConstants;
 import com.liferay.segments.model.SegmentsEntry;
@@ -35,10 +34,36 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Eduardo García
  */
+@Component(
+	property = {
+		"json.web.service.context.name=segments",
+		"json.web.service.context.path=SegmentsEntry"
+	},
+	service = AopService.class
+)
 public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
+
+	@Override
+	public SegmentsEntry addSegmentsEntry(
+			String segmentsEntryKey, Map<Locale, String> nameMap,
+			Map<Locale, String> descriptionMap, boolean active, String criteria,
+			String type, ServiceContext serviceContext)
+		throws PortalException {
+
+		_portletResourcePermission.check(
+			getPermissionChecker(), serviceContext.getScopeGroupId(),
+			SegmentsActionKeys.MANAGE_SEGMENTS_ENTRIES);
+
+		return segmentsEntryLocalService.addSegmentsEntry(
+			segmentsEntryKey, nameMap, descriptionMap, active, criteria, type,
+			serviceContext);
+	}
 
 	@Override
 	public SegmentsEntry addSegmentsEntry(
@@ -57,6 +82,19 @@ public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
 	}
 
 	@Override
+	public void addSegmentsEntryClassPKs(
+			long segmentsEntryId, long[] classPKs,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		_segmentsEntryResourcePermission.check(
+			getPermissionChecker(), segmentsEntryId, ActionKeys.UPDATE);
+
+		segmentsEntryLocalService.addSegmentsEntryClassPKs(
+			segmentsEntryId, classPKs, serviceContext);
+	}
+
+	@Override
 	public SegmentsEntry deleteSegmentsEntry(long segmentsEntryId)
 		throws PortalException {
 
@@ -64,6 +102,18 @@ public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
 			getPermissionChecker(), segmentsEntryId, ActionKeys.DELETE);
 
 		return segmentsEntryLocalService.deleteSegmentsEntry(segmentsEntryId);
+	}
+
+	@Override
+	public void deleteSegmentsEntryClassPKs(
+			long segmentsEntryId, long[] classPKs)
+		throws PortalException {
+
+		_segmentsEntryResourcePermission.check(
+			getPermissionChecker(), segmentsEntryId, ActionKeys.UPDATE);
+
+		segmentsEntryLocalService.deleteSegmentsEntryClassPKs(
+			segmentsEntryId, classPKs);
 	}
 
 	@Override
@@ -76,7 +126,7 @@ public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
 
 		return segmentsEntryPersistence.filterFindByGroupId(
 			ArrayUtil.append(
-				PortalUtil.getAncestorSiteGroupIds(groupId), groupId));
+				_portal.getAncestorSiteGroupIds(groupId), groupId));
 	}
 
 	@Override
@@ -90,8 +140,7 @@ public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
 		}
 
 		return segmentsEntryPersistence.filterFindByGroupId(
-			ArrayUtil.append(
-				PortalUtil.getAncestorSiteGroupIds(groupId), groupId),
+			ArrayUtil.append(_portal.getAncestorSiteGroupIds(groupId), groupId),
 			start, end, orderByComparator);
 	}
 
@@ -105,7 +154,7 @@ public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
 
 		return segmentsEntryPersistence.filterCountByGroupId(
 			ArrayUtil.append(
-				PortalUtil.getAncestorSiteGroupIds(groupId), groupId));
+				_portal.getAncestorSiteGroupIds(groupId), groupId));
 	}
 
 	@Override
@@ -151,15 +200,18 @@ public class SegmentsEntryServiceImpl extends SegmentsEntryServiceBaseImpl {
 			criteria, serviceContext);
 	}
 
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				SegmentsEntryServiceImpl.class, "_portletResourcePermission",
-				SegmentsConstants.RESOURCE_NAME);
-	private static volatile ModelResourcePermission<SegmentsEntry>
-		_segmentsEntryResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				SegmentsEntryServiceImpl.class,
-				"_segmentsEntryResourcePermission", SegmentsEntry.class);
+	@Reference
+	private Portal _portal;
+
+	@Reference(
+		target = "(resource.name=" + SegmentsConstants.RESOURCE_NAME + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.segments.model.SegmentsEntry)"
+	)
+	private ModelResourcePermission<SegmentsEntry>
+		_segmentsEntryResourcePermission;
 
 }

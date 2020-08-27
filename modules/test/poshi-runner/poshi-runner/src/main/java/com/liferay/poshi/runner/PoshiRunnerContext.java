@@ -21,6 +21,7 @@ import com.google.common.collect.Multimap;
 import com.liferay.poshi.runner.pql.PQLEntity;
 import com.liferay.poshi.runner.pql.PQLEntityFactory;
 import com.liferay.poshi.runner.prose.PoshiProseMatcher;
+import com.liferay.poshi.runner.script.PoshiScriptParserException;
 import com.liferay.poshi.runner.selenium.LiferaySelenium;
 import com.liferay.poshi.runner.util.FileUtil;
 import com.liferay.poshi.runner.util.MathUtil;
@@ -47,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -57,6 +57,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,7 +113,11 @@ public class PoshiRunnerContext {
 
 		if (numCommandsFound > 0) {
 			sb.append("\n\n");
-			sb.append(String.join(",", namespacedClassCommandNames));
+			sb.append(
+				StringUtil.join(
+					namespacedClassCommandNames.toArray(
+						new String[numCommandsFound]),
+					","));
 		}
 
 		System.out.println(sb.toString());
@@ -182,6 +191,13 @@ public class PoshiRunnerContext {
 		String className, String namespace) {
 
 		return _rootElements.get("macro#" + namespace + "." + className);
+	}
+
+	public static Properties getNamespacedClassCommandNameProperties(
+		String testCaseNamespacedClassCommandName) {
+
+		return _namespacedClassCommandNamePropertiesMap.get(
+			testCaseNamespacedClassCommandName);
 	}
 
 	public static String getNamespaceFromFilePath(String filePath) {
@@ -321,7 +337,14 @@ public class PoshiRunnerContext {
 	}
 
 	public static void readFiles() throws Exception {
+		System.out.print("Reading Poshi files...");
+
+		long start = System.currentTimeMillis();
+
 		readFiles(PoshiRunnerContext.POSHI_TEST_FILE_INCLUDES);
+
+		System.out.println(
+			" Completed in " + (System.currentTimeMillis() - start) + "ms.");
 	}
 
 	public static void readFiles(String[] testFileIncludes) throws Exception {
@@ -344,11 +367,22 @@ public class PoshiRunnerContext {
 			testCaseNamespacedClassCommandName;
 	}
 
-	protected static Properties getNamespacedClassCommandNameProperties(
-		String testCaseNamespacedClassCommandName) {
+	private static void _executePoshiFileCallables(
+			String poshiFileType, List<PoshiFileCallable> poshiFileCallables,
+			int threadPoolSize)
+		throws Exception {
 
-		return _namespacedClassCommandNamePropertiesMap.get(
-			testCaseNamespacedClassCommandName);
+		ExecutorService executorService = Executors.newFixedThreadPool(
+			threadPoolSize);
+
+		executorService.invokeAll(poshiFileCallables);
+
+		executorService.shutdown();
+
+		if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
+			throw new TimeoutException(
+				"Timed out while loading " + poshiFileType + " Poshi files");
+		}
 	}
 
 	private static List<String> _executePQLQuery(String query)
@@ -450,10 +484,10 @@ public class PoshiRunnerContext {
 			return commandElement.attributeValue("summary");
 		}
 
-		if (classType.equals("function")) {
-			if (Validator.isNotNull(rootElement.attributeValue("summary"))) {
-				return rootElement.attributeValue("summary");
-			}
+		if (classType.equals("function") &&
+			Validator.isNotNull(rootElement.attributeValue("summary"))) {
+
+			return rootElement.attributeValue("summary");
 		}
 
 		return classCommandName;
@@ -500,33 +534,6 @@ public class PoshiRunnerContext {
 
 	private static String _getTestBatchGroups() throws Exception {
 		String propertyQuery = PropsValues.TEST_BATCH_PROPERTY_QUERY;
-
-		if (propertyQuery == null) {
-			String[] propertyNames = PropsValues.TEST_BATCH_PROPERTY_NAMES;
-			String[] propertyValues = PropsValues.TEST_BATCH_PROPERTY_VALUES;
-
-			if (propertyNames.length != propertyValues.length) {
-				throw new Exception(
-					"'test.batch.property.names'" +
-						"/'test.batch.property.values' must have matching " +
-							"amounts of entries!");
-			}
-
-			StringBuilder sb = new StringBuilder();
-
-			for (int i = 0; i < propertyNames.length; i++) {
-				sb.append(propertyNames[i]);
-				sb.append(" == \"");
-				sb.append(propertyValues[i]);
-				sb.append("\"");
-
-				if (i < (propertyNames.length - 1)) {
-					sb.append(" OR ");
-				}
-			}
-
-			propertyQuery = sb.toString();
-		}
 
 		if (Validator.isNotNull(PropsValues.TEST_RUN_ENVIRONMENT)) {
 			StringBuilder sb = new StringBuilder();
@@ -597,7 +604,7 @@ public class PoshiRunnerContext {
 		Map<Properties, Collection<String>> map = multimap.asMap();
 
 		for (Collection<String> value : map.values()) {
-			List<String> classCommandNameGroup = new ArrayList(value);
+			List<String> classCommandNameGroup = new ArrayList<>(value);
 
 			Collections.sort(classCommandNameGroup);
 
@@ -930,7 +937,7 @@ public class PoshiRunnerContext {
 				List<Element> baseVarElements = getRootVarElements(
 					classType, className, baseNamespace);
 
-				Map<String, Element> overriddenVarElementMap = new HashMap();
+				Map<String, Element> overriddenVarElementMap = new HashMap<>();
 
 				for (Element baseVarElement : baseVarElements) {
 					overriddenVarElementMap.put(
@@ -1411,96 +1418,50 @@ public class PoshiRunnerContext {
 	private static void _storeRootElements(List<URL> urls, String namespace)
 		throws Exception {
 
-		Map<String, String> filePaths = new HashMap<>();
-
-		Collections.sort(
-			urls,
-			new Comparator<URL>() {
-
-				@Override
-				public int compare(URL url1, URL url2) {
-					String urlPath1 = url1.getPath();
-					String urlPath2 = url2.getPath();
-
-					Matcher urlPathMatcher1 = _urlPathPattern.matcher(urlPath1);
-					Matcher urlPathMatcher2 = _urlPathPattern.matcher(urlPath2);
-
-					if (urlPathMatcher1.find() && urlPathMatcher2.find()) {
-						String fileType1 = urlPathMatcher1.group(1);
-						String fileType2 = urlPathMatcher2.group(1);
-
-						List<String> fileTypeList = Arrays.asList(
-							"action", "path", "function", "macro", "testcase",
-							"prose");
-
-						Integer fileTypeIndex1 = fileTypeList.indexOf(
-							StringUtil.toLowerCase(fileType1));
-						Integer fileTypeIndex2 = fileTypeList.indexOf(
-							StringUtil.toLowerCase(fileType2));
-
-						int indexCompareValue = fileTypeIndex1.compareTo(
-							fileTypeIndex2);
-
-						if (indexCompareValue == 0) {
-							return urlPath1.compareTo(urlPath2);
-						}
-
-						return indexCompareValue;
-					}
-
-					throw new RuntimeException("Unable to sort Poshi files");
-				}
-
-			});
+		List<PoshiFileCallable> dependencyPoshiFileCallables =
+			new ArrayList<>();
+		List<PoshiFileCallable> macroPoshiFileCallables = new ArrayList<>();
+		List<PoshiFileCallable> testPoshiFileCallables = new ArrayList<>();
 
 		for (URL url : urls) {
-			String filePath = url.getFile();
+			String fileName = url.getFile();
 
-			if (OSDetector.isWindows()) {
-				if (filePath.startsWith("/")) {
-					filePath = filePath.substring(1);
-				}
+			if (fileName.contains(".macro")) {
+				macroPoshiFileCallables.add(
+					new PoshiFileCallable(url, namespace));
 
-				filePath = filePath.replace("/", "\\");
+				continue;
 			}
 
-			String fileName = PoshiRunnerGetterUtil.getFileNameFromFilePath(
-				filePath);
+			if (fileName.contains(".testcase") || fileName.contains(".prose")) {
+				testPoshiFileCallables.add(
+					new PoshiFileCallable(url, namespace));
 
-			if (filePaths.containsKey(fileName)) {
-				System.out.println(
-					"WARNING: Duplicate file name '" + fileName +
-						"' found within the namespace '" + namespace + "':\n" +
-							filePath + "\n" + filePaths.get(fileName) + "\n");
+				continue;
 			}
 
-			filePaths.put(fileName, filePath);
-
-			Element rootElement = PoshiRunnerGetterUtil.getRootElementFromURL(
-				url);
-
-			_storeRootElement(rootElement, filePath, namespace);
-
-			if (rootElement.attributeValue("override") == null) {
-				_filePaths.put(namespace + "." + fileName, filePath);
-
-				if (fileName.endsWith(".function")) {
-					_functionFileNames.add(fileName.replace(".function", ""));
-
-					_functionFileNames.add(
-						namespace + "." + fileName.replace(".function", ""));
-				}
-			}
+			dependencyPoshiFileCallables.add(
+				new PoshiFileCallable(url, namespace));
 		}
+
+		_executePoshiFileCallables(
+			"dependency", dependencyPoshiFileCallables,
+			PropsValues.POSHI_FILE_READ_THREAD_POOL);
+
+		_executePoshiFileCallables(
+			"macro", macroPoshiFileCallables,
+			PropsValues.POSHI_FILE_READ_THREAD_POOL);
+
+		_executePoshiFileCallables(
+			"test", testPoshiFileCallables,
+			PropsValues.POSHI_FILE_READ_THREAD_POOL);
 	}
 
 	private static void _writeTestCaseMethodNamesProperties() throws Exception {
 		StringBuilder sb = new StringBuilder();
 
 		if ((PropsValues.TEST_BATCH_MAX_GROUP_SIZE > 0) &&
-			(((PropsValues.TEST_BATCH_PROPERTY_NAMES != null) &&
-			  (PropsValues.TEST_BATCH_PROPERTY_VALUES != null)) ||
-			 (PropsValues.TEST_BATCH_PROPERTY_QUERY != null))) {
+			(PropsValues.TEST_BATCH_PROPERTY_QUERY != null)) {
 
 			sb.append(_getTestBatchGroups());
 		}
@@ -1584,12 +1545,12 @@ public class PoshiRunnerContext {
 				reportLineItems.clear();
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (reportCSVFile.exists()) {
 				reportCSVFile.deleteOnExit();
 			}
 
-			throw new RuntimeException(ioe);
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -1632,47 +1593,52 @@ public class PoshiRunnerContext {
 		PropsValues.TEST_BASE_DIR_NAME);
 
 	private static final Map<String, Element> _commandElements =
-		new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
 	private static final Map<String, String> _commandSummaries =
-		new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
 	private static final Set<String> _duplicateLocatorMessages =
-		new HashSet<>();
-	private static final Map<String, String> _filePaths = new HashMap<>();
-	private static final Set<String> _functionFileNames = new HashSet<>();
+		Collections.synchronizedSet(new HashSet<>());
+	private static final Map<String, String> _filePaths =
+		Collections.synchronizedMap(new HashMap<>());
+	private static final Set<String> _functionFileNames =
+		Collections.synchronizedSet(new HashSet<>());
 	private static final Map<String, Integer> _functionLocatorCounts =
-		new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
 	private static final Pattern _namespaceClassCommandNamePattern =
 		Pattern.compile(
 			"(?<namespace>[^\\.]+)\\.(?<className>[^\\#]+)\\#" +
 				"(?<commandName>.+)");
 	private static final Map<String, Properties>
-		_namespacedClassCommandNamePropertiesMap = new HashMap<>();
-	private static final List<String> _namespaces = new ArrayList<>();
+		_namespacedClassCommandNamePropertiesMap = Collections.synchronizedMap(
+			new HashMap<>());
+	private static final List<String> _namespaces =
+		Collections.synchronizedList(new ArrayList<>());
 	private static final Map<String, String> _overrideClassNames =
-		new HashMap<>();
-	private static final Map<String, String> _pathExtensions = new HashMap<>();
-	private static final Map<String, String> _pathLocators = new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
+	private static final Map<String, String> _pathExtensions =
+		Collections.synchronizedMap(new HashMap<>());
+	private static final Map<String, String> _pathLocators =
+		Collections.synchronizedMap(new HashMap<>());
 	private static final Pattern _poshiResourceJarNamePattern = Pattern.compile(
 		"jar:.*\\/(?<namespace>\\w+)\\-(?<branchName>\\w+" +
 			"([\\-\\.]\\w+)*)\\-.*?\\.jar.*");
-	private static final Map<String, Element> _rootElements = new HashMap<>();
+	private static final Map<String, Element> _rootElements =
+		Collections.synchronizedMap(new HashMap<>());
 	private static final Map<String, List<Element>> _rootVarElements =
-		new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
 	private static final Map<String, Integer> _seleniumParameterCounts =
-		new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
 	private static final List<String> _testCaseAvailablePropertyNames =
-		new ArrayList<>();
+		Collections.synchronizedList(new ArrayList<>());
 	private static final Map<String, String> _testCaseDescriptions =
-		new HashMap<>();
+		Collections.synchronizedMap(new HashMap<>());
 	private static String _testCaseNamespacedClassCommandName;
 	private static final List<String> _testCaseNamespacedClassCommandNames =
-		new ArrayList<>();
+		Collections.synchronizedList(new ArrayList<>());
 	private static final List<String> _testCaseNamespacedClassNames =
-		new ArrayList<>();
+		Collections.synchronizedList(new ArrayList<>());
 	private static final List<String> _testCaseRequiredPropertyNames =
-		new ArrayList<>();
-	private static final Pattern _urlPathPattern = Pattern.compile(
-		".*\\.(\\w+)");
+		Collections.synchronizedList(new ArrayList<>());
 
 	static {
 		String testCaseAvailablePropertyNames =
@@ -1697,6 +1663,74 @@ public class PoshiRunnerContext {
 				_testCaseRequiredPropertyNames,
 				StringUtil.split(testCaseRequiredPropertyNames));
 		}
+	}
+
+	private static class PoshiFileCallable implements Callable<URL> {
+
+		public URL call() {
+			String filePath = _url.getFile();
+
+			try {
+				if (OSDetector.isWindows()) {
+					if (filePath.startsWith("/")) {
+						filePath = filePath.substring(1);
+					}
+
+					filePath = StringUtil.replace(filePath, "/", "\\");
+				}
+
+				String fileName = PoshiRunnerGetterUtil.getFileNameFromFilePath(
+					filePath);
+
+				String namespacedFileName = _namespace + "." + fileName;
+
+				if (_filePaths.containsKey(namespacedFileName)) {
+					String duplicateFilePath = _filePaths.get(
+						namespacedFileName);
+
+					StringUtil.combine(
+						"WARNING: Duplicate file name '", fileName,
+						"' found within the namespace '", _namespace, "':\n",
+						filePath, "\n", duplicateFilePath, "\n");
+				}
+
+				Element rootElement =
+					PoshiRunnerGetterUtil.getRootElementFromURL(_url);
+
+				_storeRootElement(rootElement, filePath, _namespace);
+
+				if (rootElement.attributeValue("override") == null) {
+					_filePaths.put(_namespace + "." + fileName, filePath);
+
+					if (fileName.endsWith(".function")) {
+						_functionFileNames.add(
+							StringUtil.replace(fileName, ".function", ""));
+
+						_functionFileNames.add(
+							_namespace + "." +
+								StringUtil.replace(fileName, ".function", ""));
+					}
+				}
+			}
+			catch (Exception exception) {
+				System.out.println("Unable to read: " + filePath);
+
+				if (!(exception instanceof PoshiScriptParserException)) {
+					System.out.println(exception.getMessage());
+				}
+			}
+
+			return _url;
+		}
+
+		private PoshiFileCallable(URL url, String namespace) {
+			_url = url;
+			_namespace = namespace;
+		}
+
+		private final String _namespace;
+		private final URL _url;
+
 	}
 
 }

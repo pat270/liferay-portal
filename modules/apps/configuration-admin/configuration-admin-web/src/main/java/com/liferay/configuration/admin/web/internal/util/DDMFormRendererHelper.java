@@ -25,6 +25,7 @@ import com.liferay.dynamic.data.mapping.util.DDMFormLayoutFactory;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.settings.LocationVariableResolver;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
@@ -45,12 +46,14 @@ public class DDMFormRendererHelper {
 	public DDMFormRendererHelper(
 		PortletRequest portletRequest, PortletResponse portletResponse,
 		ConfigurationModel configurationModel, DDMFormRenderer ddmFormRenderer,
+		LocationVariableResolver locationVariableResolver,
 		ResourceBundleLoaderProvider resourceBundleLoaderProvider) {
 
 		_portletRequest = portletRequest;
 		_portletResponse = portletResponse;
 		_configurationModel = configurationModel;
 		_ddmFormRenderer = ddmFormRenderer;
+		_locationVariableResolver = locationVariableResolver;
 		_resourceBundleLoaderProvider = resourceBundleLoaderProvider;
 	}
 
@@ -62,10 +65,10 @@ public class DDMFormRendererHelper {
 				ddmForm, getDDMFormLayout(ddmForm),
 				createDDMFormRenderingContext(ddmForm));
 		}
-		catch (DDMFormRenderingException ddmfre) {
-			_log.error("Unable to render DDM Form ", ddmfre);
+		catch (DDMFormRenderingException ddmFormRenderingException) {
+			_log.error("Unable to render DDM Form ", ddmFormRenderingException);
 
-			throw new PortletException(ddmfre);
+			throw new PortletException(ddmFormRenderingException);
 		}
 	}
 
@@ -83,16 +86,15 @@ public class DDMFormRendererHelper {
 		ddmFormRenderingContext.setLocale(getLocale());
 		ddmFormRenderingContext.setPortletNamespace(
 			_portletResponse.getNamespace());
+		ddmFormRenderingContext.setShowSubmitButton(false);
 
 		return ddmFormRenderingContext;
 	}
 
 	protected DDMForm getDDMForm() {
-		String bundleSymbolicName = _configurationModel.getBundleSymbolicName();
-
 		ResourceBundleLoader resourceBundleLoader =
 			_resourceBundleLoaderProvider.getResourceBundleLoader(
-				bundleSymbolicName);
+				_configurationModel.getBundleSymbolicName());
 
 		Locale locale = getLocale();
 
@@ -116,7 +118,7 @@ public class DDMFormRendererHelper {
 			try {
 				return DDMFormLayoutFactory.create(formClass);
 			}
-			catch (IllegalArgumentException iae) {
+			catch (IllegalArgumentException illegalArgumentException) {
 			}
 		}
 
@@ -124,21 +126,11 @@ public class DDMFormRendererHelper {
 	}
 
 	protected DDMFormValues getDDMFormValues(DDMForm ddmForm) {
-		String bundleSymbolicName = _configurationModel.getBundleSymbolicName();
-
-		ResourceBundleLoader resourceBundleLoader =
-			_resourceBundleLoaderProvider.getResourceBundleLoader(
-				bundleSymbolicName);
-
-		Locale locale = getLocale();
-
-		ResourceBundle resourceBundle = resourceBundleLoader.loadResourceBundle(
-			locale);
-
 		ConfigurationModelToDDMFormValuesConverter
 			configurationModelToDDMFormValuesConverter =
 				new ConfigurationModelToDDMFormValuesConverter(
-					_configurationModel, ddmForm, locale, resourceBundle);
+					_configurationModel, ddmForm, getLocale(),
+					_locationVariableResolver);
 
 		return configurationModelToDDMFormValuesConverter.getDDMFormValues();
 	}
@@ -155,6 +147,7 @@ public class DDMFormRendererHelper {
 
 	private final ConfigurationModel _configurationModel;
 	private final DDMFormRenderer _ddmFormRenderer;
+	private final LocationVariableResolver _locationVariableResolver;
 	private final PortletRequest _portletRequest;
 	private final PortletResponse _portletResponse;
 	private final ResourceBundleLoaderProvider _resourceBundleLoaderProvider;

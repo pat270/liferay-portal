@@ -1,4 +1,5 @@
 definition {
+
 	var ddlDataDefinitionName = "Data Definition Name";
 	var ddlListName = "List Name";
 
@@ -20,10 +21,6 @@ definition {
 
 	macro gotoDDLRecordEditViaWorkflow {
 		Click(locator1 = "WorkflowSubmissionsTask#PREVIEW_EDIT");
-
-		SelectFrame(value1 = "relative=top");
-
-		SelectFrame(locator1 = "IFrame#DIALOG");
 
 		WorkflowAsset.viewDetails(
 			userName = "${userName}",
@@ -94,4 +91,5 @@ definition {
 
 		MenuItem.click(menuItem = "View");
 	}
+
 }

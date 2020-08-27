@@ -40,19 +40,20 @@ import java.util.concurrent.ConcurrentMap;
 public class ModelListenerRegistrationUtil {
 
 	public static <T> ModelListener<T>[] getModelListeners(Class<T> clazz) {
-		return _instance._getModelListeners(clazz);
+		return _modelListenerRegistrationUtil._getModelListeners(clazz);
 	}
 
 	public static void register(ModelListener<?> modelListener) {
 		Class<?> clazz = modelListener.getClass();
 
-		_instance._register(clazz.getName(), modelListener);
+		_modelListenerRegistrationUtil._register(
+			clazz.getName(), modelListener);
 	}
 
 	public static void unregister(ModelListener<?> modelListener) {
 		Class<?> clazz = modelListener.getClass();
 
-		_instance._unregister(clazz.getName());
+		_modelListenerRegistrationUtil._unregister(clazz.getName());
 	}
 
 	private ModelListenerRegistrationUtil() {
@@ -71,14 +72,7 @@ public class ModelListenerRegistrationUtil {
 		List<ModelListener<?>> modelListeners = _modelListeners.get(clazz);
 
 		if (modelListeners == null) {
-			modelListeners = new ArrayList<>();
-
-			List<ModelListener<?>> previousModelListeners =
-				_modelListeners.putIfAbsent(clazz, modelListeners);
-
-			if (previousModelListeners != null) {
-				modelListeners = previousModelListeners;
-			}
+			return new ModelListener[0];
 		}
 
 		return modelListeners.toArray(new ModelListener[0]);
@@ -104,8 +98,8 @@ public class ModelListenerRegistrationUtil {
 		}
 	}
 
-	private static final ModelListenerRegistrationUtil _instance =
-		new ModelListenerRegistrationUtil();
+	private static final ModelListenerRegistrationUtil
+		_modelListenerRegistrationUtil = new ModelListenerRegistrationUtil();
 
 	private final ConcurrentMap<Class<?>, List<ModelListener<?>>>
 		_modelListeners = new ConcurrentHashMap<>();
@@ -174,6 +168,10 @@ public class ModelListenerRegistrationUtil {
 
 			if (modelListeners != null) {
 				modelListeners.remove(modelListener);
+
+				if (modelListeners.isEmpty()) {
+					_modelListeners.remove(modelClass);
+				}
 			}
 		}
 
@@ -188,7 +186,7 @@ public class ModelListenerRegistrationUtil {
 					return (Class<?>)types[0];
 				}
 			}
-			catch (Throwable t) {
+			catch (Throwable throwable) {
 			}
 
 			return null;

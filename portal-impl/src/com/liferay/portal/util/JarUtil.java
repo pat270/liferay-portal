@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.io.File;
 import java.io.InputStream;
 
 import java.lang.reflect.Method;
@@ -34,7 +35,6 @@ import java.net.UnknownHostException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
@@ -42,8 +42,7 @@ import java.nio.file.StandardCopyOption;
  */
 public class JarUtil {
 
-	public static Path downloadAndInstallJar(
-			URL url, String libPath, String name)
+	public static void downloadAndInstallJar(URL url, Path path)
 		throws Exception {
 
 		String protocol = url.getProtocol();
@@ -69,15 +68,13 @@ public class JarUtil {
 								newURLString));
 					}
 				}
-				catch (UnknownHostException uhe) {
+				catch (UnknownHostException unknownHostException) {
 					if (_log.isDebugEnabled()) {
 						_log.debug("Unable to resolve \"mirrors\"");
 					}
 				}
 			}
 		}
-
-		Path path = Paths.get(libPath, name);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(StringBundler.concat("Downloading ", url, " to ", path));
@@ -90,15 +87,13 @@ public class JarUtil {
 		if (_log.isInfoEnabled()) {
 			_log.info(StringBundler.concat("Downloaded ", url, " to ", path));
 		}
-
-		return path;
 	}
 
 	public static void downloadAndInstallJar(
-			URL url, String libPath, String name, URLClassLoader urlClassLoader)
+			URL url, Path path, URLClassLoader urlClassLoader)
 		throws Exception {
 
-		Path path = downloadAndInstallJar(url, libPath, name);
+		downloadAndInstallJar(url, path);
 
 		URI uri = path.toUri();
 
@@ -117,6 +112,40 @@ public class JarUtil {
 		}
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #downloadAndInstallJar(URL, Path)}
+	 */
+	@Deprecated
+	public static Path downloadAndInstallJar(
+			URL url, String libPath, String name)
+		throws Exception {
+
+		File file = new File(libPath, name);
+
+		Path path = file.toPath();
+
+		downloadAndInstallJar(url, path);
+
+		return path;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #downloadAndInstallJar(URL, Path, URLClassLoader)}
+	 */
+	@Deprecated
+	public static void downloadAndInstallJar(
+			URL url, String libPath, String name, URLClassLoader urlClassLoader)
+		throws Exception {
+
+		File file = new File(libPath, name);
+
+		Path path = file.toPath();
+
+		downloadAndInstallJar(url, path, urlClassLoader);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(JarUtil.class);
 
 	private static final Method _addURLMethod;
@@ -126,8 +155,8 @@ public class JarUtil {
 			_addURLMethod = ReflectionUtil.getDeclaredMethod(
 				URLClassLoader.class, "addURL", URL.class);
 		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
 		}
 	}
 

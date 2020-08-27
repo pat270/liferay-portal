@@ -99,7 +99,7 @@ public class SelectUserGroupManagementToolbarDisplayContext {
 		return searchActionURL.toString();
 	}
 
-	public SearchContainer getSearchContainer(
+	public SearchContainer<UserGroup> getSearchContainer(
 			boolean filterManageableUserGroups)
 		throws Exception {
 
@@ -165,8 +165,8 @@ public class SelectUserGroupManagementToolbarDisplayContext {
 		try {
 			return PortalUtil.getSelectedUser(_httpServletRequest);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return null;
 		}

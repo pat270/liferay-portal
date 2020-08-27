@@ -1,4 +1,5 @@
 definition {
+
 	macro executeCommand {
 		Type(
 			locator1 = "GogoShell#COMMAND_FIELD",
@@ -64,9 +65,16 @@ definition {
 			value1 = "${moduleStatus}");
 	}
 
+	macro viewNoOutput {
+		AssertTextNotPresent(
+			locator1 = "GogoShell#OUTPUT_FIELD",
+			value1 = "${outputContent}");
+	}
+
 	macro viewOutput {
 		AssertTextEquals.assertPartialText(
 			locator1 = "GogoShell#OUTPUT_FIELD",
 			value1 = "${outputContent}");
 	}
+
 }

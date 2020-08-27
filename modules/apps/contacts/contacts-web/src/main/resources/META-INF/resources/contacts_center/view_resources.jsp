@@ -43,11 +43,11 @@ boolean portalUser = ParamUtil.getBoolean(request, "portalUser");
 				<span id="<portlet:namespace />contactsToolbar">
 					<div class="lfr-button-column">
 						<div class="lfr-button-column-content">
-							<aui:button-row cssClass="edit-toolbar" id='<%= renderResponse.getNamespace() + "entryToolbar" %>' />
+							<aui:button-row cssClass="edit-toolbar" id='<%= liferayPortletResponse.getNamespace() + "entryToolbar" %>' />
 						</div>
 					</div>
 
-					<aui:script position="inline" use="aui-io-request-deprecated,aui-toolbar">
+					<aui:script position="inline" use="aui-toolbar">
 						var buttonRow = A.one('#<portlet:namespace />entryToolbar');
 
 						var contactsToolbarChildren = [];
@@ -58,58 +58,56 @@ boolean portalUser = ParamUtil.getBoolean(request, "portalUser");
 							<portlet:param name="entryId" value="<%= String.valueOf(entryId) %>" />
 						</portlet:renderURL>
 
-						contactsToolbarChildren.push(
-							{
-								on: {
-									click: function(event) {
-										Liferay.component('contactsCenter').showPopup('<%= UnicodeLanguageUtil.get(request, "update-contact") %>', '<%= viewEntryURL %>');
+						contactsToolbarChildren.push({
+							on: {
+								click: function (event) {
+									Liferay.component('contactsCenter').showPopup(
+										'<%= UnicodeLanguageUtil.get(request, "update-contact") %>',
+										'<%= viewEntryURL %>'
+									);
+								},
+							},
+							icon: 'icon-edit',
+							id: '<portlet:namespace />edit',
+							label: '<%= UnicodeLanguageUtil.get(request, "edit") %>',
+						});
+
+						contactsToolbarChildren.push({
+							on: {
+								click: function (event) {
+									var confirmMessage =
+										'<%= UnicodeLanguageUtil.format(request, "are-you-sure-you-want-to-delete-x-from-your-contacts", entry.getFullName(), false) %>';
+
+									if (confirm(confirmMessage)) {
+										var data = new URLSearchParams();
+										data.append('<portlet:namespace />entryId', <%= entryId %>);
+
+										Liferay.Util.fetch('<portlet:actionURL name="deleteEntry" />', {
+											body: data,
+											method: 'POST',
+										})
+											.then(function (response) {
+												return response.text();
+											})
+											.then(function (data) {
+												location.href = '<%= HtmlUtil.escape(redirect) %>';
+											})
+											.catch(function () {
+												Liferay.component('contactsCenter').showMessage(false);
+											});
 									}
 								},
-								icon: 'icon-edit',
-								id: '<portlet:namespace />edit',
-								label: '<%= UnicodeLanguageUtil.get(request, "edit") %>'
-							}
-						);
+							},
+							icon: 'icon-remove',
+							id: '<portlet:namespace />delete',
+							label: '<%= UnicodeLanguageUtil.get(request, "delete") %>',
+						});
 
-						contactsToolbarChildren.push(
-							{
-								on: {
-									click: function(event) {
-										var confirmMessage = '<%= UnicodeLanguageUtil.format(request, "are-you-sure-you-want-to-delete-x-from-your-contacts", entry.getFullName(), false) %>';
-
-										if (confirm(confirmMessage)) {
-											A.io.request(
-												'<portlet:actionURL name="deleteEntry" />',
-												{
-													after: {
-														failure: function(event, id, obj) {
-															Liferay.component('contactsCenter').showMessage(false);
-														},
-														success: function(event, id, obj) {
-															location.href = '<%= HtmlUtil.escape(redirect) %>';
-														}
-													},
-													data: {
-														<portlet:namespace />entryId: <%= entryId %>
-													}
-												}
-											);
-										}
-									}
-								},
-								icon: 'icon-remove',
-								id: '<portlet:namespace />delete',
-								label: '<%= UnicodeLanguageUtil.get(request, "delete") %>'
-							}
-						);
-
-						new A.Toolbar(
-							{
-								activeState: false,
-								boundingBox: buttonRow,
-								children: contactsToolbarChildren
-							}
-						).render();
+						new A.Toolbar({
+							activeState: false,
+							boundingBox: buttonRow,
+							children: contactsToolbarChildren,
+						}).render();
 					</aui:script>
 				</span>
 			</c:if>
@@ -142,7 +140,7 @@ boolean portalUser = ParamUtil.getBoolean(request, "portalUser");
 					<c:when test="<%= showDetailView %>">
 						<div class="lfr-button-column">
 							<div class="lfr-button-column-content">
-								<aui:button-row cssClass="edit-toolbar" id='<%= renderResponse.getNamespace() + "userToolbar" %>' />
+								<aui:button-row cssClass="edit-toolbar" id='<%= liferayPortletResponse.getNamespace() + "userToolbar" %>' />
 							</div>
 						</div>
 
@@ -151,26 +149,22 @@ boolean portalUser = ParamUtil.getBoolean(request, "portalUser");
 
 							var contactsToolbarChildren = [];
 
-							contactsToolbarChildren.push(
-								{
-									icon: 'icon-chevron-sign-left',
-									id: '<portlet:namespace />backSelection',
-									label: '<%= UnicodeLanguageUtil.get(request, "back-to-selection") %>',
-									on: {
-										click: function(event) {
-											Liferay.component('contactsCenter')._setVisibleSelectedUsersView();
-										}
-									}
-								}
-							);
+							contactsToolbarChildren.push({
+								icon: 'icon-chevron-sign-left',
+								id: '<portlet:namespace />backSelection',
+								label: '<%= UnicodeLanguageUtil.get(request, "back-to-selection") %>',
+								on: {
+									click: function (event) {
+										Liferay.component('contactsCenter')._setVisibleSelectedUsersView();
+									},
+								},
+							});
 
-							new A.Toolbar(
-								{
-									activeState: false,
-									boundingBox: buttonRow,
-									children: contactsToolbarChildren
-								}
-							).render();
+							new A.Toolbar({
+								activeState: false,
+								boundingBox: buttonRow,
+								children: contactsToolbarChildren,
+							}).render();
 						</aui:script>
 					</c:when>
 					<c:otherwise>

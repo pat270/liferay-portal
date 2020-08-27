@@ -15,6 +15,7 @@
 package com.liferay.poshi.runner.elements;
 
 import com.liferay.poshi.runner.script.PoshiScriptParserException;
+import com.liferay.poshi.runner.util.Dom4JUtil;
 
 import java.net.URL;
 
@@ -62,16 +63,15 @@ public class DefinitionPoshiElement extends PoshiElement {
 		return null;
 	}
 
+	@Override
 	public String getFileExtension() {
-		String filePath = getFilePath();
+		URL url = getURL();
+
+		String filePath = url.getPath();
 
 		int index = filePath.lastIndexOf(".");
 
 		return filePath.substring(index + 1);
-	}
-
-	public String getFilePath() {
-		return _filePath;
 	}
 
 	@Override
@@ -80,13 +80,39 @@ public class DefinitionPoshiElement extends PoshiElement {
 	}
 
 	@Override
+	public URL getURL() {
+		return _url;
+	}
+
+	@Override
+	public boolean isValidPoshiXML() throws PoshiScriptParserException {
+		if (_validPoshiXML == null) {
+			_validPoshiXML = false;
+
+			URL url = getURL();
+
+			PoshiNode<?, ?> poshiNode = PoshiNodeFactory.newPoshiNodeFromFile(
+				url);
+
+			String poshiScript = poshiNode.toPoshiScript();
+
+			PoshiNode<?, ?> generatedPoshiNode = PoshiNodeFactory.newPoshiNode(
+				poshiScript, url);
+
+			if (Dom4JUtil.elementsEqual(poshiNode, generatedPoshiNode)) {
+				_validPoshiXML = true;
+			}
+		}
+
+		return _validPoshiXML;
+	}
+
+	@Override
 	public void parsePoshiScript(String poshiScript)
 		throws PoshiScriptParserException {
 
-		String blockName = getBlockName(poshiScript);
-
 		Matcher poshiScriptAnnotationMatcher =
-			poshiScriptAnnotationPattern.matcher(blockName);
+			poshiScriptAnnotationPattern.matcher(getBlockName(poshiScript));
 
 		while (poshiScriptAnnotationMatcher.find()) {
 			String annotation = poshiScriptAnnotationMatcher.group();
@@ -124,6 +150,7 @@ public class DefinitionPoshiElement extends PoshiElement {
 	}
 
 	protected DefinitionPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected DefinitionPoshiElement(Element element, URL url) {
@@ -163,6 +190,7 @@ public class DefinitionPoshiElement extends PoshiElement {
 		return "";
 	}
 
+	@Override
 	protected String getPoshiScriptKeyword() {
 		String fileExtension = getFileExtension();
 
@@ -177,8 +205,9 @@ public class DefinitionPoshiElement extends PoshiElement {
 		return isValidPoshiScriptBlock(_blockNamePattern, poshiScript);
 	}
 
+	@Override
 	protected void setFilePath(URL url) {
-		_filePath = url.getFile();
+		_url = url;
 	}
 
 	private static final String _ELEMENT_NAME = "definition";
@@ -189,6 +218,7 @@ public class DefinitionPoshiElement extends PoshiElement {
 		"^" + BLOCK_NAME_ANNOTATION_REGEX + _POSHI_SCRIPT_KEYWORD,
 		Pattern.DOTALL);
 
-	private String _filePath;
+	private URL _url;
+	private Boolean _validPoshiXML;
 
 }

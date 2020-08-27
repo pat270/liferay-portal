@@ -1,20 +1,31 @@
-import OpenSimpleInputModal from 'frontend-js-web/liferay/modal/commands/OpenSimpleInputModal.es';
-import DefaultEventHandler from 'frontend-js-web/liferay/DefaultEventHandler.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {DefaultEventHandler, openSimpleInputModal} from 'frontend-js-web';
 import {Config} from 'metal-state';
 
 class ManagementToolbarDefaultEventHandler extends DefaultEventHandler {
 	addFragmentEntry(itemData) {
-		OpenSimpleInputModal(
-			{
-				dialogTitle: itemData.title,
-				formSubmitURL: itemData.addFragmentEntryURL,
-				mainFieldLabel: Liferay.Language.get('name'),
-				mainFieldName: 'name',
-				mainFieldPlaceholder: Liferay.Language.get('name'),
-				namespace: this.namespace,
-				spritemap: this.spritemap
-			}
-		);
+		openSimpleInputModal({
+			dialogTitle: itemData.title,
+			formSubmitURL: itemData.addFragmentEntryURL,
+			mainFieldLabel: Liferay.Language.get('name'),
+			mainFieldName: 'name',
+			mainFieldPlaceholder: Liferay.Language.get('name'),
+			namespace: this.namespace,
+			spritemap: this.spritemap,
+		});
 	}
 
 	copySelectedFragmentEntries() {
@@ -29,54 +40,109 @@ class ManagementToolbarDefaultEventHandler extends DefaultEventHandler {
 		submitForm(this.one('#fragmentEntryFm'), this.copyFragmentEntryURL);
 	}
 
-	deleteSelectedFragmentEntries() {
-		if (confirm(Liferay.Language.get('are-you-sure-you-want-to-delete-this'))) {
-			submitForm(this.one('#fm'), this.deleteFragmentEntriesURL);
-		}
+	copyToSelectedFragmentEntries() {
+		this._selectFragmentCollection(this.copyFragmentEntryURL);
 	}
 
-	exportSelectedFragmentEntries() {
-		submitForm(this.one('#fm'), this.exportFragmentEntriesURL);
-	}
-
-	moveSelectedFragmentEntries() {
-		const fragmentEntryIds = Liferay.Util.listCheckedExcept(
+	copyToSelectedContributedFragmentEntries() {
+		const fragmentEntryKeys = Liferay.Util.listCheckedExcept(
 			this.one('#fm'),
 			this.ns('allRowIds')
 		);
 
-		Liferay.Util.selectEntity(
-			{
-				dialog: {
-					constrain: true,
-					destroyOnHide: true,
-					modal: true
-				},
-				eventName: this.ns('selectFragmentCollection'),
-				id: this.ns('selectFragmentCollection'),
-				title: Liferay.Language.get('select-collection'),
-				uri: this.selectFragmentCollectionURL
-			},
-			function(selectedItem) {
+		Liferay.Util.openModal({
+			id: this.ns('selectFragmentCollection'),
+			onSelect: (selectedItem) => {
 				if (selectedItem) {
 					this.one('#fragmentCollectionId').value = selectedItem.id;
+					this.one('#fragmentEntryKeys').value = fragmentEntryKeys;
+
+					submitForm(
+						this.one('#fragmentEntryFm'),
+						this.copyContributedFragmentEntryURL
+					);
+				}
+			},
+			selectEventName: this.ns('selectFragmentCollection'),
+			title: Liferay.Language.get('select-collection'),
+			url: this.selectFragmentCollectionURL,
+		});
+	}
+
+	deleteFragmentCompositionsAndFragmentEntries() {
+		if (
+			confirm(
+				Liferay.Language.get('are-you-sure-you-want-to-delete-this')
+			)
+		) {
+			submitForm(
+				this.one('#fm'),
+				this.deleteFragmentCompositionsAndFragmentEntriesURL
+			);
+		}
+	}
+
+	exportFragmentCompositionsAndFragmentEntries() {
+		submitForm(
+			this.one('#fm'),
+			this.exportFragmentCompositionsAndFragmentEntriesURL
+		);
+	}
+
+	moveFragmentCompositionsAndFragmentEntries() {
+		this._selectFragmentCollection(
+			this.moveFragmentCompositionsAndFragmentEntriesURL
+		);
+	}
+
+	_selectFragmentCollection(targetFragmentEntryURL) {
+		const fragmentCompositionIds = Liferay.Util.listCheckedExcept(
+			this.one('#fm'),
+			this.ns('allRowIds'),
+			this.ns('rowIdsFragmentComposition')
+		);
+
+		const fragmentEntryIds = Liferay.Util.listCheckedExcept(
+			this.one('#fm'),
+			this.ns('allRowIds'),
+			this.ns('rowIdsFragmentEntry')
+		);
+
+		Liferay.Util.openModal({
+			id: this.ns('selectFragmentCollection'),
+			onSelect: (selectedItem) => {
+				if (selectedItem) {
+					const form = this.one('#fragmentEntryFm');
+
+					form.querySelector(
+						`#${this.ns('fragmentCollectionId')}`
+					).value = selectedItem.id;
+
+					this.one(
+						'#fragmentCompositionIds'
+					).value = fragmentCompositionIds;
+
 					this.one('#fragmentEntryIds').value = fragmentEntryIds;
 
-					submitForm(this.one('#fragmentEntryFm'), this.moveFragmentEntryURL);
+					submitForm(form, targetFragmentEntryURL);
 				}
-			}.bind(this)
-		);
+			},
+			selectEventName: this.ns('selectFragmentCollection'),
+			title: Liferay.Language.get('select-collection'),
+			url: this.selectFragmentCollectionURL,
+		});
 	}
 }
 
 ManagementToolbarDefaultEventHandler.STATE = {
+	copyContributedFragmentEntryURL: Config.string(),
 	copyFragmentEntryURL: Config.string(),
-	deleteFragmentEntriesURL: Config.string(),
-	exportFragmentEntriesURL: Config.string(),
+	deleteFragmentCompositionsAndFragmentEntriesURL: Config.string(),
+	exportFragmentCompositionsAndFragmentEntriesURL: Config.string(),
 	fragmentCollectionId: Config.string(),
-	moveFragmentEntryURL: Config.string(),
+	moveFragmentCompositionsAndFragmentEntriesURL: Config.string(),
 	selectFragmentCollectionURL: Config.string(),
-	spritemap: Config.string()
+	spritemap: Config.string(),
 };
 
 export default ManagementToolbarDefaultEventHandler;

@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer;
 
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action.DefaultDDMFormRuleAction;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class DefaultDDMFormRuleActionSerializerTest {
 			new DefaultDDMFormRuleActionSerializer(defaultDDMFormRuleAction);
 
 		String result = defaultDDMFormRuleActionSerializer.serialize(
-			_ddmFormRuleSerializerContext);
+			_spiDDMFormRuleSerializerContext);
 
 		Assert.assertEquals("setEnabled('field0', true)", result);
 	}
@@ -49,7 +50,7 @@ public class DefaultDDMFormRuleActionSerializerTest {
 			new DefaultDDMFormRuleActionSerializer(defaultDDMFormRuleAction);
 
 		String result = defaultDDMFormRuleActionSerializer.serialize(
-			_ddmFormRuleSerializerContext);
+			_spiDDMFormRuleSerializerContext);
 
 		Assert.assertEquals("setInvalid('field0', true)", result);
 	}
@@ -63,7 +64,7 @@ public class DefaultDDMFormRuleActionSerializerTest {
 			new DefaultDDMFormRuleActionSerializer(defaultDDMFormRuleAction);
 
 		String result = defaultDDMFormRuleActionSerializer.serialize(
-			_ddmFormRuleSerializerContext);
+			_spiDDMFormRuleSerializerContext);
 
 		Assert.assertEquals("setRequired('field0', true)", result);
 	}
@@ -77,12 +78,12 @@ public class DefaultDDMFormRuleActionSerializerTest {
 			new DefaultDDMFormRuleActionSerializer(defaultDDMFormRuleAction);
 
 		String result = defaultDDMFormRuleActionSerializer.serialize(
-			_ddmFormRuleSerializerContext);
+			_spiDDMFormRuleSerializerContext);
 
 		Assert.assertEquals("setVisible('field0', true)", result);
 	}
 
 	@Mock
-	private DDMFormRuleSerializerContext _ddmFormRuleSerializerContext;
+	private SPIDDMFormRuleSerializerContext _spiDDMFormRuleSerializerContext;
 
 }

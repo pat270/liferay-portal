@@ -14,7 +14,6 @@
 
 package com.liferay.wiki.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see WikiPageLocalService
  * @generated
  */
-@ProviderType
 public class WikiPageLocalServiceUtil {
 
 	/*
@@ -103,20 +101,6 @@ public class WikiPageLocalServiceUtil {
 			nodeId, title, addGroupPermissions, addGuestPermissions);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addPageResources(WikiPage, ModelPermissions)}
-	 */
-	@Deprecated
-	public static void addPageResources(
-			long nodeId, String title, String[] groupPermissions,
-			String[] guestPermissions)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().addPageResources(
-			nodeId, title, groupPermissions, guestPermissions);
-	}
-
 	public static void addPageResources(
 			com.liferay.wiki.model.WikiPage page, boolean addGroupPermissions,
 			boolean addGuestPermissions)
@@ -135,19 +119,6 @@ public class WikiPageLocalServiceUtil {
 		getService().addPageResources(page, modelPermissions);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addPageResources(WikiPage, ModelPermissions)}
-	 */
-	@Deprecated
-	public static void addPageResources(
-			com.liferay.wiki.model.WikiPage page, String[] groupPermissions,
-			String[] guestPermissions)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().addPageResources(page, groupPermissions, guestPermissions);
-	}
-
 	public static com.liferay.portal.kernel.repository.model.FileEntry
 			addTempFileEntry(
 				long groupId, long userId, String folderName, String fileName,
@@ -159,22 +130,11 @@ public class WikiPageLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addTempFileEntry(long, long, String, String, InputStream,
-	 String)}
-	 */
-	@Deprecated
-	public static void addTempPageAttachment(
-			long groupId, long userId, String fileName, String tempFolderName,
-			java.io.InputStream inputStream, String mimeType)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().addTempPageAttachment(
-			groupId, userId, fileName, tempFolderName, inputStream, mimeType);
-	}
-
-	/**
 	 * Adds the wiki page to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param wikiPage the wiki page
 	 * @return the wiki page that was added
@@ -201,6 +161,16 @@ public class WikiPageLocalServiceUtil {
 
 		getService().copyPageAttachments(
 			userId, templateNodeId, templateTitle, nodeId, title);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -271,6 +241,10 @@ public class WikiPageLocalServiceUtil {
 	/**
 	 * Deletes the wiki page with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param pageId the primary key of the wiki page
 	 * @return the wiki page that was removed
 	 * @throws PortalException if a wiki page with the primary key could not be found
@@ -283,6 +257,10 @@ public class WikiPageLocalServiceUtil {
 
 	/**
 	 * Deletes the wiki page from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param wikiPage the wiki page
 	 * @return the wiki page that was removed
@@ -297,6 +275,12 @@ public class WikiPageLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().discardDraft(nodeId, title, version);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -321,7 +305,7 @@ public class WikiPageLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -340,7 +324,7 @@ public class WikiPageLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -466,10 +450,12 @@ public class WikiPageLocalServiceUtil {
 
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getChildren(
 		long nodeId, boolean head, String parentTitle, int status, int start,
-		int end, com.liferay.portal.kernel.util.OrderByComparator obc) {
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator
+			<com.liferay.wiki.model.WikiPage> orderByComparator) {
 
 		return getService().getChildren(
-			nodeId, head, parentTitle, status, start, end, obc);
+			nodeId, head, parentTitle, status, start, end, orderByComparator);
 	}
 
 	public static int getChildrenCount(
@@ -554,16 +540,6 @@ public class WikiPageLocalServiceUtil {
 
 		return getService().getLatestPage(
 			nodeId, title, status, preferApproved);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.wiki.model.WikiPage>
-		getNoAssetPages() {
-
-		return getService().getNoAssetPages();
 	}
 
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getOrphans(
@@ -696,17 +672,19 @@ public class WikiPageLocalServiceUtil {
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
 		long nodeId, boolean head, int status, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.wiki.model.WikiPage> obc) {
+			<com.liferay.wiki.model.WikiPage> orderByComparator) {
 
-		return getService().getPages(nodeId, head, status, start, end, obc);
+		return getService().getPages(
+			nodeId, head, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
 		long nodeId, boolean head, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.wiki.model.WikiPage> obc) {
+			<com.liferay.wiki.model.WikiPage> orderByComparator) {
 
-		return getService().getPages(nodeId, head, start, end, obc);
+		return getService().getPages(
+			nodeId, head, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
@@ -718,9 +696,9 @@ public class WikiPageLocalServiceUtil {
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
 		long nodeId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.wiki.model.WikiPage> obc) {
+			<com.liferay.wiki.model.WikiPage> orderByComparator) {
 
-		return getService().getPages(nodeId, start, end, obc);
+		return getService().getPages(nodeId, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
@@ -750,9 +728,10 @@ public class WikiPageLocalServiceUtil {
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
 		long nodeId, String title, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.wiki.model.WikiPage> obc) {
+			<com.liferay.wiki.model.WikiPage> orderByComparator) {
 
-		return getService().getPages(nodeId, title, start, end, obc);
+		return getService().getPages(
+			nodeId, title, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.wiki.model.WikiPage> getPages(
@@ -801,6 +780,9 @@ public class WikiPageLocalServiceUtil {
 		return getService().getPersistedModel(resourcePrimKey);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -878,7 +860,7 @@ public class WikiPageLocalServiceUtil {
 	 * Returns a range of all the wiki pages.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of wiki pages
@@ -944,19 +926,6 @@ public class WikiPageLocalServiceUtil {
 		getService().moveDependentToTrash(page, trashEntryId);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #renamePage(long, long, String, String, ServiceContext)}
-	 */
-	@Deprecated
-	public static void movePage(
-			long userId, long nodeId, String title, String newTitle,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().movePage(userId, nodeId, title, newTitle, serviceContext);
-	}
-
 	public static com.liferay.portal.kernel.repository.model.FileEntry
 			movePageAttachmentToTrash(
 				long userId, long nodeId, String title, String fileName)
@@ -973,20 +942,6 @@ public class WikiPageLocalServiceUtil {
 
 		return getService().movePageFromTrash(
 			userId, nodeId, title, newNodeId, newParentTitle);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #movePageFromTrash(long, long, String, long, String)} *
-	 */
-	@Deprecated
-	public static com.liferay.wiki.model.WikiPage movePageFromTrash(
-			long userId, long nodeId, String title, String newParentTitle,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().movePageFromTrash(
-			userId, nodeId, title, newParentTitle, serviceContext);
 	}
 
 	public static com.liferay.wiki.model.WikiPage movePageToTrash(
@@ -1076,6 +1031,12 @@ public class WikiPageLocalServiceUtil {
 			priority);
 	}
 
+	public static void updateLastPostDate(
+		long nodeId, java.util.Date lastPostDate) {
+
+		getService().updateLastPostDate(nodeId, lastPostDate);
+	}
+
 	public static com.liferay.wiki.model.WikiPage updatePage(
 			long userId, long nodeId, String title, double version,
 			String content, String summary, boolean minorEdit, String format,
@@ -1097,19 +1058,6 @@ public class WikiPageLocalServiceUtil {
 			userId, resourcePrimKey, status, serviceContext);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateStatus(long, WikiPage, int, ServiceContext, Map)}
-	 */
-	@Deprecated
-	public static com.liferay.wiki.model.WikiPage updateStatus(
-			long userId, com.liferay.wiki.model.WikiPage page, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateStatus(userId, page, status, serviceContext);
-	}
-
 	public static com.liferay.wiki.model.WikiPage updateStatus(
 			long userId, com.liferay.wiki.model.WikiPage page, int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext,
@@ -1123,6 +1071,10 @@ public class WikiPageLocalServiceUtil {
 	/**
 	 * Updates the wiki page in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param wikiPage the wiki page
 	 * @return the wiki page that was updated
 	 */
@@ -1132,15 +1084,11 @@ public class WikiPageLocalServiceUtil {
 		return getService().updateWikiPage(wikiPage);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 WikiPageTitleValidator#validate(String)}
-	 */
-	@Deprecated
-	public static void validateTitle(String title)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static com.liferay.wiki.model.WikiPage updateWikiPage(
+		com.liferay.wiki.model.WikiPage wikiPage,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
 
-		getService().validateTitle(title);
+		return getService().updateWikiPage(wikiPage, serviceContext);
 	}
 
 	public static WikiPageLocalService getService() {

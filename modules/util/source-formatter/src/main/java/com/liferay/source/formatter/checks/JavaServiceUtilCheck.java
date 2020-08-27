@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class JavaServiceUtilCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -48,8 +48,7 @@ public class JavaServiceUtilCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Do not use a portal-kernel *ServiceUtil in a *ServiceImpl " +
-					"class, create a reference via service.xml instead",
-				"service_util.markdown");
+					"class, create a reference via service.xml instead");
 		}
 
 		return content;

@@ -1,0 +1,154 @@
+definition {
+
+	macro _openDescriptiveMenulistCP {
+		if (!(contains("${webContentTitleEscapeCharacter}", "{webContentTitleEscapeCharacter}"))) {
+			var key_webContentTitle = "${webContentTitleEscapeCharacter}";
+		}
+		else {
+			var key_webContentTitle = "${webContentTitle}";
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${webContentTitle}");
+
+		Click.waitForMenuToggleJSClick(locator1 = "WC#ENTRY_LIST_MENULIST_ICON");
+	}
+
+	macro gotoAddCP {
+		Pause(locator1 = "3000");
+
+		LexiconEntry.gotoAdd();
+
+		MenuItem.click(menuItem = "Basic Web Content");
+
+		AssertVisible(locator1 = "TextInput#TITLE");
+
+		while (IsElementNotPresent(locator1 = "WCEditWebContent#SIDEBAR")) {
+			Pause(locator1 = "1000");
+		}
+	}
+
+	macro gotoAddWithStructureCP {
+		LexiconEntry.gotoAdd();
+
+		if (IsElementPresent(locator1 = "MenuItem#ANY_MENU_ITEM", key_menuItem = "${structureName}")) {
+			MenuItem.click(menuItem = "${structureName}");
+		}
+		else {
+			Button.clickMore();
+
+			IFrame.selectConfigurationFrame();
+
+			LexiconEntry.gotoEntry(rowEntry = "${structureName}");
+
+			IFrame.selectTopFrame();
+		}
+	}
+
+	macro gotoEditCP {
+		WebContentNavigator._openDescriptiveMenulistCP(
+			webContentTitle = "${webContentTitle}",
+			webContentTitleEscapeCharacter = "${webContentTitleEscapeCharacter}");
+
+		MenuItem.click(menuItem = "Edit");
+
+		AssertElementPresent(locator1 = "Icon#BACK");
+	}
+
+	macro gotoEditFeed {
+		AssertClick(
+			key_feedName = "${feedName}",
+			locator1 = "DDMSelectFeed#FEED_TABLE_NAME_LINK",
+			value1 = "${feedName}");
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro gotoEditStructure {
+		AssertClick(
+			key_ddlDataDefinitionName = "${structureName}",
+			locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK",
+			value1 = "${structureName}");
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro gotoEntryMenuItem {
+		Pause(locator1 = "3000");
+
+		Click.waitForMenuToggleJSClick(
+			key_webContentTitle = "${entry}",
+			locator1 = "WC#ENTRY_LIST_MENULIST_ICON");
+
+		MenuItem.clickNoError(menuItem = "${menuItem}");
+	}
+
+	macro gotoManageTemplatesViaStructures {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage Templates",
+			rowEntry = "${structureName}");
+
+		SiteAdmin.viewPortletTitle(portletTitle = "Templates for Structure: ${structureName}");
+	}
+
+	macro gotoMoreStructuresViaPlusButton {
+		LexiconEntry.gotoAdd();
+
+		if (IsElementPresent(locator1 = "Button#ANY", key_text = "More")) {
+			AssertElementPresent(
+				key_caption = "Showing ${pageMod} Elements",
+				locator1 = "Dropdown#CAPTION");
+		}
+
+		Button.clickMore();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
+
+	macro gotoPreviewEntryCP {
+		WebContentNavigator._openDescriptiveMenulistCP(
+			webContentTitle = "${webContentTitle}",
+			webContentTitleEscapeCharacter = "${webContentTitleEscapeCharacter}");
+
+		MenuItem.click(menuItem = "Preview");
+	}
+
+	macro gotoViewStatus {
+		var key_webContentTitle = "${webContentTitle}";
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		AssertElementPresent.pauseAssertVisible(locator1 = "WC#ENTRY_LIST_THUMBNAIL");
+
+		if ("${translationStatus}" == "true") {
+			AssertTextEquals(
+				locator1 = "WC#ENTRY_LIST_WORKFLOW_TRANSLATIONE_STATUS",
+				value1 = "${webContentStatus}");
+		}
+
+		else {
+			AssertTextEquals(
+				locator1 = "WC#ENTRY_LIST_WORKFLOW_STATUS",
+				value1 = "${webContentStatus}");
+		}
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "${webContentTitle}");
+	}
+
+	macro gotoViewTemplate {
+		AssertClick(
+			key_ddlTemplateName = "${templateName}",
+			locator1 = "DDMSelectTemplate#TEMPLATE_TABLE_NAME_LINK",
+			value1 = "${templateName}");
+	}
+
+	macro openWebContentAdmin {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_journal_web_portlet_JournalPortlet");
+	}
+
+}

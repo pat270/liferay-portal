@@ -55,8 +55,8 @@ public class DeploymentHandler {
 			deploymentManager = deploymentFactoryManager.getDeploymentManager(
 				dmId, dmUser, dmPassword);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		_deploymentManager = deploymentManager;
@@ -72,9 +72,9 @@ public class DeploymentHandler {
 				ModuleType.WAR, _deploymentManager.getTargets());
 
 		for (TargetModuleID targetModuleID : targetModuleIDs) {
-			String moduleId = targetModuleID.getModuleID();
+			String moduleID = targetModuleID.getModuleID();
 
-			if (!moduleId.equals(warContext)) {
+			if (!moduleID.equals(warContext)) {
 				continue;
 			}
 
@@ -122,10 +122,6 @@ public class DeploymentHandler {
 
 		while (!_error && !_started) {
 			wait();
-		}
-
-		if (_error) {
-			return;
 		}
 	}
 

@@ -45,7 +45,7 @@ public class SettingsBuilder {
 		try {
 			_builder.loadFromSource(source, XContentType.JSON);
 		}
-		catch (SettingsException se) {
+		catch (SettingsException settingsException) {
 			_builder.loadFromSource(source, XContentType.YAML);
 		}
 	}
@@ -58,6 +58,10 @@ public class SettingsBuilder {
 		if (!StringUtils.isBlank(value)) {
 			_builder.put(key, value);
 		}
+	}
+
+	public void putList(String setting, String... values) {
+		_builder.putList(setting, values);
 	}
 
 	private final Settings.Builder _builder;

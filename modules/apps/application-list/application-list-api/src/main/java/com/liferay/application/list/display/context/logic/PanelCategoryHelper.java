@@ -144,7 +144,21 @@ public class PanelCategoryHelper {
 	}
 
 	public boolean hasPanelApp(String portletId) {
-		return containsPortlet(portletId, PanelCategoryKeys.ROOT);
+		if (containsPortlet(portletId, PanelCategoryKeys.APPLICATIONS_MENU) ||
+			containsPortlet(portletId, PanelCategoryKeys.ROOT)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isApplicationsMenuApp(String portletId) {
+		return containsPortlet(portletId, PanelCategoryKeys.APPLICATIONS_MENU);
+	}
+
+	public boolean isControlPanelApp(String portletId) {
+		return containsPortlet(portletId, PanelCategoryKeys.CONTROL_PANEL);
 	}
 
 	protected boolean hasPortlet(String portletId, String panelCategoryKey) {

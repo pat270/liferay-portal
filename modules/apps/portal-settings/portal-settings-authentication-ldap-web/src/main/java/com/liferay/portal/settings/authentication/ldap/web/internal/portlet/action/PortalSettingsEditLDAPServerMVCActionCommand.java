@@ -88,12 +88,12 @@ public class PortalSettingsEditLDAPServerMVCActionCommand
 
 			sendRedirect(actionRequest, actionResponse);
 		}
-		catch (Exception e) {
-			if (e instanceof DuplicateLDAPServerNameException ||
-				e instanceof LDAPFilterException ||
-				e instanceof LDAPServerNameException) {
+		catch (Exception exception) {
+			if (exception instanceof DuplicateLDAPServerNameException ||
+				exception instanceof LDAPFilterException ||
+				exception instanceof LDAPServerNameException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				PortletURL portletURL = PortletURLFactoryUtil.create(
 					actionRequest,
@@ -114,15 +114,15 @@ public class PortalSettingsEditLDAPServerMVCActionCommand
 				return;
 			}
 
-			if (e instanceof PrincipalException) {
-				SessionErrors.add(actionRequest, e.getClass());
+			if (exception instanceof PrincipalException) {
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 
 				return;
 			}
 
-			throw e;
+			throw exception;
 		}
 	}
 
@@ -199,11 +199,11 @@ public class PortalSettingsEditLDAPServerMVCActionCommand
 		long ldapServerId = ParamUtil.getLong(
 			actionRequest, LDAPConstants.LDAP_SERVER_ID);
 
-		UnicodeProperties properties = PropertiesParamUtil.getProperties(
+		UnicodeProperties unicodeProperties = PropertiesParamUtil.getProperties(
 			actionRequest, "ldap--");
 
 		validateLDAPServerName(
-			ldapServerId, themeDisplay.getCompanyId(), properties);
+			ldapServerId, themeDisplay.getCompanyId(), unicodeProperties);
 
 		validateSearchFilters(actionRequest);
 
@@ -220,7 +220,11 @@ public class PortalSettingsEditLDAPServerMVCActionCommand
 					themeDisplay.getCompanyId(), ldapServerId);
 		}
 
-		for (Map.Entry<String, String> entry : properties.entrySet()) {
+		for (Map.Entry<String, String> entry : unicodeProperties.entrySet()) {
+			if (Portal.TEMP_OBFUSCATION_VALUE.equals(entry.getValue())) {
+				continue;
+			}
+
 			dictionary.put(entry.getKey(), entry.getValue());
 		}
 
@@ -239,10 +243,12 @@ public class PortalSettingsEditLDAPServerMVCActionCommand
 	}
 
 	protected void validateLDAPServerName(
-			long ldapServerId, long companyId, UnicodeProperties properties)
+			long ldapServerId, long companyId,
+			UnicodeProperties unicodeProperties)
 		throws Exception {
 
-		String serverName = properties.getProperty(LDAPConstants.SERVER_NAME);
+		String serverName = unicodeProperties.getProperty(
+			LDAPConstants.SERVER_NAME);
 
 		if (Validator.isNull(serverName)) {
 			throw new LDAPServerNameException();

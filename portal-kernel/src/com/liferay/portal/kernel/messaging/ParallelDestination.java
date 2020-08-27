@@ -17,7 +17,6 @@ package com.liferay.portal.kernel.messaging;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -29,8 +28,11 @@ import java.util.Set;
  * parallel.
  * </p>
  *
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.messaging.internal.ParallelDestination}
  */
+@Deprecated
 public class ParallelDestination extends BaseAsyncDestination {
 
 	@Override
@@ -38,8 +40,6 @@ public class ParallelDestination extends BaseAsyncDestination {
 		Set<MessageListener> messageListeners, final Message message) {
 
 		final Thread currentThread = Thread.currentThread();
-
-		ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
 
 		for (final MessageListener messageListener : messageListeners) {
 			Runnable runnable = new MessageRunnable(message) {
@@ -51,8 +51,10 @@ public class ParallelDestination extends BaseAsyncDestination {
 
 						messageListener.receive(message);
 					}
-					catch (MessageListenerException mle) {
-						_log.error("Unable to process message " + message, mle);
+					catch (MessageListenerException messageListenerException) {
+						_log.error(
+							"Unable to process message " + message,
+							messageListenerException);
 					}
 					finally {
 						if (Thread.currentThread() != currentThread) {
@@ -66,7 +68,7 @@ public class ParallelDestination extends BaseAsyncDestination {
 
 			};
 
-			threadPoolExecutor.execute(runnable);
+			execute(runnable);
 		}
 	}
 

@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -37,6 +37,8 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -48,6 +50,68 @@ import javax.xml.bind.annotation.XmlRootElement;
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "WorkflowTask")
 public class WorkflowTask {
+
+	public static WorkflowTask toDTO(String json) {
+		return ObjectMapperUtil.readValue(WorkflowTask.class, json);
+	}
+
+	@Schema
+	@Valid
+	public Creator getAssigneePerson() {
+		return assigneePerson;
+	}
+
+	public void setAssigneePerson(Creator assigneePerson) {
+		this.assigneePerson = assigneePerson;
+	}
+
+	@JsonIgnore
+	public void setAssigneePerson(
+		UnsafeSupplier<Creator, Exception> assigneePersonUnsafeSupplier) {
+
+		try {
+			assigneePerson = assigneePersonUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Creator assigneePerson;
+
+	@Schema
+	@Valid
+	public Role[] getAssigneeRoles() {
+		return assigneeRoles;
+	}
+
+	public void setAssigneeRoles(Role[] assigneeRoles) {
+		this.assigneeRoles = assigneeRoles;
+	}
+
+	@JsonIgnore
+	public void setAssigneeRoles(
+		UnsafeSupplier<Role[], Exception> assigneeRolesUnsafeSupplier) {
+
+		try {
+			assigneeRoles = assigneeRolesUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Role[] assigneeRoles;
 
 	@Schema(description = "A flag that indicates whether the task is complete.")
 	public Boolean getCompleted() {
@@ -73,25 +137,27 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A flag that indicates whether the task is complete."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Boolean completed;
 
 	@Schema(description = "The task's completion date.")
-	public Date getDateCompleted() {
-		return dateCompleted;
+	public Date getDateCompletion() {
+		return dateCompletion;
 	}
 
-	public void setDateCompleted(Date dateCompleted) {
-		this.dateCompleted = dateCompleted;
+	public void setDateCompletion(Date dateCompletion) {
+		this.dateCompletion = dateCompletion;
 	}
 
 	@JsonIgnore
-	public void setDateCompleted(
-		UnsafeSupplier<Date, Exception> dateCompletedUnsafeSupplier) {
+	public void setDateCompletion(
+		UnsafeSupplier<Date, Exception> dateCompletionUnsafeSupplier) {
 
 		try {
-			dateCompleted = dateCompletedUnsafeSupplier.get();
+			dateCompletion = dateCompletionUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -101,9 +167,9 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The task's completion date.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Date dateCompleted;
+	protected Date dateCompletion;
 
 	@Schema(description = "The task's creation date.")
 	public Date getDateCreated() {
@@ -129,25 +195,25 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The task's creation date.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateCreated;
 
-	@Schema(description = "The name of the task's workflow definition.")
-	public String getDefinitionName() {
-		return definitionName;
+	@Schema(description = "The date the task should be completed by.")
+	public Date getDateDue() {
+		return dateDue;
 	}
 
-	public void setDefinitionName(String definitionName) {
-		this.definitionName = definitionName;
+	public void setDateDue(Date dateDue) {
+		this.dateDue = dateDue;
 	}
 
 	@JsonIgnore
-	public void setDefinitionName(
-		UnsafeSupplier<String, Exception> definitionNameUnsafeSupplier) {
+	public void setDateDue(
+		UnsafeSupplier<Date, Exception> dateDueUnsafeSupplier) {
 
 		try {
-			definitionName = definitionNameUnsafeSupplier.get();
+			dateDue = dateDueUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -157,9 +223,9 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The date the task should be completed by.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected String definitionName;
+	protected Date dateDue;
 
 	@Schema(description = "The task's description.")
 	public String getDescription() {
@@ -185,37 +251,9 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The task's description.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String description;
-
-	@Schema(description = "The date the task should be completed by.")
-	public Date getDueDate() {
-		return dueDate;
-	}
-
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	@JsonIgnore
-	public void setDueDate(
-		UnsafeSupplier<Date, Exception> dueDateUnsafeSupplier) {
-
-		try {
-			dueDate = dueDateUnsafeSupplier.get();
-		}
-		catch (RuntimeException re) {
-			throw re;
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected Date dueDate;
 
 	@Schema(description = "The task's ID.")
 	public Long getId() {
@@ -239,9 +277,37 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The task's ID.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
+
+	@Schema
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	@JsonIgnore
+	public void setLabel(
+		UnsafeSupplier<String, Exception> labelUnsafeSupplier) {
+
+		try {
+			label = labelUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String label;
 
 	@Schema(description = "The task's name.")
 	public String getName() {
@@ -265,13 +331,14 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The task's name.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String name;
 
 	@Schema(
 		description = "The object/asset that the task's workflow is managing."
 	)
+	@Valid
 	public ObjectReviewed getObjectReviewed() {
 		return objectReviewed;
 	}
@@ -296,27 +363,27 @@ public class WorkflowTask {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The object/asset that the task's workflow is managing."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected ObjectReviewed objectReviewed;
 
-	@Schema(
-		description = "A list of transitions to be launched by the task's workflow."
-	)
-	public String[] getTransitions() {
-		return transitions;
+	@Schema
+	public Long getWorkflowDefinitionId() {
+		return workflowDefinitionId;
 	}
 
-	public void setTransitions(String[] transitions) {
-		this.transitions = transitions;
+	public void setWorkflowDefinitionId(Long workflowDefinitionId) {
+		this.workflowDefinitionId = workflowDefinitionId;
 	}
 
 	@JsonIgnore
-	public void setTransitions(
-		UnsafeSupplier<String[], Exception> transitionsUnsafeSupplier) {
+	public void setWorkflowDefinitionId(
+		UnsafeSupplier<Long, Exception> workflowDefinitionIdUnsafeSupplier) {
 
 		try {
-			transitions = transitionsUnsafeSupplier.get();
+			workflowDefinitionId = workflowDefinitionIdUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -328,7 +395,94 @@ public class WorkflowTask {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected String[] transitions;
+	protected Long workflowDefinitionId;
+
+	@Schema(description = "The name of the task's workflow definition.")
+	public String getWorkflowDefinitionName() {
+		return workflowDefinitionName;
+	}
+
+	public void setWorkflowDefinitionName(String workflowDefinitionName) {
+		this.workflowDefinitionName = workflowDefinitionName;
+	}
+
+	@JsonIgnore
+	public void setWorkflowDefinitionName(
+		UnsafeSupplier<String, Exception>
+			workflowDefinitionNameUnsafeSupplier) {
+
+		try {
+			workflowDefinitionName = workflowDefinitionNameUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField(description = "The name of the task's workflow definition.")
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String workflowDefinitionName;
+
+	@Schema
+	public String getWorkflowDefinitionVersion() {
+		return workflowDefinitionVersion;
+	}
+
+	public void setWorkflowDefinitionVersion(String workflowDefinitionVersion) {
+		this.workflowDefinitionVersion = workflowDefinitionVersion;
+	}
+
+	@JsonIgnore
+	public void setWorkflowDefinitionVersion(
+		UnsafeSupplier<String, Exception>
+			workflowDefinitionVersionUnsafeSupplier) {
+
+		try {
+			workflowDefinitionVersion =
+				workflowDefinitionVersionUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String workflowDefinitionVersion;
+
+	@Schema
+	public Long getWorkflowInstanceId() {
+		return workflowInstanceId;
+	}
+
+	public void setWorkflowInstanceId(Long workflowInstanceId) {
+		this.workflowInstanceId = workflowInstanceId;
+	}
+
+	@JsonIgnore
+	public void setWorkflowInstanceId(
+		UnsafeSupplier<Long, Exception> workflowInstanceIdUnsafeSupplier) {
+
+		try {
+			workflowInstanceId = workflowInstanceIdUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Long workflowInstanceId;
 
 	@Override
 	public boolean equals(Object object) {
@@ -360,6 +514,36 @@ public class WorkflowTask {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+		if (assigneePerson != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assigneePerson\": ");
+
+			sb.append(String.valueOf(assigneePerson));
+		}
+
+		if (assigneeRoles != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assigneeRoles\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < assigneeRoles.length; i++) {
+				sb.append(String.valueOf(assigneeRoles[i]));
+
+				if ((i + 1) < assigneeRoles.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		if (completed != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -370,16 +554,16 @@ public class WorkflowTask {
 			sb.append(completed);
 		}
 
-		if (dateCompleted != null) {
+		if (dateCompletion != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"dateCompleted\": ");
+			sb.append("\"dateCompletion\": ");
 
 			sb.append("\"");
 
-			sb.append(liferayToJSONDateFormat.format(dateCompleted));
+			sb.append(liferayToJSONDateFormat.format(dateCompletion));
 
 			sb.append("\"");
 		}
@@ -398,16 +582,16 @@ public class WorkflowTask {
 			sb.append("\"");
 		}
 
-		if (definitionName != null) {
+		if (dateDue != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"definitionName\": ");
+			sb.append("\"dateDue\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(definitionName));
+			sb.append(liferayToJSONDateFormat.format(dateDue));
 
 			sb.append("\"");
 		}
@@ -426,20 +610,6 @@ public class WorkflowTask {
 			sb.append("\"");
 		}
 
-		if (dueDate != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"dueDate\": ");
-
-			sb.append("\"");
-
-			sb.append(liferayToJSONDateFormat.format(dueDate));
-
-			sb.append("\"");
-		}
-
 		if (id != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -448,6 +618,20 @@ public class WorkflowTask {
 			sb.append("\"id\": ");
 
 			sb.append(id);
+		}
+
+		if (label != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"label\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(label));
+
+			sb.append("\"");
 		}
 
 		if (name != null) {
@@ -474,28 +658,52 @@ public class WorkflowTask {
 			sb.append(String.valueOf(objectReviewed));
 		}
 
-		if (transitions != null) {
+		if (workflowDefinitionId != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"transitions\": ");
+			sb.append("\"workflowDefinitionId\": ");
 
-			sb.append("[");
+			sb.append(workflowDefinitionId);
+		}
 
-			for (int i = 0; i < transitions.length; i++) {
-				sb.append("\"");
-
-				sb.append(_escape(transitions[i]));
-
-				sb.append("\"");
-
-				if ((i + 1) < transitions.length) {
-					sb.append(", ");
-				}
+		if (workflowDefinitionName != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
 			}
 
-			sb.append("]");
+			sb.append("\"workflowDefinitionName\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(workflowDefinitionName));
+
+			sb.append("\"");
+		}
+
+		if (workflowDefinitionVersion != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"workflowDefinitionVersion\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(workflowDefinitionVersion));
+
+			sb.append("\"");
+		}
+
+		if (workflowInstanceId != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"workflowInstanceId\": ");
+
+			sb.append(workflowInstanceId);
 		}
 
 		sb.append("}");
@@ -503,10 +711,26 @@ public class WorkflowTask {
 		return sb.toString();
 	}
 
+	@Schema(
+		defaultValue = "com.liferay.headless.admin.workflow.dto.v1_0.WorkflowTask",
+		name = "x-class-name"
+	)
+	public String xClassName;
+
 	private static String _escape(Object object) {
 		String string = String.valueOf(object);
 
 		return string.replaceAll("\"", "\\\\\"");
+	}
+
+	private static boolean _isArray(Object value) {
+		if (value == null) {
+			return false;
+		}
+
+		Class<?> clazz = value.getClass();
+
+		return clazz.isArray();
 	}
 
 	private static String _toJSON(Map<String, ?> map) {
@@ -524,9 +748,42 @@ public class WorkflowTask {
 			sb.append("\"");
 			sb.append(entry.getKey());
 			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
+
+			Object value = entry.getValue();
+
+			if (_isArray(value)) {
+				sb.append("[");
+
+				Object[] valueArray = (Object[])value;
+
+				for (int i = 0; i < valueArray.length; i++) {
+					if (valueArray[i] instanceof String) {
+						sb.append("\"");
+						sb.append(valueArray[i]);
+						sb.append("\"");
+					}
+					else {
+						sb.append(valueArray[i]);
+					}
+
+					if ((i + 1) < valueArray.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof Map) {
+				sb.append(_toJSON((Map<String, ?>)value));
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+			else {
+				sb.append(value);
+			}
 
 			if (iterator.hasNext()) {
 				sb.append(",");

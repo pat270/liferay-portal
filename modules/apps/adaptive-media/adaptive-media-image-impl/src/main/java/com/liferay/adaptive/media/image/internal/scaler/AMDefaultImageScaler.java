@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.awt.image.RenderedImage;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.Map;
@@ -67,15 +66,13 @@ public class AMDefaultImageScaler implements AMImageScaler {
 				scaledRenderedImage.getHeight(),
 				scaledRenderedImage.getWidth());
 		}
-		catch (IOException | PortalException e) {
-			StringBundler sb = new StringBundler(4);
-
-			sb.append("Unable to scale file entry ");
-			sb.append(fileVersion.getFileEntryId());
-			sb.append(" to match adaptive media configuration ");
-			sb.append(amImageConfigurationEntry.getUUID());
-
-			throw new AMRuntimeException.IOException(sb.toString(), e);
+		catch (AMRuntimeException.IOException | PortalException exception) {
+			throw new AMRuntimeException.IOException(
+				StringBundler.concat(
+					"Unable to scale file entry ", fileVersion.getFileEntryId(),
+					" to match adaptive media configuration ",
+					amImageConfigurationEntry.getUUID()),
+				exception);
 		}
 	}
 
@@ -83,8 +80,8 @@ public class AMDefaultImageScaler implements AMImageScaler {
 		try {
 			return fileVersion.getContentStream(false);
 		}
-		catch (PortalException pe) {
-			throw new AMRuntimeException.IOException(pe);
+		catch (PortalException portalException) {
+			throw new AMRuntimeException.IOException(portalException);
 		}
 	}
 

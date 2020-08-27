@@ -47,7 +47,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class PortletServiceBaseImpl
-	extends BaseServiceImpl implements PortletService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, PortletService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -453,8 +453,8 @@ public abstract class PortletServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

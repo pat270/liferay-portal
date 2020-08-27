@@ -17,6 +17,7 @@ package com.liferay.mobile.device.rules.service.impl;
 import com.liferay.mobile.device.rules.model.MDRAction;
 import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.service.base.MDRActionLocalServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -30,9 +31,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Edward C. Han
  */
+@Component(
+	property = "model.class.name=com.liferay.mobile.device.rules.model.MDRAction",
+	service = AopService.class
+)
 public class MDRActionLocalServiceImpl extends MDRActionLocalServiceBaseImpl {
 
 	@Override
@@ -77,13 +84,13 @@ public class MDRActionLocalServiceImpl extends MDRActionLocalServiceBaseImpl {
 	public MDRAction addAction(
 			long ruleGroupInstanceId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		return addAction(
 			ruleGroupInstanceId, nameMap, descriptionMap, type,
-			typeSettingsProperties.toString(), serviceContext);
+			typeSettingsUnicodeProperties.toString(), serviceContext);
 	}
 
 	@Override
@@ -148,10 +155,10 @@ public class MDRActionLocalServiceImpl extends MDRActionLocalServiceBaseImpl {
 	@Override
 	public List<MDRAction> getActions(
 		long ruleGroupInstanceId, int start, int end,
-		OrderByComparator<MDRAction> obc) {
+		OrderByComparator<MDRAction> orderByComparator) {
 
 		return mdrActionPersistence.findByRuleGroupInstanceId(
-			ruleGroupInstanceId, start, end, obc);
+			ruleGroupInstanceId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -174,7 +181,7 @@ public class MDRActionLocalServiceImpl extends MDRActionLocalServiceBaseImpl {
 		action.setType(type);
 		action.setTypeSettings(typeSettings);
 
-		mdrActionPersistence.update(action);
+		action = mdrActionPersistence.update(action);
 
 		MDRRuleGroupInstance ruleGroupInstance =
 			mdrRuleGroupInstancePersistence.findByPrimaryKey(
@@ -191,13 +198,13 @@ public class MDRActionLocalServiceImpl extends MDRActionLocalServiceBaseImpl {
 	public MDRAction updateAction(
 			long actionId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		return updateAction(
 			actionId, nameMap, descriptionMap, type,
-			typeSettingsProperties.toString(), serviceContext);
+			typeSettingsUnicodeProperties.toString(), serviceContext);
 	}
 
 }

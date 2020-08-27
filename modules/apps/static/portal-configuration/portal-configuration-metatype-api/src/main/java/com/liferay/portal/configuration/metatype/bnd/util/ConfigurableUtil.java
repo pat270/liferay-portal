@@ -18,16 +18,14 @@ import aQute.bnd.annotation.metatype.Configurable;
 
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -61,31 +59,41 @@ public class ConfigurableUtil {
 
 		String snapshotClassName = interfaceClassName.concat("Snapshot");
 
-		snapshotClassName = snapshotClassName.concat(
-			String.valueOf(_counter.getAndIncrement()));
-
 		try {
-			byte[] snapshotClassData = _generateSnapshotClassData(
-				interfaceClass, snapshotClassName, configurable);
+			ClassLoader classLoader = interfaceClass.getClassLoader();
 
-			Class<T> snapshotClass = (Class<T>)_defineClassMethod.invoke(
-				interfaceClass.getClassLoader(), snapshotClassName,
-				snapshotClassData, 0, snapshotClassData.length);
+			Class<T> snapshotClass = (Class<T>)_findLoadedClassMethod.invoke(
+				classLoader, snapshotClassName);
+
+			if (snapshotClass == null) {
+				byte[] snapshotClassData = _generateSnapshotClassData(
+					interfaceClass, snapshotClassName);
+
+				try {
+					snapshotClass = (Class<T>)_defineClassMethod.invoke(
+						classLoader, snapshotClassName, snapshotClassData, 0,
+						snapshotClassData.length);
+				}
+				catch (InvocationTargetException invocationTargetException) {
+					snapshotClass = (Class<T>)classLoader.loadClass(
+						snapshotClassName);
+				}
+			}
 
 			Constructor<T> snapshotClassConstructor =
-				snapshotClass.getConstructor(configurable.getClass());
+				snapshotClass.getConstructor(interfaceClass);
 
 			return snapshotClassConstructor.newInstance(configurable);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throw new RuntimeException(
-				"Unable to create snapshot class for " + interfaceClass, t);
+				"Unable to create snapshot class for " + interfaceClass,
+				throwable);
 		}
 	}
 
 	private static <T> byte[] _generateSnapshotClassData(
-			Class<T> interfaceClass, String snapshotClassName, T configurable)
-		throws Exception {
+		Class<T> interfaceClass, String snapshotClassName) {
 
 		String snapshotClassBinaryName = _getClassBinaryName(snapshotClassName);
 		String objectClassBinaryName = _getClassBinaryName(
@@ -100,45 +108,22 @@ public class ConfigurableUtil {
 
 		Method[] declaredMethods = interfaceClass.getDeclaredMethods();
 
-		List<Method> bigStringMethods = new ArrayList<>();
-
-		for (Method method : declaredMethods) {
-			if (method.getReturnType() == String.class) {
-				String result = (String)method.invoke(configurable);
-
-				if ((result != null) && (result.length() > 65535)) {
-					bigStringMethods.add(method);
-				}
-			}
-		}
-
 		// Fields
 
 		for (Method method : declaredMethods) {
-			Class<?> returnType = method.getReturnType();
-
-			if (returnType.isPrimitive() || returnType.isEnum() ||
-				((returnType == String.class) &&
-				 !bigStringMethods.contains(method))) {
-
-				continue;
-			}
-
 			FieldVisitor fieldVisitor = classWriter.visitField(
 				Opcodes.ACC_PRIVATE + Opcodes.ACC_FINAL, method.getName(),
-				Type.getDescriptor(returnType), null, null);
+				Type.getDescriptor(method.getReturnType()), null, null);
 
 			fieldVisitor.visitEnd();
 		}
 
 		// Constructor
 
-		Class<?> configurableClass = configurable.getClass();
-
 		MethodVisitor constructorMethodVisitor = classWriter.visitMethod(
 			Opcodes.ACC_PUBLIC, "<init>",
 			Type.getMethodDescriptor(
-				Type.VOID_TYPE, Type.getType(configurableClass)),
+				Type.VOID_TYPE, Type.getType(interfaceClass)),
 			null, null);
 
 		constructorMethodVisitor.visitCode();
@@ -151,22 +136,15 @@ public class ConfigurableUtil {
 		for (Method method : declaredMethods) {
 			Class<?> returnType = method.getReturnType();
 
-			if (returnType.isPrimitive() || returnType.isEnum() ||
-				((returnType == String.class) &&
-				 !bigStringMethods.contains(method))) {
-
-				continue;
-			}
-
 			constructorMethodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
 			constructorMethodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
 
 			String methodName = method.getName();
 
 			constructorMethodVisitor.visitMethodInsn(
-				Opcodes.INVOKEVIRTUAL,
-				_getClassBinaryName(configurableClass.getName()), methodName,
-				Type.getMethodDescriptor(method), false);
+				Opcodes.INVOKEINTERFACE,
+				_getClassBinaryName(interfaceClass.getName()), methodName,
+				Type.getMethodDescriptor(method), true);
 
 			constructorMethodVisitor.visitFieldInsn(
 				Opcodes.PUTFIELD, snapshotClassBinaryName, methodName,
@@ -193,46 +171,19 @@ public class ConfigurableUtil {
 
 			method.setAccessible(true);
 
-			if (returnType.isPrimitive() ||
-				((returnType == String.class) &&
-				 !bigStringMethods.contains(method))) {
+			methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
 
-				Object result = method.invoke(configurable);
+			methodVisitor.visitFieldInsn(
+				Opcodes.GETFIELD, snapshotClassBinaryName, methodName,
+				Type.getDescriptor(returnType));
 
-				if (result == null) {
-					methodVisitor.visitInsn(Opcodes.ACONST_NULL);
-				}
-				else {
-					methodVisitor.visitLdcInsn(result);
-				}
-
+			if (returnType.isPrimitive()) {
 				Type returnValueType = Type.getType(returnType);
 
 				methodVisitor.visitInsn(
 					returnValueType.getOpcode(Opcodes.IRETURN));
 			}
-			else if (returnType.isEnum()) {
-				Enum<?> result = (Enum<?>)method.invoke(configurable);
-
-				String fieldName = result.name();
-
-				Field enumField = ReflectionUtil.getDeclaredField(
-					returnType, fieldName);
-
-				methodVisitor.visitFieldInsn(
-					Opcodes.GETSTATIC,
-					_getClassBinaryName(returnType.getName()), fieldName,
-					Type.getDescriptor(enumField.getType()));
-
-				methodVisitor.visitInsn(Opcodes.ARETURN);
-			}
 			else {
-				methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-
-				methodVisitor.visitFieldInsn(
-					Opcodes.GETFIELD, snapshotClassBinaryName, methodName,
-					Type.getDescriptor(returnType));
-
 				methodVisitor.visitInsn(Opcodes.ARETURN);
 			}
 
@@ -247,20 +198,23 @@ public class ConfigurableUtil {
 	}
 
 	private static String _getClassBinaryName(String className) {
-		return className.replace(CharPool.PERIOD, CharPool.FORWARD_SLASH);
+		return StringUtil.replace(
+			className, CharPool.PERIOD, CharPool.FORWARD_SLASH);
 	}
 
-	private static final AtomicLong _counter = new AtomicLong();
 	private static final Method _defineClassMethod;
+	private static final Method _findLoadedClassMethod;
 
 	static {
 		try {
 			_defineClassMethod = ReflectionUtil.getDeclaredMethod(
 				ClassLoader.class, "defineClass", String.class, byte[].class,
 				int.class, int.class);
+			_findLoadedClassMethod = ReflectionUtil.getDeclaredMethod(
+				ClassLoader.class, "findLoadedClass", String.class);
 		}
-		catch (Throwable t) {
-			throw new ExceptionInInitializerError(t);
+		catch (Throwable throwable) {
+			throw new ExceptionInInitializerError(throwable);
 		}
 	}
 

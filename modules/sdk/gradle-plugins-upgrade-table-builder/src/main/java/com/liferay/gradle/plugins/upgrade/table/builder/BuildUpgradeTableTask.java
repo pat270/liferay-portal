@@ -23,15 +23,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class BuildUpgradeTableTask extends JavaExec {
 
 	public BuildUpgradeTableTask() {
@@ -48,17 +52,19 @@ public class BuildUpgradeTableTask extends JavaExec {
 	}
 
 	@InputDirectory
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getBaseDir() {
 		return GradleUtil.toFile(getProject(), _baseDir);
 	}
 
 	@InputFile
 	@Optional
-	public File getReleaseInfoFile() {
-		return GradleUtil.toFile(getProject(), _releaseInfoFile);
+	public String getReleaseInfoVersion() {
+		return GradleUtil.toString(_releaseInfoVersion);
 	}
 
 	@InputDirectory
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getUpgradeTableDir() {
 		return GradleUtil.toFile(getProject(), _upgradeTableDir);
 	}
@@ -76,8 +82,8 @@ public class BuildUpgradeTableTask extends JavaExec {
 		_osgiModule = osgiModule;
 	}
 
-	public void setReleaseInfoFile(Object releaseInfoFile) {
-		_releaseInfoFile = releaseInfoFile;
+	public void setReleaseInfoVersion(Object releaseInfoVersion) {
+		_releaseInfoVersion = releaseInfoVersion;
 	}
 
 	public void setUpgradeTableDir(Object upgradeTableDir) {
@@ -90,12 +96,10 @@ public class BuildUpgradeTableTask extends JavaExec {
 		args.add("upgrade.base.dir=" + FileUtil.getAbsolutePath(getBaseDir()));
 		args.add("upgrade.osgi.module=" + isOsgiModule());
 
-		File releaseInfoFile = getReleaseInfoFile();
+		String releaseInfoVersion = getReleaseInfoVersion();
 
-		if (releaseInfoFile != null) {
-			args.add(
-				"upgrade.release.info.file=" +
-					FileUtil.getAbsolutePath(releaseInfoFile));
+		if (releaseInfoVersion != null) {
+			args.add("upgrade.release.info.version=" + releaseInfoVersion);
 		}
 
 		args.add(
@@ -107,7 +111,7 @@ public class BuildUpgradeTableTask extends JavaExec {
 
 	private Object _baseDir = UpgradeTableBuilderArgs.BASE_DIR_NAME;
 	private boolean _osgiModule = UpgradeTableBuilderArgs.OSGI_MODULE;
-	private Object _releaseInfoFile;
+	private Object _releaseInfoVersion;
 	private Object _upgradeTableDir;
 
 }

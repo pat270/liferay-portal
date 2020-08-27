@@ -1,5 +1,6 @@
 @component-name = "portal-permissions"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Roles";
@@ -19,7 +20,7 @@ definition {
 		else {
 			User.firstLoginPG();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Role.tearDownCP();
 
@@ -37,7 +38,7 @@ definition {
 
 	@priority = "5"
 	test AddDMDocumentRegRoleDefaultPermissions {
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		Permissions.setUpRegRolePG(
 			pageName = "Documents and Media Page",
@@ -59,7 +60,7 @@ definition {
 
 	@priority = "5"
 	test AddDMDocumentRegRoleDefinePermissions {
-		property portal.acceptance = "false";
+		property portal.acceptance = "true";
 
 		Permissions.setUpRegRolePG(
 			pageName = "Documents and Media Page",
@@ -105,12 +106,13 @@ definition {
 
 	@priority = "4"
 	test AddDMDocumentSiteMemberRoleInline {
+		property custom.properties = "default.layout.template.id=1_column";
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteMemberRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Documents and Media Page",
 			portletName = "Documents and Media",
 			siteName = "Site Name",
-			siteURLTemp = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -183,6 +185,8 @@ definition {
 
 	@priority = "4"
 	test AddDMDocumentSiteRole {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
 			page = "Public Pages",
 			pageName = "Documents and Media Page",
@@ -328,6 +332,8 @@ definition {
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
 		DMFolder.deletePG(dmFolderName = "DM Folder Name");
 
 		User.logoutAndLoginPG(
@@ -344,7 +350,6 @@ definition {
 	test ViewDMDocumentNoGuestRole {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Documents and Media Page");
@@ -382,7 +387,6 @@ definition {
 	test ViewDMFolderGuestInline {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Documents and Media Page");
@@ -472,4 +476,5 @@ definition {
 			locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME",
 			value1 = "${dmFolderNameUpperCase}");
 	}
+
 }

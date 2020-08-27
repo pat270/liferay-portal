@@ -73,10 +73,12 @@ public interface ImageTool {
 	public RenderedImage crop(
 		RenderedImage renderedImage, int height, int width, int x, int y);
 
-	public void encodeGIF(RenderedImage renderedImage, OutputStream os)
+	public void encodeGIF(
+			RenderedImage renderedImage, OutputStream outputStream)
 		throws IOException;
 
-	public void encodeWBMP(RenderedImage renderedImage, OutputStream os)
+	public void encodeWBMP(
+			RenderedImage renderedImage, OutputStream outputStream)
 		throws IOException;
 
 	public RenderedImage flipHorizontal(RenderedImage renderedImage);
@@ -106,10 +108,10 @@ public interface ImageTool {
 	public Image getImage(File file)
 		throws ImageResolutionException, IOException;
 
-	public Image getImage(InputStream is)
+	public Image getImage(InputStream inputStream)
 		throws ImageResolutionException, IOException;
 
-	public Image getImage(InputStream is, boolean cleanUpStream)
+	public Image getImage(InputStream inputStream, boolean cleanUpStream)
 		throws ImageResolutionException, IOException;
 
 	public boolean isNullOrDefaultSpacer(byte[] bytes);
@@ -130,8 +132,9 @@ public interface ImageTool {
 	public RenderedImage scale(
 		RenderedImage renderedImage, int maxHeight, int maxWidth);
 
-	public abstract void write(
-			RenderedImage renderedImage, String contentType, OutputStream os)
+	public void write(
+			RenderedImage renderedImage, String contentType,
+			OutputStream outputStream)
 		throws IOException;
 
 }

@@ -18,23 +18,21 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
 
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eduardo García
  */
-@ProviderType
 public class LayoutPageTemplateStructureImpl
 	extends LayoutPageTemplateStructureBaseImpl {
 
 	public LayoutPageTemplateStructureImpl() {
 	}
 
+	@Override
 	public String getData(long segmentsExperienceId) {
 		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel =
 			LayoutPageTemplateStructureRelLocalServiceUtil.
@@ -48,6 +46,7 @@ public class LayoutPageTemplateStructureImpl
 		return StringPool.BLANK;
 	}
 
+	@Override
 	public String getData(long[] segmentsExperienceIds) throws PortalException {
 		long segmentsExperienceId = _getFirstSegmentsExperienceId(
 			segmentsExperienceIds);
@@ -55,10 +54,19 @@ public class LayoutPageTemplateStructureImpl
 		return getData(segmentsExperienceId);
 	}
 
-	private long _getFirstSegmentsExperienceId(long[] segmentsExperienceIds) {
-		LongStream stream = Arrays.stream(segmentsExperienceIds);
+	@Override
+	public long getPlid() {
+		return getClassPK();
+	}
 
-		return stream.filter(
+	private long _getFirstSegmentsExperienceId(long[] segmentsExperienceIds) {
+		if (segmentsExperienceIds.length == 1) {
+			return segmentsExperienceIds[0];
+		}
+
+		LongStream longStream = Arrays.stream(segmentsExperienceIds);
+
+		return longStream.filter(
 			segmentsExperienceId -> {
 				LayoutPageTemplateStructureRel layoutPageTemplateStructureRel =
 					LayoutPageTemplateStructureRelLocalServiceUtil.
@@ -70,7 +78,7 @@ public class LayoutPageTemplateStructureImpl
 			}
 		).findFirst(
 		).orElse(
-			SegmentsConstants.SEGMENTS_EXPERIENCE_ID_DEFAULT
+			SegmentsExperienceConstants.ID_DEFAULT
 		);
 	}
 

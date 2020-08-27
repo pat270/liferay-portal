@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
 import com.liferay.user.associated.data.constants.UserAssociatedDataPortletKeys;
@@ -64,12 +65,16 @@ public abstract class BaseUADMVCActionCommand extends BaseMVCActionCommand {
 
 		long selectedUserId = getSelectedUserId(actionRequest);
 
-		if (uadApplicationSummaryHelper.getTotalNonreviewableUADEntitiesCount(
-				selectedUserId) == 0) {
+		int totalNonreviewableUADEntitiesCount =
+			uadApplicationSummaryHelper.getTotalNonreviewableUADEntitiesCount(
+				selectedUserId);
 
-			if (uadApplicationSummaryHelper.getTotalReviewableUADEntitiesCount(
-					selectedUserId) == 0) {
+		if (totalNonreviewableUADEntitiesCount == 0) {
+			int totalReviewableUADEntitiesCount =
+				uadApplicationSummaryHelper.getTotalReviewableUADEntitiesCount(
+					selectedUserId);
 
+			if (totalReviewableUADEntitiesCount == 0) {
 				mvcRenderCommandName = "/completed_data_erasure";
 			}
 			else {
@@ -102,13 +107,16 @@ public abstract class BaseUADMVCActionCommand extends BaseMVCActionCommand {
 
 		long selectedUserId = getSelectedUserId(actionRequest);
 
-		if (uadApplicationSummaryHelper.getTotalReviewableUADEntitiesCount(
-				selectedUserId) == 0) {
+		int totalReviewableUADEntitiesCount =
+			uadApplicationSummaryHelper.getTotalReviewableUADEntitiesCount(
+				selectedUserId);
 
-			if (uadApplicationSummaryHelper.
-					getTotalNonreviewableUADEntitiesCount(selectedUserId) ==
-						0) {
+		if (totalReviewableUADEntitiesCount == 0) {
+			int totalNonreviewableUADEntitiesCount =
+				uadApplicationSummaryHelper.
+					getTotalNonreviewableUADEntitiesCount(selectedUserId);
 
+			if (totalNonreviewableUADEntitiesCount == 0) {
 				mvcRenderCommandName = "/completed_data_erasure";
 			}
 			else {
@@ -151,7 +159,8 @@ public abstract class BaseUADMVCActionCommand extends BaseMVCActionCommand {
 
 		for (String key : parameterMap.keySet()) {
 			if (key.startsWith("uadRegistryKey__")) {
-				entityTypes.add(key.replace("uadRegistryKey__", ""));
+				entityTypes.add(
+					StringUtil.removeSubstring(key, "uadRegistryKey__"));
 			}
 		}
 
@@ -184,14 +193,14 @@ public abstract class BaseUADMVCActionCommand extends BaseMVCActionCommand {
 		return selectedUserHelper.getSelectedUserId(actionRequest);
 	}
 
-	protected UADAnonymizer getUADAnonymizer(
+	protected UADAnonymizer<?> getUADAnonymizer(
 		ActionRequest actionRequest, String entityType) {
 
 		return uadRegistry.getUADAnonymizer(
 			getUADRegistryKey(actionRequest, entityType));
 	}
 
-	protected UADDisplay getUADDisplay(
+	protected UADDisplay<?> getUADDisplay(
 		ActionRequest actionRequest, String entityType) {
 
 		return uadRegistry.getUADDisplay(

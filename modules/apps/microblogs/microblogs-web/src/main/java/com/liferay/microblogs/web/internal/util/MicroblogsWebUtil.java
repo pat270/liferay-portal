@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -88,21 +87,20 @@ public class MicroblogsWebUtil {
 				continue;
 			}
 
-			JSONObject userJSONObject = JSONUtil.put(
-				"emailAddress", user.getEmailAddress()
-			).put(
-				"fullName", user.getFullName()
-			).put(
-				"jobTitle", user.getJobTitle()
-			).put(
-				"portraitURL", user.getPortraitURL(themeDisplay)
-			).put(
-				"screenName", user.getScreenName()
-			).put(
-				"userId", user.getUserId()
-			);
-
-			jsonArray.put(userJSONObject);
+			jsonArray.put(
+				JSONUtil.put(
+					"emailAddress", user.getEmailAddress()
+				).put(
+					"fullName", user.getFullName()
+				).put(
+					"jobTitle", user.getJobTitle()
+				).put(
+					"portraitURL", user.getPortraitURL(themeDisplay)
+				).put(
+					"screenName", user.getScreenName()
+				).put(
+					"userId", user.getUserId()
+				));
 		}
 
 		return jsonArray;
@@ -135,8 +133,8 @@ public class MicroblogsWebUtil {
 		while (matcher.find()) {
 			String screenName = matcher.group();
 
-			screenName = screenName.replace("[@", StringPool.BLANK);
-			screenName = screenName.replace("]", StringPool.BLANK);
+			screenName = StringUtil.removeSubstring(screenName, "[@");
+			screenName = StringUtil.replace(screenName, ']', StringPool.BLANK);
 
 			screenNames.add(screenName);
 		}
@@ -179,7 +177,7 @@ public class MicroblogsWebUtil {
 				try {
 					portletURL.setWindowState(LiferayWindowState.NORMAL);
 				}
-				catch (WindowStateException wse) {
+				catch (WindowStateException windowStateException) {
 				}
 			}
 			else {
@@ -192,7 +190,7 @@ public class MicroblogsWebUtil {
 				try {
 					portletURL.setWindowState(WindowState.MAXIMIZED);
 				}
-				catch (WindowStateException wse) {
+				catch (WindowStateException windowStateException) {
 				}
 			}
 
@@ -232,11 +230,11 @@ public class MicroblogsWebUtil {
 
 				sb.append("<a href=\"");
 
-				String assetTagScreenName = result.replace(
-					"[@", StringPool.BLANK);
+				String assetTagScreenName = StringUtil.removeSubstring(
+					result, "[@");
 
-				assetTagScreenName = assetTagScreenName.replace(
-					"]", StringPool.BLANK);
+				assetTagScreenName = StringUtil.replace(
+					assetTagScreenName, ']', StringPool.BLANK);
 
 				ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
 
@@ -258,9 +256,9 @@ public class MicroblogsWebUtil {
 
 				content = StringUtil.replace(content, result, userLink);
 			}
-			catch (NoSuchUserException nsue) {
+			catch (NoSuchUserException noSuchUserException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsue, nsue);
+					_log.debug(noSuchUserException, noSuchUserException);
 				}
 			}
 		}

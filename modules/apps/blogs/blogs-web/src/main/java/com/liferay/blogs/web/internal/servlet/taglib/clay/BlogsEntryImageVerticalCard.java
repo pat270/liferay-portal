@@ -19,7 +19,7 @@ import com.liferay.document.library.util.DLURLHelperUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.RowChecker;
@@ -84,8 +84,8 @@ public class BlogsEntryImageVerticalCard implements VerticalCard {
 		try {
 			return DLURLHelperUtil.getThumbnailSrc(_fileEntry, _themeDisplay);
 		}
-		catch (Exception e) {
-			return ReflectionUtil.throwException(e);
+		catch (Exception exception) {
+			return ReflectionUtil.throwException(exception);
 		}
 	}
 
@@ -107,16 +107,15 @@ public class BlogsEntryImageVerticalCard implements VerticalCard {
 			return Collections.emptyList();
 		}
 
-		WorkflowCapability workflowCapability =
-			_fileEntry.getRepositoryCapability(WorkflowCapability.class);
+		return LabelItemListBuilder.add(
+			labelItem -> {
+				WorkflowCapability workflowCapability =
+					_fileEntry.getRepositoryCapability(
+						WorkflowCapability.class);
 
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> labelItem.setStatus(
-						workflowCapability.getStatus(_fileEntry)));
+				labelItem.setStatus(workflowCapability.getStatus(_fileEntry));
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -130,8 +129,8 @@ public class BlogsEntryImageVerticalCard implements VerticalCard {
 
 			return user.getPortraitURL(_themeDisplay);
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 

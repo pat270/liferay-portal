@@ -24,7 +24,6 @@ import com.liferay.document.library.kernel.versioning.VersioningStrategy;
 import com.liferay.document.library.preview.DLPreviewRenderer;
 import com.liferay.document.library.preview.DLPreviewRendererProvider;
 import com.liferay.document.library.preview.exception.DLFileEntryPreviewGenerationException;
-import com.liferay.document.library.preview.exception.DLFileEntryPreviewNotAvailableException;
 import com.liferay.document.library.preview.exception.DLPreviewGenerationInProcessException;
 import com.liferay.document.library.preview.exception.DLPreviewSizeException;
 import com.liferay.document.library.util.DLURLHelper;
@@ -35,7 +34,7 @@ import com.liferay.document.library.web.internal.display.context.logic.FileVersi
 import com.liferay.document.library.web.internal.display.context.logic.UIItemsBuilder;
 import com.liferay.document.library.web.internal.display.context.util.DLRequestHelper;
 import com.liferay.document.library.web.internal.display.context.util.JSPRenderer;
-import com.liferay.document.library.web.internal.util.DLTrashUtil;
+import com.liferay.document.library.web.internal.helper.DLTrashHelper;
 import com.liferay.dynamic.data.mapping.exception.StorageException;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -59,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -78,7 +76,7 @@ public class DefaultDLViewFileVersionDisplayContext
 			HttpServletResponse httpServletResponse, FileShortcut fileShortcut,
 			DLMimeTypeDisplayContext dlMimeTypeDisplayContext,
 			ResourceBundle resourceBundle, StorageEngine storageEngine,
-			DLTrashUtil dlTrashUtil,
+			DLTrashHelper dlTrashHelper,
 			DLPreviewRendererProvider dlPreviewRendererProvider,
 			VersioningStrategy versioningStrategy, DLURLHelper dlURLHelper)
 		throws PortalException {
@@ -86,7 +84,7 @@ public class DefaultDLViewFileVersionDisplayContext
 		this(
 			httpServletRequest, fileShortcut.getFileVersion(), fileShortcut,
 			dlMimeTypeDisplayContext, resourceBundle, storageEngine,
-			dlTrashUtil, dlPreviewRendererProvider, versioningStrategy,
+			dlTrashHelper, dlPreviewRendererProvider, versioningStrategy,
 			dlURLHelper);
 	}
 
@@ -95,13 +93,13 @@ public class DefaultDLViewFileVersionDisplayContext
 		HttpServletResponse httpServletResponse, FileVersion fileVersion,
 		DLMimeTypeDisplayContext dlMimeTypeDisplayContext,
 		ResourceBundle resourceBundle, StorageEngine storageEngine,
-		DLTrashUtil dlTrashUtil,
+		DLTrashHelper dlTrashHelper,
 		DLPreviewRendererProvider dlPreviewRendererProvider,
 		VersioningStrategy versioningStrategy, DLURLHelper dlURLHelper) {
 
 		this(
 			httpServletRequest, fileVersion, null, dlMimeTypeDisplayContext,
-			resourceBundle, storageEngine, dlTrashUtil,
+			resourceBundle, storageEngine, dlTrashHelper,
 			dlPreviewRendererProvider, versioningStrategy, dlURLHelper);
 	}
 
@@ -195,7 +193,6 @@ public class DefaultDLViewFileVersionDisplayContext
 		menu.setMessage(LanguageUtil.get(_resourceBundle, "actions"));
 		menu.setScroll(false);
 		menu.setShowWhenSingleIcon(true);
-		menu.setTriggerCssClass("component-action");
 
 		return menu;
 	}
@@ -235,11 +232,13 @@ public class DefaultDLViewFileVersionDisplayContext
 	@Override
 	public boolean hasCustomThumbnail() {
 		if (_dlPreviewRendererProvider != null) {
-			Optional<DLPreviewRenderer> dlPreviewRendererOptional =
-				_dlPreviewRendererProvider.
-					getThumbnailDLPreviewRendererOptional(_fileVersion);
+			DLPreviewRenderer dlPreviewRenderer =
+				_dlPreviewRendererProvider.getThumbnailDLPreviewRenderer(
+					_fileVersion);
 
-			return dlPreviewRendererOptional.isPresent();
+			if (dlPreviewRenderer != null) {
+				return true;
+			}
 		}
 
 		return false;
@@ -248,11 +247,13 @@ public class DefaultDLViewFileVersionDisplayContext
 	@Override
 	public boolean hasPreview() {
 		if (_dlPreviewRendererProvider != null) {
-			Optional<DLPreviewRenderer> dlPreviewRendererOptional =
-				_dlPreviewRendererProvider.getPreviewDLPreviewRendererOptional(
+			DLPreviewRenderer dlPreviewRenderer =
+				_dlPreviewRendererProvider.getPreviewDLPreviewRenderer(
 					_fileVersion);
 
-			return dlPreviewRendererOptional.isPresent();
+			if (dlPreviewRenderer != null) {
+				return true;
+			}
 		}
 
 		return false;
@@ -288,17 +289,16 @@ public class DefaultDLViewFileVersionDisplayContext
 			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		Optional<DLPreviewRenderer> dlPreviewRendererOptional =
-			Optional.empty();
+		DLPreviewRenderer dlPreviewRenderer = null;
 
 		if (_dlPreviewRendererProvider != null) {
-			dlPreviewRendererOptional =
-				_dlPreviewRendererProvider.
-					getThumbnailDLPreviewRendererOptional(_fileVersion);
+			dlPreviewRenderer =
+				_dlPreviewRendererProvider.getThumbnailDLPreviewRenderer(
+					_fileVersion);
 		}
 
 		_renderPreview(
-			httpServletRequest, httpServletResponse, dlPreviewRendererOptional);
+			httpServletRequest, httpServletResponse, dlPreviewRenderer);
 	}
 
 	@Override
@@ -307,17 +307,16 @@ public class DefaultDLViewFileVersionDisplayContext
 			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		Optional<DLPreviewRenderer> dlPreviewRendererOptional =
-			Optional.empty();
+		DLPreviewRenderer dlPreviewRenderer = null;
 
 		if (_dlPreviewRendererProvider != null) {
-			dlPreviewRendererOptional =
-				_dlPreviewRendererProvider.getPreviewDLPreviewRendererOptional(
+			dlPreviewRenderer =
+				_dlPreviewRendererProvider.getPreviewDLPreviewRenderer(
 					_fileVersion);
 		}
 
 		_renderPreview(
-			httpServletRequest, httpServletResponse, dlPreviewRendererOptional);
+			httpServletRequest, httpServletResponse, dlPreviewRenderer);
 	}
 
 	private DefaultDLViewFileVersionDisplayContext(
@@ -325,7 +324,7 @@ public class DefaultDLViewFileVersionDisplayContext
 		FileShortcut fileShortcut,
 		DLMimeTypeDisplayContext dlMimeTypeDisplayContext,
 		ResourceBundle resourceBundle, StorageEngine storageEngine,
-		DLTrashUtil dlTrashUtil,
+		DLTrashHelper dlTrashHelper,
 		DLPreviewRendererProvider dlPreviewRendererProvider,
 		VersioningStrategy versioningStrategy, DLURLHelper dlURLHelper) {
 
@@ -342,29 +341,30 @@ public class DefaultDLViewFileVersionDisplayContext
 			_dlPortletInstanceSettingsHelper =
 				new DLPortletInstanceSettingsHelper(dlRequestHelper);
 
+			FileEntry fileEntry = _getFileEntry(fileVersion);
+
 			_fileEntryDisplayContextHelper = new FileEntryDisplayContextHelper(
-				dlRequestHelper.getPermissionChecker(),
-				_getFileEntry(fileVersion));
+				dlRequestHelper.getPermissionChecker(), fileEntry);
 
 			_fileVersionDisplayContextHelper =
 				new FileVersionDisplayContextHelper(fileVersion);
 
 			if (fileShortcut == null) {
 				_uiItemsBuilder = new UIItemsBuilder(
-					httpServletRequest, fileVersion, _resourceBundle,
-					dlTrashUtil, versioningStrategy, dlURLHelper);
+					httpServletRequest, fileEntry, fileVersion, _resourceBundle,
+					dlTrashHelper, versioningStrategy, dlURLHelper);
 			}
 			else {
 				_uiItemsBuilder = new UIItemsBuilder(
 					httpServletRequest, fileShortcut, _resourceBundle,
-					dlTrashUtil, versioningStrategy, dlURLHelper);
+					dlTrashHelper, versioningStrategy, dlURLHelper);
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to build DefaultDLViewFileVersionDisplayContext for " +
 					fileVersion,
-				pe);
+				portalException);
 		}
 	}
 
@@ -420,48 +420,57 @@ public class DefaultDLViewFileVersionDisplayContext
 		return menuItems;
 	}
 
+	private void _handleError(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Exception exception)
+		throws IOException, ServletException {
+
+		JSPRenderer jspRenderer = new JSPRenderer(
+			"/document_library/view_file_entry_preview_error.jsp");
+
+		jspRenderer.setAttribute(
+			WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, _fileVersion);
+
+		if (exception != null) {
+			jspRenderer.setAttribute(
+				DLWebKeys.DOCUMENT_LIBRARY_PREVIEW_EXCEPTION, exception);
+		}
+
+		jspRenderer.render(httpServletRequest, httpServletResponse);
+	}
+
 	private void _renderPreview(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse,
-			Optional<DLPreviewRenderer> dlPreviewRendererOptional)
+			DLPreviewRenderer dlPreviewRenderer)
 		throws IOException, ServletException {
 
 		try {
-			if (!dlPreviewRendererOptional.isPresent()) {
-				throw new DLFileEntryPreviewNotAvailableException();
-			}
+			if (dlPreviewRenderer == null) {
+				_handleError(httpServletRequest, httpServletResponse, null);
 
-			DLPreviewRenderer dlPreviewRenderer =
-				dlPreviewRendererOptional.get();
+				return;
+			}
 
 			dlPreviewRenderer.render(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			if (e instanceof DLFileEntryPreviewGenerationException ||
-				e instanceof DLFileEntryPreviewNotAvailableException ||
-				e instanceof DLPreviewGenerationInProcessException ||
-				e instanceof DLPreviewSizeException) {
+		catch (Exception exception) {
+			if (exception instanceof DLFileEntryPreviewGenerationException ||
+				exception instanceof DLPreviewGenerationInProcessException ||
+				exception instanceof DLPreviewSizeException) {
 
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 			else {
 				_log.error(
 					"Unable to render preview for file version: " +
 						_fileVersion.getTitle(),
-					e);
+					exception);
 			}
 
-			JSPRenderer jspRenderer = new JSPRenderer(
-				"/document_library/view_file_entry_preview_error.jsp");
-
-			jspRenderer.setAttribute(
-				WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, _fileVersion);
-			jspRenderer.setAttribute(
-				DLWebKeys.DOCUMENT_LIBRARY_PREVIEW_EXCEPTION, e);
-
-			jspRenderer.render(httpServletRequest, httpServletResponse);
+			_handleError(httpServletRequest, httpServletResponse, exception);
 		}
 	}
 

@@ -15,15 +15,14 @@
 package com.liferay.journal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.storage.Field;
 import com.liferay.dynamic.data.mapping.storage.Fields;
@@ -34,6 +33,7 @@ import com.liferay.dynamic.data.mapping.util.DDMXML;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.journal.util.JournalConverter;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -54,7 +55,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 
@@ -63,7 +63,6 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -112,17 +111,17 @@ public class JournalConverterUtilTest {
 
 		Registry registry = RegistryUtil.getRegistry();
 
-		_ddmXML = registry.getService(DDMXML.class);
-		_journalConverter = registry.getService(JournalConverter.class);
+		_ddmXML = registry.getService(
+			registry.getServiceReference(DDMXML.class));
+		_journalConverter = registry.getService(
+			registry.getServiceReference(JournalConverter.class));
 	}
 
 	@Test
 	public void testGetContentFromBooleanField() throws Exception {
 		Fields fields = new Fields();
 
-		Field booleanField = getBooleanField(_ddmStructure.getStructureId());
-
-		fields.put(booleanField);
+		fields.put(getBooleanField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(),
@@ -179,9 +178,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromListField() throws Exception {
 		Fields fields = new Fields();
 
-		Field listField = getListField(_ddmStructure.getStructureId());
-
-		fields.put(listField);
+		fields.put(getListField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "list_INSTANCE_pcm9WPVX");
@@ -235,9 +232,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromTextAreaField() throws Exception {
 		Fields fields = new Fields();
 
-		Field textAreaField = getTextAreaField(_ddmStructure.getStructureId());
-
-		fields.put(textAreaField);
+		fields.put(getTextAreaField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "text_area_INSTANCE_RFnJ1nCn");
@@ -257,9 +252,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromTextBoxField() throws Exception {
 		Fields fields = new Fields();
 
-		Field textBoxField = getTextBoxField(_ddmStructure.getStructureId());
-
-		fields.put(textBoxField);
+		fields.put(getTextBoxField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(),
@@ -281,9 +274,7 @@ public class JournalConverterUtilTest {
 	public void testGetContentFromTextField() throws Exception {
 		Fields fields = new Fields();
 
-		Field textField = getTextField(_ddmStructure.getStructureId());
-
-		fields.put(textField);
+		fields.put(getTextField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "text_INSTANCE_bf4sdx6Q");
@@ -318,9 +309,7 @@ public class JournalConverterUtilTest {
 	public void testGetFieldsFromContentWithBooleanElement() throws Exception {
 		Fields expectedFields = new Fields();
 
-		Field booleanField = getBooleanField(_ddmStructure.getStructureId());
-
-		expectedFields.put(booleanField);
+		expectedFields.put(getBooleanField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(),
@@ -379,9 +368,7 @@ public class JournalConverterUtilTest {
 	public void testGetFieldsFromContentWithListElement() throws Exception {
 		Fields expectedFields = new Fields();
 
-		Field listField = getListField(_ddmStructure.getStructureId());
-
-		expectedFields.put(listField);
+		expectedFields.put(getListField(_ddmStructure.getStructureId()));
 
 		Field fieldsDisplayField = getFieldsDisplayField(
 			_ddmStructure.getStructureId(), "list_INSTANCE_pcm9WPVX");
@@ -573,15 +560,12 @@ public class JournalConverterUtilTest {
 	}
 
 	protected DDMForm deserialize(String content) {
-		DDMFormDeserializer ddmFormDeserializer =
-			_ddmFormDeserializerTracker.getDDMFormDeserializer("xsd");
-
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
 
 		DDMFormDeserializerDeserializeResponse
 			ddmFormDeserializerDeserializeResponse =
-				ddmFormDeserializer.deserialize(builder.build());
+				_xsdDDMFormDeserializer.deserialize(builder.build());
 
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
@@ -656,20 +640,19 @@ public class JournalConverterUtilTest {
 	}
 
 	protected Map<String, Layout> getLayoutsMap() throws Exception {
-		Map<String, Layout> layouts = new LinkedHashMap<>(4);
-
 		User user = TestPropsValues.getUser();
 
-		layouts.put(_PRIVATE_LAYOUT, LayoutTestUtil.addLayout(_group, true));
-		layouts.put(
+		return LinkedHashMapBuilder.<String, Layout>put(
+			_PRIVATE_LAYOUT, LayoutTestUtil.addLayout(_group, true)
+		).put(
 			_PRIVATE_USER_LAYOUT,
-			LayoutTestUtil.addLayout(user.getGroupId(), true));
-		layouts.put(_PUBLIC_LAYOUT, LayoutTestUtil.addLayout(_group, false));
-		layouts.put(
+			LayoutTestUtil.addLayout(user.getGroupId(), true)
+		).put(
+			_PUBLIC_LAYOUT, LayoutTestUtil.addLayout(_group, false)
+		).put(
 			_PUBLIC_USER_LAYOUT,
-			LayoutTestUtil.addLayout(user.getGroupId(), false));
-
-		return layouts;
+			LayoutTestUtil.addLayout(user.getGroupId(), false)
+		).build();
 	}
 
 	protected Field getLinkToLayoutField(
@@ -915,10 +898,11 @@ public class JournalConverterUtilTest {
 			});
 	}
 
-	protected void setUpDDMXML() throws Exception {
+	protected void setUpDDMXML() {
 		Registry registry = RegistryUtil.getRegistry();
 
-		_ddmXML = registry.getService(DDMXML.class);
+		_ddmXML = registry.getService(
+			registry.getServiceReference(DDMXML.class));
 	}
 
 	protected void udpateFieldsMap(
@@ -979,11 +963,10 @@ public class JournalConverterUtilTest {
 
 	private static final String _PUBLIC_USER_LAYOUT = "publicUserLayout";
 
+	@Inject(filter = "ddm.form.deserializer.type=xsd")
+	private static DDMFormDeserializer _xsdDDMFormDeserializer;
+
 	private long _classNameId;
-
-	@Inject
-	private DDMFormDeserializerTracker _ddmFormDeserializerTracker;
-
 	private DDMStructure _ddmStructure;
 	private DDMStructureTestHelper _ddmStructureTestHelper;
 	private DDMXML _ddmXML;

@@ -140,8 +140,10 @@ else {
 BufferCacheServletResponse bufferCacheServletResponse = new BufferCacheServletResponse(response);
 
 LiferayHeaderRequest liferayHeaderRequest = HeaderRequestFactory.create(request, portlet, invokerPortlet, portletCtx, windowState, portletMode, portletPreferences, plid);
+
 PortletRequest portletRequest = liferayHeaderRequest;
 LiferayHeaderResponse liferayHeaderResponse = HeaderResponseFactory.create(liferayHeaderRequest, bufferCacheServletResponse);
+
 liferayHeaderRequest.defineObjects(portletConfig, liferayHeaderResponse);
 String responseContentType = liferayHeaderRequest.getResponseContentType();
 
@@ -222,12 +224,10 @@ portletDisplay.setWebDAVEnabled(portlet.getWebDAVStorageInstance() != null);
 
 if (portlet.isActive() && portlet.isReady() && supportsMimeType && (invokerPortlet != null)) {
 	try {
-		if (!PortalUtil.isSkipPortletContentProcesssing(group, request, layoutTypePortlet, portletDisplay, portletDisplay.getPortletName())) {
-			if (invokerPortlet.isHeaderPortlet()) {
-				invokerPortlet.renderHeaders(liferayHeaderRequest, liferayHeaderResponse);
+		if (!PortalUtil.isSkipPortletContentRendering(group, layoutTypePortlet, portletDisplay, portletDisplay.getPortletName()) && invokerPortlet.isHeaderPortlet()) {
+			invokerPortlet.renderHeaders(liferayHeaderRequest, liferayHeaderResponse);
 
-				liferayHeaderResponse.writeToHead();
-			}
+			liferayHeaderResponse.writeToHead();
 		}
 
 		liferayHeaderResponse.transferHeaders(bufferCacheServletResponse);

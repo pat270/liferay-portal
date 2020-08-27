@@ -1,0 +1,252 @@
+definition {
+
+	macro assertDescriptions {
+		AssertTextEquals(
+			key_fieldName = "enabled",
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_TEXT",
+			value1 = "Enabling multi-factor authentication implies enabling Email One-Time Password. It is strongly advised that other forms of user authentication that only support a single factor are disabled (e.g. Basic, Digest, WEBDAV).");
+
+		AssertTextEquals(
+			key_fieldName = "otpSize",
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_TEXT",
+			value1 = "Set the length of a one-time password.");
+
+		AssertTextEquals(
+			key_fieldName = "resendEmailTimeout",
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_TEXT",
+			value1 = "Set the allowed time in seconds between one-time password requests.");
+
+		AssertTextEquals(
+			key_fieldName = "emailFromAddress",
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_TEXT",
+			value1 = "Set the sender address on the one-time password email.");
+
+		AssertTextEquals(
+			key_fieldName = "failedAttemptsAllowed",
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_TEXT",
+			value1 = "Set the number of verification attempts allowed before blocking for the retry timeout.");
+
+		AssertTextEquals(
+			key_fieldName = "retryTimeout",
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_TEXT",
+			value1 = "Set the time in seconds to block requests after reaching the limit for failed attempts allowed.");
+	}
+
+	macro configureIPAddress {
+		if ("${enableIP}" == "true") {
+			FormFields.enableCheckbox(fieldName = "enabled");
+
+			if (isSet(allowedIP)) {
+				Type(
+					locator1 = "MultiFactorAuthentication#IP_ADDRESS_CONFIGURATION_ALLOWED_IP_FIELD_1",
+					value1 = "${allowedIP}");
+			}
+		}
+		else if ("${enableIP}" == "false") {
+			FormFields.disableCheckbox(fieldName = "enabled");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro configureMFAOnSystemLevel {
+		if ("${disabledMFA}" == "true") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "System Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Multi-Factor Authentication",
+				configurationName = "Multi-Factor Authentication System Configuration",
+				configurationScope = "System Scope");
+
+			FormFields.enableCheckbox(fieldName = "Disable Multi-Factor Authentication");
+		}
+		else if ("${disabledMFA}" == "false") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "System Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Multi-Factor Authentication",
+				configurationName = "Multi-Factor Authentication System Configuration",
+				configurationScope = "System Scope");
+
+			FormFields.disableCheckbox(fieldName = "Disable Multi-Factor Authentication");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro configureOTP {
+		if ("${enableOTP}" == "true") {
+			FormFields.enableCheckbox(fieldName = "enabled");
+		}
+		else if ("${enableOTP}" == "false") {
+			FormFields.disableCheckbox(fieldName = "enabled");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro configureOTPEmailSender {
+		Type(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_SENDER_ADDRESS_FIELD",
+			value1 = "${emailAddress}");
+
+		Type(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_SENDER_NAME_FIELD",
+			value1 = "${emailSenderName}");
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro emailOTPConfiguration {
+		var failedAttemptsAllowed = "${failedAttemptsAllowed}";
+
+		if (isSet(failedAttemptsAllowed)) {
+			Type(
+				key_fieldName = "failedAttemptsAllowed",
+				locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_FIELD",
+				value1 = "${failedAttemptsAllowed}");
+		}
+
+		var retryTimeout = "${retryTimeout}";
+
+		if (isSet(retryTimeout)) {
+			Type(
+				key_fieldName = "retryTimeout",
+				locator1 = "MultiFactorAuthentication#EMAIL_OTP_CONFIG_FIELD",
+				value1 = "${retryTimeout}");
+		}
+
+		var emailOTPSentSubject = "${emailOTPSentSubject}";
+
+		if (isSet(emailOTPSentSubject)) {
+			Type(
+				key_fieldName = "emailOTPSentSubject",
+				locator1 = "MultiFactorAuthentication#EMAIL_OTP_TEMPLATE_FIELD",
+				value1 = "${emailOTPSentSubject}");
+		}
+
+		var emailOTPSentBody = "${emailOTPSentBody}";
+
+		if (isSet(emailOTPSentBody)) {
+			Type(
+				key_fieldName = "emailOTPSentBody",
+				locator1 = "MultiFactorAuthentication#EMAIL_OTP_TEMPLATE_FIELD",
+				value1 = "${emailOTPSentBody}");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro sendOTPEmailPG {
+		AssertElementPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_INFO_MESSAGE");
+
+		AssertClick(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_SEND_EMAIL_BUTTON",
+			value1 = "Send");
+
+		AssertTextEquals(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_SUCCESS_MESSAGE",
+			value1 = "Your one-time password has been sent by email.");
+	}
+
+	macro verifyOTP {
+		if (isSet(specificURL)) {
+			Navigator.openSpecificURL(url = "${specificURL}");
+		}
+		else {
+			Navigator.openURL();
+		}
+
+		SignIn._signIn(
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
+
+		if ("${validOTP}" == "false") {
+			Type(
+				locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_FIELD",
+				value1 = "InvalidOTP");
+
+			Button.click(button = "Submit");
+
+			AssertElementPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_FAILED_MESSAGE");
+			AssertElementNotPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+		}
+		else {
+			var bodySpecificText = MockMock.getBodySpecificText(
+				asset = "${portalURL}",
+				content = "Your one-time password is:",
+				enableOTP = "true",
+				recipient = "${recipient}",
+				sender = "Joe Bloggs",
+				specificText = "Your one-time password is: <pre>",
+				subject = "${portalURL}");
+
+			if (isSet(specificURL)) {
+				Navigator.openSpecificURL(url = "${specificURL}");
+			}
+			else {
+				Navigator.openURL();
+			}
+
+			SignIn._signIn(
+				userEmailAddress = "${userEmailAddress}",
+				userPassword = "${userPassword}");
+
+			Type(
+				locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_FIELD",
+				value1 = "${bodySpecificText}");
+
+			Button.click(button = "Submit");
+
+			if (IsElementPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_FAILED_MESSAGE")) {
+				AssertElementNotPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+			}
+			else {
+				AssertElementNotPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_FIELD");
+				AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+			}
+		}
+	}
+
+	macro viewOTPEmailSenderCP {
+		AssertTextEquals(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_SENDER_ADDRESS_FIELD",
+			value1 = "${emailAddress}");
+
+		AssertTextEquals(
+			locator1 = "MultiFactorAuthentication#EMAIL_OTP_SENDER_NAME_FIELD",
+			value1 = "${emailSenderName}");
+	}
+
+}

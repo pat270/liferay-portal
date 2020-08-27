@@ -14,60 +14,80 @@
  */
 --%>
 
-<%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
-page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
-page import="com.liferay.portal.kernel.util.StringUtil" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %><%@
-page import="com.liferay.portal.search.web.internal.custom.filter.display.context.CustomFilterDisplayContext" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
+taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+
+<%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
+page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@
+page import="com.liferay.portal.kernel.util.WebKeys" %><%@
+page import="com.liferay.portal.search.web.internal.custom.filter.configuration.CustomFilterPortletInstanceConfiguration" %><%@
+page import="com.liferay.portal.search.web.internal.custom.filter.display.context.CustomFilterDisplayContext" %>
+
+<%@ page import="java.util.ArrayList" %><%@
+page import="java.util.Map" %>
 
 <portlet:defineObjects />
 
 <%
 CustomFilterDisplayContext customFilterDisplayContext = (CustomFilterDisplayContext)java.util.Objects.requireNonNull(request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT));
+
+CustomFilterPortletInstanceConfiguration customFilterPortletInstanceConfiguration = customFilterDisplayContext.getCustomFilterPortletInstanceConfiguration();
+
+Map<String, Object> contextObjects = HashMapBuilder.<String, Object>put(
+	"customFilterDisplayContext", customFilterDisplayContext
+).put(
+	"namespace", liferayPortletResponse.getNamespace()
+).build();
 %>
 
-<c:choose>
-	<c:when test="<%= customFilterDisplayContext.isRenderNothing() %>">
-		<aui:input autocomplete="off" name="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getParameterName()) %>" type="hidden" value="<%= customFilterDisplayContext.getFilterValue() %>" />
-	</c:when>
-	<c:otherwise>
-		<liferay-ui:panel-container
-			extended="<%= true %>"
-			id='<%= renderResponse.getNamespace() + "filterCustomPanelContainer" %>'
-			markupView="lexicon"
-			persistState="<%= true %>"
+<c:if test="<%= !customFilterDisplayContext.isRenderNothing() %>">
+	<aui:form action="<%= customFilterDisplayContext.getSearchURL() %>" method="get" name="fm">
+		<liferay-ddm:template-renderer
+			className="<%= CustomFilterDisplayContext.class.getName() %>"
+			contextObjects="<%= contextObjects %>"
+			displayStyle="<%= customFilterPortletInstanceConfiguration.displayStyle() %>"
+			displayStyleGroupId="<%= customFilterDisplayContext.getDisplayStyleGroupId() %>"
+			entries="<%= new ArrayList<CustomFilterDisplayContext>() %>"
 		>
-			<liferay-ui:panel
-				collapsible="<%= true %>"
-				cssClass="search-facet"
-				id='<%= renderResponse.getNamespace() + "filterCustomPanel" %>'
+			<liferay-ui:panel-container
+				extended="<%= true %>"
+				id='<%= liferayPortletResponse.getNamespace() + "filterCustomPanelContainer" %>'
 				markupView="lexicon"
 				persistState="<%= true %>"
-				title="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getHeading()) %>"
 			>
-				<aui:form action="<%= customFilterDisplayContext.getSearchURL() %>" method="get" name="customFilterForm">
-					<aui:input cssClass="custom-filter-value-input" data-qa-id="customFilterValueInput" id="<%= renderResponse.getNamespace() + StringUtil.randomId() %>" label="" name="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getParameterName()) %>" useNamespace="<%= false %>" value="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getFilterValue()) %>" />
+				<liferay-ui:panel
+					collapsible="<%= true %>"
+					cssClass="search-facet"
+					id='<%= liferayPortletResponse.getNamespace() + "filterCustomPanel" %>'
+					markupView="lexicon"
+					persistState="<%= true %>"
+					title="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getHeading()) %>"
+				>
+					<aui:input cssClass="custom-filter-value-input" data-qa-id="customFilterValueInput" disabled="<%= customFilterDisplayContext.isImmutable() %>" id="<%= liferayPortletResponse.getNamespace() + StringUtil.randomId() %>" label="" name="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getParameterName()) %>" useNamespace="<%= false %>" value="<%= HtmlUtil.escapeAttribute(customFilterDisplayContext.getFilterValue()) %>" />
 
 					<clay:button
-						ariaLabel='<%= LanguageUtil.get(request, "apply") %>'
-						elementClasses="custom-filter-apply-button"
-						label='<%= LanguageUtil.get(request, "apply") %>'
-						size="sm"
-						style="secondary"
+						aria-label='<%= LanguageUtil.get(request, "apply") %>'
+						cssClass="custom-filter-apply-button"
+						disabled="<%= customFilterDisplayContext.isImmutable() %>"
+						displayType="secondary"
+						label="apply"
+						small="<%= true %>"
 						type="submit"
 					/>
-				</aui:form>
-			</liferay-ui:panel>
-		</liferay-ui:panel-container>
+				</liferay-ui:panel>
+			</liferay-ui:panel-container>
+		</liferay-ddm:template-renderer>
+	</aui:form>
 
-		<aui:script use="liferay-search-custom-filter">
-			new Liferay.Search.CustomFilter(A.one('#<portlet:namespace/>customFilterForm'));
-		</aui:script>
-	</c:otherwise>
-</c:choose>
+	<aui:script use="liferay-search-custom-filter">
+		new Liferay.Search.CustomFilter(A.one('#<portlet:namespace/>fm'));
+	</aui:script>
+</c:if>

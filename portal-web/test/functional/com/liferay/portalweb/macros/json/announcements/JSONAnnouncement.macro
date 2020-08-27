@@ -1,0 +1,63 @@
+definition {
+
+	@summary = "Add a basic announcement"
+	macro addAnnouncement {
+		Variables.assertDefined(parameterList = "${announcementTitle},${announcementContent}");
+
+		var portalURL = JSONCompany.getPortalURL();
+
+		if (!(isSet(userEmailAddress))) {
+			var userEmailAddress = "test@liferay.com";
+		}
+
+		if (!(isSet(userPassword))) {
+			var userPassword = "test";
+		}
+
+		if (!(isSet(announcementURL))) {
+			var announcementURL = "";
+		}
+
+		if (!(isSet(announcementType))) {
+			var announcementType = "general";
+		}
+
+		if (!(isSet(priority))) {
+			var priority = "0";
+		}
+		else {
+			var priority = "1";
+		}
+
+		if (!(isSet(displayDate))) {
+			var displayDateDay = DateUtil.getCurrentDate();
+			var displayDateMonth = DateUtil.getCurrentMonth();
+			var displayDateYear = DateUtil.getCurrentYear();
+
+			var displayDate = "${displayDateYear}%2D${displayDateMonth}%2D${displayDateDay}";
+		}
+
+		if (!(isSet(expirationDate))) {
+			var displayDateMonth = DateUtil.getCurrentMonth();
+			var expirationMonth = ${displayDateMonth} + 1;
+
+			if ("${expirationMonth}" == "13") {
+				var expirationMonth = "${expirationMonth} - 12";
+			}
+
+			var expirationDate = "${displayDateYear}%2D${expirationMonth}%2D${displayDateDay}";
+		}
+
+		JSONAnnouncementAPI._addAnnouncement(
+			announcementContent = "${announcementContent}",
+			announcementTitle = "${announcementTitle}",
+			announcementType = "${announcementType}",
+			announcementURL = "${announcementURL}",
+			displayDate = "${displayDate}",
+			expirationDate = "${expirationDate}",
+			priority = "${priority}",
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
+	}
+
+}

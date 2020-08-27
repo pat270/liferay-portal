@@ -39,8 +39,6 @@ import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.osgi.framework.Bundle;
-
 /**
  * @author Pei-Jung Lan
  */
@@ -48,12 +46,12 @@ public abstract class BaseAppManagerManagementToolbarDisplayContext
 	extends BaseManagementToolbarDisplayContext {
 
 	public BaseAppManagerManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest);
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse);
 	}
 
 	public String getCategory() {
@@ -68,10 +66,9 @@ public abstract class BaseAppManagerManagementToolbarDisplayContext
 	public List<DropdownItem> getCategoryDropdownItems() {
 		List<App> apps = AppLocalServiceUtil.getApps(
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-		List<Bundle> bundles = BundleManagerUtil.getBundles();
 
 		String[] categories = MarketplaceAppManagerUtil.getCategories(
-			apps, bundles);
+			apps, BundleManagerUtil.getBundles());
 
 		Map<String, String> categoriesMap = new LinkedHashMap<>();
 
@@ -111,7 +108,8 @@ public abstract class BaseAppManagerManagementToolbarDisplayContext
 		return searchActionURL.toString();
 	}
 
-	public abstract SearchContainer getSearchContainer() throws Exception;
+	public abstract SearchContainer<Object> getSearchContainer()
+		throws Exception;
 
 	public String getState() {
 		if (Validator.isNull(_state)) {

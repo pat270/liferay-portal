@@ -34,8 +34,8 @@ public class WhitespaceRemoverTag extends BodyTagSupport {
 
 			jspWriter.write(getBodyContentString());
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 
 		return EVAL_PAGE;
@@ -51,10 +51,8 @@ public class WhitespaceRemoverTag extends BodyTagSupport {
 
 		String bodyContentString = StringUtil.trim(bodyContent.getString());
 
-		bodyContentString = StringUtil.removeChars(
+		return StringUtil.removeChars(
 			bodyContentString, CharPool.NEW_LINE, CharPool.TAB);
-
-		return bodyContentString;
 	}
 
 }

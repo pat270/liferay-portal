@@ -14,14 +14,15 @@
 
 package com.liferay.asset.model;
 
+import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -30,9 +31,11 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see AssetEntryUsage
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ com.liferay.layout.model.impl.LayoutClassedModelUsageImpl}
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AssetEntryUsageWrapper
 	extends BaseModelWrapper<AssetEntryUsage>
 	implements AssetEntryUsage, ModelWrapper<AssetEntryUsage> {
@@ -45,9 +48,12 @@ public class AssetEntryUsageWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("assetEntryUsageId", getAssetEntryUsageId());
 		attributes.put("groupId", getGroupId());
+		attributes.put("companyId", getCompanyId());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("assetEntryId", getAssetEntryId());
@@ -62,6 +68,18 @@ public class AssetEntryUsageWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -78,6 +96,12 @@ public class AssetEntryUsageWrapper
 
 		if (groupId != null) {
 			setGroupId(groupId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
 		}
 
 		Date createDate = (Date)attributes.get("createDate");
@@ -150,6 +174,16 @@ public class AssetEntryUsageWrapper
 	}
 
 	/**
+	 * Returns the company ID of this asset entry usage.
+	 *
+	 * @return the company ID of this asset entry usage
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
 	 * Returns the container key of this asset entry usage.
 	 *
 	 * @return the container key of this asset entry usage
@@ -180,6 +214,16 @@ public class AssetEntryUsageWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this asset entry usage.
+	 *
+	 * @return the ct collection ID of this asset entry usage
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this asset entry usage.
 	 *
 	 * @return the group ID of this asset entry usage
@@ -207,6 +251,16 @@ public class AssetEntryUsageWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this asset entry usage.
+	 *
+	 * @return the mvcc version of this asset entry usage
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -275,6 +329,16 @@ public class AssetEntryUsageWrapper
 	}
 
 	/**
+	 * Sets the company ID of this asset entry usage.
+	 *
+	 * @param companyId the company ID of this asset entry usage
+	 */
+	@Override
+	public void setCompanyId(long companyId) {
+		model.setCompanyId(companyId);
+	}
+
+	/**
 	 * Sets the container key of this asset entry usage.
 	 *
 	 * @param containerKey the container key of this asset entry usage
@@ -305,6 +369,16 @@ public class AssetEntryUsageWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this asset entry usage.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset entry usage
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this asset entry usage.
 	 *
 	 * @param groupId the group ID of this asset entry usage
@@ -332,6 +406,16 @@ public class AssetEntryUsageWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset entry usage.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry usage
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -372,6 +456,25 @@ public class AssetEntryUsageWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<AssetEntryUsage, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<AssetEntryUsage, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
+	}
+
+	@Override
+	public StagedModelType getStagedModelType() {
+		return model.getStagedModelType();
 	}
 
 	@Override

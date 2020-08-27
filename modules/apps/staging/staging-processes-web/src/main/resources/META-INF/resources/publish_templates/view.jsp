@@ -49,7 +49,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "publish-templates"));
 </liferay-portlet:renderURL>
 
 <%
-StagingProcessesWebPublishTemplatesToolbarDisplayContext stagingProcessesWebPublishTemplatesToolbarDisplayContext = new StagingProcessesWebPublishTemplatesToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, pageContext, portletURL);
+StagingProcessesWebPublishTemplatesToolbarDisplayContext stagingProcessesWebPublishTemplatesToolbarDisplayContext = new StagingProcessesWebPublishTemplatesToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, pageContext, portletURL);
 %>
 
 <clay:navigation-bar
@@ -65,7 +65,10 @@ StagingProcessesWebPublishTemplatesToolbarDisplayContext stagingProcessesWebPubl
 	showSearch="<%= true %>"
 />
 
-<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<aui:form action="<%= portletURL %>">
 		<liferay-ui:search-container
 			searchContainer="<%= stagingProcessesWebPublishTemplatesToolbarDisplayContext.getSearchContainer() %>"
@@ -130,4 +133,4 @@ StagingProcessesWebPublishTemplatesToolbarDisplayContext stagingProcessesWebPubl
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>

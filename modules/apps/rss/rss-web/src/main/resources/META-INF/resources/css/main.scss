@@ -2,3 +2,13 @@
 	height: auto;
 	max-width: 100%;
 }
+
+.feed-image-left {
+	display: flex;
+	justify-content: flex-start;
+}
+
+.feed-image-right {
+	display: flex;
+	justify-content: flex-end;
+}

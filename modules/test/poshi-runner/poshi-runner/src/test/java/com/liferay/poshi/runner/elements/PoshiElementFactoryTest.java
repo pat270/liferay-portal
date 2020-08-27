@@ -92,7 +92,9 @@ public class PoshiElementFactoryTest {
 	public void testPoshiScriptLineNumbers() throws Exception {
 		PoshiElement rootPoshiElement = _getPoshiElement("PoshiScript.macro");
 
-		int[] expectedLineNumbers = {3, 8, 9, 11, 16, 20, 25, 27, 34, 36};
+		int[] expectedLineNumbers = {
+			3, 8, 9, 10, 11, 13, 18, 22, 26, 30, 34, 38, 43, 45, 52, 54
+		};
 
 		int i = 0;
 
@@ -103,7 +105,7 @@ public class PoshiElementFactoryTest {
 				for (Node childNode :
 						Dom4JUtil.toNodeList(poshiElement.content())) {
 
-					PoshiNode childPoshiNode = (PoshiNode)childNode;
+					PoshiNode<?, ?> childPoshiNode = (PoshiNode<?, ?>)childNode;
 
 					Assert.assertEquals(
 						"The the expected line number does not match",
@@ -150,6 +152,17 @@ public class PoshiElementFactoryTest {
 	}
 
 	@Test
+	public void testPoshiXMLMacroAlternate() throws Exception {
+		PoshiElement actualElement = _getPoshiElement(
+			"AlternatePoshiScript.macro");
+		Element expectedElement = _getDom4JElement("PoshiSyntax.macro");
+
+		_assertEqualElements(
+			actualElement, expectedElement,
+			"Poshi script syntax does not translate to Poshi XML");
+	}
+
+	@Test
 	public void testPoshiXMLMacroFormat() throws Exception {
 		PoshiElement actualElement = _getPoshiElement(
 			"UnformattedPoshiScript.macro");
@@ -193,8 +206,6 @@ public class PoshiElementFactoryTest {
 		PoshiElement poshiElement = _getPoshiElement(fileName);
 
 		String poshiScript = poshiElement.toPoshiScript();
-
-		PoshiNodeFactory.setValidatePoshiScript(false);
 
 		PoshiElement actualElement =
 			(PoshiElement)PoshiNodeFactory.newPoshiNode(

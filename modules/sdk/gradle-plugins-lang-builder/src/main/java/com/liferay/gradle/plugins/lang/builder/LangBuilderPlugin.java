@@ -14,11 +14,16 @@
 
 package com.liferay.gradle.plugins.lang.builder;
 
-import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.plugins.lang.builder.internal.util.GradleUtil;
+import com.liferay.gradle.util.Validator;
+
+import groovy.lang.Closure;
 
 import java.io.File;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -27,11 +32,14 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 
@@ -39,6 +47,8 @@ import org.gradle.api.tasks.TaskContainer;
  * @author Andrea Di Giorgi
  */
 public class LangBuilderPlugin implements Plugin<Project> {
+
+	public static final String APP_BUILD_LANG_TASK_NAME = "appBuildLang";
 
 	public static final String BUILD_LANG_TASK_NAME = "buildLang";
 
@@ -49,7 +59,9 @@ public class LangBuilderPlugin implements Plugin<Project> {
 		Configuration langBuilderConfiguration = _addConfigurationLangBuilder(
 			project);
 
-		_addTaskBuildLang(project);
+		BuildLangTask buildLangTask = _addTaskBuildLang(project);
+
+		_configureTaskBuildLang(buildLangTask);
 
 		_configureTasksBuildLang(project, langBuilderConfiguration);
 	}
@@ -81,6 +93,21 @@ public class LangBuilderPlugin implements Plugin<Project> {
 			"com.liferay.lang.builder", "latest.release");
 	}
 
+	private BuildLangTask _addTaskAppBuildLang(
+		Project project, File appLangFile) {
+
+		BuildLangTask buildLangTask = GradleUtil.addTask(
+			project, APP_BUILD_LANG_TASK_NAME, BuildLangTask.class);
+
+		buildLangTask.setDescription(
+			"Runs Liferay Lang Builder to translate language property files " +
+				"for the app.");
+		buildLangTask.setLangDir(appLangFile.getParentFile());
+		buildLangTask.setLangFileName("bundle");
+
+		return buildLangTask;
+	}
+
 	private BuildLangTask _addTaskBuildLang(Project project) {
 		final BuildLangTask buildLangTask = GradleUtil.addTask(
 			project, BUILD_LANG_TASK_NAME, BuildLangTask.class);
@@ -105,10 +132,48 @@ public class LangBuilderPlugin implements Plugin<Project> {
 		return buildLangTask;
 	}
 
+	private void _configureTaskBuildLang(BuildLangTask buildLangTask) {
+		Project appProject = GradleUtil.getAppProject(
+			buildLangTask.getProject());
+
+		if (appProject != null) {
+			File appLangFile = new File(
+				appProject.getProjectDir(),
+				"app.bnd-localization/bundle.properties");
+
+			if (appLangFile.exists()) {
+				BuildLangTask appBuildLangTask = null;
+
+				if (GradleUtil.hasTask(appProject, APP_BUILD_LANG_TASK_NAME)) {
+					appBuildLangTask = (BuildLangTask)GradleUtil.getTask(
+						appProject, APP_BUILD_LANG_TASK_NAME);
+				}
+				else {
+					appBuildLangTask = _addTaskAppBuildLang(
+						appProject, appLangFile);
+				}
+
+				buildLangTask.dependsOn(appBuildLangTask);
+			}
+		}
+	}
+
 	private void _configureTaskBuildLangClasspath(
 		BuildLangTask buildLangTask, FileCollection fileCollection) {
 
 		buildLangTask.setClasspath(fileCollection);
+
+		Project appProject = GradleUtil.getAppProject(
+			buildLangTask.getProject());
+
+		if ((appProject != null) &&
+			GradleUtil.hasTask(appProject, APP_BUILD_LANG_TASK_NAME)) {
+
+			BuildLangTask appBuildLangTask = (BuildLangTask)GradleUtil.getTask(
+				appProject, APP_BUILD_LANG_TASK_NAME);
+
+			appBuildLangTask.setClasspath(fileCollection);
+		}
 	}
 
 	private void _configureTaskBuildLangForJavaPlugin(
@@ -122,6 +187,86 @@ public class LangBuilderPlugin implements Plugin<Project> {
 					return new File(
 						_getResourcesDir(buildLangTask.getProject()),
 						"content");
+				}
+
+			});
+
+		_configureTaskProcessResources(buildLangTask.getProject());
+	}
+
+	@SuppressWarnings("serial")
+	private void _configureTaskProcessResources(final Project project) {
+		File appDir = GradleUtil.getRootDir(project, "app.bnd");
+
+		final File appBndLocalizationDir = new File(
+			appDir, "app.bnd-localization");
+
+		if (!appBndLocalizationDir.exists()) {
+			return;
+		}
+
+		Copy copy = (Copy)GradleUtil.getTask(
+			project, JavaPlugin.PROCESS_RESOURCES_TASK_NAME);
+
+		final Map<String, String> relengProperties = new HashMap<>();
+
+		Map<String, ?> projectProperties = project.getProperties();
+
+		for (Map.Entry<String, ?> entry : projectProperties.entrySet()) {
+			Object value = entry.getValue();
+
+			if (value instanceof String) {
+				String key = entry.getKey();
+
+				if (key.startsWith("liferay.releng")) {
+					relengProperties.put("${" + key + "}", (String)value);
+				}
+			}
+		}
+
+		final Action<FileCopyDetails> action = new Action<FileCopyDetails>() {
+
+			@Override
+			public void execute(final FileCopyDetails fileCopyDetails) {
+				fileCopyDetails.filter(
+					new Closure<Void>(copy) {
+
+						@SuppressWarnings("unused")
+						public String doCall(String line) {
+							if (Validator.isNull(line)) {
+								return line;
+							}
+
+							for (Map.Entry<String, String> entry :
+									relengProperties.entrySet()) {
+
+								line = line.replace(
+									entry.getKey(), entry.getValue());
+							}
+
+							return line;
+						}
+
+					});
+			}
+
+		};
+
+		copy.from(
+			new Callable<File>() {
+
+				@Override
+				public File call() throws Exception {
+					return appBndLocalizationDir;
+				}
+
+			},
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.eachFile(action);
+					copySpec.into("OSGI-INF/l10n");
 				}
 
 			});

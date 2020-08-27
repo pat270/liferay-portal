@@ -15,6 +15,7 @@
 package com.liferay.gradle.plugins.node;
 
 import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.node.internal.util.NodePluginUtil;
 import com.liferay.gradle.util.OSDetector;
 import com.liferay.gradle.util.Validator;
 
@@ -42,6 +43,10 @@ public class NodeExtension {
 
 			@Override
 			public File call() throws Exception {
+				if (!isDownload()) {
+					return null;
+				}
+
 				Project curProject = project;
 
 				if (isGlobal()) {
@@ -145,6 +150,52 @@ public class NodeExtension {
 		};
 
 		_project = project;
+
+		_scriptFile = new Callable<File>() {
+
+			@Override
+			public File call() throws Exception {
+				File nodeDir = getNodeDir();
+
+				if (nodeDir == null) {
+					return null;
+				}
+
+				if (isUseNpm()) {
+					return new File(
+						NodePluginUtil.getNpmDir(nodeDir), "bin/npm-cli.js");
+				}
+
+				return new File(
+					NodePluginUtil.getYarnDir(nodeDir),
+					"yarn-" + getYarnVersion() + ".js");
+			}
+
+		};
+
+		_yarnUrl = new Callable<String>() {
+
+			@Override
+			public String call() throws Exception {
+				String yarnVersion = getYarnVersion();
+
+				if (Validator.isNull(yarnVersion)) {
+					return null;
+				}
+
+				StringBuilder sb = new StringBuilder();
+
+				sb.append(
+					"https://github.com/yarnpkg/yarn/releases/download/v");
+				sb.append(yarnVersion);
+				sb.append("/yarn-");
+				sb.append(yarnVersion);
+				sb.append(".js");
+
+				return sb.toString();
+			}
+
+		};
 	}
 
 	public File getNodeDir() {
@@ -171,12 +222,28 @@ public class NodeExtension {
 		return GradleUtil.toString(_npmVersion);
 	}
 
+	public File getScriptFile() {
+		return GradleUtil.toFile(_project, _scriptFile);
+	}
+
+	public String getYarnUrl() {
+		return GradleUtil.toString(_yarnUrl);
+	}
+
+	public String getYarnVersion() {
+		return GradleUtil.toString(_yarnVersion);
+	}
+
 	public boolean isDownload() {
 		return _download;
 	}
 
 	public boolean isGlobal() {
 		return _global;
+	}
+
+	public boolean isUseNpm() {
+		return GradleUtil.toBoolean(_useNpm);
 	}
 
 	public NodeExtension npmArgs(Iterable<?> npmArgs) {
@@ -227,6 +294,22 @@ public class NodeExtension {
 		_npmVersion = npmVersion;
 	}
 
+	public void setScriptFile(Object scriptFile) {
+		_scriptFile = scriptFile;
+	}
+
+	public void setUseNpm(Object useNpm) {
+		_useNpm = useNpm;
+	}
+
+	public void setYarnUrl(Object yarnUrl) {
+		_yarnUrl = yarnUrl;
+	}
+
+	public void setYarnVersion(Object yarnVersion) {
+		_yarnVersion = yarnVersion;
+	}
+
 	private static final Map<String, String> _npmVersions =
 		new HashMap<String, String>() {
 			{
@@ -257,5 +340,9 @@ public class NodeExtension {
 	private Object _npmUrl;
 	private Object _npmVersion;
 	private final Project _project;
+	private Object _scriptFile;
+	private Object _useNpm = true;
+	private Object _yarnUrl;
+	private Object _yarnVersion = "1.13.0";
 
 }

@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.net.URI;
 
@@ -38,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,9 +94,9 @@ public class MediaQueryProviderImpl implements MediaQueryProvider {
 
 			return adaptiveMediaStream.findFirst();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 
 			return Optional.empty();
@@ -115,19 +115,23 @@ public class MediaQueryProviderImpl implements MediaQueryProvider {
 			return adaptiveMediaOptional.get();
 		}
 
-		Optional<Integer> widthOptional = _getWidth(amImageConfigurationEntry);
-		Optional<Integer> heightOptional = _getHeight(
-			amImageConfigurationEntry);
-
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put(
+		Map<String, String> properties = HashMapBuilder.put(
 			AMImageAttribute.AM_IMAGE_ATTRIBUTE_WIDTH.getName(),
-			String.valueOf(widthOptional.orElse(0)));
+			() -> {
+				Optional<Integer> widthOptional = _getWidth(
+					amImageConfigurationEntry);
 
-		properties.put(
+				return String.valueOf(widthOptional.orElse(0));
+			}
+		).put(
 			AMImageAttribute.AM_IMAGE_ATTRIBUTE_HEIGHT.getName(),
-			String.valueOf(heightOptional.orElse(0)));
+			() -> {
+				Optional<Integer> heightOptional = _getHeight(
+					amImageConfigurationEntry);
+
+				return String.valueOf(heightOptional.orElse(0));
+			}
+		).build();
 
 		return new AMImage(
 			() -> null, AMImageAttributeMapping.fromProperties(properties),
@@ -188,8 +192,8 @@ public class MediaQueryProviderImpl implements MediaQueryProvider {
 			return _amImageURLFactory.createFileEntryURL(
 				fileEntry.getFileVersion(), amImageConfigurationEntry);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -269,7 +273,7 @@ public class MediaQueryProviderImpl implements MediaQueryProvider {
 
 			return Optional.of(height);
 		}
-		catch (NumberFormatException nfe) {
+		catch (NumberFormatException numberFormatException) {
 			return Optional.empty();
 		}
 	}

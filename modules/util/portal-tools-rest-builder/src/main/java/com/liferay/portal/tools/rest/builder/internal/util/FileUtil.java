@@ -51,6 +51,12 @@ public class FileUtil {
 	public static void deleteFiles(String dirName, List<File> files)
 		throws Exception {
 
+		Path path = Paths.get(dirName);
+
+		if (!Files.exists(path)) {
+			return;
+		}
+
 		Set<String> canonicalPaths = new HashSet<>();
 
 		for (File file : files) {
@@ -58,7 +64,7 @@ public class FileUtil {
 		}
 
 		Files.walkFileTree(
-			Paths.get(dirName),
+			path,
 			new SimpleFileVisitor<Path>() {
 
 				@Override
@@ -128,7 +134,7 @@ public class FileUtil {
 		String s = new String(
 			Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
 
-		return s.replace("\r\n", "\n");
+		return StringUtil.replace(s, "\r\n", "\n");
 	}
 
 	public static void write(File file, String content) throws Exception {

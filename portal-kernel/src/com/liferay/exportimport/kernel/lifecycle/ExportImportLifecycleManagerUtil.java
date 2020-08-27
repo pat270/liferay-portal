@@ -18,24 +18,10 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.io.Serializable;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class ExportImportLifecycleManagerUtil {
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static void fireExportImportLifecycleEvent(
-		int code, int processFlag, Serializable... arguments) {
-
-		_exportImportLifecycleManager.fireExportImportLifecycleEvent(
-			code, processFlag, arguments);
-	}
 
 	public static void fireExportImportLifecycleEvent(
 		int code, int processFlag, String processId,

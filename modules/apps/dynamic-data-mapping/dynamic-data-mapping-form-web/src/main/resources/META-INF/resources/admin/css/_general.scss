@@ -21,20 +21,20 @@ td.lfr-name-column {
 }
 
 .ddm-form-builder-buttons {
-	.btn-default {
+	.btn-secondary {
 		margin-left: 12px;
+	}
 
-		&.btn-link {
-			font-weight: 600;
+	.btn-link {
+		font-weight: 600;
 
-			&:focus {
-				box-shadow: none;
-			}
+		&:focus {
+			box-shadow: none;
 		}
+	}
 
-		&.btn-primary {
-			margin-left: 0;
-		}
+	.btn-primary {
+		margin-left: 0;
 	}
 }
 
@@ -57,7 +57,7 @@ td.lfr-name-column {
 .ddm-form-settings-modal,
 .publish-modal-container {
 	.modal-body {
-		background-color: #FFF;
+		background-color: #fff;
 	}
 }
 
@@ -137,11 +137,24 @@ td.lfr-name-column {
 	}
 }
 
+.ddm-share-url-popover {
+	max-width: 500px;
+	width: 100%;
+}
+
 .dynamic-data-mapping-data-providers-modal {
 	max-width: 720px;
 
 	.modal-content {
 		z-index: 1;
+	}
+}
+
+.editing-form-entry {
+	background-color: white;
+	.ddm-form-basic-info {
+		padding-left: 20px;
+		padding-top: 15px;
 	}
 }
 
@@ -156,7 +169,7 @@ td.lfr-name-column {
 	}
 
 	li {
-		color: #869CAD;
+		color: #869cad;
 		cursor: pointer;
 		font-size: 15px;
 		font-weight: normal;
@@ -190,10 +203,21 @@ td.lfr-name-column {
 
 .form-builder-sidebar,
 .portlet-forms {
-	.form-group .alloy-editor-container.input-group .alloy-editor-placeholder.ae-placeholder {
+	.form-group
+		.alloy-editor-container.input-group
+		.alloy-editor-placeholder.ae-placeholder {
 		border-left: 0;
 		padding-left: 0;
 		width: inherit;
+	}
+
+	.forms-navigation-bar,
+	.navigation-bar-secondary,
+	.management-bar {
+		position: sticky;
+		top: 56px;
+		width: 100%;
+		z-index: 10;
 	}
 
 	.icon-asterisk {
@@ -201,13 +225,17 @@ td.lfr-name-column {
 	}
 
 	.input-group-container .input-group-addon {
-		background-color: #E7E7ED;
+		background-color: #e7e7ed;
 	}
 
 	.liferay-ddm-form-field-editor .form-control-feedback {
 		margin-top: -25px;
 		position: absolute;
 		z-index: 2;
+	}
+
+	.management-bar {
+		top: 102px;
 	}
 
 	.radio-inline {
@@ -222,6 +250,10 @@ td.lfr-name-column {
 .lfr-ddm-field-settings-yes {
 	padding-left: 21px;
 	padding-right: 21px;
+}
+
+.lfr-ddm-form-container .lfr-ddm-form-pagination-controls {
+	overflow: hidden;
 }
 
 .portal-popup,
@@ -255,14 +287,15 @@ td.lfr-name-column {
 			content: attr(data-placeholder);
 		}
 
-		.alloy-editor-container .alloy-editor.alloy-editor-placeholder.ae-placeholder:not(:focus):not(.form-control),
+		.alloy-editor-container
+			.alloy-editor.alloy-editor-placeholder.ae-placeholder:not(:focus):not(.form-control),
 		.ddm-form-name,
 		.ddm-form-description {
 			border-width: 0;
 			margin: 0;
 			padding-left: 0;
 
-			.help-block {
+			.form-feedback-item {
 				top: -15px;
 			}
 
@@ -277,7 +310,7 @@ td.lfr-name-column {
 		}
 
 		.alloy-editor.alloy-editor-placeholder:empty:not(:focus) {
-			color: #C0CCD3;
+			color: #c0ccd3;
 		}
 
 		.ddm-form-name {
@@ -299,13 +332,19 @@ td.lfr-name-column {
 		}
 	}
 
+	.ddm-form-builder {
+		.modal-content .modal-footer {
+			justify-content: flex-start;
+		}
+	}
+
 	.ddm-form-builder-app {
 		margin-top: $baseline * 4;
 
 		.form-builder-content,
 		.lfr-ddm-form-content {
-			background: #FFF;
-			border-color: #E7E7ED;
+			background: #fff;
+			border-color: #e7e7ed;
 			border-radius: 4px;
 			margin: 0 auto;
 			width: auto;
@@ -320,7 +359,9 @@ td.lfr-name-column {
 			position: relative;
 		}
 
-		.form-builder-field-list-container .lfr-ddm-form-field-container.form-builder-field .form-group {
+		.form-builder-field-list-container
+			.lfr-ddm-form-field-container.form-builder-field
+			.form-group {
 			margin-bottom: 0;
 		}
 
@@ -339,12 +380,13 @@ td.lfr-name-column {
 
 	.form-builder-tabview,
 	.lfr-ddm-form-wizard {
-		border-bottom: 1px solid #DEE4E9;
+		border-bottom: 1px solid #dee4e9;
 		padding: 20px 34px 11px;
 		position: relative;
 	}
 
-	.form-instance-id, .form-instance-modified-date {
+	.form-instance-id,
+	.form-instance-modified-date {
 		margin-right: 20px;
 	}
 }
@@ -352,11 +394,12 @@ td.lfr-name-column {
 .portlet-forms-admin {
 	#formsNavigationBar .nav-item {
 		.nav-link {
-			color: #CDCED9;
+			color: #cdced9;
 			cursor: pointer;
 
-			&.active, &:hover {
-				color: #FFF;
+			&.active,
+			&:hover {
+				color: #fff;
 			}
 		}
 	}
@@ -385,7 +428,7 @@ td.lfr-name-column {
 	margin-bottom: 42px !important;
 
 	&:before {
-		background-color: #CAD3DB;
+		background-color: #cad3db;
 		content: '';
 		display: block;
 		height: 12px;
@@ -394,4 +437,8 @@ td.lfr-name-column {
 		right: 0;
 		width: 12px;
 	}
+}
+
+.taglib-empty-result-message {
+	margin-top: 104px;
 }

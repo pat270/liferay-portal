@@ -74,8 +74,8 @@ public class InstanceWrapperBuilder {
 				_createIW(parentDir, srcFile);
 			}
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
@@ -111,11 +111,11 @@ public class InstanceWrapperBuilder {
 		sb.append("_IW getInstance() {return _instance;}\n");
 
 		for (JavaMethod javaMethod : javaMethods) {
-			String methodName = javaMethod.getName();
-
 			if (!javaMethod.isPublic() || !javaMethod.isStatic()) {
 				continue;
 			}
+
+			String methodName = javaMethod.getName();
 
 			if (methodName.equals("getInstance")) {
 				methodName = "getWrappedInstance";
@@ -280,7 +280,7 @@ public class InstanceWrapperBuilder {
 		}
 
 		StringBundler sb = new StringBundler(
-			actualTypeArguments.length * 2 + 3);
+			(actualTypeArguments.length * 2) + 3);
 
 		sb.append(type.getValue());
 		sb.append("<");

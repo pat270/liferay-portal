@@ -19,11 +19,13 @@ import com.liferay.taglib.aui.base.BaseColTag;
 import javax.servlet.jsp.JspWriter;
 
 /**
- * @author Eduardo Lundgren
- * @author Bruno Basto
- * @author Nathan Cavanaugh
- * @author Julio Camarero
+ * @author     Eduardo Lundgren
+ * @author     Bruno Basto
+ * @author     Nathan Cavanaugh
+ * @author     Julio Camarero
+ * @deprecated As of Athanasius (7.3.x), replaced by clay:col
  */
+@Deprecated
 public class ColTag extends BaseColTag {
 
 	@Override

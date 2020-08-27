@@ -148,12 +148,14 @@ public class CalendarServiceImpl extends CalendarServiceBaseImpl {
 
 		if (!_calendarModelResourcePermission.contains(
 				getPermissionChecker(), calendarId,
-				CalendarActionKeys.MANAGE_BOOKINGS)) {
+				CalendarActionKeys.MANAGE_BOOKINGS) ||
+			!_calendarModelResourcePermission.contains(
+				getPermissionChecker(), calendarId, ActionKeys.VIEW)) {
 
 			return false;
 		}
 
-		Calendar calendar = getCalendar(calendarId);
+		Calendar calendar = calendarLocalService.getCalendar(calendarId);
 
 		if (calendarLocalService.hasStagingCalendar(calendar)) {
 			return false;
@@ -322,15 +324,15 @@ public class CalendarServiceImpl extends CalendarServiceBaseImpl {
 
 		calendars = ListUtil.copy(calendars);
 
-		Iterator<Calendar> itr = calendars.iterator();
+		Iterator<Calendar> iterator = calendars.iterator();
 
-		while (itr.hasNext()) {
-			Calendar calendar = itr.next();
+		while (iterator.hasNext()) {
+			Calendar calendar = iterator.next();
 
 			if (!_calendarModelResourcePermission.contains(
 					getPermissionChecker(), calendar, actionId)) {
 
-				itr.remove();
+				iterator.remove();
 			}
 		}
 

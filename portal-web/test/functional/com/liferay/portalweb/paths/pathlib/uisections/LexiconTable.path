@@ -24,6 +24,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>TABLE_ENTRY_DELETE</td>
+	<td>//div[contains(@class,'table')]//tr[contains(.,'${key_entryName}')]//*[*[name()='svg'][contains(@class,'times-circle')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TABLE_ENTRY_TITLE</td>
 	<td>//tr[@data-qa-id='row'][contains(.,'${key_tableEntry}')]//td[contains(@class,'table-title')]</td>
 	<td></td>
@@ -39,6 +44,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>TABLE_ENTRY_TEXT_2</td>
+	<td>xpath=(//tr[@data-qa-id='row'][contains(.,'${key_tableEntry}')]//td[normalize-space(text())='${key_tableEntryText}'])[2]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TABLE_ENTRY_PARTIAL_TEXT</td>
 	<td>//tr[@data-qa-id='row'][contains(.,'${key_tableEntry}')]//td[contains(.,'${key_tableEntryPartialText}')]</td>
 	<td></td>
@@ -46,6 +56,16 @@
 <tr>
 	<td>TABLE_ENTRY_ELLIPSIS</td>
 	<td>//tr[@data-qa-id='row'][contains(.,'${key_tableEntry}')]//button[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_ENTRY_ELLIPSIS_LINK</td>
+	<td>//tr[@data-qa-id='row'][contains(.,'${key_tableEntry}')]//a[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_HEADER</td>
+	<td>//th[contains(.,'${key_tableHeader}')]</td>
 	<td></td>
 </tr>
 </tbody>

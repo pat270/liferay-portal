@@ -17,8 +17,6 @@
 <%@ include file="/export/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
-
 portletDisplay.setShowBackIcon(true);
 
 PortletURL exportProcessesURL = PortalUtil.getControlPanelPortletURL(request, ExportImportPortletKeys.EXPORT, PortletRequest.RENDER_PHASE);
@@ -58,18 +56,18 @@ if (liveGroup == null) {
 />
 
 <%
-ExportTemplatesToolbarDisplayContext exportTemplatesToolbarDisplayContext = new ExportTemplatesToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, liveGroupId, company, portletURL);
+ExportTemplatesToolbarDisplayContext exportTemplatesToolbarDisplayContext = new ExportTemplatesToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, liveGroupId, company, portletURL);
 %>
 
 <clay:management-toolbar
 	displayContext="<%= exportTemplatesToolbarDisplayContext %>"
 	searchFormName="searchFm"
-	selectable="false"
+	selectable="<%= false %>"
 	showCreationMenu="<%= true %>"
 	showSearch="<%= true %>"
 />
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= portletURL %>">
 		<liferay-ui:search-container
 			searchContainer="<%= exportTemplatesToolbarDisplayContext.getSearchContainer() %>"
@@ -135,4 +133,4 @@ ExportTemplatesToolbarDisplayContext exportTemplatesToolbarDisplayContext = new 
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>

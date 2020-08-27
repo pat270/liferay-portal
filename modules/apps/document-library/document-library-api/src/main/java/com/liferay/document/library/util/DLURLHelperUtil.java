@@ -22,15 +22,18 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * @author Adolfo Pérez
  */
-@ProviderType
 public class DLURLHelperUtil {
 
 	public static DLURLHelper getDLURLHelper() {
+		_dlURLHelper = _serviceTracker.getService();
+
 		if (_dlURLHelper == null) {
 			throw new NullPointerException("DL URL helper is null");
 		}
@@ -157,6 +160,10 @@ public class DLURLHelperUtil {
 			officeExtensionRequired);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x)
+	 */
+	@Deprecated
 	public static void setDLURLHelper(DLURLHelper dlURLHelper) {
 		if (_dlURLHelper != null) {
 			return;
@@ -166,5 +173,19 @@ public class DLURLHelperUtil {
 	}
 
 	private static DLURLHelper _dlURLHelper;
+	private static final ServiceTracker<DLURLHelper, DLURLHelper>
+		_serviceTracker;
+
+	static {
+		Bundle bundle = FrameworkUtil.getBundle(DLURLHelperUtil.class);
+
+		ServiceTracker<DLURLHelper, DLURLHelper> serviceTracker =
+			new ServiceTracker<>(
+				bundle.getBundleContext(), DLURLHelper.class, null);
+
+		serviceTracker.open();
+
+		_serviceTracker = serviceTracker;
+	}
 
 }

@@ -150,7 +150,7 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 				</div>
 			</c:when>
 			<c:when test="<%= publicLayoutSetPrototype != null %>">
-				<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(publicLayoutSetPrototype.getName(locale))} %>" key="these-pages-are-linked-to-site-template-x" translateArguments="<%= false %>" />
+				<liferay-ui:message arguments="<%= HtmlUtil.escape(publicLayoutSetPrototype.getName(locale)) %>" key="these-pages-are-linked-to-site-template-x" translateArguments="<%= false %>" />
 
 				<aui:input name="publicLayoutSetPrototypeLinkEnabled" type="hidden" value="<%= publicLayoutSetPrototypeLinkEnabled %>" />
 			</c:when>
@@ -238,7 +238,7 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 				</div>
 			</c:when>
 			<c:when test="<%= privateLayoutSetPrototype != null %>">
-				<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(privateLayoutSetPrototype.getName(locale))} %>" key="these-pages-are-linked-to-site-template-x" translateArguments="<%= false %>" />
+				<liferay-ui:message arguments="<%= HtmlUtil.escape(privateLayoutSetPrototype.getName(locale)) %>" key="these-pages-are-linked-to-site-template-x" translateArguments="<%= false %>" />
 
 				<aui:input name="privateLayoutSetPrototypeLinkEnabled" type="hidden" value="<%= privateLayoutSetPrototypeLinkEnabled %>" />
 			</c:when>
@@ -251,9 +251,23 @@ boolean hasUnlinkLayoutSetPrototypePermission = PortalPermissionUtil.contains(pe
 		return currentValue != '';
 	}
 
-	Liferay.Util.toggleSelectBox('<portlet:namespace />publicLayoutSetPrototypeId', <portlet:namespace />isVisible, '<portlet:namespace />publicLayoutSetPrototypeIdOptions');
-	Liferay.Util.toggleSelectBox('<portlet:namespace />privateLayoutSetPrototypeId', <portlet:namespace />isVisible, '<portlet:namespace />privateLayoutSetPrototypeIdOptions');
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />publicLayoutSetPrototypeId',
+		<portlet:namespace />isVisible,
+		'<portlet:namespace />publicLayoutSetPrototypeIdOptions'
+	);
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />privateLayoutSetPrototypeId',
+		<portlet:namespace />isVisible,
+		'<portlet:namespace />privateLayoutSetPrototypeIdOptions'
+	);
 
-	Liferay.Util.toggleBoxes('<portlet:namespace />publicLayoutSetPrototypeLinkEnabled', '<portlet:namespace />publicLayoutSetPrototypeMergeAlert');
-	Liferay.Util.toggleBoxes('<portlet:namespace />privateLayoutSetPrototypeLinkEnabled', '<portlet:namespace />privateLayoutSetPrototypeMergeAlert');
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />publicLayoutSetPrototypeLinkEnabled',
+		'<portlet:namespace />publicLayoutSetPrototypeMergeAlert'
+	);
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />privateLayoutSetPrototypeLinkEnabled',
+		'<portlet:namespace />privateLayoutSetPrototypeMergeAlert'
+	);
 </aui:script>

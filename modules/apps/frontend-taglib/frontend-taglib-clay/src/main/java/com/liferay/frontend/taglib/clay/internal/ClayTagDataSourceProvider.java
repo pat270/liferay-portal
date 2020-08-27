@@ -33,18 +33,22 @@ import org.osgi.service.component.annotations.Deactivate;
 @Component(immediate = true, service = {})
 public class ClayTagDataSourceProvider {
 
-	public static <T> ClayTagDataSource<T> getClayTagDataSource(String key) {
+	public static <T> ClayTagDataSource<T> getClayTagDataSource(
+		String clayTagDataSourceKey) {
+
 		if (_clayTagDataSourceProvider == null) {
 			_log.error(
-				"Unable to get list of Clay tag data sources for key " + key);
+				"No Clay tag data source is associated with " +
+					clayTagDataSourceKey);
 
 			return null;
 		}
 
-		ServiceTrackerMap<String, ClayTagDataSource> clayTagDataSources =
+		ServiceTrackerMap<String, ClayTagDataSource<?>> clayTagDataSources =
 			_clayTagDataSourceProvider._clayTagDataSources;
 
-		return clayTagDataSources.getService(key);
+		return (ClayTagDataSource<T>)clayTagDataSources.getService(
+			clayTagDataSourceKey);
 	}
 
 	public ClayTagDataSourceProvider() {
@@ -54,7 +58,8 @@ public class ClayTagDataSourceProvider {
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		_clayTagDataSources = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, ClayTagDataSource.class,
+			bundleContext,
+			(Class<ClayTagDataSource<?>>)(Class<?>)ClayTagDataSource.class,
 			"(clay.tag.data.source.key=*)",
 			new PropertyServiceReferenceMapper<>("clay.tag.data.source.key"),
 			new PropertyServiceReferenceComparator<>("service.ranking"));
@@ -72,6 +77,6 @@ public class ClayTagDataSourceProvider {
 
 	private static ClayTagDataSourceProvider _clayTagDataSourceProvider;
 
-	private ServiceTrackerMap<String, ClayTagDataSource> _clayTagDataSources;
+	private ServiceTrackerMap<String, ClayTagDataSource<?>> _clayTagDataSources;
 
 }

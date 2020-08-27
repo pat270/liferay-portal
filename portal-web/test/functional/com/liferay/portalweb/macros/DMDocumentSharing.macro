@@ -1,4 +1,5 @@
 definition {
+
 	macro _manageCollaborators {
 		DMDocument.expandInfo();
 
@@ -28,9 +29,14 @@ definition {
 	}
 
 	macro changePermission {
-		DMDocument.viewPG(
-			dmDocumentDescription = "${dmDocumentDescription}",
-			dmDocumentTitle = "${dmDocumentTitle}");
+		if (isSet(depotName)) {
+			DMDocument.viewCP(dmDocumentTitle = "${dmDocumentTitle}");
+		}
+		else {
+			DMDocument.viewPG(
+				dmDocumentDescription = "${dmDocumentDescription}",
+				dmDocumentTitle = "${dmDocumentTitle}");
+		}
 
 		DMDocumentSharing._manageCollaborators();
 
@@ -39,15 +45,15 @@ definition {
 		var key_userName = "${userName}";
 
 		AssertTextEquals(
-			locator1 = "DocumentsAndMediaShare#MANAGE_COLLABORATORS_NAME",
+			locator1 = "Sharing#MANAGE_COLLABORATORS_NAME",
 			value1 = "${userName}");
 
 		Select(
-			locator1 = "DocumentsAndMediaShare#MANAGE_COLLABORATORS_ACCESS_DROPDOWN",
+			locator1 = "Sharing#MANAGE_COLLABORATORS_ACCESS_DROPDOWN",
 			value1 = "${selectPermission}");
 
 		AssertSelectedLabel(
-			locator1 = "DocumentsAndMediaShare#MANAGE_COLLABORATORS_ACCESS_DROPDOWN",
+			locator1 = "Sharing#MANAGE_COLLABORATORS_ACCESS_DROPDOWN",
 			value1 = "${selectPermission}");
 
 		Button.clickSave();
@@ -65,11 +71,11 @@ definition {
 		for (var collaborator : list "${collaboratorList}") {
 			var key_userName = "${collaborator}";
 
-			Click(locator1 = "DocumentsAndMediaShare#MANAGE_COLLABORATORS_REMOVE_BUTTON");
+			Click(locator1 = "Sharing#MANAGE_COLLABORATORS_REMOVE_BUTTON");
 		}
 
 		if (isSet(emptyStateMessage)) {
-			AssertElementPresent(locator1 = "DocumentsAndMediaShare#MANAGE_COLLABORATORS_EMPTY_STATE_MESSAGE");
+			AssertElementPresent(locator1 = "Sharing#MANAGE_COLLABORATORS_EMPTY_STATE_MESSAGE");
 		}
 
 		Button.clickSave();
@@ -86,17 +92,17 @@ definition {
 			var key_collaborator = "${collaborator}";
 
 			AssertElementPresent(
-				locator1 = "DocumentsAndMediaShare#COLLABORATOR_TOOLTIP",
+				locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_COLLABORATOR_TOOLTIP",
 				value1 = "${collaborator}");
 		}
 	}
 
-	macro viewDocumentViaSharedAssets {
+	macro viewDocumentViaSharedContent {
 		AssertTextEquals(
 			locator1 = "Portlet#HEADER",
 			value1 = "Shared Content");
 
-		if ("${assetSharingPermission}" == "View") {
+		if ("${contentSharingPermission}" == "View") {
 			AssertElementNotPresent(locator1 = "Comments#COMMENT_FIELD");
 		}
 
@@ -110,4 +116,15 @@ definition {
 			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_TITLE",
 			value1 = "${dmDocumentTitle}");
 	}
+
+	macro viewSharedFlag {
+		if (isSet(detailsView)) {
+			AssertVisible(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_SHARED");
+		}
+
+		else {
+			AssertElementNotPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_SHARED");
+		}
+	}
+
 }

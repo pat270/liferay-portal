@@ -52,9 +52,9 @@ public class AnnouncementsDeliveryLocalServiceImpl
 		delivery.setWebsite(true);
 
 		try {
-			announcementsDeliveryPersistence.update(delivery);
+			delivery = announcementsDeliveryPersistence.update(delivery);
 		}
-		catch (SystemException se) {
+		catch (SystemException systemException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
@@ -66,7 +66,7 @@ public class AnnouncementsDeliveryLocalServiceImpl
 				userId, type, false);
 
 			if (delivery == null) {
-				throw se;
+				throw systemException;
 			}
 		}
 
@@ -153,23 +153,7 @@ public class AnnouncementsDeliveryLocalServiceImpl
 		delivery.setSms(sms);
 		delivery.setWebsite(true);
 
-		announcementsDeliveryPersistence.update(delivery);
-
-		return delivery;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #updateDelivery(long, String, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public AnnouncementsDelivery updateDelivery(
-			long userId, String type, boolean email, boolean sms,
-			boolean website)
-		throws PortalException {
-
-		return updateDelivery(userId, type, email, sms);
+		return announcementsDeliveryPersistence.update(delivery);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

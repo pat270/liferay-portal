@@ -20,9 +20,7 @@ import com.liferay.portal.search.query.MultiMatchQuery;
 import com.liferay.portal.search.query.Operator;
 import com.liferay.portal.search.query.QueryVisitor;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,16 +30,25 @@ import java.util.Set;
 public class MultiMatchQueryImpl
 	extends BaseQueryImpl implements MultiMatchQuery {
 
+	public MultiMatchQueryImpl(Object value, Map<String, Float> fieldsBoosts) {
+		_value = value;
+		_fieldsBoosts = fieldsBoosts;
+	}
+
 	public MultiMatchQueryImpl(Object value, Set<String> fields) {
 		_value = value;
 
-		_fields.addAll(fields);
+		for (String field : fields) {
+			_fieldsBoosts.put(field, null);
+		}
 	}
 
 	public MultiMatchQueryImpl(Object value, String... fields) {
 		_value = value;
 
-		Collections.addAll(_fields, fields);
+		for (String field : fields) {
+			_fieldsBoosts.put(field, null);
+		}
 	}
 
 	@Override
@@ -49,120 +56,157 @@ public class MultiMatchQueryImpl
 		return queryVisitor.visit(this);
 	}
 
+	@Override
 	public String getAnalyzer() {
 		return _analyzer;
 	}
 
+	@Override
 	public Float getCutOffFrequency() {
 		return _cutOffFrequency;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getFieldsBoosts()}
+	 */
+	@Deprecated
+	@Override
 	public Set<String> getFields() {
-		return _fields;
+		return _fieldsBoosts.keySet();
 	}
 
+	@Override
 	public Map<String, Float> getFieldsBoosts() {
 		return _fieldsBoosts;
 	}
 
+	@Override
 	public String getFuzziness() {
 		return _fuzziness;
 	}
 
+	@Override
 	public MatchQuery.RewriteMethod getFuzzyRewriteMethod() {
 		return _fuzzyRewriteMethod;
 	}
 
+	@Override
 	public Integer getMaxExpansions() {
 		return _maxExpansions;
 	}
 
+	@Override
 	public String getMinShouldMatch() {
 		return _minShouldMatch;
 	}
 
+	@Override
 	public Operator getOperator() {
 		return _operator;
 	}
 
+	@Override
 	public Integer getPrefixLength() {
 		return _prefixLength;
 	}
 
+	@Override
 	public Integer getSlop() {
 		return _slop;
 	}
 
+	@Override
 	public Float getTieBreaker() {
 		return _tieBreaker;
 	}
 
+	@Override
 	public Type getType() {
 		return _type;
 	}
 
+	@Override
 	public Object getValue() {
 		return _value;
 	}
 
+	@Override
 	public MatchQuery.ZeroTermsQuery getZeroTermsQuery() {
 		return _zeroTermsQuery;
 	}
 
+	@Override
 	public boolean isFieldBoostsEmpty() {
 		return _fieldsBoosts.isEmpty();
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #isFieldBoostsEmpty()}
+	 */
+	@Deprecated
+	@Override
 	public boolean isFieldsEmpty() {
-		return _fields.isEmpty();
+		return _fieldsBoosts.isEmpty();
 	}
 
+	@Override
 	public Boolean isLenient() {
 		return _lenient;
 	}
 
+	@Override
 	public void setAnalyzer(String analyzer) {
 		_analyzer = analyzer;
 	}
 
+	@Override
 	public void setCutOffFrequency(Float cutOffFrequency) {
 		_cutOffFrequency = cutOffFrequency;
 	}
 
+	@Override
 	public void setFuzziness(String fuzziness) {
 		_fuzziness = fuzziness;
 	}
 
+	@Override
 	public void setFuzzyRewriteMethod(
 		MatchQuery.RewriteMethod fuzzyRewriteMethod) {
 
 		_fuzzyRewriteMethod = fuzzyRewriteMethod;
 	}
 
+	@Override
 	public void setLenient(Boolean lenient) {
 		_lenient = lenient;
 	}
 
+	@Override
 	public void setMaxExpansions(Integer maxExpansions) {
 		_maxExpansions = maxExpansions;
 	}
 
+	@Override
 	public void setMinShouldMatch(String minShouldMatch) {
 		_minShouldMatch = minShouldMatch;
 	}
 
+	@Override
 	public void setOperator(Operator operator) {
 		_operator = operator;
 	}
 
+	@Override
 	public void setPrefixLength(Integer prefixLength) {
 		_prefixLength = prefixLength;
 	}
 
+	@Override
 	public void setSlop(Integer slop) {
 		_slop = slop;
 	}
 
+	@Override
 	public void setTieBreaker(Float tieBreaker) {
 		_tieBreaker = tieBreaker;
 	}
@@ -171,6 +215,7 @@ public class MultiMatchQueryImpl
 		_type = type;
 	}
 
+	@Override
 	public void setZeroTermsQuery(MatchQuery.ZeroTermsQuery zeroTermsQuery) {
 		_zeroTermsQuery = zeroTermsQuery;
 	}
@@ -189,8 +234,8 @@ public class MultiMatchQueryImpl
 
 		sb.append(", cutOffFrequency=");
 		sb.append(_cutOffFrequency);
-		sb.append(", fields=");
-		sb.append(_fields);
+		sb.append(", _fieldsBoosts=");
+		sb.append(_fieldsBoosts);
 		sb.append(", fuzziness=");
 		sb.append(_fuzziness);
 		sb.append(", lenient=");
@@ -220,8 +265,7 @@ public class MultiMatchQueryImpl
 
 	private String _analyzer;
 	private Float _cutOffFrequency;
-	private final Set<String> _fields = new HashSet<>();
-	private final Map<String, Float> _fieldsBoosts = new HashMap<>();
+	private Map<String, Float> _fieldsBoosts = new HashMap<>();
 	private String _fuzziness;
 	private MatchQuery.RewriteMethod _fuzzyRewriteMethod;
 	private Boolean _lenient;

@@ -17,6 +17,8 @@ package com.liferay.portal.search.web.internal.search.insights.portlet;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.permission.PortletPermission;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
@@ -58,6 +60,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
 		"com.liferay.portlet.restore-current-view=false",
+		"com.liferay.portlet.show-portlet-access-denied=false",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Search Insights",
 		"javax.portlet.expiration-cache=0",
@@ -65,8 +68,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/search/insights/view.jsp",
 		"javax.portlet.name=" + SearchInsightsPortletKeys.SEARCH_INSIGHTS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -114,7 +116,7 @@ public class SearchInsightsPortlet extends MVCPortlet {
 				searchInsightsPortletPreferences.
 					getFederatedSearchKeyOptional());
 
-		if (isRequestStringPresent(searchResponse)) {
+		if (isOmniadmin() && isRequestStringPresent(searchResponse)) {
 			searchInsightsDisplayContext.setRequestString(
 				buildRequestString(searchResponse));
 
@@ -148,6 +150,13 @@ public class SearchInsightsPortlet extends MVCPortlet {
 			"content.Language", renderRequest.getLocale(), getClass());
 
 		return language.get(resourceBundle, "search-insights-help");
+	}
+
+	protected boolean isOmniadmin() {
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		return permissionChecker.isOmniadmin();
 	}
 
 	protected boolean isRequestStringPresent(SearchResponse searchResponse) {

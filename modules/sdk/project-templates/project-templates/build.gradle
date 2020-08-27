@@ -6,19 +6,12 @@ import org.gradle.util.GUtil
 
 task cleanProjectTemplatesTests(type: Delete)
 task projectTemplateJarVersions
+task testAPIJar(type: Jar, dependsOn: testClasses)
 task uploadProjectTemplateArchives
 task writeProjectTemplateVersions
 
-File mavenWrapperPropertiesFile = file("src/main/resources/maven-wrapper/.mvn/wrapper/maven-wrapper.properties")
-
-Properties mavenWrapperProperties = GUtil.loadProperties(mavenWrapperPropertiesFile)
-
-String mavenDistributionVersion = mavenWrapperProperties["distributionUrl"]
-
-mavenDistributionVersion = mavenDistributionVersion.find(/\d+\.\d+\.\d+/)
-
 Set<Project> projectTemplateProjects = project.parent.subprojects.findAll {
-	it.name.startsWith "project-templates-"
+	(!it.name.equals("project-templates-extensions")) && it.name.startsWith("project-templates")
 }
 
 ProjectConfigurer projectConfigurer = gradle.services.get(ProjectConfigurer)
@@ -32,8 +25,8 @@ cleanProjectTemplatesTests {
 }
 
 configurations {
-	mavenDistribution
 	projectTemplates
+	testAPI
 
 	projectTemplatesTests {
 		extendsFrom projectTemplates
@@ -58,47 +51,45 @@ configurations {
 	}
 }
 
+artifacts {
+	testAPI testAPIJar
+}
+
 dependencies {
 	compileInclude group: "com.beust", name: "jcommander", version: "1.72"
+	compileInclude group: "com.liferay", name: "com.liferay.project.templates.extensions", version: "1.0.41"
 
 	compileOnly group: "biz.aQute.bnd", name: "biz.aQute.bnd", version: "3.5.0"
 	compileOnly group: "org.apache.maven.archetype", name: "archetype-common", version: "2.4"
 
-	mavenDistribution classifier: "bin", ext: "zip", group: "org.apache.maven", name: "apache-maven", version: mavenDistributionVersion
-
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.activator", version: "1.0.35"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.api", version: "1.0.36"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.content.targeting.report", version: "1.0.35"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.content.targeting.rule", version: "1.0.35"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.content.targeting.tracking.action", version: "1.0.35"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.control.menu.entry", version: "1.0.35"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.form.field", version: "1.0.34"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.fragment", version: "1.0.34"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.freemarker.portlet", version: "1.0.32"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.layout.template", version: "1.0.32"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.modules.ext", version: "1.0.19"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.mvc.portlet", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.npm.angular.portlet", version: "1.0.30"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.npm.react.portlet", version: "1.0.30"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.npm.vuejs.portlet", version: "1.0.30"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.panel.app", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.portlet.configuration.icon", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.portlet.provider", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.portlet.toolbar.contributor", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.rest", version: "1.0.35"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.service", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.service.builder", version: "1.0.36"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.service.wrapper", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.simulation.panel.entry", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.social.bookmark", version: "1.0.26"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.spring.mvc.portlet", version: "1.0.30"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.template.context.contributor", version: "1.0.33"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.theme", version: "1.0.34"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.theme.contributor", version: "1.0.32"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.war.core.ext", version: "1.0.3"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.war.hook", version: "1.0.29"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.war.mvc.portlet", version: "1.0.29"
-	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.workspace", version: "1.0.36"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.api", version: "1.0.103"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.control.menu.entry", version: "1.0.101"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.form.field", version: "1.0.100"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.fragment", version: "1.0.100"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.layout.template", version: "1.0.98"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.modules.ext", version: "1.0.85"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.mvc.portlet", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.npm.angular.portlet", version: "1.0.96"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.npm.react.portlet", version: "1.0.96"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.npm.vuejs.portlet", version: "1.0.96"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.panel.app", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.portlet.configuration.icon", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.portlet.provider", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.portlet.toolbar.contributor", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.rest", version: "1.0.101"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.rest.builder", version: "1.0.6"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.service", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.service.builder", version: "1.0.102"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.service.wrapper", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.simulation.panel.entry", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.spring.mvc.portlet", version: "1.0.97"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.template.context.contributor", version: "1.0.99"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.theme", version: "1.0.100"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.theme.contributor", version: "1.0.98"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.war.core.ext", version: "1.0.69"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.war.hook", version: "1.0.95"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.war.mvc.portlet", version: "1.0.95"
+	projectTemplates group: "com.liferay", name: "com.liferay.project.templates.workspace", version: "1.0.104"
 
 	testCompile gradleTestKit()
 	testCompile group: "com.googlecode.java-diff-utils", name: "diffutils", version: "1.3.0"
@@ -140,6 +131,22 @@ projectTemplateJarVersions {
 	}
 }
 
+repositories {
+	File dir = rootProject.projectDir
+
+	while (dir != null) {
+		File tmpMavenRepositoryDir = new File(dir, ".m2-tmp")
+
+		if (tmpMavenRepositoryDir.exists()) {
+			maven {
+				url tmpMavenRepositoryDir
+			}
+		}
+
+		dir = dir.getParentFile();
+	}
+}
+
 test {
 	dependsOn projectTemplateProjects.collect {
 		"${it.path}:install"
@@ -147,37 +154,24 @@ test {
 
 	dependsOn writeProjectTemplateVersions
 
-	doFirst {
-		Properties gradleWrapperProperties = new Properties()
+	systemProperties projectTemplateTokens
+}
 
-		File gradleWrapperPropertiesFile = file("src/main/resources/gradle-wrapper/gradle/wrapper/gradle-wrapper.properties")
+testAPIJar {
+	classifier = "tests"
+	from sourceSets.test.output
+}
 
-		gradleWrapperPropertiesFile.withInputStream {
-			gradleWrapperProperties.load it
+updateFileVersions {
+	replaceOnlyIf([{
+		String group, String replacement, String content, File contentFile ->
+
+		if (contentFile.name == "releng-pom.gradle") {
+			return false
 		}
 
-		String gradleDistributionUrl = gradleWrapperProperties["distributionUrl"]
-
-		File gradleDistributionFile = FileUtil.get(project, gradleDistributionUrl)
-
-		systemProperty "gradle.distribution", uri(gradleDistributionFile)
-		systemProperty "maven.distribution.file.name", configurations.mavenDistribution.singleFile
-	}
-
-	jvmArgs "-XX:MaxMetaspaceSize=256m"
-	maxHeapSize = "1024m"
-
-	systemProperty "http.proxyHost", System.properties["http.proxyHost"]
-	systemProperty "http.proxyPort", System.properties["http.proxyPort"]
-	systemProperty "maven.debug", System.properties["maven.debug"]
-	systemProperty "maven.repo.local", System.properties["maven.repo.local"]
-	systemProperty "nodejs.npm.ci.registry", project.findProperty("nodejs.npm.ci.registry")
-	systemProperty "nodejs.npm.ci.sass.binary.site", project.findProperty("nodejs.npm.ci.sass.binary.site")
-	systemProperty "project.templates.test.builds", project.findProperty("project.templates.test.builds")
-	systemProperty "repository.url", System.properties["repository.url"]
-	systemProperty "test.debug.bundle.diffs", System.properties["test.debug.bundle.diffs"]
-
-	systemProperties projectTemplateTokens
+		return true
+	}])
 }
 
 uploadProjectTemplateArchives {

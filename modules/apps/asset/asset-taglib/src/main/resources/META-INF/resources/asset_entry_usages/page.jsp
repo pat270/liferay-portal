@@ -23,9 +23,13 @@ String className = GetterUtil.getString(request.getAttribute("liferay-asset:asse
 AssetEntryUsagesDisplayContext assetEntryUsagesDisplayContext = new AssetEntryUsagesDisplayContext(renderRequest, renderResponse, className, classPK);
 %>
 
-<div class="container-fluid container-fluid-max-xl container-form-lg">
-	<div class="row">
-		<div class="col-lg-3">
+<clay:container-fluid
+	cssClass="container-form-lg"
+>
+	<clay:row>
+		<clay:col
+			lg="3"
+		>
 			<nav class="menubar menubar-transparent menubar-vertical-expand-lg">
 				<ul class="nav nav-nested">
 					<li class="nav-item">
@@ -90,10 +94,12 @@ AssetEntryUsagesDisplayContext assetEntryUsagesDisplayContext = new AssetEntryUs
 					</li>
 				</ul>
 			</nav>
-		</div>
+		</clay:col>
 
-		<div class="col-lg-9">
-			<div class="sheet">
+		<clay:col
+			lg="9"
+		>
+			<clay:sheet>
 				<h3 class="sheet-title">
 					<c:choose>
 						<c:when test='<%= Objects.equals(assetEntryUsagesDisplayContext.getNavigation(), "pages") %>'>
@@ -112,7 +118,7 @@ AssetEntryUsagesDisplayContext assetEntryUsagesDisplayContext = new AssetEntryUs
 				</h3>
 
 				<clay:management-toolbar
-					displayContext="<%= new AssetEntryUsagesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, assetEntryUsagesDisplayContext.getSearchContainer()) %>"
+					displayContext="<%= new AssetEntryUsagesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, assetEntryUsagesDisplayContext.getSearchContainer()) %>"
 				/>
 
 				<liferay-ui:search-container
@@ -172,7 +178,7 @@ AssetEntryUsagesDisplayContext assetEntryUsagesDisplayContext = new AssetEntryUs
 						searchResultCssClass="show-quick-actions-on-hover table table-autofit"
 					/>
 				</liferay-ui:search-container>
-			</div>
-		</div>
-	</div>
-</div>
+			</clay:sheet>
+		</clay:col>
+	</clay:row>
+</clay:container-fluid>

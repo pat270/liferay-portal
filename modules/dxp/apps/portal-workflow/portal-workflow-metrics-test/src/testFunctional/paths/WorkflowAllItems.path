@@ -1,0 +1,164 @@
+<html>
+<head>
+<title>WorkflowAllItems</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">WorkflowAllItems</td></tr>
+</thead>
+<tbody>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_SELECT_ALL</td>
+	<td>//li[@class='nav-item ml-2']//label</td>
+	<td></td>
+</tr>
+<tr>
+	<td>KEBAB_DROPDOWN</td>
+	<td>xpath=(//button[contains(@class, 'dropdown-toggle component-action btn btn-monospaced btn-unstyled')])[${task}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REASSIGN_ICON</td>
+	<td>xpath=(//div[@class="quick-action-menu"]//button[1])[${task}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REASSIGN_TASK_DROPDOWN</td>
+	<td>//div[@class='dropdown-menu show']//button[@class='dropdown-item'][contains(text(),'Reassign Task')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>APPROVE_DROPDOWN</td>
+	<td>//div[@class='dropdown-menu show']//button[@class='dropdown-item'][contains(text(),'Approve')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_SELECT_ROW</td>
+	<td>//tr['${key_rowNumber}']//label</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_SELECTED_TEXT</td>
+	<td>//span[@class='ml-0 mr-0 navbar-text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_ASSET_TITLE</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'Asset Title')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_ASSET_TYPE</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'Asset Type')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_CLOSE</td>
+	<td>//div[contains(@class,'modal-header')]//button[contains(@class,'close')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_CREATED_BY</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'Created By')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_CREATION_DATE</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'Creation Date')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_CURRENT_ASSIGNEE</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'Current Assignee')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_CURRENT_STEP</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'Current Step')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_END_DATE</td>
+	<td>//div[contains(@class,'modal-body')]/p[@class='row'][contains(.,'End Date')]/span[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_PROCESS_STATUS</td>
+	<td>//h4[contains(.,'Process Details')]//following-sibling::p[1][contains(.,'Process Status')]//following-sibling::span[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_SLA_MESSAGE</td>
+	<td>//div[contains(@class,'modal-body')]/h4[contains(.,'Due Date by SLA')]//following-sibling::p/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAIL_PAGE_TITLE</td>
+	<td>//div[contains(@class,'modal-header')]/div[contains(@class,'modal-title')]</td>
+	<td></td>
+</tr>
+<tr>
+    <td>METRICS_ALL_ITEMS_TABLE_ROW</td>
+    <td>//tr[${key_rowNumber}]//td[3]</td>
+    <td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_FILTER_BY</td>
+	<td>//ul[@class='navbar-nav']//li[contains(@class,'dropdown nav-item')]//button[contains(.,'${key_allItemsFilterName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_FILTER_BY_ASSIGNEE_VALUE</td>
+	<td>//div[@class='dropdown-menu show dropdown-menu-left']/ul[@class='list-unstyled']//span[contains(.,'${assigneeName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_FILTER_BY_ASSIGNEE_VALUE_CHECKBOX</td>
+	<td>//label/input[@type='checkbox' and @data-key='${assigneeName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_FILTER_TITLE</td>
+	<td>//div[@class='portlet-body']//ul[@class='navbar-nav']/li//strong[contains(.,'Filter By')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_FILTER_VALUE</td>
+	<td>//div[contains(@class,'label-section')]//strong[contains(text(),'${key_workflowFilterValue}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_TABLE_CURRENT_ASSIGNEE</td>
+	<td>//div[@class='table-responsive']//table//th[contains(.,'Current Assignee')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_TABLE_CURRENT_ASSIGNEE_VALUE</td>
+	<td>//td[contains(@data-testid,'assetInfoCell') and contains(text(),'${key_workflowInstanceName}')]/following-sibling::td[contains(@data-testid,'assigneesCell') and contains(text(),'${key_workflowInstanceAssignee}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_INSTANCE_ID</td>
+	<td>//td[contains(@class,'table-title')]//strong | //span[contains(@data-testid,'instanceIdLink')]//strong</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_INSTANCE_NAME</td>
+	<td>//td[contains(text(),'${key_workflowInstanceName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLEAR_ALL_BUTTON</td>
+	<td>//button[@data-testid='clearAll']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_ALL_ITEMS_SELECT_ALL_MODAL</td>
+	<td>xpath=(//li[@class='nav-item ml-2']//label)[2]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

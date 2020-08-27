@@ -150,7 +150,7 @@ public interface FileEntry extends RepositoryEntry, RepositoryModel<FileEntry> {
 	@Override
 	public Date getModifiedDate();
 
-	public int getReadCount();
+	public long getReadCount();
 
 	public <T extends Capability> T getRepositoryCapability(
 		Class<T> capabilityClass);
@@ -174,12 +174,6 @@ public interface FileEntry extends RepositoryEntry, RepositoryModel<FileEntry> {
 	public String getUuid();
 
 	public String getVersion();
-
-	public long getVersionUserId();
-
-	public String getVersionUserName();
-
-	public String getVersionUserUuid();
 
 	public boolean hasLock();
 

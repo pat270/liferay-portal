@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
@@ -40,7 +41,6 @@ import com.liferay.portal.upgrade.v7_0_0.util.DLFolderTable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -82,12 +82,12 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 
 			ps.executeUpdate();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				"Unable to add dynamic data mapping structure link for file " +
 					"entry type " + classPK);
 
-			throw e;
+			throw exception;
 		}
 	}
 
@@ -151,17 +151,6 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 		}
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #hasFileEntry(long, long, long, String, String)}
-	 */
-	@Deprecated
-	protected boolean hasFileEntry(long groupId, long folderId, String fileName)
-		throws Exception {
-
-		throw new UnsupportedOperationException();
-	}
-
 	protected void updateFileEntryFileNames() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			runSQL("alter table DLFileEntry add fileName VARCHAR(255) null");
@@ -206,22 +195,13 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 		}
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected void updateFileEntryTypeFileEntryTypeKeys() throws Exception {
-	}
-
 	protected void updateFileEntryTypeNamesAndDescriptions() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement ps = connection.prepareStatement(
 				"select companyId, groupId from Group_ where classNameId = " +
 					"?")) {
 
-			long classNameId = PortalUtil.getClassNameId(Company.class);
-
-			ps.setLong(1, classNameId);
+			ps.setLong(1, PortalUtil.getClassNameId(Company.class));
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
@@ -238,20 +218,19 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 			long companyId, long groupId)
 		throws Exception {
 
-		Map<String, String> nameLanguageKeys = new HashMap<>();
-
-		nameLanguageKeys.put(
+		Map<String, String> nameLanguageKeys = HashMapBuilder.put(
 			DLFileEntryTypeConstants.NAME_CONTRACT,
-			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_CONTRACT);
-		nameLanguageKeys.put(
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_CONTRACT
+		).put(
 			DLFileEntryTypeConstants.NAME_MARKETING_BANNER,
-			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_MARKETING_BANNER);
-		nameLanguageKeys.put(
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_MARKETING_BANNER
+		).put(
 			DLFileEntryTypeConstants.NAME_ONLINE_TRAINING,
-			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_ONLINE_TRAINING);
-		nameLanguageKeys.put(
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_ONLINE_TRAINING
+		).put(
 			DLFileEntryTypeConstants.NAME_SALES_PRESENTATION,
-			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_SALES_PRESENTATION);
+			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_KEY_SALES_PRESENTATION
+		).build();
 
 		for (Map.Entry<String, String> nameAndKey :
 				nameLanguageKeys.entrySet()) {
@@ -561,8 +540,8 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 			runSQL(
 				StringBundler.concat(
 					"update ", tableName, " set title = ",
-					"CONCAT('unknown-title-', CAST_TEXT(fileEntryId)) where " +
-						"title = '' or title is null"));
+					"CONCAT('unknown-title-', CAST_TEXT(fileEntryId)) where ",
+					"title = '' or title is null"));
 		}
 	}
 

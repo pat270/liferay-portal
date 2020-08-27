@@ -14,8 +14,10 @@
 
 package com.liferay.knowledge.base.item.selector.web.internal.display.context;
 
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
+import com.liferay.item.selector.taglib.servlet.taglib.util.RepositoryEntryBrowserTagUtil;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.item.selector.criterion.KBAttachmentItemSelectorCriterion;
 import com.liferay.knowledge.base.item.selector.web.internal.KBAttachmentItemSelectorView;
@@ -23,8 +25,11 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.PortalPreferences;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Locale;
@@ -41,19 +46,24 @@ import javax.servlet.http.HttpServletRequest;
 public class KBAttachmentItemSelectorViewDisplayContext {
 
 	public KBAttachmentItemSelectorViewDisplayContext(
-		KBAttachmentItemSelectorCriterion kbAttachmentItemSelectorCriterion,
-		KBAttachmentItemSelectorView kbAttachmentItemSelectorView,
+		HttpServletRequest httpServletRequest, String itemSelectedEventName,
 		ItemSelectorReturnTypeResolverHandler
 			itemSelectorReturnTypeResolverHandler,
-		String itemSelectedEventName, boolean search, PortletURL portletURL) {
+		KBAttachmentItemSelectorCriterion kbAttachmentItemSelectorCriterion,
+		KBAttachmentItemSelectorView kbAttachmentItemSelectorView,
+		PortletURL portletURL, boolean search) {
 
-		_kbAttachmentItemSelectorCriterion = kbAttachmentItemSelectorCriterion;
-		_kbAttachmentItemSelectorView = kbAttachmentItemSelectorView;
+		_httpServletRequest = httpServletRequest;
+		_itemSelectedEventName = itemSelectedEventName;
 		_itemSelectorReturnTypeResolverHandler =
 			itemSelectorReturnTypeResolverHandler;
-		_itemSelectedEventName = itemSelectedEventName;
-		_search = search;
+		_kbAttachmentItemSelectorCriterion = kbAttachmentItemSelectorCriterion;
+		_kbAttachmentItemSelectorView = kbAttachmentItemSelectorView;
 		_portletURL = portletURL;
+		_search = search;
+
+		_portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(
+			_httpServletRequest);
 	}
 
 	public long getAttachmentsFolderId() throws PortalException {
@@ -68,7 +78,9 @@ public class KBAttachmentItemSelectorViewDisplayContext {
 		return _itemSelectedEventName;
 	}
 
-	public ItemSelectorReturnTypeResolver getItemSelectorReturnTypeResolver() {
+	public ItemSelectorReturnTypeResolver<?, ?>
+		getItemSelectorReturnTypeResolver() {
+
 		return _itemSelectorReturnTypeResolverHandler.
 			getItemSelectorReturnTypeResolver(
 				_kbAttachmentItemSelectorCriterion,
@@ -79,6 +91,14 @@ public class KBAttachmentItemSelectorViewDisplayContext {
 		getKBAttachmentItemSelectorCriterion() {
 
 		return _kbAttachmentItemSelectorCriterion;
+	}
+
+	public OrderByComparator<FileEntry> getOrderByComparator() {
+		return DLUtil.getRepositoryModelOrderByComparator(
+			RepositoryEntryBrowserTagUtil.getOrderByCol(
+				_httpServletRequest, _portalPreferences),
+			RepositoryEntryBrowserTagUtil.getOrderByType(
+				_httpServletRequest, _portalPreferences));
 	}
 
 	public PortletURL getPortletURL(
@@ -120,12 +140,14 @@ public class KBAttachmentItemSelectorViewDisplayContext {
 		return _search;
 	}
 
+	private final HttpServletRequest _httpServletRequest;
 	private final String _itemSelectedEventName;
 	private final ItemSelectorReturnTypeResolverHandler
 		_itemSelectorReturnTypeResolverHandler;
 	private final KBAttachmentItemSelectorCriterion
 		_kbAttachmentItemSelectorCriterion;
 	private final KBAttachmentItemSelectorView _kbAttachmentItemSelectorView;
+	private final PortalPreferences _portalPreferences;
 	private final PortletURL _portletURL;
 	private final boolean _search;
 

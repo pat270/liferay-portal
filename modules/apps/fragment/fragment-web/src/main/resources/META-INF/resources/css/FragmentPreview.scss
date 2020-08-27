@@ -1,6 +1,6 @@
-@import "mixins";
+@import 'atlas-variables';
 
-@import "variables";
+@import 'variables';
 
 .fragment-preview {
 	background-color: $editorBackgroundColor;
@@ -12,7 +12,7 @@
 	position: relative;
 	width: 100%;
 
-	@include sm {
+	@include media-breakpoint-up(sm) {
 		float: left;
 		height: 50%;
 		text-align: center;
@@ -24,7 +24,6 @@
 		border: none;
 		height: calc(100% - #{$toolbarHeight} - #{$toolbarBorderWidth});
 		left: 0;
-		pointer-events: none;
 		position: absolute;
 		top: calc(#{$toolbarHeight} + #{$toolbarBorderWidth});
 		width: 100%;
@@ -80,6 +79,7 @@
 }
 
 .portlet-fragment-web {
+	// stylelint-disable-next-line selector-type-no-unknown
 	lfr-editable {
 		display: block;
 	}

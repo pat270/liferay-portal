@@ -34,10 +34,8 @@ import javax.servlet.ServletContext;
 public class FileAvailabilityUtil {
 
 	public static void clearAvailabilities() {
-		String servletContextName = PortalUtil.getServletContextName();
-
 		ServletContext servletContext = ServletContextPool.get(
-			servletContextName);
+			PortalUtil.getServletContextName());
 
 		Map<String, Boolean> availabilities =
 			(Map<String, Boolean>)servletContext.getAttribute(
@@ -74,7 +72,7 @@ public class FileAvailabilityUtil {
 		try {
 			url = servletContext.getResource(path);
 		}
-		catch (MalformedURLException murle) {
+		catch (MalformedURLException malformedURLException) {
 		}
 
 		if ((url == null) && !PortalWebResourcesUtil.isAvailable(path)) {

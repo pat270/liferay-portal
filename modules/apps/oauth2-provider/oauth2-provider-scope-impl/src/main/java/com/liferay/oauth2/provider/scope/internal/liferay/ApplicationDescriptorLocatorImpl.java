@@ -15,7 +15,7 @@
 package com.liferay.oauth2.provider.scope.internal.liferay;
 
 import com.liferay.oauth2.provider.scope.internal.constants.OAuth2ProviderScopeConstants;
-import com.liferay.oauth2.provider.scope.liferay.ApplicationDescriptorLocator;
+import com.liferay.oauth2.provider.scope.liferay.spi.ApplicationDescriptorLocator;
 import com.liferay.oauth2.provider.scope.spi.application.descriptor.ApplicationDescriptor;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;

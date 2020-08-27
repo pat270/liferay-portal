@@ -25,16 +25,18 @@ import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyServiceUtil;
 import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portlet.asset.util.AssetVocabularySettingsHelper;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -81,15 +83,15 @@ public class AssetTestUtil {
 			long groupId, long vocabularyId, long parentCategoryId)
 		throws Exception {
 
-		Map<Locale, String> titleMap = new HashMap<>();
-
 		Locale locale = LocaleUtil.getSiteDefault();
 
-		titleMap.put(locale, RandomTestUtil.randomString());
+		Map<Locale, String> titleMap = HashMapBuilder.put(
+			locale, RandomTestUtil.randomString()
+		).build();
 
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(locale, RandomTestUtil.randomString());
+		Map<Locale, String> descriptionMap = HashMapBuilder.put(
+			locale, RandomTestUtil.randomString()
+		).build();
 
 		String[] categoryProperties = null;
 
@@ -111,36 +113,32 @@ public class AssetTestUtil {
 
 		long userId = TestPropsValues.getUserId();
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(groupId, userId);
-
 		return AssetTagLocalServiceUtil.addTag(
-			userId, groupId, assetTagName, serviceContext);
+			userId, groupId, assetTagName,
+			ServiceContextTestUtil.getServiceContext(groupId, userId));
 	}
 
 	public static AssetVocabulary addVocabulary(long groupId) throws Exception {
 		long userId = TestPropsValues.getUserId();
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(groupId, userId);
-
 		return AssetVocabularyLocalServiceUtil.addVocabulary(
-			userId, groupId, RandomTestUtil.randomString(), serviceContext);
+			userId, groupId, RandomTestUtil.randomString(),
+			ServiceContextTestUtil.getServiceContext(groupId, userId));
 	}
 
 	public static AssetVocabulary addVocabulary(
 			long groupId, long classNameId, long classTypePK, boolean required)
 		throws Exception {
 
-		Map<Locale, String> titleMap = new HashMap<>();
-
 		Locale locale = LocaleUtil.getSiteDefault();
 
-		titleMap.put(locale, RandomTestUtil.randomString());
+		Map<Locale, String> titleMap = HashMapBuilder.put(
+			locale, RandomTestUtil.randomString()
+		).build();
 
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(locale, RandomTestUtil.randomString());
+		Map<Locale, String> descriptionMap = HashMapBuilder.put(
+			locale, RandomTestUtil.randomString()
+		).build();
 
 		AssetVocabularySettingsHelper vocabularySettingsHelper =
 			new AssetVocabularySettingsHelper();
@@ -157,6 +155,20 @@ public class AssetTestUtil {
 		return AssetVocabularyServiceUtil.addVocabulary(
 			groupId, RandomTestUtil.randomString(), titleMap, descriptionMap,
 			vocabularySettingsHelper.toString(), serviceContext);
+	}
+
+	public static AssetVocabulary addVocabulary(long groupId, String name)
+		throws Exception {
+
+		long userId = TestPropsValues.getUserId();
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(groupId, userId);
+
+		return AssetVocabularyLocalServiceUtil.addVocabulary(
+			userId, groupId, name, name,
+			Collections.singletonMap(LocaleUtil.getDefault(), name),
+			Collections.emptyMap(), StringPool.BLANK, serviceContext);
 	}
 
 }

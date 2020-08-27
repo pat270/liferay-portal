@@ -36,13 +36,13 @@ public class PortletFilterFactory {
 			PortletContext ctx)
 		throws PortletException {
 
-		return _instance._create(portletFilterModel, ctx);
+		return _portletFilterFactory._create(portletFilterModel, ctx);
 	}
 
 	public static void destroy(
 		com.liferay.portal.kernel.model.PortletFilter portletFilterModel) {
 
-		_instance._destroy(portletFilterModel);
+		_portletFilterFactory._destroy(portletFilterModel);
 	}
 
 	private PortletFilterFactory() {
@@ -145,17 +145,17 @@ public class PortletFilterFactory {
 
 			portletFilter.init(filterConfig);
 		}
-		catch (PortletException pe) {
-			throw pe;
+		catch (PortletException portletException) {
+			throw portletException;
 		}
-		catch (Exception e) {
-			throw new UnavailableException(e.getMessage());
+		catch (Exception exception) {
+			throw new UnavailableException(exception.getMessage());
 		}
 
 		return portletFilter;
 	}
 
-	private static final PortletFilterFactory _instance =
+	private static final PortletFilterFactory _portletFilterFactory =
 		new PortletFilterFactory();
 
 	private final Map<String, Map<String, PortletFilter>> _portletFilters;

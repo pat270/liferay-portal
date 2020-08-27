@@ -27,6 +27,7 @@ import com.liferay.document.library.kernel.service.DLFileEntryServiceUtil;
 import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashServiceUtil;
 import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
@@ -47,7 +48,6 @@ import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portlet.documentlibrary.util.test.DLAppTestUtil;
 import com.liferay.trash.TrashHelper;
 import com.liferay.trash.exception.RestoreEntryException;
 import com.liferay.trash.exception.TrashEntryException;
@@ -194,11 +194,8 @@ public class DLFileEntryTrashHandlerTest
 
 	@Test
 	public void testFileNameUpdateWhenUpdatingTitle() throws Exception {
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		DLFileEntry dlFileEntry = (DLFileEntry)addBaseModelWithWorkflow(
-			serviceContext);
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		moveBaseModelToTrash(dlFileEntry.getFileEntryId());
 
@@ -229,7 +226,9 @@ public class DLFileEntryTrashHandlerTest
 		try {
 			super.testTrashParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.TrashEntryException tee) {
+		catch (com.liferay.trash.kernel.exception.TrashEntryException
+					trashEntryException) {
+
 			throw new TrashEntryException();
 		}
 	}
@@ -240,7 +239,9 @@ public class DLFileEntryTrashHandlerTest
 		try {
 			super.testTrashParentAndRestoreParentAndBaseModel();
 		}
-		catch (com.liferay.trash.kernel.exception.RestoreEntryException ree) {
+		catch (com.liferay.trash.kernel.exception.RestoreEntryException
+					restoreEntryException) {
+
 			throw new RestoreEntryException();
 		}
 	}
@@ -360,9 +361,7 @@ public class DLFileEntryTrashHandlerTest
 	protected String getUniqueTitle(BaseModel<?> baseModel) {
 		DLFileEntry dlFileEntry = (DLFileEntry)baseModel;
 
-		String title = dlFileEntry.getTitle();
-
-		return _trashHelper.getOriginalTitle(title);
+		return _trashHelper.getOriginalTitle(dlFileEntry.getTitle());
 	}
 
 	@Override

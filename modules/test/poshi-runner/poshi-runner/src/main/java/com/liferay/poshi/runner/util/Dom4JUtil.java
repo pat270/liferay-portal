@@ -33,6 +33,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultElement;
+import org.dom4j.util.NodeComparator;
 
 /**
  * @author Peter Yoo
@@ -66,6 +67,18 @@ public class Dom4JUtil {
 			throw new IllegalArgumentException(
 				"Only attributes, elements, and strings may be added");
 		}
+	}
+
+	public static boolean elementsEqual(Node node1, Node node2) {
+		NodeComparator nodeComparator = new NodeComparator();
+
+		int compare = nodeComparator.compare(node1, node2);
+
+		if (compare != 0) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public static String format(Element element) throws IOException {
@@ -163,7 +176,8 @@ public class Dom4JUtil {
 
 			String text = attribute.getValue();
 
-			attribute.setValue(text.replace(targetText, replacementText));
+			attribute.setValue(
+				StringUtil.replace(text, targetText, replacementText));
 		}
 
 		Iterator<?> nodeIterator = element.nodeIterator();
@@ -177,7 +191,8 @@ public class Dom4JUtil {
 				String text = textNode.getText();
 
 				if (text.contains(targetText)) {
-					text = text.replace(targetText, replacementText);
+					text = StringUtil.replace(
+						text, targetText, replacementText);
 
 					textNode.setText(text);
 				}
@@ -187,8 +202,6 @@ public class Dom4JUtil {
 
 			if ((node instanceof Element) && cascade) {
 				replace((Element)node, cascade, replacementText, targetText);
-
-				continue;
 			}
 		}
 	}

@@ -14,10 +14,9 @@
 
 package com.liferay.portal.osgi.web.portlet.container.upload.test;
 
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
-import com.liferay.portal.kernel.upload.UploadHandler;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.upload.UniqueFileNameProvider;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -29,20 +28,23 @@ import org.junit.Assert;
  */
 public class TestUploadMVCActionCommand extends BaseMVCActionCommand {
 
-	public TestUploadMVCActionCommand(TestUploadPortlet testUploadPortlet) {
-		_uploadHandler = new TestUploadHandler(testUploadPortlet);
+	public TestUploadMVCActionCommand(
+		TestUploadPortlet testUploadPortlet,
+		UniqueFileNameProvider uniqueFileNameProvider) {
+
+		_testUploadHandler = new TestUploadHandler(
+			testUploadPortlet, uniqueFileNameProvider);
 	}
 
 	@Override
 	protected void doProcessAction(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws PortalException {
+		ActionRequest actionRequest, ActionResponse actionResponse) {
 
-		_uploadHandler.upload(actionRequest, actionResponse);
+		_testUploadHandler.upload(actionRequest, actionResponse);
 
 		Assert.assertNull(actionRequest.getAttribute(WebKeys.UPLOAD_EXCEPTION));
 	}
 
-	private final UploadHandler _uploadHandler;
+	private final TestUploadHandler _testUploadHandler;
 
 }

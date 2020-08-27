@@ -30,8 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class AssetAddonEntryDisplayTag extends IncludeTag {
 
 	@Override
@@ -40,8 +42,8 @@ public class AssetAddonEntryDisplayTag extends IncludeTag {
 			try {
 				assetAddonEntry.include(request, getResponse());
 			}
-			catch (IOException ioe) {
-				_log.error(ioe, ioe);
+			catch (IOException ioException) {
+				_log.error(ioException, ioException);
 			}
 		}
 

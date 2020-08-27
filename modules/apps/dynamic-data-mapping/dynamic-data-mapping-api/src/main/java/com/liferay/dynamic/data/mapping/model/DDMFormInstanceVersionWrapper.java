@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMFormInstanceVersion
  * @generated
  */
-@ProviderType
 public class DDMFormInstanceVersionWrapper
 	extends BaseModelWrapper<DDMFormInstanceVersion>
 	implements DDMFormInstanceVersion, ModelWrapper<DDMFormInstanceVersion> {
@@ -47,6 +46,8 @@ public class DDMFormInstanceVersionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("formInstanceVersionId", getFormInstanceVersionId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -69,6 +70,18 @@ public class DDMFormInstanceVersionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long formInstanceVersionId = (Long)attributes.get(
 			"formInstanceVersionId");
 
@@ -192,6 +205,16 @@ public class DDMFormInstanceVersionWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this ddm form instance version.
+	 *
+	 * @return the ct collection ID of this ddm form instance version
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public String getDefaultLanguageId() {
 		return model.getDefaultLanguageId();
@@ -308,6 +331,16 @@ public class DDMFormInstanceVersionWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this ddm form instance version.
+	 *
+	 * @return the mvcc version of this ddm form instance version
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -634,6 +667,16 @@ public class DDMFormInstanceVersionWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this ddm form instance version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm form instance version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this ddm form instance version.
 	 *
 	 * @param description the description of this ddm form instance version
@@ -728,6 +771,16 @@ public class DDMFormInstanceVersionWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm form instance version.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm form instance version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -911,6 +964,20 @@ public class DDMFormInstanceVersionWrapper
 	@Override
 	public void setVersion(String version) {
 		model.setVersion(version);
+	}
+
+	@Override
+	public Map<String, Function<DDMFormInstanceVersion, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMFormInstanceVersion, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

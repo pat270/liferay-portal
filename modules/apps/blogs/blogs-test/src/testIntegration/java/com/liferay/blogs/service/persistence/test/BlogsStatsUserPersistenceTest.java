@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -124,6 +125,8 @@ public class BlogsStatsUserPersistenceTest {
 
 		BlogsStatsUser newBlogsStatsUser = _persistence.create(pk);
 
+		newBlogsStatsUser.setMvccVersion(RandomTestUtil.nextLong());
+
 		newBlogsStatsUser.setGroupId(RandomTestUtil.nextLong());
 
 		newBlogsStatsUser.setCompanyId(RandomTestUtil.nextLong());
@@ -145,6 +148,9 @@ public class BlogsStatsUserPersistenceTest {
 		BlogsStatsUser existingBlogsStatsUser = _persistence.findByPrimaryKey(
 			newBlogsStatsUser.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingBlogsStatsUser.getMvccVersion(),
+			newBlogsStatsUser.getMvccVersion());
 		Assert.assertEquals(
 			existingBlogsStatsUser.getStatsUserId(),
 			newBlogsStatsUser.getStatsUserId());
@@ -244,10 +250,10 @@ public class BlogsStatsUserPersistenceTest {
 
 	protected OrderByComparator<BlogsStatsUser> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"BlogsStatsUser", "statsUserId", true, "groupId", true, "companyId",
-			true, "userId", true, "entryCount", true, "lastPostDate", true,
-			"ratingsTotalEntries", true, "ratingsTotalScore", true,
-			"ratingsAverageScore", true);
+			"BlogsStatsUser", "mvccVersion", true, "statsUserId", true,
+			"groupId", true, "companyId", true, "userId", true, "entryCount",
+			true, "lastPostDate", true, "ratingsTotalEntries", true,
+			"ratingsTotalScore", true, "ratingsAverageScore", true);
 	}
 
 	@Test
@@ -470,23 +476,69 @@ public class BlogsStatsUserPersistenceTest {
 
 		_persistence.clearCache();
 
-		BlogsStatsUser existingBlogsStatsUser = _persistence.findByPrimaryKey(
-			newBlogsStatsUser.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newBlogsStatsUser.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		BlogsStatsUser newBlogsStatsUser = addBlogsStatsUser();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			BlogsStatsUser.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"statsUserId", newBlogsStatsUser.getStatsUserId()));
+
+		List<BlogsStatsUser> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(BlogsStatsUser blogsStatsUser) {
 		Assert.assertEquals(
-			Long.valueOf(existingBlogsStatsUser.getGroupId()),
+			Long.valueOf(blogsStatsUser.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingBlogsStatsUser, "getOriginalGroupId", new Class<?>[0]));
+				blogsStatsUser, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingBlogsStatsUser.getUserId()),
+			Long.valueOf(blogsStatsUser.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingBlogsStatsUser, "getOriginalUserId", new Class<?>[0]));
+				blogsStatsUser, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
 	}
 
 	protected BlogsStatsUser addBlogsStatsUser() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		BlogsStatsUser blogsStatsUser = _persistence.create(pk);
+
+		blogsStatsUser.setMvccVersion(RandomTestUtil.nextLong());
 
 		blogsStatsUser.setGroupId(RandomTestUtil.nextLong());
 

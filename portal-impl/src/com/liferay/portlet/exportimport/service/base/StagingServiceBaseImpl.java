@@ -53,7 +53,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class StagingServiceBaseImpl
-	extends BaseServiceImpl implements StagingService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, StagingService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -844,8 +844,8 @@ public abstract class StagingServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

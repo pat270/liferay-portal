@@ -100,12 +100,22 @@ public class UploadServletRequestImpl
 					new LiferayFileItemFactory(getTempDir()));
 			}
 
+			long uploadServletRequestImplMaxSize =
+				UploadServletRequestConfigurationHelperUtil.getMaxSize();
+
 			if (maxRequestSize > 0) {
 				servletFileUpload.setSizeMax(maxRequestSize);
+			}
+			else {
+				servletFileUpload.setSizeMax(uploadServletRequestImplMaxSize);
 			}
 
 			if (maxFileSize > 0) {
 				servletFileUpload.setFileSizeMax(maxFileSize);
+			}
+			else {
+				servletFileUpload.setFileSizeMax(
+					uploadServletRequestImplMaxSize);
 			}
 
 			liferayServletRequest = new LiferayServletRequest(
@@ -116,8 +126,6 @@ public class UploadServletRequestImpl
 
 			liferayServletRequest.setFinishedReadingOriginalStream(true);
 
-			long uploadServletRequestImplMaxSize =
-				UploadServletRequestConfigurationHelperUtil.getMaxSize();
 			long uploadServletRequestImplSize = 0;
 
 			int contentLength = httpServletRequest.getContentLength();
@@ -222,13 +230,17 @@ public class UploadServletRequestImpl
 					liferayFileItem.getFieldName(), liferayFileItems);
 			}
 		}
-		catch (Exception e) {
-			UploadException uploadException = new UploadException(e);
+		catch (Exception exception) {
+			UploadException uploadException = new UploadException(exception);
 
-			if (e instanceof FileUploadBase.FileSizeLimitExceededException) {
+			if (exception instanceof
+					FileUploadBase.FileSizeLimitExceededException) {
+
 				uploadException.setExceededFileSizeLimit(true);
 			}
-			else if (e instanceof FileUploadBase.SizeLimitExceededException) {
+			else if (exception instanceof
+						FileUploadBase.SizeLimitExceededException) {
+
 				uploadException.setExceededUploadRequestSizeLimit(true);
 			}
 
@@ -236,10 +248,12 @@ public class UploadServletRequestImpl
 				WebKeys.UPLOAD_EXCEPTION, uploadException);
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 			else if (_log.isWarnEnabled()) {
-				_log.warn("Unable to parse upload request: " + e.getMessage());
+				_log.warn(
+					"Unable to parse upload request: " +
+						exception.getMessage());
 			}
 		}
 
@@ -326,12 +340,12 @@ public class UploadServletRequestImpl
 			try {
 				FileUtil.write(file, liferayFileItem.getInputStream());
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to write temporary file " +
 							file.getAbsolutePath(),
-						ioe);
+						ioException);
 				}
 			}
 		}
@@ -501,10 +515,10 @@ public class UploadServletRequestImpl
 	public Map<String, String[]> getParameterMap() {
 		Map<String, String[]> map = new HashMap<>();
 
-		Enumeration<String> enu = getParameterNames();
+		Enumeration<String> enumeration = getParameterNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			String[] values = getParameterValues(name);
 
@@ -520,10 +534,10 @@ public class UploadServletRequestImpl
 	public Enumeration<String> getParameterNames() {
 		Set<String> parameterNames = new LinkedHashSet<>();
 
-		Enumeration<String> enu = super.getParameterNames();
+		Enumeration<String> enumeration = super.getParameterNames();
 
-		while (enu.hasMoreElements()) {
-			parameterNames.add(enu.nextElement());
+		while (enumeration.hasMoreElements()) {
+			parameterNames.add(enumeration.nextElement());
 		}
 
 		parameterNames.addAll(_regularParameters.keySet());

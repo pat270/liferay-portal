@@ -4,11 +4,15 @@ $c: '.sidebar-container';
 	bottom: 0;
 	position: fixed;
 	right: 0;
-	top: 56px;
+	top: 168px;
 	transform: translateX(100%);
 	transition: transform 0.3s ease-in-out;
 	width: 380px;
 	z-index: 12;
+
+	.navbar-collapse {
+		padding-left: 16px;
+	}
 
 	&.open {
 		transform: translateX(0%);
@@ -16,15 +20,14 @@ $c: '.sidebar-container';
 
 	.sidebar-body {
 		overflow: visible;
+
+		.ddm-form-tabs {
+			display: none;
+		}
 	}
 
 	.list-group-item:hover {
-		background-color: #F0F5FF;
-	}
-
-	.ddm-sidebar-body {
-		height: calc(100vh - 160px);
-		overflow: auto;
+		background-color: #f0f5ff;
 	}
 
 	.ddm-empty {

@@ -18,6 +18,7 @@ import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.util.Portal;
@@ -69,9 +70,13 @@ public class MBMessageUADDisplay extends BaseMBMessageUADDisplay {
 			return null;
 		}
 
+		if (mbMessage.isInTrash()) {
+			return StringPool.BLANK;
+		}
+
 		PortletURL portletURL = liferayPortletResponse.createLiferayPortletURL(
 			portal.getControlPanelPlid(liferayPortletRequest),
-			MBPortletKeys.MESSAGE_BOARDS, PortletRequest.RENDER_PHASE);
+			MBPortletKeys.MESSAGE_BOARDS_ADMIN, PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
 			"mvcRenderCommandName", "/message_boards/edit_message");

@@ -20,6 +20,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
@@ -147,7 +148,7 @@ public class DDMFormValidatorTest {
 	public void testFormRuleEmptyCondition() throws Exception {
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm("Name");
 
-		ddmForm.addDDMFormRule(new DDMFormRule("", Arrays.asList("true")));
+		ddmForm.addDDMFormRule(new DDMFormRule(Arrays.asList("true"), ""));
 
 		_ddmFormValidatorImpl.validate(ddmForm);
 	}
@@ -203,7 +204,12 @@ public class DDMFormValidatorTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		ddmFormFieldValidation.setExpression("*/+");
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setValue("*/+");
+				}
+			});
 
 		ddmFormField.setDDMFormFieldValidation(ddmFormFieldValidation);
 
@@ -223,9 +229,12 @@ public class DDMFormValidatorTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		String expression = "*/+";
-
-		ddmFormFieldValidation.setExpression(expression);
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setValue("*/+");
+				}
+			});
 
 		ddmFormField.setDDMFormFieldValidation(ddmFormFieldValidation);
 
@@ -235,8 +244,7 @@ public class DDMFormValidatorTest {
 			_ddmFormValidatorImpl.validate(ddmForm);
 		}
 		catch (MustSetValidValidationExpression msvve) {
-			Assert.assertTrue(
-				StringUtil.equals(expression, msvve.getExpression()));
+			Assert.assertTrue(StringUtil.equals("*/+", msvve.getExpression()));
 		}
 	}
 
@@ -259,7 +267,7 @@ public class DDMFormValidatorTest {
 	public void testInvalidFormRuleAction() throws Exception {
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm("Name");
 
-		ddmForm.addDDMFormRule(new DDMFormRule("true", Arrays.asList("*/?")));
+		ddmForm.addDDMFormRule(new DDMFormRule(Arrays.asList("*/?"), "true"));
 
 		_ddmFormValidatorImpl.validate(ddmForm);
 	}
@@ -268,7 +276,7 @@ public class DDMFormValidatorTest {
 	public void testInvalidFormRuleCondition() throws Exception {
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm("Name");
 
-		ddmForm.addDDMFormRule(new DDMFormRule("*/?", Arrays.asList("true")));
+		ddmForm.addDDMFormRule(new DDMFormRule(Arrays.asList("true"), "*/?"));
 
 		_ddmFormValidatorImpl.validate(ddmForm);
 	}
@@ -407,7 +415,12 @@ public class DDMFormValidatorTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		ddmFormFieldValidation.setExpression("false");
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setValue("false");
+				}
+			});
 
 		ddmFormField.setDDMFormFieldValidation(ddmFormFieldValidation);
 

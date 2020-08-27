@@ -27,13 +27,19 @@ import com.thoughtworks.qdox.model.JavaSource;
 import com.thoughtworks.qdox.model.Type;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import java.net.URL;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +48,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
@@ -59,12 +69,15 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.JavaExecSpec;
 import org.gradle.util.GUtil;
@@ -75,6 +88,7 @@ import org.w3c.dom.Element;
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class BuildPluginDescriptorTask extends DefaultTask {
 
 	public BuildPluginDescriptorTask() {
@@ -111,8 +125,8 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 
 			_readdForcedExclusions();
 		}
-		catch (Exception e) {
-			throw new GradleException(e.getMessage(), e);
+		catch (Exception exception) {
+			throw new GradleException(exception.getMessage(), exception);
 		}
 		finally {
 			if (preparedSourceDir != null) {
@@ -144,6 +158,7 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 	}
 
 	@InputDirectory
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getClassesDir() {
 		return GradleUtil.toFile(getProject(), _classesDir);
 	}
@@ -163,6 +178,7 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 	}
 
 	@InputFiles
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public FileCollection getMavenEmbedderClasspath() {
 		return _mavenEmbedderClasspath;
 	}
@@ -179,6 +195,7 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 
 	@InputFile
 	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getMavenSettingsFile() {
 		return GradleUtil.toFile(getProject(), _mavenSettingsFile);
 	}
@@ -209,6 +226,7 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 	}
 
 	@InputDirectory
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getSourceDir() {
 		return GradleUtil.toFile(getProject(), _sourceDir);
 	}
@@ -480,6 +498,30 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 
 		File dir = new File(getClassesDir(), "META-INF/maven");
 
+		Files.walkFileTree(
+			dir.toPath(),
+			new SimpleFileVisitor<Path>() {
+
+				@Override
+				public FileVisitResult visitFile(
+						Path filePath, BasicFileAttributes basicFileAttributes)
+					throws IOException {
+
+					String fileName = String.valueOf(filePath.getFileName());
+
+					if (fileName.endsWith(".xml")) {
+						try {
+							_formatXML(filePath);
+						}
+						catch (Exception exception) {
+						}
+					}
+
+					return FileVisitResult.CONTINUE;
+				}
+
+			});
+
 		File outputDir = getOutputDir();
 
 		project.delete(outputDir);
@@ -593,6 +635,44 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 		XMLUtil.write(document, pomFile);
 	}
 
+	private void _formatXML(Path filePath) throws Exception {
+		String content = new String(
+			Files.readAllBytes(filePath), StandardCharsets.UTF_8);
+
+		SAXReader saxReader = new SAXReader();
+
+		org.dom4j.Document document = saxReader.read(new StringReader(content));
+
+		OutputFormat outputFormat = OutputFormat.createPrettyPrint();
+
+		outputFormat.setExpandEmptyElements(false);
+		outputFormat.setIndent("\t");
+		outputFormat.setLineSeparator("\n");
+		outputFormat.setTrimText(true);
+
+		StringWriter stringWriter = new StringWriter();
+
+		XMLWriter xmlWriter = new XMLWriter(stringWriter, outputFormat);
+
+		xmlWriter.write(document);
+
+		content = stringWriter.toString();
+
+		content = content.trim();
+
+		while (content.contains(" \n")) {
+			content = content.replace(" \n", "\n");
+		}
+
+		content = content.replace("-->\n<", "-->\n\n<");
+
+		content = content.replace(
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+			"<?xml version=\"1.0\"?>");
+
+		Files.write(filePath, content.getBytes(StandardCharsets.UTF_8));
+	}
+
 	private String _getComments(JavaMethod javaMethod) {
 		String code = javaMethod.getCodeBlock();
 
@@ -612,8 +692,6 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 	}
 
 	private String _getDependencyName(Dependency dependency) {
-		Logger logger = getLogger();
-
 		if (dependency instanceof ProjectDependency) {
 			ProjectDependency projectDependency = (ProjectDependency)dependency;
 
@@ -623,9 +701,13 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 			try {
 				return GradleUtil.getArchivesBaseName(dependencyProject);
 			}
-			catch (IllegalStateException ise) {
+			catch (IllegalStateException illegalStateException) {
+				Logger logger = getLogger();
+
 				if (logger.isWarnEnabled()) {
-					logger.warn("Unable to find name for " + dependency, ise);
+					logger.warn(
+						"Unable to find name for " + dependency,
+						illegalStateException);
 				}
 			}
 		}
@@ -672,9 +754,7 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 			sb.append('\n');
 			sb.append("private ");
 
-			Type type = beanProperty.getType();
-
-			sb.append(_getTypeName(type));
+			sb.append(_getTypeName(beanProperty.getType()));
 
 			sb.append(' ');
 			sb.append(beanProperty.getName());
@@ -754,9 +834,21 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 			return;
 		}
 
+		String indent = "\t";
+
+		while (true) {
+			pos--;
+
+			if (content.charAt(pos) != '\t') {
+				break;
+			}
+
+			indent += "\t";
+		}
+
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(content, 0, pos - 1);
+		sb.append(content, 0, pos);
 
 		for (String dependencyNotation : forcedExclusions) {
 			String[] tokens = _parseDependencyNotation(dependencyNotation);
@@ -765,22 +857,29 @@ public class BuildPluginDescriptorTask extends DefaultTask {
 			String artifactId = tokens[1];
 			String version = tokens[2];
 
-			sb.append("<dependency>");
+			sb.append("\n");
+			sb.append(indent);
+			sb.append("<dependency>\n");
 
-			sb.append("<groupId>");
+			sb.append(indent);
+			sb.append("\t<groupId>");
 			sb.append(groupId);
-			sb.append("</groupId>");
+			sb.append("</groupId>\n");
 
-			sb.append("<artifactId>");
+			sb.append(indent);
+			sb.append("\t<artifactId>");
 			sb.append(artifactId);
-			sb.append("</artifactId>");
+			sb.append("</artifactId>\n");
 
-			sb.append("<type>jar</type>");
+			sb.append(indent);
+			sb.append("\t<type>jar</type>\n");
 
-			sb.append("<version>");
+			sb.append(indent);
+			sb.append("\t<version>");
 			sb.append(version);
-			sb.append("</version>");
+			sb.append("</version>\n");
 
+			sb.append(indent);
 			sb.append("</dependency>");
 		}
 

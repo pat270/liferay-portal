@@ -15,13 +15,15 @@
 package com.liferay.external.data.source.test.controller.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncPrintWriter;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.AssumeTestRule;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -126,6 +128,12 @@ public class ExternalDataSourceControllerTest {
 		_apiBundle.uninstall();
 
 		FileUtil.deltree(_HYPERSONIC_TEMP_DIR_NAME);
+
+		DB portalDB = DBManagerUtil.getDB();
+
+		try (Connection con = DataAccess.getConnection()) {
+			portalDB.runSQL(con, "drop table TestEntity");
+		}
 	}
 
 	@Test
@@ -144,8 +152,8 @@ public class ExternalDataSourceControllerTest {
 
 			testRunListener.rethrow(null);
 		}
-		catch (Exception e) {
-			testRunListener.rethrow(e);
+		catch (Exception exception) {
+			testRunListener.rethrow(exception);
 		}
 		finally {
 			serviceRegistration.unregister();
@@ -231,9 +239,9 @@ public class ExternalDataSourceControllerTest {
 	private static final String _HYPERSONIC_TEMP_DIR_NAME =
 		PropsValues.LIFERAY_HOME + "/data/hypersonic_temp/";
 
-	private static final String _JDBC_URL =
-		"jdbc:hsqldb:" + _HYPERSONIC_TEMP_DIR_NAME + _EXTERNAL_DATABASE_NAME +
-			";hsqldb.write_delay=false;shutdown=true";
+	private static final String _JDBC_URL = StringBundler.concat(
+		"jdbc:hsqldb:", _HYPERSONIC_TEMP_DIR_NAME, _EXTERNAL_DATABASE_NAME,
+		";hsqldb.write_delay=false;shutdown=true");
 
 	private Bundle _apiBundle;
 	private BundleContext _bundleContext;
@@ -253,18 +261,18 @@ public class ExternalDataSourceControllerTest {
 
 	private static class TestRunListener extends RunListener {
 
-		public void rethrow(Throwable t) throws Throwable {
-			if (t == null) {
+		public void rethrow(Throwable throwable) throws Throwable {
+			if (throwable == null) {
 				if (_failures.isEmpty()) {
 					return;
 				}
 
-				t = new AssertionError(
+				throwable = new AssertionError(
 					"Inner test bundle junit execution errors:");
 			}
 
 			for (Failure failure : _failures) {
-				t.addSuppressed(failure.getException());
+				throwable.addSuppressed(failure.getException());
 			}
 
 			try (UnsyncStringWriter unsyncStringWriter =
@@ -272,7 +280,7 @@ public class ExternalDataSourceControllerTest {
 				UnsyncPrintWriter unsycPrintWriter = new UnsyncPrintWriter(
 					unsyncStringWriter)) {
 
-				t.printStackTrace(unsycPrintWriter);
+				throwable.printStackTrace(unsycPrintWriter);
 
 				throw new ArquillianThrowable(unsyncStringWriter.toString());
 			}

@@ -19,7 +19,7 @@ import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -83,7 +83,7 @@ public class DLFolderPermissionCheckerTest extends BasePermissionTestCase {
 				group.getGroupId(), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 				name);
 		}
-		catch (NoSuchFolderException nsfe) {
+		catch (NoSuchFolderException noSuchFolderException) {
 		}
 
 		ServiceContext serviceContext =
@@ -100,7 +100,7 @@ public class DLFolderPermissionCheckerTest extends BasePermissionTestCase {
 			DLAppServiceUtil.deleteFolder(
 				group.getGroupId(), _folder.getFolderId(), name);
 		}
-		catch (NoSuchFolderException nsfe) {
+		catch (NoSuchFolderException noSuchFolderException) {
 		}
 
 		_subfolder = DLAppServiceUtil.addFolder(

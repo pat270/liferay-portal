@@ -82,7 +82,7 @@ public class LocaleUtil {
 	}
 
 	public static LocaleUtil getInstance() {
-		return _instance;
+		return _localeUtil;
 	}
 
 	private LocaleUtil() {
@@ -99,7 +99,7 @@ public class LocaleUtil {
 		return _locale;
 	}
 
-	private static final LocaleUtil _instance = new LocaleUtil();
+	private static final LocaleUtil _localeUtil = new LocaleUtil();
 
 	private final Locale _locale;
 

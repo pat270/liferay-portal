@@ -16,6 +16,7 @@ package com.liferay.portlet.asset.util;
 
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -31,34 +32,48 @@ import java.util.Set;
  */
 public class AssetVocabularySettingsHelper {
 
+	public static final long[] DEFAULT_SELECTED_CLASS_NAME_IDS = {
+		AssetCategoryConstants.ALL_CLASS_NAME_ID
+	};
+
+	public static final long[] DEFAULT_SELECTED_CLASS_TYPE_PKS = {
+		AssetCategoryConstants.ALL_CLASS_TYPE_PK
+	};
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #DEFAULT_SELECTED_CLASS_NAME_IDS}
+	 */
+	@Deprecated
 	public static final long[] DEFAULT_SELECTED_CLASSNAME_IDS = {
 		AssetCategoryConstants.ALL_CLASS_NAME_ID
 	};
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #DEFAULT_SELECTED_CLASS_TYPE_PKS}
+	 */
+	@Deprecated
 	public static final long[] DEFAULT_SELECTED_CLASSTYPE_PKS = {
 		AssetCategoryConstants.ALL_CLASS_TYPE_PK
 	};
 
 	public AssetVocabularySettingsHelper() {
-		_properties = new UnicodeProperties(true);
+		_unicodeProperties = new UnicodeProperties(true);
 	}
 
 	public AssetVocabularySettingsHelper(String propertiesString) {
 		this();
 
-		_properties.fastLoad(propertiesString);
+		_unicodeProperties.fastLoad(propertiesString);
 	}
 
 	public long[] getClassNameIds() {
-		String[] classNameIdsAndClassTypePKs = getClassNameIdsAndClassTypePKs();
-
-		return getClassNameIds(classNameIdsAndClassTypePKs);
+		return getClassNameIds(getClassNameIdsAndClassTypePKs());
 	}
 
 	public long[] getClassTypePKs() {
-		String[] classNameIdsAndClassTypePKs = getClassNameIdsAndClassTypePKs();
-
-		return getClassTypePKs(classNameIdsAndClassTypePKs);
+		return getClassTypePKs(getClassNameIdsAndClassTypePKs());
 	}
 
 	public long[] getRequiredClassNameIds() {
@@ -90,7 +105,7 @@ public class AssetVocabularySettingsHelper {
 	}
 
 	public boolean isMultiValued() {
-		String value = _properties.getProperty(_KEY_MULTI_VALUED);
+		String value = _unicodeProperties.getProperty(_KEY_MULTI_VALUED);
 
 		return GetterUtil.getBoolean(value, true);
 	}
@@ -133,21 +148,22 @@ public class AssetVocabularySettingsHelper {
 			selectedClassNameIds.add(classNameIdAndClassTypePK);
 		}
 
-		_properties.setProperty(
+		_unicodeProperties.setProperty(
 			_KEY_REQUIRED_CLASS_NAME_IDS_AND_CLASS_TYPE_PKS,
 			StringUtil.merge(requiredClassNameIds));
-		_properties.setProperty(
+		_unicodeProperties.setProperty(
 			_KEY_SELECTED_CLASS_NAME_IDS_AND_CLASS_TYPE_PKS,
 			StringUtil.merge(selectedClassNameIds));
 	}
 
 	public void setMultiValued(boolean multiValued) {
-		_properties.setProperty(_KEY_MULTI_VALUED, String.valueOf(multiValued));
+		_unicodeProperties.setProperty(
+			_KEY_MULTI_VALUED, String.valueOf(multiValued));
 	}
 
 	@Override
 	public String toString() {
-		return _properties.toString();
+		return _unicodeProperties.toString();
 	}
 
 	protected long getClassNameId(String classNameIdAndClassTypePK) {
@@ -160,13 +176,7 @@ public class AssetVocabularySettingsHelper {
 	protected String getClassNameIdAndClassTypePK(
 		long classNameId, long classTypePK) {
 
-		return String.valueOf(
-			classNameId
-		).concat(
-			StringPool.COLON
-		).concat(
-			String.valueOf(classTypePK)
-		);
+		return StringBundler.concat(classNameId, StringPool.COLON, classTypePK);
 	}
 
 	protected long[] getClassNameIds(String[] classNameIdsAndClassTypePKs) {
@@ -182,7 +192,7 @@ public class AssetVocabularySettingsHelper {
 	}
 
 	protected String[] getClassNameIdsAndClassTypePKs() {
-		String value = _properties.getProperty(
+		String value = _unicodeProperties.getProperty(
 			_KEY_SELECTED_CLASS_NAME_IDS_AND_CLASS_TYPE_PKS);
 
 		if (Validator.isNull(value)) {
@@ -220,7 +230,7 @@ public class AssetVocabularySettingsHelper {
 	}
 
 	protected String[] getRequiredClassNameIdsAndClassTypePKs() {
-		String value = _properties.getProperty(
+		String value = _unicodeProperties.getProperty(
 			_KEY_REQUIRED_CLASS_NAME_IDS_AND_CLASS_TYPE_PKS);
 
 		if (Validator.isNull(value)) {
@@ -279,6 +289,6 @@ public class AssetVocabularySettingsHelper {
 		_KEY_SELECTED_CLASS_NAME_IDS_AND_CLASS_TYPE_PKS =
 			"selectedClassNameIds";
 
-	private final UnicodeProperties _properties;
+	private final UnicodeProperties _unicodeProperties;
 
 }

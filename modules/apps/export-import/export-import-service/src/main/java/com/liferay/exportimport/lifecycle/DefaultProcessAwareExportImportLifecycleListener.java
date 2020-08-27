@@ -14,17 +14,14 @@
 
 package com.liferay.exportimport.lifecycle;
 
-import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleListener;
 import com.liferay.exportimport.kernel.lifecycle.ProcessAwareExportImportLifecycleListener;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class DefaultProcessAwareExportImportLifecycleListener
 	implements ExportImportLifecycleListener {
 

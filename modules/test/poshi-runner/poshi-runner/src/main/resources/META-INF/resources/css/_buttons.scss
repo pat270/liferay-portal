@@ -1,6 +1,6 @@
 /* ---------- Buttons ---------- */
 
-.btn-command-log, .btn-error, .btn-jump-to-error, .btn-screenshot, .btn-sidebar {
+.btn-command-log, .btn-error, .btn-jump-to-details, .btn-screenshot, .btn-sidebar {
 	font-family: 'FontAwesome' !important;
 }
 
@@ -121,7 +121,7 @@
 		display: block;
 	}
 
-	.btn-jump-to-error {
+	.btn-jump-to-details {
 		display: none;
 
 		&:before {
@@ -134,7 +134,7 @@
 	display: none;
 }
 
-.command-logger .btn.btn-jump-to-error {
+.command-logger .btn.btn-jump-to-details {
 	display: block;
 }
 

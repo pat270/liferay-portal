@@ -19,6 +19,9 @@ import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.test.log.CaptureAppender;
+import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.internal.test.util.URLConnectionUtil;
 import com.liferay.registry.Registry;
@@ -30,14 +33,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Application;
+
+import org.apache.log4j.Level;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -62,18 +65,19 @@ public class TransactionContainerRequestFilterTest {
 	public void setUp() {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put("liferay.auth.verifier", true);
-		properties.put("liferay.oauth2", false);
-		properties.put("osgi.jaxrs.application.base", "/test-vulcan");
-		properties.put(
-			"osgi.jaxrs.extension.select", "(osgi.jaxrs.name=Liferay.Vulcan)");
-
 		_serviceRegistration = registry.registerService(
 			Application.class,
 			new TransactionContainerRequestFilterTest.TestApplication(),
-			properties);
+			HashMapBuilder.<String, Object>put(
+				"liferay.auth.verifier", true
+			).put(
+				"liferay.oauth2", false
+			).put(
+				"osgi.jaxrs.application.base", "/test-vulcan"
+			).put(
+				"osgi.jaxrs.extension.select",
+				"(osgi.jaxrs.name=Liferay.Vulcan)"
+			).build());
 	}
 
 	@After
@@ -97,13 +101,18 @@ public class TransactionContainerRequestFilterTest {
 	public void testRollback() throws Exception {
 		Group group = GroupTestUtil.addGroup();
 
-		Assert.assertEquals(
-			500,
-			_getResponseCode(
-				"http://localhost:8080/o/test-vulcan/rollback/" +
-					group.getGroupId()));
-		Assert.assertNotNull(
-			GroupLocalServiceUtil.getGroup(group.getGroupId()));
+		try (CaptureAppender captureAppender =
+				Log4JLoggerTestUtil.configureLog4JLogger(
+					_CLASS_NAME_EXCEPTION_MAPPER, Level.ERROR)) {
+
+			Assert.assertEquals(
+				500,
+				_getResponseCode(
+					"http://localhost:8080/o/test-vulcan/rollback/" +
+						group.getGroupId()));
+			Assert.assertNotNull(
+				GroupLocalServiceUtil.getGroup(group.getGroupId()));
+		}
 	}
 
 	public static class TestApplication extends Application {
@@ -141,6 +150,10 @@ public class TransactionContainerRequestFilterTest {
 
 		return httpURLConnection.getResponseCode();
 	}
+
+	private static final String _CLASS_NAME_EXCEPTION_MAPPER =
+		"com.liferay.portal.vulcan.internal.jaxrs.exception.mapper." +
+			"ExceptionMapper";
 
 	private ServiceRegistration<Application> _serviceRegistration;
 

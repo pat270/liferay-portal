@@ -37,11 +37,10 @@ public abstract class EntryFinderBaseImpl extends BasePersistenceImpl<Entry> {
 
 	@Override
 	@Reference(
-		target = ContactsPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = ContactsPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
 	}
 
 	@Override
@@ -64,5 +63,14 @@ public abstract class EntryFinderBaseImpl extends BasePersistenceImpl<Entry> {
 
 	@Reference
 	protected EntryPersistence entryPersistence;
+
+	static {
+		try {
+			Class.forName(ContactsPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

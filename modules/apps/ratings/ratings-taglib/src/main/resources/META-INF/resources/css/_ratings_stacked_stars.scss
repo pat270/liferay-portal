@@ -1,0 +1,110 @@
+.ratings-stacked-stars {
+	.ratings-stars-average {
+		&.disabled {
+			.ratings-stars-average-icon {
+				color: $secondary-l1;
+			}
+
+			& + .ratings-stars-average.disabled {
+				cursor: not-allowed;
+				line-height: 2;
+			}
+		}
+	}
+
+	.ratings-stars-average-icon {
+		margin: -0.1em 0.1875rem 0;
+	}
+
+	.ratings-stacked-stars-vote {
+		display: inline-flex;
+
+		&.disabled {
+			cursor: not-allowed;
+		}
+
+		.ratings-stacked-stars-vote-stars {
+			display: flex;
+			flex-direction: row-reverse;
+			justify-content: flex-end;
+			margin-right: 0.3125rem;
+		}
+	}
+
+	label {
+		color: $secondary-l1;
+		font-size: 1rem;
+		margin: 0;
+		padding: 0.1875rem;
+		transition: color 300ms ease-in-out;
+
+		.ratings-stars-icon-full {
+			display: none;
+		}
+
+		.ratings-stars-icon-empty {
+			display: initial;
+		}
+
+		&.ratings-stars-star-full {
+			.ratings-stars-icon-full {
+				display: initial;
+			}
+
+			.ratings-stars-icon-empty {
+				display: none;
+			}
+		}
+	}
+
+	input:checked ~ label {
+		color: $primary;
+	}
+
+	.ratings-stacked-stars-vote {
+		&:hover label {
+			color: $primary-l1;
+		}
+
+		label:hover,
+		label:hover ~ label {
+			color: $primary;
+
+			.ratings-stars-icon-full {
+				display: initial;
+			}
+
+			.ratings-stars-icon-empty {
+				display: none;
+			}
+
+			&.ratings-stars-star-full {
+				color: $primary-l1;
+			}
+		}
+
+		label.ratings-stars-star-full:hover {
+			&,
+			~ label {
+				color: $primary;
+			}
+		}
+	}
+
+	input:disabled ~ label {
+		pointer-events: none;
+	}
+
+	.ratings-stacked-stars-delete {
+		color: $secondary-l1;
+		overflow: initial;
+
+		&:hover {
+			color: $dark;
+		}
+
+		.lexicon-icon-times-circle.lexicon-icon-vertical-align {
+			margin-top: -2px;
+		}
+	}
+}

@@ -39,13 +39,12 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -237,16 +236,14 @@ public class BlogsAMImageOptimizerTest {
 
 		String amImageConfigurationEntry1Name = RandomTestUtil.randomString();
 
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put(
-			"max-height", String.valueOf(RandomTestUtil.randomLong()));
-		properties.put(
-			"max-width", String.valueOf(RandomTestUtil.randomLong()));
-
 		return _amImageConfigurationHelper.addAMImageConfigurationEntry(
 			companyId, amImageConfigurationEntry1Name, StringPool.BLANK,
-			amImageConfigurationEntry1Name, properties);
+			amImageConfigurationEntry1Name,
+			HashMapBuilder.put(
+				"max-height", String.valueOf(RandomTestUtil.randomLong())
+			).put(
+				"max-width", String.valueOf(RandomTestUtil.randomLong())
+			).build());
 	}
 
 	private BlogsEntry _addBlogEntryWithCoverImage(long userId, long groupId)

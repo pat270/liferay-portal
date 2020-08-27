@@ -2,6 +2,7 @@
 /development/alloy-taglib.jar
 /development/annotations.jar
 /development/ant-apache-bsf.jar
+/development/ant-compress.jar
 /development/appium.jar
 /development/catalina.jar
 /development/com.liferay.jenkins.results.parser.jar
@@ -52,6 +53,7 @@
 /development/osgi-annotation-versioning.jar
 /development/p6spy.jar
 /development/persistence.jar
+/development/portletmvc4spring-test.jar
 /development/postgresql.jar
 /development/powermock-api-mockito.jar
 /development/powermock-api-support.jar
@@ -60,7 +62,6 @@
 /development/powermock-module-junit4-common.jar
 /development/powermock-reflect.jar
 /development/qdox.jar
-/development/resin.jar
 /development/saxpath.jar
 /development/sdk-addon-api-0.2.jar
 /development/servlet-api.jar
@@ -104,11 +105,6 @@
 /portal/ccpp-ri.jar
 /portal/cglib-nodep.jar
 /portal/chardet.jar
-/portal/chemistry-opencmis-client-api.jar
-/portal/chemistry-opencmis-client-bindings.jar
-/portal/chemistry-opencmis-client-impl.jar
-/portal/chemistry-opencmis-commons-api.jar
-/portal/chemistry-opencmis-commons-impl.jar
 /portal/closure-compiler.jar
 /portal/commons-beanutils.jar
 /portal/commons-chain.jar
@@ -124,6 +120,7 @@
 /portal/commons-fileupload.jar
 /portal/commons-httpclient.jar
 /portal/commons-io.jar
+/portal/commons-lang3.jar
 /portal/commons-lang.jar
 /portal/commons-logging.jar
 /portal/commons-math3.jar
@@ -135,7 +132,6 @@
 /portal/daisydiff.jar
 /portal/displaytag.jar
 /portal/dom4j.jar
-/portal/easyconf.jar
 /portal/eclipse-core-runtime.jar
 /portal/ecs.jar
 /portal/fontbox.jar
@@ -153,6 +149,8 @@
 /portal/im4java.jar
 /portal/isoparser.jar
 /portal/jabsorb.jar
+/portal/jai-imageio-core.jar
+/portal/jai-imageio-jpeg2000.jar
 /portal/jackson-annotations.jar
 /portal/jackson-core.jar
 /portal/jackson-databind.jar
@@ -171,10 +169,12 @@
 /portal/jaxws-api.jar
 /portal/jaxws-rt.jar
 /portal/jazzy.jar
+/portal/jbig2-imageio.jar
 /portal/jcifs.jar
 /portal/jcl-over-slf4j.jar
 /portal/jcommon.jar
 /portal/jdom.jar
+/portal/jdom2.jar
 /portal/jempbox.jar
 /portal/jena.jar
 /portal/jericho-html.jar
@@ -222,10 +222,12 @@
 /portal/poi-ooxml-schemas.jar
 /portal/poi-scratchpad.jar
 /portal/poi.jar
+/portal/portletmvc4spring-framework.jar
 /portal/rdffilter.jar
 /portal/rhino.jar
 /portal/rmi-api.jar
 /portal/rome.jar
+/portal/rometools-utils.jar
 /portal/rometools.jar
 /portal/saaj-api.jar
 /portal/saaj-impl.jar
@@ -235,6 +237,7 @@
 /portal/slf4j-api.jar
 /portal/soap.jar
 /portal/soap-api.jar
+/portal/sparse-bit-set.jar
 /portal/spring-aop.jar
 /portal/spring-aspects.jar
 /portal/spring-beans.jar
@@ -249,19 +252,16 @@
 /portal/spring-tx.jar
 /portal/spring-web.jar
 /portal/spring-webmvc.jar
-/portal/spring-webmvc-portlet.jar
 /portal/stax-ex.jar
 /portal/stax.jar
 /portal/streambuffer.jar
 /portal/stringtemplate.jar
-/portal/struts-core.jar
 /portal/tagsoup.jar
 /portal/tika-core.jar
 /portal/tika-parsers.jar
 /portal/tomcat-jdbc.jar
 /portal/tomcat-juli.jar
 /portal/transaction.jar
-/portal/truezip.jar
 /portal/unoil.jar
 /portal/urlrewritefilter.jar
 /portal/vorbis-java-core.jar

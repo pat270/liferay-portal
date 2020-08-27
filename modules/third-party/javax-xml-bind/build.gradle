@@ -15,6 +15,7 @@ jarPatched {
 	destinationDir = jar.destinationDir
 	duplicatesStrategy = "exclude"
 
+	exclude "META-INF/versions/9/javax/xml/bind/ModuleUtil.class"
 	exclude "module-info.class"
 
 	from sourceSets.main.output

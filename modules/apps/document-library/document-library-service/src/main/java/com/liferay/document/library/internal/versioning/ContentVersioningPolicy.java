@@ -36,8 +36,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true, property = "service.ranking:Integer=100",
-	service = VersioningPolicy.class
+	property = "service.ranking:Integer=100", service = VersioningPolicy.class
 )
 public class ContentVersioningPolicy implements VersioningPolicy {
 
@@ -83,9 +82,9 @@ public class ContentVersioningPolicy implements VersioningPolicy {
 
 			return dlFileVersion.getChecksum();
 		}
-		catch (IOException | PortalException e) {
+		catch (IOException | PortalException exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
 			return null;

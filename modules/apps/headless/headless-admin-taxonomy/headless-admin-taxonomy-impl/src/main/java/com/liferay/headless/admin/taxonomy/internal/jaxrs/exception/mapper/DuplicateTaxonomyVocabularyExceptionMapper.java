@@ -16,8 +16,9 @@ package com.liferay.headless.admin.taxonomy.internal.jaxrs.exception.mapper;
 
 import com.liferay.asset.kernel.exception.DuplicateVocabularyException;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
@@ -37,18 +38,17 @@ import org.osgi.service.component.annotations.Component;
 	service = ExceptionMapper.class
 )
 public class DuplicateTaxonomyVocabularyExceptionMapper
-	implements ExceptionMapper<DuplicateVocabularyException> {
+	extends BaseExceptionMapper<DuplicateVocabularyException> {
 
 	@Override
-	public Response toResponse(DuplicateVocabularyException dve) {
-		return Response.status(
-			409
-		).type(
-			MediaType.TEXT_PLAIN
-		).entity(
+	protected Problem getProblem(
+		DuplicateVocabularyException duplicateVocabularyException) {
+
+		return new Problem(
+			Response.Status.CONFLICT,
 			StringUtil.replace(
-				dve.getMessage(), "category vocabulary", "taxonomy vocabulary")
-		).build();
+				duplicateVocabularyException.getMessage(),
+				"category vocabulary", "taxonomy vocabulary"));
 	}
 
 }

@@ -21,6 +21,8 @@ public class GroupConstants {
 
 	public static final int ANY_PARENT_GROUP_ID = -1;
 
+	public static final String APP = "App";
+
 	public static final String CONTROL_PANEL = "Control Panel";
 
 	public static final String CONTROL_PANEL_FRIENDLY_URL = "/control_panel";
@@ -48,6 +50,8 @@ public class GroupConstants {
 	public static final String[] SYSTEM_GROUPS = {
 		CONTROL_PANEL, FORMS, GUEST, GroupConstants.USER_PERSONAL_SITE
 	};
+
+	public static final int TYPE_DEPOT = 5;
 
 	public static final String TYPE_SETTINGS_KEY_INHERIT_LOCALES =
 		"inheritLocales";
@@ -77,7 +81,7 @@ public class GroupConstants {
 		"/personal_site";
 
 	public static String getTypeLabel(int type) {
-		if (type == TYPE_SITE_OPEN) {
+		if ((type == TYPE_DEPOT) || (type == TYPE_SITE_OPEN)) {
 			return TYPE_SITE_OPEN_LABEL;
 		}
 		else if (type == TYPE_SITE_PRIVATE) {

@@ -26,6 +26,7 @@ import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLTrashServiceUtil;
+import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.kernel.LocalizedValue;
@@ -66,13 +67,11 @@ import com.liferay.portal.search.test.util.BaseSearchTestCase;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portlet.documentlibrary.util.test.DLAppTestUtil;
 
 import java.io.File;
 import java.io.InputStream;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,7 +91,6 @@ public class DLFileEntrySearchTest extends BaseSearchTestCase {
 			PermissionCheckerMethodTestRule.INSTANCE,
 			SynchronousDestinationTestRule.INSTANCE);
 
-	@Ignore
 	@Override
 	@Test
 	public void testLocalizedSearch() throws Exception {
@@ -186,7 +184,6 @@ public class DLFileEntrySearchTest extends BaseSearchTestCase {
 		testOrderHelper.testOrderByDDMTextFieldRepeatable();
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchAttachments() throws Exception {

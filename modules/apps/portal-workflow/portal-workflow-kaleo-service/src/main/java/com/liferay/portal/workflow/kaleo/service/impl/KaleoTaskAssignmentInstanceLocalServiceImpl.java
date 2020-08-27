@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -33,10 +34,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Marcellus Tavares
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignmentInstance",
+	service = AopService.class
+)
 public class KaleoTaskAssignmentInstanceLocalServiceImpl
 	extends KaleoTaskAssignmentInstanceLocalServiceBaseImpl {
 
@@ -62,6 +69,8 @@ public class KaleoTaskAssignmentInstanceLocalServiceImpl
 		kaleoTaskAssignmentInstance.setUserName(user.getFullName());
 		kaleoTaskAssignmentInstance.setCreateDate(now);
 		kaleoTaskAssignmentInstance.setModifiedDate(now);
+		kaleoTaskAssignmentInstance.setKaleoDefinitionId(
+			kaleoTaskInstanceToken.getKaleoDefinitionId());
 		kaleoTaskAssignmentInstance.setKaleoDefinitionVersionId(
 			kaleoTaskInstanceToken.getKaleoDefinitionVersionId());
 		kaleoTaskAssignmentInstance.setKaleoInstanceId(
@@ -92,10 +101,8 @@ public class KaleoTaskAssignmentInstanceLocalServiceImpl
 
 		kaleoTaskAssignmentInstance.setCompleted(false);
 
-		kaleoTaskAssignmentInstancePersistence.update(
+		return kaleoTaskAssignmentInstancePersistence.update(
 			kaleoTaskAssignmentInstance);
-
-		return kaleoTaskAssignmentInstance;
 	}
 
 	@Override
@@ -143,6 +150,21 @@ public class KaleoTaskAssignmentInstanceLocalServiceImpl
 	}
 
 	@Override
+	public List<KaleoTaskAssignmentInstance> assignKaleoTaskAssignmentInstances(
+			KaleoTaskInstanceToken kaleoTaskInstanceToken,
+			Collection<KaleoTaskAssignment> kaleoTaskAssignments,
+			Map<String, Serializable> workflowContext,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		deleteKaleoTaskAssignmentInstances(kaleoTaskInstanceToken);
+
+		return addTaskAssignmentInstances(
+			kaleoTaskInstanceToken, kaleoTaskAssignments, workflowContext,
+			serviceContext);
+	}
+
+	@Override
 	public KaleoTaskAssignmentInstance completeKaleoTaskInstanceToken(
 			long kaleoTaskInstanceTokenId, ServiceContext serviceContext)
 		throws PortalException {
@@ -163,10 +185,8 @@ public class KaleoTaskAssignmentInstanceLocalServiceImpl
 		kaleoTaskAssignmentInstance.setCompleted(true);
 		kaleoTaskAssignmentInstance.setCompletionDate(new Date());
 
-		kaleoTaskAssignmentInstancePersistence.update(
+		return kaleoTaskAssignmentInstancePersistence.update(
 			kaleoTaskAssignmentInstance);
-
-		return kaleoTaskAssignmentInstance;
 	}
 
 	@Override
@@ -215,6 +235,15 @@ public class KaleoTaskAssignmentInstanceLocalServiceImpl
 		return kaleoTaskAssignmentInstancePersistence.
 			fetchBykaleoTaskInstanceTokenId_First(
 				kaleoTaskInstanceTokenId, orderByComparator);
+	}
+
+	@Override
+	public KaleoTaskAssignmentInstance fetchFirstKaleoTaskAssignmentInstance(
+		long kaleoTaskInstanceTokenId, String assigneeClassName,
+		OrderByComparator<KaleoTaskAssignmentInstance> orderByComparator) {
+
+		return kaleoTaskAssignmentInstancePersistence.fetchByKTITI_ACN_First(
+			kaleoTaskInstanceTokenId, assigneeClassName, orderByComparator);
 	}
 
 	@Override

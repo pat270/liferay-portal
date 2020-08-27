@@ -32,9 +32,11 @@ import org.osgi.framework.Bundle;
  * as a {@link JSBundleTracker} because OSGi will complain about a soft circular
  * dependency.
  *
- * @author Iván Zaera
+ * @author     Iván Zaera
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  * @review
  */
+@Deprecated
 public interface JSBundleTracker {
 
 	public void addedJSBundle(

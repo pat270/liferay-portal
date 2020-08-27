@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashHandler;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.trash.TrashHelper;
+import com.liferay.trash.constants.TrashActionKeys;
 import com.liferay.trash.kernel.exception.RestoreEntryException;
 import com.liferay.trash.kernel.model.TrashEntry;
 import com.liferay.wiki.constants.WikiPortletKeys;
@@ -76,14 +78,15 @@ public class WikiNodeTrashHandler extends BaseWikiTrashHandler {
 			node.getGroupId(), originalTitle);
 
 		if (duplicateNode != null) {
-			RestoreEntryException ree = new RestoreEntryException(
-				RestoreEntryException.DUPLICATE);
+			RestoreEntryException restoreEntryException =
+				new RestoreEntryException(RestoreEntryException.DUPLICATE);
 
-			ree.setDuplicateEntryId(duplicateNode.getNodeId());
-			ree.setOldName(duplicateNode.getName());
-			ree.setTrashEntryId(trashEntry.getEntryId());
+			restoreEntryException.setDuplicateEntryId(
+				duplicateNode.getNodeId());
+			restoreEntryException.setOldName(duplicateNode.getName());
+			restoreEntryException.setTrashEntryId(trashEntry.getEntryId());
 
-			throw ree;
+			throw restoreEntryException;
 		}
 	}
 
@@ -155,11 +158,12 @@ public class WikiNodeTrashHandler extends BaseWikiTrashHandler {
 
 	@Override
 	public List<TrashedModel> getTrashModelTrashedModels(
-		long classPK, int start, int end, OrderByComparator<?> obc) {
+		long classPK, int start, int end,
+		OrderByComparator<?> orderByComparator) {
 
 		List<WikiPage> pages = _wikiPageLocalService.getPages(
 			classPK, true, WorkflowConstants.STATUS_IN_TRASH, start, end,
-			(OrderByComparator<WikiPage>)obc);
+			(OrderByComparator<WikiPage>)orderByComparator);
 
 		List<TrashedModel> trashedModels = new ArrayList<>(pages.size());
 
@@ -172,9 +176,8 @@ public class WikiNodeTrashHandler extends BaseWikiTrashHandler {
 
 	@Override
 	public TrashRenderer getTrashRenderer(long classPK) throws PortalException {
-		WikiNode node = _wikiNodeLocalService.getNode(classPK);
-
-		return new WikiNodeTrashRenderer(node, _trashHelper);
+		return new WikiNodeTrashRenderer(
+			_wikiNodeLocalService.getNode(classPK), _trashHelper);
 	}
 
 	@Override
@@ -183,12 +186,25 @@ public class WikiNodeTrashHandler extends BaseWikiTrashHandler {
 	}
 
 	@Override
+	public boolean isRestorable(long classPK) throws PortalException {
+		WikiNode node = _wikiNodeLocalService.getNode(classPK);
+
+		if (!hasTrashPermission(
+				PermissionThreadLocal.getPermissionChecker(), node.getGroupId(),
+				classPK, TrashActionKeys.RESTORE)) {
+
+			return false;
+		}
+
+		return !node.isInTrashContainer();
+	}
+
+	@Override
 	public void restoreTrashEntry(long userId, long classPK)
 		throws PortalException {
 
-		WikiNode node = _wikiNodeLocalService.getNode(classPK);
-
-		_wikiNodeLocalService.restoreNodeFromTrash(userId, node);
+		_wikiNodeLocalService.restoreNodeFromTrash(
+			userId, _wikiNodeLocalService.getNode(classPK));
 	}
 
 	@Override

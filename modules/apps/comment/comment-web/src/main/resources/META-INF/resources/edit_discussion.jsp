@@ -19,6 +19,8 @@
 <%
 String redirect = ParamUtil.getString(request, "redirect");
 
+String backURL = ParamUtil.getString(request, "backURL", redirect);
+
 if (Validator.isNull(redirect)) {
 	redirect = currentURL;
 }
@@ -49,14 +51,14 @@ if (comment instanceof WorkflowableComment) {
 %>
 
 <liferay-ui:header
-	backURL="<%= redirect %>"
+	backURL="<%= backURL %>"
 	title='<%= (comment == null) ? "new-message" : "edit-message" %>'
 />
 
-<div class="container-fluid-1280">
-	<aui:form action='<%= themeDisplay.getPathMain() + "/portal/comment/discussion/edit" %>' enctype="multipart/form-data" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveComment();" %>'>
+<clay:container-fluid>
+	<aui:form action='<%= themeDisplay.getPathMain() + "/portal/comment/discussion/edit" %>' enctype="multipart/form-data" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveComment();" %>'>
 		<input name="p_auth" type="hidden" value="<%= AuthTokenUtil.getToken(request) %>" />
-		<input name="namespace" type="hidden" value="<%= renderResponse.getNamespace() %>" />
+		<input name="namespace" type="hidden" value="<%= liferayPortletResponse.getNamespace() %>" />
 
 		<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
@@ -66,6 +68,7 @@ if (comment instanceof WorkflowableComment) {
 		<aui:input name="ajax" type="hidden" value="<%= false %>" />
 
 		<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
+		<liferay-ui:error exception="<%= CaptchaException.class %>" message="captcha-verification-failed" />
 		<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 		<liferay-ui:error exception="<%= DiscussionMaxCommentsException.class %>" message="maximum-number-of-comments-has-been-reached" />
 		<liferay-ui:error exception="<%= MessageBodyException.class %>" message="please-enter-a-valid-message" />
@@ -77,7 +80,7 @@ if (comment instanceof WorkflowableComment) {
 				<aui:workflow-status model="<%= CommentConstants.getDiscussionClass() %>" status="<%= workflowableComment.getStatus() %>" />
 			</c:if>
 
-			<liferay-ui:input-editor
+			<liferay-editor:editor
 				configKey="commentEditor"
 				contents="<%= comment.getBody() %>"
 				editorName='<%= PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.taglib.ui.discussion.jsp") %>'
@@ -118,17 +121,14 @@ if (comment instanceof WorkflowableComment) {
 			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
 	function <portlet:namespace />saveComment() {
-		Liferay.Util.postForm(
-			document.<portlet:namespace />fm,
-			{
-				data: {
-					body: window.<portlet:namespace />bodyEditor.getHTML()
-				}
-			}
-		);
+		Liferay.Util.postForm(document.<portlet:namespace />fm, {
+			data: {
+				body: window.<portlet:namespace />bodyEditor.getHTML(),
+			},
+		});
 	}
 </aui:script>

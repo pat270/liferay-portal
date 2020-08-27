@@ -1,5 +1,6 @@
 @component-name = "portal-staging"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Staging";
@@ -11,7 +12,7 @@ definition {
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
-		ProductMenu.gotoSite(site = "Site Name");
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
 	}
 
 	tearDown {
@@ -27,19 +28,18 @@ definition {
 
 	@priority = "4"
 	test CheckPublicationSummaryLocal {
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Staging Test Page");
+
+		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		Staging.activateStagingCP(siteName = "Site Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "Staging Test Page");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Staging Test Page",
+			widgetName = "Documents and Media");
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging Test Page",
@@ -49,28 +49,32 @@ definition {
 
 		Staging.publishToLive(publicationName = "summCheck");
 
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Staging.openStagingAdmin(siteURLKey = "site-name-staging");
 
-		Staging.viewPublicationSummary(publicationTitle = "summCheck");
+		Staging.viewPublicationSummary(
+			dateRestrictionOption = "From Last Publish Date",
+			deletions = "true",
+			pagesOption = "Public Pages",
+			permissions = "true",
+			publicationTitle = "summCheck");
 	}
 
 	@priority = "4"
 	test CheckPublicationSummaryRemote {
+		property app.server.bundles.size = "1";
 		property custom.properties = "tunneling.servlet.shared.secret=1234567890123456${line.separator}auth.verifier.TunnelAuthVerifier.hosts.allowed=";
+		property databases.size = "1";
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "StagingActivation#CheckPublicationSummaryRemote";
 
-		Staging.remoteStagingSetUp(siteName = "Site Name");
+		Staging.remoteStagingSetUp(
+			remotePort = "9080",
+			remoteStaging = "true",
+			siteName = "Site Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "Staging Test Page");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Staging Test Page");
 
 		Navigator.gotoSitePage(
 			pageName = "Staging Test Page",
@@ -78,12 +82,11 @@ definition {
 
 		Staging.gotoPublishToLive();
 
-		Staging.publishToLive(publicationName = "summCheck");
+		Staging.publishToLive(
+			publicationName = "summCheck",
+			remoteStaging = "true");
 
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		Staging.viewPublicationSummary(publicationTitle = "summCheck");
 	}
@@ -92,10 +95,7 @@ definition {
 	test DeleteRecycleBinOnStagingActivation {
 		property portal.acceptance = "true";
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
 
 		WebContent.addArticleCP(
 			webContentContent = "Web Content Content",
@@ -103,10 +103,7 @@ definition {
 
 		WebContent.moveToRecycleBinCP(webContentTitle = "Web Content Title");
 
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		Staging.activateStagingCP(
 			recycleBinNotification = "true",
@@ -114,9 +111,9 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.viewDefaultCP(assetName = "Web Content Title");
 	}
+
 }

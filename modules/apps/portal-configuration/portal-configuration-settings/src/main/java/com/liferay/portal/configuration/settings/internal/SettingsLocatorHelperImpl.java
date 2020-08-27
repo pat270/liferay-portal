@@ -113,18 +113,6 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 		return configurationBeanSettings;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getConfigurationBeanSettings(String)}
-	 */
-	@Deprecated
-	@Override
-	public Settings getConfigurationBeanSettings(
-		String configurationPid, Settings parentSettings) {
-
-		return getConfigurationBeanSettings(configurationPid);
-	}
-
 	@Override
 	public Settings getGroupConfigurationBeanSettings(
 		long groupId, String configurationPid, Settings parentSettings) {
@@ -144,8 +132,8 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 				group.getCompanyId(), groupId,
 				PortletKeys.PREFS_OWNER_TYPE_GROUP, 0, settingsId);
 		}
-		catch (PortalException pe) {
-			throw new SystemException(pe);
+		catch (PortalException portalException) {
+			throw new SystemException(portalException);
 		}
 	}
 
@@ -163,15 +151,6 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 
 		return new PortletPreferencesSettings(
 			PrefsPropsUtil.getPreferences(companyId), parentSettings);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public Settings getPortalPropertiesSettings() {
-		return _portalPropertiesSettings;
 	}
 
 	@Override
@@ -381,12 +360,10 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 				new ConfigurationBeanManagedService(
 					context, configurationBeanClass,
 					configurationBean -> {
-						ClassLoader classLoader =
-							configurationBeanClass.getClassLoader();
-
 						LocationVariableResolver locationVariableResolver =
 							new LocationVariableResolver(
-								new ClassLoaderResourceManager(classLoader),
+								new ClassLoaderResourceManager(
+									configurationBeanClass.getClassLoader()),
 								SettingsLocatorHelperImpl.this);
 
 						_configurationBeanSettings.put(
@@ -442,11 +419,10 @@ public class SettingsLocatorHelperImpl implements SettingsLocatorHelper {
 			Class<?> configurationBeanClass =
 				configurationBeanDeclaration.getConfigurationBeanClass();
 
-			ClassLoader classLoader = configurationBeanClass.getClassLoader();
-
 			LocationVariableResolver locationVariableResolver =
 				new LocationVariableResolver(
-					new ClassLoaderResourceManager(classLoader),
+					new ClassLoaderResourceManager(
+						configurationBeanClass.getClassLoader()),
 					SettingsLocatorHelperImpl.this);
 
 			ScopedConfigurationManager scopedConfigurationManager =

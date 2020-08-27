@@ -1,4 +1,11 @@
 definition {
+
+	macro activateAppCP {
+		LexiconEntry.openEntryMenu(rowEntry = "${appName}");
+
+		MenuItem.clickNoError(menuItem = "Activate");
+	}
+
 	macro deactivateAppCP {
 		LexiconEntry.openEntryMenu(rowEntry = "${appName}");
 
@@ -36,7 +43,7 @@ definition {
 
 		MenuItem.click(menuItem = "Upload");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		AssertElementPresent(locator1 = "TextInput#FILE");
 
@@ -52,13 +59,13 @@ definition {
 
 		SelectFrame.selectFrameTop();
 
-		Click(locator1 = "Modal#CLOSE_BUTTON");
+		Click(locator1 = "Icon#CLOSE");
 
-		Pause(locator1 = "15000");
+		Pause(locator1 = "10000");
 
-		AssertConsoleTextPresent(value1 = "STARTED ${appName}");
-
-		Pause(locator1 = "3000");
+		while (!IsConsoleTextPresent(value1 = "STARTED ${appName}")) {
+			Pause(locator1 = "3000");
+		}
 
 		AssertConsoleTextNotPresent(value1 = "HotDeployException: Error initializing Spring for ${appName}");
 
@@ -73,7 +80,7 @@ definition {
 		if (isSet(searchTerm)) {
 			Search.searchCP(searchTerm = "${searchTerm}");
 		}
-		else{
+		else {
 			Search.searchCP(searchTerm = "${appName}");
 		}
 
@@ -116,4 +123,5 @@ definition {
 			key_appName = "${appName}",
 			locator1 = "AppManager#APP_NAME");
 	}
+
 }

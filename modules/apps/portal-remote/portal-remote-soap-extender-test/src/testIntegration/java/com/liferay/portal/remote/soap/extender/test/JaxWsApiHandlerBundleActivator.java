@@ -14,6 +14,8 @@
 
 package com.liferay.portal.remote.soap.extender.test;
 
+import com.liferay.petra.string.StringBundler;
+
 import java.util.List;
 
 import javax.xml.ws.Binding;
@@ -37,10 +39,10 @@ public class JaxWsApiHandlerBundleActivator implements BundleActivator {
 
 		_configurationAdminBundleActivator.start(bundleContext);
 
-		String filterString =
-			"(&(objectClass=" + Provider.class.getName() + ")(" +
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH +
-					"=/soap-test))";
+		String filterString = StringBundler.concat(
+			"(&(objectClass=", Provider.class.getName(), ")(",
+			HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH,
+			"=/soap-test))");
 
 		WaiterUtil.waitForFilter(bundleContext, filterString, 10_000);
 
@@ -58,7 +60,7 @@ public class JaxWsApiHandlerBundleActivator implements BundleActivator {
 
 			binding.setHandlerChain(handlers);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			cleanUp(bundleContext);
 		}
 	}
@@ -72,7 +74,7 @@ public class JaxWsApiHandlerBundleActivator implements BundleActivator {
 		try {
 			_configurationAdminBundleActivator.stop(bundleContext);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		if (_endpoint != null) {

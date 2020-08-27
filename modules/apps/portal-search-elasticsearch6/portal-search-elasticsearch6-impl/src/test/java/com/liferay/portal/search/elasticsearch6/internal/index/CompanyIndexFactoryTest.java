@@ -16,22 +16,28 @@ package com.liferay.portal.search.elasticsearch6.internal.index;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchFixture;
 import com.liferay.portal.search.elasticsearch6.internal.connection.IndexName;
 import com.liferay.portal.search.elasticsearch6.internal.document.SingleFieldFixture;
+import com.liferay.portal.search.elasticsearch6.internal.index.constants.LiferayTypeMappingsConstants;
+import com.liferay.portal.search.elasticsearch6.internal.query.QueryBuilderFactories;
 import com.liferay.portal.search.elasticsearch6.internal.settings.BaseIndexSettingsContributor;
 import com.liferay.portal.search.elasticsearch6.internal.util.ResourceUtil;
 import com.liferay.portal.search.elasticsearch6.settings.IndexSettingsHelper;
 import com.liferay.portal.search.elasticsearch6.settings.TypeMappingsHelper;
+import com.liferay.portal.search.spi.model.index.contributor.IndexContributor;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequestBuilder;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.client.AdminClient;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
@@ -65,6 +71,8 @@ public class CompanyIndexFactoryTest {
 			_elasticsearchFixture.getClient(),
 			new IndexName(_companyIndexFactoryFixture.getIndexName()),
 			LiferayTypeMappingsConstants.LIFERAY_DOCUMENT_TYPE);
+
+		_singleFieldFixture.setQueryBuilderFactory(QueryBuilderFactories.MATCH);
 	}
 
 	@After
@@ -119,14 +127,16 @@ public class CompanyIndexFactoryTest {
 
 	@Test
 	public void testCreateIndicesWithBlankStrings() throws Exception {
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put("additionalIndexConfigurations", StringPool.BLANK);
-		properties.put("additionalTypeMappings", StringPool.SPACE);
-		properties.put("indexNumberOfReplicas", StringPool.BLANK);
-		properties.put("indexNumberOfShards", StringPool.SPACE);
-
-		_companyIndexFactory.activate(properties);
+		_companyIndexFactory.activate(
+			HashMapBuilder.<String, Object>put(
+				"additionalIndexConfigurations", StringPool.BLANK
+			).put(
+				"additionalTypeMappings", StringPool.SPACE
+			).put(
+				"indexNumberOfReplicas", StringPool.BLANK
+			).put(
+				"indexNumberOfShards", StringPool.SPACE
+			).build());
 
 		createIndices();
 	}
@@ -168,6 +178,55 @@ public class CompanyIndexFactoryTest {
 
 		Assert.assertEquals("1", settings.get("index.number_of_replicas"));
 		Assert.assertEquals("2", settings.get("index.number_of_shards"));
+	}
+
+	@Test
+	public void testIndexContributors() throws Exception {
+		CompanyIndexFactoryFixture companyIndexFactoryFixture =
+			new CompanyIndexFactoryFixture(_elasticsearchFixture, "other");
+
+		addIndexContributor(
+			new IndexContributor() {
+
+				@Override
+				public void onAfterCreate(String indexName) {
+					companyIndexFactoryFixture.createIndices();
+				}
+
+				@Override
+				public void onBeforeRemove(String indexName) {
+					companyIndexFactoryFixture.deleteIndices();
+				}
+
+			});
+
+		createIndices();
+
+		assertHasIndex(companyIndexFactoryFixture.getIndexName());
+
+		deleteIndices();
+
+		assertNoIndex(companyIndexFactoryFixture.getIndexName());
+	}
+
+	@Test
+	public void testIndexContributorsThrowsException() throws Exception {
+		addIndexContributor(
+			new IndexContributor() {
+
+				@Override
+				public void onAfterCreate(String indexName) {
+					throw new RuntimeException();
+				}
+
+				@Override
+				public void onBeforeRemove(String indexName) {
+					throw new RuntimeException();
+				}
+
+			});
+
+		createIndices();
 	}
 
 	@Test
@@ -274,6 +333,10 @@ public class CompanyIndexFactoryTest {
 	@Rule
 	public TestName testName = new TestName();
 
+	protected void addIndexContributor(IndexContributor indexContributor) {
+		_companyIndexFactory.addIndexContributor(indexContributor);
+	}
+
 	protected void addIndexSettingsContributor(String mappings) {
 		_companyIndexFactory.addIndexSettingsContributor(
 			new BaseIndexSettingsContributor(1) {
@@ -332,6 +395,11 @@ public class CompanyIndexFactoryTest {
 			_elasticsearchFixture.getIndicesAdminClient());
 	}
 
+	protected void assertHasIndex(String indexName) {
+		Assert.assertTrue(
+			"Index " + indexName + " does not exist", hasIndex(indexName));
+	}
+
 	protected void assertIndicesExist(String... indexNames) {
 		GetIndexResponse getIndexResponse = _elasticsearchFixture.getIndex(
 			_companyIndexFactoryFixture.getIndexName());
@@ -353,6 +421,11 @@ public class CompanyIndexFactoryTest {
 		assertAnalyzer(field, null);
 	}
 
+	protected void assertNoIndex(String indexName) {
+		Assert.assertFalse(
+			"Index " + indexName + " exists", hasIndex(indexName));
+	}
+
 	protected void assertType(String field, String type) throws Exception {
 		FieldMappingAssert.assertType(
 			type, field, LiferayTypeMappingsConstants.LIFERAY_DOCUMENT_TYPE,
@@ -360,11 +433,21 @@ public class CompanyIndexFactoryTest {
 			_elasticsearchFixture.getIndicesAdminClient());
 	}
 
-	protected void createIndices() throws Exception {
-		AdminClient adminClient = _elasticsearchFixture.getAdminClient();
-
+	protected void createIndex(long companyId) {
 		_companyIndexFactory.createIndices(
-			adminClient, RandomTestUtil.randomLong());
+			_elasticsearchFixture.getAdminClient(), companyId);
+	}
+
+	protected void createIndices() throws Exception {
+		long companyId = RandomTestUtil.randomLong();
+
+		createIndex(companyId);
+	}
+
+	protected void deleteIndices() {
+		_companyIndexFactory.deleteIndices(
+			_elasticsearchFixture.getAdminClient(),
+			RandomTestUtil.randomLong());
 	}
 
 	protected Settings getIndexSettings() {
@@ -379,10 +462,28 @@ public class CompanyIndexFactoryTest {
 		return immutableOpenMap.get(name);
 	}
 
+	protected boolean hasIndex(String indexName) {
+		AdminClient adminClient = _elasticsearchFixture.getAdminClient();
+
+		IndicesAdminClient indicesAdminClient = adminClient.indices();
+
+		IndicesExistsRequestBuilder indicesExistsRequestBuilder =
+			indicesAdminClient.prepareExists(indexName);
+
+		IndicesExistsResponse indicesExistsResponse =
+			indicesExistsRequestBuilder.get();
+
+		return indicesExistsResponse.isExists();
+	}
+
 	protected void indexOneDocument(String field) {
+		indexOneDocument(field, RandomTestUtil.randomString());
+	}
+
+	protected void indexOneDocument(String field, String value) {
 		_singleFieldFixture.setField(field);
 
-		_singleFieldFixture.indexDocument(RandomTestUtil.randomString());
+		_singleFieldFixture.indexDocument(value);
 	}
 
 	protected String loadAdditionalAnalyzers() throws Exception {

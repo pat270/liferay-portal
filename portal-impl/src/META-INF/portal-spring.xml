@@ -36,8 +36,6 @@
 	<bean class="com.liferay.portlet.asset.service.impl.AssetTagServiceImpl" id="com.liferay.asset.kernel.service.AssetTagService" />
 	<bean class="com.liferay.portlet.asset.service.persistence.impl.AssetTagPersistenceImpl" id="com.liferay.asset.kernel.service.persistence.AssetTagPersistence" />
 	<bean class="com.liferay.portlet.asset.service.persistence.impl.AssetTagFinderImpl" id="com.liferay.asset.kernel.service.persistence.AssetTagFinder" />
-	<bean class="com.liferay.portlet.asset.service.impl.AssetTagStatsLocalServiceImpl" id="com.liferay.asset.kernel.service.AssetTagStatsLocalService" />
-	<bean class="com.liferay.portlet.asset.service.persistence.impl.AssetTagStatsPersistenceImpl" id="com.liferay.asset.kernel.service.persistence.AssetTagStatsPersistence" />
 	<bean class="com.liferay.portlet.asset.service.impl.AssetVocabularyLocalServiceImpl" id="com.liferay.asset.kernel.service.AssetVocabularyLocalService" />
 	<bean class="com.liferay.portlet.asset.service.impl.AssetVocabularyServiceImpl" id="com.liferay.asset.kernel.service.AssetVocabularyService" />
 	<bean class="com.liferay.portlet.asset.service.persistence.impl.AssetVocabularyPersistenceImpl" id="com.liferay.asset.kernel.service.persistence.AssetVocabularyPersistence" />
@@ -97,11 +95,11 @@
 	<bean class="com.liferay.portal.service.impl.ClassNameLocalServiceImpl" id="com.liferay.portal.kernel.service.ClassNameLocalService" />
 	<bean class="com.liferay.portal.service.impl.ClassNameServiceImpl" id="com.liferay.portal.kernel.service.ClassNameService" />
 	<bean class="com.liferay.portal.service.persistence.impl.ClassNamePersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ClassNamePersistence" />
-	<bean class="com.liferay.portal.service.impl.ClusterGroupLocalServiceImpl" id="com.liferay.portal.kernel.service.ClusterGroupLocalService" />
-	<bean class="com.liferay.portal.service.persistence.impl.ClusterGroupPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ClusterGroupPersistence" />
 	<bean class="com.liferay.portal.service.impl.CompanyLocalServiceImpl" id="com.liferay.portal.kernel.service.CompanyLocalService" />
 	<bean class="com.liferay.portal.service.impl.CompanyServiceImpl" id="com.liferay.portal.kernel.service.CompanyService" />
 	<bean class="com.liferay.portal.service.persistence.impl.CompanyPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.CompanyPersistence" />
+	<bean class="com.liferay.portal.service.impl.CompanyInfoLocalServiceImpl" id="com.liferay.portal.kernel.service.CompanyInfoLocalService" />
+	<bean class="com.liferay.portal.service.persistence.impl.CompanyInfoPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.CompanyInfoPersistence" />
 	<bean class="com.liferay.portal.service.impl.ContactLocalServiceImpl" id="com.liferay.portal.kernel.service.ContactLocalService" />
 	<bean class="com.liferay.portal.service.impl.ContactServiceImpl" id="com.liferay.portal.kernel.service.ContactService" />
 	<bean class="com.liferay.portal.service.persistence.impl.ContactPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ContactPersistence" />
@@ -141,9 +139,7 @@
 	<bean class="com.liferay.portal.service.impl.LayoutSetPrototypeLocalServiceImpl" id="com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService" />
 	<bean class="com.liferay.portal.service.impl.LayoutSetPrototypeServiceImpl" id="com.liferay.portal.kernel.service.LayoutSetPrototypeService" />
 	<bean class="com.liferay.portal.service.persistence.impl.LayoutSetPrototypePersistenceImpl" id="com.liferay.portal.kernel.service.persistence.LayoutSetPrototypePersistence" />
-	<bean class="com.liferay.portal.service.persistence.impl.LayoutSetVersionPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.LayoutSetVersionPersistence" />
 	<bean class="com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl" id="com.liferay.portal.kernel.service.LayoutTemplateLocalService" />
-	<bean class="com.liferay.portal.service.persistence.impl.LayoutVersionPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.LayoutVersionPersistence" />
 	<bean class="com.liferay.portal.service.impl.ListTypeLocalServiceImpl" id="com.liferay.portal.kernel.service.ListTypeLocalService" />
 	<bean class="com.liferay.portal.service.impl.ListTypeServiceImpl" id="com.liferay.portal.kernel.service.ListTypeService" />
 	<bean class="com.liferay.portal.service.persistence.impl.ListTypePersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ListTypePersistence" />
@@ -204,19 +200,10 @@
 	<bean class="com.liferay.portal.service.impl.ResourceLocalServiceImpl" id="com.liferay.portal.kernel.service.ResourceLocalService" />
 	<bean class="com.liferay.portal.service.impl.ResourceActionLocalServiceImpl" id="com.liferay.portal.kernel.service.ResourceActionLocalService" />
 	<bean class="com.liferay.portal.service.persistence.impl.ResourceActionPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ResourceActionPersistence" />
-	<bean class="com.liferay.portal.service.impl.ResourceBlockLocalServiceImpl" id="com.liferay.portal.kernel.service.ResourceBlockLocalService" />
-	<bean class="com.liferay.portal.service.impl.ResourceBlockServiceImpl" id="com.liferay.portal.kernel.service.ResourceBlockService" />
-	<bean class="com.liferay.portal.service.persistence.impl.ResourceBlockPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ResourceBlockPersistence" />
-	<bean class="com.liferay.portal.service.persistence.impl.ResourceBlockFinderImpl" id="com.liferay.portal.kernel.service.persistence.ResourceBlockFinder" />
-	<bean class="com.liferay.portal.service.impl.ResourceBlockPermissionLocalServiceImpl" id="com.liferay.portal.kernel.service.ResourceBlockPermissionLocalService" />
-	<bean class="com.liferay.portal.service.persistence.impl.ResourceBlockPermissionPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ResourceBlockPermissionPersistence" />
 	<bean class="com.liferay.portal.service.impl.ResourcePermissionLocalServiceImpl" id="com.liferay.portal.kernel.service.ResourcePermissionLocalService" />
 	<bean class="com.liferay.portal.service.impl.ResourcePermissionServiceImpl" id="com.liferay.portal.kernel.service.ResourcePermissionService" />
 	<bean class="com.liferay.portal.service.persistence.impl.ResourcePermissionPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ResourcePermissionPersistence" />
 	<bean class="com.liferay.portal.service.persistence.impl.ResourcePermissionFinderImpl" id="com.liferay.portal.kernel.service.persistence.ResourcePermissionFinder" />
-	<bean class="com.liferay.portal.service.impl.ResourceTypePermissionLocalServiceImpl" id="com.liferay.portal.kernel.service.ResourceTypePermissionLocalService" />
-	<bean class="com.liferay.portal.service.persistence.impl.ResourceTypePermissionPersistenceImpl" id="com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersistence" />
-	<bean class="com.liferay.portal.service.persistence.impl.ResourceTypePermissionFinderImpl" id="com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinder" />
 	<bean class="com.liferay.portal.service.impl.RoleLocalServiceImpl" id="com.liferay.portal.kernel.service.RoleLocalService" />
 	<bean class="com.liferay.portal.service.impl.RoleServiceImpl" id="com.liferay.portal.kernel.service.RoleService" />
 	<bean class="com.liferay.portal.service.persistence.impl.RolePersistenceImpl" id="com.liferay.portal.kernel.service.persistence.RolePersistence" />
@@ -276,10 +263,8 @@
 	<bean class="com.liferay.portlet.ratings.service.impl.RatingsEntryLocalServiceImpl" id="com.liferay.ratings.kernel.service.RatingsEntryLocalService" />
 	<bean class="com.liferay.portlet.ratings.service.impl.RatingsEntryServiceImpl" id="com.liferay.ratings.kernel.service.RatingsEntryService" />
 	<bean class="com.liferay.portlet.ratings.service.persistence.impl.RatingsEntryPersistenceImpl" id="com.liferay.ratings.kernel.service.persistence.RatingsEntryPersistence" />
-	<bean class="com.liferay.portlet.ratings.service.persistence.impl.RatingsEntryFinderImpl" id="com.liferay.ratings.kernel.service.persistence.RatingsEntryFinder" />
 	<bean class="com.liferay.portlet.ratings.service.impl.RatingsStatsLocalServiceImpl" id="com.liferay.ratings.kernel.service.RatingsStatsLocalService" />
 	<bean class="com.liferay.portlet.ratings.service.persistence.impl.RatingsStatsPersistenceImpl" id="com.liferay.ratings.kernel.service.persistence.RatingsStatsPersistence" />
-	<bean class="com.liferay.portlet.ratings.service.persistence.impl.RatingsStatsFinderImpl" id="com.liferay.ratings.kernel.service.persistence.RatingsStatsFinder" />
 	<bean class="com.liferay.portlet.social.service.impl.SocialActivityLocalServiceImpl" id="com.liferay.social.kernel.service.SocialActivityLocalService" />
 	<bean class="com.liferay.portlet.social.service.impl.SocialActivityServiceImpl" id="com.liferay.social.kernel.service.SocialActivityService" />
 	<bean class="com.liferay.portlet.social.service.persistence.impl.SocialActivityPersistenceImpl" id="com.liferay.social.kernel.service.persistence.SocialActivityPersistence" />

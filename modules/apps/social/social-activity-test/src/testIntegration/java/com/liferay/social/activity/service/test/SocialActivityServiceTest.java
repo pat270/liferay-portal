@@ -23,8 +23,8 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -32,17 +32,16 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portlet.documentlibrary.constants.DLConstants;
 import com.liferay.portlet.social.util.SocialActivityHierarchyEntryThreadLocal;
@@ -106,14 +105,14 @@ public class SocialActivityServiceTest {
 
 		Assert.assertEquals(activities.toString(), 1, activities.size());
 
-		ServiceTestUtil.setUser(_user);
+		UserTestUtil.setUser(_user);
 
 		activities = SocialActivityServiceUtil.getGroupActivities(
 			_group.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		Assert.assertEquals(activities.toString(), 0, activities.size());
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 	}
 
 	@Test
@@ -131,7 +130,7 @@ public class SocialActivityServiceTest {
 
 		long userId = PrincipalThreadLocal.getUserId();
 
-		ServiceTestUtil.setUser(_user);
+		UserTestUtil.setUser(_user);
 
 		try {
 			Assert.assertEquals(
@@ -169,9 +168,7 @@ public class SocialActivityServiceTest {
 			}
 		}
 		finally {
-			User user = UserLocalServiceUtil.getUser(userId);
-
-			ServiceTestUtil.setUser(user);
+			UserTestUtil.setUser(UserLocalServiceUtil.getUser(userId));
 		}
 	}
 

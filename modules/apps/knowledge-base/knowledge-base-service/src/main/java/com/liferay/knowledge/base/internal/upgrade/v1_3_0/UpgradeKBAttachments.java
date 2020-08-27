@@ -16,6 +16,8 @@ package com.liferay.knowledge.base.internal.upgrade.v1_3_0;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.store.Store;
+import com.liferay.petra.io.StreamUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -118,33 +120,42 @@ public class UpgradeKBAttachments extends UpgradeProcess {
 		for (String attachment : getAttachments(companyId, resourcePrimKey)) {
 			try {
 				if (!_store.hasFile(
-						companyId, CompanyConstants.SYSTEM, attachment)) {
+						companyId, CompanyConstants.SYSTEM, attachment,
+						Store.VERSION_DEFAULT)) {
 
 					continue;
 				}
 
 				long folderId = getFolderId(groupId, userId, resourcePrimKey);
 
-				byte[] bytes = _store.getFileAsBytes(
-					companyId, CompanyConstants.SYSTEM, attachment);
+				byte[] bytes = StreamUtil.toByteArray(
+					_store.getFileAsStream(
+						companyId, CompanyConstants.SYSTEM, attachment,
+						StringPool.BLANK));
 
 				String title = FileUtil.getShortFileName(attachment);
 
-				String extension = FileUtil.getExtension(title);
-
 				String mimeType = MimeTypesUtil.getExtensionContentType(
-					extension);
+					FileUtil.getExtension(title));
 
 				PortletFileRepositoryUtil.addPortletFileEntry(
 					groupId, userId, _KB_ARTICLE_CLASS_NAME, resourcePrimKey,
 					_PORTLET_ID, folderId, bytes, title, mimeType, false);
 
-				_store.deleteFile(
-					companyId, CompanyConstants.SYSTEM, attachment);
+				for (String versionLabel :
+						_store.getFileVersions(
+							companyId, CompanyConstants.SYSTEM, attachment)) {
+
+					_store.deleteFile(
+						companyId, CompanyConstants.SYSTEM, attachment,
+						versionLabel);
+				}
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to upgrade attachment " + attachment, pe);
+					_log.warn(
+						"Unable to upgrade attachment " + attachment,
+						portalException);
 				}
 			}
 		}

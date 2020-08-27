@@ -30,6 +30,7 @@ public class MVCCPortalCache<K extends Serializable, V extends MVCCModel>
 		_lowLevelCache = lowLevelCache;
 	}
 
+	@Override
 	public boolean isMVCC() {
 		return true;
 	}
@@ -52,7 +53,7 @@ public class MVCCPortalCache<K extends Serializable, V extends MVCCModel>
 				}
 			}
 
-			if (value.getMvccVersion() <= oldValue.getMvccVersion()) {
+			if (value.getMvccVersion() < oldValue.getMvccVersion()) {
 				return;
 			}
 

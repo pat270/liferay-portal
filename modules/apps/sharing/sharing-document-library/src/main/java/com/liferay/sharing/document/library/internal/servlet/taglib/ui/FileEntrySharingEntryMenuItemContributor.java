@@ -62,8 +62,8 @@ public class FileEntrySharingEntryMenuItemContributor
 			return Collections.singleton(
 				_createDownloadMenuItem(sharingEntry, themeDisplay));
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return Collections.emptyList();
 		}
@@ -79,14 +79,14 @@ public class FileEntrySharingEntryMenuItemContributor
 		urlMenuItem.setLabel(
 			LanguageUtil.get(themeDisplay.getLocale(), "download"));
 
-		AssetRenderer assetRenderer = _getAssetEntryRenderer(sharingEntry);
+		AssetRenderer<?> assetRenderer = _getAssetEntryRenderer(sharingEntry);
 
 		urlMenuItem.setURL(assetRenderer.getURLDownload(themeDisplay));
 
 		return urlMenuItem;
 	}
 
-	private AssetRenderer _getAssetEntryRenderer(SharingEntry sharingEntry)
+	private AssetRenderer<?> _getAssetEntryRenderer(SharingEntry sharingEntry)
 		throws PortalException {
 
 		AssetRendererFactory<?> assetRendererFactory =

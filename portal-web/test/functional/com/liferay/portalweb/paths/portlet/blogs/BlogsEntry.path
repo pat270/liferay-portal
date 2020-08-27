@@ -30,7 +30,12 @@
 </tr>
 <tr>
 	<td>TITLE</td>
-	<td>//div[contains(@class,'autofit-row')]//h3[contains(.,'${key_entryTitle}')] | //div[contains(@class,'entry-title')]//h1[contains(.,'${key_entryTitle}')]</td>
+	<td>//div[contains(@class,'autofit-row')]//h3[contains(.,'${key_entryTitle}')] | //div[contains(@class,'entry-title')]//p[contains(.,'${key_entryTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TITLE_CARD</td>
+	<td>//div[contains(@class,'card-row')]//h3[contains(.,'${key_entryTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -45,12 +50,12 @@
 </tr>
 <tr>
 	<td>TITLE_FIELD_HELPER</td>
-	<td>//div[contains(@class,'required') and contains(.,'This field is required to publish the entry')]</td>
+	<td>//div[contains(@class,'required') and contains(.,'This field is required')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SUBTITLE</td>
-	<td>//div[contains(@class,'autofit-row')]//h4[contains(.,'${key_entrySubtitle}')] | //div[contains(@class,'entry-subtitle')]//h4[contains(.,'${key_entrySubtitle}')]</td>
+	<td>//div[contains(@class,'autofit-row')]//h4[contains(.,'${key_entrySubtitle}')] | //div[contains(@class,'entry-subtitle')]//p[contains(.,'${key_entrySubtitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,13 +84,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CONTENT_INLINE_IMAGE_PREVIEW</td>
+	<td>so/screenshots/blogs/content_inline_image_preview.png</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONTENT_HTML_BOLD</td>
-	<td>//div[contains(@class,'widget-mode-detail-text')]/b</td>
+	<td>//div[contains(@class,'widget-mode-detail-text')]/p/b</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONTENT_HTML_ITALICS</td>
-	<td>//div[contains(@class,'widget-mode-detail-text')]/i</td>
+	<td>//div[contains(@class,'widget-mode-detail-text')]/p/i</td>
 	<td></td>
 </tr>
 <tr>
@@ -115,12 +125,12 @@
 </tr>
 <tr>
 	<td>FLAG_LINK</td>
-	<td>//div[contains(@class,'taglib-flags')]//button[contains(@type,'button')]</td>
+	<td>//div[contains(@class,'taglib-flags')]//button[contains(@type,'button')]//span[contains(.,'Report')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FLAG_MODAL</td>
-	<td>//section[contains(@class,'modal-body')]/form[contains(@name,'flagsForm')]</td>
+	<td>//div[@class='modal-body']</td>
 	<td></td>
 </tr>
 <tr>

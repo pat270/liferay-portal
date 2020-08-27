@@ -49,7 +49,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class JournalArticleServiceBaseImpl
 	extends BaseServiceImpl
-	implements JournalArticleService, AopService, IdentifiableOSGiService {
+	implements AopService, IdentifiableOSGiService, JournalArticleService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -105,8 +105,8 @@ public abstract class JournalArticleServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -216,18 +216,6 @@ public abstract class JournalArticleServiceBaseImpl
 	@Reference
 	protected com.liferay.ratings.kernel.service.RatingsStatsLocalService
 		ratingsStatsLocalService;
-
-	@Reference
-	protected com.liferay.trash.kernel.service.TrashEntryLocalService
-		trashEntryLocalService;
-
-	@Reference
-	protected com.liferay.trash.kernel.service.TrashEntryService
-		trashEntryService;
-
-	@Reference
-	protected com.liferay.trash.kernel.service.TrashVersionLocalService
-		trashVersionLocalService;
 
 	@Reference
 	protected JournalArticleLocalizationPersistence

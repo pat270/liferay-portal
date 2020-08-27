@@ -19,7 +19,6 @@ import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderTracker;
 import com.liferay.dynamic.data.mapping.data.provider.internal.rest.DDMRESTDataProviderSettings;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -46,20 +45,13 @@ public class DDMDataProviderInstanceSettingsImplTest extends PowerMockito {
 
 	@Before
 	public void setUp() throws Exception {
-		_ddmDataProviderInstanceSettings =
+		_ddmDataProviderInstanceSettingsImpl =
 			new DDMDataProviderInstanceSettingsImpl();
 
-		_ddmDataProviderInstanceSettings.ddmDataProviderTracker =
+		_ddmDataProviderInstanceSettingsImpl.ddmDataProviderTracker =
 			_ddmDataProviderTracker;
-		_ddmDataProviderInstanceSettings.ddmFormValuesDeserializerTracker =
-			_ddmFormValuesDeserializerTracker;
-
-		when(
-			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				Matchers.anyString())
-		).thenReturn(
-			_ddmFormValuesDeserializer
-		);
+		_ddmDataProviderInstanceSettingsImpl.jsonDDMFormValuesDeserializer =
+			_ddmFormValuesDeserializer;
 	}
 
 	@Test
@@ -91,7 +83,7 @@ public class DDMDataProviderInstanceSettingsImplTest extends PowerMockito {
 		);
 
 		TestDataProviderInstanceSettings testDataProviderInstanceSettings =
-			_ddmDataProviderInstanceSettings.getSettings(
+			_ddmDataProviderInstanceSettingsImpl.getSettings(
 				_ddmDataProviderInstance,
 				TestDataProviderInstanceSettings.class);
 
@@ -110,7 +102,7 @@ public class DDMDataProviderInstanceSettingsImplTest extends PowerMockito {
 			IllegalStateException.class
 		);
 
-		_ddmDataProviderInstanceSettings.getSettings(
+		_ddmDataProviderInstanceSettingsImpl.getSettings(
 			_ddmDataProviderInstance, DDMRESTDataProviderSettings.class);
 	}
 
@@ -143,15 +135,12 @@ public class DDMDataProviderInstanceSettingsImplTest extends PowerMockito {
 	private DDMDataProviderInstance _ddmDataProviderInstance;
 
 	private DDMDataProviderInstanceSettingsImpl
-		_ddmDataProviderInstanceSettings;
+		_ddmDataProviderInstanceSettingsImpl;
 
 	@Mock
 	private DDMDataProviderTracker _ddmDataProviderTracker;
 
 	@Mock
 	private DDMFormValuesDeserializer _ddmFormValuesDeserializer;
-
-	@Mock
-	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
 
 }

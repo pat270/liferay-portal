@@ -22,7 +22,9 @@ long sourcePlid = ParamUtil.getLong(request, "sourcePlid");
 List<SiteNavigationMenu> autoSiteNavigationMenus = layoutsAdminDisplayContext.getAutoSiteNavigationMenus();
 %>
 
-<div class="container-fluid-1280 pt-2">
+<clay:container-fluid
+	cssClass="pt-2"
+>
 	<liferay-frontend:edit-form
 		action="<%= (sourcePlid <= 0) ? layoutsAdminDisplayContext.getAddLayoutURL() : layoutsAdminDisplayContext.getCopyLayoutURL(sourcePlid) %>"
 		method="post"
@@ -30,29 +32,35 @@ List<SiteNavigationMenu> autoSiteNavigationMenus = layoutsAdminDisplayContext.ge
 		onSubmit="event.preventDefault();"
 	>
 		<liferay-frontend:edit-form-body>
-			<aui:input label="name" name="name" required="<%= true %>" />
+			<aui:input autoFocus="<%= true %>" label="name" name="name" required="<%= true %>" />
 
 			<c:choose>
 				<c:when test="<%= autoSiteNavigationMenus.size() > 1 %>">
+					<div class="h3 sheet-subtitle"><liferay-ui:message key="navigation-menus" /></div>
+
 					<liferay-ui:message key="add-this-page-to-the-following-menus" />
 
-					<div class="auto-site-navigation-menus container mt-3">
-						<div class="row">
+					<clay:container-fluid
+						cssClass="auto-site-navigation-menus mt-3"
+					>
+						<clay:row>
 
 							<%
 							for (SiteNavigationMenu autoSiteNavigationMenu : autoSiteNavigationMenus) {
 							%>
 
-								<div class="col-6">
-									<aui:input id='<%= "menu_" + autoSiteNavigationMenu.getSiteNavigationMenuId() %>' label="<%= autoSiteNavigationMenu.getName() %>" name="TypeSettingsProperties--siteNavigationMenuId--" type="checkbox" value="<%= autoSiteNavigationMenu.getSiteNavigationMenuId() %>" />
-								</div>
+								<clay:col
+									size="6"
+								>
+									<aui:input id='<%= "menu_" + autoSiteNavigationMenu.getSiteNavigationMenuId() %>' label="<%= HtmlUtil.escape(autoSiteNavigationMenu.getName()) %>" name="TypeSettingsProperties--siteNavigationMenuId--" type="checkbox" value="<%= autoSiteNavigationMenu.getSiteNavigationMenuId() %>" />
+								</clay:col>
 
 							<%
 							}
 							%>
 
-						</div>
-					</div>
+						</clay:row>
+					</clay:container-fluid>
 				</c:when>
 				<c:when test="<%= autoSiteNavigationMenus.size() == 1 %>">
 
@@ -60,91 +68,110 @@ List<SiteNavigationMenu> autoSiteNavigationMenus = layoutsAdminDisplayContext.ge
 					SiteNavigationMenu autoSiteNavigationMenu = autoSiteNavigationMenus.get(0);
 					%>
 
-					<div class="auto-site-navigation-menus container mt-3">
-						<div class="row">
-							<aui:input id='<%= "menu_" + autoSiteNavigationMenu.getSiteNavigationMenuId() %>' label='<%= LanguageUtil.format(request, "add-this-page-to-x", autoSiteNavigationMenu.getName()) %>' name="TypeSettingsProperties--siteNavigationMenuId--" type="checkbox" value="<%= autoSiteNavigationMenu.getSiteNavigationMenuId() %>" />
-						</div>
-					</div>
+					<clay:container-fluid
+						cssClass="auto-site-navigation-menus mt-3"
+					>
+						<clay:row>
+							<aui:input id='<%= "menu_" + autoSiteNavigationMenu.getSiteNavigationMenuId() %>' label='<%= LanguageUtil.format(request, "add-this-page-to-x", HtmlUtil.escape(autoSiteNavigationMenu.getName())) %>' name="TypeSettingsProperties--siteNavigationMenuId--" type="checkbox" value="<%= autoSiteNavigationMenu.getSiteNavigationMenuId() %>" />
+						</clay:row>
+					</clay:container-fluid>
 				</c:when>
 			</c:choose>
+
+			<c:if test="<%= layoutsAdminDisplayContext.hasRequiredVocabularies() %>">
+				<aui:fieldset cssClass="mb-4">
+					<div class="h3 sheet-subtitle"><liferay-ui:message key="categorization" /></div>
+
+					<c:choose>
+						<c:when test="<%= layoutsAdminDisplayContext.isShowCategorization() %>">
+							<liferay-asset:asset-categories-selector
+								className="<%= Layout.class.getName() %>"
+								classPK="<%= 0 %>"
+								showOnlyRequiredVocabularies="<%= true %>"
+							/>
+						</c:when>
+						<c:otherwise>
+							<div class="alert alert-warning text-justify">
+								<liferay-ui:message key="pages-have-required-vocabularies.-you-need-to-create-at-least-one-category-in-all-required-vocabularies-in-order-to-create-a-page" />
+							</div>
+						</c:otherwise>
+					</c:choose>
+				</aui:fieldset>
+			</c:if>
 		</liferay-frontend:edit-form-body>
 
 		<liferay-frontend:edit-form-footer>
-			<aui:button type="submit" value="add" />
+			<clay:button
+				label="add"
+				type="submit"
+			/>
 
-			<aui:button type="cancel" value="cancel" />
+			<clay:button
+				displayType="secondary"
+				elementClasses="btn-cancel"
+				label="cancel"
+			/>
 		</liferay-frontend:edit-form-footer>
 	</liferay-frontend:edit-form>
-</div>
+</clay:container-fluid>
 
-<aui:script require="metal-uri/src/Uri">
+<aui:script>
 	var form = document.<portlet:namespace />fm;
 
-	var Uri = metalUriSrcUri.default;
+	form.addEventListener('submit', function (event) {
+		event.stopPropagation();
 
-	form.addEventListener(
-		'submit',
-		function(event) {
-			event.stopPropagation();
+		var formData = new FormData();
 
-			var formData = new FormData();
+		formData.append('p_auth', Liferay.authToken);
 
-			Array.prototype.slice.call(
-				form.querySelectorAll('input')
-			).forEach(
-				function(input) {
-					if (input.type == 'checkbox' && !input.checked) {
-						return;
-					}
+		formActionURL = new URL(form.action);
 
-					if (input.name && input.value) {
-						formData.append(input.name, input.value);
-					}
+		formActionURL.searchParams.delete('p_auth');
+
+		form.action = formActionURL;
+
+		Array.prototype.slice
+			.call(form.querySelectorAll('input'))
+			.forEach(function (input) {
+				if (input.type == 'checkbox' && !input.checked) {
+					return;
 				}
-			);
 
-			fetch(
-				form.action,
-				{
-					body: formData,
-					credentials: 'include',
-					method: 'POST'
+				if (input.name && input.value) {
+					formData.append(input.name, input.value);
 				}
-			).then(
-				function(response) {
-					return response.json();
-				}
-			).then(
-				function(response) {
-					if (response.redirectURL) {
-						var redirectURL = new Uri(response.redirectURL);
+			});
 
-						redirectURL.setParameterValue('p_p_state', 'normal');
+		Liferay.Util.fetch(form.action, {
+			body: formData,
+			method: 'POST',
+		})
+			.then(function (response) {
+				return response.json();
+			})
+			.then(function (response) {
+				if (response.redirectURL) {
+					var redirectURL = new URL(
+						response.redirectURL,
+						window.location.origin
+					);
 
-						Liferay.fire(
-							'closeWindow',
-							{
-								id: '<portlet:namespace />addLayoutDialog',
-								redirect: redirectURL.toString()
-							}
-						);
-					}
-					else {
-						new Liferay.Alert(
-							{
-								delay: {
-									hide: 3000,
-									show: 0
-								},
-								duration: 500,
-								icon: 'exclamation-circle',
-								message: response.errorMessage,
-								type: 'danger'
-							}
-						).render();
-					}
+					redirectURL.searchParams.set('p_p_state', 'normal');
+
+					var opener = Liferay.Util.getOpener();
+
+					opener.Liferay.fire('closeModal', {
+						id: '<portlet:namespace />addLayoutDialog',
+						redirect: redirectURL.toString(),
+					});
 				}
-			);
-		}
-	);
+				else {
+					Liferay.Util.openToast({
+						message: response.errorMessage,
+						type: 'danger',
+					});
+				}
+			});
+	});
 </aui:script>

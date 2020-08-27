@@ -17,6 +17,7 @@ package com.liferay.portal.upgrade;
 import com.liferay.portal.kernel.model.ReleaseConstants;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
+import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.version.Version;
 import com.liferay.portal.upgrade.util.PortalUpgradeProcessRegistry;
 import com.liferay.portal.upgrade.v7_1_x.PortalUpgradeProcessRegistryImpl;
@@ -66,12 +67,12 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 		NavigableSet<Version> reverseSchemaVersions =
 			_upgradeProcesses.descendingKeySet();
 
-		Iterator<Version> itr = reverseSchemaVersions.iterator();
+		Iterator<Version> iterator = reverseSchemaVersions.iterator();
 
-		Version requiredSchemaVersion = itr.next();
+		Version requiredSchemaVersion = iterator.next();
 
-		while (itr.hasNext()) {
-			Version nextSchemaVersion = itr.next();
+		while (iterator.hasNext()) {
+			Version nextSchemaVersion = iterator.next();
 
 			if ((requiredSchemaVersion.getMajor() !=
 					nextSchemaVersion.getMajor()) ||
@@ -102,10 +103,16 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 	public static boolean isInRequiredSchemaVersion(Connection connection)
 		throws SQLException {
 
+		Version currentSchemaVersion = getCurrentSchemaVersion(connection);
+
 		Version requiredSchemaVersion = getRequiredSchemaVersion();
 
-		if (requiredSchemaVersion.compareTo(
-				getCurrentSchemaVersion(connection)) <= 0) {
+		int result = requiredSchemaVersion.compareTo(currentSchemaVersion);
+
+		if ((result == 0) ||
+			((result < 0) &&
+			 (requiredSchemaVersion.getMajor() ==
+				 currentSchemaVersion.getMajor()))) {
 
 			return true;
 		}
@@ -150,7 +157,7 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 	}
 
 	private static void _initializeSchemaVersion(Connection connection)
-		throws SQLException {
+		throws Exception {
 
 		try (PreparedStatement ps = connection.prepareStatement(
 				"update Release_ set schemaVersion = ? where " +
@@ -163,27 +170,34 @@ public class PortalUpgradeProcess extends UpgradeProcess {
 		}
 	}
 
+	private static final Class<?>[] _PORTAL_UPGRADE_PROCESS_REGISTRIES = {
+		PortalUpgradeProcessRegistryImpl.class,
+		com.liferay.portal.upgrade.v7_2_x.PortalUpgradeProcessRegistryImpl.
+			class,
+		com.liferay.portal.upgrade.v7_3_x.PortalUpgradeProcessRegistryImpl.class
+	};
+
 	private static final Version _initialSchemaVersion = new Version(0, 1, 0);
 	private static final TreeMap<Version, UpgradeProcess> _upgradeProcesses =
-		new TreeMap<Version, UpgradeProcess>() {
-			{
-				put(_initialSchemaVersion, new DummyUpgradeProcess());
-			}
-		};
+		TreeMapBuilder.<Version, UpgradeProcess>put(
+			_initialSchemaVersion, new DummyUpgradeProcess()
+		).build();
 
 	static {
-		PortalUpgradeProcessRegistry portalUpgradeProcessRegistry =
-			new PortalUpgradeProcessRegistryImpl();
+		try {
+			for (Class<?> portalUpgradeProcessRegistry :
+					_PORTAL_UPGRADE_PROCESS_REGISTRIES) {
 
-		portalUpgradeProcessRegistry.registerUpgradeProcesses(
-			_upgradeProcesses);
+				PortalUpgradeProcessRegistry registry =
+					(PortalUpgradeProcessRegistry)
+						portalUpgradeProcessRegistry.newInstance();
 
-		PortalUpgradeProcessRegistry v72xPortalUpgradeProcessRegistry =
-			new com.liferay.portal.upgrade.v7_2_x.
-				PortalUpgradeProcessRegistryImpl();
-
-		v72xPortalUpgradeProcessRegistry.registerUpgradeProcesses(
-			_upgradeProcesses);
+				registry.registerUpgradeProcesses(_upgradeProcesses);
+			}
+		}
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new ExceptionInInitializerError(reflectiveOperationException);
+		}
 	}
 
 }

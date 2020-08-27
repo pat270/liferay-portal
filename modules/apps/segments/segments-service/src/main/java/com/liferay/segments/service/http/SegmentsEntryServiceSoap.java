@@ -24,8 +24,6 @@ import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>SegmentsEntryServiceUtil</code> service
@@ -63,10 +61,41 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Eduardo Garcia
  * @see SegmentsEntryServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class SegmentsEntryServiceSoap {
+
+	public static com.liferay.segments.model.SegmentsEntrySoap addSegmentsEntry(
+			String segmentsEntryKey, String[] nameMapLanguageIds,
+			String[] nameMapValues, String[] descriptionMapLanguageIds,
+			String[] descriptionMapValues, boolean active, String criteria,
+			String type,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws RemoteException {
+
+		try {
+			Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
+				nameMapLanguageIds, nameMapValues);
+			Map<Locale, String> descriptionMap =
+				LocalizationUtil.getLocalizationMap(
+					descriptionMapLanguageIds, descriptionMapValues);
+
+			com.liferay.segments.model.SegmentsEntry returnValue =
+				SegmentsEntryServiceUtil.addSegmentsEntry(
+					segmentsEntryKey, nameMap, descriptionMap, active, criteria,
+					type, serviceContext);
+
+			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
 
 	public static com.liferay.segments.model.SegmentsEntrySoap addSegmentsEntry(
 			String segmentsEntryKey, String[] nameMapLanguageIds,
@@ -91,10 +120,26 @@ public class SegmentsEntryServiceSoap {
 			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static void addSegmentsEntryClassPKs(
+			long segmentsEntryId, long[] classPKs,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws RemoteException {
+
+		try {
+			SegmentsEntryServiceUtil.addSegmentsEntryClassPKs(
+				segmentsEntryId, classPKs, serviceContext);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -109,10 +154,25 @@ public class SegmentsEntryServiceSoap {
 			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static void deleteSegmentsEntryClassPKs(
+			long segmentsEntryId, long[] classPKs)
+		throws RemoteException {
+
+		try {
+			SegmentsEntryServiceUtil.deleteSegmentsEntryClassPKs(
+				segmentsEntryId, classPKs);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -129,10 +189,10 @@ public class SegmentsEntryServiceSoap {
 			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -154,10 +214,10 @@ public class SegmentsEntryServiceSoap {
 			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -171,10 +231,10 @@ public class SegmentsEntryServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -189,10 +249,10 @@ public class SegmentsEntryServiceSoap {
 			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -220,10 +280,10 @@ public class SegmentsEntryServiceSoap {
 			return com.liferay.segments.model.SegmentsEntrySoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

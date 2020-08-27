@@ -1,6 +1,10 @@
 apply plugin: "com.liferay.node"
 apply plugin: "java"
 
+node {
+	useNpm = true
+}
+
 task runGradleTest
 
 runGradleTest {

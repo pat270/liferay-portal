@@ -114,23 +114,23 @@ public class MDRActionStagedModelDataHandler
 		String type = action.getType();
 
 		if (type.equals(SiteRedirectActionHandler.class.getName())) {
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				action.getTypeSettingsProperties();
 
 			long plid = GetterUtil.getLong(
-				typeSettingsProperties.getProperty("plid"));
+				typeSettingsUnicodeProperties.getProperty("plid"));
 
 			try {
 				Layout layout = _layoutLocalService.getLayout(plid);
 
 				actionElement.addAttribute("layout-uuid", layout.getUuid());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to set the layout uuid of layout " + plid +
 							". Site redirect may not match after import.",
-						e);
+						exception);
 				}
 			}
 		}
@@ -228,11 +228,11 @@ public class MDRActionStagedModelDataHandler
 			return;
 		}
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			action.getTypeSettingsProperties();
 
 		long groupId = GetterUtil.getLong(
-			typeSettingsProperties.getProperty("groupId"));
+			typeSettingsUnicodeProperties.getProperty("groupId"));
 
 		boolean privateLayout = GetterUtil.getBoolean(
 			actionElement.attributeValue("private-layout"));
@@ -241,10 +241,10 @@ public class MDRActionStagedModelDataHandler
 			Layout layout = _layoutLocalService.getLayoutByUuidAndGroupId(
 				layoutUuid, groupId, privateLayout);
 
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				"plid", String.valueOf(layout.getPlid()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				StringBundler sb = new StringBundler(5);
 
@@ -254,7 +254,7 @@ public class MDRActionStagedModelDataHandler
 				sb.append(groupId);
 				sb.append(". Site redirect may not match the target layout.");
 
-				_log.warn(sb.toString(), e);
+				_log.warn(sb.toString(), exception);
 			}
 		}
 	}

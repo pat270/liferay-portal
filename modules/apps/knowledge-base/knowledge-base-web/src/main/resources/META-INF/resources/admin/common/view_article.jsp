@@ -22,9 +22,9 @@ KBArticle kbArticle = (KBArticle)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_K
 if (enableKBArticleViewCountIncrement && kbArticle.isApproved()) {
 	KBArticle latestKBArticle = KBArticleLocalServiceUtil.getLatestKBArticle(kbArticle.getResourcePrimKey(), WorkflowConstants.STATUS_APPROVED);
 
-	KBArticleLocalServiceUtil.updateViewCount(themeDisplay.getUserId(), kbArticle.getResourcePrimKey(), latestKBArticle.getViewCount() + 1);
+	KBArticleLocalServiceUtil.incrementViewCount(themeDisplay.getUserId(), kbArticle.getResourcePrimKey(), 1);
 
-	AssetEntryServiceUtil.incrementViewCounter(KBArticle.class.getName(), latestKBArticle.getClassPK());
+	AssetEntryServiceUtil.incrementViewCounter(latestKBArticle.getCompanyId(), KBArticle.class.getName(), latestKBArticle.getClassPK());
 }
 
 boolean enableKBArticleSuggestions = enableKBArticleRatings && kbArticle.isApproved();
@@ -64,11 +64,7 @@ if (portletTitleBasedNavigation) {
 		<liferay-frontend:sidebar-panel>
 
 			<%
-			List<KBArticle> kbArticles = new ArrayList<KBArticle>();
-
-			kbArticles.add(kbArticle);
-
-			request.setAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_ARTICLES, kbArticles);
+			request.setAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_ARTICLES, ListUtil.fromArray(kbArticle));
 			%>
 
 			<liferay-util:include page="/admin/info_panel.jsp" servletContext="<%= application %>" />
@@ -125,7 +121,7 @@ if (portletTitleBasedNavigation) {
 
 				<c:if test="<%= enableKBArticleRatings %>">
 					<div class="kb-article-ratings">
-						<liferay-ui:ratings
+						<liferay-ratings:ratings
 							className="<%= KBArticle.class.getName() %>"
 							classPK="<%= kbArticle.getResourcePrimKey() %>"
 							inTrash="<%= false %>"

@@ -1,6 +1,7 @@
 @default = "mouseOver"
 @summary = "Mouse over '${locator1}'"
 definition {
+
 	function mouseOver {
 		WaitForSPARefresh();
 
@@ -13,18 +14,12 @@ definition {
 		selenium.assertLiferayErrors();
 	}
 
-	function mouseOverClickNavigation {
+	function mouseOverInvisible {
 		WaitForSPARefresh();
 
-		selenium.clickAt("//div[@id='navigationCollapse']", "");
+		selenium.waitForElementPresent();
 
-		selenium.waitForElementPresent(
-			"//script[contains(@src,'/frontend-js-web/liferay/sign_in_modal.js')]"
-		);
-
-		MouseOver.mouseOver();
-
-		selenium.pause("1000");
+		selenium.mouseOver();
 
 		selenium.assertJavaScriptErrors();
 
@@ -44,4 +39,5 @@ definition {
 
 		selenium.assertLiferayErrors();
 	}
+
 }

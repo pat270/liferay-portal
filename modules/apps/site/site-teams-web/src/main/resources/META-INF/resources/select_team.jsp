@@ -17,11 +17,11 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SelectTeamDisplayContext selectTeamDisplayContext = new SelectTeamDisplayContext(renderRequest, renderResponse, request);
+SelectTeamDisplayContext selectTeamDisplayContext = new SelectTeamDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectTeamManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectTeamDisplayContext) %>"
+	displayContext="<%= new SelectTeamManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectTeamDisplayContext) %>"
 />
 
 <aui:form cssClass="container-fluid-1280" name="selectTeamFm">
@@ -36,15 +36,19 @@ SelectTeamDisplayContext selectTeamDisplayContext = new SelectTeamDisplayContext
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<String, Object>();
-
-			data.put("entityid", curTeam.getTeamId());
-			data.put("entityname", curTeam.getName());
-			data.put("teamdescription", curTeam.getDescription());
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"entityid", curTeam.getTeamId()
+			).put(
+				"entityname", curTeam.getName()
+			).put(
+				"teamdescription", curTeam.getDescription()
+			).build();
 
 			Group group = themeDisplay.getScopeGroup();
 
-			long[] defaultTeamIds = StringUtil.split(group.getTypeSettingsProperties().getProperty("defaultTeamIds"), 0L);
+			UnicodeProperties typeSettingsUnicodeProperties = group.getTypeSettingsProperties();
+
+			long[] defaultTeamIds = StringUtil.split(typeSettingsUnicodeProperties.getProperty("defaultTeamIds"), 0L);
 
 			long[] teamIds = ParamUtil.getLongValues(request, "teamIds", defaultTeamIds);
 
@@ -113,5 +117,8 @@ SelectTeamDisplayContext selectTeamDisplayContext = new SelectTeamDisplayContext
 </aui:form>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectTeamFm', '<%= HtmlUtil.escapeJS(selectTeamDisplayContext.getEventName()) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectTeamFm',
+		'<%= HtmlUtil.escapeJS(selectTeamDisplayContext.getEventName()) %>'
+	);
 </aui:script>

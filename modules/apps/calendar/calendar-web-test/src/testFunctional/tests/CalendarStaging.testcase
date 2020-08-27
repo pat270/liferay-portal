@@ -1,0 +1,237 @@
+@component-name = "portal-calendar"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property testray.main.component.name = "Calendar";
+	var pageName = "Staging Test Page";
+	var portletName = "Calendar";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Staging Test Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Staging Test Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Portlet.addPG(
+			pageName = "Staging Test Page",
+			portletName = "Calendar");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.gotoPage(pageName = "Staging Test Page");
+
+			if (IsElementPresent(locator1 = "Calendar#SCHEDULER_EVENT_GENERIC")) {
+				CalendarEvent.tearDown();
+			}
+
+			Site.tearDownCP();
+		}
+	}
+
+	@description = "This is a use case for LPS-52083."
+	@priority = "3"
+	test AddEvent {
+		property portal.upstream = "quarantine";
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.editTitle(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.publish();
+
+		Navigator.openURL();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		CalendarEvent.view(eventTitle = "Calendar Event Title");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "Site Name");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		CalendarNavigator.gotoEditEvent(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.editTitle(eventTitle = "Calendar Event Title - Staged Edit");
+
+		CalendarEvent.publish();
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		CalendarEvent.view(eventTitle = "Calendar Event Title - Staged Edit");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		CalendarScheduler.selectSpecificEventNoRefresh(eventTitle = "Calendar Event Title - Staged Edit");
+
+		CalendarEvent.assertEventNotEditable();
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.viewUnavailableCalendarsNotPresent(unavailableCalendarList = "Site Name");
+
+		CalendarEvent.viewAvailableCalendars(availableCalendarList = "Test Test");
+
+		Navigator.openURL();
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		CalendarNavigator.gotoView(viewType = "Day");
+
+		CalendarScheduler.gotoAddViaDayView();
+
+		CalendarEvent.viewUnavailableCalendarsNotPresent(unavailableCalendarList = "Site Name");
+
+		CalendarEvent.viewAvailableCalendars(availableCalendarList = "Test Test");
+	}
+
+	@priority = "5"
+	test SchedulePublishToLiveWithEventAndResource {
+		property portal.acceptance = "quarantine";
+		property testray.component.names = "Training";
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "Site Name");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "Site Name",
+			eventTitle = "Site Name Staged Event",
+			eventType = "Regular",
+			pageName = "Staging Test Page",
+			pageStaging = "true",
+			siteName = "Site Name",
+			siteURL = "true");
+
+		CalendarEvent.viewToday(eventTitle = "Site Name Staged Event");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "Test Test",
+			eventTitle = "Test Test Live Event",
+			eventType = "Regular",
+			pageName = "Staging Test Page",
+			pageStaging = "true",
+			siteName = "Site Name",
+			siteURL = "true");
+
+		CalendarEvent.viewToday(eventTitle = "Test Test Live Event");
+
+		CalendarResource.add(
+			calendarResourceName = "Calendar Resource Name",
+			calendarType = "Other Calendars");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Calendar.add(
+			calendarName = "Calendar Resource Name",
+			calendarType = "Other Calendars");
+
+		Calendar.view(
+			calendarName = "Calendar Resource Name",
+			calendarType = "Other Calendars");
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		CalendarScheduler.viewSpecificEventNotPresent(eventTitle = "Site Name Staged Event");
+
+		CalendarResource.viewResourceNameNotPresent(calendarResourceName = "Calendar Resource Name");
+
+		CalendarEvent.viewToday(eventTitle = "Test Test Live Event");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.schedulePublishToLivePG(
+			checkContentNameList = "Calendar",
+			scheduleTitleName = "Staging Schedule Title");
+
+		Pause(locator1 = "180000");
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		CalendarEvent.viewToday(eventTitle = "Site Name Staged Event");
+
+		CalendarEvent.viewToday(eventTitle = "Test Test Live Event");
+
+		Calendar.view(
+			calendarName = "Calendar Resource Name",
+			calendarType = "Other Calendars");
+	}
+
+}

@@ -80,9 +80,11 @@ public class RoleSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 		try {
 			return role.getDescriptiveName();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get name for role " + fieldValue, pe);
+				_log.warn(
+					"Unable to get name for role " + fieldValue,
+					portalException);
 			}
 
 			return fieldValue;
@@ -114,9 +116,9 @@ public class RoleSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 					_portal.getLocale(portletRequest), Role.class.getName()),
 				portletURL.toString(), false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get select entity", e);
+				_log.warn("Unable to get select entity", exception);
 			}
 
 			return null;
@@ -137,7 +139,7 @@ public class RoleSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 		RoleSegmentsFieldCustomizer.class);
 
 	private static final List<String> _fieldNames = ListUtil.fromArray(
-		new String[] {"roleIds"});
+		"roleIds");
 
 	@Reference
 	private Portal _portal;

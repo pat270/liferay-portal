@@ -1,5 +1,6 @@
 @component-name = "portal-performance-and-fault-tolerance-ee"
 definition {
+
 	property app.server.bundles.size = "1";
 	property cluster.enabled = "true";
 	property remote.elasticsearch.enabled = "true";
@@ -7,6 +8,8 @@ definition {
 	property test.ignore.tomcat.ext.environment = "true";
 	property test.run.environment = "EE";
 	property testray.main.component.name = "Rolling Restart";
+	var testBuildFixPackZipURL = PropsUtil.get("test.build.fix.pack.zip.url");
+	var testBuildFixPackZipURLPrevious = PropsUtil.get("test.build.fix.pack.zip.url.previous");
 
 	setUp {
 		User.firstLoginPG();
@@ -23,7 +26,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -49,7 +51,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
@@ -63,8 +64,6 @@ definition {
 		Navigator.openSpecificURL(url = "http://localhost:9080");
 
 		Page.assertNodePortPG(nodePort = "9080");
-
-		var testBuildFixPackZipURL = PropsUtil.get("test.build.fix.pack.zip.url");
 
 		PatchingTool.installPatchOnSpecificServer(
 			nodePort = "8080",
@@ -81,7 +80,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
@@ -103,7 +101,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
@@ -129,7 +126,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
@@ -151,7 +147,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
@@ -193,8 +188,6 @@ definition {
 
 		Clustering.shutdownSpecificServer(nodePort = "9080");
 
-		var testBuildFixPackZipURL = PropsUtil.get("test.build.fix.pack.zip.url");
-
 		PatchingTool.installPatchOnSpecificServer(
 			nodePort = "9080",
 			patchFileZipURL = "${testBuildFixPackZipURL}");
@@ -215,7 +208,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -241,7 +233,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster2");
@@ -259,7 +250,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster2");
@@ -287,7 +277,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -313,7 +302,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster1");
@@ -332,7 +320,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster1");
@@ -362,7 +349,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -388,7 +374,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster3");
@@ -406,7 +391,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster3");
@@ -415,7 +399,7 @@ definition {
 	@priority = "5"
 	test InstallFixPackWithNewOSGIConfiguration {
 		property app.server.bundles.size = "2";
-		property osgi.module.configuration.file.names = "com.liferay.frontend.js.spa.web.configuration.SPAConfiguration.cfg";
+		property osgi.module.configuration.file.names = "com.liferay.frontend.js.spa.web.internal.configuration.SPAConfiguration.cfg";
 		property osgi.module.configurations = "userNotificationTimeout=30000";
 		property portal.fixpack.release = "true";
 		property test.name.skip.portal.instance = "RollingRestartEE#InstallFixPackWithNewOSGIConfiguration";
@@ -426,7 +410,7 @@ definition {
 
 		Page.assertNodePortPG(nodePort = "8080");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -451,7 +435,7 @@ definition {
 
 		Page.assertNodePortPG(nodePort = "9080");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -474,7 +458,7 @@ definition {
 
 		Page.assertNodePortPG(nodePort = "10080");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -507,7 +491,7 @@ definition {
 
 		Page.assertNodePortPG(nodePort = "8080");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -523,7 +507,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -547,7 +530,7 @@ definition {
 
 		Page.assertNodePortPG(nodePort = "9080");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -563,7 +546,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster1");
@@ -577,7 +559,7 @@ definition {
 
 		Page.assertNodePortPG(nodePort = "10080");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -593,7 +575,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster1");
@@ -644,8 +625,6 @@ definition {
 		for (var nodePort : list "8080,9080,10080") {
 			Clustering.shutdownSpecificServer(nodePort = "${nodePort}");
 
-			var testBuildFixPackZipURL = PropsUtil.get("test.build.fix.pack.zip.url");
-
 			PatchingTool.installPatchOnSpecificServer(
 				nodePort = "${nodePort}",
 				patchFileZipURL = "${testBuildFixPackZipURL}");
@@ -676,7 +655,7 @@ definition {
 
 		PatchingTool.installPatchOnSpecificServer(
 			nodePort = "9080",
-			patchFileZipURL = "https://files.liferay.com/private/ee/fix-packs/7.1.10/dxp/liferay-fix-pack-dxp-5-7110.zip");
+			patchFileZipURL = "${testBuildFixPackZipURLPrevious}");
 
 		Clustering.startSpecificServer(
 			deleteLiferayHome = "true",
@@ -704,7 +683,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -730,7 +708,6 @@ definition {
 
 			ProductMenu.gotoPortlet(
 				category = "Content &amp; Data",
-				panel = "Site Administration",
 				portlet = "Web Content");
 
 			WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster2");
@@ -749,7 +726,7 @@ definition {
 
 		PatchingTool.installPatchOnSpecificServer(
 			nodePort = "8080",
-			patchFileZipURL = "https://files.liferay.com/private/ee/fix-packs/7.1.10/dxp/liferay-fix-pack-dxp-5-7110.zip");
+			patchFileZipURL = "${testBuildFixPackZipURLPrevious}");
 
 		Clustering.startSpecificServer(
 			deleteLiferayHome = "true",
@@ -777,7 +754,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
@@ -825,7 +801,7 @@ definition {
 
 		PatchingTool.installPatchOnSpecificServer(
 			nodePort = "10080",
-			patchFileZipURL = "https://files.liferay.com/private/ee/fix-packs/7.1.10/dxp/liferay-fix-pack-dxp-5-7110.zip");
+			patchFileZipURL = "${testBuildFixPackZipURLPrevious}");
 
 		Clustering.startSpecificServer(
 			deleteLiferayHome = "true",
@@ -891,7 +867,7 @@ definition {
 		property app.server.bundles.size = "2";
 		property custom.properties = "company.security.auth.type=emailAddress";
 		property portal.release = "true";
-		property portal.upstream = "true";
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "RollingRestartEE#UpdatePortalPropertiesWithMultipleClusters";
 
 		Clustering.viewClusterStatusInConsole();
@@ -941,7 +917,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -966,7 +941,6 @@ definition {
 
 			ProductMenu.gotoPortlet(
 				category = "Content &amp; Data",
-				panel = "Site Administration",
 				portlet = "Web Content");
 
 			WebContent.viewTitle(webContentTitle = "WC WebContent Title Cluster2");
@@ -997,7 +971,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
@@ -1099,4 +1072,5 @@ definition {
 			User.logoutPG(nodePort = "${nodePort}");
 		}
 	}
+
 }

@@ -68,7 +68,7 @@ public class AnnouncementsFlagUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<AnnouncementsFlag> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -88,9 +88,10 @@ public class AnnouncementsFlagUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_announcementsFlagLocalService.fetchAnnouncementsFlag(
-				baseModelPK) == null) {
+		AnnouncementsFlag announcementsFlag =
+			_announcementsFlagLocalService.fetchAnnouncementsFlag(baseModelPK);
 
+		if (announcementsFlag == null) {
 			return true;
 		}
 
@@ -105,6 +106,6 @@ public class AnnouncementsFlagUADAnonymizerTest
 		new ArrayList<>();
 
 	@Inject(filter = "component.name=*.AnnouncementsFlagUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<AnnouncementsFlag> _uadAnonymizer;
 
 }

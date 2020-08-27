@@ -24,7 +24,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portlet.documentlibrary.service.base.DLFileShortcutServiceBaseImpl;
 
@@ -39,7 +39,7 @@ public class DLFileShortcutServiceImpl extends DLFileShortcutServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_folderModelResourcePermission, getPermissionChecker(), groupId,
 			folderId, ActionKeys.ADD_SHORTCUT);
 
@@ -47,8 +47,8 @@ public class DLFileShortcutServiceImpl extends DLFileShortcutServiceBaseImpl {
 			_fileEntryModelResourcePermission.check(
 				getPermissionChecker(), toFileEntryId, ActionKeys.VIEW);
 		}
-		catch (PrincipalException pe) {
-			throw new FileShortcutPermissionException(pe);
+		catch (PrincipalException principalException) {
+			throw new FileShortcutPermissionException(principalException);
 		}
 
 		return dlFileShortcutLocalService.addFileShortcut(
@@ -87,8 +87,8 @@ public class DLFileShortcutServiceImpl extends DLFileShortcutServiceBaseImpl {
 			_fileEntryModelResourcePermission.check(
 				getPermissionChecker(), toFileEntryId, ActionKeys.VIEW);
 		}
-		catch (PrincipalException pe) {
-			throw new FileShortcutPermissionException(pe);
+		catch (PrincipalException principalException) {
+			throw new FileShortcutPermissionException(principalException);
 		}
 
 		return dlFileShortcutLocalService.updateFileShortcut(
@@ -108,8 +108,8 @@ public class DLFileShortcutServiceImpl extends DLFileShortcutServiceBaseImpl {
 			_fileEntryModelResourcePermission.check(
 				getPermissionChecker(), newToFileEntryId, ActionKeys.VIEW);
 		}
-		catch (PrincipalException pe) {
-			throw new FileShortcutPermissionException(pe);
+		catch (PrincipalException principalException) {
+			throw new FileShortcutPermissionException(principalException);
 		}
 
 		dlFileShortcutLocalService.updateFileShortcuts(

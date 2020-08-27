@@ -40,6 +40,7 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.webserver.WebServerServlet;
 
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -66,7 +67,9 @@ public class VirtualHostFilter extends BasePortalFilter {
 
 		_servletContext = filterConfig.getServletContext();
 
-		String contextPath = PortalUtil.getPathContext();
+		_originalContextPath = PortalUtil.getPathContext();
+
+		String contextPath = _originalContextPath;
 
 		String proxyPath = PortalUtil.getPathProxy();
 
@@ -112,12 +115,13 @@ public class VirtualHostFilter extends BasePortalFilter {
 					LayoutLocalServiceUtil.getFriendlyURLLayout(
 						groupId, false, friendlyURL);
 				}
-				catch (NoSuchLayoutException nsle) {
+				catch (NoSuchLayoutException noSuchLayoutException) {
 
 					// LPS-52675
 
 					if (_log.isDebugEnabled()) {
-						_log.debug(nsle, nsle);
+						_log.debug(
+							noSuchLayoutException, noSuchLayoutException);
 					}
 
 					return true;
@@ -153,26 +157,6 @@ public class VirtualHostFilter extends BasePortalFilter {
 			(code != LayoutFriendlyURLException.ENDS_WITH_SLASH)) {
 
 			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected boolean isValidRequestURL(StringBuffer requestURL) {
-		if (requestURL == null) {
-			return false;
-		}
-
-		String url = requestURL.toString();
-
-		for (String extension : PropsValues.VIRTUAL_HOSTS_IGNORE_EXTENSIONS) {
-			if (url.endsWith(extension)) {
-				return false;
-			}
 		}
 
 		return true;
@@ -296,7 +280,7 @@ public class VirtualHostFilter extends BasePortalFilter {
 			}
 
 			LastPath lastPath = new LastPath(
-				_contextPath, friendlyURL, parameters);
+				_originalContextPath, friendlyURL, parameters);
 
 			httpServletRequest.setAttribute(WebKeys.LAST_PATH, lastPath);
 
@@ -332,7 +316,10 @@ public class VirtualHostFilter extends BasePortalFilter {
 					return;
 				}
 
-				if (group.isGuest() && friendlyURL.equals(StringPool.SLASH) &&
+				if (Objects.equals(
+						group.getGroupKey(),
+						PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME) &&
+					friendlyURL.equals(StringPool.SLASH) &&
 					!layoutSet.isPrivateLayout()) {
 
 					String homeURL = PortalUtil.getRelativeHomeURL(
@@ -376,8 +363,8 @@ public class VirtualHostFilter extends BasePortalFilter {
 
 			requestDispatcher.forward(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			processFilter(
 				VirtualHostFilter.class.getName(), httpServletRequest,
@@ -443,6 +430,7 @@ public class VirtualHostFilter extends BasePortalFilter {
 		VirtualHostFilter.class);
 
 	private String _contextPath;
+	private String _originalContextPath;
 	private ServletContext _servletContext;
 
 }

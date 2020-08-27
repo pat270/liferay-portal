@@ -20,21 +20,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.ImageServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class ImageSoap implements Serializable {
 
 	public static ImageSoap toSoapModel(Image model) {
 		ImageSoap soapModel = new ImageSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setImageId(model.getImageId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setModifiedDate(model.getModifiedDate());
@@ -102,6 +102,14 @@ public class ImageSoap implements Serializable {
 		_mvccVersion = mvccVersion;
 	}
 
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public long getImageId() {
 		return _imageId;
 	}
@@ -159,6 +167,7 @@ public class ImageSoap implements Serializable {
 	}
 
 	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _imageId;
 	private long _companyId;
 	private Date _modifiedDate;

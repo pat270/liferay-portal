@@ -45,15 +45,14 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/announcements/view",
 		"javax.portlet.name=" + AnnouncementsPortletKeys.ANNOUNCEMENTS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
 public class AnnouncementsPortlet extends MVCPortlet {
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.announcements.web)(&(release.schema.version>=2.0.0)(!(release.schema.version>=2.1.0))))"
+		target = "(&(release.bundle.symbolic.name=com.liferay.announcements.web)(&(release.schema.version>=2.0.0)(!(release.schema.version>=3.0.0))))"
 	)
 	private Release _release;
 

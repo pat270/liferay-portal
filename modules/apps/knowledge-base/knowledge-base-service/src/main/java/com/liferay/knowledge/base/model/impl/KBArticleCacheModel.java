@@ -18,6 +18,7 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,30 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KBArticle in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KBArticleCacheModel
-	implements CacheModel<KBArticle>, Externalizable {
+	implements CacheModel<KBArticle>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KBArticleCacheModel)) {
+		if (!(object instanceof KBArticleCacheModel)) {
 			return false;
 		}
 
-		KBArticleCacheModel kbArticleCacheModel = (KBArticleCacheModel)obj;
+		KBArticleCacheModel kbArticleCacheModel = (KBArticleCacheModel)object;
 
-		if (kbArticleId == kbArticleCacheModel.kbArticleId) {
+		if ((kbArticleId == kbArticleCacheModel.kbArticleId) &&
+			(mvccVersion == kbArticleCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,28 @@ public class KBArticleCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, kbArticleId);
+		int hashCode = HashUtil.hash(0, kbArticleId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
 		StringBundler sb = new StringBundler(59);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", kbArticleId=");
 		sb.append(kbArticleId);
@@ -106,8 +120,6 @@ public class KBArticleCacheModel
 		sb.append(priority);
 		sb.append(", sections=");
 		sb.append(sections);
-		sb.append(", viewCount=");
-		sb.append(viewCount);
 		sb.append(", latest=");
 		sb.append(latest);
 		sb.append(", main=");
@@ -132,6 +144,8 @@ public class KBArticleCacheModel
 	@Override
 	public KBArticle toEntityModel() {
 		KBArticleImpl kbArticleImpl = new KBArticleImpl();
+
+		kbArticleImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			kbArticleImpl.setUuid("");
@@ -210,7 +224,6 @@ public class KBArticleCacheModel
 			kbArticleImpl.setSections(sections);
 		}
 
-		kbArticleImpl.setViewCount(viewCount);
 		kbArticleImpl.setLatest(latest);
 		kbArticleImpl.setMain(main);
 
@@ -251,7 +264,10 @@ public class KBArticleCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		kbArticleId = objectInput.readLong();
@@ -278,13 +294,11 @@ public class KBArticleCacheModel
 		version = objectInput.readInt();
 		title = objectInput.readUTF();
 		urlTitle = objectInput.readUTF();
-		content = objectInput.readUTF();
+		content = (String)objectInput.readObject();
 		description = objectInput.readUTF();
 
 		priority = objectInput.readDouble();
 		sections = objectInput.readUTF();
-
-		viewCount = objectInput.readInt();
 
 		latest = objectInput.readBoolean();
 
@@ -301,6 +315,8 @@ public class KBArticleCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -353,10 +369,10 @@ public class KBArticleCacheModel
 		}
 
 		if (content == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(content);
+			objectOutput.writeObject(content);
 		}
 
 		if (description == null) {
@@ -374,8 +390,6 @@ public class KBArticleCacheModel
 		else {
 			objectOutput.writeUTF(sections);
 		}
-
-		objectOutput.writeInt(viewCount);
 
 		objectOutput.writeBoolean(latest);
 
@@ -404,6 +418,7 @@ public class KBArticleCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long kbArticleId;
 	public long resourcePrimKey;
@@ -424,7 +439,6 @@ public class KBArticleCacheModel
 	public String description;
 	public double priority;
 	public String sections;
-	public int viewCount;
 	public boolean latest;
 	public boolean main;
 	public String sourceURL;

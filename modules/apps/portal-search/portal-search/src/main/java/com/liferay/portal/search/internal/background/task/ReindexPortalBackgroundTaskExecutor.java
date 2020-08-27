@@ -20,7 +20,11 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.background.task.ReindexBackgroundTaskConstants;
 import com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSenderUtil;
+import com.liferay.portal.search.ccr.CrossClusterReplicationHelper;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.internal.SearchEngineInitializer;
+
+import org.osgi.framework.BundleContext;
 
 /**
  * @author Andrew Betts
@@ -29,14 +33,22 @@ public class ReindexPortalBackgroundTaskExecutor
 	extends ReindexBackgroundTaskExecutor {
 
 	public ReindexPortalBackgroundTaskExecutor(
+		BundleContext bundleContext,
+		CrossClusterReplicationHelper crossClusterReplicationHelper,
+		IndexNameBuilder indexNameBuilder,
 		PortalExecutorManager portalExecutorManager) {
 
+		_bundleContext = bundleContext;
+		_crossClusterReplicationHelper = crossClusterReplicationHelper;
+		_indexNameBuilder = indexNameBuilder;
 		_portalExecutorManager = portalExecutorManager;
 	}
 
 	@Override
 	public BackgroundTaskExecutor clone() {
-		return new ReindexPortalBackgroundTaskExecutor(_portalExecutorManager);
+		return new ReindexPortalBackgroundTaskExecutor(
+			_bundleContext, _crossClusterReplicationHelper, _indexNameBuilder,
+			_portalExecutorManager);
 	}
 
 	@Override
@@ -51,12 +63,14 @@ public class ReindexPortalBackgroundTaskExecutor
 			try {
 				SearchEngineInitializer searchEngineInitializer =
 					new SearchEngineInitializer(
-						companyId, _portalExecutorManager);
+						_bundleContext, companyId,
+						_crossClusterReplicationHelper, _indexNameBuilder,
+						_portalExecutorManager);
 
 				searchEngineInitializer.reindex();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 			finally {
 				ReindexStatusMessageSenderUtil.sendStatusMessage(
@@ -69,6 +83,9 @@ public class ReindexPortalBackgroundTaskExecutor
 	private static final Log _log = LogFactoryUtil.getLog(
 		ReindexPortalBackgroundTaskExecutor.class);
 
+	private final BundleContext _bundleContext;
+	private final CrossClusterReplicationHelper _crossClusterReplicationHelper;
+	private final IndexNameBuilder _indexNameBuilder;
 	private final PortalExecutorManager _portalExecutorManager;
 
 }

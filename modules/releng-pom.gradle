@@ -1,0 +1,496 @@
+import com.liferay.gradle.util.FileUtil
+import com.liferay.gradle.util.StringUtil
+import com.liferay.project.templates.ProjectTemplates
+
+import groovy.io.FileType
+import groovy.io.FileVisitResult
+
+import java.util.regex.Matcher
+
+import org.apache.maven.model.Dependency
+import org.apache.maven.model.DependencyManagement
+import org.apache.maven.model.Developer
+import org.apache.maven.model.License
+import org.apache.maven.model.Model
+import org.apache.maven.model.Repository
+import org.apache.maven.model.Scm
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer
+
+buildscript {
+	apply from: file("build-buildscript.gradle"), to: buildscript
+
+	dependencies {
+		classpath group: "com.liferay", name: "com.liferay.project.templates", version: "4.5.6"
+		classpath group: "org.apache.maven", name: "maven-model", version: "3.6.1"
+	}
+
+	repositories {
+		maven {
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
+		}
+	}
+}
+
+task generatePom
+task generatePomCompileOnly
+task generatePomRelease
+task generatePomThirdParty
+task testPomCompileOnly
+task testPomRelease
+task testPomThirdParty
+
+List<String> compileOnlyAllIdentifiers = []
+List<String> thirdPartyCheckedIdentifiers = ["javax.portlet:portlet-api", "javax.servlet:javax.servlet-api", "javax.ws.rs:javax.ws.rs-api"]
+
+String pomCompileOnlyArtifactId = "release." + (_isDigitalExperiencePlatform() ? "dxp" : "portal") + ".bom.compile.only"
+String pomReleaseArtifactId = "release." + (_isDigitalExperiencePlatform() ? "dxp" : "portal") + ".bom"
+String pomThirdPartyArtifactId = "release." + (_isDigitalExperiencePlatform() ? "dxp" : "portal") + ".bom.third.party"
+
+configurations {
+	pomProjectTemplates
+}
+
+dependencies {
+	pomProjectTemplates group: "com.liferay", name: "com.liferay.project.templates", version: "5.0.18"
+}
+
+generatePom {
+	dependsOn generatePomCompileOnly
+	dependsOn generatePomRelease
+	dependsOn generatePomThirdParty
+}
+
+generatePomCompileOnly {
+	doFirst {
+		assert project.properties["portalArtifactsJarVersion"] : "Provide a value for the project property 'portalArtifactsJarVersion'"
+
+		File projectTemplatesDir = new File(buildDir, "releng/projectTemplates")
+
+		delete projectTemplatesDir
+
+		mkdir projectTemplatesDir
+
+		ProjectTemplates.getTemplates().keySet().each {
+			def mainArgs = ["--template", it, "--name", "sample-${it}"]
+
+			if (it.equals("fragment")) {
+				mainArgs += ["--host-bundle-symbolic-name", "com.liferay.login.web", "--host-bundle-version", "1.0.0"]
+			}
+			else if (it.equals("modules-ext")) {
+				if (project.property("gradle.releng.pom.project.templates.version").startsWith("7.0")) {
+					return
+				}
+				else {
+					mainArgs += ["--original-module-name", "com.liferay.login.web", "--original-module-version", "2.0.4"]
+				}
+			}
+			else if (it.equals("service")) {
+				mainArgs += ["--class-name", "FooAction", "--service", "com.liferay.portal.kernel.events.LifecycleAction"]
+			}
+			else if (it.equals("service-builder")) {
+				mainArgs += ["--package-name", "com.liferay.docs.guestbook"]
+			}
+			else if (it.equals("service-wrapper")) {
+				mainArgs += ["--service", "com.liferay.portal.kernel.service.UserLocalServiceWrapper"]
+			}
+			else if (it.equals("theme-contributor")) {
+				mainArgs += ["--contributor-type", "sample"]
+			}
+			else if (it.equals("social-bookmark") && project.property("gradle.releng.pom.project.templates.version").startsWith("7.0")) {
+				return
+			}
+			else if (it.equals("spring-mvc-portlet")) {
+				return
+			}
+			else if (project.property("gradle.releng.pom.project.templates.version").startsWith("7.2") &&
+					 (it.equals("content-targeting-report") ||
+					  it.equals("content-targeting-rule") ||
+					  it.equals("content-targeting-tracking-action") ||
+					  it.equals("form-field") ||
+					  it.equals("npm-angular-portlet") ||
+					  it.equals("npm-react-portlet") ||
+					  it.equals("npm-vuejs-portlet") ||
+					  it.equals("social-bookmark") ||
+					  it.equals("spring-mvc-portlet"))) {
+
+				return
+			}
+
+			mainArgs += ["--liferay-version", project.property("gradle.releng.pom.project.templates.version")]
+
+			javaexec {
+				args mainArgs
+				classpath = configurations.pomProjectTemplates
+				main = "com.liferay.project.templates.ProjectTemplates"
+				workingDir = projectTemplatesDir
+			}
+		}
+	}
+
+	doLast {
+		Model model = _getModel(pomCompileOnlyArtifactId)
+
+		DependencyManagement dependencyManagement = new DependencyManagement()
+
+		File projectTemplatesDir = new File(buildDir, "releng/projectTemplates")
+
+		Set<String> gradleDependencyLines = []
+
+		projectTemplatesDir.eachFile {
+			File buildGradleFile = new File(it, "build.gradle")
+
+			if (buildGradleFile.exists()) {
+				buildGradleFile.eachLine {
+					if (it ==~ /\s*compileOnly group: (?!"com\.liferay).*/) {
+						gradleDependencyLines.add(it)
+					}
+				}
+			}
+		}
+
+		Closure getTextInQuotes = {
+			it.replaceFirst(/.*"(.+)".*/, /$1/)
+		}
+
+		gradleDependencyLines.each {
+			Dependency dependency = new Dependency()
+
+			String[] gradleDependencyLinesSplit = it.split(",")
+
+			dependency.setArtifactId(getTextInQuotes(gradleDependencyLinesSplit[1]))
+			dependency.setGroupId(getTextInQuotes(gradleDependencyLinesSplit[0]))
+			dependency.setVersion(getTextInQuotes(gradleDependencyLinesSplit[2]))
+
+			dependencyManagement.addDependency(dependency)
+		}
+
+		String portalArtifactsJarArtifactId = "release." + (_isDigitalExperiencePlatform() ? "dxp" : "portal") + ".api"
+
+		Dependency portalArtifactsJarDependency = new Dependency()
+
+		portalArtifactsJarDependency.setArtifactId(portalArtifactsJarArtifactId)
+		portalArtifactsJarDependency.setGroupId("com.liferay.portal")
+		portalArtifactsJarDependency.setVersion(project.properties["portalArtifactsJarVersion"])
+
+		dependencyManagement.addDependency(portalArtifactsJarDependency)
+
+		model.setDependencyManagement(dependencyManagement)
+
+		_write(model)
+
+		model.dependencyManagement.dependencies.each {
+			dependency ->
+
+			compileOnlyAllIdentifiers.add dependency.groupId + ":" + dependency.artifactId
+		}
+	}
+}
+
+generatePomRelease {
+	doLast {
+		Model model = _getModel(pomReleaseArtifactId)
+
+		DependencyManagement dependencyManagement = new DependencyManagement()
+
+		File modulesDir = new File("../modules")
+
+		modulesDir.traverse(
+			preDir: {
+				File relengIgnoreMarkerFile = new File(it, ".lfrbuild-releng-ignore")
+
+				if (it.name.endsWith("-test") || relengIgnoreMarkerFile.exists()) {
+					return FileVisitResult.SKIP_SUBTREE
+				}
+
+				if (it.getParentFile().name == "apps") {
+					File appBndFile = new File(it, "app.bnd")
+
+					if (appBndFile.exists()) {
+						Properties appBndProperties = new Properties()
+
+						appBndFile.withInputStream {
+							appBndProperties.load(it)
+						}
+
+						if (appBndProperties["Liferay-Releng-Bundle"] == "false") {
+							return FileVisitResult.SKIP_SUBTREE
+						}
+					}
+					else {
+						return FileVisitResult.SKIP_SUBTREE
+					}
+				}
+
+				File bndBndFile = new File(it, "bnd.bnd")
+				File buildXMLFile = new File(it, "build.xml")
+				File gulpJSFile = new File(it, "gulp.js")
+				File portalMarkerFile = new File(it, ".lfrbuild-portal")
+
+				if (!portalMarkerFile.exists() || !(buildXMLFile.exists() || gulpJSFile.exists() || bndBndFile.exists())) {
+					return FileVisitResult.CONTINUE
+				}
+
+				File artifactPropertiesFile = new File(it.toString().replace("/modules/", "/modules/.releng/"), "artifact.properties")
+
+				if (!artifactPropertiesFile.exists()) {
+					return FileVisitResult.CONTINUE
+				}
+
+				Properties artifactProperties = new Properties()
+
+				artifactPropertiesFile.withInputStream {
+					artifactProperties.load(it)
+				}
+
+				Dependency dependency = new Dependency()
+
+				String[] artifactURLSplit = artifactProperties["artifact.url"].split("/")
+
+				dependency.setArtifactId(artifactURLSplit[artifactURLSplit.length - 3])
+				dependency.setGroupId(artifactURLSplit.last().endsWith(".war") ? "com.liferay.plugins" : "com.liferay")
+				dependency.setVersion(artifactURLSplit[artifactURLSplit.length - 2])
+
+				dependencyManagement.addDependency(dependency)
+			},
+			type: FileType.DIRECTORIES
+		)
+
+		["portal-kernel", "portal-impl", "support-tomcat", "util-bridges", "util-java", "util-slf4j", "util-taglib"].each {
+			File artifactPropertiesFile = new File(".releng", "${it}.properties")
+
+			Properties artifactProperties = new Properties()
+
+			artifactPropertiesFile.withInputStream {
+				artifactProperties.load(it)
+			}
+
+			Dependency dependency = new Dependency()
+
+			String[] artifactURLSplit = artifactProperties["artifact.url"].split("/")
+
+			dependency.setArtifactId(artifactURLSplit[artifactURLSplit.length - 3])
+			dependency.setGroupId("com.liferay.portal")
+			dependency.setVersion(artifactURLSplit[artifactURLSplit.length - 2])
+
+			dependencyManagement.addDependency(dependency)
+		}
+
+		model.setDependencyManagement(dependencyManagement)
+
+		_write(model)
+	}
+}
+
+generatePomThirdParty {
+	dependsOn generatePomCompileOnly
+
+	doLast {
+		Model model = _getModel(pomThirdPartyArtifactId)
+
+		DependencyManagement dependencyManagement = new DependencyManagement()
+
+		Properties dependenciesProperties = new Properties()
+
+		File dependenciesPropertiesDevelopmentFile = new File("../lib/development/dependencies.properties")
+
+		dependenciesPropertiesDevelopmentFile.withInputStream {
+			dependenciesProperties.load(it)
+		}
+
+		File dependenciesPropertiesGlobalFile = new File("../lib/global/dependencies.properties")
+
+		dependenciesPropertiesGlobalFile.withInputStream {
+			dependenciesProperties.load(it)
+		}
+
+		File dependenciesPropertiesPortalFile = new File("../lib/portal/dependencies.properties")
+
+		dependenciesPropertiesPortalFile.withInputStream {
+			dependenciesProperties.load(it)
+		}
+
+		List<String> duplicateIdentifiers = []
+
+		dependenciesProperties.each {
+			String[] dependencyInfo = it.value.split(":")
+
+			String identifier = dependencyInfo[0] + ":" + dependencyInfo[1]
+
+			if (compileOnlyAllIdentifiers.contains(identifier)) {
+				if (!thirdPartyCheckedIdentifiers.contains(identifier)) {
+					duplicateIdentifiers.add identifier
+				}
+			}
+			else {
+				Dependency dependency = new Dependency()
+
+				dependency.setArtifactId(dependencyInfo[1])
+				dependency.setGroupId(dependencyInfo[0])
+				dependency.setVersion(dependencyInfo[2])
+
+				if (dependencyInfo.length == 4) {
+					dependency.setClassifier(dependencyInfo[3])
+				}
+
+				dependencyManagement.addDependency(dependency)
+			}
+		}
+
+		if (duplicateIdentifiers.size > 0) {
+			throw new GradleException("Duplicate dependencies:\n" + StringUtil.merge(duplicateIdentifiers as String[], "\n"))
+		}
+
+		model.setDependencyManagement(dependencyManagement)
+
+		_write(model)
+	}
+}
+
+testPomCompileOnly {
+	doLast {
+		_testPom(pomCompileOnlyArtifactId, version)
+	}
+}
+
+testPomRelease {
+	doLast {
+		_testPom(pomReleaseArtifactId, version)
+	}
+}
+
+testPomThirdParty {
+	doLast {
+		_testPom(pomThirdPartyArtifactId, version)
+	}
+}
+
+private Model _getModel(String artifactId) {
+	Model model = new Model()
+
+	model.setArtifactId(artifactId)
+	model.setGroupId("com.liferay.portal")
+	model.setModelVersion("4.0.0")
+	model.setPackaging("pom")
+	model.setVersion(project.version)
+
+	Developer developer = new Developer()
+
+	developer.setName(project.property("gradle.releng.pom.developer.name"))
+	developer.setOrganization(project.property("gradle.releng.pom.developer.organization"))
+	developer.setOrganizationUrl(project.property("gradle.releng.pom.developer.organizationUrl"))
+
+	model.addDeveloper(developer)
+
+	License license = new License()
+
+	license.setName(project.property("gradle.releng.pom.license.name"))
+	license.setUrl(project.property("gradle.releng.pom.license.url"))
+
+	model.addLicense(license)
+
+	Repository repository = new Repository()
+
+	String repositoryURL = project.property("gradle.releng.pom.repository.url")
+
+	repository.setUrl(repositoryURL)
+
+	String repositoryId = repositoryURL
+
+	List<String> repositoryPaths = repositoryURL.tokenize("/")
+
+	if (!repositoryPaths.isEmpty()) {
+		repositoryId = repositoryPaths.last()
+	}
+
+	repository.setId(repositoryId)
+
+	String repositoryName = repositoryId.replaceAll(/\-(\w)/) {
+		String s = it[1]
+
+		return " " + s.toUpperCase()
+	}
+
+	repository.setName(repositoryName.capitalize())
+
+	model.addRepository(repository)
+
+	Scm scm = new Scm()
+
+	scm.setConnection(project.property("gradle.releng.pom.scm.connection"))
+	scm.setDeveloperConnection(project.property("gradle.releng.pom.scm.developerConnection"))
+	scm.setTag(_getRevCommit("HEAD").getName())
+	scm.setUrl(project.property("gradle.releng.pom.scm.url"))
+
+	model.setScm(scm)
+
+	return model
+}
+
+private Boolean _isDigitalExperiencePlatform() {
+	return project.properties["liferay.releng.product.display.name"] == "Liferay DXP"
+}
+
+private void _testPom(String artifactId, String version) {
+	File pom = new File(buildDir, "${artifactId}-${version}.pom")
+
+	Node pomNode = new XmlParser().parseText(pom.text)
+
+	assert pomNode.artifactId.text() == artifactId
+	assert pomNode.dependencyManagement.dependencies.dependency.size() > 0
+	assert pomNode.developers.developer.size() > 0
+	assert pomNode.groupId.text() == "com.liferay.portal"
+	assert pomNode.licenses.license.name.text().matches(/LGPL 2\.\d+/)
+	assert pomNode.licenses.license.size() == 1
+	assert pomNode.licenses.license.url.text().matches(/http:\/\/www\.gnu\.org\/.*/)
+	assert pomNode.modelVersion.text() == "4.0.0"
+	assert pomNode.packaging.text() == "pom"
+	assert pomNode.repositories.repository.id.text() == "liferay-public-releases"
+	assert pomNode.repositories.repository.name.text() == "Liferay Public Releases"
+	assert pomNode.repositories.repository.size() == 1
+	assert pomNode.repositories.repository.url.text() == "https://repository-cdn.liferay.com/nexus/content/repositories/liferay-public-releases/"
+	assert pomNode.scm.connection.text() == "scm:git:git@github.com:liferay/liferay-portal.git"
+	assert pomNode.scm.developerConnection.text() == "scm:git:git@github.com:liferay/liferay-portal.git"
+	assert pomNode.scm.tag.text().matches(/[a-f\d]{40}/)
+	assert pomNode.scm.url.text() == "https://github.com/liferay/liferay-portal"
+	assert pomNode.version.text() == version
+
+	String[] failedDependencies = []
+
+	pomNode.dependencyManagement.dependencies.dependency.each {
+		assert it.artifactId.text().matches(/[A-Za-z][\w.-]*[A-Za-z\d]/)
+		assert it.groupId.text().matches(/[A-Za-z][\w.-]*[A-Za-z\d]/)
+		assert it.version.text().matches(/v?\d(?:[A-Za-z\d.-]*[A-Za-z\d])?/)
+
+		String groupPath = it.groupId.text().replaceAll(/\./, "/")
+
+		File dependencyFile = new File(buildDir, "testPom/${it.artifactId.text()}-${it.version.text()}.jar")
+		String dependencyURL = "https://repository-cdn.liferay.com/nexus/content/groups/public/${groupPath}/${it.artifactId.text()}/${it.version.text()}/${it.artifactId.text()}-${it.version.text()}.jar"
+
+		try {
+			FileUtil.get(project, dependencyURL, project.properties['systemProp.repository.private.username'], project.properties['systemProp.repository.private.password'], dependencyFile, false, true)
+		}
+		catch(Exception e) {
+			logger.error "Unable to get {}", dependencyURL
+
+			failedDependencies += "${it.groupId.text()}:${it.artifactId.text()}:${it.version.text()}"
+		}
+	}
+
+	assert failedDependencies.size() == 0
+
+	pomNode.developers.developer.each {
+		assert it.name.text().matches(/[A-Za-z]+(?: [A-Za-z]+)*/)
+		assert it.organization.text() == "Liferay, Inc."
+		assert it.organizationUrl.text() == "http://www.liferay.com"
+	}
+}
+
+private void _write(Model model) {
+	MavenXpp3Writer mavenWriter = new MavenXpp3Writer()
+
+	mkdir(buildDir)
+
+	FileWriter fileWriter = new FileWriter(new File(buildDir, "${model.artifactId}-${model.version}.pom"))
+
+	mavenWriter.write(fileWriter, model)
+}

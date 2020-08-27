@@ -55,11 +55,10 @@ public abstract class BlogsEntryFinderBaseImpl
 
 	@Override
 	@Reference(
-		target = BlogsPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = BlogsPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
 	}
 
 	@Override
@@ -85,5 +84,14 @@ public abstract class BlogsEntryFinderBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BlogsEntryFinderBaseImpl.class);
+
+	static {
+		try {
+			Class.forName(BlogsPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

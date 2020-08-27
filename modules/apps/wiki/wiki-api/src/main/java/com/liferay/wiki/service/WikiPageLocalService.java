@@ -15,6 +15,7 @@
 package com.liferay.wiki.service;
 
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
@@ -22,6 +23,8 @@ import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.increment.BufferedIncrement;
+import com.liferay.portal.kernel.increment.DateOverrideIncrement;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -45,6 +48,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -75,7 +79,7 @@ public interface WikiPageLocalService
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link WikiPageLocalServiceUtil} to access the wiki page local service. Add custom service methods to <code>com.liferay.wiki.service.impl.WikiPageLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.wiki.service.impl.WikiPageLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the wiki page local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link WikiPageLocalServiceUtil} if injection and service tracking are not available.
 	 */
 	public WikiPage addPage(
 			long userId, long nodeId, String title, double version,
@@ -109,16 +113,6 @@ public interface WikiPageLocalService
 			boolean addGuestPermissions)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addPageResources(WikiPage, ModelPermissions)}
-	 */
-	@Deprecated
-	public void addPageResources(
-			long nodeId, String title, String[] groupPermissions,
-			String[] guestPermissions)
-		throws PortalException;
-
 	public void addPageResources(
 			WikiPage page, boolean addGroupPermissions,
 			boolean addGuestPermissions)
@@ -128,33 +122,17 @@ public interface WikiPageLocalService
 			WikiPage page, ModelPermissions modelPermissions)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addPageResources(WikiPage, ModelPermissions)}
-	 */
-	@Deprecated
-	public void addPageResources(
-			WikiPage page, String[] groupPermissions, String[] guestPermissions)
-		throws PortalException;
-
 	public FileEntry addTempFileEntry(
 			long groupId, long userId, String folderName, String fileName,
 			InputStream inputStream, String mimeType)
 		throws PortalException;
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addTempFileEntry(long, long, String, String, InputStream,
-	 String)}
-	 */
-	@Deprecated
-	public void addTempPageAttachment(
-			long groupId, long userId, String fileName, String tempFolderName,
-			InputStream inputStream, String mimeType)
-		throws PortalException;
-
-	/**
 	 * Adds the wiki page to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param wikiPage the wiki page
 	 * @return the wiki page that was added
@@ -170,6 +148,12 @@ public interface WikiPageLocalService
 	public void copyPageAttachments(
 			long userId, long templateNodeId, String templateTitle, long nodeId,
 			String title)
+		throws PortalException;
+
+	/**
+	 * @throws PortalException
+	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
 		throws PortalException;
 
 	/**
@@ -214,6 +198,10 @@ public interface WikiPageLocalService
 	/**
 	 * Deletes the wiki page with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param pageId the primary key of the wiki page
 	 * @return the wiki page that was removed
 	 * @throws PortalException if a wiki page with the primary key could not be found
@@ -224,6 +212,10 @@ public interface WikiPageLocalService
 	/**
 	 * Deletes the wiki page from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param wikiPage the wiki page
 	 * @return the wiki page that was removed
 	 */
@@ -232,6 +224,9 @@ public interface WikiPageLocalService
 
 	public void discardDraft(long nodeId, String title, double version)
 		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
@@ -249,7 +244,7 @@ public interface WikiPageLocalService
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -265,7 +260,7 @@ public interface WikiPageLocalService
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -351,7 +346,7 @@ public interface WikiPageLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getChildren(
 		long nodeId, boolean head, String parentTitle, int status, int start,
-		int end, OrderByComparator obc);
+		int end, OrderByComparator<WikiPage> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getChildrenCount(long nodeId, boolean head, String parentTitle);
@@ -401,13 +396,6 @@ public interface WikiPageLocalService
 	public WikiPage getLatestPage(
 			long nodeId, String title, int status, boolean preferApproved)
 		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<WikiPage> getNoAssetPages();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getOrphans(List<WikiPage> pages)
@@ -484,19 +472,20 @@ public interface WikiPageLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(
 		long nodeId, boolean head, int status, int start, int end,
-		OrderByComparator<WikiPage> obc);
+		OrderByComparator<WikiPage> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(
 		long nodeId, boolean head, int start, int end,
-		OrderByComparator<WikiPage> obc);
+		OrderByComparator<WikiPage> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(long nodeId, int start, int end);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(
-		long nodeId, int start, int end, OrderByComparator<WikiPage> obc);
+		long nodeId, int start, int end,
+		OrderByComparator<WikiPage> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(
@@ -517,7 +506,7 @@ public interface WikiPageLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(
 		long nodeId, String title, int start, int end,
-		OrderByComparator<WikiPage> obc);
+		OrderByComparator<WikiPage> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<WikiPage> getPages(String format);
@@ -552,6 +541,9 @@ public interface WikiPageLocalService
 			long resourcePrimKey)
 		throws PortalException;
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
@@ -606,7 +598,7 @@ public interface WikiPageLocalService
 	 * Returns a range of all the wiki pages.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.wiki.model.impl.WikiPageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of wiki pages
@@ -656,16 +648,6 @@ public interface WikiPageLocalService
 	public void moveDependentToTrash(WikiPage page, long trashEntryId)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #renamePage(long, long, String, String, ServiceContext)}
-	 */
-	@Deprecated
-	public void movePage(
-			long userId, long nodeId, String title, String newTitle,
-			ServiceContext serviceContext)
-		throws PortalException;
-
 	public FileEntry movePageAttachmentToTrash(
 			long userId, long nodeId, String title, String fileName)
 		throws PortalException;
@@ -673,16 +655,6 @@ public interface WikiPageLocalService
 	public WikiPage movePageFromTrash(
 			long userId, long nodeId, String title, long newNodeId,
 			String newParentTitle)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #movePageFromTrash(long, long, String, long, String)} *
-	 */
-	@Deprecated
-	public WikiPage movePageFromTrash(
-			long userId, long nodeId, String title, String newParentTitle,
-			ServiceContext serviceContext)
 		throws PortalException;
 
 	public WikiPage movePageToTrash(long userId, long nodeId, String title)
@@ -728,6 +700,11 @@ public interface WikiPageLocalService
 			String[] assetTagNames, long[] assetLinkEntryIds, Double priority)
 		throws PortalException;
 
+	@BufferedIncrement(
+		configuration = "WikiNode", incrementClass = DateOverrideIncrement.class
+	)
+	public void updateLastPostDate(long nodeId, Date lastPostDate);
+
 	public WikiPage updatePage(
 			long userId, long nodeId, String title, double version,
 			String content, String summary, boolean minorEdit, String format,
@@ -740,16 +717,6 @@ public interface WikiPageLocalService
 			ServiceContext serviceContext)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateStatus(long, WikiPage, int, ServiceContext, Map)}
-	 */
-	@Deprecated
-	public WikiPage updateStatus(
-			long userId, WikiPage page, int status,
-			ServiceContext serviceContext)
-		throws PortalException;
-
 	public WikiPage updateStatus(
 			long userId, WikiPage page, int status,
 			ServiceContext serviceContext,
@@ -759,17 +726,17 @@ public interface WikiPageLocalService
 	/**
 	 * Updates the wiki page in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WikiPageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param wikiPage the wiki page
 	 * @return the wiki page that was updated
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	public WikiPage updateWikiPage(WikiPage wikiPage);
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 WikiPageTitleValidator#validate(String)}
-	 */
-	@Deprecated
-	public void validateTitle(String title) throws PortalException;
+	public WikiPage updateWikiPage(
+		WikiPage wikiPage, ServiceContext serviceContext);
 
 }

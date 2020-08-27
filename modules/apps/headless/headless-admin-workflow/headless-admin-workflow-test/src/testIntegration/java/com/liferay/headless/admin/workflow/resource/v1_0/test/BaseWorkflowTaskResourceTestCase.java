@@ -14,60 +14,59 @@
 
 package com.liferay.headless.admin.workflow.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
-import com.liferay.headless.admin.workflow.client.dto.v1_0.ChangeTransition;
 import com.liferay.headless.admin.workflow.client.dto.v1_0.WorkflowTask;
-import com.liferay.headless.admin.workflow.client.dto.v1_0.WorkflowTaskAssignToMe;
-import com.liferay.headless.admin.workflow.client.dto.v1_0.WorkflowTaskAssignToUser;
+import com.liferay.headless.admin.workflow.client.http.HttpInvoker;
 import com.liferay.headless.admin.workflow.client.pagination.Page;
+import com.liferay.headless.admin.workflow.client.pagination.Pagination;
+import com.liferay.headless.admin.workflow.client.resource.v1_0.WorkflowTaskResource;
 import com.liferay.headless.admin.workflow.client.serdes.v1_0.WorkflowTaskSerDes;
-import com.liferay.headless.admin.workflow.resource.v1_0.WorkflowTaskResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
@@ -102,10 +101,19 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-workflow/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_workflowTaskResource.setContextCompany(testCompany);
+
+		WorkflowTaskResource.Builder builder = WorkflowTaskResource.builder();
+
+		workflowTaskResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -119,10 +127,16 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -140,9 +154,15 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -156,18 +176,52 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
-	public void testGetRoleWorkflowTasksPage() throws Exception {
-		Long roleId = testGetRoleWorkflowTasksPage_getRoleId();
-		Long irrelevantRoleId =
-			testGetRoleWorkflowTasksPage_getIrrelevantRoleId();
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
 
-		if ((irrelevantRoleId != null)) {
+		WorkflowTask workflowTask = randomWorkflowTask();
+
+		workflowTask.setDescription(regex);
+		workflowTask.setLabel(regex);
+		workflowTask.setName(regex);
+		workflowTask.setWorkflowDefinitionName(regex);
+		workflowTask.setWorkflowDefinitionVersion(regex);
+
+		String json = WorkflowTaskSerDes.toJSON(workflowTask);
+
+		Assert.assertFalse(json.contains(regex));
+
+		workflowTask = WorkflowTaskSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, workflowTask.getDescription());
+		Assert.assertEquals(regex, workflowTask.getLabel());
+		Assert.assertEquals(regex, workflowTask.getName());
+		Assert.assertEquals(regex, workflowTask.getWorkflowDefinitionName());
+		Assert.assertEquals(regex, workflowTask.getWorkflowDefinitionVersion());
+	}
+
+	@Test
+	public void testGetWorkflowInstanceWorkflowTasksPage() throws Exception {
+		Page<WorkflowTask> page =
+			workflowTaskResource.getWorkflowInstanceWorkflowTasksPage(
+				testGetWorkflowInstanceWorkflowTasksPage_getWorkflowInstanceId(),
+				null, Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksPage_getWorkflowInstanceId();
+		Long irrelevantWorkflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksPage_getIrrelevantWorkflowInstanceId();
+
+		if ((irrelevantWorkflowInstanceId != null)) {
 			WorkflowTask irrelevantWorkflowTask =
-				testGetRoleWorkflowTasksPage_addWorkflowTask(
-					irrelevantRoleId, randomIrrelevantWorkflowTask());
+				testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+					irrelevantWorkflowInstanceId,
+					randomIrrelevantWorkflowTask());
 
-			Page<WorkflowTask> page = invokeGetRoleWorkflowTasksPage(
-				irrelevantRoleId, Pagination.of(1, 2));
+			page = workflowTaskResource.getWorkflowInstanceWorkflowTasksPage(
+				irrelevantWorkflowInstanceId, null, Pagination.of(1, 2));
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -178,15 +232,15 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		}
 
 		WorkflowTask workflowTask1 =
-			testGetRoleWorkflowTasksPage_addWorkflowTask(
-				roleId, randomWorkflowTask());
+			testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
 		WorkflowTask workflowTask2 =
-			testGetRoleWorkflowTasksPage_addWorkflowTask(
-				roleId, randomWorkflowTask());
+			testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		Page<WorkflowTask> page = invokeGetRoleWorkflowTasksPage(
-			roleId, Pagination.of(1, 2));
+		page = workflowTaskResource.getWorkflowInstanceWorkflowTasksPage(
+			workflowInstanceId, null, Pagination.of(1, 2));
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -197,23 +251,27 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	}
 
 	@Test
-	public void testGetRoleWorkflowTasksPageWithPagination() throws Exception {
-		Long roleId = testGetRoleWorkflowTasksPage_getRoleId();
+	public void testGetWorkflowInstanceWorkflowTasksPageWithPagination()
+		throws Exception {
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksPage_getWorkflowInstanceId();
 
 		WorkflowTask workflowTask1 =
-			testGetRoleWorkflowTasksPage_addWorkflowTask(
-				roleId, randomWorkflowTask());
+			testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
 		WorkflowTask workflowTask2 =
-			testGetRoleWorkflowTasksPage_addWorkflowTask(
-				roleId, randomWorkflowTask());
+			testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
 		WorkflowTask workflowTask3 =
-			testGetRoleWorkflowTasksPage_addWorkflowTask(
-				roleId, randomWorkflowTask());
+			testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		Page<WorkflowTask> page1 = invokeGetRoleWorkflowTasksPage(
-			roleId, Pagination.of(1, 2));
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.getWorkflowInstanceWorkflowTasksPage(
+				workflowInstanceId, null, Pagination.of(1, 2));
 
 		List<WorkflowTask> workflowTasks1 =
 			(List<WorkflowTask>)page1.getItems();
@@ -221,8 +279,9 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		Assert.assertEquals(
 			workflowTasks1.toString(), 2, workflowTasks1.size());
 
-		Page<WorkflowTask> page2 = invokeGetRoleWorkflowTasksPage(
-			roleId, Pagination.of(2, 2));
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.getWorkflowInstanceWorkflowTasksPage(
+				workflowInstanceId, null, Pagination.of(2, 2));
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -232,200 +291,734 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		Assert.assertEquals(
 			workflowTasks2.toString(), 1, workflowTasks2.size());
 
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.getWorkflowInstanceWorkflowTasksPage(
+				workflowInstanceId, null, Pagination.of(1, 3));
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
-			new ArrayList<WorkflowTask>() {
-				{
-					addAll(workflowTasks1);
-					addAll(workflowTasks2);
-				}
-			});
+			(List<WorkflowTask>)page3.getItems());
 	}
 
-	protected WorkflowTask testGetRoleWorkflowTasksPage_addWorkflowTask(
-			Long roleId, WorkflowTask workflowTask)
+	protected WorkflowTask
+			testGetWorkflowInstanceWorkflowTasksPage_addWorkflowTask(
+				Long workflowInstanceId, WorkflowTask workflowTask)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetRoleWorkflowTasksPage_getRoleId() throws Exception {
+	protected Long
+			testGetWorkflowInstanceWorkflowTasksPage_getWorkflowInstanceId()
+		throws Exception {
+
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetRoleWorkflowTasksPage_getIrrelevantRoleId()
+	protected Long
+			testGetWorkflowInstanceWorkflowTasksPage_getIrrelevantWorkflowInstanceId()
 		throws Exception {
 
 		return null;
 	}
 
-	protected Page<WorkflowTask> invokeGetRoleWorkflowTasksPage(
-			Long roleId, Pagination pagination)
+	@Test
+	public void testGetWorkflowInstanceWorkflowTasksAssignedToMePage()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
+		Page<WorkflowTask> page =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToMePage(
+					testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getWorkflowInstanceId(),
+					null, Pagination.of(1, 2));
 
-		String location =
-			_resourceURL + _toPath("/roles/{roleId}/workflow-tasks", roleId);
+		Assert.assertEquals(0, page.getTotalCount());
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getWorkflowInstanceId();
+		Long irrelevantWorkflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getIrrelevantWorkflowInstanceId();
+
+		if ((irrelevantWorkflowInstanceId != null)) {
+			WorkflowTask irrelevantWorkflowTask =
+				testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+					irrelevantWorkflowInstanceId,
+					randomIrrelevantWorkflowTask());
+
+			page =
+				workflowTaskResource.
+					getWorkflowInstanceWorkflowTasksAssignedToMePage(
+						irrelevantWorkflowInstanceId, null,
+						Pagination.of(1, 2));
+
+			Assert.assertEquals(1, page.getTotalCount());
+
+			assertEquals(
+				Arrays.asList(irrelevantWorkflowTask),
+				(List<WorkflowTask>)page.getItems());
+			assertValid(page);
 		}
 
-		options.setLocation(location);
+		WorkflowTask workflowTask1 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		String string = HttpUtil.URLtoString(options);
+		WorkflowTask workflowTask2 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
+		page =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToMePage(
+					workflowInstanceId, null, Pagination.of(1, 2));
 
-		return Page.of(string, WorkflowTaskSerDes::toDTO);
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2),
+			(List<WorkflowTask>)page.getItems());
+		assertValid(page);
 	}
 
-	protected Http.Response invokeGetRoleWorkflowTasksPageResponse(
-			Long roleId, Pagination pagination)
+	@Test
+	public void testGetWorkflowInstanceWorkflowTasksAssignedToMePageWithPagination()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getWorkflowInstanceId();
 
-		String location =
-			_resourceURL + _toPath("/roles/{roleId}/workflow-tasks", roleId);
+		WorkflowTask workflowTask1 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
+		WorkflowTask workflowTask2 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		WorkflowTask workflowTask3 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToMePage(
+					workflowInstanceId, null, Pagination.of(1, 2));
+
+		List<WorkflowTask> workflowTasks1 =
+			(List<WorkflowTask>)page1.getItems();
+
+		Assert.assertEquals(
+			workflowTasks1.toString(), 2, workflowTasks1.size());
+
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToMePage(
+					workflowInstanceId, null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<WorkflowTask> workflowTasks2 =
+			(List<WorkflowTask>)page2.getItems();
+
+		Assert.assertEquals(
+			workflowTasks2.toString(), 1, workflowTasks2.size());
+
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToMePage(
+					workflowInstanceId, null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
+			(List<WorkflowTask>)page3.getItems());
+	}
+
+	protected WorkflowTask
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_addWorkflowTask(
+				Long workflowInstanceId, WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getWorkflowInstanceId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetWorkflowInstanceWorkflowTasksAssignedToMePage_getIrrelevantWorkflowInstanceId()
+		throws Exception {
+
+		return null;
+	}
+
+	@Test
+	public void testGetWorkflowInstanceWorkflowTasksAssignedToUserPage()
+		throws Exception {
+
+		Page<WorkflowTask> page =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToUserPage(
+					testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getWorkflowInstanceId(),
+					null, null, Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getWorkflowInstanceId();
+		Long irrelevantWorkflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getIrrelevantWorkflowInstanceId();
+
+		if ((irrelevantWorkflowInstanceId != null)) {
+			WorkflowTask irrelevantWorkflowTask =
+				testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+					irrelevantWorkflowInstanceId,
+					randomIrrelevantWorkflowTask());
+
+			page =
+				workflowTaskResource.
+					getWorkflowInstanceWorkflowTasksAssignedToUserPage(
+						irrelevantWorkflowInstanceId, null, null,
+						Pagination.of(1, 2));
+
+			Assert.assertEquals(1, page.getTotalCount());
+
+			assertEquals(
+				Arrays.asList(irrelevantWorkflowTask),
+				(List<WorkflowTask>)page.getItems());
+			assertValid(page);
 		}
 
-		options.setLocation(location);
+		WorkflowTask workflowTask1 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		HttpUtil.URLtoByteArray(options);
+		WorkflowTask workflowTask2 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
 
-		return options.getResponse();
+		page =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToUserPage(
+					workflowInstanceId, null, null, Pagination.of(1, 2));
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2),
+			(List<WorkflowTask>)page.getItems());
+		assertValid(page);
+	}
+
+	@Test
+	public void testGetWorkflowInstanceWorkflowTasksAssignedToUserPageWithPagination()
+		throws Exception {
+
+		Long workflowInstanceId =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getWorkflowInstanceId();
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		WorkflowTask workflowTask3 =
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				workflowInstanceId, randomWorkflowTask());
+
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToUserPage(
+					workflowInstanceId, null, null, Pagination.of(1, 2));
+
+		List<WorkflowTask> workflowTasks1 =
+			(List<WorkflowTask>)page1.getItems();
+
+		Assert.assertEquals(
+			workflowTasks1.toString(), 2, workflowTasks1.size());
+
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToUserPage(
+					workflowInstanceId, null, null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<WorkflowTask> workflowTasks2 =
+			(List<WorkflowTask>)page2.getItems();
+
+		Assert.assertEquals(
+			workflowTasks2.toString(), 1, workflowTasks2.size());
+
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.
+				getWorkflowInstanceWorkflowTasksAssignedToUserPage(
+					workflowInstanceId, null, null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
+			(List<WorkflowTask>)page3.getItems());
+	}
+
+	protected WorkflowTask
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				Long workflowInstanceId, WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getWorkflowInstanceId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetWorkflowInstanceWorkflowTasksAssignedToUserPage_getIrrelevantWorkflowInstanceId()
+		throws Exception {
+
+		return null;
+	}
+
+	@Test
+	public void testPostWorkflowTasksPage() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
+	public void testPatchWorkflowTaskAssignToUser() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		WorkflowTask workflowTask =
+			testPatchWorkflowTaskAssignToUser_addWorkflowTask();
+
+		assertHttpResponseStatusCode(
+			204,
+			workflowTaskResource.patchWorkflowTaskAssignToUserHttpResponse(
+				null));
+
+		assertHttpResponseStatusCode(
+			404,
+			workflowTaskResource.patchWorkflowTaskAssignToUserHttpResponse(
+				null));
+	}
+
+	protected WorkflowTask testPatchWorkflowTaskAssignToUser_addWorkflowTask()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
 	public void testGetWorkflowTasksAssignedToMePage() throws Exception {
-		Assert.assertTrue(true);
-	}
-
-	protected Page<WorkflowTask> invokeGetWorkflowTasksAssignedToMePage(
-			Pagination pagination)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL + _toPath("/workflow-tasks/assigned-to-me");
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, WorkflowTaskSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetWorkflowTasksAssignedToMePageResponse(
-			Pagination pagination)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL + _toPath("/workflow-tasks/assigned-to-me");
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertTrue(false);
 	}
 
 	@Test
 	public void testGetWorkflowTasksAssignedToMyRolesPage() throws Exception {
-		Assert.assertTrue(true);
+		Assert.assertTrue(false);
 	}
 
-	protected Page<WorkflowTask> invokeGetWorkflowTasksAssignedToMyRolesPage(
-			Pagination pagination)
-		throws Exception {
+	@Test
+	public void testGetWorkflowTasksAssignedToRolePage() throws Exception {
+		Page<WorkflowTask> page =
+			workflowTaskResource.getWorkflowTasksAssignedToRolePage(
+				null, Pagination.of(1, 2));
 
-		Http.Options options = _createHttpOptions();
+		Assert.assertEquals(0, page.getTotalCount());
 
-		String location =
-			_resourceURL + _toPath("/workflow-tasks/assigned-to-my-roles");
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksAssignedToRolePage_addWorkflowTask(
+				randomWorkflowTask());
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksAssignedToRolePage_addWorkflowTask(
+				randomWorkflowTask());
 
-		options.setLocation(location);
+		page = workflowTaskResource.getWorkflowTasksAssignedToRolePage(
+			null, Pagination.of(1, 2));
 
-		String string = HttpUtil.URLtoString(options);
+		Assert.assertEquals(2, page.getTotalCount());
 
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, WorkflowTaskSerDes::toDTO);
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2),
+			(List<WorkflowTask>)page.getItems());
+		assertValid(page);
 	}
 
-	protected Http.Response invokeGetWorkflowTasksAssignedToMyRolesPageResponse(
-			Pagination pagination)
+	@Test
+	public void testGetWorkflowTasksAssignedToRolePageWithPagination()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksAssignedToRolePage_addWorkflowTask(
+				randomWorkflowTask());
 
-		String location =
-			_resourceURL + _toPath("/workflow-tasks/assigned-to-my-roles");
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksAssignedToRolePage_addWorkflowTask(
+				randomWorkflowTask());
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
+		WorkflowTask workflowTask3 =
+			testGetWorkflowTasksAssignedToRolePage_addWorkflowTask(
+				randomWorkflowTask());
 
-		options.setLocation(location);
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.getWorkflowTasksAssignedToRolePage(
+				null, Pagination.of(1, 2));
 
-		HttpUtil.URLtoByteArray(options);
+		List<WorkflowTask> workflowTasks1 =
+			(List<WorkflowTask>)page1.getItems();
 
-		return options.getResponse();
+		Assert.assertEquals(
+			workflowTasks1.toString(), 2, workflowTasks1.size());
+
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.getWorkflowTasksAssignedToRolePage(
+				null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<WorkflowTask> workflowTasks2 =
+			(List<WorkflowTask>)page2.getItems();
+
+		Assert.assertEquals(
+			workflowTasks2.toString(), 1, workflowTasks2.size());
+
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.getWorkflowTasksAssignedToRolePage(
+				null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
+			(List<WorkflowTask>)page3.getItems());
+	}
+
+	protected WorkflowTask
+			testGetWorkflowTasksAssignedToRolePage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGetWorkflowTasksAssignedToUserPage() throws Exception {
+		Page<WorkflowTask> page =
+			workflowTaskResource.getWorkflowTasksAssignedToUserPage(
+				null, Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		page = workflowTaskResource.getWorkflowTasksAssignedToUserPage(
+			null, Pagination.of(1, 2));
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2),
+			(List<WorkflowTask>)page.getItems());
+		assertValid(page);
+	}
+
+	@Test
+	public void testGetWorkflowTasksAssignedToUserPageWithPagination()
+		throws Exception {
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask3 =
+			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.getWorkflowTasksAssignedToUserPage(
+				null, Pagination.of(1, 2));
+
+		List<WorkflowTask> workflowTasks1 =
+			(List<WorkflowTask>)page1.getItems();
+
+		Assert.assertEquals(
+			workflowTasks1.toString(), 2, workflowTasks1.size());
+
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.getWorkflowTasksAssignedToUserPage(
+				null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<WorkflowTask> workflowTasks2 =
+			(List<WorkflowTask>)page2.getItems();
+
+		Assert.assertEquals(
+			workflowTasks2.toString(), 1, workflowTasks2.size());
+
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.getWorkflowTasksAssignedToUserPage(
+				null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
+			(List<WorkflowTask>)page3.getItems());
+	}
+
+	protected WorkflowTask
+			testGetWorkflowTasksAssignedToUserPage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGetWorkflowTasksAssignedToUserRolesPage() throws Exception {
+		Page<WorkflowTask> page =
+			workflowTaskResource.getWorkflowTasksAssignedToUserRolesPage(
+				null, Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksAssignedToUserRolesPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksAssignedToUserRolesPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		page = workflowTaskResource.getWorkflowTasksAssignedToUserRolesPage(
+			null, Pagination.of(1, 2));
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2),
+			(List<WorkflowTask>)page.getItems());
+		assertValid(page);
+	}
+
+	@Test
+	public void testGetWorkflowTasksAssignedToUserRolesPageWithPagination()
+		throws Exception {
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksAssignedToUserRolesPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksAssignedToUserRolesPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask3 =
+			testGetWorkflowTasksAssignedToUserRolesPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.getWorkflowTasksAssignedToUserRolesPage(
+				null, Pagination.of(1, 2));
+
+		List<WorkflowTask> workflowTasks1 =
+			(List<WorkflowTask>)page1.getItems();
+
+		Assert.assertEquals(
+			workflowTasks1.toString(), 2, workflowTasks1.size());
+
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.getWorkflowTasksAssignedToUserRolesPage(
+				null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<WorkflowTask> workflowTasks2 =
+			(List<WorkflowTask>)page2.getItems();
+
+		Assert.assertEquals(
+			workflowTasks2.toString(), 1, workflowTasks2.size());
+
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.getWorkflowTasksAssignedToUserRolesPage(
+				null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
+			(List<WorkflowTask>)page3.getItems());
+	}
+
+	protected WorkflowTask
+			testGetWorkflowTasksAssignedToUserRolesPage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testPatchWorkflowTaskChangeTransition() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		WorkflowTask workflowTask =
+			testPatchWorkflowTaskChangeTransition_addWorkflowTask();
+
+		assertHttpResponseStatusCode(
+			204,
+			workflowTaskResource.patchWorkflowTaskChangeTransitionHttpResponse(
+				null));
+
+		assertHttpResponseStatusCode(
+			404,
+			workflowTaskResource.patchWorkflowTaskChangeTransitionHttpResponse(
+				null));
+	}
+
+	protected WorkflowTask
+			testPatchWorkflowTaskChangeTransition_addWorkflowTask()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGetWorkflowTasksSubmittingUserPage() throws Exception {
+		Page<WorkflowTask> page =
+			workflowTaskResource.getWorkflowTasksSubmittingUserPage(
+				null, Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		page = workflowTaskResource.getWorkflowTasksSubmittingUserPage(
+			null, Pagination.of(1, 2));
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2),
+			(List<WorkflowTask>)page.getItems());
+		assertValid(page);
+	}
+
+	@Test
+	public void testGetWorkflowTasksSubmittingUserPageWithPagination()
+		throws Exception {
+
+		WorkflowTask workflowTask1 =
+			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask2 =
+			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		WorkflowTask workflowTask3 =
+			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				randomWorkflowTask());
+
+		Page<WorkflowTask> page1 =
+			workflowTaskResource.getWorkflowTasksSubmittingUserPage(
+				null, Pagination.of(1, 2));
+
+		List<WorkflowTask> workflowTasks1 =
+			(List<WorkflowTask>)page1.getItems();
+
+		Assert.assertEquals(
+			workflowTasks1.toString(), 2, workflowTasks1.size());
+
+		Page<WorkflowTask> page2 =
+			workflowTaskResource.getWorkflowTasksSubmittingUserPage(
+				null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<WorkflowTask> workflowTasks2 =
+			(List<WorkflowTask>)page2.getItems();
+
+		Assert.assertEquals(
+			workflowTasks2.toString(), 1, workflowTasks2.size());
+
+		Page<WorkflowTask> page3 =
+			workflowTaskResource.getWorkflowTasksSubmittingUserPage(
+				null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(workflowTask1, workflowTask2, workflowTask3),
+			(List<WorkflowTask>)page3.getItems());
+	}
+
+	protected WorkflowTask
+			testGetWorkflowTasksSubmittingUserPage_addWorkflowTask(
+				WorkflowTask workflowTask)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testPatchWorkflowTaskUpdateDueDate() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		WorkflowTask workflowTask =
+			testPatchWorkflowTaskUpdateDueDate_addWorkflowTask();
+
+		assertHttpResponseStatusCode(
+			204,
+			workflowTaskResource.patchWorkflowTaskUpdateDueDateHttpResponse(
+				null));
+
+		assertHttpResponseStatusCode(
+			404,
+			workflowTaskResource.patchWorkflowTaskUpdateDueDateHttpResponse(
+				null));
+	}
+
+	protected WorkflowTask testPatchWorkflowTaskUpdateDueDate_addWorkflowTask()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
 	public void testGetWorkflowTask() throws Exception {
 		WorkflowTask postWorkflowTask = testGetWorkflowTask_addWorkflowTask();
 
-		WorkflowTask getWorkflowTask = invokeGetWorkflowTask(
+		WorkflowTask getWorkflowTask = workflowTaskResource.getWorkflowTask(
 			postWorkflowTask.getId());
 
 		assertEquals(postWorkflowTask, getWorkflowTask);
@@ -439,49 +1032,47 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected WorkflowTask invokeGetWorkflowTask(Long workflowTaskId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetWorkflowTask() throws Exception {
+		WorkflowTask workflowTask = testGraphQLWorkflowTask_addWorkflowTask();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/workflow-tasks/{workflowTaskId}", workflowTaskId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return WorkflowTaskSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				workflowTask,
+				WorkflowTaskSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"workflowTask",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"workflowTaskId",
+											workflowTask.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/workflowTask"))));
 	}
 
-	protected Http.Response invokeGetWorkflowTaskResponse(Long workflowTaskId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetWorkflowTaskNotFound() throws Exception {
+		Long irrelevantWorkflowTaskId = RandomTestUtil.randomLong();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/workflow-tasks/{workflowTaskId}", workflowTaskId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"workflowTask",
+						new HashMap<String, Object>() {
+							{
+								put("workflowTaskId", irrelevantWorkflowTaskId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Test
@@ -503,59 +1094,24 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected WorkflowTask invokePostWorkflowTaskAssignToMe(
-			Long workflowTaskId, WorkflowTaskAssignToMe workflowTaskAssignToMe)
-		throws Exception {
+	@Test
+	public void testPostWorkflowTaskAssignToRole() throws Exception {
+		WorkflowTask randomWorkflowTask = randomWorkflowTask();
 
-		Http.Options options = _createHttpOptions();
+		WorkflowTask postWorkflowTask =
+			testPostWorkflowTaskAssignToRole_addWorkflowTask(
+				randomWorkflowTask);
 
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/assign-to-me",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return WorkflowTaskSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		assertEquals(randomWorkflowTask, postWorkflowTask);
+		assertValid(postWorkflowTask);
 	}
 
-	protected Http.Response invokePostWorkflowTaskAssignToMeResponse(
-			Long workflowTaskId, WorkflowTaskAssignToMe workflowTaskAssignToMe)
+	protected WorkflowTask testPostWorkflowTaskAssignToRole_addWorkflowTask(
+			WorkflowTask workflowTask)
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/assign-to-me",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -578,63 +1134,6 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected WorkflowTask invokePostWorkflowTaskAssignToUser(
-			Long workflowTaskId,
-			WorkflowTaskAssignToUser workflowTaskAssignToUser)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/assign-to-user",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return WorkflowTaskSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePostWorkflowTaskAssignToUserResponse(
-			Long workflowTaskId,
-			WorkflowTaskAssignToUser workflowTaskAssignToUser)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/assign-to-user",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testPostWorkflowTaskChangeTransition() throws Exception {
 		WorkflowTask randomWorkflowTask = randomWorkflowTask();
@@ -655,59 +1154,9 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected WorkflowTask invokePostWorkflowTaskChangeTransition(
-			Long workflowTaskId, ChangeTransition changeTransition)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/change-transition",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return WorkflowTaskSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePostWorkflowTaskChangeTransitionResponse(
-			Long workflowTaskId, ChangeTransition changeTransition)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/change-transition",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+	@Test
+	public void testGetWorkflowTaskHasAssignableUsers() throws Exception {
+		Assert.assertTrue(false);
 	}
 
 	@Test
@@ -730,66 +1179,19 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected WorkflowTask invokePostWorkflowTaskUpdateDueDate(
-			Long workflowTaskId, WorkflowTaskAssignToMe workflowTaskAssignToMe)
+	protected WorkflowTask testGraphQLWorkflowTask_addWorkflowTask()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/update-due-date",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return WorkflowTaskSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
-	protected Http.Response invokePostWorkflowTaskUpdateDueDateResponse(
-			Long workflowTaskId, WorkflowTaskAssignToMe workflowTaskAssignToMe)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/workflow-tasks/{workflowTaskId}/update-due-date",
-					workflowTaskId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -835,7 +1237,7 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		}
 	}
 
-	protected void assertValid(WorkflowTask workflowTask) {
+	protected void assertValid(WorkflowTask workflowTask) throws Exception {
 		boolean valid = true;
 
 		if (workflowTask.getDateCreated() == null) {
@@ -849,6 +1251,22 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
 
+			if (Objects.equals("assigneePerson", additionalAssertFieldName)) {
+				if (workflowTask.getAssigneePerson() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("assigneeRoles", additionalAssertFieldName)) {
+				if (workflowTask.getAssigneeRoles() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("completed", additionalAssertFieldName)) {
 				if (workflowTask.getCompleted() == null) {
 					valid = false;
@@ -857,16 +1275,16 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("dateCompleted", additionalAssertFieldName)) {
-				if (workflowTask.getDateCompleted() == null) {
+			if (Objects.equals("dateCompletion", additionalAssertFieldName)) {
+				if (workflowTask.getDateCompletion() == null) {
 					valid = false;
 				}
 
 				continue;
 			}
 
-			if (Objects.equals("definitionName", additionalAssertFieldName)) {
-				if (workflowTask.getDefinitionName() == null) {
+			if (Objects.equals("dateDue", additionalAssertFieldName)) {
+				if (workflowTask.getDateDue() == null) {
 					valid = false;
 				}
 
@@ -881,8 +1299,8 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("dueDate", additionalAssertFieldName)) {
-				if (workflowTask.getDueDate() == null) {
+			if (Objects.equals("label", additionalAssertFieldName)) {
+				if (workflowTask.getLabel() == null) {
 					valid = false;
 				}
 
@@ -905,8 +1323,40 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("transitions", additionalAssertFieldName)) {
-				if (workflowTask.getTransitions() == null) {
+			if (Objects.equals(
+					"workflowDefinitionId", additionalAssertFieldName)) {
+
+				if (workflowTask.getWorkflowDefinitionId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"workflowDefinitionName", additionalAssertFieldName)) {
+
+				if (workflowTask.getWorkflowDefinitionName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"workflowDefinitionVersion", additionalAssertFieldName)) {
+
+				if (workflowTask.getWorkflowDefinitionVersion() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"workflowInstanceId", additionalAssertFieldName)) {
+
+				if (workflowTask.getWorkflowInstanceId() == null) {
 					valid = false;
 				}
 
@@ -924,7 +1374,7 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	protected void assertValid(Page<WorkflowTask> page) {
 		boolean valid = false;
 
-		Collection<WorkflowTask> workflowTasks = page.getItems();
+		java.util.Collection<WorkflowTask> workflowTasks = page.getItems();
 
 		int size = workflowTasks.size();
 
@@ -942,6 +1392,59 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		return new String[0];
 	}
 
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.workflow.dto.v1_0.WorkflowTask.
+						class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[0];
+	}
+
 	protected boolean equals(
 		WorkflowTask workflowTask1, WorkflowTask workflowTask2) {
 
@@ -951,6 +1454,28 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("assigneePerson", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						workflowTask1.getAssigneePerson(),
+						workflowTask2.getAssigneePerson())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("assigneeRoles", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						workflowTask1.getAssigneeRoles(),
+						workflowTask2.getAssigneeRoles())) {
+
+					return false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals("completed", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
@@ -963,10 +1488,10 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("dateCompleted", additionalAssertFieldName)) {
+			if (Objects.equals("dateCompletion", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						workflowTask1.getDateCompleted(),
-						workflowTask2.getDateCompleted())) {
+						workflowTask1.getDateCompletion(),
+						workflowTask2.getDateCompletion())) {
 
 					return false;
 				}
@@ -985,10 +1510,10 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("definitionName", additionalAssertFieldName)) {
+			if (Objects.equals("dateDue", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						workflowTask1.getDefinitionName(),
-						workflowTask2.getDefinitionName())) {
+						workflowTask1.getDateDue(),
+						workflowTask2.getDateDue())) {
 
 					return false;
 				}
@@ -1007,10 +1532,9 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("dueDate", additionalAssertFieldName)) {
+			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						workflowTask1.getDueDate(),
-						workflowTask2.getDueDate())) {
+						workflowTask1.getId(), workflowTask2.getId())) {
 
 					return false;
 				}
@@ -1018,9 +1542,9 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("id", additionalAssertFieldName)) {
+			if (Objects.equals("label", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						workflowTask1.getId(), workflowTask2.getId())) {
+						workflowTask1.getLabel(), workflowTask2.getLabel())) {
 
 					return false;
 				}
@@ -1049,10 +1573,51 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("transitions", additionalAssertFieldName)) {
+			if (Objects.equals(
+					"workflowDefinitionId", additionalAssertFieldName)) {
+
 				if (!Objects.deepEquals(
-						workflowTask1.getTransitions(),
-						workflowTask2.getTransitions())) {
+						workflowTask1.getWorkflowDefinitionId(),
+						workflowTask2.getWorkflowDefinitionId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"workflowDefinitionName", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						workflowTask1.getWorkflowDefinitionName(),
+						workflowTask2.getWorkflowDefinitionName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"workflowDefinitionVersion", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						workflowTask1.getWorkflowDefinitionVersion(),
+						workflowTask2.getWorkflowDefinitionVersion())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"workflowInstanceId", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						workflowTask1.getWorkflowInstanceId(),
+						workflowTask2.getWorkflowInstanceId())) {
 
 					return false;
 				}
@@ -1068,7 +1633,33 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_workflowTaskResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -1089,12 +1680,15 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -1113,12 +1707,22 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		sb.append(operator);
 		sb.append(" ");
 
+		if (entityFieldName.equals("assigneePerson")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("assigneeRoles")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("completed")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
 
-		if (entityFieldName.equals("dateCompleted")) {
+		if (entityFieldName.equals("dateCompletion")) {
 			if (operator.equals("between")) {
 				sb = new StringBundler();
 
@@ -1128,14 +1732,14 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				sb.append(
 					_dateFormat.format(
 						DateUtils.addSeconds(
-							workflowTask.getDateCompleted(), -2)));
+							workflowTask.getDateCompletion(), -2)));
 				sb.append(" and ");
 				sb.append(entityFieldName);
 				sb.append(" lt ");
 				sb.append(
 					_dateFormat.format(
 						DateUtils.addSeconds(
-							workflowTask.getDateCompleted(), 2)));
+							workflowTask.getDateCompletion(), 2)));
 				sb.append(")");
 			}
 			else {
@@ -1145,7 +1749,7 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				sb.append(operator);
 				sb.append(" ");
 
-				sb.append(_dateFormat.format(workflowTask.getDateCompleted()));
+				sb.append(_dateFormat.format(workflowTask.getDateCompletion()));
 			}
 
 			return sb.toString();
@@ -1184,10 +1788,33 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			return sb.toString();
 		}
 
-		if (entityFieldName.equals("definitionName")) {
-			sb.append("'");
-			sb.append(String.valueOf(workflowTask.getDefinitionName()));
-			sb.append("'");
+		if (entityFieldName.equals("dateDue")) {
+			if (operator.equals("between")) {
+				sb = new StringBundler();
+
+				sb.append("(");
+				sb.append(entityFieldName);
+				sb.append(" gt ");
+				sb.append(
+					_dateFormat.format(
+						DateUtils.addSeconds(workflowTask.getDateDue(), -2)));
+				sb.append(" and ");
+				sb.append(entityFieldName);
+				sb.append(" lt ");
+				sb.append(
+					_dateFormat.format(
+						DateUtils.addSeconds(workflowTask.getDateDue(), 2)));
+				sb.append(")");
+			}
+			else {
+				sb.append(entityFieldName);
+
+				sb.append(" ");
+				sb.append(operator);
+				sb.append(" ");
+
+				sb.append(_dateFormat.format(workflowTask.getDateDue()));
+			}
 
 			return sb.toString();
 		}
@@ -1200,40 +1827,17 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			return sb.toString();
 		}
 
-		if (entityFieldName.equals("dueDate")) {
-			if (operator.equals("between")) {
-				sb = new StringBundler();
-
-				sb.append("(");
-				sb.append(entityFieldName);
-				sb.append(" gt ");
-				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(workflowTask.getDueDate(), -2)));
-				sb.append(" and ");
-				sb.append(entityFieldName);
-				sb.append(" lt ");
-				sb.append(
-					_dateFormat.format(
-						DateUtils.addSeconds(workflowTask.getDueDate(), 2)));
-				sb.append(")");
-			}
-			else {
-				sb.append(entityFieldName);
-
-				sb.append(" ");
-				sb.append(operator);
-				sb.append(" ");
-
-				sb.append(_dateFormat.format(workflowTask.getDueDate()));
-			}
-
-			return sb.toString();
-		}
-
 		if (entityFieldName.equals("id")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("label")) {
+			sb.append("'");
+			sb.append(String.valueOf(workflowTask.getLabel()));
+			sb.append("'");
+
+			return sb.toString();
 		}
 
 		if (entityFieldName.equals("name")) {
@@ -1249,7 +1853,29 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
-		if (entityFieldName.equals("transitions")) {
+		if (entityFieldName.equals("workflowDefinitionId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("workflowDefinitionName")) {
+			sb.append("'");
+			sb.append(String.valueOf(workflowTask.getWorkflowDefinitionName()));
+			sb.append("'");
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("workflowDefinitionVersion")) {
+			sb.append("'");
+			sb.append(
+				String.valueOf(workflowTask.getWorkflowDefinitionVersion()));
+			sb.append("'");
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("workflowInstanceId")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1258,17 +1884,61 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected WorkflowTask randomWorkflowTask() throws Exception {
 		return new WorkflowTask() {
 			{
 				completed = RandomTestUtil.randomBoolean();
-				dateCompleted = RandomTestUtil.nextDate();
+				dateCompletion = RandomTestUtil.nextDate();
 				dateCreated = RandomTestUtil.nextDate();
-				definitionName = RandomTestUtil.randomString();
-				description = RandomTestUtil.randomString();
-				dueDate = RandomTestUtil.nextDate();
+				dateDue = RandomTestUtil.nextDate();
+				description = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				name = RandomTestUtil.randomString();
+				label = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				workflowDefinitionId = RandomTestUtil.randomLong();
+				workflowDefinitionName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				workflowDefinitionVersion = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				workflowInstanceId = RandomTestUtil.randomLong();
 			}
 		};
 	}
@@ -1283,76 +1953,80 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 		return randomWorkflowTask();
 	}
 
+	protected WorkflowTaskResource workflowTaskResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -1373,8 +2047,8 @@ public abstract class BaseWorkflowTaskResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private WorkflowTaskResource _workflowTaskResource;
-
-	private URL _resourceURL;
+	private
+		com.liferay.headless.admin.workflow.resource.v1_0.WorkflowTaskResource
+			_workflowTaskResource;
 
 }

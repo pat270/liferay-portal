@@ -14,31 +14,18 @@
 
 package com.liferay.portal.store.file.system;
 
-import com.liferay.document.library.kernel.exception.DuplicateFileException;
-import com.liferay.document.library.kernel.exception.NoSuchFileException;
-import com.liferay.document.library.kernel.store.Store;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.convert.documentlibrary.FileSystemStoreRootDirException;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.store.file.system.configuration.AdvancedFileSystemStoreConfiguration;
 
 import java.io.File;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.Modified;
 
 /**
  * <p>
@@ -50,77 +37,33 @@ import org.osgi.service.component.annotations.Modified;
  * @author Brian Wing Shun Chan
  * @author Manuel de la Peña
  */
-@Component(
-	configurationPid = "com.liferay.portal.store.file.system.configuration.AdvancedFileSystemStoreConfiguration",
-	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true,
-	property = {
-		"service.ranking:Integer=0",
-		"store.type=com.liferay.portal.store.file.system.AdvancedFileSystemStore"
-	},
-	service = Store.class
-)
 public class AdvancedFileSystemStore extends FileSystemStore {
 
-	@Override
-	public void updateFile(
-			long companyId, long repositoryId, String fileName,
-			String newFileName)
-		throws DuplicateFileException, NoSuchFileException {
+	public AdvancedFileSystemStore(
+		AdvancedFileSystemStoreConfiguration
+			advancedFileSystemStoreConfiguration) {
 
-		super.updateFile(companyId, repositoryId, fileName, newFileName);
-
-		File newFileNameDir = getFileNameDir(
-			companyId, repositoryId, newFileName);
-
-		String[] fileNameVersions = FileUtil.listFiles(newFileNameDir);
-
-		for (String fileNameVersion : fileNameVersions) {
-			String ext = FileUtil.getExtension(fileNameVersion);
-
-			String newFileNameVersion = newFileName;
-
-			if (ext.equals(_HOOK_EXTENSION)) {
-				int pos = fileNameVersion.lastIndexOf(CharPool.UNDERLINE);
-
-				newFileNameVersion += fileNameVersion.substring(pos);
-			}
-
-			File fileNameVersionFile = new File(
-				newFileNameDir + StringPool.SLASH + fileNameVersion);
-
-			if (!fileNameVersionFile.exists()) {
-				throw new NoSuchFileException(
-					companyId, repositoryId, fileName, fileNameVersion);
-			}
-
-			File newFileNameVersionFile = new File(
-				newFileNameDir + StringPool.SLASH + newFileNameVersion);
-
-			fileSystemHelper.move(fileNameVersionFile, newFileNameVersionFile);
-		}
+		super(advancedFileSystemStoreConfiguration);
 	}
 
-	@Activate
-	@Modified
 	@Override
-	protected void activate(Map<String, Object> properties) {
-		_advancedFileSystemStoreConfiguration =
-			ConfigurableUtil.createConfigurable(
-				AdvancedFileSystemStoreConfiguration.class, properties);
+	public String[] getFileVersions(
+		long companyId, long repositoryId, String fileName) {
 
-		if (Validator.isBlank(
-				_advancedFileSystemStoreConfiguration.rootDir())) {
+		String[] versions = super.getFileVersions(
+			companyId, repositoryId, fileName);
 
-			throw new IllegalArgumentException(
-				"Advanced file system root directory is not set",
-				new FileSystemStoreRootDirException());
+		for (int i = 0; i < versions.length; i++) {
+			int x = versions[i].lastIndexOf(CharPool.UNDERLINE);
+
+			if (x > -1) {
+				int y = versions[i].lastIndexOf(CharPool.PERIOD);
+
+				versions[i] = versions[i].substring(x + 1, y);
+			}
 		}
 
-		initializeRootDir();
-
-		fileSystemHelper = new FileSystemHelper(
-			_advancedFileSystemStoreConfiguration.useHardLinks(),
-			getRootDirPath());
+		return versions;
 	}
 
 	protected void buildPath(StringBundler sb, String fileNameFragment) {
@@ -138,21 +81,6 @@ public class AdvancedFileSystemStore extends FileSystemStore {
 				return;
 			}
 		}
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #getFileNames(List, String, String)}
-	 */
-	@Deprecated
-	protected List<String> getAdvancedFileNames(
-		long companyId, long repositoryId, String fileName) {
-
-		List<String> fileNames = new ArrayList<>();
-
-		getFileNames(fileNames, StringPool.BLANK, fileName);
-
-		return fileNames;
 	}
 
 	protected int getDepth(String path) {
@@ -326,11 +254,6 @@ public class AdvancedFileSystemStore extends FileSystemStore {
 		return headVersionLabel;
 	}
 
-	@Override
-	protected String getRootDirName() {
-		return _advancedFileSystemStoreConfiguration.rootDir();
-	}
-
 	protected String unbuildPath(String path) {
 		if (path.startsWith("DLFE/")) {
 			path = path.substring(5);
@@ -358,8 +281,5 @@ public class AdvancedFileSystemStore extends FileSystemStore {
 	}
 
 	private static final String _HOOK_EXTENSION = "afsh";
-
-	private static volatile AdvancedFileSystemStoreConfiguration
-		_advancedFileSystemStoreConfiguration;
 
 }

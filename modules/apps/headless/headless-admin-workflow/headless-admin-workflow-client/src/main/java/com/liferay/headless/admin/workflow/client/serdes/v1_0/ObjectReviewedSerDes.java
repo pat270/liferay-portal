@@ -17,11 +17,11 @@ package com.liferay.headless.admin.workflow.client.serdes.v1_0;
 import com.liferay.headless.admin.workflow.client.dto.v1_0.ObjectReviewed;
 import com.liferay.headless.admin.workflow.client.json.BaseJSONParser;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.Generated;
 
@@ -54,6 +54,34 @@ public class ObjectReviewedSerDes {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("{");
+
+		if (objectReviewed.getAssetTitle() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assetTitle\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(objectReviewed.getAssetTitle()));
+
+			sb.append("\"");
+		}
+
+		if (objectReviewed.getAssetType() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assetType\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(objectReviewed.getAssetType()));
+
+			sb.append("\"");
+		}
 
 		if (objectReviewed.getId() != null) {
 			if (sb.length() > 1) {
@@ -96,7 +124,22 @@ public class ObjectReviewedSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
+
+		if (objectReviewed.getAssetTitle() == null) {
+			map.put("assetTitle", null);
+		}
+		else {
+			map.put(
+				"assetTitle", String.valueOf(objectReviewed.getAssetTitle()));
+		}
+
+		if (objectReviewed.getAssetType() == null) {
+			map.put("assetType", null);
+		}
+		else {
+			map.put("assetType", String.valueOf(objectReviewed.getAssetType()));
+		}
 
 		if (objectReviewed.getId() == null) {
 			map.put("id", null);
@@ -117,42 +160,7 @@ public class ObjectReviewedSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class ObjectReviewedJSONParser
+	public static class ObjectReviewedJSONParser
 		extends BaseJSONParser<ObjectReviewed> {
 
 		@Override
@@ -170,7 +178,17 @@ public class ObjectReviewedSerDes {
 			ObjectReviewed objectReviewed, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "id")) {
+			if (Objects.equals(jsonParserFieldName, "assetTitle")) {
+				if (jsonParserFieldValue != null) {
+					objectReviewed.setAssetTitle((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "assetType")) {
+				if (jsonParserFieldValue != null) {
+					objectReviewed.setAssetType((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
 					objectReviewed.setId(
 						Long.valueOf((String)jsonParserFieldValue));
@@ -188,6 +206,75 @@ public class ObjectReviewedSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

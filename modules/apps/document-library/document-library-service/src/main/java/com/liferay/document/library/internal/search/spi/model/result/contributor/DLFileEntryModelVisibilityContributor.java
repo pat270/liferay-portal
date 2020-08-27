@@ -30,7 +30,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 	service = ModelVisibilityContributor.class
 )
@@ -54,9 +53,9 @@ public class DLFileEntryModelVisibilityContributor
 
 			return fileEntry.getFileVersion();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return null;

@@ -16,6 +16,7 @@ package com.liferay.asset.taglib.internal.display.context;
 
 import com.liferay.asset.constants.AssetEntryUsageConstants;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.model.AssetEntryUsage;
 import com.liferay.asset.service.AssetEntryUsageLocalServiceUtil;
@@ -35,6 +36,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -43,10 +45,13 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -61,6 +66,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -86,6 +92,7 @@ public class AssetEntryUsagesDisplayContext {
 		_fragmentRendererTracker =
 			(FragmentRendererTracker)renderRequest.getAttribute(
 				FragmentActionKeys.FRAGMENT_RENDERER_TRACKER);
+
 		_themeDisplay = (ThemeDisplay)_renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -192,8 +199,10 @@ public class AssetEntryUsagesDisplayContext {
 	public String getAssetEntryUsageWhereLabel(AssetEntryUsage assetEntryUsage)
 		throws PortalException {
 
-		if (assetEntryUsage.getContainerType() != PortalUtil.getClassNameId(
-				FragmentEntryLink.class)) {
+		if ((assetEntryUsage.getContainerType() != PortalUtil.getClassNameId(
+				FragmentEntryLink.class)) &&
+			(assetEntryUsage.getContainerType() != PortalUtil.getClassNameId(
+				LayoutPageTemplateStructure.class))) {
 
 			String portletTitle = PortalUtil.getPortletTitle(
 				PortletIdCodec.decodePortletName(
@@ -204,21 +213,35 @@ public class AssetEntryUsagesDisplayContext {
 				_resourceBundle, "x-widget", portletTitle);
 		}
 
-		FragmentEntryLink fragmentEntryLink =
-			FragmentEntryLinkLocalServiceUtil.getFragmentEntryLink(
-				GetterUtil.getLong(assetEntryUsage.getContainerKey()));
+		if (assetEntryUsage.getContainerType() == PortalUtil.getClassNameId(
+				FragmentEntryLink.class)) {
 
-		String name = _getFragmentEntryName(fragmentEntryLink);
+			FragmentEntryLink fragmentEntryLink =
+				FragmentEntryLinkLocalServiceUtil.getFragmentEntryLink(
+					GetterUtil.getLong(assetEntryUsage.getContainerKey()));
 
-		if (Validator.isNull(name)) {
-			return StringPool.BLANK;
+			String name = _getFragmentEntryName(fragmentEntryLink);
+
+			if (Validator.isNull(name)) {
+				return StringPool.BLANK;
+			}
+
+			if (_getType(fragmentEntryLink) ==
+					FragmentConstants.TYPE_COMPONENT) {
+
+				return LanguageUtil.format(_resourceBundle, "x-element", name);
+			}
+
+			return LanguageUtil.format(_resourceBundle, "x-section", name);
 		}
 
-		if (_getType(fragmentEntryLink) == FragmentConstants.TYPE_COMPONENT) {
-			return LanguageUtil.format(_resourceBundle, "x-element", name);
+		if (assetEntryUsage.getContainerType() == PortalUtil.getClassNameId(
+				LayoutPageTemplateStructure.class)) {
+
+			return LanguageUtil.get(_resourceBundle, "section");
 		}
 
-		return LanguageUtil.format(_resourceBundle, "x-section", name);
+		return StringPool.BLANK;
 	}
 
 	public int getDisplayPagesUsageCount() {
@@ -255,6 +278,52 @@ public class AssetEntryUsagesDisplayContext {
 		return PortletURLUtil.clone(currentURLObj, _renderResponse);
 	}
 
+	public String getPreviewURL(AssetEntryUsage assetEntryUsage)
+		throws PortalException {
+
+		String layoutURL = null;
+
+		if (assetEntryUsage.getContainerType() == PortalUtil.getClassNameId(
+				FragmentEntryLink.class)) {
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)_renderRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			Layout layout = LayoutLocalServiceUtil.fetchLayout(
+				assetEntryUsage.getPlid());
+
+			layoutURL = PortalUtil.getLayoutFriendlyURL(layout, themeDisplay);
+
+			layoutURL = HttpUtil.setParameter(
+				layoutURL, "previewAssetEntryId",
+				String.valueOf(assetEntryUsage.getAssetEntryId()));
+			layoutURL = HttpUtil.setParameter(
+				layoutURL, "previewAssetEntryType",
+				String.valueOf(AssetRendererFactory.TYPE_LATEST));
+		}
+		else {
+			PortletURL portletURL = PortletURLFactoryUtil.create(
+				_renderRequest, assetEntryUsage.getContainerKey(),
+				assetEntryUsage.getPlid(), PortletRequest.RENDER_PHASE);
+
+			portletURL.setParameter(
+				"previewAssetEntryId",
+				String.valueOf(assetEntryUsage.getAssetEntryId()));
+			portletURL.setParameter(
+				"previewAssetEntryType",
+				String.valueOf(AssetRendererFactory.TYPE_LATEST));
+
+			layoutURL = portletURL.toString();
+		}
+
+		String portletURLString = HttpUtil.addParameter(
+			layoutURL, "p_l_mode", Constants.PREVIEW);
+
+		return portletURLString + "#portlet_" +
+			assetEntryUsage.getContainerKey();
+	}
+
 	public String getRedirect() {
 		if (_redirect != null) {
 			return _redirect;
@@ -265,14 +334,17 @@ public class AssetEntryUsagesDisplayContext {
 		return _redirect;
 	}
 
-	public SearchContainer getSearchContainer() throws PortletException {
+	public SearchContainer<AssetEntryUsage> getSearchContainer()
+		throws PortletException {
+
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
 
-		SearchContainer assetEntryUsagesSearchContainer = new SearchContainer(
-			_renderRequest, getPortletURL(), null,
-			"there-are-no-asset-entry-usages");
+		SearchContainer<AssetEntryUsage> assetEntryUsagesSearchContainer =
+			new SearchContainer(
+				_renderRequest, getPortletURL(), null,
+				"there-are-no-asset-entry-usages");
 
 		boolean orderByAsc = false;
 
@@ -403,7 +475,8 @@ public class AssetEntryUsagesDisplayContext {
 		}
 
 		Map<String, FragmentEntry> fragmentEntries =
-			_fragmentCollectionContributorTracker.getFragmentEntries();
+			_fragmentCollectionContributorTracker.getFragmentEntries(
+				_themeDisplay.getLocale());
 
 		FragmentEntry contributedFragmentEntry = fragmentEntries.get(
 			rendererKey);
@@ -502,7 +575,7 @@ public class AssetEntryUsagesDisplayContext {
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private final ResourceBundle _resourceBundle;
-	private SearchContainer _searchContainer;
+	private SearchContainer<AssetEntryUsage> _searchContainer;
 	private final ThemeDisplay _themeDisplay;
 
 }

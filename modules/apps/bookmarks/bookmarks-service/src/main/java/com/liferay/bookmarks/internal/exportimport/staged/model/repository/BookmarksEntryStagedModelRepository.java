@@ -14,8 +14,8 @@
 
 package com.liferay.bookmarks.internal.exportimport.staged.model.repository;
 
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.model.BookmarksEntry;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksEntryLocalService;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
@@ -167,8 +167,8 @@ public class BookmarksEntryStagedModelRepository
 					userId, existingBookmarksEntry.getEntryId());
 			}
 		}
-		catch (PortalException pe) {
-			throw new PortletDataException(pe);
+		catch (PortalException portalException) {
+			throw new PortletDataException(portalException);
 		}
 	}
 

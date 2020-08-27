@@ -115,8 +115,7 @@ public class EntityCacheImpl
 
 		portalCache =
 			(PortalCache<Serializable, Serializable>)
-				_multiVMPool.getPortalCache(
-					groupKey, _valueObjectEntityBlockingCacheEnabled, mvcc);
+				_multiVMPool.getPortalCache(groupKey, false, mvcc);
 
 		PortalCache<Serializable, Serializable> previousPortalCache =
 			_portalCaches.putIfAbsent(className, portalCache);
@@ -133,13 +132,21 @@ public class EntityCacheImpl
 		return EntityCache.class.getName();
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getResult(Class, Serializable)}
+	 */
+	@Deprecated
 	@Override
 	public Serializable getResult(
 		boolean entityCacheEnabled, Class<?> clazz, Serializable primaryKey) {
 
-		if (!_valueObjectEntityCacheEnabled || !entityCacheEnabled ||
-			!CacheRegistryUtil.isActive()) {
+		return getResult(clazz, primaryKey);
+	}
 
+	@Override
+	public Serializable getResult(Class<?> clazz, Serializable primaryKey) {
+		if (!_valueObjectEntityCacheEnabled || !CacheRegistryUtil.isActive()) {
 			return null;
 		}
 
@@ -184,6 +191,10 @@ public class EntityCacheImpl
 		clearCache();
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public Serializable loadResult(
 		boolean entityCacheEnabled, Class<?> clazz, Serializable primaryKey,
@@ -197,7 +208,7 @@ public class EntityCacheImpl
 			try {
 				session = sessionFactory.openSession();
 
-				return (Serializable)session.load(clazz, primaryKey);
+				return (Serializable)session.get(clazz, primaryKey);
 			}
 			finally {
 				sessionFactory.closeSession(session);
@@ -238,20 +249,22 @@ public class EntityCacheImpl
 				try {
 					session = sessionFactory.openSession();
 
-					loadResult = (Serializable)session.load(clazz, primaryKey);
+					loadResult = (Serializable)session.get(clazz, primaryKey);
 				}
 				finally {
-					if (loadResult == null) {
-						result = StringPool.BLANK;
-					}
-					else {
-						result = ((BaseModel<?>)loadResult).toCacheModel();
-
-						PortalCacheHelperUtil.putWithoutReplicator(
-							portalCache, primaryKey, result);
-					}
-
 					sessionFactory.closeSession(session);
+				}
+
+				if (loadResult == null) {
+					result = StringPool.BLANK;
+				}
+				else {
+					BaseModel<?> baseModel = (BaseModel<?>)loadResult;
+
+					result = baseModel.toCacheModel();
+
+					PortalCacheHelperUtil.putWithoutReplicator(
+						portalCache, primaryKey, result);
 				}
 			}
 
@@ -279,26 +292,53 @@ public class EntityCacheImpl
 		}
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #putResult(Class, Serializable, Serializable)}
+	 */
+	@Deprecated
 	@Override
 	public void putResult(
 		boolean entityCacheEnabled, Class<?> clazz, Serializable primaryKey,
 		Serializable result) {
 
-		putResult(entityCacheEnabled, clazz, primaryKey, result, true);
+		putResult(clazz, primaryKey, result);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #putResult(Class, Serializable, Serializable, boolean)}
+	 */
+	@Deprecated
 	@Override
 	public void putResult(
 		boolean entityCacheEnabled, Class<?> clazz, Serializable primaryKey,
 		Serializable result, boolean quiet) {
 
-		if (!_valueObjectEntityCacheEnabled || !entityCacheEnabled ||
-			!CacheRegistryUtil.isActive() || (result == null)) {
+		putResult(clazz, primaryKey, result, quiet);
+	}
+
+	@Override
+	public void putResult(
+		Class<?> clazz, Serializable primaryKey, Serializable result) {
+
+		putResult(clazz, primaryKey, result, true);
+	}
+
+	@Override
+	public void putResult(
+		Class<?> clazz, Serializable primaryKey, Serializable result,
+		boolean quiet) {
+
+		if (!_valueObjectEntityCacheEnabled || !CacheRegistryUtil.isActive() ||
+			(result == null)) {
 
 			return;
 		}
 
-		result = ((BaseModel<?>)result).toCacheModel();
+		BaseModel<?> baseModel = (BaseModel<?>)result;
+
+		result = baseModel.toCacheModel();
 
 		if (_isLocalCacheEnabled()) {
 			Map<Serializable, Serializable> localCache = _localCache.get();
@@ -330,13 +370,21 @@ public class EntityCacheImpl
 		_multiVMPool.removePortalCache(groupKey);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #removeResult(Class, Serializable)}
+	 */
+	@Deprecated
 	@Override
 	public void removeResult(
 		boolean entityCacheEnabled, Class<?> clazz, Serializable primaryKey) {
 
-		if (!_valueObjectEntityCacheEnabled || !entityCacheEnabled ||
-			!CacheRegistryUtil.isActive()) {
+		removeResult(clazz, primaryKey);
+	}
 
+	@Override
+	public void removeResult(Class<?> clazz, Serializable primaryKey) {
+		if (!_valueObjectEntityCacheEnabled || !CacheRegistryUtil.isActive()) {
 			return;
 		}
 
@@ -358,8 +406,6 @@ public class EntityCacheImpl
 	@Activate
 	@Modified
 	protected void activate() {
-		_valueObjectEntityBlockingCacheEnabled = GetterUtil.getBoolean(
-			_props.get(PropsKeys.VALUE_OBJECT_ENTITY_BLOCKING_CACHE));
 		_valueObjectEntityCacheEnabled = GetterUtil.getBoolean(
 			_props.get(PropsKeys.VALUE_OBJECT_ENTITY_CACHE_ENABLED));
 		_valueObjectMVCCEntityCacheEnabled = GetterUtil.getBoolean(
@@ -427,7 +473,6 @@ public class EntityCacheImpl
 	private final ConcurrentMap<String, PortalCache<Serializable, Serializable>>
 		_portalCaches = new ConcurrentHashMap<>();
 	private Props _props;
-	private boolean _valueObjectEntityBlockingCacheEnabled;
 	private boolean _valueObjectEntityCacheEnabled;
 	private boolean _valueObjectMVCCEntityCacheEnabled;
 
@@ -439,8 +484,8 @@ public class EntityCacheImpl
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-			LocalCacheKey localCacheKey = (LocalCacheKey)obj;
+		public boolean equals(Object object) {
+			LocalCacheKey localCacheKey = (LocalCacheKey)object;
 
 			if (localCacheKey._className.equals(_className) &&
 				localCacheKey._primaryKey.equals(_primaryKey)) {
@@ -453,7 +498,7 @@ public class EntityCacheImpl
 
 		@Override
 		public int hashCode() {
-			return _className.hashCode() * 11 + _primaryKey.hashCode();
+			return (_className.hashCode() * 11) + _primaryKey.hashCode();
 		}
 
 		private static final long serialVersionUID = 1L;

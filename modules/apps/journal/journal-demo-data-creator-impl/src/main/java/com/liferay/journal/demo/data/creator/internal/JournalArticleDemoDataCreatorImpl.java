@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import java.io.IOException;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -51,13 +51,6 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = JournalArticleDemoDataCreator.class)
 public class JournalArticleDemoDataCreatorImpl
 	implements JournalArticleDemoDataCreator {
-
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		Collections.addAll(_availableIndexes, new Integer[] {1, 2, 3, 4, 5});
-
-		Collections.shuffle(_availableIndexes);
-	}
 
 	@Override
 	public JournalArticle create(long userId, long groupId)
@@ -88,14 +81,21 @@ public class JournalArticleDemoDataCreatorImpl
 			try {
 				_journalArticleLocalService.deleteJournalArticle(entryId);
 			}
-			catch (NoSuchArticleException nsae) {
+			catch (NoSuchArticleException noSuchArticleException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nsae, nsae);
+					_log.warn(noSuchArticleException, noSuchArticleException);
 				}
 			}
 
 			_entryIds.remove(entryId);
 		}
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		Collections.addAll(_availableIndexes, new Integer[] {1, 2, 3, 4, 5});
+
+		Collections.shuffle(_availableIndexes);
 	}
 
 	@Reference(unbind = "-")
@@ -137,20 +137,19 @@ public class JournalArticleDemoDataCreatorImpl
 	private Map<Locale, String> _getDescriptionMap(int index)
 		throws IOException {
 
-		Class<?> clazz = getClass();
+		return HashMapBuilder.put(
+			LocaleUtil.getSiteDefault(),
+			() -> {
+				Class<?> clazz = getClass();
 
-		String descriptionPath = StringBundler.concat(
-			"com/liferay/journal/demo/data/creator/internal/dependencies",
-			"/article", index, "/description.txt");
+				String descriptionPath = StringBundler.concat(
+					"com/liferay/journal/demo/data/creator/internal",
+					"/dependencies/article", index, "/description.txt");
 
-		String description = StringUtil.read(
-			clazz.getClassLoader(), descriptionPath, false);
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(LocaleUtil.getSiteDefault(), description);
-
-		return descriptionMap;
+				return StringUtil.read(
+					clazz.getClassLoader(), descriptionPath, false);
+			}
+		).build();
 	}
 
 	private int _getNextIndex() {
@@ -186,20 +185,19 @@ public class JournalArticleDemoDataCreatorImpl
 	}
 
 	private Map<Locale, String> _getTitleMap(int index) throws IOException {
-		Class<?> clazz = getClass();
+		return HashMapBuilder.put(
+			LocaleUtil.getSiteDefault(),
+			() -> {
+				Class<?> clazz = getClass();
 
-		String titlePath = StringBundler.concat(
-			"com/liferay/journal/demo/data/creator/internal/dependencies",
-			"/article", index, "/title.txt");
+				String titlePath = StringBundler.concat(
+					"com/liferay/journal/demo/data/creator/internal",
+					"/dependencies/article", index, "/title.txt");
 
-		String title = StringUtil.read(
-			clazz.getClassLoader(), titlePath, false);
-
-		Map<Locale, String> titleMap = new HashMap<>();
-
-		titleMap.put(LocaleUtil.getSiteDefault(), title);
-
-		return titleMap;
+				return StringUtil.read(
+					clazz.getClassLoader(), titlePath, false);
+			}
+		).build();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

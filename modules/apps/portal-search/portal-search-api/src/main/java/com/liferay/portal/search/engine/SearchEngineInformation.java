@@ -14,20 +14,21 @@
 
 package com.liferay.portal.search.engine;
 
+import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adam Brandizzi
  */
+@ProviderType
 public interface SearchEngineInformation {
 
 	public String getClientVersionString();
 
-	public String getNodesString();
+	public List<ConnectionInformation> getConnectionInformationList();
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public String getStatusString();
+	public String getNodesString();
 
 	public String getVendorString();
 

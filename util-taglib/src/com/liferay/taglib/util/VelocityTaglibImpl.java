@@ -16,7 +16,6 @@ package com.liferay.taglib.util;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -34,7 +33,6 @@ import com.liferay.taglib.portletext.RuntimeTag;
 import com.liferay.taglib.security.DoAsURLTag;
 import com.liferay.taglib.security.PermissionsURLTag;
 import com.liferay.taglib.servlet.PageContextWrapper;
-import com.liferay.taglib.theme.LayoutIconTag;
 import com.liferay.taglib.theme.MetaTagsTag;
 import com.liferay.taglib.theme.WrapPortletTag;
 import com.liferay.taglib.ui.AssetCategoriesSummaryTag;
@@ -235,23 +233,6 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 		breadcrumbTag.runTag();
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #breadcrumb(long,
-	 *             String, boolean, boolean, boolean, boolean)}}
-	 */
-	@Deprecated
-	@Override
-	public void breadcrumb(
-			String ddmTemplateKey, boolean showGuestGroup,
-			boolean showParentGroups, boolean showLayout,
-			boolean showPortletBreadcrumb)
-		throws Exception {
-
-		breadcrumb(
-			0, ddmTemplateKey, showGuestGroup, showParentGroups, showLayout,
-			showPortletBreadcrumb);
-	}
-
 	@Override
 	public void doAsURL(long doAsUserId) throws Exception {
 		DoAsURLTag.doTag(doAsUserId, _httpServletRequest);
@@ -442,15 +423,6 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 		languageTag.setName(name);
 
 		languageTag.runTag();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void layoutIcon(Layout layout) throws Exception {
-		LayoutIconTag.doTag(layout, _pageContext);
 	}
 
 	@Override
@@ -704,14 +676,6 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 		sitesDirectoryTag.setSites(sites);
 
 		sitesDirectoryTag.runTag();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void staging() throws Exception {
 	}
 
 	@Override

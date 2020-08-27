@@ -29,8 +29,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the base implementation for the theme local service.
  *
@@ -42,10 +40,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.portal.service.impl.ThemeLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class ThemeLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements ThemeLocalService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, ThemeLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -195,8 +192,8 @@ public abstract class ThemeLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

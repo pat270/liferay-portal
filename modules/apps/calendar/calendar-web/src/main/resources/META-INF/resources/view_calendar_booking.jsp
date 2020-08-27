@@ -38,11 +38,12 @@ java.util.Calendar endTimeJCalendar = JCalendarUtil.getJCalendar(endTime, userTi
 AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBooking.class.getName(), calendarBooking.getCalendarBookingId());
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<div class="panel panel-default">
 		<liferay-ui:header
 			backURL="<%= backURL %>"
 			cssClass="panel-heading"
+			localizeTitle="<%= false %>"
 			title="<%= calendarBooking.getTitle(locale) %>"
 		/>
 
@@ -148,7 +149,7 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 
 			<c:if test="<%= calendar.isEnableRatings() %>">
 				<div class="entry-ratings">
-					<liferay-ui:ratings
+					<liferay-ratings:ratings
 						className="<%= CalendarBooking.class.getName() %>"
 						classPK="<%= calendarBooking.getCalendarBookingId() %>"
 						inTrash="<%= calendarBooking.isInTrash() %>"
@@ -189,7 +190,11 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 					<c:when test="<%= untilJCalendar != null %>">
 						endValue = 'on';
 
-						untilDate = new Date(<%= untilJCalendar.get(java.util.Calendar.YEAR) %>, <%= untilJCalendar.get(java.util.Calendar.MONTH) %>, <%= untilJCalendar.get(java.util.Calendar.DATE) %>);
+						untilDate = new Date(
+							<%= untilJCalendar.get(java.util.Calendar.YEAR) %>,
+							<%= untilJCalendar.get(java.util.Calendar.MONTH) %>,
+							<%= untilJCalendar.get(java.util.Calendar.DATE) %>
+						);
 					</c:when>
 					<c:when test="<%= recurrence.getCount() > 0 %>">
 						endValue = 'after';
@@ -216,7 +221,7 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 					positionalWeekday = {
 						month: <%= startTimeJCalendar.get(java.util.Calendar.MONTH) %>,
 						position: <%= positionalWeekday.getPosition() %>,
-						weekday: '<%= positionalWeekday.getWeekday() %>'
+						weekday: '<%= positionalWeekday.getWeekday() %>',
 					};
 				</c:if>
 
@@ -227,7 +232,7 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 					interval: <%= recurrence.getInterval() %>,
 					positionalWeekday: positionalWeekday,
 					untilDate: untilDate,
-					weekdays: <%= jsonSerializer.serialize(weekdayValues) %>
+					weekdays: <%= jsonSerializer.serialize(weekdayValues) %>,
 				};
 
 				var recurrenceSummary = Liferay.RecurrenceUtil.getSummary(recurrence);
@@ -256,15 +261,15 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 
 			<c:if test="<%= hasManageBookingsPermission && !hasWorkflowInstanceLink %>">
 				<c:if test="<%= calendarBooking.getStatus() != WorkflowConstants.STATUS_APPROVED %>">
-					<aui:button onClick='<%= renderResponse.getNamespace() + "invokeTransition(" + WorkflowConstants.STATUS_APPROVED + ");" %>' value="accept" />
+					<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "invokeTransition(" + WorkflowConstants.STATUS_APPROVED + ");" %>' value="accept" />
 				</c:if>
 
 				<c:if test="<%= calendarBooking.getStatus() != CalendarBookingWorkflowConstants.STATUS_MAYBE %>">
-					<aui:button onClick='<%= renderResponse.getNamespace() + "invokeTransition(" + CalendarBookingWorkflowConstants.STATUS_MAYBE + ");" %>' value="maybe" />
+					<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "invokeTransition(" + CalendarBookingWorkflowConstants.STATUS_MAYBE + ");" %>' value="maybe" />
 				</c:if>
 
 				<c:if test="<%= calendarBooking.getStatus() != WorkflowConstants.STATUS_DENIED %>">
-					<aui:button onClick='<%= renderResponse.getNamespace() + "invokeTransition(" + WorkflowConstants.STATUS_DENIED + ");" %>' value="decline" />
+					<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "invokeTransition(" + WorkflowConstants.STATUS_DENIED + ");" %>' value="decline" />
 				</c:if>
 			</c:if>
 		</aui:button-row>
@@ -277,17 +282,21 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 			if (<%= calendarBooking.isRecurring() %>) {
 				Liferay.RecurrenceUtil.openConfirmationPanel(
 					'invokeTransition',
-					function() {
-						document.<portlet:namespace />fm.<portlet:namespace />updateInstance.value = 'true';
-						document.<portlet:namespace />fm.<portlet:namespace />allFollowing.value = 'false';
+					function () {
+						document.<portlet:namespace />fm.<portlet:namespace />updateInstance.value =
+							'true';
+						document.<portlet:namespace />fm.<portlet:namespace />allFollowing.value =
+							'false';
 						submitForm(document.<portlet:namespace />fm);
 					},
-					function() {
-						document.<portlet:namespace />fm.<portlet:namespace />updateInstance.value = 'true';
-						document.<portlet:namespace />fm.<portlet:namespace />allFollowing.value = 'true';
+					function () {
+						document.<portlet:namespace />fm.<portlet:namespace />updateInstance.value =
+							'true';
+						document.<portlet:namespace />fm.<portlet:namespace />allFollowing.value =
+							'true';
 						submitForm(document.<portlet:namespace />fm);
 					},
-					function() {
+					function () {
 						submitForm(document.<portlet:namespace />fm);
 					}
 				);
@@ -297,4 +306,4 @@ AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(CalendarBookin
 			}
 		}
 	</aui:script>
-</div>
+</clay:container-fluid>

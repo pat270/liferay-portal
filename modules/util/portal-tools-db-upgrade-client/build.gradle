@@ -5,31 +5,36 @@ dependencies {
 }
 
 deploy {
-	from ("properties") {
-		include "*.properties"
-	}
-	from ("scripts") {
-		include "*.bat"
-		include "*.sh"
+	from "properties"
+	from "scripts"
+}
+
+distZip {
+	filesMatching("**/*.jar") {
+		it.path = it.name
 	}
 }
 
 distributions {
 	main {
 		contents {
-			from("properties") {
-				include "*.properties"
-				into "lib"
-			}
-			from ("scripts") {
-				include "*.bat"
-				include "*.sh"
-				into "lib"
-			}
+			from "properties"
+			from "scripts"
+			into "/"
 		}
 	}
 }
 
+jar {
+	archiveName "$baseName" + ".jar"
+}
+
 liferayOSGi {
 	expandCompileInclude = true
+}
+
+startScripts {
+	onlyIf {
+		false
+	}
 }

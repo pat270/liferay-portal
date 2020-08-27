@@ -28,12 +28,10 @@ if (end > total) {
 	end = total;
 }
 
-if (rowChecker != null) {
-	if (headerNames != null) {
-		headerNames.add(0, rowChecker.getAllRowsCheckBox(request));
+if ((rowChecker != null) && (headerNames != null)) {
+	headerNames.add(0, rowChecker.getAllRowsCheckBox(request));
 
-		normalizedHeaderNames.add(0, "rowChecker");
-	}
+	normalizedHeaderNames.add(0, "rowChecker");
 }
 
 String url = StringPool.BLANK;
@@ -86,7 +84,7 @@ if (iteratorURL != null) {
 					}
 
 					if (Validator.isNull(normalizedHeaderName)) {
-						normalizedHeaderName = String.valueOf(i +1);
+						normalizedHeaderName = String.valueOf(i + 1);
 					}
 
 					String orderKey = null;
@@ -120,7 +118,7 @@ if (iteratorURL != null) {
 					if (orderCurrentHeader) {
 						cssClass += " table-sorted";
 
-						if (HtmlUtil.escapeAttribute(orderByType).equals("desc")) {
+						if (Objects.equals(HtmlUtil.escapeAttribute(orderByType), "desc")) {
 							cssClass += " table-sorted-desc";
 						}
 					}

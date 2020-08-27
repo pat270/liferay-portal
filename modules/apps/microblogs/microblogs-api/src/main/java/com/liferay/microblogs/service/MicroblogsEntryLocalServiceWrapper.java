@@ -16,8 +16,6 @@ package com.liferay.microblogs.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link MicroblogsEntryLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MicroblogsEntryLocalService
  * @generated
  */
-@ProviderType
 public class MicroblogsEntryLocalServiceWrapper
 	implements MicroblogsEntryLocalService,
 			   ServiceWrapper<MicroblogsEntryLocalService> {
@@ -64,6 +61,10 @@ public class MicroblogsEntryLocalServiceWrapper
 	/**
 	 * Adds the microblogs entry to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MicroblogsEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param microblogsEntry the microblogs entry
 	 * @return the microblogs entry that was added
 	 */
@@ -88,6 +89,17 @@ public class MicroblogsEntryLocalServiceWrapper
 			microblogsEntryId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _microblogsEntryLocalService.createPersistedModel(primaryKeyObj);
+	}
+
 	@Override
 	public void deleteMicroblogsEntries(
 			long creatorClassNameId, long creatorClassPK)
@@ -99,6 +111,10 @@ public class MicroblogsEntryLocalServiceWrapper
 
 	/**
 	 * Deletes the microblogs entry with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MicroblogsEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param microblogsEntryId the primary key of the microblogs entry
 	 * @return the microblogs entry that was removed
@@ -115,6 +131,10 @@ public class MicroblogsEntryLocalServiceWrapper
 
 	/**
 	 * Deletes the microblogs entry from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MicroblogsEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param microblogsEntry the microblogs entry
 	 * @return the microblogs entry that was removed
@@ -149,6 +169,11 @@ public class MicroblogsEntryLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _microblogsEntryLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _microblogsEntryLocalService.dynamicQuery();
 	}
@@ -170,7 +195,7 @@ public class MicroblogsEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.microblogs.model.impl.MicroblogsEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.microblogs.model.impl.MicroblogsEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -191,7 +216,7 @@ public class MicroblogsEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.microblogs.model.impl.MicroblogsEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.microblogs.model.impl.MicroblogsEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -280,7 +305,7 @@ public class MicroblogsEntryLocalServiceWrapper
 	 * Returns a range of all the microblogs entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.microblogs.model.impl.MicroblogsEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.microblogs.model.impl.MicroblogsEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of microblogs entries
@@ -294,55 +319,17 @@ public class MicroblogsEntryLocalServiceWrapper
 		return _microblogsEntryLocalService.getMicroblogsEntries(start, end);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
-		getMicroblogsEntries(
-			long creatorClassNameId, int type, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator obc) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntries(
-			creatorClassNameId, type, start, end, obc);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
-		getMicroblogsEntries(
-			long creatorClassNameId, long creatorClassPK, int start, int end) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntries(
-			creatorClassNameId, creatorClassPK, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
-		getMicroblogsEntries(
-			long creatorClassNameId, long creatorClassPK, int type, int start,
-			int end) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntries(
-			creatorClassNameId, creatorClassPK, type, start, end);
-	}
-
 	@Override
 	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
 		getMicroblogsEntries(
 			long companyId, long creatorClassNameId, int type, int start,
-			int end, com.liferay.portal.kernel.util.OrderByComparator obc) {
+			int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.microblogs.model.MicroblogsEntry>
+					orderByComparator) {
 
 		return _microblogsEntryLocalService.getMicroblogsEntries(
-			companyId, creatorClassNameId, type, start, end, obc);
+			companyId, creatorClassNameId, type, start, end, orderByComparator);
 	}
 
 	@Override
@@ -377,44 +364,6 @@ public class MicroblogsEntryLocalServiceWrapper
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
-		getMicroblogsEntries(
-			long creatorClassNameId, long creatorClassPK, String assetTagName,
-			boolean andOperator, int start, int end) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntries(
-			creatorClassNameId, creatorClassPK, assetTagName, andOperator,
-			start, end);
-	}
-
-	@Override
-	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
-		getMicroblogsEntries(
-			long companyId, long creatorClassNameId, String assetTagName,
-			int start, int end) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntries(
-			companyId, creatorClassNameId, assetTagName, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.microblogs.model.MicroblogsEntry>
-		getMicroblogsEntries(
-			long creatorClassNameId, String assetTagName, int start, int end) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntries(
-			creatorClassNameId, assetTagName, start, end);
-	}
-
-	/**
 	 * Returns the number of microblogs entries.
 	 *
 	 * @return the number of microblogs entries
@@ -422,30 +371,6 @@ public class MicroblogsEntryLocalServiceWrapper
 	@Override
 	public int getMicroblogsEntriesCount() {
 		return _microblogsEntryLocalService.getMicroblogsEntriesCount();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, long creatorClassPK) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntriesCount(
-			creatorClassNameId, creatorClassPK);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, long creatorClassPK, int type) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntriesCount(
-			creatorClassNameId, creatorClassPK, type);
 	}
 
 	@Override
@@ -481,31 +406,6 @@ public class MicroblogsEntryLocalServiceWrapper
 
 		return _microblogsEntryLocalService.getMicroblogsEntriesCount(
 			companyId, creatorClassNameId, assetTagName);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, long creatorClassPK, String assetTagName,
-		boolean andOperator) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntriesCount(
-			creatorClassNameId, creatorClassPK, assetTagName, andOperator);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, String assetTagName) {
-
-		return _microblogsEntryLocalService.getMicroblogsEntriesCount(
-			creatorClassNameId, assetTagName);
 	}
 
 	/**
@@ -566,6 +466,9 @@ public class MicroblogsEntryLocalServiceWrapper
 				type, parentMicroblogsEntryId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -624,6 +527,10 @@ public class MicroblogsEntryLocalServiceWrapper
 
 	/**
 	 * Updates the microblogs entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MicroblogsEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param microblogsEntry the microblogs entry
 	 * @return the microblogs entry that was updated

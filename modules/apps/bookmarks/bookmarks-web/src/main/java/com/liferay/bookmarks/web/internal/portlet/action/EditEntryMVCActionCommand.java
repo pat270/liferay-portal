@@ -30,9 +30,11 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -42,9 +44,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.service.TrashEntryService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -113,11 +113,11 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		if (moveToTrash && !trashedModels.isEmpty()) {
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("trashedModels", trashedModels);
-
-			addDeleteSuccessData(actionRequest, data);
+			addDeleteSuccessData(
+				actionRequest,
+				HashMapBuilder.<String, Object>put(
+					"trashedModels", trashedModels
+				).build());
 		}
 	}
 
@@ -153,6 +153,16 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 				unsubscribeEntry(actionRequest);
 			}
 
+			String portletResource = ParamUtil.getString(
+				actionRequest, "portletResource");
+
+			if (Validator.isNotNull(portletResource)) {
+				hideDefaultSuccessMessage(actionRequest);
+
+				MultiSessionMessages.add(
+					actionRequest, portletResource + "requestProcessed");
+			}
+
 			String redirect = _portal.escapeRedirect(
 				ParamUtil.getString(actionRequest, "redirect"));
 
@@ -176,27 +186,28 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 				actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchEntryException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchEntryException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter(
 					"mvcPath", "/bookmarks/error.jsp");
 			}
-			else if (e instanceof EntryURLException ||
-					 e instanceof NoSuchFolderException) {
+			else if (exception instanceof EntryURLException ||
+					 exception instanceof NoSuchFolderException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
-			else if (e instanceof AssetCategoryException ||
-					 e instanceof AssetTagException) {
+			else if (exception instanceof AssetCategoryException ||
+					 exception instanceof AssetTagException) {
 
-				SessionErrors.add(actionRequest, e.getClass(), e);
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}

@@ -134,7 +134,8 @@ public class ManagementToolbarTag extends BaseClayTag {
 			setShowResultsBar(true);
 		}
 		else {
-			List filterLabels = (List)context.get("filterLabels");
+			List<LabelItem> filterLabels = (List<LabelItem>)context.get(
+				"filterLabels");
 
 			if ((filterLabels != null) && !filterLabels.isEmpty()) {
 				setShowResultsBar(true);
@@ -162,15 +163,6 @@ public class ManagementToolbarTag extends BaseClayTag {
 
 	public void setActionDropdownItems(List<DropdownItem> actionDropdownItems) {
 		putValue("actionItems", actionDropdownItems);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #setDefaultEventHandler(String)}
-	 */
-	@Deprecated
-	public void setActionHandler(String actionHandler) {
-		putValue("actionHandler", actionHandler);
 	}
 
 	public void setCheckboxStatus(String checkboxStatus) {
@@ -450,9 +442,8 @@ public class ManagementToolbarTag extends BaseClayTag {
 	private Map<String, Object> _getSearchData(String searchActionURL) {
 		Map<String, Object> searchData = new HashMap<>();
 
-		String queryString = HttpUtil.getQueryString(searchActionURL);
-
-		String[] parameters = StringUtil.split(queryString, CharPool.AMPERSAND);
+		String[] parameters = StringUtil.split(
+			HttpUtil.getQueryString(searchActionURL), CharPool.AMPERSAND);
 
 		for (String parameter : parameters) {
 			if (parameter.length() == 0) {
@@ -483,7 +474,7 @@ public class ManagementToolbarTag extends BaseClayTag {
 	}
 
 	private static final String[] _CACHE_STATE = {
-		"checkboxStatus", "showSelectAllButton", "selectedItems", "totalItems"
+		"checkboxStatus", "showSelectAllButton", "selectedItems"
 	};
 
 	private static final String[] _NAMESPACED_PARAMS = {

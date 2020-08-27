@@ -1,0 +1,120 @@
+@component-name = "portal-ab-test"
+definition {
+
+	// Ignore test until Analytics Cloud connection is fully automated
+
+	property portal.release = "true";
+	property portal.upstream = "quarantine";
+	property testray.main.component.name = "A/B Test";
+	property analytics.cloud.enabled = "true";
+
+	setUp {
+
+		// Open Analytics Cloud, login and take the token to connect to DXP
+
+		var analyticsCloudURL = PropsUtil.get("analytics.cloud.url");
+		Navigator.openURL(baseURL = "${analyticsCloudURL}");
+
+		// Take token from Analytics Cloud
+
+		AnalyticsCloud.loginAnalyticsCloud(
+			emailAddress = "test@liferay.com",
+			password = "test");
+
+		AnalyticsCloud.takeTokenFromAnalyticsCloud();
+
+		// Go to DXP portal
+
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		Navigator.openURL();
+
+		// Connect and synchronyze with Analytics Cloud
+
+		AnalyticsCloud.syncAnalyticsCloud();
+
+		// Create content page
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		ContentPages.addPage(pageName = "Content Page");
+
+		PageEditor.clickPublish();
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "web/guest/content-page");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		Click(locator1 = "ABTest#AB_TEST_BUTTON");
+
+		AnalyticsCloud.teardownAnalyticsCloud();
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		SitePages.deletePage(pageName = "Content Page");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@description = "Validate if the user can create an A/B Test"
+	@ignore = "true"
+	@priority = "5"
+	test CreateABTestByBounceRate {
+		ABTest.createABTestByBounceRate(testTitle = "Create A/B Test Title");
+
+		ABTest.createVariant(variantName = "Variant name");
+
+		ABTest.runTest();
+
+		ABTest.checkAnalyticsCloudInfo();
+
+		if (IsElementNotPresent(locator1 = "ABTest#AB_TEST_TITLE_AC_SIDE")) {
+			AnalyticsCloud.loginAnalyticsCloud(
+				emailAddress = "test@liferay.com",
+				password = "test");
+		}
+		AssertTextEquals(
+			locator1 = "ABTest#AB_TEST_TITLE_AC_SIDE",
+			value1 = "Create A/B Test Title");
+
+		SelectWindow(locator1 = "title=Content Page - Liferay DXP");
+
+		ABTest.terminateTest();
+	}
+
+	@description = "Validate if, in the AB Test, the sidebar informs the user that minimum one variant is mandatory to test against Control if the user add variants and remove all variants"
+	@ignore = "true"
+	@priority = "5"
+	test CreateABTestRunWithDeletedVariants {
+		ABTest.createABTestByBounceRate(testTitle = "AB test title");
+
+		ABTest.createVariant(variantName = "Variant name");
+
+		ABTest.deleteVariant();
+
+		ABTest.runTest();
+
+		AssertTextEquals(
+			locator1 = "ABTest#VARIANT_NEEDED_MESSAGE",
+			value1 = "A variant needs to be created.");
+	}
+
+	@description = "Validate if, in the AB Test, the sidebar informs the user that minimum one variant is mandatory to test against Control"
+	@priority = "5"
+	test CreateABTestRunWithNoVariants {
+		ABTest.createABTestByBounceRate(testTitle = "AB test title");
+
+		ABTest.runTest();
+
+		AssertTextEquals(
+			locator1 = "ABTest#VARIANT_NEEDED_MESSAGE",
+			value1 = "A variant needs to be created.");
+	}
+
+}

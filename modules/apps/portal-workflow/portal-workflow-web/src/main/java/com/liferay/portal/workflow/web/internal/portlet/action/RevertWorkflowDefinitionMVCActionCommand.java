@@ -14,10 +14,8 @@
 
 package com.liferay.portal.workflow.web.internal.portlet.action;
 
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.DateUtil;
@@ -28,8 +26,8 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionFileException;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowException;
+import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.constants.WorkflowWebKeys;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
 
 import java.text.DateFormat;
 
@@ -39,7 +37,6 @@ import java.util.ResourceBundle;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletException;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -56,36 +53,6 @@ import org.osgi.service.component.annotations.Component;
 )
 public class RevertWorkflowDefinitionMVCActionCommand
 	extends DeployWorkflowDefinitionMVCActionCommand {
-
-	@Override
-	public boolean processAction(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws PortletException {
-
-		try {
-			doProcessAction(actionRequest, actionResponse);
-
-			addSuccessMessage(actionRequest, actionResponse);
-
-			return SessionErrors.isEmpty(actionRequest);
-		}
-		catch (WorkflowException we) {
-			hideDefaultErrorMessage(actionRequest);
-
-			SessionErrors.add(actionRequest, we.getClass(), we);
-
-			actionResponse.setRenderParameter(
-				"mvcPath", "/definition/edit_workflow_definition.jsp");
-
-			return false;
-		}
-		catch (PortletException pe) {
-			throw pe;
-		}
-		catch (Exception e) {
-			throw new PortletException(e);
-		}
-	}
 
 	/**
 	 * Reverts a workflow definition to the published state, creating a new
@@ -116,8 +83,7 @@ public class RevertWorkflowDefinitionMVCActionCommand
 			WorkflowWebKeys.WORKFLOW_DEFINITION_MODIFIED_DATE,
 			previousWorkflowDefinition.getModifiedDate());
 
-		String content = GetterUtil.get(
-			previousWorkflowDefinition.getContent(), StringPool.BLANK);
+		String content = previousWorkflowDefinition.getContent();
 
 		WorkflowDefinition workflowDefinition = null;
 
@@ -142,8 +108,6 @@ public class RevertWorkflowDefinitionMVCActionCommand
 		}
 
 		setRedirectAttribute(actionRequest, workflowDefinition);
-
-		sendRedirect(actionRequest, actionResponse);
 	}
 
 	/**
@@ -159,9 +123,7 @@ public class RevertWorkflowDefinitionMVCActionCommand
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Locale locale = themeDisplay.getLocale();
-
-		DateFormat dateFormat = _getDateFormat(locale);
+		DateFormat dateFormat = _getDateFormat(themeDisplay.getLocale());
 
 		Date workflowDefinitionModifiedDate = GetterUtil.getDate(
 			actionRequest.getAttribute(
@@ -181,7 +143,7 @@ public class RevertWorkflowDefinitionMVCActionCommand
 		try {
 			workflowDefinitionManager.validateWorkflowDefinition(bytes);
 		}
-		catch (WorkflowException we) {
+		catch (WorkflowException workflowException) {
 			DateFormat dateFormat = _getDateFormat(locale);
 
 			String message = LanguageUtil.format(
@@ -189,7 +151,8 @@ public class RevertWorkflowDefinitionMVCActionCommand
 				"the-version-from-x-is-not-valid-for-publication",
 				dateFormat.format(previousDateModification));
 
-			throw new WorkflowDefinitionFileException(message, we);
+			throw new WorkflowDefinitionFileException(
+				message, workflowException);
 		}
 	}
 

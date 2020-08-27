@@ -81,14 +81,14 @@ public class ProxyRequest implements Externalizable {
 		try {
 			return _method.invoke(object, _arguments);
 		}
-		catch (InvocationTargetException ite) {
-			Throwable t = ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			Throwable throwable = invocationTargetException.getCause();
 
-			if (t instanceof Exception) {
-				throw (Exception)t;
+			if (throwable instanceof Exception) {
+				throw (Exception)throwable;
 			}
 
-			throw new Exception(t);
+			throw new Exception(throwable);
 		}
 	}
 
@@ -125,8 +125,8 @@ public class ProxyRequest implements Externalizable {
 		try {
 			_method = methodKey.getMethod();
 		}
-		catch (NoSuchMethodException nsme) {
-			throw new IOException(nsme);
+		catch (NoSuchMethodException noSuchMethodException) {
+			throw new IOException(noSuchMethodException);
 		}
 
 		_synchronous = objectInput.readBoolean();

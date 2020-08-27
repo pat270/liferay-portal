@@ -16,12 +16,9 @@ package com.liferay.blogs.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchStatsUserException extends NoSuchModelException {
 
 	public NoSuchStatsUserException() {
@@ -31,12 +28,12 @@ public class NoSuchStatsUserException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchStatsUserException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchStatsUserException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchStatsUserException(Throwable cause) {
-		super(cause);
+	public NoSuchStatsUserException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

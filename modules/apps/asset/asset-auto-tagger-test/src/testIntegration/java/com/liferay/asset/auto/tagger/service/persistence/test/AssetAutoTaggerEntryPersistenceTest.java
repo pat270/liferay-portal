@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -126,6 +127,10 @@ public class AssetAutoTaggerEntryPersistenceTest {
 
 		AssetAutoTaggerEntry newAssetAutoTaggerEntry = _persistence.create(pk);
 
+		newAssetAutoTaggerEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		newAssetAutoTaggerEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newAssetAutoTaggerEntry.setGroupId(RandomTestUtil.nextLong());
 
 		newAssetAutoTaggerEntry.setCompanyId(RandomTestUtil.nextLong());
@@ -145,6 +150,12 @@ public class AssetAutoTaggerEntryPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newAssetAutoTaggerEntry.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingAssetAutoTaggerEntry.getMvccVersion(),
+			newAssetAutoTaggerEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingAssetAutoTaggerEntry.getCtCollectionId(),
+			newAssetAutoTaggerEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingAssetAutoTaggerEntry.getAssetAutoTaggerEntryId(),
 			newAssetAutoTaggerEntry.getAssetAutoTaggerEntryId());
@@ -220,9 +231,10 @@ public class AssetAutoTaggerEntryPersistenceTest {
 
 	protected OrderByComparator<AssetAutoTaggerEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AssetAutoTaggerEntry", "assetAutoTaggerEntryId", true, "groupId",
-			true, "companyId", true, "createDate", true, "modifiedDate", true,
-			"assetEntryId", true, "assetTagId", true);
+			"AssetAutoTaggerEntry", "mvccVersion", true, "ctCollectionId", true,
+			"assetAutoTaggerEntryId", true, "groupId", true, "companyId", true,
+			"createDate", true, "modifiedDate", true, "assetEntryId", true,
+			"assetTagId", true);
 	}
 
 	@Test
@@ -468,26 +480,76 @@ public class AssetAutoTaggerEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		AssetAutoTaggerEntry existingAssetAutoTaggerEntry =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newAssetAutoTaggerEntry.getPrimaryKey());
+				newAssetAutoTaggerEntry.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AssetAutoTaggerEntry newAssetAutoTaggerEntry =
+			addAssetAutoTaggerEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AssetAutoTaggerEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"assetAutoTaggerEntryId",
+				newAssetAutoTaggerEntry.getAssetAutoTaggerEntryId()));
+
+		List<AssetAutoTaggerEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		AssetAutoTaggerEntry assetAutoTaggerEntry) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetAutoTaggerEntry.getAssetEntryId()),
+			Long.valueOf(assetAutoTaggerEntry.getAssetEntryId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetAutoTaggerEntry, "getOriginalAssetEntryId",
-				new Class<?>[0]));
+				assetAutoTaggerEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "assetEntryId"));
 		Assert.assertEquals(
-			Long.valueOf(existingAssetAutoTaggerEntry.getAssetTagId()),
+			Long.valueOf(assetAutoTaggerEntry.getAssetTagId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetAutoTaggerEntry, "getOriginalAssetTagId",
-				new Class<?>[0]));
+				assetAutoTaggerEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "assetTagId"));
 	}
 
 	protected AssetAutoTaggerEntry addAssetAutoTaggerEntry() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		AssetAutoTaggerEntry assetAutoTaggerEntry = _persistence.create(pk);
+
+		assetAutoTaggerEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		assetAutoTaggerEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		assetAutoTaggerEntry.setGroupId(RandomTestUtil.nextLong());
 

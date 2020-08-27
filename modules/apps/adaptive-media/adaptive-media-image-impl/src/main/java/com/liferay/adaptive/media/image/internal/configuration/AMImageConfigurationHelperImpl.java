@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.settings.PortletPreferencesSettings;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.settings.SettingsException;
 import com.liferay.portal.kernel.settings.SettingsFactoryUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
@@ -52,6 +53,8 @@ import java.util.stream.Stream;
 import javax.portlet.PortletPreferences;
 import javax.portlet.ValidatorException;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -359,7 +362,7 @@ public class AMImageConfigurationHelperImpl
 	}
 
 	@Activate
-	protected void activate() {
+	protected void activate(BundleContext bundleContext) {
 		DestinationConfiguration destinationConfiguration =
 			new DestinationConfiguration(
 				DestinationConfiguration.DESTINATION_TYPE_SYNCHRONOUS,
@@ -368,13 +371,15 @@ public class AMImageConfigurationHelperImpl
 		Destination destination = _destinationFactory.createDestination(
 			destinationConfiguration);
 
-		_messageBus.addDestination(destination);
+		_destinationServiceRegistration = bundleContext.registerService(
+			Destination.class, destination,
+			MapUtil.singletonDictionary(
+				"destination.name", destination.getName()));
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_messageBus.removeDestination(
-			AMImageDestinationNames.ADAPTIVE_MEDIA_IMAGE_CONFIGURATION);
+		_destinationServiceRegistration.unregister();
 	}
 
 	private static final boolean _isPositiveNumber(String s) {
@@ -506,8 +511,9 @@ public class AMImageConfigurationHelperImpl
 
 			return amImageConfigurationEntries.stream();
 		}
-		catch (SettingsException se) {
-			throw new AMRuntimeException.InvalidConfiguration(se);
+		catch (SettingsException settingsException) {
+			throw new AMRuntimeException.InvalidConfiguration(
+				settingsException);
 		}
 	}
 
@@ -586,8 +592,8 @@ public class AMImageConfigurationHelperImpl
 				companyId,
 				amImageConfigurationEntryStream.collect(Collectors.toList()));
 		}
-		catch (SettingsException | ValidatorException e) {
-			throw new AMRuntimeException.InvalidConfiguration(e);
+		catch (SettingsException | ValidatorException exception) {
+			throw new AMRuntimeException.InvalidConfiguration(exception);
 		}
 	}
 
@@ -606,6 +612,8 @@ public class AMImageConfigurationHelperImpl
 
 	@Reference
 	private DestinationFactory _destinationFactory;
+
+	private ServiceRegistration<Destination> _destinationServiceRegistration;
 
 	@Reference
 	private MessageBus _messageBus;

@@ -15,11 +15,12 @@
 package com.liferay.bookmarks.internal.exportimport.portlet.preferences.processor;
 
 import com.liferay.bookmarks.constants.BookmarksConstants;
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.constants.BookmarksPortletKeys;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.model.BookmarksFolder;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksFolderLocalService;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
@@ -73,17 +74,23 @@ public class BookmarksExportImportPortletPreferencesProcessor
 			PortletPreferences portletPreferences)
 		throws PortletDataException {
 
+		if (!_exportImportHelper.isExportPortletData(portletDataContext)) {
+			return portletPreferences;
+		}
+
 		try {
 			portletDataContext.addPortletPermissions(
 				BookmarksConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(BookmarksPortletKeys.BOOKMARKS);
-			pde.setType(PortletDataException.EXPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(BookmarksPortletKeys.BOOKMARKS);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		try {
@@ -117,13 +124,15 @@ public class BookmarksExportImportPortletPreferencesProcessor
 				entryActionableDynamicQuery.performActions();
 			}
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(BookmarksPortletKeys.BOOKMARKS);
-			pde.setType(PortletDataException.EXPORT_PORTLET_DATA);
+			portletDataException.setPortletId(BookmarksPortletKeys.BOOKMARKS);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_DATA);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		long rootFolderId = GetterUtil.getLong(
@@ -159,13 +168,15 @@ public class BookmarksExportImportPortletPreferencesProcessor
 			portletDataContext.importPortletPermissions(
 				BookmarksConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(BookmarksPortletKeys.BOOKMARKS);
-			pde.setType(PortletDataException.IMPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(BookmarksPortletKeys.BOOKMARKS);
+			portletDataException.setType(
+				PortletDataException.IMPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		String namespace = _bookmarksPortletDataHandler.getNamespace();
@@ -223,9 +234,10 @@ public class BookmarksExportImportPortletPreferencesProcessor
 			portletPreferences.setValue(
 				"rootFolderId", String.valueOf(rootFolderId));
 		}
-		catch (ReadOnlyException roe) {
+		catch (ReadOnlyException readOnlyException) {
 			throw new PortletDataException(
-				"Unable to update preference \"rootFolderId\"", roe);
+				"Unable to update preference \"rootFolderId\"",
+				readOnlyException);
 		}
 
 		return portletPreferences;
@@ -250,6 +262,9 @@ public class BookmarksExportImportPortletPreferencesProcessor
 		target = "(javax.portlet.name=" + BookmarksPortletKeys.BOOKMARKS + ")"
 	)
 	private PortletDataHandler _bookmarksPortletDataHandler;
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
 
 	@Reference
 	private PortletLocalService _portletLocalService;

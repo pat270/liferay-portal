@@ -18,7 +18,6 @@ import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.exportimport.configuration.ExportImportServiceConfiguration;
 import com.liferay.exportimport.constants.ExportImportBackgroundTaskContextMapConstants;
 import com.liferay.exportimport.kernel.lar.DefaultConfigurationPortletDataHandler;
-import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -34,6 +33,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
+import com.liferay.exportimport.portlet.data.handler.util.ExportImportGroupedModelUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -52,10 +52,11 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -67,18 +68,18 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
 import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.service.PortletLocalService;
 import com.liferay.portal.kernel.service.SystemEventLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LongWrapper;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -88,6 +89,7 @@ import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.ElementHandler;
@@ -103,7 +105,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -113,11 +114,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
-import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -136,7 +136,6 @@ import org.xml.sax.XMLReader;
 	configurationPid = "com.liferay.exportimport.configuration.ExportImportServiceConfiguration",
 	immediate = true, service = ExportImportHelper.class
 )
-@ProviderType
 public class ExportImportHelperImpl implements ExportImportHelper {
 
 	@Override
@@ -161,21 +160,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		return layoutIdMap;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), moved to {@link
-	 *             ExportImportDateUtil#getCalendar(PortletRequest, String,
-	 *             boolean)}
-	 */
-	@Deprecated
-	@Override
-	public Calendar getCalendar(
-		PortletRequest portletRequest, String paramPrefix,
-		boolean timeZoneSensitive) {
-
-		return ExportImportDateUtil.getCalendar(
-			portletRequest, paramPrefix, timeZoneSensitive);
 	}
 
 	@Override
@@ -231,34 +215,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return dataSiteLevelPortlets;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), moved to {@link
-	 *             ExportImportDateUtil#getDateRange(PortletRequest, long,
-	 *             boolean, long, String, String)}
-	 */
-	@Deprecated
-	@Override
-	public DateRange getDateRange(
-			PortletRequest portletRequest, long groupId, boolean privateLayout,
-			long plid, String portletId, String defaultRange)
-		throws Exception {
-
-		return ExportImportDateUtil.getDateRange(
-			portletRequest, groupId, privateLayout, plid, portletId,
-			defaultRange);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public Layout getExportableLayout(ThemeDisplay themeDisplay)
-		throws PortalException {
-
-		return themeDisplay.getLayout();
-	}
-
 	@Override
 	public String getExportableRootPortletId(long companyId, String portletId)
 		throws Exception {
@@ -271,46 +227,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		return PortletIdCodec.decodePortletName(portletId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getExportPortletControlsMap(long, String, Map)}
-	 */
-	@Deprecated
-	@Override
-	public boolean[] getExportPortletControls(
-			long companyId, String portletId,
-			Map<String, String[]> parameterMap)
-		throws Exception {
-
-		return getExportPortletControls(
-			companyId, portletId, parameterMap, "layout-set");
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getExportPortletControlsMap(long, String, Map, String)}
-	 */
-	@Deprecated
-	@Override
-	public boolean[] getExportPortletControls(
-			long companyId, String portletId,
-			Map<String, String[]> parameterMap, String type)
-		throws Exception {
-
-		Map<String, Boolean> exportPortletControlsMap =
-			getExportPortletControlsMap(
-				companyId, portletId, parameterMap, type);
-
-		return new boolean[] {
-			exportPortletControlsMap.get(
-				PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS),
-			exportPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_DATA),
-			exportPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_SETUP),
-			exportPortletControlsMap.get(
-				PortletDataHandlerKeys.PORTLET_USER_PREFERENCES)
-		};
 	}
 
 	@Override
@@ -329,63 +245,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			Map<String, String[]> parameterMap, String type)
 		throws Exception {
 
-		Map<String, Boolean> exportPortletControlsMap = new HashMap<>();
-
-		boolean exportPortletData = getExportPortletData(
-			companyId, portletId, parameterMap);
-
-		exportPortletControlsMap.put(
-			PortletDataHandlerKeys.PORTLET_DATA, exportPortletData);
-
-		exportPortletControlsMap.putAll(
+		return HashMapBuilder.put(
+			PortletDataHandlerKeys.PORTLET_DATA,
+			getExportPortletData(companyId, portletId, parameterMap)
+		).putAll(
 			getExportPortletSetupControlsMap(
-				companyId, portletId, parameterMap, type));
-
-		return exportPortletControlsMap;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getImportPortletControlsMap(long, String, Map, Element,
-	 *             ManifestSummary)}
-	 */
-	@Deprecated
-	@Override
-	public boolean[] getImportPortletControls(
-			long companyId, String portletId,
-			Map<String, String[]> parameterMap, Element portletDataElement)
-		throws Exception {
-
-		return getImportPortletControls(
-			companyId, portletId, parameterMap, portletDataElement, null);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getImportPortletControlsMap(long, String, Map, Element,
-	 *             ManifestSummary)}
-	 */
-	@Deprecated
-	@Override
-	public boolean[] getImportPortletControls(
-			long companyId, String portletId,
-			Map<String, String[]> parameterMap, Element portletDataElement,
-			ManifestSummary manifestSummary)
-		throws Exception {
-
-		Map<String, Boolean> importPortletControlsMap =
-			getImportPortletControlsMap(
-				companyId, portletId, parameterMap, portletDataElement,
-				manifestSummary);
-
-		return new boolean[] {
-			importPortletControlsMap.get(
-				PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS),
-			importPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_DATA),
-			importPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_SETUP),
-			importPortletControlsMap.get(
-				PortletDataHandlerKeys.PORTLET_USER_PREFERENCES)
-		};
+				companyId, portletId, parameterMap, type)
+		).build();
 	}
 
 	@Override
@@ -395,19 +261,14 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			ManifestSummary manifestSummary)
 		throws Exception {
 
-		boolean importCurPortletData = getImportPortletData(
-			companyId, portletId, parameterMap, portletDataElement);
-
-		Map<String, Boolean> importPortletControlsMap = new HashMap<>();
-
-		importPortletControlsMap.put(
-			PortletDataHandlerKeys.PORTLET_DATA, importCurPortletData);
-
-		importPortletControlsMap.putAll(
+		return HashMapBuilder.put(
+			PortletDataHandlerKeys.PORTLET_DATA,
+			getImportPortletData(
+				companyId, portletId, parameterMap, portletDataElement)
+		).putAll(
 			getImportPortletSetupControlsMap(
-				companyId, portletId, parameterMap, manifestSummary));
-
-		return importPortletControlsMap;
+				companyId, portletId, parameterMap, manifestSummary)
+		).build();
 	}
 
 	@Override
@@ -478,7 +339,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			try {
 				layout = getLayoutOrCreateDummyRootLayout(plid);
 			}
-			catch (NoSuchLayoutException nsle) {
+			catch (NoSuchLayoutException noSuchLayoutException) {
 				if (_log.isWarnEnabled()) {
 					_log.warn("Unable to publish deleted layout " + plid);
 				}
@@ -486,7 +347,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				// See LPS-36174
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsle, nsle);
+					_log.debug(noSuchLayoutException, noSuchLayoutException);
 				}
 
 				entrySet.remove(plid);
@@ -546,6 +407,34 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	}
 
 	@Override
+	public long getLayoutModelDeletionCount(
+			final PortletDataContext portletDataContext, boolean privateLayout)
+		throws PortalException {
+
+		ActionableDynamicQuery actionableDynamicQuery =
+			_systemEventLocalService.getActionableDynamicQuery();
+
+		StagedModelType stagedModelType = new StagedModelType(Layout.class);
+
+		actionableDynamicQuery.setAddCriteriaMethod(
+			dynamicQuery -> {
+				doAddCriteria(
+					portletDataContext, stagedModelType, dynamicQuery);
+
+				Property extraDataProperty = PropertyFactoryUtil.forName(
+					"extraData");
+
+				dynamicQuery.add(
+					extraDataProperty.like(
+						"%\"privateLayout\":\"" + privateLayout + "\"%"));
+			});
+
+		actionableDynamicQuery.setCompanyId(portletDataContext.getCompanyId());
+
+		return actionableDynamicQuery.performCount();
+	}
+
+	@Override
 	public Layout getLayoutOrCreateDummyRootLayout(long plid)
 		throws PortalException {
 
@@ -568,35 +457,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		String fileName = _getZipWriterFileName(String.valueOf(groupId));
 
 		return getZipWriter(fileName);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getManifestSummary(PortletDataContext)}
-	 */
-	@Deprecated
-	@Override
-	public ManifestSummary getManifestSummary(
-			long userId, long groupId, Map<String, String[]> parameterMap,
-			File file)
-		throws Exception {
-
-		final Group group = _groupLocalService.getGroup(groupId);
-		String userIdStrategy = MapUtil.getString(
-			parameterMap, PortletDataHandlerKeys.USER_ID_STRATEGY);
-		ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(file);
-
-		PortletDataContext portletDataContext =
-			_portletDataContextFactory.createImportPortletDataContext(
-				group.getCompanyId(), groupId, parameterMap,
-				getUserIdStrategy(userId, userIdStrategy), zipReader);
-
-		try {
-			return getManifestSummary(portletDataContext);
-		}
-		finally {
-			zipReader.close();
-		}
 	}
 
 	@Override
@@ -709,10 +569,8 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			_systemEventLocalService.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setAddCriteriaMethod(
-			dynamicQuery -> {
-				doAddCriteria(
-					portletDataContext, stagedModelType, dynamicQuery);
-			});
+			dynamicQuery -> doAddCriteria(
+				portletDataContext, stagedModelType, dynamicQuery));
 		actionableDynamicQuery.setCompanyId(portletDataContext.getCompanyId());
 
 		return actionableDynamicQuery.performCount();
@@ -748,13 +606,12 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		if (ArrayUtil.contains(selectedPlids, 0)) {
-			JSONObject layoutJSONObject = JSONUtil.put(
-				"includeChildren", true
-			).put(
-				"plid", 0
-			);
-
-			jsonArray.put(layoutJSONObject);
+			jsonArray.put(
+				JSONUtil.put(
+					"includeChildren", true
+				).put(
+					"plid", 0
+				));
 		}
 
 		return jsonArray.toString();
@@ -802,7 +659,20 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			return true;
 		}
 
+		return isAlwaysIncludeReference(
+			portletDataContext, referenceStagedModel, rootPortletId);
+	}
+
+	@Override
+	public boolean isAlwaysIncludeReference(
+		PortletDataContext portletDataContext, StagedModel referenceStagedModel,
+		String rootPortletId) {
+
 		Portlet portlet = _portletLocalService.getPortletById(rootPortletId);
+
+		if (portlet == null) {
+			return true;
+		}
 
 		PortletDataHandler portletDataHandler =
 			portlet.getPortletDataHandlerInstance();
@@ -833,49 +703,55 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	}
 
 	@Override
-	public boolean isReferenceWithinExportScope(
-		PortletDataContext portletDataContext, StagedModel stagedModel) {
+	public boolean isExportPortletData(PortletDataContext portletDataContext) {
+		if (((portletDataContext.getScopeGroupId() ==
+				portletDataContext.getGroupId()) ||
+			 (portletDataContext.getScopeGroupId() ==
+				 portletDataContext.getCompanyGroupId())) &&
+			(ExportImportThreadLocal.isLayoutExportInProcess() ||
+			 ExportImportThreadLocal.isLayoutStagingInProcess())) {
 
-		if (!(stagedModel instanceof StagedGroupedModel)) {
-			return true;
-		}
-
-		StagedGroupedModel stagedGroupedModel = (StagedGroupedModel)stagedModel;
-
-		if (portletDataContext.getGroupId() ==
-				stagedGroupedModel.getGroupId()) {
-
-			return true;
-		}
-
-		Group group = null;
-
-		try {
-			group = _groupLocalService.getGroup(
-				stagedGroupedModel.getGroupId());
-		}
-		catch (Exception e) {
 			return false;
 		}
 
-		String className = group.getClassName();
+		return true;
+	}
 
-		if (className.equals(Layout.class.getName())) {
-			Layout scopeLayout = null;
+	@Override
+	public boolean isLayoutRevisionInReview(Layout layout) {
+		List<LayoutRevision> layoutRevisions =
+			_layoutRevisionLocalService.getLayoutRevisions(layout.getPlid());
 
-			try {
-				scopeLayout = _layoutLocalService.getLayout(group.getClassPK());
-			}
-			catch (Exception e) {
-				return false;
-			}
+		Stream<LayoutRevision> layoutRevisionsStream = layoutRevisions.stream();
 
-			if (scopeLayout.getGroupId() == portletDataContext.getGroupId()) {
-				return true;
-			}
+		if (layoutRevisionsStream.anyMatch(
+				layoutRevision ->
+					layoutRevision.getStatus() ==
+						WorkflowConstants.STATUS_PENDING)) {
+
+			return true;
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isReferenceWithinExportScope(
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
+
+		if (!(stagedModel instanceof GroupedModel)) {
+			return true;
+		}
+
+		GroupedModel groupedModel = (GroupedModel)stagedModel;
+
+		if (portletDataContext.getGroupId() == groupedModel.getGroupId()) {
+			return true;
+		}
+
+		return ExportImportGroupedModelUtil.
+			isReferenceInLayoutGroupWithinExportScope(
+				portletDataContext, groupedModel);
 	}
 
 	@Override
@@ -921,7 +797,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					MANIFEST_SUMMARY_KEYS,
 				manifestSummaryKeys);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to process manifest for the process summary " +
@@ -934,240 +810,6 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					fileEntry.getFileEntryId());
 			}
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             com.liferay.exportimport.content.processor.ExportImportContentProcessor#replaceExportContentReferences(
-	 *             PortletDataContext, StagedModel, String, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportContentReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, Element entityElement,
-			String content, boolean exportReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             com.liferay.exportimport.content.processor.ExportImportContentProcessor#replaceExportContentReferences(
-	 *             PortletDataContext, StagedModel, String, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportContentReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, String content,
-			boolean exportReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             com.liferay.exportimport.content.processor.ExportImportContentProcessor#replaceExportContentReferences(
-	 *             PortletDataContext, StagedModel, String, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportContentReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, String content,
-			boolean exportReferencedContent, boolean escapeContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportDLReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, Element entityElement,
-			String content, boolean exportReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportDLReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, String content,
-			boolean exportReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportLayoutReferences(
-			PortletDataContext portletDataContext, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportLayoutReferences(
-			PortletDataContext portletDataContext, String content,
-			boolean exportReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportLinksToLayouts(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, Element entityElement,
-			String content, boolean exportReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceExportLinksToLayouts(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             com.liferay.exportimport.content.processor.ExportImportContentProcessor#replaceImportContentReferences(
-	 *             PortletDataContext, StagedModel, String)}
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportContentReferences(
-			PortletDataContext portletDataContext, Element entityElement,
-			String content, boolean importReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             com.liferay.exportimport.content.processor.ExportImportContentProcessor#replaceImportContentReferences(
-	 *             PortletDataContext, StagedModel, String)}
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportContentReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportDLReferences(
-			PortletDataContext portletDataContext, Element entityElement,
-			String content, boolean importReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportDLReferences(
-			PortletDataContext portletDataContext,
-			StagedModel entityStagedModel, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportLayoutReferences(
-			PortletDataContext portletDataContext, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportLayoutReferences(
-			PortletDataContext portletDataContext, String content,
-			boolean importReferencedContent)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportLinksToLayouts(
-			PortletDataContext portletDataContext, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String replaceImportLinksToLayouts(
-			PortletDataContext portletDataContext, String content,
-			boolean importReferencedContent)
-		throws Exception {
-
-		return content;
 	}
 
 	@Override
@@ -1230,9 +872,10 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 							_groupLocalService.updateGroup(oldScopeGroup);
 						}
 					}
-					catch (NoSuchLayoutException nsle) {
+					catch (NoSuchLayoutException noSuchLayoutException) {
 						if (_log.isWarnEnabled()) {
-							_log.warn(nsle, nsle);
+							_log.warn(
+								noSuchLayoutException, noSuchLayoutException);
 						}
 					}
 				}
@@ -1286,90 +929,16 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				groupIds.put(oldScopeGroupId, scopeGroup.getGroupId());
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), see {@link
-	 *             DefaultConfigurationPortletDataHandler#updateExportPortletPreferencesClassPKs(
-	 *             PortletDataContext, Portlet, PortletPreferences, String,
-	 *             String)}
-	 */
-	@Deprecated
-	@Override
-	public void updateExportPortletPreferencesClassPKs(
-			PortletDataContext portletDataContext, Portlet portlet,
-			PortletPreferences portletPreferences, String key, String className)
-		throws Exception {
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #updateExportPortletPreferencesClassPKs(PortletDataContext,
-	 *             Portlet, PortletPreferences, String, String)}
-	 */
-	@Deprecated
-	@Override
-	public void updateExportPortletPreferencesClassPKs(
-			PortletDataContext portletDataContext, Portlet portlet,
-			PortletPreferences portletPreferences, String key, String className,
-			Element rootElement)
-		throws Exception {
-
-		updateExportPortletPreferencesClassPKs(
-			portletDataContext, portlet, portletPreferences, key, className);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), see {@link
-	 *             DefaultConfigurationPortletDataHandler#updateImportPortletPreferencesClassPKs(
-	 *             PortletDataContext, PortletPreferences, String, Class, long)}
-	 */
-	@Deprecated
-	@Override
-	public void updateImportPortletPreferencesClassPKs(
-			PortletDataContext portletDataContext,
-			PortletPreferences portletPreferences, String key, Class<?> clazz,
-			long companyGroupId)
-		throws Exception {
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #validateMissingReferences(PortletDataContext)}
-	 */
-	@Deprecated
-	@Override
-	public MissingReferences validateMissingReferences(
-			long userId, long groupId, Map<String, String[]> parameterMap,
-			File file)
-		throws Exception {
-
-		Group group = _groupLocalService.getGroup(groupId);
-		String userIdStrategy = MapUtil.getString(
-			parameterMap, PortletDataHandlerKeys.USER_ID_STRATEGY);
-		ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(file);
-
-		PortletDataContext portletDataContext =
-			_portletDataContextFactory.createImportPortletDataContext(
-				group.getCompanyId(), groupId, parameterMap,
-				getUserIdStrategy(userId, userIdStrategy), zipReader);
-
-		try {
-			return validateMissingReferences(portletDataContext);
-		}
-		finally {
-			zipReader.close();
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -1457,13 +1026,11 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		Property createDateProperty = PropertyFactoryUtil.forName("createDate");
 
-		Date startDate = portletDataContext.getStartDate();
+		dynamicQuery.add(
+			createDateProperty.ge(portletDataContext.getStartDate()));
 
-		dynamicQuery.add(createDateProperty.ge(startDate));
-
-		Date endDate = portletDataContext.getEndDate();
-
-		dynamicQuery.add(createDateProperty.le(endDate));
+		dynamicQuery.add(
+			createDateProperty.le(portletDataContext.getEndDate()));
 	}
 
 	protected void doAddCriteria(
@@ -1651,11 +1218,14 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		if (importPortletConfigurationAll) {
 			boolean importCurPortletConfiguration = true;
 
-			if ((manifestSummary != null) &&
-				(manifestSummary.getConfigurationPortletOptions(
-					rootPortletId) == null)) {
+			if (manifestSummary != null) {
+				String[] configurationPortletOptions =
+					manifestSummary.getConfigurationPortletOptions(
+						rootPortletId);
 
-				importCurPortletConfiguration = false;
+				if (configurationPortletOptions == null) {
+					importCurPortletConfiguration = false;
+				}
 			}
 
 			importPortletSetupControlsMap = _createAllPortletSetupControlsMap(
@@ -1677,9 +1247,9 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				_configurationProvider.getCompanyConfiguration(
 					ExportImportServiceConfiguration.class, companyId);
 		}
-		catch (ConfigurationException ce) {
+		catch (ConfigurationException configurationException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ce.getMessage());
+				_log.warn(configurationException.getMessage());
 			}
 		}
 
@@ -1722,13 +1292,12 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			selectedLayoutIds, layout.getLayoutId());
 
 		if (checked) {
-			JSONObject layoutJSONObject = JSONUtil.put(
-				"includeChildren", includeChildren
-			).put(
-				"plid", layout.getPlid()
-			);
-
-			layoutsJSONArray.put(layoutJSONObject);
+			layoutsJSONArray.put(
+				JSONUtil.put(
+					"includeChildren", includeChildren
+				).put(
+					"plid", layout.getPlid()
+				));
 		}
 
 		if (checked && includeChildren) {
@@ -1764,6 +1333,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		LayoutLocalService layoutLocalService) {
 
 		_layoutLocalService = layoutLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutRevisionLocalService(
+		LayoutRevisionLocalService layoutRevisionLocalService) {
+
+		_layoutRevisionLocalService = layoutRevisionLocalService;
 	}
 
 	@Reference(unbind = "-")
@@ -1869,20 +1445,17 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		boolean portletArchivedSetups, boolean portletConfiguration,
 		boolean portletSetup, boolean portletUserPreferences) {
 
-		Map<String, Boolean> portletSetupControlsMap = new HashMap<>();
-
-		portletSetupControlsMap.put(
+		return HashMapBuilder.put(
 			PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS,
-			portletArchivedSetups);
-		portletSetupControlsMap.put(
-			PortletDataHandlerKeys.PORTLET_CONFIGURATION, portletConfiguration);
-		portletSetupControlsMap.put(
-			PortletDataHandlerKeys.PORTLET_SETUP, portletSetup);
-		portletSetupControlsMap.put(
+			portletArchivedSetups
+		).put(
+			PortletDataHandlerKeys.PORTLET_CONFIGURATION, portletConfiguration
+		).put(
+			PortletDataHandlerKeys.PORTLET_SETUP, portletSetup
+		).put(
 			PortletDataHandlerKeys.PORTLET_USER_PREFERENCES,
-			portletUserPreferences);
-
-		return portletSetupControlsMap;
+			portletUserPreferences
+		).build();
 	}
 
 	private Map<String, Boolean> _createRootPortletSetupControlsMap(
@@ -1932,6 +1505,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	private ExportImportServiceConfiguration _exportImportServiceConfiguration;
 	private GroupLocalService _groupLocalService;
 	private LayoutLocalService _layoutLocalService;
+	private LayoutRevisionLocalService _layoutRevisionLocalService;
 	private LayoutService _layoutService;
 
 	@Reference
@@ -1976,7 +1550,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					portlet = _portletLocalService.getPortletById(
 						_group.getCompanyId(), portletId);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					return;
 				}
 

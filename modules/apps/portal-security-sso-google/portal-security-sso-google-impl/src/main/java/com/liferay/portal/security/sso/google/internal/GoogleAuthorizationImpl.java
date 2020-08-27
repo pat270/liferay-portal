@@ -109,12 +109,12 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 				_transactionConfig,
 				() -> doAddOrUpdateUser(session, companyId, userinfoplus));
 		}
-		catch (Throwable t) {
-			if (t instanceof PortalException) {
-				throw (PortalException)t;
+		catch (Throwable throwable) {
+			if (throwable instanceof PortalException) {
+				throw (PortalException)throwable;
 			}
 
-			throw new Exception(t);
+			throw new Exception(throwable);
 		}
 	}
 
@@ -160,7 +160,6 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 		String screenName = StringPool.BLANK;
 		String emailAddress = userinfoplus.getEmail();
 		String googleUserId = userinfoplus.getId();
-		String openId = StringPool.BLANK;
 		Locale locale = LocaleUtil.getDefault();
 		String firstName = userinfoplus.getGivenName();
 		String middleName = StringPool.BLANK;
@@ -182,10 +181,10 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 
 		User user = _userLocalService.addUser(
 			creatorUserId, companyId, autoPassword, password1, password2,
-			autoScreenName, screenName, emailAddress, 0, openId, locale,
-			firstName, middleName, lastName, prefixId, suffixId, male,
-			birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
-			organizationIds, roleIds, userGroupIds, sendEmail, serviceContext);
+			autoScreenName, screenName, emailAddress, locale, firstName,
+			middleName, lastName, prefixId, suffixId, male, birthdayMonth,
+			birthdayDay, birthdayYear, jobTitle, groupIds, organizationIds,
+			roleIds, userGroupIds, sendEmail, serviceContext);
 
 		user = _userLocalService.updateGoogleUserId(
 			user.getUserId(), googleUserId);
@@ -293,8 +292,8 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 				new CompanyServiceSettingsLocator(
 					companyId, GoogleConstants.SERVICE_NAME));
 		}
-		catch (ConfigurationException ce) {
-			throw new SystemException(ce);
+		catch (ConfigurationException configurationException) {
+			throw new SystemException(configurationException);
 		}
 	}
 
@@ -374,9 +373,9 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 			user.getUserId(), StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, false, user.getReminderQueryQuestion(),
 			user.getReminderQueryAnswer(), user.getScreenName(), emailAddress,
-			0, user.getOpenId(), true, null, user.getLanguageId(),
-			user.getTimeZoneId(), user.getGreeting(), user.getComments(),
-			firstName, user.getMiddleName(), lastName, contact.getPrefixId(),
+			true, null, user.getLanguageId(), user.getTimeZoneId(),
+			user.getGreeting(), user.getComments(), firstName,
+			user.getMiddleName(), lastName, contact.getPrefixId(),
 			contact.getSuffixId(), male, birthdayMonth, birthdayDay,
 			birthdayYear, contact.getSmsSn(), contact.getFacebookSn(),
 			contact.getJabberSn(), contact.getSkypeSn(), contact.getTwitterSn(),
@@ -386,7 +385,7 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 
 	private void _checkAllowUserCreation(
 			long companyId, Userinfoplus userinfoplus)
-		throws PortalException {
+		throws Exception {
 
 		Company company = _companyLocalService.getCompany(companyId);
 
@@ -396,11 +395,11 @@ public class GoogleAuthorizationImpl implements GoogleAuthorization {
 
 		String emailAddress = userinfoplus.getEmail();
 
-		if (company.hasCompanyMx(emailAddress)) {
-			if (!company.isStrangersWithMx()) {
-				throw new UserEmailAddressException.MustNotUseCompanyMx(
-					emailAddress);
-			}
+		if (company.hasCompanyMx(emailAddress) &&
+			!company.isStrangersWithMx()) {
+
+			throw new UserEmailAddressException.MustNotUseCompanyMx(
+				emailAddress);
 		}
 	}
 

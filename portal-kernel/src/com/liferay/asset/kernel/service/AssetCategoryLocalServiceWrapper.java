@@ -14,9 +14,10 @@
 
 package com.liferay.asset.kernel.service;
 
+import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetCategoryLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetCategoryLocalService
  * @generated
  */
-@ProviderType
 public class AssetCategoryLocalServiceWrapper
 	implements AssetCategoryLocalService,
 			   ServiceWrapper<AssetCategoryLocalService> {
@@ -39,21 +39,21 @@ public class AssetCategoryLocalServiceWrapper
 	/**
 	 * Adds the asset category to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetCategory the asset category
 	 * @return the asset category that was added
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory addAssetCategory(
-		com.liferay.asset.kernel.model.AssetCategory assetCategory) {
-
+	public AssetCategory addAssetCategory(AssetCategory assetCategory) {
 		return _assetCategoryLocalService.addAssetCategory(assetCategory);
 	}
 
 	@Override
 	public void addAssetEntryAssetCategories(
-		long entryId,
-		java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-			assetCategories) {
+		long entryId, java.util.List<AssetCategory> assetCategories) {
 
 		_assetCategoryLocalService.addAssetEntryAssetCategories(
 			entryId, assetCategories);
@@ -67,8 +67,7 @@ public class AssetCategoryLocalServiceWrapper
 
 	@Override
 	public void addAssetEntryAssetCategory(
-		long entryId,
-		com.liferay.asset.kernel.model.AssetCategory assetCategory) {
+		long entryId, AssetCategory assetCategory) {
 
 		_assetCategoryLocalService.addAssetEntryAssetCategory(
 			entryId, assetCategory);
@@ -81,7 +80,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory addCategory(
+	public AssetCategory addCategory(
 			long userId, long groupId, long parentCategoryId,
 			java.util.Map<java.util.Locale, String> titleMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,
@@ -95,7 +94,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory addCategory(
+	public AssetCategory addCategory(
 			long userId, long groupId, String title, long vocabularyId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -106,8 +105,8 @@ public class AssetCategoryLocalServiceWrapper
 
 	@Override
 	public void addCategoryResources(
-			com.liferay.asset.kernel.model.AssetCategory category,
-			boolean addGroupPermissions, boolean addGuestPermissions)
+			AssetCategory category, boolean addGroupPermissions,
+			boolean addGuestPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_assetCategoryLocalService.addCategoryResources(
@@ -116,7 +115,7 @@ public class AssetCategoryLocalServiceWrapper
 
 	@Override
 	public void addCategoryResources(
-			com.liferay.asset.kernel.model.AssetCategory category,
+			AssetCategory category,
 			com.liferay.portal.kernel.service.permission.ModelPermissions
 				modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -137,35 +136,49 @@ public class AssetCategoryLocalServiceWrapper
 	 * @return the new asset category
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory createAssetCategory(
-		long categoryId) {
-
+	public AssetCategory createAssetCategory(long categoryId) {
 		return _assetCategoryLocalService.createAssetCategory(categoryId);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetCategoryLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
 	 * Deletes the asset category from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetCategory the asset category
 	 * @return the asset category that was removed
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory deleteAssetCategory(
-		com.liferay.asset.kernel.model.AssetCategory assetCategory) {
-
+	public AssetCategory deleteAssetCategory(AssetCategory assetCategory) {
 		return _assetCategoryLocalService.deleteAssetCategory(assetCategory);
 	}
 
 	/**
 	 * Deletes the asset category with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param categoryId the primary key of the asset category
 	 * @return the asset category that was removed
 	 * @throws PortalException if a asset category with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory deleteAssetCategory(
-			long categoryId)
+	public AssetCategory deleteAssetCategory(long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.deleteAssetCategory(categoryId);
@@ -173,9 +186,7 @@ public class AssetCategoryLocalServiceWrapper
 
 	@Override
 	public void deleteAssetEntryAssetCategories(
-		long entryId,
-		java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-			assetCategories) {
+		long entryId, java.util.List<AssetCategory> assetCategories) {
 
 		_assetCategoryLocalService.deleteAssetEntryAssetCategories(
 			entryId, assetCategories);
@@ -191,8 +202,7 @@ public class AssetCategoryLocalServiceWrapper
 
 	@Override
 	public void deleteAssetEntryAssetCategory(
-		long entryId,
-		com.liferay.asset.kernel.model.AssetCategory assetCategory) {
+		long entryId, AssetCategory assetCategory) {
 
 		_assetCategoryLocalService.deleteAssetEntryAssetCategory(
 			entryId, assetCategory);
@@ -205,9 +215,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public void deleteCategories(
-			java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-				categories)
+	public void deleteCategories(java.util.List<AssetCategory> categories)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_assetCategoryLocalService.deleteCategories(categories);
@@ -221,17 +229,15 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory deleteCategory(
-			com.liferay.asset.kernel.model.AssetCategory category)
+	public AssetCategory deleteCategory(AssetCategory category)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.deleteCategory(category);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory deleteCategory(
-			com.liferay.asset.kernel.model.AssetCategory category,
-			boolean skipRebuildTree)
+	public AssetCategory deleteCategory(
+			AssetCategory category, boolean skipRebuildTree)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.deleteCategory(
@@ -239,8 +245,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory deleteCategory(
-			long categoryId)
+	public AssetCategory deleteCategory(long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.deleteCategory(categoryId);
@@ -265,6 +270,11 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetCategoryLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _assetCategoryLocalService.dynamicQuery();
 	}
@@ -286,7 +296,7 @@ public class AssetCategoryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -307,7 +317,7 @@ public class AssetCategoryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -356,9 +366,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory fetchAssetCategory(
-		long categoryId) {
-
+	public AssetCategory fetchAssetCategory(long categoryId) {
 		return _assetCategoryLocalService.fetchAssetCategory(categoryId);
 	}
 
@@ -370,9 +378,8 @@ public class AssetCategoryLocalServiceWrapper
 	 * @return the matching asset category, or <code>null</code> if a matching asset category could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory
-		fetchAssetCategoryByReferenceCode(
-			long companyId, String externalReferenceCode) {
+	public AssetCategory fetchAssetCategoryByReferenceCode(
+		long companyId, String externalReferenceCode) {
 
 		return _assetCategoryLocalService.fetchAssetCategoryByReferenceCode(
 			companyId, externalReferenceCode);
@@ -386,22 +393,20 @@ public class AssetCategoryLocalServiceWrapper
 	 * @return the matching asset category, or <code>null</code> if a matching asset category could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory
-		fetchAssetCategoryByUuidAndGroupId(String uuid, long groupId) {
+	public AssetCategory fetchAssetCategoryByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _assetCategoryLocalService.fetchAssetCategoryByUuidAndGroupId(
 			uuid, groupId);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory fetchCategory(
-		long categoryId) {
-
+	public AssetCategory fetchCategory(long categoryId) {
 		return _assetCategoryLocalService.fetchCategory(categoryId);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory fetchCategory(
+	public AssetCategory fetchCategory(
 		long groupId, long parentCategoryId, String name, long vocabularyId) {
 
 		return _assetCategoryLocalService.fetchCategory(
@@ -419,7 +424,7 @@ public class AssetCategoryLocalServiceWrapper
 	 * Returns a range of all the asset categories.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset categories
@@ -427,8 +432,8 @@ public class AssetCategoryLocalServiceWrapper
 	 * @return the range of asset categories
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getAssetCategories(int start, int end) {
+	public java.util.List<AssetCategory> getAssetCategories(
+		int start, int end) {
 
 		return _assetCategoryLocalService.getAssetCategories(start, end);
 	}
@@ -441,8 +446,8 @@ public class AssetCategoryLocalServiceWrapper
 	 * @return the matching asset categories, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getAssetCategoriesByUuidAndCompanyId(String uuid, long companyId) {
+	public java.util.List<AssetCategory> getAssetCategoriesByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _assetCategoryLocalService.getAssetCategoriesByUuidAndCompanyId(
 			uuid, companyId);
@@ -459,12 +464,10 @@ public class AssetCategoryLocalServiceWrapper
 	 * @return the range of matching asset categories, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getAssetCategoriesByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetCategory>
-					orderByComparator) {
+	public java.util.List<AssetCategory> getAssetCategoriesByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory>
+			orderByComparator) {
 
 		return _assetCategoryLocalService.getAssetCategoriesByUuidAndCompanyId(
 			uuid, companyId, start, end, orderByComparator);
@@ -488,8 +491,7 @@ public class AssetCategoryLocalServiceWrapper
 	 * @throws PortalException if a asset category with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory getAssetCategory(
-			long categoryId)
+	public AssetCategory getAssetCategory(long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.getAssetCategory(categoryId);
@@ -504,8 +506,8 @@ public class AssetCategoryLocalServiceWrapper
 	 * @throws PortalException if a matching asset category could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory
-			getAssetCategoryByUuidAndGroupId(String uuid, long groupId)
+	public AssetCategory getAssetCategoryByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.getAssetCategoryByUuidAndGroupId(
@@ -513,27 +515,25 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getAssetEntryAssetCategories(long entryId) {
+	public java.util.List<AssetCategory> getAssetEntryAssetCategories(
+		long entryId) {
 
 		return _assetCategoryLocalService.getAssetEntryAssetCategories(entryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getAssetEntryAssetCategories(long entryId, int start, int end) {
+	public java.util.List<AssetCategory> getAssetEntryAssetCategories(
+		long entryId, int start, int end) {
 
 		return _assetCategoryLocalService.getAssetEntryAssetCategories(
 			entryId, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getAssetEntryAssetCategories(
-			long entryId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetCategory>
-					orderByComparator) {
+	public java.util.List<AssetCategory> getAssetEntryAssetCategories(
+		long entryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory>
+			orderByComparator) {
 
 		return _assetCategoryLocalService.getAssetEntryAssetCategories(
 			entryId, start, end, orderByComparator);
@@ -557,45 +557,41 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getCategories() {
-
+	public java.util.List<AssetCategory> getCategories() {
 		return _assetCategoryLocalService.getCategories();
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-			getCategories(com.liferay.portal.kernel.search.Hits hits)
+	public java.util.List<AssetCategory> getCategories(
+			com.liferay.portal.kernel.search.Hits hits)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.getCategories(hits);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getCategories(long classNameId, long classPK) {
+	public java.util.List<AssetCategory> getCategories(
+		long classNameId, long classPK) {
 
 		return _assetCategoryLocalService.getCategories(classNameId, classPK);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getCategories(String className, long classPK) {
+	public java.util.List<AssetCategory> getCategories(
+		String className, long classPK) {
 
 		return _assetCategoryLocalService.getCategories(className, classPK);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory getCategory(
-			long categoryId)
+	public AssetCategory getCategory(long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.getCategory(categoryId);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory getCategory(
-			String uuid, long groupId)
+	public AssetCategory getCategory(String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.getCategory(uuid, groupId);
@@ -623,21 +619,20 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getChildCategories(long parentCategoryId) {
+	public java.util.List<AssetCategory> getChildCategories(
+		long parentCategoryId) {
 
 		return _assetCategoryLocalService.getChildCategories(parentCategoryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getChildCategories(
-			long parentCategoryId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetCategory> obc) {
+	public java.util.List<AssetCategory> getChildCategories(
+		long parentCategoryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory>
+			orderByComparator) {
 
 		return _assetCategoryLocalService.getChildCategories(
-			parentCategoryId, start, end, obc);
+			parentCategoryId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -647,17 +642,14 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getDescendantCategories(
-			com.liferay.asset.kernel.model.AssetCategory category) {
+	public java.util.List<AssetCategory> getDescendantCategories(
+		AssetCategory category) {
 
 		return _assetCategoryLocalService.getDescendantCategories(category);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getEntryCategories(long entryId) {
-
+	public java.util.List<AssetCategory> getEntryCategories(long entryId) {
 		return _assetCategoryLocalService.getEntryCategories(entryId);
 	}
 
@@ -688,6 +680,9 @@ public class AssetCategoryLocalServiceWrapper
 		return _assetCategoryLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -711,25 +706,23 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getVocabularyCategories(
-			long vocabularyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetCategory> obc) {
+	public java.util.List<AssetCategory> getVocabularyCategories(
+		long vocabularyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory>
+			orderByComparator) {
 
 		return _assetCategoryLocalService.getVocabularyCategories(
-			vocabularyId, start, end, obc);
+			vocabularyId, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getVocabularyCategories(
-			long parentCategoryId, long vocabularyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetCategory> obc) {
+	public java.util.List<AssetCategory> getVocabularyCategories(
+		long parentCategoryId, long vocabularyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory>
+			orderByComparator) {
 
 		return _assetCategoryLocalService.getVocabularyCategories(
-			parentCategoryId, vocabularyId, start, end, obc);
+			parentCategoryId, vocabularyId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -739,14 +732,13 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory>
-		getVocabularyRootCategories(
-			long vocabularyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.kernel.model.AssetCategory> obc) {
+	public java.util.List<AssetCategory> getVocabularyRootCategories(
+		long vocabularyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetCategory>
+			orderByComparator) {
 
 		return _assetCategoryLocalService.getVocabularyRootCategories(
-			vocabularyId, start, end, obc);
+			vocabularyId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -767,8 +759,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory mergeCategories(
-			long fromCategoryId, long toCategoryId)
+	public AssetCategory mergeCategories(long fromCategoryId, long toCategoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.mergeCategories(
@@ -776,7 +767,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory moveCategory(
+	public AssetCategory moveCategory(
 			long categoryId, long parentCategoryId, long vocabularyId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -786,12 +777,7 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public void rebuildTree(long groupId, boolean force) {
-		_assetCategoryLocalService.rebuildTree(groupId, force);
-	}
-
-	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetCategory> search(
+	public java.util.List<AssetCategory> search(
 		long groupId, String name, String[] categoryProperties, int start,
 		int end) {
 
@@ -800,34 +786,34 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.search.BaseModelSearchResult
-		<com.liferay.asset.kernel.model.AssetCategory> searchCategories(
+	public com.liferay.portal.kernel.search.BaseModelSearchResult<AssetCategory>
+			searchCategories(
 				long companyId, long groupIds, String title, long vocabularyId,
 				int start, int end)
-			throws com.liferay.portal.kernel.exception.PortalException {
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.searchCategories(
 			companyId, groupIds, title, vocabularyId, start, end);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.search.BaseModelSearchResult
-		<com.liferay.asset.kernel.model.AssetCategory> searchCategories(
+	public com.liferay.portal.kernel.search.BaseModelSearchResult<AssetCategory>
+			searchCategories(
 				long companyId, long[] groupIds, String title,
 				long[] vocabularyIds, int start, int end)
-			throws com.liferay.portal.kernel.exception.PortalException {
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.searchCategories(
 			companyId, groupIds, title, vocabularyIds, start, end);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.search.BaseModelSearchResult
-		<com.liferay.asset.kernel.model.AssetCategory> searchCategories(
+	public com.liferay.portal.kernel.search.BaseModelSearchResult<AssetCategory>
+			searchCategories(
 				long companyId, long[] groupIds, String title,
 				long[] parentCategoryIds, long[] vocabularyIds, int start,
 				int end)
-			throws com.liferay.portal.kernel.exception.PortalException {
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.searchCategories(
 			companyId, groupIds, title, parentCategoryIds, vocabularyIds, start,
@@ -835,12 +821,12 @@ public class AssetCategoryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.search.BaseModelSearchResult
-		<com.liferay.asset.kernel.model.AssetCategory> searchCategories(
+	public com.liferay.portal.kernel.search.BaseModelSearchResult<AssetCategory>
+			searchCategories(
 				long companyId, long[] groupIds, String title,
 				long[] vocabularyIds, long[] parentCategoryIds, int start,
 				int end, com.liferay.portal.kernel.search.Sort sort)
-			throws com.liferay.portal.kernel.exception.PortalException {
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryLocalService.searchCategories(
 			companyId, groupIds, title, vocabularyIds, parentCategoryIds, start,
@@ -856,18 +842,20 @@ public class AssetCategoryLocalServiceWrapper
 	/**
 	 * Updates the asset category in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetCategory the asset category
 	 * @return the asset category that was updated
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory updateAssetCategory(
-		com.liferay.asset.kernel.model.AssetCategory assetCategory) {
-
+	public AssetCategory updateAssetCategory(AssetCategory assetCategory) {
 		return _assetCategoryLocalService.updateAssetCategory(assetCategory);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetCategory updateCategory(
+	public AssetCategory updateCategory(
 			long userId, long categoryId, long parentCategoryId,
 			java.util.Map<java.util.Locale, String> titleMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,
@@ -878,6 +866,26 @@ public class AssetCategoryLocalServiceWrapper
 		return _assetCategoryLocalService.updateCategory(
 			userId, categoryId, parentCategoryId, titleMap, descriptionMap,
 			vocabularyId, categoryProperties, serviceContext);
+	}
+
+	@Override
+	public CTPersistence<AssetCategory> getCTPersistence() {
+		return _assetCategoryLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetCategory> getModelClass() {
+		return _assetCategoryLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetCategory>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _assetCategoryLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

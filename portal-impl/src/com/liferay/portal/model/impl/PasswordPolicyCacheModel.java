@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing PasswordPolicy in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PasswordPolicyCacheModel
 	implements CacheModel<PasswordPolicy>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PasswordPolicyCacheModel)) {
+		if (!(object instanceof PasswordPolicyCacheModel)) {
 			return false;
 		}
 
 		PasswordPolicyCacheModel passwordPolicyCacheModel =
-			(PasswordPolicyCacheModel)obj;
+			(PasswordPolicyCacheModel)object;
 
 		if ((passwordPolicyId == passwordPolicyCacheModel.passwordPolicyId) &&
 			(mvccVersion == passwordPolicyCacheModel.mvccVersion)) {

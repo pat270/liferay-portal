@@ -1,0 +1,100 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "light",
+					"description": "this-is-the-style-that-will-be-applied",
+					"label": "applied-style",
+					"name": "appliedStyleTop",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"value": "dark"
+							},
+							{
+								"value": "light"
+							}
+						]
+					}
+				}
+			],
+			"label": "Heading"
+		},
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "light",
+					"description": "this-is-the-style-that-will-be-applied",
+					"label": "applied-style",
+					"name": "appliedStyleBottom",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "dark",
+								"value": "dark"
+							},
+							{
+								"label": "light",
+								"value": "light"
+							}
+						]
+					}
+				},
+				{
+					"dataType": "int",
+					"defaultValue": "3",
+					"description": "the-number-of-columns-displayed",
+					"label": "number-of-columns",
+					"name": "numberOfColumns",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "1",
+								"value": "1"
+							},
+							{
+								"label": "3",
+								"value": "3"
+							},
+							{
+								"label": "5",
+								"value": "5"
+							}
+						]
+					}
+				},
+				{
+					"dataType": "double",
+					"defaultValue": "1.1",
+					"description": "the-width-of-the-table",
+					"label": "table-width",
+					"name": "tableWidth",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "1.1",
+								"value": "1.1"
+							},
+							{
+								"label": "3.2",
+								"value": "3.2"
+							},
+							{
+								"label": "5.3",
+								"value": "5.3"
+							}
+						]
+					}
+				}
+			],
+			"label": "Body"
+		}
+	]
+}

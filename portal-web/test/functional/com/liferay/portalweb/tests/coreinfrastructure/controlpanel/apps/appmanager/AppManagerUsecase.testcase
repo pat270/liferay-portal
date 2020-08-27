@@ -1,5 +1,6 @@
 @component-name = "portal-plugins-osgi"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "App Manager";
@@ -12,19 +13,20 @@ definition {
 		Page.tearDownCP();
 	}
 
-	@ignore = "true"
 	@priority = "5"
 	test InstallUninstallApp {
+		property test.name.skip.portal.instance = "AppManagerUsecase#InstallUninstallApp";
+
 		var appName = "test-app-portlet";
 
-		ProductMenu.gotoPortlet(
-			category = "Apps",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "App Manager");
 
 		AppManager.uploadAppCP(
 			appName = "${appName}",
-			warFileName = "${appName}-7.1.0.1.war");
+			warFileName = "${appName}-7.2.0.war");
 
 		AppManager.viewAppCP(
 			appName = "${appName}",
@@ -39,8 +41,10 @@ definition {
 
 	@priority = "4"
 	test ViewIndependentModulesIsNotNestedWithinItself {
-		ProductMenu.gotoPortlet(
-			category = "Apps",
+		property test.name.skip.portal.instance = "AppManagerUsecase#ViewIndependentModulesIsNotNestedWithinItself";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "App Manager");
 
@@ -50,4 +54,22 @@ definition {
 
 		AppManager.viewNoAppCP(appName = "Independent Modules");
 	}
+
+	@description = "This is a use case for LPS-99031."
+	@priority = "5"
+	test ViewLicenseManager {
+		property test.name.skip.portal.instance = "AppManagerUsecase#ViewLicenseManager";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Marketplace",
+			panel = "Control Panel",
+			portlet = "License Manager");
+
+		Pause(locator1 = "3000");
+
+		LicenseManager.viewDefaultCP(tableTexts = "Server Info,Host Name,IP Addresses,Licenses Registered,Owner,Start Date");
+
+		AssertElementNotPresent(locator1 = "Portlet#HEADER_DUPLICATE");
+	}
+
 }

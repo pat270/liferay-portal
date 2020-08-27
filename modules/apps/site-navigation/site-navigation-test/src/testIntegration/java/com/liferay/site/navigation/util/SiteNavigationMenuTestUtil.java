@@ -14,7 +14,6 @@
 
 package com.liferay.site.navigation.util;
 
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -22,10 +21,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.site.navigation.constants.SiteNavigationConstants;
-import com.liferay.site.navigation.menu.item.layout.constants.SiteNavigationMenuItemTypeConstants;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
-import com.liferay.site.navigation.model.SiteNavigationMenuItem;
-import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalServiceUtil;
 import com.liferay.site.navigation.service.SiteNavigationMenuLocalServiceUtil;
 
 import java.util.Date;
@@ -75,12 +71,10 @@ public class SiteNavigationMenuTestUtil {
 			Group group, int type, boolean auto)
 		throws PortalException {
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		return SiteNavigationMenuLocalServiceUtil.addSiteNavigationMenu(
 			TestPropsValues.getUserId(), group.getGroupId(),
-			RandomTestUtil.randomString(), type, auto, serviceContext);
+			RandomTestUtil.randomString(), type, auto,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
 	public static SiteNavigationMenu addSiteNavigationMenu(
@@ -88,7 +82,8 @@ public class SiteNavigationMenuTestUtil {
 		throws PortalException {
 
 		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
+			ServiceContextTestUtil.getServiceContext(
+				group.getGroupId(), userId);
 
 		return SiteNavigationMenuLocalServiceUtil.addSiteNavigationMenu(
 			userId, group.getGroupId(), RandomTestUtil.randomString(),
@@ -99,51 +94,9 @@ public class SiteNavigationMenuTestUtil {
 			Group group, String name)
 		throws PortalException {
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		return SiteNavigationMenuLocalServiceUtil.addSiteNavigationMenu(
 			TestPropsValues.getUserId(), group.getGroupId(), name,
-			serviceContext);
-	}
-
-	public static SiteNavigationMenuItem addSiteNavigationMenuItem(
-			int position, SiteNavigationMenu siteNavigationMenu)
-		throws PortalException {
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(
-				siteNavigationMenu.getGroupId());
-
-		return SiteNavigationMenuItemLocalServiceUtil.addSiteNavigationMenuItem(
-			TestPropsValues.getUserId(), siteNavigationMenu.getGroupId(),
-			siteNavigationMenu.getSiteNavigationMenuId(), 0,
-			SiteNavigationMenuItemTypeConstants.LAYOUT, position,
-			StringPool.BLANK, serviceContext);
-	}
-
-	public static SiteNavigationMenuItem addSiteNavigationMenuItem(
-			long parentSiteNavigationMenuItemId,
-			SiteNavigationMenu siteNavigationMenu)
-		throws PortalException {
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(
-				siteNavigationMenu.getGroupId());
-
-		return SiteNavigationMenuItemLocalServiceUtil.addSiteNavigationMenuItem(
-			TestPropsValues.getUserId(), siteNavigationMenu.getGroupId(),
-			siteNavigationMenu.getSiteNavigationMenuId(),
-			parentSiteNavigationMenuItemId,
-			SiteNavigationMenuItemTypeConstants.LAYOUT, StringPool.BLANK,
-			serviceContext);
-	}
-
-	public static SiteNavigationMenuItem addSiteNavigationMenuItem(
-			SiteNavigationMenu siteNavigationMenu)
-		throws PortalException {
-
-		return addSiteNavigationMenuItem(0, siteNavigationMenu);
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
 
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -70,8 +71,8 @@ public class JavaFieldsParser {
 			try {
 				clazz = classLoader.loadClass(className);
 			}
-			catch (Exception e) {
-				_log.error("Unable to load class " + className, e);
+			catch (Exception exception) {
+				_log.error("Unable to load class " + className, exception);
 
 				break;
 			}
@@ -97,18 +98,13 @@ public class JavaFieldsParser {
 					_log.debug("Field value " + fieldValue);
 				}
 			}
-			catch (Exception e) {
-				_log.error("Unable to load field " + fieldName, e);
+			catch (Exception exception) {
+				_log.error("Unable to load field " + fieldName, exception);
 
 				break;
 			}
 
-			replaceFrom.add(
-				"${".concat(
-					javaSnippet
-				).concat(
-					"}"
-				));
+			replaceFrom.add(StringBundler.concat("${", javaSnippet, "}"));
 			replaceWith.add(fieldValue);
 
 			x = s.indexOf("${", y);

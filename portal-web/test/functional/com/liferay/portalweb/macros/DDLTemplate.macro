@@ -1,4 +1,5 @@
 definition {
+
 	var ddlDataDefinitionDescription = "Data Definition Description";
 	var ddlDataDefinitionName = "Data Definition Name";
 	var ddlListName = "List Name";
@@ -80,7 +81,7 @@ definition {
 	macro addDisplayTemplateTemplateViaDDLDisplayPG {
 		Click(locator1 = "DDL#PORTLET_ACTIONS_ADD_DISPLAY_TEMPLATE");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PortletEntry.inputName(name = "${ddlDisplayTemplateName}");
 
@@ -146,7 +147,7 @@ definition {
 	macro addFormTemplateViaDDLDisplayPG {
 		Click(locator1 = "DDL#PORTLET_ACTIONS_ADD_FORM_TEMPLATE");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PortletEntry.inputName(name = "${ddlFormTemplateName}");
 	}
@@ -174,7 +175,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLNavigator.gotoManageDataDefinitions();
@@ -313,7 +313,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLNavigator.gotoManageDataDefinitions();
@@ -398,4 +397,5 @@ definition {
 
 		AssertElementNotPresent(locator1 = "DDMSelectTemplate#TEMPLATE_TABLE_NAME_LINK");
 	}
+
 }

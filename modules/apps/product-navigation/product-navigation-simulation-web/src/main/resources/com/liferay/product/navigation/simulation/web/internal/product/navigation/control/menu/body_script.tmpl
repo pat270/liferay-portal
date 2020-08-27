@@ -1,17 +1,15 @@
-var simulationToggle = $('#${portletNamespace}simulationToggleId');
+var simulationToggle = document.getElementById('${portletNamespace}simulationToggleId');
 
-simulationToggle.sideNavigation();
+var sidenavInstance = Liferay.SideNavigation.initialize(simulationToggle);
 
-var simulationPanel = $('#${portletNamespace}simulationPanelId');
-
-simulationPanel.on(
+sidenavInstance.on(
 	'open.lexicon.sidenav',
 	function(event) {
 		Liferay.fire('SimulationMenu:openSimulationPanel');
 	}
 );
 
-simulationPanel.on(
+sidenavInstance.on(
 	'closed.lexicon.sidenav',
 	function(event) {
 		Liferay.fire('SimulationMenu:closeSimulationPanel');
@@ -21,10 +19,6 @@ simulationPanel.on(
 Liferay.once(
 	'screenLoad',
 	function() {
-		var sideNavigation = simulationToggle.data('lexicon.sidenav');
-
-		if (sideNavigation) {
-			sideNavigation.destroy();
-		}
+		Liferay.SideNavigation.destroy(simulationToggle);
 	}
 );

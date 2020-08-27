@@ -15,8 +15,10 @@
 package com.liferay.mentions.web.internal.portlet;
 
 import com.liferay.mentions.constants.MentionsPortletKeys;
-import com.liferay.mentions.util.MentionsUserFinder;
+import com.liferay.mentions.strategy.MentionsStrategy;
 import com.liferay.mentions.util.MentionsUtil;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -35,20 +37,22 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.social.kernel.util.SocialInteractionsConfiguration;
-import com.liferay.social.kernel.util.SocialInteractionsConfigurationUtil;
 import com.liferay.taglib.ui.UserPortraitTag;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.portlet.Portlet;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -65,8 +69,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.name=" + MentionsPortletKeys.MENTIONS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -87,10 +90,12 @@ public class MentionsPortlet extends MVCPortlet {
 				return;
 			}
 
-			HttpServletRequest httpServletRequest =
-				_portal.getHttpServletRequest(resourceRequest);
-
-			JSONArray jsonArray = _getJSONArray(httpServletRequest);
+			JSONArray jsonArray = _getJSONArray(
+				_getSupplier(
+					themeDisplay,
+					ParamUtil.getString(resourceRequest, "strategy"),
+					ParamUtil.getString(resourceRequest, "query")),
+				themeDisplay);
 
 			HttpServletResponse httpServletResponse =
 				_portal.getHttpServletResponse(resourceResponse);
@@ -100,32 +105,29 @@ public class MentionsPortlet extends MVCPortlet {
 			ServletResponseUtil.write(
 				httpServletResponse, jsonArray.toString());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
-	private JSONArray _getJSONArray(HttpServletRequest httpServletRequest)
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, MentionsStrategy.class, "mentions.strategy");
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
+	}
+
+	private JSONArray _getJSONArray(
+			Supplier<List<User>> usersSupplier, ThemeDisplay themeDisplay)
 		throws PortalException {
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		SocialInteractionsConfiguration socialInteractionsConfiguration =
-			SocialInteractionsConfigurationUtil.
-				getSocialInteractionsConfiguration(
-					themeDisplay.getCompanyId(), MentionsPortletKeys.MENTIONS);
-
-		String query = ParamUtil.getString(httpServletRequest, "query");
-
-		List<User> users = _mentionsUserFinder.getUsers(
-			themeDisplay.getCompanyId(), themeDisplay.getUserId(), query,
-			socialInteractionsConfiguration);
-
-		for (User user : users) {
+		for (User user : usersSupplier.get()) {
 			if (user.isDefaultUser() ||
 				(themeDisplay.getUserId() == user.getUserId())) {
 
@@ -161,13 +163,60 @@ public class MentionsPortlet extends MVCPortlet {
 		return jsonArray;
 	}
 
+	private JSONObject _getJSONObject(String strategyString)
+		throws PortalException {
+
+		if ((strategyString == null) || strategyString.isEmpty()) {
+			return JSONUtil.put("strategy", "default");
+		}
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			strategyString);
+
+		if (jsonObject.isNull("strategy")) {
+			throw new PortalException(
+				"Field \"strategy\" is missing in " + strategyString);
+		}
+
+		return jsonObject;
+	}
+
+	private Supplier<List<User>> _getSupplier(
+			ThemeDisplay themeDisplay, String strategyString, String query)
+		throws PortalException {
+
+		JSONObject jsonObject = _getJSONObject(strategyString);
+
+		String strategy = jsonObject.getString("strategy");
+
+		MentionsStrategy mentionsStrategy = _serviceTrackerMap.getService(
+			strategy);
+
+		if (mentionsStrategy == null) {
+			throw new PortalException(
+				"No mentions strategy is registered with " + strategy);
+		}
+
+		return () -> {
+			try {
+				return mentionsStrategy.getUsers(
+					themeDisplay.getCompanyId(), themeDisplay.getUserId(),
+					query, jsonObject);
+			}
+			catch (PortalException portalException) {
+				_log.error(portalException, portalException);
+
+				return Collections.emptyList();
+			}
+		};
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		MentionsPortlet.class);
 
 	@Reference
-	private MentionsUserFinder _mentionsUserFinder;
-
-	@Reference
 	private Portal _portal;
+
+	private ServiceTrackerMap<String, MentionsStrategy> _serviceTrackerMap;
 
 }

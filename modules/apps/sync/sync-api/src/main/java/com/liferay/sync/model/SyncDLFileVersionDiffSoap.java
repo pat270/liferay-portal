@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class SyncDLFileVersionDiffSoap implements Serializable {
 
 	public static SyncDLFileVersionDiffSoap toSoapModel(
@@ -38,6 +37,7 @@ public class SyncDLFileVersionDiffSoap implements Serializable {
 
 		soapModel.setSyncDLFileVersionDiffId(
 			model.getSyncDLFileVersionDiffId());
+		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setFileEntryId(model.getFileEntryId());
 		soapModel.setSourceFileVersionId(model.getSourceFileVersionId());
 		soapModel.setTargetFileVersionId(model.getTargetFileVersionId());
@@ -114,6 +114,14 @@ public class SyncDLFileVersionDiffSoap implements Serializable {
 		_syncDLFileVersionDiffId = syncDLFileVersionDiffId;
 	}
 
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
+	}
+
 	public long getFileEntryId() {
 		return _fileEntryId;
 	}
@@ -163,6 +171,7 @@ public class SyncDLFileVersionDiffSoap implements Serializable {
 	}
 
 	private long _syncDLFileVersionDiffId;
+	private long _companyId;
 	private long _fileEntryId;
 	private long _sourceFileVersionId;
 	private long _targetFileVersionId;

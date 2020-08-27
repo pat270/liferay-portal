@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DDMFormInstance in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDMFormInstanceCacheModel
-	implements CacheModel<DDMFormInstance>, Externalizable {
+	implements CacheModel<DDMFormInstance>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMFormInstanceCacheModel)) {
+		if (!(object instanceof DDMFormInstanceCacheModel)) {
 			return false;
 		}
 
 		DDMFormInstanceCacheModel ddmFormInstanceCacheModel =
-			(DDMFormInstanceCacheModel)obj;
+			(DDMFormInstanceCacheModel)object;
 
-		if (formInstanceId == ddmFormInstanceCacheModel.formInstanceId) {
+		if ((formInstanceId == ddmFormInstanceCacheModel.formInstanceId) &&
+			(mvccVersion == ddmFormInstanceCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class DDMFormInstanceCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, formInstanceId);
+		int hashCode = HashUtil.hash(0, formInstanceId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(33);
+		StringBundler sb = new StringBundler(37);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", formInstanceId=");
 		sb.append(formInstanceId);
@@ -107,6 +123,9 @@ public class DDMFormInstanceCacheModel
 	@Override
 	public DDMFormInstance toEntityModel() {
 		DDMFormInstanceImpl ddmFormInstanceImpl = new DDMFormInstanceImpl();
+
+		ddmFormInstanceImpl.setMvccVersion(mvccVersion);
+		ddmFormInstanceImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			ddmFormInstanceImpl.setUuid("");
@@ -198,6 +217,9 @@ public class DDMFormInstanceCacheModel
 	public void readExternal(ObjectInput objectInput)
 		throws ClassNotFoundException, IOException {
 
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		formInstanceId = objectInput.readLong();
@@ -217,8 +239,8 @@ public class DDMFormInstanceCacheModel
 		structureId = objectInput.readLong();
 		version = objectInput.readUTF();
 		name = objectInput.readUTF();
-		description = objectInput.readUTF();
-		settings = objectInput.readUTF();
+		description = (String)objectInput.readObject();
+		settings = (String)objectInput.readObject();
 		lastPublishDate = objectInput.readLong();
 
 		_ddmFormValues =
@@ -228,6 +250,10 @@ public class DDMFormInstanceCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -279,17 +305,17 @@ public class DDMFormInstanceCacheModel
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(description);
+			objectOutput.writeObject(description);
 		}
 
 		if (settings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(settings);
+			objectOutput.writeObject(settings);
 		}
 
 		objectOutput.writeLong(lastPublishDate);
@@ -297,6 +323,8 @@ public class DDMFormInstanceCacheModel
 		objectOutput.writeObject(_ddmFormValues);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long formInstanceId;
 	public long groupId;

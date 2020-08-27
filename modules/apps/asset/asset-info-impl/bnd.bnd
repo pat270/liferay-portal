@@ -1,0 +1,4 @@
+Bundle-Name: Liferay Asset Info Implementation
+Bundle-SymbolicName: com.liferay.asset.info.impl
+Bundle-Version: 1.0.9
+-dsannotations-options: inherit

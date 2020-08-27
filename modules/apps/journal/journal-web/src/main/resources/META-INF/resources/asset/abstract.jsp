@@ -24,16 +24,19 @@ JournalArticleDisplay articleDisplay = (JournalArticleDisplay)request.getAttribu
 
 <div class="asset-summary">
 	<c:if test="<%= articleDisplay.isSmallImage() %>">
-		<div class="aspect-ratio aspect-ratio-8-to-3 aspect-ratio-bg-cover cover-image mb-4" style="background-image: url(<%= articleDisplay.getArticleDisplayImageURL(themeDisplay) %>)"></div>
+		<div class="aspect-ratio aspect-ratio-8-to-3 aspect-ratio-bg-cover cover-image mb-4" style="background-image: url(<%= articleDisplay.getArticleDisplayImageURL(themeDisplay) %>);"></div>
 	</c:if>
 
 	<%
 	String summary = articleDisplay.getDescription();
-
-	if (Validator.isNull(summary)) {
-		summary = articleDisplay.getContent();
-	}
 	%>
 
-	<%= HtmlUtil.replaceNewLine(StringUtil.shorten(HtmlUtil.stripHtml(summary), abstractLength)) %>
+	<c:choose>
+		<c:when test="<%= Validator.isNull(summary) %>">
+			<%= StringUtil.shorten(HtmlUtil.stripHtml(articleDisplay.getContent()), abstractLength) %>
+		</c:when>
+		<c:otherwise>
+			<%= HtmlUtil.replaceNewLine(StringUtil.shorten(HtmlUtil.stripHtml(summary), abstractLength)) %>
+		</c:otherwise>
+	</c:choose>
 </div>

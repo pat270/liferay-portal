@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -130,6 +130,12 @@ public class LayoutPageTemplateStructureRelPersistenceTest {
 		LayoutPageTemplateStructureRel newLayoutPageTemplateStructureRel =
 			_persistence.create(pk);
 
+		newLayoutPageTemplateStructureRel.setMvccVersion(
+			RandomTestUtil.nextLong());
+
+		newLayoutPageTemplateStructureRel.setCtCollectionId(
+			RandomTestUtil.nextLong());
+
 		newLayoutPageTemplateStructureRel.setUuid(
 			RandomTestUtil.randomString());
 
@@ -165,6 +171,12 @@ public class LayoutPageTemplateStructureRelPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newLayoutPageTemplateStructureRel.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingLayoutPageTemplateStructureRel.getMvccVersion(),
+			newLayoutPageTemplateStructureRel.getMvccVersion());
+		Assert.assertEquals(
+			existingLayoutPageTemplateStructureRel.getCtCollectionId(),
+			newLayoutPageTemplateStructureRel.getCtCollectionId());
 		Assert.assertEquals(
 			existingLayoutPageTemplateStructureRel.getUuid(),
 			newLayoutPageTemplateStructureRel.getUuid());
@@ -289,11 +301,12 @@ public class LayoutPageTemplateStructureRelPersistenceTest {
 		getOrderByComparator() {
 
 		return OrderByComparatorFactoryUtil.create(
-			"LayoutPageTemplateStructureRel", "uuid", true,
+			"LayoutPageTemplateStructureRel", "mvccVersion", true,
+			"ctCollectionId", true, "uuid", true,
 			"layoutPageTemplateStructureRelId", true, "groupId", true,
 			"companyId", true, "userId", true, "userName", true, "createDate",
 			true, "modifiedDate", true, "layoutPageTemplateStructureId", true,
-			"segmentsExperienceId", true, "data", true);
+			"segmentsExperienceId", true);
 	}
 
 	@Test
@@ -552,36 +565,82 @@ public class LayoutPageTemplateStructureRelPersistenceTest {
 
 		_persistence.clearCache();
 
-		LayoutPageTemplateStructureRel existingLayoutPageTemplateStructureRel =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newLayoutPageTemplateStructureRel.getPrimaryKey());
+				newLayoutPageTemplateStructureRel.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingLayoutPageTemplateStructureRel.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingLayoutPageTemplateStructureRel, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		LayoutPageTemplateStructureRel newLayoutPageTemplateStructureRel =
+			addLayoutPageTemplateStructureRel();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			LayoutPageTemplateStructureRel.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"layoutPageTemplateStructureRelId",
+				newLayoutPageTemplateStructureRel.
+					getLayoutPageTemplateStructureRelId()));
+
+		List<LayoutPageTemplateStructureRel> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
+
 		Assert.assertEquals(
-			Long.valueOf(existingLayoutPageTemplateStructureRel.getGroupId()),
+			layoutPageTemplateStructureRel.getUuid(),
+			ReflectionTestUtil.invoke(
+				layoutPageTemplateStructureRel, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(layoutPageTemplateStructureRel.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingLayoutPageTemplateStructureRel, "getOriginalGroupId",
-				new Class<?>[0]));
+				layoutPageTemplateStructureRel, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
 			Long.valueOf(
-				existingLayoutPageTemplateStructureRel.
+				layoutPageTemplateStructureRel.
 					getLayoutPageTemplateStructureId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingLayoutPageTemplateStructureRel,
-				"getOriginalLayoutPageTemplateStructureId", new Class<?>[0]));
+				layoutPageTemplateStructureRel, "getColumnOriginalValue",
+				new Class<?>[] {String.class},
+				"layoutPageTemplateStructureId"));
 		Assert.assertEquals(
 			Long.valueOf(
-				existingLayoutPageTemplateStructureRel.
-					getSegmentsExperienceId()),
+				layoutPageTemplateStructureRel.getSegmentsExperienceId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingLayoutPageTemplateStructureRel,
-				"getOriginalSegmentsExperienceId", new Class<?>[0]));
+				layoutPageTemplateStructureRel, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "segmentsExperienceId"));
 	}
 
 	protected LayoutPageTemplateStructureRel addLayoutPageTemplateStructureRel()
@@ -591,6 +650,12 @@ public class LayoutPageTemplateStructureRelPersistenceTest {
 
 		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel =
 			_persistence.create(pk);
+
+		layoutPageTemplateStructureRel.setMvccVersion(
+			RandomTestUtil.nextLong());
+
+		layoutPageTemplateStructureRel.setCtCollectionId(
+			RandomTestUtil.nextLong());
 
 		layoutPageTemplateStructureRel.setUuid(RandomTestUtil.randomString());
 

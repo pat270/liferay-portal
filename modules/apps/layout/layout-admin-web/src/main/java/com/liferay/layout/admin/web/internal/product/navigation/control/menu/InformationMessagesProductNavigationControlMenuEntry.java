@@ -61,7 +61,7 @@ public class InformationMessagesProductNavigationControlMenuEntry
 
 	@Override
 	public String getIconJspPath() {
-		return "/control/menu/information_messages.jsp";
+		return "/dynamic_include/information_messages.jsp";
 	}
 
 	public boolean hasUpdateLayoutPermission(ThemeDisplay themeDisplay)
@@ -95,8 +95,8 @@ public class InformationMessagesProductNavigationControlMenuEntry
 				INFORMATION_MESSAGES_MODIFIED_LAYOUT,
 				isModifiedLayout(themeDisplay));
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		return super.includeIcon(httpServletRequest, httpServletResponse);

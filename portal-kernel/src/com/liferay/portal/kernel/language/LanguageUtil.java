@@ -30,12 +30,9 @@ import javax.portlet.PortletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class LanguageUtil {
 
 	public static String format(
@@ -158,6 +155,10 @@ public class LanguageUtil {
 
 		return getLanguage().format(
 			resourceBundle, pattern, arguments, translateArguments);
+	}
+
+	public static String formatStorageSize(double size, Locale locale) {
+		return getLanguage().formatStorageSize(size, locale);
 	}
 
 	public static String get(
@@ -351,17 +352,6 @@ public class LanguageUtil {
 		String value = getLanguage().get(locale, key, StringPool.BLANK);
 
 		return Validator.isNotNull(value);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #process(Supplier,
-	 *             Locale, String)}
-	 */
-	@Deprecated
-	public static String process(
-		ResourceBundle resourceBundle, Locale locale, String content) {
-
-		return getLanguage().process(resourceBundle, locale, content);
 	}
 
 	public static String process(

@@ -36,8 +36,7 @@ portletURL.setParameter("portletResource", portletResource);
 						navigationItem.setActive(tabs3.equals("new-export-process"));
 						navigationItem.setHref(portletURL.toString());
 						navigationItem.setLabel(LanguageUtil.get(request, "new-export-process"));
-					}
-				);
+					});
 
 				portletURL.setParameter("tabs3", "current-and-previous");
 
@@ -46,8 +45,7 @@ portletURL.setParameter("portletResource", portletResource);
 						navigationItem.setActive(tabs3.equals("current-and-previous"));
 						navigationItem.setHref(portletURL.toString());
 						navigationItem.setLabel(LanguageUtil.get(request, "current-and-previous"));
-					}
-				);
+					});
 			}
 		}
 	%>'
@@ -89,7 +87,7 @@ portletURL.setParameter("portletResource", portletResource);
 			<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.EXPORT %>" />
 
 			<div class="export-dialog-tree">
-				<div class="container-fluid-1280">
+				<clay:container-fluid>
 					<aui:fieldset-group markupView="lexicon">
 						<aui:fieldset>
 							<aui:input label="export-the-selected-data-to-the-given-lar-file-name" name="exportFileName" required="<%= true %>" showRequiredLabel="<%= false %>" size="50" value="<%= ExportImportHelperUtil.getPortletExportFileName(selPortlet) %>" />
@@ -141,9 +139,9 @@ portletURL.setParameter("portletResource", portletResource);
 														<span class="selected-labels" id="<portlet:namespace />selectedConfiguration_<%= selPortlet.getRootPortletId() %>"></span>
 
 														<%
-														Map<String, Object> data = new HashMap<String, Object>();
-
-														data.put("portletid", selPortlet.getRootPortletId());
+														Map<String, Object> data = HashMapBuilder.<String, Object>put(
+															"portletid", selPortlet.getRootPortletId()
+														).build();
 														%>
 
 														<aui:a cssClass="configuration-link modify-link" data="<%= data %>" href="javascript:;" label="change" method="get" />
@@ -151,7 +149,10 @@ portletURL.setParameter("portletResource", portletResource);
 												</ul>
 
 												<aui:script>
-													Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>', '<portlet:namespace />showChangeConfiguration<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>');
+													Liferay.Util.toggleBoxes(
+														'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>',
+														'<portlet:namespace />showChangeConfiguration<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>'
+													);
 												</aui:script>
 											</li>
 										</ul>
@@ -244,15 +245,15 @@ portletURL.setParameter("portletResource", portletResource);
 															/>
 
 															<liferay-ui:input-time
-																amPmParam='<%= "startDateAmPm" %>'
+																amPmParam="startDateAmPm"
 																amPmValue="<%= startCalendar.get(Calendar.AM_PM) %>"
 																cssClass="form-group form-group-inline"
 																dateParam="startDateTime"
 																dateValue="<%= startCalendar.getTime() %>"
 																disabled="<%= false %>"
-																hourParam='<%= "startDateHour" %>'
+																hourParam="startDateHour"
 																hourValue="<%= startCalendar.get(Calendar.HOUR) %>"
-																minuteParam='<%= "startDateMinute" %>'
+																minuteParam="startDateMinute"
 																minuteValue="<%= startCalendar.get(Calendar.MINUTE) %>"
 																name="startTime"
 															/>
@@ -274,15 +275,15 @@ portletURL.setParameter("portletResource", portletResource);
 															/>
 
 															<liferay-ui:input-time
-																amPmParam='<%= "endDateAmPm" %>'
+																amPmParam="endDateAmPm"
 																amPmValue="<%= endCalendar.get(Calendar.AM_PM) %>"
 																cssClass="form-group form-group-inline"
 																dateParam="startDateTime"
 																dateValue="<%= endCalendar.getTime() %>"
 																disabled="<%= false %>"
-																hourParam='<%= "endDateHour" %>'
+																hourParam="endDateHour"
 																hourValue="<%= endCalendar.get(Calendar.HOUR) %>"
-																minuteParam='<%= "endDateMinute" %>'
+																minuteParam="endDateMinute"
 																minuteValue="<%= endCalendar.get(Calendar.MINUTE) %>"
 																name="endTime"
 															/>
@@ -387,9 +388,9 @@ portletURL.setParameter("portletResource", portletResource);
 																	<span class="selected-labels" id="<portlet:namespace />selectedContent_<%= selPortlet.getRootPortletId() %>"></span>
 
 																	<%
-																	Map<String, Object> data = new HashMap<String, Object>();
-
-																	data.put("portletid", selPortlet.getRootPortletId());
+																	Map<String, Object> data = HashMapBuilder.<String, Object>put(
+																		"portletid", selPortlet.getRootPortletId()
+																	).build();
 																	%>
 
 																	<aui:a cssClass="content-link modify-link" data="<%= data %>" href="javascript:;" id='<%= "contentLink_" + selPortlet.getRootPortletId() %>' label="change" method="get" />
@@ -397,7 +398,10 @@ portletURL.setParameter("portletResource", portletResource);
 															</ul>
 
 															<aui:script>
-																Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>', '<portlet:namespace />showChangeContent<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>');
+																Liferay.Util.toggleBoxes(
+																	'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>',
+																	'<portlet:namespace />showChangeContent<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>'
+																);
 															</aui:script>
 
 														<%
@@ -446,7 +450,7 @@ portletURL.setParameter("portletResource", portletResource);
 							/>
 						</c:if>
 					</aui:fieldset-group>
-				</div>
+				</clay:container-fluid>
 			</div>
 
 			<aui:button-row>
@@ -461,29 +465,28 @@ portletURL.setParameter("portletResource", portletResource);
 
 			var form = liferayForm.formNode;
 
-			form.on(
-				'submit',
-				function(event) {
-					event.halt();
+			form.on('submit', function (event) {
+				event.halt();
 
-					var exportImport = Liferay.component('<portlet:namespace />ExportImportComponent');
+				var exportImport = Liferay.component(
+					'<portlet:namespace />ExportImportComponent'
+				);
 
-					var dateChecker = exportImport.getDateRangeChecker();
+				var dateChecker = exportImport.getDateRangeChecker();
 
-					if (dateChecker.validRange) {
-						submitForm(form, form.attr('action'), false);
-					}
-					else {
-						exportImport.showNotification(dateChecker);
-					}
+				if (dateChecker.validRange) {
+					submitForm(form, form.attr('action'), false);
 				}
-			);
+				else {
+					exportImport.showNotification(dateChecker);
+				}
+			});
 
 			var oldFieldRules = liferayForm.get('fieldRules');
 
 			var fieldRules = [
 				{
-					body: function(val, fieldNode, ruleValue) {
+					body: function (val, fieldNode, ruleValue) {
 
 						<%
 						JSONArray blacklistCharJSONArray = JSONFactoryUtil.createJSONArray();
@@ -499,22 +502,23 @@ portletURL.setParameter("portletResource", portletResource);
 							if (val.indexOf(blacklistCharJSONArray[i]) !== -1) {
 								return false;
 							}
-						};
+						}
 
 						return true;
 					},
 					custom: true,
-					errorMessage: '<%= LanguageUtil.get(request, "the-following-are-invalid-characters") + HtmlUtil.escapeJS(Arrays.toString(PropsValues.DL_CHAR_BLACKLIST)) %>',
+					errorMessage:
+						'<%= LanguageUtil.get(request, "the-following-are-invalid-characters") + HtmlUtil.escapeJS(Arrays.toString(PropsValues.DL_CHAR_BLACKLIST)) %>',
 					fieldName: '<portlet:namespace />exportFileName',
-					validatorName: 'custom_exportFileNameValidator'
-				}
+					validatorName: 'custom_exportFileNameValidator',
+				},
 			];
 
-		if (oldFieldRules) {
-			fieldRules = fieldRules.concat(oldFieldRules);
-		}
+			if (oldFieldRules) {
+				fieldRules = fieldRules.concat(oldFieldRules);
+			}
 
-		liferayForm.set('fieldRules', fieldRules);
+			liferayForm.set('fieldRules', fieldRules);
 		</aui:script>
 	</c:when>
 	<c:when test='<%= tabs3.equals("current-and-previous") %>'>
@@ -534,36 +538,44 @@ portletURL.setParameter("portletResource", portletResource);
 		<portlet:param name="portletResource" value="<%= portletResource %>" />
 	</liferay-portlet:resourceURL>
 
-	var exportImport = new Liferay.ExportImport(
-		{
-			commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
-			deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
-			form: document.<portlet:namespace />fm1,
-			incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',
-			locale: '<%= locale.toLanguageTag() %>',
-			namespace: '<portlet:namespace />',
-			processesNode: '#exportProcesses',
-			processesResourceURL: '<%= HtmlUtil.escapeJS(exportProcessesURL.toString()) %>',
-			rangeAllNode: '#rangeAll',
-			rangeDateRangeNode: '#rangeDateRange',
-			rangeLastNode: '#rangeLast',
-			ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>',
-			timeZoneOffset: <%= timeZoneOffset %>
-		}
-	);
+	var exportImport = new Liferay.ExportImport({
+		commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
+		deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
+		form: document.<portlet:namespace />fm1,
+		incompleteProcessMessageNode:
+			'#<portlet:namespace />incompleteProcessMessage',
+		locale: '<%= locale.toLanguageTag() %>',
+		namespace: '<portlet:namespace />',
+		processesNode: '#exportProcesses',
+		processesResourceURL:
+			'<%= HtmlUtil.escapeJS(exportProcessesURL.toString()) %>',
+		rangeAllNode: '#rangeAll',
+		rangeDateRangeNode: '#rangeDateRange',
+		rangeLastNode: '#rangeLast',
+		ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>',
+		timeZoneOffset: <%= timeZoneOffset %>,
+	});
 
 	Liferay.component('<portlet:namespace />ExportImportComponent', exportImport);
 
-	Liferay.once(
-		'destroyPortlet',
-		function() {
-			exportImport.destroy();
-		}
-	);
+	Liferay.once('destroyPortlet', function () {
+		exportImport.destroy();
+	});
 </aui:script>
 
 <aui:script>
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeAll', '', ['<portlet:namespace />startEndDate', '<portlet:namespace />rangeLastInputs']);
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeDateRange', '<portlet:namespace />startEndDate', '<portlet:namespace />rangeLastInputs');
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeLast', '<portlet:namespace />rangeLastInputs', ['<portlet:namespace />startEndDate']);
+	Liferay.Util.toggleRadio('<portlet:namespace />rangeAll', '', [
+		'<portlet:namespace />startEndDate',
+		'<portlet:namespace />rangeLastInputs',
+	]);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />rangeDateRange',
+		'<portlet:namespace />startEndDate',
+		'<portlet:namespace />rangeLastInputs'
+	);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />rangeLast',
+		'<portlet:namespace />rangeLastInputs',
+		['<portlet:namespace />startEndDate']
+	);
 </aui:script>

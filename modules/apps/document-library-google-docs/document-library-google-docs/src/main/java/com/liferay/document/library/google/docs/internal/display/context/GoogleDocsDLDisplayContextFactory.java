@@ -77,18 +77,20 @@ public class GoogleDocsDLDisplayContextFactory
 
 		Object model = fileEntry.getModel();
 
-		if (model instanceof DLFileEntry) {
-			GoogleDocsMetadataHelper googleDocsMetadataHelper =
-				new GoogleDocsMetadataHelper(
-					_ddmFormValuesToFieldsConverter, _ddmStructureLocalService,
-					(DLFileEntry)model, _dlFileEntryMetadataLocalService,
-					_fieldsToDDMFormValuesConverter, _storageEngine);
+		if (!(model instanceof DLFileEntry)) {
+			return parentDLEditFileEntryDisplayContext;
+		}
 
-			if (googleDocsMetadataHelper.isGoogleDocs()) {
-				return new GoogleDocsDLEditFileEntryDisplayContext(
-					parentDLEditFileEntryDisplayContext, httpServletRequest,
-					httpServletResponse, fileEntry);
-			}
+		GoogleDocsMetadataHelper googleDocsMetadataHelper =
+			new GoogleDocsMetadataHelper(
+				_ddmFormValuesToFieldsConverter, _ddmStructureLocalService,
+				(DLFileEntry)model, _dlFileEntryMetadataLocalService,
+				_fieldsToDDMFormValuesConverter, _storageEngine);
+
+		if (googleDocsMetadataHelper.isGoogleDocs()) {
+			return new GoogleDocsDLEditFileEntryDisplayContext(
+				parentDLEditFileEntryDisplayContext, httpServletRequest,
+				httpServletResponse, fileEntry);
 		}
 
 		return parentDLEditFileEntryDisplayContext;
@@ -105,17 +107,15 @@ public class GoogleDocsDLDisplayContextFactory
 
 			FileEntry fileEntry = _dlAppService.getFileEntry(fileEntryId);
 
-			FileVersion fileVersion = fileEntry.getFileVersion();
-
 			return getDLViewFileVersionDisplayContext(
 				parentDLViewFileVersionDisplayContext, httpServletRequest,
-				httpServletResponse, fileVersion);
+				httpServletResponse, fileEntry.getFileVersion());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to build GoogleDocsDLViewFileVersionDisplayContext " +
 					"for shortcut " + fileShortcut.getPrimaryKey(),
-				pe);
+				portalException);
 		}
 	}
 
@@ -127,66 +127,41 @@ public class GoogleDocsDLDisplayContextFactory
 
 		Object model = fileVersion.getModel();
 
-		if (model instanceof DLFileVersion) {
-			GoogleDocsMetadataHelper googleDocsMetadataHelper =
-				new GoogleDocsMetadataHelper(
-					_ddmFormValuesToFieldsConverter, _ddmStructureLocalService,
-					(DLFileVersion)model, _dlFileEntryMetadataLocalService,
-					_fieldsToDDMFormValuesConverter, _storageEngine);
+		if (!(model instanceof DLFileVersion)) {
+			return parentDLViewFileVersionDisplayContext;
+		}
 
-			if (googleDocsMetadataHelper.isGoogleDocs()) {
-				return new GoogleDocsDLViewFileVersionDisplayContext(
-					parentDLViewFileVersionDisplayContext, httpServletRequest,
-					httpServletResponse, fileVersion, googleDocsMetadataHelper);
-			}
+		GoogleDocsMetadataHelper googleDocsMetadataHelper =
+			new GoogleDocsMetadataHelper(
+				_ddmFormValuesToFieldsConverter, _ddmStructureLocalService,
+				(DLFileVersion)model, _dlFileEntryMetadataLocalService,
+				_fieldsToDDMFormValuesConverter, _storageEngine);
+
+		if (googleDocsMetadataHelper.isGoogleDocs()) {
+			return new GoogleDocsDLViewFileVersionDisplayContext(
+				parentDLViewFileVersionDisplayContext, httpServletRequest,
+				httpServletResponse, fileVersion, googleDocsMetadataHelper);
 		}
 
 		return parentDLViewFileVersionDisplayContext;
 	}
 
-	@Reference(unbind = "-")
-	public void setDDMFormValuesToFieldsConverter(
-		DDMFormValuesToFieldsConverter ddmFormValuesToFieldsConverter) {
-
-		_ddmFormValuesToFieldsConverter = ddmFormValuesToFieldsConverter;
-	}
-
-	@Reference(unbind = "-")
-	public void setDDMStructureLocalService(
-		DDMStructureLocalService ddmStructureLocalService) {
-
-		_ddmStructureLocalService = ddmStructureLocalService;
-	}
-
-	@Reference(unbind = "-")
-	public void setDLAppService(DLAppService dlAppService) {
-		_dlAppService = dlAppService;
-	}
-
-	@Reference(unbind = "-")
-	public void setDLFileEntryMetadataLocalService(
-		DLFileEntryMetadataLocalService dlFileEntryMetadataLocalService) {
-
-		_dlFileEntryMetadataLocalService = dlFileEntryMetadataLocalService;
-	}
-
-	@Reference(unbind = "-")
-	public void setFieldsToDDMFormValuesConverter(
-		FieldsToDDMFormValuesConverter fieldsToDDMFormValuesConverter) {
-
-		_fieldsToDDMFormValuesConverter = fieldsToDDMFormValuesConverter;
-	}
-
-	@Reference(unbind = "-")
-	public void setStorageEngine(StorageEngine storageEngine) {
-		_storageEngine = storageEngine;
-	}
-
+	@Reference
 	private DDMFormValuesToFieldsConverter _ddmFormValuesToFieldsConverter;
+
+	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Reference
 	private DLAppService _dlAppService;
+
+	@Reference
 	private DLFileEntryMetadataLocalService _dlFileEntryMetadataLocalService;
+
+	@Reference
 	private FieldsToDDMFormValuesConverter _fieldsToDDMFormValuesConverter;
+
+	@Reference
 	private StorageEngine _storageEngine;
 
 }

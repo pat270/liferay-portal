@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link CompanyService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CompanyService
  * @generated
  */
-@ProviderType
 public class CompanyServiceWrapper
 	implements CompanyService, ServiceWrapper<CompanyService> {
 
@@ -45,8 +42,8 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Company addCompany(
-			String webId, String virtualHost, String mx, boolean system,
-			int maxUsers, boolean active)
+			java.lang.String webId, java.lang.String virtualHost,
+			java.lang.String mx, boolean system, int maxUsers, boolean active)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.addCompany(
@@ -119,7 +116,8 @@ public class CompanyServiceWrapper
 	 * @return Returns the company with the mail domain
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Company getCompanyByMx(String mx)
+	public com.liferay.portal.kernel.model.Company getCompanyByMx(
+			java.lang.String mx)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.getCompanyByMx(mx);
@@ -133,7 +131,7 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Company getCompanyByVirtualHost(
-			String virtualHost)
+			java.lang.String virtualHost)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.getCompanyByVirtualHost(virtualHost);
@@ -147,7 +145,7 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Company getCompanyByWebId(
-			String webId)
+			java.lang.String webId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.getCompanyByWebId(webId);
@@ -159,7 +157,7 @@ public class CompanyServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _companyService.getOSGiServiceIdentifier();
 	}
 
@@ -174,7 +172,7 @@ public class CompanyServiceWrapper
 	 * @param keys the company's preferences keys to be remove
 	 */
 	@Override
-	public void removePreferences(long companyId, String[] keys)
+	public void removePreferences(long companyId, java.lang.String[] keys)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_companyService.removePreferences(companyId, keys);
@@ -193,8 +191,8 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Company updateCompany(
-			long companyId, String virtualHost, String mx, int maxUsers,
-			boolean active)
+			long companyId, java.lang.String virtualHost, java.lang.String mx,
+			int maxUsers, boolean active)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.updateCompany(
@@ -208,7 +206,7 @@ public class CompanyServiceWrapper
 	 * @param virtualHost the company's virtual host name
 	 * @param mx the company's mail domain
 	 * @param homeURL the company's home URL (optionally <code>null</code>)
-	 * @param logo whether to update the company's logo
+	 * @param hasLogo if the company has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param name the company's account name (optionally <code>null</code>)
 	 * @param legalName the company's account legal name (optionally
@@ -229,14 +227,17 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Company updateCompany(
-			long companyId, String virtualHost, String mx, String homeURL,
-			boolean logo, byte[] logoBytes, String name, String legalName,
-			String legalId, String legalType, String sicCode,
-			String tickerSymbol, String industry, String type, String size)
+			long companyId, java.lang.String virtualHost, java.lang.String mx,
+			java.lang.String homeURL, boolean hasLogo, byte[] logoBytes,
+			java.lang.String name, java.lang.String legalName,
+			java.lang.String legalId, java.lang.String legalType,
+			java.lang.String sicCode, java.lang.String tickerSymbol,
+			java.lang.String industry, java.lang.String type,
+			java.lang.String size)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.updateCompany(
-			companyId, virtualHost, mx, homeURL, logo, logoBytes, name,
+			companyId, virtualHost, mx, homeURL, hasLogo, logoBytes, name,
 			legalName, legalId, legalType, sicCode, tickerSymbol, industry,
 			type, size);
 	}
@@ -248,7 +249,7 @@ public class CompanyServiceWrapper
 	 * @param virtualHost the company's virtual host name
 	 * @param mx the company's mail domain
 	 * @param homeURL the company's home URL (optionally <code>null</code>)
-	 * @param logo if the company has a custom logo
+	 * @param hasLogo if the company has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param name the company's account name (optionally <code>null</code>)
 	 * @param legalName the company's account legal name (optionally
@@ -271,29 +272,32 @@ public class CompanyServiceWrapper
 	 * @param emailAddresses the company's email addresses
 	 * @param phones the company's phone numbers
 	 * @param websites the company's websites
-	 * @param properties the company's properties
+	 * @param unicodeProperties the company's properties
 	 * @return the company with the primary key
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Company updateCompany(
-			long companyId, String virtualHost, String mx, String homeURL,
-			boolean logo, byte[] logoBytes, String name, String legalName,
-			String legalId, String legalType, String sicCode,
-			String tickerSymbol, String industry, String type, String size,
-			String languageId, String timeZoneId,
+			long companyId, java.lang.String virtualHost, java.lang.String mx,
+			java.lang.String homeURL, boolean hasLogo, byte[] logoBytes,
+			java.lang.String name, java.lang.String legalName,
+			java.lang.String legalId, java.lang.String legalType,
+			java.lang.String sicCode, java.lang.String tickerSymbol,
+			java.lang.String industry, java.lang.String type,
+			java.lang.String size, java.lang.String languageId,
+			java.lang.String timeZoneId,
 			java.util.List<com.liferay.portal.kernel.model.Address> addresses,
 			java.util.List<com.liferay.portal.kernel.model.EmailAddress>
 				emailAddresses,
 			java.util.List<com.liferay.portal.kernel.model.Phone> phones,
 			java.util.List<com.liferay.portal.kernel.model.Website> websites,
-			com.liferay.portal.kernel.util.UnicodeProperties properties)
+			com.liferay.portal.kernel.util.UnicodeProperties unicodeProperties)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _companyService.updateCompany(
-			companyId, virtualHost, mx, homeURL, logo, logoBytes, name,
+			companyId, virtualHost, mx, homeURL, hasLogo, logoBytes, name,
 			legalName, legalId, legalType, sicCode, tickerSymbol, industry,
 			type, size, languageId, timeZoneId, addresses, emailAddresses,
-			phones, websites, properties);
+			phones, websites, unicodeProperties);
 	}
 
 	/**
@@ -305,7 +309,8 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public void updateDisplay(
-			long companyId, String languageId, String timeZoneId)
+			long companyId, java.lang.String languageId,
+			java.lang.String timeZoneId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_companyService.updateDisplay(companyId, languageId, timeZoneId);
@@ -346,15 +351,16 @@ public class CompanyServiceWrapper
 	 * found in portal.properties.
 	 *
 	 * @param companyId the primary key of the company
-	 * @param properties the company's properties. See {@link UnicodeProperties}
+	 * @param unicodeProperties the company's properties. See {@link
+	 UnicodeProperties}
 	 */
 	@Override
 	public void updatePreferences(
 			long companyId,
-			com.liferay.portal.kernel.util.UnicodeProperties properties)
+			com.liferay.portal.kernel.util.UnicodeProperties unicodeProperties)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_companyService.updatePreferences(companyId, properties);
+		_companyService.updatePreferences(companyId, unicodeProperties);
 	}
 
 	/**
@@ -377,7 +383,7 @@ public class CompanyServiceWrapper
 	 */
 	@Override
 	public void updateSecurity(
-			long companyId, String authType, boolean autoLogin,
+			long companyId, java.lang.String authType, boolean autoLogin,
 			boolean sendPassword, boolean strangers, boolean strangersWithMx,
 			boolean strangersVerify, boolean siteLogo)
 		throws com.liferay.portal.kernel.exception.PortalException {

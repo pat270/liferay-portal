@@ -24,12 +24,9 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class ConverterAdapter implements Converter {
 
 	public ConverterAdapter(XStreamConverter xStreamConverter) {
@@ -53,8 +50,8 @@ public class ConverterAdapter implements Converter {
 					hierarchicalStreamWriter),
 				new XStreamMarshallingContextAdapter(marshallingContext));
 		}
-		catch (Exception e) {
-			_log.error("Unable to marshal object", e);
+		catch (Exception exception) {
+			_log.error("Unable to marshal object", exception);
 		}
 	}
 
@@ -69,8 +66,8 @@ public class ConverterAdapter implements Converter {
 					hierarchicalStreamReader),
 				new XStreamUnmarshallingContextAdapter(unmarshallingContext));
 		}
-		catch (Exception e) {
-			_log.error("Unable to un-marshal object", e);
+		catch (Exception exception) {
+			_log.error("Unable to un-marshal object", exception);
 
 			return null;
 		}

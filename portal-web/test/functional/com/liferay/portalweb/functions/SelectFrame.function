@@ -1,18 +1,16 @@
 @default = "selectFrame"
 definition {
+
 	function selectFrame {
 		if (contains("${locator1}", "/iframe")) {
-			selenium.waitForVisible();
+			WaitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
 
 			selenium.mouseOver();
 
-			selenium.waitForElementPresent(
-				"${locator1}/../div[contains(@class,'overlaymask-hidden')]"
-			);
-
 			selenium.selectFrame();
-
-			selenium.waitForElementPresent("//body");
 
 			selenium.assertJavaScriptErrors();
 
@@ -56,17 +54,14 @@ definition {
 
 	function selectSecondFrame {
 		if (contains("${locator1}", "/iframe")) {
-			selenium.waitForVisible();
+			WaitForLiferayEvent(
+				attributeName = "src",
+				attributeValue = "dialog-iframe-popup",
+				eventName = "modalIframeLoaded");
 
 			selenium.mouseOver();
 
-			selenium.waitForElementPresent(
-				"xpath=(//div[contains(@class,'overlaymask-hidden')])[2]"
-			);
-
 			selenium.selectFrame();
-
-			selenium.waitForElementPresent("//body");
 
 			selenium.assertJavaScriptErrors();
 
@@ -78,4 +73,5 @@ definition {
 
 		WaitForSPARefresh();
 	}
+
 }

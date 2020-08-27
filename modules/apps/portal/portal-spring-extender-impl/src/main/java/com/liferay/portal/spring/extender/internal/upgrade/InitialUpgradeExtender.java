@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
-import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.spring.extender.internal.configuration.ConfigurationUtil;
 
@@ -36,7 +35,12 @@ import java.io.InputStream;
 
 import java.net.URL;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import java.util.Dictionary;
+
+import javax.sql.DataSource;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -68,7 +72,7 @@ public class InitialUpgradeExtender
 			return null;
 		}
 
-		return _processInitialUpgrade(_bundleContext, bundle);
+		return _processInitialUpgrade(_bundleContext, bundle, _dataSource);
 	}
 
 	@Override
@@ -90,7 +94,7 @@ public class InitialUpgradeExtender
 		_bundleContext = bundleContext;
 
 		_bundleTracker = new BundleTracker<>(
-			bundleContext, Bundle.ACTIVE | Bundle.STARTING, this);
+			bundleContext, Bundle.ACTIVE, this);
 
 		_bundleTracker.open();
 	}
@@ -101,16 +105,14 @@ public class InitialUpgradeExtender
 	}
 
 	private static ServiceRegistration<UpgradeStep> _processInitialUpgrade(
-		BundleContext bundleContext, Bundle bundle) {
+		BundleContext bundleContext, Bundle bundle, DataSource dataSource) {
 
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 
-		ClassLoader classLoader = bundleWiring.getClassLoader();
-
 		Configuration configuration = ConfigurationUtil.getConfiguration(
-			classLoader, "service");
+			bundleWiring.getClassLoader(), "service");
 
 		if (configuration != null) {
 			String buildNumber = configuration.get("build.number");
@@ -137,7 +139,8 @@ public class InitialUpgradeExtender
 		properties.put("upgrade.to.schema.version", upgradeToSchemaVersion);
 
 		return bundleContext.registerService(
-			UpgradeStep.class, new InitialUpgradeStep(bundle), properties);
+			UpgradeStep.class, new InitialUpgradeStep(bundle, dataSource),
+			properties);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -146,8 +149,8 @@ public class InitialUpgradeExtender
 	private BundleContext _bundleContext;
 	private BundleTracker<?> _bundleTracker;
 
-	@Reference(target = "(original.bean=true)")
-	private InfrastructureUtil _infrastructureUtil;
+	@Reference(target = "(&(bean.id=liferayDataSource)(original.bean=true))")
+	private DataSource _dataSource;
 
 	private static class InitialUpgradeStep implements UpgradeStep {
 
@@ -170,50 +173,57 @@ public class InitialUpgradeExtender
 			String sequencesSQL = _getSQLTemplateString("sequences.sql");
 			String indexesSQL = _getSQLTemplateString("indexes.sql");
 
-			if (tablesSQL != null) {
-				try {
-					db.runSQLTemplateString(tablesSQL, true, true);
+			try (Connection connection = _dataSource.getConnection()) {
+				if (tablesSQL != null) {
+					try {
+						db.runSQLTemplateString(connection, tablesSQL, true);
+					}
+					catch (Exception exception) {
+						throw new UpgradeException(
+							StringBundler.concat(
+								"Bundle ", _bundle,
+								" has invalid content in tables.sql:\n",
+								tablesSQL),
+							exception);
+					}
 				}
-				catch (Exception e) {
-					throw new UpgradeException(
-						StringBundler.concat(
-							"Bundle ", _bundle,
-							" has invalid content in tables.sql:\n", tablesSQL),
-						e);
+
+				if (sequencesSQL != null) {
+					try {
+						db.runSQLTemplateString(connection, sequencesSQL, true);
+					}
+					catch (Exception exception) {
+						throw new UpgradeException(
+							StringBundler.concat(
+								"Bundle ", _bundle,
+								" has invalid content in sequences.sql:\n",
+								sequencesSQL),
+							exception);
+					}
+				}
+
+				if (indexesSQL != null) {
+					try {
+						db.runSQLTemplateString(connection, indexesSQL, true);
+					}
+					catch (Exception exception) {
+						throw new UpgradeException(
+							StringBundler.concat(
+								"Bundle ", _bundle,
+								" has invalid content in indexes.sql:\n",
+								indexesSQL),
+							exception);
+					}
 				}
 			}
-
-			if (sequencesSQL != null) {
-				try {
-					db.runSQLTemplateString(sequencesSQL, true, true);
-				}
-				catch (Exception e) {
-					throw new UpgradeException(
-						StringBundler.concat(
-							"Bundle ", _bundle,
-							" has invalid content in sequences.sql:\n",
-							sequencesSQL),
-						e);
-				}
-			}
-
-			if (indexesSQL != null) {
-				try {
-					db.runSQLTemplateString(indexesSQL, true, true);
-				}
-				catch (Exception e) {
-					throw new UpgradeException(
-						StringBundler.concat(
-							"Bundle ", _bundle,
-							" has invalid content in indexes.sql:\n",
-							indexesSQL),
-						e);
-				}
+			catch (SQLException sqlException) {
+				throw new UpgradeException(sqlException);
 			}
 		}
 
-		private InitialUpgradeStep(Bundle bundle) {
+		private InitialUpgradeStep(Bundle bundle, DataSource dataSource) {
 			_bundle = bundle;
+			_dataSource = dataSource;
 		}
 
 		private String _getSQLTemplateString(String templateName)
@@ -232,13 +242,14 @@ public class InitialUpgradeExtender
 			try (InputStream inputStream = resource.openStream()) {
 				return StringUtil.read(inputStream);
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				throw new UpgradeException(
-					"Unable to read SQL template " + templateName, ioe);
+					"Unable to read SQL template " + templateName, ioException);
 			}
 		}
 
 		private final Bundle _bundle;
+		private final DataSource _dataSource;
 
 	}
 

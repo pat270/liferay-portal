@@ -1,23 +1,13 @@
-@import "bourbon";
-@import "mixins";
+#wrapper,
+.control-menu-container {
+	@include media-breakpoint-up(sm) {
+		body.sidenav-transition & {
+			@include transition(padding 0.5s ease);
+		}
 
-body.open-admin-panel {
-	&, .control-menu, .affix {
-		@include sm() {
+		body.open-admin-panel & {
 			padding-right: $admin-panel-width;
 		}
-	}
-
-	.control-menu-level-2 {
-		@include sm() {
-			right: $admin-panel-width;
-		}
-	}
-}
-
-body.open-admin-panel, body.sidenav-transition {
-	@include sm() {
-		overflow-x: hidden;
 	}
 }
 
@@ -32,6 +22,10 @@ body.open-admin-panel, body.sidenav-transition {
 
 		.product-menu {
 			width: $admin-panel-width;
+
+			&.light {
+				background-color: white;
+			}
 		}
 	}
 
@@ -68,8 +62,8 @@ body.open-admin-panel, body.sidenav-transition {
 
 .lfr-add-panel .add-content-menu {
 	.add-application-panel .lfr-content-item {
-		height: 40px;
-		padding: 0 16px;
+		margin-bottom: 0.5rem;
+		padding: 0 16px 0 8px;
 
 		&.lfr-archived-setup {
 			padding-left: 30px;
@@ -92,7 +86,7 @@ body.open-admin-panel, body.sidenav-transition {
 			width: 32px;
 
 			&.active {
-				color: #869CAD;
+				color: #869cad;
 			}
 		}
 
@@ -104,8 +98,8 @@ body.open-admin-panel, body.sidenav-transition {
 			padding-right: 4px;
 			text-decoration: none;
 
-			.icon-sort {
-				margin-left: 8px;
+			.lexicon-icon-caret-double {
+				margin-left: 0.3rem;
 			}
 		}
 	}
@@ -122,8 +116,8 @@ body.open-admin-panel, body.sidenav-transition {
 			line-height: 1;
 			padding: 0 4px;
 
-			.icon-caret-down {
-				margin-left: 8px;
+			.lexicon-icon-caret-bottom {
+				margin-left: 0.3rem;
 			}
 		}
 	}

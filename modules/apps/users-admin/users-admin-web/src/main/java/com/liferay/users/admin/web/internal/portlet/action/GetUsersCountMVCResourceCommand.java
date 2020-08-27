@@ -18,14 +18,13 @@ import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 
 import java.io.PrintWriter;
-
-import java.util.LinkedHashMap;
 
 import javax.portlet.PortletException;
 import javax.portlet.ResourceRequest;
@@ -62,8 +61,8 @@ public class GetUsersCountMVCResourceCommand implements MVCResourceCommand {
 
 			return false;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -74,12 +73,11 @@ public class GetUsersCountMVCResourceCommand implements MVCResourceCommand {
 		int count = 0;
 
 		for (long organizationId : organizationIds) {
-			LinkedHashMap<String, Object> params = new LinkedHashMap<>();
-
-			params.put("usersOrgs", organizationId);
-
 			count += _userLocalService.searchCount(
-				companyId, null, status, params);
+				companyId, null, status,
+				LinkedHashMapBuilder.<String, Object>put(
+					"usersOrgs", organizationId
+				).build());
 		}
 
 		return count;
@@ -119,12 +117,11 @@ public class GetUsersCountMVCResourceCommand implements MVCResourceCommand {
 		int count = 0;
 
 		for (long userGroupId : userGroupIds) {
-			LinkedHashMap<String, Object> params = new LinkedHashMap<>();
-
-			params.put("usersUserGroups", userGroupId);
-
 			count += _userLocalService.searchCount(
-				companyId, null, status, params);
+				companyId, null, status,
+				LinkedHashMapBuilder.<String, Object>put(
+					"usersUserGroups", userGroupId
+				).build());
 		}
 
 		return count;

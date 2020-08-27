@@ -26,31 +26,14 @@ public class AntivirusScannerException extends PortalException {
 
 	public static final int VIRUS_DETECTED = 2;
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #AntivirusScannerException(int)}
-	 */
-	@Deprecated
-	public AntivirusScannerException() {
-	}
-
 	public AntivirusScannerException(int type) {
 		_type = type;
 	}
 
-	public AntivirusScannerException(int type, Throwable cause) {
-		super(cause);
+	public AntivirusScannerException(int type, Throwable throwable) {
+		super(throwable);
 
 		_type = type;
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #AntivirusScannerException(String, int)}
-	 */
-	@Deprecated
-	public AntivirusScannerException(String msg) {
-		super(msg);
 	}
 
 	public AntivirusScannerException(String msg, int type) {
@@ -59,12 +42,12 @@ public class AntivirusScannerException extends PortalException {
 		_type = type;
 	}
 
-	public AntivirusScannerException(String msg, Throwable cause) {
-		super(msg, cause);
+	public AntivirusScannerException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public AntivirusScannerException(Throwable cause) {
-		super(cause);
+	public AntivirusScannerException(Throwable throwable) {
+		super(throwable);
 	}
 
 	public String getMessageKey() {

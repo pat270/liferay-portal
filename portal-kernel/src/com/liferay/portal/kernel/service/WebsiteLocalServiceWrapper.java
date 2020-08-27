@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link WebsiteLocalService}.
  *
@@ -23,9 +21,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WebsiteLocalService
  * @generated
  */
-@ProviderType
 public class WebsiteLocalServiceWrapper
-	implements WebsiteLocalService, ServiceWrapper<WebsiteLocalService> {
+	implements ServiceWrapper<WebsiteLocalService>, WebsiteLocalService {
 
 	public WebsiteLocalServiceWrapper(WebsiteLocalService websiteLocalService) {
 		_websiteLocalService = websiteLocalService;
@@ -33,8 +30,9 @@ public class WebsiteLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Website addWebsite(
-			long userId, String className, long classPK, String url,
-			long typeId, boolean primary, ServiceContext serviceContext)
+			long userId, java.lang.String className, long classPK,
+			java.lang.String url, long typeId, boolean primary,
+			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _websiteLocalService.addWebsite(
@@ -44,6 +42,10 @@ public class WebsiteLocalServiceWrapper
 	/**
 	 * Adds the website to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WebsiteLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param website the website
 	 * @return the website that was added
 	 */
@@ -52,6 +54,17 @@ public class WebsiteLocalServiceWrapper
 		com.liferay.portal.kernel.model.Website website) {
 
 		return _websiteLocalService.addWebsite(website);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _websiteLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -81,6 +94,10 @@ public class WebsiteLocalServiceWrapper
 	/**
 	 * Deletes the website with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WebsiteLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param websiteId the primary key of the website
 	 * @return the website that was removed
 	 * @throws PortalException if a website with the primary key could not be found
@@ -95,6 +112,10 @@ public class WebsiteLocalServiceWrapper
 	/**
 	 * Deletes the website from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WebsiteLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param website the website
 	 * @return the website that was removed
 	 */
@@ -106,8 +127,15 @@ public class WebsiteLocalServiceWrapper
 	}
 
 	@Override
-	public void deleteWebsites(long companyId, String className, long classPK) {
+	public void deleteWebsites(
+		long companyId, java.lang.String className, long classPK) {
+
 		_websiteLocalService.deleteWebsites(companyId, className, classPK);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _websiteLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -132,7 +160,7 @@ public class WebsiteLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WebsiteModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WebsiteModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -152,7 +180,7 @@ public class WebsiteLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WebsiteModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WebsiteModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -215,7 +243,7 @@ public class WebsiteLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Website
-		fetchWebsiteByUuidAndCompanyId(String uuid, long companyId) {
+		fetchWebsiteByUuidAndCompanyId(java.lang.String uuid, long companyId) {
 
 		return _websiteLocalService.fetchWebsiteByUuidAndCompanyId(
 			uuid, companyId);
@@ -251,10 +279,13 @@ public class WebsiteLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _websiteLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -287,7 +318,7 @@ public class WebsiteLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Website getWebsiteByUuidAndCompanyId(
-			String uuid, long companyId)
+			java.lang.String uuid, long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _websiteLocalService.getWebsiteByUuidAndCompanyId(
@@ -305,7 +336,7 @@ public class WebsiteLocalServiceWrapper
 	 * Returns a range of all the websites.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WebsiteModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WebsiteModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of websites
@@ -321,7 +352,7 @@ public class WebsiteLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Website> getWebsites(
-		long companyId, String className, long classPK) {
+		long companyId, java.lang.String className, long classPK) {
 
 		return _websiteLocalService.getWebsites(companyId, className, classPK);
 	}
@@ -338,7 +369,7 @@ public class WebsiteLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Website updateWebsite(
-			long websiteId, String url, long typeId, boolean primary)
+			long websiteId, java.lang.String url, long typeId, boolean primary)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _websiteLocalService.updateWebsite(
@@ -347,6 +378,10 @@ public class WebsiteLocalServiceWrapper
 
 	/**
 	 * Updates the website in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WebsiteLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param website the website
 	 * @return the website that was updated

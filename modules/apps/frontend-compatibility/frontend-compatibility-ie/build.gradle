@@ -1,132 +1,39 @@
 import com.liferay.gradle.util.copy.StripPathSegmentsAction
 
 configurations {
-	arrayFill
-	arrayFind
-	arrayFindIndex
-	arrayFrom
-	arrayIncludes
-	arrayOf
+	coreJSBundle
 	fetch
-	formData
-	objectAssign
-	objectEntries
-	objectValues
-	promise
-	stringEndsWith
-	stringIncludes
-	urlSearchParams
 }
 
-task buildArrayFill(type: Copy)
-task buildArrayFind(type: Copy)
-task buildArrayFindIndex(type: Copy)
-task buildArrayFrom(type: Copy)
-task buildArrayIncludes(type: Copy)
-task buildArrayOf(type: Copy)
+task buildCoreJSBundle(type: Copy)
 task buildFetch(type: Copy)
-task buildFormData(type: Copy)
-task buildObjectAssign(type: Copy)
-task buildObjectEntries(type: Copy)
-task buildObjectValues(type: Copy)
-task buildPromise(type: Copy)
-task buildStringEndsWith(type: Copy)
-task buildStringIncludes(type: Copy)
-task buildUrlSearchParams(type: Copy)
 
-buildArrayFill {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.arrayFill.singleFile)
-	}
-
-	include "META-INF/resources/webjars/array.prototype.fill/1.0.2/index.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "index", "array.fill"
-	}
+buildCSS {
+	imports = [
+		new File(npmInstall.nodeModulesDir, "@clayui/css/src/scss")
+	]
 }
 
-buildArrayFind {
+buildCoreJSBundle {
 	eachFile new StripPathSegmentsAction(5)
 
-	from {
-		zipTree(configurations.arrayFind.singleFile)
+	filter {
+		String line ->
+
+		line.replace "sourceMappingURL=minified.js.map", "sourceMappingURL=core-js-bundle.min.js.map"
 	}
 
-	include "META-INF/resources/webjars/Array.prototype.find/1.0.0/index.js"
+	from {
+		zipTree(configurations.coreJSBundle.singleFile)
+	}
+
+	include "META-INF/resources/webjars/core-js-bundle/3.1.4/minified.js"
+	include "META-INF/resources/webjars/core-js-bundle/3.1.4/minified.js.map"
 	includeEmptyDirs = false
 	into "classes/META-INF/resources"
 
 	rename {
-		it.replace "index", "array.find"
-	}
-}
-
-buildArrayFindIndex {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.arrayFindIndex.singleFile)
-	}
-
-	include "META-INF/resources/webjars/Array.prototype.findIndex/1.0.0/index.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "index", "array.findindex"
-	}
-}
-
-buildArrayFrom {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.arrayFrom.singleFile)
-	}
-
-	include "META-INF/resources/webjars/mdn-polyfills/5.8.0/Array.from.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "Array.from", "array.from"
-	}
-}
-
-buildArrayIncludes {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.arrayIncludes.singleFile)
-	}
-
-	include "META-INF/resources/webjars/mdn-polyfills/5.8.0/Array.prototype.includes.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "Array.prototype.includes", "array.includes"
-	}
-}
-
-buildArrayOf {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.arrayOf.singleFile)
-	}
-
-	include "META-INF/resources/webjars/array.of/0.1.1/array-of.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "array-of", "array.of"
+		it.replace "minified", "core-js-bundle.min"
 	}
 }
 
@@ -142,187 +49,21 @@ buildFetch {
 	into "classes/META-INF/resources"
 }
 
-buildFormData {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.formData.singleFile)
-	}
-
-	include "META-INF/resources/webjars/formdata-polyfill/3.0.9/formdata.min.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "formdata.min", "formdata"
-	}
-}
-
-buildObjectAssign {
-	eachFile new StripPathSegmentsAction(6)
-
-	from {
-		zipTree(configurations.objectAssign.singleFile)
-	}
-
-	include "META-INF/resources/webjars/es6-object-assign/1.1.0/dist/object-assign-auto.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "object-assign-auto", "object.assign"
-	}
-}
-
-buildObjectEntries {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.objectEntries.singleFile)
-	}
-
-	include "META-INF/resources/webjars/object_entries/0.1.2/index.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "index", "object.entries"
-	}
-}
-
-buildObjectValues {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.objectValues.singleFile)
-	}
-
-	include "META-INF/resources/webjars/object_values/0.1.2/index.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "index", "object.values"
-	}
-}
-
-buildPromise {
-	eachFile new StripPathSegmentsAction(6)
-
-	from {
-		zipTree(configurations.promise.singleFile)
-	}
-
-	include "META-INF/resources/webjars/promise-polyfill/8.1.0/dist/polyfill.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "polyfill", "promise"
-	}
-}
-
-buildStringEndsWith{
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.stringEndsWith.singleFile)
-	}
-
-	include "META-INF/resources/webjars/mdn-polyfills/5.8.0/String.prototype.endsWith.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "String.prototype.endsWith", "string.endswith"
-	}
-}
-
-buildStringIncludes {
-	eachFile new StripPathSegmentsAction(5)
-
-	from {
-		zipTree(configurations.stringIncludes.singleFile)
-	}
-
-	include "META-INF/resources/webjars/string.prototype.includes/1.0.0/includes.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "includes", "string.includes"
-	}
-}
-
-buildUrlSearchParams {
-	eachFile new StripPathSegmentsAction(6)
-
-	from {
-		zipTree(configurations.urlSearchParams.singleFile)
-	}
-
-	include "META-INF/resources/webjars/url-search-params/0.10.0/build/url-search-params.js"
-	includeEmptyDirs = false
-	into "classes/META-INF/resources"
-
-	rename {
-		it.replace "url-search-params", "url.search.params"
-	}
-}
-
 classes {
-	dependsOn buildArrayFill
-	dependsOn buildArrayFind
-	dependsOn buildArrayFindIndex
-	dependsOn buildArrayFrom
-	dependsOn buildArrayIncludes
-	dependsOn buildArrayOf
+	dependsOn buildCoreJSBundle
 	dependsOn buildFetch
-	dependsOn buildFormData
-	dependsOn buildObjectAssign
-	dependsOn buildObjectEntries
-	dependsOn buildObjectValues
-	dependsOn buildPromise
-	dependsOn buildStringEndsWith
-	dependsOn buildStringIncludes
-	dependsOn buildUrlSearchParams
 }
 
 dependencies {
-	arrayFill group: "org.webjars.npm", name: "array.prototype.fill", transitive: false, version: "1.0.2"
-
-	arrayFind group: "org.webjars.bower", name: "Array.prototype.find", transitive: false, version: "1.0.0"
-
-	arrayFindIndex group: "org.webjars.bower", name: "Array.prototype.findIndex", transitive: false, version: "1.0.0"
-
-	arrayFrom group: "org.webjars.npm", name: "mdn-polyfills", transitive: false, version: "5.8.0"
-
-	arrayIncludes group: "org.webjars.npm", name: "mdn-polyfills", transitive: false, version: "5.8.0"
-
-	arrayOf group: "org.webjars.npm", name: "array.of", transitive: false, version: "0.1.1"
-
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
-	compileOnly group: "javax.servlet", name: "javax.servlet-api", version: "3.0.1"
+	compileOnly group: "org.apache.felix", name: "org.apache.felix.http.servlet-api", version: "1.1.2"
 	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.3.0"
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
+	compileOnly project(":apps:frontend-taglib:frontend-taglib-clay")
 	compileOnly project(":apps:portal-url-builder:portal-url-builder-api")
 
+	coreJSBundle group: "org.webjars.npm", name: "core-js-bundle", transitive: false, version: "3.1.4"
+
 	fetch group: "org.webjars.npm", name: "whatwg-fetch", transitive: false, version: "2.0.4"
-
-	formData group: "org.webjars.npm", name: "formdata-polyfill", transitive: false, version: "3.0.9"
-
-	objectAssign group: "org.webjars.npm", name: "es6-object-assign", transitive: false, version: "1.1.0"
-
-	objectEntries group: "org.webjars.npm", name: "object_entries", transitive: false, version: "0.1.2"
-
-	objectValues group: "org.webjars.npm", name: "object_values", transitive: false, version: "0.1.2"
-
-	promise group: "org.webjars.npm", name: "promise-polyfill", transitive: false, version: "8.1.0"
-
-	stringEndsWith group: "org.webjars.npm", name: "mdn-polyfills", transitive: false, version: "5.8.0"
-
-	stringIncludes group: "org.webjars.npm", name: "string.prototype.includes", transitive: false, version: "1.0.0"
-
-	urlSearchParams group: "org.webjars.npm", name: "url-search-params", transitive: false, version: "0.10.0"
 }

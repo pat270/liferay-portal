@@ -1,0 +1,42 @@
+.rule-list {
+	hr {
+		border: 0.5px solid #e7e7ed;
+		margin-bottom: 0;
+		margin-top: 0;
+		width: 100%;
+	}
+
+	.collapsable-panel {
+		.collapse-icon-options {
+			position: absolute;
+			right: 16px;
+			top: 16px;
+			z-index: 1;
+		}
+
+		.collapse-icon-closed.actions,
+		.collapse-icon-open.actions {
+			right: 56px !important;
+		}
+	}
+
+	.panel-unstyled {
+		border-bottom-width: 1px;
+		border-color: #e7e7ed;
+		margin-bottom: 0;
+
+		.panel-header {
+			border: none !important;
+			margin-bottom: 0;
+			padding: 23.6px;
+		}
+
+		button:focus {
+			box-shadow: none !important;
+		}
+	}
+
+	.panel-unstyled:hover {
+		background-color: #f0f5ff;
+	}
+}

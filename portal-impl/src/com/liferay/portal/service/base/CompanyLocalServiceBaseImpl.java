@@ -14,6 +14,11 @@
 
 package com.liferay.portal.service.base;
 
+import com.liferay.document.library.kernel.service.persistence.DLFileEntryTypeFinder;
+import com.liferay.document.library.kernel.service.persistence.DLFileEntryTypePersistence;
+import com.liferay.expando.kernel.service.persistence.ExpandoColumnPersistence;
+import com.liferay.expando.kernel.service.persistence.ExpandoTablePersistence;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -36,6 +41,8 @@ import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.AccountPersistence;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.CompanyInfoPersistence;
 import com.liferay.portal.kernel.service.persistence.CompanyPersistence;
 import com.liferay.portal.kernel.service.persistence.ContactPersistence;
 import com.liferay.portal.kernel.service.persistence.GroupFinder;
@@ -51,6 +58,7 @@ import com.liferay.portal.kernel.service.persistence.PortalPreferencesPersistenc
 import com.liferay.portal.kernel.service.persistence.PortletPersistence;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.service.persistence.RolePersistence;
+import com.liferay.portal.kernel.service.persistence.SystemEventPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserGroupFinder;
 import com.liferay.portal.kernel.service.persistence.UserGroupPersistence;
@@ -66,8 +74,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the base implementation for the company local service.
  *
@@ -79,7 +85,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.portal.service.impl.CompanyLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class CompanyLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
 	implements CompanyLocalService, IdentifiableOSGiService {
@@ -92,6 +97,10 @@ public abstract class CompanyLocalServiceBaseImpl
 
 	/**
 	 * Adds the company to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param company the company
 	 * @return the company that was added
@@ -119,6 +128,10 @@ public abstract class CompanyLocalServiceBaseImpl
 	/**
 	 * Deletes the company with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param companyId the primary key of the company
 	 * @return the company that was removed
 	 * @throws PortalException if a company with the primary key could not be found
@@ -132,6 +145,10 @@ public abstract class CompanyLocalServiceBaseImpl
 	/**
 	 * Deletes the company from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param company the company
 	 * @return the company that was removed
 	 * @throws PortalException
@@ -140,6 +157,11 @@ public abstract class CompanyLocalServiceBaseImpl
 	@Override
 	public Company deleteCompany(Company company) throws PortalException {
 		return companyPersistence.remove(company);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return companyPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -165,7 +187,7 @@ public abstract class CompanyLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -185,7 +207,7 @@ public abstract class CompanyLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -290,6 +312,15 @@ public abstract class CompanyLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return companyPersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -297,6 +328,13 @@ public abstract class CompanyLocalServiceBaseImpl
 		return companyLocalService.deleteCompany((Company)persistedModel);
 	}
 
+	public BasePersistence<Company> getBasePersistence() {
+		return companyPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -308,7 +346,7 @@ public abstract class CompanyLocalServiceBaseImpl
 	 * Returns a range of all the companies.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of companies
@@ -332,6 +370,10 @@ public abstract class CompanyLocalServiceBaseImpl
 
 	/**
 	 * Updates the company in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param company the company
 	 * @return the company that was updated
@@ -442,6 +484,199 @@ public abstract class CompanyLocalServiceBaseImpl
 	 */
 	public void setAccountPersistence(AccountPersistence accountPersistence) {
 		this.accountPersistence = accountPersistence;
+	}
+
+	/**
+	 * Returns the document library file entry type local service.
+	 *
+	 * @return the document library file entry type local service
+	 */
+	public
+		com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService
+			getDLFileEntryTypeLocalService() {
+
+		return dlFileEntryTypeLocalService;
+	}
+
+	/**
+	 * Sets the document library file entry type local service.
+	 *
+	 * @param dlFileEntryTypeLocalService the document library file entry type local service
+	 */
+	public void setDLFileEntryTypeLocalService(
+		com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService
+			dlFileEntryTypeLocalService) {
+
+		this.dlFileEntryTypeLocalService = dlFileEntryTypeLocalService;
+	}
+
+	/**
+	 * Returns the document library file entry type persistence.
+	 *
+	 * @return the document library file entry type persistence
+	 */
+	public DLFileEntryTypePersistence getDLFileEntryTypePersistence() {
+		return dlFileEntryTypePersistence;
+	}
+
+	/**
+	 * Sets the document library file entry type persistence.
+	 *
+	 * @param dlFileEntryTypePersistence the document library file entry type persistence
+	 */
+	public void setDLFileEntryTypePersistence(
+		DLFileEntryTypePersistence dlFileEntryTypePersistence) {
+
+		this.dlFileEntryTypePersistence = dlFileEntryTypePersistence;
+	}
+
+	/**
+	 * Returns the document library file entry type finder.
+	 *
+	 * @return the document library file entry type finder
+	 */
+	public DLFileEntryTypeFinder getDLFileEntryTypeFinder() {
+		return dlFileEntryTypeFinder;
+	}
+
+	/**
+	 * Sets the document library file entry type finder.
+	 *
+	 * @param dlFileEntryTypeFinder the document library file entry type finder
+	 */
+	public void setDLFileEntryTypeFinder(
+		DLFileEntryTypeFinder dlFileEntryTypeFinder) {
+
+		this.dlFileEntryTypeFinder = dlFileEntryTypeFinder;
+	}
+
+	/**
+	 * Returns the expando column local service.
+	 *
+	 * @return the expando column local service
+	 */
+	public com.liferay.expando.kernel.service.ExpandoColumnLocalService
+		getExpandoColumnLocalService() {
+
+		return expandoColumnLocalService;
+	}
+
+	/**
+	 * Sets the expando column local service.
+	 *
+	 * @param expandoColumnLocalService the expando column local service
+	 */
+	public void setExpandoColumnLocalService(
+		com.liferay.expando.kernel.service.ExpandoColumnLocalService
+			expandoColumnLocalService) {
+
+		this.expandoColumnLocalService = expandoColumnLocalService;
+	}
+
+	/**
+	 * Returns the expando column persistence.
+	 *
+	 * @return the expando column persistence
+	 */
+	public ExpandoColumnPersistence getExpandoColumnPersistence() {
+		return expandoColumnPersistence;
+	}
+
+	/**
+	 * Sets the expando column persistence.
+	 *
+	 * @param expandoColumnPersistence the expando column persistence
+	 */
+	public void setExpandoColumnPersistence(
+		ExpandoColumnPersistence expandoColumnPersistence) {
+
+		this.expandoColumnPersistence = expandoColumnPersistence;
+	}
+
+	/**
+	 * Returns the expando table local service.
+	 *
+	 * @return the expando table local service
+	 */
+	public com.liferay.expando.kernel.service.ExpandoTableLocalService
+		getExpandoTableLocalService() {
+
+		return expandoTableLocalService;
+	}
+
+	/**
+	 * Sets the expando table local service.
+	 *
+	 * @param expandoTableLocalService the expando table local service
+	 */
+	public void setExpandoTableLocalService(
+		com.liferay.expando.kernel.service.ExpandoTableLocalService
+			expandoTableLocalService) {
+
+		this.expandoTableLocalService = expandoTableLocalService;
+	}
+
+	/**
+	 * Returns the expando table persistence.
+	 *
+	 * @return the expando table persistence
+	 */
+	public ExpandoTablePersistence getExpandoTablePersistence() {
+		return expandoTablePersistence;
+	}
+
+	/**
+	 * Sets the expando table persistence.
+	 *
+	 * @param expandoTablePersistence the expando table persistence
+	 */
+	public void setExpandoTablePersistence(
+		ExpandoTablePersistence expandoTablePersistence) {
+
+		this.expandoTablePersistence = expandoTablePersistence;
+	}
+
+	/**
+	 * Returns the company info local service.
+	 *
+	 * @return the company info local service
+	 */
+	public com.liferay.portal.kernel.service.CompanyInfoLocalService
+		getCompanyInfoLocalService() {
+
+		return companyInfoLocalService;
+	}
+
+	/**
+	 * Sets the company info local service.
+	 *
+	 * @param companyInfoLocalService the company info local service
+	 */
+	public void setCompanyInfoLocalService(
+		com.liferay.portal.kernel.service.CompanyInfoLocalService
+			companyInfoLocalService) {
+
+		this.companyInfoLocalService = companyInfoLocalService;
+	}
+
+	/**
+	 * Returns the company info persistence.
+	 *
+	 * @return the company info persistence
+	 */
+	public CompanyInfoPersistence getCompanyInfoPersistence() {
+		return companyInfoPersistence;
+	}
+
+	/**
+	 * Sets the company info persistence.
+	 *
+	 * @param companyInfoPersistence the company info persistence
+	 */
+	public void setCompanyInfoPersistence(
+		CompanyInfoPersistence companyInfoPersistence) {
+
+		this.companyInfoPersistence = companyInfoPersistence;
 	}
 
 	/**
@@ -936,6 +1171,49 @@ public abstract class CompanyLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the system event local service.
+	 *
+	 * @return the system event local service
+	 */
+	public com.liferay.portal.kernel.service.SystemEventLocalService
+		getSystemEventLocalService() {
+
+		return systemEventLocalService;
+	}
+
+	/**
+	 * Sets the system event local service.
+	 *
+	 * @param systemEventLocalService the system event local service
+	 */
+	public void setSystemEventLocalService(
+		com.liferay.portal.kernel.service.SystemEventLocalService
+			systemEventLocalService) {
+
+		this.systemEventLocalService = systemEventLocalService;
+	}
+
+	/**
+	 * Returns the system event persistence.
+	 *
+	 * @return the system event persistence
+	 */
+	public SystemEventPersistence getSystemEventPersistence() {
+		return systemEventPersistence;
+	}
+
+	/**
+	 * Sets the system event persistence.
+	 *
+	 * @param systemEventPersistence the system event persistence
+	 */
+	public void setSystemEventPersistence(
+		SystemEventPersistence systemEventPersistence) {
+
+		this.systemEventPersistence = systemEventPersistence;
+	}
+
+	/**
 	 * Returns the user local service.
 	 *
 	 * @return the user local service
@@ -1144,8 +1422,8 @@ public abstract class CompanyLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -1169,6 +1447,46 @@ public abstract class CompanyLocalServiceBaseImpl
 
 	@BeanReference(type = AccountPersistence.class)
 	protected AccountPersistence accountPersistence;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService.class
+	)
+	protected
+		com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService
+			dlFileEntryTypeLocalService;
+
+	@BeanReference(type = DLFileEntryTypePersistence.class)
+	protected DLFileEntryTypePersistence dlFileEntryTypePersistence;
+
+	@BeanReference(type = DLFileEntryTypeFinder.class)
+	protected DLFileEntryTypeFinder dlFileEntryTypeFinder;
+
+	@BeanReference(
+		type = com.liferay.expando.kernel.service.ExpandoColumnLocalService.class
+	)
+	protected com.liferay.expando.kernel.service.ExpandoColumnLocalService
+		expandoColumnLocalService;
+
+	@BeanReference(type = ExpandoColumnPersistence.class)
+	protected ExpandoColumnPersistence expandoColumnPersistence;
+
+	@BeanReference(
+		type = com.liferay.expando.kernel.service.ExpandoTableLocalService.class
+	)
+	protected com.liferay.expando.kernel.service.ExpandoTableLocalService
+		expandoTableLocalService;
+
+	@BeanReference(type = ExpandoTablePersistence.class)
+	protected ExpandoTablePersistence expandoTablePersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.CompanyInfoLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.CompanyInfoLocalService
+		companyInfoLocalService;
+
+	@BeanReference(type = CompanyInfoPersistence.class)
+	protected CompanyInfoPersistence companyInfoPersistence;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.ContactLocalService.class
@@ -1271,6 +1589,15 @@ public abstract class CompanyLocalServiceBaseImpl
 
 	@BeanReference(type = RoleFinder.class)
 	protected RoleFinder roleFinder;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.SystemEventLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.SystemEventLocalService
+		systemEventLocalService;
+
+	@BeanReference(type = SystemEventPersistence.class)
+	protected SystemEventPersistence systemEventPersistence;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.UserLocalService.class

@@ -24,7 +24,7 @@ DDMStructure ddmStructure = (DDMStructure)row.getObject();
 
 <c:choose>
 	<c:when test="<%= ArrayUtil.contains(journalDisplayContext.getAddMenuFavItems(), ddmStructure.getStructureKey()) %>">
-		<portlet:actionURL name="removeAddMenuFavItem" var="removeAddMenuFavItemURL">
+		<portlet:actionURL name="/journal/remove_menu_fav_item" var="removeAddMenuFavItemURL">
 			<portlet:param name="mvcPath" value="/view_more_menu_items.jsp" />
 			<portlet:param name="redirect" value="<%= currentURL %>" />
 			<portlet:param name="folderId" value="<%= String.valueOf(journalDisplayContext.getFolderId()) %>" />
@@ -42,7 +42,7 @@ DDMStructure ddmStructure = (DDMStructure)row.getObject();
 	<c:otherwise>
 		<c:choose>
 			<c:when test="<%= journalDisplayContext.getAddMenuFavItemsLength() < journalWebConfiguration.maxAddMenuItems() %>">
-				<portlet:actionURL name="addAddMenuFavItem" var="addAddMenuFavItemURL">
+				<portlet:actionURL name="/journal/add_menu_fav_item" var="addAddMenuFavItemURL">
 					<portlet:param name="mvcPath" value="/view_more_menu_items.jsp" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 					<portlet:param name="folderId" value="<%= String.valueOf(journalDisplayContext.getFolderId()) %>" />

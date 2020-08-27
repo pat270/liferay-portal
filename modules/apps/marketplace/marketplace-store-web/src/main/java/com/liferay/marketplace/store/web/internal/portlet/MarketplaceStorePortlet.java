@@ -86,8 +86,7 @@ import org.scribe.model.Verb;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + MarketplaceStorePortletKeys.MARKETPLACE_STORE,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -148,15 +147,15 @@ public class MarketplaceStorePortlet extends RemoteMVCPortlet {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		JSONObject jsonObject = JSONUtil.put(
-			"apps", getInstalledAppsJSONArray()
-		).put(
-			"cmd", "getInstalledApps"
-		).put(
-			"message", "success"
-		);
-
-		writeJSON(actionRequest, actionResponse, jsonObject);
+		writeJSON(
+			actionRequest, actionResponse,
+			JSONUtil.put(
+				"apps", getInstalledAppsJSONArray()
+			).put(
+				"cmd", "getInstalledApps"
+			).put(
+				"message", "success"
+			));
 	}
 
 	public void getPrepackagedApps(
@@ -234,7 +233,7 @@ public class MarketplaceStorePortlet extends RemoteMVCPortlet {
 		try {
 			super.render(renderRequest, renderResponse);
 		}
-		catch (PortletException pe) {
+		catch (PortletException portletException) {
 			include("/error.jsp", renderRequest, renderResponse);
 		}
 	}
@@ -369,7 +368,7 @@ public class MarketplaceStorePortlet extends RemoteMVCPortlet {
 
 						jsonArray.put(getAppJSONObject(app));
 					}
-					catch (Exception e) {
+					catch (Exception exception) {
 						jsonObject.put("message", "failed");
 					}
 					finally {
@@ -410,8 +409,8 @@ public class MarketplaceStorePortlet extends RemoteMVCPortlet {
 				return;
 			}
 		}
-		catch (PortalException pe) {
-			throw new PortletException(pe);
+		catch (PortalException portalException) {
+			throw new PortletException(portalException);
 		}
 
 		renderRequest.setAttribute(

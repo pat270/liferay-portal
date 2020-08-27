@@ -10,12 +10,7 @@
 <tbody>
 <tr>
 	<td>PREVIEW_TITLE</td>
-	<td>//div[contains(@class,'modal-header')]//span[contains(@class,'title')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PREVIEW_IFRAME</td>
-	<td>//div[contains(@class,'dialog-iframe-modal')]//iframe[@title='Preview']</td>
+	<td>//div[contains(@class,'modal-header')]/div[contains(@class,'modal-title')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -1,6 +1,25 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+/**
+ * @deprecated As of Athanasius (7.3.x), replaced by ItemSelectorDialog.es.js
+ * @module liferay-item-selector-dialog
+ */
+
 AUI.add(
 	'liferay-item-selector-dialog',
-	function(A) {
+	(A) => {
 		var Lang = A.Lang;
 
 		var Util = Liferay.Util;
@@ -11,148 +30,151 @@ AUI.add(
 
 		var STR_VISIBLE = 'visible';
 
-		var LiferayItemSelectorDialog = A.Component.create(
-			{
-				ATTRS: {
-					dialogClasses: {
-						validator: Lang.isString,
-					},
-
-					eventName: {
-						validator: Lang.isString
-					},
-
-					selectedItem: {
-					},
-
-					strings: {
-						value: {
-							add: Liferay.Language.get('add'),
-							cancel: Liferay.Language.get('cancel')
-						}
-					},
-
-					title: {
-						validator: Lang.isString,
-						value: Liferay.Language.get('select-file')
-					},
-
-					url: {
-						validator: Lang.isString
-					},
-
-					zIndex: {
-						validator: Lang.isNumber
-					},
-
-					visible: {
-						validator: Lang.isBoolean,
-						value: false
-					}
+		var LiferayItemSelectorDialog = A.Component.create({
+			ATTRS: {
+				dialogClasses: {
+					validator: Lang.isString,
 				},
 
-				NAME: 'item-selector-dialog',
+				eventName: {
+					validator: Lang.isString,
+				},
 
-				NS: 'item-selector-dialog',
+				selectedItem: {},
 
-				prototype: {
-
-					/*
-					* @deprecated since 7.2, unused
-					*/
-					close: function() {
-						var instance = this;
-
-						Util.getWindow(instance.get(STR_EVENT_NAME)).hide();
+				strings: {
+					value: {
+						add: Liferay.Language.get('add'),
+						cancel: Liferay.Language.get('cancel'),
 					},
+				},
 
-					open: function() {
-						var instance = this;
+				title: {
+					validator: Lang.isString,
+					value: Liferay.Language.get('select-file'),
+				},
 
-						var strings = instance.get('strings');
+				url: {
+					validator: Lang.isString,
+				},
 
-						var eventName = instance.get(STR_EVENT_NAME);
+				visible: {
+					validator: Lang.isBoolean,
+					value: false,
+				},
 
-						var zIndex = instance.get('zIndex');
+				zIndex: {
+					validator: Lang.isNumber,
+				},
+			},
 
-						instance._currentItem = null;
-						instance._selectedItem = null;
+			NAME: 'item-selector-dialog',
 
-						instance.set(STR_VISIBLE, true);
+			NS: 'item-selector-dialog',
 
-						Util.selectEntity(
-							{
-								dialog: {
-									cssClass: instance.get('dialogClasses'),
-									constrain: true,
-									destroyOnHide: true,
-									modal: true,
-									on: {
-										'visibleChange': function(event) {
-											if (!event.newVal) {
-												instance.set(STR_SELECTED_ITEM, instance._selectedItem);
-											}
+			prototype: {
+				_onItemSelected(event) {
+					var instance = this;
 
-											instance.set(STR_VISIBLE, event.newVal);
+					var currentItem = event.data;
+
+					var dialog = Util.getWindow(instance.get(STR_EVENT_NAME));
+
+					var addButton = dialog
+						.getToolbar('footer')
+						.get('boundingBox')
+						.one('#addButton');
+
+					Util.toggleDisabled(addButton, currentItem.length < 1);
+
+					instance._currentItem = currentItem;
+				},
+
+				/*
+				 * @deprecated As of Mueller (7.2.x), with no direct replacement
+				 */
+				close() {
+					var instance = this;
+
+					Util.getWindow(instance.get(STR_EVENT_NAME)).hide();
+				},
+
+				open() {
+					var instance = this;
+
+					var strings = instance.get('strings');
+
+					var eventName = instance.get(STR_EVENT_NAME);
+
+					var zIndex = instance.get('zIndex');
+
+					instance._currentItem = null;
+					instance._selectedItem = null;
+
+					instance.set(STR_VISIBLE, true);
+
+					Util.selectEntity(
+						{
+							dialog: {
+								constrain: true,
+								cssClass: instance.get('dialogClasses'),
+								destroyOnHide: true,
+								modal: true,
+								on: {
+									visibleChange(event) {
+										if (!event.newVal) {
+											instance.set(
+												STR_SELECTED_ITEM,
+												instance._selectedItem
+											);
 										}
+
+										instance.set(STR_VISIBLE, event.newVal);
 									},
-									'toolbars.footer': [
-										{
-											cssClass: 'btn-link close-modal',
-											id: 'cancelButton',
-											label: strings.cancel,
-											on: {
-												click: function() {
-													instance.close();
-												}
-											}
-										},
-										{
-											cssClass: 'btn-primary',
-											disabled: true,
-											id: 'addButton',
-											label: strings.add,
-											on: {
-												click: function() {
-													instance._selectedItem = instance._currentItem;
-													instance.close();
-												}
-											}
-										}
-									],
-									zIndex: zIndex
 								},
-								eventName: eventName,
-								id: eventName,
-								stack: !zIndex,
-								title: instance.get('title'),
-								uri: instance.get('url')
+								'toolbars.footer': [
+									{
+										cssClass: 'btn-link close-modal',
+										id: 'cancelButton',
+										label: strings.cancel,
+										on: {
+											click() {
+												instance.close();
+											},
+										},
+									},
+									{
+										cssClass: 'btn-primary',
+										disabled: true,
+										id: 'addButton',
+										label: strings.add,
+										on: {
+											click() {
+												instance._selectedItem =
+													instance._currentItem;
+												instance.close();
+											},
+										},
+									},
+								],
+								zIndex,
 							},
-							A.bind(instance._onItemSelected, instance)
-						);
-					},
-
-					_onItemSelected: function(event) {
-						var instance = this;
-
-						var currentItem = event.data;
-
-						var dialog = Util.getWindow(instance.get(STR_EVENT_NAME));
-
-						var addButton = dialog.getToolbar('footer').get('boundingBox').one('#addButton');
-
-						Util.toggleDisabled(addButton, !currentItem);
-
-						instance._currentItem = currentItem;
-					}
-				}
-			}
-		);
+							eventName,
+							id: eventName,
+							stack: !zIndex,
+							title: instance.get('title'),
+							uri: instance.get('url'),
+						},
+						A.bind(instance._onItemSelected, instance)
+					);
+				},
+			},
+		});
 
 		A.LiferayItemSelectorDialog = LiferayItemSelectorDialog;
 	},
 	'',
 	{
-		requires: ['aui-component']
+		requires: ['aui-component'],
 	}
 );

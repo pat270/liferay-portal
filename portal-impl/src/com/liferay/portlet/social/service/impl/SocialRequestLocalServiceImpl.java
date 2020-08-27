@@ -94,9 +94,7 @@ public class SocialRequestLocalServiceImpl
 		request.setReceiverUserId(receiverUserId);
 		request.setStatus(SocialRequestConstants.STATUS_PENDING);
 
-		socialRequestPersistence.update(request);
-
-		return request;
+		return socialRequestPersistence.update(request);
 	}
 
 	/**
@@ -335,11 +333,11 @@ public class SocialRequestLocalServiceImpl
 	public boolean hasRequest(
 		long userId, String className, long classPK, int type, int status) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
+		int count = socialRequestPersistence.countByU_C_C_T_S(
+			userId, classNameLocalService.getClassNameId(className), classPK,
+			type, status);
 
-		if (socialRequestPersistence.countByU_C_C_T_S(
-				userId, classNameId, classPK, type, status) <= 0) {
-
+		if (count <= 0) {
 			return false;
 		}
 
@@ -366,10 +364,9 @@ public class SocialRequestLocalServiceImpl
 		long userId, String className, long classPK, int type,
 		long receiverUserId, int status) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		SocialRequest socialRequest = socialRequestPersistence.fetchByU_C_C_T_R(
-			userId, classNameId, classPK, type, receiverUserId);
+			userId, classNameLocalService.getClassNameId(className), classPK,
+			type, receiverUserId);
 
 		if ((socialRequest == null) || (socialRequest.getStatus() != status)) {
 			return false;
@@ -407,7 +404,7 @@ public class SocialRequestLocalServiceImpl
 		request.setModifiedDate(System.currentTimeMillis());
 		request.setStatus(status);
 
-		socialRequestPersistence.update(request);
+		request = socialRequestPersistence.update(request);
 
 		if (status == SocialRequestConstants.STATUS_CONFIRM) {
 			socialRequestInterpreterLocalService.processConfirmation(

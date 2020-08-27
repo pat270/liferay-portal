@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class StructureLayoutException extends PortalException {
 
 	public StructureLayoutException() {
@@ -31,12 +28,12 @@ public class StructureLayoutException extends PortalException {
 		super(msg);
 	}
 
-	public StructureLayoutException(String msg, Throwable cause) {
-		super(msg, cause);
+	public StructureLayoutException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public StructureLayoutException(Throwable cause) {
-		super(cause);
+	public StructureLayoutException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

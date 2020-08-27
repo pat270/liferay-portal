@@ -32,8 +32,6 @@ import com.liferay.social.kernel.service.persistence.SocialActivitySetPersistenc
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the base implementation for the social activity interpreter local service.
  *
@@ -45,10 +43,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.portlet.social.service.impl.SocialActivityInterpreterLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class SocialActivityInterpreterLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements SocialActivityInterpreterLocalService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, SocialActivityInterpreterLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -264,8 +261,8 @@ public abstract class SocialActivityInterpreterLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

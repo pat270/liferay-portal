@@ -17,12 +17,12 @@ package com.liferay.message.boards.service.impl;
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.model.MBCategory;
 import com.liferay.message.boards.service.base.MBCategoryServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -32,9 +32,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = {
+		"json.web.service.context.name=mb",
+		"json.web.service.context.path=MBCategory"
+	},
+	service = AopService.class
+)
 public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 
 	@Override
@@ -43,7 +53,7 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(),
 			serviceContext.getScopeGroupId(), parentCategoryId,
 			ActionKeys.ADD_CATEGORY);
@@ -64,7 +74,7 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 			boolean allowAnonymousEmail, ServiceContext serviceContext)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(),
 			serviceContext.getScopeGroupId(), parentCategoryId,
 			ActionKeys.ADD_CATEGORY);
@@ -94,7 +104,7 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 	public void deleteCategory(long groupId, long categoryId)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(), groupId,
 			categoryId, ActionKeys.DELETE);
 
@@ -232,10 +242,10 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 	@Override
 	public List<Object> getCategoriesAndThreads(
 		long groupId, long categoryId, int status, int start, int end,
-		OrderByComparator<?> obc) {
+		OrderByComparator<?> orderByComparator) {
 
 		QueryDefinition<?> queryDefinition = new QueryDefinition<>(
-			status, start, end, obc);
+			status, start, end, orderByComparator);
 
 		return mbCategoryFinder.filterFindC_T_ByG_C(
 			groupId, categoryId, queryDefinition);
@@ -511,7 +521,7 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 	public void subscribeCategory(long groupId, long categoryId)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(), groupId,
 			categoryId, ActionKeys.SUBSCRIBE);
 
@@ -523,7 +533,7 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 	public void unsubscribeCategory(long groupId, long categoryId)
 		throws PortalException {
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_categoryModelResourcePermission, getPermissionChecker(), groupId,
 			categoryId, ActionKeys.SUBSCRIBE);
 
@@ -559,10 +569,10 @@ public class MBCategoryServiceImpl extends MBCategoryServiceBaseImpl {
 			serviceContext);
 	}
 
-	private static volatile ModelResourcePermission<MBCategory>
-		_categoryModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				MBCategoryServiceImpl.class, "_categoryModelResourcePermission",
-				MBCategory.class);
+	@Reference(
+		target = "(model.class.name=com.liferay.message.boards.model.MBCategory)"
+	)
+	private ModelResourcePermission<MBCategory>
+		_categoryModelResourcePermission;
 
 }

@@ -58,38 +58,55 @@ String noSuchUserRedirectURL = casConfiguration.noSuchUserRedirectURL();
 </aui:fieldset>
 
 <aui:script>
-	Liferay.provide(
-		window,
-		'<portlet:namespace />testCasSettings',
-		function() {
-			var A = AUI();
+	window['<portlet:namespace />testCasSettings'] = function () {
+		var data = {};
 
-			var data = {};
+		data.<portlet:namespace />casLoginURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>loginURL'
+			].value;
+		data.<portlet:namespace />casLogoutURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>logoutURL'
+			].value;
+		data.<portlet:namespace />casServerURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>serverURL'
+			].value;
+		data.<portlet:namespace />casServiceURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>serviceURL'
+			].value;
 
-			data.<portlet:namespace />casLoginURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>loginURL'].value;
-			data.<portlet:namespace />casLogoutURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>logoutURL'].value;
-			data.<portlet:namespace />casServerURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>serverURL'].value;
-			data.<portlet:namespace />casServiceURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsCASConstants.FORM_PARAMETER_NAMESPACE %>serviceURL'].value;
+		var baseUrl =
+			'<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="mvcRenderCommandName" value="/portal_settings/test_cas" /></portlet:renderURL>';
 
-			var url = '<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="mvcRenderCommandName" value="/portal_settings/test_cas" /></portlet:renderURL>';
+		var url = new URL(baseUrl);
 
-			var dialog = Liferay.Util.Window.getWindow(
-				{
-					dialog: {
-						destroyOnHide: true
-					},
-					title: '<%= UnicodeLanguageUtil.get(request, "cas") %>'
-				}
-			);
+		var searchParams = Liferay.Util.objectToURLSearchParams(data);
 
-			dialog.plug(
-				A.Plugin.IO,
-				{
-					data: data,
-					uri: url
-				}
-			);
-		},
-		['aui-io-plugin-deprecated', 'aui-io-request', 'liferay-util-window']
-	);
+		searchParams.forEach(function (value, key) {
+			url.searchParams.append(key, value);
+		});
+
+		Liferay.Util.fetch(url)
+			.then(function (response) {
+				return response.text();
+			})
+			.then(function (text) {
+				Liferay.Util.openModal({
+					bodyHTML: text,
+					size: 'full-screen',
+					title: '<%= UnicodeLanguageUtil.get(request, "cas") %>',
+				});
+			})
+			.catch(function (error) {
+				Liferay.Util.openToast({
+					message: Liferay.Language.get(
+						'an-unexpected-system-error-occurred'
+					),
+					type: 'danger',
+				});
+			});
+	};
 </aui:script>

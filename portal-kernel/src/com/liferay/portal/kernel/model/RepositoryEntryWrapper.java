@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link RepositoryEntry}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see RepositoryEntry
  * @generated
  */
-@ProviderType
 public class RepositoryEntryWrapper
 	extends BaseModelWrapper<RepositoryEntry>
-	implements RepositoryEntry, ModelWrapper<RepositoryEntry> {
+	implements ModelWrapper<RepositoryEntry>, RepositoryEntry {
 
 	public RepositoryEntryWrapper(RepositoryEntry repositoryEntry) {
 		super(repositoryEntry);

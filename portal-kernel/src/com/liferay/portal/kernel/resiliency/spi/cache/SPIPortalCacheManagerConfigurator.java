@@ -19,8 +19,10 @@ import com.liferay.portal.kernel.cache.PortalCacheManager;
 import java.io.Serializable;
 
 /**
- * @author Tina Tian
+ * @author     Tina Tian
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public interface SPIPortalCacheManagerConfigurator {
 
 	public PortalCacheManager<? extends Serializable, ? extends Serializable>

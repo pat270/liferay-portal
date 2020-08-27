@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-List<InfoListProvider> infoListProviders = assetPublisherDisplayContext.getAssetEntryInfoListProviders();
+List<InfoListProvider<?>> infoListProviders = assetPublisherDisplayContext.getAssetEntryInfoListProviders();
 %>
 
 <c:choose>
@@ -28,7 +28,7 @@ List<InfoListProvider> infoListProviders = assetPublisherDisplayContext.getAsset
 			<%
 			String infoListProviderClassName = PrefsParamUtil.getString(portletPreferences, request, "infoListProviderClassName", StringPool.BLANK);
 
-			for (InfoListProvider infoListProvider : infoListProviders) {
+			for (InfoListProvider<?> infoListProvider : infoListProviders) {
 				Class<?> clazz = infoListProvider.getClass();
 			%>
 
@@ -41,6 +41,6 @@ List<InfoListProvider> infoListProviders = assetPublisherDisplayContext.getAsset
 		</aui:select>
 	</c:when>
 	<c:otherwise>
-		<liferay-ui:message key="you-do-not-have-any-content-set-providers" />
+		<liferay-ui:message key="you-do-not-have-any-collection-providers" />
 	</c:otherwise>
 </c:choose>

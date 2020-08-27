@@ -30,7 +30,7 @@ boolean portletTitleBasedNavigation = GetterUtil.getBoolean(portletConfig.getIni
 
 if (portletTitleBasedNavigation) {
 	portletDisplay.setShowBackIcon(true);
-	portletDisplay.setURLBack(backURL.toString());
+	portletDisplay.setURLBack(backURL);
 
 	renderResponse.setTitle(LanguageUtil.get(resourceBundle, "compare-versions"));
 }
@@ -56,7 +56,7 @@ if (portletTitleBasedNavigation) {
 	<portlet:param name="resourcePrimKey" value="<%= String.valueOf(kbArticle.getResourcePrimKey()) %>" />
 </liferay-portlet:resourceURL>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<liferay-frontend:diff-version-comparator
 		diffHtmlResults="<%= diffHtmlResults %>"
 		diffVersionsInfo="<%= AdminUtil.getDiffVersionsInfo(scopeGroupId, kbArticle.getResourcePrimKey(), GetterUtil.getInteger(sourceVersion), GetterUtil.getInteger(targetVersion)) %>"
@@ -65,4 +65,4 @@ if (portletTitleBasedNavigation) {
 		sourceVersion="<%= sourceVersion %>"
 		targetVersion="<%= targetVersion %>"
 	/>
-</div>
+</clay:container-fluid>

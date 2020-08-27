@@ -30,8 +30,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the base implementation for the resource local service.
  *
@@ -43,10 +41,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.portal.service.impl.ResourceLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class ResourceLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements ResourceLocalService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, ResourceLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -195,8 +192,8 @@ public abstract class ResourceLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

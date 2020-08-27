@@ -14,13 +14,12 @@
  */
 --%>
 
-<%@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
-page import="com.liferay.portal.util.MaintenanceUtil" %>
+<%@ include file="/html/portal/init.jsp" %>
 
 <%
 boolean invokingSession = false;
 
-if (session.getId().equals(MaintenanceUtil.getSessionId())) {
+if (Objects.equals(session.getId(), MaintenanceUtil.getSessionId())) {
 	invokingSession = true;
 }
 %>

@@ -30,18 +30,17 @@ import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletJSONUtil;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletParameterUtil;
-import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryConstants;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.RestrictPortletServletRequest;
+import com.liferay.portal.kernel.portlet.constants.PortletPreferencesFactoryConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
@@ -49,10 +48,12 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.DirectTag;
 import com.liferay.taglib.servlet.PipingServletResponse;
 import com.liferay.taglib.util.PortalIncludeUtil;
+import com.liferay.taglib.util.ThreadLocalUtil;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.servlet.http.HttpServletRequest;
@@ -193,7 +194,7 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 
 		String portletInstanceKey = portletName;
 
-		if (Validator.isNotNull(instanceId)) {
+		if (Validator.isNotNull(instanceId) && !instanceId.startsWith("0")) {
 			portletInstanceKey = PortletIdCodec.encode(
 				PortletIdCodec.decodePortletName(portletName),
 				PortletIdCodec.decodeUserId(portletName), instanceId);
@@ -203,17 +204,26 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 				portletInstanceKey,
 				httpServletRequest.getParameter("p_p_id"))) {
 
-			parameterMap = MapUtil.filterByKeys(
-				parameterMap, key -> !key.startsWith("p_p_"));
+			Set<String> keySet = parameterMap.keySet();
+
+			keySet.removeIf(key -> key.startsWith("p_p_"));
 		}
 
 		String portletNamespace = PortalUtil.getPortletNamespace(
 			portletInstanceKey);
 
-		parameterMap.putAll(
-			MapUtil.filterByKeys(
-				originalHttpServletRequest.getParameterMap(),
-				key -> key.startsWith(portletNamespace)));
+		Map<String, String[]> originalParameterMap =
+			originalHttpServletRequest.getParameterMap();
+
+		for (Map.Entry<String, String[]> entry :
+				originalParameterMap.entrySet()) {
+
+			String key = entry.getKey();
+
+			if (key.startsWith(portletNamespace)) {
+				parameterMap.put(key, entry.getValue());
+			}
+		}
 
 		queryString = PortletParameterUtil.addNamespace(
 			portletInstanceKey, queryString);
@@ -375,10 +385,10 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new JspException(e);
+			throw new JspException(exception);
 		}
 	}
 
@@ -469,7 +479,9 @@ public class RuntimeTag extends TagSupport implements DirectTag {
 	private static final Log _log = LogFactoryUtil.getLog(RuntimeTag.class);
 
 	private static final ThreadLocal<Stack<String>> _embeddedPortletIds =
-		new CentralizedThreadLocal<>(RuntimeTag.class + "._embeddedPortletIds");
+		ThreadLocalUtil.create(
+			RuntimeTag.class, "_embeddedPortletIds",
+			name -> new CentralizedThreadLocal<>(name));
 
 	private String _defaultPreferences;
 	private String _instanceId;

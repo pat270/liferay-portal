@@ -14,9 +14,8 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
+import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link DDMStructureVersionService}.
@@ -25,7 +24,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMStructureVersionService
  * @generated
  */
-@ProviderType
 public class DDMStructureVersionServiceWrapper
 	implements DDMStructureVersionService,
 			   ServiceWrapper<DDMStructureVersionService> {
@@ -37,8 +35,7 @@ public class DDMStructureVersionServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructureVersion
-			getLatestStructureVersion(long structureId)
+	public DDMStructureVersion getLatestStructureVersion(long structureId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmStructureVersionService.getLatestStructureVersion(
@@ -56,8 +53,7 @@ public class DDMStructureVersionServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructureVersion
-			getStructureVersion(long structureVersionId)
+	public DDMStructureVersion getStructureVersion(long structureVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmStructureVersionService.getStructureVersion(
@@ -65,14 +61,11 @@ public class DDMStructureVersionServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMStructureVersion>
-				getStructureVersions(
-					long structureId, int start, int end,
-					com.liferay.portal.kernel.util.OrderByComparator
-						<com.liferay.dynamic.data.mapping.model.
-							DDMStructureVersion> orderByComparator)
-			throws com.liferay.portal.kernel.exception.PortalException {
+	public java.util.List<DDMStructureVersion> getStructureVersions(
+			long structureId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<DDMStructureVersion> orderByComparator)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmStructureVersionService.getStructureVersions(
 			structureId, start, end, orderByComparator);

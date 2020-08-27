@@ -49,7 +49,7 @@ import javax.sql.DataSource;
  */
 public abstract class UserGroupRoleServiceBaseImpl
 	extends BaseServiceImpl
-	implements UserGroupRoleService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, UserGroupRoleService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -440,8 +440,8 @@ public abstract class UserGroupRoleServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

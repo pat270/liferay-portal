@@ -16,7 +16,6 @@ package com.liferay.portal.repository.liferayrepository.model;
 
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
-import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -27,7 +26,6 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 
@@ -57,16 +55,16 @@ public class LiferayFileVersion extends LiferayModel implements FileVersion {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LiferayFileVersion)) {
+		if (!(object instanceof LiferayFileVersion)) {
 			return false;
 		}
 
-		LiferayFileVersion liferayFileVersion = (LiferayFileVersion)obj;
+		LiferayFileVersion liferayFileVersion = (LiferayFileVersion)object;
 
 		if (Objects.equals(_dlFileVersion, liferayFileVersion._dlFileVersion)) {
 			return true;
@@ -111,8 +109,8 @@ public class LiferayFileVersion extends LiferayModel implements FileVersion {
 				PrincipalThreadLocal.getUserId(), getFileEntry(),
 				incrementCounter);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return inputStream;
@@ -141,12 +139,6 @@ public class LiferayFileVersion extends LiferayModel implements FileVersion {
 	@Override
 	public String getExtraSettings() {
 		return _dlFileVersion.getExtraSettings();
-	}
-
-	public File getFile(boolean incrementCounter) throws PortalException {
-		return DLFileEntryLocalServiceUtil.getFile(
-			_dlFileVersion.getFileEntryId(), _dlFileVersion.getVersion(),
-			incrementCounter);
 	}
 
 	@Override

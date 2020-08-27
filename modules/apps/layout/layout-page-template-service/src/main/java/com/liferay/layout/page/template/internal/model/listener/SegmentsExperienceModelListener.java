@@ -26,7 +26,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author David Arques
  */
-@Component(immediate = true, service = ModelListener.class)
+@Component(service = ModelListener.class)
 public class SegmentsExperienceModelListener
 	extends BaseModelListener<SegmentsExperience> {
 
@@ -39,8 +39,8 @@ public class SegmentsExperienceModelListener
 				deleteLayoutPageTemplateStructureRelsBySegmentsExperienceId(
 					segmentsExperience.getSegmentsExperienceId());
 		}
-		catch (Exception e) {
-			throw new ModelListenerException(e);
+		catch (Exception exception) {
+			throw new ModelListenerException(exception);
 		}
 	}
 

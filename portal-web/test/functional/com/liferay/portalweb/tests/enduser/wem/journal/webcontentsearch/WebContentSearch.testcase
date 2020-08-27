@@ -1,0 +1,468 @@
+@component-name = "portal-wcm"
+definition {
+
+	property osgi.modules.includes = "journal-content-search-web";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Web Content Administration";
+	var webContentSearchPageName = "Web Content Search Page";
+	var webContentSearchPortletName = "Web Content Search";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Search Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Search Page",
+			widgetName = "Web Content Search");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			WebContent.tearDownCP();
+
+			Vocabulary.tearDownCP();
+
+			Tag.tearDownCP();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test SearchWebContent {
+		property testray.component.names = "Categories,Web Content Search";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page",
+			widgetName = "Web Content Display");
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		IFrame.closeFrame();
+
+		WebContent.viewPGViaWCD(webContentContent = "WC WebContent Content");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "WC WebContent Title");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "WC WebContent Content");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "WC");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "WebContent");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Title");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Content");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "WC1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "WC1");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "WebContent1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "WebContent1");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Title1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "Title1");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Content1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "Content1");
+	}
+
+	@priority = "4"
+	test SearchWebContentCategory {
+		property testray.component.names = "Categories,Web Content Search";
+
+		JSONCategory.addVocabulary(
+			groupName = "Guest",
+			title = "Vocabulary Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page",
+			widgetName = "Web Content Display");
+
+		var categoryId = JSONCategory.addCategory(
+			groupName = "Guest",
+			title = "Category Name",
+			vocabularyName = "Vocabulary Name");
+
+		JSONWebcontent.addWebContent(
+			assetCategoryIds = "${categoryId}",
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		IFrame.closeFrame();
+
+		WebContent.viewPGViaWCD(webContentContent = "WC WebContent Content");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Category Name");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Category");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Name");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Category1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "Category1");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "Name1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "Name1");
+	}
+
+	@priority = "3"
+	test SearchWebContentCategoryQuotes {
+		property testray.component.names = "Categories,Web Content Search";
+
+		JSONCategory.addVocabulary(
+			groupName = "Guest",
+			title = "Vocabulary Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page",
+			widgetName = "Web Content Display");
+
+		var categoryId = JSONCategory.addCategory(
+			groupName = "Guest",
+			title = "Category Name",
+			vocabularyName = "Vocabulary Name");
+
+		JSONWebcontent.addWebContent(
+			assetCategoryIds = "${categoryId}",
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Category Name&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Category&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Name&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Category1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;Category1&quot;");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Name1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;Name1&quot;");
+	}
+
+	@priority = "3"
+	test SearchWebContentQuotes {
+		property testray.component.names = "Web Content Search";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page",
+			widgetName = "Web Content Display");
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		IFrame.closeFrame();
+
+		WebContent.viewPGViaWCD(webContentContent = "WC WebContent Content");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WC WebContent Title&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WC WebContent Content&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WC&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WebContent&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Title&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Content&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WC WebContent&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WebContent Title&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WebContent Content&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WC1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;WC1&quot;");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;WebContent1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;WebContent1&quot;");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Title1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;Title1&quot;");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;Content1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;Content1&quot;");
+	}
+
+	@priority = "5"
+	test SearchWebContentTag {
+		property portal.acceptance = "true";
+		property testray.component.names = "Tags,Training,Web Content Display";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page",
+			widgetName = "Web Content Display");
+
+		var serviceContext = '''{"assetTagNames": ["tag name"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			serviceContext = "${serviceContext}",
+			title = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		IFrame.closeFrame();
+
+		WebContent.viewPGViaWCD(webContentContent = "WC WebContent Content");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "tag name");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "tag");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "name");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "tag1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "tag1");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "name1");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "name1");
+	}
+
+	@priority = "3"
+	test SearchWebContentTagQuotes {
+		property testray.component.names = "Web Content Search";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Web Content Display Page",
+			widgetName = "Web Content Display");
+
+		var serviceContext = '''{"assetTagNames": ["tag name"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			serviceContext = "${serviceContext}",
+			title = "WC WebContent Title");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		IFrame.closeFrame();
+
+		WebContent.viewPGViaWCD(webContentContent = "WC WebContent Content");
+
+		Navigator.gotoPage(pageName = "Web Content Search Page");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;tag name&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;tag&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;name&quot;");
+
+		WebContentSearchPortlet.viewResultsEntry(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;tag1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;tag1&quot;");
+
+		WebContentSearchPortlet.search(webContentSearchTerm = "&quot;name1&quot;");
+
+		WebContentSearchPortlet.viewNoResults(webContentSearchTerm = "&quot;name1&quot;");
+	}
+
+}

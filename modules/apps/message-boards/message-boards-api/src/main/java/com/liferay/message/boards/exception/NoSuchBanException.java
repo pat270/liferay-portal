@@ -16,12 +16,9 @@ package com.liferay.message.boards.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchBanException extends NoSuchModelException {
 
 	public NoSuchBanException() {
@@ -31,12 +28,12 @@ public class NoSuchBanException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchBanException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchBanException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchBanException(Throwable cause) {
-		super(cause);
+	public NoSuchBanException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

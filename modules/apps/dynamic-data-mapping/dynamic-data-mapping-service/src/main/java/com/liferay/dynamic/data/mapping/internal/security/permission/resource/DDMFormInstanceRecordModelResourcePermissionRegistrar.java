@@ -45,14 +45,15 @@ import org.osgi.service.component.annotations.Reference;
 public class DDMFormInstanceRecordModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put(
 			"model.class.name", DDMFormInstanceRecord.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<DDMFormInstanceRecord>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				DDMFormInstanceRecord.class,
 				DDMFormInstanceRecord::getFormInstanceRecordId,
@@ -60,15 +61,15 @@ public class DDMFormInstanceRecordModelResourcePermissionRegistrar {
 				_portletResourcePermission,
 				(modelResourcePermission, consumer) -> {
 					consumer.accept(
-						new DDMFormInstanceRecordAutosavedPermissionLogic());
+						new DDMFormInstanceRecordAutosavedModelResourcePermissionLogic());
 					consumer.accept(
-						new DDMFormInstanceRecordInheritancePermissionLogic());
+						new DDMFormInstanceRecordInheritanceModelResourcePermissionLogic());
 				}),
 			properties);
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -85,12 +86,13 @@ public class DDMFormInstanceRecordModelResourcePermissionRegistrar {
 	@Reference(target = "(resource.name=" + DDMConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<DDMFormInstanceRecord>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;
 
-	private class DDMFormInstanceRecordAutosavedPermissionLogic
+	private class DDMFormInstanceRecordAutosavedModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<DDMFormInstanceRecord> {
 
 		@Override
@@ -116,7 +118,7 @@ public class DDMFormInstanceRecordModelResourcePermissionRegistrar {
 
 	}
 
-	private class DDMFormInstanceRecordInheritancePermissionLogic
+	private class DDMFormInstanceRecordInheritanceModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<DDMFormInstanceRecord> {
 
 		@Override

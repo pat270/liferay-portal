@@ -67,11 +67,18 @@ public interface FragmentCollection
 	public long getResourcesFolderId()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
+	public long getResourcesFolderId(boolean createIfAbsent)
+		throws com.liferay.portal.kernel.exception.PortalException;
+
 	public boolean hasResources()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public void populateZipWriter(
 			com.liferay.portal.kernel.zip.ZipWriter zipWriter)
+		throws Exception;
+
+	public void populateZipWriter(
+			com.liferay.portal.kernel.zip.ZipWriter zipWriter, String path)
 		throws Exception;
 
 }

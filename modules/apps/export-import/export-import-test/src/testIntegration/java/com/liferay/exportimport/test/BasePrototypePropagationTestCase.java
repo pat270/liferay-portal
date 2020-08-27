@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.journal.constants.JournalContentPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -33,12 +34,11 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.service.test.ServiceTestUtil;
-import com.liferay.portal.util.test.LayoutTestUtil;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +60,7 @@ public abstract class BasePrototypePropagationTestCase {
 		ServiceContextThreadLocal.pushServiceContext(
 			ServiceContextTestUtil.getServiceContext());
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		// Group
 
@@ -118,19 +118,16 @@ public abstract class BasePrototypePropagationTestCase {
 			String columnId)
 		throws Exception {
 
-		Map<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put(
-			"articleId", new String[] {journalArticle.getArticleId()});
-		parameterMap.put(
-			"groupId",
-			new String[] {String.valueOf(journalArticle.getGroupId())});
-		parameterMap.put(
-			"showAvailableLocales", new String[] {Boolean.TRUE.toString()});
-
 		return LayoutTestUtil.addPortletToLayout(
 			userId, layout, JournalContentPortletKeys.JOURNAL_CONTENT, columnId,
-			parameterMap);
+			HashMapBuilder.put(
+				"articleId", new String[] {journalArticle.getArticleId()}
+			).put(
+				"groupId",
+				new String[] {String.valueOf(journalArticle.getGroupId())}
+			).put(
+				"showAvailableLocales", new String[] {Boolean.TRUE.toString()}
+			).build());
 	}
 
 	protected abstract void doSetUp() throws Exception;
@@ -215,11 +212,11 @@ public abstract class BasePrototypePropagationTestCase {
 
 		MergeLayoutPrototypesThreadLocal.clearMergeComplete();
 
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put("articleId", StringPool.BLANK);
-		portletPreferencesMap.put(
-			"showAvailableLocales", Boolean.FALSE.toString());
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
+			"articleId", StringPool.BLANK
+		).put(
+			"showAvailableLocales", Boolean.FALSE.toString()
+		).build();
 
 		if (globalScope) {
 			portletPreferencesMap.put("groupId", String.valueOf(globalGroupId));

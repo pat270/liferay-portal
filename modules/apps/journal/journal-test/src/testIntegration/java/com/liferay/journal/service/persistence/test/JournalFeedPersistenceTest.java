@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -46,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class JournalFeedPersistenceTest {
 
 		JournalFeed newJournalFeed = _persistence.create(pk);
 
+		newJournalFeed.setMvccVersion(RandomTestUtil.nextLong());
+
+		newJournalFeed.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newJournalFeed.setUuid(RandomTestUtil.randomString());
 
 		newJournalFeed.setGroupId(RandomTestUtil.nextLong());
@@ -175,6 +179,12 @@ public class JournalFeedPersistenceTest {
 		JournalFeed existingJournalFeed = _persistence.findByPrimaryKey(
 			newJournalFeed.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingJournalFeed.getMvccVersion(),
+			newJournalFeed.getMvccVersion());
+		Assert.assertEquals(
+			existingJournalFeed.getCtCollectionId(),
+			newJournalFeed.getCtCollectionId());
 		Assert.assertEquals(
 			existingJournalFeed.getUuid(), newJournalFeed.getUuid());
 		Assert.assertEquals(
@@ -311,12 +321,13 @@ public class JournalFeedPersistenceTest {
 
 	protected OrderByComparator<JournalFeed> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"JournalFeed", "uuid", true, "id", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "feedId", true, "name", true,
-			"description", true, "DDMStructureKey", true, "DDMTemplateKey",
-			true, "DDMRendererTemplateKey", true, "delta", true, "orderByCol",
-			true, "orderByType", true, "targetLayoutFriendlyUrl", true,
+			"JournalFeed", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "id", true, "groupId", true, "companyId", true, "userId",
+			true, "userName", true, "createDate", true, "modifiedDate", true,
+			"feedId", true, "name", true, "description", true,
+			"DDMStructureKey", true, "DDMTemplateKey", true,
+			"DDMRendererTemplateKey", true, "delta", true, "orderByCol", true,
+			"orderByType", true, "targetLayoutFriendlyUrl", true,
 			"targetPortletId", true, "contentField", true, "feedFormat", true,
 			"feedVersion", true, "lastPublishDate", true);
 	}
@@ -531,35 +542,81 @@ public class JournalFeedPersistenceTest {
 
 		_persistence.clearCache();
 
-		JournalFeed existingJournalFeed = _persistence.findByPrimaryKey(
-			newJournalFeed.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newJournalFeed.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingJournalFeed.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingJournalFeed, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		JournalFeed newJournalFeed = addJournalFeed();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			JournalFeed.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("id", newJournalFeed.getId()));
+
+		List<JournalFeed> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(JournalFeed journalFeed) {
 		Assert.assertEquals(
-			Long.valueOf(existingJournalFeed.getGroupId()),
+			journalFeed.getUuid(),
+			ReflectionTestUtil.invoke(
+				journalFeed, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(journalFeed.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingJournalFeed, "getOriginalGroupId", new Class<?>[0]));
+				journalFeed, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingJournalFeed.getGroupId()),
+			Long.valueOf(journalFeed.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingJournalFeed, "getOriginalGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingJournalFeed.getFeedId(),
-				ReflectionTestUtil.invoke(
-					existingJournalFeed, "getOriginalFeedId",
-					new Class<?>[0])));
+				journalFeed, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			journalFeed.getFeedId(),
+			ReflectionTestUtil.invoke(
+				journalFeed, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "feedId"));
 	}
 
 	protected JournalFeed addJournalFeed() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		JournalFeed journalFeed = _persistence.create(pk);
+
+		journalFeed.setMvccVersion(RandomTestUtil.nextLong());
+
+		journalFeed.setCtCollectionId(RandomTestUtil.nextLong());
 
 		journalFeed.setUuid(RandomTestUtil.randomString());
 

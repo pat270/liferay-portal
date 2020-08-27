@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,10 +32,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Organization
  * @generated
  */
-@ProviderType
 public class OrganizationWrapper
 	extends BaseModelWrapper<Organization>
-	implements Organization, ModelWrapper<Organization> {
+	implements ModelWrapper<Organization>, Organization {
 
 	public OrganizationWrapper(Organization organization) {
 		super(organization);
@@ -46,6 +45,7 @@ public class OrganizationWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("organizationId", getOrganizationId());
@@ -74,6 +74,12 @@ public class OrganizationWrapper
 
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
 		}
 
 		String uuid = (String)attributes.get("uuid");
@@ -261,6 +267,16 @@ public class OrganizationWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this organization.
+	 *
+	 * @return the ct collection ID of this organization
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	@Override
@@ -583,6 +599,16 @@ public class OrganizationWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this organization.
+	 *
+	 * @param ctCollectionId the ct collection ID of this organization
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the external reference code of this organization.
 	 *
 	 * @param externalReferenceCode the external reference code of this organization
@@ -755,6 +781,20 @@ public class OrganizationWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<Organization, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<Organization, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

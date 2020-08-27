@@ -1,0 +1,27 @@
+definition {
+
+	macro gotoManageFieldSets {
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Kaleo Forms Admin");
+
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Manage Field Sets");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Field Sets");
+	}
+
+	macro gotoManageForms {
+		KaleoFormsNavigator.gotoManageFieldSets();
+
+		Search.searchCP(searchTerm = "${kfFieldSetName}");
+
+		Click.waitForMenuToggleJSClick(
+			key_kfFieldSetName = "${kfFieldSetName}",
+			locator1 = "KaleoFormsAdminSelectStructure#KALEO_FORMS_STRUCTURE_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Manage Forms");
+	}
+
+}

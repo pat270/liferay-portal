@@ -14,14 +14,11 @@
 
 package com.liferay.portal.tools.service.builder.test.exception;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchBigDecimalEntryException extends NoSuchModelException {
 
 	public NoSuchBigDecimalEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchBigDecimalEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchBigDecimalEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchBigDecimalEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchBigDecimalEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchBigDecimalEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -18,12 +18,9 @@ import com.liferay.portal.kernel.exception.PortalException;
 
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DDMFormLayoutValidationException extends PortalException {
 
 	public DDMFormLayoutValidationException() {
@@ -33,12 +30,12 @@ public class DDMFormLayoutValidationException extends PortalException {
 		super(msg);
 	}
 
-	public DDMFormLayoutValidationException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DDMFormLayoutValidationException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DDMFormLayoutValidationException(Throwable cause) {
-		super(cause);
+	public DDMFormLayoutValidationException(Throwable throwable) {
+		super(throwable);
 	}
 
 	public static class InvalidColumnSize

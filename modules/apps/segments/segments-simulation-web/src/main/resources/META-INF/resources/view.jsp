@@ -20,12 +20,15 @@
 SegmentsSimulationDisplayContext segmentsSimulationDisplayContext = new SegmentsSimulationDisplayContext(request, renderResponse);
 %>
 
-<div class="container-fluid segments-simulation" id="<portlet:namespace />segmentsSimulationContainer">
+<clay:container-fluid
+	cssClass="segments-simulation"
+	id='<%= liferayPortletResponse.getNamespace() + "segmentsSimulationContainer" %>'
+>
 	<c:choose>
 		<c:when test="<%= segmentsSimulationDisplayContext.isShowEmptyMessage() %>">
-			<div class="alert alert-info">
-				<liferay-ui:message key="there-are-no-segments" />
-			</div>
+			<p class="mb-4 mt-1 small">
+				<liferay-ui:message key="no-segments-have-been-added-yet" />
+			</p>
 		</c:when>
 		<c:otherwise>
 			<aui:form method="post" name="segmentsSimulationFm">
@@ -59,14 +62,14 @@ SegmentsSimulationDisplayContext segmentsSimulationDisplayContext = new Segments
 			</aui:form>
 
 			<aui:script use="liferay-portlet-segments-simulation">
-				new Liferay.Portlet.SegmentsSimulation(
-					{
-						deactivateSimulationUrl: '<%= segmentsSimulationDisplayContext.getDeactivateSimulationURL() %>',
-						form: document.<portlet:namespace />segmentsSimulationFm,
-						simulateSegmentsEntriesUrl: '<%= segmentsSimulationDisplayContext.getSimulateSegmentsEntriesURL() %>'
-					}
-				);
+				new Liferay.Portlet.SegmentsSimulation({
+					deactivateSimulationUrl:
+						'<%= segmentsSimulationDisplayContext.getDeactivateSimulationURL() %>',
+					form: document.<portlet:namespace />segmentsSimulationFm,
+					simulateSegmentsEntriesUrl:
+						'<%= segmentsSimulationDisplayContext.getSimulateSegmentsEntriesURL() %>',
+				});
 			</aui:script>
 		</c:otherwise>
 	</c:choose>
-</div>
+</clay:container-fluid>

@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class ParentKnowledgeBaseFolder {
+public class ParentKnowledgeBaseFolder implements Cloneable {
+
+	public static ParentKnowledgeBaseFolder toDTO(String json) {
+		return ParentKnowledgeBaseFolderSerDes.toDTO(json);
+	}
 
 	public Long getFolderId() {
 		return folderId;
@@ -69,6 +73,11 @@ public class ParentKnowledgeBaseFolder {
 	}
 
 	protected String folderName;
+
+	@Override
+	public ParentKnowledgeBaseFolder clone() throws CloneNotSupportedException {
+		return (ParentKnowledgeBaseFolder)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

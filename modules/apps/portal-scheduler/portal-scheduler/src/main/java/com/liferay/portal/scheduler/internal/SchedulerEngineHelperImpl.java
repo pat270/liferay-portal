@@ -131,8 +131,8 @@ public class SchedulerEngineHelperImpl implements SchedulerEngineHelper {
 
 			_auditRouter.route(auditMessage);
 		}
-		catch (Exception e) {
-			throw new SchedulerException(e);
+		catch (Exception exception) {
+			throw new SchedulerException(exception);
 		}
 	}
 
@@ -753,12 +753,10 @@ public class SchedulerEngineHelperImpl implements SchedulerEngineHelper {
 	protected void activate(ComponentContext componentContext)
 		throws Exception {
 
-		Dictionary<String, Object> properties =
-			componentContext.getProperties();
-
 		_schedulerEngineHelperConfiguration =
 			ConfigurableUtil.createConfigurable(
-				SchedulerEngineHelperConfiguration.class, properties);
+				SchedulerEngineHelperConfiguration.class,
+				componentContext.getProperties());
 
 		_bundleContext = componentContext.getBundleContext();
 
@@ -807,9 +805,9 @@ public class SchedulerEngineHelperImpl implements SchedulerEngineHelper {
 		try {
 			shutdown();
 		}
-		catch (SchedulerException se) {
+		catch (SchedulerException schedulerException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to shutdown scheduler", se);
+				_log.warn("Unable to shutdown scheduler", schedulerException);
 			}
 		}
 
@@ -1007,8 +1005,8 @@ public class SchedulerEngineHelperImpl implements SchedulerEngineHelper {
 
 				return schedulerEventMessageListener;
 			}
-			catch (SchedulerException se) {
-				_log.error(se, se);
+			catch (SchedulerException schedulerException) {
+				_log.error(schedulerException, schedulerException);
 			}
 			finally {
 				ClusterableContextThreadLocal.putThreadLocalContext(
@@ -1047,8 +1045,8 @@ public class SchedulerEngineHelperImpl implements SchedulerEngineHelper {
 			try {
 				update(schedulerEntry.getTrigger(), storageType);
 			}
-			catch (SchedulerException se) {
-				_log.error(se, se);
+			catch (SchedulerException schedulerException) {
+				_log.error(schedulerException, schedulerException);
 			}
 			finally {
 				ClusterableContextThreadLocal.putThreadLocalContext(
@@ -1089,8 +1087,8 @@ public class SchedulerEngineHelperImpl implements SchedulerEngineHelper {
 			try {
 				delete(schedulerEntry, storageType);
 			}
-			catch (SchedulerException se) {
-				_log.error(se, se);
+			catch (SchedulerException schedulerException) {
+				_log.error(schedulerException, schedulerException);
 			}
 			finally {
 				ClusterableContextThreadLocal.putThreadLocalContext(

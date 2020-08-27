@@ -32,8 +32,8 @@ import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.SecureRandom;
@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
+import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.ClassUtil;
 import com.liferay.portal.kernel.util.Digester;
@@ -58,12 +59,12 @@ import com.liferay.sync.SyncSiteUnavailableException;
 import com.liferay.sync.constants.SyncConstants;
 import com.liferay.sync.constants.SyncDLObjectConstants;
 import com.liferay.sync.constants.SyncPermissionsConstants;
+import com.liferay.sync.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.model.SyncDLObject;
 import com.liferay.sync.model.SyncDevice;
 import com.liferay.sync.model.impl.SyncDLObjectImpl;
 import com.liferay.sync.service.SyncDLObjectLocalService;
 import com.liferay.sync.service.configuration.SyncServiceConfigurationKeys;
-import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.util.SyncHelper;
 
 import java.io.File;
@@ -211,13 +212,12 @@ public class SyncHelperImpl implements SyncHelper {
 			throwableMessage = rootCauseThrowable.toString();
 		}
 
-		JSONObject rootCauseJSONObject = JSONUtil.put(
-			"message", throwableMessage
-		).put(
-			"type", ClassUtil.getClassName(rootCauseThrowable)
-		);
-
-		sb.append(rootCauseJSONObject);
+		sb.append(
+			JSONUtil.put(
+				"message", throwableMessage
+			).put(
+				"type", ClassUtil.getClassName(rootCauseThrowable)
+			));
 
 		return StringUtil.unquote(sb.toString());
 	}
@@ -264,7 +264,7 @@ public class SyncHelperImpl implements SyncHelper {
 			new JcaX509v3CertificateBuilder(
 				x500Name, new BigInteger(64, new SecureRandom()),
 				new Date(System.currentTimeMillis() - Time.YEAR),
-				new Date(System.currentTimeMillis() + Time.YEAR * 1000),
+				new Date(System.currentTimeMillis() + (Time.YEAR * 1000)),
 				x500Name, keyPair.getPublic());
 
 		PrivateKey privateKey = keyPair.getPrivate();
@@ -311,7 +311,7 @@ public class SyncHelperImpl implements SyncHelper {
 			return DigesterUtil.digestBase64(
 				Digester.SHA_1, dlFileVersion.getContentStream(false));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return StringPool.BLANK;
 		}
 	}
@@ -328,7 +328,7 @@ public class SyncHelperImpl implements SyncHelper {
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			return DigesterUtil.digestBase64(Digester.SHA_1, fileInputStream);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return StringPool.BLANK;
 		}
 	}
@@ -343,8 +343,6 @@ public class SyncHelperImpl implements SyncHelper {
 	@Override
 	public File getFileDelta(File sourceFile, File targetFile)
 		throws PortalException {
-
-		File deltaFile = null;
 
 		File checksumsFile = FileUtil.createTempFile();
 
@@ -363,11 +361,11 @@ public class SyncHelperImpl implements SyncHelper {
 
 			checksumsByteChannelWriter.finish();
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 
-		deltaFile = FileUtil.createTempFile();
+		File deltaFile = FileUtil.createTempFile();
 
 		try (FileInputStream targetFileInputStream = new FileInputStream(
 				targetFile);
@@ -393,8 +391,8 @@ public class SyncHelperImpl implements SyncHelper {
 
 			deltaByteChannelWriter.finish();
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 		finally {
 			FileUtil.delete(checksumsFile);
@@ -483,8 +481,8 @@ public class SyncHelperImpl implements SyncHelper {
 				originalFileChannel, patchedWritableByteChannel,
 				deltaByteChannelReader);
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 	}
 
@@ -518,7 +516,22 @@ public class SyncHelperImpl implements SyncHelper {
 			serviceContext.getModelPermissions();
 
 		if (modelPermissions == null) {
-			modelPermissions = new ModelPermissions();
+			if (folder) {
+				modelPermissions = ModelPermissionsFactory.create(
+					Folder.class.getName());
+			}
+			else {
+				modelPermissions = ModelPermissionsFactory.create(
+					FileEntry.class.getName());
+			}
+		}
+		else {
+			if (folder) {
+				modelPermissions.setResourceName(Folder.class.getName());
+			}
+			else {
+				modelPermissions.setResourceName(FileEntry.class.getName());
+			}
 		}
 
 		modelPermissions.addRolePermissions(
@@ -567,12 +580,13 @@ public class SyncHelperImpl implements SyncHelper {
 				lockUserName = lock.getUserName();
 				type = SyncDLObjectConstants.TYPE_PRIVATE_WORKING_COPY;
 			}
-			catch (NoSuchFileVersionException nsfve) {
+			catch (NoSuchFileVersionException noSuchFileVersionException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsfve, nsfve);
+					_log.debug(
+						noSuchFileVersionException, noSuchFileVersionException);
 				}
 
 				// Publishing a checked out file entry on a staged site will

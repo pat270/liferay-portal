@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link RepositoryLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see RepositoryLocalService
  * @generated
  */
-@ProviderType
 public class RepositoryLocalServiceWrapper
 	implements RepositoryLocalService, ServiceWrapper<RepositoryLocalService> {
 
@@ -36,19 +33,24 @@ public class RepositoryLocalServiceWrapper
 	@Override
 	public com.liferay.portal.kernel.model.Repository addRepository(
 			long userId, long groupId, long classNameId, long parentFolderId,
-			String name, String description, String portletId,
+			java.lang.String name, java.lang.String description,
+			java.lang.String portletId,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				typeSettingsProperties,
+				typeSettingsUnicodeProperties,
 			boolean hidden, ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _repositoryLocalService.addRepository(
 			userId, groupId, classNameId, parentFolderId, name, description,
-			portletId, typeSettingsProperties, hidden, serviceContext);
+			portletId, typeSettingsUnicodeProperties, hidden, serviceContext);
 	}
 
 	/**
 	 * Adds the repository to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect RepositoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param repository the repository
 	 * @return the repository that was added
@@ -63,6 +65,17 @@ public class RepositoryLocalServiceWrapper
 	@Override
 	public void checkRepository(long repositoryId) {
 		_repositoryLocalService.checkRepository(repositoryId);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _repositoryLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -99,6 +112,10 @@ public class RepositoryLocalServiceWrapper
 	/**
 	 * Deletes the repository with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect RepositoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param repositoryId the primary key of the repository
 	 * @return the repository that was removed
 	 * @throws PortalException if a repository with the primary key could not be found
@@ -114,6 +131,10 @@ public class RepositoryLocalServiceWrapper
 	/**
 	 * Deletes the repository from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect RepositoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param repository the repository
 	 * @return the repository that was removed
 	 */
@@ -122,6 +143,11 @@ public class RepositoryLocalServiceWrapper
 		com.liferay.portal.kernel.model.Repository repository) {
 
 		return _repositoryLocalService.deleteRepository(repository);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _repositoryLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -146,7 +172,7 @@ public class RepositoryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.RepositoryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.RepositoryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -166,7 +192,7 @@ public class RepositoryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.RepositoryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.RepositoryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -223,14 +249,14 @@ public class RepositoryLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Repository fetchRepository(
-		long groupId, String portletId) {
+		long groupId, java.lang.String portletId) {
 
 		return _repositoryLocalService.fetchRepository(groupId, portletId);
 	}
 
 	@Override
 	public com.liferay.portal.kernel.model.Repository fetchRepository(
-		long groupId, String name, String portletId) {
+		long groupId, java.lang.String name, java.lang.String portletId) {
 
 		return _repositoryLocalService.fetchRepository(
 			groupId, name, portletId);
@@ -245,7 +271,7 @@ public class RepositoryLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Repository
-		fetchRepositoryByUuidAndGroupId(String uuid, long groupId) {
+		fetchRepositoryByUuidAndGroupId(java.lang.String uuid, long groupId) {
 
 		return _repositoryLocalService.fetchRepositoryByUuidAndGroupId(
 			uuid, groupId);
@@ -288,10 +314,13 @@ public class RepositoryLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _repositoryLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -304,7 +333,7 @@ public class RepositoryLocalServiceWrapper
 	 * Returns a range of all the repositories.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.RepositoryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.RepositoryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of repositories
@@ -327,7 +356,8 @@ public class RepositoryLocalServiceWrapper
 	 */
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Repository>
-		getRepositoriesByUuidAndCompanyId(String uuid, long companyId) {
+		getRepositoriesByUuidAndCompanyId(
+			java.lang.String uuid, long companyId) {
 
 		return _repositoryLocalService.getRepositoriesByUuidAndCompanyId(
 			uuid, companyId);
@@ -346,7 +376,7 @@ public class RepositoryLocalServiceWrapper
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Repository>
 		getRepositoriesByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
+			java.lang.String uuid, long companyId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
 				<com.liferay.portal.kernel.model.Repository>
 					orderByComparator) {
@@ -382,7 +412,7 @@ public class RepositoryLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Repository getRepository(
-			long groupId, String portletId)
+			long groupId, java.lang.String portletId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _repositoryLocalService.getRepository(groupId, portletId);
@@ -390,7 +420,7 @@ public class RepositoryLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Repository getRepository(
-			long groupId, String name, String portletId)
+			long groupId, java.lang.String name, java.lang.String portletId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _repositoryLocalService.getRepository(groupId, name, portletId);
@@ -406,7 +436,7 @@ public class RepositoryLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Repository
-			getRepositoryByUuidAndGroupId(String uuid, long groupId)
+			getRepositoryByUuidAndGroupId(java.lang.String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _repositoryLocalService.getRepositoryByUuidAndGroupId(
@@ -423,7 +453,8 @@ public class RepositoryLocalServiceWrapper
 
 	@Override
 	public void updateRepository(
-			long repositoryId, String name, String description)
+			long repositoryId, java.lang.String name,
+			java.lang.String description)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_repositoryLocalService.updateRepository(
@@ -434,15 +465,19 @@ public class RepositoryLocalServiceWrapper
 	public void updateRepository(
 			long repositoryId,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				typeSettingsProperties)
+				typeSettingsUnicodeProperties)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_repositoryLocalService.updateRepository(
-			repositoryId, typeSettingsProperties);
+			repositoryId, typeSettingsUnicodeProperties);
 	}
 
 	/**
 	 * Updates the repository in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect RepositoryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param repository the repository
 	 * @return the repository that was updated

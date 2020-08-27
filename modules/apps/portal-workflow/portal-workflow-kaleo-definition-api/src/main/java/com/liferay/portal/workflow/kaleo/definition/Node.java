@@ -17,8 +17,8 @@ package com.liferay.portal.workflow.kaleo.definition;
 import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,16 +45,16 @@ public abstract class Node implements ActionAware, NotificationAware {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Node)) {
+		if (!(object instanceof Node)) {
 			return false;
 		}
 
-		Node node = (Node)obj;
+		Node node = (Node)object;
 
 		if (!Objects.equals(_name, node._name)) {
 			return false;
@@ -150,13 +150,13 @@ public abstract class Node implements ActionAware, NotificationAware {
 
 	private Set<Action> _actions;
 	private final String _description;
-	private final Set<Transition> _incomingTransitions = new HashSet<>();
+	private final Set<Transition> _incomingTransitions = new LinkedHashSet<>();
 	private String _metadata;
 	private final String _name;
 	private final NodeType _nodeType;
 	private Set<Notification> _notifications;
 	private final Map<String, Transition> _outgoingTransitions =
-		new HashMap<>();
+		new LinkedHashMap<>();
 	private Set<Timer> _timers;
 
 }

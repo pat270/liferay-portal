@@ -14,11 +14,7 @@
  */
 --%>
 
-<%@ taglib uri="http://liferay.com/tld/asset" prefix="liferay-asset" %>
-
-<%@ page import="com.liferay.journal.model.JournalArticle" %><%@
-page import="com.liferay.journal.model.JournalArticleDisplay" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %>
+<%@ include file="/init.jsp" %>
 
 <%
 JournalArticleDisplay articleDisplay = (JournalArticleDisplay)request.getAttribute(WebKeys.JOURNAL_ARTICLE_DISPLAY);

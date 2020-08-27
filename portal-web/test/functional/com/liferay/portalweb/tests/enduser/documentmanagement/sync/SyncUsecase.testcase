@@ -1,6 +1,7 @@
 @component-name = "portal-document-management"
 definition {
-	property osgi.app.includes = "oauth, oauth-api, oauth-service, oauth-web, sync-encryptor, sync-oauth, sync-security, sync-service, sync-web";
+
+	property osgi.app.includes = "oauth,oauth-api,oauth-service,oauth-web,sync-encryptor,sync-oauth,sync-security,sync-service,sync-web";
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property custom.properties = "default.layout.template.id=1_column";
@@ -14,15 +15,17 @@ definition {
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Sync Connector Admin");
 
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+			portlet = "Pages",
+			site = "${siteName}");
 
 		SitePages.addPublicPage(
 			pageName = "Sync Page",
@@ -203,4 +206,5 @@ definition {
 			dmDocumentTitle = "Document_1.xlsx",
 			dmDocumentType = "Basic Document");
 	}
+
 }

@@ -73,6 +73,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
@@ -270,6 +271,11 @@ public class AlloyMockUtil {
 		}
 
 		@Override
+		public String changeSessionId() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public AsyncContext getAsyncContext() {
 			throw new UnsupportedOperationException();
 		}
@@ -296,6 +302,11 @@ public class AlloyMockUtil {
 
 		@Override
 		public int getContentLength() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public long getContentLengthLong() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -568,7 +579,7 @@ public class AlloyMockUtil {
 		}
 
 		@Override
-		public void login(String username, String password) {
+		public void login(String userName, String password) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -601,6 +612,11 @@ public class AlloyMockUtil {
 		public AsyncContext startAsync(
 			ServletRequest servletRequest, ServletResponse servletResponse) {
 
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -760,6 +776,11 @@ public class AlloyMockUtil {
 
 		@Override
 		public void setContentLength(int contentLength) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void setContentLengthLong(long contentLength) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -1011,12 +1032,12 @@ public class AlloyMockUtil {
 		}
 
 		@Override
-		public void handlePageException(Exception e) {
+		public void handlePageException(Exception exception) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public void handlePageException(Throwable t) {
+		public void handlePageException(Throwable throwable) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -1032,9 +1053,9 @@ public class AlloyMockUtil {
 
 		@Override
 		public void initialize(
-			Servlet servlet, ServletRequest request, ServletResponse response,
-			String errorPageURL, boolean needsSession, int bufferSize,
-			boolean autoFlush) {
+			Servlet servlet, ServletRequest servletRequest,
+			ServletResponse servletResponse, String errorPageURL,
+			boolean needsSession, int bufferSize, boolean autoFlush) {
 
 			throw new UnsupportedOperationException();
 		}
@@ -1279,8 +1300,8 @@ public class AlloyMockUtil {
 		}
 
 		@Override
-		public void setAttribute(String name, Object o) {
-			attributeMap.put(name, o);
+		public void setAttribute(String name, Object object) {
+			attributeMap.put(name, object);
 		}
 
 		protected Map<String, Object> attributeMap = new HashMap<>();

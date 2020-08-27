@@ -102,8 +102,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + MarketplaceAppManagerPortletKeys.MARKETPLACE_APP_MANAGER,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = javax.portlet.Portlet.class
 )
@@ -161,9 +160,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 
 		File file = uploadPortletRequest.getFile("file");
 
-		byte[] bytes = FileUtil.getBytes(file);
-
-		if (ArrayUtil.isEmpty(bytes)) {
+		if (ArrayUtil.isEmpty(FileUtil.getBytes(file))) {
 			SessionErrors.add(actionRequest, UploadException.class.getName());
 		}
 		else if (!fileName.endsWith(".jar") && !fileName.endsWith(".lpkg") &&
@@ -201,8 +198,9 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 				doInstallRemoteApp(url, actionRequest, true);
 			}
 		}
-		catch (MalformedURLException murle) {
-			SessionErrors.add(actionRequest, "invalidURL", murle);
+		catch (MalformedURLException malformedURLException) {
+			SessionErrors.add(
+				actionRequest, "invalidURL", malformedURLException);
 		}
 	}
 
@@ -457,11 +455,13 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 				responseCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 			}
 		}
-		catch (MalformedURLException murle) {
-			SessionErrors.add(actionRequest, "invalidUrl", murle);
+		catch (MalformedURLException malformedURLException) {
+			SessionErrors.add(
+				actionRequest, "invalidUrl", malformedURLException);
 		}
-		catch (IOException ioe) {
-			SessionErrors.add(actionRequest, "errorConnectingToUrl", ioe);
+		catch (IOException ioException) {
+			SessionErrors.add(
+				actionRequest, "errorConnectingToUrl", ioException);
 		}
 
 		return responseCode;
@@ -491,8 +491,9 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 					return;
 				}
 			}
-			catch (MalformedURLException murle) {
-				SessionErrors.add(actionRequest, "invalidUrl", murle);
+			catch (MalformedURLException malformedURLException) {
+				SessionErrors.add(
+					actionRequest, "invalidUrl", malformedURLException);
 			}
 		}
 	}

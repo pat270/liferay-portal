@@ -12,15 +12,52 @@
 	<version>1.0.0</version>
 	<name>${artifactId}</name>
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 #if (${liferayVersion.startsWith("7.0")})
+		<liferay.bom.version>7.0.6-2</liferay.bom.version>
 		<liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.0.6-ga7/liferay-ce-portal-tomcat-7.0-ga7-20180507111753223.zip</liferay.workspace.bundle.url>
 #elseif (${liferayVersion.startsWith("7.1")})
-		<liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.1.2-ga3/liferay-ce-portal-tomcat-7.1.2-ga3-20190107144105508.tar.gz</liferay.workspace.bundle.url>
+		<liferay.bom.version>7.1.3-1</liferay.bom.version>
+		<liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.1.3-ga4/liferay-ce-portal-tomcat-7.1.3-ga4-20190508171117552.tar.gz</liferay.workspace.bundle.url>
 #elseif (${liferayVersion.startsWith("7.2")})
-		<liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.2.0-rc2/liferay-ce-portal-tomcat-7.2.0-rc2-20190503192513771.tar.gz</liferay.workspace.bundle.url>
+		<liferay.bom.version>7.2.1-1</liferay.bom.version>
+		<liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.2.1-ga2/liferay-ce-portal-tomcat-7.2.1-ga2-20191111141448326.tar.gz</liferay.workspace.bundle.url>
+#elseif (${liferayVersion.startsWith("7.3")})
+		<liferay.bom.version>7.3.3</liferay.bom.version>
+		<liferay.workspace.bundle.url>https://releases-cdn.liferay.com/portal/7.3.3-ga4/liferay-ce-portal-tomcat-7.3.3-ga4-20200701015330959.tar.gz</liferay.workspace.bundle.url>
 #end
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.liferay.portal</groupId>
+				<artifactId>release.portal.bom</artifactId>
+				<version>${liferay.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.liferay.portal</groupId>
+				<artifactId>release.portal.bom.compile.only</artifactId>
+				<version>${liferay.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.liferay.portal</groupId>
+				<artifactId>release.portal.bom.third.party</artifactId>
+				<version>${liferay.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<repositories>
+		<repository>
+			<id>liferay-public</id>
+			<url>https://repository-cdn.liferay.com/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -71,6 +108,5 @@
 	<modules>
 		<module>modules</module>
 		<module>themes</module>
-		<module>wars</module>
 	</modules>
 </project>

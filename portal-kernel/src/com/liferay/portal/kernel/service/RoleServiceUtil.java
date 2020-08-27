@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for Role. This utility wraps
  * <code>com.liferay.portal.service.impl.RoleServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see RoleService
  * @generated
  */
-@ProviderType
 public class RoleServiceUtil {
 
 	/*
@@ -285,10 +282,10 @@ public class RoleServiceUtil {
 		long companyId, String keywords, Integer[] types,
 		java.util.LinkedHashMap<String, Object> params, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.portal.kernel.model.Role> obc) {
+			<com.liferay.portal.kernel.model.Role> orderByComparator) {
 
 		return getService().search(
-			companyId, keywords, types, params, start, end, obc);
+			companyId, keywords, types, params, start, end, orderByComparator);
 	}
 
 	public static int searchCount(

@@ -78,11 +78,14 @@ public class FormNavigatorOSGiCommands {
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		_formNavigatorEntries = ServiceTrackerListFactory.open(
-			bundleContext, FormNavigatorEntry.class);
+			bundleContext,
+			(Class<FormNavigatorEntry<?>>)(Class<?>)FormNavigatorEntry.class);
 		_formNavigatorEntriesMap = ServiceTrackerMapFactory.openMultiValueMap(
-			bundleContext, FormNavigatorEntry.class, null,
+			bundleContext,
+			(Class<FormNavigatorEntry<?>>)(Class<?>)FormNavigatorEntry.class,
+			null,
 			(serviceReference, emitter) -> {
-				FormNavigatorEntry formNavigatorEntry =
+				FormNavigatorEntry<?> formNavigatorEntry =
 					bundleContext.getService(serviceReference);
 
 				String key = _getKey(
@@ -99,10 +102,8 @@ public class FormNavigatorOSGiCommands {
 		Set<String> allFormNavigatorIds = new HashSet<>();
 
 		_formNavigatorEntries.forEach(
-			formNavigatorEntry -> {
-				allFormNavigatorIds.add(
-					formNavigatorEntry.getFormNavigatorId());
-			});
+			formNavigatorEntry -> allFormNavigatorIds.add(
+				formNavigatorEntry.getFormNavigatorId()));
 
 		return allFormNavigatorIds;
 	}
@@ -110,7 +111,7 @@ public class FormNavigatorOSGiCommands {
 	private String _getCategoryLine(
 		String formNavigatorId, String formNavigatorCategoryKey) {
 
-		List<FormNavigatorEntry> formNavigatorEntries =
+		List<FormNavigatorEntry<?>> formNavigatorEntries =
 			_formNavigatorEntriesMap.getService(
 				_getKey(formNavigatorId, formNavigatorCategoryKey));
 
@@ -118,7 +119,7 @@ public class FormNavigatorOSGiCommands {
 			return StringPool.BLANK;
 		}
 
-		Stream<FormNavigatorEntry> formNavigatorEntriesStream =
+		Stream<FormNavigatorEntry<?>> formNavigatorEntriesStream =
 			formNavigatorEntries.stream();
 
 		Stream<String> formNavigatorKeysStream = formNavigatorEntriesStream.map(
@@ -148,9 +149,9 @@ public class FormNavigatorOSGiCommands {
 
 	private final Collector<CharSequence, ?, String> _collectorCSV =
 		Collectors.joining(StringPool.COMMA);
-	private ServiceTrackerList<FormNavigatorEntry, FormNavigatorEntry>
+	private ServiceTrackerList<FormNavigatorEntry<?>, FormNavigatorEntry<?>>
 		_formNavigatorEntries;
-	private ServiceTrackerMap<String, List<FormNavigatorEntry>>
+	private ServiceTrackerMap<String, List<FormNavigatorEntry<?>>>
 		_formNavigatorEntriesMap;
 
 }

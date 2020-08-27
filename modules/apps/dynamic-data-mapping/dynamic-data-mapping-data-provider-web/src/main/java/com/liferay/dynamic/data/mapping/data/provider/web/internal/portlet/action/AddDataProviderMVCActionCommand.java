@@ -14,9 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.data.provider.web.internal.portlet.action;
 
+import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProvider;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderTracker;
-import com.liferay.dynamic.data.mapping.data.provider.web.internal.constants.DDMDataProviderPortletKeys;
+import com.liferay.dynamic.data.mapping.exception.DataProviderInstanceURLException;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -28,11 +29,12 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -48,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"javax.portlet.name=" + DDMDataProviderPortletKeys.DYNAMIC_DATA_MAPPING_DATA_PROVIDER,
+		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_DATA_PROVIDER,
 		"mvc.command.name=addDataProvider"
 	},
 	service = MVCActionCommand.class
@@ -90,18 +92,28 @@ public class AddDataProviderMVCActionCommand extends BaseMVCActionCommand {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DDMDataProviderInstance.class.getName(), actionRequest);
 
-		ddmDataProviderInstanceService.addDataProviderInstance(
-			groupId, getLocalizedMap(themeDisplay.getSiteDefaultLocale(), name),
-			getLocalizedMap(themeDisplay.getSiteDefaultLocale(), description),
-			ddmFormValues, type, serviceContext);
+		try {
+			ddmDataProviderInstanceService.addDataProviderInstance(
+				groupId,
+				getLocalizedMap(themeDisplay.getSiteDefaultLocale(), name),
+				getLocalizedMap(
+					themeDisplay.getSiteDefaultLocale(), description),
+				ddmFormValues, type, serviceContext);
+		}
+		catch (DataProviderInstanceURLException
+					dataProviderInstanceURLException) {
+
+			hideDefaultErrorMessage(actionRequest);
+
+			SessionErrors.add(
+				actionRequest, dataProviderInstanceURLException.getClass());
+		}
 	}
 
 	protected Map<Locale, String> getLocalizedMap(Locale locale, String value) {
-		Map<Locale, String> localizedMap = new HashMap<>();
-
-		localizedMap.put(locale, value);
-
-		return localizedMap;
+		return HashMapBuilder.put(
+			locale, value
+		).build();
 	}
 
 	@Reference

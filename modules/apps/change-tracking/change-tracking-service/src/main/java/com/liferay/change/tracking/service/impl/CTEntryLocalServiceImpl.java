@@ -15,518 +15,235 @@
 package com.liferay.change.tracking.service.impl;
 
 import com.liferay.change.tracking.constants.CTConstants;
-import com.liferay.change.tracking.exception.DuplicateCTEntryException;
 import com.liferay.change.tracking.model.CTCollection;
+import com.liferay.change.tracking.model.CTCollectionTable;
 import com.liferay.change.tracking.model.CTEntry;
+import com.liferay.change.tracking.model.CTEntryTable;
 import com.liferay.change.tracking.service.base.CTEntryLocalServiceBaseImpl;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.aop.AopService;
-import com.liferay.portal.kernel.dao.orm.QueryDefinition;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.Indexable;
-import com.liferay.portal.kernel.search.IndexableType;
-import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.search.document.Document;
-import com.liferay.portal.search.query.BooleanQuery;
-import com.liferay.portal.search.query.Queries;
-import com.liferay.portal.search.query.Query;
-import com.liferay.portal.search.query.TermsQuery;
-import com.liferay.portal.search.searcher.SearchRequest;
-import com.liferay.portal.search.searcher.SearchRequestBuilder;
-import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
-import com.liferay.portal.search.searcher.SearchResponse;
-import com.liferay.portal.search.searcher.Searcher;
-import com.liferay.portal.search.sort.Sort;
-import com.liferay.portal.search.sort.SortOrder;
-import com.liferay.portal.search.sort.Sorts;
 
-import java.util.Arrays;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
  * @author Daniel Kocsis
+ * @author Preston Crary
  */
 @Component(
 	property = "model.class.name=com.liferay.change.tracking.model.CTEntry",
 	service = AopService.class
 )
+@CTAware
 public class CTEntryLocalServiceImpl extends CTEntryLocalServiceBaseImpl {
 
-	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public CTEntry addCTEntry(
-			long userId, long modelClassNameId, long modelClassPK,
-			long modelResourcePrimKey, int changeType, long ctCollectionId,
-			ServiceContext serviceContext)
+			long ctCollectionId, long modelClassNameId, CTModel<?> ctModel,
+			long userId, int changeType)
 		throws PortalException {
 
-		boolean force = GetterUtil.getBoolean(
-			serviceContext.getAttribute("force"));
+		CTCollection ctCollection = ctCollectionPersistence.findByPrimaryKey(
+			ctCollectionId);
 
-		CTEntry ctEntry = ctEntryPersistence.fetchByMCNI_MCPK(
-			modelClassNameId, modelClassPK);
+		if ((ctCollection.getStatus() != WorkflowConstants.STATUS_DRAFT) &&
+			(ctCollection.getStatus() != WorkflowConstants.STATUS_PENDING)) {
 
-		_validate(ctEntry, changeType, ctCollectionId, force);
-
-		User user = userLocalService.getUser(userId);
-
-		if (ctEntry != null) {
-			return _updateCTEntry(ctEntry, user, changeType, serviceContext);
+			throw new PortalException(
+				"Change tracking collection " + ctCollection + " is read only");
 		}
 
-		return _addCTEntry(
-			user, modelClassNameId, modelClassPK, modelResourcePrimKey,
-			changeType, ctCollectionId, serviceContext);
+		long ctEntryId = counterLocalService.increment(CTEntry.class.getName());
+
+		CTEntry ctEntry = ctEntryPersistence.create(ctEntryId);
+
+		ctEntry.setCompanyId(ctCollection.getCompanyId());
+		ctEntry.setUserId(userId);
+		ctEntry.setCtCollectionId(ctCollectionId);
+		ctEntry.setModelClassNameId(modelClassNameId);
+		ctEntry.setModelClassPK(ctModel.getPrimaryKey());
+		ctEntry.setModelMvccVersion(ctModel.getMvccVersion());
+		ctEntry.setChangeType(changeType);
+
+		return ctEntryPersistence.update(ctEntry);
 	}
 
 	@Override
-	public List<CTEntry> fetchCTEntries(long modelClassNameId) {
-		return ctEntryPersistence.findByModelClassNameId(modelClassNameId);
-	}
+	public CTEntry deleteCTEntry(CTEntry ctEntry) throws PortalException {
+		CTCollection ctCollection = ctCollectionPersistence.findByPrimaryKey(
+			ctEntry.getCtCollectionId());
 
-	@Override
-	public List<CTEntry> fetchCTEntries(
-		long ctCollectionId, long modelResourcePrimKey,
-		QueryDefinition<CTEntry> queryDefinition) {
+		if ((ctCollection.getStatus() != WorkflowConstants.STATUS_DRAFT) &&
+			(ctCollection.getStatus() != WorkflowConstants.STATUS_PENDING)) {
 
-		return ctEntryFinder.findByCTCI_MRPK(
-			ctCollectionId, modelResourcePrimKey, queryDefinition);
-	}
+			throw new PortalException(
+				"Change tracking collection " + ctCollection + " is read only");
+		}
 
-	@Override
-	public List<CTEntry> fetchCTEntries(
-		long ctCollectionId, QueryDefinition<CTEntry> queryDefinition) {
-
-		return ctEntryFinder.findByCTCI_MRPK(
-			ctCollectionId, 0, queryDefinition);
-	}
-
-	@Override
-	public List<CTEntry> fetchCTEntries(String modelClassName) {
-		return fetchCTEntries(_portal.getClassNameId(modelClassName));
-	}
-
-	@Override
-	public List<CTEntry> fetchCTEntriesByModelClassNameId(
-		long ctCollectionId, long modelClassNameId,
-		QueryDefinition<CTEntry> queryDefinition) {
-
-		return ctEntryFinder.findByCTCI_MCNI(
-			ctCollectionId, modelClassNameId, queryDefinition);
-	}
-
-	@Override
-	public CTEntry fetchCTEntry(long modelClassNameId, long modelClassPK) {
-		return ctEntryPersistence.fetchByMCNI_MCPK(
-			modelClassNameId, modelClassPK);
+		return ctEntryPersistence.remove(ctEntry);
 	}
 
 	@Override
 	public CTEntry fetchCTEntry(
 		long ctCollectionId, long modelClassNameId, long modelClassPK) {
 
-		return ctEntryFinder.findByCTCI_MCNI_MCPK(
+		return ctEntryPersistence.fetchByC_MCNI_MCPK(
 			ctCollectionId, modelClassNameId, modelClassPK);
 	}
 
 	@Override
 	public List<CTEntry> getCTCollectionCTEntries(long ctCollectionId) {
 		return getCTCollectionCTEntries(
-			ctCollectionId, WorkflowConstants.STATUS_DRAFT, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
+			ctCollectionId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
 	@Override
 	public List<CTEntry> getCTCollectionCTEntries(
-		long ctCollectionId, int start, int end) {
-
-		return getCTCollectionCTEntries(
-			ctCollectionId, WorkflowConstants.STATUS_DRAFT, start, end, null);
-	}
-
-	@Override
-	public List<CTEntry> getCTCollectionCTEntries(
-		long ctCollectionId, int status, int start, int end,
+		long ctCollectionId, int start, int end,
 		OrderByComparator<CTEntry> orderByComparator) {
 
-		if (_isProductionCTCollectionId(ctCollectionId)) {
-			return super.getCTCollectionCTEntries(
-				ctCollectionId, start, end, orderByComparator);
+		if (ctCollectionId == CTConstants.CT_COLLECTION_ID_PRODUCTION) {
+			return Collections.emptyList();
 		}
 
-		QueryDefinition<CTEntry> queryDefinition = new QueryDefinition<>();
-
-		queryDefinition.setEnd(end);
-		queryDefinition.setOrderByComparator(orderByComparator);
-		queryDefinition.setStart(start);
-		queryDefinition.setStatus(status);
-
-		return ctEntryFinder.findByCTCollectionId(
-			ctCollectionId, queryDefinition);
+		return ctEntryPersistence.findByCTCollectionId(
+			ctCollectionId, start, end, orderByComparator);
 	}
 
 	@Override
-	public int getCTEntriesCount(
-		long ctCollectionId, QueryDefinition<CTEntry> queryDefinition) {
+	public int getCTCollectionCTEntriesCount(long ctCollectionId) {
+		if (ctCollectionId == CTConstants.CT_COLLECTION_ID_PRODUCTION) {
+			return 0;
+		}
 
-		return ctEntryFinder.countByCTCollectionId(
-			ctCollectionId, queryDefinition);
-	}
-
-	@Indexable(type = IndexableType.REINDEX)
-	@Override
-	public List<CTEntry> getRelatedOwnerCTEntries(long ctEntryId) {
-		return getRelatedOwnerCTEntries(
-			ctEntryId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+		return ctEntryPersistence.countByCTCollectionId(ctCollectionId);
 	}
 
 	@Override
-	public List<CTEntry> getRelatedOwnerCTEntries(
-		long ctEntryId, int start, int end,
-		OrderByComparator<CTEntry> orderByComparator) {
+	public List<CTEntry> getCTEntries(
+		long ctCollectionId, long modelClassNameId) {
 
-		QueryDefinition<CTEntry> queryDefinition = new QueryDefinition<>();
-
-		queryDefinition.setEnd(end);
-		queryDefinition.setOrderByComparator(orderByComparator);
-		queryDefinition.setStart(start);
-		queryDefinition.setStatus(WorkflowConstants.STATUS_DRAFT);
-
-		return ctEntryFinder.findByRelatedCTEntries(ctEntryId, queryDefinition);
+		return ctEntryPersistence.findByC_MCNI(
+			ctCollectionId, modelClassNameId);
 	}
 
 	@Override
-	public int getRelatedOwnerCTEntriesCount(long ctEntryId) {
-		QueryDefinition<CTEntry> queryDefinition = new QueryDefinition<>();
+	public long getCTRowCTCollectionId(CTEntry ctEntry) throws PortalException {
+		CTCollection ctCollection = ctCollectionPersistence.findByPrimaryKey(
+			ctEntry.getCtCollectionId());
 
-		queryDefinition.setStatus(WorkflowConstants.STATUS_DRAFT);
+		if ((ctCollection.getStatus() == WorkflowConstants.STATUS_DRAFT) ||
+			(ctCollection.getStatus() == WorkflowConstants.STATUS_PENDING)) {
 
-		return ctEntryFinder.countByRelatedCTEntries(
-			ctEntryId, queryDefinition);
-	}
-
-	@Override
-	public List<CTEntry> search(
-		CTCollection ctCollection, long[] groupIds, long[] userIds,
-		long[] classNameIds, int[] changeTypes, Boolean collision,
-		QueryDefinition<CTEntry> queryDefinition) {
-
-		Query query = _buildQuery(
-			ctCollection, groupIds, userIds, classNameIds, changeTypes,
-			collision, queryDefinition.getStatus(),
-			queryDefinition.isExcludeStatus());
-
-		SearchResponse searchResponse = _search(
-			ctCollection.getCompanyId(), query, queryDefinition);
-
-		return _getCTEntries(searchResponse);
-	}
-
-	@Override
-	public long searchCount(
-		CTCollection ctCollection, long[] groupIds, long[] userIds,
-		long[] classNameIds, int[] changeTypes, Boolean collision,
-		QueryDefinition<CTEntry> queryDefinition) {
-
-		Query query = _buildQuery(
-			ctCollection, groupIds, userIds, classNameIds, changeTypes,
-			collision, queryDefinition.getStatus(),
-			queryDefinition.isExcludeStatus());
-
-		SearchResponse searchResponse = _search(
-			ctCollection.getCompanyId(), query, queryDefinition);
-
-		return searchResponse.getTotalHits();
-	}
-
-	@Indexable(type = IndexableType.REINDEX)
-	@Override
-	public CTEntry updateCollision(long ctEntryId, boolean collision) {
-		CTEntry ctEntry = ctEntryPersistence.fetchByPrimaryKey(ctEntryId);
-
-		ctEntry.setCollision(collision);
-
-		return ctEntryPersistence.update(ctEntry);
-	}
-
-	@Indexable(type = IndexableType.REINDEX)
-	@Override
-	public CTEntry updateStatus(long ctEntryId, int status) {
-		if ((status != WorkflowConstants.STATUS_APPROVED) &&
-			(status != WorkflowConstants.STATUS_DRAFT)) {
-
-			throw new IllegalArgumentException(
-				"Change status value is invalid");
+			return ctCollection.getCtCollectionId();
 		}
 
-		CTEntry ctEntry = ctEntryPersistence.fetchByPrimaryKey(ctEntryId);
-
-		ctEntry.setStatus(status);
-
-		return ctEntryPersistence.update(ctEntry);
-	}
-
-	private CTEntry _addCTEntry(
-		User user, long modelClassNameId, long modelClassPK,
-		long modelResourcePrimKey, int changeType, long ctCollectionId,
-		ServiceContext serviceContext) {
-
-		long ctEntryId = counterLocalService.increment();
-
-		CTEntry ctEntry = ctEntryPersistence.create(ctEntryId);
-
-		ctEntry.setCompanyId(user.getCompanyId());
-		ctEntry.setUserId(user.getUserId());
-		ctEntry.setUserName(user.getFullName());
-
-		Date now = new Date();
-
-		ctEntry.setCreateDate(serviceContext.getCreateDate(now));
-		ctEntry.setModifiedDate(serviceContext.getModifiedDate(now));
-
-		ctEntry.setOriginalCTCollectionId(ctCollectionId);
-		ctEntry.setModelClassNameId(modelClassNameId);
-		ctEntry.setModelClassPK(modelClassPK);
-		ctEntry.setModelResourcePrimKey(modelResourcePrimKey);
-		ctEntry.setChangeType(changeType);
-
-		int status = WorkflowConstants.STATUS_DRAFT;
-
-		if (_isProductionCTCollectionId(ctCollectionId)) {
-			status = WorkflowConstants.STATUS_APPROVED;
-		}
-
-		ctEntry.setStatus(status);
-
-		ctEntry = ctEntryPersistence.update(ctEntry);
-
-		ctCollectionPersistence.addCTEntry(ctCollectionId, ctEntry);
-
-		return ctEntry;
-	}
-
-	private Query _buildQuery(
-		CTCollection ctCollection, long[] groupIds, long[] userIds,
-		long[] classNameIds, int[] changeTypes, Boolean collision, int status,
-		boolean excludeStatus) {
-
-		BooleanQuery booleanQuery = _queries.booleanQuery();
-
-		booleanQuery.addFilterQueryClauses(
-			_queries.term("ctCollectionId", ctCollection.getCtCollectionId()));
-		booleanQuery.addFilterQueryClauses(
-			_queries.term(Field.COMPANY_ID, ctCollection.getCompanyId()));
-
-		if (!ArrayUtil.isEmpty(groupIds)) {
-			booleanQuery.addMustQueryClauses(
-				_getTermsQuery(
-					Field.GROUP_ID,
-					_getTermValues(ArrayUtil.toArray(groupIds))));
-		}
-
-		if (!ArrayUtil.isEmpty(userIds)) {
-			booleanQuery.addMustQueryClauses(
-				_getTermsQuery(
-					Field.USER_ID, _getTermValues(ArrayUtil.toArray(userIds))));
-		}
-
-		if (!ArrayUtil.isEmpty(classNameIds)) {
-			booleanQuery.addMustQueryClauses(
-				_getTermsQuery(
-					"modelClassNameId",
-					_getTermValues(ArrayUtil.toArray(classNameIds))));
-		}
-
-		if (!ArrayUtil.isEmpty(changeTypes)) {
-			booleanQuery.addMustQueryClauses(
-				_getTermsQuery(
-					"changeType",
-					_getTermValues(ArrayUtil.toArray(changeTypes))));
-		}
-
-		if (collision != null) {
-			booleanQuery.addFilterQueryClauses(
-				_queries.term("collision", collision));
-		}
-
-		if (WorkflowConstants.STATUS_ANY != status) {
-			if (excludeStatus) {
-				booleanQuery.addMustNotQueryClauses(
-					_queries.term(Field.STATUS, status));
-			}
-			else {
-				booleanQuery.addMustQueryClauses(
-					_queries.term(Field.STATUS, status));
-			}
-		}
-
-		return booleanQuery;
-	}
-
-	private List<CTEntry> _getCTEntries(SearchResponse searchResponse) {
-		Stream<Document> documentsStream = searchResponse.getDocumentsStream();
-
-		return documentsStream.map(
-			document -> document.getLong(Field.ENTRY_CLASS_PK)
-		).map(
-			ctEntryLocalService::fetchCTEntry
-		).filter(
-			Objects::nonNull
-		).collect(
-			Collectors.toList()
+		DSLQuery dslQuery = DSLQueryFactoryUtil.select(
+			CTEntryTable.INSTANCE.ctCollectionId
+		).from(
+			CTEntryTable.INSTANCE
+		).innerJoinON(
+			CTCollectionTable.INSTANCE,
+			CTCollectionTable.INSTANCE.ctCollectionId.eq(
+				CTEntryTable.INSTANCE.ctCollectionId
+			).and(
+				CTCollectionTable.INSTANCE.status.eq(
+					WorkflowConstants.STATUS_APPROVED)
+			)
+		).where(
+			CTEntryTable.INSTANCE.modelClassNameId.eq(
+				ctEntry.getModelClassNameId()
+			).and(
+				CTEntryTable.INSTANCE.modelClassPK.eq(ctEntry.getModelClassPK())
+			).and(
+				CTCollectionTable.INSTANCE.statusDate.gt(
+					ctCollection.getStatusDate())
+			)
+		).orderBy(
+			CTCollectionTable.INSTANCE.statusDate.ascending()
+		).limit(
+			0, 1
 		);
-	}
 
-	private Sort[] _getSorts(QueryDefinition<CTEntry> queryDefinition) {
-		if (queryDefinition == null) {
-			return new Sort[0];
+		List<Long> ctCollectionIds = ctEntryPersistence.dslQuery(dslQuery);
+
+		if (ctCollectionIds.isEmpty()) {
+			return CTConstants.CT_COLLECTION_ID_PRODUCTION;
 		}
 
-		OrderByComparator<CTEntry> orderByComparator =
-			queryDefinition.getOrderByComparator();
+		return ctCollectionIds.get(0);
+	}
 
-		if (orderByComparator == null) {
-			return new Sort[0];
+	@Override
+	public List<Long> getExclusiveModelClassPKs(
+		long ctCollectionId, long modelClassNameId) {
+
+		List<CTEntry> ctEntries = ctEntryPersistence.findByC_MCNI(
+			ctCollectionId, modelClassNameId);
+
+		if (ctEntries.isEmpty()) {
+			return Collections.emptyList();
 		}
 
-		Stream<String> stream = Arrays.stream(
-			orderByComparator.getOrderByFields());
+		List<Long> modelClassPKs = ListUtil.toList(
+			ctEntries, CTEntry::getModelClassPK);
 
-		return stream.map(
-			orderByCol -> {
-				if (orderByCol.equals(Field.CREATE_DATE) ||
-					orderByCol.equals(Field.MODIFIED_DATE) ||
-					orderByCol.equals(Field.TITLE)) {
+		for (CTEntry ctEntry :
+				ctEntryPersistence.findByNotC_MCNI_MCPK(
+					ctCollectionId, modelClassNameId,
+					ArrayUtil.toArray(modelClassPKs.toArray(new Long[0])))) {
 
-					orderByCol = Field.getSortableFieldName(orderByCol);
-				}
+			modelClassPKs.remove(ctEntry.getModelClassPK());
+		}
 
-				SortOrder sortOrder = SortOrder.ASC;
-
-				if (!orderByComparator.isAscending()) {
-					sortOrder = SortOrder.DESC;
-				}
-
-				return _sorts.field(orderByCol, sortOrder);
-			}
-		).toArray(
-			Sort[]::new
-		);
+		return modelClassPKs;
 	}
 
-	private TermsQuery _getTermsQuery(String field, Object[] values) {
-		TermsQuery termsQuery = _queries.terms(field);
+	@Override
+	public boolean hasCTEntries(long ctCollectionId, long modelClassNameId) {
+		int count = ctEntryPersistence.countByC_MCNI(
+			ctCollectionId, modelClassNameId);
 
-		termsQuery.addValues(values);
-
-		return termsQuery;
-	}
-
-	private String[] _getTermValues(Number[] idsArray) {
-		Stream<Number> stream = Arrays.stream(idsArray);
-
-		return stream.map(
-			String::valueOf
-		).toArray(
-			String[]::new
-		);
-	}
-
-	private boolean _isProductionCTCollectionId(long ctCollectionId) {
-		CTCollection ctCollection = ctCollectionPersistence.fetchByPrimaryKey(
-			ctCollectionId);
-
-		if (ctCollection == null) {
+		if (count == 0) {
 			return false;
 		}
 
-		return ctCollection.isProduction();
+		return true;
 	}
 
-	private SearchResponse _search(
-		long companyId, Query query, QueryDefinition<CTEntry> queryDefinition) {
+	@Override
+	public CTEntry updateCTEntry(CTEntry ctEntry) {
+		CTCollection ctCollection = ctCollectionPersistence.fetchByPrimaryKey(
+			ctEntry.getCtCollectionId());
 
-		SearchRequestBuilder searchRequestBuilder =
-			_searchRequestBuilderFactory.builder();
+		if (ctCollection == null) {
+			throw new SystemException(
+				"No change tracking collection exists for " + ctEntry);
+		}
 
-		SearchRequest searchRequest = searchRequestBuilder.entryClassNames(
-			CTEntry.class.getName()
-		).query(
-			query
-		).modelIndexerClasses(
-			CTEntry.class
-		).sorts(
-			_getSorts(queryDefinition)
-		).withSearchContext(
-			searchContext -> {
-				searchContext.setCompanyId(companyId);
-				searchContext.setEnd(queryDefinition.getEnd());
-				searchContext.setStart(queryDefinition.getStart());
-			}
-		).build();
+		int status = ctCollection.getStatus();
 
-		return _searcher.search(searchRequest);
-	}
+		if ((status != WorkflowConstants.STATUS_DRAFT) &&
+			(status != WorkflowConstants.STATUS_PENDING)) {
 
-	private CTEntry _updateCTEntry(
-		CTEntry ctEntry, User user, int changeType,
-		ServiceContext serviceContext) {
-
-		ctEntry.setUserId(user.getUserId());
-		ctEntry.setUserName(user.getFullName());
-
-		ctEntry.setModifiedDate(serviceContext.getModifiedDate(new Date()));
-		ctEntry.setChangeType(changeType);
+			throw new SystemException(
+				"Change tracking collection " + ctCollection + " is read only");
+		}
 
 		return ctEntryPersistence.update(ctEntry);
 	}
-
-	private void _validate(
-			CTEntry ctEntry, int changeType, long ctCollectionId, boolean force)
-		throws PortalException {
-
-		if (!force && (ctEntry != null)) {
-			throw new DuplicateCTEntryException();
-		}
-
-		ctCollectionPersistence.findByPrimaryKey(ctCollectionId);
-
-		if ((changeType != CTConstants.CT_CHANGE_TYPE_ADDITION) &&
-			(changeType != CTConstants.CT_CHANGE_TYPE_DELETION) &&
-			(changeType != CTConstants.CT_CHANGE_TYPE_MODIFICATION)) {
-
-			throw new IllegalArgumentException("Change type value is invalid");
-		}
-	}
-
-	@Reference
-	private Portal _portal;
-
-	@Reference
-	private Queries _queries;
-
-	@Reference
-	private Searcher _searcher;
-
-	@Reference
-	private SearchRequestBuilderFactory _searchRequestBuilderFactory;
-
-	@Reference
-	private Sorts _sorts;
 
 }

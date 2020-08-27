@@ -1,0 +1,64 @@
+definition {
+
+	macro gotoAddCollection {
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "internetexplorer") {
+			Click(locator1 = "NavNested#NAV_NESTED_PLUS_IE");
+		}
+		else {
+			if (IsElementPresent(locator1 = "NavNested#NAV_NESTED_PLUS")) {
+				Click(locator1 = "NavNested#NAV_NESTED_PLUS");
+			}
+			else {
+				Button.click(button = "New");
+
+				MenuItem.click(menuItem = "Collection");
+			}
+		}
+	}
+
+	macro gotoCollection {
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "FragmentAdmin#FRAGMENT_COLLECTION",
+			value1 = "${collectionName}");
+	}
+
+	macro gotoEntry {
+		LexiconCard.clickCardTitle(card = "${entry}");
+	}
+
+	macro gotoEntryEllipsisItem {
+		LexiconCard.clickEllipsisItem(
+			card = "${entry}",
+			item = "${item}");
+	}
+
+	macro gotoImportCollection {
+		if (IsElementPresent(locator1 = "NavNested#NAV_NESTED_ELLIPSIS")) {
+			Click.waitForMenuToggleJSClick(locator1 = "NavNested#NAV_NESTED_ELLIPSIS");
+		}
+		else {
+			Button.click(button = "New");
+		}
+
+		DropdownMenuItem.click(menuItem = "Import");
+
+		Pause(locator1 = "3000");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_IFRAME");
+	}
+
+	macro gotoSpecificScopeCollection {
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "FragmentAdmin#FRAGMENT_COLLECTION_SPECIFIC_SCOPE",
+			value1 = "${collectionName}");
+	}
+
+	macro openFragmentsAdmin {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/fragments");
+	}
+
+}

@@ -16,20 +16,21 @@ package com.liferay.document.library.uad.anonymizer.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.document.library.uad.test.DLFolderUADTestUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
-import com.liferay.user.associated.data.test.util.BaseUADAnonymizerTestCase;
+import com.liferay.user.associated.data.test.util.BaseHasAssetEntryUADAnonymizerTestCase;
 import com.liferay.user.associated.data.test.util.WhenHasStatusByUserIdField;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,8 +41,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class DLFolderUADAnonymizerTest
-	extends BaseUADAnonymizerTestCase<DLFolder>
-	implements WhenHasStatusByUserIdField {
+	extends BaseHasAssetEntryUADAnonymizerTestCase<DLFolder>
+	implements WhenHasStatusByUserIdField<DLFolder> {
 
 	@ClassRule
 	@Rule
@@ -53,26 +54,28 @@ public class DLFolderUADAnonymizerTest
 			long userId, long statusByUserId)
 		throws Exception {
 
-		DLFolder dlFolder = DLFolderUADTestUtil.addDLFolderWithStatusByUserId(
-			_dlFolderLocalService, userId, statusByUserId);
+		return DLFolderUADTestUtil.addDLFolderWithStatusByUserId(
+			_dlAppLocalService, _dlFolderLocalService, userId,
+			_group.getGroupId(), statusByUserId);
+	}
 
-		_dlFolders.add(dlFolder);
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
 
-		return dlFolder;
+		_group = GroupTestUtil.addGroup();
 	}
 
 	@Test
 	public void testDeleteDependentFolders() throws Exception {
 		DLFolder parentDLFolder = DLFolderUADTestUtil.addDLFolder(
-			_dlFolderLocalService, user.getUserId());
-
-		_dlFolders.add(parentDLFolder);
+			_dlAppLocalService, _dlFolderLocalService, user.getUserId(),
+			_group.getGroupId());
 
 		DLFolder childDLFolder = DLFolderUADTestUtil.addDLFolder(
-			_dlFolderLocalService, user.getUserId(),
-			parentDLFolder.getFolderId());
-
-		_dlFolders.add(childDLFolder);
+			_dlAppLocalService, _dlFolderLocalService, user.getUserId(),
+			_group.getGroupId(), parentDLFolder.getFolderId());
 
 		_uadAnonymizer.delete(parentDLFolder);
 
@@ -88,18 +91,13 @@ public class DLFolderUADAnonymizerTest
 	protected DLFolder addBaseModel(long userId, boolean deleteAfterTestRun)
 		throws Exception {
 
-		DLFolder dlFolder = DLFolderUADTestUtil.addDLFolder(
-			_dlFolderLocalService, userId);
-
-		if (deleteAfterTestRun) {
-			_dlFolders.add(dlFolder);
-		}
-
-		return dlFolder;
+		return DLFolderUADTestUtil.addDLFolder(
+			_dlAppLocalService, _dlFolderLocalService, userId,
+			_group.getGroupId());
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<DLFolder> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -115,7 +113,9 @@ public class DLFolderUADAnonymizerTest
 		if ((dlFolder.getUserId() != user.getUserId()) &&
 			!userName.equals(user.getFullName()) &&
 			(dlFolder.getStatusByUserId() != user.getUserId()) &&
-			!statusByUserName.equals(user.getFullName())) {
+			!statusByUserName.equals(user.getFullName()) &&
+			isAssetEntryAutoAnonymized(
+				DLFolder.class.getName(), dlFolder.getFolderId(), user)) {
 
 			return true;
 		}
@@ -133,12 +133,15 @@ public class DLFolderUADAnonymizerTest
 	}
 
 	@Inject
+	private DLAppLocalService _dlAppLocalService;
+
+	@Inject
 	private DLFolderLocalService _dlFolderLocalService;
 
 	@DeleteAfterTestRun
-	private final List<DLFolder> _dlFolders = new ArrayList<>();
+	private Group _group;
 
 	@Inject(filter = "component.name=*.DLFolderUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<DLFolder> _uadAnonymizer;
 
 }

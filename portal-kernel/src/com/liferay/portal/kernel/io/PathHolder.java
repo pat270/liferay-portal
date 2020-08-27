@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.io;
 
+import com.liferay.portal.kernel.util.StringUtil;
+
 import java.io.File;
 import java.io.Serializable;
 
@@ -36,16 +38,16 @@ public class PathHolder implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PathHolder)) {
+		if (!(object instanceof PathHolder)) {
 			return false;
 		}
 
-		PathHolder pathHolder = (PathHolder)obj;
+		PathHolder pathHolder = (PathHolder)object;
 
 		if (Objects.equals(toString(), pathHolder.toString())) {
 			return true;
@@ -75,7 +77,8 @@ public class PathHolder implements Serializable {
 			_toString = _pathString;
 		}
 		else {
-			_toString = _pathString.replace(_separatorChar, File.separatorChar);
+			_toString = StringUtil.replace(
+				_pathString, _separatorChar, File.separatorChar);
 		}
 
 		return _toString;

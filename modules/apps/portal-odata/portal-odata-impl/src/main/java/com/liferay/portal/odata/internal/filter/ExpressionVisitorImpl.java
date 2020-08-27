@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.search.filter.PrefixFilter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.filter.RangeTermFilter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.search.generic.WildcardQueryImpl;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.CollectionEntityField;
@@ -41,6 +42,7 @@ import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitor;
 import com.liferay.portal.odata.filter.expression.LambdaFunctionExpression;
 import com.liferay.portal.odata.filter.expression.LambdaVariableExpression;
+import com.liferay.portal.odata.filter.expression.ListExpression;
 import com.liferay.portal.odata.filter.expression.LiteralExpression;
 import com.liferay.portal.odata.filter.expression.MemberExpression;
 import com.liferay.portal.odata.filter.expression.MethodExpression;
@@ -160,6 +162,20 @@ public class ExpressionVisitorImpl implements ExpressionVisitor<Object> {
 		}
 
 		return entityField;
+	}
+
+	@Override
+	public Object visitListExpressionOperation(
+			ListExpression.Operation operation, Object left, List<Object> right)
+		throws ExpressionVisitException {
+
+		if (operation == ListExpression.Operation.IN) {
+			return _getINFilter((EntityField)left, right, _locale);
+		}
+
+		throw new UnsupportedOperationException(
+			"Unsupported method visitListExpressionOperation with operation " +
+				operation);
 	}
 
 	@Override
@@ -372,6 +388,19 @@ public class ExpressionVisitorImpl implements ExpressionVisitor<Object> {
 				entityField.getType());
 	}
 
+	private Filter _getINFilter(
+		EntityField entityField, List<Object> fieldValues, Locale locale) {
+
+		TermsFilter termsFilter = new TermsFilter(
+			entityField.getFilterableName(locale));
+
+		for (Object fieldValue : fieldValues) {
+			termsFilter.addValue(entityField.getFilterableValue(fieldValue));
+		}
+
+		return termsFilter;
+	}
+
 	private EntityModel _getLambdaEntityModel(
 		String variableName, CollectionEntityField collectionEntityField) {
 
@@ -480,9 +509,10 @@ public class ExpressionVisitorImpl implements ExpressionVisitor<Object> {
 
 			return _format.format(date);
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
 			throw new InvalidFilterException(
-				"Invalid date format, use ISO 8601: " + pe.getMessage());
+				"Invalid date format, use ISO 8601: " +
+					parseException.getMessage());
 		}
 	}
 

@@ -17,6 +17,7 @@ package com.liferay.site.memberships.web.internal.display.context;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -155,7 +156,7 @@ public class SelectUsersDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getUserSearchContainer() {
+	public SearchContainer<User> getUserSearchContainer() {
 		if (_userSearch != null) {
 			return _userSearch;
 		}
@@ -180,6 +181,9 @@ public class SelectUsersDisplayContext {
 			userParams.put("inherit", Boolean.TRUE);
 			userParams.put(
 				"usersGroups", Long.valueOf(group.getParentGroupId()));
+		}
+		else {
+			userParams.put(Field.GROUP_ID, Long.valueOf(getGroupId()));
 		}
 
 		int usersCount = UserLocalServiceUtil.searchCount(

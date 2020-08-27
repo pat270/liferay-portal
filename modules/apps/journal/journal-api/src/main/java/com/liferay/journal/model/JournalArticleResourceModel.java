@@ -16,7 +16,9 @@ package com.liferay.journal.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -33,7 +35,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface JournalArticleResourceModel
-	extends BaseModel<JournalArticleResource>, ShardedModel {
+	extends BaseModel<JournalArticleResource>, CTModel<JournalArticleResource>,
+			MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -46,6 +49,7 @@ public interface JournalArticleResourceModel
 	 *
 	 * @return the primary key of this journal article resource
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -53,7 +57,40 @@ public interface JournalArticleResourceModel
 	 *
 	 * @param primaryKey the primary key of this journal article resource
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this journal article resource.
+	 *
+	 * @return the mvcc version of this journal article resource
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this journal article resource.
+	 *
+	 * @param mvccVersion the mvcc version of this journal article resource
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this journal article resource.
+	 *
+	 * @return the ct collection ID of this journal article resource
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this journal article resource.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal article resource
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this journal article resource.

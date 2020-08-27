@@ -22,6 +22,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -60,8 +62,8 @@ public class PanelAppTag extends BasePanelTag {
 					return EVAL_PAGE;
 				}
 			}
-			catch (IOException ioe) {
-				_log.error("Unable to include panel app", ioe);
+			catch (IOException ioException) {
+				_log.error("Unable to include panel app", ioException);
 			}
 		}
 
@@ -150,8 +152,22 @@ public class PanelAppTag extends BasePanelTag {
 			active = _active.booleanValue();
 		}
 		else {
-			active = Objects.equals(
-				themeDisplay.getPpid(), _panelApp.getPortletId());
+			HttpServletRequest originalHttpServletRequest =
+				PortalUtil.getOriginalServletRequest(httpServletRequest);
+
+			String parameterName =
+				PortalUtil.getPortletNamespace(themeDisplay.getPpid()) +
+					"portletResource";
+
+			String portletResource = ParamUtil.getString(
+				originalHttpServletRequest, parameterName);
+
+			active = Objects.equals(portletResource, _panelApp.getPortletId());
+
+			if (Validator.isNull(portletResource)) {
+				active = Objects.equals(
+					themeDisplay.getPpid(), _panelApp.getPortletId());
+			}
 		}
 
 		httpServletRequest.setAttribute(
@@ -165,8 +181,9 @@ public class PanelAppTag extends BasePanelTag {
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				themeDisplay.getCompanyId(), _panelApp.getPortletId());
 
-			_label = PortalUtil.getPortletTitle(
-				portlet, servletContext, themeDisplay.getLocale());
+			_label = HtmlUtil.escape(
+				PortalUtil.getPortletTitle(
+					portlet, servletContext, themeDisplay.getLocale()));
 
 			if (!_data.containsKey("qa-id")) {
 				_data.put("qa-id", "app");
@@ -210,8 +227,8 @@ public class PanelAppTag extends BasePanelTag {
 			try {
 				portletURL = _panelApp.getPortletURL(httpServletRequest);
 			}
-			catch (PortalException pe) {
-				_log.error("Unable to get portlet URL", pe);
+			catch (PortalException portalException) {
+				_log.error("Unable to get portlet URL", portalException);
 			}
 
 			_url = portletURL.toString();

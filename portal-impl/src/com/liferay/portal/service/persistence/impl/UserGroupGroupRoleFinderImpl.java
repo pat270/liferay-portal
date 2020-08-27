@@ -51,19 +51,20 @@ public class UserGroupGroupRoleFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_GROUP_ROLE_TYPE);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("UserGroupGroupRole", UserGroupGroupRoleImpl.class);
+			sqlQuery.addEntity(
+				"UserGroupGroupRole", UserGroupGroupRoleImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(roleType);
+			queryPos.add(groupId);
+			queryPos.add(roleType);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -81,18 +82,19 @@ public class UserGroupGroupRoleFinderImpl
 
 			sql = StringUtil.removeSubstring(sql, "[$WHERE$]");
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("UserGroupGroupRole", UserGroupGroupRoleImpl.class);
+			sqlQuery.addEntity(
+				"UserGroupGroupRole", UserGroupGroupRoleImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(userId);
+			queryPos.add(userId);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -113,19 +115,20 @@ public class UserGroupGroupRoleFinderImpl
 			sql = StringUtil.replace(
 				sql, "[$WHERE$]", "(UserGroupGroupRole.groupId = ?) AND ");
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("UserGroupGroupRole", UserGroupGroupRoleImpl.class);
+			sqlQuery.addEntity(
+				"UserGroupGroupRole", UserGroupGroupRoleImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(userId);
+			queryPos.add(groupId);
+			queryPos.add(userId);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

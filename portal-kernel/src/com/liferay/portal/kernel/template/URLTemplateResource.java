@@ -55,16 +55,16 @@ public class URLTemplateResource implements TemplateResource {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof URLTemplateResource)) {
+		if (!(object instanceof URLTemplateResource)) {
 			return false;
 		}
 
-		URLTemplateResource urlTemplateResource = (URLTemplateResource)obj;
+		URLTemplateResource urlTemplateResource = (URLTemplateResource)object;
 
 		if (_templateId.equals(urlTemplateResource._templateId) &&
 			_templateURLExternalForm.equals(
@@ -81,10 +81,10 @@ public class URLTemplateResource implements TemplateResource {
 		try {
 			return URLUtil.getLastModifiedTime(_templateURL);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			_log.error(
 				"Unable to get last modified time for template " + _templateId,
-				ioe);
+				ioException);
 
 			return 0;
 		}
@@ -105,13 +105,14 @@ public class URLTemplateResource implements TemplateResource {
 
 	@Override
 	public int hashCode() {
-		return _templateId.hashCode() * 11 +
+		return (_templateId.hashCode() * 11) +
 			_templateURLExternalForm.hashCode();
 	}
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		_templateId = objectInput.readUTF();
+
 		_templateURLExternalForm = objectInput.readUTF();
 
 		_templateURL = new URL(_templateURLExternalForm);

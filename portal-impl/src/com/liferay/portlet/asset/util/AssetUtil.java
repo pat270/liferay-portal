@@ -518,7 +518,7 @@ public class AssetUtil {
 
 				assetEntries.add(assetEntry);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -819,9 +819,8 @@ public class AssetUtil {
 
 		Hits hits = assetSearcher.search(searchContext);
 
-		List<AssetEntry> assetEntries = getAssetEntries(hits);
-
-		return new BaseModelSearchResult<>(assetEntries, hits.getLength());
+		return new BaseModelSearchResult<>(
+			getAssetEntries(hits), hits.getLength());
 	}
 
 	public static String substituteCategoryPropertyVariables(
@@ -932,6 +931,21 @@ public class AssetUtil {
 		return assetSearcher;
 	}
 
+	protected static boolean getDDMFormFieldLocalizable(String sortField)
+		throws PortalException {
+
+		String[] sortFields = StringUtil.split(
+			sortField, DDMStructureManager.STRUCTURE_INDEXER_FIELD_SEPARATOR);
+
+		long ddmStructureId = GetterUtil.getLong(sortFields[2]);
+
+		DDMStructure ddmStructure = DDMStructureManagerUtil.getStructure(
+			ddmStructureId);
+
+		return GetterUtil.getBoolean(
+			ddmStructure.getFieldProperty(sortFields[3], "localizable"));
+	}
+
 	protected static String getDDMFormFieldType(String sortField)
 		throws PortalException {
 
@@ -948,7 +962,8 @@ public class AssetUtil {
 	}
 
 	protected static String getOrderByCol(
-		String sortField, String fieldType, int sortType, Locale locale) {
+		String sortField, String fieldType, boolean fieldLocalizable,
+		int sortType, Locale locale) {
 
 		if (sortField.startsWith(
 				DDMStructureManager.STRUCTURE_INDEXER_FIELD_PREFIX)) {
@@ -957,8 +972,11 @@ public class AssetUtil {
 
 			sb.append(sortField);
 			sb.append(StringPool.UNDERLINE);
-			sb.append(LocaleUtil.toLanguageId(locale));
-			sb.append(StringPool.UNDERLINE);
+
+			if (fieldLocalizable) {
+				sb.append(LocaleUtil.toLanguageId(locale));
+				sb.append(StringPool.UNDERLINE);
+			}
 
 			String suffix = "String";
 
@@ -985,14 +1003,23 @@ public class AssetUtil {
 		return sortField;
 	}
 
+	protected static String getOrderByCol(
+		String sortField, String fieldType, int sortType, Locale locale) {
+
+		return getOrderByCol(sortField, fieldType, true, sortType, locale);
+	}
+
 	protected static Sort getSort(
 			String orderByType, String sortField, Locale locale)
 		throws Exception {
 
+		boolean ddmFormFieldLocalizable = true;
 		String ddmFormFieldType = sortField;
 
 		if (ddmFormFieldType.startsWith(
 				DDMStructureManager.STRUCTURE_INDEXER_FIELD_PREFIX)) {
+
+			ddmFormFieldLocalizable = getDDMFormFieldLocalizable(sortField);
 
 			ddmFormFieldType = getDDMFormFieldType(ddmFormFieldType);
 		}
@@ -1001,7 +1028,9 @@ public class AssetUtil {
 
 		return SortFactoryUtil.getSort(
 			AssetEntry.class, sortType,
-			getOrderByCol(sortField, ddmFormFieldType, sortType, locale),
+			getOrderByCol(
+				sortField, ddmFormFieldType, ddmFormFieldLocalizable, sortType,
+				locale),
 			!sortField.startsWith(
 				DDMStructureManager.STRUCTURE_INDEXER_FIELD_PREFIX),
 			orderByType);

@@ -87,11 +87,11 @@ public class ComboServlet extends HttpServlet {
 		try {
 			doService(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			PortalUtil.sendError(
-				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e,
+				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, exception,
 				httpServletRequest, httpServletResponse);
 		}
 	}
@@ -127,11 +127,11 @@ public class ComboServlet extends HttpServlet {
 		Map<String, String[]> parameterMap = HttpUtil.getParameterMap(
 			httpServletRequest.getQueryString());
 
-		Enumeration<String> enu = Collections.enumeration(
+		Enumeration<String> enumeration = Collections.enumeration(
 			parameterMap.keySet());
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			if (_protectedParameters.contains(name)) {
 				continue;
@@ -141,16 +141,16 @@ public class ComboServlet extends HttpServlet {
 
 			ServletContext servletContext = getServletContext();
 
-			String contextPath = servletContext.getContextPath();
-
-			if (name.startsWith(contextPath)) {
-				name = name.replaceFirst(contextPath, StringPool.BLANK);
-			}
-
 			String pathProxy = PortalUtil.getPathProxy();
 
 			if (name.startsWith(pathProxy)) {
 				name = name.replaceFirst(pathProxy, StringPool.BLANK);
+			}
+
+			String contextPath = servletContext.getContextPath();
+
+			if (name.startsWith(contextPath)) {
+				name = name.replaceFirst(contextPath, StringPool.BLANK);
 			}
 
 			modulePathsSet.add(name);
@@ -190,6 +190,16 @@ public class ComboServlet extends HttpServlet {
 
 				return;
 			}
+		}
+
+		boolean cacheEnabled = true;
+
+		if (PropsValues.WORK_DIR_OVERRIDE_ENABLED) {
+			cacheEnabled = false;
+
+			httpServletResponse.setHeader(
+				HttpHeaders.CACHE_CONTROL,
+				HttpHeaders.CACHE_CONTROL_NO_CACHE_VALUE);
 		}
 
 		String minifierType = ParamUtil.getString(
@@ -263,7 +273,7 @@ public class ComboServlet extends HttpServlet {
 				bytesArray[i] = bytes;
 			}
 
-			if ((modulePathsString != null) &&
+			if (cacheEnabled && (modulePathsString != null) &&
 				!PropsValues.COMBO_CHECK_TIMESTAMP) {
 
 				_bytesArrayPortalCache.put(modulePathsString, bytesArray);
@@ -273,7 +283,7 @@ public class ComboServlet extends HttpServlet {
 		String contentType = ContentTypes.TEXT_JAVASCRIPT;
 
 		if (StringUtil.equalsIgnoreCase(extension, _CSS_EXTENSION)) {
-			contentType = ContentTypes.TEXT_CSS;
+			contentType = ContentTypes.TEXT_CSS_UTF8;
 		}
 
 		httpServletResponse.setContentType(contentType);
@@ -320,12 +330,14 @@ public class ComboServlet extends HttpServlet {
 				System.currentTimeMillis() - fileContentBag._lastModified;
 
 			if ((requestDispatcher != null) &&
-				(elapsedTime <= PropsValues.COMBO_CHECK_TIMESTAMP_INTERVAL) &&
-				(RequestDispatcherUtil.getLastModifiedTime(
-					requestDispatcher, httpServletRequest,
-					httpServletResponse) == fileContentBag._lastModified)) {
+				(elapsedTime <= PropsValues.COMBO_CHECK_TIMESTAMP_INTERVAL)) {
 
-				return fileContentBag._fileContent;
+				long lastModified = RequestDispatcherUtil.getLastModifiedTime(
+					requestDispatcher, httpServletRequest, httpServletResponse);
+
+				if (lastModified == fileContentBag._lastModified) {
+					return fileContentBag._fileContent;
+				}
 			}
 
 			_fileContentBagPortalCache.remove(fileContentKey);
@@ -354,10 +366,10 @@ public class ComboServlet extends HttpServlet {
 							getServletContext(), httpServletRequest,
 							stringFileContent);
 					}
-					catch (Exception e) {
+					catch (Exception exception) {
 						_log.error(
 							"Unable to replace tokens in CSS " + resourcePath,
-							e);
+							exception);
 
 						if (_log.isDebugEnabled()) {
 							_log.debug(stringFileContent);
@@ -375,6 +387,8 @@ public class ComboServlet extends HttpServlet {
 					if (slashIndex != -1) {
 						baseURL = resourcePath.substring(0, slashIndex + 1);
 					}
+
+					baseURL = PortalUtil.getPathProxy() + baseURL;
 
 					stringFileContent = AggregateUtil.updateRelativeURLs(
 						stringFileContent, baseURL);
@@ -430,7 +444,9 @@ public class ComboServlet extends HttpServlet {
 
 		String resourcePath = getResourcePath(modulePath);
 
-		if (!PortalUtil.isValidResourceId(resourcePath)) {
+		if (!StringUtil.startsWith(resourcePath, CharPool.SLASH) ||
+			!PortalUtil.isValidResourceId(resourcePath)) {
+
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
@@ -518,9 +534,9 @@ public class ComboServlet extends HttpServlet {
 
 	private static class FileContentBag implements Serializable {
 
-		public FileContentBag(byte[] fileContent, long lastModifiedTime) {
+		public FileContentBag(byte[] fileContent, long lastModified) {
 			_fileContent = fileContent;
-			_lastModified = lastModifiedTime;
+			_lastModified = lastModified;
 		}
 
 		private final byte[] _fileContent;

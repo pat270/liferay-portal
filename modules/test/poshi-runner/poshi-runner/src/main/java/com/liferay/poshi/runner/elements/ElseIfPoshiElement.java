@@ -15,6 +15,7 @@
 package com.liferay.poshi.runner.elements;
 
 import com.liferay.poshi.runner.script.PoshiScriptParserException;
+import com.liferay.poshi.runner.util.StringUtil;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -61,6 +62,7 @@ public class ElseIfPoshiElement extends IfPoshiElement {
 	}
 
 	protected ElseIfPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected ElseIfPoshiElement(Element element) {
@@ -106,8 +108,8 @@ public class ElseIfPoshiElement extends IfPoshiElement {
 	private static final String _POSHI_SCRIPT_KEYWORD_REGEX;
 
 	static {
-		_POSHI_SCRIPT_KEYWORD_REGEX = _POSHI_SCRIPT_KEYWORD.replace(
-			" ", "[\\s]*");
+		_POSHI_SCRIPT_KEYWORD_REGEX = StringUtil.replace(
+			_POSHI_SCRIPT_KEYWORD, " ", "[\\s]*");
 
 		blockNamePattern = Pattern.compile(
 			"^" + _POSHI_SCRIPT_KEYWORD_REGEX + BLOCK_NAME_PARAMETER_REGEX,

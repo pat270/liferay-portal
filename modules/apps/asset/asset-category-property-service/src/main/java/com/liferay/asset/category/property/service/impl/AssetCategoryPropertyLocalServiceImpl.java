@@ -22,6 +22,7 @@ import com.liferay.asset.category.property.service.base.AssetCategoryPropertyLoc
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.User;
 
 import java.util.List;
@@ -66,9 +67,7 @@ public class AssetCategoryPropertyLocalServiceImpl
 		categoryProperty.setKey(key);
 		categoryProperty.setValue(value);
 
-		assetCategoryPropertyPersistence.update(categoryProperty);
-
-		return categoryProperty;
+		return assetCategoryPropertyPersistence.update(categoryProperty);
 	}
 
 	@Override
@@ -167,9 +166,7 @@ public class AssetCategoryPropertyLocalServiceImpl
 		categoryProperty.setKey(key);
 		categoryProperty.setValue(value);
 
-		assetCategoryPropertyPersistence.update(categoryProperty);
-
-		return categoryProperty;
+		return assetCategoryPropertyPersistence.update(categoryProperty);
 	}
 
 	@Override
@@ -196,8 +193,24 @@ public class AssetCategoryPropertyLocalServiceImpl
 			throw new CategoryPropertyKeyException("Invalid key " + key);
 		}
 
+		int keyMaxLength = ModelHintsUtil.getMaxLength(
+			AssetCategoryProperty.class.getName(), "key");
+
+		if (key.length() > keyMaxLength) {
+			throw new CategoryPropertyKeyException(
+				"Maximum length of key exceeded");
+		}
+
 		if (!_assetHelper.isValidWord(value)) {
 			throw new CategoryPropertyValueException("Invalid value " + value);
+		}
+
+		int valueMaxLength = ModelHintsUtil.getMaxLength(
+			AssetCategoryProperty.class.getName(), "value");
+
+		if (value.length() > valueMaxLength) {
+			throw new CategoryPropertyValueException(
+				"Maximum length of value exceeded");
 		}
 	}
 

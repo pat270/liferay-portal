@@ -107,7 +107,7 @@ public class AssetPublisherViewContentDisplayContext {
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			SessionErrors.add(
 				_renderRequest,
 				PrincipalException.MustHavePermission.class.getName());
@@ -117,9 +117,7 @@ public class AssetPublisherViewContentDisplayContext {
 	}
 
 	public boolean isShowBackURL() {
-		boolean print = getPrint();
-
-		return !print;
+		return !getPrint();
 	}
 
 	private long _getAssetEntryId() {
@@ -175,7 +173,14 @@ public class AssetPublisherViewContentDisplayContext {
 		}
 
 		try {
-			if (Validator.isNotNull(_getURLTitle())) {
+			if (Validator.isNotNull(_getAssetEntryId())) {
+				_assetEntry = _assetRendererFactory.getAssetEntry(
+					_getAssetEntryId());
+
+				_assetRenderer = _assetRendererFactory.getAssetRenderer(
+					_assetEntry.getClassPK());
+			}
+			else if (Validator.isNotNull(_getURLTitle())) {
 				_assetRenderer = _assetRendererFactory.getAssetRenderer(
 					getGroupId(), _getURLTitle());
 
@@ -183,15 +188,8 @@ public class AssetPublisherViewContentDisplayContext {
 					_assetRendererFactory.getClassName(),
 					_assetRenderer.getClassPK());
 			}
-			else {
-				_assetEntry = _assetRendererFactory.getAssetEntry(
-					_getAssetEntryId());
-
-				_assetRenderer = _assetRendererFactory.getAssetRenderer(
-					_assetEntry.getClassPK());
-			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			SessionErrors.add(
 				_renderRequest, NoSuchModelException.class.getName());
 		}

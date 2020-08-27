@@ -37,13 +37,14 @@ import com.liferay.portal.kernel.repository.capabilities.UnsupportedCapabilityEx
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.trash.TrashActionKeys;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.trash.constants.TrashActionKeys;
 import com.liferay.trash.kernel.exception.RestoreEntryException;
 import com.liferay.trash.kernel.model.TrashEntry;
 import com.liferay.trash.kernel.model.TrashEntryConstants;
@@ -93,9 +94,7 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 		TrashCapability trashCapability = documentRepository.getCapability(
 			TrashCapability.class);
 
-		Folder folder = documentRepository.getFolder(classPK);
-
-		trashCapability.deleteFolder(folder);
+		trashCapability.deleteFolder(documentRepository.getFolder(classPK));
 	}
 
 	@Override
@@ -170,9 +169,9 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 		try {
 			return getDLFolder(classPK);
 		}
-		catch (PortalException | UnsupportedCapabilityException e) {
+		catch (PortalException | UnsupportedCapabilityException exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 
 			return null;
@@ -195,7 +194,7 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 		throws PortalException {
 
 		if (trashActionId.equals(TrashActionKeys.MOVE)) {
-			return ModelResourcePermissionHelper.contains(
+			return ModelResourcePermissionUtil.contains(
 				_folderModelResourcePermission, permissionChecker, groupId,
 				classPK, ActionKeys.ADD_FOLDER);
 		}
@@ -210,6 +209,22 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 	}
 
 	@Override
+	public boolean isMovable(long classPK) throws PortalException {
+		DLFolder dlFolder = fetchDLFolder(classPK);
+
+		if (dlFolder.getParentFolderId() > 0) {
+			DLFolder parentFolder = _dlFolderLocalService.fetchFolder(
+				dlFolder.getParentFolderId());
+
+			if ((parentFolder == null) || parentFolder.isInTrash()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isRestorable(long classPK) throws PortalException {
 		DLFolder dlFolder = fetchDLFolder(classPK);
 
@@ -217,6 +232,13 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 			((dlFolder.getParentFolderId() > 0) &&
 			 (_dlFolderLocalService.fetchFolder(dlFolder.getParentFolderId()) ==
 				 null))) {
+
+			return false;
+		}
+
+		if (!hasTrashPermission(
+				PermissionThreadLocal.getPermissionChecker(),
+				dlFolder.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}
@@ -266,9 +288,8 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 		TrashCapability trashCapability = documentRepository.getCapability(
 			TrashCapability.class);
 
-		Folder folder = documentRepository.getFolder(classPK);
-
-		trashCapability.restoreFolderFromTrash(userId, folder);
+		trashCapability.restoreFolderFromTrash(
+			userId, documentRepository.getFolder(classPK));
 	}
 
 	@Override
@@ -299,14 +320,15 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 			dlFolder.getGroupId(), containerModelId, originalTitle);
 
 		if (duplicateDLFolder != null) {
-			RestoreEntryException ree = new RestoreEntryException(
-				RestoreEntryException.DUPLICATE);
+			RestoreEntryException restoreEntryException =
+				new RestoreEntryException(RestoreEntryException.DUPLICATE);
 
-			ree.setDuplicateEntryId(duplicateDLFolder.getFolderId());
-			ree.setOldName(duplicateDLFolder.getName());
-			ree.setTrashEntryId(trashEntryId);
+			restoreEntryException.setDuplicateEntryId(
+				duplicateDLFolder.getFolderId());
+			restoreEntryException.setOldName(duplicateDLFolder.getName());
+			restoreEntryException.setTrashEntryId(trashEntryId);
 
-			throw ree;
+			throw restoreEntryException;
 		}
 
 		DLFileEntry duplicateDLFileEntry =
@@ -314,15 +336,16 @@ public class DLFolderTrashHandler extends DLBaseTrashHandler {
 				dlFolder.getGroupId(), containerModelId, originalTitle);
 
 		if (duplicateDLFileEntry != null) {
-			RestoreEntryException ree = new RestoreEntryException(
-				RestoreEntryException.DUPLICATE);
+			RestoreEntryException restoreEntryException =
+				new RestoreEntryException(RestoreEntryException.DUPLICATE);
 
-			ree.setDuplicateEntryId(duplicateDLFileEntry.getFileEntryId());
-			ree.setOldName(duplicateDLFileEntry.getTitle());
-			ree.setOverridable(false);
-			ree.setTrashEntryId(trashEntryId);
+			restoreEntryException.setDuplicateEntryId(
+				duplicateDLFileEntry.getFileEntryId());
+			restoreEntryException.setOldName(duplicateDLFileEntry.getTitle());
+			restoreEntryException.setOverridable(false);
+			restoreEntryException.setTrashEntryId(trashEntryId);
 
-			throw ree;
+			throw restoreEntryException;
 		}
 	}
 

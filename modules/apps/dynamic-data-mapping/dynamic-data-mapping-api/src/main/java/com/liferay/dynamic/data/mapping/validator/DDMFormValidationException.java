@@ -16,17 +16,16 @@ package com.liferay.dynamic.data.mapping.validator;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.SetUtil;
 
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DDMFormValidationException extends PortalException {
 
 	public DDMFormValidationException() {
@@ -36,31 +35,55 @@ public class DDMFormValidationException extends PortalException {
 		super(msg);
 	}
 
-	public DDMFormValidationException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DDMFormValidationException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DDMFormValidationException(Throwable cause) {
-		super(cause);
+	public DDMFormValidationException(Throwable throwable) {
+		super(throwable);
 	}
 
 	public static class MustNotDuplicateFieldName
 		extends DDMFormValidationException {
 
-		public MustNotDuplicateFieldName(String fieldName) {
+		public MustNotDuplicateFieldName(Set<String> duplicatedFieldNames) {
 			super(
 				String.format(
-					"The field name %s cannot be defined more than once",
-					fieldName));
+					"Field names %s were defined more than once",
+					duplicatedFieldNames));
 
-			_fieldName = fieldName;
+			_duplicatedFieldNames = duplicatedFieldNames;
 		}
 
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+		 *             #MustNotDuplicateFieldName(Set)}
+		 */
+		@Deprecated
+		public MustNotDuplicateFieldName(String fieldName) {
+			this(SetUtil.fromArray(new String[] {fieldName}));
+		}
+
+		public Set<String> getDuplicatedFieldNames() {
+			return _duplicatedFieldNames;
+		}
+
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+		 *             #getDuplicatedFieldNames()}
+		 */
+		@Deprecated
 		public String getFieldName() {
-			return _fieldName;
+			String[] fieldNames = _duplicatedFieldNames.toArray(new String[0]);
+
+			if (fieldNames.length == 0) {
+				return null;
+			}
+
+			return fieldNames[0];
 		}
 
-		private String _fieldName;
+		private final Set<String> _duplicatedFieldNames;
 
 	}
 
@@ -252,13 +275,13 @@ public class DDMFormValidationException extends PortalException {
 		extends DDMFormValidationException {
 
 		public MustSetValidFormRuleExpression(
-			String expressionType, String expression, Throwable cause) {
+			String expressionType, String expression, Throwable throwable) {
 
 			super(
 				String.format(
 					"Invalid form rule %s expression set: \"%s\"",
 					expressionType, expression),
-				cause);
+				throwable);
 
 			_expression = expression;
 		}

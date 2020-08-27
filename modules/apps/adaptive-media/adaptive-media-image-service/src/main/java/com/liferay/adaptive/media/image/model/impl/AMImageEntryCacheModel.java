@@ -26,30 +26,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AMImageEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AMImageEntryCacheModel
 	implements CacheModel<AMImageEntry>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AMImageEntryCacheModel)) {
+		if (!(object instanceof AMImageEntryCacheModel)) {
 			return false;
 		}
 
 		AMImageEntryCacheModel amImageEntryCacheModel =
-			(AMImageEntryCacheModel)obj;
+			(AMImageEntryCacheModel)object;
 
 		if (amImageEntryId == amImageEntryCacheModel.amImageEntryId) {
 			return true;

@@ -22,26 +22,29 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -76,6 +79,9 @@ public class PollsQuestionIndexerIndexedFieldsTest {
 
 	@Test
 	public void testIndexedFields() throws Exception {
+		Assume.assumeFalse(
+			isNumberSortableImplementedAsDoubleForSearchEngine());
+
 		PollsQuestion pollsQuestion =
 			pollsQuestionFixture.createPollsQuestion();
 
@@ -88,6 +94,22 @@ public class PollsQuestionIndexerIndexedFieldsTest {
 
 		FieldValuesAssert.assertFieldValues(
 			_expectedFieldValues(pollsQuestion), document, searchTerm);
+	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
+	protected boolean isNumberSortableImplementedAsDoubleForSearchEngine() {
+		SearchEngine searchEngine = searchEngineHelper.getSearchEngine(
+			searchEngineHelper.getDefaultSearchEngineId());
+
+		String vendor = searchEngine.getVendor();
+
+		if (vendor.equals("Solr")) {
+			return true;
+		}
+
+		return false;
 	}
 
 	protected void setUpIndexedFieldsFixture() {
@@ -133,25 +155,30 @@ public class PollsQuestionIndexerIndexedFieldsTest {
 			PollsQuestion pollsQuestion)
 		throws Exception {
 
-		Map<String, String> map = new HashMap<>();
-
-		map.put(Field.COMPANY_ID, String.valueOf(pollsQuestion.getCompanyId()));
-		map.put(Field.DESCRIPTION, _getDescriptionField(pollsQuestion));
-		map.put(
-			Field.ENTRY_CLASS_PK,
-			String.valueOf(pollsQuestion.getQuestionId()));
-		map.put(Field.ENTRY_CLASS_NAME, PollsQuestion.class.getName());
-		map.put(Field.GROUP_ID, String.valueOf(pollsQuestion.getGroupId()));
-		map.put(
-			Field.SCOPE_GROUP_ID, String.valueOf(pollsQuestion.getGroupId()));
-		map.put(Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup()));
-		map.put(Field.TITLE, _getTitleField(pollsQuestion));
-		map.put(Field.USER_ID, String.valueOf(pollsQuestion.getUserId()));
-		map.put(
-			Field.USER_NAME, StringUtil.lowerCase(pollsQuestion.getUserName()));
-		map.put(
+		Map<String, String> map = HashMapBuilder.put(
+			Field.COMPANY_ID, String.valueOf(pollsQuestion.getCompanyId())
+		).put(
+			Field.DESCRIPTION, _getDescriptionField(pollsQuestion)
+		).put(
+			Field.ENTRY_CLASS_NAME, PollsQuestion.class.getName()
+		).put(
+			Field.ENTRY_CLASS_PK, String.valueOf(pollsQuestion.getQuestionId())
+		).put(
+			Field.GROUP_ID, String.valueOf(pollsQuestion.getGroupId())
+		).put(
+			Field.SCOPE_GROUP_ID, String.valueOf(pollsQuestion.getGroupId())
+		).put(
+			Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup())
+		).put(
+			Field.TITLE, _getTitleField(pollsQuestion)
+		).put(
+			Field.USER_ID, String.valueOf(pollsQuestion.getUserId())
+		).put(
+			Field.USER_NAME, StringUtil.lowerCase(pollsQuestion.getUserName())
+		).put(
 			"title_sortable",
-			StringUtil.lowerCase(_getTitleField(pollsQuestion)));
+			StringUtil.lowerCase(_getTitleField(pollsQuestion))
+		).build();
 
 		indexedFieldsFixture.populateUID(
 			PollsQuestion.class.getName(), pollsQuestion.getQuestionId(), map);

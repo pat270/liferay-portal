@@ -38,8 +38,8 @@ public class MulticastServerTool {
 			DatagramHandler handler = new DatagramHandler() {
 
 				@Override
-				public void errorReceived(Throwable t) {
-					t.printStackTrace();
+				public void errorReceived(Throwable throwable) {
+					throwable.printStackTrace();
 				}
 
 				@Override
@@ -72,8 +72,8 @@ public class MulticastServerTool {
 				Thread.sleep(interval);
 			}
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 
 			System.err.println(
 				"Usage: java MulticastServerTool multicastAddress port " +

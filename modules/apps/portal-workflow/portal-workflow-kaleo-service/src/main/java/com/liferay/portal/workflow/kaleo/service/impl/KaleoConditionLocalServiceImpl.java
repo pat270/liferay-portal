@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -24,17 +25,24 @@ import com.liferay.portal.workflow.kaleo.service.base.KaleoConditionLocalService
 
 import java.util.Date;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Michael C. Han
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoCondition",
+	service = AopService.class
+)
 public class KaleoConditionLocalServiceImpl
 	extends KaleoConditionLocalServiceBaseImpl {
 
 	@Override
 	public KaleoCondition addKaleoCondition(
-			long kaleoDefinitionVersionId, long kaleoNodeId,
-			Condition condition, ServiceContext serviceContext)
+			long kaleoDefinitionId, long kaleoDefinitionVersionId,
+			long kaleoNodeId, Condition condition,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = userLocalService.getUser(serviceContext.getGuestOrUserId());
@@ -50,6 +58,7 @@ public class KaleoConditionLocalServiceImpl
 		kaleoCondition.setUserName(user.getFullName());
 		kaleoCondition.setCreateDate(now);
 		kaleoCondition.setModifiedDate(now);
+		kaleoCondition.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoCondition.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoCondition.setKaleoNodeId(kaleoNodeId);
 		kaleoCondition.setScript(condition.getScript());
@@ -61,9 +70,7 @@ public class KaleoConditionLocalServiceImpl
 		kaleoCondition.setScriptRequiredContexts(
 			condition.getScriptRequiredContexts());
 
-		kaleoConditionPersistence.update(kaleoCondition);
-
-		return kaleoCondition;
+		return kaleoConditionPersistence.update(kaleoCondition);
 	}
 
 	@Override

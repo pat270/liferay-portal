@@ -19,7 +19,7 @@ import com.liferay.poshi.runner.util.FileUtil;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.runner.JUnitCore;
@@ -128,7 +128,7 @@ public class PoshiRunnerCommandExecutor {
 	protected static void printSystemProperties() throws Exception {
 		Properties systemProperties = System.getProperties();
 
-		for (Entry<Object, Object> entry : systemProperties.entrySet()) {
+		for (Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
 			System.out.println(entry);
 		}
 	}

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,10 @@ public class SocialActivityCounterPersistenceTest {
 		SocialActivityCounter newSocialActivityCounter = _persistence.create(
 			pk);
 
+		newSocialActivityCounter.setMvccVersion(RandomTestUtil.nextLong());
+
+		newSocialActivityCounter.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newSocialActivityCounter.setGroupId(RandomTestUtil.nextLong());
 
 		newSocialActivityCounter.setCompanyId(RandomTestUtil.nextLong());
@@ -157,6 +161,12 @@ public class SocialActivityCounterPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newSocialActivityCounter.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingSocialActivityCounter.getMvccVersion(),
+			newSocialActivityCounter.getMvccVersion());
+		Assert.assertEquals(
+			existingSocialActivityCounter.getCtCollectionId(),
+			newSocialActivityCounter.getCtCollectionId());
 		Assert.assertEquals(
 			existingSocialActivityCounter.getActivityCounterId(),
 			newSocialActivityCounter.getActivityCounterId());
@@ -274,11 +284,11 @@ public class SocialActivityCounterPersistenceTest {
 
 	protected OrderByComparator<SocialActivityCounter> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"SocialActivityCounter", "activityCounterId", true, "groupId", true,
-			"companyId", true, "classNameId", true, "classPK", true, "name",
-			true, "ownerType", true, "currentValue", true, "totalValue", true,
-			"graceValue", true, "startPeriod", true, "endPeriod", true,
-			"active", true);
+			"SocialActivityCounter", "mvccVersion", true, "ctCollectionId",
+			true, "activityCounterId", true, "groupId", true, "companyId", true,
+			"classNameId", true, "classPK", true, "name", true, "ownerType",
+			true, "currentValue", true, "totalValue", true, "graceValue", true,
+			"startPeriod", true, "endPeriod", true, "active", true);
 	}
 
 	@Test
@@ -521,73 +531,117 @@ public class SocialActivityCounterPersistenceTest {
 
 		_persistence.clearCache();
 
-		SocialActivityCounter existingSocialActivityCounter =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newSocialActivityCounter.getPrimaryKey());
+				newSocialActivityCounter.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		SocialActivityCounter newSocialActivityCounter =
+			addSocialActivityCounter();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			SocialActivityCounter.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"activityCounterId",
+				newSocialActivityCounter.getActivityCounterId()));
+
+		List<SocialActivityCounter> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		SocialActivityCounter socialActivityCounter) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityCounter.getGroupId()),
+			Long.valueOf(socialActivityCounter.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityCounter, "getOriginalGroupId",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityCounter.getClassNameId()),
+			Long.valueOf(socialActivityCounter.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityCounter, "getOriginalClassNameId",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityCounter.getClassPK()),
+			Long.valueOf(socialActivityCounter.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityCounter, "getOriginalClassPK",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingSocialActivityCounter.getName(),
-				ReflectionTestUtil.invoke(
-					existingSocialActivityCounter, "getOriginalName",
-					new Class<?>[0])));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivityCounter.getOwnerType()),
+			socialActivityCounter.getName(),
+			ReflectionTestUtil.invoke(
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
+		Assert.assertEquals(
+			Integer.valueOf(socialActivityCounter.getOwnerType()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivityCounter, "getOriginalOwnerType",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "ownerType"));
 		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivityCounter.getStartPeriod()),
+			Integer.valueOf(socialActivityCounter.getStartPeriod()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivityCounter, "getOriginalStartPeriod",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "startPeriod"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityCounter.getGroupId()),
+			Long.valueOf(socialActivityCounter.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityCounter, "getOriginalGroupId",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityCounter.getClassNameId()),
+			Long.valueOf(socialActivityCounter.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityCounter, "getOriginalClassNameId",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityCounter.getClassPK()),
+			Long.valueOf(socialActivityCounter.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityCounter, "getOriginalClassPK",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingSocialActivityCounter.getName(),
-				ReflectionTestUtil.invoke(
-					existingSocialActivityCounter, "getOriginalName",
-					new Class<?>[0])));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivityCounter.getOwnerType()),
+			socialActivityCounter.getName(),
+			ReflectionTestUtil.invoke(
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
+		Assert.assertEquals(
+			Integer.valueOf(socialActivityCounter.getOwnerType()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivityCounter, "getOriginalOwnerType",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "ownerType"));
 		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivityCounter.getEndPeriod()),
+			Integer.valueOf(socialActivityCounter.getEndPeriod()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivityCounter, "getOriginalEndPeriod",
-				new Class<?>[0]));
+				socialActivityCounter, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "endPeriod"));
 	}
 
 	protected SocialActivityCounter addSocialActivityCounter()
@@ -596,6 +650,10 @@ public class SocialActivityCounterPersistenceTest {
 		long pk = RandomTestUtil.nextLong();
 
 		SocialActivityCounter socialActivityCounter = _persistence.create(pk);
+
+		socialActivityCounter.setMvccVersion(RandomTestUtil.nextLong());
+
+		socialActivityCounter.setCtCollectionId(RandomTestUtil.nextLong());
 
 		socialActivityCounter.setGroupId(RandomTestUtil.nextLong());
 

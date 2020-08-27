@@ -29,11 +29,11 @@ import java.util.Map;
  */
 public class UADInfoPanelDisplay {
 
-	public void addUADEntities(List<UADEntity> uadEntities) {
+	public void addUADEntities(List<UADEntity<Object>> uadEntities) {
 		_uadEntities.addAll(uadEntities);
 	}
 
-	public UADEntity getFirstUADEntity() {
+	public UADEntity<Object> getFirstUADEntity() {
 		if (_uadEntities.size() > 0) {
 			return _uadEntities.get(0);
 		}
@@ -67,7 +67,7 @@ public class UADInfoPanelDisplay {
 			return null;
 		}
 		else if (_uadEntities.size() == 1) {
-			UADEntity uadEntity = getFirstUADEntity();
+			UADEntity<Object> uadEntity = getFirstUADEntity();
 
 			Map<String, Object> displayValues = _uadDisplay.getFieldValues(
 				uadEntity.getEntity(), _uadDisplay.getDisplayFieldNames(),
@@ -85,7 +85,7 @@ public class UADInfoPanelDisplay {
 		}
 	}
 
-	public UADDisplay getUADDisplay() {
+	public UADDisplay<Object> getUADDisplay() {
 		return _uadDisplay;
 	}
 
@@ -101,13 +101,13 @@ public class UADInfoPanelDisplay {
 		_topLevelView = topLevelView;
 	}
 
-	public void setUADDisplay(UADDisplay uadDisplay) {
+	public void setUADDisplay(UADDisplay<Object> uadDisplay) {
 		_uadDisplay = uadDisplay;
 	}
 
 	private boolean _hierarchyView;
 	private boolean _topLevelView = true;
-	private UADDisplay _uadDisplay;
-	private final List<UADEntity> _uadEntities = new ArrayList<>();
+	private UADDisplay<Object> _uadDisplay;
+	private final List<UADEntity<Object>> _uadEntities = new ArrayList<>();
 
 }

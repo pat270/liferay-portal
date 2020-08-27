@@ -76,10 +76,10 @@ public class LiferaySecureUberspector extends SecureUberspector {
 				_restrictedClasses.add(
 					aggregateClassLoader.loadClass(restrictedClassName));
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 				super.log.error(
 					"Unable to find restricted class " + restrictedClassName,
-					cnfe);
+					classNotFoundException);
 			}
 		}
 
@@ -91,8 +91,7 @@ public class LiferaySecureUberspector extends SecureUberspector {
 			_restrictedMethodNames = Collections.emptyMap();
 		}
 		else {
-			_restrictedMethodNames = new HashMap<>(
-				restrictedMethodNames.length);
+			_restrictedMethodNames = new HashMap<>();
 
 			for (String restrictedMethodName : restrictedMethodNames) {
 				int index = restrictedMethodName.indexOf(CharPool.POUND);
@@ -196,7 +195,7 @@ public class LiferaySecureUberspector extends SecureUberspector {
 		}
 	}
 
-	private void _checkMethodIsRestricted(Class clazz, String methodName) {
+	private void _checkMethodIsRestricted(Class<?> clazz, String methodName) {
 		String className = clazz.getName();
 
 		if (_restrictedMethodNames.containsKey(className)) {
@@ -257,9 +256,11 @@ public class LiferaySecureUberspector extends SecureUberspector {
 					"Executing method " + methodName + " is not allowed");
 			}
 
-			_checkClassIsRestricted(clazz);
+			if (RestrictedTemplateThreadLocal.isRestricted()) {
+				_checkClassIsRestricted(clazz);
 
-			_checkMethodIsRestricted(clazz, methodName);
+				_checkMethodIsRestricted(clazz, methodName);
+			}
 
 			return true;
 		}

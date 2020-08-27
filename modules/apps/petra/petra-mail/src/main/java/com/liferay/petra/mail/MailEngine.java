@@ -101,9 +101,9 @@ public class MailEngine {
 		try {
 			session = MailServiceUtil.getSession();
 		}
-		catch (SystemException se) {
+		catch (SystemException systemException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(se, se);
+				_log.warn(systemException, systemException);
 			}
 
 			session = InfrastructureUtil.getMailSession();
@@ -129,8 +129,8 @@ public class MailEngine {
 
 			_send(session, message, null, _BATCH_SIZE);
 		}
-		catch (Exception e) {
-			throw new MailEngineException(e);
+		catch (Exception exception) {
+			throw new MailEngineException(exception);
 		}
 	}
 
@@ -371,10 +371,11 @@ public class MailEngine {
 			}
 
 			if (internetHeaders != null) {
-				Enumeration enumeration = internetHeaders.getAllHeaders();
+				Enumeration<Header> enumeration =
+					internetHeaders.getAllHeaders();
 
 				while (enumeration.hasMoreElements()) {
-					Header header = (Header)enumeration.nextElement();
+					Header header = enumeration.nextElement();
 
 					message.setHeader(header.getName(), header.getValue());
 				}
@@ -385,15 +386,15 @@ public class MailEngine {
 
 			_send(session, message, bulkAddresses, batchSize);
 		}
-		catch (SendFailedException sfe) {
-			_log.error(sfe, sfe);
+		catch (SendFailedException sendFailedException) {
+			_log.error(sendFailedException, sendFailedException);
 
 			if (_isThrowsExceptionOnFailure()) {
-				throw new MailEngineException(sfe);
+				throw new MailEngineException(sendFailedException);
 			}
 		}
-		catch (Exception e) {
-			throw new MailEngineException(e);
+		catch (Exception exception) {
+			throw new MailEngineException(exception);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -476,8 +477,8 @@ public class MailEngine {
 				new InternetAddress(from), new InternetAddress(to), subject,
 				body);
 		}
-		catch (AddressException ae) {
-			throw new MailEngineException(ae);
+		catch (AddressException addressException) {
+			throw new MailEngineException(addressException);
 		}
 	}
 
@@ -628,22 +629,26 @@ public class MailEngine {
 				}
 			}
 		}
-		catch (MessagingException me) {
-			if (me.getNextException() instanceof SocketException) {
+		catch (MessagingException messagingException) {
+			if (messagingException.getNextException() instanceof
+					SocketException) {
+
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to connect to a valid mail server. Please " +
 							"make sure one is properly configured: " +
-								me.getMessage());
+								messagingException.getMessage());
 				}
 			}
 			else {
 				LogUtil.log(
-					_log, me, "Unable to send message: " + me.getMessage());
+					_log, messagingException,
+					"Unable to send message: " +
+						messagingException.getMessage());
 			}
 
 			if (_isThrowsExceptionOnFailure()) {
-				throw new MailEngineException(me);
+				throw new MailEngineException(messagingException);
 			}
 		}
 	}

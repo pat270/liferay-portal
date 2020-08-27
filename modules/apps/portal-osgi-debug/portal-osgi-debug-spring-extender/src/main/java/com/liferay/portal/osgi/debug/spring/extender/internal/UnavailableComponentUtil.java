@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.felix.dm.Component;
 import org.apache.felix.dm.ComponentDeclaration;
 import org.apache.felix.dm.ComponentDependencyDeclaration;
 import org.apache.felix.dm.DependencyManager;
@@ -37,15 +38,14 @@ public class UnavailableComponentUtil {
 		StringBundler sb = new StringBundler();
 
 		for (DependencyManager dependencyManager :
-				(List<DependencyManager>)
-					DependencyManager.getDependencyManagers()) {
+				DependencyManager.getDependencyManagers()) {
 
 			Map<ComponentDeclaration, List<ComponentDependencyDeclaration>>
 				unavailableComponentDeclarations = new HashMap<>();
 
-			for (ComponentDeclaration componentDeclaration :
-					(List<ComponentDeclaration>)
-						dependencyManager.getComponents()) {
+			for (Component component : dependencyManager.getComponents()) {
+				ComponentDeclaration componentDeclaration =
+					(ComponentDeclaration)component;
 
 				if (componentDeclaration.getState() !=
 						ComponentDeclaration.STATE_UNREGISTERED) {
@@ -72,43 +72,43 @@ public class UnavailableComponentUtil {
 				}
 			}
 
-			if (!unavailableComponentDeclarations.isEmpty()) {
-				BundleContext bundleContext =
-					dependencyManager.getBundleContext();
+			if (unavailableComponentDeclarations.isEmpty()) {
+				continue;
+			}
 
-				Bundle bundle = bundleContext.getBundle();
+			BundleContext bundleContext = dependencyManager.getBundleContext();
 
-				sb.append("\nBundle {id: ");
-				sb.append(bundle.getBundleId());
-				sb.append(", name: ");
-				sb.append(bundle.getSymbolicName());
-				sb.append(", version: ");
-				sb.append(bundle.getVersion());
-				sb.append("}.\n");
+			Bundle bundle = bundleContext.getBundle();
 
-				for (Map.Entry
-						<ComponentDeclaration,
-						 List<ComponentDependencyDeclaration>> entry :
-							unavailableComponentDeclarations.entrySet()) {
+			sb.append("\nBundle {id: ");
+			sb.append(bundle.getBundleId());
+			sb.append(", name: ");
+			sb.append(bundle.getSymbolicName());
+			sb.append(", version: ");
+			sb.append(bundle.getVersion());
+			sb.append("}.\n");
 
-					sb.append("\tComponent with ID ");
+			for (Map.Entry
+					<ComponentDeclaration, List<ComponentDependencyDeclaration>>
+						entry : unavailableComponentDeclarations.entrySet()) {
 
-					ComponentDeclaration componentDeclaration = entry.getKey();
+				sb.append("\tComponent with ID ");
 
-					sb.append(componentDeclaration.getId());
+				ComponentDeclaration componentDeclaration = entry.getKey();
 
-					sb.append(" is unavailable due to missing required ");
-					sb.append("dependencies:\n\t\t");
+				sb.append(componentDeclaration.getId());
 
-					for (ComponentDependencyDeclaration
-							componentDependencyDeclaration : entry.getValue()) {
+				sb.append(" is unavailable due to missing required ");
+				sb.append("dependencies:\n\t\t");
 
-						sb.append(componentDependencyDeclaration);
-						sb.append("\n\t\t");
-					}
+				for (ComponentDependencyDeclaration
+						componentDependencyDeclaration : entry.getValue()) {
 
-					sb.setIndex(sb.index() - 1);
+					sb.append(componentDependencyDeclaration);
+					sb.append("\n\t\t");
 				}
+
+				sb.setIndex(sb.index() - 1);
 			}
 		}
 

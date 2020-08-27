@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,10 +32,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsEntryRel
  * @generated
  */
-@ProviderType
 public class SegmentsEntryRelWrapper
 	extends BaseModelWrapper<SegmentsEntryRel>
-	implements SegmentsEntryRel, ModelWrapper<SegmentsEntryRel> {
+	implements ModelWrapper<SegmentsEntryRel>, SegmentsEntryRel {
 
 	public SegmentsEntryRelWrapper(SegmentsEntryRel segmentsEntryRel) {
 		super(segmentsEntryRel);
@@ -45,6 +44,8 @@ public class SegmentsEntryRelWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("segmentsEntryRelId", getSegmentsEntryRelId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -61,6 +62,18 @@ public class SegmentsEntryRelWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long segmentsEntryRelId = (Long)attributes.get("segmentsEntryRelId");
 
 		if (segmentsEntryRelId != null) {
@@ -173,6 +186,16 @@ public class SegmentsEntryRelWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this segments entry rel.
+	 *
+	 * @return the ct collection ID of this segments entry rel
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this segments entry rel.
 	 *
 	 * @return the group ID of this segments entry rel
@@ -190,6 +213,16 @@ public class SegmentsEntryRelWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this segments entry rel.
+	 *
+	 * @return the mvcc version of this segments entry rel
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -303,6 +336,16 @@ public class SegmentsEntryRelWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this segments entry rel.
+	 *
+	 * @param ctCollectionId the ct collection ID of this segments entry rel
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this segments entry rel.
 	 *
 	 * @param groupId the group ID of this segments entry rel
@@ -320,6 +363,16 @@ public class SegmentsEntryRelWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments entry rel.
+	 *
+	 * @param mvccVersion the mvcc version of this segments entry rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -380,6 +433,20 @@ public class SegmentsEntryRelWrapper
 	@Override
 	public void setUserUuid(String userUuid) {
 		model.setUserUuid(userUuid);
+	}
+
+	@Override
+	public Map<String, Function<SegmentsEntryRel, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<SegmentsEntryRel, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

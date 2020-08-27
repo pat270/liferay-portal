@@ -14,55 +14,58 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
+import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.resource.v1_0.WebUrlResource;
 import com.liferay.headless.admin.user.client.serdes.v1_0.WebUrlSerDes;
-import com.liferay.headless.admin.user.resource.v1_0.WebUrlResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 
@@ -96,10 +99,19 @@ public abstract class BaseWebUrlResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-user/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_webUrlResource.setContextCompany(testCompany);
+
+		WebUrlResource.Builder builder = WebUrlResource.builder();
+
+		webUrlResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -113,10 +125,16 @@ public abstract class BaseWebUrlResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -134,9 +152,15 @@ public abstract class BaseWebUrlResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -150,17 +174,41 @@ public abstract class BaseWebUrlResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		WebUrl webUrl = randomWebUrl();
+
+		webUrl.setUrl(regex);
+		webUrl.setUrlType(regex);
+
+		String json = WebUrlSerDes.toJSON(webUrl);
+
+		Assert.assertFalse(json.contains(regex));
+
+		webUrl = WebUrlSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, webUrl.getUrl());
+		Assert.assertEquals(regex, webUrl.getUrlType());
+	}
+
+	@Test
 	public void testGetOrganizationWebUrlsPage() throws Exception {
-		Long organizationId =
+		Page<WebUrl> page = webUrlResource.getOrganizationWebUrlsPage(
+			testGetOrganizationWebUrlsPage_getOrganizationId());
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		String organizationId =
 			testGetOrganizationWebUrlsPage_getOrganizationId();
-		Long irrelevantOrganizationId =
+		String irrelevantOrganizationId =
 			testGetOrganizationWebUrlsPage_getIrrelevantOrganizationId();
 
 		if ((irrelevantOrganizationId != null)) {
 			WebUrl irrelevantWebUrl = testGetOrganizationWebUrlsPage_addWebUrl(
 				irrelevantOrganizationId, randomIrrelevantWebUrl());
 
-			Page<WebUrl> page = invokeGetOrganizationWebUrlsPage(
+			page = webUrlResource.getOrganizationWebUrlsPage(
 				irrelevantOrganizationId);
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -176,7 +224,7 @@ public abstract class BaseWebUrlResourceTestCase {
 		WebUrl webUrl2 = testGetOrganizationWebUrlsPage_addWebUrl(
 			organizationId, randomWebUrl());
 
-		Page<WebUrl> page = invokeGetOrganizationWebUrlsPage(organizationId);
+		page = webUrlResource.getOrganizationWebUrlsPage(organizationId);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -186,67 +234,34 @@ public abstract class BaseWebUrlResourceTestCase {
 	}
 
 	protected WebUrl testGetOrganizationWebUrlsPage_addWebUrl(
-			Long organizationId, WebUrl webUrl)
+			String organizationId, WebUrl webUrl)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetOrganizationWebUrlsPage_getOrganizationId()
+	protected String testGetOrganizationWebUrlsPage_getOrganizationId()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetOrganizationWebUrlsPage_getIrrelevantOrganizationId()
+	protected String
+			testGetOrganizationWebUrlsPage_getIrrelevantOrganizationId()
 		throws Exception {
 
 		return null;
 	}
 
-	protected Page<WebUrl> invokeGetOrganizationWebUrlsPage(Long organizationId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/web-urls", organizationId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, WebUrlSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetOrganizationWebUrlsPageResponse(
-			Long organizationId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/web-urls", organizationId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testGetUserAccountWebUrlsPage() throws Exception {
+		Page<WebUrl> page = webUrlResource.getUserAccountWebUrlsPage(
+			testGetUserAccountWebUrlsPage_getUserAccountId());
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		Long userAccountId = testGetUserAccountWebUrlsPage_getUserAccountId();
 		Long irrelevantUserAccountId =
 			testGetUserAccountWebUrlsPage_getIrrelevantUserAccountId();
@@ -255,7 +270,7 @@ public abstract class BaseWebUrlResourceTestCase {
 			WebUrl irrelevantWebUrl = testGetUserAccountWebUrlsPage_addWebUrl(
 				irrelevantUserAccountId, randomIrrelevantWebUrl());
 
-			Page<WebUrl> page = invokeGetUserAccountWebUrlsPage(
+			page = webUrlResource.getUserAccountWebUrlsPage(
 				irrelevantUserAccountId);
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -271,7 +286,7 @@ public abstract class BaseWebUrlResourceTestCase {
 		WebUrl webUrl2 = testGetUserAccountWebUrlsPage_addWebUrl(
 			userAccountId, randomWebUrl());
 
-		Page<WebUrl> page = invokeGetUserAccountWebUrlsPage(userAccountId);
+		page = webUrlResource.getUserAccountWebUrlsPage(userAccountId);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -301,50 +316,11 @@ public abstract class BaseWebUrlResourceTestCase {
 		return null;
 	}
 
-	protected Page<WebUrl> invokeGetUserAccountWebUrlsPage(Long userAccountId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/user-accounts/{userAccountId}/web-urls", userAccountId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, WebUrlSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetUserAccountWebUrlsPageResponse(
-			Long userAccountId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/user-accounts/{userAccountId}/web-urls", userAccountId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testGetWebUrl() throws Exception {
 		WebUrl postWebUrl = testGetWebUrl_addWebUrl();
 
-		WebUrl getWebUrl = invokeGetWebUrl(postWebUrl.getId());
+		WebUrl getWebUrl = webUrlResource.getWebUrl(postWebUrl.getId());
 
 		assertEquals(postWebUrl, getWebUrl);
 		assertValid(getWebUrl);
@@ -355,52 +331,58 @@ public abstract class BaseWebUrlResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected WebUrl invokeGetWebUrl(Long webUrlId) throws Exception {
-		Http.Options options = _createHttpOptions();
+	@Test
+	public void testGraphQLGetWebUrl() throws Exception {
+		WebUrl webUrl = testGraphQLWebUrl_addWebUrl();
 
-		String location =
-			_resourceURL + _toPath("/web-urls/{webUrlId}", webUrlId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return WebUrlSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				webUrl,
+				WebUrlSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"webUrl",
+								new HashMap<String, Object>() {
+									{
+										put("webUrlId", webUrl.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/webUrl"))));
 	}
 
-	protected Http.Response invokeGetWebUrlResponse(Long webUrlId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL + _toPath("/web-urls/{webUrlId}", webUrlId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	@Test
+	public void testGraphQLGetWebUrlNotFound() throws Exception {
+		Long irrelevantWebUrlId = RandomTestUtil.randomLong();
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"webUrl",
+						new HashMap<String, Object>() {
+							{
+								put("webUrlId", irrelevantWebUrlId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected WebUrl testGraphQLWebUrl_addWebUrl() throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
+
+		Assert.assertEquals(
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(WebUrl webUrl1, WebUrl webUrl2) {
@@ -440,7 +422,7 @@ public abstract class BaseWebUrlResourceTestCase {
 		}
 	}
 
-	protected void assertValid(WebUrl webUrl) {
+	protected void assertValid(WebUrl webUrl) throws Exception {
 		boolean valid = true;
 
 		if (webUrl.getId() == null) {
@@ -449,6 +431,14 @@ public abstract class BaseWebUrlResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("primary", additionalAssertFieldName)) {
+				if (webUrl.getPrimary() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals("url", additionalAssertFieldName)) {
 				if (webUrl.getUrl() == null) {
@@ -477,7 +467,7 @@ public abstract class BaseWebUrlResourceTestCase {
 	protected void assertValid(Page<WebUrl> page) {
 		boolean valid = false;
 
-		Collection<WebUrl> webUrls = page.getItems();
+		java.util.Collection<WebUrl> webUrls = page.getItems();
 
 		int size = webUrls.size();
 
@@ -495,6 +485,58 @@ public abstract class BaseWebUrlResourceTestCase {
 		return new String[0];
 	}
 
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.user.dto.v1_0.WebUrl.class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[0];
+	}
+
 	protected boolean equals(WebUrl webUrl1, WebUrl webUrl2) {
 		if (webUrl1 == webUrl2) {
 			return true;
@@ -505,6 +547,16 @@ public abstract class BaseWebUrlResourceTestCase {
 
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(webUrl1.getId(), webUrl2.getId())) {
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("primary", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						webUrl1.getPrimary(), webUrl2.getPrimary())) {
+
 					return false;
 				}
 
@@ -537,7 +589,33 @@ public abstract class BaseWebUrlResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_webUrlResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -558,12 +636,15 @@ public abstract class BaseWebUrlResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -583,6 +664,11 @@ public abstract class BaseWebUrlResourceTestCase {
 		sb.append(" ");
 
 		if (entityFieldName.equals("id")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("primary")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -607,12 +693,50 @@ public abstract class BaseWebUrlResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected WebUrl randomWebUrl() throws Exception {
 		return new WebUrl() {
 			{
 				id = RandomTestUtil.randomLong();
-				url = RandomTestUtil.randomString();
-				urlType = RandomTestUtil.randomString();
+				primary = RandomTestUtil.randomBoolean();
+				url = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				urlType = StringUtil.toLowerCase(RandomTestUtil.randomString());
 			}
 		};
 	}
@@ -627,76 +751,80 @@ public abstract class BaseWebUrlResourceTestCase {
 		return randomWebUrl();
 	}
 
+	protected WebUrlResource webUrlResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -717,8 +845,7 @@ public abstract class BaseWebUrlResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private WebUrlResource _webUrlResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.admin.user.resource.v1_0.WebUrlResource
+		_webUrlResource;
 
 }

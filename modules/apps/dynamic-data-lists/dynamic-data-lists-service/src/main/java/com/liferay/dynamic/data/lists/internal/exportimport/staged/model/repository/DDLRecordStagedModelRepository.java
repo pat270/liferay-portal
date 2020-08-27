@@ -14,9 +14,9 @@
 
 package com.liferay.dynamic.data.lists.internal.exportimport.staged.model.repository;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
-import com.liferay.dynamic.data.lists.model.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordVersion;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
 import com.liferay.dynamic.data.lists.service.DDLRecordVersionLocalService;
@@ -26,6 +26,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryHelper;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
@@ -111,6 +112,12 @@ public class DDLRecordStagedModelRepository
 	}
 
 	@Override
+	public DDLRecord fetchMissingReference(String uuid, long groupId) {
+		return _stagedModelRepositoryHelper.fetchMissingReference(
+			uuid, groupId, this);
+	}
+
+	@Override
 	public DDLRecord fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
@@ -152,19 +159,14 @@ public class DDLRecordStagedModelRepository
 				Property recordIdProperty = PropertyFactoryUtil.forName(
 					"recordId");
 
-				DynamicQuery recordVersionDynamicQuery =
-					getRecordVersionDynamicQuery();
-
 				dynamicQuery.add(
-					recordIdProperty.in(recordVersionDynamicQuery));
+					recordIdProperty.in(getRecordVersionDynamicQuery()));
 
 				Property recordSetIdProperty = PropertyFactoryUtil.forName(
 					"recordSetId");
 
-				DynamicQuery recordSetDynamicQuery = getRecordSetDynamicQuery(
-					scope);
-
-				dynamicQuery.add(recordSetIdProperty.in(recordSetDynamicQuery));
+				dynamicQuery.add(
+					recordSetIdProperty.in(getRecordSetDynamicQuery(scope)));
 			});
 
 		return exportActionableDynamicQuery;
@@ -288,5 +290,8 @@ public class DDLRecordStagedModelRepository
 
 	@Reference
 	private DDLRecordVersionLocalService _ddlRecordVersionLocalService;
+
+	@Reference
+	private StagedModelRepositoryHelper _stagedModelRepositoryHelper;
 
 }

@@ -1,0 +1,261 @@
+@component-name = "portal-workflow"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Dynamic Data Lists,Workflow";
+	property testray.main.component.name = "Workflow";
+	var workflowAssetType = "Dynamic Data Lists Record";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			DDLList.tearDownCP();
+
+			DDLDataDefinition.tearDownCP();
+		}
+	}
+
+	@description = "This is a use case for LPS-61212."
+	@priority = "5"
+	test EditDDLRecordViaMyWorkflowTasks {
+		property portal.acceptance = "true";
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(
+			ddlListName = "DDL List Name",
+			workflowDefinition = "Single Approver");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition Name");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "DDL List Name");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "DDL Record 1",
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DDLRecord.submitForPublication();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "DDL List Name");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "DDL Record 2",
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DDLRecord.submitForPublication();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetTitle = "New Data Definition Name for List: DDL List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
+
+		Workflow.viewTaskAssignedToMeDetails(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetContent = "DDL Record",
+			workflowAssetTitle = "New Data Definition Name for List: DDL List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
+
+		Workflow.gotoPreviewEdit();
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "DDL Record Edit",
+			fieldName = "Text");
+
+		Button.clickSave();
+
+		Workflow.gotoPreviewEdit();
+
+		DDLRecord.viewEditPreview(
+			ddlRecordFieldDataEdit = "DDL Record Edit",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewTaskAssignedToMeDetails(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetContent = "DDL Record Edit",
+			workflowAssetTitle = "New Data Definition Name for List: DDL List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
+	}
+
+	@priority = "4"
+	test RejectDynamicdatalistCP {
+		var ddlDataDefinitionName = "DDL Definition";
+		var ddlListName = "DDL List";
+		var ddlRecordFieldData = "Record Text";
+		var field = "Text";
+		var fieldFieldLabel = "Text Label";
+		var fieldName = "TextName";
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "DDL Definition Description",
+			ddlDataDefinitionName = "DDL Definition");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(
+			ddlListDescription = "DDL List Description",
+			ddlListName = "DDL List",
+			workflowDefinition = "Single Approver");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "DDL Definition");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "DDL Definition",
+			ddlListName = "DDL List");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Record Text",
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
+
+		DDLRecord.submitForPublication();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			ddlDataDefinitionName = "DDL Definition",
+			workflowAssetTitle = "DDL List",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords(ddlListName = "DDL List");
+
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Record Text",
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName",
+			workflowStatus = "Review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.rejectTaskByActions(
+			ddlDataDefinitionName = "DDL Definition",
+			workflowAssetTitle = "DDL List",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewRejectedTask(
+			ddlDataDefinitionName = "DDL Definition",
+			workflowAssetTitle = "DDL List",
+			workflowAssetType = "Dynamic Data Lists Record");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords(ddlListName = "DDL List");
+
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Record Text",
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName",
+			workflowStatus = "Update");
+	}
+
+}

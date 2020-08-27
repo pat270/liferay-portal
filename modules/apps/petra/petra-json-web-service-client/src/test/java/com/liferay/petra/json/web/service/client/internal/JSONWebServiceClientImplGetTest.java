@@ -17,11 +17,9 @@ package com.liferay.petra.json.web.service.client.internal;
 import com.liferay.petra.json.web.service.client.JSONWebServiceInvocationException;
 import com.liferay.petra.json.web.service.client.JSONWebServiceTransportException;
 import com.liferay.petra.json.web.service.client.server.simulator.HTTPServerSimulator;
-import com.liferay.petra.json.web.service.client.server.simulator.SimulatorConstants;
+import com.liferay.petra.json.web.service.client.server.simulator.constants.SimulatorConstants;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +35,7 @@ import org.junit.Test;
  * @author Igor Beslic
  */
 public class JSONWebServiceClientImplGetTest
-	extends JSONWebServiceClientBaseTest {
+	extends BaseJSONWebServiceClientTestCase {
 
 	@Before
 	public void setUp() throws Exception {
@@ -62,8 +60,7 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		jsonWebServiceClientImpl.doGet(
-			"/", Collections.<String, String>emptyMap());
+		jsonWebServiceClientImpl.doGet("/", Collections.emptyList());
 	}
 
 	@Test(
@@ -80,8 +77,7 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		jsonWebServiceClientImpl.doGet(
-			"/testGet/", new HashMap<String, String>());
+		jsonWebServiceClientImpl.doGet("/testGet/", Collections.emptyList());
 	}
 
 	@Test
@@ -97,14 +93,8 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doGet("/testGet/", params);
+		String json = jsonWebServiceClientImpl.doGet(
+			"/testGet/", getParameters("200"));
 
 		Assert.assertTrue(
 			json,
@@ -125,15 +115,8 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		List<NameValuePair> params = getParameters("200");
 
-		params.add(
-			new BasicNameValuePair(
-				SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200"));
-		params.add(
-			new BasicNameValuePair(
-				SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON,
-				"true"));
 		params.add(new BasicNameValuePair("multi", "first"));
 		params.add(new BasicNameValuePair("multi", "second"));
 		params.add(new BasicNameValuePair("multi", "third"));
@@ -160,14 +143,8 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doGet("/testGet/", params);
+		String json = jsonWebServiceClientImpl.doGet(
+			"/testGet/", getParameters("200"));
 
 		Assert.assertTrue(
 			json,
@@ -188,16 +165,9 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "202");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doGet("/testGet/", params);
-
-		Assert.assertEquals(SimulatorConstants.RESPONSE_SUCCESS_IN_JSON, json);
+		Assert.assertEquals(
+			SimulatorConstants.RESPONSE_SUCCESS_IN_JSON,
+			jsonWebServiceClientImpl.doGet("/testGet/", getParameters("202")));
 	}
 
 	@Test(expected = JSONWebServiceInvocationException.class)
@@ -213,14 +183,7 @@ public class JSONWebServiceClientImplGetTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "204");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		jsonWebServiceClientImpl.doGet("/testGet/", params);
+		jsonWebServiceClientImpl.doGet("/testGet/", getParameters("204"));
 	}
 
 }

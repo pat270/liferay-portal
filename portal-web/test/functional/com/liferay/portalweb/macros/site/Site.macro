@@ -1,0 +1,1501 @@
+definition {
+
+	var siteMember = "User";
+	var siteType = "Open";
+
+	macro activateInactive {
+		var key_siteName = "${siteName}";
+
+		Search.searchCP(searchTerm = "${siteName}");
+
+		LexiconTable.clickEllipsisItem(
+			item = "Activate",
+			tableEntry = "${siteName}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addAllMembersCP {
+		Navigator.gotoNavItem(navItem = "Users");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		PortletEntry.selectAll();
+
+		SelectFrameTop();
+
+		Pause(locator1 = "3000");
+
+		AssertClick(
+			locator1 = "Button#DONE",
+			value1 = "Done");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addBlankCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			singleSiteTypePermission = "${singleSiteTypePermission}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Blank",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
+
+	macro addCommunityCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Community",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
+
+	macro addCP {
+		LexiconEntry.gotoAdd();
+
+		if ("${singleSiteTypePermission}" != "true") {
+			if (contains("${siteTemplateName}", "{siteTemplateName}")) {
+				var siteTemplateName = "${siteType} Site";
+			}
+
+			MetalComponent.waitForCard(card = "${siteTemplateName}");
+
+			LexiconCard.clickCard(card = "${siteTemplateName}");
+
+			PortletEntry.inputName(name = "${siteName}");
+
+			Modal.save();
+		}
+
+		if (("${siteType}" == "Community") || ("${siteType}" == "Site Template")) {
+			if ("${uncheckPropagation}" == "true") {
+				Panel.expandPanel(panel = "Pages");
+
+				Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ENABLE_PROPAGATION");
+			}
+		}
+
+		if ("${membershipType}" == "Private") {
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_TYPE",
+				value1 = "Private");
+		}
+		else if ("${membershipType}" == "Restricted") {
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_TYPE",
+				value1 = "Restricted");
+		}
+		else {
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_TYPE",
+				value1 = "Open");
+		}
+
+		if (isSet(parentSiteName)) {
+			AssertClick(
+				locator1 = "Button#SELECT",
+				value1 = "Select");
+
+			var key_parentSiteName = "${parentSiteName}";
+
+			SelectFrame.selectFrameNoLoading(locator1 = "SitesSelectSite#SELECT_SITE_IFRAME");
+
+			Search.searchCP(searchTerm = "${parentSiteName}");
+
+			var key_site = "${parentSiteName}";
+
+			AssertTextEquals(
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK",
+				value1 = "${parentSiteName}");
+
+			Click(locator1 = "ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK");
+
+			var key_parentSiteName = "${parentSiteName}";
+
+			SelectFrameTop();
+		}
+
+		ScrollWebElementIntoView(locator1 = "Button#SAVE");
+
+		PortletEntry.save();
+
+		AssertTextEquals(
+			locator1 = "SitesEditSite#DETAILS_NAME",
+			value1 = "${siteName}");
+	}
+
+	macro addIntranetCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Intranet",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
+
+	macro addSiteTemplateCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Site Template",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
+
+	macro addVirtualHostsURLCP {
+		Panel.expandPanel(panel = "Site URL");
+
+		if (isSet(publicVirtualHosts)) {
+			AssertTextEquals(
+				locator1 = "SiteSettingsSiteURL#SITE_URL_VIRTUAL_HOSTS_PUBLIC_PAGES_LABEL",
+				value1 = "Public Pages");
+
+			Type(
+				locator1 = "TextInput#PUBLIC_VIRTUAL_HOST_URL",
+				value1 = "${publicPageVirtualHostURL}");
+		}
+
+		if (isSet(privateVirtualHosts)) {
+			AssertTextEquals(
+				locator1 = "SiteSettingsSiteURL#SITE_URL_VIRTUAL_HOSTS_PRIVATE_PAGES_LABEL",
+				value1 = "Private Pages");
+
+			Type(
+				locator1 = "TextInput#PRIVATE_VIRTUAL_HOST_URL",
+				value1 = "${privatePageVirtualHostURL}");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro approveJoinSiteRestrictedViaMySitesPG {
+		var key_userScreenName = "${userScreenName}";
+
+		Click(locator1 = "Icon#INFO");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteMemberships#MEMBERSHIP_TYPE",
+			value1 = "Membership Type: Restricted");
+
+		AssertElementPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
+
+		Click(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_COMMENTS",
+			value1 = "Please allow me to join the Restricted Site.");
+
+		LexiconTable.clickEllipsisItem(
+			item = "Reply",
+			tableEntry = "${userFirstName} ${userLastName}");
+
+		Select(
+			locator1 = "SiteMembershipsViewMembershipRequests#STATUS",
+			value1 = "Approve");
+
+		Type(
+			locator1 = "SiteMembershipsViewMembershipRequests#REPLY_COMMENTS_AREA",
+			value1 = "You may join the Restricted Site.");
+
+		Button.clickSave();
+
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
+
+		Navigator.gotoNavItem(navItem = "Approved");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#REPLIER_NAME",
+			value1 = "Test Test");
+	}
+
+	macro assertMemberListNotVisibleCP {
+		for (var userEmail : list "${usersEmailsList}") {
+			var userName = StringUtil.replace("${userEmail}", "@liferay.com", "");
+
+			Site.assertMemberNotVisibleCP(
+				userFirstName = "${userName}",
+				userLastName = "${userName}",
+				userScreenName = "${userName}");
+		}
+	}
+
+	macro assertMemberNotVisibleCP {
+		var key_userScreenName = "${userScreenName}";
+
+		AssertTextNotPresent(
+			locator1 = "SiteMemberships#USER_TABLE_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMemberships#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+	}
+
+	macro assignDefaultSiteTeam {
+		Click(locator1 = "SitesEditSite#MENU_ADVANCED_TAB");
+
+		AssertClick(
+			locator1 = "SiteSettingsDefaultUserAssociations#TEAMS_SELECT",
+			value1 = "Select");
+
+		SelectFrame(locator1 = "SiteSettingsDefaultUserAssociations#TEAMS_SELECT_IFRAME");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		var key_rowEntry = "${teamName}";
+
+		AssertClick(
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
+			value1 = "${teamName}");
+
+		SelectFrame(value1 = "relative=top");
+
+		PortletEntry.save();
+
+		Click(locator1 = "SitesEditSite#MENU_ADVANCED_TAB");
+
+		var key_teamName = "${teamName}";
+
+		AssertTextEquals(
+			locator1 = "SiteSettingsDefaultUserAssociations#TEAMS_SELECTED",
+			value1 = "${teamName}");
+	}
+
+	macro assignOrganizationAsMemberCP {
+		var key_card = "${orgName}";
+
+		Navigator.gotoNavItem(navItem = "Organizations");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		AssertTextEquals(
+			locator1 = "Card#CARD_TITLE",
+			value1 = "${orgName}");
+
+		LexiconCard.checkCardCheckbox(card = "${orgName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignSiteRoleCP {
+		LexiconCard.clickEllipsisItem(
+			card = "${resourceName}",
+			item = "Assign Roles");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconCard.checkCardCheckbox(card = "${roleTitle}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignSiteRoleToUserGroup {
+		var key_userGroupName = "${userGroupName}";
+
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "UserGroups#USER_GROUP_TABLE_NAME",
+			value1 = "${userGroupName}");
+
+		Click(locator1 = "SiteMembershipsUserGroups#USER_GROUP_TABLE_ACTIONS");
+
+		AssertClick(
+			key_menuItem = "Assign Roles",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Assign Roles");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		LexiconCard.checkCardCheckbox(card = "${roleName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignUserAsMemberCP {
+		var key_cardText = "${userScreenName}";
+
+		LexiconEntry.gotoAdd();
+
+		AssertVisible(locator1 = "Button#DONE");
+
+		if (isSet(depotName)) {
+			SelectFrame(locator1 = "IFrame#ADD_USERS_TO_ASSET_LIBRARY");
+		}
+
+		else {
+			SelectFrame(locator1 = "IFrame#ADD_USERS_TO_SITE");
+		}
+
+		Pause(locator1 = "3000");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		if (isSet(userMiddleName)) {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userMiddleName} ${userLastName}");
+		}
+		else {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userLastName}");
+		}
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignUserGroupAsMemberCP {
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		Pause(locator1 = "5000");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Pause(locator1 = "3000");
+
+		LexiconEntry.selectEntry(rowEntry = "${userGroupName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignUserSitesCP {
+		var key_userScreenName = "${userScreenName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		UserNavigator.gotoMemberships();
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_SELECT_LINK",
+			value1 = "Select");
+
+		SelectFrame(locator1 = "IFrame#SELECT_USER_SITES");
+
+		var key_siteName = "${siteName}";
+
+		Type(
+			locator1 = "TextInput#SITE_SEARCH_KEYWORDS",
+			value1 = "${siteName}");
+
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${siteName}");
+
+		Click(locator1 = "SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK");
+
+		SelectFrame(value1 = "relative=top");
+
+		PortletEntry.save();
+	}
+
+	macro changeSiteLogo {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.togglePrivacy(privacy = "${pageName}");
+
+		Click(
+			key_pageName = "${pageName}",
+			locator1 = "Icon#COG_PAGE");
+
+		Panel.expandPanel(panel = "Logo");
+
+		Page.uploadFileForLogo(logoFile = "${logoFile}");
+	}
+
+	macro configureCurrentLanguagesCP {
+		if (IsNotVisible(locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO")) {
+			if (isSet(localizedLanguageTab)) {
+				Navigator.gotoNavTab(navTab = "${localizedLanguageTab}");
+			}
+			else {
+				Navigator.gotoNavTab(navTab = "Languages");
+			}
+		}
+
+		Check(locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO");
+
+		if (isSet(currentSiteLanguages)) {
+			while (IsElementPresent(locator1 = "LanguageConfiguration#LANGUAGES_CURRENT_SELECT")) {
+				Click(locator1 = "LanguageConfiguration#LANGUAGES_CURRENT_SELECT");
+
+				Click(locator1 = "SiteSettingsDisplaySettings#MOVE_CURRENT_TO_AVAILABLE_BUTTON");
+			}
+
+			for (var currentSiteLanguage : list "${currentSiteLanguages}") {
+				var currentSiteLanguage = "${currentSiteLanguage}";
+
+				Select(
+					locator1 = "LanguageConfiguration#LANGUAGES_AVAILABLE",
+					value1 = "${currentSiteLanguage}");
+
+				Click(locator1 = "SiteSettingsDisplaySettings#MOVE_AVAILABLE_TO_CURRENT_BUTTON");
+
+				AssertTextEquals.assertPartialText(
+					locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
+					value1 = "${currentSiteLanguage}");
+			}
+		}
+
+		if (isSet(defaultSiteLanguage)) {
+			var defaultSiteLanguage = "${defaultSiteLanguage}";
+
+			Select(
+				locator1 = "Select#DEFAULT_LANGUAGE",
+				value1 = "${defaultSiteLanguage}");
+		}
+
+		if (isSet(localizedSaveButton)) {
+			var key_saveButton = "${localizedSaveButton}";
+
+			AssertClick(
+				locator1 = "Button#SAVE_LOCALIZED",
+				value1 = "${localizedSaveButton}");
+		}
+		else {
+			Click(locator1 = "Button#SAVE");
+		}
+
+		if (isSet(localizedSuccessMessage)) {
+			var localizedSuccessMessage = "${localizedSuccessMessage}";
+
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro deactivateCP {
+		var key_siteName = "${siteName}";
+
+		Search.searchCP(searchTerm = "${siteName}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Sites#SITE_TABLE_NAME",
+			value1 = "${siteName}");
+
+		LexiconTable.clickEllipsisItem(
+			item = "Deactivate",
+			tableEntry = "${siteName}");
+
+		AssertConfirm(value1 = "Are you sure you want to deactivate this?");
+
+		if ("${successMessage}" == "true") {
+			Alert.viewSuccessMessage();
+		}
+		else {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_2",
+				value1 = "The site cannot be deleted or deactivated because you are accessing the site.");
+		}
+	}
+
+	macro deleteAllCP {
+		PortletEntry.selectAll();
+
+		ClickNoError(locator1 = "Icon#DELETE");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro deleteCP {
+		var key_siteName = "${siteName}";
+
+		Search.searchCP(searchTerm = "Name");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Sites#SITE_TABLE_NAME",
+			value1 = "${siteName}");
+
+		LexiconTable.clickEllipsisItem(
+			item = "Delete",
+			tableEntry = "${siteName}");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No sites were found.");
+
+		AssertTextNotPresent(value1 = "${siteName}");
+	}
+
+	macro disableRecycleBinCP {
+		AssertClick(
+			locator1 = "SitesEditSite#MENU_ADVANCED_TAB",
+			value1 = "Advanced");
+
+		Panel.expandPanel(panel = "Recycle Bin");
+
+		Uncheck.uncheckToggleSwitchNoErrorNoAssert(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
+
+		AssertConfirm(value1 = "Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin.");
+
+		AssertNotChecked.assertNotCheckedNotVisible(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
+
+		PortletEntry.save();
+	}
+
+	macro editCP {
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "${siteName}");
+
+		PortletEntry.inputName(name = "${siteNameEdit}");
+
+		PortletEntry.save();
+
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "${siteNameEdit}");
+	}
+
+	macro editFriendlyURLCP {
+		Panel.expandPanel(panel = "Site URL");
+
+		AssertTextEquals(
+			locator1 = "SiteSettingsSiteURL#SITE_URL_FRIENDLY_URL_LABEL",
+			value1 = "Friendly URL");
+
+		Pause(locator1 = "5000");
+
+		Type(
+			locator1 = "TextInput#FRIENDLY_URL_SITE_SETTINGS",
+			value1 = "${siteFriendlyURLEdit}");
+
+		Button.clickSave();
+
+		if ("${friendlyURLInvalid}" == "true") {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "The friendly URL has too many slashes.");
+
+			AssertTextEquals(
+				locator1 = "TextInput#FRIENDLY_URL_SITE_SETTINGS",
+				value1 = "${siteFriendlyURLEdit}");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro editGoogleAnalyticsIDCP {
+		AssertClick(
+			locator1 = "SitesEditSite#MENU_ADVANCED_TAB",
+			value1 = "Advanced");
+
+		Panel.expandPanel(panel = "Analytics");
+
+		Type(
+			locator1 = "TextInput#GOOGLE_ANALYTICS_ID",
+			value1 = "${googleAnalyticsID}");
+
+		PortletEntry.save();
+	}
+
+	macro getSiteId {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Settings");
+
+		AssertElementPresent(locator1 = "SitesEditSite#SITE_ID");
+
+		var siteId = selenium.getElementValue("SitesEditSite#SITE_ID");
+
+		return "${siteId}";
+	}
+
+	macro gotoSiteViaMySitesPG {
+		LexiconList.clickListEntryTitle(listEntry = "${siteName}");
+	}
+
+	macro importSiteFromTempFolder {
+		AssertClick(
+			locator1 = "Button#SELECT_FILE",
+			value1 = "Select File");
+
+		SikuliClick(locator1 = "OS#FILE_DIALOG_BOX_TYPE_FILE_NAME_ICON_PNG");
+
+		var siteLARFileName = TestCase.getDownloadedTempFileName(fileNamePattern = "Public_Pages-*.lar");
+
+		UploadTempFile.uploadTempFileHiddenNoMouseOver(
+			locator1 = "TextInput#FILE",
+			value1 = "${siteLARFileName}");
+
+		Button.click(button = "Continue");
+
+		Button.click(button = "Import");
+
+		AssertTextEquals(
+			locator1 = "SitePagesImport#CURRENT_AND_PREVIOUS_STATUS_1",
+			value1 = "Successful");
+	}
+
+	macro inactivateCP {
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "${siteName}");
+
+		AssertTextEquals(
+			locator1 = "SitesEditSite#ACTIVE_LABEL",
+			value1 = "Active");
+
+		Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ACTIVE");
+
+		PortletEntry.save();
+	}
+
+	macro joinViaMySitesPG {
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No sites were found.");
+
+		Navigator.gotoNavItem(navItem = "Available Sites");
+
+		Pause(locator1 = "3000");
+
+		if ("${membershipType}" == "Private") {
+			LexiconList.viewListEntryNotPresent(listEntry = "${siteName}");
+		}
+		else if ("${membershipType}" == "Restricted") {
+			LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${siteName}",
+				listEntrySubtitle = "Members: 1");
+
+			LexiconList.clickEllipsisItem(
+				item = "Request Membership",
+				listEntry = "${siteName}",
+				userRole = "${userRole}");
+
+			Type(
+				locator1 = "TextArea#COMMENTS",
+				value1 = "Please allow me to join the Restricted Site.");
+
+			Button.clickSave();
+
+			Alert.viewSuccessMessageText(successMessage = "Your request was sent. You will receive a reply by email.");
+
+			MySites.viewMembershipRequested(
+				siteName = "${siteName}",
+				userRole = "${userRole}");
+		}
+		else {
+			LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${siteName}",
+				listEntrySubtitle = "Members: 1");
+
+			LexiconList.clickEllipsisItem(
+				item = "Join",
+				listEntry = "${siteName}",
+				userRole = "${userRole}");
+
+			Alert.viewSuccessMessage();
+
+			LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${siteName}",
+				listEntrySubtitle = "Members: 2");
+
+			LexiconList.clickEllipsis(
+				listEntry = "${siteName}",
+				userRole = "${userRole}");
+
+			AssertVisible(
+				key_menuItem = "Leave",
+				locator1 = "MenuItem#ANY_MENU_ITEM",
+				value1 = "Leave");
+		}
+	}
+
+	macro leaveViaMySitesPG {
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: 2");
+
+		Navigator.gotoNavItem(navItem = "Available Sites");
+
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: 2");
+
+		LexiconList.clickEllipsisItem(
+			item = "Leave",
+			listEntry = "${siteName}",
+			userRole = "${userRole}");
+
+		Alert.viewSuccessMessage();
+
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: 1");
+
+		LexiconList.clickEllipsis(
+			listEntry = "${siteName}",
+			userRole = "${userRole}");
+
+		AssertVisible(
+			key_menuItem = "Join",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Join");
+	}
+
+	macro limitMembership {
+		if ("${siteLimitMembership}" == "Yes") {
+			Check.checkToggleSwitch(locator1 = "SitesEditSite#PARENT_SITE_LIMIT_MEMBERSHIP_CHECKBOX");
+		}
+		else if ("${siteLimitMembership}" == "No") {
+			Uncheck.uncheckToggleSwitch(locator1 = "SitesEditSite#PARENT_SITE_LIMIT_MEMBERSHIP_CHECKBOX");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro manageMembershipOptions {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Settings");
+
+		Pause(locator1 = "5000");
+
+		if ("${selectMembershipType}" == "true") {
+			AssertTextEquals(
+				locator1 = "SitesEditSite#MEMBERSHIP_OPTIONS_MEMBERSHIP_TYPE_LABEL",
+				value1 = "Membership Type");
+
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_OPTIONS_MEMBERSHIP_TYPE",
+				value1 = "${membershipType}");
+		}
+
+		if ("${allowManualMembershipManagement}" == "true") {
+			Check.checkToggleSwitch(locator1 = "Checkbox#ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT");
+		}
+		else if ("${allowManualMembershipManagement}" == "false") {
+			Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro openSiteMembershipsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/site_memberships");
+	}
+
+	macro openSitesAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage/-/sites");
+	}
+
+	macro openSiteSettingsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/site/settings");
+	}
+
+	macro openSiteTeamsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/site_teams");
+	}
+
+	macro removeMemberCP {
+		var key_cardText = "${userScreenName}";
+
+		Search.searchCP(searchTerm = "${userScreenName}");
+
+		if (isSet(userMiddleName)) {
+			LexiconCard.viewCardTitle(card = "${userFirstName} ${userMiddleName} ${userLastName}");
+		}
+		else {
+			LexiconCard.viewCardTitle(card = "${userFirstName} ${userLastName}");
+		}
+
+		LexiconCard.viewCardSubtitle(
+			card = "${userFirstName} ${userLastName}",
+			cardSubtitle = "${userScreenName}");
+
+		LexiconCard.clickEllipsisItem(
+			card = "${userScreenName}",
+			item = "Remove Membership");
+
+		Confirm();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro removeOrganizationCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		if (isSet(bulkEditing)) {
+			for (var orgName : list "${orgNameList}") {
+				Check(
+					key_tableEntry = "${userGroupName}",
+					locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+			}
+
+			ClickNoError(locator1 = "Icon#DELETE");
+		}
+		else {
+			Search.searchCP(searchTerm = "${orgName}");
+
+			LexiconTable.clickEllipsisItem(
+				item = "Remove Membership",
+				tableEntry = "${orgName}");
+		}
+
+		Confirm();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro removeUserGroupCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		if (isSet(bulkEditing)) {
+			for (var userGroupName : list "${userGroupNameList}") {
+				Check(
+					key_tableEntry = "${userGroupName}",
+					locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+			}
+
+			ClickNoError(locator1 = "Icon#DELETE");
+		}
+		else {
+			Search.searchCP(searchTerm = "${userGroupName}");
+
+			Click.waitForMenuToggleJSClick(
+				key_rowEntry = "${userGroupName}",
+				locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
+
+			MenuItem.clickNoError(menuItem = "Remove Membership");
+		}
+
+		Confirm();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro searchCP {
+		Search.searchCP(searchTerm = "Site Name");
+
+		Site.viewSearchResultsCP(siteName = "Site Name");
+	}
+
+	macro searchMemberCP {
+		var searchTerm = "${userEmailAddressSearchValue}";
+
+		if (isSet(userScreenNameSearchValue)) {
+			var searchTerm = "${userScreenNameSearchValue}";
+		}
+		else if (isSet(userFirstNameSearchValue)) {
+			var searchTerm = "${userFirstNameSearchValue}";
+		}
+		else if (isSet(userLastNameSearchValue)) {
+			var searchTerm = "${userLastNameSearchValue}";
+		}
+
+		Search.searchCP(searchTerm = "${searchTerm}");
+
+		Site.viewMemberCP(
+			userFirstName = "${userFirstName}",
+			userLastName = "${userLastName}",
+			userScreenName = "${userScreenName}");
+	}
+
+	macro searchMembershipCP {
+		Search.searchCP(searchTerm = "${searchValue}");
+
+		if ("${emptyResults}" == "true") {
+			AssertElementPresent(locator1 = "Message#EMPTY_INFO");
+		}
+		else {
+			LexiconTable.viewTableEntryTitle(tableEntry = StringUtil.unquote("${searchValue}"));
+		}
+	}
+
+	macro selectPageType {
+		Panel.expandPanel(panel = "Pages");
+
+		if ("${selectPublicPages}" == "true") {
+			Select(
+				locator1 = "SitesEditSite#PAGES_PUBLIC_PAGES_SITE_TEMPLATE_SELECT",
+				value1 = "${siteTemplate}");
+		}
+		else if ("${selectPrivatePages}" == "true") {
+			Select(
+				locator1 = "SitesEditSite#PAGES_PRIVATE_PAGES_SITE_TEMPLATE_SELECT",
+				value1 = "${siteTemplate}");
+
+			if ("${checkPropagation}" == "true") {
+				Panel.expandPanel(panel = "Pages");
+
+				Check.checkToggleSwitch(locator1 = "Checkbox#PRIVATE_PAGES_ENABLE_PROPAGATION");
+			}
+		}
+
+		PortletEntry.save();
+	}
+
+	macro selectParentSite {
+		AssertClick(
+			locator1 = "SitesEditSite#PARENT_SITE_SELECT",
+			value1 = "Select");
+
+		var key_parentSiteName = "${parentSiteName}";
+
+		SelectFrame(locator1 = "SitesSelectSite#SELECT_SITE_IFRAME");
+
+		Search.searchCP(searchTerm = "${parentSiteName}");
+
+		if ("${chooseButtonAvailable}" == "false") {
+			AssertElementNotPresent(
+				key_parentSiteName = "${parentSiteName}",
+				locator1 = "SitesSelectSite#SITES_TABLE_NAME");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No sites were found.");
+		}
+
+		Close(locator1 = "null");
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro tearDownCP {
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Search.searchCP(searchTerm = "Name");
+
+		AssertVisible(locator1 = "Link#CLEAR");
+
+		if (IsElementNotPresent(locator1 = "Message#EMPTY_INFO")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(
+				locator1 = "Icon#DELETE",
+				value1 = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro unassignSiteRoleToUserGroup {
+		var key_userGroupName = "${userGroupName}";
+
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		Search.searchCP(searchTerm = "${userGroupName}");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "UserGroups#USER_GROUP_TABLE_NAME",
+			value1 = "${userGroupName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${userGroupName}");
+
+		MenuItem.click(menuItem = "Unassign Roles");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		LexiconCard.checkCardCheckbox(card = "${roleName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro viewCannotAdd {
+		LexiconEntry.gotoAdd();
+
+		MetalComponent.waitForCard(card = "Blank Site");
+
+		LexiconEntry.gotoEntry(rowEntry = "Blank Site");
+
+		PortletEntry.inputName(name = "${siteName}");
+
+		Button.clickSave();
+
+		if ("${siteNameInvalid}" == "Duplicate") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_MODAL_CONTENT",
+				value1 = "Please enter a unique name.");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_MODAL_CONTENT",
+				value1 = "The Site Name cannot be blank, numeric or a reserved word such as null. The Site Name cannot contain the following invalid characters: *.");
+		}
+	}
+
+	macro viewChildCP {
+		Site.viewCP(siteName = "${siteName}");
+
+		LexiconTable.clickEllipsisItem(
+			item = "View Child Sites",
+			tableEntry = "${siteName}");
+
+		Breadcrumb.viewActiveEntry(breadcrumbName = "${siteName}");
+
+		Site.viewCP(siteName = "${childSiteName}");
+	}
+
+	macro viewCP {
+		var key_siteName = "${siteName}";
+
+		AssertElementPresent(locator1 = "Sites#SITE_TABLE_CHECKBOX");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Sites#SITE_TABLE_NAME",
+			value1 = "${siteName}");
+
+		AssertTextEquals(
+			locator1 = "Sites#SITE_TABLE_TYPE",
+			value1 = "${siteType}");
+
+		if ("${siteMember}" == "User") {
+			AssertTextEquals(
+				locator1 = "Sites#SITE_TABLE_MEMBERS_USERS",
+				value1 = "1 ${siteMember}");
+		}
+
+		AssertTextEquals(
+			key_tableEntry = "${siteName}",
+			key_tableEntryText = "Yes",
+			locator1 = "LexiconTable#TABLE_ENTRY_TEXT",
+			value1 = "Yes");
+
+		AssertVisible(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+	}
+
+	macro viewCurrentLanguagesCP {
+		var key_displaySettings = "${displaySettings}";
+
+		if (IsNotVisible(locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO")) {
+			Navigator.gotoNavTab(navTab = "Languages");
+		}
+
+		Check(
+			locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO",
+			value1 = "Display Settings");
+
+		for (var currentSiteLanguage : list "${currentSiteLanguages}") {
+			var currentSiteLanguage = "${currentSiteLanguage}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
+				value1 = "${currentSiteLanguage}");
+		}
+
+		for (var availableSiteLanguage : list "${availableSiteLanguages}") {
+			var availableSiteLanguage = "${availableSiteLanguage}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "LanguageConfiguration#LANGUAGES_AVAILABLE",
+				value1 = "${availableSiteLanguage}");
+		}
+
+		if (isSet(defaultSiteLanguage)) {
+			var defaultSiteLanguage = "${defaultSiteLanguage}";
+
+			Select(
+				locator1 = "Select#DEFAULT_LANGUAGE",
+				value1 = "${defaultSiteLanguage}");
+		}
+	}
+
+	macro viewCustomSiteLogoInDifferentViews {
+		ProductMenuHelper.openProductMenu();
+
+		ProductMenuHelper.openWorkspace();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Pause(locator1 = "3000");
+
+		Navigator.gotoNavItem(navItem = "My Sites");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "Cards");
+
+		SiteSelector._searchSite(site = "${site}");
+
+		AssertElementPresent(
+			key_card = "${site}",
+			locator1 = "Card#CARD_CUSTOM_LOGO");
+
+		SiteSelector._searchSite(site = "${site}");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "List");
+
+		AssertElementPresent(
+			key_listEntry = "${site}",
+			locator1 = "LexiconList#LIST_CUSTOM_LOGO");
+	}
+
+	macro viewGlobalLandingDefault {
+		var key_portletName = "${portletName}";
+		var key_siteName = "${siteName}";
+
+		AssertElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME");
+
+		AssertTextNotPresent(value1 = "You do not have the roles required to access this portlet");
+
+		AssertTextEquals(
+			locator1 = "ProductMenu#PRODUCT_MENU_PANEL_MENU_ITEM",
+			value1 = "${portletName}");
+	}
+
+	macro viewLimitMembershipParentSiteCP {
+		var key_userScreenName = "${userScreenName}";
+
+		Navigator.gotoNavItem(navItem = "Users");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMembershipsAddMembers#USER_TABLE_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMembershipsAddMembers#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+	}
+
+	macro viewMemberCP {
+		LexiconCard.viewCardPresent(card = "${userFirstName} ${userLastName}");
+
+		LexiconCard.viewCardTitle(card = "${userFirstName} ${userLastName}");
+
+		LexiconCard.viewCardSubtitle(
+			card = "${userFirstName} ${userLastName}",
+			cardSubtitle = "${userScreenName}");
+
+		AssertVisible(
+			key_card = "${userFirstName} ${userLastName}",
+			locator1 = "Card#CARD_ELLIPSIS");
+	}
+
+	macro viewMemberListCP {
+		for (var userEmail : list "${usersEmailsList}") {
+			var userName = StringUtil.replace("${userEmail}", "@liferay.com", "");
+
+			Site.viewMemberCP(
+				userFirstName = "${userName}",
+				userLastName = "${userName}",
+				userScreenName = "${userName}");
+		}
+	}
+
+	macro viewMemberOrganizationCP {
+		var key_tableEntry = "${orgName}";
+
+		Navigator.gotoNavItem(navItem = "Organizations");
+
+		AssertTextEquals(
+			locator1 = "LexiconTable#TABLE_ENTRY_TITLE",
+			value1 = "${orgName}");
+
+		if ("${toolTip}" == "true") {
+			MouseOver(locator1 = "Icon#TOOLTIP");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#TOOLTIP",
+				value1 = "Users are not allowed to request membership. Only site administrators can add new members.");
+		}
+	}
+
+	macro viewMemberUserGroupCP {
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		AssertTextEquals(
+			key_userGroupName = "${userGroupName}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_NAME",
+			value1 = "${userGroupName}");
+	}
+
+	macro viewMySitesViaMySitesPG {
+		AssertTextEquals(
+			key_navItem = "My Sites",
+			locator1 = "NavBar#NAV_ITEM_LINK",
+			value1 = "My Sites");
+
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: ${memberCount}");
+	}
+
+	macro viewNoMySitesViaMySitesPG {
+		LexiconList.viewListEntryNotPresent(listEntry = "${siteName}");
+	}
+
+	macro viewNoSiteMembershipsRequest {
+		Click(locator1 = "Icon#INFO");
+
+		AssertElementNotPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteMemberships#MEMBERSHIP_TYPE",
+			value1 = "Membership Type: Restricted");
+
+		AssertElementNotPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "View Membership Requests");
+
+		AssertElementNotPresent(locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_COMMENTS",
+			value1 = "Please allow me to join the Restricted Site.");
+	}
+
+	macro viewPrivateVirtualHostUrlUserLoginRedirect {
+		AssertTextEquals(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		AssertElementPresent(locator1 = "TextInput#PASSWORD");
+	}
+
+	macro viewSearchResultsCP {
+		var key_siteName = "${siteName}";
+
+		AssertElementPresent(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+
+		LexiconTable.viewTableEntryTitle(tableEntry = "${siteName}");
+
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${siteName}",
+			tableEntryText = "${siteType}");
+
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${siteName}",
+			tableEntryText = "Yes");
+
+		AssertVisible(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+	}
+
+	macro viewSelectSiteViaPersonalMenuMySites {
+		AssertElementPresent(locator1 = "Sites#SELECT_SITE_MODAL");
+
+		AssertTextEquals(
+			locator1 = "Sites#SELECT_SITE_MODAL_HEADER",
+			value1 = "Select Site");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertElementPresent(
+			key_siteName = "${siteName}",
+			locator1 = "Sites#SELECT_SITE_MODAL_CARD_BODY_SITE_NAME");
+	}
+
+	macro viewSiteAdminPermissionsCP {
+		var key_siteName = "${siteName}";
+
+		Search.searchCP(searchTerm = "${siteName}");
+
+		Click(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+		AssertTextEquals(
+			key_menuItem = "Add Child Site",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Add Child Site");
+
+		AssertTextEquals(
+			key_menuItem = "Leave",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Leave");
+
+		AssertTextEquals(
+			key_menuItem = "Deactivate",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Deactivate");
+
+		AssertTextEquals(
+			key_menuItem = "Delete",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Delete");
+	}
+
+	macro viewSiteClonedFromSiteTemplateCP {
+		Navigator.gotoNavTab(navTab = "General");
+
+		Panel.expandPanel(panel = "Site Template");
+
+		if ("${clonedFromTemplate}" == "true") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "SiteSettingsSiteTemplate#SITE_CLONED_FROM_TEMPLATE_MESSAGE",
+				value1 = "These pages are linked to site template ${siteTemplateName} without propagation of changes.");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "SiteSettingsSiteTemplate#SITE_NOT_CLONED_FROM_TEMPLATE_MESSAGE",
+				value1 = "This site is not related to a site template.");
+		}
+	}
+
+	macro viewSiteFriendlyURLPG {
+		AssertTextEquals(
+			locator1 = "Home#SITE_NAME",
+			value1 = "${siteName}");
+
+		AssertLocation(value1 = "${sitePageURL}");
+	}
+
+	macro viewSiteMembershipsRequest {
+		Click(locator1 = "Icon#INFO");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteMemberships#MEMBERSHIP_TYPE",
+			value1 = "Membership Type: Restricted");
+
+		AssertElementPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		Click(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_COMMENTS",
+			value1 = "Please allow me to join the Restricted Site.");
+	}
+
+	macro viewSiteRoleViaSiteMembershipsCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		LexiconList.viewListEntryTitle(listEntry = "${resourceName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${resourceName}",
+			listEntrySubtitle = "${roleTitle}");
+	}
+
+	macro viewUserGroupSiteRoleViaSiteMembershipsCP {
+		AssertTextEquals(
+			key_userGroupName = "${resourceName}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_NAME",
+			value1 = "${resourceName}");
+
+		AssertTextEquals(
+			key_siteRoleName = "${roleTitle}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_SITE_ROLES",
+			value1 = "${roleTitle}");
+	}
+
+	macro viewVirtualHostsURLPG {
+		var key_pageName = "${pageName}";
+
+		AssertTextEquals(
+			locator1 = "Home#SITE_NAME",
+			value1 = "${siteName}");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE",
+			value1 = "${pageName}");
+
+		AssertLocation(value1 = "${sitePageURL}");
+	}
+
+}

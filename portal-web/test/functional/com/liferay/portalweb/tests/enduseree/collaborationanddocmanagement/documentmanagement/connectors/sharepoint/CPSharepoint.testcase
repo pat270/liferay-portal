@@ -1,13 +1,14 @@
 @component-name = "portal-document-management-ee"
 definition {
+
 	property cmis.repository.type = "sharepoint2010";
 	property custom.properties = "session.store.password=true${line.separator}company.security.auth.type=screenName";
 	property dummy.socket.proxy.disabled = "true";
-	property osgi.app.includes = "sharepoint";
-	property portal.release = "true";
+	property osgi.app.includes = "sharepoint-soap";
+	property portal.release = "false";
 	property portal.upstream = "true";
 	property test.run.environment = "EE";
-	property testray.main.component.name = "Documents Management";
+	property testray.main.component.name = "Sharepoint";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -47,7 +48,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMNavigator.gotoAddRepositoryCP();
@@ -116,7 +116,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -135,10 +134,11 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
+
+		Pause(locator1 = "5000");
 
 		var key_dmDocumentTitle = "Document_3.txt";
 
@@ -167,7 +167,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -182,7 +181,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -197,7 +195,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -225,7 +222,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -255,7 +251,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -268,7 +263,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -289,6 +283,65 @@ definition {
 	}
 
 	@priority = "4"
+	test EditRepository {
+		property test.name.skip.portal.instance = "CPSharepoint#EditRepository";
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Documents and Media");
+
+		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
+
+		DMRepository.viewBreadcrumb(dmRepositoryName = "Sharepoint Repository Name");
+
+		DMDocument.expandInfo();
+
+		Click(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+
+		AssertElementNotPresent(
+			key_menuItem = "Download",
+			locator1 = "DocumentsAndMedia#SIDEBAR_MENU_ITEM");
+		AssertElementNotPresent(
+			key_menuItem = "Move",
+			locator1 = "DocumentsAndMedia#SIDEBAR_MENU_ITEM");
+		AssertElementPresent(
+			key_menuItem = "Add Folder",
+			locator1 = "DocumentsAndMedia#SIDEBAR_MENU_ITEM");
+		AssertElementPresent(
+			key_menuItem = "Delete",
+			locator1 = "DocumentsAndMedia#SIDEBAR_MENU_ITEM");
+		AssertElementPresent(
+			key_menuItem = "Edit",
+			locator1 = "DocumentsAndMedia#SIDEBAR_MENU_ITEM");
+
+		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
+
+		Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
+
+		MenuItem.viewNotPresent(menuItem = "Download");
+		MenuItem.viewNotPresent(menuItem = "Move");
+		MenuItem.viewPresent(menuItem = "Delete");
+		MenuItem.viewPresent(menuItem = "Edit");
+
+		MenuItem.click(menuItem = "Edit");
+
+		DMRepository.edit(dmRepositoryName = "Sharepoint Repository Name Edit");
+
+		PortletEntry.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Documents and Media");
+
+		AssertTextEquals(
+			key_dmRepositoryName = "Sharepoint Repository Name Edit",
+			locator1 = "DocumentsAndMedia#REPOSITORY_FOLDER_NAME_DESCRIPTIVE_VIEW",
+			value1 = "Sharepoint Repository Name Edit");
+	}
+
+	@priority = "4"
 	test MoveCheckedoutDocumentToFolder {
 		property test.name.skip.portal.instance = "CPSharepoint#MoveCheckedoutDocumentToFolder";
 
@@ -296,7 +349,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -309,7 +361,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -326,7 +377,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -341,7 +391,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -364,7 +413,6 @@ definition {
 
 	@priority = "4"
 	test MoveDocumentToHome {
-		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "CPSharepoint#MoveDocumentToHome";
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -381,7 +429,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_1.odt");
@@ -392,7 +439,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -414,7 +460,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		Search.searchCP(searchTerm = "Document_3.odt");
@@ -442,7 +487,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -463,7 +507,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -477,7 +520,6 @@ definition {
 
 	@priority = "4"
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange {
-		property portal.release = "false";
 		property test.name.skip.portal.instance = "CPSharepoint#ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange";
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -504,7 +546,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -516,7 +557,6 @@ definition {
 
 	@priority = "4"
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval {
-		property portal.release = "false";
 		property test.name.skip.portal.instance = "CPSharepoint#ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval";
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -543,7 +583,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
@@ -553,19 +592,4 @@ definition {
 		DMDocument.viewCP(dmDocumentTitle = "Document_3.docx");
 	}
 
-	@priority = "4"
-	test ViewRepository {
-		property test.name.skip.portal.instance = "CPSharepoint#ViewRepository";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
-
-		DMRepository.viewBreadcrumb(dmRepositoryName = "Sharepoint Repository Name");
-	}
 }

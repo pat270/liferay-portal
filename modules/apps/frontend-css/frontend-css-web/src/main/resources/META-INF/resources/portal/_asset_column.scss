@@ -1,5 +1,3 @@
-@import "bourbon";
-
 .lfr-asset-column-content {
 	margin-right: 1em;
 	padding: 0;
@@ -14,7 +12,7 @@
 		margin-bottom: 2em;
 		text-align: center;
 
-		@include word-wrap(break-all);
+		@include overflow-wrap(break-all);
 	}
 
 	.lfr-asset-avatar img {
@@ -65,7 +63,8 @@
 		margin: 2em 0;
 	}
 
-	.taglib-custom-attributes-list label, .lfr-asset-field label {
+	.taglib-custom-attributes-list label,
+	.lfr-asset-field label {
 		display: block;
 	}
 
@@ -74,7 +73,8 @@
 	}
 }
 
-.lfr-asset-column-details, .lfr-asset-column-actions {
+.lfr-asset-column-details,
+.lfr-asset-column-actions {
 	.lfr-asset-field {
 		clear: left;
 		margin: 1em auto;
@@ -86,21 +86,24 @@
 	padding-top: 1em;
 }
 
-.lfr-asset-panels, .lfr-asset-column-details {
+.lfr-asset-panels,
+.lfr-asset-column-details {
 	.lfr-panel {
 		clear: both;
 		margin-bottom: 0.2em;
 	}
 }
 
-.lfr-asset-panels, .lfr-asset-column-details {
+.lfr-asset-panels,
+.lfr-asset-column-details {
 	.lfr-panel.lfr-extended {
 		border: 1px solid transparent;
 		margin-bottom: 0;
 	}
 }
 
-.lfr-asset-column-details, .lfr-asset-panels {
+.lfr-asset-column-details,
+.lfr-asset-panels {
 	.lfr-panel-container {
 		border-width: 0;
 	}

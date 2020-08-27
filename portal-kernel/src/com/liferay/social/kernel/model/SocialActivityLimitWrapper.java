@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivityLimit
  * @generated
  */
-@ProviderType
 public class SocialActivityLimitWrapper
 	extends BaseModelWrapper<SocialActivityLimit>
-	implements SocialActivityLimit, ModelWrapper<SocialActivityLimit> {
+	implements ModelWrapper<SocialActivityLimit>, SocialActivityLimit {
 
 	public SocialActivityLimitWrapper(SocialActivityLimit socialActivityLimit) {
 		super(socialActivityLimit);
@@ -44,6 +43,8 @@ public class SocialActivityLimitWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("activityLimitId", getActivityLimitId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -59,6 +60,18 @@ public class SocialActivityLimitWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long activityLimitId = (Long)attributes.get("activityLimitId");
 
 		if (activityLimitId != null) {
@@ -196,6 +209,16 @@ public class SocialActivityLimitWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this social activity limit.
+	 *
+	 * @return the ct collection ID of this social activity limit
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this social activity limit.
 	 *
 	 * @return the group ID of this social activity limit
@@ -203,6 +226,16 @@ public class SocialActivityLimitWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this social activity limit.
+	 *
+	 * @return the mvcc version of this social activity limit
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -321,6 +354,16 @@ public class SocialActivityLimitWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this social activity limit.
+	 *
+	 * @param ctCollectionId the ct collection ID of this social activity limit
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this social activity limit.
 	 *
 	 * @param groupId the group ID of this social activity limit
@@ -328,6 +371,16 @@ public class SocialActivityLimitWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this social activity limit.
+	 *
+	 * @param mvccVersion the mvcc version of this social activity limit
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -368,6 +421,20 @@ public class SocialActivityLimitWrapper
 	@Override
 	public void setValue(String value) {
 		model.setValue(value);
+	}
+
+	@Override
+	public Map<String, Function<SocialActivityLimit, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<SocialActivityLimit, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

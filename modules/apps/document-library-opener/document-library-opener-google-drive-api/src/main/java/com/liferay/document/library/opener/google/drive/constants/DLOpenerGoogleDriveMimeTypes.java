@@ -14,6 +14,7 @@
 
 package com.liferay.document.library.opener.google.drive.constants;
 
+import com.liferay.document.library.opener.constants.DLOpenerMimeTypes;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -35,16 +36,24 @@ public class DLOpenerGoogleDriveMimeTypes {
 	/**
 	 * The MIME type for Rich Text files.
 	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_RTF}
 	 * @review
 	 */
-	public static final String APPLICATION_RTF = "application/rtf";
+	@Deprecated
+	public static final String APPLICATION_RTF =
+		DLOpenerMimeTypes.APPLICATION_RTF;
 
 	/**
 	 * The MIME type for Microsoft Word (docx) documents.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_VND_DOCX}
+	 * @review
 	 */
+	@Deprecated
 	public static final String APPLICATION_VND_DOCX =
-		"application/vnd.openxmlformats-officedocument.wordprocessingml." +
-			"document";
+		DLOpenerMimeTypes.APPLICATION_VND_DOCX;
 
 	/**
 	 * The MIME type for Google Docs.
@@ -66,40 +75,68 @@ public class DLOpenerGoogleDriveMimeTypes {
 
 	/**
 	 * The MIME type for Open Document (odp) presentations.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_VND_ODP}
+	 * @review
 	 */
+	@Deprecated
 	public static final String APPLICATION_VND_ODP =
-		"application/vnd.oasis.opendocument.presentation";
+		DLOpenerMimeTypes.APPLICATION_VND_ODP;
 
 	/**
 	 * The MIME type for Open Document (ods) spreadsheets.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_VND_ODS}
+	 * @review
 	 */
+	@Deprecated
 	public static final String APPLICATION_VND_ODS =
-		"application/vnd.oasis.opendocument.spreadsheet";
+		DLOpenerMimeTypes.APPLICATION_VND_ODS;
 
 	/**
 	 * The MIME type for Open Document (odt) documents.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_VND_ODT}
+	 * @review
 	 */
+	@Deprecated
 	public static final String APPLICATION_VND_ODT =
-		"application/vnd.oasis.opendocument.text";
+		DLOpenerMimeTypes.APPLICATION_VND_ODT;
 
 	/**
 	 * The MIME type for Microsoft PowerPoint (pptx) presentations.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_VND_PPTX}
+	 * @review
 	 */
+	@Deprecated
 	public static final String APPLICATION_VND_PPTX =
-		"application/vnd.openxmlformats-officedocument.presentationml." +
-			"presentation";
+		DLOpenerMimeTypes.APPLICATION_VND_PPTX;
 
 	/**
 	 * The MIME type for Microsoft Excel (xslx) spreadsheets.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.APPLICATION_VND_XSLX}
+	 * @review
 	 */
+	@Deprecated
 	public static final String APPLICATION_VND_XSLX =
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+		DLOpenerMimeTypes.APPLICATION_VND_XSLX;
 
 	/**
 	 * The MIME type for Tab Separated Values files.
+	 *
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             DLOpenerMimeTypes.TEXT_TAB_SEPARATED_VALUES}
 	 */
+	@Deprecated
 	public static final String TEXT_TAB_SEPARATED_VALUES =
-		"text/tab-separated-values";
+		DLOpenerMimeTypes.TEXT_TAB_SEPARATED_VALUES;
 
 	/**
 	 * Returns the Google Drive MIME type equivalent to the one received. For
@@ -109,15 +146,16 @@ public class DLOpenerGoogleDriveMimeTypes {
 	 *
 	 * <p>
 	 * This method returns a valid Google document type only for MIME types for
-	 * which {@link #isMimeTypeSupported(String)} returns {@code true}. An
+	 * which {@link #isGoogleMimeTypeSupported(String)} returns {@code true}. An
 	 * exception is thrown for any others.
 	 * </p>
 	 *
 	 * @param  mimeType the MIME type to map to Google Drive
 	 * @return the equivalent Google Drive MIME type
+	 * @review
 	 */
 	public static String getGoogleDocsMimeType(String mimeType) {
-		if (!isMimeTypeSupported(mimeType)) {
+		if (!isGoogleMimeTypeSupported(mimeType)) {
 			throw new UnsupportedOperationException(
 				StringBundler.concat(
 					"Google Docs does not support edition of documents of ",
@@ -139,17 +177,19 @@ public class DLOpenerGoogleDriveMimeTypes {
 	 * </p>
 	 *
 	 * <p>
-	 * Only MIME types for which the {@link #isMimeTypeSupported(String)} method
-	 * returns {@code true} return an extension. Any empty string is returned
-	 * for any others.
+	 * Only MIME types for which the {@link #isGoogleMimeTypeSupported(String)}
+	 * method returns {@code true} return an extension. Any empty string is
+	 * returned for any others.
 	 * </p>
 	 *
 	 * @param  mimeType the MIME type
 	 * @return the canonical extension, or an empty string if none could be
 	 *         determined
+	 * @review
 	 */
 	public static String getMimeTypeExtension(String mimeType) {
-		return _extensions.getOrDefault(mimeType, StringPool.BLANK);
+		return DLOpenerMimeTypes.extensions.getOrDefault(
+			mimeType, StringPool.BLANK);
 	}
 
 	/**
@@ -158,35 +198,50 @@ public class DLOpenerGoogleDriveMimeTypes {
 	 * @param  mimeType the MIME type
 	 * @return {@code true} if the MIME type is supported; {@code false}
 	 *         otherwise
+	 * @review
 	 */
-	public static boolean isMimeTypeSupported(String mimeType) {
+	public static boolean isGoogleMimeTypeSupported(String mimeType) {
 		return _googleDocsMimeTypes.containsKey(mimeType);
 	}
 
-	private static final Map<String, String> _extensions = MapUtil.fromArray(
-		ContentTypes.APPLICATION_PDF, ".pdf", APPLICATION_RTF, ".rtf",
-		ContentTypes.APPLICATION_TEXT, ".txt", APPLICATION_VND_DOCX, ".docx",
-		APPLICATION_VND_ODP, ".odp", APPLICATION_VND_ODS, ".ods",
-		APPLICATION_VND_ODT, ".odt", APPLICATION_VND_PPTX, ".pptx",
-		APPLICATION_VND_XSLX, ".xslx", ContentTypes.IMAGE_PNG, ".png",
-		ContentTypes.TEXT, ".txt", ContentTypes.TEXT_CSV, ".csv",
-		ContentTypes.TEXT_PLAIN, ".txt", ContentTypes.TEXT_HTML, ".html",
-		TEXT_TAB_SEPARATED_VALUES, ".tsv");
+	/**
+	 * Returns {@code true} if a MIME type is supported.
+	 *
+	 * @param      mimeType the MIME type
+	 * @return     {@code true} if the MIME type is supported; {@code false}
+	 *             otherwise
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #isGoogleMimeTypeSupported(String mimeType)}
+	 * @review
+	 */
+	@Deprecated
+	public static boolean isMimeTypeSupported(String mimeType) {
+		return isGoogleMimeTypeSupported(mimeType);
+	}
+
 	private static final Map<String, String> _googleDocsMimeTypes =
 		MapUtil.fromArray(
 			ContentTypes.APPLICATION_PDF, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			APPLICATION_RTF, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			ContentTypes.APPLICATION_TEXT, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			APPLICATION_VND_DOCX, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			APPLICATION_VND_ODP, APPLICATION_VND_GOOGLE_APPS_PRESENTATION,
-			APPLICATION_VND_ODS, APPLICATION_VND_GOOGLE_APPS_SPREADSHEET,
-			APPLICATION_VND_ODT, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			APPLICATION_VND_PPTX, APPLICATION_VND_GOOGLE_APPS_PRESENTATION,
-			APPLICATION_VND_XSLX, APPLICATION_VND_GOOGLE_APPS_SPREADSHEET,
-			ContentTypes.TEXT, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			ContentTypes.TEXT_CSV, APPLICATION_VND_GOOGLE_APPS_SPREADSHEET,
-			ContentTypes.TEXT_HTML, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			ContentTypes.TEXT_PLAIN, APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
-			TEXT_TAB_SEPARATED_VALUES, APPLICATION_VND_GOOGLE_APPS_SPREADSHEET);
+			DLOpenerMimeTypes.APPLICATION_RTF,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT, ContentTypes.APPLICATION_TEXT,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
+			DLOpenerMimeTypes.APPLICATION_VND_DOCX,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
+			DLOpenerMimeTypes.APPLICATION_VND_ODP,
+			APPLICATION_VND_GOOGLE_APPS_PRESENTATION,
+			DLOpenerMimeTypes.APPLICATION_VND_ODS,
+			APPLICATION_VND_GOOGLE_APPS_SPREADSHEET,
+			DLOpenerMimeTypes.APPLICATION_VND_ODT,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
+			DLOpenerMimeTypes.APPLICATION_VND_PPTX,
+			APPLICATION_VND_GOOGLE_APPS_PRESENTATION,
+			DLOpenerMimeTypes.APPLICATION_VND_XLSX,
+			APPLICATION_VND_GOOGLE_APPS_SPREADSHEET, ContentTypes.TEXT,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT, ContentTypes.TEXT_CSV,
+			APPLICATION_VND_GOOGLE_APPS_SPREADSHEET, ContentTypes.TEXT_HTML,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT, ContentTypes.TEXT_PLAIN,
+			APPLICATION_VND_GOOGLE_APPS_DOCUMENT,
+			DLOpenerMimeTypes.TEXT_TAB_SEPARATED_VALUES,
+			APPLICATION_VND_GOOGLE_APPS_SPREADSHEET);
 
 }

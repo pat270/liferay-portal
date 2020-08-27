@@ -16,12 +16,9 @@ package com.liferay.mobile.device.rules.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Edward C. Han
  */
-@ProviderType
 public class NoSuchRuleGroupException extends NoSuchModelException {
 
 	public NoSuchRuleGroupException() {
@@ -31,12 +28,12 @@ public class NoSuchRuleGroupException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchRuleGroupException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchRuleGroupException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchRuleGroupException(Throwable cause) {
-		super(cause);
+	public NoSuchRuleGroupException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

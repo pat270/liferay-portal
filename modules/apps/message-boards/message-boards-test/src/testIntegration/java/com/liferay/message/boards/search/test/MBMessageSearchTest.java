@@ -28,10 +28,11 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.Sync;
+import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -43,11 +44,9 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.InputStream;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +55,7 @@ import org.junit.runner.RunWith;
  * @author Eudaldo Alonso
  */
 @RunWith(Arquillian.class)
+@Sync
 public class MBMessageSearchTest extends BaseSearchTestCase {
 
 	@ClassRule
@@ -63,63 +63,54 @@ public class MBMessageSearchTest extends BaseSearchTestCase {
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(),
-			PermissionCheckerMethodTestRule.INSTANCE);
+			PermissionCheckerMethodTestRule.INSTANCE,
+			SynchronousDestinationTestRule.INSTANCE);
 
-	@Ignore
 	@Override
 	@Test
 	public void testLocalizedSearch() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchByDDMStructureField() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchByKeywordsInsideParentBaseModel() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchComments() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchCommentsByKeywords() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireAllVersions() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireLatestVersion() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchStatus() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchVersions() throws Exception {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchWithinDDMStructure() throws Exception {
@@ -128,14 +119,6 @@ public class MBMessageSearchTest extends BaseSearchTestCase {
 	@Override
 	protected void addAttachment(ClassedModel classedModel) throws Exception {
 		MBMessage message = (MBMessage)classedModel;
-
-		List<FileEntry> fileEntries = message.getAttachmentsFileEntries();
-
-		List<String> existingFiles = new ArrayList<>();
-
-		for (FileEntry fileEntry : fileEntries) {
-			existingFiles.add(fileEntry.getTitle());
-		}
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
@@ -147,8 +130,8 @@ public class MBMessageSearchTest extends BaseSearchTestCase {
 
 		MBMessageLocalServiceUtil.updateMessage(
 			TestPropsValues.getUserId(), message.getMessageId(),
-			getSearchKeywords(), getSearchKeywords(), inputStreamOVPs,
-			existingFiles, 0, false, serviceContext);
+			getSearchKeywords(), getSearchKeywords(), inputStreamOVPs, 0, false,
+			serviceContext);
 	}
 
 	@Override

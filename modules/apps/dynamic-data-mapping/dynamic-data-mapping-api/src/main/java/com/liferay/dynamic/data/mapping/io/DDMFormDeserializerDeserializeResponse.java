@@ -25,6 +25,10 @@ public final class DDMFormDeserializerDeserializeResponse {
 		return _ddmForm;
 	}
 
+	public Exception getException() {
+		return _exception;
+	}
+
 	public static class Builder {
 
 		public static Builder newBuilder(DDMForm ddmForm) {
@@ -33,6 +37,12 @@ public final class DDMFormDeserializerDeserializeResponse {
 
 		public DDMFormDeserializerDeserializeResponse build() {
 			return _ddmFormDeserializerDeserializeResponse;
+		}
+
+		public Builder exception(Exception exception) {
+			_ddmFormDeserializerDeserializeResponse._exception = exception;
+
+			return this;
 		}
 
 		private Builder(DDMForm ddmForm) {
@@ -49,5 +59,6 @@ public final class DDMFormDeserializerDeserializeResponse {
 	}
 
 	private DDMForm _ddmForm;
+	private Exception _exception;
 
 }

@@ -1,20 +1,35 @@
-import ClayIcon from '../shared/ClayIcon.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import ClayIcon from '@clayui/icon';
 import getCN from 'classnames';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {DragSource as dragSource} from 'react-dnd';
-import {DragTypes} from '../../utils/drag-types.es';
+
 import {PROPERTY_TYPES} from '../../utils/constants.es';
+import {DragTypes} from '../../utils/drag-types.es';
 
 const TYPE_ICON_MAP = {
-	[PROPERTY_TYPES.BOOLEAN]: 'text',
+	[PROPERTY_TYPES.BOOLEAN]: 'check-circle',
 	[PROPERTY_TYPES.COLLECTION]: 'table',
 	[PROPERTY_TYPES.DATE]: 'date',
 	[PROPERTY_TYPES.DATE_TIME]: 'date',
 	[PROPERTY_TYPES.DOUBLE]: 'decimal',
 	[PROPERTY_TYPES.ID]: 'diagram',
 	[PROPERTY_TYPES.INTEGER]: 'integer',
-	[PROPERTY_TYPES.STRING]: 'text'
+	[PROPERTY_TYPES.STRING]: 'text',
 };
 
 /**
@@ -28,9 +43,9 @@ function beginDrag({defaultValue, name, propertyKey, type}) {
 		criterion: {
 			defaultValue,
 			propertyName: name,
-			type
+			type,
 		},
-		propertyKey
+		propertyKey,
 	};
 }
 
@@ -38,17 +53,12 @@ class CriteriaSidebarItem extends Component {
 	static propTypes = {
 		className: PropTypes.string,
 		connectDragSource: PropTypes.func,
-		defaultValue: PropTypes.oneOfType(
-			[
-				PropTypes.string,
-				PropTypes.number
-			]
-		),
+		defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 		dragging: PropTypes.bool,
 		label: PropTypes.string,
 		name: PropTypes.string,
 		propertyKey: PropTypes.string.isRequired,
-		type: PropTypes.string
+		type: PropTypes.string,
 	};
 
 	render() {
@@ -57,24 +67,24 @@ class CriteriaSidebarItem extends Component {
 			connectDragSource,
 			dragging,
 			label,
-			type
+			type,
 		} = this.props;
 
 		const classes = getCN(
 			'criteria-sidebar-item-root',
 			{dragging},
-			className,
+			className
 		);
 
 		return connectDragSource(
 			<li className={classes}>
 				<span className="inline-item">
-					<ClayIcon iconName="drag" />
+					<ClayIcon symbol="drag" />
 				</span>
 
 				<span className="criteria-sidebar-item-type sticker sticker-light">
 					<span className="inline-item">
-						<ClayIcon iconName={TYPE_ICON_MAP[type] || 'text'} />
+						<ClayIcon symbol={TYPE_ICON_MAP[type] || 'text'} />
 					</span>
 				</span>
 
@@ -87,10 +97,10 @@ class CriteriaSidebarItem extends Component {
 export default dragSource(
 	DragTypes.PROPERTY,
 	{
-		beginDrag
+		beginDrag,
 	},
 	(connect, monitor) => ({
 		connectDragSource: connect.dragSource(),
-		dragging: monitor.isDragging()
+		dragging: monitor.isDragging(),
 	})
 )(CriteriaSidebarItem);

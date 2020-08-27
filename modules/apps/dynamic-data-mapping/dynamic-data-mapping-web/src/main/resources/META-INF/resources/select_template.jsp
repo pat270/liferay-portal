@@ -42,16 +42,16 @@ SearchContainer<DDMTemplate> templateSearch = ddmDisplayContext.getTemplateSearc
 	disabled="<%= ddmDisplayContext.isDisabledManagementBar(DDMWebKeys.DYNAMIC_DATA_MAPPING_TEMPLATE) %>"
 	filterDropdownItems="<%= ddmDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddmDisplayContext.getTotalItems(DDMWebKeys.DYNAMIC_DATA_MAPPING_TEMPLATE) %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= ddmDisplayContext.getSelectTemplateSearchActionURL() %>"
 	searchFormName="searchForm"
-	selectable="false"
+	selectable="<%= false %>"
 	sortingOrder="<%= ddmDisplayContext.getOrderByType() %>"
 	sortingURL="<%= ddmDisplayContext.getSortingURL() %>"
 />
 
 <aui:form action="<%= ddmDisplayContext.getSelectTemplateSearchActionURL() %>" method="post" name="selectTemplateFm">
-	<div class="container-fluid-1280">
+	<clay:container-fluid>
 		<liferay-ui:search-container
 			searchContainer="<%= templateSearch %>"
 		>
@@ -113,13 +113,18 @@ SearchContainer<DDMTemplate> templateSearch = ddmDisplayContext.getTemplateSearc
 				markupView="lexicon"
 			/>
 		</liferay-ui:search-container>
-	</div>
+	</clay:container-fluid>
 </aui:form>
 
 <aui:script>
-	Liferay.Util.focusFormField(document.<portlet:namespace />searchForm.<portlet:namespace />keywords);
+	Liferay.Util.focusFormField(
+		document.<portlet:namespace />searchForm.<portlet:namespace />keywords
+	);
 </aui:script>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectTemplateFm', '<%= HtmlUtil.escapeJS(eventName) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectTemplateFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>'
+	);
 </aui:script>

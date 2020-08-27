@@ -16,12 +16,9 @@ package com.liferay.asset.kernel.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class AssetTagNameException extends PortalException {
 
 	public AssetTagNameException() {
@@ -31,12 +28,12 @@ public class AssetTagNameException extends PortalException {
 		super(msg);
 	}
 
-	public AssetTagNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public AssetTagNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public AssetTagNameException(Throwable cause) {
-		super(cause);
+	public AssetTagNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

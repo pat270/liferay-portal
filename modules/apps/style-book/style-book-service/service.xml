@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
+
+<service-builder auto-import-default-references="false" auto-namespace-tables="false" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.style.book">
+	<namespace>StyleBook</namespace>
+	<entity local-service="true" name="StyleBookEntry" remote-service="true" versioned="true">
+
+		<!-- PK fields -->
+
+		<column name="styleBookEntryId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="defaultStyleBookEntry" type="boolean" />
+		<column name="frontendTokensValues" type="String" />
+		<column name="name" type="String" />
+		<column name="previewFileEntryId" type="long" />
+		<column name="styleBookEntryKey" type="String" />
+
+		<!-- Order -->
+
+		<order by="desc">
+			<order-column name="createDate" />
+		</order>
+
+		<!-- Finder methods -->
+
+		<finder name="GroupId" return-type="Collection">
+			<finder-column name="groupId" />
+		</finder>
+		<finder name="G_D" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="defaultStyleBookEntry" />
+		</finder>
+		<finder name="G_LikeN" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column comparator="LIKE" name="name" />
+		</finder>
+		<finder name="G_SBEK" return-type="StyleBookEntry" unique="true">
+			<finder-column name="groupId" />
+			<finder-column name="styleBookEntryKey" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="User" package-path="com.liferay.portal" />
+	</entity>
+	<exceptions>
+		<exception>DuplicateStyleBookEntryKey</exception>
+		<exception>StyleBookEntryFile</exception>
+		<exception>StyleBookEntryName</exception>
+	</exceptions>
+</service-builder>

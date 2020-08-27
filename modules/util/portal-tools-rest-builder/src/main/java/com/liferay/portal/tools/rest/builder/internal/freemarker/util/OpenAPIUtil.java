@@ -19,13 +19,13 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.JavaMethodSignature;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.GraphQLOpenAPIParser;
 import com.liferay.portal.tools.rest.builder.internal.freemarker.tool.java.parser.util.OpenAPIParserUtil;
-import com.liferay.portal.vulcan.yaml.config.ConfigYAML;
-import com.liferay.portal.vulcan.yaml.openapi.Components;
-import com.liferay.portal.vulcan.yaml.openapi.Info;
-import com.liferay.portal.vulcan.yaml.openapi.Items;
-import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
-import com.liferay.portal.vulcan.yaml.openapi.Operation;
-import com.liferay.portal.vulcan.yaml.openapi.Schema;
+import com.liferay.portal.tools.rest.builder.internal.yaml.config.ConfigYAML;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Components;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Info;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Items;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.OpenAPIYAML;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Operation;
+import com.liferay.portal.tools.rest.builder.internal.yaml.openapi.Schema;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -62,8 +62,11 @@ public class OpenAPIUtil {
 	}
 
 	public static String formatSingular(String s) {
-		if (s.endsWith("ses")) {
-			s = s.substring(0, s.length() - 3) + "s";
+		if (s.endsWith("ases")) {
+			s = s.substring(0, s.length() - 1);
+		}
+		else if (s.endsWith("ses")) {
+			s = s.substring(0, s.length() - 2);
 		}
 		else if (s.endsWith("ies")) {
 			s = s.substring(0, s.length() - 3) + "y";
@@ -78,9 +81,13 @@ public class OpenAPIUtil {
 	public static Map<String, Schema> getAllSchemas(OpenAPIYAML openAPIYAML) {
 		Map<String, Schema> allSchemas = new TreeMap<>();
 
-		Queue<Map<String, Schema>> queue = new LinkedList<>();
-
 		Components components = openAPIYAML.getComponents();
+
+		if (components == null) {
+			return allSchemas;
+		}
+
+		Queue<Map<String, Schema>> queue = new LinkedList<>();
 
 		queue.add(components.getSchemas());
 
@@ -151,6 +158,10 @@ public class OpenAPIUtil {
 		Map<String, Schema> globalEnumSchemas = new TreeMap<>();
 
 		Components components = openAPIYAML.getComponents();
+
+		if (components == null) {
+			return globalEnumSchemas;
+		}
 
 		Map<String, Schema> schemas = components.getSchemas();
 

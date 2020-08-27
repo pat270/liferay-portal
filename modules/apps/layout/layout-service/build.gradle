@@ -1,0 +1,29 @@
+buildService {
+	apiDir = "../layout-api/src/main/java"
+	testDir = "../layout-test/src/testIntegration/java"
+}
+
+dependencies {
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.3.0"
+	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
+	compileOnly project(":apps:asset:asset-api")
+	compileOnly project(":apps:change-tracking:change-tracking-spi")
+	compileOnly project(":apps:export-import:export-import-api")
+	compileOnly project(":apps:fragment:fragment-api")
+	compileOnly project(":apps:friendly-url:friendly-url-api")
+	compileOnly project(":apps:layout:layout-api")
+	compileOnly project(":apps:layout:layout-page-template-api")
+	compileOnly project(":apps:portal:portal-aop-api")
+	compileOnly project(":apps:portal:portal-dao-orm-custom-sql-api")
+	compileOnly project(":apps:portal:portal-instance-lifecycle-api")
+	compileOnly project(":apps:portal:portal-upgrade-api")
+	compileOnly project(":apps:segments:segments-api")
+	compileOnly project(":apps:staging:staging-api")
+	compileOnly project(":apps:xstream:xstream-configurator-api")
+	compileOnly project(":core:petra:petra-function")
+	compileOnly project(":core:petra:petra-lang")
+	compileOnly project(":core:petra:petra-sql-dsl-api")
+	compileOnly project(":core:petra:petra-string")
+}

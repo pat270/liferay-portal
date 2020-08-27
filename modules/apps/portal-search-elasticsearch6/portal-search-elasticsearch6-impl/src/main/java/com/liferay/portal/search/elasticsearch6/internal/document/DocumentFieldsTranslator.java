@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.document.DocumentBuilder;
 import com.liferay.portal.search.geolocation.GeoBuilders;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.elasticsearch.common.document.DocumentField;
@@ -59,6 +60,18 @@ public class DocumentFieldsTranslator {
 	}
 
 	public void translate(
+		DocumentBuilder documentBuilder,
+		Map<String, Object> documentSourceMap) {
+
+		if (MapUtil.isEmpty(documentSourceMap)) {
+			return;
+		}
+
+		documentSourceMap.forEach(
+			(name, value) -> translate(name, value, documentBuilder));
+	}
+
+	public void translate(
 		Map<String, DocumentField> documentFieldsMap,
 		DocumentBuilder documentBuilder) {
 
@@ -83,6 +96,23 @@ public class DocumentFieldsTranslator {
 
 		documentBuilder.setValues(
 			documentField.getName(), documentField.getValues());
+	}
+
+	protected void translate(
+		String name, Object value, DocumentBuilder documentBuilder) {
+
+		if (name.endsWith(_GEOPOINT_SUFFIX)) {
+			documentBuilder.setGeoLocationPoint(
+				name, _geoBuilders.geoLocationPoint((String)value));
+		}
+		else {
+			if (value instanceof Collection) {
+				documentBuilder.setValues(name, (Collection)value);
+			}
+			else {
+				documentBuilder.setValue(name, value);
+			}
+		}
 	}
 
 	protected boolean translateGeoLocationPoint(

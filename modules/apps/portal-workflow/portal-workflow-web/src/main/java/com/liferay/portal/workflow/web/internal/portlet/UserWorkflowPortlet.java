@@ -14,16 +14,30 @@
 
 package com.liferay.portal.workflow.web.internal.portlet;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
+import com.liferay.portal.kernel.workflow.WorkflowException;
+import com.liferay.portal.kernel.workflow.WorkflowInstance;
+import com.liferay.portal.kernel.workflow.WorkflowInstanceManagerUtil;
+import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.constants.WorkflowWebKeys;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.web.internal.display.context.WorkflowNavigationDisplayContext;
+
+import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.List;
 
 import javax.portlet.Portlet;
+import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -53,8 +67,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + WorkflowPortletKeys.USER_WORKFLOW,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -63,6 +76,28 @@ public class UserWorkflowPortlet extends BaseWorkflowPortlet {
 	@Override
 	public List<String> getWorkflowPortletTabNames() {
 		return Arrays.asList(WorkflowWebKeys.WORKFLOW_TAB_MY_SUBMISSIONS);
+	}
+
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		try {
+			checkWorkflowInstanceViewPermission(renderRequest);
+		}
+		catch (PortalException portalException) {
+			if (portalException instanceof PrincipalException ||
+				portalException instanceof WorkflowException) {
+
+				SessionErrors.add(renderRequest, portalException.getClass());
+			}
+			else {
+				throw new PortletException(portalException);
+			}
+		}
+
+		super.render(renderRequest, renderResponse);
 	}
 
 	@Override
@@ -76,6 +111,47 @@ public class UserWorkflowPortlet extends BaseWorkflowPortlet {
 		renderRequest.setAttribute(
 			WorkflowWebKeys.WORKFLOW_NAVIGATION_DISPLAY_CONTEXT,
 			workflowNavigationDisplayContext);
+	}
+
+	protected void checkWorkflowInstanceViewPermission(
+			RenderRequest renderRequest)
+		throws PortalException {
+
+		long workflowInstanceId = ParamUtil.getLong(
+			renderRequest, "workflowInstanceId");
+
+		if (workflowInstanceId != 0) {
+			PermissionChecker permissionChecker =
+				PermissionThreadLocal.getPermissionChecker();
+
+			WorkflowInstance workflowInstance =
+				WorkflowInstanceManagerUtil.getWorkflowInstance(
+					permissionChecker.getCompanyId(),
+					permissionChecker.getUserId(), workflowInstanceId);
+
+			if (workflowInstance == null) {
+				throw new PrincipalException.MustHavePermission(
+					permissionChecker, WorkflowInstance.class.getName(),
+					workflowInstanceId, ActionKeys.VIEW);
+			}
+		}
+	}
+
+	@Override
+	protected void doDispatch(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		if (SessionErrors.contains(
+				renderRequest, PrincipalException.getNestedClasses()) ||
+			SessionErrors.contains(
+				renderRequest, WorkflowException.class.getName())) {
+
+			include("/instance/error.jsp", renderRequest, renderResponse);
+		}
+		else {
+			super.doDispatch(renderRequest, renderResponse);
+		}
 	}
 
 	@Reference(

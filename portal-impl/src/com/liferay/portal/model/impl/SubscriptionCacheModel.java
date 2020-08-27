@@ -27,8 +27,6 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Subscription in entity cache.
  *
@@ -37,22 +35,21 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @Deprecated
-@ProviderType
 public class SubscriptionCacheModel
 	implements CacheModel<Subscription>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SubscriptionCacheModel)) {
+		if (!(object instanceof SubscriptionCacheModel)) {
 			return false;
 		}
 
 		SubscriptionCacheModel subscriptionCacheModel =
-			(SubscriptionCacheModel)obj;
+			(SubscriptionCacheModel)object;
 
 		if ((subscriptionId == subscriptionCacheModel.subscriptionId) &&
 			(mvccVersion == subscriptionCacheModel.mvccVersion)) {

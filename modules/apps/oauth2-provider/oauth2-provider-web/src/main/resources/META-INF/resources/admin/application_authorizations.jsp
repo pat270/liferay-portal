@@ -33,7 +33,7 @@ OAuth2AuthorizationsManagementToolbarDisplayContext oAuth2AuthorizationsManageme
 	disabled="<%= oAuth2AuthorizationsCount == 0 %>"
 	filterDropdownItems="<%= oAuth2AuthorizationsManagementToolbarDisplayContext.getFilterDropdownItems() %>"
 	itemsTotal="<%= oAuth2AuthorizationsCount %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchContainerId="oAuth2AuthorizationsSearchContainer"
 	selectable="<%= true %>"
 	showSearch="<%= false %>"
@@ -43,12 +43,12 @@ OAuth2AuthorizationsManagementToolbarDisplayContext oAuth2AuthorizationsManageme
 
 <portlet:actionURL name="/admin/revoke_oauth2_authorizations" var="revokeOAuth2AuthorizationsURL">
 	<portlet:param name="mvcRenderCommandName" value="/admin/view_oauth2_authorizations" />
-	<portlet:param name="appTab" value="application_authorizations" />
+	<portlet:param name="navigation" value="application_authorizations" />
 	<portlet:param name="backURL" value="<%= redirect %>" />
 	<portlet:param name="oAuth2ApplicationId" value="<%= String.valueOf(oAuth2ApplicationId) %>" />
 </portlet:actionURL>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= revokeOAuth2AuthorizationsURL %>" name="fm">
 		<aui:input name="oAuth2ApplicationId" type="hidden" value="<%= oAuth2ApplicationId %>" />
 		<aui:input name="oAuth2AuthorizationIds" type="hidden" />
@@ -118,38 +118,43 @@ OAuth2AuthorizationsManagementToolbarDisplayContext oAuth2AuthorizationsManageme
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
 	function <portlet:namespace />revokeOAuth2Authorizations() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-revoke-the-selected-authorizations-they-will-be-revoked-immediately") %>')) {
+		if (
+			confirm(
+				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-revoke-the-selected-authorizations-they-will-be-revoked-immediately") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						oAuth2AuthorizationIds: Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds')
-					},
-					url: '<%= revokeOAuth2AuthorizationsURL %>'
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					oAuth2AuthorizationIds: Liferay.Util.listCheckedExcept(
+						form,
+						'<portlet:namespace />allRowIds'
+					),
+				},
+				url: '<%= revokeOAuth2AuthorizationsURL %>',
+			});
 		}
 	}
 
 	function <portlet:namespace />revokeOAuth2Authorization(oAuth2AuthorizationId) {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-revoke-the-authorization") %>')) {
+		if (
+			confirm(
+				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-revoke-the-authorization") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						oAuth2AuthorizationIds: oAuth2AuthorizationId
-					},
-					url: '<%= revokeOAuth2AuthorizationsURL %>'
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					oAuth2AuthorizationIds: oAuth2AuthorizationId,
+				},
+				url: '<%= revokeOAuth2AuthorizationsURL %>',
+			});
 		}
 	}
 </aui:script>

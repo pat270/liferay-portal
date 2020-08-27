@@ -28,36 +28,37 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class ExportImportLifecycleEventListenerRegistryUtil {
 
 	public static Set<ExportImportLifecycleListener>
 		getAsyncExportImportLifecycleListeners() {
 
-		return _instance._getAsyncExportImportLifecycleListeners();
+		return _exportImportLifecycleEventListenerRegistryUtil.
+			_getAsyncExportImportLifecycleListeners();
 	}
 
 	public static Set<ExportImportLifecycleListener>
 		getSyncExportImportLifecycleListeners() {
 
-		return _instance._getSyncExportImportLifecycleListeners();
+		return _exportImportLifecycleEventListenerRegistryUtil.
+			_getSyncExportImportLifecycleListeners();
 	}
 
 	public static void register(
 		ExportImportLifecycleListener exportImportLifecycleListener) {
 
-		_instance._register(exportImportLifecycleListener);
+		_exportImportLifecycleEventListenerRegistryUtil._register(
+			exportImportLifecycleListener);
 	}
 
 	public static void unregister(
 		ExportImportLifecycleListener exportImportLifecycleListener) {
 
-		_instance._unregister(exportImportLifecycleListener);
+		_exportImportLifecycleEventListenerRegistryUtil._unregister(
+			exportImportLifecycleListener);
 	}
 
 	public static void unregister(
@@ -118,7 +119,8 @@ public class ExportImportLifecycleEventListenerRegistryUtil {
 	}
 
 	private static final ExportImportLifecycleEventListenerRegistryUtil
-		_instance = new ExportImportLifecycleEventListenerRegistryUtil();
+		_exportImportLifecycleEventListenerRegistryUtil =
+			new ExportImportLifecycleEventListenerRegistryUtil();
 
 	private final Set<ExportImportLifecycleListener>
 		_asyncExportImportLifecycleListeners = Collections.newSetFromMap(

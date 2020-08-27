@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see DDMStructureService
  * @generated
  */
-@ProviderType
 public class DDMStructureServiceUtil {
 
 	/*
@@ -276,11 +274,32 @@ public class DDMStructureServiceUtil {
 			companyId, groupIds, classNameId, start, end, orderByComparator);
 	}
 
+	public static java.util.List
+		<com.liferay.dynamic.data.mapping.model.DDMStructure> getStructures(
+			long companyId, long[] groupIds, long classNameId, String keywords,
+			int status, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.dynamic.data.mapping.model.DDMStructure>
+					orderByComparator) {
+
+		return getService().getStructures(
+			companyId, groupIds, classNameId, keywords, status, start, end,
+			orderByComparator);
+	}
+
 	public static int getStructuresCount(
 		long companyId, long[] groupIds, long classNameId) {
 
 		return getService().getStructuresCount(
 			companyId, groupIds, classNameId);
+	}
+
+	public static int getStructuresCount(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status) {
+
+		return getService().getStructuresCount(
+			companyId, groupIds, classNameId, keywords, status);
 	}
 
 	public static void revertStructure(
@@ -312,7 +331,7 @@ public class DDMStructureServiceUtil {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param start the lower bound of the range of structures to return
 	 * @param end the upper bound of the range of structures to return (not
@@ -398,7 +417,7 @@ public class DDMStructureServiceUtil {
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
@@ -455,7 +474,7 @@ public class DDMStructureServiceUtil {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @return the number of matching structures
 	 */
@@ -481,7 +500,7 @@ public class DDMStructureServiceUtil {
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
 	 * @return the number of matching structures

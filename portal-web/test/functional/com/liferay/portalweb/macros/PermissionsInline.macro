@@ -1,4 +1,5 @@
 definition {
+
 	macro addOrRemoveViewPermissionFromAllRoles {
 		for (var roleTitle : list "${roleList}") {
 			var roleTitle = "${roleTitle}";
@@ -63,9 +64,10 @@ definition {
 
 		Portlet.gotoPortletOptions(
 			portletName = "${portletName}",
-			portletOption = "${optionName}");
+			portletOption = "${optionName}",
+			siteTemplate = "${siteTemplate}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoDocumentsAndMediaDocumentPG {
@@ -73,7 +75,7 @@ definition {
 			menuItem = "Permissions",
 			rowEntry = "${dmDocumentTitle}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoDocumentsAndMediaHomeFolderPG {
@@ -91,7 +93,7 @@ definition {
 
 		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoMessageBoardsCategoryPG {
@@ -104,7 +106,7 @@ definition {
 
 		MenuItem.click(menuItem = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoMessageBoardsPG {
@@ -114,7 +116,7 @@ definition {
 
 		MenuItem.click(menuItem = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoMessageBoardsThreadReplyPG {
@@ -133,20 +135,20 @@ definition {
 
 		MenuItem.click(menuItem = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoPagePG {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+			portlet = "Pages",
+			site = "${site}");
 
 		SitePages.gotoPageMenuItem(
 			menuItem = "Permissions",
 			pageName = "${pageName}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		IFrame.selectPermissionsFrame();
 	}
 
 	macro gotoPollPermissionsCP {
@@ -154,7 +156,17 @@ definition {
 			menuItem = "Permissions",
 			rowEntry = "${pollsQuestionTitle}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
+
+	macro gotoRolePermissions {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Permissions",
+			rowEntry = "${roleName}");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoSitepageCP {
@@ -168,25 +180,24 @@ definition {
 	}
 
 	macro gotoSiteTeamsCP {
-		ProductMenu.gotoSite(site = "${siteScopeName}");
+		Navigator.openSiteURL(siteName = "${siteScopeName}");
 
 		ProductMenu.gotoPortlet(
 			category = "People",
-			panel = "Site Administration",
 			portlet = "${portletName}");
 
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Permissions",
 			rowEntry = "${teamName}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoSiteTemplateCP {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+			portlet = "Pages",
+			site = "${site}");
 
 		SitePages.gotoPageMenuItem(
 			menuItem = "Permissions",
@@ -194,7 +205,7 @@ definition {
 	}
 
 	macro gotoUserGroupSitePermissionsCP {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "User Groups");
@@ -225,4 +236,5 @@ definition {
 
 		AssertNotChecked(locator1 = "Permissions#${permissionDefinitionKey}");
 	}
+
 }

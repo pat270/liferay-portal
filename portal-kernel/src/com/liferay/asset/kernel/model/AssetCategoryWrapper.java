@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetCategory
  * @generated
  */
-@ProviderType
 public class AssetCategoryWrapper
 	extends BaseModelWrapper<AssetCategory>
 	implements AssetCategory, ModelWrapper<AssetCategory> {
@@ -46,6 +45,8 @@ public class AssetCategoryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("categoryId", getCategoryId());
@@ -56,8 +57,7 @@ public class AssetCategoryWrapper
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("parentCategoryId", getParentCategoryId());
-		attributes.put("leftCategoryId", getLeftCategoryId());
-		attributes.put("rightCategoryId", getRightCategoryId());
+		attributes.put("treePath", getTreePath());
 		attributes.put("name", getName());
 		attributes.put("title", getTitle());
 		attributes.put("description", getDescription());
@@ -69,6 +69,18 @@ public class AssetCategoryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -130,16 +142,10 @@ public class AssetCategoryWrapper
 			setParentCategoryId(parentCategoryId);
 		}
 
-		Long leftCategoryId = (Long)attributes.get("leftCategoryId");
+		String treePath = (String)attributes.get("treePath");
 
-		if (leftCategoryId != null) {
-			setLeftCategoryId(leftCategoryId);
-		}
-
-		Long rightCategoryId = (Long)attributes.get("rightCategoryId");
-
-		if (rightCategoryId != null) {
-			setRightCategoryId(rightCategoryId);
+		if (treePath != null) {
+			setTreePath(treePath);
 		}
 
 		String name = (String)attributes.get("name");
@@ -171,6 +177,13 @@ public class AssetCategoryWrapper
 		if (lastPublishDate != null) {
 			setLastPublishDate(lastPublishDate);
 		}
+	}
+
+	@Override
+	public String buildTreePath()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.buildTreePath();
 	}
 
 	@Override
@@ -213,6 +226,16 @@ public class AssetCategoryWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this asset category.
+	 *
+	 * @return the ct collection ID of this asset category
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	@Override
@@ -327,16 +350,6 @@ public class AssetCategoryWrapper
 	}
 
 	/**
-	 * Returns the left category ID of this asset category.
-	 *
-	 * @return the left category ID of this asset category
-	 */
-	@Override
-	public long getLeftCategoryId() {
-		return model.getLeftCategoryId();
-	}
-
-	/**
 	 * Returns the modified date of this asset category.
 	 *
 	 * @return the modified date of this asset category
@@ -344,6 +357,16 @@ public class AssetCategoryWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this asset category.
+	 *
+	 * @return the mvcc version of this asset category
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -393,16 +416,6 @@ public class AssetCategoryWrapper
 	@Override
 	public long getPrimaryKey() {
 		return model.getPrimaryKey();
-	}
-
-	/**
-	 * Returns the right category ID of this asset category.
-	 *
-	 * @return the right category ID of this asset category
-	 */
-	@Override
-	public long getRightCategoryId() {
-		return model.getRightCategoryId();
 	}
 
 	/**
@@ -479,6 +492,16 @@ public class AssetCategoryWrapper
 	@Override
 	public Map<java.util.Locale, String> getTitleMap() {
 		return model.getTitleMap();
+	}
+
+	/**
+	 * Returns the tree path of this asset category.
+	 *
+	 * @return the tree path of this asset category
+	 */
+	@Override
+	public String getTreePath() {
+		return model.getTreePath();
 	}
 
 	/**
@@ -587,6 +610,16 @@ public class AssetCategoryWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this asset category.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset category
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this asset category.
 	 *
 	 * @param description the description of this asset category
@@ -684,16 +717,6 @@ public class AssetCategoryWrapper
 	}
 
 	/**
-	 * Sets the left category ID of this asset category.
-	 *
-	 * @param leftCategoryId the left category ID of this asset category
-	 */
-	@Override
-	public void setLeftCategoryId(long leftCategoryId) {
-		model.setLeftCategoryId(leftCategoryId);
-	}
-
-	/**
 	 * Sets the modified date of this asset category.
 	 *
 	 * @param modifiedDate the modified date of this asset category
@@ -701,6 +724,16 @@ public class AssetCategoryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset category.
+	 *
+	 * @param mvccVersion the mvcc version of this asset category
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -731,16 +764,6 @@ public class AssetCategoryWrapper
 	@Override
 	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
-	}
-
-	/**
-	 * Sets the right category ID of this asset category.
-	 *
-	 * @param rightCategoryId the right category ID of this asset category
-	 */
-	@Override
-	public void setRightCategoryId(long rightCategoryId) {
-		model.setRightCategoryId(rightCategoryId);
 	}
 
 	/**
@@ -808,6 +831,16 @@ public class AssetCategoryWrapper
 	}
 
 	/**
+	 * Sets the tree path of this asset category.
+	 *
+	 * @param treePath the tree path of this asset category
+	 */
+	@Override
+	public void setTreePath(String treePath) {
+		model.setTreePath(treePath);
+	}
+
+	/**
 	 * Sets the user ID of this asset category.
 	 *
 	 * @param userId the user ID of this asset category
@@ -858,28 +891,22 @@ public class AssetCategoryWrapper
 	}
 
 	@Override
-	public long getNestedSetsTreeNodeLeft() {
-		return model.getNestedSetsTreeNodeLeft();
+	public void updateTreePath(String treePath) {
+		model.updateTreePath(treePath);
 	}
 
 	@Override
-	public long getNestedSetsTreeNodeRight() {
-		return model.getNestedSetsTreeNodeRight();
+	public Map<String, Function<AssetCategory, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
 	}
 
 	@Override
-	public long getNestedSetsTreeNodeScopeId() {
-		return model.getNestedSetsTreeNodeScopeId();
-	}
+	public Map<String, BiConsumer<AssetCategory, Object>>
+		getAttributeSetterBiConsumers() {
 
-	@Override
-	public void setNestedSetsTreeNodeLeft(long nestedSetsTreeNodeLeft) {
-		model.setNestedSetsTreeNodeLeft(nestedSetsTreeNodeLeft);
-	}
-
-	@Override
-	public void setNestedSetsTreeNodeRight(long nestedSetsTreeNodeRight) {
-		model.setNestedSetsTreeNodeRight(nestedSetsTreeNodeRight);
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

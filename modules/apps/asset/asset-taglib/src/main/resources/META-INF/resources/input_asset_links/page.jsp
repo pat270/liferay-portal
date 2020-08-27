@@ -111,13 +111,14 @@
 
 <aui:input name="assetLinkEntryIds" type="hidden" />
 
-<aui:script use="aui-base,escape,liferay-item-selector-dialog,liferay-search-container">
+<aui:script use="aui-base,liferay-search-container">
 	var assetSelectorHandle = A.getBody().delegate(
 		'click',
-		function(event) {
+		function (event) {
 			event.preventDefault();
 
-			var searchContainerName = '<portlet:namespace />assetLinksSearchContainer';
+			var searchContainerName =
+				'<portlet:namespace />assetLinksSearchContainer';
 
 			var searchContainer = Liferay.SearchContainer.get(searchContainerName);
 
@@ -130,46 +131,66 @@
 				searchContainerData = [];
 			}
 
-			var itemSelectorDialog = new A.LiferayItemSelectorDialog(
-				{
-					eventName: '<%= inputAssetLinksDisplayContext.getEventName() %>',
-					id: '<%= inputAssetLinksDisplayContext.getEventName() %>' + event.currentTarget.attr('id'),
-					on: {
-						selectedItemChange: function(event) {
-							var assetEntryIds = event.newVal;
+			Liferay.Loader.require(
+				'frontend-js-web/liferay/ItemSelectorDialog.es',
+				function (ItemSelectorDialog) {
+					var itemSelectorDialog = new ItemSelectorDialog.default({
+						buttonAddLabel: '<liferay-ui:message key="done" />',
+						eventName:
+							'<%= inputAssetLinksDisplayContext.getEventName() %>',
+						title: event.currentTarget.attr('data-title'),
+						url: event.currentTarget.attr('data-href'),
+					});
 
-							if (assetEntryIds) {
-								Array.prototype.forEach.call(
-									assetEntryIds,
-									function(assetEntry) {
-										var entityId = assetEntry.entityid;
+					itemSelectorDialog.open();
 
-										if (searchContainerData.indexOf(entityId) == -1) {
-											var entryLink = '<div class="text-right"><a class="modify-link" data-rowId="' + entityId + '" href="javascript:;"><%= UnicodeFormatter.toString(removeLinkIcon) %></a></div>';
+					itemSelectorDialog.on('selectedItemChange', function (event) {
+						var assetEntryIds = event.selectedItem;
 
-											var entryHtml = '<h4 class="list-group-title">' + A.Escape.html(assetEntry.assettitle) + '</h4><p class="list-group-subtitle">' + A.Escape.html(assetEntry.assettype) + '</p><p class="list-group-subtitle">' + A.Escape.html(assetEntry.groupdescriptivename) + '</p>';
+						if (assetEntryIds) {
+							Array.prototype.forEach.call(assetEntryIds, function (
+								assetEntry
+							) {
+								var entityId = assetEntry.entityid;
 
-											searchContainer.addRow([entryHtml, entryLink], entityId);
+								if (searchContainerData.indexOf(entityId) == -1) {
+									var entryLink =
+										'<div class="text-right"><a class="modify-link" data-rowId="' +
+										entityId +
+										'" href="javascript:;"><%= UnicodeFormatter.toString(removeLinkIcon) %></a></div>';
 
-											searchContainer.updateDataStore();
-										}
-									}
-								);
-							}
+									var entryHtml =
+										'<h4 class="list-group-title">' +
+										Liferay.Util.escapeHTML(
+											assetEntry.assettitle
+										) +
+										'</h4><p class="list-group-subtitle">' +
+										Liferay.Util.escapeHTML(
+											assetEntry.assettype
+										) +
+										'</p><p class="list-group-subtitle">' +
+										Liferay.Util.escapeHTML(
+											assetEntry.groupdescriptivename
+										) +
+										'</p>';
+
+									searchContainer.addRow(
+										[entryHtml, entryLink],
+										entityId
+									);
+
+									searchContainer.updateDataStore();
+								}
+							});
 						}
-					},
-					selectedData: searchContainerData,
-					title: event.currentTarget.attr('data-title'),
-					url: event.currentTarget.attr('data-href')
+					});
 				}
 			);
-
-			itemSelectorDialog.open();
 		},
 		'.asset-selector a'
 	);
 
-	var clearAssetSelectorHandle = function(event) {
+	var clearAssetSelectorHandle = function (event) {
 		if (event.portletId === '<%= portletDisplay.getId() %>') {
 			assetSelectorHandle.detach();
 
@@ -181,11 +202,13 @@
 </aui:script>
 
 <aui:script use="liferay-search-container">
-	var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />assetLinksSearchContainer');
+	var searchContainer = Liferay.SearchContainer.get(
+		'<portlet:namespace />assetLinksSearchContainer'
+	);
 
 	searchContainer.get('contentBox').delegate(
 		'click',
-		function(event) {
+		function (event) {
 			var link = event.currentTarget;
 
 			var tr = link.ancestor('tr');

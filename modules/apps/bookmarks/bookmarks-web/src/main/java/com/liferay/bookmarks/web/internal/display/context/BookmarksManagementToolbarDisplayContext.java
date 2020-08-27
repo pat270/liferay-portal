@@ -15,16 +15,17 @@
 package com.liferay.bookmarks.web.internal.display.context;
 
 import com.liferay.bookmarks.configuration.BookmarksGroupServiceOverriddenConfiguration;
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.constants.BookmarksPortletKeys;
 import com.liferay.bookmarks.constants.BookmarksWebKeys;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksFolderServiceUtil;
 import com.liferay.bookmarks.web.internal.portlet.toolbar.contributor.BookmarksPortletToolbarContributor;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -58,16 +59,16 @@ import javax.servlet.http.HttpServletRequest;
 public class BookmarksManagementToolbarDisplayContext {
 
 	public BookmarksManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		BookmarksGroupServiceOverriddenConfiguration
 			bookmarksGroupServiceOverriddenConfiguration,
 		PortalPreferences portalPreferences, TrashHelper trashHelper) {
 
+		_httpServletRequest = httpServletRequest;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
-		_httpServletRequest = httpServletRequest;
 		_bookmarksGroupServiceOverriddenConfiguration =
 			bookmarksGroupServiceOverriddenConfiguration;
 		_portalPreferences = portalPreferences;
@@ -87,32 +88,27 @@ public class BookmarksManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteEntries");
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteEntries");
 
-						if (_trashHelper.isTrashEnabled(
-								_themeDisplay.getScopeGroupId())) {
+				if (_trashHelper.isTrashEnabled(
+						_themeDisplay.getScopeGroupId())) {
 
-							dropdownItem.setIcon("trash");
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest,
-									"move-to-recycle-bin"));
-						}
-						else {
-							dropdownItem.setIcon("times-circle");
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest, "delete"));
-						}
+					dropdownItem.setIcon("trash");
+					dropdownItem.setLabel(
+						LanguageUtil.get(
+							_httpServletRequest, "move-to-recycle-bin"));
+				}
+				else {
+					dropdownItem.setIcon("times-circle");
+					dropdownItem.setLabel(
+						LanguageUtil.get(_httpServletRequest, "delete"));
+				}
 
-						dropdownItem.setQuickAction(true);
-					});
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getClearResultsURL() {
@@ -158,60 +154,50 @@ public class BookmarksManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "filter-by-navigation"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(
+						_httpServletRequest, "filter-by-navigation"));
 			}
-		};
+		).build();
 	}
 
 	public List<LabelItem> getFilterLabelItems() {
-		return new LabelItemList() {
-			{
-				String navigation = _getNavigation();
+		String navigation = _getNavigation();
 
-				if (navigation.equals("mine")) {
-					add(
-						labelItem -> {
-							labelItem.putData(
-								"removeLabelURL",
-								_removeNavigartionParameter(_currentURLObj));
+		return LabelItemListBuilder.add(
+			() -> navigation.equals("mine"),
+			labelItem -> {
+				labelItem.putData(
+					"removeLabelURL",
+					_removeNavigartionParameter(_currentURLObj));
 
-							labelItem.setCloseable(true);
+				labelItem.setCloseable(true);
 
-							User user = _themeDisplay.getUser();
+				User user = _themeDisplay.getUser();
 
-							String label = String.format(
-								"%s: %s",
-								LanguageUtil.get(_httpServletRequest, "owner"),
-								user.getFullName());
+				String label = String.format(
+					"%s: %s", LanguageUtil.get(_httpServletRequest, "owner"),
+					user.getFullName());
 
-							labelItem.setLabel(label);
-						});
-				}
-				else if (navigation.equals("recent")) {
-					add(
-						labelItem -> {
-							labelItem.putData(
-								"removeLabelURL",
-								_removeNavigartionParameter(_currentURLObj));
-
-							labelItem.setCloseable(true);
-
-							labelItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest, "recent"));
-						});
-				}
+				labelItem.setLabel(label);
 			}
-		};
+		).add(
+			() -> navigation.equals("recent"),
+			labelItem -> {
+				labelItem.putData(
+					"removeLabelURL",
+					_removeNavigartionParameter(_currentURLObj));
+
+				labelItem.setCloseable(true);
+
+				labelItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "recent"));
+			}
+		).build();
 	}
 
 	public String getSearchActionURL() {
@@ -395,7 +381,7 @@ public class BookmarksManagementToolbarDisplayContext {
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final PortalPreferences _portalPreferences;
-	private final SearchContainer _searchContainer;
+	private final SearchContainer<Object> _searchContainer;
 	private final ThemeDisplay _themeDisplay;
 	private final TrashHelper _trashHelper;
 

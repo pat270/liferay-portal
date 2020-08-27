@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class JavaJSPDynamicIncludeCheck extends BaseJavaTermCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -155,9 +155,7 @@ public class JavaJSPDynamicIncludeCheck extends BaseJavaTermCheck {
 
 			JavaSignature javaSignature = javaMethod.getSignature();
 
-			String returnType = javaSignature.getReturnType();
-
-			if (!Objects.equals(returnType, "String")) {
+			if (!Objects.equals(javaSignature.getReturnType(), "String")) {
 				continue;
 			}
 

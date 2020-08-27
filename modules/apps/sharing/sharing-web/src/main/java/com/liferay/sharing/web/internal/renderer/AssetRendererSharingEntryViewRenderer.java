@@ -52,21 +52,20 @@ public class AssetRendererSharingEntryViewRenderer
 			RequestDispatcher requestDispatcher =
 				_servletContext.getRequestDispatcher(_JSP_PATH);
 
-			AssetRenderer assetRenderer =
-				AssetRendererSharingUtil.getAssetRenderer(sharingEntry);
-
 			httpServletRequest.setAttribute(
-				AssetRenderer.class.getName(), assetRenderer);
+				AssetRenderer.class.getName(),
+				AssetRendererSharingUtil.getAssetRenderer(sharingEntry));
 
 			httpServletRequest.setAttribute(
 				SharingEntry.class.getName(), sharingEntry);
 
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
-		catch (IOException | ServletException e) {
-			_log.error("Unable to include JSP " + _JSP_PATH, e);
+		catch (IOException | ServletException exception) {
+			_log.error("Unable to include JSP " + _JSP_PATH, exception);
 
-			throw new IOException("Unable to include JSP " + _JSP_PATH, e);
+			throw new IOException(
+				"Unable to include JSP " + _JSP_PATH, exception);
 		}
 	}
 

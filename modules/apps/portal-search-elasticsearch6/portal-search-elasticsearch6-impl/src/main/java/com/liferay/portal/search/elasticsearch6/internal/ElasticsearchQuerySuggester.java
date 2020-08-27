@@ -28,11 +28,11 @@ import com.liferay.portal.kernel.search.suggest.TermSuggester;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.search.SuggestSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.SuggestSearchResponse;
 import com.liferay.portal.search.engine.adapter.search.SuggestSearchResult;
+import com.liferay.portal.search.index.IndexNameBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -217,11 +217,11 @@ public class ElasticsearchQuerySuggester implements QuerySuggester {
 
 			return _searchEngineAdapter.execute(suggestSearchRequest);
 		}
-		catch (RuntimeException re) {
-			String message = re.getMessage();
+		catch (RuntimeException runtimeException) {
+			String message = runtimeException.getMessage();
 
 			if (!message.contains("no mapping found for field")) {
-				Throwable throwable = re.getCause();
+				Throwable throwable = runtimeException.getCause();
 
 				if (throwable != null) {
 					message = throwable.getMessage();
@@ -230,13 +230,13 @@ public class ElasticsearchQuerySuggester implements QuerySuggester {
 
 			if (message.contains("no mapping found for field")) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("No dictionary indexed", re);
+					_log.warn("No dictionary indexed", runtimeException);
 				}
 
 				return null;
 			}
 
-			throw re;
+			throw runtimeException;
 		}
 		finally {
 			if (_log.isInfoEnabled()) {

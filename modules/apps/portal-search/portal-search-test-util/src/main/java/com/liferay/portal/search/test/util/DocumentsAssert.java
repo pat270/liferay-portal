@@ -14,7 +14,9 @@
 
 package com.liferay.portal.search.test.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.document.Document;
 
 import java.util.ArrayList;
@@ -61,18 +63,20 @@ public class DocumentsAssert {
 		List<String> actualValues = _getFieldValueStrings(fieldName, documents);
 
 		Assert.assertEquals(
-			message + "->" + actualValues, expected,
+			_getMessage(message, documents, actualValues), expected,
 			String.valueOf(actualValues));
 	}
 
 	public static void assertValues(
-		String message, Stream<Document> documents, String fieldName,
+		String message, Stream<Document> stream, String fieldName,
 		String expected) {
+
+		Document[] documents = stream.toArray(Document[]::new);
 
 		List<String> actualValues = _getFieldValueStrings(fieldName, documents);
 
 		Assert.assertEquals(
-			message + "->" + actualValues, expected,
+			_getMessage(message, documents, actualValues), expected,
 			String.valueOf(actualValues));
 	}
 
@@ -83,18 +87,34 @@ public class DocumentsAssert {
 		List<String> actualValues = _getFieldValueStrings(fieldName, documents);
 
 		Assert.assertEquals(
-			message + "->" + actualValues, _sort(expectedValues),
-			_sort(actualValues));
+			_getMessage(message, documents, actualValues),
+			_sort(expectedValues), _sort(actualValues));
 	}
 
 	public static void assertValuesIgnoreRelevance(
-		String message, Stream<Document> documents, String fieldName,
-		String expected) {
+		String message, Stream<Document> stream, String fieldName,
+		Stream<?> expectedValues) {
+
+		Document[] documents = stream.toArray(Document[]::new);
 
 		List<String> actualValues = _getFieldValueStrings(fieldName, documents);
 
 		Assert.assertEquals(
-			message + "->" + actualValues, expected, _sort(actualValues));
+			_getMessage(message, documents, actualValues),
+			_sort(expectedValues), _sort(actualValues));
+	}
+
+	public static void assertValuesIgnoreRelevance(
+		String message, Stream<Document> stream, String fieldName,
+		String expected) {
+
+		Document[] documents = stream.toArray(Document[]::new);
+
+		List<String> actualValues = _getFieldValueStrings(fieldName, documents);
+
+		Assert.assertEquals(
+			_getMessage(message, documents, actualValues), expected,
+			_sort(actualValues));
 	}
 
 	private static List<Object> _getFieldValues(
@@ -112,7 +132,7 @@ public class DocumentsAssert {
 			return String.valueOf(fieldValues.get(0));
 		}
 
-		return String.valueOf(fieldValues);
+		return _sort(fieldValues.stream());
 	}
 
 	private static List<String> _getFieldValueStrings(
@@ -137,10 +157,21 @@ public class DocumentsAssert {
 	}
 
 	private static List<String> _getFieldValueStrings(
-		String fieldName, Stream<Document> stream) {
+		String fieldName, Document... documents) {
 
 		return _getFieldValueStrings(
-			stream.map(document -> document.getValues(fieldName)));
+			Stream.of(
+				documents
+			).map(
+				document -> document.getValues(fieldName)
+			));
+	}
+
+	private static String _getMessage(
+		String message, Object[] objects, Collection<String> values) {
+
+		return StringBundler.concat(
+			message, "->", StringUtil.merge(objects), "->", values);
 	}
 
 	private static String _sort(Collection<String> collection) {
@@ -149,6 +180,15 @@ public class DocumentsAssert {
 		Collections.sort(list);
 
 		return list.toString();
+	}
+
+	private static String _sort(Stream<?> stream) {
+		return stream.map(
+			String::valueOf
+		).sorted(
+		).collect(
+			Collectors.toList()
+		).toString();
 	}
 
 }

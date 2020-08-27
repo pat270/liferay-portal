@@ -15,12 +15,12 @@
 package com.liferay.dynamic.data.lists.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.lists.constants.DDLRecordConstants;
 import com.liferay.dynamic.data.lists.exception.RecordGroupIdException;
 import com.liferay.dynamic.data.lists.helper.DDLRecordSetTestHelper;
 import com.liferay.dynamic.data.lists.helper.DDLRecordTestHelper;
 import com.liferay.dynamic.data.lists.helper.DDLRecordTestUtil;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
-import com.liferay.dynamic.data.lists.model.DDLRecordConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.lists.model.DDLRecordVersion;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalServiceUtil;
@@ -43,7 +43,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -56,9 +55,6 @@ import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistration;
 
-import java.io.Serializable;
-
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -86,7 +82,9 @@ public class DDLRecordServiceTest {
 		new LiferayIntegrationTestRule();
 
 	@BeforeClass
-	public static void setUpClass() {
+	public static void setUpClass() throws Exception {
+		_group = GroupTestUtil.addGroup();
+
 		Registry registry = RegistryUtil.getRegistry();
 
 		_serviceRegistration = registry.registerService(
@@ -100,12 +98,7 @@ public class DDLRecordServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_availableLocales = DDMFormTestUtil.createAvailableLocales(
-			LocaleUtil.US);
 		_defaultLocale = LocaleUtil.US;
-
-		_group = GroupTestUtil.addGroup();
-
 		_ddmStructureTestHelper = new DDMStructureTestHelper(
 			PortalUtil.getClassNameId(DDLRecordSet.class), _group);
 		_recordSetTestHelper = new DDLRecordSetTestHelper(_group);
@@ -426,19 +419,43 @@ public class DDLRecordServiceTest {
 
 		DDLRecord record = recordTestHelper.addRecord();
 
-		Map<String, Serializable> fieldsMap = new HashMap<>();
+		DDMFormValues ddmFormValues = createDDMFormValues(ddmForm);
 
-		fieldsMap.put("Name", "Joe Bloggs");
-		fieldsMap.put("Phone", "123456");
+		ddmFormValues.addDDMFormFieldValue(
+			createLocalizedDDMFormFieldValue("Name", "Joe Bloggs"));
+		ddmFormValues.addDDMFormFieldValue(
+			createLocalizedDDMFormFieldValue("Phone", "123456"));
 
 		updateRecord(
-			record.getRecordId(), fieldsMap, true,
+			record.getRecordId(), ddmFormValues,
 			WorkflowConstants.ACTION_PUBLISH);
 
 		record = DDLRecordLocalServiceUtil.getRecord(record.getRecordId());
 
 		assertRecordFieldValue(record, "Name", "Joe Bloggs");
 		assertRecordFieldValue(record, "Phone", "123456");
+	}
+
+	@Test
+	public void testUpdateRecordIncreaseRecordVersion() throws Exception {
+		DDMForm ddmForm = createDDMForm();
+
+		ddmForm.addDDMFormField(createTextDDMFormField("Name", true, false));
+
+		DDLRecordSet recordSet = addRecordSet(ddmForm);
+
+		DDLRecordTestHelper recordTestHelper = new DDLRecordTestHelper(
+			_group, recordSet);
+
+		DDLRecord record = recordTestHelper.addRecord();
+
+		DDLRecord updatedRecord = DDLRecordLocalServiceUtil.updateRecord(
+			TestPropsValues.getUserId(), record.getRecordId(),
+			record.getDDMStorageId(),
+			DDLRecordTestUtil.getServiceContext(
+				WorkflowConstants.ACTION_PUBLISH));
+
+		Assert.assertNotEquals(record.getVersion(), updatedRecord.getVersion());
 	}
 
 	protected DDLRecordSet addRecordSet(DDMForm ddmForm) throws Exception {
@@ -577,29 +594,11 @@ public class DDLRecordServiceTest {
 			serviceContext);
 	}
 
-	protected DDLRecord updateRecord(
-			long recordId, Map<String, Serializable> fieldsMap,
-			boolean mergeFields, int workflowAction)
-		throws Exception {
-
-		ServiceContext serviceContext = DDLRecordTestUtil.getServiceContext(
-			workflowAction);
-
-		return DDLRecordLocalServiceUtil.updateRecord(
-			TestPropsValues.getUserId(), recordId,
-			DDLRecordConstants.DISPLAY_INDEX_DEFAULT, fieldsMap, mergeFields,
-			serviceContext);
-	}
-
+	private static Group _group;
 	private static ServiceRegistration<StorageAdapter> _serviceRegistration;
 
-	private Set<Locale> _availableLocales;
 	private DDMStructureTestHelper _ddmStructureTestHelper;
 	private Locale _defaultLocale;
-
-	@DeleteAfterTestRun
-	private Group _group;
-
 	private DDLRecordSetTestHelper _recordSetTestHelper;
 
 }

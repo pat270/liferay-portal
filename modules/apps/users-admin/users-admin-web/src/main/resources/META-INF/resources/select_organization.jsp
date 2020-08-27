@@ -33,7 +33,7 @@ if (filterManageableOrganizations) {
 	organizationParams.put("organizationsTree", user.getOrganizations());
 }
 
-SearchContainer searchContainer = selectOrganizationManagementToolbarDisplayContext.getSearchContainer(organizationParams);
+SearchContainer<Organization> searchContainer = selectOrganizationManagementToolbarDisplayContext.getSearchContainer(organizationParams);
 
 renderResponse.setTitle(LanguageUtil.get(request, "organizations"));
 %>
@@ -99,12 +99,13 @@ renderResponse.setTitle(LanguageUtil.get(request, "organizations"));
 				<c:if test="<%= Validator.isNull(p_u_i_d) || OrganizationMembershipPolicyUtil.isMembershipAllowed((selUser != null) ? selUser.getUserId() : 0, organization.getOrganizationId()) %>">
 
 					<%
-					Map<String, Object> data = new HashMap<String, Object>();
-
-					data.put("entityid", organization.getOrganizationId());
-					data.put("entityname", organization.getName());
-					data.put("groupid", organization.getGroupId());
-					data.put("type", LanguageUtil.get(request, organization.getType()));
+					Map<String, Object> data = HashMapBuilder.<String, Object>put(
+						"entityid", organization.getOrganizationId()
+					).put(
+						"entityname", organization.getName()
+					).put(
+						"type", LanguageUtil.get(request, organization.getType())
+					).build();
 
 					boolean disabled = false;
 
@@ -135,16 +136,9 @@ renderResponse.setTitle(LanguageUtil.get(request, "organizations"));
 </aui:form>
 
 <aui:script use="aui-base">
-	var Util = Liferay.Util;
-
-	var openingLiferay = Util.getOpener().Liferay;
-
-	openingLiferay.fire(
-		'<portlet:namespace />enableRemovedOrganizations',
-		{
-			selectors: A.all('.selector-button:disabled')
-		}
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectOrganizationFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>',
+		<%= selUser != null %>
 	);
-
-	Util.selectEntityHandler('#<portlet:namespace />selectOrganizationFm', '<%= HtmlUtil.escapeJS(eventName) %>', <%= selUser != null %>);
 </aui:script>

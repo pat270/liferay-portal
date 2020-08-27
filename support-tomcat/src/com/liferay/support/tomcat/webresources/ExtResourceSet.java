@@ -62,9 +62,7 @@ public class ExtResourceSet extends AbstractFileResourceSet {
 	public String[] list(String path) {
 		checkPath(path);
 
-		String webAppMount = getWebAppMount();
-
-		if (!path.equals(webAppMount)) {
+		if (!path.equals(getWebAppMount())) {
 			return EMPTY_STRING_ARRAY;
 		}
 
@@ -118,7 +116,9 @@ public class ExtResourceSet extends AbstractFileResourceSet {
 	}
 
 	@Override
-	public boolean write(String path, InputStream is, boolean overwrite) {
+	public boolean write(
+		String path, InputStream inputStream, boolean overwrite) {
+
 		return false;
 	}
 

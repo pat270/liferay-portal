@@ -1,4 +1,5 @@
 definition {
+
 	macro gotoContact {
 		Navigator.gotoNavUnderline(navUnderline = "Contact");
 	}
@@ -29,6 +30,8 @@ definition {
 		UserNavigator.gotoGeneral();
 
 		Navigator.gotoNavNested(navNested = "Memberships");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro gotoOrganizations {
@@ -68,4 +71,5 @@ definition {
 
 		Pause(locator1 = "1000");
 	}
+
 }

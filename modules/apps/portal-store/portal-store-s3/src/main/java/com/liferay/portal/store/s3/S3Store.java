@@ -17,6 +17,7 @@ package com.liferay.portal.store.s3;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -26,7 +27,7 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
@@ -43,10 +44,9 @@ import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
 import com.amazonaws.services.s3.transfer.Upload;
 
 import com.liferay.document.library.kernel.exception.AccessDeniedException;
-import com.liferay.document.library.kernel.exception.DuplicateFileException;
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
-import com.liferay.document.library.kernel.store.BaseStore;
 import com.liferay.document.library.kernel.store.Store;
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -62,7 +62,6 @@ import com.liferay.portal.store.s3.configuration.S3StoreConfiguration;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -92,65 +91,34 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	configurationPid = "com.liferay.portal.store.s3.configuration.S3StoreConfiguration",
 	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true,
-	property = {
-		"service.ranking:Integer=0",
-		"store.type=com.liferay.portal.store.s3.S3Store"
-	},
+	property = "store.type=com.liferay.portal.store.s3.S3Store",
 	service = Store.class
 )
-public class S3Store extends BaseStore {
-
-	@Override
-	public void addDirectory(
-		long companyId, long repositoryId, String dirName) {
-	}
+public class S3Store implements Store {
 
 	@Override
 	public void addFile(
-			long companyId, long repositoryId, String fileName, File file)
-		throws PortalException {
-
-		updateFile(companyId, repositoryId, fileName, VERSION_DEFAULT, file);
-	}
-
-	@Override
-	public void addFile(
-			long companyId, long repositoryId, String fileName, InputStream is)
-		throws PortalException {
-
-		updateFile(companyId, repositoryId, fileName, VERSION_DEFAULT, is);
-	}
-
-	@Override
-	public void checkRoot(long companyId) {
-	}
-
-	@Override
-	public void copyFileVersion(
 			long companyId, long repositoryId, String fileName,
-			String fromVersionLabel, String toVersionLabel)
+			String versionLabel, InputStream inputStream)
 		throws PortalException {
 
-		String oldKey = _s3KeyTransformer.getFileVersionKey(
-			companyId, repositoryId, fileName, fromVersionLabel);
-
-		if (!_amazonS3.doesObjectExist(_bucketName, oldKey)) {
-			throw new NoSuchFileException(
-				companyId, repositoryId, fileName, fromVersionLabel);
+		if (hasFile(companyId, repositoryId, fileName, versionLabel)) {
+			deleteFile(companyId, repositoryId, fileName, versionLabel);
 		}
 
-		String newKey = _s3KeyTransformer.getFileVersionKey(
-			companyId, repositoryId, fileName, toVersionLabel);
+		File file = null;
 
-		if (_amazonS3.doesObjectExist(_bucketName, newKey)) {
-			throw new DuplicateFileException(
-				companyId, repositoryId, fileName, toVersionLabel);
+		try {
+			file = FileUtil.createTempFile(inputStream);
+
+			putObject(companyId, repositoryId, fileName, versionLabel, file);
 		}
-
-		CopyObjectRequest copyObjectRequest = new CopyObjectRequest(
-			_bucketName, oldKey, _bucketName, newKey);
-
-		_amazonS3.copyObject(copyObjectRequest);
+		catch (IOException ioException) {
+			throw new SystemException(ioException);
+		}
+		finally {
+			FileUtil.delete(file);
+		}
 	}
 
 	@Override
@@ -159,14 +127,6 @@ public class S3Store extends BaseStore {
 
 		String key = _s3KeyTransformer.getDirectoryKey(
 			companyId, repositoryId, dirName);
-
-		deleteObjects(key);
-	}
-
-	@Override
-	public void deleteFile(long companyId, long repositoryId, String fileName) {
-		String key = _s3KeyTransformer.getFileKey(
-			companyId, repositoryId, fileName);
 
 		deleteObjects(key);
 	}
@@ -185,8 +145,8 @@ public class S3Store extends BaseStore {
 
 			_amazonS3.deleteObject(deleteObjectRequest);
 		}
-		catch (AmazonClientException ace) {
-			throw transform(ace);
+		catch (AmazonClientException amazonClientException) {
+			throw transform(amazonClientException);
 		}
 	}
 
@@ -195,45 +155,24 @@ public class S3Store extends BaseStore {
 	}
 
 	@Override
-	public File getFile(
-			long companyId, long repositoryId, String fileName,
-			String versionLabel)
-		throws PortalException {
-
-		try {
-			S3Object s3Object = getS3Object(
-				companyId, repositoryId, fileName, versionLabel);
-
-			File file = _s3FileCache.getCacheFile(s3Object, fileName);
-
-			_s3FileCache.cleanUpCacheFiles();
-
-			return file;
-		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
-		}
-	}
-
-	@Override
 	public InputStream getFileAsStream(
 			long companyId, long repositoryId, String fileName,
 			String versionLabel)
 		throws PortalException {
 
-		File file = getFile(companyId, repositoryId, fileName, versionLabel);
-
 		try {
+			_s3FileCache.cleanUpCacheFiles();
+
+			S3Object s3Object = getS3Object(
+				companyId, repositoryId, fileName, versionLabel);
+
+			File file = _s3FileCache.getCacheFile(s3Object, fileName);
+
 			return new FileInputStream(file);
 		}
-		catch (FileNotFoundException fnfe) {
-			throw new SystemException(fnfe);
+		catch (IOException ioException) {
+			throw new SystemException(ioException);
 		}
-	}
-
-	@Override
-	public String[] getFileNames(long companyId, long repositoryId) {
-		return getFileNames(companyId, repositoryId, StringPool.BLANK);
 	}
 
 	@Override
@@ -267,14 +206,18 @@ public class S3Store extends BaseStore {
 	}
 
 	@Override
-	public long getFileSize(long companyId, long repositoryId, String fileName)
+	public long getFileSize(
+			long companyId, long repositoryId, String fileName,
+			String versionLabel)
 		throws PortalException {
 
-		String headVersionLabel = getHeadVersionLabel(
-			companyId, repositoryId, fileName);
+		if (Validator.isNull(versionLabel)) {
+			versionLabel = getHeadVersionLabel(
+				companyId, repositoryId, fileName);
+		}
 
 		String key = _s3KeyTransformer.getFileVersionKey(
-			companyId, repositoryId, fileName, headVersionLabel);
+			companyId, repositoryId, fileName, versionLabel);
 
 		GetObjectMetadataRequest getObjectMetadataRequest =
 			new GetObjectMetadataRequest(_bucketName, key);
@@ -289,15 +232,37 @@ public class S3Store extends BaseStore {
 		return objectMetadata.getContentLength();
 	}
 
-	public TransferManager getTransferManager() {
-		return _transferManager;
+	@Override
+	public String[] getFileVersions(
+		long companyId, long repositoryId, String fileName) {
+
+		String key = _s3KeyTransformer.getFileKey(
+			companyId, repositoryId, fileName);
+
+		List<S3ObjectSummary> s3ObjectSummaries = getS3ObjectSummaries(key);
+
+		if (s3ObjectSummaries.isEmpty()) {
+			return StringPool.EMPTY_ARRAY;
+		}
+
+		String[] versions = new String[s3ObjectSummaries.size()];
+
+		for (int i = 0; i < s3ObjectSummaries.size(); i++) {
+			S3ObjectSummary s3ObjectSummary = s3ObjectSummaries.get(i);
+
+			String versionKey = s3ObjectSummary.getKey();
+
+			versions[i] = versionKey.substring(
+				versionKey.lastIndexOf(CharPool.SLASH) + 1);
+		}
+
+		Arrays.sort(versions, DLUtil::compareVersions);
+
+		return versions;
 	}
 
-	@Override
-	public boolean hasDirectory(
-		long companyId, long repositoryId, String dirName) {
-
-		return true;
+	public TransferManager getTransferManager() {
+		return _transferManager;
 	}
 
 	@Override
@@ -316,114 +281,23 @@ public class S3Store extends BaseStore {
 
 			return _amazonS3.doesObjectExist(_bucketName, key);
 		}
-		catch (AmazonClientException ace) {
-			if (isFileNotFound(ace)) {
+		catch (AmazonClientException amazonClientException) {
+			if (isFileNotFound(amazonClientException)) {
 				return false;
 			}
 
-			throw transform(ace);
+			throw transform(amazonClientException);
 		}
-		catch (NoSuchFileException nsfe) {
+		catch (NoSuchFileException noSuchFileException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsfe, nsfe);
+				_log.debug(noSuchFileException, noSuchFileException);
 			}
 
 			return false;
 		}
-	}
-
-	@Override
-	public void updateFile(
-			long companyId, long repositoryId, long newRepositoryId,
-			String fileName)
-		throws PortalException {
-
-		if (repositoryId == newRepositoryId) {
-			throw new DuplicateFileException(
-				companyId, newRepositoryId, fileName);
-		}
-
-		String oldKey = _s3KeyTransformer.getFileKey(
-			companyId, repositoryId, fileName);
-		String newKey = _s3KeyTransformer.getFileKey(
-			companyId, newRepositoryId, fileName);
-
-		moveObjects(oldKey, newKey);
-	}
-
-	@Override
-	public void updateFile(
-			long companyId, long repositoryId, String fileName,
-			String newFileName)
-		throws PortalException {
-
-		if (fileName.equals(newFileName)) {
-			throw new DuplicateFileException(companyId, repositoryId, fileName);
-		}
-
-		String oldKey = _s3KeyTransformer.getFileKey(
-			companyId, repositoryId, fileName);
-		String newKey = _s3KeyTransformer.getFileKey(
-			companyId, repositoryId, newFileName);
-
-		moveObjects(oldKey, newKey);
-	}
-
-	@Override
-	public void updateFile(
-			long companyId, long repositoryId, String fileName,
-			String versionLabel, File file)
-		throws PortalException {
-
-		if (hasFile(companyId, repositoryId, fileName, versionLabel)) {
-			throw new DuplicateFileException(
-				companyId, repositoryId, fileName, versionLabel);
-		}
-
-		putObject(companyId, repositoryId, fileName, versionLabel, file);
-	}
-
-	@Override
-	public void updateFile(
-			long companyId, long repositoryId, String fileName,
-			String versionLabel, InputStream is)
-		throws PortalException {
-
-		if (hasFile(companyId, repositoryId, fileName, versionLabel)) {
-			throw new DuplicateFileException(
-				companyId, repositoryId, fileName, versionLabel);
-		}
-
-		File file = null;
-
-		try {
-			file = FileUtil.createTempFile(is);
-
-			putObject(companyId, repositoryId, fileName, versionLabel, file);
-		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
-		}
-		finally {
-			FileUtil.delete(file);
-		}
-	}
-
-	@Override
-	public void updateFileVersion(
-			long companyId, long repositoryId, String fileName,
-			String fromVersionLabel, String toVersionLabel)
-		throws PortalException {
-
-		String oldKey = _s3KeyTransformer.getFileVersionKey(
-			companyId, repositoryId, fileName, fromVersionLabel);
-		String newKey = _s3KeyTransformer.getFileVersionKey(
-			companyId, repositoryId, fileName, toVersionLabel);
-
-		moveObjects(oldKey, newKey);
 	}
 
 	@Activate
@@ -442,15 +316,34 @@ public class S3Store extends BaseStore {
 			_storageClass = StorageClass.fromValue(
 				_s3StoreConfiguration.s3StorageClass());
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			_storageClass = StorageClass.Standard;
 
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					_s3StoreConfiguration.s3StorageClass() +
 						" is not a valid value for the storage class",
-					iae);
+					illegalArgumentException);
 			}
+		}
+	}
+
+	protected void configureConnectionProtocol(
+		ClientConfiguration clientConfiguration) {
+
+		String connectionProtocol = _s3StoreConfiguration.connectionProtocol();
+
+		if (Validator.isNull(connectionProtocol) ||
+			connectionProtocol.equals("DEFAULT")) {
+
+			return;
+		}
+
+		if (connectionProtocol.equals("HTTP")) {
+			clientConfiguration.setProtocol(Protocol.HTTP);
+		}
+		else {
+			clientConfiguration.setProtocol(Protocol.HTTPS);
 		}
 	}
 
@@ -483,6 +376,42 @@ public class S3Store extends BaseStore {
 					_s3StoreConfiguration.ntlmProxyWorkstation());
 			}
 		}
+	}
+
+	protected void configureS3Endpoint(AmazonS3 amazonS3) {
+		String s3Endpoint = _s3StoreConfiguration.s3Endpoint();
+
+		if (Validator.isNull(s3Endpoint)) {
+			return;
+		}
+
+		amazonS3.setEndpoint(s3Endpoint);
+	}
+
+	protected void configureS3PathStyle(AmazonS3 amazonS3) {
+		boolean s3PathStyle = _s3StoreConfiguration.s3PathStyle();
+
+		if (!s3PathStyle) {
+			return;
+		}
+
+		S3ClientOptions s3ClientOptions = new S3ClientOptions();
+
+		s3ClientOptions.setPathStyleAccess(true);
+
+		amazonS3.setS3ClientOptions(s3ClientOptions);
+	}
+
+	protected void configureSignerOverride(
+		ClientConfiguration clientConfiguration) {
+
+		String signerOverride = _s3StoreConfiguration.signerOverride();
+
+		if (Validator.isNull(signerOverride)) {
+			return;
+		}
+
+		clientConfiguration.setSignerOverride(signerOverride);
 	}
 
 	@Deactivate
@@ -524,23 +453,24 @@ public class S3Store extends BaseStore {
 				_amazonS3.deleteObjects(deleteObjectsRequest);
 			}
 		}
-		catch (AmazonClientException ace) {
-			throw transform(ace);
+		catch (AmazonClientException amazonClientException) {
+			throw transform(amazonClientException);
 		}
 	}
 
 	protected AmazonS3 getAmazonS3(
 		AWSCredentialsProvider awsCredentialsProvider) {
 
-		ClientConfiguration clientConfiguration = getClientConfiguration();
-
 		AmazonS3 amazonS3 = new AmazonS3Client(
-			awsCredentialsProvider, clientConfiguration);
+			awsCredentialsProvider, getClientConfiguration());
 
 		Region region = Region.getRegion(
 			Regions.fromName(_s3StoreConfiguration.s3Region()));
 
 		amazonS3.setRegion(region);
+
+		configureS3Endpoint(amazonS3);
+		configureS3PathStyle(amazonS3);
 
 		return amazonS3;
 	}
@@ -570,7 +500,9 @@ public class S3Store extends BaseStore {
 		clientConfiguration.setMaxConnections(
 			_s3StoreConfiguration.httpClientMaxConnections());
 
+		configureConnectionProtocol(clientConfiguration);
 		configureProxySettings(clientConfiguration);
+		configureSignerOverride(clientConfiguration);
 
 		return clientConfiguration;
 	}
@@ -633,13 +565,13 @@ public class S3Store extends BaseStore {
 
 			return s3Object;
 		}
-		catch (AmazonClientException ace) {
-			if (isFileNotFound(ace)) {
+		catch (AmazonClientException amazonClientException) {
+			if (isFileNotFound(amazonClientException)) {
 				throw new NoSuchFileException(
 					companyId, repositoryId, fileName, versionLabel);
 			}
 
-			throw transform(ace);
+			throw transform(amazonClientException);
 		}
 	}
 
@@ -670,8 +602,8 @@ public class S3Store extends BaseStore {
 
 			return s3ObjectSummaries;
 		}
-		catch (AmazonClientException ace) {
-			throw transform(ace);
+		catch (AmazonClientException amazonClientException) {
+			throw transform(amazonClientException);
 		}
 	}
 
@@ -723,47 +655,6 @@ public class S3Store extends BaseStore {
 		activate(properties);
 	}
 
-	protected void moveObjects(String oldPrefix, String newPrefix)
-		throws DuplicateFileException {
-
-		ObjectListing objectListing = _amazonS3.listObjects(
-			_bucketName, newPrefix);
-
-		List<S3ObjectSummary> newS3ObjectSummaries =
-			objectListing.getObjectSummaries();
-
-		if (!newS3ObjectSummaries.isEmpty()) {
-			throw new DuplicateFileException(
-				StringBundler.concat(
-					"Duplicate S3 object found when moving files from ",
-					oldPrefix, " to ", newPrefix));
-		}
-
-		List<S3ObjectSummary> oldS3ObjectSummaries = getS3ObjectSummaries(
-			oldPrefix);
-
-		for (S3ObjectSummary s3ObjectSummary : oldS3ObjectSummaries) {
-			String oldKey = s3ObjectSummary.getKey();
-
-			String newKey = _s3KeyTransformer.moveKey(
-				oldKey, oldPrefix, newPrefix);
-
-			CopyObjectRequest copyObjectRequest = new CopyObjectRequest(
-				_bucketName, oldKey, _bucketName, newKey);
-
-			_amazonS3.copyObject(copyObjectRequest);
-		}
-
-		for (S3ObjectSummary objectSummary : oldS3ObjectSummaries) {
-			String oldKey = objectSummary.getKey();
-
-			DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(
-				_bucketName, oldKey);
-
-			_amazonS3.deleteObject(deleteObjectRequest);
-		}
-	}
-
 	protected void putObject(
 			long companyId, long repositoryId, String fileName,
 			String versionLabel, File file)
@@ -784,10 +675,10 @@ public class S3Store extends BaseStore {
 
 			upload.waitForCompletion();
 		}
-		catch (AmazonClientException ace) {
-			throw transform(ace);
+		catch (AmazonClientException amazonClientException) {
+			throw transform(amazonClientException);
 		}
-		catch (InterruptedException ie) {
+		catch (InterruptedException interruptedException) {
 			upload.abort();
 
 			Thread thread = Thread.currentThread();

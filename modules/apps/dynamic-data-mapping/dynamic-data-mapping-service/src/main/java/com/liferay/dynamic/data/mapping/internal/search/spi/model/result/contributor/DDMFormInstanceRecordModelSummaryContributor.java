@@ -80,11 +80,11 @@ public class DDMFormInstanceRecordModelSummaryContributor
 			String ddmFormInstanceName = ddmFormInstance.getName(locale);
 
 			return LanguageUtil.format(
-				getResourceBundle(locale), "new-entry-for-form-x",
+				getResourceBundle(locale), "form-record-for-form-x",
 				ddmFormInstanceName, false);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return StringPool.BLANK;

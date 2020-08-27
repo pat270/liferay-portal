@@ -1,9 +1,0 @@
-{
-	"cssPath": "index.css",
-	"fragmentEntryKey": "banner",
-	"htmlPath": "index.html",
-	"jsPath": "index.js",
-	"name": "Banner",
-	"thumbnail": "banner.png",
-	"type": "section"
-}

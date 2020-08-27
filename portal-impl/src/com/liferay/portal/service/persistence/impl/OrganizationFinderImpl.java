@@ -22,11 +22,17 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.Type;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.persistence.OrganizationFinder;
 import com.liferay.portal.kernel.service.persistence.OrganizationUtil;
 import com.liferay.portal.kernel.service.persistence.UserUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -106,74 +112,6 @@ public class OrganizationFinderImpl
 	public static final String JOIN_O_BY_USERS_ORGS =
 		OrganizationFinder.class.getName() + ".joinO_ByUsersOrgs";
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #countO_ByKeywords(long, long, String, String, String, Long,
-	 *             Long, LinkedHashMap<String, Object>)}
-	 */
-	@Deprecated
-	@Override
-	public int countByKeywords(
-		long companyId, long parentOrganizationId,
-		String parentOrganizationIdComparator, String keywords, String type,
-		Long regionId, Long countryId, LinkedHashMap<String, Object> params) {
-
-		return countO_ByKeywords(
-			companyId, parentOrganizationId, parentOrganizationIdComparator,
-			keywords, type, regionId, countryId, params);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #countO_ByO_U(long,
-	 *             long)}
-	 */
-	@Deprecated
-	@Override
-	public int countByO_U(long organizationId, long userId) {
-		return countO_ByO_U(organizationId, userId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #countO_ByC_PO_N_T_S_C_Z_R_C(long, long, String, String,
-	 *             String, String, String, String, Long, Long,
-	 *             LinkedHashMap<String, Object>, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public int countByC_PO_N_T_S_C_Z_R_C(
-		long companyId, long parentOrganizationId,
-		String parentOrganizationIdComparator, String name, String type,
-		String street, String city, String zip, Long regionId, Long countryId,
-		LinkedHashMap<String, Object> params, boolean andOperator) {
-
-		return countO_ByC_PO_N_T_S_C_Z_R_C(
-			companyId, parentOrganizationId, parentOrganizationIdComparator,
-			name, type, street, city, zip, regionId, countryId, params,
-			andOperator);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #countO_ByC_PO_N_T_S_C_Z_R_C(long, long, String, String[],
-	 *             String, String[], String[], String[], Long, Long,
-	 *             LinkedHashMap<String, Object>, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public int countByC_PO_N_T_S_C_Z_R_C(
-		long companyId, long parentOrganizationId,
-		String parentOrganizationIdComparator, String[] names, String type,
-		String[] streets, String[] cities, String[] zips, Long regionId,
-		Long countryId, LinkedHashMap<String, Object> params,
-		boolean andOperator) {
-
-		return countO_ByC_PO_N_T_S_C_Z_R_C(
-			companyId, parentOrganizationId, parentOrganizationIdComparator,
-			names, type, streets, cities, zips, regionId, countryId, params,
-			andOperator);
-	}
-
 	@Override
 	public int countO_ByKeywords(
 		long companyId, long parentOrganizationId,
@@ -204,9 +142,10 @@ public class OrganizationFinderImpl
 
 	@Override
 	public int countO_ByO_U(long organizationId, long userId) {
-		LinkedHashMap<String, Object> params1 = new LinkedHashMap<>();
-
-		params1.put("usersOrgs", userId);
+		LinkedHashMap<String, Object> params1 =
+			LinkedHashMapBuilder.<String, Object>put(
+				"usersOrgs", userId
+			).build();
 
 		Session session = null;
 
@@ -215,8 +154,8 @@ public class OrganizationFinderImpl
 
 			return countO_ByOrganizationId(session, organizationId, params1);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -307,12 +246,11 @@ public class OrganizationFinderImpl
 				sql, "LOWER(Address.zip)", StringPool.LIKE, true, zips);
 
 			if (regionId == null) {
-				sql = StringUtil.replace(sql, _REGION_ID_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _REGION_ID_SQL);
 			}
 
 			if (countryId == null) {
-				sql = StringUtil.replace(
-					sql, _COUNTRY_ID_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _COUNTRY_ID_SQL);
 			}
 
 			sql = StringUtil.replace(sql, "[$JOIN$]", getJoin(params));
@@ -331,47 +269,47 @@ public class OrganizationFinderImpl
 
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (doUnion) {
-				qPos.add(groupOrganization);
+				queryPos.add(groupOrganization);
 			}
 
-			setJoin(qPos, params);
+			setJoin(queryPos, params);
 
-			qPos.add(companyId);
-			qPos.add(parentOrganizationId);
+			queryPos.add(companyId);
+			queryPos.add(parentOrganizationId);
 
 			if (Validator.isNotNull(type)) {
-				qPos.add(type);
+				queryPos.add(type);
 			}
 
-			qPos.add(names, 2);
-			qPos.add(streets, 6);
+			queryPos.add(names, 2);
+			queryPos.add(streets, 6);
 
 			if (regionId != null) {
-				qPos.add(regionId);
-				qPos.add(regionId);
+				queryPos.add(regionId);
+				queryPos.add(regionId);
 			}
 
 			if (countryId != null) {
-				qPos.add(countryId);
-				qPos.add(countryId);
+				queryPos.add(countryId);
+				queryPos.add(countryId);
 			}
 
-			qPos.add(cities, 2);
-			qPos.add(zips, 2);
+			queryPos.add(cities, 2);
+			queryPos.add(zips, 2);
 
 			int count = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long l = itr.next();
+			while (iterator.hasNext()) {
+				Long l = iterator.next();
 
 				if (l != null) {
 					count += l.intValue();
@@ -380,8 +318,8 @@ public class OrganizationFinderImpl
 
 			return count;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -406,30 +344,31 @@ public class OrganizationFinderImpl
 			sb.append(getUsersSQL(COUNT_U_BY_C_S_O, queryDefinition));
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sb.toString());
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
+				sb.toString());
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(parentOrganizationId);
-			qPos.add(companyId);
+			queryPos.add(companyId);
+			queryPos.add(parentOrganizationId);
+			queryPos.add(companyId);
 
 			int status = queryDefinition.getStatus();
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(parentOrganizationId);
+			queryPos.add(parentOrganizationId);
 
 			int count = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long l = itr.next();
+			while (iterator.hasNext()) {
+				Long l = iterator.next();
 
 				if (l != null) {
 					count += l.intValue();
@@ -438,99 +377,12 @@ public class OrganizationFinderImpl
 
 			return count;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #findO_ByKeywords(long, long, String, String, String, Long,
-	 *             Long, LinkedHashMap<String, Object>, int, int,
-	 *             OrderByComparator<Organization>)}
-	 */
-	@Deprecated
-	@Override
-	public List<Organization> findByKeywords(
-		long companyId, long parentOrganizationId,
-		String parentOrganizationIdComparator, String keywords, String type,
-		Long regionId, Long countryId, LinkedHashMap<String, Object> params,
-		int start, int end, OrderByComparator<Organization> obc) {
-
-		return findO_ByKeywords(
-			companyId, parentOrganizationId, parentOrganizationIdComparator,
-			keywords, type, regionId, countryId, params, start, end, obc);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #findO_ByNoAssets()}
-	 */
-	@Deprecated
-	@Override
-	public List<Organization> findByNoAssets() {
-		return findO_ByNoAssets();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #findO_ByC_P(long,
-	 *             long, long, int)}
-	 */
-	@Deprecated
-	@Override
-	public List<Long> findByC_P(
-		long companyId, long parentOrganizationId, long previousOrganizationId,
-		int size) {
-
-		return findO_ByC_P(
-			companyId, parentOrganizationId, previousOrganizationId, size);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #findO_ByC_PO_N_T_S_C_Z_R_C(long, long, String, String,
-	 *             String, String, String, String, Long, Long,
-	 *             LinkedHashMap<String, Object>, boolean, int, int,
-	 *             OrderByComparator<Organization>)}
-	 */
-	@Deprecated
-	@Override
-	public List<Organization> findByC_PO_N_T_S_C_Z_R_C(
-		long companyId, long parentOrganizationId,
-		String parentOrganizationIdComparator, String name, String type,
-		String street, String city, String zip, Long regionId, Long countryId,
-		LinkedHashMap<String, Object> params, boolean andOperator, int start,
-		int end, OrderByComparator<Organization> obc) {
-
-		return findO_ByC_PO_N_T_S_C_Z_R_C(
-			companyId, parentOrganizationId, parentOrganizationIdComparator,
-			name, type, street, city, zip, regionId, countryId, params,
-			andOperator, start, end, obc);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #findO_ByC_PO_N_T_S_C_Z_R_C(long, long, String, String[],
-	 *             String, String[], String[], String[], Long, Long,
-	 *             LinkedHashMap<String, Object>, boolean, int, int
-	 *             OrderByComparator<Organization>)}
-	 */
-	@Deprecated
-	@Override
-	public List<Organization> findByC_PO_N_T_S_C_Z_R_C(
-		long companyId, long parentOrganizationId,
-		String parentOrganizationIdComparator, String[] names, String type,
-		String[] streets, String[] cities, String[] zips, Long regionId,
-		Long countryId, LinkedHashMap<String, Object> params,
-		boolean andOperator, int start, int end,
-		OrderByComparator<Organization> obc) {
-
-		return findO_ByC_PO_N_T_S_C_Z_R_C(
-			companyId, parentOrganizationId, parentOrganizationIdComparator,
-			names, type, streets, cities, zips, regionId, countryId, params,
-			andOperator, start, end, obc);
 	}
 
 	@Override
@@ -538,7 +390,7 @@ public class OrganizationFinderImpl
 		long companyId, long parentOrganizationId,
 		String parentOrganizationIdComparator, String keywords, String type,
 		Long regionId, Long countryId, LinkedHashMap<String, Object> params,
-		int start, int end, OrderByComparator<Organization> obc) {
+		int start, int end, OrderByComparator<Organization> orderByComparator) {
 
 		String[] names = null;
 		String[] streets = null;
@@ -559,7 +411,7 @@ public class OrganizationFinderImpl
 		return findO_ByC_PO_N_T_S_C_Z_R_C(
 			companyId, parentOrganizationId, parentOrganizationIdComparator,
 			names, type, streets, cities, zips, regionId, countryId, params,
-			andOperator, start, end, obc);
+			andOperator, start, end, orderByComparator);
 	}
 
 	@Override
@@ -571,18 +423,19 @@ public class OrganizationFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_O_BY_NO_ASSETS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("Organization_", OrganizationImpl.class);
+			sqlQuery.addEntity("Organization_", OrganizationImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(PortalUtil.getClassNameId(Organization.class.getName()));
+			queryPos.add(
+				PortalUtil.getClassNameId(Organization.class.getName()));
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -602,27 +455,27 @@ public class OrganizationFinderImpl
 			String sql = CustomSQLUtil.get(FIND_O_BY_C_P);
 
 			if (previousOrganizationId == 0) {
-				sql = StringUtil.replace(
-					sql, "(organizationId > ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(organizationId > ?) AND");
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("organizationId", Type.LONG);
+			sqlQuery.addScalar("organizationId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (previousOrganizationId > 0) {
-				qPos.add(previousOrganizationId);
+				queryPos.add(previousOrganizationId);
 			}
 
-			qPos.add(companyId);
-			qPos.add(parentOrganizationId);
+			queryPos.add(companyId);
+			queryPos.add(parentOrganizationId);
 
-			return (List<Long>)QueryUtil.list(q, getDialect(), 0, size);
+			return (List<Long>)QueryUtil.list(sqlQuery, getDialect(), 0, size);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -635,7 +488,7 @@ public class OrganizationFinderImpl
 		String parentOrganizationIdComparator, String name, String type,
 		String street, String city, String zip, Long regionId, Long countryId,
 		LinkedHashMap<String, Object> params, boolean andOperator, int start,
-		int end, OrderByComparator<Organization> obc) {
+		int end, OrderByComparator<Organization> orderByComparator) {
 
 		String[] names = CustomSQLUtil.keywords(name);
 		String[] streets = CustomSQLUtil.keywords(street);
@@ -645,7 +498,7 @@ public class OrganizationFinderImpl
 		return findO_ByC_PO_N_T_S_C_Z_R_C(
 			companyId, parentOrganizationId, parentOrganizationIdComparator,
 			names, type, streets, cities, zips, regionId, countryId, params,
-			andOperator, start, end, obc);
+			andOperator, start, end, orderByComparator);
 	}
 
 	@Override
@@ -655,7 +508,7 @@ public class OrganizationFinderImpl
 		String[] streets, String[] cities, String[] zips, Long regionId,
 		Long countryId, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end,
-		OrderByComparator<Organization> obc) {
+		OrderByComparator<Organization> orderByComparator) {
 
 		names = CustomSQLUtil.keywords(names);
 		streets = CustomSQLUtil.keywords(streets);
@@ -715,63 +568,63 @@ public class OrganizationFinderImpl
 		}
 
 		if (regionId == null) {
-			sql = StringUtil.replace(sql, _REGION_ID_SQL, StringPool.BLANK);
+			sql = StringUtil.removeSubstring(sql, _REGION_ID_SQL);
 		}
 
 		if (countryId == null) {
-			sql = StringUtil.replace(sql, _COUNTRY_ID_SQL, StringPool.BLANK);
+			sql = StringUtil.removeSubstring(sql, _COUNTRY_ID_SQL);
 		}
 
 		sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
-		sql = CustomSQLUtil.replaceOrderBy(sql, obc);
+		sql = CustomSQLUtil.replaceOrderBy(sql, orderByComparator);
 
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("orgId", Type.LONG);
+			sqlQuery.addScalar("orgId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (doUnion) {
-				qPos.add(groupOrganization);
+				queryPos.add(groupOrganization);
 			}
 
-			setJoin(qPos, params);
+			setJoin(queryPos, params);
 
-			qPos.add(companyId);
-			qPos.add(parentOrganizationId);
+			queryPos.add(companyId);
+			queryPos.add(parentOrganizationId);
 
 			if (Validator.isNotNull(type)) {
-				qPos.add(type);
+				queryPos.add(type);
 			}
 
-			qPos.add(names, 2);
-			qPos.add(streets, 6);
+			queryPos.add(names, 2);
+			queryPos.add(streets, 6);
 
 			if (regionId != null) {
-				qPos.add(regionId);
-				qPos.add(regionId);
+				queryPos.add(regionId);
+				queryPos.add(regionId);
 			}
 
 			if (countryId != null) {
-				qPos.add(countryId);
-				qPos.add(countryId);
+				queryPos.add(countryId);
+				queryPos.add(countryId);
 			}
 
-			qPos.add(cities, 2);
-			qPos.add(zips, 2);
+			queryPos.add(cities, 2);
+			queryPos.add(zips, 2);
 
 			List<Organization> organizations = new ArrayList<>();
 
-			Iterator<Long> itr = (Iterator<Long>)QueryUtil.iterate(
-				q, getDialect(), start, end);
+			Iterator<Long> iterator = (Iterator<Long>)QueryUtil.iterate(
+				sqlQuery, getDialect(), start, end);
 
-			while (itr.hasNext()) {
-				Long organizationId = itr.next();
+			while (iterator.hasNext()) {
+				Long organizationId = iterator.next();
 
 				Organization organization = OrganizationUtil.findByPrimaryKey(
 					organizationId.longValue());
@@ -781,8 +634,8 @@ public class OrganizationFinderImpl
 
 			return organizations;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -810,54 +663,54 @@ public class OrganizationFinderImpl
 			String sql = CustomSQLUtil.replaceOrderBy(
 				sb.toString(), queryDefinition.getOrderByComparator());
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("organizationId", Type.LONG);
-			q.addScalar("userId", Type.LONG);
+			sqlQuery.addScalar("organizationId", Type.LONG);
+			sqlQuery.addScalar("userId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(parentOrganizationId);
-			qPos.add(companyId);
+			queryPos.add(companyId);
+			queryPos.add(parentOrganizationId);
+			queryPos.add(companyId);
 
 			int status = queryDefinition.getStatus();
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(parentOrganizationId);
+			queryPos.add(parentOrganizationId);
 
 			List<Object> models = new ArrayList<>();
 
-			Iterator<Object[]> itr = (Iterator<Object[]>)QueryUtil.iterate(
-				q, getDialect(), queryDefinition.getStart(),
+			Iterator<Object[]> iterator = (Iterator<Object[]>)QueryUtil.iterate(
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				long organizationId = (Long)array[0];
 
-				Object obj = null;
+				Object object = null;
 
 				if (organizationId > 0) {
-					obj = OrganizationUtil.findByPrimaryKey(organizationId);
+					object = OrganizationUtil.findByPrimaryKey(organizationId);
 				}
 				else {
 					long userId = (Long)array[1];
 
-					obj = UserUtil.findByPrimaryKey(userId);
+					object = UserUtil.findByPrimaryKey(userId);
 				}
 
-				models.add(obj);
+				models.add(object);
 			}
 
 			return models;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -865,28 +718,29 @@ public class OrganizationFinderImpl
 	}
 
 	protected int countO_ByOrganizationId(
-		Session session, long organizationId,
-		LinkedHashMap<String, Object> params) {
+			Session session, long organizationId,
+			LinkedHashMap<String, Object> params)
+		throws PortalException {
 
 		String sql = CustomSQLUtil.get(COUNT_O_BY_ORGANIZATION_ID);
 
 		sql = StringUtil.replace(sql, "[$JOIN$]", getJoin(params));
 		sql = StringUtil.replace(sql, "[$WHERE$]", getWhere(params));
 
-		SQLQuery q = session.createSynchronizedSQLQuery(sql);
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-		q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+		sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-		setJoin(qPos, params);
+		setJoin(queryPos, params);
 
-		qPos.add(organizationId);
+		queryPos.add(organizationId);
 
-		Iterator<Long> itr = q.iterate();
+		Iterator<Long> iterator = sqlQuery.iterate();
 
-		if (itr.hasNext()) {
-			Long count = itr.next();
+		if (iterator.hasNext()) {
+			Long count = iterator.next();
 
 			if (count != null) {
 				return count.intValue();
@@ -910,9 +764,7 @@ public class OrganizationFinderImpl
 				continue;
 			}
 
-			Object value = entry.getValue();
-
-			if (Validator.isNotNull(value)) {
+			if (Validator.isNotNull(entry.getValue())) {
 				sb.append(getJoin(key));
 			}
 		}
@@ -958,8 +810,7 @@ public class OrganizationFinderImpl
 		int status = queryDefinition.getStatus();
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			sql = StringUtil.replace(
-				sql, "(User_.status = ?) AND", StringPool.BLANK);
+			sql = StringUtil.removeSubstring(sql, "(User_.status = ?) AND");
 		}
 
 		return sql;
@@ -1004,7 +855,7 @@ public class OrganizationFinderImpl
 			}
 			else {
 				StringBundler sb = new StringBundler(
-					organizationIds.length * 2 + 1);
+					(organizationIds.length * 2) + 1);
 
 				sb.append("WHERE (");
 
@@ -1033,7 +884,7 @@ public class OrganizationFinderImpl
 				}
 				else {
 					StringBundler sb = new StringBundler(
-						organizationGroupIds.length * 2 + 1);
+						(organizationGroupIds.length * 2) + 1);
 
 					sb.append("WHERE (");
 
@@ -1066,7 +917,7 @@ public class OrganizationFinderImpl
 				join = "WHERE (Organization_.treePath = '')";
 			}
 			else {
-				StringBundler sb = new StringBundler(size * 2 + 1);
+				StringBundler sb = new StringBundler((size * 2) + 1);
 
 				sb.append("WHERE (");
 
@@ -1107,7 +958,8 @@ public class OrganizationFinderImpl
 	}
 
 	protected void setJoin(
-		QueryPos qPos, LinkedHashMap<String, Object> params) {
+			QueryPos queryPos, LinkedHashMap<String, Object> params)
+		throws PortalException {
 
 		if (params == null) {
 			return;
@@ -1129,15 +981,30 @@ public class OrganizationFinderImpl
 					(List<Organization>)value;
 
 				if (!organizationsTree.isEmpty()) {
+					PermissionChecker permissionChecker =
+						PermissionThreadLocal.getPermissionChecker();
+
 					for (Organization organization : organizationsTree) {
-						StringBundler sb = new StringBundler(4);
+						StringBundler sb = new StringBundler(5);
 
 						sb.append(StringPool.PERCENT);
 						sb.append(StringPool.SLASH);
 						sb.append(organization.getOrganizationId());
 						sb.append(StringPool.SLASH);
 
-						qPos.add(sb.toString());
+						if ((permissionChecker != null) &&
+							(permissionChecker.isOrganizationAdmin(
+								organization.getOrganizationId()) ||
+							 permissionChecker.isOrganizationOwner(
+								 organization.getOrganizationId()) ||
+							 OrganizationPermissionUtil.contains(
+								 permissionChecker, organization,
+								 ActionKeys.MANAGE_SUBORGANIZATIONS))) {
+
+							sb.append(StringPool.PERCENT);
+						}
+
+						queryPos.add(sb.toString());
 					}
 				}
 			}
@@ -1145,7 +1012,7 @@ public class OrganizationFinderImpl
 				Long valueLong = (Long)value;
 
 				if (Validator.isNotNull(valueLong)) {
-					qPos.add(valueLong);
+					queryPos.add(valueLong);
 				}
 			}
 			else if (value instanceof Long[]) {
@@ -1153,7 +1020,7 @@ public class OrganizationFinderImpl
 
 				for (Long element : valueArray) {
 					if (Validator.isNotNull(element)) {
-						qPos.add(element);
+						queryPos.add(element);
 					}
 				}
 			}
@@ -1162,7 +1029,7 @@ public class OrganizationFinderImpl
 
 				for (Long[] valueArray : valueDoubleArray) {
 					for (Long valueLong : valueArray) {
-						qPos.add(valueLong);
+						queryPos.add(valueLong);
 					}
 				}
 			}
@@ -1170,7 +1037,7 @@ public class OrganizationFinderImpl
 				String valueString = (String)value;
 
 				if (Validator.isNotNull(valueString)) {
-					qPos.add(valueString);
+					queryPos.add(valueString);
 				}
 			}
 		}

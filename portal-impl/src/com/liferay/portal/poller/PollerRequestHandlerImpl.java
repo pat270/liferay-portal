@@ -132,9 +132,8 @@ public class PollerRequestHandlerImpl
 
 		PollerResponse pollerResponse = (PollerResponse)messagePayload;
 
-		PollerHeader pollerHeader = pollerResponse.getPollerHeader();
-
-		String pollerSessionId = getPollerSessionId(pollerHeader);
+		String pollerSessionId = getPollerSessionId(
+			pollerResponse.getPollerHeader());
 
 		synchronized (_pollerSessions) {
 			PollerSession pollerSession = _pollerSessions.get(pollerSessionId);
@@ -214,8 +213,8 @@ public class PollerRequestHandlerImpl
 					receiveRequestPortletIds.add(portletId);
 				}
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -233,8 +232,8 @@ public class PollerRequestHandlerImpl
 
 					pollerRequests.add(pollerRequest);
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 				}
 			}
 		}
@@ -337,7 +336,7 @@ public class PollerRequestHandlerImpl
 			userId = GetterUtil.getLong(
 				Encryptor.decrypt(company.getKeyObj(), userIdString));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				StringBundler.concat(
 					"Invalid credentials for company id ", companyId,

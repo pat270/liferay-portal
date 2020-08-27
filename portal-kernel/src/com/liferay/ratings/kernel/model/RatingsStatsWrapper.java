@@ -17,10 +17,11 @@ package com.liferay.ratings.kernel.model;
 import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,10 +32,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see RatingsStats
  * @generated
  */
-@ProviderType
 public class RatingsStatsWrapper
 	extends BaseModelWrapper<RatingsStats>
-	implements RatingsStats, ModelWrapper<RatingsStats> {
+	implements ModelWrapper<RatingsStats>, RatingsStats {
 
 	public RatingsStatsWrapper(RatingsStats ratingsStats) {
 		super(ratingsStats);
@@ -44,8 +44,12 @@ public class RatingsStatsWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("statsId", getStatsId());
 		attributes.put("companyId", getCompanyId());
+		attributes.put("createDate", getCreateDate());
+		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("classNameId", getClassNameId());
 		attributes.put("classPK", getClassPK());
 		attributes.put("totalEntries", getTotalEntries());
@@ -57,6 +61,18 @@ public class RatingsStatsWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long statsId = (Long)attributes.get("statsId");
 
 		if (statsId != null) {
@@ -67,6 +83,18 @@ public class RatingsStatsWrapper
 
 		if (companyId != null) {
 			setCompanyId(companyId);
+		}
+
+		Date createDate = (Date)attributes.get("createDate");
+
+		if (createDate != null) {
+			setCreateDate(createDate);
+		}
+
+		Date modifiedDate = (Date)attributes.get("modifiedDate");
+
+		if (modifiedDate != null) {
+			setModifiedDate(modifiedDate);
 		}
 
 		Long classNameId = (Long)attributes.get("classNameId");
@@ -148,6 +176,46 @@ public class RatingsStatsWrapper
 	@Override
 	public long getCompanyId() {
 		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the create date of this ratings stats.
+	 *
+	 * @return the create date of this ratings stats
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this ratings stats.
+	 *
+	 * @return the ct collection ID of this ratings stats
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
+	 * Returns the modified date of this ratings stats.
+	 *
+	 * @return the modified date of this ratings stats
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this ratings stats.
+	 *
+	 * @return the mvcc version of this ratings stats
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -241,6 +309,46 @@ public class RatingsStatsWrapper
 	}
 
 	/**
+	 * Sets the create date of this ratings stats.
+	 *
+	 * @param createDate the create date of this ratings stats
+	 */
+	@Override
+	public void setCreateDate(Date createDate) {
+		model.setCreateDate(createDate);
+	}
+
+	/**
+	 * Sets the ct collection ID of this ratings stats.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ratings stats
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
+	 * Sets the modified date of this ratings stats.
+	 *
+	 * @param modifiedDate the modified date of this ratings stats
+	 */
+	@Override
+	public void setModifiedDate(Date modifiedDate) {
+		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this ratings stats.
+	 *
+	 * @param mvccVersion the mvcc version of this ratings stats
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the primary key of this ratings stats.
 	 *
 	 * @param primaryKey the primary key of this ratings stats
@@ -278,6 +386,20 @@ public class RatingsStatsWrapper
 	@Override
 	public void setTotalScore(double totalScore) {
 		model.setTotalScore(totalScore);
+	}
+
+	@Override
+	public Map<String, Function<RatingsStats, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<RatingsStats, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

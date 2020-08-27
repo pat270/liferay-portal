@@ -22,14 +22,12 @@ import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 
 import java.text.SimpleDateFormat;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.mockito.Mockito;
 
@@ -41,20 +39,20 @@ public class DocumentFixture {
 	public static Document newDocument(
 		long companyId, long groupId, String entryClassName) {
 
-		DocumentImpl document = new DocumentImpl();
+		DocumentImpl documentImpl = new DocumentImpl();
 
-		document.addKeyword(Field.COMPANY_ID, companyId);
-		document.addKeyword(Field.GROUP_ID, groupId);
+		documentImpl.addKeyword(Field.COMPANY_ID, companyId);
+		documentImpl.addKeyword(Field.GROUP_ID, groupId);
 
 		long entryClassPK = RandomTestUtil.randomLong();
 
-		document.addUID(entryClassName, entryClassPK);
+		documentImpl.addUID(entryClassName, entryClassPK);
 
-		DocumentHelper documentHelper = new DocumentHelper(document);
+		DocumentHelper documentHelper = new DocumentHelper(documentImpl);
 
 		documentHelper.setEntryKey(entryClassName, entryClassPK);
 
-		return document;
+		return documentImpl;
 	}
 
 	public void setUp() {
@@ -88,30 +86,37 @@ public class DocumentFixture {
 	}
 
 	protected void setUpPropsUtil() {
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put(PropsKeys.INDEX_DATE_FORMAT_PATTERN, "yyyyMMddHHmmss");
-		properties.put(
-			PropsKeys.INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_ENABLED, "true");
-		properties.put(
-			PropsKeys.INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_SCORES_THRESHOLD,
-			"50");
-		properties.put(PropsKeys.INDEX_SEARCH_HIGHLIGHT_FRAGMENT_SIZE, "80");
-		properties.put(
-			PropsKeys.INDEX_SEARCH_HIGHLIGHT_REQUIRE_FIELD_MATCH, "true");
-		properties.put(PropsKeys.INDEX_SEARCH_HIGHLIGHT_SNIPPET_SIZE, "3");
-		properties.put(PropsKeys.INDEX_SEARCH_QUERY_INDEXING_ENABLED, "true");
-		properties.put(PropsKeys.INDEX_SEARCH_QUERY_INDEXING_THRESHOLD, "50");
-		properties.put(PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_ENABLED, "true");
-		properties.put(
-			PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_MAX, "yyyyMMddHHmmss");
-		properties.put(
-			PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_SCORES_THRESHOLD, "0");
-		properties.put(PropsKeys.INDEX_SEARCH_SCORING_ENABLED, "true");
-		properties.put(
-			PropsKeys.INDEX_SORTABLE_TEXT_FIELDS_TRUNCATED_LENGTH, "255");
-
-		props = PropsTestUtil.setProps(properties);
+		props = PropsTestUtil.setProps(
+			HashMapBuilder.<String, Object>put(
+				PropsKeys.INDEX_DATE_FORMAT_PATTERN, "yyyyMMddHHmmss"
+			).put(
+				PropsKeys.INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_ENABLED,
+				"true"
+			).put(
+				PropsKeys.
+					INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_SCORES_THRESHOLD,
+				"50"
+			).put(
+				PropsKeys.INDEX_SEARCH_HIGHLIGHT_FRAGMENT_SIZE, "80"
+			).put(
+				PropsKeys.INDEX_SEARCH_HIGHLIGHT_REQUIRE_FIELD_MATCH, "true"
+			).put(
+				PropsKeys.INDEX_SEARCH_HIGHLIGHT_SNIPPET_SIZE, "3"
+			).put(
+				PropsKeys.INDEX_SEARCH_QUERY_INDEXING_ENABLED, "true"
+			).put(
+				PropsKeys.INDEX_SEARCH_QUERY_INDEXING_THRESHOLD, "50"
+			).put(
+				PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_ENABLED, "true"
+			).put(
+				PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_MAX, "yyyyMMddHHmmss"
+			).put(
+				PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_SCORES_THRESHOLD, "0"
+			).put(
+				PropsKeys.INDEX_SEARCH_SCORING_ENABLED, "true"
+			).put(
+				PropsKeys.INDEX_SORTABLE_TEXT_FIELDS_TRUNCATED_LENGTH, "255"
+			).build());
 	}
 
 	protected void tearDownFastDateFormatFactoryUtil() {

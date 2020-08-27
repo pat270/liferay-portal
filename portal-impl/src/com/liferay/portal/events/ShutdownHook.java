@@ -14,15 +14,17 @@
 
 package com.liferay.portal.events;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.util.Map;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class ShutdownHook implements Runnable {
 
 	@Override

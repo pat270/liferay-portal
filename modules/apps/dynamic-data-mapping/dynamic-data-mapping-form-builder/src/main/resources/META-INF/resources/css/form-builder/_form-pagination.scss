@@ -50,9 +50,66 @@ $c: '.ddm-form-pagination';
 	padding: 0;
 	position: relative;
 
+	&.bottom .ddm-paginated-builder-dropdown {
+		bottom: 25px;
+	}
+
+	&.top .ddm-paginated-builder-dropdown {
+		top: 32px;
+	}
+}
+
+.horizontal-line {
+	background-color: #cdced9;
+	height: 1px;
+	margin-bottom: 40px;
+	margin-top: 40px;
+	padding: 0 10px;
+}
+
+.page {
+	padding: 0;
+	position: relative;
+
+	.add-page-button-container {
+		align-items: center;
+		display: flex;
+		margin: 24px 0;
+
+		.add-page-button {
+			margin: 0 10px;
+			white-space: nowrap;
+		}
+
+		.horizontal-line {
+			background-color: #cdced9;
+			height: 1px;
+			margin: 4px 0;
+			padding: 0;
+			width: 100%;
+		}
+	}
+
+	h5.pagination {
+		color: #a7a9bc;
+		font-size: 10px;
+		text-transform: uppercase;
+	}
+
 	.ddm-paginated-builder-dropdown {
 		position: absolute;
-		right: 3rem;
+		right: 24px;
+
+		button.dropdown-toggle {
+			border-width: 0;
+			color: #6b6c7e;
+
+			&:hover {
+				background-color: #f7f8f9;
+				border-color: #cdced9;
+				color: #272833;
+			}
+		}
 	}
 
 	&.bottom .ddm-paginated-builder-dropdown {
@@ -60,6 +117,27 @@ $c: '.ddm-form-pagination';
 	}
 
 	&.top .ddm-paginated-builder-dropdown {
-		top: 45px;
+		right: 20px;
+		top: 20px;
+	}
+
+	.ddm-paginated-builder-reorder {
+		position: absolute;
+		right: 60px;
+		top: 32px;
+
+		.reorder-page-button {
+			border-width: 0;
+			margin-right: 4px;
+		}
+	}
+
+	.sheet {
+		margin: 0;
+		padding: 0;
+	}
+
+	.tooltip-inner {
+		width: max-content;
 	}
 }

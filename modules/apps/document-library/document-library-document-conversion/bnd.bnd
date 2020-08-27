@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Document Library Document Conversion
 Bundle-SymbolicName: com.liferay.document.library.document.conversion
-Bundle-Version: 3.0.0
+Bundle-Version: 3.0.12
 Import-Package:\
 	!com.google.common.collect.*,\
 	!com.google.gson.*,\
@@ -15,8 +15,8 @@ Import-Package:\
 	\
 	*
 -includeresource:\
-	@google-collections-[0-9]*.jar,\
-	@gson-[0-9]*.jar,\
-	@httpclient-[0-9]*.jar,\
-	@joda-time-[0-9]*.jar,\
-	@jsontoken-[0-9]*.jar
+	@google-collections-[0-9.]*.jar,\
+	@gson-[0-9.]*.jar,\
+	@httpclient-[0-9.]*.jar,\
+	@joda-time-[0-9.]*.jar,\
+	@jsontoken-[0-9.]*.jar

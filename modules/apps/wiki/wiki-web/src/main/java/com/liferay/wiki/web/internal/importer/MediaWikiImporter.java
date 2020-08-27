@@ -49,12 +49,12 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
+import com.liferay.wiki.constants.WikiPageConstants;
 import com.liferay.wiki.exception.ImportFilesException;
 import com.liferay.wiki.exception.NoSuchPageException;
 import com.liferay.wiki.importer.WikiImporter;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
-import com.liferay.wiki.model.WikiPageConstants;
 import com.liferay.wiki.service.WikiPageLocalService;
 import com.liferay.wiki.validator.WikiPageTitleValidator;
 import com.liferay.wiki.web.internal.translator.MediaWikiToCreoleTranslator;
@@ -141,18 +141,19 @@ public class MediaWikiImporter implements WikiImporter {
 
 			moveFrontPage(userId, node, options);
 		}
-		catch (DocumentException de) {
-			throw new ImportFilesException("Invalid XML file provided", de);
-		}
-		catch (IOException ioe) {
+		catch (DocumentException documentException) {
 			throw new ImportFilesException(
-				"Error reading the files provided", ioe);
+				"Invalid XML file provided", documentException);
 		}
-		catch (PortalException pe) {
-			throw pe;
+		catch (IOException ioException) {
+			throw new ImportFilesException(
+				"Error reading the files provided", ioException);
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (PortalException portalException) {
+			throw portalException;
+		}
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 	}
 
@@ -218,7 +219,7 @@ public class MediaWikiImporter implements WikiImporter {
 			try {
 				page = _wikiPageLocalService.getPage(node.getNodeId(), title);
 			}
-			catch (NoSuchPageException nspe) {
+			catch (NoSuchPageException noSuchPageException) {
 				page = _wikiPageLocalService.addPage(
 					authorUserId, node.getNodeId(), title,
 					WikiPageConstants.NEW, null, true, serviceContext);
@@ -229,8 +230,9 @@ public class MediaWikiImporter implements WikiImporter {
 				content, summary, true, FORMAT_CREOLE, parentTitle,
 				redirectTitle, serviceContext);
 		}
-		catch (Exception e) {
-			throw new PortalException("Error importing page " + title, e);
+		catch (Exception exception) {
+			throw new PortalException(
+				"Error importing page " + title, exception);
 		}
 	}
 
@@ -260,12 +262,12 @@ public class MediaWikiImporter implements WikiImporter {
 		try {
 			DLStoreUtil.validate(fileName, true, inputStream);
 		}
-		catch (PortalException | SystemException e) {
+		catch (PortalException | SystemException exception) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 
 			return false;
@@ -279,35 +281,38 @@ public class MediaWikiImporter implements WikiImporter {
 
 		String frontPageTitle = MapUtil.getString(options, OPTIONS_FRONT_PAGE);
 
-		if (Validator.isNotNull(frontPageTitle)) {
-			frontPageTitle = _wikiPageTitleValidator.normalize(frontPageTitle);
+		if (Validator.isNull(frontPageTitle)) {
+			return;
+		}
 
-			try {
-				if (_wikiPageLocalService.getPagesCount(
-						node.getNodeId(), frontPageTitle, true) > 0) {
+		frontPageTitle = _wikiPageTitleValidator.normalize(frontPageTitle);
 
-					ServiceContext serviceContext = new ServiceContext();
+		try {
+			int count = _wikiPageLocalService.getPagesCount(
+				node.getNodeId(), frontPageTitle, true);
 
-					serviceContext.setAddGroupPermissions(true);
-					serviceContext.setAddGuestPermissions(true);
+			if (count > 0) {
+				ServiceContext serviceContext = new ServiceContext();
 
-					_wikiPageLocalService.renamePage(
-						userId, node.getNodeId(), frontPageTitle,
-						_wikiGroupServiceConfiguration.frontPageName(), false,
-						serviceContext);
-				}
+				serviceContext.setAddGroupPermissions(true);
+				serviceContext.setAddGuestPermissions(true);
+
+				_wikiPageLocalService.renamePage(
+					userId, node.getNodeId(), frontPageTitle,
+					_wikiGroupServiceConfiguration.frontPageName(), false,
+					serviceContext);
 			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					StringBundler sb = new StringBundler(4);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				StringBundler sb = new StringBundler(4);
 
-					sb.append("Could not move ");
-					sb.append(_wikiGroupServiceConfiguration.frontPageName());
-					sb.append(" to the title provided: ");
-					sb.append(frontPageTitle);
+				sb.append("Could not move ");
+				sb.append(_wikiGroupServiceConfiguration.frontPageName());
+				sb.append(" to the title provided: ");
+				sb.append(frontPageTitle);
 
-					_log.warn(sb.toString(), e);
-				}
+				_log.warn(sb.toString(), exception);
 			}
 		}
 	}
@@ -347,7 +352,7 @@ public class MediaWikiImporter implements WikiImporter {
 				_wikiPageLocalService.getPage(
 					node.getNodeId(), SHARED_IMAGES_TITLE);
 			}
-			catch (NoSuchPageException nspe) {
+			catch (NoSuchPageException noSuchPageException) {
 				ServiceContext serviceContext = new ServiceContext();
 
 				serviceContext.setAddGroupPermissions(true);
@@ -400,7 +405,7 @@ public class MediaWikiImporter implements WikiImporter {
 
 					inputStreamOVPs.clear();
 
-					percentage = Math.min(50 + (i * 50) / total, 99);
+					percentage = Math.min(50 + ((i * 50) / total), 99);
 
 					if (progressTracker != null) {
 						progressTracker.setPercent(percentage);
@@ -420,9 +425,9 @@ public class MediaWikiImporter implements WikiImporter {
 
 				try (InputStream inputStream = inputStreamOVP.getValue()) {
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
+						_log.warn(ioException, ioException);
 					}
 				}
 			}
@@ -474,7 +479,7 @@ public class MediaWikiImporter implements WikiImporter {
 			title = _wikiPageTitleValidator.normalize(title);
 
 			percentage = Math.min(
-				10 + (i * (maxPercentage - percentage)) / pageElements.size(),
+				10 + ((i * (maxPercentage - percentage)) / pageElements.size()),
 				maxPercentage);
 
 			progressTracker.setPercent(percentage);
@@ -504,12 +509,12 @@ public class MediaWikiImporter implements WikiImporter {
 						userId, author, node, title, content, summary, usersMap,
 						strictImportMode);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Page with title " + title +
 								" could not be imported",
-							e);
+							exception);
 					}
 				}
 			}
@@ -730,9 +735,9 @@ public class MediaWikiImporter implements WikiImporter {
 
 			return sb.toString();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 
 			return content;

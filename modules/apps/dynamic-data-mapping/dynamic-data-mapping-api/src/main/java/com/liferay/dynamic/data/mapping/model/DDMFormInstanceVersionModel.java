@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -40,8 +42,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDMFormInstanceVersionModel
-	extends BaseModel<DDMFormInstanceVersion>, LocalizedModel, ShardedModel,
-			WorkflowedModel {
+	extends BaseModel<DDMFormInstanceVersion>, CTModel<DDMFormInstanceVersion>,
+			LocalizedModel, MVCCModel, ShardedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -54,6 +56,7 @@ public interface DDMFormInstanceVersionModel
 	 *
 	 * @return the primary key of this ddm form instance version
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -61,7 +64,40 @@ public interface DDMFormInstanceVersionModel
 	 *
 	 * @param primaryKey the primary key of this ddm form instance version
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this ddm form instance version.
+	 *
+	 * @return the mvcc version of this ddm form instance version
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this ddm form instance version.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm form instance version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddm form instance version.
+	 *
+	 * @return the ct collection ID of this ddm form instance version
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddm form instance version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm form instance version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the form instance version ID of this ddm form instance version.

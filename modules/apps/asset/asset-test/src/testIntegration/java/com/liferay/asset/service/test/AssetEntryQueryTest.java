@@ -17,10 +17,12 @@ package com.liferay.asset.service.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetEntryServiceUtil;
+import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
@@ -38,19 +40,20 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portlet.asset.service.impl.AssetEntryServiceImpl;
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.ratings.kernel.service.RatingsEntryServiceUtil;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalServiceUtil;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,7 +75,7 @@ public class AssetEntryQueryTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_group = GroupTestUtil.addGroup();
 
@@ -402,6 +405,21 @@ public class AssetEntryQueryTest {
 	}
 
 	@Test
+	public void testLinkedAssetMultipleLinked() throws Exception {
+		testLinkedAsset(3);
+	}
+
+	@Test
+	public void testLinkedAssetNoLinked() throws Exception {
+		testLinkedAsset(0);
+	}
+
+	@Test
+	public void testLinkedAssetOneLinked() throws Exception {
+		testLinkedAsset(1);
+	}
+
+	@Test
 	public void testNotAllAssetCategories1() throws Exception {
 		testAssetCategories(
 			new long[] {_healthAssetCategoryId}, false, true, 0);
@@ -520,42 +538,6 @@ public class AssetEntryQueryTest {
 		double[] orderedScores = {0.86, 0.6, 0.44, 0.22, 0.2};
 
 		testOrderByRatings(scores, orderedScores, "DESC");
-	}
-
-	@Test
-	public void testOrderByViewCountsAsc() throws Exception {
-		int[] viewCounts = new int[10];
-		int[] orderedViewCounts = new int[10];
-
-		for (int i = 0; i < viewCounts.length; i++) {
-			int randomInt = RandomTestUtil.randomInt();
-
-			viewCounts[i] = randomInt;
-			orderedViewCounts[i] = randomInt;
-		}
-
-		Arrays.sort(orderedViewCounts);
-
-		testOrderByViewCount(viewCounts, orderedViewCounts, "ASC");
-	}
-
-	@Test
-	public void testOrderByViewCountsDesc() throws Exception {
-		int[] viewCounts = new int[10];
-		int[] orderedViewCounts = new int[10];
-
-		for (int i = 0; i < viewCounts.length; i++) {
-			int randomInt = RandomTestUtil.randomInt();
-
-			viewCounts[i] = randomInt;
-			orderedViewCounts[i] = randomInt;
-		}
-
-		Arrays.sort(orderedViewCounts);
-
-		ArrayUtil.reverse(orderedViewCounts);
-
-		testOrderByViewCount(viewCounts, orderedViewCounts, "DESC");
 	}
 
 	protected AssetEntryQuery buildAssetEntryQuery(
@@ -821,6 +803,105 @@ public class AssetEntryQueryTest {
 			not, expectedAssetEntriesCount);
 	}
 
+	protected void testLinkedAsset(int expectedAssetEntriesCount)
+		throws Exception {
+
+		ThreadLocalCache<Object[]> threadLocalCache =
+			ThreadLocalCacheManager.getThreadLocalCache(
+				Lifecycle.REQUEST, AssetEntryServiceImpl.class.getName());
+
+		threadLocalCache.removeAll();
+
+		AssetEntryQuery assetEntryQuery = new AssetEntryQuery();
+
+		assetEntryQuery.setAndOperator(true);
+		assetEntryQuery.setGroupIds(new long[] {_group.getGroupId()});
+
+		int initialAssetEntriesCount = AssetEntryServiceUtil.getEntriesCount(
+			assetEntryQuery);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+
+		BlogsEntry blogsEntry1 = BlogsEntryLocalServiceUtil.addEntry(
+			TestPropsValues.getUserId(), StringUtil.randomString(),
+			StringPool.BLANK, StringUtil.randomString(),
+			RandomTestUtil.randomString(), 1, 1, 1965, 0, 0, true, true, null,
+			StringPool.BLANK, null, null, serviceContext);
+
+		AssetEntry assetEntry1 = AssetEntryLocalServiceUtil.getEntry(
+			BlogsEntry.class.getName(), blogsEntry1.getEntryId());
+
+		List<BlogsEntry> blogsEntries = new ArrayList<>();
+
+		blogsEntries.add(blogsEntry1);
+
+		List<AssetLink> assetLinks = new ArrayList<>();
+
+		Set<Long> linkedAssetEntryIds = new HashSet<>();
+
+		for (int i = 0; i < expectedAssetEntriesCount; i++) {
+			BlogsEntry linkedBlogsEntry = BlogsEntryLocalServiceUtil.addEntry(
+				TestPropsValues.getUserId(), StringUtil.randomString(),
+				StringPool.BLANK, StringUtil.randomString(),
+				RandomTestUtil.randomString(), 1, 1, 1965, 0, 0, true, true,
+				null, StringPool.BLANK, null, null, serviceContext);
+
+			AssetEntry linkedAssetEntry = AssetEntryLocalServiceUtil.getEntry(
+				BlogsEntry.class.getName(), linkedBlogsEntry.getEntryId());
+
+			AssetLink assetLink = AssetLinkLocalServiceUtil.addLink(
+				TestPropsValues.getUserId(), assetEntry1.getEntryId(),
+				linkedAssetEntry.getEntryId(), 0, 0);
+
+			blogsEntries.add(linkedBlogsEntry);
+
+			assetLinks.add(assetLink);
+
+			linkedAssetEntryIds.add(linkedAssetEntry.getEntryId());
+		}
+
+		BlogsEntry notLinkedBlogsEntry = BlogsEntryLocalServiceUtil.addEntry(
+			TestPropsValues.getUserId(), StringUtil.randomString(),
+			StringPool.BLANK, StringUtil.randomString(),
+			RandomTestUtil.randomString(), 1, 1, 1965, 0, 0, true, true, null,
+			StringPool.BLANK, null, null, serviceContext);
+
+		blogsEntries.add(notLinkedBlogsEntry);
+
+		assetEntryQuery.setLinkedAssetEntryId(assetEntry1.getEntryId());
+
+		threadLocalCache.removeAll();
+
+		int assetEntriesCount = AssetEntryServiceUtil.getEntriesCount(
+			assetEntryQuery);
+
+		Assert.assertEquals(
+			initialAssetEntriesCount + expectedAssetEntriesCount,
+			assetEntriesCount);
+
+		List<AssetEntry> assetEntries = AssetEntryServiceUtil.getEntries(
+			assetEntryQuery);
+
+		Assert.assertEquals(
+			assetEntries.toString(),
+			initialAssetEntriesCount + expectedAssetEntriesCount,
+			assetEntries.size());
+
+		for (AssetEntry assetEntry : assetEntries) {
+			Assert.assertTrue(
+				linkedAssetEntryIds.contains(assetEntry.getEntryId()));
+		}
+
+		for (AssetLink assetLink : assetLinks) {
+			AssetLinkLocalServiceUtil.deleteAssetLink(assetLink);
+		}
+
+		for (BlogsEntry blogsEntry : blogsEntries) {
+			BlogsEntryLocalServiceUtil.deleteEntry(blogsEntry);
+		}
+	}
+
 	protected void testOrderByRatings(
 			double[] scores, double[] orderedScores, String orderByType)
 		throws Exception {
@@ -867,56 +948,6 @@ public class AssetEntryQueryTest {
 
 			Assert.assertEquals(
 				ratingsStats.getAverageScore(), orderedScores[i], 0);
-		}
-	}
-
-	protected void testOrderByViewCount(
-			int[] viewCounts, int[] orderedViewCounts, String orderByType)
-		throws Exception {
-
-		ThreadLocalCache<Object[]> threadLocalCache =
-			ThreadLocalCacheManager.getThreadLocalCache(
-				Lifecycle.REQUEST, AssetEntryServiceImpl.class.getName());
-
-		threadLocalCache.removeAll();
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(
-				_group.getGroupId(), TestPropsValues.getUserId());
-
-		Calendar displayDateCalendar = CalendarFactoryUtil.getCalendar(
-			2012, 1, 1);
-
-		for (int viewCount : viewCounts) {
-			BlogsEntry entry = BlogsEntryLocalServiceUtil.addEntry(
-				TestPropsValues.getUserId(), RandomTestUtil.randomString(),
-				RandomTestUtil.randomString(), displayDateCalendar.getTime(),
-				serviceContext);
-
-			AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(
-				BlogsEntry.class.getName(), entry.getEntryId());
-
-			assetEntry.setViewCount(viewCount);
-
-			AssetEntryLocalServiceUtil.updateAssetEntry(assetEntry);
-		}
-
-		threadLocalCache.removeAll();
-
-		AssetEntryQuery assetEntryQuery = buildAssetEntryQuery(
-			_group.getGroupId(), null, null, false, false);
-
-		assetEntryQuery.setOrderByCol1("viewCount");
-		assetEntryQuery.setOrderByType1(orderByType);
-
-		List<AssetEntry> assetEntries = AssetEntryServiceUtil.getEntries(
-			assetEntryQuery);
-
-		for (int i = 0; i < assetEntries.size(); i++) {
-			AssetEntry assetEntry = assetEntries.get(i);
-
-			Assert.assertEquals(
-				assetEntry.getViewCount(), orderedViewCounts[i]);
 		}
 	}
 

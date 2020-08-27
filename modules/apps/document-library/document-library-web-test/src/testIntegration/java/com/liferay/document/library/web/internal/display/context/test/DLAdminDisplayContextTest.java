@@ -17,23 +17,19 @@ package com.liferay.document.library.web.internal.display.context.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
-import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionRequest;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
@@ -49,39 +45,23 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
 
 import java.io.Writer;
 
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Map;
-import java.util.Objects;
 
-import javax.portlet.ActionParameters;
-import javax.portlet.ActionURL;
-import javax.portlet.MimeResponse;
 import javax.portlet.MutableRenderParameters;
-import javax.portlet.PortletConfig;
-import javax.portlet.PortletContext;
 import javax.portlet.PortletMode;
-import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderParameters;
 import javax.portlet.RenderURL;
-import javax.portlet.ResourceURL;
 import javax.portlet.WindowState;
 import javax.portlet.annotations.PortletSerializable;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
-import javax.xml.namespace.QName;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -91,13 +71,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.portlet.MockActionRequest;
-import org.springframework.mock.web.portlet.MockPortletConfig;
-
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
 
 /**
  * @author Cristina González
@@ -144,8 +117,8 @@ public class DLAdminDisplayContextTest {
 			_addDLFileEntry("alpha_" + i + ".txt", "alpha");
 		}
 
-		SearchContainer searchContainer = _getSearchContainer(
-			_getMockHttpServletRequest());
+		SearchContainer<Object> searchContainer = _getSearchContainer(
+			_getMockLiferayPortletActionRequest());
 
 		Assert.assertEquals(25, searchContainer.getTotal());
 	}
@@ -156,8 +129,8 @@ public class DLAdminDisplayContextTest {
 			_addDLFileEntry("alpha_" + i + ".txt", "alpha");
 		}
 
-		SearchContainer searchContainer = _getSearchContainer(
-			_getMockHttpServletRequestWithSearch("alpha"));
+		SearchContainer<Object> searchContainer = _getSearchContainer(
+			_getMockLiferayPortletActionRequestWithSearch("alpha"));
 
 		Assert.assertEquals(25, searchContainer.getTotal());
 	}
@@ -176,50 +149,42 @@ public class DLAdminDisplayContextTest {
 			serviceContext);
 	}
 
-	private HttpServletRequest _getHttpServletRequest(
-		HttpServletRequest httpServletRequest) {
+	private MockLiferayPortletActionRequest
+			_getMockLiferayPortletActionRequest()
+		throws Exception {
 
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
+		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
+			new MockLiferayPortletActionRequest();
 
-		mockHttpServletRequest.setAttribute(
+		mockLiferayPortletActionRequest.setAttribute(
+			JavaConstants.JAVAX_PORTLET_CONFIG, null);
+		mockLiferayPortletActionRequest.setAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST,
-			new MockLiferayPortletRequest(httpServletRequest));
-		mockHttpServletRequest.setAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE,
-			new MockLiferayPortletresponse());
-
-		return mockHttpServletRequest;
-	}
-
-	private MockHttpServletRequest _getMockHttpServletRequest()
-		throws PortalException {
-
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
-
-		mockHttpServletRequest.setAttribute(
+			mockLiferayPortletActionRequest);
+		mockLiferayPortletActionRequest.setAttribute(
+			JavaConstants.JAVAX_PORTLET_RESPONSE, new MockActionResponse());
+		mockLiferayPortletActionRequest.setAttribute(
 			WebKeys.THEME_DISPLAY, _getThemeDisplay());
 
-		return mockHttpServletRequest;
+		return mockLiferayPortletActionRequest;
 	}
 
-	private MockHttpServletRequest _getMockHttpServletRequestWithSearch(
-			String keywords)
-		throws PortalException {
+	private MockLiferayPortletActionRequest
+			_getMockLiferayPortletActionRequestWithSearch(String keywords)
+		throws Exception {
 
-		MockHttpServletRequest mockHttpServletRequest =
-			_getMockHttpServletRequest();
+		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
+			_getMockLiferayPortletActionRequest();
 
-		mockHttpServletRequest.setParameter(
+		mockLiferayPortletActionRequest.setParameter(
 			"mvcRenderCommandName", "/document_library/search");
-		mockHttpServletRequest.setParameter("keywords", keywords);
+		mockLiferayPortletActionRequest.setParameter("keywords", keywords);
 
-		return mockHttpServletRequest;
+		return mockLiferayPortletActionRequest;
 	}
 
-	private SearchContainer _getSearchContainer(
-		MockHttpServletRequest mockHttpServletRequest) {
+	private SearchContainer<Object> _getSearchContainer(
+		MockLiferayPortletActionRequest mockLiferayPortletActionRequest) {
 
 		Object dlAdminDisplayContextProvider = _serviceTracker.getService();
 
@@ -228,13 +193,13 @@ public class DLAdminDisplayContextTest {
 			new Class<?>[] {
 				HttpServletRequest.class, HttpServletResponse.class
 			},
-			_getHttpServletRequest(mockHttpServletRequest), null);
+			mockLiferayPortletActionRequest.getHttpServletRequest(), null);
 
 		return ReflectionTestUtil.invoke(
 			dlAdminDisplayContext, "getSearchContainer", new Class<?>[0], null);
 	}
 
-	private ThemeDisplay _getThemeDisplay() throws PortalException {
+	private ThemeDisplay _getThemeDisplay() throws Exception {
 		ThemeDisplay themeDisplay = new ThemeDisplay();
 
 		themeDisplay.setCompany(_company);
@@ -262,373 +227,12 @@ public class DLAdminDisplayContextTest {
 
 	private Layout _layout;
 
-	private static class MockLiferayPortletConfig
-		extends MockPortletConfig implements LiferayPortletConfig {
-
-		@Override
-		public Portlet getPortlet() {
-			return null;
-		}
-
-		@Override
-		public String getPortletId() {
-			return "testPortlet";
-		}
-
-		@Override
-		public Enumeration<PortletMode> getPortletModes(String mimeType) {
-			return null;
-		}
-
-		@Override
-		public Map<String, QName> getPublicRenderParameterDefinitions() {
-			return null;
-		}
-
-		@Override
-		public Enumeration<WindowState> getWindowStates(String mimeType) {
-			return null;
-		}
-
-		@Override
-		public boolean isCopyRequestParameters() {
-			return false;
-		}
-
-		@Override
-		public boolean isWARFile() {
-			return false;
-		}
-
-	}
-
-	private static class MockLiferayPortletRequest
-		extends MockActionRequest implements LiferayPortletRequest {
-
-		public MockLiferayPortletRequest(
-			HttpServletRequest httpServletRequest) {
-
-			_httpServletRequest = httpServletRequest;
-		}
-
-		@Override
-		public void addParameter(String name, String value) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void cleanUp() {
-		}
-
-		@Override
-		public Map<String, String[]> clearRenderParameters() {
-			return null;
-		}
-
-		@Override
-		public void defineObjects(
-			PortletConfig portletConfig, PortletResponse portletResponse) {
-		}
-
-		@Override
-		public ActionParameters getActionParameters() {
-			return null;
-		}
-
-		@Override
-		public Object getAttribute(String name) {
-			if (Objects.equals(name, JavaConstants.JAVAX_PORTLET_CONFIG)) {
-				return new MockLiferayPortletConfig();
-			}
-
-			return super.getAttribute(name);
-		}
-
-		@Override
-		public long getContentLengthLong() {
-			return 0;
-		}
-
-		@Override
-		public HttpServletRequest getHttpServletRequest() {
-			return _httpServletRequest;
-		}
-
-		@Override
-		public String getLifecycle() {
-			return null;
-		}
-
-		@Override
-		public HttpServletRequest getOriginalHttpServletRequest() {
-			return _httpServletRequest;
-		}
-
-		@Override
-		public Part getPart(String name) {
-			return null;
-		}
-
-		@Override
-		public Collection<Part> getParts() {
-			return null;
-		}
-
-		@Override
-		public long getPlid() {
-			return 0;
-		}
-
-		@Override
-		public Portlet getPortlet() {
-			return null;
-		}
-
-		@Override
-		public PortletContext getPortletContext() {
-			return null;
-		}
-
-		@Override
-		public String getPortletName() {
-			return null;
-		}
-
-		@Override
-		public HttpServletRequest getPortletRequestDispatcherRequest() {
-			return null;
-		}
-
-		@Override
-		public RenderParameters getRenderParameters() {
-			return null;
-		}
-
-		@Override
-		public String getUserAgent() {
-			return null;
-		}
-
-		@Override
-		public void invalidateSession() {
-		}
-
-		@Override
-		public void setPortletRequestDispatcherRequest(
-			HttpServletRequest httpServletRequest) {
-		}
-
-		private final HttpServletRequest _httpServletRequest;
-
-	}
-
-	private static class MockLiferayPortletresponse
-		implements LiferayPortletResponse {
-
-		@Override
-		public void addDateHeader(String name, long date) {
-		}
-
-		@Override
-		public void addHeader(String name, String value) {
-		}
-
-		@Override
-		public void addIntHeader(String name, int value) {
-		}
-
-		@Override
-		public void addProperty(Cookie cookie) {
-		}
-
-		@Override
-		public void addProperty(String key, Element element) {
-		}
-
-		@Override
-		public void addProperty(String key, String value) {
-		}
-
-		@Override
-		public <T extends PortletURL & ActionURL> T createActionURL() {
-			return null;
-		}
-
-		@Override
-		public ActionURL createActionURL(MimeResponse.Copy copy) {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createActionURL(String portletName) {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createActionURL(
-			String portletName, MimeResponse.Copy copy) {
-
-			return null;
-		}
-
-		@Override
-		public Element createElement(String tagName) throws DOMException {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(
-			long plid, String portletName, String lifecycle) {
-
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(
-			long plid, String portletName, String lifecycle,
-			boolean includeLinkToLayoutUuid) {
-
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(
-			long plid, String portletName, String lifecycle,
-			MimeResponse.Copy copy) {
-
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(
-			long plid, String portletName, String lifecycle,
-			MimeResponse.Copy copy, boolean includeLinkToLayoutUuid) {
-
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(String lifecycle) {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(
-			String portletName, String lifecycle) {
-
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createLiferayPortletURL(
-			String portletName, String lifecycle, MimeResponse.Copy copy) {
-
-			return null;
-		}
+	private static class MockActionResponse
+		extends MockLiferayPortletActionResponse {
 
 		@Override
 		public MockPortletURL createRenderURL() {
 			return new MockPortletURL();
-		}
-
-		@Override
-		public RenderURL createRenderURL(MimeResponse.Copy copy) {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createRenderURL(String portletName) {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createRenderURL(
-			String portletName, MimeResponse.Copy copy) {
-
-			return null;
-		}
-
-		@Override
-		public ResourceURL createResourceURL() {
-			return null;
-		}
-
-		@Override
-		public LiferayPortletURL createResourceURL(String portletName) {
-			return null;
-		}
-
-		@Override
-		public String encodeURL(String path) {
-			return null;
-		}
-
-		@Override
-		public HttpServletResponse getHttpServletResponse() {
-			return null;
-		}
-
-		@Override
-		public String getLifecycle() {
-			return null;
-		}
-
-		@Override
-		public String getNamespace() {
-			return null;
-		}
-
-		@Override
-		public Portlet getPortlet() {
-			return null;
-		}
-
-		@Override
-		public Map<String, String[]> getProperties() {
-			return null;
-		}
-
-		@Override
-		public String getProperty(String key) {
-			return null;
-		}
-
-		@Override
-		public Collection<String> getPropertyNames() {
-			return null;
-		}
-
-		@Override
-		public Collection<String> getPropertyValues(String name) {
-			return null;
-		}
-
-		@Override
-		public void setDateHeader(String name, long date) {
-		}
-
-		@Override
-		public void setHeader(String name, String value) {
-		}
-
-		@Override
-		public void setIntHeader(String name, int value) {
-		}
-
-		@Override
-		public void setProperty(String key, String value) {
-		}
-
-		@Override
-		public void setURLEncoder(URLEncoder urlEncoder) {
-		}
-
-		@Override
-		public void transferHeaders(HttpServletResponse httpServletResponse) {
-		}
-
-		@Override
-		public void transferMarkupHeadElements() {
 		}
 
 	}

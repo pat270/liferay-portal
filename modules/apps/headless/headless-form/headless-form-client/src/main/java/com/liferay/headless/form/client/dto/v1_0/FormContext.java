@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class FormContext {
+public class FormContext implements Cloneable {
+
+	public static FormContext toDTO(String json) {
+		return FormContextSerDes.toDTO(json);
+	}
 
 	public FormFieldValue[] getFormFieldValues() {
 		return formFieldValues;
@@ -138,6 +142,11 @@ public class FormContext {
 	}
 
 	protected Boolean showSubmitButton;
+
+	@Override
+	public FormContext clone() throws CloneNotSupportedException {
+		return (FormContext)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

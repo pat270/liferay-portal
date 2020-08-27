@@ -19,8 +19,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ITEM_ENTRY_DRAG_ICON</td>
+	<td>//div[contains(@class,'navigation-menu-item')][@data-title='${key_sourceItemName}']//*[name()='svg'][contains(@class,'lexicon-icon-drag')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ITEM_ENTRY_N</td>
 	<td>xpath=(//div[contains(@class,'navigation-menu-item__content')])[${key_index}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ITEM_ENTRY_NESTED</td>
+	<td>//div[contains(@class,'navigation-menu-item')][@data-title='${key_parentItemName}']/div[contains(@class,'navigation-menu-item')][@data-title='${key_itemName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -34,13 +44,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SET_CUSTOM_NAME_CHECKBOX</td>
-	<td>//label[contains(.,'Set Custom Name')]/input[@type='checkbox']</td>
+	<td>USE_CUSTOM_NAME_CHECKBOX</td>
+	<td>//label[contains(.,'Use Custom Name')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SIDEBAR</td>
 	<td>//div[contains(@class,'sidebar')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SCOPE_COG</td>
+	<td>//div[contains(@class,'scope-selector')]//*[*[name()='svg'][contains(@class,'lexicon-icon-cog')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -50,7 +65,12 @@
 </tr>
 <tr>
 	<td>SIDEBAR_ITEM_NAME</td>
-	<td>//div[contains(@class,'sidebar-header')][contains(.,'${key_itemName}')]</td>
+	<td>//div[contains(@class,'sidebar-header')]//p[contains(.,'${key_itemName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MENU_ADD_NEW_PAGES</td>
+	<td>//*[@data-qa-id='row' and contains(.,'${key_rowEntry}')]/td[contains(@class,'lfr-add-new-pages') and contains(.,'${key_addNewPages}')]</td>
 	<td></td>
 </tr>
 <tr>

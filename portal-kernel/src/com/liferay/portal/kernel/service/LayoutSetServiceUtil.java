@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for LayoutSet. This utility wraps
  * <code>com.liferay.portal.service.impl.LayoutSetServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetService
  * @generated
  */
-@ProviderType
 public class LayoutSetServiceUtil {
 
 	/*
@@ -78,35 +75,35 @@ public class LayoutSetServiceUtil {
 	}
 
 	public static void updateLogo(
-			long groupId, boolean privateLayout, boolean logo, byte[] bytes)
+			long groupId, boolean privateLayout, boolean hasLogo, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		getService().updateLogo(groupId, privateLayout, logo, bytes);
+		getService().updateLogo(groupId, privateLayout, hasLogo, bytes);
 	}
 
 	public static void updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
+			long groupId, boolean privateLayout, boolean hasLogo,
 			java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		getService().updateLogo(groupId, privateLayout, logo, file);
+		getService().updateLogo(groupId, privateLayout, hasLogo, file);
 	}
 
 	public static void updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
+			long groupId, boolean privateLayout, boolean hasLogo,
 			java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		getService().updateLogo(groupId, privateLayout, logo, inputStream);
+		getService().updateLogo(groupId, privateLayout, hasLogo, inputStream);
 	}
 
 	public static void updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
+			long groupId, boolean privateLayout, boolean hasLogo,
 			java.io.InputStream inputStream, boolean cleanUpStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().updateLogo(
-			groupId, privateLayout, logo, inputStream, cleanUpStream);
+			groupId, privateLayout, hasLogo, inputStream, cleanUpStream);
 	}
 
 	public static com.liferay.portal.kernel.model.LayoutSet updateLookAndFeel(
@@ -125,12 +122,26 @@ public class LayoutSetServiceUtil {
 		return getService().updateSettings(groupId, privateLayout, settings);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 #updateVirtualHosts(long, boolean, TreeMap)}
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.LayoutSet updateVirtualHost(
-			long groupId, boolean privateLayout, String virtualHost)
+			long groupId, boolean privateLayout, String virtualHostname)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateVirtualHost(
-			groupId, privateLayout, virtualHost);
+			groupId, privateLayout, virtualHostname);
+	}
+
+	public static com.liferay.portal.kernel.model.LayoutSet updateVirtualHosts(
+			long groupId, boolean privateLayout,
+			java.util.TreeMap<String, String> virtualHostnames)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateVirtualHosts(
+			groupId, privateLayout, virtualHostnames);
 	}
 
 	public static LayoutSetService getService() {

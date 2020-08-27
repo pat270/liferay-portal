@@ -17,10 +17,10 @@ package com.liferay.journal.internal.security.permission.resource;
 import com.liferay.exportimport.kernel.staging.permission.StagingPermission;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.constants.JournalConstants;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.petra.function.UnsafeFunction;
@@ -58,13 +58,14 @@ import org.osgi.service.component.annotations.Reference;
 public class JournalArticleModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", JournalArticle.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<JournalArticle>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				JournalArticle.class, JournalArticle::getResourcePrimKey,
 				classPK -> {
@@ -80,14 +81,32 @@ public class JournalArticleModelResourcePermissionRegistrar {
 				_portletResourcePermission,
 				(modelResourcePermission, consumer) -> {
 					consumer.accept(
-						new StagedModelPermissionLogic<>(
+						new StagedModelPermissionLogic<JournalArticle>(
 							_stagingPermission, JournalPortletKeys.JOURNAL,
-							JournalArticle::getResourcePrimKey));
+							JournalArticle::getResourcePrimKey) {
+
+							@Override
+							public Boolean contains(
+								PermissionChecker permissionChecker,
+								String name, JournalArticle journalArticle,
+								String actionId) {
+
+								if (actionId.equals(ActionKeys.SUBSCRIBE)) {
+									return null;
+								}
+
+								return super.contains(
+									permissionChecker, name, journalArticle,
+									actionId);
+							}
+
+						});
 					consumer.accept(
 						new WorkflowedModelPermissionLogic<>(
 							_workflowPermission, modelResourcePermission,
 							_groupLocalService, JournalArticle::getId));
-					consumer.accept(new JournalArticleConfigurationLogic());
+					consumer.accept(
+						new JournalArticleConfigurationModelResourcePermissionLogic());
 					consumer.accept(
 						new DynamicInheritancePermissionLogic<>(
 							_journalFolderModelResourcePermission,
@@ -97,7 +116,7 @@ public class JournalArticleModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -145,7 +164,8 @@ public class JournalArticleModelResourcePermissionRegistrar {
 	)
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<JournalArticle>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;
@@ -153,7 +173,7 @@ public class JournalArticleModelResourcePermissionRegistrar {
 	@Reference
 	private WorkflowPermission _workflowPermission;
 
-	private class JournalArticleConfigurationLogic
+	private class JournalArticleConfigurationModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<JournalArticle> {
 
 		@Override
@@ -178,11 +198,11 @@ public class JournalArticleModelResourcePermissionRegistrar {
 					return true;
 				}
 			}
-			catch (ConfigurationException ce) {
+			catch (ConfigurationException configurationException) {
 				_log.error(
 					"Unable to get journal service configuration for company " +
 						permissionChecker.getCompanyId(),
-					ce);
+					configurationException);
 
 				return false;
 			}

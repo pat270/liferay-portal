@@ -29,17 +29,17 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRole;
-import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
-import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
-import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalServiceUtil;
-import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
-import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
+import com.liferay.portal.kernel.service.UserGroupLocalService;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl;
 import com.liferay.portal.workflow.kaleo.runtime.util.RoleUtil;
@@ -57,10 +57,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Michael C. Han
  */
+@Component(service = KaleoTaskInstanceTokenFinder.class)
 public class KaleoTaskInstanceTokenFinderImpl
 	extends KaleoTaskInstanceTokenFinderBaseImpl
 	implements KaleoTaskInstanceTokenFinder {
@@ -71,6 +77,9 @@ public class KaleoTaskInstanceTokenFinderImpl
 	public static final String FIND_BY_C_KTAI =
 		KaleoTaskInstanceTokenFinder.class.getName() + ".findByC_KTAI";
 
+	public KaleoTaskInstanceTokenFinderImpl() {
+	}
+
 	@Override
 	public int countKaleoTaskInstanceTokens(
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
@@ -80,13 +89,13 @@ public class KaleoTaskInstanceTokenFinderImpl
 		try {
 			session = openSession();
 
-			SQLQuery q = buildKaleoTaskInstanceTokenQuerySQL(
+			SQLQuery sqlQuery = buildKaleoTaskInstanceTokenQuerySQL(
 				kaleoTaskInstanceTokenQuery, true, session);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -95,8 +104,8 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -112,18 +121,18 @@ public class KaleoTaskInstanceTokenFinderImpl
 		try {
 			session = openSession();
 
-			SQLQuery q = buildKaleoTaskInstanceTokenQuerySQL(
+			SQLQuery sqlQuery = buildKaleoTaskInstanceTokenQuerySQL(
 				kaleoTaskInstanceTokenQuery, false, session);
 
 			List<KaleoTaskInstanceToken> kaleoTaskInstanceTokens =
 				new ArrayList<>();
 
-			Iterator<Long> itr = (Iterator<Long>)QueryUtil.iterate(
-				q, getDialect(), kaleoTaskInstanceTokenQuery.getStart(),
+			Iterator<Long> iterator = (Iterator<Long>)QueryUtil.iterate(
+				sqlQuery, getDialect(), kaleoTaskInstanceTokenQuery.getStart(),
 				kaleoTaskInstanceTokenQuery.getEnd());
 
-			while (itr.hasNext()) {
-				long kaleoTaskInstanceTokenId = itr.next();
+			while (iterator.hasNext()) {
+				long kaleoTaskInstanceTokenId = iterator.next();
 
 				KaleoTaskInstanceToken kaleoTaskInstanceToken =
 					KaleoTaskInstanceTokenUtil.findByPrimaryKey(
@@ -134,8 +143,8 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 			return kaleoTaskInstanceTokens;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -163,7 +172,7 @@ public class KaleoTaskInstanceTokenFinderImpl
 			return true;
 		}
 
-		if (Validator.isNotNull(kaleoTaskInstanceTokenQuery.getTaskName())) {
+		if (ArrayUtil.isNotEmpty(kaleoTaskInstanceTokenQuery.getTaskNames())) {
 			return true;
 		}
 
@@ -191,11 +200,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 		sql = _customSQL.appendCriteria(
 			sql, getAssigneeClassName(kaleoTaskInstanceTokenQuery));
 		sql = _customSQL.appendCriteria(
-			sql, getAssigneeClassPK(kaleoTaskInstanceTokenQuery));
+			sql, getAssigneeClassPKs(kaleoTaskInstanceTokenQuery));
 		sql = _customSQL.appendCriteria(
 			sql, getCompleted(kaleoTaskInstanceTokenQuery));
 		sql = _customSQL.appendCriteria(
-			sql, getKaleoInstanceId(kaleoTaskInstanceTokenQuery));
+			sql, getKaleoInstanceIds(kaleoTaskInstanceTokenQuery));
 		sql = _customSQL.appendCriteria(
 			sql, getRoleIds(kaleoTaskInstanceTokenQuery));
 		sql = _customSQL.appendCriteria(
@@ -248,7 +257,7 @@ public class KaleoTaskInstanceTokenFinderImpl
 					(kaleoTaskInstanceTokenQuery.getDueDateGT() == null)));
 			sql = _customSQL.appendCriteria(
 				sql,
-				getTaskName(
+				getTaskNames(
 					kaleoTaskInstanceTokenQuery,
 					ArrayUtil.isEmpty(
 						kaleoTaskInstanceTokenQuery.getAssetPrimaryKeys()) &&
@@ -266,27 +275,28 @@ public class KaleoTaskInstanceTokenFinderImpl
 						kaleoTaskInstanceTokenQuery.getAssetTypes()) &&
 					(kaleoTaskInstanceTokenQuery.getDueDateGT() == null) &&
 					(kaleoTaskInstanceTokenQuery.getDueDateLT() == null) &&
-					Validator.isNull(
-						kaleoTaskInstanceTokenQuery.getTaskName())));
+					ArrayUtil.isEmpty(
+						kaleoTaskInstanceTokenQuery.getTaskNames())));
 			sql = _customSQL.appendCriteria(sql, ")");
 
 			sql = _customSQL.replaceAndOperator(
 				sql, kaleoTaskInstanceTokenQuery.isAndOperator());
 		}
 
-		OrderByComparator<KaleoTaskInstanceToken> obc =
+		OrderByComparator<KaleoTaskInstanceToken> orderByComparator =
 			kaleoTaskInstanceTokenQuery.getOrderByComparator();
 
-		if (obc != null) {
+		if (orderByComparator != null) {
 			StringBundler sb = new StringBundler(sql);
 
-			appendOrderByComparator(sb, _ORDER_BY_ENTITY_ALIAS, obc);
+			appendOrderByComparator(
+				sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
 			sql = sb.toString();
 
-			String[] orderByFields = obc.getOrderByFields();
+			String[] orderByFields = orderByComparator.getOrderByFields();
 
-			sb = new StringBundler(orderByFields.length * 3 + 1);
+			sb = new StringBundler((orderByFields.length * 3) + 1);
 
 			sb.append(
 				"DISTINCT KaleoTaskInstanceToken.kaleoTaskInstanceTokenId");
@@ -301,38 +311,36 @@ public class KaleoTaskInstanceTokenFinderImpl
 				sb.append(orderByField);
 			}
 
-			sql = sql.replace(
-				"DISTINCT KaleoTaskInstanceToken.kaleoTaskInstanceTokenId",
+			sql = StringUtil.replace(
+				sql, "DISTINCT KaleoTaskInstanceToken.kaleoTaskInstanceTokenId",
 				sb.toString());
 		}
 
-		SQLQuery q = session.createSynchronizedSQLQuery(sql);
+		SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
 		if (count) {
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 		}
 		else {
-			q.addScalar("KaleoTaskInstanceTokenId", Type.LONG);
+			sqlQuery.addScalar("KaleoTaskInstanceTokenId", Type.LONG);
 		}
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-		qPos.add(kaleoTaskInstanceTokenQuery.getCompanyId());
+		queryPos.add(kaleoTaskInstanceTokenQuery.getCompanyId());
 
-		setAssigneeClassName(qPos, kaleoTaskInstanceTokenQuery);
-		setAssigneeClassPK(qPos, kaleoTaskInstanceTokenQuery);
-		setCompleted(qPos, kaleoTaskInstanceTokenQuery);
-		setKaleoInstanceId(qPos, kaleoTaskInstanceTokenQuery);
+		setAssigneeClassName(queryPos, kaleoTaskInstanceTokenQuery);
+		setCompleted(queryPos, kaleoTaskInstanceTokenQuery);
 
-		setAssetPrimaryKey(qPos, kaleoTaskInstanceTokenQuery);
-		setAssetType(qPos, kaleoTaskInstanceTokenQuery);
-		setDueDateGT(qPos, kaleoTaskInstanceTokenQuery);
-		setDueDateLT(qPos, kaleoTaskInstanceTokenQuery);
-		setTaskName(qPos, kaleoTaskInstanceTokenQuery);
+		setAssetPrimaryKey(queryPos, kaleoTaskInstanceTokenQuery);
+		setAssetType(queryPos, kaleoTaskInstanceTokenQuery);
+		setDueDateGT(queryPos, kaleoTaskInstanceTokenQuery);
+		setDueDateLT(queryPos, kaleoTaskInstanceTokenQuery);
+		setTaskNames(queryPos, kaleoTaskInstanceTokenQuery);
 
-		setAssetTitle(qPos, kaleoTaskInstanceTokenQuery);
+		setAssetTitle(queryPos, kaleoTaskInstanceTokenQuery);
 
-		return q;
+		return sqlQuery;
 	}
 
 	protected String getAssetPrimaryKey(
@@ -374,7 +382,7 @@ public class KaleoTaskInstanceTokenFinderImpl
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(assetTitles.length * 2 + 1);
+		StringBundler sb = new StringBundler((assetTitles.length * 2) + 1);
 
 		if (!firstCriteria) {
 			sb.append("[$AND_OR_CONNECTOR$] (");
@@ -433,26 +441,41 @@ public class KaleoTaskInstanceTokenFinderImpl
 	protected String getAssigneeClassName(
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
-		String assigneeClassName =
-			kaleoTaskInstanceTokenQuery.getAssigneeClassName();
+		if (Validator.isNull(
+				kaleoTaskInstanceTokenQuery.getAssigneeClassName())) {
 
-		if (Validator.isNull(assigneeClassName)) {
 			return StringPool.BLANK;
 		}
 
 		return "AND (KaleoTaskAssignmentInstance.assigneeClassName = ?)";
 	}
 
-	protected String getAssigneeClassPK(
+	protected String getAssigneeClassPKs(
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
-		Long assigneeClassPK = kaleoTaskInstanceTokenQuery.getAssigneeClassPK();
+		Long[] assigneeClassPKs =
+			kaleoTaskInstanceTokenQuery.getAssigneeClassPKs();
 
-		if (assigneeClassPK == null) {
+		if (ArrayUtil.isEmpty(assigneeClassPKs)) {
 			return StringPool.BLANK;
 		}
 
-		return "AND (KaleoTaskAssignmentInstance.assigneeClassPK = ?)";
+		StringBundler sb = new StringBundler((assigneeClassPKs.length * 2) + 1);
+
+		sb.append("AND (KaleoTaskAssignmentInstance.assigneeClassPK IN (");
+
+		sb.append(
+			Stream.of(
+				assigneeClassPKs
+			).map(
+				String::valueOf
+			).collect(
+				Collectors.joining(StringPool.COMMA_AND_SPACE)
+			));
+
+		sb.append("))");
+
+		return sb.toString();
 	}
 
 	protected String getCompleted(
@@ -501,16 +524,32 @@ public class KaleoTaskInstanceTokenFinderImpl
 		return NOT_FIRST_DUE_DATE_LT;
 	}
 
-	protected String getKaleoInstanceId(
+	protected String getKaleoInstanceIds(
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
-		Long kaleoInstanceId = kaleoTaskInstanceTokenQuery.getKaleoInstanceId();
+		Long[] kaleoInstanceIds =
+			kaleoTaskInstanceTokenQuery.getKaleoInstanceIds();
 
-		if (kaleoInstanceId == null) {
+		if (ArrayUtil.isEmpty(kaleoInstanceIds)) {
 			return StringPool.BLANK;
 		}
 
-		return "AND (KaleoTaskInstanceToken.kaleoInstanceId = ?)";
+		StringBundler sb = new StringBundler((kaleoInstanceIds.length * 2) + 1);
+
+		sb.append("AND (KaleoTaskInstanceToken.kaleoInstanceId IN (");
+
+		sb.append(
+			Stream.of(
+				kaleoInstanceIds
+			).map(
+				String::valueOf
+			).collect(
+				Collectors.joining(StringPool.COMMA_AND_SPACE)
+			));
+
+		sb.append("))");
+
+		return sb.toString();
 	}
 
 	protected String getRoleIds(
@@ -533,12 +572,12 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		sb.append("AND (KaleoTaskAssignmentInstance.assigneeClassPK IN (");
 
-		Iterator<Long> itr = roleIds.iterator();
+		Iterator<Long> iterator = roleIds.iterator();
 
-		while (itr.hasNext()) {
-			sb.append(itr.next());
+		while (iterator.hasNext()) {
+			sb.append(iterator.next());
 
-			if (itr.hasNext()) {
+			if (iterator.hasNext()) {
 				sb.append(", ");
 			}
 		}
@@ -555,26 +594,25 @@ public class KaleoTaskInstanceTokenFinderImpl
 		List<Long> roleIds = RoleUtil.getRoleIds(
 			kaleoTaskInstanceTokenQuery.getServiceContext());
 
-		User user = UserLocalServiceUtil.getUserById(
+		User user = _userLocalService.getUserById(
 			kaleoTaskInstanceTokenQuery.getUserId());
 
 		List<Group> groups = new ArrayList<>();
 
 		groups.addAll(user.getGroups());
 		groups.addAll(
-			GroupLocalServiceUtil.getOrganizationsGroups(
+			_groupLocalService.getOrganizationsGroups(user.getOrganizations()));
+		groups.addAll(
+			_groupLocalService.getOrganizationsRelatedGroups(
 				user.getOrganizations()));
 		groups.addAll(
-			GroupLocalServiceUtil.getOrganizationsRelatedGroups(
-				user.getOrganizations()));
+			_groupLocalService.getUserGroupsGroups(user.getUserGroups()));
 		groups.addAll(
-			GroupLocalServiceUtil.getUserGroupsGroups(user.getUserGroups()));
-		groups.addAll(
-			GroupLocalServiceUtil.getUserGroupsRelatedGroups(
+			_groupLocalService.getUserGroupsRelatedGroups(
 				user.getUserGroups()));
 
 		for (Group group : groups) {
-			List<Role> roles = RoleLocalServiceUtil.getGroupRoles(
+			List<Role> roles = _roleLocalService.getGroupRoles(
 				group.getGroupId());
 
 			for (Role role : roles) {
@@ -603,7 +641,7 @@ public class KaleoTaskInstanceTokenFinderImpl
 			Map<Long, Set<Long>> roleIdGroupIdsMap = new HashMap<>();
 
 			List<UserGroupRole> userGroupRoles =
-				UserGroupRoleLocalServiceUtil.getUserGroupRoles(
+				_userGroupRoleLocalService.getUserGroupRoles(
 					kaleoTaskInstanceTokenQuery.getUserId());
 
 			for (UserGroupRole userGroupRole : userGroupRoles) {
@@ -668,12 +706,12 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 					Set<Long> groupIds = entry.getValue();
 
-					Iterator<Long> itr = groupIds.iterator();
+					Iterator<Long> iterator = groupIds.iterator();
 
-					while (itr.hasNext()) {
-						sb.append(itr.next());
+					while (iterator.hasNext()) {
+						sb.append(iterator.next());
 
-						if (itr.hasNext()) {
+						if (iterator.hasNext()) {
 							sb.append(", ");
 						}
 					}
@@ -712,23 +750,31 @@ public class KaleoTaskInstanceTokenFinderImpl
 		return KaleoTaskInstanceTokenModelImpl.TABLE_COLUMNS_MAP;
 	}
 
-	protected String getTaskName(
+	protected String getTaskNames(
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery,
 		boolean firstCriteria) {
 
-		String taskName = kaleoTaskInstanceTokenQuery.getTaskName();
-
-		if (Validator.isNull(taskName)) {
-			return StringPool.BLANK;
-		}
-
-		String[] taskNames = _customSQL.keywords(taskName, false);
+		String[] taskNames = kaleoTaskInstanceTokenQuery.getTaskNames();
 
 		if (ArrayUtil.isEmpty(taskNames)) {
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(taskNames.length * 2 + 1);
+		taskNames = Stream.of(
+			taskNames
+		).map(
+			taskName -> _customSQL.keywords(taskName, false)
+		).flatMap(
+			Stream::of
+		).toArray(
+			String[]::new
+		);
+
+		if (ArrayUtil.isEmpty(taskNames)) {
+			return StringPool.BLANK;
+		}
+
+		StringBundler sb = new StringBundler((taskNames.length * 2) + 1);
 
 		if (!firstCriteria) {
 			sb.append("[$AND_OR_CONNECTOR$] (");
@@ -745,7 +791,7 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		sb.setIndex(sb.index() - 1);
 
-		sb.append(")");
+		sb.append(StringPool.CLOSE_PARENTHESIS);
 
 		return sb.toString();
 	}
@@ -755,12 +801,12 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		List<UserGroupGroupRole> userGroupGroupRoles = new ArrayList<>();
 
-		List<UserGroup> userGroups =
-			UserGroupLocalServiceUtil.getUserUserGroups(userId);
+		List<UserGroup> userGroups = _userGroupLocalService.getUserUserGroups(
+			userId);
 
 		for (UserGroup userGroup : userGroups) {
 			userGroupGroupRoles.addAll(
-				UserGroupGroupRoleLocalServiceUtil.getUserGroupGroupRoles(
+				_userGroupGroupRoleLocalService.getUserGroupGroupRoles(
 					userGroup.getUserGroupId()));
 		}
 
@@ -782,7 +828,7 @@ public class KaleoTaskInstanceTokenFinderImpl
 	}
 
 	protected void setAssetPrimaryKey(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		Long[] assetPrimaryKeys =
@@ -792,11 +838,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 			return;
 		}
 
-		qPos.add(assetPrimaryKeys);
+		queryPos.add(assetPrimaryKeys);
 	}
 
 	protected void setAssetTitle(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		String assetTitle = kaleoTaskInstanceTokenQuery.getAssetTitle();
@@ -807,11 +853,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		String[] assetTitles = _customSQL.keywords(assetTitle, false);
 
-		qPos.add(assetTitles);
+		queryPos.add(assetTitles);
 	}
 
 	protected void setAssetType(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		String[] assetTypes = kaleoTaskInstanceTokenQuery.getAssetTypes();
@@ -822,11 +868,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		assetTypes = _customSQL.keywords(assetTypes, false);
 
-		qPos.add(assetTypes);
+		queryPos.add(assetTypes);
 	}
 
 	protected void setAssigneeClassName(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		String assigneeClassName =
@@ -836,24 +882,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 			return;
 		}
 
-		qPos.add(assigneeClassName);
-	}
-
-	protected void setAssigneeClassPK(
-		QueryPos qPos,
-		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
-
-		Long assigneeClassPK = kaleoTaskInstanceTokenQuery.getAssigneeClassPK();
-
-		if (assigneeClassPK == null) {
-			return;
-		}
-
-		qPos.add(assigneeClassPK);
+		queryPos.add(assigneeClassName);
 	}
 
 	protected void setCompleted(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		Boolean completed = kaleoTaskInstanceTokenQuery.isCompleted();
@@ -862,11 +895,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 			return;
 		}
 
-		qPos.add(completed);
+		queryPos.add(completed);
 	}
 
 	protected void setDueDateGT(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		Date dueDateGT = kaleoTaskInstanceTokenQuery.getDueDateGT();
@@ -877,11 +910,11 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		Timestamp dueDateGT_TS = CalendarUtil.getTimestamp(dueDateGT);
 
-		qPos.add(dueDateGT_TS);
+		queryPos.add(dueDateGT_TS);
 	}
 
 	protected void setDueDateLT(
-		QueryPos qPos,
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		Date dueDateLT = kaleoTaskInstanceTokenQuery.getDueDateLT();
@@ -892,35 +925,34 @@ public class KaleoTaskInstanceTokenFinderImpl
 
 		Timestamp dueDateLT_TS = CalendarUtil.getTimestamp(dueDateLT);
 
-		qPos.add(dueDateLT_TS);
+		queryPos.add(dueDateLT_TS);
 	}
 
-	protected void setKaleoInstanceId(
-		QueryPos qPos,
+	protected void setTaskNames(
+		QueryPos queryPos,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
-		Long kaleoInstanceId = kaleoTaskInstanceTokenQuery.getKaleoInstanceId();
+		String[] taskNames = kaleoTaskInstanceTokenQuery.getTaskNames();
 
-		if (kaleoInstanceId == null) {
+		if (ArrayUtil.isEmpty(taskNames)) {
 			return;
 		}
 
-		qPos.add(kaleoInstanceId);
-	}
+		taskNames = Stream.of(
+			taskNames
+		).map(
+			taskName -> _customSQL.keywords(taskName, false)
+		).flatMap(
+			Stream::of
+		).toArray(
+			String[]::new
+		);
 
-	protected void setTaskName(
-		QueryPos qPos,
-		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
-
-		String taskName = kaleoTaskInstanceTokenQuery.getTaskName();
-
-		if (Validator.isNull(taskName)) {
+		if (ArrayUtil.isEmpty(taskNames)) {
 			return;
 		}
 
-		String[] taskNames = _customSQL.keywords(taskName, false);
-
-		qPos.add(taskNames);
+		queryPos.add(taskNames);
 	}
 
 	protected static final String FIRST_DUE_DATE_GT =
@@ -940,7 +972,25 @@ public class KaleoTaskInstanceTokenFinderImpl
 	private static final String _ORDER_BY_ENTITY_ALIAS =
 		"KaleoTaskInstanceToken.";
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private UserGroupGroupRoleLocalService _userGroupGroupRoleLocalService;
+
+	@Reference
+	private UserGroupLocalService _userGroupLocalService;
+
+	@Reference
+	private UserGroupRoleLocalService _userGroupRoleLocalService;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

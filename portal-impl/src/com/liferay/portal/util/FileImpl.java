@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.FileComparator;
@@ -63,6 +64,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.compress.archivers.zip.UnsupportedZipFeatureException;
 import org.apache.commons.io.FileUtils;
@@ -71,13 +74,22 @@ import org.apache.poi.EncryptedDocumentException;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.txt.UniversalEncodingDetector;
+import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.WriteOutContentHandler;
 import org.apache.tools.ant.DirectoryScanner;
 
 import org.mozilla.intl.chardet.nsDetector;
 import org.mozilla.intl.chardet.nsPSMDetector;
+
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * @author Brian Wing Shun Chan
@@ -86,7 +98,7 @@ import org.mozilla.intl.chardet.nsPSMDetector;
 public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	public static FileImpl getInstance() {
-		return _instance;
+		return _fileImpl;
 	}
 
 	@Override
@@ -144,6 +156,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 		File[] fileArray = source.listFiles();
 
+		if (fileArray == null) {
+			return;
+		}
+
 		for (File file : fileArray) {
 			if (file.isDirectory()) {
 				copyDirectory(
@@ -188,7 +204,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			try {
 				oldContent = read(source);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				return;
 			}
 
@@ -197,7 +213,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			try {
 				newContent = read(destination);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 
 			if ((oldContent == null) || !oldContent.equals(newContent)) {
@@ -239,10 +255,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	}
 
 	@Override
-	public File createTempFile(InputStream is) throws IOException {
+	public File createTempFile(InputStream inputStream) throws IOException {
 		File file = createTempFile(StringPool.BLANK);
 
-		write(file, is);
+		write(file, inputStream);
 
 		return file;
 	}
@@ -312,7 +328,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			try {
 				exists = file.exists();
 			}
-			catch (SecurityException se) {
+			catch (SecurityException securityException) {
 
 				// We may have the permission to delete a specific file without
 				// having the permission to check if the file exists
@@ -336,6 +352,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	public void deltree(File directory) {
 		if (directory.exists() && directory.isDirectory()) {
 			File[] fileArray = directory.listFiles();
+
+			if (fileArray == null) {
+				return;
+			}
 
 			for (File file : fileArray) {
 				if (file.isDirectory()) {
@@ -376,13 +396,13 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	}
 
 	@Override
-	public String extractText(InputStream is, String fileName) {
-		return extractText(is, fileName, -1);
+	public String extractText(InputStream inputStream, String fileName) {
+		return extractText(inputStream, fileName, -1);
 	}
 
 	@Override
 	public String extractText(
-		InputStream is, String fileName, int maxStringLength) {
+		InputStream inputStream, String fileName, int maxStringLength) {
 
 		if (maxStringLength == 0) {
 			return StringPool.BLANK;
@@ -397,8 +417,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 			boolean forkProcess = false;
 
+			TikaInputStream tikaInputStream = TikaInputStream.get(inputStream);
+
 			if (PropsValues.TEXT_EXTRACTION_FORK_PROCESS_ENABLED) {
-				String mimeType = tika.detect(is);
+				String mimeType = tika.detect(tikaInputStream);
 
 				if (ArrayUtil.contains(
 						PropsValues.TEXT_EXTRACTION_FORK_PROCESS_MIME_TYPES,
@@ -417,10 +439,11 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 						try {
 							return processExecutor.execute(
 								PortalClassPathUtil.getPortalProcessConfig(),
-								new ExtractTextProcessCallable(getBytes(is)));
+								new ExtractTextProcessCallable(
+									getBytes(tikaInputStream)));
 						}
-						catch (Exception e) {
-							return ReflectionUtil.throwException(e);
+						catch (Exception exception) {
+							return ReflectionUtil.throwException(exception);
 						}
 					});
 
@@ -430,54 +453,33 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				text = future.get();
 			}
 			else {
-				TikaInputStream tikaInputStream = TikaInputStream.get(is);
-
 				if (!_isEmptyTikaInputStream(tikaInputStream)) {
-					UniversalEncodingDetector universalEncodingDetector =
-						new UniversalEncodingDetector();
-
-					Metadata metadata = new Metadata();
-
-					Charset charset = universalEncodingDetector.detect(
-						tikaInputStream, metadata);
-
-					String contentEncoding = StringPool.BLANK;
-
-					if (charset != null) {
-						contentEncoding = charset.name();
-					}
-
-					if (!contentEncoding.equals(StringPool.BLANK)) {
-						metadata.set("Content-Encoding", contentEncoding);
-						metadata.set(
-							"Content-Type",
-							"text/plain; charset=" + contentEncoding);
-					}
-
-					text = tika.parseToString(tikaInputStream, metadata);
+					text = _parseToString(tika, tikaInputStream);
 				}
 			}
 		}
-		catch (Throwable t) {
-			Throwable throwable = ExceptionUtils.getRootCause(t);
+		catch (Throwable throwable) {
+			Throwable rootCauseThrowable = ExceptionUtils.getRootCause(
+				throwable);
 
-			if (throwable instanceof EncryptedDocumentException ||
-				throwable instanceof UnsupportedZipFeatureException) {
+			if (rootCauseThrowable instanceof EncryptedDocumentException ||
+				rootCauseThrowable instanceof UnsupportedZipFeatureException) {
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to extract text from an encrypted file " +
 							fileName,
-						t);
+						throwable);
 				}
 			}
-			else if (t instanceof TikaException) {
+			else if (throwable instanceof TikaException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to extract text from " + fileName, t);
+					_log.warn(
+						"Unable to extract text from " + fileName, throwable);
 				}
 			}
 			else {
-				_log.error(t, t);
+				_log.error(throwable, throwable);
 			}
 		}
 
@@ -530,11 +532,9 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		String[] includedFiles = directoryScanner.getIncludedFiles();
 
 		for (int i = 0; i < includedFiles.length; i++) {
-			includedFiles[i] = directory.concat(
-				StringPool.SLASH
-			).concat(
-				replaceSeparator(includedFiles[i])
-			);
+			includedFiles[i] = StringBundler.concat(
+				directory, StringPool.SLASH,
+				replaceSeparator(includedFiles[i]));
 		}
 
 		return includedFiles;
@@ -569,8 +569,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	}
 
 	@Override
-	public byte[] getBytes(InputStream is) throws IOException {
-		return getBytes(is, -1);
+	public byte[] getBytes(InputStream inputStream) throws IOException {
+		return getBytes(inputStream, -1);
 	}
 
 	@Override
@@ -702,7 +702,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 			return true;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 	}
@@ -779,8 +779,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		try {
 			mkdirs(file);
 		}
-		catch (IOException ioe) {
-			ReflectionUtil.throwException(ioe);
+		catch (IOException ioException) {
+			ReflectionUtil.throwException(ioException);
 		}
 	}
 
@@ -800,7 +800,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				FileUtils.moveFile(source, destination);
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return false;
 		}
 
@@ -895,11 +895,12 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		sb.append(
 			StringUtil.stripParentheticalSuffix(fileNameWithoutExtension));
 
-		sb.append(StringPool.PERIOD);
-
 		String extension = getExtension(fileName);
 
-		sb.append(extension);
+		if (Validator.isNotNull(extension)) {
+			sb.append(StringPool.PERIOD);
+			sb.append(extension);
+		}
 
 		return sb.toString();
 	}
@@ -917,7 +918,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				list.add(line);
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 		}
 
 		return list;
@@ -928,19 +929,19 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		try {
 			return toList(new FileReader(fileName));
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return new ArrayList<>();
 		}
 	}
 
 	@Override
-	public Properties toProperties(FileInputStream fis) {
+	public Properties toProperties(FileInputStream fileInputStream) {
 		Properties properties = new Properties();
 
 		try {
-			properties.load(fis);
+			properties.load(fileInputStream);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 		}
 
 		return properties;
@@ -951,7 +952,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		try {
 			return toProperties(new FileInputStream(fileName));
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return new Properties();
 		}
 	}
@@ -1005,10 +1006,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	}
 
 	@Override
-	public void write(File file, InputStream is) throws IOException {
+	public void write(File file, InputStream inputStream) throws IOException {
 		mkdirsParentFile(file);
 
-		StreamUtil.transfer(is, new FileOutputStream(file));
+		StreamUtil.transfer(inputStream, new FileOutputStream(file));
 	}
 
 	@Override
@@ -1052,8 +1053,10 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 	}
 
 	@Override
-	public void write(String fileName, InputStream is) throws IOException {
-		write(new File(fileName), is);
+	public void write(String fileName, InputStream inputStream)
+		throws IOException {
+
+		write(new File(fileName), inputStream);
 	}
 
 	@Override
@@ -1108,12 +1111,80 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		try {
 			mkdirs(parentFile);
 		}
-		catch (SecurityException se) {
+		catch (SecurityException securityException) {
 
 			// We may have the permission to write a specific file without
 			// having the permission to check if the parent file exists
 
 		}
+	}
+
+	private static String _parseToString(
+			Tika tika, TikaInputStream tikaInputStream)
+		throws IOException, SAXException, TikaException {
+
+		UniversalEncodingDetector universalEncodingDetector =
+			new UniversalEncodingDetector();
+
+		Metadata metadata = new Metadata();
+
+		Charset charset = universalEncodingDetector.detect(
+			tikaInputStream, metadata);
+
+		String contentEncoding = StringPool.BLANK;
+
+		if (charset != null) {
+			contentEncoding = charset.name();
+		}
+
+		if (!contentEncoding.equals(StringPool.BLANK)) {
+			metadata.set("Content-Encoding", contentEncoding);
+			metadata.set(
+				"Content-Type", "text/plain; charset=" + contentEncoding);
+		}
+
+		WriteOutContentHandler writeOutContentHandler =
+			new WriteOutContentHandler(tika.getMaxStringLength());
+
+		try {
+			Parser parser = tika.getParser();
+
+			ParseContext parseContext = new ParseContext();
+
+			parseContext.set(Parser.class, parser);
+
+			parseContext.set(
+				EmbeddedDocumentExtractor.class,
+				new ParsingEmbeddedDocumentExtractor(parseContext) {
+
+					@Override
+					public void parseEmbedded(
+							InputStream inputStream,
+							ContentHandler contentHandler, Metadata metadata,
+							boolean outputHtml)
+						throws IOException, SAXException {
+
+						String mimeType = tika.detect(inputStream);
+
+						if (mimeType.equals(ContentTypes.IMAGE_PNG)) {
+							return;
+						}
+
+						super.parseEmbedded(
+							inputStream, contentHandler, metadata, outputHtml);
+					}
+
+				});
+
+			parser.parse(
+				tikaInputStream, new BodyContentHandler(writeOutContentHandler),
+				metadata, parseContext);
+		}
+		finally {
+			tikaInputStream.close();
+		}
+
+		return writeOutContentHandler.toString();
 	}
 
 	private boolean _isEmptyTikaInputStream(TikaInputStream tikaInputStream)
@@ -1148,7 +1219,7 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 
 	private static final Log _log = LogFactoryUtil.getLog(FileImpl.class);
 
-	private static final FileImpl _instance = new FileImpl();
+	private static final FileImpl _fileImpl = new FileImpl();
 
 	private static class ExtractTextProcessCallable
 		implements ProcessCallable<String> {
@@ -1163,14 +1234,24 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				return StringPool.BLANK;
 			}
 
+			Logger logger = Logger.getLogger(
+				"org.apache.tika.parser.SQLite3Parser");
+
+			logger.setLevel(Level.SEVERE);
+
+			logger = Logger.getLogger("org.apache.tika.parsers.PDFParser");
+
+			logger.setLevel(Level.SEVERE);
+
 			Tika tika = new Tika(TikaConfigHolder._tikaConfig);
 
 			try {
-				return tika.parseToString(
-					new UnsyncByteArrayInputStream(_data));
+				InputStream inputStream = new UnsyncByteArrayInputStream(_data);
+
+				return _parseToString(tika, TikaInputStream.get(inputStream));
 			}
-			catch (Exception e) {
-				throw new ProcessException(e);
+			catch (Exception exception) {
+				throw new ProcessException(exception);
 			}
 		}
 
@@ -1188,8 +1269,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			try {
 				_tikaConfig = new TikaConfig();
 			}
-			catch (Exception e) {
-				throw new ExceptionInInitializerError(e);
+			catch (Exception exception) {
+				throw new ExceptionInInitializerError(exception);
 			}
 		}
 

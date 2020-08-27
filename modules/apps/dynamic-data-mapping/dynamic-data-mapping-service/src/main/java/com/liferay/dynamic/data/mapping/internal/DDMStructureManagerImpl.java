@@ -86,8 +86,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 
 			return new DDMStructureImpl(ddmStructure);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -96,8 +96,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 		try {
 			_ddmStructureLocalService.deleteStructure(structureId);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -238,8 +238,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 
 			return new DDMStructureImpl(ddmStructure);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -255,8 +255,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 
 			return new DDMStructureImpl(structure);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -271,8 +271,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 
 			return new DDMStructureImpl(ddmStructure);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -315,8 +315,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 
 			return new DDMStructureImpl(ddmStructure);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -332,8 +332,8 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 
 			_ddmStructureLocalService.updateDDMStructure(ddmStructure);
 		}
-		catch (PortalException pe) {
-			throw translate(pe);
+		catch (PortalException portalException) {
+			throw translate(portalException);
 		}
 	}
 
@@ -414,16 +414,12 @@ public class DDMStructureManagerImpl implements DDMStructureManager {
 				portalException.getMessage(), portalException.getCause());
 		}
 		else if (portalException instanceof
-					com.liferay.dynamic.data.mapping.exception.
-						StructureDuplicateElementException) {
+					StructureDuplicateElementException) {
 
 			return new StructureDuplicateElementException(
 				portalException.getMessage(), portalException.getCause());
 		}
-		else if (portalException instanceof
-					com.liferay.dynamic.data.mapping.exception.
-						StructureNameException) {
-
+		else if (portalException instanceof StructureNameException) {
 			return new StructureNameException(
 				portalException.getMessage(), portalException.getCause());
 		}

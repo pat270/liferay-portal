@@ -14,7 +14,6 @@
 
 package com.liferay.knowledge.base.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see KBFolderService
  * @generated
  */
-@ProviderType
 public class KBFolderServiceUtil {
 
 	/*
@@ -68,10 +66,12 @@ public class KBFolderServiceUtil {
 			fetchFirstChildKBFolder(
 				long groupId, long kbFolderId,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBFolder> obc)
+					<com.liferay.knowledge.base.model.KBFolder>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return getService().fetchFirstChildKBFolder(groupId, kbFolderId, obc);
+		return getService().fetchFirstChildKBFolder(
+			groupId, kbFolderId, orderByComparator);
 	}
 
 	public static com.liferay.knowledge.base.model.KBFolder fetchKBFolder(
@@ -150,22 +150,6 @@ public class KBFolderServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().moveKBFolder(kbFolderId, parentKBFolderId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateKBFolder(long, long, long, String, String,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.knowledge.base.model.KBFolder updateKBFolder(
-			long parentResourceClassNameId, long parentResourcePrimKey,
-			long kbFolderId, String name, String description)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateKBFolder(
-			parentResourceClassNameId, parentResourcePrimKey, kbFolderId, name,
-			description);
 	}
 
 	public static com.liferay.knowledge.base.model.KBFolder updateKBFolder(

@@ -58,7 +58,7 @@ import javax.sql.DataSource;
  */
 public abstract class SocialActivityServiceBaseImpl
 	extends BaseServiceImpl
-	implements SocialActivityService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, SocialActivityService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -866,8 +866,8 @@ public abstract class SocialActivityServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

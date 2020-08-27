@@ -20,6 +20,21 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADMIN_CLIENT_CREDENTIALS_USER_SELECTED</td>
+	<td>//td[contains(@class,'lfr-screen-name-column')]/a[contains(.,'${key_clientCredentialsUser}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADMIN_GLOBAL_PANEL_COLLAPSED</td>
+	<td>//div[contains(@data-master,'${key_panel}')]//div//a[contains(@class,'collapsed')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADMIN_GLOBAL_PANEL_EXPANDED</td>
+	<td>//div[contains(@data-master,'${key_panel}')]//div//a[@aria-expanded='true' and not(contains(@class,'collapsed'))]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADMIN_GLOBAL_RESOURCE_SCOPE_CHECKBOX</td>
 	<td>//a[contains(.,'${key_panel}')]/following-sibling::div//input[contains(@data-slave,'${key_scopeName}')]</td>
 	<td></td>
@@ -76,7 +91,7 @@
 </tr>
 <tr>
 	<td>ADMIN_MODAL_GLOBAL_SCOPE_LINK</td>
-	<td>//li[contains(.,'${key_scopeName}')]//a[@data-slave]</td>
+	<td>//li[contains(.,'${key_scopeText}')]//a[@data-slave]</td>
 	<td></td>
 </tr>
 <tr>
@@ -90,6 +105,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADMIN_RESOURCE_SCOPE_ALIAS</td>
+	<td>//span[contains(@class,'badge-item') and contains(.,'${key_scopeAlias}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADMIN_RESOURCE_SCOPE_CHECKBOX</td>
 	<td>//input[@value='${key_scopeName}']</td>
 	<td></td>
@@ -97,6 +117,16 @@
 <tr>
 	<td>ADMIN_RESOURCE_SCOPE_CHECKED</td>
 	<td>xpath=(//div[contains(@aria-labelledby,'navResourceScopesTab')]//input[@type='checkbox'][@checked=''])[${key_matchCount}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADMIN_RESOURCE_SCOPE_REMOVED</td>
+	<td>//span[contains(.,'${key_scopeName}') and contains(@class,'removed-scope-alias')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADMIN_RESOURCE_SCOPE_TRANSLATION</td>
+	<td>//a[contains(.,'${key_resourcePanel}')]//following-sibling::div//label[contains(@for,'scopeAlias')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -112,11 +142,6 @@
 <tr>
 	<td>ADMIN_TABLE_APP_NAME</td>
 	<td>//td[@class=' lfr-name-column' and contains(.,'${key_tableName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ADMIN_TABLE_APP_SCOPES_COUNT</td>
-	<td>//tr[td[@class=' lfr-name-column' and contains(.,'${key_tableName}')]]/td[@class=' lfr-scopes-column']</td>
 	<td></td>
 </tr>
 <tr>
@@ -162,6 +187,16 @@
 	<td></td>
 </tr>
 <!--USER-->
+<tr>
+	<td>USER_CONNECTED_APP_ACTIVITY</td>
+	<td>//span[contains(.,'${key_activity}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONNECTED_APP_EXPIRATION_VALUE</td>
+	<td>//p[contains(.,'Expiration')]</td>
+	<td></td>
+</tr>
 <tr>
 	<td>USER_CONNECTED_APP_REMOVE_ACCESS_BUTTON</td>
 	<td>//button[contains(@id,'removeAccess')]</td>

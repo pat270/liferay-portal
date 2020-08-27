@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.liferay.data.engine.model.DEDataDefinitionFieldLink">
+		<field name="uuid" type="String" />
+		<field name="deDataDefinitionFieldLinkId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+		<field name="ddmStructureId" type="long" />
+		<field name="fieldName" type="String" />
+		<field name="lastPublishDate" type="Date" />
+	</model>
+	<model name="com.liferay.data.engine.model.DEDataListView">
+		<field name="uuid" type="String" />
+		<field name="deDataListViewId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="appliedFilters" type="String">
+			<hint-collection name="CLOB" />
+		</field>
+		<field name="ddmStructureId" type="long" />
+		<field name="fieldNames" type="String">
+			<hint-collection name="CLOB" />
+		</field>
+		<field localized="true" name="name" type="String" />
+		<field name="sortField" type="String" />
+	</model>
+</model-hints>

@@ -14,6 +14,7 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -24,6 +25,8 @@ public interface Job {
 
 	public Set<String> getBatchNames();
 
+	public List<Build> getBuildHistory(JenkinsMaster jenkinsMaster);
+
 	public Set<String> getDistTypes();
 
 	public String getJobName();
@@ -31,6 +34,8 @@ public interface Job {
 	public Properties getJobProperties();
 
 	public String getJobProperty(String key);
+
+	public String getJobURL(JenkinsMaster jenkinsMaster);
 
 	public void readJobProperties();
 

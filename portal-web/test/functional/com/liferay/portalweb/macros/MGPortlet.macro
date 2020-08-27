@@ -1,10 +1,15 @@
 definition {
+
 	macro configureShowAllPG {
 		Portlet.gotoPortletOptions(
 			portletName = "Media Gallery",
 			portletOption = "Configuration");
 
 		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		Pause(locator1 = "5000");
+
+		WaitForElementPresent(locator1 = "Checkbox#SHOW_ACTIONS_CHECKBOX");
 
 		Check(locator1 = "Checkbox#SHOW_ACTIONS_CHECKBOX");
 
@@ -30,4 +35,5 @@ definition {
 			MenuItem.viewPresent(menuItem = "${menuItem}");
 		}
 	}
+
 }

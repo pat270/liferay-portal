@@ -1,4 +1,5 @@
 definition {
+
 	macro addDocumentum {
 		Panel.expandPanel(panel = "Repository Configuration");
 
@@ -22,6 +23,13 @@ definition {
 			locator1 = "DocumentsAndMediaEditRepository#REPOSITORY_TYPE_SELECT",
 			value1 = "${dmRepositoryName}");
 
+		if (isSet(dmServerVersion)) {
+			Type(
+				key_fieldLabel = "Server Version",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${dmServerVersion}");
+		}
+
 		if (isSet(dmRepositorySiteAbsoluteURL)) {
 			Type(
 				key_fieldLabel = "Site Absolute URL",
@@ -44,6 +52,29 @@ definition {
 		}
 	}
 
+	macro cleanRepository {
+		Navigator.openSpecificURL(url = "https://localhost:8443/group/guest/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet");
+
+		DMRepository.gotoCP(dmRepositoryName = "Collaboration Test Application");
+
+		if (isSet(dmDocumentTitle)) {
+			if (IsElementPresent(key_dmDocumentTitle = "${dmDocumentTitle}", locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE")) {
+				DMDocument.deleteCP(
+					dmDocumentTitle = "${dmDocumentTitle}",
+					recycleBinDisabled = "true");
+			}
+		}
+		else if (isSet(dmFolderName)) {
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			if (IsElementPresent(key_dmFolderName = "${dmFolderName}", locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE")) {
+				DMFolder.deleteCP(
+					dmFolderName = "${dmFolderName}",
+					recycleBinDisabled = "true");
+			}
+		}
+	}
+
 	macro edit {
 		PortletEntry.inputName(name = "${dmRepositoryName}");
 	}
@@ -51,7 +82,7 @@ definition {
 	macro gotoCP {
 		var key_dmRepositoryName = "${dmRepositoryName}";
 
-		AssertClick(
+		AssertClick.assertTextClickAtAndPause(
 			locator1 = "DocumentsAndMedia#REPOSITORY_FOLDER_NAME_DESCRIPTIVE_VIEW",
 			value1 = "${dmRepositoryName}");
 
@@ -69,7 +100,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		while (IsElementPresent(locator1 = "DocumentsAndMedia#FILTER_REPOSITORY_GENERIC")) {
@@ -110,4 +140,5 @@ definition {
 			locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME",
 			value1 = "${dmRepositoryName}");
 	}
+
 }

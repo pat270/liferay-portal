@@ -15,7 +15,7 @@
 package com.liferay.site.memberships.web.internal.servlet.taglib.util;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.MembershipRequest;
@@ -52,19 +52,16 @@ public class ViewMembershipRequetsPendingActionDropdownItemsProvider {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() throws Exception {
-		return new DropdownItemList() {
-			{
-				if ((_membershipRequest.getStatusId() ==
-						MembershipRequestConstants.STATUS_PENDING) &&
-					GroupPermissionUtil.contains(
-						_themeDisplay.getPermissionChecker(),
-						_themeDisplay.getScopeGroup(),
-						ActionKeys.ASSIGN_MEMBERS)) {
-
-					add(_getReplyRequestActionUnsafeConsumer());
-				}
-			}
-		};
+		return DropdownItemListBuilder.add(
+			() ->
+				(_membershipRequest.getStatusId() ==
+					MembershipRequestConstants.STATUS_PENDING) &&
+				GroupPermissionUtil.contains(
+					_themeDisplay.getPermissionChecker(),
+					_themeDisplay.getSiteGroupIdOrLiveGroupId(),
+					ActionKeys.ASSIGN_MEMBERS),
+			_getReplyRequestActionUnsafeConsumer()
+		).build();
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
@@ -72,10 +69,11 @@ public class ViewMembershipRequetsPendingActionDropdownItemsProvider {
 
 		return dropdownItem -> {
 			dropdownItem.setHref(
-				_renderResponse.createRenderURL(), "mvcPath",
-				"/reply_membership_request.jsp", "p_u_i_d",
-				_membershipRequest.getUserId(), "groupId",
-				_themeDisplay.getScopeGroupId(), "membershipRequestId",
+				_renderResponse.createRenderURL(), "p_u_i_d",
+				_membershipRequest.getUserId(), "mvcPath",
+				"/reply_membership_request.jsp", "groupId",
+				_themeDisplay.getSiteGroupIdOrLiveGroupId(),
+				"membershipRequestId",
 				_membershipRequest.getMembershipRequestId());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "reply"));

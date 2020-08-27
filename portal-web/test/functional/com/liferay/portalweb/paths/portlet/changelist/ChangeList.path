@@ -9,123 +9,84 @@
 </thead>
 <tbody>
 <tr>
-	<td>ACTIVE_CHANGE_LIST_TITLE</td>
-	<td>//div[contains(@class,'border-left-blue')]//div[contains(@data-qa-id,'headerTitle')]</td>
+	<td>AUTOMATICALLY_RESOLVED_TABLE</td>
+	<td>//table[contains(@class,'change-lists-conflicts-table')]//td[contains(.,'Automatically Resolved')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>ACTIVE_CHANGE_LIST_STATUS</td>
-	<td>//td[contains(.,'${key_changeListName}')]//following-sibling::td//span[contains(@class,'label-info')]//span</td>
+	<td>CHANGE_LIST_INDICATOR_BUTTON</td>
+	<td>//button[contains(@class,'dropdown-toggle change-tracking-indicator-button')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_ADDED</td>
-	<td>//div[contains(@data-qa-id,'changesAdded')]</td>
+	<td>CHANGE_LIST_INDICATOR_TITLE</td>
+	<td>//button[contains(@class,'change-tracking-indicator-title')] and contains(.,'${key_publicationName}')</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_DELETED</td>
-	<td>//div[contains(@data-qa-id,'changesDeleted')]</td>
+	<td>COLUMN_VALUE_IN_PRODUCTION</td>
+	<td>//td[contains(@class,'change-lists-diff-td')][1]//td[contains(.,'${key_columnName}')]//following-sibling::td[contains(.,'${key_columnValueInProduction}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_MODIFIED</td>
-	<td>//div[contains(@data-qa-id,'changesModified')]</td>
+	<td>COLUMN_VALUE_IN_PUBLICATION</td>
+	<td>//td[contains(@class,'change-lists-diff-td')][2]//td[contains(.,'${key_columnName}')]//following-sibling::td[contains(.,'${key_columnValueInPublication}')]</td>
+	<td></td>
+</tr>
+
+<tr>
+	<td>CONFICTING_CHANGES_SUCCESS_CONTENT</td>
+	<td>//div[contains(.,'${key_entryTitle}')]//following-sibling::div[contains(.,'${key_successMessage}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_NAME</td>
-	<td>//input[contains(@name,'name')]</td>
+	<td>CONFICTING_CHANGES_VIEW_BUTTON</td>
+	<td>//div[contains(@class,'autofit-col-expand') and contains(.,'${key_entryTitle}')]//following-sibling::div//a[contains(.,'View')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_NAME_CARD_VIEW</td>
-	<td>//span[contains(@data-qa-id,'headerSubTitle')][normalize-space(text())='${key_changeListName}']</td>
+	<td>CONFICTING_CHANGES_WARNING_CONTENT</td>
+	<td>//div[contains(.,'${key_entryTitle}')]//following-sibling::div[contains(.,'${key_warningMessage}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_DESCRIPTION</td>
-	<td>//input[contains(@name,'description')]</td>
+	<td>DISABLED_PUBLISH_BUTTON</td>
+	<td>//*[contains(@class,'btn')][normalize-space(text())='Publish']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_LIST_TABLE_ENTRY_NAME</td>
-	<td>//tr[contains(@data-qa-id,'row')]//td[1]</td>
+	<td>HISTORY_PUBLICATION_STATUS</td>
+	<td>//td[contains(.,'${key_publicationName}')]//following-sibling::td/span[contains(@class,'label-success')]//span</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHECK_CIRCLE</td>
-	<td>//td[contains(.,'${key_contentTitle}')]//following-sibling::td//span[span/*[name()='svg'][contains(@class,'lexicon-icon')]]</td>
+	<td>INDICATOR</td>
+	<td>//li[contains(@class,'nav-item')]//span/*[name()='svg'][contains(@class,'change-list')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>COLLISION_DETECTED</td>
-	<td>//span[contains(@data-qa-id,'collision-detected')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>EMPTY_PRODUCTION_VIEW_TEXT</td>
-	<td>//div[contains(@class,'sheet-text text-center text-strong empty-production-view')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>HISTORY_CHANGE_LIST_STATUS</td>
-	<td>//h4[contains(.,'${key_changeListName}')]//following-sibling::span[contains(@class,'label-success')]//span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LATEST_CHANGES_CHANGE_TYPE</td>
-	<td>//div[contains(@id,'change-entry-change-type') and contains(.,'${key_contentChangeType}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LATEST_CHANGES_CONTENT_TYPE</td>
-	<td>//div[contains(@id,'change-entry-title') and contains(.,'${key_contentTitle}')]//parent::td//following-sibling::td//div[contains(@id,'change-entry-content-type')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LATEST_CHANGES_TITLE</td>
-	<td>//div[contains(@id,'change-entry-title') and contains(.,'${key_contentTitle}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>OVERVIEW_PAGE_TITLE</td>
+	<td>MANGE_PUBLICATIONS_PAGE_TITLE</td>
 	<td>//span[contains(@data-qa-id,'headerTitle')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISH_BUTTON</td>
-	<td>//footer//button[contains(.,'Publish')]</td>
+	<td>MANGE_PUBLICATIONS_NAVBAR_TITLE</td>
+	<td>//li[contains(@class,'nav-item')]/a[contains(.,'${key_navBarTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_CHANGE_LIST</td>
-	<td>//a[contains(@data-qa-id,'selectChangeListMenuItem')]</td>
+	<td>NEEDS_MANUAL_RESOLUTION_TABLE</td>
+	<td>//table[contains(@class,'change-lists-conflicts-table')]//td[contains(.,'Needs Manual Resolution')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_CHANGE_LIST_VALUE</td>
-	<td>//a[contains(.,'${key_changeListName}')]</td>
+	<td>PUBLICATION_NAME</td>
+	<td>//input[contains(@name,'name')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_CHANGE_LIST_DROPDOWN</td>
-	<td>//a[contains(@data-qa-id,'headerDropDownMenu')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>OVERVIEW_CHANGE_LIST_NAME</td>
-	<td>//div[contains(@class,'border-left-green')]//div[contains(@data-qa-id,'headerTitle')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>OVERVIEW_DESCRIPTION</td>
-	<td>//div[contains(@data-qa-id,'description')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>OVERVIEW_PUBLISHED_BY</td>
-	<td>//div[contains(@data-qa-id,'publishedBy')]</td>
+	<td>LIST_PUBLICATION_ELLIPSIS</td>
+	<td>//li[@data-qa-id='row'][contains(.,'${key_publicationName}')]//a[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -134,8 +95,48 @@
 	<td></td>
 </tr>
 <tr>
-	<td>VIEW_CHANGE_LIST_NAME_HISTORY</td>
-	<td>//tr[contains(.,'${key_contentTitle}')]//td[contains(@class,'change-list-title')]</td>
+	<td>PUBLICATION_DESCRIPTION</td>
+	<td>//textarea[contains(@name,'description')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_NAME_IN_DIFF</td>
+	<td>//td[contains(@class,'change-lists-diff-td') and contains(.,'${key_publicationName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLISH_BUTTON</td>
+	<td>//a[contains(@id,'ChangeListsPortlet')]/span[contains(.,'Publish')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLISHED_PUBLICATIONS_NAME</td>
+	<td>//div[contains(@class,'change-list-name') and contains(.,'${key_publicationName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATIONS_PUBLISHED_BY</td>
+	<td>//td[contains(@class,'published-by')]/span[contains(@title,'${key_publicationPublishedBy}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REVERT_BUTTON</td>
+	<td>//td[contains(.,'${key_publicationName}')]//following-sibling::td[contains(.,'Revert')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REVERT_SCREEN_RADIO_HELP</td>
+	<td>//div[contains(@class,'change-lists-radio-help') and contains(.,'${key_radioHelpMessage}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REVERT_SCREEN_RADIO_OPTION</td>
+	<td>//div[contains(@class,'change-lists-radio-label') and contains(.,'${key_radioName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_PUBLICATION_NAME</td>
+	<td>//a[contains(.,'${key_publicationName}')]</td>
 	<td></td>
 </tr>
 </tbody>

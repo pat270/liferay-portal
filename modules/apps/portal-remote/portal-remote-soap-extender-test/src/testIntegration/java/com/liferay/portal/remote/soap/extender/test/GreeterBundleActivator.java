@@ -15,6 +15,7 @@
 package com.liferay.portal.remote.soap.extender.test;
 
 import com.liferay.osgi.util.ServiceTrackerFactory;
+import com.liferay.petra.string.StringBundler;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -51,9 +52,10 @@ public class GreeterBundleActivator implements BundleActivator {
 
 		ServiceTracker<Bus, Bus> serviceTracker = ServiceTrackerFactory.open(
 			bundleContext,
-			"(&(objectClass=" + Bus.class.getName() + ")(" +
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH + "=" +
-					"/soap-test))");
+			StringBundler.concat(
+				"(&(objectClass=", Bus.class.getName(), ")(",
+				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_PATH, "=",
+				"/soap-test))"));
 
 		Bus bus = serviceTracker.waitForService(10_000);
 
@@ -93,7 +95,7 @@ public class GreeterBundleActivator implements BundleActivator {
 		try {
 			_configAdminBundleActivator.stop(bundleContext);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		_serviceRegistration.unregister();

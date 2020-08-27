@@ -19,8 +19,11 @@ import com.liferay.portal.kernel.util.SetUtil;
 import java.util.Set;
 
 /**
- * @author Michael Bowerman
+ * @author     Michael Bowerman
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             com.liferay.layout.admin.kernel.model.LayoutTypePortletConstants}
  */
+@Deprecated
 public class LayoutTypePortletConstants
 	extends com.liferay.portal.kernel.model.LayoutTypePortletConstants {
 

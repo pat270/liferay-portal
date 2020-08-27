@@ -1,9 +1,8 @@
 {
-	"cssPath": "index.css",
+	"cacheable": true,
 	"fragmentEntryKey": "slider",
-	"htmlPath": "index.html",
-	"jsPath": "index.js",
-	"name": "Slider",
+	"icon": "slideshow",
+	"name": "slider",
 	"thumbnail": "slider.png",
 	"type": "component"
 }

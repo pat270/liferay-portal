@@ -61,7 +61,7 @@ List<Group> selectedGroups = GroupLocalServiceUtil.getGroups(assetPublisherDispl
 		<liferay-ui:search-container-column-text>
 			<liferay-portlet:actionURL portletConfiguration="<%= true %>" var="deleteURL">
 				<portlet:param name="<%= Constants.CMD %>" value="remove-scope" />
-				<portlet:param name="redirect" value="<%= currentURL %>" />
+				<portlet:param name="redirect" value="<%= configurationRenderURL.toString() %>" />
 				<portlet:param name="scopeId" value="<%= assetPublisherHelper.getScopeId(group, scopeGroupId) %>" />
 			</liferay-portlet:actionURL>
 
@@ -96,7 +96,7 @@ List<Group> selectedGroups = GroupLocalServiceUtil.getGroups(assetPublisherDispl
 
 		<liferay-portlet:actionURL portletConfiguration="<%= true %>" var="addScopeURL">
 			<portlet:param name="<%= Constants.CMD %>" value="add-scope" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="redirect" value="<%= configurationRenderURL.toString() %>" />
 			<portlet:param name="groupId" value="<%= String.valueOf(group.getGroupId()) %>" />
 		</liferay-portlet:actionURL>
 
@@ -114,7 +114,7 @@ List<Group> selectedGroups = GroupLocalServiceUtil.getGroups(assetPublisherDispl
 	<liferay-ui:icon
 		cssClass="highlited scope-selector"
 		id="selectManageableGroup"
-		message='<%= LanguageUtil.get(request, "other-site") + StringPool.TRIPLE_PERIOD %>'
+		message='<%= LanguageUtil.get(request, "other-site-or-asset-library") + StringPool.TRIPLE_PERIOD %>'
 		method="get"
 		url="javascript:;"
 	/>
@@ -123,66 +123,58 @@ List<Group> selectedGroups = GroupLocalServiceUtil.getGroups(assetPublisherDispl
 <%
 ItemSelector itemSelector = (ItemSelector)request.getAttribute(AssetPublisherWebKeys.ITEM_SELECTOR);
 
-ItemSelectorCriterion itemSelectorCriterion = new SiteItemSelectorCriterion();
+ItemSelectorCriterion itemSelectorCriterion = new GroupItemSelectorCriterion(layout.isPrivateLayout());
 
-itemSelectorCriterion.setDesiredItemSelectorReturnTypes(new SiteItemSelectorReturnType());
+itemSelectorCriterion.setDesiredItemSelectorReturnTypes(new GroupItemSelectorReturnType());
 
 PortletURL itemSelectorURL = itemSelector.getItemSelectorURL(RequestBackedPortletURLFactoryUtil.create(renderRequest), eventName, itemSelectorCriterion);
 
 itemSelectorURL.setParameter("plid", String.valueOf(layout.getPlid()));
 itemSelectorURL.setParameter("groupId", String.valueOf(layout.getGroupId()));
-itemSelectorURL.setParameter("privateLayout", String.valueOf(layout.isPrivateLayout()));
 itemSelectorURL.setParameter("portletResource", assetPublisherDisplayContext.getPortletResource());
 %>
 
 <aui:script sandbox="<%= true %>">
 	var form = document.<portlet:namespace />fm;
 
-	var scopeSelect = document.getElementById('<portlet:namespace />selectManageableGroup');
+	var scopeSelect = document.getElementById(
+		'<portlet:namespace />selectManageableGroup'
+	);
 
 	if (scopeSelect) {
-		scopeSelect.addEventListener(
-			'click',
-			function(event) {
-				event.preventDefault();
+		scopeSelect.addEventListener('click', function (event) {
+			event.preventDefault();
 
-				var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />groupsSearchContainer');
+			var searchContainer = Liferay.SearchContainer.get(
+				'<portlet:namespace />groupsSearchContainer'
+			);
 
-				var searchContainerData = searchContainer.getData();
+			var searchContainerData = searchContainer.getData();
 
-				if (!searchContainerData.length) {
-					searchContainerData = [];
-				}
-				else {
-					searchContainerData = searchContainerData.split(',');
-				}
-
-				Liferay.Util.selectEntity(
-					{
-						dialog: {
-							constrain: true,
-							destroyOnHide: true,
-							modal: true
-						},
-						eventName: '<%= eventName %>',
-						id: '<%= eventName %>' + event.currentTarget.id,
-						selectedData: searchContainerData,
-						title: '<liferay-ui:message key="scopes" />',
-						uri: '<%= itemSelectorURL.toString() %>'
-					},
-					function(event) {
-						Liferay.Util.postForm(
-							form,
-							{
-								data: {
-									cmd: 'add-scope',
-									groupId: event.groupid
-								}
-							}
-						);
-					}
-				);
+			if (!searchContainerData.length) {
+				searchContainerData = [];
 			}
-		);
+			else {
+				searchContainerData = searchContainerData.split(',');
+			}
+
+			var opener = Liferay.Util.getOpener();
+
+			opener.Liferay.Util.openModal({
+				id: '<%= eventName %>' + event.currentTarget.id,
+				onSelect: function (event) {
+					Liferay.Util.postForm(form, {
+						data: {
+							cmd: 'add-scope',
+							groupId: event.groupid,
+						},
+					});
+				},
+				selectEventName: '<%= eventName %>',
+				selectedData: searchContainerData,
+				title: '<liferay-ui:message key="scopes" />',
+				url: '<%= itemSelectorURL.toString() %>',
+			});
+		});
 	}
 </aui:script>

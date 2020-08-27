@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionMapping;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionsManagerUtil;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceNaming;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.MethodParameter;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
@@ -85,16 +86,20 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 	@Override
 	public Object invoke() throws Exception {
-		Map<String, Object> resultsMap = new LinkedHashMap<>();
-
-		resultsMap.put("contextName", _contextName);
-		resultsMap.put("basePath", _basePath);
-		resultsMap.put("baseURL", _baseURL);
-		resultsMap.put("services", _buildJsonWebServiceActionMappingMaps());
-		resultsMap.put("types", _buildTypes());
-		resultsMap.put("version", ReleaseInfo.getVersion());
-
-		return new DiscoveryContent(resultsMap);
+		return new DiscoveryContent(
+			LinkedHashMapBuilder.<String, Object>put(
+				"contextName", _contextName
+			).put(
+				"basePath", _basePath
+			).put(
+				"baseURL", _baseURL
+			).put(
+				"services", _buildJsonWebServiceActionMappingMaps()
+			).put(
+				"types", _buildTypes()
+			).put(
+				"version", ReleaseInfo.getVersion()
+			).build());
 	}
 
 	public static class DiscoveryContent implements JSONSerializable {
@@ -231,7 +236,7 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 			return beanAnalyzerTransformer.collect();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -287,9 +292,10 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 		Class<?> type, Class<?>[] genericTypes, boolean returnType) {
 
 		if (type.isArray()) {
-			Class<?> componentType = type.getComponentType();
+			String typeName = _formatType(
+				type.getComponentType(), genericTypes, returnType);
 
-			return _formatType(componentType, genericTypes, returnType) + "[]";
+			return typeName + "[]";
 		}
 
 		if (type.isPrimitive()) {
@@ -358,7 +364,7 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 			return typeName;
 		}
 
-		StringBundler sb = new StringBundler(genericTypes.length * 2 + 1);
+		StringBundler sb = new StringBundler((genericTypes.length * 2) + 1);
 
 		sb.append(StringPool.LESS_THAN);
 
@@ -426,7 +432,7 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 				modelType = classLoader.loadClass(modelImplClassName);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 			}
 		}
 
@@ -443,11 +449,8 @@ public class JSONWebServiceDiscoverAction implements JSONWebServiceAction {
 
 		Method method = jsonWebServiceActionMapping.getRealActionMethod();
 
-		return className.concat(
-			StringPool.POUND
-		).concat(
-			method.getName()
-		);
+		return StringBundler.concat(
+			className, StringPool.POUND, method.getName());
 	}
 
 	private final String _basePath;

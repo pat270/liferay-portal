@@ -41,6 +41,7 @@ import com.liferay.portal.search.configuration.IndexWriterHelperConfiguration;
 import com.liferay.portal.search.index.IndexStatusManager;
 import com.liferay.portal.search.internal.background.task.ReindexPortalBackgroundTaskExecutor;
 import com.liferay.portal.search.internal.background.task.ReindexSingleIndexerBackgroundTaskExecutor;
+import com.liferay.portal.search.model.uid.UIDFactory;
 
 import java.io.Serializable;
 
@@ -69,6 +70,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			String searchEngineId, long companyId, Document document,
 			boolean commitImmediately)
 		throws SearchException {
+
+		_enforceStandardUID(document);
 
 		if (_indexStatusManager.isIndexReadOnly() || (document == null)) {
 			return;
@@ -100,6 +103,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			String searchEngineId, long companyId,
 			Collection<Document> documents, boolean commitImmediately)
 		throws SearchException {
+
+		_enforceStandardUID(documents);
 
 		if (_indexStatusManager.isIndexReadOnly() || (documents == null) ||
 			documents.isEmpty()) {
@@ -396,7 +401,7 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 
 	/**
 	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             IndexStatusManager# isIndexReadWrite}
+	 *             IndexStatusManager#isIndexReadWrite()}
 	 */
 	@Deprecated
 	@Override
@@ -405,8 +410,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link IndexStatusManager#
-	 *             isIndexReadWrite(String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             IndexStatusManager#isIndexReadWrite(String)}
 	 */
 	@Deprecated
 	@Override
@@ -419,6 +424,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			String searchEngineId, long companyId, Document document,
 			boolean commitImmediately)
 		throws SearchException {
+
+		_enforceStandardUID(document);
 
 		if (_indexStatusManager.isIndexReadOnly() || (document == null)) {
 			return;
@@ -450,6 +457,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			String searchEngineId, long companyId,
 			Collection<Document> documents, boolean commitImmediately)
 		throws SearchException {
+
+		_enforceStandardUID(documents);
 
 		if (_indexStatusManager.isIndexReadOnly() || (documents == null) ||
 			documents.isEmpty()) {
@@ -491,9 +500,9 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 		}
 
 		taskContextMap.put(
-			ReindexBackgroundTaskConstants.COMPANY_IDS, companyIds);
-		taskContextMap.put(
 			BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true);
+		taskContextMap.put(
+			ReindexBackgroundTaskConstants.COMPANY_IDS, companyIds);
 
 		try {
 			return _backgroundTaskManager.addBackgroundTask(
@@ -501,8 +510,9 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 				ReindexPortalBackgroundTaskExecutor.class.getName(),
 				taskContextMap, new ServiceContext());
 		}
-		catch (PortalException pe) {
-			throw new SearchException("Unable to schedule portal reindex", pe);
+		catch (PortalException portalException) {
+			throw new SearchException(
+				"Unable to schedule portal reindex", portalException);
 		}
 	}
 
@@ -521,11 +531,11 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 		}
 
 		taskContextMap.put(
+			BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true);
+		taskContextMap.put(
 			ReindexBackgroundTaskConstants.CLASS_NAME, className);
 		taskContextMap.put(
 			ReindexBackgroundTaskConstants.COMPANY_IDS, companyIds);
-		taskContextMap.put(
-			BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true);
 
 		try {
 			return _backgroundTaskManager.addBackgroundTask(
@@ -533,14 +543,15 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 				ReindexSingleIndexerBackgroundTaskExecutor.class.getName(),
 				taskContextMap, new ServiceContext());
 		}
-		catch (PortalException pe) {
-			throw new SearchException("Unable to schedule portal reindex", pe);
+		catch (PortalException portalException) {
+			throw new SearchException(
+				"Unable to schedule portal reindex", portalException);
 		}
 	}
 
 	/**
 	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             IndexStatusManager. setIndexReadOnly(boolean)}
+	 *             IndexStatusManager#setIndexReadOnly(boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -549,8 +560,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link IndexStatusManager.
-	 *             setIndexReadOnly(String, boolean)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             IndexStatusManager#setIndexReadOnly(String, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -563,6 +574,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			String searchEngineId, long companyId, Document document,
 			boolean commitImmediately)
 		throws SearchException {
+
+		_enforceStandardUID(document);
 
 		if (_indexStatusManager.isIndexReadOnly() || (document == null)) {
 			return;
@@ -596,6 +609,8 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 			String searchEngineId, long companyId,
 			Collection<Document> documents, boolean commitImmediately)
 		throws SearchException {
+
+		_enforceStandardUID(documents);
 
 		if (_indexStatusManager.isIndexReadOnly() || (documents == null) ||
 			documents.isEmpty()) {
@@ -660,6 +675,17 @@ public class IndexWriterHelperImpl implements IndexWriterHelper {
 		else {
 			searchContext.setCommitImmediately(true);
 		}
+	}
+
+	@Reference
+	protected UIDFactory uidFactory;
+
+	private void _enforceStandardUID(Collection<Document> documents) {
+		documents.forEach(this::_enforceStandardUID);
+	}
+
+	private void _enforceStandardUID(Document document) {
+		uidFactory.getUID(document);
 	}
 
 	private String _getIndexerModelName(String name) {

@@ -18,8 +18,8 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.language.LanguageConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.constants.LanguageConstants;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -37,17 +37,16 @@ public abstract class BaseEditorConfigContributor
 	protected String getContentsLanguageDir(
 		Map<String, Object> inputEditorTaglibAttributes) {
 
-		Locale contentsLocale = getContentsLocale(inputEditorTaglibAttributes);
-
-		return LanguageUtil.get(contentsLocale, LanguageConstants.KEY_DIR);
+		return LanguageUtil.get(
+			getContentsLocale(inputEditorTaglibAttributes),
+			LanguageConstants.KEY_DIR);
 	}
 
 	protected String getContentsLanguageId(
 		Map<String, Object> inputEditorTaglibAttributes) {
 
-		Locale contentsLocale = getContentsLocale(inputEditorTaglibAttributes);
-
-		return LocaleUtil.toLanguageId(contentsLocale);
+		return LocaleUtil.toLanguageId(
+			getContentsLocale(inputEditorTaglibAttributes));
 	}
 
 	protected Locale getContentsLocale(
@@ -71,8 +70,9 @@ public abstract class BaseEditorConfigContributor
 		try {
 			return JSONFactoryUtil.createJSONArray(json);
 		}
-		catch (JSONException jsone) {
-			_log.error("Unable to create a JSON array from: " + json, jsone);
+		catch (JSONException jsonException) {
+			_log.error(
+				"Unable to create a JSON array from: " + json, jsonException);
 		}
 
 		return JSONFactoryUtil.createJSONArray();
@@ -92,8 +92,9 @@ public abstract class BaseEditorConfigContributor
 		try {
 			return JSONFactoryUtil.createJSONObject(json);
 		}
-		catch (JSONException jsone) {
-			_log.error("Unable to create a JSON object from: " + json, jsone);
+		catch (JSONException jsonException) {
+			_log.error(
+				"Unable to create a JSON object from: " + json, jsonException);
 		}
 
 		return JSONFactoryUtil.createJSONObject();

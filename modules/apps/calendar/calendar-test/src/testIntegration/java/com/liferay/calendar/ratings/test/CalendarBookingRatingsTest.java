@@ -15,11 +15,11 @@
 package com.liferay.calendar.ratings.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.calendar.constants.CalendarBookingConstants;
 import com.liferay.calendar.model.Calendar;
 import com.liferay.calendar.model.CalendarBooking;
-import com.liferay.calendar.model.CalendarBookingConstants;
 import com.liferay.calendar.model.CalendarResource;
-import com.liferay.calendar.service.CalendarBookingLocalServiceUtil;
+import com.liferay.calendar.service.CalendarBookingLocalService;
 import com.liferay.calendar.util.CalendarResourceUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Group;
@@ -28,8 +28,9 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.ratings.test.BaseRatingsTestCase;
+import com.liferay.ratings.test.util.BaseRatingsTestCase;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -55,7 +56,7 @@ public class CalendarBookingRatingsTest extends BaseRatingsTestCase {
 
 		long startTime = System.currentTimeMillis();
 
-		return CalendarBookingLocalServiceUtil.addCalendarBooking(
+		return _calendarBookingLocalService.addCalendarBooking(
 			TestPropsValues.getUserId(), calendar.getCalendarId(), new long[0],
 			CalendarBookingConstants.PARENT_CALENDAR_BOOKING_ID_DEFAULT,
 			CalendarBookingConstants.RECURRING_CALENDAR_BOOKING_ID_DEFAULT,
@@ -71,7 +72,7 @@ public class CalendarBookingRatingsTest extends BaseRatingsTestCase {
 			BaseModel<?> baseModel, ServiceContext serviceContext)
 		throws Exception {
 
-		return CalendarBookingLocalServiceUtil.deleteCalendarBooking(
+		return _calendarBookingLocalService.deleteCalendarBooking(
 			(CalendarBooking)baseModel);
 	}
 
@@ -91,5 +92,8 @@ public class CalendarBookingRatingsTest extends BaseRatingsTestCase {
 
 		return calendarResource.getDefaultCalendar();
 	}
+
+	@Inject
+	private CalendarBookingLocalService _calendarBookingLocalService;
 
 }

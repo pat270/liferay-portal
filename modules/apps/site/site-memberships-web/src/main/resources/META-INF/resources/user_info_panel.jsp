@@ -46,8 +46,8 @@ Group group = siteMembershipsDisplayContext.getGroup();
 				</c:if>
 			</h4>
 
-			<h6 class="text-muted">
-				<liferay-ui:message key='<%= "membership-type-" + GroupConstants.getTypeLabel(group.getType()) + "-help" %>' />
+			<h6 class="text-secondary">
+				<liferay-ui:message arguments="<%= GroupUtil.getGroupTypeLabel(group, locale) %>" key='<%= "membership-type-" + GroupConstants.getTypeLabel(group.getType()) + "-help" %>' translateArguments="<%= false %>" />
 			</h6>
 		</div>
 
@@ -59,10 +59,11 @@ Group group = siteMembershipsDisplayContext.getGroup();
 			<h5><liferay-ui:message key="num-of-users" /></h5>
 
 			<%
-			LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
-
-			userParams.put("inherit", Boolean.TRUE);
-			userParams.put("usersGroups", Long.valueOf(siteMembershipsDisplayContext.getGroupId()));
+			LinkedHashMap<String, Object> userParams = LinkedHashMapBuilder.<String, Object>put(
+				"inherit", Boolean.TRUE
+			).put(
+				"usersGroups", Long.valueOf(siteMembershipsDisplayContext.getGroupId())
+			).build();
 			%>
 
 			<p>
@@ -132,16 +133,16 @@ Group group = siteMembershipsDisplayContext.getGroup();
 
 			List<Team> teams = TeamLocalServiceUtil.getUserOrUserGroupTeams(siteMembershipsDisplayContext.getGroupId(), curUser.getUserId());
 
-			List<String> siteRolesAndTeamsNames = ListUtil.toList(userGroupRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR);
+			List<String> rolesAndTeamsNames = ListUtil.toList(userGroupRoles, UsersAdmin.USER_GROUP_ROLE_TITLE_ACCESSOR);
 
-			siteRolesAndTeamsNames.addAll(ListUtil.toList(teams, Team.NAME_ACCESSOR));
+			rolesAndTeamsNames.addAll(ListUtil.toList(teams, Team.NAME_ACCESSOR));
 			%>
 
-			<c:if test="<%= !ListUtil.isEmpty(siteRolesAndTeamsNames) %>">
-				<h5><liferay-ui:message key="site-roles-and-teams" /></h5>
+			<c:if test="<%= !ListUtil.isEmpty(rolesAndTeamsNames) %>">
+				<h5><liferay-ui:message key="roles-and-teams" /></h5>
 
 				<p>
-					<%= HtmlUtil.escape(StringUtil.merge(siteRolesAndTeamsNames, StringPool.COMMA_AND_SPACE)) %>
+					<%= HtmlUtil.escape(StringUtil.merge(rolesAndTeamsNames, StringPool.COMMA_AND_SPACE)) %>
 				</p>
 			</c:if>
 		</div>

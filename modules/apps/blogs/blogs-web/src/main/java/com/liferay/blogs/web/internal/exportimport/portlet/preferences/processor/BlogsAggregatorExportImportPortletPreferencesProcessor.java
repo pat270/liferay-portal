@@ -54,12 +54,12 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(new Capability[] {_exportCapability});
+		return ListUtil.fromArray(_exportCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(new Capability[] {_importCapability});
+		return ListUtil.fromArray(_importCapability);
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 				portletDataContext, portletDataContext.getRootPortletId(),
 				portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return portletPreferences;
 		}
 	}
@@ -88,7 +88,7 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessor
 			return updateImportPortletPreferences(
 				portletDataContext, portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return portletPreferences;
 		}
 	}

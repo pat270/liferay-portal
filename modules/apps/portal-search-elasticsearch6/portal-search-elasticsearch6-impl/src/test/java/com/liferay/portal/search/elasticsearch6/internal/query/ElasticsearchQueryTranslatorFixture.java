@@ -68,6 +68,7 @@ public class ElasticsearchQueryTranslatorFixture {
 				setTermsQueryTranslator(new TermsQueryTranslatorImpl());
 				setTermsSetQueryTranslator(new TermsSetQueryTranslatorImpl());
 				setWildcardQueryTranslator(new WildcardQueryTranslatorImpl());
+				setWrapperQueryTranslator(new WrapperQueryTranslatorImpl());
 			}
 		};
 	}

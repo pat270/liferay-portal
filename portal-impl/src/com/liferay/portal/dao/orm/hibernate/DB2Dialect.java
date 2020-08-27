@@ -14,8 +14,8 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 /**
@@ -54,7 +54,6 @@ public class DB2Dialect extends org.hibernate.dialect.DB2Dialect {
 
 		if (!hasOffset) {
 			addQueryForLimitedRows(sb, sql, limit);
-			addOptimizeForLimitedRows(sb, limit);
 
 			return sb.toString();
 		}
@@ -77,8 +76,6 @@ public class DB2Dialect extends org.hibernate.dialect.DB2Dialect {
 		sb.append(") AS outerQuery WHERE rowNumber_ > ");
 		sb.append(offset);
 
-		addOptimizeForLimitedRows(sb, limit);
-
 		return sb.toString();
 	}
 
@@ -87,12 +84,28 @@ public class DB2Dialect extends org.hibernate.dialect.DB2Dialect {
 		return _SUPPORTS_VARIABLE_LIMIT;
 	}
 
-	protected void addOptimizeForLimitedRows(StringBundler sb, int limit) {
-		sb.append(StringPool.SPACE);
-		sb.append(
-			StringUtil.replace(
-				_SQL_OPTIMIZE_FOR_LIMITED_ROWS, "[$LIMIT$]",
-				String.valueOf(limit)));
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	protected void addOptimizeForLimitedRows(
+		com.liferay.portal.kernel.util.StringBundler sb, int limit) {
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addQueryForLimitedRows(StringBundler, String, int)}
+	 */
+	@Deprecated
+	protected void addQueryForLimitedRows(
+		com.liferay.portal.kernel.util.StringBundler sb, String sql,
+		int limit) {
+
+		StringBundler petraSB = new StringBundler();
+
+		addQueryForLimitedRows(petraSB, sql, limit);
+
+		sb.append(petraSB.getStrings());
 	}
 
 	protected void addQueryForLimitedRows(
@@ -108,9 +121,6 @@ public class DB2Dialect extends org.hibernate.dialect.DB2Dialect {
 
 	private static final String _SQL_FETCH_FIRST_LIMITED_ROWS_ONLY =
 		"FETCH FIRST [$LIMIT$] ROWS ONLY";
-
-	private static final String _SQL_OPTIMIZE_FOR_LIMITED_ROWS =
-		"OPTIMIZE FOR [$LIMIT$] ROWS";
 
 	private static final boolean _SUPPORTS_VARIABLE_LIMIT = false;
 

@@ -14,11 +14,10 @@
 
 package com.liferay.dynamic.data.lists.service.impl;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.exception.RecordSetDDMStructureIdException;
 import com.liferay.dynamic.data.lists.exception.RecordSetDuplicateRecordSetKeyException;
-import com.liferay.dynamic.data.lists.exception.RecordSetNameException;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
-import com.liferay.dynamic.data.lists.model.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordSetSettings;
 import com.liferay.dynamic.data.lists.model.DDLRecordSetVersion;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
@@ -27,11 +26,9 @@ import com.liferay.dynamic.data.lists.service.base.DDLRecordSetLocalServiceBaseI
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMStructureLink;
@@ -49,6 +46,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
@@ -105,6 +104,7 @@ public class DDLRecordSetLocalServiceImpl
 	 * @return the record set
 	 * @throws PortalException if a portal exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public DDLRecordSet addRecordSet(
 			long userId, long groupId, long ddmStructureId, String recordSetKey,
@@ -120,7 +120,9 @@ public class DDLRecordSetLocalServiceImpl
 			recordSetKey = String.valueOf(counterLocalService.increment());
 		}
 
-		validate(groupId, ddmStructureId, recordSetKey, nameMap);
+		addDefaultName(nameMap);
+
+		validate(groupId, ddmStructureId, recordSetKey);
 
 		long recordSetId = counterLocalService.increment();
 
@@ -163,10 +165,8 @@ public class DDLRecordSetLocalServiceImpl
 
 		// Record set version
 
-		long ddmStructureVersionId = getDDMStructureVersionId(ddmStructureId);
-
 		addRecordSetVersion(
-			ddmStructureVersionId, user, recordSet,
+			getDDMStructureVersionId(ddmStructureId), user, recordSet,
 			DDLRecordSetConstants.VERSION_DEFAULT, serviceContext);
 
 		// Dynamic data mapping structure link
@@ -219,27 +219,16 @@ public class DDLRecordSetLocalServiceImpl
 			recordSet.getRecordSetId(), modelPermissions);
 	}
 
-	/**
-	 * Adds the model resources with the permissions to the record set.
-	 *
-	 * @param      recordSet the record set
-	 * @param      groupPermissions whether to add group permissions
-	 * @param      guestPermissions whether to add guest permissions
-	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #addRecordSetResources(DDLRecordSet, ModelPermissions)}
-	 */
-	@Deprecated
 	@Override
-	public void addRecordSetResources(
-			DDLRecordSet recordSet, String[] groupPermissions,
-			String[] guestPermissions)
+	public void deleteDDMStructureRecordSets(long ddmStructureId)
 		throws PortalException {
 
-		resourceLocalService.addModelResources(
-			recordSet.getCompanyId(), recordSet.getGroupId(),
-			recordSet.getUserId(), DDLRecordSet.class.getName(),
-			recordSet.getRecordSetId(), groupPermissions, guestPermissions);
+		List<DDLRecordSet> ddlRecordSets = getDDMStructureRecordSets(
+			ddmStructureId);
+
+		for (DDLRecordSet ddlRecordSet : ddlRecordSets) {
+			ddlRecordSetLocalService.deleteRecordSet(ddlRecordSet);
+		}
 	}
 
 	/**
@@ -257,7 +246,7 @@ public class DDLRecordSetLocalServiceImpl
 
 		// Record set
 
-		ddlRecordSetPersistence.remove(recordSet);
+		ddlRecordSetLocalService.deleteDDLRecordSet(recordSet);
 
 		// Resources
 
@@ -364,6 +353,11 @@ public class DDLRecordSetLocalServiceImpl
 		return ddlRecordSetPersistence.fetchByG_R(groupId, recordSetKey);
 	}
 
+	@Override
+	public List<DDLRecordSet> getDDMStructureRecordSets(long ddmStructureId) {
+		return ddlRecordSetPersistence.findByDDMStructureId(ddmStructureId);
+	}
+
 	/**
 	 * Returns the record set with the ID.
 	 *
@@ -408,8 +402,9 @@ public class DDLRecordSetLocalServiceImpl
 		return ddlRecordSetPersistence.findByGroupId(groupId);
 	}
 
+	@Override
 	public List<DDLRecordSet> getRecordSets(long groupId, int start, int end) {
-		return ddlRecordSetPersistence.filterFindByGroupId(groupId, start, end);
+		return ddlRecordSetPersistence.findByGroupId(groupId, start, end);
 	}
 
 	/**
@@ -646,9 +641,7 @@ public class DDLRecordSetLocalServiceImpl
 
 		recordSet.setMinDisplayRows(minDisplayRows);
 
-		ddlRecordSetPersistence.update(recordSet);
-
-		return recordSet;
+		return ddlRecordSetPersistence.update(recordSet);
 	}
 
 	/**
@@ -695,6 +688,7 @@ public class DDLRecordSetLocalServiceImpl
 	 * @return the record set
 	 * @throws PortalException if a portal exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public DDLRecordSet updateRecordSet(
 			long recordSetId, long ddmStructureId, Map<Locale, String> nameMap,
@@ -742,6 +736,14 @@ public class DDLRecordSetLocalServiceImpl
 			minDisplayRows, serviceContext, recordSet);
 	}
 
+	protected void addDefaultName(Map<Locale, String> nameMap) {
+		Locale locale = LocaleUtil.getSiteDefault();
+
+		if (Validator.isNull(nameMap.get(locale))) {
+			nameMap.put(locale, "Untitled Dynamic Data List");
+		}
+	}
+
 	protected DDLRecordSetVersion addRecordSetVersion(
 			long ddmStructureVersionId, User user, DDLRecordSet recordSet,
 			String version, ServiceContext serviceContext)
@@ -773,23 +775,17 @@ public class DDLRecordSetLocalServiceImpl
 		recordSetVersion.setStatusByUserName(user.getFullName());
 		recordSetVersion.setStatusDate(recordSet.getModifiedDate());
 
-		ddlRecordSetVersionPersistence.update(recordSetVersion);
-
-		return recordSetVersion;
+		return ddlRecordSetVersionPersistence.update(recordSetVersion);
 	}
 
 	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
-		DDMFormValuesDeserializer ddmFormValuesDeserializer =
-			ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				"json");
-
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
 
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
-				ddmFormValuesDeserializer.deserialize(builder.build());
+				_jsonDDMFormValuesDeserializer.deserialize(builder.build());
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -802,8 +798,9 @@ public class DDLRecordSetLocalServiceImpl
 
 		// Record set
 
+		addDefaultName(nameMap);
+
 		validateDDMStructureId(ddmStructureId);
-		validateName(nameMap);
 
 		User user = userLocalService.getUser(userId);
 
@@ -920,16 +917,13 @@ public class DDLRecordSetLocalServiceImpl
 	}
 
 	protected String serialize(DDMFormValues ddmFormValues) {
-		DDMFormValuesSerializer ddmFormValuesSerializer =
-			ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
-
 		DDMFormValuesSerializerSerializeRequest.Builder builder =
 			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
 				ddmFormValues);
 
 		DDMFormValuesSerializerSerializeResponse
 			ddmFormValuesSerializerSerializeResponse =
-				ddmFormValuesSerializer.serialize(builder.build());
+				_jsonDDMFormValuesSerializer.serialize(builder.build());
 
 		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
@@ -955,8 +949,7 @@ public class DDLRecordSetLocalServiceImpl
 	}
 
 	protected void validate(
-			long groupId, long ddmStructureId, String recordSetKey,
-			Map<Locale, String> nameMap)
+			long groupId, long ddmStructureId, String recordSetKey)
 		throws PortalException {
 
 		validateDDMStructureId(ddmStructureId);
@@ -966,16 +959,16 @@ public class DDLRecordSetLocalServiceImpl
 				groupId, recordSetKey);
 
 			if (recordSet != null) {
-				RecordSetDuplicateRecordSetKeyException rsdrske =
-					new RecordSetDuplicateRecordSetKeyException();
+				RecordSetDuplicateRecordSetKeyException
+					recordSetDuplicateRecordSetKeyException =
+						new RecordSetDuplicateRecordSetKeyException();
 
-				rsdrske.setRecordSetKey(recordSet.getRecordSetKey());
+				recordSetDuplicateRecordSetKeyException.setRecordSetKey(
+					recordSet.getRecordSetKey());
 
-				throw rsdrske;
+				throw recordSetDuplicateRecordSetKeyException;
 			}
 		}
-
-		validateName(nameMap);
 	}
 
 	protected void validateDDMStructureId(long ddmStructureId)
@@ -990,25 +983,6 @@ public class DDLRecordSetLocalServiceImpl
 					ddmStructureId);
 		}
 	}
-
-	protected void validateName(Map<Locale, String> nameMap)
-		throws PortalException {
-
-		Locale locale = LocaleUtil.getSiteDefault();
-
-		String name = nameMap.get(locale);
-
-		if (Validator.isNull(name)) {
-			throw new RecordSetNameException(
-				"Name is null for locale " + locale.getDisplayName());
-		}
-	}
-
-	@Reference
-	protected DDMFormValuesDeserializerTracker ddmFormValuesDeserializerTracker;
-
-	@Reference
-	protected DDMFormValuesSerializerTracker ddmFormValuesSerializerTracker;
 
 	@Reference
 	protected DDMFormValuesValidator ddmFormValuesValidator;
@@ -1027,5 +1001,11 @@ public class DDLRecordSetLocalServiceImpl
 
 	@Reference
 	private DDLRecordSetVersionLocalService _ddlRecordSetVersionLocalService;
+
+	@Reference(target = "(ddm.form.values.deserializer.type=json)")
+	private DDMFormValuesDeserializer _jsonDDMFormValuesDeserializer;
+
+	@Reference(target = "(ddm.form.values.serializer.type=json)")
+	private DDMFormValuesSerializer _jsonDDMFormValuesSerializer;
 
 }

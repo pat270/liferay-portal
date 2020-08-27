@@ -1,0 +1,92 @@
+definition {
+
+	macro createNewUserAccount {
+		User.createAccount(
+			newPassword = "${newPassword}",
+			userEmailAddress = "${userEmailAddress}",
+			userFirstName = "${userFirstName}",
+			userLastName = "${userLastName}",
+			userScreenName = "${userScreenName}");
+
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
+	}
+
+	macro gotoViaNotification {
+		Notifications.gotoNotifications();
+
+		if (isSet(user)) {
+			AssertClick(
+				locator1 = "Notifications#NOTIFICATIONS_WORKFLOW_TITLE",
+				value1 = "${user} sent you a ${assetType} for review in the workflow.");
+		}
+		else {
+			AssertClick(
+				locator1 = "Notifications#NOTIFICATIONS_WORKFLOW_TITLE",
+				value1 = "sent you a ${assetType} for review in the workflow.");
+		}
+	}
+
+	macro previewViewContent {
+		var key_fieldLabel = "${fieldLabel}";
+		var key_fieldValue = "${fieldValue}";
+
+		AssertTextEquals(
+			locator1 = "AssetWorkflow#CONTENT_PREVIEW_VIEW",
+			value1 = "${fieldLabel} ${fieldValue}");
+	}
+
+	macro previewViewContentFieldNotPresent {
+		var key_fieldLabel = "${fieldLabel}";
+
+		AssertElementNotPresent(locator1 = "AssetWorkflow#CONTENT_FIELD_PREVIEW_VIEW");
+	}
+
+	macro viewDetails {
+		Click(locator1 = "Icon#INFO");
+
+		AssertTextEquals(
+			locator1 = "NavBar#DETAILS",
+			value1 = "Details");
+
+		AssertTextEquals(
+			locator1 = "AssetWorkflow#DETAILS_WORKFLOW_STATUS",
+			value1 = "${workflowStatus}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AssetWorkflow#DETAILS_WORKFLOW_CREATED_BY",
+			value1 = "${userName}");
+	}
+
+	macro viewFormEntryTable {
+		FormsAdmin.viewFormTableEntry(
+			fieldLabel = "${fieldLabel}",
+			fieldValue = "${fieldValue}");
+
+		var key_fieldLabel = "${fieldLabel}";
+		var key_fieldValue = "${fieldValue}";
+		var key_workflowStatus = "${workflowStatus}";
+
+		AssertTextEquals(
+			locator1 = "FormsAdmin#FORM_ENTRY_WORKFLOW_STATUS",
+			value1 = "${workflowStatus}");
+	}
+
+	macro viewFormTemplateLabel {
+		AssertTextEquals.assertPartialText(
+			locator1 = "MyWorkflowTasksTask#PREVIEW_CONTENT",
+			value1 = "${workflowFormsTemplateLabel}");
+	}
+
+	macro viewNotification {
+		AssertTextEquals(
+			locator1 = "Notifications#NOTIFICATIONS_WORKFLOW_TITLE",
+			value1 = "${contentBody}");
+	}
+
+	macro viewUserDetails {
+		AssertTextEquals.assertPartialText(
+			locator1 = "WorkflowSubmissionsTask#PREVIEW_USER",
+			value1 = "${userEmailAddress}");
+	}
+
+}

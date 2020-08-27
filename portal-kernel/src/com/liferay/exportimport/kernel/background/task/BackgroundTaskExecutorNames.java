@@ -14,13 +14,14 @@
 
 package com.liferay.exportimport.kernel.background.task;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class BackgroundTaskExecutorNames {
+
+	public static final String DDM_STRUCTURE_INDEXER_BACKGROUND_TASK_EXECUTOR =
+		"com.liferay.dynamic.data.mapping.internal.background.task." +
+			"DDMStructureIndexerBackgroundTaskExecutor";
 
 	public static final String LAYOUT_EXPORT_BACKGROUND_TASK_EXECUTOR =
 		"com.liferay.exportimport.internal.background.task." +

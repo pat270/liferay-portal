@@ -16,8 +16,11 @@ package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.source.formatter.parser.JavaClass;
+import com.liferay.source.formatter.parser.JavaParameter;
+import com.liferay.source.formatter.parser.JavaSignature;
 import com.liferay.source.formatter.parser.JavaTerm;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +30,7 @@ import java.util.regex.Pattern;
 public class JavaTestMethodAnnotationsCheck extends BaseJavaTermCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -36,13 +39,7 @@ public class JavaTestMethodAnnotationsCheck extends BaseJavaTermCheck {
 		String fileName, String absolutePath, JavaTerm javaTerm,
 		String fileContent) {
 
-		if (!fileName.endsWith("Test.java")) {
-			return javaTerm.getContent();
-		}
-
-		String accessModifier = javaTerm.getAccessModifier();
-
-		if (!accessModifier.equals(JavaTerm.ACCESS_MODIFIER_PUBLIC)) {
+		if (!javaTerm.isPublic() || !fileName.endsWith("Test.java")) {
 			return javaTerm.getContent();
 		}
 
@@ -53,14 +50,14 @@ public class JavaTestMethodAnnotationsCheck extends BaseJavaTermCheck {
 		}
 
 		_checkAnnotationForMethod(
-			fileName, javaTerm, "After", "\\btearDown(?!Class)", false);
+			fileName, javaTerm, "After", "^tearDown(?!Class)", false);
 		_checkAnnotationForMethod(
-			fileName, javaTerm, "AfterClass", "\\btearDownClass", true);
+			fileName, javaTerm, "AfterClass", "^tearDownClass", true);
 		_checkAnnotationForMethod(
-			fileName, javaTerm, "Before", "\\bsetUp(?!Class)", false);
+			fileName, javaTerm, "Before", "^setUp(?!Class)", false);
 		_checkAnnotationForMethod(
-			fileName, javaTerm, "BeforeClass", "\\bsetUpClass", true);
-		_checkAnnotationForMethod(fileName, javaTerm, "Test", "^.*test", false);
+			fileName, javaTerm, "BeforeClass", "^setUpClass", true);
+		_checkAnnotationForMethod(fileName, javaTerm, "Test", "^test", false);
 
 		return javaTerm.getContent();
 	}
@@ -84,21 +81,44 @@ public class JavaTestMethodAnnotationsCheck extends BaseJavaTermCheck {
 			if (!matcher.find()) {
 				addMessage(
 					fileName, "Incorrect method name '" + methodName + "'",
-					"test_method_naming.markdown");
+					javaTerm.getLineNumber());
 			}
 			else if (javaTerm.isStatic() != staticRequired) {
 				addMessage(
 					fileName, "Incorrect method type for '" + methodName + "'",
-					"test_method_naming.markdown");
+					javaTerm.getLineNumber());
 			}
+
+			return;
 		}
-		else if (matcher.find() && !javaTerm.hasAnnotation("Override")) {
+
+		if (!matcher.find()) {
+			return;
+		}
+
+		JavaSignature signature = javaTerm.getSignature();
+
+		List<JavaParameter> parameters = signature.getParameters();
+
+		if (!parameters.isEmpty()) {
+			return;
+		}
+
+		JavaClass javaClass = javaTerm.getParentJavaClass();
+
+		if (javaClass.isAnonymous()) {
+			return;
+		}
+
+		JavaClass parentJavaClass = javaClass.getParentJavaClass();
+
+		if (parentJavaClass == null) {
 			addMessage(
 				fileName,
 				StringBundler.concat(
 					"Annotation @", annotation, " required for '", methodName,
 					"'"),
-				"test_method_naming.markdown");
+				javaTerm.getLineNumber());
 		}
 	}
 

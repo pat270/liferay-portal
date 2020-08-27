@@ -41,15 +41,11 @@ public class ClassLoaderResourceParserTest {
 	public static final CodeCoverageAssertor codeCoverageAssertor =
 		CodeCoverageAssertor.INSTANCE;
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testGetURL() throws MalformedURLException {
 		ClassLoaderResourceParser classLoaderResourceParser =
 			new ClassLoaderResourceParser();
 
-		Assert.assertNull(
-			classLoaderResourceParser.getURL(
-				TemplateConstants.JOURNAL_SEPARATOR));
 		Assert.assertNull(
 			classLoaderResourceParser.getURL(
 				TemplateConstants.SERVLET_SEPARATOR));

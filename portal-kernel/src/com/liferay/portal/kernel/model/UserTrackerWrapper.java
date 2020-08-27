@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link UserTracker}.
@@ -31,10 +29,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserTracker
  * @generated
  */
-@ProviderType
 public class UserTrackerWrapper
 	extends BaseModelWrapper<UserTracker>
-	implements UserTracker, ModelWrapper<UserTracker> {
+	implements ModelWrapper<UserTracker>, UserTracker {
 
 	public UserTrackerWrapper(UserTracker userTracker) {
 		super(userTracker);

@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -152,11 +153,11 @@ public class InputAssetLinksDisplayContext {
 
 			assetType = classType.getName();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				"Unable to get asset type for class type primary key " +
 					entry.getClassTypeId(),
-				pe);
+				portalException);
 		}
 
 		return assetType;
@@ -196,7 +197,7 @@ public class InputAssetLinksDisplayContext {
 	public List<Map<String, Object>> getSelectorEntries() throws Exception {
 		List<Map<String, Object>> selectorEntries = new ArrayList<>();
 
-		AssetRendererFactory baseAssetRendererFactory =
+		AssetRendererFactory<?> baseAssetRendererFactory =
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
 				_className);
 
@@ -223,19 +224,18 @@ public class InputAssetLinksDisplayContext {
 					_getSelectorEntries(assetRendererFactory));
 			}
 			else {
-				Map<String, Object> selectorEntry = new HashMap<>();
-
-				selectorEntry.put(
-					"data", _getSelectorEntryData(assetRendererFactory));
-				selectorEntry.put(
-					"iconCssClass",
-					_getSelectorEntryIconCssClass(assetRendererFactory));
-				selectorEntry.put(
-					"id", _getSelectorEntryId(assetRendererFactory));
-				selectorEntry.put(
-					"message", _getSelectorEntryMessage(assetRendererFactory));
-
-				selectorEntries.add(selectorEntry);
+				selectorEntries.add(
+					HashMapBuilder.<String, Object>put(
+						"data", _getSelectorEntryData(assetRendererFactory)
+					).put(
+						"iconCssClass",
+						_getSelectorEntryIconCssClass(assetRendererFactory)
+					).put(
+						"id", _getSelectorEntryId(assetRendererFactory)
+					).put(
+						"message",
+						_getSelectorEntryMessage(assetRendererFactory)
+					).build());
 			}
 		}
 
@@ -346,6 +346,10 @@ public class InputAssetLinksDisplayContext {
 		portletURL.setParameter("eventName", getEventName());
 		portletURL.setParameter(
 			"multipleSelection", String.valueOf(Boolean.TRUE));
+		portletURL.setParameter("showBreadcrumb", String.valueOf(Boolean.TRUE));
+		portletURL.setParameter(
+			"showNonindexable", String.valueOf(Boolean.TRUE));
+		portletURL.setParameter("showScheduled", String.valueOf(Boolean.TRUE));
 		portletURL.setPortletMode(PortletMode.VIEW);
 		portletURL.setWindowState(LiferayWindowState.POP_UP);
 
@@ -372,18 +376,18 @@ public class InputAssetLinksDisplayContext {
 		List<Map<String, Object>> selectorEntries = new ArrayList<>();
 
 		for (ClassType classType : classTypes) {
-			Map<String, Object> selectorEntry = new HashMap<>();
-
-			selectorEntry.put(
-				"data", _getSelectorEntryData(assetRendererFactory, classType));
-			selectorEntry.put(
-				"iconCssClass",
-				_getSelectorEntryIconCssClass(assetRendererFactory));
-			selectorEntry.put(
-				"id", _getSelectorEntryId(assetRendererFactory, classType));
-			selectorEntry.put("message", _getSelectorEntryMessage(classType));
-
-			selectorEntries.add(selectorEntry);
+			selectorEntries.add(
+				HashMapBuilder.<String, Object>put(
+					"data",
+					_getSelectorEntryData(assetRendererFactory, classType)
+				).put(
+					"iconCssClass",
+					_getSelectorEntryIconCssClass(assetRendererFactory)
+				).put(
+					"id", _getSelectorEntryId(assetRendererFactory, classType)
+				).put(
+					"message", _getSelectorEntryMessage(classType)
+				).build());
 		}
 
 		return selectorEntries;
@@ -434,13 +438,11 @@ public class InputAssetLinksDisplayContext {
 			selectorEntryData.put("href", portletURL.toString());
 		}
 
-		ResourceBundle resourceBundle = TagResourceBundleUtil.getResourceBundle(
-			_pageContext);
-
 		selectorEntryData.put(
 			"title",
 			LanguageUtil.format(
-				resourceBundle, "select-x", classType.getName(), false));
+				TagResourceBundleUtil.getResourceBundle(_pageContext),
+				"select-x", classType.getName(), false));
 
 		selectorEntryData.put("type", classType.getName());
 

@@ -16,12 +16,9 @@ package com.liferay.portal.workflow.kaleo.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KaleoDefinitionContentException extends PortalException {
 
 	public KaleoDefinitionContentException() {
@@ -31,12 +28,12 @@ public class KaleoDefinitionContentException extends PortalException {
 		super(msg);
 	}
 
-	public KaleoDefinitionContentException(String msg, Throwable cause) {
-		super(msg, cause);
+	public KaleoDefinitionContentException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public KaleoDefinitionContentException(Throwable cause) {
-		super(cause);
+	public KaleoDefinitionContentException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

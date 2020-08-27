@@ -54,13 +54,14 @@ import org.osgi.service.component.annotations.Reference;
 public class MBMessagePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", MBMessage.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<MBMessage>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				MBMessage.class, MBMessage::getMessageId,
 				(Long resourcePrimKey) -> {
@@ -108,7 +109,7 @@ public class MBMessagePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -157,7 +158,8 @@ public class MBMessagePermissionRegistrar {
 	@Reference(target = "(resource.name=" + MBConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<MBMessage>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

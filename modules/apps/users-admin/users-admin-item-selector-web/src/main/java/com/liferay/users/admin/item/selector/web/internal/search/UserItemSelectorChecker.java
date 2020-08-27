@@ -26,25 +26,32 @@ import javax.portlet.RenderResponse;
 public class UserItemSelectorChecker extends EmptyOnClickRowChecker {
 
 	public UserItemSelectorChecker(
-		RenderResponse renderResponse, long[] checkedUserIds) {
+		RenderResponse renderResponse, long[] checkedUserIds,
+		boolean checkedUserIdsEnabled) {
 
 		super(renderResponse);
 
 		_checkedUserIds = checkedUserIds;
+		_checkedUserIdsEnabled = checkedUserIdsEnabled;
 	}
 
 	@Override
-	public boolean isChecked(Object obj) {
-		User user = (User)obj;
+	public boolean isChecked(Object object) {
+		User user = (User)object;
 
 		return ArrayUtil.contains(_checkedUserIds, user.getUserId());
 	}
 
 	@Override
-	public boolean isDisabled(Object obj) {
-		return isChecked(obj);
+	public boolean isDisabled(Object object) {
+		if (!_checkedUserIdsEnabled) {
+			return isChecked(object);
+		}
+
+		return false;
 	}
 
 	private final long[] _checkedUserIds;
+	private final boolean _checkedUserIdsEnabled;
 
 }

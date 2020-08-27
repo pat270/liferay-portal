@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -125,6 +126,8 @@ public class SubscriptionPersistenceTest {
 
 		newSubscription.setMvccVersion(RandomTestUtil.nextLong());
 
+		newSubscription.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newSubscription.setGroupId(RandomTestUtil.nextLong());
 
 		newSubscription.setCompanyId(RandomTestUtil.nextLong());
@@ -151,6 +154,9 @@ public class SubscriptionPersistenceTest {
 		Assert.assertEquals(
 			existingSubscription.getMvccVersion(),
 			newSubscription.getMvccVersion());
+		Assert.assertEquals(
+			existingSubscription.getCtCollectionId(),
+			newSubscription.getCtCollectionId());
 		Assert.assertEquals(
 			existingSubscription.getSubscriptionId(),
 			newSubscription.getSubscriptionId());
@@ -191,13 +197,6 @@ public class SubscriptionPersistenceTest {
 		_persistence.countByUserId(RandomTestUtil.nextLong());
 
 		_persistence.countByUserId(0L);
-	}
-
-	@Test
-	public void testCountByClassNameId() throws Exception {
-		_persistence.countByClassNameId(RandomTestUtil.nextLong());
-
-		_persistence.countByClassNameId(0L);
 	}
 
 	@Test
@@ -267,10 +266,11 @@ public class SubscriptionPersistenceTest {
 
 	protected OrderByComparator<Subscription> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"Subscription", "mvccVersion", true, "subscriptionId", true,
-			"groupId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true, "classNameId", true,
-			"classPK", true, "frequency", true);
+			"Subscription", "mvccVersion", true, "ctCollectionId", true,
+			"subscriptionId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "classNameId", true, "classPK", true,
+			"frequency", true);
 	}
 
 	@Test
@@ -492,26 +492,71 @@ public class SubscriptionPersistenceTest {
 
 		_persistence.clearCache();
 
-		Subscription existingSubscription = _persistence.findByPrimaryKey(
-			newSubscription.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newSubscription.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		Subscription newSubscription = addSubscription();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Subscription.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"subscriptionId", newSubscription.getSubscriptionId()));
+
+		List<Subscription> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(Subscription subscription) {
 		Assert.assertEquals(
-			Long.valueOf(existingSubscription.getCompanyId()),
+			Long.valueOf(subscription.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSubscription, "getOriginalCompanyId", new Class<?>[0]));
+				subscription, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSubscription.getUserId()),
+			Long.valueOf(subscription.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSubscription, "getOriginalUserId", new Class<?>[0]));
+				subscription, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSubscription.getClassNameId()),
+			Long.valueOf(subscription.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSubscription, "getOriginalClassNameId",
-				new Class<?>[0]));
+				subscription, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSubscription.getClassPK()),
+			Long.valueOf(subscription.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSubscription, "getOriginalClassPK", new Class<?>[0]));
+				subscription, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 	}
 
 	protected Subscription addSubscription() throws Exception {
@@ -520,6 +565,8 @@ public class SubscriptionPersistenceTest {
 		Subscription subscription = _persistence.create(pk);
 
 		subscription.setMvccVersion(RandomTestUtil.nextLong());
+
+		subscription.setCtCollectionId(RandomTestUtil.nextLong());
 
 		subscription.setGroupId(RandomTestUtil.nextLong());
 

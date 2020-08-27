@@ -17,7 +17,7 @@ package com.liferay.announcements.web.internal.portlet.action;
 import com.liferay.announcements.constants.AnnouncementsPortletKeys;
 import com.liferay.announcements.kernel.model.AnnouncementsEntry;
 import com.liferay.announcements.kernel.model.AnnouncementsFlagConstants;
-import com.liferay.announcements.web.constants.AnnouncementsWebKeys;
+import com.liferay.announcements.web.internal.constants.AnnouncementsWebKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -59,12 +59,12 @@ public class ViewEntryMVCRenderCommand implements MVCRenderCommand {
 				AnnouncementsWebKeys.VIEW_ENTRY_FLAG_VALUE,
 				AnnouncementsFlagConstants.NOT_HIDDEN);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return "/announcements/error.jsp";

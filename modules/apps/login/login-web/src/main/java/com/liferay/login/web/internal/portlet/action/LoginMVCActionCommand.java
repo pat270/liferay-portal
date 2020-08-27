@@ -14,7 +14,8 @@
 
 package com.liferay.login.web.internal.portlet.action;
 
-import com.liferay.login.web.internal.constants.LoginPortletKeys;
+import com.liferay.login.web.constants.LoginPortletKeys;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.CompanyMaxUsersException;
 import com.liferay.portal.kernel.exception.CookieNotSupportedException;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
@@ -114,39 +115,41 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 					WebKeys.REDIRECT, renderURL.toString());
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof AuthException) {
-				Throwable cause = e.getCause();
+		catch (Exception exception) {
+			if (exception instanceof AuthException) {
+				Throwable throwable = exception.getCause();
 
-				if (cause instanceof PasswordExpiredException ||
-					cause instanceof UserLockoutException) {
+				if (throwable instanceof PasswordExpiredException ||
+					throwable instanceof UserLockoutException) {
 
-					SessionErrors.add(actionRequest, cause.getClass(), cause);
+					SessionErrors.add(
+						actionRequest, throwable.getClass(), throwable);
 				}
 				else {
 					if (_log.isInfoEnabled()) {
 						_log.info("Authentication failed");
 					}
 
-					SessionErrors.add(actionRequest, e.getClass());
+					SessionErrors.add(actionRequest, exception.getClass());
 				}
 			}
-			else if (e instanceof CompanyMaxUsersException ||
-					 e instanceof CookieNotSupportedException ||
-					 e instanceof NoSuchUserException ||
-					 e instanceof PasswordExpiredException ||
-					 e instanceof UserEmailAddressException ||
-					 e instanceof UserIdException ||
-					 e instanceof UserLockoutException ||
-					 e instanceof UserPasswordException ||
-					 e instanceof UserScreenNameException) {
+			else if (exception instanceof CompanyMaxUsersException ||
+					 exception instanceof CookieNotSupportedException ||
+					 exception instanceof NoSuchUserException ||
+					 exception instanceof PasswordExpiredException ||
+					 exception instanceof UserEmailAddressException ||
+					 exception instanceof UserIdException ||
+					 exception instanceof UserLockoutException ||
+					 exception instanceof UserPasswordException ||
+					 exception instanceof UserScreenNameException) {
 
-				SessionErrors.add(actionRequest, e.getClass(), e);
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
 			}
 			else {
-				_log.error(e, e);
+				_log.error(exception, exception);
 
-				_portal.sendError(e, actionRequest, actionResponse);
+				_portal.sendError(exception, actionRequest, actionResponse);
 
 				return;
 			}
@@ -198,11 +201,10 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			boolean rememberMe = ParamUtil.getBoolean(
 				actionRequest, "rememberMe");
 
-			String portletId = _portal.getPortletId(actionRequest);
-
 			PortletPreferences portletPreferences =
 				PortletPreferencesFactoryUtil.getStrictPortletSetup(
-					themeDisplay.getLayout(), portletId);
+					themeDisplay.getLayout(),
+					_portal.getPortletId(actionRequest));
 
 			String authType = portletPreferences.getValue("authType", null);
 
@@ -213,15 +215,33 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 
 		String redirect = ParamUtil.getString(actionRequest, "redirect");
 
+		String mainPath = themeDisplay.getPathMain();
+
+		if (PropsValues.PORTAL_JAAS_ENABLE) {
+			if (Validator.isNotNull(redirect)) {
+				redirect = StringBundler.concat(
+					mainPath, "/portal/protected?redirect=",
+					URLCodec.encodeURL(redirect));
+			}
+			else {
+				redirect = mainPath.concat("/portal/protected");
+			}
+
+			HttpServletResponse httpServletResponse =
+				_portal.getHttpServletResponse(actionResponse);
+
+			httpServletResponse.sendRedirect(redirect);
+
+			return;
+		}
+
 		if (Validator.isNotNull(redirect)) {
 			if (!themeDisplay.isSignedIn()) {
 				LiferayPortletResponse liferayPortletResponse =
 					_portal.getLiferayPortletResponse(actionResponse);
 
-				String portletId = _portal.getPortletId(actionRequest);
-
 				PortletURL actionURL = liferayPortletResponse.createActionURL(
-					portletId);
+					_portal.getPortletId(actionRequest));
 
 				actionURL.setParameter(
 					ActionRequest.ACTION_NAME, "/login/login");
@@ -244,36 +264,18 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 
-		String mainPath = themeDisplay.getPathMain();
-
-		if (PropsValues.PORTAL_JAAS_ENABLE) {
-			if (Validator.isNotNull(redirect)) {
-				redirect = mainPath.concat(
-					"/portal/protected?redirect="
-				).concat(
-					URLCodec.encodeURL(redirect)
-				);
-			}
-			else {
-				redirect = mainPath.concat("/portal/protected");
-			}
-
+		if (Validator.isNotNull(redirect)) {
 			actionResponse.sendRedirect(redirect);
 		}
 		else {
-			if (Validator.isNotNull(redirect)) {
-				actionResponse.sendRedirect(redirect);
-			}
-			else {
-				boolean doActionAfterLogin = ParamUtil.getBoolean(
-					actionRequest, "doActionAfterLogin");
+			boolean doActionAfterLogin = ParamUtil.getBoolean(
+				actionRequest, "doActionAfterLogin");
 
-				if (doActionAfterLogin) {
-					return;
-				}
-
-				actionResponse.sendRedirect(mainPath);
+			if (doActionAfterLogin) {
+				return;
 			}
+
+			actionResponse.sendRedirect(mainPath);
 		}
 	}
 

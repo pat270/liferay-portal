@@ -16,6 +16,7 @@ package com.liferay.portlet.asset.model.impl;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetTag;
@@ -23,7 +24,9 @@ import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.view.count.ViewCountManagerUtil;
 
 import java.util.List;
 
@@ -42,9 +45,9 @@ public class AssetEntryImpl extends AssetEntryBaseImpl {
 		try {
 			return assetRendererFactory.getAssetRenderer(getClassPK());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get asset renderer", e);
+				_log.warn("Unable to get asset renderer", exception);
 			}
 		}
 
@@ -76,6 +79,14 @@ public class AssetEntryImpl extends AssetEntryBaseImpl {
 	@Override
 	public List<AssetTag> getTags() {
 		return AssetTagLocalServiceUtil.getEntryTags(getEntryId());
+	}
+
+	@Override
+	public long getViewCount() {
+		return ViewCountManagerUtil.getViewCount(
+			getCompanyId(),
+			ClassNameLocalServiceUtil.getClassNameId(AssetEntry.class),
+			getPrimaryKey());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(AssetEntryImpl.class);

@@ -18,24 +18,10 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.io.Serializable;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class ExportImportLifecycleEventFactoryUtil {
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static ExportImportLifecycleEvent create(
-		int code, int processFlag, Serializable... attributes) {
-
-		return _exportImportLifecycleEventFactory.create(
-			code, processFlag, attributes);
-	}
 
 	public static ExportImportLifecycleEvent create(
 		int code, int processFlag, String processId,

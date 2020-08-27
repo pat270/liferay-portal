@@ -30,10 +30,10 @@ public class PacketAspect {
 	@Before(
 		"handler(java.io.InterruptedIOException) &&" +
 			"withincode(void oracle.net.ns.Packet.receive()) &&" +
-				"args(interruptedIOException) && this(packet)"
+				"args(exception1) && this(packet)"
 	)
 	public void addSuppressedInterruptedIOException(
-			Object packet, Exception interruptedIOException)
+			Object packet, Exception exception1)
 		throws Exception {
 
 		Class<?> clazz = packet.getClass();
@@ -45,11 +45,11 @@ public class PacketAspect {
 		Constructor<? extends Exception> constructor =
 			(Constructor<? extends Exception>)clazz.getConstructor(int.class);
 
-		Exception exception = constructor.newInstance(504);
+		Exception exception2 = constructor.newInstance(504);
 
-		exception.addSuppressed(interruptedIOException);
+		exception2.addSuppressed(exception1);
 
-		throw exception;
+		throw exception2;
 	}
 
 }

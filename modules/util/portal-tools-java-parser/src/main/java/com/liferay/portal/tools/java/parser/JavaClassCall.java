@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class JavaClassCall extends JavaExpression {
+public class JavaClassCall extends BaseJavaExpression {
 
 	public JavaClassCall(
 		String className, List<JavaType> genericJavaTypes,
@@ -105,6 +105,11 @@ public class JavaClassCall extends JavaExpression {
 					sb, _parameterValueJavaExpressions, indent, maxLineLength);
 
 				sb.append("\n");
+
+				if (prefix.startsWith("try (")) {
+					sb.append("\t");
+				}
+
 				sb.append(originalIndent);
 				sb.append(")");
 				sb.append(suffix);

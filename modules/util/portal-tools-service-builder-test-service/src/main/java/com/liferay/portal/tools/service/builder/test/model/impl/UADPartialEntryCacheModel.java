@@ -14,11 +14,9 @@
 
 package com.liferay.portal.tools.service.builder.test.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.tools.service.builder.test.model.UADPartialEntry;
 
 import java.io.Externalizable;
@@ -32,22 +30,21 @@ import java.io.ObjectOutput;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class UADPartialEntryCacheModel
 	implements CacheModel<UADPartialEntry>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof UADPartialEntryCacheModel)) {
+		if (!(object instanceof UADPartialEntryCacheModel)) {
 			return false;
 		}
 
 		UADPartialEntryCacheModel uadPartialEntryCacheModel =
-			(UADPartialEntryCacheModel)obj;
+			(UADPartialEntryCacheModel)object;
 
 		if (uadPartialEntryId == uadPartialEntryCacheModel.uadPartialEntryId) {
 			return true;

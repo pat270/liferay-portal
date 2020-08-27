@@ -47,6 +47,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.search.test.util.DocumentsAssert;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
@@ -148,6 +149,9 @@ public class MultiLanguageSearchFieldsSharedAcrossIndexersTest {
 
 		assertSearchMatchesAllAssets(LocaleUtil.NETHERLANDS, US_TITLE);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void addArticlesWithEnglishWordsInUsAndNlTranslations() {
 		addJournalArticle(
@@ -263,15 +267,12 @@ public class MultiLanguageSearchFieldsSharedAcrossIndexersTest {
 
 		Hits hits = search(searchContext);
 
+		Stream<FileEntry> fileEntryStream = _fileEntries.stream();
+		Stream<JournalArticle> journalArticleStream = _journalArticles.stream();
+
 		List<String> keys = Stream.concat(
-			_fileEntries.stream(
-			).map(
-				FileEntry::getPrimaryKey
-			),
-			_journalArticles.stream(
-			).map(
-				JournalArticle::getResourcePrimKey
-			)
+			fileEntryStream.map(FileEntry::getPrimaryKey),
+			journalArticleStream.map(JournalArticle::getResourcePrimKey)
 		).map(
 			String::valueOf
 		).collect(
@@ -291,8 +292,8 @@ public class MultiLanguageSearchFieldsSharedAcrossIndexersTest {
 			searchContext.setGroupIds(new long[] {_group.getGroupId()});
 			searchContext.setUserId(TestPropsValues.getUserId());
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 
 		return searchContext;
@@ -331,8 +332,8 @@ public class MultiLanguageSearchFieldsSharedAcrossIndexersTest {
 		try {
 			return facetedSearcher.search(searchContext);
 		}
-		catch (SearchException se) {
-			throw new RuntimeException(se);
+		catch (SearchException searchException) {
+			throw new RuntimeException(searchException);
 		}
 	}
 

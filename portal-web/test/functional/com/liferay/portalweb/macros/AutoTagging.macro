@@ -1,4 +1,5 @@
 definition {
+
 	macro assertAutoTagPresent {
 		var key_tagName = "${tagName}";
 
@@ -13,7 +14,7 @@ definition {
 
 	macro disableAutoTagging {
 		if ("${disableAutoTaggingFor}" == "System Settings") {
-			ProductMenu.gotoPortlet(
+			ApplicationsMenu.gotoPortlet(
 				category = "Configuration",
 				panel = "Control Panel",
 				portlet = "System Settings");
@@ -39,8 +40,8 @@ definition {
 		else if ("${disableAutoTaggingFor}" == "Settings") {
 			ProductMenu.gotoPortlet(
 				category = "Configuration",
-				panel = "Site Administration",
-				portlet = "Settings");
+				portlet = "Settings",
+				site = "${site}");
 
 			Panel.expandPanel(panel = "Asset Auto Tagging");
 
@@ -58,7 +59,7 @@ definition {
 
 	macro enableAutoTagging {
 		if ("${enableAutoTaggingFor}" == "System Settings") {
-			ProductMenu.gotoPortlet(
+			ApplicationsMenu.gotoPortlet(
 				category = "Configuration",
 				panel = "Control Panel",
 				portlet = "System Settings");
@@ -69,6 +70,12 @@ definition {
 				configurationScope = "System Scope");
 
 			FormFields.enableCheckbox(fieldName = "enabled");
+
+			if (isSet(maximumNumberOfTags)) {
+				SystemSettings.editTextSetting(
+					settingName = "Maximum Number of Tags",
+					settingValue = "${maximumNumberOfTags}");
+			}
 		}
 
 		else if ("${enableAutoTaggingFor}" == "Instance Settings") {
@@ -76,19 +83,73 @@ definition {
 				configurationCategory = "Assets",
 				configurationName = "Asset Auto Tagging",
 				configurationScope = "Virtual Instance Scope");
-			Check(locator1 = "Checkbox#ENABLE_AUTO_TAGGING");
+
+			FormFields.enableCheckbox(fieldName = "enabled");
+
+			if (isSet(maximumNumberOfTags)) {
+				SystemSettings.editTextSetting(
+					settingName = "Maximum Number of Tags",
+					settingValue = "${maximumNumberOfTags}");
+			}
 		}
 
 		else if ("${enableAutoTaggingFor}" == "Settings") {
 			ProductMenu.gotoPortlet(
 				category = "Configuration",
-				panel = "Site Administration",
-				portlet = "Settings");
+				portlet = "Settings",
+				site = "${site}");
 
 			Panel.expandPanel(panel = "Asset Auto Tagging");
 
 			Check.checkToggleSwitch(locator1 = "Checkbox#ENABLE_AUTO_TAGGING");
 		}
+
+		if (isSet(validationError)) {
+			if (IsElementPresent(locator1 = "Button#UPDATE")) {
+				Button.clickUpdate();
+			}
+
+			else if (IsElementPresent(locator1 = "Button#SAVE")) {
+				Button.clickSave();
+			}
+
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "${validationError}");
+		}
+		else {
+			if (IsElementPresent(locator1 = "Button#UPDATE")) {
+				PortletEntry.update();
+			}
+
+			else if (IsElementPresent(locator1 = "Button#SAVE")) {
+				PortletEntry.save();
+			}
+		}
+	}
+
+	macro enableOpenNLP {
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Assets",
+			configurationName = "OpenNLP Text Auto Tagging",
+			configurationScope = "Virtual Instance Scope");
+
+		if (isSet(confidenceThreshold)) {
+			SystemSettings.editTextSetting(
+				settingName = "Confidence Threshold",
+				settingValue = "${confidenceThreshold}");
+		}
+
+		Click(locator1 = "Dropdown#TRIGGER");
+
+		DropdownMenuItem.click(menuItem = "${assetType}");
 
 		if (IsElementPresent(locator1 = "Button#UPDATE")) {
 			PortletEntry.update();
@@ -100,13 +161,13 @@ definition {
 	}
 
 	macro enableTensorFlow {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
 
 		SystemSettings.gotoConfiguration(
-			configurationCategory = "Documents and Media",
+			configurationCategory = "Assets",
 			configurationName = "TensorFlow Image Auto Tagging",
 			configurationScope = "Virtual Instance Scope");
 
@@ -120,4 +181,5 @@ definition {
 			PortletEntry.save();
 		}
 	}
+
 }

@@ -18,17 +18,23 @@ import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentExportImportConstants;
 import com.liferay.fragment.constants.FragmentPortletKeys;
 import com.liferay.fragment.exception.DuplicateFragmentCollectionKeyException;
+import com.liferay.fragment.exception.DuplicateFragmentCompositionKeyException;
 import com.liferay.fragment.exception.DuplicateFragmentEntryKeyException;
 import com.liferay.fragment.exception.FragmentCollectionNameException;
-import com.liferay.fragment.exception.InvalidFileException;
+import com.liferay.fragment.exception.FragmentEntryConfigurationException;
 import com.liferay.fragment.importer.FragmentsImporter;
+import com.liferay.fragment.importer.FragmentsImporterResultEntry;
 import com.liferay.fragment.model.FragmentCollection;
+import com.liferay.fragment.model.FragmentComposition;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.fragment.service.FragmentCollectionLocalService;
 import com.liferay.fragment.service.FragmentCollectionService;
+import com.liferay.fragment.service.FragmentCompositionLocalService;
+import com.liferay.fragment.service.FragmentCompositionService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.service.FragmentEntryService;
+import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -37,9 +43,12 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -84,85 +93,120 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 			boolean overwrite)
 		throws Exception {
 
-		_invalidFragmentEntriesNames = new ArrayList<>();
+		List<FragmentsImporterResultEntry> fragmentsImporterResultEntries =
+			importFragmentEntries(
+				userId, groupId, fragmentCollectionId, file, overwrite);
 
-		ZipFile zipFile = new ZipFile(file);
+		Stream<FragmentsImporterResultEntry> stream =
+			fragmentsImporterResultEntries.stream();
 
-		_isValidFile(zipFile);
+		return stream.map(
+			FragmentsImporterResultEntry::getName
+		).collect(
+			Collectors.toList()
+		);
+	}
 
-		Map<String, String> orphanFragmentEntries = new HashMap<>();
+	@Override
+	public List<FragmentsImporterResultEntry> importFragmentEntries(
+			long userId, long groupId, long fragmentCollectionId, File file,
+			boolean overwrite)
+		throws Exception {
 
-		Map<String, FragmentCollectionFolder> fragmentCollectionFolderMap =
-			_getFragmentCollectionFolderMap(
-				zipFile, groupId, orphanFragmentEntries);
+		_fragmentsImporterResultEntries = new ArrayList<>();
 
-		for (Map.Entry<String, FragmentCollectionFolder> entry :
-				fragmentCollectionFolderMap.entrySet()) {
+		try (ZipFile zipFile = new ZipFile(file)) {
+			Map<String, String> orphanFragmentCompositions = new HashMap<>();
+			Map<String, String> orphanFragmentEntries = new HashMap<>();
 
-			FragmentCollectionFolder fragmentCollectionFolder =
-				entry.getValue();
+			Map<String, FragmentCollectionFolder> fragmentCollectionFolderMap =
+				_getFragmentCollectionFolderMap(
+					zipFile, groupId, orphanFragmentCompositions,
+					orphanFragmentEntries);
 
-			String name = entry.getKey();
-			String description = StringPool.BLANK;
+			for (Map.Entry<String, FragmentCollectionFolder> entry :
+					fragmentCollectionFolderMap.entrySet()) {
 
-			String collectionJSON = _getContent(
-				zipFile, fragmentCollectionFolder.getFileName());
+				FragmentCollectionFolder fragmentCollectionFolder =
+					entry.getValue();
 
-			if (Validator.isNotNull(collectionJSON)) {
-				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-					collectionJSON);
+				String name = entry.getKey();
+				String description = StringPool.BLANK;
 
-				name = jsonObject.getString("name");
-				description = jsonObject.getString("description");
-			}
+				String collectionJSON = _getContent(
+					zipFile, fragmentCollectionFolder.getFileName());
 
-			if (Validator.isNull(name)) {
-				throw new FragmentCollectionNameException();
-			}
+				if (Validator.isNotNull(collectionJSON)) {
+					JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+						collectionJSON);
 
-			FragmentCollection fragmentCollection = _addFragmentCollection(
-				groupId, entry.getKey(), name, description, overwrite);
-
-			_importResources(
-				userId, groupId, fragmentCollection.getFragmentCollectionId(),
-				fragmentCollection.getResourcesFolderId(), zipFile);
-
-			_importFragmentEntries(
-				userId, groupId, zipFile,
-				fragmentCollection.getFragmentCollectionId(),
-				fragmentCollectionFolder.getFragmentEntries(), overwrite);
-		}
-
-		if (MapUtil.isNotEmpty(orphanFragmentEntries)) {
-			if (fragmentCollectionId <= 0) {
-				FragmentCollection fragmentCollection =
-					_fragmentCollectionLocalService.fetchFragmentCollection(
-						groupId, _DEFAULT_FRAGMENT_COLLECTION_KEY);
-
-				if (fragmentCollection == null) {
-					Locale locale = _portal.getSiteDefaultLocale(groupId);
-
-					ServiceContext serviceContext =
-						ServiceContextThreadLocal.getServiceContext();
-
-					fragmentCollection =
-						_fragmentCollectionService.addFragmentCollection(
-							groupId, _DEFAULT_FRAGMENT_COLLECTION_KEY,
-							LanguageUtil.get(
-								locale, _DEFAULT_FRAGMENT_COLLECTION_KEY),
-							StringPool.BLANK, serviceContext);
+					name = jsonObject.getString("name");
+					description = jsonObject.getString("description");
 				}
 
-				fragmentCollectionId =
-					fragmentCollection.getFragmentCollectionId();
+				if (Validator.isNull(name)) {
+					throw new FragmentCollectionNameException();
+				}
+
+				FragmentCollection fragmentCollection = _addFragmentCollection(
+					groupId, entry.getKey(), name, description, overwrite);
+
+				_importResources(
+					userId, groupId,
+					fragmentCollection.getFragmentCollectionId(),
+					fragmentCollection.getResourcesFolderId(), zipFile);
+
+				_importFragmentCompositions(
+					userId, groupId, zipFile,
+					fragmentCollection.getFragmentCollectionId(),
+					fragmentCollectionFolder.getFragmentCompositions(),
+					overwrite);
+
+				_importFragmentEntries(
+					userId, groupId, zipFile,
+					fragmentCollection.getFragmentCollectionId(),
+					fragmentCollectionFolder.getFragmentEntries(), overwrite);
 			}
 
-			_importFragmentEntries(
-				userId, groupId, zipFile, fragmentCollectionId,
-				orphanFragmentEntries, overwrite);
+			if (MapUtil.isNotEmpty(orphanFragmentCompositions) ||
+				MapUtil.isNotEmpty(orphanFragmentEntries)) {
+
+				FragmentCollection fragmentCollection =
+					_fragmentCollectionService.fetchFragmentCollection(
+						fragmentCollectionId);
+
+				if (fragmentCollection == null) {
+					fragmentCollection =
+						_fragmentCollectionLocalService.fetchFragmentCollection(
+							groupId, _FRAGMENT_COLLECTION_KEY_DEFAULT);
+
+					if (fragmentCollection == null) {
+						Locale locale = _portal.getSiteDefaultLocale(groupId);
+
+						fragmentCollection =
+							_fragmentCollectionService.addFragmentCollection(
+								groupId, _FRAGMENT_COLLECTION_KEY_DEFAULT,
+								LanguageUtil.get(
+									locale, _FRAGMENT_COLLECTION_KEY_DEFAULT),
+								StringPool.BLANK,
+								ServiceContextThreadLocal.getServiceContext());
+					}
+
+					fragmentCollectionId =
+						fragmentCollection.getFragmentCollectionId();
+				}
+
+				_importFragmentCompositions(
+					userId, groupId, zipFile, fragmentCollectionId,
+					orphanFragmentCompositions, overwrite);
+
+				_importFragmentEntries(
+					userId, groupId, zipFile, fragmentCollectionId,
+					orphanFragmentEntries, overwrite);
+			}
 		}
 
-		return _invalidFragmentEntriesNames;
+		return _fragmentsImporterResultEntries;
 	}
 
 	private FragmentCollection _addFragmentCollection(
@@ -175,13 +219,10 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 				groupId, fragmentCollectionKey);
 
 		if (fragmentCollection == null) {
-			ServiceContext serviceContext =
-				ServiceContextThreadLocal.getServiceContext();
-
 			fragmentCollection =
 				_fragmentCollectionService.addFragmentCollection(
 					groupId, fragmentCollectionKey, name, description,
-					serviceContext);
+					ServiceContextThreadLocal.getServiceContext());
 		}
 		else if (overwrite) {
 			fragmentCollection =
@@ -199,7 +240,8 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 
 	private FragmentEntry _addFragmentEntry(
 			long fragmentCollectionId, String fragmentEntryKey, String name,
-			String css, String html, String js, String typeLabel,
+			String css, String html, String js, boolean cacheable,
+			String configuration, boolean readOnly, String typeLabel,
 			boolean overwrite)
 		throws Exception {
 
@@ -216,35 +258,87 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 		}
 
 		int status = WorkflowConstants.STATUS_APPROVED;
+		String errorMessage = null;
 
 		try {
-			_fragmentEntryProcessorRegistry.validateFragmentEntryHTML(html);
+			_fragmentEntryProcessorRegistry.validateFragmentEntryHTML(
+				html, configuration);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			status = WorkflowConstants.STATUS_DRAFT;
+			errorMessage = portalException.getLocalizedMessage();
+		}
 
-			_invalidFragmentEntriesNames.add(name);
+		try {
+			_fragmentEntryValidator.validateConfiguration(configuration);
+		}
+		catch (FragmentEntryConfigurationException
+					fragmentEntryConfigurationException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					fragmentEntryConfigurationException,
+					fragmentEntryConfigurationException);
+			}
+
+			status = WorkflowConstants.STATUS_DRAFT;
+			errorMessage =
+				fragmentEntryConfigurationException.getLocalizedMessage();
 		}
 
 		int type = FragmentConstants.getTypeFromLabel(
 			StringUtil.toLowerCase(StringUtil.trim(typeLabel)));
 
-		if (fragmentEntry == null) {
-			ServiceContext serviceContext =
-				ServiceContextThreadLocal.getServiceContext();
+		try {
+			if (fragmentEntry == null) {
+				fragmentEntry = _fragmentEntryService.addFragmentEntry(
+					fragmentCollection.getGroupId(), fragmentCollectionId,
+					fragmentEntryKey, name, css, html, js, cacheable,
+					configuration, 0, type, status,
+					ServiceContextThreadLocal.getServiceContext());
+			}
+			else {
+				fragmentEntry = _fragmentEntryService.updateFragmentEntry(
+					fragmentEntry.getFragmentEntryId(), name, css, html, js,
+					cacheable, configuration,
+					fragmentEntry.getPreviewFileEntryId(), status);
+			}
 
-			return _fragmentEntryService.addFragmentEntry(
-				fragmentCollection.getGroupId(), fragmentCollectionId,
-				fragmentEntryKey, name, css, html, js, type, status,
-				serviceContext);
+			fragmentEntry.setReadOnly(readOnly);
+
+			fragmentEntry = _fragmentEntryLocalService.updateFragmentEntry(
+				fragmentEntry);
+
+			FragmentsImporterResultEntry.Status
+				fragmentsImporterResultEntryStatus =
+					FragmentsImporterResultEntry.Status.IMPORTED;
+
+			if (fragmentEntry.getStatus() == WorkflowConstants.STATUS_DRAFT) {
+				fragmentsImporterResultEntryStatus =
+					FragmentsImporterResultEntry.Status.IMPORTED_DRAFT;
+			}
+
+			fragmentEntry = _fragmentEntryLocalService.updateFragmentEntry(
+				fragmentEntry);
+
+			_fragmentsImporterResultEntries.add(
+				new FragmentsImporterResultEntry(
+					name, fragmentsImporterResultEntryStatus, errorMessage));
+
+			return fragmentEntry;
+		}
+		catch (PortalException portalException) {
+			_fragmentsImporterResultEntries.add(
+				new FragmentsImporterResultEntry(
+					name, FragmentsImporterResultEntry.Status.INVALID,
+					portalException.getMessage()));
 		}
 
-		return _fragmentEntryService.updateFragmentEntry(
-			fragmentEntry.getFragmentEntryId(), name, css, html, js, status);
+		return null;
 	}
 
 	private String _getContent(ZipFile zipFile, String fileName)
@@ -272,6 +366,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 	private Map<String, FragmentCollectionFolder>
 			_getFragmentCollectionFolderMap(
 				ZipFile zipFile, long groupId,
+				Map<String, String> orphanFragmentCompositions,
 				Map<String, String> orphanFragmentEntries)
 		throws Exception {
 
@@ -309,7 +404,9 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 
 			String fileName = zipEntry.getName();
 
-			if (!_isFragmentEntry(fileName)) {
+			if (!_isFragmentComposition(fileName) &&
+				!_isFragmentEntry(fileName)) {
+
 				continue;
 			}
 
@@ -324,8 +421,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 
 				String fragmentCollectionFileName =
 					fragmentCollectionPath +
-						FragmentExportImportConstants.
-							FILE_NAME_COLLECTION_CONFIG;
+						FragmentExportImportConstants.FILE_NAME_COLLECTION;
 
 				ZipEntry fragmentCollectionZipEntry = zipFile.getEntry(
 					fragmentCollectionFileName);
@@ -337,11 +433,25 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 					break;
 				}
 
+				if (Validator.isNull(fragmentCollectionPath)) {
+					break;
+				}
+
 				fragmentCollectionPath = fragmentCollectionPath.substring(
 					0, fragmentCollectionPath.lastIndexOf(StringPool.SLASH));
 			}
 
-			if (Validator.isNull(fragmentCollectionKey)) {
+			if (Validator.isNull(fragmentCollectionKey) &&
+				_isFragmentComposition(fileName)) {
+
+				orphanFragmentCompositions.put(
+					_getKey(zipFile, groupId, fileName), fileName);
+
+				continue;
+			}
+			else if (Validator.isNull(fragmentCollectionKey) &&
+					 _isFragmentEntry(fileName)) {
+
 				orphanFragmentEntries.put(
 					_getKey(zipFile, groupId, fileName), fileName);
 
@@ -351,15 +461,31 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 			FragmentCollectionFolder fragmentCollectionFolder =
 				fragmentCollectionFolderMap.get(fragmentCollectionKey);
 
-			if (fragmentCollectionFolder == null) {
+			if ((fragmentCollectionFolder == null) &&
+				_isFragmentComposition(fileName)) {
+
+				orphanFragmentCompositions.put(
+					_getKey(zipFile, groupId, fileName), fileName);
+
+				continue;
+			}
+			else if ((fragmentCollectionFolder == null) &&
+					 _isFragmentEntry(fileName)) {
+
 				orphanFragmentEntries.put(
 					_getKey(zipFile, groupId, fileName), fileName);
 
 				continue;
 			}
 
-			fragmentCollectionFolder.addFragmentEntry(
-				_getKey(zipFile, groupId, fileName), fileName);
+			if (_isFragmentComposition(fileName)) {
+				fragmentCollectionFolder.addFragmentComposition(
+					_getKey(zipFile, groupId, fileName), fileName);
+			}
+			else {
+				fragmentCollectionFolder.addFragmentEntry(
+					_getKey(zipFile, groupId, fileName), fileName);
+			}
 		}
 
 		return fragmentCollectionFolderMap;
@@ -421,8 +547,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 			key = path.substring(path.lastIndexOf(CharPool.SLASH) + 1);
 		}
 		else if (fileName.equals(
-					FragmentExportImportConstants.
-						FILE_NAME_COLLECTION_CONFIG)) {
+					FragmentExportImportConstants.FILE_NAME_COLLECTION)) {
 
 			JSONObject collectionJSONObject = JSONFactoryUtil.createJSONObject(
 				StringUtil.read(
@@ -432,7 +557,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 				groupId, collectionJSONObject.getString("name"));
 		}
 		else if (fileName.equals(
-					FragmentExportImportConstants.FILE_NAME_FRAGMENT_CONFIG)) {
+					FragmentExportImportConstants.FILE_NAME_FRAGMENT)) {
 
 			JSONObject fragmentJSONObject = JSONFactoryUtil.createJSONObject(
 				StringUtil.read(
@@ -450,8 +575,8 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 	}
 
 	private long _getPreviewFileEntryId(
-			long userId, long groupId, ZipFile zipFile, long fragmentEntryId,
-			String fileName, String contentPath)
+			long userId, long groupId, ZipFile zipFile, String className,
+			long classPK, String fileName, String contentPath)
 		throws Exception {
 
 		InputStream inputStream = _getFragmentEntryInputStream(
@@ -466,6 +591,31 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 				groupId, FragmentPortletKeys.FRAGMENT);
 
 		if (repository == null) {
+			if ((groupId == CompanyConstants.SYSTEM) &&
+				Objects.equals(className, FragmentEntry.class.getName())) {
+
+				FragmentEntry fragmentEntry =
+					_fragmentEntryLocalService.getFragmentEntry(classPK);
+
+				Company company = _companyLocalService.getCompany(
+					fragmentEntry.getCompanyId());
+
+				groupId = company.getGroupId();
+			}
+			else if ((groupId == CompanyConstants.SYSTEM) &&
+					 Objects.equals(
+						 className, FragmentComposition.class.getName())) {
+
+				FragmentComposition fragmentComposition =
+					_fragmentCompositionLocalService.getFragmentComposition(
+						classPK);
+
+				Company company = _companyLocalService.getCompany(
+					fragmentComposition.getCompanyId());
+
+				groupId = company.getGroupId();
+			}
+
 			ServiceContext serviceContext = new ServiceContext();
 
 			serviceContext.setAddGroupPermissions(true);
@@ -476,13 +626,81 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 		}
 
 		FileEntry fileEntry = PortletFileRepositoryUtil.addPortletFileEntry(
-			groupId, userId, FragmentEntry.class.getName(), fragmentEntryId,
-			FragmentPortletKeys.FRAGMENT, repository.getDlFolderId(),
-			inputStream,
-			fragmentEntryId + "_preview." + FileUtil.getExtension(contentPath),
+			groupId, userId, className, classPK, FragmentPortletKeys.FRAGMENT,
+			repository.getDlFolderId(), inputStream,
+			classPK + "_preview." + FileUtil.getExtension(contentPath),
 			MimeTypesUtil.getContentType(contentPath), false);
 
 		return fileEntry.getFileEntryId();
+	}
+
+	private void _importFragmentCompositions(
+			long userId, long groupId, ZipFile zipFile,
+			long fragmentCollectionId, Map<String, String> fragmentCompositions,
+			boolean overwrite)
+		throws Exception {
+
+		for (Map.Entry<String, String> entry :
+				fragmentCompositions.entrySet()) {
+
+			String compositionJSON = _getContent(zipFile, entry.getValue());
+
+			if (Validator.isNull(compositionJSON)) {
+				continue;
+			}
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+				compositionJSON);
+
+			String name = jsonObject.getString("name", entry.getKey());
+			String description = jsonObject.getString("description");
+			String definitionData = _getFragmentEntryContent(
+				zipFile, entry.getValue(),
+				jsonObject.getString("fragmentCompositionDefinitionPath"));
+
+			FragmentComposition fragmentComposition =
+				_fragmentCompositionService.fetchFragmentComposition(
+					groupId, entry.getKey());
+
+			if (fragmentComposition == null) {
+				fragmentComposition =
+					_fragmentCompositionService.addFragmentComposition(
+						groupId, fragmentCollectionId, entry.getKey(), name,
+						description, definitionData, 0L,
+						WorkflowConstants.STATUS_APPROVED,
+						ServiceContextThreadLocal.getServiceContext());
+			}
+			else if (!overwrite) {
+				throw new DuplicateFragmentCompositionKeyException();
+			}
+			else {
+				fragmentComposition =
+					_fragmentCompositionService.updateFragmentComposition(
+						fragmentComposition.getFragmentCompositionId(), name,
+						description, definitionData,
+						fragmentComposition.getPreviewFileEntryId(),
+						fragmentComposition.getStatus());
+			}
+
+			if (fragmentComposition.getPreviewFileEntryId() > 0) {
+				PortletFileRepositoryUtil.deletePortletFileEntry(
+					fragmentComposition.getPreviewFileEntryId());
+			}
+
+			String thumbnailPath = jsonObject.getString("thumbnailPath");
+
+			if (Validator.isNotNull(thumbnailPath)) {
+				long previewFileEntryId = _getPreviewFileEntryId(
+					userId, groupId, zipFile,
+					FragmentComposition.class.getName(),
+					fragmentComposition.getFragmentCompositionId(),
+					entry.getValue(), thumbnailPath);
+
+				_fragmentCompositionService.updateFragmentComposition(
+					fragmentComposition.getFragmentCompositionId(),
+					previewFileEntryId);
+			}
+		}
 	}
 
 	private void _importFragmentEntries(
@@ -496,6 +714,9 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 			String css = StringPool.BLANK;
 			String html = StringPool.BLANK;
 			String js = StringPool.BLANK;
+			boolean cacheable = false;
+			String configuration = StringPool.BLANK;
+			boolean readOnly = false;
 			String typeLabel = StringPool.BLANK;
 
 			String fragmentJSON = _getContent(zipFile, entry.getValue());
@@ -512,12 +733,21 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 					jsonObject.getString("htmlPath"));
 				js = _getFragmentEntryContent(
 					zipFile, entry.getValue(), jsonObject.getString("jsPath"));
+				cacheable = jsonObject.getBoolean("cacheable");
+				configuration = _getFragmentEntryContent(
+					zipFile, entry.getValue(),
+					jsonObject.getString("configurationPath"));
+				readOnly = jsonObject.getBoolean("readOnly");
 				typeLabel = jsonObject.getString("type");
 			}
 
 			FragmentEntry fragmentEntry = _addFragmentEntry(
 				fragmentCollectionId, entry.getKey(), name, css, html, js,
-				typeLabel, overwrite);
+				cacheable, configuration, readOnly, typeLabel, overwrite);
+
+			if (fragmentEntry == null) {
+				continue;
+			}
 
 			if (Validator.isNotNull(fragmentJSON)) {
 				if (fragmentEntry.getPreviewFileEntryId() > 0) {
@@ -532,7 +762,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 
 				if (Validator.isNotNull(thumbnailPath)) {
 					long previewFileEntryId = _getPreviewFileEntryId(
-						userId, groupId, zipFile,
+						userId, groupId, zipFile, FragmentEntry.class.getName(),
 						fragmentEntry.getFragmentEntryId(), entry.getValue(),
 						thumbnailPath);
 
@@ -559,11 +789,9 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 				String name = zipEntry.getName();
 
 				return name.endsWith(
-					FragmentExportImportConstants.
-						FILE_NAME_COLLECTION_CONFIG) ||
+					FragmentExportImportConstants.FILE_NAME_COLLECTION) ||
 					   name.endsWith(
-						   FragmentExportImportConstants.
-							   FILE_NAME_FRAGMENT_CONFIG);
+						   FragmentExportImportConstants.FILE_NAME_FRAGMENT);
 			}
 		).flatMap(
 			zipEntry -> {
@@ -573,8 +801,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 					0, name.lastIndexOf(StringPool.SLASH) + 1);
 
 				if (name.endsWith(
-						FragmentExportImportConstants.
-							FILE_NAME_COLLECTION_CONFIG)) {
+						FragmentExportImportConstants.FILE_NAME_COLLECTION)) {
 
 					return Arrays.stream(new String[] {name});
 				}
@@ -589,14 +816,17 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 					return Arrays.stream(
 						new String[] {
 							path + "fragment.json",
+							path + jsonObject.getString("configuration"),
 							path + jsonObject.getString("cssPath"),
 							path + jsonObject.getString("htmlPath"),
 							path + jsonObject.getString("jsPath"),
 							path + jsonObject.getString("thumbnailPath")
 						});
 				}
-				catch (Exception e) {
-					_log.error("Unable to read fragments.json file " + name, e);
+				catch (Exception exception) {
+					_log.error(
+						"Unable to read fragments.json file " + name,
+						exception);
 				}
 
 				return Arrays.stream(new String[0]);
@@ -640,7 +870,18 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 	private boolean _isFragmentCollection(String fileName) {
 		if (Objects.equals(
 				_getFileName(fileName),
-				FragmentExportImportConstants.FILE_NAME_COLLECTION_CONFIG)) {
+				FragmentExportImportConstants.FILE_NAME_COLLECTION)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isFragmentComposition(String fileName) {
+		if (Objects.equals(
+				_getFileName(fileName),
+				FragmentExportImportConstants.FILE_NAME_FRAGMENT_COMPOSITION)) {
 
 			return true;
 		}
@@ -651,7 +892,7 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 	private boolean _isFragmentEntry(String fileName) {
 		if (Objects.equals(
 				_getFileName(fileName),
-				FragmentExportImportConstants.FILE_NAME_FRAGMENT_CONFIG)) {
+				FragmentExportImportConstants.FILE_NAME_FRAGMENT)) {
 
 			return true;
 		}
@@ -659,32 +900,25 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 		return false;
 	}
 
-	private void _isValidFile(ZipFile zipFile) throws PortalException {
-		Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
-
-		while (enumeration.hasMoreElements()) {
-			ZipEntry zipEntry = enumeration.nextElement();
-
-			if (_isFragmentCollection(zipEntry.getName()) ||
-				_isFragmentEntry(zipEntry.getName())) {
-
-				return;
-			}
-		}
-
-		throw new InvalidFileException();
-	}
-
-	private static final String _DEFAULT_FRAGMENT_COLLECTION_KEY = "imported";
+	private static final String _FRAGMENT_COLLECTION_KEY_DEFAULT = "imported";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FragmentsImporterImpl.class);
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
 
 	@Reference
 	private FragmentCollectionLocalService _fragmentCollectionLocalService;
 
 	@Reference
 	private FragmentCollectionService _fragmentCollectionService;
+
+	@Reference
+	private FragmentCompositionLocalService _fragmentCompositionLocalService;
+
+	@Reference
+	private FragmentCompositionService _fragmentCompositionService;
 
 	@Reference
 	private FragmentEntryLocalService _fragmentEntryLocalService;
@@ -695,7 +929,10 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 	@Reference
 	private FragmentEntryService _fragmentEntryService;
 
-	private List<String> _invalidFragmentEntriesNames;
+	@Reference
+	private FragmentEntryValidator _fragmentEntryValidator;
+
+	private List<FragmentsImporterResultEntry> _fragmentsImporterResultEntries;
 
 	@Reference
 	private Portal _portal;
@@ -705,7 +942,12 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 		public FragmentCollectionFolder(String fileName) {
 			_fileName = fileName;
 
+			_fragmentCompositions = new HashMap<>();
 			_fragmentEntries = new HashMap<>();
+		}
+
+		public void addFragmentComposition(String key, String fileName) {
+			_fragmentCompositions.put(key, fileName);
 		}
 
 		public void addFragmentEntry(String key, String fileName) {
@@ -716,11 +958,16 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 			return _fileName;
 		}
 
+		public Map<String, String> getFragmentCompositions() {
+			return _fragmentCompositions;
+		}
+
 		public Map<String, String> getFragmentEntries() {
 			return _fragmentEntries;
 		}
 
 		private final String _fileName;
+		private final Map<String, String> _fragmentCompositions;
 		private final Map<String, String> _fragmentEntries;
 
 	}

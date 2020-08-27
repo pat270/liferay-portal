@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -46,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,8 @@ public class KBArticlePersistenceTest {
 
 		KBArticle newKBArticle = _persistence.create(pk);
 
+		newKBArticle.setMvccVersion(RandomTestUtil.nextLong());
+
 		newKBArticle.setUuid(RandomTestUtil.randomString());
 
 		newKBArticle.setResourcePrimKey(RandomTestUtil.nextLong());
@@ -163,8 +165,6 @@ public class KBArticlePersistenceTest {
 
 		newKBArticle.setSections(RandomTestUtil.randomString());
 
-		newKBArticle.setViewCount(RandomTestUtil.nextInt());
-
 		newKBArticle.setLatest(RandomTestUtil.randomBoolean());
 
 		newKBArticle.setMain(RandomTestUtil.randomBoolean());
@@ -186,6 +186,8 @@ public class KBArticlePersistenceTest {
 		KBArticle existingKBArticle = _persistence.findByPrimaryKey(
 			newKBArticle.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingKBArticle.getMvccVersion(), newKBArticle.getMvccVersion());
 		Assert.assertEquals(
 			existingKBArticle.getUuid(), newKBArticle.getUuid());
 		Assert.assertEquals(
@@ -232,8 +234,6 @@ public class KBArticlePersistenceTest {
 			existingKBArticle.getPriority(), newKBArticle.getPriority());
 		Assert.assertEquals(
 			existingKBArticle.getSections(), newKBArticle.getSections());
-		Assert.assertEquals(
-			existingKBArticle.getViewCount(), newKBArticle.getViewCount());
 		Assert.assertEquals(
 			existingKBArticle.isLatest(), newKBArticle.isLatest());
 		Assert.assertEquals(existingKBArticle.isMain(), newKBArticle.isMain());
@@ -702,16 +702,16 @@ public class KBArticlePersistenceTest {
 
 	protected OrderByComparator<KBArticle> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"KBArticle", "uuid", true, "kbArticleId", true, "resourcePrimKey",
-			true, "groupId", true, "companyId", true, "userId", true,
-			"userName", true, "createDate", true, "modifiedDate", true,
-			"rootResourcePrimKey", true, "parentResourceClassNameId", true,
-			"parentResourcePrimKey", true, "kbFolderId", true, "version", true,
-			"title", true, "urlTitle", true, "description", true, "priority",
-			true, "sections", true, "viewCount", true, "latest", true, "main",
-			true, "sourceURL", true, "lastPublishDate", true, "status", true,
-			"statusByUserId", true, "statusByUserName", true, "statusDate",
-			true);
+			"KBArticle", "mvccVersion", true, "uuid", true, "kbArticleId", true,
+			"resourcePrimKey", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "rootResourcePrimKey", true,
+			"parentResourceClassNameId", true, "parentResourcePrimKey", true,
+			"kbFolderId", true, "version", true, "title", true, "urlTitle",
+			true, "description", true, "priority", true, "sections", true,
+			"latest", true, "main", true, "sourceURL", true, "lastPublishDate",
+			true, "status", true, "statusByUserId", true, "statusByUserName",
+			true, "statusDate", true);
 	}
 
 	@Test
@@ -929,48 +929,96 @@ public class KBArticlePersistenceTest {
 
 		_persistence.clearCache();
 
-		KBArticle existingKBArticle = _persistence.findByPrimaryKey(
-			newKBArticle.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newKBArticle.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingKBArticle.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingKBArticle, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		KBArticle newKBArticle = addKBArticle();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBArticle.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbArticleId", newKBArticle.getKbArticleId()));
+
+		List<KBArticle> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(KBArticle kbArticle) {
 		Assert.assertEquals(
-			Long.valueOf(existingKBArticle.getGroupId()),
+			kbArticle.getUuid(),
+			ReflectionTestUtil.invoke(
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(kbArticle.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingKBArticle, "getOriginalGroupId", new Class<?>[0]));
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingKBArticle.getResourcePrimKey()),
+			Long.valueOf(kbArticle.getResourcePrimKey()),
 			ReflectionTestUtil.<Long>invoke(
-				existingKBArticle, "getOriginalResourcePrimKey",
-				new Class<?>[0]));
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "resourcePrimKey"));
 		Assert.assertEquals(
-			Integer.valueOf(existingKBArticle.getVersion()),
+			Integer.valueOf(kbArticle.getVersion()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingKBArticle, "getOriginalVersion", new Class<?>[0]));
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "version"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingKBArticle.getResourcePrimKey()),
+			Long.valueOf(kbArticle.getResourcePrimKey()),
 			ReflectionTestUtil.<Long>invoke(
-				existingKBArticle, "getOriginalResourcePrimKey",
-				new Class<?>[0]));
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "resourcePrimKey"));
 		Assert.assertEquals(
-			Long.valueOf(existingKBArticle.getGroupId()),
+			Long.valueOf(kbArticle.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingKBArticle, "getOriginalGroupId", new Class<?>[0]));
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Integer.valueOf(existingKBArticle.getVersion()),
+			Integer.valueOf(kbArticle.getVersion()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingKBArticle, "getOriginalVersion", new Class<?>[0]));
+				kbArticle, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "version"));
 	}
 
 	protected KBArticle addKBArticle() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		KBArticle kbArticle = _persistence.create(pk);
+
+		kbArticle.setMvccVersion(RandomTestUtil.nextLong());
 
 		kbArticle.setUuid(RandomTestUtil.randomString());
 
@@ -1009,8 +1057,6 @@ public class KBArticlePersistenceTest {
 		kbArticle.setPriority(RandomTestUtil.nextDouble());
 
 		kbArticle.setSections(RandomTestUtil.randomString());
-
-		kbArticle.setViewCount(RandomTestUtil.nextInt());
 
 		kbArticle.setLatest(RandomTestUtil.randomBoolean());
 

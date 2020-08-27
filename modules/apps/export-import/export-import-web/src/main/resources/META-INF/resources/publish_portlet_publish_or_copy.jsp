@@ -24,7 +24,7 @@ String tabs3 = ParamUtil.getString(request, "tabs3", "new-publication-process");
 boolean newPublication = tabs3.equals("new-publication-process");
 
 String defaultRange = ExportImportDateUtil.RANGE_ALL;
-String javascriptOnSubmitFunction = "event.halt(); " + renderResponse.getNamespace();
+String javascriptOnSubmitFunction = "event.halt(); " + liferayPortletResponse.getNamespace();
 long workingGroupId = liveGroupId;
 
 if (newPublication) {
@@ -56,7 +56,7 @@ else {
 	<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
 
 	<div class="export-dialog-tree portlet-export-import-publish-processes">
-		<div class="container-fluid-1280">
+		<clay:container-fluid>
 
 			<%
 			int incompleteBackgroundTaskCount = BackgroundTaskManagerUtil.getBackgroundTasksCount(StagingUtil.getStagingAndLiveGroupIds(themeDisplay.getScopeGroupId()), selPortlet.getPortletId(), BackgroundTaskExecutorNames.PORTLET_STAGING_BACKGROUND_TASK_EXECUTOR, false);
@@ -116,9 +116,9 @@ else {
 												<span class="selected-labels" id="<portlet:namespace />selectedConfiguration_<%= selPortlet.getRootPortletId() %>"></span>
 
 												<%
-												Map<String, Object> data = new HashMap<String, Object>();
-
-												data.put("portletid", selPortlet.getRootPortletId());
+												Map<String, Object> data = HashMapBuilder.<String, Object>put(
+													"portletid", selPortlet.getRootPortletId()
+												).build();
 												%>
 
 												<aui:a cssClass="configuration-link modify-link" data="<%= data %>" href="javascript:;" label="change" method="get" />
@@ -126,7 +126,10 @@ else {
 										</ul>
 
 										<aui:script>
-											Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>', '<portlet:namespace />showChangeConfiguration<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>');
+											Liferay.Util.toggleBoxes(
+												'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_CONFIGURATION + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>',
+												'<portlet:namespace />showChangeConfiguration<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>'
+											);
 										</aui:script>
 									</li>
 								</ul>
@@ -226,15 +229,15 @@ else {
 												/>
 
 												<liferay-ui:input-time
-													amPmParam='<%= "startDateAmPm" %>'
+													amPmParam="startDateAmPm"
 													amPmValue="<%= startCalendar.get(Calendar.AM_PM) %>"
 													cssClass="form-group form-group-inline"
 													dateParam="startDateTime"
 													dateValue="<%= startCalendar.getTime() %>"
 													disabled="<%= false %>"
-													hourParam='<%= "startDateHour" %>'
+													hourParam="startDateHour"
 													hourValue="<%= startCalendar.get(Calendar.HOUR) %>"
-													minuteParam='<%= "startDateMinute" %>'
+													minuteParam="startDateMinute"
 													minuteValue="<%= startCalendar.get(Calendar.MINUTE) %>"
 													name="startTime"
 												/>
@@ -256,15 +259,15 @@ else {
 												/>
 
 												<liferay-ui:input-time
-													amPmParam='<%= "endDateAmPm" %>'
+													amPmParam="endDateAmPm"
 													amPmValue="<%= endCalendar.get(Calendar.AM_PM) %>"
 													cssClass="form-group form-group-inline"
 													dateParam="startDateTime"
 													dateValue="<%= endCalendar.getTime() %>"
 													disabled="<%= false %>"
-													hourParam='<%= "endDateHour" %>'
+													hourParam="endDateHour"
 													hourValue="<%= endCalendar.get(Calendar.HOUR) %>"
-													minuteParam='<%= "endDateMinute" %>'
+													minuteParam="endDateMinute"
 													minuteValue="<%= endCalendar.get(Calendar.MINUTE) %>"
 													name="endTime"
 												/>
@@ -369,9 +372,9 @@ else {
 														<span class="selected-labels" id="<portlet:namespace />selectedContent_<%= selPortlet.getRootPortletId() %>"></span>
 
 														<%
-														Map<String, Object> data = new HashMap<String, Object>();
-
-														data.put("portletid", selPortlet.getRootPortletId());
+														Map<String, Object> data = HashMapBuilder.<String, Object>put(
+															"portletid", selPortlet.getRootPortletId()
+														).build();
 														%>
 
 														<aui:a cssClass="content-link modify-link" data="<%= data %>" href="javascript:;" id='<%= "contentLink_" + selPortlet.getRootPortletId() %>' label="change" method="get" />
@@ -379,7 +382,10 @@ else {
 												</ul>
 
 												<aui:script>
-													Liferay.Util.toggleBoxes('<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>', '<portlet:namespace />showChangeContent<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>');
+													Liferay.Util.toggleBoxes(
+														'<portlet:namespace /><%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + selPortlet.getRootPortletId() %>',
+														'<portlet:namespace />showChangeContent<%= StringPool.UNDERLINE + selPortlet.getRootPortletId() %>'
+													);
 												</aui:script>
 
 											<%
@@ -405,7 +411,7 @@ else {
 					/>
 				</c:if>
 			</aui:fieldset-group>
-		</div>
+		</clay:container-fluid>
 	</div>
 
 	<aui:button-row>

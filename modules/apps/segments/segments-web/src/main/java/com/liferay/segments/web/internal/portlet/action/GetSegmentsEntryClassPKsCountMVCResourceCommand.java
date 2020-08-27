@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.criteria.Criteria;
-import com.liferay.segments.criteria.contributor.SegmentsCriteriaContributor;
 import com.liferay.segments.criteria.contributor.SegmentsCriteriaContributorRegistry;
 import com.liferay.segments.odata.retriever.ODataRetriever;
 import com.liferay.segments.service.SegmentsEntryService;
@@ -32,7 +31,6 @@ import com.liferay.segments.web.internal.constants.SegmentsWebKeys;
 
 import java.io.PrintWriter;
 
-import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.PortletException;
@@ -62,17 +60,6 @@ import org.osgi.service.component.annotations.Reference;
 public class GetSegmentsEntryClassPKsCountMVCResourceCommand
 	implements MVCResourceCommand {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, ODataRetriever.class, "model.class.name");
-	}
-
-	@Deactivate
-	public void deactivate() {
-		_serviceTrackerMap.close();
-	}
-
 	@Override
 	public boolean serveResource(
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
@@ -85,15 +72,28 @@ public class GetSegmentsEntryClassPKsCountMVCResourceCommand
 
 			return false;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext,
+			(Class<ODataRetriever<?>>)(Class<?>)ODataRetriever.class,
+			"model.class.name");
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
 	}
 
 	protected int getSegmentsEntryClassPKsCount(
 		long companyId, Criteria criteria, String type, Locale locale) {
 
-		ODataRetriever oDataRetriever = _serviceTrackerMap.getService(type);
+		ODataRetriever<?> oDataRetriever = _serviceTrackerMap.getService(type);
 
 		if (oDataRetriever == null) {
 			return 0;
@@ -104,9 +104,10 @@ public class GetSegmentsEntryClassPKsCountMVCResourceCommand
 				companyId, criteria.getFilterString(Criteria.Type.MODEL),
 				locale);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to obtain the segment user count", pe);
+				_log.warn(
+					"Unable to obtain the segment user count", portalException);
 			}
 
 			return 0;
@@ -124,12 +125,10 @@ public class GetSegmentsEntryClassPKsCountMVCResourceCommand
 
 		String type = ParamUtil.getString(resourceRequest, "type");
 
-		List<SegmentsCriteriaContributor> segmentsCriteriaContributors =
-			_segmentsCriteriaContributorRegistry.
-				getSegmentsCriteriaContributors(type, Criteria.Type.MODEL);
-
 		Criteria criteria = ActionUtil.getCriteria(
-			resourceRequest, segmentsCriteriaContributors);
+			resourceRequest,
+			_segmentsCriteriaContributorRegistry.
+				getSegmentsCriteriaContributors(type));
 
 		saveCriteriaInSession(resourceRequest, criteria);
 
@@ -161,6 +160,6 @@ public class GetSegmentsEntryClassPKsCountMVCResourceCommand
 	@Reference
 	private SegmentsEntryService _segmentsEntryService;
 
-	private ServiceTrackerMap<String, ODataRetriever> _serviceTrackerMap;
+	private ServiceTrackerMap<String, ODataRetriever<?>> _serviceTrackerMap;
 
 }

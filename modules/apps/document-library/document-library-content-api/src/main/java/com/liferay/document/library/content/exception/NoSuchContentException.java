@@ -16,12 +16,9 @@ package com.liferay.document.library.content.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchContentException extends NoSuchModelException {
 
 	public NoSuchContentException() {
@@ -31,12 +28,12 @@ public class NoSuchContentException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchContentException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchContentException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchContentException(Throwable cause) {
-		super(cause);
+	public NoSuchContentException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -14,6 +14,11 @@
 
 package com.liferay.gradle.plugins.workspace;
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+
 import com.liferay.gradle.plugins.workspace.configurators.ExtProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.ModulesProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.PluginsProjectConfigurator;
@@ -22,29 +27,47 @@ import com.liferay.gradle.plugins.workspace.configurators.ThemesProjectConfigura
 import com.liferay.gradle.plugins.workspace.configurators.WarsProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
+import com.liferay.portal.tools.bundle.support.commands.DownloadCommand;
 import com.liferay.portal.tools.bundle.support.constants.BundleSupportConstants;
+import com.liferay.workspace.bundle.url.codec.BundleURLCodec;
 
+import groovy.lang.Closure;
 import groovy.lang.MissingPropertyException;
 
 import java.io.File;
 
+import java.net.URL;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.logging.Logger;
 
 /**
  * @author David Truong
  * @author Andrea Di Giorgi
+ * @author Simon Jiang
  */
 public class WorkspaceExtension {
 
+	@SuppressWarnings("serial")
 	public WorkspaceExtension(Settings settings) {
 		_gradle = settings.getGradle();
+
+		_product = _getProperty(settings, "product", (String)null);
 
 		_projectConfigurators.add(new ExtProjectConfigurator(settings));
 		_projectConfigurators.add(new ModulesProjectConfigurator(settings));
@@ -52,6 +75,9 @@ public class WorkspaceExtension {
 		_projectConfigurators.add(new ThemesProjectConfigurator(settings));
 		_projectConfigurators.add(new WarsProjectConfigurator(settings));
 
+		_appServerTomcatVersion = GradleUtil.getProperty(
+			settings, "app.server.tomcat.version",
+			_getDefaultAppServerVersion());
 		_bundleCacheDir = _getProperty(
 			settings, "bundle.cache.dir", _BUNDLE_CACHE_DIR);
 		_bundleDistRootDirName = _getProperty(
@@ -69,23 +95,134 @@ public class WorkspaceExtension {
 			settings, "bundle.token.password.file",
 			_BUNDLE_TOKEN_PASSWORD_FILE);
 		_bundleUrl = _getProperty(
-			settings, "bundle.url", BundleSupportConstants.DEFAULT_BUNDLE_URL);
+			settings, "bundle.url", _getDefaultProductBundleUrl());
 		_configsDir = _getProperty(
 			settings, "configs.dir",
 			BundleSupportConstants.DEFAULT_CONFIGS_DIR_NAME);
-		_dockerImageLiferay = _getProperty(
-			settings, "docker.image.liferay", _DOCKER_IMAGE_LIFERAY);
+		_dockerContainerId = new Closure<Void>(_gradle) {
+
+			@SuppressWarnings("unused")
+			public String doCall() {
+				Project rootProject = _gradle.getRootProject();
+
+				return rootProject.getName() + "-liferay";
+			}
+
+		};
 		_dockerDir = _getProperty(settings, "docker.dir", _DOCKER_DIR);
+		_dockerImageId = new Closure<Void>(_gradle) {
+
+			@SuppressWarnings("unused")
+			public String doCall() {
+				Project rootProject = _gradle.getRootProject();
+
+				Object version = rootProject.getVersion();
+
+				if (Objects.equals(version, "unspecified")) {
+					String dockerImageLiferay = getDockerImageLiferay();
+
+					int index = dockerImageLiferay.indexOf(":");
+
+					version = dockerImageLiferay.substring(index + 1);
+				}
+				else {
+					version = rootProject.getVersion();
+				}
+
+				return String.format(
+					"%s-liferay:%s", rootProject.getName(), version);
+			}
+
+		};
+		_dockerImageLiferay = _getProperty(
+			settings, "docker.image.liferay", _getDefaultDockerImage());
 		_environment = _getProperty(
 			settings, "environment",
 			BundleSupportConstants.DEFAULT_ENVIRONMENT);
 		_homeDir = _getProperty(
 			settings, "home.dir",
 			BundleSupportConstants.DEFAULT_LIFERAY_HOME_DIR_NAME);
+		_nodePackageManager = _getProperty(
+			settings, "node.package.manager", _NODE_PACKAGE_MANAGER);
 		_targetPlatformVersion = _getProperty(
-			settings, "target.platform.version", (String)null);
+			settings, "target.platform.version",
+			_getDefaultTargetplatformVersion());
 
 		_rootProjectConfigurator = new RootProjectConfigurator(settings);
+
+		_gradle.afterProject(
+			new Closure<Void>(_gradle) {
+
+				@SuppressWarnings("unused")
+				public void doCall() {
+					Project rootProject = _gradle.getRootProject();
+
+					Logger logger = rootProject.getLogger();
+
+					if (!logger.isLifecycleEnabled()) {
+						return;
+					}
+
+					if (_product == null) {
+						logger.lifecycle(
+							"The property `liferay.workspace.product` has " +
+								"not been set. It is recommended to set this " +
+									"property in gradle.properties in the " +
+										"workspace directory. See LPS-111700.");
+
+						return;
+					}
+
+					String overridePropertyInfo =
+						"The %s property is currently overriding the default " +
+							"value managed by the liferay.workspace.product " +
+								"setting.";
+
+					if (!Objects.equals(
+							getAppServerTomcatVersion(),
+							_getDefaultAppServerVersion())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"app.server.tomcat.version"));
+					}
+
+					if (!Objects.equals(
+							getBundleUrl(), _getDefaultProductBundleUrl())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"liferay.workspace.bundle.url"));
+					}
+
+					if (!Objects.equals(
+							getDockerImageLiferay(),
+							_getDefaultDockerImage())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"liferay.workspace.docker.image.liferay"));
+					}
+
+					if (!Objects.equals(
+							getTargetPlatformVersion(),
+							_getDefaultTargetplatformVersion())) {
+
+						logger.lifecycle(
+							String.format(
+								overridePropertyInfo,
+								"liferay.workspace.target.platform.version"));
+					}
+				}
+
+			});
+	}
+
+	public String getAppServerTomcatVersion() {
+		return GradleUtil.toString(_appServerTomcatVersion);
 	}
 
 	public File getBundleCacheDir() {
@@ -117,8 +254,16 @@ public class WorkspaceExtension {
 		return GradleUtil.toFile(_gradle.getRootProject(), _configsDir);
 	}
 
+	public String getDockerContainerId() {
+		return GradleUtil.toString(_dockerContainerId);
+	}
+
 	public File getDockerDir() {
 		return GradleUtil.toFile(_gradle.getRootProject(), _dockerDir);
+	}
+
+	public String getDockerImageId() {
+		return GradleUtil.toString(_dockerImageId);
 	}
 
 	public String getDockerImageLiferay() {
@@ -131,6 +276,14 @@ public class WorkspaceExtension {
 
 	public File getHomeDir() {
 		return GradleUtil.toFile(_gradle.getRootProject(), _homeDir);
+	}
+
+	public String getNodePackageManager() {
+		return GradleUtil.toString(_nodePackageManager);
+	}
+
+	public String getProduct() {
+		return GradleUtil.toString(_product);
 	}
 
 	public Iterable<ProjectConfigurator> getProjectConfigurators() {
@@ -199,8 +352,16 @@ public class WorkspaceExtension {
 		_configsDir = configsDir;
 	}
 
+	public void setDockerContainerId(Object dockerContainerId) {
+		_dockerContainerId = dockerContainerId;
+	}
+
 	public void setDockerDir(Object dockerDir) {
 		_dockerDir = dockerDir;
+	}
+
+	public void setDockerImageId(Object dockerImageId) {
+		_dockerImageId = dockerImageId;
 	}
 
 	public void setDockerImageLiferay(Object dockerImageLiferay) {
@@ -215,8 +376,112 @@ public class WorkspaceExtension {
 		_homeDir = homeDir;
 	}
 
+	public void setNodePackageManager(Object nodePackageManager) {
+		_nodePackageManager = nodePackageManager;
+	}
+
+	public void setProduct(Object product) {
+		_product = product;
+	}
+
 	public void setTargetPlatformVersion(Object targetPlatformVersion) {
 		_targetPlatformVersion = targetPlatformVersion;
+	}
+
+	private String _decodeBundleUrl(ProductInfo productInfo) {
+		try {
+			return BundleURLCodec.decode(
+				productInfo.getBundleUrl(), productInfo.getReleaseDate());
+		}
+		catch (Exception exception) {
+			throw new GradleException(
+				"Unable to determine bundle URL", exception);
+		}
+	}
+
+	private String _getDefaultAppServerVersion() {
+		return Optional.ofNullable(
+			_getProductInfo(getProduct())
+		).map(
+			ProductInfo::getAppServerTomcatVersion
+		).orElse(
+			null
+		);
+	}
+
+	private String _getDefaultDockerImage() {
+		return Optional.ofNullable(
+			_getProductInfo(getProduct())
+		).map(
+			ProductInfo::getLiferayDockerImage
+		).orElse(
+			_DOCKER_IMAGE_LIFERAY
+		);
+	}
+
+	private String _getDefaultProductBundleUrl() {
+		return Optional.ofNullable(
+			_getProductInfo(getProduct())
+		).map(
+			this::_decodeBundleUrl
+		).orElse(
+			BundleSupportConstants.DEFAULT_BUNDLE_URL
+		);
+	}
+
+	private String _getDefaultTargetplatformVersion() {
+		return Optional.ofNullable(
+			_getProductInfo(getProduct())
+		).map(
+			ProductInfo::getTargetPlatformVersion
+		).orElse(
+			null
+		);
+	}
+
+	private ProductInfo _getProductInfo(String product) {
+		if (product == null) {
+			return null;
+		}
+
+		return _productInfos.computeIfAbsent(
+			product,
+			key -> {
+				try {
+					DownloadCommand downloadCommand = new DownloadCommand();
+
+					downloadCommand.setCacheDir(_workspaceCacheDir);
+					downloadCommand.setPassword(null);
+					downloadCommand.setToken(false);
+					downloadCommand.setUrl(new URL(_PRODUCT_INFO_URL));
+					downloadCommand.setUserName(null);
+					downloadCommand.setQuiet(true);
+
+					downloadCommand.execute();
+
+					Path downloadPath = downloadCommand.getDownloadPath();
+
+					try (JsonReader jsonReader = new JsonReader(
+							Files.newBufferedReader(downloadPath))) {
+
+						Gson gson = new Gson();
+
+						TypeToken<Map<String, ProductInfo>> typeToken =
+							new TypeToken<Map<String, ProductInfo>>() {
+							};
+
+						Map<String, ProductInfo> productInfos = gson.fromJson(
+							jsonReader, typeToken.getType());
+
+						return productInfos.get(product);
+					}
+				}
+				catch (Exception exception) {
+					throw new GradleException(
+						"Unable to get product info for :" + product,
+						exception);
+				}
+			});
 	}
 
 	private boolean _getProperty(
@@ -266,12 +531,21 @@ public class WorkspaceExtension {
 
 	private static final String _BUNDLE_TOKEN_PASSWORD_FILE = null;
 
+	private static final String _DEFAULT_WORKSPACE_CACHE_DIR_NAME =
+		".liferay/workspace";
+
 	private static final File _DOCKER_DIR = new File(
 		Project.DEFAULT_BUILD_DIR_NAME + File.separator + "docker");
 
 	private static final String _DOCKER_IMAGE_LIFERAY =
-		"liferay/portal:7.1.1-ga2";
+		"liferay/portal:7.3.3-ga4";
 
+	private static final String _NODE_PACKAGE_MANAGER = "npm";
+
+	private static final String _PRODUCT_INFO_URL =
+		"https://releases.liferay.com/tools/workspace/.product_info.json";
+
+	private final Object _appServerTomcatVersion;
 	private Object _bundleCacheDir;
 	private Object _bundleDistRootDirName;
 	private Object _bundleTokenDownload;
@@ -281,14 +555,68 @@ public class WorkspaceExtension {
 	private Object _bundleTokenPasswordFile;
 	private Object _bundleUrl;
 	private Object _configsDir;
+	private Object _dockerContainerId;
 	private Object _dockerDir;
+	private Object _dockerImageId;
 	private Object _dockerImageLiferay;
 	private Object _environment;
 	private final Gradle _gradle;
 	private Object _homeDir;
+	private Object _nodePackageManager;
+	private Object _product;
+	private final Map<String, ProductInfo> _productInfos = new HashMap<>();
 	private final Set<ProjectConfigurator> _projectConfigurators =
 		new HashSet<>();
 	private final Plugin<Project> _rootProjectConfigurator;
 	private Object _targetPlatformVersion;
+	private File _workspaceCacheDir = new File(
+		System.getProperty("user.home"), _DEFAULT_WORKSPACE_CACHE_DIR_NAME);
+
+	@SuppressWarnings("unused")
+	private class ProductInfo {
+
+		public String getAppServerTomcatVersion() {
+			return _appServerTomcatVersion;
+		}
+
+		public String getBundleUrl() {
+			return _bundleUrl;
+		}
+
+		public String getLiferayDockerImage() {
+			return _liferayDockerImage;
+		}
+
+		public String getLiferayProductVersion() {
+			return _liferayProductVersion;
+		}
+
+		public String getReleaseDate() {
+			return _releaseDate;
+		}
+
+		public String getTargetPlatformVersion() {
+			return _targetPlatformVersion;
+		}
+
+		@SerializedName("appServerTomcatVersion")
+		private String _appServerTomcatVersion;
+
+		@SerializedName("bundleUrl")
+		private String _bundleUrl;
+
+		@SerializedName("liferayDockerImage")
+		private String _liferayDockerImage;
+
+		@SerializedName("liferayProductVersion")
+		private String _liferayProductVersion;
+
+		@SerializedName("releaseDate")
+		private String _releaseDate;
+
+		@SerializedName("targetPlatformVersion")
+		private String _targetPlatformVersion;
+
+	}
 
 }

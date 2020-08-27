@@ -50,9 +50,7 @@ public class SetOptionsFunctionTest extends PowerMockito {
 
 	@Before
 	public void setUp() throws Exception {
-		_setOptionsFunction = new SetOptionsFunction();
-
-		_setOptionsFunction.jsonFactory = _jsonFactory;
+		_setOptionsFunction = new SetOptionsFunction(_jsonFactory);
 
 		_setUpLanguageUtil();
 	}
@@ -113,7 +111,7 @@ public class SetOptionsFunctionTest extends PowerMockito {
 
 		Assert.assertTrue(properties.containsKey("options"));
 
-		List<KeyValuePair> keyValuePairs = new ArrayList() {
+		List<KeyValuePair> keyValuePairs = new ArrayList<KeyValuePair>() {
 			{
 				add(new KeyValuePair("value1", "label1"));
 				add(new KeyValuePair("value2", "label2"));

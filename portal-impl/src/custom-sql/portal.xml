@@ -8,16 +8,8 @@
 			FROM
 				Group_
 			INNER JOIN
-				(
-					SELECT
-						DISTINCT groupId
-					FROM
-						LayoutSet
-					WHERE
-						LayoutSet.pageCount > 0
-				)
-				TEMP_TABLE ON
-					TEMP_TABLE.groupId = Group_.groupId
+				Layout ON
+					Layout.groupId = Group_.groupId
 			WHERE
 				(Group_.companyId = ?) AND
 				(Group_.parentGroupId = ?) AND
@@ -92,16 +84,8 @@
 			FROM
 				Group_
 			INNER JOIN
-				(
-					SELECT
-						DISTINCT groupId
-					FROM
-						LayoutSet
-					WHERE
-						LayoutSet.pageCount > 0
-				)
-				TEMP_TABLE ON
-					TEMP_TABLE.groupId = Group_.groupId
+				Layout ON
+					Layout.groupId = Group_.groupId
 			WHERE
 				(Group_.companyId = ?) AND
 				(Group_.parentGroupId = ?) AND
@@ -125,40 +109,6 @@
 						WHERE
 							Group_.liveGroupId != 0
 					)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.findByNoLayouts">
-		<![CDATA[
-			SELECT
-				{Group_.*}
-			FROM
-				Group_
-			INNER JOIN
-				LayoutSet ON
-					LayoutSet.groupId = Group_.groupId
-			WHERE
-				(Group_.classNameId = ?) AND
-				(Group_.type_ != 4) AND
-				(LayoutSet.privateLayout = ?) AND
-				(LayoutSet.pageCount = 0)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.findByNullFriendlyURL">
-		<![CDATA[
-			SELECT
-				{Group_.*}
-			FROM
-				Group_
-			WHERE
-				(
-					(Group_.type_ != 4) OR
-					(Group_.type_ IS NULL)
-				) AND
-				(
-					(friendlyURL = '') OR
-					(friendlyURL IS NULL) OR
-					(friendlyURL = '/null')
-				)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.findBySystem">
@@ -203,6 +153,17 @@
 				(Group_.liveGroupId = 0) AND
 				(LOWER(Group_.groupKey) = ?) AND
 				(Group_.type_ != 4)
+		]]>
+	</sql>
+	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.findByC_A">
+		<![CDATA[
+			SELECT
+				Group_.groupId
+			FROM
+				Group_
+			WHERE
+				(Group_.companyId = ?) AND
+				(Group_.active_ = ?)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.findByL_TS_S_RSGC">
@@ -295,15 +256,14 @@
 				(Users_UserGroups.userId = ?)
 		]]>
 	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinByLayoutSet">
+	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinByLayout">
 		<![CDATA[
 			INNER JOIN
-				LayoutSet ON
-					LayoutSet.groupId = Group_.groupId
+				Layout ON
+					Layout.groupId = Group_.groupId
 			WHERE
 				(Group_.liveGroupId = 0) AND
-				(LayoutSet.privateLayout = ?) AND
-				(LayoutSet.pageCount != 0)
+				(Layout.privateLayout = ?)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinByManualMembership">
@@ -321,11 +281,10 @@
 	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinByPageCount">
 		<![CDATA[
 			INNER JOIN
-				LayoutSet ON
-					LayoutSet.groupId = Group_.groupId
+				Layout ON
+					Layout.groupId = Group_.groupId
 			WHERE
-				(Group_.liveGroupId = 0) AND
-				(LayoutSet.pageCount != 0)
+				Group_.liveGroupId = 0
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinByRoleResourcePermissions">
@@ -339,18 +298,6 @@
 				(ResourcePermission.scope = ?) AND
 				(ResourcePermission.roleId = ?) AND
 				(BITAND(CAST_LONG(ResourcePermission.actionIds), ?) != 0)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinByRoleResourceTypePermissions">
-		<![CDATA[
-			INNER JOIN
-				ResourceTypePermission ON
-					ResourceTypePermission.groupId = Group_.groupId
-			WHERE
-				(Group_.liveGroupId = 0) AND
-				(ResourceTypePermission.name = ?) AND
-				(ResourceTypePermission.roleId = ?) AND
-				(BITAND(CAST_LONG(ResourceTypePermission.actionIds), ?) != 0)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.GroupFinder.joinBySite">
@@ -395,69 +342,6 @@
 			WHERE
 				(Group_.liveGroupId = 0) AND
 				(Users_Groups.userId = ?)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.LayoutFinder.findByNoPermissions">
-		<![CDATA[
-			SELECT
-				{Layout.*}
-			FROM
-				Layout
-			LEFT JOIN
-				ResourcePermission ON
-					(ResourcePermission.companyId = Layout.companyId) AND
-					(ResourcePermission.name = ?) AND
-					(ResourcePermission.scope = ?) AND
-					(ResourcePermission.primKeyId = Layout.plid) AND
-					(ResourcePermission.roleId = ?)
-			WHERE
-				(Layout.companyId = ?) AND
-				(ResourcePermission.primKeyId IS NULL)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.LayoutFinder.findByNullFriendlyURL">
-		<![CDATA[
-			SELECT
-				{Layout.*}
-			FROM
-				Layout
-			WHERE
-				(friendlyURL = '') OR
-				(friendlyURL IS NULL)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.LayoutFinder.findByScopeGroup">
-		<![CDATA[
-			SELECT
-				{Layout.*}
-			FROM
-				Layout
-			INNER JOIN
-				Group_ ON
-					(Group_.companyId = Layout.companyId) AND
-					(Group_.classNameId = [$CLASS_NAME_ID_COM.LIFERAY.PORTAL.MODEL.LAYOUT$]) AND
-					(Group_.classPK = Layout.plid)
-			WHERE
-				(Layout.groupId = ?) AND
-				(Layout.privateLayout = ?)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.LayoutFinder.findByC_P_P">
-		<![CDATA[
-			SELECT
-				DISTINCT Layout.plid AS layoutPlid, PortletPreferences.portletId AS preferencesPortletId
-			FROM
-				Layout
-			INNER JOIN
-				PortletPreferences ON
-					PortletPreferences.plid = Layout.plid
-			WHERE
-				(Layout.companyId = ?) AND
-				(
-					(PortletPreferences.portletId = ?) OR
-					(PortletPreferences.portletId LIKE ?)
-				) AND
-				(CAST_CLOB_TEXT(PortletPreferences.preferences) LIKE ?)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.OrganizationFinder.countO_ByGroupId">
@@ -866,22 +750,6 @@
 				(Layout.privateLayout = ?)
 		]]>
 	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.ResourceBlockFinder.findByC_G_N_R">
-		<![CDATA[
-			SELECT
-				ResourceBlock.resourceBlockId AS resourceBlockId, ResourceBlockPermission.actionIds AS actionIds
-			FROM
-				ResourceBlock
-			INNER JOIN
-				ResourceBlockPermission ON
-					(ResourceBlock.resourceBlockId = ResourceBlockPermission.resourceBlockId) AND
-					(ResourceBlockPermission.roleId IN ([$ROLE_ID$]))
-			WHERE
-				(ResourceBlock.companyId = ?) AND
-				(ResourceBlock.groupId = ?) AND
-				(ResourceBlock.name = ?)
-		]]>
-	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.ResourcePermissionFinder.countByR_S">
 		<![CDATA[
 			SELECT
@@ -940,34 +808,6 @@
 			WHERE
 				(ResourcePermission.roleId = ?) AND
 				[$SCOPE$]
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinder.findByEitherScopeC_G_N">
-		<![CDATA[
-			SELECT
-				{ResourceTypePermission.*}
-			FROM
-				ResourceTypePermission
-			WHERE
-				(ResourceTypePermission.companyId = ?) AND
-				(ResourceTypePermission.name = ?) AND
-				(
-					(ResourceTypePermission.groupId = ?) OR
-					(ResourceTypePermission.groupId = 0)
-				)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinder.findByGroupScopeC_N_R">
-		<![CDATA[
-			SELECT
-				{ResourceTypePermission.*}
-			FROM
-				ResourceTypePermission
-			WHERE
-				(ResourceTypePermission.companyId = ?) AND
-				(ResourceTypePermission.groupId != 0) AND
-				(ResourceTypePermission.name = ?) AND
-				(ResourceTypePermission.roleId = ?)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.countByGroupRoleAndTeamRole">
@@ -1145,7 +985,7 @@
 			WHERE
 				[$WHERE$]
 				(Role_.companyId = ?) AND
-				(Role_.classNameId = [$CLASS_NAME_ID_COM.LIFERAY.PORTAL.MODEL.ROLE$]) AND
+				(Role_.classNameId = [$CLASS_NAME_ID$]) AND
 				(
 					(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
 					(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
@@ -1324,26 +1164,6 @@
 				[$GROUP_ID$]
 		]]>
 	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.findByR_N_A">
-		<![CDATA[
-			SELECT
-				{Role_.*}
-			FROM
-				ResourceBlockPermission
-			INNER JOIN
-				ResourceBlock ON
-					ResourceBlock.resourceBlockId = ResourceBlockPermission.resourceBlockId
-			INNER JOIN
-				Role_ ON
-					Role_.roleId = ResourceBlockPermission.roleId
-			WHERE
-				(ResourceBlock.resourceBlockId = ?) AND
-				(ResourceBlock.name = ?) AND
-				(MOD(INTEGER_DIV(ResourceBlockPermission.actionIds, ?), 2) = 1)
-			ORDER BY
-				Role_.name ASC
-		]]>
-	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.RoleFinder.findByC_N_D_T">
 		<![CDATA[
 			SELECT
@@ -1354,7 +1174,7 @@
 			WHERE
 				[$WHERE$]
 				(Role_.companyId = ?) AND
-				(Role_.classNameId = [$CLASS_NAME_ID_COM.LIFERAY.PORTAL.MODEL.ROLE$]) AND
+				(Role_.classNameId = [$CLASS_NAME_ID$]) AND
 				(
 					(LOWER(Role_.name) LIKE ? [$AND_OR_NULL_CHECK$]) [$AND_OR_CONNECTOR$]
 					(LOWER(Role_.description) LIKE ? [$AND_OR_NULL_CHECK$])
@@ -1376,7 +1196,7 @@
 			INNER JOIN
 				ResourceAction ON
 					(ResourcePermission.name = ResourceAction.name) AND
-					(MOD(INTEGER_DIV(ResourcePermission.actionIds, ResourceAction.bitwiseValue), 2) = 1)
+					(BITAND(ResourcePermission.actionIds, ResourceAction.bitwiseValue) = ResourceAction.bitwiseValue)
 			WHERE
 				(ResourcePermission.companyId = ?) AND
 				(ResourcePermission.name = ?) AND
@@ -1398,7 +1218,7 @@
 				(ResourcePermission.name = ?) AND
 				(ResourcePermission.scope = ?) AND
 				(ResourcePermission.primKey = ?) AND
-				(MOD(INTEGER_DIV(ResourcePermission.actionIds, ?), 2) = 1)
+				(BITAND(ResourcePermission.actionIds, ?) = ?)
 			ORDER BY
 				Role_.name ASC
 		]]>
@@ -1595,19 +1415,6 @@
 					(User_.defaultUser = [$FALSE$])
 			WHERE
 				AnnouncementsDelivery.userId IS NULL
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.kernel.service.persistence.UserFinder.findByNoContacts">
-		<![CDATA[
-			SELECT
-				{User_.*}
-			FROM
-				User_
-			LEFT JOIN
-				Contact_ ON
-					Contact_.contactId = User_.contactId
-			WHERE
-				Contact_.contactId IS NULL
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.kernel.service.persistence.UserFinder.findByNoGroups">
@@ -2114,36 +1921,6 @@
 					(Users_UserGroups.userId = ?) AND
 					(UserGroupGroupRole.groupId = ?)
 			)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.service.impl.ResourceBlockLocalServiceImpl.deleteResourceBlock">
-		<![CDATA[
-			DELETE FROM
-				ResourceBlock
-			WHERE
-				(referenceCount <= 0) AND
-				(resourceBlockId = ?)
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.service.impl.ResourceBlockLocalServiceImpl.releaseResourceBlock">
-		<![CDATA[
-			UPDATE
-				ResourceBlock
-			SET
-				referenceCount = (referenceCount - 1)
-			WHERE
-				resourceBlockId = ?
-		]]>
-	</sql>
-	<sql id="com.liferay.portal.service.impl.ResourceBlockLocalServiceImpl.retainResourceBlock">
-		<![CDATA[
-			UPDATE
-				ResourceBlock
-			SET
-				referenceCount = (referenceCount + 1)
-			WHERE
-				(referenceCount > 0) AND
-				(resourceBlockId = ?)
 		]]>
 	</sql>
 	<sql id="com.liferay.portal.service.impl.ResourcePermissionLocalServiceImpl.findMissingResourcePermissions">

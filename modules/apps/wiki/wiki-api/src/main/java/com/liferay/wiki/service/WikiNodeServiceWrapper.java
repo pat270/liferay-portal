@@ -16,8 +16,6 @@ package com.liferay.wiki.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link WikiNodeService}.
  *
@@ -25,9 +23,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WikiNodeService
  * @generated
  */
-@ProviderType
 public class WikiNodeServiceWrapper
-	implements WikiNodeService, ServiceWrapper<WikiNodeService> {
+	implements ServiceWrapper<WikiNodeService>, WikiNodeService {
 
 	public WikiNodeServiceWrapper(WikiNodeService wikiNodeService) {
 		_wikiNodeService = wikiNodeService;
@@ -97,9 +94,10 @@ public class WikiNodeServiceWrapper
 	public java.util.List<com.liferay.wiki.model.WikiNode> getNodes(
 		long groupId, int status, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.wiki.model.WikiNode> obc) {
+			<com.liferay.wiki.model.WikiNode> orderByComparator) {
 
-		return _wikiNodeService.getNodes(groupId, status, start, end, obc);
+		return _wikiNodeService.getNodes(
+			groupId, status, start, end, orderByComparator);
 	}
 
 	@Override

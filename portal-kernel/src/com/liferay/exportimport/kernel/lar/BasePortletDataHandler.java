@@ -61,11 +61,11 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doAddDefaultData(
 				portletDataContext, portletId, portletPreferences);
 		}
-		catch (PortletDataException pde) {
-			throw pde;
+		catch (PortletDataException portletDataException) {
+			throw portletDataException;
 		}
-		catch (Exception e) {
-			throw new PortletDataException(e);
+		catch (Exception exception) {
+			throw new PortletDataException(exception);
 		}
 		finally {
 			if (_log.isInfoEnabled()) {
@@ -96,9 +96,9 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doDeleteData(
 				portletDataContext, portletId, portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw _handleException(
-				e, PortletDataException.DELETE_PORTLET_DATA, portletId);
+				exception, PortletDataException.DELETE_PORTLET_DATA, portletId);
 		}
 		finally {
 			if (_log.isInfoEnabled()) {
@@ -141,9 +141,9 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doExportData(
 				portletDataContext, portletId, portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw _handleException(
-				e, PortletDataException.EXPORT_PORTLET_DATA, portletId);
+				exception, PortletDataException.EXPORT_PORTLET_DATA, portletId);
 		}
 		finally {
 			portletDataContext.setExportDataRootElement(rootElement);
@@ -343,6 +343,11 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 	}
 
 	@Override
+	public String getResourceName() {
+		return null;
+	}
+
+	@Override
 	public String getSchemaVersion() {
 		return "1.0.0";
 	}
@@ -385,9 +390,9 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doImportData(
 				portletDataContext, portletId, portletPreferences, data);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw _handleException(
-				e, PortletDataException.IMPORT_PORTLET_DATA, portletId);
+				exception, PortletDataException.IMPORT_PORTLET_DATA, portletId);
 		}
 		finally {
 			portletDataContext.setImportDataRootElement(rootElement);
@@ -470,54 +475,10 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		try {
 			doPrepareManifestSummary(portletDataContext, portletPreferences);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw _handleException(
-				e, PortletDataException.PREPARE_MANIFEST_SUMMARY,
+				exception, PortletDataException.PREPARE_MANIFEST_SUMMARY,
 				portletDataContext.getPortletId());
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public PortletPreferences processExportPortletPreferences(
-			PortletDataContext portletDataContext, String portletId,
-			PortletPreferences portletPreferences)
-		throws PortletDataException {
-
-		try {
-			return doProcessExportPortletPreferences(
-				portletDataContext, portletId, portletPreferences);
-		}
-		catch (PortletDataException pde) {
-			throw pde;
-		}
-		catch (Exception e) {
-			throw new PortletDataException(e);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public PortletPreferences processImportPortletPreferences(
-			PortletDataContext portletDataContext, String portletId,
-			PortletPreferences portletPreferences)
-		throws PortletDataException {
-
-		try {
-			return doProcessImportPortletPreferences(
-				portletDataContext, portletId, portletPreferences);
-		}
-		catch (PortletDataException pde) {
-			throw pde;
-		}
-		catch (Exception e) {
-			throw new PortletDataException(e);
 		}
 	}
 
@@ -536,7 +497,7 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		try {
 			return doValidateSchemaVersion(schemaVersion);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 	}
@@ -619,10 +580,8 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 				portletDataHandlerControl.getClassName(),
 				portletDataHandlerBoolean.getReferrerClassName());
 
-			String manifestSummaryKey = ManifestSummary.getManifestSummaryKey(
-				stagedModelType);
-
-			manifestSummary.addModelAdditionCount(manifestSummaryKey, 0);
+			manifestSummary.addModelAdditionCount(
+				ManifestSummary.getManifestSummaryKey(stagedModelType), 0);
 		}
 	}
 
@@ -662,22 +621,6 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			PortletDataContext portletDataContext,
 			PortletPreferences portletPreferences)
 		throws Exception {
-	}
-
-	protected PortletPreferences doProcessExportPortletPreferences(
-			PortletDataContext portletDataContext, String portletId,
-			PortletPreferences portletPreferences)
-		throws Exception {
-
-		return portletPreferences;
-	}
-
-	protected PortletPreferences doProcessImportPortletPreferences(
-			PortletDataContext portletDataContext, String portletId,
-			PortletPreferences portletPreferences)
-		throws Exception {
-
-		return portletPreferences;
 	}
 
 	protected boolean doValidateSchemaVersion(String schemaVersion)
@@ -724,7 +667,7 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 
 			return document.formattedString();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return StringPool.BLANK;
 		}
 	}
@@ -845,35 +788,28 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		_stagingControls = stagingControls;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	protected void setSupportsDataStrategyCopyAsNew(
-		boolean supportsDataStrategyCopyAsNew) {
-	}
-
 	private PortletDataException _handleException(
-		Exception e, int type, String portletId) {
+		Exception exception, int type, String portletId) {
 
-		PortletDataException pde = null;
+		PortletDataException portletDataException = null;
 
-		if (e instanceof PortletDataException) {
-			pde = (PortletDataException)e;
+		if (exception instanceof PortletDataException) {
+			portletDataException = (PortletDataException)exception;
 		}
 		else {
-			pde = new PortletDataException(e.getMessage(), e);
+			portletDataException = new PortletDataException(
+				exception.getMessage(), exception);
 		}
 
-		if (Validator.isNull(pde.getPortletId())) {
-			pde.setPortletId(portletId);
+		if (Validator.isNull(portletDataException.getPortletId())) {
+			portletDataException.setPortletId(portletId);
 		}
 
-		if (pde.getType() == PortletDataException.DEFAULT) {
-			pde.setType(type);
+		if (portletDataException.getType() == PortletDataException.DEFAULT) {
+			portletDataException.setType(type);
 		}
 
-		return pde;
+		return portletDataException;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

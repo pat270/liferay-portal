@@ -17,7 +17,8 @@ package com.liferay.document.library.web.internal.portlet.configuration.icon;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
-import com.liferay.petra.string.StringPool;
+import com.liferay.document.library.web.internal.util.DLPortletConfigurationIconUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -37,7 +38,6 @@ import org.osgi.service.component.annotations.Component;
  * @author Roberto Díaz
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 		"path=/document_library/edit_repository"
@@ -57,25 +57,23 @@ public class RepositoryPermissionPortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		String url = StringPool.BLANK;
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		try {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
 			Repository repository = ActionUtil.getRepository(portletRequest);
 
-			url = PermissionsURLTag.doTag(
+			return PermissionsURLTag.doTag(
 				null, DLFolderConstants.getClassName(),
 				HtmlUtil.unescape(repository.getName()), null,
 				String.valueOf(repository.getDlFolderId()),
 				LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			return ReflectionUtil.throwException(exception);
 		}
-
-		return url;
 	}
 
 	@Override
@@ -85,17 +83,18 @@ public class RepositoryPermissionPortletConfigurationIcon
 
 	@Override
 	public boolean isShow(PortletRequest portletRequest) {
-		try {
-			Repository repository = ActionUtil.getRepository(portletRequest);
+		return DLPortletConfigurationIconUtil.runWithDefaultValueOnError(
+			false,
+			() -> {
+				Repository repository = ActionUtil.getRepository(
+					portletRequest);
 
-			if (repository != null) {
-				return true;
-			}
-		}
-		catch (Exception e) {
-		}
+				if (repository != null) {
+					return true;
+				}
 
-		return false;
+				return false;
+			});
 	}
 
 	@Override

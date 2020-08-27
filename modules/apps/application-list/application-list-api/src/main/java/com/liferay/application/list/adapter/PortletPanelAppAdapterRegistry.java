@@ -18,11 +18,10 @@ import com.liferay.application.list.PanelApp;
 import com.liferay.osgi.util.ServiceTrackerFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Portlet;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.portlet.Portlet;
 
 import javax.servlet.ServletContext;
 
@@ -59,8 +58,8 @@ public class PortletPanelAppAdapterRegistry {
 			try {
 				serviceRegistration.unregister();
 			}
-			catch (IllegalStateException ise) {
-				_log.error(ise, ise);
+			catch (IllegalStateException illegalStateException) {
+				_log.error(illegalStateException, illegalStateException);
 			}
 		}
 

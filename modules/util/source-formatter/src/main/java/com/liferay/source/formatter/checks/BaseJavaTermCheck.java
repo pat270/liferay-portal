@@ -48,11 +48,25 @@ public abstract class BaseJavaTermCheck
 	}
 
 	protected abstract String doProcess(
-			String filename, String absolutePath, JavaTerm javaTerm,
+			String fileName, String absolutePath, JavaTerm javaTerm,
 			String fileContent)
 		throws Exception;
 
 	protected abstract String[] getCheckableJavaTermNames();
+
+	protected List<String> getImportNames(JavaTerm javaTerm) {
+		JavaClass javaClass = javaTerm.getParentJavaClass();
+
+		while (true) {
+			JavaClass parentJavaClass = javaClass.getParentJavaClass();
+
+			if (parentJavaClass == null) {
+				return javaClass.getImports();
+			}
+
+			javaClass = parentJavaClass;
+		}
+	}
 
 	protected String[] getTernaryOperatorParts(String operator) {
 		int x = -1;

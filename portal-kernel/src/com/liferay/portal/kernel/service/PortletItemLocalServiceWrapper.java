@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link PortletItemLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PortletItemLocalService
  * @generated
  */
-@ProviderType
 public class PortletItemLocalServiceWrapper
 	implements PortletItemLocalService,
 			   ServiceWrapper<PortletItemLocalService> {
@@ -36,8 +33,8 @@ public class PortletItemLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.PortletItem addPortletItem(
-			long userId, long groupId, String name, String portletId,
-			String className)
+			long userId, long groupId, java.lang.String name,
+			java.lang.String portletId, java.lang.String className)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletItemLocalService.addPortletItem(
@@ -47,6 +44,10 @@ public class PortletItemLocalServiceWrapper
 	/**
 	 * Adds the portlet item to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletItemLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletItem the portlet item
 	 * @return the portlet item that was added
 	 */
@@ -55,6 +56,17 @@ public class PortletItemLocalServiceWrapper
 		com.liferay.portal.kernel.model.PortletItem portletItem) {
 
 		return _portletItemLocalService.addPortletItem(portletItem);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _portletItemLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -84,6 +96,10 @@ public class PortletItemLocalServiceWrapper
 	/**
 	 * Deletes the portlet item with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletItemLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletItemId the primary key of the portlet item
 	 * @return the portlet item that was removed
 	 * @throws PortalException if a portlet item with the primary key could not be found
@@ -99,6 +115,10 @@ public class PortletItemLocalServiceWrapper
 	/**
 	 * Deletes the portlet item from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletItemLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param portletItem the portlet item
 	 * @return the portlet item that was removed
 	 */
@@ -107,6 +127,11 @@ public class PortletItemLocalServiceWrapper
 		com.liferay.portal.kernel.model.PortletItem portletItem) {
 
 		return _portletItemLocalService.deletePortletItem(portletItem);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _portletItemLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -131,7 +156,7 @@ public class PortletItemLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletItemModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -151,7 +176,7 @@ public class PortletItemLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletItemModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -226,10 +251,13 @@ public class PortletItemLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _portletItemLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -255,7 +283,8 @@ public class PortletItemLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.PortletItem getPortletItem(
-			long groupId, String name, String portletId, String className)
+			long groupId, java.lang.String name, java.lang.String portletId,
+			java.lang.String className)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletItemLocalService.getPortletItem(
@@ -266,7 +295,7 @@ public class PortletItemLocalServiceWrapper
 	 * Returns a range of all the portlet items.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletItemModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.PortletItemModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of portlet items
@@ -282,14 +311,16 @@ public class PortletItemLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.PortletItem>
-		getPortletItems(long groupId, String className) {
+		getPortletItems(long groupId, java.lang.String className) {
 
 		return _portletItemLocalService.getPortletItems(groupId, className);
 	}
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.PortletItem>
-		getPortletItems(long groupId, String portletId, String className) {
+		getPortletItems(
+			long groupId, java.lang.String portletId,
+			java.lang.String className) {
 
 		return _portletItemLocalService.getPortletItems(
 			groupId, portletId, className);
@@ -307,8 +338,8 @@ public class PortletItemLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.PortletItem updatePortletItem(
-			long userId, long groupId, String name, String portletId,
-			String className)
+			long userId, long groupId, java.lang.String name,
+			java.lang.String portletId, java.lang.String className)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _portletItemLocalService.updatePortletItem(
@@ -317,6 +348,10 @@ public class PortletItemLocalServiceWrapper
 
 	/**
 	 * Updates the portlet item in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PortletItemLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param portletItem the portlet item
 	 * @return the portlet item that was updated

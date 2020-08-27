@@ -32,8 +32,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class ThreadLocalFacadeServletRequestWrapper
 	extends ServletRequestWrapper implements Closeable {
 
@@ -119,10 +121,10 @@ public class ThreadLocalFacadeServletRequestWrapper
 	}
 
 	@Override
-	public void setAttribute(String name, Object o) {
+	public void setAttribute(String name, Object object) {
 		ServletRequest servletRequest = getRequest();
 
-		servletRequest.setAttribute(name, o);
+		servletRequest.setAttribute(name, object);
 	}
 
 	@Override

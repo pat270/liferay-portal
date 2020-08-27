@@ -95,8 +95,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=administrator,guest,power-user,user",
 		"javax.portlet.supported-public-render-parameter=categoryId",
-		"javax.portlet.supported-public-render-parameter=tag",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.supported-public-render-parameter=tag"
 	},
 	service = Portlet.class
 )
@@ -106,15 +105,13 @@ public class DisplayPortlet extends BaseKBPortlet {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws IOException, PortalException {
 
-		KBFolder kbFolder = null;
-
 		long kbFolderId = ParamUtil.getLong(actionRequest, "rootKBFolderId");
 
 		long kbFolderGroupId = _portal.getScopeGroupId(actionRequest);
 		String kbFolderURLTitle = StringPool.BLANK;
 
 		if (kbFolderId != KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			kbFolder = kbFolderService.getKBFolder(kbFolderId);
+			KBFolder kbFolder = kbFolderService.getKBFolder(kbFolderId);
 
 			kbFolderGroupId = kbFolder.getGroupId();
 			kbFolderURLTitle = kbFolder.getUrlTitle();
@@ -289,11 +286,11 @@ public class DisplayPortlet extends BaseKBPortlet {
 				httpServletResponse.setStatus(404);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchArticleException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchArticleException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				SessionMessages.add(
 					renderRequest,
@@ -301,7 +298,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 						SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
 			}
 			else {
-				throw new PortletException(e);
+				throw new PortletException(exception);
 			}
 		}
 	}
@@ -425,7 +422,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(&(release.schema.version>=1.2.0)(!(release.schema.version>=1.3.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(&(release.schema.version>=1.2.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

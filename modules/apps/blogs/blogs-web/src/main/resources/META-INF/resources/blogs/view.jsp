@@ -22,10 +22,14 @@ String mvcRenderCommandName = ParamUtil.getString(request, "mvcRenderCommandName
 long assetCategoryId = ParamUtil.getLong(request, "categoryId");
 String assetTagName = ParamUtil.getString(request, "tag");
 
+boolean useAssetEntryQuery = (assetCategoryId > 0) || Validator.isNotNull(assetTagName);
+
 PortletURL portletURL = renderResponse.createRenderURL();
 
 portletURL.setParameter("mvcRenderCommandName", "/blogs/view");
 %>
+
+<liferay-ui:success key='<%= portletDisplay.getId() + "requestProcessed" %>' message="your-request-completed-successfully" />
 
 <portlet:actionURL name="/blogs/edit_entry" var="restoreTrashEntriesURL">
 	<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RESTORE %>" />
@@ -38,33 +42,33 @@ portletURL.setParameter("mvcRenderCommandName", "/blogs/view");
 <aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 
 <%
+BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortletInstanceConfigurationUtil.getBlogsPortletInstanceConfiguration(themeDisplay);
+
 int pageDelta = GetterUtil.getInteger(blogsPortletInstanceConfiguration.pageDelta());
 
-SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, pageDelta, currentURLObj, null, null);
+SearchContainer<BaseModel<?>> searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, pageDelta, currentURLObj, null, null);
 
 searchContainer.setDelta(pageDelta);
 searchContainer.setDeltaConfigurable(false);
 
 int total = 0;
-List results = null;
+List<BaseModel<?>> results = new ArrayList<>();
 
 int notPublishedEntriesCount = BlogsEntryServiceUtil.getGroupUserEntriesCount(scopeGroupId, themeDisplay.getUserId(), new int[] {WorkflowConstants.STATUS_DRAFT, WorkflowConstants.STATUS_PENDING, WorkflowConstants.STATUS_SCHEDULED});
 
-if ((assetCategoryId != 0) || Validator.isNotNull(assetTagName)) {
+if (useAssetEntryQuery) {
 	SearchContainerResults<AssetEntry> searchContainerResults = BlogsUtil.getSearchContainerResults(searchContainer);
 
 	searchContainer.setTotal(searchContainerResults.getTotal());
 
-	results = searchContainerResults.getResults();
+	results.addAll(searchContainerResults.getResults());
 }
 else if ((notPublishedEntriesCount > 0) && mvcRenderCommandName.equals("/blogs/view_not_published_entries")) {
 	total = notPublishedEntriesCount;
 
 	searchContainer.setTotal(total);
 
-	results = BlogsEntryServiceUtil.getGroupUserEntries(scopeGroupId, themeDisplay.getUserId(), new int[] {WorkflowConstants.STATUS_DRAFT, WorkflowConstants.STATUS_PENDING, WorkflowConstants.STATUS_SCHEDULED}, searchContainer.getStart(), searchContainer.getEnd(), new EntryModifiedDateComparator());
-
-	searchContainer.setResults(results);
+	results.addAll(BlogsEntryServiceUtil.getGroupUserEntries(scopeGroupId, themeDisplay.getUserId(), new int[] {WorkflowConstants.STATUS_DRAFT, WorkflowConstants.STATUS_PENDING, WorkflowConstants.STATUS_SCHEDULED}, searchContainer.getStart(), searchContainer.getEnd(), new EntryModifiedDateComparator()));
 }
 else {
 	int status = WorkflowConstants.STATUS_APPROVED;
@@ -73,7 +77,7 @@ else {
 
 	searchContainer.setTotal(total);
 
-	results = BlogsEntryServiceUtil.getGroupEntries(scopeGroupId, status, searchContainer.getStart(), searchContainer.getEnd());
+	results.addAll(BlogsEntryServiceUtil.getGroupEntries(scopeGroupId, status, searchContainer.getStart(), searchContainer.getEnd()));
 }
 
 searchContainer.setResults(results);

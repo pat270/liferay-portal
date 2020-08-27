@@ -47,16 +47,16 @@ public class DLFileEntryMetadataFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_MISMATCHED_COMPANY_ID);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity(
+			sqlQuery.addEntity(
 				DLFileEntryMetadataImpl.TABLE_NAME,
 				DLFileEntryMetadataImpl.class);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -72,16 +72,16 @@ public class DLFileEntryMetadataFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_NO_STRUCTURES);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity(
+			sqlQuery.addEntity(
 				DLFileEntryMetadataImpl.TABLE_NAME,
 				DLFileEntryMetadataImpl.class);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

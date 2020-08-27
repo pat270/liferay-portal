@@ -86,12 +86,6 @@ public class TextFormatter {
 
 	public static final int O = 14;
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #K}
-	 */
-	@Deprecated
-	public static final int P = 15;
-
 	// FORMATId --> format-id
 
 	public static final int Q = 16;
@@ -148,9 +142,6 @@ public class TextFormatter {
 		else if (style == O) {
 			return _formatO(s);
 		}
-		else if (style == P) {
-			return _formatK(s);
-		}
 		else if (style == Q) {
 			return _formatQ(s);
 		}
@@ -185,19 +176,27 @@ public class TextFormatter {
 			return s;
 		}
 
-		if (s.endsWith("s")) {
-			s = s.substring(0, s.length() - 1) + "ses";
-		}
-		else if (s.endsWith("y")) {
-			s = s.substring(0, s.length() - 1) + "ies";
-		}
-		else {
-			s = s + "s";
+		if (s.endsWith("ch") || s.endsWith("s") || s.endsWith("sh") ||
+			s.endsWith("x") || s.endsWith("z")) {
+
+			return s + "es";
 		}
 
-		return s;
+		if (s.endsWith("y") && !s.endsWith("ay") && !s.endsWith("ey") &&
+			!s.endsWith("oy") && !s.endsWith("uy")) {
+
+			return s.substring(0, s.length() - 1) + "ies";
+		}
+
+		return s + "s";
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             com.liferay.portal.kernel.language.LanguageUtil#formatStorageSize(
+	 *             double, Locale) }
+	 */
+	@Deprecated
 	public static String formatStorageSize(double size, Locale locale) {
 		String suffix = _STORAGE_SIZE_SUFFIX_B;
 

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.internal.sort;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
@@ -85,14 +86,9 @@ public class SortBuilderImpl implements SortBuilder {
 	}
 
 	protected String getSortableField() {
-		if (_locale != null) {
-			if (_field.equals(Field.TITLE)) {
-				return "localized_".concat(
-					getLocalizedName(_field, _locale)
-				).concat(
-					"_sortable"
-				);
-			}
+		if ((_locale != null) && _field.equals(Field.TITLE)) {
+			return StringBundler.concat(
+				"localized_", getLocalizedName(_field, _locale), "_sortable");
 		}
 
 		return _field;

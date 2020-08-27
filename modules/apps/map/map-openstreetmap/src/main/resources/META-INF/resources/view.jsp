@@ -19,14 +19,12 @@
 <%
 String namespace = AUIUtil.getNamespace(liferayPortletRequest, liferayPortletResponse);
 
-String protocol = HttpUtil.getProtocol(request);
-
 String bootstrapRequire = (String)request.getAttribute("liferay-map:map:bootstrapRequire");
 boolean geolocation = GetterUtil.getBoolean(request.getAttribute("liferay-map:map:geolocation"));
 double latitude = (Double)request.getAttribute("liferay-map:map:latitude");
 double longitude = (Double)request.getAttribute("liferay-map:map:longitude");
 String name = (String)request.getAttribute("liferay-map:map:name");
-String points =(String)request.getAttribute("liferay-map:map:points");
+String points = (String)request.getAttribute("liferay-map:map:points");
 
 name = namespace + name;
 %>
@@ -34,9 +32,9 @@ name = namespace + name;
 <liferay-util:html-top
 	outputKey="js_maps_openstreet_skip_loading"
 >
-	<link href="<%= protocol %>://npmcdn.com/leaflet@1.2.0/dist/leaflet.css" rel="stylesheet" />
+	<link href="https://npmcdn.com/leaflet@1.2.0/dist/leaflet.css" rel="stylesheet" />
 
-	<script src="<%= protocol %>://npmcdn.com/leaflet@1.2.0/dist/leaflet.js" type="text/javascript"></script>
+	<script src="https://npmcdn.com/leaflet@1.2.0/dist/leaflet.js" type="text/javascript"></script>
 </liferay-util:html-top>
 
 <aui:script require="<%= bootstrapRequire %>">
@@ -51,7 +49,13 @@ name = namespace + name;
 					controls: [MapControls.HOME, MapControls.SEARCH],
 				</c:when>
 				<c:otherwise>
-					controls: [MapControls.HOME, MapControls.PAN, MapControls.SEARCH, MapControls.TYPE, MapControls.ZOOM],
+					controls: [
+						MapControls.HOME,
+						MapControls.PAN,
+						MapControls.SEARCH,
+						MapControls.TYPE,
+						MapControls.ZOOM,
+					],
 				</c:otherwise>
 			</c:choose>
 		</c:if>
@@ -60,22 +64,26 @@ name = namespace + name;
 			data: <%= points %>,
 		</c:if>
 
-		geolocation: <%= geolocation %>
+		geolocation: <%= geolocation %>,
 
 		<c:if test="<%= Validator.isNotNull(latitude) && Validator.isNotNull(longitude) %>">
-			, position: {
+			position: {
 				location: {
 					lat: <%= latitude %>,
-					lng: <%= longitude %>
-				}
-			}
+					lng: <%= longitude %>,
+				},
+			},
 		</c:if>
 	};
 
-	var createMap = function() {
+	var createMap = function () {
 		var map = new MapOpenStreetMap.default(mapConfig);
 
-		Liferay.MapBase.register('<%= HtmlUtil.escapeJS(name) %>', map, '<%= portletDisplay.getId() %>');
+		Liferay.MapBase.register(
+			'<%= HtmlUtil.escapeJS(name) %>',
+			map,
+			'<%= portletDisplay.getId() %>'
+		);
 	};
 
 	createMap();

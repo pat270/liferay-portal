@@ -17,8 +17,8 @@ package com.liferay.exportimport.web.internal.portlet.action;
 import com.liferay.document.library.kernel.exception.FileSizeException;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.exception.LARFileException;
 import com.liferay.exportimport.kernel.exception.LARFileSizeException;
 import com.liferay.exportimport.kernel.exception.LARTypeException;
@@ -100,35 +100,34 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 			String sourceFileName = uploadPortletRequest.getFileName("file");
 
-			String contentType = uploadPortletRequest.getContentType("file");
-
 			_layoutService.addTempFileEntry(
-				groupId, folderName, sourceFileName, inputStream, contentType);
+				groupId, folderName, sourceFileName, inputStream,
+				uploadPortletRequest.getContentType("file"));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			UploadException uploadException =
 				(UploadException)actionRequest.getAttribute(
 					WebKeys.UPLOAD_EXCEPTION);
 
 			if (uploadException != null) {
-				Throwable cause = uploadException.getCause();
+				Throwable throwable = uploadException.getCause();
 
-				if (cause instanceof FileUploadBase.IOFileUploadException) {
+				if (throwable instanceof FileUploadBase.IOFileUploadException) {
 					if (_log.isInfoEnabled()) {
 						_log.info("Temporary upload was cancelled");
 					}
 				}
 
 				if (uploadException.isExceededFileSizeLimit()) {
-					throw new FileSizeException(cause);
+					throw new FileSizeException(throwable);
 				}
 
 				if (uploadException.isExceededUploadRequestSizeLimit()) {
-					throw new UploadRequestSizeException(cause);
+					throw new UploadRequestSizeException(throwable);
 				}
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}
@@ -141,15 +140,15 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 				WebKeys.UPLOAD_EXCEPTION);
 
 		if (uploadException != null) {
-			Throwable cause = uploadException.getCause();
+			Throwable throwable = uploadException.getCause();
 
 			if (uploadException.isExceededFileSizeLimit() ||
 				uploadException.isExceededUploadRequestSizeLimit()) {
 
-				throw new LARFileSizeException(cause);
+				throw new LARFileSizeException(throwable);
 			}
 
-			throw new PortalException(cause);
+			throw new PortalException(throwable);
 		}
 	}
 
@@ -171,7 +170,7 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 			jsonObject.put("deleted", Boolean.TRUE);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			String errorMessage = themeDisplay.translate(
 				"an-unexpected-error-occurred-while-deleting-the-file");
 
@@ -234,7 +233,7 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 				sendRedirect(actionRequest, actionResponse, redirect);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (cmd.equals(Constants.ADD_TEMP) ||
 				cmd.equals(Constants.DELETE_TEMP)) {
 
@@ -242,22 +241,23 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 				handleUploadException(
 					actionRequest, actionResponse,
-					ExportImportHelper.TEMP_FOLDER_NAME, e);
+					ExportImportHelper.TEMP_FOLDER_NAME, exception);
 			}
 			else {
-				if (e instanceof LARFileException ||
-					e instanceof LARFileSizeException ||
-					e instanceof LARTypeException) {
+				if (exception instanceof LARFileException ||
+					exception instanceof LARFileSizeException ||
+					exception instanceof LARTypeException) {
 
-					SessionErrors.add(actionRequest, e.getClass());
+					SessionErrors.add(actionRequest, exception.getClass());
 				}
-				else if (e instanceof LayoutPrototypeException ||
-						 e instanceof LocaleException) {
+				else if (exception instanceof LayoutPrototypeException ||
+						 exception instanceof LocaleException) {
 
-					SessionErrors.add(actionRequest, e.getClass(), e);
+					SessionErrors.add(
+						actionRequest, exception.getClass(), exception);
 				}
 				else {
-					_log.error(e, e);
+					_log.error(exception, exception);
 
 					SessionErrors.add(
 						actionRequest, LayoutImportException.class.getName());
@@ -268,7 +268,7 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 	protected void handleUploadException(
 			ActionRequest actionRequest, ActionResponse actionResponse,
-			String folderName, Exception e)
+			String folderName, Exception exception)
 		throws Exception {
 
 		HttpServletResponse httpServletResponse =
@@ -283,7 +283,8 @@ public class ImportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 		deleteTempFileEntry(themeDisplay.getScopeGroupId(), folderName);
 
 		JSONObject jsonObject = _staging.getExceptionMessagesJSONObject(
-			themeDisplay.getLocale(), e, (ExportImportConfiguration)null);
+			themeDisplay.getLocale(), exception,
+			(ExportImportConfiguration)null);
 
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse, jsonObject);

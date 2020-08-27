@@ -28,10 +28,13 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 
 /**
@@ -39,6 +42,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final SynchronousMailTestRule synchronousMailTestRule =
+		SynchronousMailTestRule.INSTANCE;
 
 	@Before
 	@Override
@@ -76,7 +84,7 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 	@Override
 	protected EmailAddress
 			testGetOrganizationEmailAddressesPage_addEmailAddress(
-				Long organizationId, EmailAddress emailAddress)
+				String organizationId, EmailAddress emailAddress)
 		throws Exception {
 
 		return _addEmailAddress(
@@ -86,8 +94,8 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 	}
 
 	@Override
-	protected Long testGetOrganizationEmailAddressesPage_getOrganizationId() {
-		return _organization.getOrganizationId();
+	protected String testGetOrganizationEmailAddressesPage_getOrganizationId() {
+		return String.valueOf(_organization.getOrganizationId());
 	}
 
 	@Override
@@ -105,12 +113,19 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 		return _user.getUserId();
 	}
 
+	@Override
+	protected EmailAddress testGraphQLEmailAddress_addEmailAddress()
+		throws Exception {
+
+		return testGetEmailAddress_addEmailAddress();
+	}
+
 	private EmailAddress _addEmailAddress(
 			EmailAddress emailAddress, String className, long classPK,
 			String listTypeId)
 		throws Exception {
 
-		return _toEmail(
+		return _toEmailAddress(
 			EmailAddressLocalServiceUtil.addEmailAddress(
 				_user.getUserId(), className, classPK,
 				emailAddress.getEmailAddress(), _getListTypeId(listTypeId),
@@ -125,7 +140,7 @@ public class EmailAddressResourceTest extends BaseEmailAddressResourceTestCase {
 		return listType.getListTypeId();
 	}
 
-	private EmailAddress _toEmail(
+	private EmailAddress _toEmailAddress(
 		com.liferay.portal.kernel.model.EmailAddress
 			serviceBuilderEmailAddress) {
 

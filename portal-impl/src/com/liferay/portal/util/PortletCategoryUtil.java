@@ -98,12 +98,13 @@ public class PortletCategoryUtil {
 			LayoutTypePortlet layoutTypePortlet)
 		throws Exception {
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
 		Set<String> panelSelectedPortletIds = SetUtil.fromArray(
 			StringUtil.split(
-				typeSettingsProperties.getProperty("panelSelectedPortlets")));
+				typeSettingsUnicodeProperties.getProperty(
+					"panelSelectedPortlets")));
 
 		return getRelevantPortletCategory(
 			permissionChecker, companyId, layout, portletCategory,
@@ -133,35 +134,36 @@ public class PortletCategoryUtil {
 				Portlet portlet = PortletLocalServiceUtil.getPortletById(
 					companyId, portletId);
 
-				if (portlet != null) {
-					if (portlet.isSystem() || !portlet.isInclude()) {
-					}
-					else if (!portlet.isActive() ||
-							 portlet.isUndeployedPortlet()) {
-					}
-					else if (layout.isTypePanel() &&
-							 panelSelectedPortletIds.contains(
-								 portlet.getRootPortletId())) {
+				if (portlet == null) {
+					continue;
+				}
 
-						portletIds.add(portlet.getPortletId());
-					}
-					else if (layout.isTypePanel() &&
-							 !panelSelectedPortletIds.contains(
-								 portlet.getRootPortletId())) {
-					}
-					else if (!PortletPermissionUtil.contains(
-								permissionChecker, layout, portlet,
-								ActionKeys.ADD_TO_PAGE)) {
-					}
-					else if (!portlet.isInstanceable() &&
-							 layoutTypePortlet.hasPortletId(
-								 portlet.getPortletId())) {
+				if (portlet.isSystem() || !portlet.isInclude()) {
+				}
+				else if (!portlet.isActive() || portlet.isUndeployedPortlet()) {
+				}
+				else if (layout.isTypePanel() &&
+						 panelSelectedPortletIds.contains(
+							 portlet.getRootPortletId())) {
 
-						portletIds.add(portlet.getPortletId());
-					}
-					else {
-						portletIds.add(portlet.getPortletId());
-					}
+					portletIds.add(portlet.getPortletId());
+				}
+				else if (layout.isTypePanel() &&
+						 !panelSelectedPortletIds.contains(
+							 portlet.getRootPortletId())) {
+				}
+				else if (!PortletPermissionUtil.contains(
+							permissionChecker, layout, portlet,
+							ActionKeys.ADD_TO_PAGE)) {
+				}
+				else if (!portlet.isInstanceable() &&
+						 layoutTypePortlet.hasPortletId(
+							 portlet.getPortletId())) {
+
+					portletIds.add(portlet.getPortletId());
+				}
+				else {
+					portletIds.add(portlet.getPortletId());
 				}
 			}
 

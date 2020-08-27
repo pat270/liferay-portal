@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.model;
 
+import com.liferay.petra.string.StringBundler;
+
 import java.io.Serializable;
 
 /**
@@ -57,16 +59,16 @@ public class PermissionDisplay
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PermissionDisplay)) {
+		if (!(object instanceof PermissionDisplay)) {
 			return false;
 		}
 
-		PermissionDisplay permissionDisplay = (PermissionDisplay)obj;
+		PermissionDisplay permissionDisplay = (PermissionDisplay)object;
 
 		if (_portletName.equals(permissionDisplay.getPortletName()) &&
 			_modelName.equals(permissionDisplay.getModelName()) &&
@@ -112,11 +114,9 @@ public class PermissionDisplay
 
 	@Override
 	public int hashCode() {
-		return _portletName.concat(
-			_modelName
-		).concat(
-			_actionId
-		).hashCode();
+		String s = StringBundler.concat(_portletName, _modelName, _actionId);
+
+		return s.hashCode();
 	}
 
 	private final String _actionId;

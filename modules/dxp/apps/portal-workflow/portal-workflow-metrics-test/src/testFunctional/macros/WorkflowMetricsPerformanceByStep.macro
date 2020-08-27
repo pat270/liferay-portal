@@ -1,0 +1,49 @@
+definition {
+
+	macro searchForStep {
+		var key_stepName = "${stepName}";
+
+		Click(
+			locator1 = "WorkflowMetricsPerformanceByStep#METRICS_PERFORMANCE_BY_STEP_PAGE_INPUT_FIELD",
+			value1 = "${stepName}");
+
+		Type(
+			locator1 = "WorkflowMetricsPerformanceByStep#METRICS_PERFORMANCE_BY_STEP_PAGE_INPUT_FIELD",
+			value1 = "${stepName}");
+
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
+	}
+
+	macro selectDateRangeFilter {
+		key_dateRange = "${dateRange}";
+
+		Click(locator1 = "WorkflowMetricsPerformanceByStep#DATE_RANGE_DROPDOWN");
+
+		Click(locator1 = "WorkflowMetricsPerformanceByStep#DATE_RANGE_DROPDOWN_OPTION");
+	}
+
+	macro viewPerformanceByStepValues {
+		var key_stepName = "${stepName}";
+
+		AssertElementPresent(locator1 = "WorkflowMetricsPerformanceByStep#METRICS_PERFORMANCE_BY_STEP_PAGE_TABLE_STEP_NAME");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetricsPerformanceByStep#METRICS_PERFORMANCE_BY_STEP_PAGE_TABLE_SLA_BREACHED_VALUE",
+			value1 = "${slaBreachedValue}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetricsPerformanceByStep#METRICS_PERFORMANCE_BY_STEP_PAGE_TABLE_AVG_COMPLETION_TIME_VALUE",
+			value1 = "${avgCompletionTimeValue}");
+
+		if ("${isNotPresent}" != "") {
+			for (var isStepNotPresent : list "${isNotPresent}") {
+				var key_stepName = "${isStepNotPresent}";
+
+				AssertElementNotPresent(locator1 = "WorkflowMetricsPerformanceByStep#METRICS_PERFORMANCE_BY_STEP_PAGE_TABLE_STEP_NAME");
+			}
+		}
+	}
+
+}

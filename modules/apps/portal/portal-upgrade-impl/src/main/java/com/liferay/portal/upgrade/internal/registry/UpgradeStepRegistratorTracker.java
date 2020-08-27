@@ -15,22 +15,25 @@
 package com.liferay.portal.upgrade.internal.registry;
 
 import com.liferay.osgi.util.ServiceTrackerFactory;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
-import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.ReleaseLocalService;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
-import com.liferay.portal.upgrade.internal.configuration.ReleaseManagerConfiguration;
-import com.liferay.portal.upgrade.internal.release.osgi.commands.ReleaseManagerOSGiCommands;
+import com.liferay.portal.output.stream.container.constants.OutputStreamContainerConstants;
+import com.liferay.portal.upgrade.internal.executor.SwappedLogExecutor;
+import com.liferay.portal.upgrade.internal.executor.UpgradeExecutor;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
+import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.osgi.framework.Bundle;
@@ -40,7 +43,6 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.util.tracker.ServiceTracker;
@@ -49,21 +51,12 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Carlos Sierra Andrés
  */
-@Component(
-	configurationPid = "com.liferay.portal.upgrade.internal.configuration.ReleaseManagerConfiguration",
-	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
-	service = {}
-)
+@Component(immediate = true, service = {})
 public class UpgradeStepRegistratorTracker {
 
 	@Activate
-	protected void activate(
-		BundleContext bundleContext, Map<String, Object> properties) {
-
+	protected void activate(BundleContext bundleContext) {
 		_bundleContext = bundleContext;
-
-		_releaseManagerConfiguration = ConfigurableUtil.createConfigurable(
-			ReleaseManagerConfiguration.class, properties);
 
 		_serviceTracker = ServiceTrackerFactory.open(
 			bundleContext, UpgradeStepRegistrator.class,
@@ -75,18 +68,20 @@ public class UpgradeStepRegistratorTracker {
 		_serviceTracker.close();
 	}
 
-	@Reference(target = ModuleServiceLifecycle.DATABASE_INITIALIZED)
-	protected ModuleServiceLifecycle moduleServiceLifecycle;
-
 	private BundleContext _bundleContext;
-	private ReleaseManagerConfiguration _releaseManagerConfiguration;
 
 	@Reference
-	private ReleaseManagerOSGiCommands _releaseManagerOSGiCommands;
+	private ReleaseLocalService _releaseLocalService;
 
 	private ServiceTracker
 		<UpgradeStepRegistrator, Collection<ServiceRegistration<UpgradeStep>>>
 			_serviceTracker;
+
+	@Reference
+	private SwappedLogExecutor _swappedLogExecutor;
+
+	@Reference
+	private UpgradeExecutor _upgradeExecutor;
 
 	private class UpgradeStepRegistratorServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
@@ -134,13 +129,31 @@ public class UpgradeStepRegistratorTracker {
 			List<UpgradeInfo> upgradeInfos =
 				upgradeStepRegistry.getUpgradeInfos();
 
+			if (PropsValues.UPGRADE_DATABASE_AUTO_RUN ||
+				(_releaseLocalService.fetchRelease(bundleSymbolicName) ==
+					null)) {
+
+				try {
+					_upgradeExecutor.execute(
+						bundleSymbolicName, upgradeInfos,
+						OutputStreamContainerConstants.FACTORY_NAME_DUMMY);
+				}
+				catch (Throwable throwable) {
+					_swappedLogExecutor.execute(
+						bundleSymbolicName,
+						() -> _log.error(
+							"Failed upgrade process for module ".concat(
+								bundleSymbolicName),
+							throwable),
+						null);
+				}
+			}
+
 			List<ServiceRegistration<UpgradeStep>> serviceRegistrations =
 				new ArrayList<>(upgradeInfos.size());
 
-			boolean enabled = UpgradeStepRegistratorThreadLocal.isEnabled();
-
-			try {
-				UpgradeStepRegistratorThreadLocal.setEnabled(false);
+			try (SafeClosable safeClosable =
+					UpgradeStepRegistratorThreadLocal.setEnabled(false)) {
 
 				for (UpgradeInfo upgradeInfo : upgradeInfos) {
 					Dictionary<String, Object> properties =
@@ -166,13 +179,6 @@ public class UpgradeStepRegistratorTracker {
 					serviceRegistrations.add(serviceRegistration);
 				}
 			}
-			finally {
-				UpgradeStepRegistratorThreadLocal.setEnabled(enabled);
-			}
-
-			if (_releaseManagerConfiguration.autoUpgrade()) {
-				_releaseManagerOSGiCommands.execute(bundleSymbolicName);
-			}
 
 			return serviceRegistrations;
 		}
@@ -194,6 +200,9 @@ public class UpgradeStepRegistratorTracker {
 				serviceRegistration.unregister();
 			}
 		}
+
+		private final Log _log = LogFactoryUtil.getLog(
+			UpgradeStepRegistratorTracker.class);
 
 	}
 

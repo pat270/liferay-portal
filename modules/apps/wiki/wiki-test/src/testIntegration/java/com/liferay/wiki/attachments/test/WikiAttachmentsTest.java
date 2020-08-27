@@ -15,23 +15,37 @@
 package com.liferay.wiki.attachments.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
-import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
+import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
+import com.liferay.document.library.kernel.service.DLFolderLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
+import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcherManager;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.SearchContextTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
-import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
-import com.liferay.wiki.service.WikiPageLocalServiceUtil;
-import com.liferay.wiki.util.test.WikiTestUtil;
+import com.liferay.wiki.service.WikiNodeLocalService;
+import com.liferay.wiki.service.WikiPageLocalService;
+import com.liferay.wiki.test.util.WikiTestUtil;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +69,7 @@ public class WikiAttachmentsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_group = GroupTestUtil.addGroup();
 	}
@@ -63,113 +77,111 @@ public class WikiAttachmentsTest {
 	@Test
 	public void testDeleteAttachmentsWhenDeletingWikiNode() throws Exception {
 		int initialFileEntriesCount =
-			DLFileEntryLocalServiceUtil.getFileEntriesCount();
+			_dlFileEntryLocalService.getFileEntriesCount();
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
 			initialFileEntriesCount + 1,
-			DLFileEntryLocalServiceUtil.getFileEntriesCount());
+			_dlFileEntryLocalService.getFileEntriesCount());
 
-		WikiNodeLocalServiceUtil.deleteNode(_page.getNodeId());
+		_wikiNodeLocalService.deleteNode(_page.getNodeId());
 
 		Assert.assertEquals(
 			initialFileEntriesCount,
-			DLFileEntryLocalServiceUtil.getFileEntriesCount());
+			_dlFileEntryLocalService.getFileEntriesCount());
 	}
 
 	@Test
 	public void testDeleteAttachmentsWhenDeletingWikiPage() throws Exception {
 		int initialFileEntriesCount =
-			DLFileEntryLocalServiceUtil.getFileEntriesCount();
+			_dlFileEntryLocalService.getFileEntriesCount();
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
 			initialFileEntriesCount + 1,
-			DLFileEntryLocalServiceUtil.getFileEntriesCount());
+			_dlFileEntryLocalService.getFileEntriesCount());
 
-		WikiPageLocalServiceUtil.deletePage(
-			_page.getNodeId(), _page.getTitle());
+		_wikiPageLocalService.deletePage(_page.getNodeId(), _page.getTitle());
 
 		Assert.assertEquals(
 			initialFileEntriesCount,
-			DLFileEntryLocalServiceUtil.getFileEntriesCount());
+			_dlFileEntryLocalService.getFileEntriesCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenAddingAttachmentsToSameWikiPage()
 		throws Exception {
 
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPageAttachment();
 
-		int foldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int foldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		Assert.assertEquals(initialFoldersCount + 3, foldersCount);
 
 		addWikiPageAttachment();
 
-		foldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		foldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		Assert.assertEquals(initialFoldersCount + 3, foldersCount);
 	}
 
 	@Test
 	public void testFoldersCountWhenAddingWikiNode() throws Exception {
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiNode();
 
 		Assert.assertEquals(
-			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenAddingWikiPage() throws Exception {
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPage();
 
 		Assert.assertEquals(
-			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenAddingWikiPageAttachment()
 		throws Exception {
 
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
-			initialFoldersCount + 3,
-			DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount + 3, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenAddingWikiPageAttachments()
 		throws Exception {
 
-		int foldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int foldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
-			foldersCount + 3, DLFolderLocalServiceUtil.getDLFoldersCount());
+			foldersCount + 3, _dlFolderLocalService.getDLFoldersCount());
 
-		foldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		foldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		_page = null;
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
-			foldersCount + 1, DLFolderLocalServiceUtil.getDLFoldersCount());
+			foldersCount + 1, _dlFolderLocalService.getDLFoldersCount());
 
-		foldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		foldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		_node = null;
 		_page = null;
@@ -177,9 +189,9 @@ public class WikiAttachmentsTest {
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
-			foldersCount + 2, DLFolderLocalServiceUtil.getDLFoldersCount());
+			foldersCount + 2, _dlFolderLocalService.getDLFoldersCount());
 
-		foldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		foldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		Group group = _group;
 
@@ -191,10 +203,10 @@ public class WikiAttachmentsTest {
 			addWikiPageAttachment();
 
 			Assert.assertEquals(
-				foldersCount + 3, DLFolderLocalServiceUtil.getDLFoldersCount());
+				foldersCount + 3, _dlFolderLocalService.getDLFoldersCount());
 		}
 		finally {
-			GroupLocalServiceUtil.deleteGroup(group);
+			_groupLocalService.deleteGroup(group);
 		}
 	}
 
@@ -202,74 +214,68 @@ public class WikiAttachmentsTest {
 	public void testFoldersCountWhenDeletingWikiNodeWithAttachments()
 		throws Exception {
 
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
-			initialFoldersCount + 3,
-			DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount + 3, _dlFolderLocalService.getDLFoldersCount());
 
-		WikiNodeLocalServiceUtil.deleteNode(_page.getNodeId());
+		_wikiNodeLocalService.deleteNode(_page.getNodeId());
 
 		Assert.assertEquals(
-			initialFoldersCount + 1,
-			DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount + 1, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenDeletingWikiNodeWithoutAttachments()
 		throws Exception {
 
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiNode();
 
 		Assert.assertEquals(
-			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount, _dlFolderLocalService.getDLFoldersCount());
 
-		WikiNodeLocalServiceUtil.deleteNode(_node.getNodeId());
+		_wikiNodeLocalService.deleteNode(_node.getNodeId());
 
 		Assert.assertEquals(
-			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenDeletingWikiPageWithAttachments()
 		throws Exception {
 
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPageAttachment();
 
 		Assert.assertEquals(
-			initialFoldersCount + 3,
-			DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount + 3, _dlFolderLocalService.getDLFoldersCount());
 
-		WikiPageLocalServiceUtil.deletePage(
-			_page.getNodeId(), _page.getTitle());
+		_wikiPageLocalService.deletePage(_page.getNodeId(), _page.getTitle());
 
 		Assert.assertEquals(
-			initialFoldersCount + 2,
-			DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount + 2, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
 	public void testFoldersCountWhenDeletingWikiPageWithoutAttachments()
 		throws Exception {
 
-		int initialFoldersCount = DLFolderLocalServiceUtil.getDLFoldersCount();
+		int initialFoldersCount = _dlFolderLocalService.getDLFoldersCount();
 
 		addWikiPage();
 
 		Assert.assertEquals(
-			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount, _dlFolderLocalService.getDLFoldersCount());
 
-		WikiPageLocalServiceUtil.deletePage(
-			_page.getNodeId(), _page.getTitle());
+		_wikiPageLocalService.deletePage(_page.getNodeId(), _page.getTitle());
 
 		Assert.assertEquals(
-			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
+			initialFoldersCount, _dlFolderLocalService.getDLFoldersCount());
 	}
 
 	@Test
@@ -285,6 +291,20 @@ public class WikiAttachmentsTest {
 
 		_trashWikiAttachments(true);
 	}
+
+	@Test
+	public void testSearchIncludeAttachment() throws Exception {
+		String title = "Title";
+
+		_addFileEntry(title);
+		_addWikiPageWithAttachmentFileName(title);
+
+		Assert.assertEquals(1, _searchCount(title, false));
+		Assert.assertEquals(2, _searchCount(title, true));
+	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void addWikiNode() throws Exception {
 		if (_group == null) {
@@ -312,6 +332,47 @@ public class WikiAttachmentsTest {
 			_page.getUserId(), _page.getNodeId(), _page.getTitle(), getClass());
 	}
 
+	private void _addFileEntry(String title) throws Exception {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+
+		_dlAppLocalService.addFileEntry(
+			serviceContext.getUserId(), _group.getGroupId(),
+			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			StringUtil.randomString(), ContentTypes.TEXT_PLAIN, title,
+			StringPool.BLANK, StringPool.BLANK, _CONTENT.getBytes(),
+			serviceContext);
+	}
+
+	private void _addWikiPageWithAttachmentFileName(String fileName)
+		throws Exception {
+
+		if (_page == null) {
+			addWikiPage();
+		}
+
+		WikiTestUtil.addWikiAttachment(
+			_page.getUserId(), _page.getNodeId(), _page.getTitle(), fileName,
+			getClass());
+	}
+
+	private int _searchCount(String keywords, boolean includeAttachments)
+		throws Exception {
+
+		SearchContext searchContext = SearchContextTestUtil.getSearchContext(
+			_group.getGroupId());
+
+		searchContext.setIncludeAttachments(includeAttachments);
+		searchContext.setKeywords(keywords);
+
+		FacetedSearcher facetedSearcher =
+			_facetedSearcherManager.createFacetedSearcher();
+
+		Hits hits = facetedSearcher.search(searchContext);
+
+		return hits.getLength();
+	}
+
 	private void _trashWikiAttachments(boolean restore) throws Exception {
 		int initialNotInTrashCount = _page.getAttachmentsFileEntriesCount();
 		int initialTrashEntriesCount =
@@ -329,10 +390,9 @@ public class WikiAttachmentsTest {
 			initialTrashEntriesCount,
 			_page.getDeletedAttachmentsFileEntriesCount());
 
-		FileEntry fileEntry =
-			WikiPageLocalServiceUtil.movePageAttachmentToTrash(
-				TestPropsValues.getUserId(), _page.getNodeId(),
-				_page.getTitle(), fileName);
+		FileEntry fileEntry = _wikiPageLocalService.movePageAttachmentToTrash(
+			TestPropsValues.getUserId(), _page.getNodeId(), _page.getTitle(),
+			fileName);
 
 		Assert.assertEquals(
 			initialNotInTrashCount, _page.getAttachmentsFileEntriesCount());
@@ -341,7 +401,7 @@ public class WikiAttachmentsTest {
 			_page.getDeletedAttachmentsFileEntriesCount());
 
 		if (restore) {
-			WikiPageLocalServiceUtil.restorePageAttachmentFromTrash(
+			_wikiPageLocalService.restorePageAttachmentFromTrash(
 				TestPropsValues.getUserId(), _page.getNodeId(),
 				_page.getTitle(), fileName);
 
@@ -352,11 +412,11 @@ public class WikiAttachmentsTest {
 				initialTrashEntriesCount,
 				_page.getDeletedAttachmentsFileEntriesCount());
 
-			WikiPageLocalServiceUtil.deletePageAttachment(
+			_wikiPageLocalService.deletePageAttachment(
 				_page.getNodeId(), _page.getTitle(), fileName);
 		}
 		else {
-			WikiPageLocalServiceUtil.deletePageAttachment(
+			_wikiPageLocalService.deletePageAttachment(
 				_page.getNodeId(), _page.getTitle(), fileEntry.getTitle());
 
 			Assert.assertEquals(
@@ -366,6 +426,30 @@ public class WikiAttachmentsTest {
 				_page.getDeletedAttachmentsFileEntriesCount());
 		}
 	}
+
+	private static final String _CONTENT =
+		"Content: Enterprise. Open Source. For Life.";
+
+	@Inject
+	private static DLAppLocalService _dlAppLocalService;
+
+	@Inject
+	private static DLFileEntryLocalService _dlFileEntryLocalService;
+
+	@Inject
+	private static DLFolderLocalService _dlFolderLocalService;
+
+	@Inject
+	private static FacetedSearcherManager _facetedSearcherManager;
+
+	@Inject
+	private static GroupLocalService _groupLocalService;
+
+	@Inject
+	private static WikiNodeLocalService _wikiNodeLocalService;
+
+	@Inject
+	private static WikiPageLocalService _wikiPageLocalService;
 
 	@DeleteAfterTestRun
 	private Group _group;

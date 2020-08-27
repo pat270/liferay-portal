@@ -45,7 +45,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class PhoneServiceBaseImpl
-	extends BaseServiceImpl implements PhoneService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, PhoneService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -385,8 +385,8 @@ public abstract class PhoneServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

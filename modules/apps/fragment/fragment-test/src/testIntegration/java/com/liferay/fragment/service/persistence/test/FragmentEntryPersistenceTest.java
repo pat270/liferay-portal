@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,7 +124,13 @@ public class FragmentEntryPersistenceTest {
 
 		FragmentEntry newFragmentEntry = _persistence.create(pk);
 
+		newFragmentEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		newFragmentEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newFragmentEntry.setUuid(RandomTestUtil.randomString());
+
+		newFragmentEntry.setHeadId(RandomTestUtil.nextLong());
 
 		newFragmentEntry.setGroupId(RandomTestUtil.nextLong());
 
@@ -150,7 +156,13 @@ public class FragmentEntryPersistenceTest {
 
 		newFragmentEntry.setJs(RandomTestUtil.randomString());
 
+		newFragmentEntry.setCacheable(RandomTestUtil.randomBoolean());
+
+		newFragmentEntry.setConfiguration(RandomTestUtil.randomString());
+
 		newFragmentEntry.setPreviewFileEntryId(RandomTestUtil.nextLong());
+
+		newFragmentEntry.setReadOnly(RandomTestUtil.randomBoolean());
 
 		newFragmentEntry.setType(RandomTestUtil.nextInt());
 
@@ -170,7 +182,15 @@ public class FragmentEntryPersistenceTest {
 			newFragmentEntry.getPrimaryKey());
 
 		Assert.assertEquals(
+			existingFragmentEntry.getMvccVersion(),
+			newFragmentEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingFragmentEntry.getCtCollectionId(),
+			newFragmentEntry.getCtCollectionId());
+		Assert.assertEquals(
 			existingFragmentEntry.getUuid(), newFragmentEntry.getUuid());
+		Assert.assertEquals(
+			existingFragmentEntry.getHeadId(), newFragmentEntry.getHeadId());
 		Assert.assertEquals(
 			existingFragmentEntry.getFragmentEntryId(),
 			newFragmentEntry.getFragmentEntryId());
@@ -205,8 +225,16 @@ public class FragmentEntryPersistenceTest {
 		Assert.assertEquals(
 			existingFragmentEntry.getJs(), newFragmentEntry.getJs());
 		Assert.assertEquals(
+			existingFragmentEntry.isCacheable(),
+			newFragmentEntry.isCacheable());
+		Assert.assertEquals(
+			existingFragmentEntry.getConfiguration(),
+			newFragmentEntry.getConfiguration());
+		Assert.assertEquals(
 			existingFragmentEntry.getPreviewFileEntryId(),
 			newFragmentEntry.getPreviewFileEntryId());
+		Assert.assertEquals(
+			existingFragmentEntry.isReadOnly(), newFragmentEntry.isReadOnly());
 		Assert.assertEquals(
 			existingFragmentEntry.getType(), newFragmentEntry.getType());
 		Assert.assertEquals(
@@ -235,12 +263,34 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByUuid_Head() throws Exception {
+		_persistence.countByUuid_Head("", RandomTestUtil.randomBoolean());
+
+		_persistence.countByUuid_Head("null", RandomTestUtil.randomBoolean());
+
+		_persistence.countByUuid_Head(
+			(String)null, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByUUID_G() throws Exception {
 		_persistence.countByUUID_G("", RandomTestUtil.nextLong());
 
 		_persistence.countByUUID_G("null", 0L);
 
 		_persistence.countByUUID_G((String)null, 0L);
+	}
+
+	@Test
+	public void testCountByUUID_G_Head() throws Exception {
+		_persistence.countByUUID_G_Head(
+			"", RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByUUID_G_Head(
+			"null", 0L, RandomTestUtil.randomBoolean());
+
+		_persistence.countByUUID_G_Head(
+			(String)null, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -253,6 +303,18 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByUuid_C_Head() throws Exception {
+		_persistence.countByUuid_C_Head(
+			"", RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByUuid_C_Head(
+			"null", 0L, RandomTestUtil.randomBoolean());
+
+		_persistence.countByUuid_C_Head(
+			(String)null, 0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByGroupId() throws Exception {
 		_persistence.countByGroupId(RandomTestUtil.nextLong());
 
@@ -260,10 +322,27 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByGroupId_Head() throws Exception {
+		_persistence.countByGroupId_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByGroupId_Head(0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByFragmentCollectionId() throws Exception {
 		_persistence.countByFragmentCollectionId(RandomTestUtil.nextLong());
 
 		_persistence.countByFragmentCollectionId(0L);
+	}
+
+	@Test
+	public void testCountByFragmentCollectionId_Head() throws Exception {
+		_persistence.countByFragmentCollectionId_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByFragmentCollectionId_Head(
+			0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -275,12 +354,33 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_FCI_Head() throws Exception {
+		_persistence.countByG_FCI_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_Head(0L, 0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByG_FEK() throws Exception {
 		_persistence.countByG_FEK(RandomTestUtil.nextLong(), "");
 
 		_persistence.countByG_FEK(0L, "null");
 
 		_persistence.countByG_FEK(0L, (String)null);
+	}
+
+	@Test
+	public void testCountByG_FEK_Head() throws Exception {
+		_persistence.countByG_FEK_Head(
+			RandomTestUtil.nextLong(), "", RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FEK_Head(
+			0L, "null", RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FEK_Head(
+			0L, (String)null, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -294,6 +394,19 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_FCI_LikeN_Head() throws Exception {
+		_persistence.countByG_FCI_LikeN_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "",
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_LikeN_Head(
+			0L, 0L, "null", RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_LikeN_Head(
+			0L, 0L, (String)null, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByG_FCI_T() throws Exception {
 		_persistence.countByG_FCI_T(
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
@@ -303,12 +416,32 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_FCI_T_Head() throws Exception {
+		_persistence.countByG_FCI_T_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_T_Head(
+			0L, 0L, 0, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByG_FCI_S() throws Exception {
 		_persistence.countByG_FCI_S(
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
 			RandomTestUtil.nextInt());
 
 		_persistence.countByG_FCI_S(0L, 0L, 0);
+	}
+
+	@Test
+	public void testCountByG_FCI_S_Head() throws Exception {
+		_persistence.countByG_FCI_S_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_S_Head(
+			0L, 0L, 0, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -323,12 +456,43 @@ public class FragmentEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_FCI_LikeN_S_Head() throws Exception {
+		_persistence.countByG_FCI_LikeN_S_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "",
+			RandomTestUtil.nextInt(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_LikeN_S_Head(
+			0L, 0L, "null", 0, RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_LikeN_S_Head(
+			0L, 0L, (String)null, 0, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByG_FCI_T_S() throws Exception {
 		_persistence.countByG_FCI_T_S(
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
 			RandomTestUtil.nextInt(), RandomTestUtil.nextInt());
 
 		_persistence.countByG_FCI_T_S(0L, 0L, 0, 0);
+	}
+
+	@Test
+	public void testCountByG_FCI_T_S_Head() throws Exception {
+		_persistence.countByG_FCI_T_S_Head(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt(), RandomTestUtil.nextInt(),
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_FCI_T_S_Head(
+			0L, 0L, 0, 0, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
+	public void testCountByHeadId() throws Exception {
+		_persistence.countByHeadId(RandomTestUtil.nextLong());
+
+		_persistence.countByHeadId(0L);
 	}
 
 	@Test
@@ -354,19 +518,14 @@ public class FragmentEntryPersistenceTest {
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
-	@Test
-	public void testFilterFindByGroupId() throws Exception {
-		_persistence.filterFindByGroupId(
-			0, QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
-	}
-
 	protected OrderByComparator<FragmentEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"FragmentEntry", "uuid", true, "fragmentEntryId", true, "groupId",
+			"FragmentEntry", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "headId", true, "fragmentEntryId", true, "groupId",
 			true, "companyId", true, "userId", true, "userName", true,
 			"createDate", true, "modifiedDate", true, "fragmentCollectionId",
-			true, "fragmentEntryKey", true, "name", true, "css", true, "html",
-			true, "js", true, "previewFileEntryId", true, "type", true,
+			true, "fragmentEntryKey", true, "name", true, "cacheable", true,
+			"previewFileEntryId", true, "readOnly", true, "type", true,
 			"lastPublishDate", true, "status", true, "statusByUserId", true,
 			"statusByUserName", true, "statusDate", true);
 	}
@@ -590,30 +749,78 @@ public class FragmentEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		FragmentEntry existingFragmentEntry = _persistence.findByPrimaryKey(
-			newFragmentEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newFragmentEntry.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingFragmentEntry.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingFragmentEntry, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		FragmentEntry newFragmentEntry = addFragmentEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			FragmentEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"fragmentEntryId", newFragmentEntry.getFragmentEntryId()));
+
+		List<FragmentEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(FragmentEntry fragmentEntry) {
 		Assert.assertEquals(
-			Long.valueOf(existingFragmentEntry.getGroupId()),
+			fragmentEntry.getUuid(),
+			ReflectionTestUtil.invoke(
+				fragmentEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(fragmentEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFragmentEntry, "getOriginalGroupId", new Class<?>[0]));
+				fragmentEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingFragmentEntry.getGroupId()),
+			Long.valueOf(fragmentEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFragmentEntry, "getOriginalGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingFragmentEntry.getFragmentEntryKey(),
-				ReflectionTestUtil.invoke(
-					existingFragmentEntry, "getOriginalFragmentEntryKey",
-					new Class<?>[0])));
+				fragmentEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			fragmentEntry.getFragmentEntryKey(),
+			ReflectionTestUtil.invoke(
+				fragmentEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "fragmentEntryKey"));
+
+		Assert.assertEquals(
+			Long.valueOf(fragmentEntry.getHeadId()),
+			ReflectionTestUtil.<Long>invoke(
+				fragmentEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "headId"));
 	}
 
 	protected FragmentEntry addFragmentEntry() throws Exception {
@@ -621,7 +828,13 @@ public class FragmentEntryPersistenceTest {
 
 		FragmentEntry fragmentEntry = _persistence.create(pk);
 
+		fragmentEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		fragmentEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		fragmentEntry.setUuid(RandomTestUtil.randomString());
+
+		fragmentEntry.setHeadId(RandomTestUtil.nextLong());
 
 		fragmentEntry.setGroupId(RandomTestUtil.nextLong());
 
@@ -647,7 +860,13 @@ public class FragmentEntryPersistenceTest {
 
 		fragmentEntry.setJs(RandomTestUtil.randomString());
 
+		fragmentEntry.setCacheable(RandomTestUtil.randomBoolean());
+
+		fragmentEntry.setConfiguration(RandomTestUtil.randomString());
+
 		fragmentEntry.setPreviewFileEntryId(RandomTestUtil.nextLong());
+
+		fragmentEntry.setReadOnly(RandomTestUtil.randomBoolean());
 
 		fragmentEntry.setType(RandomTestUtil.nextInt());
 

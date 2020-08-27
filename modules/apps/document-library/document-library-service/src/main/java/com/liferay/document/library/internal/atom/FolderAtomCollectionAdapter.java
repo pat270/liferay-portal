@@ -52,7 +52,7 @@ public class FolderAtomCollectionAdapter
 
 	@Override
 	public List<String> getEntryAuthors(Folder folder) {
-		return ListUtil.toList(folder.getUserName());
+		return ListUtil.fromArray(folder.getUserName());
 	}
 
 	@Override
@@ -97,8 +97,11 @@ public class FolderAtomCollectionAdapter
 		String portletId = PortletProviderUtil.getPortletId(
 			Folder.class.getName(), PortletProvider.Action.VIEW);
 
-		return AtomUtil.createFeedTitleFromPortletName(
-			atomRequestContext, portletId) + " folders";
+		String feedTitleFromPortletName =
+			AtomUtil.createFeedTitleFromPortletName(
+				atomRequestContext, portletId);
+
+		return feedTitleFromPortletName + " folders";
 	}
 
 	@Override

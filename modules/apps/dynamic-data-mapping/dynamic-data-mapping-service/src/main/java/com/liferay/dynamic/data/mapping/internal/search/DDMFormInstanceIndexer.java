@@ -79,11 +79,9 @@ public class DDMFormInstanceIndexer extends BaseIndexer<DDMFormInstance> {
 
 	@Override
 	protected void doReindex(DDMFormInstance ddmFormInstance) throws Exception {
-		Document document = getDocument(ddmFormInstance);
-
 		indexWriterHelper.updateDocument(
-			getSearchEngineId(), ddmFormInstance.getCompanyId(), document,
-			isCommitImmediately());
+			getSearchEngineId(), ddmFormInstance.getCompanyId(),
+			getDocument(ddmFormInstance), isCommitImmediately());
 
 		reindexRecords(ddmFormInstance);
 	}
@@ -117,12 +115,12 @@ public class DDMFormInstanceIndexer extends BaseIndexer<DDMFormInstance> {
 						indexableActionableDynamicQuery.addDocuments(document);
 					}
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to index form instance record " +
 								ddmFormInstance.getFormInstanceId(),
-							pe);
+							portalException);
 					}
 				}
 			});

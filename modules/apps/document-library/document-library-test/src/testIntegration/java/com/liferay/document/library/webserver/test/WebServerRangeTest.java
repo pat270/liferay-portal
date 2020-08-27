@@ -16,6 +16,8 @@ package com.liferay.document.library.webserver.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
+import com.liferay.document.library.test.util.BaseWebServerTestCase;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -32,7 +34,6 @@ import com.liferay.portal.kernel.webdav.methods.Method;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.webserver.WebServerServlet;
-import com.liferay.portal.webserver.test.BaseWebServerTestCase;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -196,9 +197,9 @@ public class WebServerRangeTest extends BaseWebServerTestCase {
 			parentFolder.getFolderId(), fileName, ContentTypes.TEXT_PLAIN,
 			_SAMPLE_DATA.getBytes(), serviceContext);
 
-		String path =
-			fileEntry.getGroupId() + "/" + fileEntry.getFolderId() + "/" +
-				fileEntry.getTitle();
+		String path = StringBundler.concat(
+			fileEntry.getGroupId(), "/", fileEntry.getFolderId(), "/",
+			fileEntry.getTitle());
 
 		Map<String, String> headers = new HashMap<>();
 

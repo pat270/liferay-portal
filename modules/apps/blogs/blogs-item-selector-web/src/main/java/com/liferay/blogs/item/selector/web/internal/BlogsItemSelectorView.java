@@ -24,8 +24,7 @@ import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.ListUtil;
 
 import java.io.IOException;
@@ -41,6 +40,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -71,17 +71,12 @@ public class BlogsItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		return LanguageUtil.get(locale, "blog-images");
-	}
-
-	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
+		return _language.get(locale, "blog-images");
 	}
 
 	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			BlogsItemSelectorCriterion blogsItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
@@ -89,12 +84,11 @@ public class BlogsItemSelectorView
 		BlogsItemSelectorViewDisplayContext
 			blogsItemSelectorViewDisplayContext =
 				new BlogsItemSelectorViewDisplayContext(
-					blogsItemSelectorCriterion, this,
-					_itemSelectorReturnTypeResolverHandler,
-					itemSelectedEventName, search, portletURL,
-					_blogsEntryLocalService);
+					_blogsEntryLocalService, blogsItemSelectorCriterion, this,
+					(HttpServletRequest)servletRequest, itemSelectedEventName,
+					_itemSelectorReturnTypeResolverHandler, portletURL, search);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			BlogsItemSelectorWebKeys.BLOGS_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			blogsItemSelectorViewDisplayContext);
 
@@ -103,16 +97,14 @@ public class BlogsItemSelectorView
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher("/blogs_attachments.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
 			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new FileEntryItemSelectorReturnType(),
-					new URLItemSelectorReturnType()
-				}));
+				new FileEntryItemSelectorReturnType(),
+				new URLItemSelectorReturnType()));
 
 	@Reference
 	private BlogsEntryLocalService _blogsEntryLocalService;
@@ -120,6 +112,9 @@ public class BlogsItemSelectorView
 	@Reference
 	private ItemSelectorReturnTypeResolverHandler
 		_itemSelectorReturnTypeResolverHandler;
+
+	@Reference
+	private Language _language;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.blogs.item.selector.web)"

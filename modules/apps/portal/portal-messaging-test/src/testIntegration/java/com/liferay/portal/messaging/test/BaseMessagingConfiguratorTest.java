@@ -21,11 +21,11 @@ import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageListener;
 import com.liferay.portal.kernel.messaging.config.BaseMessagingConfigurator;
 import com.liferay.portal.kernel.messaging.config.DefaultMessagingConfigurator;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +84,7 @@ public class BaseMessagingConfiguratorTest {
 		_baseMessagingConfigurator = new BaseMessagingConfigurator() {
 
 			@Override
-			protected ClassLoader getOperatingClassloader() {
+			protected ClassLoader getOperatingClassLoader() {
 				return testClassLoader;
 			}
 
@@ -109,11 +109,12 @@ public class BaseMessagingConfiguratorTest {
 		_baseMessagingConfigurator.setDestinationConfigurations(
 			destinationConfigurations);
 
-		Map<String, List<MessageListener>> messageListeners = new HashMap<>();
-
 		List<MessageListener> messageListenersList = new ArrayList<>();
 
-		messageListeners.put("liferay/plugintest1", messageListenersList);
+		Map<String, List<MessageListener>> messageListeners =
+			HashMapBuilder.<String, List<MessageListener>>put(
+				"liferay/plugintest1", messageListenersList
+			).build();
 
 		messageListenersList.add(
 			new TestClassLoaderMessageListener(testClassLoader));
@@ -188,11 +189,12 @@ public class BaseMessagingConfiguratorTest {
 		_baseMessagingConfigurator.setDestinationConfigurations(
 			destinationConfigurations);
 
-		Map<String, List<MessageListener>> messageListeners = new HashMap<>();
-
 		List<MessageListener> messageListenersList1 = new ArrayList<>();
 
-		messageListeners.put("liferay/portaltest1", messageListenersList1);
+		Map<String, List<MessageListener>> messageListeners =
+			HashMapBuilder.<String, List<MessageListener>>put(
+				"liferay/portaltest1", messageListenersList1
+			).build();
 
 		messageListenersList1.add(
 			new TestMessageListener("liferay/portaltest1"));

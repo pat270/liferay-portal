@@ -25,7 +25,7 @@
 			id='${namespace + formName}'
 			label=""
 			name='${name}'
-			onChange='${namespace + "changeLanguage"}'
+			onChange='${namespace + "changeLanguage();"}'
 			title="language"
 		>
 			<#list entries as entry>
@@ -34,6 +34,7 @@
 					disabled=entry.isDisabled()
 					label=entry.getLongDisplayName()
 					lang=entry.getW3cLanguageId()
+					localizeLabel=false
 					selected=entry.isSelected()
 					value=entry.getLanguageId()
 				/>

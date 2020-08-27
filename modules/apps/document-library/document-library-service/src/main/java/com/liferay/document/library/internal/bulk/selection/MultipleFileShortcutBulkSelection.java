@@ -22,11 +22,9 @@ import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
 
 import java.util.Map;
 
@@ -38,10 +36,9 @@ public class MultipleFileShortcutBulkSelection
 
 	public MultipleFileShortcutBulkSelection(
 		long[] fileShortcutIds, Map<String, String[]> parameterMap,
-		ResourceBundleLoader resourceBundleLoader, Language language,
 		DLAppService dlAppService) {
 
-		super(fileShortcutIds, parameterMap, resourceBundleLoader, language);
+		super(fileShortcutIds, parameterMap);
 
 		_dlAppService = dlAppService;
 	}
@@ -64,15 +61,15 @@ public class MultipleFileShortcutBulkSelection
 		try {
 			return _dlAppService.getFileShortcut(fileShortcutId);
 		}
-		catch (NoSuchFolderException nsfe) {
+		catch (NoSuchFolderException noSuchFolderException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(nsfe, nsfe);
+				_log.warn(noSuchFolderException, noSuchFolderException);
 			}
 
 			return null;
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 

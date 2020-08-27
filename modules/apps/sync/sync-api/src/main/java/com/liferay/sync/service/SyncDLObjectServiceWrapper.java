@@ -16,8 +16,6 @@ package com.liferay.sync.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SyncDLObjectService}.
  *
@@ -25,9 +23,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SyncDLObjectService
  * @generated
  */
-@ProviderType
 public class SyncDLObjectServiceWrapper
-	implements SyncDLObjectService, ServiceWrapper<SyncDLObjectService> {
+	implements ServiceWrapper<SyncDLObjectService>, SyncDLObjectService {
 
 	public SyncDLObjectServiceWrapper(SyncDLObjectService syncDLObjectService) {
 		_syncDLObjectService = syncDLObjectService;

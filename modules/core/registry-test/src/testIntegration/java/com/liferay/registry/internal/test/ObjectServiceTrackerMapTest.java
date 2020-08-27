@@ -101,7 +101,7 @@ public class ObjectServiceTrackerMapTest {
 
 				Assert.fail();
 			}
-			catch (NullPointerException npe) {
+			catch (NullPointerException nullPointerException) {
 			}
 
 			serviceRegistration1.unregister();
@@ -455,7 +455,8 @@ public class ObjectServiceTrackerMapTest {
 
 				Assert.fail();
 			}
-			catch (UnsupportedOperationException uoe) {
+			catch (UnsupportedOperationException
+						unsupportedOperationException) {
 			}
 
 			serviceRegistration1.unregister();
@@ -515,9 +516,8 @@ public class ObjectServiceTrackerMapTest {
 	}
 
 	protected RegistryWrapper getRegistryWrapper() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		RegistryWrapper registryWrapper = new RegistryWrapper(registry);
+		RegistryWrapper registryWrapper = new RegistryWrapper(
+			RegistryUtil.getRegistry());
 
 		RegistryUtil.setRegistry(registryWrapper);
 

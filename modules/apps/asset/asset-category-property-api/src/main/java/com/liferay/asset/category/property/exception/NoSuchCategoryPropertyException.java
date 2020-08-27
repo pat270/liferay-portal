@@ -16,12 +16,9 @@ package com.liferay.asset.category.property.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchCategoryPropertyException extends NoSuchModelException {
 
 	public NoSuchCategoryPropertyException() {
@@ -31,12 +28,12 @@ public class NoSuchCategoryPropertyException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchCategoryPropertyException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchCategoryPropertyException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchCategoryPropertyException(Throwable cause) {
-		super(cause);
+	public NoSuchCategoryPropertyException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.osgi.web.wab.generator.internal;
 
+import com.liferay.portal.file.install.FileInstaller;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
@@ -49,8 +50,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.servlet.ServletContext;
-
-import org.apache.felix.fileinstall.ArtifactUrlTransformer;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -91,7 +90,7 @@ public class WabGenerator
 	}
 
 	@Activate
-	public void start(BundleContext bundleContext) throws Exception {
+	protected void activate(BundleContext bundleContext) throws Exception {
 		registerURLStreamHandlerService(bundleContext);
 
 		registerArtifactUrlTransformer(bundleContext);
@@ -164,7 +163,7 @@ public class WabGenerator
 	}
 
 	@Deactivate
-	public void stop(BundleContext bundleContext) throws Exception {
+	protected void deactivate(BundleContext bundleContext) throws Exception {
 		_serviceRegistration.unregister();
 
 		_serviceRegistration = null;
@@ -214,8 +213,8 @@ public class WabGenerator
 
 	protected void registerArtifactUrlTransformer(BundleContext bundleContext) {
 		_serviceRegistration = bundleContext.registerService(
-			ArtifactUrlTransformer.class,
-			new WarArtifactUrlTransformer(_portalIsReady), null);
+			FileInstaller.class, new WarArtifactUrlTransformer(_portalIsReady),
+			null);
 	}
 
 	protected void registerURLStreamHandlerService(
@@ -270,6 +269,6 @@ public class WabGenerator
 	private Http _http;
 
 	private final AtomicBoolean _portalIsReady = new AtomicBoolean();
-	private ServiceRegistration<ArtifactUrlTransformer> _serviceRegistration;
+	private ServiceRegistration<FileInstaller> _serviceRegistration;
 
 }

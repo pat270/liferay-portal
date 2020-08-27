@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Portal OSGi Web Servlet JSP Compiler
 Bundle-SymbolicName: com.liferay.portal.osgi.web.servlet.jsp.compiler
-Bundle-Version: 5.0.0
+Bundle-Version: 5.0.9
 Import-Package:\
 	com.sun.el;version='[3.0.0,4.0)',\
 	com.sun.el.lang;version='[3.0.0,4.0)',\
@@ -66,4 +66,4 @@ Provide-Capability:\
 	liferay.extender;\
 		liferay.extender="jsp.extender";\
 		version:Version="${Bundle-Version}"
--includeresource: @javax.servlet.jsp.jstl-[0-9]*.jar!/META-INF/*.tld
+-includeresource: @javax.servlet.jsp.jstl-[0-9.]*.jar!/META-INF/*.tld

@@ -1,4 +1,5 @@
 definition {
+
 	var assetType = "Message Boards Thread";
 	var userName = "Test Test";
 
@@ -17,37 +18,41 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
-
-		PortletEntry.publish();
-	}
-
-	macro addCPWithAttachment {
-		LexiconEntry.gotoAdd();
-
-		MenuItem.click(menuItem = "Thread");
-
-		Click(locator1 = "TextInput#SUBJECT");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
 		Type(
-			locator1 = "TextInput#SUBJECT",
-			value1 = "${threadSubject}");
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame(value1 = "relative=top");
 
-		Panel.expandPanel(panel = "Attachments");
+		if (isSet(categoryName)) {
+			Panel.expandPanel(panel = "Categorization");
 
-		AssertElementPresent(locator1 = "Button#SELECT_FILES");
+			AssetCategorization.addCategory(
+				categoryName = "${categoryName}",
+				vocabularyName = "${vocabularyName}");
+		}
 
-		var key_attachmentFileName = "${mbAttachmentFile}";
+		if (isSet(mbAttachmentFile)) {
+			Panel.expandPanel(panel = "Attachments");
 
-		UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
-			locator1 = "TextInput#FILE",
-			value1 = "${mbAttachmentFile}");
+			AssertElementPresent(locator1 = "Button#SELECT_FILES");
+
+			var key_attachmentFileName = "${mbAttachmentFile}";
+
+			UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+				locator1 = "TextInput#FILE",
+				value1 = "${mbAttachmentFile}");
+
+			Pause(locator1 = "3000");
+
+			if (IsNotChecked.isNotCheckedNotVisible(key_fileName = "${mbAttachmentFile}", locator1 = "Checkbox#UPLOAD_FILE_ENTRY")) {
+				Check.checkNotVisible(
+					key_fileName = "${mbAttachmentFile}",
+					locator1 = "Checkbox#UPLOAD_FILE_ENTRY");
+			}
+		}
 
 		PortletEntry.publish();
 	}
@@ -98,21 +103,21 @@ definition {
 			value1 = "${threadSubject}");
 
 		if (isSet(source)) {
-			Click(
-				key_editor = "body",
-				locator1 = "AlloyEditor#EDITOR");
+			Click(locator1 = "CKEditor#TOOLBAR_SOURCE_BUTTON");
 
-			Click(locator1 = "Button#EDITOR_SWITCH");
-
-			Type.sendKeysAceEditor(
-				locator1 = "TextArea#ACE_EDITOR",
+			Type(
+				locator1 = "CKEditor#BODY_FIELD_SOURCE_ON",
 				value1 = "${threadBody}");
 		}
 		else {
-			AlloyEditor.typeEditor(
-				content = "${threadBody}",
-				editor = "body");
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+			Type(
+				locator1 = "CKEditor#BODY",
+				value1 = "${threadBody}");
 		}
+
+		SelectFrame(value1 = "relative=top");
 
 		PortletEntry.publish();
 	}
@@ -128,9 +133,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrame(value1 = "relative=top");
 
 		Panel.expandPanel(panel = "More Settings");
 
@@ -151,13 +160,21 @@ definition {
 			locator1 = "Button#NEW_THREAD",
 			value1 = "New Thread");
 
+		AssertElementPresent.assertElementPresent(locator1 = "TextInput#SUBJECT");
+
+		Click(locator1 = "TextInput#SUBJECT");
+
 		Type(
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrame(value1 = "relative=top");
 
 		Panel.expandPanel(panel = "Attachments");
 
@@ -189,9 +206,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrame(value1 = "relative=top");
 
 		Panel.expandPanel(panel = "Permissions");
 
@@ -215,9 +236,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrameTop();
 
 		Click(locator1 = "Button#SUBMIT_FOR_PUBLICATION");
 
@@ -233,9 +258,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrameTop();
 
 		Click(locator1 = "Button#SUBMIT_FOR_PUBLICATION");
 
@@ -265,9 +294,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrameTop();
 
 		AssertClick(
 			locator1 = "Button#CANCEL",
@@ -285,9 +318,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubjectEdit}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBodyEdit}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBodyEdit}");
+
+		SelectFrameTop();
 
 		AssertClick(
 			locator1 = "Button#CANCEL",
@@ -305,7 +342,7 @@ definition {
 
 		MenuItem.click(menuItem = "Move to Recycle Bin");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
 		AssertElementNotPresent(locator1 = "MessageBoards#THREAD_LIST_THREAD");
 	}
@@ -344,15 +381,13 @@ definition {
 		}
 
 		if (isSet(threadBodyEdit)) {
-			Click(
-				key_editor = "body",
-				locator1 = "AlloyEditor#EDITOR");
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-			AssertElementPresent(locator1 = "AlloyEditor#CONTENT_ADD_BUTTON");
+			Type(
+				locator1 = "CKEditor#BODY",
+				value1 = "${threadBodyEdit}");
 
-			AlloyEditor.typeEditor(
-				content = "${threadBodyEdit}",
-				editor = "body");
+			SelectFrameTop();
 		}
 
 		PortletEntry.publish();
@@ -372,9 +407,13 @@ definition {
 		}
 
 		if (isSet(threadBodyEdit)) {
-			AlloyEditor.typeEditor(
-				content = "${threadBodyEdit}",
-				editor = "body");
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+			Type(
+				locator1 = "CKEditor#BODY",
+				value1 = "${threadBodyEdit}");
+
+			SelectFrameTop();
 		}
 
 		if ("${saveAsDraft}" == "true") {
@@ -544,13 +583,13 @@ definition {
 			locator1 = "Button#SELECT",
 			value1 = "Select");
 
-		Pause(locator1 = "5000");
+		Pause(locator1 = "3000");
 
 		SelectFrame(locator1 = "MessageBoardsSelectCategory#IFRAME");
 
 		AssertClick(
-			locator1 = "MessageBoardsSelectCategory#CATEGORY_TABLE_CHOOSE_BUTTON_2",
-			value1 = "Choose");
+			locator1 = "MessageBoardsSelectCategory#CATEGORY_TABLE_SELECT_BUTTON_2",
+			value1 = "Select");
 
 		if ("${explanationPost}" == "true") {
 			SelectFrame(value1 = "relative=top");
@@ -563,9 +602,11 @@ definition {
 				locator1 = "TextInput#SUBJECT",
 				value1 = "${explanationSubject}");
 
-			AlloyEditor.typeEditor(
-				content = "${explanationBody}",
-				editor = "body");
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+			Type(
+				locator1 = "CKEditor#BODY",
+				value1 = "${explanationBody}");
 		}
 
 		SelectFrame(value1 = "relative=top");
@@ -587,7 +628,7 @@ definition {
 
 		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Move to Recycle Bin");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
 		AssertTextEquals.assertText(
 			locator1 = "Message#EMPTY_INFO",
@@ -606,9 +647,13 @@ definition {
 			key_threadSubject = "${threadSubject}",
 			locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON");
 
-		Type.typeEditor(
-			locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR",
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
 			value1 = "${threadReplyBody}");
+
+		SelectFrame.selectFrameTop();
 
 		PortletEntry.publish();
 
@@ -639,7 +684,7 @@ definition {
 				value1 = "Reply");
 		}
 		else {
-			AssertElementPresent(
+			AssertElementPresent.pauseAssertVisible(
 				key_threadSubject = "${threadSubject}",
 				locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON");
 
@@ -649,9 +694,15 @@ definition {
 				value1 = "Reply");
 		}
 
-		Type.typeEditor(
-			locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR",
+		AssertElementPresent(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
 			value1 = "${threadReplyBody}");
+
+		SelectFrameTop();
 
 		if ("${anonymous}" == "true") {
 			Check(locator1 = "Checkbox#ANONYMOUS");
@@ -677,9 +728,15 @@ definition {
 			locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON",
 			value1 = "Reply");
 
-		Type.typeEditor(
-			locator1 = "MessageBoardsThread#THREAD_REPLY_EDITOR",
+		AssertElementPresent(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
 			value1 = "${threadReplyBody}");
+
+		SelectFrameTop();
 
 		AssertClick(
 			locator1 = "Button#ADVANCED_REPLY",
@@ -741,9 +798,13 @@ definition {
 			locator1 = "TextInput#SUBJECT",
 			value1 = "${threadSubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody}");
+
+		SelectFrameTop();
 
 		AssertClick(
 			locator1 = "Button#SAVE_AS_DRAFT",
@@ -788,9 +849,13 @@ definition {
 			locator1 = "MessageBoardsSplitThread#ADD_EXPLANATION_SUBJECT_FIELD",
 			value1 = "${threadSplitReplySubject}");
 
-		AlloyEditor.typeEditor(
-			content = "${threadSplitReplyBody}",
-			editor = "body");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadSplitReplyBody}");
+
+		SelectFrameTop();
 
 		AssertClick(
 			locator1 = "Button#OK",
@@ -816,7 +881,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		if (IsElementPresent.isVisible(locator1 = "MessageBoards#THREAD_TABLE_ALL_CHECKBOX")) {
@@ -826,14 +890,13 @@ definition {
 				locator1 = "MessageBoardsAdmin#THREADS_RECYCLE_BIN_BUTTON",
 				value1 = "Move to Recycle Bin");
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();
@@ -943,7 +1006,16 @@ definition {
 
 		AssertElementPresent(locator1 = "MessageBoards#THREAD_LIST_VIEWS");
 
-		AssertElementPresent(locator1 = "MessageBoards#THREAD_LIST_ACTIONS");
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "internetexplorer") {
+			AssertElementPresent(
+				key_rowEntry = "${threadSubject}",
+				locator1 = "Icon#ROW_VERTICAL_ELLIPSIS_IE");
+		}
+		else {
+			AssertElementPresent(locator1 = "MessageBoards#THREAD_LIST_ACTIONS");
+		}
 
 		AssertClick(
 			locator1 = "MessageBoards#THREAD_LIST_THREAD",
@@ -1237,8 +1309,6 @@ definition {
 
 		AssetPublisherPortlet.clickAssetTitle(assetTitle = "${threadSubject}");
 
-		AssertVisible(locator1 = "Icon#SHARE");
-
 		AssertTextEquals.assertPartialText(
 			locator1 = "APAsset#ASSET_TITLE_HEADER",
 			value1 = "${threadSubject}");
@@ -1338,7 +1408,11 @@ definition {
 				value1 = "${userName}");
 
 			AssertTextEquals(
-				locator1 = "MessageBoardsThread#MESSAGE_RATING_1_UPVOTE",
+				locator1 = "MessageBoardsThread#MESSAGE_RATING_THUMBS_UP",
+				value1 = "0");
+
+			AssertTextEquals(
+				locator1 = "MessageBoardsThread#MESSAGE_RATING_THUMBS_DOWN",
 				value1 = "0");
 
 			var key_threadBody = "${threadReplyBody}";
@@ -1352,7 +1426,11 @@ definition {
 				value1 = "${userName}");
 
 			AssertTextEquals(
-				locator1 = "MessageBoardsThread#MESSAGE_RATING_2_UPVOTE",
+				locator1 = "MessageBoardsThread#MESSAGE_RATING_THUMBS_UP",
+				value1 = "0");
+
+			AssertTextEquals(
+				locator1 = "MessageBoardsThread#MESSAGE_RATING_THUMBS_DOWN",
 				value1 = "0");
 		}
 
@@ -1530,9 +1608,16 @@ definition {
 
 		var key_userPostNumber = "${userPostNumber}";
 
-		AssertTextEquals(
-			locator1 = "MessageBoardsStatistics#TOP_POSTERS_AUTHOR_POSTS",
-			value1 = "Posts:${userPostNumber}");
+		if ("${userPostNumber}" == "1") {
+			AssertTextEquals(
+				locator1 = "MessageBoardsStatistics#TOP_POSTERS_AUTHOR_POSTS",
+				value1 = "Post: ${userPostNumber}");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "MessageBoardsStatistics#TOP_POSTERS_AUTHOR_POSTS",
+				value1 = "Posts: ${userPostNumber}");
+		}
 
 		AssertElementPresent(locator1 = "MessageBoardsStatistics#TOP_POSTERS_AUTHOR_JOIN_DATE");
 
@@ -1540,7 +1625,6 @@ definition {
 	}
 
 	macro viewWithWorkflowPG {
-		var key_repliesCount = "0";
 		var key_threadBody = "threadBody";
 		var key_threadSubject = "${threadSubject}";
 		var key_userName = "${userName}";
@@ -1604,4 +1688,5 @@ definition {
 			key_assetTitle = "${threadSubject}",
 			locator1 = "AP#ASSET_ABSTRACT_TITLE");
 	}
+
 }

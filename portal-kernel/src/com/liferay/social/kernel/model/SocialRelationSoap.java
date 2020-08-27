@@ -19,20 +19,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class SocialRelationSoap implements Serializable {
 
 	public static SocialRelationSoap toSoapModel(SocialRelation model) {
 		SocialRelationSoap soapModel = new SocialRelationSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setRelationId(model.getRelationId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -98,6 +99,22 @@ public class SocialRelationSoap implements Serializable {
 		setRelationId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public String getUuid() {
 		return _uuid;
 	}
@@ -154,6 +171,8 @@ public class SocialRelationSoap implements Serializable {
 		_type = type;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
 	private long _relationId;
 	private long _companyId;

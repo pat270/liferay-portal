@@ -35,117 +35,6 @@ import java.util.regex.Pattern;
 public class Validator {
 
 	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(boolean boolean1, boolean boolean2) {
-		if (boolean1 == boolean2) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(byte byte1, byte byte2) {
-		if (byte1 == byte2) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(char char1, char char2) {
-		if (char1 == char2) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(double double1, double double2) {
-		if (Double.compare(double1, double2) == 0) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(float float1, float float2) {
-		if (Float.compare(float1, float2) == 0) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(int int1, int int2) {
-		if (int1 == int2) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(long long1, long long2) {
-		if (long1 == long2) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(Object obj1, Object obj2) {
-		if (obj1 == obj2) {
-			return true;
-		}
-		else if ((obj1 == null) || (obj2 == null)) {
-			return false;
-		}
-
-		return obj1.equals(obj2);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static boolean equals(short short1, short short2) {
-		if (short1 == short2) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Returns <code>true</code> if the boolean arrays are equal.
 	 *
 	 * @param  booleanArray1 the first boolean array
@@ -677,8 +566,8 @@ public class Validator {
 			return false;
 		}
 
-		String normalizedPath = path.replace(
-			CharPool.BACK_SLASH, CharPool.SLASH);
+		String normalizedPath = StringUtil.replace(
+			path, CharPool.BACK_SLASH, CharPool.SLASH);
 
 		if (normalizedPath.startsWith(
 				StringPool.DOUBLE_PERIOD.concat(StringPool.SLASH))) {
@@ -983,12 +872,12 @@ public class Validator {
 	 * the rules from {@link #isNotNull(Long)} or {@link #isNotNull(String)} if
 	 * the object is one of these types.
 	 *
-	 * @param  obj the object to check
+	 * @param  object the object to check
 	 * @return <code>true</code> if the object is not <code>null</code>;
 	 *         <code>false</code> otherwise
 	 */
-	public static boolean isNotNull(Object obj) {
-		return !isNull(obj);
+	public static boolean isNotNull(Object object) {
+		return !isNull(object);
 	}
 
 	/**
@@ -1026,18 +915,18 @@ public class Validator {
 	 * rules from {@link #isNull(Long)} or {@link #isNull(String)} if the object
 	 * is one of these types.
 	 *
-	 * @param  obj the object to check
+	 * @param  object the object to check
 	 * @return <code>true</code> if the object is <code>null</code>;
 	 *         <code>false</code> otherwise
 	 */
-	public static boolean isNull(Object obj) {
-		if (obj instanceof Long) {
-			return isNull((Long)obj);
+	public static boolean isNull(Object object) {
+		if (object instanceof Long) {
+			return isNull((Long)object);
 		}
-		else if (obj instanceof String) {
-			return isNull((String)obj);
+		else if (object instanceof String) {
+			return isNull((String)object);
 		}
-		else if (obj == null) {
+		else if (object == null) {
 			return true;
 		}
 
@@ -1166,7 +1055,7 @@ public class Validator {
 
 				return true;
 			}
-			catch (URISyntaxException urise) {
+			catch (URISyntaxException uriSyntaxException) {
 			}
 		}
 
@@ -1209,7 +1098,7 @@ public class Validator {
 
 				return true;
 			}
-			catch (MalformedURLException murle) {
+			catch (MalformedURLException malformedURLException) {
 			}
 		}
 
@@ -1335,8 +1224,8 @@ public class Validator {
 	private static final String _XML_EMPTY = "<root />";
 
 	private static final Pattern _emailAddressPattern = Pattern.compile(
-		"[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@" +
-			"(?:\\w(?:[\\w-]*\\w)?\\.)*\\w(?:[\\w-]*\\w)?");
+		"^[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@" +
+			"(?:\\w(?:[\\w-]*\\w)?\\.)+(\\w(?:[\\w-]*\\w))$");
 	private static final Pattern _ipv4AddressPattern;
 	private static final Pattern _ipv6AddressPattern;
 	private static final Pattern _variableNamePattern = Pattern.compile(

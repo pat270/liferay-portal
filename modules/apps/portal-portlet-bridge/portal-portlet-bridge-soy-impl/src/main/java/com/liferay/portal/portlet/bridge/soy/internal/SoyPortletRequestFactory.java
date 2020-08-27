@@ -16,7 +16,6 @@ package com.liferay.portal.portlet.bridge.soy.internal;
 
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.portlet.LiferayActionRequest;
 import com.liferay.portal.kernel.portlet.LiferayActionResponse;
@@ -45,7 +44,6 @@ import javax.portlet.ResourceResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Bruno Basto
@@ -84,12 +82,11 @@ public class SoyPortletRequestFactory {
 		PortletConfig portletConfig = PortletConfigFactoryUtil.create(
 			_portlet, servletContext);
 
-		PortletContext portletContext = portletConfig.getPortletContext();
-
 		LiferayActionRequest liferayActionRequest = ActionRequestFactory.create(
-			httpServletRequest, _portlet, invokerPortlet, portletContext,
-			resourceRequest.getWindowState(), resourceRequest.getPortletMode(),
-			portletPreferences, themeDisplay.getPlid());
+			httpServletRequest, _portlet, invokerPortlet,
+			portletConfig.getPortletContext(), resourceRequest.getWindowState(),
+			resourceRequest.getPortletMode(), portletPreferences,
+			themeDisplay.getPlid());
 
 		liferayActionRequest.setPortletRequestDispatcherRequest(
 			httpServletRequest);
@@ -104,13 +101,9 @@ public class SoyPortletRequestFactory {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		HttpServletResponse httpServletResponse =
-			PortalUtil.getHttpServletResponse(resourceResponse);
-
-		User user = PortalUtil.getUser(actionRequest);
-
 		return ActionResponseFactory.create(
-			actionRequest, httpServletResponse, user, themeDisplay.getLayout());
+			actionRequest, PortalUtil.getHttpServletResponse(resourceResponse),
+			PortalUtil.getUser(actionRequest), themeDisplay.getLayout());
 	}
 
 	public LiferayRenderRequest createRenderRequest(
@@ -162,10 +155,8 @@ public class SoyPortletRequestFactory {
 			RenderRequest renderRequest, ResourceResponse resourceResponse)
 		throws Exception {
 
-		HttpServletResponse httpServletResponse =
-			PortalUtil.getHttpServletResponse(resourceResponse);
-
-		return RenderResponseFactory.create(renderRequest, httpServletResponse);
+		return RenderResponseFactory.create(
+			PortalUtil.getHttpServletResponse(resourceResponse), renderRequest);
 	}
 
 	private final Portlet _portlet;

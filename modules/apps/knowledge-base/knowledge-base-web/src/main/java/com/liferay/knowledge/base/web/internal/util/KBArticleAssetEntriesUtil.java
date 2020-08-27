@@ -104,12 +104,12 @@ public class KBArticleAssetEntriesUtil {
 			try {
 				AssetTagServiceUtil.getTag(tagId);
 			}
-			catch (PrincipalException pe) {
+			catch (PrincipalException principalException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(principalException, principalException);
 				}
 
 				continue;
@@ -127,8 +127,8 @@ public class KBArticleAssetEntriesUtil {
 
 	public static String getURL(
 			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay,
-			AssetRendererFactory assetRendererFactory,
-			AssetRenderer assetRenderer)
+			AssetRendererFactory<?> assetRendererFactory,
+			AssetRenderer<?> assetRenderer)
 		throws Exception {
 
 		long classPK = assetRenderer.getClassPK();

@@ -14,7 +14,7 @@
 
 package com.liferay.headless.admin.user.internal.odata.entity.v1_0;
 
-import com.liferay.petra.string.CharPool;
+import com.liferay.headless.common.spi.odata.entity.EntityFieldsMapFactory;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.odata.entity.CollectionEntityField;
 import com.liferay.portal.odata.entity.DateTimeEntityField;
@@ -24,9 +24,6 @@ import com.liferay.portal.odata.entity.IdEntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
 
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Javier Gamarra
@@ -34,7 +31,7 @@ import java.util.stream.Stream;
 public class UserAccountEntityModel implements EntityModel {
 
 	public UserAccountEntityModel() {
-		_entityFieldsMap = Stream.of(
+		_entityFieldsMap = EntityFieldsMapFactory.create(
 			new CollectionEntityField(
 				new StringEntityField(
 					"keywords", locale -> "assetTagNames.raw")),
@@ -42,7 +39,6 @@ public class UserAccountEntityModel implements EntityModel {
 				"dateModified",
 				locale -> Field.getSortableFieldName(Field.MODIFIED_DATE),
 				locale -> Field.MODIFIED_DATE),
-			new IdEntityField("id", locale -> Field.USER_ID, String::valueOf),
 			new IdEntityField(
 				"organizationIds", locale -> "organizationIds",
 				String::valueOf),
@@ -58,22 +54,12 @@ public class UserAccountEntityModel implements EntityModel {
 			new StringEntityField(
 				"givenName", locale -> Field.getSortableFieldName("firstName")),
 			new StringEntityField(
-				"jobTitle", locale -> Field.getSortableFieldName("jobTitle"))
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+				"jobTitle", locale -> Field.getSortableFieldName("jobTitle")));
 	}
 
 	@Override
 	public Map<String, EntityField> getEntityFieldsMap() {
 		return _entityFieldsMap;
-	}
-
-	@Override
-	public String getName() {
-		String name = UserAccountEntityModel.class.getName();
-
-		return name.replace(CharPool.PERIOD, CharPool.UNDERLINE);
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

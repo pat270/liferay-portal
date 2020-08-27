@@ -1,0 +1,220 @@
+definition {
+
+	macro addFeed {
+		var key_buttonRowIndexNumber = "${buttonRowIndexNumber}";
+		var key_feedRowIndexNumber = "${feedRowIndexNumber}";
+		var key_feedTitle = "${feedTitle}";
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		if (isSet(buttonRowIndexNumber)) {
+			Click(locator1 = "RSSFeed#FEEDS_ADD_ROW_BUTTON");
+		}
+
+		Type(
+			locator1 = "RSSFeed#FEEDS_TITLE_NAME_FIELD",
+			value1 = "${feedTitle}");
+
+		if ("${feedType}" == "file") {
+			Type(
+				locator1 = "RSSFeed#FEEDS_URL_NAME_FIELD",
+				value1 = "file:////");
+
+			UploadCommonFile(
+				locator1 = "RSSFeed#FEEDS_URL_NAME_FIELD",
+				value1 = "${feedUrlLink}");
+		}
+		else {
+			Type(
+				locator1 = "RSSFeed#FEEDS_URL_NAME_FIELD",
+				value1 = "${feedUrlLink}");
+		}
+	}
+
+	macro changeFeedsOrder {
+		var key_fromRowNumber = "${fromRowNumber}";
+		var key_toRowNumber = "${toRowNumber}";
+
+		DragAndDrop(
+			locator1 = "RSSFeed#FEEDS_1",
+			locator2 = "RSSFeed#FEEDS_2",
+			value1 = "${rowLocation}");
+	}
+
+	macro changeNumberOfEntriesPerFeed {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Navigator.gotoNavTab(navTab = "Display Settings");
+
+		Type(
+			key_fieldLabel = "# of Entries Per Feed",
+			locator1 = "FormFields#NUMBER_FIELD",
+			value1 = "${numberOfEntries}");
+	}
+
+	macro configureFeedDisplayStyle {
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Navigator.gotoNavTab(navTab = "Display Settings");
+
+		Select(
+			locator1 = "Select#DISPLAY_TEMPLATE",
+			value1 = "${feedDisplayStyle}");
+	}
+
+	macro deleteFeed {
+		var key_buttonRowIndexNumber = "${buttonRowIndexNumber}";
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Click(locator1 = "RSSFeed#FEEDS_DELETE_ROW_BUTTON");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "RSSFeed#UNDO_LINK",
+			value1 = "Undo");
+	}
+
+	macro disableShowFeedTitle {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Navigator.gotoNavTab(navTab = "Display Settings");
+
+		Uncheck.uncheckToggleSwitch(
+			locator1 = "RSSFeed#DISPLAY_SETTINGS_SHOW_FEED_TITLE",
+			value1 = "Show Feed Title");
+
+		Uncheck.uncheckToggleSwitch(
+			locator1 = "RSSFeed#DISPLAY_SETTINGS_SHOW_FEED_DESCRIPTION",
+			value1 = "Show Feed Description");
+	}
+
+	macro openFeed {
+		var key_feedTitle = "${feedTitle}";
+
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "RSSFeed#FEEDS_TITLE",
+			value1 = "${feedTitle}");
+
+		SelectWindow(locator1 = "title=Site Page Name 2 - Site Name - ${siteName}");
+	}
+
+	macro updateFeedTime {
+		Type(
+			locator1 = "RSSFeed#FEED_TIME",
+			value1 = "${feedTime}");
+
+		SystemSettings.saveConfiguration();
+	}
+
+	macro viewCorruptScript {
+		AssertTextPresent(value1 = "An error occurred while processing the template.");
+
+		AssertTextPresent(value1 = "Unexpected end of file reached.");
+	}
+
+	macro viewCustomADT {
+		var key_feedContentTitle = "${feedContentTitle}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "RSSFeed#FEEDS_CUSTOM_ADT_TITLE",
+			value1 = "${feedContentTitle}");
+	}
+
+	macro viewDeleteFeed {
+		var key_feedTitle = "${feedTitle}";
+
+		AssertTextNotPresent(
+			locator1 = "RSSFeed#FEEDS_TITLE",
+			value1 = "${feedTitle}");
+	}
+
+	macro viewDisplayFeedTitle {
+		var key_feedTitle = "${feedTitle}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "RSSFeed#FEEDS_TITLE",
+			value1 = "${feedTitle}");
+	}
+
+	macro viewFeedContent {
+		Panel.expandPanel(panel = "${feedEntryTitle}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "RSSFeed#FEEDS_CONTENT",
+			value1 = "${feedEntryContent}");
+	}
+
+	macro viewNavigationDisplayFeedTitle {
+		var key_feedTitle = "${feedTitle}";
+
+		AssertTextEquals(
+			locator1 = "RSSFeed#FEED_NAVIGATION_DISPLAY_STYLE",
+			value1 = "${feedTitle}");
+
+		if ("${navigationNullADT}" == "true") {
+			AssertElementNotPresent(locator1 = "RSSFeed#FEED_PANEL_TOGGLE");
+		}
+	}
+
+	macro viewNoFeedTitle {
+		var key_feedTitle = "${feedTitle}";
+
+		AssertElementNotPresent(locator1 = "RSSFeed#FEEDS_TITLE");
+	}
+
+	macro viewPG {
+		var key_feedRowIndexNumber = "${feedRowIndexNumber}";
+		var key_rowIndexNumber = "${rowIndexNumber}";
+
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertElementPresent(locator1 = "RSSFeed#FEEDS_DEFAULT");
+
+		AssertTextEquals(
+			locator1 = "RSSFeed#FEEDS_TITLE_NAME_FIELD",
+			value1 = "${feedTitle}");
+	}
+
+	macro viewPortletConfigurationInfo {
+		AssertTextEquals(
+			locator1 = "Message#INFO_MAIN_CONTENT",
+			value1 = "This application is not visible to users yet. Select at least one valid rss feed to make it visible.");
+	}
+
+	macro viewUpdateFeedTitle {
+		var key_feedHeading = "${feedHeading}";
+
+		if (isSet(updateFeed)) {
+			Pause(locator1 = "60000");
+
+			Navigator._gotoPage(pageName = "${pageName}");
+		}
+
+		AssertTextEquals(
+			locator1 = "RSSFeed#FEED_PANEL_HEADING",
+			value1 = "${feedHeading}");
+	}
+
+	macro viewWarningMessageDisplay {
+		Button.clickSave();
+
+		Alert.viewRequestFailedToComplete();
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR_1",
+			value1 = "${errorMessage}");
+	}
+
+	macro waitForRSSLoad {
+		AssertVisible(locator1 = "Portlet#H2_HEADER");
+
+		AssertTextEquals(
+			locator1 = "Portlet#H2_HEADER",
+			value1 = "RSS Publisher");
+	}
+
+}

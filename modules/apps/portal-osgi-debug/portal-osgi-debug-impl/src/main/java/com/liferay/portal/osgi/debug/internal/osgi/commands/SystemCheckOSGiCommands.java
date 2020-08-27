@@ -15,6 +15,7 @@
 package com.liferay.portal.osgi.debug.internal.osgi.commands;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
@@ -43,8 +44,12 @@ import org.osgi.util.tracker.ServiceTracker;
 )
 public class SystemCheckOSGiCommands {
 
+	public void check() {
+		_check(true);
+	}
+
 	@Activate
-	public void activate(final BundleContext bundleContext) {
+	protected void activate(final BundleContext bundleContext) {
 		_serviceTracker = new ServiceTracker<>(
 			bundleContext, SystemChecker.class, null);
 
@@ -60,16 +65,14 @@ public class SystemCheckOSGiCommands {
 				bundleContext.getProperty("initial.system.check.enabled"),
 				true)) {
 
+			DependencyManagerSyncUtil.sync();
+
 			if (_log.isInfoEnabled()) {
 				_log.info("Running system check");
 			}
 
 			_check(false);
 		}
-	}
-
-	public void check() {
-		_check(true);
 	}
 
 	@Deactivate

@@ -1,0 +1,93 @@
+definition {
+
+	macro assertFragmentPreview {
+		SelectFrame.selectFrameNoLoading(locator1 = "FragmentEditor#PREVIEW_IFRAME");
+
+		if (isSet(text)) {
+			AssertTextEquals(
+				locator1 = "${fragmentLocator}",
+				value1 = "${text}");
+		}
+		else {
+			AssertElementPresent(locator1 = "${fragmentLocator}");
+		}
+
+		SelectFrame.selectFrameTop();
+	}
+
+	@summary = "Type HTML into the fragment HTML editor using the auto complete feature."
+	macro autocompleteFragmentHTML {
+		FragmentsEditor.typeHtmlEditor(content = "");
+
+		Type.sendKeysAceEditor(
+			locator1 = "FragmentEditor#HTML_EDITOR_CONTENT",
+			value1 = "${htmlSnippet}");
+
+		Click(
+			autocompleteField = "${autocompleteField}",
+			locator1 = "FragmentEditor#AUTOCOMPLETE_FIELD");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "FragmentEditor#HTML_EDITOR_CONTENT",
+			value1 = "${fragmentHTML}");
+	}
+
+	macro gotoCodeTab {
+		Button.click(button = "Code");
+	}
+
+	macro gotoConfigurationTab {
+		Button.click(button = "Configuration");
+	}
+
+	macro publish {
+		PortletEntry.publish();
+	}
+
+	macro typeConfigurationEditor {
+		Type.typeCodeMirrorEditorNoError(
+			locator1 = "FragmentEditor#CONFIGURATION_EDITOR",
+			value1 = "${content}");
+	}
+
+	macro typeCssEditor {
+		Type.typeCodeMirrorEditorNoError(
+			locator1 = "FragmentEditor#CSS_EDITOR",
+			value1 = "${content}");
+	}
+
+	macro typeFileContent {
+		var content = TestCase.getFileContent(fileName = "${fileName}");
+
+		var fileExtension = File.getFileExtension(fileName = "${fileName}");
+
+		if ("${fileExtension}" == "html") {
+			FragmentsEditor.typeHtmlEditor(content = "${content}");
+		}
+		else if ("${fileExtension}" == "css") {
+			FragmentsEditor.typeCssEditor(content = "${content}");
+		}
+		else if ("${fileExtension}" == "js") {
+			FragmentsEditor.typeJsEditor(content = "${content}");
+		}
+		else if ("${fileExtension}" == "json") {
+			FragmentsEditor.typeConfigurationEditor(content = "${content}");
+		}
+		else {
+			fail("Invalid file extension. Expected: html, css, js, or json. Got ${fileExtension}");
+		}
+	}
+
+	macro typeHtmlEditor {
+		Type.typeCodeMirrorEditorNoError(
+			locator1 = "FragmentEditor#HTML_EDITOR",
+			value1 = "${content}");
+	}
+
+	macro typeJsEditor {
+		Type.typeCodeMirrorEditorNoError(
+			locator1 = "FragmentEditor#JS_EDITOR",
+			value1 = "${content}");
+	}
+
+}

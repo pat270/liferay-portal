@@ -16,13 +16,10 @@ package com.liferay.portal.kernel.service.persistence;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PasswordPolicyFinderUtil {
 
 	public static int countByC_N(long companyId, String name) {
@@ -37,18 +34,22 @@ public class PasswordPolicyFinderUtil {
 		filterFindByC_N(
 			long companyId, String name, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.PasswordPolicy> obc) {
+				<com.liferay.portal.kernel.model.PasswordPolicy>
+					orderByComparator) {
 
-		return getFinder().filterFindByC_N(companyId, name, start, end, obc);
+		return getFinder().filterFindByC_N(
+			companyId, name, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.PasswordPolicy>
 		findByC_N(
 			long companyId, String name, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.PasswordPolicy> obc) {
+				<com.liferay.portal.kernel.model.PasswordPolicy>
+					orderByComparator) {
 
-		return getFinder().findByC_N(companyId, name, start, end, obc);
+		return getFinder().findByC_N(
+			companyId, name, start, end, orderByComparator);
 	}
 
 	public static PasswordPolicyFinder getFinder() {

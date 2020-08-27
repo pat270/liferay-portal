@@ -99,10 +99,8 @@ public abstract class BaseFieldQueryBuilderTestCase
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
-					hits -> {
-						DocumentsAssert.assertValues(
-							keywords, hits.getDocs(), getField(), values);
-					});
+					hits -> DocumentsAssert.assertValues(
+						keywords, hits.getDocs(), getField(), values));
 			});
 	}
 
@@ -116,6 +114,22 @@ public abstract class BaseFieldQueryBuilderTestCase
 				long count = indexingTestHelper.searchCount();
 
 				Assert.assertEquals(keywords, size, count);
+			});
+	}
+
+	protected void assertSearchIgnoreRelevance(
+			String keywords, List<String> values)
+		throws Exception {
+
+		assertSearch(
+			indexingTestHelper -> {
+				prepareSearch(indexingTestHelper, keywords);
+
+				indexingTestHelper.search();
+
+				indexingTestHelper.verify(
+					hits -> DocumentsAssert.assertValuesIgnoreRelevance(
+						keywords, hits.getDocs(), getField(), values));
 			});
 	}
 
@@ -169,10 +183,8 @@ public abstract class BaseFieldQueryBuilderTestCase
 				indexingTestHelper.search();
 
 				indexingTestHelper.verify(
-					hits -> {
-						DocumentsAssert.assertCount(
-							keywords, hits.getDocs(), getField(), size);
-					});
+					hits -> DocumentsAssert.assertCount(
+						keywords, hits.getDocs(), getField(), size));
 			});
 	}
 

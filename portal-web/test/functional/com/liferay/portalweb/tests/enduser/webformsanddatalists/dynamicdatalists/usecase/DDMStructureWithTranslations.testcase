@@ -1,5 +1,6 @@
 @component-name = "portal-web-forms-and-data-lists"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Dynamic Data Lists";
@@ -13,7 +14,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP();
@@ -32,7 +32,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP();
@@ -45,7 +44,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 	}
 
@@ -67,19 +65,12 @@ definition {
 	@description = "This is a use case for LPS-69325."
 	@priority = "4"
 	test ViewFieldInputWhenSwitchingTranslations {
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "DDMStructureWithTranslations#ViewFieldInputWhenSwitchingTranslations";
 
 		DDLRecord.addCP();
 
-		DDLRecord.populateFieldText(
-			ddlRecordFieldData = "pt-BR Categoria",
-			fieldName = "Categoria");
-
-		DDLRecord.populateFieldText(
-			ddlRecordFieldData = "pt-BR Pergunta",
-			fieldName = "Pergunta");
-
-		for (var language : list "es-ES,en-US") {
+		for (var language : list "es-ES,en-US,pt-BR") {
 			PortletEntry.changeLocale(locale = "${language}");
 
 			DDLRecord.populateFieldText(
@@ -91,7 +82,7 @@ definition {
 				fieldName = "Pergunta");
 		}
 
-		for (var language : list "pt-BR,en-US,es-ES,") {
+		for (var language : list "pt-BR,en-US,es-ES") {
 			PortletEntry.changeLocale(locale = "${language}");
 
 			FormFields.viewTextValue(
@@ -103,4 +94,5 @@ definition {
 				fieldValue = "${language} Pergunta");
 		}
 	}
+
 }

@@ -18,8 +18,6 @@ import com.liferay.petra.nio.CharsetEncoderUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.HttpUtil;
 
-import java.io.UnsupportedEncodingException;
-
 import java.net.URLEncoder;
 
 import java.nio.charset.CharsetEncoder;
@@ -50,6 +48,23 @@ public class FriendlyURLNormalizerImplTest {
 	@Test
 	public void testNormalizeNull() {
 		Assert.assertEquals(null, _friendlyURLNormalizerImpl.normalize(null));
+	}
+
+	@Test
+	public void testNormalizePercentageWithEncoding() throws Exception {
+		Assert.assertEquals(
+			StringPool.DASH,
+			_friendlyURLNormalizerImpl.normalizeWithEncoding("%"));
+		Assert.assertEquals(
+			"0-", _friendlyURLNormalizerImpl.normalizeWithEncoding("0%"));
+		Assert.assertEquals(
+			"company-grew-100-last-year",
+			_friendlyURLNormalizerImpl.normalizeWithEncoding(
+				"Company grew 100% last year"));
+		Assert.assertEquals(
+			"sample-web-content-title",
+			_friendlyURLNormalizerImpl.normalizeWithEncoding(
+				"Sample Web % Content Title"));
 	}
 
 	@Test
@@ -172,9 +187,7 @@ public class FriendlyURLNormalizerImplTest {
 			"wordnc", _friendlyURLNormalizerImpl.normalize("word\u00F1\u00C7"));
 	}
 
-	private void _testNormalizeWithEncodingUnicode(String s)
-		throws UnsupportedEncodingException {
-
+	private void _testNormalizeWithEncodingUnicode(String s) throws Exception {
 		Assert.assertEquals(
 			URLEncoder.encode(s, StringPool.UTF8),
 			_friendlyURLNormalizerImpl.normalizeWithEncoding(s));

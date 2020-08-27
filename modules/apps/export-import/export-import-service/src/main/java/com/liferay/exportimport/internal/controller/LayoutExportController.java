@@ -29,8 +29,8 @@ import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManager;
+import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
@@ -63,6 +64,7 @@ import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipWriter;
+import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.site.model.adapter.StagedGroup;
 
 import java.io.File;
@@ -72,7 +74,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.time.StopWatch;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -93,7 +94,6 @@ import org.osgi.service.component.annotations.Reference;
 	property = "model.class.name=com.liferay.portal.kernel.model.Layout",
 	service = {ExportImportController.class, LayoutExportController.class}
 )
-@ProviderType
 public class LayoutExportController implements ExportController {
 
 	@Override
@@ -130,14 +130,8 @@ public class LayoutExportController implements ExportController {
 
 			return file;
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			ExportImportThreadLocal.setLayoutExportInProcess(false);
-
-			if (portletDataContext != null) {
-				ZipWriter zipWriter = portletDataContext.getZipWriter();
-
-				zipWriter.umount();
-			}
 
 			_exportImportLifecycleManager.fireExportImportLifecycleEvent(
 				ExportImportLifecycleConstants.EVENT_LAYOUT_EXPORT_FAILED,
@@ -146,9 +140,9 @@ public class LayoutExportController implements ExportController {
 					exportImportConfiguration.getExportImportConfigurationId()),
 				_portletDataContextFactory.clonePortletDataContext(
 					portletDataContext),
-				t);
+				throwable);
 
-			throw t;
+			throw throwable;
 		}
 	}
 
@@ -332,6 +326,8 @@ public class LayoutExportController implements ExportController {
 		_portletExportController.exportAssetLinks(portletDataContext);
 		_portletExportController.exportLocks(portletDataContext);
 
+		portletDataContext.addDeletionSystemEventStagedModelTypes(
+			new StagedModelType(SegmentsExperience.class, Layout.class));
 		portletDataContext.addDeletionSystemEventStagedModelTypes(
 			new StagedModelType(StagedAssetLink.class));
 

@@ -25,29 +25,26 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Company in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class CompanyCacheModel
 	implements CacheModel<Company>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof CompanyCacheModel)) {
+		if (!(object instanceof CompanyCacheModel)) {
 			return false;
 		}
 
-		CompanyCacheModel companyCacheModel = (CompanyCacheModel)obj;
+		CompanyCacheModel companyCacheModel = (CompanyCacheModel)object;
 
 		if ((companyId == companyCacheModel.companyId) &&
 			(mvccVersion == companyCacheModel.mvccVersion)) {
@@ -77,7 +74,7 @@ public class CompanyCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(23);
+		StringBundler sb = new StringBundler(21);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -87,8 +84,6 @@ public class CompanyCacheModel
 		sb.append(accountId);
 		sb.append(", webId=");
 		sb.append(webId);
-		sb.append(", key=");
-		sb.append(key);
 		sb.append(", mx=");
 		sb.append(mx);
 		sb.append(", homeURL=");
@@ -121,13 +116,6 @@ public class CompanyCacheModel
 			companyImpl.setWebId(webId);
 		}
 
-		if (key == null) {
-			companyImpl.setKey("");
-		}
-		else {
-			companyImpl.setKey(key);
-		}
-
 		if (mx == null) {
 			companyImpl.setMx("");
 		}
@@ -151,8 +139,6 @@ public class CompanyCacheModel
 
 		companyImpl.setCompanySecurityBag(_companySecurityBag);
 
-		companyImpl.setKeyObj(_keyObj);
-
 		companyImpl.setVirtualHostname(_virtualHostname);
 
 		return companyImpl;
@@ -168,7 +154,6 @@ public class CompanyCacheModel
 
 		accountId = objectInput.readLong();
 		webId = objectInput.readUTF();
-		key = objectInput.readUTF();
 		mx = objectInput.readUTF();
 		homeURL = objectInput.readUTF();
 
@@ -182,7 +167,6 @@ public class CompanyCacheModel
 
 		_companySecurityBag =
 			(CompanyImpl.CompanySecurityBag)objectInput.readObject();
-		_keyObj = (java.security.Key)objectInput.readObject();
 		_virtualHostname = (String)objectInput.readObject();
 	}
 
@@ -199,13 +183,6 @@ public class CompanyCacheModel
 		}
 		else {
 			objectOutput.writeUTF(webId);
-		}
-
-		if (key == null) {
-			objectOutput.writeUTF("");
-		}
-		else {
-			objectOutput.writeUTF(key);
 		}
 
 		if (mx == null) {
@@ -231,7 +208,6 @@ public class CompanyCacheModel
 		objectOutput.writeBoolean(active);
 
 		objectOutput.writeObject(_companySecurityBag);
-		objectOutput.writeObject(_keyObj);
 		objectOutput.writeObject(_virtualHostname);
 	}
 
@@ -239,7 +215,6 @@ public class CompanyCacheModel
 	public long companyId;
 	public long accountId;
 	public String webId;
-	public String key;
 	public String mx;
 	public String homeURL;
 	public long logoId;
@@ -247,7 +222,6 @@ public class CompanyCacheModel
 	public int maxUsers;
 	public boolean active;
 	public CompanyImpl.CompanySecurityBag _companySecurityBag;
-	public java.security.Key _keyObj;
 	public String _virtualHostname;
 
 }

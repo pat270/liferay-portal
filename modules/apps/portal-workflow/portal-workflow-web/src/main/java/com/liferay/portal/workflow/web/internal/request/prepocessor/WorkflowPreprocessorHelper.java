@@ -14,11 +14,12 @@
 
 package com.liferay.portal.workflow.web.internal.request.prepocessor;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.Portal;
 
@@ -35,11 +36,9 @@ import org.osgi.service.component.annotations.Reference;
 public class WorkflowPreprocessorHelper {
 
 	public String getMVCPathAttributeName(String namespace) {
-		return namespace.concat(
-			StringPool.PERIOD
-		).concat(
-			MVCRenderConstants.MVC_PATH_REQUEST_ATTRIBUTE_NAME
-		);
+		return StringBundler.concat(
+			namespace, StringPool.PERIOD,
+			MVCRenderConstants.MVC_PATH_REQUEST_ATTRIBUTE_NAME);
 	}
 
 	public String getPath(
@@ -75,12 +74,12 @@ public class WorkflowPreprocessorHelper {
 				SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE);
 	}
 
-	public boolean isSessionErrorException(Throwable cause) {
+	public boolean isSessionErrorException(Throwable throwable) {
 		if (_log.isDebugEnabled()) {
-			_log.debug(cause, cause);
+			_log.debug(throwable, throwable);
 		}
 
-		if (cause instanceof PortalException) {
+		if (throwable instanceof PortalException) {
 			return true;
 		}
 

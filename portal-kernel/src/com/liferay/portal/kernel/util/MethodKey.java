@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.Deserializer;
 import com.liferay.portal.kernel.io.Serializer;
@@ -75,16 +76,16 @@ public class MethodKey implements Externalizable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MethodKey)) {
+		if (!(object instanceof MethodKey)) {
 			return false;
 		}
 
-		MethodKey methodKey = (MethodKey)obj;
+		MethodKey methodKey = (MethodKey)object;
 
 		if ((_declaringClass == methodKey._declaringClass) &&
 			Objects.equals(_methodName, methodKey._methodName) &&
@@ -163,7 +164,7 @@ public class MethodKey implements Externalizable {
 			return _toString;
 		}
 
-		StringBundler sb = new StringBundler(4 + _parameterTypes.length * 2);
+		StringBundler sb = new StringBundler(4 + (_parameterTypes.length * 2));
 
 		sb.append(_declaringClass.getName());
 		sb.append(StringPool.PERIOD);

@@ -26,17 +26,24 @@ import com.liferay.bulk.rest.resource.v1_0.TaxonomyCategoryResource;
 import com.liferay.bulk.rest.resource.v1_0.TaxonomyVocabularyResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
-import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.pagination.Page;
 
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLInvokeDetached;
-import graphql.annotations.annotationTypes.GraphQLName;
-
-import java.util.Collection;
+import java.util.function.BiFunction;
 
 import javax.annotation.Generated;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.validation.constraints.NotEmpty;
+
+import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.ComponentServiceObjects;
 
@@ -79,8 +86,8 @@ public class Mutation {
 			taxonomyVocabularyResourceComponentServiceObjects;
 	}
 
-	@GraphQLInvokeDetached
-	public void patchKeywordBatch(
+	@GraphQLField
+	public boolean patchKeywordBatch(
 			@GraphQLName("keywordBulkSelection") KeywordBulkSelection
 				keywordBulkSelection)
 		throws Exception {
@@ -90,10 +97,12 @@ public class Mutation {
 			this::_populateResourceContext,
 			keywordResource -> keywordResource.patchKeywordBatch(
 				keywordBulkSelection));
+
+		return true;
 	}
 
-	@GraphQLInvokeDetached
-	public void putKeywordBatch(
+	@GraphQLField
+	public boolean updateKeywordBatch(
 			@GraphQLName("keywordBulkSelection") KeywordBulkSelection
 				keywordBulkSelection)
 		throws Exception {
@@ -103,11 +112,12 @@ public class Mutation {
 			this::_populateResourceContext,
 			keywordResource -> keywordResource.putKeywordBatch(
 				keywordBulkSelection));
+
+		return true;
 	}
 
 	@GraphQLField
-	@GraphQLInvokeDetached
-	public Collection<Keyword> postKeywordsCommonPage(
+	public java.util.Collection<Keyword> createKeywordsCommonPage(
 			@GraphQLName("documentBulkSelection") DocumentBulkSelection
 				documentBulkSelection)
 		throws Exception {
@@ -124,8 +134,7 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	@GraphQLInvokeDetached
-	public Selection postBulkSelection(
+	public Selection createBulkSelection(
 			@GraphQLName("documentBulkSelection") DocumentBulkSelection
 				documentBulkSelection)
 		throws Exception {
@@ -137,8 +146,8 @@ public class Mutation {
 				documentBulkSelection));
 	}
 
-	@GraphQLInvokeDetached
-	public void patchTaxonomyCategoryBatch(
+	@GraphQLField
+	public boolean patchTaxonomyCategoryBatch(
 			@GraphQLName("taxonomyCategoryBulkSelection")
 				TaxonomyCategoryBulkSelection taxonomyCategoryBulkSelection)
 		throws Exception {
@@ -149,10 +158,12 @@ public class Mutation {
 			taxonomyCategoryResource ->
 				taxonomyCategoryResource.patchTaxonomyCategoryBatch(
 					taxonomyCategoryBulkSelection));
+
+		return true;
 	}
 
-	@GraphQLInvokeDetached
-	public void putTaxonomyCategoryBatch(
+	@GraphQLField
+	public boolean updateTaxonomyCategoryBatch(
 			@GraphQLName("taxonomyCategoryBulkSelection")
 				TaxonomyCategoryBulkSelection taxonomyCategoryBulkSelection)
 		throws Exception {
@@ -163,13 +174,14 @@ public class Mutation {
 			taxonomyCategoryResource ->
 				taxonomyCategoryResource.putTaxonomyCategoryBatch(
 					taxonomyCategoryBulkSelection));
+
+		return true;
 	}
 
 	@GraphQLField
-	@GraphQLInvokeDetached
-	public Collection<TaxonomyVocabulary>
-			postSiteTaxonomyVocabulariesCommonPage(
-				@GraphQLName("siteId") Long siteId,
+	public java.util.Collection<TaxonomyVocabulary>
+			createSiteTaxonomyVocabulariesCommonPage(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
 				@GraphQLName("documentBulkSelection") DocumentBulkSelection
 					documentBulkSelection)
 		throws Exception {
@@ -181,7 +193,7 @@ public class Mutation {
 				Page paginationPage =
 					taxonomyVocabularyResource.
 						postSiteTaxonomyVocabulariesCommonPage(
-							siteId, documentBulkSelection);
+							Long.valueOf(siteKey), documentBulkSelection);
 
 				return paginationPage.getItems();
 			});
@@ -228,35 +240,59 @@ public class Mutation {
 	private void _populateResourceContext(KeywordResource keywordResource)
 		throws Exception {
 
-		keywordResource.setContextCompany(
-			CompanyLocalServiceUtil.getCompany(
-				CompanyThreadLocal.getCompanyId()));
+		keywordResource.setContextAcceptLanguage(_acceptLanguage);
+		keywordResource.setContextCompany(_company);
+		keywordResource.setContextHttpServletRequest(_httpServletRequest);
+		keywordResource.setContextHttpServletResponse(_httpServletResponse);
+		keywordResource.setContextUriInfo(_uriInfo);
+		keywordResource.setContextUser(_user);
+		keywordResource.setGroupLocalService(_groupLocalService);
+		keywordResource.setRoleLocalService(_roleLocalService);
 	}
 
 	private void _populateResourceContext(SelectionResource selectionResource)
 		throws Exception {
 
-		selectionResource.setContextCompany(
-			CompanyLocalServiceUtil.getCompany(
-				CompanyThreadLocal.getCompanyId()));
+		selectionResource.setContextAcceptLanguage(_acceptLanguage);
+		selectionResource.setContextCompany(_company);
+		selectionResource.setContextHttpServletRequest(_httpServletRequest);
+		selectionResource.setContextHttpServletResponse(_httpServletResponse);
+		selectionResource.setContextUriInfo(_uriInfo);
+		selectionResource.setContextUser(_user);
+		selectionResource.setGroupLocalService(_groupLocalService);
+		selectionResource.setRoleLocalService(_roleLocalService);
 	}
 
 	private void _populateResourceContext(
 			TaxonomyCategoryResource taxonomyCategoryResource)
 		throws Exception {
 
-		taxonomyCategoryResource.setContextCompany(
-			CompanyLocalServiceUtil.getCompany(
-				CompanyThreadLocal.getCompanyId()));
+		taxonomyCategoryResource.setContextAcceptLanguage(_acceptLanguage);
+		taxonomyCategoryResource.setContextCompany(_company);
+		taxonomyCategoryResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		taxonomyCategoryResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		taxonomyCategoryResource.setContextUriInfo(_uriInfo);
+		taxonomyCategoryResource.setContextUser(_user);
+		taxonomyCategoryResource.setGroupLocalService(_groupLocalService);
+		taxonomyCategoryResource.setRoleLocalService(_roleLocalService);
 	}
 
 	private void _populateResourceContext(
 			TaxonomyVocabularyResource taxonomyVocabularyResource)
 		throws Exception {
 
-		taxonomyVocabularyResource.setContextCompany(
-			CompanyLocalServiceUtil.getCompany(
-				CompanyThreadLocal.getCompanyId()));
+		taxonomyVocabularyResource.setContextAcceptLanguage(_acceptLanguage);
+		taxonomyVocabularyResource.setContextCompany(_company);
+		taxonomyVocabularyResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		taxonomyVocabularyResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		taxonomyVocabularyResource.setContextUriInfo(_uriInfo);
+		taxonomyVocabularyResource.setContextUser(_user);
+		taxonomyVocabularyResource.setGroupLocalService(_groupLocalService);
+		taxonomyVocabularyResource.setRoleLocalService(_roleLocalService);
 	}
 
 	private static ComponentServiceObjects<KeywordResource>
@@ -267,5 +303,15 @@ public class Mutation {
 		_taxonomyCategoryResourceComponentServiceObjects;
 	private static ComponentServiceObjects<TaxonomyVocabularyResource>
 		_taxonomyVocabularyResourceComponentServiceObjects;
+
+	private AcceptLanguage _acceptLanguage;
+	private com.liferay.portal.kernel.model.Company _company;
+	private GroupLocalService _groupLocalService;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
+	private RoleLocalService _roleLocalService;
+	private BiFunction<Object, String, Sort[]> _sortsBiFunction;
+	private UriInfo _uriInfo;
+	private com.liferay.portal.kernel.model.User _user;
 
 }

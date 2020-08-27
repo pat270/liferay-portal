@@ -17,7 +17,6 @@ package com.liferay.portal.kernel.messaging;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -29,8 +28,11 @@ import java.util.Set;
  * time.
  * </p>
  *
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.messaging.internal.SerialDestination}
  */
+@Deprecated
 public class SerialDestination extends BaseAsyncDestination {
 
 	public SerialDestination() {
@@ -44,8 +46,6 @@ public class SerialDestination extends BaseAsyncDestination {
 
 		final Thread currentThread = Thread.currentThread();
 
-		ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
-
 		Runnable runnable = new MessageRunnable(message) {
 
 			@Override
@@ -57,9 +57,12 @@ public class SerialDestination extends BaseAsyncDestination {
 						try {
 							messageListener.receive(message);
 						}
-						catch (MessageListenerException mle) {
+						catch (MessageListenerException
+									messageListenerException) {
+
 							_log.error(
-								"Unable to process message " + message, mle);
+								"Unable to process message " + message,
+								messageListenerException);
 						}
 					}
 				}
@@ -74,7 +77,7 @@ public class SerialDestination extends BaseAsyncDestination {
 
 		};
 
-		threadPoolExecutor.execute(runnable);
+		execute(runnable);
 	}
 
 	private static final int _WORKERS_CORE_SIZE = 1;

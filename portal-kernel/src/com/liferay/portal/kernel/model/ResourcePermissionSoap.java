@@ -19,21 +19,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.ResourcePermissionServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class ResourcePermissionSoap implements Serializable {
 
 	public static ResourcePermissionSoap toSoapModel(ResourcePermission model) {
 		ResourcePermissionSoap soapModel = new ResourcePermissionSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setResourcePermissionId(model.getResourcePermissionId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setName(model.getName());
@@ -112,6 +112,14 @@ public class ResourcePermissionSoap implements Serializable {
 
 	public void setMvccVersion(long mvccVersion) {
 		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public long getResourcePermissionId() {
@@ -199,6 +207,7 @@ public class ResourcePermissionSoap implements Serializable {
 	}
 
 	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _resourcePermissionId;
 	private long _companyId;
 	private String _name;

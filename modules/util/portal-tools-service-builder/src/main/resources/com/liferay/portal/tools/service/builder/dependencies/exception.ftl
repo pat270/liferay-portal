@@ -2,14 +2,11 @@
 
 package ${apiPackagePath}.exception;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 import com.liferay.portal.kernel.exception.PortalException;
 
 /**
  * @author ${author}
  */
-@ProviderType
 public class ${exception}Exception extends PortalException {
 
 	public ${exception}Exception() {
@@ -19,12 +16,12 @@ public class ${exception}Exception extends PortalException {
 		super(msg);
 	}
 
-	public ${exception}Exception(String msg, Throwable cause) {
-		super(msg, cause);
+	public ${exception}Exception(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public ${exception}Exception(Throwable cause) {
-		super(cause);
+	public ${exception}Exception(Throwable throwable) {
+		super(throwable);
 	}
 
 }

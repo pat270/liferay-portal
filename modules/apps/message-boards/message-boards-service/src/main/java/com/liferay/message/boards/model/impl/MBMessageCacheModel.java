@@ -18,6 +18,7 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,30 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MBMessage in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class MBMessageCacheModel
-	implements CacheModel<MBMessage>, Externalizable {
+	implements CacheModel<MBMessage>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MBMessageCacheModel)) {
+		if (!(object instanceof MBMessageCacheModel)) {
 			return false;
 		}
 
-		MBMessageCacheModel mbMessageCacheModel = (MBMessageCacheModel)obj;
+		MBMessageCacheModel mbMessageCacheModel = (MBMessageCacheModel)object;
 
-		if (messageId == mbMessageCacheModel.messageId) {
+		if ((messageId == mbMessageCacheModel.messageId) &&
+			(mvccVersion == mbMessageCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,30 @@ public class MBMessageCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, messageId);
+		int hashCode = HashUtil.hash(0, messageId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(53);
+		StringBundler sb = new StringBundler(61);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", messageId=");
 		sb.append(messageId);
@@ -94,8 +110,12 @@ public class MBMessageCacheModel
 		sb.append(rootMessageId);
 		sb.append(", parentMessageId=");
 		sb.append(parentMessageId);
+		sb.append(", treePath=");
+		sb.append(treePath);
 		sb.append(", subject=");
 		sb.append(subject);
+		sb.append(", urlSubject=");
+		sb.append(urlSubject);
 		sb.append(", body=");
 		sb.append(body);
 		sb.append(", format=");
@@ -126,6 +146,9 @@ public class MBMessageCacheModel
 	@Override
 	public MBMessage toEntityModel() {
 		MBMessageImpl mbMessageImpl = new MBMessageImpl();
+
+		mbMessageImpl.setMvccVersion(mvccVersion);
+		mbMessageImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			mbMessageImpl.setUuid("");
@@ -167,11 +190,25 @@ public class MBMessageCacheModel
 		mbMessageImpl.setRootMessageId(rootMessageId);
 		mbMessageImpl.setParentMessageId(parentMessageId);
 
+		if (treePath == null) {
+			mbMessageImpl.setTreePath("");
+		}
+		else {
+			mbMessageImpl.setTreePath(treePath);
+		}
+
 		if (subject == null) {
 			mbMessageImpl.setSubject("");
 		}
 		else {
 			mbMessageImpl.setSubject(subject);
+		}
+
+		if (urlSubject == null) {
+			mbMessageImpl.setUrlSubject("");
+		}
+		else {
+			mbMessageImpl.setUrlSubject(urlSubject);
 		}
 
 		if (body == null) {
@@ -223,7 +260,12 @@ public class MBMessageCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		messageId = objectInput.readLong();
@@ -248,8 +290,10 @@ public class MBMessageCacheModel
 		rootMessageId = objectInput.readLong();
 
 		parentMessageId = objectInput.readLong();
+		treePath = objectInput.readUTF();
 		subject = objectInput.readUTF();
-		body = objectInput.readUTF();
+		urlSubject = objectInput.readUTF();
+		body = (String)objectInput.readObject();
 		format = objectInput.readUTF();
 
 		anonymous = objectInput.readBoolean();
@@ -270,6 +314,10 @@ public class MBMessageCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -307,6 +355,13 @@ public class MBMessageCacheModel
 
 		objectOutput.writeLong(parentMessageId);
 
+		if (treePath == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(treePath);
+		}
+
 		if (subject == null) {
 			objectOutput.writeUTF("");
 		}
@@ -314,11 +369,18 @@ public class MBMessageCacheModel
 			objectOutput.writeUTF(subject);
 		}
 
-		if (body == null) {
+		if (urlSubject == null) {
 			objectOutput.writeUTF("");
 		}
 		else {
-			objectOutput.writeUTF(body);
+			objectOutput.writeUTF(urlSubject);
+		}
+
+		if (body == null) {
+			objectOutput.writeObject("");
+		}
+		else {
+			objectOutput.writeObject(body);
 		}
 
 		if (format == null) {
@@ -351,6 +413,8 @@ public class MBMessageCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long messageId;
 	public long groupId;
@@ -365,7 +429,9 @@ public class MBMessageCacheModel
 	public long threadId;
 	public long rootMessageId;
 	public long parentMessageId;
+	public String treePath;
 	public String subject;
+	public String urlSubject;
 	public String body;
 	public String format;
 	public boolean anonymous;

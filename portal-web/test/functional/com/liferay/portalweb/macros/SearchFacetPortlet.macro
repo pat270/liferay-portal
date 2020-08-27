@@ -1,12 +1,7 @@
 definition {
-	macro checkFacet {
-		Check(
-			checkboxName = "${facetValueName}",
-			locator1 = "Checkbox#ANY_CHECKBOX");
 
-		AssertChecked(
-			checkboxName = "${facetValueName}",
-			locator1 = "Checkbox#ANY_CHECKBOX");
+	macro checkFacet {
+		FormFields.enableCheckbox(fieldName = "${facetValueName}");
 	}
 
 	macro checkFacetAndViewURL {
@@ -158,7 +153,7 @@ definition {
 		var facetValue = StringUtil.replace("${facetValue}", " ", "%20");
 		var facetGroupList = "${facetGroup}";
 
-		while (!("${facetValueFound}" == "true")) {
+		while ("${facetValueFound}" != "true") {
 			var facetKeyValuePair = RegexUtil.replace("${facetGroupList}", "(&[^&]+)(.*)", "1");
 
 			if (contains("${facetKeyValuePair}", "${facetValue}")) {
@@ -196,21 +191,39 @@ definition {
 			var facetValueFound = "true";
 		}
 
-		if (!("${facetValueFound}" == "true")) {
+		if ("${facetValueFound}" != "true") {
 			fail("Facet Type value name has not been set correctly.");
 		}
 
 		return "${facetTypeValue}";
 	}
 
-	macro uncheckFacet {
-		Uncheck(
-			checkboxName = "${facetValueName}",
-			locator1 = "Checkbox#ANY_CHECKBOX");
+	macro moveAssetTypesToAvailable {
+		Portlet.gotoPortletOptions(
+			portletName = "Type Facet",
+			portletOption = "Configuration");
 
-		AssertNotChecked(
-			checkboxName = "${facetValueName}",
-			locator1 = "Checkbox#ANY_CHECKBOX");
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		for (var assetType : list "${assetType}") {
+			AssertClick(
+				locator1 = "Search#TYPE_FACET_CURRENT_ASSET_TYPE",
+				value1 = "${assetType}");
+
+			Click(locator1 = "Button#MOVE_CURRENT_TO_AVAILABLE");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Search#TYPE_FACET_AVAILABLE_ASSET_TYPE",
+				value1 = "${assetType}");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro uncheckFacet {
+		FormFields.disableCheckbox(fieldName = "${facetValueName}");
 	}
 
 	macro uncheckFacetAndViewURL {
@@ -227,4 +240,50 @@ definition {
 
 		return "${searchURL}";
 	}
+
+	macro updateFacetConfiguration {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		SelectFrameTop();
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (isSet(displayTemplate)) {
+			Select(
+				key_fieldLabel = "Display Template",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${displayTemplate}");
+		}
+
+		if (isSet(parameterName)) {
+			FormFields.editText(
+				fieldName = "parameterName",
+				fieldValue = "${parameterName}");
+		}
+
+		if (isSet(maxTerms)) {
+			FormFields.editText(
+				fieldName = "maxTerms",
+				fieldValue = "${maxTerms}");
+		}
+
+		if (isSet(frequencyThreshold)) {
+			FormFields.editText(
+				fieldName = "frequencyThreshold",
+				fieldValue = "${frequencyThreshold}");
+		}
+
+		if ("${displayFrequencies}" == "disable") {
+			FormFields.disableCheckbox(fieldName = "frequenciesVisible");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
 }

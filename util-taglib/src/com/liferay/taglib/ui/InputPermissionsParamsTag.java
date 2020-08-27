@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
@@ -104,13 +104,13 @@ public class InputPermissionsParamsTag extends TagSupport {
 					guestChecked = false;
 				}
 
-				if (group.isOrganization() || group.isRegularSite()) {
-					if (groupChecked) {
-						sb.append(StringPool.AMPERSAND);
-						sb.append(renderResponse.getNamespace());
-						sb.append("groupPermissions=");
-						sb.append(URLCodec.encodeURL(action));
-					}
+				if ((group.isOrganization() || group.isRegularSite()) &&
+					groupChecked) {
+
+					sb.append(StringPool.AMPERSAND);
+					sb.append(renderResponse.getNamespace());
+					sb.append("groupPermissions=");
+					sb.append(URLCodec.encodeURL(action));
 				}
 
 				if (guestChecked) {
@@ -131,8 +131,8 @@ public class InputPermissionsParamsTag extends TagSupport {
 
 			return sb.toString();
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 
@@ -199,8 +199,8 @@ public class InputPermissionsParamsTag extends TagSupport {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

@@ -17,13 +17,11 @@
 <%@ include file="/init.jsp" %>
 
 <%
-LayoutPortletsDisplayContext layoutPortletsDisplayContext = new LayoutPortletsDisplayContext(renderRequest, renderResponse, request);
-
-LayoutPortletsManagementToolbarDisplayContext layoutPortletsManagementToolbarDisplayContext = new LayoutPortletsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, layoutPortletsDisplayContext);
+LayoutPortletsDisplayContext layoutPortletsDisplayContext = new LayoutPortletsDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= layoutPortletsManagementToolbarDisplayContext %>"
+	displayContext="<%= new LayoutPortletsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, layoutPortletsDisplayContext) %>"
 />
 
 <aui:form action="" cssClass="container-fluid-1280" name="fm">

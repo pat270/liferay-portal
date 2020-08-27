@@ -14,6 +14,8 @@
 
 package com.liferay.poshi.runner.selenium;
 
+import com.liferay.poshi.runner.exception.ElementNotFoundPoshiRunnerException;
+
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -38,8 +40,8 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 		try {
 			super.click(locator);
 		}
-		catch (WebDriverException wde) {
-			String message = wde.getMessage();
+		catch (WebDriverException webDriverException) {
+			String message = webDriverException.getMessage();
 
 			Matcher matcher = _elementNotClickableErrorPattern.matcher(message);
 
@@ -49,7 +51,8 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 				return;
 			}
 
-			throw new ElementNotInteractableException(message, wde);
+			throw new ElementNotInteractableException(
+				message, webDriverException);
 		}
 	}
 
@@ -60,8 +63,8 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 		try {
 			super.clickAt(locator, coordString, scrollIntoView);
 		}
-		catch (WebDriverException wde) {
-			String message = wde.getMessage();
+		catch (WebDriverException webDriverException) {
+			String message = webDriverException.getMessage();
 
 			Matcher matcher = _elementNotClickableErrorPattern.matcher(message);
 
@@ -71,7 +74,8 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 				return;
 			}
 
-			throw new ElementNotInteractableException(message, wde);
+			throw new ElementNotInteractableException(
+				message, webDriverException);
 		}
 	}
 
@@ -105,8 +109,8 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 		try {
 			super.typeKeys(locator, value);
 		}
-		catch (WebDriverException wde) {
-			String message = wde.getMessage();
+		catch (WebDriverException webDriverException) {
+			String message = webDriverException.getMessage();
 
 			Matcher matcher = _cannotFocusElementErrorPattern.matcher(message);
 
@@ -118,21 +122,26 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 				return;
 			}
 
-			throw new ElementNotInteractableException(message, wde);
+			throw new ElementNotInteractableException(
+				message, webDriverException);
 		}
 	}
 
+	@Override
 	protected WebElement getWebElement(String locator, String timeout) {
 		try {
 			return super.getWebElement(locator, timeout);
 		}
-		catch (RuntimeException re) {
+		catch (ElementNotFoundPoshiRunnerException
+					elementNotFoundPoshiRunnerException) {
+
 			_refreshFrameWebElements();
 
-			throw re;
+			throw elementNotFoundPoshiRunnerException;
 		}
 	}
 
+	@Override
 	protected List<WebElement> getWebElements(String locator, String timeout) {
 		List<WebElement> webElements = super.getWebElements(locator, timeout);
 
@@ -146,21 +155,21 @@ public class ChromeWebDriverImpl extends BaseWebDriverImpl {
 	private void _refreshFrameWebElements() {
 		Stack<WebElement> frameWebElements = getFrameWebElements();
 
-		if (!frameWebElements.isEmpty()) {
-			if (frameWebElements.peek() instanceof RetryWebElementImpl) {
-				RetryWebElementImpl frameWebElement =
-					(RetryWebElementImpl)frameWebElements.peek();
+		if (!frameWebElements.isEmpty() &&
+			(frameWebElements.peek() instanceof RetryWebElementImpl)) {
 
-				String frameWebElementLocator = frameWebElement.getLocator();
+			RetryWebElementImpl retryWebElementImpl =
+				(RetryWebElementImpl)frameWebElements.peek();
 
-				frameWebElements.pop();
+			String frameWebElementLocator = retryWebElementImpl.getLocator();
 
-				frameWebElements.push(getWebElement(frameWebElementLocator));
+			frameWebElements.pop();
 
-				WebDriver.TargetLocator targetLocator = switchTo();
+			frameWebElements.push(getWebElement(frameWebElementLocator));
 
-				targetLocator.frame(frameWebElements.peek());
-			}
+			WebDriver.TargetLocator targetLocator = switchTo();
+
+			targetLocator.frame(frameWebElements.peek());
 		}
 	}
 

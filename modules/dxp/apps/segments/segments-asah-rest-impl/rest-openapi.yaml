@@ -1,0 +1,176 @@
+components:
+    schemas:
+        Experiment:
+            properties:
+                dateCreated:
+                    format: date-time
+                    readOnly: true
+                    type: string
+                dateModified:
+                    format: date-time
+                    readOnly: true
+                    type: string
+                description:
+                    readOnly: true
+                    type: string
+                id:
+                    readOnly: true
+                    type: string
+                name:
+                    readOnly: true
+                    type: string
+                siteId:
+                    format: int64
+                    readOnly: true
+                    type: integer
+                status:
+                    type: string
+                winnerVariantId:
+                    format: int64
+                    type: integer
+            type: object
+        ExperimentRun:
+            properties:
+                confidenceLevel:
+                    format: double
+                    maximum: 99
+                    minimum: 80
+                    type: number
+                experimentVariants:
+                    items:
+                        $ref: "#/components/schemas/ExperimentVariant"
+                    type: array
+                status:
+                    readOnly: true
+                    type: string
+            required:
+                - confidenceLevel
+                - experimentVariants
+            type: object
+        ExperimentVariant:
+            properties:
+                id:
+                    type: string
+                trafficSplit:
+                    format: double
+                    maximum: 99
+                    minimum: 1
+                    type: number
+            type: object
+        Status:
+            properties:
+                status:
+                    type: string
+                winnerVariantId:
+                    type: string
+            required:
+                - status
+            type: object
+info:
+    description:
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
+        'com.liferay.segments.asah.rest.client', and version '2.0.2'."
+    license:
+        name: "Apache 2.0"
+        url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+    title: "Segments Asah"
+    version: v1.0
+openapi: 3.0.1
+paths:
+    "/experiments/{experimentId}":
+        delete:
+            operationId: deleteExperiment
+            parameters:
+                - in: path
+                  name: experimentId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: {}
+                        application/xml: {}
+                    description:
+                        ""
+            tags: ["Experiment"]
+        get:
+            operationId: getExperiment
+            parameters:
+                - in: path
+                  name: experimentId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Experiment"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Experiment"
+                    description:
+                        ""
+            tags: ["Experiment"]
+    "/experiments/{experimentId}/run":
+        post:
+            operationId: postExperimentRun
+            parameters:
+                - in: path
+                  name: experimentId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ExperimentRun"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/ExperimentRun"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ExperimentRun"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ExperimentRun"
+                    description:
+                        ""
+            tags: ["ExperimentRun"]
+    "/experiments/{experimentId}/status":
+        post:
+            operationId: postExperimentStatus
+            parameters:
+                - in: path
+                  name: experimentId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Status"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/Status"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Experiment"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Experiment"
+                    description:
+                        ""
+            tags: ["Status"]

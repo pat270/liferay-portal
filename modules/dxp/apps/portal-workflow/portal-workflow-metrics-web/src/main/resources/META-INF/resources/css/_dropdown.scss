@@ -1,0 +1,49 @@
+.dropdown .dropdown-item {
+	&.active .custom-control-label-text {
+		color: #272833;
+		font-weight: 600;
+	}
+
+	.custom-control {
+		cursor: pointer;
+	}
+
+	.custom-control-label-text {
+		color: #6b6c7e;
+		font-weight: normal;
+	}
+
+	&.control-hidden {
+		.custom-control-input,
+		.custom-control-label:after,
+		.custom-control-label:before {
+			display: none;
+		}
+
+		.custom-control-label-text {
+			padding-left: 0;
+		}
+	}
+
+	.dropdown-item-description {
+		display: block;
+		font-size: 0.625em;
+		line-height: 1rem;
+		padding-left: 1.7rem;
+	}
+
+	&.with-description {
+		.custom-control-label::after,
+		.custom-control-label::before {
+			margin-top: 0.5rem;
+		}
+	}
+}
+
+.dropdown-menu {
+	z-index: 9999;
+
+	&.custom {
+		max-width: inherit;
+	}
+}

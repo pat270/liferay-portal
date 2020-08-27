@@ -5,19 +5,110 @@
 	<short-name>liferay-data-engine</short-name>
 	<uri>http://liferay.com/tld/data-engine</uri>
 	<tag>
-		<name>data-layout-renderer</name>
-		<tag-class>com.liferay.data.engine.taglib.servlet.taglib.DataLayoutRendererTag</tag-class>
+		<name>data-layout-builder</name>
+		<tag-class>com.liferay.data.engine.taglib.servlet.taglib.DataLayoutBuilderTag</tag-class>
 		<body-content>JSP</body-content>
 		<attribute>
-			<name>dataLayoutId</name>
+			<name>additionalPanels</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.util.List</type>
+		</attribute>
+		<attribute>
+			<name>componentId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>contentType</name>
 			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>dataDefinitionId</name>
+			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.Long</type>
 		</attribute>
 		<attribute>
-			<name>namespace</name>
+			<name>dataLayoutId</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Long</type>
+		</attribute>
+		<attribute>
+			<name>fieldSetContentType</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>groupId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Long</type>
+		</attribute>
+		<attribute>
+			<name>localizable</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<name>namespace</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>scopes</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.util.Set</type>
+		</attribute>
+		<dynamic-attributes>true</dynamic-attributes>
+	</tag>
+	<tag>
+		<name>data-layout-renderer</name>
+		<tag-class>com.liferay.data.engine.taglib.servlet.taglib.DataLayoutRendererTag</tag-class>
+		<body-content>JSP</body-content>
+		<attribute>
+			<name>containerId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>dataDefinitionId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Long</type>
+		</attribute>
+		<attribute>
+			<name>dataLayoutId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Long</type>
+		</attribute>
+		<attribute>
+			<name>dataRecordId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Long</type>
+		</attribute>
+		<attribute>
+			<name>dataRecordValues</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.util.Map</type>
+		</attribute>
+		<attribute>
+			<name>namespace</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>readOnly</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
 		</attribute>
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>

@@ -90,9 +90,8 @@ public class ImageJournalUploadFileEntryHandler
 		}
 
 		String fileName = uploadPortletRequest.getFileName(_PARAMETER_NAME);
-		long size = uploadPortletRequest.getSize(_PARAMETER_NAME);
 
-		_validateFile(fileName, size);
+		_validateFile(fileName, uploadPortletRequest.getSize(_PARAMETER_NAME));
 
 		String contentType = uploadPortletRequest.getContentType(
 			_PARAMETER_NAME);
@@ -148,9 +147,9 @@ public class ImageJournalUploadFileEntryHandler
 
 			return false;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return false;

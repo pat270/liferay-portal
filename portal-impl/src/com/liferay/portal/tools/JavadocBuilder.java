@@ -18,6 +18,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.DocUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.tools.ant.DirectoryScanner;
 
@@ -58,8 +58,8 @@ public class JavadocBuilder {
 		try {
 			new JavadocBuilder(args);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
@@ -627,7 +627,7 @@ public class JavadocBuilder {
 				File file = new File(_BASEDIR + fileName);
 
 				if (file.exists()) {
-					String oldContent = _fileUtil.read(
+					String oldContent = _fileImpl.read(
 						_BASEDIR + fileName + "doc");
 
 					if (_isGenerated(oldContent)) {
@@ -682,7 +682,7 @@ public class JavadocBuilder {
 
 		File file = new File(_BASEDIR + fileName);
 
-		String oldContent = _fileUtil.read(file);
+		String oldContent = _fileImpl.read(file);
 
 		String[] lines = StringUtil.splitLines(oldContent);
 
@@ -735,7 +735,7 @@ public class JavadocBuilder {
 		String newContent = StringUtil.trim(sb.toString());
 
 		if ((oldContent == null) || !oldContent.equals(newContent)) {
-			_fileUtil.write(file, newContent);
+			_fileImpl.write(file, newContent);
 
 			if (log) {
 				System.out.println("Writing " + file);
@@ -751,7 +751,7 @@ public class JavadocBuilder {
 		String oldContent = null;
 
 		if (file.exists()) {
-			oldContent = _fileUtil.read(file);
+			oldContent = _fileImpl.read(file);
 
 			if (_isGenerated(oldContent)) {
 				return;
@@ -763,7 +763,7 @@ public class JavadocBuilder {
 		String newContent = _getJavadocXml(javaClass);
 
 		if ((oldContent == null) || !oldContent.equals(newContent)) {
-			_fileUtil.write(file, newContent.getBytes());
+			_fileImpl.write(file, newContent.getBytes());
 
 			System.out.println("Writing " + file);
 		}
@@ -781,7 +781,7 @@ public class JavadocBuilder {
 		File file = new File(_BASEDIR + fileName);
 
 		if (oldContent == null) {
-			oldContent = _fileUtil.read(file);
+			oldContent = _fileImpl.read(file);
 		}
 
 		String[] lines = StringUtil.splitLines(oldContent);
@@ -793,10 +793,9 @@ public class JavadocBuilder {
 
 		Element rootElement = document.getRootElement();
 
-		Map<Integer, String> commentsMap = new TreeMap<>();
-
-		commentsMap.put(
-			javaClass.getLineNumber(), _getJavaClassComment(rootElement));
+		Map<Integer, String> commentsMap = TreeMapBuilder.put(
+			javaClass.getLineNumber(), _getJavaClassComment(rootElement)
+		).build();
 
 		Map<String, Element> methodElementsMap = new HashMap<>();
 
@@ -860,7 +859,7 @@ public class JavadocBuilder {
 		String newContent = StringUtil.trim(sb.toString());
 
 		if ((oldContent == null) || !oldContent.equals(newContent)) {
-			_fileUtil.write(file, newContent);
+			_fileImpl.write(file, newContent);
 
 			System.out.println("Writing " + file);
 		}
@@ -868,7 +867,7 @@ public class JavadocBuilder {
 
 	private static final String _BASEDIR = "./";
 
-	private static final FileImpl _fileUtil = FileImpl.getInstance();
+	private static final FileImpl _fileImpl = FileImpl.getInstance();
 	private static final SAXReader _saxReader = new SAXReaderImpl();
 
 }

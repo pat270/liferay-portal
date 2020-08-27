@@ -18,12 +18,15 @@ import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
+import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceService;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.SetUtil;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -74,7 +77,12 @@ public class DDMFormTemplateContextFactoryHelperTest extends PowerMockito {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		ddmFormFieldValidation.setExpression("isEmailAddress(Field4)");
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setValue("isEmailAddress(Field4)");
+				}
+			});
 
 		ddmFormField4.setDDMFormFieldValidation(ddmFormFieldValidation);
 
@@ -85,7 +93,7 @@ public class DDMFormTemplateContextFactoryHelperTest extends PowerMockito {
 
 		Set<String> actualEvaluableFieldNames =
 			_ddmFormTemplateContextFactoryHelper.getEvaluableDDMFormFieldNames(
-				ddmForm);
+				ddmForm, new DDMFormLayout());
 
 		Assert.assertEquals(
 			expectedEvaluableFieldNames, actualEvaluableFieldNames);
@@ -127,7 +135,8 @@ public class DDMFormTemplateContextFactoryHelperTest extends PowerMockito {
 		sb.append(", 'input=Field1', 'Field2=output')");
 
 		return new DDMFormRule(
-			"not(equals(getValue('Field1'), 'Option'))", sb.toString());
+			Arrays.asList(sb.toString()),
+			"not(equals(getValue('Field1'), 'Option'))");
 	}
 
 	private static final String _DATA_PROVIDER_INSTANCE_UUID =

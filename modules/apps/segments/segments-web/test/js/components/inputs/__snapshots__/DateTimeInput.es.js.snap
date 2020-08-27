@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DateTimeInput should render now with wrong date 1`] = `
+exports[`DateTimeInput renders now with wrong date 1`] = `
 <DocumentFragment>
   <div
     class="criterion-input date-input"
@@ -15,7 +15,7 @@ exports[`DateTimeInput should render now with wrong date 1`] = `
 </DocumentFragment>
 `;
 
-exports[`DateTimeInput should render type date 1`] = `
+exports[`DateTimeInput renders type date 1`] = `
 <DocumentFragment>
   <div
     class="criterion-input date-input"

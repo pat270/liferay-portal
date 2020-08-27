@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -31,14 +30,13 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Máté Thurzó
  */
-@ProviderType
 public class WorkflowDefinitionLinkUpdateHandlerRegistryUtil {
 
 	public static WorkflowDefinitionLinkUpdateHandler
 		getWorkflowDefinitionLinkUpdateHandler(String modelClassName) {
 
-		return _instance._getWorkflowDefinitionLinkUpdateHandler(
-			modelClassName);
+		return _workflowDefinitionLinkUpdateHandlerRegistryUtil.
+			_getWorkflowDefinitionLinkUpdateHandler(modelClassName);
 	}
 
 	private WorkflowDefinitionLinkUpdateHandlerRegistryUtil() {
@@ -59,7 +57,8 @@ public class WorkflowDefinitionLinkUpdateHandlerRegistryUtil {
 	}
 
 	private static final WorkflowDefinitionLinkUpdateHandlerRegistryUtil
-		_instance = new WorkflowDefinitionLinkUpdateHandlerRegistryUtil();
+		_workflowDefinitionLinkUpdateHandlerRegistryUtil =
+			new WorkflowDefinitionLinkUpdateHandlerRegistryUtil();
 
 	private final BundleContext _bundleContext;
 	private final ServiceTracker

@@ -1,0 +1,50 @@
+.dpt-mapping {
+	.dpt-mapping-label {
+		display: block;
+		font-weight: 400;
+		margin-bottom: 0;
+	}
+
+	.control-label {
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+	}
+
+	.dpt-mapping-input {
+		pointer-events: none;
+	}
+
+	.dpt-mapping-panel-wrapper {
+		position: relative;
+	}
+
+	.dpt-mapping-btn:not([disabled]):not(.disabled).active {
+		background-color: map-get($btn-secondary, bg);
+		color: $purple;
+
+		&:focus,
+		&:hover {
+			background-color: fade_out($purple, 0.9);
+		}
+	}
+
+	.dpt-mapping-panel {
+		max-height: 250px;
+		min-width: 288px;
+		position: absolute;
+		top: 3rem;
+		transform: translateX(-100%) translateX(40px);
+		transition: opacity ease 0.3s;
+	}
+
+	.popover-scrollable {
+		overflow: auto;
+	}
+
+	.dpt-mapping-placeholder {
+		.form-text {
+			margin-bottom: 1.5rem;
+			margin-top: -1.25rem;
+		}
+	}
+}

@@ -18,6 +18,7 @@ import com.liferay.journal.model.JournalFolder;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing JournalFolder in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class JournalFolderCacheModel
-	implements CacheModel<JournalFolder>, Externalizable {
+	implements CacheModel<JournalFolder>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof JournalFolderCacheModel)) {
+		if (!(object instanceof JournalFolderCacheModel)) {
 			return false;
 		}
 
 		JournalFolderCacheModel journalFolderCacheModel =
-			(JournalFolderCacheModel)obj;
+			(JournalFolderCacheModel)object;
 
-		if (folderId == journalFolderCacheModel.folderId) {
+		if ((folderId == journalFolderCacheModel.folderId) &&
+			(mvccVersion == journalFolderCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class JournalFolderCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, folderId);
+		int hashCode = HashUtil.hash(0, folderId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(37);
+		StringBundler sb = new StringBundler(41);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", folderId=");
 		sb.append(folderId);
@@ -111,6 +127,9 @@ public class JournalFolderCacheModel
 	@Override
 	public JournalFolder toEntityModel() {
 		JournalFolderImpl journalFolderImpl = new JournalFolderImpl();
+
+		journalFolderImpl.setMvccVersion(mvccVersion);
+		journalFolderImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			journalFolderImpl.setUuid("");
@@ -201,6 +220,9 @@ public class JournalFolderCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		folderId = objectInput.readLong();
@@ -231,6 +253,10 @@ public class JournalFolderCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -296,6 +322,8 @@ public class JournalFolderCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long folderId;
 	public long groupId;

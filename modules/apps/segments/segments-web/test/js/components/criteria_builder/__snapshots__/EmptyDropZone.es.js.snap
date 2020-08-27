@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`EmptyDropZone should render 1`] = `
+exports[`EmptyDropZone renders 1`] = `
 <DocumentFragment>
   <div
     class="empty-drop-zone-root empty-drop-zone-dashed border-primary rounded"
@@ -11,6 +11,36 @@ exports[`EmptyDropZone should render 1`] = `
       <div
         class="empty-drop-zone-indicator"
       />
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`EmptyDropZone renders illustration when empty contributors 1`] = `
+<DocumentFragment>
+  <div
+    class="empty-drop-zone-root"
+  >
+    <div>
+      <div
+        class="empty-contributors mb-0 p-5 rounded taglib-empty-result-message"
+      >
+        <div
+          class="taglib-empty-result-message-header"
+        />
+        <div
+          class="sheet-text text-center"
+        >
+          <h1
+            class="mb-3 mt-4"
+          >
+            no-x-yet
+          </h1>
+          <p>
+            empty-conditions-message
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </DocumentFragment>

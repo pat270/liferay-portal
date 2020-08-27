@@ -14,6 +14,7 @@
 
 package com.liferay.osgi.log.service.extender.internal;
 
+import com.liferay.petra.log4j.Log4JUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -66,14 +67,14 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 
 		try {
 			_loadLogConfigurations(
-				bundle, "META-INF/osgi-logging.properties", logLevels);
+				bundle, "osgi-logging.properties", logLevels);
 			_loadLogConfigurations(
-				bundle, "META-INF/osgi-logging-ext.properties", logLevels);
+				bundle, "osgi-logging-ext.properties", logLevels);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			_log.error(
 				"Unable to load OSGi logging configurations for " + bundle,
-				ioe);
+				ioException);
 
 			return Collections.emptyMap();
 		}
@@ -85,7 +86,8 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 			Bundle bundle, String resourcePath, Map<String, LogLevel> logLevels)
 		throws IOException {
 
-		Enumeration<URL> enumeration = bundle.getResources(resourcePath);
+		Enumeration<URL> enumeration = bundle.findEntries(
+			"META-INF", resourcePath, false);
 
 		if (enumeration != null) {
 			while (enumeration.hasMoreElements()) {
@@ -103,7 +105,7 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 					try {
 						logLevels.put(name, LogLevel.valueOf(value));
 					}
-					catch (IllegalArgumentException iae) {
+					catch (IllegalArgumentException illegalArgumentException) {
 						if (_log.isWarnEnabled()) {
 							_log.warn(
 								StringBundler.concat(
@@ -183,6 +185,14 @@ public class OSGiLogServiceExtenderBundleActivator implements BundleActivator {
 
 			if (logLevels.isEmpty()) {
 				return null;
+			}
+
+			for (Map.Entry<String, LogLevel> entry : logLevels.entrySet()) {
+				String name = "osgi.logging.".concat(entry.getKey());
+
+				LogLevel logLevel = entry.getValue();
+
+				Log4JUtil.setLevel(name, logLevel.toString(), false);
 			}
 
 			LoggerContext loggerContext = _loggerAdmin.getLoggerContext(

@@ -56,13 +56,13 @@ public class CategorySubscriptionPortletConfigurationIcon
 		String key = "subscribe";
 
 		try {
-			MBCategory category = ActionUtil.getCategory(portletRequest);
+			if (_isSubscribed(
+					portletRequest, ActionUtil.getCategory(portletRequest))) {
 
-			if (_isSubscribed(portletRequest, category)) {
 				key = "unsubscribe";
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return LanguageUtil.get(
@@ -85,7 +85,7 @@ public class CategorySubscriptionPortletConfigurationIcon
 		try {
 			category = ActionUtil.getCategory(portletRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 
@@ -125,13 +125,11 @@ public class CategorySubscriptionPortletConfigurationIcon
 				return false;
 			}
 
-			MBCategory category = ActionUtil.getCategory(portletRequest);
-
 			return _categoryModelResourcePermission.contains(
-				themeDisplay.getPermissionChecker(), category,
-				ActionKeys.SUBSCRIBE);
+				themeDisplay.getPermissionChecker(),
+				ActionUtil.getCategory(portletRequest), ActionKeys.SUBSCRIBE);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

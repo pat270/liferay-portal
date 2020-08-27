@@ -15,10 +15,14 @@
 package com.liferay.segments.internal.security.permission.resource;
 
 import com.liferay.exportimport.kernel.staging.permission.StagingPermission;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionLogic;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.StagedModelPermissionLogic;
+import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.segments.constants.SegmentsConstants;
 import com.liferay.segments.constants.SegmentsPortletKeys;
@@ -41,27 +45,27 @@ import org.osgi.service.component.annotations.Reference;
 public class SegmentsExperienceModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", SegmentsExperience.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<SegmentsExperience>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				SegmentsExperience.class,
 				SegmentsExperience::getSegmentsExperienceId,
 				_segmentsExperienceLocalService::getSegmentsExperience,
 				_portletResourcePermission,
 				(modelResourcePermission, consumer) -> consumer.accept(
-					new StagedModelPermissionLogic<>(
-						_stagingPermission, SegmentsPortletKeys.SEGMENTS,
-						SegmentsExperience::getSegmentsExperienceId))),
+					new StagedModelResourcePermissionLogic(
+						_stagingPermission))),
 			properties);
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -73,9 +77,43 @@ public class SegmentsExperienceModelResourcePermissionRegistrar {
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<SegmentsExperience>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;
+
+	private static class StagedModelResourcePermissionLogic
+		implements ModelResourcePermissionLogic<SegmentsExperience> {
+
+		@Override
+		public Boolean contains(
+				PermissionChecker permissionChecker, String name,
+				SegmentsExperience segmentsExperience, String actionId)
+			throws PortalException {
+
+			if (LayoutPermissionUtil.contains(
+					permissionChecker, segmentsExperience.getClassPK(),
+					ActionKeys.UPDATE)) {
+
+				return true;
+			}
+
+			return _stagingPermission.hasPermission(
+				permissionChecker, segmentsExperience.getGroupId(),
+				SegmentsExperience.class.getName(),
+				segmentsExperience.getSegmentsExperienceId(),
+				SegmentsPortletKeys.SEGMENTS, actionId);
+		}
+
+		private StagedModelResourcePermissionLogic(
+			StagingPermission stagingPermission) {
+
+			_stagingPermission = stagingPermission;
+		}
+
+		private final StagingPermission _stagingPermission;
+
+	}
 
 }

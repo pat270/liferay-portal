@@ -15,9 +15,9 @@
 package com.liferay.application.list;
 
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
-import com.liferay.application.list.util.PanelCategoryServiceReferenceMapper;
+import com.liferay.osgi.service.tracker.collections.ServiceTrackerMapBuilder;
 import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
-import com.liferay.osgi.service.tracker.collections.map.ServiceReferenceMapper;
+import com.liferay.osgi.service.tracker.collections.map.ServiceReferenceMapperFactory;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -92,8 +91,8 @@ public class PanelCategoryRegistry {
 				try {
 					return panelCategory.isShow(permissionChecker, group);
 				}
-				catch (PortalException pe) {
-					_log.error(pe, pe);
+				catch (PortalException portalException) {
+					_log.error(portalException, portalException);
 				}
 
 				return false;
@@ -119,8 +118,8 @@ public class PanelCategoryRegistry {
 					count += notificationsCount;
 				}
 			}
-			catch (PortalException pe) {
-				_log.error(pe, pe);
+			catch (PortalException portalException) {
+				_log.error(portalException, portalException);
 			}
 		}
 
@@ -140,8 +139,8 @@ public class PanelCategoryRegistry {
 					return panelCategory;
 				}
 			}
-			catch (PortalException pe) {
-				_log.error(pe, pe);
+			catch (PortalException portalException) {
+				_log.error(portalException, portalException);
 			}
 		}
 
@@ -163,35 +162,21 @@ public class PanelCategoryRegistry {
 	@Activate
 	protected void activate(final BundleContext bundleContext) {
 		_childPanelCategoriesServiceTrackerMap =
-			ServiceTrackerMapFactory.openMultiValueMap(
-				bundleContext, PanelCategory.class, "(panel.category.key=*)",
-				new PanelCategoryServiceReferenceMapper(),
+			ServiceTrackerMapBuilder.SelectorFactory.newSelector(
+				bundleContext, PanelCategory.class
+			).map(
+				"panel.category.key"
+			).collectMultiValue(
 				Collections.reverseOrder(
-					new PropertyServiceReferenceComparator(
-						"panel.category.order")));
+					new PropertyServiceReferenceComparator<>(
+						"panel.category.order"))
+			).build();
 
 		_panelCategoryServiceTrackerMap =
 			ServiceTrackerMapFactory.openSingleValueMap(
 				bundleContext, PanelCategory.class, null,
-				new ServiceReferenceMapper<String, PanelCategory>() {
-
-					@Override
-					public void map(
-						ServiceReference<PanelCategory> serviceReference,
-						Emitter<String> emitter) {
-
-						PanelCategory panelCategory = bundleContext.getService(
-							serviceReference);
-
-						try {
-							emitter.emit(panelCategory.getKey());
-						}
-						finally {
-							bundleContext.ungetService(serviceReference);
-						}
-					}
-
-				});
+				ServiceReferenceMapperFactory.createFromFunction(
+					bundleContext, PanelCategory::getKey));
 	}
 
 	@Deactivate

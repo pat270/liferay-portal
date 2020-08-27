@@ -56,25 +56,27 @@ public class ProppatchMethodImpl extends BasePropMethodImpl {
 
 			return writeResponseXML(webDAVRequest, props);
 		}
-		catch (InvalidRequestException ire) {
+		catch (InvalidRequestException invalidRequestException) {
 			if (_log.isInfoEnabled()) {
-				_log.info(ire.getMessage(), ire);
+				_log.info(
+					invalidRequestException.getMessage(),
+					invalidRequestException);
 			}
 
 			return HttpServletResponse.SC_BAD_REQUEST;
 		}
-		catch (LockException le) {
+		catch (LockException lockException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(le, le);
+				_log.debug(lockException, lockException);
 			}
 
 			return WebDAVUtil.SC_LOCKED;
 		}
-		catch (Exception e) {
-			throw new WebDAVException(e);
+		catch (Exception exception) {
+			throw new WebDAVException(exception);
 		}
 	}
 
@@ -84,8 +86,6 @@ public class ProppatchMethodImpl extends BasePropMethodImpl {
 		WebDAVStorage storage = webDAVRequest.getWebDAVStorage();
 
 		Resource resource = storage.getResource(webDAVRequest);
-
-		WebDAVProps webDAVProps = null;
 
 		if (resource.getPrimaryKey() <= 0) {
 			if (_log.isWarnEnabled()) {
@@ -108,11 +108,9 @@ public class ProppatchMethodImpl extends BasePropMethodImpl {
 			}
 		}
 
-		webDAVProps = WebDAVPropsLocalServiceUtil.getWebDAVProps(
+		return WebDAVPropsLocalServiceUtil.getWebDAVProps(
 			webDAVRequest.getCompanyId(), resource.getClassName(),
 			resource.getPrimaryKey());
-
-		return webDAVProps;
 	}
 
 	protected Set<QName> processInstructions(WebDAVRequest webDAVRequest)
@@ -210,11 +208,11 @@ public class ProppatchMethodImpl extends BasePropMethodImpl {
 
 			return newProps;
 		}
-		catch (LockException le) {
-			throw le;
+		catch (LockException lockException) {
+			throw lockException;
 		}
-		catch (Exception e) {
-			throw new InvalidRequestException(e);
+		catch (Exception exception) {
+			throw new InvalidRequestException(exception);
 		}
 	}
 

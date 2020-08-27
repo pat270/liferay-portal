@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBCategory
  * @generated
  */
-@ProviderType
 public class MBCategoryWrapper
 	extends BaseModelWrapper<MBCategory>
 	implements MBCategory, ModelWrapper<MBCategory> {
@@ -46,6 +45,8 @@ public class MBCategoryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("categoryId", getCategoryId());
 		attributes.put("groupId", getGroupId());
@@ -58,9 +59,6 @@ public class MBCategoryWrapper
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
 		attributes.put("displayStyle", getDisplayStyle());
-		attributes.put("threadCount", getThreadCount());
-		attributes.put("messageCount", getMessageCount());
-		attributes.put("lastPostDate", getLastPostDate());
 		attributes.put("lastPublishDate", getLastPublishDate());
 		attributes.put("status", getStatus());
 		attributes.put("statusByUserId", getStatusByUserId());
@@ -72,6 +70,18 @@ public class MBCategoryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -142,24 +152,6 @@ public class MBCategoryWrapper
 
 		if (displayStyle != null) {
 			setDisplayStyle(displayStyle);
-		}
-
-		Integer threadCount = (Integer)attributes.get("threadCount");
-
-		if (threadCount != null) {
-			setThreadCount(threadCount);
-		}
-
-		Integer messageCount = (Integer)attributes.get("messageCount");
-
-		if (messageCount != null) {
-			setMessageCount(messageCount);
-		}
-
-		Date lastPostDate = (Date)attributes.get("lastPostDate");
-
-		if (lastPostDate != null) {
-			setLastPostDate(lastPostDate);
 		}
 
 		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
@@ -258,6 +250,16 @@ public class MBCategoryWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this message boards category.
+	 *
+	 * @return the ct collection ID of this message boards category
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the description of this message boards category.
 	 *
 	 * @return the description of this message boards category
@@ -288,16 +290,6 @@ public class MBCategoryWrapper
 	}
 
 	/**
-	 * Returns the last post date of this message boards category.
-	 *
-	 * @return the last post date of this message boards category
-	 */
-	@Override
-	public Date getLastPostDate() {
-		return model.getLastPostDate();
-	}
-
-	/**
 	 * Returns the last publish date of this message boards category.
 	 *
 	 * @return the last publish date of this message boards category
@@ -307,11 +299,6 @@ public class MBCategoryWrapper
 		return model.getLastPublishDate();
 	}
 
-	/**
-	 * Returns the message count of this message boards category.
-	 *
-	 * @return the message count of this message boards category
-	 */
 	@Override
 	public int getMessageCount() {
 		return model.getMessageCount();
@@ -325,6 +312,16 @@ public class MBCategoryWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this message boards category.
+	 *
+	 * @return the mvcc version of this message boards category
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -424,11 +421,6 @@ public class MBCategoryWrapper
 		return model.getStatusDate();
 	}
 
-	/**
-	 * Returns the thread count of this message boards category.
-	 *
-	 * @return the thread count of this message boards category
-	 */
 	@Override
 	public int getThreadCount() {
 		return model.getThreadCount();
@@ -669,6 +661,16 @@ public class MBCategoryWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this message boards category.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards category
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this message boards category.
 	 *
 	 * @param description the description of this message boards category
@@ -699,16 +701,6 @@ public class MBCategoryWrapper
 	}
 
 	/**
-	 * Sets the last post date of this message boards category.
-	 *
-	 * @param lastPostDate the last post date of this message boards category
-	 */
-	@Override
-	public void setLastPostDate(Date lastPostDate) {
-		model.setLastPostDate(lastPostDate);
-	}
-
-	/**
 	 * Sets the last publish date of this message boards category.
 	 *
 	 * @param lastPublishDate the last publish date of this message boards category
@@ -719,16 +711,6 @@ public class MBCategoryWrapper
 	}
 
 	/**
-	 * Sets the message count of this message boards category.
-	 *
-	 * @param messageCount the message count of this message boards category
-	 */
-	@Override
-	public void setMessageCount(int messageCount) {
-		model.setMessageCount(messageCount);
-	}
-
-	/**
 	 * Sets the modified date of this message boards category.
 	 *
 	 * @param modifiedDate the modified date of this message boards category
@@ -736,6 +718,16 @@ public class MBCategoryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this message boards category.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards category
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -829,16 +821,6 @@ public class MBCategoryWrapper
 	}
 
 	/**
-	 * Sets the thread count of this message boards category.
-	 *
-	 * @param threadCount the thread count of this message boards category
-	 */
-	@Override
-	public void setThreadCount(int threadCount) {
-		model.setThreadCount(threadCount);
-	}
-
-	/**
 	 * Sets the user ID of this message boards category.
 	 *
 	 * @param userId the user ID of this message boards category
@@ -876,6 +858,20 @@ public class MBCategoryWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<MBCategory, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<MBCategory, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

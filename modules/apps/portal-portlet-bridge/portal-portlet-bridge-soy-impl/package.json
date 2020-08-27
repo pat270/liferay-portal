@@ -1,19 +1,17 @@
 {
 	"dependencies": {
-		"metal-component": "2.16.8",
+		"frontend-js-web": "*",
 		"metal-dom": "2.16.8",
 		"metal-path-parser": "1.0.4",
-		"metal-promise": "3.0.5",
 		"metal-router": "3.6.3",
 		"metal-state": "2.16.8",
-		"metal-uri": "2.4.0",
-		"senna": "2.7.7"
+		"senna": "2.7.9"
 	},
 	"name": "portal-portlet-bridge-soy-impl",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format"
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix"
 	},
-	"version": "3.0.0"
+	"version": "3.0.13"
 }

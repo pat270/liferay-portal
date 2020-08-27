@@ -1,0 +1,31 @@
+.edit-entry {
+	&.container-fluid {
+		max-width: 808px;
+	}
+
+	.app-builder-form-buttons {
+		padding: 0 1.5rem;
+	}
+
+	.card-body {
+		padding: 24px;
+	}
+
+	.sheet {
+		border: 0;
+		border-radius: 0;
+		padding: 0;
+
+		.ddm-form-builder-app {
+			padding: 0;
+
+			.lfr-ddm-form-page {
+				padding: 0;
+
+				.position-relative.row {
+					margin: 0;
+				}
+			}
+		}
+	}
+}

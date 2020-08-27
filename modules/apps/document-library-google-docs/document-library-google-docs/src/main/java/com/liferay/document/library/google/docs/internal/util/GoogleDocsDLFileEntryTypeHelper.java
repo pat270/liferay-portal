@@ -14,30 +14,18 @@
 
 package com.liferay.document.library.google.docs.internal.util;
 
-import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
+import com.liferay.document.library.google.docs.internal.util.constants.GoogleDocsConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
-import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
-import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
-import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerTracker;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
-import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
-import com.liferay.dynamic.data.mapping.storage.StorageType;
-import com.liferay.dynamic.data.mapping.util.DDM;
-import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringUtil;
-
-import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -50,118 +38,79 @@ import java.util.Map;
 public class GoogleDocsDLFileEntryTypeHelper {
 
 	public GoogleDocsDLFileEntryTypeHelper(
-		Company company, ClassNameLocalService classNameLocalService, DDM ddm,
-		DDMFormDeserializerTracker ddmFormDeserializerTracker,
+		Company company, DefaultDDMStructureHelper defaultDDMStructureHelper,
+		long dlFileEntryMetadataClassNameId,
 		DDMStructureLocalService ddmStructureLocalService,
 		DLFileEntryTypeLocalService dlFileEntryTypeLocalService,
 		UserLocalService userLocalService) {
 
 		_company = company;
-		_classNameLocalService = classNameLocalService;
-		_ddm = ddm;
-		_ddmFormDeserializerTracker = ddmFormDeserializerTracker;
+		_defaultDDMStructureHelper = defaultDDMStructureHelper;
+		_dlFileEntryMetadataClassNameId = dlFileEntryMetadataClassNameId;
 		_ddmStructureLocalService = ddmStructureLocalService;
 		_dlFileEntryTypeLocalService = dlFileEntryTypeLocalService;
 		_userLocalService = userLocalService;
-
-		_dlFileEntryMetadataClassNameId = _classNameLocalService.getClassNameId(
-			DLFileEntryMetadata.class);
 	}
 
-	public DDMStructure addGoogleDocsDDMStructure() throws PortalException {
-		long defaultUserId = _userLocalService.getDefaultUserId(
-			_company.getCompanyId());
-
-		Map<Locale, String> nameMap = new HashMap<>();
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		for (Locale curLocale :
-				LanguageUtil.getAvailableLocales(_company.getCompanyId())) {
-
-			nameMap.put(curLocale, "Google Docs Metadata");
-			descriptionMap.put(curLocale, "Google Docs Metadata");
-		}
-
-		String definition = null;
-
-		try {
-			definition = StringUtil.read(
-				GoogleDocsDLFileEntryTypeHelper.class.getResourceAsStream(
-					"dependencies/ddm_structure_google_docs.xml"));
-		}
-		catch (IOException ioe) {
-			throw new PortalException(ioe);
-		}
-
-		Locale locale = _company.getLocale();
-
-		definition = StringUtil.replace(
-			definition, "[$LOCALE_DEFAULT$]", locale.toString());
-
-		DDMFormDeserializer ddmFormDeserializer =
-			_ddmFormDeserializerTracker.getDDMFormDeserializer("xsd");
-
-		DDMFormDeserializerDeserializeRequest.Builder builder =
-			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(
-				definition);
-
-		DDMFormDeserializerDeserializeResponse
-			ddmFormDeserializerDeserializeResponse =
-				ddmFormDeserializer.deserialize(builder.build());
-
-		DDMForm ddmForm = ddmFormDeserializerDeserializeResponse.getDDMForm();
-
-		DDMFormLayout ddmFormLayout = _ddm.getDefaultDDMFormLayout(ddmForm);
-
-		ServiceContext serviceContext = new ServiceContext();
-
-		serviceContext.setAddGuestPermissions(true);
-		serviceContext.setAddGroupPermissions(true);
-		serviceContext.setScopeGroupId(_company.getGroupId());
-		serviceContext.setUserId(defaultUserId);
-
-		return _ddmStructureLocalService.addStructure(
-			defaultUserId, _company.getGroupId(),
-			DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,
-			_dlFileEntryMetadataClassNameId,
-			GoogleDocsConstants.DDM_STRUCTURE_KEY_GOOGLE_DOCS, nameMap,
-			descriptionMap, ddmForm, ddmFormLayout, StorageType.JSON.toString(),
-			DDMStructureConstants.TYPE_DEFAULT, serviceContext);
-	}
-
-	public DLFileEntryType addGoogleDocsDLFileEntryType()
-		throws PortalException {
-
+	public void addGoogleDocsDLFileEntryType() throws Exception {
 		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
 			_company.getGroupId(), _dlFileEntryMetadataClassNameId,
 			GoogleDocsConstants.DDM_STRUCTURE_KEY_GOOGLE_DOCS);
 
 		if (ddmStructure == null) {
-			ddmStructure = addGoogleDocsDDMStructure();
+			ddmStructure = _addGoogleDocsDDMStructure();
 		}
 
 		List<DLFileEntryType> dlFileEntryTypes =
 			_dlFileEntryTypeLocalService.getFileEntryTypes(
 				ddmStructure.getStructureId());
 
-		if (!dlFileEntryTypes.isEmpty()) {
-			return dlFileEntryTypes.get(0);
+		if (dlFileEntryTypes.isEmpty()) {
+			_addGoogleDocsDLFileEntryType(ddmStructure.getStructureId());
 		}
-
-		return addGoogleDocsDLFileEntryType(ddmStructure.getStructureId());
 	}
 
-	protected DLFileEntryType addGoogleDocsDLFileEntryType(long ddmStructureId)
-		throws PortalException {
+	private DDMStructure _addGoogleDocsDDMStructure() throws Exception {
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGuestPermissions(true);
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setScopeGroupId(_company.getGroupId());
 
 		long defaultUserId = _userLocalService.getDefaultUserId(
 			_company.getCompanyId());
 
-		Map<Locale, String> nameMap = new HashMap<>();
+		serviceContext.setUserId(defaultUserId);
 
-		nameMap.put(
-			LocaleUtil.getDefault(),
-			GoogleDocsConstants.DL_FILE_ENTRY_TYPE_NAME);
+		Class<?> clazz = getClass();
+
+		_defaultDDMStructureHelper.addDDMStructures(
+			defaultUserId, _company.getGroupId(),
+			_dlFileEntryMetadataClassNameId, clazz.getClassLoader(),
+			"com/liferay/document/library/google/docs/internal/util" +
+				"/dependencies/google-docs-metadata-structure.xml",
+			serviceContext);
+
+		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+			_company.getGroupId(), _dlFileEntryMetadataClassNameId,
+			GoogleDocsConstants.DL_FILE_ENTRY_TYPE_KEY);
+
+		ddmStructure.setNameMap(_updateNameMap(ddmStructure.getNameMap()));
+
+		_ddmStructureLocalService.updateDDMStructure(ddmStructure);
+
+		return ddmStructure;
+	}
+
+	private void _addGoogleDocsDLFileEntryType(long ddmStructureId)
+		throws Exception {
+
+		long defaultUserId = _userLocalService.getDefaultUserId(
+			_company.getCompanyId());
+
+		Map<Locale, String> nameMap = HashMapBuilder.put(
+			LocaleUtil.getDefault(), GoogleDocsConstants.DL_FILE_ENTRY_TYPE_NAME
+		).build();
 
 		Map<Locale, String> descriptionMap = new HashMap<>();
 
@@ -172,17 +121,27 @@ public class GoogleDocsDLFileEntryTypeHelper {
 		serviceContext.setScopeGroupId(_company.getGroupId());
 		serviceContext.setUserId(defaultUserId);
 
-		return _dlFileEntryTypeLocalService.addFileEntryType(
+		_dlFileEntryTypeLocalService.addFileEntryType(
 			defaultUserId, _company.getGroupId(),
 			GoogleDocsConstants.DL_FILE_ENTRY_TYPE_KEY, nameMap, descriptionMap,
 			new long[] {ddmStructureId}, serviceContext);
 	}
 
-	private final ClassNameLocalService _classNameLocalService;
+	private Map<Locale, String> _updateNameMap(Map<Locale, String> nameMap) {
+		Map<Locale, String> updatedNameMap = new HashMap<>();
+
+		for (Map.Entry<Locale, String> entry : nameMap.entrySet()) {
+			updatedNameMap.put(
+				entry.getKey(),
+				LanguageUtil.get(entry.getKey(), "google-docs-metadata"));
+		}
+
+		return updatedNameMap;
+	}
+
 	private final Company _company;
-	private final DDM _ddm;
-	private final DDMFormDeserializerTracker _ddmFormDeserializerTracker;
 	private final DDMStructureLocalService _ddmStructureLocalService;
+	private final DefaultDDMStructureHelper _defaultDDMStructureHelper;
 	private final long _dlFileEntryMetadataClassNameId;
 	private final DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
 	private final UserLocalService _userLocalService;

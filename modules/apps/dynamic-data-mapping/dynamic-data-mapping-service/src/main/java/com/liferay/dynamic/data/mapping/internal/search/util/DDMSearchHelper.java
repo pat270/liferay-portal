@@ -17,6 +17,7 @@ package com.liferay.dynamic.data.mapping.internal.search.util;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -30,18 +31,19 @@ import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Rafael Praxedes
@@ -87,6 +89,19 @@ public class DDMSearchHelper {
 		searchContext.setAttribute(Field.DESCRIPTION, description);
 		searchContext.setAttribute(Field.NAME, name);
 		searchContext.setAttribute(Field.STATUS, status);
+
+		try {
+			searchContext.setAttribute(
+				"resourcePermissionName",
+				_ddmPermissionSupport.getStructureModelResourceName(
+					classNameId));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+		}
+
 		searchContext.setAttribute("storageType", storageType);
 		searchContext.setAttribute("type", type);
 		searchContext.setCompanyId(companyId);
@@ -157,6 +172,19 @@ public class DDMSearchHelper {
 		searchContext.setAttribute("language", language);
 		searchContext.setAttribute("mode", mode);
 		searchContext.setAttribute("resourceClassNameId", resourceClassNameId);
+
+		try {
+			searchContext.setAttribute(
+				"resourcePermissionName",
+				_ddmPermissionSupport.getTemplateModelResourceName(
+					resourceClassNameId));
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+		}
+
 		searchContext.setAttribute("type", type);
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);
@@ -211,9 +239,9 @@ public class DDMSearchHelper {
 
 			return models;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
@@ -228,9 +256,9 @@ public class DDMSearchHelper {
 
 			return (int)indexer.searchCount(searchContext);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
@@ -263,21 +291,25 @@ public class DDMSearchHelper {
 		DDMSearchHelper.class);
 
 	private static final Map<String, String> _fieldNameOrderByCols =
-		new HashMap<String, String>() {
-			{
-				put("createDate", Field.CREATE_DATE);
-				put("modifiedDate", Field.MODIFIED_DATE);
-				put("structureId", Field.ENTRY_CLASS_PK);
-				put("templateId", Field.ENTRY_CLASS_PK);
-			}
-		};
+		HashMapBuilder.put(
+			"createDate", Field.CREATE_DATE
+		).put(
+			"modifiedDate", Field.MODIFIED_DATE
+		).put(
+			"structureId", Field.ENTRY_CLASS_PK
+		).put(
+			"templateId", Field.ENTRY_CLASS_PK
+		).build();
 	private static final Map<String, Integer> _fieldNameSortTypes =
-		new HashMap<String, Integer>() {
-			{
-				put(Field.CREATE_DATE, Sort.LONG_TYPE);
-				put(Field.ENTRY_CLASS_PK, Sort.LONG_TYPE);
-				put(Field.MODIFIED_DATE, Sort.LONG_TYPE);
-			}
-		};
+		HashMapBuilder.put(
+			Field.CREATE_DATE, Sort.LONG_TYPE
+		).put(
+			Field.ENTRY_CLASS_PK, Sort.LONG_TYPE
+		).put(
+			Field.MODIFIED_DATE, Sort.LONG_TYPE
+		).build();
+
+	@Reference
+	private DDMPermissionSupport _ddmPermissionSupport;
 
 }

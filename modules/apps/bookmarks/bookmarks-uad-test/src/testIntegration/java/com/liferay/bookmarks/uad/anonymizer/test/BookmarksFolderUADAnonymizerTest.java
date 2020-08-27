@@ -24,7 +24,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
-import com.liferay.user.associated.data.test.util.BaseUADAnonymizerTestCase;
+import com.liferay.user.associated.data.test.util.BaseHasAssetEntryUADAnonymizerTestCase;
 import com.liferay.user.associated.data.test.util.WhenHasStatusByUserIdField;
 
 import java.util.ArrayList;
@@ -39,8 +39,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class BookmarksFolderUADAnonymizerTest
-	extends BaseUADAnonymizerTestCase<BookmarksFolder>
-	implements WhenHasStatusByUserIdField {
+	extends BaseHasAssetEntryUADAnonymizerTestCase<BookmarksFolder>
+	implements WhenHasStatusByUserIdField<BookmarksFolder> {
 
 	@ClassRule
 	@Rule
@@ -83,7 +83,7 @@ public class BookmarksFolderUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<BookmarksFolder> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -100,7 +100,10 @@ public class BookmarksFolderUADAnonymizerTest
 		if ((bookmarksFolder.getUserId() != user.getUserId()) &&
 			!userName.equals(user.getFullName()) &&
 			(bookmarksFolder.getStatusByUserId() != user.getUserId()) &&
-			!statusByUserName.equals(user.getFullName())) {
+			!statusByUserName.equals(user.getFullName()) &&
+			isAssetEntryAutoAnonymized(
+				BookmarksFolder.class.getName(), bookmarksFolder.getFolderId(),
+				user)) {
 
 			return true;
 		}
@@ -126,6 +129,6 @@ public class BookmarksFolderUADAnonymizerTest
 	private final List<BookmarksFolder> _bookmarksFolders = new ArrayList<>();
 
 	@Inject(filter = "component.name=*.BookmarksFolderUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<BookmarksFolder> _uadAnonymizer;
 
 }

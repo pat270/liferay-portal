@@ -48,17 +48,17 @@ public class StringTemplateResource implements TemplateResource {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof StringTemplateResource)) {
+		if (!(object instanceof StringTemplateResource)) {
 			return false;
 		}
 
 		StringTemplateResource stringTemplateResource =
-			(StringTemplateResource)obj;
+			(StringTemplateResource)object;
 
 		if (_templateId.equals(stringTemplateResource._templateId) &&
 			_templateContent.equals(stringTemplateResource._templateContent)) {
@@ -90,7 +90,7 @@ public class StringTemplateResource implements TemplateResource {
 
 	@Override
 	public int hashCode() {
-		return _templateId.hashCode() * 11 + _templateContent.hashCode();
+		return (_templateId.hashCode() * 11) + _templateContent.hashCode();
 	}
 
 	@Override

@@ -34,8 +34,8 @@ int subscriptionsCount = mySubscriptionsManagementToolbarDisplayContext.getTotal
 	showSearch="<%= mySubscriptionsManagementToolbarDisplayContext.isShowSearch() %>"
 />
 
-<div class="container-fluid-1280">
-	<aui:form action="<%= unsubscribeURL %>" method="get" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "unsubscribe();" %>'>
+<clay:container-fluid>
+	<aui:form action="<%= unsubscribeURL %>" method="get" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "unsubscribe();" %>'>
 		<liferay-portlet:renderURLParams varImpl="portletURL" />
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 		<aui:input name="subscriptionIds" type="hidden" />
@@ -67,7 +67,7 @@ int subscriptionsCount = mySubscriptionsManagementToolbarDisplayContext.getTotal
 				>
 
 					<%
-					AssetRenderer assetRenderer = MySubscriptionsUtil.getAssetRenderer(subscription.getClassName(), subscription.getClassPK());
+					AssetRenderer<?> assetRenderer = MySubscriptionsUtil.getAssetRenderer(subscription.getClassName(), subscription.getClassPK());
 
 					String rowURL = null;
 
@@ -111,46 +111,38 @@ int subscriptionsCount = mySubscriptionsManagementToolbarDisplayContext.getTotal
 			</liferay-ui:search-container>
 		</aui:fieldset>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
-	Liferay.provide(
-		window,
-		'<portlet:namespace />displayPopup',
-		function(url, title) {
-			Liferay.Util.Window.getWindow(
-				{
-					dialog: {
-						align: {
-							node: null,
-							points: ['tc', 'tc']
-						},
-						constrain2view: true,
-						cssClass: 'portlet-my-subscription',
-						modal: true,
-						resizable: true,
-						width: 950
-					},
-					title: title,
-					uri: url
-				}
-			);
-		},
-		['liferay-util-window']
-	);
+	window['<portlet:namespace />displayPopup'] = function (url, title) {
+		Liferay.Util.openModal({
+			iframeBodyCssClass: 'portlet-my-subscription',
+			size: 'full-screen',
+			title: title,
+			url: url,
+		});
+	};
 </aui:script>
 
 <aui:script sandbox="<%= true %>">
-	var unsubscribe = function() {
+	var unsubscribe = function () {
 		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
 			form.setAttribute('method', 'post');
 
-			var subscriptionIds = form.querySelector('#<portlet:namespace />subscriptionIds');
+			var subscriptionIds = form.querySelector(
+				'#<portlet:namespace />subscriptionIds'
+			);
 
 			if (subscriptionIds) {
-				subscriptionIds.setAttribute('value', Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds'));
+				subscriptionIds.setAttribute(
+					'value',
+					Liferay.Util.listCheckedExcept(
+						form,
+						'<portlet:namespace />allRowIds'
+					)
+				);
 
 				submitForm(form);
 			}
@@ -158,21 +150,18 @@ int subscriptionsCount = mySubscriptionsManagementToolbarDisplayContext.getTotal
 	};
 
 	var ACTIONS = {
-		'unsubscribe': unsubscribe
+		unsubscribe: unsubscribe,
 	};
 
-	Liferay.componentReady('mySubscriptionsManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'actionItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	Liferay.componentReady('mySubscriptionsManagementToolbar').then(function (
+		managementToolbar
+	) {
+		managementToolbar.on('actionItemClicked', function (event) {
+			var itemData = event.data.item.data;
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action]();
-					}
-				}
-			);
-		}
-	);
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action]();
+			}
+		});
+	});
 </aui:script>

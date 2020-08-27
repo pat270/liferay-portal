@@ -19,7 +19,7 @@
 <%
 UsersDisplayContext usersDisplayContext = new UsersDisplayContext(request, renderRequest, renderResponse);
 
-UsersManagementToolbarDisplayContext usersManagementToolbarDisplayContext = new UsersManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, usersDisplayContext);
+UsersManagementToolbarDisplayContext usersManagementToolbarDisplayContext = new UsersManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, usersDisplayContext);
 
 Role role = usersDisplayContext.getRole();
 %>
@@ -35,7 +35,10 @@ Role role = usersDisplayContext.getRole();
 
 <liferay-ui:error embed="<%= false %>" exception="<%= RequiredUserException.class %>" message="one-or-more-users-were-not-removed-since-they-belong-to-a-user-group" />
 
-<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/user/info_panel" var="sidebarPanelURL">
 		<portlet:param name="groupId" value="<%= String.valueOf(siteMembershipsDisplayContext.getGroupId()) %>" />
 	</liferay-portlet:resourceURL>
@@ -58,6 +61,10 @@ Role role = usersDisplayContext.getRole();
 			<aui:input name="addUserIds" type="hidden" />
 			<aui:input name="roleId" type="hidden" value="<%= (role != null) ? role.getRoleId() : 0 %>" />
 
+			<liferay-ui:breadcrumb
+				showLayout="<%= false %>"
+			/>
+
 			<liferay-ui:membership-policy-error />
 
 			<liferay-ui:search-container
@@ -77,9 +84,9 @@ Role role = usersDisplayContext.getRole();
 
 					boolean selectUsers = false;
 
-					Map<String, Object> rowData = new HashMap<>();
-
-					rowData.put("actions", usersManagementToolbarDisplayContext.getAvailableActions(user2));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", usersManagementToolbarDisplayContext.getAvailableActions(user2)
+					).build();
 
 					row.setData(rowData);
 					%>
@@ -94,7 +101,7 @@ Role role = usersDisplayContext.getRole();
 			</liferay-ui:search-container>
 		</aui:form>
 	</div>
-</div>
+</clay:container-fluid>
 
 <portlet:actionURL name="addGroupUsers" var="addGroupUsersURL">
 	<portlet:param name="redirect" value="<%= currentURL %>" />

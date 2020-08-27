@@ -1,0 +1,102 @@
+definition {
+
+	macro addWithWorkflowPG {
+		PageComment.reply(commentBody = "${commentBody}");
+
+		var key_commentBody = "${commentBody}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#SUCCESS",
+			value1 = "Your request completed successfully.");
+
+		AssertElementPresent(locator1 = "Comments#WORKFLOW_STATUS");
+
+		var key_entryComment = "${commentBody}";
+		var key_userFullName = "${commentAuthor}";
+
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${commentBody}");
+
+		AssertTextEquals(
+			locator1 = "Comments#USER_NAME",
+			value1 = "${commentAuthor}");
+	}
+
+	macro editCommentField {
+		Type.typeEditor(
+			locator1 = "Comments#COMMENT_FIELD",
+			value1 = "${commentBody}");
+	}
+
+	macro reply {
+		PageComment.editCommentField(commentBody = "${commentBody}");
+
+		AssertClick(
+			locator1 = "Button#REPLY",
+			value1 = "Reply");
+	}
+
+	macro tearDownPG {
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			MouseOver(locator1 = "Comments#COMMENT_BODY");
+
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#SUCCESS",
+				value1 = "Your request completed successfully.");
+		}
+	}
+
+	macro viewAsWorkflowAsset {
+		SiteAdmin.viewPortletTitle(portletTitle = "${commentBody}");
+
+		var key_commentBody = "${commentBody}";
+
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_ASSET",
+			value1 = "${commentBody}");
+	}
+
+	macro viewPG {
+		var key_commentBody = "${commentBody}";
+
+		AssertElementNotPresent(locator1 = "Comments#WORKFLOW_STATUS");
+
+		var key_entryComment = "${commentBody}";
+		var key_userFullName = "${commentAuthor}";
+
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${commentBody}");
+
+		AssertTextEquals(
+			locator1 = "Comments#USER_NAME",
+			value1 = "${commentAuthor}");
+	}
+
+	macro viewWithWorkflowPG {
+		var key_commentBody = "${commentBody}";
+
+		AssertTextEquals(
+			locator1 = "Comments#WORKFLOW_STATUS",
+			value1 = "${commentStatus}");
+
+		var key_entryComment = "${commentBody}";
+		var key_userFullName = "${commentAuthor}";
+
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${commentBody}");
+
+		AssertTextEquals(
+			locator1 = "Comments#USER_NAME",
+			value1 = "${commentAuthor}");
+	}
+
+}

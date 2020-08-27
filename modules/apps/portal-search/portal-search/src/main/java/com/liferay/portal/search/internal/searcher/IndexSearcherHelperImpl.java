@@ -41,8 +41,8 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 		try {
 			return _indexSearcherHelper.search(searchContext, query);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
@@ -51,8 +51,8 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 		try {
 			return _indexSearcherHelper.searchCount(searchContext, query);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
@@ -61,8 +61,8 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 		try {
 			return _indexSearcherHelper.spellCheckKeywords(searchContext);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
@@ -73,8 +73,8 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 		try {
 			return _indexSearcherHelper.spellCheckKeywords(searchContext, max);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
@@ -86,21 +86,21 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 			return _indexSearcherHelper.suggestKeywordQueries(
 				searchContext, max);
 		}
-		catch (SearchException se) {
-			throw uncheck(se);
+		catch (SearchException searchException) {
+			throw uncheck(searchException);
 		}
 	}
 
-	protected static RuntimeException uncheck(SearchException se) {
-		if (se.getCause() instanceof RuntimeException) {
-			return (RuntimeException)se.getCause();
+	protected static RuntimeException uncheck(SearchException searchException) {
+		if (searchException.getCause() instanceof RuntimeException) {
+			return (RuntimeException)searchException.getCause();
 		}
 
-		if (se.getCause() != null) {
-			return new RuntimeException(se.getCause());
+		if (searchException.getCause() != null) {
+			return new RuntimeException(searchException.getCause());
 		}
 
-		return new RuntimeException(se);
+		return new RuntimeException(searchException);
 	}
 
 	@Reference

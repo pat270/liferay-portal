@@ -15,8 +15,8 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action;
 
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.CalculateDDMFormRuleActionSerializer;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.DDMFormRuleActionSerializer;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.DDMFormRuleSerializerContext;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleActionSerializer;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
 import com.liferay.petra.lang.HashUtil;
 
 import java.util.Objects;
@@ -36,19 +36,19 @@ public class CalculateDDMFormRuleAction extends DefaultDDMFormRuleAction {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof CalculateDDMFormRuleAction)) {
+		if (!(object instanceof CalculateDDMFormRuleAction)) {
 			return false;
 		}
 
 		CalculateDDMFormRuleAction calculateDDMFormRuleAction =
-			(CalculateDDMFormRuleAction)obj;
+			(CalculateDDMFormRuleAction)object;
 
-		if (super.equals(obj) &&
+		if (super.equals(object) &&
 			Objects.equals(
 				_expression, calculateDDMFormRuleAction._expression)) {
 
@@ -71,13 +71,13 @@ public class CalculateDDMFormRuleAction extends DefaultDDMFormRuleAction {
 
 	@Override
 	public String serialize(
-		DDMFormRuleSerializerContext ddmFormRuleSerializerContext) {
+		SPIDDMFormRuleSerializerContext spiDDMFormRuleSerializerContext) {
 
-		DDMFormRuleActionSerializer ddmFormRuleActionSerializer =
+		SPIDDMFormRuleActionSerializer spiDDMFormRuleActionSerializer =
 			new CalculateDDMFormRuleActionSerializer(this);
 
-		return ddmFormRuleActionSerializer.serialize(
-			ddmFormRuleSerializerContext);
+		return spiDDMFormRuleActionSerializer.serialize(
+			spiDDMFormRuleSerializerContext);
 	}
 
 	public void setExpression(String expression) {

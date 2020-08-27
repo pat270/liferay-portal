@@ -14,12 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the Layout service. Represents a row in the &quot;Layout&quot; database table, with each column mapped to a property of this class.
@@ -33,7 +29,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Layout
  * @generated
  */
-@ProviderType
 public abstract class LayoutBaseImpl extends LayoutModelImpl implements Layout {
 
 	/*
@@ -47,12 +42,7 @@ public abstract class LayoutBaseImpl extends LayoutModelImpl implements Layout {
 			LayoutLocalServiceUtil.addLayout(this);
 		}
 		else {
-			try {
-				LayoutLocalServiceUtil.updateLayout(this);
-			}
-			catch (PortalException pe) {
-				throw new SystemException(pe);
-			}
+			LayoutLocalServiceUtil.updateLayout(this);
 		}
 	}
 

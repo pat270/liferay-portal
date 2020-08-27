@@ -14,13 +14,13 @@
 
 package com.liferay.portal.search.engine.adapter.index;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
-public class CloseIndexRequest implements IndexRequest<CloseIndexResponse> {
+public class CloseIndexRequest
+	extends CrossClusterRequest implements IndexRequest<CloseIndexResponse> {
 
 	public CloseIndexRequest(String... indexNames) {
 		_indexNames = indexNames;
@@ -40,18 +40,6 @@ public class CloseIndexRequest implements IndexRequest<CloseIndexResponse> {
 
 	public IndicesOptions getIndicesOptions() {
 		return _indicesOptions;
-	}
-
-	/**
-	 * @return
-	 * @deprecated As of Judson (7.1.x), with no direct replacement. This method
-	 *             should not be in the parent interface.  Only certain
-	 *             IndexRequests work with mappings.
-	 */
-	@Deprecated
-	@Override
-	public String getMappingName() {
-		return null;
 	}
 
 	public long getTimeout() {

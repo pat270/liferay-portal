@@ -16,6 +16,23 @@
 
 <%@ include file="/process_status/init.jsp" %>
 
-<span class="label label-<%= clayClassPostfix %> process-status" data-qa-id="processResult">
-	<liferay-ui:message key="<%= backgroundTaskStatusLabel %>" />
-</span>
+<%
+String displayType = "info";
+
+if (backgroundTaskStatus == BackgroundTaskConstants.STATUS_FAILED) {
+	displayType = "danger";
+}
+else if (backgroundTaskStatus == BackgroundTaskConstants.STATUS_IN_PROGRESS) {
+	displayType = "warning";
+}
+else if (backgroundTaskStatus == BackgroundTaskConstants.STATUS_SUCCESSFUL) {
+	displayType = "success";
+}
+%>
+
+<clay:label
+	cssClass='<%= "process-status background-task-status-" + backgroundTaskStatusLabel %>'
+	data-qa-id="processResult"
+	displayType="<%= displayType %>"
+	label="<%= backgroundTaskStatusLabel %>"
+/>

@@ -186,23 +186,21 @@ public class PortletConfigurationCSSPortlet extends MVCPortlet {
 			"backgroundImage", StringPool.BLANK
 		);
 
-		JSONObject backgroundPositionLeftJSONObject = JSONUtil.put(
-			"unit", StringPool.BLANK
-		).put(
-			"value", StringPool.BLANK
-		);
-
 		JSONObject backgroundPositionJSONObject = JSONUtil.put(
-			"left", backgroundPositionLeftJSONObject);
-
-		JSONObject backgroundPositionTopJSONObject = JSONUtil.put(
-			"unit", StringPool.BLANK
-		).put(
-			"value", StringPool.BLANK
-		);
+			"left",
+			JSONUtil.put(
+				"unit", StringPool.BLANK
+			).put(
+				"value", StringPool.BLANK
+			));
 
 		backgroundPositionJSONObject.put(
-			"top", backgroundPositionTopJSONObject);
+			"top",
+			JSONUtil.put(
+				"unit", StringPool.BLANK
+			).put(
+				"value", StringPool.BLANK
+			));
 
 		bgDataJSONObject.put(
 			"backgroundPosition", backgroundPositionJSONObject
@@ -518,7 +516,7 @@ public class PortletConfigurationCSSPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.portlet.configuration.css.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.portlet.configuration.css.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

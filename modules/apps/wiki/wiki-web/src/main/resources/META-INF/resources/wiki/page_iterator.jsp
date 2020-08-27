@@ -118,9 +118,9 @@ WikiListPagesDisplayContext wikiListPagesDisplayContext = wikiDisplayContextProv
 String orderByCol = ParamUtil.getString(request, "orderByCol");
 String orderByType = ParamUtil.getString(request, "orderByType");
 
-SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, headerNames, wikiListPagesDisplayContext.getEmptyResultsMessage());
+SearchContainer<WikiPage> searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, headerNames, wikiListPagesDisplayContext.getEmptyResultsMessage());
 
-Map orderableHeaders = new HashMap();
+Map<String, String> orderableHeaders = new HashMap<>();
 
 if (navigation.equals("all-pages") || navigation.equals("categorized-pages") || navigation.equals("tagged-pages")) {
 	orderableHeaders.put("date", "modifiedDate");
@@ -143,7 +143,7 @@ wikiListPagesDisplayContext.populateResultsAndTotal(searchContainer);
 
 List<WikiPage> pages = searchContainer.getResults();
 
-List resultRows = searchContainer.getResultRows();
+List<com.liferay.portal.kernel.dao.search.ResultRow> resultRows = searchContainer.getResultRows();
 
 for (int i = 0; i < pages.size(); i++) {
 	WikiPage curWikiPage = pages.get(i);
@@ -161,7 +161,10 @@ for (int i = 0; i < pages.size(); i++) {
 		}
 
 		rowURL.setParameter("redirect", currentURL);
-		rowURL.setParameter("nodeName", curWikiPage.getNode().getName());
+
+		WikiNode wikiNode = curWikiPage.getNode();
+
+		rowURL.setParameter("nodeName", wikiNode.getName());
 	}
 	else {
 		rowURL.setParameter("mvcRenderCommandName", "/wiki/edit_page");
@@ -267,20 +270,21 @@ for (int i = 0; i < pages.size(); i++) {
 <c:if test='<%= navigation.equals("history") %>'>
 	<aui:script require="metal-dom/src/dom as dom">
 		function <portlet:namespace />initRowsChecked() {
-			var rowIdsNodes = document.querySelectorAll('input[name=<portlet:namespace />rowIds]');
-
-			Array.prototype.forEach.call(
-				rowIdsNodes,
-				function(rowIdsNode, index) {
-					if (index > 1) {
-						rowIdsNode.checked = false;
-					}
-				}
+			var rowIdsNodes = document.querySelectorAll(
+				'input[name=<portlet:namespace />rowIds]'
 			);
+
+			Array.prototype.forEach.call(rowIdsNodes, function (rowIdsNode, index) {
+				if (index > 1) {
+					rowIdsNode.checked = false;
+				}
+			});
 		}
 
 		function <portlet:namespace />updateRowsChecked(element) {
-			var rowsChecked = document.querySelectorAll('input[name=<portlet:namespace />rowIds]:checked');
+			var rowsChecked = document.querySelectorAll(
+				'input[name=<portlet:namespace />rowIds]:checked'
+			);
 
 			if (rowsChecked.length > 2) {
 				var index = 2;
@@ -296,57 +300,70 @@ for (int i = 0; i < pages.size(); i++) {
 		<c:if test="<%= pages.size() > 1 %>">
 
 			<%
-			WikiPage latestWikiPage = (WikiPage)pages.get(1);
+			WikiPage latestWikiPage = pages.get(1);
 			%>
 
 			var compareButton = document.getElementById('<portlet:namespace />compare');
 
-			compareButton.addEventListener(
-				'click',
-				function(event) {
-					<portlet:renderURL var="compareVersionURL">
-						<portlet:param name="mvcRenderCommandName" value="/wiki/compare_versions" />
-						<portlet:param name="backURL" value="<%= currentURL %>" />
-						<portlet:param name="tabs3" value="versions" />
-						<portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" />
-						<portlet:param name="title" value="<%= wikiPage.getTitle() %>" />
-						<portlet:param name="type" value="html" />
-					</portlet:renderURL>
+			compareButton.addEventListener('click', function (event) {
+				<portlet:renderURL var="compareVersionURL">
+					<portlet:param name="mvcRenderCommandName" value="/wiki/compare_versions" />
+					<portlet:param name="backURL" value="<%= currentURL %>" />
+					<portlet:param name="tabs3" value="versions" />
+					<portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" />
+					<portlet:param name="title" value="<%= wikiPage.getTitle() %>" />
+					<portlet:param name="type" value="html" />
+				</portlet:renderURL>
 
-					var uri = '<%= compareVersionURL %>';
+				var uri = '<%= compareVersionURL %>';
 
-					var rowIds = document.querySelectorAll('input[name=<portlet:namespace />rowIds]:checked');
+				var rowIds = document.querySelectorAll(
+					'input[name=<portlet:namespace />rowIds]:checked'
+				);
 
-					if (rowIds.length > 0) {
-						var rowIdsSize = rowIds.length;
+				if (rowIds.length > 0) {
+					var rowIdsSize = rowIds.length;
 
-						if (rowIdsSize === 0 || rowIdsSize === 2) {
-							if (rowIdsSize === 0) {
-								uri = Liferay.Util.addParams('<portlet:namespace />sourceVersion=<%= latestWikiPage.getVersion() %>', uri);
-								uri = Liferay.Util.addParams('<portlet:namespace />targetVersion=<%= wikiPage.getVersion() %>', uri);
-							}
-							else if (rowIdsSize === 2) {
-								uri = Liferay.Util.addParams('<portlet:namespace />sourceVersion=' + rowIds[1].value, uri);
-								uri = Liferay.Util.addParams('<portlet:namespace />targetVersion=' + rowIds[0].value, uri);
-							}
-
-							location.href = uri;
+					if (rowIdsSize === 0 || rowIdsSize === 2) {
+						if (rowIdsSize === 0) {
+							uri = Liferay.Util.addParams(
+								'<portlet:namespace />sourceVersion=<%= latestWikiPage.getVersion() %>',
+								uri
+							);
+							uri = Liferay.Util.addParams(
+								'<portlet:namespace />targetVersion=<%= wikiPage.getVersion() %>',
+								uri
+							);
 						}
+						else if (rowIdsSize === 2) {
+							uri = Liferay.Util.addParams(
+								'<portlet:namespace />sourceVersion=' + rowIds[1].value,
+								uri
+							);
+							uri = Liferay.Util.addParams(
+								'<portlet:namespace />targetVersion=' + rowIds[0].value,
+								uri
+							);
+						}
+
+						location.href = uri;
 					}
 				}
-			);
+			});
 		</c:if>
 
 		<portlet:namespace />initRowsChecked();
 
-		var searchContainer = document.getElementById('<portlet:namespace />ocerSearchContainer');
+		var searchContainer = document.getElementById(
+			'<portlet:namespace />ocerSearchContainer'
+		);
 
 		if (searchContainer) {
 			dom.delegate(
 				searchContainer,
 				'click',
 				'input[name=<portlet:namespace />rowIds]',
-				function(event) {
+				function (event) {
 					<portlet:namespace />updateRowsChecked(event.delegateTarget);
 				}
 			);

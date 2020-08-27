@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.util;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -57,23 +58,22 @@ public class ServiceLoader {
 			Class<S> clazz)
 		throws Exception {
 
-		Enumeration<URL> enu = lookupClassLoader.getResources(
+		Enumeration<URL> enumeration = lookupClassLoader.getResources(
 			"META-INF/services/" + clazz.getName());
 
 		List<S> services = new ArrayList<>();
 
-		while (enu.hasMoreElements()) {
-			URL url = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			URL url = enumeration.nextElement();
 
 			try {
 				_load(services, defineClassLoader, clazz, url);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
-						"Unable to load ", String.valueOf(clazz), " with ",
-						String.valueOf(defineClassLoader)),
-					e);
+						"Unable to load ", clazz, " with ", defineClassLoader),
+					exception);
 			}
 		}
 

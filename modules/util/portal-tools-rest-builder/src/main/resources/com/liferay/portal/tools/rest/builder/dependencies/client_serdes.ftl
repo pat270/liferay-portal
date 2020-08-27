@@ -4,6 +4,10 @@ package ${configYAML.apiPackagePath}.client.serdes.${escapedVersion};
 	import ${configYAML.apiPackagePath}.client.constant.${escapedVersion}.${globalEnumSchemaName};
 </#list>
 
+<#list allExternalSchemas?keys as externalSchemaName>
+	import ${configYAML.apiPackagePath}.client.dto.${escapedVersion}.${externalSchemaName};
+</#list>
+
 <#list allSchemas?keys as schemaName>
 	import ${configYAML.apiPackagePath}.client.dto.${escapedVersion}.${schemaName};
 </#list>
@@ -15,13 +19,12 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -157,7 +160,7 @@ public class ${schemaName}SerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		<#assign
 			enumSchemas = freeMarkerTool.getDTOEnumSchemas(openAPIYAML, schema)
@@ -181,64 +184,24 @@ public class ${schemaName}SerDes {
 				<#assign capitalizedPropertyName = properties[propertyName] />
 			</#if>
 
-			<#if allSchemas[properties[propertyName]]??>
-				if (${schemaVarName}.get${capitalizedPropertyName}() == null) {
-					map.put("${propertyName}", null);
-				}
-				else {
+			if (${schemaVarName}.get${capitalizedPropertyName}() == null) {
+				map.put("${propertyName}", null);
+			}
+			else {
+				<#if allSchemas[properties[propertyName]]??>
 					map.put("${propertyName}", String.valueOf(${schemaVarName}.get${capitalizedPropertyName}()));
-				}
-			<#elseif stringUtil.equals(properties[propertyName], "Date")>
-				map.put("${propertyName}", liferayToJSONDateFormat.format(${schemaVarName}.get${capitalizedPropertyName}()));
-			<#else>
-				if (${schemaVarName}.get${capitalizedPropertyName}() == null) {
-					map.put("${propertyName}", null);
-				}
-				else {
+				<#elseif stringUtil.equals(properties[propertyName], "Date")>
+					map.put("${propertyName}", liferayToJSONDateFormat.format(${schemaVarName}.get${capitalizedPropertyName}()));
+				<#else>
 					map.put("${propertyName}", String.valueOf(${schemaVarName}.get${capitalizedPropertyName}()));
-				}
-			</#if>
+				</#if>
+			}
 		</#list>
 
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class ${schemaName}JSONParser extends BaseJSONParser<${schemaName}> {
+	public static class ${schemaName}JSONParser extends BaseJSONParser<${schemaName}> {
 
 		@Override
 		protected ${schemaName} createDTO() {
@@ -273,6 +236,8 @@ public class ${schemaName}SerDes {
 							toDate((String)jsonParserFieldValue)
 						<#elseif stringUtil.equals(propertyType, "Date[]")>
 							toDates((Object[])jsonParserFieldValue)
+						<#elseif stringUtil.equals(propertyType, "Double")>
+							Double.valueOf((String)jsonParserFieldValue)
 						<#elseif stringUtil.equals(propertyType, "Integer")>
 							Integer.valueOf((String)jsonParserFieldValue)
 						<#elseif stringUtil.equals(propertyType, "Integer[]")>
@@ -282,7 +247,7 @@ public class ${schemaName}SerDes {
 						<#elseif stringUtil.equals(propertyType, "Long[]")>
 							toLongs((Object[])jsonParserFieldValue)
 						<#elseif stringUtil.startsWith(propertyType, "Map<")>
-							${schemaName}SerDes.toMap((String)jsonParserFieldValue)
+							(Map)${schemaName}SerDes.toMap((String)jsonParserFieldValue)
 						<#elseif stringUtil.equals(propertyType, "Number")>
 							Integer.valueOf((String)jsonParserFieldValue)
 						<#elseif stringUtil.equals(propertyType, "Number[]")>
@@ -314,6 +279,75 @@ public class ${schemaName}SerDes {
 				throw new IllegalArgumentException("Unsupported field name " + jsonParserFieldName);
 			}
 		}
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

@@ -22,7 +22,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.trash.TrashHelper;
@@ -37,7 +37,7 @@ import com.liferay.trash.test.util.WhenIsIndexableBaseModel;
 import com.liferay.trash.test.util.WhenIsUpdatableBaseModel;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
-import com.liferay.wiki.util.test.WikiPageTrashHandlerTestUtil;
+import com.liferay.wiki.test.util.WikiPageTrashHandlerTestUtil;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -116,7 +116,7 @@ public class WikiPageTrashHandlerTest
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		super.setUp();
 	}
@@ -187,9 +187,7 @@ public class WikiPageTrashHandlerTest
 	protected String getUniqueTitle(BaseModel<?> baseModel) {
 		WikiPage page = (WikiPage)baseModel;
 
-		String title = page.getTitle();
-
-		return _trashHelper.getOriginalTitle(title);
+		return _trashHelper.getOriginalTitle(page.getTitle());
 	}
 
 	@Override

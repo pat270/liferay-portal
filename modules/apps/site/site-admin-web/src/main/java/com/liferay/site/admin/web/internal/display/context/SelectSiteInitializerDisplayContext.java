@@ -79,7 +79,9 @@ public class SelectSiteInitializerDisplayContext {
 		return _parentGroupId;
 	}
 
-	public SearchContainer getSearchContainer() throws PortalException {
+	public SearchContainer<SiteInitializerItem> getSearchContainer()
+		throws PortalException {
+
 		SearchContainer<SiteInitializerItem>
 			siteInitializerItemSearchContainer = new SearchContainer<>(
 				_renderRequest, _getPortletURL(), null,
@@ -140,10 +142,8 @@ public class SelectSiteInitializerDisplayContext {
 			siteInitializerItems.add(siteInitializerItem);
 		}
 
-		siteInitializerItems = ListUtil.sort(
+		return ListUtil.sort(
 			siteInitializerItems, new SiteInitializerNameComparator(true));
-
-		return siteInitializerItems;
 	}
 
 	private String _backURL;

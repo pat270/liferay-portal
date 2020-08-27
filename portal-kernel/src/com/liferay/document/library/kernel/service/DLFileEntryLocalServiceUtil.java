@@ -16,8 +16,6 @@ package com.liferay.document.library.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the local service utility for DLFileEntry. This utility wraps
  * <code>com.liferay.portlet.documentlibrary.service.impl.DLFileEntryLocalServiceImpl</code> and
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileEntryLocalService
  * @generated
  */
-@ProviderType
 public class DLFileEntryLocalServiceUtil {
 
 	/*
@@ -41,6 +38,10 @@ public class DLFileEntryLocalServiceUtil {
 
 	/**
 	 * Adds the document library file entry to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param dlFileEntry the document library file entry
 	 * @return the document library file entry that was added
@@ -61,14 +62,14 @@ public class DLFileEntryLocalServiceUtil {
 					<String,
 					 com.liferay.dynamic.data.mapping.kernel.DDMFormValues>
 						ddmFormValuesMap,
-				java.io.File file, java.io.InputStream is, long size,
+				java.io.File file, java.io.InputStream inputStream, long size,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().addFileEntry(
 			userId, groupId, repositoryId, folderId, sourceFileName, mimeType,
 			title, description, changeLog, fileEntryTypeId, ddmFormValuesMap,
-			file, is, size, serviceContext);
+			file, inputStream, size, serviceContext);
 	}
 
 	public static com.liferay.document.library.kernel.model.DLFileVersion
@@ -76,22 +77,6 @@ public class DLFileEntryLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().cancelCheckOut(userId, fileEntryId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #checkInFileEntry(long, long, DLVersionNumberIncrease,
-	 String, ServiceContext)}
-	 */
-	@Deprecated
-	public static void checkInFileEntry(
-			long userId, long fileEntryId, boolean majorVersion,
-			String changeLog,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
 	}
 
 	public static void checkInFileEntry(
@@ -201,7 +186,21 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the document library file entry from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param dlFileEntry the document library file entry
 	 * @return the document library file entry that was removed
@@ -215,6 +214,10 @@ public class DLFileEntryLocalServiceUtil {
 
 	/**
 	 * Deletes the document library file entry with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param fileEntryId the primary key of the document library file entry
 	 * @return the document library file entry that was removed
@@ -303,6 +306,12 @@ public class DLFileEntryLocalServiceUtil {
 			repositoryId, folderId, includeTrashedEntries);
 	}
 
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
 		dynamicQuery() {
 
@@ -325,7 +334,7 @@ public class DLFileEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -344,7 +353,7 @@ public class DLFileEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -463,7 +472,7 @@ public class DLFileEntryLocalServiceUtil {
 	 * Returns a range of all the document library file entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library file entries
@@ -570,90 +579,6 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().getExtraSettingsFileEntriesCount();
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
-	 String, boolean)}
-	 */
-	@Deprecated
-	public static java.io.File getFile(
-			long userId, long fileEntryId, String version,
-			boolean incrementCounter)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFile(
-			userId, fileEntryId, version, incrementCounter);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #getFile(long,
-	 String, boolean, int)}
-	 */
-	@Deprecated
-	public static java.io.File getFile(
-			long userId, long fileEntryId, String version,
-			boolean incrementCounter, int increment)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFile(
-			userId, fileEntryId, version, incrementCounter, increment);
-	}
-
-	public static java.io.File getFile(
-			long fileEntryId, String version, boolean incrementCounter)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFile(fileEntryId, version, incrementCounter);
-	}
-
-	public static java.io.File getFile(
-			long fileEntryId, String version, boolean incrementCounter,
-			int increment)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFile(
-			fileEntryId, version, incrementCounter, increment);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getFileAsStream(long, String)}
-	 */
-	@Deprecated
-	public static java.io.InputStream getFileAsStream(
-			long userId, long fileEntryId, String version)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFileAsStream(userId, fileEntryId, version);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getFileAsStream(long, String, boolean)}
-	 */
-	@Deprecated
-	public static java.io.InputStream getFileAsStream(
-			long userId, long fileEntryId, String version,
-			boolean incrementCounter)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFileAsStream(
-			userId, fileEntryId, version, incrementCounter);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getFileAsStream(long, String, boolean, int)}
-	 */
-	@Deprecated
-	public static java.io.InputStream getFileAsStream(
-			long userId, long fileEntryId, String version,
-			boolean incrementCounter, int increment)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getFileAsStream(
-			userId, fileEntryId, version, incrementCounter, increment);
-	}
-
 	public static java.io.InputStream getFileAsStream(
 			long fileEntryId, String version)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -696,19 +621,22 @@ public class DLFileEntryLocalServiceUtil {
 		<com.liferay.document.library.kernel.model.DLFileEntry> getFileEntries(
 			long groupId, long folderId, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFileEntry> obc) {
+				<com.liferay.document.library.kernel.model.DLFileEntry>
+					orderByComparator) {
 
 		return getService().getFileEntries(
-			groupId, folderId, status, start, end, obc);
+			groupId, folderId, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List
 		<com.liferay.document.library.kernel.model.DLFileEntry> getFileEntries(
 			long groupId, long folderId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.document.library.kernel.model.DLFileEntry> obc) {
+				<com.liferay.document.library.kernel.model.DLFileEntry>
+					orderByComparator) {
 
-		return getService().getFileEntries(groupId, folderId, start, end, obc);
+		return getService().getFileEntries(
+			groupId, folderId, start, end, orderByComparator);
 	}
 
 	public static java.util.List
@@ -745,21 +673,6 @@ public class DLFileEntryLocalServiceUtil {
 
 	public static int getFileEntriesCount() {
 		return getService().getFileEntriesCount();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public static int getFileEntriesCount(
-		long groupId, com.liferay.portal.kernel.util.DateRange dateRange,
-		long repositoryId,
-		com.liferay.portal.kernel.dao.orm.QueryDefinition
-			<com.liferay.document.library.kernel.model.DLFileEntry>
-				queryDefinition) {
-
-		return getService().getFileEntriesCount(
-			groupId, dateRange, repositoryId, queryDefinition);
 	}
 
 	public static int getFileEntriesCount(long groupId, long folderId) {
@@ -836,9 +749,10 @@ public class DLFileEntryLocalServiceUtil {
 				long groupId, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.document.library.kernel.model.DLFileEntry>
-						obc) {
+						orderByComparator) {
 
-		return getService().getGroupFileEntries(groupId, start, end, obc);
+		return getService().getGroupFileEntries(
+			groupId, start, end, orderByComparator);
 	}
 
 	public static java.util.List
@@ -854,10 +768,10 @@ public class DLFileEntryLocalServiceUtil {
 				long groupId, long userId, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.document.library.kernel.model.DLFileEntry>
-						obc) {
+						orderByComparator) {
 
 		return getService().getGroupFileEntries(
-			groupId, userId, start, end, obc);
+			groupId, userId, start, end, orderByComparator);
 	}
 
 	public static java.util.List
@@ -867,10 +781,10 @@ public class DLFileEntryLocalServiceUtil {
 				int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.document.library.kernel.model.DLFileEntry>
-						obc) {
+						orderByComparator) {
 
 		return getService().getGroupFileEntries(
-			groupId, userId, rootFolderId, start, end, obc);
+			groupId, userId, rootFolderId, start, end, orderByComparator);
 	}
 
 	public static java.util.List
@@ -880,10 +794,11 @@ public class DLFileEntryLocalServiceUtil {
 				int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.document.library.kernel.model.DLFileEntry>
-						obc) {
+						orderByComparator) {
 
 		return getService().getGroupFileEntries(
-			groupId, userId, repositoryId, rootFolderId, start, end, obc);
+			groupId, userId, repositoryId, rootFolderId, start, end,
+			orderByComparator);
 	}
 
 	public static int getGroupFileEntriesCount(long groupId) {
@@ -901,33 +816,11 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static java.util.List
-		<com.liferay.document.library.kernel.model.DLFileEntry>
-			getMisversionedFileEntries() {
-
-		return getService().getMisversionedFileEntries();
-	}
-
 	public static java.util.List
 		<com.liferay.document.library.kernel.model.DLFileEntry>
 			getNoAssetFileEntries() {
 
 		return getService().getNoAssetFileEntries();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static java.util.List
-		<com.liferay.document.library.kernel.model.DLFileEntry>
-			getOrphanedFileEntries() {
-
-		return getService().getOrphanedFileEntries();
 	}
 
 	/**
@@ -939,6 +832,9 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -976,6 +872,12 @@ public class DLFileEntryLocalServiceUtil {
 		return getService().hasFileEntryLock(userId, fileEntryId);
 	}
 
+	public static boolean hasFileEntryLock(
+		long userId, long fileEntryId, long folderId) {
+
+		return getService().hasFileEntryLock(userId, fileEntryId, folderId);
+	}
+
 	public static void incrementViewCounter(
 		com.liferay.document.library.kernel.model.DLFileEntry dlFileEntry,
 		int increment) {
@@ -985,32 +887,6 @@ public class DLFileEntryLocalServiceUtil {
 
 	public static boolean isFileEntryCheckedOut(long fileEntryId) {
 		return getService().isFileEntryCheckedOut(fileEntryId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static boolean isKeepFileVersionLabel(
-			long fileEntryId, boolean majorVersion,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().isKeepFileVersionLabel(
-			fileEntryId, majorVersion, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #isKeepFileVersionLabel(long, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	public static boolean isKeepFileVersionLabel(
-			long fileEntryId,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().isKeepFileVersionLabel(fileEntryId, serviceContext);
 	}
 
 	public static com.liferay.portal.kernel.lock.Lock lockFileEntry(
@@ -1078,6 +954,10 @@ public class DLFileEntryLocalServiceUtil {
 	/**
 	 * Updates the document library file entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlFileEntry the document library file entry
 	 * @return the document library file entry that was updated
 	 */
@@ -1086,32 +966,6 @@ public class DLFileEntryLocalServiceUtil {
 			com.liferay.document.library.kernel.model.DLFileEntry dlFileEntry) {
 
 		return getService().updateDLFileEntry(dlFileEntry);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, long, String, String, String, String,
-	 String, DLVersionNumberIncrease, long, Map, File,
-	 InputStream, long, ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.document.library.kernel.model.DLFileEntry
-			updateFileEntry(
-				long userId, long fileEntryId, String sourceFileName,
-				String mimeType, String title, String description,
-				String changeLog, boolean majorVersion, long fileEntryTypeId,
-				java.util.Map
-					<String,
-					 com.liferay.dynamic.data.mapping.kernel.DDMFormValues>
-						ddmFormValuesMap,
-				java.io.File file, java.io.InputStream is, long size,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateFileEntry(
-			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, fileEntryTypeId, ddmFormValuesMap, file,
-			is, size, serviceContext);
 	}
 
 	public static com.liferay.document.library.kernel.model.DLFileEntry
@@ -1126,14 +980,14 @@ public class DLFileEntryLocalServiceUtil {
 					<String,
 					 com.liferay.dynamic.data.mapping.kernel.DDMFormValues>
 						ddmFormValuesMap,
-				java.io.File file, java.io.InputStream is, long size,
+				java.io.File file, java.io.InputStream inputStream, long size,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
 			changeLog, dlVersionNumberIncrease, fileEntryTypeId,
-			ddmFormValuesMap, file, is, size, serviceContext);
+			ddmFormValuesMap, file, inputStream, size, serviceContext);
 	}
 
 	public static com.liferay.document.library.kernel.model.DLFileEntry
@@ -1150,6 +1004,23 @@ public class DLFileEntryLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().updateSmallImage(smallImageId, largeImageId);
+	}
+
+	public static com.liferay.document.library.kernel.model.DLFileEntry
+			updateStatus(
+				long userId,
+				com.liferay.document.library.kernel.model.DLFileEntry
+					dlFileEntry,
+				com.liferay.document.library.kernel.model.DLFileVersion
+					dlFileVersion,
+				int status,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext,
+				java.util.Map<String, java.io.Serializable> workflowContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateStatus(
+			userId, dlFileEntry, dlFileVersion, status, serviceContext,
+			workflowContext);
 	}
 
 	public static com.liferay.document.library.kernel.model.DLFileEntry

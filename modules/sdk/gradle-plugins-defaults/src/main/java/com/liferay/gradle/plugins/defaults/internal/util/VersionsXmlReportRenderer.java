@@ -14,12 +14,13 @@
 
 package com.liferay.gradle.plugins.defaults.internal.util;
 
-import com.github.jk1.license.LicenseReportPlugin.LicenseReportExtension;
+import com.github.jk1.license.LicenseReportExtension;
 import com.github.jk1.license.ManifestData;
 import com.github.jk1.license.ModuleData;
 import com.github.jk1.license.PomData;
 import com.github.jk1.license.ProjectData;
-import com.github.jk1.license.render.SingleInfoReportRenderer;
+import com.github.jk1.license.render.LicenseDataCollector;
+import com.github.jk1.license.render.ReportRenderer;
 
 import com.liferay.gradle.util.Validator;
 
@@ -42,7 +43,7 @@ import org.w3c.dom.Element;
 /**
  * @author Andrea Di Giorgi
  */
-public class VersionsXmlReportRenderer extends SingleInfoReportRenderer {
+public class VersionsXmlReportRenderer implements ReportRenderer {
 
 	public VersionsXmlReportRenderer(
 		String fileName, LicenseReportExtension licenseReportExtension,
@@ -58,33 +59,54 @@ public class VersionsXmlReportRenderer extends SingleInfoReportRenderer {
 		try {
 			_render(projectData);
 		}
-		catch (IOException ioe) {
-			throw new UncheckedIOException(ioe);
+		catch (IOException ioException) {
+			throw new UncheckedIOException(ioException);
 		}
-		catch (Exception e) {
-			throw new GradleException("Unable to render " + projectData, e);
+		catch (Exception exception) {
+			throw new GradleException(
+				"Unable to render " + projectData, exception);
 		}
 	}
 
-	protected boolean isExcluded(ModuleData moduleData) {
+	protected String getLicenseName(
+		String moduleFileName, ModuleData moduleData) {
+
+		List<String> moduleLicenseInfo =
+			LicenseDataCollector.singleModuleLicenseInfo(moduleData);
+
+		return moduleLicenseInfo.get(1);
+	}
+
+	protected String getLicenseUrl(
+		String moduleFileName, ModuleData moduleData) {
+
+		List<String> moduleLicenseInfo =
+			LicenseDataCollector.singleModuleLicenseInfo(moduleData);
+
+		return moduleLicenseInfo.get(2);
+	}
+
+	protected boolean isExcluded(String moduleFileName, ModuleData moduleData) {
 		return false;
 	}
 
 	private void _appendLibraryElement(
-		Document document, Element librariesElement, String fileName,
+		Document document, Element librariesElement, String moduleFileName,
 		ModuleData moduleData) {
 
-		List<String> moduleLicenseInfo = moduleLicenseInfo(
-			_licenseReportExtension, moduleData);
+		List<String> moduleLicenseInfo =
+			LicenseDataCollector.singleModuleLicenseInfo(moduleData);
 
 		String projectUrl = moduleLicenseInfo.get(0);
-		String licenseName = moduleLicenseInfo.get(1);
-		String licenseUrl = moduleLicenseInfo.get(2);
+
+		String licenseName = getLicenseName(moduleFileName, moduleData);
+		String licenseUrl = getLicenseUrl(moduleFileName, moduleData);
 
 		Element libraryElement = XMLUtil.appendElement(
 			document, librariesElement, "library");
 
-		XMLUtil.appendElement(document, libraryElement, "file-name", fileName);
+		XMLUtil.appendElement(
+			document, libraryElement, "file-name", moduleFileName);
 		XMLUtil.appendElement(
 			document, libraryElement, "version", moduleData.getVersion());
 		XMLUtil.appendElement(
@@ -93,20 +115,16 @@ public class VersionsXmlReportRenderer extends SingleInfoReportRenderer {
 		XMLUtil.appendElement(
 			document, libraryElement, "project-url", projectUrl);
 
-		if (Validator.isNotNull(licenseName) ||
-			Validator.isNotNull(licenseUrl)) {
+		Element licensesElement = XMLUtil.appendElement(
+			document, libraryElement, "licenses");
 
-			Element licensesElement = XMLUtil.appendElement(
-				document, libraryElement, "licenses");
+		Element licenseElement = XMLUtil.appendElement(
+			document, licensesElement, "license");
 
-			Element licenseElement = XMLUtil.appendElement(
-				document, licensesElement, "license");
-
-			XMLUtil.appendElement(
-				document, licenseElement, "license-name", licenseName);
-			XMLUtil.appendElement(
-				document, licenseElement, "license-url", licenseUrl);
-		}
+		XMLUtil.appendElement(
+			document, licenseElement, "license-name", licenseName);
+		XMLUtil.appendElement(
+			document, licenseElement, "license-url", licenseUrl);
 	}
 
 	private String _getProjectName(ModuleData moduleData) {
@@ -153,12 +171,12 @@ public class VersionsXmlReportRenderer extends SingleInfoReportRenderer {
 		String moduleFileNamePrefix = _moduleFileNamePrefixCallable.call();
 
 		for (ModuleData moduleData : projectData.getAllDependencies()) {
-			if (isExcluded(moduleData)) {
-				continue;
-			}
-
 			String moduleFileName =
 				moduleFileNamePrefix + "!" + moduleData.getName() + ".jar";
+
+			if (isExcluded(moduleFileName, moduleData)) {
+				continue;
+			}
 
 			fileNameModuleDataMap.put(moduleFileName, moduleData);
 		}
@@ -183,7 +201,7 @@ public class VersionsXmlReportRenderer extends SingleInfoReportRenderer {
 				document, librariesElement, entry.getKey(), entry.getValue());
 		}
 
-		File file = new File(_licenseReportExtension.getOutputDir(), _fileName);
+		File file = new File(_licenseReportExtension.outputDir, _fileName);
 
 		XMLUtil.write(document, file);
 	}

@@ -14,17 +14,24 @@
 
 package com.liferay.portal.security.auto.login.basic.auth.header;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil;
 import com.liferay.portal.kernel.security.auth.http.HttpAuthorizationHeader;
 import com.liferay.portal.kernel.security.auto.login.AutoLogin;
 import com.liferay.portal.kernel.security.auto.login.BaseAutoLogin;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.security.configuration.BasicAuthHeaderSupportConfiguration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Shuyang Zhou
@@ -41,6 +48,10 @@ public class BasicAuthHeaderAutoLoginSupport extends BaseAutoLogin {
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
 		throws Exception {
+
+		if (!isEnabled(_portal.getCompanyId(httpServletRequest))) {
+			return null;
+		}
 
 		HttpAuthorizationHeader httpAuthorizationHeader =
 			HttpAuthManagerUtil.parse(httpServletRequest);
@@ -76,5 +87,32 @@ public class BasicAuthHeaderAutoLoginSupport extends BaseAutoLogin {
 
 		return credentials;
 	}
+
+	protected boolean isEnabled(long companyId) {
+		try {
+			BasicAuthHeaderSupportConfiguration
+				basicAuthHeaderSupportConfiguration =
+					_configurationProvider.getCompanyConfiguration(
+						BasicAuthHeaderSupportConfiguration.class, companyId);
+
+			return basicAuthHeaderSupportConfiguration.enabled();
+		}
+		catch (ConfigurationException configurationException) {
+			_log.error(
+				"Unable to get basic auth protocol support configuration",
+				configurationException);
+		}
+
+		return false;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BasicAuthHeaderAutoLoginSupport.class);
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
+
+	@Reference
+	private Portal _portal;
 
 }

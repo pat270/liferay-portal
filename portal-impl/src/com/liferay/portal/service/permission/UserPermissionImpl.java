@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
@@ -145,55 +145,50 @@ public class UserPermissionImpl
 					OrganizationLocalServiceUtil.getOrganization(
 						organizationId);
 
-				if (OrganizationPermissionUtil.contains(
+				if (!OrganizationPermissionUtil.contains(
 						permissionChecker, organization,
 						ActionKeys.MANAGE_USERS)) {
 
-					if (permissionChecker.getUserId() == user.getUserId()) {
+					continue;
+				}
+
+				if (permissionChecker.getUserId() == user.getUserId()) {
+					return true;
+				}
+
+				// Organization administrators and those with "Manage
+				// Users" permission can only manage normal users
+
+				if (!UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+						user.getUserId(), organization.getGroupId(),
+						RoleConstants.ORGANIZATION_ADMINISTRATOR, true) &&
+					!UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+						user.getUserId(), organization.getGroupId(),
+						RoleConstants.ORGANIZATION_OWNER, true)) {
+
+					return true;
+				}
+
+				Organization curOrganization = organization;
+
+				while (curOrganization != null) {
+
+					// Organization owners can manage all users
+
+					if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+							permissionChecker.getUserId(),
+							curOrganization.getGroupId(),
+							RoleConstants.ORGANIZATION_OWNER, true)) {
+
 						return true;
 					}
 
-					Organization curOrganization = organization;
-
-					while (curOrganization != null) {
-
-						// Organization owners can manage all users
-
-						if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-								permissionChecker.getUserId(),
-								curOrganization.getGroupId(),
-								RoleConstants.ORGANIZATION_OWNER, true)) {
-
-							return true;
-						}
-
-						// Organization administrators can only manage normal
-						// users
-
-						if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-								permissionChecker.getUserId(),
-								curOrganization.getGroupId(),
-								RoleConstants.ORGANIZATION_ADMINISTRATOR,
-								true) &&
-							!UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-								user.getUserId(), organization.getGroupId(),
-								RoleConstants.ORGANIZATION_ADMINISTRATOR,
-								true) &&
-							!UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-								user.getUserId(), organization.getGroupId(),
-								RoleConstants.ORGANIZATION_OWNER, true)) {
-
-							return true;
-						}
-
-						curOrganization =
-							curOrganization.getParentOrganization();
-					}
+					curOrganization = curOrganization.getParentOrganization();
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;

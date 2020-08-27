@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetDisplayPageEntry
  * @generated
  */
-@ProviderType
 public class AssetDisplayPageEntryWrapper
 	extends BaseModelWrapper<AssetDisplayPageEntry>
 	implements AssetDisplayPageEntry, ModelWrapper<AssetDisplayPageEntry> {
@@ -48,6 +47,8 @@ public class AssetDisplayPageEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("assetDisplayPageEntryId", getAssetDisplayPageEntryId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +69,18 @@ public class AssetDisplayPageEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -210,6 +223,16 @@ public class AssetDisplayPageEntryWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this asset display page entry.
+	 *
+	 * @return the ct collection ID of this asset display page entry
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this asset display page entry.
 	 *
 	 * @return the group ID of this asset display page entry
@@ -237,6 +260,16 @@ public class AssetDisplayPageEntryWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this asset display page entry.
+	 *
+	 * @return the mvcc version of this asset display page entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -370,6 +403,16 @@ public class AssetDisplayPageEntryWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this asset display page entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset display page entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this asset display page entry.
 	 *
 	 * @param groupId the group ID of this asset display page entry
@@ -397,6 +440,16 @@ public class AssetDisplayPageEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset display page entry.
+	 *
+	 * @param mvccVersion the mvcc version of this asset display page entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -467,6 +520,20 @@ public class AssetDisplayPageEntryWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<AssetDisplayPageEntry, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<AssetDisplayPageEntry, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

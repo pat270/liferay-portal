@@ -15,21 +15,23 @@
 package com.liferay.portal.upgrade.v7_0_0;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.upgrade.BaseUpgradeCompanyId;
 import com.liferay.portal.kernel.util.PortletKeys;
 
 import java.io.IOException;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@SuppressWarnings("deprecation")
-public class UpgradeCompanyId
-	extends com.liferay.portal.upgrade.util.UpgradeCompanyId {
+public class UpgradeCompanyId extends BaseUpgradeCompanyId {
 
 	@Override
 	protected TableUpdater[] getTableUpdaters() {
@@ -203,9 +205,20 @@ public class UpgradeCompanyId
 		private String _getSelectSQL(
 				String foreignTableName, String foreignColumnName,
 				String columnName)
-			throws IOException, SQLException {
+			throws SQLException {
 
-			List<Long> companyIds = getCompanyIds(connection, foreignTableName);
+			List<Long> companyIds = new ArrayList<>();
+
+			try (PreparedStatement ps = connection.prepareStatement(
+					"select distinct companyId from " + foreignTableName);
+				ResultSet rs = ps.executeQuery()) {
+
+				while (rs.next()) {
+					long companyId = rs.getLong(1);
+
+					companyIds.add(companyId);
+				}
+			}
 
 			if (companyIds.size() == 1) {
 				return String.valueOf(companyIds.get(0));

@@ -17,11 +17,11 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGroupsDisplayContext(renderRequest, renderResponse, request);
+SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGroupsDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectUserGroupsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectUserGroupsDisplayContext) %>"
+	displayContext="<%= new SelectUserGroupsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectUserGroupsDisplayContext) %>"
 />
 
 <aui:form cssClass="container-fluid-1280" name="selectUserGroupFm">
@@ -38,9 +38,9 @@ SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGr
 		>
 
 			<%
-			LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
-
-			userParams.put("usersUserGroups", Long.valueOf(userGroup.getUserGroupId()));
+			LinkedHashMap<String, Object> userParams = LinkedHashMapBuilder.<String, Object>put(
+				"usersUserGroups", Long.valueOf(userGroup.getUserGroupId())
+			).build();
 
 			int usersCount = UserLocalServiceUtil.searchCount(company.getCompanyId(), StringPool.BLANK, WorkflowConstants.STATUS_ANY, userParams);
 			%>
@@ -97,17 +97,16 @@ SelectUserGroupsDisplayContext selectUserGroupsDisplayContext = new SelectUserGr
 </aui:form>
 
 <aui:script use="liferay-search-container">
-	var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />userGroups');
-
-	searchContainer.on(
-		'rowToggled',
-		function(event) {
-			Liferay.Util.getOpener().Liferay.fire(
-				'<%= HtmlUtil.escapeJS(selectUserGroupsDisplayContext.getEventName()) %>',
-				{
-					data: event.elements.allSelectedElements.getDOMNodes()
-				}
-			);
-		}
+	var searchContainer = Liferay.SearchContainer.get(
+		'<portlet:namespace />userGroups'
 	);
+
+	searchContainer.on('rowToggled', function (event) {
+		Liferay.Util.getOpener().Liferay.fire(
+			'<%= HtmlUtil.escapeJS(selectUserGroupsDisplayContext.getEventName()) %>',
+			{
+				data: event.elements.allSelectedElements.getDOMNodes(),
+			}
+		);
+	});
 </aui:script>

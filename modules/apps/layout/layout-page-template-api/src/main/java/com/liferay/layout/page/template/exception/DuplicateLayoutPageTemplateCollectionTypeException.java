@@ -16,12 +16,9 @@ package com.liferay.layout.page.template.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateLayoutPageTemplateCollectionTypeException
 	extends PortalException {
 
@@ -33,13 +30,15 @@ public class DuplicateLayoutPageTemplateCollectionTypeException
 	}
 
 	public DuplicateLayoutPageTemplateCollectionTypeException(
-		String msg, Throwable cause) {
+		String msg, Throwable throwable) {
 
-		super(msg, cause);
+		super(msg, throwable);
 	}
 
-	public DuplicateLayoutPageTemplateCollectionTypeException(Throwable cause) {
-		super(cause);
+	public DuplicateLayoutPageTemplateCollectionTypeException(
+		Throwable throwable) {
+
+		super(throwable);
 	}
 
 }

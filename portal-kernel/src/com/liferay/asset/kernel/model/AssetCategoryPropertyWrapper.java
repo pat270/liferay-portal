@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -34,7 +34,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @Deprecated
-@ProviderType
 public class AssetCategoryPropertyWrapper
 	extends BaseModelWrapper<AssetCategoryProperty>
 	implements AssetCategoryProperty, ModelWrapper<AssetCategoryProperty> {
@@ -49,6 +48,8 @@ public class AssetCategoryPropertyWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("categoryPropertyId", getCategoryPropertyId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -64,6 +65,18 @@ public class AssetCategoryPropertyWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long categoryPropertyId = (Long)attributes.get("categoryPropertyId");
 
 		if (categoryPropertyId != null) {
@@ -160,6 +173,16 @@ public class AssetCategoryPropertyWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this asset category property.
+	 *
+	 * @return the ct collection ID of this asset category property
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the key of this asset category property.
 	 *
 	 * @return the key of this asset category property
@@ -177,6 +200,16 @@ public class AssetCategoryPropertyWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this asset category property.
+	 *
+	 * @return the mvcc version of this asset category property
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -275,6 +308,16 @@ public class AssetCategoryPropertyWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this asset category property.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset category property
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the key of this asset category property.
 	 *
 	 * @param key the key of this asset category property
@@ -292,6 +335,16 @@ public class AssetCategoryPropertyWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset category property.
+	 *
+	 * @param mvccVersion the mvcc version of this asset category property
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -342,6 +395,20 @@ public class AssetCategoryPropertyWrapper
 	@Override
 	public void setValue(String value) {
 		model.setValue(value);
+	}
+
+	@Override
+	public Map<String, Function<AssetCategoryProperty, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<AssetCategoryProperty, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

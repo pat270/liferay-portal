@@ -16,7 +16,9 @@ package com.liferay.portal.action;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
@@ -93,8 +95,22 @@ public class UpdateLayoutAction extends JSONAction {
 			int columnPos = ParamUtil.getInteger(
 				httpServletRequest, "p_p_col_pos", -1);
 
+			if (portletId == null) {
+				throw new IllegalArgumentException("Portlet ID is null");
+			}
+
+			String originalPortletId = portletId;
+
 			portletId = layoutTypePortlet.addPortletId(
 				userId, portletId, columnId, columnPos);
+
+			if (portletId == null) {
+				throw new PortalException(
+					StringBundler.concat(
+						"Portlet ", originalPortletId,
+						" cannot be added to layout ", layout.getPlid(),
+						" by user ", userId));
+			}
 
 			storeAddContentPortletPreferences(
 				httpServletRequest, layout, portletId, themeDisplay);
@@ -178,14 +194,15 @@ public class UpdateLayoutAction extends JSONAction {
 			updateLayout = false;
 		}
 		else if (cmd.equals("update_type_settings")) {
-			UnicodeProperties layoutTypeSettingsProperties =
+			UnicodeProperties layoutTypeSettingsUnicodeProperties =
 				layout.getTypeSettingsProperties();
 
-			UnicodeProperties formTypeSettingsProperties =
+			UnicodeProperties formTypeSettingsUnicodeProperties =
 				PropertiesParamUtil.getProperties(
 					httpServletRequest, "TypeSettingsProperties--");
 
-			layoutTypeSettingsProperties.putAll(formTypeSettingsProperties);
+			layoutTypeSettingsUnicodeProperties.putAll(
+				formTypeSettingsUnicodeProperties);
 		}
 		else if (cmd.equals("undo_layout_revision")) {
 			long layoutRevisionId = ParamUtil.getLong(
@@ -249,10 +266,8 @@ public class UpdateLayoutAction extends JSONAction {
 		// Pass in the portlet id because the portlet id may be the instance id.
 		// Namespace the request if necessary. See LEP-4644.
 
-		long companyId = PortalUtil.getCompanyId(httpServletRequest);
-
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(
-			companyId, portletId);
+			PortalUtil.getCompanyId(httpServletRequest), portletId);
 
 		DynamicServletRequest dynamicRequest = null;
 

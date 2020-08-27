@@ -22,6 +22,7 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMFormSuccessPageSettings;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -38,9 +39,12 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 
@@ -69,7 +73,7 @@ public class DDMFormBuilderContextFactoryHelper {
 		DDMFormTemplateContextFactory ddmFormTemplateContextFactory,
 		HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse, JSONFactory jsonFactory,
-		Locale locale, boolean readOnly) {
+		Locale locale, String portletNamespace, boolean readOnly) {
 
 		_ddmStructureOptional = ddmStructureOptional;
 		_ddmStructureVersionOptional = ddmStructureVersionOptional;
@@ -79,6 +83,7 @@ public class DDMFormBuilderContextFactoryHelper {
 		_httpServletResponse = httpServletResponse;
 		_jsonFactory = jsonFactory;
 		_locale = locale;
+		_portletNamespace = portletNamespace;
 		_readOnly = readOnly;
 	}
 
@@ -99,20 +104,20 @@ public class DDMFormBuilderContextFactoryHelper {
 	}
 
 	protected Map<String, Object> createEmptyStateContext() {
-		Map<String, Object> emptyFormContext = new HashMap<>();
-
-		emptyFormContext.put("pages", new ArrayList<>());
-		emptyFormContext.put("rules", new ArrayList<>());
-
-		Map<String, Object> successPage = new HashMap<>();
-
-		successPage.put("body", StringPool.BLANK);
-		successPage.put("enabled", Boolean.FALSE);
-		successPage.put("title", StringPool.BLANK);
-
-		emptyFormContext.put("successPage", successPage);
-
-		return emptyFormContext;
+		return HashMapBuilder.<String, Object>put(
+			"pages", new ArrayList<>()
+		).put(
+			"rules", new ArrayList<>()
+		).put(
+			"successPage",
+			HashMapBuilder.<String, Object>put(
+				"body", StringPool.BLANK
+			).put(
+				"enabled", Boolean.FALSE
+			).put(
+				"title", StringPool.BLANK
+			).build()
+		).build();
 	}
 
 	protected Map<String, Object> createFormContext(
@@ -125,7 +130,7 @@ public class DDMFormBuilderContextFactoryHelper {
 		ddmFormRenderingContext.setHttpServletRequest(_httpServletRequest);
 		ddmFormRenderingContext.setHttpServletResponse(_httpServletResponse);
 		ddmFormRenderingContext.setLocale(_locale);
-		ddmFormRenderingContext.setPortletNamespace(StringPool.BLANK);
+		ddmFormRenderingContext.setPortletNamespace(_portletNamespace);
 		ddmFormRenderingContext.setReadOnly(_readOnly);
 
 		Map<String, Object> ddmFormTemplateContext =
@@ -142,8 +147,8 @@ public class DDMFormBuilderContextFactoryHelper {
 		try {
 			return doCreateFormContext(ddmStructure);
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to create form context", pe);
+		catch (PortalException portalException) {
+			_log.error("Unable to create form context", portalException);
 		}
 
 		return createEmptyStateContext();
@@ -155,8 +160,8 @@ public class DDMFormBuilderContextFactoryHelper {
 		try {
 			return doCreateFormContext(ddmStructureVersion);
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to create form context", pe);
+		catch (PortalException portalException) {
+			_log.error("Unable to create form context", portalException);
 		}
 
 		return createEmptyStateContext();
@@ -206,7 +211,7 @@ public class DDMFormBuilderContextFactoryHelper {
 		ddmFormRenderingContext.setHttpServletRequest(_httpServletRequest);
 		ddmFormRenderingContext.setHttpServletResponse(_httpServletResponse);
 		ddmFormRenderingContext.setLocale(_locale);
-		ddmFormRenderingContext.setPortletNamespace(StringPool.BLANK);
+		ddmFormRenderingContext.setPortletNamespace(_portletNamespace);
 
 		DDMFormValues ddmFormValues =
 			doCreateDDMFormFieldSettingContextDDMFormValues(
@@ -259,9 +264,9 @@ public class DDMFormBuilderContextFactoryHelper {
 			return (LocalizedValue)propertyValue;
 		}
 
-		String dataType = ddmFormFieldTypeSetting.getDataType();
+		if (Objects.equals(
+				ddmFormFieldTypeSetting.getDataType(), "ddm-options")) {
 
-		if (Objects.equals(dataType, "ddm-options")) {
 			return doCreateDDMFormFieldValue(
 				(DDMFormFieldOptions)propertyValue, availableLocales);
 		}
@@ -269,7 +274,7 @@ public class DDMFormBuilderContextFactoryHelper {
 					ddmFormFieldTypeSetting.getType(), "validation")) {
 
 			return doCreateDDMFormFieldValue(
-				(DDMFormFieldValidation)propertyValue);
+				availableLocales, (DDMFormFieldValidation)propertyValue);
 		}
 
 		return new UnlocalizedValue(String.valueOf(propertyValue));
@@ -290,46 +295,86 @@ public class DDMFormBuilderContextFactoryHelper {
 	}
 
 	protected Value doCreateDDMFormFieldValue(
+		Set<Locale> availableLocales,
 		DDMFormFieldValidation ddmFormFieldValidation) {
 
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
+		if (ddmFormFieldValidation == null) {
+			return null;
+		}
 
-		jsonObject.put(
-			"errorMessage", ddmFormFieldValidation.getErrorMessage()
+		JSONObject errorMessageJSONObject = _jsonFactory.createJSONObject();
+		JSONObject parameterJSONObject = _jsonFactory.createJSONObject();
+
+		for (Locale availableLocale : availableLocales) {
+			LocalizedValue errorMessageLocalizedValue =
+				ddmFormFieldValidation.getErrorMessageLocalizedValue();
+
+			errorMessageJSONObject.put(
+				LocaleUtil.toLanguageId(availableLocale),
+				errorMessageLocalizedValue.getString(availableLocale));
+
+			LocalizedValue parameterLocalizedValue =
+				ddmFormFieldValidation.getParameterLocalizedValue();
+
+			parameterJSONObject.put(
+				LocaleUtil.toLanguageId(availableLocale),
+				parameterLocalizedValue.getString(availableLocale));
+		}
+
+		DDMFormFieldValidationExpression ddmFormFieldValidationExpression =
+			ddmFormFieldValidation.getDDMFormFieldValidationExpression();
+
+		JSONObject expressionJSONObject = _jsonFactory.createJSONObject();
+
+		expressionJSONObject.put(
+			"name",
+			GetterUtil.getString(ddmFormFieldValidationExpression.getName())
 		).put(
-			"expression", ddmFormFieldValidation.getExpression()
+			"value",
+			GetterUtil.getString(ddmFormFieldValidationExpression.getValue())
 		);
 
-		return new UnlocalizedValue(jsonObject.toString());
+		return new UnlocalizedValue(
+			JSONUtil.put(
+				"errorMessage", errorMessageJSONObject
+			).put(
+				"expression", expressionJSONObject
+			).put(
+				"parameter", parameterJSONObject
+			).toString());
 	}
 
 	protected Map<String, Object> doCreateFormContext(
 			DDMForm ddmForm, DDMFormLayout ddmFormLayout)
 		throws PortalException {
 
-		Map<String, Object> formContext1 = new HashMap<>();
+		return HashMapBuilder.<String, Object>put(
+			"pages",
+			() -> {
+				Map<String, Object> formContext = createFormContext(
+					ddmForm, ddmFormLayout);
 
-		Map<String, Object> formContext2 = createFormContext(
-			ddmForm, ddmFormLayout);
+				return formContext.get("pages");
+			}
+		).put(
+			"paginationMode", ddmFormLayout.getPaginationMode()
+		).put(
+			"rules", new ArrayList<>()
+		).put(
+			"successPageSettings",
+			() -> {
+				DDMFormSuccessPageSettings ddmFormSuccessPageSettings =
+					ddmForm.getDDMFormSuccessPageSettings();
 
-		formContext1.put("pages", formContext2.get("pages"));
-
-		formContext1.put("paginationMode", ddmFormLayout.getPaginationMode());
-
-		formContext1.put("rules", new ArrayList<>());
-
-		Map<String, Object> successPage = new HashMap<>();
-
-		DDMFormSuccessPageSettings ddmFormSuccessPageSettings =
-			ddmForm.getDDMFormSuccessPageSettings();
-
-		successPage.put("body", toMap(ddmFormSuccessPageSettings.getBody()));
-		successPage.put("enabled", ddmFormSuccessPageSettings.isEnabled());
-		successPage.put("title", toMap(ddmFormSuccessPageSettings.getTitle()));
-
-		formContext1.put("successPageSettings", successPage);
-
-		return formContext1;
+				return HashMapBuilder.<String, Object>put(
+					"body", toMap(ddmFormSuccessPageSettings.getBody())
+				).put(
+					"enabled", ddmFormSuccessPageSettings.isEnabled()
+				).put(
+					"title", toMap(ddmFormSuccessPageSettings.getTitle())
+				).build();
+			}
+		).build();
 	}
 
 	protected Map<String, Object> doCreateFormContext(DDMStructure ddmStructure)
@@ -368,9 +413,10 @@ public class DDMFormBuilderContextFactoryHelper {
 								doCreateDDMFormFieldSettingContext(
 									ddmFormFieldsMap.get(fieldName)));
 						}
-						catch (PortalException pe) {
+						catch (PortalException portalException) {
 							_log.error(
-								"Unable to create field settings context", pe);
+								"Unable to create field settings context",
+								portalException);
 						}
 					}
 
@@ -404,6 +450,7 @@ public class DDMFormBuilderContextFactoryHelper {
 	private final HttpServletResponse _httpServletResponse;
 	private final JSONFactory _jsonFactory;
 	private final Locale _locale;
+	private final String _portletNamespace;
 	private final boolean _readOnly;
 
 	private static class DDMFormBuilderContextFieldVisitor {
@@ -430,6 +477,11 @@ public class DDMFormBuilderContextFactoryHelper {
 		protected void traverseFields(List<Map<String, Object>> fields) {
 			for (Map<String, Object> field : fields) {
 				_fieldConsumer.accept(field);
+
+				if (field.containsKey("nestedFields")) {
+					traverseFields(
+						(List<Map<String, Object>>)field.get("nestedFields"));
+				}
 			}
 		}
 

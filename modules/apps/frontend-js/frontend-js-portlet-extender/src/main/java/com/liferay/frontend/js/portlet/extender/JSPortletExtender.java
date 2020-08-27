@@ -35,10 +35,12 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.Portlet;
 
@@ -67,7 +69,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 public class JSPortletExtender {
 
 	@Activate
-	public void activate(BundleContext context) {
+	protected void activate(BundleContext context) {
 		_bundleTracker = new BundleTracker<>(
 			context, Bundle.ACTIVE, _bundleTrackerCustomizer);
 
@@ -75,7 +77,7 @@ public class JSPortletExtender {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_bundleTracker.close();
 
 		_bundleTracker = null;
@@ -111,10 +113,10 @@ public class JSPortletExtender {
 			return;
 		}
 
-		Iterator<String> keys = portletJSONObject.keys();
+		Iterator<String> iterator = portletJSONObject.keys();
 
-		while (keys.hasNext()) {
-			String key = keys.next();
+		while (iterator.hasNext()) {
+			String key = iterator.next();
 
 			Object value = portletJSONObject.get(key);
 
@@ -166,8 +168,8 @@ public class JSPortletExtender {
 		try (InputStream inputStream = url.openStream()) {
 			return _jsonFactory.createJSONObject(StringUtil.read(inputStream));
 		}
-		catch (Exception e) {
-			_log.error("Unable to parse " + url, e);
+		catch (Exception exception) {
+			_log.error("Unable to parse " + url, exception);
 
 			return null;
 		}
@@ -193,16 +195,17 @@ public class JSPortletExtender {
 				new String[] {ConfigurationAction.class.getName()},
 				configurationAction, properties);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				"Unable to register configuration action service for portlet" +
 					portletName,
-				pe);
+				portalException);
 		}
 	}
 
 	private ServiceRegistration<?> _registerJSPortletService(
-		BundleContext bundleContext, JSONObject packageJSONObject) {
+		BundleContext bundleContext, JSONObject packageJSONObject,
+		Set<String> portletPreferencesFieldNames) {
 
 		Dictionary<String, Object> properties = new Hashtable<>();
 
@@ -221,7 +224,9 @@ public class JSPortletExtender {
 			new String[] {
 				ManagedService.class.getName(), Portlet.class.getName()
 			},
-			new JSPortlet(_jsonFactory, packageName, packageVersion),
+			new JSPortlet(
+				_jsonFactory, packageName, packageVersion,
+				portletPreferencesFieldNames),
 			properties);
 	}
 
@@ -251,12 +256,28 @@ public class JSPortletExtender {
 
 					BundleContext bundleContext = bundle.getBundleContext();
 
-					ServiceRegistration<?> serviceRegistration =
-						_registerJSPortletService(
-							bundleContext, packageJSONObject);
+					Set<String> portletPreferencesFieldNames = new HashSet<>();
 
 					JSONObject portletPreferencesJSONObject = _parse(
 						bundle.getEntry("features/portlet_preferences.json"));
+
+					if (portletPreferencesJSONObject != null) {
+						JSONArray fieldsJSONArray =
+							portletPreferencesJSONObject.getJSONArray("fields");
+
+						for (int i = 0; i < fieldsJSONArray.length(); i++) {
+							JSONObject jsonObject =
+								fieldsJSONArray.getJSONObject(i);
+
+							portletPreferencesFieldNames.add(
+								jsonObject.getString("name"));
+						}
+					}
+
+					ServiceRegistration<?> serviceRegistration =
+						_registerJSPortletService(
+							bundleContext, packageJSONObject,
+							portletPreferencesFieldNames);
 
 					if (portletPreferencesJSONObject != null) {
 						_registerConfigurationActionService(

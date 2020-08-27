@@ -29,6 +29,10 @@ import java.util.Locale;
  */
 public interface DDMIndexer {
 
+	public static final String DDM_FIELD_ARRAY = "ddmFieldArray";
+
+	public static final String DDM_FIELD_NAME = "ddmFieldName";
+
 	public static final String DDM_FIELD_NAMESPACE = "ddm";
 
 	public static final String DDM_FIELD_PREFIX =
@@ -36,6 +40,10 @@ public interface DDMIndexer {
 
 	public static final String DDM_FIELD_SEPARATOR =
 		StringPool.DOUBLE_UNDERLINE;
+
+	public static final String DDM_VALUE_FIELD_NAME = "ddmValueFieldName";
+
+	public static final String DDM_VALUE_FIELD_NAME_PREFIX = "ddmFieldValue";
 
 	public void addAttributes(
 		Document document, DDMStructure ddmStructure,
@@ -53,5 +61,17 @@ public interface DDMIndexer {
 
 	public String extractIndexableAttributes(
 		DDMStructure ddmStructure, DDMFormValues ddmFormValues, Locale locale);
+
+	public default String getValueFieldName(String indexType) {
+		throw new UnsupportedOperationException();
+	}
+
+	public default String getValueFieldName(String indexType, Locale locale) {
+		throw new UnsupportedOperationException();
+	}
+
+	public default boolean isLegacyDDMIndexFieldsEnabled() {
+		return false;
+	}
 
 }

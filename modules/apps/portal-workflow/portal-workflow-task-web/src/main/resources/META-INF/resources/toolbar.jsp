@@ -27,7 +27,7 @@ portletURL.setParameter("tabs1", tabs1);
 
 <clay:navigation-bar
 	inverted="<%= layout.isTypeControlPanel() %>"
-	navigationItems="<%=
+	navigationItems='<%=
 		new JSPNavigationItemList(pageContext) {
 			{
 				add(
@@ -45,20 +45,19 @@ portletURL.setParameter("tabs1", tabs1);
 					});
 			}
 		}
-	%>"
+	%>'
 />
 
 <clay:management-toolbar
 	clearResultsURL="<%= workflowTaskDisplayContext.getClearResultsURL() %>"
-	disabled="<%= workflowTaskDisplayContext.isManagementBarDisabled() %>"
 	filterDropdownItems="<%= workflowTaskDisplayContext.getFilterOptions() %>"
 	itemsTotal="<%= workflowTaskDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= workflowTaskDisplayContext.getSearchURL() %>"
 	searchContainerId="workflowTasks"
 	searchFormName="fm1"
 	selectable="<%= false %>"
-	sortingOrder='<%= ParamUtil.getString(request, "orderByType", "asc") %>'
+	sortingOrder="<%= workflowTaskDisplayContext.getOrderByType() %>"
 	sortingURL="<%= workflowTaskDisplayContext.getSortingURL() %>"
 	viewTypeItems="<%= workflowTaskDisplayContext.getViewTypes() %>"
 />

@@ -15,6 +15,7 @@
 	<property file="../app.server.${env.HOSTNAME}.properties" />
 	<property file="../app.server.properties" />
 
+	<property file="../build.profile-dxp.properties" />
 	<property file="../build.properties" />
 
 	<property name="portal.lib.dir" value="${app.server.tomcat.lib.portal.dir}" />
@@ -58,7 +59,7 @@
 					dir="${modules.dir}"
 				>
 					<include name="apps/*" />
-					<include name="private/apps/*" />
+					<include name="dxp/apps/*" />
 					<exclude name="${build.exclude.dirs}" />
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -79,12 +80,15 @@
 				<property file="@{app.dir}/app.bnd" />
 
 				<if>
-					<and>
-						<available file="@{app.dir}/app.bnd" />
-						<not>
-							<equals arg1="${Liferay-Releng-Bundle}" arg2="true" />
-						</not>
-					</and>
+					<or>
+						<available file="@{app.dir}/.lfrbuild-releng-ignore" />
+						<and>
+							<available file="@{app.dir}/app.bnd" />
+							<not>
+								<equals arg1="${Liferay-Releng-Bundle}" arg2="true" />
+							</not>
+						</and>
+					</or>
 					<then>
 						<ant inheritAll="false" target="delete-app">
 							<property name="app.name" value="${app.name}" />
@@ -145,6 +149,30 @@
 			</sequential>
 		</for>
 
+		<if>
+			<equals arg1="${lpkg.container}" arg2="true" />
+			<then>
+				<zip
+					destfile="${output.dir}/${Liferay-Releng-App-Title}.lpkg"
+				>
+					<fileset
+						dir="${output.dir}"
+					>
+						<include name="*${Liferay-Releng-App-Title}*.lpkg" />
+					</fileset>
+				</zip>
+
+				<delete>
+					<fileset
+						dir="${output.dir}"
+					>
+						<exclude name="*${Liferay-Releng-App-Title}.lpkg" />
+						<include name="*${Liferay-Releng-App-Title}*.lpkg" />
+					</fileset>
+				</delete>
+			</then>
+		</if>
+
 		<delete includeemptydirs="true">
 			<fileset
 				dir="${output.dir}"
@@ -193,7 +221,7 @@
 					dir="${modules.dir}"
 				>
 					<include name="apps/*" />
-					<include name="private/apps/*" />
+					<include name="dxp/apps/*" />
 					<exclude name="${build.exclude.dirs}" />
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -248,7 +276,7 @@
 					dir="${modules.dir}"
 				>
 					<include name="apps/*" />
-					<include name="private/apps/*" />
+					<include name="dxp/apps/*" />
 					<exclude name="${build.exclude.dirs}" />
 				</dirset>
 			</path>
@@ -286,15 +314,12 @@
 		<condition property="current.branch.private">
 			<or>
 				<istrue value="${ee.override}" />
-				<resourcecontains
-					resource="${modules.dir}/../portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java"
-					substring=" Digital Experience Platform"
-				/>
+				<equals arg1="${build.profile}" arg2="dxp" />
 			</or>
 		</condition>
 
 		<condition else="Liferay CE" property="liferay.releng.app.title.prefix" value="Liferay">
-			<istrue value="${current.branch.private}" />
+			<equals arg1="${build.profile}" arg2="dxp" />
 		</condition>
 	</target>
 
@@ -336,25 +361,6 @@
 				<isset property="module.stale.artifacts" />
 			</condition>
 		</fail>
-	</target>
-
-	<target depends="check-current-branch" if="${current.branch.private}" name="checkout-public-modules-releng">
-		<loadfile
-			property="git.commit.portal.public"
-			srcfile="${project.dir}/git-commit-portal"
-		>
-			<filterchain>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-
-		<echo message="Checking out ${app.name} public releng info from commit ID: ${git.commit.portal.public}" />
-
-		<exec dir="${project.dir}/modules" executable="git">
-			<arg value="checkout" />
-			<arg value="${git.commit.portal.public}" />
-			<arg value=".releng/apps/${app.name}" />
-		</exec>
 	</target>
 
 	<target depends="init-build-app" name="clean-app">
@@ -512,6 +518,10 @@
 	</target>
 
 	<target depends="get-app-names-core" name="get-app-names" unless="app.names">
+		<condition else="apps/**/app.bnd" property="app.names.includes" value="apps/**/app.bnd,dxp/apps/**/app.bnd">
+			<equals arg1="${build.profile}" arg2="dxp" />
+		</condition>
+
 		<condition else="Liferay-Releng-Suite:\s*[\w-]+$" property="liferay.releng.suite.pattern" value=".">
 			<istrue value="${include.standalone.apps}" />
 		</condition>
@@ -519,11 +529,10 @@
 		<pathconvert pathsep="," property="app.names">
 			<fileset
 				dir="${modules.dir}"
+				includes="${app.names.includes}"
 			>
 				<contains casesensitive="false" ignorewhitespace="true" text="Liferay-Releng-Bundle: true" />
 				<containsregexp casesensitive="false" expression="${liferay.releng.suite.pattern}" multiline="true" />
-				<include name="apps/**/app.bnd" />
-				<include name="private/apps/**/app.bnd" />
 				<present targetdir="${modules.dir}/.releng">
 					<mapper
 						from="*app.bnd"
@@ -541,7 +550,7 @@
 			<path>
 				<fileset
 					dir="."
-					includes="apps/*/app.bnd,private/apps/*/app.bnd"
+					includes="apps/*/app.bnd,dxp/apps/*/app.bnd"
 				>
 					<contains casesensitive="false" ignorewhitespace="true" text="Liferay-Releng-Fix-Delivery-Method: core" />
 				</fileset>
@@ -562,6 +571,14 @@
 	</target>
 
 	<target depends="init-build-app" name="get-app-properties">
+		<fail message="No app.properties was found in ${releng.app.dir}.">
+			<condition>
+				<not>
+					<available file="${releng.app.dir}/app.properties" />
+				</not>
+			</condition>
+		</fail>
+
 		<property file="${releng.app.dir}/app.properties" />
 
 		<condition property="app.version" value="${app.marketplace.version}">
@@ -663,7 +680,7 @@
 		</exec>
 	</target>
 
-	<target depends="checkout-public-modules-releng" name="init-build-app">
+	<target depends="check-current-branch" name="init-build-app">
 		<fail message="Please specify a value for &quot;app.name&quot; when running this command.">
 			<condition>
 				<not>
@@ -686,22 +703,29 @@
 			</condition>
 		</fail>
 
-		<condition else="${modules.dir}/apps/${app.name}" property="app.dir" value="${modules.dir}/private/apps/${app.name}">
-			<available file="${modules.dir}/private/apps/${app.name}" />
+		<condition else="${modules.dir}/apps/${app.name}" property="app.dir" value="${modules.dir}/dxp/apps/${app.name}">
+			<and>
+				<available file="${modules.dir}/dxp/apps/${app.name}" />
+				<equals arg1="${build.profile}" arg2="dxp" />
+			</and>
 		</condition>
 
-		<condition else="${modules.dir}/.releng/apps/${app.name}" property="releng.app.dir" value="${modules.dir}/.releng/private/apps/${app.name}">
-			<available file="${modules.dir}/.releng/private/apps/${app.name}" />
+		<condition else="${modules.dir}/.releng/apps/${app.name}" property="releng.app.dir" value="${modules.dir}/.releng/dxp/apps/${app.name}">
+			<and>
+				<available file="${modules.dir}/.releng/dxp/apps/${app.name}" />
+				<equals arg1="${build.profile}" arg2="dxp" />
+			</and>
 		</condition>
 
 		<condition property="download.app.sources">
 			<or>
 				<and>
-					<available file="${modules.dir}/private/apps/${app.name}" />
+					<available file="${modules.dir}/dxp/apps/${app.name}" />
 					<available file="${app.dir}/.lfrbuild-release-src" />
+					<equals arg1="${build.profile}" arg2="dxp" />
 				</and>
 				<not>
-					<available file="${modules.dir}/private/apps/${app.name}" />
+					<equals arg1="${build.profile}" arg2="dxp" />
 				</not>
 			</or>
 		</condition>
@@ -722,14 +746,14 @@
 
 					<replacestring from="-dxp" to="" />
 
-					<replacestring from="private${file.separator}" to="" />
+					<replacestring from="dxp${file.separator}" to="" />
 				</filtermapper>
 			</chainedmapper>
 			<path>
 				<dirset
 					dir="${modules.dir}"
 					excludes="**/*-test*"
-					includes="apps/${app.name}/**,private/apps/${app.name}/**"
+					includes="apps/${app.name}/**,dxp/apps/${app.name}/**"
 				>
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -752,7 +776,7 @@
 				<dirset
 					dir="${modules.dir}"
 					excludes="**/*-test*"
-					includes="apps/${app.name}/**,private/apps/${app.name}/**"
+					includes="apps/${app.name}/**,dxp/apps/${app.name}/**"
 				>
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -765,7 +789,7 @@
 				<dirset
 					dir="${modules.dir}"
 					excludes="**/*-test*"
-					includes="private/apps/${app.name}/**"
+					includes="dxp/apps/${app.name}/**"
 				>
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -791,7 +815,7 @@
 				<dirset
 					dir="${modules.dir}"
 					excludes="**/*-test*,${app.module.dirs.excludes}"
-					includes="apps/${app.name}/**,private/apps/${app.name}/**"
+					includes="apps/${app.name}/**,dxp/apps/${app.name}/**"
 				>
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -804,7 +828,7 @@
 				<dirset
 					dir="${modules.dir}"
 					excludes="${app.module.dirs.excludes}"
-					includes="apps/${app.name}/**,private/apps/${app.name}/**"
+					includes="apps/${app.name}/**,dxp/apps/${app.name}/**"
 				>
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -826,7 +850,7 @@
 				<dirset
 					dir="${modules.dir}"
 					excludes="**/*-test*,${app.module.dirs.excludes}"
-					includes="apps/${app.name}/**,private/apps/${app.name}/**"
+					includes="apps/${app.name}/**"
 				>
 					<present targetdir="${modules.dir}">
 						<mapper
@@ -845,6 +869,7 @@
 
 		<condition property="module.dirs.null">
 			<or>
+				<available file="${app.dir}/.lfrbuild-releng-ignore" />
 				<equals arg1="${app.module.dirs}" arg2="" />
 				<not>
 					<isset property="app.module.dirs" />
@@ -860,7 +885,7 @@
 
 		<property file="${modules.dir}/../build.properties" />
 
-		<for list="${modules.dir}/apps/${app.name}/app.bnd,${modules.dir}/private/apps/${app.name}/app.bnd" param="app.bnd.file">
+		<for list="${modules.dir}/apps/${app.name}/app.bnd,${modules.dir}/dxp/apps/${app.name}/app.bnd" param="app.bnd.file">
 			<sequential>
 				<if>
 					<available file="@{app.bnd.file}" />
@@ -873,9 +898,9 @@
 
 		<condition property="check.stale.artifacts.skip">
 			<and>
-				<istrue value="${current.branch.private}" />
+				<equals arg1="${build.profile}" arg2="dxp" />
 				<not>
-					<available file="${modules.dir}/private/apps/${app.name}" />
+					<available file="${modules.dir}/dxp/apps/${app.name}" />
 				</not>
 			</and>
 		</condition>
@@ -975,19 +1000,11 @@
 
 		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
 
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="context-names=" />
-
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
-
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="remote-app-id=${remote.app.id}" />
-
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
-
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="version=1.0" />
-
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
-
 		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="category=${title}" />
+
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
+
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="context-names=" />
 
 		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
 
@@ -995,11 +1012,31 @@
 
 		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
 
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="icon-url=https://www.liferay.com/web/guest/marketplace/-/mp/asset/icon/71985553" />
+
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
+
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="remote-app-id=${remote.app.id}" />
+
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
+
+		<if>
+			<equals arg1="${hot.deploy.test}" arg2="true" />
+			<then>
+				<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="restart-required=false" />
+			</then>
+			<else>
+				<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="restart-required=${Liferay-Releng-Restart-Required}" />
+			</else>
+		</if>
+
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
+
 		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="title=${title}" />
 
 		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="${line.separator}" />
 
-		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="icon-url=https://www.liferay.com/web/guest/marketplace/-/mp/asset/icon/71985553" />
+		<echo append="true" file="${lpkg.dir}/liferay-marketplace.properties" message="version=1.0" />
 	</target>
 
 	<target depends="dist-module-artifacts,get-app-change-log,zip-app-sources-init" if="zip.app.sources" name="zip-app-sources">

@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentCollection
  * @generated
  */
-@ProviderType
 public class FragmentCollectionWrapper
 	extends BaseModelWrapper<FragmentCollection>
 	implements FragmentCollection, ModelWrapper<FragmentCollection> {
@@ -46,6 +45,8 @@ public class FragmentCollectionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("fragmentCollectionId", getFragmentCollectionId());
 		attributes.put("groupId", getGroupId());
@@ -64,6 +65,18 @@ public class FragmentCollectionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -160,6 +173,16 @@ public class FragmentCollectionWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this fragment collection.
+	 *
+	 * @return the ct collection ID of this fragment collection
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the description of this fragment collection.
 	 *
 	 * @return the description of this fragment collection
@@ -220,6 +243,16 @@ public class FragmentCollectionWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this fragment collection.
+	 *
+	 * @return the mvcc version of this fragment collection
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this fragment collection.
 	 *
 	 * @return the name of this fragment collection
@@ -252,6 +285,13 @@ public class FragmentCollectionWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return model.getResourcesFolderId();
+	}
+
+	@Override
+	public long getResourcesFolderId(boolean createIfAbsent)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getResourcesFolderId(createIfAbsent);
 	}
 
 	/**
@@ -314,6 +354,14 @@ public class FragmentCollectionWrapper
 		model.populateZipWriter(zipWriter);
 	}
 
+	@Override
+	public void populateZipWriter(
+			com.liferay.portal.kernel.zip.ZipWriter zipWriter, String path)
+		throws Exception {
+
+		model.populateZipWriter(zipWriter, path);
+	}
+
 	/**
 	 * Sets the company ID of this fragment collection.
 	 *
@@ -332,6 +380,16 @@ public class FragmentCollectionWrapper
 	@Override
 	public void setCreateDate(Date createDate) {
 		model.setCreateDate(createDate);
+	}
+
+	/**
+	 * Sets the ct collection ID of this fragment collection.
+	 *
+	 * @param ctCollectionId the ct collection ID of this fragment collection
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -395,6 +453,16 @@ public class FragmentCollectionWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this fragment collection.
+	 *
+	 * @param mvccVersion the mvcc version of this fragment collection
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the name of this fragment collection.
 	 *
 	 * @param name the name of this fragment collection
@@ -452,6 +520,20 @@ public class FragmentCollectionWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<FragmentCollection, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<FragmentCollection, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

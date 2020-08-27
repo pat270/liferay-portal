@@ -14,6 +14,7 @@
 
 package com.liferay.site.item.selector.web.internal.display.context;
 
+import com.liferay.item.selector.criteria.group.criterion.GroupItemSelectorCriterion;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
@@ -23,7 +24,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.site.item.selector.criterion.SiteItemSelectorCriterion;
+import com.liferay.site.item.selector.display.context.SitesItemSelectorViewDisplayContext;
 
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
@@ -40,11 +41,11 @@ public abstract class BaseSitesItemSelectorViewDisplayContext
 
 	public BaseSitesItemSelectorViewDisplayContext(
 		HttpServletRequest httpServletRequest,
-		SiteItemSelectorCriterion siteItemSelectorCriterion,
+		GroupItemSelectorCriterion groupItemSelectorCriterion,
 		String itemSelectedEventName, PortletURL portletURL) {
 
-		request = httpServletRequest;
-		_siteItemSelectorCriterion = siteItemSelectorCriterion;
+		this.httpServletRequest = httpServletRequest;
+		_groupItemSelectorCriterion = groupItemSelectorCriterion;
 		_itemSelectedEventName = itemSelectedEventName;
 		this.portletURL = portletURL;
 	}
@@ -55,15 +56,22 @@ public abstract class BaseSitesItemSelectorViewDisplayContext
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(request, "displayStyle", "icon");
+		_displayStyle = ParamUtil.getString(
+			httpServletRequest, "displayStyle", "icon");
 
 		return _displayStyle;
 	}
 
 	@Override
+	public GroupItemSelectorCriterion getGroupItemSelectorCriterion() {
+		return _groupItemSelectorCriterion;
+	}
+
+	@Override
 	public String getGroupName(Group group) throws PortalException {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return group.getDescriptiveName(themeDisplay.getLocale());
 	}
@@ -75,13 +83,13 @@ public abstract class BaseSitesItemSelectorViewDisplayContext
 
 	@Override
 	public PortletRequest getPortletRequest() {
-		return (PortletRequest)request.getAttribute(
+		return (PortletRequest)httpServletRequest.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
 	}
 
 	@Override
 	public PortletResponse getPortletResponse() {
-		return (PortletResponse)request.getAttribute(
+		return (PortletResponse)httpServletRequest.getAttribute(
 			JavaConstants.JAVAX_PORTLET_RESPONSE);
 	}
 
@@ -90,11 +98,6 @@ public abstract class BaseSitesItemSelectorViewDisplayContext
 		return PortletURLUtil.clone(
 			portletURL,
 			PortalUtil.getLiferayPortletResponse(getPortletResponse()));
-	}
-
-	@Override
-	public SiteItemSelectorCriterion getSiteItemSelectorCriterion() {
-		return _siteItemSelectorCriterion;
 	}
 
 	@Override
@@ -112,11 +115,11 @@ public abstract class BaseSitesItemSelectorViewDisplayContext
 		return false;
 	}
 
+	protected final HttpServletRequest httpServletRequest;
 	protected final PortletURL portletURL;
-	protected final HttpServletRequest request;
 
 	private String _displayStyle;
+	private final GroupItemSelectorCriterion _groupItemSelectorCriterion;
 	private final String _itemSelectedEventName;
-	private final SiteItemSelectorCriterion _siteItemSelectorCriterion;
 
 }

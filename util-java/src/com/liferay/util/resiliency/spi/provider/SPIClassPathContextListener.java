@@ -43,8 +43,10 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class SPIClassPathContextListener implements ServletContextListener {
 
 	public static volatile String SPI_CLASS_PATH = StringPool.BLANK;
@@ -90,7 +92,7 @@ public class SPIClassPathContextListener implements ServletContextListener {
 
 		addJarFiles(jarFiles, new File(spiEmbeddedLibDir, "ext"));
 
-		StringBundler sb = new StringBundler(jarFiles.size() * 2 + 2);
+		StringBundler sb = new StringBundler((jarFiles.size() * 2) + 2);
 
 		for (File file : jarFiles) {
 			sb.append(file.getAbsolutePath());
@@ -142,11 +144,11 @@ public class SPIClassPathContextListener implements ServletContextListener {
 				MPIHelperUtil.registerSPIProvider(spiProvider);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				"Unable to create SPI provider with name " +
 					spiProviderClassName,
-				e);
+				exception);
 		}
 	}
 

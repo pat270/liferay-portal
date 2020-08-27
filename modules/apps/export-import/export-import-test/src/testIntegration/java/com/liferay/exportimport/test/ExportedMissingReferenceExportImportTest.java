@@ -34,23 +34,22 @@ import com.liferay.exportimport.test.util.model.DummyReference;
 import com.liferay.exportimport.test.util.model.util.DummyFolderTestUtil;
 import com.liferay.exportimport.test.util.model.util.DummyReferenceTestUtil;
 import com.liferay.exportimport.test.util.model.util.DummyTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.dao.orm.hibernate.DynamicQueryFactoryImpl;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletBag;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipReaderFactoryUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerList;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +76,7 @@ public class ExportedMissingReferenceExportImportTest
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		super.setUp();
 
@@ -195,8 +194,6 @@ public class ExportedMissingReferenceExportImportTest
 	}
 
 	protected void assertMissingReferences() throws Exception {
-		ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(larFile);
-
 		PortletDataContext portletDataContext =
 			PortletDataContextFactoryUtil.createImportPortletDataContext(
 				TestPropsValues.getCompanyId(), group.getGroupId(),
@@ -204,7 +201,7 @@ public class ExportedMissingReferenceExportImportTest
 				ExportImportHelperUtil.getUserIdStrategy(
 					TestPropsValues.getUserId(),
 					TestUserIdStrategy.CURRENT_USER_ID),
-				zipReader);
+				ZipReaderFactoryUtil.getZipReader(larFile));
 
 		Element missingReferencesElement =
 			portletDataContext.getMissingReferencesElement();
@@ -219,25 +216,22 @@ public class ExportedMissingReferenceExportImportTest
 
 	@Override
 	protected Map<String, String[]> getExportParameterMap() throws Exception {
-		Map<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put(
+		return HashMapBuilder.put(
 			PortletDataHandlerKeys.PORTLET_CONFIGURATION,
-			new String[] {Boolean.TRUE.toString()});
-		parameterMap.put(
+			new String[] {Boolean.TRUE.toString()}
+		).put(
 			PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,
-			new String[] {Boolean.TRUE.toString()});
-		parameterMap.put(
+			new String[] {Boolean.TRUE.toString()}
+		).put(
 			PortletDataHandlerKeys.PORTLET_DATA,
-			new String[] {Boolean.TRUE.toString()});
-		parameterMap.put(
+			new String[] {Boolean.TRUE.toString()}
+		).put(
 			PortletDataHandlerKeys.PORTLET_DATA_ALL,
-			new String[] {Boolean.TRUE.toString()});
-		parameterMap.put(
+			new String[] {Boolean.TRUE.toString()}
+		).put(
 			PortletDataHandlerKeys.PORTLET_SETUP_ALL,
-			new String[] {Boolean.TRUE.toString()});
-
-		return parameterMap;
+			new String[] {Boolean.TRUE.toString()}
+		).build();
 	}
 
 	@Override
@@ -245,9 +239,10 @@ public class ExportedMissingReferenceExportImportTest
 		return getExportParameterMap();
 	}
 
-	protected int getPortletDataHandlerRank(Class portletDataHandlerClass) {
+	protected int getPortletDataHandlerRank(Class<?> portletDataHandlerClass) {
 		ServiceTrackerList<PortletDataHandler> portletDataHandlerInstances =
-			ServiceTrackerCollections.openList(portletDataHandlerClass);
+			ServiceTrackerCollections.openList(
+				(Class<PortletDataHandler>)portletDataHandlerClass);
 
 		Assert.assertEquals(
 			portletDataHandlerInstances.toString(), 1,
@@ -260,11 +255,12 @@ public class ExportedMissingReferenceExportImportTest
 	}
 
 	protected List<PortletDataHandler> setPortletDataHandler(
-			String portletId, Class portletDataHandlerClass)
+			String portletId, Class<?> portletDataHandlerClass)
 		throws Exception {
 
 		ServiceTrackerList<PortletDataHandler> portletDataHandlerInstances =
-			ServiceTrackerCollections.openList(portletDataHandlerClass);
+			ServiceTrackerCollections.openList(
+				(Class<PortletDataHandler>)portletDataHandlerClass);
 
 		return setPortletDataHandler(portletId, portletDataHandlerInstances);
 	}
@@ -285,10 +281,11 @@ public class ExportedMissingReferenceExportImportTest
 	}
 
 	protected void setPortletDataHandlerRank(
-		Class portletDataHandlerClass, int rank) {
+		Class<?> portletDataHandlerClass, int rank) {
 
 		ServiceTrackerList<PortletDataHandler> portletDataHandlerInstances =
-			ServiceTrackerCollections.openList(portletDataHandlerClass);
+			ServiceTrackerCollections.openList(
+				(Class<PortletDataHandler>)portletDataHandlerClass);
 
 		Assert.assertEquals(
 			portletDataHandlerInstances.toString(), 1,

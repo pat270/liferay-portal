@@ -15,14 +15,13 @@
 package com.liferay.portal.search.engine.adapter.index;
 
 import com.liferay.petra.string.StringPool;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
-public class FlushIndexRequest implements IndexRequest<FlushIndexResponse> {
+public class FlushIndexRequest
+	extends CrossClusterRequest implements IndexRequest<FlushIndexResponse> {
 
 	public FlushIndexRequest() {
 		_indexNames = StringPool.EMPTY_ARRAY;
@@ -42,18 +41,6 @@ public class FlushIndexRequest implements IndexRequest<FlushIndexResponse> {
 	@Override
 	public String[] getIndexNames() {
 		return _indexNames;
-	}
-
-	/**
-	 * @return
-	 * @deprecated As of Judson (7.1.x), with no direct replacement. This method
-	 *             should not be in the parent interface.  Only certain
-	 *             IndexRequests work with mappings.
-	 */
-	@Deprecated
-	@Override
-	public String getMappingName() {
-		throw new UnsupportedOperationException();
 	}
 
 	public boolean isForce() {

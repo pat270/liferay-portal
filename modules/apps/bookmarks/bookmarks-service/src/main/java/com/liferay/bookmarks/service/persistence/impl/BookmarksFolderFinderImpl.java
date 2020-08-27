@@ -107,18 +107,18 @@ public class BookmarksFolderFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_NO_ASSETS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("BookmarksFolder", BookmarksFolderImpl.class);
+			sqlQuery.addEntity("BookmarksFolder", BookmarksFolderImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(_portal.getClassNameId(BookmarksFolder.class));
+			queryPos.add(_portal.getClassNameId(BookmarksFolder.class));
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -185,32 +185,32 @@ public class BookmarksFolderFinderImpl
 
 			sql = sb.toString();
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(folderId);
+			queryPos.add(groupId);
+			queryPos.add(folderId);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
-			qPos.add(groupId);
-			qPos.add(folderId);
+			queryPos.add(groupId);
+			queryPos.add(folderId);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
 			int count = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long l = itr.next();
+			while (iterator.hasNext()) {
+				Long l = iterator.next();
 
 				if (l != null) {
 					count += l.intValue();
@@ -219,8 +219,8 @@ public class BookmarksFolderFinderImpl
 
 			return count;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -280,57 +280,57 @@ public class BookmarksFolderFinderImpl
 
 			sql = sb.toString();
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("modelId", Type.LONG);
-			q.addScalar("modelName", Type.STRING);
-			q.addScalar("modelFolder", Type.LONG);
+			sqlQuery.addScalar("modelId", Type.LONG);
+			sqlQuery.addScalar("modelName", Type.STRING);
+			sqlQuery.addScalar("modelFolder", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(folderId);
+			queryPos.add(groupId);
+			queryPos.add(folderId);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
-			qPos.add(groupId);
-			qPos.add(folderId);
+			queryPos.add(groupId);
+			queryPos.add(folderId);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
 			List<Object> models = new ArrayList<>();
 
-			Iterator<Object[]> itr = (Iterator<Object[]>)QueryUtil.iterate(
-				q, getDialect(), queryDefinition.getStart(),
+			Iterator<Object[]> iterator = (Iterator<Object[]>)QueryUtil.iterate(
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				long modelId = (Long)array[0];
 				//String name = (String)array[1];
 				long modelFolder = (Long)array[2];
 
-				Object obj = null;
+				Object object = null;
 
 				if (modelFolder == 0) {
-					obj = BookmarksFolderUtil.findByPrimaryKey(modelId);
+					object = BookmarksFolderUtil.findByPrimaryKey(modelId);
 				}
 				else {
-					obj = BookmarksEntryUtil.findByPrimaryKey(modelId);
+					object = BookmarksEntryUtil.findByPrimaryKey(modelId);
 				}
 
-				models.add(obj);
+				models.add(object);
 			}
 
 			return models;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

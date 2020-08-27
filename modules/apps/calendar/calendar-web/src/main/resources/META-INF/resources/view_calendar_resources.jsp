@@ -26,11 +26,11 @@ CalendarResourceDisplayTerms displayTerms = new CalendarResourceDisplayTerms(ren
 	disabled="<%= calendarDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= calendarDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= calendarDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= calendarDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= calendarDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm"
-	selectable="false"
+	selectable="<%= false %>"
 />
 
 <liferay-portlet:renderURL varImpl="iteratorURL">
@@ -38,7 +38,7 @@ CalendarResourceDisplayTerms displayTerms = new CalendarResourceDisplayTerms(ren
 	<portlet:param name="tabs1" value="resources" />
 </liferay-portlet:renderURL>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<c:choose>
 		<c:when test="<%= displayTerms.getScope() == themeDisplay.getCompanyGroupId() %>">
 			<h3><liferay-ui:message key="users" /></h3>
@@ -53,4 +53,4 @@ CalendarResourceDisplayTerms displayTerms = new CalendarResourceDisplayTerms(ren
 			<%@ include file="/calendar_resource_search_container.jspf" %>
 		</c:otherwise>
 	</c:choose>
-</div>
+</clay:container-fluid>

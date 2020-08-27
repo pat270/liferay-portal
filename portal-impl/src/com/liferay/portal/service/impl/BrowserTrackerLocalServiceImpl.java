@@ -65,9 +65,9 @@ public class BrowserTrackerLocalServiceImpl
 		browserTracker.setBrowserKey(browserKey);
 
 		try {
-			browserTrackerPersistence.update(browserTracker);
+			browserTracker = browserTrackerPersistence.update(browserTracker);
 		}
-		catch (SystemException se) {
+		catch (SystemException systemException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn("Add failed, fetch {userId=" + userId + "}");
 			}
@@ -76,7 +76,7 @@ public class BrowserTrackerLocalServiceImpl
 				userId, false);
 
 			if (browserTracker == null) {
-				throw se;
+				throw systemException;
 			}
 		}
 

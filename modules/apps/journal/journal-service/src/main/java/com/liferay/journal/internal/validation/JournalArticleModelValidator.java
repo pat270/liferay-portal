@@ -14,6 +14,8 @@
 
 package com.liferay.journal.internal.validation;
 
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.dynamic.data.mapping.exception.NoSuchStructureException;
 import com.liferay.dynamic.data.mapping.exception.NoSuchTemplateException;
 import com.liferay.dynamic.data.mapping.exception.StorageFieldNameException;
@@ -29,6 +31,7 @@ import com.liferay.exportimport.content.processor.ExportImportContentProcessorRe
 import com.liferay.exportimport.kernel.exception.ExportImportContentValidationException;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.journal.configuration.JournalFileUploadsConfiguration;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.exception.ArticleContentException;
 import com.liferay.journal.exception.ArticleExpirationDateException;
 import com.liferay.journal.exception.ArticleIdException;
@@ -38,7 +41,6 @@ import com.liferay.journal.exception.ArticleTitleException;
 import com.liferay.journal.exception.DuplicateArticleIdException;
 import com.liferay.journal.exception.InvalidDDMStructureException;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticleLocalization;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.journal.service.persistence.JournalArticlePersistence;
@@ -47,6 +49,7 @@ import com.liferay.journal.util.JournalHelper;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchImageException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -61,6 +64,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -110,18 +114,18 @@ public class JournalArticleModelValidator
 			if (!LanguageUtil.isAvailableLocale(
 					groupId, articleDefaultLocale)) {
 
-				LocaleException le = new LocaleException(
+				LocaleException localeException = new LocaleException(
 					LocaleException.TYPE_CONTENT,
 					StringBundler.concat(
 						"The locale ", articleDefaultLocale.getLanguage(),
 						" is not available in site with groupId", groupId));
 
-				le.setSourceAvailableLocales(
+				localeException.setSourceAvailableLocales(
 					Collections.singleton(articleDefaultLocale));
-				le.setTargetAvailableLocales(
+				localeException.setTargetAvailableLocales(
 					LanguageUtil.getAvailableLocales(groupId));
 
-				throw le;
+				throw localeException;
 			}
 
 			if ((expirationDate != null) &&
@@ -134,7 +138,7 @@ public class JournalArticleModelValidator
 			}
 		}
 
-		if ((classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT) &&
+		if ((classNameId == JournalArticleConstants.CLASS_NAME_ID_DEFAULT) &&
 			(titleMap.isEmpty() ||
 			 Validator.isNull(titleMap.get(articleDefaultLocale)))) {
 
@@ -202,7 +206,9 @@ public class JournalArticleModelValidator
 		}
 
 		if (!validSmallImageExtension) {
-			throw new ArticleSmallImageNameException(smallImageName);
+			throw new ArticleSmallImageNameException(
+				"Invalid image extension " +
+					FileUtil.getExtension(smallImageName));
 		}
 
 		long smallImageMaxSize =
@@ -271,13 +277,13 @@ public class JournalArticleModelValidator
 		try {
 			SAXReaderUtil.read(content);
 		}
-		catch (DocumentException de) {
+		catch (DocumentException documentException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug("Invalid content:\n" + content);
 			}
 
 			throw new ArticleContentException(
-				"Unable to read content with an XML parser", de);
+				"Unable to read content with an XML parser", documentException);
 		}
 	}
 
@@ -294,7 +300,8 @@ public class JournalArticleModelValidator
 
 			if (ddmStructure.getFieldRequired(field.getName()) &&
 				Validator.isNull(field.getValue(defaultlocale)) &&
-				(classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT)) {
+				(classNameId ==
+					JournalArticleConstants.CLASS_NAME_ID_DEFAULT)) {
 
 				StringBundler sb = new StringBundler(6);
 
@@ -334,7 +341,7 @@ public class JournalArticleModelValidator
 
 		List<DDMStructure> folderDDMStructures =
 			_journalFolderLocalService.getDDMStructures(
-				_portal.getCurrentAndAncestorSiteGroupIds(groupId), folderId,
+				_getCurrentAndAncestorSiteAndDepotGroupIds(groupId), folderId,
 				restrictionType);
 
 		for (DDMStructure folderDDMStructure : folderDDMStructures) {
@@ -353,8 +360,6 @@ public class JournalArticleModelValidator
 
 	@Override
 	public ModelValidationResults validateModel(JournalArticle article) {
-		long groupId = article.getGroupId();
-		String content = article.getContent();
 		String ddmStructureKey = article.getDDMStructureKey();
 		String ddmTemplateKey = article.getDDMTemplateKey();
 		boolean smallImage = article.isSmallImage();
@@ -370,11 +375,16 @@ public class JournalArticleModelValidator
 			if (image != null) {
 				smallImageBytes = image.getTextObj();
 
-				try {
-					smallImageFile = FileUtil.createTempFile(smallImageBytes);
-				}
-				catch (IOException ioe) {
-					smallImageBytes = null;
+				if (smallImageBytes != null) {
+					try {
+						smallImageFile = FileUtil.createTempFile(
+							image.getType());
+
+						FileUtil.write(smallImageFile, smallImageBytes, false);
+					}
+					catch (IOException ioException) {
+						smallImageBytes = null;
+					}
 				}
 			}
 		}
@@ -395,38 +405,44 @@ public class JournalArticleModelValidator
 				smallImage, smallImageURL, smallImageFile, smallImageBytes,
 				serviceContext);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			ModelValidationResults.FailureBuilder failureBuilder =
 				ModelValidationResults.failure();
 
 			return failureBuilder.exceptionFailure(
-				pe.getMessage(), pe
+				portalException.getMessage(), portalException
 			).getResults();
 		}
 
 		try {
 			validateReferences(
-				groupId, ddmStructureKey, ddmTemplateKey,
+				article.getGroupId(), ddmStructureKey, ddmTemplateKey,
 				article.getLayoutUuid(), smallImage, smallImageURL,
-				smallImageBytes, article.getSmallImageId(), content);
+				smallImageBytes, article.getSmallImageId(),
+				article.getContent());
 		}
-		catch (ExportImportContentValidationException eicve) {
-			eicve.setStagedModelClassName(JournalArticle.class.getName());
-			eicve.setStagedModelClassPK(Long.valueOf(article.getArticleId()));
+		catch (ExportImportContentValidationException
+					exportImportContentValidationException) {
+
+			exportImportContentValidationException.setStagedModelClassName(
+				JournalArticle.class.getName());
+			exportImportContentValidationException.setStagedModelPrimaryKeyObj(
+				article.getArticleId());
 
 			ModelValidationResults.FailureBuilder failureBuilder =
 				ModelValidationResults.failure();
 
 			return failureBuilder.exceptionFailure(
-				eicve.getMessage(), eicve
+				exportImportContentValidationException.getMessage(),
+				exportImportContentValidationException
 			).getResults();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			ModelValidationResults.FailureBuilder failureBuilder =
 				ModelValidationResults.failure();
 
 			return failureBuilder.exceptionFailure(
-				pe.getMessage(), pe
+				portalException.getMessage(), portalException
 			).getResults();
 		}
 
@@ -471,17 +487,29 @@ public class JournalArticleModelValidator
 
 			Image image = _imageLocalService.fetchImage(smallImageId);
 
-			if (image == null) {
-				throw new NoSuchImageException();
+			if ((image == null) || (smallImageBytes == null)) {
+				throw new NoSuchImageException(
+					"Small image ID " + smallImageId);
 			}
 		}
 
-		ExportImportContentProcessor exportImportContentProcessor =
+		ExportImportContentProcessor<String> exportImportContentProcessor =
 			ExportImportContentProcessorRegistryUtil.
 				getExportImportContentProcessor(JournalArticle.class.getName());
 
 		exportImportContentProcessor.validateContentReferences(
 			groupId, content);
+	}
+
+	private long[] _getCurrentAndAncestorSiteAndDepotGroupIds(long groupId)
+		throws PortalException {
+
+		return ArrayUtil.append(
+			_portal.getCurrentAndAncestorSiteGroupIds(groupId),
+			ListUtil.toLongArray(
+				_depotEntryLocalService.getGroupConnectedDepotEntries(
+					groupId, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
+				DepotEntry::getGroupId));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -495,6 +523,9 @@ public class JournalArticleModelValidator
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference
+	private DepotEntryLocalService _depotEntryLocalService;
 
 	@Reference
 	private ImageLocalService _imageLocalService;

@@ -38,6 +38,7 @@ import org.junit.Test;
 public class TableTest extends PoshiRunnerTestCase {
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		_rawDataList = TableUtil.getRawDataListFromString(_RAW_DATA_STRING);
 
@@ -118,11 +119,8 @@ public class TableTest extends PoshiRunnerTestCase {
 
 	@Test
 	public void testTransposedTable() throws Exception {
-		List<List<String>> transposedRawDataList =
-			TableUtil.getTransposedRawDataList(_rawDataList);
-
 		RawTable transposedTable = (RawTable)TableFactory.newTable(
-			transposedRawDataList, "RawTable");
+			TableUtil.getTransposedRawDataList(_rawDataList), "RawTable");
 
 		Iterable<List<String>> actual = transposedTable.getTable();
 

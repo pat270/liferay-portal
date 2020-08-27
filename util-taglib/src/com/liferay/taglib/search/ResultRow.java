@@ -35,36 +35,36 @@ import javax.servlet.http.HttpServletResponse;
 public class ResultRow
 	implements com.liferay.portal.kernel.dao.search.ResultRow {
 
-	public ResultRow(Object obj, long primaryKey, int pos) {
-		this(obj, String.valueOf(primaryKey), pos);
+	public ResultRow(Object object, long primaryKey, int pos) {
+		this(object, String.valueOf(primaryKey), pos);
 	}
 
-	public ResultRow(Object obj, long primaryKey, int pos, boolean bold) {
-		this(obj, String.valueOf(primaryKey), pos, bold);
+	public ResultRow(Object object, long primaryKey, int pos, boolean bold) {
+		this(object, String.valueOf(primaryKey), pos, bold);
 	}
 
-	public ResultRow(Object obj, String primaryKey, int pos) {
-		this(obj, primaryKey, pos, false);
+	public ResultRow(Object object, String primaryKey, int pos) {
+		this(object, primaryKey, pos, false);
 	}
 
-	public ResultRow(Object obj, String primaryKey, int pos, boolean bold) {
-		this(String.valueOf(pos + 1), obj, primaryKey, pos, bold);
+	public ResultRow(Object object, String primaryKey, int pos, boolean bold) {
+		this(String.valueOf(pos + 1), object, primaryKey, pos, bold);
 	}
 
 	public ResultRow(
-		String rowId, Object obj, String primaryKey, int pos, boolean bold) {
+		String rowId, Object object, String primaryKey, int pos, boolean bold) {
 
 		this(
-			rowId, obj, primaryKey, pos, bold, StringPool.BLANK,
+			rowId, object, primaryKey, pos, bold, StringPool.BLANK,
 			StringPool.BLANK);
 	}
 
 	public ResultRow(
-		String rowId, Object obj, String primaryKey, int pos, boolean bold,
+		String rowId, Object object, String primaryKey, int pos, boolean bold,
 		String cssClass, String state) {
 
 		_rowId = rowId;
-		_obj = obj;
+		_obj = object;
 		_primaryKey = primaryKey;
 		_pos = pos;
 		_bold = bold;
@@ -155,17 +155,6 @@ public class ResultRow
 		_searchEntries.add(index, dateSearchEntry);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void addJSP(int index, String path) {
-		addJSP(
-			index, SearchEntry.DEFAULT_ALIGN, SearchEntry.DEFAULT_VALIGN,
-			SearchEntry.DEFAULT_COLSPAN, path);
-	}
-
 	@Override
 	public void addJSP(
 		int index, String path, ServletContext servletContext,
@@ -176,24 +165,6 @@ public class ResultRow
 			index, SearchEntry.DEFAULT_ALIGN, SearchEntry.DEFAULT_VALIGN,
 			SearchEntry.DEFAULT_COLSPAN, path, servletContext,
 			httpServletRequest, httpServletResponse);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void addJSP(
-		int index, String align, String valign, int colspan, String path) {
-
-		JSPSearchEntry jspSearchEntry = new JSPSearchEntry();
-
-		jspSearchEntry.setAlign(align);
-		jspSearchEntry.setColspan(colspan);
-		jspSearchEntry.setPath(path);
-		jspSearchEntry.setValign(valign);
-
-		_searchEntries.add(index, jspSearchEntry);
 	}
 
 	@Override
@@ -215,15 +186,6 @@ public class ResultRow
 		_searchEntries.add(index, jspSearchEntry);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void addJSP(String path) {
-		addJSP(_searchEntries.size(), path);
-	}
-
 	@Override
 	public void addJSP(
 		String path, ServletContext servletContext,
@@ -233,32 +195,6 @@ public class ResultRow
 		addJSP(
 			_searchEntries.size(), path, servletContext, httpServletRequest,
 			httpServletResponse);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void addJSP(String path, String cssClass) {
-		JSPSearchEntry jspSearchEntry = new JSPSearchEntry();
-
-		jspSearchEntry.setAlign(SearchEntry.DEFAULT_ALIGN);
-		jspSearchEntry.setColspan(SearchEntry.DEFAULT_COLSPAN);
-		jspSearchEntry.setCssClass(cssClass);
-		jspSearchEntry.setPath(path);
-		jspSearchEntry.setValign(SearchEntry.DEFAULT_VALIGN);
-
-		_searchEntries.add(_searchEntries.size(), jspSearchEntry);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void addJSP(String align, String valign, int colspan, String path) {
-		addJSP(_searchEntries.size(), align, valign, colspan, path);
 	}
 
 	@Override
@@ -290,17 +226,6 @@ public class ResultRow
 		jspSearchEntry.setValign(SearchEntry.DEFAULT_VALIGN);
 
 		_searchEntries.add(_searchEntries.size(), jspSearchEntry);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void addJSP(String align, String valign, String path) {
-		addJSP(
-			_searchEntries.size(), align, valign, SearchEntry.DEFAULT_COLSPAN,
-			path);
 	}
 
 	@Override
@@ -672,8 +597,8 @@ public class ResultRow
 	}
 
 	@Override
-	public void setObject(Object obj) {
-		_obj = obj;
+	public void setObject(Object object) {
+		_obj = object;
 	}
 
 	@Override

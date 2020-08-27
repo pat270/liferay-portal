@@ -38,7 +38,7 @@ import org.osgi.service.component.annotations.Deactivate;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = CMISSessionCache.class)
+@Component(service = CMISSessionCache.class)
 public class CMISSessionCache {
 
 	public Session get(String key) {
@@ -92,10 +92,10 @@ public class CMISSessionCache {
 	}
 
 	private void _clearSession(HttpSession httpSession) {
-		Enumeration<String> attributeNames = httpSession.getAttributeNames();
+		Enumeration<String> enumeration = httpSession.getAttributeNames();
 
-		while (attributeNames.hasMoreElements()) {
-			String attributeName = attributeNames.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String attributeName = enumeration.nextElement();
 
 			if (attributeName.startsWith(Session.class.getName())) {
 				httpSession.removeAttribute(attributeName);

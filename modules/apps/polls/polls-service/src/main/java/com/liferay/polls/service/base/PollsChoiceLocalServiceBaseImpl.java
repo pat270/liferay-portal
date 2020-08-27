@@ -19,12 +19,13 @@ import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.polls.model.PollsChoice;
 import com.liferay.polls.service.PollsChoiceLocalService;
 import com.liferay.polls.service.persistence.PollsChoicePersistence;
 import com.liferay.polls.service.persistence.PollsQuestionFinder;
 import com.liferay.polls.service.persistence.PollsQuestionPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -43,12 +44,11 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
-import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -56,7 +56,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the polls choice local service.
@@ -69,10 +69,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.polls.service.impl.PollsChoiceLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class PollsChoiceLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements PollsChoiceLocalService, IdentifiableOSGiService {
+	implements AopService, IdentifiableOSGiService, PollsChoiceLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -82,6 +81,10 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 
 	/**
 	 * Adds the polls choice to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsChoiceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param pollsChoice the polls choice
 	 * @return the polls choice that was added
@@ -109,6 +112,10 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	/**
 	 * Deletes the polls choice with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsChoiceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param choiceId the primary key of the polls choice
 	 * @return the polls choice that was removed
 	 * @throws PortalException if a polls choice with the primary key could not be found
@@ -122,6 +129,10 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	/**
 	 * Deletes the polls choice from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsChoiceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param pollsChoice the polls choice
 	 * @return the polls choice that was removed
 	 */
@@ -129,6 +140,11 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	@Override
 	public PollsChoice deletePollsChoice(PollsChoice pollsChoice) {
 		return pollsChoicePersistence.remove(pollsChoice);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return pollsChoicePersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -154,7 +170,7 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsChoiceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsChoiceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -174,7 +190,7 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsChoiceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsChoiceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -362,6 +378,15 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return pollsChoicePersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -370,6 +395,13 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 			(PollsChoice)persistedModel);
 	}
 
+	public BasePersistence<PollsChoice> getBasePersistence() {
+		return pollsChoicePersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -429,7 +461,7 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	 * Returns a range of all the polls choices.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsChoiceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsChoiceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of polls choices
@@ -454,6 +486,10 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 	/**
 	 * Updates the polls choice in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsChoiceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param pollsChoice the polls choice
 	 * @return the polls choice that was updated
 	 */
@@ -463,180 +499,17 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 		return pollsChoicePersistence.update(pollsChoice);
 	}
 
-	/**
-	 * Returns the polls choice local service.
-	 *
-	 * @return the polls choice local service
-	 */
-	public PollsChoiceLocalService getPollsChoiceLocalService() {
-		return pollsChoiceLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			PollsChoiceLocalService.class, IdentifiableOSGiService.class,
+			PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Sets the polls choice local service.
-	 *
-	 * @param pollsChoiceLocalService the polls choice local service
-	 */
-	public void setPollsChoiceLocalService(
-		PollsChoiceLocalService pollsChoiceLocalService) {
-
-		this.pollsChoiceLocalService = pollsChoiceLocalService;
-	}
-
-	/**
-	 * Returns the polls choice persistence.
-	 *
-	 * @return the polls choice persistence
-	 */
-	public PollsChoicePersistence getPollsChoicePersistence() {
-		return pollsChoicePersistence;
-	}
-
-	/**
-	 * Sets the polls choice persistence.
-	 *
-	 * @param pollsChoicePersistence the polls choice persistence
-	 */
-	public void setPollsChoicePersistence(
-		PollsChoicePersistence pollsChoicePersistence) {
-
-		this.pollsChoicePersistence = pollsChoicePersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the user local service.
-	 *
-	 * @return the user local service
-	 */
-	public com.liferay.portal.kernel.service.UserLocalService
-		getUserLocalService() {
-
-		return userLocalService;
-	}
-
-	/**
-	 * Sets the user local service.
-	 *
-	 * @param userLocalService the user local service
-	 */
-	public void setUserLocalService(
-		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
-
-		this.userLocalService = userLocalService;
-	}
-
-	/**
-	 * Returns the user persistence.
-	 *
-	 * @return the user persistence
-	 */
-	public UserPersistence getUserPersistence() {
-		return userPersistence;
-	}
-
-	/**
-	 * Sets the user persistence.
-	 *
-	 * @param userPersistence the user persistence
-	 */
-	public void setUserPersistence(UserPersistence userPersistence) {
-		this.userPersistence = userPersistence;
-	}
-
-	/**
-	 * Returns the polls question local service.
-	 *
-	 * @return the polls question local service
-	 */
-	public com.liferay.polls.service.PollsQuestionLocalService
-		getPollsQuestionLocalService() {
-
-		return pollsQuestionLocalService;
-	}
-
-	/**
-	 * Sets the polls question local service.
-	 *
-	 * @param pollsQuestionLocalService the polls question local service
-	 */
-	public void setPollsQuestionLocalService(
-		com.liferay.polls.service.PollsQuestionLocalService
-			pollsQuestionLocalService) {
-
-		this.pollsQuestionLocalService = pollsQuestionLocalService;
-	}
-
-	/**
-	 * Returns the polls question persistence.
-	 *
-	 * @return the polls question persistence
-	 */
-	public PollsQuestionPersistence getPollsQuestionPersistence() {
-		return pollsQuestionPersistence;
-	}
-
-	/**
-	 * Sets the polls question persistence.
-	 *
-	 * @param pollsQuestionPersistence the polls question persistence
-	 */
-	public void setPollsQuestionPersistence(
-		PollsQuestionPersistence pollsQuestionPersistence) {
-
-		this.pollsQuestionPersistence = pollsQuestionPersistence;
-	}
-
-	/**
-	 * Returns the polls question finder.
-	 *
-	 * @return the polls question finder
-	 */
-	public PollsQuestionFinder getPollsQuestionFinder() {
-		return pollsQuestionFinder;
-	}
-
-	/**
-	 * Sets the polls question finder.
-	 *
-	 * @param pollsQuestionFinder the polls question finder
-	 */
-	public void setPollsQuestionFinder(
-		PollsQuestionFinder pollsQuestionFinder) {
-
-		this.pollsQuestionFinder = pollsQuestionFinder;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.polls.model.PollsChoice", pollsChoiceLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.polls.model.PollsChoice");
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		pollsChoiceLocalService = (PollsChoiceLocalService)aopProxy;
 	}
 
 	/**
@@ -676,46 +549,28 @@ public abstract class PollsChoiceLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
-	@BeanReference(type = PollsChoiceLocalService.class)
 	protected PollsChoiceLocalService pollsChoiceLocalService;
 
-	@BeanReference(type = PollsChoicePersistence.class)
+	@Reference
 	protected PollsChoicePersistence pollsChoicePersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.UserLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.UserLocalService
 		userLocalService;
 
-	@ServiceReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-
-	@BeanReference(
-		type = com.liferay.polls.service.PollsQuestionLocalService.class
-	)
-	protected com.liferay.polls.service.PollsQuestionLocalService
-		pollsQuestionLocalService;
-
-	@BeanReference(type = PollsQuestionPersistence.class)
+	@Reference
 	protected PollsQuestionPersistence pollsQuestionPersistence;
 
-	@BeanReference(type = PollsQuestionFinder.class)
+	@Reference
 	protected PollsQuestionFinder pollsQuestionFinder;
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

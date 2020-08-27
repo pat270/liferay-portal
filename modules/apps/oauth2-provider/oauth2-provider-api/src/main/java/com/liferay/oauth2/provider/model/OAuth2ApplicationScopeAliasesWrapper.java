@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link OAuth2ApplicationScopeAliases}.
@@ -32,11 +30,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OAuth2ApplicationScopeAliases
  * @generated
  */
-@ProviderType
 public class OAuth2ApplicationScopeAliasesWrapper
 	extends BaseModelWrapper<OAuth2ApplicationScopeAliases>
-	implements OAuth2ApplicationScopeAliases,
-			   ModelWrapper<OAuth2ApplicationScopeAliases> {
+	implements ModelWrapper<OAuth2ApplicationScopeAliases>,
+			   OAuth2ApplicationScopeAliases {
 
 	public OAuth2ApplicationScopeAliasesWrapper(
 		OAuth2ApplicationScopeAliases oAuth2ApplicationScopeAliases) {

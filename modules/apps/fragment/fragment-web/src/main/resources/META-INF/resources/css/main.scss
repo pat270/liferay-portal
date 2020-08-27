@@ -1,11 +1,11 @@
-@import "AceEditor";
+@import 'CodeMirrorEditor';
 
-@import "FragmentEditor";
+@import 'FragmentEditor';
 
-@import "FragmentNameEditor";
+@import 'FragmentPreview';
 
-@import "FragmentPreview";
+@import 'Fragments';
 
-@import "SourceEditor";
+@import 'SourceEditor';
 
-@import "SourceEditorToolbar";
+@import 'SourceEditorToolbar';

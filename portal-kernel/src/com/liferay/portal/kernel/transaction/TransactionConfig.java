@@ -26,16 +26,16 @@ import java.util.Arrays;
 public class TransactionConfig {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof TransactionConfig)) {
+		if (!(object instanceof TransactionConfig)) {
 			return false;
 		}
 
-		TransactionConfig transactionConfig = (TransactionConfig)obj;
+		TransactionConfig transactionConfig = (TransactionConfig)object;
 
 		if ((_isolation == transactionConfig._isolation) &&
 			Arrays.equals(
@@ -131,9 +131,7 @@ public class TransactionConfig {
 			}
 		}
 
-		hash = HashUtil.hash(hash, _timeout);
-
-		return hash;
+		return HashUtil.hash(hash, _timeout);
 	}
 
 	public boolean isReadOnly() {

@@ -16,12 +16,9 @@ package com.liferay.asset.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchEntryUsageException extends NoSuchModelException {
 
 	public NoSuchEntryUsageException() {
@@ -31,12 +28,12 @@ public class NoSuchEntryUsageException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchEntryUsageException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchEntryUsageException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchEntryUsageException(Throwable cause) {
-		super(cause);
+	public NoSuchEntryUsageException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

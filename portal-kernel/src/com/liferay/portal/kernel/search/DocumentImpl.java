@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -54,51 +54,6 @@ import java.util.Set;
  * @author Bruno Farache
  */
 public class DocumentImpl implements Document {
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             Field#getLocalizedName(Locale, String)}
-	 */
-	@Deprecated
-	public static String getLocalizedName(Locale locale, String name) {
-		return Field.getLocalizedName(locale, name);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             Field#getLocalizedName(String, String)}
-	 */
-	@Deprecated
-	public static String getLocalizedName(String languageId, String name) {
-		return Field.getLocalizedName(languageId, name);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             Field#getSortableFieldName(String)}
-	 */
-	@Deprecated
-	public static String getSortableFieldName(String name) {
-		return Field.getSortableFieldName(name);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             Field#getSortFieldName(Sort, String)}
-	 */
-	@Deprecated
-	public static String getSortFieldName(Sort sort, String scoreFieldName) {
-		return Field.getSortFieldName(sort, scoreFieldName);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             Field#isSortableFieldName(String)}
-	 */
-	@Deprecated
-	public static boolean isSortableFieldName(String name) {
-		return Field.isSortableFieldName(name);
-	}
 
 	public static boolean isSortableTextField(String name) {
 		return _defaultSortableTextFields.contains(name);
@@ -175,30 +130,32 @@ public class DocumentImpl implements Document {
 
 	@Override
 	public void addFile(String name, byte[] bytes, String fileExt) {
-		InputStream is = new UnsyncByteArrayInputStream(bytes);
+		InputStream inputStream = new UnsyncByteArrayInputStream(bytes);
 
-		addFile(name, is, fileExt);
+		addFile(name, inputStream, fileExt);
 	}
 
 	@Override
 	public void addFile(String name, File file, String fileExt)
 		throws IOException {
 
-		InputStream is = new FileInputStream(file);
+		InputStream inputStream = new FileInputStream(file);
 
-		addFile(name, is, fileExt);
+		addFile(name, inputStream, fileExt);
 	}
 
 	@Override
-	public void addFile(String name, InputStream is, String fileExt) {
-		addText(name, FileUtil.extractText(is, fileExt));
+	public void addFile(String name, InputStream inputStream, String fileExt) {
+		addText(name, FileUtil.extractText(inputStream, fileExt));
 	}
 
 	@Override
 	public void addFile(
-		String name, InputStream is, String fileExt, int maxStringLength) {
+		String name, InputStream inputStream, String fileExt,
+		int maxStringLength) {
 
-		addText(name, FileUtil.extractText(is, fileExt, maxStringLength));
+		addText(
+			name, FileUtil.extractText(inputStream, fileExt, maxStringLength));
 	}
 
 	@Override
@@ -454,7 +411,7 @@ public class DocumentImpl implements Document {
 		}
 
 		if (lowerCase) {
-			Map<Locale, String> lowerCaseValues = new HashMap<>(values.size());
+			Map<Locale, String> lowerCaseValues = new HashMap<>();
 
 			for (Map.Entry<Locale, String> entry : values.entrySet()) {
 				String value = GetterUtil.getString(entry.getValue());
@@ -479,7 +436,7 @@ public class DocumentImpl implements Document {
 		}
 
 		if (lowerCase) {
-			Map<Locale, String> lowerCaseValues = new HashMap<>(values.size());
+			Map<Locale, String> lowerCaseValues = new HashMap<>();
 
 			for (Map.Entry<Locale, String> entry : values.entrySet()) {
 				String value = GetterUtil.getString(entry.getValue());
@@ -775,9 +732,8 @@ public class DocumentImpl implements Document {
 		String portletId, String field1, String field2, String field3,
 		String field4) {
 
-		String uid = Field.getUID(portletId, field1, field2, field3, field4);
-
-		addKeyword(Field.UID, uid);
+		addKeyword(
+			Field.UID, Field.getUID(portletId, field1, field2, field3, field4));
 	}
 
 	@Override
@@ -795,9 +751,7 @@ public class DocumentImpl implements Document {
 			return get(name);
 		}
 
-		String localizedName = Field.getLocalizedName(locale, name);
-
-		Field field = getField(localizedName);
+		Field field = getField(Field.getLocalizedName(locale, name));
 
 		if (field == null) {
 			field = getField(name);
@@ -1052,11 +1006,7 @@ public class DocumentImpl implements Document {
 		Class<? extends Number> clazz) {
 
 		if (typify) {
-			name = name.concat(
-				StringPool.UNDERLINE
-			).concat(
-				"Number"
-			);
+			name = StringBundler.concat(name, StringPool.UNDERLINE, "Number");
 		}
 
 		Field field = createField(Field.getSortableFieldName(name), value);
@@ -1102,6 +1052,22 @@ public class DocumentImpl implements Document {
 		_sortableTextFields = sortableTextFields;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #toString(StringBundler, Collection)}
+	 */
+	@Deprecated
+	protected void toString(
+		com.liferay.portal.kernel.util.StringBundler sb,
+		Collection<Field> fields) {
+
+		StringBundler petraSB = new StringBundler();
+
+		toString(petraSB, fields);
+
+		sb.append(petraSB.getStrings());
+	}
+
 	protected void toString(StringBundler sb, Collection<Field> fields) {
 		sb.append(StringPool.OPEN_CURLY_BRACE);
 
@@ -1136,11 +1102,7 @@ public class DocumentImpl implements Document {
 		String name, boolean typify, String value) {
 
 		if (typify) {
-			name = name.concat(
-				StringPool.UNDERLINE
-			).concat(
-				"String"
-			);
+			name = StringBundler.concat(name, StringPool.UNDERLINE, "String");
 		}
 
 		String truncatedValue = value;

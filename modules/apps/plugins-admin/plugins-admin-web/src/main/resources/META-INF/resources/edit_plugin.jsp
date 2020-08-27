@@ -22,6 +22,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 String moduleId = ParamUtil.getString(request, "moduleId");
 String pluginId = ParamUtil.getString(request, "pluginId");
 String pluginType = ParamUtil.getString(request, "pluginType");
+
 String title = ParamUtil.getString(request, "title", pluginType);
 
 PluginSetting pluginSetting = PluginSettingLocalServiceUtil.getPluginSetting(company.getCompanyId(), pluginId, pluginType);
@@ -48,7 +49,7 @@ renderResponse.setTitle(title);
 
 <portlet:actionURL name="/plugins_admin/edit_plugin" var="editPluginURL" />
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= editPluginURL %>" method="post" name="fm">
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="pluginId" type="hidden" value="<%= pluginId %>" />
@@ -67,7 +68,7 @@ renderResponse.setTitle(title);
 						<aui:field-wrapper helpMessage="edit-plugin-permissions-help" label="permissions">
 
 							<%
-							List curActions = ResourceActionsUtil.getResourceActions(portlet.getPortletId(), null);
+							List<String> resourceActions = ResourceActionsUtil.getResourceActions(portlet.getPortletId(), null);
 
 							int maxNumberOfRolesChecked = 500;
 
@@ -77,14 +78,14 @@ renderResponse.setTitle(title);
 							List<Role> addToPageRoles = null;
 							List<Role> accessInControlPanelRoles = null;
 
-							if (curActions.contains(ActionKeys.ADD_TO_PAGE)) {
+							if (resourceActions.contains(ActionKeys.ADD_TO_PAGE)) {
 								addToPageRoles = _filterRoles(roles, portlet.getPortletId(), ActionKeys.ADD_TO_PAGE);
 							}
 							else {
 								addToPageRoles = new ArrayList<Role>();
 							}
 
-							if (curActions.contains(ActionKeys.ACCESS_IN_CONTROL_PANEL)) {
+							if (resourceActions.contains(ActionKeys.ACCESS_IN_CONTROL_PANEL)) {
 								accessInControlPanelRoles = _filterRoles(roles, portlet.getPortletId(), ActionKeys.ACCESS_IN_CONTROL_PANEL);
 							}
 							else {
@@ -116,8 +117,9 @@ renderResponse.setTitle(title);
 												name="role"
 											>
 												<liferay-ui:icon
-													iconCssClass="<%= RolesAdminUtil.getIconCssClass(role) %>"
+													icon="<%= RolesAdminUtil.getIconCssClass(role) %>"
 													label="<%= true %>"
+													markupView="lexicon"
 													message="<%= HtmlUtil.escape(role.getTitle(locale)) %>"
 												/>
 											</liferay-ui:search-container-column-text>
@@ -137,8 +139,9 @@ renderResponse.setTitle(title);
 												%>
 
 												<liferay-ui:icon
-													iconCssClass="icon-edit"
+													icon="pencil"
 													label="<%= true %>"
+													markupView="lexicon"
 													message="change"
 													url="<%= editURL.toString() %>"
 												/>
@@ -170,8 +173,9 @@ renderResponse.setTitle(title);
 												name="role"
 											>
 												<liferay-ui:icon
-													iconCssClass="<%= RolesAdminUtil.getIconCssClass(role) %>"
+													icon="<%= RolesAdminUtil.getIconCssClass(role) %>"
 													label="<%= true %>"
+													markupView="lexicon"
 													message="<%= HtmlUtil.escape(role.getTitle(locale)) %>"
 												/>
 											</liferay-ui:search-container-column-text>
@@ -190,8 +194,9 @@ renderResponse.setTitle(title);
 												%>
 
 												<liferay-ui:icon
-													iconCssClass="icon-edit"
+													icon="pencil"
 													label="<%= true %>"
+													markupView="lexicon"
 													message="change"
 													url="<%= editURL.toString() %>"
 												/>
@@ -223,7 +228,7 @@ renderResponse.setTitle(title);
 			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <%!
 private List<Role> _filterRoles(List<Role> roles, String portletId, String actionId) throws Exception {

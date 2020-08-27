@@ -39,8 +39,8 @@ public abstract class BaseUpgradeServiceModuleRelease extends UpgradeProcess {
 				super.upgrade();
 			}
 		}
-		catch (SQLException sqle) {
-			throw new UpgradeException(sqle);
+		catch (SQLException sqlException) {
+			throw new UpgradeException(sqlException);
 		}
 	}
 
@@ -65,7 +65,7 @@ public abstract class BaseUpgradeServiceModuleRelease extends UpgradeProcess {
 
 	protected abstract String getOldBundleSymbolicName();
 
-	private void _createRelease() throws SQLException {
+	private void _createRelease() throws Exception {
 		ReleaseDAO releaseDAO = new ReleaseDAO();
 
 		releaseDAO.addRelease(connection, getNewBundleSymbolicName());
@@ -91,7 +91,7 @@ public abstract class BaseUpgradeServiceModuleRelease extends UpgradeProcess {
 		return null;
 	}
 
-	private boolean _hasServiceComponent() throws SQLException {
+	private boolean _hasServiceComponent() throws Exception {
 		if (Validator.isNull(getNamespace())) {
 			return false;
 		}
@@ -127,7 +127,7 @@ public abstract class BaseUpgradeServiceModuleRelease extends UpgradeProcess {
 		return sb.toString();
 	}
 
-	private void _updateRelease(String schemaVersion) throws SQLException {
+	private void _updateRelease(String schemaVersion) throws Exception {
 		try (PreparedStatement ps = connection.prepareStatement(
 				"update Release_ set servletContextName = ?, schemaVersion = " +
 					"? where servletContextName = ?")) {

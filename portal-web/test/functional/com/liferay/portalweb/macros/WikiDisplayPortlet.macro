@@ -1,10 +1,11 @@
 definition {
+
 	macro configureSetupPG {
 		Portlet.gotoPortletOptions(
 			portletName = "Wiki Display",
 			portletOption = "Configuration");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Select(
 			locator1 = "WikiConfiguration#COMMUNICATION_SELECT_NODE_ID",
@@ -30,4 +31,5 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 	}
+
 }

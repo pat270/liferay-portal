@@ -36,14 +36,6 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 
 	@Override
 	public void register(
-		String bundleSymbolicName, String fromSchemaVersionString,
-		String toSchemaVersionString, UpgradeStep... upgradeSteps) {
-
-		register(fromSchemaVersionString, toSchemaVersionString, upgradeSteps);
-	}
-
-	@Override
-	public void register(
 		String fromSchemaVersionString, String toSchemaVersionString,
 		UpgradeStep... upgradeSteps) {
 
@@ -66,7 +58,7 @@ public class UpgradeStepRegistry implements UpgradeStepRegistrator.Registry {
 			UpgradeStep upgradeStep = upgradeSteps[i];
 
 			String upgradeInfoToSchemaVersionString =
-				toSchemaVersionString + "-step" + (i - upgradeSteps.length + 1);
+				toSchemaVersionString + ".step" + (i - upgradeSteps.length + 1);
 
 			UpgradeInfo upgradeInfo = new UpgradeInfo(
 				upgradeInfoFromSchemaVersionString,

@@ -16,11 +16,13 @@ package com.liferay.document.library.content.service.persistence.impl;
 
 import com.liferay.document.library.content.exception.NoSuchContentException;
 import com.liferay.document.library.content.model.DLContent;
+import com.liferay.document.library.content.model.DLContentTable;
 import com.liferay.document.library.content.model.impl.DLContentImpl;
 import com.liferay.document.library.content.model.impl.DLContentModelImpl;
 import com.liferay.document.library.content.service.persistence.DLContentPersistence;
 import com.liferay.document.library.content.service.persistence.impl.constants.DLPersistenceConstants;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
@@ -32,10 +34,9 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -45,8 +46,12 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +59,6 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -71,7 +75,6 @@ import org.osgi.service.component.annotations.Reference;
  * @generated
  */
 @Component(service = DLContentPersistence.class)
-@ProviderType
 public class DLContentPersistenceImpl
 	extends BasePersistenceImpl<DLContent> implements DLContentPersistence {
 
@@ -114,7 +117,7 @@ public class DLContentPersistenceImpl
 	 * Returns a range of all the document library contents where companyId = &#63; and repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -134,7 +137,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents where companyId = &#63; and repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -157,7 +160,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents where companyId = &#63; and repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -165,27 +168,30 @@ public class DLContentPersistenceImpl
 	 * @param start the lower bound of the range of document library contents
 	 * @param end the upper bound of the range of document library contents (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching document library contents
 	 */
 	@Override
 	public List<DLContent> findByC_R(
 		long companyId, long repositoryId, int start, int end,
 		OrderByComparator<DLContent> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByC_R;
-			finderArgs = new Object[] {companyId, repositoryId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByC_R;
+				finderArgs = new Object[] {companyId, repositoryId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByC_R;
 			finderArgs = new Object[] {
 				companyId, repositoryId, start, end, orderByComparator
@@ -194,7 +200,7 @@ public class DLContentPersistenceImpl
 
 		List<DLContent> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DLContent>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -212,66 +218,56 @@ public class DLContentPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_DLCONTENT_WHERE);
+			sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_REPOSITORYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(DLContentModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DLContentModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				if (!pagination) {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DLContent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -303,19 +299,19 @@ public class DLContentPersistenceImpl
 			return dlContent;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchContentException(msg.toString());
+		throw new NoSuchContentException(sb.toString());
 	}
 
 	/**
@@ -363,19 +359,19 @@ public class DLContentPersistenceImpl
 			return dlContent;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchContentException(msg.toString());
+		throw new NoSuchContentException(sb.toString());
 	}
 
 	/**
@@ -444,8 +440,8 @@ public class DLContentPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -456,105 +452,105 @@ public class DLContentPersistenceImpl
 		Session session, DLContent dlContent, long companyId, long repositoryId,
 		OrderByComparator<DLContent> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_DLCONTENT_WHERE);
+		sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-		query.append(_FINDER_COLUMN_C_R_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_C_R_COMPANYID_2);
 
-		query.append(_FINDER_COLUMN_C_R_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_C_R_REPOSITORYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DLContentModelImpl.ORDER_BY_JPQL);
+			sb.append(DLContentModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(dlContent)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DLContent> list = q.list();
+		List<DLContent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -590,44 +586,54 @@ public class DLContentPersistenceImpl
 	 */
 	@Override
 	public int countByC_R(long companyId, long repositoryId) {
-		FinderPath finderPath = _finderPathCountByC_R;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
 
-		Object[] finderArgs = new Object[] {companyId, repositoryId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByC_R;
+
+			finderArgs = new Object[] {companyId, repositoryId};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_DLCONTENT_WHERE);
+			sb.append(_SQL_COUNT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_REPOSITORYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -668,7 +674,7 @@ public class DLContentPersistenceImpl
 	 * Returns a range of all the document library contents where companyId = &#63; and repositoryId = &#63; and path = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -689,7 +695,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents where companyId = &#63; and repositoryId = &#63; and path = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -713,7 +719,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents where companyId = &#63; and repositoryId = &#63; and path = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -722,29 +728,32 @@ public class DLContentPersistenceImpl
 	 * @param start the lower bound of the range of document library contents
 	 * @param end the upper bound of the range of document library contents (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching document library contents
 	 */
 	@Override
 	public List<DLContent> findByC_R_P(
 		long companyId, long repositoryId, String path, int start, int end,
 		OrderByComparator<DLContent> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		path = Objects.toString(path, "");
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByC_R_P;
-			finderArgs = new Object[] {companyId, repositoryId, path};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByC_R_P;
+				finderArgs = new Object[] {companyId, repositoryId, path};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByC_R_P;
 			finderArgs = new Object[] {
 				companyId, repositoryId, path, start, end, orderByComparator
@@ -753,7 +762,7 @@ public class DLContentPersistenceImpl
 
 		List<DLContent> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DLContent>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -772,81 +781,71 @@ public class DLContentPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_DLCONTENT_WHERE);
+			sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_P_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_P_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_REPOSITORYID_2);
 
 			boolean bindPath = false;
 
 			if (path.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_P_PATH_3);
+				sb.append(_FINDER_COLUMN_C_R_P_PATH_3);
 			}
 			else {
 				bindPath = true;
 
-				query.append(_FINDER_COLUMN_C_R_P_PATH_2);
+				sb.append(_FINDER_COLUMN_C_R_P_PATH_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(DLContentModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DLContentModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindPath) {
-					qPos.add(path);
+					queryPos.add(path);
 				}
 
-				if (!pagination) {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DLContent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -879,22 +878,22 @@ public class DLContentPersistenceImpl
 			return dlContent;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", path=");
-		msg.append(path);
+		sb.append(", path=");
+		sb.append(path);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchContentException(msg.toString());
+		throw new NoSuchContentException(sb.toString());
 	}
 
 	/**
@@ -944,22 +943,22 @@ public class DLContentPersistenceImpl
 			return dlContent;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", path=");
-		msg.append(path);
+		sb.append(", path=");
+		sb.append(path);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchContentException(msg.toString());
+		throw new NoSuchContentException(sb.toString());
 	}
 
 	/**
@@ -1032,8 +1031,8 @@ public class DLContentPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1045,32 +1044,32 @@ public class DLContentPersistenceImpl
 		String path, OrderByComparator<DLContent> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_DLCONTENT_WHERE);
+		sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-		query.append(_FINDER_COLUMN_C_R_P_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_C_R_P_COMPANYID_2);
 
-		query.append(_FINDER_COLUMN_C_R_P_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_C_R_P_REPOSITORYID_2);
 
 		boolean bindPath = false;
 
 		if (path.isEmpty()) {
-			query.append(_FINDER_COLUMN_C_R_P_PATH_3);
+			sb.append(_FINDER_COLUMN_C_R_P_PATH_3);
 		}
 		else {
 			bindPath = true;
 
-			query.append(_FINDER_COLUMN_C_R_P_PATH_2);
+			sb.append(_FINDER_COLUMN_C_R_P_PATH_2);
 		}
 
 		if (orderByComparator != null) {
@@ -1078,87 +1077,87 @@ public class DLContentPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DLContentModelImpl.ORDER_BY_JPQL);
+			sb.append(DLContentModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (bindPath) {
-			qPos.add(path);
+			queryPos.add(path);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(dlContent)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DLContent> list = q.list();
+		List<DLContent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1198,59 +1197,69 @@ public class DLContentPersistenceImpl
 	public int countByC_R_P(long companyId, long repositoryId, String path) {
 		path = Objects.toString(path, "");
 
-		FinderPath finderPath = _finderPathCountByC_R_P;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
 
-		Object[] finderArgs = new Object[] {companyId, repositoryId, path};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByC_R_P;
+
+			finderArgs = new Object[] {companyId, repositoryId, path};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_DLCONTENT_WHERE);
+			sb.append(_SQL_COUNT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_P_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_P_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_REPOSITORYID_2);
 
 			boolean bindPath = false;
 
 			if (path.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_P_PATH_3);
+				sb.append(_FINDER_COLUMN_C_R_P_PATH_3);
 			}
 			else {
 				bindPath = true;
 
-				query.append(_FINDER_COLUMN_C_R_P_PATH_2);
+				sb.append(_FINDER_COLUMN_C_R_P_PATH_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindPath) {
-					qPos.add(path);
+					queryPos.add(path);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1296,7 +1305,7 @@ public class DLContentPersistenceImpl
 	 * Returns a range of all the document library contents where companyId = &#63; and repositoryId = &#63; and path LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1317,7 +1326,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents where companyId = &#63; and repositoryId = &#63; and path LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1341,7 +1350,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents where companyId = &#63; and repositoryId = &#63; and path LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -1350,18 +1359,20 @@ public class DLContentPersistenceImpl
 	 * @param start the lower bound of the range of document library contents
 	 * @param end the upper bound of the range of document library contents (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching document library contents
 	 */
 	@Override
 	public List<DLContent> findByC_R_LikeP(
 		long companyId, long repositoryId, String path, int start, int end,
 		OrderByComparator<DLContent> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		path = Objects.toString(path, "");
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -1372,7 +1383,7 @@ public class DLContentPersistenceImpl
 
 		List<DLContent> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DLContent>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1392,81 +1403,71 @@ public class DLContentPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_DLCONTENT_WHERE);
+			sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_LIKEP_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_LIKEP_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_LIKEP_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_LIKEP_REPOSITORYID_2);
 
 			boolean bindPath = false;
 
 			if (path.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_LIKEP_PATH_3);
+				sb.append(_FINDER_COLUMN_C_R_LIKEP_PATH_3);
 			}
 			else {
 				bindPath = true;
 
-				query.append(_FINDER_COLUMN_C_R_LIKEP_PATH_2);
+				sb.append(_FINDER_COLUMN_C_R_LIKEP_PATH_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(DLContentModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DLContentModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindPath) {
-					qPos.add(path);
+					queryPos.add(path);
 				}
 
-				if (!pagination) {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DLContent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1499,22 +1500,22 @@ public class DLContentPersistenceImpl
 			return dlContent;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", path=");
-		msg.append(path);
+		sb.append(", pathLIKE");
+		sb.append(path);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchContentException(msg.toString());
+		throw new NoSuchContentException(sb.toString());
 	}
 
 	/**
@@ -1564,22 +1565,22 @@ public class DLContentPersistenceImpl
 			return dlContent;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", path=");
-		msg.append(path);
+		sb.append(", pathLIKE");
+		sb.append(path);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchContentException(msg.toString());
+		throw new NoSuchContentException(sb.toString());
 	}
 
 	/**
@@ -1652,8 +1653,8 @@ public class DLContentPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1665,32 +1666,32 @@ public class DLContentPersistenceImpl
 		String path, OrderByComparator<DLContent> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_DLCONTENT_WHERE);
+		sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-		query.append(_FINDER_COLUMN_C_R_LIKEP_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_C_R_LIKEP_COMPANYID_2);
 
-		query.append(_FINDER_COLUMN_C_R_LIKEP_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_C_R_LIKEP_REPOSITORYID_2);
 
 		boolean bindPath = false;
 
 		if (path.isEmpty()) {
-			query.append(_FINDER_COLUMN_C_R_LIKEP_PATH_3);
+			sb.append(_FINDER_COLUMN_C_R_LIKEP_PATH_3);
 		}
 		else {
 			bindPath = true;
 
-			query.append(_FINDER_COLUMN_C_R_LIKEP_PATH_2);
+			sb.append(_FINDER_COLUMN_C_R_LIKEP_PATH_2);
 		}
 
 		if (orderByComparator != null) {
@@ -1698,87 +1699,87 @@ public class DLContentPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DLContentModelImpl.ORDER_BY_JPQL);
+			sb.append(DLContentModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (bindPath) {
-			qPos.add(path);
+			queryPos.add(path);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(dlContent)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DLContent> list = q.list();
+		List<DLContent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1822,59 +1823,69 @@ public class DLContentPersistenceImpl
 
 		path = Objects.toString(path, "");
 
-		FinderPath finderPath = _finderPathWithPaginationCountByC_R_LikeP;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
 
-		Object[] finderArgs = new Object[] {companyId, repositoryId, path};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathWithPaginationCountByC_R_LikeP;
+
+			finderArgs = new Object[] {companyId, repositoryId, path};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_DLCONTENT_WHERE);
+			sb.append(_SQL_COUNT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_LIKEP_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_LIKEP_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_LIKEP_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_LIKEP_REPOSITORYID_2);
 
 			boolean bindPath = false;
 
 			if (path.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_LIKEP_PATH_3);
+				sb.append(_FINDER_COLUMN_C_R_LIKEP_PATH_3);
 			}
 			else {
 				bindPath = true;
 
-				query.append(_FINDER_COLUMN_C_R_LIKEP_PATH_2);
+				sb.append(_FINDER_COLUMN_C_R_LIKEP_PATH_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindPath) {
-					qPos.add(path);
+					queryPos.add(path);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1918,29 +1929,29 @@ public class DLContentPersistenceImpl
 			companyId, repositoryId, path, version);
 
 		if (dlContent == null) {
-			StringBundler msg = new StringBundler(10);
+			StringBundler sb = new StringBundler(10);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("companyId=");
-			msg.append(companyId);
+			sb.append("companyId=");
+			sb.append(companyId);
 
-			msg.append(", repositoryId=");
-			msg.append(repositoryId);
+			sb.append(", repositoryId=");
+			sb.append(repositoryId);
 
-			msg.append(", path=");
-			msg.append(path);
+			sb.append(", path=");
+			sb.append(path);
 
-			msg.append(", version=");
-			msg.append(version);
+			sb.append(", version=");
+			sb.append(version);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchContentException(msg.toString());
+			throw new NoSuchContentException(sb.toString());
 		}
 
 		return dlContent;
@@ -1969,24 +1980,29 @@ public class DLContentPersistenceImpl
 	 * @param repositoryId the repository ID
 	 * @param path the path
 	 * @param version the version
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching document library content, or <code>null</code> if a matching document library content could not be found
 	 */
 	@Override
 	public DLContent fetchByC_R_P_V(
 		long companyId, long repositoryId, String path, String version,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		path = Objects.toString(path, "");
 		version = Objects.toString(version, "");
 
-		Object[] finderArgs = new Object[] {
-			companyId, repositoryId, path, version
-		};
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {companyId, repositoryId, path, version};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
 				_finderPathFetchByC_R_P_V, finderArgs, this);
 		}
@@ -2004,64 +2020,66 @@ public class DLContentPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			query.append(_SQL_SELECT_DLCONTENT_WHERE);
+			sb.append(_SQL_SELECT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_P_V_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_V_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_P_V_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_V_REPOSITORYID_2);
 
 			boolean bindPath = false;
 
 			if (path.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_P_V_PATH_3);
+				sb.append(_FINDER_COLUMN_C_R_P_V_PATH_3);
 			}
 			else {
 				bindPath = true;
 
-				query.append(_FINDER_COLUMN_C_R_P_V_PATH_2);
+				sb.append(_FINDER_COLUMN_C_R_P_V_PATH_2);
 			}
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_P_V_VERSION_3);
+				sb.append(_FINDER_COLUMN_C_R_P_V_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_C_R_P_V_VERSION_2);
+				sb.append(_FINDER_COLUMN_C_R_P_V_VERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindPath) {
-					qPos.add(path);
+					queryPos.add(path);
 				}
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
-				List<DLContent> list = q.list();
+				List<DLContent> list = query.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(
-						_finderPathFetchByC_R_P_V, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						finderCache.putResult(
+							_finderPathFetchByC_R_P_V, finderArgs, list);
+					}
 				}
 				else {
 					DLContent dlContent = list.get(0);
@@ -2071,10 +2089,8 @@ public class DLContentPersistenceImpl
 					cacheResult(dlContent);
 				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(_finderPathFetchByC_R_P_V, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2125,76 +2141,84 @@ public class DLContentPersistenceImpl
 		path = Objects.toString(path, "");
 		version = Objects.toString(version, "");
 
-		FinderPath finderPath = _finderPathCountByC_R_P_V;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
 
-		Object[] finderArgs = new Object[] {
-			companyId, repositoryId, path, version
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByC_R_P_V;
+
+			finderArgs = new Object[] {companyId, repositoryId, path, version};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_DLCONTENT_WHERE);
+			sb.append(_SQL_COUNT_DLCONTENT_WHERE);
 
-			query.append(_FINDER_COLUMN_C_R_P_V_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_V_COMPANYID_2);
 
-			query.append(_FINDER_COLUMN_C_R_P_V_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_C_R_P_V_REPOSITORYID_2);
 
 			boolean bindPath = false;
 
 			if (path.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_P_V_PATH_3);
+				sb.append(_FINDER_COLUMN_C_R_P_V_PATH_3);
 			}
 			else {
 				bindPath = true;
 
-				query.append(_FINDER_COLUMN_C_R_P_V_PATH_2);
+				sb.append(_FINDER_COLUMN_C_R_P_V_PATH_2);
 			}
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_C_R_P_V_VERSION_3);
+				sb.append(_FINDER_COLUMN_C_R_P_V_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_C_R_P_V_VERSION_2);
+				sb.append(_FINDER_COLUMN_C_R_P_V_VERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindPath) {
-					qPos.add(path);
+					queryPos.add(path);
 				}
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2223,11 +2247,6 @@ public class DLContentPersistenceImpl
 		"(dlContent.version IS NULL OR dlContent.version = '')";
 
 	public DLContentPersistenceImpl() {
-		setModelClass(DLContent.class);
-
-		setModelImplClass(DLContentImpl.class);
-		setModelPKClass(long.class);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("path", "path_");
@@ -2235,6 +2254,13 @@ public class DLContentPersistenceImpl
 		dbColumnNames.put("size", "size_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(DLContent.class);
+
+		setModelImplClass(DLContentImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(DLContentTable.INSTANCE);
 	}
 
 	/**
@@ -2244,9 +2270,12 @@ public class DLContentPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(DLContent dlContent) {
+		if (dlContent.getCtCollectionId() != 0) {
+			return;
+		}
+
 		entityCache.putResult(
-			entityCacheEnabled, DLContentImpl.class, dlContent.getPrimaryKey(),
-			dlContent);
+			DLContentImpl.class, dlContent.getPrimaryKey(), dlContent);
 
 		finderCache.putResult(
 			_finderPathFetchByC_R_P_V,
@@ -2255,8 +2284,6 @@ public class DLContentPersistenceImpl
 				dlContent.getPath(), dlContent.getVersion()
 			},
 			dlContent);
-
-		dlContent.resetOriginalValues();
 	}
 
 	/**
@@ -2267,14 +2294,14 @@ public class DLContentPersistenceImpl
 	@Override
 	public void cacheResult(List<DLContent> dlContents) {
 		for (DLContent dlContent : dlContents) {
+			if (dlContent.getCtCollectionId() != 0) {
+				continue;
+			}
+
 			if (entityCache.getResult(
-					entityCacheEnabled, DLContentImpl.class,
-					dlContent.getPrimaryKey()) == null) {
+					DLContentImpl.class, dlContent.getPrimaryKey()) == null) {
 
 				cacheResult(dlContent);
-			}
-			else {
-				dlContent.resetOriginalValues();
 			}
 		}
 	}
@@ -2305,7 +2332,7 @@ public class DLContentPersistenceImpl
 	@Override
 	public void clearCache(DLContent dlContent) {
 		entityCache.removeResult(
-			entityCacheEnabled, DLContentImpl.class, dlContent.getPrimaryKey());
+			DLContentImpl.class, dlContent.getPrimaryKey());
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
@@ -2320,10 +2347,20 @@ public class DLContentPersistenceImpl
 
 		for (DLContent dlContent : dlContents) {
 			entityCache.removeResult(
-				entityCacheEnabled, DLContentImpl.class,
-				dlContent.getPrimaryKey());
+				DLContentImpl.class, dlContent.getPrimaryKey());
 
 			clearUniqueFindersCache((DLContentModelImpl)dlContent, true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(DLContentImpl.class, primaryKey);
 		}
 	}
 
@@ -2360,10 +2397,10 @@ public class DLContentPersistenceImpl
 			 _finderPathFetchByC_R_P_V.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				dlContentModelImpl.getOriginalCompanyId(),
-				dlContentModelImpl.getOriginalRepositoryId(),
-				dlContentModelImpl.getOriginalPath(),
-				dlContentModelImpl.getOriginalVersion()
+				dlContentModelImpl.getColumnOriginalValue("companyId"),
+				dlContentModelImpl.getColumnOriginalValue("repositoryId"),
+				dlContentModelImpl.getColumnOriginalValue("path_"),
+				dlContentModelImpl.getColumnOriginalValue("version")
 			};
 
 			finderCache.removeResult(_finderPathCountByC_R_P_V, args);
@@ -2384,7 +2421,7 @@ public class DLContentPersistenceImpl
 		dlContent.setNew(true);
 		dlContent.setPrimaryKey(contentId);
 
-		dlContent.setCompanyId(companyProvider.getCompanyId());
+		dlContent.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return dlContent;
 	}
@@ -2431,11 +2468,11 @@ public class DLContentPersistenceImpl
 
 			return remove(dlContent);
 		}
-		catch (NoSuchContentException nsee) {
-			throw nsee;
+		catch (NoSuchContentException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2444,6 +2481,10 @@ public class DLContentPersistenceImpl
 
 	@Override
 	protected DLContent removeImpl(DLContent dlContent) {
+		if (!ctPersistenceHelper.isRemove(dlContent)) {
+			return dlContent;
+		}
+
 		Session session = null;
 
 		try {
@@ -2458,8 +2499,8 @@ public class DLContentPersistenceImpl
 				session.delete(dlContent);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2499,32 +2540,42 @@ public class DLContentPersistenceImpl
 		try {
 			session = openSession();
 
-			if (dlContent.isNew()) {
+			if (ctPersistenceHelper.isInsert(dlContent)) {
+				if (!isNew) {
+					session.evict(
+						DLContentImpl.class, dlContent.getPrimaryKeyObj());
+				}
+
 				session.save(dlContent);
 
 				dlContent.setNew(false);
 			}
 			else {
-				session.evict(dlContent);
+				session.evict(
+					DLContentImpl.class, dlContent.getPrimaryKeyObj());
+
 				session.saveOrUpdate(dlContent);
 			}
 
 			session.flush();
 			session.clear();
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
+		if (dlContent.getCtCollectionId() != 0) {
+			dlContent.resetOriginalValues();
+
+			return dlContent;
+		}
+
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!_columnBitmaskEnabled) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				dlContentModelImpl.getCompanyId(),
 				dlContentModelImpl.getRepositoryId()
@@ -2554,8 +2605,8 @@ public class DLContentPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					dlContentModelImpl.getOriginalCompanyId(),
-					dlContentModelImpl.getOriginalRepositoryId()
+					dlContentModelImpl.getColumnOriginalValue("companyId"),
+					dlContentModelImpl.getColumnOriginalValue("repositoryId")
 				};
 
 				finderCache.removeResult(_finderPathCountByC_R, args);
@@ -2577,9 +2628,9 @@ public class DLContentPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					dlContentModelImpl.getOriginalCompanyId(),
-					dlContentModelImpl.getOriginalRepositoryId(),
-					dlContentModelImpl.getOriginalPath()
+					dlContentModelImpl.getColumnOriginalValue("companyId"),
+					dlContentModelImpl.getColumnOriginalValue("repositoryId"),
+					dlContentModelImpl.getColumnOriginalValue("path_")
 				};
 
 				finderCache.removeResult(_finderPathCountByC_R_P, args);
@@ -2599,8 +2650,7 @@ public class DLContentPersistenceImpl
 		}
 
 		entityCache.putResult(
-			entityCacheEnabled, DLContentImpl.class, dlContent.getPrimaryKey(),
-			dlContent, false);
+			DLContentImpl.class, dlContent.getPrimaryKey(), dlContent, false);
 
 		clearUniqueFindersCache(dlContentModelImpl, false);
 		cacheUniqueFindersCache(dlContentModelImpl);
@@ -2652,12 +2702,118 @@ public class DLContentPersistenceImpl
 	/**
 	 * Returns the document library content with the primary key or returns <code>null</code> if it could not be found.
 	 *
+	 * @param primaryKey the primary key of the document library content
+	 * @return the document library content, or <code>null</code> if a document library content with the primary key could not be found
+	 */
+	@Override
+	public DLContent fetchByPrimaryKey(Serializable primaryKey) {
+		if (ctPersistenceHelper.isProductionMode(DLContent.class)) {
+			return super.fetchByPrimaryKey(primaryKey);
+		}
+
+		DLContent dlContent = null;
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			dlContent = (DLContent)session.get(DLContentImpl.class, primaryKey);
+
+			if (dlContent != null) {
+				cacheResult(dlContent);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return dlContent;
+	}
+
+	/**
+	 * Returns the document library content with the primary key or returns <code>null</code> if it could not be found.
+	 *
 	 * @param contentId the primary key of the document library content
 	 * @return the document library content, or <code>null</code> if a document library content with the primary key could not be found
 	 */
 	@Override
 	public DLContent fetchByPrimaryKey(long contentId) {
 		return fetchByPrimaryKey((Serializable)contentId);
+	}
+
+	@Override
+	public Map<Serializable, DLContent> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		if (ctPersistenceHelper.isProductionMode(DLContent.class)) {
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
+		if (primaryKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Serializable, DLContent> map =
+			new HashMap<Serializable, DLContent>();
+
+		if (primaryKeys.size() == 1) {
+			Iterator<Serializable> iterator = primaryKeys.iterator();
+
+			Serializable primaryKey = iterator.next();
+
+			DLContent dlContent = fetchByPrimaryKey(primaryKey);
+
+			if (dlContent != null) {
+				map.put(primaryKey, dlContent);
+			}
+
+			return map;
+		}
+
+		StringBundler sb = new StringBundler(primaryKeys.size() * 2 + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
+
+		for (Serializable primaryKey : primaryKeys) {
+			sb.append((long)primaryKey);
+
+			sb.append(",");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query query = session.createQuery(sql);
+
+			for (DLContent dlContent : (List<DLContent>)query.list()) {
+				map.put(dlContent.getPrimaryKeyObj(), dlContent);
+
+				cacheResult(dlContent);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return map;
 	}
 
 	/**
@@ -2674,7 +2830,7 @@ public class DLContentPersistenceImpl
 	 * Returns a range of all the document library contents.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library contents
@@ -2690,7 +2846,7 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library contents
@@ -2709,64 +2865,65 @@ public class DLContentPersistenceImpl
 	 * Returns an ordered range of all the document library contents.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library contents
 	 * @param end the upper bound of the range of document library contents (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of document library contents
 	 */
 	@Override
 	public List<DLContent> findAll(
 		int start, int end, OrderByComparator<DLContent> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<DLContent> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DLContent>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_DLCONTENT);
+				sb.append(_SQL_SELECT_DLCONTENT);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_DLCONTENT;
 
-				if (pagination) {
-					sql = sql.concat(DLContentModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(DLContentModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -2774,29 +2931,19 @@ public class DLContentPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DLContent>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DLContent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2824,8 +2971,15 @@ public class DLContentPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DLContent.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)finderCache.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -2833,18 +2987,17 @@ public class DLContentPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_DLCONTENT);
+				Query query = session.createQuery(_SQL_COUNT_DLCONTENT);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				if (productionMode) {
+					finderCache.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2875,8 +3028,68 @@ public class DLContentPersistenceImpl
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.get(ctColumnResolutionType);
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return DLContentModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "DLContent";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctIgnoreColumnNames = new HashSet<String>();
+		Set<String> ctMergeColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("groupId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("repositoryId");
+		ctStrictColumnNames.add("path_");
+		ctStrictColumnNames.add("version");
+		ctStrictColumnNames.add("data_");
+		ctStrictColumnNames.add("size_");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
+		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK, Collections.singleton("contentId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
+
+		_uniqueIndexColumnNames.add(
+			new String[] {"companyId", "repositoryId", "path_", "version"});
 	}
 
 	/**
@@ -2884,26 +3097,21 @@ public class DLContentPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		DLContentModelImpl.setEntityCacheEnabled(entityCacheEnabled);
-		DLContentModelImpl.setFinderCacheEnabled(finderCacheEnabled);
-
 		_finderPathWithPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
-			new String[0]);
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByC_R = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_R",
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByC_R",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -2911,21 +3119,20 @@ public class DLContentPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByC_R = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_R",
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByC_R",
 			new String[] {Long.class.getName(), Long.class.getName()},
-			DLContentModelImpl.COMPANYID_COLUMN_BITMASK |
-			DLContentModelImpl.REPOSITORYID_COLUMN_BITMASK |
-			DLContentModelImpl.VERSION_COLUMN_BITMASK);
+			DLContentModelImpl.getColumnBitmask("companyId") |
+			DLContentModelImpl.getColumnBitmask("repositoryId") |
+			DLContentModelImpl.getColumnBitmask("version"));
 
 		_finderPathCountByC_R = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_R",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_R",
 			new String[] {Long.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByC_R_P = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_R_P",
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByC_R_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), Integer.class.getName(),
@@ -2933,28 +3140,28 @@ public class DLContentPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByC_R_P = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_R_P",
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByC_R_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			},
-			DLContentModelImpl.COMPANYID_COLUMN_BITMASK |
-			DLContentModelImpl.REPOSITORYID_COLUMN_BITMASK |
-			DLContentModelImpl.PATH_COLUMN_BITMASK |
-			DLContentModelImpl.VERSION_COLUMN_BITMASK);
+			DLContentModelImpl.getColumnBitmask("companyId") |
+			DLContentModelImpl.getColumnBitmask("repositoryId") |
+			DLContentModelImpl.getColumnBitmask("path_") |
+			DLContentModelImpl.getColumnBitmask("version"));
 
 		_finderPathCountByC_R_P = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_R_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByC_R_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationFindByC_R_LikeP = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_R_LikeP",
+			DLContentImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByC_R_LikeP",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), Integer.class.getName(),
@@ -2962,28 +3169,27 @@ public class DLContentPersistenceImpl
 			});
 
 		_finderPathWithPaginationCountByC_R_LikeP = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByC_R_LikeP",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countByC_R_LikeP",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathFetchByC_R_P_V = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, DLContentImpl.class,
-			FINDER_CLASS_NAME_ENTITY, "fetchByC_R_P_V",
+			DLContentImpl.class, FINDER_CLASS_NAME_ENTITY, "fetchByC_R_P_V",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), String.class.getName()
 			},
-			DLContentModelImpl.COMPANYID_COLUMN_BITMASK |
-			DLContentModelImpl.REPOSITORYID_COLUMN_BITMASK |
-			DLContentModelImpl.PATH_COLUMN_BITMASK |
-			DLContentModelImpl.VERSION_COLUMN_BITMASK);
+			DLContentModelImpl.getColumnBitmask("companyId") |
+			DLContentModelImpl.getColumnBitmask("repositoryId") |
+			DLContentModelImpl.getColumnBitmask("path_") |
+			DLContentModelImpl.getColumnBitmask("version"));
 
 		_finderPathCountByC_R_P_V = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_R_P_V",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByC_R_P_V",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), String.class.getName()
@@ -3000,16 +3206,10 @@ public class DLContentPersistenceImpl
 
 	@Override
 	@Reference(
-		target = DLPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = DLPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
-
-		_columnBitmaskEnabled = GetterUtil.getBoolean(
-			configuration.get(
-				"value.object.column.bitmask.enabled.com.liferay.document.library.content.model.DLContent"),
-			true);
 	}
 
 	@Override
@@ -3030,10 +3230,8 @@ public class DLContentPersistenceImpl
 		super.setSessionFactory(sessionFactory);
 	}
 
-	private boolean _columnBitmaskEnabled;
-
-	@Reference(service = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
+	@Reference
+	protected CTPersistenceHelper ctPersistenceHelper;
 
 	@Reference
 	protected EntityCache entityCache;
@@ -3066,5 +3264,14 @@ public class DLContentPersistenceImpl
 
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"path", "data", "size"});
+
+	static {
+		try {
+			Class.forName(DLPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

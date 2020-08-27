@@ -2,6 +2,8 @@
 
 <model-hints>
 	<model name="com.liferay.asset.category.property.model.AssetCategoryProperty">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="categoryPropertyId" type="long" />
 		<field name="companyId" type="long" />
 		<field name="userId" type="long" />
@@ -11,9 +13,11 @@
 		<field name="categoryId" type="long" />
 		<field name="key" type="String">
 			<hint name="display-width">210</hint>
+			<hint name="max-length">255</hint>
 		</field>
 		<field name="value" type="String">
 			<hint name="display-width">210</hint>
+			<hint name="max-length">255</hint>
 		</field>
 	</model>
 </model-hints>

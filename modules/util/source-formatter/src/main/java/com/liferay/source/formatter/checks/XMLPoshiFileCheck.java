@@ -160,7 +160,7 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 					new ElementComparator());
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		content = _sortPoshiCommands(content);
@@ -211,7 +211,7 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 		if (matcher.find()) {
 			String setUpBlock = matcher.group();
 
-			content = content.replace(setUpBlock, "");
+			content = StringUtil.removeSubstring(content, setUpBlock);
 
 			sb.append(setUpBlock);
 		}
@@ -221,7 +221,7 @@ public class XMLPoshiFileCheck extends BaseFileCheck {
 		if (matcher.find()) {
 			String tearDownBlock = matcher.group();
 
-			content = content.replace(tearDownBlock, "");
+			content = StringUtil.removeSubstring(content, tearDownBlock);
 
 			sb.append(tearDownBlock);
 		}

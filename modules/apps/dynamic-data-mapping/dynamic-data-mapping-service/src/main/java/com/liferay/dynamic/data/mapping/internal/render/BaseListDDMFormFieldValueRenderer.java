@@ -38,7 +38,7 @@ public abstract class BaseListDDMFormFieldValueRenderer
 	extends BaseDDMFormFieldValueRenderer {
 
 	@Override
-	protected ValueAccessor getValueAcessor(Locale locale) {
+	protected ValueAccessor getValueAccessor(Locale locale) {
 		return new ValueAccessor(locale) {
 
 			@Override
@@ -58,10 +58,12 @@ public abstract class BaseListDDMFormFieldValueRenderer
 						ddmFormFieldValue, jsonArray.getString(i));
 
 					if (label == null) {
-						continue;
+						sb.append(jsonArray.getString(i));
+					}
+					else {
+						sb.append(label.getString(locale));
 					}
 
-					sb.append(label.getString(locale));
 					sb.append(StringPool.COMMA_AND_SPACE);
 				}
 
@@ -78,8 +80,8 @@ public abstract class BaseListDDMFormFieldValueRenderer
 				try {
 					return JSONFactoryUtil.createJSONArray(json);
 				}
-				catch (JSONException jsone) {
-					throw new ValueAccessorException(jsone);
+				catch (JSONException jsonException) {
+					throw new ValueAccessorException(jsonException);
 				}
 			}
 

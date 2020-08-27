@@ -20,27 +20,10 @@ package com.liferay.change.tracking.constants;
 public class CTPortletKeys {
 
 	public static final String CHANGE_LISTS =
-		"com_liferay_change_tracking_change_lists_web_portlet_" +
-			"ChangeListsPortlet";
+		"com_liferay_change_tracking_web_portlet_ChangeListsPortlet";
 
 	public static final String CHANGE_LISTS_CONFIGURATION =
 		"com_liferay_change_tracking_web_portlet_" +
 			"ChangeListsConfigurationPortlet";
-
-	public static final String CHANGE_LISTS_HISTORY =
-		"com_liferay_change_tracking_change_lists_history_web_portlet_" +
-			"ChangeListsHistoryPortlet";
-
-	public static final String MY_CHANGE_LISTS =
-		"com_liferay_change_tracking_my_change_lists_web_portlet_" +
-			"MyChangeListsPortlet";
-
-	public static final String SITE_CHANGE_LISTS =
-		"com_liferay_change_tracking_site_change_lists_web_portlet_" +
-			"SiteChangeListsPortlet";
-
-	public static final String SITE_CHANGE_LISTS_HISTORY =
-		"com_liferay_change_tracking_site_change_lists_history_web_portlet_" +
-			"SiteChangeListsHistoryPortlet";
 
 }

@@ -15,8 +15,8 @@
 package com.liferay.exportimport.web.internal.portlet.action;
 
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.exception.LARFileNameException;
 import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
@@ -88,19 +88,16 @@ public class ExportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 		setLayoutIdMap(actionRequest);
 
 		try {
-			ExportImportConfiguration exportImportConfiguration =
-				getExportImportConfiguration(actionRequest);
-
 			_exportImportService.exportLayoutsAsFileInBackground(
-				exportImportConfiguration);
+				getExportImportConfiguration(actionRequest));
 
 			sendRedirect(actionRequest, actionResponse);
 		}
-		catch (Exception e) {
-			SessionErrors.add(actionRequest, e.getClass());
+		catch (Exception exception) {
+			SessionErrors.add(actionRequest, exception.getClass());
 
-			if (!(e instanceof LARFileNameException)) {
-				_log.error(e, e);
+			if (!(exception instanceof LARFileNameException)) {
+				_log.error(exception, exception);
 			}
 		}
 	}
@@ -133,13 +130,13 @@ public class ExportLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 		if (exportLayoutSettingsMap == null) {
 			long groupId = ParamUtil.getLong(actionRequest, "liveGroupId");
-			long[] layoutIds = getLayoutIds(actionRequest);
 
 			exportLayoutSettingsMap =
 				_exportImportConfigurationSettingsMapFactory.
 					buildExportLayoutSettingsMap(
 						themeDisplay.getUserId(), groupId, privateLayout,
-						layoutIds, actionRequest.getParameterMap(),
+						getLayoutIds(actionRequest),
+						actionRequest.getParameterMap(),
 						themeDisplay.getLocale(), themeDisplay.getTimeZone());
 		}
 

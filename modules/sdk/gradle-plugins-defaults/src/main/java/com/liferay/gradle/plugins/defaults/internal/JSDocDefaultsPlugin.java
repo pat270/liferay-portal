@@ -37,7 +37,9 @@ public class JSDocDefaultsPlugin extends BaseDefaultsPlugin<JSDocPlugin> {
 	public static final Plugin<Project> INSTANCE = new JSDocDefaultsPlugin();
 
 	@Override
-	protected void configureDefaults(Project project, JSDocPlugin jsDocPlugin) {
+	protected void applyPluginDefaults(
+		Project project, JSDocPlugin jsDocPlugin) {
+
 		_configureTasksJSDoc(project);
 	}
 
@@ -89,8 +91,8 @@ public class JSDocDefaultsPlugin extends BaseDefaultsPlugin<JSDocPlugin> {
 				"com/liferay/gradle/plugins/defaults/internal/dependencies" +
 					"/config-jsdoc.json");
 		}
-		catch (IOException ioe) {
-			throw new ExceptionInInitializerError(ioe);
+		catch (IOException ioException) {
+			throw new ExceptionInInitializerError(ioException);
 		}
 	}
 

@@ -17,11 +17,13 @@ package com.liferay.portal.search.test.util;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.change.tracking.constants.CTConstants;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
-import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
@@ -29,6 +31,10 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.document.Document;
+import com.liferay.portal.search.document.DocumentBuilder;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.model.uid.UIDFactory;
 
 import java.text.Format;
 
@@ -50,6 +56,30 @@ public class IndexedFieldsFixture {
 
 		_resourcePermissionLocalService = resourcePermissionLocalService;
 		_searchEngineHelper = searchEngineHelper;
+		_uidFactory = null;
+		_documentBuilderFactory = null;
+	}
+
+	public IndexedFieldsFixture(
+		ResourcePermissionLocalService resourcePermissionLocalService,
+		SearchEngineHelper searchEngineHelper,
+		DocumentBuilderFactory documentBuilderFactory) {
+
+		_resourcePermissionLocalService = resourcePermissionLocalService;
+		_searchEngineHelper = searchEngineHelper;
+		_uidFactory = null;
+		_documentBuilderFactory = documentBuilderFactory;
+	}
+
+	public IndexedFieldsFixture(
+		ResourcePermissionLocalService resourcePermissionLocalService,
+		SearchEngineHelper searchEngineHelper, UIDFactory uidFactory,
+		DocumentBuilderFactory documentBuilderFactory) {
+
+		_resourcePermissionLocalService = resourcePermissionLocalService;
+		_searchEngineHelper = searchEngineHelper;
+		_uidFactory = uidFactory;
+		_documentBuilderFactory = documentBuilderFactory;
 	}
 
 	public void populateDate(
@@ -69,9 +99,16 @@ public class IndexedFieldsFixture {
 	}
 
 	public void populatePriority(String priority, Map<String, String> map) {
+		populatePriority(priority, map, false);
+	}
+
+	public void populatePriority(
+		String priority, Map<String, String> map,
+		boolean sourceFilteringEnabled) {
+
 		map.put(Field.PRIORITY, priority);
 
-		if (_isSearchEngineSolr()) {
+		if (sourceFilteringEnabled || _isSearchEngineSolr()) {
 			map.put(Field.PRIORITY.concat("_sortable"), priority);
 		}
 	}
@@ -108,16 +145,50 @@ public class IndexedFieldsFixture {
 	}
 
 	public void populateUID(
+		ClassedModel classedModel, Map<String, String> map) {
+
+		DocumentBuilder documentBuilder = _documentBuilderFactory.builder();
+
+		_uidFactory.setUID(classedModel, documentBuilder);
+
+		Document document = documentBuilder.build();
+
+		map.put(Field.UID, document.getString(Field.UID));
+
+		String uidm = document.getString("uidm");
+
+		if (uidm != null) {
+			map.put("uidm", uidm);
+		}
+
+		if (classedModel instanceof CTModel<?>) {
+			CTModel<?> ctModel = (CTModel<?>)classedModel;
+
+			if (ctModel.getCtCollectionId() !=
+					CTConstants.CT_COLLECTION_ID_PRODUCTION) {
+
+				map.put(
+					"ctCollectionId",
+					String.valueOf(ctModel.getCtCollectionId()));
+			}
+		}
+	}
+
+	public void populateUID(
 		String modelClassName, long id, Map<String, String> map) {
 
 		map.put(Field.UID, modelClassName + "_PORTLET_" + id);
+
+		if (_ENFORCE_STANDARD_UID) {
+			map.put("uidm", modelClassName + "_PORTLET_" + id);
+		}
 	}
 
 	public void populateViewCount(
 			Class<?> clazz, long classPK, Map<String, String> map)
 		throws Exception {
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClass(
 				clazz);
 
@@ -129,10 +200,25 @@ public class IndexedFieldsFixture {
 			"viewCount_sortable", String.valueOf(assetEntry.getViewCount()));
 	}
 
-	public void postProcessDocument(Document document) {
+	public void postProcessDocument(
+		com.liferay.portal.kernel.search.Document document) {
+
 		if (_isSearchEngineSolr()) {
 			document.remove("score");
 		}
+	}
+
+	public Document postProcessDocument(Document document) {
+		if (_isSearchEngineSolr()) {
+			DocumentBuilder documentBuilder = _documentBuilderFactory.builder(
+				document);
+
+			documentBuilder.unsetValue("score");
+
+			return documentBuilder.build();
+		}
+
+		return document;
 	}
 
 	protected void populateRoleIds(
@@ -161,10 +247,14 @@ public class IndexedFieldsFixture {
 		return _isSearchEngine("Solr");
 	}
 
+	private static final boolean _ENFORCE_STANDARD_UID = false;
+
 	private final Format _dateFormat =
 		FastDateFormatFactoryUtil.getSimpleDateFormat("yyyyMMddHHmmss");
+	private final DocumentBuilderFactory _documentBuilderFactory;
 	private final ResourcePermissionLocalService
 		_resourcePermissionLocalService;
 	private final SearchEngineHelper _searchEngineHelper;
+	private final UIDFactory _uidFactory;
 
 }

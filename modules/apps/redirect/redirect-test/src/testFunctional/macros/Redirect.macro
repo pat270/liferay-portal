@@ -1,0 +1,433 @@
+definition {
+
+	macro addEntry {
+		var portalURL = PropsUtil.get("portal.url");
+
+		LexiconEntry.gotoAdd();
+
+		AssertTextEquals(
+			locator1 = "TextInput#REDIRECT_SOURCE_URL_PREFIX",
+			value1 = "${portalURL}/web/${siteName}");
+
+		AssertElementPresent(locator1 = "Button#TRY_REDIRECTION_DISABLED");
+
+		Type(
+			locator1 = "TextInput#REDIRECT_SOURCE_URL",
+			value1 = "${sourceURL}");
+
+		Type(
+			locator1 = "TextInput#REDIRECT_DESTINATION_URL",
+			value1 = "${destinationURL}");
+
+		if (isSet(checkDestinationURL)) {
+			Click(locator1 = "Button#TRY_REDIRECTION");
+
+			SelectWindow(locator1 = "title=${destinationPageName} - ${groupName} - ${portalName}");
+
+			AssertLocation(value1 = "${destinationURL}");
+
+			Close.closeWindow(locator1 = "title=${destinationPageName} - ${groupName} - ${portalName}");
+		}
+
+		if (isSet(redirectType)) {
+			Select(
+				locator1 = "Select#REDIRECT_TYPE",
+				value1 = "${redirectType}");
+		}
+
+		if (isSet(expirationDate)) {
+			Type.sendKeys(
+				locator1 = "TextInput#EXPIRATION_DATE",
+				value1 = "${expirationDate}");
+		}
+
+		Button.click(button = "Create");
+
+		if ("${redirectURLVariation}" == "Null") {
+			Alert.viewRequiredField();
+		}
+
+		else if ("${sourceURLVariation}" == "Duplicate") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR",
+				value1 = "Error:There is already a redirect set for the same source URL.");
+		}
+
+		else if ("${sourceURLVariation}" == "Invalid") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR",
+				value1 = "Please enter a source URL with valid characters.");
+		}
+
+		else if (("${destinationURLVariation}" == "Space") || ("${destinationURLVariation}" == "RelativeURL")) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "TextInput#ALERT",
+				value1 = "This URL is not supported");
+		}
+
+		else if ("${redirectChain}" == "true") {
+			Redirect.configureRedirectChain(
+				noUpdateRedirect = "${noUpdateRedirect}",
+				noUpdateReferences = "${noUpdateReferences}",
+				updateRedirect = "${updateRedirect}");
+
+			Alert.viewSuccessMessage();
+		}
+
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro addEntryVia404URLs {
+		var portalURL = PropsUtil.get("portal.url");
+
+		if (isSet(ignoredURL)) {
+			AssertClick(
+				key_navItem = "404 URLs",
+				locator1 = "NavBar#NAV_ITEM_REDIRECTION",
+				value1 = "404 URLs");
+
+			Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+			MenuItem.click(menuItem = "Ignored URLs");
+
+			Redirect.gotoEntryMenuItem(
+				item = "Create Redirect",
+				sourceURL = "${ignoredURL}");
+		}
+		else {
+			AssertClick(
+				key_navItem = "404 URLs",
+				locator1 = "NavBar#NAV_ITEM_REDIRECTION",
+				value1 = "404 URLs");
+
+			Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+			MenuItem.click(menuItem = "Active URLs");
+
+			Redirect.gotoEntryMenuItem(
+				item = "Create Redirect",
+				sourceURL = "${activeIgnoreURL}");
+		}
+
+		AssertTextEquals(
+			locator1 = "TextInput#REDIRECT_SOURCE_URL_PREFIX",
+			value1 = "${portalURL}/web/${siteName}");
+
+		AssertTextEquals(
+			locator1 = "TextInput#REDIRECT_SOURCE_URL",
+			value1 = "${sourceURL}");
+
+		Type(
+			locator1 = "TextInput#REDIRECT_DESTINATION_URL",
+			value1 = "${destinationURL}");
+
+		if (isSet(redirectType)) {
+			Select(
+				locator1 = "Select#REDIRECT_TYPE",
+				value1 = "${redirectType}");
+		}
+
+		if (isSet(expirationDate)) {
+			Type.sendKeys(
+				locator1 = "TextInput#EXPIRATION_DATE",
+				value1 = "${expirationDate}");
+		}
+
+		Button.click(button = "Create");
+
+		Redirect.configureRedirectChain(noUpdateReferences = "${noUpdateReferences}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro configureRedirectChain {
+		if (isSet(updateRedirect)) {
+			AssertChecked.assertCheckedNotVisible(
+				checkboxName = "Update Redirect",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+		else {
+			AssertChecked.assertCheckedNotVisible(
+				checkboxName = "Update References",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+		if ("${noUpdateReferences}" == "true") {
+			if (isSet(noUpdateRedirect)) {
+				FormFields.disableCheckbox(fieldName = "Update Redirect");
+			}
+			else {
+				FormFields.disableCheckbox(fieldName = "Update References");
+			}
+		}
+
+		if (isSet(destinationURLEdit)) {
+			AssertClick(
+				locator1 = "Button#MODAL_ITEM_SUBMIT",
+				value1 = "Save");
+		}
+		else {
+			AssertClick(
+				locator1 = "Button#MODAL_ITEM_SUBMIT",
+				value1 = "Create");
+		}
+	}
+
+	macro deleteEntry {
+		if (isSet(deletions)) {
+			ClickNoError(locator1 = "Icon#DELETE");
+		}
+
+		else {
+			Redirect.gotoEntryMenuItem(
+				item = "Delete",
+				sourceURL = "${sourceURL}");
+		}
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro editEntry {
+		Redirect.gotoEntryMenuItem(
+			item = "Edit",
+			sourceURL = "${sourceURL}");
+
+		if (isSet(toolTip)) {
+			MouseOver(locator1 = "Icon#TOOLTIP");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#TOOLTIP",
+				value1 = "The redirect type affects how long search engines and browsers cache the information.");
+		}
+
+		if (isSet(sourceURLEdit)) {
+			Type(
+				locator1 = "TextInput#REDIRECT_SOURCE_URL",
+				value1 = "${sourceURLEdit}");
+		}
+
+		if (isSet(destinationURLEdit)) {
+			Type(
+				locator1 = "TextInput#REDIRECT_DESTINATION_URL",
+				value1 = "${destinationURLEdit}");
+		}
+
+		if (isSet(redirectTypeEdit)) {
+			Select(
+				locator1 = "Select#REDIRECT_TYPE",
+				value1 = "${redirectTypeEdit}");
+		}
+
+		if (isSet(permanentEntryEdit)) {
+			AssertTextEquals(
+				locator1 = "Message#INFO",
+				value1 = "Info:Changes to this redirect might not be immediately seen for users whose browsers have cached the old redirect configuration.");
+		}
+
+		if (isSet(expirationDate)) {
+			Type.sendKeys(
+				locator1 = "TextInput#EXPIRATION_DATE",
+				value1 = "${expirationDate}");
+		}
+
+		Button.clickSave();
+
+		if (isSet(redirectChain)) {
+			Redirect.configureRedirectChain(
+				destinationURLEdit = "${destinationURLEdit}",
+				noUpdateRedirect = "${noUpdateRedirect}",
+				noUpdateReferences = "${noUpdateReferences}",
+				updateRedirect = "${updateRedirect}");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro gotoEntryMenuItem {
+		LexiconTable.clickEllipsisItem(
+			item = "${item}",
+			tableEntry = "${sourceURL}");
+	}
+
+	macro ignoreEntry {
+		if ("${unignore}" == "true") {
+			AssertClick(
+				key_navItem = "404 URLs",
+				locator1 = "NavBar#NAV_ITEM_REDIRECTION",
+				value1 = "404 URLs");
+
+			Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+			MenuItem.click(menuItem = "Ignored URLs");
+
+			if ("${unignoreAllEntries}" == "true") {
+				PortletEntry.selectAll();
+
+				Click(locator1 = "Button#UNIGNORE_REDIRECT_URLS");
+			}
+			else {
+				Redirect.gotoEntryMenuItem(
+					item = "Unignore",
+					sourceURL = "${ignoreURL}");
+			}
+
+			Alert.viewSuccessMessage();
+		}
+		else {
+			AssertClick(
+				key_navItem = "404 URLs",
+				locator1 = "NavBar#NAV_ITEM_REDIRECTION",
+				value1 = "404 URLs");
+
+			Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+			MenuItem.click(menuItem = "Active URLs");
+
+			if ("${ignoreAllEntries}" == "true") {
+				PortletEntry.selectAll();
+
+				Click(locator1 = "Button#IGNORE_REDIRECT_URLS");
+			}
+			else {
+				Redirect.gotoEntryMenuItem(
+					item = "Ignore",
+					sourceURL = "${ignoreURL}");
+			}
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro openRedirectAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_redirect_web_internal_portlet_RedirectPortlet");
+	}
+
+	macro view404URLs {
+		if (isSet(activeIgnoreURL)) {
+			AssertClick(
+				key_navItem = "404 URLs",
+				locator1 = "NavBar#NAV_ITEM_REDIRECTION",
+				value1 = "404 URLs");
+		}
+
+		if ("${multipleURLs}" == "true") {
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${ignoreURL}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${ignoreURL}");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${ignoreURL}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${ignoreURL}");
+
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${requestNumber}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${requestNumber}");
+		}
+	}
+
+	macro view404URLsDefault {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO_TAGLIB_TITLE",
+			value1 = "All is in order.");
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO_TAGLIB_DESCRIPTION",
+			value1 = "All your pages are connected or redirected.");
+	}
+
+	macro viewDefault {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO_TAGLIB",
+			value1 = "No redirects were found.");
+	}
+
+	macro viewEntry {
+		AssertTextEquals.assertPartialText(
+			key_rowEntry = "${sourceURL}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+			value1 = "${sourceURL}");
+
+		AssertTextEquals.assertPartialText(
+			key_rowEntry = "${destinationURL}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+			value1 = "${destinationURL}");
+
+		if (isSet(redirectType)) {
+			AssertTextEquals(
+				key_rowEntry = "${redirectType}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${redirectType}");
+		}
+
+		if (isSet(expirationDate)) {
+			AssertTextEquals(
+				key_rowEntry = "${expirationDate}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${expirationDate}");
+		}
+	}
+
+	macro viewEntryFloatingURL {
+		MouseOver(
+			key_rowEntry = "${redirectURL}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME");
+
+		AssertElementPresent(
+			key_redirectURL = "${redirectURL}",
+			locator1 = "Redirect#FLOATING_TOOLTIP_URL");
+	}
+
+	macro viewEntryInfo {
+		AssertTextEquals(
+			key_itemName = "Created By",
+			locator1 = "Redirect#SIDEBAR_INFO_ITEM",
+			value1 = "Created By");
+
+		AssertTextEquals(
+			key_itemName = "Type",
+			locator1 = "Redirect#SIDEBAR_INFO_ITEM",
+			value1 = "Type");
+
+		AssertTextEquals(
+			key_itemName = "Create Date",
+			locator1 = "Redirect#SIDEBAR_INFO_ITEM",
+			value1 = "Create Date");
+
+		AssertTextEquals(
+			key_itemName = "Latest Occurrence",
+			locator1 = "Redirect#SIDEBAR_INFO_ITEM",
+			value1 = "Latest Occurrence");
+
+		AssertTextEquals(
+			key_itemName = "Expiration Date",
+			locator1 = "Redirect#SIDEBAR_INFO_ITEM",
+			value1 = "Expiration Date");
+	}
+
+	macro viewOrderedURLs {
+		AssertTextEquals(
+			key_rowNumber = "1",
+			locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_3",
+			value1 = "${entry1}");
+
+		AssertTextEquals(
+			key_rowNumber = "2",
+			locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_3",
+			value1 = "${entry2}");
+	}
+
+	macro viewResultEntryTitle {
+		Search.searchCP(searchTerm = "${searchTerm}");
+
+		AssertTextEquals(
+			key_rowEntry = "${searchEntryTitle}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+			value1 = "${searchEntryTitle}");
+	}
+
+}

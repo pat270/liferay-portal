@@ -16,12 +16,9 @@ package com.liferay.subscription.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchSubscriptionException extends NoSuchModelException {
 
 	public NoSuchSubscriptionException() {
@@ -31,12 +28,12 @@ public class NoSuchSubscriptionException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchSubscriptionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchSubscriptionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchSubscriptionException(Throwable cause) {
-		super(cause);
+	public NoSuchSubscriptionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

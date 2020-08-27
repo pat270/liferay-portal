@@ -52,12 +52,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Tina Tian
  */
-@ProviderType
 public class DefaultSearchResultPermissionFilter
 	implements SearchResultPermissionFilter {
 
@@ -273,9 +270,9 @@ public class DefaultSearchResultPermissionFilter
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 

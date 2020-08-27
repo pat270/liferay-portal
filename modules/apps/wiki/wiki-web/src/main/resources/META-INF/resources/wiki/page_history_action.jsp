@@ -46,7 +46,8 @@ else {
 		</portlet:actionURL>
 
 		<liferay-ui:icon
-			iconCssClass="icon-undo"
+			icon="undo"
+			markupView="lexicon"
 			message="revert"
 			url="<%= revertURL %>"
 		/>
@@ -62,9 +63,9 @@ else {
 		</portlet:renderURL>
 
 		<%
-		Map<String, Object> data = new HashMap<String, Object>();
-
-		data.put("uri", compareVersionsURL);
+		Map<String, Object> data = HashMapBuilder.<String, Object>put(
+			"uri", compareVersionsURL
+		).build();
 		%>
 
 		<liferay-ui:icon

@@ -11,9 +11,9 @@
 *.iws
 *.swp
 *~
+.DS_Store
 .ant-targets-build.xml
 .ant_targets
-.eslintrc
 .gh.json
 .sass-cache
 .sass_cache_*.css
@@ -44,9 +44,10 @@
 /dist
 /intellij
 /jacoco
-/modules/.releng/private
+/modules/.releng/dxp/apps/lcs
+/modules/dxp/apps/lcs
 /modules/node_modules_cache
-/modules/private
+/modules/private/node_modules_cache
 /nbproject/private
 /out
 /portal-client/*.ipr
@@ -63,7 +64,6 @@
 /portal-impl/portal-impl*.jar
 /portal-impl/service.xml
 /portal-impl/ServiceBuilder.temp
-/portal-impl/src/META-INF/MANIFEST.MF.JOnAS
 /portal-impl/src/META-INF/portal-log4j-ext.xml
 /portal-impl/src/portal-ext.properties
 /portal-impl/src/system-ext.properties
@@ -83,11 +83,6 @@
 /portal-kernel/test-coverage
 /portal-kernel/test-results
 /portal-kernel/woven-classes
-/portal-test-integration/*.ipr
-/portal-test-integration/*.iws
-/portal-test-integration/classes
-/portal-test-integration/portal-test-integration*.asc
-/portal-test-integration/portal-test-integration*.jar
 /portal-test/*.ipr
 /portal-test/*.iws
 /portal-test/build
@@ -101,7 +96,6 @@
 /portal-web/docroot/aui
 /portal-web/docroot/dtd
 /portal-web/docroot/html/icons/_sprite.*
-/portal-web/docroot/resin-data
 /portal-web/docroot/WEB-INF/classes
 /portal-web/docroot/WEB-INF/lib
 /portal-web/docroot/WEB-INF/liferay-portlet-ext.xml
@@ -146,10 +140,6 @@
 /sql/sql.*.properties
 /sql/update-*
 /sql/velocity.log*
-/support-resin/*.ipr
-/support-resin/*.iws
-/support-resin/classes
-/support-resin/support-resin*.jar
 /support-tomcat/*.ipr
 /support-tomcat/*.iws
 /support-tomcat/classes

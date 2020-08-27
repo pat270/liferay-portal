@@ -15,8 +15,8 @@
 package com.liferay.portal.search.engine.adapter.search;
 
 import com.liferay.portal.kernel.search.GroupBy;
-import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.Stats;
+import com.liferay.portal.search.groupby.GroupByRequest;
 import com.liferay.portal.search.highlight.Highlight;
 import com.liferay.portal.search.sort.Sort;
 
@@ -28,14 +28,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Dylan Rebelak
  */
-@ProviderType
 public class SearchSearchRequest
 	extends BaseSearchRequest implements SearchRequest<SearchSearchResponse> {
+
+	public SearchSearchRequest() {
+		setPreferLocalCluster(true);
+	}
 
 	@Override
 	public SearchSearchResponse accept(
@@ -56,8 +57,24 @@ public class SearchSearchRequest
 		return _fetchSource;
 	}
 
+	public String[] getFetchSourceExcludes() {
+		return _fetchSourceExcludes;
+	}
+
+	public String[] getFetchSourceIncludes() {
+		return _fetchSourceIncludes;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by GroupByRequest
+	 */
+	@Deprecated
 	public GroupBy getGroupBy() {
 		return _groupBy;
+	}
+
+	public List<GroupByRequest> getGroupByRequests() {
+		return Collections.unmodifiableList(_groupByRequests);
 	}
 
 	public Highlight getHighlight() {
@@ -82,15 +99,6 @@ public class SearchSearchRequest
 
 	public String getPreference() {
 		return _preference;
-	}
-
-	/**
-	 * @return
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public QueryConfig getQueryConfig() {
-		throw new UnsupportedOperationException();
 	}
 
 	public Boolean getScoreEnabled() {
@@ -134,6 +142,10 @@ public class SearchSearchRequest
 		return _version;
 	}
 
+	public boolean isAllFieldsSelected() {
+		return _allFieldsSelected;
+	}
+
 	public boolean isHighlightEnabled() {
 		return _highlightEnabled;
 	}
@@ -162,6 +174,10 @@ public class SearchSearchRequest
 		_stats.putAll(stats);
 	}
 
+	public void setAllFieldsSelected(boolean allFieldsSelected) {
+		_allFieldsSelected = allFieldsSelected;
+	}
+
 	public void setAlternateUidFieldName(String alternateUidFieldName) {
 		_alternateUidFieldName = alternateUidFieldName;
 	}
@@ -170,8 +186,24 @@ public class SearchSearchRequest
 		_fetchSource = fetchSource;
 	}
 
+	public void setFetchSourceExcludes(String[] fetchSourceExcludes) {
+		_fetchSourceExcludes = fetchSourceExcludes;
+	}
+
+	public void setFetchSourceIncludes(String[] fetchSourceIncludes) {
+		_fetchSourceIncludes = fetchSourceIncludes;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by GroupByRequest
+	 */
+	@Deprecated
 	public void setGroupBy(GroupBy groupBy) {
 		_groupBy = groupBy;
+	}
+
+	public void setGroupByRequests(Collection<GroupByRequest> groupByRequests) {
+		_groupByRequests = new ArrayList<>(groupByRequests);
 	}
 
 	public void setHighlight(Highlight highlight) {
@@ -253,9 +285,13 @@ public class SearchSearchRequest
 		_version = version;
 	}
 
+	private boolean _allFieldsSelected;
 	private String _alternateUidFieldName;
 	private Boolean _fetchSource;
+	private String[] _fetchSourceExcludes;
+	private String[] _fetchSourceIncludes;
 	private GroupBy _groupBy;
+	private List<GroupByRequest> _groupByRequests = Collections.emptyList();
 	private Highlight _highlight;
 	private boolean _highlightEnabled;
 	private String[] _highlightFieldNames = {};

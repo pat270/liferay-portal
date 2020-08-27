@@ -17,8 +17,8 @@ package com.liferay.blogs.web.internal.portlet.action;
 import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.blogs.exception.NoSuchEntryException;
 import com.liferay.blogs.model.BlogsEntry;
-import com.liferay.blogs.web.constants.BlogsWebKeys;
 import com.liferay.blogs.web.internal.BlogsItemSelectorHelper;
+import com.liferay.blogs.web.internal.constants.BlogsWebKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -80,16 +80,16 @@ public class EditEntryMVCRenderCommand implements MVCRenderCommand {
 				BlogsWebKeys.BLOGS_ITEM_SELECTOR_HELPER,
 				_blogsItemSelectorHelper);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchEntryException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchEntryException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/blogs/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/blogs/edit_entry.jsp";

@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link ThemeService}.
  *
@@ -23,9 +21,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ThemeService
  * @generated
  */
-@ProviderType
 public class ThemeServiceWrapper
-	implements ThemeService, ServiceWrapper<ThemeService> {
+	implements ServiceWrapper<ThemeService>, ThemeService {
 
 	public ThemeServiceWrapper(ThemeService themeService) {
 		_themeService = themeService;
@@ -37,7 +34,7 @@ public class ThemeServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _themeService.getOSGiServiceIdentifier();
 	}
 

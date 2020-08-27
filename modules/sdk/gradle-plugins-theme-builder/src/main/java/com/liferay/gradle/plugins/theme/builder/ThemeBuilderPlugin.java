@@ -21,7 +21,6 @@ import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.concurrent.Callable;
 import java.util.zip.ZipEntry;
@@ -213,7 +212,7 @@ public class ThemeBuilderPlugin implements Plugin<Project> {
 
 		buildCSSTask.dependsOn(buildThemeTask);
 
-		buildCSSTask.setDocrootDir(
+		buildCSSTask.setBaseDir(
 			new Callable<File>() {
 
 				@Override
@@ -305,7 +304,7 @@ public class ThemeBuilderPlugin implements Plugin<Project> {
 	}
 
 	private File _getThemeFile(Iterable<File> files, String name)
-		throws IOException {
+		throws Exception {
 
 		for (File file : files) {
 			String fileName = file.getName();

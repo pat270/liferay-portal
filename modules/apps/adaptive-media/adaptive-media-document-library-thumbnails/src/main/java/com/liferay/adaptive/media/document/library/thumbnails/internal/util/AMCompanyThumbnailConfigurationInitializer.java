@@ -19,14 +19,13 @@ import com.liferay.adaptive.media.image.configuration.AMImageConfigurationEntry;
 import com.liferay.adaptive.media.image.configuration.AMImageConfigurationHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.util.PrefsPropsUtil;
 
 import java.io.IOException;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -106,15 +105,14 @@ public class AMCompanyThumbnailConfigurationInitializer {
 		String uuid = _normalize(name);
 
 		if (!_hasConfiguration(company.getCompanyId(), name, uuid)) {
-			Map<String, String> properties = new HashMap<>();
-
-			properties.put("max-height", String.valueOf(maxHeight));
-			properties.put("max-width", String.valueOf(maxWidth));
-
 			_amImageConfigurationHelper.addAMImageConfigurationEntry(
 				company.getCompanyId(), name,
 				"This image resolution was automatically added.", uuid,
-				properties);
+				HashMapBuilder.put(
+					"max-height", String.valueOf(maxHeight)
+				).put(
+					"max-width", String.valueOf(maxWidth)
+				).build());
 		}
 	}
 

@@ -18,9 +18,11 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.TrashedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -39,8 +41,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DLFileEntryModel
-	extends AttachedModel, BaseModel<DLFileEntry>, ShardedModel,
-			StagedGroupedModel, TrashedModel {
+	extends AttachedModel, BaseModel<DLFileEntry>, CTModel<DLFileEntry>,
+			MVCCModel, ShardedModel, StagedGroupedModel, TrashedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -53,6 +55,7 @@ public interface DLFileEntryModel
 	 *
 	 * @return the primary key of this document library file entry
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -60,7 +63,40 @@ public interface DLFileEntryModel
 	 *
 	 * @param primaryKey the primary key of this document library file entry
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this document library file entry.
+	 *
+	 * @return the mvcc version of this document library file entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this document library file entry.
+	 *
+	 * @param mvccVersion the mvcc version of this document library file entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this document library file entry.
+	 *
+	 * @return the ct collection ID of this document library file entry
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this document library file entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this document library file entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this document library file entry.
@@ -438,20 +474,6 @@ public interface DLFileEntryModel
 	 * @param size the size of this document library file entry
 	 */
 	public void setSize(long size);
-
-	/**
-	 * Returns the read count of this document library file entry.
-	 *
-	 * @return the read count of this document library file entry
-	 */
-	public int getReadCount();
-
-	/**
-	 * Sets the read count of this document library file entry.
-	 *
-	 * @param readCount the read count of this document library file entry
-	 */
-	public void setReadCount(int readCount);
 
 	/**
 	 * Returns the small image ID of this document library file entry.

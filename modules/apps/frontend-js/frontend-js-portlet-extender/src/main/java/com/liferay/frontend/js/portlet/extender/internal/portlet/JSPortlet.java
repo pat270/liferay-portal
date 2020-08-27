@@ -32,6 +32,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -49,11 +50,13 @@ import org.osgi.service.cm.ManagedService;
 public class JSPortlet extends MVCPortlet implements ManagedService {
 
 	public JSPortlet(
-		JSONFactory jsonFactory, String packageName, String packageVersion) {
+		JSONFactory jsonFactory, String packageName, String packageVersion,
+		Set<String> portletPreferencesFieldNames) {
 
 		_jsonFactory = jsonFactory;
 		_packageName = packageName;
 		_packageVersion = packageVersion;
+		_portletPreferencesFieldNames = portletPreferencesFieldNames;
 	}
 
 	@Override
@@ -89,8 +92,8 @@ public class JSPortlet extends MVCPortlet implements ManagedService {
 
 			printWriter.flush();
 		}
-		catch (IOException ioe) {
-			_log.error("Unable to render HTML output", ioe);
+		catch (IOException ioException) {
+			_log.error("Unable to render HTML output", ioException);
 		}
 	}
 
@@ -104,10 +107,10 @@ public class JSPortlet extends MVCPortlet implements ManagedService {
 
 		Map<String, Object> configuration = new HashMap<>();
 
-		Enumeration<String> keys = properties.keys();
+		Enumeration<String> enumeration = properties.keys();
 
-		while (keys.hasMoreElements()) {
-			String key = keys.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
 			if (key.equals("service.pid")) {
 				continue;
@@ -134,8 +137,8 @@ public class JSPortlet extends MVCPortlet implements ManagedService {
 
 			return StringUtil.read(inputStream);
 		}
-		catch (Exception e) {
-			_log.error("Unable to read template " + name, e);
+		catch (Exception exception) {
+			_log.error("Unable to read template " + name, exception);
 		}
 
 		return StringPool.BLANK;
@@ -149,11 +152,14 @@ public class JSPortlet extends MVCPortlet implements ManagedService {
 		JSONObject portletPreferencesJSONObject =
 			_jsonFactory.createJSONObject();
 
-		Enumeration<String> portletPreferencesNames =
-			portletPreferences.getNames();
+		Enumeration<String> enumeration = portletPreferences.getNames();
 
-		while (portletPreferencesNames.hasMoreElements()) {
-			String key = portletPreferencesNames.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
+
+			if (!_portletPreferencesFieldNames.contains(key)) {
+				continue;
+			}
 
 			String[] values = portletPreferences.getValues(
 				key, StringPool.EMPTY_ARRAY);
@@ -189,5 +195,6 @@ public class JSPortlet extends MVCPortlet implements ManagedService {
 	private final JSONFactory _jsonFactory;
 	private final String _packageName;
 	private final String _packageVersion;
+	private final Set<String> _portletPreferencesFieldNames;
 
 }

@@ -19,6 +19,9 @@ import com.liferay.application.list.PanelAppRegistry;
 import com.liferay.application.list.PanelCategoryRegistry;
 import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.product.navigation.simulation.constants.ProductNavigationSimulationPortletKeys;
 
 import java.io.IOException;
@@ -27,6 +30,8 @@ import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -48,8 +53,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/portlet/view.jsp",
 		"javax.portlet.name=" + ProductNavigationSimulationPortletKeys.PRODUCT_NAVIGATION_SIMULATION,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -59,6 +63,17 @@ public class ProductNavigationSimulationPortlet extends MVCPortlet {
 	protected void doDispatch(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
+
+		HttpServletRequest originalHttpServletRequest =
+			_portal.getOriginalServletRequest(
+				_portal.getHttpServletRequest(renderRequest));
+
+		String layoutMode = ParamUtil.getString(
+			originalHttpServletRequest, "p_l_mode", Constants.VIEW);
+
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return;
+		}
 
 		renderRequest.setAttribute(
 			ApplicationListWebKeys.GROUP_PROVIDER, _groupProvider);
@@ -71,25 +86,16 @@ public class ProductNavigationSimulationPortlet extends MVCPortlet {
 		super.doDispatch(renderRequest, renderResponse);
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupProvider(GroupProvider groupProvider) {
-		_groupProvider = groupProvider;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPanelAppRegistry(PanelAppRegistry panelAppRegistry) {
-		_panelAppRegistry = panelAppRegistry;
-	}
-
-	@Reference(unbind = "-")
-	protected void setPanelCategoryRegistry(
-		PanelCategoryRegistry panelCategoryRegistry) {
-
-		_panelCategoryRegistry = panelCategoryRegistry;
-	}
-
+	@Reference
 	private GroupProvider _groupProvider;
+
+	@Reference
 	private PanelAppRegistry _panelAppRegistry;
+
+	@Reference
 	private PanelCategoryRegistry _panelCategoryRegistry;
+
+	@Reference
+	private Portal _portal;
 
 }

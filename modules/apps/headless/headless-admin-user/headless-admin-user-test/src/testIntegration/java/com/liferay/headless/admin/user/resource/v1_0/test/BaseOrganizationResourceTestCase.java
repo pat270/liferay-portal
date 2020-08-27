@@ -14,63 +14,72 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
+import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.pagination.Pagination;
+import com.liferay.headless.admin.user.client.resource.v1_0.OrganizationResource;
 import com.liferay.headless.admin.user.client.serdes.v1_0.OrganizationSerDes;
-import com.liferay.headless.admin.user.resource.v1_0.OrganizationResource;
+import com.liferay.petra.function.UnsafeTriConsumer;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.test.log.CaptureAppender;
+import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
+import java.lang.reflect.Method;
 
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.log4j.Level;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -102,10 +111,19 @@ public abstract class BaseOrganizationResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-user/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_organizationResource.setContextCompany(testCompany);
+
+		OrganizationResource.Builder builder = OrganizationResource.builder();
+
+		organizationResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -119,10 +137,16 @@ public abstract class BaseOrganizationResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -140,9 +164,15 @@ public abstract class BaseOrganizationResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -156,15 +186,44 @@ public abstract class BaseOrganizationResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		Organization organization = randomOrganization();
+
+		organization.setComment(regex);
+		organization.setId(regex);
+		organization.setImage(regex);
+		organization.setName(regex);
+
+		String json = OrganizationSerDes.toJSON(organization);
+
+		Assert.assertFalse(json.contains(regex));
+
+		organization = OrganizationSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, organization.getComment());
+		Assert.assertEquals(regex, organization.getId());
+		Assert.assertEquals(regex, organization.getImage());
+		Assert.assertEquals(regex, organization.getName());
+	}
+
+	@Test
 	public void testGetOrganizationsPage() throws Exception {
+		Page<Organization> page = organizationResource.getOrganizationsPage(
+			null, RandomTestUtil.randomString(), null, Pagination.of(1, 2),
+			null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		Organization organization1 = testGetOrganizationsPage_addOrganization(
 			randomOrganization());
 
 		Organization organization2 = testGetOrganizationsPage_addOrganization(
 			randomOrganization());
 
-		Page<Organization> page = invokeGetOrganizationsPage(
-			null, null, Pagination.of(1, 2), null);
+		page = organizationResource.getOrganizationsPage(
+			null, null, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -172,6 +231,10 @@ public abstract class BaseOrganizationResourceTestCase {
 			Arrays.asList(organization1, organization2),
 			(List<Organization>)page.getItems());
 		assertValid(page);
+
+		organizationResource.deleteOrganization(organization1.getId());
+
+		organizationResource.deleteOrganization(organization2.getId());
 	}
 
 	@Test
@@ -190,8 +253,9 @@ public abstract class BaseOrganizationResourceTestCase {
 		organization1 = testGetOrganizationsPage_addOrganization(organization1);
 
 		for (EntityField entityField : entityFields) {
-			Page<Organization> page = invokeGetOrganizationsPage(
-				null, getFilterString(entityField, "between", organization1),
+			Page<Organization> page = organizationResource.getOrganizationsPage(
+				null, null,
+				getFilterString(entityField, "between", organization1),
 				Pagination.of(1, 2), null);
 
 			assertEquals(
@@ -219,8 +283,8 @@ public abstract class BaseOrganizationResourceTestCase {
 			randomOrganization());
 
 		for (EntityField entityField : entityFields) {
-			Page<Organization> page = invokeGetOrganizationsPage(
-				null, getFilterString(entityField, "eq", organization1),
+			Page<Organization> page = organizationResource.getOrganizationsPage(
+				null, null, getFilterString(entityField, "eq", organization1),
 				Pagination.of(1, 2), null);
 
 			assertEquals(
@@ -240,8 +304,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization3 = testGetOrganizationsPage_addOrganization(
 			randomOrganization());
 
-		Page<Organization> page1 = invokeGetOrganizationsPage(
-			null, null, Pagination.of(1, 2), null);
+		Page<Organization> page1 = organizationResource.getOrganizationsPage(
+			null, null, null, Pagination.of(1, 2), null);
 
 		List<Organization> organizations1 =
 			(List<Organization>)page1.getItems();
@@ -249,8 +313,8 @@ public abstract class BaseOrganizationResourceTestCase {
 		Assert.assertEquals(
 			organizations1.toString(), 2, organizations1.size());
 
-		Page<Organization> page2 = invokeGetOrganizationsPage(
-			null, null, Pagination.of(2, 2), null);
+		Page<Organization> page2 = organizationResource.getOrganizationsPage(
+			null, null, null, Pagination.of(2, 2), null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -260,61 +324,94 @@ public abstract class BaseOrganizationResourceTestCase {
 		Assert.assertEquals(
 			organizations2.toString(), 1, organizations2.size());
 
+		Page<Organization> page3 = organizationResource.getOrganizationsPage(
+			null, null, null, Pagination.of(1, 3), null);
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(organization1, organization2, organization3),
-			new ArrayList<Organization>() {
-				{
-					addAll(organizations1);
-					addAll(organizations2);
-				}
-			});
+			(List<Organization>)page3.getItems());
 	}
 
 	@Test
 	public void testGetOrganizationsPageWithSortDateTime() throws Exception {
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
+		testGetOrganizationsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, organization1, organization2) -> {
+				BeanUtils.setProperty(
+					organization1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
 
-		if (entityFields.isEmpty()) {
-			return;
-		}
-
-		Organization organization1 = randomOrganization();
-		Organization organization2 = randomOrganization();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				organization1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		organization1 = testGetOrganizationsPage_addOrganization(organization1);
-
-		organization2 = testGetOrganizationsPage_addOrganization(organization2);
-
-		for (EntityField entityField : entityFields) {
-			Page<Organization> ascPage = invokeGetOrganizationsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
-
-			Page<Organization> descPage = invokeGetOrganizationsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
-		}
+	@Test
+	public void testGetOrganizationsPageWithSortInteger() throws Exception {
+		testGetOrganizationsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, organization1, organization2) -> {
+				BeanUtils.setProperty(organization1, entityField.getName(), 0);
+				BeanUtils.setProperty(organization2, entityField.getName(), 1);
+			});
 	}
 
 	@Test
 	public void testGetOrganizationsPageWithSortString() throws Exception {
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
+		testGetOrganizationsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, organization1, organization2) -> {
+				Class<?> clazz = organization1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						organization1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						organization2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						organization1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						organization2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						organization1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						organization2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetOrganizationsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer
+				<EntityField, Organization, Organization, Exception>
+					unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
 
 		if (entityFields.isEmpty()) {
 			return;
@@ -324,8 +421,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		Organization organization2 = randomOrganization();
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(organization1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(organization2, entityField.getName(), "Bbb");
+			unsafeTriConsumer.accept(entityField, organization1, organization2);
 		}
 
 		organization1 = testGetOrganizationsPage_addOrganization(organization1);
@@ -333,17 +429,19 @@ public abstract class BaseOrganizationResourceTestCase {
 		organization2 = testGetOrganizationsPage_addOrganization(organization2);
 
 		for (EntityField entityField : entityFields) {
-			Page<Organization> ascPage = invokeGetOrganizationsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
+			Page<Organization> ascPage =
+				organizationResource.getOrganizationsPage(
+					null, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":asc");
 
 			assertEquals(
 				Arrays.asList(organization1, organization2),
 				(List<Organization>)ascPage.getItems());
 
-			Page<Organization> descPage = invokeGetOrganizationsPage(
-				null, null, Pagination.of(1, 2),
-				entityField.getName() + ":desc");
+			Page<Organization> descPage =
+				organizationResource.getOrganizationsPage(
+					null, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":desc");
 
 			assertEquals(
 				Arrays.asList(organization2, organization1),
@@ -359,85 +457,132 @@ public abstract class BaseOrganizationResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Page<Organization> invokeGetOrganizationsPage(
-			String search, String filterString, Pagination pagination,
-			String sortString)
-		throws Exception {
+	@Test
+	public void testGraphQLGetOrganizationsPage() throws Exception {
+		GraphQLField graphQLField = new GraphQLField(
+			"organizations",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 2);
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
 
-		Http.Options options = _createHttpOptions();
+		JSONObject organizationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizations");
 
-		String location = _resourceURL + _toPath("/organizations");
+		Assert.assertEquals(0, organizationsJSONObject.get("totalCount"));
 
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
+		Organization organization1 = testGraphQLOrganization_addOrganization();
+		Organization organization2 = testGraphQLOrganization_addOrganization();
 
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
+		organizationsJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/organizations");
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
+		Assert.assertEquals(2, organizationsJSONObject.get("totalCount"));
 
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, OrganizationSerDes::toDTO);
+		assertEqualsIgnoringOrder(
+			Arrays.asList(organization1, organization2),
+			Arrays.asList(
+				OrganizationSerDes.toDTOs(
+					organizationsJSONObject.getString("items"))));
 	}
 
-	protected Http.Response invokeGetOrganizationsPageResponse(
-			String search, String filterString, Pagination pagination,
-			String sortString)
+	@Test
+	public void testPostOrganization() throws Exception {
+		Organization randomOrganization = randomOrganization();
+
+		Organization postOrganization = testPostOrganization_addOrganization(
+			randomOrganization);
+
+		assertEquals(randomOrganization, postOrganization);
+		assertValid(postOrganization);
+	}
+
+	protected Organization testPostOrganization_addOrganization(
+			Organization organization)
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
 
-		String location = _resourceURL + _toPath("/organizations");
+	@Test
+	public void testDeleteOrganization() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Organization organization = testDeleteOrganization_addOrganization();
 
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
+		assertHttpResponseStatusCode(
+			204,
+			organizationResource.deleteOrganizationHttpResponse(
+				organization.getId()));
+
+		assertHttpResponseStatusCode(
+			404,
+			organizationResource.getOrganizationHttpResponse(
+				organization.getId()));
+
+		assertHttpResponseStatusCode(
+			404, organizationResource.getOrganizationHttpResponse("-"));
+	}
+
+	protected Organization testDeleteOrganization_addOrganization()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLDeleteOrganization() throws Exception {
+		Organization organization = testGraphQLOrganization_addOrganization();
+
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteOrganization",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"organizationId",
+									"\"" + organization.getId() + "\"");
+							}
+						})),
+				"JSONObject/data", "Object/deleteOrganization"));
+
+		try (CaptureAppender captureAppender =
+				Log4JLoggerTestUtil.configureLog4JLogger(
+					"graphql.execution.SimpleDataFetcherExceptionHandler",
+					Level.WARN)) {
+
+			JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"organization",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"organizationId",
+									"\"" + organization.getId() + "\"");
+							}
+						},
+						new GraphQLField("id"))),
+				"JSONArray/errors");
+
+			Assert.assertTrue(errorsJSONArray.length() > 0);
 		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
 	public void testGetOrganization() throws Exception {
 		Organization postOrganization = testGetOrganization_addOrganization();
 
-		Organization getOrganization = invokeGetOrganization(
+		Organization getOrganization = organizationResource.getOrganization(
 			postOrganization.getId());
 
 		assertEquals(postOrganization, getOrganization);
@@ -451,56 +596,117 @@ public abstract class BaseOrganizationResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Organization invokeGetOrganization(Long organizationId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetOrganization() throws Exception {
+		Organization organization = testGraphQLOrganization_addOrganization();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/organizations/{organizationId}", organizationId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return OrganizationSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				organization,
+				OrganizationSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"organization",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"organizationId",
+											"\"" + organization.getId() + "\"");
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/organization"))));
 	}
 
-	protected Http.Response invokeGetOrganizationResponse(Long organizationId)
+	@Test
+	public void testGraphQLGetOrganizationNotFound() throws Exception {
+		String irrelevantOrganizationId =
+			"\"" + RandomTestUtil.randomString() + "\"";
+
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"organization",
+						new HashMap<String, Object>() {
+							{
+								put("organizationId", irrelevantOrganizationId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	@Test
+	public void testPatchOrganization() throws Exception {
+		Organization postOrganization = testPatchOrganization_addOrganization();
+
+		Organization randomPatchOrganization = randomPatchOrganization();
+
+		Organization patchOrganization = organizationResource.patchOrganization(
+			postOrganization.getId(), randomPatchOrganization);
+
+		Organization expectedPatchOrganization = postOrganization.clone();
+
+		_beanUtilsBean.copyProperties(
+			expectedPatchOrganization, randomPatchOrganization);
+
+		Organization getOrganization = organizationResource.getOrganization(
+			patchOrganization.getId());
+
+		assertEquals(expectedPatchOrganization, getOrganization);
+		assertValid(getOrganization);
+	}
+
+	protected Organization testPatchOrganization_addOrganization()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
 
-		String location =
-			_resourceURL +
-				_toPath("/organizations/{organizationId}", organizationId);
+	@Test
+	public void testPutOrganization() throws Exception {
+		Organization postOrganization = testPutOrganization_addOrganization();
 
-		options.setLocation(location);
+		Organization randomOrganization = randomOrganization();
 
-		HttpUtil.URLtoByteArray(options);
+		Organization putOrganization = organizationResource.putOrganization(
+			postOrganization.getId(), randomOrganization);
 
-		return options.getResponse();
+		assertEquals(randomOrganization, putOrganization);
+		assertValid(putOrganization);
+
+		Organization getOrganization = organizationResource.getOrganization(
+			putOrganization.getId());
+
+		assertEquals(randomOrganization, getOrganization);
+		assertValid(getOrganization);
+	}
+
+	protected Organization testPutOrganization_addOrganization()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
 	public void testGetOrganizationOrganizationsPage() throws Exception {
-		Long parentOrganizationId =
+		Page<Organization> page =
+			organizationResource.getOrganizationOrganizationsPage(
+				testGetOrganizationOrganizationsPage_getParentOrganizationId(),
+				null, RandomTestUtil.randomString(), null, Pagination.of(1, 2),
+				null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		String parentOrganizationId =
 			testGetOrganizationOrganizationsPage_getParentOrganizationId();
-		Long irrelevantParentOrganizationId =
+		String irrelevantParentOrganizationId =
 			testGetOrganizationOrganizationsPage_getIrrelevantParentOrganizationId();
 
 		if ((irrelevantParentOrganizationId != null)) {
@@ -509,9 +715,9 @@ public abstract class BaseOrganizationResourceTestCase {
 					irrelevantParentOrganizationId,
 					randomIrrelevantOrganization());
 
-			Page<Organization> page = invokeGetOrganizationOrganizationsPage(
-				irrelevantParentOrganizationId, null, null, Pagination.of(1, 2),
-				null);
+			page = organizationResource.getOrganizationOrganizationsPage(
+				irrelevantParentOrganizationId, null, null, null,
+				Pagination.of(1, 2), null);
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -529,8 +735,8 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetOrganizationOrganizationsPage_addOrganization(
 				parentOrganizationId, randomOrganization());
 
-		Page<Organization> page = invokeGetOrganizationOrganizationsPage(
-			parentOrganizationId, null, null, Pagination.of(1, 2), null);
+		page = organizationResource.getOrganizationOrganizationsPage(
+			parentOrganizationId, null, null, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -538,6 +744,10 @@ public abstract class BaseOrganizationResourceTestCase {
 			Arrays.asList(organization1, organization2),
 			(List<Organization>)page.getItems());
 		assertValid(page);
+
+		organizationResource.deleteOrganization(organization1.getId());
+
+		organizationResource.deleteOrganization(organization2.getId());
 	}
 
 	@Test
@@ -551,7 +761,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			return;
 		}
 
-		Long parentOrganizationId =
+		String parentOrganizationId =
 			testGetOrganizationOrganizationsPage_getParentOrganizationId();
 
 		Organization organization1 = randomOrganization();
@@ -560,10 +770,11 @@ public abstract class BaseOrganizationResourceTestCase {
 			parentOrganizationId, organization1);
 
 		for (EntityField entityField : entityFields) {
-			Page<Organization> page = invokeGetOrganizationOrganizationsPage(
-				parentOrganizationId, null,
-				getFilterString(entityField, "between", organization1),
-				Pagination.of(1, 2), null);
+			Page<Organization> page =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null,
+					getFilterString(entityField, "between", organization1),
+					Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(organization1),
@@ -582,7 +793,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			return;
 		}
 
-		Long parentOrganizationId =
+		String parentOrganizationId =
 			testGetOrganizationOrganizationsPage_getParentOrganizationId();
 
 		Organization organization1 =
@@ -595,10 +806,11 @@ public abstract class BaseOrganizationResourceTestCase {
 				parentOrganizationId, randomOrganization());
 
 		for (EntityField entityField : entityFields) {
-			Page<Organization> page = invokeGetOrganizationOrganizationsPage(
-				parentOrganizationId, null,
-				getFilterString(entityField, "eq", organization1),
-				Pagination.of(1, 2), null);
+			Page<Organization> page =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null,
+					getFilterString(entityField, "eq", organization1),
+					Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(organization1),
@@ -610,7 +822,7 @@ public abstract class BaseOrganizationResourceTestCase {
 	public void testGetOrganizationOrganizationsPageWithPagination()
 		throws Exception {
 
-		Long parentOrganizationId =
+		String parentOrganizationId =
 			testGetOrganizationOrganizationsPage_getParentOrganizationId();
 
 		Organization organization1 =
@@ -625,8 +837,10 @@ public abstract class BaseOrganizationResourceTestCase {
 			testGetOrganizationOrganizationsPage_addOrganization(
 				parentOrganizationId, randomOrganization());
 
-		Page<Organization> page1 = invokeGetOrganizationOrganizationsPage(
-			parentOrganizationId, null, null, Pagination.of(1, 2), null);
+		Page<Organization> page1 =
+			organizationResource.getOrganizationOrganizationsPage(
+				parentOrganizationId, null, null, null, Pagination.of(1, 2),
+				null);
 
 		List<Organization> organizations1 =
 			(List<Organization>)page1.getItems();
@@ -634,8 +848,10 @@ public abstract class BaseOrganizationResourceTestCase {
 		Assert.assertEquals(
 			organizations1.toString(), 2, organizations1.size());
 
-		Page<Organization> page2 = invokeGetOrganizationOrganizationsPage(
-			parentOrganizationId, null, null, Pagination.of(2, 2), null);
+		Page<Organization> page2 =
+			organizationResource.getOrganizationOrganizationsPage(
+				parentOrganizationId, null, null, null, Pagination.of(2, 2),
+				null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -645,85 +861,115 @@ public abstract class BaseOrganizationResourceTestCase {
 		Assert.assertEquals(
 			organizations2.toString(), 1, organizations2.size());
 
+		Page<Organization> page3 =
+			organizationResource.getOrganizationOrganizationsPage(
+				parentOrganizationId, null, null, null, Pagination.of(1, 3),
+				null);
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(organization1, organization2, organization3),
-			new ArrayList<Organization>() {
-				{
-					addAll(organizations1);
-					addAll(organizations2);
-				}
-			});
+			(List<Organization>)page3.getItems());
 	}
 
 	@Test
 	public void testGetOrganizationOrganizationsPageWithSortDateTime()
 		throws Exception {
 
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
+		testGetOrganizationOrganizationsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, organization1, organization2) -> {
+				BeanUtils.setProperty(
+					organization1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
 
-		if (entityFields.isEmpty()) {
-			return;
-		}
+	@Test
+	public void testGetOrganizationOrganizationsPageWithSortInteger()
+		throws Exception {
 
-		Long parentOrganizationId =
-			testGetOrganizationOrganizationsPage_getParentOrganizationId();
-
-		Organization organization1 = randomOrganization();
-		Organization organization2 = randomOrganization();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				organization1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		organization1 = testGetOrganizationOrganizationsPage_addOrganization(
-			parentOrganizationId, organization1);
-
-		organization2 = testGetOrganizationOrganizationsPage_addOrganization(
-			parentOrganizationId, organization2);
-
-		for (EntityField entityField : entityFields) {
-			Page<Organization> ascPage = invokeGetOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(organization1, organization2),
-				(List<Organization>)ascPage.getItems());
-
-			Page<Organization> descPage =
-				invokeGetOrganizationOrganizationsPage(
-					parentOrganizationId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(organization2, organization1),
-				(List<Organization>)descPage.getItems());
-		}
+		testGetOrganizationOrganizationsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, organization1, organization2) -> {
+				BeanUtils.setProperty(organization1, entityField.getName(), 0);
+				BeanUtils.setProperty(organization2, entityField.getName(), 1);
+			});
 	}
 
 	@Test
 	public void testGetOrganizationOrganizationsPageWithSortString()
 		throws Exception {
 
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
+		testGetOrganizationOrganizationsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, organization1, organization2) -> {
+				Class<?> clazz = organization1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						organization1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						organization2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						organization1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						organization2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						organization1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						organization2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetOrganizationOrganizationsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer
+				<EntityField, Organization, Organization, Exception>
+					unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
 
 		if (entityFields.isEmpty()) {
 			return;
 		}
 
-		Long parentOrganizationId =
+		String parentOrganizationId =
 			testGetOrganizationOrganizationsPage_getParentOrganizationId();
 
 		Organization organization1 = randomOrganization();
 		Organization organization2 = randomOrganization();
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(organization1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(organization2, entityField.getName(), "Bbb");
+			unsafeTriConsumer.accept(entityField, organization1, organization2);
 		}
 
 		organization1 = testGetOrganizationOrganizationsPage_addOrganization(
@@ -733,17 +979,18 @@ public abstract class BaseOrganizationResourceTestCase {
 			parentOrganizationId, organization2);
 
 		for (EntityField entityField : entityFields) {
-			Page<Organization> ascPage = invokeGetOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, Pagination.of(1, 2),
-				entityField.getName() + ":asc");
+			Page<Organization> ascPage =
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null, Pagination.of(1, 2),
+					entityField.getName() + ":asc");
 
 			assertEquals(
 				Arrays.asList(organization1, organization2),
 				(List<Organization>)ascPage.getItems());
 
 			Page<Organization> descPage =
-				invokeGetOrganizationOrganizationsPage(
-					parentOrganizationId, null, null, Pagination.of(1, 2),
+				organizationResource.getOrganizationOrganizationsPage(
+					parentOrganizationId, null, null, null, Pagination.of(1, 2),
 					entityField.getName() + ":desc");
 
 			assertEquals(
@@ -753,14 +1000,14 @@ public abstract class BaseOrganizationResourceTestCase {
 	}
 
 	protected Organization testGetOrganizationOrganizationsPage_addOrganization(
-			Long parentOrganizationId, Organization organization)
+			String parentOrganizationId, Organization organization)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long
+	protected String
 			testGetOrganizationOrganizationsPage_getParentOrganizationId()
 		throws Exception {
 
@@ -768,100 +1015,29 @@ public abstract class BaseOrganizationResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Long
+	protected String
 			testGetOrganizationOrganizationsPage_getIrrelevantParentOrganizationId()
 		throws Exception {
 
 		return null;
 	}
 
-	protected Page<Organization> invokeGetOrganizationOrganizationsPage(
-			Long parentOrganizationId, String search, String filterString,
-			Pagination pagination, String sortString)
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
+	protected Organization testGraphQLOrganization_addOrganization()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{parentOrganizationId}/organizations",
-					parentOrganizationId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, OrganizationSerDes::toDTO);
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
-	protected Http.Response invokeGetOrganizationOrganizationsPageResponse(
-			Long parentOrganizationId, String search, String filterString,
-			Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{parentOrganizationId}/organizations",
-					parentOrganizationId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -907,7 +1083,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		}
 	}
 
-	protected void assertValid(Organization organization) {
+	protected void assertValid(Organization organization) throws Exception {
 		boolean valid = true;
 
 		if (organization.getDateCreated() == null) {
@@ -925,6 +1101,14 @@ public abstract class BaseOrganizationResourceTestCase {
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
 
+			if (Objects.equals("actions", additionalAssertFieldName)) {
+				if (organization.getActions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("comment", additionalAssertFieldName)) {
 				if (organization.getComment() == null) {
 					valid = false;
@@ -933,10 +1117,8 @@ public abstract class BaseOrganizationResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals(
-					"contactInformation", additionalAssertFieldName)) {
-
-				if (organization.getContactInformation() == null) {
+			if (Objects.equals("customFields", additionalAssertFieldName)) {
+				if (organization.getCustomFields() == null) {
 					valid = false;
 				}
 
@@ -986,6 +1168,17 @@ public abstract class BaseOrganizationResourceTestCase {
 			}
 
 			if (Objects.equals(
+					"organizationContactInformation",
+					additionalAssertFieldName)) {
+
+				if (organization.getOrganizationContactInformation() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"parentOrganization", additionalAssertFieldName)) {
 
 				if (organization.getParentOrganization() == null) {
@@ -1014,7 +1207,7 @@ public abstract class BaseOrganizationResourceTestCase {
 	protected void assertValid(Page<Organization> page) {
 		boolean valid = false;
 
-		Collection<Organization> organizations = page.getItems();
+		java.util.Collection<Organization> organizations = page.getItems();
 
 		int size = organizations.size();
 
@@ -1032,6 +1225,59 @@ public abstract class BaseOrganizationResourceTestCase {
 		return new String[0];
 	}
 
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.user.dto.v1_0.Organization.
+						class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[0];
+	}
+
 	protected boolean equals(
 		Organization organization1, Organization organization2) {
 
@@ -1041,6 +1287,17 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("actions", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)organization1.getActions(),
+						(Map)organization2.getActions())) {
+
+					return false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals("comment", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
@@ -1053,12 +1310,10 @@ public abstract class BaseOrganizationResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals(
-					"contactInformation", additionalAssertFieldName)) {
-
+			if (Objects.equals("customFields", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
-						organization1.getContactInformation(),
-						organization2.getContactInformation())) {
+						organization1.getCustomFields(),
+						organization2.getCustomFields())) {
 
 					return false;
 				}
@@ -1154,6 +1409,20 @@ public abstract class BaseOrganizationResourceTestCase {
 			}
 
 			if (Objects.equals(
+					"organizationContactInformation",
+					additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						organization1.getOrganizationContactInformation(),
+						organization2.getOrganizationContactInformation())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
 					"parentOrganization", additionalAssertFieldName)) {
 
 				if (!Objects.deepEquals(
@@ -1185,7 +1454,33 @@ public abstract class BaseOrganizationResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_organizationResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -1206,12 +1501,15 @@ public abstract class BaseOrganizationResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -1230,6 +1528,11 @@ public abstract class BaseOrganizationResourceTestCase {
 		sb.append(operator);
 		sb.append(" ");
 
+		if (entityFieldName.equals("actions")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("comment")) {
 			sb.append("'");
 			sb.append(String.valueOf(organization.getComment()));
@@ -1238,7 +1541,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			return sb.toString();
 		}
 
-		if (entityFieldName.equals("contactInformation")) {
+		if (entityFieldName.equals("customFields")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -1310,8 +1613,11 @@ public abstract class BaseOrganizationResourceTestCase {
 		}
 
 		if (entityFieldName.equals("id")) {
-			throw new IllegalArgumentException(
-				"Invalid entity field " + entityFieldName);
+			sb.append("'");
+			sb.append(String.valueOf(organization.getId()));
+			sb.append("'");
+
+			return sb.toString();
 		}
 
 		if (entityFieldName.equals("image")) {
@@ -1345,6 +1651,11 @@ public abstract class BaseOrganizationResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("organizationContactInformation")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("parentOrganization")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -1359,15 +1670,53 @@ public abstract class BaseOrganizationResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected Organization randomOrganization() throws Exception {
 		return new Organization() {
 			{
-				comment = RandomTestUtil.randomString();
+				comment = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
-				id = RandomTestUtil.randomLong();
-				image = RandomTestUtil.randomString();
-				name = RandomTestUtil.randomString();
+				id = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				image = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				numberOfOrganizations = RandomTestUtil.randomInt();
 			}
 		};
 	}
@@ -1382,76 +1731,80 @@ public abstract class BaseOrganizationResourceTestCase {
 		return randomOrganization();
 	}
 
+	protected OrganizationResource organizationResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -1472,8 +1825,7 @@ public abstract class BaseOrganizationResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private OrganizationResource _organizationResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.admin.user.resource.v1_0.OrganizationResource
+		_organizationResource;
 
 }

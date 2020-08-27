@@ -15,11 +15,18 @@
 package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
+import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
-import com.liferay.source.formatter.checks.util.PoshiSourceUtil;
+import com.liferay.source.formatter.checks.util.SourceUtil;
 
 import java.io.IOException;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -34,16 +41,15 @@ public class PoshiStylingCheck extends BaseFileCheck {
 
 		_checkLineBreak(fileName, content);
 
-		return content;
+		return _formatComments(content);
 	}
 
 	private void _checkLineBreak(String fileName, String content) {
 		int x = -1;
 
-		int[] multiLineCommentsPositions =
-			PoshiSourceUtil.getMultiLinePositions(
-				content, _multiLineCommentsPattern);
-		int[] multiLineStringPositions = PoshiSourceUtil.getMultiLinePositions(
+		int[] multiLineCommentsPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineCommentsPattern);
+		int[] multiLineStringPositions = SourceUtil.getMultiLinePositions(
 			content, _multiLineStringPattern);
 
 		while (true) {
@@ -53,12 +59,17 @@ public class PoshiStylingCheck extends BaseFileCheck {
 				return;
 			}
 
+			int lineNumber = getLineNumber(content, x);
+
+			String line = getLine(content, lineNumber);
+
 			if ((content.charAt(x + 1) != CharPool.NEW_LINE) &&
 				!ToolsUtil.isInsideQuotes(content, x) &&
-				!PoshiSourceUtil.isInsideMultiLines(
-					getLineNumber(content, x), multiLineCommentsPositions) &&
-				!PoshiSourceUtil.isInsideMultiLines(
-					getLineNumber(content, x), multiLineStringPositions)) {
+				!SourceUtil.isInsideMultiLines(
+					lineNumber, multiLineCommentsPositions) &&
+				!SourceUtil.isInsideMultiLines(
+					lineNumber, multiLineStringPositions) &&
+				!StringUtil.startsWith(line.trim(), StringPool.DOUBLE_SLASH)) {
 
 				addMessage(
 					fileName, "There should be a line break after ';'",
@@ -67,9 +78,101 @@ public class PoshiStylingCheck extends BaseFileCheck {
 		}
 	}
 
+	private String _formatComments(String content) throws IOException {
+		StringBundler sb = new StringBundler();
+
+		try (UnsyncBufferedReader unsyncBufferedReader =
+				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
+
+			String line = null;
+			String newComment = StringPool.BLANK;
+			String previousComment = StringPool.BLANK;
+
+			while ((line = unsyncBufferedReader.readLine()) != null) {
+				Matcher matcher = _singleLineCommentPattern.matcher(line);
+
+				if (!matcher.find()) {
+					previousComment = StringPool.BLANK;
+
+					sb.append(line);
+					sb.append("\n");
+
+					continue;
+				}
+
+				String comment = matcher.group(2);
+
+				if (Validator.isNull(comment)) {
+					previousComment = StringPool.BLANK;
+
+					continue;
+				}
+
+				String indent = matcher.group(1);
+
+				if (comment.startsWith("Ignore") ||
+					comment.startsWith("Ignoring") ||
+					comment.startsWith("Quarantine") ||
+					comment.startsWith("TODO") ||
+					comment.startsWith("Workaround") ||
+					(!comment.endsWith(StringPool.COMMA) &&
+					 !comment.endsWith(StringPool.OPEN_CURLY_BRACE) &&
+					 !comment.endsWith(StringPool.OPEN_PARENTHESIS) &&
+					 !comment.endsWith(StringPool.SEMICOLON) &&
+					 !comment.equals(StringPool.CLOSE_CURLY_BRACE)) ||
+					(comment.endsWith(StringPool.COMMA) &&
+					 !comment.contains(" = "))) {
+
+					String trimmedComment = comment.trim();
+
+					if (!previousComment.startsWith(
+							StringPool.DOUBLE_SLASH + StringPool.SPACE)) {
+
+						String upperCaseFirstChar = StringUtil.toUpperCase(
+							trimmedComment.substring(0, 1));
+
+						trimmedComment =
+							upperCaseFirstChar + trimmedComment.substring(1);
+					}
+
+					if (previousComment.matches("//[^ ].+")) {
+						sb.append("\n");
+					}
+
+					newComment =
+						StringPool.DOUBLE_SLASH + StringPool.SPACE +
+							trimmedComment;
+				}
+				else {
+					if (previousComment.startsWith(
+							StringPool.DOUBLE_SLASH + StringPool.SPACE)) {
+
+						sb.append("\n");
+					}
+
+					newComment = StringPool.DOUBLE_SLASH + comment;
+				}
+
+				sb.append(indent);
+				sb.append(newComment);
+
+				sb.append("\n");
+				previousComment = newComment;
+			}
+		}
+
+		if (sb.length() > 0) {
+			sb.setIndex(sb.index() - 1);
+		}
+
+		return sb.toString();
+	}
+
 	private static final Pattern _multiLineCommentsPattern = Pattern.compile(
 		"[ \t]/\\*.*?\\*/", Pattern.DOTALL);
 	private static final Pattern _multiLineStringPattern = Pattern.compile(
 		"'''.*?'''", Pattern.DOTALL);
+	private static final Pattern _singleLineCommentPattern = Pattern.compile(
+		"^([ \t]*)// *(\t*.*)");
 
 }

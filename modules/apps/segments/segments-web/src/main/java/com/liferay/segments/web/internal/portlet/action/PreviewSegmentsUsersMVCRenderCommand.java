@@ -22,7 +22,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.odata.retriever.ODataRetriever;
-import com.liferay.segments.provider.SegmentsEntryProvider;
+import com.liferay.segments.provider.SegmentsEntryProviderRegistry;
 import com.liferay.segments.service.SegmentsEntryService;
 import com.liferay.segments.web.internal.constants.SegmentsWebKeys;
 import com.liferay.segments.web.internal.display.context.PreviewSegmentsEntryUsersDisplayContext;
@@ -52,17 +52,6 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class PreviewSegmentsUsersMVCRenderCommand implements MVCRenderCommand {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, ODataRetriever.class, "model.class.name");
-	}
-
-	@Deactivate
-	public void deactivate() {
-		_serviceTrackerMap.close();
-	}
-
 	@Override
 	public String render(
 			RenderRequest renderRequest, RenderResponse renderResponse)
@@ -71,14 +60,14 @@ public class PreviewSegmentsUsersMVCRenderCommand implements MVCRenderCommand {
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
 			renderRequest);
 
-		ODataRetriever userODataRetriever = _serviceTrackerMap.getService(
+		ODataRetriever<User> userODataRetriever = _serviceTrackerMap.getService(
 			User.class.getName());
 
 		PreviewSegmentsEntryUsersDisplayContext
 			previewSegmentsEntryUsersDisplayContext =
 				new PreviewSegmentsEntryUsersDisplayContext(
 					httpServletRequest, renderRequest, renderResponse,
-					_segmentsEntryProvider, _segmentsEntryService,
+					_segmentsEntryProviderRegistry, _segmentsEntryService,
 					userODataRetriever, _userLocalService);
 
 		renderRequest.setAttribute(
@@ -88,16 +77,29 @@ public class PreviewSegmentsUsersMVCRenderCommand implements MVCRenderCommand {
 		return "/preview_segments_entry_users.jsp";
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext,
+			(Class<ODataRetriever<User>>)(Class<?>)ODataRetriever.class,
+			"model.class.name");
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
+	}
+
 	@Reference
 	private Portal _portal;
 
 	@Reference
-	private SegmentsEntryProvider _segmentsEntryProvider;
+	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;
 
 	@Reference
 	private SegmentsEntryService _segmentsEntryService;
 
-	private ServiceTrackerMap<String, ODataRetriever> _serviceTrackerMap;
+	private ServiceTrackerMap<String, ODataRetriever<User>> _serviceTrackerMap;
 
 	@Reference
 	private UserLocalService _userLocalService;

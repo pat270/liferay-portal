@@ -14,65 +14,72 @@
 
 package com.liferay.headless.admin.taxonomy.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.admin.taxonomy.client.dto.v1_0.TaxonomyCategory;
+import com.liferay.headless.admin.taxonomy.client.http.HttpInvoker;
 import com.liferay.headless.admin.taxonomy.client.pagination.Page;
+import com.liferay.headless.admin.taxonomy.client.pagination.Pagination;
+import com.liferay.headless.admin.taxonomy.client.resource.v1_0.TaxonomyCategoryResource;
 import com.liferay.headless.admin.taxonomy.client.serdes.v1_0.TaxonomyCategorySerDes;
-import com.liferay.headless.admin.taxonomy.resource.v1_0.TaxonomyCategoryResource;
+import com.liferay.petra.function.UnsafeTriConsumer;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.test.log.CaptureAppender;
+import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
+import java.lang.reflect.Method;
 
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.log4j.Level;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -104,10 +111,20 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-taxonomy/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_taxonomyCategoryResource.setContextCompany(testCompany);
+
+		TaxonomyCategoryResource.Builder builder =
+			TaxonomyCategoryResource.builder();
+
+		taxonomyCategoryResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -121,10 +138,16 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -142,9 +165,15 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -158,12 +187,132 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		TaxonomyCategory taxonomyCategory = randomTaxonomyCategory();
+
+		taxonomyCategory.setDescription(regex);
+		taxonomyCategory.setExternalReferenceCode(regex);
+		taxonomyCategory.setId(regex);
+		taxonomyCategory.setName(regex);
+
+		String json = TaxonomyCategorySerDes.toJSON(taxonomyCategory);
+
+		Assert.assertFalse(json.contains(regex));
+
+		taxonomyCategory = TaxonomyCategorySerDes.toDTO(json);
+
+		Assert.assertEquals(regex, taxonomyCategory.getDescription());
+		Assert.assertEquals(regex, taxonomyCategory.getExternalReferenceCode());
+		Assert.assertEquals(regex, taxonomyCategory.getId());
+		Assert.assertEquals(regex, taxonomyCategory.getName());
+	}
+
+	@Test
+	public void testGetTaxonomyCategoryRankedPage() throws Exception {
+		Page<TaxonomyCategory> page =
+			taxonomyCategoryResource.getTaxonomyCategoryRankedPage(
+				null, Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		TaxonomyCategory taxonomyCategory1 =
+			testGetTaxonomyCategoryRankedPage_addTaxonomyCategory(
+				randomTaxonomyCategory());
+
+		TaxonomyCategory taxonomyCategory2 =
+			testGetTaxonomyCategoryRankedPage_addTaxonomyCategory(
+				randomTaxonomyCategory());
+
+		page = taxonomyCategoryResource.getTaxonomyCategoryRankedPage(
+			null, Pagination.of(1, 2));
+
+		Assert.assertEquals(2, page.getTotalCount());
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(taxonomyCategory1, taxonomyCategory2),
+			(List<TaxonomyCategory>)page.getItems());
+		assertValid(page);
+
+		taxonomyCategoryResource.deleteTaxonomyCategory(
+			taxonomyCategory1.getId());
+
+		taxonomyCategoryResource.deleteTaxonomyCategory(
+			taxonomyCategory2.getId());
+	}
+
+	@Test
+	public void testGetTaxonomyCategoryRankedPageWithPagination()
+		throws Exception {
+
+		TaxonomyCategory taxonomyCategory1 =
+			testGetTaxonomyCategoryRankedPage_addTaxonomyCategory(
+				randomTaxonomyCategory());
+
+		TaxonomyCategory taxonomyCategory2 =
+			testGetTaxonomyCategoryRankedPage_addTaxonomyCategory(
+				randomTaxonomyCategory());
+
+		TaxonomyCategory taxonomyCategory3 =
+			testGetTaxonomyCategoryRankedPage_addTaxonomyCategory(
+				randomTaxonomyCategory());
+
+		Page<TaxonomyCategory> page1 =
+			taxonomyCategoryResource.getTaxonomyCategoryRankedPage(
+				null, Pagination.of(1, 2));
+
+		List<TaxonomyCategory> taxonomyCategories1 =
+			(List<TaxonomyCategory>)page1.getItems();
+
+		Assert.assertEquals(
+			taxonomyCategories1.toString(), 2, taxonomyCategories1.size());
+
+		Page<TaxonomyCategory> page2 =
+			taxonomyCategoryResource.getTaxonomyCategoryRankedPage(
+				null, Pagination.of(2, 2));
+
+		Assert.assertEquals(3, page2.getTotalCount());
+
+		List<TaxonomyCategory> taxonomyCategories2 =
+			(List<TaxonomyCategory>)page2.getItems();
+
+		Assert.assertEquals(
+			taxonomyCategories2.toString(), 1, taxonomyCategories2.size());
+
+		Page<TaxonomyCategory> page3 =
+			taxonomyCategoryResource.getTaxonomyCategoryRankedPage(
+				null, Pagination.of(1, 3));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(
+				taxonomyCategory1, taxonomyCategory2, taxonomyCategory3),
+			(List<TaxonomyCategory>)page3.getItems());
+	}
+
+	protected TaxonomyCategory
+			testGetTaxonomyCategoryRankedPage_addTaxonomyCategory(
+				TaxonomyCategory taxonomyCategory)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testGetTaxonomyCategoryTaxonomyCategoriesPage()
 		throws Exception {
 
-		Long parentTaxonomyCategoryId =
+		Page<TaxonomyCategory> page =
+			taxonomyCategoryResource.getTaxonomyCategoryTaxonomyCategoriesPage(
+				testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId(),
+				RandomTestUtil.randomString(), null, Pagination.of(1, 2), null);
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		String parentTaxonomyCategoryId =
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId();
-		Long irrelevantParentTaxonomyCategoryId =
+		String irrelevantParentTaxonomyCategoryId =
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getIrrelevantParentTaxonomyCategoryId();
 
 		if ((irrelevantParentTaxonomyCategoryId != null)) {
@@ -172,10 +321,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 					irrelevantParentTaxonomyCategoryId,
 					randomIrrelevantTaxonomyCategory());
 
-			Page<TaxonomyCategory> page =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					irrelevantParentTaxonomyCategoryId, null, null,
-					Pagination.of(1, 2), null);
+			page =
+				taxonomyCategoryResource.
+					getTaxonomyCategoryTaxonomyCategoriesPage(
+						irrelevantParentTaxonomyCategoryId, null, null,
+						Pagination.of(1, 2), null);
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -193,8 +343,8 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_addTaxonomyCategory(
 				parentTaxonomyCategoryId, randomTaxonomyCategory());
 
-		Page<TaxonomyCategory> page =
-			invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
+		page =
+			taxonomyCategoryResource.getTaxonomyCategoryTaxonomyCategoriesPage(
 				parentTaxonomyCategoryId, null, null, Pagination.of(1, 2),
 				null);
 
@@ -204,6 +354,12 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			Arrays.asList(taxonomyCategory1, taxonomyCategory2),
 			(List<TaxonomyCategory>)page.getItems());
 		assertValid(page);
+
+		taxonomyCategoryResource.deleteTaxonomyCategory(
+			taxonomyCategory1.getId());
+
+		taxonomyCategoryResource.deleteTaxonomyCategory(
+			taxonomyCategory2.getId());
 	}
 
 	@Test
@@ -217,7 +373,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			return;
 		}
 
-		Long parentTaxonomyCategoryId =
+		String parentTaxonomyCategoryId =
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId();
 
 		TaxonomyCategory taxonomyCategory1 = randomTaxonomyCategory();
@@ -228,10 +384,12 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<TaxonomyCategory> page =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					parentTaxonomyCategoryId, null,
-					getFilterString(entityField, "between", taxonomyCategory1),
-					Pagination.of(1, 2), null);
+				taxonomyCategoryResource.
+					getTaxonomyCategoryTaxonomyCategoriesPage(
+						parentTaxonomyCategoryId, null,
+						getFilterString(
+							entityField, "between", taxonomyCategory1),
+						Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(taxonomyCategory1),
@@ -250,7 +408,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			return;
 		}
 
-		Long parentTaxonomyCategoryId =
+		String parentTaxonomyCategoryId =
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId();
 
 		TaxonomyCategory taxonomyCategory1 =
@@ -264,10 +422,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<TaxonomyCategory> page =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					parentTaxonomyCategoryId, null,
-					getFilterString(entityField, "eq", taxonomyCategory1),
-					Pagination.of(1, 2), null);
+				taxonomyCategoryResource.
+					getTaxonomyCategoryTaxonomyCategoriesPage(
+						parentTaxonomyCategoryId, null,
+						getFilterString(entityField, "eq", taxonomyCategory1),
+						Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(taxonomyCategory1),
@@ -279,7 +438,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	public void testGetTaxonomyCategoryTaxonomyCategoriesPageWithPagination()
 		throws Exception {
 
-		Long parentTaxonomyCategoryId =
+		String parentTaxonomyCategoryId =
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId();
 
 		TaxonomyCategory taxonomyCategory1 =
@@ -295,7 +454,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				parentTaxonomyCategoryId, randomTaxonomyCategory());
 
 		Page<TaxonomyCategory> page1 =
-			invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
+			taxonomyCategoryResource.getTaxonomyCategoryTaxonomyCategoriesPage(
 				parentTaxonomyCategoryId, null, null, Pagination.of(1, 2),
 				null);
 
@@ -306,7 +465,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			taxonomyCategories1.toString(), 2, taxonomyCategories1.size());
 
 		Page<TaxonomyCategory> page2 =
-			invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
+			taxonomyCategoryResource.getTaxonomyCategoryTaxonomyCategoriesPage(
 				parentTaxonomyCategoryId, null, null, Pagination.of(2, 2),
 				null);
 
@@ -318,91 +477,119 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		Assert.assertEquals(
 			taxonomyCategories2.toString(), 1, taxonomyCategories2.size());
 
+		Page<TaxonomyCategory> page3 =
+			taxonomyCategoryResource.getTaxonomyCategoryTaxonomyCategoriesPage(
+				parentTaxonomyCategoryId, null, null, Pagination.of(1, 3),
+				null);
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(
 				taxonomyCategory1, taxonomyCategory2, taxonomyCategory3),
-			new ArrayList<TaxonomyCategory>() {
-				{
-					addAll(taxonomyCategories1);
-					addAll(taxonomyCategories2);
-				}
-			});
+			(List<TaxonomyCategory>)page3.getItems());
 	}
 
 	@Test
 	public void testGetTaxonomyCategoryTaxonomyCategoriesPageWithSortDateTime()
 		throws Exception {
 
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
+		testGetTaxonomyCategoryTaxonomyCategoriesPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, taxonomyCategory1, taxonomyCategory2) -> {
+				BeanUtils.setProperty(
+					taxonomyCategory1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
 
-		if (entityFields.isEmpty()) {
-			return;
-		}
+	@Test
+	public void testGetTaxonomyCategoryTaxonomyCategoriesPageWithSortInteger()
+		throws Exception {
 
-		Long parentTaxonomyCategoryId =
-			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId();
-
-		TaxonomyCategory taxonomyCategory1 = randomTaxonomyCategory();
-		TaxonomyCategory taxonomyCategory2 = randomTaxonomyCategory();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				taxonomyCategory1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		taxonomyCategory1 =
-			testGetTaxonomyCategoryTaxonomyCategoriesPage_addTaxonomyCategory(
-				parentTaxonomyCategoryId, taxonomyCategory1);
-
-		taxonomyCategory2 =
-			testGetTaxonomyCategoryTaxonomyCategoriesPage_addTaxonomyCategory(
-				parentTaxonomyCategoryId, taxonomyCategory2);
-
-		for (EntityField entityField : entityFields) {
-			Page<TaxonomyCategory> ascPage =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					parentTaxonomyCategoryId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(taxonomyCategory1, taxonomyCategory2),
-				(List<TaxonomyCategory>)ascPage.getItems());
-
-			Page<TaxonomyCategory> descPage =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					parentTaxonomyCategoryId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(taxonomyCategory2, taxonomyCategory1),
-				(List<TaxonomyCategory>)descPage.getItems());
-		}
+		testGetTaxonomyCategoryTaxonomyCategoriesPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, taxonomyCategory1, taxonomyCategory2) -> {
+				BeanUtils.setProperty(
+					taxonomyCategory1, entityField.getName(), 0);
+				BeanUtils.setProperty(
+					taxonomyCategory2, entityField.getName(), 1);
+			});
 	}
 
 	@Test
 	public void testGetTaxonomyCategoryTaxonomyCategoriesPageWithSortString()
 		throws Exception {
 
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
+		testGetTaxonomyCategoryTaxonomyCategoriesPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, taxonomyCategory1, taxonomyCategory2) -> {
+				Class<?> clazz = taxonomyCategory1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						taxonomyCategory1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						taxonomyCategory2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						taxonomyCategory1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						taxonomyCategory2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						taxonomyCategory1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						taxonomyCategory2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetTaxonomyCategoryTaxonomyCategoriesPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer
+				<EntityField, TaxonomyCategory, TaxonomyCategory, Exception>
+					unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
 
 		if (entityFields.isEmpty()) {
 			return;
 		}
 
-		Long parentTaxonomyCategoryId =
+		String parentTaxonomyCategoryId =
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId();
 
 		TaxonomyCategory taxonomyCategory1 = randomTaxonomyCategory();
 		TaxonomyCategory taxonomyCategory2 = randomTaxonomyCategory();
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				taxonomyCategory1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(
-				taxonomyCategory2, entityField.getName(), "Bbb");
+			unsafeTriConsumer.accept(
+				entityField, taxonomyCategory1, taxonomyCategory2);
 		}
 
 		taxonomyCategory1 =
@@ -415,18 +602,20 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<TaxonomyCategory> ascPage =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					parentTaxonomyCategoryId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":asc");
+				taxonomyCategoryResource.
+					getTaxonomyCategoryTaxonomyCategoriesPage(
+						parentTaxonomyCategoryId, null, null,
+						Pagination.of(1, 2), entityField.getName() + ":asc");
 
 			assertEquals(
 				Arrays.asList(taxonomyCategory1, taxonomyCategory2),
 				(List<TaxonomyCategory>)ascPage.getItems());
 
 			Page<TaxonomyCategory> descPage =
-				invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-					parentTaxonomyCategoryId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":desc");
+				taxonomyCategoryResource.
+					getTaxonomyCategoryTaxonomyCategoriesPage(
+						parentTaxonomyCategoryId, null, null,
+						Pagination.of(1, 2), entityField.getName() + ":desc");
 
 			assertEquals(
 				Arrays.asList(taxonomyCategory2, taxonomyCategory1),
@@ -436,15 +625,15 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 	protected TaxonomyCategory
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_addTaxonomyCategory(
-				Long parentTaxonomyCategoryId,
+				String parentTaxonomyCategoryId,
 				TaxonomyCategory taxonomyCategory)
 		throws Exception {
 
-		return invokePostTaxonomyCategoryTaxonomyCategory(
+		return taxonomyCategoryResource.postTaxonomyCategoryTaxonomyCategory(
 			parentTaxonomyCategoryId, taxonomyCategory);
 	}
 
-	protected Long
+	protected String
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId()
 		throws Exception {
 
@@ -452,95 +641,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Long
+	protected String
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getIrrelevantParentTaxonomyCategoryId()
 		throws Exception {
 
 		return null;
-	}
-
-	protected Page<TaxonomyCategory>
-			invokeGetTaxonomyCategoryTaxonomyCategoriesPage(
-				Long parentTaxonomyCategoryId, String search,
-				String filterString, Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{parentTaxonomyCategoryId}/taxonomy-categories",
-					parentTaxonomyCategoryId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, TaxonomyCategorySerDes::toDTO);
-	}
-
-	protected Http.Response
-			invokeGetTaxonomyCategoryTaxonomyCategoriesPageResponse(
-				Long parentTaxonomyCategoryId, String search,
-				String filterString, Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{parentTaxonomyCategoryId}/taxonomy-categories",
-					parentTaxonomyCategoryId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
@@ -560,87 +665,29 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				TaxonomyCategory taxonomyCategory)
 		throws Exception {
 
-		return invokePostTaxonomyCategoryTaxonomyCategory(
+		return taxonomyCategoryResource.postTaxonomyCategoryTaxonomyCategory(
 			testGetTaxonomyCategoryTaxonomyCategoriesPage_getParentTaxonomyCategoryId(),
 			taxonomyCategory);
 	}
 
-	protected TaxonomyCategory invokePostTaxonomyCategoryTaxonomyCategory(
-			Long parentTaxonomyCategoryId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{parentTaxonomyCategoryId}/taxonomy-categories",
-					parentTaxonomyCategoryId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return TaxonomyCategorySerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePostTaxonomyCategoryTaxonomyCategoryResponse(
-			Long parentTaxonomyCategoryId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{parentTaxonomyCategoryId}/taxonomy-categories",
-					parentTaxonomyCategoryId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testDeleteTaxonomyCategory() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
 		TaxonomyCategory taxonomyCategory =
 			testDeleteTaxonomyCategory_addTaxonomyCategory();
 
-		assertResponseCode(
+		assertHttpResponseStatusCode(
 			204,
-			invokeDeleteTaxonomyCategoryResponse(taxonomyCategory.getId()));
+			taxonomyCategoryResource.deleteTaxonomyCategoryHttpResponse(
+				taxonomyCategory.getId()));
 
-		assertResponseCode(
-			404, invokeGetTaxonomyCategoryResponse(taxonomyCategory.getId()));
+		assertHttpResponseStatusCode(
+			404,
+			taxonomyCategoryResource.getTaxonomyCategoryHttpResponse(
+				taxonomyCategory.getId()));
 
-		assertResponseCode(404, invokeGetTaxonomyCategoryResponse(0L));
+		assertHttpResponseStatusCode(
+			404, taxonomyCategoryResource.getTaxonomyCategoryHttpResponse("-"));
 	}
 
 	protected TaxonomyCategory testDeleteTaxonomyCategory_addTaxonomyCategory()
@@ -650,47 +697,46 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected void invokeDeleteTaxonomyCategory(Long taxonomyCategoryId)
-		throws Exception {
+	@Test
+	public void testGraphQLDeleteTaxonomyCategory() throws Exception {
+		TaxonomyCategory taxonomyCategory =
+			testGraphQLTaxonomyCategory_addTaxonomyCategory();
 
-		Http.Options options = _createHttpOptions();
+		Assert.assertTrue(
+			JSONUtil.getValueAsBoolean(
+				invokeGraphQLMutation(
+					new GraphQLField(
+						"deleteTaxonomyCategory",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"taxonomyCategoryId",
+									"\"" + taxonomyCategory.getId() + "\"");
+							}
+						})),
+				"JSONObject/data", "Object/deleteTaxonomyCategory"));
 
-		options.setDelete(true);
+		try (CaptureAppender captureAppender =
+				Log4JLoggerTestUtil.configureLog4JLogger(
+					"graphql.execution.SimpleDataFetcherExceptionHandler",
+					Level.WARN)) {
 
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
+			JSONArray errorsJSONArray = JSONUtil.getValueAsJSONArray(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"taxonomyCategory",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"taxonomyCategoryId",
+									"\"" + taxonomyCategory.getId() + "\"");
+							}
+						},
+						new GraphQLField("id"))),
+				"JSONArray/errors");
 
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
+			Assert.assertTrue(errorsJSONArray.length() > 0);
 		}
-	}
-
-	protected Http.Response invokeDeleteTaxonomyCategoryResponse(
-			Long taxonomyCategoryId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setDelete(true);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
@@ -698,8 +744,9 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		TaxonomyCategory postTaxonomyCategory =
 			testGetTaxonomyCategory_addTaxonomyCategory();
 
-		TaxonomyCategory getTaxonomyCategory = invokeGetTaxonomyCategory(
-			postTaxonomyCategory.getId());
+		TaxonomyCategory getTaxonomyCategory =
+			taxonomyCategoryResource.getTaxonomyCategory(
+				postTaxonomyCategory.getId());
 
 		assertEquals(postTaxonomyCategory, getTaxonomyCategory);
 		assertValid(getTaxonomyCategory);
@@ -712,55 +759,52 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected TaxonomyCategory invokeGetTaxonomyCategory(
-			Long taxonomyCategoryId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetTaxonomyCategory() throws Exception {
+		TaxonomyCategory taxonomyCategory =
+			testGraphQLTaxonomyCategory_addTaxonomyCategory();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return TaxonomyCategorySerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				taxonomyCategory,
+				TaxonomyCategorySerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"taxonomyCategory",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"taxonomyCategoryId",
+											"\"" + taxonomyCategory.getId() +
+												"\"");
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/taxonomyCategory"))));
 	}
 
-	protected Http.Response invokeGetTaxonomyCategoryResponse(
-			Long taxonomyCategoryId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetTaxonomyCategoryNotFound() throws Exception {
+		String irrelevantTaxonomyCategoryId =
+			"\"" + RandomTestUtil.randomString() + "\"";
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"taxonomyCategory",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"taxonomyCategoryId",
+									irrelevantTaxonomyCategoryId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Test
@@ -771,17 +815,19 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		TaxonomyCategory randomPatchTaxonomyCategory =
 			randomPatchTaxonomyCategory();
 
-		TaxonomyCategory patchTaxonomyCategory = invokePatchTaxonomyCategory(
-			postTaxonomyCategory.getId(), randomPatchTaxonomyCategory);
+		TaxonomyCategory patchTaxonomyCategory =
+			taxonomyCategoryResource.patchTaxonomyCategory(
+				postTaxonomyCategory.getId(), randomPatchTaxonomyCategory);
 
 		TaxonomyCategory expectedPatchTaxonomyCategory =
-			(TaxonomyCategory)BeanUtils.cloneBean(postTaxonomyCategory);
+			postTaxonomyCategory.clone();
 
 		_beanUtilsBean.copyProperties(
 			expectedPatchTaxonomyCategory, randomPatchTaxonomyCategory);
 
-		TaxonomyCategory getTaxonomyCategory = invokeGetTaxonomyCategory(
-			patchTaxonomyCategory.getId());
+		TaxonomyCategory getTaxonomyCategory =
+			taxonomyCategoryResource.getTaxonomyCategory(
+				patchTaxonomyCategory.getId());
 
 		assertEquals(expectedPatchTaxonomyCategory, getTaxonomyCategory);
 		assertValid(getTaxonomyCategory);
@@ -794,69 +840,6 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected TaxonomyCategory invokePatchTaxonomyCategory(
-			Long taxonomyCategoryId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		options.setPatch(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return TaxonomyCategorySerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePatchTaxonomyCategoryResponse(
-			Long taxonomyCategoryId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		options.setPatch(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testPutTaxonomyCategory() throws Exception {
 		TaxonomyCategory postTaxonomyCategory =
@@ -864,14 +847,16 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		TaxonomyCategory randomTaxonomyCategory = randomTaxonomyCategory();
 
-		TaxonomyCategory putTaxonomyCategory = invokePutTaxonomyCategory(
-			postTaxonomyCategory.getId(), randomTaxonomyCategory);
+		TaxonomyCategory putTaxonomyCategory =
+			taxonomyCategoryResource.putTaxonomyCategory(
+				postTaxonomyCategory.getId(), randomTaxonomyCategory);
 
 		assertEquals(randomTaxonomyCategory, putTaxonomyCategory);
 		assertValid(putTaxonomyCategory);
 
-		TaxonomyCategory getTaxonomyCategory = invokeGetTaxonomyCategory(
-			putTaxonomyCategory.getId());
+		TaxonomyCategory getTaxonomyCategory =
+			taxonomyCategoryResource.getTaxonomyCategory(
+				putTaxonomyCategory.getId());
 
 		assertEquals(randomTaxonomyCategory, getTaxonomyCategory);
 		assertValid(getTaxonomyCategory);
@@ -884,72 +869,18 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected TaxonomyCategory invokePutTaxonomyCategory(
-			Long taxonomyCategoryId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		options.setPut(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return TaxonomyCategorySerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePutTaxonomyCategoryResponse(
-			Long taxonomyCategoryId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-categories/{taxonomyCategoryId}",
-					taxonomyCategoryId);
-
-		options.setLocation(location);
-
-		options.setPut(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testGetTaxonomyVocabularyTaxonomyCategoriesPage()
 		throws Exception {
+
+		Page<TaxonomyCategory> page =
+			taxonomyCategoryResource.
+				getTaxonomyVocabularyTaxonomyCategoriesPage(
+					testGetTaxonomyVocabularyTaxonomyCategoriesPage_getTaxonomyVocabularyId(),
+					RandomTestUtil.randomString(), null, Pagination.of(1, 2),
+					null);
+
+		Assert.assertEquals(0, page.getTotalCount());
 
 		Long taxonomyVocabularyId =
 			testGetTaxonomyVocabularyTaxonomyCategoriesPage_getTaxonomyVocabularyId();
@@ -962,10 +893,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 					irrelevantTaxonomyVocabularyId,
 					randomIrrelevantTaxonomyCategory());
 
-			Page<TaxonomyCategory> page =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					irrelevantTaxonomyVocabularyId, null, null,
-					Pagination.of(1, 2), null);
+			page =
+				taxonomyCategoryResource.
+					getTaxonomyVocabularyTaxonomyCategoriesPage(
+						irrelevantTaxonomyVocabularyId, null, null,
+						Pagination.of(1, 2), null);
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -983,9 +915,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			testGetTaxonomyVocabularyTaxonomyCategoriesPage_addTaxonomyCategory(
 				taxonomyVocabularyId, randomTaxonomyCategory());
 
-		Page<TaxonomyCategory> page =
-			invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-				taxonomyVocabularyId, null, null, Pagination.of(1, 2), null);
+		page =
+			taxonomyCategoryResource.
+				getTaxonomyVocabularyTaxonomyCategoriesPage(
+					taxonomyVocabularyId, null, null, Pagination.of(1, 2),
+					null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -993,6 +927,12 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			Arrays.asList(taxonomyCategory1, taxonomyCategory2),
 			(List<TaxonomyCategory>)page.getItems());
 		assertValid(page);
+
+		taxonomyCategoryResource.deleteTaxonomyCategory(
+			taxonomyCategory1.getId());
+
+		taxonomyCategoryResource.deleteTaxonomyCategory(
+			taxonomyCategory2.getId());
 	}
 
 	@Test
@@ -1017,10 +957,12 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<TaxonomyCategory> page =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					taxonomyVocabularyId, null,
-					getFilterString(entityField, "between", taxonomyCategory1),
-					Pagination.of(1, 2), null);
+				taxonomyCategoryResource.
+					getTaxonomyVocabularyTaxonomyCategoriesPage(
+						taxonomyVocabularyId, null,
+						getFilterString(
+							entityField, "between", taxonomyCategory1),
+						Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(taxonomyCategory1),
@@ -1053,10 +995,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<TaxonomyCategory> page =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					taxonomyVocabularyId, null,
-					getFilterString(entityField, "eq", taxonomyCategory1),
-					Pagination.of(1, 2), null);
+				taxonomyCategoryResource.
+					getTaxonomyVocabularyTaxonomyCategoriesPage(
+						taxonomyVocabularyId, null,
+						getFilterString(entityField, "eq", taxonomyCategory1),
+						Pagination.of(1, 2), null);
 
 			assertEquals(
 				Collections.singletonList(taxonomyCategory1),
@@ -1084,8 +1027,10 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				taxonomyVocabularyId, randomTaxonomyCategory());
 
 		Page<TaxonomyCategory> page1 =
-			invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-				taxonomyVocabularyId, null, null, Pagination.of(1, 2), null);
+			taxonomyCategoryResource.
+				getTaxonomyVocabularyTaxonomyCategoriesPage(
+					taxonomyVocabularyId, null, null, Pagination.of(1, 2),
+					null);
 
 		List<TaxonomyCategory> taxonomyCategories1 =
 			(List<TaxonomyCategory>)page1.getItems();
@@ -1094,8 +1039,10 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			taxonomyCategories1.toString(), 2, taxonomyCategories1.size());
 
 		Page<TaxonomyCategory> page2 =
-			invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-				taxonomyVocabularyId, null, null, Pagination.of(2, 2), null);
+			taxonomyCategoryResource.
+				getTaxonomyVocabularyTaxonomyCategoriesPage(
+					taxonomyVocabularyId, null, null, Pagination.of(2, 2),
+					null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -1105,75 +1052,106 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		Assert.assertEquals(
 			taxonomyCategories2.toString(), 1, taxonomyCategories2.size());
 
+		Page<TaxonomyCategory> page3 =
+			taxonomyCategoryResource.
+				getTaxonomyVocabularyTaxonomyCategoriesPage(
+					taxonomyVocabularyId, null, null, Pagination.of(1, 3),
+					null);
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(
 				taxonomyCategory1, taxonomyCategory2, taxonomyCategory3),
-			new ArrayList<TaxonomyCategory>() {
-				{
-					addAll(taxonomyCategories1);
-					addAll(taxonomyCategories2);
-				}
-			});
+			(List<TaxonomyCategory>)page3.getItems());
 	}
 
 	@Test
 	public void testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSortDateTime()
 		throws Exception {
 
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.DATE_TIME);
+		testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, taxonomyCategory1, taxonomyCategory2) -> {
+				BeanUtils.setProperty(
+					taxonomyCategory1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
 
-		if (entityFields.isEmpty()) {
-			return;
-		}
+	@Test
+	public void testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSortInteger()
+		throws Exception {
 
-		Long taxonomyVocabularyId =
-			testGetTaxonomyVocabularyTaxonomyCategoriesPage_getTaxonomyVocabularyId();
-
-		TaxonomyCategory taxonomyCategory1 = randomTaxonomyCategory();
-		TaxonomyCategory taxonomyCategory2 = randomTaxonomyCategory();
-
-		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				taxonomyCategory1, entityField.getName(),
-				DateUtils.addMinutes(new Date(), -2));
-		}
-
-		taxonomyCategory1 =
-			testGetTaxonomyVocabularyTaxonomyCategoriesPage_addTaxonomyCategory(
-				taxonomyVocabularyId, taxonomyCategory1);
-
-		taxonomyCategory2 =
-			testGetTaxonomyVocabularyTaxonomyCategoriesPage_addTaxonomyCategory(
-				taxonomyVocabularyId, taxonomyCategory2);
-
-		for (EntityField entityField : entityFields) {
-			Page<TaxonomyCategory> ascPage =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					taxonomyVocabularyId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":asc");
-
-			assertEquals(
-				Arrays.asList(taxonomyCategory1, taxonomyCategory2),
-				(List<TaxonomyCategory>)ascPage.getItems());
-
-			Page<TaxonomyCategory> descPage =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					taxonomyVocabularyId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":desc");
-
-			assertEquals(
-				Arrays.asList(taxonomyCategory2, taxonomyCategory1),
-				(List<TaxonomyCategory>)descPage.getItems());
-		}
+		testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, taxonomyCategory1, taxonomyCategory2) -> {
+				BeanUtils.setProperty(
+					taxonomyCategory1, entityField.getName(), 0);
+				BeanUtils.setProperty(
+					taxonomyCategory2, entityField.getName(), 1);
+			});
 	}
 
 	@Test
 	public void testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSortString()
 		throws Exception {
 
-		List<EntityField> entityFields = getEntityFields(
-			EntityField.Type.STRING);
+		testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, taxonomyCategory1, taxonomyCategory2) -> {
+				Class<?> clazz = taxonomyCategory1.getClass();
+
+				String entityFieldName = entityField.getName();
+
+				Method method = clazz.getMethod(
+					"get" + StringUtil.upperCaseFirstLetter(entityFieldName));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						taxonomyCategory1, entityFieldName,
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						taxonomyCategory2, entityFieldName,
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else if (entityFieldName.contains("email")) {
+					BeanUtils.setProperty(
+						taxonomyCategory1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+					BeanUtils.setProperty(
+						taxonomyCategory2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()) +
+									"@liferay.com");
+				}
+				else {
+					BeanUtils.setProperty(
+						taxonomyCategory1, entityFieldName,
+						"aaa" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+					BeanUtils.setProperty(
+						taxonomyCategory2, entityFieldName,
+						"bbb" +
+							StringUtil.toLowerCase(
+								RandomTestUtil.randomString()));
+				}
+			});
+	}
+
+	protected void testGetTaxonomyVocabularyTaxonomyCategoriesPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer
+				<EntityField, TaxonomyCategory, TaxonomyCategory, Exception>
+					unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
 
 		if (entityFields.isEmpty()) {
 			return;
@@ -1186,10 +1164,8 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		TaxonomyCategory taxonomyCategory2 = randomTaxonomyCategory();
 
 		for (EntityField entityField : entityFields) {
-			BeanUtils.setProperty(
-				taxonomyCategory1, entityField.getName(), "Aaa");
-			BeanUtils.setProperty(
-				taxonomyCategory2, entityField.getName(), "Bbb");
+			unsafeTriConsumer.accept(
+				entityField, taxonomyCategory1, taxonomyCategory2);
 		}
 
 		taxonomyCategory1 =
@@ -1202,18 +1178,20 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<TaxonomyCategory> ascPage =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					taxonomyVocabularyId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":asc");
+				taxonomyCategoryResource.
+					getTaxonomyVocabularyTaxonomyCategoriesPage(
+						taxonomyVocabularyId, null, null, Pagination.of(1, 2),
+						entityField.getName() + ":asc");
 
 			assertEquals(
 				Arrays.asList(taxonomyCategory1, taxonomyCategory2),
 				(List<TaxonomyCategory>)ascPage.getItems());
 
 			Page<TaxonomyCategory> descPage =
-				invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-					taxonomyVocabularyId, null, null, Pagination.of(1, 2),
-					entityField.getName() + ":desc");
+				taxonomyCategoryResource.
+					getTaxonomyVocabularyTaxonomyCategoriesPage(
+						taxonomyVocabularyId, null, null, Pagination.of(1, 2),
+						entityField.getName() + ":desc");
 
 			assertEquals(
 				Arrays.asList(taxonomyCategory2, taxonomyCategory1),
@@ -1226,7 +1204,7 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				Long taxonomyVocabularyId, TaxonomyCategory taxonomyCategory)
 		throws Exception {
 
-		return invokePostTaxonomyVocabularyTaxonomyCategory(
+		return taxonomyCategoryResource.postTaxonomyVocabularyTaxonomyCategory(
 			taxonomyVocabularyId, taxonomyCategory);
 	}
 
@@ -1243,90 +1221,6 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		throws Exception {
 
 		return null;
-	}
-
-	protected Page<TaxonomyCategory>
-			invokeGetTaxonomyVocabularyTaxonomyCategoriesPage(
-				Long taxonomyVocabularyId, String search, String filterString,
-				Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-vocabularies/{taxonomyVocabularyId}/taxonomy-categories",
-					taxonomyVocabularyId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, TaxonomyCategorySerDes::toDTO);
-	}
-
-	protected Http.Response
-			invokeGetTaxonomyVocabularyTaxonomyCategoriesPageResponse(
-				Long taxonomyVocabularyId, String search, String filterString,
-				Pagination pagination, String sortString)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-vocabularies/{taxonomyVocabularyId}/taxonomy-categories",
-					taxonomyVocabularyId);
-
-		if (search != null) {
-			location = HttpUtil.addParameter(location, "search", search);
-		}
-
-		if (filterString != null) {
-			location = HttpUtil.addParameter(location, "filter", filterString);
-		}
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		if (sortString != null) {
-			location = HttpUtil.addParameter(location, "sort", sortString);
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
@@ -1346,80 +1240,27 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				TaxonomyCategory taxonomyCategory)
 		throws Exception {
 
-		return invokePostTaxonomyVocabularyTaxonomyCategory(
+		return taxonomyCategoryResource.postTaxonomyVocabularyTaxonomyCategory(
 			testGetTaxonomyVocabularyTaxonomyCategoriesPage_getTaxonomyVocabularyId(),
 			taxonomyCategory);
 	}
 
-	protected TaxonomyCategory invokePostTaxonomyVocabularyTaxonomyCategory(
-			Long taxonomyVocabularyId, TaxonomyCategory taxonomyCategory)
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
+	protected TaxonomyCategory testGraphQLTaxonomyCategory_addTaxonomyCategory()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-vocabularies/{taxonomyVocabularyId}/taxonomy-categories",
-					taxonomyVocabularyId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return TaxonomyCategorySerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
-	protected Http.Response
-			invokePostTaxonomyVocabularyTaxonomyCategoryResponse(
-				Long taxonomyVocabularyId, TaxonomyCategory taxonomyCategory)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			TaxonomyCategorySerDes.toJSON(taxonomyCategory),
-			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/taxonomy-vocabularies/{taxonomyVocabularyId}/taxonomy-categories",
-					taxonomyVocabularyId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -1470,7 +1311,9 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		}
 	}
 
-	protected void assertValid(TaxonomyCategory taxonomyCategory) {
+	protected void assertValid(TaxonomyCategory taxonomyCategory)
+		throws Exception {
+
 		boolean valid = true;
 
 		if (taxonomyCategory.getDateCreated() == null) {
@@ -1487,6 +1330,14 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("actions", additionalAssertFieldName)) {
+				if (taxonomyCategory.getActions() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals(
 					"availableLanguages", additionalAssertFieldName)) {
@@ -1514,8 +1365,34 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("description_i18n", additionalAssertFieldName)) {
+				if (taxonomyCategory.getDescription_i18n() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (taxonomyCategory.getExternalReferenceCode() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("name", additionalAssertFieldName)) {
 				if (taxonomyCategory.getName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("name_i18n", additionalAssertFieldName)) {
+				if (taxonomyCategory.getName_i18n() == null) {
 					valid = false;
 				}
 
@@ -1552,6 +1429,16 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"taxonomyCategoryUsageCount", additionalAssertFieldName)) {
+
+				if (taxonomyCategory.getTaxonomyCategoryUsageCount() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("viewableBy", additionalAssertFieldName)) {
 				if (taxonomyCategory.getViewableBy() == null) {
 					valid = false;
@@ -1571,7 +1458,8 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	protected void assertValid(Page<TaxonomyCategory> page) {
 		boolean valid = false;
 
-		Collection<TaxonomyCategory> taxonomyCategories = page.getItems();
+		java.util.Collection<TaxonomyCategory> taxonomyCategories =
+			page.getItems();
 
 		int size = taxonomyCategories.size();
 
@@ -1589,6 +1477,59 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		return new String[0];
 	}
 
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.taxonomy.dto.v1_0.
+						TaxonomyCategory.class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[0];
+	}
+
 	protected boolean equals(
 		TaxonomyCategory taxonomyCategory1,
 		TaxonomyCategory taxonomyCategory2) {
@@ -1599,6 +1540,17 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 
 		for (String additionalAssertFieldName :
 				getAdditionalAssertFieldNames()) {
+
+			if (Objects.equals("actions", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)taxonomyCategory1.getActions(),
+						(Map)taxonomyCategory2.getActions())) {
+
+					return false;
+				}
+
+				continue;
+			}
 
 			if (Objects.equals(
 					"availableLanguages", additionalAssertFieldName)) {
@@ -1657,6 +1609,30 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("description_i18n", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)taxonomyCategory1.getDescription_i18n(),
+						(Map)taxonomyCategory2.getDescription_i18n())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"externalReferenceCode", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						taxonomyCategory1.getExternalReferenceCode(),
+						taxonomyCategory2.getExternalReferenceCode())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("id", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						taxonomyCategory1.getId(), taxonomyCategory2.getId())) {
@@ -1671,6 +1647,17 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				if (!Objects.deepEquals(
 						taxonomyCategory1.getName(),
 						taxonomyCategory2.getName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("name_i18n", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)taxonomyCategory1.getName_i18n(),
+						(Map)taxonomyCategory2.getName_i18n())) {
 
 					return false;
 				}
@@ -1717,6 +1704,19 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals(
+					"taxonomyCategoryUsageCount", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						taxonomyCategory1.getTaxonomyCategoryUsageCount(),
+						taxonomyCategory2.getTaxonomyCategoryUsageCount())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("viewableBy", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						taxonomyCategory1.getViewableBy(),
@@ -1736,7 +1736,33 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_taxonomyCategoryResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -1757,12 +1783,15 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -1781,6 +1810,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		sb.append(" ");
 		sb.append(operator);
 		sb.append(" ");
+
+		if (entityFieldName.equals("actions")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
 
 		if (entityFieldName.equals("availableLanguages")) {
 			throw new IllegalArgumentException(
@@ -1868,9 +1902,26 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			return sb.toString();
 		}
 
-		if (entityFieldName.equals("id")) {
+		if (entityFieldName.equals("description_i18n")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("externalReferenceCode")) {
+			sb.append("'");
+			sb.append(
+				String.valueOf(taxonomyCategory.getExternalReferenceCode()));
+			sb.append("'");
+
+			return sb.toString();
+		}
+
+		if (entityFieldName.equals("id")) {
+			sb.append("'");
+			sb.append(String.valueOf(taxonomyCategory.getId()));
+			sb.append("'");
+
+			return sb.toString();
 		}
 
 		if (entityFieldName.equals("name")) {
@@ -1879,6 +1930,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			sb.append("'");
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("name_i18n")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("numberOfTaxonomyCategories")) {
@@ -1896,6 +1952,11 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("taxonomyCategoryUsageCount")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("viewableBy")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -1905,14 +1966,56 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected TaxonomyCategory randomTaxonomyCategory() throws Exception {
 		return new TaxonomyCategory() {
 			{
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
-				description = RandomTestUtil.randomString();
-				id = RandomTestUtil.randomLong();
-				name = RandomTestUtil.randomString();
+				description = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				externalReferenceCode = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				id = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				numberOfTaxonomyCategories = RandomTestUtil.randomInt();
+				taxonomyCategoryUsageCount = RandomTestUtil.randomInt();
 			}
 		};
 	}
@@ -1930,76 +2033,80 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 		return randomTaxonomyCategory();
 	}
 
+	protected TaxonomyCategoryResource taxonomyCategoryResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -2020,8 +2127,8 @@ public abstract class BaseTaxonomyCategoryResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private TaxonomyCategoryResource _taxonomyCategoryResource;
-
-	private URL _resourceURL;
+	private
+		com.liferay.headless.admin.taxonomy.resource.v1_0.
+			TaxonomyCategoryResource _taxonomyCategoryResource;
 
 }

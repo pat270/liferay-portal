@@ -26,30 +26,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing OAuth2Application in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class OAuth2ApplicationCacheModel
 	implements CacheModel<OAuth2Application>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof OAuth2ApplicationCacheModel)) {
+		if (!(object instanceof OAuth2ApplicationCacheModel)) {
 			return false;
 		}
 
 		OAuth2ApplicationCacheModel oAuth2ApplicationCacheModel =
-			(OAuth2ApplicationCacheModel)obj;
+			(OAuth2ApplicationCacheModel)object;
 
 		if (oAuth2ApplicationId ==
 				oAuth2ApplicationCacheModel.oAuth2ApplicationId) {

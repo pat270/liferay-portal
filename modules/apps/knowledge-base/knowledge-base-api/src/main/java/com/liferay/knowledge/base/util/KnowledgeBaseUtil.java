@@ -114,9 +114,9 @@ public class KnowledgeBaseUtil {
 		try (InputStream inputStream = new UnsyncByteArrayInputStream(bytes)) {
 			return MimeTypesUtil.getContentType(inputStream, fileName);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe, ioe);
+				_log.warn(ioException, ioException);
 			}
 		}
 
@@ -151,8 +151,8 @@ public class KnowledgeBaseUtil {
 			title = String.valueOf(id);
 		}
 		else {
-			title = FriendlyURLNormalizerUtil.normalize(
-				title, _normalizationFriendlyUrlPattern);
+			title = FriendlyURLNormalizerUtil.normalizeWithPeriodsAndSlashes(
+				title);
 		}
 
 		return ModelHintsUtil.trimString(
@@ -256,8 +256,6 @@ public class KnowledgeBaseUtil {
 	private static final Log _log = LogFactoryUtil.getLog(
 		KnowledgeBaseUtil.class);
 
-	private static final Pattern _normalizationFriendlyUrlPattern =
-		Pattern.compile("[^a-z0-9_-]");
 	private static final Pattern _validFriendlyUrlPattern = Pattern.compile(
 		"/[a-z0-9_-]+");
 

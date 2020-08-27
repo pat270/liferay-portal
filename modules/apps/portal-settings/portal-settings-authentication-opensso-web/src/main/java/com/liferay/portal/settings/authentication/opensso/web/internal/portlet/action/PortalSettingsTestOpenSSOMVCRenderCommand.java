@@ -18,7 +18,7 @@ import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.PortletException;
@@ -27,8 +27,6 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -55,19 +53,17 @@ public class PortalSettingsTestOpenSSOMVCRenderCommand
 			_servletContext.getRequestDispatcher(_JSP_PATH);
 
 		try {
-			HttpServletRequest httpServletRequest =
-				_portal.getHttpServletRequest(renderRequest);
-			HttpServletResponse httpServletResponse =
-				_portal.getHttpServletResponse(renderResponse);
-
-			requestDispatcher.include(httpServletRequest, httpServletResponse);
+			requestDispatcher.include(
+				_portal.getHttpServletRequest(renderRequest),
+				_portal.getHttpServletResponse(renderResponse));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to include JSP " + _JSP_PATH, e);
+				_log.debug("Unable to include JSP " + _JSP_PATH, exception);
 			}
 
-			throw new PortletException("Unable to include JSP " + _JSP_PATH, e);
+			throw new PortletException(
+				"Unable to include JSP " + _JSP_PATH, exception);
 		}
 
 		return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;

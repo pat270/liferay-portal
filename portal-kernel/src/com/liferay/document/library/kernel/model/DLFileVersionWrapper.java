@@ -22,8 +22,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -34,7 +34,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileVersion
  * @generated
  */
-@ProviderType
 public class DLFileVersionWrapper
 	extends BaseModelWrapper<DLFileVersion>
 	implements DLFileVersion, ModelWrapper<DLFileVersion> {
@@ -47,6 +46,8 @@ public class DLFileVersionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("fileVersionId", getFileVersionId());
 		attributes.put("groupId", getGroupId());
@@ -81,6 +82,18 @@ public class DLFileVersionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -304,6 +317,16 @@ public class DLFileVersionWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this document library file version.
+	 *
+	 * @return the ct collection ID of this document library file version
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public java.util.List<com.liferay.dynamic.data.mapping.kernel.DDMStructure>
 			getDDMStructures()
@@ -468,6 +491,16 @@ public class DLFileVersionWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this document library file version.
+	 *
+	 * @return the mvcc version of this document library file version
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -746,6 +779,16 @@ public class DLFileVersionWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this document library file version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this document library file version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this document library file version.
 	 *
 	 * @param description the description of this document library file version
@@ -778,9 +821,9 @@ public class DLFileVersionWrapper
 	@Override
 	public void setExtraSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			extraSettingsProperties) {
+			extraSettingsUnicodeProperties) {
 
-		model.setExtraSettingsProperties(extraSettingsProperties);
+		model.setExtraSettingsProperties(extraSettingsUnicodeProperties);
 	}
 
 	/**
@@ -871,6 +914,16 @@ public class DLFileVersionWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this document library file version.
+	 *
+	 * @param mvccVersion the mvcc version of this document library file version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -1026,6 +1079,20 @@ public class DLFileVersionWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<DLFileVersion, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DLFileVersion, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

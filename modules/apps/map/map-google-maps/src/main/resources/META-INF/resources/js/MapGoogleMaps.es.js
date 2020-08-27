@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import MapBase from 'map-common/js/MapBase.es';
 import {toElement} from 'metal-dom';
 
@@ -32,7 +46,7 @@ class MapGoogleMaps extends MapBase {
 		const mapConfig = {
 			center: location,
 			mapTypeId: google.maps.MapTypeId.ROADMAP,
-			zoom: this.zoom
+			zoom: this.zoom,
 		};
 
 		const map = new google.maps.Map(
@@ -43,8 +57,8 @@ class MapGoogleMaps extends MapBase {
 		if (this.data && this.data.features) {
 			const bounds = new google.maps.LatLngBounds();
 
-			this.data.features.forEach(
-				feature => bounds.extend(
+			this.data.features.forEach((feature) =>
+				bounds.extend(
 					new google.maps.LatLng(
 						feature.geometry.coordinates[1],
 						feature.geometry.coordinates[0]
@@ -112,7 +126,7 @@ MapGoogleMaps.CONTROLS_MAP = {
 	[MapBase.CONTROLS.SCALE]: 'scaleControl',
 	[MapBase.CONTROLS.STREETVIEW]: 'streetViewControl',
 	[MapBase.CONTROLS.TYPE]: 'mapTypeControl',
-	[MapBase.CONTROLS.ZOOM]: 'zoomControl'
+	[MapBase.CONTROLS.ZOOM]: 'zoomControl',
 };
 
 window.Liferay = window.Liferay || {};

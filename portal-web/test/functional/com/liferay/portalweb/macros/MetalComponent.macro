@@ -1,4 +1,5 @@
 definition {
+
 	macro waitForCard {
 		AssertVisible(locator1 = "//div[contains(@class,'card')][contains(.,'${card}')]");
 
@@ -6,9 +7,9 @@ definition {
 	}
 
 	macro waitForLayout {
-		AssertVisible(locator1 = "//div[@class='portlet-body']/form/div");
+		AssertVisible(locator1 = "//div[@class='portlet-body']//form//div");
 
-		MetalComponent.waitForMetalComponent(id = '''document.querySelector("div.portlet-body > form > div").id''');
+		MetalComponent.waitForMetalComponent(id = '''document.querySelector("div.portlet-body form div").id''');
 	}
 
 	macro waitForManagementBar {
@@ -35,10 +36,17 @@ else {
 		''';
 		var metalComponentReady = "";
 
-		while (!("${metalComponentReady}" == "ready") && (maxIterations = "30")) {
+		while ("${metalComponentReady}" != "ready" && (maxIterations = "30")) {
 			var metalComponentReady = selenium.getEval("${javaScript}");
 
 			Pause(locator1 = "1000");
 		}
 	}
+
+	macro waitForReportsManagementBar {
+		AssertVisible(locator1 = "//div[contains(@class,'management-bar')]");
+
+		MetalComponent.waitForMetalComponent(id = '''document.querySelector("div.management-bar").parentNode.id''');
+	}
+
 }

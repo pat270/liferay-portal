@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SearchContainer searchContainer = (SearchContainer)request.getAttribute("liferay-ui:search:searchContainer");
+SearchContainer<?> searchContainer = (SearchContainer<?>)request.getAttribute("liferay-ui:search:searchContainer");
 
 ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 
@@ -25,7 +25,7 @@ AssetListEntryAssetEntryRel assetListEntryAssetEntryRel = (AssetListEntryAssetEn
 
 int position = assetListEntryAssetEntryRel.getPosition();
 
-boolean last = (position == (searchContainer.getTotal() - 1));
+boolean last = position == (searchContainer.getTotal() - 1);
 %>
 
 <c:if test="<%= (position > 0) && !last %>">

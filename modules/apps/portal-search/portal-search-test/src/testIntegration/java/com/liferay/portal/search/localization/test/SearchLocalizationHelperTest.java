@@ -31,18 +31,18 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.SearchContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.localization.SearchLocalizationHelper;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -78,16 +78,15 @@ public class SearchLocalizationHelperTest {
 
 	@Test
 	public void testAddLocalizedField() {
-		Map<Locale, String> map = new HashMap<Locale, String>() {
-			{
-				put(LocaleUtil.BRAZIL, "exemplo");
-				put(LocaleUtil.SPAIN, "ejemplo");
-			}
-		};
 		Document document = new DocumentImpl();
 
 		searchLocalizationHelper.addLocalizedField(
-			document, "test", LocaleUtil.BRAZIL, map);
+			document, "test", LocaleUtil.BRAZIL,
+			HashMapBuilder.put(
+				LocaleUtil.BRAZIL, "exemplo"
+			).put(
+				LocaleUtil.SPAIN, "ejemplo"
+			).build());
 
 		Assert.assertEquals("exemplo", document.get("test"));
 		Assert.assertEquals(
@@ -103,9 +102,9 @@ public class SearchLocalizationHelperTest {
 		SearchContext searchContext = getSearchContext(
 			addCompany(LocaleUtil.BRAZIL, LocaleUtil.JAPAN));
 
-		Locale[] locales = searchLocalizationHelper.getLocales(searchContext);
-
-		assertSameValues(locales, LocaleUtil.BRAZIL, LocaleUtil.JAPAN);
+		assertSameValues(
+			searchLocalizationHelper.getLocales(searchContext),
+			LocaleUtil.BRAZIL, LocaleUtil.JAPAN);
 	}
 
 	@Test
@@ -118,9 +117,9 @@ public class SearchLocalizationHelperTest {
 			company, addGroup(company, LocaleUtil.GERMANY),
 			addGroup(company, LocaleUtil.SPAIN));
 
-		Locale[] locales = searchLocalizationHelper.getLocales(searchContext);
-
-		assertSameValues(locales, LocaleUtil.GERMANY, LocaleUtil.SPAIN);
+		assertSameValues(
+			searchLocalizationHelper.getLocales(searchContext),
+			LocaleUtil.GERMANY, LocaleUtil.SPAIN);
 	}
 
 	@Test
@@ -153,6 +152,9 @@ public class SearchLocalizationHelperTest {
 			locales, "test_de_DE", "test_es_ES", "example_de_DE",
 			"example_es_ES");
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected Company addCompany(Locale... locales) throws Exception {
 		Company company = CompanyTestUtil.addCompany();

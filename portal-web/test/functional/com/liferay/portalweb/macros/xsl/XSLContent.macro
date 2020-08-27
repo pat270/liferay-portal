@@ -1,0 +1,93 @@
+definition {
+
+	macro configureConfigurationAdminXSL {
+		Type(
+			locator1 = "TextArea#URL",
+			value1 = "@portlet_context_url@,@portal_url@");
+
+		FormFields.enableCheckbox(fieldName = "xml.doctype.declaration.allowed");
+
+		SystemSettings.saveConfiguration();
+	}
+
+	macro gotoDocumentURL {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
+
+		DMDocument.gotoEntry(dmDocumentTitle = "${dmDocumentTitle}");
+
+		DMDocument.expandInfo();
+
+		AssertTextEquals(
+			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_UPLOADED_BY",
+			value1 = "Test Test");
+
+		ClickNoError(locator1 = "DocumentsAndMediaDocument#DETAILS_URL");
+
+		Pause(locator1 = "5000");
+	}
+
+	macro viewConfigurationXSLContent {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextEquals(
+			locator1 = "TextInput#SETUP_XML_URL",
+			value1 = "@portlet_context_url@/example.xml");
+
+		AssertTextEquals(
+			locator1 = "TextInput#SETUP_XSL_URL",
+			value1 = "@portlet_context_url@/example.xsl");
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro viewConsoleError {
+		AssertConsoleTextPresent(value1 = "${consoleTextError}");
+	}
+
+	macro viewErrorMessage {
+		AssertTextEquals(
+			locator1 = "Message#ERROR",
+			value1 = "An error occurred while processing your XML and XSL.");
+	}
+
+	macro viewXSLPortletHymnDisplay {
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TITLE",
+			value1 = "My Hymn Collection");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_TITLE_HEADER",
+			value1 = "Title");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_ARTIST_HEADER",
+			value1 = "Artist");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_COUNTRY_HEADER",
+			value1 = "Country");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_YEAR_HEADER",
+			value1 = "Year");
+
+		var key_titleEntry = "${tableTitleEntry}";
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_TITLE_ENTRY",
+			value1 = "${tableTitleEntry}");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_ARTIST_ENTRY",
+			value1 = "${tableArtistEntry}");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_COUNTRY_ENTRY",
+			value1 = "${tableCountryEntry}");
+
+		AssertTextEquals(
+			locator1 = "XSLContentPortlet#TABLE_YEAR_ENTRY",
+			value1 = "${tableYearEntry}");
+	}
+
+}

@@ -116,12 +116,12 @@ public class SharepointRequest {
 		}
 
 		try {
-			InputStream is = _httpServletRequest.getInputStream();
+			InputStream inputStream = _httpServletRequest.getInputStream();
 
 			UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 				new UnsyncByteArrayOutputStream();
 
-			StreamUtil.transfer(is, unsyncByteArrayOutputStream);
+			StreamUtil.transfer(inputStream, unsyncByteArrayOutputStream);
 
 			byte[] bytes = unsyncByteArrayOutputStream.toByteArray();
 
@@ -151,8 +151,8 @@ public class SharepointRequest {
 
 			setBytes(bytes);
 		}
-		catch (Exception e) {
-			throw new SharepointException(e);
+		catch (Exception exception) {
+			throw new SharepointException(exception);
 		}
 	}
 

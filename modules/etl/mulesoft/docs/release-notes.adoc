@@ -1,0 +1,35 @@
+= Liferay Connector Release Notes
+
+The Anypoint Liferay Connector connects Liferay to platforms and services in
+the Mulesoft ecosystem.
+
+== Version 1.0.0
+
+=== Compatibility
+
+[%header%autowidth.spread]
+|===
+|Software |Version
+|Anypoint Studio |7.4 and later
+|Mule |4.1.1 and later
+|JDK |1.8
+|Liferay Portal |7.1 (FixPack 12) and later
+|===
+
+=== Features
+Initial release of Anypoint Liferay Connector
+
+* Provides *Create Records*, *Delete Records*, *Get Records*, and *Update
+Records* operations
+* Supports basic authentication and OAuth 2.0 authorization
+* Includes documentation and demo flows which explains the basic use of the
+Liferay Connector operations
+
+=== Fixed Issues
+
+== See Also
+* https://app.swaggerhub.com/organizations/liferayinc[Liferay Headless API Documentation]
+* link:liferay-connector-tech-ref.adoc[Liferay Connector Technical Reference]
+* link:user-manual.adoc[Liferay Connector User Manual]
+* https://forums.mulesoft.com[MuleSoft Forum]
+* https://support.mulesoft.com[Contact MuleSoft Support]

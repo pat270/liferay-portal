@@ -90,7 +90,14 @@
 							</c:if>
 
 							<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.ADMIN_EMAIL_USER_ADDED_ENABLED) %>">
-								<liferay-ui:message arguments="<%= HtmlUtil.escape(userEmailAddress) %>" key="your-password-was-sent-to-x" translateArguments="<%= false %>" />
+								<c:choose>
+									<c:when test="<%= PropsValues.LOGIN_CREATE_ACCOUNT_ALLOW_CUSTOM_PASSWORD %>">
+										<liferay-ui:message key="use-your-password-to-login" />
+									</c:when>
+									<c:otherwise>
+										<liferay-ui:message arguments="<%= HtmlUtil.escape(userEmailAddress) %>" key="you-can-set-your-password-following-instructions-sent-to-x" translateArguments="<%= false %>" />
+									</c:otherwise>
+								</c:choose>
 							</c:if>
 						</div>
 					</c:when>
@@ -187,32 +194,29 @@
 			var form = document.getElementById('<portlet:namespace /><%= formName %>');
 
 			if (form) {
-				form.addEventListener(
-					'submit',
-					function(event) {
-						<c:if test="<%= Validator.isNotNull(redirect) %>">
-							var redirect = form.querySelector('#<portlet:namespace />redirect');
+				form.addEventListener('submit', function (event) {
+					<c:if test="<%= Validator.isNotNull(redirect) %>">
+						var redirect = form.querySelector('#<portlet:namespace />redirect');
 
-							if (redirect) {
-								var redirectVal = redirect.getAttribute('value');
+						if (redirect) {
+							var redirectVal = redirect.getAttribute('value');
 
-								redirect.setAttribute('value', redirectVal + window.location.hash);
-							}
-						</c:if>
+							redirect.setAttribute('value', redirectVal + window.location.hash);
+						}
+					</c:if>
 
-						submitForm(form);
-					}
-				);
+					submitForm(form);
+				});
 
 				var password = form.querySelector('#<portlet:namespace />password');
 
 				if (password) {
-					password.addEventListener(
-						'keypress',
-						function(event) {
-							Liferay.Util.showCapsLock(event, '<portlet:namespace />passwordCapsLockSpan');
-						}
-					);
+					password.addEventListener('keypress', function (event) {
+						Liferay.Util.showCapsLock(
+							event,
+							'<portlet:namespace />passwordCapsLockSpan'
+						);
+					});
 				}
 			}
 		</aui:script>

@@ -41,7 +41,7 @@ public class TextReplacer {
 		String valueFile) {
 
 		try {
-			String token = _fileUtil.read(tokenFile);
+			String token = _fileImpl.read(tokenFile);
 
 			if (token == null) {
 				System.out.println(tokenFile + " does not exist");
@@ -49,7 +49,7 @@ public class TextReplacer {
 				return;
 			}
 
-			String value = _fileUtil.read(valueFile);
+			String value = _fileImpl.read(valueFile);
 
 			if (value == null) {
 				System.out.println(valueFile + " does not exist");
@@ -62,7 +62,7 @@ public class TextReplacer {
 					dir += "/";
 				}
 
-				if (!_fileUtil.exists(dir)) {
+				if (!_fileImpl.exists(dir)) {
 					System.out.println(dir + " does not exist");
 
 					continue;
@@ -79,22 +79,22 @@ public class TextReplacer {
 				for (String fileName : directoryScanner.getIncludedFiles()) {
 					File file = new File(dir + fileName);
 
-					String content = _fileUtil.read(file);
+					String content = _fileImpl.read(file);
 
 					String newContent = StringUtil.replace(
 						content, token, value);
 
 					if (!content.equals(newContent)) {
-						_fileUtil.write(file, newContent);
+						_fileImpl.write(file, newContent);
 					}
 				}
 			}
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
-	private static final FileImpl _fileUtil = FileImpl.getInstance();
+	private static final FileImpl _fileImpl = FileImpl.getInstance();
 
 }

@@ -288,34 +288,32 @@ public class AuthenticatedSessionManagerImpl
 				secure);
 		}
 
-		if (PropsValues.AUTH_USER_UUID_STORE_ENABLED) {
-			String userUUID = userIdString.concat(
-				StringPool.PERIOD
-			).concat(
-				String.valueOf(System.nanoTime())
-			);
-
-			Cookie userUUIDCookie = new Cookie(
-				CookieKeys.USER_UUID,
-				Encryptor.encrypt(company.getKeyObj(), userUUID));
-
-			userUUIDCookie.setPath(StringPool.SLASH);
-
-			session.setAttribute(CookieKeys.USER_UUID, userUUID);
-
-			if (rememberMe) {
-				userUUIDCookie.setMaxAge(loginMaxAge);
-			}
-			else {
-				userUUIDCookie.setMaxAge(-1);
-			}
-
-			CookieKeys.addCookie(
-				httpServletRequest, httpServletResponse, userUUIDCookie,
-				secure);
-
-			AuthenticatedUserUUIDStoreUtil.register(userUUID);
+		if (!PropsValues.AUTH_USER_UUID_STORE_ENABLED) {
+			return;
 		}
+
+		String userUUID = StringBundler.concat(
+			userIdString, StringPool.PERIOD, System.nanoTime());
+
+		Cookie userUUIDCookie = new Cookie(
+			CookieKeys.USER_UUID,
+			Encryptor.encrypt(company.getKeyObj(), userUUID));
+
+		userUUIDCookie.setPath(StringPool.SLASH);
+
+		session.setAttribute(CookieKeys.USER_UUID, userUUID);
+
+		if (rememberMe) {
+			userUUIDCookie.setMaxAge(loginMaxAge);
+		}
+		else {
+			userUUIDCookie.setMaxAge(-1);
+		}
+
+		CookieKeys.addCookie(
+			httpServletRequest, httpServletResponse, userUUIDCookie, secure);
+
+		AuthenticatedUserUUIDStoreUtil.register(userUUID);
 	}
 
 	@Override
@@ -354,7 +352,7 @@ public class AuthenticatedSessionManagerImpl
 		try {
 			session.invalidate();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		EventsProcessorUtil.process(
@@ -459,17 +457,18 @@ public class AuthenticatedSessionManagerImpl
 
 		Map<String, String[]> headerMap = new HashMap<>();
 
-		Enumeration<String> enu1 = httpServletRequest.getHeaderNames();
+		Enumeration<String> enumeration1 = httpServletRequest.getHeaderNames();
 
-		while (enu1.hasMoreElements()) {
-			String name = enu1.nextElement();
+		while (enumeration1.hasMoreElements()) {
+			String name = enumeration1.nextElement();
 
-			Enumeration<String> enu2 = httpServletRequest.getHeaders(name);
+			Enumeration<String> enumeration2 = httpServletRequest.getHeaders(
+				name);
 
 			List<String> headers = new ArrayList<>();
 
-			while (enu2.hasMoreElements()) {
-				String value = enu2.nextElement();
+			while (enumeration2.hasMoreElements()) {
+				String value = enumeration2.nextElement();
 
 				headers.add(value);
 			}

@@ -23,13 +23,10 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.security.service.access.policy.model.SAPEntry;
 import com.liferay.portal.security.service.access.policy.service.SAPEntryLocalService;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -75,13 +72,12 @@ public class SyncSAPEntryActivator {
 			boolean defaultSAPEntry = GetterUtil.getBoolean(
 				sapEntryObjectArray[2]);
 
-			Map<Locale, String> map = new HashMap<>();
-
-			map.put(LocaleUtil.getDefault(), name);
-
 			_sapEntryLocalService.addSAPEntry(
 				_userLocalService.getDefaultUserId(companyId),
-				allowedServiceSignatures, defaultSAPEntry, true, name, map,
+				allowedServiceSignatures, defaultSAPEntry, true, name,
+				HashMapBuilder.put(
+					LocaleUtil.getDefault(), name
+				).build(),
 				new ServiceContext());
 		}
 	}
@@ -112,11 +108,11 @@ public class SyncSAPEntryActivator {
 			try {
 				addSAPEntry(company.getCompanyId());
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				_log.error(
 					"Unable to add service access policy entry for company " +
 						company.getCompanyId(),
-					pe);
+					portalException);
 			}
 		}
 

@@ -24,7 +24,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 @ExtendedObjectClassDefinition(
 	category = "security-tools",
 	factoryInstanceLabelAttribute = "configuration.name",
-	scope = ExtendedObjectClassDefinition.Scope.SYSTEM
+	scope = ExtendedObjectClassDefinition.Scope.COMPANY
 )
 @Meta.OCD(
 	description = "portal-cors-configuration-description", factory = true,
@@ -44,7 +44,7 @@ public interface PortalCORSConfiguration {
 	public String name();
 
 	@Meta.AD(
-		deflt = "/documents/*|/image/*|/api/jsonws/*|/o/api/*",
+		deflt = "/api/jsonws/*|/documents/*|/image/*|/o/api/*|/o/graphql",
 		description = "cors-configuration-filter-mapping-url-pattern-description",
 		id = "filter.mapping.url.pattern",
 		name = "cors-configuration-filter-mapping-url-pattern", required = false

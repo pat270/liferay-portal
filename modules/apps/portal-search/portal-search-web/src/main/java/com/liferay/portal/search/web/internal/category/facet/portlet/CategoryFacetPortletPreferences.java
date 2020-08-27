@@ -19,7 +19,8 @@ package com.liferay.portal.search.web.internal.category.facet.portlet;
  */
 public interface CategoryFacetPortletPreferences {
 
-	public static final String PREFERENCE_KEY_DISPLAY_STYLE = "displayStyle";
+	public static final String PREFERENCE_KEY_DISPLAY_STYLE =
+		"categoryFacetDisplayStyle";
 
 	public static final String PREFERENCE_KEY_FREQUENCIES_VISIBLE =
 		"frequenciesVisible";
@@ -38,10 +39,6 @@ public interface CategoryFacetPortletPreferences {
 	public int getMaxTerms();
 
 	public String getParameterName();
-
-	public boolean isDisplayStyleCloud();
-
-	public boolean isDisplayStyleList();
 
 	public boolean isFrequenciesVisible();
 

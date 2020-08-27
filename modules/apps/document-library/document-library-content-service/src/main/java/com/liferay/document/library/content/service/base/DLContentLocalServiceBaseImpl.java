@@ -18,9 +18,13 @@ import com.liferay.document.library.content.model.DLContent;
 import com.liferay.document.library.content.model.DLContentDataBlobModel;
 import com.liferay.document.library.content.service.DLContentLocalService;
 import com.liferay.document.library.content.service.persistence.DLContentPersistence;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.io.AutoDeleteFileInputStream;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
+import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -32,23 +36,31 @@ import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
+import java.io.InputStream;
 import java.io.Serializable;
+
+import java.sql.Blob;
 
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -62,10 +74,9 @@ import org.osgi.service.component.annotations.Reference;
  * @see com.liferay.document.library.content.service.impl.DLContentLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class DLContentLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements DLContentLocalService, AopService, IdentifiableOSGiService {
+	implements AopService, DLContentLocalService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -75,6 +86,10 @@ public abstract class DLContentLocalServiceBaseImpl
 
 	/**
 	 * Adds the document library content to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLContentLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param dlContent the document library content
 	 * @return the document library content that was added
@@ -102,6 +117,10 @@ public abstract class DLContentLocalServiceBaseImpl
 	/**
 	 * Deletes the document library content with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLContentLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param contentId the primary key of the document library content
 	 * @return the document library content that was removed
 	 * @throws PortalException if a document library content with the primary key could not be found
@@ -115,6 +134,10 @@ public abstract class DLContentLocalServiceBaseImpl
 	/**
 	 * Deletes the document library content from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLContentLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlContent the document library content
 	 * @return the document library content that was removed
 	 */
@@ -122,6 +145,11 @@ public abstract class DLContentLocalServiceBaseImpl
 	@Override
 	public DLContent deleteDLContent(DLContent dlContent) {
 		return dlContentPersistence.remove(dlContent);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return dlContentPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -147,7 +175,7 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.document.library.content.model.impl.DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.document.library.content.model.impl.DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -167,7 +195,7 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.document.library.content.model.impl.DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.document.library.content.model.impl.DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -272,6 +300,15 @@ public abstract class DLContentLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return dlContentPersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -279,6 +316,13 @@ public abstract class DLContentLocalServiceBaseImpl
 		return dlContentLocalService.deleteDLContent((DLContent)persistedModel);
 	}
 
+	public BasePersistence<DLContent> getBasePersistence() {
+		return dlContentPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -290,7 +334,7 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * Returns a range of all the document library contents.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.document.library.content.model.impl.DLContentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.document.library.content.model.impl.DLContentModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library contents
@@ -315,6 +359,10 @@ public abstract class DLContentLocalServiceBaseImpl
 	/**
 	 * Updates the document library content in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLContentLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlContent the document library content
 	 * @return the document library content that was updated
 	 */
@@ -334,8 +382,8 @@ public abstract class DLContentLocalServiceBaseImpl
 			return (DLContentDataBlobModel)session.get(
 				DLContentDataBlobModel.class, primaryKey);
 		}
-		catch (Exception e) {
-			throw dlContentPersistence.processException(e);
+		catch (Exception exception) {
+			throw dlContentPersistence.processException(exception);
 		}
 		finally {
 			dlContentPersistence.closeSession(session);
@@ -343,10 +391,50 @@ public abstract class DLContentLocalServiceBaseImpl
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public InputStream openDataInputStream(long contentId) {
+		try {
+			DLContentDataBlobModel DLContentDataBlobModel = getDataBlobModel(
+				contentId);
+
+			Blob blob = DLContentDataBlobModel.getDataBlob();
+
+			if (blob == null) {
+				return _EMPTY_INPUT_STREAM;
+			}
+
+			InputStream inputStream = blob.getBinaryStream();
+
+			if (_useTempFile) {
+				inputStream = new AutoDeleteFileInputStream(
+					_file.createTempFile(inputStream));
+			}
+
+			return inputStream;
+		}
+		catch (Exception exception) {
+			throw new SystemException(exception);
+		}
+	}
+
+	@Activate
+	protected void activate() {
+		DB db = DBManagerUtil.getDB();
+
+		if ((db.getDBType() != DBType.DB2) &&
+			(db.getDBType() != DBType.MYSQL) &&
+			(db.getDBType() != DBType.MARIADB) &&
+			(db.getDBType() != DBType.SYBASE)) {
+
+			_useTempFile = true;
+		}
+	}
+
+	@Override
 	public Class<?>[] getAopInterfaces() {
 		return new Class<?>[] {
 			DLContentLocalService.class, IdentifiableOSGiService.class,
-			PersistedModelLocalService.class
+			CTService.class, PersistedModelLocalService.class
 		};
 	}
 
@@ -365,8 +453,22 @@ public abstract class DLContentLocalServiceBaseImpl
 		return DLContentLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<DLContent> getCTPersistence() {
+		return dlContentPersistence;
+	}
+
+	@Override
+	public Class<DLContent> getModelClass() {
 		return DLContent.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DLContent>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(dlContentPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -392,8 +494,8 @@ public abstract class DLContentLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -405,5 +507,13 @@ public abstract class DLContentLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
+
+	@Reference
+	protected File _file;
+
+	private static final InputStream _EMPTY_INPUT_STREAM =
+		new UnsyncByteArrayInputStream(new byte[0]);
+
+	private boolean _useTempFile;
 
 }

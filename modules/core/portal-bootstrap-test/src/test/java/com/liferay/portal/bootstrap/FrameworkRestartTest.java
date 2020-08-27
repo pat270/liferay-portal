@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.NewEnv;
 import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ServiceLoader;
 
 import java.io.IOException;
@@ -37,7 +38,6 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -70,12 +70,11 @@ public class FrameworkRestartTest {
 
 		System.setSecurityManager(new SecurityManager());
 
-		Map<String, String> properties = new HashMap<>();
-
 		Path frameworkStoragePath = Files.createTempDirectory(null);
 
-		properties.put(
-			Constants.FRAMEWORK_STORAGE, frameworkStoragePath.toString());
+		Map<String, String> properties = HashMapBuilder.put(
+			Constants.FRAMEWORK_STORAGE, frameworkStoragePath.toString()
+		).build();
 
 		List<FrameworkFactory> frameworkFactories = ServiceLoader.load(
 			FrameworkRestartTest.class.getClassLoader(),
@@ -251,7 +250,7 @@ public class FrameworkRestartTest {
 
 				@Override
 				public FileVisitResult postVisitDirectory(
-						Path dirPath, IOException ioe)
+						Path dirPath, IOException ioException)
 					throws IOException {
 
 					Files.delete(dirPath);

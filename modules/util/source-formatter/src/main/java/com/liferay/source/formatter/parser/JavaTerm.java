@@ -38,15 +38,21 @@ public interface JavaTerm {
 
 	public int getLineNumber();
 
+	public int getLineNumber(int pos);
+
 	public String getName();
 
 	public JavaClass getParentJavaClass();
 
 	public JavaSignature getSignature();
 
-	public boolean hasAnnotation(String annotation);
+	public boolean hasAnnotation(String... annotations);
 
 	public boolean isAbstract();
+
+	public boolean isDefault();
+
+	public boolean isFinal();
 
 	public boolean isJavaClass();
 
@@ -57,6 +63,12 @@ public interface JavaTerm {
 	public boolean isJavaStaticBlock();
 
 	public boolean isJavaVariable();
+
+	public boolean isPrivate();
+
+	public boolean isProtected();
+
+	public boolean isPublic();
 
 	public boolean isStatic();
 

@@ -146,7 +146,7 @@ public class VelocityTemplateContextHelper extends TemplateContextHelper {
 
 	@Override
 	protected void populateExtraHelperUtilities(
-		Map<String, Object> velocityContext) {
+		Map<String, Object> velocityContext, boolean restrict) {
 
 		// Date tool
 
@@ -187,8 +187,8 @@ public class VelocityTemplateContextHelper extends TemplateContextHelper {
 			velocityContext.put(
 				"rolePermission", RolePermissionUtil.getRolePermission());
 		}
-		catch (SecurityException se) {
-			_log.error(se, se);
+		catch (SecurityException securityException) {
+			_log.error(securityException, securityException);
 		}
 	}
 

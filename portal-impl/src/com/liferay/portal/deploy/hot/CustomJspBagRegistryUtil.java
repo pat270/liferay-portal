@@ -57,7 +57,8 @@ public class CustomJspBagRegistryUtil {
 	public static Map<ServiceReference<CustomJspBag>, CustomJspBag>
 		getCustomJspBags() {
 
-		return Collections.unmodifiableMap(_instance._customJspBagsMap);
+		return Collections.unmodifiableMap(
+			_customJspBagRegistryUtil._customJspBagsMap);
 	}
 
 	protected InputStream getCustomJspInputStream(
@@ -217,7 +218,7 @@ public class CustomJspBagRegistryUtil {
 			Log log = SanitizerLogWrapper.allowCRLF(_log);
 
 			StringBundler sb = new StringBundler(
-				conflictingCustomJsps.size() * 4 + 2);
+				(conflictingCustomJsps.size() * 4) + 2);
 
 			sb.append("Colliding JSP files in ");
 			sb.append(contextId);
@@ -261,7 +262,7 @@ public class CustomJspBagRegistryUtil {
 	private static final Log _log = LogFactoryUtil.getLog(
 		CustomJspBagRegistryUtil.class);
 
-	private static final CustomJspBagRegistryUtil _instance =
+	private static final CustomJspBagRegistryUtil _customJspBagRegistryUtil =
 		new CustomJspBagRegistryUtil();
 
 	private final Map<ServiceReference<CustomJspBag>, CustomJspBag>
@@ -323,9 +324,13 @@ public class CustomJspBagRegistryUtil {
 				try {
 					verifyCustomJsps(contextId, customJspBag);
 				}
-				catch (DuplicateCustomJspException dcje) {
+				catch (DuplicateCustomJspException
+							duplicateCustomJspException) {
+
 					if (_log.isWarnEnabled()) {
-						_log.warn(dcje.getMessage(), dcje);
+						_log.warn(
+							duplicateCustomJspException.getMessage(),
+							duplicateCustomJspException);
 					}
 
 					registry.ungetService(serviceReference);
@@ -340,9 +345,9 @@ public class CustomJspBagRegistryUtil {
 			try {
 				initCustomJspBag(contextId, contextName, customJspBag);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e.getMessage(), e);
+					_log.warn(exception.getMessage(), exception);
 				}
 
 				registry.ungetService(serviceReference);
@@ -397,7 +402,7 @@ public class CustomJspBagRegistryUtil {
 							FileUtil.copyFile(
 								portalJspBackupFile, portalJspFile);
 						}
-						catch (IOException ioe) {
+						catch (IOException ioException) {
 							return;
 						}
 

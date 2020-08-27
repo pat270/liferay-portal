@@ -21,11 +21,11 @@ import com.liferay.headless.form.client.json.BaseJSONParser;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -144,6 +144,16 @@ public class FormStructureSerDes {
 			sb.append("\"");
 		}
 
+		if (formStructure.getDescription_i18n() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"description_i18n\": ");
+
+			sb.append(_toJSON(formStructure.getDescription_i18n()));
+		}
+
 		if (formStructure.getFormPages() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -198,6 +208,16 @@ public class FormStructureSerDes {
 			sb.append("\"");
 		}
 
+		if (formStructure.getName_i18n() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"name_i18n\": ");
+
+			sb.append(_toJSON(formStructure.getName_i18n()));
+		}
+
 		if (formStructure.getSiteId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -225,7 +245,7 @@ public class FormStructureSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -246,13 +266,24 @@ public class FormStructureSerDes {
 			map.put("creator", String.valueOf(formStructure.getCreator()));
 		}
 
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(formStructure.getDateCreated()));
+		if (formStructure.getDateCreated() == null) {
+			map.put("dateCreated", null);
+		}
+		else {
+			map.put(
+				"dateCreated",
+				liferayToJSONDateFormat.format(formStructure.getDateCreated()));
+		}
 
-		map.put(
-			"dateModified",
-			liferayToJSONDateFormat.format(formStructure.getDateModified()));
+		if (formStructure.getDateModified() == null) {
+			map.put("dateModified", null);
+		}
+		else {
+			map.put(
+				"dateModified",
+				liferayToJSONDateFormat.format(
+					formStructure.getDateModified()));
+		}
 
 		if (formStructure.getDescription() == null) {
 			map.put("description", null);
@@ -260,6 +291,15 @@ public class FormStructureSerDes {
 		else {
 			map.put(
 				"description", String.valueOf(formStructure.getDescription()));
+		}
+
+		if (formStructure.getDescription_i18n() == null) {
+			map.put("description_i18n", null);
+		}
+		else {
+			map.put(
+				"description_i18n",
+				String.valueOf(formStructure.getDescription_i18n()));
 		}
 
 		if (formStructure.getFormPages() == null) {
@@ -292,6 +332,13 @@ public class FormStructureSerDes {
 			map.put("name", String.valueOf(formStructure.getName()));
 		}
 
+		if (formStructure.getName_i18n() == null) {
+			map.put("name_i18n", null);
+		}
+		else {
+			map.put("name_i18n", String.valueOf(formStructure.getName_i18n()));
+		}
+
 		if (formStructure.getSiteId() == null) {
 			map.put("siteId", null);
 		}
@@ -302,42 +349,7 @@ public class FormStructureSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class FormStructureJSONParser
+	public static class FormStructureJSONParser
 		extends BaseJSONParser<FormStructure> {
 
 		@Override
@@ -384,6 +396,13 @@ public class FormStructureSerDes {
 					formStructure.setDescription((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "description_i18n")) {
+				if (jsonParserFieldValue != null) {
+					formStructure.setDescription_i18n(
+						(Map)FormStructureSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "formPages")) {
 				if (jsonParserFieldValue != null) {
 					formStructure.setFormPages(
@@ -414,6 +433,13 @@ public class FormStructureSerDes {
 					formStructure.setName((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "name_i18n")) {
+				if (jsonParserFieldValue != null) {
+					formStructure.setName_i18n(
+						(Map)FormStructureSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "siteId")) {
 				if (jsonParserFieldValue != null) {
 					formStructure.setSiteId(
@@ -426,6 +452,75 @@ public class FormStructureSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

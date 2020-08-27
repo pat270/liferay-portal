@@ -39,10 +39,8 @@ boolean emailFileEntryAnyEventEnabled = dlGroupServiceSettings.isEmailFileEntryA
 	if (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) {
 		subscribed = DLSubscriptionUtil.isSubscribedToFolder(themeDisplay.getCompanyId(), scopeGroupId, user.getUserId(), folderId);
 
-		if (subscribed) {
-			if (!DLSubscriptionUtil.isSubscribedToFolder(themeDisplay.getCompanyId(), scopeGroupId, user.getUserId(), folderId, false)) {
-				unsubscribable = false;
-			}
+		if (subscribed && !DLSubscriptionUtil.isSubscribedToFolder(themeDisplay.getCompanyId(), scopeGroupId, user.getUserId(), folderId, false)) {
+			unsubscribable = false;
 		}
 	}
 	else {
@@ -54,7 +52,7 @@ boolean emailFileEntryAnyEventEnabled = dlGroupServiceSettings.isEmailFileEntryA
 		<c:when test="<%= subscribed %>">
 			<c:choose>
 				<c:when test="<%= unsubscribable %>">
-					<portlet:actionURL name='<%= (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) ? "/document_library/edit_folder" : "/document_library/edit_file_entry_type" %>' var="unsubscribeURL">
+					<portlet:actionURL name='<%= (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) ? "/document_library/edit_folder" : "/document_library/unsubscribe_file_entry_type" %>' var="unsubscribeURL">
 						<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.UNSUBSCRIBE %>" />
 						<portlet:param name="redirect" value="<%= currentURL %>" />
 
@@ -87,7 +85,7 @@ boolean emailFileEntryAnyEventEnabled = dlGroupServiceSettings.isEmailFileEntryA
 			</c:choose>
 		</c:when>
 		<c:otherwise>
-			<portlet:actionURL name='<%= (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) ? "/document_library/edit_folder" : "/document_library/edit_file_entry_type" %>' var="subscribeURL">
+			<portlet:actionURL name='<%= (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) ? "/document_library/edit_folder" : "/document_library/subscribe_file_entry_type" %>' var="subscribeURL">
 				<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.SUBSCRIBE %>" />
 				<portlet:param name="redirect" value="<%= currentURL %>" />
 

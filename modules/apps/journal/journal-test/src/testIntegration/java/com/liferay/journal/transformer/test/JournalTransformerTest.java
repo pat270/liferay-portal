@@ -15,10 +15,8 @@
 package com.liferay.journal.transformer.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
 import com.liferay.journal.model.JournalArticle;
@@ -37,6 +35,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.TestPropsUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -50,9 +49,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.lang.reflect.Method;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -85,59 +82,6 @@ public class JournalTransformerTest {
 	}
 
 	@Test
-	public void testContentTransformerListener() throws Exception {
-		DDMForm ddmForm = new DDMForm();
-
-		ddmForm.addAvailableLocale(LocaleUtil.US);
-		ddmForm.addDDMFormField(
-			DDMFormTestUtil.createTextDDMFormField(
-				"link", false, false, false));
-		ddmForm.addDDMFormField(
-			DDMFormTestUtil.createTextDDMFormField(
-				"name", false, false, false));
-		ddmForm.setDefaultLocale(LocaleUtil.US);
-
-		_ddmStructure = DDMStructureTestUtil.addStructure(
-			JournalArticle.class.getName(), ddmForm);
-
-		String xsl = "$name.getData()";
-
-		_ddmTemplate = DDMTemplateTestUtil.addTemplate(
-			_ddmStructure.getStructureId(),
-			PortalUtil.getClassNameId(JournalArticle.class),
-			TemplateConstants.LANG_TYPE_VM, xsl);
-
-		String xml = DDMStructureTestUtil.getSampleStructuredContent(
-			"Joe Bloggs");
-
-		_article = JournalTestUtil.addArticleWithXMLContent(
-			xml, _ddmStructure.getStructureKey(),
-			_ddmTemplate.getTemplateKey());
-
-		Map<String, String> tokens = getTokens();
-
-		String content = (String)_transformMethod.invoke(
-			null, null, tokens, Constants.VIEW, "en_US",
-			UnsecureSAXReaderUtil.read(xml), null, xsl,
-			TemplateConstants.LANG_TYPE_VM);
-
-		Assert.assertEquals("Joe Bloggs", content);
-
-		Document document = UnsecureSAXReaderUtil.read(xml);
-
-		Element element = (Element)document.selectSingleNode(
-			"//dynamic-content");
-
-		element.setText("[@" + _article.getArticleId() + ";name@]");
-
-		content = (String)_transformMethod.invoke(
-			null, null, tokens, Constants.VIEW, "en_US", document, null, xsl,
-			TemplateConstants.LANG_TYPE_VM);
-
-		Assert.assertEquals("Joe Bloggs", content);
-	}
-
-	@Test
 	public void testFTLTransformation() throws Exception {
 		Map<String, String> tokens = getTokens();
 
@@ -158,13 +102,13 @@ public class JournalTransformerTest {
 	public void testLocaleTransformerListener() throws Exception {
 		Map<String, String> tokens = getTokens();
 
-		Map<Locale, String> contents = new HashMap<>();
-
-		contents.put(LocaleUtil.BRAZIL, "Joao da Silva");
-		contents.put(LocaleUtil.US, "Joe Bloggs");
-
 		String xml = DDMStructureTestUtil.getSampleStructuredContent(
-			contents, LanguageUtil.getLanguageId(LocaleUtil.US));
+			HashMapBuilder.put(
+				LocaleUtil.BRAZIL, "Joao da Silva"
+			).put(
+				LocaleUtil.US, "Joe Bloggs"
+			).build(),
+			LanguageUtil.getLanguageId(LocaleUtil.US));
 
 		String script = "$name.getData()";
 
@@ -196,12 +140,11 @@ public class JournalTransformerTest {
 
 		Map<String, String> tokens = getTokens();
 
-		Map<Locale, String> contents = new HashMap<>();
-
-		contents.put(LocaleUtil.US, "Joe Bloggs");
-
 		String xml = DDMStructureTestUtil.getSampleStructuredContent(
-			contents, LanguageUtil.getLanguageId(LocaleUtil.US));
+			HashMapBuilder.put(
+				LocaleUtil.US, "Joe Bloggs"
+			).build(),
+			LanguageUtil.getLanguageId(LocaleUtil.US));
 
 		Document document = UnsecureSAXReaderUtil.read(xml);
 

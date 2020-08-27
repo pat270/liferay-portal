@@ -19,13 +19,13 @@
 <%
 AssetRenderer<?> assetRenderer = (AssetRenderer<?>)request.getAttribute(WebKeys.ASSET_RENDERER);
 
-AssetRendererFactory assetRendererFactory = (AssetRendererFactory)request.getAttribute(WebKeys.ASSET_RENDERER_FACTORY);
+AssetRendererFactory<?> assetRendererFactory = (AssetRendererFactory)request.getAttribute(WebKeys.ASSET_RENDERER_FACTORY);
 %>
 
 <div class="card">
 	<c:choose>
 		<c:when test="<%= Validator.isNotNull(assetRenderer.getThumbnailPath(renderRequest)) %>">
-			<div class="aspect-ratio aspect-ratio-bg-center aspect-ratio-bg-cover" style="background-image: url('<%= assetRenderer.getThumbnailPath(renderRequest) %>')">
+			<div class="aspect-ratio aspect-ratio-bg-center aspect-ratio-bg-cover" style="background-image: url('<%= assetRenderer.getThumbnailPath(renderRequest) %>');">
 				<img alt="" class="sr-only" src="<%= assetRenderer.getThumbnailPath(renderRequest) %>" />
 			</div>
 		</c:when>
@@ -38,10 +38,10 @@ AssetRendererFactory assetRendererFactory = (AssetRendererFactory)request.getAtt
 
 	<div class="card-row card-row-layout-fixed card-row-padded card-row-valign-top">
 		<div class="card-col-content lfr-card-details-column">
-			<span class="lfr-card-title-text truncate-text">
+			<span class="lfr-card-title-text text-truncate">
 				<%= HtmlUtil.escape(assetRenderer.getTitle(locale)) %>
 			</span>
-			<span class="lfr-card-subtitle-text truncate-text">
+			<span class="lfr-card-subtitle-text text-truncate">
 				<%= HtmlUtil.escape(assetRendererFactory.getTypeName(locale)) %>
 			</span>
 		</div>

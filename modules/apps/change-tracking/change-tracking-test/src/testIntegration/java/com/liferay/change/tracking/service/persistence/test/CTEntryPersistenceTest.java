@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -123,29 +124,25 @@ public class CTEntryPersistenceTest {
 
 		CTEntry newCTEntry = _persistence.create(pk);
 
+		newCTEntry.setMvccVersion(RandomTestUtil.nextLong());
+
 		newCTEntry.setCompanyId(RandomTestUtil.nextLong());
 
 		newCTEntry.setUserId(RandomTestUtil.nextLong());
-
-		newCTEntry.setUserName(RandomTestUtil.randomString());
 
 		newCTEntry.setCreateDate(RandomTestUtil.nextDate());
 
 		newCTEntry.setModifiedDate(RandomTestUtil.nextDate());
 
-		newCTEntry.setOriginalCTCollectionId(RandomTestUtil.nextLong());
+		newCTEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		newCTEntry.setModelClassNameId(RandomTestUtil.nextLong());
 
 		newCTEntry.setModelClassPK(RandomTestUtil.nextLong());
 
-		newCTEntry.setModelResourcePrimKey(RandomTestUtil.nextLong());
+		newCTEntry.setModelMvccVersion(RandomTestUtil.nextLong());
 
 		newCTEntry.setChangeType(RandomTestUtil.nextInt());
-
-		newCTEntry.setCollision(RandomTestUtil.randomBoolean());
-
-		newCTEntry.setStatus(RandomTestUtil.nextInt());
 
 		_ctEntries.add(_persistence.update(newCTEntry));
 
@@ -153,13 +150,13 @@ public class CTEntryPersistenceTest {
 			newCTEntry.getPrimaryKey());
 
 		Assert.assertEquals(
+			existingCTEntry.getMvccVersion(), newCTEntry.getMvccVersion());
+		Assert.assertEquals(
 			existingCTEntry.getCtEntryId(), newCTEntry.getCtEntryId());
 		Assert.assertEquals(
 			existingCTEntry.getCompanyId(), newCTEntry.getCompanyId());
 		Assert.assertEquals(
 			existingCTEntry.getUserId(), newCTEntry.getUserId());
-		Assert.assertEquals(
-			existingCTEntry.getUserName(), newCTEntry.getUserName());
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingCTEntry.getCreateDate()),
 			Time.getShortTimestamp(newCTEntry.getCreateDate()));
@@ -167,37 +164,58 @@ public class CTEntryPersistenceTest {
 			Time.getShortTimestamp(existingCTEntry.getModifiedDate()),
 			Time.getShortTimestamp(newCTEntry.getModifiedDate()));
 		Assert.assertEquals(
-			existingCTEntry.getOriginalCTCollectionId(),
-			newCTEntry.getOriginalCTCollectionId());
+			existingCTEntry.getCtCollectionId(),
+			newCTEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingCTEntry.getModelClassNameId(),
 			newCTEntry.getModelClassNameId());
 		Assert.assertEquals(
 			existingCTEntry.getModelClassPK(), newCTEntry.getModelClassPK());
 		Assert.assertEquals(
-			existingCTEntry.getModelResourcePrimKey(),
-			newCTEntry.getModelResourcePrimKey());
+			existingCTEntry.getModelMvccVersion(),
+			newCTEntry.getModelMvccVersion());
 		Assert.assertEquals(
 			existingCTEntry.getChangeType(), newCTEntry.getChangeType());
-		Assert.assertEquals(
-			existingCTEntry.isCollision(), newCTEntry.isCollision());
-		Assert.assertEquals(
-			existingCTEntry.getStatus(), newCTEntry.getStatus());
 	}
 
 	@Test
-	public void testCountByModelClassNameId() throws Exception {
-		_persistence.countByModelClassNameId(RandomTestUtil.nextLong());
+	public void testCountByCTCollectionId() throws Exception {
+		_persistence.countByCTCollectionId(RandomTestUtil.nextLong());
 
-		_persistence.countByModelClassNameId(0L);
+		_persistence.countByCTCollectionId(0L);
 	}
 
 	@Test
-	public void testCountByMCNI_MCPK() throws Exception {
-		_persistence.countByMCNI_MCPK(
+	public void testCountByC_MCNI() throws Exception {
+		_persistence.countByC_MCNI(
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
-		_persistence.countByMCNI_MCPK(0L, 0L);
+		_persistence.countByC_MCNI(0L, 0L);
+	}
+
+	@Test
+	public void testCountByC_MCNI_MCPK() throws Exception {
+		_persistence.countByC_MCNI_MCPK(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByC_MCNI_MCPK(0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByNotC_MCNI_MCPK() throws Exception {
+		_persistence.countByNotC_MCNI_MCPK(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByNotC_MCNI_MCPK(0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByNotC_MCNI_MCPKArrayable() throws Exception {
+		_persistence.countByNotC_MCNI_MCPK(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			new long[] {RandomTestUtil.nextLong(), 0L});
 	}
 
 	@Test
@@ -225,11 +243,10 @@ public class CTEntryPersistenceTest {
 
 	protected OrderByComparator<CTEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"CTEntry", "ctEntryId", true, "companyId", true, "userId", true,
-			"userName", true, "createDate", true, "modifiedDate", true,
-			"originalCTCollectionId", true, "modelClassNameId", true,
-			"modelClassPK", true, "modelResourcePrimKey", true, "changeType",
-			true, "collision", true, "status", true);
+			"CTEntry", "mvccVersion", true, "ctEntryId", true, "companyId",
+			true, "userId", true, "createDate", true, "modifiedDate", true,
+			"ctCollectionId", true, "modelClassNameId", true, "modelClassPK",
+			true, "modelMvccVersion", true, "changeType", true);
 	}
 
 	@Test
@@ -441,18 +458,64 @@ public class CTEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		CTEntry existingCTEntry = _persistence.findByPrimaryKey(
-			newCTEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newCTEntry.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		CTEntry newCTEntry = addCTEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			CTEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("ctEntryId", newCTEntry.getCtEntryId()));
+
+		List<CTEntry> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(CTEntry ctEntry) {
 		Assert.assertEquals(
-			Long.valueOf(existingCTEntry.getModelClassNameId()),
+			Long.valueOf(ctEntry.getCtCollectionId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingCTEntry, "getOriginalModelClassNameId",
-				new Class<?>[0]));
+				ctEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "ctCollectionId"));
 		Assert.assertEquals(
-			Long.valueOf(existingCTEntry.getModelClassPK()),
+			Long.valueOf(ctEntry.getModelClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingCTEntry, "getOriginalModelClassPK", new Class<?>[0]));
+				ctEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "modelClassNameId"));
+		Assert.assertEquals(
+			Long.valueOf(ctEntry.getModelClassPK()),
+			ReflectionTestUtil.<Long>invoke(
+				ctEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "modelClassPK"));
 	}
 
 	protected CTEntry addCTEntry() throws Exception {
@@ -460,29 +523,25 @@ public class CTEntryPersistenceTest {
 
 		CTEntry ctEntry = _persistence.create(pk);
 
+		ctEntry.setMvccVersion(RandomTestUtil.nextLong());
+
 		ctEntry.setCompanyId(RandomTestUtil.nextLong());
 
 		ctEntry.setUserId(RandomTestUtil.nextLong());
-
-		ctEntry.setUserName(RandomTestUtil.randomString());
 
 		ctEntry.setCreateDate(RandomTestUtil.nextDate());
 
 		ctEntry.setModifiedDate(RandomTestUtil.nextDate());
 
-		ctEntry.setOriginalCTCollectionId(RandomTestUtil.nextLong());
+		ctEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ctEntry.setModelClassNameId(RandomTestUtil.nextLong());
 
 		ctEntry.setModelClassPK(RandomTestUtil.nextLong());
 
-		ctEntry.setModelResourcePrimKey(RandomTestUtil.nextLong());
+		ctEntry.setModelMvccVersion(RandomTestUtil.nextLong());
 
 		ctEntry.setChangeType(RandomTestUtil.nextInt());
-
-		ctEntry.setCollision(RandomTestUtil.randomBoolean());
-
-		ctEntry.setStatus(RandomTestUtil.nextInt());
 
 		_ctEntries.add(_persistence.update(ctEntry));
 

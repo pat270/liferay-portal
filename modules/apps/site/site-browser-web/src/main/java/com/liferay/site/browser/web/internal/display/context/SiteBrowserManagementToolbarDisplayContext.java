@@ -32,14 +32,14 @@ public class SiteBrowserManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public SiteBrowserManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			SiteBrowserDisplayContext siteBrowserDisplayContext)
 		throws Exception {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			siteBrowserDisplayContext.getGroupSearch());
 
 		_siteBrowserDisplayContext = siteBrowserDisplayContext;

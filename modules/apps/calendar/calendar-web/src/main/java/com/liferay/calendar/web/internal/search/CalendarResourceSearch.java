@@ -23,12 +23,12 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,13 +52,11 @@ public class CalendarResourceSearch extends SearchContainer<CalendarResource> {
 			add("active");
 		}
 	};
-	public static Map<String, String> orderableHeaders =
-		new HashMap<String, String>() {
-			{
-				put("code", "code");
-				put("name", "name");
-			}
-		};
+	public static Map<String, String> orderableHeaders = HashMapBuilder.put(
+		"code", "code"
+	).put(
+		"name", "name"
+	).build();
 
 	public CalendarResourceSearch(
 		PortletRequest portletRequest, String curParam,
@@ -123,8 +121,9 @@ public class CalendarResourceSearch extends SearchContainer<CalendarResource> {
 			setOrderByType(orderByType);
 			setOrderByComparator(orderByComparator);
 		}
-		catch (Exception e) {
-			_log.error("Unable to initialize calendar resource search", e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to initialize calendar resource search", exception);
 		}
 	}
 

@@ -1,5 +1,6 @@
 @component-name = "portal-web-forms-and-data-lists"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Dynamic Data Lists";
@@ -13,7 +14,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
@@ -114,7 +114,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -154,7 +153,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -201,7 +199,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
@@ -217,7 +214,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(ddlListName = "DDL List");
@@ -257,7 +253,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "DDL Nested Definition");
@@ -384,7 +379,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -424,7 +418,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -462,7 +455,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -505,7 +497,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
@@ -521,7 +512,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLTemplate.addFormTemplateCP(
@@ -537,7 +527,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(ddlListName = "DDL List");
@@ -577,7 +566,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -617,7 +605,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -670,11 +657,12 @@ definition {
 
 	@priority = "4"
 	test EditListRecordViaRecordView {
+		property portal.upstream = "quarantine";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -731,7 +719,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -752,7 +739,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(
@@ -786,10 +772,10 @@ definition {
 		SearchPortlets.searchEmbedded(searchTerm = "Record Text");
 
 		SearchResultPortlet.viewSearchResults(
-			searchAssetTitle = "New Data Definition Name for List: DDL List Name",
+			searchAssetTitle = "Record for Dynamic Data List:",
 			searchAssetType = "Dynamic Data Lists Record");
 
-		SearchPortlets.gotoResultDetails(searchAssetTitle = "New Data Definition Name for List: DDL List Name");
+		SearchPortlets.gotoResultDetails(searchAssetTitle = "Record for Dynamic Data List: DDL List Name");
 
 		DDLRecord.viewFirstRecordSearchResult(
 			ddlListName = "DDL List Name",
@@ -801,10 +787,10 @@ definition {
 		SearchPortlets.searchEmbedded(searchTerm = "123");
 
 		SearchResultPortlet.viewSearchResults(
-			searchAssetTitle = "New Data Definition Name for List: DDL List Name",
+			searchAssetTitle = "Record for Dynamic Data List:",
 			searchAssetType = "Dynamic Data Lists Record");
 
-		SearchPortlets.gotoResultDetails(searchAssetTitle = "New Data Definition Name for List: DDL List Name");
+		SearchPortlets.gotoResultDetails(searchAssetTitle = "Record for Dynamic Data List: DDL List Name");
 
 		DDLRecord.viewSecondRecordSearchResult(
 			ddlListName = "DDL List Name",
@@ -814,14 +800,14 @@ definition {
 
 	@priority = "4"
 	test SearchDynamicDataListsRecordsAsUserWithNoPermissions {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Roles");
 
 		Role.add(roleTitle = "No Permissions Role");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -832,7 +818,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -841,7 +827,7 @@ definition {
 			userEmailAddress = "user@liferay.com",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -854,7 +840,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -870,7 +855,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(
@@ -883,7 +867,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.editPermissions(ddlListName = "DDL List Name");
@@ -896,7 +879,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -918,10 +900,10 @@ definition {
 		SearchPortlets.searchEmbedded(searchTerm = "Record Text");
 
 		SearchResultPortlet.viewSearchResults(
-			searchAssetTitle = "New Data Definition Name for List: DDL List Name",
+			searchAssetTitle = "Record for Dynamic Data List:",
 			searchAssetType = "Dynamic Data Lists Record");
 
-		SearchPortlets.gotoResultDetails(searchAssetTitle = "New Data Definition Name for List: DDL List Name");
+		SearchPortlets.gotoResultDetails(searchAssetTitle = "Record for Dynamic Data List: DDL List Name");
 
 		DDLRecord.viewFirstRecordSearchResult(
 			ddlListName = "DDL List Name",
@@ -934,7 +916,7 @@ definition {
 
 		SearchPortlets.searchEmbedded(searchTerm = "Record Text");
 
-		SearchPortlets.viewSearchResultWithNoPermissions(searchTerm = "Record Text");
+		SearchResultPortlet.viewNoSearchResults(searchTerm = "Record Text");
 	}
 
 	@priority = "4"
@@ -943,7 +925,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -959,7 +940,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(ddlListName = "List Name");
@@ -1008,7 +988,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Boolean Predefined Value Data Definition Name");
@@ -1082,11 +1061,13 @@ definition {
 
 	@priority = "3"
 	test ViewDateFieldPredefinedValue {
+		property portal.upstream = "quarantine";
+		property custom.properties = "default.layout.template.id=1_column";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Date Predefined Value Data Definition Name");
@@ -1100,10 +1081,10 @@ definition {
 			field = "Date",
 			fieldFieldLabel = "Date",
 			fieldName = "Date",
-			fieldPredefinedValue = "09/01/2018",
+			fieldPredefinedValue = "09/01/2019",
 			fieldPredefinedValueDay = "1",
 			fieldPredefinedValueMonth = "September",
-			fieldPredefinedValueYear = "2018");
+			fieldPredefinedValueYear = "2019");
 
 		DDLDataDefinition.save();
 
@@ -1125,13 +1106,14 @@ definition {
 			field = "Date",
 			fieldFieldLabel = "Date",
 			fieldName = "Date",
-			fieldPredefinedValue = "09/01/2018");
+			fieldPredefinedValue = "09/01/2019");
 
 		PortletEntry.publish();
 
 		DDLRecord.viewViaDDLDisplayPG(
 			ddlListName = "List Name",
-			ddlRecordFieldData = "9/1/18",
+			ddlRecordFieldData = "9/1/2019",
+			ddlRecordFieldData_1 = "9/1/19",
 			field = "Date",
 			fieldFieldLabel = "Date");
 
@@ -1145,10 +1127,10 @@ definition {
 			field = "Date",
 			fieldFieldLabel = "Date",
 			fieldName = "Date",
-			fieldPredefinedValue = "09/01/2018");
+			fieldPredefinedValue = "09/01/2019");
 
 		DDLRecord.populateFieldDate(
-			ddlRecordFieldData = "05/13/2017",
+			ddlRecordFieldData = "05/13/2019",
 			fieldFieldLabel = "Date",
 			fieldName = "Date");
 
@@ -1156,7 +1138,8 @@ definition {
 
 		DDLRecord.viewViaDDLDisplayPG(
 			ddlListName = "List Name",
-			ddlRecordFieldData = "5/13/17",
+			ddlRecordFieldData = "5/13/2019",
+			ddlRecordFieldData_1 = "5/13/19",
 			field = "Date",
 			fieldFieldLabel = "Date");
 	}
@@ -1167,7 +1150,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Decimal Predefined Value Data Definition Name");
@@ -1245,7 +1227,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(
@@ -1263,7 +1244,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLNavigator.gotoDataDefinitionPermissions(ddlDataDefinitionName = "Data Definition");
@@ -1314,7 +1294,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Integer Predefined Value Data Definition Name");
@@ -1394,7 +1373,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
@@ -1442,7 +1420,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
@@ -1458,7 +1435,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLTemplate.addDisplayTemplateCP(
@@ -1471,7 +1447,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(ddlListName = "List Name");
@@ -1484,7 +1459,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -1502,7 +1476,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -1537,7 +1510,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
@@ -1553,7 +1525,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLTemplate.addDisplayTemplateCP(
@@ -1566,7 +1537,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(ddlListName = "List Name");
@@ -1579,7 +1549,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -1597,7 +1566,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -1648,7 +1616,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(
@@ -1666,7 +1633,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLTemplate.addDisplayTemplateCP(
@@ -1680,7 +1646,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLList.addCP(
@@ -1695,7 +1660,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -1713,7 +1677,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLRecord.addCP(
@@ -1750,7 +1713,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Number Predefined Value Data Definition Name");
@@ -1862,7 +1824,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Text Box Predefined Value Data Definition Name");
@@ -1940,7 +1901,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		DDLDataDefinition.addCP(ddlDataDefinitionName = "Text Predefined Value Data Definition Name");
@@ -2011,4 +1971,5 @@ definition {
 			field = "Text",
 			fieldFieldLabel = "Text");
 	}
+
 }

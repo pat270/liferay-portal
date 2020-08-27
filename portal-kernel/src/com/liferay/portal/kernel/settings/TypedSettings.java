@@ -15,8 +15,15 @@
 package com.liferay.portal.kernel.settings;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 
@@ -45,9 +52,7 @@ public class TypedSettings {
 	}
 
 	public boolean getBooleanValue(String key, boolean defaultValue) {
-		String value = getValue(key, null);
-
-		return GetterUtil.getBoolean(value, defaultValue);
+		return GetterUtil.getBoolean(getValue(key, null), defaultValue);
 	}
 
 	public double getDoubleValue(String key) {
@@ -55,9 +60,7 @@ public class TypedSettings {
 	}
 
 	public double getDoubleValue(String key, double defaultValue) {
-		String value = getValue(key, null);
-
-		return GetterUtil.getDouble(value, defaultValue);
+		return GetterUtil.getDouble(getValue(key, null), defaultValue);
 	}
 
 	public float getFloatValue(String key) {
@@ -65,9 +68,7 @@ public class TypedSettings {
 	}
 
 	public float getFloatValue(String key, float defaultValue) {
-		String value = getValue(key, null);
-
-		return GetterUtil.getFloat(value, defaultValue);
+		return GetterUtil.getFloat(getValue(key, null), defaultValue);
 	}
 
 	public int getIntegerValue(String key) {
@@ -75,23 +76,23 @@ public class TypedSettings {
 	}
 
 	public int getIntegerValue(String key, int defaultValue) {
-		String value = getValue(key, null);
-
-		return GetterUtil.getInteger(value, defaultValue);
+		return GetterUtil.getInteger(getValue(key, null), defaultValue);
 	}
 
 	public LocalizedValuesMap getLocalizedValuesMap(String key) {
-		LocalizedValuesMap localizedValuesMap = new LocalizedValuesMap(
-			getValue(key, null));
+		String value = getValue(key, null);
 
-		for (Locale locale : _availableLocales) {
-			String localizedPreference = LocalizationUtil.getLocalizedName(
-				key, LocaleUtil.toLanguageId(locale));
-
-			localizedValuesMap.put(locale, getValue(localizedPreference, null));
+		if (JSONUtil.isValid(value)) {
+			try {
+				return _toLocalizedValuesMap(
+					JSONFactoryUtil.createJSONObject(value));
+			}
+			catch (JSONException jsonException) {
+				_log.error(jsonException, jsonException);
+			}
 		}
 
-		return localizedValuesMap;
+		return _toLocalizedValuesMap(key, value);
 	}
 
 	public long getLongValue(String key) {
@@ -99,9 +100,7 @@ public class TypedSettings {
 	}
 
 	public long getLongValue(String key, long defaultValue) {
-		String value = getValue(key, null);
-
-		return GetterUtil.getLong(value, defaultValue);
+		return GetterUtil.getLong(getValue(key, null), defaultValue);
 	}
 
 	public String getValue(String key) {
@@ -156,6 +155,40 @@ public class TypedSettings {
 
 		modifiableSettings.setValues(key, values);
 	}
+
+	private LocalizedValuesMap _toLocalizedValuesMap(JSONObject jsonObject) {
+		String defaultValue = jsonObject.getString(
+			LocaleUtil.toLanguageId(LocaleThreadLocal.getDefaultLocale()));
+
+		LocalizedValuesMap localizedValuesMap = new LocalizedValuesMap(
+			defaultValue);
+
+		for (Locale locale : _availableLocales) {
+			localizedValuesMap.put(
+				locale,
+				jsonObject.getString(LocaleUtil.toLanguageId(locale), null));
+		}
+
+		return localizedValuesMap;
+	}
+
+	private LocalizedValuesMap _toLocalizedValuesMap(
+		String key, String defaultValue) {
+
+		LocalizedValuesMap localizedValuesMap = new LocalizedValuesMap(
+			defaultValue);
+
+		for (Locale locale : _availableLocales) {
+			String localizedPreference = LocalizationUtil.getLocalizedName(
+				key, LocaleUtil.toLanguageId(locale));
+
+			localizedValuesMap.put(locale, getValue(localizedPreference, null));
+		}
+
+		return localizedValuesMap;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(TypedSettings.class);
 
 	private final Collection<Locale> _availableLocales;
 	private final Settings _settings;

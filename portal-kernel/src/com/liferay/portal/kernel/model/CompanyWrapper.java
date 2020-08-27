@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Company}.
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Company
  * @generated
  */
-@ProviderType
 public class CompanyWrapper
 	extends BaseModelWrapper<Company>
 	implements Company, ModelWrapper<Company> {
@@ -47,7 +44,6 @@ public class CompanyWrapper
 		attributes.put("companyId", getCompanyId());
 		attributes.put("accountId", getAccountId());
 		attributes.put("webId", getWebId());
-		attributes.put("key", getKey());
 		attributes.put("mx", getMx());
 		attributes.put("homeURL", getHomeURL());
 		attributes.put("logoId", getLogoId());
@@ -82,12 +78,6 @@ public class CompanyWrapper
 
 		if (webId != null) {
 			setWebId(webId);
-		}
-
-		String key = (String)attributes.get("key");
-
-		if (key != null) {
-			setKey(key);
 		}
 
 		String mx = (String)attributes.get("mx");
@@ -180,6 +170,11 @@ public class CompanyWrapper
 	}
 
 	@Override
+	public CompanyInfo getCompanyInfo() {
+		return model.getCompanyInfo();
+	}
+
+	@Override
 	public User getDefaultUser()
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -220,11 +215,6 @@ public class CompanyWrapper
 		return model.getHomeURL();
 	}
 
-	/**
-	 * Returns the key of this company.
-	 *
-	 * @return the key of this company
-	 */
 	@Override
 	public String getKey() {
 		return model.getKey();
@@ -296,6 +286,13 @@ public class CompanyWrapper
 		return model.getPortalURL(groupId);
 	}
 
+	@Override
+	public String getPortalURL(long groupId, boolean privateLayout)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPortalURL(groupId, privateLayout);
+	}
+
 	/**
 	 * Returns the primary key of this company.
 	 *
@@ -365,6 +362,10 @@ public class CompanyWrapper
 		return model.isAutoLogin();
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isSendPassword() {
 		return model.isSendPassword();
@@ -450,11 +451,6 @@ public class CompanyWrapper
 		model.setHomeURL(homeURL);
 	}
 
-	/**
-	 * Sets the key of this company.
-	 *
-	 * @param key the key of this company
-	 */
 	@Override
 	public void setKey(String key) {
 		model.setKey(key);

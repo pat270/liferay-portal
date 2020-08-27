@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,10 @@ public class SegmentsEntryPersistenceTest {
 
 		SegmentsEntry newSegmentsEntry = _persistence.create(pk);
 
+		newSegmentsEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		newSegmentsEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newSegmentsEntry.setUuid(RandomTestUtil.randomString());
 
 		newSegmentsEntry.setGroupId(RandomTestUtil.nextLong());
@@ -159,6 +163,12 @@ public class SegmentsEntryPersistenceTest {
 		SegmentsEntry existingSegmentsEntry = _persistence.findByPrimaryKey(
 			newSegmentsEntry.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingSegmentsEntry.getMvccVersion(),
+			newSegmentsEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingSegmentsEntry.getCtCollectionId(),
+			newSegmentsEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingSegmentsEntry.getUuid(), newSegmentsEntry.getUuid());
 		Assert.assertEquals(
@@ -311,6 +321,26 @@ public class SegmentsEntryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_A_S_T() throws Exception {
+		_persistence.countByG_A_S_T(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean(), "", "");
+
+		_persistence.countByG_A_S_T(
+			0L, RandomTestUtil.randomBoolean(), "null", "null");
+
+		_persistence.countByG_A_S_T(
+			0L, RandomTestUtil.randomBoolean(), (String)null, (String)null);
+	}
+
+	@Test
+	public void testCountByG_A_S_TArrayable() throws Exception {
+		_persistence.countByG_A_S_T(
+			new long[] {RandomTestUtil.nextLong(), 0L},
+			RandomTestUtil.randomBoolean(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString());
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		SegmentsEntry newSegmentsEntry = addSegmentsEntry();
 
@@ -341,11 +371,12 @@ public class SegmentsEntryPersistenceTest {
 
 	protected OrderByComparator<SegmentsEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"SegmentsEntry", "uuid", true, "segmentsEntryId", true, "groupId",
-			true, "companyId", true, "userId", true, "userName", true,
-			"createDate", true, "modifiedDate", true, "segmentsEntryKey", true,
-			"name", true, "description", true, "active", true, "source", true,
-			"type", true, "lastPublishDate", true);
+			"SegmentsEntry", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "segmentsEntryId", true, "groupId", true, "companyId",
+			true, "userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "segmentsEntryKey", true, "name", true,
+			"description", true, "active", true, "source", true, "type", true,
+			"lastPublishDate", true);
 	}
 
 	@Test
@@ -567,36 +598,82 @@ public class SegmentsEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		SegmentsEntry existingSegmentsEntry = _persistence.findByPrimaryKey(
-			newSegmentsEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newSegmentsEntry.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingSegmentsEntry.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingSegmentsEntry, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		SegmentsEntry newSegmentsEntry = addSegmentsEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			SegmentsEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"segmentsEntryId", newSegmentsEntry.getSegmentsEntryId()));
+
+		List<SegmentsEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(SegmentsEntry segmentsEntry) {
 		Assert.assertEquals(
-			Long.valueOf(existingSegmentsEntry.getGroupId()),
+			segmentsEntry.getUuid(),
+			ReflectionTestUtil.invoke(
+				segmentsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(segmentsEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSegmentsEntry, "getOriginalGroupId", new Class<?>[0]));
+				segmentsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingSegmentsEntry.getGroupId()),
+			Long.valueOf(segmentsEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSegmentsEntry, "getOriginalGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingSegmentsEntry.getSegmentsEntryKey(),
-				ReflectionTestUtil.invoke(
-					existingSegmentsEntry, "getOriginalSegmentsEntryKey",
-					new Class<?>[0])));
+				segmentsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			segmentsEntry.getSegmentsEntryKey(),
+			ReflectionTestUtil.invoke(
+				segmentsEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "segmentsEntryKey"));
 	}
 
 	protected SegmentsEntry addSegmentsEntry() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		SegmentsEntry segmentsEntry = _persistence.create(pk);
+
+		segmentsEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		segmentsEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		segmentsEntry.setUuid(RandomTestUtil.randomString());
 

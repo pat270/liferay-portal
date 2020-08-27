@@ -17,7 +17,9 @@
 <div aria-orientation="vertical" class="panel-group" id="<portlet:namespace />globalAccordion" role="tablist">
 
 	<%
-	for (Map.Entry<AssignableScopes, AssignScopesDisplayContext.Relations> scopeAliasAssignableScopesEntry : assignScopesDisplayContext.getGlobalAssignableScopesRelations().entrySet()) {
+	Map<AssignableScopes, AssignScopesDisplayContext.Relations> globalAssignableScopesRelations = assignScopesDisplayContext.getGlobalAssignableScopesRelations();
+
+	for (Map.Entry<AssignableScopes, AssignScopesDisplayContext.Relations> scopeAliasAssignableScopesEntry : globalAssignableScopesRelations.entrySet()) {
 		AssignScopesDisplayContext.Relations relations = scopeAliasAssignableScopesEntry.getValue();
 
 		Set<String> assignedScopeAliases = relations.getAssignedScopeAliases();
@@ -25,6 +27,7 @@
 		Set<String> scopeAliases = relations.getScopeAliases();
 
 		Set<String> relatedScopeAliases = new HashSet<>(scopeAliases);
+
 		relatedScopeAliases.addAll(assignedScopeAliases);
 
 		List<String> relatedScopeAliasesList = new ArrayList<>(relatedScopeAliases);
@@ -33,10 +36,11 @@
 
 		Iterator<String> iterator = relatedScopeAliasesList.iterator();
 
-		StringBundler sb = new StringBundler(scopeAliases.size() * 2 - 1);
+		StringBundler sb = new StringBundler((scopeAliases.size() * 2) - 1);
 
 		while (iterator.hasNext()) {
 			String scopeAlias = iterator.next();
+
 			if (!scopeAliases.contains(scopeAlias)) {
 				sb.append("<span class=\"removed-scope\">");
 				sb.append(LanguageUtil.get(request, scopeAlias));
@@ -58,10 +62,10 @@
 		<div class="panel panel-secondary<c:if test="<%= scopeAliases.size() == 0 %>"> removed-scope</c:if>" data-master="<%= scopeAliasesString %>" id="<portlet:namespace /><%= id %>">
 			<div class="collapse-icon panel-header panel-header-link" id="<portlet:namespace />globalAccordionHeading<%= id %>">
 				<div class="inline">
-					<aui:input checked="<%= !assignedScopeAliases.isEmpty() %>" id='<%= "scopeAlias" + id %>' label="<%= sb.toString() %>" name="scopeAliases" onChange='<%= renderResponse.getNamespace() + "recalculateDependants(this)" %>' type="checkbox" value="<%= scopeAliasesString %>" />
+					<aui:input checked="<%= !assignedScopeAliases.isEmpty() %>" id='<%= "scopeAlias" + id %>' label="<%= sb.toString() %>" name="scopeAliases" onChange='<%= liferayPortletResponse.getNamespace() + "recalculateDependants(this)" %>' type="checkbox" value="<%= scopeAliasesString %>" />
 				</div>
 
-				<a aria-controls="<portlet:namespace />globalAccordion<%= id %>" aria-expanded="false" class="collapsed" data-parent="#<portlet:namespace />globalAccordion" data-toggle="collapse" href="#<portlet:namespace />globalAccordion<%= id %>" role="tab">
+				<a aria-controls="<portlet:namespace />globalAccordion<%= id %>" aria-expanded="false" class="collapsed" data-toggle="liferay-collapse" href="#<portlet:namespace />globalAccordion<%= id %>" role="tab">
 					<span>(<liferay-ui:message key="details" />)</span>
 
 					<span class="collapse-icon-closed">
@@ -91,7 +95,10 @@
 					if (assignedAssignableScopes != null) {
 						newAssignableScopes = assignableScopes.subtract(assignedAssignableScopes);
 						removedAssignableScopes = assignedAssignableScopes.subtract(assignableScopes);
-						unchangedAssignableScopes = assignableScopes.subtract(newAssignableScopes).subtract(removedAssignableScopes);
+
+						AssignableScopes subtractAssignableScopes = assignableScopes.subtract(newAssignableScopes);
+
+						unchangedAssignableScopes = subtractAssignableScopes.subtract(removedAssignableScopes);
 						assignableScopes = assignableScopes.add(assignedAssignableScopes);
 					}
 
@@ -134,7 +141,7 @@
 														<c:if test="<%= !firstLine %>">+ </c:if>
 
 														<%
-														firstLine = firstLine && applicationScopeDescription.length() == 0;
+														firstLine = firstLine && (applicationScopeDescription.length() == 0);
 														%>
 
 														<%= applicationScopeDescription %>

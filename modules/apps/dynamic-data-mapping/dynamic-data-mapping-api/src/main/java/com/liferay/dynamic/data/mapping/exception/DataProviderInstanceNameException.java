@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DataProviderInstanceNameException extends PortalException {
 
 	public DataProviderInstanceNameException() {
@@ -31,12 +28,12 @@ public class DataProviderInstanceNameException extends PortalException {
 		super(msg);
 	}
 
-	public DataProviderInstanceNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DataProviderInstanceNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DataProviderInstanceNameException(Throwable cause) {
-		super(cause);
+	public DataProviderInstanceNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

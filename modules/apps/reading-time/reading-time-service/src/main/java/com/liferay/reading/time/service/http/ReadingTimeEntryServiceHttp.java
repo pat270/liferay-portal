@@ -14,8 +14,6 @@
 
 package com.liferay.reading.time.service.http;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>com.liferay.reading.time.service.ReadingTimeEntryServiceUtil</code> service
@@ -43,6 +41,5 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ReadingTimeEntryServiceSoap
  * @generated
  */
-@ProviderType
 public class ReadingTimeEntryServiceHttp {
 }

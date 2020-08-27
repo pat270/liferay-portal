@@ -80,6 +80,16 @@ public class FileUtil {
 		}
 	}
 
+	public static boolean delete(File file) {
+		return FileUtils.deleteQuietly(file);
+	}
+
+	public static boolean delete(String filePath) throws IOException {
+		File file = new File(filePath);
+
+		return FileUtils.deleteQuietly(file);
+	}
+
 	public static boolean exists(File file) {
 		return file.exists();
 	}
@@ -104,8 +114,8 @@ public class FileUtil {
 
 			return file.getCanonicalPath();
 		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
+		catch (IOException ioException) {
+			ioException.printStackTrace();
 		}
 
 		return filePath;

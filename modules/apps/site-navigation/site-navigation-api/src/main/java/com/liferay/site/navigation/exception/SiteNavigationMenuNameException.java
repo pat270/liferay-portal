@@ -16,12 +16,9 @@ package com.liferay.site.navigation.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class SiteNavigationMenuNameException extends PortalException {
 
 	public SiteNavigationMenuNameException() {
@@ -31,12 +28,12 @@ public class SiteNavigationMenuNameException extends PortalException {
 		super(msg);
 	}
 
-	public SiteNavigationMenuNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public SiteNavigationMenuNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public SiteNavigationMenuNameException(Throwable cause) {
-		super(cause);
+	public SiteNavigationMenuNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

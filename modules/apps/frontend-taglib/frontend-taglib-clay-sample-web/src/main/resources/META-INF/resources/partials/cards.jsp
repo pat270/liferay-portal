@@ -18,16 +18,11 @@
 
 <h3>Image cards</h3>
 
-<%
-String DOC_FILE_TITLE = "deliverable.doc";
-String MP3_FILE_TITLE = "deliverable.mp3";
-String PDF_FILE_TITLE = "deliverable.pdf";
-String PNG_FILE_TITLE = "lexicon.icon.camera.png";
-String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
-%>
-
-<div class="row">
-	<div class="col-md-4" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			href="#1"
@@ -36,30 +31,39 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			subtitle="Author Action"
 			title="Madrid"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			icon="camera"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-empty-block">
+	<clay:col
+		id="image-card-empty-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>Image Card with Sticker</h4>
 
-<div class="row">
-	<div class="col-md-4" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			href="#1"
@@ -70,34 +74,43 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			subtitle="Author Action"
 			title="California"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			icon="camera"
 			stickerLabel="SVG"
 			stickerStyle="warning"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-empty-block">
+	<clay:col
+		id="image-card-empty-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			stickerLabel="PNG"
 			stickerStyle="info"
 			subtitle="Author Action"
-			title="<%= PNG_FILE_TITLE %>"
+			title="<%= _PNG_FILE_TITLE %>"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>Image Card with Sticker Shape</h4>
 
-<div class="row">
-	<div class="col-md-4" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			href="#1"
@@ -109,9 +122,12 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			subtitle="Author Action"
 			title="California"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			icon="camera"
@@ -119,11 +135,14 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerShape="circle"
 			stickerStyle="warning"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-empty-block">
+	<clay:col
+		id="image-card-empty-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			stickerImageAlt="Alt Text"
@@ -132,15 +151,18 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerShape="circle"
 			stickerStyle="info"
 			subtitle="Author Action"
-			title="<%= PNG_FILE_TITLE %>"
+			title="<%= _PNG_FILE_TITLE %>"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>Image Card with Labels</h4>
 
-<div class="row">
-	<div class="col-md-4" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			href="#1"
@@ -152,9 +174,12 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			subtitle="Author Action"
 			title="Beetle"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			icon="camera"
@@ -163,26 +188,32 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerLabel="SVG"
 			stickerStyle="warning"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-empty-block">
+	<clay:col
+		id="image-card-empty-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			labels="<%= cardsDisplayContext.getLabelItems() %>"
 			stickerLabel="PNG"
 			stickerStyle="info"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>Selectable Image Card</h4>
 
-<div class="row">
-	<div class="col-md-4" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			href="#1"
@@ -196,9 +227,12 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			subtitle="Author Action"
 			title="Beetle"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			icon="camera"
@@ -208,11 +242,14 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerLabel="SVG"
 			stickerStyle="warning"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-empty-block">
+	<clay:col
+		id="image-card-empty-block"
+		md="4"
+	>
 		<clay:image-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			labels="<%= cardsDisplayContext.getLabelItems() %>"
@@ -221,26 +258,32 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerLabel="PNG"
 			stickerStyle="info"
 			subtitle="Author Action"
-			title="<%= SVG_FILE_TITLE %>"
+			title="<%= _SVG_FILE_TITLE %>"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>File Cards</h4>
 
-<div class="row">
-	<div class="col-md-4" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="4"
+	>
 		<clay:file-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			labels="<%= cardsDisplayContext.getLabelItems() %>"
 			stickerLabel="PDF"
 			stickerStyle="danger"
 			subtitle="Stevie Ray Vaughn"
-			title="<%= PDF_FILE_TITLE %>"
+			title="<%= _PDF_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="4"
+	>
 		<clay:file-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			labels="<%= cardsDisplayContext.getLabelItems() %>"
@@ -250,11 +293,14 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerLabel="MP3"
 			stickerStyle="warning"
 			subtitle="Jimi Hendrix"
-			title="<%= MP3_FILE_TITLE %>"
+			title="<%= _MP3_FILE_TITLE %>"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-4" id="image-card-empty-block">
+	<clay:col
+		id="image-card-empty-block"
+		md="4"
+	>
 		<clay:file-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			icon="list"
@@ -264,25 +310,30 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			stickerLabel="DOC"
 			stickerStyle="info"
 			subtitle="Paco de Lucia"
-			title="<%= DOC_FILE_TITLE %>"
+			title="<%= _DOC_FILE_TITLE %>"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>User Cards</h4>
 
-<div class="row">
-	<div class="col-md-6" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="6"
+	>
 		<clay:user-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
-			initials="HS"
 			name="User Name"
 			subtitle="Latest Action"
-			userColor="danger"
+			userColorClass="danger"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-6" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="6"
+	>
 		<clay:user-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			disabled="<%= true %>"
@@ -293,24 +344,42 @@ String SVG_FILE_TITLE = "lexicon.icon.camera.svg";
 			selected="<%= true %>"
 			subtitle="Latest Action"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
 
 <h4>Horizontal Cards</h4>
 
-<div class="row">
-	<div class="col-md-6" id="image-card-block">
+<clay:row>
+	<clay:col
+		id="image-card-block"
+		md="6"
+	>
 		<clay:horizontal-card
 			title="ReallySuperInsanelyJustIncrediblyLongAndTotallyNotPossibleWordButWeAreReallyTryingToCoverAllOurBasesHereJustInCaseSomeoneIsNutsAsPerUsual"
 		/>
-	</div>
+	</clay:col>
 
-	<div class="col-md-6" id="image-card-icon-block">
+	<clay:col
+		id="image-card-icon-block"
+		md="6"
+	>
 		<clay:horizontal-card
 			actionDropdownItems="<%= cardsDisplayContext.getActionDropdownItems() %>"
 			selectable="<%= true %>"
 			selected="<%= true %>"
 			title="ReallySuperInsanelyJustIncrediblyLongAndTotallyNotPossibleWordButWeAreReallyTryingToCoverAllOurBasesHereJustInCaseSomeoneIsNutsAsPerUsual"
 		/>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
+
+<%!
+private static final String _DOC_FILE_TITLE = "deliverable.doc";
+
+private static final String _MP3_FILE_TITLE = "deliverable.mp3";
+
+private static final String _PDF_FILE_TITLE = "deliverable.pdf";
+
+private static final String _PNG_FILE_TITLE = "lexicon.icon.camera.png";
+
+private static final String _SVG_FILE_TITLE = "lexicon.icon.camera.svg";
+%>

@@ -17,7 +17,6 @@ package com.liferay.source.formatter.checkstyle.checks;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
 import com.liferay.source.formatter.parser.JavaTerm;
@@ -56,14 +55,13 @@ public class PersistenceCallCheck extends BaseCheck {
 			return;
 		}
 
-		FileContents fileContents = getFileContents();
+		String absolutePath = getAbsolutePath();
 
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), '\\', '/');
-
-		if (!fileName.contains("/modules/")) {
+		if (!absolutePath.contains("/modules/")) {
 			return;
 		}
+
+		FileContents fileContents = getFileContents();
 
 		FileText fileText = fileContents.getText();
 
@@ -72,20 +70,19 @@ public class PersistenceCallCheck extends BaseCheck {
 		JavaClass javaClass = null;
 
 		try {
-			javaClass = JavaClassParser.parseJavaClass(fileName, content);
+			javaClass = JavaClassParser.parseJavaClass(absolutePath, content);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return;
 		}
 
 		Map<String, String> variablesMap = _getVariablesMap(javaClass);
 
 		variablesMap.putAll(
-			_getVariablesMap(_getExtendedJavaClass(fileName, content)));
+			_getVariablesMap(_getExtendedJavaClass(absolutePath, content)));
 
-		List<DetailAST> methodCallDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				detailAST, true, TokenTypes.METHOD_CALL);
+		List<DetailAST> methodCallDetailASTList = getAllChildTokens(
+			detailAST, true, TokenTypes.METHOD_CALL);
 
 		for (DetailAST methodCallDetailAST : methodCallDetailASTList) {
 			_checkMethodCall(
@@ -178,7 +175,9 @@ public class PersistenceCallCheck extends BaseCheck {
 		}
 	}
 
-	private JavaClass _getExtendedJavaClass(String fileName, String content) {
+	private JavaClass _getExtendedJavaClass(
+		String absolutePath, String content) {
+
 		Matcher matcher = _extendedClassPattern.matcher(content);
 
 		if (!matcher.find()) {
@@ -206,10 +205,10 @@ public class PersistenceCallCheck extends BaseCheck {
 					extendedClassName;
 		}
 
-		int pos = fileName.lastIndexOf("/com/liferay/");
+		int pos = absolutePath.lastIndexOf("/com/liferay/");
 
 		String extendedClassFileName =
-			fileName.substring(0, pos + 1) +
+			absolutePath.substring(0, pos + 1) +
 				StringUtil.replace(extendedClassName, '.', '/') + ".java";
 
 		try {
@@ -217,7 +216,7 @@ public class PersistenceCallCheck extends BaseCheck {
 				extendedClassFileName,
 				FileUtil.read(new File(extendedClassFileName)));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}

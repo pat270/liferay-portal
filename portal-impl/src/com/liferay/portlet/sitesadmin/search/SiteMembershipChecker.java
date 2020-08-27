@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 
@@ -38,42 +37,39 @@ public class SiteMembershipChecker extends RowChecker {
 	}
 
 	@Override
-	public boolean isChecked(Object obj) {
+	public boolean isChecked(Object object) {
 		User user = null;
 
-		if (obj instanceof User) {
-			user = (User)obj;
+		if (object instanceof User) {
+			user = (User)object;
 		}
-		else if (obj instanceof Object[]) {
-			user = (User)((Object[])obj)[0];
+		else if (object instanceof Object[]) {
+			user = (User)((Object[])object)[0];
 		}
 		else {
-			throw new IllegalArgumentException(obj + " is not a user");
+			throw new IllegalArgumentException(object + " is not a user");
 		}
 
 		try {
 			return UserLocalServiceUtil.hasGroupUser(
 				_group.getGroupId(), user.getUserId());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return false;
 		}
 	}
 
 	@Override
-	public boolean isDisabled(Object obj) {
-		User user = (User)obj;
+	public boolean isDisabled(Object object) {
+		User user = (User)object;
 
 		try {
 			if (isChecked(user)) {
-				PermissionChecker permissionChecker =
-					PermissionThreadLocal.getPermissionChecker();
-
 				if (SiteMembershipPolicyUtil.isMembershipProtected(
-						permissionChecker, user.getUserId(),
-						_group.getGroupId()) ||
+						PermissionThreadLocal.getPermissionChecker(),
+						user.getUserId(), _group.getGroupId()) ||
 					SiteMembershipPolicyUtil.isMembershipRequired(
 						user.getUserId(), _group.getGroupId())) {
 
@@ -88,11 +84,11 @@ public class SiteMembershipChecker extends RowChecker {
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
-		return super.isDisabled(obj);
+		return super.isDisabled(object);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

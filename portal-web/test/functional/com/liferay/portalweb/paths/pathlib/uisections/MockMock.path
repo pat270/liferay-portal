@@ -49,6 +49,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MOCKMOCK_DELETE_FIELD</td>
+	<td>//tr[contains(.,'${key_columnEntry}')]/td[4][contains(.,'Delete')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MOCKMOCK_MESSAGE_BODY</td>
 	<td>//div[@class='well' and contains(.,'${key_asset}')]</td>
 	<td></td>

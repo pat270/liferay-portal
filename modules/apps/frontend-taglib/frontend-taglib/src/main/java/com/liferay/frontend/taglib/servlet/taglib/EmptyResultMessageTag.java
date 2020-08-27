@@ -39,6 +39,10 @@ public class EmptyResultMessageTag extends IncludeTag {
 		return _animationType;
 	}
 
+	public String getButtonCssClass() {
+		return _buttonCssClass;
+	}
+
 	public String getComponentId() {
 		return _componentId;
 	}
@@ -55,6 +59,10 @@ public class EmptyResultMessageTag extends IncludeTag {
 		return _elementType;
 	}
 
+	public String getTitle() {
+		return _title;
+	}
+
 	public void setActionDropdownItems(List<DropdownItem> actionDropdownItems) {
 		_actionDropdownItems = actionDropdownItems;
 	}
@@ -63,6 +71,10 @@ public class EmptyResultMessageTag extends IncludeTag {
 		EmptyResultMessageKeys.AnimationType animationType) {
 
 		_animationType = animationType;
+	}
+
+	public void setButtonCssClass(String buttonCssClass) {
+		_buttonCssClass = buttonCssClass;
 	}
 
 	public void setComponentId(String componentId) {
@@ -88,16 +100,22 @@ public class EmptyResultMessageTag extends IncludeTag {
 		servletContext = ServletContextUtil.getServletContext();
 	}
 
+	public void setTitle(String title) {
+		_title = title;
+	}
+
 	@Override
 	protected void cleanUp() {
 		super.cleanUp();
 
 		_actionDropdownItems = null;
 		_animationType = EmptyResultMessageKeys.AnimationType.EMPTY;
+		_buttonCssClass = "primary";
 		_componentId = null;
 		_defaultEventHandler = null;
 		_description = null;
 		_elementType = null;
+		_title = null;
 	}
 
 	@Override
@@ -114,6 +132,9 @@ public class EmptyResultMessageTag extends IncludeTag {
 			"liferay-frontend:empty-result-message:animationTypeCssClass",
 			EmptyResultMessageKeys.getAnimationTypeCssClass(_animationType));
 		httpServletRequest.setAttribute(
+			"liferay-frontend:empty-result-message:buttonCssClass",
+			_buttonCssClass);
+		httpServletRequest.setAttribute(
 			"liferay-frontend:empty-result-message:componentId", _componentId);
 		httpServletRequest.setAttribute(
 			"liferay-frontend:empty-result-message:defaultEventHandler",
@@ -127,6 +148,9 @@ public class EmptyResultMessageTag extends IncludeTag {
 
 		httpServletRequest.setAttribute(
 			"liferay-frontend:empty-result-message:elementType", _elementType);
+
+		httpServletRequest.setAttribute(
+			"liferay-frontend:empty-result-message:title", _title);
 	}
 
 	private static final String _PAGE = "/empty_result_message/page.jsp";
@@ -134,9 +158,11 @@ public class EmptyResultMessageTag extends IncludeTag {
 	private List<DropdownItem> _actionDropdownItems;
 	private EmptyResultMessageKeys.AnimationType _animationType =
 		EmptyResultMessageKeys.AnimationType.EMPTY;
+	private String _buttonCssClass = "primary";
 	private String _componentId;
 	private String _defaultEventHandler;
 	private String _description;
 	private String _elementType;
+	private String _title;
 
 }

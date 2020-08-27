@@ -17,7 +17,9 @@ package com.liferay.dynamic.data.mapping.service.base;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalService;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMFormInstanceRecordVersionPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -35,11 +37,13 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -47,7 +51,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the ddm form instance record version local service.
@@ -60,10 +64,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.dynamic.data.mapping.service.impl.DDMFormInstanceRecordVersionLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements DDMFormInstanceRecordVersionLocalService,
+	implements AopService, DDMFormInstanceRecordVersionLocalService,
 			   IdentifiableOSGiService {
 
 	/*
@@ -74,6 +77,10 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 
 	/**
 	 * Adds the ddm form instance record version to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMFormInstanceRecordVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddmFormInstanceRecordVersion the ddm form instance record version
 	 * @return the ddm form instance record version that was added
@@ -107,6 +114,10 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	/**
 	 * Deletes the ddm form instance record version with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMFormInstanceRecordVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param formInstanceRecordVersionId the primary key of the ddm form instance record version
 	 * @return the ddm form instance record version that was removed
 	 * @throws PortalException if a ddm form instance record version with the primary key could not be found
@@ -124,6 +135,10 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	/**
 	 * Deletes the ddm form instance record version from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMFormInstanceRecordVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmFormInstanceRecordVersion the ddm form instance record version
 	 * @return the ddm form instance record version that was removed
 	 */
@@ -134,6 +149,11 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 
 		return ddmFormInstanceRecordVersionPersistence.remove(
 			ddmFormInstanceRecordVersion);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return ddmFormInstanceRecordVersionPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -160,7 +180,7 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -180,7 +200,7 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -301,6 +321,16 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return ddmFormInstanceRecordVersionPersistence.create(
+			((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -310,6 +340,13 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 				(DDMFormInstanceRecordVersion)persistedModel);
 	}
 
+	public BasePersistence<DDMFormInstanceRecordVersion> getBasePersistence() {
+		return ddmFormInstanceRecordVersionPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -322,7 +359,7 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	 * Returns a range of all the ddm form instance record versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm form instance record versions
@@ -349,6 +386,10 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 	/**
 	 * Updates the ddm form instance record version in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMFormInstanceRecordVersionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmFormInstanceRecordVersion the ddm form instance record version
 	 * @return the ddm form instance record version that was updated
 	 */
@@ -361,86 +402,19 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 			ddmFormInstanceRecordVersion);
 	}
 
-	/**
-	 * Returns the ddm form instance record version local service.
-	 *
-	 * @return the ddm form instance record version local service
-	 */
-	public DDMFormInstanceRecordVersionLocalService
-		getDDMFormInstanceRecordVersionLocalService() {
-
-		return ddmFormInstanceRecordVersionLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			DDMFormInstanceRecordVersionLocalService.class,
+			IdentifiableOSGiService.class, CTService.class,
+			PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Sets the ddm form instance record version local service.
-	 *
-	 * @param ddmFormInstanceRecordVersionLocalService the ddm form instance record version local service
-	 */
-	public void setDDMFormInstanceRecordVersionLocalService(
-		DDMFormInstanceRecordVersionLocalService
-			ddmFormInstanceRecordVersionLocalService) {
-
-		this.ddmFormInstanceRecordVersionLocalService =
-			ddmFormInstanceRecordVersionLocalService;
-	}
-
-	/**
-	 * Returns the ddm form instance record version persistence.
-	 *
-	 * @return the ddm form instance record version persistence
-	 */
-	public DDMFormInstanceRecordVersionPersistence
-		getDDMFormInstanceRecordVersionPersistence() {
-
-		return ddmFormInstanceRecordVersionPersistence;
-	}
-
-	/**
-	 * Sets the ddm form instance record version persistence.
-	 *
-	 * @param ddmFormInstanceRecordVersionPersistence the ddm form instance record version persistence
-	 */
-	public void setDDMFormInstanceRecordVersionPersistence(
-		DDMFormInstanceRecordVersionPersistence
-			ddmFormInstanceRecordVersionPersistence) {
-
-		this.ddmFormInstanceRecordVersionPersistence =
-			ddmFormInstanceRecordVersionPersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion",
-			ddmFormInstanceRecordVersionLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion");
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		ddmFormInstanceRecordVersionLocalService =
+			(DDMFormInstanceRecordVersionLocalService)aopProxy;
 	}
 
 	/**
@@ -453,8 +427,24 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 		return DDMFormInstanceRecordVersionLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<DDMFormInstanceRecordVersion> getCTPersistence() {
+		return ddmFormInstanceRecordVersionPersistence;
+	}
+
+	@Override
+	public Class<DDMFormInstanceRecordVersion> getModelClass() {
 		return DDMFormInstanceRecordVersion.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DDMFormInstanceRecordVersion>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(
+			ddmFormInstanceRecordVersionPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -481,27 +471,20 @@ public abstract class DDMFormInstanceRecordVersionLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
-	@BeanReference(type = DDMFormInstanceRecordVersionLocalService.class)
 	protected DDMFormInstanceRecordVersionLocalService
 		ddmFormInstanceRecordVersionLocalService;
 
-	@BeanReference(type = DDMFormInstanceRecordVersionPersistence.class)
+	@Reference
 	protected DDMFormInstanceRecordVersionPersistence
 		ddmFormInstanceRecordVersionPersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

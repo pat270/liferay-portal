@@ -82,7 +82,7 @@ public interface DefaultDDMFormFieldTypeSettings
 			"autoFocus=true", "placeholder=%enter-a-field-label",
 			"tooltip=%enter-a-descriptive-field-label-that-guides-users-to-enter-the-information-you-want"
 		},
-		type = "key_value"
+		type = "text"
 	)
 	public LocalizedValue label();
 
@@ -91,6 +91,11 @@ public interface DefaultDDMFormFieldTypeSettings
 		visibilityExpression = "FALSE"
 	)
 	public boolean localizable();
+
+	@DDMFormField(visibilityExpression = "FALSE")
+	public default boolean nativeField() {
+		return false;
+	}
 
 	@DDMFormField(
 		label = "%predefined-value",
@@ -119,10 +124,7 @@ public interface DefaultDDMFormFieldTypeSettings
 
 	@DDMFormField(
 		label = "%help-text",
-		properties = {
-			"placeholder=%enter-help-text",
-			"tooltip=%add-a-comment-to-help-users-understand-the-field-label"
-		},
+		properties = "tooltip=%add-a-comment-to-help-users-understand-the-field-label",
 		type = "text"
 	)
 	public LocalizedValue tip();
@@ -132,9 +134,6 @@ public interface DefaultDDMFormFieldTypeSettings
 	)
 	public DDMFormFieldValidation validation();
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
 	@DDMFormField(
 		label = "%field-visibility-expression",
 		properties = {
@@ -143,7 +142,6 @@ public interface DefaultDDMFormFieldTypeSettings
 		},
 		visibilityExpression = "FALSE"
 	)
-	@Deprecated
 	public String visibilityExpression();
 
 }

@@ -15,20 +15,19 @@
 package com.liferay.portal.kernel.security.auth;
 
 import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.lang.SafeClosable;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
-import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.TimeZoneThreadLocal;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class CompanyThreadLocal {
 
 	public static Long getCompanyId() {
@@ -58,13 +57,15 @@ public class CompanyThreadLocal {
 			_companyId.set(companyId);
 
 			try {
-				Company company = CompanyLocalServiceUtil.getCompany(companyId);
+				User defaultUser = UserLocalServiceUtil.getDefaultUser(
+					companyId);
 
-				LocaleThreadLocal.setDefaultLocale(company.getLocale());
-				TimeZoneThreadLocal.setDefaultTimeZone(company.getTimeZone());
+				LocaleThreadLocal.setDefaultLocale(defaultUser.getLocale());
+				TimeZoneThreadLocal.setDefaultTimeZone(
+					defaultUser.getTimeZone());
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 		else {
@@ -73,16 +74,26 @@ public class CompanyThreadLocal {
 			LocaleThreadLocal.setDefaultLocale(null);
 			TimeZoneThreadLocal.setDefaultTimeZone(null);
 		}
+
+		CTCollectionThreadLocal.removeCTCollectionId();
 	}
 
 	public static void setDeleteInProcess(boolean deleteInProcess) {
 		_deleteInProcess.set(deleteInProcess);
 	}
 
+	public static SafeClosable setInitializingCompanyId(long companyId) {
+		if (companyId > 0) {
+			return _companyId.setWithSafeClosable(companyId);
+		}
+
+		return _companyId.setWithSafeClosable(CompanyConstants.SYSTEM);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		CompanyThreadLocal.class);
 
-	private static final ThreadLocal<Long> _companyId =
+	private static final CentralizedThreadLocal<Long> _companyId =
 		new CentralizedThreadLocal<>(
 			CompanyThreadLocal.class + "._companyId",
 			() -> CompanyConstants.SYSTEM);

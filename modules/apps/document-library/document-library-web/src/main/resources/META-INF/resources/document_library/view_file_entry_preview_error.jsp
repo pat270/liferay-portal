@@ -31,17 +31,17 @@ FileVersion fileVersion = (FileVersion)request.getAttribute(WebKeys.DOCUMENT_LIB
 			</p>
 
 			<clay:link
-				buttonStyle="secondary"
+				displayType="secondary"
 				href="<%= DLURLHelperUtil.getDownloadURL(fileVersion.getFileEntry(), fileVersion, themeDisplay, StringPool.BLANK) %>"
-				label='<%= LanguageUtil.get(resourceBundle, "download") %>'
-				title='<%= LanguageUtil.format(resourceBundle, "file-size-x", TextFormatter.formatStorageSize(fileVersion.getSize(), locale), false) %>'
+				label="download"
+				title='<%= LanguageUtil.format(resourceBundle, "file-size-x", LanguageUtil.formatStorageSize(fileVersion.getSize(), locale), false) %>'
+				type="button"
 			/>
 		</div>
 	</c:when>
 	<c:when test="<%= exception instanceof DLPreviewGenerationInProcessException %>">
 		<clay:alert
-			message='<%= LanguageUtil.get(resourceBundle, "generating-preview-will-take-a-few-minutes") %>'
-			title='<%= LanguageUtil.get(request, "info") + ":" %>'
+			message="generating-preview-will-take-a-few-minutes"
 		/>
 	</c:when>
 	<c:otherwise>

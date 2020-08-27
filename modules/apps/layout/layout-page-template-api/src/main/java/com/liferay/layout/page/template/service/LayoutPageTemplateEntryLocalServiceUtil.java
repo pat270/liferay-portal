@@ -14,7 +14,6 @@
 
 package com.liferay.layout.page.template.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see LayoutPageTemplateEntryLocalService
  * @generated
  */
-@ProviderType
 public class LayoutPageTemplateEntryLocalServiceUtil {
 
 	/*
@@ -49,6 +47,10 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 
 	/**
 	 * Adds the layout page template entry to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutPageTemplateEntry the layout page template entry
 	 * @return the layout page template entry that was added
@@ -69,21 +71,13 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 		return getService().addLayoutPageTemplateEntry(layoutPrototype);
 	}
 
-	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
-			addLayoutPageTemplateEntry(
-				long userId, long groupId, long layoutPageTemplateCollectionId,
-				long classNameId, long classTypeId, String name, int type,
-				boolean defaultTemplate, long layoutPrototypeId,
-				long previewFileEntryId, int status,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().addLayoutPageTemplateEntry(
-			userId, groupId, layoutPageTemplateCollectionId, classNameId,
-			classTypeId, name, type, defaultTemplate, layoutPrototypeId,
-			previewFileEntryId, status, serviceContext);
-	}
-
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addLayoutPageTemplateEntry(long, long, long, long, long,
+	 String, int, long, boolean, long, long, long, int,
+	 ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
 			addLayoutPageTemplateEntry(
 				long userId, long groupId, long layoutPageTemplateCollectionId,
@@ -99,6 +93,60 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 			previewFileEntryId, plid, status, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addLayoutPageTemplateEntry(long, long, long, long, long,
+	 String, int, long, int, ServiceContext)}
+	 */
+	@Deprecated
+	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
+			addLayoutPageTemplateEntry(
+				long userId, long groupId, long layoutPageTemplateCollectionId,
+				long classNameId, long classTypeId, String name, int type,
+				int status,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addLayoutPageTemplateEntry(
+			userId, groupId, layoutPageTemplateCollectionId, classNameId,
+			classTypeId, name, type, status, serviceContext);
+	}
+
+	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
+			addLayoutPageTemplateEntry(
+				long userId, long groupId, long layoutPageTemplateCollectionId,
+				long classNameId, long classTypeId, String name, int type,
+				long previewFileEntryId, boolean defaultTemplate,
+				long layoutPrototypeId, long plid, long masterLayoutPlid,
+				int status,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addLayoutPageTemplateEntry(
+			userId, groupId, layoutPageTemplateCollectionId, classNameId,
+			classTypeId, name, type, previewFileEntryId, defaultTemplate,
+			layoutPrototypeId, plid, masterLayoutPlid, status, serviceContext);
+	}
+
+	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
+			addLayoutPageTemplateEntry(
+				long userId, long groupId, long layoutPageTemplateCollectionId,
+				long classNameId, long classTypeId, String name, int type,
+				long masterLayoutPlid, int status,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addLayoutPageTemplateEntry(
+			userId, groupId, layoutPageTemplateCollectionId, classNameId,
+			classTypeId, name, type, masterLayoutPlid, status, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addLayoutPageTemplateEntry(long, long, long, String, int,
+	 long, int, ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
 			addLayoutPageTemplateEntry(
 				long userId, long groupId, long layoutPageTemplateCollectionId,
@@ -114,50 +162,25 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
 			addLayoutPageTemplateEntry(
 				long userId, long groupId, long layoutPageTemplateCollectionId,
-				String name, int type, long layoutPrototypeId, int status,
+				String name, int type, long masterLayoutPlid, int status,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().addLayoutPageTemplateEntry(
 			userId, groupId, layoutPageTemplateCollectionId, name, type,
-			layoutPrototypeId, status, serviceContext);
+			masterLayoutPlid, status, serviceContext);
 	}
 
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
-			addLayoutPageTemplateEntry(
+			copyLayoutPageTemplateEntry(
 				long userId, long groupId, long layoutPageTemplateCollectionId,
-				String name, int type, long layoutPrototypeId,
-				long previewFileEntryId, int status,
+				long layoutPageTemplateEntryId,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return getService().addLayoutPageTemplateEntry(
-			userId, groupId, layoutPageTemplateCollectionId, name, type,
-			layoutPrototypeId, previewFileEntryId, status, serviceContext);
-	}
-
-	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
-			addLayoutPageTemplateEntry(
-				long userId, long groupId, long layoutPageTemplateCollectionId,
-				String name, int type,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().addLayoutPageTemplateEntry(
-			userId, groupId, layoutPageTemplateCollectionId, name, type,
-			serviceContext);
-	}
-
-	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
-			addLayoutPageTemplateEntry(
-				long userId, long groupId, long layoutPageTemplateCollectionId,
-				String name,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().addLayoutPageTemplateEntry(
-			userId, groupId, layoutPageTemplateCollectionId, name,
-			serviceContext);
+		return getService().copyLayoutPageTemplateEntry(
+			userId, groupId, layoutPageTemplateCollectionId,
+			layoutPageTemplateEntryId, serviceContext);
 	}
 
 	/**
@@ -174,7 +197,21 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the layout page template entry from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutPageTemplateEntry the layout page template entry
 	 * @return the layout page template entry that was removed
@@ -192,6 +229,10 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 
 	/**
 	 * Deletes the layout page template entry with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutPageTemplateEntryId the primary key of the layout page template entry
 	 * @return the layout page template entry that was removed
@@ -216,6 +257,12 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 		return getService().deletePersistedModel(persistedModel);
 	}
 
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
 		dynamicQuery() {
 
@@ -238,7 +285,7 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -257,7 +304,7 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -324,9 +371,17 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	}
 
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
-		fetchLayoutPageTemplateEntry(long groupId, String name) {
+		fetchLayoutPageTemplateEntry(
+			long groupId, String layoutPageTemplateEntryKey) {
 
-		return getService().fetchLayoutPageTemplateEntry(groupId, name);
+		return getService().fetchLayoutPageTemplateEntry(
+			groupId, layoutPageTemplateEntryKey);
+	}
+
+	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
+		fetchLayoutPageTemplateEntry(long groupId, String name, int type) {
+
+		return getService().fetchLayoutPageTemplateEntry(groupId, name, type);
 	}
 
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
@@ -375,7 +430,7 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 	 * Returns a range of all the layout page template entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout page template entries
@@ -387,6 +442,13 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 			getLayoutPageTemplateEntries(int start, int end) {
 
 		return getService().getLayoutPageTemplateEntries(start, end);
+	}
+
+	public static java.util.List
+		<com.liferay.layout.page.template.model.LayoutPageTemplateEntry>
+			getLayoutPageTemplateEntries(long groupId) {
+
+		return getService().getLayoutPageTemplateEntries(groupId);
 	}
 
 	public static java.util.List
@@ -483,6 +545,15 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 			orderByComparator);
 	}
 
+	public static java.util.List
+		<com.liferay.layout.page.template.model.LayoutPageTemplateEntry>
+			getLayoutPageTemplateEntriesByLayoutPrototypeId(
+				long layoutPrototypeId) {
+
+		return getService().getLayoutPageTemplateEntriesByLayoutPrototypeId(
+			layoutPrototypeId);
+	}
+
 	/**
 	 * Returns all the layout page template entries matching the UUID and company.
 	 *
@@ -571,6 +642,9 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -580,6 +654,10 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 
 	/**
 	 * Updates the layout page template entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutPageTemplateEntry the layout page template entry
 	 * @return the layout page template entry that was updated
@@ -608,16 +686,6 @@ public class LayoutPageTemplateEntryLocalServiceUtil {
 
 		return getService().updateLayoutPageTemplateEntry(
 			layoutPageTemplateEntryId, previewFileEntryId);
-	}
-
-	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry
-			updateLayoutPageTemplateEntry(
-				long layoutPageTemplateEntryId, long classNameId,
-				long classTypeId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateLayoutPageTemplateEntry(
-			layoutPageTemplateEntryId, classNameId, classTypeId);
 	}
 
 	public static com.liferay.layout.page.template.model.LayoutPageTemplateEntry

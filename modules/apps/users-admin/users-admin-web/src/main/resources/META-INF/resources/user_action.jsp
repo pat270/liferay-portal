@@ -40,9 +40,9 @@ long userId = user2.getUserId();
 
 	<c:if test="<%= hasUpdatePermission %>">
 		<portlet:renderURL var="editUserURL">
+			<portlet:param name="p_u_i_d" value="<%= String.valueOf(userId) %>" />
 			<portlet:param name="mvcRenderCommandName" value="/users_admin/edit_user" />
 			<portlet:param name="backURL" value="<%= currentURL %>" />
-			<portlet:param name="p_u_i_d" value="<%= String.valueOf(userId) %>" />
 		</portlet:renderURL>
 
 		<liferay-ui:icon

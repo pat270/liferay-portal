@@ -114,9 +114,9 @@ public class UserAssetRenderer extends BaseJSPAssetRenderer<User> {
 			getControlPanelPlid(liferayPortletRequest), portletId,
 			PortletRequest.RENDER_PHASE);
 
+		portletURL.setParameter("p_u_i_d", String.valueOf(_user.getUserId()));
 		portletURL.setParameter(
 			"mvcRenderCommandName", "/users_admin/edit_user");
-		portletURL.setParameter("p_u_i_d", String.valueOf(_user.getUserId()));
 
 		return portletURL;
 	}
@@ -139,7 +139,7 @@ public class UserAssetRenderer extends BaseJSPAssetRenderer<User> {
 		try {
 			return _user.getDisplayURL(themeDisplay);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return noSuchEntryRedirect;

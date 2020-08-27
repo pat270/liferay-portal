@@ -14,17 +14,19 @@
 
 package com.liferay.headless.delivery.client.serdes.v1_0;
 
+import com.liferay.headless.delivery.client.dto.v1_0.CustomField;
 import com.liferay.headless.delivery.client.dto.v1_0.MessageBoardSection;
 import com.liferay.headless.delivery.client.json.BaseJSONParser;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -61,6 +63,16 @@ public class MessageBoardSectionSerDes {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+		if (messageBoardSection.getActions() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(messageBoardSection.getActions()));
+		}
+
 		if (messageBoardSection.getCreator() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -69,6 +81,29 @@ public class MessageBoardSectionSerDes {
 			sb.append("\"creator\": ");
 
 			sb.append(String.valueOf(messageBoardSection.getCreator()));
+		}
+
+		if (messageBoardSection.getCustomFields() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"customFields\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < messageBoardSection.getCustomFields().length;
+				 i++) {
+
+				sb.append(
+					String.valueOf(messageBoardSection.getCustomFields()[i]));
+
+				if ((i + 1) < messageBoardSection.getCustomFields().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (messageBoardSection.getDateCreated() != null) {
@@ -147,6 +182,16 @@ public class MessageBoardSectionSerDes {
 			sb.append(messageBoardSection.getNumberOfMessageBoardThreads());
 		}
 
+		if (messageBoardSection.getParentMessageBoardSectionId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"parentMessageBoardSectionId\": ");
+
+			sb.append(messageBoardSection.getParentMessageBoardSectionId());
+		}
+
 		if (messageBoardSection.getSiteId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -155,6 +200,16 @@ public class MessageBoardSectionSerDes {
 			sb.append("\"siteId\": ");
 
 			sb.append(messageBoardSection.getSiteId());
+		}
+
+		if (messageBoardSection.getSubscribed() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"subscribed\": ");
+
+			sb.append(messageBoardSection.getSubscribed());
 		}
 
 		if (messageBoardSection.getTitle() != null) {
@@ -204,10 +259,18 @@ public class MessageBoardSectionSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		if (messageBoardSection.getActions() == null) {
+			map.put("actions", null);
+		}
+		else {
+			map.put(
+				"actions", String.valueOf(messageBoardSection.getActions()));
+		}
 
 		if (messageBoardSection.getCreator() == null) {
 			map.put("creator", null);
@@ -217,15 +280,34 @@ public class MessageBoardSectionSerDes {
 				"creator", String.valueOf(messageBoardSection.getCreator()));
 		}
 
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(
-				messageBoardSection.getDateCreated()));
+		if (messageBoardSection.getCustomFields() == null) {
+			map.put("customFields", null);
+		}
+		else {
+			map.put(
+				"customFields",
+				String.valueOf(messageBoardSection.getCustomFields()));
+		}
 
-		map.put(
-			"dateModified",
-			liferayToJSONDateFormat.format(
-				messageBoardSection.getDateModified()));
+		if (messageBoardSection.getDateCreated() == null) {
+			map.put("dateCreated", null);
+		}
+		else {
+			map.put(
+				"dateCreated",
+				liferayToJSONDateFormat.format(
+					messageBoardSection.getDateCreated()));
+		}
+
+		if (messageBoardSection.getDateModified() == null) {
+			map.put("dateModified", null);
+		}
+		else {
+			map.put(
+				"dateModified",
+				liferayToJSONDateFormat.format(
+					messageBoardSection.getDateModified()));
+		}
 
 		if (messageBoardSection.getDescription() == null) {
 			map.put("description", null);
@@ -263,11 +345,30 @@ public class MessageBoardSectionSerDes {
 					messageBoardSection.getNumberOfMessageBoardThreads()));
 		}
 
+		if (messageBoardSection.getParentMessageBoardSectionId() == null) {
+			map.put("parentMessageBoardSectionId", null);
+		}
+		else {
+			map.put(
+				"parentMessageBoardSectionId",
+				String.valueOf(
+					messageBoardSection.getParentMessageBoardSectionId()));
+		}
+
 		if (messageBoardSection.getSiteId() == null) {
 			map.put("siteId", null);
 		}
 		else {
 			map.put("siteId", String.valueOf(messageBoardSection.getSiteId()));
+		}
+
+		if (messageBoardSection.getSubscribed() == null) {
+			map.put("subscribed", null);
+		}
+		else {
+			map.put(
+				"subscribed",
+				String.valueOf(messageBoardSection.getSubscribed()));
 		}
 
 		if (messageBoardSection.getTitle() == null) {
@@ -289,42 +390,7 @@ public class MessageBoardSectionSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class MessageBoardSectionJSONParser
+	public static class MessageBoardSectionJSONParser
 		extends BaseJSONParser<MessageBoardSection> {
 
 		@Override
@@ -342,10 +408,29 @@ public class MessageBoardSectionSerDes {
 			MessageBoardSection messageBoardSection, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "creator")) {
+			if (Objects.equals(jsonParserFieldName, "actions")) {
+				if (jsonParserFieldValue != null) {
+					messageBoardSection.setActions(
+						(Map)MessageBoardSectionSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "creator")) {
 				if (jsonParserFieldValue != null) {
 					messageBoardSection.setCreator(
 						CreatorSerDes.toDTO((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "customFields")) {
+				if (jsonParserFieldValue != null) {
+					messageBoardSection.setCustomFields(
+						Stream.of(
+							toStrings((Object[])jsonParserFieldValue)
+						).map(
+							object -> CustomFieldSerDes.toDTO((String)object)
+						).toArray(
+							size -> new CustomField[size]
+						));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "dateCreated")) {
@@ -388,10 +473,24 @@ public class MessageBoardSectionSerDes {
 						Integer.valueOf((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName, "parentMessageBoardSectionId")) {
+
+				if (jsonParserFieldValue != null) {
+					messageBoardSection.setParentMessageBoardSectionId(
+						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "siteId")) {
 				if (jsonParserFieldValue != null) {
 					messageBoardSection.setSiteId(
 						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "subscribed")) {
+				if (jsonParserFieldValue != null) {
+					messageBoardSection.setSubscribed(
+						(Boolean)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "title")) {
@@ -412,6 +511,75 @@ public class MessageBoardSectionSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

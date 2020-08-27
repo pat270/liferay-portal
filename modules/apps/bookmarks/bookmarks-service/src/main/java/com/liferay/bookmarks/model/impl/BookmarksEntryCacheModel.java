@@ -18,6 +18,7 @@ import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing BookmarksEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class BookmarksEntryCacheModel
-	implements CacheModel<BookmarksEntry>, Externalizable {
+	implements CacheModel<BookmarksEntry>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof BookmarksEntryCacheModel)) {
+		if (!(object instanceof BookmarksEntryCacheModel)) {
 			return false;
 		}
 
 		BookmarksEntryCacheModel bookmarksEntryCacheModel =
-			(BookmarksEntryCacheModel)obj;
+			(BookmarksEntryCacheModel)object;
 
-		if (entryId == bookmarksEntryCacheModel.entryId) {
+		if ((entryId == bookmarksEntryCacheModel.entryId) &&
+			(mvccVersion == bookmarksEntryCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,28 @@ public class BookmarksEntryCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, entryId);
+		int hashCode = HashUtil.hash(0, entryId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
 		StringBundler sb = new StringBundler(41);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", entryId=");
 		sb.append(entryId);
@@ -93,8 +107,6 @@ public class BookmarksEntryCacheModel
 		sb.append(url);
 		sb.append(", description=");
 		sb.append(description);
-		sb.append(", visits=");
-		sb.append(visits);
 		sb.append(", priority=");
 		sb.append(priority);
 		sb.append(", lastPublishDate=");
@@ -115,6 +127,8 @@ public class BookmarksEntryCacheModel
 	@Override
 	public BookmarksEntry toEntityModel() {
 		BookmarksEntryImpl bookmarksEntryImpl = new BookmarksEntryImpl();
+
+		bookmarksEntryImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			bookmarksEntryImpl.setUuid("");
@@ -179,7 +193,6 @@ public class BookmarksEntryCacheModel
 			bookmarksEntryImpl.setDescription(description);
 		}
 
-		bookmarksEntryImpl.setVisits(visits);
 		bookmarksEntryImpl.setPriority(priority);
 
 		if (lastPublishDate == Long.MIN_VALUE) {
@@ -213,6 +226,7 @@ public class BookmarksEntryCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		entryId = objectInput.readLong();
@@ -232,8 +246,6 @@ public class BookmarksEntryCacheModel
 		url = objectInput.readUTF();
 		description = objectInput.readUTF();
 
-		visits = objectInput.readInt();
-
 		priority = objectInput.readInt();
 		lastPublishDate = objectInput.readLong();
 
@@ -246,6 +258,8 @@ public class BookmarksEntryCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -301,8 +315,6 @@ public class BookmarksEntryCacheModel
 			objectOutput.writeUTF(description);
 		}
 
-		objectOutput.writeInt(visits);
-
 		objectOutput.writeInt(priority);
 		objectOutput.writeLong(lastPublishDate);
 
@@ -320,6 +332,7 @@ public class BookmarksEntryCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long entryId;
 	public long groupId;
@@ -333,7 +346,6 @@ public class BookmarksEntryCacheModel
 	public String name;
 	public String url;
 	public String description;
-	public int visits;
 	public int priority;
 	public long lastPublishDate;
 	public int status;

@@ -16,6 +16,7 @@ package com.liferay.frontend.taglib.clay.servlet.taglib.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -45,9 +46,9 @@ public class BaseManagementToolbarDisplayContext
 	implements ManagementToolbarDisplayContext {
 
 	public BaseManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		this.liferayPortletRequest = liferayPortletRequest;
 		this.liferayPortletResponse = liferayPortletResponse;
@@ -57,37 +58,41 @@ public class BaseManagementToolbarDisplayContext
 			liferayPortletRequest, liferayPortletResponse);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #BaseManagementToolbarDisplayContext(HttpServletRequest,
+	 *             LiferayPortletRequest, LiferayPortletResponse)}
+	 */
+	@Deprecated
+	public BaseManagementToolbarDisplayContext(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse,
+		HttpServletRequest httpServletRequest) {
+
+		this(httpServletRequest, liferayPortletRequest, liferayPortletResponse);
+	}
+
 	@Override
 	public List<DropdownItem> getFilterDropdownItems() {
-		DropdownItemList filterDropdownItems = new DropdownItemList() {
-			{
-				List<DropdownItem> filterNavigationDropdownItems =
-					getFilterNavigationDropdownItems();
+		List<DropdownItem> filterNavigationDropdownItems =
+			getFilterNavigationDropdownItems();
+		List<DropdownItem> orderByDropdownItems = getOrderByDropdownItems();
 
-				if (filterNavigationDropdownItems != null) {
-					addGroup(
-						dropdownGroupItem -> {
-							dropdownGroupItem.setDropdownItems(
-								filterNavigationDropdownItems);
-							dropdownGroupItem.setLabel(
-								getFilterNavigationDropdownItemsLabel());
-						});
-				}
-
-				List<DropdownItem> orderByDropdownItems =
-					getOrderByDropdownItems();
-
-				if (orderByDropdownItems != null) {
-					addGroup(
-						dropdownGroupItem -> {
-							dropdownGroupItem.setDropdownItems(
-								orderByDropdownItems);
-							dropdownGroupItem.setLabel(
-								getOrderByDropdownItemsLabel());
-						});
-				}
+		DropdownItemList filterDropdownItems = DropdownItemListBuilder.addGroup(
+			() -> filterNavigationDropdownItems != null,
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					filterNavigationDropdownItems);
+				dropdownGroupItem.setLabel(
+					getFilterNavigationDropdownItemsLabel());
 			}
-		};
+		).addGroup(
+			() -> orderByDropdownItems != null,
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(orderByDropdownItems);
+				dropdownGroupItem.setLabel(getOrderByDropdownItemsLabel());
+			}
+		).build();
 
 		if (filterDropdownItems.isEmpty()) {
 			return null;
@@ -267,9 +272,9 @@ public class BaseManagementToolbarDisplayContext
 		try {
 			return PortletURLUtil.clone(currentURLObj, liferayPortletResponse);
 		}
-		catch (PortletException pe) {
+		catch (PortletException portletException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portletException, portletException);
 			}
 
 			PortletURL portletURL = liferayPortletResponse.createRenderURL();

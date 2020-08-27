@@ -17,6 +17,7 @@ package com.liferay.portal.util;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.model.impl.LayoutTypeControllerImpl;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
@@ -26,7 +27,6 @@ import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,18 +67,16 @@ public class LayoutTypeControllerTracker {
 			_defaultLayoutTypeControllers.entrySet();
 
 		for (Map.Entry<String, LayoutTypeController> entry : entries) {
-			Map<String, Object> properties = new HashMap<>();
-
-			properties.put("layout.type", entry.getKey());
-
 			registry.registerService(
-				LayoutTypeController.class, entry.getValue(), properties);
+				LayoutTypeController.class, entry.getValue(),
+				HashMapBuilder.<String, Object>put(
+					"layout.type", entry.getKey()
+				).build());
 		}
 	}
 
 	private static final String[] _LAYOUT_TYPES = {
-		LayoutConstants.TYPE_EMBEDDED, LayoutConstants.TYPE_PANEL,
-		LayoutConstants.TYPE_PORTLET, LayoutConstants.TYPE_URL
+		LayoutConstants.TYPE_PORTLET
 	};
 
 	private static final Map<String, LayoutTypeController>

@@ -39,7 +39,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 	service = ModelIndexerWriterContributor.class
 )
@@ -53,10 +52,8 @@ public class DLFileEntryModelIndexerWriterContributor
 
 		batchIndexingActionable.setInterval(_dlFileIndexingInterval);
 		batchIndexingActionable.setPerformActionMethod(
-			(DLFileEntry dlFileEntry) -> {
-				batchIndexingActionable.addDocuments(
-					modelIndexerWriterDocumentHelper.getDocument(dlFileEntry));
-			});
+			(DLFileEntry dlFileEntry) -> batchIndexingActionable.addDocuments(
+				modelIndexerWriterDocumentHelper.getDocument(dlFileEntry)));
 	}
 
 	@Override
@@ -78,18 +75,18 @@ public class DLFileEntryModelIndexerWriterContributor
 		try {
 			dlFileVersion = dlFileEntry.getFileVersion();
 		}
-		catch (NoSuchFileVersionException nsfve) {
+		catch (NoSuchFileVersionException noSuchFileVersionException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Unable to get file version for file entry " +
 						dlFileEntry.getFileEntryId(),
-					nsfve);
+					noSuchFileVersionException);
 			}
 
 			return IndexerWriterMode.SKIP;
 		}
-		catch (PortalException pe) {
-			throw new SystemException(pe);
+		catch (PortalException portalException) {
+			throw new SystemException(portalException);
 		}
 
 		if (!dlFileVersion.isApproved() && !dlFileEntry.isInTrash()) {

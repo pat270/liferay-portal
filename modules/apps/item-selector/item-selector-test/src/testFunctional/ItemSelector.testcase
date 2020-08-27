@@ -1,0 +1,442 @@
+@component-name = "portal-collaboration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Item Selector";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			BlogsEntry.tearDownCP();
+
+			User.logoutPG();
+		}
+	}
+
+	@description = "This makes sure that an image can be uploaded via URL."
+	@priority = "5"
+	test AddBlogsImageViaURL {
+		property portal.acceptance = "true";
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsEntry.addTitle(entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.addContent(entryContent = "Blogs Entry Content");
+
+		ItemSelector.gotoItemSelectorViaAlloyEditor();
+
+		ItemSelector.addFromURL(
+			imageSourceURL = "https://raw.githubusercontent.com/liferay/liferay-portal/master/portal-web/test/functional/com/liferay/portalweb/dependencies/Document_1.png",
+			navTab = "URL");
+
+		Pause(locator1 = "1000");
+
+		PortletEntry.publish();
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewEntryCP(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewInlineImage(uploadFileName = "https://raw.githubusercontent.com/liferay/liferay-portal/master/portal-web/test/functional/com/liferay/portalweb/dependencies/Document_1.png");
+	}
+
+	@description = "This ensures that the SVG image can be added to a fragment background."
+	@priority = "5"
+	test AddSVGImageToFragmentBackground {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		DMDocument.enableActionsMenuOnPortlet();
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.svg",
+			groupName = "Guest",
+			mimeType = "image/svg+xml",
+			sourceFileName = "Document_1.svg");
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		ContentPages.addPage(pageName = "Test Content Page Name");
+
+		PageEditor.addFragment(
+			collectionName = "Layout Elements",
+			fragmentName = "Container");
+
+		PageEditor.editLayoutContainer(
+			backgroundImage = "Manual Selection",
+			entryTitle = "Document_1.svg",
+			navItem = "Documents and Media",
+			paddingTop = "2",
+			panel = "Styles");
+
+		PageEditor.clickPublish();
+
+		Navigator.gotoPage(pageName = "Test Content Page Name");
+
+		AssertElementPresent(
+			key_imageName = "Document_1.svg",
+			locator1 = "Fragment#FRAGMENT_SECTION_BACKGROUND_IMAGE");
+	}
+
+	@description = "This test covers LPS-105188. It ensures that a user can change selected page for Navigation Menu item based on page after creation."
+	@priority = "4"
+	test ChangeSelectedPageNavigationMenu {
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		for (var i : list "1,2") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name ${i}");
+		}
+
+		NavigationMenusAdmin.openNavigationMenusAdmin(siteURLKey = "test-site-name");
+
+		NavigationMenusAdmin.addMenu(menuName = "Navigation Menu Name");
+
+		NavigationMenusAdmin.addItem(
+			item = "Page",
+			pageNames = "Test Page Name 1");
+
+		NavigationMenusAdmin.editItem(
+			item = "Page",
+			itemName = "Test Page Name 1",
+			pageNames = "Test Page Name 2");
+
+		NavigationMenusAdmin.viewItem(itemName = "Test Page Name 2");
+	}
+
+	@description = "This ensures that the background image of a fragment can be added."
+	@priority = "5"
+	test FragmentSmoke {
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.jpeg",
+			groupName = "Test Site Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpeg");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ContentPages.addPage(pageName = "Test Content Page Name");
+
+		PageEditor.addFragment(
+			collectionName = "Layout Elements",
+			fragmentName = "Container");
+
+		PageEditor.editLayoutContainer(
+			backgroundImage = "Manual Selection",
+			entryTitle = "Document_1.jpeg",
+			navItem = "Documents and Media",
+			paddingTop = "2",
+			panel = "Styles");
+
+		PageEditor.clickPublish();
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
+
+		AssertElementPresent(
+			key_imageName = "Document_1.jpeg",
+			locator1 = "Fragment#FRAGMENT_SECTION_BACKGROUND_IMAGE");
+	}
+
+	@description = "This makes sure that the files in item selector can display by pagination."
+	@priority = "4"
+	test PaginateFiles {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addMultipleCP(dmDocumentFileList = "Document_1.jpg,Document_2.jpg,Document_3.jpg,Document_1.png,Document_2.png,Document_3.png");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
+
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			key_navTab = "Documents and Media",
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Documents and Media");
+
+		for (var imageFileName : list "Document_1.jpg,Document_2.jpg,Document_3.jpg,Document_1.png,Document_2.png,Document_3.png") {
+			AssertElementPresent(
+				key_imageFileName = "${imageFileName}",
+				locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+		}
+
+		Pagination.viewResults(results = "Showing 1 to 6 of 6 entries.");
+
+		Pagination.changePagination(itemsPerPage = "4");
+
+		for (var imageFileName : list "Document_1.jpg,Document_2.jpg,Document_1.png,Document_2.png") {
+			AssertElementPresent(
+				key_imageFileName = "${imageFileName}",
+				locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+		}
+
+		for (var imageFileName : list "Document_3.jpg,Document_3.png") {
+			AssertElementNotPresent(
+				key_imageFileName = "${imageFileName}",
+				locator1 = "ItemSelector#SELECT_FILE_IMAGE_CARD");
+		}
+
+		Pagination.viewResults(results = "Showing 1 to 4 of 6 entries.");
+	}
+
+	@description = "This ensures that users can preview the SVG image in item selector."
+	@priority = "5"
+	test PreviewSVG {
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.svg",
+			groupName = "Guest",
+			mimeType = "image/svg+xml",
+			sourceFileName = "Document_1.svg");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.gotoPreviewViaSelectFile(navTab = "Documents and Media");
+
+		AssertVisible(locator1 = "ItemSelector#SELECT_IMAGE_PREVIEW");
+	}
+
+	@priority = "4"
+	test ViewBlogsEntryWithImageEditedViaItemSelector {
+		property portal.acceptance = "quarantine";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Blogs Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Blogs Page",
+			widgetName = "Blogs");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_2.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpg");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsEntry.addTitle(entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.addContent(entryContent = "Blogs Entry Content");
+
+		ImageEditor.gotoImageEditorViaItemSelector(
+			imageFileName = "Document_2.jpg",
+			navTab = "Documents and Media");
+
+		ImageEditor.rotateImage(rotateDirection = "right");
+
+		Pause(locator1 = "3000");
+
+		ImageEditor.applyChangesAndSaveFile();
+
+		Pause(locator1 = "3000");
+
+		SelectFrameTop(value1 = "relative=top");
+
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
+
+		AssertClick(
+			locator1 = "ItemSelector#ADD_BUTTON",
+			value1 = "Add");
+
+		BlogsEntry.viewInlineImage(uploadFileName = '''Document_2+%281%29.jpg''');
+
+		AssertClick(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
+
+		Pause(locator1 = "3000");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Blogs");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_2 (1).jpg");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.0");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewEntryPG(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewInlineImage(uploadFileName = '''Document_2+%281%29.jpg''');
+
+		ScrollWebElementIntoView(locator1 = "Button#SUBSCRIBE");
+
+		SikuliAssertElementPresent(locator1 = "BlogsEntry#CONTENT_INLINE_IMAGE_PREVIEW");
+	}
+
+	@description = "This ensures that the location info of a blog image can be viewed through Blogs."
+	@priority = "5"
+	test ViewBlogsImageLocationInfo {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
+
+		Blogs.addEntryWithUploadedCoverImage(
+			coverImageName = "Document_1",
+			entryContent = "Blogs Entry Content",
+			entrySubtitle = "Blogs Entry Subtitle",
+			entryTitle = "Blogs Entry Title",
+			navTab = "Blog Images",
+			uploadFileName = "Document_1.jpg");
+
+		Button.clickPublish();
+
+		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
+
+		BlogsNavigator.gotoBrowseImage();
+
+		ItemSelector.viewLocationInfoViaBlogs(
+			locationName = "Site Name",
+			navTab = "Blog Images",
+			titleList = "Document_1.jpg");
+	}
+
+	@description = "This ensures that the location info of depot documents can be viewed through Blogs on a connected site."
+	@priority = "5"
+	test ViewDocumentsLocationInfo {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.jpg",
+			groupName = "Test Depot Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "test-depot-name");
+
+		DMFolder.addCP(dmFolderName = "DM Folder Name");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_2.jpg",
+			folderName = "DM Folder Name",
+			groupName = "Test Depot Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpg");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoSites(depotName = "Test Depot Name");
+
+		Depot.connectSite(siteList = "Site Name");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.viewLocationInfoViaBlogs(
+			locationName = "Test Depot Name",
+			navTab = "Documents and Media",
+			titleList = "Document_1.jpg,Document_2.jpg,DM Folder Name");
+	}
+
+	@description = "This ensures that the location info of depot web content can be viewed through WCD on a connected site."
+	@priority = "5"
+	test ViewWCLocationInfo {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Web Content Display");
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Depot",
+			groupName = "Test Depot Name",
+			site = "false",
+			title = "WC WebContent Title");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoSites(depotName = "Test Depot Name");
+
+		Depot.connectSite(siteList = "Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		ItemSelector.viewLocationInfoViaWCD(
+			locationName = "Test Depot Name",
+			titleList = "WC WebContent Title");
+	}
+
+}

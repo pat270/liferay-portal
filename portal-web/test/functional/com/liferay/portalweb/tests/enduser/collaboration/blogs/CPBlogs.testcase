@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Blogs";
@@ -28,12 +29,7 @@ definition {
 		property testray.main.component.name = "Blogs";
 
 		task ("Add a blogs entry called 'Blogs Entry1 Title' with content 'Blogs Entry1 Content'") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			Blogs.addEntry(
 				entryContent = "Blogs Entry1 Content",
@@ -41,12 +37,7 @@ definition {
 		}
 
 		task ("Add a blogs entry called 'Blogs Entry2 Title' with content 'Blogs Entry2 Content'") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			Blogs.addEntry(
 				entryContent = "Blogs Entry2 Content",
@@ -54,12 +45,7 @@ definition {
 		}
 
 		task ("Add a blogs entry called 'Blogs Entry3 Title' with content 'Blogs Entry3 Content'") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			Blogs.addEntry(
 				entryContent = "Blogs Entry3 Content",
@@ -67,46 +53,31 @@ definition {
 		}
 
 		task ("Ensure blogs entry 'Blogs Entry1 Title' with content 'Blogs Entry1 Content' can be found") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry1 Title");
 
-			BlogsEntry.viewEntry(
+			BlogsEntry.viewEntryCP(
 				entryContent = "Blogs Entry1 Content",
 				entryTitle = "Blogs Entry1 Title");
 		}
 
 		task ("Ensure blogs entry 'Blogs Entry2 Title' with content 'Blogs Entry2 Content' can be found") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry2 Title");
 
-			BlogsEntry.viewEntry(
+			BlogsEntry.viewEntryCP(
 				entryContent = "Blogs Entry2 Content",
 				entryTitle = "Blogs Entry2 Title");
 		}
 
 		task ("Ensure blogs entry 'Blogs Entry3 Title' with content 'Blogs Entry3 Content' can be found") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry3 Title");
 
-			BlogsEntry.viewEntry(
+			BlogsEntry.viewEntryCP(
 				entryContent = "Blogs Entry3 Content",
 				entryTitle = "Blogs Entry3 Title");
 		}
@@ -114,104 +85,65 @@ definition {
 
 	@priority = "5"
 	test AddBlogsEntry {
-		property app.server.types = "jboss,resin,tcserver,tomcat,weblogic,websphere,wildfly";
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
+		property testray.component.names = "WYSIWYG";
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntry(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 	}
 
 	@priority = "4"
 	test AddBlogsEntryContentNull {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addWithInvalidContent(
 			entryInvalidContent = "",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsEntry.viewDefaultCP(entryTitle = "Blogs Entry Title");
 	}
 
 	@priority = "4"
 	test AddBlogsEntryTitleEscapeCharacters {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntry(
 			entryContent = "Blogs Entry Content",
 			entryTitle = '''& < > " Escape Characters Entry''');
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoEntryCP(entryTitle = '''& < > " Escape Characters Entry''');
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entryTitle = '''& < > " Escape Characters Entry''');
 	}
 
 	@priority = "4"
 	test AddBlogsEntryTitleNull {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addWithInvalidTitle(
 			entryContent = "Blogs Entry Content",
 			entryInvalidTitle = "");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsEntry.viewDefaultCP(entryTitle = "");
 	}
@@ -219,38 +151,29 @@ definition {
 	@description = "This is a use case for LPS-70143."
 	@priority = "4"
 	test AddBlogsEntryWithDMLink {
-		Navigator.openURL();
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "Document_1.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpg");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
-		DMDocument.addCP(
-			dmDocumentFile = "Document_1.jpg",
-			dmDocumentTitle = "Document_1.jpg");
+		var dmDocument1URL = DMDocument.getDMLatestVersionURL(
+			dmDocumentTitle = "Document_1.jpg",
+			site = "Guest");
 
-		var dmDocument1URL = DMDocument.getDMLatestVersionURL(dmDocumentTitle = "Document_1.jpg");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "Document_2.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpg");
 
-		Navigator.openURL();
+		var dmDocument2URL = DMDocument.getDMLatestVersionURL(
+			dmDocumentTitle = "Document_2.jpg",
+			site = "Guest");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
-			dmDocumentFile = "Document_2.jpg",
-			dmDocumentTitle = "Document_2.jpg");
-
-		var dmDocument2URL = DMDocument.getDMLatestVersionURL(dmDocumentTitle = "Document_2.jpg");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoAddEntry();
 
@@ -279,70 +202,19 @@ definition {
 	}
 
 	@priority = "4"
-	test AddBlogsEntryWithInlineImageViaURL {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
-
-		BlogsNavigator.gotoAddEntry();
-
-		BlogsEntry.addTitle(entryTitle = "Blogs Entry Title");
-
-		BlogsEntry.addContent(entryContent = "Blogs Entry Content");
-
-		ItemSelector.gotoItemSelectorViaAlloyEditor();
-
-		ItemSelector.addFromURL(
-			imageSourceURL = "https://dummyimage.com/600x400/000/fff.jpg",
-			navTab = "URL");
-
-		Pause(locator1 = "1000");
-
-		PortletEntry.publish();
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
-
-		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
-
-		BlogsEntry.viewEntry(
-			entryContent = "Blogs Entry Content",
-			entryTitle = "Blogs Entry Title");
-
-		BlogsEntry.viewInlineImage(uploadFileName = "https://dummyimage.com/600x400/000/fff.jpg");
-	}
-
-	@priority = "4"
 	test AddBlogsEntryWithSubtitle {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntry(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
@@ -350,19 +222,16 @@ definition {
 
 	@priority = "5"
 	test AddBlogWithFormatting {
-		property testray.component.names = "Training";
+		property testray.component.names = "Training,WYSIWYG";
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		LexiconEntry.gotoAdd();
 
 		BlogsNavigator.gotoSelectFile();
 
 		ItemSelector.uploadFile(
-			navTab = "Upload Image",
+			navTab = "Blog Images",
 			uploadFileName = "Document_1.jpg");
 
 		BlogsEntry.addEntryContent(
@@ -376,93 +245,42 @@ definition {
 	}
 
 	@priority = "5"
-	test CKEditorSmoke {
-		property custom.properties = "editor.wysiwyg.portal-web.docroot.html.portlet.blogs.edit_entry.jsp=ckeditor";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
-
-		BlogsNavigator.gotoAddEntry();
-
-		AlloyEditor.addTitle(title = "CKEditor Entry Title");
-
-		CKEditor.assertEditorPresent();
-
-		CKEditor.addContent(content = "CKEditor Entry Content");
-
-		PortletEntry.publish();
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
-
-		BlogsNavigator.gotoEntryCP(entryTitle = "CKEditor Entry Title");
-
-		BlogsEntry.viewTitle(entryTitle = "CKEditor Entry Title");
-
-		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
-
-		CKEditor.viewEntryContent(content = "CKEditor Entry Content");
-	}
-
-	@priority = "5"
 	test DeleteBlogsEntries {
+		property portal.acceptance = "true";
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry1 Content",
+			entryTitle = "Blogs Entry1 Title");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry2 Content",
+			entryTitle = "Blogs Entry2 Title");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry3 Content",
+			entryTitle = "Blogs Entry3 Title");
+
 		for (var entryCount : list "1,2,3") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
-
-			Blogs.addEntry(
-				entryContent = "Blogs Entry${entryCount} Content",
-				entryTitle = "Blogs Entry${entryCount} Title");
-		}
-
-		for (var entryCount : list "1,2,3") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			BlogsNavigator.gotoEntryCP(
 				entryContent = "Blogs Entry${entryCount} Content",
 				entryTitle = "Blogs Entry${entryCount} Title");
 
-			BlogsEntry.viewEntry(
+			BlogsEntry.viewEntryCP(
 				entryContent = "Blogs Entry${entryCount} Content",
 				entryTitle = "Blogs Entry${entryCount} Title");
 		}
 
 		for (var entryCount : list "1,2,3") {
-			Navigator.openURL();
-
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Blogs");
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 			BlogsNavigator.moveToRecycleBinCP(
 				assetType = "Blogs Entry",
 				entryTitle = "Blogs Entry${entryCount} Title");
 		}
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		for (var entryCount : list "1,2,3") {
 			BlogsEntry.viewNoCP(entryTitle = "Blogs Entry${entryCount} Title");
@@ -471,40 +289,25 @@ definition {
 
 	@priority = "4"
 	test PublishBlogsEntryDraft {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addDraft(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.publishDraftCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
@@ -512,30 +315,20 @@ definition {
 
 	@priority = "4"
 	test SaveBlogsEntryDraft {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addDraft(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoEntryCP(
 			entryStatus = "Draft",
 			entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
@@ -543,30 +336,20 @@ definition {
 
 	@priority = "4"
 	test SaveBlogsEntryDraftAuto {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addDraftViaAutoSave(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoEntryCP(
 			entryStatus = "Draft",
 			entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title");
@@ -574,23 +357,13 @@ definition {
 
 	@priority = "4"
 	test SearchBlogsEntryContent {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntry(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
@@ -622,23 +395,11 @@ definition {
 
 	@priority = "4"
 	test SearchBlogsEntryTitle {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
-
-		Blogs.addEntry(
+		JSONBlog.addEntry(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
@@ -670,19 +431,14 @@ definition {
 
 	@priority = "3"
 	test SearchBlogsImagesViaItemSelector {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntryWithUploadedCoverImage(
 			coverImageName = "Document_1",
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
-			navTab = "Upload Image",
+			navTab = "Blog Images",
 			uploadFileName = "Document_1.jpg");
 
 		Button.clickPublish();
@@ -691,7 +447,7 @@ definition {
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
@@ -704,12 +460,7 @@ definition {
 
 	@priority = "3"
 	test SearchDMImagesViaItemSelector {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntryWithUploadedCoverImage(
 			coverImageName = "Document_1",
@@ -725,7 +476,7 @@ definition {
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
@@ -738,19 +489,14 @@ definition {
 
 	@priority = "3"
 	test ViewBlogsEntryDraftWithCoverImage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntryWithUploadedCoverImage(
 			coverImageName = "Document_1",
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
-			navTab = "Upload Image",
+			navTab = "Blog Images",
 			uploadFileName = "Document_1.jpg");
 
 		Pause(locator1 = "1000");
@@ -771,7 +517,7 @@ definition {
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
@@ -780,19 +526,14 @@ definition {
 
 	@priority = "3"
 	test ViewCoverImageDetails {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		Blogs.addEntryWithUploadedCoverImage(
 			coverImageName = "Document_1",
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
-			navTab = "Upload Image",
+			navTab = "Blog Images",
 			uploadFileName = "Document_1.jpg");
 
 		Button.clickPublish();
@@ -801,7 +542,7 @@ definition {
 
 		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
@@ -821,12 +562,7 @@ definition {
 
 	@priority = "4"
 	test ViewErrorMessageForNullCustomAbstract {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Blogs");
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
 
 		BlogsNavigator.gotoAddEntry();
 
@@ -840,7 +576,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "BlogsEntry#TITLE_FIELD_HELPER",
-			value1 = "This field is required to publish the entry.");
+			value1 = "This field is required.");
 
 		BlogsEntry.addTitle(entryTitle = "Blogs Title");
 
@@ -850,4 +586,5 @@ definition {
 
 		Alert.viewRequiredField();
 	}
+
 }

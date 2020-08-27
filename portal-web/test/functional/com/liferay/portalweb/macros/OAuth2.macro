@@ -1,4 +1,5 @@
 definition {
+
 	macro addApplication {
 		LexiconEntry.gotoAdd();
 
@@ -14,6 +15,42 @@ definition {
 		AssertTextEquals(
 			locator1 = "Portlet#HEADER",
 			value1 = "${applicationName}");
+	}
+
+	macro addPrefixHandlerInSystemSettings {
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "OAuth 2",
+			configurationName = "Bundle PrefixHandlerFactory",
+			configurationScope = "System Scope");
+
+		Button.clickAdd();
+
+		FormFields.editTextMultiline(
+			fieldName = "osgi.jaxrs.name",
+			fieldValue = "${osgiJaxrsName}");
+
+		if ("${symbolicName}" == "false") {
+			FormFields.disableCheckbox(fieldName = "Include Bundle Symbolic Name");
+		}
+
+		FormFields.editTextMultiline(
+			fieldName = "excluded.scopes",
+			fieldValue = "${excludedScopesName}");
+
+		FormFields.editTextMultiline(
+			fieldName = "service.properties",
+			fieldValue = "${serviceProperties}");
+
+		FormFields.editTextMultiline(
+			fieldName = "separator",
+			fieldValue = "${separator}");
+
+		PortletEntry.save();
 	}
 
 	macro deleteApplication {
@@ -97,7 +134,7 @@ definition {
 
 			if (isSet(checkGlobalScopesViaModal)) {
 				AssertClick.assertPartialTextClickAt(
-					key_scopeName = "${modalLinkScope}",
+					key_scopeText = "${modalLinkScope}",
 					locator1 = "OAuth2#ADMIN_MODAL_GLOBAL_SCOPE_LINK",
 					value1 = "assigned via a global scope");
 
@@ -134,7 +171,7 @@ definition {
 						key_matchCount = "${count}",
 						locator1 = "OAuth2#ADMIN_RESOURCE_SCOPE_CHECKED");
 
-					var count = MathUtil.sum("${count}", "1");
+					var count = ${count} + 1;
 				}
 			}
 		}
@@ -142,6 +179,16 @@ definition {
 		PortletEntry.save();
 
 		Navigator.gotoBack();
+	}
+
+	macro expandGlobalPanel {
+		var key_panel = "${globalPanel}";
+
+		if (IsElementPresent(locator1 = "OAuth2#ADMIN_GLOBAL_PANEL_COLLAPSED") && (IsVisible(locator1 = "OAuth2#ADMIN_GLOBAL_PANEL_COLLAPSED"))) {
+			Click(locator1 = "OAuth2#ADMIN_GLOBAL_PANEL_COLLAPSED");
+		}
+
+		AssertElementPresent(locator1 = "OAuth2#ADMIN_GLOBAL_PANEL_EXPANDED");
 	}
 
 	macro expandResourcePanel {
@@ -154,6 +201,25 @@ definition {
 		AssertElementPresent(locator1 = "OAuth2#ADMIN_RESOURCE_PANEL_EXPANDED");
 	}
 
+	macro getAccessToken {
+		var portalURL = PropsUtil.get("portal.url");
+
+		if ("${grantFlow}" == "clientCredentials") {
+			var tokenCurl = '''
+				${portalURL}/o/oauth2/token \
+					--data grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}
+			''';
+		}
+
+		var response = JSONCurlUtil.post("${tokenCurl}");
+
+		var partialResponse = StringUtil.extractFirst("${response}", "&quot;,&quot;token_type");
+		var accessToken = StringUtil.extractLast("${partialResponse}", "access_token&quot;:&quot;");
+		echo("## * Access Token: ${accessToken}");
+
+		return "${accessToken}";
+	}
+
 	macro getAuthorizationCode {
 		var generatedClientId = selenium.getElementValue("OAuth2#ADMIN_INPUT_FORM_CLIENT_ID");
 		var portalURL = PropsUtil.get("portal.url");
@@ -162,7 +228,7 @@ definition {
 
 		Button.click(button = "Authorize");
 
-		Pause(locator1 = "5000");
+		Pause(locator1 = "3000");
 
 		var currentURL = selenium.getCurrentUrl();
 
@@ -262,6 +328,23 @@ definition {
 			}
 		}
 
+		if (isSet(clientCredentialsUser)) {
+			AssertClick(
+				locator1 = "Button#SELECT",
+				value1 = "Select");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			Pause(locator1 = "2000");
+
+			Click(
+				key_clientCredentialsUser = "${clientCredentialsUser}",
+				locator1 = "OAuth2#ADMIN_CLIENT_CREDENTIALS_USER_SELECTED",
+				value1 = "${clientCredentialsUser}");
+
+			SelectFrame(value1 = "relative=top");
+		}
+
 		PortletEntry.save();
 	}
 
@@ -284,7 +367,11 @@ definition {
 			locator1 = "OAuth2#ADMIN_AUTHORIZATIONS_REVOKE_BUTTON",
 			value1 = "Revoke");
 
-		AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to revoke the authorization?");
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" != "safari") {
+			AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to revoke the authorization?");
+		}
 
 		Alert.viewSuccessMessage();
 
@@ -446,6 +533,60 @@ definition {
 		}
 	}
 
+	macro viewScopeAliases {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${applicationName}");
+
+		Navigator.gotoNavItem(navItem = "Scopes");
+
+		for (var resourcePanel : list "${resourcePanels}") {
+			OAuth2.expandResourcePanel(resourcePanel = "${resourcePanel}");
+		}
+
+		for (var scopeAlias : list "${scopeAliasList}") {
+			AssertElementPresent(
+				key_scopeAlias = "${scopeAlias}",
+				locator1 = "OAuth2#ADMIN_RESOURCE_SCOPE_ALIAS");
+		}
+	}
+
+	macro viewScopeMappings {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${applicationName}");
+
+		Navigator.gotoNavItem(navItem = "Scopes");
+
+		for (var resourcePanel : list "${resourcePanels}") {
+			OAuth2.expandResourcePanel(resourcePanel = "${resourcePanel}");
+		}
+
+		if (isSet(scopeTranslation)) {
+			AssertTextEquals(
+				key_resourcePanel = "${resourcePanel}",
+				locator1 = "OAuth2#ADMIN_RESOURCE_SCOPE_TRANSLATION",
+				value1 = "${scopeTranslation}");
+		}
+
+		if (isSet(globalScopeLinkValue)) {
+			if (contains("${scopeTranslation}", "+")) {
+				var partialScopeTranslation = StringUtil.extractFirst("${scopeTranslation}", "+");
+				partialScopeTranslation = StringUtil.trim("${partialScopeTranslation}");
+
+				key_scopeText = "${partialScopeTranslation}";
+			}
+			else {
+				key_scopeText = "${scopeTranslation}";
+			}
+
+			AssertTextEquals(
+				key_scopeText = "${key_scopeText}",
+				locator1 = "OAuth2#ADMIN_MODAL_GLOBAL_SCOPE_LINK",
+				value1 = "${globalScopeLinkValue}");
+		}
+	}
+
 	macro viewScopes {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
@@ -476,7 +617,7 @@ definition {
 			}
 		}
 
-		if ((isSet(allResourceScopesUnchecked)) || (isSet(checkedGlobalScopesViaModal)) || (isSet(resourceCheckedList)) || (isSet(resourceUncheckedList))) {
+		if ((isSet(allResourceScopesUnchecked)) || (isSet(checkedGlobalScopesViaModal)) || (isSet(removedScope)) || (isSet(resourceCheckedList)) || (isSet(resourceUncheckedList))) {
 			if (IsElementPresent(locator1 = "NavUnderline#ACTIVE_NAV_UNDERLINE_LINK", key_navUnderline = "Global scopes")) {
 				Navigator.gotoNavUnderline(navUnderline = "Resource scopes");
 			}
@@ -509,7 +650,7 @@ definition {
 
 			if (isSet(checkedGlobalScopesViaModal)) {
 				AssertClick.assertPartialTextClickAt(
-					key_scopeName = "${modalLinkScope}",
+					key_scopeText = "${modalLinkScope}",
 					locator1 = "OAuth2#ADMIN_MODAL_GLOBAL_SCOPE_LINK",
 					value1 = "assigned via a global scope");
 
@@ -521,8 +662,15 @@ definition {
 
 				Click(locator1 = "Button#CLOSE_IFRAME");
 			}
+
+			if (isSet(removedScope)) {
+				AssertElementPresent(
+					key_scopeName = "${removedScope}",
+					locator1 = "OAuth2#ADMIN_RESOURCE_SCOPE_REMOVED");
+			}
 		}
 
 		Navigator.gotoBack();
 	}
+
 }

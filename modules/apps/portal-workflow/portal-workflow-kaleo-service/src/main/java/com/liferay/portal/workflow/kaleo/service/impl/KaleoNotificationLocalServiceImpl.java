@@ -16,6 +16,7 @@ package com.liferay.portal.workflow.kaleo.service.impl;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -26,6 +27,7 @@ import com.liferay.portal.workflow.kaleo.definition.NotificationType;
 import com.liferay.portal.workflow.kaleo.definition.Recipient;
 import com.liferay.portal.workflow.kaleo.definition.TemplateLanguage;
 import com.liferay.portal.workflow.kaleo.model.KaleoNotification;
+import com.liferay.portal.workflow.kaleo.service.KaleoNotificationRecipientLocalService;
 import com.liferay.portal.workflow.kaleo.service.base.KaleoNotificationLocalServiceBaseImpl;
 
 import java.util.Date;
@@ -33,15 +35,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoNotification",
+	service = AopService.class
+)
 public class KaleoNotificationLocalServiceImpl
 	extends KaleoNotificationLocalServiceBaseImpl {
 
 	@Override
 	public KaleoNotification addKaleoNotification(
-			String kaleoClassName, long kaleoClassPK,
+			String kaleoClassName, long kaleoClassPK, long kaleoDefinitionId,
 			long kaleoDefinitionVersionId, String kaleoNodeName,
 			Notification notification, ServiceContext serviceContext)
 		throws PortalException {
@@ -63,6 +72,7 @@ public class KaleoNotificationLocalServiceImpl
 		kaleoNotification.setModifiedDate(now);
 		kaleoNotification.setKaleoClassName(kaleoClassName);
 		kaleoNotification.setKaleoClassPK(kaleoClassPK);
+		kaleoNotification.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoNotification.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoNotification.setKaleoNodeName(kaleoNodeName);
 		kaleoNotification.setName(notification.getName());
@@ -94,7 +104,8 @@ public class KaleoNotificationLocalServiceImpl
 			kaleoNotification.setNotificationTypes(sb.toString());
 		}
 
-		kaleoNotificationPersistence.update(kaleoNotification);
+		kaleoNotification = kaleoNotificationPersistence.update(
+			kaleoNotification);
 
 		// Kaleo notification recipients
 
@@ -103,10 +114,10 @@ public class KaleoNotificationLocalServiceImpl
 
 		for (Set<Recipient> recipients : recipientsMap.values()) {
 			for (Recipient recipient : recipients) {
-				kaleoNotificationRecipientLocalService.
+				_kaleoNotificationRecipientLocalService.
 					addKaleoNotificationRecipient(
-						kaleoDefinitionVersionId, kaleoNotificationId,
-						recipient, serviceContext);
+						kaleoDefinitionId, kaleoDefinitionVersionId,
+						kaleoNotificationId, recipient, serviceContext);
 			}
 		}
 
@@ -122,7 +133,7 @@ public class KaleoNotificationLocalServiceImpl
 
 		// Kaleo notification recipients
 
-		kaleoNotificationRecipientLocalService.
+		_kaleoNotificationRecipientLocalService.
 			deleteCompanyKaleoNotificationRecipients(companyId);
 	}
 
@@ -137,7 +148,7 @@ public class KaleoNotificationLocalServiceImpl
 
 		// Kaleo notification recipients
 
-		kaleoNotificationRecipientLocalService.
+		_kaleoNotificationRecipientLocalService.
 			deleteKaleoDefinitionVersionKaleoNotificationRecipients(
 				kaleoDefinitionVersionId);
 	}
@@ -157,5 +168,9 @@ public class KaleoNotificationLocalServiceImpl
 		return kaleoNotificationPersistence.findByKCN_KCPK_ET(
 			kaleoClassName, kaleoClassPK, executionType);
 	}
+
+	@Reference
+	private KaleoNotificationRecipientLocalService
+		_kaleoNotificationRecipientLocalService;
 
 }

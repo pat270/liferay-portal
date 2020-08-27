@@ -2,6 +2,8 @@
 
 <model-hints>
 	<model name="com.liferay.message.boards.model.MBBan">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="banId" type="long" />
 		<field name="groupId" type="long" />
@@ -14,6 +16,8 @@
 		<field name="lastPublishDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBCategory">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="categoryId" type="long" />
 		<field name="groupId" type="long" />
@@ -30,9 +34,6 @@
 			<hint-collection name="TEXTAREA" />
 		</field>
 		<field name="displayStyle" type="String" />
-		<field name="threadCount" type="int" />
-		<field name="messageCount" type="int" />
-		<field name="lastPostDate" type="Date" />
 		<field name="lastPublishDate" type="Date" />
 		<field name="status" type="int" />
 		<field name="statusByUserId" type="long" />
@@ -40,6 +41,8 @@
 		<field name="statusDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBDiscussion">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="discussionId" type="long" />
 		<field name="groupId" type="long" />
@@ -54,6 +57,8 @@
 		<field name="lastPublishDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBMailingList">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="mailingListId" type="long" />
 		<field name="groupId" type="long" />
@@ -90,6 +95,8 @@
 		<field name="active" type="boolean" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBMessage">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="messageId" type="long" />
 		<field name="groupId" type="long" />
@@ -104,9 +111,15 @@
 		<field name="threadId" type="long" />
 		<field name="rootMessageId" type="long" />
 		<field name="parentMessageId" type="long" />
+		<field name="treePath" type="String">
+			<hint name="max-length">4000</hint>
+		</field>
 		<field name="subject" type="String">
 			<sanitize content-type="text/plain" modes="ALL" />
 			<validator name="required" />
+		</field>
+		<field name="urlSubject" type="String">
+			<hint name="max-length">255</hint>
 		</field>
 		<field name="body" type="String">
 			<hint-collection name="CLOB" />
@@ -124,6 +137,8 @@
 		<field name="statusDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBStatsUser">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="statsUserId" type="long" />
 		<field name="groupId" type="long" />
 		<field name="companyId" type="long" />
@@ -132,6 +147,8 @@
 		<field name="lastPostDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBThread">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="threadId" type="long" />
 		<field name="groupId" type="long" />
@@ -147,8 +164,6 @@
 			<sanitize content-type="text/plain" modes="ALL" />
 			<validator name="required" />
 		</field>
-		<field name="messageCount" type="int" />
-		<field name="viewCount" type="int" />
 		<field name="lastPostByUserId" type="long" />
 		<field name="lastPostDate" type="Date" />
 		<field name="priority" type="double" />
@@ -160,6 +175,8 @@
 		<field name="statusDate" type="Date" />
 	</model>
 	<model name="com.liferay.message.boards.model.MBThreadFlag">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="threadFlagId" type="long" />
 		<field name="groupId" type="long" />

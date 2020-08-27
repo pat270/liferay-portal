@@ -1,9 +1,9 @@
 @component-name = "portal-upgrades"
 definition {
+
 	property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property ignore.errors = "Plugin security management is not enabled. Enable a security manager, then restart.";
 	property testray.main.component.name = "Upgrades Core Infrastructure";
 
 	setUp {
@@ -11,7 +11,7 @@ definition {
 
 		Smoke.viewWelcomePage();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -19,7 +19,7 @@ definition {
 		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 	}
 
-	@priority = "5"
+	@priority = "4"
 	test ViewPortletsPermissionsAfterUpgrade621015 {
 		property data.archive.type = "data-archive-portlets-permissions";
 		property database.types = "db2,mysql,oracle,sybase";
@@ -28,7 +28,7 @@ definition {
 		Upgrade.ViewPortletsPermissions();
 	}
 
-	@priority = "5"
+	@priority = "4"
 	test ViewPortletsPermissionsAfterUpgrade621021 {
 		property data.archive.type = "data-archive-portlets-permissions";
 		property database.types = "db2,mysql,oracle,postgresql,sybase";
@@ -36,4 +36,5 @@ definition {
 
 		Upgrade.ViewPortletsPermissions();
 	}
+
 }

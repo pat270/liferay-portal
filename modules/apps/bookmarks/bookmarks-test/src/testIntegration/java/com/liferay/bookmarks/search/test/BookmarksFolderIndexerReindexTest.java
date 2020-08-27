@@ -16,20 +16,37 @@ package com.liferay.bookmarks.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.bookmarks.model.BookmarksFolder;
+import com.liferay.bookmarks.service.BookmarksEntryLocalService;
+import com.liferay.bookmarks.service.BookmarksFolderService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.IndexWriterHelper;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.model.uid.UIDFactory;
+import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
+import com.liferay.portal.search.searcher.SearchResponse;
+import com.liferay.portal.search.searcher.Searcher;
+import com.liferay.portal.search.test.util.FieldValuesAssert;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.users.admin.test.util.search.GroupBlueprint;
+import com.liferay.users.admin.test.util.search.GroupSearchFixture;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -54,63 +71,123 @@ public class BookmarksFolderIndexerReindexTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpUserSearchFixture();
+		Assert.assertEquals(
+			MODEL_INDEXER_CLASS.getName(), indexer.getClassName());
 
-		setUpBookmarksFolderFixture();
+		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
-		setUpBookmarksFolderIndexerFixture();
+		Group group = groupSearchFixture.addGroup(new GroupBlueprint());
+
+		UserSearchFixture userSearchFixture = new UserSearchFixture(
+			userLocalService, groupSearchFixture, null, null);
+
+		userSearchFixture.setUp();
+
+		User user = userSearchFixture.addUser(
+			RandomTestUtil.randomString(), group);
+
+		BookmarksFixture bookmarksFixture = new BookmarksFixture(
+			bookmarksEntryLocalService, bookmarksFolderService, group, user);
+
+		_group = group;
+
+		_groups = groupSearchFixture.getGroups();
+
+		_users = userSearchFixture.getUsers();
+
+		_bookmarksFixture = bookmarksFixture;
+		_bookmarksFolders = bookmarksFixture.getBookmarksFolders();
 	}
 
 	@Test
 	public void testReindex() throws Exception {
 		BookmarksFolder bookmarksFolder =
-			bookmarksFixture.createBookmarksFolder();
+			_bookmarksFixture.createBookmarksFolder();
 
-		String searchTerm = bookmarksFolder.getUserName();
+		String searchTerm = StringUtil.toLowerCase(
+			bookmarksFolder.getUserName());
 
-		bookmarksFolderIndexerFixture.searchOnlyOne(searchTerm);
+		assertFieldValue(Field.USER_NAME, searchTerm, searchTerm);
 
-		Document document = bookmarksFolderIndexerFixture.searchOnlyOne(
-			searchTerm);
+		deleteDocument(
+			bookmarksFolder.getCompanyId(), uidFactory.getUID(bookmarksFolder));
 
-		bookmarksFolderIndexerFixture.deleteDocument(document);
+		assertNoHits(searchTerm);
 
-		bookmarksFolderIndexerFixture.searchNoOne(searchTerm);
+		reindexAllIndexerModels();
 
-		bookmarksFolderIndexerFixture.reindex(bookmarksFolder.getCompanyId());
-
-		bookmarksFolderIndexerFixture.searchOnlyOne(searchTerm);
+		assertFieldValue(Field.USER_NAME, searchTerm, searchTerm);
 	}
 
-	protected void setUpBookmarksFolderFixture() throws Exception {
-		bookmarksFixture = new BookmarksFixture(_group, _user);
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
-		_bookmarksFolders = bookmarksFixture.getBookmarksFolders();
+	protected void assertFieldValue(
+		String fieldName, String fieldValue, String searchTerm) {
+
+		FieldValuesAssert.assertFieldValue(
+			fieldName, fieldValue, search(searchTerm));
 	}
 
-	protected void setUpBookmarksFolderIndexerFixture() {
-		bookmarksFolderIndexerFixture = new IndexerFixture<>(
-			BookmarksFolder.class);
+	protected void assertNoHits(String searchTerm) {
+		FieldValuesAssert.assertFieldValues(
+			Collections.emptyMap(), search(searchTerm));
 	}
 
-	protected void setUpUserSearchFixture() throws Exception {
-		userSearchFixture = new UserSearchFixture();
-
-		userSearchFixture.setUp();
-
-		_group = userSearchFixture.addGroup();
-
-		_groups = userSearchFixture.getGroups();
-
-		_user = userSearchFixture.addUser(
-			RandomTestUtil.randomString(), _group);
-
-		_users = userSearchFixture.getUsers();
+	protected void deleteDocument(long companyId, String uid) throws Exception {
+		indexWriterHelper.deleteDocument(
+			indexer.getSearchEngineId(), companyId, uid, true);
 	}
 
-	protected BookmarksFixture bookmarksFixture;
-	protected IndexerFixture<BookmarksFolder> bookmarksFolderIndexerFixture;
-	protected UserSearchFixture userSearchFixture;
+	protected void reindexAllIndexerModels() throws Exception {
+		indexer.reindex(new String[] {String.valueOf(_group.getCompanyId())});
+	}
+
+	protected SearchResponse search(String searchTerm) {
+		return searcher.search(
+			searchRequestBuilderFactory.builder(
+			).companyId(
+				_group.getCompanyId()
+			).groupIds(
+				_group.getGroupId()
+			).fields(
+				StringPool.STAR
+			).modelIndexerClasses(
+				BookmarksFolder.class
+			).queryString(
+				searchTerm
+			).build());
+	}
+
+	protected static final Class<?> MODEL_INDEXER_CLASS = BookmarksFolder.class;
+
+	@Inject
+	protected BookmarksEntryLocalService bookmarksEntryLocalService;
+
+	@Inject
+	protected BookmarksFolderService bookmarksFolderService;
+
+	@Inject(
+		filter = "indexer.class.name=com.liferay.bookmarks.model.BookmarksFolder"
+	)
+	protected Indexer<BookmarksFolder> indexer;
+
+	@Inject
+	protected IndexWriterHelper indexWriterHelper;
+
+	@Inject
+	protected Searcher searcher;
+
+	@Inject
+	protected SearchRequestBuilderFactory searchRequestBuilderFactory;
+
+	@Inject
+	protected UIDFactory uidFactory;
+
+	@Inject
+	protected UserLocalService userLocalService;
+
+	private BookmarksFixture _bookmarksFixture;
 
 	@DeleteAfterTestRun
 	private List<BookmarksFolder> _bookmarksFolders;
@@ -119,8 +196,6 @@ public class BookmarksFolderIndexerReindexTest {
 
 	@DeleteAfterTestRun
 	private List<Group> _groups;
-
-	private User _user;
 
 	@DeleteAfterTestRun
 	private List<User> _users;

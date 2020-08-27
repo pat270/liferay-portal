@@ -1,4 +1,14 @@
 definition {
+
+	/*
+
+		This is the multiline comments:
+		We should ignore all SF rules here.
+
+		Navigator.correctLine() ;
+
+	*/
+
 	test AddUser {
 		Refresh()	 ;
 
@@ -39,7 +49,62 @@ definition {
 			''';
 
 		Site.editGoogleAnalyticsIDCP(
-			googleAnalyticsID = '''']);alert(/googleAnalyticsId/);//'''
+			googleAnalyticsID = '''']) ;alert(/googleAnalyticsId/);//'''
 		);
 	}
+
+	test BB {
+		property test.run.environment = "B";
+	}
+
+	test  CC {
+		property test.run.environment = "C";
+	}
+
+	test DD  {
+		property test.run.environment = "D";
+	}
+
+	test EE{
+		property test.run.environment = "E";
+	}
+
+	test  FF{
+		property test.run.environment = "F";
+	}
+
+	test  GG
+	{
+		property test.run.environment = "G";
+	}
+
+	test HH
+	{
+		property test.run.environment = "H";
+	}
+
+	test	 II
+	{
+		property test.run.environment = "I";
+	}
+
+	/*
+
+		This command shouldn't be formatted, becasue it is in the multiline comments block :
+
+		test CommandTest{
+		}
+
+	*/
+
+	test JJ {
+		var wikiPageContent = '''
+<pre>
+	This command shouldn't be formatted, becasue it is in the multiline strings block :
+
+	test CommandTest{
+	}
+</pre>''';
+	}
+
 }

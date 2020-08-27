@@ -27,14 +27,14 @@ public class ViewMembershipRequestsManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public ViewMembershipRequestsManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		ViewMembershipRequestsDisplayContext
 			viewMembershipRequestsDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			viewMembershipRequestsDisplayContext.
 				getSiteMembershipSearchContainer());
 	}

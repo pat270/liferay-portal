@@ -16,7 +16,7 @@ package com.liferay.portal.kernel.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.LocaleException;
-import com.liferay.portal.kernel.model.version.VersionedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -37,8 +37,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface LayoutModel
-	extends AttachedModel, BaseModel<Layout>, LocalizedModel, MVCCModel,
-			ShardedModel, StagedGroupedModel, VersionedModel<LayoutVersion> {
+	extends AttachedModel, BaseModel<Layout>, CTModel<Layout>, LocalizedModel,
+			MVCCModel, ShardedModel, StagedGroupedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -79,6 +79,22 @@ public interface LayoutModel
 	public void setMvccVersion(long mvccVersion);
 
 	/**
+	 * Returns the ct collection ID of this layout.
+	 *
+	 * @return the ct collection ID of this layout
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this layout.
+	 *
+	 * @param ctCollectionId the ct collection ID of this layout
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
+
+	/**
 	 * Returns the uuid of this layout.
 	 *
 	 * @return the uuid of this layout
@@ -94,22 +110,6 @@ public interface LayoutModel
 	 */
 	@Override
 	public void setUuid(String uuid);
-
-	/**
-	 * Returns the head ID of this layout.
-	 *
-	 * @return the head ID of this layout
-	 */
-	@Override
-	public long getHeadId();
-
-	/**
-	 * Sets the head ID of this layout.
-	 *
-	 * @param headId the head ID of this layout
-	 */
-	@Override
-	public void setHeadId(long headId);
 
 	/**
 	 * Returns the plid of this layout.
@@ -975,6 +975,20 @@ public interface LayoutModel
 	public void setColorSchemeId(String colorSchemeId);
 
 	/**
+	 * Returns the style book entry ID of this layout.
+	 *
+	 * @return the style book entry ID of this layout
+	 */
+	public long getStyleBookEntryId();
+
+	/**
+	 * Sets the style book entry ID of this layout.
+	 *
+	 * @param styleBookEntryId the style book entry ID of this layout
+	 */
+	public void setStyleBookEntryId(long styleBookEntryId);
+
+	/**
 	 * Returns the css of this layout.
 	 *
 	 * @return the css of this layout
@@ -1002,6 +1016,20 @@ public interface LayoutModel
 	 * @param priority the priority of this layout
 	 */
 	public void setPriority(int priority);
+
+	/**
+	 * Returns the master layout plid of this layout.
+	 *
+	 * @return the master layout plid of this layout
+	 */
+	public long getMasterLayoutPlid();
+
+	/**
+	 * Sets the master layout plid of this layout.
+	 *
+	 * @param masterLayoutPlid the master layout plid of this layout
+	 */
+	public void setMasterLayoutPlid(long masterLayoutPlid);
 
 	/**
 	 * Returns the layout prototype uuid of this layout.
@@ -1084,6 +1112,151 @@ public interface LayoutModel
 	 */
 	@Override
 	public void setLastPublishDate(Date lastPublishDate);
+
+	/**
+	 * Returns the status of this layout.
+	 *
+	 * @return the status of this layout
+	 */
+	@Override
+	public int getStatus();
+
+	/**
+	 * Sets the status of this layout.
+	 *
+	 * @param status the status of this layout
+	 */
+	@Override
+	public void setStatus(int status);
+
+	/**
+	 * Returns the status by user ID of this layout.
+	 *
+	 * @return the status by user ID of this layout
+	 */
+	@Override
+	public long getStatusByUserId();
+
+	/**
+	 * Sets the status by user ID of this layout.
+	 *
+	 * @param statusByUserId the status by user ID of this layout
+	 */
+	@Override
+	public void setStatusByUserId(long statusByUserId);
+
+	/**
+	 * Returns the status by user uuid of this layout.
+	 *
+	 * @return the status by user uuid of this layout
+	 */
+	@Override
+	public String getStatusByUserUuid();
+
+	/**
+	 * Sets the status by user uuid of this layout.
+	 *
+	 * @param statusByUserUuid the status by user uuid of this layout
+	 */
+	@Override
+	public void setStatusByUserUuid(String statusByUserUuid);
+
+	/**
+	 * Returns the status by user name of this layout.
+	 *
+	 * @return the status by user name of this layout
+	 */
+	@AutoEscape
+	@Override
+	public String getStatusByUserName();
+
+	/**
+	 * Sets the status by user name of this layout.
+	 *
+	 * @param statusByUserName the status by user name of this layout
+	 */
+	@Override
+	public void setStatusByUserName(String statusByUserName);
+
+	/**
+	 * Returns the status date of this layout.
+	 *
+	 * @return the status date of this layout
+	 */
+	@Override
+	public Date getStatusDate();
+
+	/**
+	 * Sets the status date of this layout.
+	 *
+	 * @param statusDate the status date of this layout
+	 */
+	@Override
+	public void setStatusDate(Date statusDate);
+
+	/**
+	 * Returns <code>true</code> if this layout is approved.
+	 *
+	 * @return <code>true</code> if this layout is approved; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isApproved();
+
+	/**
+	 * Returns <code>true</code> if this layout is denied.
+	 *
+	 * @return <code>true</code> if this layout is denied; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isDenied();
+
+	/**
+	 * Returns <code>true</code> if this layout is a draft.
+	 *
+	 * @return <code>true</code> if this layout is a draft; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isDraft();
+
+	/**
+	 * Returns <code>true</code> if this layout is expired.
+	 *
+	 * @return <code>true</code> if this layout is expired; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isExpired();
+
+	/**
+	 * Returns <code>true</code> if this layout is inactive.
+	 *
+	 * @return <code>true</code> if this layout is inactive; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isInactive();
+
+	/**
+	 * Returns <code>true</code> if this layout is incomplete.
+	 *
+	 * @return <code>true</code> if this layout is incomplete; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isIncomplete();
+
+	/**
+	 * Returns <code>true</code> if this layout is pending.
+	 *
+	 * @return <code>true</code> if this layout is pending; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPending();
+
+	/**
+	 * Returns <code>true</code> if this layout is scheduled.
+	 *
+	 * @return <code>true</code> if this layout is scheduled; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isScheduled();
 
 	@Override
 	public String[] getAvailableLanguageIds();

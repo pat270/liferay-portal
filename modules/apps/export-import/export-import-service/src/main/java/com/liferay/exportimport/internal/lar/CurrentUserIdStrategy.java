@@ -19,12 +19,9 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Bruno Farache
  */
-@ProviderType
 public class CurrentUserIdStrategy implements UserIdStrategy {
 
 	public CurrentUserIdStrategy(User user) {
@@ -43,7 +40,7 @@ public class CurrentUserIdStrategy implements UserIdStrategy {
 
 			return user.getUserId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return _user.getUserId();
 		}
 	}

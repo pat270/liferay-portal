@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
@@ -94,7 +93,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.portlet.Event;
 import javax.portlet.MimeResponse;
@@ -113,7 +111,6 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 /**
  * @author Shuyang Zhou
@@ -130,8 +127,8 @@ public class PortletContainerImpl implements PortletContainer {
 		try {
 			_preparePortlet(httpServletRequest, portlet);
 		}
-		catch (Exception e) {
-			throw new PortletContainerException(e);
+		catch (Exception exception) {
+			throw new PortletContainerException(exception);
 		}
 	}
 
@@ -332,8 +329,8 @@ public class PortletContainerImpl implements PortletContainer {
 				return event;
 			}
 		}
-		catch (ClassNotFoundException cnfe) {
-			throw new RuntimeException(cnfe);
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new RuntimeException(classNotFoundException);
 		}
 
 		byte[] serializedValue = SerializableUtil.serialize(value);
@@ -345,8 +342,10 @@ public class PortletContainerImpl implements PortletContainer {
 	}
 
 	private boolean _isPublishedContentPage(Layout layout) {
-		if (Objects.equals(layout.getType(), LayoutConstants.TYPE_CONTENT) &&
-			(layout.getClassNameId() == 0)) {
+		if (layout.isTypeContent() &&
+			((layout.getClassNameId() == 0) ||
+			 (PortalUtil.getClassNameId(Layout.class.getName()) !=
+				 layout.getClassNameId()))) {
 
 			return true;
 		}
@@ -366,10 +365,9 @@ public class PortletContainerImpl implements PortletContainer {
 				WebKeys.THEME_DISPLAY);
 
 		if (user != null) {
-			HttpSession session = httpServletRequest.getSession();
-
 			InvokerPortletUtil.clearResponse(
-				session, layout.getPrimaryKey(), portlet.getPortletId(),
+				httpServletRequest.getSession(), layout.getPrimaryKey(),
+				portlet.getPortletId(),
 				LanguageUtil.getLanguageId(httpServletRequest));
 		}
 
@@ -426,8 +424,8 @@ public class PortletContainerImpl implements PortletContainer {
 		try {
 			return unsafeSupplier.get();
 		}
-		catch (Exception e) {
-			throw new PortletContainerException(e);
+		catch (Exception exception) {
+			throw new PortletContainerException(exception);
 		}
 		finally {
 			if (themeDisplay != null) {
@@ -507,11 +505,10 @@ public class PortletContainerImpl implements PortletContainer {
 					windowState, portletMode, portletPreferences,
 					layout.getPlid());
 
-			User user = PortalUtil.getUser(httpServletRequest);
-
 			LiferayActionResponse liferayActionResponse =
 				ActionResponseFactory.create(
-					liferayActionRequest, httpServletResponse, user, layout);
+					liferayActionRequest, httpServletResponse,
+					PortalUtil.getUser(httpServletRequest), layout);
 
 			liferayActionRequest.defineObjects(
 				portletConfig, liferayActionResponse);
@@ -567,10 +564,8 @@ public class PortletContainerImpl implements PortletContainer {
 					for (Map.Entry<String, String[]> entry :
 							renderParameters.entrySet()) {
 
-						String key = entry.getKey();
-						String[] value = entry.getValue();
-
-						portletURL.setParameter(key, value);
+						portletURL.setParameter(
+							entry.getKey(), entry.getValue());
 					}
 				}
 				else {
@@ -681,12 +676,12 @@ public class PortletContainerImpl implements PortletContainer {
 		liferayEventRequest.setEvent(
 			serializeEvent(event, invokerPortlet.getPortletClassLoader()));
 
-		User user = PortalUtil.getUser(httpServletRequest);
 		Layout requestLayout = (Layout)httpServletRequest.getAttribute(
 			WebKeys.LAYOUT);
 
 		LiferayEventResponse liferayEventResponse = EventResponseFactory.create(
-			liferayEventRequest, httpServletResponse, user, requestLayout);
+			liferayEventRequest, httpServletResponse,
+			PortalUtil.getUser(httpServletRequest), requestLayout);
 
 		liferayEventRequest.defineObjects(portletConfig, liferayEventResponse);
 
@@ -700,13 +695,11 @@ public class PortletContainerImpl implements PortletContainer {
 				PortletApp portletApp = portlet.getPortletApp();
 
 				if (portletApp.getSpecMajorVersion() < 3) {
-					Map<String, String[]> renderParameterMap =
-						liferayEventResponse.getRenderParameterMap();
-
 					RenderParametersPool.put(
 						httpServletRequest, requestLayout.getPlid(),
 						portlet.getPortletId(),
-						new HashMap<>(renderParameterMap));
+						new HashMap<>(
+							liferayEventResponse.getRenderParameterMap()));
 				}
 				else {
 					_setAllRenderParameters(
@@ -814,21 +807,18 @@ public class PortletContainerImpl implements PortletContainer {
 		throws Exception {
 
 		if ((portlet != null) && portlet.isInstanceable() &&
-			!portlet.isAddDefaultResource()) {
+			!portlet.isAddDefaultResource() &&
+			!Validator.isPassword(portlet.getInstanceId())) {
 
-			String instanceId = portlet.getInstanceId();
-
-			if (!Validator.isPassword(instanceId)) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						StringBundler.concat(
-							"Portlet ", portlet.getPortletId(),
-							" is instanceable but does not have a valid ",
-							"instance id"));
-				}
-
-				portlet = null;
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Portlet ", portlet.getPortletId(),
+						" is instanceable but does not have a valid instance ",
+						"id"));
 			}
+
+			portlet = null;
 		}
 
 		if (portlet == null) {
@@ -1057,14 +1047,14 @@ public class PortletContainerImpl implements PortletContainer {
 		LiferayResourceResponse liferayResourceResponse = null;
 
 		if (liferayResourceRequest == null) {
-			PortletContext portletContext = portletConfig.getPortletContext();
 			PortletPreferences portletPreferences =
 				PortletPreferencesLocalServiceUtil.getStrictPreferences(
 					portletPreferencesIds);
 
 			liferayResourceRequest = ResourceRequestFactory.create(
-				httpServletRequest, portlet, invokerPortlet, portletContext,
-				windowState, portletMode, portletPreferences, layout.getPlid());
+				httpServletRequest, portlet, invokerPortlet,
+				portletConfig.getPortletContext(), windowState, portletMode,
+				portletPreferences, layout.getPlid());
 
 			liferayResourceResponse = ResourceResponseFactory.create(
 				liferayResourceRequest, httpServletResponse);
@@ -1147,11 +1137,9 @@ public class PortletContainerImpl implements PortletContainer {
 			QName qName = supportedPublicRenderParameterMap.get(key);
 
 			if (qName != null) {
-				String publicRenderParameterName =
-					PortletQNameUtil.getPublicRenderParameterName(qName);
-
 				publicRenderParameterMap.put(
-					publicRenderParameterName, entry.getValue());
+					PortletQNameUtil.getPublicRenderParameterName(qName),
+					entry.getValue());
 
 				continue;
 			}

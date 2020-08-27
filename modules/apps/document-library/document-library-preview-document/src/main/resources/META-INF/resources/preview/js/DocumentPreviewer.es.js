@@ -1,10 +1,25 @@
-import {Config} from 'metal-state';
-import {debounce} from 'metal-debounce';
-import Component from 'metal-component';
-import imagePromise from 'image-promise';
-import Soy from 'metal-soy';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-import templates from './DocumentPreviewer.soy';
+import ClayButton from '@clayui/button';
+import ClayIcon from '@clayui/icon';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
+import {useIsMounted} from 'frontend-js-react-web';
+import {debounce} from 'frontend-js-web';
+import imagePromise from 'image-promise';
+import PropTypes from 'prop-types';
+import React, {useEffect, useRef, useState} from 'react';
 
 const KEY_CODE_ENTER = 13;
 
@@ -15,7 +30,25 @@ const KEY_CODE_ESC = 27;
  * Includes backspace, tab, arrows, delete and numbers
  * @type {Array<number>}
  */
-const VALID_KEY_CODES = [8, 9, 37, 38, 39, 40, 46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57];
+const VALID_KEY_CODES = [
+	8,
+	9,
+	37,
+	38,
+	39,
+	40,
+	46,
+	48,
+	49,
+	50,
+	51,
+	52,
+	53,
+	54,
+	55,
+	56,
+	57,
+];
 
 /**
  * Milisecons between goToPage calls
@@ -24,277 +57,249 @@ const VALID_KEY_CODES = [8, 9, 37, 38, 39, 40, 46, 48, 49, 50, 51, 52, 53, 54, 5
 const WAIT_BETWEEN_GO_TO_PAGE = 250;
 
 /**
- * Component that create an pdf preview
+ * Component that creates a pdf preview
  * @review
  */
-class DocumentPreviewer extends Component {
 
-	/**
-	 * @inheritDoc
-	 */
-	created() {
-		this._loadedPages = {
-			[this.currentPage]: {
-				loaded: true,
-				pagePromise: Promise.resolve()
+const DocumentPreviewer = ({baseImageURL, initialPage, totalPages}) => {
+	const [currentPage, setCurrentPage] = useState(initialPage);
+	const [currentPageLoading, setCurrentPageLoading] = useState(false);
+	const [expanded, setExpanded] = useState(false);
+	const [loadedPages] = useState({
+		[currentPage]: {
+			loaded: true,
+			pagePromise: Promise.resolve(),
+		},
+	});
+	const [nextPageDisabled, setNextPageDisabled] = useState(
+		currentPage === totalPages
+	);
+	const [previousPageDisabled, setPreviousPageDisabled] = useState(
+		currentPage === 1
+	);
+	const [showPageInput, setShowPageInput] = useState(false);
+
+	const imageContainer = useRef();
+	const pageInput = useRef();
+	const showPageInputButton = useRef();
+
+	if (showPageInput) {
+		setTimeout(() => {
+			if (isMounted()) {
+				pageInput.current.focus();
 			}
-		};
-
-		this._loadPages(this.currentPage);
-
-		this._goToPageDebounced = debounce(
-			this._goToPage.bind(this),
-			WAIT_BETWEEN_GO_TO_PAGE
-		);
+		}, 100);
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	rendered() {
-		if (this.showPageInput) {
-			setTimeout(() => this.refs.pageInput.focus(), 100);
-		}
-	}
+	const isMounted = useIsMounted();
 
-	/**
-	 * @inheritDoc
-	 */
-	syncCurrentPage(currentPage) {
-		this.refs.imageContainer.scrollTop = 0;
-		this.previousPageDisabled = currentPage === 1;
-		this.nextPageDisabled = currentPage === this.totalPages;
+	const goToPage = (page) => {
+		setNextPageDisabled(page === totalPages);
+		setPreviousPageDisabled(page === 1);
 
-		if (
-			!this._loadedPages[currentPage] ||
-			!this._loadedPages[currentPage].loaded
-		) {
-			this.currentPageLoading = true;
-			this._goToPageDebounced(currentPage);
-		}
-		else {
-			this.currentPageLoading = false;
-		}
-	}
+		if (!loadedPages[page] || !loadedPages[page].loaded) {
+			setCurrentPageLoading(true);
 
-	/**
-	 * Load adjacent pages of the initial one
-	 * @param {number|string} initialPage - the initial page
-	 * @param {number} [numberOfPages=2] - number of load pages (before and after)
-	 * @private
-	 * @review
-	 */
-	_loadPages(initialPage, numberOfPages = 2) {
-		for (let i = 1; i <= numberOfPages; i++) {
-			if (initialPage + i <= this.totalPages) {
-				this._loadPage(initialPage + i);
-			}
-			if (initialPage - i > 1) {
-				this._loadPage(initialPage - i);
-			}
-		}
-	}
-
-	/**
-	 * Trigger a promise to load the image
-	 * @param {number} page
-	 * @return {Promise} A promise to be resolved when the image is loaded
-	 * @private
-	 * @review
-	 */
-	_loadPage(page) {
-		let pagePromise = this._loadedPages[page] && this._loadedPages[page].pagePromise;
-
-		if (!pagePromise) {
-			pagePromise = imagePromise(`${this.baseImageURL}${page}`).then(
-				() => {
-					this._loadedPages[page].loaded = true;
-				}
-			);
-
-			this._loadedPages[page] = {
-				loaded: false,
-				pagePromise
-			};
+			loadCurrentPage(page);
 		}
 
-		return pagePromise;
-	}
+		imageContainer.current.scrollTop = 0;
 
-	/**
-	 * Show page when it's completely loaded
-	 * and load the closest pages
-	 * @param {number} page
-	 * @private
-	 * @review
-	 */
-	_goToPage(page) {
-		this._loadPage(page).then(
-			() => {
-				if (page === this.currentPage) {
-					this.currentPageLoading = false;
-					this._loadPages(page);
-				}
-			}
-		);
-	}
+		setCurrentPage(page);
+	};
 
-	/**
-	 * Event handler executed on pageInput blur.
-	 * Saves the current value.
-	 * @param {!Event} event
-	 * @private
-	 * @review
-	 */
-	_handleBlurPageInput(event) {
-		this.currentPage = event.delegateTarget.value;
-		this._hidePageInput(false);
-	}
+	const handleBlurPageInput = (event) => {
+		processPageInput(event.currentTarget.value);
 
-	/**
-	 * Handles click action in the toolbar.
-	 *
-	 * @param {!Event} event
-	 * @private
-	 * @review
-	 */
-	_handleClickToolbar(event) {
-		const action = event.currentTarget.value;
+		hidePageInput(false);
+	};
 
-		if (action === 'expandToggle') {
-			this.expanded = !this.expanded;
-		}
-		else if (action === 'go') {
-			this.showPageInput = true;
-		}
-		else if (action === 'next') {
-			this.currentPage++;
-		}
-		else if (action === 'previous') {
-			this.currentPage--;
-		}
-	}
-
-	/**
-	 * Prevents from introducing non digits in input field.
-	 * And map certain actions to escape enter (save) or (cancel)
-	 * @param {KeyboardEvent} event The keyboard event.
-	 * @private
-	 * @review
-	 */
-	_handleKeyDownPageInput(event) {
+	const handleKeyDownPageInput = (event) => {
 		const code = event.keyCode || event.charCode;
 
 		if (code === KEY_CODE_ENTER) {
-			this.currentPage = event.delegateTarget.value;
-			this._hidePageInput();
+			processPageInput(event.currentTarget.value);
+
+			hidePageInput();
 		}
 		else if (code === KEY_CODE_ESC) {
-			this._hidePageInput();
+			hidePageInput();
 		}
 		else if (VALID_KEY_CODES.indexOf(code) === -1) {
 			event.preventDefault();
 		}
-	}
+	};
 
-	/**
-	 * Hide PageInput and return focus to parent button
-	 * Saves the current value.
-	 * @param {Boolean} [returnFocus=true] - flag to determine if return the focus
-	 * @private
-	 * @review
-	 */
-	_hidePageInput(returnFocus = true) {
-		this.showPageInput = false;
+	const hidePageInput = (returnFocus = true) => {
+		setShowPageInput(false);
 
 		if (returnFocus) {
-			setTimeout(() => this.refs.showPageInputBtn.element.focus(), 100);
+			setTimeout(() => {
+				if (isMounted()) {
+					showPageInputButton.current.focus();
+				}
+			}, 100);
 		}
-	}
+	};
 
-	/**
-	 * Set the current page if is valid page and show loader
-	 * @param {number|string} page
-	 * @private
-	 * @review
-	 */
-	_setCurrentPage(page) {
-		const pageNumber = Number.parseInt(page, 10);
+	const loadPage = (page) => {
+		let pagePromise = loadedPages[page] && loadedPages[page].pagePromise;
 
-		return pageNumber ?
-			Math.min(
-				Math.max(1, pageNumber),
-				this.totalPages
-			) :
-			this.currentPage;
-	}
-}
+		if (!pagePromise) {
+			pagePromise = imagePromise(`${baseImageURL}${page}`).then(() => {
+				loadedPages[page].loaded = true;
+			});
 
-/**
- * State definition.
- * @review
- * @static
- * @type {!Object}
- */
-DocumentPreviewer.STATE = {
+			loadedPages[page] = {
+				loaded: false,
+				pagePromise,
+			};
+		}
 
-	/**
-	 * Base path to page images.
-	 * @type {String}
-	 */
-	baseImageURL: Config.string().required(),
+		return pagePromise;
+	};
 
-	/**
-	 * Current page
-	 * @type {Number}
-	 */
-	currentPage: Config.oneOfType(
-		[Config.number(), Config.string()]
-	).required().setter('_setCurrentPage'),
+	const loadAdjacentPages = (page, adjacentPageCount = 2) => {
+		for (let i = 1; i <= adjacentPageCount; i++) {
+			if (page + i <= totalPages) {
+				loadPage(page + i);
+			}
 
-	/**
-	 * Flag that indicate if currentPgae is loading.
-	 * @type {Boolean}
-	 */
-	currentPageLoading: Config.bool(),
+			if (page - i > 1) {
+				loadPage(page - i);
+			}
+		}
+	};
 
-	/**
-	 * Flag that indicate if pdf is expanded or fit to container.
-	 * @type {Boolean}
-	 */
-	expanded: Config.bool(),
+	const loadCurrentPage = debounce((page) => {
+		loadPage(page)
+			.then(() => {
+				loadAdjacentPages(page);
 
-	/**
-	 * Flag that indicate if 'next page' is disabled.
-	 * @type {Boolean}
-	 */
-	nextPageDisabled: Config.bool(),
+				setCurrentPageLoading(false);
+			})
+			.catch(() => {
+				setCurrentPageLoading(false);
+			});
+	}, WAIT_BETWEEN_GO_TO_PAGE);
 
-	/**
-	 * Flag that indicate if 'previous page' is disabled.
-	 * @type {Boolean}
-	 */
-	previousPageDisabled: Config.bool(),
+	const processPageInput = (value) => {
+		let pageNumber = Number.parseInt(value, 10);
 
-	/**
-	 * Flag that indicate if 'pageInput' is visible.
-	 * @type {Boolean}
-	 */
-	showPageInput: Config.bool(),
+		pageNumber = pageNumber
+			? Math.min(Math.max(1, pageNumber), totalPages)
+			: currentPage;
 
-	/**
-	 * Path to icon images.
-	 * @type {String}
-	 */
-	spritemap: Config.string().required(),
+		goToPage(pageNumber);
+	};
 
-	/**
-	 * Pdf pages lenght
-	 * @type {Number}
-	 */
-	totalPages: Config.number().required()
+	useEffect(() => {
+		loadAdjacentPages(initialPage);
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	return (
+		<div className="preview-file">
+			<div
+				className="preview-file-container preview-file-max-height"
+				ref={imageContainer}
+			>
+				{currentPageLoading ? (
+					<ClayLoadingIndicator />
+				) : (
+					<img
+						className={`preview-file-document ${
+							!expanded && 'preview-file-document-fit'
+						}`}
+						src={`${baseImageURL}${currentPage}`}
+					/>
+				)}
+			</div>
+			<div className="preview-toolbar-container">
+				<ClayButton.Group className="floating-bar">
+					<ClayButton.Group>
+						<ClayButton
+							className="btn-floating-bar btn-floating-bar-text"
+							onClick={() => {
+								setShowPageInput(true);
+							}}
+							ref={showPageInputButton}
+							title={
+								totalPages > 1 &&
+								Liferay.Language.get('click-to-jump-to-a-page')
+							}
+						>
+							{`${Liferay.Language.get(
+								'page'
+							)} ${currentPage} / ${totalPages}`}
+						</ClayButton>
+						{showPageInput && (
+							<div className="floating-bar-input-wrapper">
+								<input
+									className="floating-bar-input form-control form-control-sm"
+									max={totalPages}
+									min="1"
+									onBlur={handleBlurPageInput}
+									onKeyDown={handleKeyDownPageInput}
+									placeholder={Liferay.Language.get(
+										'page-...'
+									)}
+									ref={pageInput}
+									type="number"
+								/>
+							</div>
+						)}
+					</ClayButton.Group>
+					<ClayButton
+						className="btn-floating-bar"
+						disabled={previousPageDisabled}
+						monospaced
+						onClick={() => {
+							goToPage(currentPage - 1);
+						}}
+						title={Liferay.Language.get('page-above')}
+					>
+						<ClayIcon symbol="caret-top" />
+					</ClayButton>
+					<ClayButton
+						className="btn-floating-bar"
+						disabled={nextPageDisabled}
+						monospaced
+						onClick={() => {
+							goToPage(currentPage + 1);
+						}}
+						title={Liferay.Language.get('page-below')}
+					>
+						<ClayIcon symbol="caret-bottom" />
+					</ClayButton>
+					<div className="separator-floating-bar"></div>
+					<ClayButton
+						className="btn-floating-bar"
+						monospaced
+						onClick={() => {
+							setExpanded(!expanded);
+						}}
+						title={
+							expanded
+								? Liferay.Language.get('zoom-to-fit')
+								: Liferay.Language.get('expand')
+						}
+					>
+						<ClayIcon
+							symbol={expanded ? 'autosize' : 'full-size'}
+						/>
+					</ClayButton>
+				</ClayButton.Group>
+			</div>
+		</div>
+	);
 };
 
-Soy.register(DocumentPreviewer, templates);
-export {DocumentPreviewer};
+DocumentPreviewer.propTypes = {
+	baseImageURL: PropTypes.string,
+	initialPage: PropTypes.number,
+	totalPages: PropTypes.number,
+};
+
 export default DocumentPreviewer;

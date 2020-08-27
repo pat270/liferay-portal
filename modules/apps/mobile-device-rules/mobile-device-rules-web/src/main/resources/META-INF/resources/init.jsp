@@ -27,8 +27,7 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.frontend.taglib.clay.servlet.taglib.util.JSPNavigationItemList" %><%@
-page import="com.liferay.mobile.device.rules.action.ActionHandler" %><%@
+<%@ page import="com.liferay.mobile.device.rules.action.ActionHandler" %><%@
 page import="com.liferay.mobile.device.rules.action.ActionHandlerManagerUtil" %><%@
 page import="com.liferay.mobile.device.rules.constants.MDRPortletKeys" %><%@
 page import="com.liferay.mobile.device.rules.exception.ActionTypeException" %><%@
@@ -87,8 +86,10 @@ page import="com.liferay.portal.kernel.service.LayoutTemplateLocalServiceUtil" %
 page import="com.liferay.portal.kernel.service.ThemeLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.HttpUtil" %><%@
+page import="com.liferay.portal.kernel.util.LinkedHashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.OrderByComparator" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
@@ -101,7 +102,7 @@ page import="com.liferay.portal.util.PropsValues" %>
 
 <%@ page import="java.util.Collection" %><%@
 page import="java.util.Collections" %><%@
-page import="java.util.HashMap" %><%@
+page import="java.util.Iterator" %><%@
 page import="java.util.LinkedHashMap" %><%@
 page import="java.util.List" %><%@
 page import="java.util.Map" %><%@

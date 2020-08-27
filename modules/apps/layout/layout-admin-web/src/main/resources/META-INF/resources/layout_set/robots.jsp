@@ -19,11 +19,7 @@
 <%
 LayoutSet layoutSet = layoutsAdminDisplayContext.getSelLayoutSet();
 
-String virtualHostName = PortalUtil.getVirtualHostname(layoutSet);
-
-String defaultRobots = RobotsUtil.getRobots(layoutsAdminDisplayContext.getSelLayoutSet(), request.isSecure());
-
-String robots = ParamUtil.getString(request, "robots", defaultRobots);
+String virtualHostname = layoutsAdminDisplayContext.getVirtualHostname();
 %>
 
 <liferay-ui:error-marker
@@ -32,8 +28,8 @@ String robots = ParamUtil.getString(request, "robots", defaultRobots);
 />
 
 <c:choose>
-	<c:when test="<%= Validator.isNotNull(virtualHostName) %>">
-		<aui:input label="set-the-robots-txt" name='<%= "TypeSettingsProperties--" + layoutSet.isPrivateLayout() + "-robots.txt--" %>' placeholder="robots" type="textarea" value="<%= robots %>" />
+	<c:when test="<%= Validator.isNotNull(virtualHostname) %>">
+		<aui:input helpMessage="robots-txt-help" label="set-the-robots-txt" name='<%= "TypeSettingsProperties--" + layoutSet.isPrivateLayout() + "-robots.txt--" %>' placeholder="robots" type="textarea" value="<%= layoutsAdminDisplayContext.getRobots() %>" />
 	</c:when>
 	<c:otherwise>
 		<div class="alert alert-info">

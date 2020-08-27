@@ -21,7 +21,10 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.PwdGenerator;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ImportsFormatter;
@@ -74,15 +77,7 @@ public class JavaParser {
 			File file, String content, int maxLineLength, boolean writeFile)
 		throws CheckstyleException, IOException {
 
-		_maxLineLength = maxLineLength;
-
-		String newContent = _parse(file, content);
-
-		ImportsFormatter importsFormatter = new JavaImportsFormatter();
-
-		newContent = importsFormatter.format(
-			_trimContent(newContent), ToolsUtil.getPackagePath(file),
-			StringUtil.replaceLast(file.getName(), ".java", StringPool.BLANK));
+		String newContent = _parse(file, content, maxLineLength, false);
 
 		if (writeFile && !newContent.equals(content)) {
 			FileUtil.write(file, newContent);
@@ -91,9 +86,88 @@ public class JavaParser {
 		return newContent;
 	}
 
+	public static String parseSnippet(String content, String indent) {
+		int level = ToolsUtil.getLevel(
+			content, StringPool.OPEN_CURLY_BRACE, StringPool.CLOSE_CURLY_BRACE);
+
+		int additionalOpenCurlyBracesCount = Math.max(0, -level);
+		int additionalCloseCurlyBracesCount = Math.max(0, level);
+
+		int failureCount = 0;
+
+		while (true) {
+			StringBundler sb = new StringBundler();
+
+			sb.append("public class Test {\n\n");
+			sb.append("\tpublic void method() {\n");
+
+			for (int i = 0; i < additionalOpenCurlyBracesCount; i++) {
+				sb.append("if (true) {\n");
+			}
+
+			sb.append(content);
+			sb.append("\n");
+
+			for (int i = 0; i < additionalCloseCurlyBracesCount; i++) {
+				sb.append("}\n");
+			}
+
+			sb.append("\t}\n\n");
+			sb.append("}");
+
+			String javaContent = sb.toString();
+
+			String newJavaContent = null;
+
+			try {
+				String fileName = StringBundler.concat(
+					SystemProperties.get(SystemProperties.TMP_DIR),
+					StringPool.SLASH, System.currentTimeMillis(),
+					PwdGenerator.getPassword(8, PwdGenerator.KEY2), ".java");
+
+				newJavaContent = _parse(
+					new File(fileName), javaContent,
+					JavaParserUtil.NO_MAX_LINE_LENGTH, true);
+			}
+			catch (Exception exception) {
+				failureCount++;
+
+				if (failureCount > 5) {
+					return content;
+				}
+
+				additionalOpenCurlyBracesCount++;
+				additionalCloseCurlyBracesCount++;
+
+				continue;
+			}
+
+			if (javaContent.equals(newJavaContent)) {
+				return content;
+			}
+
+			String[] lines = StringUtil.splitLines(newJavaContent);
+
+			lines = ArrayUtil.subset(
+				lines, 3 + additionalOpenCurlyBracesCount,
+				lines.length - 3 - additionalCloseCurlyBracesCount);
+
+			sb = new StringBundler(lines.length - 6);
+
+			for (String line : lines) {
+				sb.append(_adjustIndent(line, indent));
+				sb.append(CharPool.NEW_LINE);
+			}
+
+			sb.setIndex(sb.index() - 1);
+
+			return sb.toString();
+		}
+	}
+
 	private static ParsedJavaClass _addClosingJavaTerm(
 		ParsedJavaClass parsedJavaClass, DetailAST closingDetailAST,
-		FileContents fileContents, String className) {
+		FileContents fileContents, String className, int maxLineLength) {
 
 		DetailAST rcurlyDetailAST = null;
 
@@ -113,7 +187,7 @@ public class JavaParser {
 				rcurlyDetailAST, fileContents);
 
 			String content = javaClosingBrace.toString(
-				curlyExpecedIndent, StringPool.BLANK, _maxLineLength);
+				curlyExpecedIndent, StringPool.BLANK, maxLineLength);
 
 			parsedJavaClass.addJavaTerm(
 				content, DetailASTUtil.getStartPosition(rcurlyDetailAST),
@@ -193,6 +267,10 @@ public class JavaParser {
 
 			for (int i = precedingCommentToken.getLine() + 1; i <= end; i++) {
 				line = fileContents.getLine(i - 1);
+
+				if (Validator.isNull(line)) {
+					contentModifications.addRemoveLineLineNumber(i);
+				}
 
 				if (javadoc) {
 					String actualIndent = _getIndent(line);
@@ -307,7 +385,7 @@ public class JavaParser {
 
 	private static ParsedJavaClass _addJavaTerm(
 			ParsedJavaClass parsedJavaClass, DetailAST detailAST,
-			JavaTerm javaTerm, FileContents fileContents)
+			JavaTerm javaTerm, FileContents fileContents, int maxLineLength)
 		throws IOException {
 
 		if (javaTerm == null) {
@@ -323,7 +401,8 @@ public class JavaParser {
 
 		if (closingDetailAST != null) {
 			parsedJavaClass = _addClosingJavaTerm(
-				parsedJavaClass, closingDetailAST, fileContents, className);
+				parsedJavaClass, closingDetailAST, fileContents, className,
+				maxLineLength);
 		}
 
 		Position startPosition = DetailASTUtil.getStartPosition(detailAST);
@@ -331,7 +410,7 @@ public class JavaParser {
 		String expectedIndent = _getExpectedIndent(detailAST, fileContents);
 
 		String javaTermContent = javaTerm.toString(
-			expectedIndent, StringPool.BLANK, _maxLineLength);
+			expectedIndent, StringPool.BLANK, maxLineLength);
 
 		if (javaTermContent.contains(
 				"\n" + JavaClassCall.NESTED_CODE_BLOCK + "\n") ||
@@ -449,6 +528,27 @@ public class JavaParser {
 			precedingNestedCodeBlockClassName, null);
 
 		return parsedJavaClass;
+	}
+
+	private static String _adjustIndent(String line, String indent) {
+		if (Validator.isNull(line) || (indent.length() == 2)) {
+			return line;
+		}
+
+		if (indent.length() < 2) {
+			for (int i = 0; i < (2 - indent.length()); i++) {
+				line = StringUtil.replaceFirst(
+					line, CharPool.TAB, StringPool.BLANK);
+			}
+
+			return line;
+		}
+
+		for (int i = 0; i < (indent.length() - 2); i++) {
+			line = StringPool.TAB + line;
+		}
+
+		return line;
 	}
 
 	private static String _fixContent(
@@ -602,10 +702,8 @@ public class JavaParser {
 				curlyBracePositionList, detailAST.getFirstChild());
 		}
 
-		curlyBracePositionList = _getCurlyBracePositionList(
+		return _getCurlyBracePositionList(
 			curlyBracePositionList, detailAST.getNextSibling());
-
-		return curlyBracePositionList;
 	}
 
 	private static String _getExpectedIndent(
@@ -725,6 +823,10 @@ public class JavaParser {
 	}
 
 	private static String _getIndent(String s) {
+		while (s.startsWith("\n")) {
+			s = s.substring(1);
+		}
+
 		StringBundler sb = new StringBundler(s.length());
 
 		for (int i = 0; i < s.length(); i++) {
@@ -801,11 +903,12 @@ public class JavaParser {
 	}
 
 	private static ParsedJavaClass _getParsedJavaClass(
-			DetailAST rootDetailAST, FileContents fileContents)
+			DetailAST rootDetailAST, FileContents fileContents,
+			int maxLineLength)
 		throws IOException {
 
 		ParsedJavaClass parsedJavaClass = _walk(
-			new ParsedJavaClass(), rootDetailAST, fileContents);
+			new ParsedJavaClass(), rootDetailAST, fileContents, maxLineLength);
 
 		parsedJavaClass.processCommentTokens();
 
@@ -837,22 +940,22 @@ public class JavaParser {
 				return false;
 			}
 
-			if (precedingCommentToken.getType() ==
-					TokenTypes.SINGLE_LINE_COMMENT) {
+			if ((precedingCommentToken.getType() ==
+					TokenTypes.SINGLE_LINE_COMMENT) &&
+				StringUtil.startsWith(
+					StringUtil.trim(precedingCommentToken.getText()),
+					"Skip JavaParser")) {
 
-				if (StringUtil.startsWith(
-						StringUtil.trim(precedingCommentToken.getText()),
-						"Skip JavaParser")) {
-
-					return true;
-				}
+				return true;
 			}
 
 			precedingCommentToken = precedingCommentToken.getHiddenBefore();
 		}
 	}
 
-	private static String _parse(File file, String content)
+	private static String _parse(
+			File file, String content, int maxLineLength,
+			boolean abortOnNestedCommentToken)
 		throws CheckstyleException, IOException {
 
 		List<String> lines = _getLines(content);
@@ -865,19 +968,35 @@ public class JavaParser {
 			com.puppycrawl.tools.checkstyle.JavaParser.parse(fileContents);
 
 		ParsedJavaClass parsedJavaClass = _getParsedJavaClass(
-			rootDetailAST, fileContents);
+			rootDetailAST, fileContents, maxLineLength);
+
+		if (abortOnNestedCommentToken &&
+			parsedJavaClass.containsNestedCommentToken()) {
+
+			return content;
+		}
 
 		String newContent = _fixIncorrectStartOrEndPositions(
 			content, parsedJavaClass, fileContents);
 
 		if (!newContent.equals(content)) {
-			return _parse(file, newContent);
+			return _parse(file, newContent, maxLineLength, false);
 		}
 
 		newContent = _parseContent(parsedJavaClass, fileContents, lines);
 
 		if (!newContent.equals(content)) {
-			return _parse(file, newContent);
+			return _parse(file, newContent, maxLineLength, false);
+		}
+
+		ImportsFormatter importsFormatter = new JavaImportsFormatter();
+
+		newContent = importsFormatter.format(
+			_trimContent(newContent), ToolsUtil.getPackagePath(file),
+			StringUtil.replaceLast(file.getName(), ".java", StringPool.BLANK));
+
+		if (!newContent.equals(content)) {
+			return _parse(file, newContent, maxLineLength, false);
 		}
 
 		return newContent;
@@ -940,7 +1059,7 @@ public class JavaParser {
 
 	private static ParsedJavaClass _parseDetailAST(
 			ParsedJavaClass parsedJavaClass, DetailAST detailAST,
-			FileContents fileContents)
+			FileContents fileContents, int maxLineLength)
 		throws IOException {
 
 		if (detailAST == null) {
@@ -961,7 +1080,8 @@ public class JavaParser {
 
 		if (javaTerm != null) {
 			parsedJavaClass = _addJavaTerm(
-				parsedJavaClass, detailAST, javaTerm, fileContents);
+				parsedJavaClass, detailAST, javaTerm, fileContents,
+				maxLineLength);
 		}
 
 		if (detailAST.getType() == TokenTypes.LITERAL_DO) {
@@ -969,7 +1089,7 @@ public class JavaParser {
 				TokenTypes.DO_WHILE);
 
 			parsedJavaClass = _parseDetailAST(
-				parsedJavaClass, doWhileDetailAST, fileContents);
+				parsedJavaClass, doWhileDetailAST, fileContents, maxLineLength);
 		}
 		else if (detailAST.getType() == TokenTypes.LITERAL_ELSE) {
 			DetailAST firstChildDetailAST = detailAST.getFirstChild();
@@ -984,13 +1104,14 @@ public class JavaParser {
 					if (rparentDetailAST != null) {
 						parsedJavaClass = _parseDetailAST(
 							parsedJavaClass, rparentDetailAST.getNextSibling(),
-							fileContents);
+							fileContents, maxLineLength);
 					}
 				}
 			}
 			else if (firstChildDetailAST.getType() != TokenTypes.SLIST) {
 				parsedJavaClass = _parseDetailAST(
-					parsedJavaClass, firstChildDetailAST, fileContents);
+					parsedJavaClass, firstChildDetailAST, fileContents,
+					maxLineLength);
 			}
 		}
 		else if (detailAST.getType() == TokenTypes.LITERAL_IF) {
@@ -1005,7 +1126,8 @@ public class JavaParser {
 				}
 
 				parsedJavaClass = _parseDetailAST(
-					parsedJavaClass, literalElseDetailAST, fileContents);
+					parsedJavaClass, literalElseDetailAST, fileContents,
+					maxLineLength);
 
 				literalIfDetailAST = literalElseDetailAST.findFirstToken(
 					TokenTypes.LITERAL_IF);
@@ -1022,7 +1144,8 @@ public class JavaParser {
 
 			for (DetailAST caseGroupDetailAST : caseGroupDetailASTList) {
 				parsedJavaClass = _parseDetailAST(
-					parsedJavaClass, caseGroupDetailAST, fileContents);
+					parsedJavaClass, caseGroupDetailAST, fileContents,
+					maxLineLength);
 			}
 		}
 		else if (detailAST.getType() == TokenTypes.LITERAL_TRY) {
@@ -1032,7 +1155,8 @@ public class JavaParser {
 
 			for (DetailAST literalCatchDetailAST : literalCatchDetailASTList) {
 				parsedJavaClass = _parseDetailAST(
-					parsedJavaClass, literalCatchDetailAST, fileContents);
+					parsedJavaClass, literalCatchDetailAST, fileContents,
+					maxLineLength);
 			}
 
 			DetailAST literalFinallyDetailAST = detailAST.findFirstToken(
@@ -1040,7 +1164,8 @@ public class JavaParser {
 
 			if (literalFinallyDetailAST != null) {
 				parsedJavaClass = _parseDetailAST(
-					parsedJavaClass, literalFinallyDetailAST, fileContents);
+					parsedJavaClass, literalFinallyDetailAST, fileContents,
+					maxLineLength);
 			}
 		}
 
@@ -1055,7 +1180,7 @@ public class JavaParser {
 			if (rparentDetailAST != null) {
 				parsedJavaClass = _parseDetailAST(
 					parsedJavaClass, rparentDetailAST.getNextSibling(),
-					fileContents);
+					fileContents, maxLineLength);
 			}
 		}
 
@@ -1102,7 +1227,7 @@ public class JavaParser {
 
 	private static ParsedJavaClass _walk(
 			ParsedJavaClass parsedJavaClass, DetailAST detailAST,
-			FileContents fileContents)
+			FileContents fileContents, int maxLineLength)
 		throws IOException {
 
 		if (detailAST == null) {
@@ -1119,14 +1244,14 @@ public class JavaParser {
 			 (parentDetailAST.getType() != TokenTypes.OBJBLOCK))) {
 
 			parsedJavaClass = _parseDetailAST(
-				parsedJavaClass, detailAST, fileContents);
+				parsedJavaClass, detailAST, fileContents, maxLineLength);
 		}
 		else if ((detailAST.getType() == TokenTypes.IMPORT) ||
 				 (detailAST.getType() == TokenTypes.PACKAGE_DEF) ||
 				 (detailAST.getType() == TokenTypes.STATIC_IMPORT)) {
 
 			parsedJavaClass = _parseDetailAST(
-				parsedJavaClass, detailAST, fileContents);
+				parsedJavaClass, detailAST, fileContents, maxLineLength);
 		}
 
 		if ((parentDetailAST != null) &&
@@ -1134,11 +1259,11 @@ public class JavaParser {
 			 (parentDetailAST.getType() == TokenTypes.SLIST))) {
 
 			parsedJavaClass = _parseDetailAST(
-				parsedJavaClass, detailAST, fileContents);
+				parsedJavaClass, detailAST, fileContents, maxLineLength);
 		}
 
 		CommonHiddenStreamToken commonHiddenStreamToken =
-			detailAST.getHiddenBefore();
+			DetailASTUtil.getHiddenBefore(detailAST);
 
 		if (commonHiddenStreamToken != null) {
 			parsedJavaClass.addPrecedingCommentToken(
@@ -1147,14 +1272,14 @@ public class JavaParser {
 		}
 
 		parsedJavaClass = _walk(
-			parsedJavaClass, detailAST.getFirstChild(), fileContents);
+			parsedJavaClass, detailAST.getFirstChild(), fileContents,
+			maxLineLength);
 		parsedJavaClass = _walk(
-			parsedJavaClass, detailAST.getNextSibling(), fileContents);
+			parsedJavaClass, detailAST.getNextSibling(), fileContents,
+			maxLineLength);
 
 		return parsedJavaClass;
 	}
-
-	private static int _maxLineLength;
 
 	private static class ContentModifications {
 

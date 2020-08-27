@@ -18,8 +18,8 @@ import com.liferay.asset.list.constants.AssetListPortletKeys;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactoryUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -76,10 +76,9 @@ public class AssetListStagingTestUtil {
 	protected static void addStagingAttribute(
 		ServiceContext serviceContext, String key, Object value) {
 
-		String affixedKey =
-			StagingConstants.STAGED_PREFIX + key + StringPool.DOUBLE_DASH;
-
-		serviceContext.setAttribute(affixedKey, String.valueOf(value));
+		serviceContext.setAttribute(
+			StagingConstants.STAGED_PREFIX + key + StringPool.DOUBLE_DASH,
+			String.valueOf(value));
 	}
 
 }

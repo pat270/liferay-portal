@@ -15,8 +15,9 @@
 package com.liferay.roles.admin.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.petra.string.StringPool;
@@ -24,16 +25,18 @@ import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.RoleServiceUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.rolesadmin.search.RoleSearch;
 import com.liferay.portlet.rolesadmin.search.RoleSearchTerms;
+import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
+import com.liferay.roles.admin.web.internal.role.type.contributor.util.RoleTypeContributorRetrieverUtil;
 import com.liferay.roles.admin.web.internal.search.RoleChecker;
 
 import java.util.LinkedHashMap;
@@ -60,22 +63,21 @@ public class ViewRolesManagementToolbarDisplayContext {
 		_renderResponse = renderResponse;
 		_displayStyle = displayStyle;
 
-		_type = ParamUtil.getInteger(httpServletRequest, "type", 1);
+		_currentRoleTypeContributor =
+			RoleTypeContributorRetrieverUtil.getCurrentRoleTypeContributor(
+				renderRequest);
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteRoles");
-						dropdownItem.setIcon("trash");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteRoles");
+				dropdownItem.setIcon("trash");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getClearResultsURL() {
@@ -87,55 +89,39 @@ public class ViewRolesManagementToolbarDisplayContext {
 	}
 
 	public CreationMenu getCreationMenu() throws PortalException {
-		return new CreationMenu() {
-			{
-				addDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							_renderResponse.createRenderURL(), "mvcPath",
-							"/edit_role.jsp", "redirect", getPortletURL(),
-							"tabs1", "details", "type", String.valueOf(_type));
+		return CreationMenuBuilder.addDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref(
+					_renderResponse.createRenderURL(), "mvcPath",
+					"/edit_role.jsp", "redirect", getPortletURL(), "tabs1",
+					"details", "roleType",
+					String.valueOf(_currentRoleTypeContributor.getType()));
 
-						String title = null;
+				String label = _currentRoleTypeContributor.getTitle(
+					_renderRequest.getLocale());
 
-						if (_type == RoleConstants.TYPE_SITE) {
-							title = "site-role";
-						}
-						else if (_type == RoleConstants.TYPE_ORGANIZATION) {
-							title = "organization-role";
-						}
-						else {
-							title = "regular-role";
-						}
-
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, title));
-					});
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, label));
 			}
-		};
+		).build();
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "filter-by-navigation"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(
+						_httpServletRequest, "filter-by-navigation"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public String getKeywords() {
@@ -168,7 +154,8 @@ public class ViewRolesManagementToolbarDisplayContext {
 		PortletURL portletURL = _renderResponse.createRenderURL();
 
 		portletURL.setParameter("mvcPath", "/view.jsp");
-		portletURL.setParameter("type", String.valueOf(_type));
+		portletURL.setParameter(
+			"roleType", String.valueOf(_currentRoleTypeContributor.getType()));
 
 		portletURL.setParameter("displayStyle", _displayStyle);
 
@@ -197,14 +184,15 @@ public class ViewRolesManagementToolbarDisplayContext {
 		return searchActionURL.toString();
 	}
 
-	public SearchContainer getSearchContainer() throws Exception {
+	public SearchContainer<Role> getSearchContainer() throws Exception {
 		if (_roleSearch != null) {
 			return _roleSearch;
 		}
 
 		RoleSearch roleSearch = new RoleSearch(_renderRequest, getPortletURL());
 
-		roleSearch.setRowChecker(new RoleChecker(_renderResponse));
+		roleSearch.setRowChecker(
+			new RoleChecker(_renderRequest, _renderResponse));
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)_httpServletRequest.getAttribute(
@@ -213,15 +201,24 @@ public class ViewRolesManagementToolbarDisplayContext {
 		RoleSearchTerms roleSearchTerms =
 			(RoleSearchTerms)roleSearch.getSearchTerms();
 
+		LinkedHashMap<String, Object> params = new LinkedHashMap<>();
+
+		if (Validator.isNotNull(_currentRoleTypeContributor.getClassName())) {
+			params.put(
+				"classNameId",
+				PortalUtil.getClassNameId(
+					_currentRoleTypeContributor.getClassName()));
+		}
+
 		List<Role> results = RoleServiceUtil.search(
 			themeDisplay.getCompanyId(), roleSearchTerms.getKeywords(),
-			roleSearchTerms.getTypesObj(), new LinkedHashMap<String, Object>(),
+			new Integer[] {_currentRoleTypeContributor.getType()}, params,
 			roleSearch.getStart(), roleSearch.getEnd(),
 			roleSearch.getOrderByComparator());
 
 		int total = RoleServiceUtil.searchCount(
 			themeDisplay.getCompanyId(), roleSearchTerms.getKeywords(),
-			roleSearchTerms.getTypesObj(), new LinkedHashMap<String, Object>());
+			new Integer[] {_currentRoleTypeContributor.getType()}, params);
 
 		roleSearch.setResults(results);
 		roleSearch.setTotal(total);
@@ -260,35 +257,29 @@ public class ViewRolesManagementToolbarDisplayContext {
 	}
 
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(true);
-						dropdownItem.setHref(StringPool.BLANK);
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "all"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(true);
+				dropdownItem.setHref(StringPool.BLANK);
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "all"));
 			}
-		};
+		).build();
 	}
 
 	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "title"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "title");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "title"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "title"));
+				dropdownItem.setHref(getPortletURL(), "orderByCol", "title");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "title"));
 			}
-		};
+		).build();
 	}
 
+	private final RoleTypeContributor _currentRoleTypeContributor;
 	private final String _displayStyle;
 	private final HttpServletRequest _httpServletRequest;
 	private String _keywords;
@@ -297,6 +288,5 @@ public class ViewRolesManagementToolbarDisplayContext {
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private RoleSearch _roleSearch;
-	private int _type;
 
 }

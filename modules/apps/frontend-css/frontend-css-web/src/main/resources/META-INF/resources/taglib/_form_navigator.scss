@@ -1,7 +1,6 @@
-@import "mixins";
-
 .taglib-form-navigator {
-	.error-notice, .modified-notice {
+	.error-notice,
+	.modified-notice {
 		display: none;
 	}
 
@@ -16,7 +15,7 @@
 			padding: 0;
 			width: 100%;
 
-			@include respond-to(phone, tablet) {
+			@include media-breakpoint-down(md) {
 				overflow: auto;
 				white-space: nowrap;
 			}

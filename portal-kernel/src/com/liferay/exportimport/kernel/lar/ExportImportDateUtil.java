@@ -14,7 +14,7 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
@@ -53,12 +53,9 @@ import java.util.TimeZone;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Máté Thurzó
  */
-@ProviderType
 public class ExportImportDateUtil {
 
 	public static final String RANGE = "range";
@@ -78,13 +75,13 @@ public class ExportImportDateUtil {
 		LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			groupId, privateLayout);
 
-		UnicodeProperties settingsProperties =
+		UnicodeProperties settingsUnicodeProperties =
 			layoutSet.getSettingsProperties();
 
-		settingsProperties.remove(_LAST_PUBLISH_DATE);
+		settingsUnicodeProperties.remove(_LAST_PUBLISH_DATE);
 
 		LayoutSetLocalServiceUtil.updateSettings(
-			groupId, privateLayout, settingsProperties.toString());
+			groupId, privateLayout, settingsUnicodeProperties.toString());
 	}
 
 	public static Calendar getCalendar(
@@ -105,11 +102,12 @@ public class ExportImportDateUtil {
 			portletRequest, paramPrefix + "Minute");
 		int dateAmPm = ParamUtil.getInteger(
 			portletRequest, paramPrefix + "AmPm");
+		TimeZone timeZone = TimeZoneUtil.getTimeZone(
+			ParamUtil.getString(portletRequest, "timeZoneId"));
 
 		return getCalendar(
 			dateAmPm, dateYear, dateMonth, dateDay, dateHour, dateMinute,
-			themeDisplay.getLocale(), themeDisplay.getTimeZone(),
-			timeZoneSensitive);
+			themeDisplay.getLocale(), timeZone, timeZoneSensitive);
 	}
 
 	public static DateRange getDateRange(
@@ -177,11 +175,9 @@ public class ExportImportDateUtil {
 	public static DateRange getDateRange(long exportImportConfigurationId)
 		throws PortalException {
 
-		ExportImportConfiguration exportImportConfiguration =
+		return getDateRange(
 			ExportImportConfigurationLocalServiceUtil.
-				getExportImportConfiguration(exportImportConfigurationId);
-
-		return getDateRange(exportImportConfiguration);
+				getExportImportConfiguration(exportImportConfigurationId));
 	}
 
 	public static DateRange getDateRange(
@@ -348,15 +344,15 @@ public class ExportImportDateUtil {
 			lastPublishDate = new Date();
 		}
 
-		UnicodeProperties settingsProperties =
+		UnicodeProperties settingsUnicodeProperties =
 			layoutSet.getSettingsProperties();
 
-		settingsProperties.setProperty(
+		settingsUnicodeProperties.setProperty(
 			_LAST_PUBLISH_DATE, String.valueOf(lastPublishDate.getTime()));
 
 		LayoutSetLocalServiceUtil.updateSettings(
 			layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
-			settingsProperties.toString());
+			settingsUnicodeProperties.toString());
 	}
 
 	public static void updateLastPublishDate(
@@ -390,15 +386,15 @@ public class ExportImportDateUtil {
 
 			portletPreferences.store();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Not updating the portlet setup for " + portletId +
 						" because no setup was returned for the current page");
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

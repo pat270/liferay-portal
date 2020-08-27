@@ -21,10 +21,12 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Locale;
 
@@ -87,6 +89,12 @@ public class LayoutAssetRenderer extends BaseJSPAssetRenderer<Layout> {
 		sb.append(":</strong> ");
 		sb.append(_layout.getHTMLTitle(locale));
 
+		if (_layout.isTypeContent() &&
+			(_layout.getStatus() == WorkflowConstants.STATUS_PENDING)) {
+
+			return HtmlUtil.stripHtml(sb.toString());
+		}
+
 		return sb.toString();
 	}
 
@@ -101,16 +109,22 @@ public class LayoutAssetRenderer extends BaseJSPAssetRenderer<Layout> {
 		LiferayPortletResponse liferayPortletResponse,
 		String noSuchEntryRedirect) {
 
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)liferayPortletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		try {
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)liferayPortletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
+			if (_layout.getStatus() != WorkflowConstants.STATUS_PENDING) {
+				return PortalUtil.getLayoutFriendlyURL(_layout, themeDisplay);
+			}
 
-			Layout layout = LayoutLocalServiceUtil.getLayout(_layout.getPlid());
+			String previewURL = PortalUtil.getLayoutFriendlyURL(
+				_layout.fetchDraftLayout(), themeDisplay);
 
-			return PortalUtil.getLayoutFriendlyURL(layout, themeDisplay);
+			return HttpUtil.addParameter(
+				previewURL, "p_l_back_url", themeDisplay.getURLCurrent());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return StringPool.BLANK;
 		}
 	}
@@ -139,6 +153,15 @@ public class LayoutAssetRenderer extends BaseJSPAssetRenderer<Layout> {
 		httpServletRequest.setAttribute(WebKeys.LAYOUT, _layout);
 
 		return super.include(httpServletRequest, httpServletResponse, template);
+	}
+
+	@Override
+	public boolean isPreviewInContext() {
+		if (_layout.isTypeContent()) {
+			return true;
+		}
+
+		return super.isPreviewInContext();
 	}
 
 	private final Layout _layout;

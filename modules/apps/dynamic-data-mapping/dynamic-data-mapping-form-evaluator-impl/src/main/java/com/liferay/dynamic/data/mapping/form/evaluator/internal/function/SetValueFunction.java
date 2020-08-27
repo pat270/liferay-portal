@@ -14,21 +14,16 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
-
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME, service = {}
-)
 public class SetValueFunction extends SetPropertyFunction<Object> {
+
+	public static final String NAME = "setValue";
 
 	@Override
 	public String getName() {
-		return "setValue";
+		return NAME;
 	}
 
 	@Override

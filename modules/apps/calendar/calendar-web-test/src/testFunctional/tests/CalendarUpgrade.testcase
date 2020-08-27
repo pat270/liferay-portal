@@ -1,0 +1,53 @@
+@component-name = "portal-upgrades"
+definition {
+
+	property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+	property portal.release = "true";
+	property testray.component.names = "Calendar";
+	property testray.main.component.name = "Upgrades Workflow";
+
+	setUp {
+		SignIn.signIn();
+
+		Smoke.viewWelcomePage();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+	}
+
+	@priority = "5"
+	test ViewCalendarArchive625 {
+		property portal.upstream = "true";
+
+		property data.archive.type = "data-archive-calendar";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "6.2.5";
+
+		Upgrade.viewCalendar();
+	}
+
+	@priority = "5"
+	test ViewCalendarArchive621015 {
+		property portal.upstream = "true";
+
+		property data.archive.type = "data-archive-calendar";
+		property portal.version = "6.2.10.15";
+
+		Upgrade.viewCalendar();
+	}
+
+	@priority = "5"
+	test ViewCalendarArchive621021 {
+		property portal.upstream = "true";
+
+		property data.archive.type = "data-archive-calendar";
+		property portal.version = "6.2.10.21";
+
+		Upgrade.viewCalendar();
+	}
+
+}

@@ -22,10 +22,11 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.service.base.WebsiteLocalServiceBaseImpl;
 
 import java.util.List;
+
+import org.apache.commons.validator.routines.UrlValidator;
 
 /**
  * @author Brian Wing Shun Chan
@@ -58,9 +59,7 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 		website.setTypeId(typeId);
 		website.setPrimary(primary);
 
-		websitePersistence.update(website);
-
-		return website;
+		return websitePersistence.update(website);
 	}
 
 	@Override
@@ -83,10 +82,9 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 
 	@Override
 	public void deleteWebsites(long companyId, String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		List<Website> websites = websitePersistence.findByC_C_C(
-			companyId, classNameId, classPK);
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 
 		for (Website website : websites) {
 			websiteLocalService.deleteWebsite(website);
@@ -102,9 +100,9 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 	public List<Website> getWebsites(
 		long companyId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return websitePersistence.findByC_C_C(companyId, classNameId, classPK);
+		return websitePersistence.findByC_C_C(
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 	}
 
 	@Override
@@ -120,9 +118,7 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 		website.setTypeId(typeId);
 		website.setPrimary(primary);
 
-		websitePersistence.update(website);
-
-		return website;
+		return websitePersistence.update(website);
 	}
 
 	protected void validate(
@@ -151,8 +147,10 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 			String url, long typeId, boolean primary)
 		throws PortalException {
 
-		if (!Validator.isUrl(url)) {
-			throw new WebsiteURLException();
+		UrlValidator urlValidator = new UrlValidator();
+
+		if (!urlValidator.isValid(url)) {
+			throw new WebsiteURLException(url);
 		}
 
 		if (websiteId > 0) {

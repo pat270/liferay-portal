@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DatePicker has a predefinedValue 1`] = `
+<div>
+  <div
+    class="form-group hide"
+    data-field-name="dateField"
+  >
+    <input
+      aria-label="date_picker_hidden"
+      name="dateField"
+      type="hidden"
+      value="2020-06-02"
+    />
+    <div
+      class="date-picker"
+    >
+      <div
+        class="input-group"
+      >
+        <div
+          class="input-group-item"
+        >
+          <input
+            name="datePicker"
+            type="hidden"
+            value="06/02/2020"
+          />
+          <input
+            class="form-control input-group-inset input-group-inset-after"
+            type="text"
+            value="06/02/2020"
+          />
+          <div
+            class="input-group-inset-item input-group-inset-item-after"
+          >
+            <button
+              class="date-picker-dropdown-toggle btn btn-unstyled"
+              type="button"
+            >
+              <svg
+                class="lexicon-icon lexicon-icon-calendar"
+                role="presentation"
+              >
+                <use
+                  xlink:href="icons.svg#calendar"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

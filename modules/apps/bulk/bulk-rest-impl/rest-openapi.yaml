@@ -18,7 +18,8 @@ components:
                             type: boolean
                     type: object
         GenericError:
-            description: https://www.schema.org/GenericError
+            description:
+                https://www.schema.org/GenericError
             properties:
                 message:
                     type: string
@@ -86,7 +87,12 @@ components:
                     format: int64
                     type: integer
 info:
-    description: ""
+    description:
+        "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
+        'com.liferay.bulk.rest.client', and version '2.0.4'."
+    license:
+        name: "Apache 2.0"
+        url: "http://www.apache.org/licenses/LICENSE-2.0.html"
     title: ""
     version: v1.0
 openapi: "3.0.1"
@@ -111,11 +117,11 @@ paths:
                         application/xml:
                             schema:
                                 $ref: "#/components/schemas/Selection"
-                    description: ""
+                    description:
+                        ""
             tags: ["Selection"]
     "/keywords/batch":
         patch:
-            operationId: patchKeywordBatch
             requestBody:
                 content:
                     application/json:
@@ -128,10 +134,10 @@ paths:
                 200:
                     content:
                         {}
-                    description: ""
+                    description:
+                        ""
             tags: ["Keyword"]
         put:
-            operationId: putKeywordBatch
             requestBody:
                 content:
                     application/json:
@@ -144,7 +150,8 @@ paths:
                 200:
                     content:
                         {}
-                    description: ""
+                    description:
+                        ""
             tags: ["Keyword"]
     "/keywords/common":
         post:
@@ -170,7 +177,8 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/Keyword"
                                 type: array
-                    description: ""
+                    description:
+                        ""
             tags: ["Keyword"]
     "/sites/{siteId}/taxonomy-vocabularies/common":
         post:
@@ -203,7 +211,8 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/TaxonomyVocabulary"
                                 type: array
-                    description: ""
+                    description:
+                        ""
             tags: ["TaxonomyVocabulary"]
     "/status":
         get:
@@ -217,11 +226,11 @@ paths:
                         application/xml:
                             schema:
                                 $ref: "#/components/schemas/Status"
-                    description: ""
+                    description:
+                        ""
             tags: ["Status"]
     "/taxonomy-categories/batch":
         patch:
-            operationId: patchTaxonomyCategoryBatch
             requestBody:
                 content:
                     application/json:
@@ -234,10 +243,10 @@ paths:
                 200:
                     content:
                         {}
-                    description: ""
+                    description:
+                        ""
             tags: ["TaxonomyCategory"]
         put:
-            operationId: putTaxonomyCategoryBatch
             requestBody:
                 content:
                     application/json:
@@ -250,5 +259,6 @@ paths:
                 200:
                     content:
                         {}
-                    description: ""
+                    description:
+                        ""
             tags: ["TaxonomyCategory"]

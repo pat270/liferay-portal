@@ -53,8 +53,8 @@ public class HTTPSServerSimulator {
 		try {
 			_httpsServerSimulator = new HTTPSServerSimulator(tlsVersion);
 		}
-		catch (Exception e) {
-			throw new HTTPSServerException(e);
+		catch (Exception exception) {
+			throw new HTTPSServerException(exception);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class HTTPSServerSimulator {
 
 		KeyStoreLoader keyStoreLoader = new KeyStoreLoader();
 
-		KeyStore keyStore = keyStoreLoader.getKeystore(
+		KeyStore keyStore = keyStoreLoader.getKeyStore(
 			"localhost.jks", "liferay");
 
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(

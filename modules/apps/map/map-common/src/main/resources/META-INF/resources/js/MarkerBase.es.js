@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import State, {Config} from 'metal-state';
 
 /**
@@ -35,7 +49,7 @@ class MarkerBase extends State {
 
 		this[functionName] =
 			this[functionName] ||
-			(nativeEvent => {
+			((nativeEvent) => {
 				this._handleNativeEvent(nativeEvent, externalEventType);
 			});
 
@@ -52,7 +66,12 @@ class MarkerBase extends State {
 	 * @return {Object} Generated native marker
 	 * @review
 	 */
-	_getNativeMarker(location, map) {
+	_getNativeMarker(
+		/* eslint-disable no-unused-vars */
+		location,
+		map
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('Must be implemented');
 	}
 
@@ -64,7 +83,11 @@ class MarkerBase extends State {
 	 * @return {{ lat: number, lng: number }}
 	 * @review
 	 */
-	_getNormalizedEventData(nativeEvent) {
+	_getNormalizedEventData(
+		/* eslint-disable no-unused-vars */
+		nativeEvent
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('Must be implemented');
 	}
 
@@ -89,28 +112,24 @@ class MarkerBase extends State {
 MarkerBase.STATE = {
 
 	/**
+	 * Location to be used
+	 * @review
+	 * @type {Object}
+	 */
+	location: Config.shapeOf({
+		lat: Config.number().required(),
+		lng: Config.number().required(),
+	}).value({
+		lat: 0,
+		lng: 0,
+	}),
+
+	/**
 	 * Map to be used
 	 * @review
 	 * @type {Object}
 	 */
 	map: Config.object().value({}),
-
-	/**
-	 * Location to be used
-	 * @review
-	 * @type {Object}
-	 */
-	location: Config.shapeOf(
-		{
-			lat: Config.number().required(),
-			lng: Config.number().required()
-		}
-	).value(
-		{
-			lat: 0,
-			lng: 0
-		}
-	)
 };
 
 window.Liferay = window.Liferay || {};

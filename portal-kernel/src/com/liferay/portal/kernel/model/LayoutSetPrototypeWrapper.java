@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link LayoutSetPrototype}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetPrototype
  * @generated
  */
-@ProviderType
 public class LayoutSetPrototypeWrapper
 	extends BaseModelWrapper<LayoutSetPrototype>
 	implements LayoutSetPrototype, ModelWrapper<LayoutSetPrototype> {
@@ -699,9 +696,10 @@ public class LayoutSetPrototypeWrapper
 
 	@Override
 	public void setSettingsProperties(
-		com.liferay.portal.kernel.util.UnicodeProperties settingsProperties) {
+		com.liferay.portal.kernel.util.UnicodeProperties
+			settingsUnicodeProperties) {
 
-		model.setSettingsProperties(settingsProperties);
+		model.setSettingsProperties(settingsUnicodeProperties);
 	}
 
 	/**

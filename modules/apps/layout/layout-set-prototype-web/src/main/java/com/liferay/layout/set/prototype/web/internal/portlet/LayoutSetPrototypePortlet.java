@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.service.LayoutSetPrototypeService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -71,12 +72,43 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + LayoutSetPrototypePortletKeys.LAYOUT_SET_PROTOTYPE,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
 public class LayoutSetPrototypePortlet extends MVCPortlet {
+
+	public void activateDeactivateLayoutSetPrototype(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
+
+		long layoutSetPrototypeId = ParamUtil.getLong(
+			actionRequest, "layoutSetPrototypeId");
+
+		LayoutSetPrototype layoutSetPrototype =
+			layoutSetPrototypeService.fetchLayoutSetPrototype(
+				layoutSetPrototypeId);
+
+		if (layoutSetPrototype == null) {
+			return;
+		}
+
+		boolean active = ParamUtil.getBoolean(actionRequest, "active");
+
+		UnicodeProperties settingsUnicodeProperties =
+			layoutSetPrototype.getSettingsProperties();
+
+		boolean layoutsUpdateable = GetterUtil.getBoolean(
+			settingsUnicodeProperties.getProperty("layoutsUpdateable"));
+
+		ServiceContext serviceContext = ServiceContextFactory.getInstance(
+			actionRequest);
+
+		layoutSetPrototypeService.updateLayoutSetPrototype(
+			layoutSetPrototypeId, layoutSetPrototype.getNameMap(),
+			layoutSetPrototype.getDescriptionMap(), active, layoutsUpdateable,
+			serviceContext);
+	}
 
 	public void changeDisplayStyle(
 		ActionRequest actionRequest, ActionResponse actionResponse) {
@@ -124,11 +156,10 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 		long layoutSetPrototypeId = ParamUtil.getLong(
 			actionRequest, "layoutSetPrototypeId");
 
-		LayoutSetPrototype layoutSetPrototype =
+		SitesUtil.setMergeFailCount(
 			layoutSetPrototypeService.getLayoutSetPrototype(
-				layoutSetPrototypeId);
-
-		SitesUtil.setMergeFailCount(layoutSetPrototype, 0);
+				layoutSetPrototypeId),
+			0);
 	}
 
 	public void updateLayoutSetPrototype(
@@ -175,15 +206,15 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 		String customJspServletContextName = ParamUtil.getString(
 			actionRequest, "customJspServletContextName");
 
-		UnicodeProperties settingsProperties =
+		UnicodeProperties settingsUnicodeProperties =
 			layoutSetPrototype.getSettingsProperties();
 
-		settingsProperties.setProperty(
+		settingsUnicodeProperties.setProperty(
 			"customJspServletContextName", customJspServletContextName);
 
 		layoutSetPrototypeService.updateLayoutSetPrototype(
 			layoutSetPrototype.getLayoutSetPrototypeId(),
-			settingsProperties.toString());
+			settingsUnicodeProperties.toString());
 	}
 
 	@Override
@@ -208,10 +239,10 @@ public class LayoutSetPrototypePortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof NoSuchLayoutSetPrototypeException ||
-			cause instanceof PrincipalException ||
-			cause instanceof RequiredLayoutSetPrototypeException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof NoSuchLayoutSetPrototypeException ||
+			throwable instanceof PrincipalException ||
+			throwable instanceof RequiredLayoutSetPrototypeException) {
 
 			return true;
 		}

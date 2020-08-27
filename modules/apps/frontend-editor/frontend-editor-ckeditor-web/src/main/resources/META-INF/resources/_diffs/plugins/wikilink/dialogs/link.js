@@ -1,204 +1,231 @@
-CKEDITOR.dialog.add(
-	'link',
-	function(editor) {
-		var LANG_COMMON = editor.lang.common;
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-		var LANG_LINK = editor.lang.link;
+CKEDITOR.dialog.add('link', (editor) => {
+	var LANG_COMMON = editor.lang.common;
 
-		var PLUGIN = CKEDITOR.plugins.link;
+	var LANG_LINK = editor.lang.link;
 
-		var parseLink = function(editor, element) {
-			var instance = this;
+	var PLUGIN = CKEDITOR.plugins.link;
 
-			var data = {
-				address: ''
-			};
+	var parseLink = function (editor, element) {
+		var instance = this;
 
-			if (element) {
-				var href = element.getAttribute('href');
+		var data = {
+			address: '',
+		};
 
-				if (editor.config.decodeLinks) {
-					data.address = decodeURIComponent(href);
-				}
-				else {
-					data.address = href;
-				}
+		if (element) {
+			var href = element.getAttribute('href');
+
+			if (editor.config.decodeLinks) {
+				data.address = decodeURIComponent(href);
 			}
 			else {
-				var selection = editor.getSelection();
-
-				data.address = selection.getSelectedText();
+				data.address = href;
 			}
+		}
+		else {
+			var selection = editor.getSelection();
 
-			instance._.selectedElement = element;
+			data.address = selection.getSelectedText();
+		}
 
-			return data;
-		};
+		instance._.selectedElement = element;
 
-		return {
-			contents: [
-				{
-					elements: [
-						{
-							children: [
-								{
-									commit: function(data) {
-										var instance = this;
+		return data;
+	};
 
-										if (!data) {
-											data = {};
-										}
+	return {
+		contents: [
+			{
+				elements: [
+					{
+						children: [
+							{
+								commit(data) {
+									var instance = this;
 
-										var val = instance.getValue();
+									if (!data) {
+										data = {};
+									}
 
-										data.address = val;
-										data.text = val;
-									},
-									id: 'linkAddress',
-									label: LANG_COMMON.url,
-									required: true,
-									setup: function(data) {
-										var instance = this;
+									var val = instance.getValue();
 
-										if (data) {
-											instance.setValue(data.address);
-										}
+									data.address = val;
+									data.text = val;
+								},
+								id: 'linkAddress',
+								label: LANG_COMMON.url,
+								required: true,
+								setup(data) {
+									var instance = this;
 
-										var linkType = instance.getDialog().getContentElement('info', 'linkType');
+									if (data) {
+										instance.setValue(data.address);
+									}
 
-										if (linkType && linkType.getValue()) {
-											instance.select();
-										}
-									},
-									type: 'text',
-									validate: function() {
-										var instance = this;
+									var linkType = instance
+										.getDialog()
+										.getContentElement('info', 'linkType');
 
-										var func = CKEDITOR.dialog.validate.notEmpty(LANG_LINK.noUrl);
-
-										return func.apply(instance);
+									if (linkType && linkType.getValue()) {
+										instance.select();
 									}
 								},
-								{
-									id: 'linkBrowse',
-									label: LANG_COMMON.browseServer,
-									required: true,
-									type: 'button',
-									onClick: function(event) {
-										var dialog = event.data.dialog;
+								type: 'text',
+								validate() {
+									var instance = this;
 
-										var editor = dialog.getParentEditor();
+									var func = CKEDITOR.dialog.validate.notEmpty(
+										LANG_LINK.noUrl
+									);
 
-										var urlField = dialog.getContentElement('info', 'linkAddress');
+									return func.apply(instance);
+								},
+							},
+							{
+								id: 'linkBrowse',
+								label: LANG_COMMON.browseServer,
+								onClick(event) {
+									var dialog = event.data.dialog;
 
-										editor.execCommand(
-											'linkselector',
-											function(newVal, selectedItem) {
-												if (selectedItem && selectedItem.title) {
-													urlField.setValue(selectedItem.title);
-												}
-												else {
-													urlField.setValue(location.origin + newVal);
-												}
+									var editor = dialog.getParentEditor();
+
+									var urlField = dialog.getContentElement(
+										'info',
+										'linkAddress'
+									);
+
+									editor.execCommand(
+										'linkselector',
+										(newVal, selectedItem) => {
+											if (
+												selectedItem &&
+												selectedItem.title
+											) {
+												urlField.setValue(
+													selectedItem.title
+												);
 											}
-										);
-									}
-								}
-							],
-							id: 'linkOptions',
-							padding: 1,
-							type: 'vbox'
-						}
-					],
-					id: 'info',
-					label: LANG_LINK.info,
-					title: LANG_LINK.info
-				}
-			],
-			minHeight: 100,
-			minWidth: 250,
-			title: LANG_LINK.title,
-
-			onFocus: function() {
-				var instance = this;
-
-				var urlField = instance.getContentElement('info', 'linkAddress');
-
-				urlField.select();
+											else {
+												urlField.setValue(
+													location.origin + newVal
+												);
+											}
+										}
+									);
+								},
+								required: true,
+								type: 'button',
+							},
+						],
+						id: 'linkOptions',
+						padding: 1,
+						type: 'vbox',
+					},
+				],
+				id: 'info',
+				label: LANG_LINK.info,
+				title: LANG_LINK.info,
 			},
+		],
 
-			onLoad: function() {
-			},
+		minHeight: 100,
+		minWidth: 250,
 
-			onOk: function() {
-				var instance = this;
+		onFocus() {
+			var instance = this;
 
-				var attributes = {};
-				var data = {};
+			var urlField = instance.getContentElement('info', 'linkAddress');
 
-				var editor = instance.getParentEditor();
+			urlField.select();
+		},
 
-				instance.commitContent(data);
+		onLoad() {},
 
-				attributes['data-cke-saved-href'] = data.address;
+		onOk() {
+			var instance = this;
 
-				attributes.href = data.address;
+			var attributes = {};
+			var data = {};
 
-				if (!instance._.selectedElement) {
-					var selection = editor.getSelection();
+			var editor = instance.getParentEditor();
 
-					var ranges = selection.getRanges(true);
+			instance.commitContent(data);
 
-					if (ranges.length == 1 && ranges[0].collapsed) {
-						var text = new CKEDITOR.dom.text(data.text, editor.document);
+			attributes['data-cke-saved-href'] = data.address;
 
-						ranges[0].insertNode(text);
-						ranges[0].selectNodeContents(text);
+			attributes.href = data.address;
 
-						selection.selectRanges(ranges);
-					}
+			if (!instance._.selectedElement) {
+				var selection = editor.getSelection();
 
-					var style = new CKEDITOR.style(
-						{
-							attributes: attributes,
-							element: 'a'
-						}
+				var ranges = selection.getRanges(true);
+
+				if (ranges.length == 1 && ranges[0].collapsed) {
+					var text = new CKEDITOR.dom.text(
+						data.text,
+						editor.document
 					);
 
-					style.type = CKEDITOR.STYLE_INLINE;
+					ranges[0].insertNode(text);
+					ranges[0].selectNodeContents(text);
 
-					editor.applyStyle(style);
-				}
-				else {
-					var selectedElement = instance._.selectedElement;
-
-					var currentText = selectedElement.getText(data.text);
-
-					selectedElement.setAttributes(attributes);
-
-					if (CKEDITOR.env.ie) {
-						selectedElement.setText(currentText);
-					}
-				}
-			},
-
-			onShow: function() {
-				var instance = this;
-
-				instance.fakeObj = false;
-
-				var editor = instance.getParentEditor();
-
-				var element = PLUGIN.getSelectedLink(editor) || null;
-
-				if (element) {
-					var selection = editor.getSelection();
-
-					selection.selectElement(element);
+					selection.selectRanges(ranges);
 				}
 
-				instance.setupContent(parseLink.apply(instance, [editor, element]));
+				var style = new CKEDITOR.style({
+					attributes,
+					element: 'a',
+				});
+
+				style.type = CKEDITOR.STYLE_INLINE;
+
+				editor.applyStyle(style);
 			}
-		};
-	}
-);
+			else {
+				var selectedElement = instance._.selectedElement;
+
+				var currentText = selectedElement.getText(data.text);
+
+				selectedElement.setAttributes(attributes);
+
+				if (CKEDITOR.env.ie) {
+					selectedElement.setText(currentText);
+				}
+			}
+		},
+
+		onShow() {
+			var instance = this;
+
+			instance.fakeObj = false;
+
+			var editor = instance.getParentEditor();
+
+			var element = PLUGIN.getSelectedLink(editor) || null;
+
+			if (element) {
+				var selection = editor.getSelection();
+
+				selection.selectElement(element);
+			}
+
+			instance.setupContent(parseLink.apply(instance, [editor, element]));
+		},
+
+		title: LANG_LINK.title,
+	};
+});

@@ -22,11 +22,17 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
+import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.ParseException;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
+import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
+import com.liferay.portal.kernel.search.filter.TermsFilter;
+import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService;
@@ -36,9 +42,11 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.filter.DateRangeFilterBuilder;
 import com.liferay.portal.search.filter.FilterBuilders;
@@ -87,18 +95,30 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 			return;
 		}
 
+		BooleanFilter innerBooleanFilter = new BooleanFilter();
+
+		appendAssetTitleTerm(
+			innerBooleanFilter, kaleoTaskInstanceTokenQuery, searchContext);
+		appendAssetTypeTerm(innerBooleanFilter, kaleoTaskInstanceTokenQuery);
 		appendAssigneeClassIdsNameTerm(
-			booleanFilter, kaleoTaskInstanceTokenQuery);
-		appendAssigneeClassPKsTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
+			innerBooleanFilter, kaleoTaskInstanceTokenQuery);
+		appendAssigneeClassPKsTerm(
+			innerBooleanFilter, kaleoTaskInstanceTokenQuery);
+		appendTaskNameTerm(innerBooleanFilter, kaleoTaskInstanceTokenQuery);
+
+		if (innerBooleanFilter.hasClauses()) {
+			booleanFilter.add(innerBooleanFilter, BooleanClauseOccur.MUST);
+		}
+
 		appendCompletedTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
-		appendKaleoInstanceIdTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
+		appendKaleoDefinitionIdTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
+		appendKaleoInstanceIdsTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
 		appendRoleIdsTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
 		appendSearchByUserRolesTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
 
 		if (appendSearchCriteria(kaleoTaskInstanceTokenQuery)) {
 			appendAssetPrimaryKeyTerm(
 				booleanFilter, kaleoTaskInstanceTokenQuery);
-			appendAssetTypeTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
 			appendDueDateRangeTerm(booleanFilter, kaleoTaskInstanceTokenQuery);
 		}
 	}
@@ -119,20 +139,56 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 		}
 	}
 
+	protected void appendAssetTitleTerm(
+		BooleanFilter booleanFilter,
+		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery,
+		SearchContext searchContext) {
+
+		String assetTitle = kaleoTaskInstanceTokenQuery.getAssetTitle();
+
+		if (Validator.isNull(assetTitle)) {
+			return;
+		}
+
+		String assetTitleLocalizedName = LocalizationUtil.getLocalizedName(
+			KaleoTaskInstanceTokenField.ASSET_TITLE,
+			searchContext.getLanguageId());
+
+		BooleanQuery booleanQuery = new BooleanQueryImpl();
+
+		try {
+			booleanQuery.addTerm(assetTitleLocalizedName, assetTitle);
+		}
+		catch (ParseException parseException) {
+			throw new RuntimeException(parseException);
+		}
+
+		booleanFilter.add(new QueryFilter(booleanQuery));
+	}
+
 	protected void appendAssetTypeTerm(
 		BooleanFilter booleanFilter,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		String[] assetTypes = kaleoTaskInstanceTokenQuery.getAssetTypes();
 
-		if (ArrayUtil.isEmpty(assetTypes)) {
+		if (ListUtil.isNull(ListUtil.fromArray(assetTypes))) {
 			return;
 		}
 
+		BooleanQuery booleanQuery = new BooleanQueryImpl();
+
 		for (String assetType : assetTypes) {
-			booleanFilter.addTerm(
-				KaleoTaskInstanceTokenField.CLASS_NAME, assetType);
+			try {
+				booleanQuery.addTerm(
+					KaleoTaskInstanceTokenField.CLASS_NAME, assetType);
+			}
+			catch (ParseException parseException) {
+				throw new RuntimeException(parseException);
+			}
 		}
+
+		booleanFilter.add(new QueryFilter(booleanQuery));
 	}
 
 	protected void appendAssigneeClassIdsNameTerm(
@@ -150,25 +206,33 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 			KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_NAME_IDS,
 			String.valueOf(portal.getClassNameId(assigneeClassName)));
 
-		booleanFilter.add(
-			assigneeClassNameIdsTermFilter, BooleanClauseOccur.MUST);
+		booleanFilter.add(assigneeClassNameIdsTermFilter);
 	}
 
 	protected void appendAssigneeClassPKsTerm(
 		BooleanFilter booleanFilter,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
-		Long assigneeClassPK = kaleoTaskInstanceTokenQuery.getAssigneeClassPK();
+		Long[] assigneeClassPKs =
+			kaleoTaskInstanceTokenQuery.getAssigneeClassPKs();
 
-		if (assigneeClassPK == null) {
+		if (ArrayUtil.isEmpty(assigneeClassPKs)) {
 			return;
 		}
 
-		TermFilter assigneeClassPKsTermFilter = new TermFilter(
-			KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_PKS,
-			String.valueOf(assigneeClassPK));
+		TermsFilter assigneeClassPKsTermsFilter = new TermsFilter(
+			KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_PKS);
 
-		booleanFilter.add(assigneeClassPKsTermFilter, BooleanClauseOccur.MUST);
+		assigneeClassPKsTermsFilter.addValues(
+			Stream.of(
+				assigneeClassPKs
+			).map(
+				String::valueOf
+			).toArray(
+				String[]::new
+			));
+
+		booleanFilter.add(assigneeClassPKsTermsFilter);
 	}
 
 	protected void appendCompletedTerm(
@@ -220,18 +284,45 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 			dueDateRangeFilterBuilder.build(), BooleanClauseOccur.MUST);
 	}
 
-	protected void appendKaleoInstanceIdTerm(
+	protected void appendKaleoDefinitionIdTerm(
 		BooleanFilter booleanFilter,
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
-		Long kaleoInstanceId = kaleoTaskInstanceTokenQuery.getKaleoInstanceId();
+		Long kaleoDefinitionId =
+			kaleoTaskInstanceTokenQuery.getKaleoDefinitionId();
 
-		if (kaleoInstanceId == null) {
+		if (kaleoDefinitionId == null) {
 			return;
 		}
 
 		booleanFilter.addRequiredTerm(
-			KaleoTaskInstanceTokenField.KALEO_INSTANCE_ID, kaleoInstanceId);
+			KaleoTaskInstanceTokenField.KALEO_DEFINITION_ID, kaleoDefinitionId);
+	}
+
+	protected void appendKaleoInstanceIdsTerm(
+		BooleanFilter booleanFilter,
+		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
+
+		Long[] kaleoInstanceIds =
+			kaleoTaskInstanceTokenQuery.getKaleoInstanceIds();
+
+		if (ArrayUtil.isEmpty(kaleoInstanceIds)) {
+			return;
+		}
+
+		TermsFilter kaleoInstanceIdsTermsFilter = new TermsFilter(
+			KaleoTaskInstanceTokenField.KALEO_INSTANCE_ID);
+
+		kaleoInstanceIdsTermsFilter.addValues(
+			Stream.of(
+				kaleoInstanceIds
+			).map(
+				String::valueOf
+			).toArray(
+				String[]::new
+			));
+
+		booleanFilter.add(kaleoInstanceIdsTermsFilter, BooleanClauseOccur.MUST);
 	}
 
 	protected void appendRoleIdsTerm(
@@ -251,17 +342,21 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 			return;
 		}
 
-		BooleanFilter roleIdsBooleanFilter = new BooleanFilter();
+		TermsFilter assigneeClassPKsTermsFilter = new TermsFilter(
+			KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_PKS);
 
-		for (Long roleId : roleIds) {
-			roleIdsBooleanFilter.add(
-				new TermFilter(
-					KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_PKS,
-					roleId.toString()),
-				BooleanClauseOccur.SHOULD);
-		}
+		assigneeClassPKsTermsFilter.addValues(
+			Stream.of(
+				roleIds
+			).flatMap(
+				List::stream
+			).map(
+				String::valueOf
+			).toArray(
+				String[]::new
+			));
 
-		booleanFilter.add(roleIdsBooleanFilter, BooleanClauseOccur.MUST);
+		booleanFilter.add(assigneeClassPKsTermsFilter, BooleanClauseOccur.MUST);
 	}
 
 	protected void appendSearchByUserRolesTerm(
@@ -364,17 +459,55 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 		return false;
 	}
 
+	protected void appendTaskNameTerm(
+		BooleanFilter booleanFilter,
+		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
+
+		String[] taskNames = kaleoTaskInstanceTokenQuery.getTaskNames();
+
+		if (ListUtil.isNull(ListUtil.fromArray(taskNames))) {
+			return;
+		}
+
+		BooleanQuery booleanQuery = new BooleanQueryImpl();
+
+		for (String taskName : taskNames) {
+			try {
+				booleanQuery.addTerm(
+					KaleoTaskInstanceTokenField.TASK_NAME, taskName);
+			}
+			catch (ParseException parseException) {
+				throw new RuntimeException(parseException);
+			}
+		}
+
+		booleanFilter.add(new QueryFilter(booleanQuery));
+	}
+
 	protected BooleanFilter createRoleAssigneeClassPKBooleanFilter(
 		List<Long> roleIds) {
 
 		BooleanFilter roleClassPKBooleanFilter = new BooleanFilter();
 
-		for (Long roleId : roleIds) {
-			roleClassPKBooleanFilter.add(
-				new TermFilter(
-					KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_PKS,
-					String.valueOf(roleId)));
+		if (ListUtil.isEmpty(roleIds)) {
+			return roleClassPKBooleanFilter;
 		}
+
+		TermsFilter assigneeClassPKsTermsFilter = new TermsFilter(
+			KaleoTaskInstanceTokenField.ASSIGNEE_CLASS_PKS);
+
+		assigneeClassPKsTermsFilter.addValues(
+			Stream.of(
+				roleIds
+			).flatMap(
+				List::stream
+			).map(
+				String::valueOf
+			).toArray(
+				String[]::new
+			));
+
+		roleClassPKBooleanFilter.add(assigneeClassPKsTermsFilter);
 
 		return roleClassPKBooleanFilter;
 	}
@@ -393,17 +526,24 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 					String.valueOf(entry.getKey())),
 				BooleanClauseOccur.MUST);
 
-			BooleanFilter assigneeGroupIdsBooleanFilter = new BooleanFilter();
+			if (SetUtil.isNotEmpty(entry.getValue())) {
+				TermsFilter assigneeGroupIdsTermsFilter = new TermsFilter(
+					KaleoTaskInstanceTokenField.ASSIGNEE_GROUP_IDS);
 
-			for (Long assigneeGroupId : entry.getValue()) {
-				assigneeGroupIdsBooleanFilter.add(
-					new TermFilter(
-						KaleoTaskInstanceTokenField.ASSIGNEE_GROUP_IDS,
-						String.valueOf(assigneeGroupId)));
+				assigneeGroupIdsTermsFilter.addValues(
+					Stream.of(
+						entry.getValue()
+					).flatMap(
+						Set::stream
+					).map(
+						String::valueOf
+					).toArray(
+						String[]::new
+					));
+
+				roleIdGroupIdsBooleanFilter.add(
+					assigneeGroupIdsTermsFilter, BooleanClauseOccur.MUST);
 			}
-
-			roleIdGroupIdsBooleanFilter.add(
-				assigneeGroupIdsBooleanFilter, BooleanClauseOccur.MUST);
 
 			roleIdGroupIdsMapBooleanFilter.add(
 				roleIdGroupIdsBooleanFilter, BooleanClauseOccur.SHOULD);
@@ -435,6 +575,10 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 				userGroupGroupRole.getRoleId(), userGroupGroupRole.getGroupId(),
 				roleIdGroupIdsMap);
 		}
+
+		mapSiteMemberRoleIdGroupId(
+			kaleoTaskInstanceTokenQuery.getCompanyId(),
+			kaleoTaskInstanceTokenQuery.getUserId(), roleIdGroupIdsMap);
 
 		return roleIdGroupIdsMap;
 	}
@@ -473,9 +617,9 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 				Collectors.toList()
 			);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 
@@ -509,6 +653,27 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 		}
 
 		groupIds.add(groupId);
+	}
+
+	protected void mapSiteMemberRoleIdGroupId(
+		long companyId, long userId, Map<Long, Set<Long>> roleIdGroupIdsMap) {
+
+		try {
+			Role siteMemberRole = roleLocalService.getRole(
+				companyId, RoleConstants.SITE_MEMBER);
+
+			User user = userLocalService.getUserById(userId);
+
+			for (Long groupId : user.getGroupIds()) {
+				mapRoleIdGroupId(
+					siteMemberRole.getRoleId(), groupId, roleIdGroupIdsMap);
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+		}
 	}
 
 	@Reference

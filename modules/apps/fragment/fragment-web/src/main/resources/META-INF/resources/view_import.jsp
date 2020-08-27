@@ -18,6 +18,8 @@
 
 <%
 long fragmentCollectionId = ParamUtil.getLong(request, "fragmentCollectionId");
+
+ImportDisplayContext importDisplayContext = new ImportDisplayContext(request, renderRequest);
 %>
 
 <portlet:actionURL name="/fragment/import" var="importURL">
@@ -34,15 +36,25 @@ long fragmentCollectionId = ParamUtil.getLong(request, "fragmentCollectionId");
 	<liferay-frontend:edit-form-body>
 
 		<%
-		List<String> invalidFragmentEntriesNames = (List<String>)SessionMessages.get(renderRequest, "invalidFragmentEntriesNames");
+		List<String> draftFragmentsImporterResultEntries = importDisplayContext.getFragmentsImporterResultEntries(FragmentsImporterResultEntry.Status.IMPORTED_DRAFT);
 		%>
 
-		<c:if test="<%= ListUtil.isNotEmpty(invalidFragmentEntriesNames) %>">
+		<c:if test="<%= ListUtil.isNotEmpty(draftFragmentsImporterResultEntries) %>">
 			<clay:alert
-				closeable="true"
-				destroyOnHide="true"
-				message='<%= LanguageUtil.format(request, "the-following-fragments-have-validation-issues.-they-have-been-left-in-draft-status-x", "<strong>" + StringUtil.merge(invalidFragmentEntriesNames, StringPool.COMMA_AND_SPACE) + "</strong>", false) %>'
-				title='<%= LanguageUtil.get(request, "info") %>'
+				dismissible="<%= true %>"
+				message='<%= LanguageUtil.format(request, "the-following-fragments-have-validation-issues.-they-have-been-left-in-draft-status-x", "<strong>" + StringUtil.merge(draftFragmentsImporterResultEntries, StringPool.COMMA_AND_SPACE) + "</strong>", false) %>'
+			/>
+		</c:if>
+
+		<%
+		List<String> invalidFragmentsImporterResultEntries = importDisplayContext.getFragmentsImporterResultEntries(FragmentsImporterResultEntry.Status.INVALID);
+		%>
+
+		<c:if test="<%= ListUtil.isNotEmpty(invalidFragmentsImporterResultEntries) %>">
+			<clay:alert
+				dismissible="<%= true %>"
+				displayType="warning"
+				message='<%= LanguageUtil.format(request, "the-following-fragments-could-not-be-imported-x", "<strong>" + StringUtil.merge(invalidFragmentsImporterResultEntries, StringPool.COMMA_AND_SPACE) + "</strong>", false) %>'
 			/>
 		</c:if>
 
@@ -80,10 +92,4 @@ long fragmentCollectionId = ParamUtil.getLong(request, "fragmentCollectionId");
 			</liferay-frontend:fieldset>
 		</liferay-frontend:fieldset-group>
 	</liferay-frontend:edit-form-body>
-
-	<liferay-frontend:edit-form-footer>
-		<aui:button type="submit" value="import" />
-
-		<aui:button type="cancel" />
-	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>

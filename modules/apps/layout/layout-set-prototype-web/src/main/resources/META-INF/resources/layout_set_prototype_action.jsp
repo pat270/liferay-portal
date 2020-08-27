@@ -56,6 +56,32 @@ Group group = layoutSetPrototype.getGroup();
 				url="<%= siteAdministrationURL.toString() %>"
 			/>
 		</c:if>
+
+		<c:choose>
+			<c:when test="<%= layoutSetPrototype.isActive() && !group.isGuest() %>">
+				<portlet:actionURL name="activateDeactivateLayoutSetPrototype" var="deactivateURL">
+					<portlet:param name="redirect" value="<%= currentURL %>" />
+					<portlet:param name="layoutSetPrototypeId" value="<%= String.valueOf(layoutSetPrototypeId) %>" />
+					<portlet:param name="active" value="<%= Boolean.FALSE.toString() %>" />
+				</portlet:actionURL>
+
+				<liferay-ui:icon-deactivate
+					url="<%= deactivateURL %>"
+				/>
+			</c:when>
+			<c:when test="<%= !layoutSetPrototype.isActive() %>">
+				<portlet:actionURL name="activateDeactivateLayoutSetPrototype" var="activateURL">
+					<portlet:param name="redirect" value="<%= currentURL %>" />
+					<portlet:param name="layoutSetPrototypeId" value="<%= String.valueOf(layoutSetPrototypeId) %>" />
+					<portlet:param name="active" value="<%= Boolean.TRUE.toString() %>" />
+				</portlet:actionURL>
+
+				<liferay-ui:icon
+					message="activate"
+					url="<%= activateURL %>"
+				/>
+			</c:when>
+		</c:choose>
 	</c:if>
 
 	<c:if test="<%= LayoutSetPrototypePermissionUtil.contains(permissionChecker, layoutSetPrototypeId, ActionKeys.PERMISSIONS) %>">

@@ -15,14 +15,13 @@
 package com.liferay.journal.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -71,12 +70,10 @@ public class JournalArticleLocalServiceTreeTest {
 		JournalArticle article = JournalTestUtil.addArticle(
 			_group.getGroupId(), folderAA.getFolderId());
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		JournalFolderLocalServiceUtil.moveFolder(
 			folderAA.getFolderId(),
-			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, serviceContext);
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		article = JournalArticleLocalServiceUtil.getArticle(
 			_group.getGroupId(), article.getArticleId());
@@ -89,7 +86,7 @@ public class JournalArticleLocalServiceTreeTest {
 		List<JournalArticle> articles = createTree();
 
 		for (JournalArticle article : articles) {
-			article.setTreePath(null);
+			article.setTreePath("/0/");
 
 			JournalArticleLocalServiceUtil.updateJournalArticle(article);
 		}

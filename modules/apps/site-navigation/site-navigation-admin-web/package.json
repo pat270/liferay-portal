@@ -1,27 +1,22 @@
 {
-	"csfConfig": {
-		"path:**/edit_site_navigation_menu.jsp": {
-			"js": {
-				"lint": {
-					"globals": {
-						"siteNavigationMenuEditorModule": true,
-						"siteNavigationMenuItemDOMHandlerModule": true
-					}
-				}
-			}
-		}
-	},
 	"dependencies": {
+		"@clayui/button": "3.4.0",
+		"@clayui/drop-down": "3.6.0",
+		"@clayui/icon": "3.0.5",
+		"@clayui/layout": "3.2.0",
+		"frontend-js-web": "*",
 		"metal-dom": "2.16.8",
 		"metal-drag-drop": "3.3.1",
 		"metal-position": "2.1.2",
-		"metal-state": "2.16.8"
+		"metal-state": "2.16.8",
+		"prop-types": "15.7.2",
+		"react": "16.12.0"
 	},
 	"name": "site-navigation-admin-web",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format"
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix"
 	},
-	"version": "3.0.0"
+	"version": "3.0.20"
 }

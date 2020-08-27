@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 /**
  * @author Shuyang Zhou
@@ -51,8 +52,8 @@ public class ProxyUtil {
 
 			return null;
 		}
-		catch (IllegalAccessException iae) {
-			throw new IllegalArgumentException(iae);
+		catch (IllegalAccessException illegalAccessException) {
+			throw new IllegalArgumentException(illegalAccessException);
 		}
 	}
 
@@ -64,8 +65,8 @@ public class ProxyUtil {
 		try {
 			return (InvocationHandler)_invocationHandlerField.get(proxy);
 		}
-		catch (IllegalAccessException iae) {
-			throw new IllegalArgumentException(iae);
+		catch (IllegalAccessException illegalAccessException) {
+			throw new IllegalArgumentException(illegalAccessException);
 		}
 	}
 
@@ -108,6 +109,37 @@ public class ProxyUtil {
 		return clazz;
 	}
 
+	public static <T> Function<InvocationHandler, T> getProxyProviderFunction(
+		Class<?>... interfaceClasses) {
+
+		ClassLoader classLoader = interfaceClasses[0].getClassLoader();
+
+		if (classLoader == null) {
+			classLoader = ClassLoader.getSystemClassLoader();
+		}
+
+		Class<?> proxyClass = getProxyClass(classLoader, interfaceClasses);
+
+		try {
+			Constructor<T> constructor =
+				(Constructor<T>)proxyClass.getConstructor(_ARGUMENTS_CLASS);
+
+			return invocationHandler -> {
+				try {
+					return constructor.newInstance(invocationHandler);
+				}
+				catch (ReflectiveOperationException
+							reflectiveOperationException) {
+
+					throw new InternalError(reflectiveOperationException);
+				}
+			};
+		}
+		catch (NoSuchMethodException noSuchMethodException) {
+			throw new InternalError(noSuchMethodException);
+		}
+	}
+
 	public static boolean isProxyClass(Class<?> clazz) {
 		if (clazz == null) {
 			throw new NullPointerException();
@@ -146,8 +178,8 @@ public class ProxyUtil {
 			_invocationHandlerField = ReflectionUtil.getDeclaredField(
 				Proxy.class, "h");
 		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
 		}
 	}
 
@@ -174,8 +206,8 @@ public class ProxyUtil {
 				return constructor.newInstance(
 					new Object[] {invocationHandler});
 			}
-			catch (ReflectiveOperationException roe) {
-				throw new InternalError(roe);
+			catch (ReflectiveOperationException reflectiveOperationException) {
+				throw new InternalError(reflectiveOperationException);
 			}
 		}
 
@@ -186,12 +218,12 @@ public class ProxyUtil {
 	private static class LookupKey {
 
 		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) {
+		public boolean equals(Object object) {
+			if (object == this) {
 				return true;
 			}
 
-			LookupKey lookupKey = (LookupKey)obj;
+			LookupKey lookupKey = (LookupKey)object;
 
 			Reference<?>[] references = lookupKey._references;
 

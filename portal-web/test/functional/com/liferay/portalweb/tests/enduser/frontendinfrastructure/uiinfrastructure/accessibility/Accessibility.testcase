@@ -1,5 +1,6 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Accessibility";
@@ -35,7 +36,6 @@ definition {
 	test ViewCollaborationPortlets {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Collaboration Page");
@@ -142,4 +142,5 @@ definition {
 
 		AssertAccessible();
 	}
+
 }

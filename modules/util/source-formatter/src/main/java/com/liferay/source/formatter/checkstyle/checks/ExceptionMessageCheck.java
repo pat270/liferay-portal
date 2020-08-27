@@ -14,8 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -24,7 +22,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class ExceptionMessageCheck extends MessageCheck {
+public class ExceptionMessageCheck extends BaseMessageCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -44,7 +42,7 @@ public class ExceptionMessageCheck extends MessageCheck {
 		DetailAST elistDetailAST = firstChildDetailAST.findFirstToken(
 			TokenTypes.ELIST);
 
-		List<DetailAST> exprDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> exprDetailASTList = getAllChildTokens(
 			elistDetailAST, false, TokenTypes.EXPR);
 
 		for (DetailAST exprDetailAST : exprDetailASTList) {

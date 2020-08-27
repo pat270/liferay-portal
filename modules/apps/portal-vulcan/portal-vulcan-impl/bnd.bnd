@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Portal Vulcan Implementation
 Bundle-SymbolicName: com.liferay.portal.vulcan.impl
-Bundle-Version: 4.0.0
+Bundle-Version: 4.0.20
 Import-Package:\
 	!com.google.errorprone.annotations.*,\
 	!com.google.gson.*,\
@@ -20,7 +20,4 @@ Import-Package:\
 	\
 	!org.jsoup.*,\
 	\
-	graphql.annotations.annotationTypes;version="5.4",\
-	\
 	*
--includeresource: @graphql-java-annotations-[0-9]*.jar!/!graphql/annotations/annotationTypes/*

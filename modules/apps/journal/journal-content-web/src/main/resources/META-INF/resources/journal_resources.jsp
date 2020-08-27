@@ -24,18 +24,20 @@ JournalArticle article = journalContentDisplayContext.getArticle();
 
 <aui:input id='<%= refererPortletName + "ddmTemplateKey" %>' name='<%= refererPortletName + "preferences--ddmTemplateKey--" %>' type="hidden" useNamespace="<%= false %>" value="<%= journalContentDisplayContext.isDefaultTemplate() ? StringPool.BLANK : journalContentDisplayContext.getDDMTemplateKey() %>" />
 
-<div class="sheet-section">
+<clay:sheet-section>
 	<div class="sheet-subtitle">
 		<liferay-ui:message key="layout.types.article" />
 	</div>
 
-	<div class="row">
-		<div class="col-md-4">
+	<clay:row>
+		<clay:col
+			md="4"
+		>
 			<c:if test="<%= article != null %>">
 				<liferay-util:include page="/journal_article_resources.jsp" servletContext="<%= application %>" />
 			</c:if>
-		</div>
-	</div>
+		</clay:col>
+	</clay:row>
 
 	<div>
 		<aui:button cssClass="web-content-selector" name="webContentSelector" value='<%= Validator.isNull(article) ? "select" : "change" %>' />
@@ -44,44 +46,54 @@ JournalArticle article = journalContentDisplayContext.getArticle();
 			<aui:button cssClass="selector-button" name="removeWebContent" value="remove" />
 		</c:if>
 	</div>
-</div>
+</clay:sheet-section>
 
 <c:if test="<%= article != null %>">
 	<liferay-util:include page="/journal_template.jsp" servletContext="<%= application %>" />
 
-	<div class="sheet-section">
+	<clay:sheet-section>
 		<div class="sheet-subtitle">
 			<liferay-ui:message key="user-tools" />
 		</div>
 
-		<liferay-asset:asset-addon-entry-selector
-			assetAddonEntries="<%= (List<AssetAddonEntry>)(List<?>)journalContentDisplayContext.getEnabledUserToolAssetAddonEntries() %>"
-			hiddenInput="preferences--userToolAssetAddonEntryKeys--"
-			id="userToolsAssetAddonEntriesSelector"
-			selectedAssetAddonEntries="<%= (List<AssetAddonEntry>)(List<?>)journalContentDisplayContext.getSelectedUserToolAssetAddonEntries() %>"
-			title='<%= LanguageUtil.get(request, "select-user-tools") %>'
-		/>
-	</div>
+		<%
+		List<UserToolAssetAddonEntry> selectedUserToolAssetAddonEntries = journalContentDisplayContext.getSelectedUserToolAssetAddonEntries();
 
-	<div class="sheet-section">
+		for (UserToolAssetAddonEntry userToolAssetAddonEntry : journalContentDisplayContext.getEnabledUserToolAssetAddonEntries()) {
+		%>
+
+			<aui:input checked="<%= selectedUserToolAssetAddonEntries.contains(userToolAssetAddonEntry) %>" id="<%= refererPortletName + userToolAssetAddonEntry.getKey() %>" label="<%= userToolAssetAddonEntry.getLabel(locale) %>" name="userToolAssetAddonEntryKeys" type="checkbox" value="<%= userToolAssetAddonEntry.getKey() %>" />
+
+		<%
+		}
+		%>
+
+	</clay:sheet-section>
+
+	<clay:sheet-section>
 		<div class="sheet-subtitle">
 			<liferay-ui:message key="content-metadata" />
 		</div>
 
-		<liferay-asset:asset-addon-entry-selector
-			assetAddonEntries="<%= (List<AssetAddonEntry>)(List<?>)journalContentDisplayContext.getEnabledContentMetadataAssetAddonEntries() %>"
-			hiddenInput="preferences--contentMetadataAssetAddonEntryKeys--"
-			id="contentMetadataAssetAddonEntriesSelector"
-			selectedAssetAddonEntries="<%= (List<AssetAddonEntry>)(List<?>)journalContentDisplayContext.getSelectedContentMetadataAssetAddonEntries() %>"
-			title='<%= LanguageUtil.get(request, "select-content-metadata") %>'
-		/>
-	</div>
+		<%
+		List<ContentMetadataAssetAddonEntry> selectedContentMetadataAssetAddonEntries = journalContentDisplayContext.getSelectedContentMetadataAssetAddonEntries();
 
-	<div class="sheet-section">
+		for (ContentMetadataAssetAddonEntry contentMetadataAssetAddonEntry : journalContentDisplayContext.getEnabledContentMetadataAssetAddonEntries()) {
+		%>
+
+			<aui:input checked="<%= selectedContentMetadataAssetAddonEntries.contains(contentMetadataAssetAddonEntry) %>" id="<%= refererPortletName + contentMetadataAssetAddonEntry.getKey() %>" label="<%= contentMetadataAssetAddonEntry.getLabel(locale) %>" name="contentMetadataAssetAddonEntryKeys" type="checkbox" value="<%= contentMetadataAssetAddonEntry.getKey() %>" />
+
+		<%
+		}
+		%>
+
+	</clay:sheet-section>
+
+	<clay:sheet-section>
 		<div class="sheet-subtitle">
 			<liferay-ui:message key="enable" />
 		</div>
 
-		<aui:input label="view-count-increment" name="preferences--enableViewCountIncrement--" type="toggle-switch" value="<%= journalContentDisplayContext.isEnableViewCountIncrement() %>" />
-	</div>
+		<aui:input id='<%= refererPortletName + "enableViewCountIncrement" %>' label="view-count-increment" name="preferences--enableViewCountIncrement--" type="toggle-switch" value="<%= journalContentDisplayContext.isEnableViewCountIncrement() %>" />
+	</clay:sheet-section>
 </c:if>

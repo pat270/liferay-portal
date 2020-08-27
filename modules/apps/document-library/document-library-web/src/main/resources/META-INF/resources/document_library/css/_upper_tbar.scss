@@ -1,13 +1,11 @@
-@import "mixins";
-
 $control-menu-height-desktop: 56px;
 $control-menu-height: 49px;
 $product-menu-width: 320px;
 $upper-tbar-height: 4rem;
 
 .upper-tbar {
-	background-color: #FFF;
-	border-color: #E7E7ED;
+	background-color: #fff;
+	border-color: #e7e7ed;
 	border-style: solid;
 	border-width: 0 0 1px;
 	height: $upper-tbar-height;
@@ -48,7 +46,7 @@ $upper-tbar-height: 4rem;
 		top: $control-menu-height;
 		z-index: 1;
 
-		@include sm {
+		@include media-breakpoint-up(sm) {
 			top: $control-menu-height-desktop;
 
 			body.open & {

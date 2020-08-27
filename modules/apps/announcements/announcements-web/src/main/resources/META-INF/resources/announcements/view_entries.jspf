@@ -19,7 +19,7 @@
 	<%
 	int flag = announcementsDisplayContext.isShowReadEntries() ? AnnouncementsFlagConstants.HIDDEN : AnnouncementsFlagConstants.NOT_HIDDEN;
 
-	SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, "cur1", announcementsDisplayContext.getPageDelta(), portletURL, null, "no-entries-were-found");
+	SearchContainer<AnnouncementsEntry> searchContainer = new SearchContainer(renderRequest, null, null, "cur1", announcementsDisplayContext.getPageDelta(), portletURL, null, "no-entries-were-found");
 
 	LinkedHashMap<Long, long[]> scopes = announcementsDisplayContext.getAnnouncementScopes();
 
@@ -64,9 +64,12 @@ if ((entriesCount == 0) && portletName.equals(AnnouncementsPortletKeys.ALERTS) &
 			'/announcementsflag/add-flag',
 			{
 				entryId: entryId,
-				value: <%= AnnouncementsFlagConstants.HIDDEN %>
+				value: <%= AnnouncementsFlagConstants.HIDDEN %>,
 			},
-			Liferay.Portlet.refresh.bind(Liferay.Portlet, '#p_p_id<portlet:namespace />')
+			Liferay.Portlet.refresh.bind(
+				Liferay.Portlet,
+				'#p_p_id<portlet:namespace />'
+			)
 		);
 	}
 
@@ -74,16 +77,19 @@ if ((entriesCount == 0) && portletName.equals(AnnouncementsPortletKeys.ALERTS) &
 		Liferay.Service(
 			'/announcementsflag/get-flag',
 			{
-				entryId : entryId,
-				value: <%= AnnouncementsFlagConstants.HIDDEN %>
+				entryId: entryId,
+				value: <%= AnnouncementsFlagConstants.HIDDEN %>,
 			},
-			function(response) {
+			function (response) {
 				Liferay.Service(
 					'/announcementsflag/delete-flag',
 					{
-						flagId: response.flagId
+						flagId: response.flagId,
 					},
-					Liferay.Portlet.refresh.bind(Liferay.Portlet, '#p_p_id<portlet:namespace />')
+					Liferay.Portlet.refresh.bind(
+						Liferay.Portlet,
+						'#p_p_id<portlet:namespace />'
+					)
 				);
 			}
 		);

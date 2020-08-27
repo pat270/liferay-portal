@@ -16,7 +16,6 @@ package com.liferay.source.formatter.checkstyle.checks;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
@@ -27,7 +26,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class PlusStatementCheck extends StringConcatenationCheck {
+public class PlusStatementCheck extends BaseStringConcatenationCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -87,7 +86,7 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 
 		String trimmedLine2 = StringUtil.trim(line2);
 
-		if ((lineLength1 + trimmedLine2.length() - 4) <= maxLineLength) {
+		if ((lineLength1 + trimmedLine2.length() - 4) <= getMaxLineLength()) {
 			log(
 				lastChildDetailAST, MSG_COMBINE_LITERAL_STRINGS, literalString1,
 				literalString2);
@@ -98,7 +97,7 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 		DetailAST parentDetailAST = detailAST.getParent();
 
 		if ((parentDetailAST.getType() == TokenTypes.PLUS) &&
-			((lineLength1 + literalString2.length()) <= maxLineLength)) {
+			((lineLength1 + literalString2.length()) <= getMaxLineLength())) {
 
 			log(
 				detailAST, MSG_COMBINE_LITERAL_STRINGS, literalString1,
@@ -108,7 +107,7 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 		}
 
 		int pos = getStringBreakPos(
-			literalString1, literalString2, maxLineLength - lineLength1);
+			literalString1, literalString2, getMaxLineLength() - lineLength1);
 
 		if (pos != -1) {
 			log(
@@ -168,7 +167,7 @@ public class PlusStatementCheck extends StringConcatenationCheck {
 				return false;
 			}
 
-			List<DetailAST> nameDetailASTList = DetailASTUtil.getAllChildTokens(
+			List<DetailAST> nameDetailASTList = getAllChildTokens(
 				firstChildDetailAST, false, TokenTypes.IDENT);
 
 			if (nameDetailASTList.size() != 2) {

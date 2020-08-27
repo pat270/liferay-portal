@@ -17,7 +17,6 @@ package com.liferay.wiki.web.internal.item.selector.view;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.ItemSelectorView;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.wiki.item.selector.WikiPageTitleItemSelectorReturnType;
@@ -81,13 +80,8 @@ public class WikiPageItemSelectorView
 	}
 
 	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
-	}
-
-	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			WikiPageItemSelectorCriterion wikiPageItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
@@ -99,7 +93,7 @@ public class WikiPageItemSelectorView
 					_itemSelectorReturnTypeResolverHandler,
 					itemSelectedEventName, search, portletURL);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			WikiItemSelectorWebKeys.
 				WIKI_PAGE_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			wikiPageItemSelectorViewDisplayContext);
@@ -110,16 +104,14 @@ public class WikiPageItemSelectorView
 			servletContext.getRequestDispatcher(
 				"/item/selector/wiki_pages.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
 			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new WikiPageURLItemSelectorReturnType(),
-					new WikiPageTitleItemSelectorReturnType()
-				}));
+				new WikiPageURLItemSelectorReturnType(),
+				new WikiPageTitleItemSelectorReturnType()));
 
 	@Reference
 	private ItemSelectorReturnTypeResolverHandler

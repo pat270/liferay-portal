@@ -17,8 +17,10 @@ package com.liferay.dynamic.data.mapping.io;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * @author Leonardo Barros
+ * @author     Leonardo Barros
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 @ProviderType
 public interface DDMFormSerializerTracker {
 

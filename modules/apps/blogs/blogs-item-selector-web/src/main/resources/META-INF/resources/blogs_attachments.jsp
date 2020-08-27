@@ -29,7 +29,7 @@ int end = startAndEnd[1];
 
 Folder folder = blogsItemSelectorViewDisplayContext.fetchAttachmentsFolder(themeDisplay.getUserId(), scopeGroupId);
 
-List portletFileEntries = null;
+List<RepositoryEntry> portletFileEntries = new ArrayList<>();
 int portletFileEntriesCount = 0;
 
 if (folder != null) {
@@ -45,8 +45,6 @@ if (folder != null) {
 		portletFileEntriesCount = hits.getLength();
 
 		Document[] docs = hits.getDocs();
-
-		portletFileEntries = new ArrayList(docs.length);
 
 		for (Document doc : docs) {
 			long fileEntryId = GetterUtil.getLong(doc.get(Field.ENTRY_CLASS_PK));
@@ -68,12 +66,7 @@ if (folder != null) {
 		}
 	}
 	else {
-		String orderByCol = ParamUtil.getString(request, "orderByCol", "title");
-		String orderByType = ParamUtil.getString(request, "orderByType", "asc");
-
-		OrderByComparator<FileEntry> orderByComparator = DLUtil.getRepositoryModelOrderByComparator(orderByCol, orderByType);
-
-		portletFileEntries = PortletFileRepositoryUtil.getPortletFileEntries(scopeGroupId, folder.getFolderId(), WorkflowConstants.STATUS_APPROVED, start, end, orderByComparator);
+		portletFileEntries.addAll(PortletFileRepositoryUtil.getPortletFileEntries(scopeGroupId, folder.getFolderId(), WorkflowConstants.STATUS_APPROVED, start, end, blogsItemSelectorViewDisplayContext.getOrderByComparator()));
 		portletFileEntriesCount = PortletFileRepositoryUtil.getPortletFileEntriesCount(scopeGroupId, folder.getFolderId(), WorkflowConstants.STATUS_APPROVED);
 	}
 }
@@ -81,14 +74,14 @@ if (folder != null) {
 
 <liferay-item-selector:repository-entry-browser
 	emptyResultsMessage='<%= LanguageUtil.get(resourceBundle, "there-are-no-blog-attachments") %>'
-	extensions="<%= ListUtil.toList(PropsUtil.getArray(PropsKeys.BLOGS_IMAGE_EXTENSIONS)) %>"
+	extensions="<%= ListUtil.fromArray(blogsItemSelectorViewDisplayContext.getImageExtensions()) %>"
 	itemSelectedEventName="<%= blogsItemSelectorViewDisplayContext.getItemSelectedEventName() %>"
 	itemSelectorReturnTypeResolver="<%= blogsItemSelectorViewDisplayContext.getItemSelectorReturnTypeResolver() %>"
-	maxFileSize="<%= PropsValues.BLOGS_IMAGE_MAX_SIZE %>"
+	maxFileSize="<%= blogsItemSelectorViewDisplayContext.getImageMaxSize() %>"
 	portletURL="<%= blogsItemSelectorViewDisplayContext.getPortletURL(request, liferayPortletResponse) %>"
 	repositoryEntries="<%= portletFileEntries %>"
 	repositoryEntriesCount="<%= portletFileEntriesCount %>"
-	showDragAndDropZone="<%= false %>"
+	showDragAndDropZone="<%= true %>"
 	tabName="<%= blogsItemSelectorViewDisplayContext.getTitle(locale) %>"
 	uploadURL="<%= blogsItemSelectorViewDisplayContext.getUploadURL(liferayPortletResponse) %>"
 />

@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Locale;
@@ -58,23 +59,31 @@ public class DDMFormViewFormInstanceRecordDisplayContext {
 	public DDMFormViewFormInstanceRecordDisplayContext(
 		HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse,
-		DDMFormInstanceRecordLocalService formInstanceRecordLocalService,
-		DDMFormInstanceVersionLocalService formInstanceVersionLocalService,
-		DDMFormRenderer formRenderer, DDMFormValuesFactory formValuesFactory,
-		DDMFormValuesMerger formValuesMerger) {
+		DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService,
+		DDMFormInstanceVersionLocalService ddmFormInstanceVersionLocalService,
+		DDMFormRenderer ddmFormRenderer,
+		DDMFormValuesFactory ddmFormValuesFactory,
+		DDMFormValuesMerger ddmFormValuesMerger) {
 
 		_httpServletResponse = httpServletResponse;
-		_ddmFormInstanceRecordLocalService = formInstanceRecordLocalService;
-		_ddmFormInstanceVersionLocalService = formInstanceVersionLocalService;
-		_ddmFormRenderer = formRenderer;
-		_ddmFormValuesFactory = formValuesFactory;
-		_ddmFormValuesMerger = formValuesMerger;
+		_ddmFormInstanceRecordLocalService = ddmFormInstanceRecordLocalService;
+		_ddmFormInstanceVersionLocalService =
+			ddmFormInstanceVersionLocalService;
+		_ddmFormRenderer = ddmFormRenderer;
+		_ddmFormValuesFactory = ddmFormValuesFactory;
+		_ddmFormValuesMerger = ddmFormValuesMerger;
 
 		_ddmFormAdminRequestHelper = new DDMFormAdminRequestHelper(
 			httpServletRequest);
 	}
 
 	public String getDDMFormHTML(RenderRequest renderRequest)
+		throws PortalException {
+
+		return getDDMFormHTML(renderRequest, true);
+	}
+
+	public String getDDMFormHTML(RenderRequest renderRequest, boolean readOnly)
 		throws PortalException {
 
 		DDMFormInstanceRecord formInstanceRecord = getDDMFormInstanceRecord();
@@ -89,7 +98,8 @@ public class DDMFormViewFormInstanceRecordDisplayContext {
 			formInstanceVersion.getStructureVersion();
 
 		DDMFormRenderingContext formRenderingContext =
-			createDDMFormRenderingContext(structureVersion.getDDMForm());
+			createDDMFormRenderingContext(
+				structureVersion.getDDMForm(), readOnly);
 
 		DDMFormValues formValues = getDDMFormValues(
 			renderRequest, formInstanceRecord, structureVersion);
@@ -116,29 +126,44 @@ public class DDMFormViewFormInstanceRecordDisplayContext {
 	}
 
 	protected DDMFormRenderingContext createDDMFormRenderingContext(
-		DDMForm ddmForm) {
+		DDMForm ddmForm, boolean readOnly) {
 
 		DDMFormRenderingContext formRenderingContext =
 			new DDMFormRenderingContext();
 
-		formRenderingContext.setHttpServletRequest(
-			_ddmFormAdminRequestHelper.getRequest());
-		formRenderingContext.setHttpServletResponse(_httpServletResponse);
-
-		Set<Locale> availableLocales = ddmForm.getAvailableLocales();
+		String redirectURL = ParamUtil.getString(
+			_ddmFormAdminRequestHelper.getRequest(), "redirect");
 
 		Locale locale = ddmForm.getDefaultLocale();
+
+		Set<Locale> availableLocales = ddmForm.getAvailableLocales();
 
 		if (availableLocales.contains(_ddmFormAdminRequestHelper.getLocale())) {
 			locale = _ddmFormAdminRequestHelper.getLocale();
 		}
 
-		formRenderingContext.setLocale(locale);
+		if (Validator.isNotNull(redirectURL)) {
+			formRenderingContext.setCancelLabel(
+				LanguageUtil.get(locale, "cancel"));
+		}
 
+		formRenderingContext.setHttpServletRequest(
+			_ddmFormAdminRequestHelper.getRequest());
+		formRenderingContext.setHttpServletResponse(_httpServletResponse);
+		formRenderingContext.setLocale(locale);
 		formRenderingContext.setPortletNamespace(
 			PortalUtil.getPortletNamespace(
 				DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN));
-		formRenderingContext.setReadOnly(true);
+		formRenderingContext.setReadOnly(readOnly);
+
+		if (Validator.isNotNull(redirectURL)) {
+			formRenderingContext.setRedirectURL(redirectURL);
+		}
+		else {
+			formRenderingContext.setShowCancelButton(false);
+		}
+
+		formRenderingContext.setViewMode(true);
 
 		return formRenderingContext;
 	}

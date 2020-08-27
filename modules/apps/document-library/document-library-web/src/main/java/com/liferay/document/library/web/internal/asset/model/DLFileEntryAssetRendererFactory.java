@@ -30,9 +30,10 @@ import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
@@ -102,12 +103,12 @@ public class DLFileEntryAssetRendererFactory
 					"Unknown asset renderer type " + type);
 			}
 		}
-		catch (NoSuchFileEntryException nsfee) {
+		catch (NoSuchFileEntryException noSuchFileEntryException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsfee, nsfee);
+				_log.debug(noSuchFileEntryException, noSuchFileEntryException);
 			}
 
 			fileVersion = _dlAppLocalService.getFileVersion(classPK);
@@ -144,7 +145,7 @@ public class DLFileEntryAssetRendererFactory
 
 	@Override
 	public String getSubtypeTitle(Locale locale) {
-		return LanguageUtil.get(locale, "type");
+		return _language.get(locale, "type");
 	}
 
 	@Override
@@ -160,7 +161,7 @@ public class DLFileEntryAssetRendererFactory
 
 			return dlFileEntryType.getName(locale);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return super.getTypeName(locale, subtypeId);
 		}
 	}
@@ -170,13 +171,16 @@ public class DLFileEntryAssetRendererFactory
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse, long classTypeId) {
 
+		Group group = getGroup(liferayPortletRequest);
+
 		PortletURL portletURL = _portal.getControlPanelPortletURL(
-			liferayPortletRequest, getGroup(liferayPortletRequest),
-			DLPortletKeys.DOCUMENT_LIBRARY, 0, 0, PortletRequest.RENDER_PHASE);
+			liferayPortletRequest, group, DLPortletKeys.DOCUMENT_LIBRARY, 0, 0,
+			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
 			"mvcRenderCommandName", "/document_library/edit_file_entry");
 		portletURL.setParameter(Constants.CMD, Constants.ADD);
+		portletURL.setParameter("groupId", String.valueOf(group.getGroupId()));
 		portletURL.setParameter(
 			"folderId",
 			String.valueOf(DLFolderConstants.DEFAULT_PARENT_FOLDER_ID));
@@ -209,7 +213,7 @@ public class DLFileEntryAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 
 		return liferayPortletURL;
@@ -240,25 +244,6 @@ public class DLFileEntryAssetRendererFactory
 			permissionChecker, classPK, actionId);
 	}
 
-	@Reference(unbind = "-")
-	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLFileEntryLocalService(
-		DLFileEntryLocalService dlFileEntryLocalService) {
-
-		_dlFileEntryLocalService = dlFileEntryLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLFileEntryTypeLocalService(
-		DLFileEntryTypeLocalService dlFileEntryTypeLocalService) {
-
-		_dlFileEntryTypeLocalService = dlFileEntryTypeLocalService;
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFileEntryAssetRendererFactory.class);
 
@@ -266,8 +251,13 @@ public class DLFileEntryAssetRendererFactory
 	private AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
 
+	@Reference
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
 	private DLFileEntryLocalService _dlFileEntryLocalService;
+
+	@Reference
 	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
 
 	@Reference(
@@ -284,6 +274,9 @@ public class DLFileEntryAssetRendererFactory
 	)
 	private ModelResourcePermission<FileEntry>
 		_fileEntryModelResourcePermission;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private Portal _portal;

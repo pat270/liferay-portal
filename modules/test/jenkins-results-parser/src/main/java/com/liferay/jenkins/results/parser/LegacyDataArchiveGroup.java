@@ -31,11 +31,11 @@ public class LegacyDataArchiveGroup {
 		_legacyDataArchivePortalVersion = legacyDataArchivePortalVersion;
 		_dataArchiveType = dataArchiveType;
 
-		_legacyDataArchiveUtil =
-			_legacyDataArchivePortalVersion.getLegacyDataArchiveUtil();
+		_legacyDataArchiveHelper =
+			_legacyDataArchivePortalVersion.getLegacyDataArchiveHelper();
 
 		_legacyGitWorkingDirectory =
-			_legacyDataArchiveUtil.getLegacyGitWorkingDirectory();
+			_legacyDataArchiveHelper.getLegacyGitWorkingDirectory();
 
 		_legacyDataArchives = _getLegacyDataArchives();
 	}
@@ -54,13 +54,11 @@ public class LegacyDataArchiveGroup {
 
 			LocalGitCommit latestTestLocalGitCommit =
 				_legacyDataArchivePortalVersion.getLatestTestLocalGitCommit();
-			String portalVersion =
-				_legacyDataArchivePortalVersion.getPortalVersion();
 
 			_legacyGitWorkingDirectory.commitStagedFilesToCurrentBranch(
 				JenkinsResultsParserUtil.combine(
 					"archive:ignore Update '", _dataArchiveType, "' for '",
-					portalVersion, "' at ",
+					_legacyDataArchivePortalVersion.getPortalVersion(), "' at ",
 					latestTestLocalGitCommit.getAbbreviatedSHA(), "."));
 		}
 	}
@@ -91,10 +89,10 @@ public class LegacyDataArchiveGroup {
 	}
 
 	private final String _dataArchiveType;
+	private final LegacyDataArchiveHelper _legacyDataArchiveHelper;
 	private final LegacyDataArchivePortalVersion
 		_legacyDataArchivePortalVersion;
 	private final List<LegacyDataArchive> _legacyDataArchives;
-	private final LegacyDataArchiveUtil _legacyDataArchiveUtil;
 	private final GitWorkingDirectory _legacyGitWorkingDirectory;
 
 }

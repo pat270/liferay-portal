@@ -69,7 +69,7 @@ public class RelatedAssetsRenderParametersPortletFilter
 
 			clearDynamicServletRequestParameters(httpServletRequest);
 
-			clearRenderRequestParameters(renderRequest, httpServletRequest);
+			clearRenderRequestParameters(httpServletRequest, renderRequest);
 		}
 
 		filterChain.doFilter(renderRequest, renderResponse);
@@ -108,15 +108,14 @@ public class RelatedAssetsRenderParametersPortletFilter
 	}
 
 	protected void clearRenderRequestParameters(
-		RenderRequest renderRequest, HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest) {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String portletId = _portal.getPortletId(renderRequest);
-
 		RenderParametersPool.clear(
-			httpServletRequest, themeDisplay.getPlid(), portletId);
+			httpServletRequest, themeDisplay.getPlid(),
+			_portal.getPortletId(renderRequest));
 	}
 
 	@Reference

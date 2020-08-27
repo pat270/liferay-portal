@@ -161,8 +161,8 @@ public class MavenExecutor extends ExternalResource {
 			try {
 				FileUtil.deleteDirectory(_mavenHomeDirPath);
 			}
-			catch (IOException ioe) {
-				ioe.printStackTrace();
+			catch (IOException ioException) {
+				ioException.printStackTrace();
 			}
 		}
 	}
@@ -278,7 +278,7 @@ public class MavenExecutor extends ExternalResource {
 	}
 
 	private static void _append(StringBuilder sb, InputStream inputStream)
-		throws IOException {
+		throws Exception {
 
 		try (BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {

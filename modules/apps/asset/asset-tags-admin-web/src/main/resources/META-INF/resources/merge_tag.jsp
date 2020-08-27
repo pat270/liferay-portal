@@ -83,10 +83,12 @@ renderResponse.setTitle(LanguageUtil.get(request, "merge-tags"));
 </liferay-frontend:edit-form>
 
 <aui:script require="metal-dom/src/all/dom as dom">
-	var targetTagNameSelect = document.getElementById('<portlet:namespace />targetTagName');
+	var targetTagNameSelect = document.getElementById(
+		'<portlet:namespace />targetTagName'
+	);
 
 	if (targetTagNameSelect) {
-		window['<portlet:namespace />onAddTag'] = function(item) {
+		window['<portlet:namespace />onAddTag'] = function (item) {
 			var value = item.value;
 
 			if (value !== undefined) {
@@ -101,11 +103,13 @@ renderResponse.setTitle(LanguageUtil.get(request, "merge-tags"));
 			}
 		};
 
-		window['<portlet:namespace />onRemoveTag'] = function(item) {
+		window['<portlet:namespace />onRemoveTag'] = function (item) {
 			var value = item.value;
 
 			if (value !== undefined) {
-				var targetTagNameOption = targetTagNameSelect.querySelector('option[value="' + value + '"]');
+				var targetTagNameOption = targetTagNameSelect.querySelector(
+					'option[value="' + value + '"]'
+				);
 
 				dom.exitDocument(targetTagNameOption);
 			}
@@ -113,30 +117,35 @@ renderResponse.setTitle(LanguageUtil.get(request, "merge-tags"));
 	}
 
 	var form = document.<portlet:namespace />fm;
-	var mergeTagNamesInput = document.getElementById('<portlet:namespace />mergeTagNames');
+	var mergeTagNamesInputs = document.getElementsByName(
+		'<portlet:namespace />mergeTagNames'
+	);
 
-	if (form && mergeTagNamesInput && targetTagNameSelect) {
-		form.addEventListener(
-			'submit',
-			function(event) {
-				var mergeTagNames = mergeTagNamesInput.value.split(',');
+	if (form && mergeTagNamesInputs && targetTagNameSelect) {
+		form.addEventListener('submit', function (event) {
+			var mergeTagNames = Array.from(mergeTagNamesInputs).map(function (
+				mergeTagNamesInput
+			) {
+				return mergeTagNamesInput.value;
+			});
 
-				if (mergeTagNames.length < 2) {
-					alert('<liferay-ui:message arguments="2" key="please-choose-at-least-x-tags" />');
-
-					return;
-				}
-
-				var mergeText = Liferay.Util.sub(
-					'<liferay-ui:message key="are-you-sure-you-want-to-merge-x-into-x" />',
-					mergeTagNames,
-					targetTagNameSelect.value
+			if (mergeTagNames.length < 2) {
+				alert(
+					'<liferay-ui:message arguments="2" key="please-choose-at-least-x-tags" />'
 				);
 
-				if (confirm(mergeText)) {
-					submitForm(form);
-				}
+				return;
 			}
-		);
+
+			var mergeText = Liferay.Util.sub(
+				'<liferay-ui:message key="are-you-sure-you-want-to-merge-x-into-x" />',
+				mergeTagNames,
+				targetTagNameSelect.value
+			);
+
+			if (confirm(mergeText)) {
+				submitForm(form);
+			}
+		});
 	}
 </aui:script>

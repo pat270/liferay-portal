@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = FileVersionPreviewEventListener.class)
+@Component(service = FileVersionPreviewEventListener.class)
 public class FileVersionPreviewEventListenerImpl
 	implements FileVersionPreviewEventListener {
 
@@ -66,9 +66,9 @@ public class FileVersionPreviewEventListenerImpl
 					previewStatus);
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 		}
 	}

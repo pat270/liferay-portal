@@ -55,7 +55,9 @@ PortletURL portletURL = userGroupItemSelectorViewDisplayContext.getPortletURL();
 	</liferay-frontend:management-bar-filters>
 </liferay-frontend:management-bar>
 
-<div class="container-fluid-1280" id="<portlet:namespace />userGroupSelectorWrapper">
+<clay:container-fluid
+	id='<%= liferayPortletResponse.getNamespace() + "userGroupSelectorWrapper" %>'
+>
 	<liferay-ui:search-container
 		id="userGroups"
 		searchContainer="<%= userGroupItemSelectorViewDisplayContext.getSearchContainer() %>"
@@ -68,10 +70,11 @@ PortletURL portletURL = userGroupItemSelectorViewDisplayContext.getPortletURL();
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("id", userGroup.getUserGroupId());
-			data.put("name", userGroup.getName());
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"id", userGroup.getUserGroupId()
+			).put(
+				"name", userGroup.getName()
+			).build();
 
 			row.setData(data);
 			%>
@@ -93,33 +96,30 @@ PortletURL portletURL = userGroupItemSelectorViewDisplayContext.getPortletURL();
 			searchContainer="<%= userGroupItemSelectorViewDisplayContext.getSearchContainer() %>"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>
 
 <aui:script use="liferay-search-container">
-	var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />userGroups');
-
-	searchContainer.on(
-		'rowToggled',
-		function(event) {
-			var allSelectedElements = event.elements.allSelectedElements;
-			var arr = [];
-
-			allSelectedElements.each(
-				function() {
-					var row = this.ancestor('tr');
-
-					var data = row.getDOM().dataset;
-
-					arr.push({id: data.id, name: data.name});
-				}
-			);
-
-			Liferay.Util.getOpener().Liferay.fire(
-				'<%= HtmlUtil.escapeJS(itemSelectedEventName) %>',
-				{
-					data: arr
-				}
-			);
-		}
+	var searchContainer = Liferay.SearchContainer.get(
+		'<portlet:namespace />userGroups'
 	);
+
+	searchContainer.on('rowToggled', function (event) {
+		var allSelectedElements = event.elements.allSelectedElements;
+		var arr = [];
+
+		allSelectedElements.each(function () {
+			var row = this.ancestor('tr');
+
+			var data = row.getDOM().dataset;
+
+			arr.push({id: data.id, name: data.name});
+		});
+
+		Liferay.Util.getOpener().Liferay.fire(
+			'<%= HtmlUtil.escapeJS(itemSelectedEventName) %>',
+			{
+				data: arr,
+			}
+		);
+	});
 </aui:script>

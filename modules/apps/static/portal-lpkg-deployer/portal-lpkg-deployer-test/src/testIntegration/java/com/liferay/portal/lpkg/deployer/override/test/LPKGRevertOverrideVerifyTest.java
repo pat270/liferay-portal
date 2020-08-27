@@ -111,11 +111,11 @@ public class LPKGRevertOverrideVerifyTest {
 			}
 		}
 
-		List<Map.Entry> leftoverEntries = new ArrayList<>();
+		List<Map.Entry<String, String>> leftoverEntries = new ArrayList<>();
 
 		leftoverEntries.addAll(jars.entrySet());
 
-		for (Map.Entry entry : leftoverEntries) {
+		for (Map.Entry<String, String> entry : leftoverEntries) {
 			if (entry.getValue() == null) {
 				leftoverEntries.remove(entry);
 			}
@@ -127,9 +127,9 @@ public class LPKGRevertOverrideVerifyTest {
 
 				@Override
 				public int compare(Map.Entry entry1, Map.Entry entry2) {
-					String entrySymbolicname = (String)entry1.getKey();
+					String entrySymbolicName = (String)entry1.getKey();
 
-					return entrySymbolicname.compareTo((String)entry2.getKey());
+					return entrySymbolicName.compareTo((String)entry2.getKey());
 				}
 
 			});

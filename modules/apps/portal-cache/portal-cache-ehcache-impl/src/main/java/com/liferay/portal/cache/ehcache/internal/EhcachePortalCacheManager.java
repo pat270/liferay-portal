@@ -14,15 +14,13 @@
 
 package com.liferay.portal.cache.ehcache.internal;
 
-import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.cache.BasePortalCacheManager;
 import com.liferay.portal.cache.configuration.PortalCacheConfiguration;
 import com.liferay.portal.cache.configuration.PortalCacheManagerConfiguration;
 import com.liferay.portal.cache.ehcache.internal.configurator.BaseEhcachePortalCacheManagerConfigurator;
+import com.liferay.portal.cache.ehcache.internal.event.ConfigurableEhcachePortalCacheListener;
 import com.liferay.portal.cache.ehcache.internal.event.PortalCacheManagerEventListener;
 import com.liferay.portal.cache.ehcache.internal.management.ManagementService;
-import com.liferay.portal.cache.ehcache.spi.EhcacheUnwrapUtil;
-import com.liferay.portal.cache.ehcache.spi.event.ConfigurableEhcachePortalCacheListener;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheListener;
 import com.liferay.portal.kernel.cache.PortalCacheListenerScope;
@@ -37,8 +35,6 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Field;
-
 import java.net.URL;
 
 import java.util.Map;
@@ -51,7 +47,6 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.event.CacheManagerEventListenerRegistry;
-import net.sf.ehcache.util.FailSafeTimer;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -169,9 +164,6 @@ public class EhcachePortalCacheManager<K extends Serializable, V>
 
 	@Override
 	protected void initPortalCacheManager() {
-		setBlockingPortalCacheAllowed(
-			GetterUtil.getBoolean(
-				props.get(PropsKeys.EHCACHE_BLOCKING_CACHE_ALLOWED)));
 		setTransactionalPortalCacheEnabled(
 			GetterUtil.getBoolean(
 				props.get(PropsKeys.TRANSACTIONAL_CACHE_ENABLED)));
@@ -208,20 +200,6 @@ public class EhcachePortalCacheManager<K extends Serializable, V>
 		_portalCacheManagerConfiguration =
 			configurationObjectValuePair.getValue();
 
-		FailSafeTimer failSafeTimer = _cacheManager.getTimer();
-
-		failSafeTimer.cancel();
-
-		try {
-			Field cacheManagerTimerField = ReflectionUtil.getDeclaredField(
-				CacheManager.class, "cacheManagerTimer");
-
-			cacheManagerTimerField.set(_cacheManager, null);
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
 		CacheManagerEventListenerRegistry cacheManagerEventListenerRegistry =
 			_cacheManager.getCacheManagerEventListenerRegistry();
 
@@ -229,43 +207,45 @@ public class EhcachePortalCacheManager<K extends Serializable, V>
 			new PortalCacheManagerEventListener(
 				aggregatedPortalCacheManagerListener));
 
-		if (GetterUtil.getBoolean(
+		if (!GetterUtil.getBoolean(
 				props.get(
 					PropsKeys.EHCACHE_PORTAL_CACHE_MANAGER_JMX_ENABLED))) {
 
-			_mBeanServerServiceTracker =
-				new ServiceTracker<MBeanServer, ManagementService>(
-					bundleContext, MBeanServer.class, null) {
-
-					@Override
-					public ManagementService addingService(
-						ServiceReference<MBeanServer> serviceReference) {
-
-						MBeanServer mBeanServer = bundleContext.getService(
-							serviceReference);
-
-						ManagementService managementService =
-							new ManagementService(_cacheManager, mBeanServer);
-
-						managementService.init();
-
-						return managementService;
-					}
-
-					@Override
-					public void removedService(
-						ServiceReference<MBeanServer> serviceReference,
-						ManagementService managementService) {
-
-						managementService.dispose();
-
-						bundleContext.ungetService(serviceReference);
-					}
-
-				};
-
-			_mBeanServerServiceTracker.open();
+			return;
 		}
+
+		_mBeanServerServiceTracker =
+			new ServiceTracker<MBeanServer, ManagementService>(
+				bundleContext, MBeanServer.class, null) {
+
+				@Override
+				public ManagementService addingService(
+					ServiceReference<MBeanServer> serviceReference) {
+
+					MBeanServer mBeanServer = bundleContext.getService(
+						serviceReference);
+
+					ManagementService managementService = new ManagementService(
+						_cacheManager, mBeanServer);
+
+					managementService.init();
+
+					return managementService;
+				}
+
+				@Override
+				public void removedService(
+					ServiceReference<MBeanServer> serviceReference,
+					ManagementService managementService) {
+
+					managementService.dispose();
+
+					bundleContext.ungetService(serviceReference);
+				}
+
+			};
+
+		_mBeanServerServiceTracker.open();
 	}
 
 	protected void reconfigEhcache(Configuration configuration) {

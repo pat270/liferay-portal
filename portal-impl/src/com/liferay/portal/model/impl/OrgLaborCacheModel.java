@@ -25,29 +25,26 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing OrgLabor in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class OrgLaborCacheModel
 	implements CacheModel<OrgLabor>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof OrgLaborCacheModel)) {
+		if (!(object instanceof OrgLaborCacheModel)) {
 			return false;
 		}
 
-		OrgLaborCacheModel orgLaborCacheModel = (OrgLaborCacheModel)obj;
+		OrgLaborCacheModel orgLaborCacheModel = (OrgLaborCacheModel)object;
 
 		if ((orgLaborId == orgLaborCacheModel.orgLaborId) &&
 			(mvccVersion == orgLaborCacheModel.mvccVersion)) {

@@ -7,18 +7,12 @@
 		</div>
 	</#if>
 <#else>
-	<#assign includeAllChildNavItems = false />
-
-	<#if stringUtil.equals(includedLayouts, "all")>
-		<#assign includeAllChildNavItems = true />
-	</#if>
-
 	<div aria-label="<@liferay.language key="site-pages" />" class="list-menu">
 		<@buildNavigation
 			branchNavItems=branchNavItems
 			cssClass="layouts"
 			displayDepth=displayDepth
-			includeAllChildNavItems=includeAllChildNavItems
+			includeAllChildNavItems=true
 			navItemLevel=1
 			navItems=entries
 		/>

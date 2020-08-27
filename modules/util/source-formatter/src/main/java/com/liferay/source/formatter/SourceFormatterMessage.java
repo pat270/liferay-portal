@@ -26,32 +26,19 @@ public class SourceFormatterMessage
 	implements Comparable<SourceFormatterMessage> {
 
 	public SourceFormatterMessage(String fileName, String message) {
-		this(fileName, message, -1);
+		this(fileName, message, null, null, null, -1);
 	}
 
 	public SourceFormatterMessage(
 		String fileName, String message, CheckType checkType, String checkName,
-		String markdownFileName, int lineNumber) {
+		String documentationURLString, int lineNumber) {
 
 		_fileName = fileName;
 		_message = message;
 		_checkType = checkType;
 		_checkName = checkName;
-		_markdownFileName = markdownFileName;
+		_documentationURLString = documentationURLString;
 		_lineNumber = lineNumber;
-	}
-
-	public SourceFormatterMessage(
-		String fileName, String message, int lineNumber) {
-
-		this(fileName, message, null, lineNumber);
-	}
-
-	public SourceFormatterMessage(
-		String fileName, String message, String markdownFileName,
-		int lineNumber) {
-
-		this(fileName, message, null, null, markdownFileName, lineNumber);
 	}
 
 	@Override
@@ -75,6 +62,10 @@ public class SourceFormatterMessage
 		return _checkType;
 	}
 
+	public String getDocumentationURLString() {
+		return _documentationURLString;
+	}
+
 	public String getFileName() {
 		return _fileName;
 	}
@@ -83,28 +74,19 @@ public class SourceFormatterMessage
 		return _lineNumber;
 	}
 
-	public String getMarkdownFilePath() {
-		if (_markdownFileName == null) {
-			return null;
-		}
-
-		return _DOCUMENTATION_URL + _markdownFileName;
-	}
-
 	public String getMessage() {
 		return _message;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(14);
+		StringBundler sb = new StringBundler(13);
 
 		sb.append(_message);
 
-		if (_markdownFileName != null) {
+		if (_documentationURLString != null) {
 			sb.append(", see ");
-			sb.append(_DOCUMENTATION_URL);
-			sb.append(_markdownFileName);
+			sb.append(_documentationURLString);
 		}
 
 		sb.append(": ");
@@ -131,15 +113,11 @@ public class SourceFormatterMessage
 		return sb.toString();
 	}
 
-	private static final String _DOCUMENTATION_URL =
-		"https://github.com/liferay/liferay-portal/blob/master/modules/util" +
-			"/source-formatter/documentation/";
-
 	private final String _checkName;
 	private final CheckType _checkType;
+	private final String _documentationURLString;
 	private final String _fileName;
 	private final int _lineNumber;
-	private final String _markdownFileName;
 	private final String _message;
 
 }

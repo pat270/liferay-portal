@@ -14,12 +14,10 @@
 
 package com.liferay.external.data.source.test.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.external.data.source.test.model.TestEntity;
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -32,21 +30,21 @@ import java.io.ObjectOutput;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class TestEntityCacheModel
 	implements CacheModel<TestEntity>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof TestEntityCacheModel)) {
+		if (!(object instanceof TestEntityCacheModel)) {
 			return false;
 		}
 
-		TestEntityCacheModel testEntityCacheModel = (TestEntityCacheModel)obj;
+		TestEntityCacheModel testEntityCacheModel =
+			(TestEntityCacheModel)object;
 
 		if (id == testEntityCacheModel.id) {
 			return true;

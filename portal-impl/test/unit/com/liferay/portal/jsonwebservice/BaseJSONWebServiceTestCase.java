@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.util.MethodParametersResolverUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.util.MethodParametersResolverImpl;
 import com.liferay.portal.util.PropsImpl;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.lang.reflect.Method;
 
@@ -71,6 +73,8 @@ public abstract class BaseJSONWebServiceTestCase extends PowerMockito {
 
 		methodParametersResolverUtil.setMethodParametersResolver(
 			new MethodParametersResolverImpl());
+
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
 	}
 
 	protected static void registerAction(Object action) {
@@ -197,7 +201,9 @@ public abstract class BaseJSONWebServiceTestCase extends PowerMockito {
 		}
 
 		if (object instanceof JSONSerializable) {
-			return ((JSONSerializable)object).toJSONString();
+			JSONSerializable jsonSerializable = (JSONSerializable)object;
+
+			return jsonSerializable.toJSONString();
 		}
 
 		JSONSerializer jsonSerializer = JSONFactoryUtil.createJSONSerializer();
@@ -207,7 +213,9 @@ public abstract class BaseJSONWebServiceTestCase extends PowerMockito {
 
 	protected String toJSON(Object object, String... includes) {
 		if (object instanceof JSONSerializable) {
-			return ((JSONSerializable)object).toJSONString();
+			JSONSerializable jsonSerializable = (JSONSerializable)object;
+
+			return jsonSerializable.toJSONString();
 		}
 
 		JSONSerializer jsonSerializer = JSONFactoryUtil.createJSONSerializer();

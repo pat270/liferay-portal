@@ -62,11 +62,11 @@ public abstract class BaseMVCActionCommand implements MVCActionCommand {
 
 			return SessionErrors.isEmpty(actionRequest);
 		}
-		catch (PortletException pe) {
-			throw pe;
+		catch (PortletException portletException) {
+			throw portletException;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -107,10 +107,9 @@ public abstract class BaseMVCActionCommand implements MVCActionCommand {
 		throws Exception;
 
 	protected PortletConfig getPortletConfig(PortletRequest portletRequest) {
-		String portletId = PortalUtil.getPortletId(portletRequest);
-
 		return PortletConfigFactoryUtil.get(
-			PortletIdCodec.decodePortletName(portletId));
+			PortletIdCodec.decodePortletName(
+				PortalUtil.getPortletId(portletRequest)));
 	}
 
 	protected void hideDefaultErrorMessage(PortletRequest portletRequest) {

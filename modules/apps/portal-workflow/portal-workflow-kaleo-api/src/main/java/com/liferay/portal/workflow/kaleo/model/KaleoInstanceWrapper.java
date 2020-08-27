@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link KaleoInstance}.
@@ -35,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KaleoInstance
  * @generated
  */
-@ProviderType
 public class KaleoInstanceWrapper
 	extends BaseModelWrapper<KaleoInstance>
 	implements KaleoInstance, ModelWrapper<KaleoInstance> {
@@ -56,6 +53,7 @@ public class KaleoInstanceWrapper
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("kaleoDefinitionId", getKaleoDefinitionId());
 		attributes.put(
 			"kaleoDefinitionVersionId", getKaleoDefinitionVersionId());
 		attributes.put("kaleoDefinitionName", getKaleoDefinitionName());
@@ -119,6 +117,12 @@ public class KaleoInstanceWrapper
 
 		if (modifiedDate != null) {
 			setModifiedDate(modifiedDate);
+		}
+
+		Long kaleoDefinitionId = (Long)attributes.get("kaleoDefinitionId");
+
+		if (kaleoDefinitionId != null) {
+			setKaleoDefinitionId(kaleoDefinitionId);
 		}
 
 		Long kaleoDefinitionVersionId = (Long)attributes.get(
@@ -248,6 +252,16 @@ public class KaleoInstanceWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the kaleo definition ID of this kaleo instance.
+	 *
+	 * @return the kaleo definition ID of this kaleo instance
+	 */
+	@Override
+	public long getKaleoDefinitionId() {
+		return model.getKaleoDefinitionId();
 	}
 
 	/**
@@ -470,6 +484,16 @@ public class KaleoInstanceWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the kaleo definition ID of this kaleo instance.
+	 *
+	 * @param kaleoDefinitionId the kaleo definition ID of this kaleo instance
+	 */
+	@Override
+	public void setKaleoDefinitionId(long kaleoDefinitionId) {
+		model.setKaleoDefinitionId(kaleoDefinitionId);
 	}
 
 	/**

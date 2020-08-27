@@ -17,7 +17,7 @@ package com.liferay.fragment.web.internal.portlet.action;
 import com.liferay.fragment.constants.FragmentPortletKeys;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.service.FragmentCollectionService;
-import com.liferay.fragment.web.internal.portlet.util.ExportUtil;
+import com.liferay.fragment.web.internal.portlet.helper.ExportHelper;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -82,7 +82,7 @@ public class ExportFragmentCollectionsMVCResourceCommand
 				fragmentCollections.add(fragmentCollection);
 			}
 
-			File file = _exportUtil.exportFragmentCollections(
+			File file = _exportHelper.exportFragmentCollections(
 				fragmentCollections);
 
 			PortletResponseUtil.sendFile(
@@ -90,15 +90,15 @@ public class ExportFragmentCollectionsMVCResourceCommand
 				"collections-" + Time.getTimestamp() + ".zip",
 				new FileInputStream(file), ContentTypes.APPLICATION_ZIP);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 
 		return false;
 	}
 
 	@Reference
-	private ExportUtil _exportUtil;
+	private ExportHelper _exportHelper;
 
 	@Reference
 	private FragmentCollectionService _fragmentCollectionService;

@@ -14,27 +14,24 @@
 
 package com.liferay.source.formatter.checks;
 
-import com.liferay.petra.string.CharPool;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.source.formatter.checks.comparator.ElementComparator;
 import com.liferay.source.formatter.checks.util.SourceUtil;
-import com.liferay.source.formatter.util.FileUtil;
 
-import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.tree.DefaultComment;
 
 /**
  * @author Hugo Huijser
@@ -53,6 +50,30 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 		return content;
 	}
 
+	private void _checkMVCCEnabled(
+		String fileName, String absolutePath, Element element) {
+
+		if (!isAttributeValue(_CHECK_MVCC_ENABLED_KEY, absolutePath) ||
+			(element.attributeValue("mvcc-enabled") != null)) {
+
+			return;
+		}
+
+		List<String> allowedFileNames = getAttributeValues(
+			_ALLOWED_MISSING_MVCC_ENABLED_FILE_NAMES_KEY, absolutePath);
+
+		for (String allowedFileName : allowedFileNames) {
+			if (absolutePath.endsWith(allowedFileName)) {
+				return;
+			}
+		}
+
+		addMessage(
+			fileName,
+			"Attribute 'mvcc-enabled' should always be set in service.xml. " +
+				"Preferably, set 'mvcc-enabled=\"true\"'.");
+	}
+
 	private void _checkServiceXML(
 			String fileName, String absolutePath, String content)
 		throws DocumentException, IOException {
@@ -61,23 +82,47 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 
 		Element rootElement = document.getRootElement();
 
+		_checkMVCCEnabled(fileName, absolutePath, rootElement);
+
 		ServiceReferenceElementComparator serviceReferenceElementComparator =
 			new ServiceReferenceElementComparator("entity");
 
 		for (Element entityElement :
 				(List<Element>)rootElement.elements("entity")) {
 
+			if (GetterUtil.getBoolean(
+					entityElement.attributeValue("deprecated"))) {
+
+				continue;
+			}
+
 			String entityName = entityElement.attributeValue("name");
 
-			List<String> columnNames = _getColumnNames(
-				fileName, absolutePath, entityName);
+			_checkStatusColumns(fileName, entityElement, entityName);
 
-			ServiceColumnElementComparator serviceColumnElementComparator =
-				new ServiceColumnElementComparator(columnNames);
+			List<String> columnNames = new ArrayList<>();
 
-			checkElementOrder(
-				fileName, entityElement, "column", entityName,
-				serviceColumnElementComparator);
+			for (Element columnElement :
+					(List<Element>)entityElement.elements("column")) {
+
+				columnNames.add(columnElement.attributeValue("name"));
+			}
+
+			if (!columnNames.isEmpty() && !columnNames.contains("companyId")) {
+				List<String> allowedEntityNames = getAttributeValues(
+					_ALLOWED_MISSING_COMPANY_ID_ENTITY_NAMES_KEY, absolutePath);
+
+				if (!allowedEntityNames.isEmpty() &&
+					!allowedEntityNames.contains(entityName)) {
+
+					addMessage(
+						fileName,
+						StringBundler.concat(
+							"Entity '", entityName,
+							"' should have a column named 'companyId', See ",
+							"LPS-107076"));
+				}
+			}
 
 			ServiceFinderColumnElementComparator
 				serviceFinderColumnElementComparator =
@@ -114,123 +159,78 @@ public class XMLServiceFileCheck extends BaseFileCheck {
 			new ServiceExceptionElementComparator());
 	}
 
-	private List<String> _getColumnNames(
-			String fileName, String absolutePath, String entityName)
-		throws IOException {
+	private void _checkStatusColumns(
+		String fileName, Element entityElement, String entityName) {
 
-		List<String> columnNames = new ArrayList<>();
+		Iterator<Node> iterator = entityElement.nodeIterator();
 
-		String tablesContent = _getTablesContent(fileName, absolutePath);
+		boolean otherFields = false;
+		String previousColumnName = null;
 
-		if (tablesContent == null) {
-			return columnNames;
+		while (iterator.hasNext()) {
+			Node node = (Node)iterator.next();
+
+			if (node instanceof DefaultComment) {
+				DefaultComment defaultComment = (DefaultComment)node;
+
+				if (Objects.equals(
+						defaultComment.asXML(), "<!-- Other fields -->")) {
+
+					otherFields = true;
+				}
+				else if (otherFields) {
+					return;
+				}
+			}
+			else if (otherFields && (node instanceof Element)) {
+				Element element = (Element)node;
+
+				if (!Objects.equals(element.getName(), "column")) {
+					continue;
+				}
+
+				String columnName = element.attributeValue("name");
+
+				if (_isStatusColumnName(previousColumnName) &&
+					!_isStatusColumnName(columnName)) {
+
+					addMessage(
+						fileName,
+						StringBundler.concat(
+							"Incorrect order '", entityName, "#",
+							previousColumnName, "'. Status columns should ",
+							"come last in the category 'Other fields'."));
+				}
+
+				previousColumnName = columnName;
+			}
 		}
-
-		Pattern pattern = Pattern.compile(
-			"create table " + entityName + "_? \\(\n([\\s\\S]*?)\n\\);");
-
-		Matcher matcher = pattern.matcher(tablesContent);
-
-		if (!matcher.find()) {
-			return columnNames;
-		}
-
-		String tableContent = matcher.group(1);
-
-		UnsyncBufferedReader unsyncBufferedReader = new UnsyncBufferedReader(
-			new UnsyncStringReader(tableContent));
-
-		String line = null;
-
-		while ((line = unsyncBufferedReader.readLine()) != null) {
-			line = StringUtil.trim(line);
-
-			String columnName = line.substring(0, line.indexOf(CharPool.SPACE));
-
-			columnName = StringUtil.replace(
-				columnName, CharPool.UNDERLINE, StringPool.BLANK);
-
-			columnNames.add(columnName);
-		}
-
-		return columnNames;
 	}
 
-	private synchronized String _getPortalTablesContent() throws IOException {
-		if (_portalTablesContent != null) {
-			return _portalTablesContent;
+	private boolean _isStatusColumnName(String columnName) {
+		if ((columnName != null) &&
+			(columnName.equals("status") ||
+			 columnName.equals("statusByUserId") ||
+			 columnName.equals("statusByUserName") ||
+			 columnName.equals("statusDate") ||
+			 columnName.equals("statusMessage"))) {
+
+			return true;
 		}
 
-		_portalTablesContent = getContent(
-			"sql/portal-tables.sql", ToolsUtil.PORTAL_MAX_DIR_LEVEL);
-
-		return _portalTablesContent;
+		return false;
 	}
 
-	private String _getTablesContent(String fileName, String absolutePath)
-		throws IOException {
+	private static final String _ALLOWED_MISSING_COMPANY_ID_ENTITY_NAMES_KEY =
+		"allowedMissingCompanyIdEntityNames";
 
-		List<String> pluginsInsideModulesDirectoryNames =
-			getPluginsInsideModulesDirectoryNames();
+	private static final String _ALLOWED_MISSING_MVCC_ENABLED_FILE_NAMES_KEY =
+		"allowedMissingMVVCEnabledFileNames";
 
-		if (isPortalSource() &&
-			!isModulesFile(absolutePath, pluginsInsideModulesDirectoryNames)) {
-
-			return _getPortalTablesContent();
-		}
-
-		int pos = fileName.lastIndexOf(CharPool.SLASH);
-
-		String moduleOrPluginFolder = fileName.substring(0, pos);
-
-		String tablesContent = FileUtil.read(
-			new File(
-				moduleOrPluginFolder +
-					"/src/main/resources/META-INF/sql/tables.sql"));
-
-		if (tablesContent == null) {
-			tablesContent = FileUtil.read(
-				new File(
-					moduleOrPluginFolder + "/src/META-INF/sql/tables.sql"));
-		}
-
-		if (tablesContent == null) {
-			tablesContent = FileUtil.read(
-				new File(moduleOrPluginFolder + "/sql/tables.sql"));
-		}
-
-		return tablesContent;
-	}
+	private static final String _CHECK_MVCC_ENABLED_KEY = "checkMVCCEnabled";
 
 	private static final String _SERVICE_FINDER_COLUMN_SORT_EXCLUDES =
 		"service.finder.column.sort.excludes";
-
-	private String _portalTablesContent;
-
-	private class ServiceColumnElementComparator extends ElementComparator {
-
-		public ServiceColumnElementComparator(List<String> columnNames) {
-			_columnNames = columnNames;
-		}
-
-		@Override
-		public int compare(Element columnElement1, Element columnElement2) {
-			String columnName1 = getElementName(columnElement1);
-			String columnName2 = getElementName(columnElement2);
-
-			int index1 = _columnNames.indexOf(columnName1);
-			int index2 = _columnNames.indexOf(columnName2);
-
-			if ((index1 == -1) || (index2 == -1)) {
-				return 0;
-			}
-
-			return index1 - index2;
-		}
-
-		private final List<String> _columnNames;
-
-	}
 
 	private class ServiceExceptionElementComparator extends ElementComparator {
 

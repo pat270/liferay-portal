@@ -19,6 +19,7 @@ import com.liferay.dynamic.data.mapping.data.provider.DDMDataProvider;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderException;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderRequest;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderResponse;
+import com.liferay.dynamic.data.mapping.data.provider.configuration.DDMDataProviderConfiguration;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceLocalService;
@@ -27,10 +28,11 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -39,21 +41,25 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.util.ResourcePermissionTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,6 +75,28 @@ public class DDMRESTDataProviderTest {
 	@Rule
 	public static final LiferayIntegrationTestRule liferayIntegrationTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		ConfigurationTestUtil.saveConfiguration(
+			DDMDataProviderConfiguration.class.getName(),
+			new HashMapDictionary() {
+				{
+					put("accessLocalNetwork", true);
+				}
+			});
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		ConfigurationTestUtil.saveConfiguration(
+			DDMDataProviderConfiguration.class.getName(),
+			new HashMapDictionary() {
+				{
+					put("accessLocalNetwork", false);
+				}
+			});
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -132,6 +160,12 @@ public class DDMRESTDataProviderTest {
 			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
 				"outputParameterType", "[\"list\"]"));
 
+		String outputParameterId = StringUtil.randomString();
+
+		outputParameters.addNestedDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"outputParameterId", outputParameterId));
+
 		long ddmDataProviderInstanceId = saveDDMDataProviderInstance(
 			ddmFormValues, false, false);
 
@@ -149,7 +183,8 @@ public class DDMRESTDataProviderTest {
 		Assert.assertNotNull(ddmDataProviderResponse);
 
 		Optional<List<KeyValuePair>> optionalKeyValuePairs =
-			ddmDataProviderResponse.getOutputOptional("output", List.class);
+			ddmDataProviderResponse.getOutputOptional(
+				outputParameterId, List.class);
 
 		Assert.assertTrue(optionalKeyValuePairs.isPresent());
 
@@ -288,6 +323,12 @@ public class DDMRESTDataProviderTest {
 			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
 				"outputParameterType", "[\"list\"]"));
 
+		String outputParameterId = StringUtil.randomString();
+
+		outputParameters.addNestedDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"outputParameterId", outputParameterId));
+
 		long ddmDataProviderInstanceId = saveDDMDataProviderInstance(
 			ddmFormValues, false, false);
 
@@ -307,7 +348,8 @@ public class DDMRESTDataProviderTest {
 		Assert.assertNotNull(ddmDataProviderResponse);
 
 		Optional<List<KeyValuePair>> optionalKeyValuePairs =
-			ddmDataProviderResponse.getOutputOptional("output", List.class);
+			ddmDataProviderResponse.getOutputOptional(
+				outputParameterId, List.class);
 
 		Assert.assertTrue(optionalKeyValuePairs.isPresent());
 
@@ -382,6 +424,12 @@ public class DDMRESTDataProviderTest {
 			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
 				"outputParameterType", "[\"list\"]"));
 
+		String outputParameterId = StringUtil.randomString();
+
+		outputParameters.addNestedDDMFormFieldValue(
+			DDMFormValuesTestUtil.createUnlocalizedDDMFormFieldValue(
+				"outputParameterId", outputParameterId));
+
 		long ddmDataProviderInstanceId = saveDDMDataProviderInstance(
 			ddmFormValues, true, true);
 
@@ -401,7 +449,8 @@ public class DDMRESTDataProviderTest {
 		Assert.assertNotNull(ddmDataProviderResponse);
 
 		Optional<List<KeyValuePair>> optionalKeyValuePairs =
-			ddmDataProviderResponse.getOutputOptional("output", List.class);
+			ddmDataProviderResponse.getOutputOptional(
+				outputParameterId, List.class);
 
 		Assert.assertTrue(optionalKeyValuePairs.isPresent());
 
@@ -436,9 +485,9 @@ public class DDMRESTDataProviderTest {
 			boolean addGuestViewPermission)
 		throws Exception {
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.US, "Test");
+		Map<Locale, String> nameMap = HashMapBuilder.put(
+			LocaleUtil.US, "Test"
+		).build();
 
 		long userId = TestPropsValues.getUserId();
 

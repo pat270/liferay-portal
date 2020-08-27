@@ -17,6 +17,7 @@ package com.liferay.portal.poller;
 import com.liferay.portal.kernel.nio.intraband.RegistrationReference;
 import com.liferay.portal.kernel.nio.intraband.proxy.TargetLocator;
 import com.liferay.portal.kernel.poller.PollerProcessor;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.nio.intraband.proxy.IntrabandProxyInstallationUtil;
 import com.liferay.portal.nio.intraband.proxy.IntrabandProxyUtil;
 import com.liferay.portal.nio.intraband.proxy.StubHolder;
@@ -33,8 +34,6 @@ import com.liferay.registry.ServiceTrackerCustomizer;
 import com.liferay.registry.collections.StringServiceRegistrationMap;
 import com.liferay.registry.collections.StringServiceRegistrationMapImpl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -45,15 +44,15 @@ public class PollerProcessorUtil {
 	public static void addPollerProcessor(
 		String portletId, PollerProcessor pollerProcessor) {
 
-		_instance._addPollerProcessor(portletId, pollerProcessor);
+		_pollerProcessorUtil._addPollerProcessor(portletId, pollerProcessor);
 	}
 
 	public static void deletePollerProcessor(String portletId) {
-		_instance._deletePollerProcessor(portletId);
+		_pollerProcessorUtil._deletePollerProcessor(portletId);
 	}
 
 	public static PollerProcessor getPollerProcessor(String portletId) {
-		return _instance._getPollerProcessor(portletId);
+		return _pollerProcessorUtil._getPollerProcessor(portletId);
 	}
 
 	private PollerProcessorUtil() {
@@ -74,13 +73,12 @@ public class PollerProcessorUtil {
 
 		Registry registry = RegistryUtil.getRegistry();
 
-		Map<String, Object> properties = new HashMap<>();
-
-		properties.put("javax.portlet.name", portletId);
-
 		ServiceRegistration<PollerProcessor> serviceRegistration =
 			registry.registerService(
-				PollerProcessor.class, pollerProcessor, properties);
+				PollerProcessor.class, pollerProcessor,
+				HashMapBuilder.<String, Object>put(
+					"javax.portlet.name", portletId
+				).build());
 
 		_serviceRegistrations.put(portletId, serviceRegistration);
 	}
@@ -98,7 +96,7 @@ public class PollerProcessorUtil {
 		return _pollerPorcessors.get(portletId);
 	}
 
-	private static final PollerProcessorUtil _instance =
+	private static final PollerProcessorUtil _pollerProcessorUtil =
 		new PollerProcessorUtil();
 
 	private final StubMap<PollerProcessor> _pollerPorcessors =
@@ -138,7 +136,7 @@ public class PollerProcessorUtil {
 				@Override
 				public PollerProcessor onCreationFailure(
 					String portletId, PollerProcessor pollerProcessor,
-					Exception e) {
+					Exception exception) {
 
 					return pollerProcessor;
 				}

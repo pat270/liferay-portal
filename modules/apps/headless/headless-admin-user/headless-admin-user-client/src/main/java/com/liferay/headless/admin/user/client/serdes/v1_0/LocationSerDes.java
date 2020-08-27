@@ -17,11 +17,11 @@ package com.liferay.headless.admin.user.client.serdes.v1_0;
 import com.liferay.headless.admin.user.client.dto.v1_0.Location;
 import com.liferay.headless.admin.user.client.json.BaseJSONParser;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.Generated;
 
@@ -67,6 +67,16 @@ public class LocationSerDes {
 			sb.append("\"");
 		}
 
+		if (location.getAddressCountry_i18n() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"addressCountry_i18n\": ");
+
+			sb.append(_toJSON(location.getAddressCountry_i18n()));
+		}
+
 		if (location.getAddressRegion() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -107,7 +117,7 @@ public class LocationSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		if (location.getAddressCountry() == null) {
 			map.put("addressCountry", null);
@@ -115,6 +125,15 @@ public class LocationSerDes {
 		else {
 			map.put(
 				"addressCountry", String.valueOf(location.getAddressCountry()));
+		}
+
+		if (location.getAddressCountry_i18n() == null) {
+			map.put("addressCountry_i18n", null);
+		}
+		else {
+			map.put(
+				"addressCountry_i18n",
+				String.valueOf(location.getAddressCountry_i18n()));
 		}
 
 		if (location.getAddressRegion() == null) {
@@ -135,42 +154,7 @@ public class LocationSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class LocationJSONParser extends BaseJSONParser<Location> {
+	public static class LocationJSONParser extends BaseJSONParser<Location> {
 
 		@Override
 		protected Location createDTO() {
@@ -192,6 +176,15 @@ public class LocationSerDes {
 					location.setAddressCountry((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName, "addressCountry_i18n")) {
+
+				if (jsonParserFieldValue != null) {
+					location.setAddressCountry_i18n(
+						(Map)LocationSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "addressRegion")) {
 				if (jsonParserFieldValue != null) {
 					location.setAddressRegion((String)jsonParserFieldValue);
@@ -208,6 +201,75 @@ public class LocationSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

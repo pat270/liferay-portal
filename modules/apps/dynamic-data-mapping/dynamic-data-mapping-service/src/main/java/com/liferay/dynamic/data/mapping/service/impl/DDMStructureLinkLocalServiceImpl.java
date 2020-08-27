@@ -20,6 +20,10 @@ import com.liferay.dynamic.data.mapping.model.DDMStructureLink;
 import com.liferay.dynamic.data.mapping.service.base.DDMStructureLinkLocalServiceBaseImpl;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -27,11 +31,17 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Bruno Basto
  * @author Marcellus Tavares
  */
+@Component(
+	property = "model.class.name=com.liferay.dynamic.data.mapping.model.DDMStructureLink",
+	service = AopService.class
+)
 public class DDMStructureLinkLocalServiceImpl
 	extends DDMStructureLinkLocalServiceBaseImpl {
 
@@ -48,9 +58,7 @@ public class DDMStructureLinkLocalServiceImpl
 		structureLink.setClassPK(classPK);
 		structureLink.setStructureId(structureId);
 
-		ddmStructureLinkPersistence.update(structureLink);
-
-		return structureLink;
+		return ddmStructureLinkPersistence.update(structureLink);
 	}
 
 	@Override
@@ -100,9 +108,20 @@ public class DDMStructureLinkLocalServiceImpl
 		}
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<DDMStructureLink> getClassNameStructureLinks(long classNameId) {
-		return ddmStructureLinkPersistence.findByClassNameId(classNameId);
+		DynamicQuery dynamicQuery = dynamicQuery();
+
+		Property classNameIdProperty = PropertyFactoryUtil.forName(
+			"classNameId");
+
+		dynamicQuery.add(classNameIdProperty.eq(classNameId));
+
+		return dynamicQuery(dynamicQuery);
 	}
 
 	@Override
@@ -261,9 +280,7 @@ public class DDMStructureLinkLocalServiceImpl
 		structureLink.setClassPK(classPK);
 		structureLink.setStructureId(structureId);
 
-		ddmStructureLinkPersistence.update(structureLink);
-
-		return structureLink;
+		return ddmStructureLinkPersistence.update(structureLink);
 	}
 
 }

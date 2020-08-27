@@ -39,25 +39,24 @@ public class DLHook extends BaseHook {
 		try {
 			DLStoreUtil.deleteFile(_COMPANY_ID, _REPOSITORY_ID, fileName);
 		}
-		catch (NoSuchFileException nsfe) {
-			throw new NoSuchImageException(nsfe);
+		catch (NoSuchFileException noSuchFileException) {
+			throw new NoSuchImageException(noSuchFileException);
 		}
 	}
 
 	@Override
 	public byte[] getImageAsBytes(Image image) throws PortalException {
-		String fileName = getFileName(image.getImageId(), image.getType());
-
-		InputStream is = DLStoreUtil.getFileAsStream(
-			_COMPANY_ID, _REPOSITORY_ID, fileName);
+		InputStream inputStream = DLStoreUtil.getFileAsStream(
+			_COMPANY_ID, _REPOSITORY_ID,
+			getFileName(image.getImageId(), image.getType()));
 
 		byte[] bytes = null;
 
 		try {
-			bytes = FileUtil.getBytes(is);
+			bytes = FileUtil.getBytes(inputStream);
 		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
+		catch (IOException ioException) {
+			throw new SystemException(ioException);
 		}
 
 		return bytes;
@@ -65,10 +64,9 @@ public class DLHook extends BaseHook {
 
 	@Override
 	public InputStream getImageAsStream(Image image) throws PortalException {
-		String fileName = getFileName(image.getImageId(), image.getType());
-
 		return DLStoreUtil.getFileAsStream(
-			_COMPANY_ID, _REPOSITORY_ID, fileName);
+			_COMPANY_ID, _REPOSITORY_ID,
+			getFileName(image.getImageId(), image.getType()));
 	}
 
 	@Override

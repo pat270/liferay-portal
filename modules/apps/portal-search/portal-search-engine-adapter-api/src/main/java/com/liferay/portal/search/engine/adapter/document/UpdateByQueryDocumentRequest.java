@@ -16,14 +16,13 @@ package com.liferay.portal.search.engine.adapter.document;
 
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.search.Query;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class UpdateByQueryDocumentRequest
+	extends CrossClusterRequest
 	implements DocumentRequest<UpdateByQueryDocumentResponse> {
 
 	public UpdateByQueryDocumentRequest(

@@ -1,5 +1,6 @@
 @component-name = "marketplace"
 definition {
+
 	property marketplace.app.acceptance = "true";
 	property testray.main.component.name = "Marketplace";
 
@@ -8,31 +9,12 @@ definition {
 	}
 
 	tearDown {
-		ProductMenu.gotoSite(portletName = "Sites");
-
-		Site.tearDownCP();
-
 		BlogsEntry.tearDownCP();
-
-		BookmarksFolder.tearDownCP();
-
-		WikiPage.tearDownCP();
-
-		Page.tearDownCP();
-
-		DMFolder.tearDownCP();
-
-		DMDocument.tearDownCP();
-
-		Navigator.gotoPage(pageName = "Calendar Test Page");
-
-		CalendarEvent.tearDown();
-
-		Calendar.tearDown();
 	}
 
 	@priority = "5"
 	test MarketplaceSmoke {
 		Marketplace.smoke();
 	}
+
 }

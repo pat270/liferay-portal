@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -44,10 +45,10 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 	extends EditSiteTeamAssignmentsDisplayContext {
 
 	public EditSiteTeamAssignmentsUserGroupsDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
-		super(renderRequest, renderResponse, httpServletRequest);
+		super(httpServletRequest, renderRequest, renderResponse);
 	}
 
 	public String getDisplayStyle() {
@@ -55,7 +56,8 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(request, "displayStyle", "list");
+		_displayStyle = ParamUtil.getString(
+			httpServletRequest, "displayStyle", "list");
 
 		return _displayStyle;
 	}
@@ -90,7 +92,7 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 			return _keywords;
 		}
 
-		_keywords = ParamUtil.getString(request, "keywords");
+		_keywords = ParamUtil.getString(httpServletRequest, "keywords");
 
 		return _keywords;
 	}
@@ -100,7 +102,8 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 			return _orderByCol;
 		}
 
-		_orderByCol = ParamUtil.getString(request, "orderByCol", "name");
+		_orderByCol = ParamUtil.getString(
+			httpServletRequest, "orderByCol", "name");
 
 		return _orderByCol;
 	}
@@ -110,21 +113,23 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 			return _orderByType;
 		}
 
-		_orderByType = ParamUtil.getString(request, "orderByType", "asc");
+		_orderByType = ParamUtil.getString(
+			httpServletRequest, "orderByType", "asc");
 
 		return _orderByType;
 	}
 
-	public SearchContainer getUserGroupSearchContainer() {
+	public SearchContainer<UserGroup> getUserGroupSearchContainer() {
 		if (_userGroupSearchContainer != null) {
 			return _userGroupSearchContainer;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-		SearchContainer userGroupSearchContainer = new UserGroupSearch(
-			renderRequest, getEditTeamAssignmentsURL());
+		SearchContainer<UserGroup> userGroupSearchContainer =
+			new UserGroupSearch(renderRequest, getEditTeamAssignmentsURL());
 
 		OrderByComparator<UserGroup> orderByComparator =
 			UsersAdminUtil.getUserGroupOrderByComparator(
@@ -140,10 +145,11 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 		UserGroupDisplayTerms searchTerms =
 			(UserGroupDisplayTerms)userGroupSearchContainer.getSearchTerms();
 
-		LinkedHashMap<String, Object> userGroupParams = new LinkedHashMap<>();
-
-		userGroupParams.put(
-			UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_TEAMS, getTeamId());
+		LinkedHashMap<String, Object> userGroupParams =
+			LinkedHashMapBuilder.<String, Object>put(
+				UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_TEAMS,
+				getTeamId()
+			).build();
 
 		int userGroupsCount = UserGroupLocalServiceUtil.searchCount(
 			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
@@ -168,6 +174,6 @@ public class EditSiteTeamAssignmentsUserGroupsDisplayContext
 	private String _keywords;
 	private String _orderByCol;
 	private String _orderByType;
-	private SearchContainer _userGroupSearchContainer;
+	private SearchContainer<UserGroup> _userGroupSearchContainer;
 
 }

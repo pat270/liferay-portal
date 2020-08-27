@@ -45,18 +45,12 @@ import org.osgi.service.component.annotations.Modified;
 public class PersonalMenuConfigurationTrackerImpl
 	implements ManagedServiceFactory, PersonalMenuConfigurationTracker {
 
-	@Activate
-	@Modified
-	public void activate(Map<String, Object> properties) {
-		_systemPersonalMenuConfiguration = ConfigurableUtil.createConfigurable(
-			PersonalMenuConfiguration.class, properties);
-	}
-
 	@Override
 	public void deleted(String pid) {
 		_unmapPid(pid);
 	}
 
+	@Override
 	public PersonalMenuConfiguration getCompanyPersonalMenuConfiguration(
 		long companyId) {
 
@@ -90,6 +84,13 @@ public class PersonalMenuConfigurationTrackerImpl
 				ConfigurableUtil.createConfigurable(
 					PersonalMenuConfiguration.class, dictionary));
 		}
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_systemPersonalMenuConfiguration = ConfigurableUtil.createConfigurable(
+			PersonalMenuConfiguration.class, properties);
 	}
 
 	private void _unmapPid(String pid) {

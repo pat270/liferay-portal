@@ -14,6 +14,7 @@
 
 package com.liferay.petra.io;
 
+import com.liferay.petra.io.constants.SerializationConstants;
 import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.petra.lang.ClassResolverUtil;
 
@@ -122,10 +123,8 @@ public class Deserializer {
 			String contextName = readString();
 			String className = readString();
 
-			ClassLoader classLoader = ClassLoaderPool.getClassLoader(
-				contextName);
-
-			return (T)ClassResolverUtil.resolve(className, classLoader);
+			return (T)ClassResolverUtil.resolve(
+				className, ClassLoaderPool.getClassLoader(contextName));
 		}
 		else if (tcByte == SerializationConstants.TC_DOUBLE) {
 			return (T)Double.valueOf(readDouble());
@@ -156,8 +155,8 @@ public class Deserializer {
 
 				return (T)objectInputStream.readObject();
 			}
-			catch (IOException ioe) {
-				throw new RuntimeException(ioe);
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
 			}
 		}
 

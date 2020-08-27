@@ -14,9 +14,8 @@
 
 package com.liferay.asset.kernel.service;
 
+import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link AssetEntryService}.
@@ -25,7 +24,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntryService
  * @generated
  */
-@ProviderType
 public class AssetEntryServiceWrapper
 	implements AssetEntryService, ServiceWrapper<AssetEntryService> {
 
@@ -34,15 +32,15 @@ public class AssetEntryServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetEntry fetchEntry(long entryId)
+	public AssetEntry fetchEntry(long entryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetEntryService.fetchEntry(entryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetEntry>
-		getCompanyEntries(long companyId, int start, int end) {
+	public java.util.List<AssetEntry> getCompanyEntries(
+		long companyId, int start, int end) {
 
 		return _assetEntryService.getCompanyEntries(companyId, start, end);
 	}
@@ -53,7 +51,7 @@ public class AssetEntryServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetEntry> getEntries(
+	public java.util.List<AssetEntry> getEntries(
 			com.liferay.asset.kernel.service.persistence.AssetEntryQuery
 				entryQuery)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -71,10 +69,17 @@ public class AssetEntryServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetEntry getEntry(long entryId)
+	public AssetEntry getEntry(long entryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetEntryService.getEntry(entryId);
+	}
+
+	@Override
+	public AssetEntry getEntry(String className, long classPK)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetEntryService.getEntry(className, classPK);
 	}
 
 	/**
@@ -88,23 +93,23 @@ public class AssetEntryServiceWrapper
 	}
 
 	@Override
-	public void incrementViewCounter(
-			com.liferay.asset.kernel.model.AssetEntry assetEntry)
+	public void incrementViewCounter(AssetEntry assetEntry)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_assetEntryService.incrementViewCounter(assetEntry);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetEntry incrementViewCounter(
-			String className, long classPK)
+	public AssetEntry incrementViewCounter(
+			long companyId, String className, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _assetEntryService.incrementViewCounter(className, classPK);
+		return _assetEntryService.incrementViewCounter(
+			companyId, className, classPK);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetEntry updateEntry(
+	public AssetEntry updateEntry(
 			long groupId, java.util.Date createDate,
 			java.util.Date modifiedDate, String className, long classPK,
 			String classUuid, long classTypeId, long[] categoryIds,
@@ -121,59 +126,6 @@ public class AssetEntryServiceWrapper
 			classTypeId, categoryIds, tagNames, listable, visible, startDate,
 			endDate, publishDate, expirationDate, mimeType, title, description,
 			summary, url, layoutUuid, height, width, priority);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
-	 Date, Date, String, long, String, long, long[], String[],
-	 boolean, boolean, Date, Date, Date, Date, String, String,
-	 String, String, String, String, int, int, Double)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.asset.kernel.model.AssetEntry updateEntry(
-			long groupId, java.util.Date createDate,
-			java.util.Date modifiedDate, String className, long classPK,
-			String classUuid, long classTypeId, long[] categoryIds,
-			String[] tagNames, boolean listable, boolean visible,
-			java.util.Date startDate, java.util.Date endDate,
-			java.util.Date expirationDate, String mimeType, String title,
-			String description, String summary, String url, String layoutUuid,
-			int height, int width, Double priority)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _assetEntryService.updateEntry(
-			groupId, createDate, modifiedDate, className, classPK, classUuid,
-			classTypeId, categoryIds, tagNames, listable, visible, startDate,
-			endDate, expirationDate, mimeType, title, description, summary, url,
-			layoutUuid, height, width, priority);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateEntry(long, Date, Date, String, long, String, long,
-	 long[], String[], boolean, boolean, Date, Date, Date, Date,
-	 String, String, String, String, String, String, int, int,
-	 Double)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.asset.kernel.model.AssetEntry updateEntry(
-			long groupId, java.util.Date createDate,
-			java.util.Date modifiedDate, String className, long classPK,
-			String classUuid, long classTypeId, long[] categoryIds,
-			String[] tagNames, boolean visible, java.util.Date startDate,
-			java.util.Date endDate, java.util.Date expirationDate,
-			String mimeType, String title, String description, String summary,
-			String url, String layoutUuid, int height, int width,
-			Integer priority, boolean sync)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _assetEntryService.updateEntry(
-			groupId, createDate, modifiedDate, className, classPK, classUuid,
-			classTypeId, categoryIds, tagNames, visible, startDate, endDate,
-			expirationDate, mimeType, title, description, summary, url,
-			layoutUuid, height, width, priority, sync);
 	}
 
 	@Override

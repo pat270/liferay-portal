@@ -1,0 +1,32 @@
+.ddm-field-actions-container {
+	background-color: $active-blue;
+	border: 2px solid $active-blue;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	color: #fff;
+	font-weight: 600;
+	height: 28px;
+	justify-content: space-between;
+	left: -2px;
+	padding: 0 0 2px 8px;
+	position: absolute;
+	top: -30px;
+	width: auto;
+	z-index: 50;
+
+	&.ddm-fieldset {
+		background-color: #5aca75;
+		border-color: #5aca75;
+	}
+
+	.actions-label {
+		font-size: 14px;
+		text-transform: capitalize;
+	}
+
+	.dropdown-action button {
+		color: #fff;
+		margin-right: -8px;
+		margin-top: -4px;
+	}
+}

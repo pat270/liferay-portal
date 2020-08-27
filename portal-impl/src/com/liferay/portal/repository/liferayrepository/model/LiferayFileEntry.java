@@ -21,7 +21,6 @@ import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalServiceUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.lock.Lock;
@@ -59,8 +58,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		this(dlFileEntry, dlFileEntry.isEscapedModel());
 	}
 
-	public LiferayFileEntry(DLFileEntry fileEntry, boolean escapedModel) {
-		_dlFileEntry = fileEntry;
+	public LiferayFileEntry(DLFileEntry dlFileEntry, boolean escapedModel) {
+		_dlFileEntry = dlFileEntry;
 		_escapedModel = escapedModel;
 	}
 
@@ -79,16 +78,16 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LiferayFileEntry)) {
+		if (!(object instanceof LiferayFileEntry)) {
 			return false;
 		}
 
-		LiferayFileEntry liferayFileEntry = (LiferayFileEntry)obj;
+		LiferayFileEntry liferayFileEntry = (LiferayFileEntry)object;
 
 		if (Objects.equals(_dlFileEntry, liferayFileEntry._dlFileEntry)) {
 			return true;
@@ -132,8 +131,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			DLAppHelperLocalServiceUtil.getFileAsStream(
 				PrincipalThreadLocal.getUserId(), this, true);
 		}
-		catch (Exception e) {
-			_log.error("Unable to get content stream", e);
+		catch (Exception exception) {
+			_log.error("Unable to get content stream", exception);
 		}
 
 		return inputStream;
@@ -147,8 +146,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			DLAppHelperLocalServiceUtil.getFileAsStream(
 				PrincipalThreadLocal.getUserId(), this, true);
 		}
-		catch (Exception e) {
-			_log.error("Error getting document stream", e);
+		catch (Exception exception) {
+			_log.error("Error getting document stream", exception);
 		}
 
 		return inputStream;
@@ -226,9 +225,9 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		try {
 			return new LiferayFolder(_dlFileEntry.getFolder());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 
 			return null;
@@ -292,9 +291,9 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 
 			return dlFileVersion.getMimeType();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 
 			return ContentTypes.APPLICATION_OCTET_STREAM;
@@ -332,7 +331,7 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	@Override
-	public int getReadCount() {
+	public long getReadCount() {
 		return _dlFileEntry.getReadCount();
 	}
 
@@ -390,69 +389,6 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		return _dlFileEntry.getVersion();
 	}
 
-	/**
-	 * @deprecated As of Newton (6.2.x), replaced by {@link
-	 *             DLFileVersion#getUserId()}
-	 */
-	@Deprecated
-	@Override
-	public long getVersionUserId() {
-		long versionUserId = 0;
-
-		try {
-			DLFileVersion dlFileVersion = _dlFileEntry.getFileVersion();
-
-			versionUserId = dlFileVersion.getUserId();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return versionUserId;
-	}
-
-	/**
-	 * @deprecated As of Newton (6.2.x), replaced by {@link
-	 *             DLFileVersion#getUserName()}
-	 */
-	@Deprecated
-	@Override
-	public String getVersionUserName() {
-		String versionUserName = StringPool.BLANK;
-
-		try {
-			DLFileVersion dlFileVersion = _dlFileEntry.getFileVersion();
-
-			versionUserName = dlFileVersion.getUserName();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return versionUserName;
-	}
-
-	/**
-	 * @deprecated As of Newton (6.2.x), replaced by {@link
-	 *             DLFileVersion#getUserUuid()}
-	 */
-	@Deprecated
-	@Override
-	public String getVersionUserUuid() {
-		String versionUserUuid = StringPool.BLANK;
-
-		try {
-			DLFileVersion dlFileVersion = _dlFileEntry.getFileVersion();
-
-			versionUserUuid = dlFileVersion.getUserUuid();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return versionUserUuid;
-	}
-
 	@Override
 	public int hashCode() {
 		return _dlFileEntry.hashCode();
@@ -492,9 +428,9 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		try {
 			return _dlFileEntry.isInTrashContainer();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 
 			return false;
@@ -615,10 +551,10 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		try {
 			return RepositoryProviderUtil.getRepository(getRepositoryId());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to get repository for file entry " + getFileEntryId(),
-				pe);
+				portalException);
 		}
 	}
 

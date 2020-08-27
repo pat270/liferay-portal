@@ -55,10 +55,8 @@ public class UserNotificationDefinition {
 	}
 
 	public String getDescription(Locale locale) {
-		ResourceBundle resourceBundle = getResourceBundle(locale);
-
 		String description = ResourceBundleUtil.getString(
-			resourceBundle, _description);
+			getResourceBundle(locale), _description);
 
 		if (description != null) {
 			return description;
@@ -92,7 +90,7 @@ public class UserNotificationDefinition {
 			return ResourceBundleUtil.getBundle(
 				"content.Language", locale, getClass());
 		}
-		catch (MissingResourceException mre) {
+		catch (MissingResourceException missingResourceException) {
 			return ResourceBundleUtil.getBundle(
 				"content.Language", locale,
 				PortalClassLoaderUtil.getClassLoader());

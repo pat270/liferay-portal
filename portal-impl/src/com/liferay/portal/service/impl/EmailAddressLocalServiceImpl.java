@@ -62,9 +62,7 @@ public class EmailAddressLocalServiceImpl
 		emailAddress.setTypeId(typeId);
 		emailAddress.setPrimary(primary);
 
-		emailAddressPersistence.update(emailAddress);
-
-		return emailAddress;
+		return emailAddressPersistence.update(emailAddress);
 	}
 
 	@Override
@@ -92,10 +90,9 @@ public class EmailAddressLocalServiceImpl
 	public void deleteEmailAddresses(
 		long companyId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		List<EmailAddress> emailAddresses = emailAddressPersistence.findByC_C_C(
-			companyId, classNameId, classPK);
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 
 		for (EmailAddress emailAddress : emailAddresses) {
 			emailAddressLocalService.deleteEmailAddress(emailAddress);
@@ -111,10 +108,9 @@ public class EmailAddressLocalServiceImpl
 	public List<EmailAddress> getEmailAddresses(
 		long companyId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return emailAddressPersistence.findByC_C_C(
-			companyId, classNameId, classPK);
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 	}
 
 	@Override
@@ -131,9 +127,7 @@ public class EmailAddressLocalServiceImpl
 		emailAddress.setTypeId(typeId);
 		emailAddress.setPrimary(primary);
 
-		emailAddressPersistence.update(emailAddress);
-
-		return emailAddress;
+		return emailAddressPersistence.update(emailAddress);
 	}
 
 	protected void validate(

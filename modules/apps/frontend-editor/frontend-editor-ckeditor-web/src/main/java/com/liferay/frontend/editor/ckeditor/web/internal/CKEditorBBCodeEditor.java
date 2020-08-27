@@ -14,7 +14,7 @@
 
 package com.liferay.frontend.editor.ckeditor.web.internal;
 
-import com.liferay.frontend.editor.api.EditorRenderer;
+import com.liferay.frontend.editor.EditorRenderer;
 import com.liferay.frontend.editor.ckeditor.web.internal.constants.CKEditorConstants;
 import com.liferay.portal.kernel.editor.Editor;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
@@ -46,7 +46,7 @@ public class CKEditorBBCodeEditor implements Editor, EditorRenderer {
 
 	@Override
 	public String getJspPath() {
-		return "/ckeditor.jsp";
+		return "/ckeditor_classic.jsp";
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class CKEditorBBCodeEditor implements Editor, EditorRenderer {
 
 	@Override
 	public String getResourcesJspPath() {
-		return "/resources.jsp";
+		return null;
 	}
 
 	@Override

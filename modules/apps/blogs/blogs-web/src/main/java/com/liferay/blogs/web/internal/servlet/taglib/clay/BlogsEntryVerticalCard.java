@@ -15,7 +15,7 @@
 package com.liferay.blogs.web.internal.servlet.taglib.clay;
 
 import com.liferay.blogs.model.BlogsEntry;
-import com.liferay.blogs.web.constants.BlogsWebConstants;
+import com.liferay.blogs.web.internal.constants.BlogsWebConstants;
 import com.liferay.blogs.web.internal.security.permission.resource.BlogsEntryPermission;
 import com.liferay.blogs.web.internal.servlet.taglib.util.BlogsEntryActionDropdownItemsProvider;
 import com.liferay.blogs.web.internal.util.BlogsEntryUtil;
@@ -62,13 +62,25 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		BlogsEntryActionDropdownItemsProvider
-			blogsEntryActionDropdownItemsProvider =
-				new BlogsEntryActionDropdownItemsProvider(
-					_blogsEntry, renderRequest, _renderResponse,
-					_permissionChecker, _resourceBundle, _trashHelper);
+		try {
+			BlogsEntryActionDropdownItemsProvider
+				blogsEntryActionDropdownItemsProvider =
+					new BlogsEntryActionDropdownItemsProvider(
+						_blogsEntry, renderRequest, _renderResponse,
+						_permissionChecker, _resourceBundle, _trashHelper);
 
-		return blogsEntryActionDropdownItemsProvider.getActionDropdownItems();
+			return blogsEntryActionDropdownItemsProvider.
+				getActionDropdownItems();
+		}
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
+		}
+	}
+
+	@Override
+	public String getAspectRatioCssClasses() {
+		return "aspect-ratio-item-center-middle " +
+			"aspect-ratio-item-vertical-fluid";
 	}
 
 	@Override
@@ -87,8 +99,8 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 
 			return _blogsEntryURL;
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -108,8 +120,8 @@ public class BlogsEntryVerticalCard extends BaseVerticalCard {
 
 			return coverImageURL;
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 

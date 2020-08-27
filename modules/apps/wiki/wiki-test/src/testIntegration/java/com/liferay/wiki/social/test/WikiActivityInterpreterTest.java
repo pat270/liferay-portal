@@ -29,7 +29,7 @@ import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.wiki.social.WikiActivityKeys;
-import com.liferay.wiki.util.test.WikiTestUtil;
+import com.liferay.wiki.test.util.WikiTestUtil;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -90,7 +90,7 @@ public class WikiActivityInterpreterTest
 			TestPropsValues.getUserId(), _page.getNodeId(), _page.getTitle(),
 			_attachmentFileName);
 
-		WikiPageLocalServiceUtil.movePageToTrash(
+		_page = WikiPageLocalServiceUtil.movePageToTrash(
 			TestPropsValues.getUserId(), _page);
 	}
 
@@ -103,9 +103,7 @@ public class WikiActivityInterpreterTest
 		TrashEntry trashEntry = TrashEntryLocalServiceUtil.getEntry(
 			WikiPage.class.getName(), _page.getResourcePrimKey());
 
-		String trashTitle = trashHelper.getTrashTitle(trashEntry.getEntryId());
-
-		_page.setTitle(trashTitle);
+		_page.setTitle(trashHelper.getTrashTitle(trashEntry.getEntryId()));
 
 		WikiPageLocalServiceUtil.restorePageAttachmentFromTrash(
 			TestPropsValues.getUserId(), _page.getNodeId(), _page.getTitle(),

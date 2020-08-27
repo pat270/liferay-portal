@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Ticket in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class TicketCacheModel
 	implements CacheModel<Ticket>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof TicketCacheModel)) {
+		if (!(object instanceof TicketCacheModel)) {
 			return false;
 		}
 
-		TicketCacheModel ticketCacheModel = (TicketCacheModel)obj;
+		TicketCacheModel ticketCacheModel = (TicketCacheModel)object;
 
 		if ((ticketId == ticketCacheModel.ticketId) &&
 			(mvccVersion == ticketCacheModel.mvccVersion)) {
@@ -153,7 +150,9 @@ public class TicketCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		ticketId = objectInput.readLong();
@@ -167,7 +166,7 @@ public class TicketCacheModel
 		key = objectInput.readUTF();
 
 		type = objectInput.readInt();
-		extraInfo = objectInput.readUTF();
+		extraInfo = (String)objectInput.readObject();
 		expirationDate = objectInput.readLong();
 	}
 
@@ -194,10 +193,10 @@ public class TicketCacheModel
 		objectOutput.writeInt(type);
 
 		if (extraInfo == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(extraInfo);
+			objectOutput.writeObject(extraInfo);
 		}
 
 		objectOutput.writeLong(expirationDate);

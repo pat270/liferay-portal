@@ -1,0 +1,871 @@
+@component-name = "portal-questions"
+definition {
+
+	property osgi.module.configuration.file.names = "com.liferay.questions.web.internal.configuration.QuestionsConfiguration-default.config";
+	property osgi.module.configurations = "com.liferay.portlet.display-category=&quot;category.collaboration&quot;\nenableRedirectToLogin=&quot;true&quot;";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Questions";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		Navigator.openURL();
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		ContentPages.addPage(pageName = "Questions Page");
+
+		PageEditor.addWidget(portletName = "Questions");
+
+		PageEditor.clickPublish();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				portlet = "Message Boards");
+
+			if (IsElementPresent(locator1 = "Questions#QUESTIONS_LIST")) {
+				Questions.tearDown();
+			}
+
+			Page.tearDownCP();
+		}
+	}
+
+	@description = "Validate if the user can create a question with an AL image."
+	@priority = "4"
+	test AddQuestionWithALImage {
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_2.jpeg",
+			groupName = "Test Depot Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpeg");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoSites(depotName = "Test Depot Name");
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Depot.connectSite(siteList = "${siteName}");
+
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			contentField = "Body AddQuestionWithTheALImage",
+			depotName = "Test Depot Name",
+			imageFileName = "Document_2.jpeg",
+			titleField = "Title AddQuestionWithTheALImage");
+
+		Click(locator1 = "Questions#ASK_QUESTION_POST_YOUR_QUESTION_BUTTON");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Title AddQuestionWithTheALImage");
+
+		AssertVisible(
+			key_imageFileName = "Document_2.jpeg",
+			locator1 = "Questions#QUESTIONS_IMAGE_NAME");
+	}
+
+	@description = "Validate if the user can create a question with an image."
+	@priority = "4"
+	test AddQuestionWithImage {
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.svg",
+			groupName = "Guest",
+			mimeType = "image/svg+xml",
+			sourceFileName = "Document_1.svg");
+
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			contentField = "Body AddQuestionWithTheImage",
+			imageFileName = "Document_1.svg",
+			titleField = "Title AddQuestionWithTheImage");
+
+		Click(locator1 = "Questions#ASK_QUESTION_POST_YOUR_QUESTION_BUTTON");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Title AddQuestionWithTheImage");
+
+		AssertVisible(
+			key_imageFileName = "Document_1.svg",
+			locator1 = "Questions#QUESTIONS_IMAGE_NAME");
+	}
+
+	@description = "Validate if the user can not create a question with the maximum of 6 tags with unexisting tag"
+	@priority = "2"
+	test AddQuestionWithMoreThanTheMaximumTagsIsNotPossible {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Question AddQuestionWithMoreThanTheMaximumTagsIsNotPossible",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question AddQuestionWithMoreThanTheMaximumTagsIsNotPossible");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			contentField = "Body AddQuestionWithMoreThanTheMaximumTagsIsNotPossible",
+			titleField = "Title AddQuestionWithMoreThanTheMaximumTagsIsNotPossible");
+
+		Questions.addTags(tagLocator = "Tag1");
+		Questions.addTags(tagLocator = "Tag2");
+		Questions.addTags(tagLocator = "Tag3");
+		Questions.addTags(tagLocator = "Tag4");
+		Questions.addTags(tagLocator = "Tag5");
+		Questions.addTags(tagLocator = "Tag6");
+
+		AssertElementPresent(
+			key_errorMessage = "This is an invalid tag.",
+			locator1 = "Questions#ASK_QUESTION_ERROR_MESSAGE");
+	}
+
+	@description = "Validate if the user can create a question with the maximum of 5 tags with unexisting tag"
+	@priority = "3"
+	test AddQuestionWithTheMaximumTags {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Question AddQuestionWithTheMaximumTags",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question AddQuestionWithTheMaximumTags");
+
+		AssertElementNotPresent(locator1 = "Questions#SEARCH_QUESTION_FIELD");
+
+		AssertElementNotPresent(locator1 = "Questions#QUESTIONS_SELECT_FILTER");
+
+		AssertElementPresent(
+			key_emptyInfo = "This topic is empty.",
+			locator1 = "Questions#EMPTY_STATE_MESSAGE");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			contentField = "Body AddQuestionWithTheMaximumTags",
+			titleField = "Title AddQuestionWithTheMaximumTags");
+
+		Questions.addTags(tagLocator = "Tag1");
+		Questions.addTags(tagLocator = "Tag2");
+		Questions.addTags(tagLocator = "Tag3");
+		Questions.addTags(tagLocator = "Tag4");
+		Questions.addTags(tagLocator = "Tag5");
+
+		Click(locator1 = "Questions#ASK_QUESTION_POST_YOUR_QUESTION_BUTTON");
+
+		AssertElementPresent(locator1 = "Questions#SEARCH_QUESTION_FIELD");
+
+		AssertElementPresent(locator1 = "Questions#QUESTIONS_SELECT_FILTER");
+
+		Questions.viewList(listedQuestions = "Title AddQuestionWithTheMaximumTags");
+	}
+
+	@description = "Validate if the user can view the topic selector and category label."
+	@priority = "4"
+	test AddSubcategoryConfigureParentCategoryDisplay {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Questions.addQuestionByAPI(
+			bodyField = "Question Body 1",
+			categoryName = "Questions Test Category",
+			tagField = "test tag",
+			titleField = "Question 1");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		AssertElementNotPresent(
+			key_categoryItem = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_CATEGORY_LABEL_ITEM");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Question 1");
+
+		AssertElementNotPresent(
+			key_categoryItem = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_CATEGORY_LABEL_ITEM");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Click(locator1 = "Questions#ASK_QUESTION_BUTTON");
+
+		AssertElementNotPresent(locator1 = "Questions#QUESTIONS_SELECT_TOPIC");
+
+		Questions.gotoTab(questionTabField = "My Activity");
+
+		AssertVisible(
+			key_categoryItem = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_CATEGORY_LABEL_ITEM");
+
+		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = "guest");
+
+		MessageboardsCategory.gotoCP(categoryName = "Questions Test Category");
+
+		var messageBoardsCategoryURL = selenium.getLocation();
+
+		var parentCategoryId = StringUtil.extractLast("${messageBoardsCategoryURL}", "mbCategoryId=");
+
+		JSONMBMessage.addCategory(
+			categoryDescription = "Subcategory Description",
+			categoryName = "Questions Test Subcategory",
+			parentCategoryId = "${parentCategoryId}",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		AssertVisible(
+			key_categoryItem = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_CATEGORY_LABEL_ITEM");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Question 1");
+
+		AssertVisible(
+			key_categoryItem = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_CATEGORY_LABEL_ITEM");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Click(locator1 = "Questions#ASK_QUESTION_BUTTON");
+
+		AssertVisible(locator1 = "Questions#QUESTIONS_SELECT_TOPIC");
+
+		Questions.gotoTab(questionTabField = "My Activity");
+
+		AssertVisible(
+			key_categoryItem = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_CATEGORY_LABEL_ITEM");
+	}
+
+	@description = "Validate if the anonymous user can ask questions and redirected to login."
+	@priority = "4"
+	test AskQuestionsThroughAnonymousUser {
+		ApplicationsMenu.gotoPortlet(
+			category = "Security",
+			panel = "Control Panel",
+			portlet = "Service Access Policy");
+
+		ServiceAccessPolicy.addServiceAccessPolicy(
+			defaultSwitch = "true",
+			enabled = "true",
+			policyName = "QUESTIONS",
+			title = "QUESTIONS");
+
+		var allowedServiceSignature = '''
+			com.liferay.expando.kernel.service.ExpandoValueService#getData
+			com.liferay.message.boards.service.MBCategoryService#getCategoriesCount
+			com.liferay.message.boards.service.MBCategoryService#getCategory
+			com.liferay.message.boards.service.MBMessageService#fetchMBMessageByUrlSubject
+			com.liferay.message.boards.service.MBMessageService#getMessage
+		''';
+
+		ServiceAccessPolicy.editServiceAccessPolicy(
+			allowedServiceSignature = "${allowedServiceSignature}",
+			policyName = "QUESTIONS");
+
+		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = "guest");
+
+		MessageboardsCategory.addCP(categoryName = "Questions Test Category");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		User.logoutPG();
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			anonymousUser = "true",
+			contentField = "Body Anonymous User Ask questions",
+			password = "test",
+			titleField = "Title Anonymous User Ask questions",
+			userEmailAddress = "test@liferay.com");
+
+		Click(locator1 = "Questions#ASK_QUESTION_POST_YOUR_QUESTION_BUTTON");
+
+		AssertTextEquals(
+			key_questionTitle = "Title Anonymous User Ask questions",
+			locator1 = "Questions#QUESTIONS_TITLE",
+			value1 = "Title Anonymous User Ask questions");
+	}
+
+	@description = "Validate if the user can search for the questions."
+	@priority = "4"
+	test SearchForQuestions {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Questions.addQuestionByAPI(
+			bodyField = "Content1",
+			categoryName = "Questions Test Category",
+			tagField = "new",
+			titleField = "Question1");
+
+		for (var num : list "2,3,4") {
+			Questions.addQuestionWithoutTagByAPI(
+				bodyField = "Content${num}",
+				categoryName = "Questions Test Category",
+				titleField = "Question${num}");
+		}
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Pause(locator = "3000");
+
+		Questions.search(
+			resultsInfo = '''4 Results for "test"''',
+			searchKey = "Test");
+
+		Questions.viewSearchResults(questionsList = "Question1,Question2,Question3,Question4");
+
+		Questions.search(
+			resultsInfo = '''1 Results for "question4"''',
+			searchKey = "Question4");
+
+		Questions.viewSearchResults(questionsList = "Question4");
+
+		Questions.viewNoSearchResults(questionsList = "Question1,Question2,Question3");
+
+		Questions.search(
+			resultsInfo = '''1 Results for "content2"''',
+			searchKey = "Content2");
+
+		Questions.viewSearchResults(questionsList = "Question2");
+
+		Questions.viewNoSearchResults(questionsList = "Question1,Question3,Question4");
+
+		Questions.search(
+			resultsInfo = '''1 Results for "new"''',
+			searchKey = "New");
+
+		Questions.viewSearchResults(questionsList = "Question1");
+
+		Questions.viewNoSearchResults(questionsList = "Question2,Question3,Question4");
+
+		Questions.search(
+			noQuestionsResults = "true",
+			searchKey = "Questions5");
+
+		Questions.clearSearchResults();
+
+		for (var num : list "1,2,3,4") {
+			AssertVisible(
+				key_questionTitle = "Question${num}",
+				locator1 = "Questions#QUESTIONS_TITLE");
+		}
+	}
+
+	@description = "Validate if the user can subscribe and unsubscribe from the question."
+	@priority = "5"
+	test SubscribeAndUnsubscribeFromQuestion {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Questions.addQuestionWithoutTagByAPI(
+			bodyField = "Content AddQuestion",
+			categoryName = "Questions Test Category",
+			titleField = "Title AddQuestion");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.gotoTab(questionTabField = "My Subscriptions");
+
+		Questions.viewSubscribedQuestion(noSubscribedQuestion = "true");
+
+		Questions.gotoTab(questionTabField = "Questions");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Title AddQuestion");
+
+		Questions.subscribeQuestion();
+
+		Questions.gotoTab(questionTabField = "My Subscriptions");
+
+		Questions.viewSubscribedQuestion(subscribedQuestion = "Title AddQuestion");
+
+		Questions.unSubscribeQuestion(questionTitle = "Title AddQuestion");
+
+		Questions.viewSubscribedQuestion(noSubscribedQuestion = "true");
+
+		Questions.gotoTab(questionTabField = "Questions");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Title AddQuestion");
+
+		Questions.subscribeQuestion();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Title AddQuestion");
+
+		Questions.answerQuestion(contentField = "This is my answer");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+
+		Notifications.gotoNotifications();
+
+		Notifications.navigateToContent(contentBody = "Title AddQuestion");
+
+		AssertVisible(
+			key_answerBodyContent = "This is my answer",
+			locator1 = "Questions#ANSWER_BODY");
+	}
+
+	@description = "Validate if the user can subscribe and unsubscribe from the topic."
+	@priority = "5"
+	test SubscribeAndUnsubscribeFromTopic {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.gotoTab(questionTabField = "My Subscriptions");
+
+		Questions.viewSubscribedTopic(noSubscribedTopic = "true");
+
+		Questions.gotoTab(questionTabField = "Questions");
+
+		Questions.subscribeTopic();
+
+		Questions.gotoTab(questionTabField = "My Subscriptions");
+
+		Questions.viewSubscribedTopic(subscribedTopic = "Questions Test Category");
+
+		Questions.unSubscribeTopic(topicName = "Questions Test Category");
+
+		Questions.viewSubscribedTopic(noSubscribedTopic = "true");
+
+		Questions.gotoTab(questionTabField = "Questions");
+
+		Questions.subscribeTopic();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			contentField = "Content AddQuestion",
+			titleField = "Title AddQuestion");
+
+		Click(locator1 = "Questions#ASK_QUESTION_POST_YOUR_QUESTION_BUTTON");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+
+		Notifications.gotoNotifications();
+
+		Notifications.navigateToContent(contentBody = "Title AddQuestion");
+
+		AssertVisible(
+			key_questionTitle = "Title AddQuestion",
+			locator1 = "Questions#QUESTIONS_TITLE");
+	}
+
+	@description = "Validate if the My Activity tab appears"
+	@priority = "4"
+	test ValidateIfTheMyActivityAppears {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Question ValidateIfTheMyActivityAppears",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question ValidateIfTheMyActivityAppears");
+
+		AssertElementPresent(
+			key_questionTabField = "My Activity",
+			locator1 = "Questions#QUESTIONS_LIST_TAB_FIELD");
+	}
+
+	@description = "Validate if the user can filter by votes."
+	@priority = "4"
+	test ViewQuestionsFilteredByVotes {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		for (var num : list "1,2,3") {
+			Questions.addQuestionByAPI(
+				bodyField = "Question Body ${num}",
+				categoryName = "Questions Test Category",
+				tagField = "test tag",
+				titleField = "Question ${num}");
+		}
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Question 1");
+
+		Questions.voteQuestion(
+			currentVotedCount = "0",
+			voteUp = "true");
+
+		Click(locator1 = "Questions#QUESTIONS_HOME_ICON");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Question 2");
+
+		Questions.voteQuestion(
+			currentVotedCount = "0",
+			voteUp = "true");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.gotoDetails(
+			questionTabField = "Questions",
+			questionTitle = "Question 2");
+
+		Questions.voteQuestion(
+			currentVotedCount = "1",
+			voteUp = "true");
+
+		Click(locator1 = "Questions#QUESTIONS_HOME_ICON");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Refresh();
+
+		AssertTextEquals(
+			key_questionTitle = "Question 1",
+			locator1 = "Questions#QUESTIONS_VOTED_COUNT",
+			value1 = "1");
+
+		AssertTextEquals(
+			key_questionTitle = "Question 2",
+			locator1 = "Questions#QUESTIONS_VOTED_COUNT",
+			value1 = "2");
+
+		AssertTextEquals(
+			key_questionTitle = "Question 3",
+			locator1 = "Questions#QUESTIONS_VOTED_COUNT",
+			value1 = "0");
+
+		Questions.configureFilter(filterBy = "Most Voted");
+
+		Questions.viewFilterResults(
+			lastQuestionTitle = "Question 1",
+			questionTitle = "Question 2");
+	}
+
+	@description = "Validate if the users can view the questions from different topics via the breadcrumb."
+	@priority = "4"
+	test ViewQuestionsFromDifferentSubTopics {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		Questions.addQuestionWithoutTagByAPI(
+			bodyField = "Content Question3",
+			categoryName = "Questions Test Category",
+			titleField = "Question 3");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		AssertElementNotPresent(
+			key_topicName = "Questions Test Category",
+			locator1 = "Questions#QUESTIONS_BREADCRUMB_TOPIC_DROPDOWN_TOGGLE");
+
+		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = "guest");
+
+		MessageboardsCategory.gotoCP(categoryName = "Questions Test Category");
+
+		var messageBoardsCategoryURL = selenium.getLocation();
+		var parentCategoryId = StringUtil.extractLast("${messageBoardsCategoryURL}", "mbCategoryId=");
+
+		for (var num : list "1,2") {
+			JSONMBMessage.addCategory(
+				categoryDescription = "Subcategory Description",
+				categoryName = "Questions Subcategory${num}",
+				parentCategoryId = "${parentCategoryId}",
+				userEmailAddress = "test@liferay.com");
+		}
+
+		for (var num : list "1,2") {
+			Questions.addQuestionWithoutTagByAPI(
+				bodyField = "Question Body ${num}",
+				categoryName = "Questions Test Category",
+				subCategoryName = "Questions Subcategory${num}",
+				titleField = "Question ${num}");
+		}
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Questions.viewList(listedQuestions = "Question 1,Question 2,Question 3");
+
+		Questions.changeTopic(
+			parentTopicName = "Questions Test Category",
+			subTopicName = "Questions Subcategory1");
+
+		Questions.viewList(
+			listedQuestions = "Question 1",
+			unlistedQuestions = "Question 2,Question 3");
+
+		Questions.changeTopic(
+			parentTopicName = "Questions Test Category",
+			subTopicName = "Questions Subcategory2");
+
+		Questions.viewList(
+			listedQuestions = "Question 2",
+			unlistedQuestions = "Question 1,Question 3");
+
+		Questions.changeTopic(gotoParentTopic = "Questions Test Category");
+
+		Questions.viewList(listedQuestions = "Question 1,Question 2,Question 3");
+	}
+
+	@description = "Validate if the pagination will appear and works when we have more than 4 questions."
+	@priority = "3"
+	test ViewQuestionsPagination {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		for (var num : list "1,2,3,4,5,6,7,8,9,10") {
+			Questions.addQuestionByAPI(
+				bodyField = "Question Body ${num}",
+				categoryName = "Questions Test Category",
+				tagField = "test tag",
+				titleField = "Question ${num}");
+		}
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Pause(locator = "3000");
+
+		Questions.viewPaginationResults(results = "Showing 1 to 10 of 10");
+
+		Questions.changePagination(itemsPerPage = "4 items");
+
+		Questions.viewPaginationResults(results = "Showing 1 to 4 of 10");
+
+		Click(locator1 = "Pagination#NEXT_LINK");
+
+		Questions.viewPaginationResults(results = "Showing 5 to 8 of 10");
+
+		Click(locator1 = "Pagination#NEXT_LINK");
+
+		Questions.viewPaginationResults(results = "Showing 9 to 10 of 10");
+	}
+
+	@description = "Validate if the user can select the filter and view the related results."
+	@priority = "4"
+	test ViewQuestionsWithConfiguredFilter {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Questions Test Category",
+			userEmailAddress = "test@liferay.com");
+
+		for (var num : list "1,2") {
+			Questions.addQuestionByAPI(
+				bodyField = "Question Body ${num}",
+				categoryName = "Questions Test Category",
+				tagField = "test tag",
+				titleField = "Question ${num}");
+		}
+
+		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = "guest");
+
+		MessageboardsCategory.gotoCP(categoryName = "Questions Test Category");
+
+		MessageboardsThread.gotoCP(threadSubject = "Question 1");
+
+		MessageboardsThread.editCP(
+			threadBodyEdit = "Question Body 1 Edit",
+			threadSubjectEdit = "Question 1 Edit");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Questions Test Category");
+
+		Pause(locator = "3000");
+
+		Questions.configureFilter(filterBy = "Latest Edited");
+
+		Questions.viewFilterResults(
+			lastQuestionTitle = "Question 2",
+			questionTitle = "Question 1 Edit");
+
+		Questions.configureFilter(filterBy = "Voted in the Last Week");
+
+		AssertElementPresent(
+			key_emptyInfo = "There are no results.",
+			locator1 = "Questions#EMPTY_STATE_MESSAGE");
+
+		for (var num : list "1 Edit,2") {
+			AssertElementNotPresent(
+				key_questionTitle = "Question ${num}",
+				locator1 = "Questions#QUESTIONS_TITLE");
+		}
+
+		Questions.configureFilter(filterBy = "Voted in the Last Month");
+
+		AssertElementPresent(
+			key_emptyInfo = "There are no results.",
+			locator1 = "Questions#EMPTY_STATE_MESSAGE");
+
+		for (var num : list "1 Edit,2") {
+			AssertElementNotPresent(
+				key_questionTitle = "Question ${num}",
+				locator1 = "Questions#QUESTIONS_TITLE");
+		}
+
+		Questions.configureFilter(filterBy = "Latest Created");
+
+		Questions.viewFilterResults(
+			lastQuestionTitle = "Question 1 Edit",
+			questionTitle = "Question 2");
+	}
+
+}

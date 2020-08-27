@@ -17,6 +17,7 @@ package com.liferay.frontend.taglib.form.navigator.internal.configuration;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -25,6 +26,7 @@ import org.junit.Test;
 public class RetrieverWhenAConfigurationEntryHasOneLineWithNoKeysTest
 	extends BaseFormNavigatorEntryConfigurationRetrieverTestCase {
 
+	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();

@@ -17,9 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-EditSiteTeamAssignmentsUserGroupsDisplayContext editSiteTeamAssignmentsUserGroupsDisplayContext = new EditSiteTeamAssignmentsUserGroupsDisplayContext(renderRequest, renderResponse, request);
+EditSiteTeamAssignmentsUserGroupsDisplayContext editSiteTeamAssignmentsUserGroupsDisplayContext = new EditSiteTeamAssignmentsUserGroupsDisplayContext(request, renderRequest, renderResponse);
 
-EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext editSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext = new EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, editSiteTeamAssignmentsUserGroupsDisplayContext);
+EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext editSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext = new EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, editSiteTeamAssignmentsUserGroupsDisplayContext);
 %>
 
 <clay:navigation-bar
@@ -51,9 +51,9 @@ EditSiteTeamAssignmentsUserGroupsManagementToolbarDisplayContext editSiteTeamAss
 		>
 
 			<%
-			LinkedHashMap<String, Object> userParams = new LinkedHashMap<>();
-
-			userParams.put("usersUserGroups", Long.valueOf(userGroup.getUserGroupId()));
+			LinkedHashMap<String, Object> userParams = LinkedHashMapBuilder.<String, Object>put(
+				"usersUserGroups", Long.valueOf(userGroup.getUserGroupId())
+			).build();
 
 			int usersCount = UserLocalServiceUtil.searchCount(company.getCompanyId(), StringPool.BLANK, WorkflowConstants.STATUS_ANY, userParams);
 			%>

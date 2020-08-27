@@ -14,28 +14,20 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionActionHandler;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionActionHandlerAware;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.dynamic.data.mapping.expression.ExecuteActionRequest;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Inácio Nery
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = {
-		DDMExpressionActionHandlerAware.class,
-		DDMExpressionFunction.Function2.class
-	}
-)
 public class JumpPageFunction
 	implements DDMExpressionActionHandlerAware,
 			   DDMExpressionFunction.Function2<Number, Number, Boolean> {
+
+	public static final String NAME = "jumpPage";
 
 	@Override
 	public Boolean apply(Number fromPage, Number toPage) {
@@ -59,7 +51,7 @@ public class JumpPageFunction
 
 	@Override
 	public String getName() {
-		return "jumpPage";
+		return NAME;
 	}
 
 	@Override

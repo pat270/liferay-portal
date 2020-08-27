@@ -17,10 +17,10 @@ package com.liferay.portal.osgi.web.portlet.container.upload.servlet.request.tes
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.upload.FileItem;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadServletRequestImpl;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -76,15 +76,15 @@ public class UploadServletRequestWhenGettingParameterNamesTest {
 
 		mockHttpServletRequest.addParameter(parameter, parameter);
 
-		UploadServletRequestImpl uploadServletRequest =
+		UploadServletRequestImpl uploadServletRequestImpl =
 			new UploadServletRequestImpl(
 				(HttpServletRequest)liferayServletRequest.getRequest(),
 				fileParameters, regularParameters);
 
-		Enumeration<String> parameterNames =
-			uploadServletRequest.getParameterNames();
+		Enumeration<String> enumeration =
+			uploadServletRequestImpl.getParameterNames();
 
-		List<String> parameterNamesList = Collections.list(parameterNames);
+		List<String> parameterNamesList = Collections.list(enumeration);
 
 		for (Map.Entry<String, List<String>> entry :
 				regularParameters.entrySet()) {

@@ -171,7 +171,8 @@ public class ScopedConfigurationManager implements ManagedServiceFactory {
 
 	private void _updateEntries(
 		String pid, Serializable scopePK,
-		ExtendedObjectClassDefinition.Scope scope, Dictionary properties) {
+		ExtendedObjectClassDefinition.Scope scope,
+		Dictionary<String, ?> properties) {
 
 		ScopeKey scopeKey = new ScopeKey(scopePK, scope);
 
@@ -219,12 +220,12 @@ public class ScopedConfigurationManager implements ManagedServiceFactory {
 	private class ScopeKey {
 
 		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof ScopeKey)) {
+		public boolean equals(Object object) {
+			if (!(object instanceof ScopeKey)) {
 				return false;
 			}
 
-			ScopeKey scopeKey = (ScopeKey)obj;
+			ScopeKey scopeKey = (ScopeKey)object;
 
 			if (Objects.equals(_scope, scopeKey.getScope()) &&
 				Objects.equals(_scopePK, scopeKey.getScopePK())) {

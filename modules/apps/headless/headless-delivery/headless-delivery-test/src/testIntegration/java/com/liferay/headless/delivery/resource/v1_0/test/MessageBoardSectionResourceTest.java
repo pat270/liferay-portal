@@ -36,6 +36,11 @@ public class MessageBoardSectionResourceTest
 	}
 
 	@Override
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[] {"creatorId"};
+	}
+
+	@Override
 	protected Long
 			testGetMessageBoardSectionMessageBoardSectionsPage_getParentMessageBoardSectionId()
 		throws Exception {

@@ -18,10 +18,10 @@ import com.liferay.oauth2.provider.rest.internal.endpoint.liferay.LiferayOAuthDa
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.MapUtil;
 
-import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.cxf.rs.security.oauth2.provider.AccessTokenGrantHandler;
 
@@ -30,6 +30,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.FieldOption;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -52,55 +53,7 @@ public class LiferayAccessTokenServiceRegistrator {
 	protected void activate(
 		BundleContext bundleContext, Map<String, Object> properties) {
 
-		_blockUnsecureRequests = MapUtil.getBoolean(
-			properties, "block.unsecure.requests", true);
-		_canSupportPublicClients = MapUtil.getBoolean(
-			properties, "allow.public.clients", true);
-		_enabled = MapUtil.getBoolean(properties, "enabled", true);
-
-		_bundleContext = bundleContext;
-
-		_updateLiferayAccessTokenService(bundleContext);
-	}
-
-	@Reference(
-		cardinality = ReferenceCardinality.AT_LEAST_ONE,
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY
-	)
-	protected void addAccessTokenGrantHandler(
-		AccessTokenGrantHandler accessTokenGrantHandler) {
-
-		_accessTokenGrantHandlers.add(accessTokenGrantHandler);
-
-		_updateLiferayAccessTokenService(_bundleContext);
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_enabled = false;
-
-		unregister();
-	}
-
-	protected void removeAccessTokenGrantHandler(
-		AccessTokenGrantHandler accessTokenGrantHandler) {
-
-		_accessTokenGrantHandlers.remove(accessTokenGrantHandler);
-
-		_updateLiferayAccessTokenService(_bundleContext);
-	}
-
-	protected void unregister() {
-		if (_serviceRegistration != null) {
-			_serviceRegistration.unregister();
-
-			_serviceRegistration = null;
-		}
-	}
-
-	private void _updateLiferayAccessTokenService(BundleContext bundleContext) {
-		if (!_enabled || (bundleContext == null)) {
+		if (!MapUtil.getBoolean(properties, "enabled", true)) {
 			return;
 		}
 
@@ -108,9 +61,9 @@ public class LiferayAccessTokenServiceRegistrator {
 			new LiferayAccessTokenService();
 
 		liferayAccessTokenService.setBlockUnsecureRequests(
-			_blockUnsecureRequests);
+			MapUtil.getBoolean(properties, "block.unsecure.requests", true));
 		liferayAccessTokenService.setCanSupportPublicClients(
-			_canSupportPublicClients);
+			MapUtil.getBoolean(properties, "allow.public.clients", true));
 		liferayAccessTokenService.setDataProvider(_liferayOAuthDataProvider);
 		liferayAccessTokenService.setGrantHandlers(_accessTokenGrantHandlers);
 
@@ -124,19 +77,27 @@ public class LiferayAccessTokenServiceRegistrator {
 			"osgi.jaxrs.name", "Liferay.Access.Token.Service.");
 		liferayAccessTokenServiceProperties.put("osgi.jaxrs.resource", true);
 
-		unregister();
-
 		_serviceRegistration = bundleContext.registerService(
 			Object.class, liferayAccessTokenService,
 			liferayAccessTokenServiceProperties);
 	}
 
-	private final List<AccessTokenGrantHandler> _accessTokenGrantHandlers =
-		new ArrayList<>();
-	private boolean _blockUnsecureRequests;
-	private BundleContext _bundleContext;
-	private boolean _canSupportPublicClients;
-	private volatile boolean _enabled;
+	@Deactivate
+	protected void deactivate() {
+		if (_serviceRegistration != null) {
+			_serviceRegistration.unregister();
+
+			_serviceRegistration = null;
+		}
+	}
+
+	@Reference(
+		cardinality = ReferenceCardinality.AT_LEAST_ONE,
+		fieldOption = FieldOption.UPDATE, policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	private volatile List<AccessTokenGrantHandler> _accessTokenGrantHandlers =
+		new CopyOnWriteArrayList<>();
 
 	@Reference
 	private LiferayOAuthDataProvider _liferayOAuthDataProvider;

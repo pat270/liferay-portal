@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -123,6 +123,10 @@ public class DLFolderPersistenceTest {
 
 		DLFolder newDLFolder = _persistence.create(pk);
 
+		newDLFolder.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDLFolder.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDLFolder.setUuid(RandomTestUtil.randomString());
 
 		newDLFolder.setGroupId(RandomTestUtil.nextLong());
@@ -172,6 +176,11 @@ public class DLFolderPersistenceTest {
 		DLFolder existingDLFolder = _persistence.findByPrimaryKey(
 			newDLFolder.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDLFolder.getMvccVersion(), newDLFolder.getMvccVersion());
+		Assert.assertEquals(
+			existingDLFolder.getCtCollectionId(),
+			newDLFolder.getCtCollectionId());
 		Assert.assertEquals(existingDLFolder.getUuid(), newDLFolder.getUuid());
 		Assert.assertEquals(
 			existingDLFolder.getFolderId(), newDLFolder.getFolderId());
@@ -423,10 +432,11 @@ public class DLFolderPersistenceTest {
 
 	protected OrderByComparator<DLFolder> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DLFolder", "uuid", true, "folderId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "repositoryId", true, "mountPoint",
-			true, "parentFolderId", true, "treePath", true, "name", true,
+			"DLFolder", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "folderId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "repositoryId", true, "mountPoint", true,
+			"parentFolderId", true, "treePath", true, "name", true,
 			"description", true, "lastPostDate", true, "defaultFileEntryTypeId",
 			true, "hidden", true, "restrictionType", true, "lastPublishDate",
 			true, "status", true, "statusByUserId", true, "statusByUserName",
@@ -641,48 +651,96 @@ public class DLFolderPersistenceTest {
 
 		_persistence.clearCache();
 
-		DLFolder existingDLFolder = _persistence.findByPrimaryKey(
-			newDLFolder.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDLFolder.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDLFolder.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDLFolder, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DLFolder newDLFolder = addDLFolder();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLFolder.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("folderId", newDLFolder.getFolderId()));
+
+		List<DLFolder> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DLFolder dlFolder) {
 		Assert.assertEquals(
-			Long.valueOf(existingDLFolder.getGroupId()),
+			dlFolder.getUuid(),
+			ReflectionTestUtil.invoke(
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(dlFolder.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFolder, "getOriginalGroupId", new Class<?>[0]));
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDLFolder.getRepositoryId()),
+			Long.valueOf(dlFolder.getRepositoryId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFolder, "getOriginalRepositoryId", new Class<?>[0]));
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "repositoryId"));
 		Assert.assertEquals(
-			Boolean.valueOf(existingDLFolder.getMountPoint()),
+			Boolean.valueOf(dlFolder.getMountPoint()),
 			ReflectionTestUtil.<Boolean>invoke(
-				existingDLFolder, "getOriginalMountPoint", new Class<?>[0]));
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "mountPoint"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDLFolder.getGroupId()),
+			Long.valueOf(dlFolder.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFolder, "getOriginalGroupId", new Class<?>[0]));
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDLFolder.getParentFolderId()),
+			Long.valueOf(dlFolder.getParentFolderId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFolder, "getOriginalParentFolderId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingDLFolder.getName(),
-				ReflectionTestUtil.invoke(
-					existingDLFolder, "getOriginalName", new Class<?>[0])));
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "parentFolderId"));
+		Assert.assertEquals(
+			dlFolder.getName(),
+			ReflectionTestUtil.invoke(
+				dlFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
 	}
 
 	protected DLFolder addDLFolder() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DLFolder dlFolder = _persistence.create(pk);
+
+		dlFolder.setMvccVersion(RandomTestUtil.nextLong());
+
+		dlFolder.setCtCollectionId(RandomTestUtil.nextLong());
 
 		dlFolder.setUuid(RandomTestUtil.randomString());
 

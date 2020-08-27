@@ -45,6 +45,11 @@ public class GenericFailureMessageGenerator
 		return getConsoleTextSnippetElementByEnd(consoleText, true, -1);
 	}
 
+	@Override
+	public boolean isGenericCIFailure() {
+		return true;
+	}
+
 	protected String getBuildFailedSnippet(String consoleText) {
 		int end = consoleText.indexOf("BUILD FAILED");
 

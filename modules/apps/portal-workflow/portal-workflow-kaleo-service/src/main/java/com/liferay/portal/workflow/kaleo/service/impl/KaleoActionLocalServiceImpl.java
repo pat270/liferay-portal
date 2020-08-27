@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -26,15 +27,21 @@ import com.liferay.portal.workflow.kaleo.service.base.KaleoActionLocalServiceBas
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoAction",
+	service = AopService.class
+)
 public class KaleoActionLocalServiceImpl
 	extends KaleoActionLocalServiceBaseImpl {
 
 	@Override
 	public KaleoAction addKaleoAction(
-			String kaleoClassName, long kaleoClassPK,
+			String kaleoClassName, long kaleoClassPK, long kaleoDefinitionId,
 			long kaleoDefinitionVersionId, String kaleoNodeName, Action action,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -53,6 +60,7 @@ public class KaleoActionLocalServiceImpl
 		kaleoAction.setModifiedDate(now);
 		kaleoAction.setKaleoClassName(kaleoClassName);
 		kaleoAction.setKaleoClassPK(kaleoClassPK);
+		kaleoAction.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoAction.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoAction.setKaleoNodeName(kaleoNodeName);
 		kaleoAction.setName(action.getName());
@@ -72,9 +80,7 @@ public class KaleoActionLocalServiceImpl
 			action.getScriptRequiredContexts());
 		kaleoAction.setPriority(action.getPriority());
 
-		kaleoActionPersistence.update(kaleoAction);
-
-		return kaleoAction;
+		return kaleoActionPersistence.update(kaleoAction);
 	}
 
 	@Override
@@ -92,12 +98,39 @@ public class KaleoActionLocalServiceImpl
 
 	@Override
 	public List<KaleoAction> getKaleoActions(
+		long companyId, String kaleoClassName, long kaleoClassPK) {
+
+		return kaleoActionPersistence.findByC_KCN_KCPK(
+			companyId, kaleoClassName, kaleoClassPK);
+	}
+
+	@Override
+	public List<KaleoAction> getKaleoActions(
+		long companyId, String kaleoClassName, long kaleoClassPK,
+		String executionType) {
+
+		return kaleoActionPersistence.findByC_KCN_KCPK_ET(
+			companyId, kaleoClassName, kaleoClassPK, executionType);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getKaleoActions(long, String, long)}
+	 */
+	@Deprecated
+	@Override
+	public List<KaleoAction> getKaleoActions(
 		String kaleoClassName, long kaleoClassPK) {
 
 		return kaleoActionPersistence.findByKCN_KCPK(
 			kaleoClassName, kaleoClassPK);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getKaleoActions(long, String, long, String)}
+	 */
+	@Deprecated
 	@Override
 	public List<KaleoAction> getKaleoActions(
 		String kaleoClassName, long kaleoClassPK, String executionType) {

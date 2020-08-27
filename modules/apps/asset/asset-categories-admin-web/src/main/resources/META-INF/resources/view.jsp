@@ -16,148 +16,232 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-AssetVocabulariesManagementToolbarDisplayContext assetVocabulariesManagementToolbarDisplayContext = new AssetVocabulariesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, assetCategoriesDisplayContext);
-%>
+<liferay-ui:success key="categoryAdded" message='<%= GetterUtil.getString(MultiSessionMessages.get(renderRequest, "categoryAdded")) %>' />
+<liferay-ui:success key="categoryUpdated" message='<%= GetterUtil.getString(MultiSessionMessages.get(renderRequest, "categoryUpdated")) %>' />
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems="<%= assetCategoriesDisplayContext.getAssetVocabulariesNavigationItems() %>"
-/>
-
-<clay:management-toolbar
-	displayContext="<%= assetVocabulariesManagementToolbarDisplayContext %>"
-/>
-
-<portlet:actionURL name="deleteVocabulary" var="deleteVocabularyURL">
-	<portlet:param name="redirect" value="<%= currentURL %>" />
-</portlet:actionURL>
-
-<aui:form action="<%= deleteVocabularyURL %>" cssClass="container-fluid container-fluid-max-xl" name="fm">
-	<liferay-site-navigation:breadcrumb
-		breadcrumbEntries="<%= AssetCategoryUtil.getAssetVocabulariesBreadcrumbEntries(request) %>"
+<clay:container-fluid
+	cssClass="container-view"
+>
+	<liferay-ui:breadcrumb
+		showLayout="<%= false %>"
 	/>
 
-	<liferay-ui:search-container
-		id="assetVocabularies"
-		searchContainer="<%= assetCategoriesDisplayContext.getVocabulariesSearchContainer() %>"
-	>
-		<liferay-ui:search-container-row
-			className="com.liferay.asset.kernel.model.AssetVocabulary"
-			keyProperty="vocabularyId"
-			modelVar="vocabulary"
+	<clay:row>
+		<clay:col
+			lg="3"
+		>
+			<nav class="menubar menubar-transparent menubar-vertical-expand-lg">
+				<ul class="nav nav-nested">
+					<li class="nav-item">
+						<c:choose>
+							<c:when test="<%= ListUtil.isNotEmpty(assetCategoriesDisplayContext.getInheritedVocabularies()) || ListUtil.isNotEmpty(assetCategoriesDisplayContext.getVocabularies()) %>">
+								<clay:content-row
+									cssClass="mb-4"
+									verticalAlign="center"
+								>
+									<clay:content-col
+										expand="<%= true %>"
+									>
+										<strong class="text-uppercase">
+											<liferay-ui:message key="vocabularies" />
+										</strong>
+									</clay:content-col>
+
+									<clay:content-col>
+										<ul class="navbar-nav">
+											<li>
+												<c:if test="<%= assetCategoriesDisplayContext.hasAddVocabularyPermission() %>">
+
+													<%
+													PortletURL editVocabularyURL = assetCategoriesDisplayContext.getEditVocabularyURL();
+													%>
+
+													<clay:link
+														borderless="<%= true %>"
+														cssClass="component-action"
+														href="<%= editVocabularyURL.toString() %>"
+														icon="plus"
+														type="button"
+													/>
+												</c:if>
+											</li>
+											<li>
+												<liferay-portlet:actionURL copyCurrentRenderParameters="<%= false %>" name="deleteVocabulary" var="deleteVocabulariesURL">
+													<portlet:param name="redirect" value="<%= assetCategoriesDisplayContext.getDefaultRedirect() %>" />
+												</liferay-portlet:actionURL>
+
+												<portlet:renderURL var="viewVocabulariesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+													<portlet:param name="mvcPath" value="/view_vocabularies.jsp" />
+												</portlet:renderURL>
+
+												<clay:dropdown-actions
+													additionalProps='<%=
+														HashMapBuilder.<String, Object>put(
+															"deleteVocabulariesURL", deleteVocabulariesURL.toString()
+														).put(
+															"viewVocabulariesURL", viewVocabulariesURL.toString()
+														).build()
+													%>'
+													dropdownItems="<%= assetCategoriesDisplayContext.getVocabulariesDropdownItems() %>"
+													propsTransformer="js/ActionsComponentPropsTransformer"
+												/>
+											</li>
+										</ul>
+									</clay:content-col>
+								</clay:content-row>
+
+								<c:if test="<%= ListUtil.isNotEmpty(assetCategoriesDisplayContext.getInheritedVocabularies()) %>">
+									<ul class="mb-2 nav nav-stacked">
+										<span class="text-truncate"><%= LanguageUtil.get(request, "global") %></span>
+
+										<%
+										for (AssetVocabulary vocabulary : assetCategoriesDisplayContext.getInheritedVocabularies()) {
+										%>
+
+											<li class="nav-item">
+
+												<%
+												PortletURL vocabularyURL = renderResponse.createRenderURL();
+
+												vocabularyURL.setParameter("mvcPath", "/view.jsp");
+												vocabularyURL.setParameter("vocabularyId", String.valueOf(vocabulary.getVocabularyId()));
+												%>
+
+												<a class="nav-link text-truncate <%= (assetCategoriesDisplayContext.getVocabularyId() == vocabulary.getVocabularyId()) ? "active" : StringPool.BLANK %>" href="<%= vocabularyURL.toString() %>">
+													<%= HtmlUtil.escape(vocabulary.getTitle(locale)) %>
+
+													<liferay-ui:icon
+														icon="lock"
+														iconCssClass="text-muted"
+														markupView="lexicon"
+														message="this-vocabulary-can-only-be-edited-from-the-global-site"
+													/>
+
+													<c:if test="<%= vocabulary.getVisibilityType() == AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL %>">
+														<liferay-ui:icon
+															icon="low-vision"
+															iconCssClass="text-muted"
+															markupView="lexicon"
+															message="for-internal-use-only"
+														/>
+													</c:if>
+												</a>
+											</li>
+
+										<%
+										}
+										%>
+
+									</ul>
+								</c:if>
+
+								<c:if test="<%= ListUtil.isNotEmpty(assetCategoriesDisplayContext.getVocabularies()) %>">
+									<ul class="mb-2 nav nav-stacked">
+										<span class="text-truncate"><%= assetCategoriesDisplayContext.getGroupName() %></span>
+
+										<%
+										for (AssetVocabulary vocabulary : assetCategoriesDisplayContext.getVocabularies()) {
+										%>
+
+											<li class="nav-item">
+
+												<%
+												PortletURL vocabularyURL = renderResponse.createRenderURL();
+
+												vocabularyURL.setParameter("mvcPath", "/view.jsp");
+												vocabularyURL.setParameter("vocabularyId", String.valueOf(vocabulary.getVocabularyId()));
+												%>
+
+												<a class="nav-link text-truncate <%= (assetCategoriesDisplayContext.getVocabularyId() == vocabulary.getVocabularyId()) ? "active" : StringPool.BLANK %>" href="<%= vocabularyURL.toString() %>">
+													<%= HtmlUtil.escape(vocabulary.getTitle(locale)) %>
+
+													<c:if test="<%= vocabulary.getVisibilityType() == AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL %>">
+														<liferay-ui:icon
+															icon="low-vision"
+															iconCssClass="text-muted"
+															markupView="lexicon"
+															message="for-internal-use-only"
+														/>
+													</c:if>
+												</a>
+											</li>
+
+										<%
+										}
+										%>
+
+									</ul>
+								</c:if>
+							</c:when>
+							<c:otherwise>
+								<p class="text-uppercase">
+									<strong><liferay-ui:message key="vocabularies" /></strong>
+								</p>
+
+								<liferay-frontend:empty-result-message
+									actionDropdownItems="<%= assetCategoriesDisplayContext.getVocabularyActionDropdownItems() %>"
+									animationType="<%= EmptyResultMessageKeys.AnimationType.NONE %>"
+									componentId='<%= liferayPortletResponse.getNamespace() + "emptyResultMessageComponent" %>'
+									description='<%= LanguageUtil.get(request, "vocabularies-are-needed-to-create-categories") %>'
+									elementType='<%= LanguageUtil.get(request, "vocabularies") %>'
+								/>
+							</c:otherwise>
+						</c:choose>
+					</li>
+				</ul>
+			</nav>
+		</clay:col>
+
+		<clay:col
+			lg="9"
 		>
 
 			<%
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", assetVocabulariesManagementToolbarDisplayContext.getAvailableActions(vocabulary));
-
-			row.setData(rowData);
+			AssetVocabulary vocabulary = assetCategoriesDisplayContext.getVocabulary();
 			%>
 
-			<portlet:renderURL var="rowURL">
-				<portlet:param name="mvcPath" value="/view_categories.jsp" />
-				<portlet:param name="vocabularyId" value="<%= String.valueOf(vocabulary.getVocabularyId()) %>" />
-			</portlet:renderURL>
+			<c:if test="<%= vocabulary != null %>">
+				<clay:sheet>
+					<h2 class="sheet-title">
+						<clay:content-row
+							verticalAlign="center"
+						>
+							<clay:content-col>
+								<%= HtmlUtil.escape(vocabulary.getTitle(locale)) %>
+							</clay:content-col>
 
-			<c:choose>
-				<c:when test='<%= Objects.equals(assetCategoriesDisplayContext.getDisplayStyle(), "descriptive") %>'>
-					<liferay-ui:search-container-column-icon
-						icon="vocabulary"
-						toggleRowChecker="<%= true %>"
-					/>
+							<clay:content-col
+								cssClass="component-action inline-item-after justify-content-end"
+							>
+								<liferay-util:include page="/vocabulary_action.jsp" servletContext="<%= application %>" />
+							</clay:content-col>
+						</clay:content-row>
+					</h2>
 
-					<liferay-ui:search-container-column-text
-						colspan="<%= 2 %>"
-					>
-						<span class="text-default">
-							<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - vocabulary.getCreateDate().getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
-						</span>
+					<%
+					String linkURL = assetCategoriesDisplayContext.getLinkURL();
+					%>
 
-						<h2 class="h5">
-							<aui:a href="<%= (rowURL != null) ? rowURL.toString() : null %>"><%= HtmlUtil.escape(vocabulary.getTitle(locale)) %></aui:a>
-						</h2>
+					<c:if test="<%= Validator.isNotNull(linkURL) %>">
 
-						<span class="text-default">
-							<%= HtmlUtil.escape(vocabulary.getDescription(locale)) %>
-						</span>
-						<span class="text-default">
-							<strong><liferay-ui:message key="number-of-categories" /></strong>:
+						<%
+						StringBundler sb = new StringBundler(3);
 
-							<c:choose>
-								<c:when test="<%= assetCategoriesDisplayContext.isFlattenedNavigationAllowed() %>">
-									<liferay-ui:message arguments="<%= vocabulary.getCategoriesCount() %>" key="flatten-x" translateArguments="<%= false %>" />
-								</c:when>
-								<c:otherwise>
-									<%= vocabulary.getCategoriesCount() %>
-								</c:otherwise>
-							</c:choose>
-						</span>
-						<span class="text-default">
-							<strong><liferay-ui:message key="asset-type" /></strong>: <%= assetCategoriesDisplayContext.getAssetType(vocabulary) %>
-						</span>
-					</liferay-ui:search-container-column-text>
+						sb.append("<a href=\"");
+						sb.append(linkURL);
+						sb.append("\" target=\"_blank\">");
+						%>
 
-					<liferay-ui:search-container-column-jsp
-						path="/vocabulary_action.jsp"
-					/>
-				</c:when>
-				<c:when test='<%= Objects.equals(assetCategoriesDisplayContext.getDisplayStyle(), "list") %>'>
-					<liferay-ui:search-container-column-text
-						cssClass="table-cell-expand table-cell-minw-200 table-title"
-						href="<%= rowURL %>"
-						name="name"
-						value="<%= HtmlUtil.escape(vocabulary.getTitle(locale)) %>"
-					/>
+						<p class="mb-5 text-secondary">
+							<liferay-ui:message arguments='<%= new String[] {sb.toString(), "</a>"} %>' key="x-learn-how-x-to-tailor-categories-to-your-needs" />
+						</p>
+					</c:if>
 
-					<liferay-ui:search-container-column-text
-						cssClass="table-cell-expand table-cell-minw-200"
-						name="description"
-						value="<%= HtmlUtil.escape(vocabulary.getDescription(locale)) %>"
-					/>
-
-					<liferay-ui:search-container-column-date
-						cssClass="table-cell-ws-nowrap"
-						name="create-date"
-						property="createDate"
-					/>
-
-					<liferay-ui:search-container-column-text
-						cssClass="table-column-text-center"
-						name="number-of-categories"
-					>
-						<c:choose>
-							<c:when test="<%= assetCategoriesDisplayContext.isFlattenedNavigationAllowed() %>">
-								<liferay-ui:message arguments="<%= vocabulary.getCategoriesCount() %>" key="flatten-x" translateArguments="<%= false %>" />
-							</c:when>
-							<c:otherwise>
-								<%= vocabulary.getCategoriesCount() %>
-							</c:otherwise>
-						</c:choose>
-					</liferay-ui:search-container-column-text>
-
-					<liferay-ui:search-container-column-text
-						cssClass="table-cell-expand-smallest table-cell-minw-150"
-						name="asset-type"
-						value="<%= assetCategoriesDisplayContext.getAssetType(vocabulary) %>"
-					/>
-
-					<liferay-ui:search-container-column-jsp
-						path="/vocabulary_action.jsp"
-					/>
-				</c:when>
-			</c:choose>
-		</liferay-ui:search-container-row>
-
-		<liferay-ui:search-iterator
-			displayStyle="<%= assetCategoriesDisplayContext.getDisplayStyle() %>"
-			markupView="lexicon"
-		/>
-	</liferay-ui:search-container>
-</aui:form>
-
-<liferay-frontend:component
-	componentId="<%= assetVocabulariesManagementToolbarDisplayContext.getDefaultEventHandler() %>"
-	module="js/AssetVocabulariesManagementToolbarDefaultEventHandler.es"
-/>
+					<clay:sheet-section>
+						<liferay-util:include page="/view_categories.jsp" servletContext="<%= application %>" />
+					</clay:sheet-section>
+				</clay:sheet>
+			</c:if>
+		</clay:col>
+	</clay:row>
+</clay:container-fluid>

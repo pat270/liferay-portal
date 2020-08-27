@@ -1,116 +1,123 @@
-import DefaultEventHandler from 'frontend-js-web/liferay/DefaultEventHandler.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {
+	DefaultEventHandler,
+	addParams,
+	navigate,
+	openModal,
+} from 'frontend-js-web';
 import {Config} from 'metal-state';
 
 class ManagementToolbarDefaultEventHandler extends DefaultEventHandler {
-	created() {
-		let addArticleURL = this.addArticleURL;
-		let namespace = this.namespace;
-
-		Liferay.on(
-			this.ns('selectAddMenuItem'),
-			function(event) {
-				const selectAddMenuItemWindow = Liferay.Util.Window.getById(namespace + 'selectAddMenuItem');
-
-				selectAddMenuItemWindow.set('destroyOnHide', false);
-
-				Liferay.fire(
-					'closeWindow',
-					{
-						id: namespace + 'selectAddMenuItem',
-						redirect: Liferay.Util.addParams(namespace + 'ddmStructureKey=' + event.ddmStructureKey, addArticleURL)
-					}
-				);
-			}
-		);
-	}
-
 	deleteEntries() {
-		let message = Liferay.Language.get('are-you-sure-you-want-to-delete-the-selected-entries');
+		let message = Liferay.Language.get(
+			'are-you-sure-you-want-to-delete-the-selected-entries'
+		);
 
 		if (this.trashEnabled) {
-			message = Liferay.Language.get('are-you-sure-you-want-to-move-the-selected-entries-to-the-recycle-bin');
+			message = Liferay.Language.get(
+				'are-you-sure-you-want-to-move-the-selected-entries-to-the-recycle-bin'
+			);
 		}
 
 		if (confirm(message)) {
-			Liferay.fire(
-				this.ns('editEntry'),
-				{
-					action: this.trashEnabled ? 'moveEntriesToTrash' : 'deleteEntries'
-				}
-			);
+			Liferay.fire(this.ns('editEntry'), {
+				action: this.trashEnabled
+					? '/journal/move_articles_and_folders_to_trash'
+					: '/journal/delete_articles_and_folders',
+			});
 		}
 	}
 
 	expireEntries() {
-		Liferay.fire(
-			this.ns('editEntry'),
-			{
-				action: 'expireEntries'
-			}
-		);
+		Liferay.fire(this.ns('editEntry'), {
+			action: '/journal/expire_articles_and_folders',
+		});
 	}
 
 	handleCreationMenuMoreButtonClicked(event) {
 		event.preventDefault();
 
-		Liferay.Util.openWindow(
-			{
-				dialog: {
-					after: {
-						destroy: function(event) {
-							if (event.target.get('destroyOnHide')) {
-								window.location.reload();
-							}
-						}
-					},
-					destroyOnHide: true,
-					modal: true
-				},
-				id: this.ns('selectAddMenuItem'),
-				title: Liferay.Language.get('more'),
-				uri: this.openViewMoreStructuresURL
-			}
-		);
+		openModal({
+			onSelect: (selectedItem) => {
+				navigate(
+					addParams(
+						this.namespace +
+							'ddmStructureKey=' +
+							selectedItem.ddmStructureKey,
+						this.addArticleURL
+					)
+				);
+			},
+			selectEventName: this.ns('selectAddMenuItem'),
+			title: Liferay.Language.get('more'),
+			url: this.openViewMoreStructuresURL,
+		});
 	}
 
 	moveEntries() {
-		Liferay.fire(
-			this.ns('editEntry'),
-			{
-				action: 'moveEntries'
+		let moveArticlesAndFoldersURL = this.moveArticlesAndFoldersURL;
+
+		let entrySelectorNodes = document.querySelectorAll('.entry-selector');
+
+		if (entrySelectorNodes.length === 0) {
+			entrySelectorNodes = document.querySelectorAll(
+				'.entry-card input[type="checkbox"]'
+			);
+		}
+
+		entrySelectorNodes.forEach((node) => {
+			if (node.checked) {
+				moveArticlesAndFoldersURL = addParams(
+					`${node.name}=${node.value}`,
+					moveArticlesAndFoldersURL
+				);
 			}
-		);
+		});
+
+		Liferay.Util.navigate(moveArticlesAndFoldersURL);
 	}
 
 	openDDMStructuresSelector() {
-		let namespace = this.namespace;
-		let uri = this.viewDDMStructureArticlesURL;
-
-		Liferay.Util.selectEntity(
-			{
-				dialog: {
-					constrain: true,
-					modal: true
-				},
-				eventName: this.ns('selectDDMStructure'),
-				title: Liferay.Language.get('structures'),
-				uri: this.selectEntityURL
+		openModal({
+			onSelect: (selectedItem) => {
+				Liferay.Util.navigate(
+					addParams(
+						this.namespace +
+							'ddmStructureKey=' +
+							selectedItem.ddmstructurekey,
+						this.viewDDMStructureArticlesURL
+					)
+				);
 			},
-			function(event) {
-				location.href = Liferay.Util.addParams(namespace + 'ddmStructureKey=' + event.ddmstructurekey, uri);
-			}
-		);
+			selectEventName: this.ns('selectDDMStructure'),
+			title: Liferay.Language.get('structures'),
+			url: this.selectEntityURL,
+		});
 	}
 }
 
 ManagementToolbarDefaultEventHandler.STATE = {
 	addArticleURL: Config.string(),
 	folderId: Config.string(),
+	moveArticlesAndFoldersURL: Config.string(),
 	namespace: Config.string(),
 	openViewMoreStructuresURL: Config.string(),
 	selectEntityURL: Config.string(),
 	trashEnabled: Config.bool(),
-	viewDDMStructureArticlesURL: Config.string()
+	viewDDMStructureArticlesURL: Config.string(),
 };
 
 export default ManagementToolbarDefaultEventHandler;

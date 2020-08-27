@@ -1,0 +1,160 @@
+<html>
+<head>
+<title>Sharing</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Sharing</td></tr>
+</thead>
+<tbody>
+	<!--BLOGS-->
+<tr>
+	<td>BLOGS_CONTENT</td>
+	<td>//div[contains(@class,'widget-mode')]//div</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BLOGS_TITLE</td>
+	<td>//h2[contains(.,'${key_entryTitle}')]</td>
+	<td></td>
+</tr>
+<!--EMAIL-->
+<tr>
+	<td>EMAIL_VIEW_DOCUMENT_BUTTON</td>
+	<td>//div/a[contains(.,'View Document')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--MANAGE_COLLABORATORS-->
+<tr>
+	<td>MANAGE_COLLABORATORS_ACCESS_DROPDOWN</td>
+	<td>//li/div[contains(.,'${key_userName}')]//div[4]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MANAGE_COLLABORATORS_EMPTY_STATE_MESSAGE</td>
+	<td>//h3[contains(.,'No Collaborators')]/../p[contains(.,'To add collaborators, share the file again.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MANAGE_COLLABORATORS_NAME</td>
+	<td>//div//span[contains(.,'${key_userName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MANAGE_COLLABORATORS_REMOVE_BUTTON</td>
+	<td>//li/div[contains(.,'${key_userName}')]//div[5]/button[//*[name()='svg'][contains(@class,'lexicon-icon')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--MODAL-->
+<tr>
+	<td>MODAL_INVITE_TO_COLLABORATE_DROPDOWN</td>
+	<td>//div[contains(@class,'dropdown-menu')]//*[contains(@class,'dropdown-item')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_INVITE_TO_COLLABORATE_INPUT</td>
+	<td>//div[contains(@class,'form-control')]//input[contains(@type,'text')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_INVITE_TO_COLLABORATE_TAG</td>
+	<td>//div/span[contains(@class,'label-secondary')]/span[contains(.,'${key_userName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_INVITE_TO_COLLABORATE_FEEDBACK_ITEM</td>
+	<td>//div[contains(@class,'form-feedback-item') and contains(.,"User ${key_userEmailAddress}  does not exist.")]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--NOTIFICATIONS-->
+<tr>
+	<td>NOTIFICATIONS_TITLE</td>
+	<td>//h4/a[contains(.,'${key_ownerName} has shared ${key_contentTitle} with you for ${key_contentSharingPermission}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NOTIFICATIONS_TITLE_SPECIAL</td>
+	<td>//h4/a[contains(.,"${key_ownerName} has shared ${key_contentTitle} with you for ${key_contentSharingPermission}")]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NOTIFICATIONS_DELETE_ENTRY_TITLE</td>
+	<td>//div[contains(@class,'autofit-col')]/div[contains(.,'Notification no longer applies.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NOTIFICATIONS_DELETE_ENTRY_CONTENT</td>
+	<td>//div[contains(@class,'autofit-col')]/div[contains(.,'Notification for Sharing was deleted.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--SHARED_CONTENT-->
+<tr>
+	<td>SHARED_CONTENT_CONTENT_OPTIONS</td>
+	<td>//tr/td[contains(.,'${key_contentTitle}')]/..//div//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_CONTENT_STATUS</td>
+	<td>//span[contains(@class,'label-item') and contains(.,'${key_status}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_CONTENT_TITLE</td>
+	<td>//tbody/tr/td[contains(@class,'table-cell-content')]/a[contains(.,'${key_contentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_CONTENT_TITLE_2</td>
+	<td>//tbody/tr[2]/td[contains(@class,'table-cell-content')]/a[contains(.,'${key_contentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_CONTENT_TITLE_3</td>
+	<td>//tbody/tr[3]/td[contains(@class,'table-cell-content')]/a[contains(.,'${key_contentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_ASSET_TYPE</td>
+	<td>//div[contains(@class,'card-title') and contains(.,'${key_assetType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_ELLIPSIS</td>
+	<td>//tr[contains(.,'${key_contentTitle}')]//a[contains(@title,'Actions')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARED_CONTENT_REPLY_TO_COMMENT</td>
+	<td>//div[contains(@class,'autofit-col')]/button[contains(.,'Reply')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

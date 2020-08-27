@@ -15,7 +15,6 @@
 package com.liferay.taglib.ui;
 
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
-import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.util.LinkedHashMap;
@@ -37,13 +36,6 @@ public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 
 	public void setSearchTerms(DisplayTerms searchTerms) {
 		_searchTerms = searchTerms;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public void setUseIndexer(boolean useIndexer) {
 	}
 
 	public void setUserGroupParams(
@@ -71,12 +63,9 @@ public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 			(SearchContainerTag<R>)findAncestorWithClass(
 				this, SearchContainerTag.class);
 
-		SearchContainer<R> searchContainer =
-			searchContainerTag.getSearchContainer();
-
 		httpServletRequest.setAttribute(
 			"liferay-ui:user-group-search-container-results:searchContainer",
-			searchContainer);
+			searchContainerTag.getSearchContainer());
 
 		httpServletRequest.setAttribute(
 			"liferay-ui:user-group-search-container-results:searchTerms",

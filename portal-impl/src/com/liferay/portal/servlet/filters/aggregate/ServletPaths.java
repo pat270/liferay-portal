@@ -89,8 +89,8 @@ public class ServletPaths {
 
 			return StringUtil.read(urlConnection.getInputStream());
 		}
-		catch (IOException ioe) {
-			_log.error(ioe, ioe);
+		catch (IOException ioException) {
+			_log.error(ioException, ioException);
 		}
 
 		return null;
@@ -134,7 +134,8 @@ public class ServletPaths {
 
 			path = downPathObject.toString();
 
-			path = path.replace(CharPool.BACK_SLASH, CharPool.SLASH);
+			path = StringUtil.replace(
+				path, CharPool.BACK_SLASH, CharPool.SLASH);
 		}
 		else {
 			path = _resourcePath.concat(path);

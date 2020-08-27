@@ -14,11 +14,11 @@
 
 package com.liferay.bookmarks.web.internal.portlet.action;
 
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.exception.NoSuchEntryException;
 import com.liferay.bookmarks.exception.NoSuchFolderException;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.model.BookmarksFolder;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksEntryServiceUtil;
 import com.liferay.bookmarks.service.BookmarksFolderServiceUtil;
 import com.liferay.bookmarks.web.internal.security.permission.resource.BookmarksResourcePermission;
@@ -50,9 +50,7 @@ public class ActionUtil {
 		List<BookmarksEntry> entries = new ArrayList<>();
 
 		for (long entryId : entryIds) {
-			BookmarksEntry entry = BookmarksEntryServiceUtil.getEntry(entryId);
-
-			entries.add(entry);
+			entries.add(BookmarksEntryServiceUtil.getEntry(entryId));
 		}
 
 		return entries;
@@ -61,10 +59,7 @@ public class ActionUtil {
 	public static List<BookmarksEntry> getEntries(PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getEntries(httpServletRequest);
+		return getEntries(PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	public static BookmarksEntry getEntry(HttpServletRequest httpServletRequest)
@@ -88,10 +83,7 @@ public class ActionUtil {
 	public static BookmarksEntry getEntry(PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getEntry(httpServletRequest);
+		return getEntry(PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	public static BookmarksFolder getFolder(
@@ -127,10 +119,7 @@ public class ActionUtil {
 	public static BookmarksFolder getFolder(PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getFolder(httpServletRequest);
+		return getFolder(PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	public static List<BookmarksFolder> getFolders(
@@ -147,10 +136,7 @@ public class ActionUtil {
 				(folderId !=
 					BookmarksFolderConstants.DEFAULT_PARENT_FOLDER_ID)) {
 
-				BookmarksFolder folder = BookmarksFolderServiceUtil.getFolder(
-					folderId);
-
-				folders.add(folder);
+				folders.add(BookmarksFolderServiceUtil.getFolder(folderId));
 			}
 		}
 
@@ -161,10 +147,7 @@ public class ActionUtil {
 			PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getFolders(httpServletRequest);
+		return getFolders(PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 }

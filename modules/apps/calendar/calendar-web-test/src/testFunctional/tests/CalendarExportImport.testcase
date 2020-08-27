@@ -1,0 +1,158 @@
+@component-name = "portal-calendar"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property testray.main.component.name = "Calendar";
+	var pageName = "Calendar Page";
+	var portletName = "Calendar";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Calendar Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Calendar Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Portlet.addPG(
+			pageName = "Calendar Page",
+			portletName = "Calendar");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.gotoPage(pageName = "Calendar Page");
+
+			if (IsElementPresent(locator1 = "Calendar#SCHEDULER_EVENT_GENERIC")) {
+				CalendarEvent.tearDown();
+			}
+
+			Calendar.tearDown();
+
+			CalendarConfiguration.tearDown();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@description = "This is a use case for LPS-57992."
+	@priority = "4"
+	test ExportUserCalendarAsICS {
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "Test Test",
+			eventTitle = "Event For Export",
+			eventType = "Regular",
+			pageName = "Calendar Page");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoMyCalendarsManage();
+
+		Calendar.exportCalendarFile(calendarName = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.view(eventTitle = "Event For Export");
+	}
+
+	@priority = "5"
+	test ImportCalendarAndViewEventComment {
+		property portal.upstream = "quarantine";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Calendar.enableComments(
+			calendarName = "${siteName}",
+			calendarType = "Current Site Calendars",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Regular Comment",
+			eventCommentEnabled = "true",
+			eventTitle = "Calendar Event Regular Title",
+			eventType = "Regular",
+			pageName = "Calendar Page",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.viewComment(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Regular Comment",
+			eventTitle = "Calendar Event Regular Title",
+			eventType = "Regular",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		LAR.exportPortlet(
+			larFileName = "calendar_calendar_with_comments.portlet.lar",
+			portletName = "Calendar");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.delete();
+
+		Calendar.tearDown();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		LAR.importPortlet(
+			larFileName = "calendar_calendar_with_comments.portlet.lar",
+			portletName = "Calendar");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.view(eventTitle = "Calendar Event Regular Title");
+
+		CalendarEvent.viewComment(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Regular Comment",
+			eventTitle = "Calendar Event Regular Title",
+			eventType = "Regular",
+			user = "Test Test");
+	}
+
+	@description = "This is a use case for LPS-53072."
+	@priority = "4"
+	test ImportMicrosoftOutlookCalendarICS {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		CalendarNavigator.gotoCurrentSiteCalendarsManage();
+
+		Calendar.importCalendarFile(
+			calendarFile = "calendar_microsoft_outlook_calendar.ics",
+			calendarName = "${siteName}");
+	}
+
+}

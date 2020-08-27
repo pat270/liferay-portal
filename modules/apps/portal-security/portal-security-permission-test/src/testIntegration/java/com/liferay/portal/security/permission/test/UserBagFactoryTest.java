@@ -19,11 +19,12 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.security.permission.UserBagFactory;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -112,6 +113,19 @@ public class UserBagFactoryTest {
 		Assert.assertEquals(userOrgGroups.toString(), 2, userOrgGroups.size());
 		Assert.assertEquals(
 			userUserGroupGroups.toString(), 1, userUserGroupGroups.size());
+	}
+
+	@Test
+	public void testGetInheritedRoles() throws Exception {
+		Role inheritedRole = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
+
+		_groupLocalService.addRoleGroup(inheritedRole.getRoleId(), _childGroup);
+
+		_userLocalService.addGroupUser(_childGroup.getGroupId(), _user);
+
+		UserBag userBag = getUserBag();
+
+		Assert.assertTrue(userBag.hasRole(inheritedRole));
 	}
 
 	@Test
@@ -241,6 +255,9 @@ public class UserBagFactoryTest {
 
 	@DeleteAfterTestRun
 	private Organization _childOrganization;
+
+	@Inject
+	private GroupLocalService _groupLocalService;
 
 	@DeleteAfterTestRun
 	private Group _parentGroup;

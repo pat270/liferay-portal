@@ -14,6 +14,7 @@
 
 package com.liferay.petra.io;
 
+import com.liferay.petra.io.constants.SerializationConstants;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.petra.lang.ClassLoaderPool;
@@ -342,11 +343,11 @@ public class SerializerTest {
 
 			Assert.fail();
 		}
-		catch (InvocationTargetException ite) {
-			Throwable cause = ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			Throwable throwable = invocationTargetException.getCause();
 
 			Assert.assertTrue(
-				cause.toString(), cause instanceof OutOfMemoryError);
+				throwable.toString(), throwable instanceof OutOfMemoryError);
 		}
 
 		// Normal doubling size
@@ -379,7 +380,7 @@ public class SerializerTest {
 		newBytes = (byte[])_getBufferMethod.invoke(serializer, _COUNT + 1);
 
 		Assert.assertEquals(
-			Arrays.toString(newBytes), bytes.length * 2 + 1, newBytes.length);
+			Arrays.toString(newBytes), (bytes.length * 2) + 1, newBytes.length);
 
 		for (int i = 0; i < bytes.length; i++) {
 			Assert.assertEquals(bytes[i], newBytes[i]);
@@ -423,7 +424,7 @@ public class SerializerTest {
 
 		Assert.assertEquals(0, bufferQueue.getCount());
 		Assert.assertEquals(
-			chars.length * 2 + 5, unsyncByteArrayOutputStream.size());
+			(chars.length * 2) + 5, unsyncByteArrayOutputStream.size());
 	}
 
 	@Test
@@ -828,14 +829,14 @@ public class SerializerTest {
 
 			Assert.fail();
 		}
-		catch (RuntimeException re) {
-			String message = re.getMessage();
+		catch (RuntimeException runtimeException) {
+			String message = runtimeException.getMessage();
 
 			Assert.assertTrue(
 				message.startsWith(
 					"Unable to write ordinary serializable object "));
 
-			Throwable throwable = re.getCause();
+			Throwable throwable = runtimeException.getCause();
 
 			Assert.assertTrue(throwable instanceof IOException);
 			Assert.assertEquals("Forced IOException", throwable.getMessage());
@@ -874,22 +875,22 @@ public class SerializerTest {
 			Assert.assertEquals(asciiString.charAt(i), (char)byteBuffer.get());
 		}
 
-		String nonAsciiString = "非ASCII Code中文测试";
+		String nonasciiString = "非ASCII Code中文测试";
 
 		serializer = new Serializer();
 
-		serializer.writeObject(nonAsciiString);
+		serializer.writeObject(nonasciiString);
 
 		byteBuffer = serializer.toByteBuffer();
 
 		Assert.assertEquals(
-			6 + nonAsciiString.length() * 2, byteBuffer.limit());
+			6 + (nonasciiString.length() * 2), byteBuffer.limit());
 		Assert.assertEquals(SerializationConstants.TC_STRING, byteBuffer.get());
 		Assert.assertEquals(0, byteBuffer.get());
-		Assert.assertEquals(nonAsciiString.length(), byteBuffer.getInt());
+		Assert.assertEquals(nonasciiString.length(), byteBuffer.getInt());
 
-		for (int i = 0; i < nonAsciiString.length(); i++) {
-			Assert.assertEquals(nonAsciiString.charAt(i), byteBuffer.getChar());
+		for (int i = 0; i < nonasciiString.length(); i++) {
+			Assert.assertEquals(nonasciiString.charAt(i), byteBuffer.getChar());
 		}
 	}
 
@@ -958,29 +959,29 @@ public class SerializerTest {
 			Assert.assertEquals(byteBuffer.get(), data[i]);
 		}
 
-		String nonAsciiString = "非ASCII Code中文测试";
+		String nonasciiString = "非ASCII Code中文测试";
 
 		serializer = new Serializer();
 
-		serializer.writeString(nonAsciiString);
+		serializer.writeString(nonasciiString);
 
 		Assert.assertEquals(
-			_indexField.getInt(serializer), 5 + nonAsciiString.length() * 2);
+			_indexField.getInt(serializer), 5 + (nonasciiString.length() * 2));
 		Assert.assertFalse(
 			BigEndianCodec.getBoolean((byte[])_bufferField.get(serializer), 0));
 
 		length = BigEndianCodec.getInt((byte[])_bufferField.get(serializer), 1);
 
-		Assert.assertEquals(nonAsciiString.length(), length);
+		Assert.assertEquals(nonasciiString.length(), length);
 
-		byteBuffer = ByteBuffer.allocate(nonAsciiString.length() * 2);
+		byteBuffer = ByteBuffer.allocate(nonasciiString.length() * 2);
 
 		byteBuffer.order(ByteOrder.BIG_ENDIAN);
 
 		CharBuffer charBuffer = byteBuffer.asCharBuffer();
 
-		for (int i = 0; i < nonAsciiString.length(); i++) {
-			charBuffer.put(nonAsciiString.charAt(i));
+		for (int i = 0; i < nonasciiString.length(); i++) {
+			charBuffer.put(nonasciiString.charAt(i));
 		}
 
 		unsyncByteArrayOutputStream = new UnsyncByteArrayOutputStream();
@@ -1046,8 +1047,8 @@ public class SerializerTest {
 				_bufferField = ReflectionTestUtil.getField(clazz, "_buffer");
 				_nextField = ReflectionTestUtil.getField(clazz, "_next");
 			}
-			catch (ClassNotFoundException cnfe) {
-				throw new ExceptionInInitializerError(cnfe);
+			catch (ClassNotFoundException classNotFoundException) {
+				throw new ExceptionInInitializerError(classNotFoundException);
 			}
 		}
 
@@ -1087,8 +1088,9 @@ public class SerializerTest {
 				_writeBytesMethod = ReflectionTestUtil.getMethod(
 					clazz, "write", byte[].class);
 			}
-			catch (ReflectiveOperationException roe) {
-				throw new ExceptionInInitializerError(roe);
+			catch (ReflectiveOperationException reflectiveOperationException) {
+				throw new ExceptionInInitializerError(
+					reflectiveOperationException);
 			}
 		}
 
@@ -1144,8 +1146,9 @@ public class SerializerTest {
 				_enqueueMethod = ReflectionTestUtil.getMethod(
 					clazz, "enqueue", byte[].class);
 			}
-			catch (ReflectiveOperationException roe) {
-				throw new ExceptionInInitializerError(roe);
+			catch (ReflectiveOperationException reflectiveOperationException) {
+				throw new ExceptionInInitializerError(
+					reflectiveOperationException);
 			}
 		}
 

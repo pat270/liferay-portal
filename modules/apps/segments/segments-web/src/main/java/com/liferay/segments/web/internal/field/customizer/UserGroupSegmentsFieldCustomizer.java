@@ -106,9 +106,9 @@ public class UserGroupSegmentsFieldCustomizer
 					UserGroup.class.getName()),
 				portletURL.toString(), false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get select entity", e);
+				_log.warn("Unable to get select entity", exception);
 			}
 
 			return null;
@@ -129,7 +129,7 @@ public class UserGroupSegmentsFieldCustomizer
 		UserGroupSegmentsFieldCustomizer.class);
 
 	private static final List<String> _fieldNames = ListUtil.fromArray(
-		new String[] {"userGroupIds"});
+		"userGroupIds");
 
 	@Reference
 	private Portal _portal;

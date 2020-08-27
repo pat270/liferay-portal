@@ -42,7 +42,7 @@
 			</div>
 
 			<%
-			StringBundler sb = new StringBundler((mapProviders.size() - 1) * 6 - 1);
+			StringBundler sb = new StringBundler(((mapProviders.size() - 1) * 6) - 1);
 
 			for (MapProvider curMapProvider : mapProviders) {
 				if (Objects.equals(mapProvider.getKey(), curMapProvider.getKey())) {
@@ -63,7 +63,11 @@
 			%>
 
 			<aui:script>
-				Liferay.Util.toggleRadio('<%= namespace %><%= mapProvider.getKey() %>Enabled', '<%= namespace %><%= mapProvider.getKey() %>Options', [<%= sb.toString() %>]);
+				Liferay.Util.toggleRadio(
+					'<%= namespace %><%= mapProvider.getKey() %>Enabled',
+					'<%= namespace %><%= mapProvider.getKey() %>Options',
+					[<%= sb.toString() %>]
+				);
 			</aui:script>
 
 		<%

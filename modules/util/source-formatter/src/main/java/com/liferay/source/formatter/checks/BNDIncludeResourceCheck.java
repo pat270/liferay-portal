@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 public class BNDIncludeResourceCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isModulesCheck() {
+	public boolean isModuleSourceCheck() {
 		return true;
 	}
 
@@ -60,8 +60,7 @@ public class BNDIncludeResourceCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Do not use 'test-classes/integration' in bnd.bnd in test " +
-					"modules",
-				"bnd_include_resources.markdown");
+					"modules");
 		}
 	}
 
@@ -111,8 +110,7 @@ public class BNDIncludeResourceCheck extends BaseFileCheck {
 			String beforeIncludeResourceDir = matcher2.group(1);
 
 			if (!beforeIncludeResourceDir.equals("\t")) {
-				return StringUtil.replace(
-					content, includeResources, StringPool.BLANK);
+				return StringUtil.removeSubstring(content, includeResources);
 			}
 
 			String afterIncludeResourceDir = matcher2.group(2);

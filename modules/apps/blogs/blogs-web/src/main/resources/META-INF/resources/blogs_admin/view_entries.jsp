@@ -17,19 +17,23 @@
 <%@ include file="/blogs_admin/init.jsp" %>
 
 <%
+long assetCategoryId = ParamUtil.getLong(request, "categoryId");
+String assetTagName = ParamUtil.getString(request, "tag");
+
 BlogEntriesDisplayContext blogEntriesDisplayContext = (BlogEntriesDisplayContext)request.getAttribute(BlogsWebKeys.BLOG_ENTRIES_DISPLAY_CONTEXT);
 
 String displayStyle = blogEntriesDisplayContext.getDisplayStyle();
-SearchContainer entriesSearchContainer = blogEntriesDisplayContext.getSearchContainer();
+SearchContainer<BlogsEntry> entriesSearchContainer = blogEntriesDisplayContext.getSearchContainer();
 
 PortletURL portletURL = entriesSearchContainer.getIteratorURL();
 
-BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayContext = new BlogEntriesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, entriesSearchContainer, trashHelper, displayStyle);
+BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayContext = new BlogEntriesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, entriesSearchContainer, trashHelper, displayStyle);
 %>
 
 <clay:management-toolbar
 	displayContext="<%= blogEntriesManagementToolbarDisplayContext %>"
 	searchContainerId="blogEntries"
+	supportsBulkActions="<%= true %>"
 />
 
 <portlet:actionURL name="/blogs/edit_entry" var="restoreTrashEntriesURL">
@@ -40,16 +44,21 @@ BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayCo
 	portletURL="<%= restoreTrashEntriesURL %>"
 />
 
-<div class="container-fluid container-fluid-max-xl main-content-body">
+<clay:container-fluid
+	cssClass="main-content-body"
+>
 	<aui:form action="<%= portletURL.toString() %>" method="get" name="fm">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
 		<aui:input name="deleteEntryIds" type="hidden" />
+		<aui:input name="selectAll" type="hidden" value="<%= false %>" />
 
-		<liferay-asset:categorization-filter
-			assetType="entries"
-			portletURL="<%= portletURL %>"
-		/>
+		<c:if test="<%= (assetCategoryId != 0) || Validator.isNotNull(assetTagName) %>">
+			<liferay-asset:categorization-filter
+				assetType="entries"
+				portletURL="<%= portletURL %>"
+			/>
+		</c:if>
 
 		<liferay-ui:search-container
 			id="blogEntries"
@@ -68,9 +77,9 @@ BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayCo
 				</liferay-portlet:renderURL>
 
 				<%
-				Map<String, Object> rowData = new HashMap<>();
-
-				rowData.put("actions", String.join(StringPool.COMMA, blogEntriesDisplayContext.getAvailableActionDropdownItems(entry)));
+				Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+					"actions", StringUtil.merge(blogEntriesDisplayContext.getAvailableActions(entry))
+				).build();
 
 				row.setData(rowData);
 				%>
@@ -84,7 +93,7 @@ BlogEntriesManagementToolbarDisplayContext blogEntriesManagementToolbarDisplayCo
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <liferay-frontend:component
 	componentId="<%= blogEntriesManagementToolbarDisplayContext.getDefaultEventHandler() %>"

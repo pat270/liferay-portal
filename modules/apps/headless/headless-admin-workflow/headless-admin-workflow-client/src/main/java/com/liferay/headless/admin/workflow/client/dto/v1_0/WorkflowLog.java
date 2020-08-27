@@ -27,7 +27,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class WorkflowLog {
+public class WorkflowLog implements Cloneable {
+
+	public static WorkflowLog toDTO(String json) {
+		return WorkflowLogSerDes.toDTO(json);
+	}
 
 	public Creator getAuditPerson() {
 		return auditPerson;
@@ -153,6 +157,27 @@ public class WorkflowLog {
 
 	protected Creator previousPerson;
 
+	public Role getPreviousRole() {
+		return previousRole;
+	}
+
+	public void setPreviousRole(Role previousRole) {
+		this.previousRole = previousRole;
+	}
+
+	public void setPreviousRole(
+		UnsafeSupplier<Role, Exception> previousRoleUnsafeSupplier) {
+
+		try {
+			previousRole = previousRoleUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Role previousRole;
+
 	public String getPreviousState() {
 		return previousState;
 	}
@@ -173,6 +198,25 @@ public class WorkflowLog {
 	}
 
 	protected String previousState;
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public void setRole(UnsafeSupplier<Role, Exception> roleUnsafeSupplier) {
+		try {
+			role = roleUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Role role;
 
 	public String getState() {
 		return state;
@@ -195,36 +239,23 @@ public class WorkflowLog {
 
 	protected String state;
 
-	public Long getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(Long taskId) {
-		this.taskId = taskId;
-	}
-
-	public void setTaskId(
-		UnsafeSupplier<Long, Exception> taskIdUnsafeSupplier) {
-
-		try {
-			taskId = taskIdUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected Long taskId;
-
-	public String getType() {
+	public Type getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public String getTypeAsString() {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
 		this.type = type;
 	}
 
-	public void setType(UnsafeSupplier<String, Exception> typeUnsafeSupplier) {
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
 		try {
 			type = typeUnsafeSupplier.get();
 		}
@@ -233,7 +264,33 @@ public class WorkflowLog {
 		}
 	}
 
-	protected String type;
+	protected Type type;
+
+	public Long getWorkflowTaskId() {
+		return workflowTaskId;
+	}
+
+	public void setWorkflowTaskId(Long workflowTaskId) {
+		this.workflowTaskId = workflowTaskId;
+	}
+
+	public void setWorkflowTaskId(
+		UnsafeSupplier<Long, Exception> workflowTaskIdUnsafeSupplier) {
+
+		try {
+			workflowTaskId = workflowTaskIdUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Long workflowTaskId;
+
+	@Override
+	public WorkflowLog clone() throws CloneNotSupportedException {
+		return (WorkflowLog)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {
@@ -259,6 +316,38 @@ public class WorkflowLog {
 
 	public String toString() {
 		return WorkflowLogSerDes.toJSON(this);
+	}
+
+	public static enum Type {
+
+		TASK_ASSIGN("TaskAssign"), TASK_COMPLETION("TaskCompletion"),
+		TASK_UPDATE("TaskUpdate"), TRANSITION("Transition");
+
+		public static Type create(String value) {
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value)) {
+					return type;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }

@@ -129,7 +129,7 @@ public class ConfigurationEntryRetrieverImpl
 		}
 
 		Set<ConfigurationCategorySectionDisplay> configurationCategorySections =
-			new TreeSet(new ConfigurationCategorySectionDisplayComparator());
+			new TreeSet<>(new ConfigurationCategorySectionDisplayComparator());
 
 		configurationCategorySections.addAll(
 			configurationCategorySectionDisplaysMap.values());
@@ -142,25 +142,10 @@ public class ConfigurationEntryRetrieverImpl
 		String configurationCategory, String languageId,
 		ExtendedObjectClassDefinition.Scope scope, Serializable scopePK) {
 
-		Set<ConfigurationEntry> configurationEntries = new TreeSet(
+		Set<ConfigurationEntry> configurationEntries = new TreeSet<>(
 			getConfigurationEntryComparator());
 
 		Locale locale = LocaleUtil.fromLanguageId(languageId);
-
-		Set<ConfigurationModel> configurationModels =
-			_configurationModelRetriever.getConfigurationModels(
-				configurationCategory, languageId, scope, scopePK);
-
-		for (ConfigurationModel configurationModel : configurationModels) {
-			if (configurationModel.isGenerateUI()) {
-				ConfigurationEntry configurationEntry =
-					new ConfigurationModelConfigurationEntry(
-						configurationModel, locale,
-						_resourceBundleLoaderProvider);
-
-				configurationEntries.add(configurationEntry);
-			}
-		}
 
 		Set<ConfigurationScreen> configurationScreens = getConfigurationScreens(
 			configurationCategory);
@@ -177,6 +162,21 @@ public class ConfigurationEntryRetrieverImpl
 					configurationScreen, locale);
 
 			configurationEntries.add(configurationEntry);
+		}
+
+		Set<ConfigurationModel> configurationModels =
+			_configurationModelRetriever.getConfigurationModels(
+				configurationCategory, languageId, scope, scopePK);
+
+		for (ConfigurationModel configurationModel : configurationModels) {
+			if (configurationModel.isGenerateUI()) {
+				ConfigurationEntry configurationEntry =
+					new ConfigurationModelConfigurationEntry(
+						configurationModel, locale,
+						_resourceBundleLoaderProvider);
+
+				configurationEntries.add(configurationEntry);
+			}
 		}
 
 		return configurationEntries;
@@ -322,7 +322,7 @@ public class ConfigurationEntryRetrieverImpl
 	private ServiceTrackerMap<String, ConfigurationCategory>
 		_configurationCategoryServiceTrackerMap;
 
-	@Reference
+	@Reference(target = "(filter.visibility=true)")
 	private ConfigurationModelRetriever _configurationModelRetriever;
 
 	private ServiceTrackerMap<String, ConfigurationScreen>
@@ -378,9 +378,7 @@ public class ConfigurationEntryRetrieverImpl
 
 		private final List<String> _orderedConfigurationCategorySections =
 			ListUtil.fromArray(
-				new String[] {
-					"content", "social", "commerce", "platform", "security"
-				});
+				"content", "social", "commerce", "platform", "security");
 
 	}
 

@@ -201,8 +201,8 @@ public class BaseIntrabandTest {
 
 				Assert.fail();
 			}
-			catch (ExecutionException ee) {
-				Throwable throwable = ee.getCause();
+			catch (ExecutionException executionException) {
+				Throwable throwable = executionException.getCause();
 
 				Assert.assertSame(
 					NullPointerException.class, throwable.getClass());
@@ -228,7 +228,7 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (ClosedIntrabandException cie) {
+		catch (ClosedIntrabandException closedIntrabandException) {
 		}
 
 		// Register after close
@@ -239,7 +239,7 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (ClosedIntrabandException cie) {
+		catch (ClosedIntrabandException closedIntrabandException) {
 		}
 
 		// Unregister after close
@@ -249,7 +249,7 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (ClosedIntrabandException cie) {
+		catch (ClosedIntrabandException closedIntrabandException) {
 		}
 	}
 
@@ -1221,9 +1221,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Registration reference is null", npe.getMessage());
+				"Registration reference is null",
+				nullPointerException.getMessage());
 		}
 
 		// Registration reference is invalid
@@ -1239,9 +1240,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				"Registration reference is invalid", iae.getMessage());
+				"Registration reference is invalid",
+				illegalArgumentException.getMessage());
 		}
 
 		// Datagram is null
@@ -1253,8 +1255,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Datagram is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Datagram is null", nullPointerException.getMessage());
 		}
 
 		// Completion type set is null
@@ -1266,9 +1269,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Completion type set is null", npe.getMessage());
+				"Completion type set is null",
+				nullPointerException.getMessage());
 		}
 
 		// Completion type set is empty
@@ -1281,9 +1285,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				"Completion type set is empty", iae.getMessage());
+				"Completion type set is empty",
+				illegalArgumentException.getMessage());
 		}
 
 		// Complete handler is null
@@ -1296,8 +1301,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Complete handler is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Complete handler is null", nullPointerException.getMessage());
 		}
 
 		// Time unit is null
@@ -1311,8 +1317,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Time unit is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Time unit is null", nullPointerException.getMessage());
 		}
 
 		// Nonpositive timeout
@@ -1389,9 +1396,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Registration reference is null", npe.getMessage());
+				"Registration reference is null",
+				nullPointerException.getMessage());
 		}
 
 		// Registration reference is invalid
@@ -1406,9 +1414,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				"Registration reference is invalid", iae.getMessage());
+				"Registration reference is invalid",
+				illegalArgumentException.getMessage());
 		}
 
 		// Datagram is null
@@ -1419,8 +1428,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Datagram is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Datagram is null", nullPointerException.getMessage());
 		}
 
 		// Normal send
@@ -1448,9 +1458,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Registration reference is null", npe.getMessage());
+				"Registration reference is null",
+				nullPointerException.getMessage());
 		}
 
 		// Registration reference is invalid
@@ -1465,9 +1476,10 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				"Registration reference is invalid", iae.getMessage());
+				"Registration reference is invalid",
+				illegalArgumentException.getMessage());
 		}
 
 		// Datagram is null
@@ -1478,8 +1490,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Datagram is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Datagram is null", nullPointerException.getMessage());
 		}
 
 		// Time unit is null
@@ -1491,8 +1504,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Time unit is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Time unit is null", nullPointerException.getMessage());
 		}
 
 		// Nonpositive timeout
@@ -1505,8 +1519,9 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (TimeoutException te) {
-			Assert.assertEquals("Result waiting timeout", te.getMessage());
+		catch (TimeoutException timeoutException) {
+			Assert.assertEquals(
+				"Result waiting timeout", timeoutException.getMessage());
 		}
 
 		Datagram datagram = _mockIntraband.getDatagram();
@@ -1524,17 +1539,18 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (TimeoutException te) {
-			Assert.assertEquals("Result waiting timeout", te.getMessage());
+		catch (TimeoutException timeoutException) {
+			Assert.assertEquals(
+				"Result waiting timeout", timeoutException.getMessage());
 		}
 
 		Assert.assertEquals(2000, requestDatagram.timeout);
 
 		// Datagram writing IOException
 
-		IOException ioException = new IOException();
+		IOException ioException1 = new IOException();
 
-		_mockIntraband.setIOException(ioException);
+		_mockIntraband.setIOException(ioException1);
 
 		try {
 			_mockIntraband.sendSyncDatagram(
@@ -1543,8 +1559,8 @@ public class BaseIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
-			Assert.assertSame(ioException, ioe);
+		catch (IOException ioException2) {
+			Assert.assertSame(ioException1, ioException2);
 		}
 		finally {
 			_mockIntraband.setIOException(null);

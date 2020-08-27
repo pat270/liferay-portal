@@ -16,7 +16,7 @@ package com.liferay.portal.search.elasticsearch6.internal.cluster;
 
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
+import com.liferay.portal.search.index.IndexNameBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.mockito.Mock;
@@ -34,7 +33,6 @@ import org.mockito.MockitoAnnotations;
 /**
  * @author Artur Aquino
  */
-@Ignore
 public class ElasticsearchClusterTest {
 
 	@Before

@@ -1,4 +1,5 @@
 definition {
+
 	macro addOrganization {
 		LexiconEntry.gotoAdd();
 
@@ -18,7 +19,7 @@ definition {
 			locator1 = "Button#SAVE_LOCALIZED",
 			value1 = "${saveButton}");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
 	macro configureDisplaySettingsLanguage {
@@ -34,7 +35,7 @@ definition {
 			locator1 = "Button#SAVE",
 			value1 = "Save");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
 	macro configureDisplaySettingsLanguageLocalized {
@@ -53,7 +54,7 @@ definition {
 			locator1 = "Button#SAVE_LOCALIZED",
 			value1 = "${saveButton}");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
 	macro editPasswordInvalidCP {
@@ -111,4 +112,5 @@ definition {
 
 		UserNavigator.gotoPassword();
 	}
+
 }

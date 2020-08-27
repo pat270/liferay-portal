@@ -15,8 +15,6 @@
 package com.liferay.layout.admin.web.internal.product.navigation.control.menu;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
@@ -28,11 +26,8 @@ import com.liferay.product.navigation.control.menu.BaseJSPProductNavigationContr
 import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuEntry;
 import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuCategoryKeys;
 
-import java.io.IOException;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -55,9 +50,6 @@ public class CustomizationSettingsProductNavigationControlMenuEntry
 	extends BaseJSPProductNavigationControlMenuEntry
 	implements ProductNavigationControlMenuEntry {
 
-	public static final String CUSTOMIZATION_SETTINGS_LAYOUT_UPDATE_PERMISSION =
-		"CUSTOMIZATION_SETTINGS_LAYOUT_UPDATE_PERMISSION";
-
 	@Override
 	public String getIconJspPath() {
 		return "/control/menu/customization_settings.jsp";
@@ -74,28 +66,6 @@ public class CustomizationSettingsProductNavigationControlMenuEntry
 		}
 
 		return false;
-	}
-
-	@Override
-	public boolean includeIcon(
-			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse)
-		throws IOException {
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		try {
-			httpServletRequest.setAttribute(
-				CUSTOMIZATION_SETTINGS_LAYOUT_UPDATE_PERMISSION,
-				hasUpdateLayoutPermission(themeDisplay));
-		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
-		}
-
-		return super.includeIcon(httpServletRequest, httpServletResponse);
 	}
 
 	@Override
@@ -177,6 +147,10 @@ public class CustomizationSettingsProductNavigationControlMenuEntry
 			return false;
 		}
 
+		if (layout.isTypeContent()) {
+			return false;
+		}
+
 		if (!isCustomizableLayout(themeDisplay)) {
 			return false;
 		}
@@ -186,8 +160,5 @@ public class CustomizationSettingsProductNavigationControlMenuEntry
 
 	private static final String _SHOW =
 		CustomizationSettingsProductNavigationControlMenuEntry.class + "#_SHOW";
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		CustomizationSettingsProductNavigationControlMenuEntry.class);
 
 }

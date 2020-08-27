@@ -76,18 +76,18 @@ public class EditRuleMVCActionCommand extends BaseMVCActionCommand {
 				deleteRule(actionRequest);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchActionException ||
-				e instanceof NoSuchRuleGroupException ||
-				e instanceof PrincipalException ||
-				e instanceof UnknownRuleHandlerException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchActionException ||
+				exception instanceof NoSuchRuleGroupException ||
+				exception instanceof PrincipalException ||
+				exception instanceof UnknownRuleHandlerException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}
@@ -113,7 +113,7 @@ public class EditRuleMVCActionCommand extends BaseMVCActionCommand {
 			throw new UnknownRuleHandlerException(type);
 		}
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			ActionUtil.getTypeSettingsProperties(
 				actionRequest, ruleHandler.getPropertyNames());
 
@@ -125,12 +125,12 @@ public class EditRuleMVCActionCommand extends BaseMVCActionCommand {
 
 			_mdrRuleService.addRule(
 				ruleGroupId, nameMap, descriptionMap, type,
-				typeSettingsProperties, serviceContext);
+				typeSettingsUnicodeProperties, serviceContext);
 		}
 		else {
 			_mdrRuleService.updateRule(
-				ruleId, nameMap, descriptionMap, type, typeSettingsProperties,
-				serviceContext);
+				ruleId, nameMap, descriptionMap, type,
+				typeSettingsUnicodeProperties, serviceContext);
 		}
 	}
 

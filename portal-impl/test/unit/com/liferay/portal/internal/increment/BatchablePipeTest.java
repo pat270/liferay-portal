@@ -138,8 +138,10 @@ public class BatchablePipeTest {
 		final BlockingQueue<IncreasableEntry<String, Integer>>
 			resultBlockingQueue = new LinkedBlockingQueue<>();
 
-		ExecutorService putThreadPool = Executors.newFixedThreadPool(5);
-		ExecutorService takeThreadPool = Executors.newFixedThreadPool(5);
+		ExecutorService putThreadPoolExecutorService =
+			Executors.newFixedThreadPool(5);
+		ExecutorService takeThreadPoolExecutorService =
+			Executors.newFixedThreadPool(5);
 
 		Runnable putRunnable = new Runnable() {
 
@@ -181,7 +183,7 @@ public class BatchablePipeTest {
 							resultBlockingQueue.put(increasableEntry);
 						}
 					}
-					catch (InterruptedException ie) {
+					catch (InterruptedException interruptedException) {
 					}
 				}
 			}
@@ -191,14 +193,14 @@ public class BatchablePipeTest {
 		// Submit jobs
 
 		for (int i = 0; i < 10; i++) {
-			putThreadPool.submit(putRunnable);
-			takeThreadPool.submit(takeRunnable);
+			putThreadPoolExecutorService.submit(putRunnable);
+			takeThreadPoolExecutorService.submit(takeRunnable);
 		}
 
 		// Wait until put finish
 
-		putThreadPool.shutdown();
-		putThreadPool.awaitTermination(240, TimeUnit.SECONDS);
+		putThreadPoolExecutorService.shutdown();
+		putThreadPoolExecutorService.awaitTermination(240, TimeUnit.SECONDS);
 
 		// Poison take thread pool
 
@@ -207,8 +209,8 @@ public class BatchablePipeTest {
 
 		Assert.assertTrue(batchablePipe.put(poisonIncreasableEntry));
 
-		takeThreadPool.shutdown();
-		takeThreadPool.awaitTermination(240, TimeUnit.SECONDS);
+		takeThreadPoolExecutorService.shutdown();
+		takeThreadPoolExecutorService.awaitTermination(240, TimeUnit.SECONDS);
 
 		// Do statistics
 
@@ -245,8 +247,6 @@ public class BatchablePipeTest {
 
 		final IncreasableEntry<String, Integer> increasableEntry1 =
 			new IntegerIncreasableEntry("test", 1);
-		final IncreasableEntry<String, Integer> increasableEntry2 =
-			new IntegerIncreasableEntry("test", 2);
 		IncreasableEntry<String, Integer> increasableEntry3 =
 			new IntegerIncreasableEntry("test", 3);
 
@@ -265,6 +265,9 @@ public class BatchablePipeTest {
 						newValue) {
 
 					if (oldValue.increasableEntry == increasableEntry1) {
+						IncreasableEntry<String, Integer> increasableEntry2 =
+							new IntegerIncreasableEntry("test", 2);
+
 						put(
 							key,
 							new BatchablePipe.IncreasableEntryWrapper

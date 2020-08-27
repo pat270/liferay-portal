@@ -1,10 +1,13 @@
 @default = "clickAtType"
 @summary = "Type to '${locator1}' the value '${value1}'"
 definition {
+
 	function clickAtType {
 		WaitForSPARefresh();
 
 		selenium.waitForVisible();
+
+		selenium.waitForEditable();
 
 		selenium.mouseOver();
 
@@ -30,6 +33,8 @@ definition {
 
 		selenium.waitForVisible();
 
+		selenium.waitForEditable();
+
 		selenium.mouseOver();
 
 		selenium.sendKeys();
@@ -43,6 +48,8 @@ definition {
 		WaitForSPARefresh();
 
 		selenium.waitForElementPresent();
+
+		selenium.waitForEditable();
 
 		selenium.mouseOver();
 
@@ -60,6 +67,8 @@ definition {
 			"//script[contains(@src,'/autocomplete-filters/autocomplete-filters')]"
 		);
 
+		selenium.waitForEditable();
+
 		Type.sendKeys();
 
 		selenium.assertJavaScriptErrors();
@@ -71,6 +80,8 @@ definition {
 		WaitForSPARefresh();
 
 		selenium.waitForVisible();
+
+		selenium.waitForEditable();
 
 		selenium.mouseOver();
 
@@ -86,6 +97,8 @@ definition {
 
 		selenium.waitForElementPresent();
 
+		selenium.waitForEditable();
+
 		selenium.mouseOver();
 
 		selenium.typeAceEditor();
@@ -100,6 +113,8 @@ definition {
 
 		selenium.waitForElementPresent();
 
+		selenium.waitForEditable();
+
 		selenium.mouseOver();
 
 		selenium.typeAceEditor();
@@ -109,6 +124,8 @@ definition {
 		WaitForSPARefresh();
 
 		selenium.waitForElementPresent();
+
+		selenium.waitForEditable();
 
 		selenium.typeAceEditor();
 
@@ -121,6 +138,8 @@ definition {
 		WaitForSPARefresh();
 
 		selenium.waitForVisible();
+
+		selenium.waitForEditable();
 
 		selenium.mouseOver();
 
@@ -140,6 +159,8 @@ definition {
 
 		selenium.pause("1000");
 
+		selenium.waitForEditable();
+
 		Type.typeCKEditor();
 
 		selenium.pause("1000");
@@ -154,6 +175,8 @@ definition {
 
 		selenium.waitForVisible();
 
+		selenium.waitForEditable();
+
 		selenium.mouseOver();
 
 		selenium.type();
@@ -165,10 +188,22 @@ definition {
 		selenium.assertLiferayErrors();
 	}
 
+	function typeCodeMirrorEditorNoError {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent();
+
+		selenium.mouseOver();
+
+		selenium.typeCodeMirrorEditor();
+	}
+
 	function typeEditor {
 		WaitForSPARefresh();
 
 		selenium.waitForElementPresent();
+
+		selenium.waitForEditable();
 
 		selenium.mouseOver();
 
@@ -179,8 +214,24 @@ definition {
 		selenium.assertLiferayErrors();
 	}
 
+	function typeNoMouseOver {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent();
+
+		selenium.waitForEditable();
+
+		selenium.type();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
 	function typeNotVisibleNoMouseOver {
 		WaitForSPARefresh();
+
+		selenium.waitForEditable();
 
 		selenium.type();
 
@@ -194,11 +245,13 @@ definition {
 
 		selenium.waitForVisible();
 
+		selenium.waitForEditable();
+
 		selenium.mouseOver();
 
 		selenium.type();
 
-		selenium.pause("1000");
+		selenium.pause("5000");
 
 		selenium.assertJavaScriptErrors();
 
@@ -212,10 +265,13 @@ definition {
 			"//script[contains(@src,'ckeditor/config.js') or contains(@id,'ckEditorScript')]"
 		);
 
+		selenium.waitForEditable();
+
 		Type.type();
 
 		selenium.assertJavaScriptErrors();
 
 		selenium.assertLiferayErrors();
 	}
+
 }

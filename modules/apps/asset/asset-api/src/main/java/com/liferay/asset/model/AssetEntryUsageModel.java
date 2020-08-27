@@ -16,6 +16,10 @@ package com.liferay.asset.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
+import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.StagedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -30,10 +34,15 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see AssetEntryUsage
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ com.liferay.layout.model.impl.LayoutClassedModelUsageImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
-public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
+public interface AssetEntryUsageModel
+	extends BaseModel<AssetEntryUsage>, CTModel<AssetEntryUsage>, MVCCModel,
+			ShardedModel, StagedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -46,6 +55,7 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 *
 	 * @return the primary key of this asset entry usage
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -53,7 +63,40 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 *
 	 * @param primaryKey the primary key of this asset entry usage
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset entry usage.
+	 *
+	 * @return the mvcc version of this asset entry usage
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset entry usage.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry usage
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset entry usage.
+	 *
+	 * @return the ct collection ID of this asset entry usage
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset entry usage.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset entry usage
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this asset entry usage.
@@ -61,6 +104,7 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 * @return the uuid of this asset entry usage
 	 */
 	@AutoEscape
+	@Override
 	public String getUuid();
 
 	/**
@@ -68,6 +112,7 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 *
 	 * @param uuid the uuid of this asset entry usage
 	 */
+	@Override
 	public void setUuid(String uuid);
 
 	/**
@@ -99,10 +144,27 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	public void setGroupId(long groupId);
 
 	/**
+	 * Returns the company ID of this asset entry usage.
+	 *
+	 * @return the company ID of this asset entry usage
+	 */
+	@Override
+	public long getCompanyId();
+
+	/**
+	 * Sets the company ID of this asset entry usage.
+	 *
+	 * @param companyId the company ID of this asset entry usage
+	 */
+	@Override
+	public void setCompanyId(long companyId);
+
+	/**
 	 * Returns the create date of this asset entry usage.
 	 *
 	 * @return the create date of this asset entry usage
 	 */
+	@Override
 	public Date getCreateDate();
 
 	/**
@@ -110,6 +172,7 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 *
 	 * @param createDate the create date of this asset entry usage
 	 */
+	@Override
 	public void setCreateDate(Date createDate);
 
 	/**
@@ -117,6 +180,7 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 *
 	 * @return the modified date of this asset entry usage
 	 */
+	@Override
 	public Date getModifiedDate();
 
 	/**
@@ -124,6 +188,7 @@ public interface AssetEntryUsageModel extends BaseModel<AssetEntryUsage> {
 	 *
 	 * @param modifiedDate the modified date of this asset entry usage
 	 */
+	@Override
 	public void setModifiedDate(Date modifiedDate);
 
 	/**

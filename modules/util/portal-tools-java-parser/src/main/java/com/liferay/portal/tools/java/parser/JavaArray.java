@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class JavaArray extends JavaExpression {
+public class JavaArray extends BaseJavaExpression {
 
 	public void addValueJavaExpression(JavaExpression valueJavaExpression) {
 		_valueJavaExpressions.add(valueJavaExpression);
@@ -56,12 +56,15 @@ public class JavaArray extends JavaExpression {
 			return sb.toString();
 		}
 
-		appendNewLine(
-			sb, _valueJavaExpressions, ", ", indent, "", "", maxLineLength,
-			_breakJavaValueExpressions);
+		if (!_valueJavaExpressions.isEmpty()) {
+			appendNewLine(
+				sb, _valueJavaExpressions, ", ", indent, "", "", maxLineLength,
+				_breakJavaValueExpressions);
 
-		sb.append("\n");
-		sb.append(StringUtil.replaceFirst(indent, "\t", ""));
+			sb.append("\n");
+			sb.append(StringUtil.replaceFirst(indent, "\t", ""));
+		}
+
 		sb.append("}");
 		sb.append(suffix);
 

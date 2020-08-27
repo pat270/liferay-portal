@@ -22,10 +22,8 @@ $media-query-sizes: (
 	xs: $screen-xs,
 	sm: $screen-sm,
 	md: $screen-md,
-	lg: $screen-lg
+	lg: $screen-lg,
 );
-
-// Deprecated
 
 $breakpoint_phone: 768px !default;
 $breakpoint_tablet: 980px !default;

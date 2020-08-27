@@ -119,7 +119,7 @@ public abstract class BaseUADAnonymizerTestCase<T extends BaseModel> {
 
 		uadAnonymizer.deleteAll(user.getUserId());
 
-		deleteBaseModels(ListUtil.toList(deletedBaseModel));
+		deleteBaseModels(ListUtil.fromArray(deletedBaseModel));
 
 		long baseModelPK = getBaseModelPrimaryKey(baseModel);
 
@@ -143,7 +143,7 @@ public abstract class BaseUADAnonymizerTestCase<T extends BaseModel> {
 	protected void deleteBaseModels(List<T> baseModels) throws Exception {
 	}
 
-	protected long getBaseModelPrimaryKey(BaseModel baseModel) {
+	protected long getBaseModelPrimaryKey(BaseModel<?> baseModel) {
 		return (long)baseModel.getPrimaryKeyObj();
 	}
 

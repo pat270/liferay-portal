@@ -51,13 +51,13 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,9 +74,9 @@ public class MembershipPolicyTestUtil {
 	public static Group addGroup() throws Exception {
 		String name = RandomTestUtil.randomString();
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.getDefault(), name);
+		Map<Locale, String> nameMap = HashMapBuilder.put(
+			LocaleUtil.getDefault(), name
+		).build();
 
 		String friendlyURL =
 			StringPool.SLASH + FriendlyURLNormalizerUtil.normalize(name);
@@ -122,8 +122,6 @@ public class MembershipPolicyTestUtil {
 		String screenName = StringPool.BLANK;
 		String emailAddress =
 			"UserServiceTest." + RandomTestUtil.nextLong() + "@liferay.com";
-		long facebookId = 0;
-		String openId = StringPool.BLANK;
 		Locale locale = LocaleUtil.getDefault();
 		String firstName = "UserServiceTest";
 		String middleName = StringPool.BLANK;
@@ -141,10 +139,10 @@ public class MembershipPolicyTestUtil {
 
 		return UserServiceUtil.addUser(
 			TestPropsValues.getCompanyId(), autoPassword, password1, password2,
-			autoScreenName, screenName, emailAddress, facebookId, openId,
-			locale, firstName, middleName, lastName, prefixId, suffixId, male,
-			birthdayMonth, birthdayDay, birthdayYear, jobTitle, siteIds,
-			organizationIds, roleIds, userGroupIds, sendMail, serviceContext);
+			autoScreenName, screenName, emailAddress, locale, firstName,
+			middleName, lastName, prefixId, suffixId, male, birthdayMonth,
+			birthdayDay, birthdayYear, jobTitle, siteIds, organizationIds,
+			roleIds, userGroupIds, sendMail, serviceContext);
 	}
 
 	public static UserGroup addUserGroup() throws Exception {
@@ -175,8 +173,6 @@ public class MembershipPolicyTestUtil {
 			NumericStringRandomizerBumper.INSTANCE);
 		String emailAddress =
 			"UserServiceTest." + RandomTestUtil.nextLong() + "@liferay.com";
-		long facebookId = 0;
-		String openId = StringPool.BLANK;
 		String languageId = LocaleUtil.toLanguageId(LocaleUtil.getDefault());
 		String timeZoneId = RandomTestUtil.randomString();
 		String greeting = RandomTestUtil.randomString();
@@ -209,13 +205,12 @@ public class MembershipPolicyTestUtil {
 		UserServiceUtil.updateUser(
 			userId, oldPassword, newPassword1, newPassword2, passwordReset,
 			reminderQueryQuestion, reminderQueryAnswer, screenName,
-			emailAddress, facebookId, openId, false, null, languageId,
-			timeZoneId, greeting, comments, firstName, middleName, lastName,
-			prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear,
-			smsSn, facebookSn, jabberSn, skypeSn, twitterSn, jobTitle, siteIds,
-			organizationIds, roleIds, userGroupRoles, userGroupIds, addresses,
-			emailAddresses, phones, websites, announcementsDelivers,
-			serviceContext);
+			emailAddress, false, null, languageId, timeZoneId, greeting,
+			comments, firstName, middleName, lastName, prefixId, suffixId, male,
+			birthdayMonth, birthdayDay, birthdayYear, smsSn, facebookSn,
+			jabberSn, skypeSn, twitterSn, jobTitle, siteIds, organizationIds,
+			roleIds, userGroupRoles, userGroupIds, addresses, emailAddresses,
+			phones, websites, announcementsDelivers, serviceContext);
 	}
 
 	protected static Map<String, Serializable> addExpandoMap(Class<?> clazz)
@@ -229,14 +224,15 @@ public class MembershipPolicyTestUtil {
 		expandoBridge.addAttribute("key3", false);
 		expandoBridge.addAttribute("key4", false);
 
-		Map<String, Serializable> expandoMap = new HashMap<>();
-
-		expandoMap.put("key1", "value1");
-		expandoMap.put("key2", "value2");
-		expandoMap.put("key3", "value3");
-		expandoMap.put("key4", "value4");
-
-		return expandoMap;
+		return HashMapBuilder.<String, Serializable>put(
+			"key1", "value1"
+		).put(
+			"key2", "value2"
+		).put(
+			"key3", "value3"
+		).put(
+			"key4", "value4"
+		).build();
 	}
 
 	protected static ServiceContext populateServiceContext(

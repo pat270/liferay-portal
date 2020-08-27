@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoLog in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoLogCacheModel
 	implements CacheModel<KaleoLog>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoLogCacheModel)) {
+		if (!(object instanceof KaleoLogCacheModel)) {
 			return false;
 		}
 
-		KaleoLogCacheModel kaleoLogCacheModel = (KaleoLogCacheModel)obj;
+		KaleoLogCacheModel kaleoLogCacheModel = (KaleoLogCacheModel)object;
 
 		if ((kaleoLogId == kaleoLogCacheModel.kaleoLogId) &&
 			(mvccVersion == kaleoLogCacheModel.mvccVersion)) {
@@ -79,7 +76,7 @@ public class KaleoLogCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(63);
+		StringBundler sb = new StringBundler(65);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -101,6 +98,8 @@ public class KaleoLogCacheModel
 		sb.append(kaleoClassName);
 		sb.append(", kaleoClassPK=");
 		sb.append(kaleoClassPK);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoInstanceId=");
@@ -187,6 +186,7 @@ public class KaleoLogCacheModel
 		}
 
 		kaleoLogImpl.setKaleoClassPK(kaleoClassPK);
+		kaleoLogImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoLogImpl.setKaleoDefinitionVersionId(kaleoDefinitionVersionId);
 		kaleoLogImpl.setKaleoInstanceId(kaleoInstanceId);
 		kaleoLogImpl.setKaleoInstanceTokenId(kaleoInstanceTokenId);
@@ -287,7 +287,9 @@ public class KaleoLogCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoLogId = objectInput.readLong();
@@ -303,6 +305,8 @@ public class KaleoLogCacheModel
 		kaleoClassName = objectInput.readUTF();
 
 		kaleoClassPK = objectInput.readLong();
+
+		kaleoDefinitionId = objectInput.readLong();
 
 		kaleoDefinitionVersionId = objectInput.readLong();
 
@@ -328,12 +332,12 @@ public class KaleoLogCacheModel
 
 		currentAssigneeClassPK = objectInput.readLong();
 		type = objectInput.readUTF();
-		comment = objectInput.readUTF();
+		comment = (String)objectInput.readObject();
 		startDate = objectInput.readLong();
 		endDate = objectInput.readLong();
 
 		duration = objectInput.readLong();
-		workflowContext = objectInput.readUTF();
+		workflowContext = (String)objectInput.readObject();
 	}
 
 	@Override
@@ -366,6 +370,8 @@ public class KaleoLogCacheModel
 		}
 
 		objectOutput.writeLong(kaleoClassPK);
+
+		objectOutput.writeLong(kaleoDefinitionId);
 
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
@@ -435,10 +441,10 @@ public class KaleoLogCacheModel
 		}
 
 		if (comment == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(comment);
+			objectOutput.writeObject(comment);
 		}
 
 		objectOutput.writeLong(startDate);
@@ -447,10 +453,10 @@ public class KaleoLogCacheModel
 		objectOutput.writeLong(duration);
 
 		if (workflowContext == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(workflowContext);
+			objectOutput.writeObject(workflowContext);
 		}
 	}
 
@@ -464,6 +470,7 @@ public class KaleoLogCacheModel
 	public long modifiedDate;
 	public String kaleoClassName;
 	public long kaleoClassPK;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoInstanceId;
 	public long kaleoInstanceTokenId;

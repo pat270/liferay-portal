@@ -16,6 +16,7 @@ package com.liferay.jenkins.results.parser.test.clazz.group;
 
 import com.google.common.collect.Lists;
 
+import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.nio.file.PathMatcher;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +74,17 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return batchName;
 	}
 
+	public Integer getMinimumSlaveRAM() {
+		String minimumSlaveRAM = getFirstPropertyValue(
+			"test.batch.minimum.slave.ram");
+
+		if (minimumSlaveRAM == null) {
+			return JenkinsMaster.SLAVE_RAM_DEFAULT;
+		}
+
+		return Integer.valueOf(minimumSlaveRAM);
+	}
+
 	public PortalGitWorkingDirectory getPortalGitWorkingDirectory() {
 		return portalGitWorkingDirectory;
 	}
@@ -101,10 +112,37 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 	}
 
+	public static enum BuildProfile {
+
+		DXP {
+
+			private static final String _TEXT = "dxp";
+
+			@Override
+			public String toString() {
+				return _TEXT;
+			}
+
+		},
+		PORTAL {
+
+			private static final String _TEXT = "portal";
+
+			@Override
+			public String toString() {
+				return _TEXT;
+			}
+
+		}
+
+	}
+
 	protected BatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
 		this.batchName = batchName;
+		this.buildProfile = buildProfile;
 
 		portalGitWorkingDirectory =
 			portalTestClassJob.getPortalGitWorkingDirectory();
@@ -127,9 +165,21 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 
 		jobProperties = portalTestClassJob.getJobProperties();
 
+		String stableTestSuiteBatchNamesFirstPropertyValue =
+			getFirstPropertyValue(
+				"test.batch.names", batchName, NAME_STABLE_TEST_SUITE);
+
+		if (stableTestSuiteBatchNamesFirstPropertyValue != null) {
+			Collections.addAll(
+				stableTestSuiteBatchNames,
+				stableTestSuiteBatchNamesFirstPropertyValue.split("\\s*,\\s*"));
+		}
+
 		_setTestReleaseBundle();
 		_setTestRelevantChanges();
 		_setTestRelevantIntegrationUnitOnly();
+
+		_setIncludeStableTestSuite();
 	}
 
 	protected int getAxisMaxSize() {
@@ -188,8 +238,6 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 				if (Objects.equals(testSuiteName, targetTestSuiteName)) {
 					return propertyName;
 				}
-
-				continue;
 			}
 		}
 
@@ -197,11 +245,19 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 	}
 
 	protected String getFirstPropertyValue(String basePropertyName) {
-		return getFirstPropertyValue(basePropertyName, batchName);
+		return getFirstPropertyValue(
+			basePropertyName, batchName, testSuiteName);
 	}
 
 	protected String getFirstPropertyValue(
 		String basePropertyName, String batchName) {
+
+		return getFirstPropertyValue(
+			basePropertyName, batchName, testSuiteName);
+	}
+
+	protected String getFirstPropertyValue(
+		String basePropertyName, String batchName, String testSuiteName) {
 
 		if (basePropertyName.contains("[") || basePropertyName.contains("]")) {
 			throw new RuntimeException(
@@ -352,6 +408,10 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return true;
 	}
 
+	protected boolean isStableTestSuiteBatch() {
+		return stableTestSuiteBatchNames.contains(batchName);
+	}
+
 	protected void setAxisTestClassGroups() {
 		int testClassCount = testClasses.size();
 
@@ -381,13 +441,18 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		}
 	}
 
+	protected static final String NAME_STABLE_TEST_SUITE = "stable";
+
 	protected final Map<Integer, AxisTestClassGroup> axisTestClassGroups =
 		new HashMap<>();
 	protected final String batchName;
+	protected final BuildProfile buildProfile;
 	protected final List<PathMatcher> excludesPathMatchers = new ArrayList<>();
 	protected final List<PathMatcher> includesPathMatchers = new ArrayList<>();
+	protected boolean includeStableTestSuite;
 	protected final Properties jobProperties;
 	protected final PortalGitWorkingDirectory portalGitWorkingDirectory;
+	protected List<String> stableTestSuiteBatchNames = new ArrayList<>();
 	protected boolean testPrivatePortalBranch;
 	protected boolean testReleaseBundle;
 	protected boolean testRelevantChanges;
@@ -488,14 +553,14 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 				}
 
 				requiredModuleDirs.add(requiredModuleDir);
-
-				requiredModuleDirs.addAll(
-					_getRequiredModuleDirs(
-						Arrays.asList(requiredModuleDir), requiredModuleDirs));
 			}
 		}
 
 		return Lists.newArrayList(requiredModuleDirs);
+	}
+
+	private void _setIncludeStableTestSuite() {
+		includeStableTestSuite = testRelevantChanges;
 	}
 
 	private void _setTestReleaseBundle() {

@@ -56,11 +56,10 @@ public abstract class JournalFeedFinderBaseImpl
 
 	@Override
 	@Reference(
-		target = JournalPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = JournalPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
 	}
 
 	@Override
@@ -86,5 +85,14 @@ public abstract class JournalFeedFinderBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalFeedFinderBaseImpl.class);
+
+	static {
+		try {
+			Class.forName(JournalPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

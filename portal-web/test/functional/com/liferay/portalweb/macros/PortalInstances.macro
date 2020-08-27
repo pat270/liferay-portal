@@ -1,4 +1,5 @@
 definition {
+
 	macro addCP {
 		LexiconEntry.gotoAdd();
 
@@ -83,13 +84,19 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
+	macro openVirtualInstancesAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_portal_instances_web_portlet_PortalInstancesPortlet");
+	}
+
 	macro tearDownCP {
-		SignOut.signOutOfSpecificURL(url = "http://localhost:8080/");
+		var defaultPortalURL = PropsUtil.get("default.portal.url");
 
-		SignIn.signInSpecificURL(url = "http://localhost:8080/");
+		SignOut.signOutOfSpecificURL(url = "${defaultPortalURL}");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		SignIn.signInSpecificURL(url = "${defaultPortalURL}");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -121,4 +128,5 @@ definition {
 			locator1 = "PortalInstances#INSTANCE_TABLE_MAIL_DOMAIN",
 			value1 = "${virtualHost}");
 	}
+
 }

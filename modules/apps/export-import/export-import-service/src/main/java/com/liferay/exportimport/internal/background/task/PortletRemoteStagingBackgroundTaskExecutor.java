@@ -17,8 +17,8 @@ package com.liferay.exportimport.internal.background.task;
 import com.liferay.exportimport.internal.background.task.display.PortletExportImportBackgroundTaskDisplay;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
-import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUtil;
+import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
@@ -108,10 +108,8 @@ public class PortletRemoteStagingBackgroundTaskExecutor
 
 			httpPrincipal = (HttpPrincipal)taskContextMap.get("httpPrincipal");
 
-			Map<String, Serializable> settingsMap =
-				exportImportConfiguration.getSettingsMap();
-
-			long targetGroupId = MapUtil.getLong(settingsMap, "targetGroupId");
+			long targetGroupId = MapUtil.getLong(
+				exportImportConfiguration.getSettingsMap(), "targetGroupId");
 
 			stagingRequestId = StagingServiceHttp.createStagingRequest(
 				httpPrincipal, targetGroupId, checksum);
@@ -138,7 +136,7 @@ public class PortletRemoteStagingBackgroundTaskExecutor
 					exportImportConfiguration.getExportImportConfigurationId()),
 				exportImportConfiguration);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			ExportImportThreadLocal.setPortletStagingInProcess(false);
 
 			ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
@@ -152,7 +150,7 @@ public class PortletRemoteStagingBackgroundTaskExecutor
 
 			deleteTempLarOnFailure(file);
 
-			throw new SystemException(t);
+			throw new SystemException(throwable);
 		}
 		finally {
 			currentThread.setContextClassLoader(contextClassLoader);
@@ -162,10 +160,11 @@ public class PortletRemoteStagingBackgroundTaskExecutor
 					StagingServiceHttp.cleanUpStagingRequest(
 						httpPrincipal, stagingRequestId);
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
-							"Unable to clean up the remote live site", pe);
+							"Unable to clean up the remote live site",
+							portalException);
 					}
 				}
 			}

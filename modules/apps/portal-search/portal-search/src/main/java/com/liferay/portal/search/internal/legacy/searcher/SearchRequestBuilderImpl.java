@@ -19,8 +19,10 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
 import com.liferay.portal.search.filter.ComplexQueryPart;
+import com.liferay.portal.search.groupby.GroupByRequest;
 import com.liferay.portal.search.internal.searcher.SearchRequestImpl;
 import com.liferay.portal.search.query.Query;
+import com.liferay.portal.search.rescore.Rescore;
 import com.liferay.portal.search.searcher.FacetContext;
 import com.liferay.portal.search.searcher.SearchRequest;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
@@ -30,8 +32,12 @@ import com.liferay.portal.search.stats.StatsRequest;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -58,6 +64,17 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		_searchContext = searchContext;
 	}
 
+	public SearchRequestBuilderImpl(
+		SearchRequestBuilderFactory searchRequestBuilderFactory,
+		SearchRequest searchRequest) {
+
+		this(
+			searchRequestBuilderFactory,
+			new SearchRequestImpl(
+				(SearchRequestImpl)searchRequest
+			).getSearchContext());
+	}
+
 	@Override
 	public SearchRequestBuilder addAggregation(Aggregation aggregation) {
 		withSearchRequestImpl(
@@ -70,9 +87,11 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	public SearchRequestBuilder addComplexQueryPart(
 		ComplexQueryPart complexQueryPart) {
 
-		withSearchRequestImpl(
-			searchRequestImpl -> searchRequestImpl.addComplexQueryPart(
-				complexQueryPart));
+		if (complexQueryPart != null) {
+			withSearchRequestImpl(
+				searchRequestImpl -> searchRequestImpl.addComplexQueryPart(
+					complexQueryPart));
+		}
 
 		return this;
 	}
@@ -81,7 +100,7 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	public SearchRequestBuilder addFederatedSearchRequest(
 		SearchRequest searchRequest) {
 
-		addFederatedSearchRequests(Stream.of(searchRequest));
+		addFederatedSearchRequests(Arrays.asList(searchRequest));
 
 		return this;
 	}
@@ -138,6 +157,23 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	}
 
 	@Override
+	public SearchRequestBuilder companyId(Long companyId) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setCompanyId(companyId));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder connectionId(String connectionId) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setConnectionId(
+				connectionId));
+
+		return this;
+	}
+
+	@Override
 	public SearchRequestBuilder emptySearchEnabled(boolean allowEmptySearches) {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setEmptySearchEnabled(
@@ -156,6 +192,14 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	}
 
 	@Override
+	public SearchRequestBuilder excludeContributors(String... ids) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.addExcludeContributors(ids));
+
+		return this;
+	}
+
+	@Override
 	public SearchRequestBuilder explain(boolean explain) {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setExplain(explain));
@@ -168,6 +212,36 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setFederatedSearchKey(
 				federatedSearchKey));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder fetchSource(boolean fetchSource) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setFetchSource(fetchSource));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder fetchSourceExcludes(
+		String[] fetchSourceExcludes) {
+
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setFetchSourceExcludes(
+				fetchSourceExcludes));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder fetchSourceIncludes(
+		String[] fetchSourceIncludes) {
+
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setFetchSourceIncludes(
+				fetchSourceIncludes));
 
 		return this;
 	}
@@ -202,6 +276,25 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	}
 
 	@Override
+	public SearchRequestBuilder groupByRequests(
+		GroupByRequest... groupByRequests) {
+
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setGroupByRequests(
+				groupByRequests));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder groupIds(long... groupIds) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setGroupIds(groupIds));
+
+		return this;
+	}
+
+	@Override
 	public SearchRequestBuilder highlightEnabled(boolean highlightEnabled) {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setHighlightEnabled(
@@ -215,6 +308,14 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setHighlightFields(
 				highlightFields));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder includeContributors(String... ids) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.addIncludeContributors(ids));
 
 		return this;
 	}
@@ -239,12 +340,38 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	}
 
 	@Override
+	public SearchRequestBuilder locale(Locale locale) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setLocale(locale));
+
+		return this;
+	}
+
+	@Override
 	public SearchRequestBuilder modelIndexerClasses(Class<?>... classes) {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setModelIndexerClasses(
 				classes));
 
 		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder ownerUserId(Long userId) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setOwnerUserId(userId));
+
+		return this;
+	}
+
+	@Override
+	public void paginationStartParameterName(
+		String paginationStartParameterName) {
+
+		withSearchRequestImpl(
+			searchRequestImpl ->
+				searchRequestImpl.setPaginationStartParameterName(
+					paginationStartParameterName));
 	}
 
 	@Override
@@ -271,10 +398,19 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		return this;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #rescores(List)}
+	 */
+	@Deprecated
 	@Override
 	public SearchRequestBuilder rescoreQuery(Query query) {
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder rescores(List<Rescore> rescores) {
 		withSearchRequestImpl(
-			searchRequestImpl -> searchRequestImpl.setRescoreQuery(query));
+			searchRequestImpl -> searchRequestImpl.setRescores(rescores));
 
 		return this;
 	}
@@ -322,9 +458,9 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 
 	@Override
 	public SearchRequestBuilder withSearchContext(
-		Consumer<SearchContext> consumer) {
+		Consumer<SearchContext> searchContextConsumer) {
 
-		consumer.accept(_searchContext);
+		searchContextConsumer.accept(_searchContext);
 
 		return this;
 	}
@@ -334,6 +470,20 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		Function<SearchContext, T> searchContextFunction) {
 
 		return searchContextFunction.apply(_searchContext);
+	}
+
+	@Override
+	public SearchRequestBuilder withSearchRequestBuilder(
+		Consumer<SearchRequestBuilder>... searchRequestBuilderConsumers) {
+
+		Stream.of(
+			searchRequestBuilderConsumers
+		).forEach(
+			searchRequestBuilderConsumer -> searchRequestBuilderConsumer.accept(
+				this)
+		);
+
+		return this;
 	}
 
 	protected static SearchRequestImpl getSearchRequestImpl(
@@ -357,20 +507,28 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		return value;
 	}
 
-	protected void addFederatedSearchRequests(Stream<SearchRequest> stream) {
+	protected void addFederatedSearchRequests(
+		List<SearchRequest> searchRequests) {
+
 		withSearchRequestImpl(
-			searchRequestImpl -> stream.forEach(
+			searchRequestImpl -> searchRequests.forEach(
 				searchRequestImpl::addFederatedSearchRequest));
 	}
 
-	protected Stream<SearchRequest> buildFederatedSearchRequests() {
+	protected List<SearchRequest> buildFederatedSearchRequests() {
 		Collection<SearchRequestBuilder> searchRequestBuilders =
 			_federatedSearchRequestBuildersMap.values();
 
-		return searchRequestBuilders.stream(
-		).map(
-			SearchRequestBuilder::build
-		);
+		List<SearchRequest> searchRequests = new ArrayList<>(
+			searchRequestBuilders.size());
+
+		for (SearchRequestBuilder searchRequestBuilder :
+				searchRequestBuilders) {
+
+			searchRequests.add(searchRequestBuilder.build());
+		}
+
+		return searchRequests;
 	}
 
 	protected SearchRequestBuilder newFederatedSearchRequestBuilder(
@@ -379,6 +537,9 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		return _searchRequestBuilderFactory.builder(
 		).federatedSearchKey(
 			federatedSearchKey
+		).withSearchContext(
+			searchContext -> searchContext.setCompanyId(
+				_searchContext.getCompanyId())
 		);
 	}
 

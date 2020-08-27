@@ -1,24 +1,12 @@
 {
-	"csfConfig": {
-		"js": {
-			"lint": {
-				"globals": {
-					"AlloyEditor": true,
-					"MODULE_PATH": true
-				},
-				"rules": {
-					"consistent-return": 0
-				}
-			}
-		}
-	},
 	"dependencies": {
-		"alloyeditor": "2.0.5"
+		"alloyeditor": "2.11.13"
 	},
 	"name": "frontend-editor-alloyeditor-web",
 	"scripts": {
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format"
+		"build": "liferay-npm-scripts build",
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix"
 	},
-	"version": "4.0.0"
+	"version": "4.0.15"
 }

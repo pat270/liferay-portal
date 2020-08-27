@@ -17,62 +17,61 @@
 <%@ include file="/group_selector/init.jsp" %>
 
 <%
-List<Group> groups = (List<Group>)request.getAttribute("liferay-item-selector:group-selector:groups");
-int groupsCount = GetterUtil.getInteger(request.getAttribute("liferay-item-selector:group-selector:groupsCount"));
-ItemSelector itemSelector = (ItemSelector)request.getAttribute("liferay-item-selector:group-selector:itemSelector");
+GroupSelectorDisplayContext groupSelectorDisplayContext = new GroupSelectorDisplayContext(liferayPortletRequest);
 
-RequestBackedPortletURLFactory requestBackedPortletURLFactory = RequestBackedPortletURLFactoryUtil.create(request);
-
-String itemSelectedEventName = ParamUtil.getString(request, "itemSelectedEventName");
-
-List<ItemSelectorCriterion> itemSelectorCriteria = itemSelector.getItemSelectorCriteria(liferayPortletRequest.getParameterMap());
-
-PortletURL iteratorURL = itemSelector.getItemSelectorURL(requestBackedPortletURLFactory, itemSelectedEventName, itemSelectorCriteria.toArray(new ItemSelectorCriterion[0]));
-
-iteratorURL.setParameter("selectedTab", ParamUtil.getString(request, "selectedTab"));
-iteratorURL.setParameter("showGroupSelector", Boolean.TRUE.toString());
-
-SearchContainer searchContainer = new GroupSearch(liferayPortletRequest, iteratorURL);
+Set<String> groupTypes = groupSelectorDisplayContext.getGroupTypes();
 %>
 
-<div class="container-fluid-1280 lfr-item-viewer">
-	<liferay-ui:search-container
-		searchContainer="<%= searchContainer %>"
-		total="<%= groupsCount %>"
-		var="listSearchContainer"
-	>
-		<liferay-ui:search-container-results
-			results="<%= groups %>"
-		/>
-
-		<liferay-ui:search-container-row
-			className="com.liferay.portal.kernel.model.Group"
-			modelVar="curGroup"
-		>
+<c:if test="<%= groupTypes.size() > 1 %>">
+	<clay:container-fluid>
+		<div class="btn-group btn-group-sm my-3" role="group">
 
 			<%
-			long refererGroupId = (themeDisplay.getRefererGroupId() != 0) ? themeDisplay.getRefererGroupId() : themeDisplay.getScopeGroupId();
-
-			PortletURL viewGroupURL = itemSelector.getItemSelectorURL(requestBackedPortletURLFactory, curGroup, refererGroupId, itemSelectedEventName, itemSelectorCriteria.toArray(new ItemSelectorCriterion[0]));
-
-			viewGroupURL.setParameter("selectedTab", ParamUtil.getString(request, "selectedTab"));
-
-			row.setCssClass("entry-card lfr-asset-item");
+			for (String curGroupType : groupTypes) {
 			%>
 
+				<a class="btn btn-secondary <%= groupSelectorDisplayContext.isGroupTypeActive(curGroupType) ? "active" : StringPool.BLANK %>" href="<%= groupSelectorDisplayContext.getGroupItemSelectorURL(curGroupType) %>"><%= groupSelectorDisplayContext.getGroupItemSelectorLabel(curGroupType) %></a>
+
+			<%
+			}
+			%>
+
+		</div>
+	</clay:container-fluid>
+</c:if>
+
+<clay:container-fluid
+	cssClass="lfr-item-viewer"
+>
+	<liferay-ui:search-container
+		searchContainer="<%= groupSelectorDisplayContext.getSearchContainer() %>"
+		var="listSearchContainer"
+	>
+		<liferay-ui:search-container-row
+			className="com.liferay.portal.kernel.model.Group"
+			cssClass="entry-card lfr-asset-item"
+			modelVar="curGroup"
+		>
 			<liferay-ui:search-container-column-text
 				colspan="<%= 3 %>"
 			>
 				<liferay-frontend:horizontal-card
-					cardCssClass="card-interactive card-interactive-primary"
-					resultRow="<%= row %>"
 					text="<%= curGroup.getDescriptiveName(locale) %>"
-					url="<%= viewGroupURL.toString() %>"
+					url="<%= groupSelectorDisplayContext.getViewGroupURL(curGroup) %>"
 				>
 					<liferay-frontend:horizontal-card-col>
-						<liferay-frontend:horizontal-card-icon
-							icon="folder"
-						/>
+						<c:choose>
+							<c:when test="<%= Validator.isNotNull(curGroup.getLogoURL(themeDisplay, false)) %>">
+								<clay:sticker>
+									<img alt="" class="sticker-img" src="<%= curGroup.getLogoURL(themeDisplay, false) %>" />
+								</clay:sticker>
+							</c:when>
+							<c:otherwise>
+								<liferay-frontend:horizontal-card-icon
+									icon="<%= groupSelectorDisplayContext.getGroupItemSelectorIcon() %>"
+								/>
+							</c:otherwise>
+						</c:choose>
 					</liferay-frontend:horizontal-card-col>
 				</liferay-frontend:horizontal-card>
 			</liferay-ui:search-container-column-text>
@@ -81,7 +80,6 @@ SearchContainer searchContainer = new GroupSearch(liferayPortletRequest, iterato
 		<liferay-ui:search-iterator
 			displayStyle="icon"
 			markupView="lexicon"
-			searchContainer="<%= searchContainer %>"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

@@ -113,19 +113,18 @@ public class DefaultMBAdminListDisplayContext
 			long searchCategoryId = ParamUtil.getLong(
 				_httpServletRequest, "searchCategoryId");
 
-			long[] categoryIdsArray = null;
-
-			List categoryIds = new ArrayList();
+			List<Long> categoryIds = new ArrayList<>();
 
 			categoryIds.add(Long.valueOf(searchCategoryId));
 
 			MBCategoryServiceUtil.getSubcategoryIds(
 				categoryIds, themeDisplay.getScopeGroupId(), searchCategoryId);
 
-			categoryIdsArray = StringUtil.split(
+			long[] categoryIdsArray = StringUtil.split(
 				StringUtil.merge(categoryIds), 0L);
 
-			Indexer indexer = IndexerRegistryUtil.getIndexer(MBMessage.class);
+			Indexer<MBMessage> indexer = IndexerRegistryUtil.getIndexer(
+				MBMessage.class);
 
 			SearchContext searchContext = SearchContextFactory.getInstance(
 				_httpServletRequest);
@@ -134,6 +133,7 @@ public class DefaultMBAdminListDisplayContext
 			searchContext.setCategoryIds(categoryIdsArray);
 			searchContext.setEnd(searchContainer.getEnd());
 			searchContext.setIncludeAttachments(true);
+			searchContext.setIncludeInternalAssetCategories(true);
 
 			String keywords = ParamUtil.getString(
 				_httpServletRequest, "keywords");
@@ -145,21 +145,21 @@ public class DefaultMBAdminListDisplayContext
 
 			Sort sort = null;
 
-			boolean orderByAsc = true;
+			boolean orderByAsc = false;
 
 			if (Objects.equals(orderByType, "asc")) {
-				orderByAsc = false;
+				orderByAsc = true;
 			}
 
 			if (Objects.equals(orderByCol, "modified-date")) {
 				sort = new Sort(
-					Field.MODIFIED_DATE, Sort.LONG_TYPE, orderByAsc);
+					Field.MODIFIED_DATE, Sort.LONG_TYPE, !orderByAsc);
 			}
 			else if (Objects.equals(orderByCol, "title")) {
 				String sortFieldName = Field.getSortableFieldName(
 					"localized_title_".concat(themeDisplay.getLanguageId()));
 
-				sort = new Sort(sortFieldName, Sort.STRING_TYPE, orderByAsc);
+				sort = new Sort(sortFieldName, Sort.STRING_TYPE, !orderByAsc);
 			}
 
 			searchContext.setSorts(sort);

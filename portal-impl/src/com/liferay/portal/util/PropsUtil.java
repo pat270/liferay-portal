@@ -16,6 +16,7 @@ package com.liferay.portal.util;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.ConfigurationFactoryImpl;
 import com.liferay.portal.configuration.ConfigurationImpl;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.Filter;
@@ -207,13 +208,6 @@ public class PropsUtil {
 		return configuration.getProperties(prefix, removePrefix);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static void reload() {
-	}
-
 	public static void removeProperties(
 		Company company, Properties properties) {
 
@@ -259,8 +253,8 @@ public class PropsUtil {
 
 					webId = company.getWebId();
 				}
-				catch (PortalException pe) {
-					_log.error(pe, pe);
+				catch (PortalException portalException) {
+					_log.error(portalException, portalException);
 				}
 
 				configuration = new ConfigurationImpl(
@@ -299,25 +293,12 @@ public class PropsUtil {
 	private static String _getDefaultLiferayHome() {
 		String defaultLiferayHome = null;
 
-		if (ServerDetector.isGlassfish()) {
-			defaultLiferayHome =
-				SystemProperties.get("com.sun.aas.installRoot") + "/..";
-		}
-		else if (ServerDetector.isJBoss()) {
+		if (ServerDetector.isJBoss()) {
 			defaultLiferayHome = SystemProperties.get("jboss.home.dir") + "/..";
-		}
-		else if (ServerDetector.isJOnAS()) {
-			defaultLiferayHome = SystemProperties.get("jonas.base") + "/..";
 		}
 		else if (ServerDetector.isWebLogic()) {
 			defaultLiferayHome =
 				SystemProperties.get("env.DOMAIN_HOME") + "/..";
-		}
-		else if (ServerDetector.isJetty()) {
-			defaultLiferayHome = SystemProperties.get("jetty.home") + "/..";
-		}
-		else if (ServerDetector.isResin()) {
-			defaultLiferayHome = SystemProperties.get("resin.home") + "/..";
 		}
 		else if (ServerDetector.isTomcat()) {
 			defaultLiferayHome = SystemProperties.get("catalina.base") + "/..";
@@ -360,9 +341,7 @@ public class PropsUtil {
 
 		pos = path.lastIndexOf(CharPool.SLASH, pos);
 
-		path = path.substring(0, pos + 1);
-
-		return path;
+		return path.substring(0, pos + 1);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(PropsUtil.class);
@@ -433,9 +412,7 @@ public class PropsUtil {
 
 		// Liferay home directory
 
-		_configuration = new ConfigurationImpl(
-			PropsUtil.class.getClassLoader(), PropsFiles.PORTAL,
-			CompanyConstants.SYSTEM, null);
+		_configuration = ConfigurationFactoryImpl.CONFIGURATION_PORTAL;
 
 		String liferayHome = _configuration.get(PropsKeys.LIFERAY_HOME);
 

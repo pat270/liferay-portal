@@ -42,8 +42,7 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.name=" + ReadingTimePortletKeys.READING_TIME,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=guest,power-user,user"
 	},
 	service = Portlet.class
 )

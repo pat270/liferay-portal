@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.lists.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class RecordGroupIdException extends PortalException {
 
 	public RecordGroupIdException() {
@@ -31,12 +28,12 @@ public class RecordGroupIdException extends PortalException {
 		super(msg);
 	}
 
-	public RecordGroupIdException(String msg, Throwable cause) {
-		super(msg, cause);
+	public RecordGroupIdException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public RecordGroupIdException(Throwable cause) {
-		super(cause);
+	public RecordGroupIdException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

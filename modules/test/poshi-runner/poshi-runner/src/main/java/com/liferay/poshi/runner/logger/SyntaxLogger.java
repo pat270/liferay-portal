@@ -135,8 +135,9 @@ public abstract class SyntaxLogger {
 
 			_syntaxLogLoggerElement.addChildLoggerElement(headerLoggerElement);
 		}
-		catch (Throwable t) {
-			throw new PoshiRunnerLoggerException(t.getMessage(), t);
+		catch (Throwable throwable) {
+			throw new PoshiRunnerLoggerException(
+				throwable.getMessage(), throwable);
 		}
 	}
 
@@ -296,6 +297,10 @@ public abstract class SyntaxLogger {
 					loggerElement.addChildLoggerElement(
 						getReturnLoggerElement(childElement));
 				}
+				else if (childElementName.equals("take-screenshot")) {
+					loggerElement.addChildLoggerElement(
+						getTakeScreenshotLoggerElement(childElement));
+				}
 				else if (childElementName.equals("var")) {
 					loggerElement.addChildLoggerElement(
 						getVarLoggerElement(childElement));
@@ -430,6 +435,10 @@ public abstract class SyntaxLogger {
 
 	protected LoggerElement getReturnLoggerElement(Element element) {
 		return getLineGroupLoggerElement("return", element);
+	}
+
+	protected LoggerElement getTakeScreenshotLoggerElement(Element element) {
+		return getLineGroupLoggerElement("take-screenshot", element);
 	}
 
 	protected LoggerElement getTestCaseCommandLoggerElement(

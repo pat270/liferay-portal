@@ -15,8 +15,8 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter;
 
 import com.liferay.dynamic.data.mapping.expression.model.Expression;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DDMFormRuleAction;
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.visitor.ActionExpressionVisitor;
+import com.liferay.dynamic.data.mapping.spi.converter.model.SPIDDMFormRuleAction;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class DDMFormRuleActionFactory {
 
-	public static DDMFormRuleAction create(
+	public static SPIDDMFormRuleAction create(
 		String action, List<Expression> expressions,
 		ActionExpressionVisitor actionExpressionVisitor) {
 

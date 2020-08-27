@@ -1,5 +1,6 @@
 @component-name = "portal-staging"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Export/Import Framework";
@@ -20,9 +21,9 @@ definition {
 
 	@priority = "4"
 	test DeleteCustomExportProcess {
-		Navigator.openURL();
-
-		LAR.exportSiteCP(larFileName = "CustomExport");
+		LAR.exportSiteCP(
+			larFileName = "CustomExport",
+			siteScopeName = "Guest");
 
 		LAR.deleteCurrentAndPreviousProcess(larFileName = "CustomExport");
 
@@ -35,10 +36,11 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		LAR.exportPortlet(larFileName = "DMExport");
+
+		Refresh();
 
 		LAR.deleteCurrentAndPreviousProcess(
 			deleteFromPortlet = "true",
@@ -49,18 +51,18 @@ definition {
 
 	@priority = "4"
 	test RelaunchCustomExportProcess {
-		Navigator.openURL();
-
-		LAR.exportSiteCP(larFileName = "CustomExport");
+		LAR.exportSiteCP(
+			larFileName = "CustomExport",
+			siteScopeName = "Guest");
 
 		LAR.relaunchCurrentAndPreviousProcess(larFileName = "CustomExport");
 	}
 
 	@priority = "3"
 	test ViewExportProcess {
-		Navigator.openURL();
-
-		LAR.exportSiteCP(larFileName = "CustomExport");
+		LAR.exportSiteCP(
+			larFileName = "CustomExport",
+			siteScopeName = "Guest");
 
 		Refresh();
 
@@ -68,6 +70,7 @@ definition {
 
 		ManagementBar.setFilterAndOrder(filterBy = "Completed");
 
-		ManagementBar.toggleViewOrder(order = "Reverse Sort Direction");
+		ManagementBar.toggleViewOrder(order = "down");
 	}
+
 }

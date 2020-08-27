@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionObserver;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionObserverAware;
@@ -35,22 +34,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = {
-		DDMExpressionFunction.Function2.class, DDMExpressionObserverAware.class,
-		DDMExpressionParameterAccessorAware.class
-	}
-)
 public class SetOptionsFunction
 	implements DDMExpressionFunction.Function2<String, String, Boolean>,
 			   DDMExpressionObserverAware, DDMExpressionParameterAccessorAware {
+
+	public static final String NAME = "setOptions";
+
+	public SetOptionsFunction(JSONFactory jsonFactory) {
+		this.jsonFactory = jsonFactory;
+	}
 
 	@Override
 	public Boolean apply(String field, String json) {
@@ -73,7 +68,7 @@ public class SetOptionsFunction
 
 	@Override
 	public String getName() {
-		return "setOptions";
+		return NAME;
 	}
 
 	@Override
@@ -101,10 +96,10 @@ public class SetOptionsFunction
 			JSONObject jsonObject = jsonFactory.createJSONObject(
 				String.valueOf(value));
 
-			Iterator<String> keys = jsonObject.keys();
+			Iterator<String> iterator = jsonObject.keys();
 
-			while (keys.hasNext()) {
-				String currentLanguageId = keys.next();
+			while (iterator.hasNext()) {
+				String currentLanguageId = iterator.next();
 
 				if (currentLanguageId.equals(languageId)) {
 					JSONArray jsonArray = jsonObject.getJSONArray(
@@ -125,14 +120,13 @@ public class SetOptionsFunction
 				}
 			}
 		}
-		catch (JSONException jsone) {
-			_log.error(jsone, jsone);
+		catch (JSONException jsonException) {
+			_log.error(jsonException, jsonException);
 		}
 
 		return keyValuePairs;
 	}
 
-	@Reference
 	protected JSONFactory jsonFactory;
 
 	private static final Log _log = LogFactoryUtil.getLog(

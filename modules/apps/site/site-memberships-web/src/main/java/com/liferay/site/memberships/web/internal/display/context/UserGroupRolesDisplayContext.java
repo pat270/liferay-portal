@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -167,7 +167,7 @@ public class UserGroupRolesDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getRoleSearchSearchContainer()
+	public SearchContainer<Role> getRoleSearchSearchContainer()
 		throws PortalException {
 
 		if (_roleSearch != null) {

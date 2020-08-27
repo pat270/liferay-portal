@@ -19,16 +19,16 @@ import com.liferay.exportimport.internal.background.task.display.LayoutStagingBa
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.MissingReferences;
-import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUtil;
+import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -166,7 +166,7 @@ public class LayoutStagingBackgroundTaskExecutor
 			ExportImportHelperUtil.processBackgroundTaskManifestSummary(
 				userId, sourceGroupId, backgroundTask, file);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			ExportImportThreadLocal.setInitialLayoutStagingInProcess(false);
 			ExportImportThreadLocal.setLayoutStagingInProcess(false);
 
@@ -177,7 +177,7 @@ public class LayoutStagingBackgroundTaskExecutor
 					PROCESS_FLAG_LAYOUT_STAGING_IN_PROCESS,
 				String.valueOf(
 					exportImportConfiguration.getExportImportConfigurationId()),
-				exportImportConfiguration, t);
+				exportImportConfiguration, throwable);
 
 			Group sourceGroup = GroupLocalServiceUtil.getGroup(sourceGroupId);
 
@@ -207,7 +207,7 @@ public class LayoutStagingBackgroundTaskExecutor
 
 			deleteTempLarOnFailure(file);
 
-			throw new SystemException(t);
+			throw new SystemException(throwable);
 		}
 
 		deleteTempLarOnSuccess(file);
@@ -238,13 +238,13 @@ public class LayoutStagingBackgroundTaskExecutor
 		LayoutSetBranchLocalServiceUtil.deleteLayoutSetBranches(
 			targetGroupId, true, true);
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			sourceGroup.getTypeSettingsProperties();
 
 		boolean branchingPrivate = GetterUtil.getBoolean(
-			typeSettingsProperties.getProperty("branchingPrivate"));
+			typeSettingsUnicodeProperties.getProperty("branchingPrivate"));
 		boolean branchingPublic = GetterUtil.getBoolean(
-			typeSettingsProperties.getProperty("branchingPublic"));
+			typeSettingsUnicodeProperties.getProperty("branchingPublic"));
 
 		ServiceContext serviceContext = new ServiceContext();
 

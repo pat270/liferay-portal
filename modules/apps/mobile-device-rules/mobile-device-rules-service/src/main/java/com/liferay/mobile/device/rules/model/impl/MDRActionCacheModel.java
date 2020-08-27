@@ -18,6 +18,7 @@ import com.liferay.mobile.device.rules.model.MDRAction;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,30 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MDRAction in entity cache.
  *
  * @author Edward C. Han
  * @generated
  */
-@ProviderType
 public class MDRActionCacheModel
-	implements CacheModel<MDRAction>, Externalizable {
+	implements CacheModel<MDRAction>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MDRActionCacheModel)) {
+		if (!(object instanceof MDRActionCacheModel)) {
 			return false;
 		}
 
-		MDRActionCacheModel mdrActionCacheModel = (MDRActionCacheModel)obj;
+		MDRActionCacheModel mdrActionCacheModel = (MDRActionCacheModel)object;
 
-		if (actionId == mdrActionCacheModel.actionId) {
+		if ((actionId == mdrActionCacheModel.actionId) &&
+			(mvccVersion == mdrActionCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,28 @@ public class MDRActionCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, actionId);
+		int hashCode = HashUtil.hash(0, actionId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(33);
+		StringBundler sb = new StringBundler(35);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", actionId=");
 		sb.append(actionId);
@@ -106,6 +120,8 @@ public class MDRActionCacheModel
 	@Override
 	public MDRAction toEntityModel() {
 		MDRActionImpl mdrActionImpl = new MDRActionImpl();
+
+		mdrActionImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			mdrActionImpl.setUuid("");
@@ -185,7 +201,10 @@ public class MDRActionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		actionId = objectInput.readLong();
@@ -207,12 +226,14 @@ public class MDRActionCacheModel
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		type = objectInput.readUTF();
-		typeSettings = objectInput.readUTF();
+		typeSettings = (String)objectInput.readObject();
 		lastPublishDate = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -266,15 +287,16 @@ public class MDRActionCacheModel
 		}
 
 		if (typeSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(typeSettings);
+			objectOutput.writeObject(typeSettings);
 		}
 
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long actionId;
 	public long groupId;

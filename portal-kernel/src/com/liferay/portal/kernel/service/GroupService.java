@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -45,6 +46,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -56,7 +58,7 @@ public interface GroupService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link GroupServiceUtil} to access the group remote service. Add custom service methods to <code>com.liferay.portal.service.impl.GroupServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.GroupServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the group remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link GroupServiceUtil} if injection and service tracking are not available.
 	 */
 	public Group addGroup(
 			long parentGroupId, long liveGroupId, Map<Locale, String> nameMap,
@@ -324,6 +326,10 @@ public interface GroupService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Group> getUserSitesGroups() throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Group> getUserSitesGroups(long userId, int start, int end)
+		throws PortalException;
+
 	/**
 	 * Returns the user's groups &quot;sites&quot; associated with the group
 	 * entity class names, including the Control Panel group if the user is
@@ -429,7 +435,7 @@ public interface GroupService extends BaseService {
 	public List<Group> search(
 			long companyId, long[] classNameIds, String keywords,
 			LinkedHashMap<String, Object> params, int start, int end,
-			OrderByComparator<Group> obc)
+			OrderByComparator<Group> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -437,7 +443,7 @@ public interface GroupService extends BaseService {
 			long companyId, long[] classNameIds, String name,
 			String description, LinkedHashMap<String, Object> params,
 			boolean andOperator, int start, int end,
-			OrderByComparator<Group> obc)
+			OrderByComparator<Group> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -476,6 +482,11 @@ public interface GroupService extends BaseService {
 			long companyId, String name, String description, String[] params,
 			int start, int end)
 		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int searchCount(
+		long companyId, long[] classNameIds, String keywords,
+		LinkedHashMap<String, Object> params);
 
 	/**
 	 * Returns the number of groups and organization groups that match the name

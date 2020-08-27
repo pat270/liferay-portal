@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
@@ -26,9 +27,7 @@ import com.liferay.wiki.service.WikiPageLocalService;
 
 import java.io.Serializable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -64,15 +63,12 @@ public class WikiPageUADTestHelper {
 			ServiceContextTestUtil.getServiceContext(
 				TestPropsValues.getGroupId());
 
-		Map<String, Serializable> workflowContext = new HashMap<>();
-
-		workflowContext.put(WorkflowConstants.CONTEXT_URL, "http://localhost");
-
-		_wikiPageLocalService.updateStatus(
+		return _wikiPageLocalService.updateStatus(
 			statusByUserId, wikiPage, WorkflowConstants.STATUS_APPROVED,
-			serviceContext, workflowContext);
-
-		return wikiPage;
+			serviceContext,
+			HashMapBuilder.<String, Serializable>put(
+				WorkflowConstants.CONTEXT_URL, "http://localhost"
+			).build());
 	}
 
 	public void cleanUpDependencies(List<WikiPage> wikiPages) throws Exception {

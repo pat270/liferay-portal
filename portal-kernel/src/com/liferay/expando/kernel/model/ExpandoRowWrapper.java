@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ExpandoRow
  * @generated
  */
-@ProviderType
 public class ExpandoRowWrapper
 	extends BaseModelWrapper<ExpandoRow>
 	implements ExpandoRow, ModelWrapper<ExpandoRow> {
@@ -45,6 +44,8 @@ public class ExpandoRowWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("rowId", getRowId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("modifiedDate", getModifiedDate());
@@ -56,6 +57,18 @@ public class ExpandoRowWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long rowId = (Long)attributes.get("rowId");
 
 		if (rowId != null) {
@@ -108,6 +121,16 @@ public class ExpandoRowWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this expando row.
+	 *
+	 * @return the ct collection ID of this expando row
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the modified date of this expando row.
 	 *
 	 * @return the modified date of this expando row
@@ -115,6 +138,16 @@ public class ExpandoRowWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this expando row.
+	 *
+	 * @return the mvcc version of this expando row
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -173,6 +206,16 @@ public class ExpandoRowWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this expando row.
+	 *
+	 * @param ctCollectionId the ct collection ID of this expando row
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the modified date of this expando row.
 	 *
 	 * @param modifiedDate the modified date of this expando row
@@ -180,6 +223,16 @@ public class ExpandoRowWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this expando row.
+	 *
+	 * @param mvccVersion the mvcc version of this expando row
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -210,6 +263,20 @@ public class ExpandoRowWrapper
 	@Override
 	public void setTableId(long tableId) {
 		model.setTableId(tableId);
+	}
+
+	@Override
+	public Map<String, Function<ExpandoRow, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<ExpandoRow, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

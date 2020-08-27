@@ -25,6 +25,7 @@ import com.liferay.portal.test.log.CaptureAppender;
 import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import javax.ws.rs.client.Entity;
@@ -111,18 +112,38 @@ public class JsonWebServiceTest extends BaseClientTestCase {
 			Assert.assertEquals(403, response.getStatus());
 		}
 
-		invocationBuilder = authorize(
-			webTarget.request(),
-			getToken(
-				"oauthTestApplicationRW", null,
-				getResourceOwnerPasswordBiFunction("test@liferay.com", "test"),
-				this::parseTokenString));
+		String token = getToken(
+			"oauthTestApplicationRW", null,
+			getResourceOwnerPasswordBiFunction(
+				"test@liferay.com", "test", "everything.write"),
+			this::parseTokenString);
+
+		invocationBuilder = authorize(webTarget.request(), token);
 
 		response = invocationBuilder.post(Entity.form(formData));
 
 		String responseString = response.readEntity(String.class);
 
 		Assert.assertTrue(responseString.contains("No Country exists with"));
+
+		webTarget = getJsonWebTarget("company", "get-company-by-virtual-host");
+
+		invocationBuilder = authorize(webTarget.request(), token);
+
+		formData = new MultivaluedHashMap<>();
+
+		formData.putSingle("virtualHost", "testcompany.xyz");
+
+		try (CaptureAppender captureAppender =
+				Log4JLoggerTestUtil.configureLog4JLogger(
+					"portal_web.docroot.errors.code_jsp", Level.WARN)) {
+
+			Assert.assertEquals(
+				403,
+				invocationBuilder.post(
+					Entity.form(formData)
+				).getStatus());
+		}
 	}
 
 	public static class JsonWebServiceTestPreparatorBundleActivator
@@ -142,7 +163,7 @@ public class JsonWebServiceTest extends BaseClientTestCase {
 
 			createOAuth2Application(
 				defaultCompanyId, user, "oauthTestApplicationRW",
-				Collections.singletonList("everything"));
+				Arrays.asList("everything.read", "everything.write"));
 		}
 
 	}

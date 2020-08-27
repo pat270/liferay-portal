@@ -175,8 +175,8 @@ public abstract class TopLevelBuildRunner
 
 			publishToUserContentDir(jenkinsReportFile);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -298,8 +298,8 @@ public abstract class TopLevelBuildRunner
 		try {
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 
 		String invocationURL =
@@ -329,13 +329,6 @@ public abstract class TopLevelBuildRunner
 		}
 
 		_topLevelBuild.addDownstreamBuilds(sb.toString());
-
-		try {
-			JenkinsResultsParserUtil.toString(sb.toString());
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
 	}
 
 	private void _invokeDownstreamBuild(BuildData buildData) {

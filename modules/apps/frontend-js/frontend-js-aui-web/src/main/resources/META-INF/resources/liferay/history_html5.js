@@ -1,13 +1,27 @@
 /**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+/**
  * The History HTML5 Component.
  *
- * @deprecated since 7.2, unused
+ * @deprecated As of Mueller (7.2.x), replaced by senna.js
  * @module liferay-history-html5
  */
 
 AUI.add(
 	'liferay-history-html5',
-	function(A) {
+	(A) => {
 		var AObject = A.Object;
 		var History = Liferay.History;
 		var Lang = A.Lang;
@@ -25,26 +39,13 @@ AUI.add(
 		A.mix(
 			History.prototype,
 			{
-				PROTECTED_HASH_KEYS: [/^liferay$/, /^tab$/, /^_\d+_tab$/],
-
-				add: function(state, options) {
-					var instance = this;
-
-					options = options || {};
-
-					options.url = options.url || instance._updateURI(state);
-
-					state.liferay = true;
-
-					return History.superclass.add.call(instance, state, options);
-				},
-
-				_init: function(config) {
+				_init(config) {
 					var instance = this;
 
 					var hash = LOCATION.hash;
 
-					var locationHashValid = hash.indexOf(History.VALUE_SEPARATOR) != -1;
+					var locationHashValid =
+						hash.indexOf(History.VALUE_SEPARATOR) != -1;
 
 					if (locationHashValid) {
 						HISTORY.replaceState(null, null, instance._updateURI());
@@ -52,21 +53,28 @@ AUI.add(
 
 					config = config || {};
 
-					if (!config.hasOwnProperty('initialState')) {
+					if (
+						!Object.prototype.hasOwnProperty.call(
+							config,
+							'initialState'
+						)
+					) {
 						if (locationHashValid) {
-							config.initialState = instance._parse(hash.substr(1));
+							config.initialState = instance._parse(
+								hash.substr(1)
+							);
 						}
 
 						History.superclass._init.call(instance, config);
 					}
 				},
 
-				_updateURI: function(state) {
+				_updateURI(state) {
 					var instance = this;
 
 					var uriData = [
 						LOCATION.search.substr(1),
-						LOCATION.hash.substr(1)
+						LOCATION.hash.substr(1),
 					];
 
 					var hash = uriData[1];
@@ -86,55 +94,77 @@ AUI.add(
 
 							state = hashMap;
 
-							A.each(
-								state,
-								function(value1, key1) {
-									instance.PROTECTED_HASH_KEYS.forEach(
-										function(value2, key2) {
-											if (value2.test(key1)) {
-												delete state[key1];
-												protectedHashMap[key1] = value1;
-											}
+							A.each(state, (value1, key1) => {
+								instance.PROTECTED_HASH_KEYS.forEach(
+									(value2) => {
+										if (value2.test(key1)) {
+											delete state[key1];
+											protectedHashMap[key1] = value1;
 										}
-									);
-								}
-							);
+									}
+								);
+							});
 
 							uriData.pop();
 
-							uriData.push('#', QueryString.stringify(protectedHashMap));
+							uriData.push(
+								'#',
+								QueryString.stringify(protectedHashMap)
+							);
 						}
 					}
 
 					A.mix(queryMap, state, true);
 
-					AObject.each(
-						queryMap,
-						function(item, index) {
-							if (!isValue(item)) {
-								delete queryMap[index];
-							}
+					AObject.each(queryMap, (item, index) => {
+						if (!isValue(item)) {
+							delete queryMap[index];
 						}
-					);
+					});
 
-					uriData[0] = QueryString.stringify(
-						queryMap,
-						{
-							eq: History.VALUE_SEPARATOR,
-							sep: History.PAIR_SEPARATOR
-						}
-					);
+					uriData[0] = QueryString.stringify(queryMap, {
+						eq: History.VALUE_SEPARATOR,
+						sep: History.PAIR_SEPARATOR,
+					});
 
-					uriData.unshift(LOCATION.protocol, '//', LOCATION.host, LOCATION.pathname, '?');
+					uriData.unshift(
+						LOCATION.protocol,
+						'//',
+						LOCATION.host,
+						LOCATION.pathname,
+						'?'
+					);
 
 					return uriData.join('');
-				}
+				},
+
+				PROTECTED_HASH_KEYS: [/^liferay$/, /^tab$/, /^_\d+_tab$/],
+
+				add(state, options) {
+					var instance = this;
+
+					options = options || {};
+
+					options.url = options.url || instance._updateURI(state);
+
+					state.liferay = true;
+
+					return History.superclass.add.call(
+						instance,
+						state,
+						options
+					);
+				},
 			},
 			true
 		);
 	},
 	'',
 	{
-		requires: ['history-html5', 'liferay-history', 'querystring-stringify-simple']
+		requires: [
+			'history-html5',
+			'liferay-history',
+			'querystring-stringify-simple',
+		],
 	}
 );

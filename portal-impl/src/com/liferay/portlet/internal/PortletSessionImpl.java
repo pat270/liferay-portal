@@ -118,10 +118,10 @@ public class PortletSessionImpl implements LiferayPortletSession {
 
 		List<String> attributeNames = new ArrayList<>();
 
-		Enumeration<String> enu = session.getAttributeNames();
+		Enumeration<String> enumeration = session.getAttributeNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			if (name.startsWith(scopePrefix)) {
 				name = name.substring(scopePrefix.length());
@@ -257,8 +257,9 @@ public class PortletSessionImpl implements LiferayPortletSession {
 			try {
 				return deserializer.readObject();
 			}
-			catch (ClassNotFoundException cnfe) {
-				_log.error("Unable to deserialize object", cnfe);
+			catch (ClassNotFoundException classNotFoundException) {
+				_log.error(
+					"Unable to deserialize object", classNotFoundException);
 
 				return null;
 			}
@@ -374,8 +375,10 @@ public class PortletSessionImpl implements LiferayPortletSession {
 
 			Class<?> clazz = value.getClass();
 
-			if (!PortalClassLoaderUtil.isPortalClassLoader(
-					clazz.getClassLoader())) {
+			ClassLoader classLoader = clazz.getClassLoader();
+
+			if ((classLoader != null) &&
+				!PortalClassLoaderUtil.isPortalClassLoader(classLoader)) {
 
 				value = new LazySerializableObjectWrapper((Serializable)value);
 			}

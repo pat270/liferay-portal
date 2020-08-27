@@ -15,6 +15,9 @@
 package com.liferay.asset.entry.rel.model;
 
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
+import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -31,7 +34,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetEntryAssetCategoryRelModel
-	extends BaseModel<AssetEntryAssetCategoryRel> {
+	extends BaseModel<AssetEntryAssetCategoryRel>,
+			CTModel<AssetEntryAssetCategoryRel>, MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -44,6 +48,7 @@ public interface AssetEntryAssetCategoryRelModel
 	 *
 	 * @return the primary key of this asset entry asset category rel
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -51,7 +56,40 @@ public interface AssetEntryAssetCategoryRelModel
 	 *
 	 * @param primaryKey the primary key of this asset entry asset category rel
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset entry asset category rel.
+	 *
+	 * @return the mvcc version of this asset entry asset category rel
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset entry asset category rel.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry asset category rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset entry asset category rel.
+	 *
+	 * @return the ct collection ID of this asset entry asset category rel
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset entry asset category rel.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset entry asset category rel
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the asset entry asset category rel ID of this asset entry asset category rel.
@@ -67,6 +105,22 @@ public interface AssetEntryAssetCategoryRelModel
 	 */
 	public void setAssetEntryAssetCategoryRelId(
 		long assetEntryAssetCategoryRelId);
+
+	/**
+	 * Returns the company ID of this asset entry asset category rel.
+	 *
+	 * @return the company ID of this asset entry asset category rel
+	 */
+	@Override
+	public long getCompanyId();
+
+	/**
+	 * Sets the company ID of this asset entry asset category rel.
+	 *
+	 * @param companyId the company ID of this asset entry asset category rel
+	 */
+	@Override
+	public void setCompanyId(long companyId);
 
 	/**
 	 * Returns the asset entry ID of this asset entry asset category rel.

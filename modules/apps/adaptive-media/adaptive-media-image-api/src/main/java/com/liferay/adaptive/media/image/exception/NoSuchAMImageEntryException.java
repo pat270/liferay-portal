@@ -16,12 +16,9 @@ package com.liferay.adaptive.media.image.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchAMImageEntryException extends NoSuchModelException {
 
 	public NoSuchAMImageEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchAMImageEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchAMImageEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchAMImageEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchAMImageEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchAMImageEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -33,8 +33,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author Eudaldo Alonso
+ * @author     Eudaldo Alonso
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.layout.type.controller.BaseLayoutTypeControllerImpl}
  */
+@Deprecated
 public abstract class BaseLayoutTypeControllerImpl
 	implements LayoutTypeController {
 
@@ -154,8 +157,8 @@ public abstract class BaseLayoutTypeControllerImpl
 
 			return values.contains(friendlyURL);
 		}
-		catch (SystemException se) {
-			throw new RuntimeException(se);
+		catch (SystemException systemException) {
+			throw new RuntimeException(systemException);
 		}
 	}
 

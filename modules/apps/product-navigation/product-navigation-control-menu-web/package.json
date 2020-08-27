@@ -1,30 +1,20 @@
 {
-	"csfConfig": {
-		"path:**/*.js": {
-			"js": {
-				"lint": {
-					"globals": {
-						"$": true,
-						"MODULE_PATH": true,
-						"_": true
-					}
-				}
-			}
-		}
-	},
 	"dependencies": {
-		"metal": "2.16.8",
-		"metal-component": "2.16.8",
-		"metal-dom": "2.16.8",
-		"metal-position": "2.1.2",
-		"metal-soy": "2.16.8",
-		"metal-state": "2.16.8"
+		"@clayui/button": "3.4.0",
+		"@clayui/drop-down": "3.6.0",
+		"@clayui/icon": "3.0.5",
+		"@clayui/sticker": "3.2.0",
+		"frontend-js-web": "*",
+		"prop-types": "15.7.2",
+		"react": "16.12.0",
+		"react-dnd": "11.1.1",
+		"react-dnd-html5-backend": "11.1.1"
 	},
-	"name": "product-navigation-control-menu-web",
+	"name": "product-navigation-control-menu",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format"
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix"
 	},
-	"version": "5.0.0"
+	"version": "5.0.15"
 }

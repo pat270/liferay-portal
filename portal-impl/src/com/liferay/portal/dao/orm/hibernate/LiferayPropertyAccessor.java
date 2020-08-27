@@ -40,12 +40,9 @@ import org.hibernate.property.BasicPropertyAccessor;
 import org.hibernate.property.Getter;
 import org.hibernate.property.Setter;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Preston Crary
  */
-@ProviderType
 public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 
 	@Override
@@ -69,13 +66,13 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 
 			return new LiferayPropertyGetter(getterMethod, propertyName);
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
 						"Getter not found for ", clazz.getName(),
 						StringPool.POUND, propertyName),
-					nsme);
+					noSuchMethodException);
 			}
 
 			return super.getGetter(clazz, propertyName);
@@ -107,13 +104,13 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 
 			return new LiferayPropertySetter(setterMethod, propertyName);
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
 						"Setter not found for ", clazz.getName(),
 						StringPool.POUND, propertyName),
-					nsme);
+					noSuchMethodException);
 			}
 
 			return super.getSetter(clazz, propertyName);
@@ -125,7 +122,7 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 	}
 
 	private LiferayPropertyMutator _getLiferayPropertyMutator(
-		Class clazz, String name) {
+		Class<?> clazz, String name) {
 
 		ModelMutators modelMutators = _modelMutators.computeIfAbsent(
 			clazz,
@@ -168,9 +165,13 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 						(Map<String, BiConsumer<Object, Object>>)
 							attributeSetterBiConsumersField.get(null);
 				}
-				catch (ReflectiveOperationException roe) {
+				catch (ReflectiveOperationException
+							reflectiveOperationException) {
+
 					if (_log.isDebugEnabled()) {
-						_log.debug(roe, roe);
+						_log.debug(
+							reflectiveOperationException,
+							reflectiveOperationException);
 					}
 				}
 
@@ -203,7 +204,7 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 	private static final Log _log = LogFactoryUtil.getLog(
 		LiferayPropertyAccessor.class);
 
-	private static final Map<Class, ModelMutators> _modelMutators =
+	private static final Map<Class<?>, ModelMutators> _modelMutators =
 		new ConcurrentReferenceValueHashMap<>(
 			FinalizeManager.WEAK_REFERENCE_FACTORY);
 
@@ -215,11 +216,11 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 				return _method.invoke(target);
 			}
 			catch (IllegalAccessException | IllegalArgumentException |
-				   InvocationTargetException e) {
+				   InvocationTargetException exception) {
 
 				throw new PropertyAccessException(
-					e, e.getMessage(), false, _method.getDeclaringClass(),
-					_propertyName);
+					exception, exception.getMessage(), false,
+					_method.getDeclaringClass(), _propertyName);
 			}
 		}
 
@@ -339,11 +340,11 @@ public class LiferayPropertyAccessor extends BasicPropertyAccessor {
 				_method.invoke(target, value);
 			}
 			catch (IllegalAccessException | IllegalArgumentException |
-				   InvocationTargetException | NullPointerException e) {
+				   InvocationTargetException | NullPointerException exception) {
 
 				throw new PropertyAccessException(
-					e, e.getMessage(), true, _method.getDeclaringClass(),
-					_propertyName);
+					exception, exception.getMessage(), true,
+					_method.getDeclaringClass(), _propertyName);
 			}
 		}
 

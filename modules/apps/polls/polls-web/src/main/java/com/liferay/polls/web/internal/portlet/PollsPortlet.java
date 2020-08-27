@@ -15,10 +15,20 @@
 package com.liferay.polls.web.internal.portlet;
 
 import com.liferay.polls.constants.PollsPortletKeys;
+import com.liferay.polls.service.PollsQuestionLocalService;
+import com.liferay.polls.web.internal.portlet.display.context.PollsDisplayContext;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.util.WebKeys;
+
+import java.io.IOException;
 
 import javax.portlet.Portlet;
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -51,18 +61,52 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/polls/view.jsp",
 		"javax.portlet.name=" + PollsPortletKeys.POLLS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
 public class PollsPortlet extends MVCPortlet {
 
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		try {
+			setRenderRequestAttributes(renderRequest, renderResponse);
+		}
+		catch (Exception exception) {
+			if (isSessionErrorException(exception)) {
+				SessionErrors.add(renderRequest, exception.getClass());
+			}
+			else {
+				throw new PortletException(exception);
+			}
+		}
+
+		hideDefaultErrorMessage(renderRequest);
+
+		super.render(renderRequest, renderResponse);
+	}
+
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.polls.service)(&(release.schema.version>=2.0.0)(!(release.schema.version>=2.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.polls.service)(&(release.schema.version>=2.0.0)(!(release.schema.version>=3.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
 	}
+
+	protected void setRenderRequestAttributes(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws PortalException {
+
+		renderRequest.setAttribute(
+			WebKeys.PORTLET_DISPLAY_CONTEXT,
+			new PollsDisplayContext(
+				renderRequest, renderResponse, _pollsQuestionLocalService));
+	}
+
+	@Reference
+	private PollsQuestionLocalService _pollsQuestionLocalService;
 
 }

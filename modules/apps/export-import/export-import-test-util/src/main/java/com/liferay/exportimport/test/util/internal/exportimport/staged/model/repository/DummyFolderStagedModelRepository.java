@@ -74,21 +74,23 @@ public class DummyFolderStagedModelRepository
 
 	@Override
 	public DummyFolder addStagedModel(
-			PortletDataContext portletDataContext, DummyFolder dummyFolder)
+			PortletDataContext portletDataContext, DummyFolder dummyFolder1)
 		throws PortalException {
 
 		if ((portletDataContext != null) &&
 			(portletDataContext.getUserIdStrategy() != null)) {
 
-			dummyFolder.setUserId(
-				portletDataContext.getUserId(dummyFolder.getUserUuid()));
+			dummyFolder1.setUserId(
+				portletDataContext.getUserId(dummyFolder1.getUserUuid()));
 		}
 
-		dummyFolder.setId(new DummyFolder().getId());
+		DummyFolder dummyFolder2 = new DummyFolder();
 
-		_dummyFolders.add(dummyFolder);
+		dummyFolder1.setId(dummyFolder2.getId());
 
-		return dummyFolder;
+		_dummyFolders.add(dummyFolder1);
+
+		return dummyFolder1;
 	}
 
 	@Override
@@ -310,10 +312,9 @@ public class DummyFolderStagedModelRepository
 			portletDataContext.getScopeGroupId());
 
 		exportActionableDynamicQuery.setPerformActionMethod(
-			(DummyFolder dummyFolder) -> {
+			(DummyFolder dummyFolder) ->
 				StagedModelDataHandlerUtil.exportStagedModel(
-					portletDataContext, dummyFolder);
-			});
+					portletDataContext, dummyFolder));
 
 		exportActionableDynamicQuery.setStagedModelType(
 			new StagedModelType(
@@ -372,8 +373,10 @@ public class DummyFolderStagedModelRepository
 	public class DummyFolderBaseLocalServiceImpl extends BaseLocalServiceImpl {
 
 		public List<DummyFolder> dynamicQuery(DynamicQuery dynamicQuery) {
+			DynamicQueryImpl dynamicQueryImpl = (DynamicQueryImpl)dynamicQuery;
+
 			DetachedCriteria detachedCriteria =
-				((DynamicQueryImpl)dynamicQuery).getDetachedCriteria();
+				dynamicQueryImpl.getDetachedCriteria();
 
 			Class<?> detachedCriteriaClass = detachedCriteria.getClass();
 
@@ -388,12 +391,11 @@ public class DummyFolderStagedModelRepository
 				CriteriaImpl detachedCriteriaImpl = (CriteriaImpl)method.invoke(
 					detachedCriteria);
 
-				Iterator iterator =
+				Iterator<CriteriaImpl.CriterionEntry> iterator =
 					detachedCriteriaImpl.iterateExpressionEntries();
 
 				while (iterator.hasNext()) {
-					CriteriaImpl.CriterionEntry criteriaImpl =
-						(CriteriaImpl.CriterionEntry)iterator.next();
+					CriteriaImpl.CriterionEntry criteriaImpl = iterator.next();
 
 					Stream<DummyFolder> dummyFoldersStream = result.stream();
 
@@ -404,8 +406,8 @@ public class DummyFolderStagedModelRepository
 					);
 				}
 			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
 			}
 
 			return result;
@@ -418,7 +420,7 @@ public class DummyFolderStagedModelRepository
 		}
 
 		public Predicate<? super DummyFolder> getPredicate(String expression) {
-			if (expression.contains("groupId=")) {
+			if (expression.startsWith("groupId=")) {
 				return d ->
 					d.getGroupId() == Long.valueOf(
 						expression.substring("groupId=".length()));
@@ -428,7 +430,7 @@ public class DummyFolderStagedModelRepository
 				return d -> d.getId() > -1;
 			}
 
-			if (expression.contains("companyId=")) {
+			if (expression.startsWith("companyId=")) {
 				return d ->
 					d.getCompanyId() == Long.valueOf(
 						expression.substring("companyId=".length()));

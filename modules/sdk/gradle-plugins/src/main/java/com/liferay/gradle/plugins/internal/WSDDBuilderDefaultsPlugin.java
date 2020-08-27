@@ -14,7 +14,8 @@
 
 package com.liferay.gradle.plugins.internal;
 
-import com.liferay.gradle.plugins.BasePortalToolDefaultsPlugin;
+import com.liferay.gradle.plugins.BaseDefaultsPlugin;
+import com.liferay.gradle.plugins.util.PortalTools;
 import com.liferay.gradle.plugins.wsdd.builder.WSDDBuilderPlugin;
 
 import org.gradle.api.Plugin;
@@ -24,24 +25,25 @@ import org.gradle.api.Project;
  * @author Andrea Di Giorgi
  */
 public class WSDDBuilderDefaultsPlugin
-	extends BasePortalToolDefaultsPlugin<WSDDBuilderPlugin> {
+	extends BaseDefaultsPlugin<WSDDBuilderPlugin> {
 
 	public static final Plugin<Project> INSTANCE =
 		new WSDDBuilderDefaultsPlugin();
 
 	@Override
+	protected void applyPluginDefaults(
+		Project project, WSDDBuilderPlugin wsddBuilderPlugin) {
+
+		// Dependencies
+
+		PortalTools.addPortalToolDependencies(
+			project, WSDDBuilderPlugin.CONFIGURATION_NAME, PortalTools.GROUP,
+			_PORTAL_TOOL_NAME);
+	}
+
+	@Override
 	protected Class<WSDDBuilderPlugin> getPluginClass() {
 		return WSDDBuilderPlugin.class;
-	}
-
-	@Override
-	protected String getPortalToolConfigurationName() {
-		return WSDDBuilderPlugin.CONFIGURATION_NAME;
-	}
-
-	@Override
-	protected String getPortalToolName() {
-		return _PORTAL_TOOL_NAME;
 	}
 
 	private WSDDBuilderDefaultsPlugin() {

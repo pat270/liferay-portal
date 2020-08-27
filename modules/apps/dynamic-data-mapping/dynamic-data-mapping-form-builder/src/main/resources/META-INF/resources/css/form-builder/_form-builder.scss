@@ -1,12 +1,12 @@
-@import "./field-settings";
-@import "./field-types-dropdown";
-@import "./field-types-panel";
-@import "./form-page";
-@import "./form-pagination";
-@import "./moveable";
-@import "./resizeable";
-@import "./share_url_popover";
-@import "./sidebar";
+@import './actionable';
+@import './field-settings';
+@import './field-types-dropdown';
+@import './field-types-panel';
+@import './form-page';
+@import './form-pagination';
+@import './moveable';
+@import './resizeable';
+@import './sidebar';
 
 $c: '.ddm-form-builder';
 
@@ -22,18 +22,46 @@ $c: '.ddm-form-builder';
 		cursor: inherit;
 	}
 
-	.ddm-parent-dragging {
-		border: none;
-
-		.ddm-field-actions-container {
-			display: none;
-		}
+	.lfr-ddm-form-pagination-controls {
+		display: none;
 	}
 
 	.ddm-field-container {
-		&:hover, &:active {
-			border-color: #CDCED9;
+		border: 2px solid transparent;
+		padding: 0 12px;
+
+		&.dragging,
+		&.expanded,
+		&.hovered,
+		&.selected,
+		&.targetOver {
+			border-color: $active-blue;
+
+			&.ddm-fieldset {
+				border-color: #5aca75;
+			}
 		}
+
+		&.hovered {
+			border-width: 1px;
+			margin: 1px 2px;
+		}
+
+		&.active-drop-child {
+			border-color: $light-blue;
+			border-style: dashed;
+		}
+
+		&.active-drop-child,
+		&.selected,
+		&.targetOver {
+			border-width: 2px;
+			margin: 0;
+		}
+	}
+
+	.form-builder-layout {
+		padding: 1em 1.5rem;
 	}
 }
 

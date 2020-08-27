@@ -89,140 +89,6 @@ public class ImageToolImpl implements ImageTool {
 		return _instance;
 	}
 
-	public void afterPropertiesSet() {
-		Class<?> clazz = getClass();
-
-		ClassLoader classLoader = clazz.getClassLoader();
-
-		try {
-			InputStream inputStream = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_SPACER));
-
-			if (inputStream == null) {
-				_log.error("Default spacer is not available");
-			}
-
-			_defaultSpacer = getImage(inputStream);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default spacer: " + e.getMessage());
-		}
-
-		try {
-			InputStream inputStream = null;
-
-			String imageDefaultCompanyLogo = PropsUtil.get(
-				PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO);
-
-			int index = imageDefaultCompanyLogo.indexOf(CharPool.SEMICOLON);
-
-			if (index == -1) {
-				inputStream = classLoader.getResourceAsStream(
-					PropsUtil.get(PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO));
-			}
-			else {
-				String bundleIdString = imageDefaultCompanyLogo.substring(
-					0, index);
-
-				int bundleId = GetterUtil.getInteger(bundleIdString, -1);
-
-				String name = imageDefaultCompanyLogo.substring(index + 1);
-
-				if (bundleId < 0) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"Fallback to portal class loader because of " +
-								"invalid bundle ID " + bundleIdString);
-					}
-
-					inputStream = classLoader.getResourceAsStream(name);
-				}
-				else {
-					URL url = ModuleFrameworkUtilAdapter.getBundleResource(
-						bundleId, name);
-
-					inputStream = url.openStream();
-				}
-			}
-
-			if (inputStream == null) {
-				_log.error("Default company logo is not available");
-			}
-
-			_defaultCompanyLogo = getImage(inputStream);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default company logo: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_ORGANIZATION_LOGO));
-
-			if (is == null) {
-				_log.error("Default organization logo is not available");
-			}
-
-			_defaultOrganizationLogo = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default organization logo: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_FEMALE_PORTRAIT));
-
-			if (is == null) {
-				_log.error("Default user female portrait is not available");
-			}
-
-			_defaultUserFemalePortrait = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default user female portrait: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_MALE_PORTRAIT));
-
-			if (is == null) {
-				_log.error("Default user male portrait is not available");
-			}
-
-			_defaultUserMalePortrait = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default user male portrait: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_PORTRAIT));
-
-			if (is == null) {
-				_log.error("Default user portrait is not available");
-			}
-
-			_defaultUserPortrait = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default user portrait: " +
-					e.getMessage());
-		}
-	}
-
 	@Override
 	public Future<RenderedImage> convertCMYKtoRGB(
 		byte[] bytes, final String type) {
@@ -233,11 +99,11 @@ public class ImageToolImpl implements ImageTool {
 			return null;
 		}
 
-		File inputFile = _fileUtil.createTempFile(type);
-		final File outputFile = _fileUtil.createTempFile(type);
+		File inputFile = _fileImpl.createTempFile(type);
+		final File outputFile = _fileImpl.createTempFile(type);
 
 		try {
-			_fileUtil.write(inputFile, bytes);
+			_fileImpl.write(inputFile, bytes);
 
 			IMOperation imOperation = new IMOperation();
 
@@ -265,18 +131,21 @@ public class ImageToolImpl implements ImageTool {
 				return new FutureConverter<RenderedImage, Object>(future) {
 
 					@Override
-					protected RenderedImage convert(Object obj) {
+					protected RenderedImage convert(Object object) {
 						RenderedImage renderedImage = null;
 
 						try {
 							ImageBag imageBag = read(
-								_fileUtil.getBytes(outputFile));
+								_fileImpl.getBytes(outputFile));
 
 							renderedImage = imageBag.getRenderedImage();
 						}
-						catch (ImageResolutionException | IOException e) {
+						catch (ImageResolutionException | IOException
+									exception) {
+
 							if (_log.isDebugEnabled()) {
-								_log.debug("Unable to convert " + type, e);
+								_log.debug(
+									"Unable to convert " + type, exception);
 							}
 						}
 
@@ -286,12 +155,12 @@ public class ImageToolImpl implements ImageTool {
 				};
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 		finally {
-			_fileUtil.delete(inputFile);
-			_fileUtil.delete(outputFile);
+			_fileImpl.delete(inputFile);
+			_fileImpl.delete(outputFile);
 		}
 
 		return null;
@@ -328,7 +197,8 @@ public class ImageToolImpl implements ImageTool {
 	}
 
 	@Override
-	public void encodeGIF(RenderedImage renderedImage, OutputStream os)
+	public void encodeGIF(
+			RenderedImage renderedImage, OutputStream outputStream)
 		throws IOException {
 
 		BufferedImage bufferedImage = getBufferedImage(renderedImage);
@@ -340,11 +210,12 @@ public class ImageToolImpl implements ImageTool {
 
 		Gif89Encoder encoder = new Gif89Encoder(bufferedImage);
 
-		encoder.encode(os);
+		encoder.encode(outputStream);
 	}
 
 	@Override
-	public void encodeWBMP(RenderedImage renderedImage, OutputStream os)
+	public void encodeWBMP(
+			RenderedImage renderedImage, OutputStream outputStream)
 		throws IOException {
 
 		BufferedImage bufferedImage = getBufferedImage(renderedImage);
@@ -369,14 +240,14 @@ public class ImageToolImpl implements ImageTool {
 			renderedImage = binaryImage;
 		}
 
-		if (!ImageIO.write(renderedImage, "wbmp", os)) {
+		if (!ImageIO.write(renderedImage, "wbmp", outputStream)) {
 
 			// See http://www.jguru.com/faq/view.jsp?EID=127723
 
-			os.write(0);
-			os.write(0);
-			os.write(toMultiByte(bufferedImage.getWidth()));
-			os.write(toMultiByte(bufferedImage.getHeight()));
+			outputStream.write(0);
+			outputStream.write(0);
+			outputStream.write(toMultiByte(bufferedImage.getWidth()));
+			outputStream.write(toMultiByte(bufferedImage.getHeight()));
 
 			Raster data = bufferedImage.getData();
 
@@ -385,7 +256,7 @@ public class ImageToolImpl implements ImageTool {
 			int size = dataBuffer.getSize();
 
 			for (int i = 0; i < size; i++) {
-				os.write((byte)dataBuffer.getElem(i));
+				outputStream.write((byte)dataBuffer.getElem(i));
 			}
 		}
 	}
@@ -455,40 +326,206 @@ public class ImageToolImpl implements ImageTool {
 	public byte[] getBytes(RenderedImage renderedImage, String contentType)
 		throws IOException {
 
-		UnsyncByteArrayOutputStream baos = new UnsyncByteArrayOutputStream();
+		UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
+			new UnsyncByteArrayOutputStream();
 
-		write(renderedImage, contentType, baos);
+		write(renderedImage, contentType, unsyncByteArrayOutputStream);
 
-		return baos.toByteArray();
+		return unsyncByteArrayOutputStream.toByteArray();
 	}
 
 	@Override
 	public Image getDefaultCompanyLogo() {
+		if (_defaultCompanyLogo != null) {
+			return _defaultCompanyLogo;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = null;
+
+			String imageDefaultCompanyLogo = PropsUtil.get(
+				PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO);
+
+			int index = imageDefaultCompanyLogo.indexOf(CharPool.SEMICOLON);
+
+			if (index == -1) {
+				inputStream = classLoader.getResourceAsStream(
+					PropsUtil.get(PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO));
+			}
+			else {
+				String bundleIdString = imageDefaultCompanyLogo.substring(
+					0, index);
+
+				int bundleId = GetterUtil.getInteger(bundleIdString, -1);
+
+				String name = imageDefaultCompanyLogo.substring(index + 1);
+
+				if (bundleId < 0) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Fallback to portal class loader because of " +
+								"invalid bundle ID " + bundleIdString);
+					}
+
+					inputStream = classLoader.getResourceAsStream(name);
+				}
+				else {
+					URL url = ModuleFrameworkUtilAdapter.getBundleResource(
+						bundleId, name);
+
+					inputStream = url.openStream();
+				}
+			}
+
+			if (inputStream == null) {
+				_log.error("Default company logo is not available");
+			}
+
+			_defaultCompanyLogo = getImage(inputStream);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to configure the default company logo: " +
+					exception.getMessage());
+		}
+
 		return _defaultCompanyLogo;
 	}
 
 	@Override
 	public Image getDefaultOrganizationLogo() {
+		if (_defaultOrganizationLogo != null) {
+			return _defaultOrganizationLogo;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_ORGANIZATION_LOGO));
+
+			if (inputStream == null) {
+				_log.error("Default organization logo is not available");
+			}
+
+			_defaultOrganizationLogo = getImage(inputStream);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to configure the default organization logo: " +
+					exception.getMessage());
+		}
+
 		return _defaultOrganizationLogo;
 	}
 
 	@Override
 	public Image getDefaultSpacer() {
+		if (_defaultSpacer != null) {
+			return _defaultSpacer;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_SPACER));
+
+			if (inputStream == null) {
+				_log.error("Default spacer is not available");
+			}
+
+			_defaultSpacer = getImage(inputStream);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to configure the default spacer: " +
+					exception.getMessage());
+		}
+
 		return _defaultSpacer;
 	}
 
 	@Override
 	public Image getDefaultUserFemalePortrait() {
+		if (_defaultUserFemalePortrait != null) {
+			return _defaultUserFemalePortrait;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_FEMALE_PORTRAIT));
+
+			if (inputStream == null) {
+				_log.error("Default user female portrait is not available");
+			}
+
+			_defaultUserFemalePortrait = getImage(inputStream);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to configure the default user female portrait: " +
+					exception.getMessage());
+		}
+
 		return _defaultUserFemalePortrait;
 	}
 
 	@Override
 	public Image getDefaultUserMalePortrait() {
+		if (_defaultUserMalePortrait != null) {
+			return _defaultUserMalePortrait;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_MALE_PORTRAIT));
+
+			if (inputStream == null) {
+				_log.error("Default user male portrait is not available");
+			}
+
+			_defaultUserMalePortrait = getImage(inputStream);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to configure the default user male portrait: " +
+					exception.getMessage());
+		}
+
 		return _defaultUserMalePortrait;
 	}
 
 	@Override
 	public Image getDefaultUserPortrait() {
+		if (_defaultUserPortrait != null) {
+			return _defaultUserPortrait;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_PORTRAIT));
+
+			if (inputStream == null) {
+				_log.error("Default user portrait is not available");
+			}
+
+			_defaultUserPortrait = getImage(inputStream);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to configure the default user portrait: " +
+					exception.getMessage());
+		}
+
 		return _defaultUserPortrait;
 	}
 
@@ -529,27 +566,21 @@ public class ImageToolImpl implements ImageTool {
 	public Image getImage(File file)
 		throws ImageResolutionException, IOException {
 
-		byte[] bytes = _fileUtil.getBytes(file);
-
-		return getImage(bytes);
+		return getImage(_fileImpl.getBytes(file));
 	}
 
 	@Override
-	public Image getImage(InputStream is)
+	public Image getImage(InputStream inputStream)
 		throws ImageResolutionException, IOException {
 
-		byte[] bytes = _fileUtil.getBytes(is, -1, true);
-
-		return getImage(bytes);
+		return getImage(_fileImpl.getBytes(inputStream, -1, true));
 	}
 
 	@Override
-	public Image getImage(InputStream is, boolean cleanUpStream)
+	public Image getImage(InputStream inputStream, boolean cleanUpStream)
 		throws ImageResolutionException, IOException {
 
-		byte[] bytes = _fileUtil.getBytes(is, -1, cleanUpStream);
-
-		return getImage(bytes);
+		return getImage(_fileImpl.getBytes(inputStream, -1, cleanUpStream));
 	}
 
 	@Override
@@ -612,7 +643,7 @@ public class ImageToolImpl implements ImageTool {
 
 					renderedImage = imageReader.read(0);
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					continue;
 				}
 
@@ -666,14 +697,14 @@ public class ImageToolImpl implements ImageTool {
 	public ImageBag read(File file)
 		throws ImageResolutionException, IOException {
 
-		return read(_fileUtil.getBytes(file));
+		return read(_fileImpl.getBytes(file));
 	}
 
 	@Override
 	public ImageBag read(InputStream inputStream)
 		throws ImageResolutionException, IOException {
 
-		return read(_fileUtil.getBytes(inputStream));
+		return read(_fileImpl.getBytes(inputStream));
 	}
 
 	@Override
@@ -761,27 +792,28 @@ public class ImageToolImpl implements ImageTool {
 
 	@Override
 	public void write(
-			RenderedImage renderedImage, String contentType, OutputStream os)
+			RenderedImage renderedImage, String contentType,
+			OutputStream outputStream)
 		throws IOException {
 
 		if (contentType.contains(TYPE_BMP)) {
-			ImageIO.write(renderedImage, "bmp", os);
+			ImageIO.write(renderedImage, "bmp", outputStream);
 		}
 		else if (contentType.contains(TYPE_GIF)) {
-			encodeGIF(renderedImage, os);
+			encodeGIF(renderedImage, outputStream);
 		}
 		else if (contentType.contains(TYPE_JPEG) ||
 				 contentType.contains("jpeg")) {
 
-			ImageIO.write(renderedImage, "jpeg", os);
+			ImageIO.write(renderedImage, "jpeg", outputStream);
 		}
 		else if (contentType.contains(TYPE_PNG)) {
-			ImageIO.write(renderedImage, TYPE_PNG, os);
+			ImageIO.write(renderedImage, TYPE_PNG, outputStream);
 		}
 		else if (contentType.contains(TYPE_TIFF) ||
 				 contentType.contains("tif")) {
 
-			ImageIO.write(renderedImage, "tiff", os);
+			ImageIO.write(renderedImage, "tiff", outputStream);
 		}
 	}
 
@@ -792,8 +824,14 @@ public class ImageToolImpl implements ImageTool {
 
 		BufferedImage originalBufferedImage = getBufferedImage(renderedImage);
 
+		int type = originalBufferedImage.getType();
+
+		if (type == BufferedImage.TYPE_CUSTOM) {
+			type = BufferedImage.TYPE_INT_ARGB;
+		}
+
 		BufferedImage scaledBufferedImage = new BufferedImage(
-			scaledWidth, scaledHeight, originalBufferedImage.getType());
+			scaledWidth, scaledHeight, type);
 
 		int originalHeight = originalBufferedImage.getHeight();
 		int originalWidth = originalBufferedImage.getWidth();
@@ -901,11 +939,11 @@ public class ImageToolImpl implements ImageTool {
 		ImageReaderSpi firstImageReaderSpi = null;
 		ImageReaderSpi secondImageReaderSpi = null;
 
-		Iterator<ImageReaderSpi> imageReaderSpis =
+		Iterator<ImageReaderSpi> iterator =
 			defaultIIORegistry.getServiceProviders(ImageReaderSpi.class, true);
 
-		while (imageReaderSpis.hasNext()) {
-			ImageReaderSpi imageReaderSpi = imageReaderSpis.next();
+		while (iterator.hasNext()) {
+			ImageReaderSpi imageReaderSpi = iterator.next();
 
 			if (imageReaderSpi instanceof CMYKJPEGImageReaderSpi) {
 				secondImageReaderSpi = imageReaderSpi;
@@ -964,7 +1002,7 @@ public class ImageToolImpl implements ImageTool {
 
 	private static final ImageTool _instance = new ImageToolImpl();
 
-	private static final FileImpl _fileUtil = FileImpl.getInstance();
+	private static final FileImpl _fileImpl = FileImpl.getInstance();
 	private static ImageMagick _imageMagick;
 
 	private Image _defaultCompanyLogo;

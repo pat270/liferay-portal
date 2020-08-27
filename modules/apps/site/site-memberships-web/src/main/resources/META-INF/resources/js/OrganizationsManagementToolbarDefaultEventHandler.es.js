@@ -1,46 +1,59 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {DefaultEventHandler, ItemSelectorDialog} from 'frontend-js-web';
 import dom from 'metal-dom';
-import DefaultEventHandler from 'frontend-js-web/liferay/DefaultEventHandler.es';
 
 class OrganizationsManagementToolbarDefaultEventHandler extends DefaultEventHandler {
 	deleteSelectedOrganizations() {
-		if (confirm(Liferay.Language.get('are-you-sure-you-want-to-delete-this'))) {
+		if (
+			confirm(
+				Liferay.Language.get('are-you-sure-you-want-to-delete-this')
+			)
+		) {
 			submitForm(this.one('#fm'));
 		}
 	}
 
 	selectOrganizations(itemData) {
-		AUI().use(
-			'liferay-item-selector-dialog',
-			A => {
-				const itemSelectorDialog = new A.LiferayItemSelectorDialog(
-					{
-						eventName: this.ns('selectOrganizations'),
-						on: {
-							selectedItemChange: function(event) {
-								const selectedItem = event.newVal;
+		const itemSelectorDialog = new ItemSelectorDialog({
+			buttonAddLabel: Liferay.Language.get('done'),
+			eventName: this.ns('selectOrganizations'),
+			title: Liferay.Util.sub(
+				Liferay.Language.get('assign-organizations-to-this-x'),
+				itemData.groupTypeLabel
+			),
+			url: itemData.selectOrganizationsURL,
+		});
 
-								if (selectedItem) {
-									let addGroupOrganizationsFm = this.one('#addGroupOrganizationsFm');
+		itemSelectorDialog.on('selectedItemChange', (event) => {
+			const selectedItem = event.selectedItem;
 
-									selectedItem.forEach(
-										item => {
-											dom.append(addGroupOrganizationsFm, item);
-										}
-									);
-
-									submitForm(addGroupOrganizationsFm);
-								}
-							}.bind(this)
-						},
-						'strings.add': Liferay.Language.get('done'),
-						title: Liferay.Language.get('assign-organizations-to-this-site'),
-						url: itemData.selectOrganizationsURL
-					}
+			if (selectedItem) {
+				const addGroupOrganizationsFm = this.one(
+					'#addGroupOrganizationsFm'
 				);
 
-				itemSelectorDialog.open();
+				selectedItem.forEach((item) => {
+					dom.append(addGroupOrganizationsFm, item);
+				});
+
+				submitForm(addGroupOrganizationsFm);
 			}
-		);
+		});
+
+		itemSelectorDialog.open();
 	}
 }
 

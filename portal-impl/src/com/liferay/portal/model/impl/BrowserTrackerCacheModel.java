@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing BrowserTracker in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class BrowserTrackerCacheModel
 	implements CacheModel<BrowserTracker>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof BrowserTrackerCacheModel)) {
+		if (!(object instanceof BrowserTrackerCacheModel)) {
 			return false;
 		}
 
 		BrowserTrackerCacheModel browserTrackerCacheModel =
-			(BrowserTrackerCacheModel)obj;
+			(BrowserTrackerCacheModel)object;
 
 		if ((browserTrackerId == browserTrackerCacheModel.browserTrackerId) &&
 			(mvccVersion == browserTrackerCacheModel.mvccVersion)) {

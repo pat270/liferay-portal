@@ -552,8 +552,8 @@ public class HeaderResponseImpl
 				}
 			}
 		}
-		catch (XMLStreamException xmlse) {
-			_log.error(xmlse, xmlse);
+		catch (XMLStreamException xmlStreamException) {
+			_log.error(xmlStreamException, xmlStreamException);
 
 			parsedElements.add(new ParsedElement(null, null, null, false));
 		}
@@ -562,8 +562,8 @@ public class HeaderResponseImpl
 				try {
 					xmlStreamReader.close();
 				}
-				catch (XMLStreamException xmlse) {
-					_log.error(xmlse, xmlse);
+				catch (XMLStreamException xmlStreamException) {
+					_log.error(xmlStreamException, xmlStreamException);
 				}
 			}
 		}
@@ -588,7 +588,7 @@ public class HeaderResponseImpl
 		}
 
 		public StringBundler toStringBundler() {
-			StringBundler sb = new StringBundler(_attributes.size() * 5 + 7);
+			StringBundler sb = new StringBundler((_attributes.size() * 5) + 7);
 
 			sb.append("\n<");
 			sb.append(_name);
@@ -707,8 +707,9 @@ public class HeaderResponseImpl
 			try {
 				return toString(getCharacterEncoding());
 			}
-			catch (UnsupportedEncodingException uee) {
-				_log.error(uee, uee);
+			catch (UnsupportedEncodingException unsupportedEncodingException) {
+				_log.error(
+					unsupportedEncodingException, unsupportedEncodingException);
 			}
 
 			return StringPool.BLANK;

@@ -23,8 +23,8 @@ import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.BooleanClause;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -46,7 +46,8 @@ import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.search.test.internal.util.BaseTestFilterVisitor;
+import com.liferay.portal.search.internal.test.util.BaseTestFilterVisitor;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import org.junit.After;
@@ -244,6 +245,9 @@ public class SearchPermissionCheckerTest {
 			_group.getGroupId() + StringPool.DASH + _role.getRoleId());
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected void addViewPermission(int scope, long primKey, long roleId)
 		throws Exception {
 
@@ -342,10 +346,10 @@ public class SearchPermissionCheckerTest {
 
 		@Override
 		public Void visit(TermsFilter termsFilter) {
-			if (_field.equals(termsFilter.getField())) {
-				if (ArrayUtil.contains(termsFilter.getValues(), _value)) {
-					_found = true;
-				}
+			if (_field.equals(termsFilter.getField()) &&
+				ArrayUtil.contains(termsFilter.getValues(), _value)) {
+
+				_found = true;
 			}
 
 			return null;

@@ -14,29 +14,29 @@
 
 package com.liferay.portal.kernel.test.rule;
 
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.messaging.BaseAsyncDestination;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.BaseDestination;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.InvokerMessageListener;
 import com.liferay.portal.kernel.messaging.Message;
-import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.MessageListener;
-import com.liferay.portal.kernel.messaging.SynchronousDestination;
+import com.liferay.portal.kernel.messaging.MessageListenerException;
 import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
 import com.liferay.portal.kernel.search.SearchEngineHelperUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule.SyncHandler;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -44,6 +44,7 @@ import com.liferay.registry.dependency.ServiceDependencyManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
@@ -79,6 +80,8 @@ public class SynchronousDestinationTestRule
 
 	@Override
 	public SyncHandler beforeClass(Description description) throws Throwable {
+		DependencyManagerSyncUtil.sync();
+
 		Class<?> testClass = description.getTestClass();
 
 		return _createSyncHandler(testClass.getAnnotation(Sync.class));
@@ -108,31 +111,35 @@ public class SynchronousDestinationTestRule
 		public BaseDestination createSynchronousDestination(
 			String destinationName) {
 
-			SynchronousDestination synchronousDestination = null;
+			TestSynchronousDestination testSynchronousDestination = null;
 
 			if ((_sync != null) && _sync.cleanTransaction()) {
-				synchronousDestination =
+				testSynchronousDestination =
 					new CleanTransactionSynchronousDestination();
 			}
 			else {
-				synchronousDestination = new SynchronousDestination();
+				testSynchronousDestination = new TestSynchronousDestination();
 			}
 
-			synchronousDestination.setName(destinationName);
+			testSynchronousDestination.setName(destinationName);
 
-			return synchronousDestination;
+			return testSynchronousDestination;
 		}
 
 		public void enableSync() {
 			ServiceDependencyManager serviceDependencyManager =
 				new ServiceDependencyManager();
 
+			Filter auditFilter = _registerDestinationFilter(
+				DestinationNames.AUDIT);
 			Filter asyncFilter = _registerDestinationFilter(
 				DestinationNames.ASYNC_SERVICE);
 			Filter backgroundTaskFilter = _registerDestinationFilter(
 				DestinationNames.BACKGROUND_TASK);
 			Filter backgroundTaskStatusFilter = _registerDestinationFilter(
 				DestinationNames.BACKGROUND_TASK_STATUS);
+			Filter kaleoGraphWalkerFilter = _registerDestinationFilter(
+				"liferay/kaleo_graph_walker");
 			Filter mailFilter = _registerDestinationFilter(
 				DestinationNames.MAIL);
 			Filter pdfProcessorFilter = _registerDestinationFilter(
@@ -143,25 +150,20 @@ public class SynchronousDestinationTestRule
 				DestinationNames.SUBSCRIPTION_SENDER);
 
 			serviceDependencyManager.registerDependencies(
-				asyncFilter, backgroundTaskFilter, backgroundTaskStatusFilter,
-				mailFilter, pdfProcessorFilter, rawMetaDataProcessorFilter,
+				auditFilter, asyncFilter, backgroundTaskFilter,
+				backgroundTaskStatusFilter, kaleoGraphWalkerFilter, mailFilter,
+				pdfProcessorFilter, rawMetaDataProcessorFilter,
 				subscrpitionSenderFilter);
-
-			boolean schedulerEnabled = GetterUtil.getBoolean(
-				PropsUtil.get(PropsKeys.SCHEDULER_ENABLED));
-
-			if (schedulerEnabled) {
-				Filter kaleoGraphWalkerFilter = _registerDestinationFilter(
-					"liferay/kaleo_graph_walker");
-
-				serviceDependencyManager.registerDependencies(
-					kaleoGraphWalkerFilter);
-			}
 
 			serviceDependencyManager.waitForDependencies();
 
-			ProxyModeThreadLocal.setForceSync(true);
+			_destinations = ReflectionTestUtil.getFieldValue(
+				MessageBusUtil.getMessageBus(), "_destinations");
 
+			_forceSyncSafeClosable = ProxyModeThreadLocal.setWithSafeClosable(
+				true);
+
+			replaceDestination(DestinationNames.AUDIT);
 			replaceDestination(DestinationNames.ASYNC_SERVICE);
 			replaceDestination(DestinationNames.BACKGROUND_TASK);
 			replaceDestination(DestinationNames.BACKGROUND_TASK_STATUS);
@@ -175,6 +177,7 @@ public class SynchronousDestinationTestRule
 			replaceDestination(DestinationNames.SUBSCRIPTION_SENDER);
 			replaceDestination("liferay/adaptive_media_processor");
 			replaceDestination("liferay/asset_auto_tagger");
+			replaceDestination("liferay/kaleo_graph_walker");
 			replaceDestination("liferay/report_request");
 			replaceDestination("liferay/reports_admin");
 
@@ -182,10 +185,6 @@ public class SynchronousDestinationTestRule
 				for (String name : _sync.destinationNames()) {
 					replaceDestination(name);
 				}
-			}
-
-			if (schedulerEnabled) {
-				replaceDestination("liferay/kaleo_graph_walker");
 			}
 
 			for (String searchEngineId :
@@ -199,11 +198,8 @@ public class SynchronousDestinationTestRule
 						searchEngineId));
 			}
 
-			MessageBus messageBus = MessageBusUtil.getMessageBus();
-
-			BaseAsyncDestination schedulerDestination =
-				(BaseAsyncDestination)messageBus.getDestination(
-					DestinationNames.SCHEDULER_DISPATCH);
+			Destination schedulerDestination = _destinations.get(
+				DestinationNames.SCHEDULER_DISPATCH);
 
 			if (schedulerDestination == null) {
 				return;
@@ -223,8 +219,11 @@ public class SynchronousDestinationTestRule
 				_schedulerInvokerMessageListeners.add(invokerMessageListener);
 			}
 
+			int workersMaxSize = ReflectionTestUtil.getFieldValue(
+				schedulerDestination, "_workersMaxSize");
+
 			CountDownLatch startCountDownLatch = new CountDownLatch(
-				schedulerDestination.getWorkersMaxSize());
+				workersMaxSize);
 
 			CountDownLatch endCountDownLatch = new CountDownLatch(1);
 
@@ -237,23 +236,23 @@ public class SynchronousDestinationTestRule
 					try {
 						endCountDownLatch.await();
 					}
-					catch (InterruptedException ie) {
-						ReflectionUtil.throwException(ie);
+					catch (InterruptedException interruptedException) {
+						ReflectionUtil.throwException(interruptedException);
 					}
 				}
 			};
 
 			schedulerDestination.register(messageListener);
 
-			for (int i = 0; i < schedulerDestination.getWorkersMaxSize(); i++) {
+			for (int i = 0; i < workersMaxSize; i++) {
 				schedulerDestination.send(countDownMessage);
 			}
 
 			try {
 				startCountDownLatch.await();
 			}
-			catch (InterruptedException ie) {
-				ReflectionUtil.throwException(ie);
+			catch (InterruptedException interruptedException) {
+				ReflectionUtil.throwException(interruptedException);
 			}
 
 			schedulerDestination.unregister(messageListener);
@@ -262,42 +261,60 @@ public class SynchronousDestinationTestRule
 		}
 
 		public void replaceDestination(String destinationName) {
-			MessageBus messageBus = MessageBusUtil.getMessageBus();
+			Destination destination = _destinations.get(destinationName);
 
-			Destination destination = messageBus.getDestination(
-				destinationName);
+			boolean asyncDestination = false;
 
-			if (destination instanceof BaseAsyncDestination) {
+			if (destination != null) {
+				try {
+					ReflectionTestUtil.getField(
+						destination.getClass(),
+						"_noticeableThreadPoolExecutor");
+
+					asyncDestination = true;
+				}
+				catch (Exception exception) {
+				}
+			}
+
+			if (asyncDestination) {
 				_asyncServiceDestinations.add(destination);
 
-				messageBus.replace(
-					createSynchronousDestination(destinationName), false);
+				Destination synchronousDestination =
+					createSynchronousDestination(destinationName);
+
+				destination.copyDestinationEventListeners(
+					synchronousDestination);
+				destination.copyMessageListeners(synchronousDestination);
+
+				_destinations.put(destinationName, synchronousDestination);
 			}
 
 			if (destination == null) {
 				_absentDestinationNames.add(destinationName);
 
-				messageBus.addDestination(
+				_destinations.put(
+					destinationName,
 					createSynchronousDestination(destinationName));
 			}
 		}
 
 		public void restorePreviousSync() {
-			ProxyModeThreadLocal.setForceSync(_forceSync);
-
-			MessageBus messageBus = MessageBusUtil.getMessageBus();
+			if (_forceSyncSafeClosable != null) {
+				_forceSyncSafeClosable.close();
+			}
 
 			for (Destination destination : _asyncServiceDestinations) {
-				messageBus.replace(destination);
+				_destinations.put(destination.getName(), destination);
 			}
 
 			_asyncServiceDestinations.clear();
 
 			for (String absentDestinationName : _absentDestinationNames) {
-				messageBus.removeDestination(absentDestinationName);
+				_destinations.remove(absentDestinationName);
 			}
 
-			Destination destination = messageBus.getDestination(
+			Destination destination = _destinations.get(
 				DestinationNames.SCHEDULER_DISPATCH);
 
 			if (destination == null) {
@@ -313,8 +330,11 @@ public class SynchronousDestinationTestRule
 			}
 		}
 
+		/**
+		 * @deprecated As of Mueller (7.2.x), with no direct replacement
+		 */
+		@Deprecated
 		public void setForceSync(boolean forceSync) {
-			_forceSync = forceSync;
 		}
 
 		public void setSync(Sync sync) {
@@ -333,10 +353,32 @@ public class SynchronousDestinationTestRule
 		private final List<String> _absentDestinationNames = new ArrayList<>();
 		private final List<Destination> _asyncServiceDestinations =
 			new ArrayList<>();
-		private boolean _forceSync;
+		private Map<String, Destination> _destinations;
+		private SafeClosable _forceSyncSafeClosable;
 		private final List<InvokerMessageListener>
 			_schedulerInvokerMessageListeners = new ArrayList<>();
 		private Sync _sync;
+
+	}
+
+	public static class TestSynchronousDestination extends BaseDestination {
+
+		@Override
+		public void send(Message message) {
+			for (MessageListener messageListener : messageListeners) {
+				try {
+					messageListener.receive(message);
+				}
+				catch (MessageListenerException messageListenerException) {
+					_log.error(
+						"Unable to process message " + message,
+						messageListenerException);
+				}
+			}
+		}
+
+		private static final Log _log = LogFactoryUtil.getLog(
+			TestSynchronousDestination.class);
 
 	}
 
@@ -346,7 +388,6 @@ public class SynchronousDestinationTestRule
 	private SyncHandler _createSyncHandler(Sync sync) {
 		SyncHandler syncHandler = new SyncHandler();
 
-		syncHandler.setForceSync(ProxyModeThreadLocal.isForceSync());
 		syncHandler.setSync(sync);
 
 		syncHandler.enableSync();
@@ -367,7 +408,7 @@ public class SynchronousDestinationTestRule
 	}
 
 	private static class CleanTransactionSynchronousDestination
-		extends SynchronousDestination {
+		extends TestSynchronousDestination {
 
 		@Override
 		public void send(final Message message) {
@@ -386,8 +427,8 @@ public class SynchronousDestinationTestRule
 
 					});
 			}
-			catch (Throwable t) {
-				throw new RuntimeException(t);
+			catch (Throwable throwable) {
+				throw new RuntimeException(throwable);
 			}
 		}
 

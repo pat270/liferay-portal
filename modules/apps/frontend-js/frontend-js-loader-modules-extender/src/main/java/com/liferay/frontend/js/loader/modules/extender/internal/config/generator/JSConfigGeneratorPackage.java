@@ -60,7 +60,15 @@ public class JSConfigGeneratorPackage {
 
 		Version version = _bundle.getVersion();
 
-		_version = version.toString();
+		String jsVersion = version.toString();
+
+		int index = jsVersion.indexOf(".hotfix");
+
+		if (index > -1) {
+			jsVersion = jsVersion.substring(0, index);
+		}
+
+		_version = jsVersion;
 
 		BundleWiring bundleWiring = _bundle.adapt(BundleWiring.class);
 
@@ -88,7 +96,6 @@ public class JSConfigGeneratorPackage {
 	 * Returns the path to the web context containing the package (usually
 	 * something like '/o/web-context-name').
 	 *
-	 * @return
 	 * @review
 	 */
 	public String getContextPath() {
@@ -113,7 +120,6 @@ public class JSConfigGeneratorPackage {
 	 * convention for names, it is not enforced by this code so, to be safe,
 	 * we interpret and use each attribute strictly.
 	 *
-	 * @return
 	 * @review
 	 */
 	public String getName() {
@@ -296,9 +302,7 @@ public class JSConfigGeneratorPackage {
 	protected String removeEnclosingCurlyBraces(JSONObject jsonObject) {
 		String json = jsonObject.toString();
 
-		json = json.substring(1, json.length() - 1);
-
-		return json;
+		return json.substring(1, json.length() - 1);
 	}
 
 	protected void urlToConfiguration(URL url, BundleWiring bundleWiring) {
@@ -344,8 +348,8 @@ public class JSConfigGeneratorPackage {
 			_populateJSConfigGeneratorModules(
 				unversionedConfigurationJSONObject);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 

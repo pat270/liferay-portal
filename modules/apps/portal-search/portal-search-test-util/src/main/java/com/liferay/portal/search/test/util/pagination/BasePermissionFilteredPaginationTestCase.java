@@ -285,8 +285,7 @@ public abstract class BasePermissionFilteredPaginationTestCase
 		searchContext.setStart(start);
 
 		searchContext.setSorts(
-			new Sort(null, Sort.SCORE_TYPE, false),
-			new Sort(Field.MODIFIED_DATE, Sort.LONG_TYPE, true));
+			new Sort(Field.PRIORITY, Sort.DOUBLE_TYPE, false));
 
 		return searchContext;
 	}
@@ -336,9 +335,7 @@ public abstract class BasePermissionFilteredPaginationTestCase
 
 			Hits hits = searchFilteredPagination(start, end);
 
-			List<Integer> entries = getEntries(hits);
-
-			paginatedEntries.add(entries);
+			paginatedEntries.add(getEntries(hits));
 		}
 
 		String actual = paginatedEntries.toString();
@@ -379,11 +376,11 @@ public abstract class BasePermissionFilteredPaginationTestCase
 		try {
 			return search(searchContext);
 		}
-		catch (RuntimeException re) {
-			throw re;
+		catch (RuntimeException runtimeException) {
+			throw runtimeException;
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
@@ -431,8 +428,9 @@ public abstract class BasePermissionFilteredPaginationTestCase
 			}
 
 			addDocument(
-				DocumentCreationHelpers.singleKeyword(
-					Field.ENTRY_CLASS_PK, String.valueOf(entryClassPK)));
+				DocumentCreationHelpers.twoKeywords(
+					Field.ENTRY_CLASS_PK, String.valueOf(entryClassPK),
+					Field.PRIORITY, String.valueOf(entry)));
 		}
 	}
 
@@ -453,7 +451,7 @@ public abstract class BasePermissionFilteredPaginationTestCase
 				defaultSearchResultPermissionFilterConfiguration)
 		throws Exception {
 
-		Indexer indexer = Mockito.mock(Indexer.class);
+		Indexer<Object> indexer = Mockito.mock(Indexer.class);
 
 		Mockito.when(
 			indexer.hasPermission(

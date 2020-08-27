@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -34,20 +33,20 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Máté Thurzó
  */
-@ProviderType
 public class ExportImportPortletPreferencesProcessorRegistryUtil {
 
 	public static ExportImportPortletPreferencesProcessor
 		getExportImportPortletPreferencesProcessor(String portletName) {
 
-		return _instance._getExportImportPortletPreferencesProcessor(
-			portletName);
+		return _exportImportPortletPreferencesProcessorRegistryUtil.
+			_getExportImportPortletPreferencesProcessor(portletName);
 	}
 
 	public static List<ExportImportPortletPreferencesProcessor>
 		getExportImportPortletPreferencesProcessors() {
 
-		return _instance._getExportImportPortletPreferencesProcessors();
+		return _exportImportPortletPreferencesProcessorRegistryUtil.
+			_getExportImportPortletPreferencesProcessors();
 	}
 
 	private ExportImportPortletPreferencesProcessorRegistryUtil() {
@@ -77,7 +76,8 @@ public class ExportImportPortletPreferencesProcessorRegistryUtil {
 	}
 
 	private static final ExportImportPortletPreferencesProcessorRegistryUtil
-		_instance = new ExportImportPortletPreferencesProcessorRegistryUtil();
+		_exportImportPortletPreferencesProcessorRegistryUtil =
+			new ExportImportPortletPreferencesProcessorRegistryUtil();
 
 	private final BundleContext _bundleContext;
 	private final Map<String, ExportImportPortletPreferencesProcessor>

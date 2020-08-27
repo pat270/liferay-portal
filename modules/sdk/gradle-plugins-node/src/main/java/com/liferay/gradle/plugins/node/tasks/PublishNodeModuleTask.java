@@ -16,7 +16,6 @@ package com.liferay.gradle.plugins.node.tasks;
 
 import com.liferay.gradle.plugins.node.internal.util.FileUtil;
 import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
-import com.liferay.gradle.plugins.node.internal.util.NodePluginUtil;
 import com.liferay.gradle.util.Validator;
 
 import groovy.json.JsonOutput;
@@ -44,15 +43,19 @@ import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
  */
-public class PublishNodeModuleTask extends ExecuteNpmTask {
+@CacheableTask
+public class PublishNodeModuleTask extends ExecutePackageManagerTask {
 
 	@Override
 	public void executeNode() throws Exception {
@@ -175,6 +178,7 @@ public class PublishNodeModuleTask extends ExecuteNpmTask {
 
 	@InputDirectory
 	@Override
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getWorkingDir() {
 		return super.getWorkingDir();
 	}
@@ -292,13 +296,24 @@ public class PublishNodeModuleTask extends ExecuteNpmTask {
 	}
 
 	private File _getNpmrcFile() {
-		File scriptFile = getScriptFile();
-
-		if (!NodePluginUtil.isYarnScriptFile(scriptFile)) {
+		if (isUseNpm()) {
 			return new File(getTemporaryDir(), "npmrc");
 		}
 
-		return new File(scriptFile.getParentFile(), ".npmrc");
+		Project curProject = getProject();
+
+		do {
+			File file = curProject.file("yarn.lock");
+
+			if (file.exists()) {
+				return curProject.file(".npmrc");
+			}
+		}
+		while ((curProject = curProject.getParent()) != null);
+
+		Project project = getProject();
+
+		return project.file(".npmrc");
 	}
 
 	private void _updatePackageJsonFile(Path packageJsonPath)

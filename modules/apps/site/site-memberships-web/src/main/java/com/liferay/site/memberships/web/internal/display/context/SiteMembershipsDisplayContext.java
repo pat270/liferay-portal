@@ -15,7 +15,7 @@
 package com.liferay.site.memberships.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -77,21 +77,20 @@ public class SiteMembershipsDisplayContext {
 	}
 
 	public List<NavigationItem> getInfoPanelNavigationItems() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		return NavigationItemListBuilder.add(
+			navigationItem -> {
+				navigationItem.setActive(true);
 
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(themeDisplay.getURLCurrent());
-						navigationItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "details"));
-					});
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)_httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
+
+				navigationItem.setHref(themeDisplay.getURLCurrent());
+
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "details"));
 			}
-		};
+		).build();
 	}
 
 	public PortletURL getPortletURL() {
@@ -161,41 +160,31 @@ public class SiteMembershipsDisplayContext {
 	}
 
 	public List<NavigationItem> getViewNavigationItems() {
-		return new NavigationItemList() {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(
-							Objects.equals(getTabs1(), "users"));
-						navigationItem.setHref(
-							getPortletURL(), "tabs1", "users");
-						navigationItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "users"));
-					});
-
-				add(
-					navigationItem -> {
-						navigationItem.setActive(
-							Objects.equals(getTabs1(), "organizations"));
-						navigationItem.setHref(
-							getPortletURL(), "tabs1", "organizations");
-						navigationItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "organizations"));
-					});
-
-				add(
-					navigationItem -> {
-						navigationItem.setActive(
-							Objects.equals(getTabs1(), "user-groups"));
-						navigationItem.setHref(
-							getPortletURL(), "tabs1", "user-groups");
-						navigationItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "user-groups"));
-					});
+		return NavigationItemListBuilder.add(
+			navigationItem -> {
+				navigationItem.setActive(Objects.equals(getTabs1(), "users"));
+				navigationItem.setHref(getPortletURL(), "tabs1", "users");
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "users"));
 			}
-		};
+		).add(
+			navigationItem -> {
+				navigationItem.setActive(
+					Objects.equals(getTabs1(), "organizations"));
+				navigationItem.setHref(
+					getPortletURL(), "tabs1", "organizations");
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "organizations"));
+			}
+		).add(
+			navigationItem -> {
+				navigationItem.setActive(
+					Objects.equals(getTabs1(), "user-groups"));
+				navigationItem.setHref(getPortletURL(), "tabs1", "user-groups");
+				navigationItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "user-groups"));
+			}
+		).build();
 	}
 
 	private Group _group;

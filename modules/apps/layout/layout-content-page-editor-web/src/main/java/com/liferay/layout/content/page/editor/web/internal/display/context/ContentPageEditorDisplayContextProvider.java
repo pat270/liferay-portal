@@ -14,85 +14,170 @@
 
 package com.liferay.layout.content.page.editor.web.internal.display.context;
 
+import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
 import com.liferay.fragment.renderer.FragmentRendererController;
+import com.liferay.fragment.renderer.FragmentRendererTracker;
+import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
+import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.item.selector.ItemSelector;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys;
+import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSidebarPanel;
+import com.liferay.layout.content.page.editor.web.internal.configuration.FFLayoutContentPageEditorConfiguration;
+import com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
-import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Portal;
+import com.liferay.staging.StagingGroupHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import javax.portlet.PortletRequest;
 import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Pavel Savinov
  */
 @Component(
+	configurationPid = {
+		"com.liferay.layout.content.page.editor.web.internal.configuration.FFLayoutContentPageEditorConfiguration",
+		"com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration"
+	},
 	immediate = true, service = ContentPageEditorDisplayContextProvider.class
 )
 public class ContentPageEditorDisplayContextProvider {
 
 	public ContentPageEditorDisplayContext getContentPageEditorDisplayContext(
-		HttpServletRequest httpServletRequest, RenderResponse renderResponse) {
+		HttpServletRequest httpServletRequest, RenderResponse renderResponse,
+		PortletRequest portletRequest) {
 
 		String className = (String)httpServletRequest.getAttribute(
 			ContentPageEditorWebKeys.CLASS_NAME);
 
-		long classPK = GetterUtil.getLong(
-			httpServletRequest.getAttribute(ContentPageEditorWebKeys.CLASS_PK));
-
 		if (Objects.equals(className, Layout.class.getName())) {
 			return new ContentPageLayoutEditorDisplayContext(
-				httpServletRequest, renderResponse, className, classPK,
-				_fragmentRendererController);
+				_commentManager, _getContentPageEditorSidebarPanels(),
+				_ffLayoutContentPageEditorConfiguration,
+				_fragmentCollectionContributorTracker,
+				_fragmentEntryConfigurationParser, _fragmentRendererController,
+				_fragmentRendererTracker, httpServletRequest,
+				_infoItemServiceTracker, _itemSelector,
+				_pageEditorConfiguration, portletRequest, renderResponse,
+				_stagingGroupHelper);
 		}
+
+		long classPK = GetterUtil.getLong(
+			httpServletRequest.getAttribute(ContentPageEditorWebKeys.CLASS_PK));
 
 		LayoutPageTemplateEntry layoutPageTemplateEntry =
 			_layoutPageTemplateEntryLocalService.fetchLayoutPageTemplateEntry(
 				classPK);
 
-		Layout draftLayout = _layoutLocalService.fetchLayout(
-			_portal.getClassNameId(Layout.class.getName()),
-			layoutPageTemplateEntry.getPlid());
-
-		boolean showMapping = false;
+		boolean pageIsDisplayPage = false;
 
 		if ((layoutPageTemplateEntry != null) &&
 			(layoutPageTemplateEntry.getType() ==
 				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)) {
 
-			showMapping = true;
+			pageIsDisplayPage = true;
 		}
 
 		return new ContentPageEditorLayoutPageTemplateDisplayContext(
-			httpServletRequest, renderResponse, Layout.class.getName(),
-			draftLayout.getPlid(), showMapping, _fragmentRendererController);
+			_commentManager, _getContentPageEditorSidebarPanels(),
+			_ffLayoutContentPageEditorConfiguration,
+			_fragmentCollectionContributorTracker,
+			_fragmentEntryConfigurationParser, _fragmentRendererController,
+			_fragmentRendererTracker, httpServletRequest,
+			_infoItemServiceTracker, _itemSelector, _pageEditorConfiguration,
+			pageIsDisplayPage, portletRequest, renderResponse);
 	}
+
+	@Activate
+	@Modified
+	protected void activate(
+		BundleContext bundleContext, Map<String, Object> properties) {
+
+		_ffLayoutContentPageEditorConfiguration =
+			ConfigurableUtil.createConfigurable(
+				FFLayoutContentPageEditorConfiguration.class, properties);
+		_pageEditorConfiguration = ConfigurableUtil.createConfigurable(
+			PageEditorConfiguration.class, properties);
+		_serviceTrackerList = ServiceTrackerListFactory.open(
+			bundleContext, ContentPageEditorSidebarPanel.class);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerList.close();
+	}
+
+	private List<ContentPageEditorSidebarPanel>
+		_getContentPageEditorSidebarPanels() {
+
+		List<ContentPageEditorSidebarPanel> contentPageEditorSidebarPanels =
+			new ArrayList<>(_serviceTrackerList.size());
+
+		for (ContentPageEditorSidebarPanel contentPageEditorSidebarPanel :
+				_serviceTrackerList) {
+
+			contentPageEditorSidebarPanels.add(contentPageEditorSidebarPanel);
+		}
+
+		return contentPageEditorSidebarPanels;
+	}
+
+	@Reference
+	private CommentManager _commentManager;
+
+	private volatile FFLayoutContentPageEditorConfiguration
+		_ffLayoutContentPageEditorConfiguration;
+
+	@Reference
+	private FragmentCollectionContributorTracker
+		_fragmentCollectionContributorTracker;
+
+	@Reference
+	private FragmentEntryConfigurationParser _fragmentEntryConfigurationParser;
 
 	@Reference
 	private FragmentRendererController _fragmentRendererController;
 
 	@Reference
-	private LayoutCopyHelper _layoutCopyHelper;
+	private FragmentRendererTracker _fragmentRendererTracker;
 
 	@Reference
-	private LayoutLocalService _layoutLocalService;
+	private InfoItemServiceTracker _infoItemServiceTracker;
+
+	@Reference
+	private ItemSelector _itemSelector;
 
 	@Reference
 	private LayoutPageTemplateEntryLocalService
 		_layoutPageTemplateEntryLocalService;
 
+	private volatile PageEditorConfiguration _pageEditorConfiguration;
+	private ServiceTrackerList
+		<ContentPageEditorSidebarPanel, ContentPageEditorSidebarPanel>
+			_serviceTrackerList;
+
 	@Reference
-	private Portal _portal;
+	private StagingGroupHelper _stagingGroupHelper;
 
 }

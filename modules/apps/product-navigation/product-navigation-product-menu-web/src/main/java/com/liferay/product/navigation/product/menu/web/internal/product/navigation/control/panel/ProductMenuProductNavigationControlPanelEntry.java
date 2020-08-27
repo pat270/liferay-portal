@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.BaseControlPanelEntry;
 import com.liferay.portal.kernel.portlet.ControlPanelEntry;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.product.navigation.product.menu.web.internal.constants.ProductNavigationProductMenuPortletKeys;
+import com.liferay.product.navigation.product.menu.constants.ProductNavigationProductMenuPortletKeys;
 
 import org.osgi.service.component.annotations.Component;
 

@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -63,18 +64,16 @@ public class BulkSelectionRunnerTest {
 
 	@Test
 	public void testRunsABulkSelectionAction() throws Exception {
-		HashMap<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put("integers", new String[] {"1", "2", "3", "4"});
-
-		HashMap<String, Serializable> inputMap = new HashMap<>();
-
-		inputMap.put("integer", 10);
-
 		_bulkSelectionRunner.run(
 			TestPropsValues.getUser(),
-			_testBulkSelectionFactory.create(parameterMap),
-			_testBulkSelectionAction, inputMap);
+			_testBulkSelectionFactory.create(
+				HashMapBuilder.put(
+					"integers", new String[] {"1", "2", "3", "4"}
+				).build()),
+			_testBulkSelectionAction,
+			HashMapBuilder.<String, Serializable>put(
+				"integer", 10
+			).build());
 
 		Assert.assertEquals(
 			(Integer)100, TestBulkSelectionAction.getLastResult());

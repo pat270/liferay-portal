@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.io;
 
 import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.io.constants.SerializationConstants;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
@@ -122,8 +123,9 @@ public class DeserializerTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
-			Assert.assertEquals("Buffer underflow", ise.getMessage());
+		catch (IllegalStateException illegalStateException) {
+			Assert.assertEquals(
+				"Buffer underflow", illegalStateException.getMessage());
 		}
 	}
 
@@ -528,9 +530,10 @@ public class DeserializerTest {
 
 			Assert.fail();
 		}
-		catch (RuntimeException re) {
+		catch (RuntimeException runtimeException) {
 			Assert.assertTrue(
-				re.getCause() instanceof StreamCorruptedException);
+				runtimeException.getCause() instanceof
+					StreamCorruptedException);
 		}
 	}
 
@@ -575,17 +578,18 @@ public class DeserializerTest {
 		Assert.assertTrue(object instanceof String);
 		Assert.assertEquals(asciiString, object);
 
-		String nonAsciiString = "非ASCII Code中文测试";
+		String nonasciiString = "非ASCII Code中文测试";
 
-		buffer = new byte[nonAsciiString.length() * 2 + 6];
+		buffer = new byte[(nonasciiString.length() * 2) + 6];
 
 		buffer[0] = SerializationConstants.TC_STRING;
 		buffer[1] = 0;
 
-		BigEndianCodec.putInt(buffer, 2, nonAsciiString.length());
+		BigEndianCodec.putInt(buffer, 2, nonasciiString.length());
 
-		for (int i = 0; i < nonAsciiString.length(); i++) {
-			BigEndianCodec.putChar(buffer, 6 + i * 2, nonAsciiString.charAt(i));
+		for (int i = 0; i < nonasciiString.length(); i++) {
+			BigEndianCodec.putChar(
+				buffer, 6 + (i * 2), nonasciiString.charAt(i));
 		}
 
 		byteBuffer = ByteBuffer.wrap(buffer);
@@ -595,7 +599,7 @@ public class DeserializerTest {
 		object = deserializer.readObject();
 
 		Assert.assertTrue(object instanceof String);
-		Assert.assertEquals(nonAsciiString, object);
+		Assert.assertEquals(nonasciiString, object);
 	}
 
 	@Test
@@ -609,8 +613,9 @@ public class DeserializerTest {
 		try {
 			deserializer.readObject();
 		}
-		catch (IllegalStateException ise) {
-			Assert.assertEquals("Unkown TC code 12", ise.getMessage());
+		catch (IllegalStateException illegalStateException) {
+			Assert.assertEquals(
+				"Unkown TC code 12", illegalStateException.getMessage());
 		}
 	}
 
@@ -659,16 +664,17 @@ public class DeserializerTest {
 
 		Assert.assertEquals(asciiString, resultString);
 
-		String nonAsciiString = "非ASCII Code中文测试";
+		String nonasciiString = "非ASCII Code中文测试";
 
-		buffer = new byte[nonAsciiString.length() * 2 + 5];
+		buffer = new byte[(nonasciiString.length() * 2) + 5];
 
 		buffer[0] = 0;
 
-		BigEndianCodec.putInt(buffer, 1, nonAsciiString.length());
+		BigEndianCodec.putInt(buffer, 1, nonasciiString.length());
 
-		for (int i = 0; i < nonAsciiString.length(); i++) {
-			BigEndianCodec.putChar(buffer, 5 + i * 2, nonAsciiString.charAt(i));
+		for (int i = 0; i < nonasciiString.length(); i++) {
+			BigEndianCodec.putChar(
+				buffer, 5 + (i * 2), nonasciiString.charAt(i));
 		}
 
 		byteBuffer = ByteBuffer.wrap(buffer);
@@ -677,7 +683,7 @@ public class DeserializerTest {
 
 		resultString = deserializer.readString();
 
-		Assert.assertEquals(nonAsciiString, resultString);
+		Assert.assertEquals(nonasciiString, resultString);
 	}
 
 	private static final int _COUNT = 1024;

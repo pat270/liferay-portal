@@ -1,9 +1,9 @@
-@import "mixins";
+@import 'atlas-variables';
 
-@import "upper_tbar";
+@import 'upper_tbar';
 
 .preview-file {
-	@import "floating_bar";
+	@import 'floating_bar';
 
 	margin: 1.5rem auto;
 	position: relative;
@@ -36,10 +36,10 @@
 
 .sidebar-preview {
 	.sidebar-panel {
-		background-color: #FFF;
+		background-color: #fff;
 	}
 
-	@include sm {
+	@include media-breakpoint-up(sm) {
 		.panel {
 			border-color: transparent;
 		}
@@ -58,7 +58,7 @@
 		top: $top;
 		z-index: 1;
 
-		@include sm {
+		@include media-breakpoint-up(sm) {
 			$top-sm: $control-menu-height-sm + $upper-tbar-height;
 
 			height: calc(100vh - #{$top-sm});

@@ -16,13 +16,10 @@ package com.liferay.portal.kernel.service.persistence;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class TeamFinderUtil {
 
 	public static int countByG_N_D(
@@ -45,19 +42,20 @@ public class TeamFinderUtil {
 			long groupId, String name, String description,
 			java.util.LinkedHashMap<String, Object> params, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Team> obc) {
+				<com.liferay.portal.kernel.model.Team> orderByComparator) {
 
 		return getFinder().filterFindByG_N_D(
-			groupId, name, description, params, start, end, obc);
+			groupId, name, description, params, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.Team>
 		findByG_U(
 			long groupId, long userId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Team> obc) {
+				<com.liferay.portal.kernel.model.Team> orderByComparator) {
 
-		return getFinder().findByG_U(groupId, userId, start, end, obc);
+		return getFinder().findByG_U(
+			groupId, userId, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.Team>
@@ -65,10 +63,10 @@ public class TeamFinderUtil {
 			long groupId, String name, String description,
 			java.util.LinkedHashMap<String, Object> params, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Team> obc) {
+				<com.liferay.portal.kernel.model.Team> orderByComparator) {
 
 		return getFinder().findByG_N_D(
-			groupId, name, description, params, start, end, obc);
+			groupId, name, description, params, start, end, orderByComparator);
 	}
 
 	public static TeamFinder getFinder() {

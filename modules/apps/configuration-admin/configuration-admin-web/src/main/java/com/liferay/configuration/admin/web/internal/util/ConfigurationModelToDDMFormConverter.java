@@ -14,20 +14,23 @@
 
 package com.liferay.configuration.admin.web.internal.util;
 
+import com.liferay.configuration.admin.definition.ConfigurationFieldOptionsProvider;
 import com.liferay.configuration.admin.web.internal.model.ConfigurationModel;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.string.StringUtil;
+import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.configuration.metatype.definitions.ExtendedAttributeDefinition;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +126,7 @@ public class ConfigurationModelToDDMFormConverter {
 			try {
 				return DDMFormFactory.create(formClass);
 			}
-			catch (IllegalArgumentException iae) {
+			catch (IllegalArgumentException illegalArgumentException) {
 			}
 		}
 
@@ -134,6 +137,28 @@ public class ConfigurationModelToDDMFormConverter {
 		AttributeDefinition attributeDefinition) {
 
 		DDMFormFieldOptions ddmFormFieldOptions = new DDMFormFieldOptions();
+
+		String pid = _configurationModel.getID();
+
+		if (_configurationModel.isFactory()) {
+			pid = _configurationModel.getFactoryPid();
+		}
+
+		ConfigurationFieldOptionsProvider configurationFieldOptionsProvider =
+			ConfigurationFieldOptionsProviderUtil.
+				getConfigurationFieldOptionsProvider(
+					pid, attributeDefinition.getID());
+
+		if (configurationFieldOptionsProvider != null) {
+			for (ConfigurationFieldOptionsProvider.Option option :
+					configurationFieldOptionsProvider.getOptions()) {
+
+				ddmFormFieldOptions.addOptionLabel(
+					option.getValue(), _locale, option.getLabel(_locale));
+			}
+
+			return ddmFormFieldOptions;
+		}
 
 		String[] optionLabels = attributeDefinition.getOptionLabels();
 		String[] optionValues = attributeDefinition.getOptionValues();
@@ -153,17 +178,22 @@ public class ConfigurationModelToDDMFormConverter {
 	protected DDMFormField getDDMFormField(
 		AttributeDefinition attributeDefinition, boolean required) {
 
-		String type = getDDMFormFieldType(attributeDefinition);
+		DDMFormFieldOptions ddmFormFieldOptions = getDDMFieldOptions(
+			attributeDefinition);
+
+		String type = getDDMFormFieldType(
+			attributeDefinition, ddmFormFieldOptions);
 
 		DDMFormField ddmFormField = new DDMFormField(
 			attributeDefinition.getID(), type);
 
 		setDDMFormFieldDataType(attributeDefinition, ddmFormField);
 		setDDMFormFieldLabel(attributeDefinition, ddmFormField);
-		setDDMFormFieldOptions(attributeDefinition, ddmFormField);
+		setDDMFormFieldOptions(ddmFormField, ddmFormFieldOptions);
 		setDDMFormFieldPredefinedValue(attributeDefinition, ddmFormField);
 		setDDMFormFieldRequired(attributeDefinition, ddmFormField, required);
 		setDDMFormFieldTip(attributeDefinition, ddmFormField);
+		setDDMFormFieldVisibilityExpression(attributeDefinition, ddmFormField);
 
 		ddmFormField.setLocalizable(true);
 		ddmFormField.setShowLabel(true);
@@ -226,14 +256,13 @@ public class ConfigurationModelToDDMFormConverter {
 	}
 
 	protected String getDDMFormFieldType(
-		AttributeDefinition attributeDefinition) {
+		AttributeDefinition attributeDefinition,
+		DDMFormFieldOptions ddmFormFieldOptions) {
 
 		int type = attributeDefinition.getType();
 
 		if (type == AttributeDefinition.BOOLEAN) {
-			String[] optionLabels = attributeDefinition.getOptionLabels();
-
-			if (ArrayUtil.isEmpty(optionLabels)) {
+			if (SetUtil.isEmpty(ddmFormFieldOptions.getOptionsValues())) {
 				return DDMFormFieldType.CHECKBOX;
 			}
 
@@ -242,10 +271,11 @@ public class ConfigurationModelToDDMFormConverter {
 		else if (type == AttributeDefinition.PASSWORD) {
 			return DDMFormFieldType.PASSWORD;
 		}
+		else if (type == ExtendedAttributeDefinition.LOCALIZED_VALUES_MAP) {
+			return DDMFormFieldType.LOCALIZABLE_TEXT;
+		}
 
-		if (ArrayUtil.isNotEmpty(attributeDefinition.getOptionLabels()) ||
-			ArrayUtil.isNotEmpty(attributeDefinition.getOptionValues())) {
-
+		if (!SetUtil.isEmpty(ddmFormFieldOptions.getOptionsValues())) {
 			return DDMFormFieldType.SELECT;
 		}
 
@@ -261,9 +291,7 @@ public class ConfigurationModelToDDMFormConverter {
 	}
 
 	protected void setDDMFormFieldDisplayStyle(DDMFormField ddmFormField) {
-		String dataType = ddmFormField.getDataType();
-
-		if (Objects.equals(dataType, FieldConstants.STRING)) {
+		if (Objects.equals(ddmFormField.getDataType(), FieldConstants.STRING)) {
 			ddmFormField.setProperty("displayStyle", "multiline");
 		}
 	}
@@ -286,10 +314,7 @@ public class ConfigurationModelToDDMFormConverter {
 	}
 
 	protected void setDDMFormFieldOptions(
-		AttributeDefinition attributeDefinition, DDMFormField ddmFormField) {
-
-		DDMFormFieldOptions ddmFormFieldOptions = getDDMFieldOptions(
-			attributeDefinition);
+		DDMFormField ddmFormField, DDMFormFieldOptions ddmFormFieldOptions) {
 
 		ddmFormField.setDDMFormFieldOptions(ddmFormFieldOptions);
 	}
@@ -351,6 +376,22 @@ public class ConfigurationModelToDDMFormConverter {
 				attributeDefinition.getDescription(), descriptionArguments));
 
 		ddmFormField.setTip(tip);
+	}
+
+	protected void setDDMFormFieldVisibilityExpression(
+		AttributeDefinition attributeDefinition, DDMFormField ddmFormField) {
+
+		String[] hiddenFieldKeys = {
+			ExtendedObjectClassDefinition.Scope.COMPANY.getPropertyKey(),
+			ExtendedObjectClassDefinition.Scope.COMPANY.getValue()
+		};
+
+		if (ArrayUtil.contains(hiddenFieldKeys, attributeDefinition.getID()) ||
+			ArrayUtil.contains(
+				hiddenFieldKeys, attributeDefinition.getName())) {
+
+			ddmFormField.setVisibilityExpression("FALSE");
+		}
 	}
 
 	protected String translate(String key) {

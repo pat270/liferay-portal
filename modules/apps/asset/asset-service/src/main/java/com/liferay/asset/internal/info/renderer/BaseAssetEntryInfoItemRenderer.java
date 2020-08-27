@@ -18,7 +18,7 @@ import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
-import com.liferay.info.renderer.InfoItemRenderer;
+import com.liferay.info.item.renderer.InfoItemRenderer;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,22 +35,26 @@ public abstract class BaseAssetEntryInfoItemRenderer
 		AssetEntry assetEntry, HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse) {
 
-		AssetRendererFactory<?> assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
-				assetEntry.getClassName());
-
-		httpServletRequest.setAttribute(
-			WebKeys.ASSET_RENDERER_FACTORY, assetRendererFactory);
-
 		try {
+			AssetRendererFactory<?> assetRendererFactory =
+				AssetRendererFactoryRegistryUtil.
+					getAssetRendererFactoryByClassName(
+						assetEntry.getClassName());
+
+			httpServletRequest.setAttribute(
+				WebKeys.ASSET_RENDERER_FACTORY, assetRendererFactory);
+
 			AssetRenderer<?> assetRenderer =
 				assetRendererFactory.getAssetRenderer(assetEntry.getClassPK());
+
+			httpServletRequest.setAttribute(
+				WebKeys.ASSET_RENDERER, assetRenderer);
 
 			assetRenderer.include(
 				httpServletRequest, httpServletResponse, getTemplate());
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 

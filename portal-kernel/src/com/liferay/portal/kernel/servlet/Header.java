@@ -41,36 +41,36 @@ public class Header implements Externalizable {
 	public Header() {
 	}
 
-	public Header(Cookie cookie) {
-		if (cookie == null) {
+	public Header(Cookie cookieValue) {
+		if (cookieValue == null) {
 			throw new IllegalArgumentException("Cookie is null");
 		}
 
 		_type = Type.COOKIE;
 
-		_cookieValue = cookie;
+		_cookieValue = cookieValue;
 	}
 
-	public Header(int integer) {
+	public Header(int intValue) {
 		_type = Type.INTEGER;
 
-		_intValue = integer;
+		_intValue = intValue;
 	}
 
-	public Header(long date) {
+	public Header(long dateValue) {
 		_type = Type.DATE;
 
-		_dateValue = date;
+		_dateValue = dateValue;
 	}
 
-	public Header(String string) {
-		if (string == null) {
+	public Header(String stringValue) {
+		if (stringValue == null) {
 			throw new IllegalArgumentException("String is null");
 		}
 
 		_type = Type.STRING;
 
-		_stringValue = string;
+		_stringValue = stringValue;
 	}
 
 	public void addToResponse(
@@ -94,16 +94,16 @@ public class Header implements Externalizable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Header)) {
+		if (!(object instanceof Header)) {
 			return false;
 		}
 
-		Header header = (Header)obj;
+		Header header = (Header)object;
 
 		if (_type != header._type) {
 			return false;

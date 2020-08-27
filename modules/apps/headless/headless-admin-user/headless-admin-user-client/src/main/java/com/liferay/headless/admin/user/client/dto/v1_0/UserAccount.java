@@ -18,6 +18,7 @@ import com.liferay.headless.admin.user.client.function.UnsafeSupplier;
 import com.liferay.headless.admin.user.client.serdes.v1_0.UserAccountSerDes;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Generated;
@@ -27,7 +28,33 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class UserAccount {
+public class UserAccount implements Cloneable {
+
+	public static UserAccount toDTO(String json) {
+		return UserAccountSerDes.toDTO(json);
+	}
+
+	public Map<String, Map<String, String>> getActions() {
+		return actions;
+	}
+
+	public void setActions(Map<String, Map<String, String>> actions) {
+		this.actions = actions;
+	}
+
+	public void setActions(
+		UnsafeSupplier<Map<String, Map<String, String>>, Exception>
+			actionsUnsafeSupplier) {
+
+		try {
+			actions = actionsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Map<String, Map<String, String>> actions;
 
 	public String getAdditionalName() {
 		return additionalName;
@@ -92,27 +119,26 @@ public class UserAccount {
 
 	protected Date birthDate;
 
-	public ContactInformation getContactInformation() {
-		return contactInformation;
+	public CustomField[] getCustomFields() {
+		return customFields;
 	}
 
-	public void setContactInformation(ContactInformation contactInformation) {
-		this.contactInformation = contactInformation;
+	public void setCustomFields(CustomField[] customFields) {
+		this.customFields = customFields;
 	}
 
-	public void setContactInformation(
-		UnsafeSupplier<ContactInformation, Exception>
-			contactInformationUnsafeSupplier) {
+	public void setCustomFields(
+		UnsafeSupplier<CustomField[], Exception> customFieldsUnsafeSupplier) {
 
 		try {
-			contactInformation = contactInformationUnsafeSupplier.get();
+			customFields = customFieldsUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected ContactInformation contactInformation;
+	protected CustomField[] customFields;
 
 	public String getDashboardURL() {
 		return dashboardURL;
@@ -467,6 +493,36 @@ public class UserAccount {
 	}
 
 	protected SiteBrief[] siteBriefs;
+
+	public UserAccountContactInformation getUserAccountContactInformation() {
+		return userAccountContactInformation;
+	}
+
+	public void setUserAccountContactInformation(
+		UserAccountContactInformation userAccountContactInformation) {
+
+		this.userAccountContactInformation = userAccountContactInformation;
+	}
+
+	public void setUserAccountContactInformation(
+		UnsafeSupplier<UserAccountContactInformation, Exception>
+			userAccountContactInformationUnsafeSupplier) {
+
+		try {
+			userAccountContactInformation =
+				userAccountContactInformationUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected UserAccountContactInformation userAccountContactInformation;
+
+	@Override
+	public UserAccount clone() throws CloneNotSupportedException {
+		return (UserAccount)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

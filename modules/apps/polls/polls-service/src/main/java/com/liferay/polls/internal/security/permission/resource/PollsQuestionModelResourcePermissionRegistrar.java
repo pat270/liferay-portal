@@ -41,13 +41,14 @@ import org.osgi.service.component.annotations.Reference;
 public class PollsQuestionModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", PollsQuestion.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<PollsQuestion>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				PollsQuestion.class, PollsQuestion::getQuestionId,
 				_pollsQuestionLocalService::getQuestion,
@@ -60,7 +61,7 @@ public class PollsQuestionModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -70,7 +71,8 @@ public class PollsQuestionModelResourcePermissionRegistrar {
 	@Reference(target = "(resource.name=" + PollsConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<PollsQuestion>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

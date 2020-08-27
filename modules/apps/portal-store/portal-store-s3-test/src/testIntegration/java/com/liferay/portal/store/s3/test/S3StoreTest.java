@@ -16,27 +16,25 @@ package com.liferay.portal.store.s3.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.store.Store;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.AssumeTestRule;
-import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.store.test.util.BaseStoreTestCase;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.store.test.BaseStoreTestCase;
 
 import java.util.Dictionary;
 
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.osgi.service.cm.Configuration;
@@ -61,8 +59,9 @@ public class S3StoreTest extends BaseStoreTestCase {
 		String s3StoreClassName = "com.liferay.portal.store.s3.S3Store";
 
 		Assume.assumeTrue(
-			"Property \"" + PropsKeys.DL_STORE_IMPL + "\" is not set to \"" +
-				s3StoreClassName + "\"",
+			StringBundler.concat(
+				"Property \"", PropsKeys.DL_STORE_IMPL, "\" is not set to \"",
+				s3StoreClassName, "\""),
 			dlStoreImpl.equals(s3StoreClassName));
 	}
 
@@ -92,33 +91,8 @@ public class S3StoreTest extends BaseStoreTestCase {
 	}
 
 	@Override
-	@Test
-	public void testUpdateFileWithNewFileNameNoSuchFileException()
-		throws Exception {
-
-		updateFileShouldNotUpdateFile();
-	}
-
-	@Override
-	@Test
-	public void testUpdateFileWithNewRepositoryIdNoSuchFileException()
-		throws Exception {
-
-		updateFileShouldNotUpdateFile();
-	}
-
-	@Override
 	protected Store getStore() {
 		return _store;
-	}
-
-	protected void updateFileShouldNotUpdateFile() throws Exception {
-		String fileName = RandomTestUtil.randomString();
-
-		store.updateFile(
-			companyId, repositoryId, fileName, RandomTestUtil.randomString());
-
-		Assert.assertFalse(store.hasFile(companyId, repositoryId, fileName));
 	}
 
 	private static Configuration _configuration;

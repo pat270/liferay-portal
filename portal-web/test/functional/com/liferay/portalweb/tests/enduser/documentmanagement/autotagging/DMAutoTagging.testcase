@@ -1,5 +1,6 @@
 @component-name = "portal-document-management"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Auto Tagging";
@@ -29,44 +30,96 @@ definition {
 		}
 	}
 
+	@description = "This test covers LPS-89073. It ensures that users can add and remove tags for existing images via Gogo Shell."
+	@priority = "4"
+	test AddAndRemoveImageAutoTagViaGogoShell {
+		property test.name.skip.portal.instance = "DMAutoTagging#AddAndRemoveImageAutoTagViaGogoShell";
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		for (var documentNumber : list "_1,_2,_3") {
+			JSONDocument.addFileWithUploadedFile(
+				dmDocumentDescription = "DM Document Description",
+				dmDocumentTitle = "DM Document JPG${documentNumber}",
+				groupName = "Guest",
+				mimeType = "image/jpeg",
+				sourceFileName = "Document_4.jpg");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
+
+			DMDocument.viewCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
+
+			AutoTagging.assertAutoTagPresent(tagName = "carton");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+		}
+
+		GogoShell.openGogoShellAdmin();
+
+		var companyId = JSONCompany.getCompanyId();
+
+		GogoShell.executeCommand(commandName = "assetAutoTagger:untagAll ${companyId}");
+
+		GogoShell.viewOutput(outputContent = "Deleted 1 tags to asset entry DM Document JPG_1 Deleted 1 tags to asset entry DM Document JPG_2 Deleted 1 tags to asset entry DM Document JPG_3");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		for (var documentNumber : list "_1,_2,_3") {
+			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
+
+			DMDocument.viewCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
+
+			AutoTagging.assertNoAutoTag(tagName = "carton");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+		}
+
+		GogoShell.openGogoShellAdmin();
+
+		GogoShell.executeCommand(commandName = "assetAutoTagger:tagAllUntagged ${companyId}");
+
+		GogoShell.viewOutput(outputContent = "Added 1 tags to asset entry DM Document JPG_1 Added 1 tags to asset entry DM Document JPG_2 Added 1 tags to asset entry DM Document JPG_3");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		for (var documentNumber : list "_1,_2,_3") {
+			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
+
+			DMDocument.viewCP(dmDocumentTitle = "DM Document JPG${documentNumber}");
+
+			AutoTagging.assertAutoTagPresent(tagName = "carton");
+
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+		}
+	}
+
 	@description = "This test asserts that auto-tags added to an image uploaded on a staged site gets published to Live."
 	@priority = "4"
-	test AssertAutoTagAfterPublishToLive {
-		property test.name.skip.portal.instance = "DMAutoTagging#AssertAutoTagAfterPublishToLive";
+	test AssertImageAutoTagAfterPublishToLive {
+		property test.name.skip.portal.instance = "DMAutoTagging#AssertImageAutoTagAfterPublishToLive";
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		JSONGroup.addGroup(groupName = "Site Name");
 
-		Site.addBlankCP(siteName = "Site Name");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Documents and Media Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(
-			pageName = "Documents and Media Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Documents and Media Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Site Name",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
 
 		Navigator.gotoSitePage(
 			pageName = "Documents and Media Page",
 			siteName = "Site Name");
 
-		Portlet.addPG(portletName = "Documents and Media");
-
 		DMDocument.enableActionsMenuOnPortlet();
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Staging");
 
 		Staging.activateStagingCP(siteName = "Site Name");
@@ -94,7 +147,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Navigator.gotoSitePage(
 			pageName = "Documents and Media Page",
@@ -109,55 +162,35 @@ definition {
 
 	@description = "This test asserts that no auto-tag is generated when an image is uploaded to a site that has auto-tagging disabled despite the auto-tagging functionality enabled at portal level."
 	@priority = "4"
-	test ConfigureAutoTaggingPerSite {
-		property test.name.skip.portal.instance = "DMAutoTagging#ConfigureAutoTaggingPerSite";
+	test ConfigureImageAutoTaggingPerSite {
+		property test.name.skip.portal.instance = "DMAutoTagging#ConfigureImageAutoTaggingPerSite";
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		JSONGroup.addGroup(groupName = "Site AutoTag Enabled");
 
-		Site.addBlankCP(siteName = "Site AutoTag Enabled");
+		JSONLayout.addPublicLayout(
+			groupName = "Site AutoTag Enabled",
+			layoutName = "AutoTag Enabled Site Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONGroup.addGroup(groupName = "Site AutoTag Disabled");
 
-		SitePages.addPublicPage(pageName = "AutoTag Enabled Site Page");
+		JSONLayout.addPublicLayout(
+			groupName = "Site AutoTag Disabled",
+			layoutName = "AutoTag Disabled Site Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		Navigator.openSiteURL(siteName = "Site AutoTag Disabled");
 
-		Site.addBlankCP(siteName = "Site AutoTag Disabled");
+		AutoTagging.disableAutoTagging(
+			disableAutoTaggingFor = "Settings",
+			site = "Site AutoTag Disabled");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "AutoTag Disabled Site Page");
-
-		AutoTagging.disableAutoTagging(disableAutoTaggingFor = "Settings");
-
-		Navigator.openSiteURL(siteName = "Site AutoTag Enabled");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "DM Document JPG");
+			dmDocumentTitle = "DM Document JPG",
+			groupName = "Site AutoTag Enabled",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-autotag-enabled");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG");
 
@@ -165,28 +198,60 @@ definition {
 
 		AutoTagging.assertAutoTagPresent(tagName = "carton");
 
-		Navigator.openSiteURL(siteName = "Site AutoTag Disabled");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "DM Document JPG");
+			dmDocumentTitle = "DM Document JPG",
+			groupName = "Site AutoTag Disabled",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-autotag-disabled");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG");
 
 		DMDocument.viewCP(dmDocumentTitle = "DM Document JPG");
 
-		AutoTagging.assertNoAutoTag();
+		AutoTagging.assertNoAutoTag(tagName = "carton");
+	}
+
+	@description = "This test covers LPS-101885. It asserts that an auto-tagged document can be deleted when OpenNLP Auto-Tagging is enabled."
+	@priority = "4"
+	test DeleteAutoTaggedDocument {
+		property test.name.skip.portal.instance = "DMAutoTagging#DeleteAutoTaggedDocument";
+
+		AutoTagging.enableOpenNLP(
+			assetType = "Document",
+			confidenceThreshold = "0.05");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Alice's Adventures in Wonderland.docx",
+			dmDocumentTitle = "DM Document DOCX");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.deleteCP(dmDocumentTitle = "DM Document DOCX");
+
+		AssertConsoleTextNotPresent(value1 = "javax.portlet.PortletException");
+
+		DMDocument.viewDefaultCP();
+	}
+
+	@description = "This test asserts that the max number of tags at the instance level cannot be greater than the max number of tags at the portal level."
+	@priority = "4"
+	test MaxNumberOfTagsCheckBetweenInstanceLevelAndPortalLevel {
+		property test.name.skip.portal.instance = "DMAutoTagging#MaxNumberOfTagsCheckBetweenInstanceLevelAndPortalLevel";
+
+		AutoTagging.enableAutoTagging(
+			enableAutoTaggingFor = "System Settings",
+			maximumNumberOfTags = "5");
+
+		AutoTagging.enableAutoTagging(
+			enableAutoTaggingFor = "Instance Settings",
+			maximumNumberOfTags = "10",
+			validationError = "Maximum number of tags cannot be greater than the maximum number of system tags.");
 	}
 
 	@description = "This test asserts that no auto-tags are generated for manually tagged images."
@@ -194,24 +259,17 @@ definition {
 	test NoAutoTagForManuallyTaggedImage {
 		property test.name.skip.portal.instance = "DMAutoTagging#NoAutoTagForManuallyTaggedImage";
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
 
-		SitePages.addPublicPage(
-			pageName = "Documents and Media Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Documents and Media Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
-
-		Portlet.addPG(portletName = "Documents and Media");
 
 		DMDocument.enableActionsMenuOnPortlet();
 
@@ -235,40 +293,65 @@ definition {
 		AutoTagging.assertNoAutoTag(tagName = "carton");
 	}
 
+	@description = "This test covers LPS-94208. It asserts that a document is auto tagged when OpenNLP Auto-Tagging is enabled."
+	@priority = "5"
+	test OpenNLPSmoke {
+		property environment.acceptance = "true";
+		property portal.acceptance = "true";
+
+		property test.name.skip.portal.instance = "DMAutoTagging#OpenNLPSmoke";
+
+		AutoTagging.enableOpenNLP(
+			assetType = "Document",
+			confidenceThreshold = "0.05");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Alice's Adventures in Wonderland.docx",
+			dmDocumentTitle = "DM Document DOCX");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document DOCX");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document DOCX");
+
+		AutoTagging.assertAutoTagPresent(tagName = "adventures");
+
+		AutoTagging.assertAutoTagPresent(tagName = "alice");
+	}
+
 	@description = "This test asserts that auto-tags can be deleted."
 	@priority = "4"
-	test RemoveAutoTag {
-		property test.name.skip.portal.instance = "DMAutoTagging#RemoveAutoTag";
+	test RemoveImageAutoTag {
+		property test.name.skip.portal.instance = "DMAutoTagging#RemoveImageAutoTag";
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
 
-		SitePages.addPublicPage(
-			pageName = "Documents and Media Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Documents and Media Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
-		Portlet.addPG(portletName = "Documents and Media");
-
 		DMDocument.enableActionsMenuOnPortlet();
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "Auto Tagged Image Description",
+			dmDocumentTitle = "Auto Tagged Image",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
-		DMDocument.addPG(
-			dmDocumentDescription = "Auto Tagged Image Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "Auto Tagged Image");
 
 		DMDocument.viewPG(
 			dmDocumentDescription = "Auto Tagged Image Description",
@@ -285,7 +368,68 @@ definition {
 			dmDocumentDescription = "Auto Tagged Image Description",
 			dmDocumentTitle = "Auto Tagged Image");
 
-		AutoTagging.assertNoAutoTag();
+		AutoTagging.assertNoAutoTag(tagName = "carton");
+	}
+
+	@description = "This test covers LPS-94209. It asserts that OpenNLP auto-tags can be deleted."
+	@priority = "4"
+	test RemoveOpenNLPAutoTag {
+		property test.name.skip.portal.instance = "DMAutoTagging#RemoveOpenNLPAutoTag";
+
+		AutoTagging.enableOpenNLP(
+			assetType = "Document",
+			confidenceThreshold = "0.05");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		DMDocument.enableActionsMenuOnPortlet();
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.addPG(
+			dmDocumentDescription = "Auto Tagged PDF Description",
+			dmDocumentFile = "Alice's Adventures in Wonderland.pdf",
+			dmDocumentTitle = "Auto Tagged PDF");
+
+		DMDocument.viewPG(
+			dmDocumentDescription = "Auto Tagged PDF Description",
+			dmDocumentTitle = "Auto Tagged PDF",
+			tagNameList = "alice");
+
+		DMDocument.removeTag(removeTag = "alice");
+
+		Button.clickPublish();
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		DMDocument.viewPG(
+			dmDocumentDescription = "Auto Tagged PDF Description",
+			dmDocumentTitle = "Auto Tagged PDF",
+			tagNameList = "adventures");
+
+		DMDocument.removeTag(removeTag = "adventures");
+
+		Button.clickPublish();
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		DMDocument.viewPG(
+			dmDocumentDescription = "Auto Tagged PDF Description",
+			dmDocumentTitle = "Auto Tagged PDF");
+
+		AutoTagging.assertNoAutoTag(tagName = "alice");
 	}
 
 	@description = "This test asserts that an image is auto-tagged during upload when Auto-Tagging is enabled."
@@ -294,20 +438,14 @@ definition {
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "DMAutoTagging#Smoke";
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_4.jpg",
-			dmDocumentTitle = "DM Document JPG");
+			dmDocumentTitle = "DM Document JPG",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_4.jpg");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document JPG");
 
@@ -315,4 +453,5 @@ definition {
 
 		AutoTagging.assertAutoTagPresent(tagName = "carton");
 	}
+
 }

@@ -46,5 +46,6 @@ User selUser = (User)request.getAttribute(UsersAdminWebKeys.SELECTED_USER);
 	<liferay-asset:asset-tags-selector
 		className="<%= User.class.getName() %>"
 		classPK="<%= (selUser != null) ? selUser.getPrimaryKey() : 0 %>"
+		groupIds="<%= new long[] {themeDisplay.getCompanyGroupId()} %>"
 	/>
 </div>

@@ -16,18 +16,8 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-Map<String, Object> context = new HashMap<>();
-
-context.put("color", portletConfigurationCSSPortletDisplayContext.getBackgroundColor());
-context.put("id", renderResponse.getNamespace() + "backgroundColor");
-context.put("label", LanguageUtil.get(request, "background-color"));
-context.put("name", renderResponse.getNamespace() + "backgroundColor");
-%>
-
-<soy:component-renderer
-	context="<%= context %>"
-	module="js/ColorPickerInput.es"
-	servletContext="<%= application %>"
-	templateNamespace="com.liferay.portlet.configuration.css.web.ColorPickerInput.render"
-/>
+<liferay-util:include page="/color_picker_input.jsp" servletContext="<%= application %>">
+	<liferay-util:param name="color" value="<%= portletConfigurationCSSPortletDisplayContext.getBackgroundColor() %>" />
+	<liferay-util:param name="label" value='<%= LanguageUtil.get(request, "background-color") %>' />
+	<liferay-util:param name="name" value='<%= liferayPortletResponse.getNamespace() + "backgroundColor" %>' />
+</liferay-util:include>

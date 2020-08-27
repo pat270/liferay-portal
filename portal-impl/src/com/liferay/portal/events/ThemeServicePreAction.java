@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ColorScheme;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Theme;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
@@ -44,8 +45,8 @@ public class ThemeServicePreAction extends Action {
 		try {
 			servicePre(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			throw new ActionException(e);
+		catch (Exception exception) {
+			throw new ActionException(exception);
 		}
 	}
 
@@ -74,6 +75,16 @@ public class ThemeServicePreAction extends Action {
 		if (layout != null) {
 			theme = layout.getTheme();
 			colorScheme = layout.getColorScheme();
+
+			if (layout.getMasterLayoutPlid() > 0) {
+				Layout masterLayout = LayoutLocalServiceUtil.fetchLayout(
+					layout.getMasterLayoutPlid());
+
+				if (masterLayout != null) {
+					theme = masterLayout.getTheme();
+					colorScheme = masterLayout.getColorScheme();
+				}
+			}
 		}
 		else {
 			String themeId = ThemeFactoryUtil.getDefaultRegularThemeId(

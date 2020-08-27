@@ -16,12 +16,9 @@ package com.liferay.marketplace.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Ryan Park
  */
-@ProviderType
 public class NoSuchModuleException extends NoSuchModelException {
 
 	public NoSuchModuleException() {
@@ -31,12 +28,12 @@ public class NoSuchModuleException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchModuleException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchModuleException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchModuleException(Throwable cause) {
-		super(cause);
+	public NoSuchModuleException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

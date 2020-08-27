@@ -1,367 +1,225 @@
-import {Config} from 'metal-state';
-import {isString} from 'metal';
-import Soy from 'metal-soy';
-
-import '../../compat/modal/Modal.es';
-import PortletBase from '../../PortletBase.es';
-import templates from './SimpleInputModal.soy';
-
 /**
- * SimpleInputModal
- * @review
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
-class SimpleInputModal extends PortletBase {
+import ClayAlert from '@clayui/alert';
+import ClayButton from '@clayui/button';
+import {ClayCheckbox} from '@clayui/form';
+import ClayIcon from '@clayui/icon';
+import ClayModal, {useModal} from '@clayui/modal';
+import {useIsMounted} from 'frontend-js-react-web';
+import {fetch, navigate} from 'frontend-js-web';
+import React, {useState} from 'react';
 
-	/**
-	 * @inheritDoc
-	 * @review
-	 */
+/**
+ * Manipulates small amounts of data with a form shown inside a modal.
+ */
+const SimpleInputModal = ({
+	alert,
+	checkboxFieldLabel,
+	checkboxFieldName,
+	checkboxFieldValue,
+	closeModal,
+	dialogTitle,
+	formSubmitURL,
+	idFieldName,
+	idFieldValue,
+	initialVisible,
+	mainFieldLabel,
+	mainFieldName,
+	namespace,
+	onFormSuccess,
+	placeholder,
+}) => {
+	const isMounted = useIsMounted();
+	const [errorMessage, setErrorMessage] = useState();
+	const [loadingResponse, setLoadingResponse] = useState(false);
+	const [visible, setVisible] = useState(initialVisible);
+	const [inputValue, setInputValue] = useState('');
+	const [isChecked, setChecked] = useState(checkboxFieldValue);
 
-	attached() {
-		this.addListener('formSubmit', this._defaultFormSubmit.bind(this), true);
-	}
+	const handleFormError = (responseContent) => {
+		setErrorMessage(responseContent.error || '');
+	};
 
-	/**
-	 * @inheritDoc
-	 * @review
-	 */
-
-	rendered() {
-		requestAnimationFrame(
-			() => {
-				this.refs.modal.refs.mainField.focus();
-			}
-		);
-	}
-
-	/**
-	 * Default event listener for form submission.
-	 * @param {Event} event
-	 * @private
-	 * @review
-	 */
-
-	_defaultFormSubmit(event) {
-		this.fetch(this.formSubmitURL, event.form)
-			.then(response => response.json())
-			.then(
-				responseContent => {
-					if (responseContent.error) {
-						this._loadingResponse = false;
-						this._handleFormError(responseContent);
-					}
-					else {
-						this._handleFormSuccess(responseContent);
-					}
-				}
-			)
-			.catch(
-				response => {
-					this._handleFormError(response);
-				}
-			);
-
-		this._loadingResponse = true;
-	}
-
-	/**
-	 * Callback executed when the SimpleInputModal cancel button
-	 * has been clicked.
-	 * @private
-	 * @review
-	 */
-
-	_handleCancelButtonClick() {
-		this.emit('cancelButtonClicked');
-	}
-
-	/**
-	 * Callback executed when the SimpleInputModal form has been
-	 * submited and it receives a server error as response.
-	 * It emits a formError event with the errorMessage received.
-	 * @param {{error: string}} responseContent
-	 * @private
-	 * @review
-	 */
-
-	_handleFormError(responseContent) {
-		this._errorMessage = responseContent.error || '';
-
-		this.emit(
-			'formError',
-			{
-				errorMessage: this._errorMessage
-			}
-		);
-	}
-
-	/**
-	 * Callback executed when the SimpleInputModal form has been
-	 * submited. It prevents the default behaviour and sends this form
-	 * using a fetch request.
-	 * @param {Event} event
-	 * @private
-	 * @review
-	 */
-
-	_handleFormSubmit(event) {
+	const _handleSubmit = (event) => {
 		event.preventDefault();
 
-		this.emit(
-			'formSubmit',
-			{
-				form: this.refs.modal.refs.form
-			}
+		const formData = new FormData(
+			document.querySelector(`#${namespace}form`)
 		);
-	}
 
-	/**
-	 * Callback executed when the SimpleInputModal form has been
-	 * submited and it receives a server successful response.
-	 * It emits a formSuccess event with the redirectURL received.
-	 * @param {{redirectURL: string}} responseContent
-	 * @private
-	 * @review
-	 */
+		fetch(formSubmitURL, {
+			body: formData,
+			method: 'POST',
+		})
+			.then((response) => response.json())
+			.then((responseContent) => {
+				if (isMounted()) {
+					if (responseContent.error) {
+						setLoadingResponse(false);
 
-	_handleFormSuccess(responseContent) {
-		this.emit(
-			'formSuccess',
-			{
-				redirectURL: responseContent.redirectURL || ''
-			}
-		);
-	}
+						handleFormError(responseContent);
+					}
+					else {
+						setVisible(false);
 
-	/**
-	 * Callback executed when the modal visibility property changes
-	 * @private
-	 * @review
-	 */
+						closeModal();
 
-	_handleModalVisibleChanged() {
-		this.emit('dialogHidden');
-	}
-}
+						if (responseContent.redirectURL) {
+							navigate(responseContent.redirectURL);
+						}
+						else {
+							if (onFormSuccess) {
+								onFormSuccess({
+									...responseContent,
+									redirectURL:
+										responseContent.redirectURL || '',
+								});
+							}
+						}
+					}
+				}
+			})
+			.catch((response) => {
+				handleFormError(response);
+			});
 
-/**
- * State definition.
- * @review
- * @static
- * @type {!Object}
- */
+		setLoadingResponse(true);
+	};
 
-SimpleInputModal.STATE = {
+	const {observer, onClose} = useModal({
+		onClose: () => {
+			setVisible(false);
 
-	/**
-	 * Label for the optional checkbox
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
+			closeModal();
+		},
+	});
 
-	checkboxFieldLabel: Config
-		.setter(
-			(checkboxFieldLabel) => {
-				return (isString(checkboxFieldLabel) && checkboxFieldLabel) ?
-					Soy.toIncDom(checkboxFieldLabel) : '';
-			}
+	return (
+		visible && (
+			<ClayModal observer={observer} size="md">
+				<ClayModal.Header>{dialogTitle}</ClayModal.Header>
+
+				<form id={`${namespace}form`} onSubmit={_handleSubmit}>
+					<ClayModal.Body>
+						{alert && alert.message && alert.title && (
+							<ClayAlert
+								displayType={alert.style}
+								title={alert.title}
+							>
+								{alert.message}
+							</ClayAlert>
+						)}
+
+						<input
+							name={`${namespace}${idFieldName}`}
+							type="hidden"
+							value={idFieldValue}
+						/>
+
+						<div
+							className={`form-group ${
+								errorMessage ? 'has-error' : ''
+							}`}
+						>
+							<label
+								className="control-label"
+								htmlFor={`${namespace}${mainFieldName}`}
+							>
+								{mainFieldLabel}
+
+								<span className="reference-mark">
+									<ClayIcon symbol="asterisk" />
+								</span>
+							</label>
+
+							<input
+								autoFocus
+								className="form-control"
+								disabled={loadingResponse}
+								id={`${namespace}${mainFieldName}`}
+								name={`${namespace}${mainFieldName}`}
+								onChange={(event) =>
+									setInputValue(event.target.value)
+								}
+								placeholder={placeholder}
+								required
+								type="text"
+								value={inputValue}
+							/>
+
+							{errorMessage && (
+								<div className="form-feedback-item">
+									<ClayIcon
+										className="inline-item inline-item-before"
+										symbol="exclamation-full"
+									/>
+
+									{errorMessage}
+								</div>
+							)}
+						</div>
+
+						{checkboxFieldName && checkboxFieldLabel && (
+							<div className="form-check">
+								<ClayCheckbox
+									checked={isChecked}
+									disabled={loadingResponse}
+									label={checkboxFieldLabel}
+									name={`${namespace}${checkboxFieldName}`}
+									onChange={() =>
+										setChecked((isChecked) => !isChecked)
+									}
+								/>
+							</div>
+						)}
+					</ClayModal.Body>
+
+					<ClayModal.Footer
+						last={
+							<ClayButton.Group spaced>
+								<ClayButton
+									disabled={loadingResponse}
+									displayType="secondary"
+									onClick={onClose}
+								>
+									{Liferay.Language.get('cancel')}
+								</ClayButton>
+
+								<ClayButton
+									disabled={loadingResponse}
+									displayType="primary"
+									type="submit"
+								>
+									{loadingResponse && (
+										<span className="inline-item inline-item-before">
+											<span
+												aria-hidden="true"
+												className="loading-animation"
+											></span>
+										</span>
+									)}
+
+									{Liferay.Language.get('save')}
+								</ClayButton>
+							</ClayButton.Group>
+						}
+					/>
+				</form>
+			</ClayModal>
 		)
-		.string()
-		.value(''),
-
-	/**
-	 * Name for the optional checkbox
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
-
-	checkboxFieldName: Config.string().value(''),
-
-	/**
-	 * Initial value for the optional checkbox
-	 * @default false
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {boolean}
-	 */
-
-	checkboxFieldValue: Config.bool().value(false),
-
-	/**
-	 * Modal window title
-	 * @default undefined
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	dialogTitle: Config.string().required(),
-
-	/**
-	 * Adds a hidden bogus input when necessary to work around some formdata + ajax
-	 * formatting issues. See LPS-86960 for more details
-	 * @default false
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	fixFormData: Config.bool().value(false),
-
-	/**
-	 * URL where the form will be submitted to
-	 * @default undefined
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	formSubmitURL: Config.string().required(),
-
-	/**
-	 * Autogenerated id provided by templates
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
-
-	id: Config.string().value(''),
-
-	/**
-	 * Name for the hidden id field
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
-
-	idFieldName: Config.string().value(''),
-
-	/**
-	 * Value for the hidden id field
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
-
-	idFieldValue: Config.string().value(''),
-
-	/**
-	 * Label for the main field
-	 * @default undefined
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	mainFieldLabel: Config
-		.setter((mainFieldLabel) => Soy.toIncDom(mainFieldLabel))
-		.string()
-		.required(),
-
-	/**
-	 * Name for the main field
-	 * @default undefined
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	mainFieldName: Config.string().required(),
-
-	/**
-	 * Placeholder for the main field
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
-
-	mainFieldPlaceholder: Config.string().value(''),
-
-	/**
-	 * Initial value for the main field
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {string}
-	 */
-
-	mainFieldValue: Config.string().value(''),
-
-	/**
-	 * Namespace that will be prepended to field names
-	 * @default undefined
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	namespace: Config.string().required(),
-
-	/**
-	 * URL for the portal icons being used
-	 * @default undefined
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @review
-	 * @type {!string}
-	 */
-
-	spritemap: Config.string().required(),
-
-	/**
-	 * Form error message returned by the server
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @private
-	 * @review
-	 * @type {!string}
-	 */
-
-	_errorMessage: Config.string()
-		.internal()
-		.value(''),
-
-	/**
-	 * Flag indicating if we are waiting for a server response
-	 * after a form submission.
-	 * @default false
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @private
-	 * @review
-	 * @type {boolean}
-	 */
-
-	_loadingResponse: Config.bool()
-		.internal()
-		.value(false)
+	);
 };
 
-Soy.register(SimpleInputModal, templates);
-
-export {SimpleInputModal};
 export default SimpleInputModal;

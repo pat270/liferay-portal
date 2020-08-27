@@ -22,6 +22,8 @@ import com.liferay.portal.kernel.model.Plugin;
 import com.liferay.portal.kernel.model.PluginSetting;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.transaction.Propagation;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.model.impl.PluginSettingImpl;
 import com.liferay.portal.service.base.PluginSettingLocalServiceBaseImpl;
@@ -33,6 +35,7 @@ public class PluginSettingLocalServiceImpl
 	extends PluginSettingLocalServiceBaseImpl {
 
 	@Override
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void checkPermission(long userId, String pluginId, String pluginType)
 		throws PortalException {
 
@@ -43,13 +46,14 @@ public class PluginSettingLocalServiceImpl
 	}
 
 	@Override
+	@Transactional(enabled = false)
 	public PluginSetting getDefaultPluginSetting() {
-		PluginSettingImpl pluginSetting = new PluginSettingImpl();
+		PluginSettingImpl pluginSettingImpl = new PluginSettingImpl();
 
-		pluginSetting.setRoles(StringPool.BLANK);
-		pluginSetting.setActive(true);
+		pluginSettingImpl.setRoles(StringPool.BLANK);
+		pluginSettingImpl.setActive(true);
 
-		return pluginSetting;
+		return pluginSettingImpl;
 	}
 
 	@Override
@@ -101,9 +105,10 @@ public class PluginSettingLocalServiceImpl
 
 			return true;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Could not check permissions for " + pluginId, e);
+				_log.warn(
+					"Could not check permissions for " + pluginId, exception);
 			}
 
 			return false;
@@ -133,9 +138,7 @@ public class PluginSettingLocalServiceImpl
 		pluginSetting.setRoles(roles);
 		pluginSetting.setActive(active);
 
-		pluginSettingPersistence.update(pluginSetting);
-
-		return pluginSetting;
+		return pluginSettingPersistence.update(pluginSetting);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

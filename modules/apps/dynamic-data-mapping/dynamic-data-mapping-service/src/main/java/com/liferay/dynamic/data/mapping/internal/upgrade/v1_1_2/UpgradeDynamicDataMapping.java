@@ -84,16 +84,16 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 			return jsonArray.getString(0);
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(jsone, jsone);
+				_log.warn(jsonException, jsonException);
 			}
 
 			return value;
 		}
 	}
 
-	protected DDMForm deserialize(String content) {
+	protected DDMForm deserialize(String content) throws Exception {
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
 
@@ -101,10 +101,19 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			ddmFormDeserializerDeserializeResponse =
 				_ddmFormDeserializer.deserialize(builder.build());
 
+		Exception exception =
+			ddmFormDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
+
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
 
-	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
+	protected DDMFormValues deserialize(String content, DDMForm ddmForm)
+		throws Exception {
+
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
@@ -112,6 +121,13 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
 				_ddmFormValuesDeserializer.deserialize(builder.build());
+
+		Exception exception =
+			ddmFormValuesDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -251,6 +267,16 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 					locale, convertJSONArrayToString(valueString));
 			}
 		}
+		else if (type.equals("select")) {
+			String dataSourceType = ddmFormField.getDataSourceType();
+
+			if (!dataSourceType.startsWith(StringPool.OPEN_BRACKET) ||
+				!dataSourceType.endsWith(StringPool.CLOSE_BRACKET)) {
+
+				ddmFormField.setProperty(
+					"dataSourceType", "[\"" + dataSourceType + "\"]");
+			}
+		}
 	}
 
 	protected void updateDDMFormFields(DDMForm ddmForm) throws Exception {
@@ -318,23 +344,55 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 					connection,
 					"update DDMStructure set definition = ? where " +
 						"structureId = ?");
-			ResultSet rs = ps1.executeQuery()) {
+			PreparedStatement ps3 = connection.prepareStatement(
+				"select structureVersionId, definition from " +
+					"DDMStructureVersion where structureId = ?");
+			PreparedStatement ps4 =
+				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+					connection,
+					"update DDMStructureVersion set definition = ? where " +
+						"structureVersionId = ?")) {
 
-			while (rs.next()) {
-				long ddmStructureId = rs.getLong("structureId");
+			try (ResultSet rs = ps1.executeQuery()) {
+				while (rs.next()) {
+					long ddmStructureId = rs.getLong("structureId");
 
-				DDMForm ddmForm = getDDMForm(ddmStructureId);
+					DDMForm ddmForm = getDDMForm(ddmStructureId);
 
-				updateDDMFormFields(ddmForm);
+					updateDDMFormFields(ddmForm);
 
-				ps2.setString(1, serialize(ddmForm));
+					ps2.setString(1, serialize(ddmForm));
 
-				ps2.setLong(2, ddmStructureId);
+					ps2.setLong(2, ddmStructureId);
 
-				ps2.addBatch();
+					ps2.addBatch();
+
+					ps3.setLong(1, ddmStructureId);
+
+					try (ResultSet rs2 = ps3.executeQuery()) {
+						while (rs2.next()) {
+							String definition = rs2.getString("definition");
+
+							ddmForm = deserialize(definition);
+
+							updateDDMFormFields(ddmForm);
+
+							ps4.setString(1, serialize(ddmForm));
+
+							long structureVersionId = rs2.getLong(
+								"structureVersionId");
+
+							ps4.setLong(2, structureVersionId);
+
+							ps4.addBatch();
+						}
+					}
+				}
 			}
 
 			ps2.executeBatch();
+
+			ps4.executeBatch();
 		}
 	}
 
@@ -417,7 +475,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			try {
 				return _jsonFactory.createJSONArray(value);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				JSONArray jsonArray = _jsonFactory.createJSONArray();
 
 				jsonArray.put(value);

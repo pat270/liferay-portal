@@ -6,6 +6,10 @@ apply plugin: "java"
 
 task runGradleTest
 
+buildCSS {
+	excludes "**/excluded.scss"
+}
+
 repositories {
 	maven {
 		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
@@ -16,7 +20,7 @@ runGradleTest {
 	dependsOn classes
 
 	doLast {
-		File dir = file("src/main/resources/css/.sass-cache")
+		File dir = new File(processResources.destinationDir, "css/.sass-cache")
 
 		Pattern pattern = ~/@import\s+url\s*\(\s*['"]?(.+\.css\?t=\d+)['"]?\s*\)\s*;/
 
@@ -29,5 +33,9 @@ runGradleTest {
 
 			assert matcher.count == 3
 		}
+
+		File excludedFile = new File(dir, "excluded.css")
+
+		assert !excludedFile.exists()
 	}
 }

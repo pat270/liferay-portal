@@ -16,9 +16,13 @@ package com.liferay.mobile.device.rules.service.impl;
 
 import com.liferay.mobile.device.rules.model.MDRRule;
 import com.liferay.mobile.device.rules.model.MDRRuleGroup;
+import com.liferay.mobile.device.rules.service.MDRRuleGroupInstanceLocalService;
+import com.liferay.mobile.device.rules.service.MDRRuleLocalService;
 import com.liferay.mobile.device.rules.service.base.MDRRuleGroupLocalServiceBaseImpl;
 import com.liferay.mobile.device.rules.util.comparator.RuleGroupCreateDateComparator;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -36,10 +40,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Edward C. Han
  * @author Manuel de la Peña
  */
+@Component(
+	property = "model.class.name=com.liferay.mobile.device.rules.model.MDRRuleGroup",
+	service = AopService.class
+)
 public class MDRRuleGroupLocalServiceImpl
 	extends MDRRuleGroupLocalServiceBaseImpl {
 
@@ -106,12 +117,7 @@ public class MDRRuleGroupLocalServiceImpl
 				PropsValues.MOBILE_DEVICE_RULES_RULE_GROUP_COPY_POSTFIX);
 
 			nameMap.put(
-				locale,
-				name.concat(
-					StringPool.SPACE
-				).concat(
-					postfix
-				));
+				locale, StringBundler.concat(name, StringPool.SPACE, postfix));
 		}
 
 		MDRRuleGroup newRuleGroup = addRuleGroup(
@@ -124,7 +130,7 @@ public class MDRRuleGroupLocalServiceImpl
 		for (MDRRule rule : rules) {
 			serviceContext.setUuid(PortalUUIDUtil.generate());
 
-			mdrRuleLocalService.copyRule(
+			_mdrRuleLocalService.copyRule(
 				rule, newRuleGroup.getRuleGroupId(), serviceContext);
 		}
 
@@ -154,11 +160,11 @@ public class MDRRuleGroupLocalServiceImpl
 
 		// Rules
 
-		mdrRuleLocalService.deleteRules(ruleGroup.getRuleGroupId());
+		_mdrRuleLocalService.deleteRules(ruleGroup.getRuleGroupId());
 
 		// Rule group instances
 
-		mdrRuleGroupInstanceLocalService.deleteRuleGroupInstances(
+		_mdrRuleGroupInstanceLocalService.deleteRuleGroupInstances(
 			ruleGroup.getRuleGroupId());
 	}
 
@@ -232,10 +238,10 @@ public class MDRRuleGroupLocalServiceImpl
 	public List<MDRRuleGroup> searchByKeywords(
 		long groupId, String keywords, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end,
-		OrderByComparator<MDRRuleGroup> obc) {
+		OrderByComparator<MDRRuleGroup> orderByComparator) {
 
 		return mdrRuleGroupFinder.findByKeywords(
-			groupId, keywords, params, start, end, obc);
+			groupId, keywords, params, start, end, orderByComparator);
 	}
 
 	@Override
@@ -267,9 +273,13 @@ public class MDRRuleGroupLocalServiceImpl
 		ruleGroup.setNameMap(nameMap);
 		ruleGroup.setDescriptionMap(descriptionMap);
 
-		mdrRuleGroupPersistence.update(ruleGroup);
-
-		return ruleGroup;
+		return mdrRuleGroupPersistence.update(ruleGroup);
 	}
+
+	@Reference
+	private MDRRuleGroupInstanceLocalService _mdrRuleGroupInstanceLocalService;
+
+	@Reference
+	private MDRRuleLocalService _mdrRuleLocalService;
 
 }

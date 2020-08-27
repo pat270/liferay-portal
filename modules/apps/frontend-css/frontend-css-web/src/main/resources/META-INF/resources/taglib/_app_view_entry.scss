@@ -1,6 +1,3 @@
-@import "bourbon";
-@import "mixins";
-
 .app-view-entry-taglib.entry-display-style {
 	&.display-icon {
 		display: inline-block;
@@ -12,7 +9,7 @@
 		vertical-align: top;
 		width: 200px;
 
-		@include respond-to(phone, tablet) {
+		@include media-breakpoint-down(md) {
 			height: 230px;
 		}
 
@@ -31,10 +28,11 @@
 			text-align: center;
 		}
 
-		.folder-action, .entry-action {
+		.folder-action,
+		.entry-action {
 			top: 14px;
 
-			@include respond-to(phone, tablet) {
+			@include media-breakpoint-down(md) {
 				bottom: 8px;
 				right: 31px;
 				top: auto;
@@ -73,11 +71,12 @@
 		}
 
 		.entry-title {
-			@include ellipsis;
+			@include text-truncate();
 		}
 
-		@include respond-to(phone, tablet) {
-			.folder-action, .entry-action {
+		@include media-breakpoint-down(md) {
+			.folder-action,
+			.entry-action {
 				a {
 					padding: 10px 12px;
 					width: auto;
@@ -86,8 +85,9 @@
 		}
 	}
 
-	&.display-descriptive, &.display-icon {
-		border: 1px solid #E1E1E1;
+	&.display-descriptive,
+	&.display-icon {
+		border: 1px solid #e1e1e1;
 		margin: 5px;
 
 		img {

@@ -16,8 +16,6 @@ package com.liferay.oauth2.provider.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link OAuth2ApplicationService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OAuth2ApplicationService
  * @generated
  */
-@ProviderType
 public class OAuth2ApplicationServiceWrapper
 	implements OAuth2ApplicationService,
 			   ServiceWrapper<OAuth2ApplicationService> {
@@ -58,7 +55,7 @@ public class OAuth2ApplicationServiceWrapper
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), since 7.2, unused
+	 * @deprecated As of Mueller (7.2.x)
 	 */
 	@Deprecated
 	@Override
@@ -177,7 +174,7 @@ public class OAuth2ApplicationServiceWrapper
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), since 7.2, unused
+	 * @deprecated As of Mueller (7.2.x)
 	 */
 	@Deprecated
 	@Override

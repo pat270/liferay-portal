@@ -24,7 +24,8 @@ import com.liferay.mobile.device.rules.service.MDRRuleLocalService;
 import com.liferay.mobile.device.rules.service.persistence.MDRRuleGroupFinder;
 import com.liferay.mobile.device.rules.service.persistence.MDRRuleGroupPersistence;
 import com.liferay.mobile.device.rules.service.persistence.MDRRulePersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -43,12 +44,11 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
-import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -56,7 +56,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the mdr rule local service.
@@ -69,10 +69,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.mobile.device.rules.service.impl.MDRRuleLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class MDRRuleLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements MDRRuleLocalService, IdentifiableOSGiService {
+	implements AopService, IdentifiableOSGiService, MDRRuleLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -82,6 +81,10 @@ public abstract class MDRRuleLocalServiceBaseImpl
 
 	/**
 	 * Adds the mdr rule to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MDRRuleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param mdrRule the mdr rule
 	 * @return the mdr rule that was added
@@ -109,6 +112,10 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	/**
 	 * Deletes the mdr rule with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MDRRuleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ruleId the primary key of the mdr rule
 	 * @return the mdr rule that was removed
 	 * @throws PortalException if a mdr rule with the primary key could not be found
@@ -122,6 +129,10 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	/**
 	 * Deletes the mdr rule from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MDRRuleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mdrRule the mdr rule
 	 * @return the mdr rule that was removed
 	 */
@@ -129,6 +140,11 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	@Override
 	public MDRRule deleteMDRRule(MDRRule mdrRule) {
 		return mdrRulePersistence.remove(mdrRule);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return mdrRulePersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -154,7 +170,7 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.mobile.device.rules.model.impl.MDRRuleModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.mobile.device.rules.model.impl.MDRRuleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -174,7 +190,7 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.mobile.device.rules.model.impl.MDRRuleModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.mobile.device.rules.model.impl.MDRRuleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -360,6 +376,15 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return mdrRulePersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -367,6 +392,13 @@ public abstract class MDRRuleLocalServiceBaseImpl
 		return mdrRuleLocalService.deleteMDRRule((MDRRule)persistedModel);
 	}
 
+	public BasePersistence<MDRRule> getBasePersistence() {
+		return mdrRulePersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -426,7 +458,7 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	 * Returns a range of all the mdr rules.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.mobile.device.rules.model.impl.MDRRuleModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.mobile.device.rules.model.impl.MDRRuleModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of mdr rules
@@ -451,6 +483,10 @@ public abstract class MDRRuleLocalServiceBaseImpl
 	/**
 	 * Updates the mdr rule in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MDRRuleLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mdrRule the mdr rule
 	 * @return the mdr rule that was updated
 	 */
@@ -460,177 +496,17 @@ public abstract class MDRRuleLocalServiceBaseImpl
 		return mdrRulePersistence.update(mdrRule);
 	}
 
-	/**
-	 * Returns the mdr rule local service.
-	 *
-	 * @return the mdr rule local service
-	 */
-	public MDRRuleLocalService getMDRRuleLocalService() {
-		return mdrRuleLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			MDRRuleLocalService.class, IdentifiableOSGiService.class,
+			PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Sets the mdr rule local service.
-	 *
-	 * @param mdrRuleLocalService the mdr rule local service
-	 */
-	public void setMDRRuleLocalService(
-		MDRRuleLocalService mdrRuleLocalService) {
-
-		this.mdrRuleLocalService = mdrRuleLocalService;
-	}
-
-	/**
-	 * Returns the mdr rule persistence.
-	 *
-	 * @return the mdr rule persistence
-	 */
-	public MDRRulePersistence getMDRRulePersistence() {
-		return mdrRulePersistence;
-	}
-
-	/**
-	 * Sets the mdr rule persistence.
-	 *
-	 * @param mdrRulePersistence the mdr rule persistence
-	 */
-	public void setMDRRulePersistence(MDRRulePersistence mdrRulePersistence) {
-		this.mdrRulePersistence = mdrRulePersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the user local service.
-	 *
-	 * @return the user local service
-	 */
-	public com.liferay.portal.kernel.service.UserLocalService
-		getUserLocalService() {
-
-		return userLocalService;
-	}
-
-	/**
-	 * Sets the user local service.
-	 *
-	 * @param userLocalService the user local service
-	 */
-	public void setUserLocalService(
-		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
-
-		this.userLocalService = userLocalService;
-	}
-
-	/**
-	 * Returns the user persistence.
-	 *
-	 * @return the user persistence
-	 */
-	public UserPersistence getUserPersistence() {
-		return userPersistence;
-	}
-
-	/**
-	 * Sets the user persistence.
-	 *
-	 * @param userPersistence the user persistence
-	 */
-	public void setUserPersistence(UserPersistence userPersistence) {
-		this.userPersistence = userPersistence;
-	}
-
-	/**
-	 * Returns the mdr rule group local service.
-	 *
-	 * @return the mdr rule group local service
-	 */
-	public com.liferay.mobile.device.rules.service.MDRRuleGroupLocalService
-		getMDRRuleGroupLocalService() {
-
-		return mdrRuleGroupLocalService;
-	}
-
-	/**
-	 * Sets the mdr rule group local service.
-	 *
-	 * @param mdrRuleGroupLocalService the mdr rule group local service
-	 */
-	public void setMDRRuleGroupLocalService(
-		com.liferay.mobile.device.rules.service.MDRRuleGroupLocalService
-			mdrRuleGroupLocalService) {
-
-		this.mdrRuleGroupLocalService = mdrRuleGroupLocalService;
-	}
-
-	/**
-	 * Returns the mdr rule group persistence.
-	 *
-	 * @return the mdr rule group persistence
-	 */
-	public MDRRuleGroupPersistence getMDRRuleGroupPersistence() {
-		return mdrRuleGroupPersistence;
-	}
-
-	/**
-	 * Sets the mdr rule group persistence.
-	 *
-	 * @param mdrRuleGroupPersistence the mdr rule group persistence
-	 */
-	public void setMDRRuleGroupPersistence(
-		MDRRuleGroupPersistence mdrRuleGroupPersistence) {
-
-		this.mdrRuleGroupPersistence = mdrRuleGroupPersistence;
-	}
-
-	/**
-	 * Returns the mdr rule group finder.
-	 *
-	 * @return the mdr rule group finder
-	 */
-	public MDRRuleGroupFinder getMDRRuleGroupFinder() {
-		return mdrRuleGroupFinder;
-	}
-
-	/**
-	 * Sets the mdr rule group finder.
-	 *
-	 * @param mdrRuleGroupFinder the mdr rule group finder
-	 */
-	public void setMDRRuleGroupFinder(MDRRuleGroupFinder mdrRuleGroupFinder) {
-		this.mdrRuleGroupFinder = mdrRuleGroupFinder;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.mobile.device.rules.model.MDRRule",
-			mdrRuleLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.mobile.device.rules.model.MDRRule");
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		mdrRuleLocalService = (MDRRuleLocalService)aopProxy;
 	}
 
 	/**
@@ -670,46 +546,28 @@ public abstract class MDRRuleLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
-	@BeanReference(type = MDRRuleLocalService.class)
 	protected MDRRuleLocalService mdrRuleLocalService;
 
-	@BeanReference(type = MDRRulePersistence.class)
+	@Reference
 	protected MDRRulePersistence mdrRulePersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.UserLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.UserLocalService
 		userLocalService;
 
-	@ServiceReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-
-	@BeanReference(
-		type = com.liferay.mobile.device.rules.service.MDRRuleGroupLocalService.class
-	)
-	protected com.liferay.mobile.device.rules.service.MDRRuleGroupLocalService
-		mdrRuleGroupLocalService;
-
-	@BeanReference(type = MDRRuleGroupPersistence.class)
+	@Reference
 	protected MDRRuleGroupPersistence mdrRuleGroupPersistence;
 
-	@BeanReference(type = MDRRuleGroupFinder.class)
+	@Reference
 	protected MDRRuleGroupFinder mdrRuleGroupFinder;
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

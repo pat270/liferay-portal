@@ -39,18 +39,18 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portletmvc4spring.test.mock.web.portlet.MockPortletResponse;
+import com.liferay.portletmvc4spring.test.mock.web.portlet.MockRenderRequest;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import javax.portlet.RenderRequest;
 
@@ -66,8 +66,6 @@ import org.junit.runner.RunWith;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.portlet.MockPortletResponse;
-import org.springframework.mock.web.portlet.MockRenderRequest;
 
 /**
  * @author Adam Brandizzi
@@ -114,14 +112,12 @@ public class JournalContentTest {
 	}
 
 	protected static String getXML() {
-		Map<Locale, String> content = new HashMap<Locale, String>() {
-			{
-				put(LocaleUtil.US, "example");
-			}
-		};
-
 		return DDMStructureTestUtil.getSampleStructuredContent(
-			"content", Collections.singletonList(content),
+			"content",
+			Collections.singletonList(
+				HashMapBuilder.put(
+					LocaleUtil.US, "example"
+				).build()),
 			LocaleUtil.toLanguageId(LocaleUtil.US));
 	}
 
@@ -186,6 +182,7 @@ public class JournalContentTest {
 		themeDisplay.setRequest(httpServletRequest);
 		themeDisplay.setResponse(new MockHttpServletResponse());
 		themeDisplay.setScopeGroupId(TestPropsValues.getGroupId());
+		themeDisplay.setSiteGroupId(TestPropsValues.getGroupId());
 		themeDisplay.setUser(TestPropsValues.getUser());
 		themeDisplay.setTimeZone(TimeZoneUtil.getDefault());
 
@@ -198,10 +195,8 @@ public class JournalContentTest {
 			MockHttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay = getThemeDisplay(httpServletRequest);
-
 		RenderRequest renderRequest = getRenderRequest(
-			httpServletRequest, themeDisplay);
+			httpServletRequest, getThemeDisplay(httpServletRequest));
 
 		_portletRequestModel = new PortletRequestModel(
 			renderRequest, new MockPortletResponse());
@@ -211,9 +206,8 @@ public class JournalContentTest {
 			MockHttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		ServiceContext serviceContext = getServiceContext(httpServletRequest);
-
-		ServiceContextThreadLocal.pushServiceContext(serviceContext);
+		ServiceContextThreadLocal.pushServiceContext(
+			getServiceContext(httpServletRequest));
 	}
 
 	protected void tearDownServiceContext() {

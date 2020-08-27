@@ -1,4 +1,0 @@
-Bundle-Name: Liferay WYSIWYG Web
-Bundle-SymbolicName: com.liferay.wysiwyg.web
-Bundle-Version: 4.0.0
-Web-ContextPath: /wysiwyg-web

@@ -29,16 +29,11 @@ int end = startAndEnd[1];
 
 JournalArticle journalArticle = journalItemSelectorViewDisplayContext.getJournalArticle();
 
-List portletFileEntries = null;
+List<RepositoryEntry> portletFileEntries = new ArrayList<>();
 int portletFileEntriesCount = 0;
 
 if (journalArticle != null) {
-	String orderByCol = ParamUtil.getString(request, "orderByCol", "title");
-	String orderByType = ParamUtil.getString(request, "orderByType", "asc");
-
-	OrderByComparator<FileEntry> orderByComparator = DLUtil.getRepositoryModelOrderByComparator(orderByCol, orderByType);
-
-	portletFileEntries = journalArticle.getImagesFileEntries(start, end, orderByComparator);
+	portletFileEntries.addAll(journalArticle.getImagesFileEntries(start, end, (OrderByComparator<FileEntry>)journalItemSelectorViewDisplayContext.getOrderByComparator()));
 	portletFileEntriesCount = journalArticle.getImagesFileEntriesCount();
 }
 %>

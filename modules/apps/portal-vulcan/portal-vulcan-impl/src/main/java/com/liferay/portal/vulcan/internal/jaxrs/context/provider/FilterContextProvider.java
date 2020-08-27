@@ -32,7 +32,6 @@ import com.liferay.portal.vulcan.internal.accept.language.AcceptLanguageImpl;
 
 import javax.servlet.http.HttpServletRequest;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.ext.Provider;
 
@@ -56,27 +55,10 @@ public class FilterContextProvider implements ContextProvider<Filter> {
 		_portal = portal;
 	}
 
-	@Override
-	public Filter createContext(Message message) {
-		try {
-			return _createContext(message);
-		}
-		catch (ExpressionVisitException eve) {
-			throw new BadRequestException(eve.getMessage(), eve);
-		}
-		catch (InvalidFilterException ife) {
-			throw ife;
-		}
-		catch (Exception e) {
-			throw new ServerErrorException(500, e);
-		}
-	}
-
-	private Filter _createContext(Message message) throws Exception {
-		HttpServletRequest httpServletRequest =
-			ContextProviderUtil.getHttpServletRequest(message);
-
-		String filterString = ParamUtil.getString(httpServletRequest, "filter");
+	public Filter createContext(
+			AcceptLanguage acceptLanguage, EntityModel entityModel,
+			String filterString)
+		throws Exception {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Filter parameter value: " + filterString);
@@ -85,8 +67,6 @@ public class FilterContextProvider implements ContextProvider<Filter> {
 		if (Validator.isNull(filterString)) {
 			return null;
 		}
-
-		EntityModel entityModel = ContextProviderUtil.getEntityModel(message);
 
 		if (entityModel == null) {
 			return null;
@@ -114,9 +94,6 @@ public class FilterContextProvider implements ContextProvider<Filter> {
 			_log.debug("Entity model: " + entityModel);
 		}
 
-		AcceptLanguage acceptLanguage = new AcceptLanguageImpl(
-			httpServletRequest, _language, _portal);
-
 		Filter filter = _expressionConvert.convert(
 			oDataFilter.getExpression(), acceptLanguage.getPreferredLocale(),
 			entityModel);
@@ -126,6 +103,30 @@ public class FilterContextProvider implements ContextProvider<Filter> {
 		}
 
 		return filter;
+	}
+
+	@Override
+	public Filter createContext(Message message) {
+		try {
+			HttpServletRequest httpServletRequest =
+				ContextProviderUtil.getHttpServletRequest(message);
+
+			return createContext(
+				new AcceptLanguageImpl(httpServletRequest, _language, _portal),
+				ContextProviderUtil.getEntityModel(message),
+				ParamUtil.getString(httpServletRequest, "filter"));
+		}
+		catch (ExpressionVisitException expressionVisitException) {
+			throw new InvalidFilterException(
+				expressionVisitException.getMessage(),
+				expressionVisitException);
+		}
+		catch (InvalidFilterException invalidFilterException) {
+			throw invalidFilterException;
+		}
+		catch (Exception exception) {
+			throw new ServerErrorException(500, exception);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

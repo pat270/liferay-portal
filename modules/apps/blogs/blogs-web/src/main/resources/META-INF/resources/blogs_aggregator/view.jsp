@@ -22,9 +22,8 @@ boolean blogsPortletFound = ParamUtil.getBoolean(request, "blogsPortletFound", t
 
 <c:if test="<%= !blogsPortletFound %>">
 	<clay:stripe
-		message='<%= LanguageUtil.get(resourceBundle, "no-suitable-application-found-to-display-the-blogs-entry") %>'
-		style="danger"
-		title='<%= LanguageUtil.get(resourceBundle, "error") + ":" %>'
+		displayType="danger"
+		message="no-suitable-application-found-to-display-the-blogs-entry"
 	/>
 </c:if>
 
@@ -33,9 +32,9 @@ PortletURL portletURL = renderResponse.createRenderURL();
 
 portletURL.setParameter("mvcRenderCommandName", "/blogs_aggregator/view");
 
-SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, 5, portletURL, null, null);
+SearchContainer<BlogsEntry> searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, 5, portletURL, null, null);
 
-List entries = null;
+List<BlogsEntry> entries = null;
 
 if (selectionMethod.equals("users")) {
 	if (organizationId > 0) {
@@ -53,7 +52,7 @@ int total = entries.size();
 
 searchContainer.setTotal(total);
 
-List results = ListUtil.subList(entries, searchContainer.getStart(), searchContainer.getEnd());
+List<BlogsEntry> results = ListUtil.subList(entries, searchContainer.getStart(), searchContainer.getEnd());
 
 searchContainer.setResults(results);
 %>
@@ -62,6 +61,8 @@ searchContainer.setResults(results);
 
 <c:if test="<%= windowState.equals(WindowState.MAXIMIZED) %>">
 	<aui:script>
-		Liferay.Util.focusFormField(document.<portlet:namespace />fm1.<portlet:namespace />keywords);
+		Liferay.Util.focusFormField(
+			document.<portlet:namespace />fm1.<portlet:namespace />keywords
+		);
 	</aui:script>
 </c:if>

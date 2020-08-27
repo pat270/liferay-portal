@@ -49,8 +49,6 @@ import javax.portlet.filter.HeaderFilter;
 import javax.portlet.filter.RenderFilter;
 import javax.portlet.filter.ResourceFilter;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  * @author Karthik Sudarshan
@@ -58,7 +56,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Philip Jones
  * @author Neil Griffin
  */
-@ProviderType
 public class MonitoringInvokerPortlet
 	implements InvokerFilterContainer, InvokerPortlet {
 
@@ -176,24 +173,6 @@ public class MonitoringInvokerPortlet
 		return _invokerPortlet.isHeaderPortlet();
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public boolean isStrutsBridgePortlet() {
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public boolean isStrutsPortlet() {
-		return _invokerPortlet.isStrutsPortlet();
-	}
-
 	@Override
 	public void processAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
@@ -221,10 +200,10 @@ public class MonitoringInvokerPortlet
 				dataSample.capture(RequestStatus.SUCCESS);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_processException(
 				_portletMonitoringControl.isMonitorPortletActionRequest(),
-				dataSample, e);
+				dataSample, exception);
 		}
 		finally {
 			if (dataSample != null) {
@@ -258,10 +237,10 @@ public class MonitoringInvokerPortlet
 				dataSample.capture(RequestStatus.SUCCESS);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_processException(
 				_portletMonitoringControl.isMonitorPortletEventRequest(),
-				dataSample, e);
+				dataSample, exception);
 		}
 		finally {
 			if (dataSample != null) {
@@ -318,10 +297,10 @@ public class MonitoringInvokerPortlet
 				dataSample.capture(RequestStatus.SUCCESS);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_processException(
 				_portletMonitoringControl.isMonitorPortletResourceRequest(),
-				dataSample, e);
+				dataSample, exception);
 		}
 		finally {
 			if (dataSample != null) {
@@ -340,21 +319,22 @@ public class MonitoringInvokerPortlet
 	}
 
 	private void _processException(
-			boolean monitorPortletRequest, DataSample dataSample, Exception e)
+			boolean monitorPortletRequest, DataSample dataSample,
+			Exception exception)
 		throws IOException, PortletException {
 
 		if (monitorPortletRequest && (dataSample != null)) {
 			dataSample.capture(RequestStatus.ERROR);
 		}
 
-		if (e instanceof IOException) {
-			throw (IOException)e;
+		if (exception instanceof IOException) {
+			throw (IOException)exception;
 		}
-		else if (e instanceof PortletException) {
-			throw (PortletException)e;
+		else if (exception instanceof PortletException) {
+			throw (PortletException)exception;
 		}
 		else {
-			throw new PortletException("Unable to process portlet", e);
+			throw new PortletException("Unable to process portlet", exception);
 		}
 	}
 
@@ -389,11 +369,11 @@ public class MonitoringInvokerPortlet
 				dataSample.capture(RequestStatus.SUCCESS);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_processException(
 				_portletMonitoringControl.isMonitorPortletHeaderRequest() ||
 				_portletMonitoringControl.isMonitorPortletRenderRequest(),
-				dataSample, e);
+				dataSample, exception);
 		}
 		finally {
 			if (dataSample != null) {

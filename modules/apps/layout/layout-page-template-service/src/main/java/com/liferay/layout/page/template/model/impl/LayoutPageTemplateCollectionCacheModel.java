@@ -18,6 +18,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,35 +27,35 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing LayoutPageTemplateCollection in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutPageTemplateCollectionCacheModel
-	implements CacheModel<LayoutPageTemplateCollection>, Externalizable {
+	implements CacheModel<LayoutPageTemplateCollection>, Externalizable,
+			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LayoutPageTemplateCollectionCacheModel)) {
+		if (!(object instanceof LayoutPageTemplateCollectionCacheModel)) {
 			return false;
 		}
 
 		LayoutPageTemplateCollectionCacheModel
 			layoutPageTemplateCollectionCacheModel =
-				(LayoutPageTemplateCollectionCacheModel)obj;
+				(LayoutPageTemplateCollectionCacheModel)object;
 
-		if (layoutPageTemplateCollectionId ==
+		if ((layoutPageTemplateCollectionId ==
 				layoutPageTemplateCollectionCacheModel.
-					layoutPageTemplateCollectionId) {
+					layoutPageTemplateCollectionId) &&
+			(mvccVersion ==
+				layoutPageTemplateCollectionCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -64,14 +65,30 @@ public class LayoutPageTemplateCollectionCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, layoutPageTemplateCollectionId);
+		int hashCode = HashUtil.hash(0, layoutPageTemplateCollectionId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(23);
+		StringBundler sb = new StringBundler(29);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", layoutPageTemplateCollectionId=");
 		sb.append(layoutPageTemplateCollectionId);
@@ -87,6 +104,8 @@ public class LayoutPageTemplateCollectionCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", layoutPageTemplateCollectionKey=");
+		sb.append(layoutPageTemplateCollectionKey);
 		sb.append(", name=");
 		sb.append(name);
 		sb.append(", description=");
@@ -102,6 +121,9 @@ public class LayoutPageTemplateCollectionCacheModel
 	public LayoutPageTemplateCollection toEntityModel() {
 		LayoutPageTemplateCollectionImpl layoutPageTemplateCollectionImpl =
 			new LayoutPageTemplateCollectionImpl();
+
+		layoutPageTemplateCollectionImpl.setMvccVersion(mvccVersion);
+		layoutPageTemplateCollectionImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			layoutPageTemplateCollectionImpl.setUuid("");
@@ -139,6 +161,15 @@ public class LayoutPageTemplateCollectionCacheModel
 				new Date(modifiedDate));
 		}
 
+		if (layoutPageTemplateCollectionKey == null) {
+			layoutPageTemplateCollectionImpl.setLayoutPageTemplateCollectionKey(
+				"");
+		}
+		else {
+			layoutPageTemplateCollectionImpl.setLayoutPageTemplateCollectionKey(
+				layoutPageTemplateCollectionKey);
+		}
+
 		if (name == null) {
 			layoutPageTemplateCollectionImpl.setName("");
 		}
@@ -168,6 +199,9 @@ public class LayoutPageTemplateCollectionCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		layoutPageTemplateCollectionId = objectInput.readLong();
@@ -180,6 +214,7 @@ public class LayoutPageTemplateCollectionCacheModel
 		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
+		layoutPageTemplateCollectionKey = objectInput.readUTF();
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		lastPublishDate = objectInput.readLong();
@@ -187,6 +222,10 @@ public class LayoutPageTemplateCollectionCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -212,6 +251,13 @@ public class LayoutPageTemplateCollectionCacheModel
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		if (layoutPageTemplateCollectionKey == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(layoutPageTemplateCollectionKey);
+		}
+
 		if (name == null) {
 			objectOutput.writeUTF("");
 		}
@@ -229,6 +275,8 @@ public class LayoutPageTemplateCollectionCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long layoutPageTemplateCollectionId;
 	public long groupId;
@@ -237,6 +285,7 @@ public class LayoutPageTemplateCollectionCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public String layoutPageTemplateCollectionKey;
 	public String name;
 	public String description;
 	public long lastPublishDate;

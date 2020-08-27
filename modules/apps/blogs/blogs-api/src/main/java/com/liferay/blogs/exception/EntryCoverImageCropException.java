@@ -16,12 +16,9 @@ package com.liferay.blogs.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class EntryCoverImageCropException extends PortalException {
 
 	public EntryCoverImageCropException() {
@@ -31,12 +28,12 @@ public class EntryCoverImageCropException extends PortalException {
 		super(msg);
 	}
 
-	public EntryCoverImageCropException(String msg, Throwable cause) {
-		super(msg, cause);
+	public EntryCoverImageCropException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public EntryCoverImageCropException(Throwable cause) {
-		super(cause);
+	public EntryCoverImageCropException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

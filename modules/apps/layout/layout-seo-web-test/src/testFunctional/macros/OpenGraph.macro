@@ -1,0 +1,195 @@
+definition {
+
+	macro changeLocale {
+		Click.clickNoMouseOver(
+			key_fieldName = "${fieldName}",
+			locator1 = "Button#LOCALIZATION_OPEN_GRAPH");
+
+		Click(
+			key_locale = StringUtil.replace("${locale}", "-", "_"),
+			locator1 = "Translation#LOCALIZATION_NAME");
+	}
+
+	macro configureOpenGraph {
+		if (isSet(customTitle)) {
+			var checkboxName = "Use Custom Title";
+
+			if (IsNotChecked(locator1 = "Checkbox#ANY_CHECKBOX")) {
+				Click(locator1 = "Checkbox#ANY_CHECKBOX");
+			}
+
+			Type(
+				locator1 = "TextInput#OPEN_GRAPH_CUSTOM_TITLE",
+				value1 = "${customTitle}");
+		}
+
+		if (isSet(customDescription)) {
+			var checkboxName = "Use Custom Description";
+
+			if (IsNotChecked(locator1 = "Checkbox#ANY_CHECKBOX")) {
+				Click(locator1 = "Checkbox#ANY_CHECKBOX");
+			}
+
+			Type(
+				key_text = "openGraphDescription",
+				locator1 = "TextArea#ANY",
+				value1 = "${customDescription}");
+		}
+
+		if (isSet(customImage)) {
+			var key_uploadFileName = "${uploadFileName}";
+
+			AssertElementPresent.pauseAssertVisible(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
+
+			Click.pauseClickAt(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			Pause(locator1 = "3000");
+
+			AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_UPLOAD_IMAGE");
+
+			UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+				locator1 = "TextInput#FILE",
+				value1 = "${uploadFileName}");
+
+			Pause(locator1 = "2000");
+
+			AssertElementPresent.pauseAssertVisible(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+
+			AssertClick(
+				locator1 = "ItemSelector#ADD_BUTTON",
+				value1 = "Add");
+
+			SelectFrameTop(value1 = "relative=top");
+
+			if (isSet(altDescription)) {
+				Type(
+					locator1 = "TextInput#OPEN_GRAPH_IMAGE_ALT_DESCRIPTION",
+					value1 = "${altDescription}");
+			}
+		}
+
+		if (!(isSet(dontSave))) {
+			Button.click(button = "Save");
+
+			if (isSet(customImage)) {
+				AssertTextEquals(
+					key_dmDocumentURL = "${uploadFileName}",
+					locator1 = "TextInput#OPEN_GRAPH_CUSTOM_IMAGE_INPUT",
+					value1 = "${uploadFileName}");
+			}
+		}
+	}
+
+	macro disableOpenGraphAtSiteLevel {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		if (IsChecked(locator1 = "Checkbox#ANY_CHECKBOX", checkboxName = "Enable Open Graph")) {
+			Click(
+				checkboxName = "Enable Open Graph",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		AssertElementPresent(locator1 = "Checkbox#OPEN_GRAPH_CHECKBOX_DISABLED");
+
+		Button.click(button = "Save");
+	}
+
+	macro mapEditableTextToField {
+		Click(
+			key_mappedField = "${mappedField}",
+			locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_MAP_BUTTON_SPECIFIC");
+
+		Select(
+			key_fieldLabel = "Field",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${field}");
+
+		Click(
+			key_mappedField = "${mappedField}",
+			locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_MAP_BUTTON_SPECIFIC");
+	}
+
+	macro viewDefaultConfiguration {
+		task ("Assert open graph title") {
+			AssertTextEquals(
+				key_title = "Open Graph",
+				locator1 = "Header#H2_TITLE",
+				value1 = "Open Graph");
+		}
+
+		task ("Assert custom title configuration") {
+			AssertTextEquals.assertPartialText(
+				key_fieldName = "openGraphTitleEnabled",
+				locator1 = "FormFields#CHECKBOX_LABEL",
+				value1 = "Use Custom Title");
+
+			AssertElementPresent(locator1 = "TextInput#OPEN_GRAPH_CUSTOM_TITLE");
+		}
+
+		task ("Assert custom description configuration") {
+			AssertTextEquals.assertPartialText(
+				key_fieldName = "openGraphDescriptionEnabled",
+				locator1 = "FormFields#CHECKBOX_LABEL",
+				value1 = "Use Custom Description");
+
+			AssertElementPresent(
+				key_text = "openGraphDescription",
+				locator1 = "TextArea#ANY");
+		}
+
+		task ("Assert image configuration") {
+			AssertTextEquals.assertPartialText(
+				key_fieldLabel = "Image",
+				locator1 = "FormFields#OPEN_GRAPH_LABEL",
+				value1 = "Image");
+
+			AssertTextEquals.assertPartialText(
+				key_fieldLabel = "Image Alt Description",
+				locator1 = "FormFields#OPEN_GRAPH_LABEL",
+				value1 = "Image Alt Description");
+
+			AssertElementPresent(locator1 = "Button#SELECT_OPEN_GRAPH_IMAGE");
+		}
+	}
+
+	macro viewMappedField {
+		AssertTextEquals(
+			key_mappedField = "${mappedField}",
+			locator1 = "TextInput#SEO_MAPPED_FIELD",
+			value1 = "${mappedFieldValue}");
+
+		if ("${mappedFieldValue}" == "-- Unmapped --") {
+			AssertElementPresent(
+				key_mappedField = "${mappedField}",
+				locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_UNMAPPED_BUTTON");
+		}
+
+		else {
+			AssertElementPresent(
+				key_mappedField = "${mappedField}",
+				locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_MAPPED_BUTTON");
+		}
+	}
+
+	macro viewNoOpenGraphProperties {
+		for (var ogProperty : list "${ogPropertyList}" ) {
+			AssertHTMLSourceTextNotPresent(value1 = "${ogProperty}");
+		}
+	}
+
+	macro viewOpenGraphProperties {
+		for (var ogProperty : list "${ogPropertyList}" ) {
+			AssertHTMLSourceTextPresent(value1 = "${ogProperty}");
+		}
+	}
+
+}

@@ -14,9 +14,9 @@
 
 package com.liferay.asset.auto.tagger.google.cloud.natural.language.internal;
 
-import com.liferay.asset.auto.tagger.google.cloud.natural.language.api.GCloudNaturalLanguageDocumentAssetAutoTagger;
+import com.liferay.asset.auto.tagger.google.cloud.natural.language.GCloudNaturalLanguageDocumentAssetAutoTagger;
 import com.liferay.asset.auto.tagger.google.cloud.natural.language.internal.configuration.GCloudNaturalLanguageAssetAutoTaggerCompanyConfiguration;
-import com.liferay.asset.auto.tagger.google.cloud.natural.language.internal.contants.GCloudNaturalLanguageDocumentAssetAutoTaggerConstants;
+import com.liferay.asset.auto.tagger.google.cloud.natural.language.internal.constants.GCloudNaturalLanguageDocumentAssetAutoTaggerConstants;
 import com.liferay.asset.auto.tagger.google.cloud.natural.language.internal.util.GCloudNaturalLanguageUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
@@ -42,6 +42,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -52,13 +53,34 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Cristina González
  */
-@Component(service = GCloudNaturalLanguageDocumentAssetAutoTagger.class)
+@Component(
+	service = {
+		GCloudNaturalLanguageDocumentAssetAutoTagger.class,
+		GCloudNaturalLanguageDocumentAssetAutoTaggerImpl.class
+	}
+)
 public class GCloudNaturalLanguageDocumentAssetAutoTaggerImpl
 	implements GCloudNaturalLanguageDocumentAssetAutoTagger {
 
 	@Override
 	public Collection<String> getTagNames(
 			long companyId, String content, Locale locale, String mimeType)
+		throws Exception {
+
+		return getTagNames(companyId, () -> content, locale, mimeType);
+	}
+
+	@Override
+	public Collection<String> getTagNames(
+			long companyId, String content, String mimeType)
+		throws Exception {
+
+		return getTagNames(companyId, content, null, mimeType);
+	}
+
+	public Collection<String> getTagNames(
+			long companyId, Supplier<String> textSupplier, Locale locale,
+			String mimeType)
 		throws Exception {
 
 		if (!_supportedContentTypes.contains(mimeType)) {
@@ -80,7 +102,8 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerImpl
 			return Collections.emptySet();
 		}
 
-		String documentPayload = _getDocumentPayload(content, mimeType);
+		String documentPayload = _getDocumentPayload(
+			textSupplier.get(), mimeType);
 
 		Collection<String> classificationTagNames = _getClassificationTagNames(
 			gCloudNaturalLanguageAssetAutoTagProviderCompanyConfiguration,
@@ -95,14 +118,6 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerImpl
 		).collect(
 			Collectors.toSet()
 		);
-	}
-
-	@Override
-	public Collection<String> getTagNames(
-			long companyId, String content, String mimeType)
-		throws Exception {
-
-		return getTagNames(companyId, content, null, mimeType);
 	}
 
 	private static <T> Predicate<T> _negate(Predicate<T> predicate) {
@@ -235,9 +250,10 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerImpl
 			return Collections.emptySet();
 		}
 
-		return StreamSupport.stream(
-			(Spliterator<JSONObject>)jsonArray.spliterator(), false
-		).filter(
+		Stream<JSONObject> stream = StreamSupport.stream(
+			(Spliterator<JSONObject>)jsonArray.spliterator(), false);
+
+		return stream.filter(
 			predicate
 		).map(
 			jsonObject -> StringUtil.removeChars(

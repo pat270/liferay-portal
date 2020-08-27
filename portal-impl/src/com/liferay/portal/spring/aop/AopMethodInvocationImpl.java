@@ -49,8 +49,8 @@ public class AopMethodInvocationImpl implements AopMethodInvocation {
 			try {
 				return _method.invoke(_target, arguments);
 			}
-			catch (InvocationTargetException ite) {
-				throw ite.getTargetException();
+			catch (InvocationTargetException invocationTargetException) {
+				throw invocationTargetException.getTargetException();
 			}
 		}
 
@@ -66,7 +66,7 @@ public class AopMethodInvocationImpl implements AopMethodInvocation {
 
 		Class<?>[] parameterTypes = _method.getParameterTypes();
 
-		StringBundler sb = new StringBundler(parameterTypes.length * 2 + 6);
+		StringBundler sb = new StringBundler((parameterTypes.length * 2) + 6);
 
 		Class<?> declaringClass = _method.getDeclaringClass();
 
@@ -105,6 +105,7 @@ public class AopMethodInvocationImpl implements AopMethodInvocation {
 		AopMethodInvocation nextAopMethodInvocation) {
 
 		_target = target;
+
 		_method = method;
 
 		_method.setAccessible(true);

@@ -27,22 +27,25 @@ boolean trashEnabled = PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKe
 </aui:fieldset>
 
 <script>
-	(function() {
-		var trashEnabledCheckbox = document.getElementById('<portlet:namespace />trashEnabled');
+	(function () {
+		var trashEnabledCheckbox = document.getElementById(
+			'<portlet:namespace />trashEnabled'
+		);
 
 		if (trashEnabledCheckbox) {
 			var trashEnabledDefault = trashEnabledCheckbox.checked;
 
-			trashEnabledCheckbox.addEventListener(
-				'change',
-				function(event) {
-					if (!trashEnabledCheckbox.checked && trashEnabledDefault) {
-						if (!confirm('<%= HtmlUtil.escapeJS(LanguageUtil.get(request, "disabling-the-recycle-bin-prevents-the-restoring-of-content-that-has-been-moved-to-the-recycle-bin")) %>')) {
-							trashEnabledCheckbox.checked = true;
-						}
+			trashEnabledCheckbox.addEventListener('change', function (event) {
+				if (!trashEnabledCheckbox.checked && trashEnabledDefault) {
+					if (
+						!confirm(
+							'<%= HtmlUtil.escapeJS(LanguageUtil.get(request, "disabling-the-recycle-bin-prevents-the-restoring-of-content-that-has-been-moved-to-the-recycle-bin")) %>'
+						)
+					) {
+						trashEnabledCheckbox.checked = true;
 					}
 				}
-			);
+			});
 		}
 	})();
 </script>

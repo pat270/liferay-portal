@@ -60,7 +60,7 @@ request.setAttribute("view.jsp-orderByType", orderByType);
 </portlet:actionURL>
 
 <%
-SearchContainer wikiNodesSearchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, portletURL, null, "there-are-no-wikis");
+SearchContainer<WikiNode> wikiNodesSearchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, portletURL, null, "there-are-no-wikis");
 
 NodesChecker nodesChecker = new NodesChecker(liferayPortletRequest, liferayPortletResponse);
 
@@ -92,7 +92,10 @@ WikiNodesManagementToolbarDisplayContext wikiNodesManagementToolbarDisplayContex
 	viewTypeItems="<%= wikiNodesManagementToolbarDisplayContext.getViewTypes() %>"
 />
 
-<div class="closed container-fluid container-fluid-max-xl sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/wiki/node_info_panel" var="sidebarPanelURL" />
 
 	<liferay-frontend:sidebar-panel
@@ -142,9 +145,9 @@ WikiNodesManagementToolbarDisplayContext wikiNodesManagementToolbarDisplayContex
 				>
 
 					<%
-					Map<String, Object> rowData = new HashMap<>();
-
-					rowData.put("actions", String.join(StringPool.COMMA, wikiNodesManagementToolbarDisplayContext.getAvailableActionDropdownItems(node)));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", StringUtil.merge(wikiNodesManagementToolbarDisplayContext.getAvailableActions(node))
+					).build();
 
 					row.setData(rowData);
 
@@ -166,11 +169,11 @@ WikiNodesManagementToolbarDisplayContext wikiNodesManagementToolbarDisplayContex
 							<liferay-ui:search-container-column-text
 								colspan="<%= 2 %>"
 							>
-								<h2 class="h5">
+								<p class="h5">
 									<aui:a href="<%= rowURL.toString() %>">
 										<%= HtmlUtil.escape(node.getName()) %>
 									</aui:a>
-								</h2>
+								</p>
 
 								<%
 								Date lastPostDate = node.getLastPostDate();
@@ -178,7 +181,7 @@ WikiNodesManagementToolbarDisplayContext wikiNodesManagementToolbarDisplayContex
 
 								<c:if test="<%= lastPostDate != null %>">
 									<span class="text-default">
-										<liferay-ui:message arguments="<%= new String[] {LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - lastPostDate.getTime(), true)} %>" key="last-post-x-ago" />
+										<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - lastPostDate.getTime(), true) %>" key="last-post-x-ago" />
 									</span>
 								</c:if>
 
@@ -225,41 +228,41 @@ WikiNodesManagementToolbarDisplayContext wikiNodesManagementToolbarDisplayContex
 			</liferay-ui:search-container>
 		</aui:form>
 	</div>
-</div>
+</clay:container-fluid>
 
 <script>
-	var deleteNodes = function() {
-		if (<%= trashHelper.isTrashEnabled(scopeGroupId) %> || confirm(' <%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>')) {
+	var deleteNodes = function () {
+		if (
+			<%= trashHelper.isTrashEnabled(scopeGroupId) %> ||
+			confirm(
+				' <%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						'<%= Constants.CMD %>': '<%= trashHelper.isTrashEnabled(scopeGroupId) ? Constants.MOVE_TO_TRASH : Constants.DELETE %>'
-					},
-					url: '<portlet:actionURL name="/wiki/edit_node" />'
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					<%= Constants.CMD %>:
+						'<%= trashHelper.isTrashEnabled(scopeGroupId) ? Constants.MOVE_TO_TRASH : Constants.DELETE %>',
+				},
+				url: '<portlet:actionURL name="/wiki/edit_node" />',
+			});
 		}
 	};
 
 	var ACTIONS = {
-		'deleteNodes': deleteNodes
+		deleteNodes: deleteNodes,
 	};
 
-	Liferay.componentReady('wikiNodesManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'actionItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	Liferay.componentReady('wikiNodesManagementToolbar').then(function (
+		managementToolbar
+	) {
+		managementToolbar.on('actionItemClicked', function (event) {
+			var itemData = event.data.item.data;
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action]();
-					}
-				}
-			);
-		}
-	);
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action]();
+			}
+		});
+	});
 </script>

@@ -22,9 +22,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.trash.BaseTrashHandler;
-import com.liferay.portal.kernel.trash.TrashHandler;
-import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
-import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -133,33 +130,6 @@ public abstract class JournalBaseTrashHandler extends BaseTrashHandler {
 	}
 
 	@Override
-	public List<TrashRenderer> getTrashContainedModelTrashRenderers(
-			long classPK, int start, int end)
-		throws PortalException {
-
-		List<TrashRenderer> trashRenderers = new ArrayList<>();
-
-		JournalFolder folder = JournalFolderLocalServiceUtil.getFolder(classPK);
-
-		List<JournalArticle> articles = JournalArticleLocalServiceUtil.search(
-			folder.getGroupId(), classPK, WorkflowConstants.STATUS_IN_TRASH,
-			start, end);
-
-		for (JournalArticle article : articles) {
-			TrashHandler trashHandler =
-				TrashHandlerRegistryUtil.getTrashHandler(
-					JournalArticle.class.getName());
-
-			TrashRenderer trashRenderer = trashHandler.getTrashRenderer(
-				article.getResourcePrimKey());
-
-			trashRenderers.add(trashRenderer);
-		}
-
-		return trashRenderers;
-	}
-
-	@Override
 	public String getTrashContainerModelName() {
 		return "folders";
 	}
@@ -175,33 +145,6 @@ public abstract class JournalBaseTrashHandler extends BaseTrashHandler {
 	}
 
 	@Override
-	public List<TrashRenderer> getTrashContainerModelTrashRenderers(
-			long classPK, int start, int end)
-		throws PortalException {
-
-		List<TrashRenderer> trashRenderers = new ArrayList<>();
-
-		JournalFolder folder = JournalFolderLocalServiceUtil.getFolder(classPK);
-
-		List<JournalFolder> folders = JournalFolderLocalServiceUtil.getFolders(
-			folder.getGroupId(), classPK, WorkflowConstants.STATUS_IN_TRASH,
-			start, end);
-
-		for (JournalFolder curFolder : folders) {
-			TrashHandler trashHandler =
-				TrashHandlerRegistryUtil.getTrashHandler(
-					JournalFolder.class.getName());
-
-			TrashRenderer trashRenderer = trashHandler.getTrashRenderer(
-				curFolder.getPrimaryKey());
-
-			trashRenderers.add(trashRenderer);
-		}
-
-		return trashRenderers;
-	}
-
-	@Override
 	public int getTrashModelsCount(long classPK) throws PortalException {
 		JournalFolder folder = JournalFolderLocalServiceUtil.getFolder(classPK);
 
@@ -211,7 +154,8 @@ public abstract class JournalBaseTrashHandler extends BaseTrashHandler {
 
 	@Override
 	public List<TrashedModel> getTrashModelTrashedModels(
-			long classPK, int start, int end, OrderByComparator obc)
+			long classPK, int start, int end,
+			OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		List<TrashedModel> trashedModels = new ArrayList<>();
@@ -221,7 +165,7 @@ public abstract class JournalBaseTrashHandler extends BaseTrashHandler {
 		List<Object> foldersAndArticles =
 			JournalFolderLocalServiceUtil.getFoldersAndArticles(
 				folder.getGroupId(), classPK, WorkflowConstants.STATUS_IN_TRASH,
-				start, end, obc);
+				start, end, orderByComparator);
 
 		for (Object folderOrArticle : foldersAndArticles) {
 			if (folderOrArticle instanceof JournalFolder) {

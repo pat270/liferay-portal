@@ -54,19 +54,11 @@ AssetEntryUsagesDisplayContext assetEntryUsagesDisplayContext = new AssetEntryUs
 					%>
 
 					<c:if test="<%= curLayout != null %>">
-
-						<%
-						Map<String, String> data = new HashMap<>();
-
-						data.put("href", PortalUtil.getLayoutFriendlyURL(curLayout, themeDisplay));
-						%>
-
 						<clay:button
-							data="<%= data %>"
-							elementClasses="preview-asset-entry-usage table-action-link"
+							cssClass="preview-asset-entry-usage table-action-link"
+							data-href="<%= assetEntryUsagesDisplayContext.getPreviewURL(assetEntryUsage) %>"
+							displayType="secondary"
 							icon="view"
-							monospaced="<%= true %>"
-							style="secondary"
 						/>
 					</c:if>
 				</c:if>
@@ -87,16 +79,14 @@ AssetEntryUsagesDisplayContext assetEntryUsagesDisplayContext = new AssetEntryUs
 			document.querySelector('#<portlet:namespace/>assetEntryUsagesList'),
 			'click',
 			'.preview-asset-entry-usage',
-			function(event) {
+			function (event) {
 				var delegateTarget = event.delegateTarget;
 
-				Liferay.fire(
-					'previewArticle',
-					{
-						title: '<liferay-ui:message key="preview" />',
-						uri: delegateTarget.getAttribute('data-href')
-					}
-				);
+				Liferay.Util.openModal({
+					iframeBodyCssClass: 'article-preview',
+					title: '<liferay-ui:message key="preview" />',
+					url: delegateTarget.getAttribute('data-href'),
+				});
 			}
 		);
 

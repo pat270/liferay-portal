@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
+import com.liferay.portal.kernel.servlet.RequestDispatcherUtil;
 import com.liferay.portal.kernel.servlet.ResourceUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -38,6 +39,7 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
@@ -69,9 +71,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -428,7 +428,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 					httpServletResponse.setContentType(contentType);
 				}
 				else if (resourcePath.endsWith(_CSS_EXTENSION)) {
-					httpServletResponse.setContentType(ContentTypes.TEXT_CSS);
+					httpServletResponse.setContentType(
+						ContentTypes.TEXT_CSS_UTF8);
 				}
 				else if (resourcePath.endsWith(_JAVASCRIPT_EXTENSION)) {
 					httpServletResponse.setContentType(
@@ -450,10 +451,11 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 				content = getCssContent(
 					httpServletRequest, httpServletResponse, resourcePath);
 
-				httpServletResponse.setContentType(ContentTypes.TEXT_CSS);
+				httpServletResponse.setContentType(ContentTypes.TEXT_CSS_UTF8);
 
 				if (!_isLegacyIe(httpServletRequest)) {
-					FileUtil.write(cacheContentTypeFile, ContentTypes.TEXT_CSS);
+					FileUtil.write(
+						cacheContentTypeFile, ContentTypes.TEXT_CSS_UTF8);
 				}
 			}
 			else if (resourcePath.endsWith(_JAVASCRIPT_EXTENSION)) {
@@ -572,8 +574,9 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			content = DynamicCSSUtil.replaceToken(
 				cssServletContext, httpServletRequest, content);
 		}
-		catch (Exception e) {
-			_log.error("Unable to replace tokens in CSS " + resourcePath, e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to replace tokens in CSS " + resourcePath, exception);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(content);
@@ -598,7 +601,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	protected String getCssContent(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, String resourcePath)
-		throws IOException, ServletException {
+		throws Exception {
 
 		String resourcePathRoot = null;
 
@@ -644,18 +647,18 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		String content) {
 
 		try {
-			String requestURI = httpServletRequest.getRequestURI();
-
 			ServletContext cssServletContext =
 				ResourceUtil.getPathServletContext(
-					resourcePath, requestURI, _servletContext);
+					resourcePath, httpServletRequest.getRequestURI(),
+					_servletContext);
 
 			return getCssContent(
 				httpServletRequest, httpServletResponse, cssServletContext,
 				resourcePath, content);
 		}
-		catch (Exception e) {
-			_log.error("Unable to detect servlet context " + resourcePath, e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to detect servlet context " + resourcePath, exception);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(content);
@@ -673,7 +676,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, String resourcePath,
 			URL resourceURL)
-		throws IOException, ServletException {
+		throws Exception {
 
 		String content = _readResource(
 			httpServletRequest, httpServletResponse, resourcePath);
@@ -683,9 +686,9 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 	@Override
 	protected boolean isModuleRequest(HttpServletRequest httpServletRequest) {
-		String requestURI = httpServletRequest.getRequestURI();
+		if (PortalWebResourcesUtil.hasContextPath(
+				httpServletRequest.getRequestURI())) {
 
-		if (PortalWebResourcesUtil.hasContextPath(requestURI)) {
 			return false;
 		}
 
@@ -736,21 +739,17 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	private String _readResource(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, String resourcePath)
-		throws IOException, ServletException {
+		throws Exception {
 
 		URL url = _servletContext.getResource(resourcePath);
 
 		if (url == null) {
-			RequestDispatcher requestDispatcher =
-				httpServletRequest.getRequestDispatcher(resourcePath);
+			ObjectValuePair<String, Long> objectValuePair =
+				RequestDispatcherUtil.getContentAndLastModifiedTime(
+					httpServletRequest.getRequestDispatcher(resourcePath),
+					httpServletRequest, httpServletResponse);
 
-			BufferCacheServletResponse bufferCacheServletResponse =
-				new BufferCacheServletResponse(httpServletResponse);
-
-			requestDispatcher.include(
-				httpServletRequest, bufferCacheServletResponse);
-
-			return bufferCacheServletResponse.getString();
+			return objectValuePair.getKey();
 		}
 
 		URLConnection urlConnection = url.openConnection();

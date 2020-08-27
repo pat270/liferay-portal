@@ -14,10 +14,10 @@
 
 package com.liferay.portal.tools.service.builder;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Accessor;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Validator;
@@ -70,15 +70,18 @@ public class Entity implements Comparable<Entity> {
 	}
 
 	public static boolean hasEntityColumn(
-		String name, List<EntityColumn> entityColumns) {
+		ServiceBuilder serviceBuilder, String name,
+		List<EntityColumn> entityColumns) {
 
-		return hasEntityColumn(name, null, entityColumns);
+		return hasEntityColumn(serviceBuilder, name, null, entityColumns);
 	}
 
 	public static boolean hasEntityColumn(
-		String name, String type, List<EntityColumn> entityColumns) {
+		ServiceBuilder serviceBuilder, String name, String type,
+		List<EntityColumn> entityColumns) {
 
-		int index = entityColumns.indexOf(new EntityColumn(name));
+		int index = entityColumns.indexOf(
+			new EntityColumn(serviceBuilder, name));
 
 		if (index != -1) {
 			EntityColumn entityColumn = entityColumns.get(index);
@@ -93,23 +96,25 @@ public class Entity implements Comparable<Entity> {
 
 	public Entity(ServiceBuilder serviceBuilder, String name) {
 		this(
-			serviceBuilder, null, null, null, name, null, null, null, false,
-			false, false, false, true, true, null, null, null, null, null, true,
-			false, false, false, false, null, false, null, null, false, null,
-			null, null, null, null, null, null, null, null, null, false);
+			serviceBuilder, null, null, null, name, null, null, null, null,
+			false, false, false, false, true, true, null, null, null, null,
+			null, true, false, false, false, false, false, null, false, null,
+			null, false, null, null, null, null, null, null, null, null, null,
+			null, false);
 	}
 
 	public Entity(
 		ServiceBuilder serviceBuilder, String packagePath,
 		String apiPackagePath, String portletShortName, String name,
-		String humanName, String table, String alias, boolean uuid,
-		boolean uuidAccessor, boolean externalReferenceCode,
+		String pluralName, String humanName, String table, String alias,
+		boolean uuid, boolean uuidAccessor, boolean externalReferenceCode,
 		boolean localService, boolean remoteService, boolean persistence,
-		String persistenceClass, String finderClassName, String dataSource,
+		String persistenceClassName, String finderClassName, String dataSource,
 		String sessionFactory, String txManager, boolean cacheEnabled,
-		boolean dynamicUpdateEnabled, boolean jsonEnabled, boolean mvccEnabled,
-		boolean trashEnabled, String uadApplicationName, boolean uadAutoDelete,
-		String uadOutputPath, String uadPackagePath, boolean deprecated,
+		boolean changeTrackingEnabled, boolean dynamicUpdateEnabled,
+		boolean jsonEnabled, boolean mvccEnabled, boolean trashEnabled,
+		String uadApplicationName, boolean uadAutoDelete, String uadOutputPath,
+		String uadPackagePath, boolean deprecated,
 		List<EntityColumn> pkEntityColumns,
 		List<EntityColumn> regularEntityColumns,
 		List<EntityColumn> blobEntityColumns,
@@ -124,6 +129,10 @@ public class Entity implements Comparable<Entity> {
 		_apiPackagePath = apiPackagePath;
 		_portletShortName = portletShortName;
 		_name = name;
+		_pluralName = GetterUtil.getString(
+			pluralName, serviceBuilder.formatPlural(name));
+		_humanName = GetterUtil.getString(
+			humanName, ServiceBuilder.toHumanName(name));
 		_table = table;
 		_alias = alias;
 		_uuid = uuid;
@@ -132,8 +141,9 @@ public class Entity implements Comparable<Entity> {
 		_localService = localService;
 		_remoteService = remoteService;
 		_persistence = persistence;
-		_persistenceClassName = persistenceClass;
+		_persistenceClassName = persistenceClassName;
 		_finderClassName = finderClassName;
+		_changeTrackingEnabled = changeTrackingEnabled;
 		_dynamicUpdateEnabled = dynamicUpdateEnabled;
 		_jsonEnabled = jsonEnabled;
 		_mvccEnabled = mvccEnabled;
@@ -155,8 +165,6 @@ public class Entity implements Comparable<Entity> {
 		_txRequiredMethodNames = txRequiredMethodNames;
 		_resourceActionModel = resourceActionModel;
 
-		_humanName = GetterUtil.getString(
-			humanName, ServiceBuilder.toHumanName(name));
 		_dataSource = GetterUtil.getString(dataSource, _DATA_SOURCE_DEFAULT);
 		_sessionFactory = GetterUtil.getString(
 			sessionFactory, _SESSION_FACTORY_DEFAULT);
@@ -224,20 +232,18 @@ public class Entity implements Comparable<Entity> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Entity)) {
+		if (!(object instanceof Entity)) {
 			return false;
 		}
 
-		Entity entity = (Entity)obj;
+		Entity entity = (Entity)object;
 
-		String name = entity.getName();
-
-		if (_name.equals(name)) {
+		if (_name.equals(entity.getName())) {
 			return true;
 		}
 
@@ -344,10 +350,6 @@ public class Entity implements Comparable<Entity> {
 		return _humanName;
 	}
 
-	public String getHumanNames() {
-		return TextFormatter.formatPlural(_humanName);
-	}
-
 	public Entity getLocalizedEntity() {
 		return _localizedEntity;
 	}
@@ -367,6 +369,10 @@ public class Entity implements Comparable<Entity> {
 		}
 
 		interfaceNames.add("BaseModel<" + _name + ">");
+
+		if (isChangeTrackingEnabled()) {
+			interfaceNames.add("CTModel<" + _name + ">");
+		}
 
 		if (isContainerModel()) {
 			interfaceNames.add("ContainerModel");
@@ -443,11 +449,7 @@ public class Entity implements Comparable<Entity> {
 		return _name;
 	}
 
-	public String getNames() {
-		return TextFormatter.formatPlural(_name);
-	}
-
-	public Set getOverrideColumnNames() {
+	public Set<String> getOverrideColumnNames() {
 		Set<String> overrideColumnName = new HashSet<>();
 
 		if (isAttachedModel()) {
@@ -461,6 +463,11 @@ public class Entity implements Comparable<Entity> {
 			overrideColumnName.add("userId");
 			overrideColumnName.add("userName");
 			overrideColumnName.add("userUuid");
+		}
+
+		if (isChangeTrackingEnabled()) {
+			overrideColumnName.add("ctCollectionId");
+			overrideColumnName.add("primaryKey");
 		}
 
 		if (isGroupedModel()) {
@@ -567,6 +574,12 @@ public class Entity implements Comparable<Entity> {
 		return _pkEntityColumns;
 	}
 
+	public String getPKMethodName() {
+		EntityColumn entityColumn = _getPKEntityColumn();
+
+		return entityColumn.getMethodName();
+	}
+
 	public String getPKVarName() {
 		if (hasCompoundPK()) {
 			return getVarName() + "PK";
@@ -577,14 +590,26 @@ public class Entity implements Comparable<Entity> {
 		return entityColumn.getName();
 	}
 
-	public String getPKVarNames() {
+	public String getPluralHumanName() {
+		return _serviceBuilder.formatPlural(_humanName);
+	}
+
+	public String getPluralName() {
+		return _pluralName;
+	}
+
+	public String getPluralPKVarName() {
 		if (hasCompoundPK()) {
 			return getVarName() + "PKs";
 		}
 
 		EntityColumn entityColumn = _getPKEntityColumn();
 
-		return entityColumn.getNames();
+		return entityColumn.getPluralName();
+	}
+
+	public String getPluralVarName() {
+		return TextFormatter.format(_pluralName, TextFormatter.I);
 	}
 
 	public String getPortletShortName() {
@@ -640,7 +665,7 @@ public class Entity implements Comparable<Entity> {
 		for (EntityColumn entityColumn : _entityColumns) {
 			if (entityColumn.isUADUserId()) {
 				uadAnonymizableEntityColumnsMap.put(
-					entityColumn.getName(), ListUtil.toList(entityColumn));
+					entityColumn.getName(), ListUtil.fromArray(entityColumn));
 			}
 		}
 
@@ -752,10 +777,6 @@ public class Entity implements Comparable<Entity> {
 		return TextFormatter.format(_name, TextFormatter.I);
 	}
 
-	public String getVarNames() {
-		return TextFormatter.formatPlural(getVarName());
-	}
-
 	public Entity getVersionedEntity() {
 		return _versionedEntity;
 	}
@@ -811,11 +832,11 @@ public class Entity implements Comparable<Entity> {
 	}
 
 	public boolean hasEntityColumn(String name) {
-		return hasEntityColumn(name, _entityColumns);
+		return hasEntityColumn(_serviceBuilder, name, _entityColumns);
 	}
 
 	public boolean hasEntityColumn(String name, String type) {
-		return hasEntityColumn(name, type, _entityColumns);
+		return hasEntityColumn(_serviceBuilder, name, type, _entityColumns);
 	}
 
 	public boolean hasEntityColumns() {
@@ -870,7 +891,7 @@ public class Entity implements Comparable<Entity> {
 	}
 
 	public boolean hasPrimitivePK(boolean includeWrappers) {
-		if (hasCompoundPK()) {
+		if (_pkEntityColumns.size() != 1) {
 			return false;
 		}
 
@@ -927,6 +948,10 @@ public class Entity implements Comparable<Entity> {
 
 	public boolean isCacheEnabled() {
 		return _cacheEnabled;
+	}
+
+	public boolean isChangeTrackingEnabled() {
+		return _changeTrackingEnabled;
 	}
 
 	public boolean isContainerModel() {
@@ -986,12 +1011,12 @@ public class Entity implements Comparable<Entity> {
 
 		String methodName = entityColumn.getMethodName();
 
-		if ((_entityColumns.indexOf(new EntityColumn("parent" + methodName)) !=
-				-1) &&
-			(_entityColumns.indexOf(new EntityColumn("left" + methodName)) !=
-				-1) &&
-			(_entityColumns.indexOf(new EntityColumn("right" + methodName)) !=
-				-1)) {
+		if (_entityColumns.contains(
+				new EntityColumn(_serviceBuilder, "parent" + methodName)) &&
+			_entityColumns.contains(
+				new EntityColumn(_serviceBuilder, "left" + methodName)) &&
+			_entityColumns.contains(
+				new EntityColumn(_serviceBuilder, "right" + methodName))) {
 
 			return true;
 		}
@@ -1072,7 +1097,9 @@ public class Entity implements Comparable<Entity> {
 	}
 
 	public boolean isPermissionedModel() {
-		if (hasEntityColumn("resourceBlockId")) {
+		if (_serviceBuilder.isVersionLTE_7_2_0() &&
+			hasEntityColumn("resourceBlockId")) {
+
 			return true;
 		}
 
@@ -1255,6 +1282,7 @@ public class Entity implements Comparable<Entity> {
 	private String _apiPackagePath;
 	private List<EntityColumn> _blobEntityColumns;
 	private final boolean _cacheEnabled;
+	private boolean _changeTrackingEnabled;
 	private final List<EntityColumn> _collectionEntityColumns;
 	private final boolean _containerModel;
 	private final List<EntityColumn> _databaseRegularEntityColumns;
@@ -1279,6 +1307,7 @@ public class Entity implements Comparable<Entity> {
 	private final boolean _persistence;
 	private final String _persistenceClassName;
 	private final List<EntityColumn> _pkEntityColumns;
+	private final String _pluralName;
 	private boolean _portalReference;
 	private final String _portletShortName;
 	private final List<Entity> _referenceEntities;

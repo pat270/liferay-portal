@@ -1,8 +1,8 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property custom.properties = "default.layout.template.id=1_column";
 	property testray.main.component.name = "Wiki";
 	var pageName = "Wiki Test Page";
 	var portletName = "Wiki";
@@ -12,24 +12,17 @@ definition {
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Wiki Test Page");
 
-		SitePages.addPublicPage(
-			pageName = "Wiki Test Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Wiki Test Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Wiki Test Page",
+			widgetName = "Wiki");
 
 		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		Portlet.addPG(portletName = "Wiki");
 	}
 
 	tearDown {
@@ -47,37 +40,27 @@ definition {
 		}
 	}
 
+	@description = "This test covers LPS-95501. It asserts added wiki attachment file via item selector."
 	@priority = "4"
-	test ActivateInitialStagingWithWikiAttachment {
-		ProductMenu.gotoPortlet(
+	test ActivateInitialStagingWithAttachment {
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
 
-		Site.addCP(
-			siteName = "Site Name",
-			siteType = "Blank");
+		JSONGroup.addGroup(groupName = "Site Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
 
-		SitePages.addPublicPage(
-			pageName = "Staging Test Page",
-			sitePageType = "Widget Page");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Staging Test Page");
 
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Staging Test Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
-
-		Navigator.gotoSitePage(
-			pageName = "Staging Test Page",
-			siteName = "Site Name");
-
-		Portlet.addPG(portletName = "Wiki");
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Site Name",
+			layoutName = "Staging Test Page",
+			widgetName = "Wiki");
 
 		Navigator.gotoSitePage(
 			pageName = "Staging Test Page",
@@ -99,7 +82,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Staging");
 
 		Staging.activateStagingCP(
@@ -126,6 +108,36 @@ definition {
 		WikiPage.viewAttachmentPGViaEdit(
 			attachmentFileName = "Document_1.jpg",
 			wikiPageTitle = "Wiki Page Title");
+
+		ItemSelector.viewWikiAttachment(imageFileName = "Document_1.jpg");
+	}
+
+	@description = "This test covers LPS-106280. It ensures that the wiki Email content can be edited."
+	@priority = "3"
+	test ConfigureEmailContent {
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
+
+		WikiNode.configureEmailCP(
+			bodyContent = "[$TO_NAME$], [$PAGE_CONTENT$] This is an edited wiki email. [$FROM_NAME$]",
+			pageAddedEmail = "true");
+
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
+
+		Click(locator1 = "Portlet#OPTIONS_ICON");
+
+		MenuItem.click(menuItem = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertClick(
+			locator1 = "Configuration#NAVIGATION_PAGE_ADDED_EMAIL",
+			value1 = "Page Added Email");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "CKEditor#BODY",
+			value1 = "[$TO_NAME$], [$PAGE_CONTENT$] This is an edited wiki email. [$FROM_NAME$]");
 	}
 
 	@priority = "4"
@@ -138,12 +150,7 @@ definition {
 			isNotPresent = "NAVIGATION_EMAIL_FROM,NAVIGATION_PAGE_ADDED_EMAIL,NAVIGATION_PAGE_UPDATED_EMAIL,NAVIGATION_RSS",
 			isPresent = "SETUP_DISPLAY_SETTINGS_PANEL");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Configuration");
 
@@ -165,76 +172,11 @@ definition {
 	}
 
 	@priority = "5"
-	test DeleteDeleteWikiFrontpage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiNavigator.gotoCP(wikiPageTitle = "FrontPage");
-
-		WikiPage.addFrontPageCP(
-			wikiFrontPageContent = "Wiki FrontPage Content",
-			wikiNodeName = "Main");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiPage.moveToRecycleBinCP(
-			wikiNodeName = "Main",
-			wikiPageTitle = "FrontPage");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Recycle Bin",
-			panel = "Site Administration",
-			portlet = "Recycle Bin");
-
-		RecycleBin.deleteCP(
-			assetName = "FrontPage",
-			assetType = "Wiki Page");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Recycle Bin",
-			panel = "Site Administration",
-			portlet = "Recycle Bin");
-
-		RecycleBin.viewDefaultCP(assetName = "FrontPage");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiNavigator.gotoCP(wikiPageTitle = "FrontPage");
-
-		WikiPage.viewFrontPageDefaultCP(wikiPageTitle = "FrontPage");
-	}
-
-	@priority = "5"
-	test importWikiLARLinkNode {
+	test ImportLARLinkNode {
 		property testray.component.names = "Training";
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPrivatePage(pageName = "Research Projects");
@@ -253,7 +195,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		LAR.importPortlet(
@@ -276,104 +217,24 @@ definition {
 			value1 = "Sweet Potatoes");
 	}
 
-	@priority = "5"
-	test RateAndEditPageComment {
-		Navigator.openURL();
+	@priority = "4"
+	test NavigationPortletSmoke {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Navigation Test Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		Navigator.gotoPage(pageName = "Navigation Test Page");
 
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
+		Portlet.addPG(portletName = "Tree Menu");
 
-		WikiPage.addCP(
-			wikiPageContent = "Wiki Page Content 1",
-			wikiPageTitle = "Wiki Page 1");
-
-		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		WikiNavigator.gotoAllPagesPG();
-
-		WikiTable.viewEntry(
-			draftStatus = "APPROVED",
-			wikiPageTitle = "Wiki Page 1");
-
-		WikiNavigator.gotoEntryViaPGTable(wikiPageTitle = "Wiki Page 1");
-
-		WikiEntry.viewPageContentBody(wikiPageContent = "Wiki Page Content 1");
-
-		WikiPage.addComment(entryComment = "Wiki Page Comment");
-
-		WikiPage.rateCommentAsGood();
-
-		WikiPage.editComment(
-			entryComment = "Wiki Page Comment",
-			entryCommentEdit = "Wiki Page Comment Edited");
-
-		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		WikiNavigator.gotoAllPagesPG();
-
-		WikiNavigator.gotoEntryViaPGTable(wikiPageTitle = "Wiki Page 1");
-
-		WikiPage.viewCommentPG(
-			entryComment = "Wiki Page Comment Edited",
-			wikiPageTitle = "Wiki Page 1");
-
-		WikiPage.viewCommentRatingGood();
+		AntCommand.antCommand(
+			locator1 = "build-test.xml",
+			value1 = "remove-plugin -Dplugin.name=wiki-navigation-portlet");
 	}
 
 	@priority = "5"
-	test RatePage {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
-
-		WikiNavigator.gotoNode(wikiNodeName = "Main");
-
-		WikiPage.addCP(
-			wikiPageContent = "Wiki Page Content 1",
-			wikiPageTitle = "Wiki Page 1");
-
-		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		WikiNavigator.gotoAllPagesPG();
-
-		WikiTable.viewEntry(
-			draftStatus = "APPROVED",
-			wikiPageTitle = "Wiki Page 1");
-
-		WikiNavigator.gotoEntryViaPGTable(wikiPageTitle = "Wiki Page 1");
-
-		WikiEntry.viewPageContentBody(wikiPageContent = "Wiki Page Content 1");
-
-		WikiPage.rate4StarsPG(wikiPageTitle = "Wiki Page 1");
-
-		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		WikiNavigator.gotoAllPagesPG();
-
-		WikiNavigator.gotoEntryViaPGTable(wikiPageTitle = "Wiki Page 1");
-
-		WikiEntry.viewPageContentBody(wikiPageContent = "Wiki Page Content 1");
-
-		WikiPage.viewRate4StarsPG(wikiPageTitle = "Wiki Page 1");
-	}
-
-	@priority = "5"
-	test RestoreDeleteWikiFrontpage {
-		property portal.acceptance = "true";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+	test RestoreDeletedFrontPage {
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -383,12 +244,7 @@ definition {
 			wikiFrontPageContent = "Wiki FrontPage Content",
 			wikiPageTitle = "FrontPage");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -400,17 +256,16 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
+
+		RecycleBin.viewCP(
+			assetName = "FrontPage",
+			assetType = "Wiki Page",
+			deleteUser = "Test Test");
 
 		RecycleBin.restoreOverwriteCP(assetName = "FrontPage");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Wiki");
+		WikiNavigator.openWikiAdmin(siteURLKey = "guest");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
@@ -423,29 +278,7 @@ definition {
 	}
 
 	@priority = "4"
-	test SearchWikiAttachments {
-		WikiPage.addFrontPagePG(
-			wikiNodeName = "Main",
-			wikiPageContent = "Wiki FrontPage Content");
-
-		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		WikiPage.addAttachmentViaPageEdit(
-			attachmentFileName = "Document_1.txt",
-			wikiPageTitle = "FrontPage");
-
-		Navigator.gotoPage(pageName = "Wiki Test Page");
-
-		WikiPage.searchPG(searchTerm = "document");
-
-		WikiPage.viewSearchResultsPG(
-			wikiAttachment = "true",
-			wikiAttachmentBody = "Document_1.txt",
-			wikiPageTitle = "FrontPage");
-	}
-
-	@priority = "4"
-	test SearchWikiComment {
+	test SearchChildPageComment {
 		WikiPage.addFrontPagePG(
 			wikiNodeName = "Main",
 			wikiPageContent = "Wiki FrontPage Content");
@@ -473,29 +306,30 @@ definition {
 			wikiPageTitle = "Wiki FrontPage Child Page Title");
 	}
 
-	@priority = "3"
-	test ViewNoWikiXSSviaAddPage {
+	@priority = "4"
+	test SearchFrontPageAttachments {
+		WikiPage.addFrontPagePG(
+			wikiNodeName = "Main",
+			wikiPageContent = "Wiki FrontPage Content");
+
 		Navigator.gotoPage(pageName = "Wiki Test Page");
 
-		WikiPage.editFrontPagePG(wikiPageContentEdit = '''<script>alert(123);</script>''');
+		WikiPage.addAttachmentViaPageEdit(
+			attachmentFileName = "Document_1.txt",
+			wikiPageTitle = "FrontPage");
 
-		AssertClick(
-			locator1 = "Link#EDIT",
-			value1 = "Edit");
+		Navigator.gotoPage(pageName = "Wiki Test Page");
 
-		AssertAlertNotPresent();
+		WikiPage.searchPG(searchTerm = "document");
 
-		var actualScript = '''<script>alert(123);</script>''';
-
-		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
-
-		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
-
-		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+		WikiPage.viewSearchResultsPG(
+			wikiAttachment = "true",
+			wikiAttachmentBody = "Document_1.txt",
+			wikiPageTitle = "FrontPage");
 	}
 
 	@priority = "4"
-	test ViewWikiDraftPagesViaBreadcrumb {
+	test ViewDraftPagesViaBreadcrumb {
 		Navigator.gotoPage(pageName = "Wiki Test Page");
 
 		Portlet.addPG(portletName = "Breadcrumb");
@@ -537,14 +371,21 @@ definition {
 			pathLocator = "CURRENT_LOCATION");
 	}
 
-	@priority = "4"
-	test WikiNavigationPortletSmoke {
-		Navigator.openURL(pageName = "Wiki Test Page");
+	@priority = "3"
+	test ViewNoXSSViaAddPage {
+		Navigator.gotoPage(pageName = "Wiki Test Page");
 
-		Portlet.addPG(portletName = "Tree Menu");
+		WikiPage.editFrontPagePG(wikiPageContentEdit = '''<script>alert(123);</script>''');
 
-		AntCommand.antCommand(
-			locator1 = "build-test.xml",
-			value1 = "remove-plugin -Dplugin.name=wiki-navigation-portlet");
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
 	}
+
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<suppressions>
+	<checkstyle>
+		<suppress checks="CamelCaseNameCheck" />
+		<suppress checks="ConstantNameCheck" />
+		<suppress checks="MemberNameCheck" />
+		<suppress checks="MethodNameCheck" />
+	</checkstyle>
+</suppressions>

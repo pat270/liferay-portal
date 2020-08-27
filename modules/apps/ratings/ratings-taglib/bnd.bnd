@@ -1,0 +1,10 @@
+Bundle-Name: Liferay Ratings Taglib
+Bundle-SymbolicName: com.liferay.ratings.taglib
+Bundle-Version: 2.1.6
+Export-Package: com.liferay.ratings.taglib.servlet.taglib
+Provide-Capability:\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
+		uri="http://liferay.com/tld/ratings";\
+		version:Version="${Bundle-Version}"
+Web-ContextPath: /ratings-taglib

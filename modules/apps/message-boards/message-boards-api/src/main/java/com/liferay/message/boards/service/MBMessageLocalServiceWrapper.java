@@ -14,9 +14,10 @@
 
 package com.liferay.message.boards.service;
 
+import com.liferay.message.boards.model.MBMessage;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link MBMessageLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBMessageLocalService
  * @generated
  */
-@ProviderType
 public class MBMessageLocalServiceWrapper
 	implements MBMessageLocalService, ServiceWrapper<MBMessageLocalService> {
 
@@ -36,7 +36,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage addDiscussionMessage(
+	public MBMessage addDiscussionMessage(
 			long userId, String userName, long groupId, String className,
 			long classPK, int workflowAction)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -46,7 +46,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage addDiscussionMessage(
+	public MBMessage addDiscussionMessage(
 			long userId, String userName, long groupId, String className,
 			long classPK, long threadId, long parentMessageId, String subject,
 			String body,
@@ -61,18 +61,20 @@ public class MBMessageLocalServiceWrapper
 	/**
 	 * Adds the message-boards message to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbMessage the message-boards message
 	 * @return the message-boards message that was added
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMBMessage(
-		com.liferay.message.boards.model.MBMessage mbMessage) {
-
+	public MBMessage addMBMessage(MBMessage mbMessage) {
 		return _mbMessageLocalService.addMBMessage(mbMessage);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long userId, String userName, long groupId, long categoryId,
 			long threadId, long parentMessageId, String subject, String body,
 			String format,
@@ -90,7 +92,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long userId, String userName, long groupId, long categoryId,
 			String subject, String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -102,7 +104,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long userId, String userName, long groupId, long categoryId,
 			String subject, String body, String format,
 			java.util.List
@@ -119,7 +121,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage addMessage(
+	public MBMessage addMessage(
 			long userId, String userName, long groupId, long categoryId,
 			String subject, String body, String format, String fileName,
 			java.io.File file, boolean anonymous, double priority,
@@ -166,8 +168,8 @@ public class MBMessageLocalServiceWrapper
 
 	@Override
 	public void addMessageResources(
-			com.liferay.message.boards.model.MBMessage message,
-			boolean addGroupPermissions, boolean addGuestPermissions)
+			MBMessage message, boolean addGroupPermissions,
+			boolean addGuestPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_mbMessageLocalService.addMessageResources(
@@ -176,7 +178,7 @@ public class MBMessageLocalServiceWrapper
 
 	@Override
 	public void addMessageResources(
-			com.liferay.message.boards.model.MBMessage message,
+			MBMessage message,
 			com.liferay.portal.kernel.service.permission.ModelPermissions
 				modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -202,15 +204,23 @@ public class MBMessageLocalServiceWrapper
 	 * @return the new message-boards message
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage createMBMessage(
-		long messageId) {
-
+	public MBMessage createMBMessage(long messageId) {
 		return _mbMessageLocalService.createMBMessage(messageId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage deleteDiscussionMessage(
-			long messageId)
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _mbMessageLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	@Override
+	public MBMessage deleteDiscussionMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.deleteDiscussionMessage(messageId);
@@ -226,13 +236,16 @@ public class MBMessageLocalServiceWrapper
 	/**
 	 * Deletes the message-boards message with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param messageId the primary key of the message-boards message
 	 * @return the message-boards message that was removed
 	 * @throws PortalException if a message-boards message with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage deleteMBMessage(
-			long messageId)
+	public MBMessage deleteMBMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.deleteMBMessage(messageId);
@@ -241,27 +254,27 @@ public class MBMessageLocalServiceWrapper
 	/**
 	 * Deletes the message-boards message from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbMessage the message-boards message
 	 * @return the message-boards message that was removed
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage deleteMBMessage(
-		com.liferay.message.boards.model.MBMessage mbMessage) {
-
+	public MBMessage deleteMBMessage(MBMessage mbMessage) {
 		return _mbMessageLocalService.deleteMBMessage(mbMessage);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage deleteMessage(
-			long messageId)
+	public MBMessage deleteMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.deleteMessage(messageId);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage deleteMessage(
-			com.liferay.message.boards.model.MBMessage message)
+	public MBMessage deleteMessage(MBMessage message)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.deleteMessage(message);
@@ -302,6 +315,11 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _mbMessageLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _mbMessageLocalService.dynamicQuery();
 	}
@@ -323,7 +341,7 @@ public class MBMessageLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -343,7 +361,7 @@ public class MBMessageLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -399,16 +417,14 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage fetchFileEntryMessage(
-			long fileEntryId)
+	public MBMessage fetchFileEntryMessage(long fileEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.fetchFileEntryMessage(fileEntryId);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage fetchFirstMessage(
-			long threadId, long parentMessageId)
+	public MBMessage fetchFirstMessage(long threadId, long parentMessageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.fetchFirstMessage(
@@ -416,10 +432,16 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage fetchMBMessage(
-		long messageId) {
-
+	public MBMessage fetchMBMessage(long messageId) {
 		return _mbMessageLocalService.fetchMBMessage(messageId);
+	}
+
+	@Override
+	public MBMessage fetchMBMessageByUrlSubject(
+		long groupId, String urlSubject) {
+
+		return _mbMessageLocalService.fetchMBMessageByUrlSubject(
+			groupId, urlSubject);
 	}
 
 	/**
@@ -430,9 +452,7 @@ public class MBMessageLocalServiceWrapper
 	 * @return the matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage
-		fetchMBMessageByUuidAndGroupId(String uuid, long groupId) {
-
+	public MBMessage fetchMBMessageByUuidAndGroupId(String uuid, long groupId) {
 		return _mbMessageLocalService.fetchMBMessageByUuidAndGroupId(
 			uuid, groupId);
 	}
@@ -445,28 +465,26 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getCategoryMessages(
-			long groupId, long categoryId, int status, int start, int end) {
+	public java.util.List<MBMessage> getCategoryMessages(
+		long groupId, long categoryId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getCategoryMessages(
 			groupId, categoryId, status, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getCategoryMessages(
-			long groupId, long categoryId, int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getCategoryMessages(
+		long groupId, long categoryId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getCategoryMessages(
-			groupId, categoryId, status, start, end, obc);
+			groupId, categoryId, status, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getCategoryMessages(long groupId, long categoryId, long threadId) {
+	public java.util.List<MBMessage> getCategoryMessages(
+		long groupId, long categoryId, long threadId) {
 
 		return _mbMessageLocalService.getCategoryMessages(
 			groupId, categoryId, threadId);
@@ -481,15 +499,15 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getChildMessages(long parentMessageId, int status) {
+	public java.util.List<MBMessage> getChildMessages(
+		long parentMessageId, int status) {
 
 		return _mbMessageLocalService.getChildMessages(parentMessageId, status);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getChildMessages(long parentMessageId, int status, int start, int end) {
+	public java.util.List<MBMessage> getChildMessages(
+		long parentMessageId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getChildMessages(
 			parentMessageId, status, start, end);
@@ -502,22 +520,21 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getCompanyMessages(long companyId, int status, int start, int end) {
+	public java.util.List<MBMessage> getCompanyMessages(
+		long companyId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getCompanyMessages(
 			companyId, status, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getCompanyMessages(
-			long companyId, int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getCompanyMessages(
+		long companyId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getCompanyMessages(
-			companyId, status, start, end, obc);
+			companyId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -541,9 +558,7 @@ public class MBMessageLocalServiceWrapper
 	public com.liferay.message.boards.model.MBMessageDisplay
 			getDiscussionMessageDisplay(
 				long userId, long groupId, String className, long classPK,
-				int status,
-				java.util.Comparator<com.liferay.message.boards.model.MBMessage>
-					comparator)
+				int status, java.util.Comparator<MBMessage> comparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getDiscussionMessageDisplay(
@@ -584,16 +599,14 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage getFileEntryMessage(
-			long fileEntryId)
+	public MBMessage getFileEntryMessage(long fileEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getFileEntryMessage(fileEntryId);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage getFirstMessage(
-			long threadId, long parentMessageId)
+	public MBMessage getFirstMessage(long threadId, long parentMessageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getFirstMessage(
@@ -601,42 +614,39 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getGroupMessages(long groupId, int status, int start, int end) {
+	public java.util.List<MBMessage> getGroupMessages(
+		long groupId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getGroupMessages(
 			groupId, status, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getGroupMessages(
-			long groupId, int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getGroupMessages(
+		long groupId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getGroupMessages(
-			groupId, status, start, end, obc);
+			groupId, status, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getGroupMessages(
-			long groupId, long userId, int status, int start, int end) {
+	public java.util.List<MBMessage> getGroupMessages(
+		long groupId, long userId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getGroupMessages(
 			groupId, userId, status, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getGroupMessages(
-			long groupId, long userId, int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getGroupMessages(
+		long groupId, long userId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getGroupMessages(
-			groupId, userId, status, start, end, obc);
+			groupId, userId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -658,9 +668,9 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage getLastThreadMessage(
-		long threadId, int status)
+	public MBMessage getLastThreadMessage(long threadId, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		return _mbMessageLocalService.getLastThreadMessage(threadId, status);
 	}
 
@@ -672,8 +682,7 @@ public class MBMessageLocalServiceWrapper
 	 * @throws PortalException if a message-boards message with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage getMBMessage(
-			long messageId)
+	public MBMessage getMBMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getMBMessage(messageId);
@@ -688,8 +697,7 @@ public class MBMessageLocalServiceWrapper
 	 * @throws PortalException if a matching message-boards message could not be found
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage
-			getMBMessageByUuidAndGroupId(String uuid, long groupId)
+	public MBMessage getMBMessageByUuidAndGroupId(String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getMBMessageByUuidAndGroupId(
@@ -700,7 +708,7 @@ public class MBMessageLocalServiceWrapper
 	 * Returns a range of all the message-boards messages.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of message-boards messages
@@ -708,9 +716,7 @@ public class MBMessageLocalServiceWrapper
 	 * @return the range of message-boards messages
 	 */
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getMBMessages(int start, int end) {
-
+	public java.util.List<MBMessage> getMBMessages(int start, int end) {
 		return _mbMessageLocalService.getMBMessages(start, end);
 	}
 
@@ -722,8 +728,8 @@ public class MBMessageLocalServiceWrapper
 	 * @return the matching message-boards messages, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getMBMessagesByUuidAndCompanyId(String uuid, long companyId) {
+	public java.util.List<MBMessage> getMBMessagesByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _mbMessageLocalService.getMBMessagesByUuidAndCompanyId(
 			uuid, companyId);
@@ -740,12 +746,10 @@ public class MBMessageLocalServiceWrapper
 	 * @return the range of matching message-boards messages, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getMBMessagesByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage>
-					orderByComparator) {
+	public java.util.List<MBMessage> getMBMessagesByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getMBMessagesByUuidAndCompanyId(
 			uuid, companyId, start, end, orderByComparator);
@@ -762,7 +766,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage getMessage(long messageId)
+	public MBMessage getMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getMessage(messageId);
@@ -779,8 +783,7 @@ public class MBMessageLocalServiceWrapper
 
 	@Override
 	public com.liferay.message.boards.model.MBMessageDisplay getMessageDisplay(
-			long userId, com.liferay.message.boards.model.MBMessage message,
-			int status)
+			long userId, MBMessage message, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getMessageDisplay(
@@ -789,10 +792,8 @@ public class MBMessageLocalServiceWrapper
 
 	@Override
 	public com.liferay.message.boards.model.MBMessageDisplay getMessageDisplay(
-			long userId, com.liferay.message.boards.model.MBMessage message,
-			int status,
-			java.util.Comparator<com.liferay.message.boards.model.MBMessage>
-				comparator)
+			long userId, MBMessage message, int status,
+			java.util.Comparator<MBMessage> comparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getMessageDisplay(
@@ -800,21 +801,10 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getMessages(String className, long classPK, int status) {
+	public java.util.List<MBMessage> getMessages(
+		String className, long classPK, int status) {
 
 		return _mbMessageLocalService.getMessages(className, classPK, status);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getNoAssetMessages() {
-
-		return _mbMessageLocalService.getNoAssetMessages();
 	}
 
 	/**
@@ -827,6 +817,9 @@ public class MBMessageLocalServiceWrapper
 		return _mbMessageLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -843,9 +836,8 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-			getRootDiscussionMessages(
-				String className, long classPK, int status)
+	public java.util.List<MBMessage> getRootDiscussionMessages(
+			String className, long classPK, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getRootDiscussionMessages(
@@ -853,9 +845,8 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-			getRootDiscussionMessages(
-				String className, long classPK, int status, int start, int end)
+	public java.util.List<MBMessage> getRootDiscussionMessages(
+			String className, long classPK, int status, int start, int end)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mbMessageLocalService.getRootDiscussionMessages(
@@ -870,48 +861,6 @@ public class MBMessageLocalServiceWrapper
 			className, classPK, status);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getRootDiscussionMessages(String, long, int)}
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-			getRootMessages(String className, long classPK, int status)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _mbMessageLocalService.getRootMessages(
-			className, classPK, status);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getRootDiscussionMessages(String, long, int, int, int)}
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-			getRootMessages(
-				String className, long classPK, int status, int start, int end)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _mbMessageLocalService.getRootMessages(
-			className, classPK, status, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getRootDiscussionMessagesCount(String, long, int)}
-	 */
-	@Deprecated
-	@Override
-	public int getRootMessagesCount(
-		String className, long classPK, int status) {
-
-		return _mbMessageLocalService.getRootMessagesCount(
-			className, classPK, status);
-	}
-
 	@Override
 	public String[] getTempAttachmentNames(
 			long groupId, long userId, String folderName)
@@ -922,45 +871,40 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadMessages(long threadId, int status) {
+	public java.util.List<MBMessage> getThreadMessages(
+		long threadId, int status) {
 
 		return _mbMessageLocalService.getThreadMessages(threadId, status);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadMessages(
-			long threadId, int status,
-			java.util.Comparator<com.liferay.message.boards.model.MBMessage>
-				comparator) {
+	public java.util.List<MBMessage> getThreadMessages(
+		long threadId, int status, java.util.Comparator<MBMessage> comparator) {
 
 		return _mbMessageLocalService.getThreadMessages(
 			threadId, status, comparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadMessages(long threadId, int status, int start, int end) {
+	public java.util.List<MBMessage> getThreadMessages(
+		long threadId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getThreadMessages(
 			threadId, status, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadMessages(long threadId, long parentMessageId) {
+	public java.util.List<MBMessage> getThreadMessages(
+		long threadId, long parentMessageId) {
 
 		return _mbMessageLocalService.getThreadMessages(
 			threadId, parentMessageId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadMessages(
-			long userId, long threadId, int status, int start, int end,
-			java.util.Comparator<com.liferay.message.boards.model.MBMessage>
-				comparator) {
+	public java.util.List<MBMessage> getThreadMessages(
+		long userId, long threadId, int status, int start, int end,
+		java.util.Comparator<MBMessage> comparator) {
 
 		return _mbMessageLocalService.getThreadMessages(
 			userId, threadId, status, start, end, comparator);
@@ -977,47 +921,44 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getThreadRepliesMessages(
-			long threadId, int status, int start, int end) {
+	public java.util.List<MBMessage> getThreadRepliesMessages(
+		long threadId, int status, int start, int end) {
 
 		return _mbMessageLocalService.getThreadRepliesMessages(
 			threadId, status, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getUserDiscussionMessages(
-			long userId, long classNameId, long classPK, int status, int start,
-			int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getUserDiscussionMessages(
+		long userId, long classNameId, long classPK, int status, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getUserDiscussionMessages(
-			userId, classNameId, classPK, status, start, end, obc);
+			userId, classNameId, classPK, status, start, end,
+			orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getUserDiscussionMessages(
-			long userId, long[] classNameIds, int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getUserDiscussionMessages(
+		long userId, long[] classNameIds, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getUserDiscussionMessages(
-			userId, classNameIds, status, start, end, obc);
+			userId, classNameIds, status, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.message.boards.model.MBMessage>
-		getUserDiscussionMessages(
-			long userId, String className, long classPK, int status, int start,
-			int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+	public java.util.List<MBMessage> getUserDiscussionMessages(
+		long userId, String className, long classPK, int status, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<MBMessage>
+			orderByComparator) {
 
 		return _mbMessageLocalService.getUserDiscussionMessages(
-			userId, className, classPK, status, start, end, obc);
+			userId, className, classPK, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -1084,9 +1025,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public void updateAnswer(
-			com.liferay.message.boards.model.MBMessage message, boolean answer,
-			boolean cascade)
+	public void updateAnswer(MBMessage message, boolean answer, boolean cascade)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_mbMessageLocalService.updateAnswer(message, answer, cascade);
@@ -1094,9 +1033,8 @@ public class MBMessageLocalServiceWrapper
 
 	@Override
 	public void updateAsset(
-			long userId, com.liferay.message.boards.model.MBMessage message,
-			long[] assetCategoryIds, String[] assetTagNames,
-			long[] assetLinkEntryIds)
+			long userId, MBMessage message, long[] assetCategoryIds,
+			String[] assetTagNames, long[] assetLinkEntryIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_mbMessageLocalService.updateAsset(
@@ -1105,7 +1043,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateDiscussionMessage(
+	public MBMessage updateDiscussionMessage(
 			long userId, long messageId, String className, long classPK,
 			String subject, String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -1119,18 +1057,20 @@ public class MBMessageLocalServiceWrapper
 	/**
 	 * Updates the message-boards message in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbMessage the message-boards message
 	 * @return the message-boards message that was updated
 	 */
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateMBMessage(
-		com.liferay.message.boards.model.MBMessage mbMessage) {
-
+	public MBMessage updateMBMessage(MBMessage mbMessage) {
 		return _mbMessageLocalService.updateMBMessage(mbMessage);
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateMessage(
+	public MBMessage updateMessage(
 			long userId, long messageId, String body,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -1140,7 +1080,7 @@ public class MBMessageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateMessage(
+	public MBMessage updateMessage(
 			long userId, long messageId, String subject, String body,
 			java.util.List
 				<com.liferay.portal.kernel.util.ObjectValuePair
@@ -1154,29 +1094,8 @@ public class MBMessageLocalServiceWrapper
 			allowPingbacks, serviceContext);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
-	 long, String, String, List, double, boolean, ServiceContext)}
-	 */
-	@Deprecated
 	@Override
-	public com.liferay.message.boards.model.MBMessage updateMessage(
-			long userId, long messageId, String subject, String body,
-			java.util.List
-				<com.liferay.portal.kernel.util.ObjectValuePair
-					<String, java.io.InputStream>> inputStreamOVPs,
-			java.util.List<String> existingFiles, double priority,
-			boolean allowPingbacks,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _mbMessageLocalService.updateMessage(
-			userId, messageId, subject, body, inputStreamOVPs, existingFiles,
-			priority, allowPingbacks, serviceContext);
-	}
-
-	@Override
-	public com.liferay.message.boards.model.MBMessage updateStatus(
+	public MBMessage updateStatus(
 			long userId, long messageId, int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext,
 			java.util.Map<String, java.io.Serializable> workflowContext)
@@ -1189,6 +1108,25 @@ public class MBMessageLocalServiceWrapper
 	@Override
 	public void updateUserName(long userId, String userName) {
 		_mbMessageLocalService.updateUserName(userId, userName);
+	}
+
+	@Override
+	public CTPersistence<MBMessage> getCTPersistence() {
+		return _mbMessageLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<MBMessage> getModelClass() {
+		return _mbMessageLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<MBMessage>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return _mbMessageLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

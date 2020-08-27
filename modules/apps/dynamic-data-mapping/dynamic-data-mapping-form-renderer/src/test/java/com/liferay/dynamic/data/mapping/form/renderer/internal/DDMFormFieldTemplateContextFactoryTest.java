@@ -14,6 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.form.renderer.internal;
 
+import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluator;
 import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluatorFieldContextKey;
 import com.liferay.dynamic.data.mapping.form.field.type.BaseDDMFormFieldRenderer;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldRenderer;
@@ -22,16 +23,21 @@ import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServices
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.language.LanguageConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.constants.LanguageConstants;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -50,6 +56,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 /**
@@ -83,17 +90,18 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		String instanceId = StringUtil.randomString();
 
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("readOnly", readOnly);
-		changedProperties.put("visible", true);
-
 		Map<DDMFormEvaluatorFieldContextKey, Map<String, Object>>
-			ddmFormFieldsPropertyChanges = new HashMap<>();
-
-		ddmFormFieldsPropertyChanges.put(
-			new DDMFormEvaluatorFieldContextKey("Field1", instanceId),
-			changedProperties);
+			ddmFormFieldsPropertyChanges =
+				HashMapBuilder.
+					<DDMFormEvaluatorFieldContextKey, Map<String, Object>>put(
+						new DDMFormEvaluatorFieldContextKey(
+							"Field1", instanceId),
+						HashMapBuilder.<String, Object>put(
+							"readOnly", readOnly
+						).put(
+							"visible", true
+						).build()
+					).build();
 
 		// Dynamic data mapping form values
 
@@ -109,8 +117,8 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		DDMFormFieldTemplateContextFactory ddmFormFieldTemplateContextFactory =
 			createDDMFormFieldTemplateContextFactory(
-				ddmForm, ddmFormFieldsPropertyChanges, ddmFormFieldValues, true,
-				getTextDDMFormFieldRenderer(),
+				ddmForm, ddmFormField.getName(), ddmFormFieldsPropertyChanges,
+				ddmFormFieldValues, true, getTextDDMFormFieldRenderer(),
 				getTextDDMFormFieldTemplateContextContributor());
 
 		List<Object> fields = ddmFormFieldTemplateContextFactory.create();
@@ -144,17 +152,18 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		String instanceId = StringUtil.randomString();
 
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("readOnly", readOnly);
-		changedProperties.put("visible", true);
-
 		Map<DDMFormEvaluatorFieldContextKey, Map<String, Object>>
-			ddmFormFieldsPropertyChanges = new HashMap<>();
-
-		ddmFormFieldsPropertyChanges.put(
-			new DDMFormEvaluatorFieldContextKey("Field1", instanceId),
-			changedProperties);
+			ddmFormFieldsPropertyChanges =
+				HashMapBuilder.
+					<DDMFormEvaluatorFieldContextKey, Map<String, Object>>put(
+						new DDMFormEvaluatorFieldContextKey(
+							"Field1", instanceId),
+						HashMapBuilder.<String, Object>put(
+							"readOnly", readOnly
+						).put(
+							"visible", true
+						).build()
+					).build();
 
 		// Dynamic data mapping form values
 
@@ -170,8 +179,8 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		DDMFormFieldTemplateContextFactory ddmFormFieldTemplateContextFactory =
 			createDDMFormFieldTemplateContextFactory(
-				ddmForm, ddmFormFieldsPropertyChanges, ddmFormFieldValues,
-				false, getTextDDMFormFieldRenderer(),
+				ddmForm, ddmFormField.getName(), ddmFormFieldsPropertyChanges,
+				ddmFormFieldValues, false, getTextDDMFormFieldRenderer(),
 				getTextDDMFormFieldTemplateContextContributor());
 
 		List<Object> fields = ddmFormFieldTemplateContextFactory.create();
@@ -212,18 +221,20 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		String instanceId = StringUtil.randomString();
 
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("required", true);
-		changedProperties.put("valid", true);
-		changedProperties.put("visible", true);
-
 		Map<DDMFormEvaluatorFieldContextKey, Map<String, Object>>
-			ddmFormFieldsPropertyChanges = new HashMap<>();
-
-		ddmFormFieldsPropertyChanges.put(
-			new DDMFormEvaluatorFieldContextKey("Field1", instanceId),
-			changedProperties);
+			ddmFormFieldsPropertyChanges =
+				HashMapBuilder.
+					<DDMFormEvaluatorFieldContextKey, Map<String, Object>>put(
+						new DDMFormEvaluatorFieldContextKey(
+							"Field1", instanceId),
+						HashMapBuilder.<String, Object>put(
+							"required", true
+						).put(
+							"valid", true
+						).put(
+							"visible", true
+						).build()
+					).build();
 
 		// Dynamic data mapping form values
 
@@ -239,8 +250,8 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		DDMFormFieldTemplateContextFactory ddmFormFieldTemplateContextFactory =
 			createDDMFormFieldTemplateContextFactory(
-				ddmForm, ddmFormFieldsPropertyChanges, ddmFormFieldValues,
-				false, getTextDDMFormFieldRenderer(),
+				ddmForm, ddmFormField.getName(), ddmFormFieldsPropertyChanges,
+				ddmFormFieldValues, false, getTextDDMFormFieldRenderer(),
 				getTextDDMFormFieldTemplateContextContributor());
 
 		List<Object> fields = ddmFormFieldTemplateContextFactory.create();
@@ -282,7 +293,7 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 	protected DDMFormFieldTemplateContextFactory
 		createDDMFormFieldTemplateContextFactory(
-			DDMForm ddmForm,
+			DDMForm ddmForm, String ddmFormFieldName,
 			Map<DDMFormEvaluatorFieldContextKey, Map<String, Object>>
 				ddmFormFieldsPropertyChanges,
 			List<DDMFormFieldValue> ddmFormFieldValues, boolean ddmFormReadOnly,
@@ -300,8 +311,11 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		DDMFormFieldTemplateContextFactory ddmFormFieldTemplateContextFactory =
 			new DDMFormFieldTemplateContextFactory(
+				_ddmFormEvaluator, ddmFormFieldName,
 				ddmForm.getDDMFormFieldsMap(true), ddmFormFieldsPropertyChanges,
-				ddmFormFieldValues, ddmFormRenderingContext, true);
+				ddmFormFieldValues, ddmFormRenderingContext,
+				_ddmStructureLayoutLocalService, _ddmStructureLocalService,
+				new JSONFactoryImpl(), true, new DDMFormLayout());
 
 		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker =
 			mockDDMFormFieldTypeServicesTracker(
@@ -419,6 +433,15 @@ public class DDMFormFieldTemplateContextFactoryTest {
 	private static final Locale _LOCALE = LocaleUtil.US;
 
 	private static final String _PORTLET_NAMESPACE = "_PORTLET_NAMESPACE_";
+
+	@Mock
+	private DDMFormEvaluator _ddmFormEvaluator;
+
+	@Mock
+	private DDMStructureLayoutLocalService _ddmStructureLayoutLocalService;
+
+	@Mock
+	private DDMStructureLocalService _ddmStructureLocalService;
 
 	private HttpServletRequest _httpServletRequest;
 

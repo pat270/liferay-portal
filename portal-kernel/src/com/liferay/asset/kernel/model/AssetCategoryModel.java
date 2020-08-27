@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -40,8 +42,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetCategoryModel
-	extends BaseModel<AssetCategory>, LocalizedModel, ShardedModel,
-			StagedGroupedModel {
+	extends BaseModel<AssetCategory>, CTModel<AssetCategory>, LocalizedModel,
+			MVCCModel, ShardedModel, StagedGroupedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -54,6 +56,7 @@ public interface AssetCategoryModel
 	 *
 	 * @return the primary key of this asset category
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -61,7 +64,40 @@ public interface AssetCategoryModel
 	 *
 	 * @param primaryKey the primary key of this asset category
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset category.
+	 *
+	 * @return the mvcc version of this asset category
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset category.
+	 *
+	 * @param mvccVersion the mvcc version of this asset category
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset category.
+	 *
+	 * @return the ct collection ID of this asset category
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset category.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset category
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this asset category.
@@ -237,32 +273,19 @@ public interface AssetCategoryModel
 	public void setParentCategoryId(long parentCategoryId);
 
 	/**
-	 * Returns the left category ID of this asset category.
+	 * Returns the tree path of this asset category.
 	 *
-	 * @return the left category ID of this asset category
+	 * @return the tree path of this asset category
 	 */
-	public long getLeftCategoryId();
+	@AutoEscape
+	public String getTreePath();
 
 	/**
-	 * Sets the left category ID of this asset category.
+	 * Sets the tree path of this asset category.
 	 *
-	 * @param leftCategoryId the left category ID of this asset category
+	 * @param treePath the tree path of this asset category
 	 */
-	public void setLeftCategoryId(long leftCategoryId);
-
-	/**
-	 * Returns the right category ID of this asset category.
-	 *
-	 * @return the right category ID of this asset category
-	 */
-	public long getRightCategoryId();
-
-	/**
-	 * Sets the right category ID of this asset category.
-	 *
-	 * @param rightCategoryId the right category ID of this asset category
-	 */
-	public void setRightCategoryId(long rightCategoryId);
+	public void setTreePath(String treePath);
 
 	/**
 	 * Returns the name of this asset category.

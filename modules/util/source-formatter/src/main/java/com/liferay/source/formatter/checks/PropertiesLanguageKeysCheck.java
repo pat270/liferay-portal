@@ -32,6 +32,11 @@ import java.util.Properties;
 public class PropertiesLanguageKeysCheck extends BaseFileCheck {
 
 	@Override
+	public boolean isLiferaySourceCheck() {
+		return true;
+	}
+
+	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, String content)
 		throws IOException {
@@ -64,7 +69,8 @@ public class PropertiesLanguageKeysCheck extends BaseFileCheck {
 				String value = array[1];
 
 				if ((portalImplLanguageProperties != null) &&
-					!absolutePath.contains("/private/apps/")) {
+					!absolutePath.contains("/modules/dxp/apps/") &&
+					!absolutePath.contains("/modules/private/apps/")) {
 
 					String portalImplValue =
 						portalImplLanguageProperties.getProperty(key);
@@ -79,7 +85,6 @@ public class PropertiesLanguageKeysCheck extends BaseFileCheck {
 
 					addMessage(
 						fileName, "Remove HTML markup for '" + key + "'",
-						"language_keys.markdown",
 						getLineNumber(content, content.indexOf(line)));
 				}
 

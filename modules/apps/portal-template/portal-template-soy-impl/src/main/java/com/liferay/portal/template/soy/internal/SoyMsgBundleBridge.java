@@ -20,16 +20,21 @@ import com.google.template.soy.msgs.restricted.SoyMsgPart;
 import com.google.template.soy.msgs.restricted.SoyMsgPlaceholderPart;
 import com.google.template.soy.msgs.restricted.SoyMsgRawTextPart;
 
+import com.ibm.icu.util.ULocale;
+
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -38,51 +43,61 @@ import java.util.ResourceBundle;
 public class SoyMsgBundleBridge extends SoyMsgBundle {
 
 	public SoyMsgBundleBridge(
-		Iterable<SoyMsg> messages, Locale locale,
+		SoyMsgBundle soyMsgBundle, Locale locale,
 		ResourceBundle resourceBundle) {
 
-		_messages = messages;
-		_locale = locale;
-		_resourceBundle = resourceBundle;
+		_languageId = LanguageUtil.getLanguageId(locale);
+
+		_rtl = soyMsgBundle.isRtl();
+
+		for (SoyMsg soyMsg : soyMsgBundle) {
+			SoyMsg.Builder builder = SoyMsg.builder();
+
+			builder.setLocaleString(_languageId);
+			builder.setIsPlrselMsg(false);
+			builder.setParts(_getLocalizedMessageParts(resourceBundle, soyMsg));
+
+			_soyMsgMap.put(soyMsg.getId(), builder.build());
+		}
+
+		_uLocale = soyMsgBundle.getLocale();
+	}
+
+	@Override
+	public ULocale getLocale() {
+		return _uLocale;
 	}
 
 	@Override
 	public String getLocaleString() {
-		return LanguageUtil.getLanguageId(_locale);
+		return _languageId;
 	}
 
 	@Override
 	public SoyMsg getMsg(long messageId) {
-		SoyMsg soyMsg = _getMsg(messageId);
-
-		SoyMsg.Builder builder = SoyMsg.builder();
-
-		builder.setLocaleString(getLocaleString());
-		builder.setIsPlrselMsg(false);
-		builder.setParts(_getLocalizedMessageParts(soyMsg));
-
-		return builder.build();
+		return _soyMsgMap.get(messageId);
 	}
 
 	@Override
 	public int getNumMsgs() {
-		int count = 0;
+		return _soyMsgMap.size();
+	}
 
-		Iterator<SoyMsg> iterator = _messages.iterator();
-
-		while (iterator.hasNext()) {
-			count++;
-		}
-
-		return count;
+	@Override
+	public boolean isRtl() {
+		return _rtl;
 	}
 
 	@Override
 	public Iterator<SoyMsg> iterator() {
-		return _messages.iterator();
+		Collection<SoyMsg> values = _soyMsgMap.values();
+
+		return values.iterator();
 	}
 
-	private List<SoyMsgPart> _getLocalizedMessageParts(SoyMsg soyMsg) {
+	private static List<SoyMsgPart> _getLocalizedMessageParts(
+		ResourceBundle resourceBundle, SoyMsg soyMsg) {
+
 		List<SoyMsgPart> soyMsgParts = soyMsg.getParts();
 
 		StringBundler sb = new StringBundler(soyMsgParts.size());
@@ -111,7 +126,7 @@ public class SoyMsgBundleBridge extends SoyMsgBundle {
 		}
 
 		String localizedText = LanguageUtil.format(
-			_resourceBundle, sb.toString(), placeholderStrings.toArray());
+			resourceBundle, sb.toString(), placeholderStrings.toArray());
 
 		List<SoyMsgPart> localizedSoyMsgParts = new ArrayList<>();
 
@@ -129,24 +144,11 @@ public class SoyMsgBundleBridge extends SoyMsgBundle {
 		return localizedSoyMsgParts;
 	}
 
-	private SoyMsg _getMsg(long messageId) {
-		Iterator<SoyMsg> iterator = _messages.iterator();
-
-		while (iterator.hasNext()) {
-			SoyMsg soyMsg = iterator.next();
-
-			if (messageId == soyMsg.getId()) {
-				return soyMsg;
-			}
-		}
-
-		return null;
-	}
-
 	private static final String _PLACEHOLDER = "__SOY_MSG_PLACEHOLDER__";
 
-	private final Locale _locale;
-	private final Iterable<SoyMsg> _messages;
-	private final ResourceBundle _resourceBundle;
+	private final String _languageId;
+	private final boolean _rtl;
+	private final Map<Long, SoyMsg> _soyMsgMap = new HashMap<>();
+	private final ULocale _uLocale;
 
 }

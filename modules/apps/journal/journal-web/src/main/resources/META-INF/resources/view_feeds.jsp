@@ -19,7 +19,7 @@
 <%
 JournalFeedsDisplayContext journalFeedsDisplayContext = new JournalFeedsDisplayContext(renderRequest, renderResponse);
 
-JournalFeedsManagementToolbarDisplayContext journalFeedsManagementToolbarDisplayContext = new JournalFeedsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalFeedsDisplayContext);
+JournalFeedsManagementToolbarDisplayContext journalFeedsManagementToolbarDisplayContext = new JournalFeedsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalFeedsDisplayContext);
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(journalFeedsDisplayContext.getRedirect());
@@ -29,14 +29,14 @@ renderResponse.setTitle(LanguageUtil.get(request, "feeds"));
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems='<%= journalDisplayContext.getNavigationBarItems("feeds") %>'
+	navigationItems='<%= journalDisplayContext.getNavigationItems("feeds") %>'
 />
 
 <clay:management-toolbar
 	displayContext="<%= journalFeedsManagementToolbarDisplayContext %>"
 />
 
-<portlet:actionURL name="deleteFeeds" var="deleteFeedsURL">
+<portlet:actionURL name="/journal/delete_feeds" var="deleteFeedsURL">
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
@@ -66,9 +66,9 @@ renderResponse.setTitle(LanguageUtil.get(request, "feeds"));
 				editURL = editFeedURL.toString();
 			}
 
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", journalFeedsManagementToolbarDisplayContext.getAvailableActions(feed));
+			Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+				"actions", journalFeedsManagementToolbarDisplayContext.getAvailableActions(feed)
+			).build();
 
 			row.setData(rowData);
 			%>

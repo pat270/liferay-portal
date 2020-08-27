@@ -16,12 +16,12 @@ package com.liferay.javadoc.formatter;
 
 import com.liferay.javadoc.formatter.util.JavadocFormatterUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
@@ -52,7 +52,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -94,8 +93,8 @@ public class JavadocFormatter {
 		try {
 			new JavadocFormatter(arguments);
 		}
-		catch (Exception e) {
-			ArgumentsUtil.processMainException(arguments, e);
+		catch (Exception exception) {
+			ArgumentsUtil.processMainException(arguments, exception);
 		}
 	}
 
@@ -210,9 +209,9 @@ public class JavadocFormatter {
 				try {
 					_format(fileName);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					throw new RuntimeException(
-						"Unable to format file " + fileName, e);
+						"Unable to format file " + fileName, exception);
 				}
 			}
 		}
@@ -364,6 +363,10 @@ public class JavadocFormatter {
 		throws Exception {
 
 		int lineNumber = _getJavaModelLineNumber(javaClass, content);
+
+		if (lineNumber == -1) {
+			return commentsMap;
+		}
 
 		String indent = _getIndent(lines, lineNumber);
 
@@ -778,6 +781,10 @@ public class JavadocFormatter {
 	private void _addFieldElement(Element parentElement, JavaField javaField)
 		throws Exception {
 
+		if (javaField == null) {
+			return;
+		}
+
 		Element fieldElement = parentElement.addElement("field");
 
 		Dom4jDocUtil.add(fieldElement, "name", javaField.getName());
@@ -1042,7 +1049,7 @@ public class JavadocFormatter {
 		return comment;
 	}
 
-	private String _compactString(Node node) throws IOException {
+	private String _compactString(Node node) throws Exception {
 		UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 			new UnsyncByteArrayOutputStream();
 
@@ -1100,7 +1107,7 @@ public class JavadocFormatter {
 			javaClass = _getJavaClass(
 				fileName, new UnsyncStringReader(originalContent));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (!fileName.contains("__")) {
 				System.out.println(
 					"Qdox parsing error while formatting file " + fileName);
@@ -1180,7 +1187,7 @@ public class JavadocFormatter {
 		return text;
 	}
 
-	private String _formattedString(Node node) throws IOException {
+	private String _formattedString(Node node) throws Exception {
 		return Dom4jUtil.toString(node);
 	}
 
@@ -1347,7 +1354,7 @@ public class JavadocFormatter {
 				JavadocFormatterUtil.getDeprecationsDocument(
 					_deprecationSyncDirName);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_deprecationsDocument = DocumentHelper.createDocument();
 		}
 
@@ -1745,6 +1752,10 @@ public class JavadocFormatter {
 	}
 
 	private int _getJavaModelLineNumber(JavaModel javaModel, String content) {
+		if ((javaModel == null) || (javaModel.getLineNumber() == 0)) {
+			return -1;
+		}
+
 		String[] lines = StringUtil.splitLines(content);
 
 		if (javaModel instanceof JavaClass) {
@@ -1877,11 +1888,9 @@ public class JavadocFormatter {
 
 		_updateLanguageProperties(document, javaClass.getName());
 
-		Element rootElement = document.getRootElement();
-
 		Map<Integer, String> commentsMap = _addComments(
-			new TreeMap<Integer, String>(), rootElement, javaClass,
-			javadocLessContent, lines);
+			new TreeMap<Integer, String>(), document.getRootElement(),
+			javaClass, javadocLessContent, lines);
 
 		StringBundler sb = new StringBundler(javadocLessContent.length());
 
@@ -2055,13 +2064,13 @@ public class JavadocFormatter {
 			Element curElement = elements.get(i);
 
 			if (!foundLastElementWithElementName) {
-				if (elementName.equals(curElement.getName())) {
-					if ((i + 1) < elements.size()) {
-						Element nextElement = elements.get(i + 1);
+				if (elementName.equals(curElement.getName()) &&
+					((i + 1) < elements.size())) {
 
-						if (!elementName.equals(nextElement.getName())) {
-							foundLastElementWithElementName = true;
-						}
+					Element nextElement = elements.get(i + 1);
+
+					if (!elementName.equals(nextElement.getName())) {
+						foundLastElementWithElementName = true;
 					}
 				}
 			}
@@ -2140,7 +2149,7 @@ public class JavadocFormatter {
 	}
 
 	private void _updateLanguageProperties(Document document, String className)
-		throws IOException {
+		throws Exception {
 
 		if (_languageProperties == null) {
 			return;
@@ -2204,7 +2213,7 @@ public class JavadocFormatter {
 	}
 
 	private void _updateLanguageProperties(String key, String value)
-		throws IOException {
+		throws Exception {
 
 		StringBundler sb = new StringBundler();
 
@@ -2248,8 +2257,7 @@ public class JavadocFormatter {
 
 		System.out.println(
 			StringBundler.concat(
-				"Updating ", String.valueOf(_languagePropertiesFile), " key ",
-				key));
+				"Updating ", _languagePropertiesFile, " key ", key));
 	}
 
 	private String _wrap(String text, int width) {
@@ -2365,7 +2373,7 @@ public class JavadocFormatter {
 		return text;
 	}
 
-	private void _write(File file, String s) throws IOException {
+	private void _write(File file, String s) throws Exception {
 		Files.write(file.toPath(), s.getBytes(StandardCharsets.UTF_8));
 	}
 

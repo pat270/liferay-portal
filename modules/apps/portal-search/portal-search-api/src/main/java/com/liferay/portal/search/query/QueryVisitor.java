@@ -89,4 +89,6 @@ public interface QueryVisitor<T> {
 
 	public T visit(WildcardQuery wildcardQuery);
 
+	public T visit(WrapperQuery wrapperQuery);
+
 }

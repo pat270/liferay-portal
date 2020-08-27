@@ -14,10 +14,12 @@
 
 package com.liferay.sync.internal.model.listener;
 
+import com.liferay.petra.concurrent.NoticeableExecutorService;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.sync.model.SyncDLObject;
 
 import java.util.Date;
@@ -93,7 +95,26 @@ public class ResourcePermissionModelListener
 		else if (!originalResourcePermission.hasActionId(ActionKeys.VIEW) &&
 				 resourcePermission.hasActionId(ActionKeys.VIEW)) {
 
-			updateSyncDLObject(syncDLObject);
+			TransactionCommitCallbackUtil.registerCallback(
+				() -> {
+					NoticeableExecutorService noticeableExecutorService =
+						portalExecutorManager.getPortalExecutor(
+							ResourcePermissionModelListener.class.getName());
+
+					noticeableExecutorService.submit(
+						() -> {
+							try {
+								updateSyncDLObject(syncDLObject);
+							}
+							catch (Exception exception) {
+								throw new ModelListenerException(exception);
+							}
+
+							return null;
+						});
+
+					return null;
+				});
 		}
 	}
 

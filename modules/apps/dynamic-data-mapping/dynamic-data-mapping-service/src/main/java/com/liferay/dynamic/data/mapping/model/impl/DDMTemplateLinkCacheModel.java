@@ -18,13 +18,12 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplateLink;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The cache model class for representing DDMTemplateLink in entity cache.
@@ -32,24 +31,25 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDMTemplateLinkCacheModel
-	implements CacheModel<DDMTemplateLink>, Externalizable {
+	implements CacheModel<DDMTemplateLink>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMTemplateLinkCacheModel)) {
+		if (!(object instanceof DDMTemplateLinkCacheModel)) {
 			return false;
 		}
 
 		DDMTemplateLinkCacheModel ddmTemplateLinkCacheModel =
-			(DDMTemplateLinkCacheModel)obj;
+			(DDMTemplateLinkCacheModel)object;
 
-		if (templateLinkId == ddmTemplateLinkCacheModel.templateLinkId) {
+		if ((templateLinkId == ddmTemplateLinkCacheModel.templateLinkId) &&
+			(mvccVersion == ddmTemplateLinkCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -58,14 +58,30 @@ public class DDMTemplateLinkCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, templateLinkId);
+		int hashCode = HashUtil.hash(0, templateLinkId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(11);
+		StringBundler sb = new StringBundler(15);
 
-		sb.append("{templateLinkId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", templateLinkId=");
 		sb.append(templateLinkId);
 		sb.append(", companyId=");
 		sb.append(companyId);
@@ -84,6 +100,8 @@ public class DDMTemplateLinkCacheModel
 	public DDMTemplateLink toEntityModel() {
 		DDMTemplateLinkImpl ddmTemplateLinkImpl = new DDMTemplateLinkImpl();
 
+		ddmTemplateLinkImpl.setMvccVersion(mvccVersion);
+		ddmTemplateLinkImpl.setCtCollectionId(ctCollectionId);
 		ddmTemplateLinkImpl.setTemplateLinkId(templateLinkId);
 		ddmTemplateLinkImpl.setCompanyId(companyId);
 		ddmTemplateLinkImpl.setClassNameId(classNameId);
@@ -97,6 +115,10 @@ public class DDMTemplateLinkCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
+
 		templateLinkId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
@@ -110,6 +132,10 @@ public class DDMTemplateLinkCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		objectOutput.writeLong(templateLinkId);
 
 		objectOutput.writeLong(companyId);
@@ -121,6 +147,8 @@ public class DDMTemplateLinkCacheModel
 		objectOutput.writeLong(templateId);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public long templateLinkId;
 	public long companyId;
 	public long classNameId;

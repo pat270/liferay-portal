@@ -28,9 +28,9 @@ import com.liferay.portal.search.elasticsearch6.internal.connection.IndexCreator
 import com.liferay.portal.search.elasticsearch6.internal.connection.IndexName;
 import com.liferay.portal.search.elasticsearch6.internal.facet.DefaultFacetProcessor;
 import com.liferay.portal.search.elasticsearch6.internal.facet.FacetProcessor;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
 import com.liferay.portal.search.elasticsearch6.internal.search.engine.adapter.ElasticsearchEngineAdapterFixture;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.internal.legacy.searcher.SearchRequestBuilderFactoryImpl;
 import com.liferay.portal.search.internal.legacy.searcher.SearchResponseBuilderFactoryImpl;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;

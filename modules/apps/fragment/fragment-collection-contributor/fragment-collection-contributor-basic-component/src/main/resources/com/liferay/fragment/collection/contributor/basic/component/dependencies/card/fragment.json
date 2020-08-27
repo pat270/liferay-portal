@@ -1,9 +1,8 @@
 {
-	"cssPath": "index.css",
+	"cacheable": true,
 	"fragmentEntryKey": "card",
-	"htmlPath": "index.html",
-	"jsPath": "index.js",
-	"name": "Card",
+	"icon": "blogs",
+	"name": "card",
 	"thumbnail": "card.png",
 	"type": "component"
 }

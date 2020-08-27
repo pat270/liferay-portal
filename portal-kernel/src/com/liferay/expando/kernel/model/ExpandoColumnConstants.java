@@ -144,6 +144,9 @@ public class ExpandoColumnConstants {
 
 	public static final String PROPERTY_HIDDEN = "hidden";
 
+	public static final String PROPERTY_LOCALIZE_FIELD_NAME =
+		"localize-field-name";
+
 	public static final String PROPERTY_SECRET = "secret";
 
 	public static final String PROPERTY_VISIBLE_WITH_UPDATE_PERMISSION =
@@ -209,7 +212,7 @@ public class ExpandoColumnConstants {
 	}
 
 	public static final String getDefaultDisplayTypeProperty(
-		int type, UnicodeProperties properties) {
+		int type, UnicodeProperties unicodeProperties) {
 
 		if (type == BOOLEAN) {
 			return PROPERTY_DISPLAY_TYPE_BOOLEAN;
@@ -230,7 +233,7 @@ public class ExpandoColumnConstants {
 		}
 		else if ((type == STRING) || (type == STRING_LOCALIZED)) {
 			int propertyHeight = GetterUtil.getInteger(
-				properties.get(PROPERTY_HEIGHT));
+				unicodeProperties.get(PROPERTY_HEIGHT));
 
 			if (propertyHeight > 0) {
 				return PROPERTY_DISPLAY_TYPE_TEXT_BOX;
@@ -274,9 +277,9 @@ public class ExpandoColumnConstants {
 
 				return dateFormat.parse(value);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Unable to parse date " + value, e);
+					_log.warn("Unable to parse date " + value, exception);
 				}
 			}
 		}

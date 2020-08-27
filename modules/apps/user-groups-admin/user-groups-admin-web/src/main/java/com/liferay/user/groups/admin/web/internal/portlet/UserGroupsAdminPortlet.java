@@ -14,12 +14,12 @@
 
 package com.liferay.user.groups.admin.web.internal.portlet;
 
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.portal.kernel.exception.DuplicateUserGroupException;
 import com.liferay.portal.kernel.exception.NoSuchUserGroupException;
 import com.liferay.portal.kernel.exception.RequiredUserGroupException;
 import com.liferay.portal.kernel.exception.UserGroupNameException;
 import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
-import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocalCloseable;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -67,8 +67,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + UserGroupsAdminPortletKeys.USER_GROUPS_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -100,10 +99,8 @@ public class UserGroupsAdminPortlet extends MVCPortlet {
 
 		UserGroup userGroup = null;
 
-		try (ProxyModeThreadLocalCloseable proxyModeThreadLocalCloseable =
-				new ProxyModeThreadLocalCloseable()) {
-
-			ProxyModeThreadLocal.setForceSync(true);
+		try (SafeClosable safeClosable =
+				ProxyModeThreadLocal.setWithSafeClosable(true)) {
 
 			if (userGroupId <= 0) {
 
@@ -155,10 +152,8 @@ public class UserGroupsAdminPortlet extends MVCPortlet {
 		long[] removeUserIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "removeUserIds"), 0L);
 
-		try (ProxyModeThreadLocalCloseable proxyModeThreadLocalCloseable =
-				new ProxyModeThreadLocalCloseable()) {
-
-			ProxyModeThreadLocal.setForceSync(true);
+		try (SafeClosable safeClosable =
+				ProxyModeThreadLocal.setWithSafeClosable(true)) {
 
 			_userService.addUserGroupUsers(userGroupId, addUserIds);
 			_userService.unsetUserGroupUsers(userGroupId, removeUserIds);
@@ -197,13 +192,13 @@ public class UserGroupsAdminPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof DuplicateUserGroupException ||
-			cause instanceof MembershipPolicyException ||
-			cause instanceof NoSuchUserGroupException ||
-			cause instanceof PrincipalException ||
-			cause instanceof RequiredUserGroupException ||
-			cause instanceof UserGroupNameException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof DuplicateUserGroupException ||
+			throwable instanceof MembershipPolicyException ||
+			throwable instanceof NoSuchUserGroupException ||
+			throwable instanceof PrincipalException ||
+			throwable instanceof RequiredUserGroupException ||
+			throwable instanceof UserGroupNameException) {
 
 			return true;
 		}

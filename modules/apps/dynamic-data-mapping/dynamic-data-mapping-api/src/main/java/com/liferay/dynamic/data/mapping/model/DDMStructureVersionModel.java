@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -40,8 +42,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDMStructureVersionModel
-	extends BaseModel<DDMStructureVersion>, LocalizedModel, ShardedModel,
-			WorkflowedModel {
+	extends BaseModel<DDMStructureVersion>, CTModel<DDMStructureVersion>,
+			LocalizedModel, MVCCModel, ShardedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -54,6 +56,7 @@ public interface DDMStructureVersionModel
 	 *
 	 * @return the primary key of this ddm structure version
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -61,7 +64,40 @@ public interface DDMStructureVersionModel
 	 *
 	 * @param primaryKey the primary key of this ddm structure version
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this ddm structure version.
+	 *
+	 * @return the mvcc version of this ddm structure version
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this ddm structure version.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm structure version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddm structure version.
+	 *
+	 * @return the ct collection ID of this ddm structure version
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddm structure version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm structure version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the structure version ID of this ddm structure version.

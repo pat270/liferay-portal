@@ -16,7 +16,6 @@ package com.liferay.jenkins.results.parser;
 
 import java.io.File;
 
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -52,24 +51,6 @@ public abstract class PortalGitRepositoryJob
 		return (PortalGitWorkingDirectory)gitWorkingDirectory;
 	}
 
-	public String getPoshiQuery(String testBatchName) {
-		Properties jobProperties = getJobProperties();
-
-		String propertyName = JenkinsResultsParserUtil.combine(
-			"test.batch.run.property.query[", testBatchName, "]");
-
-		if (jobProperties.containsKey(propertyName)) {
-			String propertyValue = JenkinsResultsParserUtil.getProperty(
-				jobProperties, propertyName);
-
-			if ((propertyValue != null) && !propertyValue.isEmpty()) {
-				return propertyValue;
-			}
-		}
-
-		return null;
-	}
-
 	protected PortalGitRepositoryJob(String jobName) {
 		super(jobName);
 
@@ -88,7 +69,7 @@ public abstract class PortalGitRepositoryJob
 	}
 
 	protected GitWorkingDirectory getNewGitWorkingDirectory() {
-		return JenkinsResultsParserUtil.getPortalGitWorkingDirectory(
+		return GitWorkingDirectoryFactory.newPortalGitWorkingDirectory(
 			getBranchName());
 	}
 

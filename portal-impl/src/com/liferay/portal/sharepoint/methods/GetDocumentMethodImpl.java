@@ -22,7 +22,6 @@ import com.liferay.portal.sharepoint.Property;
 import com.liferay.portal.sharepoint.ResponseElement;
 import com.liferay.portal.sharepoint.SharepointRequest;
 import com.liferay.portal.sharepoint.SharepointStorage;
-import com.liferay.portal.sharepoint.Tree;
 
 import java.io.InputStream;
 
@@ -52,9 +51,11 @@ public class GetDocumentMethodImpl extends BaseMethodImpl {
 
 		String html = getResponse(sharepointRequest, true);
 
-		InputStream is = storage.getDocumentInputStream(sharepointRequest);
+		InputStream inputStream = storage.getDocumentInputStream(
+			sharepointRequest);
 
-		byte[] bytes = ArrayUtil.append(html.getBytes(), FileUtil.getBytes(is));
+		byte[] bytes = ArrayUtil.append(
+			html.getBytes(), FileUtil.getBytes(inputStream));
 
 		ServletResponseUtil.write(
 			sharepointRequest.getHttpServletResponse(), bytes);
@@ -71,9 +72,8 @@ public class GetDocumentMethodImpl extends BaseMethodImpl {
 
 		elements.add(new Property("message", StringPool.BLANK));
 
-		Tree documentTree = storage.getDocumentTree(sharepointRequest);
-
-		Property documentProperty = new Property("document", documentTree);
+		Property documentProperty = new Property(
+			"document", storage.getDocumentTree(sharepointRequest));
 
 		elements.add(documentProperty);
 

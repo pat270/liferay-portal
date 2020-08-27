@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.exception.NoSuchRegionException;
 import com.liferay.portal.kernel.exception.PhoneNumberException;
 import com.liferay.portal.kernel.exception.PhoneNumberExtensionException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.exception.WebsiteURLException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Account;
@@ -63,6 +64,7 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PrefsProps;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -71,11 +73,14 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.settings.web.internal.exception.RequiredLocaleException;
 import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletPreferences;
+import javax.portlet.ReadOnlyException;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -115,48 +120,51 @@ public class EditCompanyMVCActionCommand extends BaseFormMVCActionCommand {
 				sendRedirect(actionRequest, actionResponse, redirect);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof PrincipalException) {
-				SessionErrors.add(actionRequest, e.getClass());
+		catch (Exception exception) {
+			if (exception instanceof PrincipalException) {
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 
 				return;
 			}
-			else if (e instanceof AccountNameException ||
-					 e instanceof AddressCityException ||
-					 e instanceof AddressStreetException ||
-					 e instanceof AddressZipException ||
-					 e instanceof CompanyMxException ||
-					 e instanceof CompanyVirtualHostException ||
-					 e instanceof CompanyWebIdException ||
-					 e instanceof EmailAddressException ||
-					 e instanceof LocaleException ||
-					 e instanceof NoSuchCountryException ||
-					 e instanceof NoSuchListTypeException ||
-					 e instanceof NoSuchRegionException ||
-					 e instanceof PhoneNumberException ||
-					 e instanceof PhoneNumberExtensionException ||
-					 e instanceof RequiredLocaleException ||
-					 e instanceof WebsiteURLException) {
+			else if (exception instanceof AccountNameException ||
+					 exception instanceof AddressCityException ||
+					 exception instanceof AddressStreetException ||
+					 exception instanceof AddressZipException ||
+					 exception instanceof CompanyMxException ||
+					 exception instanceof CompanyVirtualHostException ||
+					 exception instanceof CompanyWebIdException ||
+					 exception instanceof EmailAddressException ||
+					 exception instanceof LocaleException ||
+					 exception instanceof NoSuchCountryException ||
+					 exception instanceof NoSuchListTypeException ||
+					 exception instanceof NoSuchRegionException ||
+					 exception instanceof PhoneNumberException ||
+					 exception instanceof PhoneNumberExtensionException ||
+					 exception instanceof RequiredLocaleException ||
+					 exception instanceof WebsiteURLException) {
 
-				if (e instanceof NoSuchListTypeException) {
-					NoSuchListTypeException nslte = (NoSuchListTypeException)e;
+				if (exception instanceof NoSuchListTypeException) {
+					NoSuchListTypeException noSuchListTypeException =
+						(NoSuchListTypeException)exception;
 
-					Class<?> clazz = e.getClass();
+					Class<?> clazz = exception.getClass();
 
 					SessionErrors.add(
-						actionRequest, clazz.getName() + nslte.getType());
+						actionRequest,
+						clazz.getName() + noSuchListTypeException.getType());
 				}
 				else {
-					SessionErrors.add(actionRequest, e.getClass(), e);
+					SessionErrors.add(
+						actionRequest, exception.getClass(), exception);
 				}
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 
-			SessionErrors.add(actionRequest, e.getClass(), e);
+			SessionErrors.add(actionRequest, exception.getClass(), exception);
 
 			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
@@ -263,14 +271,48 @@ public class EditCompanyMVCActionCommand extends BaseFormMVCActionCommand {
 				companyId, Account.class.getName(), company.getAccountId());
 		}
 
-		UnicodeProperties properties = PropertiesParamUtil.getProperties(
+		UnicodeProperties unicodeProperties = PropertiesParamUtil.getProperties(
 			actionRequest, "settings--");
+
+		if (unicodeProperties.containsKey(PropsKeys.ADMIN_EMAIL_FROM_ADDRESS) &&
+			!Validator.isEmailAddress(
+				unicodeProperties.getProperty(
+					PropsKeys.ADMIN_EMAIL_FROM_ADDRESS))) {
+
+			throw new EmailAddressException();
+		}
+
+		String[] discardLegacyKeys = ParamUtil.getStringValues(
+			actionRequest, "discardLegacyKey");
+
+		PortletPreferences portletPreferences = _prefsProps.getPreferences(
+			companyId);
+
+		Enumeration<String> enumeration = portletPreferences.getNames();
+
+		try {
+			while (enumeration.hasMoreElements()) {
+				String name2 = enumeration.nextElement();
+
+				for (String discardLegacyKey : discardLegacyKeys) {
+					if (name2.startsWith(discardLegacyKey + "_")) {
+						portletPreferences.reset(name2);
+						unicodeProperties.remove(name2);
+					}
+				}
+			}
+
+			portletPreferences.store();
+		}
+		catch (ReadOnlyException readOnlyException) {
+			throw new SystemException(readOnlyException);
+		}
 
 		_companyService.updateCompany(
 			companyId, virtualHostname, mx, homeURL, !deleteLogo, logoBytes,
 			name, legalName, legalId, legalType, sicCode, tickerSymbol,
 			industry, type, size, languageId, timeZoneId, addresses,
-			emailAddresses, phones, websites, properties);
+			emailAddresses, phones, websites, unicodeProperties);
 
 		_portal.resetCDNHosts();
 	}
@@ -278,10 +320,11 @@ public class EditCompanyMVCActionCommand extends BaseFormMVCActionCommand {
 	private void _validateAvailableLanguages(ActionRequest actionRequest)
 		throws PortalException {
 
-		UnicodeProperties properties = PropertiesParamUtil.getProperties(
+		UnicodeProperties unicodeProperties = PropertiesParamUtil.getProperties(
 			actionRequest, "settings--");
 
-		String newLanguageIds = properties.getProperty(PropsKeys.LOCALES);
+		String newLanguageIds = unicodeProperties.getProperty(
+			PropsKeys.LOCALES);
 
 		if (Validator.isNull(newLanguageIds)) {
 			return;
@@ -338,10 +381,11 @@ public class EditCompanyMVCActionCommand extends BaseFormMVCActionCommand {
 				"you-must-choose-a-default-language");
 		}
 
-		UnicodeProperties properties = PropertiesParamUtil.getProperties(
+		UnicodeProperties unicodeProperties = PropertiesParamUtil.getProperties(
 			actionRequest, "settings--");
 
-		String newLanguageIds = properties.getProperty(PropsKeys.LOCALES);
+		String newLanguageIds = unicodeProperties.getProperty(
+			PropsKeys.LOCALES);
 
 		if (Validator.isNull(newLanguageIds) ||
 			!StringUtil.contains(
@@ -370,6 +414,9 @@ public class EditCompanyMVCActionCommand extends BaseFormMVCActionCommand {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private PrefsProps _prefsProps;
 
 	@Reference
 	private UserLocalService _userLocalService;

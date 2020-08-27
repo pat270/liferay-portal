@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -235,8 +236,6 @@ public class WebDAVOSXTest extends BaseWebDAVTestCase {
 
 	@Test
 	public void testMSOffice2Open() throws Exception {
-		Tuple tuple = null;
-
 		assertCode(
 			WebDAVUtil.SC_MULTI_STATUS, servicePropFind(_TEST_FILE_NAME));
 		assertCode(
@@ -244,7 +243,7 @@ public class WebDAVOSXTest extends BaseWebDAVTestCase {
 
 		lock(HttpServletResponse.SC_OK, _TEST_FILE_NAME);
 
-		tuple = serviceGet(_TEST_FILE_NAME);
+		Tuple tuple = serviceGet(_TEST_FILE_NAME);
 
 		assertCode(HttpServletResponse.SC_OK, tuple);
 		Assert.assertArrayEquals(_testFileBytes, getResponseBody(tuple));
@@ -260,8 +259,6 @@ public class WebDAVOSXTest extends BaseWebDAVTestCase {
 
 	@Test
 	public void testMSOffice3Modify() throws Exception {
-		Tuple tuple = null;
-
 		assertCode(
 			HttpServletResponse.SC_NOT_FOUND,
 			servicePropFind(_TEMP_FILE_NAME_1));
@@ -309,7 +306,7 @@ public class WebDAVOSXTest extends BaseWebDAVTestCase {
 		unlock(_TEST_FILE_NAME);
 		lock(HttpServletResponse.SC_OK, _TEST_FILE_NAME);
 
-		tuple = serviceGet(_TEST_FILE_NAME);
+		Tuple tuple = serviceGet(_TEST_FILE_NAME);
 
 		assertCode(HttpServletResponse.SC_OK, tuple);
 		Assert.assertArrayEquals(_testFileBytes, getResponseBody(tuple));
@@ -552,10 +549,8 @@ public class WebDAVOSXTest extends BaseWebDAVTestCase {
 			DLFileEntryType finalFileEntryType =
 				finalDLFileEntryModel.getDLFileEntryType();
 
-			List<DDMStructure> ddmStructures =
-				finalFileEntryType.getDDMStructures();
-
-			Assert.assertTrue(ListUtil.isNotEmpty(ddmStructures));
+			Assert.assertTrue(
+				ListUtil.isNotEmpty(finalFileEntryType.getDDMStructures()));
 
 			Assert.assertEquals(
 				initialDLFileEntryType.getFileEntryTypeId(),
@@ -592,9 +587,9 @@ public class WebDAVOSXTest extends BaseWebDAVTestCase {
 
 		ddmForm.addDDMFormField(ddmFormField);
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(ddmForm.getDefaultLocale(), "Test Structure");
+		Map<Locale, String> nameMap = HashMapBuilder.put(
+			ddmForm.getDefaultLocale(), "Test Structure"
+		).build();
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(group.getGroupId());

@@ -1,19 +1,11 @@
 @component-name = "portal-deployment-mysql"
 definition {
+
 	property database.types = "mysql";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property setup.wizard.enabled = "true";
 	property testray.main.component.name = "Setup Wizard";
-
-	@priority = "4"
-	test MySQLtoMySQL {
-		SetupWizard.configureDefaultPG();
-
-		Smoke.viewWelcomePage();
-
-		Smoke.runSmoke();
-	}
 
 	@priority = "4"
 	test MySQLtoMySQLEditedAdministratorUser {
@@ -87,51 +79,4 @@ definition {
 			value1 = "testsetupwizard");
 	}
 
-	@priority = "5"
-	test MySQLtoMySQLLportal1 {
-		property databases.size = "1";
-		property portal.acceptance = "true";
-		property test.name.skip.portal.instance = "SetupWizardMySQL#MySQLtoMySQLLportal1";
-
-		SetupWizard.configurePG(
-			administratorEmail = "test@liferay.com",
-			administratorFirstName = "Test",
-			administratorLastName = "Test",
-			databaseName = "lportal1",
-			databasePassword = PropsUtil.get("database.mysql.password"),
-			databaseType = "MySQL",
-			databaseUserName = PropsUtil.get("database.mysql.username"),
-			jdbcDriverClassName = PropsUtil.get("database.mysql.driver"),
-			jdbcURL = PropsUtil.get("database.mysql.url"));
-
-		Smoke.viewWelcomePage(
-			userFirstName = "Joe",
-			userLastName = "Bloggs");
-
-		Smoke.runSmoke();
-	}
-
-	@priority = "5"
-	test MySQLtoMySQLLportal1SampleDataDisabled {
-		property custom.properties = "setup.wizard.add.sample.data=true";
-		property databases.size = "1";
-		property portal.acceptance = "true";
-		property test.name.skip.portal.instance = "SetupWizardMySQL#MySQLtoMySQLLportal1SampleDataDisabled";
-
-		SetupWizard.configurePG(
-			addSampleData = "false",
-			administratorEmail = "test@liferay.com",
-			administratorFirstName = "Test",
-			administratorLastName = "Test",
-			databaseName = "lportal1",
-			databasePassword = PropsUtil.get("database.mysql.password"),
-			databaseType = "MySQL",
-			databaseUserName = PropsUtil.get("database.mysql.username"),
-			jdbcDriverClassName = PropsUtil.get("database.mysql.driver"),
-			jdbcURL = PropsUtil.get("database.mysql.url"));
-
-		Smoke.viewWelcomePage();
-
-		Smoke.runSmoke();
-	}
 }

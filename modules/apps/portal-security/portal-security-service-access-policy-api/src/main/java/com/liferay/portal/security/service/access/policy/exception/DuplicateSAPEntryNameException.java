@@ -16,12 +16,9 @@ package com.liferay.portal.security.service.access.policy.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateSAPEntryNameException extends PortalException {
 
 	public DuplicateSAPEntryNameException() {
@@ -31,12 +28,12 @@ public class DuplicateSAPEntryNameException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateSAPEntryNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateSAPEntryNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateSAPEntryNameException(Throwable cause) {
-		super(cause);
+	public DuplicateSAPEntryNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

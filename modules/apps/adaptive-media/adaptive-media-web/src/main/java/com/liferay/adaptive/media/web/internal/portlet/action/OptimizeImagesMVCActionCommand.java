@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.uuid.PortalUUID;
 
 import java.io.Serializable;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
@@ -83,14 +83,14 @@ public class OptimizeImagesMVCActionCommand extends BaseMVCActionCommand {
 
 	private BackgroundTask _optimizeImages(
 			long userId, long companyId, String jobName)
-		throws PortalException {
+		throws Exception {
 
-		Map<String, Serializable> taskContextMap = new HashMap<>();
-
-		taskContextMap.put(
-			AMOptimizeImagesBackgroundTaskConstants.COMPANY_ID, companyId);
-		taskContextMap.put(
-			BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true);
+		Map<String, Serializable> taskContextMap =
+			HashMapBuilder.<String, Serializable>put(
+				AMOptimizeImagesBackgroundTaskConstants.COMPANY_ID, companyId
+			).put(
+				BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true
+			).build();
 
 		try {
 			return _backgroundTaskManager.addBackgroundTask(
@@ -99,26 +99,28 @@ public class OptimizeImagesMVCActionCommand extends BaseMVCActionCommand {
 					getName(),
 				taskContextMap, new ServiceContext());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new PortalException(
-				"Unable to schedule adaptive media images optimization", pe);
+				"Unable to schedule adaptive media images optimization",
+				portalException);
 		}
 	}
 
 	private BackgroundTask _optimizeImagesSingleConfiguration(
 			long userId, long companyId, String jobName,
 			String configurationEntryUuid)
-		throws PortalException {
+		throws Exception {
 
-		Map<String, Serializable> taskContextMap = new HashMap<>();
-
-		taskContextMap.put(
-			AMOptimizeImagesBackgroundTaskConstants.CONFIGURATION_ENTRY_UUID,
-			configurationEntryUuid);
-		taskContextMap.put(
-			AMOptimizeImagesBackgroundTaskConstants.COMPANY_ID, companyId);
-		taskContextMap.put(
-			BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true);
+		Map<String, Serializable> taskContextMap =
+			HashMapBuilder.<String, Serializable>put(
+				AMOptimizeImagesBackgroundTaskConstants.COMPANY_ID, companyId
+			).put(
+				AMOptimizeImagesBackgroundTaskConstants.
+					CONFIGURATION_ENTRY_UUID,
+				configurationEntryUuid
+			).put(
+				BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true
+			).build();
 
 		try {
 			return _backgroundTaskManager.addBackgroundTask(
@@ -127,11 +129,11 @@ public class OptimizeImagesMVCActionCommand extends BaseMVCActionCommand {
 					getName(),
 				taskContextMap, new ServiceContext());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new PortalException(
 				"Unable to schedule adaptive media images optimization for " +
 					"configuration " + configurationEntryUuid,
-				pe);
+				portalException);
 		}
 	}
 

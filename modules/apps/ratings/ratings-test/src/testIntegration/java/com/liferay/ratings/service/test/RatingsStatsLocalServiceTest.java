@@ -115,19 +115,14 @@ public class RatingsStatsLocalServiceTest {
 		String className = StringUtil.randomString();
 		long classPK = RandomTestUtil.randomLong();
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		RatingsEntryLocalServiceUtil.updateEntry(
-			_user1.getUserId(), className, classPK, 1, serviceContext);
-
-		RatingsStats ratingsStats = RatingsStatsLocalServiceUtil.getStats(
-			className, classPK);
+			_user1.getUserId(), className, classPK, 1,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		RatingsEntryLocalServiceUtil.deleteEntry(
 			_user1.getUserId(), className, classPK);
 
-		ratingsStats = RatingsStatsLocalServiceUtil.fetchStats(
+		RatingsStats ratingsStats = RatingsStatsLocalServiceUtil.fetchStats(
 			className, classPK);
 
 		Assert.assertNull(ratingsStats);

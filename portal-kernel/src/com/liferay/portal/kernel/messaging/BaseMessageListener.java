@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.messaging;
 
+import com.liferay.portal.kernel.model.CompanyConstants;
+
 /**
  * @author Michael C. Han
  * @author Brian Wing Shun Chan
@@ -22,17 +24,28 @@ public abstract class BaseMessageListener implements MessageListener {
 
 	@Override
 	public void receive(Message message) throws MessageListenerException {
+		long companyId = message.getLong("companyId");
+
 		try {
-			doReceive(message);
+			if (companyId == CompanyConstants.SYSTEM) {
+				doReceive(message);
+			}
+			else {
+				doReceive(message, companyId);
+			}
 		}
-		catch (MessageListenerException mle) {
-			throw mle;
+		catch (MessageListenerException messageListenerException) {
+			throw messageListenerException;
 		}
-		catch (Exception e) {
-			throw new MessageListenerException(e);
+		catch (Exception exception) {
+			throw new MessageListenerException(exception);
 		}
 	}
 
 	protected abstract void doReceive(Message message) throws Exception;
+
+	protected void doReceive(Message message, long companyId) throws Exception {
+		doReceive(message);
+	}
 
 }

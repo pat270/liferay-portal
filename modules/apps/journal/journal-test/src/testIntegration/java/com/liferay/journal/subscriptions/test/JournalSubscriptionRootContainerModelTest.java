@@ -20,14 +20,14 @@ import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.subscriptions.test.BaseSubscriptionRootContainerModelTestCase;
+import com.liferay.subscription.test.util.BaseSubscriptionRootContainerModelTestCase;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -45,14 +45,6 @@ public class JournalSubscriptionRootContainerModelTest
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(), SynchronousMailTestRule.INSTANCE);
-
-	@Before
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-
-		user = UserTestUtil.addOmniAdminUser();
-	}
 
 	@Override
 	protected long addBaseModel(long userId, long containerModelId)
@@ -81,6 +73,11 @@ public class JournalSubscriptionRootContainerModelTest
 
 		JournalFolderLocalServiceUtil.subscribe(
 			user.getUserId(), group.getGroupId(), containerModelId);
+	}
+
+	@Override
+	protected User addUser() throws Exception {
+		return UserTestUtil.addOmniAdminUser();
 	}
 
 	@Override

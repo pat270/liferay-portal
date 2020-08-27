@@ -1,13 +1,27 @@
 /**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+/**
  * The Autocomplete Input Caretindex Sel Component.
  *
- * @deprecated since 7.2, unused
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  * @module liferay-autocomplete-input-caretindex-sel
  */
 
 AUI.add(
 	'liferay-autocomplete-input-caretindex-sel',
-	function(A) {
+	(A) => {
 		var DOC = A.config.doc;
 
 		var REGEX_NEW_LINE = /\r\n/g;
@@ -20,11 +34,10 @@ AUI.add(
 
 		var STR_NEW_LINE = '\n';
 
-		var AutcompleteInputCaretIndex = function() {
-		};
+		var AutcompleteInputCaretIndex = function () {};
 
 		AutcompleteInputCaretIndex.prototype = {
-			_getCaretIndex: function(node) {
+			_getCaretIndex(node) {
 				var instance = this;
 
 				node = node || instance.get(STR_INPUT_NODE);
@@ -39,7 +52,10 @@ AUI.add(
 				if (range && range.parentElement() === inputEl) {
 					var value = inputEl.value;
 
-					var normalizedValue = value.replace(REGEX_NEW_LINE, STR_NEW_LINE);
+					var normalizedValue = value.replace(
+						REGEX_NEW_LINE,
+						STR_NEW_LINE
+					);
 
 					var textInputRange = inputEl.createTextRange();
 
@@ -51,30 +67,51 @@ AUI.add(
 
 					var length = value.length;
 
-					if (textInputRange.compareEndPoints('StartToEnd', endRange) > -1) {
+					if (
+						textInputRange.compareEndPoints(
+							'StartToEnd',
+							endRange
+						) > -1
+					) {
 						start = end = length;
 					}
 					else {
-						start = -textInputRange.moveStart(STR_CHARACTER, -length);
-						start += normalizedValue.slice(0, start).split(STR_NEW_LINE).length - 1;
+						start = -textInputRange.moveStart(
+							STR_CHARACTER,
+							-length
+						);
+						start +=
+							normalizedValue.slice(0, start).split(STR_NEW_LINE)
+								.length - 1;
 
-						if (textInputRange.compareEndPoints(STR_END_TO_END, endRange) > -1) {
+						if (
+							textInputRange.compareEndPoints(
+								STR_END_TO_END,
+								endRange
+							) > -1
+						) {
 							end = length;
 						}
 						else {
-							end = -textInputRange.moveEnd(STR_CHARACTER, -length);
-							end += normalizedValue.slice(0, end).split(STR_NEW_LINE).length - 1;
+							end = -textInputRange.moveEnd(
+								STR_CHARACTER,
+								-length
+							);
+							end +=
+								normalizedValue
+									.slice(0, end)
+									.split(STR_NEW_LINE).length - 1;
 						}
 					}
 				}
 
 				return {
-					end: end,
-					start: start
+					end,
+					start,
 				};
 			},
 
-			_setCaretIndex: function(node, cursorIndex) {
+			_setCaretIndex(node, cursorIndex) {
 				var instance = this;
 
 				node = node || instance.get(STR_INPUT_NODE);
@@ -98,13 +135,13 @@ AUI.add(
 
 					range.select();
 				}
-			}
+			},
 		};
 
 		A.Base.mix(Liferay.AutoCompleteTextarea, [AutcompleteInputCaretIndex]);
 	},
 	'',
 	{
-		requires: ['liferay-autocomplete-textarea']
+		requires: ['liferay-autocomplete-textarea'],
 	}
 );

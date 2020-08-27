@@ -1,0 +1,85 @@
+definition {
+
+	macro closeProductMenu {
+		if (IsElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) {
+			Click(locator1 = "ProductMenu#TOGGLE");
+		}
+
+		AssertElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_CLOSED");
+	}
+
+	macro expandCategory {
+		var key_category = "${category}";
+
+		if (IsElementPresent(locator1 = "ProductMenu#CATEGORY_COLLAPSED")) {
+			Click(locator1 = "ProductMenu#CATEGORY_COLLAPSED");
+		}
+
+		AssertElementPresent(locator1 = "ProductMenu#CATEGORY_EXPANDED");
+	}
+
+	macro expandPanel {
+		ProductMenuHelper.openProductMenu();
+
+		var key_panel = StringUtil.toLowerCase("${panel}");
+		var key_panel = StringUtil.replace("${key_panel}", " ", "_");
+
+		if (IsElementPresent(locator1 = "ProductMenu#PANEL_COLLAPSED", key_panel = "${key_panel}")) {
+			Click(
+				key_panel = "${key_panel}",
+				locator1 = "ProductMenu#PANEL_COLLAPSED");
+		}
+
+		AssertElementPresent(
+			key_panel = "${key_panel}",
+			locator1 = "ProductMenu#PANEL_EXPANDED");
+	}
+
+	macro gotoPortlet {
+		AssertClick.assertPartialTextClickAt(
+			key_portlet = "${portlet}",
+			locator1 = "ProductMenu#PORTLET",
+			value1 = "${portlet}");
+	}
+
+	macro openProductMenu {
+		if ((IsElementNotPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) && (IsElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_CLOSED"))) {
+			Click(locator1 = "ProductMenu#TOGGLE");
+		}
+
+		AssertElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED");
+
+		AssertElementNotPresent(locator1 = "ProductMenu#PRODUCT_MENU_CLOSED");
+
+		if (IsElementPresent(key_text = "Back to Menu", locator1 = "Button#ANY")) {
+			Click(
+				key_text = "Back to Menu",
+				locator1 = "Button#ANY");
+		}
+
+		AssertVisible(locator1 = "ProductMenu#PRODUCT_MENU_BODY");
+	}
+
+	macro openWorkspace {
+		if (IsElementNotPresent(locator1 = "Portlet#MODAL_TITLE")) {
+			Click(locator1 = "ProductMenu#CHANGE_SPACE_ICON");
+
+			AssertVisible(locator1 = "Portlet#MODAL_TITLE");
+		}
+	}
+
+	macro selectScope {
+		Click(locator1 = "SiteNavigationMenu#SCOPE_COG");
+
+		Click(
+			key_scope = "${scope}",
+			locator1 = "ProductMenu#SCOPE");
+	}
+
+	macro viewNoSite {
+		var key_site = "${site}";
+
+		AssertElementNotPresent(locator1 = "ProductMenu#SITE");
+	}
+
+}

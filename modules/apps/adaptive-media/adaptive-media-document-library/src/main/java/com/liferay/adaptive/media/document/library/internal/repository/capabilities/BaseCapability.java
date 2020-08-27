@@ -18,6 +18,7 @@ import com.liferay.adaptive.media.document.library.internal.util.AMCleanUpOnUpda
 import com.liferay.adaptive.media.image.service.AMImageEntryLocalService;
 import com.liferay.adaptive.media.processor.AMAsyncProcessor;
 import com.liferay.adaptive.media.processor.AMAsyncProcessorLocator;
+import com.liferay.document.library.kernel.util.DLAppHelperThreadLocal;
 import com.liferay.document.library.security.io.InputStreamSanitizer;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -56,6 +57,9 @@ public abstract class BaseCapability
 		repositoryEventRegistry.registerRepositoryEventListener(
 			RepositoryEventType.Update.class, FileEntry.class,
 			this::_updateAdaptiveMedia);
+		repositoryEventRegistry.registerRepositoryEventListener(
+			RepositoryEventType.Delete.class, FileVersion.class,
+			this::_deleteAdaptiveMedia);
 	}
 
 	@Reference
@@ -68,7 +72,9 @@ public abstract class BaseCapability
 	protected InputStreamSanitizer inputStreamSanitizer;
 
 	private void _deleteAdaptiveMedia(FileEntry fileEntry) {
-		if (ExportImportThreadLocal.isImportInProcess()) {
+		if (!DLAppHelperThreadLocal.isEnabled() ||
+			ExportImportThreadLocal.isImportInProcess()) {
+
 			return;
 		}
 
@@ -85,13 +91,34 @@ public abstract class BaseCapability
 					String.valueOf(fileVersion.getFileVersionId()));
 			}
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
+		}
+	}
+
+	private void _deleteAdaptiveMedia(FileVersion fileVersion) {
+		if (!DLAppHelperThreadLocal.isEnabled() ||
+			ExportImportThreadLocal.isImportInProcess()) {
+
+			return;
+		}
+
+		try {
+			AMAsyncProcessor<FileVersion, ?> amAsyncProcessor =
+				amAsyncProcessorLocator.locateForClass(FileVersion.class);
+
+			amAsyncProcessor.triggerCleanUp(
+				fileVersion, String.valueOf(fileVersion.getFileVersionId()));
+		}
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
 	private void _updateAdaptiveMedia(FileEntry fileEntry) {
-		if (ExportImportThreadLocal.isImportInProcess()) {
+		if (!DLAppHelperThreadLocal.isEnabled() ||
+			ExportImportThreadLocal.isImportInProcess()) {
+
 			return;
 		}
 
@@ -111,8 +138,8 @@ public abstract class BaseCapability
 				_wrap(latestFileVersion),
 				String.valueOf(latestFileVersion.getFileVersionId()));
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 

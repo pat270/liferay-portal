@@ -1,13 +1,13 @@
 @if $compat-sidebar {
 	.sidebar-default {
-		background-color: #FFF;
+		background-color: #fff;
 	}
 
 	.sidebar-actions,
 	.sidebar-header-actions {
 		float: right;
 
-		@include list-unstyled;
+		@include list-unstyled();
 
 		margin-bottom: 0;
 		margin-right: -9px;

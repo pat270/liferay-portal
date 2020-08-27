@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing PortletPreferences in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PortletPreferencesCacheModel
 	implements CacheModel<PortletPreferences>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PortletPreferencesCacheModel)) {
+		if (!(object instanceof PortletPreferencesCacheModel)) {
 			return false;
 		}
 
 		PortletPreferencesCacheModel portletPreferencesCacheModel =
-			(PortletPreferencesCacheModel)obj;
+			(PortletPreferencesCacheModel)object;
 
 		if ((portletPreferencesId ==
 				portletPreferencesCacheModel.portletPreferencesId) &&
@@ -79,10 +76,12 @@ public class PortletPreferencesCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(17);
+		StringBundler sb = new StringBundler(19);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", portletPreferencesId=");
 		sb.append(portletPreferencesId);
 		sb.append(", companyId=");
@@ -108,6 +107,7 @@ public class PortletPreferencesCacheModel
 			new PortletPreferencesImpl();
 
 		portletPreferencesImpl.setMvccVersion(mvccVersion);
+		portletPreferencesImpl.setCtCollectionId(ctCollectionId);
 		portletPreferencesImpl.setPortletPreferencesId(portletPreferencesId);
 		portletPreferencesImpl.setCompanyId(companyId);
 		portletPreferencesImpl.setOwnerId(ownerId);
@@ -134,8 +134,12 @@ public class PortletPreferencesCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 
 		portletPreferencesId = objectInput.readLong();
 
@@ -147,12 +151,14 @@ public class PortletPreferencesCacheModel
 
 		plid = objectInput.readLong();
 		portletId = objectInput.readUTF();
-		preferences = objectInput.readUTF();
+		preferences = (String)objectInput.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		objectOutput.writeLong(portletPreferencesId);
 
@@ -172,14 +178,15 @@ public class PortletPreferencesCacheModel
 		}
 
 		if (preferences == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(preferences);
+			objectOutput.writeObject(preferences);
 		}
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public long portletPreferencesId;
 	public long companyId;
 	public long ownerId;

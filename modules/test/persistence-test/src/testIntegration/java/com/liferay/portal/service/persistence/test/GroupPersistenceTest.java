@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,8 @@ public class GroupPersistenceTest {
 
 		newGroup.setMvccVersion(RandomTestUtil.nextLong());
 
+		newGroup.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newGroup.setUuid(RandomTestUtil.randomString());
 
 		newGroup.setCompanyId(RandomTestUtil.nextLong());
@@ -171,6 +173,8 @@ public class GroupPersistenceTest {
 
 		Assert.assertEquals(
 			existingGroup.getMvccVersion(), newGroup.getMvccVersion());
+		Assert.assertEquals(
+			existingGroup.getCtCollectionId(), newGroup.getCtCollectionId());
 		Assert.assertEquals(existingGroup.getUuid(), newGroup.getUuid());
 		Assert.assertEquals(existingGroup.getGroupId(), newGroup.getGroupId());
 		Assert.assertEquals(
@@ -474,11 +478,11 @@ public class GroupPersistenceTest {
 
 	protected OrderByComparator<Group> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"Group_", "mvccVersion", true, "uuid", true, "groupId", true,
-			"companyId", true, "creatorUserId", true, "classNameId", true,
-			"classPK", true, "parentGroupId", true, "liveGroupId", true,
-			"treePath", true, "groupKey", true, "name", true, "description",
-			true, "type", true, "manualMembership", true,
+			"Group_", "mvccVersion", true, "ctCollectionId", true, "uuid", true,
+			"groupId", true, "companyId", true, "creatorUserId", true,
+			"classNameId", true, "classPK", true, "parentGroupId", true,
+			"liveGroupId", true, "treePath", true, "groupKey", true, "name",
+			true, "description", true, "type", true, "manualMembership", true,
 			"membershipRestriction", true, "friendlyURL", true, "site", true,
 			"remoteStagingGroupCount", true, "inheritContent", true, "active",
 			true);
@@ -688,88 +692,140 @@ public class GroupPersistenceTest {
 
 		_persistence.clearCache();
 
-		Group existingGroup = _persistence.findByPrimaryKey(
-			newGroup.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newGroup.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingGroup.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingGroup, "getOriginalUuid", new Class<?>[0])));
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getGroupId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalGroupId", new Class<?>[0]));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
 
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getLiveGroupId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalLiveGroupId", new Class<?>[0]));
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
 
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalCompanyId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingGroup.getGroupKey(),
-				ReflectionTestUtil.invoke(
-					existingGroup, "getOriginalGroupKey", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
 
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalCompanyId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingGroup.getFriendlyURL(),
-				ReflectionTestUtil.invoke(
-					existingGroup, "getOriginalFriendlyURL", new Class<?>[0])));
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
 
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalCompanyId", new Class<?>[0]));
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getClassNameId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalClassNameId", new Class<?>[0]));
-		Assert.assertEquals(
-			Long.valueOf(existingGroup.getClassPK()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalClassPK", new Class<?>[0]));
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
 
+		Group newGroup = addGroup();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Group.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("groupId", newGroup.getGroupId()));
+
+		List<Group> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(Group group) {
 		Assert.assertEquals(
-			Long.valueOf(existingGroup.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalCompanyId", new Class<?>[0]));
+			group.getUuid(),
+			ReflectionTestUtil.invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"uuid_"));
 		Assert.assertEquals(
-			Long.valueOf(existingGroup.getLiveGroupId()),
+			Long.valueOf(group.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalLiveGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingGroup.getGroupKey(),
-				ReflectionTestUtil.invoke(
-					existingGroup, "getOriginalGroupKey", new Class<?>[0])));
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingGroup.getCompanyId()),
+			Long.valueOf(group.getLiveGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalCompanyId", new Class<?>[0]));
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"liveGroupId"));
+
 		Assert.assertEquals(
-			Long.valueOf(existingGroup.getClassNameId()),
+			Long.valueOf(group.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalClassNameId", new Class<?>[0]));
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
 		Assert.assertEquals(
-			Long.valueOf(existingGroup.getLiveGroupId()),
+			group.getGroupKey(),
+			ReflectionTestUtil.invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"groupKey"));
+
+		Assert.assertEquals(
+			Long.valueOf(group.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingGroup, "getOriginalLiveGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingGroup.getGroupKey(),
-				ReflectionTestUtil.invoke(
-					existingGroup, "getOriginalGroupKey", new Class<?>[0])));
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
+		Assert.assertEquals(
+			group.getFriendlyURL(),
+			ReflectionTestUtil.invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"friendlyURL"));
+
+		Assert.assertEquals(
+			Long.valueOf(group.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
+		Assert.assertEquals(
+			Long.valueOf(group.getClassNameId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classNameId"));
+		Assert.assertEquals(
+			Long.valueOf(group.getClassPK()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classPK"));
+
+		Assert.assertEquals(
+			Long.valueOf(group.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
+		Assert.assertEquals(
+			Long.valueOf(group.getLiveGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"liveGroupId"));
+		Assert.assertEquals(
+			group.getGroupKey(),
+			ReflectionTestUtil.invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"groupKey"));
+
+		Assert.assertEquals(
+			Long.valueOf(group.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"companyId"));
+		Assert.assertEquals(
+			Long.valueOf(group.getClassNameId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"classNameId"));
+		Assert.assertEquals(
+			Long.valueOf(group.getLiveGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"liveGroupId"));
+		Assert.assertEquals(
+			group.getGroupKey(),
+			ReflectionTestUtil.invoke(
+				group, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"groupKey"));
 	}
 
 	protected Group addGroup() throws Exception {
@@ -778,6 +834,8 @@ public class GroupPersistenceTest {
 		Group group = _persistence.create(pk);
 
 		group.setMvccVersion(RandomTestUtil.nextLong());
+
+		group.setCtCollectionId(RandomTestUtil.nextLong());
 
 		group.setUuid(RandomTestUtil.randomString());
 

@@ -78,9 +78,6 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	public static final String FIND_BY_NO_ANNOUNCEMENTS_DELIVERIES =
 		UserFinder.class.getName() + ".findByNoAnnouncementsDeliveries";
 
-	public static final String FIND_BY_NO_CONTACTS =
-		UserFinder.class.getName() + ".findByNoContacts";
-
 	public static final String FIND_BY_NO_GROUPS =
 		UserFinder.class.getName() + ".findByNoGroups";
 
@@ -257,24 +254,24 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 					StringPool.CLOSE_PARENTHESIS);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(sql, _STATUS_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _STATUS_SQL);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			for (int i = 0; i < 4; i++) {
-				qPos.add(companyId);
-				qPos.add(false);
+				queryPos.add(companyId);
+				queryPos.add(false);
 
 				if (status != WorkflowConstants.STATUS_ANY) {
-					qPos.add(status);
+					queryPos.add(status);
 				}
 			}
 
 			List<Object[]> list = (List<Object[]>)QueryUtil.list(
-				q, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+				sqlQuery, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 			for (Object[] objects : list) {
 				Number groupId = (Number)objects[0];
@@ -285,8 +282,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			return counts;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -360,8 +357,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			count = (Long)sqlQuery.uniqueResult();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			if (count == null) {
@@ -397,22 +394,22 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 					StringPool.NOT_EQUAL);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(userId);
-			qPos.add(socialRelationType);
-			qPos.add(companyId);
-			qPos.add(Boolean.FALSE);
-			qPos.add(status);
+			queryPos.add(userId);
+			queryPos.add(socialRelationType);
+			queryPos.add(companyId);
+			queryPos.add(Boolean.FALSE);
+			queryPos.add(status);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -421,8 +418,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -440,20 +437,20 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			sql = replaceJoinAndWhere(sql, params);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			setJoin(qPos, params);
+			setJoin(queryPos, params);
 
-			qPos.add(userId);
+			queryPos.add(userId);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -462,8 +459,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -530,7 +527,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 				emailAddresses);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(sql, _STATUS_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _STATUS_SQL);
 			}
 
 			StringBundler sb = null;
@@ -542,10 +539,10 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			if (db.getDBType() == DBType.SYBASE) {
 				sybase = true;
 
-				sb = new StringBundler(paramsList.size() * 7 + 1);
+				sb = new StringBundler((paramsList.size() * 7) + 1);
 			}
 			else {
-				sb = new StringBundler(paramsList.size() * 4 + 1);
+				sb = new StringBundler((paramsList.size() * 4) + 1);
 			}
 
 			sb.append("SELECT COUNT(userId) AS COUNT_VALUE FROM (");
@@ -575,32 +572,32 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			for (LinkedHashMap<String, Object> paramsMap : paramsList) {
-				setJoin(qPos, paramsMap);
+				setJoin(queryPos, paramsMap);
 
-				qPos.add(companyId);
-				qPos.add(false);
-				qPos.add(firstNames, 2);
-				qPos.add(middleNames, 2);
-				qPos.add(lastNames, 2);
-				qPos.add(screenNames, 2);
-				qPos.add(emailAddresses, 2);
+				queryPos.add(companyId);
+				queryPos.add(false);
+				queryPos.add(firstNames, 2);
+				queryPos.add(middleNames, 2);
+				queryPos.add(lastNames, 2);
+				queryPos.add(screenNames, 2);
+				queryPos.add(emailAddresses, 2);
 
 				if (status != WorkflowConstants.STATUS_ANY) {
-					qPos.add(status);
+					queryPos.add(status);
 				}
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -609,8 +606,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -621,7 +618,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	public List<User> findByKeywords(
 		long companyId, String keywords, int status,
 		LinkedHashMap<String, Object> params, int start, int end,
-		OrderByComparator<User> obc) {
+		OrderByComparator<User> orderByComparator) {
 
 		String[] firstNames = null;
 		String[] middleNames = null;
@@ -650,7 +647,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 		return findByC_FN_MN_LN_SN_EA_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
-			emailAddresses, status, params, andOperator, start, end, obc);
+			emailAddresses, status, params, andOperator, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -662,45 +660,18 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_NO_ANNOUNCEMENTS_DELIVERIES);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("User_", UserImpl.class);
+			sqlQuery.addEntity("User_", UserImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(type);
+			queryPos.add(type);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public List<User> findByNoContacts() {
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = CustomSQLUtil.get(FIND_BY_NO_CONTACTS);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addEntity("User_", UserImpl.class);
-
-			return q.list(true);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -716,14 +687,14 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_NO_GROUPS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("User_", UserImpl.class);
+			sqlQuery.addEntity("User_", UserImpl.class);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -734,7 +705,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	public List<User> findBySocialUsers(
 		long companyId, long userId, int socialRelationType,
 		String socialRelationTypeComparator, int status, int start, int end,
-		OrderByComparator<User> obc) {
+		OrderByComparator<User> orderByComparator) {
 
 		Session session = null;
 
@@ -754,27 +725,30 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 					StringPool.NOT_EQUAL);
 			}
 
-			if (obc != null) {
+			if (orderByComparator != null) {
 				sql = CustomSQLUtil.replaceOrderBy(
-					sql, new TableNameOrderByComparator<>(obc, "User_"));
+					sql,
+					new TableNameOrderByComparator<>(
+						orderByComparator, "User_"));
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("User_", UserImpl.class);
+			sqlQuery.addEntity("User_", UserImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(userId);
-			qPos.add(socialRelationType);
-			qPos.add(companyId);
-			qPos.add(Boolean.FALSE);
-			qPos.add(status);
+			queryPos.add(userId);
+			queryPos.add(socialRelationType);
+			queryPos.add(companyId);
+			queryPos.add(Boolean.FALSE);
+			queryPos.add(status);
 
-			return (List<User>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<User>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -792,18 +766,18 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_USERS_ORGS_GT_USER_ID);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("User_", UserImpl.class);
+			sqlQuery.addEntity("User_", UserImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(organizationId);
-			qPos.add(companyId);
-			qPos.add(Boolean.FALSE);
-			qPos.add(gtUserId);
+			queryPos.add(organizationId);
+			queryPos.add(companyId);
+			queryPos.add(Boolean.FALSE);
+			queryPos.add(gtUserId);
 
-			return (List<User>)QueryUtil.list(q, getDialect(), 0, size);
+			return (List<User>)QueryUtil.list(sqlQuery, getDialect(), 0, size);
 		}
 		finally {
 			session.close();
@@ -822,18 +796,18 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			String sql = CustomSQLUtil.get(
 				FIND_BY_USERS_USER_GROUPS_GT_USER_ID);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("User_", UserImpl.class);
+			sqlQuery.addEntity("User_", UserImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(userGroupId);
-			qPos.add(companyId);
-			qPos.add(Boolean.FALSE);
-			qPos.add(gtUserId);
+			queryPos.add(userGroupId);
+			queryPos.add(companyId);
+			queryPos.add(Boolean.FALSE);
+			queryPos.add(gtUserId);
 
-			return (List<User>)QueryUtil.list(q, getDialect(), 0, size);
+			return (List<User>)QueryUtil.list(sqlQuery, getDialect(), 0, size);
 		}
 		finally {
 			session.close();
@@ -845,7 +819,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		long companyId, String firstName, String middleName, String lastName,
 		String screenName, String emailAddress, int status,
 		LinkedHashMap<String, Object> params, boolean andOperator, int start,
-		int end, OrderByComparator<User> obc) {
+		int end, OrderByComparator<User> orderByComparator) {
 
 		String[] firstNames = null;
 		String[] middleNames = null;
@@ -869,7 +843,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 		return findByC_FN_MN_LN_SN_EA_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
-			emailAddresses, status, params, andOperator, start, end, obc);
+			emailAddresses, status, params, andOperator, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -877,12 +852,13 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		long companyId, String[] firstNames, String[] middleNames,
 		String[] lastNames, String[] screenNames, String[] emailAddresses,
 		int status, LinkedHashMap<String, Object> params, boolean andOperator,
-		int start, int end, OrderByComparator<User> obc) {
+		int start, int end, OrderByComparator<User> orderByComparator) {
 
 		try {
 			List<Long> userIds = doFindByC_FN_MN_LN_SN_EA_S(
 				companyId, firstNames, middleNames, lastNames, screenNames,
-				emailAddresses, status, params, andOperator, start, end, obc);
+				emailAddresses, status, params, andOperator, start, end,
+				orderByComparator);
 
 			List<User> users = new ArrayList<>(userIds.size());
 
@@ -894,8 +870,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			return users;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -903,7 +879,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		long companyId, String[] firstNames, String[] middleNames,
 		String[] lastNames, String[] screenNames, String[] emailAddresses,
 		int status, LinkedHashMap<String, Object> params, boolean andOperator,
-		int start, int end, OrderByComparator<User> obc) {
+		int start, int end, OrderByComparator<User> orderByComparator) {
 
 		firstNames = CustomSQLUtil.keywords(firstNames);
 		middleNames = CustomSQLUtil.keywords(middleNames);
@@ -921,17 +897,17 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
 
 			sql = StringUtil.replace(
-				sql, "[$COLUMN_NAMES$]", getColumnNames(obc));
+				sql, "[$COLUMN_NAMES$]", getColumnNames(orderByComparator));
 
 			sql = replaceKeywords(
 				sql, firstNames, middleNames, lastNames, screenNames,
 				emailAddresses);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(sql, _STATUS_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _STATUS_SQL);
 			}
 
-			StringBundler sb = new StringBundler(paramsList.size() * 3 + 2);
+			StringBundler sb = new StringBundler((paramsList.size() * 3) + 2);
 
 			for (int i = 0; i < paramsList.size(); i++) {
 				if (i == 0) {
@@ -945,55 +921,56 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 				sb.append(StringPool.CLOSE_PARENTHESIS);
 			}
 
-			if (obc != null) {
+			if (orderByComparator != null) {
 				sb.append(" ORDER BY ");
-				sb.append(obc.toString());
+				sb.append(orderByComparator.toString());
 			}
 
 			sql = sb.toString();
 
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("userId", Type.LONG);
+			sqlQuery.addScalar("userId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			for (LinkedHashMap<String, Object> paramsMap : paramsList) {
-				setJoin(qPos, paramsMap);
+				setJoin(queryPos, paramsMap);
 
-				qPos.add(companyId);
-				qPos.add(false);
-				qPos.add(firstNames, 2);
-				qPos.add(middleNames, 2);
-				qPos.add(lastNames, 2);
-				qPos.add(screenNames, 2);
-				qPos.add(emailAddresses, 2);
+				queryPos.add(companyId);
+				queryPos.add(false);
+				queryPos.add(firstNames, 2);
+				queryPos.add(middleNames, 2);
+				queryPos.add(lastNames, 2);
+				queryPos.add(screenNames, 2);
+				queryPos.add(emailAddresses, 2);
 
 				if (status != WorkflowConstants.STATUS_ANY) {
-					qPos.add(status);
+					queryPos.add(status);
 				}
 			}
 
-			return (List<Long>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<Long>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	protected String getColumnNames(OrderByComparator obc) {
-		if (obc == null) {
+	protected String getColumnNames(OrderByComparator<User> orderByComparator) {
+		if (orderByComparator == null) {
 			return "DISTINCT User_.userId AS userId";
 		}
 
-		String[] orderByFields = obc.getOrderByFields();
+		String[] orderByFields = orderByComparator.getOrderByFields();
 
-		StringBundler sb = new StringBundler(orderByFields.length * 4 + 1);
+		StringBundler sb = new StringBundler((orderByFields.length * 4) + 1);
 
 		sb.append("DISTINCT User_.userId AS userId");
 
@@ -1373,7 +1350,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			join = CustomSQLUtil.get(JOIN_BY_GROUPS_ORGS);
 
 			if (groupIds.length > 1) {
-				StringBundler sb = new StringBundler(groupIds.length * 2 + 1);
+				StringBundler sb = new StringBundler((groupIds.length * 2) + 1);
 
 				sb.append("Groups_Orgs.groupId IN (");
 
@@ -1401,7 +1378,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			join = CustomSQLUtil.get(JOIN_BY_GROUPS_USER_GROUPS);
 
 			if (groupIds.length > 1) {
-				StringBundler sb = new StringBundler(groupIds.length * 2 + 1);
+				StringBundler sb = new StringBundler((groupIds.length * 2) + 1);
 
 				sb.append("Groups_UserGroups.groupId IN (");
 
@@ -1434,8 +1411,8 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			Long groupId = valueArray[0];
 
 			if (Validator.isNull(groupId)) {
-				join = StringUtil.replace(
-					join, "(UserGroupRole.groupId = ?) AND", StringPool.BLANK);
+				join = StringUtil.removeSubstring(
+					join, "(UserGroupRole.groupId = ?) AND");
 			}
 		}
 		else if (key.equals("usersGroups")) {
@@ -1447,7 +1424,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 				if (groupIds.length > 1) {
 					StringBundler sb = new StringBundler(
-						groupIds.length * 2 + 1);
+						(groupIds.length * 2) + 1);
 
 					sb.append("WHERE (Users_Groups.groupId IN (");
 
@@ -1476,7 +1453,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 				if (organizationIds.length > 1) {
 					StringBundler sb = new StringBundler(
-						organizationIds.length * 2 + 1);
+						(organizationIds.length * 2) + 1);
 
 					sb.append("WHERE (Users_Orgs.organizationId IN (");
 
@@ -1504,7 +1481,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			int size = organizationsTree.size();
 
 			if (size > 0) {
-				StringBundler sb = new StringBundler(size * 4 + 1);
+				StringBundler sb = new StringBundler((size * 4) + 1);
 
 				sb.append("WHERE (");
 
@@ -1543,7 +1520,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 				if (userGroupIds.length > 1) {
 					StringBundler sb = new StringBundler(
-						userGroupIds.length * 2 + 1);
+						(userGroupIds.length * 2) + 1);
 
 					sb.append("WHERE (Users_UserGroups.userGroupId IN (");
 
@@ -1658,7 +1635,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	}
 
 	protected void setJoin(
-		QueryPos qPos, LinkedHashMap<String, Object> params) {
+		QueryPos queryPos, LinkedHashMap<String, Object> params) {
 
 		if (params == null) {
 			return;
@@ -1677,7 +1654,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 				Long valueLong = (Long)value;
 
 				if (Validator.isNotNull(valueLong)) {
-					qPos.add(valueLong);
+					queryPos.add(valueLong);
 				}
 			}
 			else if (value instanceof Long[]) {
@@ -1693,7 +1670,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 				for (Long element : valueArray) {
 					if (Validator.isNotNull(element)) {
-						qPos.add(element);
+						queryPos.add(element);
 					}
 				}
 			}
@@ -1702,7 +1679,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 				for (Long[] valueArray : valueDoubleArray) {
 					for (Long valueLong : valueArray) {
-						qPos.add(valueLong);
+						queryPos.add(valueLong);
 					}
 				}
 			}
@@ -1710,7 +1687,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 				String valueString = (String)value;
 
 				if (Validator.isNotNull(valueString)) {
-					qPos.add(valueString);
+					queryPos.add(valueString);
 				}
 			}
 			else if (value instanceof String[]) {
@@ -1718,14 +1695,14 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 				for (String element : valueArray) {
 					if (Validator.isNotNull(element)) {
-						qPos.add(element);
+						queryPos.add(element);
 					}
 				}
 			}
 			else if (value instanceof CustomSQLParam) {
 				CustomSQLParam customSQLParam = (CustomSQLParam)value;
 
-				customSQLParam.process(qPos);
+				customSQLParam.process(queryPos);
 			}
 		}
 	}
@@ -1733,6 +1710,6 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	private static final String _STATUS_SQL = "AND (User_.status = ?)";
 
 	private final LinkedHashMap<String, Object> _emptyLinkedHashMap =
-		new LinkedHashMap<>(0);
+		new LinkedHashMap<>();
 
 }

@@ -29,10 +29,8 @@ public class WebDAVPropsLocalServiceImpl
 
 	@Override
 	public void deleteWebDAVProps(String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		WebDAVProps webDAVProps = webDAVPropsPersistence.fetchByC_C(
-			classNameId, classPK);
+			classNameLocalService.getClassNameId(className), classPK);
 
 		if (webDAVProps != null) {
 			webDAVPropsPersistence.remove(webDAVProps);
@@ -73,8 +71,9 @@ public class WebDAVPropsLocalServiceImpl
 		try {
 			webDAVProps.store();
 		}
-		catch (Exception e) {
-			throw new WebDAVException("Problem trying to store WebDAVProps", e);
+		catch (Exception exception) {
+			throw new WebDAVException(
+				"Problem trying to store WebDAVProps", exception);
 		}
 
 		webDAVPropsPersistence.update(webDAVProps);

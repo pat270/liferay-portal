@@ -1,0 +1,387 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Fragments";
+	property testray.component.name = "Theme";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONFragment.addFragmentCollection(
+			groupName = "Test Site Name",
+			name = "Collection Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Content Page Name",
+			type = "content");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-102526. User can activate fragment configuration by clicking on topper."
+	@priority = "5"
+	test ActivateFragmentConfigurationViaTopper {
+		property portal.acceptance = "true";
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Basic Components",
+			fragmentName = "Button");
+
+		Click.clickNoWaitForVisible(
+			key_fragmentName = "Button",
+			locator1 = "Fragment#FRAGMENT_HEADER");
+
+		Pause(locator1 = "3000");
+
+		var key_navItem = "General";
+
+		AssertVisible(
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "General");
+	}
+
+	@description = "This is a test for LPS-99377. User can change checkbox fragment configuration."
+	@priority = "5"
+	test AddCheckboxConfigurationFragmentToContentPage {
+		property portal.acceptance = "true";
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "checkbox_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "checkbox_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "Checkbox Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Checkbox Fragment Example");
+
+		PageEditorConfiguration.checkConfigCheckbox(
+			checkboxName = "Hide Body",
+			fragmentName = "Checkbox Fragment Example");
+
+		PageEditorConfiguration.checkConfigCheckbox(
+			checkboxName = "Make Bold",
+			fragmentName = "Checkbox Fragment Example");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert body text is hidden") {
+			AssertElementNotPresent(locator1 = "//div[contains(@class,'fragment-configuration')]//h3[contains(.,'Body Present!!')]");
+		}
+
+		task ("Assert text is bolded") {
+			AssertElementPresent(locator1 = "//div[contains(@class,'fragment-configuration')]//b[contains(.,'Bold Words')]");
+		}
+	}
+
+	@description = "This is a test for LPS-97179. User can change colorPalette fragment configuration."
+	@priority = "5"
+	test AddColorPaletteConfigurationFragmentToContentPage {
+		property portal.acceptance = "true";
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "colorPalette_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "colorPalette_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "ColorPalette Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "ColorPalette Fragment Example");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert text is white") {
+			AssertElementNotPresent(locator1 = "//div[contains(@class,'fragment-configuration')]//h3[contains(.,'Example Color Red')]");
+			AssertElementPresent(locator1 = "//div[contains(@class,'fragment-configuration')]//h3[contains(.,'Example Color White')]");
+		}
+
+		task ("Navigate to the content page") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
+		}
+
+		task ("Navigate to the content page's 'Edit Mode'") {
+			ContentPages.clickPencil();
+		}
+
+		PageEditorConfiguration.changeConfigColor(
+			colorPalette = "danger",
+			fragmentName = "ColorPalette Fragment Example");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert text is red") {
+			AssertElementNotPresent(locator1 = "//div[contains(@class,'fragment-configuration')]//h3[contains(.,'Example Color White')]");
+			AssertElementPresent(locator1 = "//div[contains(@class,'fragment-configuration')]//h3[contains(.,'Example Color Red')]");
+		}
+	}
+
+	@description = "This is a test for LPS-101326. Add placeholder in fragment configuration and assert there the placeholder text is present."
+	@priority = "5"
+	test AddPlaceholderConfigurationFragmentToContentPage {
+		property portal.acceptance = "true";
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "text_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "placeholder_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "Text Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Text Fragment Example");
+
+		task ("Assert placeholder is exist") {
+			Click.clickNoWaitForVisible(
+				key_fragmentName = "Text Fragment Example",
+				locator1 = "Fragment#FRAGMENT_HEADER");
+
+			Pause(locator1 = "3000");
+
+			AssertClick(
+				key_navItem = "General",
+				locator1 = "PageEditor#NAV_ITEM_BUTTON",
+				value1 = "General");
+
+			AssertVisible(locator1 = "FragmentEditor#FRAGMENTS_EDITOR_FLOATING_CONFIGURATION_PANEL");
+		}
+	}
+
+	@description = "This is a test for LPS-96685. User can change select fragment configuration."
+	@priority = "5"
+	test AddSelectConfigurationFragmentToContentPage {
+		property portal.acceptance = "true";
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "select_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "select_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "Text Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Text Fragment Example");
+
+		PageEditorConfiguration.changeConfigSelection(
+			fragmentName = "Text Fragment Example",
+			optionValue = "dark");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert dark text is visible") {
+			AssertElementPresent(locator1 = "//div[contains(@class,'fragment-configuration')]/div[contains(@class,'dark')]");
+		}
+	}
+
+	@description = "This is a test for LPS-99543. User can change text fragment configuration."
+	@priority = "5"
+	test AddTextConfigurationFragmentToContentPage {
+		property portal.acceptance = "true";
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "text_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "text_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "Text Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Text Fragment Example");
+
+		PageEditorConfiguration.changeConfigText(
+			editableText = "Updated fragment text",
+			fragmentName = "Text Fragment Example",
+			textConfigName = "buttonText");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert text is changed") {
+			AssertVisible(
+				key_content = "Updated fragment text",
+				key_fragmentClass = "configuration",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "This is a test for LPS-100545. Ensure that the correct content is selected when using itemSelector."
+	@priority = "4"
+	test CanSelectSpecificWebContentUsingItemSelector {
+		for (var count : list "1,2,3") {
+			JSONWebcontent.addWebContent(
+				content = "WC WebContent Content ${count}",
+				groupName = "Test Site Name",
+				title = "WebContent Title ${count}");
+		}
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "itemSelector_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "itemSelector_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "itemSelector Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "itemSelector Fragment Example");
+
+		PageEditor.editContentDisplay(
+			fragmentName = "itemSelector Fragment Example",
+			webcontent = "true",
+			webContentContent = "WC WebContent Content 2",
+			webContentTitle = "WebContent Title 2");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert correct content is visible") {
+			AssertVisible(
+				key_content = "WC WebContent Content 2",
+				key_fragmentClass = "configuration",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "This is a test for LPS-96685. User can change fragment configuration value."
+	@priority = "5"
+	test ChangeConfigurationFragmentToContentPage {
+		property portal.acceptance = "true";
+
+		task ("Add a section fragment to the fragment collection via JSON") {
+			var htmlSnippet = FragmentsAPI.getFragmentFileContent(fileName = "select_configuration.html");
+			var jsonSnippet = FragmentsAPI.getFragmentFileContent(fileName = "select_configuration.json");
+
+			JSONFragment.addSection(
+				collectionName = "Collection Name",
+				configuration = "${jsonSnippet}",
+				fragmentStatus = "Approved",
+				groupName = "Test Site Name",
+				html = "${htmlSnippet}",
+				name = "Text Fragment Example");
+		}
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Text Fragment Example");
+
+		PageEditorConfiguration.changeConfigSelection(
+			fragmentName = "Text Fragment Example",
+			optionValue = "dark");
+
+		task ("Assert dark text is visible") {
+			AssertElementPresent(locator1 = "//div[contains(@class,'fragment-configuration')]/div[contains(@class,'dark')]");
+		}
+	}
+
+}

@@ -1,5 +1,11 @@
 <#include "init.ftl">
 
+<#assign encodedName = name />
+
+<#if !repeatable>
+	<#assign encodedName = stringUtil.replace(name, ".", "_") />
+</#if>
+
 <#if stringUtil.equals(language, "ftl")>
 	${r"<#assign"} latitude = 0>
 	${r"<#assign"} longitude = 0>
@@ -14,7 +20,7 @@
 			geolocation=true
 			latitude=latitude
 			longitude=longitude
-			name="${name}${r"${randomizer.nextInt()}"}"
+			name="${encodedName}${r"${random.nextInt()}"}"
 		/>
 	${r"</#if>"}
 <#else>

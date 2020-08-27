@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.MimeTypes;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -33,6 +34,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,8 +86,8 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 			read(url.openStream(), _extensionsMap);
 			read(customMimeTypesUrl.openStream(), _customExtensionsMap);
 		}
-		catch (Exception e) {
-			_log.error("Unable to populate extensions map", e);
+		catch (Exception exception) {
+			_log.error("Unable to populate extensions map", exception);
 		}
 	}
 
@@ -103,9 +105,9 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 		try (InputStream is = TikaInputStream.get(file)) {
 			return getContentType(is, fileName);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe, ioe);
+				_log.warn(ioException, ioException);
 			}
 		}
 
@@ -123,14 +125,13 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 		try (TikaInputStream tikaInputStream = TikaInputStream.get(
 				new CloseShieldInputStream(inputStream))) {
 
-			String extension = FileUtil.getExtension(fileName);
-
-			contentType = getCustomContentType(extension);
+			contentType = getCustomContentType(FileUtil.getExtension(fileName));
 
 			if (ContentTypes.APPLICATION_OCTET_STREAM.equals(contentType)) {
 				Metadata metadata = new Metadata();
 
-				metadata.set(Metadata.RESOURCE_NAME_KEY, fileName);
+				metadata.set(
+					Metadata.RESOURCE_NAME_KEY, HtmlUtil.escapeURL(fileName));
 
 				MediaType mediaType = _detector.detect(
 					tikaInputStream, metadata);
@@ -154,8 +155,8 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 				contentType = ContentTypes.APPLICATION_OCTET_STREAM;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			contentType = ContentTypes.APPLICATION_OCTET_STREAM;
 		}
@@ -172,14 +173,13 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 		String contentType = null;
 
 		try {
-			String extension = FileUtil.getExtension(fileName);
-
-			contentType = getCustomContentType(extension);
+			contentType = getCustomContentType(FileUtil.getExtension(fileName));
 
 			if (ContentTypes.APPLICATION_OCTET_STREAM.equals(contentType)) {
 				Metadata metadata = new Metadata();
 
-				metadata.set(Metadata.RESOURCE_NAME_KEY, fileName);
+				metadata.set(
+					Metadata.RESOURCE_NAME_KEY, HtmlUtil.escapeURL(fileName));
 
 				MediaType mediaType = _detector.detect(null, metadata);
 
@@ -193,8 +193,8 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 				_log.debug("Retrieved invalid content type " + contentType);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return ContentTypes.APPLICATION_OCTET_STREAM;
@@ -243,17 +243,8 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 		return ContentTypes.APPLICATION_OCTET_STREAM;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #read(InputStream,
-	 *             Map)}
-	 */
-	@Deprecated
-	protected void read(InputStream stream) throws Exception {
-		read(stream, _extensionsMap);
-	}
-
 	protected void read(
-			InputStream stream, Map<String, Set<String>> extensionsMap)
+			InputStream inputStream, Map<String, Set<String>> extensionsMap)
 		throws Exception {
 
 		DocumentBuilderFactory documentBuilderFactory =
@@ -262,7 +253,7 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 		DocumentBuilder documentBuilder =
 			documentBuilderFactory.newDocumentBuilder();
 
-		Document document = documentBuilder.parse(new InputSource(stream));
+		Document document = documentBuilder.parse(new InputSource(inputStream));
 
 		Element element = document.getDocumentElement();
 
@@ -285,15 +276,6 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 				readMimeType(childElement, extensionsMap);
 			}
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #readMimeType(Element, Map)}
-	 */
-	@Deprecated
-	protected void readMimeType(Element element) {
-		readMimeType(element, _extensionsMap);
 	}
 
 	protected void readMimeType(
@@ -345,6 +327,16 @@ public class MimeTypesImpl implements MimeTypes, MimeTypesReaderMetKeys {
 					extensions.add(extension);
 				}
 			}
+		}
+
+		if (extensions.isEmpty()) {
+			return;
+		}
+
+		if (extensions.size() == 1) {
+			Iterator<String> iterator = extensions.iterator();
+
+			extensions = Collections.singleton(iterator.next());
 		}
 
 		for (String mimeType : mimeTypes) {

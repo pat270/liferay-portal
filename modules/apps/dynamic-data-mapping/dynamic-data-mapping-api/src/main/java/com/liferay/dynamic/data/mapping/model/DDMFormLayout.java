@@ -47,10 +47,18 @@ public class DDMFormLayout implements Serializable {
 
 			addDDMFormLayoutPage(new DDMFormLayoutPage(ddmFormLayoutPage));
 		}
+
+		for (DDMFormRule ddmFormRule : ddmFormLayout._ddmFormRules) {
+			addDDMFormRule(new DDMFormRule(ddmFormRule));
+		}
 	}
 
 	public void addDDMFormLayoutPage(DDMFormLayoutPage ddmFormLayoutPage) {
 		_ddmFormLayoutPages.add(ddmFormLayoutPage);
+	}
+
+	public void addDDMFormRule(DDMFormRule ddmFormRule) {
+		_ddmFormRules.add(ddmFormRule);
 	}
 
 	public Set<Locale> getAvailableLocales() {
@@ -63,6 +71,10 @@ public class DDMFormLayout implements Serializable {
 
 	public List<DDMFormLayoutPage> getDDMFormLayoutPages() {
 		return _ddmFormLayoutPages;
+	}
+
+	public List<DDMFormRule> getDDMFormRules() {
+		return _ddmFormRules;
 	}
 
 	public Locale getDefaultLocale() {
@@ -83,6 +95,10 @@ public class DDMFormLayout implements Serializable {
 		_ddmFormLayoutPages = ddmFormLayoutPages;
 	}
 
+	public void setDDMFormRules(List<DDMFormRule> ddmFormRules) {
+		_ddmFormRules = ddmFormRules;
+	}
+
 	public void setDefaultLocale(Locale defaultLocale) {
 		_defaultLocale = defaultLocale;
 	}
@@ -93,6 +109,7 @@ public class DDMFormLayout implements Serializable {
 
 	private Set<Locale> _availableLocales = new LinkedHashSet<>();
 	private List<DDMFormLayoutPage> _ddmFormLayoutPages = new ArrayList<>();
+	private List<DDMFormRule> _ddmFormRules = new ArrayList<>();
 	private Locale _defaultLocale;
 	private String _paginationMode;
 

@@ -1,0 +1,534 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Site Administration";
+	property testray.main.component.name = "Site Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Site.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test ActivateSite {
+		property test.name.skip.portal.instance = "Sites#ActivateSite";
+
+		SystemSettings.openSystemSettingsAdmin();
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Infrastructure",
+			configurationName = "Inactive Request Handler",
+			configurationScope = "System Scope");
+
+		FormFields.enableCheckbox(fieldName = "Show Inactive Request Message");
+
+		SystemSettings.saveConfiguration();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.inactivateCP(siteName = "Site Name");
+
+		var baseURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${baseURL}/web/site-name");
+
+		Page.viewInactiveRequestMessage(resource = "site");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Site.openSitesAdmin();
+
+		Site.activateInactive(siteName = "Site Name");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		AssertTextNotPresent(value1 = "This site is inactive. Please contact the administrator.");
+	}
+
+	@priority = "4"
+	test AddChildChildSite {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONGroup.addChildSite(
+			groupName = "Child SiteName",
+			parentGroupName = "Site Name");
+
+		JSONGroup.addChildSite(
+			grandParentGroupName = "Site Name",
+			groupName = "Child Child SiteName",
+			parentGroupName = "Child SiteName");
+
+		Site.openSitesAdmin();
+
+		Site.viewChildCP(
+			childSiteName = "Child SiteName",
+			siteName = "Site Name");
+
+		Site.viewChildCP(
+			childSiteName = "Child Child SiteName",
+			siteName = "Child SiteName");
+	}
+
+	@priority = "3"
+	test AddPublicVirtualHostsSiteURL {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.addVirtualHostsURLCP(
+			publicPageVirtualHostURL = "www.able.com",
+			publicVirtualHosts = "true");
+
+		Navigator.openSpecificURL(url = "http://www.able.com:8080/site-page");
+
+		Site.viewVirtualHostsURLPG(
+			pageName = "Site Page",
+			siteName = "Site Name",
+			sitePageURL = "http://www.able.com:8080/site-page");
+	}
+
+	@priority = "3"
+	test AddSiteWithCommaInName {
+		JSONGroup.addGroup(groupName = "Site Name,");
+
+		Site.openSitesAdmin();
+
+		Site.viewCP(siteName = "Site Name,");
+	}
+
+	@priority = "3"
+	test AddSiteWithInvalidDuplicateName {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSitesAdmin();
+
+		Site.viewCannotAdd(
+			siteName = "Site Name",
+			siteNameInvalid = "Duplicate");
+	}
+
+	@priority = "3"
+	test AddSiteWithInvalidName {
+		for (var siteName : list " ,Site Name*,22222") {
+			Site.openSitesAdmin();
+
+			Site.viewCannotAdd(
+				siteName = "${siteName}",
+				siteNameInvalid = "Invalid");
+		}
+	}
+
+	@priority = "4"
+	test DeleteSiteFriendlyURL {
+		Site.openSitesAdmin();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Public Page");
+
+		JSONLayout.addPrivateLayout(
+			groupName = "Site Name",
+			layoutName = "Private Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.editFriendlyURLCP(siteFriendlyURLEdit = "");
+
+		var siteID = JSONGroupAPI._getGroupIdByName(groupName = "Site Name", site = "true");
+
+		AssertTextEquals(
+			locator1 = "TextInput#FRIENDLY_URL_SITE_SETTINGS",
+			value1 = "/group-${siteID}");
+
+		Navigator.openSiteURL(siteName = "site-name");
+
+		Page.viewNoPG(pageName = "Public Page");
+
+		AssertTextEquals(
+			locator1 = "Home#ERROR_MESSAGE_ALERT_ERROR",
+			value1 = "Not Found");
+
+		Navigator.openPrivateSiteURL(siteName = "site-name");
+
+		Page.viewNoPG(pageName = "Private Page");
+
+		AssertTextEquals(
+			locator1 = "Home#ERROR_MESSAGE_ALERT_ERROR",
+			value1 = "Not Found");
+	}
+
+	@priority = "5"
+	test EditSite {
+		property portal.acceptance = "true";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.editCP(
+			siteName = "Site Name",
+			siteNameEdit = "Site Name Edit");
+
+		Site.openSitesAdmin();
+
+		Site.viewCP(siteName = "Site Name Edit");
+	}
+
+	@priority = "4"
+	test EditSiteFriendlyURL {
+		var portalURL = PropsUtil.get("portal.url");
+
+		Site.openSitesAdmin();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		JSONLayout.addPrivateLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.editFriendlyURLCP(siteFriendlyURLEdit = "alpha");
+
+		Navigator.openSiteURL(siteName = "alpha");
+
+		Site.viewSiteFriendlyURLPG(
+			pageName = "Public Page",
+			siteName = "Site Name",
+			sitePageURL = "${portalURL}/web/alpha");
+
+		Navigator.openPrivateSiteURL(siteName = "alpha");
+
+		Site.viewSiteFriendlyURLPG(
+			pageName = "Private Page",
+			siteName = "Site Name",
+			sitePageURL = "${portalURL}/group/alpha");
+	}
+
+	@priority = "3"
+	test EditSiteFriendlyURLInvalid {
+		property test.name.skip.portal.instance = "Sites#EditSiteFriendlyURLInvalid";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.editFriendlyURLCP(
+			friendlyURLInvalid = "true",
+			siteFriendlyURL = "/site-name",
+			siteFriendlyURLEdit = "/alpha/alpha");
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Site Page");
+
+		Page.viewFriendlyURL(
+			pageName = "Site Page",
+			siteFriendlyURL = "${portalURL}/web/site-name");
+	}
+
+	@priority = "5"
+	test SearchSite {
+		property portal.acceptance = "true";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSitesAdmin();
+
+		Site.searchCP(siteName = "Site Name");
+	}
+
+	@priority = "3"
+	test SiteCannotBeItsOwnParent {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.selectParentSite(
+			chooseButtonAvailable = "false",
+			parentSiteName = "Site Name");
+	}
+
+	@priority = "3"
+	test SiteCannotBeItsOwnParentStaging {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		Staging.openStagingAdmin(siteURLKey = "site-name");
+
+		Staging.activateStagingCP(siteName = "Site Name");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Site Page",
+			siteName = "Site Name");
+
+		Staging.viewStagingLocalLivePG();
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.selectParentSite(
+			chooseButtonAvailable = "false",
+			parentSiteName = "Site Name");
+	}
+
+	@priority = "4"
+	test ViewDefaultGlobalScopeLandingPage {
+		property testray.component.names = "Site Administration";
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
+
+		ProductMenuHelper.openProductMenu();
+
+		Site.viewGlobalLandingDefault(
+			portletName = "Web Content",
+			siteName = "Global");
+	}
+
+	@priority = "4"
+	test ViewDisplayParentSiteViaSitesDirectory {
+		Site.openSitesAdmin();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		JSONGroup.addChildSite(
+			groupName = "Child SiteName",
+			parentGroupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Child SiteName",
+			layoutName = "Site Page",
+			parentGroupName = "Site Name");
+
+		JSONGroup.addChildSite(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSiteName",
+			parentGroupName = "Child SiteName");
+
+		JSONLayout.addPublicLayout(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSiteName",
+			layoutName = "Site Page",
+			parentGroupName = "Child SiteName");
+
+		Site.openSitesAdmin();
+
+		Site.viewChildCP(
+			childSiteName = "Child SiteName",
+			siteName = "Site Name");
+
+		Site.viewChildCP(
+			childSiteName = "Child ChildSiteName",
+			siteName = "Child SiteName");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Child SiteName",
+			layoutName = "Site Page",
+			parentGroupName = "Site Name",
+			widgetName = "Sites Directory");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child SiteName");
+
+		SitesDirectory.configureSetupPG(directorySites = "Parent Level");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child SiteName");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Site Name");
+	}
+
+	@priority = "4"
+	test ViewSiteHierarchiesViaSitesDirectory {
+		Site.openSitesAdmin();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		JSONGroup.addChildSite(
+			groupName = "Child Site1Name",
+			parentGroupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Child Site1Name",
+			layoutName = "Site Page",
+			parentGroupName = "Site Name");
+
+		JSONGroup.addChildSite(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSite1Name",
+			parentGroupName = "Child Site1Name");
+
+		JSONLayout.addPublicLayout(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSite1Name",
+			layoutName = "Site Page",
+			parentGroupName = "Child Site1Name");
+
+		JSONGroup.addChildSite(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSite2Name",
+			parentGroupName = "Child Site1Name");
+
+		JSONLayout.addPublicLayout(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSite2Name",
+			layoutName = "Site Page",
+			parentGroupName = "Child Site1Name");
+
+		JSONGroup.addChildSite(
+			groupName = "Child Site2Name",
+			parentGroupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Child Site2Name",
+			layoutName = "Site Page",
+			parentGroupName = "Site Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Child Site1Name",
+			layoutName = "Site Page",
+			parentGroupName = "Site Name",
+			widgetName = "Sites Directory");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child Site1Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Top Level");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child Site1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Site Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Parent Level");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child Site1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Site Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Siblings");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child Site1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child Site1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child Site2Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Children");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child Site1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child ChildSite1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child ChildSite2Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			grandParentGroupName = "Site Name",
+			groupName = "Child ChildSite1Name",
+			layoutName = "Site Page",
+			parentGroupName = "Child Site1Name",
+			widgetName = "Sites Directory");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child ChildSite1Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Top Level");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child ChildSite1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Site Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Parent Level");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child ChildSite1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child Site1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child Site2Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Siblings");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child ChildSite1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child ChildSite1Name");
+
+		SitesDirectory.viewDescriptivePG(siteName = "Child ChildSite2Name");
+
+		SitesDirectory.configureSetupPG(directorySites = "Children");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Child ChildSite1Name");
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No sites were found.");
+	}
+
+}

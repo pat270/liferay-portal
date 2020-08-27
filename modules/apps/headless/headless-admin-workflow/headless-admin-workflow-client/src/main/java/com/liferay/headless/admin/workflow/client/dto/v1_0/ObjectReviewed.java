@@ -26,7 +26,53 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class ObjectReviewed {
+public class ObjectReviewed implements Cloneable {
+
+	public static ObjectReviewed toDTO(String json) {
+		return ObjectReviewedSerDes.toDTO(json);
+	}
+
+	public String getAssetTitle() {
+		return assetTitle;
+	}
+
+	public void setAssetTitle(String assetTitle) {
+		this.assetTitle = assetTitle;
+	}
+
+	public void setAssetTitle(
+		UnsafeSupplier<String, Exception> assetTitleUnsafeSupplier) {
+
+		try {
+			assetTitle = assetTitleUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String assetTitle;
+
+	public String getAssetType() {
+		return assetType;
+	}
+
+	public void setAssetType(String assetType) {
+		this.assetType = assetType;
+	}
+
+	public void setAssetType(
+		UnsafeSupplier<String, Exception> assetTypeUnsafeSupplier) {
+
+		try {
+			assetType = assetTypeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String assetType;
 
 	public Long getId() {
 		return id;
@@ -67,6 +113,11 @@ public class ObjectReviewed {
 	}
 
 	protected String resourceType;
+
+	@Override
+	public ObjectReviewed clone() throws CloneNotSupportedException {
+		return (ObjectReviewed)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

@@ -69,29 +69,11 @@ public class SubrepositoryGitRepositoryJob
 	public PortalGitWorkingDirectory getPortalGitWorkingDirectory() {
 		if (portalGitWorkingDirectory == null) {
 			portalGitWorkingDirectory =
-				JenkinsResultsParserUtil.getPortalGitWorkingDirectory(
+				GitWorkingDirectoryFactory.newPortalGitWorkingDirectory(
 					getBranchName());
 		}
 
 		return portalGitWorkingDirectory;
-	}
-
-	public String getPoshiQuery(String testBatchName) {
-		Properties jobProperties = getJobProperties();
-
-		String propertyName = JenkinsResultsParserUtil.combine(
-			"test.batch.run.property.query[", testBatchName, "]");
-
-		if (jobProperties.containsKey(propertyName)) {
-			String propertyValue = JenkinsResultsParserUtil.getProperty(
-				jobProperties, propertyName);
-
-			if ((propertyValue != null) && !propertyValue.isEmpty()) {
-				return propertyValue;
-			}
-		}
-
-		return null;
 	}
 
 	@Override
@@ -145,8 +127,9 @@ public class SubrepositoryGitRepositoryJob
 		try {
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException("Unable to get build properties", ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to get build properties", ioException);
 		}
 
 		jobPropertiesFiles.add(new File(gitRepositoryDir, "test.properties"));

@@ -41,19 +41,6 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 public class PortalInstanceLifecycleListenerManagerImpl
 	implements PortalInstanceLifecycleManager {
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void preregisterCompany(long companyId) {
-		for (PortalInstanceLifecycleListener portalInstanceLifecycleListener :
-				_portalInstanceLifecycleListeners) {
-
-			preregisterCompany(portalInstanceLifecycleListener, companyId);
-		}
-	}
-
 	@Override
 	public void preunregisterCompany(Company company) {
 		for (PortalInstanceLifecycleListener portalInstanceLifecycleListener :
@@ -104,23 +91,6 @@ public class PortalInstanceLifecycleListenerManagerImpl
 		}
 	}
 
-	protected void preregisterCompany(
-		PortalInstanceLifecycleListener portalInstanceLifecycleListener,
-		long companyId) {
-
-		if (!(portalInstanceLifecycleListener instanceof Clusterable) &&
-			!clusterMasterExecutor.isMaster()) {
-
-			if (_log.isDebugEnabled()) {
-				_log.debug("Skipping " + portalInstanceLifecycleListener);
-			}
-
-			return;
-		}
-
-		portalInstanceLifecycleListener.portalInstancePreregistered(companyId);
-	}
-
 	protected void preunregisterCompany(
 		PortalInstanceLifecycleListener portalInstanceLifecycleListener,
 		Company company) {
@@ -139,10 +109,11 @@ public class PortalInstanceLifecycleListenerManagerImpl
 			portalInstanceLifecycleListener.portalInstancePreunregistered(
 				company);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to preunregister portal instance " + company, e);
+					"Unable to preunregister portal instance " + company,
+					exception);
 			}
 		}
 	}
@@ -170,9 +141,10 @@ public class PortalInstanceLifecycleListenerManagerImpl
 
 			portalInstanceLifecycleListener.portalInstanceRegistered(company);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to register portal instance " + company, e);
+				_log.warn(
+					"Unable to register portal instance " + company, exception);
 			}
 		}
 		finally {
@@ -215,9 +187,11 @@ public class PortalInstanceLifecycleListenerManagerImpl
 		try {
 			portalInstanceLifecycleListener.portalInstanceUnregistered(company);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to unregister portal instance " + company, e);
+				_log.warn(
+					"Unable to unregister portal instance " + company,
+					exception);
 			}
 		}
 	}

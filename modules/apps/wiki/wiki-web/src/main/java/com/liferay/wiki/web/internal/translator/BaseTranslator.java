@@ -111,7 +111,7 @@ public abstract class BaseTranslator {
 			String hash = entry.getKey();
 			String protectedMarkup = entry.getValue();
 
-			content = content.replace(hash, protectedMarkup);
+			content = StringUtil.replace(content, hash, protectedMarkup);
 		}
 
 		return content;
@@ -121,12 +121,10 @@ public abstract class BaseTranslator {
 	protected Map<String, String> regexps = new LinkedHashMap<>();
 
 	private String _normalizeLineBreaks(String content) {
-		content = StringUtil.replace(
+		return StringUtil.replace(
 			content,
 			new String[] {StringPool.RETURN_NEW_LINE, StringPool.RETURN},
 			new String[] {StringPool.NEW_LINE, StringPool.NEW_LINE});
-
-		return content;
 	}
 
 	private final Map<String, String> _protectedMap = new LinkedHashMap<>();

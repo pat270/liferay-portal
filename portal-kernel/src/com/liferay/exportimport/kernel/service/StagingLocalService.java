@@ -24,8 +24,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
-import java.util.Map;
-
 import javax.portlet.PortletRequest;
 
 import org.osgi.annotation.versioning.ProviderType;
@@ -50,7 +48,7 @@ public interface StagingLocalService extends BaseLocalService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link StagingLocalServiceUtil} to access the staging local service. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.StagingLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.StagingLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the staging local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link StagingLocalServiceUtil} if injection and service tracking are not available.
 	 */
 	public void checkDefaultLayoutSetBranches(
 			long userId, Group liveGroup, boolean branchingPublic,
@@ -91,15 +89,6 @@ public interface StagingLocalService extends BaseLocalService {
 	 */
 	public String getOSGiServiceIdentifier();
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public MissingReferences publishStagingRequest(
-			long userId, long stagingRequestId, boolean privateLayout,
-			Map<String, String[]> parameterMap)
-		throws PortalException;
-
 	public MissingReferences publishStagingRequest(
 			long userId, long stagingRequestId,
 			ExportImportConfiguration exportImportConfiguration)
@@ -108,14 +97,5 @@ public interface StagingLocalService extends BaseLocalService {
 	public void updateStagingRequest(
 			long userId, long stagingRequestId, String fileName, byte[] bytes)
 		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #publishStagingRequest(long, long, boolean, Map)}
-	 */
-	@Deprecated
-	public MissingReferences validateStagingRequest(
-		long userId, long stagingRequestId, boolean privateLayout,
-		Map<String, String[]> parameterMap);
 
 }

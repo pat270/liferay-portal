@@ -23,8 +23,6 @@ import com.liferay.portal.workflow.kaleo.runtime.manager.PortalKaleoManager;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import org.springframework.context.ApplicationContext;
-
 /**
  * @author Michael C. Han
  */
@@ -36,24 +34,9 @@ public class CompanyModelListener extends BaseModelListener<Company> {
 		try {
 			_portalKaleoManager.deleteKaleoData(company.getCompanyId());
 		}
-		catch (Exception e) {
-			throw new ModelListenerException(e);
+		catch (Exception exception) {
+			throw new ModelListenerException(exception);
 		}
-	}
-
-	@Reference(
-		target = "(org.springframework.context.service.name=com.liferay.portal.workflow.kaleo.service)",
-		unbind = "-"
-	)
-	protected void setApplicationContext(
-		ApplicationContext applicationContext) {
-	}
-
-	@Reference(unbind = "-")
-	protected void setPortalKaleoManager(
-		PortalKaleoManager portalKaleoManager) {
-
-		_portalKaleoManager = portalKaleoManager;
 	}
 
 	@Reference

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,10 @@ public class DDMStructureLayoutPersistenceTest {
 
 		DDMStructureLayout newDDMStructureLayout = _persistence.create(pk);
 
+		newDDMStructureLayout.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMStructureLayout.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMStructureLayout.setUuid(RandomTestUtil.randomString());
 
 		newDDMStructureLayout.setGroupId(RandomTestUtil.nextLong());
@@ -139,6 +143,11 @@ public class DDMStructureLayoutPersistenceTest {
 		newDDMStructureLayout.setCreateDate(RandomTestUtil.nextDate());
 
 		newDDMStructureLayout.setModifiedDate(RandomTestUtil.nextDate());
+
+		newDDMStructureLayout.setClassNameId(RandomTestUtil.nextLong());
+
+		newDDMStructureLayout.setStructureLayoutKey(
+			RandomTestUtil.randomString());
 
 		newDDMStructureLayout.setStructureVersionId(RandomTestUtil.nextLong());
 
@@ -154,6 +163,12 @@ public class DDMStructureLayoutPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newDDMStructureLayout.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMStructureLayout.getMvccVersion(),
+			newDDMStructureLayout.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMStructureLayout.getCtCollectionId(),
+			newDDMStructureLayout.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMStructureLayout.getUuid(),
 			newDDMStructureLayout.getUuid());
@@ -179,6 +194,12 @@ public class DDMStructureLayoutPersistenceTest {
 			Time.getShortTimestamp(
 				existingDDMStructureLayout.getModifiedDate()),
 			Time.getShortTimestamp(newDDMStructureLayout.getModifiedDate()));
+		Assert.assertEquals(
+			existingDDMStructureLayout.getClassNameId(),
+			newDDMStructureLayout.getClassNameId());
+		Assert.assertEquals(
+			existingDDMStructureLayout.getStructureLayoutKey(),
+			newDDMStructureLayout.getStructureLayoutKey());
 		Assert.assertEquals(
 			existingDDMStructureLayout.getStructureVersionId(),
 			newDDMStructureLayout.getStructureVersionId());
@@ -228,10 +249,46 @@ public class DDMStructureLayoutPersistenceTest {
 	}
 
 	@Test
+	public void testCountByStructureLayoutKey() throws Exception {
+		_persistence.countByStructureLayoutKey("");
+
+		_persistence.countByStructureLayoutKey("null");
+
+		_persistence.countByStructureLayoutKey((String)null);
+	}
+
+	@Test
 	public void testCountByStructureVersionId() throws Exception {
 		_persistence.countByStructureVersionId(RandomTestUtil.nextLong());
 
 		_persistence.countByStructureVersionId(0L);
+	}
+
+	@Test
+	public void testCountByG_C() throws Exception {
+		_persistence.countByG_C(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+
+		_persistence.countByG_C(0L, 0L);
+	}
+
+	@Test
+	public void testCountByG_C_S() throws Exception {
+		_persistence.countByG_C_S(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "");
+
+		_persistence.countByG_C_S(0L, 0L, "null");
+
+		_persistence.countByG_C_S(0L, 0L, (String)null);
+	}
+
+	@Test
+	public void testCountByG_C_SV() throws Exception {
+		_persistence.countByG_C_SV(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByG_C_SV(0L, 0L, 0L);
 	}
 
 	@Test
@@ -260,10 +317,11 @@ public class DDMStructureLayoutPersistenceTest {
 
 	protected OrderByComparator<DDMStructureLayout> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMStructureLayout", "uuid", true, "structureLayoutId", true,
-			"groupId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true,
-			"structureVersionId", true);
+			"DDMStructureLayout", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "structureLayoutId", true, "groupId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "classNameId", true,
+			"structureLayoutKey", true, "structureVersionId", true);
 	}
 
 	@Test
@@ -492,33 +550,95 @@ public class DDMStructureLayoutPersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMStructureLayout existingDDMStructureLayout =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newDDMStructureLayout.getPrimaryKey());
+				newDDMStructureLayout.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMStructureLayout.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDDMStructureLayout, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMStructureLayout newDDMStructureLayout = addDDMStructureLayout();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMStructureLayout.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"structureLayoutId",
+				newDDMStructureLayout.getStructureLayoutId()));
+
+		List<DDMStructureLayout> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMStructureLayout ddmStructureLayout) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructureLayout.getGroupId()),
+			ddmStructureLayout.getUuid(),
+			ReflectionTestUtil.invoke(
+				ddmStructureLayout, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(ddmStructureLayout.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructureLayout, "getOriginalGroupId",
-				new Class<?>[0]));
+				ddmStructureLayout, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructureLayout.getStructureVersionId()),
+			Long.valueOf(ddmStructureLayout.getStructureVersionId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructureLayout, "getOriginalStructureVersionId",
-				new Class<?>[0]));
+				ddmStructureLayout, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "structureVersionId"));
+
+		Assert.assertEquals(
+			Long.valueOf(ddmStructureLayout.getGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				ddmStructureLayout, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			Long.valueOf(ddmStructureLayout.getClassNameId()),
+			ReflectionTestUtil.<Long>invoke(
+				ddmStructureLayout, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
+		Assert.assertEquals(
+			ddmStructureLayout.getStructureLayoutKey(),
+			ReflectionTestUtil.invoke(
+				ddmStructureLayout, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "structureLayoutKey"));
 	}
 
 	protected DDMStructureLayout addDDMStructureLayout() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMStructureLayout ddmStructureLayout = _persistence.create(pk);
+
+		ddmStructureLayout.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmStructureLayout.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmStructureLayout.setUuid(RandomTestUtil.randomString());
 
@@ -533,6 +653,10 @@ public class DDMStructureLayoutPersistenceTest {
 		ddmStructureLayout.setCreateDate(RandomTestUtil.nextDate());
 
 		ddmStructureLayout.setModifiedDate(RandomTestUtil.nextDate());
+
+		ddmStructureLayout.setClassNameId(RandomTestUtil.nextLong());
+
+		ddmStructureLayout.setStructureLayoutKey(RandomTestUtil.randomString());
 
 		ddmStructureLayout.setStructureVersionId(RandomTestUtil.nextLong());
 

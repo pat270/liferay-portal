@@ -39,10 +39,9 @@
 	<c:if test="<%= selectAssetDisplayPageDisplayContext.isAssetDisplayPageTypeDefault() && selectAssetDisplayPageDisplayContext.isShowViewInContextLink() && selectAssetDisplayPageDisplayContext.isURLViewInContext() %>">
 		<div class="input-group-item input-group-item-shrink">
 			<clay:button
+				displayType="secondary"
 				icon="view"
 				id='<%= liferayPortletResponse.getNamespace() + "previewDefaultDisplayPageButton" %>'
-				monospaced="<%= true %>"
-				style="secondary"
 			/>
 		</div>
 	</c:if>
@@ -62,11 +61,9 @@
 		<c:if test="<%= selectAssetDisplayPageDisplayContext.isAssetDisplayPageTypeSpecific() && selectAssetDisplayPageDisplayContext.isShowViewInContextLink() && selectAssetDisplayPageDisplayContext.isURLViewInContext() %>">
 			<div class="input-group-item input-group-item-shrink">
 				<clay:button
-					elementClasses="ml-2"
+					displayType="secondary"
 					icon="view"
 					id='<%= liferayPortletResponse.getNamespace() + "previewSpecificDisplayPageButton" %>'
-					monospaced="<%= true %>"
-					style="secondary"
 				/>
 			</div>
 		</c:if>
@@ -77,92 +74,92 @@
 	</div>
 </div>
 
-<aui:script use="liferay-item-selector-dialog">
-	var assetDisplayPageIdInput = document.getElementById('<portlet:namespace />assetDisplayPageIdInput');
-	var chooseSpecificDisplayPage = document.getElementById('<portlet:namespace />chooseSpecificDisplayPage');
-	var pagesContainerInput = document.getElementById('<portlet:namespace />pagesContainerInput');
-	var specificDisplayPageNameInput = document.getElementById('<portlet:namespace />specificDisplayPageNameInput');
-
-	chooseSpecificDisplayPage.addEventListener(
-		'click',
-		function(event) {
-			var itemSelectorDialog = new A.LiferayItemSelectorDialog(
-				{
-					eventName: '<%= selectAssetDisplayPageDisplayContext.getEventName() %>',
-					on: {
-						selectedItemChange: function(event) {
-							var selectedItem = event.newVal;
-
-							assetDisplayPageIdInput.value = '';
-
-							pagesContainerInput.value = '';
-
-							if (selectedItem) {
-								if (selectedItem.type === 'asset-display-page') {
-									assetDisplayPageIdInput.value = selectedItem.id;
-								}
-								else {
-									pagesContainerInput.value = selectedItem.id;
-								}
-
-								specificDisplayPageNameInput.value = selectedItem.name;
-							}
-						}
-					},
-					'strings.add': '<liferay-ui:message key="done" />',
-					title: '<liferay-ui:message key="select-page" />',
-					url: '<%= selectAssetDisplayPageDisplayContext.getAssetDisplayPageItemSelectorURL() %>'
-				}
-			);
-
-			itemSelectorDialog.open();
-		}
+<aui:script require="frontend-js-web/liferay/ItemSelectorDialog.es as ItemSelectorDialog">
+	var assetDisplayPageIdInput = document.getElementById(
+		'<portlet:namespace />assetDisplayPageIdInput'
+	);
+	var chooseSpecificDisplayPage = document.getElementById(
+		'<portlet:namespace />chooseSpecificDisplayPage'
+	);
+	var pagesContainerInput = document.getElementById(
+		'<portlet:namespace />pagesContainerInput'
+	);
+	var previewSpecificDisplayPageButton = document.getElementById(
+		'<portlet:namespace />previewSpecificDisplayPageButton'
+	);
+	var specificDisplayPageNameInput = document.getElementById(
+		'<portlet:namespace />specificDisplayPageNameInput'
 	);
 
-	var previewDefaultDisplayPageButton = document.getElementById('<portlet:namespace />previewDefaultDisplayPageButton');
+	chooseSpecificDisplayPage.addEventListener('click', function (event) {
+		var itemSelectorDialog = new ItemSelectorDialog.default({
+			eventName: '<%= selectAssetDisplayPageDisplayContext.getEventName() %>',
+			singleSelect: true,
+			title: '<liferay-ui:message key="select-page" />',
+			url:
+				'<%= selectAssetDisplayPageDisplayContext.getAssetDisplayPageItemSelectorURL() %>',
+		});
+
+		itemSelectorDialog.open();
+
+		itemSelectorDialog.on('selectedItemChange', function (event) {
+			var selectedItem = event.selectedItem;
+
+			assetDisplayPageIdInput.value = '';
+
+			pagesContainerInput.value = '';
+
+			if (selectedItem) {
+				if (selectedItem.type === 'asset-display-page') {
+					assetDisplayPageIdInput.value = selectedItem.id;
+				}
+				else {
+					pagesContainerInput.value = selectedItem.id;
+				}
+
+				specificDisplayPageNameInput.value = selectedItem.name;
+
+				if (previewSpecificDisplayPageButton) {
+					previewSpecificDisplayPageButton.parentNode.remove();
+				}
+			}
+		});
+	});
+
+	var previewDefaultDisplayPageButton = document.getElementById(
+		'<portlet:namespace />previewDefaultDisplayPageButton'
+	);
 
 	if (previewDefaultDisplayPageButton) {
-		previewDefaultDisplayPageButton.addEventListener(
-			'click',
-			function(event) {
-				Liferay.Util.openWindow(
-					{
-						dialog: {
-							destroyOnHide: true
-						},
-						dialogIframe: {
-							bodyCssClass: 'dialog-with-footer'
-						},
-						title: '<liferay-ui:message key="preview" />',
-						uri: '<%= selectAssetDisplayPageDisplayContext.getURLViewInContext() %>'
-					}
-				);
-			}
-		);
+		previewDefaultDisplayPageButton.addEventListener('click', function (event) {
+			Liferay.Util.openModal({
+				title: '<liferay-ui:message key="preview" />',
+				url:
+					'<%= selectAssetDisplayPageDisplayContext.getURLViewInContext() %>',
+			});
+		});
 	}
-
-	var previewSpecificDisplayPageButton = document.getElementById('<portlet:namespace />previewSpecificDisplayPageButton');
 
 	if (previewSpecificDisplayPageButton) {
-		previewSpecificDisplayPageButton.addEventListener(
-			'click',
-			function(event) {
-				Liferay.Util.openWindow(
-					{
-						dialog: {
-							destroyOnHide: true
-						},
-						dialogIframe: {
-							bodyCssClass: 'dialog-with-footer'
-						},
-						title: '<liferay-ui:message key="preview" />',
-						uri: '<%= selectAssetDisplayPageDisplayContext.getURLViewInContext() %>'
-					}
-				);
-			}
-		);
+		previewSpecificDisplayPageButton.addEventListener('click', function (
+			event
+		) {
+			Liferay.Util.openModal({
+				title: '<liferay-ui:message key="preview" />',
+				url:
+					'<%= selectAssetDisplayPageDisplayContext.getURLViewInContext() %>',
+			});
+		});
 	}
 
-	Liferay.Util.toggleSelectBox('<portlet:namespace />displayPageType', '<%= AssetDisplayPageConstants.TYPE_DEFAULT %>', '<portlet:namespace />defaultDisplayPageNameContainer');
-	Liferay.Util.toggleSelectBox('<portlet:namespace />displayPageType', '<%= AssetDisplayPageConstants.TYPE_SPECIFIC %>', '<portlet:namespace />specificDisplayPageNameContainer');
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />displayPageType',
+		'<%= AssetDisplayPageConstants.TYPE_DEFAULT %>',
+		'<portlet:namespace />defaultDisplayPageNameContainer'
+	);
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />displayPageType',
+		'<%= AssetDisplayPageConstants.TYPE_SPECIFIC %>',
+		'<portlet:namespace />specificDisplayPageNameContainer'
+	);
 </aui:script>

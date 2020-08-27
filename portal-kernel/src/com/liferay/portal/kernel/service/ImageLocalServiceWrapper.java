@@ -14,7 +14,9 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.model.Image;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link ImageLocalService}.
@@ -23,7 +25,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ImageLocalService
  * @generated
  */
-@ProviderType
 public class ImageLocalServiceWrapper
 	implements ImageLocalService, ServiceWrapper<ImageLocalService> {
 
@@ -34,13 +35,15 @@ public class ImageLocalServiceWrapper
 	/**
 	 * Adds the image to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect ImageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param image the image
 	 * @return the image that was added
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Image addImage(
-		com.liferay.portal.kernel.model.Image image) {
-
+	public Image addImage(Image image) {
 		return _imageLocalService.addImage(image);
 	}
 
@@ -51,32 +54,49 @@ public class ImageLocalServiceWrapper
 	 * @return the new image
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Image createImage(long imageId) {
+	public Image createImage(long imageId) {
 		return _imageLocalService.createImage(imageId);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _imageLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
 	 * Deletes the image from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect ImageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param image the image
 	 * @return the image that was removed
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Image deleteImage(
-		com.liferay.portal.kernel.model.Image image) {
-
+	public Image deleteImage(Image image) {
 		return _imageLocalService.deleteImage(image);
 	}
 
 	/**
 	 * Deletes the image with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect ImageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param imageId the primary key of the image
 	 * @return the image that was removed
 	 * @throws PortalException if a image with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Image deleteImage(long imageId)
+	public Image deleteImage(long imageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageLocalService.deleteImage(imageId);
@@ -91,6 +111,11 @@ public class ImageLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageLocalService.deletePersistedModel(persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _imageLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -115,7 +140,7 @@ public class ImageLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ImageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ImageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -135,7 +160,7 @@ public class ImageLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ImageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ImageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -183,7 +208,7 @@ public class ImageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image fetchImage(long imageId) {
+	public Image fetchImage(long imageId) {
 		return _imageLocalService.fetchImage(imageId);
 	}
 
@@ -195,7 +220,7 @@ public class ImageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image getCompanyLogo(long imageId) {
+	public Image getCompanyLogo(long imageId) {
 		return _imageLocalService.getCompanyLogo(imageId);
 	}
 
@@ -207,21 +232,19 @@ public class ImageLocalServiceWrapper
 	 * @throws PortalException if a image with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Image getImage(long imageId)
+	public Image getImage(long imageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageLocalService.getImage(imageId);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image getImageOrDefault(
-		long imageId) {
-
+	public Image getImageOrDefault(long imageId) {
 		return _imageLocalService.getImageOrDefault(imageId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Image> getImages() {
+	public java.util.List<Image> getImages() {
 		return _imageLocalService.getImages();
 	}
 
@@ -229,7 +252,7 @@ public class ImageLocalServiceWrapper
 	 * Returns a range of all the images.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ImageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ImageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of images
@@ -237,16 +260,12 @@ public class ImageLocalServiceWrapper
 	 * @return the range of images
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Image> getImages(
-		int start, int end) {
-
+	public java.util.List<Image> getImages(int start, int end) {
 		return _imageLocalService.getImages(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Image>
-		getImagesBySize(int size) {
-
+	public java.util.List<Image> getImagesBySize(int size) {
 		return _imageLocalService.getImagesBySize(size);
 	}
 
@@ -277,6 +296,9 @@ public class ImageLocalServiceWrapper
 		return _imageLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -286,8 +308,7 @@ public class ImageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image moveImage(
-			long imageId, byte[] bytes)
+	public Image moveImage(long imageId, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageLocalService.moveImage(imageId, bytes);
@@ -296,26 +317,27 @@ public class ImageLocalServiceWrapper
 	/**
 	 * Updates the image in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect ImageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param image the image
 	 * @return the image that was updated
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Image updateImage(
-		com.liferay.portal.kernel.model.Image image) {
-
+	public Image updateImage(Image image) {
 		return _imageLocalService.updateImage(image);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image updateImage(
-			long imageId, byte[] bytes)
+	public Image updateImage(long imageId, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageLocalService.updateImage(imageId, bytes);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image updateImage(
+	public Image updateImage(
 			long imageId, byte[] bytes, String type, int height, int width,
 			int size)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -325,27 +347,46 @@ public class ImageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image updateImage(
-			long imageId, java.io.File file)
+	public Image updateImage(long imageId, java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _imageLocalService.updateImage(imageId, file);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image updateImage(
-			long imageId, java.io.InputStream is)
+	public Image updateImage(long imageId, java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _imageLocalService.updateImage(imageId, is);
+		return _imageLocalService.updateImage(imageId, inputStream);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Image updateImage(
-			long imageId, java.io.InputStream is, boolean cleanUpStream)
+	public Image updateImage(
+			long imageId, java.io.InputStream inputStream,
+			boolean cleanUpStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _imageLocalService.updateImage(imageId, is, cleanUpStream);
+		return _imageLocalService.updateImage(
+			imageId, inputStream, cleanUpStream);
+	}
+
+	@Override
+	public CTPersistence<Image> getCTPersistence() {
+		return _imageLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<Image> getModelClass() {
+		return _imageLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<Image>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return _imageLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

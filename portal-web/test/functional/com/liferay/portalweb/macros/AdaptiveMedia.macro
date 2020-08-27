@@ -1,4 +1,5 @@
 definition {
+
 	macro adaptAllImages {
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Adapt All Images");
 
@@ -8,7 +9,7 @@ definition {
 	macro adaptRemainingImages {
 		var key_imageName = "${imageName}";
 
-		if (IsElementNotPresent(locator1 = "AdaptiveMediaTable#PROGRESS")) {
+		if (IsElementNotPresent(locator1 = "AdaptiveMediaTable#PROGRESS_SUCCESS")) {
 			Click(locator1 = "AdaptiveMediaTable#IMAGE_RESOLUTION_OPTIONS");
 
 			MenuItem.click(menuItem = "Adapt Remaining");
@@ -18,7 +19,7 @@ definition {
 
 		AssertElementPresent(locator1 = "AdaptiveMediaTable#PROGRESS_SUCCESS");
 
-		Alert.closeMessage(messageType = "GENERIC");
+		Alert.viewSuccessMessage();
 	}
 
 	macro addImageResolution {
@@ -121,14 +122,7 @@ definition {
 			locator1 = "AdaptiveMediaTable#STATE",
 			value1 = "Disabled");
 
-		if (isSet(percentAdapted)) {
-			var key_percentAdapted = "${percentAdapted}";
-
-			AssertCssValue(
-				locator1 = "AdaptiveMediaTable#PROGRESS_BAR_COLOR",
-				locator2 = "opacity",
-				value1 = "0.5");
-		}
+		AssertElementPresent(locator1 = "AdaptiveMediaTable#PROGRESS_DISABLED");
 	}
 
 	macro editImageResolution {
@@ -144,7 +138,7 @@ definition {
 
 		AssertElementNotPresent(locator1 = "Checkbox#ADD_HIGH_DENSITY_DISPLAY");
 
-		if (IsElementPresent(locator1 = "Message#INFO", value1 = "The images for this resolution are already adapted.")) {
+		if (IsElementPresent(locator1 = "Message#INFO")) {
 			AssertNotEditable(locator1 = "TextInput#IMAGE_ID");
 
 			AssertNotEditable(locator1 = "TextInput#MAX_HEIGHT");
@@ -274,6 +268,8 @@ definition {
 	}
 
 	macro viewNumberOfAdaptedImages {
+		AssertElementPresent(locator1 = "AdaptiveMediaTable#INFO_ICON");
+
 		Click(locator1 = "AdaptiveMediaTable#INFO_ICON");
 
 		var key_numberOfAdaptedImages = "${numberOfAdaptedImages}";
@@ -284,4 +280,5 @@ definition {
 
 		Click(locator1 = "AdaptiveMediaTable#INFO_ICON");
 	}
+
 }

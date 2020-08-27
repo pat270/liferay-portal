@@ -28,8 +28,8 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -41,13 +41,13 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.context.ContextUserReplace;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.DateTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -201,8 +201,7 @@ public class DLCheckInCheckOutTest {
 
 		folder = DLAppServiceUtil.getFolder(_folder.getFolderId());
 
-		Assert.assertTrue(
-			DateUtil.equals(lastPostDate, folder.getLastPostDate()));
+		DateTestUtil.assertEquals(lastPostDate, folder.getLastPostDate());
 
 		fileEntry = DLAppServiceUtil.getFileEntry(_fileEntry.getFileEntryId());
 
@@ -413,8 +412,7 @@ public class DLCheckInCheckOutTest {
 
 		folder = DLAppServiceUtil.getFolder(_folder.getFolderId());
 
-		Assert.assertTrue(
-			DateUtil.equals(lastPostDate, folder.getLastPostDate()));
+		DateTestUtil.assertEquals(lastPostDate, folder.getLastPostDate());
 
 		FileVersion fileVersion = _fileEntry.getLatestFileVersion();
 
@@ -515,21 +513,20 @@ public class DLCheckInCheckOutTest {
 
 	protected FileEntry createFileEntry(String fileName) throws Exception {
 		long repositoryId = _group.getGroupId();
-		long folderId = _folder.getFolderId();
+
 		InputStream inputStream = new UnsyncByteArrayInputStream(
 			_TEST_CONTENT.getBytes());
 
 		FileEntry fileEntry = DLAppServiceUtil.addFileEntry(
-			repositoryId, folderId, fileName, ContentTypes.TEXT_PLAIN, fileName,
-			null, null, inputStream, _TEST_CONTENT.length(), _serviceContext);
+			repositoryId, _folder.getFolderId(), fileName,
+			ContentTypes.TEXT_PLAIN, fileName, null, null, inputStream,
+			_TEST_CONTENT.length(), _serviceContext);
 
 		Assert.assertNotNull(fileEntry);
 
 		Assert.assertEquals("1.0", fileEntry.getVersion());
 
-		AssetEntry assetEntry = getAssetEntry(fileEntry.getFileEntryId(), true);
-
-		Assert.assertNotNull(assetEntry);
+		Assert.assertNotNull(getAssetEntry(fileEntry.getFileEntryId(), true));
 
 		return fileEntry;
 	}

@@ -14,10 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.verify;
 
+import com.liferay.dynamic.data.mapping.exception.NoSuchStorageLinkException;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMContent;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
@@ -73,17 +73,13 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 	protected DDMFormValues getDDMFormValues(
 		DDMForm ddmForm, DDMContent ddmContent) {
 
-		DDMFormValuesDeserializer ddmFormValuesDeserializer =
-			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				"json");
-
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				ddmContent.getData(), ddmForm);
 
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
-				ddmFormValuesDeserializer.deserialize(builder.build());
+				_jsonDDMFormValuesDeserializer.deserialize(builder.build());
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -112,13 +108,6 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 	@Reference(unbind = "-")
 	protected void setDDMFormValidator(DDMFormValidator ddmFormValidator) {
 		_ddmFormValidator = ddmFormValidator;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMFormValuesDeserializerTracker(
-		DDMFormValuesDeserializerTracker ddmFormValuesDeserializerTracker) {
-
-		_ddmFormValuesDeserializerTracker = ddmFormValuesDeserializerTracker;
 	}
 
 	@Reference(unbind = "-")
@@ -171,9 +160,21 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 	}
 
 	protected void verifyContent(DDMContent ddmContent) throws PortalException {
-		DDMStorageLink ddmStorageLink =
-			_ddmStorageLinkLocalService.getClassStorageLink(
+		DDMStorageLink ddmStorageLink = null;
+
+		try {
+			ddmStorageLink = _ddmStorageLinkLocalService.getClassStorageLink(
 				ddmContent.getContentId());
+		}
+		catch (NoSuchStorageLinkException noSuchStorageLinkException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Skip verification for orphaned DDM content " +
+						ddmContent.getContentId());
+			}
+
+			return;
+		}
 
 		DDMStructureVersion ddmStructureVersion =
 			_ddmStructureVersionLocalService.getStructureVersion(
@@ -185,15 +186,16 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 
 			_ddmFormValuesValidator.validate(ddmFormValues);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					String.format(
 						"Stale or invalid data for DDM content %d  and " +
 							"structure version %d causes: {%s}",
 						ddmContent.getContentId(),
-						ddmStructureVersion.getStructureId(), e.getMessage()),
-					e);
+						ddmStructureVersion.getStructureId(),
+						exception.getMessage()),
+					exception);
 			}
 		}
 	}
@@ -270,13 +272,14 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 					try {
 						verifyStructure(ddmStructure);
 					}
-					catch (PortalException pe) {
+					catch (PortalException portalException) {
 						_log.error(
 							String.format(
 								"Invalid data for DDM structure %d causes: " +
 									"{%s}",
-								ddmStructure.getStructureId(), pe.getMessage()),
-							pe);
+								ddmStructure.getStructureId(),
+								portalException.getMessage()),
+							portalException);
 					}
 				});
 
@@ -316,7 +319,6 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 	private DDMContentLocalService _ddmContentLocalService;
 	private DDMFormLayoutValidator _ddmFormLayoutValidator;
 	private DDMFormValidator _ddmFormValidator;
-	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
 	private DDMFormValuesValidator _ddmFormValuesValidator;
 	private DDMStorageLinkLocalService _ddmStorageLinkLocalService;
 	private DDMStructureLinkLocalService _ddmStructureLinkLocalService;
@@ -324,5 +326,8 @@ public class DDMServiceVerifyProcess extends VerifyProcess {
 	private DDMStructureVersionLocalService _ddmStructureVersionLocalService;
 	private DDMTemplateLinkLocalService _ddmTemplateLinkLocalService;
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference(target = "(ddm.form.values.deserializer.type=json)")
+	private DDMFormValuesDeserializer _jsonDDMFormValuesDeserializer;
 
 }

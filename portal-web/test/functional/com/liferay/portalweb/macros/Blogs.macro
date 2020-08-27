@@ -1,4 +1,5 @@
 definition {
+
 	macro addDraft {
 		BlogsNavigator.gotoAddEntry();
 
@@ -171,9 +172,9 @@ definition {
 	macro addViaAP {
 		AssetPublisherPortlet.addAsset(assetType = "Blogs Entry");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		AssertClick(
 			locator1 = "Button#PUBLISH",
@@ -199,9 +200,9 @@ definition {
 			assetType = "Blogs Entry",
 			siteScope = "${siteScope}");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		AssertClick(
 			locator1 = "Button#PUBLISH",
@@ -301,9 +302,9 @@ definition {
 	macro addWithWorkflowViaAP {
 		AssetPublisherPortlet.addAsset(assetType = "Blogs Entry");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		AlloyEditor.addContent(content = "${entryContent}");
 
 		AssertClick(
 			locator1 = "Button#SUBMIT_FOR_PUBLICATION",
@@ -427,7 +428,7 @@ definition {
 	macro publishDraftCP {
 		BlogsNavigator.gotoEditCP(entryTitle = "${entryTitle}");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryCP(
 			entryContent = "${entryContent}",
 			entrySubtitle = "${entrySubtitle}",
 			entryTitle = "${entryTitle}");
@@ -470,9 +471,11 @@ definition {
 
 		BlogsNavigator.gotoConfigurationSetupPG();
 
-		BlogsNavigator.gotoConfigurationScopePG();
+		Navigator.gotoPage(pageName = "${pageName}");
 
-		BlogsConfiguration.selectScopePG(scopeSelection = "Liferay");
+		Portlet.selectScopePG(
+			portletName = "Blogs",
+			scope = "Liferay");
 	}
 
 	macro tearDownCP {
@@ -480,24 +483,20 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		if (IsElementPresent.isVisible(locator1 = "Blogs#ENTRY_TABLE_ALL_CHECKBOX")) {
 			Click(locator1 = "Blogs#ENTRY_TABLE_ALL_CHECKBOX");
 
-			AssertClick(
-				locator1 = "Button#MOVE_TO_RECYCLE_BIN",
-				value1 = "Move to Recycle Bin");
+			Click(locator1 = "Button#MOVE_TO_RECYCLE_BIN");
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();
@@ -539,9 +538,8 @@ definition {
 		LexiconCard.viewCardPresent(card = "${entryTitle}");
 	}
 
-	macro viewEntryTitle
-	{
-		LexiconList.viewListEntryTitle(listEntry = "${entryTitle}");
+	macro viewEntryTitle {
+		LexiconList.viewListEntryTitleLink(listEntry = "${entryTitle}");
 	}
 
 	macro viewNoEntryCP {
@@ -549,4 +547,5 @@ definition {
 			locator1 = "Message#EMPTY_INFO",
 			value1 = "No entries were found.");
 	}
+
 }

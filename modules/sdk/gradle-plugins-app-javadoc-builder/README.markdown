@@ -5,7 +5,7 @@ single, combined HTML document for an application that spans different
 subprojects, each one representing a different component of the same
 application.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -14,7 +14,7 @@ To use the plugin, include it in the build script of the root project:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.app.javadoc.builder", version: "1.2.2"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.app.javadoc.builder", version: "1.2.3"
 	}
 
 	repositories {

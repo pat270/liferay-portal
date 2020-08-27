@@ -14,32 +14,27 @@
 
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
+import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.transaction.Propagation;
-import com.liferay.portal.kernel.transaction.TransactionConfig;
-import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.segments.constants.SegmentsConstants;
-import com.liferay.segments.service.SegmentsExperienceLocalService;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
+import com.liferay.segments.service.SegmentsExperienceService;
 
-import java.util.concurrent.Callable;
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletPreferences;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -56,93 +51,75 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCActionCommand.class
 )
 public class DeleteSegmentsExperienceMVCActionCommand
-	extends BaseMVCActionCommand {
+	extends BaseContentPageEditorTransactionalMVCActionCommand {
 
 	protected void deleteSegmentsExperience(ActionRequest actionRequest)
 		throws PortalException {
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
 		long segmentsExperienceId = ParamUtil.getLong(
 			actionRequest, "segmentsExperienceId",
-			SegmentsConstants.SEGMENTS_EXPERIENCE_ID_DEFAULT);
+			SegmentsExperienceConstants.ID_DEFAULT);
 
-		if (segmentsExperienceId !=
-				SegmentsConstants.SEGMENTS_EXPERIENCE_ID_DEFAULT) {
-
-			_segmentsExperienceLocalService.deleteSegmentsExperience(
+		if (segmentsExperienceId != SegmentsExperienceConstants.ID_DEFAULT) {
+			_segmentsExperienceService.deleteSegmentsExperience(
 				segmentsExperienceId);
 		}
 
-		String fragmentEntryLinkIdsString = ParamUtil.getString(
-			actionRequest, "fragmentEntryLinkIds");
+		List<FragmentEntryLink> fragmentEntryLinks =
+			_fragmentEntryLinkLocalService.
+				getFragmentEntryLinksBySegmentsExperienceId(
+					themeDisplay.getScopeGroupId(), segmentsExperienceId,
+					themeDisplay.getPlid());
 
-		if (Validator.isNotNull(fragmentEntryLinkIdsString)) {
-			long[] toFragmentEntryLinkIds = JSONUtil.toLongArray(
-				JSONFactoryUtil.createJSONArray(fragmentEntryLinkIdsString));
+		for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
+			List<String> portletIds =
+				_portletRegistry.getFragmentEntryLinkPortletIds(
+					fragmentEntryLink);
 
-			_fragmentEntryLinkLocalService.deleteFragmentEntryLinks(
-				toFragmentEntryLinkIds);
+			for (String portletId : portletIds) {
+				PortletPreferences jxPortletPreferences =
+					_portletPreferencesLocalService.fetchPreferences(
+						fragmentEntryLink.getCompanyId(),
+						PortletKeys.PREFS_OWNER_ID_DEFAULT,
+						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+						fragmentEntryLink.getPlid(), portletId);
+
+				if (jxPortletPreferences != null) {
+					_portletPreferencesLocalService.deletePortletPreferences(
+						PortletKeys.PREFS_OWNER_ID_DEFAULT,
+						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+						fragmentEntryLink.getPlid(), portletId);
+				}
+			}
+
+			_fragmentEntryLinkLocalService.deleteFragmentEntryLink(
+				fragmentEntryLink);
 		}
 	}
 
 	@Override
-	protected void doProcessAction(
+	protected JSONObject doTransactionalCommand(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		deleteSegmentsExperience(actionRequest);
 
-		Callable<Void> callable = new DeleteSegmentsExperienceCallable(
-			actionRequest);
-
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-		try {
-			TransactionInvokerUtil.invoke(_transactionConfig, callable);
-		}
-		catch (Throwable t) {
-			_log.error(t, t);
-
-			jsonObject.put(
-				"error",
-				LanguageUtil.get(
-					themeDisplay.getRequest(), "an-unexpected-error-occurred"));
-		}
-
-		hideDefaultSuccessMessage(actionRequest);
-
-		JSONPortletResponseUtil.writeJSON(
-			actionRequest, actionResponse, jsonObject);
+		return JSONFactoryUtil.createJSONObject();
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		DeleteSegmentsExperienceMVCActionCommand.class);
-
-	private static final TransactionConfig _transactionConfig =
-		TransactionConfig.Factory.create(
-			Propagation.REQUIRED, new Class<?>[] {Exception.class});
 
 	@Reference
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
 
 	@Reference
-	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+	private PortletPreferencesLocalService _portletPreferencesLocalService;
 
-	private class DeleteSegmentsExperienceCallable implements Callable<Void> {
+	@Reference
+	private PortletRegistry _portletRegistry;
 
-		@Override
-		public Void call() throws Exception {
-			deleteSegmentsExperience(_actionRequest);
-
-			return null;
-		}
-
-		private DeleteSegmentsExperienceCallable(ActionRequest actionRequest) {
-			_actionRequest = actionRequest;
-		}
-
-		private final ActionRequest _actionRequest;
-
-	}
+	@Reference
+	private SegmentsExperienceService _segmentsExperienceService;
 
 }

@@ -16,7 +16,6 @@ package com.liferay.portal.events;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.deploy.DeployUtil;
-import com.liferay.portal.deploy.RequiredPluginsUtil;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployDir;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployListener;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployUtil;
@@ -28,13 +27,8 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionsManagerUtil
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
-import com.liferay.portal.kernel.util.BasePortalLifecycle;
-import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
-import com.liferay.portal.kernel.util.PortalLifecycle;
-import com.liferay.portal.kernel.util.PortalLifecycleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.spring.context.PortalContextLoaderListener;
 import com.liferay.portal.struts.AuthPublicPathRegistry;
@@ -80,8 +74,9 @@ public class GlobalStartupAction extends SimpleAction {
 
 				autoDeployListeners.add(autoDeployListener);
 			}
-			catch (Exception e) {
-				_log.error("Unable to initialiaze auto deploy listener", e);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to initialiaze auto deploy listener", exception);
 			}
 		}
 
@@ -112,8 +107,9 @@ public class GlobalStartupAction extends SimpleAction {
 
 				hotDeployListeners.add(hotDeployListener);
 			}
-			catch (Exception e) {
-				_log.error("Unable to initialiaze hot deploy listener", e);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to initialiaze hot deploy listener", exception);
 			}
 		}
 
@@ -132,12 +128,9 @@ public class GlobalStartupAction extends SimpleAction {
 			File destDir = new File(DeployUtil.getAutoDeployDestDir());
 			long interval = PropsValues.AUTO_DEPLOY_INTERVAL;
 
-			List<AutoDeployListener> autoDeployListeners =
-				getAutoDeployListeners(false);
-
 			AutoDeployDir autoDeployDir = new AutoDeployDir(
 				AutoDeployDir.DEFAULT_NAME, deployDir, destDir, interval,
-				autoDeployListeners);
+				getAutoDeployListeners(false));
 
 			if (PropsValues.AUTO_DEPLOY_ENABLED) {
 				if (_log.isInfoEnabled()) {
@@ -152,8 +145,8 @@ public class GlobalStartupAction extends SimpleAction {
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error("Unable to register auto deploy directories", e);
+		catch (Exception exception) {
+			_log.error("Unable to register auto deploy directories", exception);
 		}
 
 		// Hot deploy
@@ -177,49 +170,12 @@ public class GlobalStartupAction extends SimpleAction {
 		JavadocManagerUtil.load(
 			StringPool.BLANK, currentThread.getContextClassLoader());
 
-		// JNDI
-
-		try {
-			InfrastructureUtil.getDataSource();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		try {
-			if (!ServerDetector.isJOnAS()) {
-				InfrastructureUtil.getMailSession();
-			}
-		}
-		catch (Exception e) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(e.getMessage());
-			}
-		}
-
 		// JSON web service
 
 		ServletContext servletContext = ServletContextPool.get(
 			PortalContextLoaderListener.getPortalServletContextName());
 
 		JSONWebServiceActionsManagerUtil.registerServletContext(servletContext);
-
-		// Plugins
-
-		PortalLifecycleUtil.register(
-			new BasePortalLifecycle() {
-
-				@Override
-				protected void doPortalDestroy() {
-				}
-
-				@Override
-				protected void doPortalInit() {
-					RequiredPluginsUtil.startCheckingRequiredPlugins();
-				}
-
-			},
-			PortalLifecycle.METHOD_INIT);
 
 		// Launch browser
 

@@ -16,9 +16,12 @@ package com.liferay.fragment.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
+import com.liferay.portal.kernel.model.version.VersionedModel;
 
 import java.util.Date;
 
@@ -37,8 +40,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface FragmentEntryModel
-	extends BaseModel<FragmentEntry>, ShardedModel, StagedGroupedModel,
-			WorkflowedModel {
+	extends BaseModel<FragmentEntry>, CTModel<FragmentEntry>, MVCCModel,
+			ShardedModel, StagedGroupedModel,
+			VersionedModel<FragmentEntryVersion>, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -51,6 +55,7 @@ public interface FragmentEntryModel
 	 *
 	 * @return the primary key of this fragment entry
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -58,7 +63,40 @@ public interface FragmentEntryModel
 	 *
 	 * @param primaryKey the primary key of this fragment entry
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this fragment entry.
+	 *
+	 * @return the mvcc version of this fragment entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this fragment entry.
+	 *
+	 * @param mvccVersion the mvcc version of this fragment entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this fragment entry.
+	 *
+	 * @return the ct collection ID of this fragment entry
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this fragment entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this fragment entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this fragment entry.
@@ -76,6 +114,22 @@ public interface FragmentEntryModel
 	 */
 	@Override
 	public void setUuid(String uuid);
+
+	/**
+	 * Returns the head ID of this fragment entry.
+	 *
+	 * @return the head ID of this fragment entry
+	 */
+	@Override
+	public long getHeadId();
+
+	/**
+	 * Sets the head ID of this fragment entry.
+	 *
+	 * @param headId the head ID of this fragment entry
+	 */
+	@Override
+	public void setHeadId(long headId);
 
 	/**
 	 * Returns the fragment entry ID of this fragment entry.
@@ -294,6 +348,42 @@ public interface FragmentEntryModel
 	public void setJs(String js);
 
 	/**
+	 * Returns the cacheable of this fragment entry.
+	 *
+	 * @return the cacheable of this fragment entry
+	 */
+	public boolean getCacheable();
+
+	/**
+	 * Returns <code>true</code> if this fragment entry is cacheable.
+	 *
+	 * @return <code>true</code> if this fragment entry is cacheable; <code>false</code> otherwise
+	 */
+	public boolean isCacheable();
+
+	/**
+	 * Sets whether this fragment entry is cacheable.
+	 *
+	 * @param cacheable the cacheable of this fragment entry
+	 */
+	public void setCacheable(boolean cacheable);
+
+	/**
+	 * Returns the configuration of this fragment entry.
+	 *
+	 * @return the configuration of this fragment entry
+	 */
+	@AutoEscape
+	public String getConfiguration();
+
+	/**
+	 * Sets the configuration of this fragment entry.
+	 *
+	 * @param configuration the configuration of this fragment entry
+	 */
+	public void setConfiguration(String configuration);
+
+	/**
 	 * Returns the preview file entry ID of this fragment entry.
 	 *
 	 * @return the preview file entry ID of this fragment entry
@@ -306,6 +396,27 @@ public interface FragmentEntryModel
 	 * @param previewFileEntryId the preview file entry ID of this fragment entry
 	 */
 	public void setPreviewFileEntryId(long previewFileEntryId);
+
+	/**
+	 * Returns the read only of this fragment entry.
+	 *
+	 * @return the read only of this fragment entry
+	 */
+	public boolean getReadOnly();
+
+	/**
+	 * Returns <code>true</code> if this fragment entry is read only.
+	 *
+	 * @return <code>true</code> if this fragment entry is read only; <code>false</code> otherwise
+	 */
+	public boolean isReadOnly();
+
+	/**
+	 * Sets whether this fragment entry is read only.
+	 *
+	 * @param readOnly the read only of this fragment entry
+	 */
+	public void setReadOnly(boolean readOnly);
 
 	/**
 	 * Returns the type of this fragment entry.

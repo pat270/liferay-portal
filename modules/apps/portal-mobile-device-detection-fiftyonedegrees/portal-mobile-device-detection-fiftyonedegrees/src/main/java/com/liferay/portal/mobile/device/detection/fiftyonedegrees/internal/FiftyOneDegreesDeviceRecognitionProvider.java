@@ -15,7 +15,6 @@
 package com.liferay.portal.mobile.device.detection.fiftyonedegrees.internal;
 
 import com.liferay.portal.kernel.mobile.device.Device;
-import com.liferay.portal.kernel.mobile.device.DeviceCapabilityFilter;
 import com.liferay.portal.kernel.mobile.device.DeviceRecognitionProvider;
 import com.liferay.portal.kernel.mobile.device.KnownDevices;
 
@@ -48,23 +47,14 @@ public class FiftyOneDegreesDeviceRecognitionProvider
 		_fiftyOneDegreesKnownDevices.reload();
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public void setDeviceCapabilityFilter(
-		DeviceCapabilityFilter deviceCapabilityFilter) {
-	}
-
 	@Activate
 	protected void activate() {
 		try {
 			reload();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new IllegalStateException(
-				"Unable to load 51Degrees device data", e);
+				"Unable to load 51Degrees device data", exception);
 		}
 	}
 

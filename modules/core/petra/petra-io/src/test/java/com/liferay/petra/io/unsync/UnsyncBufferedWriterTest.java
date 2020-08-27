@@ -100,7 +100,7 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 
 		unsyncBufferedWriter.write("fgh".toCharArray());
 
-		buffer = (char[])_bufferField.get(unsyncBufferedWriter);
+		_bufferField.get(unsyncBufferedWriter);
 
 		Assert.assertEquals(0, _countField.getInt(unsyncBufferedWriter));
 
@@ -145,8 +145,8 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
-			Assert.assertEquals("Writer is null", ioe.getMessage());
+		catch (IOException ioException) {
+			Assert.assertEquals("Writer is null", ioException.getMessage());
 		}
 
 		try {
@@ -154,8 +154,8 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
-			Assert.assertEquals("Writer is null", ioe.getMessage());
+		catch (IOException ioException) {
+			Assert.assertEquals("Writer is null", ioException.getMessage());
 		}
 
 		try {
@@ -163,8 +163,8 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
-			Assert.assertEquals("Writer is null", ioe.getMessage());
+		catch (IOException ioException) {
+			Assert.assertEquals("Writer is null", ioException.getMessage());
 		}
 
 		try {
@@ -172,8 +172,8 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
-			Assert.assertEquals("Writer is null", ioe.getMessage());
+		catch (IOException ioException) {
+			Assert.assertEquals("Writer is null", ioException.getMessage());
 		}
 
 		unsyncBufferedWriter.close();
@@ -205,8 +205,9 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
-			Assert.assertEquals("Size is less than 1", iae.getMessage());
+		catch (IllegalArgumentException illegalArgumentException) {
+			Assert.assertEquals(
+				"Size is less than 1", illegalArgumentException.getMessage());
 		}
 	}
 
@@ -251,7 +252,7 @@ public class UnsyncBufferedWriterTest extends BaseWriterTestCase {
 		unsyncBufferedWriter.newLine();
 
 		Assert.assertEquals(
-			lineSeparator.length() * 2 + 1,
+			(lineSeparator.length() * 2) + 1,
 			_countField.getInt(unsyncBufferedWriter));
 
 		unsyncBufferedWriter.flush();

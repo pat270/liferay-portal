@@ -20,6 +20,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -45,9 +46,11 @@ public class TGZUtil {
 
 	public static boolean debug = false;
 
-	public static void archive(File sourceFile, File archiveFile) {
+	public static void archive(File sourceFile, File archiveFile)
+		throws IOException {
+
 		if (!sourceFile.exists()) {
-			throw new RuntimeException("Unable to find " + sourceFile);
+			throw new FileNotFoundException("Unable to find " + sourceFile);
 		}
 
 		File parentDir = archiveFile.getParentFile();
@@ -85,13 +88,11 @@ public class TGZUtil {
 
 			tarArchiveOutputStream.finish();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(
-				"Unable to archive " + sourceFile.toString(), ioe);
-		}
 	}
 
-	public static void unarchive(File archiveFile, File destinationDir) {
+	public static void unarchive(File archiveFile, File destinationDir)
+		throws IOException {
+
 		if (!destinationDir.exists()) {
 			destinationDir.mkdirs();
 		}
@@ -125,10 +126,6 @@ public class TGZUtil {
 
 				tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
 			}
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(
-				"Unable to unarchive " + archiveFile.toString(), ioe);
 		}
 	}
 
@@ -195,7 +192,7 @@ public class TGZUtil {
 			file, archiveEntryName);
 
 		if (!(archiveEntry instanceof TarArchiveEntry)) {
-			throw new RuntimeException("Invalid archive entry");
+			throw new IOException("Invalid archive entry");
 		}
 
 		TarArchiveEntry tarArchiveEntry = (TarArchiveEntry)archiveEntry;
@@ -247,9 +244,9 @@ public class TGZUtil {
 		try {
 			return PosixFilePermissions.fromString(sb.toString());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new RuntimeException(
-				"Invalid POSIX integer value " + posixIntegerValue, e);
+				"Invalid POSIX integer value " + posixIntegerValue, exception);
 		}
 	}
 
@@ -287,8 +284,9 @@ public class TGZUtil {
 	}
 
 	private static void _unarchiveFile(
-		File destinationRootDir, TarArchiveEntry tarArchiveEntry,
-		TarArchiveInputStream tarArchiveInputStream) {
+			File destinationRootDir, TarArchiveEntry tarArchiveEntry,
+			TarArchiveInputStream tarArchiveInputStream)
+		throws IOException {
 
 		File file = new File(destinationRootDir, tarArchiveEntry.getName());
 
@@ -302,20 +300,12 @@ public class TGZUtil {
 			parentDir.mkdirs();
 		}
 
-		try {
-			try (FileOutputStream fileOutputStream = new FileOutputStream(
-					file)) {
-
-				IOUtils.copy(tarArchiveInputStream, fileOutputStream);
-			}
-
-			Files.setPosixFilePermissions(
-				file.toPath(),
-				_getPosixFilePermissions(tarArchiveEntry.getMode()));
+		try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+			IOUtils.copy(tarArchiveInputStream, fileOutputStream);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
+
+		Files.setPosixFilePermissions(
+			file.toPath(), _getPosixFilePermissions(tarArchiveEntry.getMode()));
 	}
 
 	private static final int _CHARS_BUFFER_SIZE = 8192;

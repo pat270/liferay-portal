@@ -15,7 +15,7 @@
 package com.liferay.layout.page.template.internal.security.permission.resource;
 
 import com.liferay.exportimport.kernel.staging.permission.StagingPermission;
-import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -44,14 +44,6 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class LayoutPageTemplatePortletResourcePermission
 	implements PortletResourcePermission {
-
-	@Activate
-	public void activate() {
-		_portletResourcePermission = PortletResourcePermissionFactory.create(
-			LayoutPageTemplateConstants.RESOURCE_NAME,
-			new StagedPortletPermissionLogic(
-				_stagingPermission, LayoutAdminPortletKeys.GROUP_PAGES));
-	}
 
 	@Override
 	public void check(
@@ -94,6 +86,15 @@ public class LayoutPageTemplatePortletResourcePermission
 	@Override
 	public String getResourceName() {
 		return LayoutPageTemplateConstants.RESOURCE_NAME;
+	}
+
+	@Activate
+	protected void activate() {
+		_portletResourcePermission = PortletResourcePermissionFactory.create(
+			LayoutPageTemplateConstants.RESOURCE_NAME,
+			new StagedPortletPermissionLogic(
+				_stagingPermission,
+				LayoutPageTemplateAdminPortletKeys.LAYOUT_PAGE_TEMPLATES));
 	}
 
 	private long _getGroupId(long groupId) {

@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link LayoutSetPrototypeLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetPrototypeLocalService
  * @generated
  */
-@ProviderType
 public class LayoutSetPrototypeLocalServiceWrapper
 	implements LayoutSetPrototypeLocalService,
 			   ServiceWrapper<LayoutSetPrototypeLocalService> {
@@ -36,6 +33,10 @@ public class LayoutSetPrototypeLocalServiceWrapper
 
 	/**
 	 * Adds the layout set prototype to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetPrototypeLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutSetPrototype the layout set prototype
 	 * @return the layout set prototype that was added
@@ -54,8 +55,9 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	public com.liferay.portal.kernel.model.LayoutSetPrototype
 			addLayoutSetPrototype(
 				long userId, long companyId,
-				java.util.Map<java.util.Locale, String> nameMap,
-				java.util.Map<java.util.Locale, String> descriptionMap,
+				java.util.Map<java.util.Locale, java.lang.String> nameMap,
+				java.util.Map<java.util.Locale, java.lang.String>
+					descriptionMap,
 				boolean active, boolean layoutsUpdateable,
 				ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -80,7 +82,23 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutSetPrototypeLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the layout set prototype from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetPrototypeLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutSetPrototype the layout set prototype
 	 * @return the layout set prototype that was removed
@@ -99,6 +117,10 @@ public class LayoutSetPrototypeLocalServiceWrapper
 
 	/**
 	 * Deletes the layout set prototype with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetPrototypeLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutSetPrototypeId the primary key of the layout set prototype
 	 * @return the layout set prototype that was removed
@@ -141,6 +163,11 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _layoutSetPrototypeLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _layoutSetPrototypeLocalService.dynamicQuery();
 	}
@@ -162,7 +189,7 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -183,7 +210,7 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -248,7 +275,8 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetPrototype
-		fetchLayoutSetPrototypeByUuidAndCompanyId(String uuid, long companyId) {
+		fetchLayoutSetPrototypeByUuidAndCompanyId(
+			java.lang.String uuid, long companyId) {
 
 		return _layoutSetPrototypeLocalService.
 			fetchLayoutSetPrototypeByUuidAndCompanyId(uuid, companyId);
@@ -305,7 +333,8 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetPrototype
-			getLayoutSetPrototypeByUuidAndCompanyId(String uuid, long companyId)
+			getLayoutSetPrototypeByUuidAndCompanyId(
+				java.lang.String uuid, long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetPrototypeLocalService.
@@ -316,7 +345,7 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	 * Returns a range of all the layout set prototypes.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout set prototypes
@@ -355,10 +384,13 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _layoutSetPrototypeLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -370,21 +402,26 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.LayoutSetPrototype>
 		search(
-			long companyId, Boolean active, int start, int end,
+			long companyId, java.lang.Boolean active, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.LayoutSetPrototype> obc) {
+				<com.liferay.portal.kernel.model.LayoutSetPrototype>
+					orderByComparator) {
 
 		return _layoutSetPrototypeLocalService.search(
-			companyId, active, start, end, obc);
+			companyId, active, start, end, orderByComparator);
 	}
 
 	@Override
-	public int searchCount(long companyId, Boolean active) {
+	public int searchCount(long companyId, java.lang.Boolean active) {
 		return _layoutSetPrototypeLocalService.searchCount(companyId, active);
 	}
 
 	/**
 	 * Updates the layout set prototype in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetPrototypeLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutSetPrototype the layout set prototype
 	 * @return the layout set prototype that was updated
@@ -403,8 +440,9 @@ public class LayoutSetPrototypeLocalServiceWrapper
 	public com.liferay.portal.kernel.model.LayoutSetPrototype
 			updateLayoutSetPrototype(
 				long layoutSetPrototypeId,
-				java.util.Map<java.util.Locale, String> nameMap,
-				java.util.Map<java.util.Locale, String> descriptionMap,
+				java.util.Map<java.util.Locale, java.lang.String> nameMap,
+				java.util.Map<java.util.Locale, java.lang.String>
+					descriptionMap,
 				boolean active, boolean layoutsUpdateable,
 				ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -416,7 +454,8 @@ public class LayoutSetPrototypeLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetPrototype
-			updateLayoutSetPrototype(long layoutSetPrototypeId, String settings)
+			updateLayoutSetPrototype(
+				long layoutSetPrototypeId, java.lang.String settings)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetPrototypeLocalService.updateLayoutSetPrototype(

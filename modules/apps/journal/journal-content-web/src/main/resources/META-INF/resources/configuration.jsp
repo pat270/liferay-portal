@@ -40,7 +40,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 			<liferay-frontend:fieldset>
 				<div id="<portlet:namespace />articlePreview">
 					<liferay-util:include page="/journal_resources.jsp" servletContext="<%= application %>">
-						<liferay-util:param name="refererPortletName" value="<%= renderResponse.getNamespace() %>" />
+						<liferay-util:param name="refererPortletName" value="<%= liferayPortletResponse.getNamespace() %>" />
 					</liferay-util:include>
 				</div>
 			</liferay-frontend:fieldset>
@@ -54,73 +54,51 @@ String redirect = ParamUtil.getString(request, "redirect");
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>
 
-<aui:script sandbox="<%= true %>" use="aui-base">
-	var form = A.one('#<portlet:namespace />fm');
-
-	var articlePreview = A.one('#<portlet:namespace />articlePreview');
-
-	articlePreview.delegate(
-		'click',
-		function(event) {
-			event.preventDefault();
-
-			<%
-			PortletURL selectWebContentURL = PortletProviderUtil.getPortletURL(request, JournalArticle.class.getName(), PortletProvider.Action.BROWSE);
-
-			selectWebContentURL.setParameter("groupId", String.valueOf(journalContentDisplayContext.getGroupId()));
-
-			if (journalContentDisplayContext.getSelectedGroupIds() != null) {
-				selectWebContentURL.setParameter("selectedGroupIds", StringUtil.merge(journalContentDisplayContext.getSelectedGroupIds()));
-			}
-			else {
-				selectWebContentURL.setParameter("selectedGroupId", String.valueOf(themeDisplay.getScopeGroupId()));
-			}
-
-			selectWebContentURL.setParameter("refererAssetEntryId", "[$ARTICLE_REFERER_ASSET_ENTRY_ID$]");
-			selectWebContentURL.setParameter("typeSelection", JournalArticle.class.getName());
-			selectWebContentURL.setParameter("showNonindexable", String.valueOf(Boolean.TRUE));
-			selectWebContentURL.setParameter("showScheduled", String.valueOf(Boolean.TRUE));
-			selectWebContentURL.setParameter("eventName", "selectContent");
-			selectWebContentURL.setWindowState(LiferayWindowState.POP_UP);
-			%>
-
-			var baseSelectWebContentURI = '<%= selectWebContentURL.toString() %>';
-
-			Liferay.Util.selectEntity(
-				{
-					dialog: {
-						constrain: true,
-						destroyOnHide: true,
-						modal: true
-					},
-					eventName: 'selectContent',
-					id: 'selectContent',
-					title: '<liferay-ui:message key="select-web-content" />',
-					uri: baseSelectWebContentURI.replace(encodeURIComponent('[$ARTICLE_REFERER_ASSET_ENTRY_ID$]'), form.attr('<portlet:namespace />assetEntryId').val())
-				},
-				function(event) {
-					retrieveWebContent(event.assetclasspk);
-				}
-			);
-		},
-		'.web-content-selector'
+<aui:script require="metal-dom/src/all/dom as dom, frontend-js-web/liferay/ItemSelectorDialog.es as ItemSelectorDialog">
+	var articlePreview = document.getElementById(
+		'<portlet:namespace />articlePreview'
+	);
+	var assetEntryIdInput = document.getElementById(
+		'<portlet:namespace />assetEntryId'
 	);
 
-	articlePreview.delegate(
-		'click',
-		function(event) {
-			event.preventDefault();
+	var itemSelectorDialog = new ItemSelectorDialog.default({
+		eventName: '<portlet:namespace />selectedItem',
+		singleSelect: true,
+		title: '<liferay-ui:message key="select-web-content" />',
+		url: '<%= journalContentDisplayContext.getItemSelectorURL() %>',
+	});
 
-			retrieveWebContent(-1);
-		},
-		'.selector-button'
-	);
+	itemSelectorDialog.on('selectedItemChange', function (event) {
+		var selectedItem = event.selectedItem;
+
+		if (!selectedItem) {
+			return;
+		}
+
+		retrieveWebContent(selectedItem.assetclasspk);
+	});
+
+	dom.delegate(articlePreview, 'click', '.web-content-selector', function (
+		event
+	) {
+		event.preventDefault();
+		itemSelectorDialog.open();
+	});
+
+	dom.delegate(articlePreview, 'click', '.selector-button', function (event) {
+		event.preventDefault();
+		retrieveWebContent(-1);
+	});
 
 	function retrieveWebContent(assetClassPK) {
 		var uri = '<%= configurationRenderURL %>';
 
-		uri = Liferay.Util.addParams('<portlet:namespace />articleResourcePrimKey=' + assetClassPK, uri);
+		uri = Liferay.Util.addParams(
+			'<portlet:namespace />articleResourcePrimKey=' + assetClassPK,
+			uri
+		);
 
-		location.href = uri;
+		Liferay.Util.navigate(uri);
 	}
 </aui:script>

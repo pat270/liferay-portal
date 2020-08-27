@@ -60,12 +60,11 @@ Calendar calendar = (Calendar)row.getObject();
 		</liferay-portlet:actionURL>
 
 		<%
-		StringBundler sb = new StringBundler(6);
+		StringBundler sb = new StringBundler(5);
 
 		sb.append("javascript:");
-		sb.append(renderResponse.getNamespace());
-		sb.append("importCalendar");
-		sb.append("('");
+		sb.append(liferayPortletResponse.getNamespace());
+		sb.append("importCalendar('");
 		sb.append(importURL);
 		sb.append("');");
 		%>

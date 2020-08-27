@@ -141,7 +141,8 @@ public class DiscussionTag extends IncludeTag {
 		return StringBundler.concat(
 			themeDisplay.getPathMain(),
 			"/portal/comment/discussion/get_editor?p_p_isolated=1&",
-			"portletId=", portletId);
+			"doAsUserId=", themeDisplay.getDoAsUserId(), "&portletId=",
+			portletId);
 	}
 
 	protected String getFormAction(HttpServletRequest httpServletRequest) {
@@ -153,7 +154,10 @@ public class DiscussionTag extends IncludeTag {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		return themeDisplay.getPathMain() + "/portal/comment/discussion/edit";
+		return StringBundler.concat(
+			themeDisplay.getPathMain(),
+			"/portal/comment/discussion/edit?doAsUserId=",
+			themeDisplay.getDoAsUserId());
 	}
 
 	@Override
@@ -173,7 +177,13 @@ public class DiscussionTag extends IncludeTag {
 		return StringBundler.concat(
 			themeDisplay.getPathMain(),
 			"/portal/comment/discussion/get_comments?p_p_isolated=1&",
-			"portletId=", portletId);
+			"doAsUserId=", themeDisplay.getDoAsUserId(), "&portletId=",
+			portletId);
+	}
+
+	@Override
+	protected boolean isCleanUpSetAttributes() {
+		return true;
 	}
 
 	@Override
@@ -185,12 +195,8 @@ public class DiscussionTag extends IncludeTag {
 			"liferay-comment:discussion:className", _className);
 		httpServletRequest.setAttribute(
 			"liferay-comment:discussion:classPK", String.valueOf(_classPK));
-
-		if (_discussion != null) {
-			httpServletRequest.setAttribute(
-				"liferay-comment:discussion:discussion", _discussion);
-		}
-
+		httpServletRequest.setAttribute(
+			"liferay-comment:discussion:discussion", _discussion);
 		httpServletRequest.setAttribute(
 			"liferay-comment:discussion:editorURL",
 			getEditorURL(httpServletRequest));

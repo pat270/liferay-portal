@@ -72,7 +72,7 @@ public class UserNotificationEventUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<UserNotificationEvent> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -85,9 +85,11 @@ public class UserNotificationEventUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_userNotificationEventLocalService.fetchUserNotificationEvent(
-				baseModelPK) == null) {
+		UserNotificationEvent userNotificationEvent =
+			_userNotificationEventLocalService.fetchUserNotificationEvent(
+				baseModelPK);
 
+		if (userNotificationEvent == null) {
 			return true;
 		}
 
@@ -95,7 +97,7 @@ public class UserNotificationEventUADAnonymizerTest
 	}
 
 	@Inject(filter = "component.name=*.UserNotificationEventUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<UserNotificationEvent> _uadAnonymizer;
 
 	@Inject
 	private UserNotificationEventLocalService

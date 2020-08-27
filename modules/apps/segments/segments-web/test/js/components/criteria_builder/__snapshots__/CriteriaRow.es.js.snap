@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CriteriaRow should render 1`] = `
+exports[`CriteriaRow renders 1`] = `
 <DocumentFragment>
   <div
     class="criterion-row-root"
@@ -12,9 +12,8 @@ exports[`CriteriaRow should render 1`] = `
         class="drag-icon"
       >
         <svg
-          aria-hidden="true"
           class="lexicon-icon lexicon-icon-drag"
-          viewBox="0 0 512 512"
+          role="presentation"
         >
           <use
             xlink:href="#drag"
@@ -29,7 +28,7 @@ exports[`CriteriaRow should render 1`] = `
         </b>
       </span>
       <select
-        class="form-control criterion-input operator-input form-control"
+        class="form-control criterion-input form-control operator-input"
       />
       <input
         class="criterion-input form-control"
@@ -38,13 +37,12 @@ exports[`CriteriaRow should render 1`] = `
         value="test_val"
       />
       <button
-        class="btn btn-outline-secondary btn-monospaced btn-outline-borderless"
+        class="btn-outline-borderless btn-sm mr-1 btn btn-monospaced btn-secondary"
         type="button"
       >
         <svg
-          aria-hidden="true"
-          class="lexicon-icon lexicon-icon-paste icon"
-          viewBox="0 0 512 512"
+          class="lexicon-icon lexicon-icon-paste"
+          role="presentation"
         >
           <use
             xlink:href="#paste"
@@ -52,13 +50,12 @@ exports[`CriteriaRow should render 1`] = `
         </svg>
       </button>
       <button
-        class="btn btn-outline-secondary btn-monospaced btn-outline-borderless"
+        class="btn-outline-borderless btn-sm btn btn-monospaced btn-secondary"
         type="button"
       >
         <svg
-          aria-hidden="true"
-          class="lexicon-icon lexicon-icon-times-circle icon"
-          viewBox="0 0 512 512"
+          class="lexicon-icon lexicon-icon-times-circle"
+          role="presentation"
         >
           <use
             xlink:href="#times-circle"
@@ -70,7 +67,7 @@ exports[`CriteriaRow should render 1`] = `
 </DocumentFragment>
 `;
 
-exports[`CriteriaRow should render and inform there is an unknown property 1`] = `
+exports[`CriteriaRow renders and inform there is an unknown property 1`] = `
 <DocumentFragment>
   <div
     class="criterion-row-root criterion-row-root-error"
@@ -82,9 +79,8 @@ exports[`CriteriaRow should render and inform there is an unknown property 1`] =
         class="drag-icon"
       >
         <svg
-          aria-hidden="true"
           class="lexicon-icon lexicon-icon-drag"
-          viewBox="0 0 512 512"
+          role="presentation"
         >
           <use
             xlink:href="#drag"
@@ -99,7 +95,7 @@ exports[`CriteriaRow should render and inform there is an unknown property 1`] =
         </b>
       </span>
       <select
-        class="form-control criterion-input operator-input form-control"
+        class="form-control criterion-input form-control operator-input"
         disabled=""
       />
       <input
@@ -110,7 +106,7 @@ exports[`CriteriaRow should render and inform there is an unknown property 1`] =
         value="test_val"
       />
       <button
-        class="btn btn-outline-danger"
+        class="btn-outline-danger btn-sm btn"
         type="button"
       >
         delete
@@ -118,28 +114,47 @@ exports[`CriteriaRow should render and inform there is an unknown property 1`] =
     </div>
   </div>
   <div
-    class="alert alert-danger bg-transparent p-1 mt-1 border-0"
+    class="bg-transparent border-0 mt-1 p-1 alert alert-danger"
     role="alert"
   >
-    <span
-      class="alert-indicator"
+    <div
+      class="alert-autofit-row autofit-row"
     >
-      <svg
-        class="lexicon-icon lexicon-icon-check-circle-full"
-        focusable="false"
-        role="presentation"
+      <div
+        class="autofit-col"
       >
-        <use
-          href="#exclamation-full"
-        />
-      </svg>
-    </span>
-    <strong
-      class="lead"
-    >
-      error:
-    </strong>
-    criteria-error-message-edit
+        <div
+          class="autofit-section"
+        >
+          <span
+            class="alert-indicator"
+          >
+            <svg
+              class="lexicon-icon lexicon-icon-exclamation-full"
+              role="presentation"
+            >
+              <use
+                xlink:href="#exclamation-full"
+              />
+            </svg>
+          </span>
+        </div>
+      </div>
+      <div
+        class="autofit-col autofit-col-expand"
+      >
+        <div
+          class="autofit-section"
+        >
+          <strong
+            class="lead"
+          >
+            error
+          </strong>
+          criteria-error-message-edit
+        </div>
+      </div>
+    </div>
   </div>
 </DocumentFragment>
 `;

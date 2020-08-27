@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoTimerInstanceToken in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoTimerInstanceTokenCacheModel
 	implements CacheModel<KaleoTimerInstanceToken>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoTimerInstanceTokenCacheModel)) {
+		if (!(object instanceof KaleoTimerInstanceTokenCacheModel)) {
 			return false;
 		}
 
 		KaleoTimerInstanceTokenCacheModel kaleoTimerInstanceTokenCacheModel =
-			(KaleoTimerInstanceTokenCacheModel)obj;
+			(KaleoTimerInstanceTokenCacheModel)object;
 
 		if ((kaleoTimerInstanceTokenId ==
 				kaleoTimerInstanceTokenCacheModel.kaleoTimerInstanceTokenId) &&
@@ -81,7 +78,7 @@ public class KaleoTimerInstanceTokenCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(43);
+		StringBundler sb = new StringBundler(45);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -103,6 +100,8 @@ public class KaleoTimerInstanceTokenCacheModel
 		sb.append(kaleoClassName);
 		sb.append(", kaleoClassPK=");
 		sb.append(kaleoClassPK);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoInstanceId=");
@@ -171,6 +170,7 @@ public class KaleoTimerInstanceTokenCacheModel
 		}
 
 		kaleoTimerInstanceTokenImpl.setKaleoClassPK(kaleoClassPK);
+		kaleoTimerInstanceTokenImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoTimerInstanceTokenImpl.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoTimerInstanceTokenImpl.setKaleoInstanceId(kaleoInstanceId);
@@ -212,7 +212,9 @@ public class KaleoTimerInstanceTokenCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoTimerInstanceTokenId = objectInput.readLong();
@@ -228,6 +230,8 @@ public class KaleoTimerInstanceTokenCacheModel
 		kaleoClassName = objectInput.readUTF();
 
 		kaleoClassPK = objectInput.readLong();
+
+		kaleoDefinitionId = objectInput.readLong();
 
 		kaleoDefinitionVersionId = objectInput.readLong();
 
@@ -246,7 +250,7 @@ public class KaleoTimerInstanceTokenCacheModel
 
 		completed = objectInput.readBoolean();
 		completionDate = objectInput.readLong();
-		workflowContext = objectInput.readUTF();
+		workflowContext = (String)objectInput.readObject();
 	}
 
 	@Override
@@ -280,6 +284,8 @@ public class KaleoTimerInstanceTokenCacheModel
 
 		objectOutput.writeLong(kaleoClassPK);
 
+		objectOutput.writeLong(kaleoDefinitionId);
+
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		objectOutput.writeLong(kaleoInstanceId);
@@ -305,10 +311,10 @@ public class KaleoTimerInstanceTokenCacheModel
 		objectOutput.writeLong(completionDate);
 
 		if (workflowContext == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(workflowContext);
+			objectOutput.writeObject(workflowContext);
 		}
 	}
 
@@ -322,6 +328,7 @@ public class KaleoTimerInstanceTokenCacheModel
 	public long modifiedDate;
 	public String kaleoClassName;
 	public long kaleoClassPK;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoInstanceId;
 	public long kaleoInstanceTokenId;

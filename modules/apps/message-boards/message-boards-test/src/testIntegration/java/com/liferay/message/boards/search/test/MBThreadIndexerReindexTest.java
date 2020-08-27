@@ -23,9 +23,11 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
@@ -42,6 +44,7 @@ import org.junit.runner.RunWith;
  * @author Luan Maoski
  */
 @RunWith(Arquillian.class)
+@Sync
 public class MBThreadIndexerReindexTest {
 
 	@ClassRule
@@ -61,11 +64,8 @@ public class MBThreadIndexerReindexTest {
 
 	@Test
 	public void testReindexMBThread() throws Exception {
-		User user = userSearchFixture.addUser(
-			RandomTestUtil.randomString(), _group);
-
 		MBMessage mbMessage = mbFixture.createMBMessageWithCategory(
-			RandomTestUtil.randomString(), user.getUserId());
+			RandomTestUtil.randomString());
 
 		MBThread thread = mbMessage.getThread();
 
@@ -86,11 +86,9 @@ public class MBThreadIndexerReindexTest {
 
 	@Test
 	public void testReindexMBThreadWithDefaultCategory() throws Exception {
-		User user = userSearchFixture.addUser(
-			RandomTestUtil.randomString(), _group);
-
 		MBMessage mbMessage = mbFixture.createMBMessage(
-			user.getUserId(), MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID);
+			MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
+			RandomTestUtil.randomString());
 
 		MBThread mbThread = mbMessage.getThread();
 
@@ -111,11 +109,9 @@ public class MBThreadIndexerReindexTest {
 
 	@Test
 	public void testReindexMBThreadWithDiscussion() throws Exception {
-		User user = userSearchFixture.addUser(
-			RandomTestUtil.randomString(), _group);
-
 		MBMessage mbMessage = mbFixture.createMBMessage(
-			user.getUserId(), MBCategoryConstants.DISCUSSION_CATEGORY_ID);
+			MBCategoryConstants.DISCUSSION_CATEGORY_ID,
+			RandomTestUtil.randomString());
 
 		MBThread mbThread = mbMessage.getThread();
 
@@ -134,7 +130,10 @@ public class MBThreadIndexerReindexTest {
 		mbThreadIndexerFixture.searchOnlyOne(searchTerm);
 	}
 
-	protected void setUpMBFixture() throws Exception {
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
+	protected void setUpMBFixture() {
 		mbFixture = new MBFixture(_group, _user);
 
 		_mbMessages = mbFixture.getMbMessages();

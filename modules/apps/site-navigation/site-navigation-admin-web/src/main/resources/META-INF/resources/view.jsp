@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagementToolbarDisplayContext = new SiteNavigationAdminManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteNavigationAdminDisplayContext);
+SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagementToolbarDisplayContext = new SiteNavigationAdminManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteNavigationAdminDisplayContext);
 %>
 
 <clay:management-toolbar
@@ -40,9 +40,9 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 		>
 
 			<%
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", siteNavigationAdminManagementToolbarDisplayContext.getAvailableActions(siteNavigationMenu));
+			Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+				"actions", siteNavigationAdminManagementToolbarDisplayContext.getAvailableActions(siteNavigationMenu)
+			).build();
 
 			row.setData(rowData);
 			%>
@@ -104,11 +104,17 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 						value="<%= HtmlUtil.escape(siteNavigationMenu.getName()) %>"
 					/>
 
-					<liferay-ui:search-container-column-text
-						cssClass="table-cell-expand-smaller"
-						name="add-new-pages"
-						value='<%= siteNavigationMenu.isAuto() ? LanguageUtil.get(request, "yes") : StringPool.BLANK %>'
-					/>
+					<%
+					Group scopeGroup = themeDisplay.getScopeGroup();
+					%>
+
+					<c:if test="<%= !scopeGroup.isCompany() %>">
+						<liferay-ui:search-container-column-text
+							cssClass="table-cell-expand-smaller"
+							name="add-new-pages"
+							value='<%= siteNavigationMenu.isAuto() ? LanguageUtil.get(request, "yes") : StringPool.BLANK %>'
+						/>
+					</c:if>
 
 					<liferay-ui:search-container-column-text
 						cssClass="table-cell-expand-smaller table-cell-minw-150"
@@ -142,30 +148,30 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 	</liferay-ui:search-container>
 </aui:form>
 
-<aui:script require="metal-dom/src/all/dom as dom,frontend-js-web/liferay/modal/commands/OpenSimpleInputModal.es as modalCommands" sandbox="<%= true %>">
+<aui:script require="metal-dom/src/all/dom as dom,frontend-js-web/liferay/modal/commands/OpenSimpleInputModal.es as openSimpleInputModal" sandbox="<%= true %>">
 	var renameSiteNavigationMenuClickHandler = dom.delegate(
 		document.body,
 		'click',
 		'.<portlet:namespace />update-site-navigation-menu-action-option > a',
-		function(event) {
+		function (event) {
 			var data = event.delegateTarget.dataset;
 
 			event.preventDefault();
 
-			modalCommands.openSimpleInputModal(
-				{
-					dialogTitle: '<liferay-ui:message key="rename-site-navigation-menu" />',
-					formSubmitURL: data.formSubmitUrl,
-					idFieldName: 'id',
-					idFieldValue: data.idFieldValue,
-					mainFieldLabel: '<liferay-ui:message key="name" />',
-					mainFieldName: 'name',
-					mainFieldPlaceholder: '<liferay-ui:message key="name" />',
-					mainFieldValue: data.mainFieldValue,
-					namespace: '<portlet:namespace />',
-					spritemap: '<%= themeDisplay.getPathThemeImages() %>/lexicon/icons.svg'
-				}
-			);
+			openSimpleInputModal.default({
+				dialogTitle:
+					'<liferay-ui:message key="rename-site-navigation-menu" />',
+				formSubmitURL: data.formSubmitUrl,
+				idFieldName: 'id',
+				idFieldValue: data.idFieldValue,
+				mainFieldLabel: '<liferay-ui:message key="name" />',
+				mainFieldName: 'name',
+				mainFieldPlaceholder: '<liferay-ui:message key="name" />',
+				mainFieldValue: data.mainFieldValue,
+				namespace: '<portlet:namespace />',
+				spritemap:
+					'<%= themeDisplay.getPathThemeImages() %>/clay/icons.svg',
+			});
 		}
 	);
 
@@ -180,5 +186,5 @@ SiteNavigationAdminManagementToolbarDisplayContext siteNavigationAdminManagement
 
 <liferay-frontend:component
 	componentId="<%= siteNavigationAdminManagementToolbarDisplayContext.getDefaultEventHandler() %>"
-	module="js/ManagementToolbarDefaultEventHandler.es"
+	module="js/ManagementToolbarDefaultEventHandler"
 />

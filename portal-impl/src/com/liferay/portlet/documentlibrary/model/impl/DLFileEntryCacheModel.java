@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DLFileEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DLFileEntryCacheModel
-	implements CacheModel<DLFileEntry>, Externalizable {
+	implements CacheModel<DLFileEntry>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DLFileEntryCacheModel)) {
+		if (!(object instanceof DLFileEntryCacheModel)) {
 			return false;
 		}
 
 		DLFileEntryCacheModel dlFileEntryCacheModel =
-			(DLFileEntryCacheModel)obj;
+			(DLFileEntryCacheModel)object;
 
-		if (fileEntryId == dlFileEntryCacheModel.fileEntryId) {
+		if ((fileEntryId == dlFileEntryCacheModel.fileEntryId) &&
+			(mvccVersion == dlFileEntryCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class DLFileEntryCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, fileEntryId);
+		int hashCode = HashUtil.hash(0, fileEntryId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(61);
+		StringBundler sb = new StringBundler(63);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", fileEntryId=");
 		sb.append(fileEntryId);
@@ -113,8 +129,6 @@ public class DLFileEntryCacheModel
 		sb.append(version);
 		sb.append(", size=");
 		sb.append(size);
-		sb.append(", readCount=");
-		sb.append(readCount);
 		sb.append(", smallImageId=");
 		sb.append(smallImageId);
 		sb.append(", largeImageId=");
@@ -135,6 +149,9 @@ public class DLFileEntryCacheModel
 	@Override
 	public DLFileEntry toEntityModel() {
 		DLFileEntryImpl dlFileEntryImpl = new DLFileEntryImpl();
+
+		dlFileEntryImpl.setMvccVersion(mvccVersion);
+		dlFileEntryImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			dlFileEntryImpl.setUuid("");
@@ -240,7 +257,6 @@ public class DLFileEntryCacheModel
 		}
 
 		dlFileEntryImpl.setSize(size);
-		dlFileEntryImpl.setReadCount(readCount);
 		dlFileEntryImpl.setSmallImageId(smallImageId);
 		dlFileEntryImpl.setLargeImageId(largeImageId);
 		dlFileEntryImpl.setCustom1ImageId(custom1ImageId);
@@ -260,7 +276,12 @@ public class DLFileEntryCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		fileEntryId = objectInput.readLong();
@@ -288,14 +309,12 @@ public class DLFileEntryCacheModel
 		mimeType = objectInput.readUTF();
 		title = objectInput.readUTF();
 		description = objectInput.readUTF();
-		extraSettings = objectInput.readUTF();
+		extraSettings = (String)objectInput.readObject();
 
 		fileEntryTypeId = objectInput.readLong();
 		version = objectInput.readUTF();
 
 		size = objectInput.readLong();
-
-		readCount = objectInput.readInt();
 
 		smallImageId = objectInput.readLong();
 
@@ -311,6 +330,10 @@ public class DLFileEntryCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -394,10 +417,10 @@ public class DLFileEntryCacheModel
 		}
 
 		if (extraSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(extraSettings);
+			objectOutput.writeObject(extraSettings);
 		}
 
 		objectOutput.writeLong(fileEntryTypeId);
@@ -411,8 +434,6 @@ public class DLFileEntryCacheModel
 
 		objectOutput.writeLong(size);
 
-		objectOutput.writeInt(readCount);
-
 		objectOutput.writeLong(smallImageId);
 
 		objectOutput.writeLong(largeImageId);
@@ -425,6 +446,8 @@ public class DLFileEntryCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long fileEntryId;
 	public long groupId;
@@ -448,7 +471,6 @@ public class DLFileEntryCacheModel
 	public long fileEntryTypeId;
 	public String version;
 	public long size;
-	public int readCount;
 	public long smallImageId;
 	public long largeImageId;
 	public long custom1ImageId;

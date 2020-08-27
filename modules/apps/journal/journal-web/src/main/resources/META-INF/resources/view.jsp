@@ -17,7 +17,20 @@
 <%@ include file="/init.jsp" %>
 
 <%
-JournalManagementToolbarDisplayContext journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalDisplayContext, trashHelper);
+JournalManagementToolbarDisplayContext journalManagementToolbarDisplayContext = null;
+
+if (!journalDisplayContext.isSearch() || journalDisplayContext.isWebContentTabSelected()) {
+	journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
+}
+else if (journalDisplayContext.isVersionsTabSelected()) {
+	journalManagementToolbarDisplayContext = new JournalArticleVersionsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
+}
+else if (journalDisplayContext.isCommentsTabSelected()) {
+	journalManagementToolbarDisplayContext = new JournalArticleCommentsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
+}
+else {
+	journalManagementToolbarDisplayContext = new JournalManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDisplayContext, trashHelper);
+}
 
 String title = journalDisplayContext.getFolderTitle();
 
@@ -26,7 +39,7 @@ if (Validator.isNotNull(title)) {
 }
 %>
 
-<portlet:actionURL name="restoreTrashEntries" var="restoreTrashEntriesURL" />
+<portlet:actionURL name="/journal/restore_trash_entries" var="restoreTrashEntriesURL" />
 
 <liferay-trash:undo
 	portletURL="<%= restoreTrashEntriesURL %>"
@@ -34,7 +47,7 @@ if (Validator.isNotNull(title)) {
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems='<%= journalDisplayContext.getNavigationBarItems("web-content") %>'
+	navigationItems='<%= journalDisplayContext.getNavigationItems("web-content") %>'
 />
 
 <clay:management-toolbar
@@ -47,9 +60,14 @@ if (Validator.isNotNull(title)) {
 	module="js/ManagementToolbarDefaultEventHandler.es"
 />
 
-<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<c:if test="<%= journalDisplayContext.isShowInfoButton() %>">
-		<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/journal/info_panel" var="sidebarPanelURL" />
+		<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/journal/info_panel" var="sidebarPanelURL">
+			<portlet:param name="folderId" value="<%= String.valueOf(journalDisplayContext.getFolderId()) %>" />
+		</liferay-portlet:resourceURL>
 
 		<liferay-frontend:sidebar-panel
 			resourceURL="<%= sidebarPanelURL %>"
@@ -71,10 +89,6 @@ if (Validator.isNotNull(title)) {
 			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 			<aui:input name="groupId" type="hidden" value="<%= scopeGroupId %>" />
 			<aui:input name="newFolderId" type="hidden" />
-
-			<%
-			request.setAttribute("view.jsp-journalManagementToolbarDisplayContext", journalManagementToolbarDisplayContext);
-			%>
 
 			<c:choose>
 				<c:when test="<%= !journalDisplayContext.isSearch() %>">
@@ -115,13 +129,13 @@ if (Validator.isNotNull(title)) {
 					/>
 
 					<c:choose>
-						<c:when test='<%= Objects.equals(journalDisplayContext.getTabs1(), "web-content") || (journalDisplayContext.hasResults() && Validator.isNull(journalDisplayContext.getTabs1())) %>'>
+						<c:when test="<%= journalDisplayContext.isWebContentTabSelected() %>">
 							<liferay-util:include page="/view_entries.jsp" servletContext="<%= application %>" />
 						</c:when>
-						<c:when test='<%= Objects.equals(journalDisplayContext.getTabs1(), "versions") || (journalDisplayContext.hasVersionsResults() && Validator.isNull(journalDisplayContext.getTabs1())) %>'>
+						<c:when test="<%= journalDisplayContext.isVersionsTabSelected() %>">
 							<liferay-util:include page="/view_versions.jsp" servletContext="<%= application %>" />
 						</c:when>
-						<c:when test='<%= Objects.equals(journalDisplayContext.getTabs1(), "comments") || (journalDisplayContext.hasCommentsResults() && Validator.isNull(journalDisplayContext.getTabs1())) %>'>
+						<c:when test="<%= journalDisplayContext.isCommentsTabSelected() %>">
 							<liferay-util:include page="/view_comments.jsp" servletContext="<%= application %>" />
 						</c:when>
 						<c:otherwise>
@@ -132,29 +146,11 @@ if (Validator.isNotNull(title)) {
 			</c:choose>
 		</aui:form>
 	</div>
-</div>
 
-<aui:script use="liferay-journal-navigation">
-	var journalNavigation = new Liferay.Portlet.JournalNavigation(
-		{
-			editEntryUrl: '<portlet:actionURL />',
-			form: {
-				method: 'POST',
-				node: A.one(document.<portlet:namespace />fm)
-			},
-			moveEntryUrl: '<portlet:renderURL><portlet:param name="mvcPath" value="/move_entries.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>',
-			namespace: '<portlet:namespace />',
-			searchContainerId: 'articles'
-		}
-	);
-
-	var clearJournalNavigationHandles = function(event) {
-		if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
-			journalNavigation.destroy();
-
-			Liferay.detach('destroyPortlet', clearJournalNavigationHandles);
-		}
-	};
-
-	Liferay.on('destroyPortlet', clearJournalNavigationHandles);
-</aui:script>
+	<div>
+		<react:component
+			module="js/export_translation/ExportTranslation.es"
+			props="<%= journalDisplayContext.getExportTranslationData() %>"
+		/>
+	</div>
+</clay:container-fluid>

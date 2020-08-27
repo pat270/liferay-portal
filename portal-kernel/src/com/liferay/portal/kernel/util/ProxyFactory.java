@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
@@ -58,85 +58,6 @@ public class ProxyFactory {
 		return ProxyUtil.newProxyInstance(
 			classLoader, interfaceClasses,
 			new ClassLoaderBeanHandler(instance, classLoader));
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #newServiceTrackedInstance(Class, Class, String)}
-	 */
-	@Deprecated
-	public static <T> T newServiceTrackedInstance(Class<T> interfaceClass) {
-		return (T)ProxyUtil.newProxyInstance(
-			interfaceClass.getClassLoader(), new Class<?>[] {interfaceClass},
-			new ServiceTrackedInvocationHandler<>(interfaceClass));
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             ServiceProxyFactory#newServiceTrackedInstance(Class, Class,
-	 *             String, boolean)}
-	 */
-	@Deprecated
-	public static <T> T newServiceTrackedInstance(
-		Class<T> serviceClass, Class<?> declaringClass, String fieldName) {
-
-		return ServiceProxyFactory.newServiceTrackedInstance(
-			serviceClass, declaringClass, fieldName, false);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             ServiceProxyFactory#newServiceTrackedInstance(Class, Class,
-	 *             String, String, boolean)}
-	 */
-	@Deprecated
-	public static <T> T newServiceTrackedInstance(
-		Class<T> serviceClass, Class<?> declaringClass, String fieldName,
-		String filterString) {
-
-		return ServiceProxyFactory.newServiceTrackedInstance(
-			serviceClass, declaringClass, fieldName, filterString, false);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #newServiceTrackedInstance(Class, Class, String, String)}
-	 */
-	@Deprecated
-	public static <T> T newServiceTrackedInstance(
-		Class<T> interfaceClass, String filterString) {
-
-		return (T)ProxyUtil.newProxyInstance(
-			interfaceClass.getClassLoader(), new Class<?>[] {interfaceClass},
-			new ServiceTrackedInvocationHandler<>(
-				interfaceClass, filterString));
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             ServiceProxyFactory#newServiceTrackedInstance(Class, Class,
-	 *             String, boolean)}
-	 */
-	@Deprecated
-	public static <T> T newServiceTrackedInstanceWithoutDummyService(
-		Class<T> serviceClass, Class<?> declaringClass, String fieldName) {
-
-		return ServiceProxyFactory.newServiceTrackedInstance(
-			serviceClass, declaringClass, fieldName, true);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             ServiceProxyFactory#newServiceTrackedInstance(Class, Class,
-	 *             String, String, boolean)}
-	 */
-	@Deprecated
-	public static <T> T newServiceTrackedInstanceWithoutDummyService(
-		Class<T> serviceClass, Class<?> declaringClass, String fieldName,
-		String filterString) {
-
-		return ServiceProxyFactory.newServiceTrackedInstance(
-			serviceClass, declaringClass, fieldName, filterString, true);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(ProxyFactory.class);
@@ -190,8 +111,8 @@ public class ProxyFactory {
 				try {
 					return method.invoke(service, arguments);
 				}
-				catch (InvocationTargetException ite) {
-					throw ite.getTargetException();
+				catch (InvocationTargetException invocationTargetException) {
+					throw invocationTargetException.getTargetException();
 				}
 			}
 
@@ -262,9 +183,8 @@ public class ProxyFactory {
 
 				sb.append(StringPool.CLOSE_PARENTHESIS);
 
-				Filter filter = registry.getFilter(sb.toString());
-
-				_serviceTracker = registry.trackServices(filter);
+				_serviceTracker = registry.trackServices(
+					registry.getFilter(sb.toString()));
 			}
 
 			_serviceTracker.open();

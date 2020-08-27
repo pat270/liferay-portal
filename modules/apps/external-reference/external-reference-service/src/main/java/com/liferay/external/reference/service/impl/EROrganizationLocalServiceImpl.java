@@ -15,17 +15,24 @@
 package com.liferay.external.reference.service.impl;
 
 import com.liferay.external.reference.service.base.EROrganizationLocalServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.users.admin.kernel.file.uploads.UserFileUploadsSettings;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Dylan Rebelak
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.kernel.model.Organization",
+	service = AopService.class
+)
 public class EROrganizationLocalServiceImpl
 	extends EROrganizationLocalServiceBaseImpl {
 
@@ -34,7 +41,7 @@ public class EROrganizationLocalServiceImpl
 			String externalReferenceCode, long userId,
 			long parentOrganizationId, String name, String type, long regionId,
 			long countryId, long statusId, String comments, boolean site,
-			boolean logo, byte[] logoBytes, ServiceContext serviceContext)
+			boolean hasLogo, byte[] logoBytes, ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = userLocalService.getUser(userId);
@@ -50,8 +57,8 @@ public class EROrganizationLocalServiceImpl
 
 			organization.setExternalReferenceCode(externalReferenceCode);
 
-			PortalUtil.updateImageId(
-				organization, logo, logoBytes, "logoId",
+			_portal.updateImageId(
+				organization, hasLogo, logoBytes, "logoId",
 				_userFileUploadsSettings.getImageMaxSize(),
 				_userFileUploadsSettings.getImageMaxHeight(),
 				_userFileUploadsSettings.getImageMaxWidth());
@@ -63,13 +70,16 @@ public class EROrganizationLocalServiceImpl
 			organizationLocalService.updateOrganization(
 				user.getCompanyId(), organization.getOrganizationId(),
 				parentOrganizationId, name, type, regionId, countryId, statusId,
-				comments, logo, logoBytes, site, serviceContext);
+				comments, hasLogo, logoBytes, site, serviceContext);
 		}
 
 		return organization;
 	}
 
-	@ServiceReference(type = UserFileUploadsSettings.class)
+	@Reference
+	private Portal _portal;
+
+	@Reference
 	private UserFileUploadsSettings _userFileUploadsSettings;
 
 }

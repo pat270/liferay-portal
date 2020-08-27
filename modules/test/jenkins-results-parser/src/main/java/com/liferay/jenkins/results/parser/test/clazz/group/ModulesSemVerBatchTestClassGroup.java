@@ -38,7 +38,7 @@ public class ModulesSemVerBatchTestClassGroup
 
 	@Override
 	public int getAxisCount() {
-		if (testRelevantIntegrationUnitOnly) {
+		if (!isStableTestSuiteBatch() && testRelevantIntegrationUnitOnly) {
 			return 0;
 		}
 
@@ -118,20 +118,21 @@ public class ModulesSemVerBatchTestClassGroup
 
 				});
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
 				"Unable to get module marker files from " +
 					moduleBaseDir.getPath(),
-				ioe);
+				ioException);
 		}
 
 		return modulesProjectDirs;
 	}
 
 	protected ModulesSemVerBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 	}
 
 	@Override
@@ -142,7 +143,14 @@ public class ModulesSemVerBatchTestClassGroup
 		File portalModulesBaseDir = new File(
 			portalGitWorkingDirectory.getWorkingDirectory(), "modules");
 
-		if ((testSuiteName == null) || testSuiteName.equals("default")) {
+		if (testRelevantChanges &&
+			!(includeStableTestSuite && isStableTestSuiteBatch())) {
+
+			moduleDirsList.addAll(
+				portalGitWorkingDirectory.getModifiedModuleDirsList(
+					excludesPathMatchers, includesPathMatchers));
+		}
+		else {
 			moduleDirsList.addAll(
 				portalGitWorkingDirectory.getModuleDirsList(
 					excludesPathMatchers, includesPathMatchers));
@@ -154,23 +162,18 @@ public class ModulesSemVerBatchTestClassGroup
 				moduleDirsList.add(semVerMarkerFile.getParentFile());
 			}
 		}
-		else {
-			moduleDirsList.addAll(
-				portalGitWorkingDirectory.getModifiedModuleDirsList(
-					excludesPathMatchers, includesPathMatchers));
-		}
 
 		for (File moduleDir : moduleDirsList) {
-			List<File> modulesProjectsDirs = getModulesProjectDirs(
+			List<File> modulesProjectDirs = getModulesProjectDirs(
 				moduleDir, portalModulesBaseDir);
 
-			if (!modulesProjectsDirs.isEmpty()) {
+			if (!modulesProjectDirs.isEmpty()) {
 				testClasses.add(
 					ModulesSemVerBatchTestClass.getInstance(
 						new TestClass.TestClassFile(
 							JenkinsResultsParserUtil.getCanonicalPath(
 								moduleDir)),
-						portalModulesBaseDir, modulesProjectsDirs));
+						portalModulesBaseDir, modulesProjectDirs));
 			}
 		}
 	}

@@ -28,33 +28,29 @@
 	label="<%= label %>"
 />
 
-<aui:script use="liferay-store">
-	var sidenavToggle = $('[href="#<%= sidenavId %>"]');
+<aui:script>
+	var sidenavToggle = document.querySelector('[href="#<%= sidenavId %>"]');
 
-	if (!sidenavToggle.sideNavigation('instance')) {
-		sidenavToggle.sideNavigation(
-			{
-				position: '<%= position %>',
-				type: '<%= type %>',
-				typeMobile: '<%= typeMobile %>',
-				width: '<%= width %>'
-			}
-		);
+	if (!Liferay.SideNavigation.instance(sidenavToggle)) {
+		var sidenavInstance = Liferay.SideNavigation.initialize(sidenavToggle, {
+			position: '<%= position %>',
+			type: '<%= type %>',
+			typeMobile: '<%= typeMobile %>',
+			width: '<%= width %>',
+		});
 
-		var sidenavSlider = $('#<%= sidenavId %>');
+		sidenavInstance.on('closed.lexicon.sidenav', function (event) {
+			Liferay.Util.Session.set(
+				'com.liferay.info.panel_<%= sidenavId %>',
+				'closed'
+			);
+		});
 
-		sidenavSlider.on(
-			'closed.lexicon.sidenav',
-			function(event) {
-				Liferay.Store('com.liferay.info.panel_<%= sidenavId %>', 'closed');
-			}
-		);
-
-		sidenavSlider.on(
-			'open.lexicon.sidenav',
-			function(event) {
-				Liferay.Store('com.liferay.info.panel_<%= sidenavId %>', 'open');
-			}
-		);
+		sidenavInstance.on('open.lexicon.sidenav', function (event) {
+			Liferay.Util.Session.set(
+				'com.liferay.info.panel_<%= sidenavId %>',
+				'open'
+			);
+		});
 	}
 </aui:script>

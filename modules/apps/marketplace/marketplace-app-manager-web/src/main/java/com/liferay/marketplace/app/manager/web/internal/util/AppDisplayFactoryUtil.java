@@ -58,16 +58,15 @@ public class AppDisplayFactoryUtil {
 
 			bundlesMap.load(bundles);
 
-			App app = _appLocalService.getApp(appId);
-
-			return createMarketplaceAppDisplay(bundlesMap, app);
+			return createMarketplaceAppDisplay(
+				bundlesMap, _appLocalService.getApp(appId));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return null;

@@ -19,15 +19,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.announcements.service.http.AnnouncementsDeliveryServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AnnouncementsDeliverySoap implements Serializable {
 
 	public static AnnouncementsDeliverySoap toSoapModel(
@@ -35,6 +34,7 @@ public class AnnouncementsDeliverySoap implements Serializable {
 
 		AnnouncementsDeliverySoap soapModel = new AnnouncementsDeliverySoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setDeliveryId(model.getDeliveryId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
@@ -102,6 +102,14 @@ public class AnnouncementsDeliverySoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setDeliveryId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public long getDeliveryId() {
@@ -172,6 +180,7 @@ public class AnnouncementsDeliverySoap implements Serializable {
 		_website = website;
 	}
 
+	private long _mvccVersion;
 	private long _deliveryId;
 	private long _companyId;
 	private long _userId;

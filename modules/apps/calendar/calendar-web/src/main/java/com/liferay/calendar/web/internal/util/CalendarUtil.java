@@ -25,7 +25,6 @@ import com.liferay.calendar.service.CalendarResourceLocalService;
 import com.liferay.calendar.service.CalendarService;
 import com.liferay.calendar.util.JCalendarUtil;
 import com.liferay.calendar.util.RecurrenceUtil;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -75,22 +74,16 @@ public class CalendarUtil {
 		Map<Integer, Map<Integer, List<Integer>>> rulesMap = new HashMap<>();
 
 		for (CalendarBooking calendarBooking : calendarBookings) {
-			TimeZone displayTimeZone = timeZone;
-
-			if (calendarBooking.isAllDay()) {
-				displayTimeZone = _utcTimeZone;
-			}
-
 			long maxStartTime = Math.max(
 				calendarBooking.getStartTime(), startTime);
 
 			java.util.Calendar startTimeJCalendar = JCalendarUtil.getJCalendar(
-				maxStartTime, displayTimeZone);
+				maxStartTime, timeZone);
 
 			long minEndTime = Math.min(calendarBooking.getEndTime(), endTime);
 
 			java.util.Calendar endTimeJCalendar = JCalendarUtil.getJCalendar(
-				minEndTime, displayTimeZone);
+				minEndTime, timeZone);
 
 			long days = JCalendarUtil.getDaysBetween(
 				startTimeJCalendar, endTimeJCalendar);
@@ -160,10 +153,7 @@ public class CalendarUtil {
 		Set<CalendarResource> calendarResources = new HashSet<>();
 
 		for (CalendarBooking calendarBooking : calendarBookings) {
-			CalendarResource calendarResource =
-				calendarBooking.getCalendarResource();
-
-			calendarResources.add(calendarResource);
+			calendarResources.add(calendarBooking.getCalendarResource());
 		}
 
 		return calendarResources;
@@ -184,10 +174,6 @@ public class CalendarUtil {
 			"description",
 			calendarBooking.getDescription(themeDisplay.getLocale())
 		);
-
-		if (calendarBooking.isAllDay()) {
-			timeZone = TimeZone.getTimeZone(StringPool.UTC);
-		}
 
 		java.util.Calendar endTimeJCalendar = JCalendarUtil.getJCalendar(
 			calendarBooking.getEndTime(), timeZone);
@@ -492,8 +478,6 @@ public class CalendarUtil {
 		_calendarModelResourcePermission;
 	private static CalendarResourceLocalService _calendarResourceLocalService;
 	private static CalendarService _calendarService;
-	private static final TimeZone _utcTimeZone = TimeZone.getTimeZone(
-		StringPool.UTC);
 	private static WorkflowDefinitionLinkLocalService
 		_workflowDefinitionLinkLocalService;
 	private static WorkflowInstanceLinkLocalService

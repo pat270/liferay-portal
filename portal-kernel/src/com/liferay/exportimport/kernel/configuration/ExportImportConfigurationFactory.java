@@ -14,6 +14,7 @@
 
 package com.liferay.exportimport.kernel.configuration;
 
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -32,12 +32,9 @@ import java.util.Map;
 
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Levente Hudák
  */
-@ProviderType
 public class ExportImportConfigurationFactory {
 
 	public static ExportImportConfiguration
@@ -152,27 +149,6 @@ public class ExportImportConfigurationFactory {
 				exportImportConfiguration.getType(),
 				exportImportConfiguration.getSettingsMap(),
 				exportImportConfiguration.getStatus(), new ServiceContext());
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             ExportImportConfigurationParameterMapFactoryUtil#buildParameterMap(
-	 *             )}
-	 */
-	@Deprecated
-	public static Map<String, String[]> getDefaultPublishingParameters(
-		PortletRequest portletRequest) {
-
-		Map<String, String[]> parameterMap =
-			ExportImportConfigurationParameterMapFactoryUtil.
-				buildParameterMap();
-
-		Map<String, String[]> requestParameterMap = new LinkedHashMap<>(
-			portletRequest.getParameterMap());
-
-		MapUtil.merge(requestParameterMap, parameterMap);
-
-		return parameterMap;
 	}
 
 	protected static ExportImportConfiguration

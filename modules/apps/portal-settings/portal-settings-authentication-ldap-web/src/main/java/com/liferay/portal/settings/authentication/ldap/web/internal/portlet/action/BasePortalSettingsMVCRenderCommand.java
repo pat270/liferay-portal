@@ -17,7 +17,7 @@ package com.liferay.portal.settings.authentication.ldap.web.internal.portlet.act
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import javax.portlet.PortletException;
@@ -26,8 +26,6 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Tomas Polesovsky
@@ -44,20 +42,17 @@ public abstract class BasePortalSettingsMVCRenderCommand
 			servletContext.getRequestDispatcher(getJspPath());
 
 		try {
-			HttpServletRequest httpServletRequest =
-				PortalUtil.getHttpServletRequest(renderRequest);
-			HttpServletResponse httpServletResponse =
-				PortalUtil.getHttpServletResponse(renderResponse);
-
-			requestDispatcher.include(httpServletRequest, httpServletResponse);
+			requestDispatcher.include(
+				PortalUtil.getHttpServletRequest(renderRequest),
+				PortalUtil.getHttpServletResponse(renderResponse));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to include JSP " + getJspPath(), e);
+				_log.warn("Unable to include JSP " + getJspPath(), exception);
 			}
 
 			throw new PortletException(
-				"Unable to include JSP " + getJspPath(), e);
+				"Unable to include JSP " + getJspPath(), exception);
 		}
 
 		return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;

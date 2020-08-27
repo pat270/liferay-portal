@@ -15,8 +15,11 @@
 package com.liferay.portal.kernel.language;
 
 /**
- * @author Drew Brokke
+ * @author     Drew Brokke
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.kernel.language.constants.LanguageConstants}
  */
+@Deprecated
 public class LanguageConstants {
 
 	public static final String KEY_DIR = "lang.dir";

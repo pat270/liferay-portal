@@ -21,7 +21,7 @@
 />
 
 <clay:management-toolbar
-	displayContext="<%= new SiteBrowserManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteBrowserDisplayContext) %>"
+	displayContext="<%= new SiteBrowserManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteBrowserDisplayContext) %>"
 />
 
 <aui:form action="<%= siteBrowserDisplayContext.getPortletURL() %>" cssClass="container-fluid-1280" method="post" name="selectGroupFm">
@@ -38,13 +38,17 @@
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<String, Object>();
-
-			data.put("entityid", group.getGroupId());
-			data.put("entityname", group.getDescriptiveName(locale));
-			data.put("grouptarget", siteBrowserDisplayContext.getTarget());
-			data.put("grouptype", LanguageUtil.get(request, group.getTypeLabel()));
-			data.put("url", group.getDisplayURL(themeDisplay));
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"entityid", group.getGroupId()
+			).put(
+				"entityname", group.getDescriptiveName(locale)
+			).put(
+				"grouptarget", siteBrowserDisplayContext.getTarget()
+			).put(
+				"grouptype", LanguageUtil.get(request, group.getTypeLabel())
+			).put(
+				"url", group.getDisplayURL(themeDisplay)
+			).build();
 			%>
 
 			<c:choose>
@@ -118,17 +122,10 @@
 	</liferay-ui:search-container>
 </aui:form>
 
-<aui:script use="aui-base">
-	var Util = Liferay.Util;
-
-	var openingLiferay = Util.getOpener().Liferay;
-
-	openingLiferay.fire(
-		'<portlet:namespace />enableRemovedSites',
-		{
-			selectors: A.all('.selector-button:disabled')
-		}
+<aui:script>
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectGroupFm',
+		'<%= HtmlUtil.escapeJS(siteBrowserDisplayContext.getEventName()) %>',
+		<%= siteBrowserDisplayContext.getSelUser() != null %>
 	);
-
-	Util.selectEntityHandler('#<portlet:namespace />selectGroupFm', '<%= HtmlUtil.escapeJS(siteBrowserDisplayContext.getEventName()) %>', <%= siteBrowserDisplayContext.getSelUser() != null %>);
 </aui:script>

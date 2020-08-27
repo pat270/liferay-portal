@@ -16,12 +16,9 @@ package com.liferay.document.library.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchFileVersionPreviewException extends NoSuchModelException {
 
 	public NoSuchFileVersionPreviewException() {
@@ -31,12 +28,12 @@ public class NoSuchFileVersionPreviewException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchFileVersionPreviewException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchFileVersionPreviewException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchFileVersionPreviewException(Throwable cause) {
-		super(cause);
+	public NoSuchFileVersionPreviewException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

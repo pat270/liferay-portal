@@ -196,10 +196,10 @@ public abstract class BaseFriendlyURLMapper implements FriendlyURLMapper {
 
 		try {
 			if (!PortalUtil.isReservedParameter(name)) {
-				Map<String, String> prpIdentifers =
+				Map<String, String> prpIdentifiers =
 					FriendlyURLMapperThreadLocal.getPRPIdentifiers();
 
-				String identiferValue = prpIdentifers.get(name);
+				String identiferValue = prpIdentifiers.get(name);
 
 				if (identiferValue != null) {
 					name = identiferValue;
@@ -211,8 +211,8 @@ public abstract class BaseFriendlyURLMapper implements FriendlyURLMapper {
 
 			parameterMap.put(name, values);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

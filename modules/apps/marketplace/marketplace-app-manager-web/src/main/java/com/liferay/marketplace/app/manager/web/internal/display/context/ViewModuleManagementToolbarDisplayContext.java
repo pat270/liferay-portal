@@ -47,12 +47,12 @@ public class ViewModuleManagementToolbarDisplayContext
 	extends BaseAppManagerManagementToolbarDisplayContext {
 
 	public ViewModuleManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest);
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse);
 	}
 
 	public String getApp() {
@@ -118,7 +118,7 @@ public class ViewModuleManagementToolbarDisplayContext
 	}
 
 	@Override
-	public SearchContainer getSearchContainer() throws Exception {
+	public SearchContainer<Object> getSearchContainer() throws Exception {
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
@@ -131,7 +131,7 @@ public class ViewModuleManagementToolbarDisplayContext
 			emptyResultsMessage = "no-components-were-found";
 		}
 
-		SearchContainer searchContainer = new SearchContainer(
+		SearchContainer<Object> searchContainer = new SearchContainer(
 			liferayPortletRequest, getPortletURL(), null, emptyResultsMessage);
 
 		searchContainer.setOrderByCol(getOrderByCol());
@@ -164,7 +164,7 @@ public class ViewModuleManagementToolbarDisplayContext
 					"(&(component.id=*)(service.bundleid=" +
 						bundle.getBundleId() + "))");
 
-			serviceReferences = ListUtil.toList(serviceReferenceArray);
+			serviceReferences = ListUtil.fromArray(serviceReferenceArray);
 
 			serviceReferences = ListUtil.sort(
 				serviceReferences,
@@ -178,8 +178,10 @@ public class ViewModuleManagementToolbarDisplayContext
 			end = serviceReferences.size();
 		}
 
+		List<Object> results = new ArrayList<>(serviceReferences);
+
 		searchContainer.setResults(
-			serviceReferences.subList(searchContainer.getStart(), end));
+			results.subList(searchContainer.getStart(), end));
 
 		searchContainer.setTotal(serviceReferences.size());
 
@@ -188,6 +190,6 @@ public class ViewModuleManagementToolbarDisplayContext
 		return _searchContainer;
 	}
 
-	private SearchContainer _searchContainer;
+	private SearchContainer<Object> _searchContainer;
 
 }

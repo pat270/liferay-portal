@@ -19,8 +19,13 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHECKIN_DIALOG_TITLE</td>
+	<td>//div[contains(@class,'modal-title') and contains(text(),'Describe Your Changes')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONFIGURATION_IFRAME</td>
-	<td>//iframe[contains(@id,'DLPortlet')]</td>
+	<td>//div[contains(@class,'modal-body')]/iframe</td>
 	<td></td>
 </tr>
 <tr>
@@ -61,7 +66,7 @@
 <!--EDIT_TAGS-->
 <tr>
 	<td>EDIT_TAGS_FIELD</td>
-	<td>//div[@class='input-group-item']//div/input[@type='text']</td>
+	<td>//input[@class='form-control-inset']</td>
 	<td></td>
 </tr>
 <tr>
@@ -93,6 +98,11 @@
 <tr>
 	<td>ICON_DOCUMENT_CHECKBOX</td>
 	<td>//li[contains(@data-title,'${key_dmDocumentTitle}')]//input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ICON_DOCUMENT_SHARED</td>
+	<td>//*[*[name()='svg'][contains(@class,'lexicon-icon-users')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -153,8 +163,13 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DESCRIPTIVE_LIST_DOCUMENT_SHARED</td>
+	<td>//li[contains(@data-title,'${key_dmDocumentTitle}')]//*[*[name()='svg'][contains(@class,'lexicon-icon-users')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DESCRIPTIVE_LIST_DOCUMENT_TITLE</td>
-	<td>//li[@data-title='${key_dmDocumentTitle}']//a</td>
+	<td>//li[contains(@data-title,'${key_dmDocumentTitle}')]//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -165,6 +180,11 @@
 <tr>
 	<td>DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS</td>
 	<td>//li[contains(.,'${key_dmDocumentTitle}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS_SPECIFIC</td>
+	<td>//li[contains(.,"${key_dmDocumentTitle}")]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -219,15 +239,26 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--TABLE_DOCUMENT-->
+<tr>
+	<td>TABLE_DOCUMENT_SHARED</td>
+	<td>//tr[contains(.,'${key_dmDocumentTitle}')]//*[*[name()='svg'][contains(@class,'lexicon-icon-users')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--TOOLBAR-->
 <tr>
 	<td>TOOLBAR_ACTIONS</td>
-	<td>//ul[contains(@id,'toolbarContainer')]/li/a[@title='Actions']</td>
+	<td>//div[contains(@class,'dropdown-action')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TOOLBAR_SELECT_ALL_CHECKBOX</td>
-	<td>xpath=(//div[@class='checkbox']//input[@title='Select All'])[2]</td>
+	<td>//div[contains(@class,'checkbox')]//span[text()='Select Items']</td>
 	<td></td>
 </tr>
 <tr>
@@ -260,6 +291,11 @@
 <tr>
 	<td>SIDEBAR_LATEST_VERSION</td>
 	<td>//div[contains(@class,'sidebar-body')]//div[@class='h5']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIDEBAR_MENU_ITEM</td>
+	<td>//div[contains(@class,'lfr-icon-menu-open')]//*[normalize-space(text())='${key_menuItem}']</td>
 	<td></td>
 </tr>
 <tr>

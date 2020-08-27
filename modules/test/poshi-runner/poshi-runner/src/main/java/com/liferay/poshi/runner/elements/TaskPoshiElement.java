@@ -58,9 +58,8 @@ public class TaskPoshiElement extends PoshiElement {
 	public void parsePoshiScript(String poshiScript)
 		throws PoshiScriptParserException {
 
-		String blockName = getBlockName(poshiScript);
-
-		String parentheticalContent = getParentheticalContent(blockName);
+		String parentheticalContent = getParentheticalContent(
+			getBlockName(poshiScript));
 
 		String summary = getDoubleQuotedContent(parentheticalContent);
 
@@ -79,6 +78,7 @@ public class TaskPoshiElement extends PoshiElement {
 	}
 
 	protected TaskPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected TaskPoshiElement(Element element) {
@@ -107,6 +107,7 @@ public class TaskPoshiElement extends PoshiElement {
 		return sb.toString();
 	}
 
+	@Override
 	protected String getPoshiScriptKeyword() {
 		return getName();
 	}

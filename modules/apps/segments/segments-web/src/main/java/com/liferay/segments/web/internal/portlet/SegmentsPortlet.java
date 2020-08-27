@@ -14,8 +14,12 @@
 
 package com.liferay.segments.web.internal.portlet;
 
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
+import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.service.SegmentsEntryService;
 import com.liferay.segments.web.internal.constants.SegmentsWebKeys;
@@ -27,8 +31,6 @@ import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -49,14 +51,12 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
 		"com.liferay.portlet.render-weight=50",
-		"com.liferay.portlet.scopeable=true",
 		"javax.portlet.display-name=Segments",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SegmentsPortletKeys.SEGMENTS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = {Portlet.class, SegmentsPortlet.class}
 )
@@ -67,13 +67,15 @@ public class SegmentsPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			renderRequest);
+		renderRequest.setAttribute(
+			SegmentsWebKeys.EXCLUDED_ROLE_NAMES, _getExcludedRoleNames());
+		renderRequest.setAttribute(
+			SegmentsWebKeys.ITEM_SELECTOR, _itemSelector);
 
 		SegmentsDisplayContext segmentsDisplayContext =
 			new SegmentsDisplayContext(
-				httpServletRequest, renderRequest, renderResponse,
-				_segmentsEntryService);
+				_portal.getHttpServletRequest(renderRequest), renderRequest,
+				renderResponse, _segmentsEntryService);
 
 		renderRequest.setAttribute(
 			SegmentsWebKeys.SEGMENTS_DISPLAY_CONTEXT, segmentsDisplayContext);
@@ -81,8 +83,26 @@ public class SegmentsPortlet extends MVCPortlet {
 		super.render(renderRequest, renderResponse);
 	}
 
+	private String[] _getExcludedRoleNames() {
+		RoleTypeContributor roleTypeContributor =
+			_roleTypeContributorProvider.getRoleTypeContributor(
+				RoleConstants.TYPE_SITE);
+
+		if (roleTypeContributor != null) {
+			return roleTypeContributor.getExcludedRoleNames();
+		}
+
+		return new String[0];
+	}
+
+	@Reference
+	private ItemSelector _itemSelector;
+
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private RoleTypeContributorProvider _roleTypeContributorProvider;
 
 	@Reference
 	private SegmentsEntryService _segmentsEntryService;

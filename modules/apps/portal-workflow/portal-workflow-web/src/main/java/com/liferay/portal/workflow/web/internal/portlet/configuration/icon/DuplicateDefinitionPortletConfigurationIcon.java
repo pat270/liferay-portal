@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.workflow.configuration.WorkflowDefinitionConfiguration;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
+import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
 
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -70,9 +70,8 @@ public class DuplicateDefinitionPortletConfigurationIcon
 	public String getOnClick(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		String portletId = _portal.getPortletId(portletRequest);
-
-		String portletNamespace = _portal.getPortletNamespace(portletId);
+		String portletNamespace = _portal.getPortletNamespace(
+			_portal.getPortletId(portletRequest));
 
 		return "Liferay.fire('" + portletNamespace + "duplicateDefinition');";
 	}
@@ -94,11 +93,11 @@ public class DuplicateDefinitionPortletConfigurationIcon
 			(WorkflowDefinition)portletRequest.getAttribute(
 				WebKeys.WORKFLOW_DEFINITION);
 
-		if ((workflowDefinition != null) && workflowDefinition.isActive()) {
-			return true;
+		if (workflowDefinition == null) {
+			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	@Activate

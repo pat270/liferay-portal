@@ -11,6 +11,13 @@ create table BigDecimalEntry (
 	bigDecimalValue DECIMAL(30, 16) null
 );
 
+create table EagerBlobEntity (
+	uuid_ VARCHAR(75) null,
+	eagerBlobEntityId LONG not null primary key,
+	groupId LONG,
+	blob_ BLOB
+);
+
 create table LVEntries_BigDecimalEntries (
 	companyId LONG not null,
 	bigDecimalEntryId LONG not null,
@@ -62,6 +69,14 @@ create table LVEntryVersion (
 	companyId LONG,
 	groupId LONG,
 	uniqueGroupKey VARCHAR(75) null
+);
+
+create table LazyBlobEntity (
+	uuid_ VARCHAR(75) null,
+	lazyBlobEntityId LONG not null primary key,
+	groupId LONG,
+	blob1 BLOB,
+	blob2 BLOB
 );
 
 create table LocalizedEntry (

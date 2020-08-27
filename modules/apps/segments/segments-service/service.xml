@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
-<service-builder auto-namespace-tables="false" package-path="com.liferay.segments">
+<service-builder auto-namespace-tables="false" change-tracking-enabled="true" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.segments">
 	<author>Eduardo Garcia</author>
 	<namespace>Segments</namespace>
 	<entity local-service="true" name="SegmentsEntry" remote-service="true" uuid="true">
@@ -67,6 +67,12 @@
 			<finder-column name="active" />
 			<finder-column name="type" />
 		</finder>
+		<finder name="G_A_S_T" return-type="Collection">
+			<finder-column arrayable-operator="OR" name="groupId" />
+			<finder-column name="active" />
+			<finder-column name="source" />
+			<finder-column name="type" />
+		</finder>
 	</entity>
 	<entity local-service="true" name="SegmentsEntryRel" remote-service="true">
 
@@ -112,6 +118,42 @@
 			<finder-column name="classPK" />
 		</finder>
 	</entity>
+	<entity local-service="true" name="SegmentsEntryRole" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="segmentsEntryRoleId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="segmentsEntryId" type="long" />
+		<column name="roleId" type="long" />
+
+		<!-- Finder methods -->
+
+		<finder name="SegmentsEntryId" return-type="Collection">
+			<finder-column name="segmentsEntryId" />
+		</finder>
+		<finder name="RoleId" return-type="Collection">
+			<finder-column name="roleId" />
+		</finder>
+		<finder name="S_R" return-type="SegmentsEntryRole" unique="true">
+			<finder-column name="segmentsEntryId" />
+			<finder-column name="roleId" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="Role" package-path="com.liferay.portal" />
+	</entity>
 	<entity local-service="true" name="SegmentsExperience" remote-service="true" uuid="true">
 
 		<!-- PK fields -->
@@ -133,6 +175,7 @@
 		<!-- Other fields -->
 
 		<column name="segmentsEntryId" type="long" />
+		<column name="segmentsExperienceKey" type="String" />
 		<column name="classNameId" type="long" />
 		<column name="classPK" type="long" />
 		<column localized="true" name="name" type="String" />
@@ -153,6 +196,10 @@
 		</finder>
 		<finder name="SegmentsEntryId" return-type="Collection">
 			<finder-column name="segmentsEntryId" />
+		</finder>
+		<finder name="G_S" return-type="SegmentsExperience" unique="true">
+			<finder-column name="groupId" />
+			<finder-column name="segmentsExperienceKey" />
 		</finder>
 		<finder name="G_C_C" return-type="Collection">
 			<finder-column name="groupId" />
@@ -195,10 +242,125 @@
 
 		<reference entity="Layout" package-path="com.liferay.portal" />
 	</entity>
+	<entity local-service="true" name="SegmentsExperiment" remote-service="true" uuid="true">
+
+		<!-- PK fields -->
+
+		<column name="segmentsExperimentId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="segmentsEntryId" type="long" />
+		<column name="segmentsExperienceId" type="long" />
+		<column name="segmentsExperimentKey" type="String" />
+		<column name="classNameId" type="long" />
+		<column name="classPK" type="long" />
+		<column name="name" type="String" />
+		<column name="description" type="String" />
+		<column name="typeSettings" type="String" />
+		<column name="status" type="int" />
+
+		<!-- Order -->
+
+		<order by="desc">
+			<order-column name="createDate" />
+		</order>
+
+		<!-- Finder methods -->
+
+		<finder name="GroupId" return-type="Collection">
+			<finder-column name="groupId" />
+		</finder>
+		<finder name="SegmentsExperimentKey" return-type="Collection">
+			<finder-column name="segmentsExperimentKey" />
+		</finder>
+		<finder name="G_S" return-type="SegmentsExperiment" unique="true">
+			<finder-column name="groupId" />
+			<finder-column name="segmentsExperimentKey" />
+		</finder>
+		<finder name="G_C_C" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+		</finder>
+		<finder name="S_C_C" return-type="Collection">
+			<finder-column name="segmentsExperienceId" />
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+		</finder>
+		<finder name="S_C_C_S" return-type="Collection">
+			<finder-column arrayable-operator="OR" name="segmentsExperienceId" />
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+			<finder-column arrayable-operator="OR" name="status" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="UserNotificationEvent" package-path="com.liferay.portal.kernel" />
+	</entity>
+	<entity local-service="true" name="SegmentsExperimentRel" remote-service="true">
+
+		<!-- PK fields -->
+
+		<column name="segmentsExperimentRelId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="segmentsExperimentId" type="long" />
+		<column name="segmentsExperienceId" type="long" />
+		<column name="split" type="double" />
+
+		<!-- Finder methods -->
+
+		<finder name="SegmentsExperimentId" return-type="Collection">
+			<finder-column name="segmentsExperimentId" />
+		</finder>
+		<finder name="S_S" return-type="SegmentsExperimentRel" unique="true">
+			<finder-column name="segmentsExperimentId" />
+			<finder-column name="segmentsExperienceId" />
+		</finder>
+	</entity>
 	<exceptions>
+		<exception>LockedSegmentsExperiment</exception>
 		<exception>RequiredSegmentsEntry</exception>
+		<exception>RequiredSegmentsExperience</exception>
+		<exception>RunSegmentsExperiment</exception>
 		<exception>SegmentsEntryCriteria</exception>
 		<exception>SegmentsEntryKey</exception>
+		<exception>SegmentsEntryName</exception>
+		<exception>SegmentsExperienceName</exception>
 		<exception>SegmentsExperiencePriority</exception>
+		<exception>SegmentsExperimentConfidenceLevel</exception>
+		<exception>SegmentsExperimentGoal</exception>
+		<exception>SegmentsExperimentName</exception>
+		<exception>SegmentsExperimentRelName</exception>
+		<exception>SegmentsExperimentRelSplit</exception>
+		<exception>SegmentsExperimentStatus</exception>
+		<exception>WinnerSegmentsExperience</exception>
 	</exceptions>
 </service-builder>

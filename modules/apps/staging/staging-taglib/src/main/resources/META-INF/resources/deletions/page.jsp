@@ -18,7 +18,7 @@
 
 <c:if test="<%= cmd.equals(Constants.EXPORT) || cmd.equals(Constants.IMPORT) || cmd.equals(Constants.PUBLISH) %>">
 	<aui:fieldset cssClass="options-group" markupView="lexicon">
-		<div class="sheet-section">
+		<clay:sheet-section>
 			<h3 class="sheet-subtitle"><liferay-ui:message key="deletions" /></h3>
 
 			<c:if test="<%= !cmd.equals(Constants.EXPORT) %>">
@@ -32,13 +32,17 @@
 				/>
 			</c:if>
 
+			<%
+			ExportImportServiceConfiguration exportImportServiceConfiguration = ConfigurationProviderUtil.getSystemConfiguration(ExportImportServiceConfiguration.class);
+			%>
+
 			<liferay-staging:checkbox
-				checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETIONS, false) %>"
+				checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETIONS, exportImportServiceConfiguration.replicateIndividualDeletionsByDefault()) %>"
 				description="<%= individualDeletionsDescription %>"
 				disabled="<%= disableInputs %>"
 				label="<%= individualDeletionsTitle %>"
 				name="<%= PortletDataHandlerKeys.DELETIONS %>"
 			/>
-		</div>
+		</clay:sheet-section>
 	</aui:fieldset>
 </c:if>

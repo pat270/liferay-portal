@@ -69,8 +69,9 @@ public class URLCodec {
 				try {
 					charBuffer = charsetDecoder.decode(byteBuffer);
 				}
-				catch (CharacterCodingException cce) {
-					_log.error(cce, cce);
+				catch (CharacterCodingException characterCodingException) {
+					_log.error(
+						characterCodingException, characterCodingException);
 
 					return StringPool.BLANK;
 				}
@@ -85,7 +86,7 @@ public class URLCodec {
 
 				sb.append(charBuffer);
 
-				i += byteBuffer.capacity() * 3 - 1;
+				i += (byteBuffer.capacity() * 3) - 1;
 			}
 			else if (c == CharPool.PLUS) {
 				if (sb == null) {
@@ -184,8 +185,8 @@ public class URLCodec {
 			try {
 				byteBuffer = charsetEncoder.encode(charBuffer);
 			}
-			catch (CharacterCodingException cce) {
-				_log.error(cce, cce);
+			catch (CharacterCodingException characterCodingException) {
+				_log.error(characterCodingException, characterCodingException);
 
 				return StringPool.BLANK;
 			}
@@ -240,14 +241,14 @@ public class URLCodec {
 			}
 		}
 
-		if (encodedString.length() < (start + count * 3)) {
+		if (encodedString.length() < (start + (count * 3))) {
 			throw new IllegalArgumentException(
 				"Invalid URL encoding " + encodedString);
 		}
 
 		ByteBuffer byteBuffer = ByteBuffer.allocate(count);
 
-		for (int i = start; i < (start + count * 3); i += 3) {
+		for (int i = start; i < (start + (count * 3)); i += 3) {
 			int high = _charToHex(encodedString.charAt(i + 1));
 			int low = _charToHex(encodedString.charAt(i + 2));
 
@@ -272,13 +273,12 @@ public class URLCodec {
 
 				count++;
 
-				if (Character.isHighSurrogate(rawChar)) {
-					if (((i + 1) < rawString.length()) &&
-						Character.isLowSurrogate(rawString.charAt(i + 1))) {
+				if (Character.isHighSurrogate(rawChar) &&
+					((i + 1) < rawString.length()) &&
+					Character.isLowSurrogate(rawString.charAt(i + 1))) {
 
-						i++;
-						count++;
-					}
+					i++;
+					count++;
 				}
 			}
 			else {

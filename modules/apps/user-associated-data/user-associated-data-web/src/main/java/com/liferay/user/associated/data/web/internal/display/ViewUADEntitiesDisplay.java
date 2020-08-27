@@ -33,11 +33,19 @@ public class ViewUADEntitiesDisplay {
 		return _applicationKey;
 	}
 
+	public long[] getGroupIds() {
+		return _groupIds;
+	}
+
 	public ResultRowSplitter getResultRowSplitter() {
 		return _resultRowSplitter;
 	}
 
-	public SearchContainer<UADEntity> getSearchContainer() {
+	public String getScope() {
+		return _scope;
+	}
+
+	public SearchContainer<UADEntity<?>> getSearchContainer() {
 		return _searchContainer;
 	}
 
@@ -70,9 +78,9 @@ public class ViewUADEntitiesDisplay {
 
 		List<String> userOwnedPKs = new ArrayList<>();
 
-		List<UADEntity> entities = _searchContainer.getResults();
+		List<UADEntity<?>> entities = _searchContainer.getResults();
 
-		for (UADEntity entity : entities) {
+		for (UADEntity<?> entity : entities) {
 			if (entity.isUserOwned()) {
 				userOwnedPKs.add(String.valueOf(entity.getPrimaryKey()));
 			}
@@ -90,6 +98,10 @@ public class ViewUADEntitiesDisplay {
 		_applicationKey = applicationKey;
 	}
 
+	public void setGroupIds(long[] groupIds) {
+		_groupIds = groupIds;
+	}
+
 	public void setHierarchy(boolean hierarchy) {
 		_hierarchy = hierarchy;
 	}
@@ -98,7 +110,13 @@ public class ViewUADEntitiesDisplay {
 		_resultRowSplitter = resultRowSplitter;
 	}
 
-	public void setSearchContainer(SearchContainer<UADEntity> searchContainer) {
+	public void setScope(String scope) {
+		_scope = scope;
+	}
+
+	public void setSearchContainer(
+		SearchContainer<UADEntity<?>> searchContainer) {
+
 		_searchContainer = searchContainer;
 	}
 
@@ -115,9 +133,11 @@ public class ViewUADEntitiesDisplay {
 	}
 
 	private String _applicationKey;
+	private long[] _groupIds;
 	private boolean _hierarchy;
 	private ResultRowSplitter _resultRowSplitter;
-	private SearchContainer<UADEntity> _searchContainer;
+	private String _scope;
+	private SearchContainer<UADEntity<?>> _searchContainer;
 	private Class<?>[] _typeClasses;
 	private String _typeName;
 	private String _uadRegistryKey = StringPool.BLANK;

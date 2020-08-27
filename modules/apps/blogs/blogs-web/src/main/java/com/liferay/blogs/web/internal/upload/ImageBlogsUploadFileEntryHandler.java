@@ -14,37 +14,46 @@
 
 package com.liferay.blogs.web.internal.upload;
 
+import com.liferay.blogs.configuration.BlogsFileUploadsConfiguration;
 import com.liferay.blogs.constants.BlogsConstants;
 import com.liferay.blogs.exception.EntryImageNameException;
 import com.liferay.blogs.exception.EntryImageSizeException;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
-import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.util.PrefsPropsUtil;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.upload.UploadFileEntryHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
+ * @author Roberto Díaz
  * @author Alejandro Tardín
  */
-@Component(service = ImageBlogsUploadFileEntryHandler.class)
+@Component(
+	configurationPid = "com.liferay.blogs.configuration.BlogsFileUploadsConfiguration",
+	service = ImageBlogsUploadFileEntryHandler.class
+)
 public class ImageBlogsUploadFileEntryHandler
 	implements UploadFileEntryHandler {
 
@@ -61,12 +70,12 @@ public class ImageBlogsUploadFileEntryHandler
 			ActionKeys.ADD_ENTRY);
 
 		String fileName = uploadPortletRequest.getFileName(_PARAMETER_NAME);
-		long size = uploadPortletRequest.getSize(_PARAMETER_NAME);
-
-		_validateFile(fileName, size);
-
 		String contentType = uploadPortletRequest.getContentType(
 			_PARAMETER_NAME);
+
+		_validateFile(
+			fileName, contentType,
+			uploadPortletRequest.getSize(_PARAMETER_NAME));
 
 		try (InputStream inputStream = uploadPortletRequest.getFileAsStream(
 				_PARAMETER_NAME)) {
@@ -74,6 +83,13 @@ public class ImageBlogsUploadFileEntryHandler
 			return addFileEntry(
 				fileName, contentType, inputStream, themeDisplay);
 		}
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_blogsFileUploadsConfiguration = ConfigurableUtil.createConfigurable(
+			BlogsFileUploadsConfiguration.class, properties);
 	}
 
 	protected FileEntry addFileEntry(
@@ -84,10 +100,10 @@ public class ImageBlogsUploadFileEntryHandler
 		Folder folder = blogsLocalService.addAttachmentsFolder(
 			themeDisplay.getUserId(), themeDisplay.getScopeGroupId());
 
-		String uniqueFileName = PortletFileRepositoryUtil.getUniqueFileName(
+		String uniqueFileName = portletFileRepository.getUniqueFileName(
 			themeDisplay.getScopeGroupId(), folder.getFolderId(), fileName);
 
-		return PortletFileRepositoryUtil.addPortletFileEntry(
+		return portletFileRepository.addPortletFileEntry(
 			themeDisplay.getScopeGroupId(), themeDisplay.getUserId(),
 			BlogsEntry.class.getName(), 0, BlogsConstants.SERVICE_NAME,
 			folder.getFolderId(), inputStream, uniqueFileName, contentType,
@@ -97,35 +113,39 @@ public class ImageBlogsUploadFileEntryHandler
 	@Reference
 	protected BlogsEntryLocalService blogsLocalService;
 
+	@Reference
+	protected PortletFileRepository portletFileRepository;
+
 	@Reference(target = "(resource.name=" + BlogsConstants.RESOURCE_NAME + ")")
 	protected PortletResourcePermission portletResourcePermission;
 
-	private void _validateFile(String fileName, long size)
+	private void _validateFile(String fileName, String contentType, long size)
 		throws PortalException {
 
-		if ((PropsValues.BLOGS_IMAGE_MAX_SIZE > 0) &&
-			(size > PropsValues.BLOGS_IMAGE_MAX_SIZE)) {
+		long blogsImageMaxSize = _blogsFileUploadsConfiguration.imageMaxSize();
 
+		if ((blogsImageMaxSize > 0) && (size > blogsImageMaxSize)) {
 			throw new EntryImageSizeException();
 		}
 
-		String extension = FileUtil.getExtension(fileName);
+		Set<String> extensions = MimeTypesUtil.getExtensions(contentType);
 
-		String[] imageExtensions = PrefsPropsUtil.getStringArray(
-			PropsKeys.BLOGS_IMAGE_EXTENSIONS, StringPool.COMMA);
+		boolean validContentType = Stream.of(
+			_blogsFileUploadsConfiguration.imageExtensions()
+		).anyMatch(
+			extension ->
+				extension.equals(StringPool.STAR) ||
+				extensions.contains(extension)
+		);
 
-		for (String imageExtension : imageExtensions) {
-			if (StringPool.STAR.equals(imageExtension) ||
-				imageExtension.equals(StringPool.PERIOD + extension)) {
-
-				return;
-			}
+		if (!validContentType) {
+			throw new EntryImageNameException(
+				"Invalid image for file name " + fileName);
 		}
-
-		throw new EntryImageNameException(
-			"Invalid image for file name " + fileName);
 	}
 
 	private static final String _PARAMETER_NAME = "imageSelectorFileName";
+
+	private BlogsFileUploadsConfiguration _blogsFileUploadsConfiguration;
 
 }

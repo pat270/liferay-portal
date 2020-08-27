@@ -14,6 +14,7 @@
 
 package com.liferay.social.kernel.service;
 
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -41,6 +42,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -52,7 +54,7 @@ public interface SocialActivitySettingService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link SocialActivitySettingServiceUtil} to access the social activity setting remote service. Add custom service methods to <code>com.liferay.portlet.social.service.impl.SocialActivitySettingServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portlet.social.service.impl.SocialActivitySettingServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the social activity setting remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link SocialActivitySettingServiceUtil} if injection and service tracking are not available.
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public SocialActivityDefinition getActivityDefinition(

@@ -14,7 +14,9 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link LayoutSetLocalService}.
@@ -23,7 +25,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetLocalService
  * @generated
  */
-@ProviderType
 public class LayoutSetLocalServiceWrapper
 	implements LayoutSetLocalService, ServiceWrapper<LayoutSetLocalService> {
 
@@ -36,82 +37,75 @@ public class LayoutSetLocalServiceWrapper
 	/**
 	 * Adds the layout set to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutSet the layout set
 	 * @return the layout set that was added
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet addLayoutSet(
-		com.liferay.portal.kernel.model.LayoutSet layoutSet) {
-
+	public LayoutSet addLayoutSet(LayoutSet layoutSet) {
 		return _layoutSetLocalService.addLayoutSet(layoutSet);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet addLayoutSet(
-			long groupId, boolean privateLayout)
+	public LayoutSet addLayoutSet(long groupId, boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.addLayoutSet(groupId, privateLayout);
 	}
 
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet checkout(
-			com.liferay.portal.kernel.model.LayoutSet publishedLayoutSet,
-			int version)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.checkout(publishedLayoutSet, version);
-	}
-
 	/**
-	 * Creates a new layout set. Does not add the layout set to the database.
+	 * Creates a new layout set with the primary key. Does not add the layout set to the database.
 	 *
+	 * @param layoutSetId the primary key for the new layout set
 	 * @return the new layout set
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet create() {
-		return _layoutSetLocalService.create();
+	public LayoutSet createLayoutSet(long layoutSetId) {
+		return _layoutSetLocalService.createLayoutSet(layoutSetId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet delete(
-			com.liferay.portal.kernel.model.LayoutSet publishedLayoutSet)
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _layoutSetLocalService.delete(publishedLayoutSet);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet deleteDraft(
-			com.liferay.portal.kernel.model.LayoutSet draftLayoutSet)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.deleteDraft(draftLayoutSet);
+		return _layoutSetLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
 	 * Deletes the layout set from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutSet the layout set
 	 * @return the layout set that was removed
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet deleteLayoutSet(
-		com.liferay.portal.kernel.model.LayoutSet layoutSet) {
-
+	public LayoutSet deleteLayoutSet(LayoutSet layoutSet) {
 		return _layoutSetLocalService.deleteLayoutSet(layoutSet);
 	}
 
 	/**
 	 * Deletes the layout set with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutSetId the primary key of the layout set
 	 * @return the layout set that was removed
 	 * @throws PortalException if a layout set with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet deleteLayoutSet(
-			long layoutSetId)
+	public LayoutSet deleteLayoutSet(long layoutSetId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.deleteLayoutSet(layoutSetId);
@@ -138,11 +132,8 @@ public class LayoutSetLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSetVersion deleteVersion(
-			com.liferay.portal.kernel.model.LayoutSetVersion layoutSetVersion)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.deleteVersion(layoutSetVersion);
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _layoutSetLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -167,7 +158,7 @@ public class LayoutSetLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -187,7 +178,7 @@ public class LayoutSetLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -236,50 +227,22 @@ public class LayoutSetLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchDraft(
-		com.liferay.portal.kernel.model.LayoutSet layoutSet) {
-
-		return _layoutSetLocalService.fetchDraft(layoutSet);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchDraft(
-		long primaryKey) {
-
-		return _layoutSetLocalService.fetchDraft(primaryKey);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSetVersion fetchLatestVersion(
-		com.liferay.portal.kernel.model.LayoutSet layoutSet) {
-
-		return _layoutSetLocalService.fetchLatestVersion(layoutSet);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchLayoutSet(
-		long layoutSetId) {
-
+	public LayoutSet fetchLayoutSet(long layoutSetId) {
 		return _layoutSetLocalService.fetchLayoutSet(layoutSetId);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchLayoutSet(
-		long groupId, boolean privateLayout) {
-
+	public LayoutSet fetchLayoutSet(long groupId, boolean privateLayout) {
 		return _layoutSetLocalService.fetchLayoutSet(groupId, privateLayout);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchLayoutSet(
-		String virtualHostname) {
-
+	public LayoutSet fetchLayoutSet(String virtualHostname) {
 		return _layoutSetLocalService.fetchLayoutSet(virtualHostname);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchLayoutSetByLogoId(
-			boolean privateLayout, long logoId)
+	public LayoutSet fetchLayoutSetByLogoId(boolean privateLayout, long logoId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.fetchLayoutSetByLogoId(
@@ -287,39 +250,10 @@ public class LayoutSetLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchPublished(
-		com.liferay.portal.kernel.model.LayoutSet layoutSet) {
-
-		return _layoutSetLocalService.fetchPublished(layoutSet);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet fetchPublished(
-		long primaryKey) {
-
-		return _layoutSetLocalService.fetchPublished(primaryKey);
-	}
-
-	@Override
 	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
 		getActionableDynamicQuery() {
 
 		return _layoutSetLocalService.getActionableDynamicQuery();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet getDraft(
-			com.liferay.portal.kernel.model.LayoutSet layoutSet)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.getDraft(layoutSet);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet getDraft(long primaryKey)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.getDraft(primaryKey);
 	}
 
 	@Override
@@ -337,24 +271,21 @@ public class LayoutSetLocalServiceWrapper
 	 * @throws PortalException if a layout set with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet getLayoutSet(
-			long layoutSetId)
+	public LayoutSet getLayoutSet(long layoutSetId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.getLayoutSet(layoutSetId);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet getLayoutSet(
-			long groupId, boolean privateLayout)
+	public LayoutSet getLayoutSet(long groupId, boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.getLayoutSet(groupId, privateLayout);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet getLayoutSet(
-			String virtualHostname)
+	public LayoutSet getLayoutSet(String virtualHostname)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.getLayoutSet(virtualHostname);
@@ -364,7 +295,7 @@ public class LayoutSetLocalServiceWrapper
 	 * Returns a range of all the layout sets.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout sets
@@ -372,15 +303,13 @@ public class LayoutSetLocalServiceWrapper
 	 * @return the range of layout sets
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.LayoutSet>
-		getLayoutSets(int start, int end) {
-
+	public java.util.List<LayoutSet> getLayoutSets(int start, int end) {
 		return _layoutSetLocalService.getLayoutSets(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.LayoutSet>
-		getLayoutSetsByLayoutSetPrototypeUuid(String layoutSetPrototypeUuid) {
+	public java.util.List<LayoutSet> getLayoutSetsByLayoutSetPrototypeUuid(
+		String layoutSetPrototypeUuid) {
 
 		return _layoutSetLocalService.getLayoutSetsByLayoutSetPrototypeUuid(
 			layoutSetPrototypeUuid);
@@ -407,6 +336,14 @@ public class LayoutSetLocalServiceWrapper
 	}
 
 	@Override
+	public int getPageCount(long groupId, boolean privateLayout) {
+		return _layoutSetLocalService.getPageCount(groupId, privateLayout);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -414,70 +351,19 @@ public class LayoutSetLocalServiceWrapper
 		return _layoutSetLocalService.getPersistedModel(primaryKeyObj);
 	}
 
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSetVersion getVersion(
-			com.liferay.portal.kernel.model.LayoutSet layoutSet, int version)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.getVersion(layoutSet, version);
-	}
-
-	@Override
-	public java.util.List<com.liferay.portal.kernel.model.LayoutSetVersion>
-		getVersions(com.liferay.portal.kernel.model.LayoutSet layoutSet) {
-
-		return _layoutSetLocalService.getVersions(layoutSet);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet publishDraft(
-			com.liferay.portal.kernel.model.LayoutSet draftLayoutSet)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.publishDraft(draftLayoutSet);
-	}
-
-	@Override
-	public void registerListener(
-		com.liferay.portal.kernel.service.version.VersionServiceListener
-			<com.liferay.portal.kernel.model.LayoutSet,
-			 com.liferay.portal.kernel.model.LayoutSetVersion>
-				versionServiceListener) {
-
-		_layoutSetLocalService.registerListener(versionServiceListener);
-	}
-
-	@Override
-	public void unregisterListener(
-		com.liferay.portal.kernel.service.version.VersionServiceListener
-			<com.liferay.portal.kernel.model.LayoutSet,
-			 com.liferay.portal.kernel.model.LayoutSetVersion>
-				versionServiceListener) {
-
-		_layoutSetLocalService.unregisterListener(versionServiceListener);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateDraft(
-			com.liferay.portal.kernel.model.LayoutSet draftLayoutSet)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.updateDraft(draftLayoutSet);
-	}
-
 	/**
 	 * Updates the layout set in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutSet the layout set
 	 * @return the layout set that was updated
-	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateLayoutSet(
-			com.liferay.portal.kernel.model.LayoutSet draftLayoutSet)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.updateLayoutSet(draftLayoutSet);
+	public LayoutSet updateLayoutSet(LayoutSet layoutSet) {
+		return _layoutSetLocalService.updateLayoutSet(layoutSet);
 	}
 
 	/**
@@ -503,46 +389,46 @@ public class LayoutSetLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateLogo(
-			long groupId, boolean privateLayout, boolean logo, byte[] bytes)
+	public LayoutSet updateLogo(
+			long groupId, boolean privateLayout, boolean hasLogo, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.updateLogo(
-			groupId, privateLayout, logo, bytes);
+			groupId, privateLayout, hasLogo, bytes);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
+	public LayoutSet updateLogo(
+			long groupId, boolean privateLayout, boolean hasLogo,
 			java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.updateLogo(
-			groupId, privateLayout, logo, file);
+			groupId, privateLayout, hasLogo, file);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
-			java.io.InputStream is)
+	public LayoutSet updateLogo(
+			long groupId, boolean privateLayout, boolean hasLogo,
+			java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.updateLogo(
-			groupId, privateLayout, logo, is);
+			groupId, privateLayout, hasLogo, inputStream);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
-			java.io.InputStream is, boolean cleanUpStream)
+	public LayoutSet updateLogo(
+			long groupId, boolean privateLayout, boolean hasLogo,
+			java.io.InputStream inputStream, boolean cleanUpStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.updateLogo(
-			groupId, privateLayout, logo, is, cleanUpStream);
+			groupId, privateLayout, hasLogo, inputStream, cleanUpStream);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateLookAndFeel(
+	public LayoutSet updateLookAndFeel(
 			long groupId, boolean privateLayout, String themeId,
 			String colorSchemeId, String css)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -561,15 +447,7 @@ public class LayoutSetLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updatePageCount(
-			long groupId, boolean privateLayout)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutSetLocalService.updatePageCount(groupId, privateLayout);
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateSettings(
+	public LayoutSet updateSettings(
 			long groupId, boolean privateLayout, String settings)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -577,13 +455,47 @@ public class LayoutSetLocalServiceWrapper
 			groupId, privateLayout, settings);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 #updateVirtualHosts(long, boolean, TreeMap)}
+	 */
+	@Deprecated
 	@Override
-	public com.liferay.portal.kernel.model.LayoutSet updateVirtualHost(
+	public LayoutSet updateVirtualHost(
 			long groupId, boolean privateLayout, String virtualHostname)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetLocalService.updateVirtualHost(
 			groupId, privateLayout, virtualHostname);
+	}
+
+	@Override
+	public LayoutSet updateVirtualHosts(
+			long groupId, boolean privateLayout,
+			java.util.TreeMap<String, String> virtualHostnames)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutSetLocalService.updateVirtualHosts(
+			groupId, privateLayout, virtualHostnames);
+	}
+
+	@Override
+	public CTPersistence<LayoutSet> getCTPersistence() {
+		return _layoutSetLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<LayoutSet> getModelClass() {
+		return _layoutSetLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<LayoutSet>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return _layoutSetLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

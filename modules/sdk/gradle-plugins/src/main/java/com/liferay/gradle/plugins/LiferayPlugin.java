@@ -23,9 +23,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.UncheckedIOException;
+import org.gradle.api.plugins.ExtensionContainer;
+import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.plugins.PluginContainer;
 
 /**
  * @author Andrea Di Giorgi
@@ -36,6 +41,9 @@ public class LiferayPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
+
+		// Plugins
+
 		Class<? extends Plugin<Project>> clazz;
 
 		if (_isAnt(project)) {
@@ -52,6 +60,27 @@ public class LiferayPlugin implements Plugin<Project> {
 		}
 
 		GradleUtil.applyPlugin(project, clazz);
+
+		// Other
+
+		PluginContainer pluginContainer = project.getPlugins();
+
+		pluginContainer.withType(
+			JavaPlugin.class,
+			new Action<JavaPlugin>() {
+
+				@Override
+				public void execute(JavaPlugin javaPlugin) {
+					ExtensionContainer extensionContainer =
+						project.getExtensions();
+
+					JavaPluginExtension javaPluginExtension =
+						extensionContainer.getByType(JavaPluginExtension.class);
+
+					javaPluginExtension.disableAutoTargetJvm();
+				}
+
+			});
 	}
 
 	protected Class<? extends Plugin<Project>> getAntPluginClass() {
@@ -99,8 +128,8 @@ public class LiferayPlugin implements Plugin<Project> {
 			gulpFileContent = new String(
 				Files.readAllBytes(gulpFile.toPath()), StandardCharsets.UTF_8);
 		}
-		catch (IOException ioe) {
-			throw new UncheckedIOException(ioe);
+		catch (IOException ioException) {
+			throw new UncheckedIOException(ioException);
 		}
 
 		if (gulpFileContent.contains("require('liferay-theme-tasks')")) {

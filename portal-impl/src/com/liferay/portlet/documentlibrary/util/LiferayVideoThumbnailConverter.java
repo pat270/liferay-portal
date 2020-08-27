@@ -110,7 +110,7 @@ public class LiferayVideoThumbnailConverter extends LiferayConverter {
 			thumbnailGenerated = generateThumbnail(
 				inputIStreamCoders, inputIVideoPictures);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		if (!thumbnailGenerated) {
@@ -135,7 +135,7 @@ public class LiferayVideoThumbnailConverter extends LiferayConverter {
 		throws Exception {
 
 		boolean keyPacketFound = false;
-		int nonKeyAfterKeyCount = 0;
+		int nonkeyAfterKeyCount = 0;
 		boolean onlyDecodeKeyPackets = false;
 
 		IPacket inputIPacket = IPacket.make();
@@ -157,12 +157,12 @@ public class LiferayVideoThumbnailConverter extends LiferayConverter {
 
 			keyPacketFound = isKeyPacketFound(inputIPacket, keyPacketFound);
 
-			nonKeyAfterKeyCount = countNonKeyAfterKey(
-				inputIPacket, keyPacketFound, nonKeyAfterKeyCount);
+			nonkeyAfterKeyCount = countNonKeyAfterKey(
+				inputIPacket, keyPacketFound, nonkeyAfterKeyCount);
 
 			if (isStartDecoding(
 					inputIPacket, inputIStreamCoder, keyPacketFound,
-					nonKeyAfterKeyCount, onlyDecodeKeyPackets)) {
+					nonkeyAfterKeyCount, onlyDecodeKeyPackets)) {
 
 				IStream iStream = _inputIContainer.getStream(streamIndex);
 
@@ -180,8 +180,6 @@ public class LiferayVideoThumbnailConverter extends LiferayConverter {
 					}
 
 					onlyDecodeKeyPackets = true;
-
-					continue;
 				}
 				else if (value == DECODE_VIDEO_THUMBNAIL) {
 					cleanUp(inputIPacket, null);

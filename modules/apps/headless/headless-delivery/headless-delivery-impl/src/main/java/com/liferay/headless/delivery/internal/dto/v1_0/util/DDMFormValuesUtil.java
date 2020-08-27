@@ -94,11 +94,11 @@ public class DDMFormValuesUtil {
 				try {
 					return unsafeFunction.apply(ddmFormField);
 				}
-				catch (RuntimeException re) {
-					throw re;
+				catch (RuntimeException runtimeException) {
+					throw runtimeException;
 				}
-				catch (Exception e) {
-					throw new RuntimeException(e);
+				catch (Exception exception) {
+					throw new RuntimeException(exception);
 				}
 			}
 		).flatMap(
@@ -161,8 +161,8 @@ public class DDMFormValuesUtil {
 		return TransformUtil.transform(
 			contentFields,
 			contentField -> _toDDMFormFieldValue(
-				ListUtil.toList(contentField.getNestedFields()), ddmFormField,
-				dlAppService, groupId, journalArticleService,
+				ListUtil.fromArray(contentField.getNestedContentFields()),
+				ddmFormField, dlAppService, groupId, journalArticleService,
 				layoutLocalService, locale,
 				DDMValueUtil.toDDMValue(
 					contentField, ddmFormField, dlAppService, groupId,

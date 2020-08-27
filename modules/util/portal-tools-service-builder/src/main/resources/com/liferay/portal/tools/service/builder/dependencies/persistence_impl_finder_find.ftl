@@ -83,12 +83,12 @@ that may or may not be enforced with a unique index at the database level. Case
 
 <#if entityFinder.isCollection() && !entityFinder.isUnique()>
 	/**
-	 * Returns all the ${entity.humanNames} where ${entityFinder.getHumanConditions(false)}.
+	 * Returns all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(false)}.
 	 *
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @return the matching ${entity.humanNames}
+	 * @return the matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
@@ -112,7 +112,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns a range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(false)}.
+	 * Returns a range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(false)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -121,9 +121,9 @@ that may or may not be enforced with a unique index at the database level. Case
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
-	 * @return the range of matching ${entity.humanNames}
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
+	 * @return the range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
@@ -143,7 +143,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns an ordered range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(false)}.
+	 * Returns an ordered range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(false)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -152,10 +152,10 @@ that may or may not be enforced with a unique index at the database level. Case
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching ${entity.humanNames}
+	 * @return the ordered range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
@@ -175,7 +175,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns an ordered range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(false)}.
+	 * Returns an ordered range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(false)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -184,11 +184,11 @@ that may or may not be enforced with a unique index at the database level. Case
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
-	 * @return the ordered range of matching ${entity.humanNames}
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
@@ -197,36 +197,40 @@ that may or may not be enforced with a unique index at the database level. Case
 		${entityColumn.type} ${entityColumn.name},
 	</#list>
 
-	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean retrieveFromCache) {
+	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean useFinderCache) {
 		<#list entityColumns as entityColumn>
 			<#if stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
 				${entityColumn.name} = Objects.toString(${entityColumn.name}, "");
 			</#if>
 		</#list>
 
-		boolean pagination = true;
+		<#if entity.isChangeTrackingEnabled()>
+			boolean productionMode = ${ctPersistenceHelper}.isProductionMode(${entity.name}.class);
+		</#if>
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		<#if !entityFinder.hasCustomComparator()>
 			if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (orderByComparator == null)) {
-				pagination = false;
-				finderPath = _finderPathWithoutPaginationFindBy${entityFinder.name};
-				finderArgs = new Object[] {
-					<#list entityColumns as entityColumn>
-						<#if stringUtil.equals(entityColumn.type, "Date")>
-							_getTime(${entityColumn.name})
-						<#else>
-							${entityColumn.name}
-						</#if>
+				if (${useCache}) {
+					finderPath = _finderPathWithoutPaginationFindBy${entityFinder.name};
+					finderArgs = new Object[] {
+						<#list entityColumns as entityColumn>
+							<#if stringUtil.equals(entityColumn.type, "Date")>
+								_getTime(${entityColumn.name})
+							<#else>
+								${entityColumn.name}
+							</#if>
 
-						<#if entityColumn_has_next>
-							,
-						</#if>
-					</#list>
-				};
+							<#if entityColumn_has_next>
+								,
+							</#if>
+						</#list>
+					};
+				}
 			}
-			else {
+			else if (${useCache}) {
 		</#if>
 
 		finderPath = _finderPathWithPaginationFindBy${entityFinder.name};
@@ -248,7 +252,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		List<${entity.name}> list = null;
 
-		if (retrieveFromCache) {
+		if (${useCache}) {
 			list = (List<${entity.name}>)${finderCache}.getResult(finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -271,44 +275,37 @@ that may or may not be enforced with a unique index at the database level. Case
 		}
 
 		if (list == null) {
-			<#assign checkPagination = true />
-
 			<#include "persistence_impl_find_by_query.ftl">
 
-			<#assign checkPagination = false />
-
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				<@finderQPos />
 
-				if (!pagination) {
-					list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
-				}
+				list = (List<${entity.name}>)QueryUtil.list(query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				${finderCache}.putResult(finderPath, finderArgs, list);
+				if (${useCache}) {
+					${finderCache}.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				${finderCache}.removeResult(finderPath, finderArgs);
+			catch (Exception exception) {
+				<#if serviceBuilder.isVersionLTE_7_2_0()>
+					if (${useCache}) {
+						${finderCache}.removeResult(finderPath, finderArgs);
+					}
+				</#if>
 
-				throw processException(e);
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -348,20 +345,20 @@ that may or may not be enforced with a unique index at the database level. Case
 			return ${entity.varName};
 		}
 
-		StringBundler msg = new StringBundler(${(entityColumns?size * 2) + 2});
+		StringBundler sb = new StringBundler(${(entityColumns?size * 2) + 2});
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
 		<#list entityColumns as entityColumn>
-			msg.append("<#if entityColumn_index != 0>, </#if>${entityColumn.name}=");
-			msg.append(${entityColumn.name});
+			sb.append("<#if entityColumn_index != 0>, </#if>${entityColumn.name}${entityColumn.comparator}");
+			sb.append(${entityColumn.name});
 
 			<#if !entityColumn_has_next>
-				msg.append("}");
+				sb.append("}");
 			</#if>
 		</#list>
 
-		throw new ${noSuchEntity}Exception(msg.toString());
+		throw new ${noSuchEntity}Exception(sb.toString());
 	}
 
 	/**
@@ -426,20 +423,20 @@ that may or may not be enforced with a unique index at the database level. Case
 			return ${entity.varName};
 		}
 
-		StringBundler msg = new StringBundler(${(entityColumns?size * 2) + 2});
+		StringBundler sb = new StringBundler(${(entityColumns?size * 2) + 2});
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
 		<#list entityColumns as entityColumn>
-			msg.append("<#if entityColumn_index != 0>, </#if>${entityColumn.name}=");
-			msg.append(${entityColumn.name});
+			sb.append("<#if entityColumn_index != 0>, </#if>${entityColumn.name}${entityColumn.comparator}");
+			sb.append(${entityColumn.name});
 
 			<#if !entityColumn_has_next>
-				msg.append("}");
+				sb.append("}");
 			</#if>
 		</#list>
 
-		throw new ${noSuchEntity}Exception(msg.toString());
+		throw new ${noSuchEntity}Exception(sb.toString());
 	}
 
 	/**
@@ -492,7 +489,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 	<#if !entityFinder.hasEntityColumn(entity.PKVarName)>
 		/**
-		 * Returns the ${entity.humanNames} before and after the current ${entity.humanName} in the ordered set where ${entityFinder.getHumanConditions(false)}.
+		 * Returns the ${entity.pluralHumanName} before and after the current ${entity.humanName} in the ordered set where ${entityFinder.getHumanConditions(false)}.
 		 *
 		 * @param ${entity.PKVarName} the primary key of the current ${entity.humanName}
 		<#list entityColumns as entityColumn>
@@ -549,8 +546,8 @@ that may or may not be enforced with a unique index at the database level. Case
 
 				return array;
 			}
-			catch (Exception e) {
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -568,24 +565,24 @@ that may or may not be enforced with a unique index at the database level. Case
 
 			<#include "persistence_impl_get_by_prev_and_next_query.ftl">
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
-			Query q = session.createQuery(sql);
+			Query query = session.createQuery(sql);
 
-			q.setFirstResult(0);
-			q.setMaxResults(2);
+			query.setFirstResult(0);
+			query.setMaxResults(2);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(query);
 
 			<@finderQPos />
 
 			if (orderByComparator != null) {
 				for (Object orderByConditionValue : orderByComparator.getOrderByConditionValues(${entity.varName})) {
-					qPos.add(orderByConditionValue);
+					queryPos.add(orderByConditionValue);
 				}
 			}
 
-			List<${entity.name}> list = q.list();
+			List<${entity.name}> list = query.list();
 
 			if (list.size() == 2) {
 				return list.get(1);
@@ -598,12 +595,12 @@ that may or may not be enforced with a unique index at the database level. Case
 
 	<#if entity.isPermissionCheckEnabled(entityFinder)>
 		/**
-		 * Returns all the ${entity.humanNames} that the user has permission to view where ${entityFinder.getHumanConditions(false)}.
+		 * Returns all the ${entity.pluralHumanName} that the user has permission to view where ${entityFinder.getHumanConditions(false)}.
 		 *
 		<#list entityColumns as entityColumn>
 		 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#list>
-		 * @return the matching ${entity.humanNames} that the user has permission to view
+		 * @return the matching ${entity.pluralHumanName} that the user has permission to view
 		 */
 		@Override
 		public List<${entity.name}> filterFindBy${entityFinder.name}(
@@ -627,7 +624,7 @@ that may or may not be enforced with a unique index at the database level. Case
 		}
 
 		/**
-		 * Returns a range of all the ${entity.humanNames} that the user has permission to view where ${entityFinder.getHumanConditions(false)}.
+		 * Returns a range of all the ${entity.pluralHumanName} that the user has permission to view where ${entityFinder.getHumanConditions(false)}.
 		 *
 		 * <p>
 		 * <#include "range_comment.ftl">
@@ -636,9 +633,9 @@ that may or may not be enforced with a unique index at the database level. Case
 		<#list entityColumns as entityColumn>
 		 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#list>
-		 * @param start the lower bound of the range of ${entity.humanNames}
-		 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
-		 * @return the range of matching ${entity.humanNames} that the user has permission to view
+		 * @param start the lower bound of the range of ${entity.pluralHumanName}
+		 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
+		 * @return the range of matching ${entity.pluralHumanName} that the user has permission to view
 		 */
 		@Override
 		public List<${entity.name}> filterFindBy${entityFinder.name}(
@@ -658,7 +655,7 @@ that may or may not be enforced with a unique index at the database level. Case
 		}
 
 		/**
-		 * Returns an ordered range of all the ${entity.humanNames} that the user has permissions to view where ${entityFinder.getHumanConditions(false)}.
+		 * Returns an ordered range of all the ${entity.pluralHumanName} that the user has permissions to view where ${entityFinder.getHumanConditions(false)}.
 		 *
 		 * <p>
 		 * <#include "range_comment.ftl">
@@ -667,10 +664,10 @@ that may or may not be enforced with a unique index at the database level. Case
 		<#list entityColumns as entityColumn>
 		 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#list>
-		 * @param start the lower bound of the range of ${entity.humanNames}
-		 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+		 * @param start the lower bound of the range of ${entity.pluralHumanName}
+		 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 		 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-		 * @return the ordered range of matching ${entity.humanNames} that the user has permission to view
+		 * @return the ordered range of matching ${entity.pluralHumanName} that the user has permission to view
 		 */
 		@Override
 		public List<${entity.name}> filterFindBy${entityFinder.name}(
@@ -706,42 +703,42 @@ that may or may not be enforced with a unique index at the database level. Case
 			<#if entity.isPermissionedModel()>
 				<#include "persistence_impl_find_by_query.ftl">
 
-				String sql = InlineSQLHelperUtil.replacePermissionCheck(query.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, _FILTER_ENTITY_TABLE_FILTER_USERID_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
+				String sql = InlineSQLHelperUtil.replacePermissionCheck(sb.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, _FILTER_ENTITY_TABLE_FILTER_USERID_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
 
 				Session session = null;
 
 				try {
 					session = openSession();
 
-					Query q = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-					QueryPos qPos = QueryPos.getInstance(q);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
 					<@finderQPos />
 
-					return (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
+					return (List<${entity.name}>)QueryUtil.list(query, getDialect(), start, end);
 				}
-				catch (Exception e) {
-					throw processException(e);
+				catch (Exception exception) {
+					throw processException(exception);
 				}
 				finally {
 					closeSession(session);
 				}
 			<#else>
-				StringBundler query = null;
+				StringBundler sb = null;
 
 				if (orderByComparator != null) {
-					query = new StringBundler(${entityColumns?size + 2} + (orderByComparator.getOrderByFields().length * 2));
+					sb = new StringBundler(${entityColumns?size + 2} + (orderByComparator.getOrderByFields().length * 2));
 				}
 				else {
-					query = new StringBundler(${entityColumns?size + 3});
+					sb = new StringBundler(${entityColumns?size + 3});
 				}
 
 				if (getDB().isSupportsInlineDistinct()) {
-					query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_WHERE);
+					sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_WHERE);
 				}
 				else {
-					query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_1);
+					sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_1);
 				}
 
 				<#assign sqlQuery = true />
@@ -751,50 +748,50 @@ that may or may not be enforced with a unique index at the database level. Case
 				<#assign sqlQuery = false />
 
 				if (!getDB().isSupportsInlineDistinct()) {
-					query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_2);
+					sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_2);
 				}
 
 				if (orderByComparator != null) {
 					if (getDB().isSupportsInlineDistinct()) {
-						appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+						appendOrderByComparator(sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
 					}
 					else {
-						appendOrderByComparator(query, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+						appendOrderByComparator(sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
 					}
 				}
 				else {
 					if (getDB().isSupportsInlineDistinct()) {
-						query.append(${entity.name}ModelImpl.ORDER_BY_JPQL);
+						sb.append(${entity.name}ModelImpl.ORDER_BY_JPQL);
 					}
 					else {
-						query.append(${entity.name}ModelImpl.ORDER_BY_SQL);
+						sb.append(${entity.name}ModelImpl.ORDER_BY_SQL);
 					}
 				}
 
-				String sql = InlineSQLHelperUtil.replacePermissionCheck(query.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
+				String sql = InlineSQLHelperUtil.replacePermissionCheck(sb.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
 
 				Session session = null;
 
 				try {
 					session = openSession();
 
-					SQLQuery q = session.createSynchronizedSQLQuery(sql);
+					SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
 					if (getDB().isSupportsInlineDistinct()) {
-						q.addEntity(_FILTER_ENTITY_ALIAS, ${entity.name}Impl.class);
+						sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, ${entity.name}Impl.class);
 					}
 					else {
-						q.addEntity(_FILTER_ENTITY_TABLE, ${entity.name}Impl.class);
+						sqlQuery.addEntity(_FILTER_ENTITY_TABLE, ${entity.name}Impl.class);
 					}
 
-					QueryPos qPos = QueryPos.getInstance(q);
+					QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 					<@finderQPos />
 
-					return (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
+					return (List<${entity.name}>)QueryUtil.list(sqlQuery, getDialect(), start, end);
 				}
-				catch (Exception e) {
-					throw processException(e);
+				catch (Exception exception) {
+					throw processException(exception);
 				}
 				finally {
 					closeSession(session);
@@ -804,7 +801,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#if !entityFinder.hasEntityColumn(entity.PKVarName)>
 			/**
-			 * Returns the ${entity.humanNames} before and after the current ${entity.humanName} in the ordered set of ${entity.humanNames} that the user has permission to view where ${entityFinder.getHumanConditions(false)}.
+			 * Returns the ${entity.pluralHumanName} before and after the current ${entity.humanName} in the ordered set of ${entity.pluralHumanName} that the user has permission to view where ${entityFinder.getHumanConditions(false)}.
 			 *
 			 * @param ${entity.PKVarName} the primary key of the current ${entity.humanName}
 			<#list entityColumns as entityColumn>
@@ -878,8 +875,8 @@ that may or may not be enforced with a unique index at the database level. Case
 
 					return array;
 				}
-				catch (Exception e) {
-					throw processException(e);
+				catch (Exception exception) {
+					throw processException(exception);
 				}
 				finally {
 					closeSession(session);
@@ -898,24 +895,24 @@ that may or may not be enforced with a unique index at the database level. Case
 				<#if entity.isPermissionedModel()>
 					<#include "persistence_impl_get_by_prev_and_next_query.ftl">
 
-					String sql = InlineSQLHelperUtil.replacePermissionCheck(query.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, _FILTER_ENTITY_TABLE_FILTER_USERID_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
+					String sql = InlineSQLHelperUtil.replacePermissionCheck(sb.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, _FILTER_ENTITY_TABLE_FILTER_USERID_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
 
-					Query q = session.createQuery(sql);
+					Query query = session.createQuery(sql);
 
-					q.setFirstResult(0);
-					q.setMaxResults(2);
+					query.setFirstResult(0);
+					query.setMaxResults(2);
 
-					QueryPos qPos = QueryPos.getInstance(q);
+					QueryPos queryPos = QueryPos.getInstance(query);
 
 					<@finderQPos />
 
 					if (orderByComparator != null) {
 						for (Object orderByConditionValue : orderByComparator.getOrderByConditionValues(${entity.varName})) {
-							qPos.add(orderByConditionValue);
+							queryPos.add(orderByConditionValue);
 						}
 					}
 
-					List<${entity.name}> list = q.list();
+					List<${entity.name}> list = query.list();
 
 					if (list.size() == 2) {
 						return list.get(1);
@@ -924,20 +921,20 @@ that may or may not be enforced with a unique index at the database level. Case
 						return null;
 					}
 				<#else>
-					StringBundler query = null;
+					StringBundler sb = null;
 
 					if (orderByComparator != null) {
-						query = new StringBundler(${entityColumns?size + 4} + (orderByComparator.getOrderByConditionFields().length * 3) + (orderByComparator.getOrderByFields().length * 3));
+						sb = new StringBundler(${entityColumns?size + 4} + (orderByComparator.getOrderByConditionFields().length * 3) + (orderByComparator.getOrderByFields().length * 3));
 					}
 					else {
-						query = new StringBundler(${entityColumns?size + 3});
+						sb = new StringBundler(${entityColumns?size + 3});
 					}
 
 					if (getDB().isSupportsInlineDistinct()) {
-						query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_WHERE);
+						sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_WHERE);
 					}
 					else {
-						query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_1);
+						sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_1);
 					}
 
 					<#assign sqlQuery = true />
@@ -947,106 +944,106 @@ that may or may not be enforced with a unique index at the database level. Case
 					<#assign sqlQuery = false />
 
 					if (!getDB().isSupportsInlineDistinct()) {
-						query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_2);
+						sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_2);
 					}
 
 					if (orderByComparator != null) {
 						String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
 
 						if (orderByConditionFields.length > 0) {
-							query.append(WHERE_AND);
+							sb.append(WHERE_AND);
 						}
 
 						for (int i = 0; i < orderByConditionFields.length; i++) {
 							if (getDB().isSupportsInlineDistinct()) {
-								query.append(getColumnName(_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i], true));
+								sb.append(getColumnName(_ORDER_BY_ENTITY_ALIAS, orderByConditionFields[i], true));
 							}
 							else {
-								query.append(getColumnName(_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i], true));
+								sb.append(getColumnName(_ORDER_BY_ENTITY_TABLE, orderByConditionFields[i], true));
 							}
 
 							if ((i + 1) < orderByConditionFields.length) {
 								if (orderByComparator.isAscending() ^ previous) {
-									query.append(WHERE_GREATER_THAN_HAS_NEXT);
+									sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 								}
 								else {
-									query.append(WHERE_LESSER_THAN_HAS_NEXT);
+									sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 								}
 							}
 							else {
 								if (orderByComparator.isAscending() ^ previous) {
-									query.append(WHERE_GREATER_THAN);
+									sb.append(WHERE_GREATER_THAN);
 								}
 								else {
-									query.append(WHERE_LESSER_THAN);
+									sb.append(WHERE_LESSER_THAN);
 								}
 							}
 						}
 
-						query.append(ORDER_BY_CLAUSE);
+						sb.append(ORDER_BY_CLAUSE);
 
 						String[] orderByFields = orderByComparator.getOrderByFields();
 
 						for (int i = 0; i < orderByFields.length; i++) {
 							if (getDB().isSupportsInlineDistinct()) {
-								query.append(getColumnName(_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
+								sb.append(getColumnName(_ORDER_BY_ENTITY_ALIAS, orderByFields[i], true));
 							}
 							else {
-								query.append(getColumnName(_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
+								sb.append(getColumnName(_ORDER_BY_ENTITY_TABLE, orderByFields[i], true));
 							}
 
 							if ((i + 1) < orderByFields.length) {
 								if (orderByComparator.isAscending() ^ previous) {
-									query.append(ORDER_BY_ASC_HAS_NEXT);
+									sb.append(ORDER_BY_ASC_HAS_NEXT);
 								}
 								else {
-									query.append(ORDER_BY_DESC_HAS_NEXT);
+									sb.append(ORDER_BY_DESC_HAS_NEXT);
 								}
 							}
 							else {
 								if (orderByComparator.isAscending() ^ previous) {
-									query.append(ORDER_BY_ASC);
+									sb.append(ORDER_BY_ASC);
 								}
 								else {
-									query.append(ORDER_BY_DESC);
+									sb.append(ORDER_BY_DESC);
 								}
 							}
 						}
 					}
 					else {
 						if (getDB().isSupportsInlineDistinct()) {
-							query.append(${entity.name}ModelImpl.ORDER_BY_JPQL);
+							sb.append(${entity.name}ModelImpl.ORDER_BY_JPQL);
 						}
 						else {
-							query.append(${entity.name}ModelImpl.ORDER_BY_SQL);
+							sb.append(${entity.name}ModelImpl.ORDER_BY_SQL);
 						}
 					}
 
-					String sql = InlineSQLHelperUtil.replacePermissionCheck(query.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
+					String sql = InlineSQLHelperUtil.replacePermissionCheck(sb.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN<#if entityFinder.hasEntityColumn("groupId")>, groupId</#if>);
 
-					SQLQuery q = session.createSynchronizedSQLQuery(sql);
+					SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-					q.setFirstResult(0);
-					q.setMaxResults(2);
+					sqlQuery.setFirstResult(0);
+					sqlQuery.setMaxResults(2);
 
 					if (getDB().isSupportsInlineDistinct()) {
-						q.addEntity(_FILTER_ENTITY_ALIAS, ${entity.name}Impl.class);
+						sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, ${entity.name}Impl.class);
 					}
 					else {
-						q.addEntity(_FILTER_ENTITY_TABLE, ${entity.name}Impl.class);
+						sqlQuery.addEntity(_FILTER_ENTITY_TABLE, ${entity.name}Impl.class);
 					}
 
-					QueryPos qPos = QueryPos.getInstance(q);
+					QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 					<@finderQPos />
 
 					if (orderByComparator != null) {
 						for (Object orderByConditionValue : orderByComparator.getOrderByConditionValues(${entity.varName})) {
-							qPos.add(orderByConditionValue);
+							queryPos.add(orderByConditionValue);
 						}
 					}
 
-					List<${entity.name}> list = q.list();
+					List<${entity.name}> list = sqlQuery.list();
 
 					if (list.size() == 2) {
 						return list.get(1);
@@ -1060,23 +1057,23 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#if entityFinder.hasArrayableOperator()>
 			/**
-			 * Returns all the ${entity.humanNames} that the user has permission to view where ${entityFinder.getHumanConditions(true)}.
+			 * Returns all the ${entity.pluralHumanName} that the user has permission to view where ${entityFinder.getHumanConditions(true)}.
 			 *
 			<#list entityColumns as entityColumn>
 				<#if entityColumn.hasArrayableOperator()>
-			 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+			 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 				<#else>
 			 * @param ${entityColumn.name} the ${entityColumn.humanName}
 				</#if>
 			</#list>
-			 * @return the matching ${entity.humanNames} that the user has permission to view
+			 * @return the matching ${entity.pluralHumanName} that the user has permission to view
 			 */
 			@Override
 			public List<${entity.name}> filterFindBy${entityFinder.name}(
 
 			<#list entityColumns as entityColumn>
 				<#if entityColumn.hasArrayableOperator()>
-					${entityColumn.type}[] ${entityColumn.names}
+					${entityColumn.type}[] ${entityColumn.pluralName}
 				<#else>
 					${entityColumn.type} ${entityColumn.name}
 				</#if>
@@ -1091,7 +1088,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 				<#list entityColumns as entityColumn>
 					<#if entityColumn.hasArrayableOperator()>
-						${entityColumn.names},
+						${entityColumn.pluralName},
 					<#else>
 						${entityColumn.name},
 					</#if>
@@ -1101,7 +1098,7 @@ that may or may not be enforced with a unique index at the database level. Case
 			}
 
 			/**
-			 * Returns a range of all the ${entity.humanNames} that the user has permission to view where ${entityFinder.getHumanConditions(true)}.
+			 * Returns a range of all the ${entity.pluralHumanName} that the user has permission to view where ${entityFinder.getHumanConditions(true)}.
 			 *
 			 * <p>
 			 * <#include "range_comment.ftl">
@@ -1109,21 +1106,21 @@ that may or may not be enforced with a unique index at the database level. Case
 			 *
 			<#list entityColumns as entityColumn>
 				<#if entityColumn.hasArrayableOperator()>
-			 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+			 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 				<#else>
 			 * @param ${entityColumn.name} the ${entityColumn.humanName}
 				</#if>
 			</#list>
-			 * @param start the lower bound of the range of ${entity.humanNames}
-			 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
-			 * @return the range of matching ${entity.humanNames} that the user has permission to view
+			 * @param start the lower bound of the range of ${entity.pluralHumanName}
+			 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
+			 * @return the range of matching ${entity.pluralHumanName} that the user has permission to view
 			 */
 			@Override
 			public List<${entity.name}> filterFindBy${entityFinder.name}(
 
 			<#list entityColumns as entityColumn>
 				<#if entityColumn.hasArrayableOperator()>
-					${entityColumn.type}[] ${entityColumn.names},
+					${entityColumn.type}[] ${entityColumn.pluralName},
 				<#else>
 					${entityColumn.type} ${entityColumn.name},
 				</#if>
@@ -1134,7 +1131,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 				<#list entityColumns as entityColumn>
 					<#if entityColumn.hasArrayableOperator()>
-						${entityColumn.names},
+						${entityColumn.pluralName},
 					<#else>
 						${entityColumn.name},
 					</#if>
@@ -1144,7 +1141,7 @@ that may or may not be enforced with a unique index at the database level. Case
 			}
 
 			/**
-			 * Returns an ordered range of all the ${entity.humanNames} that the user has permission to view where ${entityFinder.getHumanConditions(true)}.
+			 * Returns an ordered range of all the ${entity.pluralHumanName} that the user has permission to view where ${entityFinder.getHumanConditions(true)}.
 			 *
 			 * <p>
 			 * <#include "range_comment.ftl">
@@ -1152,22 +1149,22 @@ that may or may not be enforced with a unique index at the database level. Case
 			 *
 			<#list entityColumns as entityColumn>
 				<#if entityColumn.hasArrayableOperator()>
-			 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+			 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 				<#else>
 			 * @param ${entityColumn.name} the ${entityColumn.humanName}
 				</#if>
 			</#list>
-			 * @param start the lower bound of the range of ${entity.humanNames}
-			 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+			 * @param start the lower bound of the range of ${entity.pluralHumanName}
+			 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 			 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-			 * @return the ordered range of matching ${entity.humanNames} that the user has permission to view
+			 * @return the ordered range of matching ${entity.pluralHumanName} that the user has permission to view
 			 */
 			@Override
 			public List<${entity.name}> filterFindBy${entityFinder.name}(
 
 			<#list entityColumns as entityColumn>
 				<#if entityColumn.hasArrayableOperator()>
-					${entityColumn.type}[] ${entityColumn.names},
+					${entityColumn.type}[] ${entityColumn.pluralName},
 				<#else>
 					${entityColumn.type} ${entityColumn.name},
 				</#if>
@@ -1192,7 +1189,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 					<#list entityColumns as entityColumn>
 						<#if entityColumn.hasArrayableOperator()>
-							${entityColumn.names},
+							${entityColumn.pluralName},
 						<#else>
 							${entityColumn.name},
 						</#if>
@@ -1203,27 +1200,31 @@ that may or may not be enforced with a unique index at the database level. Case
 
 				<#list entityColumns as entityColumn>
 					<#if entityColumn.hasArrayableOperator()>
-						if (${entityColumn.names} == null) {
-							${entityColumn.names} = new ${entityColumn.type}[0];
+						if (${entityColumn.pluralName} == null) {
+							${entityColumn.pluralName} = new ${entityColumn.type}[0];
 						}
-						else if (${entityColumn.names}.length > 1) {
+						else if (${entityColumn.pluralName}.length > 1) {
 							<#if stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
-								for (int i = 0; i < ${entityColumn.names}.length; i++) {
-									${entityColumn.names}[i] = Objects.toString(${entityColumn.names}[i], "");
+								for (int i = 0; i < ${entityColumn.pluralName}.length; i++) {
+									${entityColumn.pluralName}[i] = Objects.toString(${entityColumn.pluralName}[i], "");
 								}
 							</#if>
 
-							${entityColumn.names} =
-								<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
-									ArrayUtil.distinct(${entityColumn.names}, NULL_SAFE_STRING_COMPARATOR);
-								<#else>
-									ArrayUtil.unique(${entityColumn.names});
-								</#if>
-
-							<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
-								Arrays.sort(${entityColumn.names}, NULL_SAFE_STRING_COMPARATOR);
+							<#if serviceBuilder.isVersionGTE_7_2_0()>
+								${entityColumn.pluralName} = ArrayUtil.sortedUnique(${entityColumn.pluralName});
 							<#else>
-								Arrays.sort(${entityColumn.names});
+								${entityColumn.pluralName} =
+									<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
+										ArrayUtil.distinct(${entityColumn.pluralName}, NULL_SAFE_STRING_COMPARATOR);
+									<#else>
+										ArrayUtil.unique(${entityColumn.pluralName});
+									</#if>
+
+								<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
+									Arrays.sort(${entityColumn.pluralName}, NULL_SAFE_STRING_COMPARATOR);
+								<#else>
+									Arrays.sort(${entityColumn.pluralName});
+								</#if>
 							</#if>
 						}
 					<#elseif stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
@@ -1234,7 +1235,7 @@ that may or may not be enforced with a unique index at the database level. Case
 				<#if entity.isPermissionedModel()>
 					<#include "persistence_impl_find_by_arrayable_query.ftl">
 
-					String sql = InlineSQLHelperUtil.replacePermissionCheck(query.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, _FILTER_ENTITY_TABLE_FILTER_USERID_COLUMN
+					String sql = InlineSQLHelperUtil.replacePermissionCheck(sb.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN, _FILTER_ENTITY_TABLE_FILTER_USERID_COLUMN
 
 					<#if entityFinder.hasEntityColumn("groupId")>,
 						<#if entityFinder.getEntityColumn("groupId").hasArrayableOperator()>
@@ -1249,30 +1250,30 @@ that may or may not be enforced with a unique index at the database level. Case
 					try {
 						session = openSession();
 
-						Query q = session.createQuery(sql);
+						Query query = session.createQuery(sql);
 
 						<#if bindParameter(entityColumns)>
-							QueryPos qPos = QueryPos.getInstance(q);
+							QueryPos queryPos = QueryPos.getInstance(query);
 						</#if>
 
 						<@finderQPos _arrayable=true />
 
-						return (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
+						return (List<${entity.name}>)QueryUtil.list(query, getDialect(), start, end);
 					}
-					catch (Exception e) {
-						throw processException(e);
+					catch (Exception exception) {
+						throw processException(exception);
 					}
 					finally {
 						closeSession(session);
 					}
 				<#else>
-					StringBundler query = new StringBundler();
+					StringBundler sb = new StringBundler();
 
 					if (getDB().isSupportsInlineDistinct()) {
-						query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_WHERE);
+						sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_WHERE);
 					}
 					else {
-						query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_1);
+						sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_1);
 					}
 
 					<#assign sqlQuery = true />
@@ -1282,27 +1283,27 @@ that may or may not be enforced with a unique index at the database level. Case
 					<#assign sqlQuery = false />
 
 					if (!getDB().isSupportsInlineDistinct()) {
-						query.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_2);
+						sb.append(_FILTER_SQL_SELECT_${entity.alias?upper_case}_NO_INLINE_DISTINCT_WHERE_2);
 					}
 
 					if (orderByComparator != null) {
 						if (getDB().isSupportsInlineDistinct()) {
-							appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
+							appendOrderByComparator(sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator, true);
 						}
 						else {
-							appendOrderByComparator(query, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
+							appendOrderByComparator(sb, _ORDER_BY_ENTITY_TABLE, orderByComparator, true);
 						}
 					}
 					else {
 						if (getDB().isSupportsInlineDistinct()) {
-							query.append(${entity.name}ModelImpl.ORDER_BY_JPQL);
+							sb.append(${entity.name}ModelImpl.ORDER_BY_JPQL);
 						}
 						else {
-							query.append(${entity.name}ModelImpl.ORDER_BY_SQL);
+							sb.append(${entity.name}ModelImpl.ORDER_BY_SQL);
 						}
 					}
 
-					String sql = InlineSQLHelperUtil.replacePermissionCheck(query.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN
+					String sql = InlineSQLHelperUtil.replacePermissionCheck(sb.toString(), ${entity.name}.class.getName(), _FILTER_ENTITY_TABLE_FILTER_PK_COLUMN
 
 					<#if entityFinder.hasEntityColumn("groupId")>,
 						<#if entityFinder.getEntityColumn("groupId").hasArrayableOperator()>
@@ -1317,25 +1318,25 @@ that may or may not be enforced with a unique index at the database level. Case
 					try {
 						session = openSession();
 
-						SQLQuery q = session.createSynchronizedSQLQuery(sql);
+						SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
 						if (getDB().isSupportsInlineDistinct()) {
-							q.addEntity(_FILTER_ENTITY_ALIAS, ${entity.name}Impl.class);
+							sqlQuery.addEntity(_FILTER_ENTITY_ALIAS, ${entity.name}Impl.class);
 						}
 						else {
-							q.addEntity(_FILTER_ENTITY_TABLE, ${entity.name}Impl.class);
+							sqlQuery.addEntity(_FILTER_ENTITY_TABLE, ${entity.name}Impl.class);
 						}
 
 						<#if bindParameter(entityColumns)>
-							QueryPos qPos = QueryPos.getInstance(q);
+							QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 						</#if>
 
 						<@finderQPos _arrayable=true />
 
-						return (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
+						return (List<${entity.name}>)QueryUtil.list(sqlQuery, getDialect(), start, end);
 					}
-					catch (Exception e) {
-						throw processException(e);
+					catch (Exception exception) {
+						throw processException(exception);
 					}
 					finally {
 						closeSession(session);
@@ -1365,7 +1366,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 <#if entityFinder.isCollection() && entityFinder.hasArrayableOperator() && !entityFinder.hasArrayablePagination()>
 	/**
-	 * Returns all the ${entity.humanNames} where ${entityFinder.getHumanConditions(true)}.
+	 * Returns all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(true)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1373,19 +1374,19 @@ that may or may not be enforced with a unique index at the database level. Case
 	 *
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-	 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+	 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 		<#else>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#if>
 	</#list>
-	 * @return the matching ${entity.humanNames}
+	 * @return the matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names}
+			${entityColumn.type}[] ${entityColumn.pluralName}
 		<#else>
 			${entityColumn.type} ${entityColumn.name}
 		</#if>
@@ -1400,7 +1401,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				${entityColumn.names},
+				${entityColumn.pluralName},
 			<#else>
 				${entityColumn.name},
 			</#if>
@@ -1410,7 +1411,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns a range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(true)}.
+	 * Returns a range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(true)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1418,21 +1419,21 @@ that may or may not be enforced with a unique index at the database level. Case
 	 *
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-	 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+	 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 		<#else>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#if>
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
-	 * @return the range of matching ${entity.humanNames}
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
+	 * @return the range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
@@ -1443,7 +1444,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				${entityColumn.names},
+				${entityColumn.pluralName},
 			<#else>
 				${entityColumn.name},
 			</#if>
@@ -1453,7 +1454,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns an ordered range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(true)}.
+	 * Returns an ordered range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(true)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1461,22 +1462,22 @@ that may or may not be enforced with a unique index at the database level. Case
 	 *
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-	 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+	 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 		<#else>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#if>
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching ${entity.humanNames}
+	 * @return the ordered range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
@@ -1487,7 +1488,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				${entityColumn.names},
+				${entityColumn.pluralName},
 			<#else>
 				${entityColumn.name},
 			</#if>
@@ -1497,7 +1498,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns an ordered range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(false)}, optionally using the finder cache.
+	 * Returns an ordered range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(false)}, optionally using the finder cache.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1506,47 +1507,51 @@ that may or may not be enforced with a unique index at the database level. Case
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
-	 * @return the ordered range of matching ${entity.humanNames}
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
 	</#list>
 
-	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean retrieveFromCache) {
+	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean useFinderCache) {
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				if (${entityColumn.names} == null) {
-					${entityColumn.names} = new ${entityColumn.type}[0];
+				if (${entityColumn.pluralName} == null) {
+					${entityColumn.pluralName} = new ${entityColumn.type}[0];
 				}
-				else if (${entityColumn.names}.length > 1) {
+				else if (${entityColumn.pluralName}.length > 1) {
 					<#if stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
-						for (int i = 0; i < ${entityColumn.names}.length; i++) {
-							${entityColumn.names}[i] = Objects.toString(${entityColumn.names}[i], "");
+						for (int i = 0; i < ${entityColumn.pluralName}.length; i++) {
+							${entityColumn.pluralName}[i] = Objects.toString(${entityColumn.pluralName}[i], "");
 						}
 					</#if>
 
-					${entityColumn.names} =
-						<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
-							ArrayUtil.distinct(${entityColumn.names}, NULL_SAFE_STRING_COMPARATOR);
-						<#else>
-							ArrayUtil.unique(${entityColumn.names});
-						</#if>
-
-					<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
-						Arrays.sort(${entityColumn.names}, NULL_SAFE_STRING_COMPARATOR);
+					<#if serviceBuilder.isVersionGTE_7_2_0()>
+						${entityColumn.pluralName} = ArrayUtil.sortedUnique(${entityColumn.pluralName});
 					<#else>
-						Arrays.sort(${entityColumn.names});
+						${entityColumn.pluralName} =
+							<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
+								ArrayUtil.distinct(${entityColumn.pluralName}, NULL_SAFE_STRING_COMPARATOR);
+							<#else>
+								ArrayUtil.unique(${entityColumn.pluralName});
+							</#if>
+
+						<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
+							Arrays.sort(${entityColumn.pluralName}, NULL_SAFE_STRING_COMPARATOR);
+						<#else>
+							Arrays.sort(${entityColumn.pluralName});
+						</#if>
 					</#if>
 				}
 			<#elseif stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
@@ -1564,7 +1569,7 @@ that may or may not be enforced with a unique index at the database level. Case
 					&&
 				</#if>
 
-				${entityColumn.names}.length == 1
+				${entityColumn.pluralName}.length == 1
 			</#if>
 		</#list>
 		) {
@@ -1572,7 +1577,7 @@ that may or may not be enforced with a unique index at the database level. Case
 				${entity.name} ${entity.varName} = fetchBy${entityFinder.name}(
 					<#list entityColumns as entityColumn>
 						<#if entityColumn.hasArrayableOperator()>
-							${entityColumn.names}[0]
+							${entityColumn.pluralName}[0]
 						<#else>
 							${entityColumn.name}
 						</#if>
@@ -1596,7 +1601,7 @@ that may or may not be enforced with a unique index at the database level. Case
 				return findBy${entityFinder.name}(
 					<#list entityColumns as entityColumn>
 						<#if entityColumn.hasArrayableOperator()>
-							${entityColumn.names}[0],
+							${entityColumn.pluralName}[0],
 						<#else>
 							${entityColumn.name},
 						</#if>
@@ -1606,32 +1611,36 @@ that may or may not be enforced with a unique index at the database level. Case
 			</#if>
 		}
 
-		boolean pagination = true;
+		<#if entity.isChangeTrackingEnabled()>
+			boolean productionMode = ${ctPersistenceHelper}.isProductionMode(${entity.name}.class);
+		</#if>
+
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (orderByComparator == null)) {
-			pagination = false;
-			finderArgs = new Object[] {
-				<#list entityColumns as entityColumn>
-					<#if entityColumn.hasArrayableOperator()>
-						StringUtil.merge(${entityColumn.names})
-					<#elseif stringUtil.equals(entityColumn.type, "Date")>
-						_getTime(${entityColumn.name})
-					<#else>
-						${entityColumn.name}
-					</#if>
+			if (${useCache}) {
+				finderArgs = new Object[] {
+					<#list entityColumns as entityColumn>
+						<#if entityColumn.hasArrayableOperator()>
+							StringUtil.merge(${entityColumn.pluralName})
+						<#elseif stringUtil.equals(entityColumn.type, "Date")>
+							_getTime(${entityColumn.name})
+						<#else>
+							${entityColumn.name}
+						</#if>
 
-					<#if entityColumn_has_next>
-						,
-					</#if>
-				</#list>
-			};
+						<#if entityColumn_has_next>
+							,
+						</#if>
+					</#list>
+				};
+			}
 		}
-		else {
+		else if (${useCache}) {
 			finderArgs = new Object[] {
 				<#list entityColumns as entityColumn>
 					<#if entityColumn.hasArrayableOperator()>
-						StringUtil.merge(${entityColumn.names}),
+						StringUtil.merge(${entityColumn.pluralName}),
 					<#elseif stringUtil.equals(entityColumn.type, "Date")>
 						_getTime(${entityColumn.name}),
 					<#else>
@@ -1645,7 +1654,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		List<${entity.name}> list = null;
 
-		if (retrieveFromCache) {
+		if (${useCache}) {
 			list = (List<${entity.name}>)${finderCache}.getResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1653,7 +1662,7 @@ that may or may not be enforced with a unique index at the database level. Case
 					if (
 						<#list entityColumns as entityColumn>
 							<#if entityColumn.hasArrayableOperator()>
-								!ArrayUtil.contains(${entityColumn.names}, ${entity.varName}.get${entityColumn.methodName}())
+								!ArrayUtil.contains(${entityColumn.pluralName}, ${entity.varName}.get${entityColumn.methodName}())
 							<#else>
 								<#include "persistence_impl_finder_field_comparator.ftl">
 							</#if>
@@ -1672,46 +1681,39 @@ that may or may not be enforced with a unique index at the database level. Case
 		}
 
 		if (list == null) {
-			<#assign checkPagination = true />
-
 			<#include "persistence_impl_find_by_arrayable_query.ftl">
 
-			<#assign checkPagination = false />
-
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
 				<#if bindParameter(entityColumns)>
-					QueryPos qPos = QueryPos.getInstance(q);
+					QueryPos queryPos = QueryPos.getInstance(query);
 				</#if>
 
 				<@finderQPos _arrayable=true />
 
-				if (!pagination) {
-					list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
-				}
+				list = (List<${entity.name}>)QueryUtil.list(query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				${finderCache}.putResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs, list);
+				if (${useCache}) {
+					${finderCache}.putResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				${finderCache}.removeResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs);
+			catch (Exception exception) {
+				<#if serviceBuilder.isVersionLTE_7_2_0()>
+					if (${useCache}) {
+						${finderCache}.removeResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs);
+					}
+				</#if>
 
-				throw processException(e);
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1726,7 +1728,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 <#if entityFinder.isCollection() && entityFinder.hasArrayableOperator() && entityFinder.hasArrayablePagination()>
 	/**
-	 * Returns all the ${entity.humanNames} where ${entityFinder.getHumanConditions(true)}.
+	 * Returns all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(true)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1734,19 +1736,19 @@ that may or may not be enforced with a unique index at the database level. Case
 	 *
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-	 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+	 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 		<#else>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#if>
 	</#list>
-	 * @return the matching ${entity.humanNames}
+	 * @return the matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names}
+			${entityColumn.type}[] ${entityColumn.pluralName}
 		<#else>
 			${entityColumn.type} ${entityColumn.name}
 		</#if>
@@ -1761,7 +1763,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				${entityColumn.names},
+				${entityColumn.pluralName},
 			<#else>
 				${entityColumn.name},
 			</#if>
@@ -1771,7 +1773,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns a range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(true)}.
+	 * Returns a range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(true)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1779,21 +1781,21 @@ that may or may not be enforced with a unique index at the database level. Case
 	 *
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-	 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+	 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 		<#else>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#if>
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
-	 * @return the range of matching ${entity.humanNames}
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
+	 * @return the range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
@@ -1804,7 +1806,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				${entityColumn.names},
+				${entityColumn.pluralName},
 			<#else>
 				${entityColumn.name},
 			</#if>
@@ -1814,7 +1816,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns an ordered range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(true)}.
+	 * Returns an ordered range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(true)}.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1822,22 +1824,22 @@ that may or may not be enforced with a unique index at the database level. Case
 	 *
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-	 * @param ${entityColumn.names} the ${entityColumn.humanNames}
+	 * @param ${entityColumn.pluralName} the ${entityColumn.pluralHumanName}
 		<#else>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 		</#if>
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching ${entity.humanNames}
+	 * @return the ordered range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
@@ -1848,7 +1850,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				${entityColumn.names},
+				${entityColumn.pluralName},
 			<#else>
 				${entityColumn.name},
 			</#if>
@@ -1858,7 +1860,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	}
 
 	/**
-	 * Returns an ordered range of all the ${entity.humanNames} where ${entityFinder.getHumanConditions(false)}, optionally using the finder cache.
+	 * Returns an ordered range of all the ${entity.pluralHumanName} where ${entityFinder.getHumanConditions(false)}, optionally using the finder cache.
 	 *
 	 * <p>
 	 * <#include "range_comment.ftl">
@@ -1867,47 +1869,51 @@ that may or may not be enforced with a unique index at the database level. Case
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @param start the lower bound of the range of ${entity.humanNames}
-	 * @param end the upper bound of the range of ${entity.humanNames} (not inclusive)
+	 * @param start the lower bound of the range of ${entity.pluralHumanName}
+	 * @param end the upper bound of the range of ${entity.pluralHumanName} (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
-	 * @return the ordered range of matching ${entity.humanNames}
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching ${entity.pluralHumanName}
 	 */
 	@Override
 	public List<${entity.name}> findBy${entityFinder.name}(
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
 	</#list>
 
-	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean retrieveFromCache) {
+	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean useFinderCache) {
 		<#list entityColumns as entityColumn>
 			<#if entityColumn.hasArrayableOperator()>
-				if (${entityColumn.names} == null) {
-					${entityColumn.names} = new ${entityColumn.type}[0];
+				if (${entityColumn.pluralName} == null) {
+					${entityColumn.pluralName} = new ${entityColumn.type}[0];
 				}
-				else if (${entityColumn.names}.length > 1) {
+				else if (${entityColumn.pluralName}.length > 1) {
 					<#if stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
-						for (int i = 0; i < ${entityColumn.names}.length; i++) {
-							${entityColumn.names}[i] = Objects.toString(${entityColumn.names}[i], "");
+						for (int i = 0; i < ${entityColumn.pluralName}.length; i++) {
+							${entityColumn.pluralName}[i] = Objects.toString(${entityColumn.pluralName}[i], "");
 						}
 					</#if>
 
-					${entityColumn.names} =
-						<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
-							ArrayUtil.distinct(${entityColumn.names}, NULL_SAFE_STRING_COMPARATOR);
-						<#else>
-							ArrayUtil.unique(${entityColumn.names});
-						</#if>
-
-					<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
-						Arrays.sort(${entityColumn.names}, NULL_SAFE_STRING_COMPARATOR);
+					<#if serviceBuilder.isVersionGTE_7_2_0()>
+						${entityColumn.pluralName} = ArrayUtil.sortedUnique(${entityColumn.pluralName});
 					<#else>
-						Arrays.sort(${entityColumn.names});
+						${entityColumn.pluralName} =
+							<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
+								ArrayUtil.distinct(${entityColumn.pluralName}, NULL_SAFE_STRING_COMPARATOR);
+							<#else>
+								ArrayUtil.unique(${entityColumn.pluralName});
+							</#if>
+
+						<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isConvertNull()>
+							Arrays.sort(${entityColumn.pluralName}, NULL_SAFE_STRING_COMPARATOR);
+						<#else>
+							Arrays.sort(${entityColumn.pluralName});
+						</#if>
 					</#if>
 				}
 			<#elseif stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
@@ -1925,7 +1931,7 @@ that may or may not be enforced with a unique index at the database level. Case
 					&&
 				</#if>
 
-				${entityColumn.names}.length == 1
+				${entityColumn.pluralName}.length == 1
 			</#if>
 		</#list>
 		) {
@@ -1933,7 +1939,7 @@ that may or may not be enforced with a unique index at the database level. Case
 				${entity.name} ${entity.varName} = fetchBy${entityFinder.name}(
 					<#list entityColumns as entityColumn>
 						<#if entityColumn.hasArrayableOperator()>
-							${entityColumn.names}[0]
+							${entityColumn.pluralName}[0]
 						<#else>
 							${entityColumn.name}
 						</#if>
@@ -1953,7 +1959,7 @@ that may or may not be enforced with a unique index at the database level. Case
 				return findBy${entityFinder.name}(
 					<#list entityColumns as entityColumn>
 						<#if entityColumn.hasArrayableOperator()>
-							${entityColumn.names}[0],
+							${entityColumn.pluralName}[0],
 						<#else>
 							${entityColumn.name},
 						</#if>
@@ -1963,30 +1969,34 @@ that may or may not be enforced with a unique index at the database level. Case
 			</#if>
 		}
 
-		boolean pagination = true;
+		<#if entity.isChangeTrackingEnabled()>
+			boolean productionMode = ${ctPersistenceHelper}.isProductionMode(${entity.name}.class);
+		</#if>
+
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (orderByComparator == null)) {
-			pagination = false;
-			finderArgs = new Object[] {
-				<#list entityColumns as entityColumn>
-					<#if entityColumn.hasArrayableOperator()>
-						StringUtil.merge(${entityColumn.names})
-					<#else>
-						${entityColumn.name}
-					</#if>
+			if (${useCache}) {
+				finderArgs = new Object[] {
+					<#list entityColumns as entityColumn>
+						<#if entityColumn.hasArrayableOperator()>
+							StringUtil.merge(${entityColumn.pluralName})
+						<#else>
+							${entityColumn.name}
+						</#if>
 
-					<#if entityColumn_has_next>
-						,
-					</#if>
-				</#list>
-			};
+						<#if entityColumn_has_next>
+							,
+						</#if>
+					</#list>
+				};
+			}
 		}
-		else {
+		else if (${useCache}) {
 			finderArgs = new Object[] {
 				<#list entityColumns as entityColumn>
 					<#if entityColumn.hasArrayableOperator()>
-						StringUtil.merge(${entityColumn.names}),
+						StringUtil.merge(${entityColumn.pluralName}),
 					<#else>
 						${entityColumn.name},
 					</#if>
@@ -1998,7 +2008,7 @@ that may or may not be enforced with a unique index at the database level. Case
 
 		List<${entity.name}> list = null;
 
-		if (retrieveFromCache) {
+		if (${useCache}) {
 			list = (List<${entity.name}>)${finderCache}.getResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -2006,7 +2016,7 @@ that may or may not be enforced with a unique index at the database level. Case
 					if (
 						<#list entityColumns as entityColumn>
 							<#if entityColumn.hasArrayableOperator()>
-								!ArrayUtil.contains(${entityColumn.names}, ${entity.varName}.get${entityColumn.methodName}())
+								!ArrayUtil.contains(${entityColumn.pluralName}, ${entity.varName}.get${entityColumn.methodName}())
 							<#else>
 								<#include "persistence_impl_finder_field_comparator.ftl">
 							</#if>
@@ -2027,7 +2037,7 @@ that may or may not be enforced with a unique index at the database level. Case
 		if (list == null) {
 			try {
 				if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (databaseInMaxParameters > 0) && (<#list entityFinderArrayableColsList as arrayableentityColumn>
-						(${arrayableentityColumn.names}.length > databaseInMaxParameters)
+						(${arrayableentityColumn.pluralName}.length > databaseInMaxParameters)
 
 						<#if arrayableentityColumn_has_next>
 							||
@@ -2037,24 +2047,24 @@ that may or may not be enforced with a unique index at the database level. Case
 					list = new ArrayList<${entity.name}>();
 
 					<#list entityFinderArrayableColsList as arrayableentityColumn>
-						${arrayableentityColumn.type}[][] ${arrayableentityColumn.names}Pages = (${arrayableentityColumn.type}[][])ArrayUtil.split(${arrayableentityColumn.names}, databaseInMaxParameters);
+						${arrayableentityColumn.type}[][] ${arrayableentityColumn.pluralName}Pages = (${arrayableentityColumn.type}[][])ArrayUtil.split(${arrayableentityColumn.pluralName}, databaseInMaxParameters);
 					</#list>
 
 					<#list entityFinderArrayableColsList as arrayableentityColumn>
-						for (${arrayableentityColumn.type}[] ${arrayableentityColumn.names}Page : ${arrayableentityColumn.names}Pages) {
+						for (${arrayableentityColumn.type}[] ${arrayableentityColumn.pluralName}Page : ${arrayableentityColumn.pluralName}Pages) {
 					</#list>
 
 						list.addAll(_findBy${entityFinder.name}(
 
 						<#list entityColumns as entityColumn>
 							<#if entityColumn.hasArrayableOperator()>
-								${entityColumn.names}Page,
+								${entityColumn.pluralName}Page,
 							<#else>
 								${entityColumn.name},
 							</#if>
 						</#list>
 
-						start, end, orderByComparator, pagination));
+						start, end, orderByComparator));
 					<#list entityFinderArrayableColsList as arrayableentityColumn>
 						}
 					</#list>
@@ -2068,23 +2078,29 @@ that may or may not be enforced with a unique index at the database level. Case
 
 					<#list entityColumns as entityColumn>
 						<#if entityColumn.hasArrayableOperator()>
-							${entityColumn.names},
+							${entityColumn.pluralName},
 						<#else>
 							${entityColumn.name},
 						</#if>
 					</#list>
 
-					start, end, orderByComparator, pagination);
+					start, end, orderByComparator);
 				}
 
 				cacheResult(list);
 
-				${finderCache}.putResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs, list);
+				if (${useCache}) {
+					${finderCache}.putResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				${finderCache}.removeResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs);
+			catch (Exception exception) {
+				<#if serviceBuilder.isVersionLTE_7_2_0()>
+					if (${useCache}) {
+						${finderCache}.removeResult(_finderPathWithPaginationFindBy${entityFinder.name}, finderArgs);
+					}
+				</#if>
 
-				throw processException(e);
+				throw processException(exception);
 			}
 		}
 
@@ -2095,49 +2111,36 @@ that may or may not be enforced with a unique index at the database level. Case
 
 	<#list entityColumns as entityColumn>
 		<#if entityColumn.hasArrayableOperator()>
-			${entityColumn.type}[] ${entityColumn.names},
+			${entityColumn.type}[] ${entityColumn.pluralName},
 		<#else>
 			${entityColumn.type} ${entityColumn.name},
 		</#if>
 	</#list>
 
-	int start, int end, OrderByComparator<${entity.name}> orderByComparator, boolean pagination) {
+	int start, int end, OrderByComparator<${entity.name}> orderByComparator) {
 		List<${entity.name}> list = null;
-
-		<#assign checkPagination = true />
 
 		<#include "persistence_impl_find_by_arrayable_query.ftl">
 
-		<#assign checkPagination = false />
-
-		String sql = query.toString();
+		String sql = sb.toString();
 
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			Query q = session.createQuery(sql);
+			Query query = session.createQuery(sql);
 
 			<#if bindParameter(entityColumns)>
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 			</#if>
 
 			<@finderQPos _arrayable=true />
 
-			if (!pagination) {
-				list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end, false);
-
-				Collections.sort(list);
-
-				list = Collections.unmodifiableList(list);
-			}
-			else {
-				list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
-			}
+			list = (List<${entity.name}>)QueryUtil.list(query, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2189,24 +2192,24 @@ that may or may not be enforced with a unique index at the database level. Case
 		);
 
 		if ( ${entity.varName} == null) {
-			StringBundler msg = new StringBundler(${(entityColumns?size * 2) + 2});
+			StringBundler sb = new StringBundler(${(entityColumns?size * 2) + 2});
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
 			<#list entityColumns as entityColumn>
-				msg.append("<#if entityColumn_index != 0>, </#if>${entityColumn.name}=");
-				msg.append(${entityColumn.name});
+				sb.append("<#if entityColumn_index != 0>, </#if>${entityColumn.name}${entityColumn.comparator}");
+				sb.append(${entityColumn.name});
 
 				<#if !entityColumn_has_next>
-					msg.append("}");
+					sb.append("}");
 				</#if>
 			</#list>
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new ${noSuchEntity}Exception(msg.toString());
+			throw new ${noSuchEntity}Exception(sb.toString());
 		}
 
 		return ${entity.varName};
@@ -2247,7 +2250,7 @@ that may or may not be enforced with a unique index at the database level. Case
 	<#list entityColumns as entityColumn>
 	 * @param ${entityColumn.name} the ${entityColumn.humanName}
 	</#list>
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching ${entity.humanName}, or <code>null</code> if a matching ${entity.humanName} could not be found
 	 */
 	@Override
@@ -2259,30 +2262,38 @@ that may or may not be enforced with a unique index at the database level. Case
 		,
 	</#list>
 
-	boolean retrieveFromCache) {
+	boolean useFinderCache) {
 		<#list entityColumns as entityColumn>
 			<#if stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull()>
 				${entityColumn.name} = Objects.toString(${entityColumn.name}, "");
 			</#if>
 		</#list>
 
-		Object[] finderArgs = new Object[] {
-			<#list entityColumns as entityColumn>
-				<#if stringUtil.equals(entityColumn.type, "Date")>
-					_getTime(${entityColumn.name})
-				<#else>
-					${entityColumn.name}
-				</#if>
+		<#if entity.isChangeTrackingEnabled()>
+			boolean productionMode = ${ctPersistenceHelper}.isProductionMode(${entity.name}.class);
+		</#if>
 
-				<#if entityColumn_has_next>
-					,
-				</#if>
-			</#list>
-		};
+		Object[] finderArgs = null;
+
+		if (${useCache}) {
+			finderArgs = new Object[] {
+				<#list entityColumns as entityColumn>
+					<#if stringUtil.equals(entityColumn.type, "Date")>
+						_getTime(${entityColumn.name})
+					<#else>
+						${entityColumn.name}
+					</#if>
+
+					<#if entityColumn_has_next>
+						,
+					</#if>
+				</#list>
+			};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (${useCache}) {
 			result = ${finderCache}.getResult(_finderPathFetchBy${entityFinder.name}, finderArgs, this);
 		}
 
@@ -2311,29 +2322,31 @@ that may or may not be enforced with a unique index at the database level. Case
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(${entityColumns?size + 2});
+			StringBundler sb = new StringBundler(${entityColumns?size + 2});
 
-			query.append(_SQL_SELECT_${entity.alias?upper_case}_WHERE);
+			sb.append(_SQL_SELECT_${entity.alias?upper_case}_WHERE);
 
 			<#include "persistence_impl_finder_cols.ftl">
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				<@finderQPos />
 
-				List<${entity.name}> list = q.list();
+				List<${entity.name}> list = query.list();
 
 				if (list.isEmpty()) {
-					${finderCache}.putResult(_finderPathFetchBy${entityFinder.name}, finderArgs, list);
+					if (${useCache}) {
+						${finderCache}.putResult(_finderPathFetchBy${entityFinder.name}, finderArgs, list);
+					}
 				}
 				else {
 					<#if !entityFinder.isUnique()>
@@ -2341,6 +2354,26 @@ that may or may not be enforced with a unique index at the database level. Case
 							Collections.sort(list, Collections.reverseOrder());
 
 							if (_log.isWarnEnabled()) {
+								<#if entity.isChangeTrackingEnabled()>
+									if (!productionMode || !useFinderCache) {
+								<#else>
+									if (!useFinderCache) {
+								</#if>
+									finderArgs = new Object[] {
+										<#list entityColumns as entityColumn>
+											<#if stringUtil.equals(entityColumn.type, "Date")>
+												_getTime(${entityColumn.name})
+											<#else>
+												${entityColumn.name}
+											</#if>
+
+											<#if entityColumn_has_next>
+												,
+											</#if>
+										</#list>
+									};
+								}
+
 								_log.warn("${entity.name}PersistenceImpl.fetchBy${entityFinder.name}(<#list entityColumns as entityColumn>${entityColumn.type}, </#list>boolean) with parameters (" + StringUtil.merge(finderArgs) + ") yields a result set with more than 1 result. This violates the logical unique restriction. There is no order guarantee on which result is returned by this finder.");
 							}
 						}
@@ -2353,10 +2386,14 @@ that may or may not be enforced with a unique index at the database level. Case
 					cacheResult(${entity.varName});
 				}
 			}
-			catch (Exception e) {
-				${finderCache}.removeResult(_finderPathFetchBy${entityFinder.name}, finderArgs);
+			catch (Exception exception) {
+				<#if serviceBuilder.isVersionLTE_7_2_0()>
+					if (${useCache}) {
+						${finderCache}.removeResult(_finderPathFetchBy${entityFinder.name}, finderArgs);
+					}
+				</#if>
 
-				throw processException(e);
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);

@@ -40,22 +40,12 @@ import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Jorge Ferrer
  * @author Julio Camarero
  */
-@ProviderType
 public class UsersAdminUtil {
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             UsersAdmin#CUSTOM_QUESTION}
-	 */
-	@Deprecated
-	public static final String CUSTOM_QUESTION = "write-my-own-question";
 
 	public static void addPortletBreadcrumbEntries(
 			Organization organization, HttpServletRequest httpServletRequest,

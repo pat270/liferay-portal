@@ -15,8 +15,10 @@
 package com.liferay.document.library.preview.video.internal;
 
 import com.liferay.document.library.constants.DLFileVersionPreviewConstants;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
+import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
-import com.liferay.document.library.kernel.util.VideoProcessorUtil;
+import com.liferay.document.library.kernel.util.VideoProcessor;
 import com.liferay.document.library.preview.DLPreviewRenderer;
 import com.liferay.document.library.preview.DLPreviewRendererProvider;
 import com.liferay.document.library.preview.exception.DLFileEntryPreviewGenerationException;
@@ -36,64 +38,64 @@ import com.liferay.portal.util.PropsValues;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+
 /**
  * @author Alejandro Tardín
  */
+@Component(service = DLPreviewRendererProvider.class)
 public class VideoDLPreviewRendererProvider
 	implements DLPreviewRendererProvider {
 
-	public VideoDLPreviewRendererProvider(
-		DLFileVersionPreviewLocalService dlFileVersionPreviewLocalService,
-		DLURLHelper dlURLHelper, ServletContext servletContext) {
-
-		_dlFileVersionPreviewLocalService = dlFileVersionPreviewLocalService;
-		_dlURLHelper = dlURLHelper;
-		_servletContext = servletContext;
+	@Override
+	public Set<String> getMimeTypes() {
+		return _videoProcessor.getVideoMimeTypes();
 	}
 
 	@Override
-	public Optional<DLPreviewRenderer> getPreviewDLPreviewRendererOptional(
+	public DLPreviewRenderer getPreviewDLPreviewRenderer(
 		FileVersion fileVersion) {
 
-		if (!VideoProcessorUtil.isVideoSupported(fileVersion)) {
-			return Optional.empty();
+		if (!_videoProcessor.isVideoSupported(fileVersion)) {
+			return null;
 		}
 
-		return Optional.of(
-			(request, response) -> {
-				checkForPreviewGenerationExceptions(fileVersion);
+		return (request, response) -> {
+			checkForPreviewGenerationExceptions(fileVersion);
 
-				RequestDispatcher requestDispatcher =
-					_servletContext.getRequestDispatcher("/preview/view.jsp");
+			RequestDispatcher requestDispatcher =
+				_servletContext.getRequestDispatcher("/preview/view.jsp");
 
-				ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-					WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-				String videoPosterURL = _getVideoPosterURL(
-					fileVersion, themeDisplay);
+			String videoPosterURL = _getVideoPosterURL(
+				fileVersion, themeDisplay);
 
-				request.setAttribute(
-					DLPreviewVideoWebKeys.PREVIEW_FILE_URLS,
-					_getPreviewFileURLs(fileVersion, videoPosterURL, request));
+			request.setAttribute(
+				DLPreviewVideoWebKeys.PREVIEW_FILE_URLS,
+				_getPreviewFileURLs(fileVersion, videoPosterURL, request));
 
-				request.setAttribute(
-					DLPreviewVideoWebKeys.VIDEO_POSTER_URL, videoPosterURL);
+			request.setAttribute(
+				DLPreviewVideoWebKeys.VIDEO_POSTER_URL, videoPosterURL);
 
-				requestDispatcher.include(request, response);
-			});
+			requestDispatcher.include(request, response);
+		};
 	}
 
 	@Override
-	public Optional<DLPreviewRenderer> getThumbnailDLPreviewRendererOptional(
+	public DLPreviewRenderer getThumbnailDLPreviewRenderer(
 		FileVersion fileVersion) {
 
-		return Optional.empty();
+		return null;
 	}
 
 	protected void checkForPreviewGenerationExceptions(FileVersion fileVersion)
@@ -106,13 +108,22 @@ public class VideoDLPreviewRendererProvider
 			throw new DLFileEntryPreviewGenerationException();
 		}
 
-		if (!VideoProcessorUtil.hasVideo(fileVersion)) {
+		if (!_videoProcessor.hasVideo(fileVersion)) {
 			if (!DLProcessorRegistryUtil.isPreviewableSize(fileVersion)) {
 				throw new DLPreviewSizeException();
 			}
 
 			throw new DLPreviewGenerationInProcessException();
 		}
+	}
+
+	@Reference(
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(type=" + DLProcessorConstants.VIDEO_PROCESSOR + ")",
+		unbind = "-"
+	)
+	protected void setDLProcessor(DLProcessor dlProcessor) {
+		_videoProcessor = (VideoProcessor)dlProcessor;
 	}
 
 	private List<String> _getPreviewFileURLs(
@@ -140,10 +151,10 @@ public class VideoDLPreviewRendererProvider
 				for (String dlFileEntryPreviewVideoContainer :
 						PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_CONTAINERS) {
 
-					if (VideoProcessorUtil.getPreviewFileSize(
-							fileVersion, dlFileEntryPreviewVideoContainer) >
-								0) {
+					long previewFileSize = _videoProcessor.getPreviewFileSize(
+						fileVersion, dlFileEntryPreviewVideoContainer);
 
+					if (previewFileSize > 0) {
 						previewFileURLs.add(
 							_dlURLHelper.getPreviewURL(
 								fileVersion.getFileEntry(), fileVersion,
@@ -160,8 +171,8 @@ public class VideoDLPreviewRendererProvider
 
 				return previewFileURLs;
 			}
-			catch (Exception e) {
-				throw new PortalException(e);
+			catch (Exception exception) {
+				throw new PortalException(exception);
 			}
 		}
 		else {
@@ -178,9 +189,17 @@ public class VideoDLPreviewRendererProvider
 			"&videoThumbnail=1");
 	}
 
-	private final DLFileVersionPreviewLocalService
-		_dlFileVersionPreviewLocalService;
-	private final DLURLHelper _dlURLHelper;
-	private final ServletContext _servletContext;
+	@Reference
+	private DLFileVersionPreviewLocalService _dlFileVersionPreviewLocalService;
+
+	@Reference
+	private DLURLHelper _dlURLHelper;
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.document.library.preview.video)"
+	)
+	private ServletContext _servletContext;
+
+	private VideoProcessor _videoProcessor;
 
 }

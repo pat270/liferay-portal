@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AnnouncementsEntry}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsEntry
  * @generated
  */
-@ProviderType
 public class AnnouncementsEntryWrapper
 	extends BaseModelWrapper<AnnouncementsEntry>
 	implements AnnouncementsEntry, ModelWrapper<AnnouncementsEntry> {
@@ -46,6 +43,7 @@ public class AnnouncementsEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("entryId", getEntryId());
 		attributes.put("companyId", getCompanyId());
@@ -69,6 +67,12 @@ public class AnnouncementsEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -290,6 +294,16 @@ public class AnnouncementsEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this announcements entry.
+	 *
+	 * @return the mvcc version of this announcements entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this announcements entry.
 	 *
 	 * @return the primary key of this announcements entry
@@ -497,6 +511,16 @@ public class AnnouncementsEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this announcements entry.
+	 *
+	 * @param mvccVersion the mvcc version of this announcements entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

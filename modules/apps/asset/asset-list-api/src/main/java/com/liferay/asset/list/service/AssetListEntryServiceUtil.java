@@ -14,7 +14,6 @@
 
 package com.liferay.asset.list.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see AssetListEntryService
  * @generated
  */
-@ProviderType
 public class AssetListEntryServiceUtil {
 
 	/*
@@ -143,12 +141,119 @@ public class AssetListEntryServiceUtil {
 			groupId, title, start, end, orderByComparator);
 	}
 
+	public static java.util.List<com.liferay.asset.list.model.AssetListEntry>
+		getAssetListEntries(
+			long[] groupIds, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.asset.list.model.AssetListEntry>
+					orderByComparator) {
+
+		return getService().getAssetListEntries(
+			groupIds, start, end, orderByComparator);
+	}
+
+	public static java.util.List<com.liferay.asset.list.model.AssetListEntry>
+		getAssetListEntries(
+			long[] groupIds, String title, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.asset.list.model.AssetListEntry>
+					orderByComparator) {
+
+		return getService().getAssetListEntries(
+			groupIds, title, start, end, orderByComparator);
+	}
+
+	public static java.util.List<com.liferay.asset.list.model.AssetListEntry>
+		getAssetListEntries(
+			long[] groupIds, String assetEntrySubtype, String assetEntryType,
+			int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.asset.list.model.AssetListEntry>
+					orderByComparator) {
+
+		return getService().getAssetListEntries(
+			groupIds, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	public static java.util.List<com.liferay.asset.list.model.AssetListEntry>
+		getAssetListEntries(
+			long[] groupIds, String title, String assetEntrySubtype,
+			String assetEntryType, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.asset.list.model.AssetListEntry>
+					orderByComparator) {
+
+		return getService().getAssetListEntries(
+			groupIds, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	public static java.util.List<com.liferay.asset.list.model.AssetListEntry>
+		getAssetListEntries(
+			long[] groupIds, String title, String[] assetEntryTypes, int start,
+			int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.asset.list.model.AssetListEntry>
+					orderByComparator) {
+
+		return getService().getAssetListEntries(
+			groupIds, title, assetEntryTypes, start, end, orderByComparator);
+	}
+
+	public static java.util.List<com.liferay.asset.list.model.AssetListEntry>
+		getAssetListEntries(
+			long[] groupIds, String[] assetEntryTypes, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.asset.list.model.AssetListEntry>
+					orderByComparator) {
+
+		return getService().getAssetListEntries(
+			groupIds, assetEntryTypes, start, end, orderByComparator);
+	}
+
 	public static int getAssetListEntriesCount(long groupId) {
 		return getService().getAssetListEntriesCount(groupId);
 	}
 
 	public static int getAssetListEntriesCount(long groupId, String title) {
 		return getService().getAssetListEntriesCount(groupId, title);
+	}
+
+	public static int getAssetListEntriesCount(long[] groupIds) {
+		return getService().getAssetListEntriesCount(groupIds);
+	}
+
+	public static int getAssetListEntriesCount(long[] groupIds, String title) {
+		return getService().getAssetListEntriesCount(groupIds, title);
+	}
+
+	public static int getAssetListEntriesCount(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType) {
+
+		return getService().getAssetListEntriesCount(
+			groupIds, assetEntrySubtype, assetEntryType);
+	}
+
+	public static int getAssetListEntriesCount(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getService().getAssetListEntriesCount(
+			groupIds, title, assetEntrySubtype, assetEntryType);
+	}
+
+	public static int getAssetListEntriesCount(
+		long[] groupIds, String title, String[] assetEntryTypes) {
+
+		return getService().getAssetListEntriesCount(
+			groupIds, title, assetEntryTypes);
+	}
+
+	public static int getAssetListEntriesCount(
+		long[] groupIds, String[] assetEntryTypes) {
+
+		return getService().getAssetListEntriesCount(groupIds, assetEntryTypes);
 	}
 
 	public static com.liferay.asset.list.model.AssetListEntry getAssetListEntry(

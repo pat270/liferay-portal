@@ -40,6 +40,11 @@ import java.util.regex.Pattern;
 public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 
 	@Override
+	public boolean isLiferaySourceCheck() {
+		return true;
+	}
+
+	@Override
 	protected String doProcess(
 			String fileName, String absolutePath, JavaTerm javaTerm,
 			String fileContent)
@@ -53,16 +58,36 @@ public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 		String fileName, String absolutePath, JavaClass javaClass,
 		String annotation, String indent) {
 
-		if (!annotation.contains("@Component")) {
+		String trimmedAnnotation = StringUtil.trim(annotation);
+
+		if (!trimmedAnnotation.equals("@Component") &&
+			!trimmedAnnotation.startsWith("@Component(")) {
+
+			return annotation;
+		}
+
+		List<String> importNames = javaClass.getImports();
+
+		if (!importNames.contains(
+				"org.osgi.service.component.annotations.Component")) {
+
 			return annotation;
 		}
 
 		annotation = _formatAnnotationParameterProperties(annotation);
 		annotation = _formatConfigurationAttributes(
 			fileName, absolutePath, javaClass, annotation);
+		annotation = _formatEnabledAttribute(absolutePath, annotation);
 		annotation = _formatServiceAttribute(
 			fileName, absolutePath, javaClass.getName(), annotation,
 			javaClass.getImplementedClassNames());
+
+		List<String> extendedClassNames = javaClass.getExtendedClassNames(
+			false);
+
+		if (extendedClassNames.contains("MVCPortlet")) {
+			annotation = _formatMVCPortletProperties(annotation);
+		}
 
 		return annotation;
 	}
@@ -118,10 +143,10 @@ public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 			annotation);
 
 		while (matcher.find()) {
-			int x = matcher.end();
+			int x = matcher.end() - 1;
 
 			while (true) {
-				x = annotation.indexOf(CharPool.CLOSE_CURLY_BRACE, x);
+				x = annotation.indexOf(CharPool.CLOSE_CURLY_BRACE, x + 1);
 
 				if (!ToolsUtil.isInsideQuotes(annotation, x)) {
 					break;
@@ -165,9 +190,10 @@ public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 				String previousParameterProperty =
 					parameterPropertiesArray[i - 1];
 
-				if (comparator.compare(
-						previousParameterProperty, parameterProperty) > 0) {
+				int compare = comparator.compare(
+					previousParameterProperty, parameterProperty);
 
+				if (compare > 0) {
 					annotation = StringUtil.replaceFirst(
 						annotation, previousParameterProperty,
 						parameterProperty);
@@ -239,6 +265,77 @@ public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 
 		return _addAttribute(
 			annotation, "configurationPolicy", "ConfigurationPolicy.IGNORE");
+	}
+
+	private String _formatEnabledAttribute(
+		String absolutePath, String annotation) {
+
+		List<String> enterpriseAppModulePathNames = getAttributeValues(
+			_ENTERPRISE_APP_MODULE_PATH_NAMES_KEY, absolutePath);
+
+		if (enterpriseAppModulePathNames.isEmpty()) {
+			return annotation;
+		}
+
+		for (String enterpriseAppModulePathName :
+				enterpriseAppModulePathNames) {
+
+			if (!absolutePath.contains(enterpriseAppModulePathName)) {
+				continue;
+			}
+
+			String enabledAttributeValue = _getAttributeValue(
+				annotation, "enabled");
+
+			if (enabledAttributeValue == null) {
+				return _addAttribute(annotation, "enabled", "false");
+			}
+		}
+
+		return annotation;
+	}
+
+	private String _formatMVCPortletProperties(String annotation) {
+		int x = annotation.indexOf("property = {");
+
+		if (x == -1) {
+			return annotation;
+		}
+
+		int y = x;
+
+		while (true) {
+			y = annotation.indexOf(CharPool.CLOSE_CURLY_BRACE, y + 1);
+
+			if (!ToolsUtil.isInsideQuotes(annotation, y)) {
+				break;
+			}
+		}
+
+		String properties = annotation.substring(x, y);
+
+		String newProperties = StringUtil.replace(
+			properties,
+			new String[] {
+				"\"javax.portlet.supports.mime-type=text/html\",",
+				"\"javax.portlet.supports.mime-type=text/html\""
+			},
+			new String[] {StringPool.BLANK, StringPool.BLANK});
+
+		if (newProperties.contains(
+				"\"javax.portlet.init-param.config-template=") &&
+			!newProperties.contains("javax.portlet.portlet-mode=")) {
+
+			newProperties = StringUtil.trimTrailing(newProperties);
+
+			if (!newProperties.endsWith(StringPool.COMMA)) {
+				newProperties += StringPool.COMMA;
+			}
+
+			newProperties += "\"javax.portlet.portlet-mode=text/html;config\"";
+		}
+
+		return StringUtil.replace(annotation, properties, newProperties);
 	}
 
 	private String _formatServiceAttribute(
@@ -336,7 +433,7 @@ public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 		}
 
 		StringBundler sb = new StringBundler(
-			implementedClassNames.size() * 3 + 1);
+			(implementedClassNames.size() * 3) + 1);
 
 		sb.append("{");
 
@@ -383,6 +480,9 @@ public class JavaComponentAnnotationsCheck extends JavaAnnotationsCheck {
 
 	private static final String _CHECK_SELF_REGISTRATION_KEY =
 		"checkSelfRegistration";
+
+	private static final String _ENTERPRISE_APP_MODULE_PATH_NAMES_KEY =
+		"enterpriseAppModulePathNames";
 
 	private static final Pattern _annotationParameterPropertyPattern =
 		Pattern.compile("\\s(\\w+) = \\{");

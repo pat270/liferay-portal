@@ -17,10 +17,8 @@ package com.liferay.user.groups.admin.item.selector.web.internal;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
-import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.user.groups.admin.item.selector.UserGroupItemSelectorCriterion;
 import com.liferay.user.groups.admin.item.selector.web.internal.constants.UserGroupItemSelectorWebKeys;
@@ -32,7 +30,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import javax.portlet.PortletURL;
 
@@ -71,24 +68,18 @@ public class UserGroupItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		ResourceBundle resourceBundle = _portal.getResourceBundle(locale);
-
-		return LanguageUtil.get(resourceBundle, "user-groups");
-	}
-
-	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
+		return _language.get(_portal.getResourceBundle(locale), "user-groups");
 	}
 
 	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			UserGroupItemSelectorCriterion userGroupItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
 
-		HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+		HttpServletRequest httpServletRequest =
+			(HttpServletRequest)servletRequest;
 
 		UserGroupItemSelectorViewDisplayContext
 			userGroupItemSelectorViewDisplayContext =
@@ -96,7 +87,7 @@ public class UserGroupItemSelectorView
 					_userGroupLocalService, _usersAdmin, httpServletRequest,
 					portletURL, itemSelectedEventName);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			UserGroupItemSelectorWebKeys.
 				USER_GROUP_ITEM_SELECTOR_DISPLAY_CONTEXT,
 			userGroupItemSelectorViewDisplayContext);
@@ -107,15 +98,15 @@ public class UserGroupItemSelectorView
 			servletContext.getRequestDispatcher(
 				"/user_group_item_selector.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
-		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new UUIDItemSelectorReturnType()
-				}));
+		_supportedItemSelectorReturnTypes = Collections.singletonList(
+			new UUIDItemSelectorReturnType());
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private Portal _portal;

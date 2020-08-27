@@ -23,9 +23,9 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.store.test.util.BaseStoreTestCase;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.store.test.BaseStoreTestCase;
 
 import java.util.Dictionary;
 
@@ -89,7 +89,7 @@ public class FileSystemStoreTest extends BaseStoreTestCase {
 	private static String _rootDir;
 
 	@Inject(
-		filter = "(&(service.ranking=0)(store.type=com.liferay.portal.store.file.system.FileSystemStore))",
+		filter = "store.type=com.liferay.portal.store.file.system.FileSystemStore",
 		type = Store.class
 	)
 	private Store _store;

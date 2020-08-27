@@ -54,16 +54,9 @@ public class JavaRedundantConstructorCheck extends BaseJavaTermCheck {
 			return constructorContent;
 		}
 
-		String classAccessModifier = javaClass.getAccessModifier();
-		String constructorAccessModifier = javaTerm.getAccessModifier();
-
-		if ((constructorAccessModifier.equals(
-				JavaTerm.ACCESS_MODIFIER_PRIVATE) &&
-			 !classAccessModifier.equals(JavaTerm.ACCESS_MODIFIER_PRIVATE)) ||
-			(constructorAccessModifier.equals(
-				JavaTerm.ACCESS_MODIFIER_PROTECTED) &&
-			 !classAccessModifier.equals(JavaTerm.ACCESS_MODIFIER_PRIVATE) &&
-			 !classAccessModifier.equals(JavaTerm.ACCESS_MODIFIER_PROTECTED))) {
+		if ((javaTerm.isPrivate() && !javaClass.isPrivate()) ||
+			(javaTerm.isProtected() && !javaClass.isPrivate() &&
+			 !javaClass.isProtected())) {
 
 			return constructorContent;
 		}
@@ -83,7 +76,7 @@ public class JavaRedundantConstructorCheck extends BaseJavaTermCheck {
 		try {
 			javaProjectBuilder.addSource(new UnsyncStringReader(fileContent));
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
 			return constructorContent;
 		}
 

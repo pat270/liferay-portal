@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.segments.service.SegmentsExperienceServiceUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>SegmentsExperienceServiceUtil</code> service
@@ -51,7 +49,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperienceServiceSoap
  * @generated
  */
-@ProviderType
 public class SegmentsExperienceServiceHttp {
 
 	public static com.liferay.segments.model.SegmentsExperience
@@ -76,24 +73,26 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.segments.model.SegmentsExperience)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -115,24 +114,68 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.segments.model.SegmentsExperience)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperience
+			fetchSegmentsExperience(
+				HttpPrincipal httpPrincipal, long groupId,
+				String segmentsExperienceKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				SegmentsExperienceServiceUtil.class, "fetchSegmentsExperience",
+				_fetchSegmentsExperienceParameterTypes2);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, segmentsExperienceKey);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (com.liferay.segments.model.SegmentsExperience)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -144,7 +187,7 @@ public class SegmentsExperienceServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				SegmentsExperienceServiceUtil.class, "getSegmentsExperience",
-				_getSegmentsExperienceParameterTypes2);
+				_getSegmentsExperienceParameterTypes3);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, segmentsExperienceId);
@@ -154,36 +197,39 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.segments.model.SegmentsExperience)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static java.util.List<com.liferay.segments.model.SegmentsExperience>
-		getSegmentsExperiences(
-			HttpPrincipal httpPrincipal, long groupId, long classNameId,
-			long classPK, boolean active) {
+			getSegmentsExperiences(
+				HttpPrincipal httpPrincipal, long groupId, long classNameId,
+				long classPK, boolean active)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
 			MethodKey methodKey = new MethodKey(
 				SegmentsExperienceServiceUtil.class, "getSegmentsExperiences",
-				_getSegmentsExperiencesParameterTypes3);
+				_getSegmentsExperiencesParameterTypes4);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, groupId, classNameId, classPK, active);
@@ -193,33 +239,43 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (java.util.List
 				<com.liferay.segments.model.SegmentsExperience>)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static java.util.List<com.liferay.segments.model.SegmentsExperience>
-		getSegmentsExperiences(
-			HttpPrincipal httpPrincipal, long groupId, long classNameId,
-			long classPK, boolean active, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.segments.model.SegmentsExperience>
-					orderByComparator) {
+			getSegmentsExperiences(
+				HttpPrincipal httpPrincipal, long groupId, long classNameId,
+				long classPK, boolean active, int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.segments.model.SegmentsExperience>
+						orderByComparator)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
 			MethodKey methodKey = new MethodKey(
 				SegmentsExperienceServiceUtil.class, "getSegmentsExperiences",
-				_getSegmentsExperiencesParameterTypes4);
+				_getSegmentsExperiencesParameterTypes5);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, groupId, classNameId, classPK, active, start, end,
@@ -230,30 +286,40 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (java.util.List
 				<com.liferay.segments.model.SegmentsExperience>)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
 	public static int getSegmentsExperiencesCount(
-		HttpPrincipal httpPrincipal, long groupId, long classNameId,
-		long classPK, boolean active) {
+			HttpPrincipal httpPrincipal, long groupId, long classNameId,
+			long classPK, boolean active)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		try {
 			MethodKey methodKey = new MethodKey(
 				SegmentsExperienceServiceUtil.class,
 				"getSegmentsExperiencesCount",
-				_getSegmentsExperiencesCountParameterTypes5);
+				_getSegmentsExperiencesCountParameterTypes6);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, groupId, classNameId, classPK, active);
@@ -263,17 +329,26 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return ((Integer)returnObj).intValue();
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -287,7 +362,7 @@ public class SegmentsExperienceServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				SegmentsExperienceServiceUtil.class, "updateSegmentsExperience",
-				_updateSegmentsExperienceParameterTypes6);
+				_updateSegmentsExperienceParameterTypes7);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, segmentsExperienceId, segmentsEntryId, nameMap,
@@ -298,24 +373,26 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.segments.model.SegmentsExperience)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -328,7 +405,7 @@ public class SegmentsExperienceServiceHttp {
 			MethodKey methodKey = new MethodKey(
 				SegmentsExperienceServiceUtil.class,
 				"updateSegmentsExperiencePriority",
-				_updateSegmentsExperiencePriorityParameterTypes7);
+				_updateSegmentsExperiencePriorityParameterTypes8);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, segmentsExperienceId, newPriority);
@@ -336,22 +413,24 @@ public class SegmentsExperienceServiceHttp {
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -366,25 +445,27 @@ public class SegmentsExperienceServiceHttp {
 		};
 	private static final Class<?>[] _deleteSegmentsExperienceParameterTypes1 =
 		new Class[] {long.class};
-	private static final Class<?>[] _getSegmentsExperienceParameterTypes2 =
+	private static final Class<?>[] _fetchSegmentsExperienceParameterTypes2 =
+		new Class[] {long.class, String.class};
+	private static final Class<?>[] _getSegmentsExperienceParameterTypes3 =
 		new Class[] {long.class};
-	private static final Class<?>[] _getSegmentsExperiencesParameterTypes3 =
-		new Class[] {long.class, long.class, long.class, boolean.class};
 	private static final Class<?>[] _getSegmentsExperiencesParameterTypes4 =
+		new Class[] {long.class, long.class, long.class, boolean.class};
+	private static final Class<?>[] _getSegmentsExperiencesParameterTypes5 =
 		new Class[] {
 			long.class, long.class, long.class, boolean.class, int.class,
 			int.class, com.liferay.portal.kernel.util.OrderByComparator.class
 		};
 	private static final Class<?>[]
-		_getSegmentsExperiencesCountParameterTypes5 = new Class[] {
+		_getSegmentsExperiencesCountParameterTypes6 = new Class[] {
 			long.class, long.class, long.class, boolean.class
 		};
-	private static final Class<?>[] _updateSegmentsExperienceParameterTypes6 =
+	private static final Class<?>[] _updateSegmentsExperienceParameterTypes7 =
 		new Class[] {
 			long.class, long.class, java.util.Map.class, boolean.class
 		};
 	private static final Class<?>[]
-		_updateSegmentsExperiencePriorityParameterTypes7 = new Class[] {
+		_updateSegmentsExperiencePriorityParameterTypes8 = new Class[] {
 			long.class, int.class
 		};
 

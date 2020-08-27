@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.process.local;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
@@ -98,11 +99,9 @@ public class LocalProcessLauncher {
 			String processCallableName =
 				(String)bootstrapObjectInputStream.readObject();
 
-			String logPrefixString = StringPool.OPEN_BRACKET.concat(
-				processCallableName
-			).concat(
-				StringPool.CLOSE_BRACKET
-			);
+			String logPrefixString = StringBundler.concat(
+				StringPool.OPEN_BRACKET, processCallableName,
+				StringPool.CLOSE_BRACKET);
 
 			byte[] logPrefix = logPrefixString.getBytes(StringPool.UTF8);
 
@@ -125,7 +124,7 @@ public class LocalProcessLauncher {
 
 			Thread thread = new Thread(
 				new ProcessCallableDispatcher(objectInputStream),
-				"ProcessCallable-Dispatcher");
+				"Process Callable Dispatcher");
 
 			thread.setDaemon(true);
 
@@ -140,16 +139,16 @@ public class LocalProcessLauncher {
 
 			outProcessOutputStream.flush();
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			errPrintStream.flush();
 
 			ProcessException processException = null;
 
-			if (t instanceof ProcessException) {
-				processException = (ProcessException)t;
+			if (throwable instanceof ProcessException) {
+				processException = (ProcessException)throwable;
 			}
 			else {
-				processException = new ProcessException(t);
+				processException = new ProcessException(throwable);
 			}
 
 			errProcessOutputStream.writeProcessCallable(
@@ -237,7 +236,7 @@ public class LocalProcessLauncher {
 
 		public static final int UNKNOWN_CODE = 3;
 
-		public boolean shutdown(int shutdownCode, Throwable shutdownThrowable);
+		public boolean shutdown(int shutdownCode, Throwable throwable);
 
 	}
 
@@ -295,17 +294,17 @@ public class LocalProcessLauncher {
 					ProcessContext.writeProcessCallable(
 						_pringBackProcessCallable);
 				}
-				catch (InterruptedException ie) {
+				catch (InterruptedException interruptedException) {
 					if (_detach) {
 						return;
 					}
 
-					shutdownThrowable = ie;
+					shutdownThrowable = interruptedException;
 
 					shutdownCode = ShutdownHook.INTERRUPTION_CODE;
 				}
-				catch (IOException ioe) {
-					shutdownThrowable = ioe;
+				catch (IOException ioException) {
+					shutdownThrowable = ioException;
 
 					shutdownCode = ShutdownHook.BROKEN_PIPE_CODE;
 				}
@@ -411,18 +410,18 @@ public class LocalProcessLauncher {
 					ProcessCallable<?> processCallable =
 						(ProcessCallable<?>)_objectInputStream.readObject();
 
-					executorService.submit(() -> processCallable.call());
+					executorService.submit(processCallable::call);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
 						new UnsyncByteArrayOutputStream();
 
 					UnsyncPrintWriter unsyncPrintWriter = new UnsyncPrintWriter(
 						unsyncByteArrayOutputStream);
 
-					unsyncPrintWriter.println(e);
+					unsyncPrintWriter.println(exception);
 
-					e.printStackTrace(unsyncPrintWriter);
+					exception.printStackTrace(unsyncPrintWriter);
 
 					unsyncPrintWriter.println();
 
@@ -486,10 +485,10 @@ public class LocalProcessLauncher {
 				try {
 					_objectOutputStream.writeObject(processCallable);
 				}
-				catch (NotSerializableException nse) {
+				catch (NotSerializableException notSerializableException) {
 					_objectOutputStream.reset();
 
-					throw nse;
+					throw notSerializableException;
 				}
 				finally {
 					_objectOutputStream.flush();

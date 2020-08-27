@@ -26,30 +26,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SharingEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SharingEntryCacheModel
 	implements CacheModel<SharingEntry>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SharingEntryCacheModel)) {
+		if (!(object instanceof SharingEntryCacheModel)) {
 			return false;
 		}
 
 		SharingEntryCacheModel sharingEntryCacheModel =
-			(SharingEntryCacheModel)obj;
+			(SharingEntryCacheModel)object;
 
 		if (sharingEntryId == sharingEntryCacheModel.sharingEntryId) {
 			return true;

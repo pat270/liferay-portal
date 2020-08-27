@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.service.ContactServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationServiceUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 
 import javax.portlet.RenderResponse;
@@ -35,16 +36,17 @@ import javax.servlet.http.HttpServletRequest;
 public class EditContactInformationDisplayContext {
 
 	public EditContactInformationDisplayContext(
-		String contactInfoTypeName, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		String contactInfoTypeName, HttpServletRequest httpServletRequest,
+		RenderResponse renderResponse) {
 
-		_renderResponse = renderResponse;
 		_httpServletRequest = httpServletRequest;
+		_renderResponse = renderResponse;
 
 		_className = ParamUtil.getString(httpServletRequest, "className");
 		_classPK = ParamUtil.getLong(httpServletRequest, "classPK");
-		_primaryKey = ParamUtil.getLong(httpServletRequest, "primaryKey", 0L);
-		_redirect = ParamUtil.getString(httpServletRequest, "redirect");
+		_primaryKey = ParamUtil.getLong(httpServletRequest, "primaryKey");
+		_redirect = PortalUtil.escapeRedirect(
+			ParamUtil.getString(httpServletRequest, "redirect"));
 
 		if (_primaryKey > 0) {
 			_sheetTitle = LanguageUtil.get(

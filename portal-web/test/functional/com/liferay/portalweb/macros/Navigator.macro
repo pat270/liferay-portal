@@ -1,14 +1,15 @@
 definition {
+
 	macro _gotoPage {
 		var key_pageName = "${pageName}";
 		var count = "0";
 
-		while ((!("${count}" == "3")) && (IsElementNotPresent(locator1 = "Home#PAGE_ACTIVE"))) {
+		while (("${count}" != "3") && (IsElementNotPresent(locator1 = "Home#PAGE_ACTIVE"))) {
 			AssertClick.assertPartialTextClickAt(
 				locator1 = "Home#PAGE",
 				value1 = "${pageName}");
 
-			var count = MathUtil.sum("${count}", "1");
+			var count = ${count} + 1;
 		}
 
 		AssertVisible(locator1 = "Home#PAGE_ACTIVE");
@@ -56,11 +57,7 @@ definition {
 	}
 
 	macro gotoAccountSettings {
-		Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
-
-		var key_dropdownItem = "Account Settings";
-
-		Click(locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
+		UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
 	}
 
 	macro gotoBack {
@@ -109,6 +106,8 @@ definition {
 			value1 = "${navTab}");
 
 		AssertElementPresent(locator1 = "NavTab#ACTIVE_TAB_LINK");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro gotoNavUnderline {
@@ -122,11 +121,7 @@ definition {
 	}
 
 	macro gotoNotifications {
-		Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
-
-		var key_dropdownItem = "Notifications";
-
-		Click(locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
 	}
 
 	@summary = "Navigate to the page named '${pageName}'"
@@ -139,11 +134,7 @@ definition {
 	}
 
 	macro gotoPersonalSite {
-		Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
-
-		var key_dropdownItem = "My Sites";
-
-		Click(locator1 = "UserBar#USER_AVATAR_DROPDOWN_ITEM");
+		UserBar.gotoDropdownItem(dropdownItem = "My Profile");
 	}
 
 	macro gotoPrivateSitePage {
@@ -161,12 +152,6 @@ definition {
 			siteNameURL = "${siteName}");
 
 		Navigator._gotoPage(pageName = "${pageName}");
-	}
-
-	macro gotoSEOPanel {
-		Navigator.gotoNavTab(navTab = "SEO");
-
-		Panel.expandPanel(panel = "SEO");
 	}
 
 	macro gotoSitePage {
@@ -187,6 +172,7 @@ definition {
 	macro gotoStagedSitePage {
 		Navigator.openStagingSiteURL(
 			baseURL = "${baseURL}",
+			defaultSite = "${defaultSite}",
 			siteName = "${siteName}");
 
 		Navigator._gotoPage(pageName = "${pageName}");
@@ -196,6 +182,8 @@ definition {
 		ProductMenuHelper.openProductMenu();
 
 		Click(locator1 = "Link#STAGING");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro openNodePort {
@@ -250,6 +238,21 @@ definition {
 		Open(locator1 = "${baseURL}/group/guest");
 	}
 
+	macro openSitePage {
+		var siteNameURL = StringUtil.replace("${siteName}", " ", "-");
+		var siteNameURL = StringUtil.lowerCase("${siteNameURL}");
+		var baseURL = "${baseURL}";
+
+		if (contains("${baseURL}", "{baseURL}")) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		var pageNameURL = StringUtil.replace("${pageName}", " ", "-");
+		var pageNameURL = StringUtil.lowerCase("${pageNameURL}");
+
+		Open(locator1 = "${baseURL}/web/${siteNameURL}/${pageNameURL}");
+	}
+
 	macro openSiteURL {
 		var siteNameURL = StringUtil.replace("${siteName}", " ", "-");
 		var siteNameURL = StringUtil.lowerCase("${siteNameURL}");
@@ -275,7 +278,13 @@ definition {
 			var baseURL = PropsUtil.get("portal.url");
 		}
 
-		Open(locator1 = "${baseURL}/web/${siteNameURL}-staging");
+		if (isSet(defaultSite)) {
+			Open(locator1 = "${baseURL}/web/guest-staging");
+		}
+
+		else {
+			Open(locator1 = "${baseURL}/web/${siteNameURL}-staging");
+		}
 	}
 
 	macro openURL {
@@ -303,4 +312,15 @@ definition {
 	macro selectSpecificWindow {
 		SelectWindow(locator1 = "title=${windowTitle}");
 	}
+
+	macro viewNoNavTab {
+		AssertElementNotPresent(
+			key_tab = "${navTab}",
+			locator1 = "NavTab#TAB_LINK");
+
+		AssertElementNotPresent(
+			key_tab = "${navTab}",
+			locator1 = "NavTab#ACTIVE_TAB_LINK");
+	}
+
 }

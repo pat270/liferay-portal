@@ -15,8 +15,8 @@
 package com.liferay.bookmarks.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.bookmarks.constants.BookmarksFolderConstants;
 import com.liferay.bookmarks.model.BookmarksFolder;
-import com.liferay.bookmarks.model.BookmarksFolderConstants;
 import com.liferay.bookmarks.service.BookmarksFolderLocalServiceUtil;
 import com.liferay.bookmarks.service.BookmarksFolderServiceUtil;
 import com.liferay.bookmarks.test.util.BookmarksTestUtil;
@@ -24,8 +24,8 @@ import com.liferay.portal.kernel.model.TreeModel;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.service.test.BaseLocalServiceTreeTestCase;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.local.service.tree.test.util.BaseLocalServiceTreeTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class BookmarksFolderLocalServiceTreeTest
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		super.setUp();
 	}
@@ -106,7 +106,7 @@ public class BookmarksFolderLocalServiceTreeTest
 		BookmarksFolder folder = BookmarksTestUtil.addFolder(
 			group.getGroupId(), parentFolderId, RandomTestUtil.randomString());
 
-		folder.setTreePath(null);
+		folder.setTreePath("/0/");
 
 		return BookmarksFolderLocalServiceUtil.updateBookmarksFolder(folder);
 	}

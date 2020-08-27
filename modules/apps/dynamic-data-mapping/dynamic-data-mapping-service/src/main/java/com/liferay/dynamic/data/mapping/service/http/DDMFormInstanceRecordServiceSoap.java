@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>DDMFormInstanceRecordServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see DDMFormInstanceRecordServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DDMFormInstanceRecordServiceSoap {
 
 	public static
@@ -84,10 +83,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMFormInstanceRecordSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -98,10 +97,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			DDMFormInstanceRecordServiceUtil.deleteFormInstanceRecord(
 				ddmFormInstanceRecordId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -119,10 +118,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMFormInstanceRecordSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -141,10 +140,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMFormInstanceRecordSoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -168,10 +167,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMFormInstanceRecordSoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -185,10 +184,10 @@ public class DDMFormInstanceRecordServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -201,10 +200,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			DDMFormInstanceRecordServiceUtil.revertFormInstanceRecord(
 				ddmFormInstanceRecordId, version, serviceContext);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -228,10 +227,10 @@ public class DDMFormInstanceRecordServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMFormInstanceRecordSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

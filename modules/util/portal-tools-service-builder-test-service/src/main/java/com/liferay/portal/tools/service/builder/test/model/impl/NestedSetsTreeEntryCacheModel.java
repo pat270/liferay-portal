@@ -14,11 +14,9 @@
 
 package com.liferay.portal.tools.service.builder.test.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.tools.service.builder.test.model.NestedSetsTreeEntry;
 
 import java.io.Externalizable;
@@ -32,22 +30,21 @@ import java.io.ObjectOutput;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class NestedSetsTreeEntryCacheModel
 	implements CacheModel<NestedSetsTreeEntry>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof NestedSetsTreeEntryCacheModel)) {
+		if (!(object instanceof NestedSetsTreeEntryCacheModel)) {
 			return false;
 		}
 
 		NestedSetsTreeEntryCacheModel nestedSetsTreeEntryCacheModel =
-			(NestedSetsTreeEntryCacheModel)obj;
+			(NestedSetsTreeEntryCacheModel)object;
 
 		if (nestedSetsTreeEntryId ==
 				nestedSetsTreeEntryCacheModel.nestedSetsTreeEntryId) {

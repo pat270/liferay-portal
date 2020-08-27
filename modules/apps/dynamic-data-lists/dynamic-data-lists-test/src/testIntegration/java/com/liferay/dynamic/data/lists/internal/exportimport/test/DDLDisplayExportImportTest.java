@@ -28,11 +28,9 @@ import com.liferay.exportimport.test.util.lar.BasePortletExportImportTestCase;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.portlet.PortletPreferences;
 
@@ -65,7 +63,7 @@ public class DDLDisplayExportImportTest
 	public void setUp() throws Exception {
 		super.setUp();
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		DDMStructure ddmStructure = DDMStructureTestUtil.addStructure(
 			group.getGroupId(), DDLRecordSet.class.getName());
@@ -84,14 +82,12 @@ public class DDLDisplayExportImportTest
 
 		DDLRecordSet recordSet = record.getRecordSet();
 
-		Map<String, String[]> preferenceMap = new HashMap<>();
-
-		preferenceMap.put(
-			"recordSetId",
-			new String[] {String.valueOf(recordSet.getRecordSetId())});
-
 		PortletPreferences importedPortletPreferences =
-			getImportedPortletPreferences(preferenceMap);
+			getImportedPortletPreferences(
+				HashMapBuilder.put(
+					"recordSetId",
+					new String[] {String.valueOf(recordSet.getRecordSetId())}
+				).build());
 
 		DDLRecord importedRecord =
 			DDLRecordLocalServiceUtil.fetchDDLRecordByUuidAndGroupId(

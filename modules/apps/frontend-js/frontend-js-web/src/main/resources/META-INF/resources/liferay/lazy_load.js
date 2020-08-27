@@ -1,8 +1,22 @@
-(function(Liferay) {
-	Liferay.lazyLoad = function() {
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+(function (Liferay) {
+	Liferay.lazyLoad = function () {
 		var failureCallback;
 
-		var isFunction = function(val) {
+		var isFunction = function (val) {
 			return typeof val === 'function';
 		};
 
@@ -24,13 +38,15 @@
 				}
 				else if (isFunction(arguments[i])) {
 					successCallback = arguments[i];
-					failureCallback = isFunction(arguments[++i]) ? arguments[i] : null;
+					failureCallback = isFunction(arguments[++i])
+						? arguments[i]
+						: null;
 					break;
 				}
 			}
 		}
 
-		return function() {
+		return function () {
 			var args = [];
 
 			for (var i = 0; i < arguments.length; ++i) {
@@ -39,7 +55,7 @@
 
 			Liferay.Loader.require(
 				modules,
-				function() {
+				function () {
 					for (var i = 0; i < arguments.length; ++i) {
 						args.splice(i, 0, arguments[i]);
 					}

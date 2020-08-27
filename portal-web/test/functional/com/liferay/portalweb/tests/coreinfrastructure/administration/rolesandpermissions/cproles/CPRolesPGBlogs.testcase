@@ -1,5 +1,6 @@
 @component-name = "portal-permissions"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Roles";
@@ -20,7 +21,7 @@ definition {
 		else {
 			User.firstLoginPG();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Role.tearDownCP();
 
@@ -40,7 +41,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Blogs Page");
@@ -153,7 +153,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -184,7 +183,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -279,7 +277,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -304,7 +301,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -328,14 +324,13 @@ definition {
 
 	@priority = "5"
 	test AddBlogsEntrySiteRole {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Blogs Page",
 			portletName = "Blogs",
 			roleTitle = "Roles Siterole Name",
-			roleType = "Site",
 			siteName = "Site Name",
-			siteURL = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -386,14 +381,13 @@ definition {
 
 	@priority = "4"
 	test AddBlogsEntrySiteRoleInline {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Blogs Page",
 			portletName = "Blogs",
 			roleTitle = "Roles Siterole Name",
-			roleType = "Site",
 			siteName = "Site Name",
-			siteURL = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -411,11 +405,10 @@ definition {
 			userLoginEmailAddress = "test@liferay.com",
 			userLoginFullName = "Test Test");
 
-		ProductMenu.gotoSite(site = "Site Name");
+		Navigator.openSiteURL(siteName = "Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -440,11 +433,10 @@ definition {
 			userLoginEmailAddress = "test@liferay.com",
 			userLoginFullName = "Test Test");
 
-		ProductMenu.gotoSite(site = "Site Name");
+		Navigator.openSiteURL(siteName = "Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -500,7 +492,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -531,7 +522,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -559,7 +549,6 @@ definition {
 	test DeleteBlogsEntryNoGuestRole {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Blogs Page");
@@ -1004,14 +993,13 @@ definition {
 
 	@priority = "4"
 	test DeleteBlogsEntrySiteRole {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Blogs Page",
 			portletName = "Blogs",
 			roleTitle = "Roles Siterole Name",
-			roleType = "Site",
 			siteName = "Site Name",
-			siteURL = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -1085,14 +1073,13 @@ definition {
 
 	@priority = "4"
 	test DeleteBlogsEntrySiteRoleInline {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Blogs Page",
 			portletName = "Blogs",
 			roleTitle = "Roles Siterole Name",
-			roleType = "Site",
 			siteName = "Site Name",
-			siteURL = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -1346,14 +1333,16 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryContentEdit = "Blogs Entry Content Edit");
 
-		BlogsEntry.viewEntry(
+		PortletEntry.publish();
+
+		BlogsEntry.viewEntryPG(
 			entryContent = "Blogs Entry Content Edit",
 			entryTitle = "Blogs Entry Title Edit");
 	}
 
 	@priority = "5"
 	test SubscribeBlogsRegRole {
-		property portal.acceptance = "true";
+		property portal.acceptance = "false";
 
 		Permissions.setUpRegRoleLoginUserPG(
 			pageName = "Blogs Page",
@@ -1424,7 +1413,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -1447,7 +1435,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -1471,6 +1458,8 @@ definition {
 
 	@priority = "4"
 	test SubscribeBlogsSiteRoleInline {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteMemberRoleLoginUserPG(
 			page = "Public Pages",
 			pageName = "Blogs Page",
@@ -1511,7 +1500,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Blogs");
 
 		BlogsNavigator.gotoBlogsEntriesPermissionsCP();
@@ -1547,6 +1535,16 @@ definition {
 			userLoginEmailAddress = "test@liferay.com",
 			userLoginFullName = "Test Test",
 			userScreenName = "usersn");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_blogs_web_portlet_BlogsAdminPortlet",
+			roleTitle = "Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_SITE_ADMINISTRATION",
+			resourceName = "com.liferay.portal.kernel.model.Group",
+			roleTitle = "Regrole Name");
 
 		Permissions.definePermissionViaJSONAPI(
 			resourceAction = "ADD_ENTRY",
@@ -1606,7 +1604,7 @@ definition {
 
 	@priority = "5"
 	test ViewBlogsPermissionsRegRole {
-		property portal.acceptance = "true";
+		property portal.acceptance = "false";
 		property test.name.skip.portal.instance = "CPRolesPGBlogs#ViewBlogsPermissionsRegRole";
 
 		Permissions.setUpRegRoleLoginUserPG(
@@ -1757,14 +1755,13 @@ definition {
 
 	@priority = "4"
 	test ViewBlogsPermissionsSiteRole {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Blogs Page",
 			portletName = "Blogs",
 			roleTitle = "Roles Siterole Name",
-			roleType = "Site",
 			siteName = "Site Name",
-			siteURL = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -1839,14 +1836,13 @@ definition {
 
 	@priority = "4"
 	test ViewBlogsPermissionsSiteRoleInline {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		Permissions.setUpSiteRoleLoginUserPG(
-			page = "Public Pages",
 			pageName = "Blogs Page",
 			portletName = "Blogs",
 			roleTitle = "Roles Siterole Name",
-			roleType = "Site",
 			siteName = "Site Name",
-			siteURL = "true",
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
@@ -1951,7 +1947,6 @@ definition {
 	test ViewBlogsPortletNoGuestRole {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Blogs Page");
@@ -1968,4 +1963,5 @@ definition {
 
 		BlogsConfiguration.viewNoPermissionPG();
 	}
+
 }

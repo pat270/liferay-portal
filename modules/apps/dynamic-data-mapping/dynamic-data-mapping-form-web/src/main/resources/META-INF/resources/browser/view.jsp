@@ -26,7 +26,7 @@
 	disabled="<%= ddmFormBrowserDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= ddmFormBrowserDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddmFormBrowserDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= ddmFormBrowserDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= ddmFormBrowserDisplayContext.getSearchContainerId() %>"
 	searchFormName="searchFm"
@@ -34,11 +34,13 @@
 	sortingURL="<%= ddmFormBrowserDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid-1280" id="<portlet:namespace />formContainer">
+<clay:container-fluid
+	id='<%= liferayPortletResponse.getNamespace() + "formContainer" %>'
+>
 	<aui:form action="<%= String.valueOf(ddmFormBrowserDisplayContext.getPortletURL()) %>" method="post" name="selectDDMFormFm">
 		<liferay-ui:search-container
 			id="<%= ddmFormBrowserDisplayContext.getSearchContainerId() %>"
-			searchContainer="<%= ddmFormBrowserDisplayContext.getFormInstanceSearch() %>"
+			searchContainer="<%= ddmFormBrowserDisplayContext.getDDMFormInstanceSearch() %>"
 		>
 			<liferay-ui:search-container-row
 				className="com.liferay.dynamic.data.mapping.model.DDMFormInstance"
@@ -48,10 +50,11 @@
 			>
 
 				<%
-				Map<String, Object> data = new HashMap<>();
-
-				data.put("forminstanceid", formInstance.getFormInstanceId());
-				data.put("forminstancename", formInstance.getName(locale));
+				Map<String, Object> data = HashMapBuilder.<String, Object>put(
+					"forminstanceid", formInstance.getFormInstanceId()
+				).put(
+					"forminstancename", formInstance.getName(locale)
+				).build();
 				%>
 
 				<liferay-ui:search-container-column-text
@@ -84,8 +87,11 @@
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectDDMFormFm', '<%= HtmlUtil.escapeJS(ddmFormBrowserDisplayContext.getEventName()) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectDDMFormFm',
+		'<%= HtmlUtil.escapeJS(ddmFormBrowserDisplayContext.getEventName()) %>'
+	);
 </aui:script>

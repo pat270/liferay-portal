@@ -17,6 +17,7 @@ package com.liferay.layout.prototype.internal.exportimport.data.handler;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -32,9 +33,12 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -77,7 +81,7 @@ public class LayoutPrototypeStagedModelDataHandler
 	public List<LayoutPrototype> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return ListUtil.toList(
+		return ListUtil.fromArray(
 			_layoutPrototypeLocalService.fetchLayoutPrototypeByUuidAndCompanyId(
 				uuid, companyId));
 	}
@@ -239,10 +243,25 @@ public class LayoutPrototypeStagedModelDataHandler
 		boolean privateLayout = portletDataContext.isPrivateLayout();
 		long scopeGroupId = portletDataContext.getScopeGroupId();
 
+		Map<String, String[]> parameterMap =
+			portletDataContext.getParameterMap();
+
+		String layoutsImportMode = MapUtil.getString(
+			parameterMap, PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE);
+
 		try {
 			portletDataContext.setGroupId(importedGroupId);
 			portletDataContext.setPrivateLayout(true);
 			portletDataContext.setScopeGroupId(importedGroupId);
+
+			if (!portletDataContext.isDataStrategyMirror()) {
+				parameterMap.put(
+					PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE,
+					new String[] {
+						PortletDataHandlerKeys.
+							LAYOUTS_IMPORT_MODE_ADD_AS_NEW_PROTOTYPE
+					});
+			}
 
 			StagedModelDataHandlerUtil.importReferenceStagedModels(
 				portletDataContext, layoutPrototype, Layout.class);
@@ -251,6 +270,20 @@ public class LayoutPrototypeStagedModelDataHandler
 			portletDataContext.setGroupId(groupId);
 			portletDataContext.setPrivateLayout(privateLayout);
 			portletDataContext.setScopeGroupId(scopeGroupId);
+
+			if (Validator.isNull(layoutsImportMode)) {
+				if (parameterMap.containsKey(
+						PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE)) {
+
+					parameterMap.remove(
+						PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE);
+				}
+			}
+			else {
+				parameterMap.put(
+					PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE,
+					new String[] {layoutsImportMode});
+			}
 		}
 	}
 

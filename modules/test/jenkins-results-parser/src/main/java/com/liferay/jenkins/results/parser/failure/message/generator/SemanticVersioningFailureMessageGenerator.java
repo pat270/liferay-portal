@@ -41,9 +41,7 @@ public class SemanticVersioningFailureMessageGenerator
 
 		end = consoleText.indexOf("\n", end);
 
-		int start = consoleText.lastIndexOf(_TOKEN_BASELINE_CHECK, end);
-
-		start = consoleText.indexOf(_TOKEN_SEMVER_PACKAGE, start);
+		int start = consoleText.lastIndexOf(_TOKEN_SEMVER_PACKAGE, end);
 
 		start = consoleText.lastIndexOf("\n", start);
 
@@ -58,9 +56,6 @@ public class SemanticVersioningFailureMessageGenerator
 					getBaseBranchAnchorElement(build.getTopLevelBuild())),
 				getConsoleTextSnippetElement(consoleText, true, start, end)));
 	}
-
-	private static final String _TOKEN_BASELINE_CHECK =
-		"Checking for baseline log files";
 
 	private static final String _TOKEN_SEMVER_INCORRECT =
 		"Semantic versioning is incorrect";

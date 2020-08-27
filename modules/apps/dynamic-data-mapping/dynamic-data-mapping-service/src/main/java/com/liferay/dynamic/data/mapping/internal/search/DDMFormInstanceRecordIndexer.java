@@ -117,12 +117,12 @@ public class DDMFormInstanceRecordIndexer
 			contextBooleanFilter.addRequiredTerm(Field.STATUS, status);
 		}
 
-		long ddmFormInstanceId = GetterUtil.getLong(
-			searchContext.getAttribute("ddmFormInstanceId"));
+		long formInstanceId = GetterUtil.getLong(
+			searchContext.getAttribute("formInstanceId"));
 
-		if (ddmFormInstanceId > 0) {
+		if (formInstanceId > 0) {
 			contextBooleanFilter.addRequiredTerm(
-				"ddmFormInstanceId", ddmFormInstanceId);
+				"formInstanceId", formInstanceId);
 		}
 
 		addSearchClassTypeIds(contextBooleanFilter, searchContext);
@@ -220,12 +220,13 @@ public class DDMFormInstanceRecordIndexer
 		document.addKeyword(
 			Field.CLASS_TYPE_ID,
 			ddmFormInstanceRecordVersion.getFormInstanceId());
+		document.addDate(
+			Field.MODIFIED_DATE, ddmFormInstance.getModifiedDate());
 		document.addKeyword(Field.RELATED_ENTRY, true);
 		document.addKeyword(
 			Field.STATUS, ddmFormInstanceRecordVersion.getStatus());
 		document.addKeyword(
 			Field.VERSION, ddmFormInstanceRecordVersion.getVersion());
-
 		document.addKeyword(
 			"formInstanceId", ddmFormInstance.getFormInstanceId());
 
@@ -246,10 +247,10 @@ public class DDMFormInstanceRecordIndexer
 		Document document, Locale locale, String snippet,
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		long ddmFormInstanceId = GetterUtil.getLong(
+		long formInstanceId = GetterUtil.getLong(
 			document.get("formInstanceId"));
 
-		String title = getTitle(ddmFormInstanceId, locale);
+		String title = getTitle(formInstanceId, locale);
 
 		Summary summary = createSummary(
 			document, Field.TITLE, Field.DESCRIPTION);
@@ -264,11 +265,9 @@ public class DDMFormInstanceRecordIndexer
 	protected void doReindex(DDMFormInstanceRecord ddmFormInstanceRecord)
 		throws Exception {
 
-		Document document = getDocument(ddmFormInstanceRecord);
-
 		indexWriterHelper.updateDocument(
-			getSearchEngineId(), ddmFormInstanceRecord.getCompanyId(), document,
-			isCommitImmediately());
+			getSearchEngineId(), ddmFormInstanceRecord.getCompanyId(),
+			getDocument(ddmFormInstanceRecord), isCommitImmediately());
 	}
 
 	@Override
@@ -309,19 +308,19 @@ public class DDMFormInstanceRecordIndexer
 		return PortalUtil.getResourceBundle(defaultLocale);
 	}
 
-	protected String getTitle(long ddmFormInstanceId, Locale locale) {
+	protected String getTitle(long formInstanceId, Locale locale) {
 		try {
 			DDMFormInstance ddmFormInstance =
-				ddmFormInstanceLocalService.getFormInstance(ddmFormInstanceId);
+				ddmFormInstanceLocalService.getFormInstance(formInstanceId);
 
 			String ddmFormInstanceName = ddmFormInstance.getName(locale);
 
 			return LanguageUtil.format(
-				getResourceBundle(locale), "new-entry-for-form-x",
+				getResourceBundle(locale), "form-record-for-form-x",
 				ddmFormInstanceName, false);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return StringPool.BLANK;
@@ -334,7 +333,7 @@ public class DDMFormInstanceRecordIndexer
 
 		indexableActionableDynamicQuery.setAddCriteriaMethod(
 			dynamicQuery -> {
-				Property ddmFormInstanceRecordIdProperty =
+				Property formInstanceRecordIdProperty =
 					PropertyFactoryUtil.forName("formInstanceRecordId");
 
 				DynamicQuery ddmFormInstanceRecordVersionDynamicQuery =
@@ -344,10 +343,10 @@ public class DDMFormInstanceRecordIndexer
 					ProjectionFactoryUtil.property("formInstanceRecordId"));
 
 				dynamicQuery.add(
-					ddmFormInstanceRecordIdProperty.in(
+					formInstanceRecordIdProperty.in(
 						ddmFormInstanceRecordVersionDynamicQuery));
 
-				Property ddmFormInstanceProperty = PropertyFactoryUtil.forName(
+				Property formInstanceProperty = PropertyFactoryUtil.forName(
 					"formInstanceId");
 
 				DynamicQuery ddmFormInstanceDynamicQuery =
@@ -357,7 +356,7 @@ public class DDMFormInstanceRecordIndexer
 					ProjectionFactoryUtil.property("formInstanceId"));
 
 				dynamicQuery.add(
-					ddmFormInstanceProperty.in(ddmFormInstanceDynamicQuery));
+					formInstanceProperty.in(ddmFormInstanceDynamicQuery));
 			});
 		indexableActionableDynamicQuery.setCompanyId(companyId);
 		indexableActionableDynamicQuery.setPerformActionMethod(
@@ -369,12 +368,12 @@ public class DDMFormInstanceRecordIndexer
 						indexableActionableDynamicQuery.addDocuments(document);
 					}
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to index form instance record " +
 								ddmFormInstanceRecord.getFormInstanceRecordId(),
-							pe);
+							portalException);
 					}
 				}
 			});

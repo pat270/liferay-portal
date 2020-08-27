@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserTrackerLocalServiceUtil;
 import com.liferay.portal.kernel.service.persistence.UserTrackerUtil;
 import com.liferay.portal.kernel.servlet.PortalSessionContext;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
 
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,9 +127,9 @@ public class LiveUsers {
 	public static void joinGroup(long companyId, long groupId, long userId) {
 		Map<Long, Set<Long>> liveUsers = _getLiveUsers(companyId);
 
-		Set<Long> groupUsers = _getGroupUsers(liveUsers, groupId);
-
 		if (_getUserTrackers(companyId, userId) != null) {
+			Set<Long> groupUsers = _getGroupUsers(liveUsers, groupId);
+
 			groupUsers.add(userId);
 		}
 	}
@@ -255,9 +255,9 @@ public class LiveUsers {
 					userTracker.getUserAgent(), userTracker.getPaths());
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e.getMessage());
+				_log.warn(exception.getMessage());
 			}
 		}
 
@@ -268,7 +268,7 @@ public class LiveUsers {
 				session.invalidate();
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		_removeUserTracker(companyId, userId, userTracker);
@@ -419,13 +419,13 @@ public class LiveUsers {
 
 		String sessionId = userTracker.getSessionId();
 
-		Iterator<UserTracker> itr = userTrackers.iterator();
+		Iterator<UserTracker> iterator = userTrackers.iterator();
 
-		while (itr.hasNext()) {
-			UserTracker curUserTracker = itr.next();
+		while (iterator.hasNext()) {
+			UserTracker curUserTracker = iterator.next();
 
 			if (sessionId.equals(curUserTracker.getSessionId())) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -442,13 +442,12 @@ public class LiveUsers {
 
 		Map<Long, Set<Long>> liveUsers = _getLiveUsers(companyId);
 
-		LinkedHashMap<String, Object> groupParams = new LinkedHashMap<>();
-
-		groupParams.put("usersGroups", userId);
-
 		List<Group> groups = GroupLocalServiceUtil.search(
-			companyId, null, null, groupParams, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS);
+			companyId, null, null,
+			LinkedHashMapBuilder.<String, Object>put(
+				"usersGroups", userId
+			).build(),
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		for (Group group : groups) {
 			Set<Long> groupUsers = _getGroupUsers(

@@ -1,0 +1,8 @@
+Bundle-Name: Liferay Analytics Message Storage API
+Bundle-SymbolicName: com.liferay.analytics.message.storage.api
+Bundle-Version: 4.1.5
+Export-Package:\
+	com.liferay.analytics.message.storage.exception,\
+	com.liferay.analytics.message.storage.model,\
+	com.liferay.analytics.message.storage.service,\
+	com.liferay.analytics.message.storage.service.persistence

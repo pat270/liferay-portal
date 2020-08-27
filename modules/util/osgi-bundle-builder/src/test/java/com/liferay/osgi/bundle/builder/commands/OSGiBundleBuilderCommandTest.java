@@ -18,7 +18,6 @@ import com.liferay.osgi.bundle.builder.OSGiBundleBuilderArgs;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URL;
@@ -106,7 +105,7 @@ public class OSGiBundleBuilderCommandTest {
 	public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
 	private static void _compareJarDirs(File expectedDir, File actualDir)
-		throws IOException {
+		throws Exception {
 
 		final Path expectedDirPath = expectedDir.toPath();
 		final Path actualDirPath = actualDir.toPath();
@@ -148,7 +147,7 @@ public class OSGiBundleBuilderCommandTest {
 
 	private static void _compareManifestFiles(
 			File expectedFile, File actualFile)
-		throws IOException {
+		throws Exception {
 
 		Attributes expectedAttributes = _getManifestAttributes(expectedFile);
 		Attributes actualAttributes = _getManifestAttributes(actualFile);
@@ -165,7 +164,7 @@ public class OSGiBundleBuilderCommandTest {
 	}
 
 	private static Attributes _getManifestAttributes(File file)
-		throws IOException {
+		throws Exception {
 
 		try (InputStream inputStream = new FileInputStream(file)) {
 			Manifest manifest = new Manifest(inputStream);
@@ -174,7 +173,7 @@ public class OSGiBundleBuilderCommandTest {
 		}
 	}
 
-	private static void _unzip(File file, File outputDir) throws IOException {
+	private static void _unzip(File file, File outputDir) throws Exception {
 		Path outputDirPath = outputDir.toPath();
 
 		try (ZipFile zipFile = new ZipFile(file)) {
@@ -220,7 +219,7 @@ public class OSGiBundleBuilderCommandTest {
 	}
 
 	private File _unzip(String resourceName, String outputDirName)
-		throws IOException {
+		throws Exception {
 
 		URL url = OSGiBundleBuilderCommandTest.class.getResource(resourceName);
 

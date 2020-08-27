@@ -17,22 +17,24 @@ package com.liferay.microblogs.service.impl;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.microblogs.constants.MicroblogsEntryConstants;
 import com.liferay.microblogs.constants.MicroblogsPortletKeys;
 import com.liferay.microblogs.exception.UnsupportedMicroblogsEntryException;
 import com.liferay.microblogs.internal.social.MicroblogsActivityKeys;
+import com.liferay.microblogs.internal.util.MicroblogsUtil;
 import com.liferay.microblogs.model.MicroblogsEntry;
-import com.liferay.microblogs.model.MicroblogsEntryConstants;
 import com.liferay.microblogs.service.base.MicroblogsEntryLocalServiceBaseImpl;
-import com.liferay.microblogs.util.MicroblogsUtil;
 import com.liferay.microblogs.util.comparator.EntryCreateDateComparator;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserNotificationDeliveryConstants;
@@ -43,7 +45,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.subscription.model.Subscription;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
@@ -54,9 +55,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Jonathan Lee
  */
+@Component(
+	property = "model.class.name=com.liferay.microblogs.model.MicroblogsEntry",
+	service = AopService.class
+)
 public class MicroblogsEntryLocalServiceImpl
 	extends MicroblogsEntryLocalServiceBaseImpl {
 
@@ -96,7 +104,7 @@ public class MicroblogsEntryLocalServiceImpl
 		microblogsEntry.setParentMicroblogsEntryId(parentMicroblogsEntryId);
 		microblogsEntry.setSocialRelationType(socialRelationType);
 
-		microblogsEntryPersistence.update(microblogsEntry);
+		microblogsEntry = microblogsEntryPersistence.update(microblogsEntry);
 
 		// Resources
 
@@ -147,7 +155,7 @@ public class MicroblogsEntryLocalServiceImpl
 		microblogsEntry.setParentMicroblogsEntryId(parentMicroblogsEntryId);
 		microblogsEntry.setSocialRelationType(socialRelationType);
 
-		microblogsEntryPersistence.update(microblogsEntry);
+		microblogsEntry = microblogsEntryPersistence.update(microblogsEntry);
 
 		// Resources
 
@@ -269,51 +277,13 @@ public class MicroblogsEntryLocalServiceImpl
 		return microblogsEntryPersistence.countByCompanyId(companyId);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> getMicroblogsEntries(
-		long creatorClassNameId, int type, int start, int end,
-		OrderByComparator obc) {
-
-		return microblogsEntryPersistence.findByCCNI_T(
-			creatorClassNameId, type, start, end, obc);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> getMicroblogsEntries(
-		long creatorClassNameId, long creatorClassPK, int start, int end) {
-
-		return microblogsEntryPersistence.findByCCNI_CCPK(
-			creatorClassNameId, creatorClassPK, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> getMicroblogsEntries(
-		long creatorClassNameId, long creatorClassPK, int type, int start,
-		int end) {
-
-		return microblogsEntryPersistence.findByCCNI_CCPK_T(
-			creatorClassNameId, creatorClassPK, type, start, end);
-	}
-
 	@Override
 	public List<MicroblogsEntry> getMicroblogsEntries(
 		long companyId, long creatorClassNameId, int type, int start, int end,
-		OrderByComparator obc) {
+		OrderByComparator<MicroblogsEntry> orderByComparator) {
 
 		return microblogsEntryPersistence.findByC_CCNI_T(
-			companyId, creatorClassNameId, type, start, end, obc);
+			companyId, creatorClassNameId, type, start, end, orderByComparator);
 	}
 
 	@Override
@@ -342,65 +312,6 @@ public class MicroblogsEntryLocalServiceImpl
 		return microblogsEntryFinder.findByC_CCNI_CCPK_ATN(
 			companyId, creatorClassNameId, creatorClassPK, assetTagName,
 			andOperator, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> getMicroblogsEntries(
-		long creatorClassNameId, long creatorClassPK, String assetTagName,
-		boolean andOperator, int start, int end) {
-
-		return microblogsEntryFinder.findByCCNI_CCPK_ATN(
-			creatorClassNameId, creatorClassPK, assetTagName, andOperator,
-			start, end);
-	}
-
-	@Override
-	public List<MicroblogsEntry> getMicroblogsEntries(
-		long companyId, long creatorClassNameId, String assetTagName, int start,
-		int end) {
-
-		return microblogsEntryFinder.findByC_CCNI_ATN(
-			companyId, creatorClassNameId, assetTagName, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> getMicroblogsEntries(
-		long creatorClassNameId, String assetTagName, int start, int end) {
-
-		return microblogsEntryFinder.findByCCNI_ATN(
-			creatorClassNameId, assetTagName, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, long creatorClassPK) {
-
-		return microblogsEntryPersistence.countByCCNI_CCPK(
-			creatorClassNameId, creatorClassPK);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, long creatorClassPK, int type) {
-
-		return microblogsEntryPersistence.countByCCNI_CCPK_T(
-			creatorClassNameId, creatorClassPK, type);
 	}
 
 	@Override
@@ -436,31 +347,6 @@ public class MicroblogsEntryLocalServiceImpl
 
 		return microblogsEntryFinder.countByC_CCNI_ATN(
 			companyId, creatorClassNameId, assetTagName);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, long creatorClassPK, String assetTagName,
-		boolean andOperator) {
-
-		return microblogsEntryFinder.countByCCNI_CCPK_ATN(
-			creatorClassNameId, creatorClassPK, assetTagName, andOperator);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public int getMicroblogsEntriesCount(
-		long creatorClassNameId, String assetTagName) {
-
-		return microblogsEntryFinder.countByCCNI_ATN(
-			creatorClassNameId, assetTagName);
 	}
 
 	@Override
@@ -551,7 +437,7 @@ public class MicroblogsEntryLocalServiceImpl
 		microblogsEntry.setContent(content);
 		microblogsEntry.setSocialRelationType(socialRelationType);
 
-		microblogsEntryPersistence.update(microblogsEntry);
+		microblogsEntry = microblogsEntryPersistence.update(microblogsEntry);
 
 		// Asset
 
@@ -567,16 +453,16 @@ public class MicroblogsEntryLocalServiceImpl
 
 		try {
 			Subscription subscription =
-				subscriptionLocalService.getSubscription(
+				_subscriptionLocalService.getSubscription(
 					microblogsEntry.getCompanyId(), userId,
 					MicroblogsEntry.class.getName(),
 					microblogsEntry.getParentMicroblogsEntryId());
 
 			return subscription.getSubscriptionId();
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
@@ -614,9 +500,9 @@ public class MicroblogsEntryLocalServiceImpl
 				serviceContext.getLiferayPortletRequest(),
 				serviceContext.getLiferayPortletResponse(), null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 
@@ -633,11 +519,15 @@ public class MicroblogsEntryLocalServiceImpl
 
 			@Override
 			public Void call() throws Exception {
-				MessageBusUtil.sendMessage(
-					DestinationNames.ASYNC_SERVICE,
+				Message message = new Message();
+
+				message.setPayload(
 					new NotificationProcessCallable(
 						receiverUserIds, microblogsEntry,
 						notificationEventJSONObject));
+
+				_messageBus.sendMessage(
+					DestinationNames.ASYNC_SERVICE, message);
 
 				return null;
 			}
@@ -654,7 +544,7 @@ public class MicroblogsEntryLocalServiceImpl
 		long rootMicroblogsEntryId = MicroblogsUtil.getRootMicroblogsEntryId(
 			microblogsEntry);
 
-		subscriptionLocalService.addSubscription(
+		_subscriptionLocalService.addSubscription(
 			microblogsEntry.getUserId(), serviceContext.getScopeGroupId(),
 			MicroblogsEntry.class.getName(), rootMicroblogsEntryId);
 
@@ -665,7 +555,7 @@ public class MicroblogsEntryLocalServiceImpl
 			long userId = userLocalService.getUserIdByScreenName(
 				serviceContext.getCompanyId(), screenName);
 
-			subscriptionLocalService.addSubscription(
+			_subscriptionLocalService.addSubscription(
 				userId, serviceContext.getScopeGroupId(),
 				MicroblogsEntry.class.getName(), rootMicroblogsEntryId);
 		}
@@ -692,9 +582,6 @@ public class MicroblogsEntryLocalServiceImpl
 			throw new UnsupportedMicroblogsEntryException();
 		}
 	}
-
-	@ServiceReference(type = SubscriptionLocalService.class)
-	protected SubscriptionLocalService subscriptionLocalService;
 
 	private List<MicroblogsEntry> _getAllRelatedMicroblogsEntries(
 		long microblogsEntryId) {
@@ -723,6 +610,12 @@ public class MicroblogsEntryLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		MicroblogsEntryLocalServiceImpl.class);
 
+	@Reference
+	private MessageBus _messageBus;
+
+	@Reference
+	private SubscriptionLocalService _subscriptionLocalService;
+
 	private class NotificationProcessCallable
 		implements ProcessCallable<Serializable> {
 
@@ -742,8 +635,8 @@ public class MicroblogsEntryLocalServiceImpl
 					_receiverUserIds, _microblogsEntry,
 					_notificationEventJSONObject);
 			}
-			catch (Exception e) {
-				throw new ProcessException(e);
+			catch (Exception exception) {
+				throw new ProcessException(exception);
 			}
 
 			return null;

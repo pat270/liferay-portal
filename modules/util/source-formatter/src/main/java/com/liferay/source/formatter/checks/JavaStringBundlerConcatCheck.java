@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 public class JavaStringBundlerConcatCheck extends BaseJavaTermCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -63,8 +63,7 @@ public class JavaStringBundlerConcatCheck extends BaseJavaTermCheck {
 					fileName,
 					"Do not use 'StringBundler.concat' when concatenating " +
 						"less than 3 elements",
-					javaTerm.getLineNumber() - 1 +
-						getLineNumber(content, matcher1.start()));
+					javaTerm.getLineNumber(matcher1.start()));
 			}
 
 			if (!hasPetraStringStringBundler) {

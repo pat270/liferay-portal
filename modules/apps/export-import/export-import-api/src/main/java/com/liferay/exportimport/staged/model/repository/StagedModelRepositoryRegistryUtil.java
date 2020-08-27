@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -33,17 +32,17 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class StagedModelRepositoryRegistryUtil {
 
 	public static List<StagedModelRepository<?>> getStagedModelRepositories() {
-		return _instance._getStagedModelRepositories();
+		return _stagedModelRepositoryRegistryUtil._getStagedModelRepositories();
 	}
 
 	public static StagedModelRepository<?> getStagedModelRepository(
 		String className) {
 
-		return _instance._getStagedModelRepository(className);
+		return _stagedModelRepositoryRegistryUtil._getStagedModelRepository(
+			className);
 	}
 
 	private StagedModelRepositoryRegistryUtil() {
@@ -69,8 +68,9 @@ public class StagedModelRepositoryRegistryUtil {
 		return _stagedModelRepositories.get(className);
 	}
 
-	private static final StagedModelRepositoryRegistryUtil _instance =
-		new StagedModelRepositoryRegistryUtil();
+	private static final StagedModelRepositoryRegistryUtil
+		_stagedModelRepositoryRegistryUtil =
+			new StagedModelRepositoryRegistryUtil();
 
 	private final BundleContext _bundleContext;
 	private final ServiceTracker

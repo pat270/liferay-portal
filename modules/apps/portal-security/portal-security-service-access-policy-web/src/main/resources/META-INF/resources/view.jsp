@@ -39,27 +39,16 @@ sortingURL.setParameter("displayStyle", displayStyle);
 sortingURL.setParameter("orderByType", orderByAsc ? "desc" : "asc");
 %>
 
-<aui:nav-bar markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<aui:nav-item label="policies" selected="<%= true %>" />
-	</aui:nav>
-</aui:nav-bar>
-
 <clay:management-toolbar
-	creationMenu="<%=
+	creationMenu='<%=
 		new JSPCreationMenu(pageContext) {
 			{
-					addPrimaryDropdownItem(
-						dropdownItem -> dropdownItem.setHref(
-							renderResponse.createRenderURL(),
-							"mvcPath", "/edit_entry.jsp", "redirect",
-							PortalUtil.getCurrentURL(request))
-					);
+				addPrimaryDropdownItem(dropdownItem -> dropdownItem.setHref(renderResponse.createRenderURL(), "mvcPath", "/edit_entry.jsp", "redirect", PortalUtil.getCurrentURL(request)));
 			}
 		}
-	%>"
+	%>'
 	disabled="<%= sapEntriesCount == 0 %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	selectable="<%= false %>"
 	showCreationMenu="<%= SAPPermission.contains(permissionChecker, SAPActionKeys.ACTION_ADD_SAP_ENTRY) %>"
 	showSearch="<%= false %>"
@@ -67,7 +56,7 @@ sortingURL.setParameter("orderByType", orderByAsc ? "desc" : "asc");
 	sortingURL="<%= sortingURL.toString() %>"
 />
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<liferay-ui:search-container
 		emptyResultsMessage="there-are-no-service-access-policies"
 		iteratorURL="<%= portletURL %>"
@@ -122,4 +111,4 @@ sortingURL.setParameter("orderByType", orderByAsc ? "desc" : "asc");
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

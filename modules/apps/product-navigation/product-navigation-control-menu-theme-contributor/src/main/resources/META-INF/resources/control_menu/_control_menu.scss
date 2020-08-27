@@ -1,71 +1,6 @@
-.has-control-menu {
-	.affix, #wrapper {
-		margin-top: $has-control-menu-margin-top-mobile;
-
-		.portlet-boundary > span:first-child {
-			display: block;
-			position: relative;
-			top: -$has-control-menu-margin-top-mobile;
-			visibility: hidden;
-		}
-
-		:not(.portlet):target::before {
-			content: '';
-			display: block;
-			height: $has-control-menu-margin-top-mobile;
-			margin-top: -$has-control-menu-margin-top-mobile;
-		}
-
-		@include sm() {
-			margin-top: $has-control-menu-margin-top-desktop;
-
-			.portlet-boundary > span:first-child {
-				top: -$has-control-menu-margin-top-desktop;
-			}
-
-			:not(.portlet):target::before {
-				height: $has-control-menu-margin-top-desktop;
-				margin-top: -$has-control-menu-margin-top-desktop;
-			}
-		}
-	}
-
-	&.has-customization-menu .affix, &.has-customization-menu #wrapper {
-		margin-top: ($has-control-menu-margin-top-mobile + $has-customization-menu-margin-top-mobile);
-
-		.portlet-boundary > span:first-child {
-			display: block;
-			position: relative;
-			top: -($has-control-menu-margin-top-mobile + $has-customization-menu-margin-top-mobile);
-			visibility: hidden;
-		}
-
-		:target::before {
-			content: '';
-			display: block;
-			height: ($has-control-menu-margin-top-mobile + $has-customization-menu-margin-top-mobile);
-			margin-top: -($has-control-menu-margin-top-mobile + $has-customization-menu-margin-top-mobile);
-		}
-
-		@include sm() {
-			margin-top: ($has-control-menu-margin-top-desktop + $has-customization-menu-margin-top-desktop);
-
-			.portlet-boundary > span:first-child {
-				top: -($has-control-menu-margin-top-desktop + $has-customization-menu-margin-top-desktop);
-			}
-
-			:target::before {
-				height: ($has-control-menu-margin-top-desktop + $has-customization-menu-margin-top-desktop);
-				margin-top: -($has-control-menu-margin-top-desktop + $has-customization-menu-margin-top-desktop);
-			}
-		}
-	}
-}
-
-.affix, .control-menu {
-	left: 0;
-	position: fixed;
-	right: 0;
+.affix,
+.control-menu-container {
+	position: sticky;
 	top: 0;
 	z-index: $control-menu-zindex;
 }
@@ -86,28 +21,12 @@ a.control-menu-icon,
 }
 
 .control-menu-level-1 {
-	background-color: $control-menu-level-1-bg;
-	color: $control-menu-level-1-color;
-
 	> .container-fluid {
 		padding: 8px;
 
-		@include sm() {
+		@include media-breakpoint-up(sm) {
 			padding: 12px;
 		}
-	}
-
-	a, button {
-		color: $control-menu-level-1-link-color;
-
-		&:focus, &:hover {
-			color: $control-menu-level-1-link-hover-color;
-			text-decoration: none;
-		}
-	}
-
-	.layout-finder a {
-		color: $control-menu-level-2-link-color;
 	}
 
 	.personal-menu-dropdown .dropdown-toggle {
@@ -115,44 +34,109 @@ a.control-menu-icon,
 		margin-top: -2px;
 		padding: 2px;
 	}
+
+	a:not(.dropdown-item),
+	button:not(.btn-link):not(.dropdown-item):not(.nav-link) {
+		&:focus,
+		&:hover {
+			text-decoration: none;
+		}
+	}
 }
 
 .control-menu-level-1-heading {
-	color: #FFF;
 	font-size: 1rem;
-	font-weight: bold;
+	font-weight: 600;
 }
 
-.control-menu-level-1-nav {
-	@include display(flex);
-	@include flex-wrap(wrap);
-	@include justify-content(space-between);
+.control-menu-level-1-dark {
+	background-color: $control-menu-level-1-bg;
+	color: $control-menu-level-1-color;
 
-	> li > .control-menu-nav > .control-menu-nav-item {
-		@include xs {
-			margin-left: 4px;
-			margin-right: 4px;
-		}
+	a:not(.dropdown-item),
+	button:not(.btn-link):not(.dropdown-item):not(.nav-link) {
+		color: $control-menu-level-1-link-color;
 
-		@include sm {
-			margin-left: 8px;
-			margin-right: 8px;
+		&:focus,
+		&:hover {
+			background-color: $control-menu-level-1-link-background-color;
+			color: $control-menu-level-1-link-hover-color;
 		}
 	}
 
+	.control-menu-level-1-heading {
+		color: $white;
+	}
+}
+
+.control-menu-level-1-light {
+	background-color: $control-menu-level-1-light-bg;
+	border-bottom: $control-menu-level-1-light-border;
+	color: $control-menu-level-1-light-color;
+
+	a:not(.dropdown-item),
+	button:not(.btn-link):not(.dropdown-item):not(.nav-link) {
+		color: $control-menu-level-1-light-link-color;
+		&:focus,
+		&:hover {
+			background-color: $control-menu-level-1-light-link-background-color;
+			color: $control-menu-level-1-light-link-hover-color;
+		}
+	}
+
+	> .container-fluid {
+		padding-bottom: $control-menu-level-1-padding - 1px;
+
+		@include media-breakpoint-up(sm) {
+			padding-bottom: $control-menu-level-1-padding-desktop - 1px;
+		}
+	}
+
+	.control-menu-level-1-heading {
+		color: $gray-900;
+	}
+
+	.toast-animation {
+		.cn,
+		.pm {
+			border-color: $control-menu-level-1-light-color;
+		}
+	}
+
+	.product-menu-toggle:focus,
+	.product-menu-toggle:hover {
+		.cn,
+		.pm {
+			border-color: $control-menu-level-1-light-link-hover-color;
+		}
+	}
+}
+
+.control-menu-level-1-nav {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+
+	> li > .control-menu-nav > .control-menu-nav-item {
+		margin-left: 4px;
+		margin-right: 4px;
+	}
+
 	> .control-menu-nav-item {
-		@include align-self(center);
+		align-self: center;
 	}
 }
 
 .control-menu-level-2 {
 	background-color: $control-menu-level-2-bg;
-	border-bottom: 1px solid #E7E7ED;
+	border-bottom: 1px solid $secondary-l3;
 	color: $control-menu-level-2-color;
 	padding-bottom: 7px;
 	padding-top: 6px;
 
-	a, a:focus, a:hover {
+	a,
+	a:focus,
+	a:hover {
 		color: $control-menu-level-2-link-color;
 	}
 
@@ -169,18 +153,13 @@ a.control-menu-icon,
 		text-transform: none;
 	}
 
-	@include sm() {
-		left: 0;
-		position: absolute;
-		right: 0;
-		top: 100%;
-
-		.control-menu-label {
+	.control-menu-label {
+		@include media-breakpoint-up(sm) {
 			color: $control-menu-level-2-label-color;
 		}
 	}
 
-	@include media-query(null, $screen-xs-max) {
+	@include media-breakpoint-down(sm) {
 		bottom: 0;
 		display: none;
 		left: 0;
@@ -188,9 +167,10 @@ a.control-menu-icon,
 		right: 0;
 		top: 0;
 		z-index: 1;
+	}
 
-		&.open {
-			background-color: transparentize(#29343D, 0.1);
+	&.open {
+		@include media-breakpoint-down(sm) {
 			display: block;
 			overflow: auto;
 		}
@@ -203,18 +183,18 @@ a.control-menu-icon,
 	padding: 20px 0;
 	text-align: center;
 
-	.close {
+	button.close {
 		color: $control-menu-level-2-color;
 		opacity: 1;
 	}
 }
 
 .control-menu-level-2-nav {
-	@include display(flex);
-	@include flex-wrap(wrap);
-	@include justify-content(space-between);
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: space-between;
 
-	@include media-query(null, $screen-xs-max) {
+	@include media-breakpoint-down(sm) {
 		> .control-menu-nav-item {
 			margin-bottom: 55px;
 		}
@@ -226,19 +206,9 @@ a.control-menu-icon,
 	}
 }
 
-.control-menu-link {
-	&.active {
-		&:after {
-			background-color: $control-menu-level-1-active-border;
-			height: $control-menu-level-1-active-border-width;
-		}
-	}
-}
-
 .control-menu-nav {
-	@include align-items(center);
-	@include display(flex);
-
+	align-items: center;
+	display: flex;
 	font-size: 16px;
 	list-style: none;
 	margin-bottom: 0;
@@ -250,24 +220,18 @@ a.control-menu-icon,
 }
 
 .control-menu-nav-item-content {
-	@include display(flex);
-	@include flex(1 1 0);
-	@include justify-content(center);
-
+	display: flex;
+	flex-basis: 0;
+	flex-grow: 1;
+	flex-shrink: 1;
 	min-width: 64px;
 	width: 0;
-
-	.ie & {
-		width: auto;
-	}
 
 	.clamp-container {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		top: 50%;
-
-		@include transform(translateY(-50%));
-
+		transform: translateY(-50%);
 		white-space: nowrap;
 	}
 
@@ -276,56 +240,42 @@ a.control-menu-icon,
 	}
 }
 
-.control-menu-nav-item-field {
-	@include flex(0 1 auto);
+.control-menu-nav-item-separator:not(:first-child):before {
+	background-color: $gray-600;
+	content: '';
+	height: 16px;
+	margin-right: 16px;
+	position: relative;
+	top: 9px;
+	width: 1px;
 }
 
-.live-link, .staging-link {
-	a, a:focus {
-		color: #869CAD;
-	}
-
-	&.active {
-		position: relative;
-
-		&:after {
-			bottom: -16px;
-			content: '';
-			left: 0;
-			position: absolute;
-			right: 0;
-		}
-
-		a {
-			color: #FFF;
-		}
-	}
+.control-menu-nav-item-field {
+	flex: 0 1 auto;
 }
 
 .sidenav-transition {
 	.affix,
-	.control-menu,
-	.control-menu-level-2 {
+	.control-menu-container {
 		@include transition($control-menu-css-transition);
 	}
 }
 
 %control-menu-icon-monospaced {
 	height: 32px;
-	line-height: 34px;
+	line-height: 32px;
 	text-align: center;
 	width: 32px;
 }
 
 .tools-control-group {
-	@include flex(1);
-	@include flex-wrap(wrap);
-
+	flex: 1;
+	flex-wrap: wrap;
 	min-width: 50px;
 
 	> .control-menu-nav {
-		@include flex-wrap(wrap);
-		@include justify-content(center);
+		flex-wrap: wrap;
+		justify-content: center;
 
 		> li > .lfr-portal-tooltip > .control-menu-icon {
 			@extend %control-menu-icon-monospaced;

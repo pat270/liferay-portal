@@ -16,12 +16,9 @@ package com.liferay.layout.page.template.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchPageTemplateStructureRelException
 	extends NoSuchModelException {
 
@@ -33,13 +30,13 @@ public class NoSuchPageTemplateStructureRelException
 	}
 
 	public NoSuchPageTemplateStructureRelException(
-		String msg, Throwable cause) {
+		String msg, Throwable throwable) {
 
-		super(msg, cause);
+		super(msg, throwable);
 	}
 
-	public NoSuchPageTemplateStructureRelException(Throwable cause) {
-		super(cause);
+	public NoSuchPageTemplateStructureRelException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

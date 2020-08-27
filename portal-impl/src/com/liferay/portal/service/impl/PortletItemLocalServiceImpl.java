@@ -56,9 +56,7 @@ public class PortletItemLocalServiceImpl
 		portletItem.setPortletId(portletId);
 		portletItem.setClassNameId(classNameId);
 
-		portletItemPersistence.update(portletItem);
-
-		return portletItem;
+		return portletItemPersistence.update(portletItem);
 	}
 
 	@Override
@@ -66,27 +64,24 @@ public class PortletItemLocalServiceImpl
 			long groupId, String name, String portletId, String className)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return portletItemPersistence.findByG_N_P_C(
-			groupId, name, portletId, classNameId);
+			groupId, name, portletId,
+			classNameLocalService.getClassNameId(className));
 	}
 
 	@Override
 	public List<PortletItem> getPortletItems(long groupId, String className) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return portletItemPersistence.findByG_C(groupId, classNameId);
+		return portletItemPersistence.findByG_C(
+			groupId, classNameLocalService.getClassNameId(className));
 	}
 
 	@Override
 	public List<PortletItem> getPortletItems(
 		long groupId, String portletId, String className) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return portletItemPersistence.findByG_P_C(
-			groupId, portletId, classNameId);
+			groupId, portletId,
+			classNameLocalService.getClassNameId(className));
 	}
 
 	@Override
@@ -106,14 +101,15 @@ public class PortletItemLocalServiceImpl
 			portletItem.setUserId(userId);
 			portletItem.setUserName(user.getFullName());
 
-			portletItemPersistence.update(portletItem);
+			portletItem = portletItemPersistence.update(portletItem);
 		}
-		catch (NoSuchPortletItemException nspie) {
+		catch (NoSuchPortletItemException noSuchPortletItemException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nspie, nspie);
+				_log.debug(
+					noSuchPortletItemException, noSuchPortletItemException);
 			}
 
 			portletItem = addPortletItem(

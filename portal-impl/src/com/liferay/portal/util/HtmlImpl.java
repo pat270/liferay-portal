@@ -15,14 +15,14 @@
 package com.liferay.portal.util;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Html;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,14 +47,35 @@ import net.htmlparser.jericho.TextExtractor;
  */
 public class HtmlImpl implements Html {
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #escapeAttribute(String)}
+	 */
+	@Deprecated
 	public static final int ESCAPE_MODE_ATTRIBUTE = 1;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #escapeCSS(String)}
+	 */
+	@Deprecated
 	public static final int ESCAPE_MODE_CSS = 2;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #escapeJS(String)}
+	 */
+	@Deprecated
 	public static final int ESCAPE_MODE_JS = 3;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #escape(String)}
+	 */
+	@Deprecated
 	public static final int ESCAPE_MODE_TEXT = 4;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #escapeURL(String)}
+	 */
+	@Deprecated
 	public static final int ESCAPE_MODE_URL = 5;
 
 	/**
@@ -191,11 +212,16 @@ public class HtmlImpl implements Html {
 	 * <code>escape(text)</code>.
 	 * </p>
 	 *
-	 * @param  text the text to escape
-	 * @param  mode the encoding type
-	 * @return the escaped hexadecimal value of the input text, based on the
-	 *         mode, or <code>null</code> if the text is <code>null</code>
+	 * @param      text the text to escape
+	 * @param      mode the encoding type
+	 * @return     the escaped hexadecimal value of the input text, based on the
+	 *             mode, or <code>null</code> if the text is <code>null</code>
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #escapeAttribute(String)}, {@link #escapeCSS(String)}, {@link
+	 *             #escapeJS(String)}, {@link #escape(String)}, {@link
+	 *             #escapeURL(String)}
 	 */
+	@Deprecated
 	@Override
 	public String escape(String text, int mode) {
 		if (text == null) {
@@ -206,141 +232,23 @@ public class HtmlImpl implements Html {
 			return StringPool.BLANK;
 		}
 
-		String prefix = StringPool.BLANK;
-		String postfix = StringPool.BLANK;
-
 		if (mode == ESCAPE_MODE_ATTRIBUTE) {
-			prefix = "&#x";
-			postfix = StringPool.SEMICOLON;
-		}
-		else if (mode == ESCAPE_MODE_CSS) {
-			prefix = StringPool.BACK_SLASH;
-		}
-		else if (mode == ESCAPE_MODE_JS) {
-			prefix = "\\x";
-		}
-		else if (mode == ESCAPE_MODE_URL) {
-			return URLCodec.encodeURL(text, true);
-		}
-		else {
-			return escape(text);
+			return escapeAttribute(text);
 		}
 
-		StringBuilder sb = null;
-		char[] hexBuffer = new char[4];
-		int lastReplacementIndex = 0;
-
-		for (int i = 0; i < text.length(); i++) {
-			char c = text.charAt(i);
-
-			if (c < _VALID_CHARS.length) {
-				if (!_VALID_CHARS[c]) {
-					String replacement = null;
-
-					if (mode == ESCAPE_MODE_ATTRIBUTE) {
-						if (c == CharPool.AMPERSAND) {
-							replacement = StringPool.AMPERSAND_ENCODED;
-						}
-						else if (c == CharPool.APOSTROPHE) {
-							replacement = "&#39;";
-						}
-						else if (c == CharPool.GREATER_THAN) {
-							replacement = "&gt;";
-						}
-						else if (c == CharPool.LESS_THAN) {
-							replacement = "&lt;";
-						}
-						else if (c == CharPool.QUOTE) {
-							replacement = "&quot;";
-						}
-						else if (!_isValidXmlCharacter(c)) {
-							replacement = StringPool.SPACE;
-						}
-						else {
-							continue;
-						}
-					}
-
-					if (sb == null) {
-						sb = new StringBuilder(text.length() + 64);
-					}
-
-					if (i > lastReplacementIndex) {
-						sb.append(text, lastReplacementIndex, i);
-					}
-
-					if (replacement != null) {
-						sb.append(replacement);
-					}
-					else {
-						sb.append(prefix);
-
-						_appendHexChars(sb, hexBuffer, c);
-
-						sb.append(postfix);
-
-						if ((mode == ESCAPE_MODE_CSS) &&
-							(i < (text.length() - 1))) {
-
-							char nextChar = text.charAt(i + 1);
-
-							if ((nextChar >= CharPool.NUMBER_0) &&
-								(nextChar <= CharPool.NUMBER_9)) {
-
-								sb.append(CharPool.SPACE);
-							}
-						}
-					}
-
-					lastReplacementIndex = i + 1;
-				}
-			}
-			else if ((mode == ESCAPE_MODE_ATTRIBUTE) &&
-					 (!_isValidXmlCharacter(c) ||
-					  _isUnicodeCompatibilityCharacter(c))) {
-
-				if (sb == null) {
-					sb = new StringBuilder(text.length() + 64);
-				}
-
-				if (i > lastReplacementIndex) {
-					sb.append(text, lastReplacementIndex, i);
-				}
-
-				sb.append(CharPool.SPACE);
-
-				lastReplacementIndex = i + 1;
-			}
-			else if ((mode == ESCAPE_MODE_JS) &&
-					 ((c == '\u2028') || (c == '\u2029'))) {
-
-				if (sb == null) {
-					sb = new StringBuilder(text.length() + 64);
-				}
-
-				if (i > lastReplacementIndex) {
-					sb.append(text, lastReplacementIndex, i);
-				}
-
-				sb.append("\\u");
-
-				_appendHexChars(sb, hexBuffer, c);
-
-				sb.append(postfix);
-
-				lastReplacementIndex = i + 1;
-			}
+		if (mode == ESCAPE_MODE_JS) {
+			return escapeJS(text);
 		}
 
-		if (sb == null) {
-			return text;
+		if (mode == ESCAPE_MODE_CSS) {
+			return escapeCSS(text);
 		}
 
-		if (lastReplacementIndex < text.length()) {
-			sb.append(text, lastReplacementIndex, text.length());
+		if (mode == ESCAPE_MODE_URL) {
+			return escapeURL(text);
 		}
 
-		return sb.toString();
+		return escape(text);
 	}
 
 	/**
@@ -353,7 +261,65 @@ public class HtmlImpl implements Html {
 	 */
 	@Override
 	public String escapeAttribute(String attribute) {
-		return escape(attribute, ESCAPE_MODE_ATTRIBUTE);
+		if (attribute == null) {
+			return null;
+		}
+
+		if (attribute.length() == 0) {
+			return StringPool.BLANK;
+		}
+
+		StringBuilder sb = null;
+		int lastReplacementIndex = 0;
+
+		for (int i = 0; i < attribute.length(); i++) {
+			char c = attribute.charAt(i);
+
+			if (c < _ATTRIBUTE_ESCAPES.length) {
+				String replacement = _ATTRIBUTE_ESCAPES[c];
+
+				if (replacement == null) {
+					continue;
+				}
+
+				if (sb == null) {
+					sb = new StringBuilder(attribute.length() + 64);
+				}
+
+				if (i > lastReplacementIndex) {
+					sb.append(attribute, lastReplacementIndex, i);
+				}
+
+				sb.append(replacement);
+
+				lastReplacementIndex = i + 1;
+			}
+			else if (!_isValidXmlCharacter(c) ||
+					 _isUnicodeCompatibilityCharacter(c)) {
+
+				if (sb == null) {
+					sb = new StringBuilder(attribute.length() + 64);
+				}
+
+				if (i > lastReplacementIndex) {
+					sb.append(attribute, lastReplacementIndex, i);
+				}
+
+				sb.append(CharPool.SPACE);
+
+				lastReplacementIndex = i + 1;
+			}
+		}
+
+		if (sb == null) {
+			return attribute;
+		}
+
+		if (lastReplacementIndex < attribute.length()) {
+			sb.append(attribute, lastReplacementIndex, attribute.length());
+		}
+
+		return sb.toString();
 	}
 
 	/**
@@ -365,7 +331,59 @@ public class HtmlImpl implements Html {
 	 */
 	@Override
 	public String escapeCSS(String css) {
-		return escape(css, ESCAPE_MODE_CSS);
+		if (css == null) {
+			return null;
+		}
+
+		if (css.length() == 0) {
+			return StringPool.BLANK;
+		}
+
+		String prefix = StringPool.BACK_SLASH;
+
+		StringBuilder sb = null;
+		char[] hexBuffer = new char[4];
+		int lastReplacementIndex = 0;
+
+		for (int i = 0; i < css.length(); i++) {
+			char c = css.charAt(i);
+
+			if ((c < _VALID_CHARS.length) && !_VALID_CHARS[c]) {
+				if (sb == null) {
+					sb = new StringBuilder(css.length() + 64);
+				}
+
+				if (i > lastReplacementIndex) {
+					sb.append(css, lastReplacementIndex, i);
+				}
+
+				sb.append(prefix);
+
+				_appendHexChars(sb, hexBuffer, c);
+
+				if (i < (css.length() - 1)) {
+					char nextChar = css.charAt(i + 1);
+
+					if ((nextChar >= CharPool.NUMBER_0) &&
+						(nextChar <= CharPool.NUMBER_9)) {
+
+						sb.append(CharPool.SPACE);
+					}
+				}
+
+				lastReplacementIndex = i + 1;
+			}
+		}
+
+		if (sb == null) {
+			return css;
+		}
+
+		if (lastReplacementIndex < css.length()) {
+			sb.append(css, lastReplacementIndex, css.length());
+		}
+
+		return sb.toString();
 	}
 
 	/**
@@ -420,7 +438,66 @@ public class HtmlImpl implements Html {
 	 */
 	@Override
 	public String escapeJS(String js) {
-		return escape(js, ESCAPE_MODE_JS);
+		if (js == null) {
+			return null;
+		}
+
+		if (js.length() == 0) {
+			return StringPool.BLANK;
+		}
+
+		String prefix = "\\x";
+
+		StringBuilder sb = null;
+		char[] hexBuffer = new char[4];
+		int lastReplacementIndex = 0;
+
+		for (int i = 0; i < js.length(); i++) {
+			char c = js.charAt(i);
+
+			if (c < _VALID_CHARS.length) {
+				if (!_VALID_CHARS[c]) {
+					if (sb == null) {
+						sb = new StringBuilder(js.length() + 64);
+					}
+
+					if (i > lastReplacementIndex) {
+						sb.append(js, lastReplacementIndex, i);
+					}
+
+					sb.append(prefix);
+
+					_appendHexChars(sb, hexBuffer, c);
+
+					lastReplacementIndex = i + 1;
+				}
+			}
+			else if ((c == '\u2028') || (c == '\u2029')) {
+				if (sb == null) {
+					sb = new StringBuilder(js.length() + 64);
+				}
+
+				if (i > lastReplacementIndex) {
+					sb.append(js, lastReplacementIndex, i);
+				}
+
+				sb.append("\\u");
+
+				_appendHexChars(sb, hexBuffer, c);
+
+				lastReplacementIndex = i + 1;
+			}
+		}
+
+		if (sb == null) {
+			return js;
+		}
+
+		if (lastReplacementIndex < js.length()) {
+			sb.append(js, lastReplacementIndex, js.length());
+		}
+
+		return sb.toString();
 	}
 
 	@Override
@@ -449,7 +526,7 @@ public class HtmlImpl implements Html {
 	 */
 	@Override
 	public String escapeURL(String url) {
-		return escape(url, ESCAPE_MODE_URL);
+		return URLCodec.encodeURL(url, true);
 	}
 
 	@Override
@@ -492,26 +569,17 @@ public class HtmlImpl implements Html {
 		if (hasQuote && hasApostrophe) {
 			String[] parts = xPathAttribute.split(StringPool.APOSTROPHE);
 
-			return "concat('".concat(
-				StringUtil.merge(parts, "', \"'\", '")
-			).concat(
-				"')"
-			);
+			return StringBundler.concat(
+				"concat('", StringUtil.merge(parts, "', \"'\", '"), "')");
 		}
 
 		if (hasQuote) {
-			return StringPool.APOSTROPHE.concat(
-				xPathAttribute
-			).concat(
-				StringPool.APOSTROPHE
-			);
+			return StringBundler.concat(
+				StringPool.APOSTROPHE, xPathAttribute, StringPool.APOSTROPHE);
 		}
 
-		return StringPool.QUOTE.concat(
-			xPathAttribute
-		).concat(
-			StringPool.QUOTE
-		);
+		return StringBundler.concat(
+			StringPool.QUOTE, xPathAttribute, StringPool.QUOTE);
 	}
 
 	/**
@@ -915,6 +983,18 @@ public class HtmlImpl implements Html {
 		sb.append(buffer, index, buffer.length - index);
 	}
 
+	private static boolean _isValidXmlCharacter(char c) {
+		if (((c >= CharPool.SPACE) && (c <= '\ud7ff')) ||
+			((c >= '\ue000') && (c <= '\ufffd')) || Character.isSurrogate(c) ||
+			(c == CharPool.TAB) || (c == CharPool.NEW_LINE) ||
+			(c == CharPool.RETURN)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isUnicodeCompatibilityCharacter(char c) {
 		if (((c >= '\u007f') && (c <= '\u0084')) ||
 			((c >= '\u0086') && (c <= '\u009f')) ||
@@ -926,17 +1006,7 @@ public class HtmlImpl implements Html {
 		return false;
 	}
 
-	private boolean _isValidXmlCharacter(char c) {
-		if (((c >= CharPool.SPACE) && (c <= '\ud7ff')) ||
-			((c >= '\ue000') && (c <= '\ufffd')) || Character.isSurrogate(c) ||
-			(c == CharPool.TAB) || (c == CharPool.NEW_LINE) ||
-			(c == CharPool.RETURN)) {
-
-			return true;
-		}
-
-		return false;
-	}
+	private static final String[] _ATTRIBUTE_ESCAPES = new String[256];
 
 	private static final char[] _HEX_DIGITS = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
@@ -957,30 +1027,56 @@ public class HtmlImpl implements Html {
 	};
 
 	private static final Pattern _pattern = Pattern.compile("([\\s<&]|$)");
-	private static final Map<String, String> _unescapeMap =
-		new HashMap<String, String>() {
-			{
-				put("#34", "\"");
-				put("#35", "#");
-				put("#37", "%");
-				put("#39", "'");
-				put("#40", "(");
-				put("#41", ")");
-				put("#43", "+");
-				put("#44", ",");
-				put("#45", "-");
-				put("#59", ";");
-				put("#61", "=");
-				put("amp", "&");
-				put("gt", ">");
-				put("lt", "<");
-				put("rsquo", "\u2019");
-			}
-		};
+	private static final Map<String, String> _unescapeMap = HashMapBuilder.put(
+		"#34", "\""
+	).put(
+		"#35", "#"
+	).put(
+		"#37", "%"
+	).put(
+		"#39", "'"
+	).put(
+		"#40", "("
+	).put(
+		"#41", ")"
+	).put(
+		"#43", "+"
+	).put(
+		"#44", ","
+	).put(
+		"#45", "-"
+	).put(
+		"#59", ";"
+	).put(
+		"#61", "="
+	).put(
+		"amp", "&"
+	).put(
+		"gt", ">"
+	).put(
+		"lt", "<"
+	).put(
+		"nbsp", " "
+	).put(
+		"rsquo", "\u2019"
+	).build();
 
 	static {
-		for (int i = 0; i < _VALID_CHARS.length; i++) {
-			if (Character.isLetterOrDigit(i)) {
+		for (int i = 0; i < 256; i++) {
+			char c = (char)i;
+
+			if (!_isValidXmlCharacter(c)) {
+				_ATTRIBUTE_ESCAPES[i] = StringPool.SPACE;
+			}
+
+			_ATTRIBUTE_ESCAPES[CharPool.AMPERSAND] =
+				StringPool.AMPERSAND_ENCODED;
+			_ATTRIBUTE_ESCAPES[CharPool.APOSTROPHE] = "&#39;";
+			_ATTRIBUTE_ESCAPES[CharPool.GREATER_THAN] = "&gt;";
+			_ATTRIBUTE_ESCAPES[CharPool.LESS_THAN] = "&lt;";
+			_ATTRIBUTE_ESCAPES[CharPool.QUOTE] = "&quot;";
+
+			if (Character.isLetterOrDigit(c)) {
 				_VALID_CHARS[i] = true;
 			}
 		}

@@ -26,9 +26,11 @@ import java.util.List;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.Text;
+import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -85,6 +87,16 @@ public class Dom4JUtil {
 
 			throw new IllegalArgumentException(
 				"Only elements and strings may be added");
+		}
+	}
+
+	public static void detach(Object... items) {
+		for (Object item : items) {
+			if (item instanceof Node) {
+				Node node = (Node)item;
+
+				node.detach();
+			}
 		}
 	}
 
@@ -153,6 +165,24 @@ public class Dom4JUtil {
 		return childElement;
 	}
 
+	public static Node getNodeByXPath(Document document, String xpathString) {
+		List<Node> nodes = getNodesByXPath(document, xpathString);
+
+		if (nodes.isEmpty()) {
+			return null;
+		}
+
+		return nodes.get(0);
+	}
+
+	public static List<Node> getNodesByXPath(
+		Document document, String xpathString) {
+
+		XPath xPath = DocumentHelper.createXPath(xpathString);
+
+		return xPath.selectNodes(document);
+	}
+
 	public static Element getOrderedListElement(
 		List<Element> itemElements, Element parentElement, int maxItems) {
 
@@ -188,6 +218,60 @@ public class Dom4JUtil {
 		List<Element> itemElements, int maxItems) {
 
 		return getOrderedListElement(itemElements, null, maxItems);
+	}
+
+	public static void insertElementAfter(
+		Element parentElement, Element targetElement, Element newElement) {
+
+		List<Element> elements = parentElement.elements();
+
+		int targetElementIndex = -1;
+
+		if (targetElement != null) {
+			if (!elements.contains(targetElement)) {
+				try {
+					throw new IllegalArgumentException(
+						"Invalid target element\n" + format(targetElement));
+				}
+				catch (IOException ioException) {
+					throw new IllegalArgumentException(
+						"Invalid target element");
+				}
+			}
+
+			targetElementIndex = elements.indexOf(targetElement);
+		}
+
+		elements.add(targetElementIndex + 1, newElement);
+
+		setElements(parentElement, elements);
+	}
+
+	public static void insertElementBefore(
+		Element parentElement, Element targetElement, Element newElement) {
+
+		List<Element> elements = parentElement.elements();
+
+		int targetElementIndex = elements.size();
+
+		if (targetElement != null) {
+			if (!elements.contains(targetElement)) {
+				try {
+					throw new IllegalArgumentException(
+						"Invalid target element\n" + format(targetElement));
+				}
+				catch (IOException ioException) {
+					throw new IllegalArgumentException(
+						"Invalid target element");
+				}
+			}
+
+			targetElementIndex = elements.indexOf(targetElement);
+		}
+
+		elements.add(targetElementIndex, newElement);
+
+		setElements(parentElement, elements);
 	}
 
 	public static Document parse(String xml) throws DocumentException {
@@ -228,11 +312,48 @@ public class Dom4JUtil {
 		}
 	}
 
+	public static void setElements(
+		Element parentElement, List<Element> elements) {
+
+		if (parentElement == null) {
+			throw new IllegalArgumentException("Parent is null");
+		}
+
+		for (Element element : parentElement.elements()) {
+			parentElement.remove(element);
+		}
+
+		for (Element element : elements) {
+			parentElement.add(element);
+		}
+	}
+
 	public static Element toCodeSnippetElement(String content) {
 		return getNewElement(
 			"pre", null,
 			getNewElement(
 				"code", null, JenkinsResultsParserUtil.redact(content)));
+	}
+
+	public static void truncateElement(Element element, int size) {
+		List<Node> nodes = new ArrayList<>();
+
+		nodes.add(element);
+		nodes.addAll(element.attributes());
+
+		for (Node node : nodes) {
+			String nodeText = node.getText();
+
+			if ((nodeText != null) && (nodeText.length() > size)) {
+				node.setText(nodeText.substring(0, size));
+			}
+		}
+
+		for (Iterator<Element> iterator = element.elementIterator();
+			 iterator.hasNext();) {
+
+			truncateElement(iterator.next(), size);
+		}
 	}
 
 }

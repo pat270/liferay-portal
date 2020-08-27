@@ -30,8 +30,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.PageContext;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class AssetAddonEntrySelectorTag extends IncludeTag {
 
 	public List<AssetAddonEntry> getAssetAddonEntries() {

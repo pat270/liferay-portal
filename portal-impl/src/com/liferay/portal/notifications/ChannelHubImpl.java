@@ -137,16 +137,16 @@ public class ChannelHubImpl implements ChannelHub {
 	public void destroy() throws ChannelException {
 		Set<Map.Entry<Long, Channel>> channels = _channels.entrySet();
 
-		Iterator<Map.Entry<Long, Channel>> itr = channels.iterator();
+		Iterator<Map.Entry<Long, Channel>> iterator = channels.iterator();
 
-		while (itr.hasNext()) {
-			Map.Entry<Long, Channel> entry = itr.next();
+		while (iterator.hasNext()) {
+			Map.Entry<Long, Channel> entry = iterator.next();
 
 			Channel channel = entry.getValue();
 
 			channel.close();
 
-			itr.remove();
+			iterator.remove();
 		}
 	}
 
@@ -176,10 +176,8 @@ public class ChannelHubImpl implements ChannelHub {
 			synchronized (_channels) {
 				channel = _channels.get(userId);
 
-				if (channel == null) {
-					if (createIfAbsent) {
-						channel = createChannel(userId);
-					}
+				if ((channel == null) && createIfAbsent) {
+					channel = createChannel(userId);
 				}
 			}
 		}
@@ -336,8 +334,8 @@ public class ChannelHubImpl implements ChannelHub {
 			UserNotificationEventLocalServiceUtil.addUserNotificationEvent(
 				userId, notificationEvent);
 		}
-		catch (Exception e) {
-			throw new ChannelException("Unable to send event", e);
+		catch (Exception exception) {
+			throw new ChannelException("Unable to send event", exception);
 		}
 	}
 
@@ -371,8 +369,8 @@ public class ChannelHubImpl implements ChannelHub {
 			UserNotificationEventLocalServiceUtil.addUserNotificationEvents(
 				userId, persistedNotificationEvents);
 		}
-		catch (Exception e) {
-			throw new ChannelException("Unable to send events", e);
+		catch (Exception exception) {
+			throw new ChannelException("Unable to send events", exception);
 		}
 	}
 

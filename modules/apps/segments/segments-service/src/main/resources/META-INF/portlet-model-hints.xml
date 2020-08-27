@@ -2,6 +2,8 @@
 
 <model-hints>
 	<model name="com.liferay.segments.model.SegmentsEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="segmentsEntryId" type="long" />
 		<field name="groupId" type="long" />
@@ -24,6 +26,8 @@
 		<field name="lastPublishDate" type="Date" />
 	</model>
 	<model name="com.liferay.segments.model.SegmentsEntryRel">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="segmentsEntryRelId" type="long" />
 		<field name="groupId" type="long" />
 		<field name="companyId" type="long" />
@@ -35,7 +39,21 @@
 		<field name="classNameId" type="long" />
 		<field name="classPK" type="long" />
 	</model>
+	<model name="com.liferay.segments.model.SegmentsEntryRole">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
+		<field name="segmentsEntryRoleId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="segmentsEntryId" type="long" />
+		<field name="roleId" type="long" />
+	</model>
 	<model name="com.liferay.segments.model.SegmentsExperience">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="segmentsExperienceId" type="long" />
 		<field name="groupId" type="long" />
@@ -45,11 +63,51 @@
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
 		<field name="segmentsEntryId" type="long" />
+		<field name="segmentsExperienceKey" type="String" />
 		<field name="classNameId" type="long" />
 		<field name="classPK" type="long" />
 		<field localized="true" name="name" type="String" />
 		<field name="priority" type="int" />
 		<field name="active" type="boolean" />
 		<field name="lastPublishDate" type="Date" />
+	</model>
+	<model name="com.liferay.segments.model.SegmentsExperiment">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
+		<field name="uuid" type="String" />
+		<field name="segmentsExperimentId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="segmentsEntryId" type="long" />
+		<field name="segmentsExperienceId" type="long" />
+		<field name="segmentsExperimentKey" type="String" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+		<field name="name" type="String" />
+		<field name="description" type="String">
+			<hint-collection name="TEXTAREA" />
+		</field>
+		<field name="typeSettings" type="String">
+			<hint-collection name="CLOB" />
+		</field>
+		<field name="status" type="int" />
+	</model>
+	<model name="com.liferay.segments.model.SegmentsExperimentRel">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
+		<field name="segmentsExperimentRelId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="segmentsExperimentId" type="long" />
+		<field name="segmentsExperienceId" type="long" />
+		<field name="split" type="double" />
 	</model>
 </model-hints>

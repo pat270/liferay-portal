@@ -1,0 +1,34 @@
+@import 'atlas-variables';
+
+@import './variables';
+
+.page-editor__disabled-area {
+	cursor: not-allowed;
+	padding-right: 40px;
+	position: relative;
+	transition: padding-left ease $defaultTransitionDuration,
+		padding-right ease $defaultTransitionDuration;
+	will-change: padding-left, padding-right;
+
+	&::after {
+		background-color: rgba(255, 255, 255, 0);
+		content: '';
+		display: block;
+		height: 100%;
+		left: 0;
+		position: absolute;
+		top: 0;
+		transition: background-color ease 0.3s;
+		width: 100%;
+	}
+
+	&:hover:after {
+		background-color: rgba(255, 255, 255, 0.4);
+	}
+
+	&.collapsed {
+		@include media-breakpoint-up(sm) {
+			padding-right: $sidebarButtonWidth + $sidebarContentWidth;
+		}
+	}
+}

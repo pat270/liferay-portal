@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.util.CollectionUtils;
 
@@ -34,6 +35,7 @@ import org.gradle.util.CollectionUtils;
  * @author Raymond Augé
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class FormatSourceTask extends JavaExec {
 
 	public FormatSourceTask() {
@@ -92,6 +94,14 @@ public class FormatSourceTask extends JavaExec {
 		return _sourceFormatterArgs.isAutoFix();
 	}
 
+	public boolean isFailOnAutoFix() {
+		return _sourceFormatterArgs.isFailOnAutoFix();
+	}
+
+	public boolean isFailOnHasWarning() {
+		return _sourceFormatterArgs.isFailOnHasWarning();
+	}
+
 	public boolean isFormatCurrentBranch() {
 		return _sourceFormatterArgs.isFormatCurrentBranch();
 	}
@@ -124,16 +134,20 @@ public class FormatSourceTask extends JavaExec {
 		return _sourceFormatterArgs.isShowStatusUpdates();
 	}
 
-	public boolean isThrowException() {
-		return _sourceFormatterArgs.isThrowException();
-	}
-
 	public void setAutoFix(boolean autoFix) {
 		_sourceFormatterArgs.setAutoFix(autoFix);
 	}
 
 	public void setBaseDirName(String baseDirName) {
 		_sourceFormatterArgs.setBaseDirName(baseDirName);
+	}
+
+	public void setFailOnAutoFix(boolean failOnAutoFix) {
+		_sourceFormatterArgs.setFailOnAutoFix(failOnAutoFix);
+	}
+
+	public void setFailOnHasWarning(boolean failOnHasWarning) {
+		_sourceFormatterArgs.setFailOnHasWarning(failOnHasWarning);
 	}
 
 	public void setFileExtensions(Iterable<String> fileExtensions) {
@@ -199,10 +213,6 @@ public class FormatSourceTask extends JavaExec {
 		_sourceFormatterArgs.setShowStatusUpdates(showStatusUpdates);
 	}
 
-	public void setThrowException(boolean throwException) {
-		_sourceFormatterArgs.setThrowException(throwException);
-	}
-
 	private List<String> _getCompleteArgs() {
 		List<String> args = new ArrayList<>(getArgs());
 
@@ -217,11 +227,12 @@ public class FormatSourceTask extends JavaExec {
 		args.add("show.documentation=" + isShowDocumentation());
 		args.add("show.status.updates=" + isShowStatusUpdates());
 		args.add("source.auto.fix=" + isAutoFix());
+		args.add("source.fail.on.auto.fix=" + isFailOnAutoFix());
+		args.add("source.fail.on.has.warning=" + isFailOnHasWarning());
 		args.add(
 			"source.file.extensions=" +
 				CollectionUtils.join(",", getFileExtensions()));
 		args.add("source.print.errors=" + isPrintErrors());
-		args.add("source.throw.exception=" + isThrowException());
 
 		FileCollection fileCollection = getFiles();
 

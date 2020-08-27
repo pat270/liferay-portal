@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.GroupedModel;
+import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -33,6 +34,7 @@ import com.liferay.user.associated.data.util.UADDynamicQueryUtil;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.util.Arrays;
@@ -90,6 +92,26 @@ public abstract class BaseModelUADDisplay<T extends BaseModel>
 	@Override
 	public String getTypeName(Locale locale) {
 		return getTypeClass().getSimpleName();
+	}
+
+	@Override
+	public boolean isInTrash(T t)
+		throws IllegalAccessException, InvocationTargetException {
+
+		if (!TrashedModel.class.isAssignableFrom(t.getClass())) {
+			return false;
+		}
+
+		try {
+			Class<?> clazz = t.getClass();
+
+			Method method = clazz.getMethod("isInTrash");
+
+			return (boolean)method.invoke(t);
+		}
+		catch (NoSuchMethodException noSuchMethodException) {
+			return false;
+		}
 	}
 
 	@Override
@@ -230,10 +252,11 @@ public abstract class BaseModelUADDisplay<T extends BaseModel>
 
 			for (String searchableField : searchableFields) {
 				try {
+					String formattedSearchableField = TextFormatter.format(
+						searchableField, TextFormatter.G);
+
 					Method method = clazz.getMethod(
-						"get" +
-							TextFormatter.format(
-								searchableField, TextFormatter.G));
+						"get" + formattedSearchableField);
 
 					if (method.getReturnType() == String.class) {
 						disjunction.add(
@@ -241,9 +264,9 @@ public abstract class BaseModelUADDisplay<T extends BaseModel>
 								searchableField, quotedKeywords));
 					}
 				}
-				catch (NoSuchMethodException | SecurityException e) {
+				catch (NoSuchMethodException | SecurityException exception) {
 					if (_log.isDebugEnabled()) {
-						_log.debug(e, e);
+						_log.debug(exception, exception);
 					}
 				}
 			}
@@ -252,11 +275,12 @@ public abstract class BaseModelUADDisplay<T extends BaseModel>
 		}
 
 		if (orderByField != null) {
-			OrderByComparator<T> obc = getOrderByComparator(
+			OrderByComparator<T> orderByComparator = getOrderByComparator(
 				orderByField, orderByType);
 
-			if (obc != null) {
-				OrderFactoryUtil.addOrderByComparator(dynamicQuery, obc);
+			if (orderByComparator != null) {
+				OrderFactoryUtil.addOrderByComparator(
+					dynamicQuery, orderByComparator);
 			}
 			else {
 				Order order = null;

@@ -16,24 +16,22 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-Group group = themeDisplay.getScopeGroup();
-%>
-
 <c:choose>
-	<c:when test="<%= group.isUser() %>">
+	<c:when test="<%= scopeGroup.isUser() %>">
 
 		<%
-		User user2 = UserLocalServiceUtil.getUserById(group.getClassPK());
+		User user2 = UserLocalServiceUtil.getUserById(scopeGroup.getClassPK());
 
 		request.setAttribute(ContactsWebKeys.CONTACTS_USER, user2);
 		%>
 
-		<aui:row>
-			<aui:col cssClass="contacts-container" width="<%= 100 %>">
+		<clay:row>
+			<clay:col
+				cssClass="contacts-container"
+			>
 				<liferay-util:include page="/view_user.jsp" servletContext="<%= application %>" />
-			</aui:col>
-		</aui:row>
+			</clay:col>
+		</clay:row>
 	</c:when>
 	<c:otherwise>
 		<div class="lfr-message-info">

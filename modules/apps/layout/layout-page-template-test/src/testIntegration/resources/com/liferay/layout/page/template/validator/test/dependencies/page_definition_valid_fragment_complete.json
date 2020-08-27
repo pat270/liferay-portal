@@ -1,0 +1,24 @@
+{
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"fragment": {
+						"key": "my-key"
+					},
+					"fragmentConfig": {
+						"fieldOne": 1,
+						"fieldThree": "v2",
+						"fieldTwo": "v1"
+					},
+					"fragmentFields": [
+					]
+				},
+				"pageElements": [
+				],
+				"type": "Fragment"
+			}
+		],
+		"type": "Root"
+	}
+}

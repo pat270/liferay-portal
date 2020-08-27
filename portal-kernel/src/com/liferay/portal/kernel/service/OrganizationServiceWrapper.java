@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.model.Organization;
 
 /**
  * Provides a wrapper for {@link OrganizationService}.
@@ -23,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OrganizationService
  * @generated
  */
-@ProviderType
 public class OrganizationServiceWrapper
 	implements OrganizationService, ServiceWrapper<OrganizationService> {
 
@@ -73,7 +72,7 @@ public class OrganizationServiceWrapper
 	 * @return the organization
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Organization addOrganization(
+	public Organization addOrganization(
 			long parentOrganizationId, String name, String type, long regionId,
 			long countryId, long statusId, String comments, boolean site,
 			java.util.List<com.liferay.portal.kernel.model.Address> addresses,
@@ -115,7 +114,7 @@ public class OrganizationServiceWrapper
 	 * @return the organization
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Organization addOrganization(
+	public Organization addOrganization(
 			long parentOrganizationId, String name, String type, long regionId,
 			long countryId, long statusId, String comments, boolean site,
 			ServiceContext serviceContext)
@@ -176,18 +175,16 @@ public class OrganizationServiceWrapper
 	 user did not have permission to view the organization
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Organization fetchOrganization(
-			long organizationId)
+	public Organization fetchOrganization(long organizationId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.fetchOrganization(organizationId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Organization>
-		getGtOrganizations(
-			long gtOrganizationId, long companyId, long parentOrganizationId,
-			int size) {
+	public java.util.List<Organization> getGtOrganizations(
+		long gtOrganizationId, long companyId, long parentOrganizationId,
+		int size) {
 
 		return _organizationService.getGtOrganizations(
 			gtOrganizationId, companyId, parentOrganizationId, size);
@@ -200,8 +197,7 @@ public class OrganizationServiceWrapper
 	 * @return the organization with the primary key
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Organization getOrganization(
-			long organizationId)
+	public Organization getOrganization(long organizationId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.getOrganization(organizationId);
@@ -231,8 +227,8 @@ public class OrganizationServiceWrapper
 	 * @return the organizations belonging to the parent organization
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Organization>
-		getOrganizations(long companyId, long parentOrganizationId) {
+	public java.util.List<Organization> getOrganizations(
+		long companyId, long parentOrganizationId) {
 
 		return _organizationService.getOrganizations(
 			companyId, parentOrganizationId);
@@ -261,19 +257,17 @@ public class OrganizationServiceWrapper
 	 * @return the range of organizations belonging to the parent organization
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Organization>
-		getOrganizations(
-			long companyId, long parentOrganizationId, int start, int end) {
+	public java.util.List<Organization> getOrganizations(
+		long companyId, long parentOrganizationId, int start, int end) {
 
 		return _organizationService.getOrganizations(
 			companyId, parentOrganizationId, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Organization>
-		getOrganizations(
-			long companyId, long parentOrganizationId, String name, int start,
-			int end) {
+	public java.util.List<Organization> getOrganizations(
+		long companyId, long parentOrganizationId, String name, int start,
+		int end) {
 
 		return _organizationService.getOrganizations(
 			companyId, parentOrganizationId, name, start, end);
@@ -328,8 +322,7 @@ public class OrganizationServiceWrapper
 	 * @return the organizations with which the user is explicitly associated
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Organization>
-			getUserOrganizations(long userId)
+	public java.util.List<Organization> getUserOrganizations(long userId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _organizationService.getUserOrganizations(userId);
@@ -389,7 +382,7 @@ public class OrganizationServiceWrapper
 	 * @param countryId the primary key of the organization's country
 	 * @param statusId the organization's workflow status
 	 * @param comments the comments about the organization
-	 * @param logo whether to update the ogranization's logo
+	 * @param hasLogo if the organization has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param site whether the organization is to be associated with a main
 	 site
@@ -405,10 +398,10 @@ public class OrganizationServiceWrapper
 	 * @return the organization
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Organization updateOrganization(
+	public Organization updateOrganization(
 			long organizationId, long parentOrganizationId, String name,
 			String type, long regionId, long countryId, long statusId,
-			String comments, boolean logo, byte[] logoBytes, boolean site,
+			String comments, boolean hasLogo, byte[] logoBytes, boolean site,
 			java.util.List<com.liferay.portal.kernel.model.Address> addresses,
 			java.util.List<com.liferay.portal.kernel.model.EmailAddress>
 				emailAddresses,
@@ -420,7 +413,7 @@ public class OrganizationServiceWrapper
 
 		return _organizationService.updateOrganization(
 			organizationId, parentOrganizationId, name, type, regionId,
-			countryId, statusId, comments, logo, logoBytes, site, addresses,
+			countryId, statusId, comments, hasLogo, logoBytes, site, addresses,
 			emailAddresses, orgLabors, phones, websites, serviceContext);
 	}
 
@@ -445,7 +438,7 @@ public class OrganizationServiceWrapper
 	 * @return the organization
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Organization updateOrganization(
+	public Organization updateOrganization(
 			long organizationId, long parentOrganizationId, String name,
 			String type, long regionId, long countryId, long statusId,
 			String comments, boolean site, ServiceContext serviceContext)

@@ -19,20 +19,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.expando.service.http.ExpandoValueServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class ExpandoValueSoap implements Serializable {
 
 	public static ExpandoValueSoap toSoapModel(ExpandoValue model) {
 		ExpandoValueSoap soapModel = new ExpandoValueSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setValueId(model.getValueId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setTableId(model.getTableId());
@@ -92,6 +93,22 @@ public class ExpandoValueSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setValueId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public long getValueId() {
@@ -158,6 +175,8 @@ public class ExpandoValueSoap implements Serializable {
 		_data = data;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _valueId;
 	private long _companyId;
 	private long _tableId;

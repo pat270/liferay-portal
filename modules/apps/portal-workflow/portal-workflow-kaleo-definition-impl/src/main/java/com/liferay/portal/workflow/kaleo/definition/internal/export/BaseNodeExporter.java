@@ -378,9 +378,7 @@ public abstract class BaseNodeExporter implements NodeExporter {
 					timerElement, "description", timer.getDescription());
 			}
 
-			DelayDuration delayDuration = timer.getDelayDuration();
-
-			addDelayDuration(timerElement, "delay", delayDuration);
+			addDelayDuration(timerElement, "delay", timer.getDelayDuration());
 
 			DelayDuration recurrenceDelayDuration = timer.getRecurrence();
 
@@ -429,17 +427,14 @@ public abstract class BaseNodeExporter implements NodeExporter {
 		for (Transition outgoingTransition : outgoingTransitions) {
 			Element transition = transitionsElement.addElement("transition");
 
+			addTextElement(
+				transition, "default",
+				String.valueOf(outgoingTransition.isDefault()));
 			addTextElement(transition, "name", outgoingTransition.getName());
 
 			Node targetNode = outgoingTransition.getTargetNode();
 
 			addTextElement(transition, "target", targetNode.getName());
-
-			if (outgoingTransition.isDefault()) {
-				addTextElement(
-					transition, "default",
-					String.valueOf(outgoingTransition.isDefault()));
-			}
 		}
 	}
 

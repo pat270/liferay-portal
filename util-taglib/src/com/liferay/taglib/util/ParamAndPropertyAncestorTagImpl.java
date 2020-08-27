@@ -18,11 +18,13 @@ import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.BaseBodyTagSupport;
+import com.liferay.taglib.servlet.AutoClosePageContextRegistry;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +45,7 @@ public class ParamAndPropertyAncestorTagImpl
 		}
 
 		if (_dynamicServletRequest == null) {
-			_dynamicServletRequest = new DynamicServletRequest(request);
+			_dynamicServletRequest = new DynamicServletRequest(getRequest());
 
 			request = _dynamicServletRequest;
 		}
@@ -146,6 +148,15 @@ public class ParamAndPropertyAncestorTagImpl
 		return _removedParameterNames;
 	}
 
+	@Override
+	public HttpServletRequest getRequest() {
+		if (_dynamicServletRequest != null) {
+			return _dynamicServletRequest;
+		}
+
+		return super.getRequest();
+	}
+
 	public boolean isAllowEmptyParam() {
 		return _allowEmptyParam;
 	}
@@ -177,21 +188,50 @@ public class ParamAndPropertyAncestorTagImpl
 	public void setPageContext(PageContext pageContext) {
 		super.setPageContext(pageContext);
 
-		request = (HttpServletRequest)pageContext.getRequest();
+		HttpServletRequest httpServletRequest =
+			(HttpServletRequest)pageContext.getRequest();
 
-		servletContext = (ServletContext)request.getAttribute(WebKeys.CTX);
+		request = httpServletRequest;
+
+		servletContext = (ServletContext)httpServletRequest.getAttribute(
+			WebKeys.CTX);
 
 		if (servletContext == null) {
 			servletContext = pageContext.getServletContext();
 		}
+
+		AutoClosePageContextRegistry.registerCloseCallback(
+			pageContext,
+			() -> _atomicReferenceFieldUpdater.compareAndSet(
+				ParamAndPropertyAncestorTagImpl.this, httpServletRequest,
+				null));
 	}
 
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 
-	protected HttpServletRequest request;
+	protected ServletContext getServletContext() {
+		return servletContext;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #getRequest()}
+	 */
+	@Deprecated
+	protected volatile HttpServletRequest request;
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #getServletContext()}
+	 */
+	@Deprecated
 	protected ServletContext servletContext;
+
+	private static final AtomicReferenceFieldUpdater
+		_atomicReferenceFieldUpdater = AtomicReferenceFieldUpdater.newUpdater(
+			ParamAndPropertyAncestorTagImpl.class, HttpServletRequest.class,
+			"request");
 
 	private boolean _allowEmptyParam;
 	private boolean _copyCurrentRenderParameters = true;

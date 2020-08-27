@@ -15,11 +15,13 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter;
 
 import com.liferay.dynamic.data.mapping.expression.internal.DDMExpressionFactoryImpl;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.DDMFormRule;
-import com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer.DDMFormRuleSerializerContext;
+import com.liferay.dynamic.data.mapping.expression.internal.DDMExpressionFunctionTrackerImpl;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
+import com.liferay.dynamic.data.mapping.model.DDMFormRule;
+import com.liferay.dynamic.data.mapping.spi.converter.model.SPIDDMFormRule;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -59,16 +61,13 @@ import org.skyscreamer.jsonassert.JSONAssert;
 @PrepareForTest(ServiceContextThreadLocal.class)
 @RunWith(PowerMockRunner.class)
 public class DDMFormRuleToDDMFormRuleModelConverterTest
-	extends BaseDDMConverterTest {
+	extends BaseDDMConverterTestCase {
 
 	@Before
 	public void setUp() throws Exception {
+		setUpDDMExpressionFactory();
+		setUpDDMFormRuleConverter();
 		setUpDDMFormRuleDeserializer();
-
-		_ddmFormRuleConverter = new DDMFormRuleConverter();
-
-		_ddmFormRuleConverter.ddmExpressionFactory =
-			new DDMExpressionFactoryImpl();
 	}
 
 	@Test
@@ -90,9 +89,8 @@ public class DDMFormRuleToDDMFormRuleModelConverterTest
 		JSONArray expectedDDMFormRulesJSONArray = jsonFactory.createJSONArray(
 			read("ddm-form-rules-model-auto-fill-actions.json"));
 
-		List<com.liferay.dynamic.data.mapping.model.DDMFormRule>
-			actualDDMFormRules = convert(
-				"ddm-form-rules-auto-fill-actions.json");
+		List<DDMFormRule> actualDDMFormRules = convert(
+			"ddm-form-rules-auto-fill-actions.json");
 
 		JSONArray actualDDMFormRulesJSONArray = jsonFactory.createJSONArray(
 			serialize(actualDDMFormRules));
@@ -211,7 +209,7 @@ public class DDMFormRuleToDDMFormRuleModelConverterTest
 			Arrays.asList(ddmFormField0, ddmFormField1, ddmFormField2));
 
 		PowerMockito.when(
-			_ddmFormRuleSerializerContext.getAttribute("form")
+			_spiDDMFormRuleSerializerContext.getAttribute("form")
 		).thenReturn(
 			ddmForm
 		);
@@ -330,38 +328,32 @@ public class DDMFormRuleToDDMFormRuleModelConverterTest
 
 		String serializedDDMFormRules = read(fromFileName);
 
-		com.liferay.dynamic.data.mapping.model.DDMFormRule[] ddmFormRules =
-			deserialize(
-				serializedDDMFormRules,
-				com.liferay.dynamic.data.mapping.model.DDMFormRule[].class);
+		DDMFormRule[] ddmFormRules = deserialize(
+			serializedDDMFormRules, DDMFormRule[].class);
 
-		List<DDMFormRule> actualDDMFormRules = _ddmFormRuleConverter.convert(
-			ListUtil.toList(ddmFormRules));
+		List<SPIDDMFormRule> spiDDMFormRules =
+			_ddmFormRuleConverterImpl.convert(ListUtil.fromArray(ddmFormRules));
 
 		JSONAssert.assertEquals(
-			read(toFileName), serialize(actualDDMFormRules), false);
+			read(toFileName), serialize(spiDDMFormRules), false);
 	}
 
 	protected void assertConversionToModel(
 			String fromFileName, String toFileName)
 		throws Exception {
 
-		List<com.liferay.dynamic.data.mapping.model.DDMFormRule>
-			actualDDMFormRules = convert(fromFileName);
+		List<DDMFormRule> ddmFormRules = convert(fromFileName);
 
 		JSONAssert.assertEquals(
-			read(toFileName), serialize(actualDDMFormRules), false);
+			read(toFileName), serialize(ddmFormRules), false);
 	}
 
-	protected List<com.liferay.dynamic.data.mapping.model.DDMFormRule> convert(
-			String fileName)
-		throws Exception {
-
+	protected List<DDMFormRule> convert(String fileName) throws Exception {
 		String serializedDDMFormRules = read(fileName);
 
-		return _ddmFormRuleConverter.convert(
-			_ddmFormRuleDeserializer.deserialize(serializedDDMFormRules),
-			_ddmFormRuleSerializerContext);
+		return _ddmFormRuleConverterImpl.convert(
+			_ddmFormRuleDeserializerImpl.deserialize(serializedDDMFormRules),
+			_spiDDMFormRuleSerializerContext);
 	}
 
 	protected List<String> extractCallFunctionParameters(String callFunction) {
@@ -378,24 +370,47 @@ public class DDMFormRuleToDDMFormRuleModelConverterTest
 		return callFunctionParameters;
 	}
 
-	protected void setUpDDMFormRuleDeserializer()
-		throws Exception, IllegalAccessException {
-
+	protected void setUpDDMExpressionFactory() throws Exception {
 		Field field = ReflectionUtil.getDeclaredField(
-			_ddmFormRuleDeserializer.getClass(), "_jsonFactory");
+			_ddmExpressionFactoryImpl.getClass(),
+			"ddmExpressionFunctionTracker");
 
-		field.set(_ddmFormRuleDeserializer, new JSONFactoryImpl());
+		field.set(
+			_ddmExpressionFactoryImpl, new DDMExpressionFunctionTrackerImpl());
+	}
+
+	protected void setUpDDMFormRuleConverter() throws Exception {
+		Field field = ReflectionUtil.getDeclaredField(
+			_ddmFormRuleConverterImpl.getClass(), "ddmExpressionFactory");
+
+		field.set(_ddmFormRuleConverterImpl, _ddmExpressionFactoryImpl);
+	}
+
+	protected void setUpDDMFormRuleDeserializer() throws Exception {
+		Field field = ReflectionUtil.getDeclaredField(
+			_ddmFormRuleDeserializerImpl.getClass(), "_jsonFactory");
+
+		field.set(_ddmFormRuleDeserializerImpl, new JSONFactoryImpl());
+
+		field = ReflectionUtil.getDeclaredField(
+			_ddmFormRuleDeserializerImpl.getClass(),
+			"_spiDDMFormRuleConverter");
+
+		field.set(_ddmFormRuleDeserializerImpl, _ddmFormRuleConverterImpl);
 	}
 
 	private static final Pattern _callFunctionPattern = Pattern.compile(
 		"call\\(\\s*\'([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-" +
 			"[0-9a-f]{12})\'\\s*,\\s*\'(.*)\'\\s*,\\s*\'(.*)\'\\s*\\)");
 
-	private DDMFormRuleConverter _ddmFormRuleConverter;
-	private final DDMFormRuleDeserializer _ddmFormRuleDeserializer =
-		new DDMFormRuleDeserializer();
+	private final DDMExpressionFactoryImpl _ddmExpressionFactoryImpl =
+		new DDMExpressionFactoryImpl();
+	private final DDMFormRuleConverterImpl _ddmFormRuleConverterImpl =
+		new DDMFormRuleConverterImpl();
+	private final DDMFormRuleDeserializerImpl _ddmFormRuleDeserializerImpl =
+		new DDMFormRuleDeserializerImpl();
 
 	@Mock
-	private DDMFormRuleSerializerContext _ddmFormRuleSerializerContext;
+	private SPIDDMFormRuleSerializerContext _spiDDMFormRuleSerializerContext;
 
 }

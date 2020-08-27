@@ -31,7 +31,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 	service = ModelDocumentContributor.class
 )
@@ -56,8 +55,8 @@ public class DLFileEntryRelatedEntryModelDocumentContributor
 
 			document.addKeyword(Field.RELATED_ENTRY, true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

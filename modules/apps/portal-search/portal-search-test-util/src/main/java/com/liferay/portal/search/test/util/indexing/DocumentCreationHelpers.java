@@ -14,12 +14,18 @@
 
 package com.liferay.portal.search.test.util.indexing;
 
+import com.liferay.portal.kernel.search.Field;
+
 import java.util.Date;
 
 /**
  * @author André de Oliveira
  */
 public class DocumentCreationHelpers {
+
+	public static DocumentCreationHelper field(Field field) {
+		return document -> document.add(field);
+	}
 
 	public static DocumentCreationHelper singleDate(
 		String fieldName, Date value) {
@@ -56,6 +62,15 @@ public class DocumentCreationHelpers {
 		String fieldName, String... values) {
 
 		return document -> document.addText(fieldName, values);
+	}
+
+	public static DocumentCreationHelper twoKeywords(
+		String fieldName1, String value1, String fieldName2, String value2) {
+
+		return document -> {
+			document.addKeyword(fieldName1, value1);
+			document.addKeyword(fieldName2, value2);
+		};
 	}
 
 }

@@ -14,34 +14,20 @@
 
 package com.liferay.portal.search.engine.adapter.document;
 
-import java.util.function.Consumer;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.Consumer;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class DeleteDocumentRequest
+	extends CrossClusterRequest
 	implements BulkableDocumentRequest<DeleteDocumentRequest>,
 			   DocumentRequest<DeleteDocumentResponse> {
 
 	public DeleteDocumentRequest(String indexName, String uid) {
 		_indexName = indexName;
-		_uid = uid;
-	}
-
-	/**
-	 * @param      indexName
-	 * @param      type
-	 * @param      uid
-	 * @deprecated As of Judson (7.1.x), since 7.1.x, replaced by {@link
-	 *             DeleteDocumentRequest#DeleteDocumentRequest(String, String)}
-	 */
-	@Deprecated
-	public DeleteDocumentRequest(String indexName, String type, String uid) {
-		_indexName = indexName;
-		_type = type;
 		_uid = uid;
 	}
 

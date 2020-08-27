@@ -24,13 +24,13 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.sharing.configuration.SharingConfiguration;
 import com.liferay.sharing.configuration.SharingConfigurationFactory;
 import com.liferay.sharing.display.context.util.SharingMenuItemFactory;
 import com.liferay.sharing.display.context.util.SharingToolbarItemFactory;
-import com.liferay.sharing.document.library.internal.security.permission.SharingPermissionHelper;
+import com.liferay.sharing.security.permission.SharingPermission;
+import com.liferay.sharing.service.SharingEntryLocalService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -100,17 +100,15 @@ public class SharingDLDisplayContextFactory implements DLDisplayContextFactory {
 			return new SharingDLViewFileVersionDisplayContext(
 				parentDLViewFileVersionDisplayContext, httpServletRequest,
 				httpServletResponse, fileEntry, fileVersion,
-				ResourceBundleUtil.getBundle(
-					themeDisplay.getLocale(),
-					SharingDLDisplayContextFactory.class),
-				_sharingMenuItemFactory, _sharingToolbarItemFactory,
-				_sharingPermissionHelper, sharingConfiguration);
+				_sharingEntryLocalService, _sharingMenuItemFactory,
+				_sharingToolbarItemFactory, _sharingPermission,
+				sharingConfiguration);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to create sharing document library view file version " +
 					"display context for file version " + fileVersion,
-				pe);
+				portalException);
 		}
 	}
 
@@ -118,10 +116,13 @@ public class SharingDLDisplayContextFactory implements DLDisplayContextFactory {
 	private SharingConfigurationFactory _sharingConfigurationFactory;
 
 	@Reference
+	private SharingEntryLocalService _sharingEntryLocalService;
+
+	@Reference
 	private SharingMenuItemFactory _sharingMenuItemFactory;
 
 	@Reference
-	private SharingPermissionHelper _sharingPermissionHelper;
+	private SharingPermission _sharingPermission;
 
 	@Reference
 	private SharingToolbarItemFactory _sharingToolbarItemFactory;

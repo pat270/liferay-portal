@@ -14,6 +14,7 @@
 
 package com.liferay.headless.admin.user.client.serdes.v1_0;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.CustomField;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.Service;
 import com.liferay.headless.admin.user.client.json.BaseJSONParser;
@@ -21,11 +22,11 @@ import com.liferay.headless.admin.user.client.json.BaseJSONParser;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -63,6 +64,16 @@ public class OrganizationSerDes {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+		if (organization.getActions() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(organization.getActions()));
+		}
+
 		if (organization.getComment() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -77,14 +88,24 @@ public class OrganizationSerDes {
 			sb.append("\"");
 		}
 
-		if (organization.getContactInformation() != null) {
+		if (organization.getCustomFields() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"contactInformation\": ");
+			sb.append("\"customFields\": ");
 
-			sb.append(String.valueOf(organization.getContactInformation()));
+			sb.append("[");
+
+			for (int i = 0; i < organization.getCustomFields().length; i++) {
+				sb.append(String.valueOf(organization.getCustomFields()[i]));
+
+				if ((i + 1) < organization.getCustomFields().length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (organization.getDateCreated() != null) {
@@ -124,7 +145,11 @@ public class OrganizationSerDes {
 
 			sb.append("\"id\": ");
 
-			sb.append(organization.getId());
+			sb.append("\"");
+
+			sb.append(_escape(organization.getId()));
+
+			sb.append("\"");
 		}
 
 		if (organization.getImage() != null) {
@@ -199,6 +224,18 @@ public class OrganizationSerDes {
 			sb.append(organization.getNumberOfOrganizations());
 		}
 
+		if (organization.getOrganizationContactInformation() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"organizationContactInformation\": ");
+
+			sb.append(
+				String.valueOf(
+					organization.getOrganizationContactInformation()));
+		}
+
 		if (organization.getParentOrganization() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -246,10 +283,17 @@ public class OrganizationSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		if (organization.getActions() == null) {
+			map.put("actions", null);
+		}
+		else {
+			map.put("actions", String.valueOf(organization.getActions()));
+		}
 
 		if (organization.getComment() == null) {
 			map.put("comment", null);
@@ -258,22 +302,31 @@ public class OrganizationSerDes {
 			map.put("comment", String.valueOf(organization.getComment()));
 		}
 
-		if (organization.getContactInformation() == null) {
-			map.put("contactInformation", null);
+		if (organization.getCustomFields() == null) {
+			map.put("customFields", null);
 		}
 		else {
 			map.put(
-				"contactInformation",
-				String.valueOf(organization.getContactInformation()));
+				"customFields", String.valueOf(organization.getCustomFields()));
 		}
 
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(organization.getDateCreated()));
+		if (organization.getDateCreated() == null) {
+			map.put("dateCreated", null);
+		}
+		else {
+			map.put(
+				"dateCreated",
+				liferayToJSONDateFormat.format(organization.getDateCreated()));
+		}
 
-		map.put(
-			"dateModified",
-			liferayToJSONDateFormat.format(organization.getDateModified()));
+		if (organization.getDateModified() == null) {
+			map.put("dateModified", null);
+		}
+		else {
+			map.put(
+				"dateModified",
+				liferayToJSONDateFormat.format(organization.getDateModified()));
+		}
 
 		if (organization.getId() == null) {
 			map.put("id", null);
@@ -319,6 +372,16 @@ public class OrganizationSerDes {
 				String.valueOf(organization.getNumberOfOrganizations()));
 		}
 
+		if (organization.getOrganizationContactInformation() == null) {
+			map.put("organizationContactInformation", null);
+		}
+		else {
+			map.put(
+				"organizationContactInformation",
+				String.valueOf(
+					organization.getOrganizationContactInformation()));
+		}
+
 		if (organization.getParentOrganization() == null) {
 			map.put("parentOrganization", null);
 		}
@@ -338,42 +401,7 @@ public class OrganizationSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class OrganizationJSONParser
+	public static class OrganizationJSONParser
 		extends BaseJSONParser<Organization> {
 
 		@Override
@@ -391,18 +419,28 @@ public class OrganizationSerDes {
 			Organization organization, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "comment")) {
+			if (Objects.equals(jsonParserFieldName, "actions")) {
+				if (jsonParserFieldValue != null) {
+					organization.setActions(
+						(Map)OrganizationSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "comment")) {
 				if (jsonParserFieldValue != null) {
 					organization.setComment((String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(
-						jsonParserFieldName, "contactInformation")) {
-
+			else if (Objects.equals(jsonParserFieldName, "customFields")) {
 				if (jsonParserFieldValue != null) {
-					organization.setContactInformation(
-						ContactInformationSerDes.toDTO(
-							(String)jsonParserFieldValue));
+					organization.setCustomFields(
+						Stream.of(
+							toStrings((Object[])jsonParserFieldValue)
+						).map(
+							object -> CustomFieldSerDes.toDTO((String)object)
+						).toArray(
+							size -> new CustomField[size]
+						));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "dateCreated")) {
@@ -419,8 +457,7 @@ public class OrganizationSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "id")) {
 				if (jsonParserFieldValue != null) {
-					organization.setId(
-						Long.valueOf((String)jsonParserFieldValue));
+					organization.setId((String)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "image")) {
@@ -454,6 +491,16 @@ public class OrganizationSerDes {
 				}
 			}
 			else if (Objects.equals(
+						jsonParserFieldName,
+						"organizationContactInformation")) {
+
+				if (jsonParserFieldValue != null) {
+					organization.setOrganizationContactInformation(
+						OrganizationContactInformationSerDes.toDTO(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(
 						jsonParserFieldName, "parentOrganization")) {
 
 				if (jsonParserFieldValue != null) {
@@ -479,6 +526,75 @@ public class OrganizationSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

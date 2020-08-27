@@ -40,6 +40,10 @@ public interface DDMTemplateFinder {
 		long companyId, long[] groupIds, long classNameId, long classPK,
 		long resourceClassNameId, String type, String mode, int status);
 
+	public int countByC_G_C_C_R_T_M_S(
+		long companyId, long[] groupIds, long[] classNameIds, long[] classPKs,
+		long resourceClassNameId, String type, String mode, int status);
+
 	public int countByC_G_C_C_R_N_D_T_M_L_S(
 		long companyId, long groupId, long classNameId, long classPK,
 		long resourceClassNameId, String name, String description, String type,
@@ -80,6 +84,10 @@ public interface DDMTemplateFinder {
 
 	public int filterCountByC_G_C_C_R_T_M_S(
 		long companyId, long[] groupIds, long classNameId, long classPK,
+		long resourceClassNameId, String type, String mode, int status);
+
+	public int filterCountByC_G_C_C_R_T_M_S(
+		long companyId, long[] groupIds, long[] classNameIds, long[] classPKs,
 		long resourceClassNameId, String type, String mode, int status);
 
 	public int filterCountByC_G_C_C_R_N_D_T_M_L_S(
@@ -143,6 +151,15 @@ public interface DDMTemplateFinder {
 			long companyId, long[] groupIds, long classNameId, long classPK,
 			long resourceClassNameId, String type, String mode, int status,
 			int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.dynamic.data.mapping.model.DDMTemplate>
+					orderByComparator);
+
+	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMTemplate>
+		filterFindByC_G_C_C_R_T_M_S(
+			long companyId, long[] groupIds, long[] classNameIds,
+			long[] classPKs, long resourceClassNameId, String type, String mode,
+			int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
 				<com.liferay.dynamic.data.mapping.model.DDMTemplate>
 					orderByComparator);
@@ -227,6 +244,15 @@ public interface DDMTemplateFinder {
 			long companyId, long[] groupIds, long classNameId, long classPK,
 			long resourceClassNameId, String type, String mode, int status,
 			int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.dynamic.data.mapping.model.DDMTemplate>
+					orderByComparator);
+
+	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMTemplate>
+		findByC_G_C_C_R_T_M_S(
+			long companyId, long[] groupIds, long[] classNameIds,
+			long[] classPKs, long resourceClassNameId, String type, String mode,
+			int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
 				<com.liferay.dynamic.data.mapping.model.DDMTemplate>
 					orderByComparator);

@@ -18,12 +18,9 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Akos Thurzo
  */
-@ProviderType
 public class StagingURLHelperUtil {
 
 	public static String buildRemoteURL(
@@ -41,9 +38,9 @@ public class StagingURLHelperUtil {
 	}
 
 	public static String buildRemoteURL(
-		UnicodeProperties typeSettingsProperties) {
+		UnicodeProperties typeSettingsUnicodeProperties) {
 
-		return _stagingURLHelper.buildRemoteURL(typeSettingsProperties);
+		return _stagingURLHelper.buildRemoteURL(typeSettingsUnicodeProperties);
 	}
 
 	private static volatile StagingURLHelper _stagingURLHelper =

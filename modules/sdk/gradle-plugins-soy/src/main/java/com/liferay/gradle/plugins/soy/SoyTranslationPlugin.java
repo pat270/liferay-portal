@@ -35,8 +35,10 @@ import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 
 /**
- * @author Andrea Di Giorgi
+ * @author     Andrea Di Giorgi
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class SoyTranslationPlugin implements Plugin<Project> {
 
 	public static final String REPLACE_SOY_TRANSLATION_TASK_NAME =

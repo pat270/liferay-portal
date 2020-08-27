@@ -149,7 +149,7 @@ public class TestFileEntry implements FileEntry {
 		try {
 			return DLAppLocalServiceUtil.getFolder(_folderId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			return null;
 		}
 	}
@@ -239,7 +239,7 @@ public class TestFileEntry implements FileEntry {
 	}
 
 	@Override
-	public int getReadCount() {
+	public long getReadCount() {
 		return 0;
 	}
 
@@ -292,21 +292,6 @@ public class TestFileEntry implements FileEntry {
 
 	@Override
 	public String getVersion() {
-		return RandomTestUtil.randomString();
-	}
-
-	@Override
-	public long getVersionUserId() {
-		return 0;
-	}
-
-	@Override
-	public String getVersionUserName() {
-		return RandomTestUtil.randomString();
-	}
-
-	@Override
-	public String getVersionUserUuid() {
 		return RandomTestUtil.randomString();
 	}
 

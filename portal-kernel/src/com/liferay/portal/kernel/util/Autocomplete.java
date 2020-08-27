@@ -14,14 +14,13 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -46,15 +45,12 @@ public class Autocomplete {
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
 		for (int i = 0; (i < array.length) && (i < max); i++) {
-			String text = array[i][0];
-			String value = array[i][1];
-
-			Map<String, String> map = new HashMap<>();
-
-			map.put("text", text);
-			map.put("value", value);
-
-			jsonArray.put(map);
+			jsonArray.put(
+				HashMapBuilder.put(
+					"text", array[i][0]
+				).put(
+					"value", array[i][1]
+				).build());
 		}
 
 		return jsonArray;
@@ -69,7 +65,7 @@ public class Autocomplete {
 			max = array.length;
 		}
 
-		StringBundler sb = new StringBundler(array.length * 8 + 3);
+		StringBundler sb = new StringBundler((array.length * 8) + 3);
 
 		sb.append("<?xml version=\"1.0\"?>");
 

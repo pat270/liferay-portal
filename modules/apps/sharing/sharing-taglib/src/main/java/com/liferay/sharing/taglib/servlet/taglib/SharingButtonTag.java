@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.sharing.display.context.util.SharingJavaScriptFactory;
 import com.liferay.sharing.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.sharing.taglib.internal.servlet.SharingJavaScriptFactoryUtil;
-import com.liferay.taglib.util.IncludeTag;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.PageContext;
@@ -28,7 +27,7 @@ import javax.servlet.jsp.PageContext;
 /**
  * @author Alejandro Tardín
  */
-public class SharingButtonTag extends IncludeTag {
+public class SharingButtonTag extends BaseSharingTag {
 
 	public String getClassName() {
 		return _className;
@@ -73,20 +72,16 @@ public class SharingButtonTag extends IncludeTag {
 
 		try {
 			httpServletRequest.setAttribute(
-				"liferay-sharing:button:javaScript",
-				sharingJavaScriptFactory.createSharingJavaScript(
-					httpServletRequest));
-			httpServletRequest.setAttribute(
 				"liferay-sharing:button:onClick",
 				sharingJavaScriptFactory.createSharingOnClickMethod(
 					_className, _classPK, httpServletRequest));
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to set onclick method", pe);
+		catch (PortalException portalException) {
+			_log.error("Unable to set onclick method", portalException);
 		}
 	}
 
-	private static final String _PAGE = "/sharing/page.jsp";
+	private static final String _PAGE = "/button/page.jsp";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SharingButtonTag.class);

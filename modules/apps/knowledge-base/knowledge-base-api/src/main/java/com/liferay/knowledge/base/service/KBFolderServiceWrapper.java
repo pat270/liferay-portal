@@ -16,8 +16,6 @@ package com.liferay.knowledge.base.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link KBFolderService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KBFolderService
  * @generated
  */
-@ProviderType
 public class KBFolderServiceWrapper
 	implements KBFolderService, ServiceWrapper<KBFolderService> {
 
@@ -65,11 +62,11 @@ public class KBFolderServiceWrapper
 	public com.liferay.knowledge.base.model.KBFolder fetchFirstChildKBFolder(
 			long groupId, long kbFolderId,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.knowledge.base.model.KBFolder> obc)
+				<com.liferay.knowledge.base.model.KBFolder> orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _kbFolderService.fetchFirstChildKBFolder(
-			groupId, kbFolderId, obc);
+			groupId, kbFolderId, orderByComparator);
 	}
 
 	@Override
@@ -157,23 +154,6 @@ public class KBFolderServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_kbFolderService.moveKBFolder(kbFolderId, parentKBFolderId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateKBFolder(long, long, long, String, String,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.knowledge.base.model.KBFolder updateKBFolder(
-			long parentResourceClassNameId, long parentResourcePrimKey,
-			long kbFolderId, String name, String description)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _kbFolderService.updateKBFolder(
-			parentResourceClassNameId, parentResourcePrimKey, kbFolderId, name,
-			description);
 	}
 
 	@Override

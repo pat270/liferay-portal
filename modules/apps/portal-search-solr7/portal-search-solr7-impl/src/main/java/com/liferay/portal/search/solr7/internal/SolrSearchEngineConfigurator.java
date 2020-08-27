@@ -14,6 +14,8 @@
 
 package com.liferay.portal.search.solr7.internal;
 
+import com.liferay.portal.kernel.messaging.DestinationFactory;
+import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.search.BaseSearchEngineConfigurator;
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.IndexWriter;
@@ -65,7 +67,7 @@ public class SolrSearchEngineConfigurator extends BaseSearchEngineConfigurator {
 	}
 
 	@Override
-	protected ClassLoader getOperatingClassloader() {
+	protected ClassLoader getOperatingClassLoader() {
 		Class<?> clazz = getClass();
 
 		return clazz.getClassLoader();
@@ -114,8 +116,15 @@ public class SolrSearchEngineConfigurator extends BaseSearchEngineConfigurator {
 	@Reference
 	protected SearchEngineHelper searchEngineHelper;
 
+	@Reference
+	private DestinationFactory _destinationFactory;
+
 	private IndexSearcher _indexSearcher;
 	private IndexWriter _indexWriter;
+
+	@Reference
+	private MessageBus _messageBus;
+
 	private final Map<String, SearchEngine> _searchEngines =
 		new ConcurrentHashMap<>();
 

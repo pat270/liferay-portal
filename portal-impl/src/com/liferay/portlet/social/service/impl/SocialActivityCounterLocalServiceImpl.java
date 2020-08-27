@@ -124,7 +124,8 @@ public class SocialActivityCounterLocalServiceImpl
 					activityCounter.getStartPeriod() + periodLength - 1);
 			}
 
-			socialActivityCounterPersistence.update(activityCounter);
+			activityCounter = socialActivityCounterPersistence.update(
+				activityCounter);
 		}
 
 		activityCounter = socialActivityCounterPersistence.fetchByG_C_C_N_O_E(
@@ -165,9 +166,7 @@ public class SocialActivityCounterLocalServiceImpl
 			SocialActivityCounterConstants.END_PERIOD_UNDEFINED);
 		activityCounter.setActive(true);
 
-		socialActivityCounterPersistence.update(activityCounter);
-
-		return activityCounter;
+		return socialActivityCounterPersistence.update(activityCounter);
 	}
 
 	/**
@@ -395,9 +394,8 @@ public class SocialActivityCounterLocalServiceImpl
 			deleteActivityCounters(assetEntry);
 		}
 		else {
-			long classNameId = classNameLocalService.getClassNameId(className);
-
-			socialActivityCounterPersistence.removeByC_C(classNameId, classPK);
+			socialActivityCounterPersistence.removeByC_C(
+				classNameLocalService.getClassNameId(className), classPK);
 
 			socialActivityLimitPersistence.removeByUserId(classPK);
 		}
@@ -421,9 +419,7 @@ public class SocialActivityCounterLocalServiceImpl
 	public void disableActivityCounters(long classNameId, long classPK)
 		throws PortalException {
 
-		String className = PortalUtil.getClassName(classNameId);
-
-		disableActivityCounters(className, classPK);
+		disableActivityCounters(PortalUtil.getClassName(classNameId), classPK);
 	}
 
 	/**
@@ -482,9 +478,7 @@ public class SocialActivityCounterLocalServiceImpl
 	public void enableActivityCounters(long classNameId, long classPK)
 		throws PortalException {
 
-		String className = PortalUtil.getClassName(classNameId);
-
-		enableActivityCounters(className, classPK);
+		enableActivityCounters(PortalUtil.getClassName(classNameId), classPK);
 	}
 
 	/**
@@ -608,10 +602,9 @@ public class SocialActivityCounterLocalServiceImpl
 	public List<SocialActivityCounter> getOffsetActivityCounters(
 		long groupId, String name, int startOffset, int endOffset) {
 
-		int startPeriod = SocialCounterPeriodUtil.getStartPeriod(startOffset);
-		int endPeriod = SocialCounterPeriodUtil.getEndPeriod(endOffset);
-
-		return getPeriodActivityCounters(groupId, name, startPeriod, endPeriod);
+		return getPeriodActivityCounters(
+			groupId, name, SocialCounterPeriodUtil.getStartPeriod(startOffset),
+			SocialCounterPeriodUtil.getEndPeriod(endOffset));
 	}
 
 	/**
@@ -635,11 +628,9 @@ public class SocialActivityCounterLocalServiceImpl
 	public List<SocialActivityCounter> getOffsetDistributionActivityCounters(
 		long groupId, String name, int startOffset, int endOffset) {
 
-		int startPeriod = SocialCounterPeriodUtil.getStartPeriod(startOffset);
-		int endPeriod = SocialCounterPeriodUtil.getEndPeriod(endOffset);
-
 		return getPeriodDistributionActivityCounters(
-			groupId, name, startPeriod, endPeriod);
+			groupId, name, SocialCounterPeriodUtil.getStartPeriod(startOffset),
+			SocialCounterPeriodUtil.getEndPeriod(endOffset));
 	}
 
 	/**
@@ -665,9 +656,8 @@ public class SocialActivityCounterLocalServiceImpl
 			endPeriod = SocialCounterPeriodUtil.getEndPeriod();
 		}
 
-		int offset = SocialCounterPeriodUtil.getOffset(endPeriod);
-
-		int periodLength = SocialCounterPeriodUtil.getPeriodLength(offset);
+		int periodLength = SocialCounterPeriodUtil.getPeriodLength(
+			SocialCounterPeriodUtil.getOffset(endPeriod));
 
 		return socialActivityCounterFinder.findAC_ByG_N_S_E_1(
 			groupId, name, startPeriod, endPeriod, periodLength);
@@ -694,9 +684,8 @@ public class SocialActivityCounterLocalServiceImpl
 	public List<SocialActivityCounter> getPeriodDistributionActivityCounters(
 		long groupId, String name, int startPeriod, int endPeriod) {
 
-		int offset = SocialCounterPeriodUtil.getOffset(endPeriod);
-
-		int periodLength = SocialCounterPeriodUtil.getPeriodLength(offset);
+		int periodLength = SocialCounterPeriodUtil.getPeriodLength(
+			SocialCounterPeriodUtil.getOffset(endPeriod));
 
 		return socialActivityCounterFinder.findAC_ByG_N_S_E_2(
 			groupId, name, startPeriod, endPeriod, periodLength);
@@ -938,10 +927,12 @@ public class SocialActivityCounterLocalServiceImpl
 		}
 
 		if (latestPopularityActivityCounter.getStartPeriod() == startPeriod) {
+			int latestPopularityActivityCounterCurrentValue =
+				latestPopularityActivityCounter.getCurrentValue();
+
 			latestContributionActivityCounter.setCurrentValue(
 				latestContributionActivityCounter.getCurrentValue() +
-					(latestPopularityActivityCounter.getCurrentValue() *
-						factor));
+					(latestPopularityActivityCounterCurrentValue * factor));
 		}
 
 		latestContributionActivityCounter.setTotalValue(
@@ -1042,7 +1033,8 @@ public class SocialActivityCounterLocalServiceImpl
 			activityCounter.getTotalValue() +
 				activityCounterDefinition.getIncrement());
 
-		socialActivityCounterPersistence.update(activityCounter);
+		activityCounter = socialActivityCounterPersistence.update(
+			activityCounter);
 
 		socialActivityCounterPersistence.clearCache(activityCounter);
 	}

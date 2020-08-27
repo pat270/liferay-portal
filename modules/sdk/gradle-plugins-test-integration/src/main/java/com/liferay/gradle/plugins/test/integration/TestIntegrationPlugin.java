@@ -192,14 +192,14 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 	private void _addDependenciesTestModules(Project project) {
 		GradleUtil.addDependency(
-			project, TEST_MODULES_CONFIGURATION_NAME, "org.apache.aries.jmx",
-			"org.apache.aries.jmx.core", "1.1.7");
+			project, TEST_MODULES_CONFIGURATION_NAME, "com.liferay",
+			"com.liferay.arquillian.extension.junit.bridge.connector", "1.0.0");
 		GradleUtil.addDependency(
 			project, TEST_MODULES_CONFIGURATION_NAME, "com.liferay.portal",
 			"com.liferay.portal.test", "3.0.0");
 		GradleUtil.addDependency(
-			project, TEST_MODULES_CONFIGURATION_NAME, "com.liferay.portal",
-			"com.liferay.portal.test.integration", "3.0.0");
+			project, TEST_MODULES_CONFIGURATION_NAME, "org.apache.aries.jmx",
+			"org.apache.aries.jmx.core", "1.1.7");
 	}
 
 	private Copy _addTaskCopyTestModules(
@@ -349,8 +349,6 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 			});
 
-		_configureJmxRemotePortSpec(
-			setUpTestableTomcatTask, testIntegrationTomcatExtension);
 		_configureManagerSpec(
 			setUpTestableTomcatTask, testIntegrationTomcatExtension);
 		_configureModuleFrameworkBaseDirSpec(
@@ -395,33 +393,34 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 					_startedAppServersReentrantLock.unlock();
 				}
 
-				if (started) {
-					Logger logger = startTestableTomcatTask.getLogger();
+				if (!started) {
+					return;
+				}
 
+				Logger logger = startTestableTomcatTask.getLogger();
+
+				if (logger.isDebugEnabled()) {
+					logger.debug(
+						"Application server {} is already started", binDir);
+				}
+
+				Project project = startTestableTomcatTask.getProject();
+
+				Gradle gradle = project.getGradle();
+
+				StartParameter startParameter = gradle.getStartParameter();
+
+				if (startParameter.isParallelProjectExecutionEnabled()) {
 					if (logger.isDebugEnabled()) {
 						logger.debug(
-							"Application server {} is already started", binDir);
+							"Waiting for application server {} to be reachable",
+							binDir);
 					}
 
-					Project project = startTestableTomcatTask.getProject();
-
-					Gradle gradle = project.getGradle();
-
-					StartParameter startParameter = gradle.getStartParameter();
-
-					if (startParameter.isParallelProjectExecutionEnabled()) {
-						if (logger.isDebugEnabled()) {
-							logger.debug(
-								"Waiting for application server {} to be " +
-									"reachable",
-								binDir);
-						}
-
-						startTestableTomcatTask.waitForReachable();
-					}
-
-					throw new StopExecutionException();
+					startTestableTomcatTask.waitForReachable();
 				}
+
+				throw new StopExecutionException();
 			}
 
 		};
@@ -470,6 +469,7 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 		return startTestableTomcatTask;
 	}
 
+	@SuppressWarnings("serial")
 	private StopTestableTomcatTask _addTaskStopTestableTomcat(
 		Project project, Test testIntegrationTask,
 		TestIntegrationTomcatExtension testIntegrationTomcatExtension) {
@@ -700,6 +700,7 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private void _configureTaskTestIntegration(
 		final Test test, final SourceSet testIntegrationSourceSet,
 		final TestIntegrationTomcatExtension testIntegrationTomcatExtension,

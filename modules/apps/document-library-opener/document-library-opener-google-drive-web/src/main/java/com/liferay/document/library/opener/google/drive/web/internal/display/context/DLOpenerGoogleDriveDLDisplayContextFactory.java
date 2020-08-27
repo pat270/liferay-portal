@@ -17,7 +17,7 @@ package com.liferay.document.library.opener.google.drive.web.internal.display.co
 import com.liferay.document.library.display.context.BaseDLDisplayContextFactory;
 import com.liferay.document.library.display.context.DLDisplayContextFactory;
 import com.liferay.document.library.display.context.DLViewFileVersionDisplayContext;
-import com.liferay.document.library.opener.google.drive.DLOpenerGoogleDriveManager;
+import com.liferay.document.library.opener.google.drive.web.internal.DLOpenerGoogleDriveManager;
 import com.liferay.document.library.opener.service.DLOpenerFileEntryReferenceLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = DLDisplayContextFactory.class)
+@Component(service = DLDisplayContextFactory.class)
 public class DLOpenerGoogleDriveDLDisplayContextFactory
 	extends BaseDLDisplayContextFactory {
 
@@ -55,14 +55,14 @@ public class DLOpenerGoogleDriveDLDisplayContextFactory
 				parentDLViewFileVersionDisplayContext, httpServletRequest,
 				httpServletResponse, fileShortcut.getFileVersion());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				StringBundler.concat(
 					"Unable to build ",
 					DLOpenerGoogleDriveDLViewFileVersionDisplayContext.class.
 						getSimpleName(),
 					" for shortcut ", fileShortcut.getPrimaryKey()),
-				pe);
+				portalException);
 		}
 	}
 

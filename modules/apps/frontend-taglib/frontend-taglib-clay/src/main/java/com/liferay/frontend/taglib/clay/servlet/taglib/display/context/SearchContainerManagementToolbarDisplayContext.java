@@ -27,15 +27,33 @@ public class SearchContainerManagementToolbarDisplayContext
 	extends BaseManagementToolbarDisplayContext {
 
 	public SearchContainerManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse,
+		SearchContainer<?> searchContainer) {
+
+		super(
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse);
+
+		this.searchContainer = searchContainer;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #SearchContainerManagementToolbarDisplayContext(
+	 *             HttpServletRequest, LiferayPortletRequest,
+	 *             LiferayPortletResponse, SearchContainer)}
+	 */
+	@Deprecated
+	public SearchContainerManagementToolbarDisplayContext(
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
 		HttpServletRequest httpServletRequest,
-		SearchContainer searchContainer) {
+		SearchContainer<?> searchContainer) {
 
-		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest);
-
-		this.searchContainer = searchContainer;
+		this(
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
+			searchContainer);
 	}
 
 	@Override
@@ -77,6 +95,6 @@ public class SearchContainerManagementToolbarDisplayContext
 		return searchContainer.getOrderByTypeParam();
 	}
 
-	protected SearchContainer searchContainer;
+	protected SearchContainer<?> searchContainer;
 
 }

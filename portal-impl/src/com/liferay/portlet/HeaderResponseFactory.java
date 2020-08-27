@@ -23,19 +23,19 @@ import javax.portlet.filter.HeaderRequestWrapper;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Neil Griffin
  */
-@ProviderType
 public class HeaderResponseFactory {
 
 	public static LiferayHeaderResponse create(
 		HeaderRequest headerRequest, HttpServletResponse httpServletResponse) {
 
 		while (headerRequest instanceof HeaderRequestWrapper) {
-			headerRequest = ((HeaderRequestWrapper)headerRequest).getRequest();
+			HeaderRequestWrapper headerRequestWrapper =
+				(HeaderRequestWrapper)headerRequest;
+
+			headerRequest = headerRequestWrapper.getRequest();
 		}
 
 		HeaderResponseImpl headerResponseImpl = new HeaderResponseImpl();

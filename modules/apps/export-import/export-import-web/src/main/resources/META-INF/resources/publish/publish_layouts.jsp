@@ -110,7 +110,7 @@ redirectURL.setParameter("privateLayout", String.valueOf(privateLayout));
 response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<c:if test='<%= SessionMessages.contains(renderRequest, "requestProcessed") %>'>
 
 		<%
@@ -124,7 +124,7 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 		</c:if>
 	</c:if>
 
-	<aui:form action='<%= portletURL.toString() + "&etag=0&strip=0" %>' cssClass="lfr-export-dialog" method="post" name="publishPagesFm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "publishPages();" %>'>
+	<aui:form action='<%= portletURL.toString() + "&etag=0&strip=0" %>' cssClass="lfr-export-dialog" method="post" name="publishPagesFm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "publishPages();" %>'>
 		<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= cmd %>" />
 		<aui:input name="originalCmd" type="hidden" value="<%= cmd %>" />
 		<aui:input name="tabs1" type="hidden" value="<%= tabs1 %>" />
@@ -190,7 +190,7 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 
 		<div id="<portlet:namespace />publishOptions">
 			<div class="export-dialog-tree">
-				<div class="container-fluid-1280">
+				<clay:container-fluid>
 
 					<%
 					String taskExecutorClassName = localPublishing ? BackgroundTaskExecutorNames.LAYOUT_STAGING_BACKGROUND_TASK_EXECUTOR : BackgroundTaskExecutorNames.LAYOUT_REMOTE_STAGING_BACKGROUND_TASK_EXECUTOR;
@@ -239,12 +239,18 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 						</aui:fieldset>
 
 						<aui:fieldset cssClass="options-group">
-							<div class="sheet-section">
+							<clay:sheet-section>
 								<h3 class="sheet-subtitle"><liferay-ui:message key="date" /></h3>
 
 								<%@ include file="/publish/publish_layouts_scheduler.jspf" %>
-							</div>
+							</clay:sheet-section>
 						</aui:fieldset>
+
+						<liferay-staging:deletions
+							cmd="<%= Constants.PUBLISH %>"
+							disableInputs="<%= configuredPublish %>"
+							exportImportConfigurationId="<%= exportImportConfigurationId %>"
+						/>
 
 						<c:if test="<%= !group.isCompany() %>">
 							<liferay-staging:select-pages
@@ -262,12 +268,6 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 							disableInputs="<%= configuredPublish %>"
 							exportImportConfigurationId="<%= exportImportConfigurationId %>"
 							type="<%= localPublishing ? Constants.PUBLISH_TO_LIVE : Constants.PUBLISH_TO_REMOTE %>"
-						/>
-
-						<liferay-staging:deletions
-							cmd="<%= Constants.PUBLISH %>"
-							disableInputs="<%= configuredPublish %>"
-							exportImportConfigurationId="<%= exportImportConfigurationId %>"
 						/>
 
 						<liferay-staging:permissions
@@ -289,11 +289,11 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 							</aui:fieldset>
 						</c:if>
 					</aui:fieldset-group>
-				</div>
+				</clay:container-fluid>
 			</div>
 
 			<aui:button-row>
-				<aui:button id="addButton" onClick='<%= renderResponse.getNamespace() + "schedulePublishEvent();" %>' value="add-event" />
+				<aui:button id="addButton" onClick='<%= liferayPortletResponse.getNamespace() + "schedulePublishEvent();" %>' value="add-event" />
 
 				<aui:button id="publishButton" type="submit" value="<%= LanguageUtil.get(request, publishMessageKey) %>" />
 
@@ -303,11 +303,13 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 			</aui:button-row>
 		</div>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
 	function <portlet:namespace />publishPages() {
-		var exportImport = Liferay.component('<portlet:namespace />ExportImportComponent');
+		var exportImport = Liferay.component(
+			'<portlet:namespace />ExportImportComponent'
+		);
 
 		var dateChecker = exportImport.getDateRangeChecker();
 
@@ -319,37 +321,67 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 		}
 	}
 
-	Liferay.Util.toggleRadio('<portlet:namespace />allApplications', '<portlet:namespace />showChangeGlobalConfiguration', ['<portlet:namespace />selectApplications']);
-	Liferay.Util.toggleRadio('<portlet:namespace />allContent', '<portlet:namespace />showChangeGlobalContent', ['<portlet:namespace />selectContents']);
-	Liferay.Util.toggleRadio('<portlet:namespace />publishingEventNow', '<portlet:namespace />publishButton', ['<portlet:namespace />selectSchedule', '<portlet:namespace />addButton']);
-	Liferay.Util.toggleRadio('<portlet:namespace />publishingEventSchedule', ['<portlet:namespace />selectSchedule', '<portlet:namespace />addButton'], '<portlet:namespace />publishButton');
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeAll', '', ['<portlet:namespace />startEndDate', '<portlet:namespace />rangeLastInputs']);
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeDateRange', '<portlet:namespace />startEndDate', '<portlet:namespace />rangeLastInputs');
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeLastPublish', '', ['<portlet:namespace />startEndDate', '<portlet:namespace />rangeLastInputs']);
-	Liferay.Util.toggleRadio('<portlet:namespace />rangeLast', '<portlet:namespace />rangeLastInputs', ['<portlet:namespace />startEndDate']);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />allApplications',
+		'<portlet:namespace />showChangeGlobalConfiguration',
+		['<portlet:namespace />selectApplications']
+	);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />allContent',
+		'<portlet:namespace />showChangeGlobalContent',
+		['<portlet:namespace />selectContents']
+	);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />publishingEventNow',
+		'<portlet:namespace />publishButton',
+		['<portlet:namespace />selectSchedule', '<portlet:namespace />addButton']
+	);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />publishingEventSchedule',
+		['<portlet:namespace />selectSchedule', '<portlet:namespace />addButton'],
+		'<portlet:namespace />publishButton'
+	);
+	Liferay.Util.toggleRadio('<portlet:namespace />rangeAll', '', [
+		'<portlet:namespace />startEndDate',
+		'<portlet:namespace />rangeLastInputs',
+	]);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />rangeDateRange',
+		'<portlet:namespace />startEndDate',
+		'<portlet:namespace />rangeLastInputs'
+	);
+	Liferay.Util.toggleRadio('<portlet:namespace />rangeLastPublish', '', [
+		'<portlet:namespace />startEndDate',
+		'<portlet:namespace />rangeLastInputs',
+	]);
+	Liferay.Util.toggleRadio(
+		'<portlet:namespace />rangeLast',
+		'<portlet:namespace />rangeLastInputs',
+		['<portlet:namespace />startEndDate']
+	);
 </aui:script>
 
 <aui:script use="liferay-export-import-export-import">
-	var exportImport = new Liferay.ExportImport(
-		{
-			commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
-			deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
-			form: document.<portlet:namespace />publishPagesFm,
-			incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',
-			locale: '<%= locale.toLanguageTag() %>',
-			namespace: '<portlet:namespace />',
-			pageTreeId: '<%= treeId %>',
-			processesNode: '#publishProcesses',
-			rangeAllNode: '#rangeAll',
-			rangeDateRangeNode: '#rangeDateRange',
-			rangeLastNode: '#rangeLast',
-			rangeLastPublishNode: '#rangeLastPublish',
-			ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>',
-			setupNode: '#<%= PortletDataHandlerKeys.PORTLET_SETUP_ALL %>',
-			timeZoneOffset: <%= timeZoneOffset %>,
-			userPreferencesNode: '#<%= PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL %>'
-		}
-	);
+	var exportImport = new Liferay.ExportImport({
+		commentsNode: '#<%= PortletDataHandlerKeys.COMMENTS %>',
+		deletionsNode: '#<%= PortletDataHandlerKeys.DELETIONS %>',
+		form: document.<portlet:namespace />publishPagesFm,
+		incompleteProcessMessageNode:
+			'#<portlet:namespace />incompleteProcessMessage',
+		locale: '<%= locale.toLanguageTag() %>',
+		namespace: '<portlet:namespace />',
+		pageTreeId: '<%= treeId %>',
+		processesNode: '#publishProcesses',
+		rangeAllNode: '#rangeAll',
+		rangeDateRangeNode: '#rangeDateRange',
+		rangeLastNode: '#rangeLast',
+		rangeLastPublishNode: '#rangeLastPublish',
+		ratingsNode: '#<%= PortletDataHandlerKeys.RATINGS %>',
+		setupNode: '#<%= PortletDataHandlerKeys.PORTLET_SETUP_ALL %>',
+		timeZoneOffset: <%= timeZoneOffset %>,
+		userPreferencesNode:
+			'#<%= PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL %>',
+	});
 
 	Liferay.component('<portlet:namespace />ExportImportComponent', exportImport);
 </aui:script>

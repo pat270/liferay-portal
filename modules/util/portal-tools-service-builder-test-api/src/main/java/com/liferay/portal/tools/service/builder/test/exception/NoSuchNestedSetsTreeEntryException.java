@@ -14,14 +14,11 @@
 
 package com.liferay.portal.tools.service.builder.test.exception;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchNestedSetsTreeEntryException extends NoSuchModelException {
 
 	public NoSuchNestedSetsTreeEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchNestedSetsTreeEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchNestedSetsTreeEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchNestedSetsTreeEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchNestedSetsTreeEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchNestedSetsTreeEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -19,7 +19,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.monitoring.DataSampleFactory;
 import com.liferay.portal.kernel.monitoring.DataSampleThreadLocal;
@@ -125,9 +126,10 @@ public class MonitoringFilter
 
 				groupId = layout.getGroupId();
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to retrieve layout " + plid, pe);
+					_log.debug(
+						"Unable to retrieve layout " + plid, portalException);
 				}
 			}
 		}
@@ -191,19 +193,20 @@ public class MonitoringFilter
 					httpServletResponse.getStatus());
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (portalRequestDataSample != null) {
 				portalRequestDataSample.capture(RequestStatus.ERROR);
 			}
 
-			if (e instanceof IOException) {
-				throw (IOException)e;
+			if (exception instanceof IOException) {
+				throw (IOException)exception;
 			}
-			else if (e instanceof ServletException) {
-				throw (ServletException)e;
+			else if (exception instanceof ServletException) {
+				throw (ServletException)exception;
 			}
 			else {
-				throw new ServletException("Unable to execute request", e);
+				throw new ServletException(
+					"Unable to execute request", exception);
 			}
 		}
 		finally {
@@ -212,9 +215,11 @@ public class MonitoringFilter
 			}
 
 			if (decrementProcessFilterCount() == 0) {
-				MessageBusUtil.sendMessage(
-					DestinationNames.MONITORING,
-					DataSampleThreadLocal.getDataSamples());
+				Message message = new Message();
+
+				message.setPayload(DataSampleThreadLocal.getDataSamples());
+
+				_messageBus.sendMessage(DestinationNames.MONITORING, message);
 
 				_processFilterCount.remove();
 			}
@@ -256,6 +261,9 @@ public class MonitoringFilter
 		policyOption = ReferencePolicyOption.GREEDY
 	)
 	private volatile LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private MessageBus _messageBus;
 
 	private boolean _monitorPortalRequest;
 

@@ -14,7 +14,6 @@
 
 package com.liferay.journal.internal.exportimport.content.processor;
 
-import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.Value;
@@ -23,6 +22,7 @@ import com.liferay.dynamic.data.mapping.util.DDMFormFieldValueTransformer;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -42,9 +42,8 @@ public class ImageExportDDMFormFieldValueTransformer
 	implements DDMFormFieldValueTransformer {
 
 	public ImageExportDDMFormFieldValueTransformer(
-		String content, DLAppService dlAppService,
-		boolean exportReferencedContent, PortletDataContext portletDataContext,
-		StagedModel stagedModel) {
+		DLAppService dlAppService, boolean exportReferencedContent,
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
 
 		_dlAppService = dlAppService;
 		_exportReferencedContent = exportReferencedContent;
@@ -66,8 +65,18 @@ public class ImageExportDDMFormFieldValueTransformer
 		for (Locale locale : value.getAvailableLocales()) {
 			String valueString = value.getString(locale);
 
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-				valueString);
+			JSONObject jsonObject = null;
+
+			try {
+				jsonObject = JSONFactoryUtil.createJSONObject(valueString);
+			}
+			catch (JSONException jsonException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug("Unable to parse JSON", jsonException);
+				}
+
+				continue;
+			}
 
 			long groupId = GetterUtil.getLong(jsonObject.get("groupId"));
 			String uuid = jsonObject.getString("uuid");
@@ -89,7 +98,7 @@ public class ImageExportDDMFormFieldValueTransformer
 						_portletDataContext, _stagedModel, fileEntry,
 						_portletDataContext.REFERENCE_TYPE_DEPENDENCY);
 
-					return;
+					continue;
 				}
 
 				Element entityElement =
@@ -99,9 +108,9 @@ public class ImageExportDDMFormFieldValueTransformer
 					_stagedModel, entityElement, fileEntry,
 					PortletDataContext.REFERENCE_TYPE_DEPENDENCY, true);
 			}
-			catch (NoSuchFileEntryException nsfee) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsfee, nsfee);
+					_log.debug(portalException, portalException);
 				}
 			}
 		}

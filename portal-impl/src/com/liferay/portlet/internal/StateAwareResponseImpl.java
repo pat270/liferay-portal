@@ -220,10 +220,8 @@ public abstract class StateAwareResponseImpl
 			return;
 		}
 
-		com.liferay.portal.kernel.xml.QName qName =
-			publicRenderParameter.getQName();
-
-		String key = PortletQNameUtil.getPublicRenderParameterName(qName);
+		String key = PortletQNameUtil.getPublicRenderParameterName(
+			publicRenderParameter.getQName());
 
 		_publicRenderParameters.remove(key);
 	}
@@ -269,8 +267,8 @@ public abstract class StateAwareResponseImpl
 
 			portletRequestImpl.setPortletMode(_portletMode);
 		}
-		catch (Exception e) {
-			throw new PortletModeException(e, portletMode);
+		catch (Exception exception) {
+			throw new PortletModeException(exception, portletMode);
 		}
 
 		_calledSetRenderParameter = true;
@@ -386,8 +384,8 @@ public abstract class StateAwareResponseImpl
 
 			portletRequestImpl.setWindowState(_windowState);
 		}
-		catch (Exception e) {
-			throw new WindowStateException(e, windowState);
+		catch (Exception exception) {
+			throw new WindowStateException(exception, windowState);
 		}
 
 		_calledSetRenderParameter = true;
@@ -400,9 +398,9 @@ public abstract class StateAwareResponseImpl
 		try {
 			setPortletMode(PortletMode.VIEW);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to reset portlet mode to VIEW", e);
+				_log.warn("Unable to reset portlet mode to VIEW", exception);
 			}
 		}
 
@@ -413,9 +411,9 @@ public abstract class StateAwareResponseImpl
 		try {
 			setWindowState(WindowState.NORMAL);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to reset window state to NORMAL", e);
+				_log.warn("Unable to reset window state to NORMAL", exception);
 			}
 		}
 

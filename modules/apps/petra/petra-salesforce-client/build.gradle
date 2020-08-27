@@ -4,7 +4,7 @@ dependencies {
 	compileInclude group: "com.force.api", name: "force-metadata-api", version: "39.0.0"
 	compileInclude group: "com.force.api", name: "force-partner-api", version: "39.0.0"
 	compileInclude group: "com.force.api", name: "force-wsc", version: "39.0.0"
-	compileInclude group: "commons-beanutils", name: "commons-beanutils", version: "1.9.3"
+	compileInclude group: "commons-beanutils", name: "commons-beanutils", version: "1.9.4"
 	compileInclude group: "commons-collections", name: "commons-collections", version: "3.2.2"
 	compileInclude group: "commons-logging", name: "commons-logging", version: "1.2"
 	compileInclude group: "org.antlr", name: "ST4", version: "4.0.7"
@@ -19,10 +19,10 @@ dependencies {
 	compileInclude group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.14.v20181114"
 	compileInclude group: "org.eclipse.jetty", name: "jetty-io", version: "9.4.14.v20181114"
 	compileInclude group: "org.eclipse.jetty", name: "jetty-util", version: "9.4.14.v20181114"
-	compileInclude group: "org.slf4j", name: "slf4j-api", version: "1.7.25"
 
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	compileOnly group: "org.osgi", name: "org.osgi.annotation.versioning", version: "1.1.0"
+	compileOnly group: "org.slf4j", name: "slf4j-api", version: "1.7.26"
 	compileOnly project(":core:petra:petra-string")
 }
 

@@ -16,6 +16,7 @@ package com.liferay.site.teams.web.internal.exportimport.data.handler;
 
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -157,7 +158,11 @@ public class TeamStagedModelDataHandler
 
 			if ((user != null) &&
 				!_userLocalService.hasTeamUser(
-					importedTeam.getTeamId(), user.getUserId())) {
+					importedTeam.getTeamId(), user.getUserId()) &&
+				((ExportImportThreadLocal.isStagingInProcess() &&
+				  !ExportImportThreadLocal.isStagingInProcessOnRemoteLive()) ||
+				 _userLocalService.hasGroupUser(
+					 importedTeam.getGroupId(), user.getUserId()))) {
 
 				_userLocalService.addTeamUser(importedTeam.getTeamId(), user);
 			}

@@ -29,8 +29,28 @@ import org.gradle.api.tasks.Input;
 public class GenerateOptions {
 
 	@Input
+	public Databinding getDatabinding() {
+		return _databinding;
+	}
+
+	@Input
 	public Map<?, ?> getMappings() {
 		return _mappings;
+	}
+
+	@Input
+	public boolean isBackwordCompatible() {
+		return _backwordCompatible;
+	}
+
+	@Input
+	public boolean isFlattenFiles() {
+		return _flattenFiles;
+	}
+
+	@Input
+	public boolean isGenerateAll() {
+		return _generateAll;
 	}
 
 	@Input
@@ -59,6 +79,22 @@ public class GenerateOptions {
 		return this;
 	}
 
+	public void setBackwordCompatible(boolean backwordCompatible) {
+		_backwordCompatible = backwordCompatible;
+	}
+
+	public void setDatabinding(Databinding databinding) {
+		_databinding = databinding;
+	}
+
+	public void setFlattenFiles(boolean flattenFiles) {
+		_flattenFiles = flattenFiles;
+	}
+
+	public void setGenerateAll(boolean generateAll) {
+		_generateAll = generateAll;
+	}
+
 	public void setMappings(Map<?, ?> mappings) {
 		_mappings.clear();
 
@@ -77,8 +113,36 @@ public class GenerateOptions {
 		_verbose = verbose;
 	}
 
+	public enum Databinding {
+
+		ADB, JIBX, NONE, XMLBEANS
+
+	}
+
 	protected List<String> getArgs() {
 		List<String> args = new ArrayList<>();
+
+		if (isBackwordCompatible()) {
+			args.add("--backword-compatible");
+		}
+
+		Databinding databinding = getDatabinding();
+
+		if (databinding != null) {
+			args.add("--databinding-method");
+
+			String name = databinding.name();
+
+			args.add(name.toLowerCase());
+		}
+
+		if (isFlattenFiles()) {
+			args.add("--flatten-files");
+		}
+
+		if (isGenerateAll()) {
+			args.add("--generate-all");
+		}
 
 		if (isNoWrapped()) {
 			args.add("--noWrapped");
@@ -108,6 +172,10 @@ public class GenerateOptions {
 		return args;
 	}
 
+	private boolean _backwordCompatible;
+	private Databinding _databinding;
+	private boolean _flattenFiles;
+	private boolean _generateAll;
 	private final Map<Object, Object> _mappings = new TreeMap<>();
 	private boolean _noWrapped;
 	private boolean _serverSide;

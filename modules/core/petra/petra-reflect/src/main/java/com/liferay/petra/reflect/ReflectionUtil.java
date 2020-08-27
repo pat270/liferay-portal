@@ -40,8 +40,8 @@ public class ReflectionUtil {
 		try {
 			return _cloneMethod.invoke(array);
 		}
-		catch (Exception e) {
-			return throwException(e);
+		catch (Exception exception) {
+			return throwException(exception);
 		}
 	}
 
@@ -110,8 +110,8 @@ public class ReflectionUtil {
 							classLoader.loadClass(interfaceClass.getName()));
 					}
 				}
-				catch (ClassNotFoundException cnfe) {
-					classNotFoundHandler.accept(cnfe);
+				catch (ClassNotFoundException classNotFoundException) {
+					classNotFoundHandler.accept(classNotFoundException);
 				}
 			}
 
@@ -128,8 +128,8 @@ public class ReflectionUtil {
 	public static Field unfinalField(Field field) throws Exception {
 		int modifiers = field.getModifiers();
 
-		if ((modifiers & Modifier.FINAL) == Modifier.FINAL) {
-			_modifiersField.setInt(field, modifiers & ~Modifier.FINAL);
+		if ((modifiers & _STATIC_FINAL) == _STATIC_FINAL) {
+			_modifiersField.setInt(field, modifiers - Modifier.FINAL);
 		}
 
 		return field;
@@ -142,6 +142,8 @@ public class ReflectionUtil {
 
 		throw (E)throwable;
 	}
+
+	private static final int _STATIC_FINAL = Modifier.STATIC + Modifier.FINAL;
 
 	private static final Method _cloneMethod;
 	private static final Field _modifiersField;
@@ -156,8 +158,8 @@ public class ReflectionUtil {
 
 			_modifiersField.setAccessible(true);
 		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
 		}
 	}
 

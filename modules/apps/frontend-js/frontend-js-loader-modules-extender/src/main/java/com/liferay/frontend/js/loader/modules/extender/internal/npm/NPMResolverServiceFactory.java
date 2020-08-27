@@ -39,22 +39,11 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 @Component(immediate = true, service = ServiceFactory.class)
 public class NPMResolverServiceFactory implements ServiceFactory<NPMResolver> {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_serviceRegistration = bundleContext.registerService(
-			NPMResolver.class, this, new Hashtable<String, Object>());
-	}
-
-	@Deactivate
-	public void deactivate() {
-		_serviceRegistration.unregister();
-	}
-
 	@Override
 	public NPMResolver getService(
 		Bundle bundle, ServiceRegistration<NPMResolver> serviceRegistration) {
 
-		URL url = bundle.getResource("META-INF/resources/package.json");
+		URL url = bundle.getEntry("META-INF/resources/package.json");
 
 		if (url == null) {
 			return new NullNPMResolverImpl(bundle);
@@ -67,6 +56,17 @@ public class NPMResolverServiceFactory implements ServiceFactory<NPMResolver> {
 	public void ungetService(
 		Bundle bundle, ServiceRegistration<NPMResolver> serviceRegistration,
 		NPMResolver npmResolver) {
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceRegistration = bundleContext.registerService(
+			NPMResolver.class, this, new Hashtable<String, Object>());
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceRegistration.unregister();
 	}
 
 	@Reference(

@@ -16,12 +16,9 @@ package com.liferay.bookmarks.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class EntryURLException extends PortalException {
 
 	public EntryURLException() {
@@ -31,12 +28,12 @@ public class EntryURLException extends PortalException {
 		super(msg);
 	}
 
-	public EntryURLException(String msg, Throwable cause) {
-		super(msg, cause);
+	public EntryURLException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public EntryURLException(Throwable cause) {
-		super(cause);
+	public EntryURLException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

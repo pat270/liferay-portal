@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.user.associated.data.exporter.UADExporter;
 import com.liferay.user.associated.data.test.util.BaseUADExporterTestCase;
 
@@ -44,7 +45,9 @@ public class LayoutSetPrototypeUADExporterTest
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Override
 	protected LayoutSetPrototype addBaseModel(long userId) throws Exception {
@@ -66,7 +69,7 @@ public class LayoutSetPrototypeUADExporterTest
 	}
 
 	@Override
-	protected UADExporter getUADExporter() {
+	protected UADExporter<LayoutSetPrototype> getUADExporter() {
 		return _uadExporter;
 	}
 
@@ -78,6 +81,6 @@ public class LayoutSetPrototypeUADExporterTest
 		new ArrayList<>();
 
 	@Inject(filter = "component.name=*.LayoutSetPrototypeUADExporter")
-	private UADExporter _uadExporter;
+	private UADExporter<LayoutSetPrototype> _uadExporter;
 
 }

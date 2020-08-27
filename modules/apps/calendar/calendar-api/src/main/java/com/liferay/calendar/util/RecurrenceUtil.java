@@ -72,8 +72,8 @@ public class RecurrenceUtil {
 				}
 			}
 		}
-		catch (ParseException pe) {
-			_log.error("Unable to parse data ", pe);
+		catch (ParseException parseException) {
+			_log.error("Unable to parse data ", parseException);
 		}
 
 		return expandedCalendarBookings;
@@ -120,8 +120,8 @@ public class RecurrenceUtil {
 				}
 			}
 		}
-		catch (ParseException pe) {
-			_log.error("Unable to parse data ", pe);
+		catch (ParseException parseException) {
+			_log.error("Unable to parse data ", parseException);
 		}
 
 		return null;
@@ -150,8 +150,8 @@ public class RecurrenceUtil {
 				count++;
 			}
 		}
-		catch (ParseException pe) {
-			_log.error("Unable to parse data ", pe);
+		catch (ParseException parseException) {
+			_log.error("Unable to parse data ", parseException);
 		}
 
 		return count;
@@ -273,8 +273,12 @@ public class RecurrenceUtil {
 		List<CalendarBooking> calendarBookingInstances = expandCalendarBooking(
 			calendarBooking, calendarBooking.getStartTime(), Long.MAX_VALUE, 0);
 
-		return calendarBookingInstances.get(
-			calendarBookingInstances.size() - 1);
+		if (!calendarBookingInstances.isEmpty()) {
+			return calendarBookingInstances.get(
+				calendarBookingInstances.size() - 1);
+		}
+
+		return calendarBooking;
 	}
 
 	protected static boolean hasLimit(Recurrence recurrence) {

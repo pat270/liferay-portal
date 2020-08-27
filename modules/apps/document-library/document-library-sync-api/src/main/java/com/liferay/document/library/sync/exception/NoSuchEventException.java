@@ -16,12 +16,9 @@ package com.liferay.document.library.sync.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchEventException extends NoSuchModelException {
 
 	public NoSuchEventException() {
@@ -31,12 +28,12 @@ public class NoSuchEventException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchEventException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchEventException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchEventException(Throwable cause) {
-		super(cause);
+	public NoSuchEventException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

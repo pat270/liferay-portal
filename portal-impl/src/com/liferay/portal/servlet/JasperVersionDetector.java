@@ -41,11 +41,11 @@ import java.util.jar.Manifest;
 public class JasperVersionDetector {
 
 	public static String getJasperVersion() {
-		return _instance._jasperVersion;
+		return _jasperVersionDetector._jasperVersion;
 	}
 
 	public static boolean hasJspServletDependantsMap() {
-		return _instance._jspServletDependantsMap;
+		return _jasperVersionDetector._jspServletDependantsMap;
 	}
 
 	private JasperVersionDetector() {
@@ -111,8 +111,8 @@ public class JasperVersionDetector {
 				_jasperVersion = StringPool.BLANK;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -124,12 +124,11 @@ public class JasperVersionDetector {
 			Method method = ReflectionUtil.getDeclaredMethod(
 				clazz, "getDependants");
 
-			Class<?> returnType = method.getReturnType();
-
-			_jspServletDependantsMap = Map.class.isAssignableFrom(returnType);
+			_jspServletDependantsMap = Map.class.isAssignableFrom(
+				method.getReturnType());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -146,7 +145,7 @@ public class JasperVersionDetector {
 	private static final Log _log = LogFactoryUtil.getLog(
 		JasperVersionDetector.class);
 
-	private static final JasperVersionDetector _instance =
+	private static final JasperVersionDetector _jasperVersionDetector =
 		new JasperVersionDetector();
 
 	private String _jasperVersion = StringPool.BLANK;

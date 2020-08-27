@@ -14,7 +14,7 @@
 
 package com.liferay.iframe.web.internal.display.context;
 
-import com.liferay.iframe.web.configuration.IFramePortletInstanceConfiguration;
+import com.liferay.iframe.web.internal.configuration.IFramePortletInstanceConfiguration;
 import com.liferay.iframe.web.internal.constants.IFrameWebKeys;
 import com.liferay.iframe.web.internal.util.IFrameUtil;
 import com.liferay.petra.string.CharPool;
@@ -96,7 +96,7 @@ public class IFrameDisplayContext {
 	public List<KeyValuePair> getHiddenVariableKVPs() {
 		List<KeyValuePair> hiddenVariableKVPs = new ArrayList<>();
 
-		List<String> hiddenVariables = ListUtil.toList(
+		List<String> hiddenVariables = ListUtil.fromArray(
 			StringUtil.split(getHiddenVariables(), CharPool.SEMICOLON));
 
 		hiddenVariables.addAll(getIFrameVariables());
@@ -187,10 +187,10 @@ public class IFrameDisplayContext {
 	public List<String> getIFrameVariables() {
 		List<String> iFrameVariables = new ArrayList<>();
 
-		Enumeration<String> enu = _request.getParameterNames();
+		Enumeration<String> enumeration = _request.getParameterNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			if (name.startsWith(_IFRAME_PREFIX)) {
 				iFrameVariables.add(

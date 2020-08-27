@@ -16,9 +16,9 @@ package com.liferay.taglib.util;
 
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -28,7 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletRequest;
-import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyContent;
@@ -107,7 +106,7 @@ public class HtmlTopTagTest {
 
 	private static void _testDataSennaTrackAttributeAdded(
 			final String element, String expectedDataSennaTrackValue)
-		throws IOException, JspException {
+		throws Exception {
 
 		HtmlTopTag htmlTopTag = new HtmlTopTag();
 
@@ -135,15 +134,15 @@ public class HtmlTopTagTest {
 						return new OutputData() {
 
 							@Override
-							public void addData(
+							public void addDataSB(
 								String outputKey, String webKey,
 								StringBundler sb) {
 
 								try {
 									jspWriter.write(sb.toString());
 								}
-								catch (IOException ioe) {
-									ReflectionUtil.throwException(ioe);
+								catch (IOException ioException) {
+									ReflectionUtil.throwException(ioException);
 								}
 							}
 
@@ -194,9 +193,9 @@ public class HtmlTopTagTest {
 		String dataSennaTrackAttributeName = "data-senna-track";
 
 		if (expectedDataSennaTrackValue != null) {
-			String dataSennaTrackAttribute =
-				dataSennaTrackAttributeName + "=\"" +
-					expectedDataSennaTrackValue + "\"";
+			String dataSennaTrackAttribute = StringBundler.concat(
+				dataSennaTrackAttributeName, "=\"", expectedDataSennaTrackValue,
+				"\"");
 
 			String dataSennaTrackAttributeRegex =
 				elementBeginRegex + dataSennaTrackAttribute + "[\\s>]";

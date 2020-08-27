@@ -14,7 +14,7 @@
 
 package com.liferay.iframe.web.internal.portlet;
 
-import com.liferay.iframe.web.configuration.IFramePortletInstanceConfiguration;
+import com.liferay.iframe.web.internal.configuration.IFramePortletInstanceConfiguration;
 import com.liferay.iframe.web.internal.constants.IFramePortletKeys;
 import com.liferay.iframe.web.internal.constants.IFrameWebKeys;
 import com.liferay.iframe.web.internal.display.context.IFrameDisplayContext;
@@ -76,8 +76,8 @@ public class IFramePortlet extends MVCPortlet {
 		try {
 			src = transformSrc(renderRequest, renderResponse);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		renderRequest.setAttribute(IFrameWebKeys.IFRAME_SRC, src);
@@ -93,7 +93,7 @@ public class IFramePortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.iframe.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.iframe.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

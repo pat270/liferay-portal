@@ -14,7 +14,7 @@
 
 package com.liferay.document.library.google.docs.internal.upgrade.v1_0_0;
 
-import com.liferay.document.library.google.docs.internal.util.GoogleDocsConstants;
+import com.liferay.document.library.google.docs.internal.util.constants.GoogleDocsConstants;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.petra.string.StringPool;
@@ -59,8 +59,8 @@ public class UpgradeFileEntryTypeName extends UpgradeProcess {
 
 			actionableDynamicQuery.performActions();
 		}
-		catch (PortalException pe) {
-			throw new UpgradeException(pe);
+		catch (PortalException portalException) {
+			throw new UpgradeException(portalException);
 		}
 	}
 
@@ -93,8 +93,8 @@ public class UpgradeFileEntryTypeName extends UpgradeProcess {
 					dlFileEntryType);
 			}
 		}
-		catch (SQLException sqle) {
-			throw new UpgradeException(sqle);
+		catch (SQLException sqlException) {
+			throw new UpgradeException(sqlException);
 		}
 	}
 

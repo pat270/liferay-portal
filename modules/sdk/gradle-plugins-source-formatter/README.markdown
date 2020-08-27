@@ -4,7 +4,7 @@ The Source Formatter Gradle plugin lets you format project files using the
 [Liferay Source Formatter](https://github.com/liferay/liferay-portal/tree/master/modules/util/source-formatter)
 tool.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -13,7 +13,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.source.formatter", version: "2.3.384"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.source.formatter", version: "4.0.20"
 	}
 
 	repositories {
@@ -91,8 +91,10 @@ Property Name | Default Value
 Property Name | Type | Default Value | Description
 ------------- | ---- | ------------- | -----------
 `autoFix` | `boolean` | `false` | Whether to automatically fix source formatting errors. It sets the `source.auto.fix` argument.
-`baseDir` | `File` |  | The Source Formatter base directory. It sets the `source.base.dir` argument. *(Read-only)*
+`baseDir` | `File` | | The Source Formatter base directory. It sets the `source.base.dir` argument. *(Read-only)*
 `baseDirName` | `String` | `"./"` | The name of the Source Formatter base directory, relative to the project directory.
+`failOnAutoFix` | `boolean` | `false` | Whether to fail the build if formatting errors are found that were automatically fixed. It sets the `source.fail.on.auto.fix` argument.
+`failOnHasWarning` | `boolean` | `true` | Whether to fail the build if formatting errors are found that were not automatically fixed. It sets the `source.fail.on.has.warning` argument.
 `fileExtensions` | `List<String>` | `[]` | The file extensions to format. If empty, all file extensions will be formatted. It sets the `source.file.extensions` argument.
 `files` | `List<File>` | | The list of files to format. It sets the `source.files` argument. *(Read-only)*
 `fileNames` | `List<String>` | `null` | The file names to format, relative to the project directory. If `null`, all files contained in `baseDir` will be formatted.
@@ -107,7 +109,6 @@ Property Name | Type | Default Value | Description
 `showDebugInformation` | `boolean` | `false` | Whether to show debug information, if present. It sets the `show.debug.information` argument.
 `showDocumentation` | `boolean` | `false` | Whether to show the documentation for the source formatting issues, if present. It sets the `show.documentation` argument.
 `showStatusUpdates` | `boolean` | `false` | Whether to show status updates during source formatting, if present. It sets the `show.status.updates` argument.
-`throwException` | `boolean` | `false` | Whether to fail the build if formatting errors are found. It sets the `source.throw.exception` argument.
 
 ## Additional Configuration
 
@@ -122,7 +123,7 @@ manually adding a dependency to the `sourceFormatter` configuration:
 
 ```gradle
 dependencies {
-	sourceFormatter group: "com.liferay", name: "com.liferay.source.formatter", version: "1.0.855"
+	sourceFormatter group: "com.liferay", name: "com.liferay.source.formatter", version: "1.0.1036"
 }
 ```
 

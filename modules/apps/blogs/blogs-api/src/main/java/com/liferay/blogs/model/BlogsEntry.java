@@ -56,23 +56,14 @@ public interface BlogsEntry extends BlogsEntryModel, PersistedModel {
 
 		};
 
+	public String getCoverImageAlt()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
 	public String getCoverImageURL(
 			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getSmallImageURL(ThemeDisplay)}
-	 */
-	@Deprecated
-	public String getEntryImageURL(
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public String getSmallImageType()
+	public String getSmallImageAlt()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public String getSmallImageURL(

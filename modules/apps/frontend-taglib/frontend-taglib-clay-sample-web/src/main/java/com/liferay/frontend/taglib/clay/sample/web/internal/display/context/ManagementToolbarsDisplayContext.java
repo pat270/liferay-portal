@@ -15,10 +15,11 @@
 package com.liferay.frontend.taglib.clay.sample.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 
@@ -34,31 +35,26 @@ public class ManagementToolbarsDisplayContext {
 			return _actionDropdownItems;
 		}
 
-		_actionDropdownItems = new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#edit");
-						dropdownItem.setLabel("Edit");
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#download");
-						dropdownItem.setIcon("download");
-						dropdownItem.setLabel("Download");
-						dropdownItem.setQuickAction(true);
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#delete");
-						dropdownItem.setLabel("Delete");
-						dropdownItem.setIcon("trash");
-						dropdownItem.setQuickAction(true);
-					});
+		_actionDropdownItems = DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setHref("#edit");
+				dropdownItem.setLabel("Edit");
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref("#download");
+				dropdownItem.setIcon("download");
+				dropdownItem.setLabel("Download");
+				dropdownItem.setQuickAction(true);
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref("#delete");
+				dropdownItem.setLabel("Delete");
+				dropdownItem.setIcon("trash");
+				dropdownItem.setQuickAction(true);
+			}
+		).build();
 
 		return _actionDropdownItems;
 	}
@@ -68,33 +64,27 @@ public class ManagementToolbarsDisplayContext {
 			return _creationMenu;
 		}
 
-		_creationMenu = new CreationMenu() {
-			{
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref("#1");
-						dropdownItem.setLabel("Sample 1");
-					});
-
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref("#2");
-						dropdownItem.setLabel("Sample 2");
-					});
-
-				addFavoriteDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref("#3");
-						dropdownItem.setLabel("Favorite 1");
-					});
-
-				addFavoriteDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref("#4");
-						dropdownItem.setLabel("Other item");
-					});
+		_creationMenu = CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref("#1");
+				dropdownItem.setLabel("Sample 1");
 			}
-		};
+		).addPrimaryDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref("#2");
+				dropdownItem.setLabel("Sample 2");
+			}
+		).addFavoriteDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref("#3");
+				dropdownItem.setLabel("Favorite 1");
+			}
+		).addFavoriteDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref("#4");
+				dropdownItem.setLabel("Other item");
+			}
+		).build();
 
 		return _creationMenu;
 	}
@@ -104,73 +94,51 @@ public class ManagementToolbarsDisplayContext {
 			return _filterDropdownItems;
 		}
 
-		List<DropdownItem> filterByDropdownItems = new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#1");
-						dropdownItem.setLabel("Filter 1");
-					});
+		_filterDropdownItems = DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.setHref("#1");
+							dropdownItem.setLabel("Filter 1");
+						}
+					).add(
+						dropdownItem -> {
+							dropdownItem.setHref("#2");
+							dropdownItem.setLabel("Filter 2");
+						}
+					).build());
 
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#2");
-						dropdownItem.setLabel("Filter 2");
-					});
+				dropdownGroupItem.setLabel("Filter By");
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.setHref("#3");
+							dropdownItem.setLabel("Order 1");
+						}
+					).add(
+						dropdownItem -> {
+							dropdownItem.setHref("#4");
+							dropdownItem.setLabel("Order 2");
+						}
+					).build());
 
-		List<DropdownItem> orderByDropdownItems = new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#3");
-						dropdownItem.setLabel("Order 1");
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref("#4");
-						dropdownItem.setLabel("Order 2");
-					});
+				dropdownGroupItem.setLabel("Order By");
 			}
-		};
-
-		_filterDropdownItems = new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							filterByDropdownItems);
-						dropdownGroupItem.setLabel("Filter By");
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							orderByDropdownItems);
-						dropdownGroupItem.setLabel("Order By");
-					});
-			}
-		};
+		).build();
 
 		return _filterDropdownItems;
 	}
 
 	public List<LabelItem> getFilterLabelItems() {
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> {
-						labelItem.setLabel("Filter 1");
-					});
-
-				add(
-					labelItem -> {
-						labelItem.setLabel("Filter 2");
-					});
-			}
-		};
+		return LabelItemListBuilder.add(
+			labelItem -> labelItem.setLabel("Filter 1")
+		).add(
+			labelItem -> labelItem.setLabel("Filter 2")
+		).build();
 	}
 
 	public List<ViewTypeItem> getViewTypeItems() {
@@ -187,14 +155,10 @@ public class ManagementToolbarsDisplayContext {
 					});
 
 				addListViewTypeItem(
-					viewTypeItem -> {
-						viewTypeItem.setLabel("List");
-					});
+					viewTypeItem -> viewTypeItem.setLabel("List"));
 
 				addTableViewTypeItem(
-					viewTypeItem -> {
-						viewTypeItem.setLabel("Table");
-					});
+					viewTypeItem -> viewTypeItem.setLabel("Table"));
 			}
 		};
 

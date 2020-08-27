@@ -16,17 +16,22 @@ package com.liferay.site.memberships.web.internal.display.context;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
-import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserGroupServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.service.persistence.constants.UserGroupFinderConstants;
 import com.liferay.portlet.usergroupsadmin.search.UserGroupDisplayTerms;
 import com.liferay.portlet.usergroupsadmin.search.UserGroupSearch;
+import com.liferay.site.memberships.web.internal.util.GroupUtil;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -185,7 +190,7 @@ public class UserGroupsDisplayContext {
 		return _role;
 	}
 
-	public SearchContainer getUserGroupSearchContainer() {
+	public SearchContainer<UserGroup> getUserGroupSearchContainer() {
 		if (_userGroupSearch != null) {
 			return _userGroupSearch;
 		}
@@ -198,18 +203,26 @@ public class UserGroupsDisplayContext {
 			_renderRequest, getPortletURL());
 
 		userGroupSearch.setEmptyResultsMessage(
-			"no-user-group-was-found-that-is-a-member-of-this-site");
+			LanguageUtil.format(
+				ResourceBundleUtil.getBundle(
+					themeDisplay.getLocale(), getClass()),
+				"no-user-group-was-found-that-is-a-member-of-this-x",
+				StringUtil.toLowerCase(
+					GroupUtil.getGroupTypeLabel(
+						_groupId, themeDisplay.getLocale())),
+				false));
+
 		userGroupSearch.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
 
 		UserGroupDisplayTerms searchTerms =
 			(UserGroupDisplayTerms)userGroupSearch.getSearchTerms();
 
-		LinkedHashMap<String, Object> userGroupParams = new LinkedHashMap<>();
-
-		userGroupParams.put(
-			UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_GROUPS,
-			Long.valueOf(getGroupId()));
+		LinkedHashMap<String, Object> userGroupParams =
+			LinkedHashMapBuilder.<String, Object>put(
+				UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_GROUPS,
+				Long.valueOf(getGroupId())
+			).build();
 
 		Role role = getRole();
 
@@ -221,13 +234,13 @@ public class UserGroupsDisplayContext {
 				});
 		}
 
-		int userGroupsCount = UserGroupLocalServiceUtil.searchCount(
+		int userGroupsCount = UserGroupServiceUtil.searchCount(
 			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
 			userGroupParams);
 
 		userGroupSearch.setTotal(userGroupsCount);
 
-		List<UserGroup> userGroups = UserGroupLocalServiceUtil.search(
+		List<UserGroup> userGroups = UserGroupServiceUtil.search(
 			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
 			userGroupParams, userGroupSearch.getStart(),
 			userGroupSearch.getEnd(), userGroupSearch.getOrderByComparator());

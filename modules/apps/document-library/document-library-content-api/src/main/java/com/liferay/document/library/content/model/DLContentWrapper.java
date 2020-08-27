@@ -21,8 +21,8 @@ import java.sql.Blob;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLContent
  * @generated
  */
-@ProviderType
 public class DLContentWrapper
 	extends BaseModelWrapper<DLContent>
 	implements DLContent, ModelWrapper<DLContent> {
@@ -46,6 +45,8 @@ public class DLContentWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("contentId", getContentId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -60,6 +61,18 @@ public class DLContentWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long contentId = (Long)attributes.get("contentId");
 
 		if (contentId != null) {
@@ -130,6 +143,16 @@ public class DLContentWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this document library content.
+	 *
+	 * @return the ct collection ID of this document library content
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the data of this document library content.
 	 *
 	 * @return the data of this document library content
@@ -147,6 +170,16 @@ public class DLContentWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this document library content.
+	 *
+	 * @return the mvcc version of this document library content
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -225,6 +258,16 @@ public class DLContentWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this document library content.
+	 *
+	 * @param ctCollectionId the ct collection ID of this document library content
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the data of this document library content.
 	 *
 	 * @param data the data of this document library content
@@ -242,6 +285,16 @@ public class DLContentWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this document library content.
+	 *
+	 * @param mvccVersion the mvcc version of this document library content
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -292,6 +345,20 @@ public class DLContentWrapper
 	@Override
 	public void setVersion(String version) {
 		model.setVersion(version);
+	}
+
+	@Override
+	public Map<String, Function<DLContent, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DLContent, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

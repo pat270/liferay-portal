@@ -16,8 +16,6 @@ package com.liferay.calendar.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link CalendarBookingLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CalendarBookingLocalService
  * @generated
  */
-@ProviderType
 public class CalendarBookingLocalServiceWrapper
 	implements CalendarBookingLocalService,
 			   ServiceWrapper<CalendarBookingLocalService> {
@@ -38,6 +35,10 @@ public class CalendarBookingLocalServiceWrapper
 
 	/**
 	 * Adds the calendar booking to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CalendarBookingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param calendarBooking the calendar booking
 	 * @return the calendar booking that was added
@@ -69,32 +70,6 @@ public class CalendarBookingLocalServiceWrapper
 			serviceContext);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addCalendarBooking(long, long, long[], long, long, Map, Map,
-	 String, long, long, boolean, String, long, String, long,
-	 String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.calendar.model.CalendarBooking addCalendarBooking(
-			long userId, long calendarId, long[] childCalendarIds,
-			long parentCalendarBookingId,
-			java.util.Map<java.util.Locale, String> titleMap,
-			java.util.Map<java.util.Locale, String> descriptionMap,
-			String location, long startTime, long endTime, boolean allDay,
-			String recurrence, long firstReminder, String firstReminderType,
-			long secondReminder, String secondReminderType,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _calendarBookingLocalService.addCalendarBooking(
-			userId, calendarId, childCalendarIds, parentCalendarBookingId,
-			titleMap, descriptionMap, location, startTime, endTime, allDay,
-			recurrence, firstReminder, firstReminderType, secondReminder,
-			secondReminderType, serviceContext);
-	}
-
 	@Override
 	public void checkCalendarBookings()
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -117,7 +92,22 @@ public class CalendarBookingLocalServiceWrapper
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _calendarBookingLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the calendar booking from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CalendarBookingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param calendarBooking the calendar booking
 	 * @return the calendar booking that was removed
@@ -145,6 +135,10 @@ public class CalendarBookingLocalServiceWrapper
 	/**
 	 * Deletes the calendar booking with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CalendarBookingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param calendarBookingId the primary key of the calendar booking
 	 * @return the calendar booking that was removed
 	 * @throws PortalException if a calendar booking with the primary key could not be found
@@ -165,74 +159,6 @@ public class CalendarBookingLocalServiceWrapper
 
 		return _calendarBookingLocalService.deleteCalendarBooking(
 			calendarBookingId, allRecurringInstances);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #deleteCalendarBookingInstance(long, CalendarBooking, int,
-	 boolean)}
-	 */
-	@Deprecated
-	@Override
-	public void deleteCalendarBookingInstance(
-			com.liferay.calendar.model.CalendarBooking calendarBooking,
-			int instanceIndex, boolean allFollowing)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_calendarBookingLocalService.deleteCalendarBookingInstance(
-			calendarBooking, instanceIndex, allFollowing);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #deleteCalendarBookingInstance(long, CalendarBooking, int,
-	 boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public void deleteCalendarBookingInstance(
-			com.liferay.calendar.model.CalendarBooking calendarBooking,
-			int instanceIndex, boolean allFollowing,
-			boolean deleteRecurringCalendarBookings)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_calendarBookingLocalService.deleteCalendarBookingInstance(
-			calendarBooking, instanceIndex, allFollowing,
-			deleteRecurringCalendarBookings);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #deleteCalendarBookingInstance(long, CalendarBooking, long,
-	 boolean)}
-	 */
-	@Deprecated
-	@Override
-	public void deleteCalendarBookingInstance(
-			com.liferay.calendar.model.CalendarBooking calendarBooking,
-			long startTime, boolean allFollowing)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_calendarBookingLocalService.deleteCalendarBookingInstance(
-			calendarBooking, startTime, allFollowing);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #deleteCalendarBookingInstance(long, CalendarBooking, long,
-	 boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public void deleteCalendarBookingInstance(
-			com.liferay.calendar.model.CalendarBooking calendarBooking,
-			long startTime, boolean allFollowing,
-			boolean deleteRecurringCalendarBookings)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_calendarBookingLocalService.deleteCalendarBookingInstance(
-			calendarBooking, startTime, allFollowing,
-			deleteRecurringCalendarBookings);
 	}
 
 	@Override
@@ -281,20 +207,6 @@ public class CalendarBookingLocalServiceWrapper
 		_calendarBookingLocalService.deleteCalendarBookingInstance(
 			userId, calendarBooking, startTime, allFollowing,
 			deleteRecurringCalendarBookings);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #deleteCalendarBookingInstance(long, long, long, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public void deleteCalendarBookingInstance(
-			long calendarBookingId, long startTime, boolean allFollowing)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_calendarBookingLocalService.deleteCalendarBookingInstance(
-			calendarBookingId, startTime, allFollowing);
 	}
 
 	@Override
@@ -346,6 +258,11 @@ public class CalendarBookingLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _calendarBookingLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _calendarBookingLocalService.dynamicQuery();
 	}
@@ -367,7 +284,7 @@ public class CalendarBookingLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.calendar.model.impl.CalendarBookingModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.calendar.model.impl.CalendarBookingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -388,7 +305,7 @@ public class CalendarBookingLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.calendar.model.impl.CalendarBookingModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.calendar.model.impl.CalendarBookingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -545,7 +462,7 @@ public class CalendarBookingLocalServiceWrapper
 	 * Returns a range of all the calendar bookings.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.calendar.model.impl.CalendarBookingModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.calendar.model.impl.CalendarBookingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of calendar bookings
@@ -708,6 +625,9 @@ public class CalendarBookingLocalServiceWrapper
 		return _calendarBookingLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -868,6 +788,10 @@ public class CalendarBookingLocalServiceWrapper
 
 	/**
 	 * Updates the calendar booking in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CalendarBookingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param calendarBooking the calendar booking
 	 * @return the calendar booking that was updated

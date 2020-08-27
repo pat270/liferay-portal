@@ -138,6 +138,7 @@ public class KBArticleIndexer extends BaseIndexer<KBArticle> {
 		document.addKeyword(
 			"parentMessageId", kbArticle.getParentResourcePrimKey());
 		document.addKeyword("titleKeyword", kbArticle.getTitle(), true);
+		document.addKeywordSortable("urlTitle", kbArticle.getUrlTitle());
 
 		return document;
 	}
@@ -225,9 +226,6 @@ public class KBArticleIndexer extends BaseIndexer<KBArticle> {
 	}
 
 	protected void reindexKBArticles(KBArticle kbArticle) throws Exception {
-
-		// See KBArticlePermission#contains
-
 		List<KBArticle> kbArticles =
 			kbArticleLocalService.getKBArticleAndAllDescendantKBArticles(
 				kbArticle.getResourcePrimKey(),
@@ -259,16 +257,15 @@ public class KBArticleIndexer extends BaseIndexer<KBArticle> {
 		indexableActionableDynamicQuery.setPerformActionMethod(
 			(KBArticle kbArticle) -> {
 				try {
-					Document document = getDocument(kbArticle);
-
-					indexableActionableDynamicQuery.addDocuments(document);
+					indexableActionableDynamicQuery.addDocuments(
+						getDocument(kbArticle));
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to index knowledge base article " +
 								kbArticle.getKbArticleId(),
-							pe);
+							portalException);
 					}
 				}
 			});

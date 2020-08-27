@@ -1,5 +1,9 @@
 apply plugin: "com.liferay.node"
 
+node {
+	useNpm = true
+}
+
 task runGradleTest
 
 runGradleTest {

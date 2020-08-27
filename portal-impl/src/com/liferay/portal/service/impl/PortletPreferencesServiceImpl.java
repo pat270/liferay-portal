@@ -56,10 +56,9 @@ public class PortletPreferencesServiceImpl
 		long ownerId = portletItemId;
 		int ownerType = PortletKeys.PREFS_OWNER_TYPE_ARCHIVED;
 		long plid = 0;
-		String portletId = portletItem.getPortletId();
 
 		portletPreferencesLocalService.deletePortletPreferences(
-			ownerId, ownerType, plid, portletId);
+			ownerId, ownerType, plid, portletItem.getPortletId());
 
 		portletItemLocalService.deletePortletItem(portletItemId);
 	}
@@ -70,11 +69,10 @@ public class PortletPreferencesServiceImpl
 			javax.portlet.PortletPreferences jxPortletPreferences)
 		throws PortalException {
 
-		PortletItem portletItem = portletItemLocalService.getPortletItem(
-			portletItemId);
-
 		restoreArchivedPreferences(
-			groupId, layout, portletId, portletItem, jxPortletPreferences);
+			groupId, layout, portletId,
+			portletItemLocalService.getPortletItem(portletItemId),
+			jxPortletPreferences);
 	}
 
 	@Override
@@ -152,7 +150,7 @@ public class PortletPreferencesServiceImpl
 				try {
 					targetJxPortletPreferences.reset(key);
 				}
-				catch (ReadOnlyException roe) {
+				catch (ReadOnlyException readOnlyException) {
 				}
 			}
 
@@ -166,17 +164,17 @@ public class PortletPreferencesServiceImpl
 						sourceJxPortletPreferences.getValues(
 							key, new String[0]));
 				}
-				catch (ReadOnlyException roe) {
+				catch (ReadOnlyException readOnlyException) {
 				}
 			}
 
 			targetJxPortletPreferences.store();
 		}
-		catch (IOException ioe) {
-			_log.error("Unable to copy jxPortletPreferences", ioe);
+		catch (IOException ioException) {
+			_log.error("Unable to copy jxPortletPreferences", ioException);
 		}
-		catch (ValidatorException ve) {
-			throw new SystemException(ve);
+		catch (ValidatorException validatorException) {
+			throw new SystemException(validatorException);
 		}
 	}
 

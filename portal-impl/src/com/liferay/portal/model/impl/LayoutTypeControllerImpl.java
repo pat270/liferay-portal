@@ -14,11 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
 import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
@@ -108,10 +107,6 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 
 		if (Validator.isNull(portletId)) {
 			return _viewPage;
-		}
-
-		if (_type.equals(LayoutConstants.TYPE_PANEL)) {
-			return StrutsUtil.TEXT_HTML_DIR + "/portal/layout/view/panel.jsp";
 		}
 
 		return StrutsUtil.TEXT_HTML_DIR + "/portal/layout/view/portlet.jsp";
@@ -211,15 +206,6 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	}
 
 	@Override
-	public boolean isPrimaryType() {
-		if (_type.equals(LayoutConstants.TYPE_PORTLET)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	@Override
 	public boolean isSitemapable() {
 		return _sitemapable;
 	}
@@ -231,10 +217,6 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 
 	@Override
 	public boolean isWorkflowEnabled() {
-		if (_type.equals(LayoutConstants.TYPE_URL)) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -250,8 +232,8 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 
 			return values.contains(friendlyURL);
 		}
-		catch (SystemException se) {
-			throw new RuntimeException(se);
+		catch (SystemException systemException) {
+			throw new RuntimeException(systemException);
 		}
 	}
 

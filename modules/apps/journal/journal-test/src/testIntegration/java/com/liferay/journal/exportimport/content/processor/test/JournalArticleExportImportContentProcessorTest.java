@@ -51,11 +51,26 @@ public class JournalArticleExportImportContentProcessorTest {
 
 	@Test
 	public void testValidateContentReferences() throws Exception {
-		ExportImportContentProcessor exportImportContentProcessor =
+		ExportImportContentProcessor<String> exportImportContentProcessor =
 			ExportImportContentProcessorRegistryUtil.
 				getExportImportContentProcessor(JournalArticle.class.getName());
 
 		String content = read("test-journal-content-web-content-field.xml");
+
+		exportImportContentProcessor.validateContentReferences(
+			_group.getGroupId(), content);
+	}
+
+	@Test
+	public void testValidateContentReferencesLargeHTMLComment()
+		throws Exception {
+
+		ExportImportContentProcessor<String> exportImportContentProcessor =
+			ExportImportContentProcessorRegistryUtil.
+				getExportImportContentProcessor(JournalArticle.class.getName());
+
+		String content = read(
+			"test-journal-content-web-content-field-large-HTML-comment.xml");
 
 		exportImportContentProcessor.validateContentReferences(
 			_group.getGroupId(), content);

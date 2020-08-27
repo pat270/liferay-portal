@@ -1,23 +1,15 @@
 .tree-node {
 	.icon-check {
 		padding-right: 2px;
-
-		&:before {
-			content: "\f096";
-		}
 	}
 
 	.tree-node-checked {
 		.icon-check {
 			padding-right: 0;
-
-			&:before {
-				content: "\f046";
-			}
 		}
 	}
 
-	[class ^="icon-"] {
+	[class^='icon-'] {
 		margin-right: 5px;
 	}
 

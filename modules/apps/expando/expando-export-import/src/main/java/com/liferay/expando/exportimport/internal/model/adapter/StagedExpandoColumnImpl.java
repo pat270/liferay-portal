@@ -51,11 +51,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 			expandoTable = ExpandoTableLocalServiceUtil.getExpandoTable(
 				expandoColumn.getTableId());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new RuntimeException(
 				"Could not find expando table for tableId=" +
 					expandoColumn.getTableId(),
-				pe);
+				portalException);
 		}
 
 		_expandoTableClassName = expandoTable.getClassName();
@@ -64,15 +64,15 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 
 	@Override
 	public Object clone() {
-		StagedExpandoColumnImpl stagedExpandoColumn =
+		StagedExpandoColumnImpl stagedExpandoColumnImpl =
 			new StagedExpandoColumnImpl();
 
-		stagedExpandoColumn._expandoColumn =
+		stagedExpandoColumnImpl._expandoColumn =
 			(ExpandoColumn)_expandoColumn.clone();
-		stagedExpandoColumn._expandoTableClassName = _expandoTableClassName;
-		stagedExpandoColumn._expandoTableName = _expandoTableName;
+		stagedExpandoColumnImpl._expandoTableClassName = _expandoTableClassName;
+		stagedExpandoColumnImpl._expandoTableName = _expandoTableName;
 
-		return stagedExpandoColumn;
+		return stagedExpandoColumnImpl;
 	}
 
 	@Override
@@ -93,6 +93,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	@Override
 	public Date getCreateDate() {
 		return new Date();
+	}
+
+	@Override
+	public long getCtCollectionId() {
+		return _expandoColumn.getCtCollectionId();
 	}
 
 	@Override
@@ -133,6 +138,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	@Override
 	public Date getModifiedDate() {
 		return new Date();
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _expandoColumn.getMvccVersion();
 	}
 
 	@Override
@@ -187,6 +197,10 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 		return _expandoColumn.isCachedModel();
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isEntityCacheEnabled() {
 		return _expandoColumn.isEntityCacheEnabled();
@@ -197,6 +211,10 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 		return _expandoColumn.isEscapedModel();
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isFinderCacheEnabled() {
 		return _expandoColumn.isFinderCacheEnabled();
@@ -238,6 +256,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	}
 
 	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void setDefaultData(String defaultData) {
 		_expandoColumn.setDefaultData(defaultData);
 	}
@@ -265,6 +288,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	@Override
 	public void setModifiedDate(Date date) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_expandoColumn.setMvccVersion(mvccVersion);
 	}
 
 	@Override
@@ -304,9 +332,9 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 
 	@Override
 	public void setTypeSettingsProperties(
-		UnicodeProperties typeSettingsProperties) {
+		UnicodeProperties typeSettingsUnicodeProperties) {
 
-		_expandoColumn.setTypeSettingsProperties(typeSettingsProperties);
+		_expandoColumn.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 	}
 
 	@Override

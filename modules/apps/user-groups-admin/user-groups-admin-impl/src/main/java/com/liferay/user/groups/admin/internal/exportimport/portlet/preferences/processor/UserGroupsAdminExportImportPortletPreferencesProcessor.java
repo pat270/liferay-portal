@@ -41,18 +41,14 @@ public class UserGroupsAdminExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {
-				_userGroupsAdminPortletDisplayTemplateExportCapability
-			});
+		return ListUtil.fromArray(
+			_userGroupsAdminPortletDisplayTemplateExportCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {
-				_userGroupsAdminPortletDisplayTemplateImportCapability
-			});
+		return ListUtil.fromArray(
+			_userGroupsAdminPortletDisplayTemplateImportCapability);
 	}
 
 	@Override

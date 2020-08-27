@@ -21,9 +21,9 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
-import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
@@ -74,6 +73,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -236,22 +236,47 @@ public class JournalTransformer {
 				templateId, tokens, languageId, document, script, langType);
 
 			if ((themeDisplay != null) && (themeDisplay.getRequest() != null)) {
+				PortletRequest originalPortletRequest = null;
+				PortletResponse originalPortletResponse = null;
+
 				HttpServletRequest httpServletRequest =
 					themeDisplay.getRequest();
 
-				if (portletRequestModel != null) {
-					httpServletRequest.setAttribute(
-						JavaConstants.JAVAX_PORTLET_REQUEST,
-						portletRequestModel.getPortletRequest());
-					httpServletRequest.setAttribute(
-						JavaConstants.JAVAX_PORTLET_RESPONSE,
-						portletRequestModel.getPortletResponse());
-					httpServletRequest.setAttribute(
-						PortletRequest.LIFECYCLE_PHASE,
-						portletRequestModel.getLifecycle());
-				}
+				try {
+					if (portletRequestModel != null) {
+						originalPortletRequest =
+							(PortletRequest)httpServletRequest.getAttribute(
+								JavaConstants.JAVAX_PORTLET_REQUEST);
+						originalPortletResponse =
+							(PortletResponse)httpServletRequest.getAttribute(
+								JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-				template.prepare(httpServletRequest);
+						httpServletRequest.setAttribute(
+							JavaConstants.JAVAX_PORTLET_REQUEST,
+							portletRequestModel.getPortletRequest());
+						httpServletRequest.setAttribute(
+							JavaConstants.JAVAX_PORTLET_RESPONSE,
+							portletRequestModel.getPortletResponse());
+						httpServletRequest.setAttribute(
+							PortletRequest.LIFECYCLE_PHASE,
+							portletRequestModel.getLifecycle());
+					}
+
+					template.prepare(httpServletRequest);
+				}
+				finally {
+					if ((originalPortletRequest != null) &&
+						(originalPortletResponse != null) &&
+						(portletRequestModel != null)) {
+
+						httpServletRequest.setAttribute(
+							JavaConstants.JAVAX_PORTLET_REQUEST,
+							originalPortletRequest);
+						httpServletRequest.setAttribute(
+							JavaConstants.JAVAX_PORTLET_RESPONSE,
+							originalPortletResponse);
+					}
+				}
 			}
 
 			if (contextObjects != null) {
@@ -324,17 +349,8 @@ public class JournalTransformer {
 				template.put("viewMode", viewMode);
 
 				if (themeDisplay != null) {
-					TemplateManager templateManager =
-						TemplateManagerUtil.getTemplateManager(langType);
-
-					HttpServletRequest httpServletRequest =
-						themeDisplay.getRequest();
-
-					templateManager.addTaglibSupport(
-						template, httpServletRequest,
-						themeDisplay.getResponse());
-					templateManager.addTaglibTheme(
-						template, "taglibLiferay", httpServletRequest,
+					template.prepareTaglib(
+						themeDisplay.getRequest(),
 						new PipingServletResponse(
 							themeDisplay.getResponse(), unsyncStringWriter));
 				}
@@ -353,19 +369,21 @@ public class JournalTransformer {
 						() -> getErrorTemplateResource(langType));
 				}
 			}
-			catch (Exception e) {
-				if (e instanceof DocumentException) {
+			catch (Exception exception) {
+				if (exception instanceof DocumentException) {
 					throw new TransformException(
-						"Unable to read XML document", e);
+						"Unable to read XML document", exception);
 				}
-				else if (e instanceof IOException) {
-					throw new TransformException("Error reading template", e);
+				else if (exception instanceof IOException) {
+					throw new TransformException(
+						"Error reading template", exception);
 				}
-				else if (e instanceof TransformException) {
-					throw (TransformException)e;
+				else if (exception instanceof TransformException) {
+					throw (TransformException)exception;
 				}
 				else {
-					throw new TransformException("Unhandled exception", e);
+					throw new TransformException(
+						"Unhandled exception", exception);
 				}
 			}
 
@@ -422,11 +440,10 @@ public class JournalTransformer {
 
 	protected TemplateResource getErrorTemplateResource(String langType) {
 		try {
-			long companyId = CompanyThreadLocal.getCompanyId();
-
 			JournalServiceConfiguration journalServiceConfiguration =
 				ConfigurationProviderUtil.getCompanyConfiguration(
-					JournalServiceConfiguration.class, companyId);
+					JournalServiceConfiguration.class,
+					CompanyThreadLocal.getCompanyId());
 
 			String template = StringPool.BLANK;
 
@@ -445,7 +462,7 @@ public class JournalTransformer {
 
 			return new StringTemplateResource(langType, template);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;
@@ -554,10 +571,10 @@ public class JournalTransformer {
 				JSONObject dataJSONObject = JSONFactoryUtil.createJSONObject(
 					data);
 
-				Iterator<String> itr = dataJSONObject.keys();
+				Iterator<String> iterator = dataJSONObject.keys();
 
-				while (itr.hasNext()) {
-					String key = itr.next();
+				while (iterator.hasNext()) {
+					String key = iterator.next();
 
 					String value = dataJSONObject.getString(key);
 
@@ -612,6 +629,8 @@ public class JournalTransformer {
 					String optionLabel = localizedLabel.getString(locale);
 
 					templateNode.appendOptionMap(optionValue, optionLabel);
+
+					templateNode.appendOption(optionValue);
 				}
 			}
 

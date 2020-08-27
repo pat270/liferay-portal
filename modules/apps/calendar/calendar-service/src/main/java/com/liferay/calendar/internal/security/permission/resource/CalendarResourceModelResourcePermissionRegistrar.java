@@ -41,26 +41,27 @@ import org.osgi.service.component.annotations.Reference;
 public class CalendarResourceModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", CalendarResource.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<CalendarResource>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				CalendarResource.class, CalendarResource::getCalendarResourceId,
 				_calendarResourceLocalService::getCalendarResource,
 				_portletResourcePermission,
 				(modelResourcePermission, consumer) -> consumer.accept(
 					new StagedModelPermissionLogic<>(
-						_stagingPermission, CalendarPortletKeys.CALENDAR,
+						_stagingPermission, CalendarPortletKeys.CALENDAR_ADMIN,
 						CalendarResource::getCalendarResourceId))),
 			properties);
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -72,7 +73,8 @@ public class CalendarResourceModelResourcePermissionRegistrar {
 	)
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<CalendarResource>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

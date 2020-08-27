@@ -9,18 +9,23 @@
 </thead>
 <tbody>
 <tr>
+	<td>CAPTION</td>
+	<td>//div[contains(@class,'caption') and normalize-space()='${key_caption}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EMPTY_MESSAGE_DROPDOWN</td>
 	<td>//div[contains(@class,'empty-result-message')]//button[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENTRIES</td>
-	<td>//a[contains(@class,'dropdown') and contains(.,'Entries')]</td>
+	<td>//*[contains(@class,'dropdown') and contains(.,'Entries')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>RESULT</td>
-	<td>//div[@class='drop-chosen']//ul//li/a[text()='${key_option}']</td>
+	<td>FRIENDLY_URL_LOCALE</td>
+	<td>//button[contains(@id,'friendlyURLMenu')]//span[contains(@class,'btn-section')]</td>
 	<td></td>
 </tr>
 <tr>

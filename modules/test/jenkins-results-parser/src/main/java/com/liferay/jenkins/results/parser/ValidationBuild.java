@@ -20,6 +20,8 @@ import com.liferay.jenkins.results.parser.failure.message.generator.GradleTaskFa
 import com.liferay.jenkins.results.parser.failure.message.generator.RebaseFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.SourceFormatFailureMessageGenerator;
 
+import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +42,11 @@ public class ValidationBuild extends BaseBuild {
 	@Override
 	public void addTimelineData(BaseBuild.TimelineData timelineData) {
 		timelineData.addTimelineData(this);
+	}
+
+	@Override
+	public URL getArtifactsBaseURL() {
+		return null;
 	}
 
 	@Override
@@ -126,7 +133,7 @@ public class ValidationBuild extends BaseBuild {
 			return Collections.emptyList();
 		}
 
-		JSONObject testReportJSONObject = getTestReportJSONObject();
+		JSONObject testReportJSONObject = getTestReportJSONObject(false);
 
 		return getTestResults(
 			this, testReportJSONObject.getJSONArray("suites"), testStatus);
@@ -161,15 +168,15 @@ public class ValidationBuild extends BaseBuild {
 				baseGitRepositoryName);
 		}
 
-		String baseGitRepositoryCommitURL =
-			"https://github.com/liferay/" + baseGitRepositoryName + "/commit/" +
-				baseGitRepositorySHA;
-
 		Element baseBranchDetailsElement = Dom4JUtil.getNewElement(
 			"p", null, "Branch Name: ",
 			Dom4JUtil.getNewAnchorElement(baseBranchURL, getBranchName()));
 
 		if (baseGitRepositorySHA != null) {
+			String baseGitRepositoryCommitURL =
+				"https://github.com/liferay/" + baseGitRepositoryName +
+					"/commit/" + baseGitRepositorySHA;
+
 			Dom4JUtil.addToElement(
 				baseBranchDetailsElement, Dom4JUtil.getNewElement("br"),
 				"Branch GIT ID: ",
@@ -355,13 +362,11 @@ public class ValidationBuild extends BaseBuild {
 		return testSummaryElement;
 	}
 
-	// Skip JavaParser
-
 	private static final FailureMessageGenerator[] _FAILURE_MESSAGE_GENERATORS =
 		{
 			new RebaseFailureMessageGenerator(),
 			new SourceFormatFailureMessageGenerator(),
-
+			//
 			new GenericFailureMessageGenerator()
 		};
 

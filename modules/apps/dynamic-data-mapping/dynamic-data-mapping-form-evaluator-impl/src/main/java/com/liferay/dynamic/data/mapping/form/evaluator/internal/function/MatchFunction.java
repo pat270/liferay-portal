@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -22,17 +21,13 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = DDMExpressionFunction.Function2.class
-)
 public class MatchFunction
 	implements DDMExpressionFunction.Function2<String, String, Boolean> {
+
+	public static final String NAME = "match";
 
 	@Override
 	public Boolean apply(String value, String regex) {
@@ -43,9 +38,9 @@ public class MatchFunction
 
 			return matcher.matches();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 
@@ -54,7 +49,7 @@ public class MatchFunction
 
 	@Override
 	public String getName() {
-		return "match";
+		return NAME;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(MatchFunction.class);

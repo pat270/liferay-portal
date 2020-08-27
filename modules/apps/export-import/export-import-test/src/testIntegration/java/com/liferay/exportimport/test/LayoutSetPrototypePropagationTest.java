@@ -21,6 +21,8 @@ import com.liferay.journal.constants.JournalContentPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.journal.util.JournalContent;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.LayoutParentLayoutIdException;
@@ -32,8 +34,8 @@ import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -56,12 +58,13 @@ import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.servlet.filters.cache.CacheUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.sites.kernel.util.Sites;
 import com.liferay.sites.kernel.util.SitesUtil;
 
@@ -127,6 +130,52 @@ public class LayoutSetPrototypePropagationTest
 	@Test
 	public void testIsLayoutUpdateable() throws Exception {
 		doTestIsLayoutUpdateable();
+	}
+
+	@Test
+	public void testLayoutDeleteAndReaddWithSameFriendlyURL() throws Exception {
+		setLinkEnabled(true);
+
+		Layout layout = LayoutTestUtil.addLayout(
+			_layoutSetPrototypeGroup.getGroupId(), "test", true);
+
+		String friendlyURL = layout.getFriendlyURL();
+
+		Assert.assertEquals(
+			_initialPrototypeLayoutCount, getGroupLayoutCount());
+
+		propagateChanges(group);
+
+		Assert.assertEquals(
+			_initialPrototypeLayoutCount + 1, getGroupLayoutCount());
+
+		LayoutLocalServiceUtil.deleteLayout(
+			layout, ServiceContextTestUtil.getServiceContext());
+
+		Layout newLayout = LayoutTestUtil.addLayout(
+			_layoutSetPrototypeGroup.getGroupId(), "test", true);
+
+		Assert.assertEquals(friendlyURL, newLayout.getFriendlyURL());
+
+		Assert.assertEquals(
+			_initialPrototypeLayoutCount + 1, getGroupLayoutCount());
+
+		propagateChanges(group);
+
+		Assert.assertEquals(
+			_initialPrototypeLayoutCount + 1, getGroupLayoutCount());
+
+		Layout propagatedLayout =
+			LayoutLocalServiceUtil.fetchLayoutByUuidAndGroupId(
+				newLayout.getUuid(), group.getGroupId(), false);
+
+		Assert.assertNotNull(
+			"Deleted and readded layout could not be found on propagated site",
+			propagatedLayout);
+
+		Assert.assertEquals(
+			"Friendly URLs of the source and target layouts should match",
+			friendlyURL, propagatedLayout.getFriendlyURL());
 	}
 
 	@Test
@@ -275,9 +324,9 @@ public class LayoutSetPrototypePropagationTest
 			_layoutSetPrototypeLayout = LayoutTestUtil.addLayout(
 				_layoutSetPrototypeGroup, true, layoutPrototype, true);
 
-			Map<String, String[]> preferenceMap = new HashMap<>();
-
-			preferenceMap.put("bulletStyle", new String[] {"Dots"});
+			Map<String, String[]> preferenceMap = HashMapBuilder.put(
+				"bulletStyle", new String[] {"Dots"}
+			).build();
 
 			String testPortletId1 = LayoutTestUtil.addPortletToLayout(
 				TestPropsValues.getUserId(), _layoutSetPrototypeLayout,
@@ -438,7 +487,7 @@ public class LayoutSetPrototypePropagationTest
 				"The user should not be able to reset another user's " +
 					"dashboard");
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 		}
 	}
 
@@ -589,7 +638,7 @@ public class LayoutSetPrototypePropagationTest
 		}
 
 		LayoutLocalServiceUtil.deleteLayout(
-			layout, true, ServiceContextTestUtil.getServiceContext());
+			layout, ServiceContextTestUtil.getServiceContext());
 
 		if (linkEnabled) {
 			Assert.assertEquals(
@@ -653,16 +702,21 @@ public class LayoutSetPrototypePropagationTest
 
 		setLinkEnabled(linkEnabled);
 
-		String content = _layoutSetPrototypeJournalArticle.getContent();
+		Map<String, String> content = new HashMap<>();
 
 		for (String languageId : journalArticle.getAvailableLanguageIds()) {
-			String localization = LocalizationUtil.getLocalization(
-				content, languageId);
+			String localization = _journalContent.getContent(
+				_layoutSetPrototypeJournalArticle.getGroupId(),
+				_layoutSetPrototypeJournalArticle.getArticleId(),
+				Constants.VIEW, languageId);
 
-			String importedLocalization = LocalizationUtil.getLocalization(
-				journalArticle.getContent(), languageId);
+			String importedLocalization = _journalContent.getContent(
+				journalArticle.getGroupId(), journalArticle.getArticleId(),
+				Constants.VIEW, languageId);
 
 			Assert.assertEquals(localization, importedLocalization);
+
+			content.put(languageId, localization);
 		}
 
 		String newContent = DDMStructureTestUtil.getSampleStructuredContent(
@@ -676,11 +730,11 @@ public class LayoutSetPrototypePropagationTest
 		// Portlet data is no longer propagated once the group has been created
 
 		for (String languageId : journalArticle.getAvailableLanguageIds()) {
-			String localization = LocalizationUtil.getLocalization(
-				content, languageId);
+			String localization = content.get(languageId);
 
-			String importedLocalization = LocalizationUtil.getLocalization(
-				journalArticle.getContent(), languageId);
+			String importedLocalization = _journalContent.getContent(
+				journalArticle.getGroupId(), journalArticle.getArticleId(),
+				Constants.VIEW, languageId);
 
 			Assert.assertEquals(localization, importedLocalization);
 		}
@@ -724,13 +778,13 @@ public class LayoutSetPrototypePropagationTest
 			Layout layout, boolean layoutUpdateable)
 		throws Exception {
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
-		typeSettingsProperties.put(
+		typeSettingsUnicodeProperties.put(
 			Sites.LAYOUT_UPDATEABLE, String.valueOf(layoutUpdateable));
 
-		layout.setTypeSettingsProperties(typeSettingsProperties);
+		layout.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 		return LayoutLocalServiceUtil.updateLayout(layout);
 	}
@@ -740,19 +794,15 @@ public class LayoutSetPrototypePropagationTest
 		if ((layout != null) && (_layout != null)) {
 			layout = LayoutLocalServiceUtil.getLayout(layout.getPlid());
 
-			Layout draftLayout = LayoutLocalServiceUtil.getDraft(layout);
+			layout.setLayoutPrototypeLinkEnabled(linkEnabled);
 
-			draftLayout.setLayoutPrototypeLinkEnabled(linkEnabled);
-
-			layout = LayoutLocalServiceUtil.publishDraft(draftLayout);
+			LayoutLocalServiceUtil.updateLayout(layout);
 
 			_layout = LayoutLocalServiceUtil.getLayout(_layout.getPlid());
 
-			draftLayout = LayoutLocalServiceUtil.getDraft(_layout);
+			_layout.setLayoutPrototypeLinkEnabled(linkEnabled);
 
-			draftLayout.setLayoutPrototypeLinkEnabled(linkEnabled);
-
-			_layout = LayoutLocalServiceUtil.updateLayout(draftLayout);
+			LayoutLocalServiceUtil.updateLayout(_layout);
 		}
 
 		MergeLayoutPrototypesThreadLocal.clearMergeComplete();
@@ -777,7 +827,7 @@ public class LayoutSetPrototypePropagationTest
 					"template with link enabled",
 				layoutSetPrototypeLinkEnabled);
 		}
-		catch (LayoutParentLayoutIdException lplie) {
+		catch (LayoutParentLayoutIdException layoutParentLayoutIdException) {
 			Assert.assertTrue(
 				"Unable to add a child page to a page associated to a " +
 					"template with link disabled",
@@ -787,6 +837,10 @@ public class LayoutSetPrototypePropagationTest
 
 	private int _initialLayoutCount;
 	private int _initialPrototypeLayoutCount;
+
+	@Inject
+	private JournalContent _journalContent;
+
 	private Layout _layout;
 
 	@DeleteAfterTestRun

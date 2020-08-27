@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class KaleoDefinitionVersionSoap implements Serializable {
 
 	public static KaleoDefinitionVersionSoap toSoapModel(
@@ -48,6 +47,7 @@ public class KaleoDefinitionVersionSoap implements Serializable {
 		soapModel.setStatusDate(model.getStatusDate());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
+		soapModel.setKaleoDefinitionId(model.getKaleoDefinitionId());
 		soapModel.setName(model.getName());
 		soapModel.setTitle(model.getTitle());
 		soapModel.setDescription(model.getDescription());
@@ -205,6 +205,14 @@ public class KaleoDefinitionVersionSoap implements Serializable {
 		_modifiedDate = modifiedDate;
 	}
 
+	public long getKaleoDefinitionId() {
+		return _kaleoDefinitionId;
+	}
+
+	public void setKaleoDefinitionId(long kaleoDefinitionId) {
+		_kaleoDefinitionId = kaleoDefinitionId;
+	}
+
 	public String getName() {
 		return _name;
 	}
@@ -272,6 +280,7 @@ public class KaleoDefinitionVersionSoap implements Serializable {
 	private Date _statusDate;
 	private Date _createDate;
 	private Date _modifiedDate;
+	private long _kaleoDefinitionId;
 	private String _name;
 	private String _title;
 	private String _description;

@@ -17,8 +17,6 @@ package com.liferay.asset.model.impl;
 import com.liferay.asset.model.AssetEntryUsage;
 import com.liferay.asset.service.AssetEntryUsageLocalServiceUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The extended model base implementation for the AssetEntryUsage service. Represents a row in the &quot;AssetEntryUsage&quot; database table, with each column mapped to a property of this class.
  *
@@ -29,9 +27,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @see AssetEntryUsageImpl
  * @see AssetEntryUsage
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ com.liferay.layout.model.impl.LayoutClassedModelUsageImpl}
  * @generated
  */
-@ProviderType
+@Deprecated
 public abstract class AssetEntryUsageBaseImpl
 	extends AssetEntryUsageModelImpl implements AssetEntryUsage {
 

@@ -84,10 +84,10 @@ public class ClientState {
 
 				_socketState.connect(passCode);
 			}
-			catch (Throwable t) {
+			catch (Throwable throwable) {
 				_frameworkState.uninstallBundle(_bundleId);
 
-				throw t;
+				throw throwable;
 			}
 		}
 
@@ -103,10 +103,10 @@ public class ClientState {
 					try {
 						_frameworkState.uninstallBundle(_bundleId);
 					}
-					catch (Throwable t) {
+					catch (Throwable throwable) {
 						throw new IOException(
 							"Unable to uninstall bundle " + _bundleId + ": " +
-								t);
+								throwable);
 					}
 					finally {
 						_frameworkState.close();
@@ -205,8 +205,11 @@ public class ClientState {
 									testClasses.add(clazz);
 								}
 							}
-							catch (ClassNotFoundException cnfe) {
-								throw new RuntimeException(cnfe);
+							catch (ClassNotFoundException
+										classNotFoundException) {
+
+								throw new RuntimeException(
+									classNotFoundException);
 							}
 
 							return FileVisitResult.CONTINUE;
@@ -214,11 +217,11 @@ public class ClientState {
 
 					});
 			}
-			catch (IOException ioe) {
-				throw new RuntimeException(ioe);
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
 			}
-			catch (URISyntaxException urise) {
-				throw new RuntimeException(urise);
+			catch (URISyntaxException uriSyntaxException) {
+				throw new RuntimeException(uriSyntaxException);
 			}
 
 			if (!testClasses.contains(testClass)) {

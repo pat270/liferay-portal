@@ -45,7 +45,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class AssetCategoryPropertyServiceBaseImpl
 	extends BaseServiceImpl
-	implements AssetCategoryPropertyService, AopService,
+	implements AopService, AssetCategoryPropertyService,
 			   IdentifiableOSGiService {
 
 	/*
@@ -103,8 +103,8 @@ public abstract class AssetCategoryPropertyServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

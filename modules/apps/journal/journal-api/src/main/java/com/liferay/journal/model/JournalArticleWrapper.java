@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalArticle
  * @generated
  */
-@ProviderType
 public class JournalArticleWrapper
 	extends BaseModelWrapper<JournalArticle>
 	implements JournalArticle, ModelWrapper<JournalArticle> {
@@ -46,6 +45,8 @@ public class JournalArticleWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("id", getId());
 		attributes.put("resourcePrimKey", getResourcePrimKey());
@@ -85,6 +86,18 @@ public class JournalArticleWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -404,6 +417,16 @@ public class JournalArticleWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this journal article.
+	 *
+	 * @return the ct collection ID of this journal article
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public com.liferay.dynamic.data.mapping.model.DDMStructure
 		getDDMStructure() {
@@ -469,6 +492,11 @@ public class JournalArticleWrapper
 	@Override
 	public String getDescription(String languageId, boolean useDefault) {
 		return model.getDescription(languageId, useDefault);
+	}
+
+	@Override
+	public String getDescriptionCurrentValue() {
+		return model.getDescriptionCurrentValue();
 	}
 
 	@Override
@@ -577,10 +605,12 @@ public class JournalArticleWrapper
 	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry>
 			getImagesFileEntries(
 				int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator obc)
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.portal.kernel.repository.model.FileEntry>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return model.getImagesFileEntries(start, end, obc);
+		return model.getImagesFileEntries(start, end, orderByComparator);
 	}
 
 	@Override
@@ -656,6 +686,16 @@ public class JournalArticleWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this journal article.
+	 *
+	 * @return the mvcc version of this journal article
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -1166,6 +1206,16 @@ public class JournalArticleWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this journal article.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal article
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the ddm structure key of this journal article.
 	 *
 	 * @param DDMStructureKey the ddm structure key of this journal article
@@ -1309,6 +1359,16 @@ public class JournalArticleWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this journal article.
+	 *
+	 * @param mvccVersion the mvcc version of this journal article
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -1533,6 +1593,20 @@ public class JournalArticleWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<JournalArticle, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<JournalArticle, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

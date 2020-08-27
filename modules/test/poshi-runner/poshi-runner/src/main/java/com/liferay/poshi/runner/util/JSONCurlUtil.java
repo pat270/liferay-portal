@@ -99,10 +99,6 @@ public class JSONCurlUtil {
 		return _getParsedResponse(request, jsonPath);
 	}
 
-	protected Request getRequest(String requestString, String requestMethod) {
-		return new Request(requestString, requestMethod);
-	}
-
 	private static String _getParsedResponse(Request request, String jsonPath)
 		throws IOException, TimeoutException {
 
@@ -158,7 +154,7 @@ public class JSONCurlUtil {
 					"Command finished with exit value: " + process.exitValue());
 			}
 
-			return response;
+			return response.replaceAll("\\\\r\\\\n|\\\\n|\\\\r", "%0A");
 		}
 
 		private String _encodeCurlData(String requestString) {
@@ -171,8 +167,8 @@ public class JSONCurlUtil {
 
 				_curlDataMap.put(key, matcher.group(1));
 
-				encodedRequestString = encodedRequestString.replace(
-					matcher.group(0), key);
+				encodedRequestString = StringUtil.replace(
+					encodedRequestString, matcher.group(0), key);
 			}
 
 			return encodedRequestString;
@@ -279,7 +275,8 @@ public class JSONCurlUtil {
 		private static Pattern _escapePattern = Pattern.compile(
 			"<CURL_DATA\\[([\\s\\S]*?)\\]CURL_DATA>");
 		private static Pattern _requestPattern = Pattern.compile(
-			"(-[\\w#:\\.]|--[\\w#:\\.-]{2,}|https?:[^\\s]+)(\\s+|\\Z)");
+			"(-[\\w#:\\.]|--[\\w#:\\.-]{2,}|(?:[\\s]|^)https?:[^\\s]+)" +
+				"(\\s+|\\Z)");
 
 		private Map<String, String> _curlDataMap = new HashMap<>();
 		private final String _requestMethod;
@@ -334,7 +331,7 @@ public class JSONCurlUtil {
 
 				optionValue = optionValue.replaceAll("(?<!\\\\)\"", "\\\\\\\"");
 
-				optionValue = optionValue.replace("&", "^&");
+				optionValue = StringUtil.replace(optionValue, "&", "^&");
 
 				sb.append(optionValue);
 
@@ -367,7 +364,7 @@ public class JSONCurlUtil {
 
 					optionValue = jsonObject.toString();
 				}
-				catch (JSONException jsone) {
+				catch (JSONException jsonException) {
 					throw new RuntimeException(
 						"Invalid JSON: '" + optionValue + "'");
 				}
@@ -382,7 +379,7 @@ public class JSONCurlUtil {
 
 				return true;
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				return false;
 			}
 		}

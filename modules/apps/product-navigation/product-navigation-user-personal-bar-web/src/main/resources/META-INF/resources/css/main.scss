@@ -4,12 +4,17 @@
 			font-size: 1.25rem;
 		}
 
-		.sticker-lg .lexicon-icon {
-			margin-top: -.25rem;
+		.sticker-bottom-right.sticker-outside {
+			bottom: -0.5rem;
+			right: -0.5rem;
 		}
 
-		.sticker-sm .lexicon-icon {
-			margin-top: -.125rem;
+		.sticker-lg .inline-item .lexicon-icon {
+			margin-top: -0.25rem;
+		}
+
+		.sticker-sm .inline-item .lexicon-icon {
+			margin-top: -0.125rem;
 		}
 	}
 }

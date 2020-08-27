@@ -50,12 +50,14 @@ public class NotificationsPersonalMenuEntry extends BasePersonalMenuEntry {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		if (_userNotificationEventLocalService.
-				getArchivedUserNotificationEventsCount(
+		int count =
+			_userNotificationEventLocalService.
+				getDeliveredArchivedUserNotificationEventsCount(
 					themeDisplay.getUserId(),
-					UserNotificationDeliveryConstants.TYPE_WEBSITE, false) >
-						0) {
+					UserNotificationDeliveryConstants.TYPE_WEBSITE, true,
+					false);
 
+		if (count > 0) {
 			return "simple-circle";
 		}
 
@@ -63,7 +65,7 @@ public class NotificationsPersonalMenuEntry extends BasePersonalMenuEntry {
 	}
 
 	@Override
-	protected String getPortletId() {
+	public String getPortletId() {
 		return NotificationsPortletKeys.NOTIFICATIONS;
 	}
 

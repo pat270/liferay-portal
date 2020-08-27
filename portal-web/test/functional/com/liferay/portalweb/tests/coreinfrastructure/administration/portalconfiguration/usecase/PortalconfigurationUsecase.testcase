@@ -1,5 +1,6 @@
 @component-name = "portal-user-management-and-portal-configuration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Portal Instances";
@@ -27,8 +28,8 @@ definition {
 	test AddPortalInstance {
 		property test.name.skip.portal.instance = "PortalconfigurationUsecase#AddPortalInstance";
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -44,8 +45,8 @@ definition {
 	test DeletePortalInstance {
 		property test.name.skip.portal.instance = "PortalconfigurationUsecase#DeletePortalInstance";
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -61,8 +62,8 @@ definition {
 	test PermissionCheckPortalInstances {
 		property test.name.skip.portal.instance = "PortalconfigurationUsecase#PermissionCheckPortalInstances";
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -85,7 +86,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMDocument.addCP(
@@ -118,7 +118,7 @@ definition {
 	test ViewDeactivatedPortalInstance {
 		property test.name.skip.portal.instance = "PortalconfigurationUsecase#ViewDeactivatedPortalInstance";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -128,12 +128,12 @@ definition {
 			configurationName = "Inactive Request Handler",
 			configurationScope = "System Scope");
 
-		FormFields.enableCheckbox(fieldName = "show.inactive.request.message");
+		FormFields.enableCheckbox(fieldName = "Show Inactive Request Message");
 
 		SystemSettings.saveConfiguration();
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -146,7 +146,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Blogs Page");
@@ -157,7 +156,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Wiki Page");
@@ -168,7 +166,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Language Page");
@@ -192,9 +189,12 @@ definition {
 
 		Navigator.openSpecificURL(url = "http://www.able.com:8080");
 
+		// Assert the Home page is a content page in the new virtual instance
+
+		AssertVisible(locator1 = "Icon#EDIT_PENCIL");
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Web Content Page");
@@ -215,8 +215,8 @@ definition {
 
 		User.loginPG();
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -227,6 +227,7 @@ definition {
 		Page.viewInactiveRequestMessage(resource = "instance");
 	}
 
+	@ignore = "true"
 	@priority = "4"
 	test ViewVirtualHostPrivateSitePage {
 		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com,www.baker.com,www.charlie.com";
@@ -243,7 +244,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Settings");
 
 		Site.addVirtualHostsURLCP(
@@ -254,7 +254,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Settings");
 
 		Site.addVirtualHostsURLCP(
@@ -263,7 +262,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Public Page");
@@ -297,7 +295,7 @@ definition {
 	test ViewVirtualInstanceInheritsSystemSettings {
 		property test.name.skip.portal.instance = "PortalconfigurationUsecase#ViewVirtualInstanceInheritsSystemSettings";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -313,8 +311,8 @@ definition {
 
 		Navigator.openURL();
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -335,4 +333,5 @@ definition {
 
 		FormFields.viewCheckboxChecked(fieldName = "InstanceSettingsPortlet_enabled");
 	}
+
 }

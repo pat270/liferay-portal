@@ -41,8 +41,8 @@ public class PortalLoginModule implements LoginModule {
 				loginModule = (LoginModule)InstanceFactory.newInstance(
 					PropsValues.PORTAL_JAAS_IMPL);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -50,21 +50,6 @@ public class PortalLoginModule implements LoginModule {
 			if (ServerDetector.isJBoss()) {
 				loginModule =
 					new com.liferay.portal.security.jaas.ext.jboss.
-						PortalLoginModule();
-			}
-			else if (ServerDetector.isJetty()) {
-				loginModule =
-					new com.liferay.portal.security.jaas.ext.jetty.
-						PortalLoginModule();
-			}
-			else if (ServerDetector.isJOnAS()) {
-				loginModule =
-					new com.liferay.portal.security.jaas.ext.jonas.
-						PortalLoginModule();
-			}
-			else if (ServerDetector.isResin()) {
-				loginModule =
-					new com.liferay.portal.security.jaas.ext.resin.
 						PortalLoginModule();
 			}
 			else if (ServerDetector.isTomcat()) {

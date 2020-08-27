@@ -19,14 +19,15 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.search.generic.TermQueryImpl;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.search.elasticsearch6.internal.ElasticsearchIndexSearcher;
 import com.liferay.portal.search.elasticsearch6.internal.LiferayElasticsearchIndexingFixtureFactory;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchFixture;
 import com.liferay.portal.search.test.util.indexing.BaseIndexingTestCase;
 import com.liferay.portal.search.test.util.indexing.IndexingFixture;
 import com.liferay.portal.search.test.util.logging.ExpectedLogTestRule;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.logging.Level;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,17 +55,15 @@ public class ElasticsearchIndexSearcherLogExceptionsOnlyTest
 	}
 
 	@Rule
-	public ExpectedLogTestRule expectedLogTestRule = ExpectedLogTestRule.none();
+	public ExpectedLogTestRule expectedLogTestRule = ExpectedLogTestRule.with(
+		ElasticsearchIndexSearcher.class, Level.WARNING);
 
 	protected ElasticsearchFixture createElasticsearchFixture() {
-		Map<String, Object> elasticsearchConfigurationProperties =
-			new HashMap<>();
-
-		elasticsearchConfigurationProperties.put("logExceptionsOnly", true);
-
 		return new ElasticsearchFixture(
 			ElasticsearchIndexWriterLogExceptionsOnlyTest.class.getSimpleName(),
-			elasticsearchConfigurationProperties);
+			HashMapBuilder.<String, Object>put(
+				"logExceptionsOnly", true
+			).build());
 	}
 
 	@Override

@@ -15,6 +15,8 @@
 package com.liferay.frontend.taglib.clay.servlet.taglib.util;
 
 import com.liferay.petra.function.UnsafeConsumer;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,19 +24,21 @@ import java.util.List;
 /**
  * @author Carlos Lancha
  */
-public class CreationMenu extends HashMap {
+public class CreationMenu extends HashMap<String, Object> {
 
 	public CreationMenu() {
 		put("primaryItems", _primaryDropdownItems);
 	}
 
-	public void addDropdownItem(
+	public CreationMenu addDropdownItem(
 		UnsafeConsumer<DropdownItem, Exception> unsafeConsumer) {
 
 		addPrimaryDropdownItem(unsafeConsumer);
+
+		return this;
 	}
 
-	public void addFavoriteDropdownItem(
+	public CreationMenu addFavoriteDropdownItem(
 		UnsafeConsumer<DropdownItem, Exception> unsafeConsumer) {
 
 		DropdownItem dropdownItem = new DropdownItem();
@@ -42,16 +46,18 @@ public class CreationMenu extends HashMap {
 		try {
 			unsafeConsumer.accept(dropdownItem);
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 
 		_favoriteDropdownItems.add(dropdownItem);
 
 		put("secondaryItems", _buildSecondaryDropdownItems());
+
+		return this;
 	}
 
-	public void addPrimaryDropdownItem(
+	public CreationMenu addPrimaryDropdownItem(
 		UnsafeConsumer<DropdownItem, Exception> unsafeConsumer) {
 
 		DropdownItem dropdownItem = new DropdownItem();
@@ -59,14 +65,16 @@ public class CreationMenu extends HashMap {
 		try {
 			unsafeConsumer.accept(dropdownItem);
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 
 		_primaryDropdownItems.add(dropdownItem);
+
+		return this;
 	}
 
-	public void addRestDropdownItem(
+	public CreationMenu addRestDropdownItem(
 		UnsafeConsumer<DropdownItem, Exception> unsafeConsumer) {
 
 		DropdownItem dropdownItem = new DropdownItem();
@@ -74,13 +82,26 @@ public class CreationMenu extends HashMap {
 		try {
 			unsafeConsumer.accept(dropdownItem);
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 
 		_restDropdownItems.add(dropdownItem);
 
 		put("secondaryItems", _buildSecondaryDropdownItems());
+
+		return this;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		if (_favoriteDropdownItems.isEmpty() &&
+			_primaryDropdownItems.isEmpty() && _restDropdownItems.isEmpty()) {
+
+			return true;
+		}
+
+		return super.isEmpty();
 	}
 
 	public void setCaption(String caption) {
@@ -106,7 +127,9 @@ public class CreationMenu extends HashMap {
 			secondaryDropdownItemList.addGroup(
 				dropdownGroupItem -> {
 					dropdownGroupItem.setDropdownItems(_favoriteDropdownItems);
-					dropdownGroupItem.setLabel("favorites");
+					dropdownGroupItem.setLabel(
+						LanguageUtil.get(
+							LocaleUtil.getMostRelevantLocale(), "favorites"));
 
 					if (!_restDropdownItems.isEmpty()) {
 						dropdownGroupItem.setSeparator(true);
@@ -116,9 +139,8 @@ public class CreationMenu extends HashMap {
 
 		if (!_restDropdownItems.isEmpty()) {
 			secondaryDropdownItemList.addGroup(
-				dropdownGroupItem -> {
-					dropdownGroupItem.setDropdownItems(_restDropdownItems);
-				});
+				dropdownGroupItem -> dropdownGroupItem.setDropdownItems(
+					_restDropdownItems));
 		}
 
 		return secondaryDropdownItemList;

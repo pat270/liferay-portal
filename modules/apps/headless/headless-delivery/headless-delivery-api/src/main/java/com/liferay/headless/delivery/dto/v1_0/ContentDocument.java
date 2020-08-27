@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Generated;
+
+import javax.validation.Valid;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -44,6 +46,68 @@ import javax.xml.bind.annotation.XmlRootElement;
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "ContentDocument")
 public class ContentDocument {
+
+	public static ContentDocument toDTO(String json) {
+		return ObjectMapperUtil.readValue(ContentDocument.class, json);
+	}
+
+	@Schema
+	@Valid
+	public Map<String, Map<String, String>> getActions() {
+		return actions;
+	}
+
+	public void setActions(Map<String, Map<String, String>> actions) {
+		this.actions = actions;
+	}
+
+	@JsonIgnore
+	public void setActions(
+		UnsafeSupplier<Map<String, Map<String, String>>, Exception>
+			actionsUnsafeSupplier) {
+
+		try {
+			actions = actionsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Map<String, Map<String, String>> actions;
+
+	@Schema
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
+
+	@JsonIgnore
+	public void setContentType(
+		UnsafeSupplier<String, Exception> contentTypeUnsafeSupplier) {
+
+		try {
+			contentType = contentTypeUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String contentType;
 
 	@Schema(description = "The document's relative URL.")
 	public String getContentUrl() {
@@ -69,9 +133,41 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The document's relative URL.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String contentUrl;
+
+	@Schema(
+		description = "optional field with the content of the document in Base64, can be embedded with nestedFields"
+	)
+	public String getContentValue() {
+		return contentValue;
+	}
+
+	public void setContentValue(String contentValue) {
+		this.contentValue = contentValue;
+	}
+
+	@JsonIgnore
+	public void setContentValue(
+		UnsafeSupplier<String, Exception> contentValueUnsafeSupplier) {
+
+		try {
+			contentValue = contentValueUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField(
+		description = "optional field with the content of the document in Base64, can be embedded with nestedFields"
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String contentValue;
 
 	@Schema(description = "The document's description.")
 	public String getDescription() {
@@ -97,7 +193,7 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The document's description.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String description;
 
@@ -127,7 +223,9 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The document's content type (e.g., `application/pdf`, etc.)."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String encodingFormat;
 
@@ -155,7 +253,7 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The document's file extension.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String fileExtension;
 
@@ -181,7 +279,7 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The document's ID.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Long id;
 
@@ -209,7 +307,7 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The document's file size in bytes.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long sizeInBytes;
 
@@ -237,7 +335,7 @@ public class ContentDocument {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The document's title.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String title;
 
@@ -268,6 +366,30 @@ public class ContentDocument {
 
 		sb.append("{");
 
+		if (actions != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(actions));
+		}
+
+		if (contentType != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"contentType\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(contentType));
+
+			sb.append("\"");
+		}
+
 		if (contentUrl != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -278,6 +400,20 @@ public class ContentDocument {
 			sb.append("\"");
 
 			sb.append(_escape(contentUrl));
+
+			sb.append("\"");
+		}
+
+		if (contentValue != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"contentValue\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(contentValue));
 
 			sb.append("\"");
 		}
@@ -363,10 +499,26 @@ public class ContentDocument {
 		return sb.toString();
 	}
 
+	@Schema(
+		defaultValue = "com.liferay.headless.delivery.dto.v1_0.ContentDocument",
+		name = "x-class-name"
+	)
+	public String xClassName;
+
 	private static String _escape(Object object) {
 		String string = String.valueOf(object);
 
 		return string.replaceAll("\"", "\\\\\"");
+	}
+
+	private static boolean _isArray(Object value) {
+		if (value == null) {
+			return false;
+		}
+
+		Class<?> clazz = value.getClass();
+
+		return clazz.isArray();
 	}
 
 	private static String _toJSON(Map<String, ?> map) {
@@ -384,9 +536,42 @@ public class ContentDocument {
 			sb.append("\"");
 			sb.append(entry.getKey());
 			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
+
+			Object value = entry.getValue();
+
+			if (_isArray(value)) {
+				sb.append("[");
+
+				Object[] valueArray = (Object[])value;
+
+				for (int i = 0; i < valueArray.length; i++) {
+					if (valueArray[i] instanceof String) {
+						sb.append("\"");
+						sb.append(valueArray[i]);
+						sb.append("\"");
+					}
+					else {
+						sb.append(valueArray[i]);
+					}
+
+					if ((i + 1) < valueArray.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof Map) {
+				sb.append(_toJSON((Map<String, ?>)value));
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+			else {
+				sb.append(value);
+			}
 
 			if (iterator.hasNext()) {
 				sb.append(",");

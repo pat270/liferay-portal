@@ -1,89 +1,33 @@
 {
-	"csfConfig": {
-		"path:**/src/main/resources/META-INF/resources/*/*.js": {
-			"js": {
-				"lint": {
-					"env": {
-						"browser": true
-					},
-					"extends": "liferay",
-					"globals": {
-						"AlloyEditor": true,
-						"DDMDate": true,
-						"DDMNumeric": true,
-						"DDMSelect": true,
-						"MODULE_PATH": true
-					},
-					"parser": "babel-eslint",
-					"parserOptions": {
-						"ecmaVersion": 5
-					}
-				}
-			}
-		},
-		"path:**/src/main/resources/META-INF/resources/config.js": {
-			"js": {
-				"lint": {
-					"env": {
-						"browser": true
-					},
-					"extends": "liferay",
-					"globals": {
-						"AlloyEditor": true,
-						"MODULE_PATH": true
-					},
-					"parser": "babel-eslint",
-					"parserOptions": {
-						"ecmaVersion": 5
-					}
-				}
-			}
-		},
-		"path:**/src/main/resources/META-INF/resources/metal/**/*.js": {
-			"js": {
-				"lint": {
-					"env": {
-						"browser": true,
-						"jest": true
-					},
-					"extends": "liferay",
-					"globals": {
-						"AlloyEditor": true
-					},
-					"parser": "babel-eslint",
-					"parserOptions": {
-						"ecmaVersion": 7
-					}
-				}
-			}
-		}
-	},
 	"dependencies": {
-		"clay-button": "2.15.1",
-		"clay-checkbox": "2.15.1",
-		"clay-dropdown": "2.15.1",
-		"clay-icon": "2.15.1",
-		"clay-label": "2.15.1",
-		"clay-radio": "2.15.1",
+		"@clayui/button": "3.4.0",
+		"@clayui/form": "3.10.0",
+		"@clayui/layout": "3.2.0",
+		"@clayui/modal": "3.6.5",
+		"@clayui/table": "3.0.7",
+		"classnames": "2.2.6",
+		"clay-button": "2.21.4",
+		"clay-checkbox": "2.21.4",
+		"clay-dropdown": "2.21.4",
+		"clay-icon": "2.21.4",
+		"clay-label": "2.21.4",
+		"clay-radio": "2.21.4",
+		"frontend-editor-ckeditor-web": "*",
+		"frontend-js-web": "*",
+		"leaflet": "1.2.0",
+		"map-google-maps": "*",
+		"map-openstreetmap": "*",
 		"metal-component": "2.16.8",
+		"metal-dom": "2.16.8",
 		"metal-drag-drop": "3.3.1",
 		"metal-position": "2.1.2",
 		"metal-soy": "2.16.8",
 		"moment": "^2.22.2",
 		"text-mask-addons": "^3.7.1",
+		"text-mask-core": "^5.1.2",
 		"vanilla-text-mask": "^5.0.1"
 	},
 	"jest": {
-		"moduleNameMapper": {
-			"(.*)\\.soy$": "$1.soy.js",
-			"dynamic-data-mapping-form-builder/(.*)": "<rootDir>/../dynamic-data-mapping-form-builder/src/main/resources/META-INF/resources/$1",
-			"source/(.*)": "<rootDir>/src/main/resources/META-INF/resources/metal/$1.js"
-		},
-		"modulePathIgnorePatterns": [
-			"/__fixtures__/",
-			"/__mock__/",
-			"/classes/"
-		],
 		"setupFiles": [
 			"<rootDir>/jest-setup.config.js"
 		],
@@ -91,25 +35,18 @@
 			"metal-jest-serializer"
 		],
 		"testPathIgnorePatterns": [
-			"DatePicker",
-			"Numeric",
-			"Options",
-			"Select",
 			"Tooltip",
-			"Validation"
-		],
-		"transform": {
-			".+": "./jest-workspaces-transform.js"
-		}
+			"withContextMock"
+		]
 	},
-	"main": "./",
+	"main": "index.js",
 	"name": "dynamic-data-mapping-form-field-type",
 	"private": true,
 	"scripts": {
 		"build": "liferay-npm-scripts build",
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format",
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "5.0.0"
+	"version": "5.0.34"
 }

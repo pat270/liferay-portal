@@ -16,7 +16,11 @@ package com.liferay.headless.form.client.resource.v1_0;
 
 import com.liferay.headless.form.client.dto.v1_0.FormDocument;
 import com.liferay.headless.form.client.http.HttpInvoker;
+import com.liferay.headless.form.client.problem.Problem;
 
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,63 +31,277 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class FormDocumentResource {
+public interface FormDocumentResource {
 
-	public void deleteFormDocument(Long formDocumentId) throws Exception {
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-form/v1.0/form-documents/{formDocumentId}",
-			formDocumentId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
+	public static Builder builder() {
+		return new Builder();
 	}
 
-	public FormDocument getFormDocument(Long formDocumentId) throws Exception {
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public void deleteFormDocument(Long formDocumentId) throws Exception;
 
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+	public HttpInvoker.HttpResponse deleteFormDocumentHttpResponse(
+			Long formDocumentId)
+		throws Exception;
 
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-form/v1.0/form-documents/{formDocumentId}",
-			formDocumentId);
+	public void deleteFormDocumentBatch(String callbackURL, Object object)
+		throws Exception;
 
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
+	public HttpInvoker.HttpResponse deleteFormDocumentBatchHttpResponse(
+			String callbackURL, Object object)
+		throws Exception;
 
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+	public FormDocument getFormDocument(Long formDocumentId) throws Exception;
 
-		String content = httpResponse.getContent();
+	public HttpInvoker.HttpResponse getFormDocumentHttpResponse(
+			Long formDocumentId)
+		throws Exception;
 
-		_logger.fine("HTTP response content: " + content);
+	public static class Builder {
 
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
+		public Builder authentication(String login, String password) {
+			_login = login;
+			_password = password;
 
-		try {
-			return com.liferay.headless.form.client.serdes.v1_0.
-				FormDocumentSerDes.toDTO(content);
+			return this;
 		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
 
-			throw e;
+		public FormDocumentResource build() {
+			return new FormDocumentResourceImpl(this);
 		}
+
+		public Builder endpoint(String host, int port, String scheme) {
+			_host = host;
+			_port = port;
+			_scheme = scheme;
+
+			return this;
+		}
+
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
+		public Builder locale(Locale locale) {
+			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
+
+			return this;
+		}
+
+		private Builder() {
+		}
+
+		private Map<String, String> _headers = new LinkedHashMap<>();
+		private String _host = "localhost";
+		private Locale _locale;
+		private String _login = "";
+		private String _password = "";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
+		private int _port = 8080;
+		private String _scheme = "http";
+
 	}
 
-	private static final Logger _logger = Logger.getLogger(
-		FormDocumentResource.class.getName());
+	public static class FormDocumentResourceImpl
+		implements FormDocumentResource {
+
+		public void deleteFormDocument(Long formDocumentId) throws Exception {
+			HttpInvoker.HttpResponse httpResponse =
+				deleteFormDocumentHttpResponse(formDocumentId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return;
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse deleteFormDocumentHttpResponse(
+				Long formDocumentId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/form-documents/{formDocumentId}",
+				formDocumentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public void deleteFormDocumentBatch(String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				deleteFormDocumentBatchHttpResponse(callbackURL, object);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+		}
+
+		public HttpInvoker.HttpResponse deleteFormDocumentBatchHttpResponse(
+				String callbackURL, Object object)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
+
+			if (callbackURL != null) {
+				httpInvoker.parameter(
+					"callbackURL", String.valueOf(callbackURL));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/form-documents/batch");
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public FormDocument getFormDocument(Long formDocumentId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse = getFormDocumentHttpResponse(
+				formDocumentId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return com.liferay.headless.form.client.serdes.v1_0.
+					FormDocumentSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse getFormDocumentHttpResponse(
+				Long formDocumentId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/form-documents/{formDocumentId}",
+				formDocumentId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		private FormDocumentResourceImpl(Builder builder) {
+			_builder = builder;
+		}
+
+		private static final Logger _logger = Logger.getLogger(
+			FormDocumentResource.class.getName());
+
+		private Builder _builder;
+
+	}
 
 }

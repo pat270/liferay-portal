@@ -17,7 +17,6 @@ package com.liferay.gradle.plugins.js.transpiler;
 import com.liferay.gradle.plugins.js.transpiler.internal.util.JSTranspilerPluginUtil;
 import com.liferay.gradle.plugins.node.NodePlugin;
 import com.liferay.gradle.plugins.node.tasks.DownloadNodeModuleTask;
-import com.liferay.gradle.plugins.node.tasks.ExecuteNpmTask;
 import com.liferay.gradle.plugins.node.tasks.NpmInstallTask;
 import com.liferay.gradle.util.FileUtil;
 import com.liferay.gradle.util.GradleUtil;
@@ -47,8 +46,10 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskDependency;
 
 /**
- * @author Andrea Di Giorgi
+ * @author     Andrea Di Giorgi
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class JSTranspilerPlugin implements Plugin<Project> {
 
 	public static final String DOWNLOAD_METAL_CLI_TASK_NAME =
@@ -180,7 +181,7 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 
 	private void _configureTasksTranspileJS(
 		Project project, final DownloadNodeModuleTask downloadMetalCliTask,
-		final ExecuteNpmTask npmInstallTask) {
+		final NpmInstallTask npmInstallTask) {
 
 		TaskContainer taskContainer = project.getTasks();
 
@@ -200,7 +201,7 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 	private void _configureTaskTranspileJS(
 		TranspileJSTask transpileJSTask,
 		final DownloadNodeModuleTask downloadMetalCliTask,
-		final ExecuteNpmTask npmInstallTask) {
+		final NpmInstallTask npmInstallTask) {
 
 		FileCollection fileCollection = transpileJSTask.getSourceFiles();
 

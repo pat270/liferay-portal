@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
@@ -33,49 +34,29 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.sync.constants.SyncDLObjectConstants;
+import com.liferay.sync.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.model.SyncDLObject;
+import com.liferay.sync.service.SyncDLFileVersionDiffLocalService;
 import com.liferay.sync.service.base.SyncDLObjectLocalServiceBaseImpl;
-import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.util.SyncHelper;
 
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Michael Young
  * @author Dennis Ju
  */
+@Component(
+	property = "model.class.name=com.liferay.sync.model.SyncDLObject",
+	service = AopService.class
+)
 public class SyncDLObjectLocalServiceImpl
 	extends SyncDLObjectLocalServiceBaseImpl {
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #addSyncDLObject(long, long, String, long, long, long,
-	 *             String, String, String, String, String, String, String,
-	 *             String, long, long, String, String, String, Date, long,
-	 *             String, String, long, String)}
-	 */
-	@Deprecated
-	@Override
-	public SyncDLObject addSyncDLObject(
-			long companyId, long userId, String userName, long modifiedTime,
-			long repositoryId, long parentFolderId, String treePath,
-			String name, String extension, String mimeType, String description,
-			String changeLog, String extraSettings, String version,
-			long versionId, long size, String checksum, String event,
-			Date lockExpirationDate, long lockUserId, String lockUserName,
-			String type, long typePK, String typeUuid)
-		throws PortalException {
-
-		return addSyncDLObject(
-			companyId, userId, userName, modifiedTime, repositoryId,
-			parentFolderId, treePath, name, extension, mimeType, description,
-			changeLog, extraSettings, version, versionId, size, checksum, event,
-			StringPool.BLANK, lockExpirationDate, lockUserId, lockUserName,
-			type, typePK, typeUuid);
-	}
 
 	@Override
 	public SyncDLObject addSyncDLObject(
@@ -231,11 +212,11 @@ public class SyncDLObjectLocalServiceImpl
 		}
 		else if (event.equals(SyncDLObjectConstants.EVENT_DELETE)) {
 			try {
-				syncDLFileVersionDiffLocalService.deleteSyncDLFileVersionDiffs(
+				_syncDLFileVersionDiffLocalService.deleteSyncDLFileVersionDiffs(
 					typePK);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -263,8 +244,8 @@ public class SyncDLObjectLocalServiceImpl
 		List<Long> modifiedTimes = syncDLObjectPersistence.findWithDynamicQuery(
 			dynamicQuery);
 
-		if (modifiedTimes.isEmpty() || (modifiedTimes.get(0) == 0)) {
-			return System.currentTimeMillis();
+		if (modifiedTimes.isEmpty()) {
+			return 0;
 		}
 
 		return modifiedTimes.get(0);
@@ -288,12 +269,10 @@ public class SyncDLObjectLocalServiceImpl
 			getActionableDynamicQuery();
 
 		actionableDynamicQuery.setAddCriteriaMethod(
-			dynamicQuery -> {
-				dynamicQuery.add(
-					RestrictionsFactoryUtil.like(
-						"treePath",
-						StringUtil.quote(searchTreePath, StringPool.PERCENT)));
-			});
+			dynamicQuery -> dynamicQuery.add(
+				RestrictionsFactoryUtil.like(
+					"treePath",
+					StringUtil.quote(searchTreePath, StringPool.PERCENT))));
 		actionableDynamicQuery.setPerformActionMethod(
 			(SyncDLObject syncDLObject) -> {
 				syncDLObject.setUserId(parentSyncDLObject.getUserId());
@@ -428,7 +407,11 @@ public class SyncDLObjectLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		SyncDLObjectLocalServiceImpl.class);
 
-	@ServiceReference(type = SyncHelper.class)
+	@Reference
+	private SyncDLFileVersionDiffLocalService
+		_syncDLFileVersionDiffLocalService;
+
+	@Reference
 	private SyncHelper _syncHelper;
 
 }

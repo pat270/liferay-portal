@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -41,6 +42,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.segments.exception.RequiredSegmentsExperienceException;
 import com.liferay.sites.kernel.util.SitesUtil;
 
 import javax.portlet.ActionRequest;
@@ -117,12 +119,15 @@ public class DeleteLayoutMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		if (group.isGuest() && !layout.isPrivateLayout() &&
-			layout.isRootLayout() &&
-			(_layoutLocalService.getLayoutsCount(
-				group, false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) == 1)) {
+			layout.isRootLayout()) {
 
-			throw new RequiredLayoutException(
-				RequiredLayoutException.AT_LEAST_ONE);
+			int count = _layoutLocalService.getLayoutsCount(
+				group, false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
+
+			if (count == 1) {
+				throw new RequiredLayoutException(
+					RequiredLayoutException.AT_LEAST_ONE);
+			}
 		}
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
@@ -133,7 +138,22 @@ public class DeleteLayoutMVCActionCommand extends BaseMVCActionCommand {
 
 		serviceContext.setAttribute("layoutSetBranchId", layoutSetBranchId);
 
-		_layoutService.deleteLayout(selPlid, serviceContext);
+		try {
+			_layoutService.deleteLayout(selPlid, serviceContext);
+		}
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
+
+			if (throwable instanceof
+					RequiredSegmentsExperienceException.
+						MustNotDeleteSegmentsExperienceReferencedBySegmentsExperiments) {
+
+				SessionErrors.add(actionRequest, throwable.getClass());
+			}
+			else {
+				throw exception;
+			}
+		}
 	}
 
 	@Override

@@ -7,7 +7,9 @@ task deployJar(type: Copy)
 task patch(type: PatchTask)
 
 dependencies {
-	compile group: "org.apache.aries.spifly", name: "org.apache.aries.spifly.dynamic.framework.extension", optional, version: "1.2"
+	compile group: "org.apache.aries.spifly", name: "org.apache.aries.spifly.dynamic.framework.extension", optional, version: "1.2.3"
+
+	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
 }
 
 liferay {
@@ -20,7 +22,10 @@ patch {
 	}
 
 	fileNames "org/apache/aries/spifly/BaseActivator.java"
+	fileNames "org/apache/aries/spifly/ConsumerBundleTrackerCustomizer.java"
+	fileNames "org/apache/aries/spifly/ConsumerHeaderProcessor.java"
 	fileNames "org/apache/aries/spifly/ProviderBundleTrackerCustomizer.java"
+	fileNames "org/apache/aries/spifly/dynamic/DynamicWeavingActivator.java"
 
 	originalLibModuleName = "org.apache.aries.spifly.dynamic.framework.extension"
 }

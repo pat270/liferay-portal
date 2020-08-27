@@ -75,9 +75,7 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 		address.setMailing(mailing);
 		address.setPrimary(primary);
 
-		addressPersistence.update(address);
-
-		return address;
+		return addressPersistence.update(address);
 	}
 
 	@Override
@@ -102,10 +100,9 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 	public void deleteAddresses(
 		long companyId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		List<Address> addresses = addressPersistence.findByC_C_C(
-			companyId, classNameId, classPK);
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 
 		for (Address address : addresses) {
 			addressLocalService.deleteAddress(address);
@@ -121,9 +118,9 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 	public List<Address> getAddresses(
 		long companyId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return addressPersistence.findByC_C_C(companyId, classNameId, classPK);
+		return addressPersistence.findByC_C_C(
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 	}
 
 	@Override
@@ -150,9 +147,7 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 		address.setMailing(mailing);
 		address.setPrimary(primary);
 
-		addressPersistence.update(address);
-
-		return address;
+		return addressPersistence.update(address);
 	}
 
 	protected void validate(

@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -31,9 +32,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Eudaldo Alonso
@@ -141,15 +140,12 @@ public class MBTestUtil {
 			MBMessage message, ServiceContext serviceContext)
 		throws Exception {
 
-		Map<String, Serializable> workflowContext = new HashMap<>();
-
-		workflowContext.put(WorkflowConstants.CONTEXT_URL, "http://localhost");
-
-		message = MBMessageLocalServiceUtil.updateStatus(
+		return MBMessageLocalServiceUtil.updateStatus(
 			message.getUserId(), message.getMessageId(),
-			WorkflowConstants.STATUS_APPROVED, serviceContext, workflowContext);
-
-		return message;
+			WorkflowConstants.STATUS_APPROVED, serviceContext,
+			HashMapBuilder.<String, Serializable>put(
+				WorkflowConstants.CONTEXT_URL, "http://localhost"
+			).build());
 	}
 
 }

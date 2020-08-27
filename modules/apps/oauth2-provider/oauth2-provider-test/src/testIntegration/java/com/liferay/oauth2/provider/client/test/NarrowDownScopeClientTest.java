@@ -16,7 +16,7 @@ package com.liferay.oauth2.provider.client.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.oauth2.provider.constants.GrantType;
-import com.liferay.oauth2.provider.test.internal.TestApplication;
+import com.liferay.oauth2.provider.internal.test.TestApplication;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
@@ -27,6 +27,13 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.HashSet;
+import java.util.function.Function;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -64,13 +71,23 @@ public class NarrowDownScopeClientTest extends BaseClientTestCase {
 				getClientCredentialsResponseBiFunction("GET"),
 				this::parseScopeString));
 
-		Assert.assertEquals(
-			"GET",
-			getToken(
-				"oauthTestApplication", null,
-				getResourceOwnerPasswordBiFunction(
-					"test@liferay.com", "test", "GET"),
-				this::parseScopeString));
+		Response response = getToken(
+			"oauthTestApplication", null,
+			getResourceOwnerPasswordBiFunction(
+				"test@liferay.com", "test", "GET"),
+			Function.identity());
+
+		Assert.assertEquals("GET", parseScopeString(response));
+
+		WebTarget webTarget = getWebTarget("methods");
+
+		Invocation.Builder builder = authorize(
+			webTarget.request(), parseTokenString(response));
+
+		Response postResponse = builder.post(
+			Entity.entity("", MediaType.TEXT_PLAIN_TYPE));
+
+		Assert.assertEquals(403, postResponse.getStatus());
 
 		String scopeString = getToken(
 			"oauthTestApplication", null,

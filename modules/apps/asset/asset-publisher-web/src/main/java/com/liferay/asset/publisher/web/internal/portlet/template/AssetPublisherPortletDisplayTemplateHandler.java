@@ -25,16 +25,15 @@ import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.util.AssetPublisherHelper;
-import com.liferay.asset.tag.stats.service.AssetTagStatsLocalService;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portletdisplaytemplate.BasePortletDisplayTemplateHandler;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portlet.display.template.constants.PortletDisplayTemplateConstants;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,11 +60,9 @@ public class AssetPublisherPortletDisplayTemplateHandler
 
 	@Override
 	public Map<String, Object> getCustomContextObjects() {
-		Map<String, Object> contextObjects = new HashMap<>(1);
-
-		contextObjects.put("assetPublisherHelper", assetPublisherHelper);
-
-		return contextObjects;
+		return HashMapBuilder.<String, Object>put(
+			"assetPublisherHelper", assetPublisherHelper
+		).build();
 	}
 
 	@Override
@@ -127,8 +124,7 @@ public class AssetPublisherPortletDisplayTemplateHandler
 			AssetEntryLocalService.class, AssetEntryService.class,
 			AssetVocabularyLocalService.class, AssetVocabularyService.class,
 			AssetCategoryLocalService.class, AssetCategoryService.class,
-			AssetTagLocalService.class, AssetTagService.class,
-			AssetTagStatsLocalService.class);
+			AssetTagLocalService.class, AssetTagService.class);
 
 		templateVariableGroups.put(
 			assetServicesTemplateVariableGroup.getLabel(),

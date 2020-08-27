@@ -93,10 +93,10 @@ public class BlogsStatsUserLocalServiceImpl
 	@Override
 	public List<BlogsStatsUser> getCompanyStatsUsers(
 		long companyId, int start, int end,
-		OrderByComparator<BlogsStatsUser> obc) {
+		OrderByComparator<BlogsStatsUser> orderByComparator) {
 
 		return blogsStatsUserPersistence.findByC_NotE(
-			companyId, 0, start, end, obc);
+			companyId, 0, start, end, orderByComparator);
 	}
 
 	@Override
@@ -123,10 +123,10 @@ public class BlogsStatsUserLocalServiceImpl
 	@Override
 	public List<BlogsStatsUser> getGroupStatsUsers(
 		long groupId, int start, int end,
-		OrderByComparator<BlogsStatsUser> obc) {
+		OrderByComparator<BlogsStatsUser> orderByComparator) {
 
 		return blogsStatsUserPersistence.findByG_NotE(
-			groupId, 0, start, end, obc);
+			groupId, 0, start, end, orderByComparator);
 	}
 
 	@Override
@@ -145,10 +145,10 @@ public class BlogsStatsUserLocalServiceImpl
 	@Override
 	public List<BlogsStatsUser> getOrganizationStatsUsers(
 		long organizationId, int start, int end,
-		OrderByComparator<BlogsStatsUser> obc) {
+		OrderByComparator<BlogsStatsUser> orderByComparator) {
 
 		return blogsStatsUserFinder.findByOrganizationId(
-			organizationId, start, end, obc);
+			organizationId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -174,7 +174,7 @@ public class BlogsStatsUserLocalServiceImpl
 			statsUser.setCompanyId(group.getCompanyId());
 			statsUser.setUserId(userId);
 
-			blogsStatsUserPersistence.update(statsUser);
+			statsUser = blogsStatsUserPersistence.update(statsUser);
 		}
 
 		return statsUser;
@@ -200,9 +200,10 @@ public class BlogsStatsUserLocalServiceImpl
 			try {
 				blogsStatsUserPersistence.removeByG_U(groupId, userId);
 			}
-			catch (NoSuchStatsUserException nssue) {
+			catch (NoSuchStatsUserException noSuchStatsUserException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nssue, nssue);
+					_log.warn(
+						noSuchStatsUserException, noSuchStatsUserException);
 				}
 			}
 

@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
+
+<service-builder auto-import-default-references="false" auto-namespace-tables="false" package-path="com.liferay.data.engine">
+	<namespace>DE</namespace>
+	<entity local-service="true" name="DEDataDefinitionFieldLink" remote-service="false" uuid="true">
+
+		<!-- PK fields -->
+
+		<column name="deDataDefinitionFieldLinkId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="classNameId" type="long" />
+		<column name="classPK" type="long" />
+		<column name="ddmStructureId" type="long" />
+		<column name="fieldName" type="String" />
+		<column name="lastPublishDate" type="Date" />
+
+		<!-- Finder methods -->
+
+		<finder name="DDMStructureId" return-type="Collection">
+			<finder-column name="ddmStructureId" />
+		</finder>
+		<finder name="C_C" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+		</finder>
+		<finder name="C_DDMSI" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="ddmStructureId" />
+		</finder>
+		<finder name="DDMSI_F" return-type="Collection">
+			<finder-column name="ddmStructureId" />
+			<finder-column arrayable-operator="OR" name="fieldName" />
+		</finder>
+		<finder name="C_DDMSI_F" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="ddmStructureId" />
+			<finder-column arrayable-operator="OR" name="fieldName" />
+		</finder>
+		<finder name="C_C_DDMSI_F" return-type="DEDataDefinitionFieldLink" unique="true">
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+			<finder-column name="ddmStructureId" />
+			<finder-column arrayable-operator="OR" name="fieldName" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="Group" package-path="com.liferay.portal" />
+	</entity>
+	<entity local-service="true" name="DEDataListView" remote-service="false" uuid="true">
+
+		<!-- PK fields -->
+
+		<column name="deDataListViewId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="appliedFilters" type="String" />
+		<column name="ddmStructureId" type="long" />
+		<column name="fieldNames" type="String" />
+		<column localized="true" name="name" type="String" />
+		<column name="sortField" type="String" />
+
+		<!-- Finder methods -->
+
+		<finder name="DDMStructureId" return-type="Collection">
+			<finder-column name="ddmStructureId" />
+		</finder>
+		<finder name="G_C_DDMSI" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="companyId" />
+			<finder-column name="ddmStructureId" />
+		</finder>
+	</entity>
+</service-builder>

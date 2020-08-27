@@ -40,11 +40,6 @@ import org.osgi.service.component.annotations.Component;
 @Component(immediate = true, service = LPKGVerifier.class)
 public class DefaultLPKGVerifier implements LPKGVerifier {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_bundleContext = bundleContext;
-	}
-
 	@Override
 	public List<Bundle> verify(File lpkgFile) {
 		try (ZipFile zipFile = new ZipFile(lpkgFile)) {
@@ -78,11 +73,11 @@ public class DefaultLPKGVerifier implements LPKGVerifier {
 			try {
 				version = new Version(versionString);
 			}
-			catch (IllegalArgumentException iae) {
+			catch (IllegalArgumentException illegalArgumentException) {
 				throw new LPKGVerifyException(
 					lpkgFile + " does not have a valid version: " +
 						versionString,
-					iae);
+					illegalArgumentException);
 			}
 
 			List<Bundle> oldBundles = new ArrayList<>();
@@ -115,9 +110,14 @@ public class DefaultLPKGVerifier implements LPKGVerifier {
 
 			return oldBundles;
 		}
-		catch (Exception e) {
-			throw new LPKGVerifyException(e);
+		catch (Exception exception) {
+			throw new LPKGVerifyException(exception);
 		}
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
 	}
 
 	private BundleContext _bundleContext;

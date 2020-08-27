@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.test.ConsoleTestUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.template.CacheTemplateResource;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -172,10 +173,10 @@ public class TemplateResourceExternalizationTest {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			Assert.assertEquals(
 				"Unable to retrieve ddm template with ID " + templateId,
-				ioe.getMessage());
+				ioException.getMessage());
 		}
 		finally {
 			ConsoleTestUtil.restoreStdErr(hijackedUnsyncByteArrayOutputStream);
@@ -260,7 +261,7 @@ public class TemplateResourceExternalizationTest {
 
 		String resourcePath = clazz.getName();
 
-		resourcePath = resourcePath.replace('.', '/') + ".class";
+		resourcePath = StringUtil.replace(resourcePath, '.', '/') + ".class";
 
 		URL url = classLoader.getResource(resourcePath);
 
@@ -325,7 +326,7 @@ public class TemplateResourceExternalizationTest {
 		}
 
 		@Override
-		public void writeObject(Object obj) {
+		public void writeObject(Object object) {
 			throw new UnsupportedOperationException();
 		}
 

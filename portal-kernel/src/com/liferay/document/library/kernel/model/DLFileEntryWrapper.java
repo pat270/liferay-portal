@@ -22,8 +22,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -34,7 +34,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileEntry
  * @generated
  */
-@ProviderType
 public class DLFileEntryWrapper
 	extends BaseModelWrapper<DLFileEntry>
 	implements DLFileEntry, ModelWrapper<DLFileEntry> {
@@ -47,6 +46,8 @@ public class DLFileEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("fileEntryId", getFileEntryId());
 		attributes.put("groupId", getGroupId());
@@ -70,7 +71,6 @@ public class DLFileEntryWrapper
 		attributes.put("fileEntryTypeId", getFileEntryTypeId());
 		attributes.put("version", getVersion());
 		attributes.put("size", getSize());
-		attributes.put("readCount", getReadCount());
 		attributes.put("smallImageId", getSmallImageId());
 		attributes.put("largeImageId", getLargeImageId());
 		attributes.put("custom1ImageId", getCustom1ImageId());
@@ -83,6 +83,18 @@ public class DLFileEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -221,12 +233,6 @@ public class DLFileEntryWrapper
 			setSize(size);
 		}
 
-		Integer readCount = (Integer)attributes.get("readCount");
-
-		if (readCount != null) {
-			setReadCount(readCount);
-		}
-
 		Long smallImageId = (Long)attributes.get("smallImageId");
 
 		if (smallImageId != null) {
@@ -334,6 +340,16 @@ public class DLFileEntryWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this document library file entry.
+	 *
+	 * @return the ct collection ID of this document library file entry
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	/**
@@ -582,6 +598,16 @@ public class DLFileEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this document library file entry.
+	 *
+	 * @return the mvcc version of this document library file entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this document library file entry.
 	 *
 	 * @return the name of this document library file entry
@@ -601,13 +627,8 @@ public class DLFileEntryWrapper
 		return model.getPrimaryKey();
 	}
 
-	/**
-	 * Returns the read count of this document library file entry.
-	 *
-	 * @return the read count of this document library file entry
-	 */
 	@Override
-	public int getReadCount() {
+	public long getReadCount() {
 		return model.getReadCount();
 	}
 
@@ -861,6 +882,16 @@ public class DLFileEntryWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this document library file entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this document library file entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the custom1 image ID of this document library file entry.
 	 *
 	 * @param custom1ImageId the custom1 image ID of this document library file entry
@@ -913,9 +944,9 @@ public class DLFileEntryWrapper
 	@Override
 	public void setExtraSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			extraSettingsProperties) {
+			extraSettingsUnicodeProperties) {
 
-		model.setExtraSettingsProperties(extraSettingsProperties);
+		model.setExtraSettingsProperties(extraSettingsUnicodeProperties);
 	}
 
 	/**
@@ -1019,6 +1050,16 @@ public class DLFileEntryWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this document library file entry.
+	 *
+	 * @param mvccVersion the mvcc version of this document library file entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the name of this document library file entry.
 	 *
 	 * @param name the name of this document library file entry
@@ -1036,16 +1077,6 @@ public class DLFileEntryWrapper
 	@Override
 	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
-	}
-
-	/**
-	 * Sets the read count of this document library file entry.
-	 *
-	 * @param readCount the read count of this document library file entry
-	 */
-	@Override
-	public void setReadCount(int readCount) {
-		model.setReadCount(readCount);
 	}
 
 	/**
@@ -1151,6 +1182,20 @@ public class DLFileEntryWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<DLFileEntry, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DLFileEntry, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

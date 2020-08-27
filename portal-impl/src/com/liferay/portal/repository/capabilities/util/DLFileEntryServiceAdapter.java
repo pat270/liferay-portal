@@ -106,7 +106,8 @@ public class DLFileEntryServiceAdapter {
 
 	public List<DLFileEntry> getGroupFileEntries(
 			long groupId, int userId, long repositoryId, long folderId,
-			int start, int end, OrderByComparator<DLFileEntry> obc)
+			int start, int end,
+			OrderByComparator<DLFileEntry> orderByComparator)
 		throws PortalException {
 
 		List<DLFileEntry> dlFileEntries = null;
@@ -114,32 +115,15 @@ public class DLFileEntryServiceAdapter {
 		if (_dlFileEntryService != null) {
 			dlFileEntries = _dlFileEntryService.getGroupFileEntries(
 				groupId, userId, repositoryId, folderId, null,
-				WorkflowConstants.STATUS_ANY, start, end, obc);
+				WorkflowConstants.STATUS_ANY, start, end, orderByComparator);
 		}
 		else {
 			dlFileEntries = _dlFileEntryLocalService.getGroupFileEntries(
-				groupId, userId, repositoryId, folderId, start, end, obc);
+				groupId, userId, repositoryId, folderId, start, end,
+				orderByComparator);
 		}
 
 		return dlFileEntries;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public boolean isKeepFileVersionLabel(
-			long fileEntryId, boolean majorVersion,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		if (_dlFileEntryService != null) {
-			return _dlFileEntryService.isKeepFileVersionLabel(
-				fileEntryId, majorVersion, serviceContext);
-		}
-
-		return _dlFileEntryLocalService.isKeepFileVersionLabel(
-			fileEntryId, majorVersion, serviceContext);
 	}
 
 	public DLFileEntry updateStatus(

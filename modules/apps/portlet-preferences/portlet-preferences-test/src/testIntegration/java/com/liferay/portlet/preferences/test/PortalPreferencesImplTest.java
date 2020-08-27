@@ -23,16 +23,17 @@ import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalService;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.SynchronousInvocationHandler;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.service.test.SynchronousInvocationHandler;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
 import com.liferay.portal.spring.transaction.DefaultTransactionExecutor;
 import com.liferay.portal.spring.transaction.TransactionAttributeAdapter;
+import com.liferay.portal.spring.transaction.TransactionInterceptor;
 import com.liferay.portal.spring.transaction.TransactionStatusAdapter;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -78,8 +79,11 @@ public class PortalPreferencesImplTest {
 		_aopInvocationHandler = ProxyUtil.fetchInvocationHandler(
 			_portalPreferencesLocalService, AopInvocationHandler.class);
 
+		_transactionInterceptor = ReflectionTestUtil.getFieldValue(
+			_aopInvocationHandler, "_transactionInterceptor");
+
 		_originalTransactionExecutor = ReflectionTestUtil.getFieldValue(
-			_aopInvocationHandler, "_transactionExecutor");
+			_transactionInterceptor, "_transactionHandler");
 
 		_platformTransactionManager = ReflectionTestUtil.getFieldValue(
 			_originalTransactionExecutor, "_platformTransactionManager");
@@ -144,11 +148,11 @@ public class PortalPreferencesImplTest {
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
 			Assert.assertSame(
-				ConcurrentModificationException.class, cause.getClass());
+				ConcurrentModificationException.class, throwable.getClass());
 		}
 	}
 
@@ -182,11 +186,11 @@ public class PortalPreferencesImplTest {
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
 			Assert.assertSame(
-				ConcurrentModificationException.class, cause.getClass());
+				ConcurrentModificationException.class, throwable.getClass());
 		}
 	}
 
@@ -254,11 +258,11 @@ public class PortalPreferencesImplTest {
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
 			Assert.assertSame(
-				ConcurrentModificationException.class, cause.getClass());
+				ConcurrentModificationException.class, throwable.getClass());
 		}
 	}
 
@@ -326,11 +330,11 @@ public class PortalPreferencesImplTest {
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
 			Assert.assertSame(
-				ConcurrentModificationException.class, cause.getClass());
+				ConcurrentModificationException.class, throwable.getClass());
 		}
 	}
 
@@ -347,7 +351,7 @@ public class PortalPreferencesImplTest {
 					2,
 					() -> {
 						ReflectionTestUtil.setFieldValue(
-							_aopInvocationHandler, "_transactionExecutor",
+							_transactionInterceptor, "_transactionHandler",
 							new SynchronizedTransactionExecutor(_testOwnerId));
 
 						_aopInvocationHandler.setTarget(
@@ -396,8 +400,8 @@ public class PortalPreferencesImplTest {
 				_originalTransactionExecutor.commit(
 					transactionAttributeAdapter, transactionStatusAdapter);
 			}
-			catch (Throwable t) {
-				ReflectionUtil.throwException(t);
+			catch (Throwable throwable) {
+				ReflectionUtil.throwException(throwable);
 			}
 			finally {
 				PortalPreferencesWrapperCacheUtil.remove(
@@ -418,7 +422,7 @@ public class PortalPreferencesImplTest {
 				@Override
 				public void run() {
 					ReflectionTestUtil.setFieldValue(
-						_aopInvocationHandler, "_transactionExecutor",
+						_transactionInterceptor, "_transactionHandler",
 						_originalTransactionExecutor);
 
 					_aopInvocationHandler.setTarget(
@@ -453,6 +457,7 @@ public class PortalPreferencesImplTest {
 	private static PortalPreferencesLocalService _portalPreferencesLocalService;
 
 	private static ThreadLocal<Boolean> _synchronizeThreadLocal;
+	private static TransactionInterceptor _transactionInterceptor;
 	private static Method _updatePreferencesMethod;
 
 	@Inject

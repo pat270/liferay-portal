@@ -39,16 +39,16 @@ public class UserGroupGroupRoleUserGroupChecker extends RowChecker {
 	}
 
 	@Override
-	public boolean isChecked(Object obj) {
-		UserGroup userGroup = (UserGroup)obj;
+	public boolean isChecked(Object object) {
+		UserGroup userGroup = (UserGroup)object;
 
 		try {
 			return UserGroupGroupRoleLocalServiceUtil.hasUserGroupGroupRole(
 				userGroup.getUserGroupId(), _group.getGroupId(),
 				_role.getRoleId());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return false;
 		}

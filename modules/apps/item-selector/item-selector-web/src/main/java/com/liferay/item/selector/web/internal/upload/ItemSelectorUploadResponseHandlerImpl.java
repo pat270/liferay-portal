@@ -40,10 +40,11 @@ public class ItemSelectorUploadResponseHandlerImpl
 
 	@Override
 	public JSONObject onFailure(
-			PortletRequest portletRequest, PortalException pe)
+			PortletRequest portletRequest, PortalException portalException)
 		throws PortalException {
 
-		return _defaultUploadResponseHandler.onFailure(portletRequest, pe);
+		return _defaultUploadResponseHandler.onFailure(
+			portletRequest, portalException);
 	}
 
 	@Override
@@ -65,10 +66,12 @@ public class ItemSelectorUploadResponseHandlerImpl
 		String returnType = ParamUtil.getString(
 			uploadPortletRequest, "returnType");
 
-		ItemSelectorReturnTypeResolver itemSelectorReturnTypeResolver =
-			_itemSelectorReturnTypeResolverHandler.
-				getItemSelectorReturnTypeResolver(
-					returnType, FileEntry.class.getName());
+		ItemSelectorReturnTypeResolver<?, Object>
+			itemSelectorReturnTypeResolver =
+				(ItemSelectorReturnTypeResolver<?, Object>)
+					_itemSelectorReturnTypeResolverHandler.
+						getItemSelectorReturnTypeResolver(
+							returnType, FileEntry.class.getName());
 
 		if (itemSelectorReturnTypeResolver != null) {
 			try {
@@ -83,8 +86,8 @@ public class ItemSelectorUploadResponseHandlerImpl
 
 				fileJSONObject.put("resolvedValue", resolvedValue);
 			}
-			catch (Exception e) {
-				throw new PortalException(e);
+			catch (Exception exception) {
+				throw new PortalException(exception);
 			}
 		}
 

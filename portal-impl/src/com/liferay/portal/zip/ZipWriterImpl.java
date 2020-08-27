@@ -14,29 +14,36 @@
 
 package com.liferay.portal.zip;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.petra.memory.DeleteFileFinalizeAction;
 import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.kernel.zip.ZipWriter;
-import com.liferay.portal.util.PropsValues;
 
-import de.schlichtherle.io.ArchiveDetector;
-import de.schlichtherle.io.ArchiveException;
-import de.schlichtherle.io.DefaultArchiveDetector;
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileOutputStream;
-import de.schlichtherle.io.archive.zip.ZipDriver;
-
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.UncheckedIOException;
+
+import java.net.URI;
+
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Raymond Augé
@@ -44,31 +51,63 @@ import java.io.OutputStream;
 public class ZipWriterImpl implements ZipWriter {
 
 	public ZipWriterImpl() {
-		_file = new File(
-			StringBundler.concat(
-				SystemProperties.get(SystemProperties.TMP_DIR),
-				StringPool.SLASH, PortalUUIDUtil.generate(), ".zip"));
-
-		_file.mkdir();
+		this(
+			new File(
+				StringBundler.concat(
+					SystemProperties.get(SystemProperties.TMP_DIR),
+					StringPool.SLASH, PortalUUIDUtil.generate(), ".zip")));
 
 		FinalizeManager.register(
-			_file.getDelegate(),
-			new DeleteFileFinalizeAction(_file.getAbsolutePath()),
+			_file, new DeleteFileFinalizeAction(_file.getAbsolutePath()),
 			FinalizeManager.PHANTOM_REFERENCE_FACTORY);
 	}
 
-	public ZipWriterImpl(java.io.File file) {
-		_file = new File(file.getAbsolutePath());
+	public ZipWriterImpl(File file) {
+		_file = file.getAbsoluteFile();
 
-		_file.mkdir();
+		URI fileURI = _file.toURI();
+
+		_uri = URI.create("jar:file:" + fileURI.getPath());
+
+		try (FileSystem fileSystem = FileSystems.newFileSystem(
+				_uri, Collections.singletonMap("create", "true"))) {
+		}
+		catch (IOException ioException) {
+			throw new UncheckedIOException(ioException);
+		}
 	}
 
 	@Override
 	public void addEntry(String name, byte[] bytes) throws IOException {
-		try (UnsyncByteArrayInputStream unsyncByteArrayInputStream =
-				new UnsyncByteArrayInputStream(bytes)) {
+		if (bytes == null) {
+			return;
+		}
 
-			addEntry(name, unsyncByteArrayInputStream);
+		if (ExportImportThreadLocal.isExportInProcess()) {
+			if (_exportEntries == null) {
+				_exportEntries = new LinkedList<>();
+			}
+
+			_exportEntries.add(
+				new AbstractMap.SimpleImmutableEntry<>(name, bytes));
+
+			return;
+		}
+
+		try (FileSystem fileSystem = FileSystems.newFileSystem(
+				_uri, Collections.emptyMap())) {
+
+			Path path = fileSystem.getPath(name);
+
+			Path parentPath = path.getParent();
+
+			if (parentPath != null) {
+				Files.createDirectories(parentPath);
+			}
+
+			Files.write(
+				path, bytes, StandardOpenOption.CREATE,
+				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 		}
 	}
 
@@ -76,22 +115,22 @@ public class ZipWriterImpl implements ZipWriter {
 	public void addEntry(String name, InputStream inputStream)
 		throws IOException {
 
-		if (name.startsWith(StringPool.SLASH)) {
-			name = name.substring(1);
-		}
-
 		if (inputStream == null) {
 			return;
 		}
 
-		if (_log.isDebugEnabled()) {
-			_log.debug("Adding " + name);
-		}
+		try (FileSystem fileSystem = FileSystems.newFileSystem(
+				_uri, Collections.emptyMap())) {
 
-		try (OutputStream outputStream = new FileOutputStream(
-				new File(getPath() + StringPool.SLASH + name))) {
+			Path path = fileSystem.getPath(name);
 
-			File.cat(inputStream, outputStream);
+			Path parentPath = path.getParent();
+
+			if (parentPath != null) {
+				Files.createDirectories(parentPath);
+			}
+
+			Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 
@@ -113,53 +152,72 @@ public class ZipWriterImpl implements ZipWriter {
 		addEntry(name, sb.toString());
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getFile()}
+	 */
+	@Deprecated
 	@Override
 	public byte[] finish() throws IOException {
-		java.io.File file = getFile();
-
-		return FileUtil.getBytes(file);
+		return FileUtil.getBytes(getFile());
 	}
 
 	@Override
-	public java.io.File getFile() {
-		try {
-			File.umount(_file);
-		}
-		catch (ArchiveException ae) {
-			_log.error(ae, ae);
+	public File getFile() {
+		if (_exportEntries != null) {
+			try (FileSystem fileSystem = FileSystems.newFileSystem(
+					_uri, Collections.emptyMap())) {
+
+				Iterator<Map.Entry<String, byte[]>> iterator =
+					_exportEntries.iterator();
+
+				while (iterator.hasNext()) {
+					Map.Entry<String, byte[]> entry = iterator.next();
+
+					iterator.remove();
+
+					Path path = fileSystem.getPath(entry.getKey());
+
+					Path parentPath = path.getParent();
+
+					if (parentPath != null) {
+						Files.createDirectories(parentPath);
+					}
+
+					Files.write(
+						path, entry.getValue(), StandardOpenOption.CREATE,
+						StandardOpenOption.TRUNCATE_EXISTING,
+						StandardOpenOption.WRITE);
+				}
+
+				_exportEntries = null;
+			}
+			catch (IOException ioException) {
+				throw new UncheckedIOException(ioException);
+			}
 		}
 
-		return _file.getDelegate();
+		return _file;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getFile()}
+	 */
+	@Deprecated
 	@Override
 	public String getPath() {
 		return _file.getPath();
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getFile()}
+	 */
+	@Deprecated
 	@Override
 	public void umount() {
-		try {
-			File.umount(_file);
-		}
-		catch (ArchiveException ae) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to unmount file entry", ae);
-			}
-		}
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(ZipWriterImpl.class);
-
-	static {
-		File.setDefaultArchiveDetector(
-			new DefaultArchiveDetector(
-				ArchiveDetector.ALL, "lar|" + ArchiveDetector.ALL.getSuffixes(),
-				new ZipDriver(PropsValues.ZIP_FILE_NAME_ENCODING)));
-
-		TrueZIPHelperUtil.initialize();
-	}
-
+	private List<Map.Entry<String, byte[]>> _exportEntries;
 	private final File _file;
+	private final URI _uri;
 
 }

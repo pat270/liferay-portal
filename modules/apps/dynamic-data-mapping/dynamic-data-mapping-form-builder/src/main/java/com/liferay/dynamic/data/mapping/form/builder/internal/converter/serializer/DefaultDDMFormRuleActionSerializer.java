@@ -15,46 +15,49 @@
 package com.liferay.dynamic.data.mapping.form.builder.internal.converter.serializer;
 
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action.DefaultDDMFormRuleAction;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleActionSerializer;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Leonardo Barros
  */
 public class DefaultDDMFormRuleActionSerializer
-	implements DDMFormRuleActionSerializer {
+	implements SPIDDMFormRuleActionSerializer {
 
 	public DefaultDDMFormRuleActionSerializer(
 		DefaultDDMFormRuleAction defaultDDMFormRuleAction) {
 
-		_defaultDefaultDDMFormRuleAction = defaultDDMFormRuleAction;
+		_defaultDDMFormRuleAction = defaultDDMFormRuleAction;
 	}
 
 	@Override
 	public String serialize(
-		DDMFormRuleSerializerContext ddmFormRuleSerializerContext) {
+		SPIDDMFormRuleSerializerContext spiDDMFormRuleSerializerContext) {
 
 		String functionName = _actionBooleanFunctionNameMap.get(
-			_defaultDefaultDDMFormRuleAction.getAction());
+			_defaultDDMFormRuleAction.getAction());
 
 		return String.format(
 			_SET_BOOLEAN_PROPERTY_FORMAT, functionName,
-			_defaultDefaultDDMFormRuleAction.getTarget());
+			_defaultDDMFormRuleAction.getTarget());
 	}
 
 	private static final String _SET_BOOLEAN_PROPERTY_FORMAT = "%s('%s', true)";
 
 	private static final Map<String, String> _actionBooleanFunctionNameMap =
-		new HashMap<String, String>() {
-			{
-				put("enable", "setEnabled");
-				put("invalidate", "setInvalid");
-				put("require", "setRequired");
-				put("show", "setVisible");
-			}
-		};
+		HashMapBuilder.put(
+			"enable", "setEnabled"
+		).put(
+			"invalidate", "setInvalid"
+		).put(
+			"require", "setRequired"
+		).put(
+			"show", "setVisible"
+		).build();
 
-	private final DefaultDDMFormRuleAction _defaultDefaultDDMFormRuleAction;
+	private final DefaultDDMFormRuleAction _defaultDDMFormRuleAction;
 
 }

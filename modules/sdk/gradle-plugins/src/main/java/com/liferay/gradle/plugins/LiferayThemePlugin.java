@@ -47,13 +47,17 @@ import org.gradle.api.Task;
 import org.gradle.api.UncheckedIOException;
 import org.gradle.api.artifacts.ConfigurablePublishArtifact;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.ArtifactHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.BasePluginConvention;
+import org.gradle.api.plugins.Convention;
+import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Delete;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 
 /**
  * @author Andrea Di Giorgi
@@ -65,100 +69,131 @@ public class LiferayThemePlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
+
+		// Plugins
+
 		GradleUtil.applyPlugin(project, BasePlugin.class);
 		GradleUtil.applyPlugin(project, GulpPlugin.class);
 		GradleUtil.applyPlugin(project, LangBuilderPlugin.class);
 		GradleUtil.applyPlugin(project, LiferayBasePlugin.class);
 		GradleUtil.applyPlugin(project, SourceFormatterPlugin.class);
 
-		LiferayExtension liferayExtension = GradleUtil.getExtension(
-			project, LiferayExtension.class);
+		// Extensions
+
+		ExtensionContainer extensionContainer = project.getExtensions();
+
+		LiferayExtension liferayExtension = extensionContainer.getByType(
+			LiferayExtension.class);
+
+		// Configurations
+
+		ConfigurationContainer configurationContainer =
+			project.getConfigurations();
+
+		Configuration archivesConfiguration = configurationContainer.getByName(
+			Dependency.ARCHIVES_CONFIGURATION);
+		Configuration defaultConfiguration = configurationContainer.getByName(
+			Dependency.DEFAULT_CONFIGURATION);
+
+		_configureConfigurationDefault(
+			archivesConfiguration, defaultConfiguration);
+
+		// Conventions
+
+		Convention convention = project.getConvention();
+
+		BasePluginConvention basePluginConvention = convention.getPlugin(
+			BasePluginConvention.class);
 
 		Map<String, Object> packageJsonMap = _getPackageJsonMap(project);
 
-		_configureArchivesBaseName(project, packageJsonMap);
-		_configureVersion(project, packageJsonMap);
+		_configureConventionBasePlugin(basePluginConvention, packageJsonMap);
 
-		// liferay-theme-tasks already uses the "build" directory
+		// Tasks
 
-		project.setBuildDir("build_gradle");
+		TaskProvider<Delete> cleanTaskProvider = GradleUtil.getTaskProvider(
+			project, BasePlugin.CLEAN_TASK_NAME, Delete.class);
+		TaskProvider<Task> createLiferayThemeJsonTaskProvider =
+			GradleUtil.addTaskProvider(
+				project, CREATE_LIFERAY_THEME_JSON_TASK_NAME, Task.class);
+		TaskProvider<BuildLangTask> buildLangTaskProvider =
+			GradleUtil.getTaskProvider(
+				project, LangBuilderPlugin.BUILD_LANG_TASK_NAME,
+				BuildLangTask.class);
+		TaskProvider<Copy> deployTaskProvider = GradleUtil.getTaskProvider(
+			project, LiferayBasePlugin.DEPLOY_TASK_NAME, Copy.class);
+		final TaskProvider<Task> gulpBuildTaskProvider =
+			GradleUtil.getTaskProvider(project, _GULP_BUILD_TASK_NAME);
 
-		Task createLiferayThemeJsonTask = _addTaskCreateLiferayThemeJson(
-			project, liferayExtension);
+		_configureTaskBuildLangProvider(buildLangTaskProvider);
+		_configureTaskCleanProvider(cleanTaskProvider);
+		_configureTaskCreateLiferayThemeJsonProvider(
+			project, liferayExtension, createLiferayThemeJsonTaskProvider);
+		_configureTaskDeployProvider(project, deployTaskProvider);
 
-		_configureArtifacts(project);
-		_configureConfigurationDefault(project);
-		_configureTaskBuildLang(project);
-		_configureTaskClean(project);
-		_configureTaskDeploy(project);
-		_configureTasksExecuteGulp(createLiferayThemeJsonTask);
-	}
+		// Other
 
-	private Task _addTaskCreateLiferayThemeJson(
-		Project project, final LiferayExtension liferayExtension) {
+		_configureProject(project, packageJsonMap);
 
-		Task task = project.task(CREATE_LIFERAY_THEME_JSON_TASK_NAME);
+		final TaskContainer taskContainer = project.getTasks();
 
-		final File liferayThemeJsonFile = project.file("liferay-theme.json");
-
-		task.doLast(
-			new Action<Task>() {
+		taskContainer.withType(
+			ExecuteGulpTask.class,
+			new Action<ExecuteGulpTask>() {
 
 				@Override
-				public void execute(Task task) {
-					Project project = task.getProject();
-
-					Map<String, Object> map = new HashMap<>();
-
-					map.put(
-						"appServerPath",
-						FileUtil.getAbsolutePath(
-							liferayExtension.getAppServerDir()));
-
-					File appServerThemeDir = new File(
-						liferayExtension.getAppServerDeployDir(),
-						project.getName());
-
-					map.put(
-						"appServerPathTheme",
-						FileUtil.getAbsolutePath(appServerThemeDir));
-
-					map.put("deployed", false);
-
-					map.put(
-						"deployPath",
-						FileUtil.getAbsolutePath(
-							liferayExtension.getDeployDir()));
-					map.put("themeName", project.getName());
-
-					String json = JsonOutput.toJson(
-						Collections.singletonMap("LiferayTheme", map));
-
-					try {
-						Files.write(
-							liferayThemeJsonFile.toPath(),
-							json.getBytes(StandardCharsets.UTF_8));
-					}
-					catch (IOException ioe) {
-						throw new UncheckedIOException(ioe);
-					}
+				public void execute(ExecuteGulpTask executeGulpTask) {
+					_configureTaskExecuteGulp(
+						createLiferayThemeJsonTaskProvider, executeGulpTask);
 				}
 
 			});
 
-		task.setDescription(
-			"Generates the " + liferayThemeJsonFile.getName() +
-				" file for this project.");
+		ArtifactHandler artifacts = project.getArtifacts();
 
-		return task;
+		artifacts.add(
+			Dependency.ARCHIVES_CONFIGURATION, _getWarFile(project),
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(
+					ConfigurablePublishArtifact configurablePublishArtifact) {
+
+					Task packageRunBuildTask = taskContainer.findByName(
+						NodePlugin.PACKAGE_RUN_BUILD_TASK_NAME);
+
+					if (packageRunBuildTask != null) {
+						gulpBuildTaskProvider.configure(
+							new Action<Task>() {
+
+								@Override
+								public void execute(Task gulpBuildTask) {
+									gulpBuildTask.finalizedBy(
+										NodePlugin.PACKAGE_RUN_BUILD_TASK_NAME);
+								}
+
+							});
+					}
+
+					configurablePublishArtifact.builtBy(gulpBuildTaskProvider);
+				}
+
+			});
 	}
 
-	private void _configureArchivesBaseName(
-		Project project, Map<String, Object> packageJsonMap) {
+	private void _configureConfigurationDefault(
+		Configuration archivesConfiguration,
+		Configuration defaultConfiguration) {
+
+		defaultConfiguration.extendsFrom(archivesConfiguration);
+	}
+
+	private void _configureConventionBasePlugin(
+		BasePluginConvention basePluginConvention,
+		Map<String, Object> packageJsonMap) {
 
 		String name = null;
 
-		@SuppressWarnings("unchecked")
 		Map<String, Object> liferayThemeMap =
 			(Map<String, Object>)packageJsonMap.get("liferayTheme");
 
@@ -174,108 +209,138 @@ public class LiferayThemePlugin implements Plugin<Project> {
 			return;
 		}
 
-		BasePluginConvention basePluginConvention = GradleUtil.getConvention(
-			project, BasePluginConvention.class);
-
 		basePluginConvention.setArchivesBaseName(name);
 	}
 
-	@SuppressWarnings("serial")
-	private void _configureArtifacts(final Project project) {
-		ArtifactHandler artifacts = project.getArtifacts();
-
-		File warFile = _getWarFile(project);
-
-		artifacts.add(
-			Dependency.ARCHIVES_CONFIGURATION, warFile,
-			new Closure<Void>(project) {
-
-				@SuppressWarnings("unused")
-				public void doCall(
-					ConfigurablePublishArtifact configurablePublishArtifact) {
-
-					Task gulpBuildTask = GradleUtil.getTask(
-						project, _GULP_BUILD_TASK_NAME);
-
-					if (GradleUtil.hasTask(
-							project, NodePlugin.NPM_RUN_BUILD_TASK_NAME)) {
-
-						gulpBuildTask.finalizedBy(
-							NodePlugin.NPM_RUN_BUILD_TASK_NAME);
-					}
-
-					configurablePublishArtifact.builtBy(gulpBuildTask);
-				}
-
-			});
-	}
-
-	private void _configureConfigurationDefault(Project project) {
-		Configuration defaultConfiguration = GradleUtil.getConfiguration(
-			project, Dependency.DEFAULT_CONFIGURATION);
-
-		Configuration archivesConfiguration = GradleUtil.getConfiguration(
-			project, Dependency.ARCHIVES_CONFIGURATION);
-
-		defaultConfiguration.extendsFrom(archivesConfiguration);
-	}
-
-	private void _configureTaskBuildLang(Project project) {
-		BuildLangTask buildLangTask = (BuildLangTask)GradleUtil.getTask(
-			project, LangBuilderPlugin.BUILD_LANG_TASK_NAME);
-
-		buildLangTask.setLangDir("src/WEB-INF/src/content");
-	}
-
-	private void _configureTaskClean(Project project) {
-		Delete delete = (Delete)GradleUtil.getTask(
-			project, BasePlugin.CLEAN_TASK_NAME);
-
-		delete.delete("build", "dist");
-	}
-
-	private void _configureTaskDeploy(Project project) {
-		Copy copy = (Copy)GradleUtil.getTask(
-			project, LiferayBasePlugin.DEPLOY_TASK_NAME);
-
-		copy.dependsOn(BasePlugin.ASSEMBLE_TASK_NAME);
-		copy.from(_getWarFile(project));
-	}
-
-	private void _configureTaskExecuteGulp(
-		ExecuteGulpTask executeGulpTask, Task createLiferayThemeJsonTask) {
-
-		executeGulpTask.dependsOn(createLiferayThemeJsonTask);
-	}
-
-	private void _configureTasksExecuteGulp(
-		final Task createLiferayThemeJsonTask) {
-
-		Project project = createLiferayThemeJsonTask.getProject();
-
-		TaskContainer taskContainer = project.getTasks();
-
-		taskContainer.withType(
-			ExecuteGulpTask.class,
-			new Action<ExecuteGulpTask>() {
-
-				@Override
-				public void execute(ExecuteGulpTask executeGulpTask) {
-					_configureTaskExecuteGulp(
-						executeGulpTask, createLiferayThemeJsonTask);
-				}
-
-			});
-	}
-
-	private void _configureVersion(
+	private void _configureProject(
 		Project project, Map<String, Object> packageJsonMap) {
+
+		// liferay-theme-tasks already uses the "build" directory
+
+		project.setBuildDir("build_gradle");
 
 		String version = (String)packageJsonMap.get("version");
 
 		if (Validator.isNotNull(version)) {
 			project.setVersion(version);
 		}
+	}
+
+	private void _configureTaskBuildLangProvider(
+		TaskProvider<BuildLangTask> buildLangTaskProvider) {
+
+		buildLangTaskProvider.configure(
+			new Action<BuildLangTask>() {
+
+				@Override
+				public void execute(BuildLangTask buildLangTask) {
+					buildLangTask.setLangDir("src/WEB-INF/src/content");
+				}
+
+			});
+	}
+
+	private void _configureTaskCleanProvider(
+		TaskProvider<Delete> cleanTaskProvider) {
+
+		cleanTaskProvider.configure(
+			new Action<Delete>() {
+
+				@Override
+				public void execute(Delete cleanDelete) {
+					cleanDelete.delete("build", "dist");
+				}
+
+			});
+	}
+
+	private void _configureTaskCreateLiferayThemeJsonProvider(
+		final Project project, final LiferayExtension liferayExtension,
+		TaskProvider<Task> createLiferayThemeJsonTaskProvider) {
+
+		createLiferayThemeJsonTaskProvider.configure(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task createLiferayThemeJsonTask) {
+					final File liferayThemeJsonFile = project.file(
+						"liferay-theme.json");
+
+					createLiferayThemeJsonTask.doLast(
+						new Action<Task>() {
+
+							@Override
+							public void execute(Task task) {
+								Project project = task.getProject();
+
+								Map<String, Object> map = new HashMap<>();
+
+								map.put(
+									"appServerPath",
+									FileUtil.getAbsolutePath(
+										liferayExtension.getAppServerDir()));
+
+								File appServerThemeDir = new File(
+									liferayExtension.getAppServerDeployDir(),
+									project.getName());
+
+								map.put(
+									"appServerPathTheme",
+									FileUtil.getAbsolutePath(
+										appServerThemeDir));
+
+								map.put("deployed", false);
+
+								map.put(
+									"deployPath",
+									FileUtil.getAbsolutePath(
+										liferayExtension.getDeployDir()));
+								map.put("themeName", project.getName());
+
+								String json = JsonOutput.toJson(
+									Collections.singletonMap(
+										"LiferayTheme", map));
+
+								try {
+									Files.write(
+										liferayThemeJsonFile.toPath(),
+										json.getBytes(StandardCharsets.UTF_8));
+								}
+								catch (IOException ioException) {
+									throw new UncheckedIOException(ioException);
+								}
+							}
+
+						});
+
+					createLiferayThemeJsonTask.setDescription(
+						"Generates the " + liferayThemeJsonFile.getName() +
+							" file for this project.");
+				}
+
+			});
+	}
+
+	private void _configureTaskDeployProvider(
+		final Project project, TaskProvider<Copy> deployTaskProvider) {
+
+		deployTaskProvider.configure(
+			new Action<Copy>() {
+
+				@Override
+				public void execute(Copy deployCopy) {
+					deployCopy.dependsOn(BasePlugin.ASSEMBLE_TASK_NAME);
+					deployCopy.from(_getWarFile(project));
+				}
+
+			});
+	}
+
+	private void _configureTaskExecuteGulp(
+		TaskProvider<Task> createLiferayThemeJsonTaskProvider,
+		ExecuteGulpTask executeGulpTask) {
+
+		executeGulpTask.dependsOn(createLiferayThemeJsonTaskProvider);
 	}
 
 	@SuppressWarnings("unchecked")

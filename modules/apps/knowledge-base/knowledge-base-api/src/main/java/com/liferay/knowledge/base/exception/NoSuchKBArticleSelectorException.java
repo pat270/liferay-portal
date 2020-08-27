@@ -16,12 +16,9 @@ package com.liferay.knowledge.base.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchKBArticleSelectorException extends NoSuchModelException {
 
 	public NoSuchKBArticleSelectorException() {
@@ -31,12 +28,12 @@ public class NoSuchKBArticleSelectorException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchKBArticleSelectorException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchKBArticleSelectorException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchKBArticleSelectorException(Throwable cause) {
-		super(cause);
+	public NoSuchKBArticleSelectorException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

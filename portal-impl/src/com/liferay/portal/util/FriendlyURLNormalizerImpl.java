@@ -29,8 +29,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
 
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Brian Wing Shun Chan
@@ -44,52 +42,14 @@ public class FriendlyURLNormalizerImpl implements FriendlyURLNormalizer {
 		return normalize(friendlyURL, false);
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String normalize(String friendlyURL, Pattern friendlyURLPattern) {
-		if (Validator.isNull(friendlyURL)) {
-			return friendlyURL;
-		}
-
-		friendlyURL = StringUtil.toLowerCase(friendlyURL);
-		friendlyURL = Normalizer.normalizeToAscii(friendlyURL);
-
-		Matcher matcher = friendlyURLPattern.matcher(friendlyURL);
-
-		friendlyURL = matcher.replaceAll(StringPool.DASH);
-
-		StringBuilder sb = new StringBuilder(friendlyURL.length());
-
-		for (int i = 0; i < friendlyURL.length(); i++) {
-			char c = friendlyURL.charAt(i);
-
-			if (c == CharPool.DASH) {
-				if ((i == 0) || (CharPool.DASH != sb.charAt(sb.length() - 1))) {
-					sb.append(CharPool.DASH);
-				}
-			}
-			else {
-				sb.append(c);
-			}
-		}
-
-		if (sb.length() == friendlyURL.length()) {
-			return friendlyURL;
-		}
-
-		return sb.toString();
-	}
-
 	@Override
 	public String normalizeWithEncoding(String friendlyURL) {
 		if (Validator.isNull(friendlyURL)) {
 			return friendlyURL;
 		}
 
-		String decodedFriendlyURL = HttpUtil.decodePath(friendlyURL);
+		String decodedFriendlyURL = HttpUtil.decodePath(
+			StringUtil.replace(friendlyURL, CharPool.PERCENT, CharPool.POUND));
 
 		StringBuilder sb = new StringBuilder(decodedFriendlyURL.length());
 

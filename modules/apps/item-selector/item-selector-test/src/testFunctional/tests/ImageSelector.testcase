@@ -1,0 +1,230 @@
+@component-name = "portal-collaboration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Item Selector";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			BlogsEntry.tearDownCP();
+
+			DMFolder.tearDownCP();
+
+			User.logoutPG();
+		}
+	}
+
+	@description = "This makes sure that multiple blog images can be previewed by using the keyboard."
+	@priority = "5"
+	test PreviewMultipleImagesInBlogsImages {
+		for (var i : list "1,2,3") {
+			BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+			Blogs.addEntryWithUploadedCoverImage(
+				coverImageName = "Document_${i}",
+				entryContent = "Blogs Entry Content",
+				entryTitle = "Blogs Entry Title ${i}",
+				navTab = "Blog Images",
+				uploadFileName = "Document_${i}.jpg");
+
+			Button.clickPublish();
+
+			Pause(locator1 = "10000");
+		}
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.gotoPreviewViaSelectFile(navTab = "Blog Images");
+
+		ItemSelector.viewPreview(
+			footer = "1 of 3",
+			imageFileName = "Document_1.jpg");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_RIGHT",
+			value1 = "\RIGHT");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_LEFT",
+			value1 = "\LEFT");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_LEFT",
+			value1 = "\LEFT");
+
+		ItemSelector.viewPreview(
+			footer = "3 of 3",
+			imageFileName = "Document_3.jpg");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_INFO",
+			value1 = "\ESCAPE");
+
+		SelectFrame(value1 = "relative=top");
+
+		IFrame.closeFrame();
+
+		for (var coverImageName : list "Document_1,Document_2,Document_3") {
+			AssertElementNotPresent(
+				key_coverImageName = "${coverImageName}",
+				locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_UNPUBLISHED");
+		}
+	}
+
+	@description = "This makes sure that multiple DM images can be previewed by using the keyboard."
+	@priority = "5"
+	test PreviewMultipleImagesInDM {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addMultipleCP(dmDocumentFileList = "Document_1.jpg,Document_2.jpg,Document_3.jpg");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		Pause(locator1 = "3000");
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.gotoPreviewViaSelectFile(navTab = "Documents and Media");
+
+		ItemSelector.viewPreview(
+			footer = "1 of 3",
+			imageFileName = "Document_1.jpg");
+
+		AssertVisible(locator1 = "ItemSelector#VIEWER_LEFT");
+
+		AssertVisible(locator1 = "ItemSelector#VIEWER_RIGHT");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_RIGHT",
+			value1 = "\RIGHT");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_LEFT",
+			value1 = "\LEFT");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_LEFT",
+			value1 = "\LEFT");
+
+		ItemSelector.viewPreview(
+			footer = "3 of 3",
+			imageFileName = "Document_3.jpg");
+
+		KeyPress(
+			locator1 = "ItemSelector#VIEWER_INFO",
+			value1 = "\ESCAPE");
+
+		SelectFrame(value1 = "relative=top");
+
+		IFrame.closeFrame();
+
+		for (var coverImageName : list "Document_1,Document_2,Document_3") {
+			AssertElementNotPresent(
+				key_coverImageName = "${coverImageName}",
+				locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_UNPUBLISHED");
+		}
+	}
+
+	@description = "This ensures that navigation arrows do not appear in image preview when there is only one image in the library."
+	@priority = "5"
+	test PreviewSingleImage {
+		property portal.acceptance = "true";
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		Blogs.addEntryWithUploadedCoverImage(
+			coverImageName = "Document_1",
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title 1",
+			navTab = "Blog Images",
+			uploadFileName = "Document_1.jpg");
+
+		Button.clickPublish();
+
+		Pause(locator1 = "10000");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.gotoPreviewViaSelectFile(navTab = "Blog Images");
+
+		ItemSelector.viewPreview(
+			footer = "1 of 1",
+			imageFileName = "Document_1.jpg");
+
+		AssertElementNotPresent(locator1 = "ItemSelector#VIEWER_LEFT");
+
+		AssertElementNotPresent(locator1 = "ItemSelector#VIEWER_RIGHT");
+	}
+
+	@priority = "4"
+	test RotateImageViaDMSiteAdmin {
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_2.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertVisible(
+			locator1 = "Portlet#HEADER",
+			value1 = "Documents and Media");
+
+		ImageEditor.gotoImageEditorViaDM(dmDocumentTitle = "Document_2.jpg");
+
+		ImageEditor.rotateImage(rotateDirection = "left");
+
+		Pause(locator1 = "3000");
+
+		ImageEditor.applyChangesAndSaveFile();
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_2.jpg");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.1");
+	}
+
+	@priority = "5"
+	test ViewImageEditorControls {
+		property environment.acceptance = "true";
+		property portal.acceptance = "true";
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		ImageEditor.gotoImageEditorViaDM(dmDocumentTitle = "Document_1.jpg");
+
+		ImageEditor.viewBaseControls();
+	}
+
+}

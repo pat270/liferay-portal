@@ -1,5 +1,6 @@
 @component-name = "portal-user-management-and-portal-configuration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Users and Organizations";
@@ -17,7 +18,7 @@ definition {
 			PortalInstances.tearDownCP();
 		}
 		else {
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Site.tearDownCP();
 
@@ -29,10 +30,10 @@ definition {
 
 	@priority = "5"
 	test AddMember {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -43,7 +44,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -52,7 +53,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -66,7 +67,7 @@ definition {
 			userName = "userfn userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -84,7 +85,7 @@ definition {
 	test AddOrganization {
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -93,7 +94,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -111,7 +112,7 @@ definition {
 
 	@priority = "3"
 	test AddOrganizationComment {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -128,7 +129,7 @@ definition {
 
 	@priority = "3"
 	test AddOrganizationNameDuplicate {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -137,7 +138,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -152,7 +153,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -165,7 +166,7 @@ definition {
 
 	@priority = "4"
 	test AddOrganizations {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -174,7 +175,7 @@ definition {
 			orgName = "Organization Name 1",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -189,7 +190,7 @@ definition {
 			orgName = "Organization Name 1",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -198,7 +199,7 @@ definition {
 			orgName = "Organization Name 2",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -213,7 +214,7 @@ definition {
 			orgName = "Organization Name 2",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -222,7 +223,7 @@ definition {
 			orgName = "Organization Name 3",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -242,7 +243,7 @@ definition {
 	test AddOrganizationSite {
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -251,7 +252,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -260,7 +261,7 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -275,7 +276,7 @@ definition {
 	test AddOrganizationSitePrivatePage {
 		var portalURL = PropsUtil.get("portal.url");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -284,7 +285,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -293,11 +294,10 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoSite(site = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPrivatePage(pageName = "Private Page");
@@ -315,7 +315,7 @@ definition {
 	test AddOrganizationSitePublicPage {
 		var portalURL = PropsUtil.get("portal.url");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -324,7 +324,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -333,11 +333,10 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoSite(site = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Public Page");
@@ -353,18 +352,18 @@ definition {
 
 	@priority = "5"
 	test AddOrganizationTeam {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "CPUsersandorganizations#AddOrganizationTeam";
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
 
 		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -373,7 +372,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -382,18 +381,11 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "organization-name");
 
-		UsersAndOrganizationsNavigator.gotoOrganizations();
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
-		Organization.manageMembershipOptionsInSites(
-			allowManualMembershipManagement = "true",
-			orgName = "Organization Name");
-
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -407,20 +399,18 @@ definition {
 			userName = "Test Test",
 			userScreenName = "test");
 
-		ProductMenu.gotoSite(site = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Organization Public Page");
 
-		ProductMenu.gotoSite(site = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "People",
-			panel = "Site Administration",
 			portlet = "Teams");
 
 		Team.addCP(
@@ -431,10 +421,10 @@ definition {
 
 	@priority = "5"
 	test AddSuborganization {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -443,7 +433,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -458,7 +448,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -469,7 +459,7 @@ definition {
 			orgName = "Organization Name",
 			suborgName = "Suborganization Name");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -483,11 +473,12 @@ definition {
 			suborgType = "Organization");
 	}
 
+	@description = "This is a use case for LPS-119168."
 	@priority = "5"
 	test AddUser {
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -500,7 +491,7 @@ definition {
 
 		Alert.viewSuccessMessage();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -510,11 +501,28 @@ definition {
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
+
+		AssertConsoleTextNotPresent(value1 = "java.lang.NullPointerException");
 	}
 
-	@priority = "3"
-	test AddUserDisplaySettings {
-		ProductMenu.gotoPortlet(
+	@description = "This is a use case for LPS-95340."
+	@priority = "5"
+	test AddUserAfterPublishContentPageWithAP {
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ContentPages.addPage(pageName = "Test Content Page Name");
+
+		PageEditor.addWidget(portletName = "Asset Publisher");
+
+		PageEditor.clickPublish();
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/test-content-page-name");
+
+		Alert.viewInfoMessageSpecific(infoMessage = "There are no results.");
+
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -525,7 +533,23 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		AssertConsoleTextNotPresent(value1 = "FileNotFoundException");
+	}
+
+	@priority = "3"
+	test AddUserDisplaySettings {
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.addCP(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -535,9 +559,115 @@ definition {
 			userScreenName = "usersn");
 	}
 
+	@description = "This is a use case for LPS-102425."
+	@priority = "4"
+	test AddUserEmailAddressApostrophe {
+		JSONUser.addUser(
+			userEmailAddress = "user1@liferay.com",
+			userFirstName = "user1",
+			userLastName = "user1",
+			userScreenName = "user1");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "user1@liferay.com",
+			userScreenName = "user1");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "user1@liferay.com");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "user1@liferay.com",
+			userLoginFullName = "user1 user1");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Message Boards Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Message Boards Page",
+			widgetName = "Message Boards");
+
+		PermissionsInline.gotoMessageBoardsPG(pageName = "Message Boards Page");
+
+		Role.definePermissionPG(
+			permissionDefinitionKey = "INLINE_PERMISSIONS_ADD_MESSAGE_CHECKBOX",
+			roleTitle = "User");
+
+		Navigator.openURL();
+
+		JSONUser.addUser(
+			userEmailAddress = "user%27ea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "user'ea@liferay.com",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "user'ea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.openURL();
+
+		Navigator.gotoAccountSettings();
+
+		MyAccount.view();
+
+		Navigator.openURL();
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.addPG(
+			threadBody = "MB Thread Message Body as User",
+			threadSubject = "MB Thread Message Subject as User");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "user1@liferay.com",
+			userLoginFullName = "user1 user1");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "user%27ea@liferay.com");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "user'ea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.addPG(
+			threadBody = "MB Thread Message Body as Admin",
+			threadSubject = "MB Thread Message Subject as Admin");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		Blogs.addEntry(
+			entryContent = "Blogs Entry Content as Admin",
+			entryTitle = "Blogs Entry Title as Admin");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test");
+	}
+
 	@priority = "4"
 	test AddUserEmailAddressAt {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -561,7 +691,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressBackSlash {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -576,7 +706,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressBackTick {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -590,7 +720,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressCaret {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -604,7 +734,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressCloseBracket {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -619,7 +749,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressCloseCurlyBrace {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -633,7 +763,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressCloseParenthesis {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -648,7 +778,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressColon {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -663,7 +793,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressDash {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -677,7 +807,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressEqual {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -688,7 +818,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -702,7 +832,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressGreaterThan {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -717,7 +847,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressMinus {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -731,7 +861,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressNull {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -746,7 +876,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressOpenBracket {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -761,7 +891,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressOpenCurlyBrace {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -775,7 +905,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressOpenParenthesis {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -790,7 +920,7 @@ definition {
 
 	@priority = "4"
 	test AddUserEmailAddressPeriod {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -814,7 +944,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressRoot {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -829,7 +959,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressSemicolon {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -844,7 +974,7 @@ definition {
 
 	@priority = "3"
 	test AddUserEmailAddressUnderline {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -855,7 +985,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -871,8 +1001,8 @@ definition {
 	test AddUsers {
 		var count = "1";
 
-		while (!("${count}" == "4")) {
-			ProductMenu.gotoPortlet(
+		while ("${count}" != "4") {
+			ApplicationsMenu.gotoPortlet(
 				category = "Users",
 				panel = "Control Panel",
 				portlet = "Users and Organizations");
@@ -883,13 +1013,13 @@ definition {
 				userLastName = "userln${count}",
 				userScreenName = "usersn${count}");
 
-			var count = MathUtil.sum("${count}", "1");
+			var count = ${count} + 1;
 		}
 
 		var count = "1";
 
-		while (!("${count}" == "4")) {
-			ProductMenu.gotoPortlet(
+		while ("${count}" != "4") {
+			ApplicationsMenu.gotoPortlet(
 				category = "Users",
 				panel = "Control Panel",
 				portlet = "Users and Organizations");
@@ -900,13 +1030,13 @@ definition {
 				userLastName = "userln${count}",
 				userScreenName = "usersn${count}");
 
-			var count = MathUtil.sum("${count}", "1");
+			var count = ${count} + 1;
 		}
 	}
 
 	@priority = "3"
 	test AddUserScreenNameInvalid {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -932,7 +1062,7 @@ definition {
 	test AddUserScreenNameNumber {
 		property custom.properties = "users.screen.name.allow.numeric=true";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -943,7 +1073,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "11111");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -957,7 +1087,7 @@ definition {
 
 	@priority = "4"
 	test ChangeUserPassword {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -968,7 +1098,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -990,7 +1120,7 @@ definition {
 
 	@priority = "4"
 	test ChangeUserPasswordInvalid {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1001,7 +1131,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1025,9 +1155,9 @@ definition {
 
 	@priority = "5"
 	test DeleteOrganization {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1036,7 +1166,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1045,7 +1175,7 @@ definition {
 
 		Organization.deleteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1057,7 +1187,7 @@ definition {
 
 	@priority = "4"
 	test DeleteOrganizationSite {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1066,7 +1196,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1075,7 +1205,7 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -1085,7 +1215,7 @@ definition {
 			siteName = "Organization Name",
 			siteType = "Private");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -1097,7 +1227,7 @@ definition {
 	test DeleteUser {
 		property portal.acceptance = "true";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1108,7 +1238,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1117,7 +1247,7 @@ definition {
 			deactivateType = "Actions",
 			userFirstName = "userfn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1126,14 +1256,14 @@ definition {
 
 		User.viewNoUsersFoundCP();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
 
 		User.deleteCP(userFirstName = "userfn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1149,10 +1279,10 @@ definition {
 
 	@priority = "5"
 	test EditOrganizationSite {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1161,7 +1291,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1170,7 +1300,7 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -1180,7 +1310,7 @@ definition {
 			siteName = "Organization Name",
 			siteType = "Private");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1191,7 +1321,7 @@ definition {
 			orgName = "Organization Name",
 			orgNameEdit = "Organization Name Edit");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1209,7 +1339,7 @@ definition {
 
 	@priority = "3"
 	test EditOrganizationSiteTeam {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1220,7 +1350,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1229,7 +1359,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1238,18 +1368,11 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		Site.openSiteSettingsAdmin(siteURLKey = "organization-name");
 
-		UsersAndOrganizationsNavigator.gotoOrganizations();
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
 
-		Organization.manageMembershipOptionsInSites(
-			allowManualMembershipManagement = "true",
-			orgName = "Organization Name");
-
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1263,20 +1386,18 @@ definition {
 			userName = "userfn userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoSite(site = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Public Page");
 
-		Navigator.openSiteURL(siteName = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "People",
-			panel = "Site Administration",
 			portlet = "Teams");
 
 		Team.addCP(
@@ -1298,12 +1419,12 @@ definition {
 
 	@priority = "5"
 	test EditUserSite {
-		property app.server.types = "jboss,resin,tcserver,tomcat,weblogic,websphere,wildfly";
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
 		property portal.acceptance = "true";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1314,14 +1435,14 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
 
 		Site.addBlankCP(siteName = "Site Name");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1330,21 +1451,21 @@ definition {
 			siteName = "Site Name",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
 
 		User.gotoEditCP(userScreenName = "usersn");
 
-		User.viewUserSiteCP(siteName = "Site Name");
+		User.viewUserInfomationSitesCP(siteName = "Site Name");
 	}
 
 	@priority = "4"
 	test ErrorAddUserScreenNameNumberSiteId {
 		property custom.properties = "users.screen.name.allow.numeric=false";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -1353,7 +1474,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
-			panel = "Site Administration",
 			portlet = "Settings");
 
 		var siteID = "siteID";
@@ -1362,7 +1482,7 @@ definition {
 			locator1 = "SitesEditSite#SITE_ID",
 			value1 = "siteID");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1377,7 +1497,7 @@ definition {
 
 	@priority = "4"
 	test LoginUser {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1388,7 +1508,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1405,13 +1525,40 @@ definition {
 
 		User.loginPG(
 			password = "test",
-			userEmailAddress = "test@liferay.com",
+			userEmailAddress = "test@liferay.com");
+	}
+
+	@priority = "4"
+	test LogoutUserViaURL {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
 			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		User.logoutPG();
+
+		User.loginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Navigator.openSpecificURL(url = "${portalURL}/c/portal/logout");
+
+		User.viewLoggedOutPG();
 	}
 
 	@priority = "4"
 	test RemoveMember {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1422,7 +1569,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1431,7 +1578,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1442,7 +1589,7 @@ definition {
 			orgName = "Organization Name",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1453,7 +1600,7 @@ definition {
 			orgName = "Organization Name",
 			userFullName = "userfn userln");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1467,7 +1614,7 @@ definition {
 
 	@priority = "3"
 	test SearchOrganization {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1476,7 +1623,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1490,7 +1637,7 @@ definition {
 
 	@priority = "4"
 	test SearchUser {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1501,7 +1648,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1515,7 +1662,7 @@ definition {
 
 	@priority = "4"
 	test SearchUserFullName {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1526,7 +1673,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1542,7 +1689,7 @@ definition {
 
 	@priority = "4"
 	test SearchUserQuotes {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1553,7 +1700,7 @@ definition {
 			userLastName = "userln1",
 			userScreenName = "usersn1");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1564,7 +1711,7 @@ definition {
 			userLastName = "userln2",
 			userScreenName = "usersn2");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1604,7 +1751,7 @@ definition {
 
 	@priority = "4"
 	test SearchUsersInOrganization {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1615,7 +1762,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1624,7 +1771,7 @@ definition {
 			orgName = "Organization Name",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1638,7 +1785,7 @@ definition {
 			userName = "userfn userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1662,7 +1809,7 @@ definition {
 
 	@priority = "3"
 	test ViewBack {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1678,7 +1825,7 @@ definition {
 
 	@priority = "4"
 	test ViewInvalidLoginForDeactivatedUserViaActionsMenu {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1689,7 +1836,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1698,7 +1845,7 @@ definition {
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1721,7 +1868,7 @@ definition {
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1732,7 +1879,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1741,7 +1888,7 @@ definition {
 			userEmailAddress = "userea@liferay.com",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1760,6 +1907,10 @@ definition {
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 
+		UserBar.gotoDropdown();
+
+		UserBar.viewFullName(userName = "userfn userln");
+
 		User.logoutPG();
 
 		User.loginUserPG();
@@ -1767,36 +1918,29 @@ definition {
 
 	@priority = "4"
 	test ViewLoginForDeactivatedUserViaDeactivateButton {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		var portalURL = PropsUtil.get("portal.url");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.addCP(
+		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
-
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
 
 		User.deactivateCP(userFirstName = "userfn");
 
-		Navigator.openSpecificURL(url = "${portalURL}/c/portal/logout");
+		User.logoutPG();
 
 		User.loginUserInvalidPG(
 			password = "test",
@@ -1804,15 +1948,13 @@ definition {
 
 		User.loginPG(
 			password = "test",
-			userEmailAddress = "test@liferay.com",
-			userScreenName = "usersn");
+			userEmailAddress = "test@liferay.com");
 	}
 
 	@priority = "4"
 	test ViewOrganizationSiteViaSitesDirectory {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Sites Directory Page");
@@ -1821,7 +1963,7 @@ definition {
 
 		Portlet.addPG(portletName = "Sites Directory");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1830,7 +1972,7 @@ definition {
 			orgName = "Organization Name 1",
 			orgType = "Organization");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1839,16 +1981,15 @@ definition {
 
 		Organization.addSiteCP(orgName = "Organization Name 1");
 
-		ProductMenu.gotoSite(site = "Organization Name 1");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name 1");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Page");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1904,27 +2045,19 @@ definition {
 	test ViewUpdateUserViaJSONWS {
 		property test.name.skip.portal.instance = "CPUsersandorganizations#ViewUpdateUserViaJSONWS";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
 
 		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
 
-		var key_userScreenName = "test";
-
-		AssertClick(
-			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
-			value1 = "test");
-
-		Pause(locator1 = "5000");
-
-		var userId = selenium.getElementValue("UsersAndOrganizationsEditUser#DETAILS_USER_ID_FIELD");
+		var userId = JSONUserSetter.setUserId(userEmailAddress = "test@liferay.com");
 
 		Api.apiJsonwsUserView();
 
@@ -1938,12 +2071,13 @@ definition {
 			userId = "${userId}",
 			userLastName = "test1",
 			userPrefixId = "0",
+			userRoleTitles = "Administrator,Power User",
 			userScreenName = "test1",
 			userSuffixId = "0");
 
 		Navigator.openURL();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -1978,4 +2112,5 @@ definition {
 			locator1 = "UsersAndOrganizationsEditUser#DETAILS_BIRTHDAY_FIELD",
 			value1 = "11/24/1984");
 	}
+
 }

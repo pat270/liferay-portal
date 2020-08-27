@@ -16,8 +16,6 @@ package com.liferay.site.navigation.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SiteNavigationMenuLocalService}.
  *
@@ -25,10 +23,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SiteNavigationMenuLocalService
  * @generated
  */
-@ProviderType
 public class SiteNavigationMenuLocalServiceWrapper
-	implements SiteNavigationMenuLocalService,
-			   ServiceWrapper<SiteNavigationMenuLocalService> {
+	implements ServiceWrapper<SiteNavigationMenuLocalService>,
+			   SiteNavigationMenuLocalService {
 
 	public SiteNavigationMenuLocalServiceWrapper(
 		SiteNavigationMenuLocalService siteNavigationMenuLocalService) {
@@ -72,6 +69,10 @@ public class SiteNavigationMenuLocalServiceWrapper
 	/**
 	 * Adds the site navigation menu to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SiteNavigationMenuLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param siteNavigationMenu the site navigation menu
 	 * @return the site navigation menu that was added
 	 */
@@ -83,6 +84,18 @@ public class SiteNavigationMenuLocalServiceWrapper
 
 		return _siteNavigationMenuLocalService.addSiteNavigationMenu(
 			siteNavigationMenu);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _siteNavigationMenuLocalService.createPersistedModel(
+			primaryKeyObj);
 	}
 
 	/**
@@ -114,6 +127,10 @@ public class SiteNavigationMenuLocalServiceWrapper
 	/**
 	 * Deletes the site navigation menu with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SiteNavigationMenuLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param siteNavigationMenuId the primary key of the site navigation menu
 	 * @return the site navigation menu that was removed
 	 * @throws PortalException if a site navigation menu with the primary key could not be found
@@ -129,6 +146,10 @@ public class SiteNavigationMenuLocalServiceWrapper
 
 	/**
 	 * Deletes the site navigation menu from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SiteNavigationMenuLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param siteNavigationMenu the site navigation menu
 	 * @return the site navigation menu that was removed
@@ -148,6 +169,11 @@ public class SiteNavigationMenuLocalServiceWrapper
 	@Override
 	public void deleteSiteNavigationMenus(long groupId) {
 		_siteNavigationMenuLocalService.deleteSiteNavigationMenus(groupId);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _siteNavigationMenuLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -172,7 +198,7 @@ public class SiteNavigationMenuLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.site.navigation.model.impl.SiteNavigationMenuModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.site.navigation.model.impl.SiteNavigationMenuModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -193,7 +219,7 @@ public class SiteNavigationMenuLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.site.navigation.model.impl.SiteNavigationMenuModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.site.navigation.model.impl.SiteNavigationMenuModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -323,6 +349,9 @@ public class SiteNavigationMenuLocalServiceWrapper
 		return _siteNavigationMenuLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -368,7 +397,7 @@ public class SiteNavigationMenuLocalServiceWrapper
 	 * Returns a range of all the site navigation menus.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.site.navigation.model.impl.SiteNavigationMenuModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.site.navigation.model.impl.SiteNavigationMenuModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of site navigation menus
@@ -395,7 +424,8 @@ public class SiteNavigationMenuLocalServiceWrapper
 		getSiteNavigationMenus(
 			long groupId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				orderByComparator) {
+				<com.liferay.site.navigation.model.SiteNavigationMenu>
+					orderByComparator) {
 
 		return _siteNavigationMenuLocalService.getSiteNavigationMenus(
 			groupId, start, end, orderByComparator);
@@ -406,7 +436,8 @@ public class SiteNavigationMenuLocalServiceWrapper
 		getSiteNavigationMenus(
 			long groupId, String keywords, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				orderByComparator) {
+				<com.liferay.site.navigation.model.SiteNavigationMenu>
+					orderByComparator) {
 
 		return _siteNavigationMenuLocalService.getSiteNavigationMenus(
 			groupId, keywords, start, end, orderByComparator);
@@ -507,6 +538,10 @@ public class SiteNavigationMenuLocalServiceWrapper
 
 	/**
 	 * Updates the site navigation menu in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SiteNavigationMenuLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param siteNavigationMenu the site navigation menu
 	 * @return the site navigation menu that was updated

@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>WorkflowSubmissionsTask</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">WorkflowSubmissionsTask</td></tr>
+</thead>
+<tbody>
+<!--MENU-->
+<tr>
+	<td>MENU_WITHDRAW_SUBMISSION</td>
+	<td>//a[contains(@id,'_menu_withdraw-submission_1')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--PREVIEW-->
+<tr>
+	<td>PREVIEW</td>
+	<td>//div[@class='h4 panel-title']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_CONTENT</td>
+	<td>//div[@id='preview']//div[@class='panel-body']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_VIEW</td>
+	<td>//span[@class='icon-monospaced']/*[name()='svg'][contains(@class,'lexicon-icon-view')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_EDIT</td>
+	<td>//*[@data-qa-id='editButton'] | //span/*[name()='svg'][contains(@class,'icon-pencil')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_USER</td>
+	<td>//div[contains(@class,'contacts-container')]//div[@class='lfr-contact-extra']</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

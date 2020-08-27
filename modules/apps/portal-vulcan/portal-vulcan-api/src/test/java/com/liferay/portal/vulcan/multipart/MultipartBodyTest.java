@@ -75,11 +75,11 @@ public class MultipartBodyTest {
 			Collections.singletonMap(
 				"key",
 				JSONUtil.put(
-					"string", "Hello"
+					"list", Arrays.asList(1, 2, 3)
 				).put(
 					"number", 42
 				).put(
-					"list", Arrays.asList(1, 2, 3)
+					"string", "Hello"
 				).toString()));
 
 		TestClass testClass = multipartBody.getValueAsInstance(
@@ -95,10 +95,11 @@ public class MultipartBodyTest {
 
 			throw new AssertionError("Should thrown exception");
 		}
-		catch (Exception e) {
-			assertThat(e, is(instanceOf(BadRequestException.class)));
+		catch (Exception exception) {
+			assertThat(exception, is(instanceOf(BadRequestException.class)));
 			assertThat(
-				e.getMessage(), is("Missing JSON property with the key: null"));
+				exception.getMessage(),
+				is("Missing JSON property with the key: null"));
 		}
 
 		// Without object mapper
@@ -112,14 +113,15 @@ public class MultipartBodyTest {
 
 			throw new AssertionError();
 		}
-		catch (Exception e) {
-			assertThat(e, is(instanceOf(InternalServerErrorException.class)));
+		catch (Exception exception) {
+			assertThat(
+				exception, is(instanceOf(InternalServerErrorException.class)));
 
 			String expectedMessage =
 				"Unable to get object mapper for class " +
 					TestClass.class.getName();
 
-			assertThat(e.getMessage(), is(expectedMessage));
+			assertThat(exception.getMessage(), is(expectedMessage));
 		}
 	}
 
@@ -133,11 +135,11 @@ public class MultipartBodyTest {
 			Collections.singletonMap(
 				"key",
 				JSONUtil.put(
-					"string", "Hello"
+					"list", Arrays.asList(1, 2, 3)
 				).put(
 					"number", 42
 				).put(
-					"list", Arrays.asList(1, 2, 3)
+					"string", "Hello"
 				).toString()));
 
 		Optional<TestClass> testClassOptional =
@@ -166,9 +168,9 @@ public class MultipartBodyTest {
 			Collections.singletonMap(
 				"key",
 				JSONUtil.put(
-					"string", "Hello"
-				).put(
 					"number", 42
+				).put(
+					"string", "Hello"
 				).put(
 					"wrongKey", Arrays.asList(1, 2, 3)
 				).toString()));
@@ -178,8 +180,9 @@ public class MultipartBodyTest {
 
 			throw new AssertionError();
 		}
-		catch (Exception e) {
-			assertThat(e, is(instanceOf(UnrecognizedPropertyException.class)));
+		catch (Exception exception) {
+			assertThat(
+				exception, is(instanceOf(UnrecognizedPropertyException.class)));
 		}
 	}
 

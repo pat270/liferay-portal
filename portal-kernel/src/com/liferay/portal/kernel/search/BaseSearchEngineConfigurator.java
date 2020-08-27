@@ -15,9 +15,6 @@
 package com.liferay.portal.kernel.search;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.concurrent.CallerRunsPolicy;
-import com.liferay.portal.kernel.concurrent.RejectedExecutionHandler;
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
@@ -32,6 +29,7 @@ import com.liferay.portal.kernel.search.messaging.BaseSearchEngineMessageListene
 import com.liferay.portal.kernel.search.messaging.SearchReaderMessageListener;
 import com.liferay.portal.kernel.search.messaging.SearchWriterMessageListener;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalRunMode;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -44,10 +42,12 @@ import com.liferay.registry.dependency.ServiceDependencyListener;
 import com.liferay.registry.dependency.ServiceDependencyManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author Michael C. Han
@@ -66,9 +66,6 @@ public abstract class BaseSearchEngineConfigurator
 				@Override
 				public void dependenciesFulfilled() {
 					Registry registry = RegistryUtil.getRegistry();
-
-					_destinationServiceRegistrar = registry.getServiceRegistrar(
-						Destination.class);
 
 					_messageBusServiceReference = registry.getServiceReference(
 						MessageBus.class);
@@ -113,7 +110,13 @@ public abstract class BaseSearchEngineConfigurator
 			registry.ungetService(_messageBusServiceReference);
 		}
 
-		_destinationServiceRegistrar.destroy();
+		for (ServiceRegistrar<Destination> destinationServiceRegistrar :
+				_destinationServiceRegistrars.values()) {
+
+			destinationServiceRegistrar.destroy();
+		}
+
+		_destinationServiceRegistrars.clear();
 	}
 
 	@Override
@@ -168,7 +171,7 @@ public abstract class BaseSearchEngineConfigurator
 				_INDEX_SEARCH_WRITER_MAX_QUEUE_SIZE);
 
 			RejectedExecutionHandler rejectedExecutionHandler =
-				new CallerRunsPolicy() {
+				new ThreadPoolExecutor.CallerRunsPolicy() {
 
 					@Override
 					public void rejectedExecution(
@@ -202,11 +205,15 @@ public abstract class BaseSearchEngineConfigurator
 	protected void destroySearchEngine(
 		SearchEngineRegistration searchEngineRegistration) {
 
-		_messageBus.removeDestination(
-			searchEngineRegistration.getSearchReaderDestinationName());
+		Destination searchReaderDestination = getSearchReaderDestination(
+			_messageBus, searchEngineRegistration.getSearchEngineId());
 
-		_messageBus.removeDestination(
-			searchEngineRegistration.getSearchWriterDestinationName());
+		searchReaderDestination.unregisterMessageListeners();
+
+		Destination searchWriterDestination = getSearchWriterDestination(
+			_messageBus, searchEngineRegistration.getSearchEngineId());
+
+		searchWriterDestination.unregisterMessageListeners();
 
 		SearchEngineHelper searchEngineHelper = getSearchEngineHelper();
 
@@ -214,21 +221,23 @@ public abstract class BaseSearchEngineConfigurator
 			searchEngineRegistration.getSearchEngineId());
 
 		if (!searchEngineRegistration.isOverride()) {
+			ServiceRegistrar<Destination> destinationServiceRegistrar =
+				_destinationServiceRegistrars.remove(
+					searchEngineRegistration.getSearchEngineId());
+
+			if (destinationServiceRegistrar != null) {
+				destinationServiceRegistrar.destroy();
+			}
+
 			return;
 		}
 
 		SearchEngineProxyWrapper originalSearchEngineProxy =
 			searchEngineRegistration.getOriginalSearchEngineProxyWrapper();
 
-		Destination searchReaderDestination = getSearchReaderDestination(
-			_messageBus, searchEngineRegistration.getSearchEngineId());
-
 		registerInvokerMessageListener(
 			searchReaderDestination,
 			searchEngineRegistration.getOriginalSearchReaderMessageListeners());
-
-		Destination searchWriterDestination = getSearchWriterDestination(
-			_messageBus, searchEngineRegistration.getSearchEngineId());
 
 		registerInvokerMessageListener(
 			searchWriterDestination,
@@ -249,7 +258,16 @@ public abstract class BaseSearchEngineConfigurator
 
 	protected abstract IndexWriter getIndexWriter();
 
-	protected abstract ClassLoader getOperatingClassloader();
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getOperatingClassLoader()}
+	 */
+	@Deprecated
+	protected ClassLoader getOperatingClassloader() {
+		return getOperatingClassLoader();
+	}
+
+	protected abstract ClassLoader getOperatingClassLoader();
 
 	protected abstract SearchEngineHelper getSearchEngineHelper();
 
@@ -268,7 +286,8 @@ public abstract class BaseSearchEngineConfigurator
 			searchReaderDestination = createSearchReaderDestination(
 				searchReaderDestinationName);
 
-			messageBus.addDestination(searchReaderDestination);
+			_registerSearchEngineDestination(
+				searchEngineId, searchReaderDestination);
 		}
 
 		return searchReaderDestination;
@@ -289,7 +308,8 @@ public abstract class BaseSearchEngineConfigurator
 			searchWriterDestination = createSearchWriterDestination(
 				searchWriterDestinationName);
 
-			messageBus.addDestination(searchWriterDestination);
+			_registerSearchEngineDestination(
+				searchEngineId, searchWriterDestination);
 		}
 
 		return searchWriterDestination;
@@ -331,15 +351,11 @@ public abstract class BaseSearchEngineConfigurator
 		searchEngineRegistration.setSearchReaderDestinationName(
 			searchReaderDestination.getName());
 
-		_registerSearchEngineDestination(searchReaderDestination);
-
 		Destination searchWriterDestination = getSearchWriterDestination(
 			_messageBus, searchEngineId);
 
 		searchEngineRegistration.setSearchWriterDestinationName(
 			searchWriterDestination.getName());
-
-		_registerSearchEngineDestination(searchWriterDestination);
 
 		SearchEngineHelper searchEngineHelper = getSearchEngineHelper();
 
@@ -356,17 +372,8 @@ public abstract class BaseSearchEngineConfigurator
 				searchReaderDestination, searchWriterDestination,
 				searchEngineRegistration);
 
-			_messageBus.removeDestination(
-				searchReaderDestination.getName(), false);
-
-			searchReaderDestination = getSearchReaderDestination(
-				_messageBus, searchEngineId);
-
-			_messageBus.removeDestination(
-				searchWriterDestination.getName(), false);
-
-			searchWriterDestination = getSearchWriterDestination(
-				_messageBus, searchEngineId);
+			searchReaderDestination.unregisterMessageListeners();
+			searchWriterDestination.unregisterMessageListeners();
 		}
 
 		createSearchEngineListeners(
@@ -405,7 +412,7 @@ public abstract class BaseSearchEngineConfigurator
 		baseSearchEngineMessageListener.setSearchEngineId(searchEngineId);
 
 		destination.register(
-			baseSearchEngineMessageListener, getOperatingClassloader());
+			baseSearchEngineMessageListener, getOperatingClassLoader());
 	}
 
 	protected void savePreviousSearchEngineListeners(
@@ -450,12 +457,27 @@ public abstract class BaseSearchEngineConfigurator
 		searchEngine.initialize(CompanyConstants.SYSTEM);
 	}
 
-	private void _registerSearchEngineDestination(Destination destination) {
-		Map<String, Object> properties = new HashMap<>();
+	private void _registerSearchEngineDestination(
+		String searchEngineId, Destination destination) {
 
-		properties.put("destination.name", destination.getName());
+		Map<String, Object> properties = HashMapBuilder.<String, Object>put(
+			"destination.name", destination.getName()
+		).build();
 
-		_destinationServiceRegistrar.registerService(
+		ServiceRegistrar<Destination> destinationServiceRegistrar =
+			_destinationServiceRegistrars.get(searchEngineId);
+
+		if (destinationServiceRegistrar == null) {
+			Registry registry = RegistryUtil.getRegistry();
+
+			destinationServiceRegistrar = registry.getServiceRegistrar(
+				Destination.class);
+
+			_destinationServiceRegistrars.put(
+				searchEngineId, destinationServiceRegistrar);
+		}
+
+		destinationServiceRegistrar.registerService(
 			Destination.class, destination, properties);
 	}
 
@@ -466,7 +488,8 @@ public abstract class BaseSearchEngineConfigurator
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseSearchEngineConfigurator.class);
 
-	private ServiceRegistrar<Destination> _destinationServiceRegistrar;
+	private final Map<String, ServiceRegistrar<Destination>>
+		_destinationServiceRegistrars = new ConcurrentHashMap<>();
 	private volatile MessageBus _messageBus;
 	private volatile ServiceReference<MessageBus> _messageBusServiceReference;
 	private String _originalSearchEngineId;

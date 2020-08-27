@@ -18,18 +18,16 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
 import com.liferay.portal.spring.extender.internal.bean.ApplicationContextServicePublisherUtil;
 import com.liferay.portal.spring.extender.internal.jdbc.DataSourceUtil;
+import com.liferay.portal.spring.extender.internal.loader.ModuleAggregareClassLoader;
 
 import java.beans.Introspector;
 
 import java.util.Dictionary;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
@@ -60,13 +58,8 @@ public class ModuleApplicationContextRegistrator {
 
 		ClassLoader extendeeClassLoader = extendeeBundleWiring.getClassLoader();
 
-		BundleWiring extenderBundleWiring = _extenderBundle.adapt(
-			BundleWiring.class);
-
-		ClassLoader extenderClassLoader = extenderBundleWiring.getClassLoader();
-
-		ClassLoader classLoader = AggregateClassLoader.getAggregateClassLoader(
-			extendeeClassLoader, extenderClassLoader);
+		ClassLoader classLoader = new ModuleAggregareClassLoader(
+			extendeeClassLoader, _extendeeBundle.getSymbolicName());
 
 		try {
 			Dictionary<String, String> headers = _extendeeBundle.getHeaders(
@@ -80,11 +73,9 @@ public class ModuleApplicationContextRegistrator {
 			_configurableApplicationContext.addBeanFactoryPostProcessor(
 				beanFactory -> {
 					if (!beanFactory.containsBean("liferayDataSource")) {
-						DataSource dataSource = DataSourceUtil.getDataSource(
-							extendeeClassLoader);
-
 						beanFactory.registerSingleton(
-							"liferayDataSource", dataSource);
+							"liferayDataSource",
+							DataSourceUtil.getDataSource(extendeeClassLoader));
 					}
 				});
 
@@ -111,16 +102,21 @@ public class ModuleApplicationContextRegistrator {
 					_configurableApplicationContext,
 					_extendeeBundle.getBundleContext());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new Exception(
-				"Unable to start " + _extendeeBundle.getSymbolicName(), e);
+				"Unable to start " + _extendeeBundle.getSymbolicName(),
+				exception);
 		}
 		finally {
 			CachedIntrospectionResults.clearClassLoader(classLoader);
 
 			CachedIntrospectionResults.clearClassLoader(extendeeClassLoader);
 
-			CachedIntrospectionResults.clearClassLoader(extenderClassLoader);
+			BundleWiring extenderBundleWiring = _extenderBundle.adapt(
+				BundleWiring.class);
+
+			CachedIntrospectionResults.clearClassLoader(
+				extenderBundleWiring.getClassLoader());
 
 			Introspector.flushCaches();
 		}

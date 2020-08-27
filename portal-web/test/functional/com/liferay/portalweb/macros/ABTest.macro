@@ -1,0 +1,63 @@
+definition {
+
+	macro checkAnalyticsCloudInfo {
+		Click(locator1 = "ABTest#CONTROL_VARIANT");
+
+		Click(locator1 = "ABTest#VIEW_DATA_ANALYTICS_CLOUD_BUTTON");
+	}
+
+	macro createABTestByBounceRate {
+		Click(locator1 = "ABTest#AB_TEST_BUTTON");
+
+		Click(locator1 = "ABTest#CREATE_TEST_BUTTON");
+
+		Click(locator1 = "ABTest#AB_TEST_TITLE_FIELD");
+
+		Type(
+			locator1 = "ABTest#AB_TEST_TITLE_FIELD",
+			value1 = "${testTitle}");
+
+		Click(locator1 = "ABTest#SAVE_AB_TEST_BUTTON");
+	}
+
+	macro createVariant {
+		Click(locator1 = "ABTest#CREATE_VARIANT_BUTTON");
+
+		Click(locator1 = "ABTest#VARIANT_NAME_FIELD");
+
+		Type(
+			locator1 = "ABTest#VARIANT_NAME_FIELD",
+			value1 = "${variantName}");
+
+		Click(locator1 = "ABTest#SAVE_VARIANT_NAME_BUTTON");
+	}
+
+	macro deleteVariant {
+		Click(locator1 = "ABTest#VARIANT_DROPDOWN");
+
+		ClickNoError(locator1 = "ABTest#DELETE_VARIANT_BUTTON");
+
+		AssertConfirm.assertConfirmationNoError(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro runTest {
+		Click(locator1 = "ABTest#REVIEW_AND_RUN_TEST_BUTTON");
+
+		if (IsElementPresent(locator1 = "ABTest#RUN_TEST_BUTTON")) {
+			Click(locator1 = "ABTest#RUN_TEST_BUTTON");
+
+			Click(locator1 = "ABTest#OK_BUTTON");
+		}
+	}
+
+	macro terminateTest {
+		ClickNoError(locator1 = "ABTest#TERMINATE_TEST_BUTTON");
+
+		AssertConfirm.assertConfirmationNoError(value1 = "Are you sure you want to terminate this test?");
+
+		Alert.viewSuccessMessage();
+	}
+
+}

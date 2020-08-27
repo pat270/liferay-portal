@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.SynchronousInvocationHandler;
+import com.liferay.portal.kernel.test.constants.ServiceTestConstants;
 import com.liferay.portal.kernel.test.randomizerbumpers.UniqueStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -26,8 +28,6 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.service.impl.PortletPreferencesLocalServiceImpl;
-import com.liferay.portal.service.test.ServiceTestUtil;
-import com.liferay.portal.service.test.SynchronousInvocationHandler;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
 import com.liferay.portal.spring.transaction.DefaultTransactionExecutor;
 import com.liferay.portal.test.rule.ExpectedDBType;
@@ -74,7 +74,7 @@ public class PortletPreferencesLocalServiceConcurrentTest {
 	public void setUp() throws NoSuchMethodException {
 		Assume.assumeTrue(PropsValues.RETRY_ADVICE_MAX_RETRIES != 0);
 
-		_threadCount = ServiceTestUtil.THREAD_COUNT;
+		_threadCount = ServiceTestConstants.THREAD_COUNT;
 
 		if ((PropsValues.RETRY_ADVICE_MAX_RETRIES > 0) &&
 			(_threadCount > PropsValues.RETRY_ADVICE_MAX_RETRIES)) {
@@ -165,6 +165,11 @@ public class PortletPreferencesLocalServiceConcurrentTest {
 						expectedType = ExpectedType.CONTAINS
 					),
 					@ExpectedLog(
+						expectedDBType = ExpectedDBType.SQLSERVER,
+						expectedLog = "Cannot insert duplicate key row",
+						expectedType = ExpectedType.PREFIX
+					),
+					@ExpectedLog(
 						expectedDBType = ExpectedDBType.SYBASE,
 						expectedLog = "Attempt to insert duplicate key row",
 						expectedType = ExpectedType.CONTAINS
@@ -197,10 +202,12 @@ public class PortletPreferencesLocalServiceConcurrentTest {
 				FutureTask<PortletPreferences> futureTask = new FutureTask<>(
 					callable);
 
-				Thread thread = new Thread(
-					futureTask,
+				String className =
 					PortletPreferencesLocalServiceConcurrentTest.class.
-						getName() + "-concurrent-getPreferences-" + i);
+						getName();
+
+				Thread thread = new Thread(
+					futureTask, className + "-concurrent-getPreferences-" + i);
 
 				thread.start();
 

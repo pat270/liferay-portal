@@ -17,6 +17,7 @@ package com.liferay.portlet.ratings.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.ratings.kernel.model.RatingsStats;
 
 import java.io.Externalizable;
@@ -24,7 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.Date;
 
 /**
  * The cache model class for representing RatingsStats in entity cache.
@@ -32,24 +33,25 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class RatingsStatsCacheModel
-	implements CacheModel<RatingsStats>, Externalizable {
+	implements CacheModel<RatingsStats>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RatingsStatsCacheModel)) {
+		if (!(object instanceof RatingsStatsCacheModel)) {
 			return false;
 		}
 
 		RatingsStatsCacheModel ratingsStatsCacheModel =
-			(RatingsStatsCacheModel)obj;
+			(RatingsStatsCacheModel)object;
 
-		if (statsId == ratingsStatsCacheModel.statsId) {
+		if ((statsId == ratingsStatsCacheModel.statsId) &&
+			(mvccVersion == ratingsStatsCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -58,17 +60,37 @@ public class RatingsStatsCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, statsId);
+		int hashCode = HashUtil.hash(0, statsId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(15);
+		StringBundler sb = new StringBundler(23);
 
-		sb.append("{statsId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", statsId=");
 		sb.append(statsId);
 		sb.append(", companyId=");
 		sb.append(companyId);
+		sb.append(", createDate=");
+		sb.append(createDate);
+		sb.append(", modifiedDate=");
+		sb.append(modifiedDate);
 		sb.append(", classNameId=");
 		sb.append(classNameId);
 		sb.append(", classPK=");
@@ -88,8 +110,25 @@ public class RatingsStatsCacheModel
 	public RatingsStats toEntityModel() {
 		RatingsStatsImpl ratingsStatsImpl = new RatingsStatsImpl();
 
+		ratingsStatsImpl.setMvccVersion(mvccVersion);
+		ratingsStatsImpl.setCtCollectionId(ctCollectionId);
 		ratingsStatsImpl.setStatsId(statsId);
 		ratingsStatsImpl.setCompanyId(companyId);
+
+		if (createDate == Long.MIN_VALUE) {
+			ratingsStatsImpl.setCreateDate(null);
+		}
+		else {
+			ratingsStatsImpl.setCreateDate(new Date(createDate));
+		}
+
+		if (modifiedDate == Long.MIN_VALUE) {
+			ratingsStatsImpl.setModifiedDate(null);
+		}
+		else {
+			ratingsStatsImpl.setModifiedDate(new Date(modifiedDate));
+		}
+
 		ratingsStatsImpl.setClassNameId(classNameId);
 		ratingsStatsImpl.setClassPK(classPK);
 		ratingsStatsImpl.setTotalEntries(totalEntries);
@@ -103,9 +142,15 @@ public class RatingsStatsCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
+
 		statsId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
+		createDate = objectInput.readLong();
+		modifiedDate = objectInput.readLong();
 
 		classNameId = objectInput.readLong();
 
@@ -120,9 +165,15 @@ public class RatingsStatsCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		objectOutput.writeLong(statsId);
 
 		objectOutput.writeLong(companyId);
+		objectOutput.writeLong(createDate);
+		objectOutput.writeLong(modifiedDate);
 
 		objectOutput.writeLong(classNameId);
 
@@ -135,8 +186,12 @@ public class RatingsStatsCacheModel
 		objectOutput.writeDouble(averageScore);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public long statsId;
 	public long companyId;
+	public long createDate;
+	public long modifiedDate;
 	public long classNameId;
 	public long classPK;
 	public int totalEntries;

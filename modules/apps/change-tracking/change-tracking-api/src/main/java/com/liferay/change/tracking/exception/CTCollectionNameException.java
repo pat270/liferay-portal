@@ -16,12 +16,9 @@ package com.liferay.change.tracking.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class CTCollectionNameException extends PortalException {
 
 	public CTCollectionNameException() {
@@ -31,12 +28,12 @@ public class CTCollectionNameException extends PortalException {
 		super(msg);
 	}
 
-	public CTCollectionNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public CTCollectionNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public CTCollectionNameException(Throwable cause) {
-		super(cause);
+	public CTCollectionNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -77,7 +76,7 @@ public class ManageCustomFieldsPortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -102,17 +101,14 @@ public class ManageCustomFieldsPortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		try {
-			PermissionChecker permissionChecker =
-				themeDisplay.getPermissionChecker();
-
 			if (PortletPermissionUtil.contains(
-					permissionChecker, PortletKeys.EXPANDO,
+					themeDisplay.getPermissionChecker(), PortletKeys.EXPANDO,
 					ActionKeys.ACCESS_IN_CONTROL_PANEL)) {
 
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

@@ -22,7 +22,7 @@ import com.liferay.portal.kernel.security.auto.login.AutoLogin;
 import com.liferay.portal.kernel.security.auto.login.BaseAutoLogin;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.security.auto.login.basic.auth.header.module.configuration.BasicAuthHeaderAutoLoginConfiguration;
+import com.liferay.portal.security.auto.login.internal.basic.auth.header.configuration.BasicAuthHeaderAutoLoginConfiguration;
 import com.liferay.portal.security.auto.login.internal.basic.auth.header.constants.BasicAuthHeaderAutoLoginConstants;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +65,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Tomas Polesovsky
  */
 @Component(
-	configurationPid = "com.liferay.portal.security.auto.login.basic.auth.header.module.configuration.BasicAuthHeaderAutoLoginConfiguration",
+	configurationPid = "com.liferay.portal.security.auto.login.internal.basic.auth.header.configuration.BasicAuthHeaderAutoLoginConfiguration",
 	immediate = true, property = "type=basic.auth.header",
 	service = AutoLogin.class
 )
@@ -77,9 +77,7 @@ public class BasicAuthHeaderAutoLogin extends BaseAutoLogin {
 			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		long companyId = _portal.getCompanyId(httpServletRequest);
-
-		if (!isEnabled(companyId)) {
+		if (!isEnabled(_portal.getCompanyId(httpServletRequest))) {
 			return null;
 		}
 
@@ -117,10 +115,13 @@ public class BasicAuthHeaderAutoLogin extends BaseAutoLogin {
 			return _configurationProvider.getConfiguration(
 				BasicAuthHeaderAutoLoginConfiguration.class,
 				new CompanyServiceSettingsLocator(
-					companyId, BasicAuthHeaderAutoLoginConstants.SERVICE_NAME));
+					companyId, BasicAuthHeaderAutoLoginConstants.SERVICE_NAME,
+					BasicAuthHeaderAutoLoginConfiguration.class.getName()));
 		}
-		catch (ConfigurationException ce) {
-			_log.error("Unable to get basic auth header configuration", ce);
+		catch (ConfigurationException configurationException) {
+			_log.error(
+				"Unable to get basic auth header configuration",
+				configurationException);
 		}
 
 		return null;

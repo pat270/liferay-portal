@@ -41,6 +41,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Raymond Augé
@@ -85,7 +88,9 @@ public class Transformer {
 	public String transform(
 			ThemeDisplay themeDisplay, Map<String, Object> contextObjects,
 			String script, String langType,
-			UnsyncStringWriter unsyncStringWriter)
+			UnsyncStringWriter unsyncStringWriter,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		if (Validator.isNull(langType)) {
@@ -136,6 +141,8 @@ public class Transformer {
 			template.put("siteGroupId", siteGroupId);
 			template.put("templatesPath", templatesPath);
 
+			template.prepareTaglib(httpServletRequest, httpServletResponse);
+
 			// Deprecated variables
 
 			template.put("groupId", scopeGroupId);
@@ -144,8 +151,8 @@ public class Transformer {
 			template.processTemplate(
 				unsyncStringWriter, () -> getErrorTemplateResource(langType));
 		}
-		catch (Exception e) {
-			throw new TransformException("Unhandled exception", e);
+		catch (Exception exception) {
+			throw new TransformException("Unhandled exception", exception);
 		}
 
 		return unsyncStringWriter.toString();

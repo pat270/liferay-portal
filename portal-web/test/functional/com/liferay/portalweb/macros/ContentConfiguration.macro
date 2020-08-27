@@ -1,4 +1,5 @@
 definition {
+
 	macro checkContentNameList {
 		for (var contentName : list "${checkContentNameList}") {
 			var key_contentName = "${contentName}";
@@ -58,14 +59,18 @@ definition {
 	}
 
 	macro contentDateRange {
+		if (IsElementPresent(locator1 = "Button#PUBLISH")) {
+			ScrollWebElementIntoView(locator1 = "Button#PUBLISH");
+		}
+
+		var browserType = PropsUtil.get("browser.type");
+
 		if ("${contentDateRange}" == "All") {
 			Click(locator1 = "StagingPublishToLive#CONTENT_ALL");
-
-			Click(locator1 = "Link#REFRESH_COUNTS");
 		}
 
 		if ("${contentDateRange}" == "Date Range") {
-			Click(locator1 = "StagingPublishToLive#CONTENT_DATE_RANGE");
+			Click(locator1 = "Radio#CHOOSE_CONTENT_DATE_RANGE_CHANGE");
 
 			var key_contentDateRange = "${contentDateRange}";
 
@@ -76,13 +81,19 @@ definition {
 			Type(
 				locator1 = "Select#DATE_RANGE_END_DATE",
 				value1 = "${dateRangeEndDate}");
-
-			Click(locator1 = "Link#REFRESH_COUNTS");
 		}
 
-		if ("${contentDateRange}" == "Last") {
-			Click(locator1 = "StagingPublishToLive#CONTENT_LAST");
+		if (("${contentDateRange}" == "Last") && ("${browserType}" == "safari")) {
+			Click.javaScriptClick(locator1 = "StagingPublishToLive#CONTENT_LAST");
+		}
+		else if ("${contentDateRange}" == "Last") {
+			Click.clickNoMouseOverNoWaitForVisible(locator1 = "StagingPublishToLive#CONTENT_LAST");
+		}
 
+		if ("${browserType}" == "safari") {
+			Click.javaScriptClick(locator1 = "Link#REFRESH_COUNTS");
+		}
+		else {
 			Click(locator1 = "Link#REFRESH_COUNTS");
 		}
 	}
@@ -99,6 +110,14 @@ definition {
 		Panel.expandPanel(panel = "Permissions");
 
 		Click(locator1 = "Checkbox#PERMISSIONS");
+	}
+
+	macro pageDeletion {
+		Click(locator1 = "StagingPublishToLive#CONTENT_CHOOSE_CONTENT_DELETION_CHECKBOX");
+
+		AssertElementPresent(locator1 = "StagingPublishToLive#PAGES_CHOOSE_PAGE_DELETION_CHECKBOX");
+
+		Click(locator1 = "StagingPublishToLive#PAGES_CHOOSE_PAGE_DELETION_CHECKBOX");
 	}
 
 	macro setTitle {
@@ -150,7 +169,7 @@ definition {
 	macro uncheckSubSubContent {
 		var key_contentName = "${contentName}";
 
-		Click(locator1 = "PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX");
+		Check(locator1 = "PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX");
 
 		AssertClick(
 			locator1 = "ExportImport#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK",
@@ -165,4 +184,5 @@ definition {
 			locator1 = "Button#OK",
 			value1 = "OK");
 	}
+
 }

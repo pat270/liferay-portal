@@ -134,10 +134,8 @@ public class UpgradeEventsDisplayPortletId extends BaseUpgradePortletId {
 			});
 		actionableDynamicQuery.setParallel(true);
 		actionableDynamicQuery.setPerformActionMethod(
-			(PortletPreferences portletPreference) -> {
-				updatePortletPreferences(
-					portletPreference, oldRootPortletId, newRootPortletId);
-			});
+			(PortletPreferences portletPreference) -> updatePortletPreferences(
+				portletPreference, oldRootPortletId, newRootPortletId));
 
 		actionableDynamicQuery.performActions();
 	}
@@ -155,9 +153,9 @@ public class UpgradeEventsDisplayPortletId extends BaseUpgradePortletId {
 
 			updateLayouts(oldRootPortletId, newRootPortletId, false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 	}

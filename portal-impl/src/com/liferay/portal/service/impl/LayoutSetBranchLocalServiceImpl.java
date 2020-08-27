@@ -135,7 +135,7 @@ public class LayoutSetBranchLocalServiceImpl
 		layoutSetBranch.setCss(css);
 		layoutSetBranch.setSettings(settings);
 
-		layoutSetBranchPersistence.update(layoutSetBranch);
+		layoutSetBranch = layoutSetBranchPersistence.update(layoutSetBranch);
 
 		// Resources
 
@@ -151,9 +151,9 @@ public class LayoutSetBranchLocalServiceImpl
 		if (layoutSetBranch.isMaster() ||
 			(copyLayoutSetBranchId == LayoutSetBranchConstants.ALL_BRANCHES)) {
 
-			List<Layout> layouts = layoutPersistence.findByG_P_Head(
-				layoutSetBranch.getGroupId(), layoutSetBranch.isPrivateLayout(),
-				false);
+			List<Layout> layouts = layoutPersistence.findByG_P(
+				layoutSetBranch.getGroupId(),
+				layoutSetBranch.isPrivateLayout());
 
 			for (Layout layout : layouts) {
 				LayoutBranch layoutBranch =
@@ -477,9 +477,7 @@ public class LayoutSetBranchLocalServiceImpl
 		layoutSetBranch.setName(name);
 		layoutSetBranch.setDescription(description);
 
-		layoutSetBranchPersistence.update(layoutSetBranch);
-
-		return layoutSetBranch;
+		return layoutSetBranchPersistence.update(layoutSetBranch);
 	}
 
 	protected String getLayoutBranchName(
@@ -538,35 +536,41 @@ public class LayoutSetBranchLocalServiceImpl
 					LayoutSetBranchNameException.DUPLICATE);
 			}
 		}
-		catch (NoSuchLayoutSetBranchException nslsbe) {
+		catch (NoSuchLayoutSetBranchException noSuchLayoutSetBranchException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nslsbe, nslsbe);
+				_log.debug(
+					noSuchLayoutSetBranchException,
+					noSuchLayoutSetBranchException);
 			}
 		}
 
-		if (master) {
-			try {
-				LayoutSetBranch masterLayoutSetBranch =
-					layoutSetBranchPersistence.findByG_P_M_First(
-						groupId, privateLayout, true, null);
+		if (!master) {
+			return;
+		}
 
-				if (layoutSetBranchId !=
-						masterLayoutSetBranch.getLayoutSetBranchId()) {
+		try {
+			LayoutSetBranch masterLayoutSetBranch =
+				layoutSetBranchPersistence.findByG_P_M_First(
+					groupId, privateLayout, true, null);
 
-					throw new LayoutSetBranchNameException(
-						LayoutSetBranchNameException.MASTER);
-				}
+			if (layoutSetBranchId !=
+					masterLayoutSetBranch.getLayoutSetBranchId()) {
+
+				throw new LayoutSetBranchNameException(
+					LayoutSetBranchNameException.MASTER);
 			}
-			catch (NoSuchLayoutSetBranchException nslsbe) {
+		}
+		catch (NoSuchLayoutSetBranchException noSuchLayoutSetBranchException) {
 
-				// LPS-52675
+			// LPS-52675
 
-				if (_log.isDebugEnabled()) {
-					_log.debug(nslsbe, nslsbe);
-				}
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					noSuchLayoutSetBranchException,
+					noSuchLayoutSetBranchException);
 			}
 		}
 	}

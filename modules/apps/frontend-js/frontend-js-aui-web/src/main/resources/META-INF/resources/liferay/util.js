@@ -1,4 +1,18 @@
-;(function(A, $, Liferay) {
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+(function (A, Liferay) {
 	A.use('aui-base-lang');
 
 	var AArray = A.Array;
@@ -11,208 +25,252 @@
 		false: {
 			cssClass: 'controls-hidden',
 			iconCssClass: 'hidden',
-			state: 'hidden'
+			state: 'hidden',
 		},
 		true: {
 			cssClass: 'controls-visible',
 			iconCssClass: 'view',
-			state: 'visible'
-		}
+			state: 'visible',
+		},
 	};
-
-	var REGEX_PORTLET_ID = /^(?:p_p_id)?_(.*)_.*$/;
 
 	var REGEX_SUB = /\{\s*([^|}]+?)\s*(?:\|([^}]*))?\s*\}/g;
 
 	var SRC_HIDE_LINK = {
-		src: 'hideLink'
+		src: 'hideLink',
 	};
-
-	var STR_CHECKED = 'checked';
 
 	var STR_RIGHT_SQUARE_BRACKET = ']';
 
-	var TPL_LEXICON_ICON = '<svg class="lexicon-icon lexicon-icon-{0} {1}" focusable="false" role="image">' +
-			'<use data-href="' + themeDisplay.getPathThemeImages() + '/lexicon/icons.svg#{0}" />' +
+	var TPL_LEXICON_ICON =
+		'<svg class="lexicon-icon lexicon-icon-{0} {1}" focusable="false" role="image">' +
+		'<use href="' +
+		themeDisplay.getPathThemeImages() +
+		'/clay/icons.svg#{0}" />' +
 		'</svg>';
 
 	var Window = {
-		getById: function(id) {
+		_map: {},
+
+		getById(id) {
 			var instance = this;
 
 			return instance._map[id];
 		},
-
-		_map: {}
 	};
 
 	var Util = {
-		submitCountdown: 0,
+		_getEditableInstance(title) {
+			var editable = Util._EDITABLE;
 
-		addInputCancel: function() {
-			A.use(
-				'aui-button-search-cancel',
-				function(A) {
-					new A.ButtonSearchCancel(
-						{
-							trigger: 'input[type=password], input[type=search], input.clearable, input.search-query'
-						}
-					);
-				}
-			);
+			if (!editable) {
+				editable = new A.Editable({
+					after: {
+						contentTextChange(event) {
+							var instance = this;
 
-			Util.addInputCancel = function() {
-			};
+							if (!event.initial) {
+								var title = instance.get('node');
+
+								var portletTitleEditOptions = title.getData(
+									'portletTitleEditOptions'
+								);
+
+								Util.savePortletTitle({
+									doAsUserId:
+										portletTitleEditOptions.doAsUserId,
+									plid: portletTitleEditOptions.plid,
+									portletId:
+										portletTitleEditOptions.portletId,
+									title: event.newVal,
+								});
+							}
+						},
+						startEditing() {
+							var instance = this;
+
+							var Layout = Liferay.Layout;
+
+							if (Layout) {
+								instance._dragListener = Layout.getLayoutHandler().on(
+									'drag:start',
+									() => {
+										instance.fire('save');
+									}
+								);
+							}
+
+							var title = instance.get('node');
+
+							instance._titleListener = title.on(
+								'mouseupoutside',
+								(event) => {
+									var editable = Util._getEditableInstance(
+										title
+									);
+
+									if (
+										!editable
+											.get('boundingBox')
+											.contains(event.target)
+									) {
+										editable.save();
+									}
+								}
+							);
+						},
+						stopEditing() {
+							var instance = this;
+
+							if (instance._dragListener) {
+								instance._dragListener.detach();
+							}
+
+							if (instance._titleListener) {
+								instance._titleListener.detach();
+							}
+						},
+					},
+					cssClass: 'lfr-portlet-title-editable',
+					node: title,
+				});
+
+				editable.get('cancelButton').icon = 'times';
+				editable.get('saveButton').icon = 'check';
+
+				Util._EDITABLE = editable;
+			}
+
+			return editable;
 		},
 
-		addParams: function(params, url) {
-			if (typeof params === 'object') {
-				var paramKeys = Object.keys(params);
+		addInputCancel() {
+			A.use('aui-button-search-cancel', (A) => {
+				new A.ButtonSearchCancel({
+					trigger:
+						'input[type=password], input[type=search], input.clearable, input.search-query',
+				});
+			});
 
-				params = paramKeys.map(
-					function(key) {
-						return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
-					}
-				).join('&');
-			}
-			else {
-				params = String(params).trim();
-			}
-
-			var loc = url || location.href;
-
-			var finalUrl = loc;
-
-			if (params) {
-				var anchorHash;
-
-				if (loc.indexOf('#') > -1) {
-					var locationPieces = loc.split('#');
-
-					loc = locationPieces[0];
-					anchorHash = locationPieces[1];
-				}
-
-				if (loc.indexOf('?') == -1) {
-					params = '?' + params;
-				}
-				else {
-					params = '&' + params;
-				}
-
-				if (loc.indexOf(params) == -1) {
-					finalUrl = loc + params;
-
-					if (anchorHash) {
-						finalUrl += '#' + anchorHash;
-					}
-					if (!url) {
-						location.href = finalUrl;
-					}
-
-				}
-			}
-
-			return finalUrl;
+			Util.addInputCancel = function () {};
 		},
 
-		checkAll: function(form, name, allBox, selectClassName) {
+		checkAll(form, name, allBox, selectClassName) {
 			if (form) {
 				form = Util.getDOM(form);
+
+				if (typeof form === 'string') {
+					form = document.querySelector(form);
+				}
+
 				allBox = Util.getDOM(allBox);
 
-				var selector;
+				if (typeof allBox === 'string') {
+					allBox = document.querySelector(allBox);
+				}
+
+				let selector;
 
 				if (Array.isArray(name)) {
-					selector = 'input[name=' + name.join('], input[name=') + STR_RIGHT_SQUARE_BRACKET;
+					selector =
+						'input[name=' +
+						name.join('], input[name=') +
+						STR_RIGHT_SQUARE_BRACKET;
 				}
 				else {
 					selector = 'input[name=' + name + STR_RIGHT_SQUARE_BRACKET;
 				}
 
-				form = $(form);
+				const allBoxChecked = allBox.checked;
 
-				var allBoxChecked = $(allBox).prop(STR_CHECKED);
-
-				form.find(selector).each(
-					function(index, item) {
-						item = $(item);
-
-						if (!item.prop('disabled')) {
-							item.prop(STR_CHECKED, allBoxChecked);
-						}
-					}
+				const uploadedItems = Array.from(
+					form.querySelectorAll(selector)
 				);
 
+				uploadedItems.forEach((item) => {
+					if (!item.disabled) {
+						item.checked = allBoxChecked;
+					}
+				});
+
 				if (selectClassName) {
-					form.find(selectClassName).toggleClass('info', allBoxChecked);
+					const selectItem = form.querySelector(selectClassName);
+
+					if (allBoxChecked) {
+						selectItem.classList.add('info');
+					}
+					else {
+						selectItem.classList.remove('info');
+					}
 				}
 			}
 		},
 
-		checkAllBox: function(form, name, allBox) {
-			var totalOn = 0;
+		checkAllBox(form, name, allBox) {
+			let totalOn = 0;
 
 			if (form) {
 				form = Util.getDOM(form);
-				allBox = Util.getDOM(allBox);
 
-				form = $(form);
-
-				var allBoxNodes = $(allBox);
-
-				if (!allBoxNodes.length) {
-					allBoxNodes = form.find('input[name="' + allBox + '"]');
+				if (typeof form === 'string') {
+					form = document.querySelector(form);
 				}
 
-				var totalBoxes = 0;
+				allBox = Util.getDOM(allBox);
 
-				var inputs = form.find('input[type=checkbox]');
+				if (typeof allBox === 'string') {
+					allBox =
+						document.querySelector(allBox) ||
+						form.querySelector(`input[name="${allBox}"]`);
+				}
+
+				const inputs = Array.from(
+					form.querySelectorAll('input[type=checkbox]')
+				);
 
 				if (!Array.isArray(name)) {
 					name = [name];
 				}
 
-				inputs.each(
-					function(index, item) {
-						item = $(item);
+				let totalBoxes = 0;
 
-						if (!item.is(allBoxNodes) && name.indexOf(item.attr('name')) > -1) {
-							totalBoxes++;
+				inputs.forEach((input) => {
+					if (
+						input.id !== allBox.id ||
+						(input.id !== allBox.name &&
+							name.indexOf(input.name) > -1)
+					) {
+						totalBoxes++;
 
-							if (item.prop(STR_CHECKED)) {
-								totalOn++;
-							}
+						if (input.checked) {
+							totalOn++;
 						}
 					}
-				);
+				});
 
-				allBoxNodes.prop(STR_CHECKED, totalBoxes == totalOn);
+				allBox.checked = totalBoxes === totalOn;
 			}
 
 			return totalOn;
 		},
 
-		checkTab: function(box) {
+		checkTab(box) {
 			if (document.all && window.event.keyCode == 9) {
 				box.selection = document.selection.createRange();
 
-				setTimeout(
-					function() {
-						Util.processTab(box.id);
-					},
-					0
-				);
+				setTimeout(() => {
+					Util.processTab(box.id);
+				}, 0);
 			}
 		},
 
-		disableElements: function(el) {
-			var currentElement = $(el)[0];
+		disableElements(el) {
+			const currentElement = Util.getElement(el);
 
 			if (currentElement) {
 				var children = currentElement.getElementsByTagName('*');
 
-				var emptyFnFalse = function() {
+				var emptyFnFalse = function () {
 					return false;
 				};
 
@@ -231,144 +289,78 @@
 					item.disabled = true;
 					item.href = 'javascript:;';
 					item.onsubmit = emptyFnFalse;
-
-					$(item).off();
 				}
 			}
 		},
 
-		disableEsc: function() {
-			if (document.all && window.event.keyCode == 27) {
-				window.event.returnValue = false;
-			}
-		},
-
-		disableFormButtons: function(inputs, form) {
+		disableFormButtons(inputs, form) {
 			inputs.attr('disabled', true);
 			inputs.setStyle('opacity', 0.5);
 
 			if (A.UA.gecko) {
-				A.getWin().on(
-					'unload',
-					function(event) {
-						inputs.attr('disabled', false);
-					}
-				);
+				A.getWin().on('unload', () => {
+					inputs.attr('disabled', false);
+				});
 			}
 			else if (A.UA.safari) {
-				A.use(
-					'node-event-html5',
-					function(A) {
-						A.getWin().on(
-							'pagehide',
-							function(event) {
-								Util.enableFormButtons(inputs, form);
-							}
-						);
-					}
-				);
+				A.use('node-event-html5', (A) => {
+					A.getWin().on('pagehide', () => {
+						Util.enableFormButtons(inputs, form);
+					});
+				});
 			}
 		},
 
-		disableToggleBoxes: function(checkBoxId, toggleBoxId, checkDisabled) {
-			var checkBox = $('#' + checkBoxId);
-			var toggleBox = $('#' + toggleBoxId);
+		disableToggleBoxes(checkBoxId, toggleBoxId, checkDisabled) {
+			const checkBox = document.getElementById(checkBoxId);
+			const toggleBox = document.getElementById(toggleBoxId);
 
-			toggleBox.prop('disabled', checkDisabled && checkBox.prop(STR_CHECKED));
+			if (checkBox && toggleBox) {
+				toggleBox.disabled = checkDisabled && checkBox.checked;
 
-			checkBox.on(
-				EVENT_CLICK,
-				function() {
-					toggleBox.prop('disabled', !toggleBox.prop('disabled'));
-				}
-			);
+				checkBox.addEventListener(EVENT_CLICK, () => {
+					toggleBox.disabled = !toggleBox.disabled;
+				});
+			}
 		},
 
-		enableFormButtons: function(inputs) {
+		enableFormButtons(inputs) {
 			Util._submitLocked = null;
 
 			Util.toggleDisabled(inputs, false);
 		},
 
-		escapeCDATA: function(str) {
-			return str.replace(
-				/<!\[CDATA\[|\]\]>/gi,
-				function(match) {
-					var str = '';
+		/**
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
+		escapeCDATA(str) {
+			return str.replace(/<!\[CDATA\[|\]\]>/gi, (match) => {
+				var str = '';
 
-					if (match == ']]>') {
-						str = ']]&gt;';
-					}
-					else if (match == '<![CDATA[') {
-						str = '&lt;![CDATA[';
-					}
-
-					return str;
+				if (match == ']]>') {
+					str = ']]&gt;';
 				}
-			);
+				else if (match == '<![CDATA[') {
+					str = '&lt;![CDATA[';
+				}
+
+				return str;
+			});
 		},
 
-		focusFormField: function(el) {
-			var doc = $(document);
+		forcePost(link) {
+			const currentElement = Util.getElement(link);
 
-			var interacting = false;
+			if (currentElement) {
+				const url = currentElement.getAttribute('href');
 
-			el = Util.getDOM(el);
+				const newWindow =
+					currentElement.getAttribute('target') == '_blank';
 
-			el = $(el);
-
-			doc.on(
-				'click.focusFormField',
-				function(event) {
-					interacting = true;
-
-					doc.off('click.focusFormField');
-				}
-			);
-
-			if (!interacting && Util.inBrowserView(el)) {
-				var form = el.closest('form');
-
-				var focusable = !el.is(':disabled') && !el.is(':hidden') && !el.parents(':disabled').length;
-
-				if (!form.length || focusable) {
-					el.focus();
-				}
-				else {
-					var portletName = form.data('fm-namespace');
-
-					var formReadyEventName = portletName + 'formReady';
-
-					var formReadyHandler = function(event) {
-						var elFormName = form.attr('name');
-						var formName = event.formName;
-
-						if (elFormName === formName) {
-							el.focus();
-
-							Liferay.detach(formReadyEventName, formReadyHandler);
-						}
-					};
-
-					Liferay.on(formReadyEventName, formReadyHandler);
-				}
-			}
-		},
-
-		forcePost: function(link) {
-			link = Util.getDOM(link);
-
-			link = $(link);
-
-			if (link.length) {
-				var url = link.attr('href');
-
-				var newWindow = link.attr('target') == '_blank';
-
-				var hrefFm = $(document.hrefFm);
+				const hrefFm = document.hrefFm;
 
 				if (newWindow) {
-					hrefFm.attr('target', '_blank');
+					hrefFm.setAttribute('target', '_blank');
 				}
 
 				submitForm(hrefFm, url, !newWindow);
@@ -377,9 +369,7 @@
 			}
 		},
 
-		getAttributes: function(el, attributeGetter) {
-			var instance = this;
-
+		getAttributes(el, attributeGetter) {
 			var result = null;
 
 			if (el) {
@@ -391,7 +381,7 @@
 
 				result = {};
 
-				var getterFn = this.isFunction(attributeGetter);
+				var getterFn = typeof attributeGetter === 'function';
 				var getterString = typeof attributeGetter === 'string';
 
 				var attrs = el.attributes;
@@ -425,24 +415,16 @@
 			return result;
 		},
 
-		getColumnId: function(str) {
+		getColumnId(str) {
 			var columnId = str.replace(/layout-column_/, '');
 
 			return columnId;
 		},
 
-		getDOM: function(el) {
-			if (el._node || el._nodes) {
-				el = el.getDOM();
-			}
-
-			return el;
-		},
-
-		getGeolocation: function(success, fallback, options) {
+		getGeolocation(success, fallback, options) {
 			if (success && navigator.geolocation) {
 				navigator.geolocation.getCurrentPosition(
-					function(position) {
+					(position) => {
 						success(
 							position.coords.latitude,
 							position.coords.longitude,
@@ -458,19 +440,21 @@
 			}
 		},
 
-		getLexiconIcon: function(icon, cssClass) {
+		getLexiconIcon(icon, cssClass) {
 			var instance = this;
 
-			return $(instance.getLexiconIconTpl(icon, cssClass))[0];
+			const tempElement = document.createElement('div');
+
+			tempElement.innerHTML = instance.getLexiconIconTpl(icon, cssClass);
+
+			return tempElement.firstChild;
 		},
 
-		getLexiconIconTpl: function(icon, cssClass) {
-			var instance = this;
-
+		getLexiconIconTpl(icon, cssClass) {
 			return Liferay.Util.sub(TPL_LEXICON_ICON, icon, cssClass || '');
 		},
 
-		getOpener: function() {
+		getOpener() {
 			var openingWindow = Window._opener;
 
 			if (!openingWindow) {
@@ -490,15 +474,7 @@
 			return openingWindow || window.opener || window.parent;
 		},
 
-		getPortletId: function(portletId) {
-			return String(portletId).replace(REGEX_PORTLET_ID, '$1');
-		},
-
-		getPortletNamespace: function(portletId) {
-			return '_' + portletId + '_';
-		},
-
-		getTop: function() {
+		getTop() {
 			var topWindow = Util._topWindow;
 
 			if (!topWindow) {
@@ -518,10 +494,16 @@
 						break;
 					}
 
-					if (!parentThemeDisplay || window.name === 'simulationDeviceIframe') {
+					if (
+						!parentThemeDisplay ||
+						window.name === 'simulationDeviceIframe'
+					) {
 						break;
 					}
-					else if (!parentThemeDisplay.isStatePopUp() || parentWindow == parentWindow.parent) {
+					else if (
+						!parentThemeDisplay.isStatePopUp() ||
+						parentWindow == parentWindow.parent
+					) {
 						topWindow = parentWindow;
 
 						break;
@@ -540,7 +522,7 @@
 			return topWindow;
 		},
 
-		getURLWithSessionId: function(url) {
+		getURLWithSessionId(url) {
 			if (!themeDisplay.isAddSessionIdToURL()) {
 				return url;
 			}
@@ -577,7 +559,7 @@
 			return url + sessionId;
 		},
 
-		getWindow: function(id) {
+		getWindow(id) {
 			if (!id) {
 				id = Util.getWindowName();
 			}
@@ -585,169 +567,102 @@
 			return Util.getTop().Liferay.Util.Window.getById(id);
 		},
 
-		getWindowName: function() {
+		getWindowName() {
 			return window.name || Window._name || '';
 		},
 
-		getWindowWidth: function() {
-			return window.innerWidth > 0 ? window.innerWidth : screen.width;
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by `window.innerWidth`
+		 */
+		getWindowWidth() {
+			return window.innerWidth;
 		},
 
-		inBrowserView: function(node, win, nodeRegion) {
-			var viewable = false;
-
-			node = $(node);
-
-			if (node.length) {
-				if (!nodeRegion) {
-					nodeRegion = node.offset();
-
-					nodeRegion.bottom = nodeRegion.top + node.outerHeight();
-					nodeRegion.right = nodeRegion.left + node.outerWidth();
-				}
-
-				if (!win) {
-					win = window;
-				}
-
-				win = $(win);
-
-				var winRegion = {};
-
-				winRegion.left = win.scrollLeft();
-				winRegion.right = winRegion.left + win.width();
-
-				winRegion.top = win.scrollTop();
-				winRegion.bottom = winRegion.top + win.height();
-
-				viewable = nodeRegion.bottom <= winRegion.bottom &&
-					nodeRegion.left >= winRegion.left &&
-					nodeRegion.right <= winRegion.right &&
-					nodeRegion.top >= winRegion.top;
-
-				if (viewable) {
-					var frameEl = $(win.prop('frameElement'));
-
-					if (frameEl.length) {
-						var frameOffset = frameEl.offset();
-
-						var xOffset = frameOffset.left - winRegion.left;
-
-						nodeRegion.left += xOffset;
-						nodeRegion.right += xOffset;
-
-						var yOffset = frameOffset.top - winRegion.top;
-
-						nodeRegion.top += yOffset;
-						nodeRegion.bottom += yOffset;
-
-						viewable = Util.inBrowserView(node, win.prop('parent'), nodeRegion);
-					}
-				}
-			}
-
-			return viewable;
-		},
-
-		isFunction: function(val) {
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by `typeof val === 'function'`
+		 */
+		isFunction(val) {
 			return typeof val === 'function';
 		},
 
-		isPhone: function() {
-			var instance = this;
-
-			return instance.getWindowWidth() < Liferay.BREAKPOINTS.PHONE;
-		},
-
-		isTablet: function() {
-			var instance = this;
-
-			return instance.getWindowWidth() < Liferay.BREAKPOINTS.TABLET;
-		},
-
-		listCheckboxesExcept: function(form, except, name, checked) {
+		listCheckboxesExcept(form, except, name, checked) {
 			form = Util.getDOM(form);
 
-			var selector = 'input[type=checkbox]';
+			if (typeof form === 'string') {
+				form = document.querySelector(form);
+			}
+
+			let selector = 'input[type=checkbox]';
 
 			if (name) {
 				selector += '[name=' + name + ']';
 			}
 
-			return $(form).find(selector).toArray().reduce(
-				function(prev, item, index) {
-					item = $(item);
+			const checkboxes = Array.from(form.querySelectorAll(selector));
 
-					var val = item.val();
+			return checkboxes
+				.reduce((prev, item) => {
+					const value = item.value;
 
-					if (val && item.attr('name') != except && item.prop('checked') == checked && !item.prop('disabled')) {
-						prev.push(val);
+					if (
+						value &&
+						item.name !== except &&
+						item.checked === checked &&
+						!item.disabled
+					) {
+						prev.push(value);
 					}
 
 					return prev;
-				},
-				[]
-			).join();
+				}, [])
+				.join();
 		},
 
-		listCheckedExcept: function(form, except, name) {
+		listCheckedExcept(form, except, name) {
 			return Util.listCheckboxesExcept(form, except, name, true);
 		},
 
-		listSelect: function(select, delimeter) {
-			select = Util.getDOM(select);
+		listSelect(select, delimeter) {
+			select = Util.getElement(select);
 
-			return $(select).find('option').toArray().reduce(
-				function(prev, item, index) {
-					var val = $(item).val();
+			return Array.from(select.querySelectorAll('option'))
+				.reduce((prev, item) => {
+					const val = item.value;
 
 					if (val) {
 						prev.push(val);
 					}
 
 					return prev;
-				},
-				[]
-			).join(delimeter || ',');
+				}, [])
+				.join(delimeter || ',');
 		},
 
-		listUncheckedExcept: function(form, except, name) {
+		listUncheckedExcept(form, except, name) {
 			return Util.listCheckboxesExcept(form, except, name, false);
 		},
 
-		normalizeFriendlyURL: function(text) {
-			var newText = text.replace(/[^a-zA-Z0-9_-]/g, '-');
-
-			if (newText[0] === '-') {
-				newText = newText.replace(/^-+/, '');
-			}
-
-			newText = newText.replace(/--+/g, '-');
-
-			return newText.toLowerCase();
-		},
-
-		openInDialog: function(event, config) {
+		openInDialog(event, config) {
 			event.preventDefault();
 
-			var currentTarget = Util.getDOM(event.currentTarget);
+			var currentTarget = Util.getElement(event.currentTarget);
 
-			currentTarget = $(currentTarget);
-
-			config = A.mix(A.merge({}, currentTarget.data()), config);
+			config = A.mix(A.merge({}, currentTarget.dataset), config);
 
 			if (!config.uri) {
-				config.uri = currentTarget.data('href') || currentTarget.attr('href');
+				config.uri =
+					currentTarget.dataset.href ||
+					currentTarget.getAttribute('href');
 			}
 
 			if (!config.title) {
-				config.title = currentTarget.attr('title');
+				config.title = currentTarget.getAttribute('title');
 			}
 
 			Liferay.Util.openWindow(config);
 		},
 
-		openWindow: function(config, callback) {
+		openWindow(config, callback) {
 			config.openingWindow = window;
 
 			var top = Util.getTop();
@@ -757,74 +672,102 @@
 			topUtil._openWindowProvider(config, callback);
 		},
 
-		processTab: function(id) {
+		processTab(id) {
 			document.all[id].selection.text = String.fromCharCode(9);
 			document.all[id].focus();
 		},
 
-		randomInt: function() {
-			return Math.ceil(Math.random() * (new Date()).getTime());
+		/**
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
+		randomInt() {
+			return Math.ceil(Math.random() * new Date().getTime());
 		},
 
-		removeEntitySelection: function(entityIdString, entityNameString, removeEntityButton, namespace) {
-			$('#' + namespace + entityIdString).val(0);
+		removeEntitySelection(
+			entityIdString,
+			entityNameString,
+			removeEntityButton,
+			namespace
+		) {
+			const elementByEntityId = document.getElementById(
+				`${namespace}${entityIdString}`
+			);
 
-			$('#' + namespace + entityNameString).val('');
+			if (elementByEntityId) {
+				elementByEntityId.value = 0;
+			}
+
+			const elementByEntityName = document.getElementById(
+				`${namespace}${entityNameString}`
+			);
+
+			if (elementByEntityName) {
+				elementByEntityName.value = '';
+			}
 
 			Liferay.Util.toggleDisabled(removeEntityButton, true);
 
 			Liferay.fire('entitySelectionRemoved');
 		},
 
-		reorder: function(box, down) {
-			box = Util.getDOM(box);
+		reorder(box, down) {
+			box = Util.getElement(box);
 
-			box = $(box);
-
-			if (box.prop('selectedIndex') == -1) {
-				box.prop('selectedIndex', 0);
-			}
-			else {
-				var selectedItems = box.find('option:selected');
-
-				if (down) {
-					selectedItems.get().reverse().forEach(
-						function(item, index) {
-							item = $(item);
-
-							var itemIndex = item.prop('index');
-
-							var lastIndex = box.find('option').length - 1;
-
-							if (itemIndex === lastIndex) {
-								box.prepend(item);
-							}
-							else {
-								item.insertAfter(item.next());
-							}
-						}
-					);
+			if (box) {
+				if (box.getAttribute('selectedIndex') == -1) {
+					box.setAttribute('selectedIndex', 0);
 				}
 				else {
-					selectedItems.get().forEach(
-						function(item, index) {
-							item = $(item);
+					const selectedItems = Array.from(
+						box.querySelectorAll('option:checked')
+					);
 
-							var itemIndex = item.prop('index');
+					const items = Array.from(box.querySelectorAll('option'));
 
-							if (itemIndex === 0) {
-								box.append(item);
+					if (down) {
+						selectedItems.reverse().forEach((item) => {
+							const itemIndex = items.indexOf(item);
+
+							const lastIndex = items.length - 1;
+
+							if (itemIndex === lastIndex) {
+								box.insertBefore(item, box.firstChild);
 							}
 							else {
-								item.insertBefore(item.prev());
+								const nextItem =
+									item.nextElementSibling.nextElementSibling;
+
+								box.insertBefore(item, nextItem);
 							}
-						}
-					);
+						});
+					}
+					else {
+						selectedItems.forEach((item) => {
+							const itemIndex = items.indexOf(item);
+
+							if (itemIndex === 0) {
+								box.appendChild(item);
+							}
+							else {
+								box.insertBefore(
+									item,
+									item.previousElementSibling
+								);
+							}
+						});
+					}
 				}
 			}
 		},
 
-		rowCheckerCheckAllBox: function(ancestorTable, ancestorRow, checkboxesIds, checkboxAllIds, cssClass) {
+		rowCheckerCheckAllBox(
+			ancestorTable,
+			ancestorRow,
+			checkboxesIds,
+			checkboxAllIds,
+			cssClass
+		) {
 			Util.checkAllBox(ancestorTable, checkboxesIds, checkboxAllIds);
 
 			if (ancestorRow) {
@@ -832,97 +775,64 @@
 			}
 		},
 
-		savePortletTitle: function(params) {
-			params = Object.assign(
-				{
-					doAsUserId: 0,
-					plid: 0,
-					portletId: 0,
-					title: '',
-					url: themeDisplay.getPathMain() + '/portal/update_portlet_title'
-				},
-				params
-			);
+		savePortletTitle(params) {
+			params = {
+				doAsUserId: 0,
+				plid: 0,
+				portletId: 0,
+				title: '',
+				url:
+					themeDisplay.getPathMain() + '/portal/update_portlet_title',
+				...params,
+			};
 
-			$.ajax(
-				params.url,
-				{
-					data: {
-						doAsUserId: params.doAsUserId,
-						p_auth: Liferay.authToken,
-						p_l_id: params.plid,
-						portletId: params.portletId,
-						title: params.title
-					}
-				}
-			);
+			var data = {
+				doAsUserId: params.doAsUserId,
+				p_auth: Liferay.authToken,
+				p_l_id: params.plid,
+				portletId: params.portletId,
+				title: params.title,
+			};
+
+			Liferay.Util.fetch(params.url, {
+				body: Liferay.Util.objectToFormData(data),
+				method: 'POST',
+			});
 		},
 
-		selectEntityHandler: function(container, selectEventName, disableButton) {
-			container = $(container);
-
-			var openingLiferay = Util.getOpener().Liferay;
-
-			var selectorButtons = container.find('.selector-button');
-
-			container.on(
-				'click',
-				'.selector-button',
-				function(event) {
-					var target = $(event.target);
-
-					if (!target.attr('data-prevent-selection')) {
-						var currentTarget = $(event.currentTarget);
-
-						var confirmSelection = currentTarget.attr('data-confirm-selection') === 'true';
-						var confirmSelectionMessage = currentTarget.attr('data-confirm-selection-message');
-
-						if (!confirmSelection || confirm(confirmSelectionMessage)) {
-							if (disableButton !== false) {
-								selectorButtons.prop('disabled', false);
-
-								currentTarget.prop('disabled', true);
-							}
-
-							var result = Util.getAttributes(currentTarget, 'data-');
-
-							openingLiferay.fire(selectEventName, result);
-
-							Util.getWindow().hide();
-						}
-					}
-				}
+		selectFolder(folderData, namespace) {
+			const folderDataElement = document.getElementById(
+				namespace + folderData.idString
 			);
 
-			openingLiferay.on(
-				'entitySelectionRemoved',
-				function(event) {
-					selectorButtons.prop('disabled', false);
-				}
+			if (folderDataElement) {
+				folderDataElement.value = folderData.idValue;
+			}
+
+			const folderNameElement = document.getElementById(
+				namespace + folderData.nameString
 			);
+
+			if (folderNameElement) {
+				folderNameElement.value = this.unescape(folderData.nameValue);
+			}
+
+			const removeFolderButton = document.getElementById(
+				`${namespace}removeFolderButton`
+			);
+
+			if (removeFolderButton) {
+				this.toggleDisabled(removeFolderButton, false);
+			}
 		},
 
-		selectFolder: function(folderData, namespace) {
-			$('#' + namespace + folderData.idString).val(folderData.idValue);
-
-			var name = Liferay.Util.unescape(folderData.nameValue);
-
-			$('#' + namespace + folderData.nameString).val(name);
-
-			var button = $('#' + namespace + 'removeFolderButton');
-
-			Liferay.Util.toggleDisabled(button, false);
-		},
-
-		setCursorPosition: function(el, position) {
+		setCursorPosition(el, position) {
 			var instance = this;
 
 			instance.setSelectionRange(el, position, position);
 		},
 
-		setSelectionRange: function(el, selectionStart, selectionEnd) {
-			var instance = this;
-
+		setSelectionRange(el, selectionStart, selectionEnd) {
 			el = Util.getDOM(el);
 
 			if (el.jquery) {
@@ -946,23 +856,33 @@
 			}
 		},
 
-		showCapsLock: function(event, span) {
-			var keyCode = event.keyCode ? event.keyCode : event.which;
+		showCapsLock(event, spanId) {
+			const span = document.getElementById(spanId);
 
-			var shiftKeyCode = keyCode === 16;
+			if (span) {
+				var keyCode = event.keyCode ? event.keyCode : event.which;
 
-			var shiftKey = event.shiftKey ? event.shiftKey : shiftKeyCode;
+				var shiftKeyCode = keyCode === 16;
 
-			var display = 'none';
+				var shiftKey = event.shiftKey ? event.shiftKey : shiftKeyCode;
 
-			if (keyCode >= 65 && keyCode <= 90 && !shiftKey || keyCode >= 97 && keyCode <= 122 && shiftKey) {
-				display = '';
+				var display = 'none';
+
+				if (
+					(keyCode >= 65 && keyCode <= 90 && !shiftKey) ||
+					(keyCode >= 97 && keyCode <= 122 && shiftKey)
+				) {
+					display = '';
+				}
+
+				span.style.display = display;
 			}
-
-			$('#' + span).css('display', display);
 		},
 
-		sortByAscending: function(a, b) {
+		/**
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
+		sortByAscending(a, b) {
 			a = a[1].toLowerCase();
 			b = b[1].toLowerCase();
 
@@ -977,85 +897,101 @@
 			return 0;
 		},
 
-		sub: function(string, data) {
-			if (arguments.length > 2 || (typeof data !== 'object' && typeof data !== 'function')) {
+		sub(string, data) {
+			if (
+				arguments.length > 2 ||
+				(typeof data !== 'object' && typeof data !== 'function')
+			) {
 				data = Array.prototype.slice.call(arguments, 1);
 			}
 
-			return string.replace ? string.replace(
-				REGEX_SUB,
-				function(match, key) {
-					return data[key] === undefined ? match : data[key];
-				}
-			) : string;
+			return string.replace
+				? string.replace(REGEX_SUB, (match, key) => {
+						return data[key] === undefined ? match : data[key];
+				  })
+				: string;
 		},
 
-		submitForm: function(form) {
+		submitCountdown: 0,
+
+		submitForm(form) {
 			form.submit();
 		},
 
-		toggleBoxes: function(checkBoxId, toggleBoxId, displayWhenUnchecked, toggleChildCheckboxes) {
-			var checkBox = $('#' + checkBoxId);
-			var toggleBox = $('#' + toggleBoxId);
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by `parseInt()`
+		 */
+		toNumber(value) {
+			return parseInt(value, 10) || 0;
+		},
 
-			var checked = checkBox.prop(STR_CHECKED);
+		toggleBoxes(
+			checkBoxId,
+			toggleBoxId,
+			displayWhenUnchecked,
+			toggleChildCheckboxes
+		) {
+			const checkBox = document.getElementById(checkBoxId);
+			const toggleBox = document.getElementById(toggleBoxId);
 
-			if (displayWhenUnchecked) {
-				checked = !checked;
-			}
+			if (checkBox && toggleBox) {
+				let checked = checkBox.checked;
 
-			toggleBox.toggleClass('hide', !checked);
+				if (displayWhenUnchecked) {
+					checked = !checked;
+				}
 
-			checkBox.on(
-				EVENT_CLICK,
-				function() {
-					toggleBox.toggleClass('hide');
+				if (checked) {
+					toggleBox.classList.remove('hide');
+				}
+				else {
+					toggleBox.classList.add('hide');
+				}
+
+				checkBox.addEventListener(EVENT_CLICK, () => {
+					toggleBox.classList.toggle('hide');
 
 					if (toggleChildCheckboxes) {
-						var childCheckboxes = toggleBox.find('input[type=checkbox]');
+						const childCheckboxes = toggleBox.querySelectorAll(
+							'input[type=checkbox]'
+						);
 
-						childCheckboxes.prop(STR_CHECKED, checkBox.prop(STR_CHECKED));
+						childCheckboxes.forEach((childCheckbox) => {
+							childCheckbox.checked = checkBox.checked;
+						});
 					}
-				}
-			);
-		},
-
-		toggleDisabled: function(button, state) {
-			button = Util.getDOM(button);
-
-			button = $(button);
-
-			button.each(
-				function(index, item) {
-					item = $(item);
-
-					item.prop('disabled', state);
-
-					item.toggleClass('disabled', state);
-				}
-			);
-		},
-
-		toggleRadio: function(radioId, showBoxIds, hideBoxIds) {
-			var radioButton = $('#' + radioId);
-
-			var showBoxes;
-
-			if (showBoxIds) {
-				if (Array.isArray(showBoxIds)) {
-					showBoxIds = showBoxIds.join(',#');
-				}
-
-				showBoxes = $('#' + showBoxIds);
-
-				showBoxes.toggleClass('hide', !radioButton.prop(STR_CHECKED));
+				});
 			}
+		},
 
-			radioButton.on(
-				'change',
-				function() {
+		toggleRadio(radioId, showBoxIds, hideBoxIds) {
+			const radioButton = document.getElementById(radioId);
+
+			if (radioButton) {
+				let showBoxes;
+
+				if (showBoxIds) {
+					if (Array.isArray(showBoxIds)) {
+						showBoxIds = showBoxIds.join(',#');
+					}
+
+					showBoxes = document.querySelectorAll('#' + showBoxIds);
+
+					showBoxes.forEach((showBox) => {
+						if (radioButton.checked) {
+							showBox.classList.remove('hide');
+						}
+						else {
+							showBox.classList.add('hide');
+						}
+					});
+				}
+
+				radioButton.addEventListener('change', () => {
 					if (showBoxes) {
-						showBoxes.removeClass('hide');
+						showBoxes.forEach((showBox) => {
+							showBox.classList.remove('hide');
+						});
 					}
 
 					if (hideBoxIds) {
@@ -1063,197 +999,74 @@
 							hideBoxIds = hideBoxIds.join(',#');
 						}
 
-						$('#' + hideBoxIds).addClass('hide');
+						const hideBoxes = document.querySelectorAll(
+							'#' + hideBoxIds
+						);
+
+						hideBoxes.forEach((hideBox) => {
+							hideBox.classList.add('hide');
+						});
 					}
-				}
-			);
+				});
+			}
 		},
 
-		toggleSearchContainerButton: function(buttonId, searchContainerId, form, ignoreFieldName) {
-			$(searchContainerId).on(
+		/*
+		 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+		 */
+		toggleSearchContainerButton(
+			buttonId,
+			searchContainerId,
+			form,
+			ignoreFieldName
+		) {
+			A.one(searchContainerId).delegate(
 				EVENT_CLICK,
-				'input[type=checkbox]',
-				function() {
-					Util.toggleDisabled(buttonId, !Util.listCheckedExcept(form, ignoreFieldName));
-				}
+				() => {
+					Util.toggleDisabled(
+						buttonId,
+						!Util.listCheckedExcept(form, ignoreFieldName)
+					);
+				},
+				'input[type=checkbox]'
 			);
 		},
 
-		toggleSelectBox: function(selectBoxId, value, toggleBoxId) {
-			var selectBox = $('#' + selectBoxId);
-			var toggleBox = $('#' + toggleBoxId);
+		toggleSelectBox(selectBoxId, value, toggleBoxId) {
+			var selectBox = document.getElementById(selectBoxId);
+			var toggleBox = document.getElementById(toggleBoxId);
 
-			var dynamicValue = this.isFunction(value);
+			if (selectBox && toggleBox) {
+				var dynamicValue = typeof value === 'function';
 
-			var toggle = function() {
-				var currentValue = selectBox.val();
+				var toggle = function () {
+					var currentValue = selectBox.value;
 
-				var visible = value == currentValue;
+					var visible = value == currentValue;
 
-				if (dynamicValue) {
-					visible = value(currentValue, value);
-				}
-
-				toggleBox.toggleClass('hide', !visible);
-			};
-
-			toggle();
-
-			selectBox.on('change', toggle);
-		},
-
-		toNumber: function(value) {
-			return parseInt(value, 10) || 0;
-		},
-
-		_defaultPreviewArticleFn: function(event) {
-			var instance = this;
-
-			event.preventDefault();
-
-			Util.defaultPreviewArticleFn(event);
-		},
-
-		_defaultSubmitFormFn: function(event) {
-			var form = event.form;
-
-			var hasErrors = false;
-
-			if (event.validate) {
-				var liferayForm = Liferay.Form.get(form.attr('id'));
-
-				if (liferayForm) {
-					var validator = liferayForm.formValidator;
-
-					if (A.instanceOf(validator, A.FormValidator)) {
-						validator.validate();
-
-						hasErrors = validator.hasErrors();
-
-						if (hasErrors) {
-							validator.focusInvalidField();
-						}
+					if (dynamicValue) {
+						visible = value(currentValue, value);
 					}
-				}
-			}
 
-			if (!hasErrors) {
-				var action = event.action || form.attr('action');
+					if (visible) {
+						toggleBox.classList.remove('hide');
+					}
+					else {
+						toggleBox.classList.add('hide');
+					}
+				};
 
-				var singleSubmit = event.singleSubmit;
+				toggle();
 
-				var inputs = form.all('button[type=submit], input[type=button], input[type=image], input[type=reset], input[type=submit]');
-
-				Util.disableFormButtons(inputs, form);
-
-				if (singleSubmit === false) {
-					Util._submitLocked = A.later(
-						1000,
-						Util,
-						Util.enableFormButtons,
-						[inputs, form]
-					);
-				}
-				else {
-					Util._submitLocked = true;
-				}
-
-				var searchParamsIndex = action.indexOf('?');
-
-				if (searchParamsIndex === -1) {
-					var baseURL = action;
-					var queryString = '';
-				}
-				else {
-					var baseURL = action.slice(0, searchParamsIndex);
-					var queryString = action.slice(searchParamsIndex + 1);
-				}
-
-				var searchParams = new URLSearchParams(queryString);
-
-				var authToken = searchParams.get('p_auth') || '';
-
-				form.append('<input name="p_auth" type="hidden" value="' + authToken + '" />');
-
-				if (authToken) {
-					searchParams.delete('p_auth');
-
-					action = baseURL + '?' + searchParams.toString();
-				}
-
-				form.attr('action', action);
-
-				Util.submitForm(form);
-
-				form.attr('target', '');
-
-				Util._submitLocked = null;
+				selectBox.addEventListener('change', toggle);
 			}
 		},
-
-		_getEditableInstance: function(title) {
-			var editable = Util._EDITABLE;
-
-			if (!editable) {
-				editable = new A.Editable(
-					{
-						after: {
-							contentTextChange: function(event) {
-								var instance = this;
-
-								if (!event.initial) {
-									var title = instance.get('node');
-
-									var portletTitleEditOptions = title.getData('portletTitleEditOptions');
-
-									Util.savePortletTitle(
-										{
-											doAsUserId: portletTitleEditOptions.doAsUserId,
-											plid: portletTitleEditOptions.plid,
-											portletId: portletTitleEditOptions.portletId,
-											title: event.newVal
-										}
-									);
-								}
-							},
-							startEditing: function(event) {
-								var instance = this;
-
-								var Layout = Liferay.Layout;
-
-								if (Layout) {
-									instance._dragListener = Layout.getLayoutHandler().on(
-										'drag:start',
-										function(event) {
-											instance.fire('save');
-										}
-									);
-								}
-							},
-							stopEditing: function(event) {
-								var instance = this;
-
-								if (instance._dragListener) {
-									instance._dragListener.detach();
-								}
-							}
-						},
-						cssClass: 'lfr-portlet-title-editable',
-						node: title
-					}
-				);
-
-				Util._EDITABLE = editable;
-			}
-
-			return editable;
-		}
 	};
 
 	Liferay.provide(
 		Util,
 		'afterIframeLoaded',
-		function(event) {
+		(event) => {
 			var nodeInstances = A.Node._instances;
 
 			var docEl = event.doc;
@@ -1274,10 +1087,15 @@
 
 			iframeBody.addClass('dialog-iframe-popup');
 
-			if (lfrFormContent && iframeBody.one('.button-holder.dialog-footer')) {
+			if (
+				lfrFormContent &&
+				iframeBody.one('.button-holder.dialog-footer')
+			) {
 				iframeBody.addClass('dialog-with-footer');
 
-				var stagingAlert = iframeBody.one('.portlet-body > .lfr-portlet-message-staging-alert');
+				var stagingAlert = iframeBody.one(
+					'.portlet-body > .lfr-portlet-message-staging-alert'
+				);
 
 				if (stagingAlert) {
 					stagingAlert.remove();
@@ -1290,7 +1108,26 @@
 
 			event.win.focus();
 
-			var detachEventHandles = function() {
+			var iframeWindow = event.win;
+
+			if (iframeWindow.Liferay.SPA) {
+				var beforeScreenFlipHandler = iframeWindow.Liferay.on(
+					'beforeScreenFlip',
+					() => {
+						iframeWindow.document.body.classList.add(
+							'dialog-iframe-popup'
+						);
+					}
+				);
+
+				iframeWindow.onunload = () => {
+					if (beforeScreenFlipHandler) {
+						iframeWindow.Liferay.detach(beforeScreenFlipHandler);
+					}
+				};
+			}
+
+			var detachEventHandles = function () {
 				AArray.invoke(eventHandles, 'detach');
 
 				iframeDocument.purge(true);
@@ -1301,18 +1138,24 @@
 
 				iframeBody.delegate(
 					EVENT_CLICK,
-					function(event) {
+					(event) => {
 						dialog.set(
 							'visible',
 							false,
-							event.currentTarget.hasClass('lfr-hide-dialog') ? SRC_HIDE_LINK : null
+							event.currentTarget.hasClass('lfr-hide-dialog')
+								? SRC_HIDE_LINK
+								: null
 						);
 
 						detachEventHandles();
 					},
 					'.btn-cancel,.lfr-hide-dialog'
-				)
+				),
 			];
+
+			Liferay.fire('modalIframeLoaded', {
+				src: event.dialog.iframe.node.getAttribute('src'),
+			});
 		},
 		['aui-base']
 	);
@@ -1320,95 +1163,83 @@
 	Liferay.provide(
 		Util,
 		'openDDMPortlet',
-		function(config, callback) {
-			var instance = this;
-
+		(config, callback) => {
 			var defaultValues = {
-				eventName: 'selectStructure'
+				eventName: 'selectStructure',
 			};
 
-			config = A.merge(defaultValues,	config);
+			config = A.merge(defaultValues, config);
 
-			var ddmURL;
+			var params = {
+				classNameId: config.classNameId,
+				classPK: config.classPK,
+				doAsGroupId:
+					config.doAsGroupId || themeDisplay.getScopeGroupId(),
+				eventName: config.eventName,
+				groupId: config.groupId,
+				mvcPath: config.mvcPath || '/view.jsp',
+				p_p_state: 'pop_up',
+				portletResourceNamespace: config.portletResourceNamespace,
+				resourceClassNameId: config.resourceClassNameId,
+				scopeTitle: config.title,
+				structureAvailableFields: config.structureAvailableFields,
+				templateId: config.templateId,
+			};
 
-			if (config.basePortletURL) {
-				ddmURL = Liferay.PortletURL.createURL(config.basePortletURL);
-			}
-			else {
-				ddmURL = Liferay.PortletURL.createRenderURL();
-			}
-
-			ddmURL.setEscapeXML(false);
-
-			ddmURL.setDoAsGroupId(config.doAsGroupId || themeDisplay.getScopeGroupId());
-
-			ddmURL.setParameter('classNameId', config.classNameId);
-			ddmURL.setParameter('classPK', config.classPK);
-			ddmURL.setParameter('resourceClassNameId', config.resourceClassNameId);
-			ddmURL.setParameter('eventName', config.eventName);
-			ddmURL.setParameter('groupId', config.groupId);
-			ddmURL.setParameter('mode', config.mode);
-
-			if (config.mvcPath) {
-				ddmURL.setParameter('mvcPath', config.mvcPath);
-			}
-			else {
-				ddmURL.setParameter('mvcPath', '/view.jsp');
+			if ('mode' in config) {
+				params.mode = config.mode;
 			}
 
 			if ('navigationStartsOn' in config) {
-				ddmURL.setParameter('navigationStartsOn', config.navigationStartsOn);
+				params.navigationStartsOn = config.navigationStartsOn;
 			}
 
-			ddmURL.setParameter('portletResourceNamespace', config.portletResourceNamespace);
-
 			if ('redirect' in config) {
-				ddmURL.setParameter('redirect', config.redirect);
+				params.redirect = config.redirect;
 			}
 
 			if ('refererPortletName' in config) {
-				ddmURL.setParameter('refererPortletName', config.refererPortletName);
+				params.refererPortletName = config.refererPortletName;
 			}
 
 			if ('refererWebDAVToken' in config) {
-				ddmURL.setParameter('refererWebDAVToken', config.refererWebDAVToken);
+				params.refererWebDAVToken = config.refererWebDAVToken;
 			}
 
-			ddmURL.setParameter('scopeTitle', config.title);
-
 			if ('searchRestriction' in config) {
-				ddmURL.setParameter('searchRestriction', config.searchRestriction);
-				ddmURL.setParameter('searchRestrictionClassNameId', config.searchRestrictionClassNameId);
-				ddmURL.setParameter('searchRestrictionClassPK', config.searchRestrictionClassPK);
+				params.searchRestriction = config.searchRestriction;
+				params.searchRestrictionClassNameId =
+					config.searchRestrictionClassNameId;
+				params.searchRestrictionClassPK =
+					config.searchRestrictionClassPK;
 			}
 
 			if ('showAncestorScopes' in config) {
-				ddmURL.setParameter('showAncestorScopes', config.showAncestorScopes);
+				params.showAncestorScopes = config.showAncestorScopes;
 			}
 
 			if ('showBackURL' in config) {
-				ddmURL.setParameter('showBackURL', config.showBackURL);
+				params.showBackURL = config.showBackURL;
 			}
 
 			if ('showCacheableInput' in config) {
-				ddmURL.setParameter('showCacheableInput', config.showCacheableInput);
+				params.showCacheableInput = config.showCacheableInput;
 			}
 
 			if ('showHeader' in config) {
-				ddmURL.setParameter('showHeader', config.showHeader);
+				params.showHeader = config.showHeader;
 			}
 
 			if ('showManageTemplates' in config) {
-				ddmURL.setParameter('showManageTemplates', config.showManageTemplates);
+				params.showManageTemplates = config.showManageTemplates;
 			}
 
-			ddmURL.setParameter('structureAvailableFields', config.structureAvailableFields);
-			ddmURL.setParameter('templateId', config.templateId);
+			var url = Liferay.Util.PortletURL.createRenderURL(
+				config.basePortletURL,
+				params
+			);
 
-			ddmURL.setPortletId(Liferay.PortletKeys.DYNAMIC_DATA_MAPPING);
-			ddmURL.setWindowState('pop_up');
-
-			config.uri = ddmURL.toString();
+			config.uri = url.toString();
 
 			var dialogConfig = config.dialog;
 
@@ -1418,38 +1249,47 @@
 				config.dialog = dialogConfig;
 			}
 
-			var eventHandles = [Liferay.once(config.eventName, callback)];
+			var eventHandles = [];
 
-			var detachSelectionOnHideFn = function(event) {
+			if (callback) {
+				eventHandles.push(Liferay.once(config.eventName, callback));
+			}
+
+			var detachSelectionOnHideFn = function (event) {
+				Liferay.fire(config.eventName);
+
 				if (!event.newVal) {
-					(new A.EventHandle(eventHandles)).detach();
+					new A.EventHandle(eventHandles).detach();
 				}
 			};
 
-			Util.openWindow(
-				config,
-				function(dialogWindow) {
-					eventHandles.push(dialogWindow.after(['destroy', 'visibleChange'], detachSelectionOnHideFn));
-				}
-			);
+			Util.openWindow(config, (dialogWindow) => {
+				eventHandles.push(
+					dialogWindow.after(
+						['destroy', 'visibleChange'],
+						detachSelectionOnHideFn
+					)
+				);
+			});
 		},
-		['liferay-portlet-url']
+		['aui-base']
 	);
 
 	Liferay.provide(
 		Util,
 		'openDocument',
-		function(webDavUrl, onSuccess, onError) {
+		(webDavUrl, onSuccess, onError) => {
 			if (A.UA.ie) {
 				try {
-					var executor = new A.config.win.ActiveXObject('SharePoint.OpenDocuments');
+					var executor = new A.config.win.ActiveXObject(
+						'SharePoint.OpenDocuments'
+					);
 
 					executor.EditDocument(webDavUrl);
 
 					if (Lang.isFunction(onSuccess)) {
 						onSuccess();
 					}
-
 				}
 				catch (e) {
 					if (Lang.isFunction(onError)) {
@@ -1463,9 +1303,82 @@
 
 	Liferay.provide(
 		Util,
+		'selectEntityHandler',
+		(containerSelector, selectEventName, disableButton) => {
+			const container = A.one(containerSelector);
+
+			if (!container) {
+				return;
+			}
+
+			const openingLiferay = Util.getOpener().Liferay;
+
+			const selectorButtons = container
+				.getDOM()
+				.querySelectorAll('.selector-button');
+
+			container.delegate(
+				EVENT_CLICK,
+				(event) => {
+					const currentTarget = event.currentTarget.getDOM();
+
+					if (
+						currentTarget.disabled ||
+						currentTarget.dataset['preventSelection']
+					) {
+						return;
+					}
+
+					const confirmSelection =
+						currentTarget.dataset['confirmSelection'] === 'true';
+
+					if (
+						!confirmSelection ||
+						confirm(
+							currentTarget.dataset['confirmSelectionMessage']
+						)
+					) {
+						if (disableButton) {
+							selectorButtons.forEach((selectorButton) => {
+								selectorButton.disabled = false;
+							});
+
+							currentTarget.disabled = true;
+						}
+
+						const result = Util.getAttributes(
+							currentTarget,
+							'data-'
+						);
+
+						openingLiferay.fire(selectEventName, result);
+
+						const window = Util.getWindow();
+
+						if (window) {
+							window.hide();
+						}
+					}
+				},
+				'.selector-button'
+			);
+
+			openingLiferay.on('entitySelectionRemoved', () => {
+				selectorButtons.forEach((selectorButton) => {
+					selectorButton.disabled = false;
+				});
+			});
+		},
+		['aui-base']
+	);
+
+	Liferay.provide(
+		Util,
 		'portletTitleEdit',
-		function(options) {
+		(options) => {
 			var obj = options.obj;
+
+			A.Event.defineOutside('mouseup');
 
 			if (obj) {
 				var title = obj.one('.portlet-title-text');
@@ -1473,73 +1386,92 @@
 				if (title && !title.hasClass('not-editable')) {
 					title.addClass('portlet-title-editable');
 
-					title.on(
-						EVENT_CLICK,
-						function(event) {
-							var editable = Util._getEditableInstance(title);
+					title.on(EVENT_CLICK, (event) => {
+						var editable = Util._getEditableInstance(title);
 
-							var rendered = editable.get('rendered');
+						var rendered = editable.get('rendered');
 
-							if (rendered) {
-								editable.fire('stopEditing');
-							}
-
-							editable.set('node', event.currentTarget);
-
-							if (rendered) {
-								editable.syncUI();
-							}
-
-							editable._startEditing(event);
+						if (rendered) {
+							editable.fire('stopEditing');
 						}
-					);
+
+						editable.set('node', event.currentTarget);
+
+						if (rendered) {
+							editable.syncUI();
+						}
+
+						editable._startEditing(event);
+
+						if (!rendered) {
+							var defaultIconsTpl =
+								A.ToolbarRenderer.prototype.TEMPLATES.icon;
+
+							A.ToolbarRenderer.prototype.TEMPLATES.icon = Liferay.Util.getLexiconIconTpl(
+								'{cssClass}'
+							);
+
+							editable._comboBox.icons.destroy();
+							editable._comboBox._renderIcons();
+
+							A.ToolbarRenderer.prototype.TEMPLATES.icon = defaultIconsTpl;
+						}
+					});
 
 					title.setData('portletTitleEditOptions', options);
 				}
 			}
 		},
-		['aui-editable-deprecated']
+		['aui-editable-deprecated', 'event-outside']
 	);
 
 	Liferay.provide(
 		Util,
 		'editEntity',
-		function(config, callback) {
+		(config, callback) => {
 			var dialog = Util.getWindow(config.id);
 
 			var eventName = config.eventName || config.id;
 
 			var eventHandles = [Liferay.on(eventName, callback)];
 
-			var detachSelectionOnHideFn = function(event) {
+			var detachSelectionOnHideFn = function (event) {
 				if (!event.newVal) {
-					(new A.EventHandle(eventHandles)).detach();
+					new A.EventHandle(eventHandles).detach();
 				}
 			};
 
 			if (dialog) {
-				eventHandles.push(dialog.after(['destroy', 'visibleChange'], detachSelectionOnHideFn));
+				eventHandles.push(
+					dialog.after(
+						['destroy', 'visibleChange'],
+						detachSelectionOnHideFn
+					)
+				);
 
 				dialog.show();
 			}
 			else {
-				var destroyDialog = function(event) {
+				var destroyDialog = function (event) {
 					var dialogId = config.id;
 
 					var dialogWindow = Util.getWindow(dialogId);
 
-					if (dialogWindow && Util.getPortletId(dialogId) === event.portletId) {
+					if (
+						dialogWindow &&
+						Util.getPortletId(dialogId) === event.portletId
+					) {
 						dialogWindow.destroy();
 
 						Liferay.detach('destroyPortlet', destroyDialog);
 					}
 				};
 
-				var editURL = new Liferay.PortletURL.createURL(
+				var editURL = new Liferay.Util.PortletURL.createPortletURL(
 					config.uri,
 					A.merge(
 						{
-							eventName: eventName
+							eventName,
 						},
 						config.urlParams
 					)
@@ -1549,30 +1481,30 @@
 
 				config.dialogIframe = A.merge(
 					{
-						bodyCssClass: 'dialog-with-footer'
+						bodyCssClass: 'dialog-with-footer',
 					},
 					config.dialogIframe || {}
 				);
 
-				Util.openWindow(
-					config,
-					function(dialogWindow) {
-						eventHandles.push(
-							dialogWindow.after(['destroy', 'visibleChange'], detachSelectionOnHideFn)
-						);
+				Util.openWindow(config, (dialogWindow) => {
+					eventHandles.push(
+						dialogWindow.after(
+							['destroy', 'visibleChange'],
+							detachSelectionOnHideFn
+						)
+					);
 
-						Liferay.on('destroyPortlet', destroyDialog);
-					}
-				);
+					Liferay.on('destroyPortlet', destroyDialog);
+				});
 			}
 		},
-		['aui-base', 'liferay-portlet-url', 'liferay-util-window']
+		['aui-base', 'liferay-util-window']
 	);
 
 	Liferay.provide(
 		Util,
 		'selectEntity',
-		function(config, callback) {
+		(config, callback) => {
 			var dialog = Util.getWindow(config.id);
 
 			var eventName = config.eventName || config.id;
@@ -1585,67 +1517,83 @@
 				config.dialog.destroyOnHide = true;
 			}
 
-			var detachSelectionOnHideFn = function(event) {
+			var detachSelectionOnHideFn = function (event) {
 				if (!event.newVal) {
-					(new A.EventHandle(eventHandles)).detach();
+					new A.EventHandle(eventHandles).detach();
 				}
 			};
 
-			var disableSelectedAssets = function(event) {
-				if (selectedData && selectedData.length) {
-					var currentWindow = event.currentTarget.node.get('contentWindow.document');
+			var syncAssets = function (event) {
+				var currentWindow = event.currentTarget.node.get(
+					'contentWindow.document'
+				);
 
-					var selectorButtons = currentWindow.all('.lfr-search-container-wrapper .selector-button');
+				var selectorButtons = currentWindow.all(
+					'.lfr-search-container-wrapper .selector-button'
+				);
 
-					A.some(
-						selectorButtons,
-						function(item, index) {
-							var assetEntryId = item.attr('data-entityid') || item.attr('data-entityname');
+				A.each(selectorButtons, (item) => {
+					var assetEntryId =
+						item.attr('data-entityid') ||
+						item.attr('data-entityname');
 
-							var assetEntryIndex = selectedData.indexOf(assetEntryId);
+					var assetGroupId = item.attr('data-groupid');
 
-							if (assetEntryIndex > -1) {
-								item.attr('data-prevent-selection', true);
-								item.attr('disabled', true);
+					if (assetGroupId) {
+						assetEntryId = assetGroupId + '-' + assetEntryId;
+					}
 
-								selectedData.splice(assetEntryIndex, 1);
-							}
+					var disabled =
+						selectedData && selectedData.includes(assetEntryId);
 
-							return !selectedData.length;
-						}
-					);
-				}
+					if (disabled) {
+						item.attr('data-prevent-selection', true);
+					}
+					else {
+						item.removeAttribute('data-prevent-selection');
+					}
+
+					Util.toggleDisabled(item, disabled);
+				});
 			};
 
 			if (dialog) {
-				eventHandles.push(dialog.after(['destroy', 'visibleChange'], detachSelectionOnHideFn));
+				eventHandles.push(
+					dialog.after(
+						['destroy', 'visibleChange'],
+						detachSelectionOnHideFn
+					)
+				);
 
 				dialog.show();
 			}
 			else {
-				var destroyDialog = function(event) {
+				var destroyDialog = function (event) {
 					var dialogId = config.id;
 
 					var dialogWindow = Util.getWindow(dialogId);
 
-					if (dialogWindow && Util.getPortletId(dialogId) === event.portletId) {
+					if (
+						dialogWindow &&
+						Util.getPortletId(dialogId) === event.portletId
+					) {
 						dialogWindow.destroy();
 
 						Liferay.detach('destroyPortlet', destroyDialog);
 					}
 				};
 
-				Util.openWindow(
-					config,
-					function(dialogWindow) {
-						eventHandles.push(
-							dialogWindow.after(['destroy', 'visibleChange'], detachSelectionOnHideFn),
-							dialogWindow.iframe.after(['load'], disableSelectedAssets)
-						);
+				Util.openWindow(config, (dialogWindow) => {
+					eventHandles.push(
+						dialogWindow.after(
+							['destroy', 'visibleChange'],
+							detachSelectionOnHideFn
+						),
+						dialogWindow.iframe.after(['load'], syncAssets)
+					);
 
-						Liferay.on('destroyPortlet', destroyDialog);
-					}
-				);
+					Liferay.on('destroyPortlet', destroyDialog);
+				});
 			}
 		},
 		['aui-base', 'liferay-util-window']
@@ -1654,7 +1602,7 @@
 	Liferay.provide(
 		Util,
 		'toggleControls',
-		function(node) {
+		(node) => {
 			var docBody = A.getBody();
 
 			node = node || docBody;
@@ -1674,131 +1622,62 @@
 
 				docBody.addClass(currentState.cssClass);
 
-				Liferay.fire(
-					'toggleControls',
-					{
-						enabled: controlsVisible
-					}
-				);
+				Liferay.fire('toggleControls', {
+					enabled: controlsVisible,
+				});
 
-				trigger.on(
-					'tap',
-					function(event) {
-						controlsVisible = !controlsVisible;
+				trigger.on('tap', () => {
+					controlsVisible = !controlsVisible;
 
-						var prevState = currentState;
+					var prevState = currentState;
 
-						currentState = MAP_TOGGLE_STATE[controlsVisible];
+					currentState = MAP_TOGGLE_STATE[controlsVisible];
 
-						docBody.toggleClass(prevState.cssClass);
-						docBody.toggleClass(currentState.cssClass);
+					docBody.toggleClass(prevState.cssClass);
+					docBody.toggleClass(currentState.cssClass);
 
-						var editControlsIconClass = currentState.iconCssClass;
-						var editControlsState = currentState.state;
+					var editControlsIconClass = currentState.iconCssClass;
+					var editControlsState = currentState.state;
 
-						if (icon) {
-							var newIcon = currentState.icon;
+					if (icon) {
+						var newIcon = currentState.icon;
 
-							if (!newIcon) {
-								newIcon = Util.getLexiconIcon(editControlsIconClass);
+						if (!newIcon) {
+							newIcon = Util.getLexiconIcon(
+								editControlsIconClass
+							);
 
-								newIcon = A.one(newIcon);
+							newIcon = A.one(newIcon);
 
-								currentState.icon = newIcon;
-							}
-
-							icon.replace(newIcon);
-
-							icon = newIcon;
+							currentState.icon = newIcon;
 						}
 
-						Liferay._editControlsState = editControlsState;
+						icon.replace(newIcon);
 
-						Liferay.Store('com.liferay.frontend.js.web_toggleControls', editControlsState);
-
-						Liferay.fire(
-							'toggleControls',
-							{
-								enabled: controlsVisible,
-								src: 'ui'
-							}
-						);
+						icon = newIcon;
 					}
-				);
+
+					Liferay._editControlsState = editControlsState;
+
+					Liferay.Util.Session.set(
+						'com.liferay.frontend.js.web_toggleControls',
+						editControlsState
+					);
+
+					Liferay.fire('toggleControls', {
+						enabled: controlsVisible,
+						src: 'ui',
+					});
+				});
 			}
 		},
-		['event-tap', 'liferay-store']
-	);
-
-	Liferay.provide(
-		window,
-		'submitForm',
-		function(form, action, singleSubmit, validate) {
-			if (!Util._submitLocked) {
-				if (form.jquery) {
-					form = form[0];
-				}
-
-				Liferay.fire(
-					'submitForm',
-					{
-						action: action,
-						form: A.one(form),
-						singleSubmit: singleSubmit,
-						validate: validate !== false
-					}
-				);
-			}
-		},
-		['aui-base', 'aui-form-validator', 'aui-url', 'liferay-form']
-	);
-
-	Liferay.publish(
-		'submitForm',
-		{
-			defaultFn: Util._defaultSubmitFormFn
-		}
-	);
-
-	Liferay.provide(
-		Util,
-		'defaultPreviewArticleFn',
-		function(event) {
-			var instance = this;
-
-			var urlPreview = instance._urlPreview;
-
-			if (!urlPreview) {
-				urlPreview = new Liferay.UrlPreview(
-					{
-						title: Util.escapeHTML(event.title),
-						url: event.uri
-					}
-				);
-
-				instance._urlPreview = urlPreview;
-			}
-			else {
-				urlPreview.set('title', Util.escapeHTML(event.title));
-				urlPreview.set('url', event.uri);
-			}
-
-			urlPreview.open();
-		},
-		['liferay-url-preview']
-	);
-
-	Liferay.publish(
-		'previewArticle',
-		{
-			defaultFn: Util._defaultPreviewArticleFn
-		}
+		['event-tap']
 	);
 
 	Liferay.provide(
 		Util,
 		'_openWindowProvider',
-		function(config, callback) {
+		(config, callback) => {
 			var dialog = Window.getWindow(config);
 
 			if (Lang.isFunction(callback)) {
@@ -1808,51 +1687,9 @@
 		['liferay-util-window']
 	);
 
-	Liferay.after(
-		'closeWindow',
-		function(event) {
-			var id = event.id;
-
-			var dialog = Liferay.Util.getTop().Liferay.Util.Window.getById(id);
-
-			if (dialog && dialog.iframe) {
-				var dialogWindow = dialog.iframe.node.get('contentWindow').getDOM();
-
-				var openingWindow = dialogWindow.Liferay.Util.getOpener();
-				var redirect = event.redirect;
-
-				if (redirect) {
-					openingWindow.Liferay.Util.navigate(redirect);
-				}
-				else {
-					var refresh = event.refresh;
-
-					if (refresh && openingWindow) {
-						var data;
-
-						if (!event.portletAjaxable) {
-							data = {
-								portletAjaxable: false
-							};
-						}
-
-						openingWindow.Liferay.Portlet.refresh('#p_p_id_' + refresh + '_', data);
-					}
-				}
-
-				dialog.hide();
-			}
-		}
-	);
-
 	Util.Window = Window;
 
 	Liferay.Util = Util;
-
-	Liferay.BREAKPOINTS = {
-		PHONE: 768,
-		TABLET: 980
-	};
 
 	Liferay.STATUS_CODE = {
 		BAD_REQUEST: 400,
@@ -1860,10 +1697,11 @@
 		OK: 200,
 		SC_DUPLICATE_FILE_EXCEPTION: 490,
 		SC_FILE_ANTIVIRUS_EXCEPTION: 494,
+		SC_FILE_CUSTOM_EXCEPTION: 499,
 		SC_FILE_EXTENSION_EXCEPTION: 491,
 		SC_FILE_NAME_EXCEPTION: 492,
 		SC_FILE_SIZE_EXCEPTION: 493,
-		SC_UPLOAD_REQUEST_SIZE_EXCEPTION: 495
+		SC_UPLOAD_REQUEST_SIZE_EXCEPTION: 495,
 	};
 
 	// 0-200: Theme Developer
@@ -1881,6 +1719,6 @@
 		OVERLAY: 1000,
 		POPOVER: 1600,
 		TOOLTIP: 10000,
-		WINDOW: 1200
+		WINDOW: 1200,
 	};
-})(AUI(), AUI.$, Liferay);
+})(AUI(), Liferay);

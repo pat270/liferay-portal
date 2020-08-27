@@ -28,28 +28,28 @@ public class LogWrapper implements Log {
 		try {
 			_log.debug(msg);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void debug(Object msg, Throwable t) {
+	public void debug(Object msg, Throwable throwable) {
 		try {
-			_log.debug(msg, t);
+			_log.debug(msg, throwable);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void debug(Throwable t) {
+	public void debug(Throwable throwable) {
 		try {
-			_log.debug(t);
+			_log.debug(throwable);
 		}
-		catch (Exception e) {
-			printMsg(t.getMessage());
+		catch (Exception exception) {
+			printMsg(throwable.getMessage());
 		}
 	}
 
@@ -58,28 +58,28 @@ public class LogWrapper implements Log {
 		try {
 			_log.error(msg);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void error(Object msg, Throwable t) {
+	public void error(Object msg, Throwable throwable) {
 		try {
-			_log.error(msg, t);
+			_log.error(msg, throwable);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void error(Throwable t) {
+	public void error(Throwable throwable) {
 		try {
-			_log.error(t);
+			_log.error(throwable);
 		}
-		catch (Exception e) {
-			printMsg(t.getMessage());
+		catch (Exception exception) {
+			printMsg(throwable.getMessage());
 		}
 	}
 
@@ -88,28 +88,28 @@ public class LogWrapper implements Log {
 		try {
 			_log.fatal(msg);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void fatal(Object msg, Throwable t) {
+	public void fatal(Object msg, Throwable throwable) {
 		try {
-			_log.fatal(msg, t);
+			_log.fatal(msg, throwable);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void fatal(Throwable t) {
+	public void fatal(Throwable throwable) {
 		try {
-			_log.fatal(t);
+			_log.fatal(throwable);
 		}
-		catch (Exception e) {
-			printMsg(t.getMessage());
+		catch (Exception exception) {
+			printMsg(throwable.getMessage());
 		}
 	}
 
@@ -122,28 +122,28 @@ public class LogWrapper implements Log {
 		try {
 			_log.info(msg);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void info(Object msg, Throwable t) {
+	public void info(Object msg, Throwable throwable) {
 		try {
-			_log.info(msg, t);
+			_log.info(msg, throwable);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void info(Throwable t) {
+	public void info(Throwable throwable) {
 		try {
-			_log.info(t);
+			_log.info(throwable);
 		}
-		catch (Exception e) {
-			printMsg(t.getMessage());
+		catch (Exception exception) {
+			printMsg(throwable.getMessage());
 		}
 	}
 
@@ -191,28 +191,28 @@ public class LogWrapper implements Log {
 		try {
 			_log.trace(msg);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void trace(Object msg, Throwable t) {
+	public void trace(Object msg, Throwable throwable) {
 		try {
-			_log.trace(msg, t);
+			_log.trace(msg, throwable);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void trace(Throwable t) {
+	public void trace(Throwable throwable) {
 		try {
-			_log.trace(t);
+			_log.trace(throwable);
 		}
-		catch (Exception e) {
-			printMsg(t.getMessage());
+		catch (Exception exception) {
+			printMsg(throwable.getMessage());
 		}
 	}
 
@@ -221,28 +221,28 @@ public class LogWrapper implements Log {
 		try {
 			_log.warn(msg);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void warn(Object msg, Throwable t) {
+	public void warn(Object msg, Throwable throwable) {
 		try {
-			_log.warn(msg, t);
+			_log.warn(msg, throwable);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			printMsg(msg);
 		}
 	}
 
 	@Override
-	public void warn(Throwable t) {
+	public void warn(Throwable throwable) {
 		try {
-			_log.warn(t);
+			_log.warn(throwable);
 		}
-		catch (Exception e) {
-			printMsg(t.getMessage());
+		catch (Exception exception) {
+			printMsg(throwable.getMessage());
 		}
 	}
 

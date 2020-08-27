@@ -1,10 +1,11 @@
 definition {
+
 	macro acceptConditions {
-		if (IsElementPresent.pauseIsElementPresent(locator1 = "GoogleLogin#ALLOW", value1 = "Allow")) {
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "GoogleLogin#ALLOW")) {
 			Click(locator1 = "GoogleLogin#ALLOW");
 		}
 
-		if (IsElementPresent.pauseIsElementPresent(locator1 = "Button#I_AGREE", value1 = "I Agree")) {
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "Button#I_AGREE")) {
 			Click(locator1 = "Button#I_AGREE");
 		}
 
@@ -13,7 +14,7 @@ definition {
 				locator1 = "TextInput#ANSWER",
 				value1 = "test");
 
-			Button.clickSave();
+			Button.click(button = "Save");
 		}
 
 		SelectWindow.selectWindowTopNoSPARefresh();
@@ -26,7 +27,7 @@ definition {
 			locator1 = "UserBar#USER_SIGN_IN",
 			value1 = "Sign In");
 
-		Click(locator1 = "Icon#GOOGLE_PLUS");
+		Click(locator1 = "Link#GOOGLE");
 
 		SelectWindow(locator1 = "GoogleLogin#PAGE_TITLE");
 
@@ -47,4 +48,5 @@ definition {
 			Click(locator1 = "GoogleLogin#LOGIN_NEXT_BUTTON");
 		}
 	}
+
 }

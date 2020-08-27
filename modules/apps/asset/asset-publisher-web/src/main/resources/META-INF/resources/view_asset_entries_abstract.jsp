@@ -17,8 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-long previewAssetEntryId = ParamUtil.getLong(request, "previewAssetEntryId");
-int previewAssetEntryType = ParamUtil.getInteger(request, "previewAssetEntryType");
+long previewClassNameId = ParamUtil.getLong(request, "previewClassNameId");
+long previewClassPK = ParamUtil.getLong(request, "previewClassPK");
+int previewType = ParamUtil.getInteger(request, "previewType");
 
 AssetEntryResult assetEntryResult = (AssetEntryResult)request.getAttribute("view.jsp-assetEntryResult");
 
@@ -32,8 +33,8 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 	AssetRenderer<?> assetRenderer = null;
 
 	try {
-		if (previewAssetEntryId == assetEntry.getEntryId()) {
-			assetRenderer = assetRendererFactory.getAssetRenderer(assetEntry.getClassPK(), previewAssetEntryType);
+		if ((previewClassNameId == assetEntry.getClassNameId()) && (previewClassPK == assetEntry.getClassPK())) {
+			assetRenderer = assetRendererFactory.getAssetRenderer(previewClassPK, previewType);
 		}
 		else {
 			assetRenderer = assetRendererFactory.getAssetRenderer(assetEntry.getClassPK());
@@ -45,7 +46,7 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 		}
 	}
 
-	if ((assetRenderer == null) || (!assetRenderer.isDisplayable() && (previewAssetEntryId <= 0))) {
+	if ((assetRenderer == null) || (!assetRenderer.isDisplayable() && (previewClassPK <= 0))) {
 		continue;
 	}
 
@@ -56,11 +57,15 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 		String title = assetRenderer.getTitle(locale);
 
 		String viewURL = assetPublisherHelper.getAssetViewURL(liferayPortletRequest, liferayPortletResponse, assetRenderer, assetEntry, assetPublisherDisplayContext.isAssetLinkBehaviorViewInPortlet());
+
+		Map<String, Object> fragmentsEditorData = HashMapBuilder.<String, Object>put(
+			"fragments-editor-item-id", PortalUtil.getClassNameId(assetRenderer.getClassName()) + "-" + assetRenderer.getClassPK()
+		).put(
+			"fragments-editor-item-type", "fragments-editor-mapped-item"
+		).build();
 %>
 
-		<div class="asset-abstract mb-5 <%= assetPublisherWebUtil.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) ? "default-asset-publisher" : StringPool.BLANK %> <%= (previewAssetEntryId == assetEntry.getEntryId()) ? "p-1 preview-asset-entry" : StringPool.BLANK %>">
-			<span class="asset-anchor lfr-asset-anchor" id="<%= assetEntry.getEntryId() %>"></span>
-
+		<div class="asset-abstract mb-5 <%= assetPublisherWebHelper.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) ? "default-asset-publisher" : StringPool.BLANK %> <%= ((previewClassNameId == assetEntry.getClassNameId()) && (previewClassPK == assetEntry.getClassPK())) ? "p-1 preview-asset-entry" : StringPool.BLANK %>" <%= AUIUtil.buildData(fragmentsEditorData) %>>
 			<div class="mb-2">
 				<h4 class="component-title">
 					<c:choose>
@@ -82,88 +87,78 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 				</h4>
 			</div>
 
+			<span class="asset-anchor lfr-asset-anchor" id="<%= assetEntry.getEntryId() %>"></span>
+
 			<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() || (assetPublisherDisplayContext.isShowCreateDate() && (assetEntry.getCreateDate() != null)) || (assetPublisherDisplayContext.isShowPublishDate() && (assetEntry.getPublishDate() != null)) || (assetPublisherDisplayContext.isShowExpirationDate() && (assetEntry.getExpirationDate() != null)) || (assetPublisherDisplayContext.isShowModifiedDate() && (assetEntry.getModifiedDate() != null)) || assetPublisherDisplayContext.isShowViewCount() %>">
-
-				<%
-				User assetRendererUser = UserLocalServiceUtil.getUser(assetRenderer.getUserId());
-				%>
-
-				<div class="autofit-row mb-4 metadata-author">
+				<clay:content-row
+					cssClass="mb-4 metadata-author"
+				>
 					<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() %>">
-						<div class="asset-avatar autofit-col inline-item-before mr-3 pt-1">
-							<span class="user-avatar-image">
-								<div class="sticker sticker-circle sticker-light user-icon user-icon-default <%= LexiconUtil.getUserColorCssClass(assetRendererUser) %> ">
-									<c:choose>
-										<c:when test="<%= assetRendererUser.getPortraitId() <= 0 %>">
-											<aui:icon image="user" markupView="lexicon" />
-										</c:when>
-										<c:otherwise>
-											<img class="sticker-img" src="<%= HtmlUtil.escape(UserConstants.getPortraitURL(themeDisplay.getPathImage(), assetRendererUser.isMale(), assetRendererUser.getPortraitId(), assetRendererUser.getUserUuid())) %>" />
-										</c:otherwise>
-									</c:choose>
-								</div>
-							</span>
-						</div>
+						<clay:content-col
+							cssClass="asset-avatar inline-item-before mr-3 pt-1"
+						>
+							<liferay-ui:user-portrait
+								userId="<%= assetRenderer.getUserId() %>"
+							/>
+						</clay:content-col>
 					</c:if>
 
-					<div class="autofit-col autofit-col-expand">
-						<div class="autofit-row">
-							<div class="autofit-col autofit-col-expand">
-								<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() %>">
-									<div class="text-truncate-inline">
-										<span class="text-truncate user-info"><strong><%= HtmlUtil.escape(assetRendererUser.getFullName()) %></strong></span>
-									</div>
-								</c:if>
-
-								<%
-								StringBundler sb = new StringBundler(13);
-
-								if (assetPublisherDisplayContext.isShowCreateDate() && (assetEntry.getCreateDate() != null)) {
-									sb.append(LanguageUtil.get(request, "created"));
-									sb.append(StringPool.SPACE);
-									sb.append(dateFormatDate.format(assetEntry.getCreateDate()));
-									sb.append(" - ");
-								}
-
-								if (assetPublisherDisplayContext.isShowPublishDate() && (assetEntry.getPublishDate() != null)) {
-									sb.append(LanguageUtil.get(request, "published"));
-									sb.append(StringPool.SPACE);
-									sb.append(dateFormatDate.format(assetEntry.getPublishDate()));
-									sb.append(" - ");
-								}
-
-								if (assetPublisherDisplayContext.isShowExpirationDate() && (assetEntry.getExpirationDate() != null)) {
-									sb.append(LanguageUtil.get(request, "expired"));
-									sb.append(StringPool.SPACE);
-									sb.append(dateFormatDate.format(assetEntry.getExpirationDate()));
-									sb.append(" - ");
-								}
-
-								if (assetPublisherDisplayContext.isShowModifiedDate() && (assetEntry.getModifiedDate() != null)) {
-									Date modifiedDate = assetEntry.getModifiedDate();
-
-									String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
-
-									sb.append(LanguageUtil.format(request, "modified-x-ago", modifiedDateDescription));
-								}
-								else if (sb.index() > 1) {
-									sb.setIndex(sb.index() - 1);
-								}
-								%>
-
-								<div class="asset-user-info text-secondary">
-									<span class="date-info"><%= sb.toString() %></span>
-								</div>
-
-								<c:if test="<%= assetPublisherDisplayContext.isShowViewCount() %>">
-									<div class="asset-view-count-info text-secondary">
-										<span class="view-count-info"><%= assetEntry.getViewCount() %> <liferay-ui:message key='<%= (assetEntry.getViewCount() == 1) ? "view" : "views" %>' /></span>
-									</div>
-								</c:if>
+					<clay:content-col
+						expand="<%= true %>"
+					>
+						<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() %>">
+							<div class="text-truncate-inline">
+								<span class="text-truncate user-info"><strong><%= HtmlUtil.escape(AssetRendererUtil.getAssetRendererUserFullName(assetRenderer, request)) %></strong></span>
 							</div>
+						</c:if>
+
+						<%
+						StringBundler sb = new StringBundler(13);
+
+						if (assetPublisherDisplayContext.isShowCreateDate() && (assetEntry.getCreateDate() != null)) {
+							sb.append(LanguageUtil.get(request, "created"));
+							sb.append(StringPool.SPACE);
+							sb.append(dateFormatDate.format(assetEntry.getCreateDate()));
+							sb.append(" - ");
+						}
+
+						if (assetPublisherDisplayContext.isShowPublishDate() && (assetEntry.getPublishDate() != null)) {
+							sb.append(LanguageUtil.get(request, "published"));
+							sb.append(StringPool.SPACE);
+							sb.append(dateFormatDate.format(assetEntry.getPublishDate()));
+							sb.append(" - ");
+						}
+
+						if (assetPublisherDisplayContext.isShowExpirationDate() && (assetEntry.getExpirationDate() != null)) {
+							sb.append(LanguageUtil.get(request, "expired"));
+							sb.append(StringPool.SPACE);
+							sb.append(dateFormatDate.format(assetEntry.getExpirationDate()));
+							sb.append(" - ");
+						}
+
+						if (assetPublisherDisplayContext.isShowModifiedDate() && (assetEntry.getModifiedDate() != null)) {
+							Date modifiedDate = assetEntry.getModifiedDate();
+
+							String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
+
+							sb.append(LanguageUtil.format(request, "modified-x-ago", modifiedDateDescription));
+						}
+						else if (sb.index() > 1) {
+							sb.setIndex(sb.index() - 1);
+						}
+						%>
+
+						<div class="asset-user-info text-secondary">
+							<span class="date-info"><%= sb.toString() %></span>
 						</div>
-					</div>
-				</div>
+
+						<c:if test="<%= assetPublisherDisplayContext.isShowViewCount() %>">
+							<div class="asset-view-count-info text-secondary">
+								<span class="view-count-info"><%= assetEntry.getViewCount() %> <liferay-ui:message key='<%= (assetEntry.getViewCount() == 1) ? "view" : "views" %>' /></span>
+							</div>
+						</c:if>
+					</clay:content-col>
+				</clay:content-row>
 			</c:if>
 
 			<div class="asset-content mb-3">
@@ -224,18 +219,26 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 			<c:if test="<%= (assetPublisherDisplayContext.isEnableRatings() && assetRenderer.isRatable()) || assetPublisherDisplayContext.isEnableFlags() || assetPublisherDisplayContext.isEnablePrint() || Validator.isNotNull(assetPublisherDisplayContext.getSocialBookmarksTypes()) %>">
 				<div class="separator"><!-- --></div>
 
-				<div class="asset-details autofit-float autofit-row autofit-row-center">
+				<clay:content-row
+					cssClass="asset-details"
+					floatElements=""
+					verticalAlign="center"
+				>
 					<c:if test="<%= assetPublisherDisplayContext.isEnableRatings() && assetRenderer.isRatable() %>">
-						<div class="asset-ratings autofit-col mr-3">
-							<liferay-ui:ratings
+						<clay:content-col
+							cssClass="asset-ratings mr-3"
+						>
+							<liferay-ratings:ratings
 								className="<%= assetEntry.getClassName() %>"
 								classPK="<%= assetEntry.getClassPK() %>"
 							/>
-						</div>
+						</clay:content-col>
 					</c:if>
 
 					<c:if test="<%= assetPublisherDisplayContext.isEnableFlags() %>">
-						<div class="asset-flag autofit-col mr-3">
+						<clay:content-col
+							cssClass="asset-flag mr-3"
+						>
 
 							<%
 							TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(assetRenderer.getClassName());
@@ -252,11 +255,13 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 								message='<%= inTrash ? "flags-are-disabled-because-this-entry-is-in-the-recycle-bin" : null %>'
 								reportedUserId="<%= assetRenderer.getUserId() %>"
 							/>
-						</div>
+						</clay:content-col>
 					</c:if>
 
 					<c:if test="<%= assetPublisherDisplayContext.isEnablePrint() %>">
-						<div class="autofit-col component-subtitle mr-3 print-action">
+						<clay:content-col
+							cssClass="component-subtitle mr-3 print-action"
+						>
 
 							<%
 							PortletURL printAssetURL = renderResponse.createRenderURL();
@@ -276,33 +281,26 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 								linkCssClass="btn btn-monospaced btn-outline-borderless btn-outline-secondary btn-sm"
 								markupView="lexicon"
 								message='<%= LanguageUtil.format(request, "print-x-x", new Object[] {"hide-accessible", HtmlUtil.escape(title)}, false) %>'
-								url='<%= "javascript:" + renderResponse.getNamespace() + "printPage_" + id + "();" %>'
+								url='<%= "javascript:" + liferayPortletResponse.getNamespace() + "printPage_" + id + "();" %>'
 							/>
 
 							<aui:script>
 								function <portlet:namespace />printPage_<%= id %>() {
-									window.open('<%= printAssetURL %>', '', 'directories=0,height=480,left=80,location=1,menubar=1,resizable=1,scrollbars=yes,status=0,toolbar=0,top=180,width=640');
+									window.open(
+										'<%= printAssetURL %>',
+										'',
+										'directories=0,height=480,left=80,location=1,menubar=1,resizable=1,scrollbars=yes,status=0,toolbar=0,top=180,width=640'
+									);
 								}
 							</aui:script>
-						</div>
+						</clay:content-col>
 					</c:if>
 
 					<%
-					PortletURL viewFullContentURL = renderResponse.createRenderURL();
-
-					viewFullContentURL.setParameter("mvcPath", "/view_content.jsp");
-					viewFullContentURL.setParameter("type", assetRendererFactory.getType());
-
-					if (Validator.isNotNull(assetRenderer.getUrlTitle())) {
-						if (assetRenderer.getGroupId() != scopeGroupId) {
-							viewFullContentURL.setParameter("groupId", String.valueOf(assetRenderer.getGroupId()));
-						}
-
-						viewFullContentURL.setParameter("urlTitle", assetRenderer.getUrlTitle());
-					}
+					PortletURL viewFullContentURL = assetPublisherHelper.getBaseAssetViewURL(liferayPortletRequest, liferayPortletResponse, assetRenderer, assetEntry);
 					%>
 
-					<div class="autofit-col">
+					<clay:content-col>
 						<liferay-social-bookmarks:bookmarks
 							className="<%= assetEntry.getClassName() %>"
 							classPK="<%= assetEntry.getClassPK() %>"
@@ -312,28 +310,40 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 							types="<%= assetPublisherDisplayContext.getSocialBookmarksTypes() %>"
 							urlImpl="<%= viewFullContentURL %>"
 						/>
-					</div>
-				</div>
+					</clay:content-col>
+				</clay:content-row>
 			</c:if>
 
 			<c:if test="<%= (assetPublisherDisplayContext.isShowAvailableLocales() && assetRenderer.isLocalizable()) || (assetPublisherDisplayContext.isEnableConversions() && assetRenderer.isConvertible()) %>">
 				<div class="separator"><!-- --></div>
 
-				<div class="asset-details autofit-float autofit-row autofit-row-center">
+				<clay:content-row
+					cssClass="asset-details"
+					floatElements=""
+					verticalAlign="center"
+				>
 					<c:if test="<%= assetPublisherDisplayContext.isShowAvailableLocales() && assetRenderer.isLocalizable() %>">
 
 						<%
+						String languageId = LanguageUtil.getLanguageId(request);
+
 						String[] availableLanguageIds = assetRenderer.getAvailableLanguageIds();
+
+						if (ArrayUtil.isNotEmpty(availableLanguageIds) && !ArrayUtil.contains(availableLanguageIds, languageId)) {
+							languageId = assetRenderer.getDefaultLanguageId();
+						}
 						%>
 
 						<c:if test="<%= availableLanguageIds.length > 1 %>">
-							<div class="autofit-col locale-actions mr-3">
+							<clay:content-col
+								cssClass="locale-actions mr-3"
+							>
 								<liferay-ui:language
 									formAction="<%= currentURL %>"
-									languageId="<%= LanguageUtil.getLanguageId(request) %>"
+									languageId="<%= languageId %>"
 									languageIds="<%= availableLanguageIds %>"
 								/>
-							</div>
+							</clay:content-col>
 						</c:if>
 					</c:if>
 
@@ -347,27 +357,32 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 						exportAssetURL.setWindowState(LiferayWindowState.EXCLUSIVE);
 
 						for (String extension : assetPublisherDisplayContext.getExtensions(assetRenderer)) {
-							Map<String, Object> data = new HashMap<>();
-
 							exportAssetURL.setParameter("targetExtension", extension);
 
-							data.put("resource-href", exportAssetURL.toString());
+							Map<String, Object> data = HashMapBuilder.<String, Object>put(
+								"resource-href", exportAssetURL.toString()
+							).build();
 						%>
 
-							<div class="autofit-col export-action">
+							<clay:content-col
+								cssClass="export-action"
+							>
 								<aui:a cssClass="btn btn-outline-borderless btn-outline-secondary btn-sm" data="<%= data %>" href="<%= exportAssetURL.toString() %>" label='<%= LanguageUtil.format(request, "x-convert-x-to-x", new Object[] {"hide-accessible", title, StringUtil.toUpperCase(HtmlUtil.escape(extension))}, false) %>' />
-							</div>
+							</clay:content-col>
 
 						<%
 						}
 						%>
 
 					</c:if>
-				</div>
+				</clay:content-row>
 			</c:if>
 
 			<c:if test="<%= assetPublisherDisplayContext.isEnableComments() && assetRenderer.isCommentable() %>">
-				<div class="col-md-12 mt-4">
+				<clay:col
+					cssClass="mt-4"
+					md="12"
+				>
 					<liferay-comment:discussion
 						className="<%= assetEntry.getClassName() %>"
 						classPK="<%= assetEntry.getClassPK() %>"
@@ -376,7 +391,7 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 						redirect="<%= currentURL %>"
 						userId="<%= assetRenderer.getUserId() %>"
 					/>
-				</div>
+				</clay:col>
 			</c:if>
 		</div>
 

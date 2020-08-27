@@ -22,8 +22,10 @@ import java.nio.channels.ScatteringByteChannel;
 import java.util.EnumSet;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link DatagramUtil}
  */
+@Deprecated
 public class DatagramHelper {
 
 	public static Datagram createACKResponseDatagram(long sequenceId) {

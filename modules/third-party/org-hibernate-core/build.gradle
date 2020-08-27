@@ -37,12 +37,14 @@ patch {
 
 	fileNames "org/hibernate/cache/UpdateTimestampsCache.java"
 	fileNames "org/hibernate/cfg/Configuration.java"
+	fileNames "org/hibernate/cfg/SettingsFactory.java"
 	fileNames "org/hibernate/engine/jdbc/BlobProxy.java"
 	fileNames "org/hibernate/engine/jdbc/ClobProxy.java"
 	fileNames "org/hibernate/engine/jdbc/NClobProxy.java"
 	fileNames "org/hibernate/engine/jdbc/SerializableBlobProxy.java"
 	fileNames "org/hibernate/engine/jdbc/SerializableClobProxy.java"
 	fileNames "org/hibernate/intercept/FieldInterceptionHelper.java"
+	fileNames "org/hibernate/util/ReflectHelper.java"
 
 	originalLibModuleName = "hibernate-core"
 }

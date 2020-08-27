@@ -29,12 +29,14 @@ SelectSegmentsEntryDisplayContext selectSegmentsEntryDisplayContext = (SelectSeg
 	searchActionURL="<%= selectSegmentsEntryDisplayContext.getSearchActionURL() %>"
 	searchContainerId="selectSegmentsEntry"
 	searchFormName="searchFm"
+	selectable="<%= false %>"
 	sortingOrder="<%= selectSegmentsEntryDisplayContext.getOrderByType() %>"
 	sortingURL="<%= selectSegmentsEntryDisplayContext.getSortingURL() %>"
 />
 
 <aui:form cssClass="container-fluid-1280" name="selectSegmentsEntryFm">
 	<liferay-ui:search-container
+		id="<%= selectSegmentsEntryDisplayContext.getSearchContainerId() %>"
 		searchContainer="<%= selectSegmentsEntryDisplayContext.getSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
@@ -49,15 +51,17 @@ SelectSegmentsEntryDisplayContext selectSegmentsEntryDisplayContext = (SelectSeg
 			>
 				<c:choose>
 					<c:when test="<%= !ArrayUtil.contains(selectSegmentsEntryDisplayContext.getSelectedSegmentsEntryIds(), segmentsEntry.getSegmentsEntryId()) %>">
-
-						<%
-						Map<String, Object> data = new HashMap();
-
-						data.put("entityid", segmentsEntry.getSegmentsEntryId());
-						data.put("entityname", segmentsEntry.getName(locale));
-						%>
-
-						<aui:a cssClass="selector-button" data="<%= data %>" href="javascript:;">
+						<aui:a
+							cssClass="selector-button"
+							data='<%=
+								HashMapBuilder.<String, Object>put(
+									"entityid", segmentsEntry.getSegmentsEntryId()
+								).put(
+									"entityname", segmentsEntry.getName(locale)
+								).build()
+							%>'
+							href="javascript:;"
+						>
 							<%= HtmlUtil.escape(segmentsEntry.getName(locale)) %>
 						</aui:a>
 					</c:when>
@@ -87,5 +91,8 @@ SelectSegmentsEntryDisplayContext selectSegmentsEntryDisplayContext = (SelectSeg
 </aui:form>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectSegmentsEntryFm', '<%= HtmlUtil.escapeJS(selectSegmentsEntryDisplayContext.getEventName()) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectSegmentsEntryFm',
+		'<%= HtmlUtil.escapeJS(selectSegmentsEntryDisplayContext.getEventName()) %>'
+	);
 </aui:script>

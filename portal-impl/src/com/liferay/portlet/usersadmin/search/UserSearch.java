@@ -87,9 +87,8 @@ public class UserSearch extends SearchContainer<User> {
 
 		String portletId = PortletProviderUtil.getPortletId(
 			User.class.getName(), PortletProvider.Action.VIEW);
-		String portletName = portletConfig.getPortletName();
 
-		if (!portletId.equals(portletName)) {
+		if (!portletId.equals(portletConfig.getPortletName())) {
 			displayTerms.setStatus(WorkflowConstants.STATUS_APPROVED);
 
 			UserSearchTerms searchTerms = (UserSearchTerms)getSearchTerms();
@@ -153,8 +152,8 @@ public class UserSearch extends SearchContainer<User> {
 			setOrderByType(orderByType);
 			setOrderByComparator(orderByComparator);
 		}
-		catch (Exception e) {
-			_log.error("Unable to initialize user search", e);
+		catch (Exception exception) {
+			_log.error("Unable to initialize user search", exception);
 		}
 	}
 

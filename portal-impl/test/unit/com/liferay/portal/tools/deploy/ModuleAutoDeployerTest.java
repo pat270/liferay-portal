@@ -24,6 +24,7 @@ import java.io.File;
 import java.text.MessageFormat;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -36,6 +37,7 @@ public class ModuleAutoDeployerTest extends BaseDeployerTestCase {
 		return new ModuleAutoDeployer();
 	}
 
+	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();

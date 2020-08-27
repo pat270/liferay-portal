@@ -24,7 +24,7 @@ import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigura
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.Portal;
@@ -68,7 +68,7 @@ public class ThreadLockPortletConfigurationIcon
 			return LanguageUtil.get(
 				getResourceBundle(getLocale(portletRequest)), key);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -101,7 +101,7 @@ public class ThreadLockPortletConfigurationIcon
 			portletURL.setParameter(
 				"threadId", String.valueOf(thread.getThreadId()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 
@@ -121,13 +121,13 @@ public class ThreadLockPortletConfigurationIcon
 		try {
 			MBMessage message = ActionUtil.getMessage(portletRequest);
 
-			return ModelResourcePermissionHelper.contains(
+			return ModelResourcePermissionUtil.contains(
 				_categoryModelResourcePermission,
 				themeDisplay.getPermissionChecker(),
 				themeDisplay.getScopeGroupId(), message.getCategoryId(),
 				ActionKeys.LOCK_THREAD);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

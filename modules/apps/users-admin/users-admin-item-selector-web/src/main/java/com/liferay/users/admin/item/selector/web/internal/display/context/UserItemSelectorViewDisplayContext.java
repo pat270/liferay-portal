@@ -92,7 +92,7 @@ public class UserItemSelectorViewDisplayContext {
 				getOrderByCol(), getOrderByType());
 
 		RowChecker rowChecker = new UserItemSelectorChecker(
-			_renderResponse, getCheckedUserIds());
+			_renderResponse, getCheckedUserIds(), isCheckedUseIdsEnable());
 
 		_searchContainer.setOrderByCol(getOrderByCol());
 		_searchContainer.setOrderByComparator(orderByComparator);
@@ -122,6 +122,10 @@ public class UserItemSelectorViewDisplayContext {
 
 	protected long[] getCheckedUserIds() {
 		return ParamUtil.getLongValues(_portletRequest, "checkedUserIds");
+	}
+
+	protected boolean isCheckedUseIdsEnable() {
+		return ParamUtil.getBoolean(_portletRequest, "checkedUserIdsEnabled");
 	}
 
 	private final HttpServletRequest _httpServletRequest;

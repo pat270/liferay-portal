@@ -1,13 +1,27 @@
 /**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+/**
  * The Form Placeholders Component.
  *
- * @deprecated since 7.2, unused
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  * @module liferay-form-placeholders
  */
 
 AUI.add(
 	'liferay-form-placeholders',
-	function(A) {
+	(A) => {
 		var ANode = A.Node;
 
 		var CSS_PLACEHOLDER = 'text-placeholder';
@@ -15,14 +29,16 @@ AUI.add(
 		var MAP_IGNORE_ATTRS = {
 			id: 1,
 			name: 1,
-			type: 1
+			type: 1,
 		};
 
-		var SELECTOR_PLACEHOLDER_INPUTS = 'input[placeholder], textarea[placeholder]';
+		var SELECTOR_PLACEHOLDER_INPUTS =
+			'input[placeholder], textarea[placeholder]';
 
 		var STR_BLANK = '';
 
-		var STR_DATA_TYPE_PASSWORD_PLACEHOLDER = 'data-type-password-placeholder';
+		var STR_DATA_TYPE_PASSWORD_PLACEHOLDER =
+			'data-type-password-placeholder';
 
 		var STR_FOCUS = 'focus';
 
@@ -34,93 +50,137 @@ AUI.add(
 
 		var STR_TYPE = 'type';
 
-		var Placeholders = A.Component.create(
-			{
-				EXTENDS: A.Plugin.Base,
+		var Placeholders = A.Component.create({
+			EXTENDS: A.Plugin.Base,
 
-				NAME: 'placeholders',
+			NAME: 'placeholders',
 
-				NS: STR_PLACEHOLDER,
+			NS: STR_PLACEHOLDER,
 
-				prototype: {
-					initializer: function(config) {
-						var instance = this;
+			prototype: {
+				_initializePasswordNode(field) {
+					var placeholder = ANode.create(
+						'<input name="' +
+							field.attr('name') +
+							'_pass_placeholder" type="text" />'
+					);
 
-						var host = instance.get('host');
+					Liferay.Util.getAttributes(field, (value, name) => {
+						var result = false;
 
-						var formNode = host.formNode;
+						if (!MAP_IGNORE_ATTRS[name]) {
+							if (name === 'class') {
+								value += STR_SPACE + CSS_PLACEHOLDER;
+							}
 
-						if (formNode) {
-							var placeholderInputs = formNode.all(SELECTOR_PLACEHOLDER_INPUTS);
-
-							placeholderInputs.each(
-								function(item, index) {
-									if (!item.val()) {
-										if (item.attr(STR_TYPE) === STR_PASSWORD) {
-											instance._initializePasswordNode(item);
-										}
-										else {
-											item.addClass(CSS_PLACEHOLDER);
-
-											item.val(item.attr(STR_PLACEHOLDER));
-										}
-									}
-								}
-							);
-
-							instance.host = host;
-
-							instance.beforeHostMethod('_onValidatorSubmit', instance._removePlaceholders, instance);
-							instance.beforeHostMethod('_onFieldFocusChange', instance._togglePlaceholders, instance);
+							placeholder.setAttribute(name, value);
 						}
-					},
 
-					_initializePasswordNode: function(field) {
-						var placeholder = ANode.create('<input name="' + field.attr('name') + '_pass_placeholder" type="text" />');
+						return result;
+					});
 
-						Liferay.Util.getAttributes(
-							field,
-							function(value, name, attrs) {
-								var result = false;
+					placeholder.val(field.attr(STR_PLACEHOLDER));
 
-								if (!MAP_IGNORE_ATTRS[name]) {
-									if (name === 'class') {
-										value += STR_SPACE + CSS_PLACEHOLDER;
-									}
+					placeholder.attr(STR_DATA_TYPE_PASSWORD_PLACEHOLDER, true);
 
-									placeholder.setAttribute(name, value);
-								}
+					field.placeBefore(placeholder);
 
-								return result;
+					field.hide();
+				},
+
+				_removePlaceholders() {
+					var instance = this;
+
+					var formNode = instance.host.formNode;
+
+					var placeholderInputs = formNode.all(
+						SELECTOR_PLACEHOLDER_INPUTS
+					);
+
+					placeholderInputs.each((item) => {
+						if (item.val() == item.attr(STR_PLACEHOLDER)) {
+							item.val(STR_BLANK);
+						}
+					});
+				},
+
+				_toggleLocalizedPlaceholders(event, currentTarget) {
+					var placeholder = currentTarget.attr(STR_PLACEHOLDER);
+
+					if (placeholder) {
+						var value = currentTarget.val();
+
+						if (event.type === STR_FOCUS) {
+							if (value === placeholder) {
+								currentTarget.removeClass(CSS_PLACEHOLDER);
 							}
-						);
+						}
+						else if (!value) {
+							currentTarget.val(placeholder);
 
-						placeholder.val(field.attr(STR_PLACEHOLDER));
+							currentTarget.addClass(CSS_PLACEHOLDER);
+						}
+					}
+				},
 
-						placeholder.attr(STR_DATA_TYPE_PASSWORD_PLACEHOLDER, true);
+				_togglePasswordPlaceholders(event, currentTarget) {
+					var placeholder = currentTarget.attr(STR_PLACEHOLDER);
 
-						field.placeBefore(placeholder);
+					if (placeholder) {
+						if (event.type === STR_FOCUS) {
+							if (
+								currentTarget.hasAttribute(
+									STR_DATA_TYPE_PASSWORD_PLACEHOLDER
+								)
+							) {
+								currentTarget.hide();
 
-						field.hide();
-					},
+								var passwordField = currentTarget.next();
 
-					_removePlaceholders: function() {
-						var instance = this;
+								passwordField.show();
 
-						var formNode = instance.host.formNode;
-
-						var placeholderInputs = formNode.all(SELECTOR_PLACEHOLDER_INPUTS);
-
-						placeholderInputs.each(
-							function(item, index) {
-								if (item.val() == item.attr(STR_PLACEHOLDER)) {
-									item.val(STR_BLANK);
-								}
+								setTimeout(() => {
+									Liferay.Util.focusFormField(passwordField);
+								}, 0);
 							}
-						);
-					},
+						}
+						else if (
+							currentTarget.attr(STR_TYPE) === STR_PASSWORD
+						) {
+							var value = currentTarget.val();
 
-					_toggleLocalizedPlaceholders: function(event, currentTarget) {
+							if (!value) {
+								currentTarget.hide();
+
+								currentTarget.previous().show();
+							}
+						}
+					}
+				},
+
+				_togglePlaceholders(event) {
+					var instance = this;
+
+					var currentTarget = event.currentTarget;
+
+					if (
+						currentTarget.hasAttribute(
+							STR_DATA_TYPE_PASSWORD_PLACEHOLDER
+						) ||
+						currentTarget.attr(STR_TYPE) === STR_PASSWORD
+					) {
+						instance._togglePasswordPlaceholders(
+							event,
+							currentTarget
+						);
+					}
+					else if (currentTarget.hasClass('language-value')) {
+						instance._toggleLocalizedPlaceholders(
+							event,
+							currentTarget
+						);
+					}
+					else {
 						var placeholder = currentTarget.attr(STR_PLACEHOLDER);
 
 						if (placeholder) {
@@ -128,6 +188,8 @@ AUI.add(
 
 							if (event.type === STR_FOCUS) {
 								if (value === placeholder) {
+									currentTarget.val(STR_BLANK);
+
 									currentTarget.removeClass(CSS_PLACEHOLDER);
 								}
 							}
@@ -137,75 +199,50 @@ AUI.add(
 								currentTarget.addClass(CSS_PLACEHOLDER);
 							}
 						}
-					},
-
-					_togglePasswordPlaceholders: function(event, currentTarget) {
-						var placeholder = currentTarget.attr(STR_PLACEHOLDER);
-
-						if (placeholder) {
-							if (event.type === STR_FOCUS) {
-								if (currentTarget.hasAttribute(STR_DATA_TYPE_PASSWORD_PLACEHOLDER)) {
-									currentTarget.hide();
-
-									var passwordField = currentTarget.next();
-
-									passwordField.show();
-
-									setTimeout(
-										function() {
-											Liferay.Util.focusFormField(passwordField);
-										},
-										0
-									);
-								}
-							}
-							else if (currentTarget.attr(STR_TYPE) === STR_PASSWORD) {
-								var value = currentTarget.val();
-
-								if (!value) {
-									currentTarget.hide();
-
-									currentTarget.previous().show();
-								}
-							}
-						}
-					},
-
-					_togglePlaceholders: function(event) {
-						var instance = this;
-
-						var currentTarget = event.currentTarget;
-
-						if (currentTarget.hasAttribute(STR_DATA_TYPE_PASSWORD_PLACEHOLDER) || currentTarget.attr(STR_TYPE) === STR_PASSWORD) {
-							instance._togglePasswordPlaceholders(event, currentTarget);
-						}
-						else if (currentTarget.hasClass('language-value')) {
-							instance._toggleLocalizedPlaceholders(event, currentTarget);
-						}
-						else {
-							var placeholder = currentTarget.attr(STR_PLACEHOLDER);
-
-							if (placeholder) {
-								var value = currentTarget.val();
-
-								if (event.type === STR_FOCUS) {
-									if (value === placeholder) {
-										currentTarget.val(STR_BLANK);
-
-										currentTarget.removeClass(CSS_PLACEHOLDER);
-									}
-								}
-								else if (!value) {
-									currentTarget.val(placeholder);
-
-									currentTarget.addClass(CSS_PLACEHOLDER);
-								}
-							}
-						}
 					}
-				}
-			}
-		);
+				},
+
+				initializer() {
+					var instance = this;
+
+					var host = instance.get('host');
+
+					var formNode = host.formNode;
+
+					if (formNode) {
+						var placeholderInputs = formNode.all(
+							SELECTOR_PLACEHOLDER_INPUTS
+						);
+
+						placeholderInputs.each((item) => {
+							if (!item.val()) {
+								if (item.attr(STR_TYPE) === STR_PASSWORD) {
+									instance._initializePasswordNode(item);
+								}
+								else {
+									item.addClass(CSS_PLACEHOLDER);
+
+									item.val(item.attr(STR_PLACEHOLDER));
+								}
+							}
+						});
+
+						instance.host = host;
+
+						instance.beforeHostMethod(
+							'_onValidatorSubmit',
+							instance._removePlaceholders,
+							instance
+						);
+						instance.beforeHostMethod(
+							'_onFieldFocusChange',
+							instance._togglePlaceholders,
+							instance
+						);
+					}
+				},
+			},
+		});
 
 		Liferay.Form.Placeholders = Placeholders;
 
@@ -213,6 +250,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['liferay-form', 'plugin']
+		requires: ['liferay-form', 'plugin'],
 	}
 );

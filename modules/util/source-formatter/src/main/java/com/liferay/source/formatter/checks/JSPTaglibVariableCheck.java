@@ -14,74 +14,124 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.source.formatter.checks.util.JSPSourceUtil;
 
+import java.io.IOException;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author Hugo Huijser
  */
-public class JSPTaglibVariableCheck extends BaseFileCheck {
+public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 
 	@Override
 	protected String doProcess(
-		String fileName, String absolutePath, String content) {
+			String fileName, String absolutePath, String content)
+		throws IOException {
 
 		return _formatTaglibVariable(fileName, content);
 	}
 
-	private String _formatTaglibVariable(String fileName, String content) {
+	private String _formatTaglibVariable(String fileName, String content)
+		throws IOException {
+
 		Matcher matcher = _taglibVariablePattern.matcher(content);
 
 		while (matcher.find()) {
-			String nextTag = matcher.group(4);
+			String nextTag = matcher.group(5);
 			String taglibValue = matcher.group(3);
 			String variableName = matcher.group(2);
 
-			if (taglibValue.contains("\\\"") ||
-				(taglibValue.contains(StringPool.APOSTROPHE) &&
-				 taglibValue.contains(StringPool.QUOTE))) {
+			if (!taglibValue.contains("\n") &&
+				(taglibValue.contains("\\\"") ||
+				 (taglibValue.contains(StringPool.APOSTROPHE) &&
+				  taglibValue.contains(StringPool.QUOTE)))) {
 
 				if (!variableName.startsWith("taglib") &&
-					(StringUtil.count(content, variableName) == 2) &&
+					(_getVariableCount(content, variableName) == 2) &&
 					nextTag.contains("=\"<%= " + variableName + " %>\"")) {
 
 					addMessage(
 						fileName,
 						"Variable '" + variableName +
 							"' should start with 'taglib'",
-						getLineNumber(content, matcher.start()));
+						getLineNumber(content, matcher.start(1)));
 				}
 
 				continue;
 			}
 
-			if (!variableName.startsWith("taglib")) {
-				continue;
+			if (nextTag.contains("=\"<%= " + variableName + " %>\"")) {
+				populateContentsMap(fileName, content);
+
+				String newContent = StringUtil.replaceFirst(
+					content, "<%= " + variableName + " %>\"",
+					"<%= " + taglibValue + " %>\"", matcher.start(5));
+
+				Set<String> checkedFileNames = new HashSet<>();
+				Set<String> includeFileNames = new HashSet<>();
+
+				if (hasUnusedJSPTerm(
+						fileName, newContent, "\\W" + variableName + "\\W",
+						"variable", checkedFileNames, includeFileNames,
+						getContentsMap())) {
+
+					if (!taglibValue.contains("\n")) {
+						return StringUtil.replaceFirst(
+							newContent, matcher.group(1), StringPool.BLANK,
+							matcher.start());
+					}
+
+					addMessage(
+						fileName,
+						StringBundler.concat(
+							"No need to declare variable '", variableName,
+							"', inline inside the tag."),
+						getLineNumber(content, matcher.start(2)));
+				}
 			}
-
-			if (!nextTag.contains("=\"<%= " + variableName + " %>\"")) {
-				addMessage(
-					fileName,
-					"No need to specify taglib variable '" + variableName + "'",
-					getLineNumber(content, matcher.start()));
-
-				continue;
-			}
-
-			content = StringUtil.replaceFirst(
-				content, variableName, taglibValue, matcher.start(4));
-
-			return content = StringUtil.replaceFirst(
-				content, matcher.group(1), StringPool.BLANK, matcher.start());
 		}
 
 		return content;
 	}
 
+	private int _getVariableCount(String content, String variableName) {
+		int count = 0;
+
+		Pattern pattern = Pattern.compile("\\W" + variableName + "\\W");
+
+		Matcher matcher = pattern.matcher(content);
+
+		while (matcher.find()) {
+			int x = matcher.start() + 1;
+
+			if (JSPSourceUtil.isJavaSource(content, x)) {
+				if (!ToolsUtil.isInsideQuotes(content, x)) {
+					count++;
+				}
+
+				continue;
+			}
+
+			if (JSPSourceUtil.isJavaSource(content, x, true)) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
 	private static final Pattern _taglibVariablePattern = Pattern.compile(
-		"(\t*String (\\w+) = (.*);)\n\\s*%>\\s+(<[\\S\\s]*?>)\n");
+		"\n(\t*[\\w<>\\[\\],\\? ]+ (\\w+) = ([^{]((?!;\n).)*);)\n\\s*%>\\s+" +
+			"(<[\\S\\s]*?>)(\n|\\Z)",
+		Pattern.DOTALL);
 
 }

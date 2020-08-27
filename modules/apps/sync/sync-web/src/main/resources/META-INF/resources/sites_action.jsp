@@ -33,15 +33,10 @@ String groupId = String.valueOf(group.getGroupId());
 >
 	<c:choose>
 		<c:when test='<%= GetterUtil.getBoolean(group.getTypeSettingsProperty("syncEnabled"), !group.isCompany()) %>'>
-
-			<%
-			String editDefaultFilePermissionsDialogURL = "javascript:" + renderResponse.getNamespace() + "editDefaultFilePermissions(" + groupId + ");";
-			%>
-
 			<liferay-ui:icon
 				label="<%= true %>"
 				message="default-file-permissions"
-				url="<%= editDefaultFilePermissionsDialogURL %>"
+				url='<%= "javascript:" + liferayPortletResponse.getNamespace() + "editDefaultFilePermissions(" + groupId + ");" %>'
 			/>
 
 			<portlet:actionURL name="updateSites" var="disableSiteURL">
@@ -75,33 +70,46 @@ String groupId = String.valueOf(group.getGroupId());
 
 <aui:script>
 	function <portlet:namespace />editDefaultFilePermissions(groupId) {
-		var A = AUI();
 
-		Liferay.Util.openWindow(
+		<%
+		String selectEventName = liferayPortletResponse.getNamespace() + "itemSelected";
+		%>
+
+		<portlet:renderURL var="editDefaultFilePermissionsURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+			<portlet:param name="groupIds" value="{groupId}" />
+			<portlet:param name="mvcPath" value="/edit_default_file_permissions.jsp" />
+			<portlet:param name="selectEventName" value="<%= selectEventName %>" />
+		</portlet:renderURL>
+
+		var url = Liferay.Util.sub(
+			decodeURIComponent('<%= editDefaultFilePermissionsURL %>'),
 			{
-				dialog: {
-					destroyOnHide: true,
-					on: {
-						destroy: function() {
-							Liferay.Portlet.refresh('#p_p_id<portlet:namespace />');
-						}
-					}
-				},
-				id: '<portlet:namespace />editDefaultFilePermissionsDialog',
-				title: '<liferay-ui:message key="default-file-permissions" />',
-
-				<portlet:renderURL var="editDefaultFilePermissionsURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-					<portlet:param name="groupIds" value="{groupId}" />
-					<portlet:param name="mvcPath" value="/edit_default_file_permissions.jsp" />
-				</portlet:renderURL>
-
-				uri: A.Lang.sub(
-					decodeURIComponent('<%= editDefaultFilePermissionsURL %>'),
-					{
-						groupId: groupId
-					}
-				)
+				groupId: groupId,
 			}
 		);
+
+		Liferay.Util.openModal({
+			id: '<portlet:namespace />editDefaultFilePermissionsDialog',
+			onSelect: function (selectedItem) {
+				Liferay.Util.fetch(selectedItem.uri, {method: 'POST'})
+					.then(function (response) {
+						return response.text();
+					})
+					.then(function () {
+						Liferay.Portlet.refresh('#p_p_id<portlet:namespace />');
+					})
+					.catch(function (error) {
+						Liferay.Util.openToast({
+							message: Liferay.Language.get(
+								'an-unexpected-system-error-occurred'
+							),
+							type: 'danger',
+						});
+					});
+			},
+			selectEventName: '<%= selectEventName %>',
+			title: '<liferay-ui:message key="default-file-permissions" />',
+			url: url,
+		});
 	}
 </aui:script>

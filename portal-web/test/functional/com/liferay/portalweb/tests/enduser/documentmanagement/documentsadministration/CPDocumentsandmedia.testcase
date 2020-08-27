@@ -1,8 +1,8 @@
 @component-name = "portal-document-management"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property test.assert.warning.exceptions = "true";
 	property testray.main.component.name = "Documents Management";
 
 	setUp {
@@ -29,71 +29,53 @@ definition {
 	@description = "This is a use case for LPS-82073."
 	@priority = "5"
 	test AddShortcutToSiteDocument {
-		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		Navigator.openURL();
+		JSONGroup.addGroup(groupName = "Site Name");
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
-
-		Site.addCP(
-			siteName = "Site Name",
-			siteType = "Blank");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Site Name",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
 
 		DMDocument.viewCP(dmDocumentTitle = "DM Document Title");
 
-		Navigator.openSiteURL(siteName = "Liferay");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.addDMShortcutCP(
-			dmDocumentDescription = "DM Document Description",
 			dmDocumentTitle = "DM Document Title",
 			siteName = "Site Name");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
 
-		DMDocument.viewCP(
-			dmDocumentSize = "259 B",
-			dmDocumentTitle = "DM Document Title");
+		DMDocument.viewCP(dmDocumentTitle = "DM Document Title");
 	}
 
-	@description = "This test ensures that a user can check in a document without changing versions."
+	@description = "This test covers LPS-88313 and LPS-92145. It ensures that a user can check in a document without changing versions."
 	@priority = "5"
 	test CheckInDocumentAsCurrentVersion {
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "Check in as current version",
+			groupName = "Guest",
+			mimeType = "application/msword",
+			sourceFileName = "Document_1.doc");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		DMDocument.addCP(
+		DMDocument.editCP(
 			dmDocumentFile = "Document_1.doc",
-			dmDocumentTitle = "Check in as current version");
+			dmDocumentTitle = "Check in as current version",
+			revision = "Current",
+			versioning = "true",
+			versionNotes = '''<!DOCTYPE html> <html class="ltr" dir="ltr" lang="en-US"> <head> <title>''');
 
 		DMDocument.checkoutCP(dmDocumentTitle = "Check in as current version");
 
@@ -103,12 +85,7 @@ definition {
 			dmDocumentTitle = "Check in as current version",
 			revision = "Current");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		AssertElementNotPresent(
 			key_dmDocumentTitle = "Check in as current version",
@@ -122,16 +99,15 @@ definition {
 	@description = "This test ensures that a user can check in a document as a major version."
 	@priority = "5"
 	test CheckInDocumentAsMajorVersion {
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "Check in as major version",
+			groupName = "Guest",
+			mimeType = "application/msword",
+			sourceFileName = "Document_1.doc");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
-		DMDocument.addCP(
-			dmDocumentFile = "Document_1.doc",
-			dmDocumentTitle = "Check in as major version");
 
 		DMDocument.checkoutCP(dmDocumentTitle = "Check in as major version");
 
@@ -141,12 +117,7 @@ definition {
 			dmDocumentTitle = "Check in as major version",
 			revision = "Major");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		AssertElementNotPresent(
 			key_dmDocumentTitle = "Check in as major version",
@@ -160,16 +131,15 @@ definition {
 	@description = "This test ensures that a user can check in a document as a minor version."
 	@priority = "5"
 	test CheckInDocumentAsMinorVersion {
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "Check in as minor version",
+			groupName = "Guest",
+			mimeType = "application/msword",
+			sourceFileName = "Document_1.doc");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
-		DMDocument.addCP(
-			dmDocumentFile = "Document_1.doc",
-			dmDocumentTitle = "Check in as minor version");
 
 		DMDocument.checkoutCP(dmDocumentTitle = "Check in as minor version");
 
@@ -179,12 +149,7 @@ definition {
 			dmDocumentTitle = "Check in as minor version",
 			revision = "Minor");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		AssertElementNotPresent(
 			key_dmDocumentTitle = "Check in as minor version",
@@ -195,18 +160,49 @@ definition {
 		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.1");
 	}
 
+	@description = "This test covers LPS-82306. It ensures that a user can check in a document through Management bar and allow to select the change version."
+	@priority = "4"
+	test CheckInDocumentAtManagementBar {
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "Check in as current version",
+			groupName = "Guest",
+			mimeType = "application/msword",
+			sourceFileName = "Document_1.doc");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in as current version");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.checkinManagementBar(
+			dmDocumentTitle = "Check in as current version",
+			revision = "Current");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertElementNotPresent(
+			key_dmDocumentTitle = "Check in as current version",
+			locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
+
+		DMDocument.checkDocumentCheckboxCP(dmDocumentTitle = "Check in as current version");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.0");
+	}
+
 	@description = "This test asserts that major version increment will occur even if only metadata was changed if version increment was selected manually."
 	@priority = "4"
-	test CustomizeVersionNumberMajor{
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+	test CustomizeVersionNumberMajor {
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
 
@@ -214,12 +210,7 @@ definition {
 			dmDocumentSize = "259 B",
 			dmDocumentTitle = "DM Document Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.editCP(
 			dmDocumentDescription = "DM Document Description1",
@@ -236,16 +227,15 @@ definition {
 
 	@description = "This test asserts that minor version increment will occur even if the actual file was changed if version increment was selected manually."
 	@priority = "4"
-	test CustomizeVersionNumberMinor{
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+	test CustomizeVersionNumberMinor {
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
 
@@ -253,12 +243,7 @@ definition {
 			dmDocumentSize = "259 B",
 			dmDocumentTitle = "DM Document Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.editCP(
 			dmDocumentFileEdit = "Document_2.doc",
@@ -271,20 +256,53 @@ definition {
 			dmDocumentVersionNumber = "1.1");
 	}
 
+	@description = "This case covers LPS-110213. It ensures that a document file can be downloaded after moving it between folders."
+	@priority = "5"
+	test DownloadDocumentAfterMoveBetweenFolders {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder 1 Description",
+			dmFolderName = "DM Folder 1 Name");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder 2 Description",
+			dmFolderName = "DM Folder 2 Name");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentTitle = "DM Document Title",
+			folderName = "DM Folder 1 Name",
+			groupName = "Guest",
+			mimeType = "application/msword",
+			sourceFileName = "Document_1.doc");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoFolder(dmFolderName = "DM Folder 1 Name");
+
+		DMDocument.moveToFolderCP(
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "DM Folder 2 Name");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoFolder(dmFolderName = "DM Folder 2 Name");
+
+		DMDocument.downloadCP(dmDocumentTitle = "DM Document Title");
+
+		AssertTextNotPresent(value1 = "The requested resource could not be found.");
+	}
+
 	@description = "This test edits the title and description of a document. It asserts minor version increment because only its metadata was updated."
 	@priority = "5"
 	test EditDocument {
-		property app.server.types = "jboss,resin,tcserver,tomcat,weblogic,websphere,wildfly";
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
 		property portal.acceptance = "true";
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.addCP(
 			dmDocumentDescription = "DM Document Description",
@@ -297,12 +315,7 @@ definition {
 			dmDocumentSize = "259 B",
 			dmDocumentTitle = "DM Document Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.editCP(
 			dmDocumentDescription = "DM Document Description1",
@@ -320,12 +333,7 @@ definition {
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMFolder.addCP(
 			dmFolderDescription = "DM Folder Description",
@@ -333,12 +341,7 @@ definition {
 
 		DMFolder.viewCP(dmFolderName = "DM Folder Name");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMFolder.editCP(
 			dmFolderDescription = "DM Folder Description",
@@ -349,15 +352,12 @@ definition {
 		DMFolder.viewCP(dmFolderName = "DM Folder Name Name");
 	}
 
-	@description = "This test ensures that only the last two versions of a file are kept when the max version limit is set."
-	@priority = "5"
-	test LimitMaxFileVersion {
-		property test.name.skip.portal.instance = "CPDocumentsandmedia#LimitMaxFileVersion";
+	@description = "This test covers LPS-94820. This test ensures that only the last two checked in versions of a file are kept when the max version limit is set."
+	@priority = "4"
+	test LimitCheckInMaxFileVersion {
+		property test.name.skip.portal.instance = "CPDocumentsandmedia#LimitCheckInMaxFileVersion";
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "System Settings");
+		SystemSettings.openSystemSettingsAdmin();
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "Documents and Media",
@@ -375,39 +375,109 @@ definition {
 			locator1 = "Button#SAVE",
 			value1 = "Save");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Check in this document three times",
+			groupName = "Guest");
 
-		DMDocument.addCP(
-			dmDocumentFile = "Document_1.doc",
-			dmDocumentTitle = "Edit this document two times");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in this document three times");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in this document three times",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in this document three times");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in this document three times",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in this document three times");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in this document three times",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Check in this document three times");
+
+		for (var versionNumber : list "3.0,4.0") {
+			AssertElementPresent(
+				key_dmDocumentVersionNumber = "${versionNumber}",
+				locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
+		}
+
+		for (var versionNumber : list "1.0,2.0") {
+			AssertElementNotPresent(
+				key_dmDocumentVersionNumber = "${versionNumber}",
+				locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
+		}
+	}
+
+	@description = "This test ensures that only the last two versions of a file are kept when the max version limit is set."
+	@priority = "5"
+	test LimitMaxFileVersion {
+		property test.name.skip.portal.instance = "CPDocumentsandmedia#LimitMaxFileVersion";
+
+		SystemSettings.openSystemSettingsAdmin();
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Documents and Media",
+			configurationName = "Service",
+			configurationScope = "System Scope");
+
+		Type(
+			key_fieldLabel = "Maximum Number Of Versions",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "2");
+
+		ScrollWebElementIntoView(locator1 = "Button#SAVE");
+
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Edit this document two times",
+			groupName = "Guest");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.editCP(
 			dmDocumentTitle = "Edit this document two times",
 			dmDocumentTitleEdit = "First edit");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.editCP(
 			dmDocumentTitle = "First edit",
 			dmDocumentTitleEdit = "Second edit");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Second edit");
 
@@ -422,32 +492,29 @@ definition {
 			locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
 	}
 
+	@description = "This case covers the folder name of a document can be viewed in the info panel and navigate to it."
 	@priority = "5"
 	test MoveDocumentToFolder {
-		Navigator.openURL();
+		property portal.acceptance = "true";
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		DMDocument.addCP(
-			dmDocumentDescription = "DM Document Description1",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
 
 		DMDocument.viewCP(
 			dmDocumentSize = "259 B",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "Home",
+			locationFieldName = "true");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMFolder.addCP(
 			dmFolderDescription = "DM Folder Description",
@@ -455,12 +522,7 @@ definition {
 
 		DMFolder.viewCP(dmFolderName = "DM Folder Name");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.moveToFolderCP(
 			dmDocumentTitle = "DM Document Title",
@@ -469,29 +531,27 @@ definition {
 		DMDocument.viewMovedToFolderCP(
 			dmDocumentTitle = "DM Document Title",
 			dmFolderName = "DM Folder Name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "DM Folder Name",
+			locationFieldName = "true");
 	}
 
 	@description = "This is a use case for LPS-60405."
 	@priority = "5"
 	test MoveDocumentToSameFolder {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.moveToFolderCP(
 			dmDocumentTitle = "DM Document Title",
@@ -506,12 +566,7 @@ definition {
 
 	@priority = "4"
 	test MoveFolderToFolder {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMFolder.addCP(
 			dmFolderDescription = "DM Folder1 Description",
@@ -531,22 +586,14 @@ definition {
 	test MoveToRecycleBinDocument {
 		property portal.acceptance = "true";
 
-		Navigator.openURL();
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
-			dmDocumentDescription = "DM Document Description1",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.moveToRecycleBinCP(
 			assetType = "Document",
@@ -557,12 +604,7 @@ definition {
 	test MoveToRecycleBinFolder {
 		property portal.acceptance = "true";
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMFolder.addCP(
 			dmFolderDescription = "DM Folder Description",
@@ -570,31 +612,83 @@ definition {
 
 		DMFolder.viewCP(dmFolderName = "DM Folder Name");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMFolder.moveToRecycleBinCP(
 			assetType = "Documents Folder",
 			dmFolderName = "DM Folder Name");
 	}
 
+	@description = "This is a test for LPS-91751. It ensures that a user cannot preview a file with size that exceeds the preview limit."
+	@priority = "4"
+	test PreviewFileThatExceedsLimit {
+		property test.name.skip.portal.instance = "CPDocumentsandmedia#PreviewFileThatExceedsLimit";
+
+		SystemSettings.openSystemSettingsAdmin();
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Documents and Media",
+			configurationName = "File Entries",
+			configurationScope = "System Scope");
+
+		Type(
+			key_fieldLabel = "Previewable Processor Maximum Size",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "1024");
+
+		SystemSettings.saveConfiguration();
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "high_resolution_photo.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		AssertVisible(
+			key_title = "File too big to preview",
+			locator1 = "Header#H3_TITLE");
+	}
+
+	@description = "This test covers LPS-104957. It ensures that the JPG file can be previewed."
+	@priority = "5"
+	test PreviewJPG {
+		property portal.acceptance = "true";
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_1.jpg");
+
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW");
+
+		DMDocument.expandInfo();
+
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_THUMBNAIL");
+	}
+
 	@description = "This is a use case for LPS-88785."
 	@priority = "5"
 	test PreviewPDF {
-		Navigator.openURL();
+		property portal.acceptance = "true";
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "large_file.pdf",
+			groupName = "Guest",
+			mimeType = "application/pdf",
+			sourceFileName = "large_file.pdf");
 
-		DMDocument.addCP(
-			dmDocumentFile = "large_file.pdf",
-			dmDocumentTitle = "large_file.pdf");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "large_file.pdf");
 
@@ -609,92 +703,75 @@ definition {
 		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW");
 	}
 
-	@priority = "4"
-	test RotateImageViaDMSiteAdmin {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+	@description = "This test covers LPS-104957. It ensures that the PNG file can be previewed."
+	@priority = "5"
+	test PreviewPNG {
+		JSONDocument.addFileWithUploadedFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_2.jpg",
-			dmDocumentTitle = "Document_2.jpg");
+			dmDocumentTitle = "Document_1.png",
+			groupName = "Guest",
+			mimeType = "image/png",
+			sourceFileName = "Document_1.png");
 
-		Navigator.openURL();
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_1.png");
 
-		AssertVisible(
-			locator1 = "Portlet#HEADER",
-			value1 = "Documents and Media");
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW");
 
-		ImageEditor.gotoImageEditorViaDM(dmDocumentTitle = "Document_2.jpg");
+		DMDocument.expandInfo();
 
-		ImageEditor.rotateImage(rotateDirection = "left");
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_THUMBNAIL");
+	}
 
-		Pause(locator1 = "3000");
+	@description = "This ensures that the SVG file can be previewed."
+	@priority = "5"
 
-		ImageEditor.applyChangesAndSaveFile();
+	test PreviewSVG {
+		property portal.acceptance = "true";
 
-		Navigator.openURL();
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.svg",
+			groupName = "Guest",
+			mimeType = "image/svg+xml",
+			sourceFileName = "Document_1.svg");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_2.jpg");
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_1.svg");
 
-		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.1");
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW");
+
+		DMDocument.expandInfo();
+
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_THUMBNAIL");
 	}
 
 	@priority = "4"
 	test SearchForDocumentInHomeFolder {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
+		JSONDocument.addFile(
 			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		Search.searchCP(searchTerm = "DM Document Title");
 
 		DMDocument.viewSearchResultsCP(dmDocumentTitle = "DM Document Title");
 	}
 
-	@description = "This test makes sure that all files are deleted when user selects all"
+	@description = "This test covers LPS-91598. It makes sure that all files are deleted when user selects all."
 	@priority = "4"
 	test SelectAllAndDelete {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
 		DMDocument.addMultipleCP(dmDocumentFileList = "Document_1.doc,Document_2.jpg,Document_3.xls,Document_4.txt,Document_1.txt,Document_2.xls,Document_3.jpg,Document_4.jpg,Document_1.xls,Document_2.doc");
 
-		Pagination.changePagination(itemsPerPage = "5");
+		Pagination.changePagination(itemsPerPage = "4");
 
-		Pagination.viewResults(results = "Showing 1 to 5 of 10 entries.");
+		Pagination.viewResults(results = "Showing 1 to 4 of 10 entries.");
 
 		PortletEntry.selectAll();
 
@@ -709,31 +786,4 @@ definition {
 		DMDocument.viewDefaultCP();
 	}
 
-	@priority = "5"
-	test ViewImageEditorControls {
-		property portal.acceptance = "true";
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		DMDocument.addCP(
-			dmDocumentDescription = "DM Document Description",
-			dmDocumentFile = "Document_1.jpg",
-			dmDocumentTitle = "Document_1.jpg");
-
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
-
-		ImageEditor.gotoImageEditorViaDM(dmDocumentTitle = "Document_1.jpg");
-
-		ImageEditor.viewBaseControls();
-	}
 }

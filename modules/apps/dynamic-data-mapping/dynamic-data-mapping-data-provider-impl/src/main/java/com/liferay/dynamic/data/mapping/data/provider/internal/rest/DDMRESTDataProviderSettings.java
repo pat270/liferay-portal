@@ -141,7 +141,8 @@ public interface DDMRESTDataProviderSettings
 
 	@DDMFormField(
 		label = "%url", properties = "placeholder=%enter-the-rest-service-url",
-		required = true
+		required = true, validationErrorMessage = "%please-enter-a-valid-url",
+		validationExpression = "isURL(url)"
 	)
 	public String url();
 

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.action;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -132,35 +133,35 @@ public class JSONServiceAction extends JSONAction {
 						" with args ", Arrays.toString(args)));
 			}
 
-			Object returnObj = null;
+			Object returnObject = null;
 
 			boolean remoteAccess = AccessControlThreadLocal.isRemoteAccess();
 
 			try {
 				AccessControlThreadLocal.setRemoteAccess(true);
 
-				returnObj = method.invoke(clazz, args);
+				returnObject = method.invoke(clazz, args);
 			}
 			finally {
 				AccessControlThreadLocal.setRemoteAccess(remoteAccess);
 			}
 
-			if (returnObj != null) {
-				return getReturnValue(returnObj);
+			if (returnObject != null) {
+				return getReturnValue(returnObject);
 			}
 
 			return JSONFactoryUtil.getNullJSON();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					StringBundler.concat(
 						"Invoked ", clazz, " on method ", method.getName(),
 						" with args ", Arrays.toString(args)),
-					e);
+					exception);
 			}
 
-			return JSONFactoryUtil.serializeThrowable(e);
+			return JSONFactoryUtil.serializeThrowable(exception);
 		}
 	}
 
@@ -412,7 +413,7 @@ public class JSONServiceAction extends JSONAction {
 			try {
 				return JSONFactoryUtil.looseDeserialize(value);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
 						"Unsupported parameter type for class ", clazz,
@@ -488,48 +489,51 @@ public class JSONServiceAction extends JSONAction {
 		for (Method curMethod : methods) {
 			String curMethodName = curMethod.getName();
 
-			if (curMethodName.equals(methodName)) {
-				Type[] curParameterTypes = curMethod.getGenericParameterTypes();
+			if (!curMethodName.equals(methodName)) {
+				continue;
+			}
 
-				if (curParameterTypes.length == parameters.length) {
-					if ((parameterTypes.length > 0) &&
-						(parameterTypes.length == curParameterTypes.length)) {
+			Type[] curParameterTypes = curMethod.getGenericParameterTypes();
 
-						boolean match = true;
+			if (curParameterTypes.length != parameters.length) {
+				continue;
+			}
 
-						for (int j = 0; j < parameterTypes.length; j++) {
-							String t1 = parameterTypes[j];
-							String t2 = getTypeNameOrClassDescriptor(
-								curParameterTypes[j]);
+			if ((parameterTypes.length > 0) &&
+				(parameterTypes.length == curParameterTypes.length)) {
 
-							if (!t1.equals(t2)) {
-								match = false;
-							}
-						}
+				boolean match = true;
 
-						if (match) {
-							method = curMethod;
-							methodParameterTypes = curParameterTypes;
+				for (int j = 0; j < parameterTypes.length; j++) {
+					String t1 = parameterTypes[j];
+					String t2 = getTypeNameOrClassDescriptor(
+						curParameterTypes[j]);
 
-							break;
-						}
-					}
-					else if (method != null) {
-						String parametersString = StringUtil.merge(parameters);
-
-						_log.error(
-							StringBundler.concat(
-								"Obscure method name for class ", clazz,
-								", method ", methodName, ", and parameters ",
-								parametersString));
-
-						return null;
-					}
-					else {
-						method = curMethod;
-						methodParameterTypes = curParameterTypes;
+					if (!t1.equals(t2)) {
+						match = false;
 					}
 				}
+
+				if (match) {
+					method = curMethod;
+					methodParameterTypes = curParameterTypes;
+
+					break;
+				}
+			}
+			else if (method != null) {
+				String parametersString = StringUtil.merge(parameters);
+
+				_log.error(
+					StringBundler.concat(
+						"Obscure method name for class ", clazz, ", method ",
+						methodName, ", and parameters ", parametersString));
+
+				return null;
+			}
+			else {
+				method = curMethod;
+				methodParameterTypes = curParameterTypes;
 			}
 		}
 
@@ -558,9 +562,9 @@ public class JSONServiceAction extends JSONAction {
 		return _REROUTE_PATH;
 	}
 
-	protected String getReturnValue(Object returnObj) throws Exception {
-		if (returnObj instanceof JSONSerializable) {
-			JSONSerializable jsonSerializable = (JSONSerializable)returnObj;
+	protected String getReturnValue(Object returnObject) throws Exception {
+		if (returnObject instanceof JSONSerializable) {
+			JSONSerializable jsonSerializable = (JSONSerializable)returnObject;
 
 			return jsonSerializable.toJSONString();
 		}
@@ -569,7 +573,7 @@ public class JSONServiceAction extends JSONAction {
 
 		jsonSerializer.exclude("*.class");
 
-		return jsonSerializer.serializeDeep(returnObj);
+		return jsonSerializer.serializeDeep(returnObject);
 	}
 
 	protected String[] getStringArrayFromJSON(
@@ -600,8 +604,8 @@ public class JSONServiceAction extends JSONAction {
 				return fieldDescriptor;
 			}
 
-			dimensions = dimensions.replace(
-				StringPool.CLOSE_BRACKET, StringPool.BLANK);
+			dimensions = StringUtil.replace(
+				dimensions, CharPool.CLOSE_BRACKET, StringPool.BLANK);
 
 			if (fieldDescriptor.equals("boolean")) {
 				fieldDescriptor = "Z";
@@ -628,11 +632,8 @@ public class JSONServiceAction extends JSONAction {
 				fieldDescriptor = "S";
 			}
 			else {
-				fieldDescriptor = "L".concat(
-					fieldDescriptor
-				).concat(
-					StringPool.SEMICOLON
-				);
+				fieldDescriptor = StringBundler.concat(
+					"L", fieldDescriptor, StringPool.SEMICOLON);
 			}
 
 			return dimensions.concat(fieldDescriptor);

@@ -22,6 +22,7 @@ import com.liferay.document.library.kernel.exception.RepositoryNameException;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.portal.kernel.exception.InvalidRepositoryException;
 import com.liferay.portal.kernel.exception.NoSuchRepositoryException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
@@ -63,60 +64,47 @@ public class EditRepositoryMVCActionCommand extends BaseMVCActionCommand {
 	@Override
 	protected void doProcessAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws Exception {
+		throws PortalException {
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
 		try {
 			if (cmd.equals(Constants.ADD) || cmd.equals(Constants.UPDATE)) {
-				updateRepository(actionRequest);
+				_updateRepository(actionRequest);
 			}
 			else if (cmd.equals(Constants.DELETE)) {
-				unmountRepository(actionRequest);
+				_unmountRepository(actionRequest);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchRepositoryException ||
-				e instanceof PrincipalException) {
+		catch (NoSuchRepositoryException | PrincipalException exception) {
+			SessionErrors.add(actionRequest, exception.getClass());
 
-				SessionErrors.add(actionRequest, e.getClass());
+			actionResponse.setRenderParameter(
+				"mvcPath", "/document_library/error.jsp");
+		}
+		catch (InvalidRepositoryException invalidRepositoryException) {
+			_log.error(invalidRepositoryException, invalidRepositoryException);
 
-				actionResponse.setRenderParameter(
-					"mvcPath", "/document_library/error.jsp");
-			}
-			else if (e instanceof DuplicateFolderNameException ||
-					 e instanceof DuplicateRepositoryNameException ||
-					 e instanceof FolderNameException ||
-					 e instanceof InvalidRepositoryException ||
-					 e instanceof RepositoryNameException) {
+			SessionErrors.add(
+				actionRequest, invalidRepositoryException.getClass());
+		}
+		catch (DuplicateFolderNameException | DuplicateRepositoryNameException |
+			   FolderNameException | RepositoryNameException exception) {
 
-				if (e instanceof InvalidRepositoryException) {
-					_log.error(e, e);
-				}
-
-				SessionErrors.add(actionRequest, e.getClass());
-			}
-			else {
-				throw e;
-			}
+			SessionErrors.add(actionRequest, exception.getClass());
 		}
 	}
 
-	@Reference(unbind = "-")
-	protected void setRepositoryService(RepositoryService repositoryService) {
-		_repositoryService = repositoryService;
-	}
-
-	protected void unmountRepository(ActionRequest actionRequest)
-		throws Exception {
+	private void _unmountRepository(ActionRequest actionRequest)
+		throws PortalException {
 
 		long repositoryId = ParamUtil.getLong(actionRequest, "repositoryId");
 
 		_repositoryService.deleteRepository(repositoryId);
 	}
 
-	protected void updateRepository(ActionRequest actionRequest)
-		throws Exception {
+	private void _updateRepository(ActionRequest actionRequest)
+		throws PortalException {
 
 		long repositoryId = ParamUtil.getLong(actionRequest, "repositoryId");
 
@@ -137,15 +125,15 @@ public class EditRepositoryMVCActionCommand extends BaseMVCActionCommand {
 			long folderId = ParamUtil.getLong(actionRequest, "folderId");
 
 			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				PropertiesParamUtil.getProperties(actionRequest, "settings--");
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				DLFolder.class.getName(), actionRequest);
 
 			_repositoryService.addRepository(
 				themeDisplay.getScopeGroupId(), classNameId, folderId, name,
-				description, portletDisplay.getId(), typeSettingsProperties,
-				serviceContext);
+				description, portletDisplay.getId(),
+				typeSettingsUnicodeProperties, serviceContext);
 		}
 		else {
 
@@ -162,6 +150,7 @@ public class EditRepositoryMVCActionCommand extends BaseMVCActionCommand {
 	@Reference
 	private Portal _portal;
 
+	@Reference
 	private RepositoryService _repositoryService;
 
 }

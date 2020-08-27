@@ -35,10 +35,14 @@ import java.util.TimeZone;
 
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletURL;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Eudaldo Alonso
  */
+@ProviderType
 public interface AssetPublisherHelper {
 
 	public static final String SCOPE_ID_CHILD_GROUP_PREFIX = "ChildGroup_";
@@ -73,7 +77,7 @@ public interface AssetPublisherHelper {
 			PortletPreferences portletPreferences,
 			PermissionChecker permissionChecker, long[] groupIds,
 			boolean deleteMissingAssetEntries, boolean checkPermission,
-			boolean includeNonVisibleAssets)
+			boolean includeNonvisibleAssets)
 		throws Exception;
 
 	public List<AssetEntry> getAssetEntries(
@@ -81,7 +85,7 @@ public interface AssetPublisherHelper {
 			PortletPreferences portletPreferences,
 			PermissionChecker permissionChecker, long[] groupIds,
 			boolean deleteMissingAssetEntries, boolean checkPermission,
-			boolean includeNonVisibleAssets, int type)
+			boolean includeNonvisibleAssets, int type)
 		throws Exception;
 
 	public List<AssetEntry> getAssetEntries(
@@ -98,11 +102,18 @@ public interface AssetPublisherHelper {
 			String[] overrideAllAssetTagNames)
 		throws PortalException;
 
+	public AssetEntryQuery getAssetEntryQuery(
+			PortletPreferences portletPreferences, long groupId, Layout layout,
+			long[] overrideAllAssetCategoryIds,
+			String[] overrideAllAssetTagNames, String[] overrideAllKeywords)
+		throws PortalException;
+
 	public List<AssetEntryResult> getAssetEntryResults(
-			SearchContainer searchContainer, AssetEntryQuery assetEntryQuery,
-			Layout layout, PortletPreferences portletPreferences,
-			String portletName, Locale locale, TimeZone timeZone,
-			long companyId, long scopeGroupId, long userId, long[] classNameIds,
+			SearchContainer<AssetEntry> searchContainer,
+			AssetEntryQuery assetEntryQuery, Layout layout,
+			PortletPreferences portletPreferences, String portletName,
+			Locale locale, TimeZone timeZone, long companyId, long scopeGroupId,
+			long userId, long[] classNameIds,
 			Map<String, Serializable> attributes)
 		throws Exception;
 
@@ -123,6 +134,11 @@ public interface AssetPublisherHelper {
 		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
 		boolean viewInContext);
 
+	public PortletURL getBaseAssetViewURL(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse,
+		AssetRenderer<?> assetRenderer, AssetEntry assetEntry);
+
 	public long[] getClassNameIds(
 		PortletPreferences portletPreferences, long[] availableClassNameIds);
 
@@ -133,6 +149,8 @@ public interface AssetPublisherHelper {
 	public long[] getGroupIds(
 		PortletPreferences portletPreferences, long scopeGroupId,
 		Layout layout);
+
+	public String[] getKeywords(PortletPreferences portletPreferences);
 
 	public String getScopeId(Group group, long scopeGroupId);
 

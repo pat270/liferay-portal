@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the local service utility for UserNotificationEvent. This utility wraps
  * <code>com.liferay.portal.service.impl.UserNotificationEventLocalServiceImpl</code> and
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserNotificationEventLocalService
  * @generated
  */
-@ProviderType
 public class UserNotificationEventLocalServiceUtil {
 
 	/*
@@ -38,6 +35,21 @@ public class UserNotificationEventLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.UserNotificationEventLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static com.liferay.portal.kernel.model.UserNotificationEvent
+			addUserNotificationEvent(
+				long userId, boolean delivered, boolean actionRequired,
+				com.liferay.portal.kernel.notifications.NotificationEvent
+					notificationEvent)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addUserNotificationEvent(
+			userId, delivered, actionRequired, notificationEvent);
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.UserNotificationEvent
 			addUserNotificationEvent(
 				long userId, boolean actionRequired,
@@ -59,6 +71,23 @@ public class UserNotificationEventLocalServiceUtil {
 		return getService().addUserNotificationEvent(userId, notificationEvent);
 	}
 
+	public static com.liferay.portal.kernel.model.UserNotificationEvent
+			addUserNotificationEvent(
+				long userId, String type, long timestamp, int deliveryType,
+				long deliverBy, boolean delivered, String payload,
+				boolean actionRequired, boolean archived,
+				ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addUserNotificationEvent(
+			userId, type, timestamp, deliveryType, deliverBy, delivered,
+			payload, actionRequired, archived, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.UserNotificationEvent
 			addUserNotificationEvent(
 				long userId, String type, long timestamp, int deliveryType,
@@ -85,6 +114,10 @@ public class UserNotificationEventLocalServiceUtil {
 
 	/**
 	 * Adds the user notification event to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserNotificationEventLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param userNotificationEvent the user notification event
 	 * @return the user notification event that was added
@@ -119,6 +152,16 @@ public class UserNotificationEventLocalServiceUtil {
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Creates a new user notification event with the primary key. Does not add the user notification event to the database.
 	 *
 	 * @param userNotificationEventId the primary key for the new user notification event
@@ -145,6 +188,10 @@ public class UserNotificationEventLocalServiceUtil {
 	/**
 	 * Deletes the user notification event with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserNotificationEventLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param userNotificationEventId the primary key of the user notification event
 	 * @return the user notification event that was removed
 	 * @throws PortalException if a user notification event with the primary key could not be found
@@ -166,6 +213,10 @@ public class UserNotificationEventLocalServiceUtil {
 	/**
 	 * Deletes the user notification event from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserNotificationEventLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param userNotificationEvent the user notification event
 	 * @return the user notification event that was removed
 	 */
@@ -185,6 +236,12 @@ public class UserNotificationEventLocalServiceUtil {
 
 	public static void deleteUserNotificationEvents(long userId) {
 		getService().deleteUserNotificationEvents(userId);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -209,7 +266,7 @@ public class UserNotificationEventLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserNotificationEventModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserNotificationEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -228,7 +285,7 @@ public class UserNotificationEventLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserNotificationEventModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserNotificationEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -356,6 +413,31 @@ public class UserNotificationEventLocalServiceUtil {
 	public static java.util.List
 		<com.liferay.portal.kernel.model.UserNotificationEvent>
 			getArchivedUserNotificationEvents(
+				long userId, int deliveryType, boolean delivered,
+				boolean actionRequired, boolean archived, int start, int end) {
+
+		return getService().getArchivedUserNotificationEvents(
+			userId, deliveryType, delivered, actionRequired, archived, start,
+			end);
+	}
+
+	public static java.util.List
+		<com.liferay.portal.kernel.model.UserNotificationEvent>
+			getArchivedUserNotificationEvents(
+				long userId, int deliveryType, boolean delivered,
+				boolean actionRequired, boolean archived, int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.portal.kernel.model.UserNotificationEvent>
+						orderByComparator) {
+
+		return getService().getArchivedUserNotificationEvents(
+			userId, deliveryType, delivered, actionRequired, archived, start,
+			end, orderByComparator);
+	}
+
+	public static java.util.List
+		<com.liferay.portal.kernel.model.UserNotificationEvent>
+			getArchivedUserNotificationEvents(
 				long userId, int deliveryType, boolean actionRequired,
 				boolean archived, int start, int end) {
 
@@ -370,10 +452,11 @@ public class UserNotificationEventLocalServiceUtil {
 				boolean archived, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.portal.kernel.model.UserNotificationEvent>
-						obc) {
+						orderByComparator) {
 
 		return getService().getArchivedUserNotificationEvents(
-			userId, deliveryType, actionRequired, archived, start, end, obc);
+			userId, deliveryType, actionRequired, archived, start, end,
+			orderByComparator);
 	}
 
 	public static java.util.List
@@ -413,6 +496,21 @@ public class UserNotificationEventLocalServiceUtil {
 
 		return getService().getArchivedUserNotificationEventsCount(
 			userId, deliveryType, actionRequired, archived);
+	}
+
+	public static int getArchivedUserNotificationEventsCount(
+		long userId, int deliveryType, boolean delivered,
+		boolean actionRequired, boolean archived) {
+
+		return getService().getArchivedUserNotificationEventsCount(
+			userId, deliveryType, delivered, actionRequired, archived);
+	}
+
+	public static int getDeliveredArchivedUserNotificationEventsCount(
+		long userId, int deliveryType, boolean delivered, boolean archived) {
+
+		return getService().getDeliveredArchivedUserNotificationEventsCount(
+			userId, deliveryType, delivered, archived);
 	}
 
 	public static java.util.List
@@ -487,10 +585,11 @@ public class UserNotificationEventLocalServiceUtil {
 				boolean actionRequired, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
 					<com.liferay.portal.kernel.model.UserNotificationEvent>
-						obc) {
+						orderByComparator) {
 
 		return getService().getDeliveredUserNotificationEvents(
-			userId, deliveryType, delivered, actionRequired, start, end, obc);
+			userId, deliveryType, delivered, actionRequired, start, end,
+			orderByComparator);
 	}
 
 	public static java.util.List
@@ -548,6 +647,9 @@ public class UserNotificationEventLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -597,7 +699,7 @@ public class UserNotificationEventLocalServiceUtil {
 	 * Returns a range of all the user notification events.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserNotificationEventModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.UserNotificationEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of user notification events
@@ -662,10 +764,46 @@ public class UserNotificationEventLocalServiceUtil {
 	}
 
 	public static int getUserNotificationEventsCount(
-		long userId, String type, int deliveryType, boolean archived) {
+		long userId, int deliveryType, boolean delivered, boolean archived) {
 
 		return getService().getUserNotificationEventsCount(
-			userId, type, deliveryType, archived);
+			userId, deliveryType, delivered, archived);
+	}
+
+	public static int getUserNotificationEventsCount(
+		long userId, String type, int deliveryType, boolean delivered) {
+
+		return getService().getUserNotificationEventsCount(
+			userId, type, deliveryType, delivered);
+	}
+
+	public static int getUserNotificationEventsCount(
+		long userId, String type, int deliveryType, boolean delivered,
+		boolean archived) {
+
+		return getService().getUserNotificationEventsCount(
+			userId, type, deliveryType, delivered, archived);
+	}
+
+	public static int getUserNotificationEventsCount(
+		long userId, String type,
+		java.util.Map<String, String> payloadParameters) {
+
+		return getService().getUserNotificationEventsCount(
+			userId, type, payloadParameters);
+	}
+
+	public static com.liferay.portal.kernel.model.UserNotificationEvent
+			sendUserNotificationEvents(
+				long userId, String portletId, int deliveryType,
+				boolean delivered, boolean actionRequired,
+				com.liferay.portal.kernel.json.JSONObject
+					notificationEventJSONObject)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().sendUserNotificationEvents(
+			userId, portletId, deliveryType, delivered, actionRequired,
+			notificationEventJSONObject);
 	}
 
 	public static com.liferay.portal.kernel.model.UserNotificationEvent
@@ -702,6 +840,10 @@ public class UserNotificationEventLocalServiceUtil {
 
 	/**
 	 * Updates the user notification event in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect UserNotificationEventLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param userNotificationEvent the user notification event
 	 * @return the user notification event that was updated

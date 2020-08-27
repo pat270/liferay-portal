@@ -21,6 +21,7 @@ import com.liferay.journal.test.util.search.JournalArticleBlueprint;
 import com.liferay.journal.test.util.search.JournalArticleContent;
 import com.liferay.journal.test.util.search.JournalArticleSearchFixture;
 import com.liferay.journal.test.util.search.JournalArticleTitle;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.Document;
@@ -30,11 +31,13 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexerFixture;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -78,7 +81,7 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 		_journalArticles = _journalArticleSearchFixture.getJournalArticles();
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		CompanyThreadLocal.setCompanyId(TestPropsValues.getCompanyId());
 	}
@@ -120,19 +123,17 @@ public class JournalArticleIndexerLocalizedContentTest {
 				}
 			});
 
-		Map<String, String> titleStrings = new HashMap<String, String>() {
-			{
-				put("title_en_US", originalTitle);
-				put("title_hu_HU", translatedTitle);
-			}
-		};
+		Map<String, String> titleStrings = HashMapBuilder.put(
+			"title_en_US", originalTitle
+		).put(
+			"title_hu_HU", translatedTitle
+		).build();
 
-		Map<String, String> contentStrings = new HashMap<String, String>() {
-			{
-				put("content_en_US", originalContent);
-				put("content_hu_HU", translatedContent);
-			}
-		};
+		Map<String, String> contentStrings = HashMapBuilder.put(
+			"content_en_US", originalContent
+		).put(
+			"content_hu_HU", translatedContent
+		).build();
 
 		Map<String, String> localizedTitleStrings = _withSortableValues(
 			new HashMap<String, String>() {
@@ -141,9 +142,9 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 					locales.forEach(
 						locale -> {
-							String mapKey =
-								"localized_title_" + locale.getLanguage() +
-									"_" + locale.getCountry();
+							String mapKey = StringBundler.concat(
+								"localized_title_", locale.getLanguage(), "_",
+								locale.getCountry());
 
 							put(mapKey, originalTitle);
 						});
@@ -222,7 +223,11 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 		String articleId = journalArticle.getArticleId();
 
-		Map<String, String> titleStrings = Collections.emptyMap();
+		Map<String, String> titleStrings = HashMapBuilder.put(
+			"title_en_US", originalTitle
+		).put(
+			"title_pt_BR", translatedTitle
+		).build();
 
 		Map<String, String> contentStrings = Collections.emptyMap();
 
@@ -233,9 +238,9 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 					locales.forEach(
 						locale -> {
-							String mapKey =
-								"localized_title_" + locale.getLanguage() +
-									"_" + locale.getCountry();
+							String mapKey = StringBundler.concat(
+								"localized_title_", locale.getLanguage(), "_",
+								locale.getCountry());
 
 							put(mapKey, originalTitle);
 						});
@@ -307,9 +312,9 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 					locales.forEach(
 						locale -> {
-							String mapKey =
-								"localized_title_" + locale.getLanguage() +
-									"_" + locale.getCountry();
+							String mapKey = StringBundler.concat(
+								"localized_title_", locale.getLanguage(), "_",
+								locale.getCountry());
 
 							put(mapKey, title);
 						});
@@ -345,43 +350,44 @@ public class JournalArticleIndexerLocalizedContentTest {
 
 	@Test
 	public void testJapaneseTitleFullWordOnly() throws Exception {
-		String full = "新規作成";
-		String partial1 = "新大阪";
-		String partial2 = "作戦大成功";
+		Map<String, String> titleStrings = HashMapBuilder.put(
+			"title_ja_JP",
+			() -> {
+				String full = "新規作成";
+				String partial1 = "新大阪";
+				String partial2 = "作戦大成功";
 
-		Stream.of(
-			full, partial1, partial2
-		).forEach(
-			title -> _journalArticleSearchFixture.addArticle(
-				new JournalArticleBlueprint() {
-					{
-						setGroupId(_group.getGroupId());
-						setJournalArticleContent(
-							new JournalArticleContent() {
-								{
-									put(
-										LocaleUtil.JAPAN,
-										RandomTestUtil.randomString());
+				Stream.of(
+					full, partial1, partial2
+				).forEach(
+					title -> _journalArticleSearchFixture.addArticle(
+						new JournalArticleBlueprint() {
+							{
+								setGroupId(_group.getGroupId());
+								setJournalArticleContent(
+									new JournalArticleContent() {
+										{
+											put(
+												LocaleUtil.JAPAN,
+												RandomTestUtil.randomString());
 
-									setDefaultLocale(LocaleUtil.JAPAN);
-									setName("content");
-								}
-							});
-						setJournalArticleTitle(
-							new JournalArticleTitle() {
-								{
-									put(LocaleUtil.JAPAN, title);
-								}
-							});
-					}
-				})
-		);
+											setDefaultLocale(LocaleUtil.JAPAN);
+											setName("content");
+										}
+									});
+								setJournalArticleTitle(
+									new JournalArticleTitle() {
+										{
+											put(LocaleUtil.JAPAN, title);
+										}
+									});
+							}
+						})
+				);
 
-		Map<String, String> titleStrings = new HashMap<String, String>() {
-			{
-				put("title_ja_JP", full);
+				return full;
 			}
-		};
+		).build();
 
 		String word1 = "新規";
 		String word2 = "作成";
@@ -398,6 +404,9 @@ public class JournalArticleIndexerLocalizedContentTest {
 			}
 		);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void assertSearchOneDocumentOneField(
 		String fieldValue, Locale locale, String fieldPrefix,

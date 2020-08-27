@@ -1,0 +1,152 @@
+@component-name = "portal-calendar"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property testray.main.component.name = "Calendar";
+	var pageName = "Calendar Page";
+	var portletName = "Calendar";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Calendar Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Calendar Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Portlet.addPG(
+			pageName = "Calendar Page",
+			portletName = "Calendar");
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Calendar.enableComments(
+			calendarName = "${siteName}",
+			calendarType = "Current Site Calendars",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.gotoPage(pageName = "Calendar Page");
+
+			if (IsElementPresent(locator1 = "Calendar#SCHEDULER_EVENT_GENERIC")) {
+				CalendarEvent.tearDown();
+			}
+
+			Calendar.tearDown();
+
+			CalendarConfiguration.tearDown();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "3"
+	test AddToEventAllDay {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event All Day Comment",
+			eventCommentEnabled = "true",
+			eventTitle = "Calendar Event All Day Title",
+			eventType = "All Day",
+			pageName = "Calendar Page",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.viewComment(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event All Day Comment",
+			eventTitle = "Calendar Event All Day Title",
+			eventType = "All Day",
+			site = "${siteName}",
+			user = "Test Test");
+	}
+
+	@priority = "4"
+	test AddToEventRegular {
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Regular Comment",
+			eventCommentEnabled = "true",
+			eventTitle = "Calendar Event Regular Title",
+			eventType = "Regular",
+			pageName = "Calendar Page",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.viewComment(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Regular Comment",
+			eventTitle = "Calendar Event Regular Title",
+			eventType = "Regular",
+			site = "${siteName}",
+			user = "Test Test");
+	}
+
+	@priority = "3"
+	test AddToEventRepeating {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.add(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Repeating Comment",
+			eventCommentEnabled = "true",
+			eventTitle = "Calendar Event Repeating Title",
+			eventType = "Repeating",
+			frequency = "Daily",
+			numberOfOccurrences = "1",
+			pageName = "Calendar Page",
+			site = "${siteName}",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.viewComment(
+			calendarName = "${siteName}",
+			eventComment = "Calendar Event Repeating Comment",
+			eventTitle = "Calendar Event Repeating Title",
+			eventType = "Repeating",
+			site = "${siteName}",
+			user = "Test Test");
+	}
+
+}

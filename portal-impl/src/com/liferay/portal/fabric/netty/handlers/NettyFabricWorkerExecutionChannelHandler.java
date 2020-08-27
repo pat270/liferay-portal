@@ -38,6 +38,7 @@ import com.liferay.portal.fabric.repository.Repository;
 import com.liferay.portal.fabric.worker.FabricWorker;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -131,8 +132,6 @@ public class NettyFabricWorkerExecutionChannelHandler
 		Channel channel,
 		NettyFabricWorkerConfig<Serializable> nettyFabricWorkerConfig) {
 
-		Map<Path, Path> mergedPaths = new HashMap<>();
-
 		ProcessConfig processConfig =
 			nettyFabricWorkerConfig.getProcessConfig();
 
@@ -144,8 +143,6 @@ public class NettyFabricWorkerExecutionChannelHandler
 			bootstrapPaths.put(Paths.get(pathHolder.toString()), null);
 		}
 
-		mergedPaths.putAll(bootstrapPaths);
-
 		final Map<Path, Path> runtimePaths = new LinkedHashMap<>();
 
 		for (PathHolder pathHolder :
@@ -154,12 +151,16 @@ public class NettyFabricWorkerExecutionChannelHandler
 			runtimePaths.put(Paths.get(pathHolder.toString()), null);
 		}
 
-		mergedPaths.putAll(runtimePaths);
-
 		final Map<Path, Path> inputPaths =
 			nettyFabricWorkerConfig.getInputPathMap();
 
-		mergedPaths.putAll(inputPaths);
+		Map<Path, Path> mergedPaths = HashMapBuilder.<Path, Path>putAll(
+			bootstrapPaths
+		).putAll(
+			runtimePaths
+		).putAll(
+			inputPaths
+		).build();
 
 		return new NoticeableFutureConverter<LoadedPaths, Map<Path, Path>>(
 			_repository.getFiles(channel, mergedPaths, false)) {
@@ -241,12 +242,12 @@ public class NettyFabricWorkerExecutionChannelHandler
 
 	protected void sendResult(
 		Channel channel, long fabricWorkerId, Serializable result,
-		Throwable t) {
+		Throwable throwable) {
 
 		final FabricWorkerResultProcessCallable
 			fabricWorkerResultProcessCallable =
 				new FabricWorkerResultProcessCallable(
-					fabricWorkerId, result, t);
+					fabricWorkerId, result, throwable);
 
 		NoticeableFuture<Serializable> noticeableFuture = RPCUtil.execute(
 			channel,
@@ -406,8 +407,8 @@ public class NettyFabricWorkerExecutionChannelHandler
 				builder.setReactClassLoader(
 					new URLClassLoader(urls.toArray(new URL[0])));
 			}
-			catch (MalformedURLException murle) {
-				throw new ProcessException(murle);
+			catch (MalformedURLException malformedURLException) {
+				throw new ProcessException(malformedURLException);
 			}
 
 			return builder.build();
@@ -517,12 +518,14 @@ public class NettyFabricWorkerExecutionChannelHandler
 					_channel, _nettyFabricWorkerConfig.getId(), future.get(),
 					null);
 			}
-			catch (Throwable t) {
-				if (t instanceof ExecutionException) {
-					t = t.getCause();
+			catch (Throwable throwable) {
+				if (throwable instanceof ExecutionException) {
+					throwable = throwable.getCause();
 				}
 
-				sendResult(_channel, _nettyFabricWorkerConfig.getId(), null, t);
+				sendResult(
+					_channel, _nettyFabricWorkerConfig.getId(), null,
+					throwable);
 			}
 		}
 
@@ -568,11 +571,10 @@ public class NettyFabricWorkerExecutionChannelHandler
 						public FabricWorker<Serializable> call()
 							throws ProcessException {
 
-							ProcessConfig processConfig =
-								_nettyFabricWorkerConfig.getProcessConfig();
-
 							return _fabricAgent.execute(
-								loadedPaths.toProcessConfig(processConfig),
+								loadedPaths.toProcessConfig(
+									_nettyFabricWorkerConfig.
+										getProcessConfig()),
 								_nettyFabricWorkerConfig.getProcessCallable());
 						}
 

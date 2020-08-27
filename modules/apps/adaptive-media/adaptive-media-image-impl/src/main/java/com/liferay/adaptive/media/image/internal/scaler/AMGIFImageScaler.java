@@ -24,6 +24,7 @@ import com.liferay.adaptive.media.image.scaler.AMImageScaler;
 import com.liferay.petra.process.CollectorOutputProcessor;
 import com.liferay.petra.process.ProcessException;
 import com.liferay.petra.process.ProcessUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
 
 import java.awt.image.RenderedImage;
 
@@ -74,22 +74,24 @@ public class AMGIFImageScaler implements AMImageScaler {
 				ProcessUtil.execute(
 					CollectorOutputProcessor.INSTANCE, "gifsicle",
 					"--resize-fit",
-					getResizeFitValues(amImageConfigurationEntry), "--output",
+					_getResizeFitValues(amImageConfigurationEntry), "--output",
 					"-", file.getAbsolutePath());
 
 			Map.Entry<byte[], byte[]> objectValuePair = collectorFuture.get();
 
+			file.delete();
+
 			byte[] bytes = objectValuePair.getKey();
 
-			Tuple<Integer, Integer> dimension = getDimension(bytes);
+			Tuple<Integer, Integer> dimension = _getDimension(bytes);
 
 			return new AMImageScaledImageImpl(
 				bytes, dimension.second, dimension.first);
 		}
 		catch (ExecutionException | InterruptedException | IOException |
-			   PortalException | ProcessException e) {
+			   PortalException | ProcessException exception) {
 
-			throw new AMRuntimeException.IOException(e);
+			throw new AMRuntimeException.IOException(exception);
 		}
 	}
 
@@ -100,8 +102,8 @@ public class AMGIFImageScaler implements AMImageScaler {
 			AMImageConfiguration.class, properties);
 	}
 
-	protected Tuple<Integer, Integer> getDimension(byte[] bytes)
-		throws IOException {
+	private Tuple<Integer, Integer> _getDimension(byte[] bytes)
+		throws IOException, PortalException {
 
 		try (InputStream inputStream = new UnsyncByteArrayInputStream(bytes)) {
 			RenderedImage renderedImage = RenderedImageUtil.readImage(
@@ -112,7 +114,15 @@ public class AMGIFImageScaler implements AMImageScaler {
 		}
 	}
 
-	protected String getResizeFitValues(
+	private File _getFile(FileVersion fileVersion)
+		throws IOException, PortalException {
+
+		try (InputStream inputStream = fileVersion.getContentStream(false)) {
+			return FileUtil.createTempFile(inputStream);
+		}
+	}
+
+	private String _getResizeFitValues(
 		AMImageConfigurationEntry amImageConfigurationEntry) {
 
 		Map<String, String> properties =
@@ -134,26 +144,7 @@ public class AMGIFImageScaler implements AMImageScaler {
 			maxWidthString = String.valueOf(maxWidth);
 		}
 
-		return maxWidthString.concat(
-			"x"
-		).concat(
-			maxHeightString
-		);
-	}
-
-	private File _getFile(FileVersion fileVersion)
-		throws IOException, PortalException {
-
-		if (fileVersion instanceof LiferayFileVersion) {
-			LiferayFileVersion liferayFileVersion =
-				(LiferayFileVersion)fileVersion;
-
-			return liferayFileVersion.getFile(false);
-		}
-
-		try (InputStream inputStream = fileVersion.getContentStream(false)) {
-			return FileUtil.createTempFile(inputStream);
-		}
+		return StringBundler.concat(maxWidthString, "x", maxHeightString);
 	}
 
 	private volatile AMImageConfiguration _amImageConfiguration;

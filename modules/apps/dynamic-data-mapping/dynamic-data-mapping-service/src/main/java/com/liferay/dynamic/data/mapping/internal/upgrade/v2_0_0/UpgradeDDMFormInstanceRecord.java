@@ -61,7 +61,7 @@ public class UpgradeDDMFormInstanceRecord extends UpgradeProcess {
 			localizationMap.containsKey(defautLocale)) {
 
 			String title = LanguageUtil.format(
-				getResourceBundle(defautLocale), "new-entry-for-form-x",
+				getResourceBundle(defautLocale), "form-record-for-form-x",
 				localizationMap.get(defautLocale), false);
 
 			_assetEntryLocalService.updateEntry(

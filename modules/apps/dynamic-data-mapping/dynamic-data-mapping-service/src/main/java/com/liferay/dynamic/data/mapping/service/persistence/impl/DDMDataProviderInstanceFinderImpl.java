@@ -31,14 +31,17 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.Iterator;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Leonardo Barros
  */
+@Component(service = DDMDataProviderInstanceFinder.class)
 public class DDMDataProviderInstanceFinderImpl
 	extends DDMDataProviderInstanceFinderBaseImpl
 	implements DDMDataProviderInstanceFinder {
@@ -222,25 +225,25 @@ public class DDMDataProviderInstanceFinderImpl
 				true, descriptions);
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (groupIds != null) {
-				qPos.add(groupIds);
+				queryPos.add(groupIds);
 			}
 
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -249,8 +252,8 @@ public class DDMDataProviderInstanceFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -290,27 +293,27 @@ public class DDMDataProviderInstanceFinderImpl
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 			sql = _customSQL.replaceOrderBy(sql, orderByComparator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity(
+			sqlQuery.addEntity(
 				"DDMDataProviderInstance", DDMDataProviderInstanceImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (groupIds != null) {
-				qPos.add(groupIds);
+				queryPos.add(groupIds);
 			}
 
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
 			return (List<DDMDataProviderInstance>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -335,7 +338,7 @@ public class DDMDataProviderInstanceFinderImpl
 		return sb.toString();
 	}
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
 
 }

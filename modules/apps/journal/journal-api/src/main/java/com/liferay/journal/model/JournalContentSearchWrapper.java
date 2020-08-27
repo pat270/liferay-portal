@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalContentSearch
  * @generated
  */
-@ProviderType
 public class JournalContentSearchWrapper
 	extends BaseModelWrapper<JournalContentSearch>
 	implements JournalContentSearch, ModelWrapper<JournalContentSearch> {
@@ -46,6 +45,8 @@ public class JournalContentSearchWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("contentSearchId", getContentSearchId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -59,6 +60,18 @@ public class JournalContentSearchWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long contentSearchId = (Long)attributes.get("contentSearchId");
 
 		if (contentSearchId != null) {
@@ -133,6 +146,16 @@ public class JournalContentSearchWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this journal content search.
+	 *
+	 * @return the ct collection ID of this journal content search
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this journal content search.
 	 *
 	 * @return the group ID of this journal content search
@@ -150,6 +173,16 @@ public class JournalContentSearchWrapper
 	@Override
 	public long getLayoutId() {
 		return model.getLayoutId();
+	}
+
+	/**
+	 * Returns the mvcc version of this journal content search.
+	 *
+	 * @return the mvcc version of this journal content search
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -228,6 +261,16 @@ public class JournalContentSearchWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this journal content search.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal content search
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this journal content search.
 	 *
 	 * @param groupId the group ID of this journal content search
@@ -245,6 +288,16 @@ public class JournalContentSearchWrapper
 	@Override
 	public void setLayoutId(long layoutId) {
 		model.setLayoutId(layoutId);
+	}
+
+	/**
+	 * Sets the mvcc version of this journal content search.
+	 *
+	 * @param mvccVersion the mvcc version of this journal content search
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -275,6 +328,20 @@ public class JournalContentSearchWrapper
 	@Override
 	public void setPrivateLayout(boolean privateLayout) {
 		model.setPrivateLayout(privateLayout);
+	}
+
+	@Override
+	public Map<String, Function<JournalContentSearch, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<JournalContentSearch, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

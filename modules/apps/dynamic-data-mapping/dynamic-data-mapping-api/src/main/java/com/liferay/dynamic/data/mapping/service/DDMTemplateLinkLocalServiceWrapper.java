@@ -14,9 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
+import com.liferay.dynamic.data.mapping.model.DDMTemplateLink;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link DDMTemplateLinkLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMTemplateLinkLocalService
  * @generated
  */
-@ProviderType
 public class DDMTemplateLinkLocalServiceWrapper
 	implements DDMTemplateLinkLocalService,
 			   ServiceWrapper<DDMTemplateLinkLocalService> {
@@ -39,21 +39,21 @@ public class DDMTemplateLinkLocalServiceWrapper
 	/**
 	 * Adds the ddm template link to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmTemplateLink the ddm template link
 	 * @return the ddm template link that was added
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		addDDMTemplateLink(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-				ddmTemplateLink) {
-
+	public DDMTemplateLink addDDMTemplateLink(DDMTemplateLink ddmTemplateLink) {
 		return _ddmTemplateLinkLocalService.addDDMTemplateLink(ddmTemplateLink);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		addTemplateLink(long classNameId, long classPK, long templateId) {
+	public DDMTemplateLink addTemplateLink(
+		long classNameId, long classPK, long templateId) {
 
 		return _ddmTemplateLinkLocalService.addTemplateLink(
 			classNameId, classPK, templateId);
@@ -66,24 +66,35 @@ public class DDMTemplateLinkLocalServiceWrapper
 	 * @return the new ddm template link
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		createDDMTemplateLink(long templateLinkId) {
-
+	public DDMTemplateLink createDDMTemplateLink(long templateLinkId) {
 		return _ddmTemplateLinkLocalService.createDDMTemplateLink(
 			templateLinkId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ddmTemplateLinkLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the ddm template link from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddmTemplateLink the ddm template link
 	 * @return the ddm template link that was removed
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		deleteDDMTemplateLink(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-				ddmTemplateLink) {
+	public DDMTemplateLink deleteDDMTemplateLink(
+		DDMTemplateLink ddmTemplateLink) {
 
 		return _ddmTemplateLinkLocalService.deleteDDMTemplateLink(
 			ddmTemplateLink);
@@ -92,13 +103,16 @@ public class DDMTemplateLinkLocalServiceWrapper
 	/**
 	 * Deletes the ddm template link with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param templateLinkId the primary key of the ddm template link
 	 * @return the ddm template link that was removed
 	 * @throws PortalException if a ddm template link with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-			deleteDDMTemplateLink(long templateLinkId)
+	public DDMTemplateLink deleteDDMTemplateLink(long templateLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateLinkLocalService.deleteDDMTemplateLink(
@@ -118,26 +132,19 @@ public class DDMTemplateLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		deleteTemplateLink(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-				templateLink) {
-
+	public DDMTemplateLink deleteTemplateLink(DDMTemplateLink templateLink) {
 		return _ddmTemplateLinkLocalService.deleteTemplateLink(templateLink);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-			deleteTemplateLink(long templateLinkId)
+	public DDMTemplateLink deleteTemplateLink(long templateLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateLinkLocalService.deleteTemplateLink(templateLinkId);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		deleteTemplateLink(long classNameId, long classPK) {
-
+	public DDMTemplateLink deleteTemplateLink(long classNameId, long classPK) {
 		return _ddmTemplateLinkLocalService.deleteTemplateLink(
 			classNameId, classPK);
 	}
@@ -145,6 +152,11 @@ public class DDMTemplateLinkLocalServiceWrapper
 	@Override
 	public void deleteTemplateLinks(long templateId) {
 		_ddmTemplateLinkLocalService.deleteTemplateLinks(templateId);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _ddmTemplateLinkLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -169,7 +181,7 @@ public class DDMTemplateLinkLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -190,7 +202,7 @@ public class DDMTemplateLinkLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -239,9 +251,7 @@ public class DDMTemplateLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		fetchDDMTemplateLink(long templateLinkId) {
-
+	public DDMTemplateLink fetchDDMTemplateLink(long templateLinkId) {
 		return _ddmTemplateLinkLocalService.fetchDDMTemplateLink(
 			templateLinkId);
 	}
@@ -261,8 +271,7 @@ public class DDMTemplateLinkLocalServiceWrapper
 	 * @throws PortalException if a ddm template link with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-			getDDMTemplateLink(long templateLinkId)
+	public DDMTemplateLink getDDMTemplateLink(long templateLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateLinkLocalService.getDDMTemplateLink(templateLinkId);
@@ -272,7 +281,7 @@ public class DDMTemplateLinkLocalServiceWrapper
 	 * Returns a range of all the ddm template links.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.mapping.model.impl.DDMTemplateLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm template links
@@ -280,9 +289,8 @@ public class DDMTemplateLinkLocalServiceWrapper
 	 * @return the range of ddm template links
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMTemplateLink>
-			getDDMTemplateLinks(int start, int end) {
+	public java.util.List<DDMTemplateLink> getDDMTemplateLinks(
+		int start, int end) {
 
 		return _ddmTemplateLinkLocalService.getDDMTemplateLinks(start, end);
 	}
@@ -315,6 +323,9 @@ public class DDMTemplateLinkLocalServiceWrapper
 		return _ddmTemplateLinkLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -324,34 +335,32 @@ public class DDMTemplateLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-			getTemplateLink(long templateLinkId)
+	public DDMTemplateLink getTemplateLink(long templateLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateLinkLocalService.getTemplateLink(templateLinkId);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-			getTemplateLink(long classNameId, long classPK)
+	public DDMTemplateLink getTemplateLink(long classNameId, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateLinkLocalService.getTemplateLink(
 			classNameId, classPK);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMTemplateLink>
-			getTemplateLinks(long classNameId) {
-
+	public java.util.List<DDMTemplateLink> getTemplateLinks(long classNameId) {
 		return _ddmTemplateLinkLocalService.getTemplateLinks(classNameId);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.dynamic.data.mapping.model.DDMTemplateLink>
-			getTemplateLinksByTemplateId(long templateId) {
+	public java.util.List<DDMTemplateLink> getTemplateLinksByTemplateId(
+		long templateId) {
 
 		return _ddmTemplateLinkLocalService.getTemplateLinksByTemplateId(
 			templateId);
@@ -360,22 +369,24 @@ public class DDMTemplateLinkLocalServiceWrapper
 	/**
 	 * Updates the ddm template link in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDMTemplateLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddmTemplateLink the ddm template link
 	 * @return the ddm template link that was updated
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		updateDDMTemplateLink(
-			com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-				ddmTemplateLink) {
+	public DDMTemplateLink updateDDMTemplateLink(
+		DDMTemplateLink ddmTemplateLink) {
 
 		return _ddmTemplateLinkLocalService.updateDDMTemplateLink(
 			ddmTemplateLink);
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-			updateTemplateLink(long templateLinkId, long templateId)
+	public DDMTemplateLink updateTemplateLink(
+			long templateLinkId, long templateId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmTemplateLinkLocalService.updateTemplateLink(
@@ -383,11 +394,31 @@ public class DDMTemplateLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMTemplateLink
-		updateTemplateLink(long classNameId, long classPK, long templateId) {
+	public DDMTemplateLink updateTemplateLink(
+		long classNameId, long classPK, long templateId) {
 
 		return _ddmTemplateLinkLocalService.updateTemplateLink(
 			classNameId, classPK, templateId);
+	}
+
+	@Override
+	public CTPersistence<DDMTemplateLink> getCTPersistence() {
+		return _ddmTemplateLinkLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<DDMTemplateLink> getModelClass() {
+		return _ddmTemplateLinkLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DDMTemplateLink>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _ddmTemplateLinkLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

@@ -14,20 +14,17 @@
 
 package com.liferay.digital.signature.exception;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class DSSignatureException extends Exception {
 
 	public DSSignatureException(String message) {
 		super(message);
 	}
 
-	public DSSignatureException(String message, Throwable cause) {
-		super(message, cause);
+	public DSSignatureException(String message, Throwable throwable) {
+		super(message, throwable);
 	}
 
 }

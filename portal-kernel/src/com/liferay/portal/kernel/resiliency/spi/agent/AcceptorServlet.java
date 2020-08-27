@@ -31,8 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class AcceptorServlet extends HttpServlet {
 
 	protected void doService(
@@ -66,18 +68,19 @@ public class AcceptorServlet extends HttpServlet {
 		HttpServletResponse spiAgentHttpServletResponse =
 			spiAgent.prepareResponse(httpServletRequest, httpServletResponse);
 
-		Exception exception = null;
+		Exception exception1 = null;
 
 		try {
 			requestDispatcher.forward(
 				spiAgentHttpServletRequest, spiAgentHttpServletResponse);
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception exception2) {
+			exception1 = exception2;
 		}
 
 		spiAgent.transferResponse(
-			spiAgentHttpServletRequest, spiAgentHttpServletResponse, exception);
+			spiAgentHttpServletRequest, spiAgentHttpServletResponse,
+			exception1);
 
 		HttpSession session = spiAgentHttpServletRequest.getSession();
 
@@ -93,15 +96,15 @@ public class AcceptorServlet extends HttpServlet {
 		try {
 			doService(httpServletRequest, httpServletResponse);
 		}
-		catch (IOException ioe) {
-			_log.error(ioe, ioe);
+		catch (IOException ioException) {
+			_log.error(ioException, ioException);
 
-			throw ioe;
+			throw ioException;
 		}
-		catch (RuntimeException re) {
-			_log.error(re, re);
+		catch (RuntimeException runtimeException) {
+			_log.error(runtimeException, runtimeException);
 
-			throw re;
+			throw runtimeException;
 		}
 	}
 

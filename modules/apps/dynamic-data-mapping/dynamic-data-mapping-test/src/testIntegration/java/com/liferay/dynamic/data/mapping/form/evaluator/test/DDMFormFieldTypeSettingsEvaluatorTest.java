@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.form.evaluator.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderOutputParametersSettings;
+import com.liferay.dynamic.data.mapping.data.provider.configuration.DDMDataProviderConfiguration;
 import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluator;
 import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluatorEvaluateRequest;
 import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluatorEvaluateResponse;
@@ -30,12 +31,15 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.test.util.DDMDataProviderTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
-import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -44,9 +48,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,44 +69,70 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Ignore
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		ConfigurationTestUtil.saveConfiguration(
+			DDMDataProviderConfiguration.class.getName(),
+			new HashMapDictionary() {
+				{
+					put("accessLocalNetwork", true);
+				}
+			});
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		ConfigurationTestUtil.saveConfiguration(
+			DDMDataProviderConfiguration.class.getName(),
+			new HashMapDictionary() {
+				{
+					put("accessLocalNetwork", false);
+				}
+			});
+	}
+
 	@Test
 	public void testSelectCallGetDataProviderInstanceOutputParameters()
 		throws Exception {
 
 		List<DDMDataProviderOutputParametersSettings> outputParametersSettings =
 			ListUtil.fromArray(
-				new DDMDataProviderOutputParametersSettings[] {
-					new DDMDataProviderOutputParametersSettings() {
+				new DDMDataProviderOutputParametersSettings() {
 
-						@Override
-						public String outputParameterName() {
-							return "Countries";
-						}
-
-						@Override
-						public String outputParameterPath() {
-							return "nameCurrentValue";
-						}
-
-						@Override
-						public String outputParameterType() {
-							return "[\"list\"]";
-						}
-
+					@Override
+					public String outputParameterId() {
+						return StringUtil.randomString();
 					}
+
+					@Override
+					public String outputParameterName() {
+						return "Countries";
+					}
+
+					@Override
+					public String outputParameterPath() {
+						return "nameCurrentValue";
+					}
+
+					@Override
+					public String outputParameterType() {
+						return "[\"list\"]";
+					}
+
 				});
 
 		Map<String, Object> ddmDataProviderInstanceOutputFielPropertyChanges =
 			evaluateCallFunctionExpression(outputParametersSettings);
 
-		JSONArray jsonArray =
-			(JSONArray)ddmDataProviderInstanceOutputFielPropertyChanges.get(
-				"value");
+		List<KeyValuePair> options =
+			(List<KeyValuePair>)
+				ddmDataProviderInstanceOutputFielPropertyChanges.get("options");
 
-		Assert.assertEquals(1, jsonArray.length());
+		Assert.assertEquals(options.toString(), 1, options.size());
 
-		Assert.assertEquals("Countries", jsonArray.getString(0));
+		KeyValuePair keyValuePair = options.get(0);
+
+		Assert.assertEquals("Countries", keyValuePair.getValue());
 	}
 
 	@Test
@@ -117,16 +148,17 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 				ddmForm, SetUtil.fromArray(new Locale[] {LocaleUtil.US}),
 				LocaleUtil.US);
 
-		Map<String, List<DDMFormFieldValue>> ddmFormFieldValueMap =
+		Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
 			ddmFormValues.getDDMFormFieldValuesMap();
 
-		List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValueMap.get(
+		List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValuesMap.get(
 			"dataSourceType");
 
 		DDMFormFieldValue dataSourceTypeFormFieldValue = ddmFormFieldValues.get(
 			0);
 
-		dataSourceTypeFormFieldValue.setValue(new UnlocalizedValue("manual"));
+		dataSourceTypeFormFieldValue.setValue(
+			new UnlocalizedValue("[\"manual\"]"));
 
 		DDMFormEvaluatorEvaluateRequest.Builder builder =
 			DDMFormEvaluatorEvaluateRequest.Builder.newBuilder(
@@ -142,7 +174,7 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 				ddmFormEvaluatorEvaluateResponse.
 					getDDMFormFieldsPropertyChanges();
 
-		ddmFormFieldValues = ddmFormFieldValueMap.get(
+		ddmFormFieldValues = ddmFormFieldValuesMap.get(
 			"ddmDataProviderInstanceId");
 
 		DDMFormFieldValue ddmDataProviderInstanceIdFormFieldValue =
@@ -161,7 +193,7 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 			(Boolean)ddmDataProviderInstanceIdFieldPropertyChanges.get(
 				"required"));
 
-		ddmFormFieldValues = ddmFormFieldValueMap.get(
+		ddmFormFieldValues = ddmFormFieldValuesMap.get(
 			"ddmDataProviderInstanceOutput");
 
 		DDMFormFieldValue ddmDataProviderInstanceOutputFormFieldValue =
@@ -181,7 +213,7 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 			(Boolean)ddmDataProviderInstanceOutputFieldPropertyChanges.get(
 				"required"));
 
-		ddmFormFieldValues = ddmFormFieldValueMap.get("options");
+		ddmFormFieldValues = ddmFormFieldValuesMap.get("options");
 
 		DDMFormFieldValue optionsDDMFormFieldValue = ddmFormFieldValues.get(0);
 
@@ -214,19 +246,19 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 				ddmForm, SetUtil.fromArray(new Locale[] {LocaleUtil.US}),
 				LocaleUtil.US);
 
-		Map<String, List<DDMFormFieldValue>> ddmFormFieldValueMap =
+		Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
 			ddmFormValues.getDDMFormFieldValuesMap();
 
-		List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValueMap.get(
+		List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValuesMap.get(
 			"dataSourceType");
 
 		DDMFormFieldValue dataSourceTypeFormFieldValue = ddmFormFieldValues.get(
 			0);
 
 		dataSourceTypeFormFieldValue.setValue(
-			new UnlocalizedValue("data-provider"));
+			new UnlocalizedValue("[data-provider]"));
 
-		ddmFormFieldValues = ddmFormFieldValueMap.get(
+		ddmFormFieldValues = ddmFormFieldValuesMap.get(
 			"ddmDataProviderInstanceId");
 
 		DDMFormFieldValue ddmDataProviderInstanceIdFormFieldValue =
@@ -250,7 +282,7 @@ public class DDMFormFieldTypeSettingsEvaluatorTest {
 		DDMFormEvaluatorEvaluateResponse ddmFormEvaluatorEvaluateResponse =
 			_ddmFormEvaluator.evaluate(builder.build());
 
-		ddmFormFieldValues = ddmFormFieldValueMap.get(
+		ddmFormFieldValues = ddmFormFieldValuesMap.get(
 			"ddmDataProviderInstanceOutput");
 
 		DDMFormFieldValue ddmDataProviderInstanceOutputFormFieldValue =

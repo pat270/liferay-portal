@@ -18,6 +18,7 @@ import com.liferay.petra.process.CollectorOutputProcessor;
 import com.liferay.petra.process.OutputProcessor;
 import com.liferay.petra.process.ProcessUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -83,8 +84,9 @@ public class HeapUtil {
 		try {
 			return ProcessUtil.execute(outputProcessor, arguments);
 		}
-		catch (Exception e) {
-			throw new RuntimeException("Unable to perform heap dump", e);
+		catch (Exception exception) {
+			throw new RuntimeException(
+				"Unable to perform heap dump", exception);
 		}
 	}
 
@@ -174,9 +176,10 @@ public class HeapUtil {
 
 				supported = true;
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(HeapUtil.class.getName() + " is disabled", e);
+					_log.warn(
+						HeapUtil.class.getName() + " is disabled", exception);
 				}
 			}
 		}

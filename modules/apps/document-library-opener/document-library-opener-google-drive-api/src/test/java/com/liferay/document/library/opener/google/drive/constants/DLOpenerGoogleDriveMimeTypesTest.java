@@ -54,7 +54,7 @@ public class DLOpenerGoogleDriveMimeTypesTest {
 			"application/vnd.oasis.opendocument.spreadsheet", "ods");
 		_assertIsSupportedGoogleDocsSpreadsheet(
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-			"xslx");
+			"xlsx");
 		_assertIsSupportedGoogleDocsSpreadsheet("text/csv", "csv");
 		_assertIsSupportedGoogleDocsSpreadsheet(
 			"text/tab-separated-values", "tsv");
@@ -95,7 +95,7 @@ public class DLOpenerGoogleDriveMimeTypesTest {
 
 		Assert.assertTrue(
 			mimeType + " is not supported",
-			DLOpenerGoogleDriveMimeTypes.isMimeTypeSupported(mimeType));
+			DLOpenerGoogleDriveMimeTypes.isGoogleMimeTypeSupported(mimeType));
 
 		Assert.assertEquals(
 			"." + extension,

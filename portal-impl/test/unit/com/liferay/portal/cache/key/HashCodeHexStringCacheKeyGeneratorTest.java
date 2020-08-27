@@ -14,12 +14,15 @@
 
 package com.liferay.portal.cache.key;
 
+import org.junit.Before;
+
 /**
  * @author Shuyang Zhou
  */
 public class HashCodeHexStringCacheKeyGeneratorTest
 	extends BaseCacheKeyGeneratorTestCase {
 
+	@Before
 	@Override
 	public void setUp() throws Exception {
 		cacheKeyGenerator = new HashCodeHexStringCacheKeyGenerator();

@@ -1,0 +1,659 @@
+@component-name = "portal-search"
+definition {
+
+	property portal.release = "true";
+	property portal.suite.search.engine = "elasticsearch7";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Elasticsearch Impl";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			MessageboardsThread.tearDownCP();
+
+			DMDocument.tearDownCP();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AssertIndexOnStartup {
+		property test.assert.warning.exceptions = "true";
+		property test.name.skip.portal.instance = "Elasticsearch7#AssertIndexOnStartup";
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Asset Publisher Page");
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/guest/asset-publisher-page");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		Portlet.shutdownServer();
+
+		var liferayHome = PropsUtil.get("liferay.home.dir.name");
+
+		var elasticsearchDeleted = FileUtil.delete("${liferayHome}/data/elasticsearch7");
+
+		if ("${elasticsearchDeleted}" == "true") {
+			echo("Deleted ${liferayHome}/data/elasticsearch7");
+		}
+		else {
+			fail("Failed to delete elasticsearch7 directory");
+		}
+
+		var newProperty = "index.on.startup=true";
+
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "portal-ext-properties-update -Dadd.new.properties=true -Dupdate.properties=${newProperty}");
+
+		Portlet.startServer(deleteLiferayHome = "false");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/guest/asset-publisher-page");
+
+		// Workaround for LPS-113094
+
+		VerifyElementPresent(
+			key_assetTitle = "Blogs Entry Title",
+			locator1 = "AP#ASSET_ABSTRACT_TITLE");
+
+		VerifyElementPresent(
+			key_assetTitle = "DM Document Title",
+			locator1 = "AP#ASSET_ABSTRACT_TITLE");
+
+		VerifyElementPresent(
+			key_assetTitle = "WC WebContent Title",
+			locator1 = "AP#ASSET_ABSTRACT_TITLE");
+
+		SearchPortlets.searchEmbedded(searchTerm = "test");
+
+		// Workaround for LPS-89026 and LPS-113094
+
+		VerifyElementPresent(
+			key_searchAssetTitle = "Blogs Entry Title",
+			key_searchAssetType = "Blogs Entry",
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC");
+
+		VerifyElementPresent(
+			key_searchAssetTitle = "DM Document Title",
+			key_searchAssetType = "Document",
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC");
+
+		VerifyElementPresent(
+			key_searchAssetTitle = "Test Test",
+			key_searchAssetType = "User",
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC");
+
+		VerifyElementPresent(
+			key_searchAssetTitle = "WC WebContent Title",
+			key_searchAssetType = "Web Content Article",
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC");
+	}
+
+	test AssertSearchAdmin {
+		property test.name.skip.portal.instance = "Elasticsearch7#AssertSearchAdmin";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.assertEngineVendorAndVersions(
+			clientVersion = "7.3.0",
+			engineVendor = "Elasticsearch",
+			serverVersion = "7.3.0");
+
+		Navigator.gotoNavItem(navItem = "Field Mappings");
+
+		Click(
+			key_navNested = "liferay-0",
+			locator1 = "NavNested#NAV_NESTED_LINK");
+
+		AssertTextEquals.assertPartialText(
+			indexName = "liferay-0",
+			locator1 = "Search#FIELD_MAPPINGS_EDITOR",
+			value1 = "liferay-0");
+
+		var companyId = JSONCompany.getCompanyId();
+		var liferayIndexName = "liferay-${companyId}";
+
+		Click(
+			key_navNested = "${liferayIndexName}",
+			locator1 = "NavNested#NAV_NESTED_LINK");
+
+		AssertTextEquals.assertPartialText(
+			indexName = "${liferayIndexName}",
+			locator1 = "Search#FIELD_MAPPINGS_EDITOR",
+			value1 = "${liferayIndexName}");
+	}
+
+	@priority = "4"
+	test AssertSearchInsightsExplain {
+		property test.name.skip.portal.instance = "Elasticsearch7#AssertSearchInsightsExplain";
+
+		JSONWebcontent.addWebContent(
+			content = "WC Content",
+			groupName = "Guest",
+			title = "apple");
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/guest/search");
+
+		Portlet.addPG(portletName = "Search Insights");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Search Insights",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		AssertChecked(
+			checkboxName = "Enable Score Explanation",
+			locator1 = "Checkbox#ANY_CHECKBOX");
+
+		IFrame.closeFrame();
+
+		SearchPortlets.searchEmbedded(searchTerm = "apple");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_STRING_QUERY",
+			value1 = "&quot;explain&quot;:true");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_RESPONSE_QUERY",
+			value1 = "buckets");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_RESPONSE_QUERY",
+			value1 = "_explanation");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Search Insights",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		Uncheck(
+			checkboxName = "Enable Score Explanation",
+			locator1 = "Checkbox#ANY_CHECKBOX");
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+
+		SearchPortlets.searchEmbedded(searchTerm = "apple");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_STRING_QUERY",
+			value1 = "&quot;explain&quot;:false");
+
+		AssertTextNotEquals.assertNotPartialText(
+			locator1 = "SearchResults#SEARCH_INSIGHTS_PORTLET_RESPONSE_QUERY",
+			value1 = "_explanation");
+	}
+
+	test AssertSidecarAutoInstall {
+		property environment.acceptance = "true";
+		property delete.sidecar.bundle = "true";
+		property portal.acceptance = "true";
+		property test.assert.warning.exceptions = "true";
+
+		AssertConsoleTextPresent(value1 = "Sidecar Elasticsearch liferay is at 127.0.0.1:9201");
+
+		JSONWebcontent.addWebContent(
+			content = "WC Content",
+			groupName = "Guest",
+			title = "apple");
+
+		SearchPortlets.searchEmbedded(searchTerm = "apple");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "apple",
+			searchAssetType = "Web Content Article");
+	}
+
+	test AssertSidecarDoesNotCluster {
+		property app.server.bundles.size = "1";
+		property cluster.enabled = "true";
+		property test.assert.warning.exceptions = "true";
+		property test.name.skip.portal.instance = "Elasticsearch7#AssertSidecarDoesNotCluster";
+
+		Clustering.viewClusterStatusInConsole();
+
+		Clustering.viewTextPresentOnSpecificNode(
+			expectedText = "Sidecar Elasticsearch liferay is at 127.0.0.1:9201",
+			nodePort = "8080");
+
+		Clustering.viewTextPresentOnSpecificNode(
+			expectedText = "Sidecar Elasticsearch liferay is at 127.0.0.1:9202",
+			nodePort = "9080");
+
+		Elasticsearch.viewClusterStatusViaClusterHealthAPI(
+			nodePort = "9201",
+			numberOfNodes = "1");
+
+		Elasticsearch.viewClusterStatusViaClusterHealthAPI(
+			nodePort = "9202",
+			numberOfNodes = "1");
+
+		Navigator.openURL();
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchAdmin#SEARCH_ENGINE_VENDOR",
+			value1 = "Elasticsearch (Sidecar)");
+
+		AssertTextEquals(
+			locator1 = "SearchAdmin#ACTIVE_CONNECTION_COUNT",
+			value1 = "1");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "__SIDECAR__",
+			locator1 = "SearchAdmin#NODE_COUNT",
+			value1 = "NODES (1)");
+
+		AssertElementPresent(
+			key_connectionID = "__SIDECAR__",
+			key_nodeName = "liferay",
+			locator1 = "SearchAdmin#NODE_NAME");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "WC WebContent Title");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "WC WebContent Title",
+			searchAssetType = "Web Content Article");
+
+		User.logoutPG();
+
+		User.loginPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchAdmin#SEARCH_ENGINE_VENDOR",
+			value1 = "Elasticsearch (Sidecar)");
+
+		AssertTextEquals(
+			locator1 = "SearchAdmin#ACTIVE_CONNECTION_COUNT",
+			value1 = "1");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "__SIDECAR__",
+			locator1 = "SearchAdmin#NODE_COUNT",
+			value1 = "NODES (1)");
+
+		AssertElementPresent(
+			key_connectionID = "__SIDECAR__",
+			key_nodeName = "liferay",
+			locator1 = "SearchAdmin#NODE_NAME");
+
+		Navigator.openSpecificURL(url = "http://localhost:9080");
+
+		SearchPortlets.searchEmbedded(searchTerm = "WC WebContent Title");
+
+		SearchResultPortlet.viewSearchResultNotPresent(
+			searchAssetTitle = "WC WebContent Title",
+			searchAssetType = "Web Content Article");
+	}
+
+	@ignore = "true"
+	@priority = "3"
+	test AssertSystemSettingsPropogateToModule {
+
+		// Ignoring test until LPS-65459 is resolved
+
+		property test.name.skip.portal.instance = "Elasticsearch7#AssertSystemSettingsPropogateToModule";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Search",
+			configurationName = "Elasticsearch 7",
+			configurationScope = "System Scope");
+
+		SystemSettings.editTextAreaSetting(
+			settingName = "Cluster Name",
+			settingValue = "LiferayElasticsearchCluster1");
+
+		SystemSettings.saveConfiguration();
+
+		Navigator.openSpecificURL(url = "http://localhost:9200");
+
+		Elasticsearch.viewClusterStatus(clusterStatus = "&quot;cluster_name&quot; : &quot;LiferayElasticsearchCluster1&quot;");
+	}
+
+	@priority = "5"
+	test ElasticsearchRemoteClusterSmokeTest {
+		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
+		property remote.elasticsearch.cluster.size = "2";
+		property remote.elasticsearch.enabled = "true";
+		property test.name.skip.portal.instance = "Elasticsearch7#ElasticsearchRemoteClusterSmokeTest";
+
+		Elasticsearch.viewClusterStatusViaClusterHealthAPI(
+			nodePort = "9200",
+			numberOfNodes = "2");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Message Boards");
+
+		MessageboardsThread.addCP(
+			threadBody = "Orange",
+			threadSubject = "Apple");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Documents and Media");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "Orange",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "Apple");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "Apple");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Apple",
+			searchAssetType = "Document");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Apple",
+			searchAssetType = "Message Boards Message");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "Orange");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Apple",
+			searchAssetType = "Document");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Apple",
+			searchAssetType = "Message Boards Message");
+	}
+
+	test MultipleConnectionsSmokeTest {
+		property portal.upstream = "quarantine";
+		property remote.elasticsearch.clusters.enabled = "true";
+		property remote.elasticsearch.enabled = "true";
+
+		OSGiConfig.deployOSGiConfigs(
+			OSGiConfigFileName = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-connection2.config",
+			OSGiConfigs = "active=&quot;true&quot;,connectionId=&quot;connection2&quot;,networkHostAddresses=[&quot;http://localhost:9202&quot;]");
+
+		Pause(locator1 = "10000");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		AssertTextEquals(
+			locator1 = "SearchAdmin#ACTIVE_CONNECTION_COUNT",
+			value1 = "2");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "__REMOTE__",
+			locator1 = "SearchAdmin#CLUSTER_NAME",
+			value1 = "LiferayElasticsearchCluster");
+
+		AssertTextEquals.assertPartialText(
+			key_connectionID = "connection2",
+			locator1 = "SearchAdmin#CLUSTER_NAME",
+			value1 = "LiferayElasticsearchClusterTwo");
+
+		JSONWebcontent.addWebContent(
+			content = "WC Content",
+			groupName = "Guest",
+			title = "apple");
+
+		var curlSecondConnection = '''
+			http://localhost:9202/connection2_index/_doc/1?pretty \
+				-H 'Content-Type: application/json' \
+				-d '{"connection2_field" : "multiple connections is cool"}'
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curlSecondConnection}");
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Multiple Connections Page");
+
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Guest",
+			layoutName = "Multiple Connections Page",
+			layoutTemplate = "3 Columns");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Multiple Connections Page",
+			widgetName = "Custom Filter");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "2",
+			groupName = "Guest",
+			layoutName = "Multiple Connections Page",
+			widgetName = "Search Results");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "3",
+			groupName = "Guest",
+			layoutName = "Multiple Connections Page",
+			widgetName = "Search Options");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "3",
+			groupName = "Guest",
+			layoutName = "Multiple Connections Page",
+			widgetName = "Low Level Search Options");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/guest/multiple-connections-page");
+
+		SearchPortlets.configureSearchOptions(allowEmptySearches = "true");
+
+		Refresh();
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "apple",
+			searchAssetType = "Web Content Article");
+
+		SearchPortlets.configureCustomFilter(
+			filterField = "connection2_field",
+			filterQueryType = "Match",
+			filterValue = "cool",
+			occur = "must");
+
+		SearchResultPortlet.configureSearchResults(fieldsToDisplay = "connection2_field");
+
+		SearchPortlets.configureLowLevelSearchOptions(
+			connectionId = "connection2",
+			indexes = "connection2_index");
+
+		Refresh();
+
+		AssertElementPresent(
+			key_searchAssetTitle = "multiple connections is cool",
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE");
+	}
+
+	@priority = "5"
+	test OSGiConfigSmokeTest {
+		property osgi.module.configuration.file.names = "com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConfiguration.config";
+		property osgi.module.configurations = "clusterName=&quot;LiferayElasticsearchCluster1&quot;";
+		property portal.acceptance = "true";
+
+		Navigator.openSpecificURL(url = "http://localhost:9201");
+
+		Elasticsearch.viewClusterStatus(clusterStatus = "&quot;cluster_name&quot; : &quot;LiferayElasticsearchCluster1&quot;");
+	}
+
+	test SearchWithNonLiferayIndex {
+		property test.name.skip.portal.instance = "Elasticsearch7#SearchWithNonLiferayIndex";
+
+		Navigator.openSpecificURL(url = "http://localhost:9201");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "add-boston-dataset-index -Dbackup.index=boston311 -Delasticsearch.port=9201");
+
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Search Page");
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/guest/search-page");
+
+		SearchPortlets.addWidgets(searchPortletList = "Custom Filter,Low Level Search Options,Search Results,Search Bar");
+
+		SearchPortlets.configureCustomFilter(
+			customParameterName = "q",
+			federatedSearchKey = "s1",
+			filterField = "case_title,closure_reason",
+			filterQueryType = "Multi Match");
+
+		SearchPortlets.configureLowLevelSearchOptions(
+			federatedSearchKey = "s1",
+			indexes = "boston311");
+
+		SearchResultPortlet.configureSearchResults(
+			federatedSearchKey = "s1",
+			fieldsToDisplay = "case_title,closure_reason,case_enquiry_id");
+
+		SearchPortlets.configureSearchBarWidget(federatedSearchKey = "s1");
+
+		SearchPortlets.searchWidget(searchTerm = "bicycle");
+
+		AssertTextEquals.assertPartialText(
+			key_searchAssetTitle = "Abandoned Bicycle",
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE",
+			value1 = "Abandoned Bicycle");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchResults#RESULTS_PORTLET_SEARCH_QUERY",
+			value1 = "1 results for bicycle");
+	}
+
+	test SwitchSidecarToRemote {
+		property test.name.skip.portal.instance = "Elasticsearch7#SwitchSidecarToRemote";
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		AntCommand(
+			locator1 = "build-test-elasticsearch7.xml",
+			value1 = "start-elasticsearch");
+
+		AssertConsoleTextPresent(value1 = "Stopping sidecar Elasticsearch");
+
+		Navigator.openSpecificURL(url = "http://localhost:9201");
+
+		AssertTextNotPresent(value1 = "cluster_name");
+
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.assertEngineVendorAndVersions(
+			clientVersion = "7.3.0",
+			engineVendor = "Elasticsearch",
+			serverVersion = "7.7.0");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchAdmin#CONNECTION_ID",
+			value1 = "__REMOTE__");
+
+		AssertTextNotEquals.assertNotPartialText(
+			locator1 = "SearchAdmin#SEARCH_ENGINE_VENDOR",
+			value1 = "(Sidecar)");
+
+		AssertTextNotEquals.assertNotPartialText(
+			locator1 = "SearchAdmin#CONNECTION_ID",
+			value1 = "__SIDECAR__");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+
+		Navigator.openURL();
+
+		SearchPortlets.searchEmbedded(searchTerm = "WebContent");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "WC WebContent Title",
+			searchAssetType = "Web Content Article");
+	}
+
+}

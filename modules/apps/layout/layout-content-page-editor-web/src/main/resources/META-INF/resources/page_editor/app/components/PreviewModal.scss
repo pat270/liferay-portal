@@ -1,0 +1,39 @@
+@import 'atlas-variables';
+
+@import './variables';
+
+.page-editor__preview-modal {
+	&__part {
+		display: flex;
+		flex-basis: calc(100% / 3);
+		justify-content: center;
+
+		&:first-child {
+			justify-content: flex-start;
+		}
+
+		&:last-child {
+			justify-content: flex-end;
+		}
+
+		label {
+			font-size: 14px;
+		}
+
+		select {
+			min-width: 200px;
+			padding: 0.25rem 2em 0.25em 0.75rem;
+		}
+	}
+
+	.modal-body {
+		background-color: $gray-400;
+		display: flex;
+		justify-content: center;
+
+		& > iframe {
+			background-color: white;
+			margin: 0 auto;
+		}
+	}
+}

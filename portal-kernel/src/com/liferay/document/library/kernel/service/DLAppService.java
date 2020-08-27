@@ -16,6 +16,7 @@ package com.liferay.document.library.kernel.service;
 
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -53,6 +54,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -64,7 +66,7 @@ public interface DLAppService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DLAppServiceUtil} to access the dl app remote service. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLAppServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLAppServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the dl app remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DLAppServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**
@@ -162,7 +164,7 @@ public interface DLAppService extends BaseService {
 	 </code>)
 	 * @param description the file's description
 	 * @param changeLog the file's version change log
-	 * @param is the file's data (optionally <code>null</code>)
+	 * @param inputStream the file's data (optionally <code>null</code>)
 	 * @param size the file's size (optionally <code>0</code>)
 	 * @param serviceContext the service context to be applied. Can set the
 	 asset category IDs, asset tag names, and expando bridge
@@ -176,7 +178,7 @@ public interface DLAppService extends BaseService {
 	public FileEntry addFileEntry(
 			long repositoryId, long folderId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			InputStream is, long size, ServiceContext serviceContext)
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -288,17 +290,6 @@ public interface DLAppService extends BaseService {
 	 * @see #checkOutFileEntry(long, ServiceContext)
 	 */
 	public void cancelCheckOut(long fileEntryId) throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #checkInFileEntry(long, DLVersionNumberIncrease, String,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public void checkInFileEntry(
-			long fileEntryId, boolean majorVersion, String changeLog,
-			ServiceContext serviceContext)
-		throws PortalException;
 
 	/**
 	 * Checks in the file entry. If a user has not checked out the specified
@@ -567,16 +558,16 @@ public interface DLAppService extends BaseService {
 	 * @param folderId the primary key of the file entry's folder
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the file entries (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the file entries
+	 (optionally <code>null</code>)
 	 * @return the range of file entries in the folder ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FileEntry> getFileEntries(
 			long repositoryId, long folderId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -620,8 +611,8 @@ public interface DLAppService extends BaseService {
 	 * @param fileEntryTypeId the primary key of the file entry type
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the results by (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the results by
+	 (optionally <code>null</code>)
 	 * @return the range of file entries with the file entry type in the folder
 	 ordered by <code>null</code>
 	 * @throws PortalException if a portal exception occurred
@@ -629,7 +620,7 @@ public interface DLAppService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FileEntry> getFileEntries(
 			long repositoryId, long folderId, long fileEntryTypeId, int start,
-			int end, OrderByComparator<FileEntry> obc)
+			int end, OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -640,7 +631,7 @@ public interface DLAppService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FileEntry> getFileEntries(
 			long repositoryId, long folderId, String[] mimeTypes, int start,
-			int end, OrderByComparator<FileEntry> obc)
+			int end, OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -887,16 +878,16 @@ public interface DLAppService extends BaseService {
 	 third-party repositories
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the folders (optionally
+	 * @param orderByComparator the comparator to order the folders (optionally
 	 <code>null</code>)
 	 * @return the range of immediate subfolders of the parent folder ordered by
-	 comparator <code>obc</code>
+	 comparator <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Folder> getFolders(
 			long repositoryId, long parentFolderId, boolean includeMountFolders,
-			int start, int end, OrderByComparator<Folder> obc)
+			int start, int end, OrderByComparator<Folder> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -919,17 +910,17 @@ public interface DLAppService extends BaseService {
 	 third-party repositories
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the folders (optionally
+	 * @param orderByComparator the comparator to order the folders (optionally
 	 <code>null</code>)
 	 * @return the range of immediate subfolders of the parent folder ordered by
-	 comparator <code>obc</code>
+	 comparator <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Folder> getFolders(
 			long repositoryId, long parentFolderId, int status,
 			boolean includeMountFolders, int start, int end,
-			OrderByComparator<Folder> obc)
+			OrderByComparator<Folder> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -975,16 +966,16 @@ public interface DLAppService extends BaseService {
 	 * @param parentFolderId the primary key of the folder's parent folder
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the folders (optionally
+	 * @param orderByComparator the comparator to order the folders (optionally
 	 <code>null</code>)
 	 * @return the range of immediate subfolders of the parent folder ordered by
-	 comparator <code>obc</code>
+	 comparator <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Folder> getFolders(
 			long repositoryId, long parentFolderId, int start, int end,
-			OrderByComparator<Folder> obc)
+			OrderByComparator<Folder> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -1037,32 +1028,32 @@ public interface DLAppService extends BaseService {
 	 third-party repositories
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the results (optionally
+	 * @param orderByComparator the comparator to order the results (optionally
 	 <code>null</code>)
 	 * @return the range of immediate subfolders, file entries, and file
 	 shortcuts in the parent folder ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long repositoryId, long folderId, int status,
 			boolean includeMountFolders, int start, int end,
-			OrderByComparator<?> obc)
+			OrderByComparator<?> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long repositoryId, long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, boolean includeOwner, int start,
-			int end, OrderByComparator<?> obc)
+			int end, OrderByComparator<?> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long repositoryId, long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
-			OrderByComparator<?> obc)
+			OrderByComparator<?> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -1209,16 +1200,16 @@ public interface DLAppService extends BaseService {
 	 (optionally <code>0</code>)
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the file entries (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the file entries
+	 (optionally <code>null</code>)
 	 * @return the range of matching file entries ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FileEntry> getGroupFileEntries(
 			long groupId, long userId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -1273,22 +1264,23 @@ public interface DLAppService extends BaseService {
 	 search
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the file entries (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the file entries
+	 (optionally <code>null</code>)
 	 * @return the range of matching file entries ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FileEntry> getGroupFileEntries(
 			long groupId, long userId, long rootFolderId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FileEntry> getGroupFileEntries(
 			long groupId, long userId, long rootFolderId, String[] mimeTypes,
-			int status, int start, int end, OrderByComparator<FileEntry> obc)
+			int status, int start, int end,
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -1392,17 +1384,17 @@ public interface DLAppService extends BaseService {
 	 * @param parentFolderId the primary key of the folder's parent folder
 	 * @param start the lower bound of the range of results
 	 * @param end the upper bound of the range of results (not inclusive)
-	 * @param obc the comparator to order the folders (optionally
+	 * @param orderByComparator the comparator to order the folders (optionally
 	 <code>null</code>)
 	 * @return the range of immediate subfolders of the parent folder that are
 	 used for mounting third-party repositories ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Folder> getMountFolders(
 			long repositoryId, long parentFolderId, int start, int end,
-			OrderByComparator<Folder> obc)
+			OrderByComparator<Folder> orderByComparator)
 		throws PortalException;
 
 	/**
@@ -1668,44 +1660,6 @@ public interface DLAppService extends BaseService {
 		throws PortalException;
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, String, String, String, String,
-	 String, DLVersionNumberIncrease, byte[], ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntry(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
-			boolean majorVersion, byte[] bytes, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, String, String, String, String,
-	 String, DLVersionNumberIncrease, File, ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntry(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, String, String, String, String,
-	 String, DLVersionNumberIncrease, InputStream, long,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntry(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
 	 * Updates a file entry and associated metadata based on a byte array
 	 * object. If the file data is <code>null</code>, then only the associated
 	 * metadata (i.e., <code>title</code>, <code>description</code>, and
@@ -1814,7 +1768,7 @@ public interface DLAppService extends BaseService {
 	 <code>null</code>)
 	 * @param dlVersionNumberIncrease the kind of version number increase to
 	 apply for these changes.
-	 * @param is the file's data (optionally <code>null</code>)
+	 * @param inputStream the file's data (optionally <code>null</code>)
 	 * @param size the file's size (optionally <code>0</code>)
 	 * @param serviceContext the service context to be applied. Can set the
 	 asset category IDs, asset tag names, and expando bridge
@@ -1828,35 +1782,8 @@ public interface DLAppService extends BaseService {
 	public FileEntry updateFileEntry(
 			long fileEntryId, String sourceFileName, String mimeType,
 			String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x),  As of Judson (7.1.x), replaced by
-	 {@link #updateFileEntryAndCheckIn(long, String, String,
-	 String, String, String, DLVersionNumberIncrease, File,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntryAndCheckIn(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntryAndCheckIn(long, String, String, String,
-	 String, String, DLVersionNumberIncrease, InputStream, long,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntryAndCheckIn(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException;
 
 	public FileEntry updateFileEntryAndCheckIn(
@@ -1869,8 +1796,8 @@ public interface DLAppService extends BaseService {
 	public FileEntry updateFileEntryAndCheckIn(
 			long fileEntryId, String sourceFileName, String mimeType,
 			String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**

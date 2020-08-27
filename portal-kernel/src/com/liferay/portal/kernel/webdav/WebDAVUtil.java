@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -132,9 +133,7 @@ public class WebDAVUtil {
 	public static long getGroupId(long companyId, String path)
 		throws WebDAVException {
 
-		String[] pathArray = getPathArray(path);
-
-		return getGroupId(companyId, pathArray);
+		return getGroupId(companyId, getPathArray(path));
 	}
 
 	public static long getGroupId(long companyId, String[] pathArray)
@@ -163,17 +162,15 @@ public class WebDAVUtil {
 				return group.getGroupId();
 			}
 		}
-		catch (Exception e) {
-			throw new WebDAVException(e);
+		catch (Exception exception) {
+			throw new WebDAVException(exception);
 		}
 
 		return 0;
 	}
 
 	public static List<Group> getGroups(long userId) throws Exception {
-		User user = UserLocalServiceUtil.getUser(userId);
-
-		return getGroups(user);
+		return getGroups(UserLocalServiceUtil.getUser(userId));
 	}
 
 	public static List<Group> getGroups(User user) throws Exception {
@@ -195,9 +192,10 @@ public class WebDAVUtil {
 
 		Set<Group> groups = new HashSet<>();
 
-		LinkedHashMap<String, Object> params = new LinkedHashMap<>();
-
-		params.put("usersGroups", user.getUserId());
+		LinkedHashMap<String, Object> params =
+			LinkedHashMapBuilder.<String, Object>put(
+				"usersGroups", user.getUserId()
+			).build();
 
 		OrderByComparator<Group> orderByComparator =
 			new GroupFriendlyURLComparator(true);
@@ -227,7 +225,7 @@ public class WebDAVUtil {
 	}
 
 	public static WebDAVUtil getInstance() {
-		return _instance;
+		return _webDAVUtil;
 	}
 
 	public static String getLockUuid(HttpServletRequest httpServletRequest)
@@ -446,7 +444,7 @@ public class WebDAVUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(WebDAVUtil.class);
 
-	private static final WebDAVUtil _instance = new WebDAVUtil();
+	private static final WebDAVUtil _webDAVUtil = new WebDAVUtil();
 
 	private final ServiceRegistrationMap<WebDAVStorage> _serviceRegistrations =
 		new ServiceRegistrationMapImpl<>();

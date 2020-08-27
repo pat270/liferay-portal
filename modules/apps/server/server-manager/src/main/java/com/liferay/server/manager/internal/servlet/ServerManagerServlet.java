@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.servlet.HttpMethods;
@@ -99,8 +98,8 @@ public class ServerManagerServlet extends HttpServlet {
 
 		String path = StringUtil.toLowerCase(pathInfo);
 
-		path = StringUtil.replace(
-			path, matchingExecutorPath + StringPool.SLASH, StringPool.BLANK);
+		path = StringUtil.removeSubstring(
+			path, matchingExecutorPath + StringPool.SLASH);
 
 		String[] pathParts = StringUtil.split(path, StringPool.SLASH);
 
@@ -120,17 +119,16 @@ public class ServerManagerServlet extends HttpServlet {
 
 	protected boolean isValidUser(HttpServletRequest httpServletRequest) {
 		try {
-			User user = _portal.getUser(httpServletRequest);
-
 			PermissionChecker permissionChecker =
-				PermissionCheckerFactoryUtil.create(user);
+				PermissionCheckerFactoryUtil.create(
+					_portal.getUser(httpServletRequest));
 
 			if (permissionChecker.isOmniadmin()) {
 				return true;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -161,9 +159,9 @@ public class ServerManagerServlet extends HttpServlet {
 				httpServletRequest, responseJSONObject,
 				httpServletRequest.getPathInfo());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			responseJSONObject.put(
-				JSONKeys.ERROR, StackTraceUtil.getStackTrace(e)
+				JSONKeys.ERROR, StackTraceUtil.getStackTrace(exception)
 			).put(
 				JSONKeys.STATUS, 1
 			);

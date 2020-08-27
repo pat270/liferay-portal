@@ -1,4 +1,31 @@
 definition {
+
+	macro configureSearchResults {
+		Portlet.gotoPortletOptions(
+			portletName = "Search Results",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (isSet(federatedSearchKey)) {
+			Type(
+				key_fieldLabel = "Federated Search Key",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${federatedSearchKey}");
+		}
+
+		if (isSet(fieldsToDisplay)) {
+			Type(
+				key_fieldLabel = "Fields to Display",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${fieldsToDisplay}");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
 	macro paginateAndViewSearchResults {
 		var key_searchAssetTitle = "${searchAssetTitle}";
 		var key_searchAssetType = "${searchAssetType}";
@@ -74,7 +101,7 @@ definition {
 
 		if (isSet(entryDate)) {
 			AssertTextEquals.assertPartialText(
-				locator1 = "SearchResults#ASSET_ENTRY_TABLE_TYPE_SPECIFIC",
+				locator1 = "SearchResults#ASSET_ENTRY_TABLE_TYPE_SPECIFIC_DATE",
 				value1 = "${entryDate}");
 		}
 
@@ -95,7 +122,7 @@ definition {
 		var resultOrder = "0";
 
 		for (var searchAssetTitle : list "${resultsList}") {
-			var resultOrder = MathUtil.sum("${resultOrder}", "1");
+			var resultOrder = ${resultOrder} + 1;
 
 			AssertTextEquals.assertPartialText(
 				locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE_SPECIFIC_ORDER",
@@ -103,4 +130,5 @@ definition {
 				value1 = "${searchAssetTitle}");
 		}
 	}
+
 }

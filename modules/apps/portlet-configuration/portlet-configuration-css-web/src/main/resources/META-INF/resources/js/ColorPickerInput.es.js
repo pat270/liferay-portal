@@ -1,117 +1,41 @@
-import Component from 'metal-component';
-import core from 'metal';
-import Soy from 'metal-soy';
-
-import templates from './ColorPickerInput.soy';
-
 /**
- * ColorPickerInput
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
- * This class creates an input with a ColorPickerPopover binded to it.
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  */
 
-class ColorPickerInput extends Component {
+import ClayColorPicker from '@clayui/color-picker';
+import React, {useState} from 'react';
 
-	/**
-	 * @inheritDoc
-	 */
-
-	rendered() {
-		let instance = this;
-
-		AUI().use(
-			'aui-color-picker-popover',
-			function(A) {
-				instance.colorPickerPopover = new A.ColorPickerPopover(
-					{
-						color: instance.color,
-						constrain: true,
-						trigger: '#' + instance.id,
-						zIndex: Liferay.zIndex.POPOVER
-					}
-				);
-
-				instance.colorPickerPopover.render(instance.element);
-				instance.colorPickerPopover.after('select', instance.setColor_, instance);
-			}
-		);
-	}
-
-	/**
-	 * Sets the selected color
-	 *
-	 * @param  {Event} event
-	 */
-
-	setColor_(event) {
-		this.color = event.color;
-	}
+function normalizeColor(color) {
+	return color.startsWith('#') ? color.substring(1) : color;
 }
 
-/**
- * State definition.
- * @type {!Object}
- * @static
- */
+const ColorPicker = ({color, label, name}) => {
+	const [colorValue, setColorValue] = useState(normalizeColor(color));
 
-ColorPickerInput.STATE = {
+	return (
+		<div className="form-group">
+			<input name={name} type="hidden" value={`#${colorValue}`} />
 
-	/**
-	 * Current selected color
-	 * @type {String}
-	 */
-
-	color: {
-		validator: core.isString
-	},
-
-	/**
-	 * Input disabled state
-	 * @type {Boolean}
-	 */
-
-	disabled: {
-		validator: core.isBoolean,
-		value: false
-	},
-
-	/**
-	 * Id for the input
-	 * @type {String}
-	 */
-
-	id: {
-		validator: core.isString
-	},
-
-	/**
-	 * Input css classes
-	 * @type {String}
-	 */
-
-	inputClasses: {
-		validator: core.isString
-	},
-
-	/**
-	 * Label for the input
-	 * @type {String}
-	 */
-
-	label: {
-		validator: core.isString
-	},
-
-	/**
-	 * Name for the input
-	 * @type {String}
-	 */
-
-	name: {
-		validator: core.isString
-	}
+			<ClayColorPicker
+				label={label}
+				name={`${name}ColorPicker`}
+				onValueChange={setColorValue}
+				showHex={true}
+				title={label}
+				value={colorValue}
+			/>
+		</div>
+	);
 };
 
-Soy.register(ColorPickerInput, templates);
-
-export default ColorPickerInput;
+export default ColorPicker;

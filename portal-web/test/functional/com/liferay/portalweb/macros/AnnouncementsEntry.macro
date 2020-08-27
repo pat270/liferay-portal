@@ -1,16 +1,23 @@
 definition {
+
 	macro addEntryWithFutureDate {
 		AssertClick(
 			locator1 = "Button#ADD_ANNOUNCEMENT",
 			value1 = "Add Announcement");
 
-		AssertElementPresent(
-			key_editor = "title",
-			locator1 = "AlloyEditor#EDITOR");
+		AssertElementPresent(locator1 = "TextInput#TITLE");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		Type(
+			locator1 = "TextInput#TITLE",
+			value1 = "${entryTitle}");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		KeyPress(
+			locator1 = "CKEditor#BODY",
+			value1 = "${entryContent}");
+
+		SelectFrame(value1 = "relative=top");
 
 		Panel.expandPanel(panel = "Configuration");
 
@@ -37,7 +44,7 @@ definition {
 		var displayDateAMPM = StringUtil.replace("${displayDateAMPM}", "0", "AM");
 		var displayDateAMPM = StringUtil.replace("${displayDateAMPM}", "1", "PM");
 		var displayDateMinute = selenium.getAttribute("//input[contains(@id,'displayDateMinute')]@value");
-		var displayDateMinuteFuture = MathUtil.sum("${displayDateMinute}", "2");
+		var displayDateMinuteFuture = ${displayDateMinute} + 2;
 		var displayDateMinuteFutureLength = StringUtil.length("${displayDateMinuteFuture}");
 
 		if ("${displayDateMinuteFutureLength}" == "1") {
@@ -58,13 +65,13 @@ definition {
 			locator1 = "Button#ADD_ANNOUNCEMENT",
 			value1 = "Add Announcement");
 
-		AssertElementPresent(
-			key_editor = "title",
-			locator1 = "AlloyEditor#EDITOR");
+		AssertElementPresent(locator1 = "TextInput#TITLE");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContent}",
-			title = "${entryTitle}");
+		Type(
+			locator1 = "TextInput#TITLE",
+			value1 = "${entryTitle}");
+
+		CKEditor.addContent(content = "${entryContent}");
 
 		Panel.expandPanel(panel = "Configuration");
 
@@ -147,13 +154,20 @@ definition {
 		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Edit");
 
 		AssertTextEquals(
-			key_editor = "title",
-			locator1 = "AlloyEditor#EDITOR",
+			locator1 = "TextInput#TITLE",
 			value1 = "${entryTitle}");
 
-		AlloyEditor.addTitleAndContent(
-			content = "${entryContentEdit}",
-			title = "${entryTitleEdit}");
+		Type(
+			locator1 = "TextInput#TITLE",
+			value1 = "${entryTitleEdit}");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${entryContentEdit}");
+
+		SelectFrame(value1 = "relative=top");
 
 		Panel.expandPanel(panel = "Configuration");
 
@@ -267,4 +281,5 @@ definition {
 			locator1 = "Announcements#CARD_VIEW_ENTRY_CONTENT",
 			value1 = "${entryContent}");
 	}
+
 }

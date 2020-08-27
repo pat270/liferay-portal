@@ -35,10 +35,10 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +48,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Máté Thurzó
  */
-@Component(immediate = true, service = StagedModelDataHandler.class)
+@Component(service = StagedModelDataHandler.class)
 public class DLFileEntryTypeStagedModelDataHandler
 	extends BaseStagedModelDataHandler<DLFileEntryType> {
 
@@ -103,32 +103,33 @@ public class DLFileEntryTypeStagedModelDataHandler
 	public Map<String, String> getReferenceAttributes(
 		PortletDataContext portletDataContext, DLFileEntryType fileEntryType) {
 
-		Map<String, String> referenceAttributes = new HashMap<>();
+		return HashMapBuilder.put(
+			"file-entry-type-key", fileEntryType.getFileEntryTypeKey()
+		).put(
+			"preloaded",
+			() -> {
+				long defaultUserId = UserConstants.USER_ID_DEFAULT;
 
-		referenceAttributes.put(
-			"file-entry-type-key", fileEntryType.getFileEntryTypeKey());
+				try {
+					defaultUserId = _userLocalService.getDefaultUserId(
+						fileEntryType.getCompanyId());
+				}
+				catch (Exception exception) {
+				}
 
-		long defaultUserId = UserConstants.USER_ID_DEFAULT;
+				boolean preloaded = false;
 
-		try {
-			defaultUserId = _userLocalService.getDefaultUserId(
-				fileEntryType.getCompanyId());
-		}
-		catch (Exception e) {
-		}
+				if ((fileEntryType.getFileEntryTypeId() ==
+						DLFileEntryTypeConstants.
+							FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT) ||
+					(defaultUserId == fileEntryType.getUserId())) {
 
-		boolean preloaded = false;
+					preloaded = true;
+				}
 
-		if ((fileEntryType.getFileEntryTypeId() ==
-				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT) ||
-			(defaultUserId == fileEntryType.getUserId())) {
-
-			preloaded = true;
-		}
-
-		referenceAttributes.put("preloaded", String.valueOf(preloaded));
-
-		return referenceAttributes;
+				return String.valueOf(preloaded);
+			}
+		).build();
 	}
 
 	@Override

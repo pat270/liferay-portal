@@ -16,6 +16,9 @@
 
 <%@ include file="/card/vertical_card_small_image/init.jsp" %>
 
-<div class="sticker sticker-bottom <%= cssClass %>">
+<clay:sticker
+	cssClass="<%= cssClass %>"
+	position="bottom-left"
+>
 	<img alt="thumbnail" class="img-responsive" src="<%= src %>" />
-</div>
+</clay:sticker>

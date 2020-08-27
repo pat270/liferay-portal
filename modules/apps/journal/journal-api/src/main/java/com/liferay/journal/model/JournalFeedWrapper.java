@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalFeed
  * @generated
  */
-@ProviderType
 public class JournalFeedWrapper
 	extends BaseModelWrapper<JournalFeed>
 	implements JournalFeed, ModelWrapper<JournalFeed> {
@@ -46,6 +45,8 @@ public class JournalFeedWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("id", getId());
 		attributes.put("groupId", getGroupId());
@@ -75,6 +76,18 @@ public class JournalFeedWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -247,6 +260,16 @@ public class JournalFeedWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this journal feed.
+	 *
+	 * @return the ct collection ID of this journal feed
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the ddm renderer template key of this journal feed.
 	 *
 	 * @return the ddm renderer template key of this journal feed
@@ -367,6 +390,16 @@ public class JournalFeedWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this journal feed.
+	 *
+	 * @return the mvcc version of this journal feed
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this journal feed.
 	 *
 	 * @return the name of this journal feed
@@ -407,26 +440,6 @@ public class JournalFeedWrapper
 	}
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getDDMRendererTemplateKey()}
-	 */
-	@Deprecated
-	@Override
-	public String getRendererTemplateId() {
-		return model.getRendererTemplateId();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getDDMStructureKey()}
-	 */
-	@Deprecated
-	@Override
-	public String getStructureId() {
-		return model.getStructureId();
-	}
-
-	/**
 	 * Returns the target layout friendly url of this journal feed.
 	 *
 	 * @return the target layout friendly url of this journal feed
@@ -444,16 +457,6 @@ public class JournalFeedWrapper
 	@Override
 	public String getTargetPortletId() {
 		return model.getTargetPortletId();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getDDMTemplateKey()}
-	 */
-	@Deprecated
-	@Override
-	public String getTemplateId() {
-		return model.getTemplateId();
 	}
 
 	/**
@@ -529,6 +532,16 @@ public class JournalFeedWrapper
 	@Override
 	public void setCreateDate(Date createDate) {
 		model.setCreateDate(createDate);
+	}
+
+	/**
+	 * Sets the ct collection ID of this journal feed.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal feed
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -652,6 +665,16 @@ public class JournalFeedWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this journal feed.
+	 *
+	 * @param mvccVersion the mvcc version of this journal feed
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the name of this journal feed.
 	 *
 	 * @param name the name of this journal feed
@@ -692,26 +715,6 @@ public class JournalFeedWrapper
 	}
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #setDDMRendererTemplateKey(String)}
-	 */
-	@Deprecated
-	@Override
-	public void setRendererTemplateId(String rendererTemplateKey) {
-		model.setRendererTemplateId(rendererTemplateKey);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #setDDMStructureKey(String)}
-	 */
-	@Deprecated
-	@Override
-	public void setStructureId(String structureKey) {
-		model.setStructureId(structureKey);
-	}
-
-	/**
 	 * Sets the target layout friendly url of this journal feed.
 	 *
 	 * @param targetLayoutFriendlyUrl the target layout friendly url of this journal feed
@@ -729,16 +732,6 @@ public class JournalFeedWrapper
 	@Override
 	public void setTargetPortletId(String targetPortletId) {
 		model.setTargetPortletId(targetPortletId);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #setDDMTemplateKey(String)}
-	 */
-	@Deprecated
-	@Override
-	public void setTemplateId(String templateKey) {
-		model.setTemplateId(templateKey);
 	}
 
 	/**
@@ -779,6 +772,20 @@ public class JournalFeedWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<JournalFeed, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<JournalFeed, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

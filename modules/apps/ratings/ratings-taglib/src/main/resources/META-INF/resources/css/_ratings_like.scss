@@ -1,0 +1,34 @@
+.ratings-like {
+	$animation-duration: 500ms;
+
+	button {
+		&[aria-pressed='true'] .on .lexicon-icon {
+			color: $red;
+		}
+
+		&.btn-animated {
+			&[aria-pressed='true'] .on {
+				animation-name: heart-on;
+			}
+		}
+	}
+}
+
+@keyframes heart-on {
+	0% {
+		opacity: 0;
+		transform: scale3d(0.1, 0.1, 0.1);
+	}
+
+	33% {
+		transform: scale3d(1.2, 1.2, 1.2);
+	}
+
+	66% {
+		transform: scale3d(0.8, 0.8, 0.8);
+	}
+
+	100% {
+		opacity: 1;
+	}
+}

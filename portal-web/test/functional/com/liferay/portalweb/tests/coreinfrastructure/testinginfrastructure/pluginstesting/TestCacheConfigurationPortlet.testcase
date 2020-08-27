@@ -1,5 +1,6 @@
 @component-name = "portal-test-plugins"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Test Plugins";
@@ -13,11 +14,11 @@ definition {
 		Page.tearDownCP();
 	}
 
+	@ignore = "true"
 	@priority = "4"
 	test ViewCacheConfiguration {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Cache Configuration Page");
@@ -30,4 +31,5 @@ definition {
 
 		AssertTextNotPresent(value1 = "FAILED");
 	}
+
 }

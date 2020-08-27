@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Wiki";
@@ -13,7 +14,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Wiki Display Test Page");
@@ -44,7 +44,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -91,7 +90,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -116,13 +114,19 @@ definition {
 			locator1 = "Link#ADD_CHILD_PAGE",
 			value1 = "Add Child Page");
 
+		WikiEntry.addPageTitle(wikiPageTitle = "Wiki FrontPage Child Page Title");
+
 		WikiEntry.selectPageFormat(pageFormat = "HTML");
 
 		WikiEntry.confirmHTML();
 
-		WikiEntry.addPageTitle(wikiPageTitle = "Wiki FrontPage Child Page Title");
+		Click(locator1 = "CKEditor#TOOLBAR_SOURCE_BUTTON");
 
-		AlloyEditor.addSourceContent(content = "${welcomeToLiferay}");
+		Type(
+			locator1 = "CKEditor#BODY_FIELD_SOURCE_ON_3",
+			value1 = "${welcomeToLiferay}");
+
+		SelectFrame(value1 = "relative=top");
 
 		PortletEntry.publish();
 
@@ -147,7 +151,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -239,7 +242,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -278,7 +280,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -303,4 +304,5 @@ definition {
 			wikiPageTitle = "FrontPage",
 			wikiPageUsername = "Test Test");
 	}
+
 }

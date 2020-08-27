@@ -16,29 +16,36 @@ package com.liferay.asset.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetVocabularyService;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.model.uid.UIDFactory;
+import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
+import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
-import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.users.admin.test.util.search.GroupBlueprint;
+import com.liferay.users.admin.test.util.search.GroupSearchFixture;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -68,14 +75,23 @@ public class AssetVocabularyIndexerIndexedFieldsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpUserSearchFixture();
+		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
-		setUpAssetVocabularyFixture();
+		Group group = groupSearchFixture.addGroup(new GroupBlueprint());
 
-		setUpAssetVocabularyIndexerFixture();
+		AssetVocabularyFixture assetVocabularyFixture =
+			new AssetVocabularyFixture(assetVocabularyService, group);
 
-		setUpIndexedFieldsFixture();
+		_assetVocabularies = assetVocabularyFixture.getAssetVocabularies();
+		_assetVocabularyFixture = assetVocabularyFixture;
 
+		_group = group;
+
+		_groups = groupSearchFixture.getGroups();
+
+		_indexedFieldsFixture = new IndexedFieldsFixture(
+			resourcePermissionLocalService, searchEngineHelper, uidFactory,
+			documentBuilderFactory);
 		_defaultLocale = LocaleThreadLocal.getDefaultLocale();
 	}
 
@@ -91,56 +107,55 @@ public class AssetVocabularyIndexerIndexedFieldsTest {
 		setTestLocale(locale);
 
 		AssetVocabulary assetVocabulary =
-			assetVocabularyFixture.createAssetVocabulary("新しい商品");
+			_assetVocabularyFixture.createAssetVocabulary("新しい商品");
 
 		String searchTerm = "新しい";
 
-		Document document = assetVocabularyIndexerFixture.searchOnlyOne(
-			searchTerm, locale);
+		assertFieldValues(
+			_expectedFieldValues(assetVocabulary), locale, searchTerm);
+	}
 
-		indexedFieldsFixture.postProcessDocument(document);
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
+	protected void assertFieldValues(
+		Map<String, String> map, Locale locale, String searchTerm) {
 
 		FieldValuesAssert.assertFieldValues(
-			_expectedFieldValues(assetVocabulary), document, searchTerm);
+			map, name -> !name.equals("score"),
+			searcher.search(
+				searchRequestBuilderFactory.builder(
+				).companyId(
+					_group.getCompanyId()
+				).groupIds(
+					_group.getGroupId()
+				).locale(
+					locale
+				).fields(
+					StringPool.STAR
+				).modelIndexerClasses(
+					AssetVocabulary.class
+				).queryString(
+					searchTerm
+				).build()));
 	}
 
 	protected void setTestLocale(Locale locale) throws Exception {
-		assetVocabularyFixture.updateDisplaySettings(locale);
+		_assetVocabularyFixture.updateDisplaySettings(locale);
 
 		LocaleThreadLocal.setDefaultLocale(locale);
 	}
 
-	protected void setUpAssetVocabularyFixture() throws Exception {
-		assetVocabularyFixture = new AssetVocabularyFixture(_group);
+	@Inject
+	protected AssetVocabularyService assetVocabularyService;
 
-		_assetVocabularies = assetVocabularyFixture.getAssetVocabularies();
-	}
+	@Inject
+	protected DocumentBuilderFactory documentBuilderFactory;
 
-	protected void setUpAssetVocabularyIndexerFixture() {
-		assetVocabularyIndexerFixture = new IndexerFixture<>(
-			AssetVocabulary.class);
-	}
-
-	protected void setUpIndexedFieldsFixture() {
-		indexedFieldsFixture = new IndexedFieldsFixture(
-			resourcePermissionLocalService, searchEngineHelper);
-	}
-
-	protected void setUpUserSearchFixture() throws Exception {
-		userSearchFixture = new UserSearchFixture();
-
-		userSearchFixture.setUp();
-
-		_group = userSearchFixture.addGroup();
-
-		_groups = userSearchFixture.getGroups();
-
-		_users = userSearchFixture.getUsers();
-	}
-
-	protected AssetVocabularyFixture assetVocabularyFixture;
-	protected IndexerFixture<AssetVocabulary> assetVocabularyIndexerFixture;
-	protected IndexedFieldsFixture indexedFieldsFixture;
+	@Inject(
+		filter = "indexer.class.name=com.liferay.asset.kernel.model.AssetVocabulary"
+	)
+	protected Indexer<AssetVocabulary> indexer;
 
 	@Inject
 	protected ResourcePermissionLocalService resourcePermissionLocalService;
@@ -148,42 +163,54 @@ public class AssetVocabularyIndexerIndexedFieldsTest {
 	@Inject
 	protected SearchEngineHelper searchEngineHelper;
 
+	@Inject
+	protected Searcher searcher;
+
+	@Inject
+	protected SearchRequestBuilderFactory searchRequestBuilderFactory;
+
+	@Inject
+	protected UIDFactory uidFactory;
+
 	protected UserSearchFixture userSearchFixture;
 
 	private Map<String, String> _expectedFieldValues(
 			AssetVocabulary assetVocabulary)
 		throws Exception {
 
-		Map<String, String> map = new HashMap<>();
-
-		map.put(
+		Map<String, String> map = HashMapBuilder.put(
 			Field.ASSET_VOCABULARY_ID,
-			String.valueOf(assetVocabulary.getVocabularyId()));
-		map.put(
-			Field.COMPANY_ID, String.valueOf(assetVocabulary.getCompanyId()));
-		map.put(Field.ENTRY_CLASS_NAME, AssetVocabulary.class.getName());
-		map.put(
+			String.valueOf(assetVocabulary.getVocabularyId())
+		).put(
+			Field.COMPANY_ID, String.valueOf(assetVocabulary.getCompanyId())
+		).put(
+			Field.ENTRY_CLASS_NAME, AssetVocabulary.class.getName()
+		).put(
 			Field.ENTRY_CLASS_PK,
-			String.valueOf(assetVocabulary.getVocabularyId()));
-		map.put(Field.GROUP_ID, String.valueOf(assetVocabulary.getGroupId()));
-		map.put(Field.NAME, assetVocabulary.getName());
-		map.put(
-			Field.SCOPE_GROUP_ID, String.valueOf(assetVocabulary.getGroupId()));
-		map.put(Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup()));
-		map.put(Field.TITLE, assetVocabulary.getName());
-		map.put(Field.USER_ID, String.valueOf(assetVocabulary.getUserId()));
-		map.put(
-			Field.USER_NAME,
-			StringUtil.lowerCase(assetVocabulary.getUserName()));
-		map.put(
-			"name_sortable", StringUtil.lowerCase(assetVocabulary.getName()));
-		map.put("title_ja_JP", assetVocabulary.getName());
-		map.put(
-			"title_sortable", StringUtil.lowerCase(assetVocabulary.getName()));
+			String.valueOf(assetVocabulary.getVocabularyId())
+		).put(
+			Field.GROUP_ID, String.valueOf(assetVocabulary.getGroupId())
+		).put(
+			Field.NAME, assetVocabulary.getName()
+		).put(
+			Field.SCOPE_GROUP_ID, String.valueOf(assetVocabulary.getGroupId())
+		).put(
+			Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup())
+		).put(
+			Field.TITLE, assetVocabulary.getName()
+		).put(
+			Field.USER_ID, String.valueOf(assetVocabulary.getUserId())
+		).put(
+			Field.USER_NAME, StringUtil.lowerCase(assetVocabulary.getUserName())
+		).put(
+			"name_sortable", StringUtil.lowerCase(assetVocabulary.getName())
+		).put(
+			"title_ja_JP", assetVocabulary.getName()
+		).put(
+			"title_sortable", StringUtil.lowerCase(assetVocabulary.getName())
+		).build();
 
-		indexedFieldsFixture.populateUID(
-			AssetVocabulary.class.getName(), assetVocabulary.getVocabularyId(),
-			map);
+		_indexedFieldsFixture.populateUID(assetVocabulary, map);
 
 		_populateDates(assetVocabulary, map);
 		_populateRoles(assetVocabulary, map);
@@ -195,9 +222,9 @@ public class AssetVocabularyIndexerIndexedFieldsTest {
 	private void _populateDates(
 		AssetVocabulary assetVocabulary, Map<String, String> map) {
 
-		indexedFieldsFixture.populateDate(
+		_indexedFieldsFixture.populateDate(
 			Field.CREATE_DATE, assetVocabulary.getCreateDate(), map);
-		indexedFieldsFixture.populateDate(
+		_indexedFieldsFixture.populateDate(
 			Field.MODIFIED_DATE, assetVocabulary.getModifiedDate(), map);
 	}
 
@@ -226,7 +253,7 @@ public class AssetVocabularyIndexerIndexedFieldsTest {
 			AssetVocabulary assetVocabulary, Map<String, String> map)
 		throws Exception {
 
-		indexedFieldsFixture.populateRoleIdFields(
+		_indexedFieldsFixture.populateRoleIdFields(
 			assetVocabulary.getCompanyId(), AssetVocabulary.class.getName(),
 			assetVocabulary.getVocabularyId(), assetVocabulary.getGroupId(),
 			null, map);
@@ -235,13 +262,13 @@ public class AssetVocabularyIndexerIndexedFieldsTest {
 	@DeleteAfterTestRun
 	private List<AssetVocabulary> _assetVocabularies;
 
+	private AssetVocabularyFixture _assetVocabularyFixture;
 	private Locale _defaultLocale;
 	private Group _group;
 
 	@DeleteAfterTestRun
 	private List<Group> _groups;
 
-	@DeleteAfterTestRun
-	private List<User> _users;
+	private IndexedFieldsFixture _indexedFieldsFixture;
 
 }

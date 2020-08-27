@@ -1,0 +1,40 @@
+@component-name = "portal-collaboration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Util";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Quick Note Page");
+
+		Navigator.gotoPage(pageName = "Quick Note Page");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@ignore = "true"
+	@priority = "2"
+	test AddQuickNote {
+		Portlet.addPG(portletName = "Quick Note");
+
+		Navigator.gotoPage(pageName = "Quick Note Page");
+
+		QuickNote.addPG(noteContent = "Test Note Content");
+	}
+
+}

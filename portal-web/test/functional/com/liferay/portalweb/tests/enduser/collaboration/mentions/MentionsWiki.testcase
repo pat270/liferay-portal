@@ -1,9 +1,10 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property custom.properties = "default.layout.template.id=1_column";
-	property testray.component.names = "Comment,Mentions,Wiki";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}jsonws.web.service.paths.excludes=";
+	property testray.component.names = "Mentions";
 	property testray.main.component.name = "Mentions";
 
 	setUp {
@@ -13,17 +14,10 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "Wiki Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Wiki Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "Wiki Page");
@@ -38,17 +32,22 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = PropsUtil.get("email.address.4"));
 
-		User.editPasswordCP(
-			password = "password",
-			userEmailAddress = PropsUtil.get("email.address.4"),
-			userScreenName = "usersn");
+		User.logoutPG();
 
-		ProductMenu.gotoPortlet(
+		User.loginPG(
+			password = "test",
+			userEmailAddress = PropsUtil.get("email.address.4"));
+
+		User.logoutPG();
+
+		User.loginPG();
+
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -57,8 +56,8 @@ definition {
 			roleTitle = "Administrator",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Server Administration");
 
@@ -68,8 +67,8 @@ definition {
 
 		Navigator.gotoPage(pageName = "Wiki Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Virtual Instances");
 
@@ -89,7 +88,7 @@ definition {
 		else {
 			WikiPage.tearDownCP();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Page.tearDownCP();
 		}
@@ -103,7 +102,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Wiki");
 
 		WikiNavigator.gotoNode(wikiNodeName = "Main");
@@ -115,6 +113,8 @@ definition {
 		WikiEntry.addPageTitle(wikiPageTitle = "Wiki Page Title");
 
 		WikiEntry.addPageContent(wikiPageContent = "Wiki Page Content");
+
+		SelectFrame(value1 = "relative=top");
 
 		PortletEntry.publish();
 
@@ -137,4 +137,5 @@ definition {
 			mentionsUserFullName = "userfn userln",
 			mentionsUserScreenName = "usersn");
 	}
+
 }

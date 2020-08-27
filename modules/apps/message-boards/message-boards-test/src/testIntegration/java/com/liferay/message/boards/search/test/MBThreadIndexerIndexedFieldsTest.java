@@ -26,21 +26,23 @@ import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +58,7 @@ import org.junit.runner.RunWith;
  * @author Luan Maoski
  */
 @RunWith(Arquillian.class)
+@Sync
 public class MBThreadIndexerIndexedFieldsTest {
 
 	@ClassRule
@@ -77,7 +80,7 @@ public class MBThreadIndexerIndexedFieldsTest {
 	@Test
 	public void testIndexedFields() throws Exception {
 		MBMessage mbMessage = mbFixture.createMBMessageWithCategory(
-			RandomTestUtil.randomString(), _user.getUserId());
+			RandomTestUtil.randomString());
 
 		MBThread mbThread = mbMessage.getThread();
 
@@ -91,6 +94,9 @@ public class MBThreadIndexerIndexedFieldsTest {
 		FieldValuesAssert.assertFieldValues(
 			_expectedFieldValues(mbThread, mbMessage), document, searchTerm);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void setUpIndexedFieldsFixture() {
 		indexedFieldsFixture = new IndexedFieldsFixture(
@@ -142,26 +148,37 @@ public class MBThreadIndexerIndexedFieldsTest {
 			MBThread mbThread, MBMessage mbMessage)
 		throws Exception {
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = HashMapBuilder.put(
+			Field.COMPANY_ID, String.valueOf(mbThread.getCompanyId())
+		).put(
+			Field.ENTRY_CLASS_NAME, MBThread.class.getName()
+		).put(
+			Field.ENTRY_CLASS_PK, String.valueOf(mbThread.getThreadId())
+		).put(
+			Field.GROUP_ID, String.valueOf(mbThread.getGroupId())
+		).put(
+			Field.SCOPE_GROUP_ID, String.valueOf(mbThread.getGroupId())
+		).put(
+			Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup())
+		).put(
+			Field.STATUS, String.valueOf(mbThread.getStatus())
+		).put(
+			Field.USER_ID, String.valueOf(mbThread.getUserId())
+		).put(
+			Field.USER_NAME, StringUtil.lowerCase(mbThread.getUserName())
+		).put(
+			"discussion", "false"
+		).put(
+			"lastPostDate",
+			() -> {
+				Date lastPostDate = mbThread.getLastPostDate();
 
-		map.put(Field.COMPANY_ID, String.valueOf(mbThread.getCompanyId()));
-		map.put(Field.ENTRY_CLASS_PK, String.valueOf(mbThread.getThreadId()));
-		map.put(Field.ENTRY_CLASS_NAME, MBThread.class.getName());
-		map.put(Field.GROUP_ID, String.valueOf(mbThread.getGroupId()));
-		map.put(Field.SCOPE_GROUP_ID, String.valueOf(mbThread.getGroupId()));
-		map.put(Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup()));
-		map.put(Field.STATUS, String.valueOf(mbThread.getStatus()));
-		map.put(Field.USER_ID, String.valueOf(mbThread.getUserId()));
-		map.put(Field.USER_NAME, StringUtil.lowerCase(mbThread.getUserName()));
-		map.put("discussion", "false");
-
-		Date lastPostDate = mbThread.getLastPostDate();
-
-		map.put("lastPostDate", String.valueOf(lastPostDate.getTime()));
-
-		map.put(
+				return String.valueOf(lastPostDate.getTime());
+			}
+		).put(
 			"participantUserIds",
-			String.valueOf(_getValues(mbThread.getParticipantUserIds())));
+			String.valueOf(_getValues(mbThread.getParticipantUserIds()))
+		).build();
 
 		indexedFieldsFixture.populateUID(
 			MBThread.class.getName(), mbThread.getThreadId(), map);

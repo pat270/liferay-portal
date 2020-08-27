@@ -21,6 +21,7 @@ import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileShortcutLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLFolderServiceUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.model.Group;
@@ -75,10 +76,9 @@ public class RepositoryTest {
 
 	@Test
 	public void testAddFileEntryInRepository() throws Exception {
-		long classNameId = PortalUtil.getClassNameId(LiferayRepository.class);
-
 		Repository repository = RepositoryLocalServiceUtil.addRepository(
-			TestPropsValues.getUserId(), _group.getGroupId(), classNameId,
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			PortalUtil.getClassNameId(LiferayRepository.class),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), new UnicodeProperties(), true,
@@ -142,7 +142,7 @@ public class RepositoryTest {
 				Assert.fail(
 					"Should not be able to access repository " + repositoryId);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 	}
@@ -181,10 +181,9 @@ public class RepositoryTest {
 	public void testFileEntriesAreDeletedWhenDeletingAllRepositories()
 		throws Exception {
 
-		long classNameId = PortalUtil.getClassNameId(LiferayRepository.class);
-
 		Repository dlRepository = RepositoryLocalServiceUtil.addRepository(
-			TestPropsValues.getUserId(), _group.getGroupId(), classNameId,
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			PortalUtil.getClassNameId(LiferayRepository.class),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), new UnicodeProperties(), true,
@@ -208,10 +207,11 @@ public class RepositoryTest {
 				localRepository.getFileEntry(fileEntryId);
 
 				Assert.fail(
-					"Should not be able to get file entry " + fileEntryId +
-						" from repository " + dlRepository.getRepositoryId());
+					StringBundler.concat(
+						"Should not be able to get file entry ", fileEntryId,
+						" from repository ", dlRepository.getRepositoryId()));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 	}
@@ -220,10 +220,9 @@ public class RepositoryTest {
 	public void testGetMountFoldersCountWithHiddenRepository()
 		throws Exception {
 
-		long classNameId = PortalUtil.getClassNameId(LiferayRepository.class);
-
 		RepositoryLocalServiceUtil.addRepository(
-			TestPropsValues.getUserId(), _group.getGroupId(), classNameId,
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			PortalUtil.getClassNameId(LiferayRepository.class),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), new UnicodeProperties(), true,
@@ -240,10 +239,9 @@ public class RepositoryTest {
 	public void testGetMountFoldersCountWithNotHiddenRepository()
 		throws Exception {
 
-		long classNameId = PortalUtil.getClassNameId(LiferayRepository.class);
-
 		RepositoryLocalServiceUtil.addRepository(
-			TestPropsValues.getUserId(), _group.getGroupId(), classNameId,
+			TestPropsValues.getUserId(), _group.getGroupId(),
+			PortalUtil.getClassNameId(LiferayRepository.class),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), new UnicodeProperties(), false,
@@ -293,7 +291,7 @@ public class RepositoryTest {
 				"Should not be able to get file entry from repository " +
 					_group.getGroupId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		LocalRepository localRepository =
@@ -350,7 +348,7 @@ public class RepositoryTest {
 				"Should be able to get file entry from repository " +
 					repository2.getRepositoryId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		LocalRepository localRepository =

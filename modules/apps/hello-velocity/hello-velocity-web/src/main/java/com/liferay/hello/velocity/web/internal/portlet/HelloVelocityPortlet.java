@@ -82,10 +82,9 @@ public class HelloVelocityPortlet extends VelocityPortlet {
 			PortletResponse portletResponse)
 		throws Exception {
 
-		TemplateResource templateResource = getTemplateResource(templateId);
-
 		Template template = TemplateManagerUtil.getTemplate(
-			TemplateConstants.LANG_TYPE_VM, templateResource, false);
+			TemplateConstants.LANG_TYPE_VM, getTemplateResource(templateId),
+			false);
 
 		prepareTemplate(template, portletRequest, portletResponse);
 
@@ -93,7 +92,7 @@ public class HelloVelocityPortlet extends VelocityPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.hello.velocity.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.hello.velocity.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

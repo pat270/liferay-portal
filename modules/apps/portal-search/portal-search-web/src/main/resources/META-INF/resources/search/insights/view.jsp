@@ -14,16 +14,16 @@
  */
 --%>
 
-<%@ page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
-page import="com.liferay.portal.kernel.util.Validator" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %><%@
-page import="com.liferay.portal.search.web.internal.search.insights.display.context.SearchInsightsDisplayContext" %>
-
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+
+<%@ page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.Validator" %><%@
+page import="com.liferay.portal.kernel.util.WebKeys" %><%@
+page import="com.liferay.portal.search.web.internal.search.insights.display.context.SearchInsightsDisplayContext" %>
 
 <portlet:defineObjects />
 
@@ -49,13 +49,13 @@ SearchInsightsDisplayContext searchInsightsDisplayContext = (SearchInsightsDispl
 		<div class="full-query">
 			<liferay-ui:panel-container
 				extended="<%= true %>"
-				id='<%= renderResponse.getNamespace() + "insightsPanelContainer" %>'
+				id='<%= liferayPortletResponse.getNamespace() + "insightsPanelContainer" %>'
 				markupView="lexicon"
 				persistState="<%= true %>"
 			>
 				<liferay-ui:panel
 					collapsible="<%= true %>"
-					id='<%= renderResponse.getNamespace() + "insightsRequestPanel" %>'
+					id='<%= liferayPortletResponse.getNamespace() + "insightsRequestPanel" %>'
 					markupView="lexicon"
 					persistState="<%= true %>"
 					title="request-string"
@@ -67,7 +67,7 @@ SearchInsightsDisplayContext searchInsightsDisplayContext = (SearchInsightsDispl
 
 				<liferay-ui:panel
 					collapsible="<%= true %>"
-					id='<%= renderResponse.getNamespace() + "insightsResponsePanel" %>'
+					id='<%= liferayPortletResponse.getNamespace() + "insightsResponsePanel" %>'
 					markupView="lexicon"
 					persistState="<%= true %>"
 					title="response-string"

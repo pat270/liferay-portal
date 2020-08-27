@@ -24,8 +24,6 @@ import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>DDMStructureServiceUtil</code> service
@@ -63,9 +61,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see DDMStructureServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DDMStructureServiceSoap {
 
 	public static com.liferay.dynamic.data.mapping.model.DDMStructureSoap
@@ -97,10 +96,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -131,10 +130,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -167,10 +166,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -210,10 +209,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -231,10 +230,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -254,10 +253,10 @@ public class DDMStructureServiceSoap {
 		try {
 			DDMStructureServiceUtil.deleteStructure(structureId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -284,10 +283,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -306,10 +305,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -330,10 +329,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -359,10 +358,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -402,10 +401,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -422,10 +421,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -447,10 +446,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -472,10 +471,35 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.dynamic.data.mapping.model.DDMStructureSoap[]
+			getStructures(
+				long companyId, long[] groupIds, long classNameId,
+				String keywords, int status, int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.dynamic.data.mapping.model.DDMStructure>
+						orderByComparator)
+		throws RemoteException {
+
+		try {
+			java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
+				returnValue = DDMStructureServiceUtil.getStructures(
+					companyId, groupIds, classNameId, keywords, status, start,
+					end, orderByComparator);
+
+			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
+				toSoapModels(returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -489,10 +513,28 @@ public class DDMStructureServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static int getStructuresCount(
+			long companyId, long[] groupIds, long classNameId, String keywords,
+			int status)
+		throws RemoteException {
+
+		try {
+			int returnValue = DDMStructureServiceUtil.getStructuresCount(
+				companyId, groupIds, classNameId, keywords, status);
+
+			return returnValue;
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -505,10 +547,10 @@ public class DDMStructureServiceSoap {
 			DDMStructureServiceUtil.revertStructure(
 				structureId, version, serviceContext);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -533,7 +575,7 @@ public class DDMStructureServiceSoap {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param start the lower bound of the range of structures to return
 	 * @param end the upper bound of the range of structures to return (not
@@ -560,10 +602,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -613,10 +655,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -643,7 +685,7 @@ public class DDMStructureServiceSoap {
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
@@ -674,10 +716,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -705,10 +747,10 @@ public class DDMStructureServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -723,7 +765,7 @@ public class DDMStructureServiceSoap {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @return the number of matching structures
 	 */
@@ -738,10 +780,10 @@ public class DDMStructureServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -759,7 +801,7 @@ public class DDMStructureServiceSoap {
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
 	 * @return the number of matching structures
@@ -777,10 +819,10 @@ public class DDMStructureServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -812,10 +854,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -846,10 +888,10 @@ public class DDMStructureServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.DDMStructureSoap.
 				toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

@@ -16,8 +16,10 @@ package com.liferay.asset.list.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -36,7 +38,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetListEntrySegmentsEntryRelModel
-	extends BaseModel<AssetListEntrySegmentsEntryRel>, ShardedModel,
+	extends BaseModel<AssetListEntrySegmentsEntryRel>,
+			CTModel<AssetListEntrySegmentsEntryRel>, MVCCModel, ShardedModel,
 			StagedGroupedModel {
 
 	/*
@@ -50,6 +53,7 @@ public interface AssetListEntrySegmentsEntryRelModel
 	 *
 	 * @return the primary key of this asset list entry segments entry rel
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -57,7 +61,40 @@ public interface AssetListEntrySegmentsEntryRelModel
 	 *
 	 * @param primaryKey the primary key of this asset list entry segments entry rel
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset list entry segments entry rel.
+	 *
+	 * @return the mvcc version of this asset list entry segments entry rel
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset list entry segments entry rel.
+	 *
+	 * @param mvccVersion the mvcc version of this asset list entry segments entry rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset list entry segments entry rel.
+	 *
+	 * @return the ct collection ID of this asset list entry segments entry rel
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset list entry segments entry rel.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset list entry segments entry rel
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this asset list entry segments entry rel.

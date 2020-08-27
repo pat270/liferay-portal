@@ -27,15 +27,15 @@ else {
 }
 
 assetTags = ListUtil.sort(assetTags);
-
-Map<String, Object> contextObjects = new HashMap<String, Object>();
-
-contextObjects.put("scopeGroupId", Long.valueOf(scopeGroupId));
 %>
 
 <liferay-ddm:template-renderer
 	className="<%= AssetTag.class.getName() %>"
-	contextObjects="<%= contextObjects %>"
+	contextObjects='<%=
+		HashMapBuilder.<String, Object>put(
+			"scopeGroupId", Long.valueOf(scopeGroupId)
+		).build()
+	%>'
 	displayStyle="<%= displayStyle %>"
 	displayStyleGroupId="<%= displayStyleGroupId %>"
 	entries="<%= assetTags %>"

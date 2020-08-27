@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing LayoutPrototype in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutPrototypeCacheModel
 	implements CacheModel<LayoutPrototype>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LayoutPrototypeCacheModel)) {
+		if (!(object instanceof LayoutPrototypeCacheModel)) {
 			return false;
 		}
 
 		LayoutPrototypeCacheModel layoutPrototypeCacheModel =
-			(LayoutPrototypeCacheModel)obj;
+			(LayoutPrototypeCacheModel)object;
 
 		if ((layoutPrototypeId ==
 				layoutPrototypeCacheModel.layoutPrototypeId) &&
@@ -179,7 +176,9 @@ public class LayoutPrototypeCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
@@ -191,8 +190,8 @@ public class LayoutPrototypeCacheModel
 		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
-		name = objectInput.readUTF();
-		description = objectInput.readUTF();
+		name = (String)objectInput.readObject();
+		description = (String)objectInput.readObject();
 		settings = objectInput.readUTF();
 
 		active = objectInput.readBoolean();
@@ -226,17 +225,17 @@ public class LayoutPrototypeCacheModel
 		objectOutput.writeLong(modifiedDate);
 
 		if (name == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(name);
+			objectOutput.writeObject(name);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(description);
+			objectOutput.writeObject(description);
 		}
 
 		if (settings == null) {

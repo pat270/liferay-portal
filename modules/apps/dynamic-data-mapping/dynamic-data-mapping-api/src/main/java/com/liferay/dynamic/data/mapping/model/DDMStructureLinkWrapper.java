@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMStructureLink
  * @generated
  */
-@ProviderType
 public class DDMStructureLinkWrapper
 	extends BaseModelWrapper<DDMStructureLink>
 	implements DDMStructureLink, ModelWrapper<DDMStructureLink> {
@@ -44,6 +43,8 @@ public class DDMStructureLinkWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("structureLinkId", getStructureLinkId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("classNameId", getClassNameId());
@@ -55,6 +56,18 @@ public class DDMStructureLinkWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long structureLinkId = (Long)attributes.get("structureLinkId");
 
 		if (structureLinkId != null) {
@@ -124,6 +137,26 @@ public class DDMStructureLinkWrapper
 	@Override
 	public long getCompanyId() {
 		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the ct collection ID of this ddm structure link.
+	 *
+	 * @return the ct collection ID of this ddm structure link
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
+	 * Returns the mvcc version of this ddm structure link.
+	 *
+	 * @return the mvcc version of this ddm structure link
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -204,6 +237,26 @@ public class DDMStructureLinkWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this ddm structure link.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm structure link
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm structure link.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm structure link
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the primary key of this ddm structure link.
 	 *
 	 * @param primaryKey the primary key of this ddm structure link
@@ -231,6 +284,20 @@ public class DDMStructureLinkWrapper
 	@Override
 	public void setStructureLinkId(long structureLinkId) {
 		model.setStructureLinkId(structureLinkId);
+	}
+
+	@Override
+	public Map<String, Function<DDMStructureLink, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMStructureLink, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

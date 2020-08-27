@@ -1,6 +1,7 @@
 @default = "click"
 @summary = "Click on '${locator1}'"
 definition {
+
 	function click {
 		WaitForSPARefresh();
 
@@ -19,6 +20,20 @@ definition {
 		WaitForSPARefresh();
 
 		selenium.waitForVisible();
+
+		selenium.mouseOver();
+
+		selenium.clickAt();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function clickAtNotVisible {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent();
 
 		selenium.mouseOver();
 
@@ -113,6 +128,16 @@ definition {
 		selenium.click();
 	}
 
+	function javaScriptClick {
+		WaitForSPARefresh();
+
+		selenium.javaScriptClick();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
 	function mouseDownMouseUp {
 		WaitForSPARefresh();
 
@@ -165,10 +190,10 @@ definition {
 		selenium.selectFrame("relative=top");
 
 		selenium.waitForElementPresent(
-			"//script[contains(@src,'/o/frontend-js-web/liferay/menu_toggle.js')]"
+			"//script[contains(@src,'/o/frontend-js-aui-web/liferay/menu_toggle.js')]"
 		);
 
-		if (selenium.isElementPresent("//iframe")) {
+		if (selenium.isElementPresent("//iframe[not(contains(@class,'hidden'))]")) {
 			selenium.selectFrame("//iframe");
 		}
 
@@ -180,4 +205,21 @@ definition {
 
 		selenium.assertLiferayErrors();
 	}
+
+	function waitForPersonalMenuJSClick {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent(
+			"//script[contains(@src,'personal_menu/js/PersonalMenu.es.js')]"
+		);
+
+		selenium.pause("3000");
+
+		Click();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
 }

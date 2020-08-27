@@ -18,6 +18,7 @@ import com.liferay.knowledge.base.model.KBComment;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,30 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KBComment in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KBCommentCacheModel
-	implements CacheModel<KBComment>, Externalizable {
+	implements CacheModel<KBComment>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KBCommentCacheModel)) {
+		if (!(object instanceof KBCommentCacheModel)) {
 			return false;
 		}
 
-		KBCommentCacheModel kbCommentCacheModel = (KBCommentCacheModel)obj;
+		KBCommentCacheModel kbCommentCacheModel = (KBCommentCacheModel)object;
 
-		if (kbCommentId == kbCommentCacheModel.kbCommentId) {
+		if ((kbCommentId == kbCommentCacheModel.kbCommentId) &&
+			(mvccVersion == kbCommentCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,28 @@ public class KBCommentCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, kbCommentId);
+		int hashCode = HashUtil.hash(0, kbCommentId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(29);
+		StringBundler sb = new StringBundler(31);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", kbCommentId=");
 		sb.append(kbCommentId);
@@ -102,6 +116,8 @@ public class KBCommentCacheModel
 	@Override
 	public KBComment toEntityModel() {
 		KBCommentImpl kbCommentImpl = new KBCommentImpl();
+
+		kbCommentImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			kbCommentImpl.setUuid("");
@@ -164,6 +180,7 @@ public class KBCommentCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		kbCommentId = objectInput.readLong();
@@ -190,6 +207,8 @@ public class KBCommentCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -232,6 +251,7 @@ public class KBCommentCacheModel
 		objectOutput.writeInt(status);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long kbCommentId;
 	public long groupId;

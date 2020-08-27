@@ -16,12 +16,9 @@ package com.liferay.marketplace.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Ryan Park
  */
-@ProviderType
 public class AppTitleException extends PortalException {
 
 	public AppTitleException() {
@@ -31,12 +28,12 @@ public class AppTitleException extends PortalException {
 		super(msg);
 	}
 
-	public AppTitleException(String msg, Throwable cause) {
-		super(msg, cause);
+	public AppTitleException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public AppTitleException(Throwable cause) {
-		super(cause);
+	public AppTitleException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

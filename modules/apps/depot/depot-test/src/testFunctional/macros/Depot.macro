@@ -1,0 +1,907 @@
+definition {
+
+	macro addDepot {
+		LexiconEntry.gotoAdd();
+
+		Type(
+			locator1 = "TextInput#NAME",
+			value1 = "${depotName}");
+
+		Button.clickSave();
+
+		if ("${depot}" == "Duplicate") {
+			AssertTextEquals(
+				locator1 = "Message#ERROR_FORM_FIELD_REQUIRED",
+				value1 = "Please enter a unique name.");
+		}
+		else {
+			Alert.viewSuccessMessageText(successMessage = "Asset Library was added.");
+
+			AssertTextEquals(
+				locator1 = "ControlMenu#HEADING",
+				value1 = "${depotName}");
+
+			if (isSet(depotDescription)) {
+				Type(
+					locator1 = "TextArea#DESCRIPTION",
+					value1 = "${depotDescription}");
+			}
+
+			Button.clickSave();
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro assignAssetLibraryRole {
+		LexiconCard.clickEllipsisItem(
+			card = "${resourceName}",
+			item = "Assign Roles");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconCard.checkCardCheckbox(card = "${roleTitle}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignOrganizationAsMember {
+		var key_card = "${orgName}";
+
+		Navigator.gotoNavItem(navItem = "Organizations");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		AssertTextEquals(
+			locator1 = "Card#CARD_TITLE",
+			value1 = "${orgName}");
+
+		LexiconCard.checkCardCheckbox(card = "${orgName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignUserAsMember {
+		var key_cardText = "${userScreenName}";
+
+		LexiconEntry.gotoAdd();
+
+		AssertVisible(locator1 = "Button#DONE");
+
+		if (isSet(depotName)) {
+			SelectFrame(locator1 = "IFrame#ADD_USERS_TO_ASSET_LIBRARY");
+		}
+
+		else {
+			SelectFrame(locator1 = "IFrame#ADD_USERS_TO_SITE");
+		}
+
+		Pause(locator1 = "3000");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		if (isSet(userMiddleName)) {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userMiddleName} ${userLastName}");
+		}
+		else {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userLastName}");
+		}
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro assignUserGroupAsMember {
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		Pause(locator1 = "3000");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Pause(locator1 = "3000");
+
+		LexiconEntry.selectEntry(rowEntry = "${userGroupName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro changeLanguagesOrder {
+		var key_fromRowNumber = "${fromRowNumber}";
+		var key_toRowNumber = "${toRowNumber}";
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_ORDER_FROM",
+			locator2 = "LanguageConfiguration#DEPOT_LANGUAGE_ORDER_TO",
+			value1 = "");
+	}
+
+	macro configureApplication {
+		if ("${status}" == "Enabled") {
+			for (var applicationList : list "${applicationList}") {
+				Check(
+					checkboxName = "${applicationList}",
+					locator1 = "Checkbox#ANY_CHECKBOX");
+			}
+		}
+		else if ("${status}" == "Disabled") {
+			for (var applicationList : list "${applicationList}") {
+				Uncheck(
+					checkboxName = "${applicationList}",
+					locator1 = "Checkbox#ANY_CHECKBOX");
+			}
+		}
+
+		PortletEntry.save();
+	}
+
+	macro configureAutoTagging {
+		if ("${autoTagging}" == "Enabled") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Enable Auto Tagging of Assets on This Asset Library",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${autoTagging}" == "Disabled") {
+			Uncheck.uncheckToggleSwitch(
+				key_toggleSwitchLabel = "Enable Auto Tagging of Assets on This Asset Library",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro configureCurrentLanguages {
+		for (var language : list "English (United States),Arabic (Saudi Arabia),Catalan (Spain),Chinese (China),Dutch (Netherlands),Finnish (Finland),French (France),German (Germany),Hungarian (Hungary),Japanese (Japan),Portuguese (Brazil),Spanish (Spain),Swedish (Sweden)") {
+			if ("${language}" != "${defaultDepotLanguage}") {
+				if (IsElementPresent(locator1 = "Checkbox#DEPOT_LANGUAGE_CHECKBOX_CHECKED", key_language = "${language}")) {
+					Click.clickNoMouseOverNoWaitForVisible(
+						key_language = "${language}",
+						locator1 = "Checkbox#DEPOT_LANGUAGE_CHECKBOX");
+				}
+			}
+		}
+
+		for (var currentLanguage : list "${currentLanguages}" ) {
+			if ("${currentLanguage}" != "${defaultDepotLanguage}") {
+				Click.clickNoMouseOverNoWaitForVisible(
+					key_language = "${currentLanguage}",
+					locator1 = "Checkbox#DEPOT_LANGUAGE_CHECKBOX");
+			}
+		}
+
+		Button.click(button = "Done");
+	}
+
+	macro configureDDMStructures {
+		DepotNavigator.gotoEdit(depotName = "${depotName}");
+
+		DepotNavigator.gotoSites(depotName = "${depotName}");
+
+		if (isSet(makeWCUnavailable)) {
+			LexiconTable.clickEllipsisItem(
+				item = "Make Web Content Structures Unavailable",
+				tableEntry = "${siteName}");
+
+			AssertConfirm(value1 = "After disabling structure sharing, any site content that uses the structures will be invalid. Do you want to disable structure sharing?");
+
+			Alert.viewSuccessMessage();
+
+			AssertTextEquals(
+				key_tableEntry = "${siteName}",
+				key_tableEntryText = "${tableEntryText}",
+				locator1 = "LexiconTable#TABLE_ENTRY_TEXT",
+				value1 = "${tableEntryText}");
+		}
+		else {
+			LexiconTable.clickEllipsisItem(
+				item = "Make Web Content Structures Available",
+				tableEntry = "${siteName}");
+
+			AssertConfirm(value1 = "You will not be able to disconnect this site when structure sharing is enabled. In order to disconnect this site from this asset library, you must disable structure sharing first.");
+
+			Alert.viewSuccessMessage();
+
+			AssertTextEquals(
+				key_tableEntry = "${siteName}",
+				key_tableEntryText = "${tableEntryText}",
+				locator1 = "LexiconTable#TABLE_ENTRY_TEXT_2",
+				value1 = "${tableEntryText}");
+
+			if (isSet(disconnectDisabled)) {
+				Click.waitForMenuToggleJSClick(
+					key_tableEntry = "${siteName}",
+					locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+				AssertElementPresent(
+					key_menuItem = "Disconnect",
+					locator1 = "MenuItem#DISABLED_MENU_ITEM_2");
+			}
+		}
+	}
+
+	macro configureDefaultLanguage {
+		Click(
+			key_language = "${defaultDepotLanguage}",
+			locator1 = "Icon#DEPOT_LANGUAGES_ELLIPSIS");
+
+		Click.clickNoMouseOverNoWaitForVisible(
+			key_language = "${locale}",
+			locator1 = "Button#MAKE_DEFAULT");
+
+		Button.click(button = "Save");
+
+		AssertTextEquals.assertPartialText(
+			key_language = "${defaultDepotLanguage}",
+			locator1 = "LanguageConfiguration#DEPOT_DEFAULT_LANGUAGE",
+			value1 = "${defaultDepotLanguage}");
+	}
+
+	macro configureDirectoryIndexing {
+		if ("${directoryIndexing}" == "Enabled") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Enable Directory Indexing",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${directoryIndexing}" == "Disabled") {
+			Uncheck.uncheckToggleSwitch(
+				key_toggleSwitchLabel = "Enable Directory Indexing",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro configureRecycleBin {
+		Panel.expandPanel(panel = "Recycle Bin");
+
+		if ("${recycleBin}" == "Enabled") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Enable Recycle Bin",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${recycleBin}" == "Disabled") {
+			Uncheck.uncheckToggleSwitchNoErrorNoAssert(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
+
+			AssertConfirm(value1 = "Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin.");
+
+			AssertNotChecked.assertNotCheckedNotVisible(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro configureSearch {
+		for (var siteName : list "${siteList}") {
+			DepotNavigator.gotoEdit(depotName = "${depotName}");
+
+			DepotNavigator.gotoSites(depotName = "${depotName}");
+
+			LexiconTable.clickEllipsisItem(
+				item = "${item}",
+				tableEntry = "${siteName}");
+
+			SelectFrame(value1 = "relative=top");
+
+			Alert.viewSuccessMessage();
+
+			AssertTextEquals(
+				key_tableEntry = "${siteName}",
+				key_tableEntryText = "${tableEntryText}",
+				locator1 = "LexiconTable#TABLE_ENTRY_TEXT",
+				value1 = "${tableEntryText}");
+		}
+	}
+
+	macro configureSharing {
+		if ("${sharing}" == "Enabled") {
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Enable Sharing",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+		else if ("${sharing}" == "Disabled") {
+			Uncheck.uncheckToggleSwitch(
+				key_toggleSwitchLabel = "Enable Sharing",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro connectSite {
+		for (var siteName : list "${siteList}") {
+			Button.clickAdd();
+
+			SelectFrame(locator1 = "IFrame#SELECT_SITES");
+
+			Pause(locator1 = "3000");
+
+			Navigator.gotoNavItem(navItem = "My Sites");
+
+			SiteSelector.selectSite(site = "${siteName}");
+
+			SelectFrame(value1 = "relative=top");
+
+			Alert.viewSuccessMessage();
+
+			AssertElementPresent.pauseAssertVisible(
+				key_tableEntry = "${siteName}",
+				locator1 = "LexiconTable#TABLE_ENTRY");
+		}
+	}
+
+	macro deleteContentViaBulkEditing {
+		if (isSet(recycleBinDisabled)) {
+			ClickNoError(locator1 = "Icon#DELETE");
+
+			AssertConfirm(value1 = "Are you sure you want to delete the selected entries? They will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+		else {
+			ClickNoError(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
+
+			if (isSet(webContent)) {
+				AssertConfirm(value1 = "Are you sure you want to move the selected entries to the Recycle Bin?");
+			}
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro deleteCP {
+		if (isSet(deletions)) {
+			ClickNoError(locator1 = "Icon#DELETE");
+		}
+
+		else {
+			LexiconEntry.gotoEntryMenuItemNoError(
+				menuItem = "Delete",
+				rowEntry = "${depotName}");
+		}
+
+		AssertConfirm(value1 = "Removing an asset library can affect sites that use the contents stored in it. Are you sure you want to continue removing this asset library?");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro disconnectSite {
+		for (var siteName : list "${siteList}") {
+			LexiconTable.clickEllipsisItem(
+				item = "Disconnect",
+				tableEntry = "${siteName}");
+
+			AssertConfirm(value1 = "Removing this site connection will not allow the site to consume data from this asset library directly.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro editDepot {
+		if (isSet(listView)) {
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			Click(
+				key_listEntry = "${depotName}",
+				locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		else if (isSet(tableView)) {
+			LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+			Click(
+				key_tableEntry = "${depotName}",
+				locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Edit");
+		}
+
+		else if (isSet(settings)) {
+			AssertElementNotPresent(locator1 = "Button#BACK");
+		}
+
+		else {
+			DepotNavigator.gotoEdit(depotName = "${depotName}");
+		}
+
+		if (isSet(depotNameEdit)) {
+			if (isSet(language)) {
+				PortletEntry.changeLocale(
+					fieldName = "Name",
+					locale = "${language}");
+
+				Type(
+					locator1 = "TextInput#NAME",
+					value1 = "${depotNameEdit}");
+			}
+			else {
+				Type(
+					locator1 = "TextInput#NAME",
+					value1 = "${depotNameEdit}");
+			}
+		}
+
+		if (isSet(depotDescriptionEdit)) {
+			Type(
+				locator1 = "TextArea#DESCRIPTION",
+				value1 = "${depotDescriptionEdit}");
+		}
+
+		Button.clickSave();
+
+		if ("${depot}" == "Duplicate") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR",
+				value1 = "Please enter a unique name.");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro moveLanguage {
+		Click(
+			key_language = "${depotLanguage}",
+			locator1 = "Icon#DEPOT_LANGUAGES_ELLIPSIS");
+
+		if ("${moveDown}" == "true") {
+			MenuItem.click(menuItem = "Move Down");
+		}
+
+		else {
+			MenuItem.click(menuItem = "Move Up");
+		}
+
+		Button.click(button = "Save");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro removeMember {
+		var key_cardText = "${userScreenName}";
+
+		Search.searchCP(searchTerm = "${userScreenName}");
+
+		if (isSet(userMiddleName)) {
+			LexiconCard.viewCardTitle(card = "${userFirstName} ${userMiddleName} ${userLastName}");
+		}
+		else {
+			LexiconCard.viewCardTitle(card = "${userFirstName} ${userLastName}");
+		}
+
+		LexiconCard.viewCardSubtitle(
+			card = "${userFirstName} ${userLastName}",
+			cardSubtitle = "${userScreenName}");
+
+		LexiconCard.clickEllipsisItem(
+			card = "${userScreenName}",
+			item = "Remove Membership");
+
+		Confirm();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro removeOrganization {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		if (isSet(bulkEditing)) {
+			for (var orgName : list "${orgNameList}") {
+				Check(
+					key_tableEntry = "${userGroupName}",
+					locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+			}
+
+			ClickNoError(locator1 = "Icon#DELETE");
+		}
+		else {
+			Search.searchCP(searchTerm = "${orgName}");
+
+			LexiconTable.clickEllipsisItem(
+				item = "Remove Membership",
+				tableEntry = "${orgName}");
+		}
+
+		Confirm();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro removeUserGroup {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		if (isSet(bulkEditing)) {
+			for (var userGroupName : list "${userGroupNameList}") {
+				Check(
+					key_tableEntry = "${userGroupName}",
+					locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+			}
+
+			ClickNoError(locator1 = "Icon#DELETE");
+		}
+		else {
+			Search.searchCP(searchTerm = "${userGroupName}");
+
+			Click.waitForMenuToggleJSClick(
+				key_rowEntry = "${userGroupName}",
+				locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
+
+			MenuItem.clickNoError(menuItem = "Remove Membership");
+		}
+
+		Confirm();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro view4LanguagesOrder {
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_1",
+			value1 = "${localizationName1}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_2",
+			value1 = "${localizationName2}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_3",
+			value1 = "${localizationName3}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "LanguageConfiguration#DEPOT_LANGUAGE_LOCALIZATION_NAME_4",
+			value1 = "${localizationName4}");
+	}
+
+	macro viewApplication {
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		Click(
+			key_card = "${depotName}",
+			locator1 = "Card#CARD_TITLE");
+
+		if (isSet(noApplication)) {
+			for (var applicationList : list "${applicationList}") {
+				AssertElementNotPresent(
+					key_card = "${applicationList}",
+					locator1 = "Card#CARD");
+			}
+		}
+		else {
+			for (var applicationList : list "${applicationList}") {
+				AssertVisible(
+					key_card = "${applicationList}",
+					locator1 = "Card#CARD");
+			}
+		}
+	}
+
+	macro viewConnectedSite {
+		for (var siteName : list "${siteList}") {
+			AssertElementPresent(
+				key_tableEntry = "${siteName}",
+				locator1 = "LexiconTable#TABLE_ENTRY");
+
+			AssertTextEquals(
+				key_tableEntry = "${siteName}",
+				key_tableEntryText = "Yes",
+				locator1 = "LexiconTable#TABLE_ENTRY_TEXT",
+				value1 = "Yes");
+		}
+	}
+
+	macro viewConnectedSiteNumber {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		if ("${connectedSiteNumber}" == "1") {
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${depotName}",
+				listEntrySubtitle = "${connectedSiteNumber} Connected Site");
+		}
+		else {
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${depotName}",
+				listEntrySubtitle = "${connectedSiteNumber} Connected Sites");
+		}
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+	}
+
+	macro viewCurrentLanguages {
+		for (var currentLanguage : list "${currentLanguages}") {
+			AssertTextEquals.assertPartialText(
+				key_language = "${currentLanguage}",
+				locator1 = "LanguageConfiguration#DEPOT_AVAILABLE_LANGUAGES",
+				value1 = "${currentLanguage}");
+		}
+
+		Button.click(button = "Edit");
+
+		for (var currentLanguage : list "${currentLanguages}") {
+			AssertChecked.assertCheckedNotVisible(
+				key_language = "${currentLanguage}",
+				locator1 = "Checkbox#DEPOT_LANGUAGE_CHECKBOX");
+		}
+
+		Click(locator1 = "Icon#TIMES");
+	}
+
+	macro viewDefaultCP {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No asset libraries were found.");
+	}
+
+	macro viewDefaultLanguage {
+		AssertTextEquals.assertPartialText(
+			key_language = "${defaultDepotLanguage}",
+			locator1 = "LanguageConfiguration#DEPOT_DEFAULT_LANGUAGE",
+			value1 = "${defaultDepotLanguage}");
+
+		Button.click(button = "Edit");
+
+		AssertTextEquals.assertPartialText(
+			key_language = "${defaultDepotLanguage}",
+			locator1 = "LanguageConfiguration#DEPOT_MANAGEMENT_PANEL_DEFAULT_LANGUAGE",
+			value1 = "${defaultDepotLanguage}");
+
+		AssertElementPresent(
+			key_language = "${defaultDepotLanguage}",
+			locator1 = "Checkbox#DEPOT_DEFAULT_LANGUAGE_CHECKBOX_DISABLED");
+
+		Click(locator1 = "Icon#TIMES");
+	}
+
+	macro viewDefaultLanguagesConfiguration {
+		AssertChecked.assertCheckedNotVisible(
+			key_languagesOption = "Use the default language options.",
+			locator1 = "Radio#DEPOT_LANGUAGES_OPTION");
+
+		AssertNotChecked.assertNotCheckedNotVisible(
+			key_languagesOption = "Define a custom default language and additional active languages for this asset library.",
+			locator1 = "Radio#DEPOT_LANGUAGES_OPTION");
+
+		AssertTextEquals.assertPartialText(
+			key_language = "English (United States)",
+			locator1 = "LanguageConfiguration#DEPOT_DEFAULT_LANGUAGE",
+			value1 = "English (United States)");
+
+		for (var language : list "English (United States),Arabic (Saudi Arabia),Catalan (Spain),Chinese (China),Dutch (Netherlands),Finnish (Finland),French (France),German (Germany),Hungarian (Hungary),Japanese (Japan),Portuguese (Brazil),Spanish (Spain),Swedish (Sweden)") {
+			AssertTextEquals.assertPartialText(
+				key_language = "${language}",
+				locator1 = "LanguageConfiguration#DEPOT_AVAILABLE_LANGUAGES",
+				value1 = "${language}");
+		}
+
+		AssertElementPresent(locator1 = "Button#SAVE");
+	}
+
+	macro viewDMWorkflowPresent {
+		DMFolder.gotoEditCP(folderName = "${dmFolderName}");
+
+		if (IsElementNotPresent.isNotVisible(locator1 = "Radio#WORKFLOW_PARENT_FOLDER")) {
+			Click(locator1 = "DocumentsAndMediaEditFolder#WORKFLOW_DOCUMENT_TYPE_RESTRICTIONS_TOGGLE");
+		}
+
+		AssertVisible(locator1 = "Radio#WORKFLOW_PARENT_FOLDER");
+
+		AssertVisible(locator1 = "Radio#WORKFLOW_SPECIFIC_RESTRICTIONS");
+
+		AssertVisible(locator1 = "Radio#WORKFLOW_DEFAULT_WORKFLOW");
+	}
+
+	macro viewDocumentInFTP {
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/documents/${depotName}");
+
+		if (isSet(dmFolderName)) {
+			Click(
+				key_text = "${dmFolderName}",
+				locator1 = "Link#ANY");
+		}
+
+		AssertTextEquals(
+			key_text = "${dmDocumentTitle}",
+			locator1 = "Link#ANY",
+			value1 = "${dmDocumentTitle}");
+	}
+
+	macro viewGeneralLanguageOptions {
+		Page.viewFriendlyURLLanguageOptionsPG(
+			currentLanguageList = "${currentLanguageList}",
+			fieldName = "Name");
+
+		Page.viewFriendlyURLLanguageOptionsPG(
+			currentLanguageList = "${currentLanguageList}",
+			fieldName = "Description");
+	}
+
+	macro viewLanguageItems {
+		Click(
+			key_language = "${depotLanguage}",
+			locator1 = "Icon#DEPOT_LANGUAGES_ELLIPSIS");
+
+		if ("${firstLanguageItem}" == "true") {
+			MenuItem.viewNotPresent(menuItem = "Move Up");
+
+			MenuItem.viewVisible(menuItem = "Move Down");
+		}
+
+		else if ("${lastLanguageItem}" == "true") {
+			MenuItem.viewNotPresent(menuItem = "Move Down");
+
+			MenuItem.viewVisible(menuItem = "Move Up");
+		}
+
+		else {
+			MenuItem.viewVisible(menuItem = "Move Down");
+
+			MenuItem.viewVisible(menuItem = "Move Up");
+		}
+	}
+
+	macro viewLanguageOrderInWebContent {
+		Click(locator1 = "Button#LOCALIZATION_GENERIC");
+
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
+
+		Click(
+			key_portletName = "JournalPortlet_Menu",
+			locator1 = "Button#LANGUAGE_DROPDOWN");
+
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
+
+		Panel.expandPanel(panel = "Basic Information");
+
+		Click(
+			key_fieldName = "Summary",
+			locator1 = "Button#LOCALIZATION");
+
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
+
+		Panel.expandPanel(panel = "Friendly URL");
+
+		Click(
+			key_portletName = "JournalPortlet_friendlyURLMenu",
+			locator1 = "Button#LANGUAGE_DROPDOWN");
+
+		Depot.view4LanguagesOrder(
+			localizationName1 = "${localizationName1}",
+			localizationName2 = "${localizationName2}",
+			localizationName3 = "${localizationName3}",
+			localizationName4 = "${localizationName4}");
+	}
+
+	macro viewMember {
+		LexiconCard.viewCardPresent(card = "${userFirstName} ${userLastName}");
+
+		LexiconCard.viewCardTitle(card = "${userFirstName} ${userLastName}");
+
+		LexiconCard.viewCardSubtitle(
+			card = "${userFirstName} ${userLastName}",
+			cardSubtitle = "${userScreenName}");
+
+		AssertVisible(
+			key_card = "${userFirstName} ${userLastName}",
+			locator1 = "Card#CARD_ELLIPSIS");
+	}
+
+	macro viewMemberOrganization {
+		var key_tableEntry = "${orgName}";
+
+		Navigator.gotoNavItem(navItem = "Organizations");
+
+		AssertTextEquals(
+			locator1 = "LexiconTable#TABLE_ENTRY_TITLE",
+			value1 = "${orgName}");
+
+		if ("${toolTip}" == "true") {
+			MouseOver(locator1 = "Icon#TOOLTIP");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#TOOLTIP",
+				value1 = "Users are not allowed to request membership. Only site administrators can add new members.");
+		}
+	}
+
+	macro viewMemberUserGroup {
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		AssertTextEquals(
+			key_userGroupName = "${userGroupName}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_NAME",
+			value1 = "${userGroupName}");
+	}
+
+	macro viewNoConnectedSiteCP {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO_DEPOT",
+			value1 = "No sites are connected yet.");
+	}
+
+	macro viewNoDocumentInFTP {
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/documents/${depotName}");
+
+		if (isSet(dmFolderName)) {
+			Click(
+				key_text = "${dmFolderName}",
+				locator1 = "Link#ANY");
+		}
+
+		AssertElementNotPresent(
+			key_text = "${dmDocumentTitle}",
+			locator1 = "Link#ANY");
+	}
+
+	macro viewNoWorkflowResource {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No entries were found.");
+	}
+
+	macro viewSearchResult {
+		if ("${resultCount}" != "1") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "ManagementBar#SEARCH_RESULT_SUMMARY",
+				value1 = "${resultCount} Results for ${searchTerm}");
+		}
+
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "ManagementBar#SEARCH_RESULT_SUMMARY",
+				value1 = "1 Result for ${searchTerm}");
+		}
+
+		for (var depotName : list "${includedResults}") {
+			var key_card = "${depotName}";
+
+			AssertTextEquals(
+				locator1 = "Card#CARD_TITLE",
+				value1 = "${depotName}");
+		}
+
+		if (isSet(excludedResults)) {
+			for (var depotName : list "${excludedResults}") {
+				var key_card = "${depotName}";
+
+				AssertElementNotPresent(locator1 = "Card#CARD_TITLE");
+			}
+		}
+	}
+
+}

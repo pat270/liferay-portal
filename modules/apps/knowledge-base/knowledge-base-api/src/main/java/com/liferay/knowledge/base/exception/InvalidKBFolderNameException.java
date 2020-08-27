@@ -16,12 +16,9 @@ package com.liferay.knowledge.base.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class InvalidKBFolderNameException extends PortalException {
 
 	public InvalidKBFolderNameException() {
@@ -31,12 +28,12 @@ public class InvalidKBFolderNameException extends PortalException {
 		super(msg);
 	}
 
-	public InvalidKBFolderNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public InvalidKBFolderNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public InvalidKBFolderNameException(Throwable cause) {
-		super(cause);
+	public InvalidKBFolderNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

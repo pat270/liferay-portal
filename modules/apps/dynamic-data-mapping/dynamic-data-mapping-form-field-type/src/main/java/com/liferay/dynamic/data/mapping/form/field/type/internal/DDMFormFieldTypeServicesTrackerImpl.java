@@ -19,6 +19,7 @@ import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateCont
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueAccessor;
+import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueLocalizer;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueRenderer;
 import com.liferay.dynamic.data.mapping.form.field.type.DefaultDDMFormFieldValueRenderer;
 import com.liferay.dynamic.data.mapping.form.field.type.internal.util.comparator.DDMFormFieldTypeServiceWrapperDisplayOrderComparator;
@@ -154,7 +155,15 @@ public class DDMFormFieldTypeServicesTrackerImpl
 	public <T> DDMFormFieldValueAccessor<T> getDDMFormFieldValueAccessor(
 		String name) {
 
-		return _ddmFormFieldValueAccessorServiceTrackerMap.getService(name);
+		return (DDMFormFieldValueAccessor<T>)
+			_ddmFormFieldValueAccessorServiceTrackerMap.getService(name);
+	}
+
+	@Override
+	public DDMFormFieldValueLocalizer getDDMFormFieldValueLocalizer(
+		String name) {
+
+		return _ddmFormFieldValueLocalizerServiceTrackerMap.getService(name);
 	}
 
 	@Override
@@ -190,7 +199,14 @@ public class DDMFormFieldTypeServicesTrackerImpl
 
 		_ddmFormFieldValueAccessorServiceTrackerMap =
 			ServiceTrackerMapFactory.openSingleValueMap(
-				bundleContext, DDMFormFieldValueAccessor.class,
+				bundleContext,
+				(Class<DDMFormFieldValueAccessor<?>>)
+					(Class<?>)DDMFormFieldValueAccessor.class,
+				"ddm.form.field.type.name");
+
+		_ddmFormFieldValueLocalizerServiceTrackerMap =
+			ServiceTrackerMapFactory.openSingleValueMap(
+				bundleContext, DDMFormFieldValueLocalizer.class,
 				"ddm.form.field.type.name");
 
 		_ddmFormFieldValueRendererServiceTrackerMap =
@@ -209,6 +225,8 @@ public class DDMFormFieldTypeServicesTrackerImpl
 
 		_ddmFormFieldValueAccessorServiceTrackerMap.close();
 
+		_ddmFormFieldValueLocalizerServiceTrackerMap.close();
+
 		_ddmFormFieldValueRendererServiceTrackerMap.close();
 	}
 
@@ -224,8 +242,10 @@ public class DDMFormFieldTypeServicesTrackerImpl
 	private final Comparator<ServiceWrapper<DDMFormFieldType>>
 		_ddmFormFieldTypeServiceWrapperDisplayOrderComparator =
 			new DDMFormFieldTypeServiceWrapperDisplayOrderComparator();
-	private ServiceTrackerMap<String, DDMFormFieldValueAccessor>
+	private ServiceTrackerMap<String, DDMFormFieldValueAccessor<?>>
 		_ddmFormFieldValueAccessorServiceTrackerMap;
+	private ServiceTrackerMap<String, DDMFormFieldValueLocalizer>
+		_ddmFormFieldValueLocalizerServiceTrackerMap;
 	private ServiceTrackerMap<String, DDMFormFieldValueRenderer>
 		_ddmFormFieldValueRendererServiceTrackerMap;
 	private final DefaultDDMFormFieldValueRenderer

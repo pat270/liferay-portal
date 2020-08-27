@@ -57,41 +57,65 @@ String version = openSSOConfiguration.version();
 </aui:fieldset>
 
 <aui:script>
-	Liferay.provide(
-		window,
-		'<portlet:namespace />testOpenSSOSettings',
-		function() {
-			var A = AUI();
+	window['<portlet:namespace />testOpenSSOSettings'] = function () {
+		var data = {};
+		data.<portlet:namespace />openSsoLoginURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>loginURL'
+			].value;
+		data.<portlet:namespace />openSsoLogoutURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>logoutURL'
+			].value;
+		data.<portlet:namespace />openSsoServiceURL =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>serviceURL'
+			].value;
+		data.<portlet:namespace />openSsoScreenNameAttr =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>screenNameAttr'
+			].value;
+		data.<portlet:namespace />openSsoEmailAddressAttr =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>emailAddressAttr'
+			].value;
+		data.<portlet:namespace />openSsoFirstNameAttr =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>firstNameAttr'
+			].value;
+		data.<portlet:namespace />openSsoLastNameAttr =
+			document.<portlet:namespace />fm[
+				'<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>lastNameAttr'
+			].value;
 
-			var data = {};
+		var baseUrl =
+			'<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="mvcRenderCommandName" value="/portal_settings/test_opensso" /></portlet:renderURL>';
 
-			data.<portlet:namespace />openSsoLoginURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>loginURL'].value;
-			data.<portlet:namespace />openSsoLogoutURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>logoutURL'].value;
-			data.<portlet:namespace />openSsoServiceURL = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>serviceURL'].value;
-			data.<portlet:namespace />openSsoScreenNameAttr = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>screenNameAttr'].value;
-			data.<portlet:namespace />openSsoEmailAddressAttr = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>emailAddressAttr'].value;
-			data.<portlet:namespace />openSsoFirstNameAttr = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>firstNameAttr'].value;
-			data.<portlet:namespace />openSsoLastNameAttr = document.<portlet:namespace />fm['<portlet:namespace /><%= PortalSettingsOpenSSOConstants.FORM_PARAMETER_NAMESPACE %>lastNameAttr'].value;
+		var url = new URL(baseUrl);
 
-			var url = '<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="mvcRenderCommandName" value="/portal_settings/test_opensso" /></portlet:renderURL>';
+		var searchParams = Liferay.Util.objectToFormData(data);
+		searchParams.forEach(function (value, key) {
+			url.searchParams.append(key, value);
+		});
 
-			var dialog = Liferay.Util.Window.getWindow(
-				{
-					dialog: {
-						destroyOnHide: true
-					},
-					title: '<%= UnicodeLanguageUtil.get(request, "opensso") %>'
-				}
-			);
-
-			dialog.plug(
-				A.Plugin.IO,
-				{
-					data: data,
-					uri: url
-				}
-			);
-		},
-		['aui-io-plugin-deprecated', 'aui-io-request', 'liferay-util-window']
-	);
+		Liferay.Util.fetch(url)
+			.then(function (response) {
+				return response.text();
+			})
+			.then(function (text) {
+				Liferay.Util.openModal({
+					bodyHTML: text,
+					size: 'full-screen',
+					title: '<%= UnicodeLanguageUtil.get(request, "opensso") %>',
+				});
+			})
+			.catch(function (error) {
+				Liferay.Util.openToast({
+					message: Liferay.Language.get(
+						'an-unexpected-system-error-occurred'
+					),
+					type: 'danger',
+				});
+			});
+	};
 </aui:script>

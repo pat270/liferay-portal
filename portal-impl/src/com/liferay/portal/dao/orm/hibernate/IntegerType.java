@@ -41,8 +41,8 @@ public class IntegerType implements CompositeUserType, Serializable {
 	}
 
 	@Override
-	public Object deepCopy(Object obj) {
-		return obj;
+	public Object deepCopy(Object object) {
+		return object;
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class IntegerType implements CompositeUserType, Serializable {
 			value = StandardBasicTypes.INTEGER.nullSafeGet(
 				rs, names[0], session);
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		if (value == null) {

@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class FormPageContext {
+public class FormPageContext implements Cloneable {
+
+	public static FormPageContext toDTO(String json) {
+		return FormPageContextSerDes.toDTO(json);
+	}
 
 	public Boolean getEnabled() {
 		return enabled;
@@ -95,6 +99,11 @@ public class FormPageContext {
 	}
 
 	protected Boolean showRequiredFieldsWarning;
+
+	@Override
+	public FormPageContext clone() throws CloneNotSupportedException {
+		return (FormPageContext)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

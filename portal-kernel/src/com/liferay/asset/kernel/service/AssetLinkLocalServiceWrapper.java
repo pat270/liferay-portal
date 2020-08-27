@@ -14,9 +14,10 @@
 
 package com.liferay.asset.kernel.service;
 
+import com.liferay.asset.kernel.model.AssetLink;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetLinkLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetLinkLocalService
  * @generated
  */
-@ProviderType
 public class AssetLinkLocalServiceWrapper
 	implements AssetLinkLocalService, ServiceWrapper<AssetLinkLocalService> {
 
@@ -38,13 +38,15 @@ public class AssetLinkLocalServiceWrapper
 	/**
 	 * Adds the asset link to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetLink the asset link
 	 * @return the asset link that was added
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink addAssetLink(
-		com.liferay.asset.kernel.model.AssetLink assetLink) {
-
+	public AssetLink addAssetLink(AssetLink assetLink) {
 		return _assetLinkLocalService.addAssetLink(assetLink);
 	}
 
@@ -64,7 +66,7 @@ public class AssetLinkLocalServiceWrapper
 	 * @return the asset link
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink addLink(
+	public AssetLink addLink(
 			long userId, long entryId1, long entryId2, int type, int weight)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -79,34 +81,49 @@ public class AssetLinkLocalServiceWrapper
 	 * @return the new asset link
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink createAssetLink(
-		long linkId) {
-
+	public AssetLink createAssetLink(long linkId) {
 		return _assetLinkLocalService.createAssetLink(linkId);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetLinkLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
 	 * Deletes the asset link from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetLink the asset link
 	 * @return the asset link that was removed
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink deleteAssetLink(
-		com.liferay.asset.kernel.model.AssetLink assetLink) {
-
+	public AssetLink deleteAssetLink(AssetLink assetLink) {
 		return _assetLinkLocalService.deleteAssetLink(assetLink);
 	}
 
 	/**
 	 * Deletes the asset link with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param linkId the primary key of the asset link
 	 * @return the asset link that was removed
 	 * @throws PortalException if a asset link with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink deleteAssetLink(long linkId)
+	public AssetLink deleteAssetLink(long linkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetLinkLocalService.deleteAssetLink(linkId);
@@ -123,7 +140,7 @@ public class AssetLinkLocalServiceWrapper
 	 * @param link the asset link
 	 */
 	@Override
-	public void deleteLink(com.liferay.asset.kernel.model.AssetLink link) {
+	public void deleteLink(AssetLink link) {
 		_assetLinkLocalService.deleteLink(link);
 	}
 
@@ -172,6 +189,11 @@ public class AssetLinkLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetLinkLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _assetLinkLocalService.dynamicQuery();
 	}
@@ -193,7 +215,7 @@ public class AssetLinkLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -213,7 +235,7 @@ public class AssetLinkLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -262,9 +284,7 @@ public class AssetLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink fetchAssetLink(
-		long linkId) {
-
+	public AssetLink fetchAssetLink(long linkId) {
 		return _assetLinkLocalService.fetchAssetLink(linkId);
 	}
 
@@ -283,7 +303,7 @@ public class AssetLinkLocalServiceWrapper
 	 * @throws PortalException if a asset link with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink getAssetLink(long linkId)
+	public AssetLink getAssetLink(long linkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetLinkLocalService.getAssetLink(linkId);
@@ -293,7 +313,7 @@ public class AssetLinkLocalServiceWrapper
 	 * Returns a range of all the asset links.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset links
@@ -301,9 +321,7 @@ public class AssetLinkLocalServiceWrapper
 	 * @return the range of asset links
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink>
-		getAssetLinks(int start, int end) {
-
+	public java.util.List<AssetLink> getAssetLinks(int start, int end) {
 		return _assetLinkLocalService.getAssetLinks(start, end);
 	}
 
@@ -324,15 +342,13 @@ public class AssetLinkLocalServiceWrapper
 	 * @return the asset links whose first entry ID is the given entry ID
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink>
-		getDirectLinks(long entryId) {
-
+	public java.util.List<AssetLink> getDirectLinks(long entryId) {
 		return _assetLinkLocalService.getDirectLinks(entryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink>
-		getDirectLinks(long entryId, boolean excludeInvisibleLinks) {
+	public java.util.List<AssetLink> getDirectLinks(
+		long entryId, boolean excludeInvisibleLinks) {
 
 		return _assetLinkLocalService.getDirectLinks(
 			entryId, excludeInvisibleLinks);
@@ -352,33 +368,16 @@ public class AssetLinkLocalServiceWrapper
 	 the given entry ID
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink>
-		getDirectLinks(long entryId, int typeId) {
-
+	public java.util.List<AssetLink> getDirectLinks(long entryId, int typeId) {
 		return _assetLinkLocalService.getDirectLinks(entryId, typeId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink>
-		getDirectLinks(
-			long entryId, int typeId, boolean excludeInvisibleLinks) {
+	public java.util.List<AssetLink> getDirectLinks(
+		long entryId, int typeId, boolean excludeInvisibleLinks) {
 
 		return _assetLinkLocalService.getDirectLinks(
 			entryId, typeId, excludeInvisibleLinks);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
-		getExportActionbleDynamicQuery(
-			com.liferay.exportimport.kernel.lar.PortletDataContext
-				portletDataContext) {
-
-		return _assetLinkLocalService.getExportActionbleDynamicQuery(
-			portletDataContext);
 	}
 
 	@Override
@@ -397,14 +396,12 @@ public class AssetLinkLocalServiceWrapper
 	 ID
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
-		long entryId) {
-
+	public java.util.List<AssetLink> getLinks(long entryId) {
 		return _assetLinkLocalService.getLinks(entryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
+	public java.util.List<AssetLink> getLinks(
 		long groupId, java.util.Date startDate, java.util.Date endDate,
 		int start, int end) {
 
@@ -426,9 +423,7 @@ public class AssetLinkLocalServiceWrapper
 	 entry ID is the given entry ID
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
-		long entryId, int typeId) {
-
+	public java.util.List<AssetLink> getLinks(long entryId, int typeId) {
 		return _assetLinkLocalService.getLinks(entryId, typeId);
 	}
 
@@ -440,9 +435,7 @@ public class AssetLinkLocalServiceWrapper
 	 * @return the asset links of the given entry params
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
-		long classNameId, long classPK) {
-
+	public java.util.List<AssetLink> getLinks(long classNameId, long classPK) {
 		return _assetLinkLocalService.getLinks(classNameId, classPK);
 	}
 
@@ -456,6 +449,9 @@ public class AssetLinkLocalServiceWrapper
 		return _assetLinkLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -478,27 +474,27 @@ public class AssetLinkLocalServiceWrapper
 	 the given entry ID
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.kernel.model.AssetLink>
-		getReverseLinks(long entryId, int typeId) {
-
+	public java.util.List<AssetLink> getReverseLinks(long entryId, int typeId) {
 		return _assetLinkLocalService.getReverseLinks(entryId, typeId);
 	}
 
 	/**
 	 * Updates the asset link in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetLink the asset link
 	 * @return the asset link that was updated
 	 */
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink updateAssetLink(
-		com.liferay.asset.kernel.model.AssetLink assetLink) {
-
+	public AssetLink updateAssetLink(AssetLink assetLink) {
 		return _assetLinkLocalService.updateAssetLink(assetLink);
 	}
 
 	@Override
-	public com.liferay.asset.kernel.model.AssetLink updateLink(
+	public AssetLink updateLink(
 			long userId, long entryId1, long entryId2, int typeId, int weight)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -535,6 +531,25 @@ public class AssetLinkLocalServiceWrapper
 
 		_assetLinkLocalService.updateLinks(
 			userId, entryId, linkEntryIds, typeId);
+	}
+
+	@Override
+	public CTPersistence<AssetLink> getCTPersistence() {
+		return _assetLinkLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetLink> getModelClass() {
+		return _assetLinkLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetLink>, R, E> updateUnsafeFunction)
+		throws E {
+
+		return _assetLinkLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

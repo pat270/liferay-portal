@@ -491,6 +491,34 @@ public class ArrayUtil_IW {
 		ArrayUtil.reverse(array);
 	}
 
+	public byte[] sortedUnique(byte[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
+	public double[] sortedUnique(double[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
+	public float[] sortedUnique(float[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
+	public int[] sortedUnique(int[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
+	public long[] sortedUnique(long[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
+	public short[] sortedUnique(short[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
+	public java.lang.String[] sortedUnique(java.lang.String[] array) {
+		return ArrayUtil.sortedUnique(array);
+	}
+
 	public java.lang.Object split(java.lang.Object array, int splitSize) {
 		return ArrayUtil.split(array, splitSize);
 	}
@@ -595,6 +623,10 @@ public class ArrayUtil_IW {
 		return ArrayUtil.toArray(array);
 	}
 
+	/**
+	 * @deprecated
+	 */
+	@Deprecated
 	public java.lang.String[] toArray(java.lang.String[] array) {
 		return ArrayUtil.toArray(array);
 	}

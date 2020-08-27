@@ -20,7 +20,14 @@
 String redirect = ParamUtil.getString(request, "redirect");
 
 String modelResource = ParamUtil.getString(request, "modelResource");
+
 String modelResourceName = ResourceActionsUtil.getModelResource(request, modelResource);
+
+ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.getCompanyId(), modelResource);
+
+List<String> attributeNames = Collections.list(expandoBridge.getAttributeNames());
+
+ExpandoDisplayContext expandoDisplayContext = new ExpandoDisplayContext(request);
 
 PortletURL portletURL = renderResponse.createRenderURL();
 
@@ -33,15 +40,12 @@ portletDisplay.setURLBack(redirect);
 
 renderResponse.setTitle(modelResourceName);
 
-ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.getCompanyId(), modelResource);
+PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "custom-field"), String.valueOf(renderResponse.createRenderURL()));
 
-List<String> attributeNames = Collections.list(expandoBridge.getAttributeNames());
-
-ExpandoDisplayContext expandoDisplayContext = new ExpandoDisplayContext(request);
+PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "view-attributes"), null);
 %>
 
 <clay:navigation-bar
-	inverted="<%= true %>"
 	navigationItems='<%= expandoDisplayContext.getNavigationItems("fields") %>'
 />
 
@@ -58,6 +62,15 @@ ExpandoDisplayContext expandoDisplayContext = new ExpandoDisplayContext(request)
 <aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid-1280" method="post" name="fm">
 	<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
 	<aui:input name="columnIds" type="hidden" />
+
+	<clay:container-fluid>
+		<liferay-ui:breadcrumb
+			showCurrentGroup="<%= false %>"
+			showGuestGroup="<%= false %>"
+			showLayout="<%= false %>"
+			showPortletBreadcrumb="<%= true %>"
+		/>
+	</clay:container-fluid>
 
 	<liferay-ui:search-container
 		emptyResultsMessage='<%= LanguageUtil.format(request, "no-custom-fields-are-defined-for-x", HtmlUtil.escape(modelResourceName), false) %>'
@@ -119,7 +132,10 @@ ExpandoDisplayContext expandoDisplayContext = new ExpandoDisplayContext(request)
 			var columnIds = form.querySelector('#<portlet:namespace />columnIds');
 
 			if (columnIds) {
-				var checkedIds = Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds');
+				var checkedIds = Liferay.Util.listCheckedExcept(
+					form,
+					'<portlet:namespace />allRowIds'
+				);
 
 				columnIds.setAttribute('value', checkedIds);
 
@@ -128,7 +144,3 @@ ExpandoDisplayContext expandoDisplayContext = new ExpandoDisplayContext(request)
 		}
 	}
 </aui:script>
-
-<%
-PortalUtil.addPortletBreadcrumbEntry(request, modelResourceName, portletURL.toString());
-%>

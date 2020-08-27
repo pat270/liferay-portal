@@ -9,13 +9,48 @@
 </thead>
 <tbody>
 <tr>
+	<td>ADD_ASSIGNEE_TO_ACCOUNT</td>
+	<td>//iframe[@title='Assign ${key_assigneeType} to ${key_accountName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADD_DOMAIN</td>
+	<td>//iframe[@title='Add Domain']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADD_USERS_TO_ASSET_LIBRARY</td>
+	<td>//iframe[@title='Assign Users to This Asset Library']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADD_USERS_TO_SITE</td>
+	<td>//iframe[@title='Assign Users to This Site']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSIGN_USER</td>
+	<td>//div[contains(.,'Assign User')]//iframe</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CONFIGURATION</td>
-	<td>//div[contains(@class,'dialog-iframe-bd')]/iframe[contains(@src,'portlet_configuration')]</td>
+	<td>//div[contains(@class,'modal-body')]/iframe[contains(@src,'portlet_configuration')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CONFIGURATION_DIALOG</td>
-	<td>//iframe[contains(@id,'configurationIframeDialog')]</td>
+	<td>//div[contains(@class,'modal-body')]/iframe</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONFIRM_PASSWORD</td>
+	<td>//iframe[@title='Confirm Password']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_DIALOG</td>
+	<td>//iframe[contains(@class,'dialog-iframe-node') and contains(@id,'selectAssetList_iframe')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -44,8 +79,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EMBEDDED_VIDEO_IFRAME</td>
+	<td>//iframe[contains(@src,'embed')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>GOOGLE_DOC</td>
 	<td>//iframe[contains(@class,'google-docs')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IFRAME</td>
+	<td>//iframe</td>
 	<td></td>
 </tr>
 <tr>
@@ -70,7 +115,12 @@
 </tr>
 <tr>
 	<td>METADATA_SETS_IFRAME</td>
-	<td>//iframe[contains(@class,'dialog-iframe-node ')]</td>
+	<td>//div[contains(@class,'modal-body')]/iframe</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_BODY</td>
+	<td>//div[contains(@class,'modal-body')]/iframe</td>
 	<td></td>
 </tr>
 <tr>
@@ -104,6 +154,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SHARING</td>
+	<td>//iframe[contains(@id,'sharing')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MODAL_IFRAME</td>
 	<td>//div[contains(@class,'modal')]//iframe</td>
 	<td></td>
@@ -111,6 +166,26 @@
 <tr>
 	<td>RECAPTCHA</td>
 	<td>//iframe[contains(@src,'recaptcha')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_ACCOUNT</td>
+	<td>//iframe[@title='Select an Account']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_ACCOUNTS</td>
+	<td>//iframe[@title='Select Accounts']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_DEPOT_ROLE</td>
+	<td>//iframe[contains(@id,'selectDepotRole_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_MEDIA_GALLERY_VIDEO</td>
+	<td>//iframe[@class='image-viewer-base-image']</td>
 	<td></td>
 </tr>
 <tr>
@@ -140,12 +215,22 @@
 </tr>
 <tr>
 	<td>SELECT_STRUCTURE_FIELD</td>
-	<td>//div[contains(@class,'dialog-iframe-bd')]/iframe[contains(@src,'select_structure_field')]</td>
+	<td>//iframe[contains(@title,'Select Structure Field')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SITE_VARIATION_IFRAME</td>
 	<td>//iframe[contains(@id,'sitePagesVariationDialog_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VALID_DOMAINS</td>
+	<td>//iframe[@title='Valid Domains']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_APPLICATION</td>
+	<td>//iframe[contains(@id,'WebApplicationFrame')]</td>
 	<td></td>
 </tr>
 <tr>

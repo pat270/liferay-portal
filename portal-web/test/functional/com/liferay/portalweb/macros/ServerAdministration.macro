@@ -1,10 +1,9 @@
 definition {
+
 	macro addCategoryLogLevels {
 		Navigator.gotoNavItem(navItem = "Log Levels");
 
-		AssertClick(
-			locator1 = "NavBar#ADD_CATEGORY",
-			value1 = "Add Category");
+		LexiconEntry.gotoAdd();
 
 		Type(
 			locator1 = "ServerAdministrationLogLevels#ADD_CATEGORY_NAME_FIELD",
@@ -175,8 +174,8 @@ definition {
 	}
 
 	macro tearDownDMFileUploadSettings {
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Server Administration");
 
@@ -192,8 +191,8 @@ definition {
 	}
 
 	macro tearDownMailServerSettings {
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
 			panel = "Control Panel",
 			portlet = "Server Administration");
 
@@ -243,4 +242,20 @@ definition {
 			locator1 = "Message#SUCCESS",
 			value1 = "Your request completed successfully.");
 	}
+
+	macro viewProperties {
+		Navigator.gotoNavItem(navItem = "Properties");
+
+		var key_propertyName = "${propertyName}";
+		var key_propertyTitle = "${propertyTitle}";
+
+		AssertClick(
+			locator1 = "ServerAdministrationProperties#PORTAL_SYSTEM_PROPERTY_TITLE",
+			value1 = "${propertyTitle}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "ServerAdministrationProperties#PORTAL_SYSTEM_PROPERTY_NAME",
+			value1 = "${propertyName}");
+	}
+
 }

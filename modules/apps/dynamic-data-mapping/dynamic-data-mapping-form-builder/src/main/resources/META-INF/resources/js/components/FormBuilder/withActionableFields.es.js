@@ -1,281 +1,305 @@
-import * as FormSupport from '../Form/FormSupport.es';
-import ClayButton from 'clay-button';
-import ClayModal from 'clay-modal';
-import Component from 'metal-jsx';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {FormSupport} from 'dynamic-data-mapping-form-renderer';
 import dom from 'metal-dom';
-import {Config} from 'metal-state';
 import {EventHandler} from 'metal-events';
-import {focusedFieldStructure, pageStructure, ruleStructure} from '../../util/config.es';
+import Component from 'metal-jsx';
+import {Config} from 'metal-state';
 
-class Actions extends Component {
-	render() {
-		const {spritemap} = this.props;
+import {isFieldSetChild} from '../../util/fieldSupport.es';
+import FieldActionsDropDown from './FieldActionsDropDown.es';
+import formBuilderProps from './props.es';
 
-		return (
-			<div class="ddm-field-actions-container" ref="actionsContainer">
-				<ClayButton
-					editable={true}
-					events={{
-						click: this._handleDuplicateButtonClicked.bind(this)
-					}}
-					icon="paste"
-					monospaced={true}
-					size="sm"
-					spritemap={spritemap}
-					style="secondary"
-				/>
+const _CSS_HOVERED = 'hovered';
 
-				<ClayButton
-					editable={true}
-					events={{
-						click: this._handleDeleteButtonClicked.bind(this)
-					}}
-					icon="trash"
-					monospaced={true}
-					size="sm"
-					spritemap={spritemap}
-					style="secondary"
-				/>
-			</div>
-		);
-	}
+const ACTIONABLE_FIELDS_CONTAINER = 'ddm-actionable-fields-container';
 
-	_handleDeleteButtonClicked(event) {
-		const indexes = FormSupport.getIndexes(
-			dom.closest(event.target, '.col-ddm')
-		);
-
-		this.emit('fieldDeleted', {indexes});
-	}
-
-	_handleDuplicateButtonClicked(event) {
-		const indexes = FormSupport.getIndexes(
-			dom.closest(event.target, '.col-ddm')
-		);
-
-		this.emit(
-			'fieldDuplicated',
-			{
-				indexes
-			}
-		);
-	}
-}
-
-const withActionableFields = ChildComponent => {
+const withActionableFields = (ChildComponent) => {
 	class ActionableFields extends Component {
-		static STATE = {
-
-			/**
-			 * @default undefined
-			 * @instance
-			 * @memberof ActionableFields
-			 * @type {?array<string>}
-			 */
-
-			indexes: Config.object()
-		}
-
-		static PROPS = {
-
-			/**
-			 * @default
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {?number}
-			 */
-
-			activePage: Config.number().value(0),
-
-			/**
-			 * @default undefined
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {?string}
-			 */
-
-			defaultLanguageId: Config.string(),
-
-			/**
-			 * @default undefined
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {?string}
-			 */
-
-			editingLanguageId: Config.string(),
-
-			/**
-			 * @default []
-			 * @instance
-			 * @memberof Sidebar
-			 * @type {?(array|undefined)}
-			 */
-
-			fieldTypes: Config.array().value([]),
-
-			/**
-			 * @default {}
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {?object}
-			 */
-
-			focusedField: focusedFieldStructure.value({}),
-
-			/**
-			 * @default []
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {?array<object>}
-			 */
-
-			pages: Config.arrayOf(pageStructure).value([]),
-
-			/**
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {string}
-			 */
-
-			paginationMode: Config.string().required(),
-
-			/**
-			 * @instance
-			 * @memberof FormBuilder
-			 * @type {string}
-			 */
-
-			rules: Config.arrayOf(ruleStructure).required(),
-
-			/**
-			 * @default undefined
-			 * @instance
-			 * @memberof FormRenderer
-			 * @type {!string}
-			 */
-
-			spritemap: Config.string().required()
-		}
-
 		attached() {
 			this._eventHandler = new EventHandler();
 
 			this._eventHandler.add(
-				this.delegate('mouseenter', '.ddm-field-container', this._handleMouseEnterField.bind(this))
+				this.delegate(
+					'mouseenter',
+					'.ddm-field-container',
+					this._handleMouseEnterField.bind(this)
+				)
 			);
+
+			this._eventHandler.add(
+				this.delegate(
+					'mouseleave',
+					'.ddm-field-container',
+					this._handleMouseLeaveField.bind(this)
+				)
+			);
+		}
+
+		created() {
+			if (!this._actionableFieldsContainer) {
+				const container = document.createElement('div');
+
+				container.id = ACTIONABLE_FIELDS_CONTAINER;
+
+				document.body.appendChild(container);
+
+				this._actionableFieldsContainer = container;
+			}
 		}
 
 		disposeInternal() {
 			super.disposeInternal();
 
 			this._eventHandler.removeAllListeners();
+
+			if (this._actionableFieldsContainer) {
+				dom.exitDocument(this._actionableFieldsContainer);
+			}
 		}
 
-		getEvents() {
-			return {
-				fieldDeleted: this._handleDeleteRequest.bind(this),
-				fieldDuplicated: this._handleDuplicateRequest.bind(this)
-			};
+		hasFocusedField() {
+			const {focusedField} = this.props;
+
+			return Object.keys(focusedField).length > 0;
 		}
 
-		isActionsEnabled() {
-			const {defaultLanguageId, editingLanguageId} = this.props;
+		hideActions(actions) {
+			actions.close();
+			actions.setState({fieldName: null});
 
-			return defaultLanguageId === editingLanguageId;
+			if (actions === this.refs.hoveredFieldActions) {
+				this.setState({hoveredFieldActionsVisible: false});
+			}
 		}
 
 		render() {
-			const {spritemap} = this.props;
+			const {activePage, hoveredFieldActionsVisible} = this.state;
+			const {fieldActions, fieldTypes, pages, spritemap} = this.props;
 
 			return (
 				<div>
-					<ClayModal
-						body={Liferay.Language.get('are-you-sure-you-want-to-delete-this-field')}
+					<ChildComponent {...this.props} />
+
+					<FieldActionsDropDown
+						activePage={activePage}
 						events={{
-							clickButton: this._handleDeleteConfirmationModalButtonClicked.bind(this)
+							mouseLeave: this._handleMouseLeaveActions.bind(
+								this
+							),
 						}}
-						footerButtons={[
-							{
-								alignment: 'right',
-								label: Liferay.Language.get('dismiss'),
-								style: 'primary',
-								type: 'close'
-							},
-							{
-								alignment: 'right',
-								label: Liferay.Language.get('delete'),
-								style: 'primary',
-								type: 'button'
-							}
-						]}
-						ref="deleteModal"
-						size="sm"
+						fieldTypes={fieldTypes}
+						items={fieldActions}
+						pages={pages}
+						portalElement={this._actionableFieldsContainer}
+						ref="selectedFieldActions"
 						spritemap={spritemap}
-						title={Liferay.Language.get('delete-field-dialog-title')}
+						visible={this.hasFocusedField()}
 					/>
 
-					<ChildComponent {...this.props} events={this.getEvents()} />
-
-					{this.isActionsEnabled() && (
-						<Actions
-							events={this.getEvents()}
-							portalElement={this.element}
-							ref="actions"
-							spritemap={spritemap}
-						/>
-					)}
+					<FieldActionsDropDown
+						activePage={activePage}
+						events={{
+							mouseLeave: this._handleMouseLeaveActions.bind(
+								this
+							),
+						}}
+						fieldTypes={fieldTypes}
+						items={fieldActions}
+						pages={pages}
+						portalElement={this._actionableFieldsContainer}
+						ref="hoveredFieldActions"
+						spritemap={spritemap}
+						visible={hoveredFieldActionsVisible}
+					/>
 				</div>
 			);
 		}
 
-		showDeleteConfirmationModal() {
-			const {deleteModal} = this.refs;
+		rendered() {
+			const {focusedField, pages} = this.props;
+			const {hoveredFieldActions, selectedFieldActions} = this.refs;
 
-			deleteModal.show();
+			if (this.hasFocusedField()) {
+				const {fieldName} = focusedField;
+
+				this.showActions(selectedFieldActions, fieldName);
+			}
+			else {
+				this.hideActions(selectedFieldActions);
+			}
+
+			const hoveredFieldName = hoveredFieldActions.state.fieldName;
+
+			if (!FormSupport.findFieldByFieldName(pages, hoveredFieldName)) {
+				this.hideActions(hoveredFieldActions);
+
+				const hoveredNode = this._getHoveredNode();
+
+				if (hoveredNode) {
+					hoveredNode.classList.remove(_CSS_HOVERED);
+				}
+			}
 		}
 
-		_handleDeleteConfirmationModalButtonClicked(event) {
-			const {store} = this.context;
-			const {target} = event;
-			const {deleteModal} = this.refs;
-			const {indexes} = this.state;
+		showActions(actions, fieldName) {
+			if (actions.state.fieldName !== fieldName) {
+				actions.close();
+			}
+
+			actions.setState({fieldName});
+
+			if (actions === this.refs.hoveredFieldActions) {
+				this.setState({hoveredFieldActionsVisible: true});
+			}
+		}
+
+		_getClosestParent(node) {
+			return dom.closest(node.parentElement, `.ddm-field-container`);
+		}
+
+		_getHoveredNode() {
+			return this.element.querySelector(
+				`.ddm-field-container.${_CSS_HOVERED}`
+			);
+		}
+
+		_handleMouseEnterField(event) {
+			const {pages} = this.props;
+			const {delegateTarget} = event;
+			const {fieldName} = delegateTarget.dataset;
+			const {hoveredFieldActions, selectedFieldActions} = this.refs;
+			const activePage = parseInt(
+				dom.closest(event.delegateTarget, '[data-ddm-page]').dataset
+					.ddmPage,
+				10
+			);
+			this.setState({activePage});
+
+			if (
+				selectedFieldActions.state.fieldName === fieldName ||
+				isFieldSetChild(pages, fieldName)
+			) {
+				this._handleMouseLeaveField(event);
+
+				return;
+			}
+
+			const hoveredNode = this._getHoveredNode();
+
+			if (hoveredNode) {
+				hoveredNode.classList.remove(_CSS_HOVERED);
+			}
+
+			delegateTarget.classList.add(_CSS_HOVERED);
+
+			this.showActions(hoveredFieldActions, fieldName);
 
 			event.stopPropagation();
+		}
 
-			deleteModal.emit('hide');
+		_handleMouseLeaveActions(event) {
+			const {delegateTarget, relatedTarget} = event;
+			const {fieldName} = delegateTarget.dataset;
+			const {hoveredFieldActions} = this.refs;
+			const {pages} = this.props;
 
-			if (!target.classList.contains('close-modal')) {
-				store.emit('fieldDeleted', {indexes});
+			if (isFieldSetChild(pages, fieldName)) {
+				return;
+			}
+
+			const closestRelatedParent = this._getClosestParent(relatedTarget);
+
+			if (
+				closestRelatedParent &&
+				closestRelatedParent.dataset.fieldName ===
+					hoveredFieldActions.state.fieldName
+			) {
+				return;
+			}
+
+			this._handleMouseLeaveField({
+				delegateTarget: event.container,
+				relatedTarget,
+			});
+		}
+
+		_handleMouseLeaveField(event) {
+			const {delegateTarget} = event;
+			const {hoveredFieldActions, selectedFieldActions} = this.refs;
+
+			if (
+				hoveredFieldActions.expanded ||
+				!this._hasLeftField(event.relatedTarget)
+			) {
+				return;
+			}
+
+			delegateTarget.classList.remove(_CSS_HOVERED);
+
+			this.hideActions(hoveredFieldActions);
+
+			this._handleClosestParent({
+				delegateTarget,
+				hoveredFieldActions,
+				selectedFieldActions,
+			});
+
+			if (event.stopPropagation) {
+				event.stopPropagation();
 			}
 		}
 
-		_handleDeleteRequest({indexes}) {
-			this.setState(
-				{
-					indexes
+		_handleClosestParent({
+			delegateTarget,
+			hoveredFieldActions,
+			selectedFieldActions,
+		}) {
+			const {pages} = this.props;
+			const closestParent = this._getClosestParent(delegateTarget);
+
+			if (closestParent) {
+				const {fieldName} = closestParent.dataset;
+
+				if (
+					selectedFieldActions.state.fieldName !== fieldName &&
+					!isFieldSetChild(pages, fieldName)
+				) {
+					closestParent.classList.add(_CSS_HOVERED);
+
+					this.showActions(hoveredFieldActions, fieldName);
 				}
-			);
-
-			this.showDeleteConfirmationModal();
-		}
-
-		_handleDuplicateRequest(indexes) {
-			this._handleFieldDuplicated(indexes);
-		}
-
-		_handleFieldDuplicated(indexes) {
-			const {store} = this.context;
-
-			store.emit('fieldDuplicated', indexes);
-		}
-
-		_handleMouseEnterField({delegateTarget}) {
-			if (this.isActionsEnabled()) {
-				dom.append(delegateTarget, this.refs.actions.element);
 			}
+		}
+
+		_hasLeftField(relatedTarget) {
+			return !dom.closest(
+				relatedTarget,
+				'.dropdown-menu,.ddm-field-actions-container'
+			);
 		}
 	}
+
+	ActionableFields.PROPS = {
+		...formBuilderProps,
+	};
+
+	ActionableFields.STATE = {
+		activePage: Config.number(),
+		hoveredFieldActionsVisible: Config.bool().value(false),
+	};
 
 	return ActionableFields;
 };

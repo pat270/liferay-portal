@@ -16,14 +16,11 @@ package com.liferay.dynamic.data.lists.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Thrown when the system is unable to find a required DDL Record Set.
  *
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchRecordSetException extends NoSuchModelException {
 
 	public NoSuchRecordSetException() {
@@ -33,12 +30,12 @@ public class NoSuchRecordSetException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchRecordSetException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchRecordSetException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchRecordSetException(Throwable cause) {
-		super(cause);
+	public NoSuchRecordSetException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -55,13 +55,6 @@ import org.osgi.service.component.annotations.Deactivate;
 public class JournalContentSearchLocalServiceImpl
 	extends JournalContentSearchLocalServiceBaseImpl {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, DisplayInformationProvider.class,
-			"javax.portlet.name");
-	}
-
 	@Override
 	public void checkContentSearches(long companyId) throws PortalException {
 		if (_log.isInfoEnabled()) {
@@ -146,11 +139,6 @@ public class JournalContentSearchLocalServiceImpl
 
 			journalContentSearchPersistence.remove(journalContentSearch);
 		}
-	}
-
-	@Deactivate
-	public void deactivate() {
-		_serviceTrackerMap.close();
 	}
 
 	@Override
@@ -307,9 +295,7 @@ public class JournalContentSearchLocalServiceImpl
 			contentSearch.setArticleId(articleId);
 		}
 
-		journalContentSearchPersistence.update(contentSearch);
-
-		return contentSearch;
+		return journalContentSearchPersistence.update(contentSearch);
 	}
 
 	@Override
@@ -333,6 +319,18 @@ public class JournalContentSearchLocalServiceImpl
 		return contentSearches;
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, DisplayInformationProvider.class,
+			"javax.portlet.name");
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalContentSearchLocalServiceImpl.class);
 
@@ -342,9 +340,9 @@ public class JournalContentSearchLocalServiceImpl
 	private static class JournalContentSearchKey implements Serializable {
 
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(Object object) {
 			JournalContentSearchKey journalContentSearchKey =
-				(JournalContentSearchKey)obj;
+				(JournalContentSearchKey)object;
 
 			if (Objects.equals(
 					journalContentSearchKey._articleId, _articleId) &&

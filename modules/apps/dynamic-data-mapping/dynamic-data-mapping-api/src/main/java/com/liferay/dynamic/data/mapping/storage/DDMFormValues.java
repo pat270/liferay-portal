@@ -49,16 +49,16 @@ public class DDMFormValues implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMFormValues)) {
+		if (!(object instanceof DDMFormValues)) {
 			return false;
 		}
 
-		DDMFormValues ddmFormValues = (DDMFormValues)obj;
+		DDMFormValues ddmFormValues = (DDMFormValues)object;
 
 		if (Objects.equals(
 				_availableLocales, ddmFormValues._availableLocales) &&
@@ -84,7 +84,18 @@ public class DDMFormValues implements Serializable {
 		return _ddmFormFieldValues;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getDDMFormFieldValuesMap(boolean)}
+	 */
+	@Deprecated
 	public Map<String, List<DDMFormFieldValue>> getDDMFormFieldValuesMap() {
+		return getDDMFormFieldValuesMap(false);
+	}
+
+	public Map<String, List<DDMFormFieldValue>> getDDMFormFieldValuesMap(
+		boolean includeNestedDDMFormFieldValues) {
+
 		Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
 			new LinkedHashMap<>();
 
@@ -100,6 +111,11 @@ public class DDMFormValues implements Serializable {
 			}
 
 			ddmFormFieldValues.add(ddmFormFieldValue);
+
+			if (includeNestedDDMFormFieldValues) {
+				ddmFormFieldValuesMap.putAll(
+					ddmFormFieldValue.getNestedDDMFormFieldValuesMap());
+			}
 		}
 
 		return ddmFormFieldValuesMap;

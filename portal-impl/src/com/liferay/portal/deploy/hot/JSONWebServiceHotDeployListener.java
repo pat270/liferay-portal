@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.deploy.hot.HotDeployEvent;
 import com.liferay.portal.kernel.deploy.hot.HotDeployException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionsManagerUtil;
 
-import javax.servlet.ServletContext;
-
 /**
  * @author Igor Spasic
  */
@@ -33,9 +31,10 @@ public class JSONWebServiceHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeDeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
-				hotDeployEvent, "Error registering JSONWebServices for ", t);
+				hotDeployEvent, "Error registering JSONWebServices for ",
+				throwable);
 		}
 	}
 
@@ -46,27 +45,25 @@ public class JSONWebServiceHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeUndeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
-				hotDeployEvent, "Error unregistering JSONWebServices for ", t);
+				hotDeployEvent, "Error unregistering JSONWebServices for ",
+				throwable);
 		}
 	}
 
 	protected void doInvokeDeploy(HotDeployEvent hotDeployEvent)
 		throws Exception {
 
-		ServletContext servletContext = hotDeployEvent.getServletContext();
-
-		JSONWebServiceActionsManagerUtil.registerServletContext(servletContext);
+		JSONWebServiceActionsManagerUtil.registerServletContext(
+			hotDeployEvent.getServletContext());
 	}
 
 	protected void doInvokeUndeploy(HotDeployEvent hotDeployEvent)
 		throws Exception {
 
-		ServletContext servletContext = hotDeployEvent.getServletContext();
-
 		JSONWebServiceActionsManagerUtil.unregisterServletContext(
-			servletContext);
+			hotDeployEvent.getServletContext());
 	}
 
 }

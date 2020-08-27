@@ -16,12 +16,9 @@ package com.liferay.knowledge.base.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KBCommentContentException extends PortalException {
 
 	public KBCommentContentException() {
@@ -31,12 +28,12 @@ public class KBCommentContentException extends PortalException {
 		super(msg);
 	}
 
-	public KBCommentContentException(String msg, Throwable cause) {
-		super(msg, cause);
+	public KBCommentContentException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public KBCommentContentException(Throwable cause) {
-		super(cause);
+	public KBCommentContentException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

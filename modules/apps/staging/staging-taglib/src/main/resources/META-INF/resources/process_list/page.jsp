@@ -164,7 +164,7 @@
 					deleteMenu="<%= deleteMenu %>"
 					localPublishing="<%= localPublishing %>"
 					relaunchMenu="<%= relaunchMenu %>"
-					summaryMenu="<%= summaryMenu %>"
+					summaryMenu="<%= summaryMenu && !(backgroundTask.getStatus() == BackgroundTaskConstants.STATUS_FAILED) %>"
 				/>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
@@ -183,18 +183,22 @@
 
 <aui:script>
 	function <portlet:namespace />deleteEntries() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>')) {
+		if (
+			confirm(
+				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						'<%= Constants.CMD %>': '<%= Constants.DELETE %>',
-						deleteBackgroundTaskIds: Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds')
-					}
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					<%= Constants.CMD %>: '<%= Constants.DELETE %>',
+					deleteBackgroundTaskIds: Liferay.Util.listCheckedExcept(
+						form,
+						'<portlet:namespace />allRowIds'
+					),
+				},
+			});
 		}
 	}
 </aui:script>

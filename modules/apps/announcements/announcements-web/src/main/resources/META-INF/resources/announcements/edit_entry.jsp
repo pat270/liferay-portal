@@ -28,11 +28,7 @@ String content = BeanParamUtil.getString(entry, request, "content");
 
 boolean alert = BeanParamUtil.getBoolean(entry, request, "alert");
 
-boolean displayImmediately = ParamUtil.getBoolean(request, "displayImmediately");
-
-if (entry == null) {
-	displayImmediately = true;
-}
+boolean displayImmediately = ParamUtil.getBoolean(request, "displayImmediately", entry == null);
 
 String headerTitle = null;
 
@@ -59,7 +55,7 @@ if (portletTitleBasedNavigation) {
 %>
 
 <div <%= portletTitleBasedNavigation ? "class=\"container-fluid-1280\"" : StringPool.BLANK %>>
-	<aui:form method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveEntry();" %>'>
+	<aui:form method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveEntry();" %>'>
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="entryId" type="hidden" value="<%= entryId %>" />
@@ -82,14 +78,13 @@ if (portletTitleBasedNavigation) {
 
 		<aui:fieldset-group markupView="lexicon">
 			<aui:fieldset>
-				<h1><liferay-ui:input-editor contents="<%= HtmlUtil.escape(title) %>" editorName="alloyeditor" name="titleEditor" placeholder="title" showSource="<%= false %>" /></h1>
+				<aui:input autocomplete="off" id="titleEditor" label='<%= LanguageUtil.get(request, "title") %>' name="title" required="<%= true %>" title="" type="text" value="<%= HtmlUtil.escape(title) %>" />
 
-				<aui:input name="title" type="hidden" />
-
-				<liferay-ui:input-editor
+				<liferay-editor:editor
 					contents="<%= content %>"
 					editorName='<%= PropsUtil.get("editor.wysiwyg.portal-web.docroot.html.portlet.announcements.edit_entry.jsp") %>'
 					name="contentEditor"
+					placeholder="content"
 				/>
 
 				<aui:input name="content" type="hidden" />
@@ -171,25 +166,28 @@ if (portletTitleBasedNavigation) {
 		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
-			form.action = '<portlet:actionURL name="/announcements/edit_entry"><portlet:param name="mvcRenderCommandName" value="/announcements/edit_entry" /></portlet:actionURL>';
+			form.action =
+				'<portlet:actionURL name="/announcements/edit_entry"><portlet:param name="mvcRenderCommandName" value="/announcements/edit_entry" /></portlet:actionURL>';
 			form.target = '';
 
-			var cmd = form.querySelector('#<portlet:namespace /><%= Constants.CMD %>');
+			var cmd = form.querySelector(
+				'#<portlet:namespace /><%= Constants.CMD %>'
+			);
 
 			if (cmd) {
-				cmd.setAttribute('value', '<%= (entry == null) ? Constants.ADD : Constants.UPDATE %>');
+				cmd.setAttribute(
+					'value',
+					'<%= (entry == null) ? Constants.ADD : Constants.UPDATE %>'
+				);
 			}
 
 			var content = form.querySelector('#<portlet:namespace />content');
 
 			if (content) {
-				content.setAttribute('value', window.<portlet:namespace />contentEditor.getHTML());
-			}
-
-			var title = form.querySelector('#<portlet:namespace />title');
-
-			if (title) {
-				title.setAttribute('value', window.<portlet:namespace />titleEditor.getText());
+				content.setAttribute(
+					'value',
+					window.<portlet:namespace />contentEditor.getHTML()
+				);
 			}
 
 			submitForm(form);

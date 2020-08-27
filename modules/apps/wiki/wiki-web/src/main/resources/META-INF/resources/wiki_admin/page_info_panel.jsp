@@ -60,7 +60,7 @@ request.setAttribute("page_info_panel.jsp-wikiPage", wikiPageInfoPanelDisplayCon
 		</div>
 	</c:when>
 	<c:otherwise>
-		<div class="sidebar-header visible-xs">
+		<div class="d-block d-sm-none sidebar-header">
 
 			<%
 			WikiPage wikiPage = wikiPageInfoPanelDisplayContext.getFirstPage();
@@ -167,7 +167,7 @@ if (wikiPageInfoPanelDisplayContext.isSinglePageSelection()) {
 					</div>
 
 					<c:if test="<%= wikiPortletInstanceSettingsHelper.isEnablePageRatings() %>">
-						<liferay-ui:ratings
+						<liferay-ratings:ratings
 							className="<%= WikiPage.class.getName() %>"
 							classPK="<%= wikiPage.getResourcePrimKey() %>"
 							inTrash="<%= wikiPage.isInTrash() %>"

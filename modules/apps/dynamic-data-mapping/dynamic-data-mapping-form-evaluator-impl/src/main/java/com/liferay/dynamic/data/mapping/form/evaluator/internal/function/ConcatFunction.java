@@ -14,31 +14,28 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = DDMExpressionFunction.Function1.class
-)
 public class ConcatFunction
-	implements DDMExpressionFunction.Function1<String[], String> {
+	implements DDMExpressionFunction.Function1<Object[], String> {
+
+	public static final String NAME = "concat";
 
 	@Override
-	public String apply(String[] values) {
+	public String apply(Object[] values) {
 		return Stream.of(
 			values
 		).filter(
 			Validator::isNotNull
+		).map(
+			Object::toString
 		).collect(
 			Collectors.joining()
 		);
@@ -46,7 +43,7 @@ public class ConcatFunction
 
 	@Override
 	public String getName() {
-		return "concat";
+		return NAME;
 	}
 
 }

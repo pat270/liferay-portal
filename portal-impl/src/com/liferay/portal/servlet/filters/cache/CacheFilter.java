@@ -217,14 +217,14 @@ public class CacheFilter extends BasePortalFilter {
 				privateLayout = false;
 			}
 		}
-		catch (NoSuchLayoutException nsle) {
+		catch (NoSuchLayoutException noSuchLayoutException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(nsle, nsle);
+				_log.warn(noSuchLayoutException, noSuchLayoutException);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get friendly URL group", e);
+				_log.warn("Unable to get friendly URL group", exception);
 			}
 
 			return 0;
@@ -243,8 +243,8 @@ public class CacheFilter extends BasePortalFilter {
 				return LayoutLocalServiceUtil.getDefaultPlid(
 					groupId, privateLayout);
 			}
-			catch (Exception e) {
-				_log.warn(e, e);
+			catch (Exception exception) {
+				_log.warn(exception, exception);
 
 				return 0;
 			}
@@ -261,13 +261,14 @@ public class CacheFilter extends BasePortalFilter {
 
 			return layout.getPlid();
 		}
-		catch (NoSuchLayoutException nsle) {
-			_log.warn("Unable to get friendly URL layout", nsle);
+		catch (NoSuchLayoutException noSuchLayoutException) {
+			_log.warn(
+				"Unable to get friendly URL layout", noSuchLayoutException);
 
 			return 0;
 		}
-		catch (Exception e) {
-			_log.error("Unable to get friendly URL layout", e);
+		catch (Exception exception) {
+			_log.error("Unable to get friendly URL layout", exception);
 
 			return 0;
 		}
@@ -309,7 +310,7 @@ public class CacheFilter extends BasePortalFilter {
 
 			return layoutTypePortlet.isCacheable();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 	}
@@ -325,9 +326,10 @@ public class CacheFilter extends BasePortalFilter {
 
 		if ((_pattern == _PATTERN_FRIENDLY) || (_pattern == _PATTERN_LAYOUT)) {
 			long userId = PortalUtil.getUserId(httpServletRequest);
-			String remoteUser = httpServletRequest.getRemoteUser();
 
-			if ((userId > 0) || Validator.isNotNull(remoteUser)) {
+			if ((userId > 0) ||
+				Validator.isNotNull(httpServletRequest.getRemoteUser())) {
+
 				return false;
 			}
 		}
@@ -385,12 +387,12 @@ public class CacheFilter extends BasePortalFilter {
 				AuthTokenUtil.checkCSRFToken(
 					httpServletRequest, CacheFilter.class.getName());
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						"Request is not cacheable " + key +
 							", invalid token received",
-						pe);
+						portalException);
 				}
 
 				processFilter(
@@ -400,7 +402,8 @@ public class CacheFilter extends BasePortalFilter {
 				return;
 			}
 
-			key = key.replace(StringUtil.toUpperCase(pAuth), "VALID");
+			key = StringUtil.replace(
+				key, StringUtil.toUpperCase(pAuth), "VALID");
 		}
 
 		long companyId = PortalInstances.getCompanyId(httpServletRequest);

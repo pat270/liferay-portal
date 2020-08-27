@@ -41,7 +41,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class ThemeServiceBaseImpl
-	extends BaseServiceImpl implements ThemeService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, ThemeService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -236,8 +236,8 @@ public abstract class ThemeServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

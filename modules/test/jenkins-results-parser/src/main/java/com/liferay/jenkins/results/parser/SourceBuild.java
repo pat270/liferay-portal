@@ -19,6 +19,8 @@ import com.liferay.jenkins.results.parser.failure.message.generator.GenericFailu
 import com.liferay.jenkins.results.parser.failure.message.generator.RebaseFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.SourceFormatFailureMessageGenerator;
 
+import java.net.URL;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -49,7 +51,12 @@ public class SourceBuild extends BaseBuild {
 	}
 
 	@Override
-	public JSONObject getTestReportJSONObject() {
+	public URL getArtifactsBaseURL() {
+		return null;
+	}
+
+	@Override
+	public JSONObject getTestReportJSONObject(boolean cache) {
 		return null;
 	}
 
@@ -68,13 +75,11 @@ public class SourceBuild extends BaseBuild {
 		return null;
 	}
 
-	// Skip JavaParser
-
 	private static final FailureMessageGenerator[] _FAILURE_MESSAGE_GENERATORS =
 		{
 			new RebaseFailureMessageGenerator(),
 			new SourceFormatFailureMessageGenerator(),
-
+			//
 			new GenericFailureMessageGenerator()
 		};
 

@@ -16,8 +16,6 @@ package com.liferay.polls.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link PollsQuestionLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PollsQuestionLocalService
  * @generated
  */
-@ProviderType
 public class PollsQuestionLocalServiceWrapper
 	implements PollsQuestionLocalService,
 			   ServiceWrapper<PollsQuestionLocalService> {
@@ -38,6 +35,10 @@ public class PollsQuestionLocalServiceWrapper
 
 	/**
 	 * Adds the polls question to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsQuestionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param pollsQuestion the polls question
 	 * @return the polls question that was added
@@ -87,21 +88,6 @@ public class PollsQuestionLocalServiceWrapper
 			questionId, modelPermissions);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addQuestionResources(long, ModelPermissions)}
-	 */
-	@Deprecated
-	@Override
-	public void addQuestionResources(
-			long questionId, String[] groupPermissions,
-			String[] guestPermissions)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_pollsQuestionLocalService.addQuestionResources(
-			questionId, groupPermissions, guestPermissions);
-	}
-
 	@Override
 	public void addQuestionResources(
 			com.liferay.polls.model.PollsQuestion question,
@@ -124,18 +110,14 @@ public class PollsQuestionLocalServiceWrapper
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addQuestionResources(PollsQuestion, ModelPermissions)}
+	 * @throws PortalException
 	 */
-	@Deprecated
 	@Override
-	public void addQuestionResources(
-			com.liferay.polls.model.PollsQuestion question,
-			String[] groupPermissions, String[] guestPermissions)
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		_pollsQuestionLocalService.addQuestionResources(
-			question, groupPermissions, guestPermissions);
+		return _pollsQuestionLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -165,6 +147,10 @@ public class PollsQuestionLocalServiceWrapper
 	/**
 	 * Deletes the polls question with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsQuestionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param questionId the primary key of the polls question
 	 * @return the polls question that was removed
 	 * @throws PortalException if a polls question with the primary key could not be found
@@ -179,6 +165,10 @@ public class PollsQuestionLocalServiceWrapper
 
 	/**
 	 * Deletes the polls question from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsQuestionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param pollsQuestion the polls question
 	 * @return the polls question that was removed
@@ -212,6 +202,11 @@ public class PollsQuestionLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _pollsQuestionLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _pollsQuestionLocalService.dynamicQuery();
 	}
@@ -233,7 +228,7 @@ public class PollsQuestionLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsQuestionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsQuestionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -254,7 +249,7 @@ public class PollsQuestionLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsQuestionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsQuestionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -358,6 +353,9 @@ public class PollsQuestionLocalServiceWrapper
 		return _pollsQuestionLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -402,7 +400,7 @@ public class PollsQuestionLocalServiceWrapper
 	 * Returns a range of all the polls questions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsQuestionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.polls.model.impl.PollsQuestionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of polls questions
@@ -490,6 +488,16 @@ public class PollsQuestionLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.polls.model.PollsQuestion> search(
+		long groupId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator
+			<com.liferay.polls.model.PollsQuestion> orderByComparator) {
+
+		return _pollsQuestionLocalService.search(
+			groupId, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.polls.model.PollsQuestion> search(
 		long companyId, long[] groupIds, String keywords, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
 			<com.liferay.polls.model.PollsQuestion> orderByComparator) {
@@ -511,6 +519,11 @@ public class PollsQuestionLocalServiceWrapper
 	}
 
 	@Override
+	public int searchCount(long groupId) {
+		return _pollsQuestionLocalService.searchCount(groupId);
+	}
+
+	@Override
 	public int searchCount(long companyId, long[] groupIds, String keywords) {
 		return _pollsQuestionLocalService.searchCount(
 			companyId, groupIds, keywords);
@@ -527,6 +540,10 @@ public class PollsQuestionLocalServiceWrapper
 
 	/**
 	 * Updates the polls question in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect PollsQuestionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param pollsQuestion the polls question
 	 * @return the polls question that was updated

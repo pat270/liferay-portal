@@ -16,6 +16,7 @@ package com.liferay.journal.internal.transformer;
 
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.constants.JournalTransformerListenerKeys;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -89,46 +90,39 @@ public class TokensTransformerListener extends BaseTransformerListener {
 		for (Map.Entry<String, String> entry : tokens.entrySet()) {
 			String key = entry.getKey();
 
-			if (Validator.isNotNull(key) && s.contains(key)) {
-				if (!hasKey) {
-					escapedKeysList = new ArrayList<>();
-					escapedValuesList = new ArrayList<>();
-					keysList = new ArrayList<>();
-					valuesList = new ArrayList<>();
-					tempEscapedKeysList = new ArrayList<>();
-					tempEscapedValuesList = new ArrayList<>();
-
-					hasKey = true;
-				}
-
-				String actualKey = StringPool.AT.concat(
-					key
-				).concat(
-					StringPool.AT
-				);
-
-				String escapedKey = StringPool.AT.concat(
-					actualKey
-				).concat(
-					StringPool.AT
-				);
-
-				String tempEscapedKey =
-					JournalTransformerListenerKeys.TEMP_ESCAPED_AT_OPEN.concat(
-						key
-					).concat(
-						JournalTransformerListenerKeys.TEMP_ESCAPED_AT_CLOSE
-					);
-
-				escapedKeysList.add(escapedKey);
-				escapedValuesList.add(tempEscapedKey);
-
-				keysList.add(actualKey);
-				valuesList.add(GetterUtil.getString(entry.getValue()));
-
-				tempEscapedKeysList.add(tempEscapedKey);
-				tempEscapedValuesList.add(actualKey);
+			if (Validator.isNull(key) || !s.contains(key)) {
+				continue;
 			}
+
+			if (!hasKey) {
+				escapedKeysList = new ArrayList<>();
+				escapedValuesList = new ArrayList<>();
+				keysList = new ArrayList<>();
+				valuesList = new ArrayList<>();
+				tempEscapedKeysList = new ArrayList<>();
+				tempEscapedValuesList = new ArrayList<>();
+
+				hasKey = true;
+			}
+
+			String actualKey = StringBundler.concat(
+				StringPool.AT, key, StringPool.AT);
+
+			String escapedKey = StringBundler.concat(
+				StringPool.AT, actualKey, StringPool.AT);
+
+			String tempEscapedKey = StringBundler.concat(
+				JournalTransformerListenerKeys.TEMP_ESCAPED_AT_OPEN, key,
+				JournalTransformerListenerKeys.TEMP_ESCAPED_AT_CLOSE);
+
+			escapedKeysList.add(escapedKey);
+			escapedValuesList.add(tempEscapedKey);
+
+			keysList.add(actualKey);
+			valuesList.add(GetterUtil.getString(entry.getValue()));
+
+			tempEscapedKeysList.add(tempEscapedKey);
+			tempEscapedValuesList.add(actualKey);
 		}
 
 		if (!hasKey) {

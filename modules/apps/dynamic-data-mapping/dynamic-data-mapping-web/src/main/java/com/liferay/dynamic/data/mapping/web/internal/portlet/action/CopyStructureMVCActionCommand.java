@@ -15,9 +15,9 @@
 package com.liferay.dynamic.data.mapping.web.internal.portlet.action;
 
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateService;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
@@ -129,11 +129,9 @@ public class CopyStructureMVCActionCommand extends DDMBaseMVCActionCommand {
 
 		portletURL.setParameter("mvcPath", "/copy_structure");
 
-		long classNameId = _portal.getClassNameId(DDMStructure.class);
-
 		portletURL.setParameter(
-			"classNameId", String.valueOf(classNameId), false);
-
+			"classNameId",
+			String.valueOf(_portal.getClassNameId(DDMStructure.class)), false);
 		portletURL.setParameter(
 			"classPK", String.valueOf(structure.getStructureId()), false);
 		portletURL.setParameter(

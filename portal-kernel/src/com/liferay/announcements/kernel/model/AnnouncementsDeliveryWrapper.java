@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AnnouncementsDelivery}.
@@ -31,7 +29,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsDelivery
  * @generated
  */
-@ProviderType
 public class AnnouncementsDeliveryWrapper
 	extends BaseModelWrapper<AnnouncementsDelivery>
 	implements AnnouncementsDelivery, ModelWrapper<AnnouncementsDelivery> {
@@ -46,6 +43,7 @@ public class AnnouncementsDeliveryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("deliveryId", getDeliveryId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -59,6 +57,12 @@ public class AnnouncementsDeliveryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long deliveryId = (Long)attributes.get("deliveryId");
 
 		if (deliveryId != null) {
@@ -130,6 +134,16 @@ public class AnnouncementsDeliveryWrapper
 	@Override
 	public boolean getEmail() {
 		return model.getEmail();
+	}
+
+	/**
+	 * Returns the mvcc version of this announcements delivery.
+	 *
+	 * @return the mvcc version of this announcements delivery
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -255,6 +269,16 @@ public class AnnouncementsDeliveryWrapper
 	@Override
 	public void setEmail(boolean email) {
 		model.setEmail(email);
+	}
+
+	/**
+	 * Sets the mvcc version of this announcements delivery.
+	 *
+	 * @param mvccVersion the mvcc version of this announcements delivery
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

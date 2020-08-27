@@ -1,25 +1,25 @@
 .info-bar-container {
-	background-color: #FFF;
-	border-bottom: 1px solid #EDF0F2;
+	background-color: #fff;
+	border-bottom: 1px solid #edf0f2;
 	min-height: 47px;
 
 	.info-bar {
 		padding: 0;
 	}
 
-	@include sm() {
+	@include media-breakpoint-up(sm) {
 		min-height: 59px;
 	}
 
 	.info-bar-default {
 		.taglib-workflow-status .workflow-version {
-			color: #6B6C7E;
+			color: #6b6c7e;
 		}
 
 		.btn {
 			margin: 7px 0 7px 15px;
 
-			@include sm() {
+			@include media-breakpoint-up(sm) {
 				margin: 13px 0 13px 15px;
 			}
 		}
@@ -33,7 +33,7 @@
 		transform: translate(-50%);
 		width: 100%;
 
-		@include sm() {
+		@include media-breakpoint-up(sm) {
 			margin-top: 20px;
 		}
 	}

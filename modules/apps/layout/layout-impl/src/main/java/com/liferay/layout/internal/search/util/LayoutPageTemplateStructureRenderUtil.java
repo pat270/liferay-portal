@@ -19,12 +19,12 @@ import com.liferay.fragment.renderer.DefaultFragmentRendererContext;
 import com.liferay.fragment.renderer.FragmentRendererController;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
+import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Locale;
@@ -58,60 +58,76 @@ public class LayoutPageTemplateStructureRenderUtil {
 			return StringPool.BLANK;
 		}
 
-		JSONObject dataJSONObject = JSONFactoryUtil.createJSONObject(data);
+		return _renderLayoutData(
+			data, fragmentRendererController, httpServletRequest,
+			httpServletResponse, mode, parameterMap, locale,
+			segmentsExperienceIds);
+	}
 
-		JSONArray structureJSONArray = dataJSONObject.getJSONArray("structure");
+	private static String _renderFragmentEntryLink(
+		long fragmentEntryLinkId,
+		FragmentRendererController fragmentRendererController,
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, String mode,
+		Map<String, Object> parameterMap, Locale locale,
+		long[] segmentsExperienceIds) {
 
-		if (structureJSONArray == null) {
+		FragmentEntryLink fragmentEntryLink =
+			FragmentEntryLinkLocalServiceUtil.fetchFragmentEntryLink(
+				fragmentEntryLinkId);
+
+		if (fragmentEntryLink == null) {
 			return StringPool.BLANK;
 		}
 
+		DefaultFragmentRendererContext fragmentRendererContext =
+			new DefaultFragmentRendererContext(fragmentEntryLink);
+
+		fragmentRendererContext.setFieldValues(parameterMap);
+		fragmentRendererContext.setLocale(locale);
+		fragmentRendererContext.setMode(mode);
+		fragmentRendererContext.setSegmentsExperienceIds(segmentsExperienceIds);
+
+		return fragmentRendererController.render(
+			fragmentRendererContext, httpServletRequest, httpServletResponse);
+	}
+
+	private static String _renderLayoutData(
+		String data, FragmentRendererController fragmentRendererController,
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, String mode,
+		Map<String, Object> parameterMap, Locale locale,
+		long[] segmentsExperienceIds) {
+
 		StringBundler sb = new StringBundler();
 
-		for (int i = 0; i < structureJSONArray.length(); i++) {
-			JSONObject rowJSONObject = structureJSONArray.getJSONObject(i);
+		LayoutStructure layoutStructure = LayoutStructure.of(data);
 
-			JSONArray columnsJSONArray = rowJSONObject.getJSONArray("columns");
+		for (LayoutStructureItem layoutStructureItem :
+				layoutStructure.getLayoutStructureItems()) {
 
-			for (int j = 0; j < columnsJSONArray.length(); j++) {
-				JSONObject columnJSONObject = columnsJSONArray.getJSONObject(j);
+			if (!(layoutStructureItem instanceof
+					FragmentStyledLayoutStructureItem)) {
 
-				JSONArray fragmentEntryLinkIdsJSONArray =
-					columnJSONObject.getJSONArray("fragmentEntryLinkIds");
-
-				for (int k = 0; k < fragmentEntryLinkIdsJSONArray.length();
-					 k++) {
-
-					long fragmentEntryLinkId =
-						fragmentEntryLinkIdsJSONArray.getLong(k);
-
-					if (fragmentEntryLinkId <= 0) {
-						continue;
-					}
-
-					FragmentEntryLink fragmentEntryLink =
-						FragmentEntryLinkLocalServiceUtil.
-							fetchFragmentEntryLink(fragmentEntryLinkId);
-
-					if (fragmentEntryLink == null) {
-						continue;
-					}
-
-					DefaultFragmentRendererContext fragmentRendererContext =
-						new DefaultFragmentRendererContext(fragmentEntryLink);
-
-					fragmentRendererContext.setFieldValues(parameterMap);
-					fragmentRendererContext.setLocale(locale);
-					fragmentRendererContext.setMode(mode);
-					fragmentRendererContext.setSegmentsExperienceIds(
-						segmentsExperienceIds);
-
-					sb.append(
-						fragmentRendererController.render(
-							fragmentRendererContext, httpServletRequest,
-							httpServletResponse));
-				}
+				continue;
 			}
+
+			FragmentStyledLayoutStructureItem
+				fragmentStyledLayoutStructureItem =
+					(FragmentStyledLayoutStructureItem)layoutStructureItem;
+
+			if (fragmentStyledLayoutStructureItem.getFragmentEntryLinkId() <=
+					0) {
+
+				continue;
+			}
+
+			sb.append(
+				_renderFragmentEntryLink(
+					fragmentStyledLayoutStructureItem.getFragmentEntryLinkId(),
+					fragmentRendererController, httpServletRequest,
+					httpServletResponse, mode, parameterMap, locale,
+					segmentsExperienceIds));
 		}
 
 		return sb.toString();

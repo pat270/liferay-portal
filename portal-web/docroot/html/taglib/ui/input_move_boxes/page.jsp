@@ -24,6 +24,9 @@ String cssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:
 String leftTitle = LanguageUtil.get(resourceBundle, (String)request.getAttribute("liferay-ui:input-move-boxes:leftTitle"));
 String rightTitle = LanguageUtil.get(resourceBundle, (String)request.getAttribute("liferay-ui:input-move-boxes:rightTitle"));
 
+Integer leftBoxMaxItems = (Integer)request.getAttribute("liferay-ui:input-move-boxes:leftBoxMaxItems");
+Integer rightBoxMaxItems = (Integer)request.getAttribute("liferay-ui:input-move-boxes:rightBoxMaxItems");
+
 String leftBoxName = (String)request.getAttribute("liferay-ui:input-move-boxes:leftBoxName");
 String rightBoxName = (String)request.getAttribute("liferay-ui:input-move-boxes:rightBoxName");
 
@@ -87,6 +90,15 @@ Map<String, Object> data = new HashMap<String, Object>();
 	new Liferay.InputMoveBoxes(
 		{
 			contentBox: '#<%= randomNamespace + "input-move-boxes" %>',
+
+			<c:if test="<%= leftBoxMaxItems != null %>">
+				leftBoxMaxItems: <%= leftBoxMaxItems %>,
+			</c:if>
+
+			<c:if test="<%= rightBoxMaxItems != null %>">
+				rightBoxMaxItems: <%= rightBoxMaxItems %>,
+			</c:if>
+
 			strings: {
 				LEFT_MOVE_DOWN: '<%= UnicodeLanguageUtil.format(request, "move-selected-item-in-x-one-position-down", leftTitle, false) %>',
 				LEFT_MOVE_UP: '<%= UnicodeLanguageUtil.format(request, "move-selected-item-in-x-one-position-up", leftTitle, false) %>',

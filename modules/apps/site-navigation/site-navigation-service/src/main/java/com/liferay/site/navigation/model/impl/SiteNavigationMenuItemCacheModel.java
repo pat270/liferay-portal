@@ -17,6 +17,7 @@ package com.liferay.site.navigation.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 
 import java.io.Externalizable;
@@ -26,33 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SiteNavigationMenuItem in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SiteNavigationMenuItemCacheModel
-	implements CacheModel<SiteNavigationMenuItem>, Externalizable {
+	implements CacheModel<SiteNavigationMenuItem>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SiteNavigationMenuItemCacheModel)) {
+		if (!(object instanceof SiteNavigationMenuItemCacheModel)) {
 			return false;
 		}
 
 		SiteNavigationMenuItemCacheModel siteNavigationMenuItemCacheModel =
-			(SiteNavigationMenuItemCacheModel)obj;
+			(SiteNavigationMenuItemCacheModel)object;
 
-		if (siteNavigationMenuItemId ==
-				siteNavigationMenuItemCacheModel.siteNavigationMenuItemId) {
+		if ((siteNavigationMenuItemId ==
+				siteNavigationMenuItemCacheModel.siteNavigationMenuItemId) &&
+			(mvccVersion == siteNavigationMenuItemCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,28 @@ public class SiteNavigationMenuItemCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, siteNavigationMenuItemId);
+		int hashCode = HashUtil.hash(0, siteNavigationMenuItemId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(33);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", siteNavigationMenuItemId=");
 		sb.append(siteNavigationMenuItemId);
@@ -108,6 +121,8 @@ public class SiteNavigationMenuItemCacheModel
 	public SiteNavigationMenuItem toEntityModel() {
 		SiteNavigationMenuItemImpl siteNavigationMenuItemImpl =
 			new SiteNavigationMenuItemImpl();
+
+		siteNavigationMenuItemImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			siteNavigationMenuItemImpl.setUuid("");
@@ -185,7 +200,10 @@ public class SiteNavigationMenuItemCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		siteNavigationMenuItemId = objectInput.readLong();
@@ -204,7 +222,7 @@ public class SiteNavigationMenuItemCacheModel
 		parentSiteNavigationMenuItemId = objectInput.readLong();
 		name = objectInput.readUTF();
 		type = objectInput.readUTF();
-		typeSettings = objectInput.readUTF();
+		typeSettings = (String)objectInput.readObject();
 
 		order = objectInput.readInt();
 		lastPublishDate = objectInput.readLong();
@@ -212,6 +230,8 @@ public class SiteNavigationMenuItemCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -256,16 +276,17 @@ public class SiteNavigationMenuItemCacheModel
 		}
 
 		if (typeSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(typeSettings);
+			objectOutput.writeObject(typeSettings);
 		}
 
 		objectOutput.writeInt(order);
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long siteNavigationMenuItemId;
 	public long groupId;

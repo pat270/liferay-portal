@@ -1,6 +1,24 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+/**
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
+ * @module liferay-dd-proxy
+ */
 AUI.add(
 	'liferay-dd-proxy',
-	function(A) {
+	(A) => {
 		var body = A.getBody();
 
 		var DDM = A.DD.DDM;
@@ -8,21 +26,19 @@ AUI.add(
 		A.mix(
 			DDM,
 			{
-				_createFrame: function() {
+				_createFrame() {
 					if (!DDM._proxy) {
 						DDM._proxy = true;
 
 						var proxyNode = A.Node.create('<div></div>');
 
-						proxyNode.setStyles(
-							{
-								display: 'none',
-								left: '-999px',
-								position: 'absolute',
-								top: '-999px',
-								zIndex: '999'
-							}
-						);
+						proxyNode.setStyles({
+							display: 'none',
+							left: '-999px',
+							position: 'absolute',
+							top: '-999px',
+							zIndex: '999',
+						});
 
 						body.prepend(proxyNode);
 
@@ -34,7 +50,7 @@ AUI.add(
 					}
 				},
 
-				_setFrame: function(drag) {
+				_setFrame(drag) {
 					var activeHandle;
 
 					var cursor = 'auto';
@@ -52,14 +68,12 @@ AUI.add(
 						cursor = DDM.get('dragCursor');
 					}
 
-					dragNode.setStyles(
-						{
-							border: drag.proxy.get('borderStyle'),
-							cursor: cursor,
-							display: 'block',
-							visibility: 'hidden'
-						}
-					);
+					dragNode.setStyles({
+						border: drag.proxy.get('borderStyle'),
+						cursor,
+						display: 'block',
+						visibility: 'hidden',
+					});
 
 					if (drag.proxy.get('cloneNode')) {
 						dragNode = drag.proxy.clone();
@@ -68,12 +82,10 @@ AUI.add(
 					if (drag.proxy.get('resizeFrame')) {
 						var size = node.invoke('getBoundingClientRect');
 
-						dragNode.setStyles(
-							{
-								height: Math.ceil(size.height),
-								width: Math.ceil(size.width)
-							}
-						);
+						dragNode.setStyles({
+							height: Math.ceil(size.height),
+							width: Math.ceil(size.width),
+						});
 					}
 
 					if (drag.proxy.get('positionProxy')) {
@@ -81,13 +93,13 @@ AUI.add(
 					}
 
 					dragNode.setStyle('visibility', 'visible');
-				}
+				},
 			},
 			true
 		);
 	},
 	'',
 	{
-		requires: ['dd-proxy']
+		requires: ['dd-proxy'],
 	}
 );

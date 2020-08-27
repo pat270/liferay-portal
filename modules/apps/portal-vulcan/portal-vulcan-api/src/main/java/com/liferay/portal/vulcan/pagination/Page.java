@@ -19,8 +19,13 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
+import com.liferay.portal.vulcan.aggregation.Facet;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Alejandro Hernández
@@ -31,13 +36,45 @@ import java.util.Collection;
 public class Page<T> {
 
 	public static <T> Page<T> of(Collection<T> items) {
-		return new Page<>(items);
+		return new Page<>(new HashMap<>(), items);
 	}
 
 	public static <T> Page<T> of(
 		Collection<T> items, Pagination pagination, long totalCount) {
 
-		return new Page<>(items, pagination, totalCount);
+		return new Page<>(
+			new HashMap<>(), new ArrayList<>(), items, pagination, totalCount);
+	}
+
+	public static <T> Page<T> of(
+		Map<String, Map<String, String>> actions, Collection<T> items) {
+
+		return new Page<>(actions, items);
+	}
+
+	public static <T> Page<T> of(
+		Map<String, Map<String, String>> actions, Collection<T> items,
+		Pagination pagination, long totalCount) {
+
+		return new Page<>(
+			actions, new ArrayList<>(), items, pagination, totalCount);
+	}
+
+	public static <T> Page<T> of(
+		Map<String, Map<String, String>> actions, List<Facet> facets,
+		Collection<T> items, Pagination pagination, long totalCount) {
+
+		return new Page<>(actions, facets, items, pagination, totalCount);
+	}
+
+	@JsonProperty("actions")
+	public Map<String, Map<String, String>> getActions() {
+		return _actions;
+	}
+
+	@JsonProperty("facets")
+	public List<Facet> getFacets() {
+		return _facets;
 	}
 
 	@JacksonXmlElementWrapper(localName = "items")
@@ -84,15 +121,22 @@ public class Page<T> {
 		return false;
 	}
 
-	private Page(Collection<T> items) {
+	private Page(
+		Map<String, Map<String, String>> actions, Collection<T> items) {
+
+		_actions = actions;
 		_items = items;
 		_page = 1;
 		_pageSize = items.size();
-
-		_totalCount = _pageSize;
+		_totalCount = items.size();
 	}
 
-	private Page(Collection<T> items, Pagination pagination, long totalCount) {
+	private Page(
+		Map<String, Map<String, String>> actions, List<Facet> facets,
+		Collection<T> items, Pagination pagination, long totalCount) {
+
+		_actions = actions;
+		_facets = facets;
 		_items = items;
 
 		if (pagination == null) {
@@ -107,6 +151,8 @@ public class Page<T> {
 		_totalCount = totalCount;
 	}
 
+	private final Map<String, Map<String, String>> _actions;
+	private List<Facet> _facets = new ArrayList<>();
 	private final Collection<T> _items;
 	private final long _page;
 	private final long _pageSize;

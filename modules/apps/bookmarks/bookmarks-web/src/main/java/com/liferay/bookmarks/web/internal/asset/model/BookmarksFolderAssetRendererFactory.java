@@ -108,7 +108,7 @@ public class BookmarksFolderAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 
 		return liferayPortletURL;
@@ -117,7 +117,7 @@ public class BookmarksFolderAssetRendererFactory
 	@Override
 	public boolean hasPermission(
 			PermissionChecker permissionChecker, long classPK, String actionId)
-		throws Exception {
+		throws PortalException {
 
 		return _bookmarksFolderModelResourcePermission.contains(
 			permissionChecker, classPK, actionId);

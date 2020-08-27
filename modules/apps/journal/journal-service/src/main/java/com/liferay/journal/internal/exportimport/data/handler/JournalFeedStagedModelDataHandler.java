@@ -187,11 +187,16 @@ public class JournalFeedStagedModelDataHandler
 
 		boolean autoFeedId = false;
 
-		if (Validator.isNumber(feedId) ||
-			(_journalFeedLocalService.fetchFeed(
-				portletDataContext.getScopeGroupId(), feedId) != null)) {
-
+		if (Validator.isNumber(feedId)) {
 			autoFeedId = true;
+		}
+		else {
+			JournalFeed existingFeed = _journalFeedLocalService.fetchFeed(
+				portletDataContext.getScopeGroupId(), feedId);
+
+			if (existingFeed != null) {
+				autoFeedId = true;
+			}
 		}
 
 		Map<String, String> ddmStructureKeys =
@@ -291,7 +296,9 @@ public class JournalFeedStagedModelDataHandler
 				}
 			}
 		}
-		catch (FeedTargetLayoutFriendlyUrlException ftlfue) {
+		catch (FeedTargetLayoutFriendlyUrlException
+					feedTargetLayoutFriendlyUrlException) {
+
 			if (_log.isWarnEnabled()) {
 				StringBundler sb = new StringBundler(7);
 
@@ -301,7 +308,7 @@ public class JournalFeedStagedModelDataHandler
 				sb.append("URL ");
 				sb.append(feed.getTargetLayoutFriendlyUrl());
 				sb.append(" does not exist: ");
-				sb.append(ftlfue.getMessage());
+				sb.append(feedTargetLayoutFriendlyUrlException.getMessage());
 
 				_log.warn(sb.toString());
 			}

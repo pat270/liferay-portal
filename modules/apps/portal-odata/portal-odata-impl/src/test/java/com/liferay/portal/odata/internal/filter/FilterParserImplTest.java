@@ -30,6 +30,7 @@ import com.liferay.portal.odata.filter.expression.Expression;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 import com.liferay.portal.odata.filter.expression.LambdaFunctionExpression;
 import com.liferay.portal.odata.filter.expression.LambdaVariableExpression;
+import com.liferay.portal.odata.filter.expression.ListExpression;
 import com.liferay.portal.odata.filter.expression.LiteralExpression;
 import com.liferay.portal.odata.filter.expression.MemberExpression;
 import com.liferay.portal.odata.filter.expression.MethodExpression;
@@ -64,7 +65,8 @@ public class FilterParserImplTest {
 		);
 
 		exception.hasMessage(
-			"A property used in the filter criteria is not supported");
+			"A property used in the filter criteria is not supported: %s",
+			filterString);
 	}
 
 	@Test
@@ -147,8 +149,10 @@ public class FilterParserImplTest {
 			_filterParserImpl.parse("collectionFieldExternal eq 'value'");
 			Assert.fail("Expected ExpressionVisitException was not thrown");
 		}
-		catch (ExpressionVisitException eve) {
-			Assert.assertEquals("Collection not allowed.", eve.getMessage());
+		catch (ExpressionVisitException expressionVisitException) {
+			Assert.assertEquals(
+				"Collection not allowed.",
+				expressionVisitException.getMessage());
 		}
 	}
 
@@ -357,7 +361,8 @@ public class FilterParserImplTest {
 		);
 
 		exception.hasMessage(
-			"A property used in the filter criteria is not supported");
+			"A property used in the filter criteria is not supported: %s",
+			filterString);
 	}
 
 	@Test
@@ -454,6 +459,36 @@ public class FilterParserImplTest {
 	}
 
 	@Test
+	public void testParseWithINMethod() throws ExpressionVisitException {
+		Expression expression = _filterParserImpl.parse(
+			"fieldExternal in ('value1', 'value2', 'value3')");
+
+		Assert.assertNotNull(expression);
+
+		ListExpression listExpression = (ListExpression)expression;
+
+		Assert.assertEquals(
+			ListExpression.Operation.IN, listExpression.getOperation());
+
+		MemberExpression memberExpression =
+			(MemberExpression)listExpression.getLeftOperationExpression();
+
+		PrimitivePropertyExpression primitivePropertyExpression =
+			(PrimitivePropertyExpression)memberExpression.getExpression();
+
+		Assert.assertEquals(
+			"fieldExternal", primitivePropertyExpression.getName());
+
+		List<Expression> rightOperationExpressions =
+			listExpression.getRightOperationExpressions();
+
+		LiteralExpression literalExpression1 =
+			(LiteralExpression)rightOperationExpressions.get(0);
+
+		Assert.assertEquals("'value1'", literalExpression1.getText());
+	}
+
+	@Test
 	public void testParseWithLambdaAllOnCollectionField() {
 		AbstractThrowableAssert exception = Assertions.assertThatThrownBy(
 			() -> _filterParserImpl.parse(
@@ -531,9 +566,10 @@ public class FilterParserImplTest {
 			_filterParserImpl.parse("fieldExternal/any(f:contains(f,'alu'))");
 			Assert.fail("Expected ExpressionVisitException was not thrown");
 		}
-		catch (ExpressionVisitException eve) {
+		catch (ExpressionVisitException expressionVisitException) {
 			Assert.assertEquals(
-				"Expected token 'QualifiedName' not found.", eve.getMessage());
+				"Expected token 'QualifiedName' not found.",
+				expressionVisitException.getMessage());
 		}
 	}
 

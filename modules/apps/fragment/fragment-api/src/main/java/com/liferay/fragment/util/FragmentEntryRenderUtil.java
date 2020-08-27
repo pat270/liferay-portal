@@ -38,8 +38,11 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
- * @author Pablo Molina
+ * @author     Pablo Molina
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             FragmentRendererController}
  */
+@Deprecated
 public class FragmentEntryRenderUtil {
 
 	public static PortletRegistry getPortletRegistry() {

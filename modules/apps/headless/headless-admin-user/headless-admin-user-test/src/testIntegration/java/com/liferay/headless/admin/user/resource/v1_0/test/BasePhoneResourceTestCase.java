@@ -14,55 +14,58 @@
 
 package com.liferay.headless.admin.user.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Phone;
+import com.liferay.headless.admin.user.client.http.HttpInvoker;
 import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.resource.v1_0.PhoneResource;
 import com.liferay.headless.admin.user.client.serdes.v1_0.PhoneSerDes;
-import com.liferay.headless.admin.user.resource.v1_0.PhoneResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 
@@ -96,10 +99,19 @@ public abstract class BasePhoneResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL(
-			"http://localhost:8080/o/headless-admin-user/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_phoneResource.setContextCompany(testCompany);
+
+		PhoneResource.Builder builder = PhoneResource.builder();
+
+		phoneResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -113,10 +125,16 @@ public abstract class BasePhoneResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -134,9 +152,15 @@ public abstract class BasePhoneResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -150,16 +174,43 @@ public abstract class BasePhoneResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		Phone phone = randomPhone();
+
+		phone.setExtension(regex);
+		phone.setPhoneNumber(regex);
+		phone.setPhoneType(regex);
+
+		String json = PhoneSerDes.toJSON(phone);
+
+		Assert.assertFalse(json.contains(regex));
+
+		phone = PhoneSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, phone.getExtension());
+		Assert.assertEquals(regex, phone.getPhoneNumber());
+		Assert.assertEquals(regex, phone.getPhoneType());
+	}
+
+	@Test
 	public void testGetOrganizationPhonesPage() throws Exception {
-		Long organizationId = testGetOrganizationPhonesPage_getOrganizationId();
-		Long irrelevantOrganizationId =
+		Page<Phone> page = phoneResource.getOrganizationPhonesPage(
+			testGetOrganizationPhonesPage_getOrganizationId());
+
+		Assert.assertEquals(0, page.getTotalCount());
+
+		String organizationId =
+			testGetOrganizationPhonesPage_getOrganizationId();
+		String irrelevantOrganizationId =
 			testGetOrganizationPhonesPage_getIrrelevantOrganizationId();
 
 		if ((irrelevantOrganizationId != null)) {
 			Phone irrelevantPhone = testGetOrganizationPhonesPage_addPhone(
 				irrelevantOrganizationId, randomIrrelevantPhone());
 
-			Page<Phone> page = invokeGetOrganizationPhonesPage(
+			page = phoneResource.getOrganizationPhonesPage(
 				irrelevantOrganizationId);
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -175,7 +226,7 @@ public abstract class BasePhoneResourceTestCase {
 		Phone phone2 = testGetOrganizationPhonesPage_addPhone(
 			organizationId, randomPhone());
 
-		Page<Phone> page = invokeGetOrganizationPhonesPage(organizationId);
+		page = phoneResource.getOrganizationPhonesPage(organizationId);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -185,70 +236,31 @@ public abstract class BasePhoneResourceTestCase {
 	}
 
 	protected Phone testGetOrganizationPhonesPage_addPhone(
-			Long organizationId, Phone phone)
+			String organizationId, Phone phone)
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetOrganizationPhonesPage_getOrganizationId()
+	protected String testGetOrganizationPhonesPage_getOrganizationId()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetOrganizationPhonesPage_getIrrelevantOrganizationId()
+	protected String testGetOrganizationPhonesPage_getIrrelevantOrganizationId()
 		throws Exception {
 
 		return null;
-	}
-
-	protected Page<Phone> invokeGetOrganizationPhonesPage(Long organizationId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/phones", organizationId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, PhoneSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetOrganizationPhonesPageResponse(
-			Long organizationId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath(
-					"/organizations/{organizationId}/phones", organizationId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
 	public void testGetPhone() throws Exception {
 		Phone postPhone = testGetPhone_addPhone();
 
-		Phone getPhone = invokeGetPhone(postPhone.getId());
+		Phone getPhone = phoneResource.getPhone(postPhone.getId());
 
 		assertEquals(postPhone, getPhone);
 		assertValid(getPhone);
@@ -259,47 +271,54 @@ public abstract class BasePhoneResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Phone invokeGetPhone(Long phoneId) throws Exception {
-		Http.Options options = _createHttpOptions();
+	@Test
+	public void testGraphQLGetPhone() throws Exception {
+		Phone phone = testGraphQLPhone_addPhone();
 
-		String location = _resourceURL + _toPath("/phones/{phoneId}", phoneId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return PhoneSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				phone,
+				PhoneSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"phone",
+								new HashMap<String, Object>() {
+									{
+										put("phoneId", phone.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/phone"))));
 	}
 
-	protected Http.Response invokeGetPhoneResponse(Long phoneId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetPhoneNotFound() throws Exception {
+		Long irrelevantPhoneId = RandomTestUtil.randomLong();
 
-		Http.Options options = _createHttpOptions();
-
-		String location = _resourceURL + _toPath("/phones/{phoneId}", phoneId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"phone",
+						new HashMap<String, Object>() {
+							{
+								put("phoneId", irrelevantPhoneId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Test
 	public void testGetUserAccountPhonesPage() throws Exception {
+		Page<Phone> page = phoneResource.getUserAccountPhonesPage(
+			testGetUserAccountPhonesPage_getUserAccountId());
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		Long userAccountId = testGetUserAccountPhonesPage_getUserAccountId();
 		Long irrelevantUserAccountId =
 			testGetUserAccountPhonesPage_getIrrelevantUserAccountId();
@@ -308,7 +327,7 @@ public abstract class BasePhoneResourceTestCase {
 			Phone irrelevantPhone = testGetUserAccountPhonesPage_addPhone(
 				irrelevantUserAccountId, randomIrrelevantPhone());
 
-			Page<Phone> page = invokeGetUserAccountPhonesPage(
+			page = phoneResource.getUserAccountPhonesPage(
 				irrelevantUserAccountId);
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -324,7 +343,7 @@ public abstract class BasePhoneResourceTestCase {
 		Phone phone2 = testGetUserAccountPhonesPage_addPhone(
 			userAccountId, randomPhone());
 
-		Page<Phone> page = invokeGetUserAccountPhonesPage(userAccountId);
+		page = phoneResource.getUserAccountPhonesPage(userAccountId);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -354,48 +373,17 @@ public abstract class BasePhoneResourceTestCase {
 		return null;
 	}
 
-	protected Page<Phone> invokeGetUserAccountPhonesPage(Long userAccountId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/user-accounts/{userAccountId}/phones", userAccountId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, PhoneSerDes::toDTO);
+	protected Phone testGraphQLPhone_addPhone() throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
-	protected Http.Response invokeGetUserAccountPhonesPageResponse(
-			Long userAccountId)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/user-accounts/{userAccountId}/phones", userAccountId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(Phone phone1, Phone phone2) {
@@ -435,7 +423,7 @@ public abstract class BasePhoneResourceTestCase {
 		}
 	}
 
-	protected void assertValid(Phone phone) {
+	protected void assertValid(Phone phone) throws Exception {
 		boolean valid = true;
 
 		if (phone.getId() == null) {
@@ -488,7 +476,7 @@ public abstract class BasePhoneResourceTestCase {
 	protected void assertValid(Page<Phone> page) {
 		boolean valid = false;
 
-		Collection<Phone> phones = page.getItems();
+		java.util.Collection<Phone> phones = page.getItems();
 
 		int size = phones.size();
 
@@ -503,6 +491,58 @@ public abstract class BasePhoneResourceTestCase {
 	}
 
 	protected String[] getAdditionalAssertFieldNames() {
+		return new String[0];
+	}
+
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.admin.user.dto.v1_0.Phone.class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
 		return new String[0];
 	}
 
@@ -570,7 +610,33 @@ public abstract class BasePhoneResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_phoneResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -591,12 +657,15 @@ public abstract class BasePhoneResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -653,13 +722,53 @@ public abstract class BasePhoneResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected Phone randomPhone() throws Exception {
 		return new Phone() {
 			{
-				extension = RandomTestUtil.randomString();
+				extension = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				phoneNumber = RandomTestUtil.randomString();
-				phoneType = RandomTestUtil.randomString();
+				phoneNumber = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
+				phoneType = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				primary = RandomTestUtil.randomBoolean();
 			}
 		};
@@ -675,76 +784,80 @@ public abstract class BasePhoneResourceTestCase {
 		return randomPhone();
 	}
 
+	protected PhoneResource phoneResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -765,8 +878,7 @@ public abstract class BasePhoneResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private PhoneResource _phoneResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.admin.user.resource.v1_0.PhoneResource
+		_phoneResource;
 
 }

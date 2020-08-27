@@ -14,14 +14,11 @@
 
 package com.liferay.portal.tools.service.builder.test.exception;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchLVEntryException extends NoSuchModelException {
 
 	public NoSuchLVEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchLVEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchLVEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchLVEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchLVEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchLVEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

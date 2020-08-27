@@ -41,14 +41,15 @@ JournalPreviewArticleContentTemplateDisplayContext journalPreviewArticleContentT
 			</li>
 			<li class="tbar-item">
 				<div class="journal-article-button-row tbar-section text-right">
-
-					<%
-					Map<String, Object> data = new HashMap<>();
-
-					data.put("ddmtemplateid", journalPreviewArticleContentTemplateDisplayContext.getDDMTemplateId());
-					%>
-
-					<aui:button cssClass="btn-sm selector-button" data="<%= data %>" value="apply" />
+					<aui:button
+						cssClass="btn-sm selector-button"
+						data='<%=
+							HashMapBuilder.<String, Object>put(
+								"ddmtemplateid", journalPreviewArticleContentTemplateDisplayContext.getDDMTemplateId()
+							).build()
+						%>'
+						value="apply"
+					/>
 				</div>
 			</li>
 		</ul>
@@ -65,7 +66,7 @@ JournalArticleDisplay articleDisplay = journalPreviewArticleContentTemplateDispl
 	<c:if test="<%= articleDisplay.isPaginate() %>">
 		<liferay-ui:page-iterator
 			cur="<%= articleDisplay.getCurrentPage() %>"
-			curParam='<%= "page" %>'
+			curParam="page"
 			delta="<%= 1 %>"
 			id="articleDisplayPages"
 			maxPages="<%= 25 %>"
@@ -78,10 +79,18 @@ JournalArticleDisplay articleDisplay = journalPreviewArticleContentTemplateDispl
 
 <script>
 	function previewArticleContentTemplate() {
-		var ddmTemplateId = document.getElementById('<portlet:namespace />ddmTemplateId');
+		var ddmTemplateId = document.getElementById(
+			'<portlet:namespace />ddmTemplateId'
+		);
 
-		location.href = Liferay.Util.addParams('<portlet:namespace />ddmTemplateId=' + ddmTemplateId.value, '<%= journalPreviewArticleContentTemplateDisplayContext.getPortletURL() %>');
+		location.href = Liferay.Util.addParams(
+			'<portlet:namespace />ddmTemplateId=' + ddmTemplateId.value,
+			'<%= journalPreviewArticleContentTemplateDisplayContext.getPortletURL() %>'
+		);
 	}
 
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />previewFm', '<%= HtmlUtil.escapeJS(journalPreviewArticleContentTemplateDisplayContext.getEventName()) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />previewFm',
+		'<%= HtmlUtil.escapeJS(journalPreviewArticleContentTemplateDisplayContext.getEventName()) %>'
+	);
 </script>

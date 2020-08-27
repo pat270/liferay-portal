@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property custom.properties = "default.layout.template.id=1_column";
@@ -12,17 +13,10 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "Microblogs Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Microblogs Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "Microblogs Page");
@@ -57,8 +51,6 @@ definition {
 
 	@priority = "5"
 	test DeleteEntry {
-		property portal.acceptance = "true";
-
 		Microblogs.updateStatus(entryContent = "Microblog Entry Content");
 
 		Microblogs.gotoTimelineTab();
@@ -74,8 +66,6 @@ definition {
 
 	@priority = "5"
 	test EditEntry {
-		property portal.acceptance = "true";
-
 		Microblogs.updateStatus(entryContent = "Microblog Entry Content");
 
 		Microblogs.gotoTimelineTab();
@@ -90,4 +80,5 @@ definition {
 			entryContent = "Edited Microblogs Content",
 			userName = "Test Test");
 	}
+
 }

@@ -90,7 +90,7 @@ Set<String> contextNames = JSONWebServiceActionsManagerUtil.getContextNames();
 		<liferay-ui:panel
 			collapsible="<%= true %>"
 			extended="<%= true %>"
-			id='<%= "apiService" + jsonWebServiceClassName + "Panel" %>'
+			id='<%= "apiService" + HtmlUtil.getAUICompatibleId(jsonWebServiceClassName) + "Panel" %>'
 			persistState="<%= true %>"
 			title="<%= panelTitle %>"
 		>
@@ -108,12 +108,7 @@ Set<String> contextNames = JSONWebServiceActionsManagerUtil.getContextNames();
 				%>
 
 					<li class="lfr-api-signature <%= serviceSignature.equals(signature) ? "selected" : StringPool.BLANK %>">
-
-						<%
-						String methodURL = HttpUtil.addParameter(jsonWSContextPath, "signature", serviceSignature);
-						%>
-
-						<a class="lfr-api-service-result method-name" data-metaData="<%= jsonWebServiceClassName %>" href="<%= methodURL %>">
+						<a class="lfr-api-service-result method-name" data-metaData="<%= jsonWebServiceClassName %>" href="<%= HttpUtil.addParameter(jsonWSContextPath, "signature", serviceSignature) %>">
 							<%= path %>
 						</a>
 					</li>

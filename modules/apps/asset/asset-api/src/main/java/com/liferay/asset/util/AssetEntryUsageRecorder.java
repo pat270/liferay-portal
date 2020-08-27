@@ -18,8 +18,11 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.portal.kernel.exception.PortalException;
 
 /**
- * @author Pavel Savinov
+ * @author     Pavel Savinov
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.layout.util.LayoutClassedModelUsageRecorder}
  */
+@Deprecated
 public interface AssetEntryUsageRecorder {
 
 	public void record(AssetEntry assetEntry) throws PortalException;

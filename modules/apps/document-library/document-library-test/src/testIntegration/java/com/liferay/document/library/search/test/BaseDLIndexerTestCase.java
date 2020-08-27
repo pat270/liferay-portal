@@ -24,6 +24,9 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.legacy.searcher.SearchRequestBuilderFactory;
+import com.liferay.portal.search.model.uid.UIDFactory;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
 import com.liferay.portal.test.rule.Inject;
 
@@ -53,12 +56,14 @@ public abstract class BaseDLIndexerTestCase {
 	}
 
 	protected DLSearchFixture createDLSearchFixture() {
-		return new DLSearchFixture(indexerRegistry);
+		return new DLSearchFixture(
+			indexerRegistry, searchRequestBuilderFactory);
 	}
 
 	protected IndexedFieldsFixture createIndexedFieldsFixture() {
 		return new IndexedFieldsFixture(
-			resourcePermissionLocalService, searchEngineHelper);
+			resourcePermissionLocalService, searchEngineHelper, uidFactory,
+			documentBuilderFactory);
 	}
 
 	protected void setGroup(Group group) {
@@ -90,6 +95,10 @@ public abstract class BaseDLIndexerTestCase {
 	protected DLFolderLocalService dlFolderLocalService;
 
 	protected DLSearchFixture dlSearchFixture;
+
+	@Inject
+	protected DocumentBuilderFactory documentBuilderFactory;
+
 	protected IndexedFieldsFixture indexedFieldsFixture;
 
 	@Inject
@@ -100,6 +109,12 @@ public abstract class BaseDLIndexerTestCase {
 
 	@Inject
 	protected SearchEngineHelper searchEngineHelper;
+
+	@Inject
+	protected SearchRequestBuilderFactory searchRequestBuilderFactory;
+
+	@Inject
+	protected UIDFactory uidFactory;
 
 	@DeleteAfterTestRun
 	private final List<Group> _groups = new ArrayList<>(1);

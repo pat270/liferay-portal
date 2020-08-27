@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class FragmentCollectionPersistenceTest {
 
 		FragmentCollection newFragmentCollection = _persistence.create(pk);
 
+		newFragmentCollection.setMvccVersion(RandomTestUtil.nextLong());
+
+		newFragmentCollection.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newFragmentCollection.setUuid(RandomTestUtil.randomString());
 
 		newFragmentCollection.setGroupId(RandomTestUtil.nextLong());
@@ -154,6 +158,12 @@ public class FragmentCollectionPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newFragmentCollection.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingFragmentCollection.getMvccVersion(),
+			newFragmentCollection.getMvccVersion());
+		Assert.assertEquals(
+			existingFragmentCollection.getCtCollectionId(),
+			newFragmentCollection.getCtCollectionId());
 		Assert.assertEquals(
 			existingFragmentCollection.getUuid(),
 			newFragmentCollection.getUuid());
@@ -229,6 +239,11 @@ public class FragmentCollectionPersistenceTest {
 	}
 
 	@Test
+	public void testCountByGroupIdArrayable() throws Exception {
+		_persistence.countByGroupId(new long[] {RandomTestUtil.nextLong(), 0L});
+	}
+
+	@Test
 	public void testCountByG_FCK() throws Exception {
 		_persistence.countByG_FCK(RandomTestUtil.nextLong(), "");
 
@@ -244,6 +259,13 @@ public class FragmentCollectionPersistenceTest {
 		_persistence.countByG_LikeN(0L, "null");
 
 		_persistence.countByG_LikeN(0L, (String)null);
+	}
+
+	@Test
+	public void testCountByG_LikeNArrayable() throws Exception {
+		_persistence.countByG_LikeN(
+			new long[] {RandomTestUtil.nextLong(), 0L},
+			RandomTestUtil.randomString());
 	}
 
 	@Test
@@ -270,19 +292,13 @@ public class FragmentCollectionPersistenceTest {
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
-	@Test
-	public void testFilterFindByGroupId() throws Exception {
-		_persistence.filterFindByGroupId(
-			0, QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
-	}
-
 	protected OrderByComparator<FragmentCollection> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"FragmentCollection", "uuid", true, "fragmentCollectionId", true,
-			"groupId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true,
-			"fragmentCollectionKey", true, "name", true, "description", true,
-			"lastPublishDate", true);
+			"FragmentCollection", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "fragmentCollectionId", true, "groupId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "fragmentCollectionKey", true, "name",
+			true, "description", true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -514,39 +530,84 @@ public class FragmentCollectionPersistenceTest {
 
 		_persistence.clearCache();
 
-		FragmentCollection existingFragmentCollection =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newFragmentCollection.getPrimaryKey());
+				newFragmentCollection.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingFragmentCollection.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingFragmentCollection, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		FragmentCollection newFragmentCollection = addFragmentCollection();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			FragmentCollection.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"fragmentCollectionId",
+				newFragmentCollection.getFragmentCollectionId()));
+
+		List<FragmentCollection> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(FragmentCollection fragmentCollection) {
 		Assert.assertEquals(
-			Long.valueOf(existingFragmentCollection.getGroupId()),
+			fragmentCollection.getUuid(),
+			ReflectionTestUtil.invoke(
+				fragmentCollection, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(fragmentCollection.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFragmentCollection, "getOriginalGroupId",
-				new Class<?>[0]));
+				fragmentCollection, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingFragmentCollection.getGroupId()),
+			Long.valueOf(fragmentCollection.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingFragmentCollection, "getOriginalGroupId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingFragmentCollection.getFragmentCollectionKey(),
-				ReflectionTestUtil.invoke(
-					existingFragmentCollection,
-					"getOriginalFragmentCollectionKey", new Class<?>[0])));
+				fragmentCollection, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			fragmentCollection.getFragmentCollectionKey(),
+			ReflectionTestUtil.invoke(
+				fragmentCollection, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "fragmentCollectionKey"));
 	}
 
 	protected FragmentCollection addFragmentCollection() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		FragmentCollection fragmentCollection = _persistence.create(pk);
+
+		fragmentCollection.setMvccVersion(RandomTestUtil.nextLong());
+
+		fragmentCollection.setCtCollectionId(RandomTestUtil.nextLong());
 
 		fragmentCollection.setUuid(RandomTestUtil.randomString());
 

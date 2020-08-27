@@ -14,31 +14,35 @@
 
 package com.liferay.dynamic.data.mapping.service.impl;
 
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.exception.FormInstanceNameException;
 import com.liferay.dynamic.data.mapping.exception.FormInstanceStructureIdException;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceSettings;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceVersion;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceVersionLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.base.DDMFormInstanceLocalServiceBaseImpl;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.dynamic.data.mapping.util.DDMFormInstanceFactory;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValuesValidator;
+import com.liferay.mail.kernel.model.MailMessage;
+import com.liferay.mail.kernel.service.MailService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -51,16 +55,25 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.mail.internet.InternetAddress;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Leonardo Barros
  */
+@Component(
+	property = "model.class.name=com.liferay.dynamic.data.mapping.model.DDMFormInstance",
+	service = AopService.class
+)
 public class DDMFormInstanceLocalServiceImpl
 	extends DDMFormInstanceLocalServiceBaseImpl {
 
@@ -111,11 +124,9 @@ public class DDMFormInstanceLocalServiceImpl
 				ddmFormInstance, serviceContext.getModelPermissions());
 		}
 
-		long structureVersionId = getStructureVersionId(ddmStructureId);
-
 		addFormInstanceVersion(
-			structureVersionId, user, ddmFormInstance, _VERSION_DEFAULT,
-			serviceContext);
+			getStructureVersionId(ddmStructureId), user, ddmFormInstance,
+			_VERSION_DEFAULT, serviceContext);
 
 		return updatedDDMFormInstance;
 	}
@@ -144,7 +155,7 @@ public class DDMFormInstanceLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		DDMStructure ddmStructure = ddmStructureLocalService.addStructure(
+		DDMStructure ddmStructure = _ddmStructureLocalService.addStructure(
 			userId, groupId, DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,
 			classNameLocalService.getClassNameId(DDMFormInstance.class),
 			StringPool.BLANK, nameMap, descriptionMap, ddmForm, ddmFormLayout,
@@ -180,24 +191,6 @@ public class DDMFormInstanceLocalServiceImpl
 			ddmFormInstance.getFormInstanceId(), modelPermissions);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #addFormInstanceResources(DDMFormInstance, ModelPermissions)}
-	 */
-	@Deprecated
-	@Override
-	public void addFormInstanceResources(
-			DDMFormInstance ddmFormInstance, String[] groupPermissions,
-			String[] guestPermissions)
-		throws PortalException {
-
-		resourceLocalService.addModelResources(
-			ddmFormInstance.getCompanyId(), ddmFormInstance.getGroupId(),
-			ddmFormInstance.getUserId(), DDMFormInstance.class.getName(),
-			ddmFormInstance.getFormInstanceId(), groupPermissions,
-			guestPermissions);
-	}
-
 	@Override
 	@SystemEvent(
 		action = SystemEventConstants.ACTION_SKIP,
@@ -206,29 +199,32 @@ public class DDMFormInstanceLocalServiceImpl
 	public void deleteFormInstance(DDMFormInstance ddmFormInstance)
 		throws PortalException {
 
-		deleteDDMFormInstance(ddmFormInstance);
-
 		resourceLocalService.deleteResource(
 			ddmFormInstance.getCompanyId(), DDMFormInstance.class.getName(),
 			ResourceConstants.SCOPE_INDIVIDUAL,
 			ddmFormInstance.getFormInstanceId());
 
-		ddmFormInstanceRecordLocalService.deleteFormInstanceRecords(
+		_ddmFormInstanceRecordLocalService.deleteFormInstanceRecords(
 			ddmFormInstance.getFormInstanceId());
 
-		ddmFormInstanceVersionLocalService.deleteByFormInstanceId(
+		_ddmFormInstanceVersionLocalService.deleteByFormInstanceId(
 			ddmFormInstance.getFormInstanceId());
 
 		long structureId = ddmFormInstance.getStructureId();
 
-		if (ddmStructureLocalService.fetchDDMStructure(structureId) != null) {
-			ddmStructureLocalService.deleteStructure(structureId);
+		if (_ddmStructureLocalService.fetchDDMStructure(structureId) != null) {
+			_ddmStructureLocalService.deleteStructure(structureId);
 		}
 
 		workflowDefinitionLinkLocalService.deleteWorkflowDefinitionLink(
 			ddmFormInstance.getCompanyId(), ddmFormInstance.getGroupId(),
 			DDMFormInstance.class.getName(),
 			ddmFormInstance.getFormInstanceId(), 0);
+
+		// See LPS-97208 and
+		// DDMFormInstanceRecordSearchTest#testBasicSearchWithDefaultUser.
+
+		deleteDDMFormInstance(ddmFormInstance);
 	}
 
 	@Override
@@ -278,6 +274,11 @@ public class DDMFormInstanceLocalServiceImpl
 	@Override
 	public int getFormInstancesCount(long groupId) {
 		return ddmFormInstancePersistence.countByGroupId(groupId);
+	}
+
+	@Override
+	public int getFormInstancesCount(String uuid) throws PortalException {
+		return ddmFormInstancePersistence.countByUuid(uuid);
 	}
 
 	@Override
@@ -336,6 +337,29 @@ public class DDMFormInstanceLocalServiceImpl
 	}
 
 	@Override
+	public void sendEmail(
+			long userId, String message, String subject,
+			String[] toEmailAddresses)
+		throws Exception {
+
+		User user = userLocalService.getUser(userId);
+
+		MailMessage mailMessage = new MailMessage(
+			new InternetAddress(user.getEmailAddress(), user.getFullName()),
+			subject, message, false);
+
+		List<InternetAddress> internetAddresses = new ArrayList<>();
+
+		for (String toEmailAddress : toEmailAddresses) {
+			internetAddresses.add(new InternetAddress(toEmailAddress));
+		}
+
+		mailMessage.setTo(internetAddresses.toArray(new InternetAddress[0]));
+
+		_mailService.sendEmail(mailMessage);
+	}
+
+	@Override
 	public DDMFormInstance updateFormInstance(
 			long formInstanceId, DDMFormValues settingsDDMFormValues)
 		throws PortalException {
@@ -364,7 +388,7 @@ public class DDMFormInstanceLocalServiceImpl
 		DDMFormInstance ddmFormInstance =
 			ddmFormInstancePersistence.findByPrimaryKey(ddmFormInstanceId);
 
-		ddmStructureLocalService.updateStructure(
+		_ddmStructureLocalService.updateStructure(
 			serviceContext.getUserId(), ddmFormInstance.getStructureId(),
 			DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID, nameMap,
 			descriptionMap, ddmForm, ddmFormLayout, serviceContext);
@@ -422,9 +446,7 @@ public class DDMFormInstanceLocalServiceImpl
 		ddmFormInstanceVersion.setStatusByUserName(user.getFullName());
 		ddmFormInstanceVersion.setStatusDate(ddmFormInstance.getModifiedDate());
 
-		ddmFormInstanceVersionPersistence.update(ddmFormInstanceVersion);
-
-		return ddmFormInstanceVersion;
+		return ddmFormInstanceVersionPersistence.update(ddmFormInstanceVersion);
 	}
 
 	protected DDMFormInstance doUpdateFormInstance(
@@ -441,7 +463,7 @@ public class DDMFormInstanceLocalServiceImpl
 		User user = userLocalService.getUser(userId);
 
 		DDMFormInstanceVersion latestDDMFormInstanceVersion =
-			ddmFormInstanceVersionLocalService.getLatestFormInstanceVersion(
+			_ddmFormInstanceVersionLocalService.getLatestFormInstanceVersion(
 				ddmFormInstance.getFormInstanceId());
 
 		int status = GetterUtil.getInteger(
@@ -508,7 +530,7 @@ public class DDMFormInstanceLocalServiceImpl
 	protected Locale getDDMFormDefaultLocale(long ddmStructureId)
 		throws PortalException {
 
-		DDMStructure ddmStructure = ddmStructureLocalService.getDDMStructure(
+		DDMStructure ddmStructure = _ddmStructureLocalService.getDDMStructure(
 			ddmStructureId);
 
 		DDMForm ddmForm = ddmStructure.getDDMForm();
@@ -521,17 +543,13 @@ public class DDMFormInstanceLocalServiceImpl
 
 		DDMForm ddmForm = DDMFormFactory.create(DDMFormInstanceSettings.class);
 
-		DDMFormValuesDeserializer ddmFormValuesDeserializer =
-			ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				"json");
-
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				serializedSettingsDDMFormValues, ddmForm);
 
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
-				ddmFormValuesDeserializer.deserialize(builder.build());
+				_jsonDDMFormValuesDeserializer.deserialize(builder.build());
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -567,7 +585,7 @@ public class DDMFormInstanceLocalServiceImpl
 	protected long getStructureVersionId(long ddmStructureId)
 		throws PortalException {
 
-		DDMStructure ddmStructure = ddmStructureLocalService.getStructure(
+		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
 			ddmStructureId);
 
 		DDMStructureVersion ddmStructureVersion =
@@ -587,16 +605,13 @@ public class DDMFormInstanceLocalServiceImpl
 	}
 
 	protected String serialize(DDMFormValues ddmFormValues) {
-		DDMFormValuesSerializer ddmFormValuesSerializer =
-			ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
-
 		DDMFormValuesSerializerSerializeRequest.Builder builder =
 			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
 				ddmFormValues);
 
 		DDMFormValuesSerializerSerializeResponse
 			ddmFormValuesSerializerSerializeResponse =
-				ddmFormValuesSerializer.serialize(builder.build());
+				_jsonDDMFormValuesSerializer.serialize(builder.build());
 
 		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
@@ -607,7 +622,7 @@ public class DDMFormInstanceLocalServiceImpl
 		throws PortalException {
 
 		DDMFormInstanceVersion ddmFormInstanceVersion =
-			ddmFormInstanceVersionLocalService.getLatestFormInstanceVersion(
+			_ddmFormInstanceVersionLocalService.getLatestFormInstanceVersion(
 				ddmFormInstance.getFormInstanceId());
 
 		ddmFormInstanceVersion.setUserId(ddmFormInstance.getUserId());
@@ -656,7 +671,7 @@ public class DDMFormInstanceLocalServiceImpl
 			DDMFormValues settingsDDMFormValues)
 		throws PortalException {
 
-		ddmFormValuesValidator.validate(settingsDDMFormValues);
+		_ddmFormValuesValidator.validate(settingsDDMFormValues);
 	}
 
 	protected void validateName(
@@ -674,7 +689,7 @@ public class DDMFormInstanceLocalServiceImpl
 	protected void validateStructureId(long ddmStructureId)
 		throws PortalException {
 
-		DDMStructure ddmStructure = ddmStructureLocalService.fetchStructure(
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
 			ddmStructureId);
 
 		if (ddmStructure == null) {
@@ -684,15 +699,29 @@ public class DDMFormInstanceLocalServiceImpl
 		}
 	}
 
-	@ServiceReference(type = DDMFormValuesDeserializerTracker.class)
-	protected DDMFormValuesDeserializerTracker ddmFormValuesDeserializerTracker;
-
-	@ServiceReference(type = DDMFormValuesSerializerTracker.class)
-	protected DDMFormValuesSerializerTracker ddmFormValuesSerializerTracker;
-
-	@ServiceReference(type = DDMFormValuesValidator.class)
-	protected DDMFormValuesValidator ddmFormValuesValidator;
-
 	private static final String _VERSION_DEFAULT = "1.0";
+
+	@Reference
+	private DDMFormInstanceRecordLocalService
+		_ddmFormInstanceRecordLocalService;
+
+	@Reference
+	private DDMFormInstanceVersionLocalService
+		_ddmFormInstanceVersionLocalService;
+
+	@Reference
+	private DDMFormValuesValidator _ddmFormValuesValidator;
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Reference(target = "(ddm.form.values.deserializer.type=json)")
+	private DDMFormValuesDeserializer _jsonDDMFormValuesDeserializer;
+
+	@Reference(target = "(ddm.form.values.serializer.type=json)")
+	private DDMFormValuesSerializer _jsonDDMFormValuesSerializer;
+
+	@Reference
+	private MailService _mailService;
 
 }

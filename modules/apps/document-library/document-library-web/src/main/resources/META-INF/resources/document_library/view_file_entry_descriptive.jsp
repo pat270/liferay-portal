@@ -27,10 +27,8 @@ FileShortcut fileShortcut = null;
 if (result instanceof AssetEntry) {
 	AssetEntry assetEntry = (AssetEntry)result;
 
-	if (assetEntry.getClassName().equals(DLFileEntryConstants.getClassName())) {
+	if (Objects.equals(assetEntry.getClassName(), DLFileEntryConstants.getClassName())) {
 		fileEntry = DLAppLocalServiceUtil.getFileEntry(assetEntry.getClassPK());
-
-		fileEntry = fileEntry.toEscapedModel();
 	}
 	else {
 		fileShortcut = DLAppLocalServiceUtil.getFileShortcut(assetEntry.getClassPK());
@@ -63,6 +61,15 @@ Date modifiedDate = latestFileVersion.getModifiedDate();
 
 String modifiedDateDescription = LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - modifiedDate.getTime(), true);
 
+DLViewFileVersionDisplayContext dlViewFileVersionDisplayContext = null;
+
+if (fileShortcut == null) {
+	dlViewFileVersionDisplayContext = dlDisplayContextProvider.getDLViewFileVersionDisplayContext(request, response, latestFileVersion);
+}
+else {
+	dlViewFileVersionDisplayContext = dlDisplayContextProvider.getDLViewFileVersionDisplayContext(request, response, fileShortcut);
+}
+
 PortletURL rowURL = liferayPortletResponse.createRenderURL();
 
 rowURL.setParameter("mvcRenderCommandName", "/document_library/view_file_entry");
@@ -79,6 +86,9 @@ rowURL.setParameter("fileEntryId", String.valueOf(fileEntry.getFileEntryId()));
 <span>
 	<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(latestFileVersion.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 </span>
+<span>
+	<%= DLUtil.getAbsolutePath(liferayPortletRequest, fileEntry.getFolderId()).replace(StringPool.RAQUO_CHAR, StringPool.GREATER_THAN) %>
+</span>
 
 <c:if test="<%= latestFileVersion.getModel() instanceof DLFileVersion %>">
 
@@ -93,19 +103,25 @@ rowURL.setParameter("fileEntryId", String.valueOf(fileEntry.getFileEntryId()));
 	</span>
 </c:if>
 
-<span>
+<span class="file-entry-status">
 	<aui:workflow-status showIcon="<%= false %>" showLabel="<%= false %>" status="<%= latestFileVersion.getStatus() %>" />
 
 	<c:choose>
 		<c:when test="<%= fileShortcut != null %>">
-			<span>
+			<span class="inline-item inline-item-after state-icon">
 				<aui:icon image="shortcut" markupView="lexicon" message="shortcut" />
 			</span>
 		</c:when>
 		<c:when test="<%= fileEntry.hasLock() || fileEntry.isCheckedOut() %>">
-			<span>
+			<span class="inline-item inline-item-after state-icon">
 				<aui:icon image="lock" markupView="lexicon" message="locked" />
 			</span>
 		</c:when>
 	</c:choose>
+
+	<c:if test="<%= dlViewFileVersionDisplayContext.isShared() %>">
+		<span class="inline-item inline-item-after lfr-portal-tooltip state-icon" title="<%= LanguageUtil.get(request, "shared") %>">
+			<aui:icon image="users" markupView="lexicon" message="shared" />
+		</span>
+	</c:if>
 </span>

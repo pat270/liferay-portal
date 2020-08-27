@@ -16,12 +16,9 @@ package com.liferay.message.boards.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class CategoryNameException extends PortalException {
 
 	public CategoryNameException() {
@@ -31,12 +28,12 @@ public class CategoryNameException extends PortalException {
 		super(msg);
 	}
 
-	public CategoryNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public CategoryNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public CategoryNameException(Throwable cause) {
-		super(cause);
+	public CategoryNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

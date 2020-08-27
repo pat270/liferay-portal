@@ -15,7 +15,9 @@
 package com.liferay.document.library.preview.audio.internal;
 
 import com.liferay.document.library.constants.DLFileVersionPreviewConstants;
-import com.liferay.document.library.kernel.util.AudioProcessorUtil;
+import com.liferay.document.library.kernel.model.DLProcessorConstants;
+import com.liferay.document.library.kernel.util.AudioProcessor;
+import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
 import com.liferay.document.library.preview.DLPreviewRenderer;
 import com.liferay.document.library.preview.DLPreviewRendererProvider;
@@ -35,58 +37,58 @@ import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+
 /**
  * @author Alejandro Tardín
  */
+@Component(service = DLPreviewRendererProvider.class)
 public class AudioDLPreviewRendererProvider
 	implements DLPreviewRendererProvider {
 
-	public AudioDLPreviewRendererProvider(
-		DLFileVersionPreviewLocalService dlFileVersionPreviewLocalService,
-		DLURLHelper dlURLHelper, ServletContext servletContext) {
-
-		_dlFileVersionPreviewLocalService = dlFileVersionPreviewLocalService;
-		_dlURLHelper = dlURLHelper;
-		_servletContext = servletContext;
+	@Override
+	public Set<String> getMimeTypes() {
+		return _audioProcessor.getAudioMimeTypes();
 	}
 
 	@Override
-	public Optional<DLPreviewRenderer> getPreviewDLPreviewRendererOptional(
+	public DLPreviewRenderer getPreviewDLPreviewRenderer(
 		FileVersion fileVersion) {
 
-		if (!AudioProcessorUtil.isAudioSupported(fileVersion)) {
-			return Optional.empty();
+		if (!_audioProcessor.isAudioSupported(fileVersion)) {
+			return null;
 		}
 
-		return Optional.of(
-			(request, response) -> {
-				checkForPreviewGenerationExceptions(fileVersion);
+		return (request, response) -> {
+			checkForPreviewGenerationExceptions(fileVersion);
 
-				RequestDispatcher requestDispatcher =
-					_servletContext.getRequestDispatcher("/preview/view.jsp");
+			RequestDispatcher requestDispatcher =
+				_servletContext.getRequestDispatcher("/preview/view.jsp");
 
-				request.setAttribute(
-					WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, fileVersion);
+			request.setAttribute(
+				WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, fileVersion);
 
-				request.setAttribute(
-					DLPreviewAudioWebKeys.PREVIEW_FILE_URLS,
-					_getPreviewFileURLs(fileVersion, request));
+			request.setAttribute(
+				DLPreviewAudioWebKeys.PREVIEW_FILE_URLS,
+				_getPreviewFileURLs(fileVersion, request));
 
-				requestDispatcher.include(request, response);
-			});
+			requestDispatcher.include(request, response);
+		};
 	}
 
 	@Override
-	public Optional<DLPreviewRenderer> getThumbnailDLPreviewRendererOptional(
+	public DLPreviewRenderer getThumbnailDLPreviewRenderer(
 		FileVersion fileVersion) {
 
-		return Optional.empty();
+		return null;
 	}
 
 	protected void checkForPreviewGenerationExceptions(FileVersion fileVersion)
@@ -99,13 +101,22 @@ public class AudioDLPreviewRendererProvider
 			throw new DLFileEntryPreviewGenerationException();
 		}
 
-		if (!AudioProcessorUtil.hasAudio(fileVersion)) {
+		if (!_audioProcessor.hasAudio(fileVersion)) {
 			if (!DLProcessorRegistryUtil.isPreviewableSize(fileVersion)) {
 				throw new DLPreviewSizeException();
 			}
 
 			throw new DLPreviewGenerationInProcessException();
 		}
+	}
+
+	@Reference(
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(type=" + DLProcessorConstants.AUDIO_PROCESSOR + ")",
+		unbind = "-"
+	)
+	protected void setDLProcessor(DLProcessor dlProcessor) {
+		_audioProcessor = (AudioProcessor)dlProcessor;
 	}
 
 	private List<String> _getPreviewFileURLs(
@@ -131,9 +142,10 @@ public class AudioDLPreviewRendererProvider
 			for (String dlFileEntryPreviewAudioContainer :
 					PropsValues.DL_FILE_ENTRY_PREVIEW_AUDIO_CONTAINERS) {
 
-				if (AudioProcessorUtil.getPreviewFileSize(
-						fileVersion, dlFileEntryPreviewAudioContainer) > 0) {
+				long previewFileSize = _audioProcessor.getPreviewFileSize(
+					fileVersion, dlFileEntryPreviewAudioContainer);
 
+				if (previewFileSize > 0) {
 					previewFileURLs.add(
 						_dlURLHelper.getPreviewURL(
 							fileVersion.getFileEntry(), fileVersion,
@@ -143,8 +155,8 @@ public class AudioDLPreviewRendererProvider
 				}
 			}
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 
 		if (previewFileURLs.isEmpty()) {
@@ -155,9 +167,17 @@ public class AudioDLPreviewRendererProvider
 		return previewFileURLs;
 	}
 
-	private final DLFileVersionPreviewLocalService
-		_dlFileVersionPreviewLocalService;
-	private final DLURLHelper _dlURLHelper;
-	private final ServletContext _servletContext;
+	private AudioProcessor _audioProcessor;
+
+	@Reference
+	private DLFileVersionPreviewLocalService _dlFileVersionPreviewLocalService;
+
+	@Reference
+	private DLURLHelper _dlURLHelper;
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.document.library.preview.audio)"
+	)
+	private ServletContext _servletContext;
 
 }

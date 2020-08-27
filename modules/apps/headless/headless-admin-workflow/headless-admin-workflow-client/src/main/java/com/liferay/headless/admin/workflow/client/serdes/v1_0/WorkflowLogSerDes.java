@@ -20,11 +20,11 @@ import com.liferay.headless.admin.workflow.client.json.BaseJSONParser;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.Generated;
 
@@ -130,6 +130,16 @@ public class WorkflowLogSerDes {
 			sb.append(String.valueOf(workflowLog.getPreviousPerson()));
 		}
 
+		if (workflowLog.getPreviousRole() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"previousRole\": ");
+
+			sb.append(String.valueOf(workflowLog.getPreviousRole()));
+		}
+
 		if (workflowLog.getPreviousState() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -142,6 +152,16 @@ public class WorkflowLogSerDes {
 			sb.append(_escape(workflowLog.getPreviousState()));
 
 			sb.append("\"");
+		}
+
+		if (workflowLog.getRole() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"role\": ");
+
+			sb.append(String.valueOf(workflowLog.getRole()));
 		}
 
 		if (workflowLog.getState() != null) {
@@ -158,16 +178,6 @@ public class WorkflowLogSerDes {
 			sb.append("\"");
 		}
 
-		if (workflowLog.getTaskId() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"taskId\": ");
-
-			sb.append(workflowLog.getTaskId());
-		}
-
 		if (workflowLog.getType() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -177,9 +187,19 @@ public class WorkflowLogSerDes {
 
 			sb.append("\"");
 
-			sb.append(_escape(workflowLog.getType()));
+			sb.append(workflowLog.getType());
 
 			sb.append("\"");
+		}
+
+		if (workflowLog.getWorkflowTaskId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"workflowTaskId\": ");
+
+			sb.append(workflowLog.getWorkflowTaskId());
 		}
 
 		sb.append("}");
@@ -199,7 +219,7 @@ public class WorkflowLogSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -219,9 +239,14 @@ public class WorkflowLogSerDes {
 			map.put("commentLog", String.valueOf(workflowLog.getCommentLog()));
 		}
 
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(workflowLog.getDateCreated()));
+		if (workflowLog.getDateCreated() == null) {
+			map.put("dateCreated", null);
+		}
+		else {
+			map.put(
+				"dateCreated",
+				liferayToJSONDateFormat.format(workflowLog.getDateCreated()));
+		}
 
 		if (workflowLog.getId() == null) {
 			map.put("id", null);
@@ -246,6 +271,14 @@ public class WorkflowLogSerDes {
 				String.valueOf(workflowLog.getPreviousPerson()));
 		}
 
+		if (workflowLog.getPreviousRole() == null) {
+			map.put("previousRole", null);
+		}
+		else {
+			map.put(
+				"previousRole", String.valueOf(workflowLog.getPreviousRole()));
+		}
+
 		if (workflowLog.getPreviousState() == null) {
 			map.put("previousState", null);
 		}
@@ -255,18 +288,18 @@ public class WorkflowLogSerDes {
 				String.valueOf(workflowLog.getPreviousState()));
 		}
 
+		if (workflowLog.getRole() == null) {
+			map.put("role", null);
+		}
+		else {
+			map.put("role", String.valueOf(workflowLog.getRole()));
+		}
+
 		if (workflowLog.getState() == null) {
 			map.put("state", null);
 		}
 		else {
 			map.put("state", String.valueOf(workflowLog.getState()));
-		}
-
-		if (workflowLog.getTaskId() == null) {
-			map.put("taskId", null);
-		}
-		else {
-			map.put("taskId", String.valueOf(workflowLog.getTaskId()));
 		}
 
 		if (workflowLog.getType() == null) {
@@ -276,45 +309,19 @@ public class WorkflowLogSerDes {
 			map.put("type", String.valueOf(workflowLog.getType()));
 		}
 
+		if (workflowLog.getWorkflowTaskId() == null) {
+			map.put("workflowTaskId", null);
+		}
+		else {
+			map.put(
+				"workflowTaskId",
+				String.valueOf(workflowLog.getWorkflowTaskId()));
+		}
+
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class WorkflowLogJSONParser
+	public static class WorkflowLogJSONParser
 		extends BaseJSONParser<WorkflowLog> {
 
 		@Override
@@ -367,9 +374,21 @@ public class WorkflowLogSerDes {
 						CreatorSerDes.toDTO((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "previousRole")) {
+				if (jsonParserFieldValue != null) {
+					workflowLog.setPreviousRole(
+						RoleSerDes.toDTO((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "previousState")) {
 				if (jsonParserFieldValue != null) {
 					workflowLog.setPreviousState((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "role")) {
+				if (jsonParserFieldValue != null) {
+					workflowLog.setRole(
+						RoleSerDes.toDTO((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "state")) {
@@ -377,15 +396,16 @@ public class WorkflowLogSerDes {
 					workflowLog.setState((String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "taskId")) {
-				if (jsonParserFieldValue != null) {
-					workflowLog.setTaskId(
-						Long.valueOf((String)jsonParserFieldValue));
-				}
-			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
 				if (jsonParserFieldValue != null) {
-					workflowLog.setType((String)jsonParserFieldValue);
+					workflowLog.setType(
+						WorkflowLog.Type.create((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "workflowTaskId")) {
+				if (jsonParserFieldValue != null) {
+					workflowLog.setWorkflowTaskId(
+						Long.valueOf((String)jsonParserFieldValue));
 				}
 			}
 			else {
@@ -394,6 +414,75 @@ public class WorkflowLogSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

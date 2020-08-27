@@ -12,7 +12,7 @@
 	<tag>
 		<description>Creates a flag icon that lets users report inappropriate content.</description>
 		<name>flags</name>
-		<tag-class>com.liferay.flags.taglib.servlet.taglib.soy.FlagsTag</tag-class>
+		<tag-class>com.liferay.flags.taglib.servlet.taglib.react.FlagsTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
 			<description>The flagged asset's Java class name.</description>
@@ -30,6 +30,12 @@
 			<description>The flagged asset's title.</description>
 			<name>contentTitle</name>
 			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description>The flagged asset's content URL.</description>
+			<name>contentURL</name>
+			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>

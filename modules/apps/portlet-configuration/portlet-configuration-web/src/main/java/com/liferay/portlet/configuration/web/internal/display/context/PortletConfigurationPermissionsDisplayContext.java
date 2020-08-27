@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.ResourcePrimKeyException;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Portlet;
@@ -27,8 +28,8 @@ import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.Resource;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -45,6 +46,7 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -58,11 +60,16 @@ import com.liferay.portlet.configuration.web.internal.configuration.RoleVisibili
 import com.liferay.portlet.configuration.web.internal.constants.PortletConfigurationPortletKeys;
 import com.liferay.portlet.rolesadmin.search.RoleSearch;
 import com.liferay.portlet.rolesadmin.search.RoleSearchTerms;
+import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
+import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
 import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletMode;
@@ -71,7 +78,6 @@ import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.WindowStateException;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -81,11 +87,13 @@ import javax.servlet.http.HttpSession;
 public class PortletConfigurationPermissionsDisplayContext {
 
 	public PortletConfigurationPermissionsDisplayContext(
-			HttpServletRequest httpServletRequest, RenderRequest renderRequest)
+			HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+			RoleTypeContributorProvider roleTypeContributorProvider)
 		throws PortalException {
 
 		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
+		_roleTypeContributorProvider = roleTypeContributorProvider;
 
 		long groupId = _getResourceGroupId();
 
@@ -112,7 +120,7 @@ public class PortletConfigurationPermissionsDisplayContext {
 			return _actions;
 		}
 
-		List<String> actions = ResourceActionsUtil.getResourceActions(
+		List<String> resourceActions = ResourceActionsUtil.getResourceActions(
 			_getPortletResource(), getModelResource());
 
 		if (Objects.equals(getModelResource(), Group.class.getName())) {
@@ -126,18 +134,18 @@ public class PortletConfigurationPermissionsDisplayContext {
 				modelResourceGroup.isLayoutSetPrototype() ||
 				modelResourceGroup.isUserGroup()) {
 
-				actions = new ArrayList<>(actions);
+				resourceActions = new ArrayList<>(resourceActions);
 
-				actions.remove(ActionKeys.ADD_LAYOUT_BRANCH);
-				actions.remove(ActionKeys.ADD_LAYOUT_SET_BRANCH);
-				actions.remove(ActionKeys.ASSIGN_MEMBERS);
-				actions.remove(ActionKeys.ASSIGN_USER_ROLES);
-				actions.remove(ActionKeys.MANAGE_ANNOUNCEMENTS);
-				actions.remove(ActionKeys.MANAGE_STAGING);
-				actions.remove(ActionKeys.MANAGE_TEAMS);
-				actions.remove(ActionKeys.PUBLISH_STAGING);
-				actions.remove(ActionKeys.VIEW_MEMBERS);
-				actions.remove(ActionKeys.VIEW_STAGING);
+				resourceActions.remove(ActionKeys.ADD_LAYOUT_BRANCH);
+				resourceActions.remove(ActionKeys.ADD_LAYOUT_SET_BRANCH);
+				resourceActions.remove(ActionKeys.ASSIGN_MEMBERS);
+				resourceActions.remove(ActionKeys.ASSIGN_USER_ROLES);
+				resourceActions.remove(ActionKeys.MANAGE_ANNOUNCEMENTS);
+				resourceActions.remove(ActionKeys.MANAGE_STAGING);
+				resourceActions.remove(ActionKeys.MANAGE_TEAMS);
+				resourceActions.remove(ActionKeys.PUBLISH_STAGING);
+				resourceActions.remove(ActionKeys.VIEW_MEMBERS);
+				resourceActions.remove(ActionKeys.VIEW_STAGING);
 			}
 		}
 		else if (Objects.equals(getModelResource(), Role.class.getName())) {
@@ -151,18 +159,15 @@ public class PortletConfigurationPermissionsDisplayContext {
 			if (name.equals(RoleConstants.GUEST) ||
 				name.equals(RoleConstants.USER)) {
 
-				actions = new ArrayList<>(actions);
+				resourceActions = new ArrayList<>(resourceActions);
 
-				actions.remove(ActionKeys.ASSIGN_MEMBERS);
-				actions.remove(ActionKeys.DEFINE_PERMISSIONS);
-				actions.remove(ActionKeys.DELETE);
-				actions.remove(ActionKeys.PERMISSIONS);
-				actions.remove(ActionKeys.UPDATE);
-				actions.remove(ActionKeys.VIEW);
+				resourceActions.remove(ActionKeys.ASSIGN_MEMBERS);
+				resourceActions.remove(ActionKeys.DELETE);
+				resourceActions.remove(ActionKeys.UPDATE);
 			}
 		}
 
-		_actions = actions;
+		_actions = resourceActions;
 
 		return _actions;
 	}
@@ -322,7 +327,7 @@ public class PortletConfigurationPermissionsDisplayContext {
 		return _resourcePrimKey;
 	}
 
-	public SearchContainer getRoleSearchContainer() throws Exception {
+	public SearchContainer<Role> getRoleSearchContainer() throws Exception {
 		if (_roleSearchContainer != null) {
 			return _roleSearchContainer;
 		}
@@ -346,9 +351,12 @@ public class PortletConfigurationPermissionsDisplayContext {
 			Role modelResourceRole = RoleLocalServiceUtil.getRole(
 				modelResourceRoleId);
 
-			if ((modelResourceRole.getType() ==
-					RoleConstants.TYPE_ORGANIZATION) ||
-				(modelResourceRole.getType() == RoleConstants.TYPE_SITE)) {
+			RoleTypeContributor roleTypeContributor =
+				_roleTypeContributorProvider.getRoleTypeContributor(
+					modelResourceRole.getType());
+
+			if (ArrayUtil.isNotEmpty(
+					roleTypeContributor.getExcludedRoleNames())) {
 
 				filterGroupRoles = true;
 			}
@@ -404,20 +412,26 @@ public class PortletConfigurationPermissionsDisplayContext {
 			}
 		}
 
-		List<String> excludedRoleNames = new ArrayList<>();
+		Set<String> excludedRoleNamesSet = new HashSet<>();
 
-		excludedRoleNames.add(RoleConstants.ADMINISTRATOR);
+		excludedRoleNamesSet.add(RoleConstants.ADMINISTRATOR);
 
 		if (filterGroupRoles) {
-			excludedRoleNames.add(RoleConstants.ORGANIZATION_ADMINISTRATOR);
-			excludedRoleNames.add(RoleConstants.ORGANIZATION_OWNER);
-			excludedRoleNames.add(RoleConstants.SITE_ADMINISTRATOR);
-			excludedRoleNames.add(RoleConstants.SITE_OWNER);
+			for (RoleTypeContributor roleTypeContributor :
+					_roleTypeContributorProvider.getRoleTypeContributors()) {
+
+				Collections.addAll(
+					excludedRoleNamesSet,
+					roleTypeContributor.getExcludedRoleNames());
+			}
 		}
 
 		if (filterGuestRole) {
-			excludedRoleNames.add(RoleConstants.GUEST);
+			excludedRoleNamesSet.add(RoleConstants.GUEST);
 		}
+
+		List<String> excludedRoleNames = ListUtil.fromCollection(
+			excludedRoleNamesSet);
 
 		long teamGroupId = _group.getGroupId();
 
@@ -525,6 +539,10 @@ public class PortletConfigurationPermissionsDisplayContext {
 
 		_roleTypes = RoleConstants.TYPES_REGULAR_AND_SITE;
 
+		if (_group.getType() == GroupConstants.TYPE_DEPOT) {
+			_roleTypes = _TYPES_DEPOT_AND_REGULAR;
+		}
+
 		if (ResourceActionsUtil.isPortalModelResource(getModelResource())) {
 			if (Objects.equals(
 					getModelResource(), Organization.class.getName()) ||
@@ -601,10 +619,8 @@ public class PortletConfigurationPermissionsDisplayContext {
 
 		HttpSession session = _httpServletRequest.getSession();
 
-		ServletContext servletContext = session.getServletContext();
-
 		_selResourceDescription = PortalUtil.getPortletTitle(
-			portlet, servletContext, themeDisplay.getLocale());
+			portlet, session.getServletContext(), themeDisplay.getLocale());
 
 		return _selResourceDescription;
 	}
@@ -712,6 +728,10 @@ public class PortletConfigurationPermissionsDisplayContext {
 		return _roleTypesParam;
 	}
 
+	private static final int[] _TYPES_DEPOT_AND_REGULAR = {
+		RoleConstants.TYPE_DEPOT, RoleConstants.TYPE_REGULAR
+	};
+
 	private List<String> _actions;
 	private Group _group;
 	private final long _groupId;
@@ -725,7 +745,8 @@ public class PortletConfigurationPermissionsDisplayContext {
 	private Long _resourceGroupId;
 	private String _resourcePrimKey;
 	private String _returnToFullPageURL;
-	private SearchContainer _roleSearchContainer;
+	private SearchContainer<Role> _roleSearchContainer;
+	private final RoleTypeContributorProvider _roleTypeContributorProvider;
 	private int[] _roleTypes;
 	private String _roleTypesParam;
 	private final Layout _selLayout;

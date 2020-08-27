@@ -16,6 +16,8 @@ package com.liferay.portal.kernel.security.auth;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -63,7 +65,7 @@ public class DefaultScreenNameGenerator implements ScreenNameGenerator {
 		if (!_USERS_SCREEN_NAME_ALLOW_NUMERIC &&
 			Validator.isNumber(screenName)) {
 
-			screenName = _NON_NUMERICAL_PREFIX + screenName;
+			screenName = _NONNUMERICAL_PREFIX + screenName;
 		}
 
 		String[] reservedScreenNames = PrefsPropsUtil.getStringArray(
@@ -76,15 +78,17 @@ public class DefaultScreenNameGenerator implements ScreenNameGenerator {
 			}
 		}
 
-		if (UserLocalServiceUtil.fetchUserByScreenName(companyId, screenName) !=
-				null) {
+		User user = UserLocalServiceUtil.fetchUserByScreenName(
+			companyId, screenName);
 
+		if (user != null) {
 			return getUnusedScreenName(companyId, screenName);
 		}
 
-		if (GroupLocalServiceUtil.fetchFriendlyURLGroup(
-				companyId, StringPool.SLASH + screenName) == null) {
+		Group friendlyURLGroup = GroupLocalServiceUtil.fetchFriendlyURLGroup(
+			companyId, StringPool.SLASH + screenName);
 
+		if (friendlyURLGroup == null) {
 			return screenName;
 		}
 
@@ -95,15 +99,18 @@ public class DefaultScreenNameGenerator implements ScreenNameGenerator {
 		for (int i = 1;; i++) {
 			String tempScreenName = screenName + StringPool.PERIOD + i;
 
-			if (UserLocalServiceUtil.fetchUserByScreenName(
-					companyId, tempScreenName) != null) {
+			User user = UserLocalServiceUtil.fetchUserByScreenName(
+				companyId, tempScreenName);
 
+			if (user != null) {
 				continue;
 			}
 
-			if (GroupLocalServiceUtil.fetchFriendlyURLGroup(
-					companyId, StringPool.SLASH + tempScreenName) == null) {
+			Group friendlyURLGroup =
+				GroupLocalServiceUtil.fetchFriendlyURLGroup(
+					companyId, StringPool.SLASH + tempScreenName);
 
+			if (friendlyURLGroup == null) {
 				return tempScreenName;
 			}
 		}
@@ -113,7 +120,7 @@ public class DefaultScreenNameGenerator implements ScreenNameGenerator {
 		StringUtil.splitLines(
 			PropsUtil.get(PropsKeys.ADMIN_RESERVED_SCREEN_NAMES));
 
-	private static final String _NON_NUMERICAL_PREFIX = "user.";
+	private static final String _NONNUMERICAL_PREFIX = "user.";
 
 	private static final boolean _USERS_SCREEN_NAME_ALLOW_NUMERIC =
 		GetterUtil.getBoolean(

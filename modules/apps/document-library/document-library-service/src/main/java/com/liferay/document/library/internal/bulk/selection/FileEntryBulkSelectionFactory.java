@@ -17,13 +17,13 @@ package com.liferay.document.library.internal.bulk.selection;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.bulk.selection.BulkSelection;
 import com.liferay.bulk.selection.BulkSelectionFactory;
+import com.liferay.bulk.selection.EmptyBulkSelection;
 import com.liferay.document.library.internal.bulk.selection.util.BulkSelectionFactoryUtil;
 import com.liferay.document.library.kernel.service.DLAppService;
-import com.liferay.portal.kernel.language.Language;
+import com.liferay.document.library.util.DLAssetHelper;
 import com.liferay.portal.kernel.repository.RepositoryProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Map;
@@ -35,23 +35,20 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = "model.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 	service = {BulkSelectionFactory.class, FileEntryBulkSelectionFactory.class}
 )
 public class FileEntryBulkSelectionFactory
 	implements BulkSelectionFactory<FileEntry> {
 
+	@Override
 	public BulkSelection<FileEntry> create(Map<String, String[]> parameterMap) {
 		if (BulkSelectionFactoryUtil.isSelectAll(parameterMap)) {
-			long repositoryId = BulkSelectionFactoryUtil.getRepositoryId(
-				parameterMap);
-			long folderId = BulkSelectionFactoryUtil.getFolderId(parameterMap);
-
 			return new FolderFileEntryBulkSelection(
-				repositoryId, folderId, parameterMap, _resourceBundleLoader,
-				_language, _repositoryProvider, _dlAppService,
-				_assetEntryLocalService);
+				BulkSelectionFactoryUtil.getRepositoryId(parameterMap),
+				BulkSelectionFactoryUtil.getFolderId(parameterMap),
+				parameterMap, _repositoryProvider, _dlAppService,
+				_assetEntryLocalService, _dlAssetHelper);
 		}
 
 		if (!parameterMap.containsKey("rowIdsFileEntry")) {
@@ -74,13 +71,13 @@ public class FileEntryBulkSelectionFactory
 
 		if (fileEntryIds.length == 1) {
 			return new SingleFileEntryBulkSelection(
-				fileEntryIds[0], parameterMap, _resourceBundleLoader, _language,
-				_dlAppService, _assetEntryLocalService);
+				fileEntryIds[0], parameterMap, _dlAppService,
+				_assetEntryLocalService, _dlAssetHelper);
 		}
 
 		return new MultipleFileEntryBulkSelection(
-			fileEntryIds, parameterMap, _resourceBundleLoader, _language,
-			_dlAppService, _assetEntryLocalService);
+			fileEntryIds, parameterMap, _dlAppService, _assetEntryLocalService,
+			_dlAssetHelper);
 	}
 
 	@Reference
@@ -90,14 +87,9 @@ public class FileEntryBulkSelectionFactory
 	private DLAppService _dlAppService;
 
 	@Reference
-	private Language _language;
+	private DLAssetHelper _dlAssetHelper;
 
 	@Reference
 	private RepositoryProvider _repositoryProvider;
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.document.library.service)"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 }

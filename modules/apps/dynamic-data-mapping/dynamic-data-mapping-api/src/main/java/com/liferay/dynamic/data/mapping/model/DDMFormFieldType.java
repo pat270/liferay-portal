@@ -35,6 +35,8 @@ public class DDMFormFieldType {
 
 	public static final String GEOLOCATION = "ddm-geolocation";
 
+	public static final String GRID = "grid";
+
 	public static final String IMAGE = "ddm-image";
 
 	public static final String INTEGER = "ddm-integer";
@@ -42,6 +44,8 @@ public class DDMFormFieldType {
 	public static final String JOURNAL_ARTICLE = "ddm-journal-article";
 
 	public static final String LINK_TO_PAGE = "ddm-link-to-page";
+
+	public static final String LOCALIZABLE_TEXT = "localizable_text";
 
 	public static final String NUMBER = "ddm-number";
 

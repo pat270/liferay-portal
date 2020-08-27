@@ -20,9 +20,38 @@
 ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEditorDisplayContext)request.getAttribute(ContentPageEditorWebKeys.LIFERAY_SHARED_CONTENT_PAGE_EDITOR_DISPLAY_CONTEXT);
 %>
 
-<soy:component-renderer
-	componentId='<%= PortalUtil.getPortletNamespace(ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET) + "toolbar" %>'
-	context="<%= contentPageEditorDisplayContext.getFragmentsEditorToolbarSoyContext() %>"
-	module="js/components/toolbar/FragmentsEditorToolbar.es"
-	templateNamespace="com.liferay.layout.content.page.editor.web.FragmentsEditorToolbar.render"
-/>
+<div class="management-bar navbar navbar-expand-md page-editor__toolbar <%= contentPageEditorDisplayContext.isMasterLayout() ? "page-editor__toolbar--master-layout" : StringPool.BLANK %>" id="<%= contentPageEditorDisplayContext.getPortletNamespace() %>pageEditorToolbar">
+	<clay:container-fluid>
+		<ul class="navbar-nav">
+		</ul>
+
+		<ul class="navbar-nav">
+			<c:if test="<%= contentPageEditorDisplayContext.isSingleSegmentsExperienceMode() %>">
+				<li class="nav-item">
+					<button class="btn btn-secondary btn-sm mr-3" disabled type="submit">
+						<liferay-ui:message key="discard-variant" />
+					</button>
+				</li>
+			</c:if>
+
+			<li class="nav-item">
+				<button class="btn btn-primary btn-sm" disabled type="submit">
+					<c:choose>
+						<c:when test="<%= contentPageEditorDisplayContext.isMasterLayout() %>">
+							<liferay-ui:message key="publish-master" />
+						</c:when>
+						<c:when test="<%= contentPageEditorDisplayContext.isSingleSegmentsExperienceMode() %>">
+							<liferay-ui:message key="save-variant" />
+						</c:when>
+						<c:when test="<%= contentPageEditorDisplayContext.isWorkflowEnabled() %>">
+							<liferay-ui:message key="submit-for-publication" />
+						</c:when>
+						<c:otherwise>
+							<liferay-ui:message key="publish" />
+						</c:otherwise>
+					</c:choose>
+				</button>
+			</li>
+		</ul>
+	</clay:container-fluid>
+</div>

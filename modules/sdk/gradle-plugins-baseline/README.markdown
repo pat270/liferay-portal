@@ -6,11 +6,11 @@ rules are obeyed by your OSGi bundle.
 When you run the [`baseline`](#baseline) task, the plugin *baselines* the new
 bundle against the latest released non-snapshot bundle (i.e., the *baseline*).
 That is, it compares the public exported API of the new bundle with
-the baseline. If there are any changes, it uses the OSGi semantic versioning
+the baseline. If there are any changes, it uses the OSGi semantic versioning
 rules to calculate the minimum new version. If the new bundle has a lower
 version, errors are thrown.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -19,7 +19,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.baseline", version: "2.1.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.baseline", version: "6.0.2"
 	}
 
 	repositories {

@@ -15,13 +15,13 @@
 package com.liferay.layout.page.template.service;
 
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -41,14 +41,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=layout",
-		"json.web.service.context.path=LayoutPageTemplateEntry"
-	},
-	service = LayoutPageTemplateEntryService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -59,8 +53,33 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link LayoutPageTemplateEntryServiceUtil} to access the layout page template entry remote service. Add custom service methods to <code>com.liferay.layout.page.template.service.impl.LayoutPageTemplateEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.layout.page.template.service.impl.LayoutPageTemplateEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the layout page template entry remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link LayoutPageTemplateEntryServiceUtil} if injection and service tracking are not available.
 	 */
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addLayoutPageTemplateEntry(long, long, long, long, String,
+	 long, int, ServiceContext)}
+	 */
+	@Deprecated
+	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(
+			long groupId, long layoutPageTemplateCollectionId, long classNameId,
+			long classTypeId, String name, int status,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(
+			long groupId, long layoutPageTemplateCollectionId, long classNameId,
+			long classTypeId, String name, long masterLayoutPlid, int status,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addLayoutPageTemplateEntry(long, long, String, int, long,
+	 int, ServiceContext)}
+	 */
+	@Deprecated
 	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(
 			long groupId, long layoutPageTemplateCollectionId, String name,
 			int type, int status, ServiceContext serviceContext)
@@ -68,12 +87,25 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 
 	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(
 			long groupId, long layoutPageTemplateCollectionId, String name,
-			int type, ServiceContext serviceContext)
+			int type, long masterLayoutPlid, int status,
+			ServiceContext serviceContext)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addLayoutPageTemplateEntry(long, long, long, long, String,
+	 int, ServiceContext)}
+	 */
+	@Deprecated
 	public LayoutPageTemplateEntry addLayoutPageTemplateEntry(
 			long groupId, long layoutPageTemplateCollectionId, String name,
+			int status, long classNameId, long classTypeId,
 			ServiceContext serviceContext)
+		throws PortalException;
+
+	public LayoutPageTemplateEntry copyLayoutPageTemplateEntry(
+			long groupId, long layoutPageTemplateCollectionId,
+			long layoutPageTemplateEntryId, ServiceContext serviceContext)
 		throws PortalException;
 
 	public void deleteLayoutPageTemplateEntries(
@@ -86,6 +118,10 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public LayoutPageTemplateEntry fetchDefaultLayoutPageTemplateEntry(
+		long groupId, int type, int status);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public LayoutPageTemplateEntry fetchDefaultLayoutPageTemplateEntry(
 		long groupId, long classNameId, long classTypeId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -94,46 +130,8 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public LayoutPageTemplateEntry fetchLayoutPageTemplateEntry(
-			long groupId, String name)
-		throws PortalException;
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public LayoutPageTemplateEntry fetchLayoutPageTemplateEntryByUuidAndGroupId(
 		String uuid, long groupId);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getLayoutPageTemplateCollectionsCount(
-		long groupId, long layoutPageTemplateCollectionId);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getLayoutPageTemplateCollectionsCount(
-		long groupId, long layoutPageTemplateCollectionId, int status);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getLayoutPageTemplateCollectionsCount(
-		long groupId, long layoutPageTemplateCollectionId, String name);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getLayoutPageTemplateCollectionsCount(
-		long groupId, long layoutPageTemplateCollectionId, String name,
-		int status);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<LayoutPageTemplateEntry> getLayoutPageTemplateEntries(
@@ -236,11 +234,11 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutPageTemplateEntriesCount(
-		long groupId, long layoutPageTemplateFolderId);
+		long groupId, long layoutPageTemplateCollectionId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutPageTemplateEntriesCount(
-		long groupId, long layoutPageTemplateFolderId, int status);
+		long groupId, long layoutPageTemplateCollectionId, int status);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutPageTemplateEntriesCount(
@@ -262,11 +260,12 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutPageTemplateEntriesCount(
-		long groupId, long layoutPageTemplateFolderId, String name);
+		long groupId, long layoutPageTemplateCollectionId, String name);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutPageTemplateEntriesCount(
-		long groupId, long layoutPageTemplateFolderId, String name, int status);
+		long groupId, long layoutPageTemplateCollectionId, String name,
+		int status);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutPageTemplateEntriesCount(
@@ -293,10 +292,6 @@ public interface LayoutPageTemplateEntryService extends BaseService {
 
 	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
 			long layoutPageTemplateEntryId, long previewFileEntryId)
-		throws PortalException;
-
-	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
-			long layoutPageTemplateEntryId, long classNameId, long classTypeId)
 		throws PortalException;
 
 	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(

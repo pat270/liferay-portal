@@ -40,12 +40,12 @@ renderResponse.setTitle(journalEditDDMTemplateDisplayContext.getTitle());
 	<aui:input name="ddmTemplateId" type="hidden" value="<%= journalEditDDMTemplateDisplayContext.getDDMTemplateId() %>" />
 	<aui:input name="groupId" type="hidden" value="<%= journalEditDDMTemplateDisplayContext.getGroupId() %>" />
 	<aui:input name="classPK" type="hidden" value="<%= journalEditDDMTemplateDisplayContext.getClassPK() %>" />
-	<aui:input name="language" type="hidden" value="<%= journalEditDDMTemplateDisplayContext.getLanguage() %>" />
+	<aui:input name="saveAndContinue" type="hidden" value="<%= false %>" />
 
 	<aui:model-context bean="<%= ddmTemplate %>" model="<%= DDMTemplate.class %>" />
 
 	<nav class="component-tbar subnav-tbar-light tbar tbar-article">
-		<div class="container-fluid container-fluid-max-xl">
+		<clay:container-fluid>
 			<ul class="tbar-nav">
 				<li class="tbar-item tbar-item-expand">
 					<aui:input cssClass="form-control-inline" defaultLanguageId="<%= (ddmTemplate == null) ? LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()): ddmTemplate.getDefaultLanguageId() %>" label="" name="name" placeholder='<%= LanguageUtil.format(request, "untitled-x", "template") %>' wrapperCssClass="article-content-title mb-0" />
@@ -55,22 +55,27 @@ renderResponse.setTitle(journalEditDDMTemplateDisplayContext.getTitle());
 						<aui:button cssClass="btn-secondary btn-sm mr-3" href="<%= journalEditDDMTemplateDisplayContext.getRedirect() %>" type="cancel" />
 
 						<%
-						String taglibOnClick = "Liferay.fire('" + liferayPortletResponse.getNamespace() + "saveTemplate');";
+						String taglibOnClickSaveAndContinue = "Liferay.fire('" + liferayPortletResponse.getNamespace() + "saveAndContinue');";
 						%>
 
-						<aui:button cssClass="btn-sm mr-3" onClick="<%= taglibOnClick %>" type="submit" value="<%= journalEditDDMTemplateDisplayContext.getSaveButtonLabel() %>" />
+						<aui:button cssClass="btn-secondary btn-sm mr-3" onClick="<%= taglibOnClickSaveAndContinue %>" type="submit" value="save-and-continue" />
+
+						<%
+						String taglibOnClickSaveTemplate = "Liferay.fire('" + liferayPortletResponse.getNamespace() + "saveTemplate');";
+						%>
+
+						<aui:button cssClass="btn-sm mr-3" onClick="<%= taglibOnClickSaveTemplate %>" type="submit" value="save" />
 
 						<clay:button
+							borderless="<%= true %>"
 							icon="cog"
-							id='<%= renderResponse.getNamespace() + "contextualSidebarButton" %>'
-							monospaced="<%= true %>"
-							size="sm"
-							style="borderless"
+							id='<%= liferayPortletResponse.getNamespace() + "contextualSidebarButton" %>'
+							small="<%= true %>"
 						/>
 					</div>
 				</li>
 			</ul>
-		</div>
+		</clay:container-fluid>
 	</nav>
 
 	<div class="contextual-sidebar edit-article-sidebar sidebar-light sidebar-sm" id="<portlet:namespace />contextualSidebarContainer">
@@ -91,7 +96,9 @@ renderResponse.setTitle(journalEditDDMTemplateDisplayContext.getTitle());
 	</div>
 
 	<div class="contextual-sidebar-content">
-		<div class="container-fluid container-fluid-max-xl container-view">
+		<clay:container-fluid
+			cssClass="container-view"
+		>
 			<div class="sheet">
 				<liferay-ui:error exception="<%= TemplateNameException.class %>" message="please-enter-a-valid-name" />
 				<liferay-ui:error exception="<%= TemplateScriptException.class %>" message="please-enter-a-valid-script" />
@@ -104,37 +111,51 @@ renderResponse.setTitle(journalEditDDMTemplateDisplayContext.getTitle());
 
 				<liferay-util:include page="/edit_ddm_template_display.jsp" servletContext="<%= application %>" />
 			</div>
-		</div>
+		</clay:container-fluid>
 	</div>
 </aui:form>
 
 <aui:script>
-	Liferay.after(
-		'<portlet:namespace />saveTemplate',
-		function() {
-			submitForm(document.<portlet:namespace />fm);
-		}
+	Liferay.after('<portlet:namespace />saveAndContinue', function () {
+		document.<portlet:namespace />fm.<portlet:namespace />saveAndContinue.value = true;
+
+		Liferay.fire('<portlet:namespace />saveTemplate');
+	});
+
+	Liferay.after('<portlet:namespace />saveTemplate', function () {
+		submitForm(document.<portlet:namespace />fm);
+	});
+
+	var contextualSidebarButton = document.getElementById(
+		'<portlet:namespace />contextualSidebarButton'
+	);
+	var contextualSidebarContainer = document.getElementById(
+		'<portlet:namespace />contextualSidebarContainer'
 	);
 
-	var contextualSidebarButton = document.getElementById('<portlet:namespace />contextualSidebarButton');
-	var contextualSidebarContainer = document.getElementById('<portlet:namespace />contextualSidebarContainer');
-
-	if (contextualSidebarContainer && (window.innerWidth > Liferay.BREAKPOINTS.PHONE)) {
+	if (
+		contextualSidebarContainer &&
+		window.innerWidth > Liferay.BREAKPOINTS.PHONE
+	) {
 		contextualSidebarContainer.classList.add('contextual-sidebar-visible');
 	}
 
 	if (contextualSidebarButton) {
-		contextualSidebarButton.addEventListener(
-			'click',
-			function(event) {
-				if (contextualSidebarContainer.classList.contains('contextual-sidebar-visible')) {
-					contextualSidebarContainer.classList.remove('contextual-sidebar-visible');
-
-				}
-				else {
-					contextualSidebarContainer.classList.add('contextual-sidebar-visible');
-				}
+		contextualSidebarButton.addEventListener('click', function (event) {
+			if (
+				contextualSidebarContainer.classList.contains(
+					'contextual-sidebar-visible'
+				)
+			) {
+				contextualSidebarContainer.classList.remove(
+					'contextual-sidebar-visible'
+				);
 			}
-		);
+			else {
+				contextualSidebarContainer.classList.add(
+					'contextual-sidebar-visible'
+				);
+			}
+		});
 	}
 </aui:script>

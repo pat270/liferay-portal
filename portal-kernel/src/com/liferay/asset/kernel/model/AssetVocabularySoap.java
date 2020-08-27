@@ -20,20 +20,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.asset.service.http.AssetVocabularyServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AssetVocabularySoap implements Serializable {
 
 	public static AssetVocabularySoap toSoapModel(AssetVocabulary model) {
 		AssetVocabularySoap soapModel = new AssetVocabularySoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setVocabularyId(model.getVocabularyId());
@@ -47,6 +48,7 @@ public class AssetVocabularySoap implements Serializable {
 		soapModel.setTitle(model.getTitle());
 		soapModel.setDescription(model.getDescription());
 		soapModel.setSettings(model.getSettings());
+		soapModel.setVisibilityType(model.getVisibilityType());
 		soapModel.setLastPublishDate(model.getLastPublishDate());
 
 		return soapModel;
@@ -105,6 +107,22 @@ public class AssetVocabularySoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setVocabularyId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public String getUuid() {
@@ -211,6 +229,14 @@ public class AssetVocabularySoap implements Serializable {
 		_settings = settings;
 	}
 
+	public int getVisibilityType() {
+		return _visibilityType;
+	}
+
+	public void setVisibilityType(int visibilityType) {
+		_visibilityType = visibilityType;
+	}
+
 	public Date getLastPublishDate() {
 		return _lastPublishDate;
 	}
@@ -219,6 +245,8 @@ public class AssetVocabularySoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
 	private String _externalReferenceCode;
 	private long _vocabularyId;
@@ -232,6 +260,7 @@ public class AssetVocabularySoap implements Serializable {
 	private String _title;
 	private String _description;
 	private String _settings;
+	private int _visibilityType;
 	private Date _lastPublishDate;
 
 }

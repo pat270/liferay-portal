@@ -41,12 +41,12 @@ import javax.servlet.http.HttpServletRequest;
 public class SelectTeamDisplayContext {
 
 	public SelectTeamDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
+		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
-		_httpServletRequest = httpServletRequest;
 	}
 
 	public String getDisplayStyle() {
@@ -131,7 +131,7 @@ public class SelectTeamDisplayContext {
 		return portletURL;
 	}
 
-	public SearchContainer getTeamSearchContainer() {
+	public SearchContainer<Team> getTeamSearchContainer() {
 		if (_teamSearchContainer != null) {
 			return _teamSearchContainer;
 		}
@@ -185,6 +185,6 @@ public class SelectTeamDisplayContext {
 	private String _orderByType;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
-	private SearchContainer _teamSearchContainer;
+	private SearchContainer<Team> _teamSearchContainer;
 
 }

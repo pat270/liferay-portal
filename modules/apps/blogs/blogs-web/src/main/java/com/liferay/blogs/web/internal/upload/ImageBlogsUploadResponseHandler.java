@@ -14,66 +14,72 @@
 
 package com.liferay.blogs.web.internal.upload;
 
+import com.liferay.blogs.configuration.BlogsFileUploadsConfiguration;
 import com.liferay.blogs.exception.EntryImageNameException;
 import com.liferay.blogs.exception.EntryImageSizeException;
 import com.liferay.item.selector.ItemSelectorUploadResponseHandler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.servlet.ServletResponseConstants;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
-import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.upload.UploadResponseHandler;
+
+import java.util.Map;
 
 import javax.portlet.PortletRequest;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
+ * @author Roberto Díaz
  * @author Alejandro Tardín
  */
-@Component(service = ImageBlogsUploadResponseHandler.class)
+@Component(
+	configurationPid = "com.liferay.blogs.configuration.BlogsFileUploadsConfiguration",
+	service = ImageBlogsUploadResponseHandler.class
+)
 public class ImageBlogsUploadResponseHandler implements UploadResponseHandler {
 
 	@Override
 	public JSONObject onFailure(
-			PortletRequest portletRequest, PortalException pe)
+			PortletRequest portletRequest, PortalException portalException)
 		throws PortalException {
 
 		JSONObject jsonObject = _itemSelectorUploadResponseHandler.onFailure(
-			portletRequest, pe);
+			portletRequest, portalException);
 
-		if (pe instanceof EntryImageNameException ||
-			pe instanceof EntryImageSizeException) {
+		if (portalException instanceof EntryImageNameException ||
+			portalException instanceof EntryImageSizeException) {
 
 			String errorMessage = StringPool.BLANK;
 			int errorType = 0;
 
-			if (pe instanceof EntryImageNameException) {
+			if (portalException instanceof EntryImageNameException) {
 				errorType =
 					ServletResponseConstants.SC_FILE_EXTENSION_EXCEPTION;
 
-				String[] imageExtensions = PrefsPropsUtil.getStringArray(
-					PropsKeys.BLOGS_IMAGE_EXTENSIONS, StringPool.COMMA);
-
-				errorMessage = StringUtil.merge(imageExtensions);
+				errorMessage = StringUtil.merge(
+					_blogsFileUploadsConfiguration.imageExtensions());
 			}
-			else if (pe instanceof EntryImageSizeException) {
+			else if (portalException instanceof EntryImageSizeException) {
 				errorType = ServletResponseConstants.SC_FILE_SIZE_EXCEPTION;
 			}
 
-			JSONObject errorJSONObject = JSONUtil.put(
-				"errorType", errorType
-			).put(
-				"message", errorMessage
-			);
-
-			jsonObject.put("error", errorJSONObject);
+			jsonObject.put(
+				"error",
+				JSONUtil.put(
+					"errorType", errorType
+				).put(
+					"message", errorMessage
+				));
 		}
 
 		return jsonObject;
@@ -87,6 +93,15 @@ public class ImageBlogsUploadResponseHandler implements UploadResponseHandler {
 		return _itemSelectorUploadResponseHandler.onSuccess(
 			uploadPortletRequest, fileEntry);
 	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_blogsFileUploadsConfiguration = ConfigurableUtil.createConfigurable(
+			BlogsFileUploadsConfiguration.class, properties);
+	}
+
+	private BlogsFileUploadsConfiguration _blogsFileUploadsConfiguration;
 
 	@Reference
 	private ItemSelectorUploadResponseHandler

@@ -46,7 +46,7 @@ import javax.sql.DataSource;
  */
 public abstract class ResourcePermissionServiceBaseImpl
 	extends BaseServiceImpl
-	implements ResourcePermissionService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, ResourcePermissionService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -347,8 +347,8 @@ public abstract class ResourcePermissionServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

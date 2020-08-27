@@ -37,27 +37,28 @@ public class GetterUtilCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws ReflectiveOperationException {
 
-		if (!fileName.endsWith("GetterUtilTest.java")) {
-			_checkGetterUtilGet(fileName, content);
-		}
+		_checkDefaultValues(fileName, content, _getterUtilGetPattern, 2);
+		_checkDefaultValues(fileName, content, _paramUtilGetPattern, 3);
 
 		return content;
 	}
 
-	private void _checkGetterUtilGet(String fileName, String content)
+	private void _checkDefaultValues(
+			String fileName, String content, Pattern pattern,
+			int parameterCount)
 		throws ReflectiveOperationException {
 
-		Matcher matcher = _getterUtilGetPattern.matcher(content);
+		Matcher matcher = pattern.matcher(content);
 
 		while (matcher.find()) {
-			if (ToolsUtil.isInsideQuotes(content, matcher.start())) {
+			if (ToolsUtil.isInsideQuotes(content, matcher.start() + 1)) {
 				continue;
 			}
 
-			List<String> parametersList = JavaSourceUtil.getParameterList(
-				matcher.group());
+			List<String> parameterList = JavaSourceUtil.getParameterList(
+				content.substring(matcher.start() + 1));
 
-			if (parametersList.size() != 2) {
+			if (parameterList.size() != parameterCount) {
 				continue;
 			}
 
@@ -71,27 +72,30 @@ public class GetterUtilCheck extends BaseFileCheck {
 
 			defaultValue = defaultValue.replaceFirst("\\.0", StringPool.BLANK);
 
-			String value = parametersList.get(1);
+			String value = parameterList.get(parameterCount - 1);
 
-			value = value.replaceFirst("0(\\.0)?[dDfFlL]?", "0");
+			String formattedValue = value.replaceFirst(
+				"0(\\.0)?[dDfFlL]?", "0");
 
-			if (value.equals("StringPool.BLANK")) {
-				value = StringPool.BLANK;
+			if (formattedValue.equals("StringPool.BLANK")) {
+				formattedValue = StringPool.BLANK;
 			}
 
-			if (Objects.equals(value, defaultValue)) {
+			if (Objects.equals(formattedValue, defaultValue)) {
 				addMessage(
-					fileName,
-					"No need to pass default value '" + parametersList.get(1) +
-						"'",
+					fileName, "No need to pass default value '" + value + "'",
 					getLineNumber(content, matcher.start()));
 			}
 		}
 	}
 
 	private static final Pattern _getterUtilGetPattern = Pattern.compile(
-		"GetterUtil\\.get(Boolean|Double|Float|Integer|Long|Number|Object|" +
-			"Short|String)\\((.*?)\\);\n",
+		"\\WGetterUtil\\.get(Boolean|Double|Float|Integer|Long|Number|Object|" +
+			"Short|String)\\(",
+		Pattern.DOTALL);
+	private static final Pattern _paramUtilGetPattern = Pattern.compile(
+		"\\WParamUtil\\.get(Boolean|Double|Float|Integer|Long|Number|Short|" +
+			"String)\\(",
 		Pattern.DOTALL);
 
 }

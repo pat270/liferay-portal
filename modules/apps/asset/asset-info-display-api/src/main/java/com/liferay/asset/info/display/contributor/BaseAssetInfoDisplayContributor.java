@@ -14,7 +14,8 @@
 
 package com.liferay.asset.info.display.contributor;
 
-import com.liferay.asset.info.display.contributor.util.AssetInfoDisplayContributorFieldUtil;
+import com.liferay.asset.info.display.contributor.field.util.ExpandoInfoDisplayFieldProviderUtil;
+import com.liferay.asset.info.display.field.util.AssetEntryInfoDisplayFieldProviderUtil;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.exception.NoSuchEntryException;
 import com.liferay.asset.kernel.model.AssetEntry;
@@ -23,28 +24,22 @@ import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.model.VersionedAssetEntry;
 import com.liferay.info.display.contributor.InfoDisplayField;
 import com.liferay.info.display.contributor.InfoDisplayObjectProvider;
-import com.liferay.info.display.contributor.field.InfoDisplayContributorField;
-import com.liferay.info.display.contributor.field.InfoDisplayContributorFieldType;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.sanitizer.Sanitizer;
-import com.liferay.portal.kernel.sanitizer.SanitizerException;
-import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
-import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
- * @author Jürgen Kappler
+ * @author     Jürgen Kappler
+ * @deprecated As of Mueller (7.2.x), in favour of {@link
+ *             com.liferay.info.display.contributor.InfoDisplayContributor}
  */
+@Deprecated
 public abstract class BaseAssetInfoDisplayContributor<T>
 	implements AssetInfoDisplayContributor {
 
@@ -53,18 +48,15 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 			long classTypeId, Locale locale)
 		throws PortalException {
 
-		Set<InfoDisplayField> infoDisplayFields = _getInfoDisplayFields(
-			AssetEntry.class.getName(), locale);
+		Set<InfoDisplayField> infoDisplayFields =
+			AssetEntryInfoDisplayFieldProviderUtil.getInfoDisplayFields(
+				locale, AssetEntry.class.getName(), getClassName());
 
-		Set<InfoDisplayField> assetTypeInfoDisplayFields =
-			_getInfoDisplayFields(getClassName(), locale);
-
-		infoDisplayFields.addAll(assetTypeInfoDisplayFields);
-
-		List<InfoDisplayField> classTypeInfoDisplayFields =
-			getClassTypeInfoDisplayFields(classTypeId, locale);
-
-		infoDisplayFields.addAll(classTypeInfoDisplayFields);
+		infoDisplayFields.addAll(
+			getClassTypeInfoDisplayFields(classTypeId, locale));
+		infoDisplayFields.addAll(
+			ExpandoInfoDisplayFieldProviderUtil.getExpandoInfoDisplayFields(
+				getClassName(), locale));
 
 		return infoDisplayFields;
 	}
@@ -74,10 +66,11 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 			AssetEntry assetEntry, Locale locale)
 		throws PortalException {
 
-		AssetRendererFactory assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.
-				getAssetRendererFactoryByClassNameId(
-					assetEntry.getClassNameId());
+		AssetRendererFactory<T> assetRendererFactory =
+			(AssetRendererFactory<T>)
+				AssetRendererFactoryRegistryUtil.
+					getAssetRendererFactoryByClassName(
+						assetEntry.getClassName());
 
 		AssetRenderer<T> assetRenderer = null;
 
@@ -93,9 +86,8 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 				assetEntry.getClassPK());
 		}
 
-		T assetObject = assetRenderer.getAssetObject();
-
-		return _getParameterMap(assetEntry, assetObject, locale);
+		return _getParameterMap(
+			assetEntry, assetRenderer.getAssetObject(), locale);
 	}
 
 	@Override
@@ -111,24 +103,24 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 	}
 
 	@Override
-	public InfoDisplayObjectProvider getInfoDisplayObjectProvider(
+	public InfoDisplayObjectProvider<AssetEntry> getInfoDisplayObjectProvider(
 		long classPK) {
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.
 				getAssetRendererFactoryByClassNameId(
 					PortalUtil.getClassNameId(getClassName()));
 
 		try {
-			AssetRenderer assetRenderer = assetRendererFactory.getAssetRenderer(
-				classPK);
+			AssetRenderer<?> assetRenderer =
+				assetRendererFactory.getAssetRenderer(classPK);
 
 			AssetEntry assetEntry = assetRendererFactory.getAssetEntry(
 				getClassName(), assetRenderer.getClassPK());
 
 			return new AssetInfoDisplayObjectProvider(assetEntry);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -138,12 +130,12 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 			long groupId, String urlTitle)
 		throws PortalException {
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.
 				getAssetRendererFactoryByClassNameId(
 					PortalUtil.getClassNameId(getClassName()));
 
-		AssetRenderer assetRenderer = assetRendererFactory.getAssetRenderer(
+		AssetRenderer<?> assetRenderer = assetRendererFactory.getAssetRenderer(
 			groupId, urlTitle);
 
 		AssetEntry assetEntry = assetRendererFactory.getAssetEntry(
@@ -162,10 +154,11 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 			AssetEntry assetEntry, long versionClassPK, Locale locale)
 		throws PortalException {
 
-		AssetRendererFactory assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.
-				getAssetRendererFactoryByClassNameId(
-					assetEntry.getClassNameId());
+		AssetRendererFactory<T> assetRendererFactory =
+			(AssetRendererFactory<T>)
+				AssetRendererFactoryRegistryUtil.
+					getAssetRendererFactoryByClassNameId(
+						assetEntry.getClassNameId());
 
 		AssetRenderer<T> assetRenderer = assetRendererFactory.getAssetRenderer(
 			assetEntry.getClassPK());
@@ -193,105 +186,23 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 	protected abstract Map<String, Object> getClassTypeValues(
 		T assetEntryObject, Locale locale);
 
-	private Map<String, Object> _getAssetEntryInfoDisplayFieldsValues(
-			AssetEntry assetEntry, Locale locale)
-		throws PortalException {
-
-		Map<String, Object> infoDisplayFieldsValues = new HashMap<>();
-
-		for (InfoDisplayContributorField infoDisplayContributorField :
-				_getInfoDisplayContributorFields(AssetEntry.class.getName())) {
-
-			infoDisplayFieldsValues.putIfAbsent(
-				infoDisplayContributorField.getKey(),
-				_getInfoDisplayFieldValue(
-					assetEntry, assetEntry, infoDisplayContributorField,
-					locale));
-		}
-
-		return infoDisplayFieldsValues;
-	}
-
-	private List<InfoDisplayContributorField> _getInfoDisplayContributorFields(
-		String className) {
-
-		return AssetInfoDisplayContributorFieldUtil.
-			getInfoDisplayContributorFields(className);
-	}
-
-	private Set<InfoDisplayField> _getInfoDisplayFields(
-		String className, Locale locale) {
-
-		Set<InfoDisplayField> infoDisplayFields = new LinkedHashSet<>();
-
-		for (InfoDisplayContributorField infoDisplayContributorField :
-				_getInfoDisplayContributorFields(className)) {
-
-			InfoDisplayContributorFieldType infoDisplayContributorFieldType =
-				infoDisplayContributorField.getType();
-
-			infoDisplayFields.add(
-				new InfoDisplayField(
-					infoDisplayContributorField.getKey(),
-					infoDisplayContributorField.getLabel(locale),
-					infoDisplayContributorFieldType.getValue()));
-		}
-
-		return infoDisplayFields;
-	}
-
-	private <T> Object _getInfoDisplayFieldValue(
-			T model, AssetEntry assetEntry,
-			InfoDisplayContributorField infoDisplayContributorField,
-			Locale locale)
-		throws SanitizerException {
-
-		InfoDisplayContributorFieldType infoDisplayContributorFieldType =
-			infoDisplayContributorField.getType();
-		Object value = infoDisplayContributorField.getValue(model, locale);
-
-		if (!Objects.equals(
-				InfoDisplayContributorFieldType.URL,
-				infoDisplayContributorFieldType) &&
-			(value instanceof String)) {
-
-			return SanitizerUtil.sanitize(
-				assetEntry.getCompanyId(), assetEntry.getGroupId(),
-				assetEntry.getUserId(), AssetEntry.class.getName(),
-				assetEntry.getEntryId(), ContentTypes.TEXT_HTML,
-				Sanitizer.MODE_ALL, (String)value, null);
-		}
-
-		return value;
-	}
-
 	private Map<String, Object> _getParameterMap(
 			AssetEntry assetEntry, T assetObject, Locale locale)
 		throws PortalException {
 
-		Map<String, Object> parameterMap =
-			_getAssetEntryInfoDisplayFieldsValues(assetEntry, locale);
-
-		List<InfoDisplayContributorField> infoDisplayContributorFields =
-			AssetInfoDisplayContributorFieldUtil.
-				getInfoDisplayContributorFields(getClassName());
-
-		for (InfoDisplayContributorField infoDisplayContributorField :
-				infoDisplayContributorFields) {
-
-			Object fieldValue = _getInfoDisplayFieldValue(
-				assetObject, assetEntry, infoDisplayContributorField, locale);
-
-			parameterMap.putIfAbsent(
-				infoDisplayContributorField.getKey(), fieldValue);
-		}
-
-		Map<String, Object> classTypeValues = getClassTypeValues(
-			assetObject, locale);
-
-		parameterMap.putAll(classTypeValues);
-
-		return parameterMap;
+		return HashMapBuilder.<String, Object>putAll(
+			AssetEntryInfoDisplayFieldProviderUtil.getInfoDisplayFields(
+				AssetEntry.class.getName(), assetEntry, locale)
+		).putAll(
+			AssetEntryInfoDisplayFieldProviderUtil.getInfoDisplayFields(
+				getClassName(), assetObject, locale)
+		).putAll(
+			getClassTypeValues(assetObject, locale)
+		).putAll(
+			ExpandoInfoDisplayFieldProviderUtil.
+				getExpandoInfoDisplayFieldsValues(
+					getClassName(), assetObject, locale)
+		).build();
 	}
 
 }

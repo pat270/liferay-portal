@@ -18,7 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.editor.EditorConstants;
+import com.liferay.portal.kernel.editor.constants.EditorConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
@@ -29,10 +29,10 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
-import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -99,14 +99,13 @@ public class EntryAttachmentContentUpdaterTest {
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			_getInputStream(), ContentTypes.IMAGE_JPEG);
 
-		Map<String, String> attributes = new HashMap<>();
-
-		attributes.put("alt", "A big image");
-		attributes.put("class", "image-big");
-
 		String tempFileEntryImgTag = _getTempEntryAttachmentFileEntryImgTag(
 			tempFileEntry.getFileEntryId(), _TEMP_FILE_ENTRY_IMAGE_URL,
-			attributes);
+			HashMapBuilder.put(
+				"alt", "A big image"
+			).put(
+				"class", "image-big"
+			).build());
 
 		String originalContent =
 			"<p>Sample Text</p><a href=\"www.liferay.com\">" +
@@ -132,10 +131,10 @@ public class EntryAttachmentContentUpdaterTest {
 		String fileEntryURL = PortletFileRepositoryUtil.getPortletFileEntryURL(
 			null, newFileEntry, StringPool.BLANK);
 
-		String expectedContent =
-			"<p>Sample Text</p><a href=\"www.liferay.com\">" +
-				"<img alt=\"A big image\" class=\"image-big\" src=\"" +
-					fileEntryURL + "\" /></a>";
+		String expectedContent = StringBundler.concat(
+			"<p>Sample Text</p><a href=\"www.liferay.com\">",
+			"<img alt=\"A big image\" class=\"image-big\" src=\"", fileEntryURL,
+			"\" /></a>");
 
 		_assertEquals(_parseHtml(expectedContent), _parseHtml(content));
 	}
@@ -356,7 +355,7 @@ public class EntryAttachmentContentUpdaterTest {
 		return sb.toString();
 	}
 
-	private List<Element> _parseHtml(String html) throws DocumentException {
+	private List<Element> _parseHtml(String html) throws Exception {
 		Document document = SAXReaderUtil.read("<div>" + html + "</div>");
 
 		Element rootElement = document.getRootElement();

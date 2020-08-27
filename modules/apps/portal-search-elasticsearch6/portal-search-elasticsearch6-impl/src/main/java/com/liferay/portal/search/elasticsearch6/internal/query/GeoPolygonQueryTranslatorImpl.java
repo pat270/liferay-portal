@@ -19,11 +19,10 @@ import com.liferay.portal.search.elasticsearch6.internal.query.geolocation.GeoVa
 import com.liferay.portal.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.search.query.GeoPolygonQuery;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -42,16 +41,16 @@ public class GeoPolygonQueryTranslatorImpl
 		Set<GeoLocationPoint> geoLocationPoints =
 			geoPolygonQuery.getGeoLocationPoints();
 
-		List<GeoPoint> geoPoints = geoLocationPoints.stream(
-		).map(
-			GeoLocationPointTranslator::translate
-		).collect(
-			Collectors.toList()
-		);
+		Stream<GeoLocationPoint> stream = geoLocationPoints.stream();
 
 		GeoPolygonQueryBuilder geoPolygonQueryBuilder =
 			QueryBuilders.geoPolygonQuery(
-				geoPolygonQuery.getField(), geoPoints);
+				geoPolygonQuery.getField(),
+				stream.map(
+					GeoLocationPointTranslator::translate
+				).collect(
+					Collectors.toList()
+				));
 
 		if (geoPolygonQuery.getGeoValidationMethod() != null) {
 			geoPolygonQueryBuilder.setValidationMethod(

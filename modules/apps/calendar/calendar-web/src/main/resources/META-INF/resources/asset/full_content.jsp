@@ -16,16 +16,26 @@
 
 <%@ include file="/init.jsp" %>
 
+<%
+String languageId = LanguageUtil.getLanguageId(request);
+%>
+
 <div class="calendar-asset-full-content">
-	<c:if test="<%= Validator.isNotNull(calendarBooking.getDescription(locale)) %>">
+
+	<%
+	String description = calendarBooking.getDescription(languageId);
+	%>
+
+	<c:if test="<%= Validator.isNotNull(description) %>">
 		<div>
-			<%= calendarBooking.getDescription(locale) %>
+			<%= description %>
 		</div>
 	</c:if>
 
 	<p>
 		<liferay-ui:icon
-			iconCssClass="icon-user"
+			icon="user"
+			markupView="lexicon"
 			message="owner"
 		/>
 
@@ -33,7 +43,7 @@
 		Calendar calendar = calendarBooking.getCalendar();
 		%>
 
-		<strong><%= HtmlUtil.escape(calendar.getName(locale)) %></strong>
+		<strong><%= HtmlUtil.escape(calendar.getName(languageId)) %></strong>
 
 		<%
 		List<CalendarBooking> childCalendarBookings = calendarBooking.getChildCalendarBookings();
@@ -43,7 +53,8 @@
 			<br />
 
 			<liferay-ui:icon
-				iconCssClass="icon-globe"
+				icon="globe"
+				markupView="lexicon"
 				message="resources"
 			/>
 
@@ -55,7 +66,7 @@
 			for (CalendarBooking childCalendarBooking : childCalendarBookings) {
 				CalendarResource calendarResource = childCalendarBooking.getCalendarResource();
 
-				calendarResourcesNames.add(calendarResource.getName(locale));
+				calendarResourcesNames.add(calendarResource.getName(languageId));
 			}
 			%>
 
@@ -66,7 +77,8 @@
 			<br /><br />
 
 			<liferay-ui:icon
-				iconCssClass="icon-list-alt"
+				icon="list"
+				markupView="lexicon"
 				message="recurring"
 			/>
 
@@ -76,7 +88,8 @@
 		<br /><br />
 
 		<liferay-ui:icon
-			iconCssClass="icon-calendar"
+			icon="calendar"
+			markupView="lexicon"
 			message="starts"
 		/>
 
@@ -89,7 +102,8 @@
 		<br />
 
 		<liferay-ui:icon
-			iconCssClass="icon-calendar"
+			icon="calendar"
+			markupView="lexicon"
 			message="ends"
 		/>
 
@@ -103,7 +117,8 @@
 			<br /><br />
 
 			<liferay-ui:icon
-				iconCssClass="icon-location-arrow"
+				icon="geolocation"
+				markupView="lexicon"
 				message="location"
 			/>
 

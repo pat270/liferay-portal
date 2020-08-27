@@ -27,29 +27,35 @@ Layout selLayout = layoutsAdminDisplayContext.getSelLayout();
 if (Validator.isNotNull(themeId) && Validator.isNotNull(companyId)) {
 	selTheme = ThemeLocalServiceUtil.getTheme(companyId, themeId);
 }
-else if (Validator.isNull(selLayout)) {
+else if (selLayout == null) {
 	selTheme = selLayout.getTheme();
 }
 
 PluginPackage selPluginPackage = selTheme.getPluginPackage();
 %>
 
-<h4 class="text-default"><liferay-ui:message key="current-theme" /></h4>
+<h1 class="h4 text-default"><liferay-ui:message key="current-theme" /></h1>
 
 <div class="card-horizontal main-content-card">
-	<div class="card-row card-row-padded">
-		<aui:row>
-			<div class="col-6 col-sm-4">
-				<div class="card image-card img-thumbnail">
-					<div class="aspect-ratio aspect-ratio-16-to-9">
-						<img alt="<%= HtmlUtil.escapeAttribute(selTheme.getName()) %>" class="aspect-ratio-item-flush aspect-ratio-item-top-center img-thumbnail theme-screenshot" src="<%= themeDisplay.getCDNBaseURL() %><%= HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) %><%= HtmlUtil.escapeAttribute(selTheme.getImagesPath()) %>/thumbnail.png" title="<%= HtmlUtil.escapeAttribute(selTheme.getName()) %>" />
+	<div class="card-body">
+		<clay:row>
+			<clay:col
+				size="6"
+				sm="4"
+			>
+				<div class="card card-type-asset image-card">
+					<div class="aspect-ratio card-item-first card-item-last">
+						<img alt="<%= HtmlUtil.escapeAttribute(selTheme.getName()) %>" class="aspect-ratio-item aspect-ratio-item-center-middle aspect-ratio-item-fluid" src="<%= themeDisplay.getCDNBaseURL() %><%= HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) %><%= HtmlUtil.escapeAttribute(selTheme.getImagesPath()) %>/thumbnail.png" />
 					</div>
 				</div>
-			</div>
+			</clay:col>
 
-			<div class="col-6 col-sm-8">
+			<clay:col
+				size="6"
+				sm="8"
+			>
 				<c:if test="<%= (selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getName()) %>">
-					<h4><liferay-ui:message key="name" /></h4>
+					<h2 class="h4"><liferay-ui:message key="name" /></h2>
 
 					<p class="text-default">
 						<%= HtmlUtil.escape(selPluginPackage.getName()) %>
@@ -57,17 +63,17 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 				</c:if>
 
 				<c:if test="<%= (selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getAuthor()) %>">
-					<h4><liferay-ui:message key="author" /></h4>
+					<h2 class="h4"><liferay-ui:message key="author" /></h2>
 
 					<p class="text-default">
 						<aui:a href="<%= HtmlUtil.escapeHREF(selPluginPackage.getPageURL()) %>" target="_blank"><%= HtmlUtil.escape(selPluginPackage.getAuthor()) %></aui:a>
 					</p>
 				</c:if>
-			</div>
-		</aui:row>
+			</clay:col>
+		</clay:row>
 
 		<c:if test="<%= (selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getShortDescription()) %>">
-			<h4><liferay-ui:message key="description" /></h4>
+			<h2 class="h4"><liferay-ui:message key="description" /></h2>
 
 			<p class="text-default">
 				<%= HtmlUtil.escape(selPluginPackage.getShortDescription()) %>
@@ -81,10 +87,14 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 		%>
 
 		<c:if test="<%= !colorSchemes.isEmpty() && Validator.isNotNull(selColorScheme) %>">
-			<h4><liferay-ui:message key="color-scheme" /></h4>
+			<h2 class="h4"><liferay-ui:message key="color-scheme" /></h2>
 
-			<aui:row>
-				<div class="col-6 col-md-3 col-sm-4">
+			<clay:row>
+				<clay:col
+					md="3"
+					size="6"
+					sm="4"
+				>
 					<div class="card image-card img-thumbnail">
 						<div class="aspect-ratio aspect-ratio-16-to-9">
 							<img alt="" class="aspect-ratio-item-flush aspect-ratio-item-top-center img-thumbnail theme-screenshot" src="<%= themeDisplay.getCDNBaseURL() %><%= HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) %><%= HtmlUtil.escapeAttribute(selColorScheme.getColorSchemeThumbnailPath()) %>/thumbnail.png" title="<%= HtmlUtil.escapeAttribute(selColorScheme.getName()) %>" />
@@ -98,8 +108,8 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 							</div>
 						</div>
 					</div>
-				</div>
-			</aui:row>
+				</clay:col>
+			</clay:row>
 		</c:if>
 
 		<%
@@ -107,15 +117,16 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 		%>
 
 		<c:if test="<%= !configurableSettings.isEmpty() %>">
-			<h4><liferay-ui:message key="settings" /></h4>
+			<h2 class="h4"><liferay-ui:message key="settings" /></h2>
 
 			<%
 			LayoutSet selLayoutSet = layoutsAdminDisplayContext.getSelLayoutSet();
 
 			for (String name : configurableSettings.keySet()) {
+				String value = selLayoutSet.getThemeSetting(name, "regular");
 			%>
 
-				<p class="text-default"><liferay-ui:message key="<%= HtmlUtil.escape(name) %>" />: <%= HtmlUtil.escape(selLayoutSet.getThemeSetting(name, "regular")) %></p>
+				<p class="text-default"><liferay-ui:message key="<%= HtmlUtil.escape(name) %>" />: <%= HtmlUtil.escape(LanguageUtil.get(request, value)) %></p>
 
 			<%
 			}

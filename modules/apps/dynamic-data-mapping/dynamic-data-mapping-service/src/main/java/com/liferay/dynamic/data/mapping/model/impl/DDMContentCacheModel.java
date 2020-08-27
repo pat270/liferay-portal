@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMContent;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DDMContent in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDMContentCacheModel
-	implements CacheModel<DDMContent>, Externalizable {
+	implements CacheModel<DDMContent>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMContentCacheModel)) {
+		if (!(object instanceof DDMContentCacheModel)) {
 			return false;
 		}
 
-		DDMContentCacheModel ddmContentCacheModel = (DDMContentCacheModel)obj;
+		DDMContentCacheModel ddmContentCacheModel =
+			(DDMContentCacheModel)object;
 
-		if (contentId == ddmContentCacheModel.contentId) {
+		if ((contentId == ddmContentCacheModel.contentId) &&
+			(mvccVersion == ddmContentCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +60,30 @@ public class DDMContentCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, contentId);
+		int hashCode = HashUtil.hash(0, contentId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(23);
+		StringBundler sb = new StringBundler(27);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", contentId=");
 		sb.append(contentId);
@@ -96,6 +113,9 @@ public class DDMContentCacheModel
 	@Override
 	public DDMContent toEntityModel() {
 		DDMContentImpl ddmContentImpl = new DDMContentImpl();
+
+		ddmContentImpl.setMvccVersion(mvccVersion);
+		ddmContentImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			ddmContentImpl.setUuid("");
@@ -157,7 +177,12 @@ public class DDMContentCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		contentId = objectInput.readLong();
@@ -172,11 +197,15 @@ public class DDMContentCacheModel
 		modifiedDate = objectInput.readLong();
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
-		data = objectInput.readUTF();
+		data = (String)objectInput.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -217,13 +246,15 @@ public class DDMContentCacheModel
 		}
 
 		if (data == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(data);
+			objectOutput.writeObject(data);
 		}
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long contentId;
 	public long groupId;

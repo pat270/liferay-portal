@@ -16,12 +16,9 @@ package com.liferay.friendly.url.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateFriendlyURLEntryException extends PortalException {
 
 	public DuplicateFriendlyURLEntryException() {
@@ -31,12 +28,12 @@ public class DuplicateFriendlyURLEntryException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateFriendlyURLEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateFriendlyURLEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateFriendlyURLEntryException(Throwable cause) {
-		super(cause);
+	public DuplicateFriendlyURLEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

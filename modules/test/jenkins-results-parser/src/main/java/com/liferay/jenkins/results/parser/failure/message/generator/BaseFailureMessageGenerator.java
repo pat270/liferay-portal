@@ -43,6 +43,11 @@ public abstract class BaseFailureMessageGenerator
 		return null;
 	}
 
+	@Override
+	public boolean isGenericCIFailure() {
+		return false;
+	}
+
 	protected Element getBaseBranchAnchorElement(TopLevelBuild topLevelBuild) {
 		StringBuilder sb = new StringBuilder();
 

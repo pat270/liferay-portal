@@ -26,31 +26,28 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing OAuth2ApplicationScopeAliases in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class OAuth2ApplicationScopeAliasesCacheModel
 	implements CacheModel<OAuth2ApplicationScopeAliases>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof OAuth2ApplicationScopeAliasesCacheModel)) {
+		if (!(object instanceof OAuth2ApplicationScopeAliasesCacheModel)) {
 			return false;
 		}
 
 		OAuth2ApplicationScopeAliasesCacheModel
 			oAuth2ApplicationScopeAliasesCacheModel =
-				(OAuth2ApplicationScopeAliasesCacheModel)obj;
+				(OAuth2ApplicationScopeAliasesCacheModel)object;
 
 		if (oAuth2ApplicationScopeAliasesId ==
 				oAuth2ApplicationScopeAliasesCacheModel.

@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivityCounter
  * @generated
  */
-@ProviderType
 public class SocialActivityCounterWrapper
 	extends BaseModelWrapper<SocialActivityCounter>
-	implements SocialActivityCounter, ModelWrapper<SocialActivityCounter> {
+	implements ModelWrapper<SocialActivityCounter>, SocialActivityCounter {
 
 	public SocialActivityCounterWrapper(
 		SocialActivityCounter socialActivityCounter) {
@@ -46,6 +45,8 @@ public class SocialActivityCounterWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("activityCounterId", getActivityCounterId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -65,6 +66,18 @@ public class SocialActivityCounterWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long activityCounterId = (Long)attributes.get("activityCounterId");
 
 		if (activityCounterId != null) {
@@ -205,6 +218,16 @@ public class SocialActivityCounterWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this social activity counter.
+	 *
+	 * @return the ct collection ID of this social activity counter
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the current value of this social activity counter.
 	 *
 	 * @return the current value of this social activity counter
@@ -242,6 +265,16 @@ public class SocialActivityCounterWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this social activity counter.
+	 *
+	 * @return the mvcc version of this social activity counter
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -370,6 +403,16 @@ public class SocialActivityCounterWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this social activity counter.
+	 *
+	 * @param ctCollectionId the ct collection ID of this social activity counter
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the current value of this social activity counter.
 	 *
 	 * @param currentValue the current value of this social activity counter
@@ -407,6 +450,16 @@ public class SocialActivityCounterWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this social activity counter.
+	 *
+	 * @param mvccVersion the mvcc version of this social activity counter
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -457,6 +510,20 @@ public class SocialActivityCounterWrapper
 	@Override
 	public void setTotalValue(int totalValue) {
 		model.setTotalValue(totalValue);
+	}
+
+	@Override
+	public Map<String, Function<SocialActivityCounter, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<SocialActivityCounter, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

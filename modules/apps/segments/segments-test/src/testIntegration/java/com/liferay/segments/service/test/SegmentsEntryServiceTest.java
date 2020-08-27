@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -37,12 +37,13 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.segments.constants.SegmentsActionKeys;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsEntryConstants;
+import com.liferay.segments.criteria.Criteria;
+import com.liferay.segments.criteria.CriteriaSerializer;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.service.SegmentsEntryService;
 import com.liferay.segments.test.util.SegmentsTestUtil;
@@ -82,7 +83,7 @@ public class SegmentsEntryServiceTest {
 		_groupUser = UserTestUtil.addGroupUser(
 			_group, RoleConstants.POWER_USER);
 
-		ServiceTestUtil.setUser(_companyAdminUser);
+		UserTestUtil.setUser(_companyAdminUser);
 	}
 
 	@Test
@@ -108,7 +109,38 @@ public class SegmentsEntryServiceTest {
 				RandomTestUtil.randomString(),
 				RandomTestUtil.randomLocaleStringMap(),
 				RandomTestUtil.randomLocaleStringMap(), true,
-				RandomTestUtil.randomString(), SegmentsConstants.SOURCE_DEFAULT,
+				CriteriaSerializer.serialize(new Criteria()),
+				SegmentsEntryConstants.SOURCE_DEFAULT,
+				RandomTestUtil.randomString(),
+				ServiceContextTestUtil.getServiceContext(
+					_group, _groupUser.getUserId()));
+		}
+	}
+
+	@Test
+	public void testAddSegmentsEntryWithManageSegmentsEntriesPermissionWithoutSource()
+		throws Exception {
+
+		Role siteMemberRole = RoleLocalServiceUtil.getRole(
+			_company.getCompanyId(), RoleConstants.SITE_MEMBER);
+
+		ResourcePermissionLocalServiceUtil.addResourcePermission(
+			_company.getCompanyId(), "com.liferay.segments",
+			ResourceConstants.SCOPE_GROUP, String.valueOf(_group.getGroupId()),
+			siteMemberRole.getRoleId(),
+			SegmentsActionKeys.MANAGE_SEGMENTS_ENTRIES);
+
+		PermissionChecker permissionChecker =
+			PermissionCheckerFactoryUtil.create(_groupUser);
+
+		try (ContextUserReplace contextUserReplace = new ContextUserReplace(
+				_groupUser, permissionChecker)) {
+
+			_segmentsEntryService.addSegmentsEntry(
+				RandomTestUtil.randomString(),
+				RandomTestUtil.randomLocaleStringMap(),
+				RandomTestUtil.randomLocaleStringMap(), true,
+				CriteriaSerializer.serialize(new Criteria()),
 				RandomTestUtil.randomString(),
 				ServiceContextTestUtil.getServiceContext(
 					_group, _groupUser.getUserId()));
@@ -126,25 +158,12 @@ public class SegmentsEntryServiceTest {
 				RandomTestUtil.randomString(),
 				RandomTestUtil.randomLocaleStringMap(),
 				RandomTestUtil.randomLocaleStringMap(), true,
-				RandomTestUtil.randomString(), SegmentsConstants.SOURCE_DEFAULT,
+				RandomTestUtil.randomString(),
+				SegmentsEntryConstants.SOURCE_DEFAULT,
 				RandomTestUtil.randomString(),
 				ServiceContextTestUtil.getServiceContext(
 					_group, _groupUser.getUserId()));
 		}
-	}
-
-	@Test(expected = PrincipalException.MustHavePermission.class)
-	public void testDeleteSegmentsEntryFromExternalSource() throws Exception {
-		SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			SegmentsConstants.SOURCE_ASAH_FARO_BACKEND,
-			RandomTestUtil.randomString(),
-			ServiceContextTestUtil.getServiceContext(
-				_group, _companyAdminUser.getUserId()));
-
-		_segmentsEntryService.deleteSegmentsEntry(
-			segmentsEntry.getSegmentsEntryId());
 	}
 
 	@Test
@@ -371,8 +390,9 @@ public class SegmentsEntryServiceTest {
 
 		SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			SegmentsConstants.SOURCE_ASAH_FARO_BACKEND,
+			RandomTestUtil.randomString(),
+			CriteriaSerializer.serialize(new Criteria()),
+			SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
 			RandomTestUtil.randomString(), serviceContext);
 
 		_segmentsEntryService.updateSegmentsEntry(
@@ -426,7 +446,7 @@ public class SegmentsEntryServiceTest {
 				RandomTestUtil.randomString(),
 				RandomTestUtil.randomLocaleStringMap(),
 				RandomTestUtil.randomLocaleStringMap(), true,
-				RandomTestUtil.randomString(),
+				CriteriaSerializer.serialize(new Criteria()),
 				ServiceContextTestUtil.getServiceContext(
 					_group, _groupUser.getUserId()));
 		}

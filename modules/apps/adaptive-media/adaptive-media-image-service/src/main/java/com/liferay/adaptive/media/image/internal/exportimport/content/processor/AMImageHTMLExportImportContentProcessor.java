@@ -94,9 +94,9 @@ public class AMImageHTMLExportImportContentProcessor
 		try {
 			return _dlAppLocalService.getFileEntry(fileEntryId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 
 			return null;
@@ -126,7 +126,7 @@ public class AMImageHTMLExportImportContentProcessor
 
 	private String _replace(
 			String content, AMEmbeddedReferenceSet amEmbeddedReferenceSet)
-		throws PortalException {
+		throws Exception {
 
 		Document document = _parseDocument(content);
 
@@ -204,12 +204,12 @@ public class AMImageHTMLExportImportContentProcessor
 					_ATTRIBUTE_NAME_EXPORT_IMPORT_PATH,
 					ExportImportPathUtil.getModelPath(fileEntry));
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(pe, pe);
+					_log.debug(portalException, portalException);
 				}
 				else if (_log.isWarnEnabled()) {
-					_log.warn(pe.getMessage());
+					_log.warn(portalException.getMessage());
 				}
 			}
 		}

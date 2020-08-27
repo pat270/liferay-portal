@@ -17,51 +17,21 @@
 <%@ include file="/init.jsp" %>
 
 <%
-LayoutTypeController layoutTypeController = LayoutTypeControllerTracker.getLayoutTypeController(layout.getType());
+String cssClass = "control-menu-nav-item";
 
-ResourceBundle layoutTypeResourceBundle = ResourceBundleUtil.getBundle("content.Language", locale, layoutTypeController.getClass());
+if (!Objects.equals(layout.getType(), LayoutConstants.TYPE_COLLECTION)) {
+	cssClass += " control-menu-nav-item-content";
+}
 
 String headerTitle = HtmlUtil.escape(layout.getName(locale));
 
-String layoutFriendlyURL = layout.getFriendlyURL();
-
 String portletId = ParamUtil.getString(request, "p_p_id");
 
-if (Validator.isNotNull(portletId) && layout.isSystem() && !layout.isTypeControlPanel() && layoutFriendlyURL.equals(PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL)) {
+if (Validator.isNotNull(portletId) && layout.isSystem() && !layout.isTypeControlPanel() && Objects.equals(layout.getFriendlyURL(), PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL)) {
 	headerTitle = PortalUtil.getPortletTitle(portletId, locale);
 }
 %>
 
-<li class="align-items-center control-menu-nav-item control-menu-nav-item-content">
-	<span class="control-menu-level-1-heading truncate-text" data-qa-id="headerTitle"><%= headerTitle %></span>&nbsp;<span class="text-muted truncate-text">(<%= LanguageUtil.get(request, layoutTypeResourceBundle, "layout.types." + layout.getType()) %>)</span>
-
-	<%
-	Map<String, Object> context = new HashMap<>();
-
-	context.put("administrationPortletNamespace", PortalUtil.getPortletNamespace(LayoutAdminPortletKeys.GROUP_PAGES));
-
-	PortletURL administrationPortletURL = PortalUtil.getControlPanelPortletURL(request, LayoutAdminPortletKeys.GROUP_PAGES, PortletRequest.RENDER_PHASE);
-
-	administrationPortletURL.setParameter("redirect", themeDisplay.getURLCurrent());
-
-	context.put("administrationPortletURL", administrationPortletURL.toString());
-
-	LiferayPortletURL findLayoutsURL = PortletURLFactoryUtil.create(request, ProductNavigationControlMenuPortletKeys.PRODUCT_NAVIGATION_CONTROL_MENU, PortletRequest.RESOURCE_PHASE);
-
-	findLayoutsURL.setResourceID("/control_menu/find_layouts");
-
-	context.put("findLayoutsURL", findLayoutsURL.toString());
-
-	context.put("layouts", JSONFactoryUtil.createJSONArray());
-	context.put("namespace", PortalUtil.getPortletNamespace(ProductNavigationControlMenuPortletKeys.PRODUCT_NAVIGATION_CONTROL_MENU));
-	context.put("spritemap", themeDisplay.getPathThemeImages() + "/lexicon/icons.svg");
-	context.put("totalCount", 0);
-	%>
-
-	<soy:component-renderer
-		componentId="layoutFinder"
-		context="<%= context %>"
-		module="js/LayoutFinder.es"
-		templateNamespace="com.liferay.product.navigation.control.menu.web.LayoutFinder.render"
-	/>
+<li class="<%= cssClass %>">
+	<span class="control-menu-level-1-heading text-truncate" data-qa-id="headerTitle"><%= headerTitle %></span>
 </li>

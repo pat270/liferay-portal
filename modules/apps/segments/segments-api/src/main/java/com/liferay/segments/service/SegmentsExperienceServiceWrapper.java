@@ -15,8 +15,7 @@
 package com.liferay.segments.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.segments.model.SegmentsExperience;
 
 /**
  * Provides a wrapper for {@link SegmentsExperienceService}.
@@ -25,7 +24,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperienceService
  * @generated
  */
-@ProviderType
 public class SegmentsExperienceServiceWrapper
 	implements SegmentsExperienceService,
 			   ServiceWrapper<SegmentsExperienceService> {
@@ -37,7 +35,7 @@ public class SegmentsExperienceServiceWrapper
 	}
 
 	@Override
-	public com.liferay.segments.model.SegmentsExperience addSegmentsExperience(
+	public SegmentsExperience addSegmentsExperience(
 			long segmentsEntryId, long classNameId, long classPK,
 			java.util.Map<java.util.Locale, String> nameMap, boolean active,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -49,12 +47,21 @@ public class SegmentsExperienceServiceWrapper
 	}
 
 	@Override
-	public com.liferay.segments.model.SegmentsExperience
-			deleteSegmentsExperience(long segmentsExperienceId)
+	public SegmentsExperience deleteSegmentsExperience(
+			long segmentsExperienceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperienceService.deleteSegmentsExperience(
 			segmentsExperienceId);
+	}
+
+	@Override
+	public SegmentsExperience fetchSegmentsExperience(
+			long groupId, String segmentsExperienceKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperienceService.fetchSegmentsExperience(
+			groupId, segmentsExperienceKey);
 	}
 
 	/**
@@ -68,8 +75,7 @@ public class SegmentsExperienceServiceWrapper
 	}
 
 	@Override
-	public com.liferay.segments.model.SegmentsExperience getSegmentsExperience(
-			long segmentsExperienceId)
+	public SegmentsExperience getSegmentsExperience(long segmentsExperienceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperienceService.getSegmentsExperience(
@@ -77,22 +83,21 @@ public class SegmentsExperienceServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.segments.model.SegmentsExperience>
-		getSegmentsExperiences(
-			long groupId, long classNameId, long classPK, boolean active) {
+	public java.util.List<SegmentsExperience> getSegmentsExperiences(
+			long groupId, long classNameId, long classPK, boolean active)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperienceService.getSegmentsExperiences(
 			groupId, classNameId, classPK, active);
 	}
 
 	@Override
-	public java.util.List<com.liferay.segments.model.SegmentsExperience>
-		getSegmentsExperiences(
+	public java.util.List<SegmentsExperience> getSegmentsExperiences(
 			long groupId, long classNameId, long classPK, boolean active,
 			int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.segments.model.SegmentsExperience>
-					orderByComparator) {
+			com.liferay.portal.kernel.util.OrderByComparator<SegmentsExperience>
+				orderByComparator)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperienceService.getSegmentsExperiences(
 			groupId, classNameId, classPK, active, start, end,
@@ -101,17 +106,17 @@ public class SegmentsExperienceServiceWrapper
 
 	@Override
 	public int getSegmentsExperiencesCount(
-		long groupId, long classNameId, long classPK, boolean active) {
+			long groupId, long classNameId, long classPK, boolean active)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperienceService.getSegmentsExperiencesCount(
 			groupId, classNameId, classPK, active);
 	}
 
 	@Override
-	public com.liferay.segments.model.SegmentsExperience
-			updateSegmentsExperience(
-				long segmentsExperienceId, long segmentsEntryId,
-				java.util.Map<java.util.Locale, String> nameMap, boolean active)
+	public SegmentsExperience updateSegmentsExperience(
+			long segmentsExperienceId, long segmentsEntryId,
+			java.util.Map<java.util.Locale, String> nameMap, boolean active)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _segmentsExperienceService.updateSegmentsExperience(

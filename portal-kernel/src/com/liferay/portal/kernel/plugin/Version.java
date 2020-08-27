@@ -152,16 +152,16 @@ public class Version implements Comparable<Version>, Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Version)) {
+		if (!(object instanceof Version)) {
 			return false;
 		}
 
-		Version version = (Version)obj;
+		Version version = (Version)object;
 
 		String versionString1 = toString();
 		String versionString2 = version.toString();
@@ -336,7 +336,7 @@ public class Version implements Comparable<Version>, Serializable {
 
 				return false;
 			}
-			catch (NumberFormatException nfe) {
+			catch (NumberFormatException numberFormatException) {
 				return false;
 			}
 		}

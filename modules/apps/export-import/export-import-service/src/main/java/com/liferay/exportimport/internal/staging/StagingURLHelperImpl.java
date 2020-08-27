@@ -28,14 +28,12 @@ import java.io.Serializable;
 
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Akos Thurzo
  */
 @Component(immediate = true, service = StagingURLHelper.class)
-@ProviderType
 public class StagingURLHelperImpl implements StagingURLHelper {
 
 	@Override
@@ -85,15 +83,17 @@ public class StagingURLHelperImpl implements StagingURLHelper {
 	}
 
 	@Override
-	public String buildRemoteURL(UnicodeProperties typeSettingsProperties) {
-		String remoteAddress = typeSettingsProperties.getProperty(
+	public String buildRemoteURL(
+		UnicodeProperties typeSettingsUnicodeProperties) {
+
+		String remoteAddress = typeSettingsUnicodeProperties.getProperty(
 			"remoteAddress");
 		int remotePort = GetterUtil.getInteger(
-			typeSettingsProperties.getProperty("remotePort"));
-		String remotePathContext = typeSettingsProperties.getProperty(
+			typeSettingsUnicodeProperties.getProperty("remotePort"));
+		String remotePathContext = typeSettingsUnicodeProperties.getProperty(
 			"remotePathContext");
 		boolean secureConnection = GetterUtil.getBoolean(
-			typeSettingsProperties.getProperty("secureConnection"));
+			typeSettingsUnicodeProperties.getProperty("secureConnection"));
 
 		return buildRemoteURL(
 			remoteAddress, remotePort, remotePathContext, secureConnection);

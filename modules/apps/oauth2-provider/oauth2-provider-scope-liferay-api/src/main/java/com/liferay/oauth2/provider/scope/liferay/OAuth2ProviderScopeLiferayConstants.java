@@ -15,8 +15,11 @@
 package com.liferay.oauth2.provider.scope.liferay;
 
 /**
- * @author Marta Medio
+ * @author     Marta Medio
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.oauth2.provider.scope.liferay.constants.OAuth2ProviderScopeLiferayConstants}
  */
+@Deprecated
 public class OAuth2ProviderScopeLiferayConstants {
 
 	public static final String AUTH_VERIFIER_OAUTH2_TYPE = "OAuth2";

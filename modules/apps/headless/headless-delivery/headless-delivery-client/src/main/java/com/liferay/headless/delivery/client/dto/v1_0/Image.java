@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class Image {
+public class Image implements Cloneable {
+
+	public static Image toDTO(String json) {
+		return ImageSerDes.toDTO(json);
+	}
 
 	public String getCaption() {
 		return caption;
@@ -70,6 +74,27 @@ public class Image {
 
 	protected String contentUrl;
 
+	public String getContentValue() {
+		return contentValue;
+	}
+
+	public void setContentValue(String contentValue) {
+		this.contentValue = contentValue;
+	}
+
+	public void setContentValue(
+		UnsafeSupplier<String, Exception> contentValueUnsafeSupplier) {
+
+		try {
+			contentValue = contentValueUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String contentValue;
+
 	public Long getImageId() {
 		return imageId;
 	}
@@ -90,6 +115,11 @@ public class Image {
 	}
 
 	protected Long imageId;
+
+	@Override
+	public Image clone() throws CloneNotSupportedException {
+		return (Image)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

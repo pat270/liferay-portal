@@ -1,0 +1,251 @@
+<html>
+<head>
+<title>Questions</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Questions</td></tr>
+</thead>
+<tbody>
+<tr>
+	<td>ANSWER_BODY</td>
+	<td>//div[contains(@class,'questions-answer')]//div[contains(@class,'questions-article-body')]//p[contains(.,'${key_answerBodyContent}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASK_QUESTION_BUTTON</td>
+	<td>//*[contains(@class,'btn btn-primary') and contains(text(),'Ask Question')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASK_QUESTION_ERROR_MESSAGE</td>
+	<td>//div[text()='${key_errorMessage}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASK_QUESTION_POST_YOUR_QUESTION_BUTTON</td>
+	<td>//button[contains(@class,'btn-primary') and contains(@class,'btn-primary')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASK_QUESTION_SEARCH_QUESTION</td>
+	<td>//h2[text()='${key_titleField}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASK_QUESTION_TAG_FIELD</td>
+	<td>//div[contains(@class,'input-group-item')]/input[contains(@class,'form-control-inset')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASK_QUESTION_TITLE_FIELD</td>
+	<td>//div[contains(@class,'form-group')]/input[contains(@class,'form-control')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CREATE_QUESTIONS_NAME_FIELD</td>
+	<td>//input[@id='_com_liferay_message_boards_web_portlet_MBAdminPortlet_name']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CREATE_QUESTIONS_DISPLAY_STYLE_SELECTOR</td>
+	<td>//select[@id='_com_liferay_message_boards_web_portlet_MBAdminPortlet_displayStyle']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMPTY_STATE_MESSAGE</td>
+	<td>//div[contains(@class,'questions-container')]//div[contains(@class,'empty')]//span[contains(text(),'${key_emptyInfo}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ITEMS_PER_PAGE_SELECT</td>
+	<td>//div[contains(@class,'pagination-items-per-page')]/button[contains(@class,'toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_RESULTS</td>
+	<td>//div[@class='pagination-results']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_CATEGORY_LABEL_ITEM</td>
+	<td>//span[contains(@class,'label-item') and contains(.,'${key_categoryItem}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_BELL_BUTTON</td>
+	<td>//button[*[name()='svg'][contains(@class,'bell-on')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_BREADCRUMB_ACTIVE_SUBTOPIC</td>
+	<td>//ol[contains(@class,'breadcrumb')]//li[contains(.,'${key_topicName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_BREADCRUMB_PARENT_TOPIC_BUTTON</td>
+	<td>//button[contains(@class,'dropdown') and contains(.,'${key_topicName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_BREADCRUMB_TOPIC_DROPDOWN_OPTION</td>
+	<td>//div[contains(@class,'dropdown-menu')]//span[contains(.,'${key_topicName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_BREADCRUMB_TOPIC_DROPDOWN_TOGGLE</td>
+	<td>//button[contains(@class,'dropdown-toggle') and contains(.,'${key_topicName}')]//*[name()='svg'][contains(@class,'caret-bottom')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_CATEGORY_TITLE</td>
+	<td>//div[contains(@class,'questions-root')]//ol[contains(@class,'breadcrumb')]//li[contains(.,'${key_categoryTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_DEFAULT_SUBSCRIPTION_QUESTIONS</td>
+	<td>//div[contains(@class,'questions-container')]/div[contains(.,'Questions')]/div/div/div/span[contains(.,'There are no results.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_DEFAULT_SUBSCRIPTION_TOPICS</td>
+	<td>//div[contains(@class,'questions-container')]/div[contains(.,'Topics')]/div[contains(@class,'c-empty-state')]//span/span[contains(.,'There are no results.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_ELLIPSIS_ICON</td>
+	<td>//div[contains(@class,'question-row') and contains(.,'${key_questionTitle}')]//li//button[*[name()='svg'][contains(@class,'icon-ellipsis-v')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_HOME_ICON</td>
+	<td>//ol[contains(@class,'breadcrumb')]/li//a[*[name()='svg'][contains(@class,'lexicon-icon-home')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_SUBSCRIBED_BUTTON</td>
+	<td>//button[@type='button' and @title='Subscribed']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_SUBSCRIBED_TOPIC</td>
+	<td>//div[contains(@class,'questions-container')]/div[contains(.,'Topics')]//div[contains(@class,'card-title')]/span[contains(.,'${key_subscribedTopic}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_IMAGE_NAME</td>
+	<td>//img[contains(@src,'${key_imageFileName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_LIST</td>
+	<td>//form[@data-fm-namespace='_com_liferay_message_boards_web_portlet_MBAdminPortlet_']//ul</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_LIST_TAB_FIELD</td>
+	<td>//*[contains(@class, 'navbar')]//a[normalize-space(text())='${key_questionTabField}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_LIST_ACTIVE_TAB_FIELD</td>
+	<td>//a[contains(@class,'active') and contains(.,'${key_questionTabField}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_NAME_FIELD</td>
+	<td>//p[@title='${key_questionNameField}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_DETAILS_TITLE</td>
+	<td>//div[contains(@class,'questions-container')]//h1[contains(.,'${key_questionTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_TITLE</td>
+	<td>//a[contains(@class,'questions-title')]/h2[contains(.,'${key_questionTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_TITLE_LAST</td>
+	<td>xpath=(//a[contains(@class,'questions-title')]/h2[contains(.,'${key_lastQuestionTitle}')])[last()]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_SELECT_FILTER</td>
+	<td>//select[contains(@id,'questionsFilter')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_TAGS_SELECT_FILTER</td>
+	<td>//select[contains(@id,'tagsOrderBy')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_SELECT_FILTER_VALUE</td>
+	<td>//option[contains(text(),'${key_filter}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_SELECT_TOPIC</td>
+	<td>//select[contains(@class,'form-control')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_SELECT_TOPIC_VALUE</td>
+	<td>//option[contains(text(),'${key_topic}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_VOTED_COUNT</td>
+	<td>//div[contains(@class,'question-row') and contains(.,'${key_questionTitle}')]//ul/li[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VOTE_BUTTON</td>
+	<td>//button[contains(@class,'text-reset')]//*[name()='svg'][contains(@class,'${key_caretName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VOTED_RESULT</td>
+	<td>//div[contains(@class,'questions-container')]//span[contains(@class,'c-px-2') and normalize-space()='${key_votedResult}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEARCH_INFO</td>
+	<td>//div[contains(@class,'questions-container')]//span[contains(.,'${key_resultsInfo}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEARCH_QUESTION_FIELD</td>
+	<td>//div[contains(@class,'questions')]//input[contains(@placeholder,'Search')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEARCH_RESULTS_CLEAR_BUTTON</td>
+	<td>//div[contains(@class,'input-group-item')]//button[contains(@class,'btn-monospaced')]//*[name()='svg'][contains(@class,'times-circle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TAGS_LIST_TAB_NAMES</td>
+	<td>//a[contains(@href, '${key_tagName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TAGS_LIST_TAB_NO_RESULTS</td>
+	<td>//div[contains(@class,'container')]//div[contains(@class,'questions')]//span[@class='text-truncate']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TAGS_LIST_TAB_USED_TIMES</td>
+	<td>//a[contains(@href, '${key_tagName}')]//*[contains(.,'Used ${key_amountOfUsedTimes} Times')]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
+
+

@@ -10,7 +10,7 @@
 <tbody>
 <tr>
 	<td>SWITCH_TO_ADVANCED_PUBLICATION</td>
-	<td>//a[contains(.,'Switch to Advanced Publication')]/span</td>
+	<td>//a[contains(.,'Switch to Advanced Publication')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -24,6 +24,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>STAGING_CONFIGURATION_CHECKBOX</td>
+	<td>//label[contains(.,'${key_checkboxName}')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -32,6 +37,11 @@
 <tr>
 	<td>DATE_SCHEDULE_RADIO</td>
 	<td>//span[contains(@class,'custom-control-label-text') and contains(.,'Schedule')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DATE_SCHEDULE_START_DATE</td>
+	<td>//input[contains(@name,'_schedulerStartDate') and @placeholder='mm/dd/yyyy']</td>
 	<td></td>
 </tr>
 <tr>
@@ -60,8 +70,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DATE_SCHEDULE_REPEAT_RADIO</td>
-	<td>//option[contains(@id,'recurrenceType${key_frequency}')]</td>
+	<td>DATE_SCHEDULE_REPEAT_DROPDOWN</td>
+	<td>//select[contains(@id,'_recurrence')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -70,6 +80,11 @@
 	<td></td>
 </tr>
 <!--PAGES-->
+<tr>
+	<td>PAGES_CHOOSE_PAGE_DELETION_CHECKBOX</td>
+	<td>//span[contains(.,'Publish Page Deletions')]//span[contains(@class,'deletions')]/../../input</td>
+	<td></td>
+</tr>
 <tr>
 	<td>PAGES_TO_PUBLISH_CHECKBOX_CHECKED</td>
 	<td>//div[@class='pages-selector']//div[normalize-space()='${key_entryName}' and contains(@class,'checked')]//span[contains(@class,'icon-check')]</td>
@@ -93,7 +108,7 @@
 </tr>
 <tr>
 	<td>SIMPLE_PUBLICATION_DELETION</td>
-	<td>//span[contains(@class,'deletions') and contains(.,'${key_itemName}')]</td>
+	<td>//li[contains(.,'${key_itemName}')]//span[contains(@class,'deletions')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -152,11 +167,6 @@
 <tr>
 	<td>CONTENT_LAST</td>
 	<td>//span[contains(.,'Last...')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONTENT_DATE_RANGE</td>
-	<td>//span[contains(@class,'custom-control-label-text') and contains(.,'Date Range')]</td>
 	<td></td>
 </tr>
 <tr>

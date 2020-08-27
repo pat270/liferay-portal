@@ -16,12 +16,6 @@
 
 <%@ include file="/html/taglib/aui/input/init.jsp" %>
 
-<%
-if (type.equals("textarea") && BrowserSnifferUtil.isIe(request) && ((BrowserSnifferUtil.getMajorVersion(request) == 10.0) || (BrowserSnifferUtil.getMajorVersion(request) == 11.0))) {
-	placeholder = StringPool.BLANK;
-}
-%>
-
 <c:if test="<%= Validator.isNotNull(helpMessage) %>">
 	<liferay-util:buffer
 		var="helpMessageContent"
@@ -306,7 +300,7 @@ boolean choiceField = checkboxField || radioField;
 		if (type.equals("hidden") && (value == null)) {
 			valueString = BeanPropertiesUtil.getStringSilent(bean, name);
 		}
-		else if (!ignoreRequestValue && (Validator.isNull(type) || ArrayUtil.contains(_TYPES, type))) {
+		else if (!ignoreRequestValue && (Validator.isNull(type) || _TYPES.contains(type))) {
 			valueString = BeanParamUtil.getStringSilent(bean, request, name, valueString);
 
 			if (Validator.isNotNull(fieldParam)) {
@@ -332,6 +326,7 @@ boolean choiceField = checkboxField || radioField;
 					onChange="<%= onChange %>"
 					onClick="<%= onClick %>"
 					placeholder="<%= placeholder %>"
+					selectedLanguageId="<%= selectedLanguageId %>"
 					type='<%= type.equals("text") ? "input" : type %>'
 					xml="<%= valueString %>"
 				/>
@@ -355,20 +350,21 @@ boolean choiceField = checkboxField || radioField;
 				<textarea class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(resourceBundle, placeholder) + "\"" : StringPool.BLANK %> <%= (storedDimensions.length > 1) ? "style=\"height: " + storedDimensions[0] + "; width: " + storedDimensions[1] + ";" + title + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(resourceBundle, title) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %>><%= HtmlUtil.escape(valueString) %></textarea>
 
 				<c:if test="<%= autoSize %>">
-					<aui:script use="aui-autosize-deprecated">
-						A.one('#<%= namespace + id %>').plug(A.Plugin.Autosize);
+					<aui:script require="frontend-js-web/liferay/autosize/autosize.es as autoSizeModule">
+						var inputElement = document.getElementById('<%= namespace + id %>');
+						new autoSizeModule.default(inputElement);
 					</aui:script>
 				</c:if>
 
 				<c:if test="<%= resizable %>">
-					<aui:script use="liferay-store,resize-base">
+					<aui:script use="resize-base">
 						var textareaNode = A.one('#<%= namespace + id %>');
 
 						var resizeInstance = new A.Resize(
 							{
 								after: {
 									'end': function(event) {
-										Liferay.Store('<%= _TEXTAREA_WIDTH_HEIGHT_PREFIX %><%= namespace + id %>', textareaNode.getStyle('height') + ',' + textareaNode.getStyle('width'));
+										Liferay.Util.Session.set('<%= _TEXTAREA_WIDTH_HEIGHT_PREFIX %><%= namespace + id %>', textareaNode.getStyle('height') + ',' + textareaNode.getStyle('width'));
 									}
 								},
 								autoHide: true,
@@ -434,5 +430,5 @@ private long _getClassPK(Object bean, long classPK) {
 
 private static final String _TEXTAREA_WIDTH_HEIGHT_PREFIX = "liferay_resize_";
 
-private static final String[] _TYPES = {"color", "email", "number", "range", "tel", "text", "textarea"};
+private static final Set<String> _TYPES = new HashSet<>(Arrays.asList("color", "email", "number", "range", "tel", "text", "textarea"));
 %>

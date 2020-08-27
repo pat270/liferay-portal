@@ -77,6 +77,11 @@ public class DummyContainerUADDisplay extends DummyUADDisplay<DummyContainer> {
 	}
 
 	@Override
+	public boolean isInTrash(DummyContainer dummyContainer) {
+		return false;
+	}
+
+	@Override
 	protected DummyService<DummyContainer> getDummyService() {
 		return _dummyContainerService;
 	}

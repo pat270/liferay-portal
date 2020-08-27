@@ -26,29 +26,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SAPEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SAPEntryCacheModel
 	implements CacheModel<SAPEntry>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SAPEntryCacheModel)) {
+		if (!(object instanceof SAPEntryCacheModel)) {
 			return false;
 		}
 
-		SAPEntryCacheModel sapEntryCacheModel = (SAPEntryCacheModel)obj;
+		SAPEntryCacheModel sapEntryCacheModel = (SAPEntryCacheModel)object;
 
 		if (sapEntryId == sapEntryCacheModel.sapEntryId) {
 			return true;

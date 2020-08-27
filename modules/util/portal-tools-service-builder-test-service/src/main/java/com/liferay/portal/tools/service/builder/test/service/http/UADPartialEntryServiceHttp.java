@@ -14,8 +14,6 @@
 
 package com.liferay.portal.tools.service.builder.test.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>com.liferay.portal.tools.service.builder.test.service.UADPartialEntryServiceUtil</code> service
@@ -43,6 +41,5 @@ import aQute.bnd.annotation.ProviderType;
  * @see UADPartialEntryServiceSoap
  * @generated
  */
-@ProviderType
 public class UADPartialEntryServiceHttp {
 }

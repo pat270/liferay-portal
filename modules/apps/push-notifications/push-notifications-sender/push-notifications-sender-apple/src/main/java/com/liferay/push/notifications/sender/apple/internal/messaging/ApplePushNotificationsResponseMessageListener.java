@@ -49,9 +49,8 @@ public class ApplePushNotificationsResponseMessageListener
 		AppleResponse appleResponse = (AppleResponse)response;
 
 		String invalidTokenErrorName = DeliveryError.INVALID_TOKEN.name();
-		String status = appleResponse.getStatus();
 
-		if (invalidTokenErrorName.equals(status)) {
+		if (invalidTokenErrorName.equals(appleResponse.getStatus())) {
 			String token = appleResponse.getToken();
 
 			try {
@@ -62,7 +61,7 @@ public class ApplePushNotificationsResponseMessageListener
 					_log.warn("Token " + token + " is invalid and was deleted");
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 	}

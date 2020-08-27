@@ -18,15 +18,8 @@ import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortlet
 import com.liferay.layout.content.page.editor.web.internal.constants.ContentPageEditorWebKeys;
 import com.liferay.layout.content.page.editor.web.internal.display.context.ContentPageEditorDisplayContext;
 import com.liferay.layout.content.page.editor.web.internal.display.context.ContentPageEditorDisplayContextProvider;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
@@ -36,7 +29,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -59,8 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
-		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.resource-bundle=content.Language"
 	},
 	service = Portlet.class
 )
@@ -83,7 +74,7 @@ public class ContentPageEditorPortlet extends MVCPortlet {
 			contentPageEditorDisplayContext =
 				_contentPageEditorDisplayContextProvider.
 					getContentPageEditorDisplayContext(
-						httpServletRequest, renderResponse);
+						httpServletRequest, renderResponse, renderRequest);
 
 			httpServletRequest.setAttribute(
 				ContentPageEditorWebKeys.
@@ -91,44 +82,12 @@ public class ContentPageEditorPortlet extends MVCPortlet {
 				contentPageEditorDisplayContext);
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		Layout layout = themeDisplay.getLayout();
-
-		Layout draftLayout = _layoutLocalService.fetchLayout(
-			_portal.getClassNameId(Layout.class), layout.getPlid());
-
-		if (draftLayout != null) {
-			HttpServletResponse httpServletResponse =
-				_portal.getHttpServletResponse(renderResponse);
-
-			try {
-				String layoutFullURL = _portal.getLayoutFullURL(
-					draftLayout, themeDisplay);
-
-				httpServletResponse.sendRedirect(
-					_http.addParameter(
-						layoutFullURL, "p_l_mode", Constants.EDIT));
-			}
-			catch (PortalException pe) {
-				throw new PortletException(pe);
-			}
-		}
-		else {
-			super.doDispatch(renderRequest, renderResponse);
-		}
+		super.doDispatch(renderRequest, renderResponse);
 	}
 
 	@Reference
 	private ContentPageEditorDisplayContextProvider
 		_contentPageEditorDisplayContextProvider;
-
-	@Reference
-	private Http _http;
-
-	@Reference
-	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private Portal _portal;

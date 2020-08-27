@@ -51,10 +51,10 @@ public class NodeImpl implements Node {
 
 	@Override
 	public Node asXPathResult(Element parent) {
-		ElementImpl parentImpl = (ElementImpl)parent;
+		ElementImpl parentElementImpl = (ElementImpl)parent;
 
 		org.dom4j.Node node = _node.asXPathResult(
-			parentImpl.getWrappedElement());
+			parentElementImpl.getWrappedElement());
 
 		if (node == null) {
 			return null;
@@ -98,16 +98,18 @@ public class NodeImpl implements Node {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof NodeImpl)) {
+		if (!(object instanceof NodeImpl)) {
 			return false;
 		}
 
-		org.dom4j.Node node = ((NodeImpl)obj).getWrappedNode();
+		NodeImpl nodeImpl = (NodeImpl)object;
+
+		org.dom4j.Node node = nodeImpl.getWrappedNode();
 
 		return _node.equals(node);
 	}
@@ -171,9 +173,9 @@ public class NodeImpl implements Node {
 
 	@Override
 	public String getPath(Element context) {
-		ElementImpl contextImpl = (ElementImpl)context;
+		ElementImpl contextElementImpl = (ElementImpl)context;
 
-		return _node.getPath(contextImpl.getWrappedElement());
+		return _node.getPath(contextElementImpl.getWrappedElement());
 	}
 
 	@Override
@@ -193,9 +195,9 @@ public class NodeImpl implements Node {
 
 	@Override
 	public String getUniquePath(Element context) {
-		ElementImpl contextImpl = (ElementImpl)context;
+		ElementImpl contextElementImpl = (ElementImpl)context;
 
-		return _node.getUniquePath(contextImpl.getWrappedElement());
+		return _node.getUniquePath(contextElementImpl.getWrappedElement());
 	}
 
 	public org.dom4j.Node getWrappedNode() {
@@ -252,16 +254,16 @@ public class NodeImpl implements Node {
 
 	@Override
 	public Object selectObject(String xPathExpression) {
-		Object obj = _node.selectObject(xPathExpression);
+		Object object = _node.selectObject(xPathExpression);
 
-		if (obj == null) {
+		if (object == null) {
 			return null;
 		}
-		else if (obj instanceof List<?>) {
-			return SAXReaderImpl.toNewNodes((List<org.dom4j.Node>)obj);
+		else if (object instanceof List<?>) {
+			return SAXReaderImpl.toNewNodes((List<org.dom4j.Node>)object);
 		}
 
-		return obj;
+		return object;
 	}
 
 	@Override

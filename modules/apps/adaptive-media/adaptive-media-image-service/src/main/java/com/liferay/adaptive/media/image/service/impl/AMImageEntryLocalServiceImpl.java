@@ -68,12 +68,6 @@ import org.osgi.service.component.annotations.Reference;
 public class AMImageEntryLocalServiceImpl
 	extends AMImageEntryLocalServiceBaseImpl {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, AMImageCounter.class, "adaptive.media.key");
-	}
-
 	/**
 	 * Adds an adaptive media image entry in the database and stores the image
 	 * bytes in the file store.
@@ -123,11 +117,6 @@ public class AMImageEntryLocalServiceImpl
 		return amImageEntryPersistence.update(amImageEntry);
 	}
 
-	@Deactivate
-	public void deactivate() {
-		_serviceTrackerMap.close();
-	}
-
 	/**
 	 * Deletes all the adaptive media images generated for the configuration in
 	 * the company. This method deletes both the adaptive media image entry from
@@ -170,8 +159,8 @@ public class AMImageEntryLocalServiceImpl
 				_imageStorage.delete(
 					fileVersion, amImageEntry.getConfigurationUuid());
 			}
-			catch (AMRuntimeException.IOException amreioe) {
-				_log.error(amreioe, amreioe);
+			catch (AMRuntimeException.IOException ioException) {
+				_log.error(ioException, ioException);
 			}
 		}
 	}
@@ -305,6 +294,17 @@ public class AMImageEntryLocalServiceImpl
 			(actualAMImageEntriesCount * 100) / expectedAMImageEntriesCount;
 
 		return Math.min(percentage, 100);
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, AMImageCounter.class, "adaptive.media.key");
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceTrackerMap.close();
 	}
 
 	private void _checkDuplicateAMImageEntry(

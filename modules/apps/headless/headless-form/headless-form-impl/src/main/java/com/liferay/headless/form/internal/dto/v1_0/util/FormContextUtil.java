@@ -50,19 +50,21 @@ public class FormContextUtil {
 
 		DDMStructure ddmStructure = ddmFormInstance.getStructure();
 
-		Map<String, Object> formContext = ddmFormTemplateContextFactory.create(
-			ddmStructure.getDDMForm(), ddmStructure.getDDMFormLayout(),
-			ddmFormRenderingContext);
+		Map<String, Object> ddmFormTemplateContext =
+			ddmFormTemplateContextFactory.create(
+				ddmStructure.getDDMForm(), ddmStructure.getDDMFormLayout(),
+				ddmFormRenderingContext);
 
 		return new FormContext() {
 			{
 				formPageContexts = TransformUtil.transformToArray(
-					_getMaps(formContext, "pages"),
+					_getMaps(ddmFormTemplateContext, "pages"),
 					FormContextUtil::_toFormPageContext, FormPageContext.class);
-				readOnly = _getBoolean(formContext, "readOnly");
+				readOnly = _getBoolean(ddmFormTemplateContext, "readOnly");
 				showRequiredFieldsWarning = _getBoolean(
-					formContext, "showRequiredFieldsWarning");
-				showSubmitButton = _getBoolean(formContext, "showSubmitButton");
+					ddmFormTemplateContext, "showRequiredFieldsWarning");
+				showSubmitButton = _getBoolean(
+					ddmFormTemplateContext, "showSubmitButton");
 			}
 		};
 	}
@@ -106,24 +108,24 @@ public class FormContextUtil {
 			{
 				enabled = _getBoolean(formPageContext, "enabled");
 
-				Stream<Map<String, Object>> stream = _getMaps(
-					formPageContext, "rows"
-				).stream();
+				List<Map<String, Object>> maps = _getMaps(
+					formPageContext, "rows");
 
-				List<Map<String, Object>> fields = stream.map(
-					row -> _getMaps(row, "columns")
-				).flatMap(
-					List::stream
-				).map(
-					column -> _getMaps(column, "fields")
-				).flatMap(
-					List::stream
-				).collect(
-					Collectors.toList()
-				);
+				Stream<Map<String, Object>> stream = maps.stream();
 
 				formFieldContexts = TransformUtil.transformToArray(
-					fields, FormContextUtil::_toFormFieldContext,
+					stream.map(
+						row -> _getMaps(row, "columns")
+					).flatMap(
+						List::stream
+					).map(
+						column -> _getMaps(column, "fields")
+					).flatMap(
+						List::stream
+					).collect(
+						Collectors.toList()
+					),
+					FormContextUtil::_toFormFieldContext,
 					FormFieldContext.class);
 
 				showRequiredFieldsWarning = _getBoolean(

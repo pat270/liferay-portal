@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing WorkflowInstanceLink in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class WorkflowInstanceLinkCacheModel
 	implements CacheModel<WorkflowInstanceLink>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof WorkflowInstanceLinkCacheModel)) {
+		if (!(object instanceof WorkflowInstanceLinkCacheModel)) {
 			return false;
 		}
 
 		WorkflowInstanceLinkCacheModel workflowInstanceLinkCacheModel =
-			(WorkflowInstanceLinkCacheModel)obj;
+			(WorkflowInstanceLinkCacheModel)object;
 
 		if ((workflowInstanceLinkId ==
 				workflowInstanceLinkCacheModel.workflowInstanceLinkId) &&
@@ -81,10 +78,12 @@ public class WorkflowInstanceLinkCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(23);
+		StringBundler sb = new StringBundler(25);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", workflowInstanceLinkId=");
 		sb.append(workflowInstanceLinkId);
 		sb.append(", groupId=");
@@ -116,6 +115,7 @@ public class WorkflowInstanceLinkCacheModel
 			new WorkflowInstanceLinkImpl();
 
 		workflowInstanceLinkImpl.setMvccVersion(mvccVersion);
+		workflowInstanceLinkImpl.setCtCollectionId(ctCollectionId);
 		workflowInstanceLinkImpl.setWorkflowInstanceLinkId(
 			workflowInstanceLinkId);
 		workflowInstanceLinkImpl.setGroupId(groupId);
@@ -156,6 +156,8 @@ public class WorkflowInstanceLinkCacheModel
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
 
+		ctCollectionId = objectInput.readLong();
+
 		workflowInstanceLinkId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -177,6 +179,8 @@ public class WorkflowInstanceLinkCacheModel
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		objectOutput.writeLong(workflowInstanceLinkId);
 
@@ -204,6 +208,7 @@ public class WorkflowInstanceLinkCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public long workflowInstanceLinkId;
 	public long groupId;
 	public long companyId;

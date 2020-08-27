@@ -1,4 +1,5 @@
 definition {
+
 	macro assertEquals {
 		echo("${expected}");
 
@@ -9,6 +10,19 @@ definition {
 		}
 		else {
 			TestUtils.fail(message = "FAILED: expected &apos;${expected}&apos;, actual was &apos;${actual}&apos;");
+		}
+	}
+
+	macro assertNotEquals {
+		echo("${expected}");
+
+		echo("${actual}");
+
+		if ("${expected}" != "${actual}") {
+			echo("PASSED");
+		}
+		else {
+			TestUtils.fail(message = "FAILED: &apos;${expected}&apos; equals &apos;${actual}&apos;");
 		}
 	}
 
@@ -35,9 +49,9 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Page Name");
 	}
+
 }

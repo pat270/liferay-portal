@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.HashMap;
@@ -81,11 +82,10 @@ public class JSONFactoryTest {
 
 	@Test
 	public void testDeserializeLongArrayToIntegerArray() {
-		Map<String, long[]> map = new HashMap<>();
-
-		map.put("key", new long[] {1L, 2L, 3L, 4L, 5L});
-
-		String json = JSONFactoryUtil.serialize(map);
+		String json = JSONFactoryUtil.serialize(
+			HashMapBuilder.<String, long[]>put(
+				"key", new long[] {1L, 2L, 3L, 4L, 5L}
+			).build());
 
 		Object object = JSONFactoryUtil.deserialize(json);
 
@@ -209,12 +209,15 @@ public class JSONFactoryTest {
 			"{\"\u0063lass\":\"java.lang.Thread\"}");
 
 		Assert.assertEquals(HashMap.class, object.getClass());
-		Assert.assertTrue(((Map<?, ?>)object).containsKey("class"));
+
+		Map<?, ?> map = (Map<?, ?>)object;
+
+		Assert.assertTrue(map.containsKey("class"));
 
 		JSONFactoryUtil.looseDeserialize(
 			"{\"class\":\"" + JSONFactoryUtil.class.getName() + "\"}");
 
-		Map<?, ?> map = (Map<?, ?>)JSONFactoryUtil.looseDeserialize(
+		map = (Map<?, ?>)JSONFactoryUtil.looseDeserialize(
 			"{\"class\":\"" + JSONFactoryUtil.class.getName() +
 				"\",\"foo\": \"boo\"}");
 

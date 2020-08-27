@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSet
  * @generated
  */
-@ProviderType
 public class LayoutSetWrapper
 	extends BaseModelWrapper<LayoutSet>
 	implements LayoutSet, ModelWrapper<LayoutSet> {
@@ -45,7 +44,7 @@ public class LayoutSetWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
-		attributes.put("headId", getHeadId());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("layoutSetId", getLayoutSetId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -56,7 +55,6 @@ public class LayoutSetWrapper
 		attributes.put("themeId", getThemeId());
 		attributes.put("colorSchemeId", getColorSchemeId());
 		attributes.put("css", getCss());
-		attributes.put("pageCount", getPageCount());
 		attributes.put("settings", getSettings());
 		attributes.put("layoutSetPrototypeUuid", getLayoutSetPrototypeUuid());
 		attributes.put(
@@ -73,10 +71,10 @@ public class LayoutSetWrapper
 			setMvccVersion(mvccVersion);
 		}
 
-		Long headId = (Long)attributes.get("headId");
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
 
-		if (headId != null) {
-			setHeadId(headId);
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
 		}
 
 		Long layoutSetId = (Long)attributes.get("layoutSetId");
@@ -137,12 +135,6 @@ public class LayoutSetWrapper
 
 		if (css != null) {
 			setCss(css);
-		}
-
-		Integer pageCount = (Integer)attributes.get("pageCount");
-
-		if (pageCount != null) {
-			setPageCount(pageCount);
 		}
 
 		String settings = (String)attributes.get("settings");
@@ -228,6 +220,16 @@ public class LayoutSetWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this layout set.
+	 *
+	 * @return the ct collection ID of this layout set
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the layout set's group.
 	 *
 	 * @return the layout set's group
@@ -247,16 +249,6 @@ public class LayoutSetWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
-	}
-
-	/**
-	 * Returns the head ID of this layout set.
-	 *
-	 * @return the head ID of this layout set
-	 */
-	@Override
-	public long getHeadId() {
-		return model.getHeadId();
 	}
 
 	/**
@@ -347,11 +339,6 @@ public class LayoutSetWrapper
 		return model.getMvccVersion();
 	}
 
-	/**
-	 * Returns the page count of this layout set.
-	 *
-	 * @return the page count of this layout set
-	 */
 	@Override
 	public int getPageCount() {
 		return model.getPageCount();
@@ -420,19 +407,38 @@ public class LayoutSetWrapper
 	}
 
 	/**
-	 * Returns the name of the layout set's virtual host.
+	 * Returns the name of the layout set's default virtual host.
 	 *
 	 * <p>
 	 * When accessing a layout set that has a the virtual host, the URL elements
 	 * "/web/sitename" or "/group/sitename" can be omitted.
 	 * </p>
 	 *
-	 * @return the layout set's virtual host name, or an empty string if the
-	 layout set has no virtual host configured
+	 * @return the layout set's default virtual host name, or an empty
+	 string if the layout set has no virtual hosts configured
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 #getVirtualHostnames()}
 	 */
+	@Deprecated
 	@Override
 	public String getVirtualHostname() {
 		return model.getVirtualHostname();
+	}
+
+	/**
+	 * Returns the names of the layout set's virtual hosts.
+	 *
+	 * <p>
+	 * When accessing a layout set that has a the virtual host, the URL elements
+	 * "/web/sitename" or "/group/sitename" can be omitted.
+	 * </p>
+	 *
+	 * @return the layout set's virtual host names, or an empty string if the
+	 layout set has no virtual hosts configured
+	 */
+	@Override
+	public java.util.TreeMap<String, String> getVirtualHostnames() {
+		return model.getVirtualHostnames();
 	}
 
 	@Override
@@ -523,6 +529,16 @@ public class LayoutSetWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this layout set.
+	 *
+	 * @param ctCollectionId the ct collection ID of this layout set
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this layout set.
 	 *
 	 * @param groupId the group ID of this layout set
@@ -530,16 +546,6 @@ public class LayoutSetWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
-	}
-
-	/**
-	 * Sets the head ID of this layout set.
-	 *
-	 * @param headId the head ID of this layout set
-	 */
-	@Override
-	public void setHeadId(long headId) {
-		model.setHeadId(headId);
 	}
 
 	/**
@@ -605,16 +611,6 @@ public class LayoutSetWrapper
 	}
 
 	/**
-	 * Sets the page count of this layout set.
-	 *
-	 * @param pageCount the page count of this layout set
-	 */
-	@Override
-	public void setPageCount(int pageCount) {
-		model.setPageCount(pageCount);
-	}
-
-	/**
 	 * Sets the primary key of this layout set.
 	 *
 	 * @param primaryKey the primary key of this layout set
@@ -646,9 +642,10 @@ public class LayoutSetWrapper
 
 	@Override
 	public void setSettingsProperties(
-		com.liferay.portal.kernel.util.UnicodeProperties settingsProperties) {
+		com.liferay.portal.kernel.util.UnicodeProperties
+			settingsUnicodeProperties) {
 
-		model.setSettingsProperties(settingsProperties);
+		model.setSettingsProperties(settingsUnicodeProperties);
 	}
 
 	/**
@@ -666,20 +663,39 @@ public class LayoutSetWrapper
 	 *
 	 * @param virtualHostname the name of the layout set's virtual host
 	 * @see #getVirtualHostname()
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 #setVirtualHostnames(TreeMap)}
 	 */
+	@Deprecated
 	@Override
 	public void setVirtualHostname(String virtualHostname) {
 		model.setVirtualHostname(virtualHostname);
 	}
 
+	/**
+	 * Sets the names of the layout set's virtual host name and language IDs.
+	 *
+	 * @param virtualHostnames the map of the layout set's virtual host name and
+	 language IDs
+	 * @see #getVirtualHostnames()
+	 */
 	@Override
-	public boolean isHead() {
-		return model.isHead();
+	public void setVirtualHostnames(java.util.TreeMap virtualHostnames) {
+		model.setVirtualHostnames(virtualHostnames);
 	}
 
 	@Override
-	public void populateVersionModel(LayoutSetVersion layoutSetVersion) {
-		model.populateVersionModel(layoutSetVersion);
+	public Map<String, Function<LayoutSet, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<LayoutSet, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

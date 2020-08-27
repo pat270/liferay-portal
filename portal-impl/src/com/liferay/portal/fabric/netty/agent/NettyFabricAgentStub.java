@@ -77,16 +77,17 @@ public class NettyFabricAgentStub implements FabricAgent {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof NettyFabricAgentStub)) {
+		if (!(object instanceof NettyFabricAgentStub)) {
 			return false;
 		}
 
-		NettyFabricAgentStub nettyFabricAgentStub = (NettyFabricAgentStub)obj;
+		NettyFabricAgentStub nettyFabricAgentStub =
+			(NettyFabricAgentStub)object;
 
 		if (_channel.equals(nettyFabricAgentStub._channel)) {
 			return true;
@@ -188,15 +189,15 @@ public class NettyFabricAgentStub implements FabricAgent {
 
 			_nettyFabricWorkerStubs.put(id, nettyFabricWorkerStub);
 		}
-		catch (CancellationException ce) {
+		catch (CancellationException cancellationException) {
 			nettyFabricWorkerStub.setCancel();
 		}
-		catch (Throwable t) {
-			if (t instanceof ExecutionException) {
-				t = t.getCause();
+		catch (Throwable throwable) {
+			if (throwable instanceof ExecutionException) {
+				throwable = throwable.getCause();
 			}
 
-			nettyFabricWorkerStub.setException(t);
+			nettyFabricWorkerStub.setException(throwable);
 		}
 
 		return nettyFabricWorkerStub;

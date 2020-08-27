@@ -1,0 +1,650 @@
+@component-name = "portal-wcm"
+definition {
+
+	property custom.properties = "default.layout.template.id=1_column";
+	property osgi.module.configuration.file.names = "com.liferay.rss.web.internal.configuration.RSSWebCacheConfiguration.config";
+	property osgi.module.configurations = "com.liferay.portlet.display-category=&quot;category.cms&quot;";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Content and Application Templates";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page");
+
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			layoutTemplate = "1 Column");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@priority = "5"
+	test AddRSSADTViaPortletConfiguration {
+		property portal.acceptance = "true";
+		property testray.component.names = "Content and Application Templates,RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Latimes &gt; Technology News",
+			feedType = "file",
+			feedUrlLink = "rss2.0.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		ApplicationDisplayTemplates.addManualViaRSS(siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		RSSPortlet.waitForRSSLoad();
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "RSS Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		RSSPortlet.waitForRSSLoad();
+
+		RSSPortlet.viewCustomADT(feedContentTitle = "Technology");
+	}
+
+	@priority = "3"
+	test AddRSSADTWithCorruptScript {
+		property testray.component.names = "Content and Application Templates,RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Latimes &gt; Technology News",
+			feedType = "file",
+			feedUrlLink = "rss2.0.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_rss_navigation_corrupt.ftl",
+			adtType = "RSS",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "RSS Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		RSSPortlet.viewCorruptScript();
+	}
+
+	@priority = "3"
+	test AddRSSADTWithScript {
+		property testray.component.names = "Content and Application Templates,RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Technology",
+			feedType = "file",
+			feedUrlLink = "Technology.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_rss_navigation.ftl",
+			adtType = "RSS",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "RSS Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		RSSPortlet.viewNavigationDisplayFeedTitle(
+			feedTitle = "Technology",
+			navigationNullADT = "true");
+	}
+
+	@priority = "3"
+	test ADTAssetPublisher {
+		property osgi.app.includes = "social-bookmarks";
+		property testray.component.names = "Asset Publisher,Content and Application Templates";
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Asset Publisher");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		WebContent.addPGViaAP(
+			webContentContent = "WC Content",
+			webContentTitle = "WC Title");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_asset_publisher_rich_summary.ftl",
+			adtType = "Asset Publisher",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		AssetPublisherPortlet.configureDisplaySettings(
+			displaySettings = "Comments,Comment Ratings,Flags,Print,Ratings,Related Assets",
+			enableSocialBookmarkSites = "Facebook,LinkedIn,Twitter,AddThis,Delicious,Digg,Evernote,Reddit,Slashdot");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		AssetPublisherPortlet.viewDefaultWithAllDisplaySettingsCheckboxesPG(
+			assetDescription = "WC Content",
+			assetTitle = "WC Title");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "Asset Publisher Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		AssetPublisherPortlet.viewCustomADTRichSummaryPG(
+			assetDescription = "WC Content",
+			assetTitle = "WC Title");
+	}
+
+	@priority = "5"
+	test ADTBreadcrumb {
+		property portal.acceptance = "true";
+		property testray.component.names = "Breadcrumb,Content and Application Templates";
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Breadcrumb");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		AssertVisible(locator1 = "BreadcrumbPortlet#BREADCRUMB");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Breadcrumb",
+			portletOption = "Configuration");
+
+		Breadcrumb.configureBreadcrumb(selectADTType = "Arrows");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Breadcrumb.viewADTApplied(breadcrumbADTType = "arrows");
+	}
+
+	@priority = "5"
+	test ADTCategoriesNavigation {
+		property portal.acceptance = "true";
+		property testray.component.names = "Categories,Content and Application Templates";
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 1");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 2");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 2",
+			vocabularyName = "Vocabulary Name 2");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 3");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 3",
+			vocabularyName = "Vocabulary Name 3");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Categories Navigation");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_categories_navigation_multi_column.ftl",
+			adtType = "Categories Navigation",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		CategoriesNavigationPortlet.viewDefaultPG(
+			categoryName = "Category Name 2",
+			vocabularyName = "Vocabulary Name 2");
+
+		CategoriesNavigationPortlet.viewDefaultPG(
+			categoryName = "Category Name 3",
+			vocabularyName = "Vocabulary Name 3");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "Categories Navigation Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		CategoriesNavigationPortlet.viewCustomADTMultiColumnPG(
+			categoryNameList = "Null,Null,Null,Null,Category Name 2,Category Name 3",
+			columnList = "1,2,3,4,5,6",
+			vocabularyNameList = "Audience,Stage,Topic,Vocabulary Name 1,Vocabulary Name 2,Vocabulary Name 3");
+	}
+
+	@priority = "3"
+	test ADTSiteMap {
+		property testray.component.names = "Content and Application Templates,Sitemap";
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Site Map");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Child Page Name",
+			parentLayoutName = "ADT Test Page");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page 2");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page 3");
+
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page 2",
+			layoutTemplate = "1 Column");
+
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page 3",
+			layoutTemplate = "1 Column");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_sitemap_multi_column.ftl",
+			adtType = "Site Map",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		SiteMapPortlet.viewDefaultPG(
+			listChildPageName = "ADT Child Page Name",
+			listPageName = "ADT Test Page,ADT Test Page 2,ADT Test Page 3");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "Site Map Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		SiteMapPortlet.viewCustomADTMultiColumnPG(
+			listChildPageName = "ADT Child Page Name",
+			listPageName = "ADT Test Page,ADT Test Page 2,ADT Test Page 3");
+	}
+
+	@priority = "3"
+	test ADTStagingCategoriesNavigation {
+		property testray.component.names = "Categories,Content and Application Templates,Staging";
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 1");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 2");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 3");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 2",
+			vocabularyName = "Vocabulary Name 2");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 3",
+			vocabularyName = "Vocabulary Name 3");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Categories Navigation");
+
+		Staging.openStagingAdmin(siteURLKey = "test-site-name");
+
+		Staging.activateStagingCP(siteName = "Test Site Name");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_categories_navigation_multi_column.ftl",
+			adtType = "Categories Navigation",
+			siteName = "Test Site Name");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		CategoriesNavigationPortlet.viewDefaultPG(
+			categoryName = "Category Name 2",
+			vocabularyName = "Vocabulary Name 2");
+
+		CategoriesNavigationPortlet.viewDefaultPG(
+			categoryName = "Category Name 3",
+			vocabularyName = "Vocabulary Name 3");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "Categories Navigation Test ADT");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		CategoriesNavigationPortlet.viewCustomADTMultiColumnPG(
+			categoryNameList = "Null,Null,Null,Null,Category Name 2,Category Name 3",
+			columnList = "1,2,3,4,5,6",
+			vocabularyNameList = "Audience,Stage,Topic,Vocabulary Name 1,Vocabulary Name 2,Vocabulary Name 3");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		CategoriesNavigationPortlet.viewCustomADTMultiColumnPG(
+			categoryNameList = "Null,Null,Null,Null,Category Name 2,Category Name 3",
+			columnList = "1,2,3,4,5,6",
+			vocabularyNameList = "Audience,Stage,Topic,Vocabulary Name 1,Vocabulary Name 2,Vocabulary Name 3");
+	}
+
+	@priority = "5"
+	test ADTTagsNavigationPortlet {
+		property portal.acceptance = "true";
+		property testray.component.names = "Content and Application Templates,Tags";
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Tags Navigation");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Blogs Test Page");
+
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Blogs Test Page",
+			layoutTemplate = "1 Column");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Blogs Test Page",
+			widgetName = "Blogs");
+
+		Navigator.gotoSitePage(
+			pageName = "Blogs Test Page",
+			siteName = "Test Site Name");
+
+		Blogs.addEntryWithTags(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagNameList = "tag name 1,tag name 2,tag name 3");
+
+		Navigator.gotoSitePage(
+			pageName = "Blogs Test Page",
+			siteName = "Test Site Name");
+
+		Blogs.addEntryWithTags(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagNameList = "tag name 2,tag name 3");
+
+		Navigator.gotoSitePage(
+			pageName = "Blogs Test Page",
+			siteName = "Test Site Name");
+
+		Blogs.addEntryWithTags(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagNameList = "tag name 3");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		TagsNavigationPortlet.viewDefaultPG(tagNameList = "tag name 1,tag name 2,tag name 3");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_tags_color.ftl",
+			adtType = "Tags Navigation",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "Tags Navigation Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		TagsNavigationPortlet.viewADTColorByPopularityPG(
+			adtTagColor = "green",
+			tagName = "tag name 1");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		TagsNavigationPortlet.viewADTColorByPopularityPG(
+			adtTagColor = "orange",
+			tagName = "tag name 2");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		TagsNavigationPortlet.viewADTColorByPopularityPG(
+			adtTagColor = "red",
+			tagName = "tag name 3");
+	}
+
+	@priority = "3"
+	test ADTWiki {
+		property app.server.types = "tomcat,websphere";
+		property testray.component.names = "Content and Application Templates,Wiki";
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "ADT Test Page",
+			widgetName = "Wiki");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		WikiPage.addFrontPagePG(wikiPageContent = "Test Wiki Content");
+
+		WikiNavigator.gotoFrontPagePG();
+
+		WikiPage.viewFrontPageDefaultADTPG(wikiPageContent = "Test Wiki Content");
+
+		Navigator.openSiteURL(siteName = "Test Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Design",
+			portlet = "Widget Templates");
+
+		ApplicationDisplayTemplates.addCP(
+			adtFile = "adt_wiki_social.ftl",
+			adtType = "Wiki");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ApplicationDisplayTemplates.selectPortletADT(
+			portletName = "Wiki",
+			templateName = "Wiki Test ADT");
+
+		Navigator.gotoSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		WikiPage.viewCustomADTSocialPG(wikiPageContent = "Test Wiki Content");
+	}
+
+	@priority = "4"
+	test PublishWidgetPageTemplates {
+		Staging.openStagingAdmin(siteURLKey = "test-site-name");
+
+		Staging.activateStagingCP(siteName = "Test Site Name");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Design",
+			portlet = "Widget Templates");
+
+		ApplicationDisplayTemplates.addCP(
+			adtFile = "adt_asset_publisher_rich_summary.ftl",
+			adtType = "Asset Publisher");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "ADT Test Page",
+			siteName = "Test Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		ProductMenu.gotoLiveSite(site = "Test Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Design",
+			portlet = "Widget Templates");
+
+		ApplicationDisplayTemplates.viewTemplate(adtType = "Asset Publisher");
+	}
+
+}

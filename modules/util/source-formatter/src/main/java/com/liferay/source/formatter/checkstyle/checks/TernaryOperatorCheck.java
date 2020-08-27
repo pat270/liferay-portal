@@ -14,8 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -31,10 +29,33 @@ public class TernaryOperatorCheck extends BaseCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		if (DetailASTUtil.getStartLineNumber(detailAST) !=
-				DetailASTUtil.getEndLineNumber(detailAST)) {
+		_checkTernaryExpression(detailAST, detailAST.getFirstChild());
 
-			log(detailAST, _MSG_AVOID_TERNARY_OPERATOR);
+		DetailAST colonDetailAST = detailAST.findFirstToken(TokenTypes.COLON);
+
+		_checkTernaryExpression(detailAST, colonDetailAST.getNextSibling());
+		_checkTernaryExpression(detailAST, colonDetailAST.getPreviousSibling());
+	}
+
+	private void _checkTernaryExpression(
+		DetailAST questionDetailAST, DetailAST expressionDetailAST) {
+
+		while (true) {
+			if (expressionDetailAST.getType() == TokenTypes.LPAREN) {
+				expressionDetailAST = expressionDetailAST.getNextSibling();
+			}
+			else if (expressionDetailAST.getType() == TokenTypes.RPAREN) {
+				expressionDetailAST = expressionDetailAST.getPreviousSibling();
+			}
+			else {
+				break;
+			}
+		}
+
+		if (getStartLineNumber(expressionDetailAST) != getEndLineNumber(
+				expressionDetailAST)) {
+
+			log(questionDetailAST, _MSG_AVOID_TERNARY_OPERATOR);
 		}
 	}
 

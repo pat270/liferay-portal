@@ -15,8 +15,13 @@
 		<tag-class>com.liferay.journal.taglib.servlet.taglib.JournalArticleTag</tag-class>
 		<body-content>JSP</body-content>
 		<attribute>
+			<name>article</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
 			<name>articleId</name>
-			<required>true</required>
+			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
@@ -26,7 +31,7 @@
 		</attribute>
 		<attribute>
 			<name>groupId</name>
-			<required>true</required>
+			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>long</type>
 		</attribute>

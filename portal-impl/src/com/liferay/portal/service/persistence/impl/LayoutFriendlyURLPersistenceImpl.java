@@ -15,7 +15,7 @@
 package com.liferay.portal.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -28,11 +28,12 @@ import com.liferay.portal.kernel.exception.NoSuchLayoutFriendlyURLException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
+import com.liferay.portal.kernel.model.LayoutFriendlyURLTable;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.LayoutFriendlyURLPersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -49,16 +50,16 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The persistence implementation for the layout friendly url service.
@@ -70,7 +71,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutFriendlyURLPersistenceImpl
 	extends BasePersistenceImpl<LayoutFriendlyURL>
 	implements LayoutFriendlyURLPersistence {
@@ -111,7 +111,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -128,7 +128,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -149,43 +149,46 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByUuid(
 		String uuid, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		uuid = Objects.toString(uuid, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByUuid;
-			finderArgs = new Object[] {uuid};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByUuid;
+				finderArgs = new Object[] {uuid};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByUuid;
 			finderArgs = new Object[] {uuid, start, end, orderByComparator};
 		}
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -201,73 +204,63 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_UUID_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -297,16 +290,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -350,16 +343,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -426,8 +419,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -439,28 +432,28 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
 		boolean bindUuid = false;
 
 		if (uuid.isEmpty()) {
-			query.append(_FINDER_COLUMN_UUID_UUID_3);
+			sb.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
 			bindUuid = true;
 
-			query.append(_FINDER_COLUMN_UUID_UUID_2);
+			sb.append(_FINDER_COLUMN_UUID_UUID_2);
 		}
 
 		if (orderByComparator != null) {
@@ -468,72 +461,72 @@ public class LayoutFriendlyURLPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindUuid) {
-			qPos.add(uuid);
+			queryPos.add(uuid);
 		}
 
 		if (orderByComparator != null) {
@@ -541,11 +534,11 @@ public class LayoutFriendlyURLPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -579,52 +572,62 @@ public class LayoutFriendlyURLPersistenceImpl
 	public int countByUuid(String uuid) {
 		uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = _finderPathCountByUuid;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {uuid};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByUuid;
+
+			finderArgs = new Object[] {uuid};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_UUID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -658,23 +661,23 @@ public class LayoutFriendlyURLPersistenceImpl
 		LayoutFriendlyURL layoutFriendlyURL = fetchByUUID_G(uuid, groupId);
 
 		if (layoutFriendlyURL == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("uuid=");
-			msg.append(uuid);
+			sb.append("uuid=");
+			sb.append(uuid);
 
-			msg.append(", groupId=");
-			msg.append(groupId);
+			sb.append(", groupId=");
+			sb.append(groupId);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchLayoutFriendlyURLException(msg.toString());
+			throw new NoSuchLayoutFriendlyURLException(sb.toString());
 		}
 
 		return layoutFriendlyURL;
@@ -697,20 +700,27 @@ public class LayoutFriendlyURLPersistenceImpl
 	 *
 	 * @param uuid the uuid
 	 * @param groupId the group ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching layout friendly url, or <code>null</code> if a matching layout friendly url could not be found
 	 */
 	@Override
 	public LayoutFriendlyURL fetchByUUID_G(
-		String uuid, long groupId, boolean retrieveFromCache) {
+		String uuid, long groupId, boolean useFinderCache) {
 
 		uuid = Objects.toString(uuid, "");
 
-		Object[] finderArgs = new Object[] {uuid, groupId};
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {uuid, groupId};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByUUID_G, finderArgs, this);
 		}
@@ -726,45 +736,47 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_G_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
+			sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				List<LayoutFriendlyURL> list = q.list();
+				List<LayoutFriendlyURL> list = query.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByUUID_G, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByUUID_G, finderArgs, list);
+					}
 				}
 				else {
 					LayoutFriendlyURL layoutFriendlyURL = list.get(0);
@@ -774,11 +786,8 @@ public class LayoutFriendlyURLPersistenceImpl
 					cacheResult(layoutFriendlyURL);
 				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathFetchByUUID_G, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -820,56 +829,66 @@ public class LayoutFriendlyURLPersistenceImpl
 	public int countByUUID_G(String uuid, long groupId) {
 		uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = _finderPathCountByUUID_G;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {uuid, groupId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByUUID_G;
+
+			finderArgs = new Object[] {uuid, groupId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_G_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_G_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
+			sb.append(_FINDER_COLUMN_UUID_G_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -909,7 +928,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -929,7 +948,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -952,7 +971,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -960,29 +979,32 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByUuid_C(
 		String uuid, long companyId, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		uuid = Objects.toString(uuid, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByUuid_C;
-			finderArgs = new Object[] {uuid, companyId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByUuid_C;
+				finderArgs = new Object[] {uuid, companyId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByUuid_C;
 			finderArgs = new Object[] {
 				uuid, companyId, start, end, orderByComparator
@@ -991,7 +1013,7 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -1009,77 +1031,67 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1111,19 +1123,19 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append(", companyId=");
-		msg.append(companyId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -1171,19 +1183,19 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("uuid=");
-		msg.append(uuid);
+		sb.append("uuid=");
+		sb.append(uuid);
 
-		msg.append(", companyId=");
-		msg.append(companyId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -1255,8 +1267,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1268,117 +1280,117 @@ public class LayoutFriendlyURLPersistenceImpl
 		long companyId, OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
 		boolean bindUuid = false;
 
 		if (uuid.isEmpty()) {
-			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
+			sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
 			bindUuid = true;
 
-			query.append(_FINDER_COLUMN_UUID_C_UUID_2);
+			sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 		}
 
-		query.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindUuid) {
-			qPos.add(uuid);
+			queryPos.add(uuid);
 		}
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1416,56 +1428,66 @@ public class LayoutFriendlyURLPersistenceImpl
 	public int countByUuid_C(String uuid, long companyId) {
 		uuid = Objects.toString(uuid, "");
 
-		FinderPath finderPath = _finderPathCountByUuid_C;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {uuid, companyId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByUuid_C;
+
+			finderArgs = new Object[] {uuid, companyId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
 			boolean bindUuid = false;
 
 			if (uuid.isEmpty()) {
-				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
 				bindUuid = true;
 
-				query.append(_FINDER_COLUMN_UUID_C_UUID_2);
+				sb.append(_FINDER_COLUMN_UUID_C_UUID_2);
 			}
 
-			query.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_UUID_C_COMPANYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindUuid) {
-					qPos.add(uuid);
+					queryPos.add(uuid);
 				}
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1504,7 +1526,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1523,7 +1545,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1544,47 +1566,50 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByGroupId(
 		long groupId, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByGroupId;
-			finderArgs = new Object[] {groupId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByGroupId;
+				finderArgs = new Object[] {groupId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByGroupId;
 			finderArgs = new Object[] {groupId, start, end, orderByComparator};
 		}
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutFriendlyURL layoutFriendlyURL : list) {
-					if ((groupId != layoutFriendlyURL.getGroupId())) {
+					if (groupId != layoutFriendlyURL.getGroupId()) {
 						list = null;
 
 						break;
@@ -1594,62 +1619,52 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1680,16 +1695,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -1734,16 +1749,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -1808,8 +1823,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1821,102 +1836,102 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-		query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1949,41 +1964,51 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		FinderPath finderPath = _finderPathCountByGroupId;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {groupId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByGroupId;
+
+			finderArgs = new Object[] {groupId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2016,7 +2041,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -2035,7 +2060,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -2056,34 +2081,37 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByCompanyId(
 		long companyId, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByCompanyId;
-			finderArgs = new Object[] {companyId};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByCompanyId;
+				finderArgs = new Object[] {companyId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByCompanyId;
 			finderArgs = new Object[] {
 				companyId, start, end, orderByComparator
@@ -2092,13 +2120,13 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutFriendlyURL layoutFriendlyURL : list) {
-					if ((companyId != layoutFriendlyURL.getCompanyId())) {
+					if (companyId != layoutFriendlyURL.getCompanyId()) {
 						list = null;
 
 						break;
@@ -2108,62 +2136,52 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2194,16 +2212,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -2249,16 +2267,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -2325,8 +2343,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2338,102 +2356,102 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-		query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2466,41 +2484,51 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByCompanyId(long companyId) {
-		FinderPath finderPath = _finderPathCountByCompanyId;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {companyId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByCompanyId;
+
+			finderArgs = new Object[] {companyId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2532,7 +2560,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -2549,7 +2577,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -2570,47 +2598,50 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByPlid(
 		long plid, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByPlid;
-			finderArgs = new Object[] {plid};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByPlid;
+				finderArgs = new Object[] {plid};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByPlid;
 			finderArgs = new Object[] {plid, start, end, orderByComparator};
 		}
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (LayoutFriendlyURL layoutFriendlyURL : list) {
-					if ((plid != layoutFriendlyURL.getPlid())) {
+					if (plid != layoutFriendlyURL.getPlid()) {
 						list = null;
 
 						break;
@@ -2620,62 +2651,52 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_PLID_PLID_2);
+			sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2705,16 +2726,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -2758,16 +2779,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -2832,8 +2853,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2845,102 +2866,102 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-		query.append(_FINDER_COLUMN_PLID_PLID_2);
+		sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2972,41 +2993,51 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countByPlid(long plid) {
-		FinderPath finderPath = _finderPathCountByPlid;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {plid};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByPlid;
+
+			finderArgs = new Object[] {plid};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_PLID_PLID_2);
+			sb.append(_FINDER_COLUMN_PLID_PLID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3040,7 +3071,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -3060,7 +3091,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -3083,7 +3114,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63; and friendlyURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -3091,29 +3122,32 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByP_F(
 		long plid, String friendlyURL, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		friendlyURL = Objects.toString(friendlyURL, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByP_F;
-			finderArgs = new Object[] {plid, friendlyURL};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByP_F;
+				finderArgs = new Object[] {plid, friendlyURL};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByP_F;
 			finderArgs = new Object[] {
 				plid, friendlyURL, start, end, orderByComparator
@@ -3122,7 +3156,7 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -3141,77 +3175,67 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_P_F_PLID_2);
+			sb.append(_FINDER_COLUMN_P_F_PLID_2);
 
 			boolean bindFriendlyURL = false;
 
 			if (friendlyURL.isEmpty()) {
-				query.append(_FINDER_COLUMN_P_F_FRIENDLYURL_3);
+				sb.append(_FINDER_COLUMN_P_F_FRIENDLYURL_3);
 			}
 			else {
 				bindFriendlyURL = true;
 
-				query.append(_FINDER_COLUMN_P_F_FRIENDLYURL_2);
+				sb.append(_FINDER_COLUMN_P_F_FRIENDLYURL_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindFriendlyURL) {
-					qPos.add(friendlyURL);
+					queryPos.add(friendlyURL);
 				}
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3243,19 +3267,19 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append(", friendlyURL=");
-		msg.append(friendlyURL);
+		sb.append(", friendlyURL=");
+		sb.append(friendlyURL);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -3303,19 +3327,19 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("plid=");
-		msg.append(plid);
+		sb.append("plid=");
+		sb.append(plid);
 
-		msg.append(", friendlyURL=");
-		msg.append(friendlyURL);
+		sb.append(", friendlyURL=");
+		sb.append(friendlyURL);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -3387,8 +3411,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3401,30 +3425,30 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-		query.append(_FINDER_COLUMN_P_F_PLID_2);
+		sb.append(_FINDER_COLUMN_P_F_PLID_2);
 
 		boolean bindFriendlyURL = false;
 
 		if (friendlyURL.isEmpty()) {
-			query.append(_FINDER_COLUMN_P_F_FRIENDLYURL_3);
+			sb.append(_FINDER_COLUMN_P_F_FRIENDLYURL_3);
 		}
 		else {
 			bindFriendlyURL = true;
 
-			query.append(_FINDER_COLUMN_P_F_FRIENDLYURL_2);
+			sb.append(_FINDER_COLUMN_P_F_FRIENDLYURL_2);
 		}
 
 		if (orderByComparator != null) {
@@ -3432,74 +3456,74 @@ public class LayoutFriendlyURLPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(plid);
+		queryPos.add(plid);
 
 		if (bindFriendlyURL) {
-			qPos.add(friendlyURL);
+			queryPos.add(friendlyURL);
 		}
 
 		if (orderByComparator != null) {
@@ -3507,11 +3531,11 @@ public class LayoutFriendlyURLPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3549,56 +3573,66 @@ public class LayoutFriendlyURLPersistenceImpl
 	public int countByP_F(long plid, String friendlyURL) {
 		friendlyURL = Objects.toString(friendlyURL, "");
 
-		FinderPath finderPath = _finderPathCountByP_F;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {plid, friendlyURL};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByP_F;
+
+			finderArgs = new Object[] {plid, friendlyURL};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_P_F_PLID_2);
+			sb.append(_FINDER_COLUMN_P_F_PLID_2);
 
 			boolean bindFriendlyURL = false;
 
 			if (friendlyURL.isEmpty()) {
-				query.append(_FINDER_COLUMN_P_F_FRIENDLYURL_3);
+				sb.append(_FINDER_COLUMN_P_F_FRIENDLYURL_3);
 			}
 			else {
 				bindFriendlyURL = true;
 
-				query.append(_FINDER_COLUMN_P_F_FRIENDLYURL_2);
+				sb.append(_FINDER_COLUMN_P_F_FRIENDLYURL_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindFriendlyURL) {
-					qPos.add(friendlyURL);
+					queryPos.add(friendlyURL);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3627,7 +3661,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns all the layout friendly urls where plid = any &#63; and languageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plids the plids
@@ -3644,7 +3678,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where plid = any &#63; and languageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plids the plids
@@ -3664,7 +3698,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where plid = any &#63; and languageId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plids the plids
@@ -3687,7 +3721,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where plid = &#63; and languageId = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -3695,22 +3729,20 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByP_L(
 		long[] plids, String languageId, int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (plids == null) {
 			plids = new long[0];
 		}
 		else if (plids.length > 1) {
-			plids = ArrayUtil.unique(plids);
-
-			Arrays.sort(plids);
+			plids = ArrayUtil.sortedUnique(plids);
 		}
 
 		languageId = Objects.toString(languageId, "");
@@ -3727,16 +3759,19 @@ public class LayoutFriendlyURLPersistenceImpl
 			}
 		}
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {StringUtil.merge(plids), languageId};
+			if (useFinderCache && productionMode) {
+				finderArgs = new Object[] {StringUtil.merge(plids), languageId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderArgs = new Object[] {
 				StringUtil.merge(plids), languageId, start, end,
 				orderByComparator
@@ -3745,7 +3780,7 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				_finderPathWithPaginationFindByP_L, finderArgs, this);
 
@@ -3779,7 +3814,7 @@ public class LayoutFriendlyURLPersistenceImpl
 						list.addAll(
 							_findByP_L(
 								plidsPage, languageId, start, end,
-								orderByComparator, pagination));
+								orderByComparator));
 					}
 
 					Collections.sort(list, orderByComparator);
@@ -3788,20 +3823,18 @@ public class LayoutFriendlyURLPersistenceImpl
 				}
 				else {
 					list = _findByP_L(
-						plids, languageId, start, end, orderByComparator,
-						pagination);
+						plids, languageId, start, end, orderByComparator);
 				}
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(
-					_finderPathWithPaginationFindByP_L, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(
+						_finderPathWithPaginationFindByP_L, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathWithPaginationFindByP_L, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 		}
 
@@ -3810,82 +3843,70 @@ public class LayoutFriendlyURLPersistenceImpl
 
 	private List<LayoutFriendlyURL> _findByP_L(
 		long[] plids, String languageId, int start, int end,
-		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean pagination) {
+		OrderByComparator<LayoutFriendlyURL> orderByComparator) {
 
 		List<LayoutFriendlyURL> list = null;
 
-		StringBundler query = new StringBundler();
+		StringBundler sb = new StringBundler();
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
 		if (plids.length > 0) {
-			query.append("(");
+			sb.append("(");
 
-			query.append(_FINDER_COLUMN_P_L_PLID_7);
+			sb.append(_FINDER_COLUMN_P_L_PLID_7);
 
-			query.append(StringUtil.merge(plids));
+			sb.append(StringUtil.merge(plids));
 
-			query.append(")");
+			sb.append(")");
 
-			query.append(")");
+			sb.append(")");
 
-			query.append(WHERE_AND);
+			sb.append(WHERE_AND);
 		}
 
 		boolean bindLanguageId = false;
 
 		if (languageId.isEmpty()) {
-			query.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
+			sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
 		}
 		else {
 			bindLanguageId = true;
 
-			query.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
+			sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
 		}
 
-		query.setStringAt(
-			removeConjunction(query.stringAt(query.index() - 1)),
-			query.index() - 1);
+		sb.setStringAt(
+			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 		if (orderByComparator != null) {
 			appendOrderByComparator(
-				query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+				sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 		}
-		else if (pagination) {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+		else {
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			Query q = session.createQuery(sql);
+			Query query = session.createQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(query);
 
 			if (bindLanguageId) {
-				qPos.add(languageId);
+				queryPos.add(languageId);
 			}
 
-			if (!pagination) {
-				list = (List<LayoutFriendlyURL>)QueryUtil.list(
-					q, getDialect(), start, end, false);
-
-				Collections.sort(list);
-
-				list = Collections.unmodifiableList(list);
-			}
-			else {
-				list = (List<LayoutFriendlyURL>)QueryUtil.list(
-					q, getDialect(), start, end);
-			}
+			list = (List<LayoutFriendlyURL>)QueryUtil.list(
+				query, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3909,23 +3930,23 @@ public class LayoutFriendlyURLPersistenceImpl
 		LayoutFriendlyURL layoutFriendlyURL = fetchByP_L(plid, languageId);
 
 		if (layoutFriendlyURL == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("plid=");
-			msg.append(plid);
+			sb.append("plid=");
+			sb.append(plid);
 
-			msg.append(", languageId=");
-			msg.append(languageId);
+			sb.append(", languageId=");
+			sb.append(languageId);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchLayoutFriendlyURLException(msg.toString());
+			throw new NoSuchLayoutFriendlyURLException(sb.toString());
 		}
 
 		return layoutFriendlyURL;
@@ -3948,20 +3969,27 @@ public class LayoutFriendlyURLPersistenceImpl
 	 *
 	 * @param plid the plid
 	 * @param languageId the language ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching layout friendly url, or <code>null</code> if a matching layout friendly url could not be found
 	 */
 	@Override
 	public LayoutFriendlyURL fetchByP_L(
-		long plid, String languageId, boolean retrieveFromCache) {
+		long plid, String languageId, boolean useFinderCache) {
 
 		languageId = Objects.toString(languageId, "");
 
-		Object[] finderArgs = new Object[] {plid, languageId};
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {plid, languageId};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByP_L, finderArgs, this);
 		}
@@ -3978,45 +4006,47 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_P_L_PLID_2);
+			sb.append(_FINDER_COLUMN_P_L_PLID_2);
 
 			boolean bindLanguageId = false;
 
 			if (languageId.isEmpty()) {
-				query.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
+				sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
 			}
 			else {
 				bindLanguageId = true;
 
-				query.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
+				sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindLanguageId) {
-					qPos.add(languageId);
+					queryPos.add(languageId);
 				}
 
-				List<LayoutFriendlyURL> list = q.list();
+				List<LayoutFriendlyURL> list = query.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByP_L, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByP_L, finderArgs, list);
+					}
 				}
 				else {
 					LayoutFriendlyURL layoutFriendlyURL = list.get(0);
@@ -4026,10 +4056,8 @@ public class LayoutFriendlyURLPersistenceImpl
 					cacheResult(layoutFriendlyURL);
 				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(_finderPathFetchByP_L, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4071,56 +4099,66 @@ public class LayoutFriendlyURLPersistenceImpl
 	public int countByP_L(long plid, String languageId) {
 		languageId = Objects.toString(languageId, "");
 
-		FinderPath finderPath = _finderPathCountByP_L;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {plid, languageId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByP_L;
+
+			finderArgs = new Object[] {plid, languageId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_P_L_PLID_2);
+			sb.append(_FINDER_COLUMN_P_L_PLID_2);
 
 			boolean bindLanguageId = false;
 
 			if (languageId.isEmpty()) {
-				query.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
+				sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
 			}
 			else {
 				bindLanguageId = true;
 
-				query.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
+				sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(plid);
+				queryPos.add(plid);
 
 				if (bindLanguageId) {
-					qPos.add(languageId);
+					queryPos.add(languageId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4143,19 +4181,24 @@ public class LayoutFriendlyURLPersistenceImpl
 			plids = new long[0];
 		}
 		else if (plids.length > 1) {
-			plids = ArrayUtil.unique(plids);
-
-			Arrays.sort(plids);
+			plids = ArrayUtil.sortedUnique(plids);
 		}
 
 		languageId = Objects.toString(languageId, "");
 
-		Object[] finderArgs = new Object[] {
-			StringUtil.merge(plids), languageId
-		};
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathWithPaginationCountByP_L, finderArgs, this);
+		Object[] finderArgs = null;
+
+		Long count = null;
+
+		if (productionMode) {
+			finderArgs = new Object[] {StringUtil.merge(plids), languageId};
+
+			count = (Long)FinderCacheUtil.getResult(
+				_finderPathWithPaginationCountByP_L, finderArgs, this);
+		}
 
 		if (count == null) {
 			try {
@@ -4176,14 +4219,13 @@ public class LayoutFriendlyURLPersistenceImpl
 					count = Long.valueOf(_countByP_L(plids, languageId));
 				}
 
-				FinderCacheUtil.putResult(
-					_finderPathWithPaginationCountByP_L, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(
+						_finderPathWithPaginationCountByP_L, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathWithPaginationCountByP_L, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 		}
 
@@ -4193,58 +4235,57 @@ public class LayoutFriendlyURLPersistenceImpl
 	private int _countByP_L(long[] plids, String languageId) {
 		Long count = null;
 
-		StringBundler query = new StringBundler();
+		StringBundler sb = new StringBundler();
 
-		query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
 		if (plids.length > 0) {
-			query.append("(");
+			sb.append("(");
 
-			query.append(_FINDER_COLUMN_P_L_PLID_7);
+			sb.append(_FINDER_COLUMN_P_L_PLID_7);
 
-			query.append(StringUtil.merge(plids));
+			sb.append(StringUtil.merge(plids));
 
-			query.append(")");
+			sb.append(")");
 
-			query.append(")");
+			sb.append(")");
 
-			query.append(WHERE_AND);
+			sb.append(WHERE_AND);
 		}
 
 		boolean bindLanguageId = false;
 
 		if (languageId.isEmpty()) {
-			query.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
+			sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_3);
 		}
 		else {
 			bindLanguageId = true;
 
-			query.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
+			sb.append(_FINDER_COLUMN_P_L_LANGUAGEID_2);
 		}
 
-		query.setStringAt(
-			removeConjunction(query.stringAt(query.index() - 1)),
-			query.index() - 1);
+		sb.setStringAt(
+			removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			Query q = session.createQuery(sql);
+			Query query = session.createQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(query);
 
 			if (bindLanguageId) {
-				qPos.add(languageId);
+				queryPos.add(languageId);
 			}
 
-			count = (Long)q.uniqueResult();
+			count = (Long)query.uniqueResult();
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4290,7 +4331,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4313,7 +4354,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4338,7 +4379,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls where groupId = &#63; and privateLayout = &#63; and friendlyURL = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4347,29 +4388,32 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findByG_P_F(
 		long groupId, boolean privateLayout, String friendlyURL, int start,
 		int end, OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		friendlyURL = Objects.toString(friendlyURL, "");
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_P_F;
-			finderArgs = new Object[] {groupId, privateLayout, friendlyURL};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_P_F;
+				finderArgs = new Object[] {groupId, privateLayout, friendlyURL};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByG_P_F;
 			finderArgs = new Object[] {
 				groupId, privateLayout, friendlyURL, start, end,
@@ -4379,7 +4423,7 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -4400,81 +4444,71 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_G_P_F_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_P_F_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_P_F_PRIVATELAYOUT_2);
+			sb.append(_FINDER_COLUMN_G_P_F_PRIVATELAYOUT_2);
 
 			boolean bindFriendlyURL = false;
 
 			if (friendlyURL.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_3);
+				sb.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_3);
 			}
 			else {
 				bindFriendlyURL = true;
 
-				query.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_2);
+				sb.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(privateLayout);
+				queryPos.add(privateLayout);
 
 				if (bindFriendlyURL) {
-					qPos.add(friendlyURL);
+					queryPos.add(friendlyURL);
 				}
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4507,22 +4541,22 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", privateLayout=");
-		msg.append(privateLayout);
+		sb.append(", privateLayout=");
+		sb.append(privateLayout);
 
-		msg.append(", friendlyURL=");
-		msg.append(friendlyURL);
+		sb.append(", friendlyURL=");
+		sb.append(friendlyURL);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -4572,22 +4606,22 @@ public class LayoutFriendlyURLPersistenceImpl
 			return layoutFriendlyURL;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", privateLayout=");
-		msg.append(privateLayout);
+		sb.append(", privateLayout=");
+		sb.append(privateLayout);
 
-		msg.append(", friendlyURL=");
-		msg.append(friendlyURL);
+		sb.append(", friendlyURL=");
+		sb.append(friendlyURL);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchLayoutFriendlyURLException(msg.toString());
+		throw new NoSuchLayoutFriendlyURLException(sb.toString());
 	}
 
 	/**
@@ -4663,8 +4697,8 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4677,32 +4711,32 @@ public class LayoutFriendlyURLPersistenceImpl
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+		sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-		query.append(_FINDER_COLUMN_G_P_F_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_P_F_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_P_F_PRIVATELAYOUT_2);
+		sb.append(_FINDER_COLUMN_G_P_F_PRIVATELAYOUT_2);
 
 		boolean bindFriendlyURL = false;
 
 		if (friendlyURL.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_3);
+			sb.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_3);
 		}
 		else {
 			bindFriendlyURL = true;
 
-			query.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_2);
+			sb.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_2);
 		}
 
 		if (orderByComparator != null) {
@@ -4710,76 +4744,76 @@ public class LayoutFriendlyURLPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
+			sb.append(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(privateLayout);
+		queryPos.add(privateLayout);
 
 		if (bindFriendlyURL) {
-			qPos.add(friendlyURL);
+			queryPos.add(friendlyURL);
 		}
 
 		if (orderByComparator != null) {
@@ -4787,11 +4821,11 @@ public class LayoutFriendlyURLPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						layoutFriendlyURL)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<LayoutFriendlyURL> list = q.list();
+		List<LayoutFriendlyURL> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4835,62 +4869,70 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		friendlyURL = Objects.toString(friendlyURL, "");
 
-		FinderPath finderPath = _finderPathCountByG_P_F;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {
-			groupId, privateLayout, friendlyURL
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_P_F;
+
+			finderArgs = new Object[] {groupId, privateLayout, friendlyURL};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_G_P_F_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_P_F_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_P_F_PRIVATELAYOUT_2);
+			sb.append(_FINDER_COLUMN_G_P_F_PRIVATELAYOUT_2);
 
 			boolean bindFriendlyURL = false;
 
 			if (friendlyURL.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_3);
+				sb.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_3);
 			}
 			else {
 				bindFriendlyURL = true;
 
-				query.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_2);
+				sb.append(_FINDER_COLUMN_G_P_F_FRIENDLYURL_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(privateLayout);
+				queryPos.add(privateLayout);
 
 				if (bindFriendlyURL) {
-					qPos.add(friendlyURL);
+					queryPos.add(friendlyURL);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4935,29 +4977,29 @@ public class LayoutFriendlyURLPersistenceImpl
 			groupId, privateLayout, friendlyURL, languageId);
 
 		if (layoutFriendlyURL == null) {
-			StringBundler msg = new StringBundler(10);
+			StringBundler sb = new StringBundler(10);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("groupId=");
-			msg.append(groupId);
+			sb.append("groupId=");
+			sb.append(groupId);
 
-			msg.append(", privateLayout=");
-			msg.append(privateLayout);
+			sb.append(", privateLayout=");
+			sb.append(privateLayout);
 
-			msg.append(", friendlyURL=");
-			msg.append(friendlyURL);
+			sb.append(", friendlyURL=");
+			sb.append(friendlyURL);
 
-			msg.append(", languageId=");
-			msg.append(languageId);
+			sb.append(", languageId=");
+			sb.append(languageId);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchLayoutFriendlyURLException(msg.toString());
+			throw new NoSuchLayoutFriendlyURLException(sb.toString());
 		}
 
 		return layoutFriendlyURL;
@@ -4988,24 +5030,31 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * @param privateLayout the private layout
 	 * @param friendlyURL the friendly url
 	 * @param languageId the language ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching layout friendly url, or <code>null</code> if a matching layout friendly url could not be found
 	 */
 	@Override
 	public LayoutFriendlyURL fetchByG_P_F_L(
 		long groupId, boolean privateLayout, String friendlyURL,
-		String languageId, boolean retrieveFromCache) {
+		String languageId, boolean useFinderCache) {
 
 		friendlyURL = Objects.toString(friendlyURL, "");
 		languageId = Objects.toString(languageId, "");
 
-		Object[] finderArgs = new Object[] {
-			groupId, privateLayout, friendlyURL, languageId
-		};
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {
+				groupId, privateLayout, friendlyURL, languageId
+			};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByG_P_F_L, finderArgs, this);
 		}
@@ -5025,64 +5074,66 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			query.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_G_P_F_L_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_P_F_L_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_P_F_L_PRIVATELAYOUT_2);
+			sb.append(_FINDER_COLUMN_G_P_F_L_PRIVATELAYOUT_2);
 
 			boolean bindFriendlyURL = false;
 
 			if (friendlyURL.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_3);
+				sb.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_3);
 			}
 			else {
 				bindFriendlyURL = true;
 
-				query.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_2);
+				sb.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_2);
 			}
 
 			boolean bindLanguageId = false;
 
 			if (languageId.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_3);
+				sb.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_3);
 			}
 			else {
 				bindLanguageId = true;
 
-				query.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_2);
+				sb.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(privateLayout);
+				queryPos.add(privateLayout);
 
 				if (bindFriendlyURL) {
-					qPos.add(friendlyURL);
+					queryPos.add(friendlyURL);
 				}
 
 				if (bindLanguageId) {
-					qPos.add(languageId);
+					queryPos.add(languageId);
 				}
 
-				List<LayoutFriendlyURL> list = q.list();
+				List<LayoutFriendlyURL> list = query.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByG_P_F_L, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByG_P_F_L, finderArgs, list);
+					}
 				}
 				else {
 					LayoutFriendlyURL layoutFriendlyURL = list.get(0);
@@ -5092,11 +5143,8 @@ public class LayoutFriendlyURLPersistenceImpl
 					cacheResult(layoutFriendlyURL);
 				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathFetchByG_P_F_L, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5149,77 +5197,87 @@ public class LayoutFriendlyURLPersistenceImpl
 		friendlyURL = Objects.toString(friendlyURL, "");
 		languageId = Objects.toString(languageId, "");
 
-		FinderPath finderPath = _finderPathCountByG_P_F_L;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
 
-		Object[] finderArgs = new Object[] {
-			groupId, privateLayout, friendlyURL, languageId
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)FinderCacheUtil.getResult(
-			finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_P_F_L;
+
+			finderArgs = new Object[] {
+				groupId, privateLayout, friendlyURL, languageId
+			};
+
+			count = (Long)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
+			sb.append(_SQL_COUNT_LAYOUTFRIENDLYURL_WHERE);
 
-			query.append(_FINDER_COLUMN_G_P_F_L_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_P_F_L_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_P_F_L_PRIVATELAYOUT_2);
+			sb.append(_FINDER_COLUMN_G_P_F_L_PRIVATELAYOUT_2);
 
 			boolean bindFriendlyURL = false;
 
 			if (friendlyURL.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_3);
+				sb.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_3);
 			}
 			else {
 				bindFriendlyURL = true;
 
-				query.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_2);
+				sb.append(_FINDER_COLUMN_G_P_F_L_FRIENDLYURL_2);
 			}
 
 			boolean bindLanguageId = false;
 
 			if (languageId.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_3);
+				sb.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_3);
 			}
 			else {
 				bindLanguageId = true;
 
-				query.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_2);
+				sb.append(_FINDER_COLUMN_G_P_F_L_LANGUAGEID_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(privateLayout);
+				queryPos.add(privateLayout);
 
 				if (bindFriendlyURL) {
-					qPos.add(friendlyURL);
+					queryPos.add(friendlyURL);
 				}
 
 				if (bindLanguageId) {
-					qPos.add(languageId);
+					queryPos.add(languageId);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5248,17 +5306,18 @@ public class LayoutFriendlyURLPersistenceImpl
 		"(layoutFriendlyURL.languageId IS NULL OR layoutFriendlyURL.languageId = '')";
 
 	public LayoutFriendlyURLPersistenceImpl() {
-		setModelClass(LayoutFriendlyURL.class);
-
-		setModelImplClass(LayoutFriendlyURLImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("uuid", "uuid_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(LayoutFriendlyURL.class);
+
+		setModelImplClass(LayoutFriendlyURLImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(LayoutFriendlyURLTable.INSTANCE);
 	}
 
 	/**
@@ -5268,8 +5327,11 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public void cacheResult(LayoutFriendlyURL layoutFriendlyURL) {
+		if (layoutFriendlyURL.getCtCollectionId() != 0) {
+			return;
+		}
+
 		EntityCacheUtil.putResult(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, layoutFriendlyURL.getPrimaryKey(),
 			layoutFriendlyURL);
 
@@ -5296,8 +5358,6 @@ public class LayoutFriendlyURLPersistenceImpl
 				layoutFriendlyURL.getLanguageId()
 			},
 			layoutFriendlyURL);
-
-		layoutFriendlyURL.resetOriginalValues();
 	}
 
 	/**
@@ -5308,15 +5368,15 @@ public class LayoutFriendlyURLPersistenceImpl
 	@Override
 	public void cacheResult(List<LayoutFriendlyURL> layoutFriendlyURLs) {
 		for (LayoutFriendlyURL layoutFriendlyURL : layoutFriendlyURLs) {
+			if (layoutFriendlyURL.getCtCollectionId() != 0) {
+				continue;
+			}
+
 			if (EntityCacheUtil.getResult(
-					LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
 					LayoutFriendlyURLImpl.class,
 					layoutFriendlyURL.getPrimaryKey()) == null) {
 
 				cacheResult(layoutFriendlyURL);
-			}
-			else {
-				layoutFriendlyURL.resetOriginalValues();
 			}
 		}
 	}
@@ -5347,7 +5407,6 @@ public class LayoutFriendlyURLPersistenceImpl
 	@Override
 	public void clearCache(LayoutFriendlyURL layoutFriendlyURL) {
 		EntityCacheUtil.removeResult(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, layoutFriendlyURL.getPrimaryKey());
 
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
@@ -5364,11 +5423,22 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		for (LayoutFriendlyURL layoutFriendlyURL : layoutFriendlyURLs) {
 			EntityCacheUtil.removeResult(
-				LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
 				LayoutFriendlyURLImpl.class, layoutFriendlyURL.getPrimaryKey());
 
 			clearUniqueFindersCache(
 				(LayoutFriendlyURLModelImpl)layoutFriendlyURL, true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			EntityCacheUtil.removeResult(
+				LayoutFriendlyURLImpl.class, primaryKey);
 		}
 	}
 
@@ -5426,8 +5496,8 @@ public class LayoutFriendlyURLPersistenceImpl
 			 _finderPathFetchByUUID_G.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				layoutFriendlyURLModelImpl.getOriginalUuid(),
-				layoutFriendlyURLModelImpl.getOriginalGroupId()
+				layoutFriendlyURLModelImpl.getColumnOriginalValue("uuid_"),
+				layoutFriendlyURLModelImpl.getColumnOriginalValue("groupId")
 			};
 
 			FinderCacheUtil.removeResult(_finderPathCountByUUID_G, args);
@@ -5448,8 +5518,8 @@ public class LayoutFriendlyURLPersistenceImpl
 			 _finderPathFetchByP_L.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				layoutFriendlyURLModelImpl.getOriginalPlid(),
-				layoutFriendlyURLModelImpl.getOriginalLanguageId()
+				layoutFriendlyURLModelImpl.getColumnOriginalValue("plid"),
+				layoutFriendlyURLModelImpl.getColumnOriginalValue("languageId")
 			};
 
 			FinderCacheUtil.removeResult(_finderPathCountByP_L, args);
@@ -5472,10 +5542,12 @@ public class LayoutFriendlyURLPersistenceImpl
 			 _finderPathFetchByG_P_F_L.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				layoutFriendlyURLModelImpl.getOriginalGroupId(),
-				layoutFriendlyURLModelImpl.getOriginalPrivateLayout(),
-				layoutFriendlyURLModelImpl.getOriginalFriendlyURL(),
-				layoutFriendlyURLModelImpl.getOriginalLanguageId()
+				layoutFriendlyURLModelImpl.getColumnOriginalValue("groupId"),
+				layoutFriendlyURLModelImpl.getColumnOriginalValue(
+					"privateLayout"),
+				layoutFriendlyURLModelImpl.getColumnOriginalValue(
+					"friendlyURL"),
+				layoutFriendlyURLModelImpl.getColumnOriginalValue("languageId")
 			};
 
 			FinderCacheUtil.removeResult(_finderPathCountByG_P_F_L, args);
@@ -5500,7 +5572,7 @@ public class LayoutFriendlyURLPersistenceImpl
 
 		layoutFriendlyURL.setUuid(uuid);
 
-		layoutFriendlyURL.setCompanyId(companyProvider.getCompanyId());
+		layoutFriendlyURL.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return layoutFriendlyURL;
 	}
@@ -5550,11 +5622,11 @@ public class LayoutFriendlyURLPersistenceImpl
 
 			return remove(layoutFriendlyURL);
 		}
-		catch (NoSuchLayoutFriendlyURLException nsee) {
-			throw nsee;
+		catch (NoSuchLayoutFriendlyURLException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5564,6 +5636,10 @@ public class LayoutFriendlyURLPersistenceImpl
 	@Override
 	protected LayoutFriendlyURL removeImpl(
 		LayoutFriendlyURL layoutFriendlyURL) {
+
+		if (!CTPersistenceHelperUtil.isRemove(layoutFriendlyURL)) {
+			return layoutFriendlyURL;
+		}
 
 		Session session = null;
 
@@ -5580,8 +5656,8 @@ public class LayoutFriendlyURLPersistenceImpl
 				session.delete(layoutFriendlyURL);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5654,7 +5730,13 @@ public class LayoutFriendlyURLPersistenceImpl
 		try {
 			session = openSession();
 
-			if (layoutFriendlyURL.isNew()) {
+			if (CTPersistenceHelperUtil.isInsert(layoutFriendlyURL)) {
+				if (!isNew) {
+					session.evict(
+						LayoutFriendlyURLImpl.class,
+						layoutFriendlyURL.getPrimaryKeyObj());
+				}
+
 				session.save(layoutFriendlyURL);
 
 				layoutFriendlyURL.setNew(false);
@@ -5664,20 +5746,22 @@ public class LayoutFriendlyURLPersistenceImpl
 					layoutFriendlyURL);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
+		if (layoutFriendlyURL.getCtCollectionId() != 0) {
+			layoutFriendlyURL.resetOriginalValues();
+
+			return layoutFriendlyURL;
+		}
+
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!LayoutFriendlyURLModelImpl.COLUMN_BITMASK_ENABLED) {
-			FinderCacheUtil.clearCache(
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {layoutFriendlyURLModelImpl.getUuid()};
 
 			FinderCacheUtil.removeResult(_finderPathCountByUuid, args);
@@ -5750,7 +5834,7 @@ public class LayoutFriendlyURLPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalUuid()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue("uuid_")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByUuid, args);
@@ -5769,8 +5853,9 @@ public class LayoutFriendlyURLPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalUuid(),
-					layoutFriendlyURLModelImpl.getOriginalCompanyId()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue("uuid_"),
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"companyId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByUuid_C, args);
@@ -5792,7 +5877,7 @@ public class LayoutFriendlyURLPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalGroupId()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue("groupId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByGroupId, args);
@@ -5811,7 +5896,8 @@ public class LayoutFriendlyURLPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalCompanyId()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"companyId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByCompanyId, args);
@@ -5830,7 +5916,7 @@ public class LayoutFriendlyURLPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalPlid()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue("plid")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByPlid, args);
@@ -5849,8 +5935,9 @@ public class LayoutFriendlyURLPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalPlid(),
-					layoutFriendlyURLModelImpl.getOriginalFriendlyURL()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue("plid"),
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"friendlyURL")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByP_F, args);
@@ -5872,8 +5959,9 @@ public class LayoutFriendlyURLPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalPlid(),
-					layoutFriendlyURLModelImpl.getOriginalLanguageId()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue("plid"),
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"languageId")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByP_L, args);
@@ -5895,9 +5983,12 @@ public class LayoutFriendlyURLPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					layoutFriendlyURLModelImpl.getOriginalGroupId(),
-					layoutFriendlyURLModelImpl.getOriginalPrivateLayout(),
-					layoutFriendlyURLModelImpl.getOriginalFriendlyURL()
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"groupId"),
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"privateLayout"),
+					layoutFriendlyURLModelImpl.getColumnOriginalValue(
+						"friendlyURL")
 				};
 
 				FinderCacheUtil.removeResult(_finderPathCountByG_P_F, args);
@@ -5917,7 +6008,6 @@ public class LayoutFriendlyURLPersistenceImpl
 		}
 
 		EntityCacheUtil.putResult(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, layoutFriendlyURL.getPrimaryKey(),
 			layoutFriendlyURL, false);
 
@@ -5971,12 +6061,122 @@ public class LayoutFriendlyURLPersistenceImpl
 	/**
 	 * Returns the layout friendly url with the primary key or returns <code>null</code> if it could not be found.
 	 *
+	 * @param primaryKey the primary key of the layout friendly url
+	 * @return the layout friendly url, or <code>null</code> if a layout friendly url with the primary key could not be found
+	 */
+	@Override
+	public LayoutFriendlyURL fetchByPrimaryKey(Serializable primaryKey) {
+		if (CTPersistenceHelperUtil.isProductionMode(LayoutFriendlyURL.class)) {
+			return super.fetchByPrimaryKey(primaryKey);
+		}
+
+		LayoutFriendlyURL layoutFriendlyURL = null;
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			layoutFriendlyURL = (LayoutFriendlyURL)session.get(
+				LayoutFriendlyURLImpl.class, primaryKey);
+
+			if (layoutFriendlyURL != null) {
+				cacheResult(layoutFriendlyURL);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return layoutFriendlyURL;
+	}
+
+	/**
+	 * Returns the layout friendly url with the primary key or returns <code>null</code> if it could not be found.
+	 *
 	 * @param layoutFriendlyURLId the primary key of the layout friendly url
 	 * @return the layout friendly url, or <code>null</code> if a layout friendly url with the primary key could not be found
 	 */
 	@Override
 	public LayoutFriendlyURL fetchByPrimaryKey(long layoutFriendlyURLId) {
 		return fetchByPrimaryKey((Serializable)layoutFriendlyURLId);
+	}
+
+	@Override
+	public Map<Serializable, LayoutFriendlyURL> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		if (CTPersistenceHelperUtil.isProductionMode(LayoutFriendlyURL.class)) {
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
+		if (primaryKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Serializable, LayoutFriendlyURL> map =
+			new HashMap<Serializable, LayoutFriendlyURL>();
+
+		if (primaryKeys.size() == 1) {
+			Iterator<Serializable> iterator = primaryKeys.iterator();
+
+			Serializable primaryKey = iterator.next();
+
+			LayoutFriendlyURL layoutFriendlyURL = fetchByPrimaryKey(primaryKey);
+
+			if (layoutFriendlyURL != null) {
+				map.put(primaryKey, layoutFriendlyURL);
+			}
+
+			return map;
+		}
+
+		StringBundler sb = new StringBundler(primaryKeys.size() * 2 + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
+
+		for (Serializable primaryKey : primaryKeys) {
+			sb.append((long)primaryKey);
+
+			sb.append(",");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query query = session.createQuery(sql);
+
+			for (LayoutFriendlyURL layoutFriendlyURL :
+					(List<LayoutFriendlyURL>)query.list()) {
+
+				map.put(
+					layoutFriendlyURL.getPrimaryKeyObj(), layoutFriendlyURL);
+
+				cacheResult(layoutFriendlyURL);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return map;
 	}
 
 	/**
@@ -5993,7 +6193,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns a range of all the layout friendly urls.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout friendly urls
@@ -6009,7 +6209,7 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout friendly urls
@@ -6029,65 +6229,66 @@ public class LayoutFriendlyURLPersistenceImpl
 	 * Returns an ordered range of all the layout friendly urls.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutFriendlyURLModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout friendly urls
 	 * @param end the upper bound of the range of layout friendly urls (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of layout friendly urls
 	 */
 	@Override
 	public List<LayoutFriendlyURL> findAll(
 		int start, int end,
 		OrderByComparator<LayoutFriendlyURL> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<LayoutFriendlyURL> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<LayoutFriendlyURL>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_LAYOUTFRIENDLYURL);
+				sb.append(_SQL_SELECT_LAYOUTFRIENDLYURL);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_LAYOUTFRIENDLYURL;
 
-				if (pagination) {
-					sql = sql.concat(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(LayoutFriendlyURLModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -6095,29 +6296,19 @@ public class LayoutFriendlyURLPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<LayoutFriendlyURL>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<LayoutFriendlyURL>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6145,8 +6336,15 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)FinderCacheUtil.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			LayoutFriendlyURL.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)FinderCacheUtil.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -6154,18 +6352,17 @@ public class LayoutFriendlyURLPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_LAYOUTFRIENDLYURL);
+				Query query = session.createQuery(_SQL_COUNT_LAYOUTFRIENDLYURL);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				FinderCacheUtil.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6196,8 +6393,80 @@ public class LayoutFriendlyURLPersistenceImpl
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.get(ctColumnResolutionType);
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return LayoutFriendlyURLModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "LayoutFriendlyURL";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctIgnoreColumnNames = new HashSet<String>();
+		Set<String> ctMergeColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("uuid_");
+		ctStrictColumnNames.add("groupId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("userId");
+		ctStrictColumnNames.add("userName");
+		ctStrictColumnNames.add("createDate");
+		ctIgnoreColumnNames.add("modifiedDate");
+		ctStrictColumnNames.add("plid");
+		ctStrictColumnNames.add("privateLayout");
+		ctStrictColumnNames.add("friendlyURL");
+		ctStrictColumnNames.add("languageId");
+		ctStrictColumnNames.add("lastPublishDate");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
+		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK,
+			Collections.singleton("layoutFriendlyURLId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
+
+		_uniqueIndexColumnNames.add(new String[] {"uuid_", "groupId"});
+
+		_uniqueIndexColumnNames.add(new String[] {"plid", "languageId"});
+
+		_uniqueIndexColumnNames.add(
+			new String[] {
+				"groupId", "privateLayout", "friendlyURL", "languageId"
+			});
 	}
 
 	/**
@@ -6205,27 +6474,19 @@ public class LayoutFriendlyURLPersistenceImpl
 	 */
 	public void afterPropertiesSet() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByUuid = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByUuid",
 			new String[] {
@@ -6234,37 +6495,28 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByUuid = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
 			new String[] {String.class.getName()},
-			LayoutFriendlyURLModelImpl.UUID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("uuid_"));
 
 		_finderPathCountByUuid = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-			new String[] {String.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByUuid", new String[] {String.class.getName()});
 
 		_finderPathFetchByUUID_G = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_ENTITY,
 			"fetchByUUID_G",
 			new String[] {String.class.getName(), Long.class.getName()},
-			LayoutFriendlyURLModelImpl.UUID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.GROUPID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("uuid_") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("groupId"));
 
 		_finderPathCountByUUID_G = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUUID_G",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByUUID_G",
 			new String[] {String.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByUuid_C = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByUuid_C",
 			new String[] {
@@ -6274,23 +6526,18 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByUuid_C = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
 			new String[] {String.class.getName(), Long.class.getName()},
-			LayoutFriendlyURLModelImpl.UUID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.COMPANYID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("uuid_") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("companyId"));
 
 		_finderPathCountByUuid_C = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByUuid_C",
 			new String[] {String.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByGroupId",
 			new String[] {
@@ -6299,22 +6546,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
 			new String[] {Long.class.getName()},
-			LayoutFriendlyURLModelImpl.GROUPID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("groupId"));
 
 		_finderPathCountByGroupId = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByGroupId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByCompanyId",
 			new String[] {
@@ -6323,22 +6564,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
 			new String[] {Long.class.getName()},
-			LayoutFriendlyURLModelImpl.COMPANYID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("companyId"));
 
 		_finderPathCountByCompanyId = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByCompanyId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByPlid = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByPlid",
 			new String[] {
@@ -6347,22 +6582,16 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByPlid = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
 			new String[] {Long.class.getName()},
-			LayoutFriendlyURLModelImpl.PLID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("plid"));
 
 		_finderPathCountByPlid = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByPlid", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByP_F = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByP_F",
 			new String[] {
@@ -6372,23 +6601,17 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByP_F = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_F",
 			new String[] {Long.class.getName(), String.class.getName()},
-			LayoutFriendlyURLModelImpl.PLID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.FRIENDLYURL_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("plid") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("friendlyURL"));
 
 		_finderPathCountByP_F = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_F",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_F",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByP_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByP_L",
 			new String[] {
@@ -6398,37 +6621,27 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByP_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_L",
 			new String[] {Long.class.getName(), String.class.getName()},
-			LayoutFriendlyURLModelImpl.PLID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.LANGUAGEID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("plid") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("languageId"));
 
 		_finderPathFetchByP_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_ENTITY, "fetchByP_L",
 			new String[] {Long.class.getName(), String.class.getName()},
-			LayoutFriendlyURLModelImpl.PLID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.LANGUAGEID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("plid") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("languageId"));
 
 		_finderPathCountByP_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_L",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_L",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationCountByP_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByP_L",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByP_L",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByG_P_F = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByG_P_F",
 			new String[] {
@@ -6438,45 +6651,39 @@ public class LayoutFriendlyURLPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_P_F = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_P_F",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				String.class.getName()
 			},
-			LayoutFriendlyURLModelImpl.GROUPID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.PRIVATELAYOUT_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.FRIENDLYURL_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("groupId") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("privateLayout") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("friendlyURL"));
 
 		_finderPathCountByG_P_F = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_F",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_P_F",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathFetchByG_P_F_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED,
 			LayoutFriendlyURLImpl.class, FINDER_CLASS_NAME_ENTITY,
 			"fetchByG_P_F_L",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				String.class.getName(), String.class.getName()
 			},
-			LayoutFriendlyURLModelImpl.GROUPID_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.PRIVATELAYOUT_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.FRIENDLYURL_COLUMN_BITMASK |
-			LayoutFriendlyURLModelImpl.LANGUAGEID_COLUMN_BITMASK);
+			LayoutFriendlyURLModelImpl.getColumnBitmask("groupId") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("privateLayout") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("friendlyURL") |
+			LayoutFriendlyURLModelImpl.getColumnBitmask("languageId"));
 
 		_finderPathCountByG_P_F_L = new FinderPath(
-			LayoutFriendlyURLModelImpl.ENTITY_CACHE_ENABLED,
-			LayoutFriendlyURLModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_P_F_L",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_P_F_L",
 			new String[] {
 				Long.class.getName(), Boolean.class.getName(),
 				String.class.getName(), String.class.getName()
@@ -6489,9 +6696,6 @@ public class LayoutFriendlyURLPersistenceImpl
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
-
-	@BeanReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
 
 	private static final String _SQL_SELECT_LAYOUTFRIENDLYURL =
 		"SELECT layoutFriendlyURL FROM LayoutFriendlyURL layoutFriendlyURL";

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -51,12 +52,12 @@ public class InstancePool {
 
 			_instances.put(className, instance);
 		}
-		catch (Exception e1) {
+		catch (Exception exception1) {
 			if (logErrors && _log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to load " + className +
 						" with the portal class loader",
-					e1);
+					exception1);
 			}
 
 			Thread currentThread = Thread.currentThread();
@@ -71,14 +72,14 @@ public class InstancePool {
 
 				_instances.put(className, instance);
 			}
-			catch (Exception e2) {
+			catch (Exception exception2) {
 				if (logErrors) {
 					_log.error(
 						StringBundler.concat(
 							"Unable to load ", className,
 							" with the portal class loader or the current ",
 							"context class loader"),
-						e2);
+						exception2);
 				}
 			}
 		}
@@ -86,8 +87,8 @@ public class InstancePool {
 		return instance;
 	}
 
-	public static void put(String className, Object obj) {
-		_instances.put(className.trim(), obj);
+	public static void put(String className, Object object) {
+		_instances.put(className.trim(), object);
 	}
 
 	public static void reset() {

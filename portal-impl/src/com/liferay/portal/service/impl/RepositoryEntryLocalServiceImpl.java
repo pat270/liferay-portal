@@ -54,9 +54,7 @@ public class RepositoryEntryLocalServiceImpl
 		repositoryEntry.setRepositoryId(repositoryId);
 		repositoryEntry.setMappedId(mappedId);
 
-		repositoryEntryPersistence.update(repositoryEntry);
-
-		return repositoryEntry;
+		return repositoryEntryPersistence.update(repositoryEntry);
 	}
 
 	@Override
@@ -68,12 +66,15 @@ public class RepositoryEntryLocalServiceImpl
 			try {
 				deleteRepositoryEntry(repositoryId, mappedId);
 			}
-			catch (NoSuchRepositoryEntryException nsree) {
+			catch (NoSuchRepositoryEntryException
+						noSuchRepositoryEntryException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsree, nsree);
+					_log.debug(
+						noSuchRepositoryEntryException,
+						noSuchRepositoryEntryException);
 				}
 			}
 		}
@@ -124,9 +125,7 @@ public class RepositoryEntryLocalServiceImpl
 
 		repositoryEntry.setMappedId(mappedId);
 
-		repositoryEntryPersistence.update(repositoryEntry);
-
-		return repositoryEntry;
+		return repositoryEntryPersistence.update(repositoryEntry);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

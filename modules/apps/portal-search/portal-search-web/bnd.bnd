@@ -1,10 +1,9 @@
 Bundle-Name: Liferay Portal Search Web
 Bundle-SymbolicName: com.liferay.portal.search.web
-Bundle-Version: 5.0.0
+Bundle-Version: 5.0.35
 Import-Package:\
 	!com.liferay.util.xml,\
 	\
 	*
 Liferay-JS-Config: /META-INF/resources/js/config.js
-Liferay-Require-SchemaVersion: 2.0.0
 Web-ContextPath: /portal-search-web

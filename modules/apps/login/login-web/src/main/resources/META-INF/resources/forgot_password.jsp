@@ -23,6 +23,8 @@ if (Validator.isNull(authType)) {
 	authType = company.getAuthType();
 }
 
+String login = (String)portletSession.getAttribute(WebKeys.FORGOT_PASSWORD_REMINDER_USER_EMAIL_ADDRESS);
+
 Integer reminderAttempts = (Integer)portletSession.getAttribute(WebKeys.FORGOT_PASSWORD_REMINDER_ATTEMPTS);
 
 if (reminderAttempts == null) {
@@ -41,6 +43,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "forgot-password"));
 		<aui:input name="saveLastPath" type="hidden" value="<%= false %>" />
 
 		<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
+		<liferay-ui:error exception="<%= CaptchaException.class %>" message="captcha-verification-failed" />
 		<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 		<liferay-ui:error exception="<%= NoSuchUserException.class %>" message='<%= "the-" + TextFormatter.format(HtmlUtil.escape(authType), TextFormatter.K) + "-you-requested-is-not-registered-in-our-database" %>' />
 		<liferay-ui:error exception="<%= RequiredReminderQueryException.class %>" message="you-have-not-configured-a-reminder-query" />
@@ -61,7 +64,12 @@ renderResponse.setTitle(LanguageUtil.get(request, "forgot-password"));
 					<liferay-ui:message key="this-account-is-locked" />
 				</c:when>
 				<c:otherwise>
-					<liferay-ui:message arguments="<%= ule.user.getUnlockDate() %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
+
+					<%
+					Format dateFormat = FastDateFormatFactoryUtil.getDateTime(FastDateFormatConstants.SHORT, FastDateFormatConstants.LONG, locale, TimeZone.getTimeZone(ule.user.getTimeZoneId()));
+					%>
+
+					<liferay-ui:message arguments="<%= dateFormat.format(ule.user.getUnlockDate()) %>" key="this-account-is-locked-until-x" translateArguments="<%= false %>" />
 				</c:otherwise>
 			</c:choose>
 		</liferay-ui:error>
@@ -73,23 +81,17 @@ renderResponse.setTitle(LanguageUtil.get(request, "forgot-password"));
 				<c:when test="<%= user2 == null %>">
 
 					<%
-					String loginParameter = null;
 					String loginLabel = null;
 
 					if (authType.equals(CompanyConstants.AUTH_TYPE_EA)) {
-						loginParameter = "emailAddress";
 						loginLabel = "email-address";
 					}
 					else if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
-						loginParameter = "screenName";
 						loginLabel = "screen-name";
 					}
 					else if (authType.equals(CompanyConstants.AUTH_TYPE_ID)) {
-						loginParameter = "userId";
 						loginLabel = "id";
 					}
-
-					String loginValue = ParamUtil.getString(request, loginParameter);
 					%>
 
 					<aui:input name="step" type="hidden" value="1" />
@@ -102,25 +104,20 @@ renderResponse.setTitle(LanguageUtil.get(request, "forgot-password"));
 						<aui:input name="redirect" type="hidden" value="<%= redirectURL %>" />
 					</c:if>
 
-					<aui:input label="<%= loginLabel %>" name="<%= loginParameter %>" size="30" type="text" value="<%= loginValue %>">
+					<aui:input label="<%= loginLabel %>" name="login" size="30" type="text" value="<%= login %>">
 						<aui:validator name="required" />
 					</aui:input>
 
 					<c:if test="<%= captchaConfiguration.sendPasswordCaptchaEnabled() %>">
-						<portlet:resourceURL id="/login/captcha" var="captchaURL" />
-
-						<liferay-captcha:captcha
-							url="<%= captchaURL %>"
-						/>
+						<liferay-captcha:captcha />
 					</c:if>
 
 					<aui:button-row>
 						<aui:button type="submit" value='<%= PropsValues.USERS_REMINDER_QUERIES_ENABLED ? "next" : "send-new-password" %>' />
 					</aui:button-row>
 				</c:when>
-				<c:when test="<%= (user2 != null) && Validator.isNotNull(user2.getEmailAddress()) %>">
+				<c:when test="<%= user2 != null %>">
 					<aui:input name="step" type="hidden" value="2" />
-					<aui:input name="emailAddress" type="hidden" value="<%= user2.getEmailAddress() %>" />
 
 					<portlet:renderURL var="redirectURL">
 						<portlet:param name="mvcRenderCommandName" value="/login/login" />
@@ -129,21 +126,6 @@ renderResponse.setTitle(LanguageUtil.get(request, "forgot-password"));
 					<aui:input name="redirect" type="hidden" value="<%= redirectURL %>" />
 
 					<c:if test="<%= Validator.isNotNull(user2.getReminderQueryQuestion()) && Validator.isNotNull(user2.getReminderQueryAnswer()) %>">
-
-						<%
-						String login = null;
-
-						if (authType.equals(CompanyConstants.AUTH_TYPE_EA)) {
-							login = user2.getEmailAddress();
-						}
-						else if (authType.equals(CompanyConstants.AUTH_TYPE_SN)) {
-							login = user2.getScreenName();
-						}
-						else if (authType.equals(CompanyConstants.AUTH_TYPE_ID)) {
-							login = String.valueOf(user2.getUserId());
-						}
-						%>
-
 						<div class="alert alert-info">
 							<liferay-ui:message arguments="<%= HtmlUtil.escape(login) %>" key="an-email-will-be-sent-to-x-if-you-can-correctly-answer-the-following-question" translateArguments="<%= false %>" />
 						</div>
@@ -159,11 +141,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "forgot-password"));
 						</c:when>
 						<c:otherwise>
 							<c:if test="<%= reminderAttempts >= 3 %>">
-								<portlet:resourceURL id="/login/captcha" var="captchaURL" />
-
-								<liferay-captcha:captcha
-									url="<%= captchaURL %>"
-								/>
+								<liferay-captcha:captcha />
 							</c:if>
 
 							<aui:button-row>

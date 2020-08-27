@@ -1,21 +1,52 @@
-import AutoSave from './util/AutoSave.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import ClayModal from 'clay-modal';
-import Component from 'metal-jsx';
+import {FormBuilderBase} from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/FormBuilder.es';
+import withActionableFields from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/withActionableFields.es';
+import withClickableFields from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/withClickableFields.es';
+import withEditablePageHeader from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/withEditablePageHeader.es';
+import withMoveableFields from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/withMoveableFields.es';
+import withMultiplePages from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/withMultiplePages.es';
+import withResizeableColumns from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/withResizeableColumns.es';
+import LayoutProvider from 'dynamic-data-mapping-form-builder/js/components/LayoutProvider/LayoutProvider.es';
+import RuleBuilder from 'dynamic-data-mapping-form-builder/js/components/RuleBuilder/RuleBuilder.es';
+import Sidebar from 'dynamic-data-mapping-form-builder/js/components/Sidebar/Sidebar.es';
+import {pageStructure} from 'dynamic-data-mapping-form-builder/js/util/config.es';
+import {
+	isKeyInSet,
+	isModifyingKey,
+} from 'dynamic-data-mapping-form-builder/js/util/dom.es';
+import {sub} from 'dynamic-data-mapping-form-builder/js/util/strings.es';
+import {PagesVisitor, compose} from 'dynamic-data-mapping-form-renderer';
 import core from 'metal';
 import dom from 'metal-dom';
-import FormBuilder from 'dynamic-data-mapping-form-builder/js/components/FormBuilder/FormBuilder.es';
-import LayoutProvider from 'dynamic-data-mapping-form-builder/js/components/LayoutProvider/LayoutProvider.es';
-import Notifications from './util/Notifications.es';
-import PreviewButton from './components/PreviewButton/PreviewButton.es';
-import PublishButton from './components/PublishButton/PublishButton.es';
-import RuleBuilder from 'dynamic-data-mapping-form-builder/js/components/RuleBuilder/RuleBuilder.es';
-import ShareFormPopover from './components/ShareFormPopover/ShareFormPopover.es';
-import StateSyncronizer from './util/StateSyncronizer.es';
-import {Config} from 'metal-state';
 import {EventHandler} from 'metal-events';
-import {isKeyInSet, isModifyingKey} from 'dynamic-data-mapping-form-builder/js/util/dom.es';
-import {pageStructure} from 'dynamic-data-mapping-form-builder/js/util/config.es';
-import {sub} from 'dynamic-data-mapping-form-builder/js/util/strings.es';
+import Component from 'metal-jsx';
+import {Config} from 'metal-state';
+
+import ShareFormModal from './components/ShareFormModal/ShareFormModal.es';
+import AutoSave from './util/AutoSave.es';
+import FormURL from './util/FormURL.es';
+import Notifications from './util/Notifications.es';
+import StateSyncronizer from './util/StateSyncronizer.es';
+
+const NAV_ITEMS = {
+	FORM: 0,
+	REPORT: 2,
+	RULES: 1,
+};
 
 /**
  * Form.
@@ -23,315 +54,91 @@ import {sub} from 'dynamic-data-mapping-form-builder/js/util/strings.es';
  */
 
 class Form extends Component {
-	static PROPS = {
-
-		/**
-		 * The context for rendering a layout that represents a form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		context: Config.shapeOf(
-			{
-				pages: Config.arrayOf(Config.object()),
-				paginationMode: Config.string(),
-				rules: Config.array(),
-				successPageSettings: Config.object()
-			}
-		).required().setter('_setContext'),
-
-		/**
-		 * The rules of a form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		dataProviderInstanceParameterSettingsURL: Config.string().required(),
-
-		/**
-		 * The rules of a form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		dataProviderInstancesURL: Config.string().required(),
-
-		/**
-		 * The default language id of the form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		defaultLanguageId: Config.string().value(themeDisplay.getDefaultLanguageId()),
-
-		/**
-		 * The default language id of the form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		editingLanguageId: Config.string().value(themeDisplay.getDefaultLanguageId()),
-
-		/**
-		 * @default []
-		 * @instance
-		 * @memberof Form
-		 * @type {?(array|undefined)}
-		 */
-
-		fieldTypes: Config.array().value([]),
-
-		/**
-		 * A map with all translated values available as the form description.
-		 * @default 0
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		formInstanceId: Config.number().value(0),
-
-		/**
-		 * A map with all translated values available as the form name.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		functionsMetadata: Config.object().value({}),
-
-		/**
-		 * A map with all translated values available as the form name.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		functionsURL: Config.string(),
-
-		/**
-		 * A map with all translated values available as the form description.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		localizedDescription: Config.object().value({}),
-
-		/**
-		 * The context for rendering a layout that represents a form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		localizedName: Config.object().value({}),
-
-		/**
-		 * The namespace of the portlet.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!string}
-		 */
-
-		namespace: Config.string().required(),
-
-		/**
-		 * Wether the form is published or not
-		 * @default false
-		 * @instance
-		 * @memberof Form
-		 * @type {!boolean}
-		 */
-
-		published: Config.bool().value(false),
-
-		/**
-		 * The url to be redirected when canceling the Element Set edition.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!string}
-		 */
-
-		redirectURL: Config.string(),
-
-		/**
-		 * The rules of a form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		rolesURL: Config.string(),
-
-		/**
-		 * The rules of a form.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		rules: Config.array().value([]),
-
-		/**
-		 * The path to the SVG spritemap file containing the icons.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!boolean}
-		 */
-
-		saved: Config.bool(),
-
-		/**
-		 * Wether to show an alert telling the user about the result of the
-		 * "Publish" operation.
-		 * @default false
-		 * @instance
-		 * @memberof Form
-		 * @type {!boolean}
-		 */
-
-		showPublishAlert: Config.bool().value(false),
-
-		/**
-		 * The path to the SVG spritemap file containing the icons.
-		 * @default undefined
-		 * @instance
-		 * @memberof Form
-		 * @type {!string}
-		 */
-
-		spritemap: Config.string().required(),
-
-		view: Config.string()
-	};
-
-	static STATE = {
-
-		/**
-		 * Internal mirror of the pages state
-		 * @default _pagesValueFn
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		pages: Config.arrayOf(pageStructure).valueFn('_pagesValueFn'),
-
-		/**
-		 * @default _paginationModeValueFn
-		 * @instance
-		 * @memberof Form
-		 * @type {!array}
-		 */
-
-		paginationMode: Config.string().valueFn('_paginationModeValueFn'),
-
-		/**
-		 * Wether the RuleBuilder should be visible or not.
-		 * @default false
-		 * @instance
-		 * @memberof Form
-		 * @type {!boolean}
-		 */
-
-		ruleBuilderVisible: Config.bool().value(false),
-
-		/**
-		 * The label of the save button
-		 * @default 'save-form'
-		 * @instance
-		 * @memberof Form
-		 * @type {!string}
-		 */
-
-		saveButtonLabel: Config.string().valueFn('_saveButtonLabelValueFn')
-	}
-
 	attached() {
-		const {layoutProvider} = this.refs;
+		const {store} = this.refs;
 		const {
 			localizedDescription,
 			localizedName,
 			namespace,
 			published,
-			showPublishAlert
+			showPublishAlert,
 		} = this.props;
-		const {paginationMode} = this.state;
+
+		const {activeNavItem, paginationMode} = this.state;
 
 		this._eventHandler = new EventHandler();
 
 		const dependencies = [
-			this._createEditor('nameEditor').then(
-				editor => {
-					this._eventHandler.add(
-						dom.on(editor.element.$, 'keydown', this._handleNameEditorKeydown),
-						dom.on(editor.element.$, 'keyup', this._handleNameEditorCopyAndPaste),
-						dom.on(editor.element.$, 'keypress', this._handleNameEditorCopyAndPaste)
-					);
+			this._createEditor('nameEditor').then((editor) => {
+				this._eventHandler.add(
+					dom.on(
+						editor.element.$,
+						'keydown',
+						this._handleNameEditorKeydown
+					),
+					dom.on(
+						editor.element.$,
+						'keyup',
+						this._handleNameEditorCopyAndPaste
+					),
+					dom.on(
+						editor.element.$,
+						'keypress',
+						this._handleNameEditorCopyAndPaste
+					)
+				);
 
-					return editor;
-				}
-			),
-			this._createEditor('descriptionEditor')
+				return editor;
+			}),
+			this._createEditor('descriptionEditor'),
+			Liferay.componentReady('translationManager'),
 		];
 
 		if (this.isFormBuilderView()) {
 			dependencies.push(this._getSettingsDDMForm());
-			dependencies.push(this._getTranslationManager());
+
+			this.syncActiveNavItem(activeNavItem);
 		}
 
 		Promise.all(dependencies).then(
-			results => {
-				const translationManager = results[3];
-
+			([
+				nameEditor,
+				descriptionEditor,
+				translationManager,
+				settingsDDMForm,
+			]) => {
 				if (translationManager) {
-					translationManager.on(
-						'editingLocaleChange',
-						event => {
-							this.props.editingLanguageId = event.newVal;
-						}
+					this.props.defaultLanguageId = translationManager.get(
+						'defaultLocale'
 					);
 
-					translationManager.on(
-						'deleteAvailableLocale',
-						event => {
-							layoutProvider.emit('languageIdDeleted', event);
-						}
+					this.props.editingLanguageId = translationManager.get(
+						'editingLocale'
 					);
+
+					this._translationManagerHandles = [
+						translationManager.on('editingLocale', ({newValue}) => {
+							this.props.editingLanguageId = newValue;
+						}),
+						translationManager.on(
+							'availableLocales',
+							this.onAvailableLocalesRemoved.bind(this)
+						),
+					];
 				}
 
 				this._stateSyncronizer = new StateSyncronizer(
 					{
-						descriptionEditor: results[1],
-						layoutProvider,
+						descriptionEditor,
 						localizedDescription,
 						localizedName,
-						nameEditor: results[0],
+						nameEditor,
 						namespace,
 						paginationMode,
 						published,
-						settingsDDMForm: results[2],
-						translationManager
+						settingsDDMForm,
+						store,
+						translationManager,
 					},
 					this.element
 				);
@@ -342,60 +149,165 @@ class Form extends Component {
 						interval: Liferay.DDM.FormSettings.autosaveInterval,
 						namespace,
 						stateSyncronizer: this._stateSyncronizer,
-						url: Liferay.DDM.FormSettings.autosaveURL
+						url: Liferay.DDM.FormSettings.autosaveURL,
 					},
 					this.element
 				);
 
-				this._eventHandler.add(this._autoSave.on('autosaved', this._updateAutoSaveMessage));
+				this._eventHandler.add(
+					this._autoSave.on('autosaved', this._updateAutoSaveMessage)
+				);
 			}
 		);
 
 		this._eventHandler.add(
-			dom.on(`#${namespace}ControlMenu *[data-title="Back"]`, 'click', this._handleBackButtonClicked),
-			dom.on('.forms-management-bar li', 'click', this._handleFormNavClicked)
+			dom.on(
+				`#addFieldButton`,
+				'click',
+				this._handleAddFieldButtonClicked.bind(this)
+			),
+			dom.on(
+				`#${namespace}controlMenu .sites-control-group span.lfr-portal-tooltip`,
+				'click',
+				this._handleBackButtonClicked
+			),
+			dom.on(
+				'.forms-navigation-bar li',
+				'click',
+				this._handleFormNavClicked
+			),
+			dom.on(
+				'.lfr-ddm-preview-button',
+				'click',
+				this._handlePreviewButtonClicked.bind(this)
+			),
+			dom.on(
+				'.lfr-ddm-save-button',
+				'click',
+				this._handleSaveButtonClicked.bind(this)
+			),
+			dom.on(
+				'.lfr-ddm-publish-button',
+				'click',
+				this._handlePublishButtonClicked.bind(this)
+			)
+		);
+
+		const shareURLButton = document.querySelector(
+			'.lfr-ddm-share-url-button'
 		);
 
 		if (showPublishAlert) {
 			if (published) {
 				this._showPublishedAlert(this._createFormURL());
+				shareURLButton.removeAttribute('title');
 			}
 			else {
 				this._showUnpublishedAlert();
 			}
 		}
+
+		if (
+			activeNavItem === NAV_ITEMS.FORM &&
+			!this._pageHasFields(store.getPages(), store.state.activePage)
+		) {
+			this.openSidebar();
+		}
+
+		store.on('fieldDuplicated', () => this.openSidebar());
+
+		store.on('focusedFieldChanged', ({newVal}) => {
+			if (newVal && Object.keys(newVal).length > 0) {
+				this.openSidebar();
+			}
+		});
+
+		store.on('activePageChanged', () => {
+			const {activePage, pages} = store.state;
+
+			if (
+				activePage > -1 &&
+				pages[activePage] &&
+				!pages[activePage].successPageSettings
+			) {
+				if (!this._pageHasFields(pages, activePage)) {
+					this.openSidebar();
+				}
+			}
+		});
+
+		store.on('pagesChanged', ({newVal, prevVal}) => {
+			if (
+				newVal &&
+				prevVal &&
+				newVal.length !== prevVal.length &&
+				!this._pageHasFields(newVal, store.state.activePage)
+			) {
+				this.openSidebar();
+			}
+		});
+
+		store.on(
+			'paginationModeChanged',
+			this._handlePaginationModeChanded.bind(this)
+		);
+		store.on('ruleCancelled', this.showAddButton.bind(this));
+		store.on('rulesModified', this._handleRulesModified.bind(this));
 	}
 
 	checkEditorLimit(event, limit) {
-		const charCode = (event.which) ? event.which : event.keyCode;
+		const charCode = event.which ? event.which : event.keyCode;
 
-		if (this.isForbiddenKey(event, limit) && (charCode != 91)) {
+		if (this.isForbiddenKey(event, limit) && charCode != 91) {
 			event.preventDefault();
 		}
 	}
 
 	created() {
 		this._createFormURL = this._createFormURL.bind(this);
-		this._handleBackButtonClicked = this._handleBackButtonClicked.bind(this);
+		this._handleBackButtonClicked = this._handleBackButtonClicked.bind(
+			this
+		);
 		this._handleFormNavClicked = this._handleFormNavClicked.bind(this);
-		this._handleNameEditorCopyAndPaste = this._handleNameEditorCopyAndPaste.bind(this);
-		this._handleNameEditorKeydown = this._handleNameEditorKeydown.bind(this);
-		this._handlePaginationModeChanded = this._handlePaginationModeChanded.bind(this);
+		this._handleNameEditorCopyAndPaste = this._handleNameEditorCopyAndPaste.bind(
+			this
+		);
+		this._handleNameEditorKeydown = this._handleNameEditorKeydown.bind(
+			this
+		);
+		this._handlePaginationModeChanded = this._handlePaginationModeChanded.bind(
+			this
+		);
 		this._resolvePreviewURL = this._resolvePreviewURL.bind(this);
 		this._updateAutoSaveMessage = this._updateAutoSaveMessage.bind(this);
+		this.ComposedFormBuilder = this._createFormBuilder();
 		this.submitForm = this.submitForm.bind(this);
 	}
 
 	disposed() {
-		super.disposed();
-
 		if (this._autoSave) {
 			this._autoSave.dispose();
+		}
+
+		if (this._stateSyncronizer) {
+			this._stateSyncronizer.dispose();
 		}
 
 		Notifications.closeAlert();
 
 		this._eventHandler.removeAllListeners();
+
+		if (this._translationManagerHandles) {
+			this._translationManagerHandles.forEach((handle) =>
+				handle.detach()
+			);
+		}
+	}
+
+	hideAddButton() {
+		const addButton = document.querySelector('#addFieldButton');
+
+		addButton.classList.add('hide');
 	}
 
 	isForbiddenKey(event, limit) {
@@ -409,6 +321,7 @@ class Form extends Component {
 		) {
 			forbidden = true;
 		}
+
 		return forbidden;
 	}
 
@@ -419,9 +332,37 @@ class Form extends Component {
 	}
 
 	isShowRuleBuilder() {
-		const {ruleBuilderVisible} = this.state;
+		const {activeNavItem} = this.state;
 
-		return ruleBuilderVisible && this.isFormBuilderView();
+		return activeNavItem === NAV_ITEMS.RULES && this.isFormBuilderView();
+	}
+
+	isShowReport() {
+		const {activeNavItem} = this.state;
+
+		return activeNavItem === NAV_ITEMS.REPORT && this.isFormBuilderView();
+	}
+
+	onAvailableLocalesRemoved({newValue, previousValue}) {
+		const {store} = this.refs;
+
+		const removedItems = new Map();
+
+		previousValue.forEach((value, key) => {
+			if (!newValue.has(key)) {
+				removedItems.set(key, value);
+			}
+		});
+
+		if (removedItems.size > 0) {
+			store.emit('languageIdDeleted', {
+				locale: removedItems.keys().next().value,
+			});
+		}
+	}
+
+	openSidebar() {
+		this.refs.sidebar.open();
 	}
 
 	preventCopyAndPaste(event, limit) {
@@ -441,102 +382,114 @@ class Form extends Component {
 		}
 	}
 
+	publish(event) {
+		this.props.published = true;
+
+		return this._savePublished(event, true);
+	}
+
 	render() {
+		const {ComposedFormBuilder} = this;
 		const {
+			autocompleteUserURL,
 			context,
+			dataProviderInstanceParameterSettingsURL,
+			dataProviderInstancesURL,
 			defaultLanguageId,
 			editingLanguageId,
 			fieldSetDefinitionURL,
 			fieldSets,
 			fieldTypes,
+			functionsMetadata,
+			functionsURL,
 			groupId,
+			localizedName,
 			namespace,
 			published,
 			redirectURL,
+			rolesURL,
+			rules,
+			shareFormInstanceURL,
 			spritemap,
-			view
+			view,
 		} = this.props;
+		const {saveButtonLabel} = this.state;
 
-		const layoutProviderProps = {
+		const storeProps = {
 			...this.props,
 			defaultLanguageId,
 			editingLanguageId,
-			events: {
-				paginationModeChanged: this._handlePaginationModeChanded,
-				ruleAdded: this._handleRuleSaved.bind(this),
-				ruleSaved: this._handleRuleSaved.bind(this)
-			},
 			initialPages: context.pages,
 			initialPaginationMode: context.paginationMode,
 			initialSuccessPageSettings: context.successPageSettings,
-			ref: 'layoutProvider'
+			ref: 'store',
 		};
-		const {saveButtonLabel} = this.state;
+
+		const LayoutProviderTag = LayoutProvider;
 
 		return (
 			<div class={'ddm-form-builder'}>
-				<LayoutProvider {...layoutProviderProps}>
-					<RuleBuilder
-						dataProviderInstanceParameterSettingsURL={this.props.dataProviderInstanceParameterSettingsURL}
-						dataProviderInstancesURL={this.props.dataProviderInstancesURL}
-						fieldTypes={fieldTypes}
-						functionsMetadata={this.props.functionsMetadata}
-						functionsURL={this.props.functionsURL}
-						pages={context.pages}
-						rolesURL={this.props.rolesURL}
-						rules={this.props.rules}
-						spritemap={spritemap}
-						visible={this.isShowRuleBuilder()}
-					/>
-
-					{!this.isShowRuleBuilder() && (
-						<FormBuilder
-							fieldSetDefinitionURL={fieldSetDefinitionURL}
-							fieldSets={fieldSets}
+				<LayoutProviderTag {...storeProps}>
+					{this.isFormBuilderView() && (
+						<RuleBuilder
+							dataProviderInstanceParameterSettingsURL={
+								dataProviderInstanceParameterSettingsURL
+							}
+							dataProviderInstancesURL={dataProviderInstancesURL}
 							fieldTypes={fieldTypes}
+							functionsMetadata={functionsMetadata}
+							functionsURL={functionsURL}
 							groupId={groupId}
-							namespace={this.props.namespace}
-							ref="builder"
-							rules={this.props.rules}
+							portletNamespace={namespace}
+							ref="ruleBuilder"
+							rolesURL={rolesURL}
+							rules={rules}
 							spritemap={spritemap}
-							view={view}
-							visible={!this.isShowRuleBuilder()}
+							visible={this.isShowRuleBuilder()}
 						/>
 					)}
-				</LayoutProvider>
+
+					<ComposedFormBuilder
+						fieldSets={fieldSets}
+						fieldTypes={fieldTypes}
+						groupId={groupId}
+						portletNamespace={namespace}
+						ref="formBuilder"
+						rules={rules}
+						spritemap={spritemap}
+						view={view}
+						visible={
+							!this.isShowRuleBuilder() && !this.isShowReport()
+						}
+					/>
+
+					<Sidebar
+						defaultLanguageId={defaultLanguageId}
+						editingLanguageId={editingLanguageId}
+						fieldSetDefinitionURL={fieldSetDefinitionURL}
+						fieldSets={fieldSets}
+						fieldTypes={fieldTypes}
+						portletNamespace={namespace}
+						ref="sidebar"
+						spritemap={spritemap}
+						visible={
+							!this.isShowRuleBuilder() && !this.isShowReport()
+						}
+					/>
+				</LayoutProviderTag>
 
 				<div class="container-fluid-1280">
-					{this.isFormBuilderView() && (
-						<div class="button-holder ddm-form-builder-buttons">
-							<PublishButton
-								namespace={namespace}
-								published={published}
-								spritemap={spritemap}
-								submitForm={this.submitForm}
-								url={Liferay.DDM.FormSettings.publishFormInstanceURL}
-							/>
-							<button class="btn ddm-button btn-default" data-onclick="_handleSaveButtonClicked" ref="saveButton">
-								{saveButtonLabel}
-							</button>
-							<PreviewButton
-								namespace={namespace}
-								resolvePreviewURL={this._resolvePreviewURL}
-								spritemap={spritemap}
-							/>
-						</div>
-					)}
-
 					{!this.isFormBuilderView() && (
 						<div class="button-holder ddm-form-builder-buttons">
 							<button
-								class="btn btn-primary ddm-button btn-default"
+								class="btn btn-primary ddm-button"
 								data-onclick="_handleSaveButtonClicked"
 								ref="saveFieldSetButton"
 							>
 								{saveButtonLabel}
 							</button>
 							<a
-								class="btn btn-cancel btn-default btn-link"
+								class="btn btn-cancel btn-link"
 								data-onclick="_handleCancelButtonClicked"
 								href={redirectURL}
 								ref="cancelFieldSetButton"
@@ -547,39 +500,47 @@ class Form extends Component {
 					)}
 
 					<ClayModal
-						body={Liferay.Language.get('any-unsaved-changes-will-be-lost-are-you-sure-you-want-to-leave')}
-						footerButtons={
-							[
-								{
-									'alignment': 'right',
-									'label': Liferay.Language.get('leave'),
-									'style': 'secondary',
-									'type': 'close'
-								},
-								{
-									'alignment': 'right',
-									'label': Liferay.Language.get('stay'),
-									'style': 'primary',
-									'type': 'button'
-								}
-							]
-						}
+						body={Liferay.Language.get(
+							'any-unsaved-changes-will-be-lost-are-you-sure-you-want-to-leave'
+						)}
+						footerButtons={[
+							{
+								alignment: 'right',
+								label: Liferay.Language.get('leave'),
+								style: 'secondary',
+								type: 'close',
+							},
+							{
+								alignment: 'right',
+								label: Liferay.Language.get('stay'),
+								style: 'primary',
+								type: 'button',
+							},
+						]}
 						ref={'discardChangesModal'}
 						size={'sm'}
 						spritemap={spritemap}
 						title={Liferay.Language.get('leave-form')}
 					/>
+					{published && (
+						<ShareFormModal
+							autocompleteUserURL={autocompleteUserURL}
+							localizedName={localizedName}
+							portletNamespace={namespace}
+							shareFormInstanceURL={shareFormInstanceURL}
+							spritemap={spritemap}
+							url={this._createFormURL()}
+						/>
+					)}
 				</div>
-				{published && (
-					<ShareFormPopover
-						alignElement={document.querySelector('.share-form-icon')}
-						spritemap={spritemap}
-						url={this._createFormURL()}
-						visible={false}
-					/>
-				)}
 			</div>
 		);
+	}
+
+	showAddButton() {
+		const addButton = document.querySelector('#addFieldButton');
+
+		addButton.classList.remove('hide');
 	}
 
 	submitForm() {
@@ -590,48 +551,51 @@ class Form extends Component {
 		submitForm(document.querySelector(`#${namespace}editForm`));
 	}
 
-	syncRuleBuilderVisible(ruleBuilderVisible) {
-		const {published, saved} = this.props;
-		const formBasicInfo = document.querySelector('.ddm-form-basic-info');
-		const formBuilderButtons = document.querySelector('.ddm-form-builder-buttons');
-		const publishIcon = document.querySelector('.publish-icon');
-		const shareURLButton = document.querySelector('.lfr-ddm-share-url-button');
-		const translationManager = document.querySelector('.ddm-translation-manager');
+	syncActiveNavItem(activeNavItem) {
+		switch (activeNavItem) {
+			case NAV_ITEMS.FORM:
+				this._toggleRulesBuilder(false);
+				this._toggleReport(false);
+				this._toggleFormBuilder(true);
+				break;
 
-		if (ruleBuilderVisible) {
-			formBasicInfo.classList.add('hide');
-			formBuilderButtons.classList.add('hide');
-			shareURLButton.classList.add('hide');
+			case NAV_ITEMS.RULES:
+				this._toggleFormBuilder(false);
+				this._toggleReport(false);
+				this._toggleRulesBuilder(true);
+				break;
 
-			if (publishIcon) {
-				publishIcon.classList.add('hide');
-			}
+			case NAV_ITEMS.REPORT:
+				this._toggleFormBuilder(false);
+				this._toggleRulesBuilder(false);
+				this._toggleReport(true);
+				break;
 
-			if (translationManager) {
-				translationManager.classList.add('hide');
-			}
-		}
-		else {
-			formBasicInfo.classList.remove('hide');
-			formBuilderButtons.classList.remove('hide');
-
-			if (publishIcon) {
-				publishIcon.classList.remove('hide');
-			}
-
-			if (translationManager) {
-				translationManager.classList.remove('hide');
-			}
-
-			if (saved || published) {
-				shareURLButton.classList.remove('hide');
-			}
+			default:
+				break;
 		}
 	}
 
-	willReceiveProps({published = {}}) {
-		if (published.newVal != null) {
-			this._updateShareFormIcon(published.newVal);
+	unpublish(event) {
+		this.props.published = false;
+
+		return this._savePublished(event, false);
+	}
+
+	_activeNavItemValueFn() {
+		const {context} = this.props;
+
+		return context.activeNavItem || NAV_ITEMS.FORM;
+	}
+
+	_handleAddFieldButtonClicked() {
+		if (this.isShowRuleBuilder()) {
+			this.refs.ruleBuilder.showRuleCreation();
+
+			this.hideAddButton();
+		}
+		else {
+			this.openSidebar();
 		}
 	}
 
@@ -650,38 +614,60 @@ class Form extends Component {
 			promise = Promise.resolve(CKEDITOR.instances[editorName]);
 		}
 		else {
-			promise = new Promise(
-				resolve => {
-					Liferay.on(
-						'editorAPIReady',
-						event => {
-							if (event.editorName === editorName) {
-								event.editor.create();
+			promise = new Promise((resolve) => {
+				Liferay.on('editorAPIReady', (event) => {
+					if (event.editorName === editorName) {
+						event.editor.create();
 
-								resolve(CKEDITOR.instances[editorName]);
-							}
-						}
-					);
-				}
-			);
+						resolve(CKEDITOR.instances[editorName]);
+					}
+				});
+			});
 		}
 
 		return promise;
 	}
 
-	_createFormURL() {
-		let formURL;
+	_createFormBuilder() {
+		const composeList = [
+			withActionableFields,
+			withClickableFields,
+			withMoveableFields,
+			withMultiplePages,
+			withResizeableColumns,
+		];
 
+		if (this.isFormBuilderView()) {
+			composeList.push(withEditablePageHeader);
+		}
+
+		return compose(...composeList)(FormBuilderBase);
+	}
+
+	_createFormURL() {
 		const settingsDDMForm = Liferay.component('settingsDDMForm');
 
-		if (settingsDDMForm && settingsDDMForm.getField('requireAuthentication').getValue()) {
-			formURL = Liferay.DDM.FormSettings.restrictedFormURL;
-		}
-		else {
-			formURL = Liferay.DDM.FormSettings.sharedFormURL;
+		let requireAuthentication = false;
+
+		if (settingsDDMForm && settingsDDMForm.reactComponentRef.current) {
+			const settingsPageVisitor = new PagesVisitor(
+				settingsDDMForm.reactComponentRef.current.get('pages')
+			);
+
+			settingsPageVisitor.mapFields((field) => {
+				if (field.fieldName === 'requireAuthentication') {
+					requireAuthentication = field.value;
+				}
+			});
 		}
 
-		return formURL + this._getFormInstanceId();
+		const formURL = new FormURL(
+			this._getFormInstanceId(),
+			this.props.published,
+			requireAuthentication
+		);
+
+		return formURL.create();
 	}
 
 	_getFormInstanceId() {
@@ -700,21 +686,6 @@ class Form extends Component {
 		}
 		else {
 			promise = Liferay.componentReady('settingsDDMForm');
-		}
-
-		return promise;
-	}
-
-	_getTranslationManager() {
-		let promise;
-
-		const translationManager = Liferay.component('translationManager');
-
-		if (translationManager) {
-			promise = Promise.resolve(translationManager);
-		}
-		else {
-			promise = Liferay.componentReady('translationManager');
 		}
 
 		return promise;
@@ -759,16 +730,16 @@ class Form extends Component {
 		const navItemIndex = Number(navItem.dataset.navItemIndex);
 		const navLink = navItem.querySelector('.nav-link');
 
-		this.setState(
-			{
-				ruleBuilderVisible: navItemIndex === 1
-			}
-		);
-
-		document.querySelector('.forms-management-bar li > a.active').classList.remove('active');
+		document
+			.querySelector('.forms-navigation-bar li > .active')
+			.classList.remove('active');
 		navLink.classList.add('active');
 
-		this.syncRuleBuilderVisible(this.state.ruleBuilderVisible);
+		this.setState({
+			activeNavItem: navItemIndex,
+		});
+
+		this.syncActiveNavItem(this.state.activeNavItem);
 	}
 
 	_handleNameEditorCopyAndPaste(event) {
@@ -780,37 +751,65 @@ class Form extends Component {
 	}
 
 	_handlePaginationModeChanded({newVal}) {
-		this.setState(
-			{
-				paginationMode: newVal
-			}
-		);
+		this.setState({
+			paginationMode: newVal,
+		});
 	}
 
-	_handleRuleSaved() {
+	_handlePreviewButtonClicked() {
+		return this._resolvePreviewURL()
+			.then((previewURL) => {
+				window.open(previewURL, '_blank');
+
+				return previewURL;
+			})
+			.catch(() => {
+				Notifications.showError(
+					Liferay.Language.get('your-request-failed-to-complete')
+				);
+			});
+	}
+
+	_handlePublishButtonClicked(event) {
+		const {published} = this.props;
+		let promise;
+
+		if (published) {
+			promise = this.unpublish(event);
+		}
+		else {
+			promise = this.publish(event);
+		}
+
+		return promise;
+	}
+
+	_handleRulesModified() {
 		this._autoSave.save(true);
+
+		this.showAddButton();
 	}
 
 	_handleSaveButtonClicked(event) {
 		event.preventDefault();
 
-		this.setState(
-			{
-				saveButtonLabel: Liferay.Language.get('saving')
-			}
-		);
+		this.setState({
+			saveButtonLabel: Liferay.Language.get('saving'),
+		});
 
 		this.submitForm();
 	}
 
-	_openSidebar() {
-		const {builder} = this.refs;
+	_pageHasFields(pages, pageIndex) {
+		const visitor = new PagesVisitor([pages[pageIndex]]);
 
-		if (builder) {
-			const {sidebar} = builder.refs;
+		let hasFields = false;
 
-			sidebar.open();
-		}
+		visitor.mapFields(() => {
+			hasFields = true;
+		});
+
+		return hasFields;
 	}
 
 	_pagesValueFn() {
@@ -826,11 +825,9 @@ class Form extends Component {
 	}
 
 	_resolvePreviewURL() {
-		return this._autoSave.save(true).then(
-			() => {
-				return `${this._createFormURL()}/preview`;
-			}
-		);
+		return this._autoSave.save(true).then(() => {
+			return `${this._createFormURL()}/preview`;
+		});
 	}
 
 	_saveButtonLabelValueFn() {
@@ -843,26 +840,43 @@ class Form extends Component {
 		return label;
 	}
 
+	_savePublished(event) {
+		const {namespace} = this.props;
+		const url = Liferay.DDM.FormSettings.publishFormInstanceURL;
+
+		event.preventDefault();
+
+		const form = document.querySelector(`#${namespace}editForm`);
+
+		if (form) {
+			form.setAttribute('action', url);
+		}
+
+		return Promise.resolve(this.submitForm());
+	}
+
 	_setContext(context) {
 		let {successPageSettings} = context;
+		const {defaultLanguageId} = this.props;
 		const {successPage} = context;
 
-		if (!successPageSettings) {
+		if (!successPageSettings && this.isFormBuilderView()) {
 			successPageSettings = successPage;
+			successPageSettings.enabled = true;
 		}
 
-		if (core.isString(successPageSettings.title)) {
+		if (successPageSettings && core.isString(successPageSettings.title)) {
 			successPageSettings.title = {};
-			successPageSettings.title[themeDisplay.getLanguageId()] = '';
+			successPageSettings.title[defaultLanguageId] = '';
 		}
 
-		if (core.isString(successPageSettings.body)) {
+		if (successPageSettings && core.isString(successPageSettings.body)) {
 			successPageSettings.body = {};
-			successPageSettings.body[themeDisplay.getLanguageId()] = '';
+			successPageSettings.body[defaultLanguageId] = '';
 		}
 
 		const emptyLocalizableValue = {
-			[themeDisplay.getLanguageId()]: ''
+			[themeDisplay.getLanguageId()]: '',
 		};
 
 		if (!context.pages.length) {
@@ -878,53 +892,66 @@ class Form extends Component {
 								columns: [
 									{
 										fields: [],
-										size: 12
-									}
-								]
-							}
+										size: 12,
+									},
+								],
+							},
 						],
-						title: ''
-					}
+						title: '',
+					},
 				],
 				paginationMode: 'wizard',
-				successPageSettings
+				successPageSettings,
 			};
 		}
 
 		return {
 			...context,
-			pages: context.pages.map(
-				page => {
-					let {description, localizedDescription, localizedTitle, title} = page;
+			pages: context.pages.map((page) => {
+				let {
+					description,
+					localizedDescription,
+					localizedTitle,
+					title,
+				} = page;
 
-					if (!core.isString(description)) {
-						description = description[themeDisplay.getLanguageId()];
-						localizedDescription = {
-							[themeDisplay.getLanguageId()]: description
-						};
-					}
-
-					if (!core.isString(title)) {
-						title = title[themeDisplay.getLanguageId()];
-						localizedTitle = {
-							[themeDisplay.getLanguageId()]: title
-						};
-					}
-
-					return {
-						...page,
-						description,
-						localizedDescription,
-						localizedTitle,
-						title
+				if (!core.isString(description)) {
+					description = description[themeDisplay.getLanguageId()];
+					localizedDescription = {
+						[themeDisplay.getLanguageId()]: description,
 					};
 				}
-			)
+
+				if (!core.isString(title)) {
+					title = title[themeDisplay.getLanguageId()];
+					localizedTitle = {
+						[themeDisplay.getLanguageId()]: title,
+					};
+				}
+
+				return {
+					...page,
+					description,
+					localizedDescription,
+					localizedTitle,
+					title,
+				};
+			}),
 		};
 	}
 
+	_setSearchParamsWithoutPageReload(name, value) {
+		const url = new URL(location.toString());
+
+		url.searchParams.set(name, value);
+
+		window.history.replaceState({path: url.toString()}, '', url.toString());
+	}
+
 	_showPublishedAlert(publishURL) {
-		const message = Liferay.Language.get('the-form-was-published-successfully-access-it-with-this-url-x');
+		const message = Liferay.Language.get(
+			'the-form-was-published-successfully-access-it-with-this-url-x'
+		);
 
 		Notifications.showAlert(
 			message.replace(
@@ -935,10 +962,119 @@ class Form extends Component {
 	}
 
 	_showUnpublishedAlert() {
-		Notifications.showAlert(Liferay.Language.get('the-form-was-unpublished-successfully'));
+		Notifications.showAlert(
+			Liferay.Language.get('the-form-was-unpublished-successfully')
+		);
 	}
 
-	_updateAutoSaveMessage({savedAsDraft, modifiedDate}) {
+	_toggleFormBuilder(show) {
+		const {namespace} = this.props;
+
+		const managementToolbar = document.querySelector(
+			`#${namespace}managementToolbar`
+		);
+		const formBasicInfo = document.querySelector('.ddm-form-basic-info');
+		const formBuilderButtons = document.querySelectorAll(
+			'.toolbar-group-field .nav-item .lfr-ddm-button'
+		);
+		const publishIcon = document.querySelector('.publish-icon');
+		const translationManager = document.querySelector(
+			'.ddm-translation-manager'
+		);
+
+		if (show) {
+			this._setSearchParamsWithoutPageReload(
+				`${namespace}activeNavItem`,
+				NAV_ITEMS.FORM
+			);
+
+			managementToolbar.classList.remove('hide');
+			formBasicInfo.classList.remove('hide');
+
+			formBuilderButtons.forEach((formBuilderButton) => {
+				formBuilderButton.classList.remove('hide');
+			});
+
+			if (publishIcon) {
+				publishIcon.classList.remove('hide');
+			}
+
+			if (translationManager) {
+				translationManager.classList.remove('hide');
+			}
+
+			this.showAddButton();
+		}
+		else {
+			managementToolbar.classList.add('hide');
+			formBasicInfo.classList.add('hide');
+
+			formBuilderButtons.forEach((formBuilderButton) => {
+				formBuilderButton.classList.add('hide');
+			});
+
+			if (publishIcon) {
+				publishIcon.classList.add('hide');
+			}
+
+			if (translationManager) {
+				translationManager.classList.add('hide');
+			}
+
+			this.hideAddButton();
+		}
+	}
+
+	_toggleReport(show) {
+		const formReport = document.querySelector('.ddm-form-report');
+
+		if (!formReport) {
+			return;
+		}
+
+		if (show) {
+			const {namespace} = this.props;
+
+			this._setSearchParamsWithoutPageReload(
+				`${namespace}activeNavItem`,
+				NAV_ITEMS.REPORT
+			);
+
+			formReport.classList.remove('hide');
+		}
+		else {
+			formReport.classList.add('hide');
+		}
+	}
+
+	_toggleRulesBuilder(show) {
+		const {namespace} = this.props;
+
+		const managementToolbar = document.querySelector(
+			`#${namespace}managementToolbar`
+		);
+
+		if (show) {
+			this._setSearchParamsWithoutPageReload(
+				`${namespace}activeNavItem`,
+				NAV_ITEMS.RULES
+			);
+
+			managementToolbar.classList.remove('hide');
+		}
+		else {
+			managementToolbar.classList.add('hide');
+		}
+
+		if (this.refs.ruleBuilder.isViewMode()) {
+			this.showAddButton();
+		}
+		else {
+			this.hideAddButton();
+		}
+	}
+
+	_updateAutoSaveMessage({modifiedDate, savedAsDraft}) {
 		const {namespace} = this.props;
 
 		let message = '';
@@ -950,30 +1086,297 @@ class Form extends Component {
 			message = Liferay.Language.get('saved-x');
 		}
 
-		const autoSaveMessageNode = document.querySelector(`#${namespace}autosaveMessage`);
-
-		autoSaveMessageNode.innerHTML = sub(
-			message,
-			[
-				modifiedDate
-			]
+		const autoSaveMessageNode = document.querySelector(
+			`#${namespace}autosaveMessage`
 		);
-	}
 
-	_updateShareFormIcon(published) {
-		const {saved} = this.props;
-		const shareFormIcon = document.querySelector('.share-form-icon');
-
-		if (saved && published) {
-			shareFormIcon.classList.remove('ddm-btn-disabled');
-			shareFormIcon.setAttribute('title', Liferay.Language.get('copy-url'));
-		}
-		else {
-			shareFormIcon.classList.add('ddm-btn-disabled');
-			shareFormIcon.setAttribute('title', Liferay.Language.get('publish-the-form-to-get-its-shareable-link'));
-		}
+		autoSaveMessageNode.innerHTML = sub(message, [modifiedDate]);
 	}
 }
+
+Form.PROPS = {
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	autocompleteUserURL: Config.string(),
+
+	/**
+	 * The context for rendering a layout that represents a form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	context: Config.shapeOf({
+		pages: Config.arrayOf(Config.object()),
+		paginationMode: Config.string(),
+		rules: Config.array(),
+		successPageSettings: Config.object(),
+	})
+		.required()
+		.setter('_setContext'),
+
+	/**
+	 * The rules of a form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	dataProviderInstanceParameterSettingsURL: Config.string().required(),
+
+	/**
+	 * The rules of a form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	dataProviderInstancesURL: Config.string().required(),
+
+	/**
+	 * The default language id of the form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	defaultLanguageId: Config.string().value(
+		themeDisplay.getDefaultLanguageId()
+	),
+
+	/**
+	 * The default language id of the form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	editingLanguageId: Config.string().value(
+		themeDisplay.getDefaultLanguageId()
+	),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {?string}
+	 */
+
+	fieldSetDefinitionURL: Config.string(),
+
+	/**
+	 * @default []
+	 * @instance
+	 * @memberof Form
+	 * @type {?(array|undefined)}
+	 */
+
+	fieldSets: Config.array().value([]),
+
+	/**
+	 * @default []
+	 * @instance
+	 * @memberof Form
+	 * @type {?(array|undefined)}
+	 */
+
+	fieldTypes: Config.array().value([]),
+
+	/**
+	 * A map with all translated values available as the form description.
+	 * @default 0
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	formInstanceId: Config.number().value(0),
+
+	/**
+	 * A map with all translated values available as the form name.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	functionsMetadata: Config.object().value({}),
+
+	/**
+	 * A map with all translated values available as the form name.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	functionsURL: Config.string(),
+
+	/**
+	 * A map with all translated values available as the form description.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	localizedDescription: Config.object().value({}),
+
+	/**
+	 * The context for rendering a layout that represents a form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	localizedName: Config.object().value({}),
+
+	/**
+	 * The namespace of the portlet.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	namespace: Config.string().required(),
+
+	/**
+	 * Whether the form is published or not
+	 * @default false
+	 * @instance
+	 * @memberof Form
+	 * @type {!boolean}
+	 */
+
+	published: Config.bool().value(false),
+
+	/**
+	 * The url to be redirected when canceling the Element Set edition.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	redirectURL: Config.string(),
+
+	/**
+	 * The rules of a form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	rolesURL: Config.string(),
+
+	/**
+	 * The rules of a form.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	rules: Config.array().value([]),
+
+	/**
+	 * The path to the SVG spritemap file containing the icons.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!boolean}
+	 */
+
+	saved: Config.bool(),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	shareFormInstanceURL: Config.string(),
+
+	/**
+	 * Whether to show an alert telling the user about the result of the
+	 * "Publish" operation.
+	 * @default false
+	 * @instance
+	 * @memberof Form
+	 * @type {!boolean}
+	 */
+
+	showPublishAlert: Config.bool().value(false),
+
+	/**
+	 * The path to the SVG spritemap file containing the icons.
+	 * @default undefined
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	spritemap: Config.string().required(),
+
+	view: Config.string(),
+};
+
+Form.STATE = {
+
+	/**
+	 * Current active tab index.
+	 * @default _activeNavItemValueFn
+	 * @instance
+	 * @memberof Form
+	 * @type {!number}
+	 */
+
+	activeNavItem: Config.number().valueFn('_activeNavItemValueFn'),
+
+	/**
+	 * Internal mirror of the pages state
+	 * @default _pagesValueFn
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	pages: Config.arrayOf(pageStructure).valueFn('_pagesValueFn'),
+
+	/**
+	 * @default _paginationModeValueFn
+	 * @instance
+	 * @memberof Form
+	 * @type {!array}
+	 */
+
+	paginationMode: Config.string().valueFn('_paginationModeValueFn'),
+
+	/**
+	 * The label of the save button
+	 * @default 'save-form'
+	 * @instance
+	 * @memberof Form
+	 * @type {!string}
+	 */
+
+	saveButtonLabel: Config.string().valueFn('_saveButtonLabelValueFn'),
+};
 
 export default Form;
 export {Form};

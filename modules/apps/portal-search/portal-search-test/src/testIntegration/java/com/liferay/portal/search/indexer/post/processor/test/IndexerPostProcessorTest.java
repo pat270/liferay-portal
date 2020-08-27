@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.SearchContextTestUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.test.util.DocumentsAssert;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -112,11 +113,14 @@ public class IndexerPostProcessorTest {
 			Arrays.asList(StringPool.BLANK, _TEST_VALUE, StringPool.BLANK));
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected static IndexerPostProcessor createIndexerPostProcessor() {
 		return new BaseIndexerPostProcessor() {
 
 			@Override
-			public void postProcessDocument(Document document, Object obj)
+			public void postProcessDocument(Document document, Object object)
 				throws Exception {
 
 				document.addText(_TEST_FIELD, _TEST_VALUE);

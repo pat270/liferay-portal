@@ -28,7 +28,7 @@ if (Validator.isNull(displayStyle)) {
 
 // Left list
 
-List leftList = new ArrayList();
+List<KeyValuePair> leftList = new ArrayList<>();
 
 for (int i = 0; i < types.length; i++) {
 	SocialBookmark socialBookmark = SocialBookmarksRegistryUtil.getSocialBookmark(types[i]);
@@ -40,7 +40,7 @@ for (int i = 0; i < types.length; i++) {
 
 // Right list
 
-List rightList = new ArrayList();
+List<KeyValuePair> rightList = new ArrayList<>();
 
 Set<String> typesSet = new HashSet<>(Arrays.asList(types));
 
@@ -55,7 +55,7 @@ for (String curType : SocialBookmarksRegistryUtil.getSocialBookmarksTypes()) {
 rightList = ListUtil.sort(rightList, new KeyValuePairComparator(false, true));
 %>
 
-<aui:input name="preferences--socialBookmarksTypes--" type="hidden" value="<%= String.join(StringPool.COMMA, types) %>" />
+<aui:input name="preferences--socialBookmarksTypes--" type="hidden" value="<%= StringUtil.merge(types) %>" />
 
 <liferay-ui:input-move-boxes
 	leftBoxName="currentTypes"
@@ -67,9 +67,9 @@ rightList = ListUtil.sort(rightList, new KeyValuePairComparator(false, true));
 	rightTitle="available"
 />
 
-<h5>
+<label class="control-label" for="<portlet:namespace />typesOptions">
 	<liferay-ui:message key="display-style" />
-</h5>
+</label>
 
 <div class="form-group" id="<portlet:namespace />typesOptions">
 
@@ -86,24 +86,22 @@ rightList = ListUtil.sort(rightList, new KeyValuePairComparator(false, true));
 </div>
 
 <script>
-	(function() {
+	(function () {
 		var Util = Liferay.Util;
 
-		var socialBookmarksTypes = document.getElementById('<portlet:namespace />socialBookmarksTypes');
-		var currentTypes = document.getElementById('<portlet:namespace />currentTypes');
-
-		Liferay.after(
-			'inputmoveboxes:moveItem',
-			function(event) {
-				socialBookmarksTypes.value = Util.listSelect(currentTypes);
-			}
+		var socialBookmarksTypes = document.getElementById(
+			'<portlet:namespace />socialBookmarksTypes'
+		);
+		var currentTypes = document.getElementById(
+			'<portlet:namespace />currentTypes'
 		);
 
-		Liferay.after(
-			'inputmoveboxes:orderItem',
-			function(event) {
-				socialBookmarksTypes.value = Util.listSelect(currentTypes);
-			}
-		);
+		Liferay.after('inputmoveboxes:moveItem', function (event) {
+			socialBookmarksTypes.value = Util.listSelect(currentTypes);
+		});
+
+		Liferay.after('inputmoveboxes:orderItem', function (event) {
+			socialBookmarksTypes.value = Util.listSelect(currentTypes);
+		});
 	})();
 </script>

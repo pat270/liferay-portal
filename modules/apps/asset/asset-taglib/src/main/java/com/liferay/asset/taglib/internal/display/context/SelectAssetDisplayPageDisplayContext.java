@@ -18,7 +18,7 @@ import com.liferay.asset.display.page.constants.AssetDisplayPageConstants;
 import com.liferay.asset.display.page.item.selector.criterion.AssetDisplayPageSelectorCriterion;
 import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryLocalServiceUtil;
-import com.liferay.asset.display.page.util.AssetDisplayPageHelper;
+import com.liferay.asset.display.page.util.AssetDisplayPageUtil;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
@@ -43,10 +43,10 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -75,6 +75,7 @@ public class SelectAssetDisplayPageDisplayContext {
 
 		_httpServletRequest = httpServletRequest;
 		_liferayPortletRequest = liferayPortletRequest;
+
 		_liferayPortletResponse = liferayPortletResponse;
 
 		_classNameId = GetterUtil.getLong(
@@ -162,7 +163,10 @@ public class SelectAssetDisplayPageDisplayContext {
 			return _displayPageType;
 		}
 
-		if (_classPK == 0) {
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_getDefaultLayoutPageTemplateEntry();
+
+		if ((_classPK == 0) && (layoutPageTemplateEntry != null)) {
 			_displayPageType = AssetDisplayPageConstants.TYPE_DEFAULT;
 
 			return _displayPageType;
@@ -172,7 +176,12 @@ public class SelectAssetDisplayPageDisplayContext {
 			_getAssetDisplayPageEntry();
 
 		if (assetDisplayPageEntry == null) {
-			_displayPageType = AssetDisplayPageConstants.TYPE_NONE;
+			if (Validator.isNull(getLayoutUuid())) {
+				_displayPageType = AssetDisplayPageConstants.TYPE_DEFAULT;
+			}
+			else {
+				_displayPageType = AssetDisplayPageConstants.TYPE_SPECIFIC;
+			}
 		}
 		else {
 			_displayPageType = assetDisplayPageEntry.getType();
@@ -182,13 +191,11 @@ public class SelectAssetDisplayPageDisplayContext {
 	}
 
 	public String getDefaultAssetDisplayPageName() {
-		LayoutPageTemplateEntry defaultAssetDisplayPage =
-			LayoutPageTemplateEntryServiceUtil.
-				fetchDefaultLayoutPageTemplateEntry(
-					_groupId, _classNameId, _classTypeId);
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_getDefaultLayoutPageTemplateEntry();
 
-		if (defaultAssetDisplayPage != null) {
-			return defaultAssetDisplayPage.getName();
+		if (layoutPageTemplateEntry != null) {
+			return layoutPageTemplateEntry.getName();
 		}
 
 		return null;
@@ -254,23 +261,22 @@ public class SelectAssetDisplayPageDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		AssetRendererFactory assetRendererFactory =
+		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.
 				getAssetRendererFactoryByClassNameId(_classNameId);
 
 		try {
-			AssetRenderer assetRenderer = assetRendererFactory.getAssetRenderer(
-				_classPK);
+			AssetRenderer<?> assetRenderer =
+				assetRendererFactory.getAssetRenderer(_classPK);
 
 			String viewInContextURL = assetRenderer.getURLViewInContext(
 				_liferayPortletRequest, _liferayPortletResponse,
 				themeDisplay.getURLCurrent());
 
 			return HttpUtil.addParameter(
-				viewInContextURL, "p_p_state",
-				LiferayWindowState.POP_UP.toString());
+				viewInContextURL, "p_l_mode", Constants.PREVIEW);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -310,7 +316,7 @@ public class SelectAssetDisplayPageDisplayContext {
 				InfoDisplayContributorTrackerUtil.
 					getInfoDisplayContributorTracker();
 
-			InfoDisplayContributor infoDisplayContributor =
+			InfoDisplayContributor<?> infoDisplayContributor =
 				infoDisplayContributorTracker.getInfoDisplayContributor(
 					PortalUtil.getClassName(_classNameId));
 
@@ -318,14 +324,14 @@ public class SelectAssetDisplayPageDisplayContext {
 				return false;
 			}
 
-			InfoDisplayObjectProvider infoDisplayObjectProvider =
+			InfoDisplayObjectProvider<?> infoDisplayObjectProvider =
 				infoDisplayContributor.getInfoDisplayObjectProvider(_classPK);
 
 			if (infoDisplayObjectProvider == null) {
 				return false;
 			}
 
-			if (!AssetDisplayPageHelper.hasAssetDisplayPage(
+			if (!AssetDisplayPageUtil.hasAssetDisplayPage(
 					themeDisplay.getScopeGroupId(),
 					infoDisplayObjectProvider.getClassNameId(),
 					infoDisplayObjectProvider.getClassPK(),
@@ -334,7 +340,7 @@ public class SelectAssetDisplayPageDisplayContext {
 				return false;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return true;
@@ -388,6 +394,19 @@ public class SelectAssetDisplayPageDisplayContext {
 		return layoutPageTemplateEntry.getName();
 	}
 
+	private LayoutPageTemplateEntry _getDefaultLayoutPageTemplateEntry() {
+		if (_defaultLayoutPageTemplateEntry != null) {
+			return _defaultLayoutPageTemplateEntry;
+		}
+
+		_defaultLayoutPageTemplateEntry =
+			LayoutPageTemplateEntryServiceUtil.
+				fetchDefaultLayoutPageTemplateEntry(
+					_groupId, _classNameId, _classTypeId);
+
+		return _defaultLayoutPageTemplateEntry;
+	}
+
 	private String _getLayoutBreadcrumb(Layout layout) throws Exception {
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)_httpServletRequest.getAttribute(
@@ -397,7 +416,7 @@ public class SelectAssetDisplayPageDisplayContext {
 
 		List<Layout> ancestors = layout.getAncestors();
 
-		StringBundler sb = new StringBundler(4 * ancestors.size() + 5);
+		StringBundler sb = new StringBundler((4 * ancestors.size()) + 5);
 
 		if (layout.isPrivateLayout()) {
 			sb.append(LanguageUtil.get(_httpServletRequest, "private-pages"));
@@ -429,6 +448,7 @@ public class SelectAssetDisplayPageDisplayContext {
 	private final Long _classNameId;
 	private Long _classPK;
 	private final Long _classTypeId;
+	private LayoutPageTemplateEntry _defaultLayoutPageTemplateEntry;
 	private Integer _displayPageType;
 	private final String _eventName;
 	private final long _groupId;

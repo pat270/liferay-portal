@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -41,7 +40,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see OAuth2AuthorizationPersistence
  * @generated
  */
-@ProviderType
 public class OAuth2AuthorizationUtil {
 
 	/*
@@ -142,7 +140,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns a range of all the o auth2 authorizations where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -160,7 +158,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns an ordered range of all the o auth2 authorizations where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -181,23 +179,23 @@ public class OAuth2AuthorizationUtil {
 	 * Returns an ordered range of all the o auth2 authorizations where userId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByUserId(
 		long userId, int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByUserId(
-			userId, start, end, orderByComparator, retrieveFromCache);
+			userId, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -314,7 +312,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns a range of all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param oAuth2ApplicationId the o auth2 application ID
@@ -333,7 +331,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns an ordered range of all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param oAuth2ApplicationId the o auth2 application ID
@@ -354,24 +352,23 @@ public class OAuth2AuthorizationUtil {
 	 * Returns an ordered range of all the o auth2 authorizations where oAuth2ApplicationId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param oAuth2ApplicationId the o auth2 application ID
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByOAuth2ApplicationId(
 		long oAuth2ApplicationId, int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByOAuth2ApplicationId(
-			oAuth2ApplicationId, start, end, orderByComparator,
-			retrieveFromCache);
+			oAuth2ApplicationId, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -479,44 +476,47 @@ public class OAuth2AuthorizationUtil {
 	}
 
 	/**
-	 * Returns all the o auth2 authorizations where accessTokenContentHash = &#63;.
+	 * Returns all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @return the matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByAccessTokenContentHash(
-		long accessTokenContentHash) {
+		long companyId, long accessTokenContentHash) {
 
 		return getPersistence().findByAccessTokenContentHash(
-			accessTokenContentHash);
+			companyId, accessTokenContentHash);
 	}
 
 	/**
-	 * Returns a range of all the o auth2 authorizations where accessTokenContentHash = &#63;.
+	 * Returns a range of all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @return the range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByAccessTokenContentHash(
-		long accessTokenContentHash, int start, int end) {
+		long companyId, long accessTokenContentHash, int start, int end) {
 
 		return getPersistence().findByAccessTokenContentHash(
-			accessTokenContentHash, start, end);
+			companyId, accessTokenContentHash, start, end);
 	}
 
 	/**
-	 * Returns an ordered range of all the o auth2 authorizations where accessTokenContentHash = &#63;.
+	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
@@ -524,107 +524,113 @@ public class OAuth2AuthorizationUtil {
 	 * @return the ordered range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByAccessTokenContentHash(
-		long accessTokenContentHash, int start, int end,
+		long companyId, long accessTokenContentHash, int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator) {
 
 		return getPersistence().findByAccessTokenContentHash(
-			accessTokenContentHash, start, end, orderByComparator);
+			companyId, accessTokenContentHash, start, end, orderByComparator);
 	}
 
 	/**
-	 * Returns an ordered range of all the o auth2 authorizations where accessTokenContentHash = &#63;.
+	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByAccessTokenContentHash(
-		long accessTokenContentHash, int start, int end,
+		long companyId, long accessTokenContentHash, int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByAccessTokenContentHash(
-			accessTokenContentHash, start, end, orderByComparator,
-			retrieveFromCache);
+			companyId, accessTokenContentHash, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
-	 * Returns the first o auth2 authorization in the ordered set where accessTokenContentHash = &#63;.
+	 * Returns the first o auth2 authorization in the ordered set where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching o auth2 authorization
 	 * @throws NoSuchOAuth2AuthorizationException if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization findByAccessTokenContentHash_First(
-			long accessTokenContentHash,
+			long companyId, long accessTokenContentHash,
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws com.liferay.oauth2.provider.exception.
 			NoSuchOAuth2AuthorizationException {
 
 		return getPersistence().findByAccessTokenContentHash_First(
-			accessTokenContentHash, orderByComparator);
+			companyId, accessTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the first o auth2 authorization in the ordered set where accessTokenContentHash = &#63;.
+	 * Returns the first o auth2 authorization in the ordered set where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching o auth2 authorization, or <code>null</code> if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization fetchByAccessTokenContentHash_First(
-		long accessTokenContentHash,
+		long companyId, long accessTokenContentHash,
 		OrderByComparator<OAuth2Authorization> orderByComparator) {
 
 		return getPersistence().fetchByAccessTokenContentHash_First(
-			accessTokenContentHash, orderByComparator);
+			companyId, accessTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the last o auth2 authorization in the ordered set where accessTokenContentHash = &#63;.
+	 * Returns the last o auth2 authorization in the ordered set where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching o auth2 authorization
 	 * @throws NoSuchOAuth2AuthorizationException if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization findByAccessTokenContentHash_Last(
-			long accessTokenContentHash,
+			long companyId, long accessTokenContentHash,
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws com.liferay.oauth2.provider.exception.
 			NoSuchOAuth2AuthorizationException {
 
 		return getPersistence().findByAccessTokenContentHash_Last(
-			accessTokenContentHash, orderByComparator);
+			companyId, accessTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the last o auth2 authorization in the ordered set where accessTokenContentHash = &#63;.
+	 * Returns the last o auth2 authorization in the ordered set where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching o auth2 authorization, or <code>null</code> if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization fetchByAccessTokenContentHash_Last(
-		long accessTokenContentHash,
+		long companyId, long accessTokenContentHash,
 		OrderByComparator<OAuth2Authorization> orderByComparator) {
 
 		return getPersistence().fetchByAccessTokenContentHash_Last(
-			accessTokenContentHash, orderByComparator);
+			companyId, accessTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the o auth2 authorizations before and after the current o auth2 authorization in the ordered set where accessTokenContentHash = &#63;.
+	 * Returns the o auth2 authorizations before and after the current o auth2 authorization in the ordered set where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
 	 * @param oAuth2AuthorizationId the primary key of the current o auth2 authorization
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next o auth2 authorization
@@ -632,78 +638,86 @@ public class OAuth2AuthorizationUtil {
 	 */
 	public static OAuth2Authorization[]
 			findByAccessTokenContentHash_PrevAndNext(
-				long oAuth2AuthorizationId, long accessTokenContentHash,
+				long oAuth2AuthorizationId, long companyId,
+				long accessTokenContentHash,
 				OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws com.liferay.oauth2.provider.exception.
 			NoSuchOAuth2AuthorizationException {
 
 		return getPersistence().findByAccessTokenContentHash_PrevAndNext(
-			oAuth2AuthorizationId, accessTokenContentHash, orderByComparator);
+			oAuth2AuthorizationId, companyId, accessTokenContentHash,
+			orderByComparator);
 	}
 
 	/**
-	 * Removes all the o auth2 authorizations where accessTokenContentHash = &#63; from the database.
+	 * Removes all the o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63; from the database.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 */
 	public static void removeByAccessTokenContentHash(
-		long accessTokenContentHash) {
+		long companyId, long accessTokenContentHash) {
 
-		getPersistence().removeByAccessTokenContentHash(accessTokenContentHash);
+		getPersistence().removeByAccessTokenContentHash(
+			companyId, accessTokenContentHash);
 	}
 
 	/**
-	 * Returns the number of o auth2 authorizations where accessTokenContentHash = &#63;.
+	 * Returns the number of o auth2 authorizations where companyId = &#63; and accessTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param accessTokenContentHash the access token content hash
 	 * @return the number of matching o auth2 authorizations
 	 */
 	public static int countByAccessTokenContentHash(
-		long accessTokenContentHash) {
+		long companyId, long accessTokenContentHash) {
 
 		return getPersistence().countByAccessTokenContentHash(
-			accessTokenContentHash);
+			companyId, accessTokenContentHash);
 	}
 
 	/**
-	 * Returns all the o auth2 authorizations where refreshTokenContentHash = &#63;.
+	 * Returns all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @return the matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByRefreshTokenContentHash(
-		long refreshTokenContentHash) {
+		long companyId, long refreshTokenContentHash) {
 
 		return getPersistence().findByRefreshTokenContentHash(
-			refreshTokenContentHash);
+			companyId, refreshTokenContentHash);
 	}
 
 	/**
-	 * Returns a range of all the o auth2 authorizations where refreshTokenContentHash = &#63;.
+	 * Returns a range of all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @return the range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByRefreshTokenContentHash(
-		long refreshTokenContentHash, int start, int end) {
+		long companyId, long refreshTokenContentHash, int start, int end) {
 
 		return getPersistence().findByRefreshTokenContentHash(
-			refreshTokenContentHash, start, end);
+			companyId, refreshTokenContentHash, start, end);
 	}
 
 	/**
-	 * Returns an ordered range of all the o auth2 authorizations where refreshTokenContentHash = &#63;.
+	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
@@ -711,107 +725,113 @@ public class OAuth2AuthorizationUtil {
 	 * @return the ordered range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByRefreshTokenContentHash(
-		long refreshTokenContentHash, int start, int end,
+		long companyId, long refreshTokenContentHash, int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator) {
 
 		return getPersistence().findByRefreshTokenContentHash(
-			refreshTokenContentHash, start, end, orderByComparator);
+			companyId, refreshTokenContentHash, start, end, orderByComparator);
 	}
 
 	/**
-	 * Returns an ordered range of all the o auth2 authorizations where refreshTokenContentHash = &#63;.
+	 * Returns an ordered range of all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findByRefreshTokenContentHash(
-		long refreshTokenContentHash, int start, int end,
+		long companyId, long refreshTokenContentHash, int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByRefreshTokenContentHash(
-			refreshTokenContentHash, start, end, orderByComparator,
-			retrieveFromCache);
+			companyId, refreshTokenContentHash, start, end, orderByComparator,
+			useFinderCache);
 	}
 
 	/**
-	 * Returns the first o auth2 authorization in the ordered set where refreshTokenContentHash = &#63;.
+	 * Returns the first o auth2 authorization in the ordered set where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching o auth2 authorization
 	 * @throws NoSuchOAuth2AuthorizationException if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization findByRefreshTokenContentHash_First(
-			long refreshTokenContentHash,
+			long companyId, long refreshTokenContentHash,
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws com.liferay.oauth2.provider.exception.
 			NoSuchOAuth2AuthorizationException {
 
 		return getPersistence().findByRefreshTokenContentHash_First(
-			refreshTokenContentHash, orderByComparator);
+			companyId, refreshTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the first o auth2 authorization in the ordered set where refreshTokenContentHash = &#63;.
+	 * Returns the first o auth2 authorization in the ordered set where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching o auth2 authorization, or <code>null</code> if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization fetchByRefreshTokenContentHash_First(
-		long refreshTokenContentHash,
+		long companyId, long refreshTokenContentHash,
 		OrderByComparator<OAuth2Authorization> orderByComparator) {
 
 		return getPersistence().fetchByRefreshTokenContentHash_First(
-			refreshTokenContentHash, orderByComparator);
+			companyId, refreshTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the last o auth2 authorization in the ordered set where refreshTokenContentHash = &#63;.
+	 * Returns the last o auth2 authorization in the ordered set where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching o auth2 authorization
 	 * @throws NoSuchOAuth2AuthorizationException if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization findByRefreshTokenContentHash_Last(
-			long refreshTokenContentHash,
+			long companyId, long refreshTokenContentHash,
 			OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws com.liferay.oauth2.provider.exception.
 			NoSuchOAuth2AuthorizationException {
 
 		return getPersistence().findByRefreshTokenContentHash_Last(
-			refreshTokenContentHash, orderByComparator);
+			companyId, refreshTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the last o auth2 authorization in the ordered set where refreshTokenContentHash = &#63;.
+	 * Returns the last o auth2 authorization in the ordered set where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching o auth2 authorization, or <code>null</code> if a matching o auth2 authorization could not be found
 	 */
 	public static OAuth2Authorization fetchByRefreshTokenContentHash_Last(
-		long refreshTokenContentHash,
+		long companyId, long refreshTokenContentHash,
 		OrderByComparator<OAuth2Authorization> orderByComparator) {
 
 		return getPersistence().fetchByRefreshTokenContentHash_Last(
-			refreshTokenContentHash, orderByComparator);
+			companyId, refreshTokenContentHash, orderByComparator);
 	}
 
 	/**
-	 * Returns the o auth2 authorizations before and after the current o auth2 authorization in the ordered set where refreshTokenContentHash = &#63;.
+	 * Returns the o auth2 authorizations before and after the current o auth2 authorization in the ordered set where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
 	 * @param oAuth2AuthorizationId the primary key of the current o auth2 authorization
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next o auth2 authorization
@@ -819,38 +839,42 @@ public class OAuth2AuthorizationUtil {
 	 */
 	public static OAuth2Authorization[]
 			findByRefreshTokenContentHash_PrevAndNext(
-				long oAuth2AuthorizationId, long refreshTokenContentHash,
+				long oAuth2AuthorizationId, long companyId,
+				long refreshTokenContentHash,
 				OrderByComparator<OAuth2Authorization> orderByComparator)
 		throws com.liferay.oauth2.provider.exception.
 			NoSuchOAuth2AuthorizationException {
 
 		return getPersistence().findByRefreshTokenContentHash_PrevAndNext(
-			oAuth2AuthorizationId, refreshTokenContentHash, orderByComparator);
+			oAuth2AuthorizationId, companyId, refreshTokenContentHash,
+			orderByComparator);
 	}
 
 	/**
-	 * Removes all the o auth2 authorizations where refreshTokenContentHash = &#63; from the database.
+	 * Removes all the o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63; from the database.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 */
 	public static void removeByRefreshTokenContentHash(
-		long refreshTokenContentHash) {
+		long companyId, long refreshTokenContentHash) {
 
 		getPersistence().removeByRefreshTokenContentHash(
-			refreshTokenContentHash);
+			companyId, refreshTokenContentHash);
 	}
 
 	/**
-	 * Returns the number of o auth2 authorizations where refreshTokenContentHash = &#63;.
+	 * Returns the number of o auth2 authorizations where companyId = &#63; and refreshTokenContentHash = &#63;.
 	 *
+	 * @param companyId the company ID
 	 * @param refreshTokenContentHash the refresh token content hash
 	 * @return the number of matching o auth2 authorizations
 	 */
 	public static int countByRefreshTokenContentHash(
-		long refreshTokenContentHash) {
+		long companyId, long refreshTokenContentHash) {
 
 		return getPersistence().countByRefreshTokenContentHash(
-			refreshTokenContentHash);
+			companyId, refreshTokenContentHash);
 	}
 
 	/**
@@ -943,7 +967,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns a range of all the o auth2 authorizations.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of o auth2 authorizations
@@ -958,7 +982,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns an ordered range of all the o auth2 authorizations.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of o auth2 authorizations
@@ -977,22 +1001,22 @@ public class OAuth2AuthorizationUtil {
 	 * Returns an ordered range of all the o auth2 authorizations.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of o auth2 authorizations
 	 * @param end the upper bound of the range of o auth2 authorizations (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of o auth2 authorizations
 	 */
 	public static List<OAuth2Authorization> findAll(
 		int start, int end,
 		OrderByComparator<OAuth2Authorization> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findAll(
-			start, end, orderByComparator, retrieveFromCache);
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1037,7 +1061,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns all the o auth2 authorization associated with the o auth2 scope grant.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param pk the primary key of the o auth2 scope grant
@@ -1056,7 +1080,7 @@ public class OAuth2AuthorizationUtil {
 	 * Returns all the o auth2 authorization associated with the o auth2 scope grant.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>OAuth2AuthorizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param pk the primary key of the o auth2 scope grant

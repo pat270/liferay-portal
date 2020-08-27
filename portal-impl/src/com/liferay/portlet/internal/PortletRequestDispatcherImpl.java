@@ -194,6 +194,7 @@ public class PortletRequestDispatcherImpl
 
 			if (pos != -1) {
 				pathNoQueryString = _path.substring(0, pos);
+
 				queryString = _path.substring(pos + 1);
 
 				httpServletRequest = createDynamicServletRequest(
@@ -295,14 +296,15 @@ public class PortletRequestDispatcherImpl
 					portletServletRequest, portletServletResponse);
 			}
 		}
-		catch (ServletException se) {
+		catch (ServletException servletException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to dispatch request", se);
+				_log.debug("Unable to dispatch request", servletException);
 			}
 
-			_log.error("Unable to dispatch request: " + se.getMessage());
+			_log.error(
+				"Unable to dispatch request: " + servletException.getMessage());
 
-			throw new PortletException(se);
+			throw new PortletException(servletException);
 		}
 		finally {
 			liferayPortletRequest.setPortletRequestDispatcherRequest(null);
@@ -363,14 +365,15 @@ public class PortletRequestDispatcherImpl
 				_requestDispatcher.forward(servletRequest, servletResponse);
 			}
 		}
-		catch (ServletException se) {
+		catch (ServletException servletException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to dispatch request", se);
+				_log.debug("Unable to dispatch request", servletException);
 			}
 
-			_log.error("Unable to dispatch request: " + se.getMessage());
+			_log.error(
+				"Unable to dispatch request: " + servletException.getMessage());
 
-			throw new ServletException(se);
+			throw new ServletException(servletException);
 		}
 		finally {
 			if (liferayPortletRequest != null) {

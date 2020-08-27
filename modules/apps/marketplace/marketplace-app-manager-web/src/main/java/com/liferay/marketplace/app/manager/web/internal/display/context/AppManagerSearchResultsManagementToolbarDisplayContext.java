@@ -30,8 +30,6 @@ import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.osgi.framework.Bundle;
-
 /**
  * @author Pei-Jung Lan
  */
@@ -39,12 +37,12 @@ public class AppManagerSearchResultsManagementToolbarDisplayContext
 	extends BaseAppManagerManagementToolbarDisplayContext {
 
 	public AppManagerSearchResultsManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest);
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse);
 	}
 
 	public String getKeywords() {
@@ -83,22 +81,20 @@ public class AppManagerSearchResultsManagementToolbarDisplayContext
 	}
 
 	@Override
-	public SearchContainer getSearchContainer() throws Exception {
+	public SearchContainer<Object> getSearchContainer() throws Exception {
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
 
-		SearchContainer searchContainer = new SearchContainer(
+		SearchContainer<Object> searchContainer = new SearchContainer(
 			liferayPortletRequest, getPortletURL(), null,
 			"no-results-were-found");
 
 		searchContainer.setOrderByCol(getOrderByCol());
 		searchContainer.setOrderByType(getOrderByType());
 
-		List<Bundle> bundles = BundleManagerUtil.getBundles();
-
 		List<Object> results = MarketplaceAppManagerSearchUtil.getResults(
-			bundles, getKeywords(), request.getLocale());
+			BundleManagerUtil.getBundles(), getKeywords(), request.getLocale());
 
 		results = ListUtil.sort(
 			results, new MarketplaceAppManagerComparator(getOrderByType()));
@@ -119,6 +115,6 @@ public class AppManagerSearchResultsManagementToolbarDisplayContext
 		return _searchContainer;
 	}
 
-	private SearchContainer _searchContainer;
+	private SearchContainer<Object> _searchContainer;
 
 }

@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -44,9 +45,7 @@ import com.liferay.wiki.service.WikiNodeLocalService;
 import com.liferay.wiki.service.WikiNodeService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -75,10 +74,10 @@ public class EditNodeMVCActionCommand extends BaseMVCActionCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		int nodeCount = _wikiNodeLocalService.getNodesCount(
+		int nodesCount = _wikiNodeLocalService.getNodesCount(
 			themeDisplay.getScopeGroupId());
 
-		if (nodeCount == 1) {
+		if (nodesCount == 1) {
 			SessionErrors.add(actionRequest, RequiredNodeException.class);
 
 			return;
@@ -120,11 +119,11 @@ public class EditNodeMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		if (moveToTrash && !trashedModels.isEmpty()) {
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("trashedModels", trashedModels);
-
-			addDeleteSuccessData(actionRequest, data);
+			addDeleteSuccessData(
+				actionRequest,
+				HashMapBuilder.<String, Object>put(
+					"trashedModels", trashedModels
+				).build());
 		}
 	}
 
@@ -155,21 +154,21 @@ public class EditNodeMVCActionCommand extends BaseMVCActionCommand {
 				unsubscribeNode(actionRequest);
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchNodeException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchNodeException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/wiki/error.jsp");
 			}
-			else if (e instanceof DuplicateNodeNameException ||
-					 e instanceof NodeNameException) {
+			else if (exception instanceof DuplicateNodeNameException ||
+					 exception instanceof NodeNameException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}
@@ -260,10 +259,7 @@ public class EditNodeMVCActionCommand extends BaseMVCActionCommand {
 			_wikiNodeService.updateNode(
 				nodeId, name, description, serviceContext);
 
-			ModifiableSettings modifiableSettings = getModifiableSettings(
-				actionRequest);
-
-			updateSettings(modifiableSettings, oldName, name);
+			updateSettings(getModifiableSettings(actionRequest), oldName, name);
 		}
 	}
 

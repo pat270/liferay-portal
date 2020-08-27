@@ -18,8 +18,8 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.headless.delivery.dto.v1_0.RelatedContent;
-import com.liferay.headless.delivery.dto.v1_0.converter.DTOConverter;
-import com.liferay.headless.delivery.internal.dto.v1_0.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.Locale;
@@ -30,24 +30,29 @@ import java.util.Locale;
 public class RelatedContentUtil {
 
 	public static RelatedContent[] toRelatedContents(
-			AssetEntryLocalService assetEntryLocalService,
-			AssetLinkLocalService assetLinkLocalService, String className,
-			long classPK, Locale locale)
-		throws Exception {
+		AssetEntryLocalService assetEntryLocalService,
+		AssetLinkLocalService assetLinkLocalService,
+		DTOConverterRegistry dtoConverterRegistry, String className,
+		long classPK, Locale locale) {
 
-		AssetEntry assetEntry = assetEntryLocalService.getEntry(
+		AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
 			className, classPK);
+
+		if (assetEntry == null) {
+			return null;
+		}
 
 		return TransformUtil.transformToArray(
 			assetLinkLocalService.getDirectLinks(assetEntry.getEntryId()),
 			assetLink -> _toRelatedContent(
 				assetEntryLocalService.getEntry(assetLink.getEntryId2()),
-				locale),
+				dtoConverterRegistry, locale),
 			RelatedContent.class);
 	}
 
 	private static RelatedContent _toRelatedContent(
-		AssetEntry assetEntry, Locale locale) {
+		AssetEntry assetEntry, DTOConverterRegistry dtoConverterRegistry,
+		Locale locale) {
 
 		if (assetEntry == null) {
 			return null;
@@ -60,8 +65,8 @@ public class RelatedContentUtil {
 
 				setContentType(
 					() -> {
-						DTOConverter dtoConverter =
-							DTOConverterRegistry.getDTOConverter(
+						DTOConverter<?, ?> dtoConverter =
+							dtoConverterRegistry.getDTOConverter(
 								assetEntry.getClassName());
 
 						if (dtoConverter == null) {

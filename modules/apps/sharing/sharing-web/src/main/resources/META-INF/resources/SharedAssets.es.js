@@ -1,4 +1,18 @@
-import PortletBase from 'frontend-js-web/liferay/PortletBase.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {ItemSelectorDialog, PortletBase, addParams} from 'frontend-js-web';
 
 class SharedAssets extends PortletBase {
 	constructor(config, ...args) {
@@ -8,42 +22,42 @@ class SharedAssets extends PortletBase {
 		this._viewAssetTypeURL = config.viewAssetTypeURL;
 	}
 
+	attached() {
+		Liferay.on('sharing:changed', () =>
+			Liferay.Portlet.refresh('#p_p_id' + this.namespace)
+		);
+	}
+
 	handleFilterItemClicked(event) {
-		let namespace = this.namespace;
-		let viewAssetTypeURL = this._viewAssetTypeURL;
+		const itemData = event.data.item.data;
+		const namespace = this.namespace;
+		const viewAssetTypeURL = this._viewAssetTypeURL;
 
-		AUI().use(
-			'liferay-item-selector-dialog',
-			A => {
-				var itemData = event.data.item.data;
+		if (itemData.action === 'openAssetTypesSelector') {
+			const itemSelectorDialog = new ItemSelectorDialog({
+				eventName: namespace + 'selectAssetType',
+				singleSelect: true,
+				title: Liferay.Language.get('select-asset-type'),
+				url: this._selectAssetTypeURL,
+			});
 
-				if (itemData.action === 'openAssetTypesSelector') {
-					var itemSelectorDialog = new A.LiferayItemSelectorDialog(
-						{
-							eventName: namespace + 'selectAssetType',
-							on: {
-								selectedItemChange: function(event) {
-									var selectedItem = event.newVal;
+			itemSelectorDialog.open();
 
-									if (selectedItem) {
-										var uri = viewAssetTypeURL;
+			itemSelectorDialog.on('selectedItemChange', (event) => {
+				const selectedItem = event.selectedItem;
 
-										uri = Liferay.Util.addParams(namespace + 'className=' + selectedItem, uri);
+				if (selectedItem) {
+					let uri = viewAssetTypeURL;
 
-										location.href = uri;
-									}
-								}
-							},
-							'strings.add': Liferay.Language.get('select'),
-							title: Liferay.Language.get('select-asset-type'),
-							url: this._selectAssetTypeURL
-						}
+					uri = addParams(
+						namespace + 'className=' + selectedItem.value,
+						uri
 					);
 
-					itemSelectorDialog.open();
+					location.href = uri;
 				}
-			}
-		);
+			});
+		}
 	}
 }
 

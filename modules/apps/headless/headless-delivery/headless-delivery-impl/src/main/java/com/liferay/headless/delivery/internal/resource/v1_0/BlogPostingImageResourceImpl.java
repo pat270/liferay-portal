@@ -18,8 +18,9 @@ import com.liferay.blogs.service.BlogsEntryService;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.util.DLURLHelper;
-import com.liferay.headless.common.spi.service.context.ServiceContextUtil;
+import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil;
 import com.liferay.headless.delivery.dto.v1_0.BlogPostingImage;
+import com.liferay.headless.delivery.internal.dto.v1_0.util.ContentValueUtil;
 import com.liferay.headless.delivery.internal.odata.entity.v1_0.BlogPostingImageEntityModel;
 import com.liferay.headless.delivery.resource.v1_0.BlogPostingImageResource;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.vulcan.aggregation.Aggregation;
 import com.liferay.portal.vulcan.multipart.BinaryFile;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -36,7 +38,10 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.SearchUtil;
 
+import java.util.Collections;
 import java.util.Optional;
+
+import javax.validation.constraints.NotNull;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -80,26 +85,28 @@ public class BlogPostingImageResourceImpl
 
 	@Override
 	public Page<BlogPostingImage> getSiteBlogPostingImagesPage(
-			Long siteId, String search, Filter filter, Pagination pagination,
-			Sort[] sorts)
+			@NotNull Long siteId, String search, Aggregation aggregation,
+			Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
 		Folder folder = _blogsEntryService.addAttachmentsFolder(siteId);
 
 		return SearchUtil.search(
+			Collections.emptyMap(),
 			booleanQuery -> {
 			},
 			filter, DLFileEntry.class, search, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			searchContext -> {
+				searchContext.addVulcanAggregation(aggregation);
 				searchContext.setCompanyId(contextCompany.getCompanyId());
 				searchContext.setFolderIds(new long[] {folder.getFolderId()});
 			},
+			sorts,
 			document -> _toBlogPostingImage(
 				_dlAppService.getFileEntry(
-					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))),
-			sorts);
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))));
 	}
 
 	@Override
@@ -128,8 +135,8 @@ public class BlogPostingImageResourceImpl
 				binaryFile.getFileName()
 			),
 			null, null, binaryFile.getInputStream(), binaryFile.getSize(),
-			ServiceContextUtil.createServiceContext(
-				siteId,
+			ServiceContextRequestUtil.createServiceContext(
+				siteId, contextHttpServletRequest,
 				blogPostingImageOptional.map(
 					BlogPostingImage::getViewableByAsString
 				).orElse(
@@ -161,6 +168,9 @@ public class BlogPostingImageResourceImpl
 			{
 				contentUrl = _dlURLHelper.getPreviewURL(
 					fileEntry, fileEntry.getFileVersion(), null, "");
+				contentValue = ContentValueUtil.toContentValue(
+					"contentValue", fileEntry::getContentStream,
+					Optional.of(contextUriInfo));
 				encodingFormat = fileEntry.getMimeType();
 				fileExtension = fileEntry.getExtension();
 				id = fileEntry.getFileEntryId();

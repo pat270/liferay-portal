@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetLink
  * @generated
  */
-@ProviderType
 public class AssetLinkWrapper
 	extends BaseModelWrapper<AssetLink>
 	implements AssetLink, ModelWrapper<AssetLink> {
@@ -45,6 +44,8 @@ public class AssetLinkWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("linkId", getLinkId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -60,6 +61,18 @@ public class AssetLinkWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long linkId = (Long)attributes.get("linkId");
 
 		if (linkId != null) {
@@ -136,6 +149,16 @@ public class AssetLinkWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this asset link.
+	 *
+	 * @return the ct collection ID of this asset link
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the entry id1 of this asset link.
 	 *
 	 * @return the entry id1 of this asset link
@@ -163,6 +186,16 @@ public class AssetLinkWrapper
 	@Override
 	public long getLinkId() {
 		return model.getLinkId();
+	}
+
+	/**
+	 * Returns the mvcc version of this asset link.
+	 *
+	 * @return the mvcc version of this asset link
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -251,6 +284,16 @@ public class AssetLinkWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this asset link.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset link
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the entry id1 of this asset link.
 	 *
 	 * @param entryId1 the entry id1 of this asset link
@@ -278,6 +321,16 @@ public class AssetLinkWrapper
 	@Override
 	public void setLinkId(long linkId) {
 		model.setLinkId(linkId);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset link.
+	 *
+	 * @param mvccVersion the mvcc version of this asset link
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -338,6 +391,20 @@ public class AssetLinkWrapper
 	@Override
 	public void setWeight(int weight) {
 		model.setWeight(weight);
+	}
+
+	@Override
+	public Map<String, Function<AssetLink, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<AssetLink, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

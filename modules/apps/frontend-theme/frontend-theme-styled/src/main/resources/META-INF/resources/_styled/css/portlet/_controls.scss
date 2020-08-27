@@ -35,7 +35,8 @@ body.portlet {
 	white-space: nowrap;
 }
 
-.panel-page-content, .panel-page-body {
+.panel-page-content,
+.panel-page-body {
 	.portlet-title-text {
 		cursor: auto;
 	}
@@ -65,12 +66,13 @@ body.portlet {
 
 .portlet {
 	.visible-interaction {
-		@include sm {
+		@include media-breakpoint-up(sm) {
 			display: none;
 		}
 	}
 
-	&:hover, &.open {
+	&:hover,
+	&.open {
 		.visible-interaction {
 			display: block;
 		}
@@ -78,7 +80,7 @@ body.portlet {
 }
 
 .controls-hidden .portlet .visible-interaction {
-	@include media-query(null, $screen-xs-max) {
+	@include media-breakpoint-down(sm) {
 		display: none;
 	}
 }

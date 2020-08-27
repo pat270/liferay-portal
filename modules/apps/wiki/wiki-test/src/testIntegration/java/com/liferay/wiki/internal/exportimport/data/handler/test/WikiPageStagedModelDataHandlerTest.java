@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.wiki.attachments.test.WikiAttachmentsTest;
 import com.liferay.wiki.model.WikiNode;
@@ -43,7 +44,7 @@ import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageServiceUtil;
-import com.liferay.wiki.util.test.WikiTestUtil;
+import com.liferay.wiki.test.util.WikiTestUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +70,7 @@ public class WikiPageStagedModelDataHandlerTest
 		new LiferayIntegrationTestRule();
 
 	@Test
-	public void testDeletesAttachments() throws Exception {
+	public void testDeleteAttachmentsFileEntry() throws Exception {
 		Map<String, List<StagedModel>> dependentStagedModelsMap =
 			addDependentStagedModelsMap(stagingGroup);
 
@@ -87,11 +88,11 @@ public class WikiPageStagedModelDataHandlerTest
 		List<FileEntry> attachmentsFileEntries =
 			wikiPage.getAttachmentsFileEntries();
 
-		FileEntry attachment = attachmentsFileEntries.get(0);
+		FileEntry attachmentFileEntry = attachmentsFileEntries.get(0);
 
 		WikiPageServiceUtil.movePageAttachmentToTrash(
 			wikiPage.getNodeId(), wikiPage.getTitle(),
-			attachment.getFileName());
+			attachmentFileEntry.getFileName());
 
 		exportImportStagedModel(wikiPage);
 
@@ -100,6 +101,39 @@ public class WikiPageStagedModelDataHandlerTest
 
 		Assert.assertEquals(
 			0, importedWikiPage.getAttachmentsFileEntriesCount());
+	}
+
+	@Test
+	public void testUpdateAttachmentsWithFrontendWikiPage() throws Exception {
+		Map<String, List<StagedModel>> dependentStagedModelsMap =
+			addDependentStagedModelsMap(stagingGroup);
+
+		WikiPage wikiPage = (WikiPage)addStagedModel(
+			stagingGroup, dependentStagedModelsMap, "FrontPage");
+
+		exportImportStagedModel(
+			WikiPageLocalServiceUtil.getWikiPage(wikiPage.getPageId()));
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(wikiPage.getGroupId());
+
+		serviceContext.setCommand(Constants.UPDATE);
+		serviceContext.setLayoutFullURL("http://localhost");
+
+		WikiPage updatedWikiPage = WikiTestUtil.updatePage(
+			wikiPage, wikiPage.getUserId(), RandomTestUtil.randomString(),
+			serviceContext);
+
+		exportImportStagedModel(updatedWikiPage);
+
+		exportImportStagedModel(
+			WikiPageLocalServiceUtil.getWikiPage(wikiPage.getPageId()));
+
+		WikiPage importedWikiPage = (WikiPage)getStagedModel(
+			wikiPage.getUuid(), liveGroup);
+
+		Assert.assertEquals(
+			1, importedWikiPage.getAttachmentsFileEntriesCount());
 	}
 
 	@Override
@@ -162,12 +196,10 @@ public class WikiPageStagedModelDataHandlerTest
 
 		WikiNode node = (WikiNode)dependentStagedModels.get(0);
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		WikiPage page = WikiTestUtil.addPage(
 			TestPropsValues.getUserId(), node.getNodeId(), name,
-			RandomTestUtil.randomString(), true, serviceContext);
+			RandomTestUtil.randomString(), true,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		WikiTestUtil.addWikiAttachment(
 			TestPropsValues.getUserId(), node.getNodeId(), page.getTitle(),
@@ -228,9 +260,10 @@ public class WikiPageStagedModelDataHandlerTest
 			Group group)
 		throws Exception {
 
-		StagedModelDataHandler stagedModelDataHandler =
-			StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(
-				ExportImportClassedModelUtil.getClassName(stagedModel));
+		StagedModelDataHandler<StagedModel> stagedModelDataHandler =
+			(StagedModelDataHandler<StagedModel>)
+				StagedModelDataHandlerRegistryUtil.getStagedModelDataHandler(
+					ExportImportClassedModelUtil.getClassName(stagedModel));
 
 		stagedModelDataHandler.deleteStagedModel(stagedModel);
 
@@ -240,19 +273,22 @@ public class WikiPageStagedModelDataHandlerTest
 			for (StagedModel dependentStagedModel : dependentStagedModels) {
 				try {
 					stagedModelDataHandler =
-						StagedModelDataHandlerRegistryUtil.
-							getStagedModelDataHandler(
-								ExportImportClassedModelUtil.getClassName(
-									dependentStagedModel));
+						(StagedModelDataHandler<StagedModel>)
+							StagedModelDataHandlerRegistryUtil.
+								getStagedModelDataHandler(
+									ExportImportClassedModelUtil.getClassName(
+										dependentStagedModel));
 
 					stagedModelDataHandler.deleteStagedModel(
 						dependentStagedModel);
 				}
-				catch (NoSuchModelException nsme) {
-					if (!(nsme instanceof NoSuchFileEntryException) &&
-						!(nsme instanceof NoSuchFolderException)) {
+				catch (NoSuchModelException noSuchModelException) {
+					if (!(noSuchModelException instanceof
+							NoSuchFileEntryException) &&
+						!(noSuchModelException instanceof
+							NoSuchFolderException)) {
 
-						throw nsme;
+						throw noSuchModelException;
 					}
 				}
 			}
@@ -307,11 +343,12 @@ public class WikiPageStagedModelDataHandlerTest
 
 		WikiPage page = (WikiPage)stagedModel;
 
-		List<FileEntry> attachmentFileEntries =
+		List<FileEntry> attachmentsFileEntries =
 			page.getAttachmentsFileEntries();
 
 		Assert.assertEquals(
-			attachmentFileEntries.toString(), 1, attachmentFileEntries.size());
+			attachmentsFileEntries.toString(), 1,
+			attachmentsFileEntries.size());
 
 		validateImport(dependentStagedModelsMap, group);
 	}

@@ -14,13 +14,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PAGER_TITLE</td>
+	<td>//div[contains(@class,'list-group-header-title') and contains(.,'${key_titleName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>VERTICAL_ELLIPSIS</td>
 	<td>//li[contains(.,'${key_threadSubject}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]] | //div[contains(@class,'heading')]//div[contains(@class,'dropdown')]//a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>VERTICAL_ELLIPSIS_REPLY_CARD</td>
-	<td>//div[contains(@class,'message-container')]/div[contains(@class,'message-container')]/div[contains(@class,'group-card')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
+	<td>//div[contains(@class,'message-container')]/div[contains(@class,'message-container')]/div[contains(@class,'card panel')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -233,7 +238,7 @@
 </tr>
 <tr>
 	<td>THREAD_TABLE_REPLIES</td>
-	<td>//a[contains(.,'${key_threadSubject}')]/../../span[contains(.,'${key_repliesCount}')]</td>
+	<td>//a[contains(.,'${key_threadSubject}')]/../../div[contains(.,'Replies')]</td>
 	<td></td>
 </tr>
 <tr>

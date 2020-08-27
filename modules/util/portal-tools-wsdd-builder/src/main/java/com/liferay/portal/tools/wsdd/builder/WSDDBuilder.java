@@ -14,9 +14,9 @@
 
 package com.liferay.portal.tools.wsdd.builder;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ArgumentsUtil;
 import com.liferay.portal.tools.ToolsUtil;
@@ -61,8 +61,8 @@ public class WSDDBuilder {
 
 			wsddBuilder.build();
 		}
-		catch (Exception e) {
-			ArgumentsUtil.processMainException(arguments, e);
+		catch (Exception exception) {
+			ArgumentsUtil.processMainException(arguments, exception);
 		}
 	}
 
@@ -72,10 +72,8 @@ public class WSDDBuilder {
 		if (!serverConfigFile.exists()) {
 			Class<?> clazz = getClass();
 
-			ClassLoader classLoader = clazz.getClassLoader();
-
 			String serverConfigContent = StringUtil.read(
-				classLoader,
+				clazz.getClassLoader(),
 				"com/liferay/portal/tools/wsdd/builder/dependencies" +
 					"/server-config.wsdd");
 
@@ -84,9 +82,8 @@ public class WSDDBuilder {
 
 		SAXReader saxReader = _getSAXReader();
 
-		String content = ToolsUtil.getContent(_fileName);
-
-		Document document = saxReader.read(new XMLSafeReader(content));
+		Document document = saxReader.read(
+			new XMLSafeReader(ToolsUtil.getContent(_fileName)));
 
 		Element rootElement = document.getRootElement();
 

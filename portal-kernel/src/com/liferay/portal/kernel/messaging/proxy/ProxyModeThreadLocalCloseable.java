@@ -17,8 +17,10 @@ package com.liferay.portal.kernel.messaging.proxy;
 import java.io.Closeable;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class ProxyModeThreadLocalCloseable implements Closeable {
 
 	public ProxyModeThreadLocalCloseable() {

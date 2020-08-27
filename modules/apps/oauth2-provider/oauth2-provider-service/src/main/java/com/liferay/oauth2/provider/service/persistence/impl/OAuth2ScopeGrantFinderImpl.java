@@ -55,20 +55,21 @@ public class OAuth2ScopeGrantFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_C_A_B_A);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			q.addEntity("OAuth2ScopeGrant", OAuth2ScopeGrantImpl.class);
-			q.addEntity("OAuth2Authorization", OAuth2AuthorizationImpl.class);
+			sqlQuery.addEntity("OAuth2ScopeGrant", OAuth2ScopeGrantImpl.class);
+			sqlQuery.addEntity(
+				"OAuth2Authorization", OAuth2AuthorizationImpl.class);
 
-			qPos.add(companyId);
-			qPos.add(applicationName);
-			qPos.add(bundleSymbolicName);
-			qPos.add(accessTokenContent.hashCode());
+			queryPos.add(companyId);
+			queryPos.add(applicationName);
+			queryPos.add(bundleSymbolicName);
+			queryPos.add(accessTokenContent.hashCode());
 
 			List<Object[]> rows = (List<Object[]>)QueryUtil.list(
-				q, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+				sqlQuery, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 			ArrayList<OAuth2ScopeGrant> oAuth2ScopeGrants = new ArrayList<>();
 
@@ -85,8 +86,8 @@ public class OAuth2ScopeGrantFinderImpl
 
 			return oAuth2ScopeGrants;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

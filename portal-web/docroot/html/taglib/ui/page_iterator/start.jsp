@@ -33,11 +33,11 @@ PortletURL portletURL = (PortletURL)request.getAttribute("liferay-ui:page-iterat
 String target = (String)request.getAttribute("liferay-ui:page-iterator:target");
 int total = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:page-iterator:total"));
 String type = (String)request.getAttribute("liferay-ui:page-iterator:type");
-String url = (String)request.getAttribute("liferay-ui:page-iterator:url");
-String urlAnchor = (String)request.getAttribute("liferay-ui:page-iterator:urlAnchor");
+String url = StringPool.BLANK;
+String urlAnchor = StringPool.BLANK;
 int pages = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:page-iterator:pages"));
 
-if ((portletURL != null) && Validator.isNull(url) && Validator.isNull(urlAnchor)) {
+if (portletURL != null) {
 	String[] urlArray = PortalUtil.stripURLAnchor(portletURL.toString(), StringPool.POUND);
 
 	url = urlArray[0];
@@ -83,7 +83,7 @@ if (forcePost && (portletURL != null)) {
 	url = url.split(namespace)[0];
 %>
 
-	<form action="<%= url %>" id="<%= randomNamespace + namespace %>pageIteratorFm" method="post" name="<%= randomNamespace + namespace %>pageIteratorFm">
+	<form action="<%= HtmlUtil.escapeAttribute(url) %>" id="<%= randomNamespace + namespace %>pageIteratorFm" method="post" name="<%= randomNamespace + namespace %>pageIteratorFm">
 		<aui:input name="<%= curParam %>" type="hidden" />
 		<liferay-portlet:renderURLParams portletURL="<%= portletURL %>" />
 	</form>
@@ -204,7 +204,7 @@ if (forcePost && (portletURL != null)) {
 								<liferay-ui:icon
 									message="<%= String.valueOf(i) %>"
 									onClick='<%= forcePost ? _getOnClick(namespace, curParam, i) : "" %>'
-									url='<%= url + namespace + curParam + "=" + i + urlAnchor %>'
+									url='<%= HtmlUtil.escapeJSLink(url + namespace + curParam + "=" + i + urlAnchor) %>'
 								/>
 
 							<%
@@ -234,12 +234,18 @@ if (forcePost && (portletURL != null)) {
 										if (curDelta > SearchContainer.MAX_DELTA) {
 											continue;
 										}
+
+										String curDeltaURL = deltaURL + urlAnchor;
+
+										if (curDelta != PropsValues.SEARCH_CONTAINER_PAGE_DEFAULT_DELTA) {
+											curDeltaURL = deltaURL + "&" + namespace + deltaParam + "=" + curDelta + urlAnchor;
+										}
 									%>
 
 										<liferay-ui:icon
 											message="<%= String.valueOf(curDelta) %>"
 											onClick='<%= forcePost ? _getOnClick(namespace, deltaParam, curDelta) : "" %>'
-											url='<%= deltaURL + "&" + namespace + deltaParam + "=" + curDelta + urlAnchor %>'
+											url="<%= HtmlUtil.escapeJSLink(curDeltaURL) %>"
 										/>
 
 									<%

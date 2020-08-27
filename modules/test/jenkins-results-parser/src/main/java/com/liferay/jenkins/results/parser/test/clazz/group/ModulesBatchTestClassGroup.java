@@ -31,7 +31,7 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 
 	@Override
 	public int getAxisCount() {
-		if (testRelevantIntegrationUnitOnly) {
+		if (!isStableTestSuiteBatch() && testRelevantIntegrationUnitOnly) {
 			return 0;
 		}
 
@@ -61,9 +61,10 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected ModulesBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 
 		try {
 			File modulesDir = new File(
@@ -84,6 +85,22 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 					getPathMatchers(
 						getFirstPropertyValue("modules.includes.private"),
 						modulesDir));
+
+				if (includeStableTestSuite && isStableTestSuiteBatch()) {
+					excludesPathMatchers.addAll(
+						getPathMatchers(
+							getFirstPropertyValue(
+								"modules.excludes.private", batchName,
+								NAME_STABLE_TEST_SUITE),
+							modulesDir));
+
+					includesPathMatchers.addAll(
+						getPathMatchers(
+							getFirstPropertyValue(
+								"modules.includes.private", batchName,
+								NAME_STABLE_TEST_SUITE),
+							modulesDir));
+				}
 			}
 			else {
 				excludesPathMatchers.addAll(
@@ -95,7 +112,28 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 					getPathMatchers(
 						getFirstPropertyValue("modules.includes.public"),
 						modulesDir));
+
+				if (includeStableTestSuite && isStableTestSuiteBatch()) {
+					excludesPathMatchers.addAll(
+						getPathMatchers(
+							getFirstPropertyValue(
+								"modules.excludes.public", batchName,
+								NAME_STABLE_TEST_SUITE),
+							modulesDir));
+
+					includesPathMatchers.addAll(
+						getPathMatchers(
+							getFirstPropertyValue(
+								"modules.includes.public", batchName,
+								NAME_STABLE_TEST_SUITE),
+							modulesDir));
+				}
 			}
+
+			excludesPathMatchers.addAll(
+				getPathMatchers(
+					getFirstPropertyValue("modules.excludes." + buildProfile),
+					modulesDir));
 
 			if (testRelevantChanges) {
 				moduleDirsList.addAll(
@@ -108,8 +146,8 @@ public abstract class ModulesBatchTestClassGroup extends BatchTestClassGroup {
 
 			setAxisTestClassGroups();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 

@@ -1,9 +1,58 @@
 @default = "dragAndDropToObject"
 definition {
+
 	function dragAndDrop {
 		WaitForSPARefresh();
 
 		selenium.dragAndDrop();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function DragAndDropObject {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent("${locator1}");
+
+		selenium.mouseOver("${locator1}");
+
+		selenium.waitForVisible("${locator1}");
+
+		selenium.mouseDown("${locator1}");
+
+		selenium.mouseMoveAt("${locator1}", "${position}");
+
+		selenium.pause("3000");
+
+		selenium.mouseRelease("${locator1}");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function dragAndDropObjectMoveTwice {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent("${locator1}");
+
+		selenium.mouseOver("${locator1}");
+
+		selenium.waitForVisible("${locator1}");
+
+		selenium.mouseDown("${locator1}");
+
+		selenium.mouseMoveAt("${locator1}", "${position1}");
+
+		selenium.pause("1000");
+
+		selenium.mouseMoveAt("${locator1}", "${position2}");
+
+		selenium.pause("3000");
+
+		selenium.mouseRelease("${locator1}");
 
 		selenium.assertJavaScriptErrors();
 
@@ -35,7 +84,35 @@ definition {
 
 		selenium.mouseMove("${locator2}");
 
+		selenium.pause("3000");
+
 		selenium.mouseRelease("${locator2}");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function dragAndDropReorganizeObjects {
+		WaitForSPARefresh();
+
+		selenium.waitForElementPresent("${locator1}");
+
+		selenium.mouseOver("${locator1}");
+
+		selenium.waitForVisible("${locator1}");
+
+		selenium.mouseDown("${locator1}");
+
+		selenium.pause("1000");
+
+		selenium.mouseMove("${locator2}");
+
+		selenium.mouseMoveAt("${locator2}", "${position}");
+
+		selenium.pause("3000");
+
+		selenium.mouseRelease();
 
 		selenium.assertJavaScriptErrors();
 
@@ -61,4 +138,173 @@ definition {
 
 		selenium.assertLiferayErrors();
 	}
+
+	function javaScriptDragAndDropObjectToBottomOfNestedObject {
+		WaitForSPARefresh();
+
+		var javaScript = '''
+Simulate = {
+	dragAndDrop: async function(source, target, offset = 44) {
+		const dataTransfer = new DataTransfer();
+
+		const dispatchEvent = async(type, element) => {
+			const rect = element.getBoundingClientRect();
+
+			const event = new DragEvent(
+				type,{
+					bubbles: true,
+					clientX: rect.left + (rect.width / 2),
+					clientY: rect.top + rect.height - offset,
+					dataTransfer: dataTransfer,
+					relatedTarget: element
+				});
+
+			element.dispatchEvent(event);
+		};
+
+		await dispatchEvent('dragstart', source);
+
+		await dispatchEvent('dragover', target);
+
+		await dispatchEvent('drop', target);
+
+		await dispatchEvent('dragend', source);
+	}
+};
+
+Simulate.dragAndDrop(arguments[0], arguments[1]);
+		''';
+
+		selenium.executeJavaScript("${javaScript}", "${locator1}", "${locator2}");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function javaScriptDragAndDropToBottom {
+		WaitForSPARefresh();
+
+		var javaScript = '''
+Simulate = {
+	dragAndDrop: async function(source, target) {
+		const dataTransfer = new DataTransfer();
+
+		const dispatchEvent = async(type, element) => {
+			const rect = element.getBoundingClientRect();
+
+			const event = new DragEvent(
+				type,{
+					bubbles: true,
+					clientX: rect.left + (rect.width / 2),
+					clientY: rect.top + rect.height,
+					dataTransfer: dataTransfer,
+					relatedTarget: element
+				});
+
+			element.dispatchEvent(event);
+		};
+
+		await dispatchEvent('dragstart', source);
+
+		await dispatchEvent('dragover', target);
+
+		await dispatchEvent('drop', target);
+
+		await dispatchEvent('dragend', source);
+	}
+};
+
+Simulate.dragAndDrop(arguments[0], arguments[1]);
+		''';
+
+		selenium.executeJavaScript("${javaScript}", "${locator1}", "${locator2}");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function javaScriptDragAndDropToObject {
+		WaitForSPARefresh();
+
+		var javaScript = '''
+Simulate = {
+	dragAndDrop: function (source, target) {
+		const dispatchEvent = function (type, element) {
+			const rect = element.getBoundingClientRect();
+			const event = document.createEvent('customEvent');
+			event.initEvent(type, true, true);
+			event.relatedTarget = element;
+			(event.clientX = rect.left + rect.width / 2),
+				(event.clientY = rect.top + rect.height / 2),
+				element.dispatchEvent(event);
+			return Promise.resolve();
+		};
+		dispatchEvent('dragstart', source)
+			.then(function () {
+				dispatchEvent('dragover', target);
+			})
+			.then(function () {
+				dispatchEvent('drop', target);
+			})
+			.then(function () {
+				dispatchEvent('dragend', source);
+			});
+	}
+};
+
+Simulate.dragAndDrop(arguments[0], arguments[1]);
+		''';
+
+		selenium.executeJavaScript("${javaScript}", "${locator1}", "${locator2}");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function javaScriptDragAndDropToUp {
+		WaitForSPARefresh();
+
+		var javaScript = '''
+Simulate = {
+	dragAndDrop: async function(source, target) {
+		const dataTransfer = new DataTransfer();
+
+		const dispatchEvent = async(type, element) => {
+			const rect = element.getBoundingClientRect();
+
+			const event = new DragEvent(
+				type,{
+					bubbles: true,
+					clientX: rect.left + (rect.width / 2),
+					clientY: -rect.top + (rect.height / 2),
+					dataTransfer: dataTransfer,
+					relatedTarget: element
+				});
+
+			element.dispatchEvent(event);
+		};
+
+		await dispatchEvent('dragstart', source);
+
+		await dispatchEvent('dragover', target);
+
+		await dispatchEvent('drop', target);
+
+		await dispatchEvent('dragend', source);
+	}
+};
+
+Simulate.dragAndDrop(arguments[0], arguments[1]);
+		''';
+
+		selenium.executeJavaScript("${javaScript}", "${locator1}", "${locator2}");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
 }

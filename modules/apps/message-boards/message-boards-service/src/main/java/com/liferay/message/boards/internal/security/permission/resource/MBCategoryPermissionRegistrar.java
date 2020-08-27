@@ -48,13 +48,14 @@ import org.osgi.service.component.annotations.Reference;
 public class MBCategoryPermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", MBCategory.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<MBCategory>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				MBCategory.class, MBCategory::getCategoryId,
 				_mbCategoryLocalService::getCategory,
@@ -94,7 +95,7 @@ public class MBCategoryPermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -125,7 +126,8 @@ public class MBCategoryPermissionRegistrar {
 	@Reference(target = "(resource.name=" + MBConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<MBCategory>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

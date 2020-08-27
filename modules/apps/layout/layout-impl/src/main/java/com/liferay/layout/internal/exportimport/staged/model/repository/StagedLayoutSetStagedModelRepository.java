@@ -14,6 +14,7 @@
 
 package com.liferay.layout.internal.exportimport.staged.model.repository;
 
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
@@ -94,12 +95,16 @@ public class StagedLayoutSetStagedModelRepository
 		PortletDataContext portletDataContext,
 		StagedLayoutSet stagedLayoutSet) {
 
+		LayoutSet layoutSet = stagedLayoutSet.getLayoutSet();
+
 		List<Layout> layouts = _layoutLocalService.getLayouts(
-			stagedLayoutSet.getGroupId(), stagedLayoutSet.isPrivateLayout());
+			stagedLayoutSet.getGroupId(), layoutSet.isPrivateLayout());
 
 		Stream<Layout> layoutsStream = layouts.stream();
 
-		return layoutsStream.map(
+		return layoutsStream.filter(
+			layout -> !_exportImportHelper.isLayoutRevisionInReview(layout)
+		).map(
 			layout -> (StagedModel)layout
 		).collect(
 			Collectors.toList()
@@ -118,12 +123,12 @@ public class StagedLayoutSetStagedModelRepository
 			stagedLayoutSet = ModelAdapterUtil.adapt(
 				layoutSet, LayoutSet.class, StagedLayoutSet.class);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
@@ -143,12 +148,12 @@ public class StagedLayoutSetStagedModelRepository
 			return ModelAdapterUtil.adapt(
 				layoutSet, LayoutSet.class, StagedLayoutSet.class);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return null;
@@ -194,17 +199,16 @@ public class StagedLayoutSetStagedModelRepository
 	public StagedLayoutSet getStagedModel(long layoutSetId)
 		throws PortalException {
 
-		LayoutSet layoutSet = _layoutSetLocalService.getLayoutSet(layoutSetId);
-
 		return ModelAdapterUtil.adapt(
-			layoutSet, LayoutSet.class, StagedLayoutSet.class);
+			_layoutSetLocalService.getLayoutSet(layoutSetId), LayoutSet.class,
+			StagedLayoutSet.class);
 	}
 
 	public StagedLayoutSet saveStagedModel(StagedLayoutSet stagedLayoutSet)
 		throws PortalException {
 
 		LayoutSet layoutSet = _layoutSetLocalService.updateLayoutSet(
-			stagedLayoutSet);
+			stagedLayoutSet.getLayoutSet());
 
 		return ModelAdapterUtil.adapt(
 			layoutSet, LayoutSet.class, StagedLayoutSet.class);
@@ -215,8 +219,10 @@ public class StagedLayoutSetStagedModelRepository
 			StagedLayoutSet stagedLayoutSet)
 		throws PortalException {
 
+		LayoutSet layoutSet = stagedLayoutSet.getLayoutSet();
+
 		LayoutSet existingLayoutSet = _layoutSetLocalService.fetchLayoutSet(
-			stagedLayoutSet.getLayoutSetId());
+			layoutSet.getLayoutSetId());
 
 		// Layout set prototype settings
 
@@ -225,10 +231,10 @@ public class StagedLayoutSetStagedModelRepository
 			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_SETTINGS);
 
 		if (layoutSetPrototypeSettings &&
-			Validator.isNotNull(stagedLayoutSet.getLayoutSetPrototypeUuid())) {
+			Validator.isNotNull(layoutSet.getLayoutSetPrototypeUuid())) {
 
 			existingLayoutSet.setLayoutSetPrototypeUuid(
-				stagedLayoutSet.getLayoutSetPrototypeUuid());
+				layoutSet.getLayoutSetPrototypeUuid());
 
 			boolean layoutSetPrototypeLinkEnabled = MapUtil.getBoolean(
 				portletDataContext.getParameterMap(),
@@ -250,8 +256,7 @@ public class StagedLayoutSetStagedModelRepository
 		if (layoutSetSettings) {
 			existingLayoutSet = _layoutSetLocalService.updateSettings(
 				existingLayoutSet.getGroupId(),
-				existingLayoutSet.isPrivateLayout(),
-				stagedLayoutSet.getSettings());
+				existingLayoutSet.isPrivateLayout(), layoutSet.getSettings());
 		}
 
 		return ModelAdapterUtil.adapt(
@@ -260,6 +265,9 @@ public class StagedLayoutSetStagedModelRepository
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		StagedLayoutSetStagedModelRepository.class);
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

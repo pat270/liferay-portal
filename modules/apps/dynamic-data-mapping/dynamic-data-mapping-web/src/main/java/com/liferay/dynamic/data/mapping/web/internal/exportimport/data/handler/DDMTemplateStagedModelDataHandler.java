@@ -15,9 +15,9 @@
 package com.liferay.dynamic.data.mapping.web.internal.exportimport.data.handler;
 
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplateVersion;
 import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -52,7 +53,6 @@ import com.liferay.portal.kernel.xml.Element;
 
 import java.io.File;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -122,11 +122,11 @@ public class DDMTemplateStagedModelDataHandler
 	public Map<String, String> getReferenceAttributes(
 		PortletDataContext portletDataContext, DDMTemplate template) {
 
-		Map<String, String> referenceAttributes = new HashMap<>();
-
-		referenceAttributes.put(
-			"referenced-class-name", template.getClassName());
-		referenceAttributes.put("template-key", template.getTemplateKey());
+		Map<String, String> referenceAttributes = HashMapBuilder.put(
+			"referenced-class-name", template.getClassName()
+		).put(
+			"template-key", template.getTemplateKey()
+		).build();
 
 		long defaultUserId = 0;
 
@@ -134,7 +134,7 @@ public class DDMTemplateStagedModelDataHandler
 			defaultUserId = _userLocalService.getDefaultUserId(
 				template.getCompanyId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return referenceAttributes;
 		}
 
@@ -278,9 +278,9 @@ public class DDMTemplateStagedModelDataHandler
 			portletDataContext.addPermissions(
 				getResourceName(template), template.getPrimaryKey());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 	}
@@ -469,12 +469,12 @@ public class DDMTemplateStagedModelDataHandler
 
 			try {
 				portletDataContext.importPermissions(
-					getResourceName(template), template.getPrimaryKey(),
+					getResourceName(importedTemplate), template.getPrimaryKey(),
 					importedTemplate.getPrimaryKey());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(e, e);
+					_log.debug(exception, exception);
 				}
 			}
 
@@ -565,8 +565,8 @@ public class DDMTemplateStagedModelDataHandler
 					template.getTemplateId(),
 					DDMTemplateConstants.VERSION_DEFAULT);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		if ((ddmTemplateVersion != null) &&

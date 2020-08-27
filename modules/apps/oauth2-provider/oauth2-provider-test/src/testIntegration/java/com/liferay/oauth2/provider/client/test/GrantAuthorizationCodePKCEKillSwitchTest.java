@@ -16,7 +16,7 @@ package com.liferay.oauth2.provider.client.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.oauth2.provider.constants.GrantType;
-import com.liferay.oauth2.provider.test.internal.TestAnnotatedApplication;
+import com.liferay.oauth2.provider.internal.test.TestAnnotatedApplication;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
@@ -52,17 +52,17 @@ public class GrantAuthorizationCodePKCEKillSwitchTest
 	public void test() throws Exception {
 		Assert.assertEquals(
 			"unauthorized_client",
-			getCodeResponse(
-				"test@liferay.com", "test", null,
-				getCodeFunction(
-					webTarget -> webTarget.queryParam(
-						"client_id", "oauthTestApplicationCodePKCE"
-					).queryParam(
-						"code_challenge", "NotChecked"
-					).queryParam(
-						"response_type", "code"
-					)),
-				this::parseErrorParameter));
+			parseErrorParameter(
+				getCodeResponse(
+					"test@liferay.com", "test", null,
+					getCodeFunction(
+						webTarget -> webTarget.queryParam(
+							"client_id", "oauthTestApplicationCodePKCE"
+						).queryParam(
+							"code_challenge", "NotChecked"
+						).queryParam(
+							"response_type", "code"
+						)))));
 	}
 
 	public static class

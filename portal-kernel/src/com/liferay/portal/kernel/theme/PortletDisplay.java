@@ -17,21 +17,29 @@ package com.liferay.portal.kernel.theme;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIconMenu;
 import com.liferay.portal.kernel.portlet.toolbar.PortletToolbar;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.Writer;
 
 import javax.portlet.PortletPreferences;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Provides general configuration methods for the portlet, providing access to
@@ -458,6 +466,56 @@ public class PortletDisplay implements Cloneable, Serializable {
 
 	public boolean isShowPortletIcon() {
 		return _showPortletIcon;
+	}
+
+	public boolean isShowPortletTitle() {
+		if (Validator.isNull(getPortletDecoratorId())) {
+			return false;
+		}
+
+		if (StringUtil.equals(getPortletDecoratorId(), "barebone")) {
+			return false;
+		}
+
+		PortletPreferences portletSetup = getPortletSetup();
+
+		String portletSetupPortletDecoratorId = portletSetup.getValue(
+			"portletSetupPortletDecoratorId", StringPool.BLANK);
+
+		Layout layout = _themeDisplay.getLayout();
+
+		if (Validator.isNull(portletSetupPortletDecoratorId) &&
+			(layout.isTypeAssetDisplay() || layout.isTypeContent())) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean isShowPortletTopper() {
+		HttpServletRequest httpServletRequest = _themeDisplay.getRequest();
+
+		String layoutMode = ParamUtil.getString(
+			httpServletRequest, "p_l_mode", Constants.VIEW);
+
+		Layout layout = _themeDisplay.getLayout();
+
+		boolean showPortletTopper = GetterUtil.getBoolean(
+			httpServletRequest.getAttribute(WebKeys.SHOW_PORTLET_TOPPER));
+
+		if (layoutMode.equals(Constants.VIEW) &&
+			(layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
+			showPortletTopper) {
+
+			return false;
+		}
+
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isShowPrintIcon() {

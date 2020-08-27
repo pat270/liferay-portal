@@ -75,7 +75,7 @@ public class ImportPagesPortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -92,12 +92,11 @@ public class ImportPagesPortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		try {
-			WikiNode node = ActionUtil.getNode(portletRequest);
-
 			return _wikiNodeModelResourcePermission.contains(
-				themeDisplay.getPermissionChecker(), node, ActionKeys.IMPORT);
+				themeDisplay.getPermissionChecker(),
+				ActionUtil.getNode(portletRequest), ActionKeys.IMPORT);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

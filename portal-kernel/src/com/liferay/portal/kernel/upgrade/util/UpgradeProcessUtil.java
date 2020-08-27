@@ -14,18 +14,12 @@
 
 package com.liferay.portal.kernel.upgrade.util;
 
-import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
-import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.IndexWriterHelperUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,14 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Alexander Chow
  * @author Raymond Augé
  */
-@ProviderType
 public class UpgradeProcessUtil {
 
 	public static String getDefaultLanguageId(long companyId)
@@ -95,7 +86,7 @@ public class UpgradeProcessUtil {
 
 				upgradeProcess = (UpgradeProcess)clazz.newInstance();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					"Unable to initialize upgrade " + upgradeProcessClassName);
 
@@ -122,42 +113,31 @@ public class UpgradeProcessUtil {
 			int buildNumber, List<UpgradeProcess> upgradeProcesses)
 		throws UpgradeException {
 
-		return upgradeProcess(buildNumber, upgradeProcesses, _INDEX_ON_UPGRADE);
+		boolean ranUpgradeProcess = false;
+
+		for (UpgradeProcess upgradeProcess : upgradeProcesses) {
+			boolean tempRanUpgradeProcess = _upgradeProcess(
+				buildNumber, upgradeProcess);
+
+			if (tempRanUpgradeProcess) {
+				ranUpgradeProcess = true;
+			}
+		}
+
+		return ranUpgradeProcess;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *			 #upgradeProcess(int, List)} ()}
+	 */
+	@Deprecated
 	public static boolean upgradeProcess(
 			int buildNumber, List<UpgradeProcess> upgradeProcesses,
 			boolean indexOnUpgrade)
 		throws UpgradeException {
 
-		boolean ranUpgradeProcess = false;
-
-		boolean tempIndexReadOnly = IndexWriterHelperUtil.isIndexReadOnly();
-
-		if (indexOnUpgrade) {
-			IndexWriterHelperUtil.setIndexReadOnly(true);
-		}
-
-		try {
-			for (UpgradeProcess upgradeProcess : upgradeProcesses) {
-				boolean tempRanUpgradeProcess = _upgradeProcess(
-					buildNumber, upgradeProcess);
-
-				if (tempRanUpgradeProcess) {
-					ranUpgradeProcess = true;
-				}
-			}
-		}
-		finally {
-			IndexWriterHelperUtil.setIndexReadOnly(tempIndexReadOnly);
-
-			if (ranUpgradeProcess) {
-				PortalCacheHelperUtil.clearPortalCaches(
-					PortalCacheManagerNames.MULTI_VM);
-			}
-		}
-
-		return ranUpgradeProcess;
+		return upgradeProcess(buildNumber, upgradeProcesses);
 	}
 
 	private static boolean _upgradeProcess(
@@ -192,9 +172,6 @@ public class UpgradeProcessUtil {
 
 		return false;
 	}
-
-	private static final boolean _INDEX_ON_UPGRADE = GetterUtil.getBoolean(
-		PropsUtil.get(PropsKeys.INDEX_ON_UPGRADE));
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		UpgradeProcessUtil.class);

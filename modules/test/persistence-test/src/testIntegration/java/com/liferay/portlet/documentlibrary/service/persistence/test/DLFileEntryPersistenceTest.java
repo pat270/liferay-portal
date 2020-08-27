@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -123,6 +123,10 @@ public class DLFileEntryPersistenceTest {
 
 		DLFileEntry newDLFileEntry = _persistence.create(pk);
 
+		newDLFileEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDLFileEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDLFileEntry.setUuid(RandomTestUtil.randomString());
 
 		newDLFileEntry.setGroupId(RandomTestUtil.nextLong());
@@ -167,8 +171,6 @@ public class DLFileEntryPersistenceTest {
 
 		newDLFileEntry.setSize(RandomTestUtil.nextLong());
 
-		newDLFileEntry.setReadCount(RandomTestUtil.nextInt());
-
 		newDLFileEntry.setSmallImageId(RandomTestUtil.nextLong());
 
 		newDLFileEntry.setLargeImageId(RandomTestUtil.nextLong());
@@ -186,6 +188,12 @@ public class DLFileEntryPersistenceTest {
 		DLFileEntry existingDLFileEntry = _persistence.findByPrimaryKey(
 			newDLFileEntry.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDLFileEntry.getMvccVersion(),
+			newDLFileEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingDLFileEntry.getCtCollectionId(),
+			newDLFileEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingDLFileEntry.getUuid(), newDLFileEntry.getUuid());
 		Assert.assertEquals(
@@ -240,8 +248,6 @@ public class DLFileEntryPersistenceTest {
 			existingDLFileEntry.getVersion(), newDLFileEntry.getVersion());
 		Assert.assertEquals(
 			existingDLFileEntry.getSize(), newDLFileEntry.getSize());
-		Assert.assertEquals(
-			existingDLFileEntry.getReadCount(), newDLFileEntry.getReadCount());
 		Assert.assertEquals(
 			existingDLFileEntry.getSmallImageId(),
 			newDLFileEntry.getSmallImageId());
@@ -497,16 +503,16 @@ public class DLFileEntryPersistenceTest {
 
 	protected OrderByComparator<DLFileEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DLFileEntry", "uuid", true, "fileEntryId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "classNameId", true, "classPK", true,
+			"DLFileEntry", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "fileEntryId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "classNameId", true, "classPK", true,
 			"repositoryId", true, "folderId", true, "treePath", true, "name",
 			true, "fileName", true, "extension", true, "mimeType", true,
 			"title", true, "description", true, "fileEntryTypeId", true,
-			"version", true, "size", true, "readCount", true, "smallImageId",
-			true, "largeImageId", true, "custom1ImageId", true,
-			"custom2ImageId", true, "manualCheckInRequired", true,
-			"lastPublishDate", true);
+			"version", true, "size", true, "smallImageId", true, "largeImageId",
+			true, "custom1ImageId", true, "custom2ImageId", true,
+			"manualCheckInRequired", true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -726,67 +732,119 @@ public class DLFileEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		DLFileEntry existingDLFileEntry = _persistence.findByPrimaryKey(
-			newDLFileEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDLFileEntry.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDLFileEntry.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDLFileEntry, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DLFileEntry newDLFileEntry = addDLFileEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLFileEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"fileEntryId", newDLFileEntry.getFileEntryId()));
+
+		List<DLFileEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DLFileEntry dlFileEntry) {
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getGroupId()),
+			dlFileEntry.getUuid(),
+			ReflectionTestUtil.invoke(
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(dlFileEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalGroupId", new Class<?>[0]));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getGroupId()),
+			Long.valueOf(dlFileEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalGroupId", new Class<?>[0]));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getFolderId()),
+			Long.valueOf(dlFileEntry.getFolderId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalFolderId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingDLFileEntry.getName(),
-				ReflectionTestUtil.invoke(
-					existingDLFileEntry, "getOriginalName", new Class<?>[0])));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "folderId"));
+		Assert.assertEquals(
+			dlFileEntry.getName(),
+			ReflectionTestUtil.invoke(
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getGroupId()),
+			Long.valueOf(dlFileEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalGroupId", new Class<?>[0]));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getFolderId()),
+			Long.valueOf(dlFileEntry.getFolderId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalFolderId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingDLFileEntry.getFileName(),
-				ReflectionTestUtil.invoke(
-					existingDLFileEntry, "getOriginalFileName",
-					new Class<?>[0])));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "folderId"));
+		Assert.assertEquals(
+			dlFileEntry.getFileName(),
+			ReflectionTestUtil.invoke(
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "fileName"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getGroupId()),
+			Long.valueOf(dlFileEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalGroupId", new Class<?>[0]));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDLFileEntry.getFolderId()),
+			Long.valueOf(dlFileEntry.getFolderId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLFileEntry, "getOriginalFolderId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingDLFileEntry.getTitle(),
-				ReflectionTestUtil.invoke(
-					existingDLFileEntry, "getOriginalTitle", new Class<?>[0])));
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "folderId"));
+		Assert.assertEquals(
+			dlFileEntry.getTitle(),
+			ReflectionTestUtil.invoke(
+				dlFileEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "title"));
 	}
 
 	protected DLFileEntry addDLFileEntry() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DLFileEntry dlFileEntry = _persistence.create(pk);
+
+		dlFileEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		dlFileEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		dlFileEntry.setUuid(RandomTestUtil.randomString());
 
@@ -831,8 +889,6 @@ public class DLFileEntryPersistenceTest {
 		dlFileEntry.setVersion(RandomTestUtil.randomString());
 
 		dlFileEntry.setSize(RandomTestUtil.nextLong());
-
-		dlFileEntry.setReadCount(RandomTestUtil.nextInt());
 
 		dlFileEntry.setSmallImageId(RandomTestUtil.nextLong());
 

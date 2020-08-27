@@ -14,22 +14,7 @@
  */
 --%>
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
-
-<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
-taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
-
-<%@ page import="com.liferay.journal.model.JournalArticleDisplay" %><%@
-page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
-page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
-page import="com.liferay.portal.kernel.util.Constants" %><%@
-page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
-page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %>
-
-<portlet:defineObjects />
+<%@ include file="/init.jsp" %>
 
 <%
 JournalArticleDisplay articleDisplay = (JournalArticleDisplay)request.getAttribute(WebKeys.JOURNAL_ARTICLE_DISPLAY);
@@ -51,15 +36,18 @@ String viewMode = ParamUtil.getString(request, "viewMode");
 			<portlet:param name="viewMode" value="<%= Constants.PRINT %>" />
 		</portlet:renderURL>
 
-		<div class="print-action user-tool-asset-addon-entry">
+		<clay:content-col
+			cssClass="print-action user-tool-asset-addon-entry"
+		>
 			<liferay-ui:icon
 				icon="print"
 				label="<%= true %>"
+				linkCssClass="btn btn-monospaced btn-outline-borderless btn-outline-secondary btn-sm"
 				markupView="lexicon"
 				message='<%= LanguageUtil.format(request, "print-x-x", new Object[] {"hide-accessible", HtmlUtil.escape(articleDisplay.getTitle())}, false) %>'
-				url='<%= "javascript:" + renderResponse.getNamespace() + "printPage();" %>'
+				url='<%= "javascript:" + liferayPortletResponse.getNamespace() + "printPage();" %>'
 			/>
-		</div>
+		</clay:content-col>
 
 		<aui:script>
 			function <portlet:namespace />printPage() {

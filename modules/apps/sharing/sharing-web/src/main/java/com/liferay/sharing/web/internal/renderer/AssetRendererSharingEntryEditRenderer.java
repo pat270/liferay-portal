@@ -38,14 +38,18 @@ public class AssetRendererSharingEntryEditRenderer
 		throws PortalException {
 
 		try {
-			AssetRenderer assetRenderer =
+			AssetRenderer<?> assetRenderer =
 				AssetRendererSharingUtil.getAssetRenderer(sharingEntry);
+
+			if (assetRenderer == null) {
+				return null;
+			}
 
 			return assetRenderer.getURLEdit(
 				liferayPortletRequest, liferayPortletResponse);
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 	}
 

@@ -1,0 +1,801 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Content Pages";
+
+	setUp {
+		task ("Set up instance and sign in") {
+			TestCase.setUpPortalInstance();
+
+			User.firstLoginPG();
+		}
+
+		task ("Add a site via JSON") {
+			JSONGroup.addGroup(groupName = "Test Site Name");
+		}
+
+		task ("Activate local live staging") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name");
+
+			Staging.activateStagingCP(siteName = "Test Site Name");
+		}
+
+		task ("Import test fragments from dependencies folder") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name-staging");
+
+			FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+		}
+
+		task ("Add a content page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name-staging",
+				layoutName = "Test Content Page Name",
+				site = "false",
+				type = "content");
+
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name Staging");
+		}
+
+		task ("Add a Title fragment to the content page") {
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Title");
+		}
+
+		task ("Add a Rich Text fragment to the content page") {
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Rich Text",
+				targetFragmentName = "Title");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-112249. The Content Flags, Content Ratings and Content Display are displayed normally when enable local staging."
+	@priority = "4"
+	test AddAllThreeContentFragmentsInCollectionDisplayOneCellWithLocalLiveStaging {
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name-staging",
+			layoutName = "Test Content Page Name 2",
+			site = "false",
+			type = "content");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name-staging");
+
+		for (var i : list "1,2,3") {
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(
+				webContentContent = "Web Content Content ${i}",
+				webContentTitle = "Web Content Title ${i}");
+
+			PortletEntry.publish();
+		}
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name-staging");
+
+		AssetListsAdmin.addDynamicSelection(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "All Types");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name-staging");
+
+		AssetListsAdmin.editAssetList(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "Web Content Article");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name Staging");
+
+		PageEditor.addFragment(
+			collectionName = "Content Display",
+			fragmentName = "Collection Display");
+
+		PageEditor.editCollectionDisplay(
+			assetListName = "Dynamic Asset List Test",
+			fragmentName = "Collection Display");
+
+		var n = "1";
+
+		for (var title : list "Web Content Title 3,Web Content Title 2,Web Content Title 1") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_entryTitle = "${title}",
+				key_fragmentName = "Collection Display",
+				key_rowPosition = "${n}",
+				locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+
+			var n = ${n} + 1;
+		}
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			entryTitle = "Web Content Title 3",
+			fragmentName = "Content Flags");
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			fragmentName = "Content Ratings",
+			targetFragmentName = "Content Flags");
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			fragmentName = "Content Display",
+			targetFragmentName = "Content Ratings");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_RATING_STAR_DISABLE");
+
+			AssertVisible(
+				key_colPosition = "1",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_AVERAGE_STAR");
+
+			AssertTextEquals(
+				key_rowPosition = "${i}",
+				locator1 = "Fragment#CONTENT_FRAGMENT_BODY",
+				value1 = "Report");
+		}
+
+		var n = "1";
+
+		for (var content : list "Web Content Content 3,Web Content Content 2,Web Content Content 1") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_entryContent = "${content}",
+				key_fragmentName = "Collection Display",
+				key_rowPosition = "${n}",
+				locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+
+			var n = ${n} + 1;
+		}
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name Staging");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "${i}",
+				key_rowPosition = "1",
+				locator1 = "PageEditor#COLLECTION_ITEM_RATING_STAR_DISABLE");
+
+			AssertVisible(
+				key_colPosition = "${i}",
+				key_rowPosition = "1",
+				locator1 = "PageEditor#COLLECTION_ITEM_AVERAGE_STAR");
+
+			AssertVisible(
+				locator1 = "Button#REPORT",
+				value1 = "Report");
+		}
+
+		var n = "1";
+
+		for (var content : list "Web Content Content 3,Web Content Content 2,Web Content Content 1") {
+			AssertVisible(
+				key_colPosition = "${n}",
+				key_entryContent = "${content}",
+				key_rowPosition = "1",
+				locator1 = "Fragment#CONTENT_DISPLAY_FRAGMENT_CONTENT");
+
+			var n = ${n} + 1;
+		}
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "${i}",
+				key_rowPosition = "1",
+				locator1 = "PageEditor#COLLECTION_ITEM_RATING_STAR_EMPTY");
+
+			AssertVisible(
+				key_colPosition = "${i}",
+				key_rowPosition = "1",
+				locator1 = "PageEditor#COLLECTION_ITEM_AVERAGE_STAR");
+
+			AssertVisible(
+				locator1 = "Button#REPORT",
+				value1 = "Report");
+		}
+
+		var n = "1";
+
+		for (var content : list "Web Content Content 3,Web Content Content 2,Web Content Content 1") {
+			AssertVisible(
+				key_colPosition = "${n}",
+				key_entryContent = "${content}",
+				key_rowPosition = "1",
+				locator1 = "Fragment#CONTENT_DISPLAY_FRAGMENT_CONTENT");
+
+			var n = ${n} + 1;
+		}
+	}
+
+	@description = "This is a test for LPS-114174. Can create a Collection Page based on Collections or Collection Providers in Staging site."
+	@priority = "4"
+	test AddCollectionPageInLocalLiveStaging {
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name-staging");
+
+		for (var i : list "3,2,1") {
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(
+				webContentContent = "Web Content Content ${i}",
+				webContentTitle = "Web Content Title ${i}");
+
+			PortletEntry.publish();
+		}
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name-staging");
+
+		AssetListsAdmin.addDynamicSelection(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "All Types");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name-staging");
+
+		ContentPages.addPublicCollectionPage(
+			collectionName = "Dynamic Asset List Test",
+			pageName = "Content Collection Page Name",
+			tabName = "Collections");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "ControlMenu#PAGE_TYPE",
+			value1 = "Collection Page");
+
+		AssertVisible(
+			key_elementHeader = "//div[contains(.,'Dynamic Asset List Test') and contains(@id,'fragment-')]",
+			key_position = "1",
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_entryTitle = "Web Content Title ${i}",
+				key_fragmentName = "Collection Display",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+		}
+
+		PageEditor.clickConfigurableField(fragmentName = "Collection Display");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertTextEquals(
+			key_fieldLabel = "Collection",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "Dynamic Asset List Test");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name-staging");
+
+		ContentPages.addPublicCollectionPage(
+			collectionName = "Most Viewed Assets",
+			pageName = "Content Collection Page Name 2",
+			tabName = "Collection Providers");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "ControlMenu#PAGE_TYPE",
+			value1 = "Collection Page");
+
+		AssertVisible(
+			key_elementHeader = "//div[contains(.,'Most Viewed Assets') and contains(@id,'fragment-')]",
+			key_position = "1",
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
+
+		for (var i : list "1,2,3") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_entryTitle = "Web Content Title ${i}",
+				key_fragmentName = "Collection Display",
+				key_rowPosition = "${i}",
+				locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+		}
+
+		PageEditor.clickConfigurableField(fragmentName = "Collection Display");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertTextEquals(
+			key_fieldLabel = "Collection",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "Most Viewed Assets");
+	}
+
+	@description = "Published content pages should remain if staging is deactivated."
+	@priority = "4"
+	test DeactivateStagingAfterPublish {
+		task ("Publish the site to live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.publishCustomPublication();
+		}
+
+		task ("Deactivate staging") {
+			Staging.deactivateStagingCP(siteName = "Test Site Name");
+		}
+
+		task ("Navigate to the content page") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Assert the Title fragment is still present after deactivating staging") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment is still present after deactivating staging") {
+			AssertVisible(
+				key_content = "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "Content pages only appear in live view after being published and should appear properly."
+	@priority = "5"
+	test PublishContentPage {
+		property portal.acceptance = "true";
+
+		task ("Navigate to the content page in the staging site") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name Staging");
+		}
+
+		task ("Assert the Title fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment is present") {
+			AssertVisible(
+				key_content = "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Navigate to the URL of what the content page should be in the live site") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Assert the content page does not yet exist in the live site") {
+			AssertTextPresent(value1 = "The requested resource could not be found.");
+		}
+
+		task ("Publish the site to live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.publishCustomPublication();
+		}
+
+		task ("Navigate to the content page in the live site") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Assert the Title fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment is present") {
+			AssertVisible(
+				key_content = "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "Edits made to existing content pages should not appear in the live site until after published."
+	@priority = "5"
+	test PublishEditedContentPage {
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
+		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
+		property environment.acceptance = "true";
+		property portal.acceptance = "true";
+
+		task ("Publish the site to live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.publishCustomPublication();
+		}
+
+		task ("Navigate to the content page in the staging site at Edit mode") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name Staging");
+		}
+
+		task ("Add a Content fragment") {
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Content",
+				targetFragmentName = "Rich Text");
+		}
+
+		task ("Edit the Rich Text fragment's editable text") {
+			PageEditor.editFragmentText(
+				contributed = "false",
+				fragmentName = "Rich Text",
+				id = "rich-text",
+				text = "New editable fragment text");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Assert the Title fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment with updated editable text is present") {
+			AssertVisible(
+				key_content = "New editable fragment text",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Content fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean tempus eleifend lacus nec porttitor. Vestibulum pharetra ullamcorper felis volutpat commodo. Nam id ipsum placerat, hendrerit orci eu, congue nisi. Proin.",
+				key_fragmentClass = "body",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Navigate to the content page in the live site") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Assert the Title fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment with its original editable text is present") {
+			AssertVisible(
+				key_content = "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Content fragment is not present") {
+			AssertElementNotPresent(
+				key_content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean tempus eleifend lacus nec porttitor. Vestibulum pharetra ullamcorper felis volutpat commodo. Nam id ipsum placerat, hendrerit orci eu, congue nisi. Proin.",
+				key_fragmentClass = "body",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Publish the site to live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-staging");
+
+			Staging.publishCustomPublication();
+		}
+
+		task ("Navigate to the content page in the live site") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Assert the Title fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment with updated editable text is present") {
+			AssertVisible(
+				key_content = "New editable fragment text",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Content fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean tempus eleifend lacus nec porttitor. Vestibulum pharetra ullamcorper felis volutpat commodo. Nam id ipsum placerat, hendrerit orci eu, congue nisi. Proin.",
+				key_fragmentClass = "body",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "This is a test for LPS-112030. Can return to a give saved interactions via Undo History list in Staging site."
+	@priority = "3"
+	test RestoreSavedInteractionsViaUndoHistoryInStagingSite {
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name-staging",
+			layoutName = "Test Content Page Name 2",
+			site = "false",
+			type = "content");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name Staging");
+
+		PageEditor.addFragment(
+			collectionName = "Layout Elements",
+			fragmentName = "Container");
+
+		Click.clickNoWaitForVisible(
+			key_elementType = "Container",
+			key_position = "1",
+			locator1 = "PageEditor#LAYOUT_ELEMENTS_HEADER");
+
+		PageEditor.expandFragmentCollection(collectionName = "Basic Components");
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			key_collectionName = "Basic Components",
+			key_fragmentName = "Heading",
+			key_position = "1",
+			locator1 = "PageEditor#FRAGMENTS_AND_WIDGETS_TAB_FRAGMENT",
+			locator2 = "PageEditor#CONTAINER_CONTAINER",
+			value1 = "");
+
+		PageEditor.editFragmentText(
+			fragmentName = "Heading",
+			id = "element-text",
+			text = "New editable fragment text");
+
+		PageEditor.editLayoutContainer(
+			backgroundColor = "success",
+			panel = "Styles");
+
+		PageEditor.removeFragment(fragmentName = "Container");
+
+		Click(locator1 = "PageEditor#UNDO_HISTORY");
+
+		for (var menuItem : list "Add Container,Add Heading,Update Heading Editable Values,Update Container Configuration") {
+			MenuItem.viewVisible(menuItem = "${menuItem}");
+		}
+
+		MenuItem.click(menuItem = "Add Container");
+
+		PageEditor.viewFragment(fragmentName = "Container");
+
+		for (var menuItem : list "Add Container,Add Heading,Update Heading Editable Values,Update Container Configuration") {
+			MenuItem.viewVisible(menuItem = "${menuItem}");
+		}
+
+		MenuItem.click(menuItem = "Add Heading");
+
+		AssertElementPresent(
+			key_elementHeader = "//div[contains(@class,'page-editor__topper')][1]/div[contains(.,'Heading')]//li[contains(@class,'title')]",
+			key_position = "1",
+			locator1 = "PageEditor#CONTAINER_CONTAINER_NESTED_ELEMENT");
+
+		MenuItem.click(menuItem = "Update Heading Editable Values");
+
+		AssertTextEquals(
+			key_fragmentName = "heading",
+			locator1 = "Fragment#FRAGMENT_BASIC_COMPONENT",
+			value1 = "New editable fragment text");
+
+		for (var menuItem : list "Add Container,Add Heading,Update Heading Editable Values,Update Container Configuration") {
+			MenuItem.viewVisible(menuItem = "${menuItem}");
+		}
+
+		MenuItem.click(menuItem = "Update Container Configuration");
+
+		PageEditor.viewContainerStyle(
+			backgroundColor = "success",
+			position = "1");
+
+		for (var menuItem : list "Add Container,Add Heading,Update Heading Editable Values,Update Container Configuration") {
+			MenuItem.viewVisible(menuItem = "${menuItem}");
+		}
+	}
+
+	@description = "This is a test for LPS-111946. Undo can bring deleted fragments back in Staging site."
+	@priority = "3"
+	test UndoDeletedFragmentInStagingSite {
+		task ("Navigate to the content page edit mode in the staging site") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name Staging");
+		}
+
+		task ("Remove Title frgament in staging site") {
+			PageEditor.removeFragment(fragmentName = "Title");
+		}
+
+		task ("Assert the Title fragment is removed") {
+			PageEditor.viewNoFragment(fragmentName = "Title");
+		}
+
+		task ("Click Undo to revert change") {
+			Click(
+				key_text = "undo",
+				locator1 = "Icon#ANY");
+		}
+
+		task ("Assert the Title fragment is present") {
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+		}
+
+		task ("Assert the Rich Text fragment is present") {
+			AssertVisible(
+				key_content = "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "This is a test for LPS-112093. The Web Content Articles of collection are displayed normally when enable local staging."
+	@priority = "4"
+	test ViewWCViaContentDisplayInCollectionDisplayWithLocalLiveStaging {
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name-staging",
+			layoutName = "Test Content Page Name 2",
+			site = "false",
+			type = "content");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name-staging");
+
+		for (var i : list "1,2,3") {
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(
+				webContentContent = "Web Content Content ${i}",
+				webContentTitle = "Web Content Title ${i}");
+
+			PortletEntry.publish();
+		}
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name-staging");
+
+		AssetListsAdmin.addDynamicSelection(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "All Types");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name-staging");
+
+		AssetListsAdmin.editAssetList(assetListTitle = "Dynamic Asset List Test");
+
+		AssetListsAdmin.configureAssetEntryType(selectedAsset = "Web Content Article");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name Staging");
+
+		PageEditor.addFragment(
+			collectionName = "Content Display",
+			fragmentName = "Collection Display");
+
+		PageEditor.editCollectionDisplay(
+			assetListName = "Dynamic Asset List Test",
+			fragmentName = "Collection Display");
+
+		var n = "1";
+
+		for (var title : list "Web Content Title 3,Web Content Title 2,Web Content Title 1") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_entryTitle = "${title}",
+				key_fragmentName = "Collection Display",
+				key_rowPosition = "${n}",
+				locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
+
+			var n = ${n} + 1;
+		}
+
+		PageEditor.addFragmentToCollectionDisplay(
+			collectionName = "Content Display",
+			entryTitle = "Web Content Title 3",
+			fragmentName = "Content Display");
+
+		var n = "1";
+
+		for (var content : list "Web Content Content 3,Web Content Content 2,Web Content Content 1") {
+			AssertVisible(
+				key_colPosition = "1",
+				key_entryContent = "${content}",
+				key_fragmentName = "Collection Display",
+				key_rowPosition = "${n}",
+				locator1 = "PageEditor#COLLECTION_ITEM_CONTENT");
+
+			var n = ${n} + 1;
+		}
+
+		PageEditor.waitForAutoSave();
+
+		PageEditor.gotoConfiguration(fragmentName = "Content Display");
+
+		AssertSelectedLabel(
+			key_fieldLabel = "Template",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "Default Template");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name Staging");
+
+		var n = "1";
+
+		for (var content : list "Web Content Content 3,Web Content Content 2,Web Content Content 1") {
+			AssertVisible(
+				key_colPosition = "${n}",
+				key_entryContent = "${content}",
+				key_rowPosition = "1",
+				locator1 = "Fragment#CONTENT_DISPLAY_FRAGMENT_CONTENT");
+
+			var n = ${n} + 1;
+		}
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Test Content Page Name 2",
+			siteName = "Test Site Name");
+
+		var n = "1";
+
+		for (var content : list "Web Content Content 3,Web Content Content 2,Web Content Content 1") {
+			AssertVisible(
+				key_colPosition = "${n}",
+				key_entryContent = "${content}",
+				key_rowPosition = "1",
+				locator1 = "Fragment#CONTENT_DISPLAY_FRAGMENT_CONTENT");
+
+			var n = ${n} + 1;
+		}
+	}
+
+}

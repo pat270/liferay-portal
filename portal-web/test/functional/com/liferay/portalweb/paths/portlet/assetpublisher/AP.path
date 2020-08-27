@@ -73,6 +73,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ASSET_ABSTRACT_TITLE_EXACT_MATCH</td>
+	<td>//section[@class='portlet']//h4/*[contains(@class,'asset-title')][normalize-space(text())='${key_assetTitle}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ASSET_ABSTRACT_GENERIC_TITLE_1</td>
 	<td>//h4/*[contains(@class,'asset-title')]</td>
 	<td></td>
@@ -98,8 +103,13 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ASSET_ABSTRACT_DESCRIPTION_EXACT_MATCH</td>
+	<td>//section[@class='portlet']//h4/*[contains(@class,'asset-title')][normalize-space(text())='${key_assetTitle}']/../../../div[contains(@class,'asset-content')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CUSTOM_ASSET_ABSTRACT_DESCRIPTION</td>
-	<td>//div[@class='asset-abstract' and h3[contains(.,'${key_assetTitle}')]]/div[contains(@class,'asset-content')]</td>
+	<td>//div[contains(@class,'asset-abstract') and h3[contains(.,'${key_assetTitle}')]]/div[contains(@class,'asset-content')]/div[contains(@class,'asset-summary')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -206,6 +216,11 @@
 <tr>
 	<td>METADATA_CATEGORY</td>
 	<td>//div[contains(@class,'categories')]/span/a[contains(.,'${key_categoryName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>METADATA_PRIORITY</td>
+	<td>//div[contains(@class,'asset-priority') and contains(.,'${key_assetPriority}')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -14,13 +14,14 @@
 
 package com.liferay.journal.web.internal.portlet.action;
 
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateService;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -30,6 +31,7 @@ import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.File;
 
@@ -39,6 +41,7 @@ import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -67,7 +70,7 @@ public class AddDDMTemplateMVCActionCommand extends BaseMVCActionCommand {
 		long groupId = ParamUtil.getLong(uploadPortletRequest, "groupId");
 		long classPK = ParamUtil.getLong(uploadPortletRequest, "classPK");
 		String templateKey = ParamUtil.getString(
-			uploadPortletRequest, "ddmTemplateKey");
+			uploadPortletRequest, "templateKey");
 		Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
 			uploadPortletRequest, "name");
 		Map<Locale, String> descriptionMap =
@@ -101,12 +104,32 @@ public class AddDDMTemplateMVCActionCommand extends BaseMVCActionCommand {
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
 
-		_ddmTemplateService.addTemplate(
+		DDMTemplate ddmTemplate = _ddmTemplateService.addTemplate(
 			groupId, _portal.getClassNameId(DDMStructure.class), classPK,
 			_portal.getClassNameId(JournalArticle.class), templateKey, nameMap,
 			descriptionMap, DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY,
 			StringPool.BLANK, language, script, cacheable, smallImage,
 			smallImageURL, smallImageFile, serviceContext);
+
+		boolean saveAndContinue = ParamUtil.getBoolean(
+			uploadPortletRequest, "saveAndContinue");
+
+		if (saveAndContinue) {
+			String redirect = ParamUtil.getString(
+				uploadPortletRequest, "redirect");
+
+			LiferayPortletResponse liferayPortletResponse =
+				_portal.getLiferayPortletResponse(actionResponse);
+
+			PortletURL portletURL = liferayPortletResponse.createRenderURL();
+
+			portletURL.setParameter("mvcPath", "/edit_ddm_template.jsp");
+			portletURL.setParameter("redirect", redirect);
+			portletURL.setParameter(
+				"ddmTemplateId", String.valueOf(ddmTemplate.getTemplateId()));
+
+			actionRequest.setAttribute(WebKeys.REDIRECT, portletURL.toString());
+		}
 	}
 
 	@Reference

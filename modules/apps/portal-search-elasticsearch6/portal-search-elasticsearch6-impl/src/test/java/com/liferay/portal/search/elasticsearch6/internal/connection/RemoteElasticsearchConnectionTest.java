@@ -18,6 +18,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.search.elasticsearch6.configuration.OperationMode;
 
@@ -43,23 +44,19 @@ public class RemoteElasticsearchConnectionTest {
 		_remoteElasticsearchConnection = new RemoteElasticsearchConnection();
 
 		_remoteElasticsearchConnection.props = PropsTestUtil.setProps(
-			new HashMap<String, Object>() {
-				{
-					put(
-						PropsKeys.DNS_SECURITY_ADDRESS_TIMEOUT_SECONDS,
-						String.valueOf(2));
-					put(
-						PropsKeys.DNS_SECURITY_THREAD_LIMIT,
-						String.valueOf(10));
-				}
-			});
+			HashMapBuilder.<String, Object>put(
+				PropsKeys.DNS_SECURITY_ADDRESS_TIMEOUT_SECONDS,
+				String.valueOf(2)
+			).put(
+				PropsKeys.DNS_SECURITY_THREAD_LIMIT, String.valueOf(10)
+			).build());
 	}
 
 	@Test
 	public void testModifyConnected() {
-		HashMap<String, Object> properties = new HashMap<>();
-
-		properties.put("operationMode", OperationMode.REMOTE.name());
+		HashMap<String, Object> properties = HashMapBuilder.<String, Object>put(
+			"operationMode", OperationMode.REMOTE.name()
+		).build();
 
 		_remoteElasticsearchConnection.activate(properties);
 
@@ -82,9 +79,9 @@ public class RemoteElasticsearchConnectionTest {
 
 	@Test
 	public void testModifyConnectedWithInvalidPropertiesThenValidProperties() {
-		HashMap<String, Object> properties = new HashMap<>();
-
-		properties.put("operationMode", OperationMode.REMOTE.name());
+		HashMap<String, Object> properties = HashMapBuilder.<String, Object>put(
+			"operationMode", OperationMode.REMOTE.name()
+		).build();
 
 		_remoteElasticsearchConnection.activate(properties);
 
@@ -101,7 +98,7 @@ public class RemoteElasticsearchConnectionTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		Assert.assertFalse(_remoteElasticsearchConnection.isConnected());
@@ -117,11 +114,10 @@ public class RemoteElasticsearchConnectionTest {
 	public void testModifyUnconnected() {
 		Assert.assertFalse(_remoteElasticsearchConnection.isConnected());
 
-		HashMap<String, Object> properties = new HashMap<>();
-
-		properties.put("operationMode", OperationMode.REMOTE.name());
-
-		_remoteElasticsearchConnection.modified(properties);
+		_remoteElasticsearchConnection.modified(
+			HashMapBuilder.<String, Object>put(
+				"operationMode", OperationMode.REMOTE.name()
+			).build());
 
 		Assert.assertTrue(_remoteElasticsearchConnection.isConnected());
 	}

@@ -17,7 +17,7 @@ package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -151,8 +151,8 @@ public class EntityFieldsProvider {
 
 			return searchDateFormat.format(date);
 		}
-		catch (ParseException pe) {
-			throw new RuntimeException(pe);
+		catch (ParseException parseException) {
+			throw new RuntimeException(parseException);
 		}
 	}
 

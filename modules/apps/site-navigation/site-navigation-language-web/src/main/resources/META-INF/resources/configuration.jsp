@@ -24,7 +24,7 @@
 	action="<%= configurationActionURL %>"
 	method="post"
 	name="fm"
-	onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveConfiguration();" %>'
+	onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveConfiguration();" %>'
 >
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
@@ -79,17 +79,17 @@
 	function <portlet:namespace />saveConfiguration() {
 		var form = document.<portlet:namespace />fm;
 
-		var currentLanguageIdsInput = Liferay.Util.getFormElement(form, 'currentLanguageIds');
+		var currentLanguageIdsInput = Liferay.Util.getFormElement(
+			form,
+			'currentLanguageIds'
+		);
 
 		if (currentLanguageIdsInput) {
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						languageIds: Liferay.Util.listSelect(currentLanguageIdsInput)
-					}
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					languageIds: Liferay.Util.listSelect(currentLanguageIdsInput),
+				},
+			});
 		}
 	}
 </script>

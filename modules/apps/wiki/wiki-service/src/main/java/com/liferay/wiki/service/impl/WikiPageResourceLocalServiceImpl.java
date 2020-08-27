@@ -14,14 +14,21 @@
 
 package com.liferay.wiki.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.wiki.model.WikiPageResource;
 import com.liferay.wiki.service.base.WikiPageResourceLocalServiceBaseImpl;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Brian Wing Shun Chan
  * @author Raymond Augé
  */
+@Component(
+	property = "model.class.name=com.liferay.wiki.model.WikiPageResource",
+	service = AopService.class
+)
 public class WikiPageResourceLocalServiceImpl
 	extends WikiPageResourceLocalServiceBaseImpl {
 
@@ -38,19 +45,7 @@ public class WikiPageResourceLocalServiceImpl
 		pageResource.setNodeId(nodeId);
 		pageResource.setTitle(title);
 
-		wikiPageResourcePersistence.update(pageResource);
-
-		return pageResource;
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #addPageResource(long, long, String)}
-	 */
-	@Deprecated
-	@Override
-	public WikiPageResource addPageResource(long nodeId, String title) {
-		throw new UnsupportedOperationException();
+		return wikiPageResourcePersistence.update(pageResource);
 	}
 
 	@Override
@@ -94,23 +89,6 @@ public class WikiPageResourceLocalServiceImpl
 
 		if (pageResource == null) {
 			pageResource = addPageResource(groupId, nodeId, title);
-		}
-
-		return pageResource.getResourcePrimKey();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 *             #getPageResourcePrimKey(long, long, String)}
-	 */
-	@Deprecated
-	@Override
-	public long getPageResourcePrimKey(long nodeId, String title) {
-		WikiPageResource pageResource = wikiPageResourcePersistence.fetchByN_T(
-			nodeId, title);
-
-		if (pageResource == null) {
-			pageResource = addPageResource(nodeId, title);
 		}
 
 		return pageResource.getResourcePrimKey();

@@ -1,0 +1,166 @@
+@component-name = "portal-workflow"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Workflow";
+	var pageName = "Message Boards Page";
+	var portletName = "Message Boards";
+	var workflowAssetType = "Message Boards Message";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Message Boards Message");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Message Boards Page");
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		Portlet.addPG(portletName = "Message Boards");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			MessageboardsCategory.tearDownCP();
+
+			MessageboardsThread.tearDownCP();
+
+			MessageboardsPortlet.tearDownConfigurationGeneralCP();
+
+			Page.tearDownPG();
+
+			Workflow.tearDownPortalWorkflow();
+
+			Workflow.tearDownSiteWorkflow();
+		}
+	}
+
+	@priority = "4"
+	test ApproveMessageBoardsThreadPG {
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.addWithWorkflowPG(
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject");
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.viewWithWorkflowPG(
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject",
+			workflowTask = "Review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "MB Thread Subject",
+			workflowAssetType = "Message Boards Message",
+			workflowTask = "Review");
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.viewWithWorkflowPG(
+			pageName = "Message Boards Page",
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject",
+			workflowTask = "Review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "MB Thread Subject",
+			workflowAssetType = "Message Boards Message",
+			workflowTask = "Review");
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.gotoPG(
+			lastPostUserName = "Test Test",
+			replyCount = "0",
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject");
+
+		MessageboardsThread.viewPG(
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject");
+
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Submissions");
+
+		Workflow.gotoViewCompletedAssetViaMySubmissions(workflowAssetTitle = "MB Thread Subject");
+
+		MessageboardsThread.viewAsWorkflowAsset(
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject");
+
+		MessageboardsThread.gotoViewInContext();
+
+		MessageboardsThread.viewPG(
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject");
+	}
+
+	@priority = "4"
+	test RejectMessageBoardsThreadPG {
+		property test.name.skip.portal.instance = "WorkflowadminPGMessageboards#RejectMessageBoardsThreadPG";
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.addWithWorkflowPG(
+			pageName = "Message Boards Page",
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "MB Thread Subject",
+			workflowAssetType = "Message Boards Message",
+			workflowTask = "Review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.rejectTaskByActions(
+			workflowAssetTitle = "MB Thread Subject",
+			workflowAssetType = "Message Boards Message",
+			workflowTask = "Review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewRejectedTask(
+			workflowAssetTitle = "MB Thread Subject",
+			workflowAssetType = "Message Boards Message");
+
+		Navigator.gotoPage(pageName = "Message Boards Page");
+
+		MessageboardsThread.viewWithWorkflowPG(
+			pageName = "Message Boards Page",
+			threadBody = "MB Thread Body",
+			threadSubject = "MB Thread Subject",
+			workflowTask = "Update");
+	}
+
+}

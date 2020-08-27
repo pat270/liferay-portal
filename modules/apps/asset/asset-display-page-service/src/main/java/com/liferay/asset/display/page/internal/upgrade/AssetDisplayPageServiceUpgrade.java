@@ -16,11 +16,16 @@ package com.liferay.asset.display.page.internal.upgrade;
 
 import com.liferay.asset.display.page.internal.upgrade.v2_0_0.util.AssetDisplayPageEntryTable;
 import com.liferay.asset.display.page.internal.upgrade.v2_1_0.UpgradeAssetDisplayLayout;
+import com.liferay.asset.display.page.internal.upgrade.v2_1_1.UpgradeAssetDisplayPrivateLayout;
+import com.liferay.asset.display.page.internal.upgrade.v2_2_1.UpgradeAssetDisplayLayoutFriendlyURLPrivateLayout;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
+import com.liferay.portal.kernel.upgrade.UpgradeCTModel;
+import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 
 import org.osgi.service.component.annotations.Component;
@@ -45,6 +50,33 @@ public class AssetDisplayPageServiceUpgrade implements UpgradeStepRegistrator {
 				_assetEntryLocalService, _layoutLocalService,
 				_layoutPageTemplateEntryLocalService,
 				_layoutPageTemplateEntryService));
+
+		registry.register(
+			"2.1.0", "2.1.1",
+			new UpgradeAssetDisplayPrivateLayout(
+				_layoutLocalService, _resourceLocalService));
+
+		registry.register(
+			"2.1.1", "2.2.0",
+			new UpgradeMVCCVersion() {
+
+				@Override
+				protected String[] getModuleTableNames() {
+					return new String[] {"AssetDisplayPageEntry"};
+				}
+
+			});
+
+		registry.register(
+			"2.2.0", "2.2.1",
+			new UpgradeAssetDisplayLayoutFriendlyURLPrivateLayout());
+
+		registry.register(
+			"2.2.1", "2.2.2",
+			new UpgradeAssetDisplayLayoutFriendlyURLPrivateLayout());
+
+		registry.register(
+			"2.2.2", "2.3.0", new UpgradeCTModel("AssetDisplayPageEntry"));
 	}
 
 	@Reference
@@ -59,5 +91,8 @@ public class AssetDisplayPageServiceUpgrade implements UpgradeStepRegistrator {
 
 	@Reference
 	private LayoutPageTemplateEntryService _layoutPageTemplateEntryService;
+
+	@Reference
+	private ResourceLocalService _resourceLocalService;
 
 }

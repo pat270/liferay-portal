@@ -17,9 +17,7 @@ package com.liferay.portal.cache.ehcache.internal.event;
 import com.liferay.portal.cache.PortalCacheListenerFactory;
 import com.liferay.portal.cache.PortalCacheReplicator;
 import com.liferay.portal.cache.PortalCacheReplicatorFactory;
-import com.liferay.portal.cache.ehcache.internal.EhcacheConstants;
-import com.liferay.portal.cache.ehcache.spi.event.ConfigurableEhcachePortalCacheListener;
-import com.liferay.portal.cache.ehcache.spi.event.EhcachePortalCacheListenerAdapter;
+import com.liferay.portal.cache.ehcache.internal.constants.EhcacheConstants;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheException;
 import com.liferay.portal.kernel.cache.PortalCacheListener;
@@ -92,11 +90,11 @@ public class EhcachePortalCacheListenerFactory
 
 			return new EhcachePortalCacheListenerAdapter<>(cacheEventListener);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SystemException(
 				"Unable to instantiate cache event listener factory " +
 					className,
-				e);
+				exception);
 		}
 	}
 

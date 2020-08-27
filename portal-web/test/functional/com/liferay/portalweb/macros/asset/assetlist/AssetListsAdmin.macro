@@ -1,0 +1,496 @@
+definition {
+
+	macro addDynamicSelection {
+		if (isSet(depotName)) {
+			Click(locator1 = "Message#EMPTY_INFO_TAGLIB");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Dropdown#EMPTY_MESSAGE_DROPDOWN");
+
+			Click(
+				key_menuItem = "Dynamic Selection",
+				locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
+		}
+
+		else {
+
+			LexiconEntry.gotoAddMenuItem(menuItem = "Dynamic Selection");
+
+		}
+
+		PortletEntry.inputText(
+			fieldLabel = "Title",
+			text = "${assetListTitle}");
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addKeywordsFilter {
+		Panel.expandPanel(panel = "Source");
+
+		if (!(IsSelectedLabel(locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT", value1 = "All Types"))) {
+			Select(
+				locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT",
+				value1 = "All Types");
+		}
+
+		Panel.expandPanel(panel = "Filter");
+
+		Select(
+			locator1 = "APConfiguration#FILTER_CATEGORIZATION_SELECT",
+			value1 = "Keywords");
+
+		Select(
+			locator1 = "APConfiguration#FILTER_QUERY_CONTAINS",
+			value1 = "${queryContains}");
+
+		Select(
+			locator1 = "APConfiguration#FILTER_QUERY_AND_OPERATOR",
+			value1 = "${queryAndOperator}");
+
+		Type(
+			locator1 = "AssetLists#ASSET_LIST_KEYWORDS_FIELD",
+			value1 = "${keyWords}");
+
+		PortletEntry.save();
+
+		AssertTextEquals(
+			locator1 = "AssetLists#ASSET_LIST_KEYWORDS_FIELD",
+			value1 = "${keyWords}");
+	}
+
+	macro addManualSelection {
+		if (isSet(depotName)) {
+			Click(locator1 = "Message#EMPTY_INFO_TAGLIB");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Dropdown#EMPTY_MESSAGE_DROPDOWN");
+
+			Click(
+				key_menuItem = "Manual Selection",
+				locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
+		}
+
+		else {
+
+			LexiconEntry.gotoAddMenuItem(menuItem = "Manual Selection");
+
+		}
+
+		PortletEntry.inputText(
+			fieldLabel = "Title",
+			text = "${assetListTitle}");
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addSelection {
+		Click(locator1 = "Button#NEW");
+
+		MenuItem.click(menuItem = "${menuItem}");
+
+		PortletEntry.inputText(
+			fieldLabel = "Title",
+			text = "${collectionName}");
+
+		Button.clickSave();
+
+		Select(
+			locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT",
+			value1 = "${selectedAsset}");
+
+		Pause(locator1 = "3000");
+
+		PortletEntry.save();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addTagsFilter {
+		Panel.expandPanel(panel = "Filter");
+
+		if (isSet(queryAndOperator)) {
+			Select(
+				locator1 = "APConfiguration#FILTER_QUERY_AND_OPERATOR",
+				value1 = "${queryAndOperator}");
+		}
+
+		if (isSet(queryContains)) {
+			Select(
+				locator1 = "APConfiguration#FILTER_QUERY_CONTAINS",
+				value1 = "${queryContains}");
+		}
+
+		Select(
+			locator1 = "APConfiguration#FILTER_CATEGORIZATION_SELECT",
+			value1 = "Tags");
+
+		AssetCategorization.selectTag(tagNameList = "${tagNameList}");
+
+		PortletEntry.save();
+	}
+
+	macro configureAssetEntrySubtype {
+		Panel.expandPanel(panel = "Source");
+
+		Select(
+			locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_SUBTYPE_SELECT",
+			value1 = "${selectedSubtype}");
+
+		Pause(locator1 = "3000");
+
+		PortletEntry.save();
+	}
+
+	macro configureAssetEntryType {
+		Panel.expandPanel(panel = "Source");
+
+		Select(
+			locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT",
+			value1 = "${selectedAsset}");
+
+		Pause(locator1 = "3000");
+
+		PortletEntry.save();
+	}
+
+	macro configureItemTypeInManualCollection {
+		if (isSet(itemType)) {
+			Select(
+				locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT",
+				value1 = "${itemType}");
+
+			Pause(locator1 = "3000");
+		}
+
+		if (isSet(itemSubtype)) {
+			Select(
+				locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_SUBTYPE_SELECT",
+				value1 = "${itemSubtype}");
+
+			Pause(locator1 = "3000");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro configureScope {
+		Click(
+			key_title = "${assetListTitle}",
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+
+		if (isSet(selectedAsset)) {
+			Panel.expandPanel(panel = "Source");
+
+			Select(
+				locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT",
+				value1 = "${selectedAsset}");
+		}
+
+		Panel.expandPanel(panel = "Scope");
+
+		if (isSet(otherSite)) {
+			AssertClick(
+				locator1 = "Configuration#SCOPE_SELECT",
+				value1 = "Select");
+
+			MenuItem.click(menuItem = "Other Site or Asset Library...");
+
+			SelectFrame(value1 = "relative=top");
+
+			SelectFrame(locator1 = "IFrame#SELECT_SITES");
+
+			Navigator.gotoNavTab(navTab = "My Sites");
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+			LexiconEntry.gotoEntry(rowEntry = "${otherSite}");
+		}
+
+		if (isSet(defaultSite)) {
+			AssertClick(
+				locator1 = "Configuration#SCOPE_SELECT",
+				value1 = "Select");
+
+			AssertClick(
+				key_menuItem = "${defaultSite}",
+				locator1 = "AssetLists#ASSET_LIST_SCOPE_ITEM",
+				value1 = "${defaultSite}");
+		}
+
+		SelectFrameTop();
+
+		PortletEntry.save();
+	}
+
+	macro deleteEntry {
+		LexiconList.delete(listEntry = "${assetListTitle}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro deleteManualSelectionAssets {
+		for (var assetName : list "${assetsList}") {
+			Click(
+				key_entryName = "${assetName}",
+				locator1 = "LexiconTable#TABLE_ENTRY_DELETE");
+		}
+	}
+
+	macro editAssetList {
+		AssetListsAdmin.gotoEntryMenuItem(
+			assetListTitle = "${assetListTitle}",
+			item = "Edit");
+	}
+
+	macro gotoEntry {
+		Click(
+			key_title = "${assetListName}",
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+	}
+
+	macro gotoEntryMenuItem {
+		LexiconList.clickEllipsisItem(
+			item = "${item}",
+			listEntry = "${assetListTitle}");
+	}
+
+	macro gotoPersonalizationMenuItem {
+		Click(locator1 = "AssetLists#PERSONALIZATION_DROPDOWN");
+
+		Click(
+			key_menuItem = "View Content",
+			locator1 = "AssetLists#PERSONALIZATION_DROPDOWN_ITEM");
+	}
+
+	macro openAssetListsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_asset_list_web_portlet_AssetListPortlet");
+	}
+
+	macro removeScope {
+		Click(
+			key_title = "${assetListTitle}",
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+
+		Panel.expandPanel(panel = "Scope");
+
+		Click(
+			key_scopeName = "${scopeName}",
+			locator1 = "AssetLists#ASSET_LIST_REMOVE_SCOPE");
+
+		PortletEntry.save();
+
+		AssertTextNotPresent(
+			key_scopeName = "${scopeName}",
+			locator1 = "AssetLists#ASSET_LIST_SCOPE_NAME",
+			value1 = "${scopeName}");
+
+		SelectFrameTop();
+	}
+
+	macro renameAssetList {
+		AssetListsAdmin.gotoEntryMenuItem(
+			assetListTitle = "${oldAssetListTitle}",
+			item = "Rename");
+
+		PortletEntry.inputText(
+			fieldLabel = "Title",
+			text = "${newAssetListTitle}");
+
+		Button.clickSave();
+	}
+
+	macro selectAsset {
+		var key_title = "${assetListName}";
+		var key_assetType = "${assetType}";
+
+		Click(locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+
+		Pause(locator1 = "3000");
+
+		if (IsElementPresent(locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT")) {
+			AssetListsAdmin.configureItemTypeInManualCollection(
+				itemSubtype = "${itemSubtype}",
+				itemType = "${itemType}");
+		}
+
+		Click(locator1 = "AssetLists#ASSET_LIST_SELECT_BUTTON");
+
+		Click(locator1 = "AssetLists#ASSET_TYPE_DROPDOWN_ITEM");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Pause(locator1 = "3000");
+
+		if (isSet(depotName)) {
+			AssertClick(
+				key_breadcrumbName = "Sites and Libraries",
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+				value1 = "Sites and Libraries");
+
+			AssertClick(
+				key_groupTab = "Asset Library",
+				locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+				value1 = "Asset Library");
+
+			LexiconCard.clickCard(card = "${depotName}");
+		}
+
+		if (isSet(entryList)) {
+			for (var assetName : list "${entryList}") {
+
+				LexiconEntry.selectEntry(rowEntry = "${assetName}");
+
+				Pause(locator1 = "3000");
+			}
+		}
+		else {
+			LexiconEntry.selectEntry(rowEntry = "${assetName}");
+		}
+
+		SelectFrameTop();
+
+		Button.clickAdd();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro viewAssetList {
+		var key_title = "${assetListTitle}";
+		var key_type = "${type}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE",
+			value1 = "${assetListTitle}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TYPE",
+			value1 = "${type}");
+	}
+
+	macro viewAssetTypeList {
+		var key_title = "${assetListName}";
+
+		Click(locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+
+		if (isSet(manualSelection)) {
+			if (IsElementPresent(locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT")) {
+				if (isSet(itemType)) {
+					Select(
+						locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT",
+						value1 = "${itemType}");
+				}
+
+				if (isSet(itemSubtype)) {
+					Select(
+						locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_SUBTYPE_SELECT",
+						value1 = "${itemSubtype}");
+				}
+
+				Pause(locator1 = "3000");
+
+				PortletEntry.save();
+			}
+
+			if (isSet(allAssetsDisabled)) {
+				AssertElementNotPresent(locator1 = "AssetLists#ASSET_LIST_SELECT_BUTTON");
+			}
+			else {
+				Click(locator1 = "AssetLists#ASSET_LIST_SELECT_BUTTON");
+
+				for (var assetType : list "${assetType}") {
+					var key_assetType = "${assetType}";
+
+					AssertElementPresent(locator1 = "AssetLists#ASSET_TYPE_DROPDOWN_ITEM");
+				}
+			}
+		}
+
+		if (isSet(dynamicSelection)) {
+			Panel.expandPanel(panel = "Source");
+
+			Click(locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_SELECT");
+
+			if (isSet(allAssetsDisabled)) {
+				for (var assetType : list "Document,Documents Folder,Web Content Article,Web Content Folder") {
+					AssertElementNotPresent(
+						key_assetType = "${assetType}",
+						locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_OPTION");
+				}
+			}
+			else {
+				for (var assetType : list "${assetType}") {
+					AssertElementPresent(
+						key_assetType = "${assetType}",
+						locator1 = "APConfiguration#SOURCE_SCOPE_ASSET_TYPE_OPTION");
+				}
+			}
+		}
+	}
+
+	macro viewContent {
+		Click(
+			key_title = "${assetListTitle}",
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+
+		Click(locator1 = "AssetLists#ASSET_LIST_ELLIPSIS");
+
+		Click(
+			key_menuItem = "View Items",
+			locator1 = "AssetLists#PERSONALIZATION_DROPDOWN_ITEM");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextEquals(
+			key_assetTitle = "${assetTitle}",
+			locator1 = "AssetLists#ASSET_TITLE_ROW",
+			value1 = "${assetTitle}");
+
+		AssertTextEquals(
+			key_assetTitle = "${assetTitle}",
+			locator1 = "AssetLists#ASSET_TYPE_ROW",
+			value1 = "${assetType}");
+
+		SelectFrameTop();
+
+		Click(locator1 = "Icon#CLOSE");
+	}
+
+	macro viewNoContent {
+		Click(
+			key_title = "${assetListTitle}",
+			locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
+
+		Click(locator1 = "AssetLists#ASSET_LIST_ELLIPSIS");
+
+		Click(
+			key_menuItem = "View Items",
+			locator1 = "AssetLists#PERSONALIZATION_DROPDOWN_ITEM");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		var key_assetTitle = "${assetTitle}";
+
+		AssertElementNotPresent(locator1 = "AssetLists#ASSET_TITLE_ROW");
+
+		AssertElementNotPresent(locator1 = "AssetLists#ASSET_TYPE_ROW");
+
+		SelectFrameTop();
+
+		Click(locator1 = "Icon#CLOSE");
+	}
+
+	macro viewUsages {
+		AssetListsAdmin.gotoEntryMenuItem(
+			assetListTitle = "${assetListTitle}",
+			item = "View Usages");
+
+		var usageAmount = "${usageAmount}";
+		var usageType = "${usageType}";
+
+		AssertElementPresent(locator1 = "AssetLists#ASSET_LIST_USAGES");
+	}
+
+}

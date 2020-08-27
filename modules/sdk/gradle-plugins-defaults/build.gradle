@@ -1,6 +1,10 @@
 import com.liferay.gradle.util.copy.ReplaceLeadingPathAction
 
-String gradleVersion = "4.10.2"
+apply plugin: "org.ysb33r.gradletest"
+
+task copyGradleTestDependencies(type: Copy)
+
+String gradleVersion = "5.6.4"
 String pluginsSDKVersion = project.properties["plugins.sdk.version"]
 
 tasks.eclipse {
@@ -13,28 +17,40 @@ configurations {
 	}
 }
 
+copyGradleTestDependencies {
+	from configurations.compile
+	into jar.destinationDir
+}
+
 dependencies {
-	compile group: "com.gradle.publish", name: "plugin-publish-plugin", version: "0.9.9"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins", version: "4.0.10"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.app.javadoc.builder", version: "1.2.2"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.baseline", version: "2.1.0"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.cache", version: "1.0.16"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.change.log.builder", version: "1.1.3"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.dependency.checker", version: "1.0.3"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.go", version: "1.0.0"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.jsdoc", version: "2.0.29"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.lang.merger", version: "1.1.2"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.patcher", version: "1.0.16"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "2.2.12"
-	compile group: "com.liferay", name: "com.liferay.gradle.plugins.whip", version: "1.0.7"
+	compile group: "com.github.jk1", name: "gradle-license-report", version: "1.8"
+	compile group: "com.gradle.publish", name: "plugin-publish-plugin", version: "0.11.0"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins", version: "11.0.27"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.app.javadoc.builder", version: "1.2.3"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.baseline", version: "6.0.2"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.cache", version: "1.0.17"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.change.log.builder", version: "1.1.4"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.dependency.checker", version: "1.0.4"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.go", version: "1.0.1"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.jsdoc", version: "2.0.55"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.patcher", version: "1.0.18"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "2.2.32"
+	compile group: "com.liferay", name: "com.liferay.gradle.plugins.whip", version: "1.0.8"
 	compile group: "com.netflix.nebula", name: "gradle-extra-configurations-plugin", version: "3.1.0"
-	compile group: "gradle.plugin.com.github.jk1", name: "gradle-license-report", version: "0.3.11"
+	compile group: "gradle.plugin.com.github.spotbugs.snom", name: "spotbugs-gradle-plugin", version: "4.0.0"
 	compile group: "org.apache.aries.jmx", name: "org.apache.aries.jmx.api", version: "1.1.0"
 	compile group: "org.springframework.boot", name: "spring-boot-gradle-plugin", version: "1.5.7.RELEASE"
 
 	compileOnly fileTree(builtBy: [rootProject.tasks.getByName("extractGradleApi" + gradleVersion.replace(".", ""))], dir: new File(rootProject.buildDir, "gradle-${gradleVersion}"))
 
 	pluginsSDK group: "com.liferay.portal", name: "com.liferay.portal.plugins.sdk", version: pluginsSDKVersion
+}
+
+gradleTest {
+	dependsOn copyGradleTestDependencies
+	dependsOn jar
+
+	versions gradleVersion
 }
 
 processResources {

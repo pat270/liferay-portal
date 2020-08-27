@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -121,6 +122,10 @@ public class SocialActivityPersistenceTest {
 
 		SocialActivity newSocialActivity = _persistence.create(pk);
 
+		newSocialActivity.setMvccVersion(RandomTestUtil.nextLong());
+
+		newSocialActivity.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newSocialActivity.setGroupId(RandomTestUtil.nextLong());
 
 		newSocialActivity.setCompanyId(RandomTestUtil.nextLong());
@@ -152,6 +157,12 @@ public class SocialActivityPersistenceTest {
 		SocialActivity existingSocialActivity = _persistence.findByPrimaryKey(
 			newSocialActivity.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingSocialActivity.getMvccVersion(),
+			newSocialActivity.getMvccVersion());
+		Assert.assertEquals(
+			existingSocialActivity.getCtCollectionId(),
+			newSocialActivity.getCtCollectionId());
 		Assert.assertEquals(
 			existingSocialActivity.getActivityId(),
 			newSocialActivity.getActivityId());
@@ -227,13 +238,6 @@ public class SocialActivityPersistenceTest {
 		_persistence.countByMirrorActivityId(RandomTestUtil.nextLong());
 
 		_persistence.countByMirrorActivityId(0L);
-	}
-
-	@Test
-	public void testCountByClassNameId() throws Exception {
-		_persistence.countByClassNameId(RandomTestUtil.nextLong());
-
-		_persistence.countByClassNameId(0L);
 	}
 
 	@Test
@@ -315,11 +319,12 @@ public class SocialActivityPersistenceTest {
 
 	protected OrderByComparator<SocialActivity> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"SocialActivity", "activityId", true, "groupId", true, "companyId",
-			true, "userId", true, "createDate", true, "activitySetId", true,
-			"mirrorActivityId", true, "classNameId", true, "classPK", true,
-			"parentClassNameId", true, "parentClassPK", true, "type", true,
-			"extraData", true, "receiverUserId", true);
+			"SocialActivity", "mvccVersion", true, "ctCollectionId", true,
+			"activityId", true, "groupId", true, "companyId", true, "userId",
+			true, "createDate", true, "activitySetId", true, "mirrorActivityId",
+			true, "classNameId", true, "classPK", true, "parentClassNameId",
+			true, "parentClassPK", true, "type", true, "extraData", true,
+			"receiverUserId", true);
 	}
 
 	@Test
@@ -542,52 +547,102 @@ public class SocialActivityPersistenceTest {
 
 		_persistence.clearCache();
 
-		SocialActivity existingSocialActivity = _persistence.findByPrimaryKey(
-			newSocialActivity.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newSocialActivity.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		SocialActivity newSocialActivity = addSocialActivity();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			SocialActivity.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"activityId", newSocialActivity.getActivityId()));
+
+		List<SocialActivity> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(SocialActivity socialActivity) {
+		Assert.assertEquals(
+			Long.valueOf(socialActivity.getMirrorActivityId()),
+			ReflectionTestUtil.<Long>invoke(
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "mirrorActivityId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getMirrorActivityId()),
+			Long.valueOf(socialActivity.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalMirrorActivityId",
-				new Class<?>[0]));
-
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getGroupId()),
+			Long.valueOf(socialActivity.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalGroupId", new Class<?>[0]));
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getUserId()),
+			Long.valueOf(socialActivity.getCreateDate()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalUserId", new Class<?>[0]));
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "createDate"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getCreateDate()),
+			Long.valueOf(socialActivity.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalCreateDate",
-				new Class<?>[0]));
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getClassNameId()),
+			Long.valueOf(socialActivity.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalClassNameId",
-				new Class<?>[0]));
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getClassPK()),
-			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalClassPK", new Class<?>[0]));
-		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivity.getType()),
+			Integer.valueOf(socialActivity.getType()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivity, "getOriginalType", new Class<?>[0]));
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "type_"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivity.getReceiverUserId()),
+			Long.valueOf(socialActivity.getReceiverUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivity, "getOriginalReceiverUserId",
-				new Class<?>[0]));
+				socialActivity, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "receiverUserId"));
 	}
 
 	protected SocialActivity addSocialActivity() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		SocialActivity socialActivity = _persistence.create(pk);
+
+		socialActivity.setMvccVersion(RandomTestUtil.nextLong());
+
+		socialActivity.setCtCollectionId(RandomTestUtil.nextLong());
 
 		socialActivity.setGroupId(RandomTestUtil.nextLong());
 

@@ -300,11 +300,8 @@ public abstract class BasePropMethodImpl implements Method {
 			if (customProps.contains(qName)) {
 				Namespace namespace = qName.getNamespace();
 
-				String name = qName.getName();
-				String prefix = namespace.getPrefix();
-				String uri = namespace.getURI();
-
-				String text = webDAVProps.getText(name, prefix, uri);
+				String text = webDAVProps.getText(
+					qName.getName(), namespace.getPrefix(), namespace.getURI());
 
 				DocUtil.add(successPropElement, qName, text);
 
@@ -400,9 +397,9 @@ public abstract class BasePropMethodImpl implements Method {
 
 				httpServletResponse.flushBuffer();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 

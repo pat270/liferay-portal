@@ -15,7 +15,8 @@ task buildLexiconIcons(type: Copy)
 task buildTheme
 task publishNodeModule(type: PublishNodeModuleTask)
 
-String alloyUIVersion = "3.1.0-deprecated.60"
+String alloyUIVersion = "3.1.0-deprecated.78"
+
 String fontAwesomeVersion = "3.2.1"
 
 File themeDestinationDir = file("src/main/resources/META-INF/resources/_unstyled");
@@ -101,9 +102,9 @@ buildClay {
 		}
 	}
 
-	eachFile new StripPathSegmentsAction(3)
+	eachFile new StripPathSegmentsAction(4)
 	from npmInstall.nodeModulesDir
-	include "clay-css/src/scss/"
+	include "@clayui/css/src/scss/"
 	includeEmptyDirs = false
 	into clayDestinationDir
 }
@@ -133,9 +134,9 @@ buildClayIcons {
 		delete clayIconsDestinationDir
 	}
 
-	eachFile new StripPathSegmentsAction(4)
+	eachFile new StripPathSegmentsAction(5)
 	from npmInstall.nodeModulesDir
-	include "clay-css/lib/images/icons/"
+	include "@clayui/css/lib/images/icons/"
 	includeEmptyDirs = false
 	into clayIconsDestinationDir
 }
@@ -149,9 +150,9 @@ buildLexiconIcons {
 		delete lexiconIconsDestinationDir
 	}
 
-	eachFile new StripPathSegmentsAction(4)
+	eachFile new StripPathSegmentsAction(5)
 	from npmInstall.nodeModulesDir
-	include "clay-css/lib/images/icons/"
+	include "@clayui/css/lib/images/icons/"
 	includeEmptyDirs = false
 	into lexiconIconsDestinationDir
 }
@@ -166,11 +167,6 @@ buildTheme {
 
 classes {
 	dependsOn buildTheme
-}
-
-configJSModules {
-	dependsOn = []
-	enabled = false
 }
 
 dependencies {

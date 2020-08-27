@@ -14,8 +14,8 @@
 
 package com.liferay.project.templates.fragment.internal;
 
-import com.liferay.project.templates.ProjectTemplateCustomizer;
-import com.liferay.project.templates.ProjectTemplatesArgs;
+import com.liferay.project.templates.extensions.ProjectTemplateCustomizer;
+import com.liferay.project.templates.extensions.ProjectTemplatesArgs;
 
 import java.io.File;
 
@@ -29,6 +29,11 @@ import org.apache.maven.archetype.ArchetypeGenerationResult;
  */
 public class FragmentProjectTemplateCustomizer
 	implements ProjectTemplateCustomizer {
+
+	@Override
+	public String getTemplateName() {
+		return "fragment";
+	}
 
 	@Override
 	public void onAfterGenerateProject(
@@ -45,12 +50,16 @@ public class FragmentProjectTemplateCustomizer
 
 		Properties properties = archetypeGenerationRequest.getProperties();
 
-		String hostBundleSymbolicName =
-			projectTemplatesArgs.getHostBundleSymbolicName();
-		String hostBundleVersion = projectTemplatesArgs.getHostBundleVersion();
+		FragmentProjectTemplatesArgs fragmentProjectTemplatesArgs =
+			(FragmentProjectTemplatesArgs)
+				projectTemplatesArgs.getProjectTemplatesArgsExt();
 
-		properties.put("hostBundleSymbolicName", hostBundleSymbolicName);
-		properties.put("hostBundleVersion", hostBundleVersion);
+		setProperty(
+			properties, "hostBundleSymbolicName",
+			fragmentProjectTemplatesArgs.getHostBundleSymbolicName());
+		setProperty(
+			properties, "hostBundleVersion",
+			fragmentProjectTemplatesArgs.getHostBundleVersion());
 	}
 
 }

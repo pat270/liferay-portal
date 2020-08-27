@@ -1,0 +1,377 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Team.tearDownCP();
+
+			UserGroup.tearDownCP();
+
+			JSONUser.tearDownNonAdminUsers();
+
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+	}
+
+	@priority = "4"
+	test AddSiteTeam {
+		property testray.component.names = "Site Administration";
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.viewCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+	}
+
+	@priority = "4"
+	test AddSiteTeamAssignUser {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.assignMembersCP(
+			teamName = "Site Team Name",
+			userScreenName = "usersn");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.viewMemberCP(
+			membershipType = "User",
+			teamName = "Site Team Name",
+			userFirstName = "userfn",
+			userLastName = "userln");
+	}
+
+	@priority = "4"
+	test AddSiteTeamAssignUserGroup {
+		property testray.component.names = "Site Administration,User Groups";
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.viewCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		UserGroup.openUserGroupsAdmin();
+
+		UserGroup.addCP(userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.assignUserGroups(
+			teamName = "Site Team Name",
+			userGroupName = "User Group Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.viewMemberCP(
+			membershipType = "User Group",
+			teamName = "Site Team Name",
+			userGroupName = "User Group Name");
+	}
+
+	@priority = "5"
+	test AddSiteTeamMultiple {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Administration";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team1 Description",
+			teamName = "Site Team1 Name");
+
+		Team.addCP(
+			teamDescription = "Site Team2 Description",
+			teamName = "Site Team2 Name");
+
+		Team.addCP(
+			teamDescription = "Site Team3 Description",
+			teamName = "Site Team3 Name");
+
+		Team.viewCP(
+			teamDescription = "Site Team1 Description",
+			teamName = "Site Team1 Name");
+
+		Team.viewCP(
+			teamDescription = "Site Team2 Description",
+			teamName = "Site Team2 Name");
+
+		Team.viewCP(
+			teamDescription = "Site Team3 Description",
+			teamName = "Site Team3 Name");
+	}
+
+	@priority = "5"
+	test AddSiteTeamRemoveUser {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.addUserToSite(
+			groupName = "Site Name",
+			userEmailAddress = "userea@liferay.com");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.assignMembersCP(
+			teamName = "Site Team Name",
+			userScreenName = "usersn");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.viewMemberCP(
+			membershipType = "User",
+			teamName = "Site Team Name",
+			userFirstName = "userfn",
+			userLastName = "userln");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.removeMemberCP(
+			membershipType = "User",
+			teamName = "Site Team Name",
+			userFirstName = "userfn",
+			userLastName = "userln");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.viewNoMembersCP(teamName = "Site Team Name");
+	}
+
+	@priority = "4"
+	test AddSiteTeamRemoveUserGroup {
+		property testray.component.names = "Site Administration,User Groups";
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.viewCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		UserGroup.openUserGroupsAdmin();
+
+		UserGroup.addCP(userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.assignUserGroups(
+			teamName = "Site Team Name",
+			userGroupName = "User Group Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.viewMemberCP(
+			membershipType = "User Group",
+			teamName = "Site Team Name",
+			userGroupName = "User Group Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.removeMemberCP(
+			membershipType = "User Group",
+			teamName = "Site Team Name",
+			userGroupName = "User Group Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.viewNoMembersCP(teamName = "Site Team Name");
+	}
+
+	test AddSiteTeamSearchUserGroups {
+		property testray.component.names = "Site Administration,User Groups";
+
+		for (var n : list "1,2") {
+			UserGroup.openUserGroupsAdmin();
+
+			UserGroup.addCP(userGroupName = "User Group Name ${n}");
+
+			Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+			Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name ${n}");
+		}
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.assignUserGroups(
+			teamName = "Site Team Name",
+			userGroupName = "User Group Name 1");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		LexiconEntry.gotoEntry(rowEntry = "Site Team Name");
+
+		Team.searchCP(
+			membershipType = "User Group",
+			searchTerm = "&quot;User Group Name 1&quot;");
+
+		Team.searchCP(
+			isEmpty = "true",
+			membershipType = "User Group",
+			searchTerm = "&quot;User Group Name 2&quot;");
+	}
+
+	test AddSiteTeamSearchUsers {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		for (var n : list "1,2") {
+			JSONUser.addUser(
+				userEmailAddress = "userea${n}@liferay.com",
+				userFirstName = "userfn${n}",
+				userLastName = "userln${n}",
+				userScreenName = "usersn${n}");
+
+			Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+			Site.assignUserAsMemberCP(
+				userFirstName = "userfn${n}",
+				userLastName = "userln${n}",
+				userScreenName = "usersn${n}");
+		}
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.assignMembersCP(
+			teamName = "Site Team Name",
+			userScreenName = "usersn1");
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		LexiconEntry.gotoEntry(rowEntry = "Site Team Name");
+
+		for (var searchTerm : list "userfn1,userln1,usersn1") {
+			Team.searchCP(
+				membershipType = "User",
+				searchTerm = "${searchTerm}");
+		}
+
+		for (var searchTerm : list "userfn2,userln2,usersn2") {
+			Team.searchCP(
+				isEmpty = "true",
+				membershipType = "User",
+				searchTerm = "${searchTerm}");
+		}
+	}
+
+	@priority = "5"
+	test DeleteSiteTeam {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Administration";
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.deleteCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.viewDefaultCP(teamName = "Site Team Name");
+	}
+
+	@priority = "5"
+	test EditSiteTeam {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Administration";
+
+		Site.openSiteTeamsAdmin(siteURLKey = "site-name");
+
+		Team.addCP(
+			teamDescription = "Site Team Description",
+			teamName = "Site Team Name");
+
+		Team.editCP(
+			teamDescriptionEdit = "Site Team Description Edit",
+			teamName = "Site Team Name",
+			teamNameEdit = "Site Team Name Edit");
+
+		Team.viewCP(
+			teamDescription = "Site Team Description Edit",
+			teamName = "Site Team Name Edit");
+	}
+
+}

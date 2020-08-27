@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class DocumentBulkSelection {
+public class DocumentBulkSelection implements Cloneable {
+
+	public static DocumentBulkSelection toDTO(String json) {
+		return DocumentBulkSelectionSerDes.toDTO(json);
+	}
 
 	public String[] getDocumentIds() {
 		return documentIds;
@@ -70,6 +74,11 @@ public class DocumentBulkSelection {
 	}
 
 	protected SelectionScope selectionScope;
+
+	@Override
+	public DocumentBulkSelection clone() throws CloneNotSupportedException {
+		return (DocumentBulkSelection)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

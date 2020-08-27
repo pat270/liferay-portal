@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US,es_ES" default-locale="en_US">
+	<dynamic-element index-type="text" instance-id="gxjr" name="HTML4acl" type="text_area">
+		<dynamic-content language-id="en_US"><![CDATA[<p>Some HTML</p>]]></dynamic-content>
+		<dynamic-content language-id="es_ES"><![CDATA[<p>Un poco de HTML</p>]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="kfce" name="Text1gf6" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Some Text]]></dynamic-content>
+		<dynamic-content language-id="es_ES"><![CDATA[Un poco de texto]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="gxjr2" name="HTML2" type="text_area">
+		<dynamic-content language-id="en_US"><![CDATA[<p>Some HTML</p>]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="kfce2" name="Text2" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Some Text]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="itet" name="Booleanr39a" type="boolean">
+		<dynamic-content language-id="en_US"><![CDATA[]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="dqqn" name="Imageqvnd" type="image">
+		<dynamic-content language-id="en_US"></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="bajz" name="Integer2cc6" type="ddm-integer">
+		<dynamic-content language-id="en_US"><![CDATA[1]]></dynamic-content>
+	</dynamic-element>
+</root>

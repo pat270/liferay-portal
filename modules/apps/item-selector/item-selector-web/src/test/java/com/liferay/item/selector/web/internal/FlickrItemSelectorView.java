@@ -16,8 +16,6 @@ package com.liferay.item.selector.web.internal;
 
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ListUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -53,28 +51,20 @@ public class FlickrItemSelectorView
 	}
 
 	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
-	}
-
-	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			FlickrItemSelectorCriterion flickrItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException {
 
-		PrintWriter printWriter = response.getWriter();
+		PrintWriter printWriter = servletResponse.getWriter();
 
 		printWriter.print(
 			"<html>" + FlickrItemSelectorView.class.getName() + "</html>");
 	}
 
 	private static final List<ItemSelectorReturnType>
-		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new TestURLItemSelectorReturnType()
-				}));
+		_supportedItemSelectorReturnTypes = Collections.singletonList(
+			new TestURLItemSelectorReturnType());
 
 }

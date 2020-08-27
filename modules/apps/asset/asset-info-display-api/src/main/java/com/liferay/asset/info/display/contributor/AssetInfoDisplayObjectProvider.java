@@ -25,8 +25,10 @@ import com.liferay.portal.kernel.util.StringUtil;
 import java.util.Locale;
 
 /**
- * @author Jürgen Kappler
+ * @author     Jürgen Kappler
+ * @deprecated As of Mueller (7.2.x), with no direct replacement}
  */
+@Deprecated
 public class AssetInfoDisplayObjectProvider
 	implements InfoDisplayObjectProvider<AssetEntry> {
 
@@ -87,7 +89,7 @@ public class AssetInfoDisplayObjectProvider
 
 	@Override
 	public String getURLTitle(Locale locale) {
-		AssetRenderer assetRenderer = _assetEntry.getAssetRenderer();
+		AssetRenderer<?> assetRenderer = _assetEntry.getAssetRenderer();
 
 		return assetRenderer.getUrlTitle(locale);
 	}

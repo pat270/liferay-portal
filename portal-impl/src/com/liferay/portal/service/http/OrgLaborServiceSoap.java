@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.service.OrgLaborServiceUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>OrgLaborServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see OrgLaborServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class OrgLaborServiceSoap {
 
 	public static com.liferay.portal.kernel.model.OrgLaborSoap addOrgLabor(
@@ -81,10 +80,10 @@ public class OrgLaborServiceSoap {
 			return com.liferay.portal.kernel.model.OrgLaborSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -92,10 +91,10 @@ public class OrgLaborServiceSoap {
 		try {
 			OrgLaborServiceUtil.deleteOrgLabor(orgLaborId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -110,10 +109,10 @@ public class OrgLaborServiceSoap {
 			return com.liferay.portal.kernel.model.OrgLaborSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -128,10 +127,10 @@ public class OrgLaborServiceSoap {
 			return com.liferay.portal.kernel.model.OrgLaborSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -152,10 +151,10 @@ public class OrgLaborServiceSoap {
 			return com.liferay.portal.kernel.model.OrgLaborSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

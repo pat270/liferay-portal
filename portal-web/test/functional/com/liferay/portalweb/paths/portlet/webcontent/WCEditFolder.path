@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>WORKFLOW_FOLDER_WORKFLOW</td>
+	<td>//select[contains(@id,'workflowDefinition')]//option[contains(@selected,'') and contains(@value,'${key_workflowResourceValue}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>WORKFLOW_STRUCTURE_RESTRICTIONS_TOGGLE</td>
 	<td>//a[contains(.,'Structure Restrictions and Workflow')]</td>
 	<td></td>

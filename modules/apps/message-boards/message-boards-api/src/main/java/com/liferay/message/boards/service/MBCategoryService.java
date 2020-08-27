@@ -15,6 +15,7 @@
 package com.liferay.message.boards.service;
 
 import com.liferay.message.boards.model.MBCategory;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -42,14 +42,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=mb",
-		"json.web.service.context.path=MBCategory"
-	},
-	service = MBCategoryService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -60,7 +54,7 @@ public interface MBCategoryService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link MBCategoryServiceUtil} to access the message boards category remote service. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBCategoryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBCategoryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the message boards category remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link MBCategoryServiceUtil} if injection and service tracking are not available.
 	 */
 	public MBCategory addCategory(
 			long userId, long parentCategoryId, String name, String description,
@@ -136,7 +130,7 @@ public interface MBCategoryService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getCategoriesAndThreads(
 		long groupId, long categoryId, int status, int start, int end,
-		OrderByComparator<?> obc);
+		OrderByComparator<?> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getCategoriesAndThreads(

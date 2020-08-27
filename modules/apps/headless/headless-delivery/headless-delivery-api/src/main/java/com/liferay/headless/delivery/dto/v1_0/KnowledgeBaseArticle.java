@@ -22,9 +22,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -39,6 +39,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -50,44 +51,49 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Generated("")
 @GraphQLName("KnowledgeBaseArticle")
 @JsonFilter("Liferay.Vulcan")
-@Schema(requiredProperties = {"articleBody", "title"})
+@Schema(
+	requiredProperties = {"articleBody", "title"},
+	description = "Represents a Knowledge Base article (`KBArticle`), the main entity in the Knowledge Base API."
+)
 @XmlRootElement(name = "KnowledgeBaseArticle")
 public class KnowledgeBaseArticle {
 
-	public static enum ViewableBy {
-
-		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
-
-		@JsonCreator
-		public static ViewableBy create(String value) {
-			for (ViewableBy viewableBy : values()) {
-				if (Objects.equals(viewableBy.getValue(), value)) {
-					return viewableBy;
-				}
-			}
-
-			return null;
-		}
-
-		@JsonValue
-		public String getValue() {
-			return _value;
-		}
-
-		@Override
-		public String toString() {
-			return _value;
-		}
-
-		private ViewableBy(String value) {
-			_value = value;
-		}
-
-		private final String _value;
-
+	public static KnowledgeBaseArticle toDTO(String json) {
+		return ObjectMapperUtil.readValue(KnowledgeBaseArticle.class, json);
 	}
 
+	@Schema
+	@Valid
+	public Map<String, Map<String, String>> getActions() {
+		return actions;
+	}
+
+	public void setActions(Map<String, Map<String, String>> actions) {
+		this.actions = actions;
+	}
+
+	@JsonIgnore
+	public void setActions(
+		UnsafeSupplier<Map<String, Map<String, String>>, Exception>
+			actionsUnsafeSupplier) {
+
+		try {
+			actions = actionsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Map<String, Map<String, String>> actions;
+
 	@Schema(description = "The article's average rating.")
+	@Valid
 	public AggregateRating getAggregateRating() {
 		return aggregateRating;
 	}
@@ -112,7 +118,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's average rating.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected AggregateRating aggregateRating;
 
@@ -140,12 +146,13 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's main content.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotEmpty
 	protected String articleBody;
 
 	@Schema(description = "The article's author.")
+	@Valid
 	public Creator getCreator() {
 		return creator;
 	}
@@ -169,9 +176,38 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's author.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Creator creator;
+
+	@Schema
+	@Valid
+	public CustomField[] getCustomFields() {
+		return customFields;
+	}
+
+	public void setCustomFields(CustomField[] customFields) {
+		this.customFields = customFields;
+	}
+
+	@JsonIgnore
+	public void setCustomFields(
+		UnsafeSupplier<CustomField[], Exception> customFieldsUnsafeSupplier) {
+
+		try {
+			customFields = customFieldsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected CustomField[] customFields;
 
 	@Schema(description = "The date the article was created.")
 	public Date getDateCreated() {
@@ -197,7 +233,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The date the article was created.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateCreated;
 
@@ -227,7 +263,9 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The last time the article's content or metadata changed."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateModified;
 
@@ -255,7 +293,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's description.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String description;
 
@@ -285,7 +323,9 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The article's media type (e.g., HTML, BBCode, etc.)."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String encodingFormat;
 
@@ -313,7 +353,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's relative URL.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String friendlyUrlPath;
 
@@ -339,7 +379,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's ID.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
@@ -367,7 +407,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "A list of keywords describing the article.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String[] keywords;
 
@@ -395,7 +435,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's number attachments.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Integer numberOfAttachments;
 
@@ -427,11 +467,12 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The number of this article's child articles.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Integer numberOfKnowledgeBaseArticles;
 
 	@Schema(description = "The article's parent folder, if it exists.")
+	@Valid
 	public ParentKnowledgeBaseFolder getParentKnowledgeBaseFolder() {
 		return parentKnowledgeBaseFolder;
 	}
@@ -459,7 +500,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's parent folder, if it exists.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected ParentKnowledgeBaseFolder parentKnowledgeBaseFolder;
 
@@ -493,11 +534,14 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The ID of the article's parent folder, if that folder exists."
+	)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	protected Long parentKnowledgeBaseFolderId;
 
 	@Schema
+	@Valid
 	public RelatedContent[] getRelatedContents() {
 		return relatedContents;
 	}
@@ -550,26 +594,27 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The ID of the site to which this article is scoped."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long siteId;
 
-	@Schema(description = "The categories associated with this article.")
-	public TaxonomyCategory[] getTaxonomyCategories() {
-		return taxonomyCategories;
+	@Schema
+	public Boolean getSubscribed() {
+		return subscribed;
 	}
 
-	public void setTaxonomyCategories(TaxonomyCategory[] taxonomyCategories) {
-		this.taxonomyCategories = taxonomyCategories;
+	public void setSubscribed(Boolean subscribed) {
+		this.subscribed = subscribed;
 	}
 
 	@JsonIgnore
-	public void setTaxonomyCategories(
-		UnsafeSupplier<TaxonomyCategory[], Exception>
-			taxonomyCategoriesUnsafeSupplier) {
+	public void setSubscribed(
+		UnsafeSupplier<Boolean, Exception> subscribedUnsafeSupplier) {
 
 		try {
-			taxonomyCategories = taxonomyCategoriesUnsafeSupplier.get();
+			subscribed = subscribedUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -581,7 +626,39 @@ public class KnowledgeBaseArticle {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected TaxonomyCategory[] taxonomyCategories;
+	protected Boolean subscribed;
+
+	@Schema(description = "The categories associated with this article.")
+	@Valid
+	public TaxonomyCategoryBrief[] getTaxonomyCategoryBriefs() {
+		return taxonomyCategoryBriefs;
+	}
+
+	public void setTaxonomyCategoryBriefs(
+		TaxonomyCategoryBrief[] taxonomyCategoryBriefs) {
+
+		this.taxonomyCategoryBriefs = taxonomyCategoryBriefs;
+	}
+
+	@JsonIgnore
+	public void setTaxonomyCategoryBriefs(
+		UnsafeSupplier<TaxonomyCategoryBrief[], Exception>
+			taxonomyCategoryBriefsUnsafeSupplier) {
+
+		try {
+			taxonomyCategoryBriefs = taxonomyCategoryBriefsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField(description = "The categories associated with this article.")
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected TaxonomyCategoryBrief[] taxonomyCategoryBriefs;
 
 	@Schema(
 		description = "A write-only field that adds taxonomy categories to this article."
@@ -609,7 +686,9 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A write-only field that adds taxonomy categories to this article."
+	)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	protected Long[] taxonomyCategoryIds;
 
@@ -637,7 +716,7 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The article's main title.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotEmpty
 	protected String title;
@@ -645,6 +724,7 @@ public class KnowledgeBaseArticle {
 	@Schema(
 		description = "A write-only property that specifies the article's default permissions."
 	)
+	@Valid
 	public ViewableBy getViewableBy() {
 		return viewableBy;
 	}
@@ -677,7 +757,9 @@ public class KnowledgeBaseArticle {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A write-only property that specifies the article's default permissions."
+	)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	protected ViewableBy viewableBy;
 
@@ -712,6 +794,16 @@ public class KnowledgeBaseArticle {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+		if (actions != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(actions));
+		}
+
 		if (aggregateRating != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -744,6 +836,26 @@ public class KnowledgeBaseArticle {
 			sb.append("\"creator\": ");
 
 			sb.append(String.valueOf(creator));
+		}
+
+		if (customFields != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"customFields\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < customFields.length; i++) {
+				sb.append(String.valueOf(customFields[i]));
+
+				if ((i + 1) < customFields.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (dateCreated != null) {
@@ -920,19 +1032,29 @@ public class KnowledgeBaseArticle {
 			sb.append(siteId);
 		}
 
-		if (taxonomyCategories != null) {
+		if (subscribed != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"taxonomyCategories\": ");
+			sb.append("\"subscribed\": ");
+
+			sb.append(subscribed);
+		}
+
+		if (taxonomyCategoryBriefs != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"taxonomyCategoryBriefs\": ");
 
 			sb.append("[");
 
-			for (int i = 0; i < taxonomyCategories.length; i++) {
-				sb.append(String.valueOf(taxonomyCategories[i]));
+			for (int i = 0; i < taxonomyCategoryBriefs.length; i++) {
+				sb.append(String.valueOf(taxonomyCategoryBriefs[i]));
 
-				if ((i + 1) < taxonomyCategories.length) {
+				if ((i + 1) < taxonomyCategoryBriefs.length) {
 					sb.append(", ");
 				}
 			}
@@ -993,10 +1115,60 @@ public class KnowledgeBaseArticle {
 		return sb.toString();
 	}
 
+	@Schema(
+		defaultValue = "com.liferay.headless.delivery.dto.v1_0.KnowledgeBaseArticle",
+		name = "x-class-name"
+	)
+	public String xClassName;
+
+	@GraphQLName("ViewableBy")
+	public static enum ViewableBy {
+
+		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
+
+		@JsonCreator
+		public static ViewableBy create(String value) {
+			for (ViewableBy viewableBy : values()) {
+				if (Objects.equals(viewableBy.getValue(), value)) {
+					return viewableBy;
+				}
+			}
+
+			return null;
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private ViewableBy(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
 	private static String _escape(Object object) {
 		String string = String.valueOf(object);
 
 		return string.replaceAll("\"", "\\\\\"");
+	}
+
+	private static boolean _isArray(Object value) {
+		if (value == null) {
+			return false;
+		}
+
+		Class<?> clazz = value.getClass();
+
+		return clazz.isArray();
 	}
 
 	private static String _toJSON(Map<String, ?> map) {
@@ -1014,9 +1186,42 @@ public class KnowledgeBaseArticle {
 			sb.append("\"");
 			sb.append(entry.getKey());
 			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
+
+			Object value = entry.getValue();
+
+			if (_isArray(value)) {
+				sb.append("[");
+
+				Object[] valueArray = (Object[])value;
+
+				for (int i = 0; i < valueArray.length; i++) {
+					if (valueArray[i] instanceof String) {
+						sb.append("\"");
+						sb.append(valueArray[i]);
+						sb.append("\"");
+					}
+					else {
+						sb.append(valueArray[i]);
+					}
+
+					if ((i + 1) < valueArray.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof Map) {
+				sb.append(_toJSON((Map<String, ?>)value));
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+			else {
+				sb.append(value);
+			}
 
 			if (iterator.hasNext()) {
 				sb.append(",");

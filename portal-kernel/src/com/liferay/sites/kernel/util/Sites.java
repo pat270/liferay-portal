@@ -14,6 +14,8 @@
 
 package com.liferay.sites.kernel.util;
 
+import com.liferay.expando.kernel.model.ExpandoBridge;
+import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -26,6 +28,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import java.util.List;
 import java.util.Map;
@@ -61,6 +64,8 @@ public interface Sites {
 
 	public static final String LAST_MERGE_TIME = "last-merge-time";
 
+	public static final String LAST_MERGE_VERSION = "last-merge-version";
+
 	public static final String LAST_RESET_TIME = "last-reset-time";
 
 	public static final String LAYOUT_UPDATEABLE = "layoutUpdateable";
@@ -95,6 +100,27 @@ public interface Sites {
 			LayoutPrototype layoutPrototype, Layout targetLayout,
 			boolean linkEnabled)
 		throws Exception;
+
+	public default void copyExpandoBridgeAttributes(
+		Layout sourceLayout, Layout targetLayout) {
+
+		ExpandoBridge sourceExpandoBridge =
+			ExpandoBridgeFactoryUtil.getExpandoBridge(
+				sourceLayout.getCompanyId(), Layout.class.getName(),
+				sourceLayout.getPlid());
+
+		ExpandoBridge targetExpandoBridge =
+			ExpandoBridgeFactoryUtil.getExpandoBridge(
+				targetLayout.getCompanyId(), Layout.class.getName(),
+				targetLayout.getPlid());
+
+		Map<String, Serializable> attributes =
+			sourceExpandoBridge.getAttributes();
+
+		for (Map.Entry<String, Serializable> entry : attributes.entrySet()) {
+			targetExpandoBridge.setAttribute(entry.getKey(), entry.getValue());
+		}
+	}
 
 	public void copyLayout(
 			long userId, Layout sourceLayout, Layout targetLayout,

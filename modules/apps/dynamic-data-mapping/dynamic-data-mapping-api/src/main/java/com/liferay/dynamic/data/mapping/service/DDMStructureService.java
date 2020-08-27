@@ -17,13 +17,13 @@ package com.liferay.dynamic.data.mapping.service;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -45,14 +45,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=ddm",
-		"json.web.service.context.path=DDMStructure"
-	},
-	service = DDMStructureService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -63,7 +57,7 @@ public interface DDMStructureService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DDMStructureServiceUtil} to access the ddm structure remote service. Add custom service methods to <code>com.liferay.dynamic.data.mapping.service.impl.DDMStructureServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.dynamic.data.mapping.service.impl.DDMStructureServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the ddm structure remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DDMStructureServiceUtil} if injection and service tracking are not available.
 	 */
 	public DDMStructure addStructure(
 			long groupId, long parentStructureId, long classNameId,
@@ -218,8 +212,19 @@ public interface DDMStructureService extends BaseService {
 		OrderByComparator<DDMStructure> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<DDMStructure> getStructures(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status, int start, int end,
+		OrderByComparator<DDMStructure> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getStructuresCount(
 		long companyId, long[] groupIds, long classNameId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getStructuresCount(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status);
 
 	public void revertStructure(
 			long structureId, String version, ServiceContext serviceContext)
@@ -246,7 +251,7 @@ public interface DDMStructureService extends BaseService {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param start the lower bound of the range of structures to return
 	 * @param end the upper bound of the range of structures to return (not
@@ -318,7 +323,7 @@ public interface DDMStructureService extends BaseService {
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
@@ -365,7 +370,7 @@ public interface DDMStructureService extends BaseService {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @return the number of matching structures
 	 */
@@ -388,7 +393,7 @@ public interface DDMStructureService extends BaseService {
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
 	 * @return the number of matching structures

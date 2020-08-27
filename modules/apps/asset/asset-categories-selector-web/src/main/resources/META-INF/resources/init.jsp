@@ -17,14 +17,13 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
-taglib uri="http://liferay.com/tld/soy" prefix="soy" %><%@
-taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
+taglib uri="http://liferay.com/tld/react" prefix="react" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
-<%@ page import="com.liferay.asset.categories.selector.web.display.context.AssetCategoriesSelectorDisplayContext" %><%@
-page import="com.liferay.portal.kernel.util.HtmlUtil" %>
-
-<%@ page import="java.util.HashMap" %><%@
-page import="java.util.Map" %>
+<%@ page import="com.liferay.asset.categories.selector.web.internal.display.context.AssetCategoriesSelectorDisplayContext" %><%@
+page import="com.liferay.portal.kernel.servlet.MultiSessionMessages" %><%@
+page import="com.liferay.portal.kernel.util.GetterUtil" %>
 
 <liferay-frontend:defineObjects />
 
@@ -33,7 +32,7 @@ page import="java.util.Map" %>
 <portlet:defineObjects />
 
 <%
-AssetCategoriesSelectorDisplayContext assetCategoriesSelectorDisplayContext = new AssetCategoriesSelectorDisplayContext(renderRequest, renderResponse, request);
+AssetCategoriesSelectorDisplayContext assetCategoriesSelectorDisplayContext = new AssetCategoriesSelectorDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <%@ include file="/init-ext.jsp" %>

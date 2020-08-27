@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing User in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class UserCacheModel
 	implements CacheModel<User>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof UserCacheModel)) {
+		if (!(object instanceof UserCacheModel)) {
 			return false;
 		}
 
-		UserCacheModel userCacheModel = (UserCacheModel)obj;
+		UserCacheModel userCacheModel = (UserCacheModel)object;
 
 		if ((userId == userCacheModel.userId) &&
 			(mvccVersion == userCacheModel.mvccVersion)) {
@@ -79,10 +76,12 @@ public class UserCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(87);
+		StringBundler sb = new StringBundler(89);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", externalReferenceCode=");
@@ -177,6 +176,7 @@ public class UserCacheModel
 		UserImpl userImpl = new UserImpl();
 
 		userImpl.setMvccVersion(mvccVersion);
+		userImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			userImpl.setUuid("");
@@ -399,6 +399,8 @@ public class UserCacheModel
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 		externalReferenceCode = objectInput.readUTF();
 
@@ -461,6 +463,8 @@ public class UserCacheModel
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		if (uuid == null) {
 			objectOutput.writeUTF("");
@@ -644,6 +648,7 @@ public class UserCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public String externalReferenceCode;
 	public long userId;

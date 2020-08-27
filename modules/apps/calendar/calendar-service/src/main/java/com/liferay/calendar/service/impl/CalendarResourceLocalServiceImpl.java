@@ -114,7 +114,7 @@ public class CalendarResourceLocalServiceImpl
 		calendarResource.setDescriptionMap(descriptionMap);
 		calendarResource.setActive(active);
 
-		calendarResourcePersistence.update(calendarResource);
+		calendarResource = calendarResourcePersistence.update(calendarResource);
 
 		// Resources
 
@@ -307,7 +307,7 @@ public class CalendarResourceLocalServiceImpl
 		calendarResource.setDescriptionMap(descriptionMap);
 		calendarResource.setActive(active);
 
-		calendarResourcePersistence.update(calendarResource);
+		calendarResource = calendarResourcePersistence.update(calendarResource);
 
 		// Calendar
 
@@ -315,8 +315,8 @@ public class CalendarResourceLocalServiceImpl
 			calendarResource.getGroupId(),
 			calendarResource.getCalendarResourceId());
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(
-			Calendar.class.getName());
+		Indexer<Calendar> indexer = IndexerRegistryUtil.getIndexer(
+			Calendar.class);
 
 		for (Calendar calendar : calendars) {
 			indexer.reindex(calendar);
@@ -359,7 +359,7 @@ public class CalendarResourceLocalServiceImpl
 	protected void validate(Map<Locale, String> nameMap)
 		throws PortalException {
 
-		Locale locale = LocaleUtil.getDefault();
+		Locale locale = LocaleUtil.getSiteDefault();
 
 		if (nameMap.isEmpty() || Validator.isNull(nameMap.get(locale))) {
 			throw new CalendarResourceNameException();

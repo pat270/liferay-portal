@@ -23,7 +23,7 @@ if (Validator.isNull(fieldParam)) {
 	fieldParam = String.valueOf(searchScopeGroupId);
 }
 
-ScopeSearchFacetDisplayBuilder scopeSearchFacetDisplayBuilder = new ScopeSearchFacetDisplayBuilder();
+ScopeSearchFacetDisplayBuilder scopeSearchFacetDisplayBuilder = new ScopeSearchFacetDisplayBuilder(renderRequest);
 
 scopeSearchFacetDisplayBuilder.setFacet(facet);
 
@@ -34,6 +34,7 @@ if (searchScopeGroupId != 0) {
 scopeSearchFacetDisplayBuilder.setFrequenciesVisible(dataJSONObject.getBoolean("showAssetCount", true));
 scopeSearchFacetDisplayBuilder.setFrequencyThreshold(dataJSONObject.getInt("frequencyThreshold"));
 scopeSearchFacetDisplayBuilder.setGroupLocalService(GroupLocalServiceUtil.getService());
+scopeSearchFacetDisplayBuilder.setLanguage(LanguageUtil.getLanguage());
 scopeSearchFacetDisplayBuilder.setLocale(locale);
 scopeSearchFacetDisplayBuilder.setMaxTerms(dataJSONObject.getInt("maxTerms"));
 scopeSearchFacetDisplayBuilder.setParameterName(facet.getFieldId());

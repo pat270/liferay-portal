@@ -1,5 +1,6 @@
 @component-name = "portal-web-forms-and-data-lists"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Dynamic Data Lists";
@@ -9,30 +10,23 @@ definition {
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
-			category = "Sites",
-			panel = "Control Panel",
-			portlet = "Sites");
+		JSONGroup.addGroup(groupName = "Staging Site Name");
 
-		Site.addBlankCP(siteName = "Staging Site Name");
+		JSONLayout.addPublicLayout(
+			groupName = "Staging Site Name",
+			layoutName = "Staging Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "Staging Page");
+		Navigator.openSiteURL(siteName = "Staging Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Staging");
 
 		Staging.activateStagingCP(
 			pageVersioningEnabled = "true",
 			siteName = "Staging Site Name");
 
-		ProductMenu.gotoSite(site = "Staging Site Name");
+		Navigator.openSiteURL(siteName = "Staging Site Name");
 	}
 
 	tearDown {
@@ -61,7 +55,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMDocument.addCP(
@@ -71,7 +64,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
@@ -82,14 +74,13 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
 
-		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
 
-		WebContentTemplates.viewTableEntryCP(
+		WebContentTemplates.viewCardsEntryCP(
 			templateName = "WC Template Name",
 			templateSmallImage = "true");
 
@@ -101,18 +92,17 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Staging Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
 
-		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
 
-		WebContentTemplates.viewTableEntryCP(
+		WebContentTemplates.viewCardsEntryCP(
 			templateName = "WC Template Name",
 			templateSmallImage = "true");
 	}
@@ -126,7 +116,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Structures");
@@ -144,7 +133,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Structures");
@@ -155,7 +143,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
@@ -168,7 +155,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
@@ -185,11 +171,10 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Staging Site Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Structures");
@@ -212,4 +197,5 @@ definition {
 				rowEntry = "WC Template Name");
 		}
 	}
+
 }

@@ -25,16 +25,16 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -97,7 +97,7 @@ public class DLAMImageCounterTest {
 			RandomTestUtil.randomString() + ".jpg", ContentTypes.IMAGE_JPEG,
 			_getImageBytes(), serviceContext);
 
-		PortletFileRepositoryUtil.addPortletFileEntry(
+		_portletFileRepository.addPortletFileEntry(
 			_group1.getGroupId(), _user1.getUserId(),
 			BlogsEntry.class.getName(), RandomTestUtil.randomLong(),
 			BlogsConstants.SERVICE_NAME,
@@ -133,7 +133,7 @@ public class DLAMImageCounterTest {
 			RandomTestUtil.randomString() + ".jpg", ContentTypes.IMAGE_JPEG,
 			_getImageBytes(), serviceContext);
 
-		PortletFileRepositoryUtil.addPortletFileEntry(
+		_portletFileRepository.addPortletFileEntry(
 			_group1.getGroupId(), _user1.getUserId(),
 			BlogsEntry.class.getName(), RandomTestUtil.randomLong(),
 			BlogsConstants.SERVICE_NAME,
@@ -240,6 +240,10 @@ public class DLAMImageCounterTest {
 
 	private Group _group1;
 	private Group _group2;
+
+	@Inject
+	private PortletFileRepository _portletFileRepository;
+
 	private User _user1;
 	private User _user2;
 

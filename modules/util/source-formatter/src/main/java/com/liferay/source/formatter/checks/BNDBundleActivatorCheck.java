@@ -25,7 +25,7 @@ import com.liferay.source.formatter.checks.util.BNDSourceUtil;
 public class BNDBundleActivatorCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isModulesCheck() {
+	public boolean isModuleSourceCheck() {
 		return true;
 	}
 
@@ -55,8 +55,7 @@ public class BNDBundleActivatorCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Incorrect Bundle-Activator, it should end with " +
-					"'BundleActivator'",
-				"bnd_bundle_activator.markdown");
+					"'BundleActivator'");
 
 			return;
 		}
@@ -82,8 +81,7 @@ public class BNDBundleActivatorCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Incorrect Bundle-Activator, it should match " +
-					"'Bundle-SymbolicName'",
-				"bnd_bundle_activator.markdown");
+					"'Bundle-SymbolicName'");
 		}
 	}
 

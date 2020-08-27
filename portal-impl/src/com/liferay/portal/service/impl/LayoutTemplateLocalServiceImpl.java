@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -108,8 +108,8 @@ public class LayoutTemplateLocalServiceImpl
 		try {
 			return layoutTemplate.getUncachedContent();
 		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
+		catch (IOException ioException) {
+			throw new SystemException(ioException);
 		}
 	}
 
@@ -264,8 +264,8 @@ public class LayoutTemplateLocalServiceImpl
 						pluginPackage));
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return new ArrayList<>(layoutTemplates);
@@ -353,16 +353,16 @@ public class LayoutTemplateLocalServiceImpl
 			String content = null;
 
 			try {
-				content = HttpUtil.URLtoString(
-					servletContext.getResource(
+				content = StreamUtil.toString(
+					servletContext.getResourceAsStream(
 						layoutTemplateModel.getTemplatePath()));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
 						"Unable to get content at template path ",
 						layoutTemplateModel.getTemplatePath(), ": ",
-						e.getMessage()));
+						exception.getMessage()));
 			}
 
 			if (Validator.isNull(content)) {
@@ -443,9 +443,10 @@ public class LayoutTemplateLocalServiceImpl
 				_warCustom.remove(layoutTemplateId);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
-				"Unable to uninstall layout template " + layoutTemplateId, e);
+				"Unable to uninstall layout template " + layoutTemplateId,
+				exception);
 		}
 	}
 
@@ -467,11 +468,11 @@ public class LayoutTemplateLocalServiceImpl
 				TemplateResourceLoaderUtil.clearCache(
 					_getSupportedLangType(layoutTemplate), templateId);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					"Unable to uninstall layout template " +
 						layoutTemplate.getLayoutTemplateId(),
-					e);
+					exception);
 			}
 		}
 
@@ -492,11 +493,11 @@ public class LayoutTemplateLocalServiceImpl
 				TemplateResourceLoaderUtil.clearCache(
 					_getSupportedLangType(layoutTemplate), templateId);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					"Unable to uninstall layout template " +
 						layoutTemplate.getLayoutTemplateId(),
-					e);
+					exception);
 			}
 		}
 
@@ -519,8 +520,8 @@ public class LayoutTemplateLocalServiceImpl
 
 			return ListUtil.sort(processor.getColumns());
 		}
-		catch (Exception e) {
-			_log.error("Unable to get layout template columns", e);
+		catch (Exception exception) {
+			_log.error("Unable to get layout template columns", exception);
 
 			return new ArrayList<>();
 		}

@@ -15,8 +15,9 @@
 package com.liferay.headless.delivery.internal.jaxrs.exception.mapper;
 
 import com.liferay.knowledge.base.exception.KBArticleTitleException;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
@@ -31,22 +32,19 @@ import org.osgi.service.component.annotations.Component;
 	property = {
 		"osgi.jaxrs.application.select=(osgi.jaxrs.name=Liferay.Headless.Delivery)",
 		"osgi.jaxrs.extension=true",
-		"osgi.jaxrs.name=Liferay.Headless.Delivery.KBArticleTitleException"
+		"osgi.jaxrs.name=Liferay.Headless.Delivery.KnowledgeBaseArticleTitleExceptionMapper"
 	},
 	service = ExceptionMapper.class
 )
 public class KnowledgeBaseArticleTitleExceptionMapper
-	implements ExceptionMapper<KBArticleTitleException> {
+	extends BaseExceptionMapper<KBArticleTitleException> {
 
 	@Override
-	public Response toResponse(KBArticleTitleException kbate) {
-		return Response.status(
-			400
-		).type(
-			MediaType.TEXT_PLAIN
-		).entity(
-			kbate.getMessage()
-		).build();
+	protected Problem getProblem(
+		KBArticleTitleException kbArticleTitleException) {
+
+		return new Problem(
+			Response.Status.BAD_REQUEST, kbArticleTitleException.getMessage());
 	}
 
 }

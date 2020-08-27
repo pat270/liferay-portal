@@ -16,12 +16,9 @@ package com.liferay.sharing.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class InvalidSharingEntryExpirationDateException
 	extends PortalException {
 
@@ -33,13 +30,13 @@ public class InvalidSharingEntryExpirationDateException
 	}
 
 	public InvalidSharingEntryExpirationDateException(
-		String msg, Throwable cause) {
+		String msg, Throwable throwable) {
 
-		super(msg, cause);
+		super(msg, throwable);
 	}
 
-	public InvalidSharingEntryExpirationDateException(Throwable cause) {
-		super(cause);
+	public InvalidSharingEntryExpirationDateException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

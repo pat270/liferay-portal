@@ -246,7 +246,7 @@ public class ServiceTrackerMapBuilder {
 
 			return new MapperImpl<>(
 				_bundleContext, _clazz, _serviceTrackerCustomizer,
-				serviceReferenceMapper, null);
+				serviceReferenceMapper, _filterString);
 		}
 
 		@Override

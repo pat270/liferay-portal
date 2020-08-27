@@ -1,4 +1,5 @@
 definition {
+
 	macro searchCP {
 		if ("${searchTerm}" == "${resourceAction}") {
 			var reportFieldKey = "RESOURCE_ACTION";
@@ -36,4 +37,51 @@ definition {
 			locator1 = "AuditReports#REPORTS_TABLE_${reportFieldKey}_1",
 			value1 = "${searchTerm}");
 	}
+
+	macro searchViaKeywords {
+		AssertElementPresent(locator1 = "TextInput#SITE_SEARCH_KEYWORDS");
+
+		Type(
+			locator1 = "TextInput#SITE_SEARCH_KEYWORDS",
+			value1 = "${searchTerm}");
+
+		Click(locator1 = "Button#SUBMIT");
+
+		AssertElementPresent(
+			key_resourceAction = "${searchTerm}",
+			key_resourceName = "${resourceName}",
+			locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_NAME");
+	}
+
+	macro viewAuditDetails {
+		var key_resourceAction = "${resourceAction}";
+		var key_resourceName = "${resourceName}";
+
+		AssertClick(
+			locator1 = "AuditReports#REPORTS_TABLE_RESOURCE_ACTION",
+			value1 = "${resourceAction}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AuditReports#REPORTS_DETAIL_RESOURCE_NAME",
+			value1 = "${resourceName}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AuditReports#REPORTS_DETAIL_RESOURCE_ACTION",
+			value1 = "${resourceAction}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AuditReports#REPORTS_DETAIL_USER_NAME",
+			value1 = "${userName}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AuditReports#REPORTS_DETAIL_ADDITIONAL_INFORMATION",
+			value1 = "${additionalInformation}");
+
+		if (isSet(clientIP)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "AuditReports#REPORTS_DETAIL_CLIENT_IP",
+				value1 = "${clientIP}");
+		}
+	}
+
 }

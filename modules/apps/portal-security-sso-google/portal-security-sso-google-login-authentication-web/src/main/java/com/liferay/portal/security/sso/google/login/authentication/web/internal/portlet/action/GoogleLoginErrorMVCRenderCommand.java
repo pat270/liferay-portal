@@ -16,19 +16,20 @@ package com.liferay.portal.security.sso.google.login.authentication.web.internal
 
 import com.liferay.portal.kernel.exception.UserEmailAddressException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.security.sso.google.GoogleAuthorization;
 import com.liferay.portal.security.sso.google.exception.StrangersNotAllowedException;
+import com.liferay.portal.security.sso.google.login.authentication.web.internal.struts.GoogleLoginStrutsAction;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.PortletException;
@@ -72,7 +73,7 @@ public class GoogleLoginErrorMVCRenderCommand implements MVCRenderCommand {
 			throw new PortletException(
 				new PrincipalException.MustBeEnabled(
 					themeDisplay.getCompanyId(),
-					GoogleLoginAction.class.getName()));
+					GoogleLoginStrutsAction.class.getName()));
 		}
 
 		String error = ParamUtil.getString(renderRequest, "error");
@@ -97,25 +98,22 @@ public class GoogleLoginErrorMVCRenderCommand implements MVCRenderCommand {
 
 			requestDispatcher.forward(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			throw new PortletException("Unable to include error.jsp", e);
+		catch (Exception exception) {
+			throw new PortletException(
+				"Unable to include error.jsp", exception);
 		}
 
 		return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;
 	}
 
 	private static final Map<String, Class<? extends Throwable>> _errorClasses =
-		new HashMap<String, Class<? extends Throwable>>() {
-			{
-				put(
-					StrangersNotAllowedException.class.getSimpleName(),
-					StrangersNotAllowedException.class);
-				put(
-					UserEmailAddressException.MustNotUseCompanyMx.class.
-						getSimpleName(),
-					UserEmailAddressException.MustNotUseCompanyMx.class);
-			}
-		};
+		HashMapBuilder.<String, Class<? extends Throwable>>put(
+			StrangersNotAllowedException.class.getSimpleName(),
+			StrangersNotAllowedException.class
+		).put(
+			UserEmailAddressException.MustNotUseCompanyMx.class.getSimpleName(),
+			UserEmailAddressException.MustNotUseCompanyMx.class
+		).build();
 
 	@Reference
 	private GoogleAuthorization _googleAuthorization;

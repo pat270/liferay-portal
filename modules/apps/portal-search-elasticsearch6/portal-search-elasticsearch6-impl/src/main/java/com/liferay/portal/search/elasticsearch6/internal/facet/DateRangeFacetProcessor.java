@@ -14,11 +14,13 @@
 
 package com.liferay.portal.search.elasticsearch6.internal.facet;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.config.FacetConfiguration;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Optional;
 
@@ -66,8 +68,10 @@ public class DateRangeFacetProcessor
 
 			String range = rangeJSONObject.getString("range");
 
-			range = range.replace(StringPool.OPEN_BRACKET, StringPool.BLANK);
-			range = range.replace(StringPool.CLOSE_BRACKET, StringPool.BLANK);
+			range = StringUtil.replace(
+				range, CharPool.OPEN_BRACKET, StringPool.BLANK);
+			range = StringUtil.replace(
+				range, CharPool.CLOSE_BRACKET, StringPool.BLANK);
 
 			String[] rangeParts = range.split(StringPool.SPACE);
 

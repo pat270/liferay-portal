@@ -14,18 +14,21 @@
 
 package com.liferay.asset.service;
 
+import com.liferay.asset.model.AssetEntryUsage;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetEntryUsageLocalService}.
  *
  * @author Brian Wing Shun Chan
  * @see AssetEntryUsageLocalService
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ com.liferay.layout.service.impl.LayoutClassedModelUsageLocalServiceImpl}
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AssetEntryUsageLocalServiceWrapper
 	implements AssetEntryUsageLocalService,
 			   ServiceWrapper<AssetEntryUsageLocalService> {
@@ -39,18 +42,20 @@ public class AssetEntryUsageLocalServiceWrapper
 	/**
 	 * Adds the asset entry usage to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryUsageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetEntryUsage the asset entry usage
 	 * @return the asset entry usage that was added
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage addAssetEntryUsage(
-		com.liferay.asset.model.AssetEntryUsage assetEntryUsage) {
-
+	public AssetEntryUsage addAssetEntryUsage(AssetEntryUsage assetEntryUsage) {
 		return _assetEntryUsageLocalService.addAssetEntryUsage(assetEntryUsage);
 	}
 
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage addAssetEntryUsage(
+	public AssetEntryUsage addAssetEntryUsage(
 		long groupId, long assetEntryId, long containerType,
 		String containerKey, long plid,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
@@ -61,7 +66,7 @@ public class AssetEntryUsageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage addDefaultAssetEntryUsage(
+	public AssetEntryUsage addDefaultAssetEntryUsage(
 		long groupId, long assetEntryId,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
 
@@ -76,22 +81,35 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * @return the new asset entry usage
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage createAssetEntryUsage(
-		long assetEntryUsageId) {
-
+	public AssetEntryUsage createAssetEntryUsage(long assetEntryUsageId) {
 		return _assetEntryUsageLocalService.createAssetEntryUsage(
 			assetEntryUsageId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetEntryUsageLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the asset entry usage from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryUsageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param assetEntryUsage the asset entry usage
 	 * @return the asset entry usage that was removed
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage deleteAssetEntryUsage(
-		com.liferay.asset.model.AssetEntryUsage assetEntryUsage) {
+	public AssetEntryUsage deleteAssetEntryUsage(
+		AssetEntryUsage assetEntryUsage) {
 
 		return _assetEntryUsageLocalService.deleteAssetEntryUsage(
 			assetEntryUsage);
@@ -100,13 +118,16 @@ public class AssetEntryUsageLocalServiceWrapper
 	/**
 	 * Deletes the asset entry usage with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryUsageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetEntryUsageId the primary key of the asset entry usage
 	 * @return the asset entry usage that was removed
 	 * @throws PortalException if a asset entry usage with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage deleteAssetEntryUsage(
-			long assetEntryUsageId)
+	public AssetEntryUsage deleteAssetEntryUsage(long assetEntryUsageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetEntryUsageLocalService.deleteAssetEntryUsage(
@@ -144,6 +165,11 @@ public class AssetEntryUsageLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetEntryUsageLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _assetEntryUsageLocalService.dynamicQuery();
 	}
@@ -165,7 +191,7 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.model.impl.AssetEntryUsageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.model.impl.AssetEntryUsageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -186,7 +212,7 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.model.impl.AssetEntryUsageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.model.impl.AssetEntryUsageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -235,15 +261,13 @@ public class AssetEntryUsageLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage fetchAssetEntryUsage(
-		long assetEntryUsageId) {
-
+	public AssetEntryUsage fetchAssetEntryUsage(long assetEntryUsageId) {
 		return _assetEntryUsageLocalService.fetchAssetEntryUsage(
 			assetEntryUsageId);
 	}
 
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage fetchAssetEntryUsage(
+	public AssetEntryUsage fetchAssetEntryUsage(
 		long assetEntryId, long containerType, String containerKey, long plid) {
 
 		return _assetEntryUsageLocalService.fetchAssetEntryUsage(
@@ -258,8 +282,8 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * @return the matching asset entry usage, or <code>null</code> if a matching asset entry usage could not be found
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage
-		fetchAssetEntryUsageByUuidAndGroupId(String uuid, long groupId) {
+	public AssetEntryUsage fetchAssetEntryUsageByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _assetEntryUsageLocalService.
 			fetchAssetEntryUsageByUuidAndGroupId(uuid, groupId);
@@ -280,8 +304,7 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * @throws PortalException if a asset entry usage with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage getAssetEntryUsage(
-			long assetEntryUsageId)
+	public AssetEntryUsage getAssetEntryUsage(long assetEntryUsageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsage(
@@ -297,8 +320,8 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * @throws PortalException if a matching asset entry usage could not be found
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage
-			getAssetEntryUsageByUuidAndGroupId(String uuid, long groupId)
+	public AssetEntryUsage getAssetEntryUsageByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsageByUuidAndGroupId(
@@ -309,7 +332,7 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * Returns a range of all the asset entry usages.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.model.impl.AssetEntryUsageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.model.impl.AssetEntryUsageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset entry usages
@@ -317,46 +340,81 @@ public class AssetEntryUsageLocalServiceWrapper
 	 * @return the range of asset entry usages
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.model.AssetEntryUsage>
-		getAssetEntryUsages(int start, int end) {
+	public java.util.List<AssetEntryUsage> getAssetEntryUsages(
+		int start, int end) {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsages(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.model.AssetEntryUsage>
-		getAssetEntryUsages(long assetEntryId) {
+	public java.util.List<AssetEntryUsage> getAssetEntryUsages(
+		long assetEntryId) {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsages(assetEntryId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.model.AssetEntryUsage>
-		getAssetEntryUsages(
-			long assetEntryId, int type, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.model.AssetEntryUsage> orderByComparator) {
+	public java.util.List<AssetEntryUsage> getAssetEntryUsages(
+		long assetEntryId, int type, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetEntryUsage>
+			orderByComparator) {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsages(
 			assetEntryId, type, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.model.AssetEntryUsage>
-		getAssetEntryUsages(
-			long assetEntryId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.model.AssetEntryUsage> orderByComparator) {
+	public java.util.List<AssetEntryUsage> getAssetEntryUsages(
+		long assetEntryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetEntryUsage>
+			orderByComparator) {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsages(
 			assetEntryId, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.model.AssetEntryUsage>
-		getAssetEntryUsagesByPlid(long plid) {
+	public java.util.List<AssetEntryUsage> getAssetEntryUsagesByPlid(
+		long plid) {
 
 		return _assetEntryUsageLocalService.getAssetEntryUsagesByPlid(plid);
+	}
+
+	/**
+	 * Returns all the asset entry usages matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the asset entry usages
+	 * @param companyId the primary key of the company
+	 * @return the matching asset entry usages, or an empty list if no matches were found
+	 */
+	@Override
+	public java.util.List<AssetEntryUsage>
+		getAssetEntryUsagesByUuidAndCompanyId(String uuid, long companyId) {
+
+		return _assetEntryUsageLocalService.
+			getAssetEntryUsagesByUuidAndCompanyId(uuid, companyId);
+	}
+
+	/**
+	 * Returns a range of asset entry usages matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the asset entry usages
+	 * @param companyId the primary key of the company
+	 * @param start the lower bound of the range of asset entry usages
+	 * @param end the upper bound of the range of asset entry usages (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the range of matching asset entry usages, or an empty list if no matches were found
+	 */
+	@Override
+	public java.util.List<AssetEntryUsage>
+		getAssetEntryUsagesByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator<AssetEntryUsage>
+				orderByComparator) {
+
+		return _assetEntryUsageLocalService.
+			getAssetEntryUsagesByUuidAndCompanyId(
+				uuid, companyId, start, end, orderByComparator);
 	}
 
 	/**
@@ -382,6 +440,16 @@ public class AssetEntryUsageLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
+		getExportActionableDynamicQuery(
+			com.liferay.exportimport.kernel.lar.PortletDataContext
+				portletDataContext) {
+
+		return _assetEntryUsageLocalService.getExportActionableDynamicQuery(
+			portletDataContext);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery
 		getIndexableActionableDynamicQuery() {
 
@@ -399,12 +467,21 @@ public class AssetEntryUsageLocalServiceWrapper
 		return _assetEntryUsageLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetEntryUsageLocalService.getPersistedModel(primaryKeyObj);
+	}
+
+	@Override
+	public int getUniqueAssetEntryUsagesCount(long assetEntryId) {
+		return _assetEntryUsageLocalService.getUniqueAssetEntryUsagesCount(
+			assetEntryId);
 	}
 
 	@Override
@@ -416,15 +493,39 @@ public class AssetEntryUsageLocalServiceWrapper
 	/**
 	 * Updates the asset entry usage in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryUsageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetEntryUsage the asset entry usage
 	 * @return the asset entry usage that was updated
 	 */
 	@Override
-	public com.liferay.asset.model.AssetEntryUsage updateAssetEntryUsage(
-		com.liferay.asset.model.AssetEntryUsage assetEntryUsage) {
+	public AssetEntryUsage updateAssetEntryUsage(
+		AssetEntryUsage assetEntryUsage) {
 
 		return _assetEntryUsageLocalService.updateAssetEntryUsage(
 			assetEntryUsage);
+	}
+
+	@Override
+	public CTPersistence<AssetEntryUsage> getCTPersistence() {
+		return _assetEntryUsageLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetEntryUsage> getModelClass() {
+		return _assetEntryUsageLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetEntryUsage>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _assetEntryUsageLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

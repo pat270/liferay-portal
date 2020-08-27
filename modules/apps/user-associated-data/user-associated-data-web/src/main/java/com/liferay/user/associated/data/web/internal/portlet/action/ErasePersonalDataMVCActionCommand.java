@@ -80,22 +80,26 @@ public class ErasePersonalDataMVCActionCommand
 					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE);
 		}
 
-		LiferayPortletURL redirect = PortletURLFactoryUtil.create(
+		LiferayPortletURL redirectURL = PortletURLFactoryUtil.create(
 			actionRequest, UserAssociatedDataPortletKeys.USER_ASSOCIATED_DATA,
 			PortletRequest.RENDER_PHASE);
 
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"p_u_i_d", String.valueOf(selectedUser.getUserId()));
 
 		String mvcRenderCommandName = "/review_uad_data";
 
-		if (_uadApplicationSummaryHelper.getTotalReviewableUADEntitiesCount(
-				selectedUser.getUserId()) == 0) {
+		int totalReviewableUADEntitiesCount =
+			_uadApplicationSummaryHelper.getTotalReviewableUADEntitiesCount(
+				selectedUser.getUserId());
 
-			if (_uadApplicationSummaryHelper.
+		if (totalReviewableUADEntitiesCount == 0) {
+			int totalNonreviewableUADEntitiesCount =
+				_uadApplicationSummaryHelper.
 					getTotalNonreviewableUADEntitiesCount(
-						selectedUser.getUserId()) == 0) {
+						selectedUser.getUserId());
 
+			if (totalNonreviewableUADEntitiesCount == 0) {
 				mvcRenderCommandName = "/completed_data_erasure";
 			}
 			else {
@@ -103,9 +107,9 @@ public class ErasePersonalDataMVCActionCommand
 			}
 		}
 
-		redirect.setParameter("mvcRenderCommandName", mvcRenderCommandName);
+		redirectURL.setParameter("mvcRenderCommandName", mvcRenderCommandName);
 
-		actionResponse.sendRedirect(redirect.toString());
+		actionResponse.sendRedirect(redirectURL.toString());
 	}
 
 	@Reference

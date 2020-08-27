@@ -26,7 +26,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 public class UtilLocator {
 
 	public static UtilLocator getInstance() {
-		return _instance;
+		return _utilLocator;
 	}
 
 	public Object findUtil(String utilName) {
@@ -35,8 +35,8 @@ public class UtilLocator {
 		try {
 			bean = PortalBeanLocatorUtil.locate(_getUtilName(utilName));
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return bean;
@@ -49,8 +49,8 @@ public class UtilLocator {
 			bean = PortletBeanLocatorUtil.locate(
 				servletContextName, _getUtilName(utilName));
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return bean;
@@ -69,6 +69,6 @@ public class UtilLocator {
 
 	private static final Log _log = LogFactoryUtil.getLog(UtilLocator.class);
 
-	private static final UtilLocator _instance = new UtilLocator();
+	private static final UtilLocator _utilLocator = new UtilLocator();
 
 }

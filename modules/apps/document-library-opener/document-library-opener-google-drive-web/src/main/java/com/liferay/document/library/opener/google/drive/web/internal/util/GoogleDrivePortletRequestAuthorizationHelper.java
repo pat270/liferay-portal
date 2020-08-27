@@ -14,10 +14,12 @@
 
 package com.liferay.document.library.opener.google.drive.web.internal.util;
 
-import com.liferay.document.library.opener.google.drive.DLOpenerGoogleDriveManager;
+import com.liferay.document.library.opener.google.drive.web.internal.DLOpenerGoogleDriveManager;
+import com.liferay.document.library.opener.google.drive.web.internal.oauth.OAuth2StateUtil;
+import com.liferay.document.library.opener.oauth.OAuth2State;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
-import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
@@ -49,11 +52,15 @@ public class GoogleDrivePortletRequestAuthorizationHelper {
 
 		String state = PwdGenerator.getPassword(5);
 
-		State.save(
+		HttpServletRequest originalHttpServletRequest =
 			_portal.getOriginalServletRequest(
-				_portal.getHttpServletRequest(portletRequest)),
-			themeDisplay.getUserId(), _getSuccessURL(portletRequest),
-			_getFailureURL(portletRequest), state);
+				_portal.getHttpServletRequest(portletRequest));
+
+		OAuth2StateUtil.save(
+			originalHttpServletRequest,
+			new OAuth2State(
+				themeDisplay.getUserId(), _getSuccessURL(portletRequest),
+				_getFailureURL(portletRequest), state));
 
 		HttpServletResponse httpServletResponse =
 			_portal.getHttpServletResponse(portletResponse);
@@ -61,7 +68,8 @@ public class GoogleDrivePortletRequestAuthorizationHelper {
 		String authorizationURL =
 			_dlOpenerGoogleDriveManager.getAuthorizationURL(
 				themeDisplay.getCompanyId(), state,
-				_oAuth2Helper.getRedirectURI(portletRequest));
+				OAuth2StateUtil.getRedirectURI(
+					_portal.getPortalURL(portletRequest)));
 
 		if (!_dlOpenerGoogleDriveManager.hasValidCredential(
 				themeDisplay.getCompanyId(), themeDisplay.getUserId())) {
@@ -76,7 +84,7 @@ public class GoogleDrivePortletRequestAuthorizationHelper {
 	private String _getFailureURL(PortletRequest portletRequest)
 		throws PortalException {
 
-		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(
+		LiferayPortletURL liferayPortletURL = _portletURLFactory.create(
 			portletRequest, _portal.getPortletId(portletRequest),
 			_portal.getControlPanelPlid(portletRequest),
 			PortletRequest.RENDER_PHASE);
@@ -96,9 +104,9 @@ public class GoogleDrivePortletRequestAuthorizationHelper {
 	private HttpUtil _httpUtil;
 
 	@Reference
-	private OAuth2Helper _oAuth2Helper;
+	private Portal _portal;
 
 	@Reference
-	private Portal _portal;
+	private PortletURLFactory _portletURLFactory;
 
 }

@@ -33,6 +33,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -57,13 +58,30 @@ public class InitBundleCommand extends DownloadCommand {
 		FileUtil.unpack(
 			getDownloadPath(), liferayHomeDir.toPath(), _stripComponents);
 
-		_copyConfigs();
+		CopyConfigsCommand copyConfigsCommand = new CopyConfigsCommand();
+
+		copyConfigsCommand.setConfigsDirs(_configsDirs);
+		copyConfigsCommand.setEnvironment(_environment);
+		copyConfigsCommand.setLiferayHomeDir(getLiferayHomeDir());
+
+		copyConfigsCommand.execute();
+
 		_copyProvidedModules();
 		_fixPosixFilePermissions();
 	}
 
 	public File getConfigsDir() {
-		return _configsDir;
+		File configsDir = null;
+
+		if (!_configsDirs.isEmpty()) {
+			configsDir = _configsDirs.get(_configsDirs.size() - 1);
+		}
+
+		return configsDir;
+	}
+
+	public List<File> getConfigsDirs() {
+		return _configsDirs;
 	}
 
 	public String getEnvironment() {
@@ -79,7 +97,11 @@ public class InitBundleCommand extends DownloadCommand {
 	}
 
 	public void setConfigsDir(File configsDir) {
-		_configsDir = configsDir;
+		_configsDirs = Arrays.asList(configsDir);
+	}
+
+	public void setConfigsDirs(List<File> configsDirs) {
+		_configsDirs = configsDirs;
 	}
 
 	public void setEnvironment(String environment) {
@@ -94,32 +116,7 @@ public class InitBundleCommand extends DownloadCommand {
 		_stripComponents = stripComponents;
 	}
 
-	private void _copyConfigs() throws IOException {
-		if ((_configsDir == null) || !_configsDir.exists()) {
-			return;
-		}
-
-		Path configsDirPath = _configsDir.toPath();
-
-		Path configsCommonDirPath = configsDirPath.resolve("common");
-
-		File liferayHomeDir = getLiferayHomeDir();
-
-		Path liferayHomeDirPath = liferayHomeDir.toPath();
-
-		if (Files.exists(configsCommonDirPath)) {
-			FileUtil.copyDirectory(configsCommonDirPath, liferayHomeDirPath);
-		}
-
-		Path configsEnvironmentDirPath = configsDirPath.resolve(_environment);
-
-		if (Files.exists(configsEnvironmentDirPath)) {
-			FileUtil.copyDirectory(
-				configsEnvironmentDirPath, liferayHomeDirPath);
-		}
-	}
-
-	private void _copyProvidedModules() throws IOException {
+	private void _copyProvidedModules() throws Exception {
 		File liferayHomeDir = getLiferayHomeDir();
 
 		Path liferayHomeDirPath = liferayHomeDir.toPath();
@@ -133,13 +130,13 @@ public class InitBundleCommand extends DownloadCommand {
 		}
 	}
 
-	private void _deleteBundle() throws IOException {
+	private void _deleteBundle() throws Exception {
 		File dir = getLiferayHomeDir();
 
 		FileUtil.deleteDirectory(dir.toPath());
 	}
 
-	private void _fixPosixFilePermissions() throws IOException {
+	private void _fixPosixFilePermissions() throws Exception {
 		File dir = getLiferayHomeDir();
 
 		Path dirPath = dir.toPath();
@@ -174,10 +171,11 @@ public class InitBundleCommand extends DownloadCommand {
 		PosixFilePermissions.fromString("rwxr-x---");
 
 	@Parameter(
-		description = "The directory that contains the configuration files.",
+		converter = FileConverter.class,
+		description = "The directories that contains the configuration files.",
 		names = "--configs"
 	)
-	private File _configsDir;
+	private List<File> _configsDirs = BundleSupportConstants.defaultConfigsDirs;
 
 	@Parameter(
 		description = "The environment of your Liferay home deployment.",

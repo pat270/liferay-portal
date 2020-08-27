@@ -23,9 +23,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
-import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
 import com.liferay.portal.spring.extender.internal.configuration.ConfigurationUtil;
 
@@ -36,8 +34,6 @@ import java.io.Reader;
 import java.net.URL;
 
 import java.util.Dictionary;
-
-import javax.sql.DataSource;
 
 import org.apache.felix.dm.DependencyManager;
 import org.apache.felix.dm.ServiceDependency;
@@ -81,8 +77,8 @@ public class ModuleApplicationContextExtender
 
 			return moduleApplicationContextExtension;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return null;
@@ -123,12 +119,10 @@ public class ModuleApplicationContextExtender
 			BundleContext bundleContext =
 				ModuleApplicationContextExtender.this._bundleContext;
 
-			Bundle bundle = bundleContext.getBundle();
-
 			_component.setImplementation(
 				new ModuleApplicationContextRegistrator(
 					_configurableApplicationContextConfigurator, _bundle,
-					bundle));
+					bundleContext.getBundle()));
 
 			BundleWiring bundleWiring = _bundle.adapt(BundleWiring.class);
 
@@ -267,16 +261,7 @@ public class ModuleApplicationContextExtender
 	private ConfigurableApplicationContextConfigurator
 		_configurableApplicationContextConfigurator;
 
-	@Reference(target = "(&(bean.id=liferayDataSource)(original.bean=true))")
-	private DataSource _dataSource;
-
-	@Reference(target = "(original.bean=true)")
-	private InfrastructureUtil _infrastructureUtil;
-
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED)
 	private ModuleServiceLifecycle _moduleServiceLifecycle;
-
-	@Reference(target = "(original.bean=true)")
-	private SAXReaderUtil _saxReaderUtil;
 
 }

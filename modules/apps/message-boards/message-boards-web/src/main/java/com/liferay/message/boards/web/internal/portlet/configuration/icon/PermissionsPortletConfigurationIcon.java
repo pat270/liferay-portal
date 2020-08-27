@@ -18,12 +18,13 @@ import com.liferay.message.boards.constants.MBPortletKeys;
 import com.liferay.message.boards.web.internal.security.permission.MBResourcePermission;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
@@ -85,7 +86,10 @@ public class PermissionsPortletConfigurationIcon
 				resourcePrimKey, LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return url;
@@ -107,12 +111,9 @@ public class PermissionsPortletConfigurationIcon
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
-
 		if (!MBResourcePermission.contains(
-				permissionChecker, themeDisplay.getScopeGroupId(),
-				ActionKeys.PERMISSIONS)) {
+				themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroupId(), ActionKeys.PERMISSIONS)) {
 
 			return false;
 		}
@@ -129,5 +130,8 @@ public class PermissionsPortletConfigurationIcon
 	public boolean isUseDialog() {
 		return true;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PermissionsPortletConfigurationIcon.class);
 
 }

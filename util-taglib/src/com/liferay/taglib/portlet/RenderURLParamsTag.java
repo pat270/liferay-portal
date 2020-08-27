@@ -66,8 +66,8 @@ public class RenderURLParamsTag extends TagSupport {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 
@@ -100,9 +100,8 @@ public class RenderURLParamsTag extends TagSupport {
 
 		JspWriter jspWriter = pageContext.getOut();
 
-		String queryString = HttpUtil.getQueryString(url);
-
-		String[] parameters = StringUtil.split(queryString, CharPool.AMPERSAND);
+		String[] parameters = StringUtil.split(
+			HttpUtil.getQueryString(url), CharPool.AMPERSAND);
 
 		for (String parameter : parameters) {
 			if (parameter.length() > 0) {

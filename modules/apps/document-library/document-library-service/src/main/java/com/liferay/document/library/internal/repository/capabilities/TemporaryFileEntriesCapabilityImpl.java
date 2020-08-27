@@ -17,6 +17,7 @@ package com.liferay.document.library.internal.repository.capabilities;
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -89,8 +90,9 @@ public class TemporaryFileEntriesCapabilityImpl
 				fileName, mimeType, fileName, StringPool.BLANK,
 				StringPool.BLANK, file, serviceContext);
 		}
-		catch (IOException ioe) {
-			throw new SystemException("Unable to write temporary file", ioe);
+		catch (IOException ioException) {
+			throw new SystemException(
+				"Unable to write temporary file", ioException);
 		}
 		finally {
 			FileUtil.delete(file);
@@ -135,12 +137,12 @@ public class TemporaryFileEntriesCapabilityImpl
 					_documentRepository.deleteFileEntry(
 						fileEntry.getFileEntryId());
 				}
-				catch (NoSuchModelException nsme) {
+				catch (NoSuchModelException noSuchModelException) {
 
 					// LPS-52675
 
 					if (_log.isDebugEnabled()) {
-						_log.debug(nsme, nsme);
+						_log.debug(noSuchModelException, noSuchModelException);
 					}
 				}
 
@@ -160,12 +162,12 @@ public class TemporaryFileEntriesCapabilityImpl
 				temporaryFileEntriesScope.getUserId(), folder.getFolderId(),
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 		}
-		catch (NoSuchModelException nsme) {
+		catch (NoSuchModelException noSuchModelException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsme, nsme);
+				_log.debug(noSuchModelException, noSuchModelException);
 			}
 
 			return Collections.emptyList();
@@ -219,12 +221,12 @@ public class TemporaryFileEntriesCapabilityImpl
 		try {
 			return _documentRepository.getFolder(parentFolderId, folderName);
 		}
-		catch (NoSuchFolderException nsfe) {
+		catch (NoSuchFolderException noSuchFolderException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsfe, nsfe);
+				_log.debug(noSuchFolderException, noSuchFolderException);
 			}
 
 			return _documentRepository.addFolder(
@@ -344,19 +346,26 @@ public class TemporaryFileEntriesCapabilityImpl
 
 		@Override
 		public void execute(FileEntry fileEntry) throws PortalException {
-			Folder folder = fileEntry.getFolder();
+			DLAppHelperLocalServiceUtil.deleteFileEntry(fileEntry);
 
 			_documentRepository.deleteFileEntry(fileEntry.getFileEntryId());
+
+			Folder folder = fileEntry.getFolder();
 
 			Folder mountFolder = _documentRepository.getFolder(
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
-			while ((folder.getFolderId() != mountFolder.getFolderId()) &&
-				   (_documentRepository.getFileEntriesCount(
-					   folder.getFolderId(), WorkflowConstants.STATUS_ANY) ==
-						   0)) {
-
+			while (folder.getFolderId() != mountFolder.getFolderId()) {
 				long folderId = folder.getFolderId();
+
+				int count = _documentRepository.getFileEntriesCount(
+					folderId, WorkflowConstants.STATUS_ANY);
+
+				if (count != 0) {
+					break;
+				}
+
+				DLAppHelperLocalServiceUtil.deleteFolder(folder);
 
 				folder = folder.getParentFolder();
 

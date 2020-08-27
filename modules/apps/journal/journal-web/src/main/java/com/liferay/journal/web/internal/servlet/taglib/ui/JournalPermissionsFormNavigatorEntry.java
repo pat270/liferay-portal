@@ -14,8 +14,8 @@
 
 package com.liferay.journal.web.internal.servlet.taglib.ui;
 
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -60,7 +60,7 @@ public class JournalPermissionsFormNavigatorEntry
 		long classNameId = BeanParamUtil.getLong(
 			article, portletRequest, "classNameId");
 
-		if (classNameId > JournalArticleConstants.CLASSNAME_ID_DEFAULT) {
+		if (classNameId > JournalArticleConstants.CLASS_NAME_ID_DEFAULT) {
 			return false;
 		}
 

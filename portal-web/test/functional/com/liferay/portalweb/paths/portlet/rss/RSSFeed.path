@@ -9,11 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>RSS_CONFIGURATION_IFRAME</td>
-	<td>//iframe[contains(@id,'com_liferay_rss_web_portlet_RSSPortlet') and contains(@class,'dialog-iframe-node')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>UNDO_LINK</td>
 	<td>//a[contains(@class,'action-undo')]</td>
 	<td></td>
@@ -102,7 +97,7 @@
 </tr>
 <tr>
 	<td>FEED_TIME</td>
-	<td>//input[contains(@id,'feedTime')]</td>
+	<td>//input[contains(@name,'feedTime')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -16,10 +16,17 @@ package com.liferay.source.formatter.checks;
 
 import com.liferay.source.formatter.checks.util.SourceUtil;
 
+import java.util.List;
+
 /**
  * @author Alan Huang
  */
 public class JSONDeprecatedPackagesCheck extends BaseFileCheck {
+
+	@Override
+	public boolean isLiferaySourceCheck() {
+		return true;
+	}
 
 	@Override
 	protected String doProcess(
@@ -29,7 +36,10 @@ public class JSONDeprecatedPackagesCheck extends BaseFileCheck {
 			return content;
 		}
 
-		for (String deprecatedPackageName : _DEPRECATED_PACKAGE_NAMES) {
+		List<String> deprecatedPackageNames = getAttributeValues(
+			_DEPRECATED_PACKAGE_NAMES_KEY, absolutePath);
+
+		for (String deprecatedPackageName : deprecatedPackageNames) {
 			int x = -1;
 
 			while (true) {
@@ -40,21 +50,18 @@ public class JSONDeprecatedPackagesCheck extends BaseFileCheck {
 					break;
 				}
 
-				int lineNumber = SourceUtil.getLineNumber(content, x);
-
 				addMessage(
 					fileName,
 					"Do not use deprecated package '" + deprecatedPackageName +
 						"'",
-					lineNumber);
+					SourceUtil.getLineNumber(content, x));
 			}
 		}
 
 		return content;
 	}
 
-	private static final String[] _DEPRECATED_PACKAGE_NAMES = {
-		"liferay-module-config-generator", "metal-cli"
-	};
+	private static final String _DEPRECATED_PACKAGE_NAMES_KEY =
+		"deprecatedPackageNames";
 
 }

@@ -1,0 +1,20 @@
+.table-list {
+	td:first-child,
+	th:first-child {
+		> .table-first-element-group {
+			display: flex;
+			justify-content: space-between;
+		}
+	}
+
+	td:last-child:not(.actions),
+	th:last-child,
+	td + td,
+	th + th {
+		padding-right: 3rem;
+	}
+
+	th.table-head-title .title {
+		line-height: 24px;
+	}
+}

@@ -26,9 +26,7 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerPostProcessor;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.Query;
-import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
@@ -39,6 +37,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.asset.SearchableAssetClassNamesProvider;
 import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.internal.indexer.PreFilterContributorHelper;
 
@@ -56,13 +55,13 @@ public class FacetedSearcherImpl
 		IndexerRegistry indexerRegistry,
 		IndexSearcherHelper indexSearcherHelper,
 		PreFilterContributorHelper preFilterContributorHelper,
-		SearchEngineHelper searchEngineHelper) {
+		SearchableAssetClassNamesProvider searchableAssetClassNamesProvider) {
 
 		_expandoQueryContributor = expandoQueryContributor;
 		_indexerRegistry = indexerRegistry;
 		_indexSearcherHelper = indexSearcherHelper;
 		_preFilterContributorHelper = preFilterContributorHelper;
-		_searchEngineHelper = searchEngineHelper;
+		_searchableAssetClassNamesProvider = searchableAssetClassNamesProvider;
 	}
 
 	@Override
@@ -143,14 +142,12 @@ public class FacetedSearcherImpl
 			Query query = _getFinalQuery(
 				createFullQuery(booleanFilter, searchContext));
 
-			QueryConfig queryConfig = searchContext.getQueryConfig();
-
-			query.setQueryConfig(queryConfig);
+			query.setQueryConfig(searchContext.getQueryConfig());
 
 			return _indexSearcherHelper.search(searchContext, query);
 		}
-		catch (Exception e) {
-			throw new SearchException(e);
+		catch (Exception exception) {
+			throw new SearchException(exception);
 		}
 	}
 
@@ -246,8 +243,8 @@ public class FacetedSearcherImpl
 	private Map<String, Indexer<?>> _getEntryClassNameIndexerMap(
 		String[] entryClassNames, String searchEngineId) {
 
-		Map<String, Indexer<?>> entryClassNameIndexerMap = new LinkedHashMap<>(
-			entryClassNames.length);
+		Map<String, Indexer<?>> entryClassNameIndexerMap =
+			new LinkedHashMap<>();
 
 		for (String entryClassName : entryClassNames) {
 			Indexer<?> indexer = _indexerRegistry.getIndexer(entryClassName);
@@ -273,7 +270,8 @@ public class FacetedSearcherImpl
 			return entryClassNames;
 		}
 
-		return _searchEngineHelper.getEntryClassNames();
+		return _searchableAssetClassNamesProvider.getClassNames(
+			searchContext.getCompanyId());
 	}
 
 	private Query _getFinalQuery(Query query) {
@@ -308,6 +306,7 @@ public class FacetedSearcherImpl
 	private final IndexerRegistry _indexerRegistry;
 	private final IndexSearcherHelper _indexSearcherHelper;
 	private final PreFilterContributorHelper _preFilterContributorHelper;
-	private final SearchEngineHelper _searchEngineHelper;
+	private final SearchableAssetClassNamesProvider
+		_searchableAssetClassNamesProvider;
 
 }

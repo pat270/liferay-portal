@@ -15,8 +15,10 @@
 package com.liferay.gradle.plugins.soy.internal;
 
 /**
- * @author Andrea Di Giorgi
+ * @author     Andrea Di Giorgi
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public interface SoyPluginConstants {
 
 	public static final String CONFIG_JS_MODULES_TASK_NAME = "configJSModules";

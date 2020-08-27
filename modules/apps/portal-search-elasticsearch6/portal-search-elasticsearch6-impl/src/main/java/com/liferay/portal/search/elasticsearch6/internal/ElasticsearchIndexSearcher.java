@@ -38,7 +38,6 @@ import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
 import com.liferay.portal.search.constants.SearchContextAttributes;
 import com.liferay.portal.search.elasticsearch6.configuration.ElasticsearchConfiguration;
 import com.liferay.portal.search.elasticsearch6.constants.ElasticsearchSearchContextAttributes;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.search.BaseSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.BaseSearchResponse;
@@ -46,12 +45,9 @@ import com.liferay.portal.search.engine.adapter.search.CountSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.CountSearchResponse;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchRequest;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchResponse;
-import com.liferay.portal.search.filter.ComplexQueryBuilderFactory;
-import com.liferay.portal.search.filter.ComplexQueryPart;
+import com.liferay.portal.search.index.IndexNameBuilder;
 import com.liferay.portal.search.legacy.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.legacy.searcher.SearchResponseBuilderFactory;
-import com.liferay.portal.search.query.BooleanQuery;
-import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.searcher.SearchRequest;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.searcher.SearchResponseBuilder;
@@ -139,8 +135,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 						StringBundler.concat(
 							"The search engine processed ",
 							searchSearchResponse.getSearchRequestString(),
-							" in ",
-							searchSearchResponse.getExecutionTime() + " ms"));
+							" in ", searchSearchResponse.getExecutionTime(),
+							" ms"));
 				}
 
 				populateResponse(searchSearchResponse, searchResponseBuilder);
@@ -167,13 +163,13 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 			return hits;
 		}
-		catch (RuntimeException re) {
-			if (!handle(re)) {
+		catch (RuntimeException runtimeException) {
+			if (!handle(runtimeException)) {
 				if (_logExceptionsOnly) {
-					_log.error(re, re);
+					_log.error(runtimeException, runtimeException);
 				}
 				else {
-					throw re;
+					throw runtimeException;
 				}
 			}
 
@@ -185,8 +181,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 				_log.info(
 					StringBundler.concat(
-						"Searching ", query.toString(), " took ",
-						stopWatch.getTime(), " ms"));
+						"Searching ", query, " took ", stopWatch.getTime(),
+						" ms"));
 			}
 		}
 	}
@@ -209,7 +205,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 					StringBundler.concat(
 						"The search engine processed ",
 						countSearchResponse.getSearchRequestString(), " in ",
-						countSearchResponse.getExecutionTime() + " ms"));
+						countSearchResponse.getExecutionTime(), " ms"));
 			}
 
 			populateResponse(
@@ -217,13 +213,13 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 			return countSearchResponse.getCount();
 		}
-		catch (RuntimeException re) {
-			if (!handle(re)) {
+		catch (RuntimeException runtimeException) {
+			if (!handle(runtimeException)) {
 				if (_logExceptionsOnly) {
-					_log.error(re, re);
+					_log.error(runtimeException, runtimeException);
 				}
 				else {
-					throw re;
+					throw runtimeException;
 				}
 			}
 
@@ -286,8 +282,14 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		searchSearchRequest.putAllFacets(searchContext.getFacets());
 
+		searchSearchRequest.setFetchSource(searchRequest.getFetchSource());
+		searchSearchRequest.setFetchSourceExcludes(
+			searchRequest.getFetchSourceExcludes());
+		searchSearchRequest.setFetchSourceIncludes(
+			searchRequest.getFetchSourceIncludes());
 		searchSearchRequest.setGroupBy(searchContext.getGroupBy());
-
+		searchSearchRequest.setGroupByRequests(
+			searchRequest.getGroupByRequests());
 		searchSearchRequest.setHighlightEnabled(
 			queryConfig.isHighlightEnabled());
 		searchSearchRequest.setHighlightFieldNames(
@@ -327,7 +329,6 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		searchSearchRequest.setSorts(searchContext.getSorts());
 		searchSearchRequest.setSorts(searchRequest.getSorts());
 		searchSearchRequest.setStats(searchContext.getStats());
-		searchSearchRequest.setStatsRequests(searchRequest.getStatsRequests());
 
 		return searchSearchRequest;
 	}
@@ -347,36 +348,6 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		return new String[] {indexName};
 	}
 
-	protected com.liferay.portal.search.query.Query getQuery(
-		SearchRequest searchRequest) {
-
-		com.liferay.portal.search.query.Query query = searchRequest.getQuery();
-
-		List<ComplexQueryPart> complexQueryParts =
-			searchRequest.getComplexQueryParts();
-
-		if (complexQueryParts.isEmpty()) {
-			if (query != null) {
-				return query;
-			}
-
-			return null;
-		}
-
-		BooleanQuery booleanQuery = _queries.booleanQuery();
-
-		if (query != null) {
-			booleanQuery.addMustQueryClauses(query);
-		}
-
-		return _complexQueryBuilderFactory.builder(
-		).addParts(
-			complexQueryParts
-		).root(
-			booleanQuery
-		).build();
-	}
-
 	protected SearchRequest getSearchRequest(SearchContext searchContext) {
 		SearchRequestBuilder searchRequestBuilder = _getSearchRequestBuilder(
 			searchContext);
@@ -384,8 +355,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		return searchRequestBuilder.build();
 	}
 
-	protected boolean handle(Exception e) {
-		Throwable throwable = e.getCause();
+	protected boolean handle(Exception exception) {
+		Throwable throwable = exception.getCause();
 
 		if (throwable == null) {
 			return false;
@@ -400,7 +371,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		if (message.contains(
 				"Fielddata is disabled on text fields by default.")) {
 
-			_log.error("Unable to aggregate facet on a nonkeyword field", e);
+			_log.error(
+				"Unable to aggregate facet on a nonkeyword field", exception);
 
 			return true;
 		}
@@ -425,19 +397,33 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		);
 	}
 
+	protected void populateResponse(
+		SearchSearchResponse searchSearchResponse,
+		SearchResponseBuilder searchResponseBuilder) {
+
+		populateResponse(
+			(BaseSearchResponse)searchSearchResponse, searchResponseBuilder);
+
+		searchResponseBuilder.groupByResponses(
+			searchSearchResponse.getGroupByResponses());
+	}
+
 	protected void prepare(
 		BaseSearchRequest baseSearchRequest, SearchRequest searchRequest,
 		Query query, SearchContext searchContext) {
 
+		baseSearchRequest.addComplexQueryParts(
+			searchRequest.getComplexQueryParts());
 		baseSearchRequest.setExplain(searchRequest.isExplain());
 		baseSearchRequest.setIncludeResponseString(
 			searchRequest.isIncludeResponseString());
 		baseSearchRequest.setPostFilterQuery(
 			searchRequest.getPostFilterQuery());
-		baseSearchRequest.setRescoreQuery(searchRequest.getRescoreQuery());
+		baseSearchRequest.setRescores(searchRequest.getRescores());
 		baseSearchRequest.setStatsRequests(searchRequest.getStatsRequests());
 
 		setAggregations(baseSearchRequest, searchRequest);
+		setConnectionId(baseSearchRequest, searchRequest);
 		setIndexNames(baseSearchRequest, searchRequest, searchContext);
 		setLegacyQuery(baseSearchRequest, query);
 		setLegacyPostFilter(baseSearchRequest, query);
@@ -455,11 +441,10 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		}
 	}
 
-	@Reference(unbind = "-")
-	protected void setComplexQueryBuilderFactory(
-		ComplexQueryBuilderFactory complexQueryBuilderFactory) {
+	protected void setConnectionId(
+		BaseSearchRequest baseSearchRequest, SearchRequest searchRequest) {
 
-		_complexQueryBuilderFactory = complexQueryBuilderFactory;
+		baseSearchRequest.setConnectionId(searchRequest.getConnectionId());
 	}
 
 	@Reference(unbind = "-")
@@ -505,15 +490,10 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		_props = props;
 	}
 
-	@Reference(unbind = "-")
-	protected void setQueries(Queries queries) {
-		_queries = queries;
-	}
-
 	protected void setQuery(
 		BaseSearchRequest baseSearchRequest, SearchRequest searchRequest) {
 
-		baseSearchRequest.setQuery(getQuery(searchRequest));
+		baseSearchRequest.setQuery(searchRequest.getQuery());
 	}
 
 	@Reference(target = "(search.engine.impl=Elasticsearch)", unbind = "-")
@@ -552,12 +532,10 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ElasticsearchIndexSearcher.class);
 
-	private ComplexQueryBuilderFactory _complexQueryBuilderFactory;
 	private volatile ElasticsearchConfiguration _elasticsearchConfiguration;
 	private IndexNameBuilder _indexNameBuilder;
 	private boolean _logExceptionsOnly;
 	private Props _props;
-	private Queries _queries;
 	private SearchEngineAdapter _searchEngineAdapter;
 	private SearchRequestBuilderFactory _searchRequestBuilderFactory;
 	private SearchResponseBuilderFactory _searchResponseBuilderFactory;

@@ -26,8 +26,6 @@ import com.liferay.taglib.aui.base.BaseATag;
 import com.liferay.taglib.util.InlineUtil;
 import com.liferay.taglib.util.TagResourceBundleUtil;
 
-import java.io.IOException;
-
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -50,8 +48,11 @@ public class ATag extends BaseATag {
 
 		if (Validator.isNotNull(getHref())) {
 			if (AUIUtil.isOpensNewWindow(getTarget())) {
-				ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-					WebKeys.THEME_DISPLAY);
+				HttpServletRequest httpServletRequest = getRequest();
+
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
 				ResourceBundle resourceBundle =
 					TagResourceBundleUtil.getResourceBundle(pageContext);
@@ -59,9 +60,9 @@ public class ATag extends BaseATag {
 				jspWriter.write(StringPool.SPACE);
 				jspWriter.write("<svg class=\"lexicon-icon ");
 				jspWriter.write("lexicon-icon-shortcut\" focusable=\"false\" ");
-				jspWriter.write("role=\"img\"><use data-href=\"");
+				jspWriter.write("role=\"img\"><use href=\"");
 				jspWriter.write(themeDisplay.getPathThemeImages());
-				jspWriter.write("/lexicon/icons.svg#shortcut\" /><span ");
+				jspWriter.write("/clay/icons.svg#shortcut\" /><span ");
 				jspWriter.write("class=\"sr-only\">");
 
 				String opensNewWindowLabel = LanguageUtil.get(
@@ -140,7 +141,7 @@ public class ATag extends BaseATag {
 
 		if (Validator.isNotNull(onClick)) {
 			jspWriter.write("onClick=\"");
-			jspWriter.write(onClick);
+			jspWriter.write(HtmlUtil.escapeAttribute(onClick));
 			jspWriter.write("\" ");
 		}
 
@@ -151,13 +152,13 @@ public class ATag extends BaseATag {
 		}
 
 		if (Validator.isNotNull(title)) {
-			ResourceBundle resourceBundle =
-				TagResourceBundleUtil.getResourceBundle(pageContext);
-
 			jspWriter.write("title=\"");
 
 			if (Validator.isNotNull(title)) {
-				jspWriter.write(LanguageUtil.get(resourceBundle, title));
+				jspWriter.write(
+					LanguageUtil.get(
+						TagResourceBundleUtil.getResourceBundle(pageContext),
+						title));
 			}
 
 			jspWriter.write("\" ");
@@ -172,13 +173,11 @@ public class ATag extends BaseATag {
 		jspWriter.write(">");
 
 		if (Validator.isNotNull(label)) {
-			Boolean localizeLabel = getLocalizeLabel();
-
-			if (localizeLabel) {
-				ResourceBundle resourceBundle =
-					TagResourceBundleUtil.getResourceBundle(pageContext);
-
-				jspWriter.write(LanguageUtil.get(resourceBundle, label));
+			if (getLocalizeLabel()) {
+				jspWriter.write(
+					LanguageUtil.get(
+						TagResourceBundleUtil.getResourceBundle(pageContext),
+						label));
 			}
 			else {
 				jspWriter.write(label);
@@ -217,9 +216,7 @@ public class ATag extends BaseATag {
 		return StringPool.BLANK;
 	}
 
-	private void _writeDynamicAttributes(JspWriter jspWriter)
-		throws IOException {
-
+	private void _writeDynamicAttributes(JspWriter jspWriter) throws Exception {
 		String dynamicAttributesString = InlineUtil.buildDynamicAttributes(
 			getDynamicAttributes());
 

@@ -14,9 +14,10 @@
 
 package com.liferay.fragment.service;
 
+import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link FragmentEntryLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentEntryLocalService
  * @generated
  */
-@ProviderType
 public class FragmentEntryLocalServiceWrapper
 	implements FragmentEntryLocalService,
 			   ServiceWrapper<FragmentEntryLocalService> {
@@ -39,218 +39,72 @@ public class FragmentEntryLocalServiceWrapper
 	/**
 	 * Adds the fragment entry to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FragmentEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param fragmentEntry the fragment entry
 	 * @return the fragment entry that was added
 	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-		com.liferay.fragment.model.FragmentEntry fragmentEntry) {
-
+	public FragmentEntry addFragmentEntry(FragmentEntry fragmentEntry) {
 		return _fragmentEntryLocalService.addFragmentEntry(fragmentEntry);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
+	public FragmentEntry addFragmentEntry(
+			long userId, long groupId, long fragmentCollectionId,
+			String fragmentEntryKey, String name, long previewFileEntryId,
 			int type, int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, type, status,
-			serviceContext);
+			userId, groupId, fragmentCollectionId, fragmentEntryKey, name,
+			previewFileEntryId, type, status, serviceContext);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
-			int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, status,
-			serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
+	public FragmentEntry addFragmentEntry(
+			long userId, long groupId, long fragmentCollectionId,
+			String fragmentEntryKey, String name, String css, String html,
+			String js, boolean cacheable, String configuration,
 			long previewFileEntryId, int type, int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, previewFileEntryId,
-			type, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
-			long previewFileEntryId, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, previewFileEntryId,
+			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
+			html, js, cacheable, configuration, previewFileEntryId, type,
 			status, serviceContext);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
+	public FragmentEntry addFragmentEntry(
 			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, int type, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, type,
-			status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name,
-			status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, long previewFileEntryId,
-			int type, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name,
-			previewFileEntryId, type, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, long previewFileEntryId,
+			String fragmentEntryKey, String name, String css, String html,
+			String js, String configuration, long previewFileEntryId, int type,
 			int status,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name,
-			previewFileEntryId, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
-			String css, String html, String js, int type, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, css, html, js, type,
-			status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
-			String css, String html, String js, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, css, html, js, status,
+			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
+			html, js, configuration, previewFileEntryId, type, status,
 			serviceContext);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
-			String css, String html, String js, long previewFileEntryId,
-			int type, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public FragmentEntry checkout(
+			FragmentEntry publishedFragmentEntry, int version)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, css, html, js,
-			previewFileEntryId, type, status, serviceContext);
+		return _fragmentEntryLocalService.checkout(
+			publishedFragmentEntry, version);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId, String name,
-			String css, String html, String js, long previewFileEntryId,
-			int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, name, css, html, js,
-			previewFileEntryId, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, String css, String html,
-			String js, int type, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
-			html, js, type, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, String css, String html,
-			String js, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
-			html, js, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, String css, String html,
-			String js, long previewFileEntryId, int type, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
-			html, js, previewFileEntryId, type, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry addFragmentEntry(
-			long userId, long groupId, long fragmentCollectionId,
-			String fragmentEntryKey, String name, String css, String html,
-			String js, long previewFileEntryId, int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _fragmentEntryLocalService.addFragmentEntry(
-			userId, groupId, fragmentCollectionId, fragmentEntryKey, name, css,
-			html, js, previewFileEntryId, status, serviceContext);
-	}
-
-	@Override
-	public com.liferay.fragment.model.FragmentEntry copyFragmentEntry(
+	public FragmentEntry copyFragmentEntry(
 			long userId, long groupId, long fragmentEntryId,
 			long fragmentCollectionId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -262,28 +116,58 @@ public class FragmentEntryLocalServiceWrapper
 	}
 
 	/**
-	 * Creates a new fragment entry with the primary key. Does not add the fragment entry to the database.
+	 * Creates a new fragment entry. Does not add the fragment entry to the database.
 	 *
-	 * @param fragmentEntryId the primary key for the new fragment entry
 	 * @return the new fragment entry
 	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry createFragmentEntry(
-		long fragmentEntryId) {
+	public FragmentEntry create() {
+		return _fragmentEntryLocalService.create();
+	}
 
+	@Override
+	public FragmentEntry createFragmentEntry(long fragmentEntryId) {
 		return _fragmentEntryLocalService.createFragmentEntry(fragmentEntryId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	@Override
+	public FragmentEntry delete(FragmentEntry publishedFragmentEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.delete(publishedFragmentEntry);
+	}
+
+	@Override
+	public FragmentEntry deleteDraft(FragmentEntry draftFragmentEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.deleteDraft(draftFragmentEntry);
+	}
+
+	/**
 	 * Deletes the fragment entry from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FragmentEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param fragmentEntry the fragment entry
 	 * @return the fragment entry that was removed
 	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry deleteFragmentEntry(
-			com.liferay.fragment.model.FragmentEntry fragmentEntry)
+	public FragmentEntry deleteFragmentEntry(FragmentEntry fragmentEntry)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.deleteFragmentEntry(fragmentEntry);
@@ -292,13 +176,16 @@ public class FragmentEntryLocalServiceWrapper
 	/**
 	 * Deletes the fragment entry with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FragmentEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param fragmentEntryId the primary key of the fragment entry
 	 * @return the fragment entry that was removed
 	 * @throws PortalException if a fragment entry with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry deleteFragmentEntry(
-			long fragmentEntryId)
+	public FragmentEntry deleteFragmentEntry(long fragmentEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.deleteFragmentEntry(fragmentEntryId);
@@ -313,6 +200,20 @@ public class FragmentEntryLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.deletePersistedModel(persistedModel);
+	}
+
+	@Override
+	public com.liferay.fragment.model.FragmentEntryVersion deleteVersion(
+			com.liferay.fragment.model.FragmentEntryVersion
+				fragmentEntryVersion)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.deleteVersion(fragmentEntryVersion);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _fragmentEntryLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -337,7 +238,7 @@ public class FragmentEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.fragment.model.impl.FragmentEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.fragment.model.impl.FragmentEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -358,7 +259,7 @@ public class FragmentEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.fragment.model.impl.FragmentEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.fragment.model.impl.FragmentEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -407,33 +308,51 @@ public class FragmentEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry fetchFragmentEntry(
-		long fragmentEntryId) {
+	public FragmentEntry fetchDraft(FragmentEntry fragmentEntry) {
+		return _fragmentEntryLocalService.fetchDraft(fragmentEntry);
+	}
 
+	@Override
+	public FragmentEntry fetchDraft(long primaryKey) {
+		return _fragmentEntryLocalService.fetchDraft(primaryKey);
+	}
+
+	@Override
+	public FragmentEntry fetchFragmentEntry(long fragmentEntryId) {
 		return _fragmentEntryLocalService.fetchFragmentEntry(fragmentEntryId);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry fetchFragmentEntry(
+	public FragmentEntry fetchFragmentEntry(
 		long groupId, String fragmentEntryKey) {
 
 		return _fragmentEntryLocalService.fetchFragmentEntry(
 			groupId, fragmentEntryKey);
 	}
 
-	/**
-	 * Returns the fragment entry matching the UUID and group.
-	 *
-	 * @param uuid the fragment entry's UUID
-	 * @param groupId the primary key of the group
-	 * @return the matching fragment entry, or <code>null</code> if a matching fragment entry could not be found
-	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry
-		fetchFragmentEntryByUuidAndGroupId(String uuid, long groupId) {
+	public FragmentEntry fetchFragmentEntryByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _fragmentEntryLocalService.fetchFragmentEntryByUuidAndGroupId(
 			uuid, groupId);
+	}
+
+	@Override
+	public com.liferay.fragment.model.FragmentEntryVersion fetchLatestVersion(
+		FragmentEntry fragmentEntry) {
+
+		return _fragmentEntryLocalService.fetchLatestVersion(fragmentEntry);
+	}
+
+	@Override
+	public FragmentEntry fetchPublished(FragmentEntry fragmentEntry) {
+		return _fragmentEntryLocalService.fetchPublished(fragmentEntry);
+	}
+
+	@Override
+	public FragmentEntry fetchPublished(long primaryKey) {
+		return _fragmentEntryLocalService.fetchPublished(primaryKey);
 	}
 
 	@Override
@@ -450,6 +369,20 @@ public class FragmentEntryLocalServiceWrapper
 	}
 
 	@Override
+	public FragmentEntry getDraft(FragmentEntry fragmentEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.getDraft(fragmentEntry);
+	}
+
+	@Override
+	public FragmentEntry getDraft(long primaryKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.getDraft(primaryKey);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery
 		getExportActionableDynamicQuery(
 			com.liferay.exportimport.kernel.lar.PortletDataContext
@@ -463,7 +396,7 @@ public class FragmentEntryLocalServiceWrapper
 	 * Returns a range of all the fragment entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.fragment.model.impl.FragmentEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.fragment.model.impl.FragmentEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of fragment entries
@@ -471,91 +404,70 @@ public class FragmentEntryLocalServiceWrapper
 	 * @return the range of fragment entries
 	 */
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntries(int start, int end) {
+	public java.util.List<FragmentEntry> getFragmentEntries(
+		int start, int end) {
 
 		return _fragmentEntryLocalService.getFragmentEntries(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntries(long fragmentCollectionId) {
+	public java.util.List<FragmentEntry> getFragmentEntries(
+		long fragmentCollectionId) {
 
 		return _fragmentEntryLocalService.getFragmentEntries(
 			fragmentCollectionId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntries(long fragmentCollectionId, int start, int end) {
+	public java.util.List<FragmentEntry> getFragmentEntries(
+		long fragmentCollectionId, int start, int end) {
 
 		return _fragmentEntryLocalService.getFragmentEntries(
 			fragmentCollectionId, start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntries(
-			long groupId, long fragmentCollectionId, int status) {
+	public java.util.List<FragmentEntry> getFragmentEntries(
+		long groupId, long fragmentCollectionId, int status) {
 
 		return _fragmentEntryLocalService.getFragmentEntries(
 			groupId, fragmentCollectionId, status);
 	}
 
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntries(
-			long groupId, long fragmentCollectionId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.fragment.model.FragmentEntry> orderByComparator) {
+	public java.util.List<FragmentEntry> getFragmentEntries(
+		long groupId, long fragmentCollectionId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<FragmentEntry>
+			orderByComparator) {
 
 		return _fragmentEntryLocalService.getFragmentEntries(
 			groupId, fragmentCollectionId, start, end, orderByComparator);
 	}
 
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntries(
-			long groupId, long fragmentCollectionId, String name, int start,
-			int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.fragment.model.FragmentEntry> orderByComparator) {
+	public java.util.List<FragmentEntry> getFragmentEntries(
+		long groupId, long fragmentCollectionId, String name, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<FragmentEntry>
+			orderByComparator) {
 
 		return _fragmentEntryLocalService.getFragmentEntries(
 			groupId, fragmentCollectionId, name, start, end, orderByComparator);
 	}
 
-	/**
-	 * Returns all the fragment entries matching the UUID and company.
-	 *
-	 * @param uuid the UUID of the fragment entries
-	 * @param companyId the primary key of the company
-	 * @return the matching fragment entries, or an empty list if no matches were found
-	 */
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntriesByUuidAndCompanyId(String uuid, long companyId) {
+	public java.util.List<FragmentEntry> getFragmentEntriesByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _fragmentEntryLocalService.getFragmentEntriesByUuidAndCompanyId(
 			uuid, companyId);
 	}
 
-	/**
-	 * Returns a range of fragment entries matching the UUID and company.
-	 *
-	 * @param uuid the UUID of the fragment entries
-	 * @param companyId the primary key of the company
-	 * @param start the lower bound of the range of fragment entries
-	 * @param end the upper bound of the range of fragment entries (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the range of matching fragment entries, or an empty list if no matches were found
-	 */
 	@Override
-	public java.util.List<com.liferay.fragment.model.FragmentEntry>
-		getFragmentEntriesByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.fragment.model.FragmentEntry> orderByComparator) {
+	public java.util.List<FragmentEntry> getFragmentEntriesByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<FragmentEntry>
+			orderByComparator) {
 
 		return _fragmentEntryLocalService.getFragmentEntriesByUuidAndCompanyId(
 			uuid, companyId, start, end, orderByComparator);
@@ -585,24 +497,15 @@ public class FragmentEntryLocalServiceWrapper
 	 * @throws PortalException if a fragment entry with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry getFragmentEntry(
-			long fragmentEntryId)
+	public FragmentEntry getFragmentEntry(long fragmentEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.getFragmentEntry(fragmentEntryId);
 	}
 
-	/**
-	 * Returns the fragment entry matching the UUID and group.
-	 *
-	 * @param uuid the fragment entry's UUID
-	 * @param groupId the primary key of the group
-	 * @return the matching fragment entry
-	 * @throws PortalException if a matching fragment entry could not be found
-	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry
-			getFragmentEntryByUuidAndGroupId(String uuid, long groupId)
+	public FragmentEntry getFragmentEntryByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.getFragmentEntryByUuidAndGroupId(
@@ -626,6 +529,9 @@ public class FragmentEntryLocalServiceWrapper
 		return _fragmentEntryLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -644,7 +550,22 @@ public class FragmentEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry moveFragmentEntry(
+	public com.liferay.fragment.model.FragmentEntryVersion getVersion(
+			FragmentEntry fragmentEntry, int version)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.getVersion(fragmentEntry, version);
+	}
+
+	@Override
+	public java.util.List<com.liferay.fragment.model.FragmentEntryVersion>
+		getVersions(FragmentEntry fragmentEntry) {
+
+		return _fragmentEntryLocalService.getVersions(fragmentEntry);
+	}
+
+	@Override
+	public FragmentEntry moveFragmentEntry(
 			long fragmentEntryId, long fragmentCollectionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -652,21 +573,59 @@ public class FragmentEntryLocalServiceWrapper
 			fragmentEntryId, fragmentCollectionId);
 	}
 
-	/**
-	 * Updates the fragment entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
-	 *
-	 * @param fragmentEntry the fragment entry
-	 * @return the fragment entry that was updated
-	 */
 	@Override
-	public com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
-		com.liferay.fragment.model.FragmentEntry fragmentEntry) {
+	public FragmentEntry publishDraft(FragmentEntry draftFragmentEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _fragmentEntryLocalService.updateFragmentEntry(fragmentEntry);
+		return _fragmentEntryLocalService.publishDraft(draftFragmentEntry);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
+	public void registerListener(
+		com.liferay.portal.kernel.service.version.VersionServiceListener
+			<FragmentEntry, com.liferay.fragment.model.FragmentEntryVersion>
+				versionServiceListener) {
+
+		_fragmentEntryLocalService.registerListener(versionServiceListener);
+	}
+
+	@Override
+	public void unregisterListener(
+		com.liferay.portal.kernel.service.version.VersionServiceListener
+			<FragmentEntry, com.liferay.fragment.model.FragmentEntryVersion>
+				versionServiceListener) {
+
+		_fragmentEntryLocalService.unregisterListener(versionServiceListener);
+	}
+
+	@Override
+	public FragmentEntry updateDraft(FragmentEntry draftFragmentEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.updateDraft(draftFragmentEntry);
+	}
+
+	/**
+	 * Updates the fragment entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FragmentEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
+	 * @param fragmentEntry the fragment entry
+	 * @return the fragment entry that was updated
+	 * @throws PortalException
+	 */
+	@Override
+	public FragmentEntry updateFragmentEntry(FragmentEntry draftFragmentEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.updateFragmentEntry(
+			draftFragmentEntry);
+	}
+
+	@Override
+	public FragmentEntry updateFragmentEntry(
 			long fragmentEntryId, long previewFileEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -675,33 +634,66 @@ public class FragmentEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
+	public FragmentEntry updateFragmentEntry(
 			long userId, long fragmentEntryId, String name, String css,
-			String html, String js, int status)
+			String html, String js, boolean cacheable, String configuration,
+			long previewFileEntryId, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.updateFragmentEntry(
-			userId, fragmentEntryId, name, css, html, js, status);
+			userId, fragmentEntryId, name, css, html, js, cacheable,
+			configuration, previewFileEntryId, status);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
+	public FragmentEntry updateFragmentEntry(
 			long userId, long fragmentEntryId, String name, String css,
-			String html, String js, long previewFileEntryId, int status)
+			String html, String js, String configuration, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.updateFragmentEntry(
-			userId, fragmentEntryId, name, css, html, js, previewFileEntryId,
+			userId, fragmentEntryId, name, css, html, js, configuration,
 			status);
 	}
 
 	@Override
-	public com.liferay.fragment.model.FragmentEntry updateFragmentEntry(
-			long fragmentEntryId, String name)
+	public FragmentEntry updateFragmentEntry(
+			long userId, long fragmentEntryId, String name, String css,
+			String html, String js, String configuration,
+			long previewFileEntryId, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLocalService.updateFragmentEntry(
+			userId, fragmentEntryId, name, css, html, js, configuration,
+			previewFileEntryId, status);
+	}
+
+	@Override
+	public FragmentEntry updateFragmentEntry(long fragmentEntryId, String name)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _fragmentEntryLocalService.updateFragmentEntry(
 			fragmentEntryId, name);
+	}
+
+	@Override
+	public CTPersistence<FragmentEntry> getCTPersistence() {
+		return _fragmentEntryLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<FragmentEntry> getModelClass() {
+		return _fragmentEntryLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<FragmentEntry>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _fragmentEntryLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

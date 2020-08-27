@@ -14,26 +14,19 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionObserver;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionObserverAware;
 import com.liferay.dynamic.data.mapping.expression.UpdateFieldPropertyRequest;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = {
-		DDMExpressionFunction.Function2.class, DDMExpressionObserverAware.class
-	}
-)
 public class SetInvalidFunction
 	implements DDMExpressionFunction.Function2<String, String, Boolean>,
 			   DDMExpressionObserverAware {
+
+	public static final String NAME = "setInvalid";
 
 	@Override
 	public Boolean apply(String field, String errorMessage) {
@@ -57,7 +50,7 @@ public class SetInvalidFunction
 
 	@Override
 	public String getName() {
-		return "setInvalid";
+		return NAME;
 	}
 
 	@Override

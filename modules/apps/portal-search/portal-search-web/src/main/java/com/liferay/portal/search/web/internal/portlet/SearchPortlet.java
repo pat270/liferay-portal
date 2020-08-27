@@ -54,6 +54,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-search",
 		"com.liferay.portlet.display-category=category.tools",
+		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/search.png",
 		"com.liferay.portlet.layout-cacheable=true",
 		"com.liferay.portlet.preferences-owned-by-group=true",
@@ -66,8 +67,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SearchPortletKeys.SEARCH,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=guest,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -104,18 +104,17 @@ public class SearchPortlet extends MVCPortlet {
 				_portal.getHttpServletResponse(resourceResponse);
 
 			try {
-				byte[] xml = getXML(resourceRequest, resourceResponse);
-
 				ServletResponseUtil.sendFile(
-					httpServletRequest, httpServletResponse, null, xml,
+					httpServletRequest, httpServletResponse, null,
+					getXML(resourceRequest, resourceResponse),
 					ContentTypes.TEXT_XML_UTF8);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				try {
 					_portal.sendError(
-						e, httpServletRequest, httpServletResponse);
+						exception, httpServletRequest, httpServletResponse);
 				}
-				catch (ServletException se) {
+				catch (ServletException servletException) {
 				}
 			}
 		}
@@ -159,7 +158,7 @@ public class SearchPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.portal.search.web)(&(release.schema.version>=2.0.0)(!(release.schema.version>=2.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.portal.search.web)(&(release.schema.version>=2.0.0)(!(release.schema.version>=3.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

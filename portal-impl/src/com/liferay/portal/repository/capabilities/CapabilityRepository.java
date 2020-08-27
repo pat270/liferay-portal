@@ -76,15 +76,15 @@ public class CapabilityRepository
 	@Override
 	public FileEntry addFileEntry(
 			long userId, long folderId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog, InputStream is,
-			long size, ServiceContext serviceContext)
+			String title, String description, String changeLog,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = getRepository();
 
 		FileEntry fileEntry = repository.addFileEntry(
 			userId, folderId, sourceFileName, mimeType, title, description,
-			changeLog, is, size, serviceContext);
+			changeLog, inputStream, size, serviceContext);
 
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Add.class, FileEntry.class, fileEntry);
@@ -154,10 +154,9 @@ public class CapabilityRepository
 			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
 			serviceContext);
 
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
+			RepositoryEventType.Update.class, FileEntry.class,
+			repository.getFileEntry(fileEntryId));
 	}
 
 	@Override
@@ -171,10 +170,9 @@ public class CapabilityRepository
 		repository.checkInFileEntry(
 			userId, fileEntryId, lockUuid, serviceContext);
 
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
+			RepositoryEventType.Update.class, FileEntry.class,
+			repository.getFileEntry(fileEntryId));
 	}
 
 	@Override
@@ -241,10 +239,9 @@ public class CapabilityRepository
 	public void deleteFileEntry(long fileEntryId) throws PortalException {
 		Repository repository = getRepository();
 
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Delete.class, FileEntry.class, fileEntry);
+			RepositoryEventType.Delete.class, FileEntry.class,
+			repository.getFileEntry(fileEntryId));
 
 		repository.deleteFileEntry(fileEntryId);
 	}
@@ -255,10 +252,9 @@ public class CapabilityRepository
 
 		Repository repository = getRepository();
 
-		FileEntry fileEntry = repository.getFileEntry(folderId, title);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Delete.class, FileEntry.class, fileEntry);
+			RepositoryEventType.Delete.class, FileEntry.class,
+			repository.getFileEntry(folderId, title));
 
 		repository.deleteFileEntry(folderId, title);
 	}
@@ -267,10 +263,9 @@ public class CapabilityRepository
 	public void deleteFileShortcut(long fileShortcutId) throws PortalException {
 		Repository repository = getRepository();
 
-		FileShortcut fileShortcut = repository.getFileShortcut(fileShortcutId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Delete.class, FileShortcut.class, fileShortcut);
+			RepositoryEventType.Delete.class, FileShortcut.class,
+			repository.getFileShortcut(fileShortcutId));
 
 		repository.deleteFileShortcut(fileShortcutId);
 	}
@@ -296,10 +291,9 @@ public class CapabilityRepository
 	public void deleteFileVersion(long fileVersionId) throws PortalException {
 		Repository repository = getRepository();
 
-		FileVersion fileVersion = repository.getFileVersion(fileVersionId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Delete.class, FileVersion.class, fileVersion);
+			RepositoryEventType.Delete.class, FileVersion.class,
+			repository.getFileVersion(fileVersionId));
 
 		repository.deleteFileVersion(fileVersionId);
 	}
@@ -315,6 +309,10 @@ public class CapabilityRepository
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
 
+		_repositoryEventTrigger.trigger(
+			RepositoryEventType.Delete.class, FileVersion.class,
+			fileEntry.getFileVersion(version));
+
 		repository.deleteFileVersion(fileEntryId, version);
 	}
 
@@ -322,10 +320,9 @@ public class CapabilityRepository
 	public void deleteFolder(long folderId) throws PortalException {
 		Repository repository = getRepository();
 
-		Folder folder = repository.getFolder(folderId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Delete.class, Folder.class, folder);
+			RepositoryEventType.Delete.class, Folder.class,
+			repository.getFolder(folderId));
 
 		repository.deleteFolder(folderId);
 	}
@@ -336,10 +333,9 @@ public class CapabilityRepository
 
 		Repository repository = getRepository();
 
-		Folder folder = repository.getFolder(parentFolderId, name);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Delete.class, Folder.class, folder);
+			RepositoryEventType.Delete.class, Folder.class,
+			repository.getFolder(parentFolderId, name));
 
 		repository.deleteFolder(parentFolderId, name);
 	}
@@ -347,49 +343,51 @@ public class CapabilityRepository
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, int status, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFileEntries(
-			folderId, status, start, end, obc);
+			folderId, status, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
-			long folderId, int start, int end, OrderByComparator<FileEntry> obc)
+			long folderId, int start, int end,
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
-		return getRepository().getFileEntries(folderId, start, end, obc);
+		return getRepository().getFileEntries(
+			folderId, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, long fileEntryTypeId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFileEntries(
-			folderId, fileEntryTypeId, start, end, obc);
+			folderId, fileEntryTypeId, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, String[] mimeTypes, int status, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFileEntries(
-			folderId, mimeTypes, status, start, end, obc);
+			folderId, mimeTypes, status, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, String[] mimeTypes, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFileEntries(
-			folderId, mimeTypes, start, end, obc);
+			folderId, mimeTypes, start, end, orderByComparator);
 	}
 
 	@Override
@@ -498,54 +496,57 @@ public class CapabilityRepository
 	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountFolders, int start,
-			int end, OrderByComparator<Folder> obc)
+			int end, OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFolders(
-			parentFolderId, includeMountFolders, start, end, obc);
+			parentFolderId, includeMountFolders, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, int status, boolean includeMountFolders,
-			int start, int end, OrderByComparator<Folder> obc)
+			int start, int end, OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFolders(
-			parentFolderId, status, includeMountFolders, start, end, obc);
+			parentFolderId, status, includeMountFolders, start, end,
+			orderByComparator);
 	}
 
 	@Override
 	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
-			int end, OrderByComparator<?> obc)
+			int end, OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, includeMountFolders, start, end, obc);
+			folderId, status, includeMountFolders, start, end,
+			orderByComparator);
 	}
 
 	@Override
 	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, boolean includeOwner, int start,
-			int end, OrderByComparator<?> obc)
+			int end, OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFoldersAndFileEntriesAndFileShortcuts(
 			folderId, status, mimeTypes, includeMountFolders, includeOwner,
-			start, end, obc);
+			start, end, orderByComparator);
 	}
 
 	@Override
 	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
-			OrderByComparator<?> obc)
+			OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, mimeTypes, includeMountFolders, start, end, obc);
+			folderId, status, mimeTypes, includeMountFolders, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -604,10 +605,11 @@ public class CapabilityRepository
 	@Override
 	public List<Folder> getMountFolders(
 			long parentFolderId, int start, int end,
-			OrderByComparator<Folder> obc)
+			OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
-		return getRepository().getMountFolders(parentFolderId, start, end, obc);
+		return getRepository().getMountFolders(
+			parentFolderId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -620,21 +622,22 @@ public class CapabilityRepository
 	@Override
 	public List<FileEntry> getRepositoryFileEntries(
 			long userId, long rootFolderId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getRepositoryFileEntries(
-			userId, rootFolderId, start, end, obc);
+			userId, rootFolderId, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getRepositoryFileEntries(
 			long userId, long rootFolderId, String[] mimeTypes, int status,
-			int start, int end, OrderByComparator<FileEntry> obc)
+			int start, int end, OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return getRepository().getRepositoryFileEntries(
-			userId, rootFolderId, mimeTypes, status, start, end, obc);
+			userId, rootFolderId, mimeTypes, status, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -751,10 +754,9 @@ public class CapabilityRepository
 		repository.revertFileEntry(
 			userId, fileEntryId, version, serviceContext);
 
-		FileEntry fileEntry = getFileEntry(fileEntryId);
-
 		_repositoryEventTrigger.trigger(
-			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
+			RepositoryEventType.Update.class, FileEntry.class,
+			getFileEntry(fileEntryId));
 	}
 
 	@Override
@@ -824,15 +826,16 @@ public class CapabilityRepository
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = getRepository();
 
 		FileEntry fileEntry = repository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, inputStream, size,
+			serviceContext);
 
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Update.class, FileEntry.class, fileEntry);

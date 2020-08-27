@@ -16,11 +16,9 @@ package com.liferay.portal.scheduler.quartz.internal;
 
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.InputStream;
@@ -28,6 +26,8 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+import javax.sql.DataSource;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -43,47 +43,27 @@ public class QuartzSchemaManager {
 
 	@Activate
 	protected void activate() {
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-
-		try {
-			con = DataAccess.getConnection();
-
-			ps = con.prepareStatement(
+		try (Connection con = _dataSource.getConnection();
+			PreparedStatement ps = con.prepareStatement(
 				"select count(*) from QUARTZ_JOB_DETAILS");
-
-			rs = ps.executeQuery();
+			ResultSet rs = ps.executeQuery()) {
 
 			if (rs.next()) {
 				return;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isInfoEnabled()) {
-				_log.info(e, e);
+				_log.info(exception, exception);
 			}
 		}
-		finally {
-			DataAccess.cleanUp(con, ps, rs);
-		}
 
-		try {
-			con = DataAccess.getConnection();
-
+		try (Connection con = _dataSource.getConnection()) {
 			_populateSchema(con);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
-		finally {
-			DataAccess.cleanUp(con);
-		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setInfrastructureUtil(
-		InfrastructureUtil infrastructureUtil) {
 	}
 
 	private void _populateSchema(Connection con) throws Exception {
@@ -108,14 +88,14 @@ public class QuartzSchemaManager {
 		try {
 			con.setAutoCommit(false);
 
-			db.runSQLTemplateString(con, template, false, false);
+			db.runSQLTemplateString(con, template, false);
 
 			con.commit();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			con.rollback();
 
-			throw e;
+			throw exception;
 		}
 		finally {
 			con.setAutoCommit(autoCommit);
@@ -124,5 +104,8 @@ public class QuartzSchemaManager {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		QuartzSchemaManager.class);
+
+	@Reference(target = "(&(bean.id=liferayDataSource)(original.bean=true))")
+	private DataSource _dataSource;
 
 }

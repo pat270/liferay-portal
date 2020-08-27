@@ -26,7 +26,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.workflow.WorkflowException;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
@@ -62,13 +62,18 @@ public class WorkflowTaskUserNotificationHandler
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userNotificationEvent.getPayload());
 
-		if (!isWorkflowTaskVisible(
-				jsonObject.getLong("workflowTaskId"), serviceContext)) {
+		long workflowTaskId = jsonObject.getLong("workflowTaskId");
 
-			_userNotificationEventLocalService.deleteUserNotificationEvent(
-				userNotificationEvent.getUserNotificationEventId());
+		if (workflowTaskId > 0) {
+			WorkflowTask workflowTask = _fetchWorkflowTask(
+				workflowTaskId, serviceContext);
 
-			return StringPool.BLANK;
+			if (workflowTask == null) {
+				_userNotificationEventLocalService.deleteUserNotificationEvent(
+					userNotificationEvent.getUserNotificationEventId());
+
+				return StringPool.BLANK;
+			}
 		}
 
 		return HtmlUtil.escape(jsonObject.getString("notificationMessage"));
@@ -83,31 +88,51 @@ public class WorkflowTaskUserNotificationHandler
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userNotificationEvent.getPayload());
 
-		String entryClassName = jsonObject.getString("entryClassName");
-
 		WorkflowHandler<?> workflowHandler =
-			WorkflowHandlerRegistryUtil.getWorkflowHandler(entryClassName);
+			WorkflowHandlerRegistryUtil.getWorkflowHandler(
+				jsonObject.getString("entryClassName"));
 
 		long workflowTaskId = jsonObject.getLong("workflowTaskId");
 
-		if ((workflowHandler == null) || (workflowTaskId <= 0)) {
+		if ((workflowHandler == null) ||
+			!_hasPermission(workflowTaskId, serviceContext)) {
+
 			return StringPool.BLANK;
 		}
+
+		serviceContext.setAttribute(
+			WorkflowConstants.CONTEXT_URL,
+			jsonObject.getString(WorkflowConstants.CONTEXT_URL));
 
 		return workflowHandler.getURLEditWorkflowTask(
 			workflowTaskId, serviceContext);
 	}
 
-	protected boolean isWorkflowTaskVisible(
+	@Reference(unbind = "-")
+	protected void setUserNotificationEventLocalService(
+		UserNotificationEventLocalService userNotificationEventLocalService) {
+
+		_userNotificationEventLocalService = userNotificationEventLocalService;
+	}
+
+	private WorkflowTask _fetchWorkflowTask(
 			long workflowTaskId, ServiceContext serviceContext)
-		throws WorkflowException {
+		throws Exception {
 
 		if (workflowTaskId <= 0) {
-			return true;
+			return null;
 		}
 
-		WorkflowTask workflowTask = WorkflowTaskManagerUtil.fetchWorkflowTask(
+		return WorkflowTaskManagerUtil.fetchWorkflowTask(
 			serviceContext.getCompanyId(), workflowTaskId);
+	}
+
+	private boolean _hasPermission(
+			long workflowTaskId, ServiceContext serviceContext)
+		throws Exception {
+
+		WorkflowTask workflowTask = _fetchWorkflowTask(
+			workflowTaskId, serviceContext);
 
 		if (workflowTask == null) {
 			return false;
@@ -121,13 +146,6 @@ public class WorkflowTaskUserNotificationHandler
 
 		return _workflowTaskPermissionChecker.hasPermission(
 			groupId, workflowTask, themeDisplay.getPermissionChecker());
-	}
-
-	@Reference(unbind = "-")
-	protected void setUserNotificationEventLocalService(
-		UserNotificationEventLocalService userNotificationEventLocalService) {
-
-		_userNotificationEventLocalService = userNotificationEventLocalService;
 	}
 
 	private UserNotificationEventLocalService

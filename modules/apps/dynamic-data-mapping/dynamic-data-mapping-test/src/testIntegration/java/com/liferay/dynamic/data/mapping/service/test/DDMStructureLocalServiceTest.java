@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.exception.InvalidParentStructureException;
 import com.liferay.dynamic.data.mapping.exception.RequiredStructureException;
 import com.liferay.dynamic.data.mapping.exception.StructureDefinitionException;
@@ -27,7 +28,6 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceLinkLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMDataProviderInstanceLocalServiceUtil;
@@ -43,19 +43,29 @@ import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -254,7 +264,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		actions.add(action);
 
-		DDMFormRule ddmFormRule = new DDMFormRule("TRUE", actions);
+		DDMFormRule ddmFormRule = new DDMFormRule(actions, "TRUE");
 
 		ddmForm.addDDMFormRule(ddmFormRule);
 
@@ -684,6 +694,40 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 	}
 
 	@Test
+	public void testSearchGlobalSiteStructure() throws Exception {
+		Company company = CompanyLocalServiceUtil.getCompany(
+			TestPropsValues.getCompanyId());
+
+		DDMStructure structure = addStructure(
+			company.getGroup(), _classNameId, "Global Structure");
+
+		User user = UserTestUtil.addGroupAdminUser(group);
+
+		PermissionChecker originalPermissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		PermissionThreadLocal.setPermissionChecker(
+			permissionCheckerFactory.create(user));
+
+		List<DDMStructure> structures = DDMStructureLocalServiceUtil.search(
+			structure.getCompanyId(),
+			PortalUtil.getCurrentAndAncestorSiteGroupIds(group.getGroupId()),
+			structure.getClassNameId(), "Global", WorkflowConstants.STATUS_ANY,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StructureIdComparator(true));
+
+		Assert.assertEquals(structures.toString(), 1, structures.size());
+		Assert.assertEquals(
+			"Global Structure", getStructureName(structures.get(0)));
+
+		PermissionThreadLocal.setPermissionChecker(originalPermissionChecker);
+
+		DDMStructureLocalServiceUtil.deleteDDMStructure(structure);
+
+		UserLocalServiceUtil.deleteUser(user);
+	}
+
+	@Test
 	public void testUpdateStructureWithReferencedDataProviderInstance()
 		throws Exception {
 
@@ -781,7 +825,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		actions.add(action1);
 		actions.add(action2);
 
-		DDMFormRule ddmFormRule1 = new DDMFormRule("TRUE", actions);
+		DDMFormRule ddmFormRule1 = new DDMFormRule(actions, "TRUE");
 
 		ddmForm.addDDMFormRule(ddmFormRule1);
 
@@ -789,7 +833,7 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 
 		actions.add(action1);
 
-		DDMFormRule ddmFormRule2 = new DDMFormRule("FALSE", actions);
+		DDMFormRule ddmFormRule2 = new DDMFormRule(actions, "FALSE");
 
 		ddmForm.addDDMFormRule(ddmFormRule2);
 
@@ -916,6 +960,9 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 		updateStructure(structure1);
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected DDMStructure copyStructure(DDMStructure structure)
 		throws Exception {
 
@@ -928,9 +975,9 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 	protected DDMDataProviderInstance createDDMDataProviderInstance()
 		throws Exception {
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.getSiteDefault(), StringUtil.randomString());
+		Map<Locale, String> nameMap = HashMapBuilder.put(
+			LocaleUtil.getSiteDefault(), StringUtil.randomString()
+		).build();
 
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm("dataProviderName");
 
@@ -960,6 +1007,9 @@ public class DDMStructureLocalServiceTest extends BaseDDMServiceTestCase {
 			structure.getDDMFormLayout(),
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
+
+	@Inject
+	protected static PermissionCheckerFactory permissionCheckerFactory;
 
 	private static long _classNameId;
 

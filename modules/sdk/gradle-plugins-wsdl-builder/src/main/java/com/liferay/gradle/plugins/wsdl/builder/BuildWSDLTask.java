@@ -21,13 +21,17 @@ import groovy.lang.Closure;
 import java.io.File;
 
 import org.gradle.api.Project;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Nested;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SourceTask;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class BuildWSDLTask extends SourceTask {
 
 	public void generateOptions(Closure<?> closure) {
@@ -37,6 +41,12 @@ public class BuildWSDLTask extends SourceTask {
 	}
 
 	@Input
+	public int getAxisVersion() {
+		return GradleUtil.toInteger(_axisVersion);
+	}
+
+	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getDestinationDir() {
 		return GradleUtil.toFile(getProject(), _destinationDir);
 	}
@@ -61,6 +71,10 @@ public class BuildWSDLTask extends SourceTask {
 		return _includeWSDLs;
 	}
 
+	public void setAxisVersion(Object axisVersion) {
+		_axisVersion = axisVersion;
+	}
+
 	public void setBuildLibs(boolean buildLibs) {
 		_buildLibs = buildLibs;
 	}
@@ -77,6 +91,7 @@ public class BuildWSDLTask extends SourceTask {
 		_includeWSDLs = includeWSDLs;
 	}
 
+	private Object _axisVersion = 1;
 	private boolean _buildLibs = true;
 	private Object _destinationDir;
 	private final GenerateOptions _generateOptions = new GenerateOptions();

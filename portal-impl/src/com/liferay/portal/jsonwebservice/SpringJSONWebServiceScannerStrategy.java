@@ -88,6 +88,9 @@ public class SpringJSONWebServiceScannerStrategy
 					service = bean;
 				}
 			}
+			else {
+				break;
+			}
 		}
 
 		return service.getClass();
@@ -119,7 +122,8 @@ public class SpringJSONWebServiceScannerStrategy
 
 					return true;
 				}
-				catch (ReflectiveOperationException roe) {
+				catch (ReflectiveOperationException
+							reflectiveOperationException) {
 				}
 			}
 			else {

@@ -95,6 +95,8 @@ public interface Language {
 		ResourceBundle resourceBundle, String pattern, Object[] arguments,
 		boolean translateArguments);
 
+	public String formatStorageSize(double size, Locale locale);
+
 	public String get(
 		HttpServletRequest httpServletRequest, ResourceBundle resourceBundle,
 		String key);
@@ -183,14 +185,6 @@ public interface Language {
 	public boolean isInheritLocales(long groupId) throws PortalException;
 
 	public boolean isSameLanguage(Locale locale1, Locale locale2);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #process(Supplier,
-	 *             Locale, String)}
-	 */
-	@Deprecated
-	public String process(
-		ResourceBundle resourceBundle, Locale locale, String content);
 
 	public String process(
 		Supplier<ResourceBundle> resourceBundleSupplier, Locale locale,

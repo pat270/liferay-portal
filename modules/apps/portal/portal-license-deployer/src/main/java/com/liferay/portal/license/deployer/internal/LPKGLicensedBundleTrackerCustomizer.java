@@ -14,6 +14,7 @@
 
 package com.liferay.portal.license.deployer.internal;
 
+import com.liferay.portal.file.install.FileInstaller;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -30,8 +31,6 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.felix.fileinstall.ArtifactInstaller;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
@@ -42,9 +41,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 public class LPKGLicensedBundleTrackerCustomizer
 	implements BundleTrackerCustomizer<Bundle> {
 
-	public LPKGLicensedBundleTrackerCustomizer(
-		ArtifactInstaller licenseInstaller) {
-
+	public LPKGLicensedBundleTrackerCustomizer(FileInstaller licenseInstaller) {
 		_licenseInstaller = licenseInstaller;
 	}
 
@@ -65,10 +62,10 @@ public class LPKGLicensedBundleTrackerCustomizer
 		boolean hasLicense = false;
 
 		try (ZipFile zipFile = new ZipFile(file)) {
-			Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+			Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
 
-			while (zipEntries.hasMoreElements()) {
-				ZipEntry zipEntry = zipEntries.nextElement();
+			while (enumeration.hasMoreElements()) {
+				ZipEntry zipEntry = enumeration.nextElement();
 
 				String zipEntryName = zipEntry.getName();
 
@@ -87,8 +84,8 @@ public class LPKGLicensedBundleTrackerCustomizer
 
 					File tempFile = tempFilePath.toFile();
 
-					if (_licenseInstaller.canHandle(tempFile)) {
-						_licenseInstaller.install(tempFile);
+					if (_licenseInstaller.canTransformURL(tempFile)) {
+						_licenseInstaller.transformURL(tempFile);
 
 						hasLicense = true;
 					}
@@ -98,8 +95,8 @@ public class LPKGLicensedBundleTrackerCustomizer
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error("Unable to register license", e);
+		catch (Exception exception) {
+			_log.error("Unable to register license", exception);
 
 			return null;
 		}
@@ -124,6 +121,6 @@ public class LPKGLicensedBundleTrackerCustomizer
 	private static final Log _log = LogFactoryUtil.getLog(
 		LPKGLicensedBundleTrackerCustomizer.class);
 
-	private final ArtifactInstaller _licenseInstaller;
+	private final FileInstaller _licenseInstaller;
 
 }

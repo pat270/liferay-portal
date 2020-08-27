@@ -18,6 +18,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * @author Tina Tian
  */
@@ -25,11 +27,13 @@ public class TestClusterChannelFactory implements ClusterChannelFactory {
 
 	@Override
 	public ClusterChannel createClusterChannel(
-		String channelLogicName, String channelProperties, String clusterName,
+		ExecutorService executorService, String channelLogicName,
+		String channelPropertiesLocation, String clusterName,
 		ClusterReceiver clusterReceiver) {
 
 		return new TestClusterChannel(
-			channelLogicName, channelProperties, clusterName, clusterReceiver);
+			channelLogicName, channelPropertiesLocation, clusterName,
+			clusterReceiver);
 	}
 
 	@Override
@@ -43,8 +47,8 @@ public class TestClusterChannelFactory implements ClusterChannelFactory {
 			return NetworkInterface.getByInetAddress(
 				InetAddress.getLoopbackAddress());
 		}
-		catch (SocketException se) {
-			throw new IllegalStateException(se);
+		catch (SocketException socketException) {
+			throw new IllegalStateException(socketException);
 		}
 	}
 

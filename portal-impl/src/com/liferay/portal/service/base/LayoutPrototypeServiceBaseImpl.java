@@ -48,7 +48,7 @@ import javax.sql.DataSource;
  */
 public abstract class LayoutPrototypeServiceBaseImpl
 	extends BaseServiceImpl
-	implements LayoutPrototypeService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, LayoutPrototypeService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -443,8 +443,8 @@ public abstract class LayoutPrototypeServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

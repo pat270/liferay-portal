@@ -14,6 +14,8 @@
 
 package com.liferay.arquillian.extension.junit.bridge.command;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 
 import org.junit.AssumptionViolatedException;
@@ -27,17 +29,35 @@ import org.junit.runner.notification.RunNotifier;
 public interface RunNotifierCommand extends Serializable {
 
 	public static RunNotifierCommand assumptionFailed(
-		Description description, AssumptionViolatedException ave) {
+		Description description,
+		AssumptionViolatedException assumptionViolatedException) {
 
 		return runNotifier -> runNotifier.fireTestAssumptionFailed(
-			new Failure(description, ave));
+			new Failure(description, assumptionViolatedException));
 	}
 
 	public static RunNotifierCommand testFailure(
 		Description description, Throwable throwable) {
 
+		ByteArrayOutputStream byteArrayOutputStream =
+			new ByteArrayOutputStream();
+
+		throwable.printStackTrace(new PrintStream(byteArrayOutputStream));
+
+		Throwable stacklessThrowable = new Throwable(
+			byteArrayOutputStream.toString()) {
+
+			@Override
+			public String toString() {
+				return getMessage();
+			}
+
+		};
+
+		stacklessThrowable.setStackTrace(new StackTraceElement[0]);
+
 		return runNotifier -> runNotifier.fireTestFailure(
-			new Failure(description, throwable));
+			new Failure(description, stacklessThrowable));
 	}
 
 	public static RunNotifierCommand testFinished(Description description) {

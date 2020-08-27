@@ -14,9 +14,13 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
+import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.source.formatter.checks.util.SourceUtil;
 
 import java.io.IOException;
 
@@ -34,17 +38,117 @@ public class PoshiWhitespaceCheck extends WhitespaceCheck {
 		throws IOException {
 
 		content = _formatWhitespace(content);
+		content = _formatWhitespace(fileName, absolutePath, content);
+		content = _formatWhitespaceOnCommand(content);
 
 		return super.doProcess(fileName, absolutePath, content);
 	}
 
 	private String _formatWhitespace(String content) {
+		int[] multiLineCommentsPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineCommentsPattern);
+		int[] multiLineStringPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineStringPattern);
+
 		Matcher matcher = _incorrectWhitespacePattern.matcher(content);
 
 		while (matcher.find()) {
-			if (!ToolsUtil.isInsideQuotes(content, matcher.start(1))) {
+			String match = matcher.group(1);
+
+			int pos = matcher.start(1);
+
+			if (pos == -1) {
+				match = matcher.group(2);
+
+				pos = matcher.start(2);
+			}
+
+			if (!ToolsUtil.isInsideQuotes(content, pos) &&
+				!SourceUtil.isInsideMultiLines(
+					getLineNumber(content, pos), multiLineCommentsPositions) &&
+				!SourceUtil.isInsideMultiLines(
+					getLineNumber(content, pos), multiLineStringPositions)) {
+
 				return StringUtil.replaceFirst(
-					content, matcher.group(1), StringPool.BLANK,
+					content, match, StringPool.BLANK, matcher.start());
+			}
+		}
+
+		return content;
+	}
+
+	private String _formatWhitespace(
+			String fileName, String absolutePath, String content)
+		throws IOException {
+
+		int[] multiLineCommentsPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineCommentsPattern);
+		int[] multiLineStringPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineStringPattern);
+
+		StringBundler sb = new StringBundler();
+
+		try (UnsyncBufferedReader unsyncBufferedReader =
+				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
+
+			int lineNumber = 0;
+
+			String line = null;
+
+			while ((line = unsyncBufferedReader.readLine()) != null) {
+				lineNumber++;
+
+				line = trimLine(fileName, absolutePath, line);
+
+				if (SourceUtil.isInsideMultiLines(
+						lineNumber, multiLineCommentsPositions) ||
+					SourceUtil.isInsideMultiLines(
+						lineNumber, multiLineStringPositions)) {
+
+					sb.append(line);
+					sb.append("\n");
+
+					continue;
+				}
+
+				String trimmedLine = StringUtil.trimLeading(line);
+
+				line = formatWhitespace(line, trimmedLine, false);
+
+				line = formatIncorrectSyntax(line, "){", ") {", false);
+				line = formatIncorrectSyntax(line, "for \\([^:]*[^:\"'\\s](:)");
+				line = formatIncorrectSyntax(line, "for \\([^:]*:([^:\"'\\s])");
+
+				sb.append(line);
+
+				sb.append("\n");
+			}
+		}
+
+		return sb.toString();
+	}
+
+	private String _formatWhitespaceOnCommand(String content) {
+		int[] multiLineCommentsPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineCommentsPattern);
+		int[] multiLineStringPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineStringPattern);
+
+		Matcher matcher = _incorrectCommandPattern.matcher(content);
+
+		while (matcher.find()) {
+			int lineNumber = SourceUtil.getLineNumber(content, matcher.start());
+
+			if (!SourceUtil.isInsideMultiLines(
+					lineNumber, multiLineCommentsPositions) &&
+				!SourceUtil.isInsideMultiLines(
+					lineNumber, multiLineStringPositions)) {
+
+				return StringUtil.replaceFirst(
+					content, matcher.group(),
+					StringBundler.concat(
+						matcher.group(1), StringPool.SPACE, matcher.group(3),
+						StringPool.SPACE, matcher.group(4)),
 					matcher.start());
 			}
 		}
@@ -52,7 +156,13 @@ public class PoshiWhitespaceCheck extends WhitespaceCheck {
 		return content;
 	}
 
+	private static final Pattern _incorrectCommandPattern = Pattern.compile(
+		"(\n\t*(function|macro|test))(?! \\w+ \\{)[\t ]+(\\w+)\\s*(\\{)");
 	private static final Pattern _incorrectWhitespacePattern = Pattern.compile(
-		"\\)(\\s+);");
+		"\\)(\\s+);|(\n\t*)\\{");
+	private static final Pattern _multiLineCommentsPattern = Pattern.compile(
+		"[ \t]/\\*.*?\\*/", Pattern.DOTALL);
+	private static final Pattern _multiLineStringPattern = Pattern.compile(
+		"'''.*?'''", Pattern.DOTALL);
 
 }

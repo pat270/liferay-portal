@@ -17,6 +17,7 @@ package com.liferay.user.associated.data.web.internal.portlet.action;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.user.associated.data.constants.UserAssociatedDataPortletKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
@@ -62,17 +63,19 @@ public class InfoPanelMVCResourceCommand extends BaseMVCResourceCommand {
 
 		for (String key : parameterMap.keySet()) {
 			if (key.startsWith("uadRegistryKey__")) {
-				entityTypes.add(key.replace("uadRegistryKey__", ""));
+				entityTypes.add(
+					StringUtil.removeSubstring(key, "uadRegistryKey__"));
 			}
 		}
 
 		for (String entityType : entityTypes) {
-			List<UADEntity> uadEntities = new ArrayList<>();
+			List<UADEntity<Object>> uadEntities = new ArrayList<>();
 
 			String uadRegistryKey = ParamUtil.getString(
 				resourceRequest, "uadRegistryKey__" + entityType);
 
-			UADDisplay uadDisplay = _uadRegistry.getUADDisplay(uadRegistryKey);
+			UADDisplay<Object> uadDisplay =
+				(UADDisplay<Object>)_uadRegistry.getUADDisplay(uadRegistryKey);
 
 			String[] rowIds = ParamUtil.getStringValues(
 				resourceRequest, "rowIds" + entityType);
@@ -80,8 +83,8 @@ public class InfoPanelMVCResourceCommand extends BaseMVCResourceCommand {
 			for (String rowId : rowIds) {
 				Object entity = uadDisplay.get(rowId);
 
-				UADEntity uadEntity = new UADEntity(
-					entity, uadDisplay.getPrimaryKey(entity), null,
+				UADEntity<Object> uadEntity = new UADEntity(
+					entity, uadDisplay.getPrimaryKey(entity), null, false,
 					uadDisplay.getTypeClass(), true, null);
 
 				uadEntities.add(uadEntity);
@@ -123,7 +126,7 @@ public class InfoPanelMVCResourceCommand extends BaseMVCResourceCommand {
 			}
 
 			uadInfoPanelDisplay.setUADDisplay(
-				_uadRegistry.getUADDisplay(uadRegistryKey));
+				(UADDisplay<Object>)_uadRegistry.getUADDisplay(uadRegistryKey));
 		}
 
 		boolean hierarchyView = ParamUtil.getBoolean(

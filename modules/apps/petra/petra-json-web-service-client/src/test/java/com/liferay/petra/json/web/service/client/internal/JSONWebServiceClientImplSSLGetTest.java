@@ -17,11 +17,10 @@ package com.liferay.petra.json.web.service.client.internal;
 import com.liferay.petra.json.web.service.client.JSONWebServiceException;
 import com.liferay.petra.json.web.service.client.keystore.KeyStoreLoader;
 import com.liferay.petra.json.web.service.client.server.simulator.HTTPSServerSimulator;
-import com.liferay.petra.json.web.service.client.server.simulator.SimulatorConstants;
+import com.liferay.petra.json.web.service.client.server.simulator.constants.SimulatorConstants;
 
 import java.security.KeyStore;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -31,23 +30,17 @@ import org.junit.Test;
  * @author Igor Beslic
  */
 public class JSONWebServiceClientImplSSLGetTest
-	extends JSONWebServiceClientBaseTest {
+	extends BaseJSONWebServiceClientTestCase {
 
 	@Test
 	public void test200OKOnGetIfTLS11() throws Exception {
 		JSONWebServiceClientImpl jsonWebServiceClientImpl =
 			_createJsonWebServiceClient();
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
 		HTTPSServerSimulator.start("TLSv1.1");
 
-		String json = jsonWebServiceClientImpl.doGet("/testGet/", params);
+		String json = jsonWebServiceClientImpl.doGet(
+			"/testGet/", getParameters("200"));
 
 		HTTPSServerSimulator.stop();
 
@@ -62,16 +55,10 @@ public class JSONWebServiceClientImplSSLGetTest
 		JSONWebServiceClientImpl jsonWebServiceClientImpl =
 			_createJsonWebServiceClient();
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
 		HTTPSServerSimulator.start("TLSv1.2");
 
-		String json = jsonWebServiceClientImpl.doGet("/testGet/", params);
+		String json = jsonWebServiceClientImpl.doGet(
+			"/testGet/", getParameters("200"));
 
 		HTTPSServerSimulator.stop();
 
@@ -88,17 +75,11 @@ public class JSONWebServiceClientImplSSLGetTest
 		JSONWebServiceClientImpl jsonWebServiceClientImpl =
 			_createJsonWebServiceClient();
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
 		HTTPSServerSimulator.start("TLSv1");
 
 		try {
-			String json = jsonWebServiceClientImpl.doGet("/testGet/", params);
+			String json = jsonWebServiceClientImpl.doGet(
+				"/testGet/", getParameters("200"));
 
 			Assert.assertTrue(
 				json,
@@ -124,7 +105,7 @@ public class JSONWebServiceClientImplSSLGetTest
 
 		KeyStoreLoader keyStoreLoader = new KeyStoreLoader();
 
-		KeyStore keyStore = keyStoreLoader.getKeystore(
+		KeyStore keyStore = keyStoreLoader.getKeyStore(
 			"localhost.jks", "liferay");
 
 		properties.put("keyStore", keyStore);

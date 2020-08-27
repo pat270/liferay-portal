@@ -1,7 +1,6 @@
 package ${packagePath}.model.impl;
 
 import ${serviceBuilder.getCompatJavaClassName("HashUtil")};
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
 import ${serviceBuilder.getCompatJavaClassName("StringBundler")};
 
 import ${apiPackagePath}.model.${entity.name};
@@ -37,8 +36,6 @@ import java.util.Map;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}CacheModel implements CacheModel<${entity.name}>, Externalizable
 	<#if entity.isMvccEnabled()>
 		, MVCCModel
@@ -47,16 +44,16 @@ public class ${entity.name}CacheModel implements CacheModel<${entity.name}>, Ext
 	{
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ${entity.name}CacheModel)) {
+		if (!(object instanceof ${entity.name}CacheModel)) {
 			return false;
 		}
 
-		${entity.name}CacheModel ${entity.varName}CacheModel = (${entity.name}CacheModel)obj;
+		${entity.name}CacheModel ${entity.varName}CacheModel = (${entity.name}CacheModel)object;
 
 		<#if entity.hasPrimitivePK(false)>
 			<#if entity.isMvccEnabled()>
@@ -170,7 +167,7 @@ public class ${entity.name}CacheModel implements CacheModel<${entity.name}>, Ext
 		<#list entity.databaseRegularEntityColumns as entityColumn>
 			<#if entityColumn.primitiveType>
 			<#elseif stringUtil.equals(entityColumn.type, "Date")>
-			<#elseif stringUtil.equals(entityColumn.type, "String")>
+			<#elseif stringUtil.equals(entityColumn.type, "String") && !(serviceBuilder.getSqlType(entity.getName(), entityColumn.getName(), entityColumn.getType()) == "CLOB")>
 			<#elseif !stringUtil.equals(entityColumn.type, "Blob")>
 				<#assign throwsClassNotFoundException = true />
 			</#if>
@@ -194,7 +191,11 @@ public class ${entity.name}CacheModel implements CacheModel<${entity.name}>, Ext
 			<#elseif stringUtil.equals(entityColumn.type, "Date")>
 				${entityColumn.name} = objectInput.readLong();
 			<#elseif stringUtil.equals(entityColumn.type, "String")>
-				${entityColumn.name} = objectInput.readUTF();
+				<#if serviceBuilder.getSqlType(entity.getName(), entityColumn.getName(), entityColumn.getType()) == "CLOB">
+					${entityColumn.name} = (String)objectInput.readObject();
+				<#else>
+					${entityColumn.name} = objectInput.readUTF();
+				</#if>
 			<#elseif !stringUtil.equals(entityColumn.type, "Blob")>
 				${entityColumn.name} = (${entityColumn.genericizedType})objectInput.readObject();
 			</#if>
@@ -229,12 +230,22 @@ public class ${entity.name}CacheModel implements CacheModel<${entity.name}>, Ext
 			<#elseif stringUtil.equals(entityColumn.type, "Date")>
 				objectOutput.writeLong(${entityColumn.name});
 			<#elseif stringUtil.equals(entityColumn.type, "String")>
-				if (${entityColumn.name} == null) {
-					objectOutput.writeUTF("");
-				}
-				else {
-					objectOutput.writeUTF(${entityColumn.name});
-				}
+				<#if serviceBuilder.getSqlType(entity.getName(), entityColumn.getName(), entityColumn.getType()) == "CLOB">
+					if (${entityColumn.name} == null) {
+						objectOutput.writeObject("");
+					}
+					else {
+						objectOutput.writeObject(${entityColumn.name});
+					}
+				<#else>
+					if (${entityColumn.name} == null) {
+						objectOutput.writeUTF("");
+					}
+					else {
+						objectOutput.writeUTF(${entityColumn.name});
+					}
+				</#if>
+
 			<#elseif !stringUtil.equals(entityColumn.type, "Blob")>
 				objectOutput.writeObject(${entityColumn.name});
 			</#if>

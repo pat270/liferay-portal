@@ -88,8 +88,8 @@ public class WebXMLBuilder {
 
 			FileUtil.write(mergedWebXML, mergedContent, true);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
@@ -125,9 +125,7 @@ public class WebXMLBuilder {
 
 		xmlMerger.organizeXML(documentImpl.getWrappedDocument());
 
-		webXML = document.formattedString();
-
-		return webXML;
+		return document.formattedString();
 	}
 
 	protected static String getCustomContent(String customWebXML)
@@ -147,9 +145,7 @@ public class WebXMLBuilder {
 	protected static int getMergedContentIndex(String content) {
 		int x = content.indexOf("<web-app");
 
-		x = content.indexOf(">", x) + 1;
-
-		return x;
+		return content.indexOf(">", x) + 1;
 	}
 
 	protected static int getOriginalContentIndex(String content) {

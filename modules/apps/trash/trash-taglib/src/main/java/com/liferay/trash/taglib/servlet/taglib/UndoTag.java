@@ -51,6 +51,10 @@ public class UndoTag extends IncludeTag {
 
 	@Override
 	public int doStartTag() {
+		if (_getData() == null) {
+			return SKIP_BODY;
+		}
+
 		return EVAL_BODY_INCLUDE;
 	}
 
@@ -126,7 +130,7 @@ public class UndoTag extends IncludeTag {
 				restoreTrashEntryIds.add(trashEntry.getEntryId());
 				titles.add(trashRenderer.getTitle(themeDisplay.getLocale()));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 

@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for Organization. This utility wraps
  * <code>com.liferay.portal.service.impl.OrganizationServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OrganizationService
  * @generated
  */
-@ProviderType
 public class OrganizationServiceUtil {
 
 	/*
@@ -379,7 +376,7 @@ public class OrganizationServiceUtil {
 	 * @param countryId the primary key of the organization's country
 	 * @param statusId the organization's workflow status
 	 * @param comments the comments about the organization
-	 * @param logo whether to update the ogranization's logo
+	 * @param hasLogo if the organization has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param site whether the organization is to be associated with a main
 	 site
@@ -398,7 +395,8 @@ public class OrganizationServiceUtil {
 			updateOrganization(
 				long organizationId, long parentOrganizationId, String name,
 				String type, long regionId, long countryId, long statusId,
-				String comments, boolean logo, byte[] logoBytes, boolean site,
+				String comments, boolean hasLogo, byte[] logoBytes,
+				boolean site,
 				java.util.List<com.liferay.portal.kernel.model.Address>
 					addresses,
 				java.util.List<com.liferay.portal.kernel.model.EmailAddress>
@@ -413,7 +411,7 @@ public class OrganizationServiceUtil {
 
 		return getService().updateOrganization(
 			organizationId, parentOrganizationId, name, type, regionId,
-			countryId, statusId, comments, logo, logoBytes, site, addresses,
+			countryId, statusId, comments, hasLogo, logoBytes, site, addresses,
 			emailAddresses, orgLabors, phones, websites, serviceContext);
 	}
 

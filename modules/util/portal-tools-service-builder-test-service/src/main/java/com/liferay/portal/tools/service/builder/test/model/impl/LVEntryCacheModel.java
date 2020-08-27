@@ -14,12 +14,10 @@
 
 package com.liferay.portal.tools.service.builder.test.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.tools.service.builder.test.model.LVEntry;
 
 import java.io.Externalizable;
@@ -33,21 +31,20 @@ import java.io.ObjectOutput;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LVEntryCacheModel
 	implements CacheModel<LVEntry>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LVEntryCacheModel)) {
+		if (!(object instanceof LVEntryCacheModel)) {
 			return false;
 		}
 
-		LVEntryCacheModel lvEntryCacheModel = (LVEntryCacheModel)obj;
+		LVEntryCacheModel lvEntryCacheModel = (LVEntryCacheModel)object;
 
 		if ((lvEntryId == lvEntryCacheModel.lvEntryId) &&
 			(mvccVersion == lvEntryCacheModel.mvccVersion)) {

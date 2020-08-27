@@ -18,11 +18,11 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.upload.FileItem;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadPortletRequestImpl;
 import com.liferay.portal.upload.UploadServletRequestImpl;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.io.InputStream;
 
@@ -125,10 +125,8 @@ public class UploadPortletRequestWhenGettingFilesAsStreamTest {
 		Assert.assertEquals(map.toString(), 10, map.size());
 
 		for (Map.Entry<String, FileItem[]> entry : map.entrySet()) {
-			String key = entry.getKey();
-
 			InputStream[] inputStreams = uploadPortletRequest.getFilesAsStream(
-				key);
+				entry.getKey());
 
 			FileItem[] fileItems = entry.getValue();
 

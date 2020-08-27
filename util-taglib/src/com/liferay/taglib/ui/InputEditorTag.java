@@ -17,7 +17,6 @@ package com.liferay.taglib.ui;
 import com.liferay.portal.kernel.editor.Editor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigurationFactoryUtil;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
@@ -40,7 +39,6 @@ import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerMap;
 import com.liferay.taglib.BaseValidatorTagSupport;
 import com.liferay.taglib.aui.AUIUtil;
-import com.liferay.taglib.util.TagResourceBundleUtil;
 
 import java.io.IOException;
 
@@ -50,7 +48,7 @@ import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.function.Function;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -329,8 +327,11 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 
 	protected String getContentsLanguageId() {
 		if (_contentsLanguageId == null) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			HttpServletRequest httpServletRequest = getRequest();
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			_contentsLanguageId = themeDisplay.getLanguageId();
 		}
@@ -339,7 +340,10 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 	}
 
 	protected String getCssClasses() {
-		Portlet portlet = (Portlet)request.getAttribute(WebKeys.RENDER_PORTLET);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		Portlet portlet = (Portlet)httpServletRequest.getAttribute(
+			WebKeys.RENDER_PORTLET);
 
 		String cssClasses = "portlet ";
 
@@ -351,7 +355,10 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 	}
 
 	protected Map<String, Object> getData() {
-		String portletId = (String)request.getAttribute(WebKeys.PORTLET_ID);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		String portletId = (String)httpServletRequest.getAttribute(
+			WebKeys.PORTLET_ID);
 
 		if (portletId == null) {
 			return _data;
@@ -359,26 +366,29 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 
 		Map<String, Object> attributes = new HashMap<>();
 
-		Enumeration<String> enumeration = request.getAttributeNames();
+		Enumeration<String> enumeration =
+			httpServletRequest.getAttributeNames();
 
 		while (enumeration.hasMoreElements()) {
 			String attributeName = enumeration.nextElement();
 
 			if (attributeName.startsWith("liferay-ui:input-editor")) {
 				attributes.put(
-					attributeName, request.getAttribute(attributeName));
+					attributeName,
+					httpServletRequest.getAttribute(attributeName));
 			}
 		}
 
 		attributes.put("liferay-ui:input-editor:namespace", getNamespace());
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		EditorConfiguration editorConfiguration =
 			EditorConfigurationFactoryUtil.getEditorConfiguration(
 				PortletIdCodec.decodePortletName(portletId), getConfigKey(),
-				getEditorName(request), attributes, themeDisplay,
+				getEditorName(httpServletRequest), attributes, themeDisplay,
 				getRequestBackedPortletURLFactory());
 
 		Map<String, Object> data = editorConfiguration.getData();
@@ -401,19 +411,23 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 	}
 
 	protected String getEditorResourceType() {
-		Editor editor = getEditor(request);
+		Editor editor = getEditor(getRequest());
 
 		return editor.getResourceType();
 	}
 
 	protected String getNamespace() {
-		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_REQUEST);
-		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		PortletRequest portletRequest =
+			(PortletRequest)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_REQUEST);
+		PortletResponse portletResponse =
+			(PortletResponse)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_RESPONSE);
 
 		if ((portletRequest == null) || (portletResponse == null)) {
-			return AUIUtil.getNamespace(request);
+			return AUIUtil.getNamespace(httpServletRequest);
 		}
 
 		return AUIUtil.getNamespace(portletRequest, portletResponse);
@@ -421,7 +435,7 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 
 	@Override
 	protected String getPage() {
-		Editor editor = getEditor(request);
+		Editor editor = getEditor(getRequest());
 
 		return editor.getJspPath();
 	}
@@ -429,11 +443,15 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 	protected RequestBackedPortletURLFactory
 		getRequestBackedPortletURLFactory() {
 
-		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_REQUEST);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		PortletRequest portletRequest =
+			(PortletRequest)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_REQUEST);
 
 		if (portletRequest == null) {
-			return RequestBackedPortletURLFactoryUtil.create(request);
+			return RequestBackedPortletURLFactoryUtil.create(
+				httpServletRequest);
 		}
 
 		return RequestBackedPortletURLFactoryUtil.create(portletRequest);
@@ -452,8 +470,8 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 			String page, HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		servletContext = PortalWebResourcesUtil.getServletContext(
-			getEditorResourceType());
+		setServletContext(
+			PortalWebResourcesUtil.getServletContext(getEditorResourceType()));
 
 		super.includePage(page, httpServletResponse);
 	}
@@ -498,18 +516,8 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 			"liferay-ui:input-editor:onFocusMethod", _onFocusMethod);
 		httpServletRequest.setAttribute(
 			"liferay-ui:input-editor:onInitMethod", _onInitMethod);
-
-		if (Validator.isNull(_placeholder)) {
-			ResourceBundle resourceBundle =
-				TagResourceBundleUtil.getResourceBundle(pageContext);
-
-			_placeholder = LanguageUtil.get(
-				resourceBundle, "write-your-content-here");
-		}
-
 		httpServletRequest.setAttribute(
 			"liferay-ui:input-editor:placeholder", _placeholder);
-
 		httpServletRequest.setAttribute(
 			"liferay-ui:input-editor:required", String.valueOf(_required));
 		httpServletRequest.setAttribute(
@@ -526,15 +534,17 @@ public class InputEditorTag extends BaseValidatorTagSupport {
 
 		httpServletRequest.setAttribute(
 			"liferay-ui:input-editor:data",
-			ProxyUtil.newProxyInstance(
-				ClassLoader.getSystemClassLoader(), new Class<?>[] {Map.class},
-				new LazyDataInvocationHandler()));
+			_mapProxyProviderFunction.apply(new LazyDataInvocationHandler()));
 	}
 
 	private static final String _EDITOR_WYSIWYG_DEFAULT = PropsUtil.get(
 		PropsKeys.EDITOR_WYSIWYG_DEFAULT);
 
 	private static final String _TOOLBAR_SET_DEFAULT = "liferay";
+
+	private static final Function<InvocationHandler, Map<?, ?>>
+		_mapProxyProviderFunction = ProxyUtil.getProxyProviderFunction(
+			Map.class);
 
 	private static final ServiceTrackerMap<String, Editor> _serviceTrackerMap =
 		ServiceTrackerCollections.openSingleValueMap(

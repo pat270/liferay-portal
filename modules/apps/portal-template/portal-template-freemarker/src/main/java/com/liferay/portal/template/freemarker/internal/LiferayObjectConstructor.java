@@ -28,6 +28,10 @@ import java.util.List;
  */
 public class LiferayObjectConstructor implements TemplateMethodModelEx {
 
+	public LiferayObjectConstructor(BeansWrapper beansWrapper) {
+		_beansWrapper = beansWrapper;
+	}
+
 	@Override
 	public Object exec(@SuppressWarnings("rawtypes") List arguments)
 		throws TemplateModelException {
@@ -48,22 +52,22 @@ public class LiferayObjectConstructor implements TemplateMethodModelEx {
 			clazz = Class.forName(
 				className, true, currentThread.getContextClassLoader());
 		}
-		catch (Exception e1) {
+		catch (Exception exception1) {
 			try {
 				clazz = Class.forName(
 					className, true, PortalClassLoaderUtil.getClassLoader());
 			}
-			catch (Exception e2) {
-				throw new TemplateModelException(e2.getMessage());
+			catch (Exception exception2) {
+				throw new TemplateModelException(exception2.getMessage());
 			}
 		}
 
-		BeansWrapper beansWrapper = FreeMarkerManager.getBeansWrapper();
-
-		Object object = beansWrapper.newInstance(
+		Object object = _beansWrapper.newInstance(
 			clazz, arguments.subList(1, arguments.size()));
 
-		return beansWrapper.wrap(object);
+		return _beansWrapper.wrap(object);
 	}
+
+	private final BeansWrapper _beansWrapper;
 
 }

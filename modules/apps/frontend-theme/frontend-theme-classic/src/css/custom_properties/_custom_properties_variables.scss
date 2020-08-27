@@ -1,0 +1,181 @@
+// Spacers map copy
+
+$spacers-cp: ();
+$spacers-cp: map-deep-merge(
+	(
+		0: var(--spacer-0),
+		1: var(--spacer-1),
+		2: var(--spacer-2),
+		3: var(--spacer-3),
+		4: var(--spacer-4),
+		5: var(--spacer-5),
+		6: var(--spacer-6),
+		7: var(--spacer-7),
+		8: var(--spacer-8),
+		9: var(--spacer-9),
+		10: var(--spacer-10),
+	),
+	$spacers-cp
+);
+
+// Theme colors
+
+$theme-colors-cp: ();
+$theme-colors-cp: map-deep-merge(
+	(
+		danger: var(--danger),
+		dark: var(--dark),
+		gray-dark: var(--gray-800),
+		info: var(--info),
+		light: var(--light),
+		lighter: var(--gray-100),
+		primary: var(--primary),
+		secondary: var(--secondary),
+		success: var(--success),
+		warning: var(--warning),
+	),
+	$theme-colors-cp
+);
+
+:root {
+	// Aspect ratios
+
+	--aspect-ratio-4-to-3: 75%;
+	--aspect-ratio-8-to-3: 37.5%;
+	--aspect-ratio-16-to-9: 56.25%;
+	--aspect-ratio: 100%;
+
+	// Blockquotes
+
+	--blockquote-font-size: #{$font-size-base} * 1.25;
+	--blockquote-small-color: #{$gray-600};
+	--blockquote-small-font-size: #{$small-font-size};
+
+	// Body
+
+	--body-bg: $body-bg;
+	--body-color: $body-color;
+
+	// Border radius
+
+	--border-radius-circle: 50%;
+	--border-radius-lg: #{$border-radius-lg};
+	--border-radius-sm: #{$border-radius-sm};
+	--border-radius: #{$border-radius};
+	--rounded-pill: #{$rounded-pill};
+
+	// Colors
+
+	--black: #{$black};
+	--gray-100: #{$gray-100};
+	--gray-200: #{$gray-200};
+	--gray-300: #{$gray-300};
+	--gray-400: #{$gray-400};
+	--gray-500: #{$gray-500};
+	--gray-600: #{$gray-600};
+	--gray-700: #{$gray-700};
+	--gray-800: #{$gray-800};
+	--gray-900: #{$gray-900};
+	--transparent: transparent;
+	--white: #{$white};
+
+	@each $key, $value in $theme-colors {
+		--#{$key}: #{$value};
+	}
+
+	--danger-l1: #{$danger-l1};
+	--danger-l2: #{$danger-l2};
+	--info-l1: #{$info-l1};
+	--info-l2: #{$info-l2};
+	--primary-d1: #{$primary-d1};
+	--primary-l1: #{$primary-l1};
+	--primary-l3: #{$primary-l3};
+	--secondary-d1: var(--gray-800);
+	--success-d1: #{$success-d1};
+	--success-l1: #{$success-l1};
+	--success-l2: #{$success-l2};
+	--warning-l1: #{$warning-l1};
+	--warning-l2: #{$warning-l2};
+
+	// Container max
+
+	@each $key, $value in $container-max-widths {
+		--container-max-#{$key}: #{$value};
+	}
+
+	// Display
+
+	--display1-size: #{$display1-size};
+	--display2-size: #{$display2-size};
+	--display3-size: #{$display3-size};
+	--display4-size: #{$display4-size};
+
+	--display1-weight: #{$display1-weight};
+	--display2-weight: #{$display2-weight};
+	--display3-weight: #{$display3-weight};
+	--display4-weight: #{$display4-weight};
+
+	--display-line-height: #{$display-line-height};
+
+	// Fonts
+
+	--font-family-base: #{$font-family-base};
+	--font-family-monospace: #{$font-family-monospace};
+	--font-family-sans-serif: #{$font-family-sans-serif};
+
+	--font-size-base: #{$font-size-base};
+	--font-size-lg: #{$font-size-lg};
+	--font-size-sm: #{$font-size-sm};
+
+	--font-weight-bold: #{$font-weight-bold};
+	--font-weight-bolder: #{$font-weight-bolder};
+	--font-weight-light: #{$font-weight-light};
+	--font-weight-lighter: #{$font-weight-lighter};
+	--font-weight-normal: #{$font-weight-normal};
+	--font-weight-semi-bold: #{$font-weight-semi-bold};
+
+	--line-height-base: #{$line-height-base};
+	--line-height-sm: 1.15;
+
+	// Headings
+
+	--h1-font-size: #{$h1-font-size};
+	--h2-font-size: #{$h2-font-size};
+	--h3-font-size: #{$h3-font-size};
+	--h4-font-size: #{$h4-font-size};
+	--h5-font-size: #{$h5-font-size};
+	--h6-font-size: #{$h6-font-size};
+
+	// Lead
+
+	--lead-font-size: #{$lead-font-size};
+	--lead-font-weight: #{$lead-font-weight};
+
+	// Separator
+
+	--hr-border-color: #{$hr-border-color};
+	--hr-border-width: #{$hr-border-width};
+	--hr-margin-y: #{$hr-margin-y};
+
+	// Shadows
+
+	--box-shadow-lg: #{$box-shadow-lg};
+	--box-shadow-sm: #{$box-shadow-sm};
+	--box-shadow: #{$box-shadow};
+
+	// Spacers
+
+	--spacer: 1;
+	@each $key, $value in $spacers {
+		--spacer-#{$key}: #{$value};
+	}
+
+	// Text muted
+
+	--text-muted: #{$text-muted};
+
+	// Transitions
+
+	--transition-collapse: #{$transition-collapse};
+	--transition-fade: #{$transition-fade};
+}

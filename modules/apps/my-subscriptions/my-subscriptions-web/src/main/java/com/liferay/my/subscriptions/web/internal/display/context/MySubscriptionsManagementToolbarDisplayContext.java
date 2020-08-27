@@ -15,7 +15,7 @@
 package com.liferay.my.subscriptions.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -36,6 +36,7 @@ public class MySubscriptionsManagementToolbarDisplayContext {
 
 		_httpServletRequest = httpServletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
+
 		_user = user;
 
 		_totalItems = SubscriptionLocalServiceUtil.getUserSubscriptionsCount(
@@ -43,19 +44,15 @@ public class MySubscriptionsManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "unsubscribe");
-						dropdownItem.setIcon("times");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "unsubscribe"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "unsubscribe");
+				dropdownItem.setIcon("times");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "unsubscribe"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public int getTotalItems() {

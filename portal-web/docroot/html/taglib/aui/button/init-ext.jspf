@@ -83,7 +83,10 @@ if (primary == Boolean.TRUE) {
 }
 
 if (type.equals("cancel")) {
-	cssClass += " btn-cancel btn-default";
+	cssClass += " btn-cancel btn-secondary";
+}
+else if (primary == Boolean.FALSE) {
+	cssClass += " btn-secondary";
 }
 
 if (dropdown) {

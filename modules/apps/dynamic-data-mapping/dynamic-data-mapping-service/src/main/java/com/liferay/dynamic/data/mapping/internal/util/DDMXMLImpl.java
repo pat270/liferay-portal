@@ -14,14 +14,15 @@
 
 package com.liferay.dynamic.data.mapping.internal.util;
 
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.exception.StructureDefinitionException;
 import com.liferay.dynamic.data.mapping.exception.StructureDuplicateElementException;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.storage.Field;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
 import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDMXML;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -77,9 +78,9 @@ public class DDMXMLImpl implements DDMXML {
 		try {
 			document = _saxReader.read(xml);
 		}
-		catch (DocumentException de) {
+		catch (DocumentException documentException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(de.getMessage(), de);
+				_log.debug(documentException.getMessage(), documentException);
 			}
 
 			return null;
@@ -169,10 +170,10 @@ public class DDMXMLImpl implements DDMXML {
 				rootElement = document.addElement("root");
 			}
 
-			Iterator<Field> itr = fields.iterator(true);
+			Iterator<Field> iterator = fields.iterator(true);
 
-			while (itr.hasNext()) {
-				Field field = itr.next();
+			while (iterator.hasNext()) {
+				Field field = iterator.next();
 
 				List<Node> nodes = getElementsByName(document, field.getName());
 
@@ -185,8 +186,8 @@ public class DDMXMLImpl implements DDMXML {
 
 			return document.formattedString();
 		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
+		catch (IOException ioException) {
+			throw new SystemException(ioException);
 		}
 	}
 
@@ -197,13 +198,13 @@ public class DDMXMLImpl implements DDMXML {
 
 	public XMLSchema getXMLSchema() {
 		if (_xmlSchema == null) {
-			XMLSchemaImpl xmlSchema = new XMLSchemaImpl();
+			XMLSchemaImpl xmlSchemaImpl = new XMLSchemaImpl();
 
-			xmlSchema.setSchemaLanguage("http://www.w3.org/2001/XMLSchema");
-			xmlSchema.setSystemId(
+			xmlSchemaImpl.setSchemaLanguage("http://www.w3.org/2001/XMLSchema");
+			xmlSchemaImpl.setSystemId(
 				"http://www.liferay.com/dtd/liferay-ddm-structure_6_2_0.xsd");
 
-			_xmlSchema = xmlSchema;
+			_xmlSchema = xmlSchemaImpl;
 		}
 
 		return _xmlSchema;
@@ -218,18 +219,21 @@ public class DDMXMLImpl implements DDMXML {
 
 			return document.asXML();
 		}
-		catch (StructureDefinitionException sde) {
-			throw sde;
+		catch (StructureDefinitionException structureDefinitionException) {
+			throw structureDefinitionException;
 		}
-		catch (StructureDuplicateElementException sdee) {
-			throw sdee;
+		catch (StructureDuplicateElementException
+					structureDuplicateElementException) {
+
+			throw structureDuplicateElementException;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Invalid XML content " + e.getMessage(), e);
+				_log.debug(
+					"Invalid XML content " + exception.getMessage(), exception);
 			}
 
-			throw new StructureDefinitionException(e);
+			throw new StructureDefinitionException(exception);
 		}
 	}
 
@@ -260,11 +264,7 @@ public class DDMXMLImpl implements DDMXML {
 		name = HtmlUtil.escapeXPathAttribute(name);
 
 		XPath xPathSelector = _saxReader.createXPath(
-			"//dynamic-element[@name=".concat(
-				name
-			).concat(
-				"]"
-			));
+			StringBundler.concat("//dynamic-element[@name=", name, "]"));
 
 		return xPathSelector.selectNodes(document);
 	}

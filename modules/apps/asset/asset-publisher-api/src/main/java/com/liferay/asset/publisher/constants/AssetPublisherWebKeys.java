@@ -37,6 +37,14 @@ public class AssetPublisherWebKeys {
 	public static final String ASSET_PUBLISHER_WEB_CONFIGURATION =
 		"ASSET_PUBLISHER_WEB_CONFIGURATION";
 
+	public static final String ASSET_PUBLISHER_WEB_HELPER =
+		"ASSET_PUBLISHER_WEB_HELPER";
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #ASSET_PUBLISHER_WEB_HELPER}
+	 */
+	@Deprecated
 	public static final String ASSET_PUBLISHER_WEB_UTIL =
 		"ASSET_PUBLISHER_WEB_UTIL";
 

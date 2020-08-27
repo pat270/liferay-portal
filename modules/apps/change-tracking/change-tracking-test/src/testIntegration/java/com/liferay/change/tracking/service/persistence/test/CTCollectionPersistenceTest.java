@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -45,7 +44,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,11 +122,11 @@ public class CTCollectionPersistenceTest {
 
 		CTCollection newCTCollection = _persistence.create(pk);
 
+		newCTCollection.setMvccVersion(RandomTestUtil.nextLong());
+
 		newCTCollection.setCompanyId(RandomTestUtil.nextLong());
 
 		newCTCollection.setUserId(RandomTestUtil.nextLong());
-
-		newCTCollection.setUserName(RandomTestUtil.randomString());
 
 		newCTCollection.setCreateDate(RandomTestUtil.nextDate());
 
@@ -142,8 +140,6 @@ public class CTCollectionPersistenceTest {
 
 		newCTCollection.setStatusByUserId(RandomTestUtil.nextLong());
 
-		newCTCollection.setStatusByUserName(RandomTestUtil.randomString());
-
 		newCTCollection.setStatusDate(RandomTestUtil.nextDate());
 
 		_ctCollections.add(_persistence.update(newCTCollection));
@@ -152,6 +148,9 @@ public class CTCollectionPersistenceTest {
 			newCTCollection.getPrimaryKey());
 
 		Assert.assertEquals(
+			existingCTCollection.getMvccVersion(),
+			newCTCollection.getMvccVersion());
+		Assert.assertEquals(
 			existingCTCollection.getCtCollectionId(),
 			newCTCollection.getCtCollectionId());
 		Assert.assertEquals(
@@ -159,8 +158,6 @@ public class CTCollectionPersistenceTest {
 			newCTCollection.getCompanyId());
 		Assert.assertEquals(
 			existingCTCollection.getUserId(), newCTCollection.getUserId());
-		Assert.assertEquals(
-			existingCTCollection.getUserName(), newCTCollection.getUserName());
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingCTCollection.getCreateDate()),
 			Time.getShortTimestamp(newCTCollection.getCreateDate()));
@@ -178,9 +175,6 @@ public class CTCollectionPersistenceTest {
 			existingCTCollection.getStatusByUserId(),
 			newCTCollection.getStatusByUserId());
 		Assert.assertEquals(
-			existingCTCollection.getStatusByUserName(),
-			newCTCollection.getStatusByUserName());
-		Assert.assertEquals(
 			Time.getShortTimestamp(existingCTCollection.getStatusDate()),
 			Time.getShortTimestamp(newCTCollection.getStatusDate()));
 	}
@@ -193,12 +187,11 @@ public class CTCollectionPersistenceTest {
 	}
 
 	@Test
-	public void testCountByC_N() throws Exception {
-		_persistence.countByC_N(RandomTestUtil.nextLong(), "");
+	public void testCountByC_S() throws Exception {
+		_persistence.countByC_S(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
 
-		_persistence.countByC_N(0L, "null");
-
-		_persistence.countByC_N(0L, (String)null);
+		_persistence.countByC_S(0L, 0);
 	}
 
 	@Test
@@ -226,10 +219,10 @@ public class CTCollectionPersistenceTest {
 
 	protected OrderByComparator<CTCollection> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"CTCollection", "ctCollectionId", true, "companyId", true, "userId",
-			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"name", true, "description", true, "status", true, "statusByUserId",
-			true, "statusByUserName", true, "statusDate", true);
+			"CTCollection", "mvccVersion", true, "ctCollectionId", true,
+			"companyId", true, "userId", true, "createDate", true,
+			"modifiedDate", true, "name", true, "description", true, "status",
+			true, "statusByUserId", true, "statusDate", true);
 	}
 
 	@Test
@@ -445,36 +438,16 @@ public class CTCollectionPersistenceTest {
 		Assert.assertEquals(0, result.size());
 	}
 
-	@Test
-	public void testResetOriginalValues() throws Exception {
-		CTCollection newCTCollection = addCTCollection();
-
-		_persistence.clearCache();
-
-		CTCollection existingCTCollection = _persistence.findByPrimaryKey(
-			newCTCollection.getPrimaryKey());
-
-		Assert.assertEquals(
-			Long.valueOf(existingCTCollection.getCompanyId()),
-			ReflectionTestUtil.<Long>invoke(
-				existingCTCollection, "getOriginalCompanyId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingCTCollection.getName(),
-				ReflectionTestUtil.invoke(
-					existingCTCollection, "getOriginalName", new Class<?>[0])));
-	}
-
 	protected CTCollection addCTCollection() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		CTCollection ctCollection = _persistence.create(pk);
 
+		ctCollection.setMvccVersion(RandomTestUtil.nextLong());
+
 		ctCollection.setCompanyId(RandomTestUtil.nextLong());
 
 		ctCollection.setUserId(RandomTestUtil.nextLong());
-
-		ctCollection.setUserName(RandomTestUtil.randomString());
 
 		ctCollection.setCreateDate(RandomTestUtil.nextDate());
 
@@ -487,8 +460,6 @@ public class CTCollectionPersistenceTest {
 		ctCollection.setStatus(RandomTestUtil.nextInt());
 
 		ctCollection.setStatusByUserId(RandomTestUtil.nextLong());
-
-		ctCollection.setStatusByUserName(RandomTestUtil.randomString());
 
 		ctCollection.setStatusDate(RandomTestUtil.nextDate());
 

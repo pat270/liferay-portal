@@ -1,8 +1,22 @@
-import Component from 'metal-component';
-import Soy from 'metal-soy';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import core from 'metal';
+import Component from 'metal-component';
 import dom from 'metal-dom';
 import {EventHandler} from 'metal-events';
+import Soy from 'metal-soy';
 
 import templates from './Modal.soy';
 
@@ -94,7 +108,9 @@ class Modal extends Component {
 	syncOverlay(overlay) {
 		const willShowOverlay = overlay && this.visible;
 
-		dom[willShowOverlay ? 'enterDocument' : 'exitDocument'](this.overlayElement);
+		dom[willShowOverlay ? 'enterDocument' : 'exitDocument'](
+			this.overlayElement
+		);
 	}
 
 	/**
@@ -105,7 +121,8 @@ class Modal extends Component {
 		this.syncOverlay(this.overlay);
 
 		if (this.visible) {
-			this._lastFocusedElement = this._lastFocusedElement || document.activeElement;
+			this._lastFocusedElement =
+				this._lastFocusedElement || document.activeElement;
 
 			this._autoFocus(this.autoFocus);
 			this._restrictFocus();
@@ -214,7 +231,8 @@ class Modal extends Component {
 	 */
 
 	_valueOverlayElementFn() {
-		return dom.buildFragment('<div class="modal-backdrop fade show"></div>').firstChild;
+		return dom.buildFragment('<div class="modal-backdrop fade show"></div>')
+			.firstChild;
 	}
 }
 
@@ -228,8 +246,8 @@ Modal.STATE = {
 	 */
 
 	autoFocus: {
-		validator: val => val === false || core.isString(val),
-		value: '.close'
+		validator: (val) => val === false || core.isString(val),
+		value: '.close',
 	},
 
 	/**
@@ -238,8 +256,7 @@ Modal.STATE = {
 	 * @type {string|function()}
 	 */
 
-	body: {
-	},
+	body: {},
 
 	/**
 	 * The id used by the body element.
@@ -247,7 +264,7 @@ Modal.STATE = {
 	 */
 
 	bodyId: {
-		valueFn: () => 'modal-body-' + core.getUid()
+		valueFn: () => 'modal-body-' + core.getUid(),
 	},
 
 	/**
@@ -256,7 +273,7 @@ Modal.STATE = {
 	 */
 
 	dialogClasses: {
-		validator: core.isString
+		validator: core.isString,
 	},
 
 	/**
@@ -265,17 +282,7 @@ Modal.STATE = {
 	 * @type {string|function()}
 	 */
 
-	footer: {
-	},
-
-	/**
-	 * The id used by the header element.
-	 * @type {string}
-	 */
-
-	headerId: {
-		valueFn: () => 'modal-header-' + core.getUid()
-	},
+	footer: {},
 
 	/**
 	 * Content to be placed inside modal header. Can be either an html string or
@@ -283,7 +290,15 @@ Modal.STATE = {
 	 * @type {string|function()}
 	 */
 
-	header: {
+	header: {},
+
+	/**
+	 * The id used by the header element.
+	 * @type {string}
+	 */
+
+	headerId: {
+		valueFn: () => 'modal-header-' + core.getUid(),
 	},
 
 	/**
@@ -294,7 +309,7 @@ Modal.STATE = {
 
 	hideOnEscape: {
 		validator: core.isBoolean,
-		value: true
+		value: true,
 	},
 
 	/**
@@ -305,7 +320,7 @@ Modal.STATE = {
 	 */
 
 	noCloseButton: {
-		value: false
+		value: false,
 	},
 
 	/**
@@ -316,7 +331,7 @@ Modal.STATE = {
 
 	overlay: {
 		validator: core.isBoolean,
-		value: true
+		value: true,
 	},
 
 	/**
@@ -326,7 +341,7 @@ Modal.STATE = {
 
 	overlayElement: {
 		valueFn: '_valueOverlayElementFn',
-		writeOnce: true
+		writeOnce: true,
 	},
 
 	/**
@@ -337,8 +352,8 @@ Modal.STATE = {
 
 	role: {
 		validator: core.isString,
-		value: 'dialog'
-	}
+		value: 'dialog',
+	},
 };
 
 Soy.register(Modal, templates);

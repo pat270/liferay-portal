@@ -14,22 +14,16 @@
 
 package com.liferay.source.formatter.checks;
 
-import aQute.bnd.version.Version;
-
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.tools.ToolsUtil;
-import com.liferay.source.formatter.util.FileUtil;
-import com.liferay.source.formatter.util.SourceFormatterUtil;
+import com.liferay.source.formatter.checks.util.GradleSourceUtil;
 
-import java.io.File;
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,10 +44,6 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 			String fileName, String absolutePath, String content)
 		throws IOException {
 
-		if (absolutePath.contains("/modules/apps/")) {
-			content = _formatInconsistentVersions(absolutePath, content);
-		}
-
 		if (isExcludedPath(RUN_OUTSIDE_PORTAL_EXCLUDES, absolutePath)) {
 			return content;
 		}
@@ -65,7 +55,9 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 		String moduleName = absolutePath.substring(y + 1, x);
 
 		if (!moduleName.contains("test")) {
-			for (String dependencies : _getDependenciesBlocks(content)) {
+			for (String dependencies :
+					GradleSourceUtil.getDependenciesBlocks(content)) {
+
 				content = _formatDependencies(
 					absolutePath, content, dependencies);
 			}
@@ -123,102 +115,6 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 			StringUtil.trim(sb.toString()));
 	}
 
-	private String _formatInconsistentVersions(
-			String absolutePath, String content)
-		throws IOException {
-
-		Map<String, Version> latestVersionsMap = _getLatestVersionsMap(
-			absolutePath);
-
-		if (latestVersionsMap.isEmpty()) {
-			return content;
-		}
-
-		List<String> enforceConsistentVersionDependencyNames =
-			getAttributeValues(
-				_ENFORCE_CONSISTENT_VERSION_DEPENDENCY_NAMES_KEY, absolutePath);
-
-		for (String dependencyName : enforceConsistentVersionDependencyNames) {
-			Version latestVersion = latestVersionsMap.get(dependencyName);
-
-			if (latestVersion == null) {
-				continue;
-			}
-
-			Pattern pattern = Pattern.compile(
-				"compileOnly .*, name: \"" + dependencyName +
-					"\",.* version: \"(.*?)\"");
-
-			Matcher matcher = pattern.matcher(content);
-
-			if (!matcher.find()) {
-				continue;
-			}
-
-			String version = matcher.group(1);
-
-			if (!version.equals(latestVersion.toString())) {
-				return StringUtil.replaceFirst(
-					content, version, latestVersion.toString(),
-					matcher.start(1));
-			}
-		}
-
-		return content;
-	}
-
-	private List<String> _getBuildGradleFileNames() throws IOException {
-		String modulesAppsDirLocation = "modules/apps/";
-
-		for (int i = 0; i < (ToolsUtil.PORTAL_MAX_DIR_LEVEL - 1); i++) {
-			File file = new File(getBaseDirName() + modulesAppsDirLocation);
-
-			if (file.exists()) {
-				return SourceFormatterUtil.scanForFiles(
-					getBaseDirName() + modulesAppsDirLocation, new String[0],
-					new String[] {"**/build.gradle"},
-					getSourceFormatterExcludes(), false);
-			}
-
-			modulesAppsDirLocation = "../" + modulesAppsDirLocation;
-		}
-
-		return null;
-	}
-
-	private List<String> _getDependenciesBlocks(String content) {
-		List<String> dependenciesBlocks = new ArrayList<>();
-
-		Matcher matcher = _dependenciesPattern.matcher(content);
-
-		while (matcher.find()) {
-			int y = matcher.start();
-
-			while (true) {
-				y = content.indexOf("}", y + 1);
-
-				if (y == -1) {
-					return dependenciesBlocks;
-				}
-
-				String dependencies = content.substring(
-					matcher.start(2), y + 1);
-
-				int level = getLevel(dependencies, "{", "}");
-
-				if (level == 0) {
-					if (!dependencies.contains("}\n")) {
-						dependenciesBlocks.add(dependencies);
-					}
-
-					break;
-				}
-			}
-		}
-
-		return dependenciesBlocks;
-	}
-
 	private String _getDependencyName(String dependency) {
 		Matcher matcher = _dependencyNamePattern.matcher(dependency);
 
@@ -239,61 +135,6 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 		return matcher.group(1);
 	}
 
-	private synchronized Map<String, Version> _getLatestVersionsMap(
-			String absolutePath)
-		throws IOException {
-
-		if (_latestVersionsMap != null) {
-			return _latestVersionsMap;
-		}
-
-		_latestVersionsMap = new HashMap<>();
-
-		List<String> enforceConsistentVersionDependencyNames =
-			getAttributeValues(
-				_ENFORCE_CONSISTENT_VERSION_DEPENDENCY_NAMES_KEY, absolutePath);
-
-		if (enforceConsistentVersionDependencyNames.isEmpty()) {
-			return _latestVersionsMap;
-		}
-
-		List<String> buildGradleFileNames = _getBuildGradleFileNames();
-
-		if (buildGradleFileNames == null) {
-			return _latestVersionsMap;
-		}
-
-		for (String buildGradleFileName : buildGradleFileNames) {
-			String buildGradleFileContent = FileUtil.read(
-				new File(buildGradleFileName));
-
-			for (String dependencyName :
-					enforceConsistentVersionDependencyNames) {
-
-				Pattern pattern = Pattern.compile(
-					"compileOnly .*, name: \"" + dependencyName +
-						"\",.* version: \"(.*?)\"");
-
-				Matcher matcher = pattern.matcher(buildGradleFileContent);
-
-				if (!matcher.find()) {
-					continue;
-				}
-
-				Version latestVerion = _latestVersionsMap.get(dependencyName);
-				Version version = new Version(matcher.group(1));
-
-				if ((latestVerion == null) ||
-					(version.compareTo(latestVerion) > 0)) {
-
-					_latestVersionsMap.put(dependencyName, version);
-				}
-			}
-		}
-
-		return _latestVersionsMap;
-	}
-
 	private String _getMajorVersion(String version) {
 		Matcher matcher = _majorVersionPattern.matcher(version);
 
@@ -304,18 +145,6 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 		return matcher.group();
 	}
 
-	private String _getModulesPropertiesContent(String absolutePath)
-		throws IOException {
-
-		if (!isPortalSource()) {
-			return getPortalContent(
-				_MODULES_PROPERTIES_FILE_NAME, absolutePath);
-		}
-
-		return getContent(
-			_MODULES_PROPERTIES_FILE_NAME, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
-	}
-
 	private synchronized Map<String, Integer> _getPublishedMajorVersionsMap(
 			String absolutePath)
 		throws IOException {
@@ -324,7 +153,7 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 			return _publishedMajorVersionsMap;
 		}
 
-		String content = _getModulesPropertiesContent(absolutePath);
+		String content = getModulesPropertiesContent(absolutePath);
 
 		if (Validator.isNull(content)) {
 			_publishedMajorVersionsMap = Collections.emptyMap();
@@ -339,8 +168,15 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 		for (String line : lines) {
 			String[] array = StringUtil.split(line, StringPool.EQUAL);
 
-			if (array.length == 2) {
-				bundleVersionsMap.put(array[0], array[1]);
+			if (array.length != 2) {
+				continue;
+			}
+
+			String key = array[0];
+
+			if (key.startsWith("bundle.version[")) {
+				bundleVersionsMap.put(
+					key.substring(15, key.length() - 1), array[1]);
 			}
 		}
 
@@ -395,15 +231,6 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 		return false;
 	}
 
-	private static final String
-		_ENFORCE_CONSISTENT_VERSION_DEPENDENCY_NAMES_KEY =
-			"enforceConsistentVersionDependencyNames";
-
-	private static final String _MODULES_PROPERTIES_FILE_NAME =
-		"modules/modules.properties";
-
-	private static final Pattern _dependenciesPattern = Pattern.compile(
-		"(\n|\\A)(\t*)dependencies \\{\n");
 	private static final Pattern _dependencyNamePattern = Pattern.compile(
 		".*, name: \"([^\"]*)\".*");
 	private static final Pattern _dependencyVersionPattern = Pattern.compile(
@@ -411,7 +238,6 @@ public class GradleDependencyVersionCheck extends BaseFileCheck {
 	private static final Pattern _majorVersionPattern = Pattern.compile(
 		"^[0-9]+");
 
-	private Map<String, Version> _latestVersionsMap;
 	private Map<String, Integer> _publishedMajorVersionsMap;
 
 }

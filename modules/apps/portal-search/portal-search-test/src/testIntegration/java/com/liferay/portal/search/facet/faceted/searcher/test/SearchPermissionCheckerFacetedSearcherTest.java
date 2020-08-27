@@ -19,9 +19,10 @@ import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.MultiValueFacet;
@@ -31,11 +32,13 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
+import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.test.util.FacetsAssert;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -108,10 +111,10 @@ public class SearchPermissionCheckerFacetedSearcherTest
 
 		searchContext.addFacet(facet);
 
-		search(searchContext);
+		Hits hits = search(searchContext);
 
-		assertFrequencies(
-			facet.getFieldName(), searchContext,
+		FacetsAssert.assertFrequencies(
+			facet.getFieldName(), searchContext, hits,
 			Collections.singletonMap(
 				StringUtil.toLowerCase(user2.getFullName()), 1));
 	}
@@ -132,7 +135,8 @@ public class SearchPermissionCheckerFacetedSearcherTest
 	}
 
 	protected ModelPermissions createModelPermissions() {
-		ModelPermissions modelPermissions = new ModelPermissions();
+		ModelPermissions modelPermissions =
+			ModelPermissionsFactory.createForAllResources();
 
 		modelPermissions.addRolePermissions(
 			RoleConstants.OWNER, ActionKeys.VIEW);

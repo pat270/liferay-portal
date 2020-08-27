@@ -19,6 +19,7 @@
 <%
 int cur = ParamUtil.getInteger(request, SearchContainer.DEFAULT_CUR_PARAM);
 int delta = ParamUtil.getInteger(request, SearchContainer.DEFAULT_DELTA_PARAM);
+String keywords = ParamUtil.getString(request, "keywords");
 
 PortletURL portletURL = renderResponse.createRenderURL();
 
@@ -31,6 +32,8 @@ portletURL.setParameter("tabs2", tabs2);
 	<portlet:param name="mvcRenderCommandName" value="/server_admin/view" />
 	<portlet:param name="tabs1" value="<%= tabs1 %>" />
 	<portlet:param name="cur" value="<%= String.valueOf(cur) %>" />
+	<portlet:param name="delta" value="<%= String.valueOf(delta) %>" />
+	<portlet:param name="keywords" value="<%= keywords %>" />
 </portlet:renderURL>
 
 <aui:form action="<%= portletURL.toString() %>" method="post" name="fm">
@@ -48,13 +51,11 @@ portletURL.setParameter("tabs2", tabs2);
 </portlet:renderURL>
 
 <aui:script use="liferay-admin">
-	new Liferay.Portlet.Admin(
-		{
-			form: document.<portlet:namespace />fm,
-			namespace: '<portlet:namespace />',
-			redirectUrl: '<%= redirectURL %>',
-			submitButton: '.save-server-button',
-			url: '<portlet:actionURL name="/server_admin/edit_server" />'
-		}
-	);
+	new Liferay.Portlet.Admin({
+		form: document.<portlet:namespace />fm,
+		namespace: '<portlet:namespace />',
+		redirectUrl: '<%= redirectURL %>',
+		submitButton: '.save-server-button',
+		url: '<portlet:actionURL name="/server_admin/edit_server" />',
+	});
 </aui:script>

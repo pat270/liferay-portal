@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -126,6 +126,10 @@ public class JournalContentSearchPersistenceTest {
 
 		JournalContentSearch newJournalContentSearch = _persistence.create(pk);
 
+		newJournalContentSearch.setMvccVersion(RandomTestUtil.nextLong());
+
+		newJournalContentSearch.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newJournalContentSearch.setGroupId(RandomTestUtil.nextLong());
 
 		newJournalContentSearch.setCompanyId(RandomTestUtil.nextLong());
@@ -146,6 +150,12 @@ public class JournalContentSearchPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newJournalContentSearch.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingJournalContentSearch.getMvccVersion(),
+			newJournalContentSearch.getMvccVersion());
+		Assert.assertEquals(
+			existingJournalContentSearch.getCtCollectionId(),
+			newJournalContentSearch.getCtCollectionId());
 		Assert.assertEquals(
 			existingJournalContentSearch.getContentSearchId(),
 			newJournalContentSearch.getContentSearchId());
@@ -285,9 +295,10 @@ public class JournalContentSearchPersistenceTest {
 
 	protected OrderByComparator<JournalContentSearch> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"JournalContentSearch", "contentSearchId", true, "groupId", true,
-			"companyId", true, "privateLayout", true, "layoutId", true,
-			"portletId", true, "articleId", true);
+			"JournalContentSearch", "mvccVersion", true, "ctCollectionId", true,
+			"contentSearchId", true, "groupId", true, "companyId", true,
+			"privateLayout", true, "layoutId", true, "portletId", true,
+			"articleId", true);
 	}
 
 	@Test
@@ -528,43 +539,91 @@ public class JournalContentSearchPersistenceTest {
 
 		_persistence.clearCache();
 
-		JournalContentSearch existingJournalContentSearch =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newJournalContentSearch.getPrimaryKey());
+				newJournalContentSearch.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		JournalContentSearch newJournalContentSearch =
+			addJournalContentSearch();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			JournalContentSearch.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"contentSearchId",
+				newJournalContentSearch.getContentSearchId()));
+
+		List<JournalContentSearch> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		JournalContentSearch journalContentSearch) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingJournalContentSearch.getGroupId()),
+			Long.valueOf(journalContentSearch.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingJournalContentSearch, "getOriginalGroupId",
-				new Class<?>[0]));
+				journalContentSearch, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Boolean.valueOf(existingJournalContentSearch.getPrivateLayout()),
+			Boolean.valueOf(journalContentSearch.getPrivateLayout()),
 			ReflectionTestUtil.<Boolean>invoke(
-				existingJournalContentSearch, "getOriginalPrivateLayout",
-				new Class<?>[0]));
+				journalContentSearch, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "privateLayout"));
 		Assert.assertEquals(
-			Long.valueOf(existingJournalContentSearch.getLayoutId()),
+			Long.valueOf(journalContentSearch.getLayoutId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingJournalContentSearch, "getOriginalLayoutId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingJournalContentSearch.getPortletId(),
-				ReflectionTestUtil.invoke(
-					existingJournalContentSearch, "getOriginalPortletId",
-					new Class<?>[0])));
-		Assert.assertTrue(
-			Objects.equals(
-				existingJournalContentSearch.getArticleId(),
-				ReflectionTestUtil.invoke(
-					existingJournalContentSearch, "getOriginalArticleId",
-					new Class<?>[0])));
+				journalContentSearch, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "layoutId"));
+		Assert.assertEquals(
+			journalContentSearch.getPortletId(),
+			ReflectionTestUtil.invoke(
+				journalContentSearch, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "portletId"));
+		Assert.assertEquals(
+			journalContentSearch.getArticleId(),
+			ReflectionTestUtil.invoke(
+				journalContentSearch, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "articleId"));
 	}
 
 	protected JournalContentSearch addJournalContentSearch() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		JournalContentSearch journalContentSearch = _persistence.create(pk);
+
+		journalContentSearch.setMvccVersion(RandomTestUtil.nextLong());
+
+		journalContentSearch.setCtCollectionId(RandomTestUtil.nextLong());
 
 		journalContentSearch.setGroupId(RandomTestUtil.nextLong());
 

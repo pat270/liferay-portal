@@ -67,7 +67,7 @@ public class ItemSelectorViewReturnTypeProviderHandlerTest {
 	public void testItemSelectorViewReturnTypeProviderHandler() {
 		TestItemSelectorView testItemSelectorView = new TestItemSelectorView();
 
-		ServiceRegistration<ItemSelectorView>
+		ServiceRegistration<ItemSelectorView<?>>
 			itemSelectorViewServiceRegistration = registerItemSelectorView(
 				testItemSelectorView, "test-view");
 
@@ -76,7 +76,7 @@ public class ItemSelectorViewReturnTypeProviderHandlerTest {
 				registerItemSelectorViewProvider(
 					new TestItemSelectorViewReturnTypeProvider(), "test-view");
 
-		List serviceRegistrations = new ArrayList<>();
+		List<ServiceRegistration<?>> serviceRegistrations = new ArrayList<>();
 
 		serviceRegistrations.add(itemSelectorViewServiceRegistration);
 		serviceRegistrations.add(
@@ -102,15 +102,16 @@ public class ItemSelectorViewReturnTypeProviderHandlerTest {
 		}
 	}
 
-	protected ServiceRegistration<ItemSelectorView> registerItemSelectorView(
-		ItemSelectorView itemSelectorView, String itemSelectorViewKey) {
+	protected ServiceRegistration<ItemSelectorView<?>> registerItemSelectorView(
+		ItemSelectorView<?> itemSelectorView, String itemSelectorViewKey) {
 
 		Dictionary<String, Object> properties = new Hashtable<>();
 
 		properties.put("item.selector.view.key", itemSelectorViewKey);
 
 		return _bundleContext.registerService(
-			ItemSelectorView.class, itemSelectorView, properties);
+			(Class<ItemSelectorView<?>>)(Class<?>)ItemSelectorView.class,
+			itemSelectorView, properties);
 	}
 
 	protected ServiceRegistration<ItemSelectorViewReturnTypeProvider>
@@ -128,7 +129,9 @@ public class ItemSelectorViewReturnTypeProviderHandlerTest {
 			itemSelectorViewReturnTypeProvider, properties);
 	}
 
-	private void _unregister(List<ServiceRegistration> serviceRegistrations) {
+	private void _unregister(
+		List<ServiceRegistration<?>> serviceRegistrations) {
+
 		serviceRegistrations.forEach(ServiceRegistration::unregister);
 	}
 

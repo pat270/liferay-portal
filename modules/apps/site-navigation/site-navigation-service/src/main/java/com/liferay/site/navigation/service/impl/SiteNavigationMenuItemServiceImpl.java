@@ -14,16 +14,30 @@
 
 package com.liferay.site.navigation.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.base.SiteNavigationMenuItemServiceBaseImpl;
 
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Pavel Savinov
  */
+@Component(
+	property = {
+		"json.web.service.context.name=sitenavigation",
+		"json.web.service.context.path=SiteNavigationMenuItem"
+	},
+	service = AopService.class
+)
 public class SiteNavigationMenuItemServiceImpl
 	extends SiteNavigationMenuItemServiceBaseImpl {
 
@@ -65,6 +79,18 @@ public class SiteNavigationMenuItemServiceImpl
 	}
 
 	@Override
+	public List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
+			long siteNavigationMenuId, long parentSiteNavigationMenuItemId)
+		throws PortalException {
+
+		_siteNavigationMenuModelResourcePermission.check(
+			getPermissionChecker(), siteNavigationMenuId, ActionKeys.VIEW);
+
+		return siteNavigationMenuItemLocalService.getSiteNavigationMenuItems(
+			siteNavigationMenuId, parentSiteNavigationMenuItemId);
+	}
+
+	@Override
 	public SiteNavigationMenuItem updateSiteNavigationMenuItem(
 			long siteNavigationMenuId, long parentSiteNavigationMenuItemId,
 			int order)
@@ -83,5 +109,11 @@ public class SiteNavigationMenuItemServiceImpl
 		return siteNavigationMenuItemLocalService.updateSiteNavigationMenuItem(
 			getUserId(), siteNavigationMenuId, typeSettings, serviceContext);
 	}
+
+	@Reference(
+		target = "(model.class.name=com.liferay.site.navigation.model.SiteNavigationMenu)"
+	)
+	private ModelResourcePermission<SiteNavigationMenu>
+		_siteNavigationMenuModelResourcePermission;
 
 }

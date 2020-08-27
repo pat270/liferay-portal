@@ -1,17 +1,30 @@
 {
 	"dependencies": {
-		"clay-button": "2.15.1",
-		"clay-multi-select": "2.15.1",
-		"clay-radio": "2.15.1",
-		"metal-component": "2.16.8",
-		"metal-soy": "2.16.8",
-		"metal-state": "2.16.8"
+		"@clayui/alert": "3.4.1",
+		"@clayui/button": "3.4.0",
+		"@clayui/css": "3.17.0",
+		"@clayui/form": "3.10.0",
+		"@clayui/icon": "3.0.5",
+		"@clayui/loading-indicator": "3.1.0",
+		"@clayui/modal": "3.6.5",
+		"asset-taglib": "*",
+		"clay-button": "2.21.4",
+		"clay-multi-select": "2.21.4",
+		"clay-radio": "2.21.4",
+		"clipboard": "2.0.4",
+		"frontend-js-react-web": "*",
+		"frontend-js-web": "*",
+		"prop-types": "15.7.2",
+		"react": "16.12.0",
+		"react-dom": "16.12.0"
 	},
 	"name": "document-library-web",
+	"private": true,
 	"scripts": {
 		"build": "liferay-npm-scripts build",
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format"
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix",
+		"test": "liferay-npm-scripts test"
 	},
-	"version": "5.0.0"
+	"version": "5.0.39"
 }

@@ -50,7 +50,7 @@ public class JS {
 		try {
 			s = URLDecoder.decode(s, StringPool.UTF8);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return s;
@@ -63,7 +63,7 @@ public class JS {
 		try {
 			s = URLEncoder.encode(s, StringPool.UTF8);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		// Adjust for JavaScript specific annoyances
@@ -72,14 +72,6 @@ public class JS {
 		s = StringUtil.replace(s, "%2B", "+");
 
 		return s;
-	}
-
-	/**
-	 * @deprecated As of Bunyan (6.0.x), replaced by {@link #encodeURIComponent}
-	 */
-	@Deprecated
-	public static String escape(String s) {
-		return encodeURIComponent(s);
 	}
 
 	public static String getSafeName(String name) {
@@ -116,7 +108,7 @@ public class JS {
 	}
 
 	public static String toScript(String[] array) {
-		StringBundler sb = new StringBundler(array.length * 4 + 2);
+		StringBundler sb = new StringBundler((array.length * 4) + 2);
 
 		sb.append(StringPool.OPEN_BRACKET);
 
@@ -133,14 +125,6 @@ public class JS {
 		sb.append(StringPool.CLOSE_BRACKET);
 
 		return sb.toString();
-	}
-
-	/**
-	 * @deprecated As of Bunyan (6.0.x), replaced by {@link #decodeURIComponent}
-	 */
-	@Deprecated
-	public static String unescape(String s) {
-		return decodeURIComponent(s);
 	}
 
 	private static final Pattern _pattern = Pattern.compile("%u[0-9a-fA-F]{4}");

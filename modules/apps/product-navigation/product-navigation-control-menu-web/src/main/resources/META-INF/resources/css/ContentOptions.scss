@@ -1,0 +1,28 @@
+@import 'atlas-variables';
+
+.sidebar-body__add-panel__content-options {
+	display: flex;
+
+	&-add {
+		margin-left: 16px;
+	}
+
+	&-list {
+		margin-left: auto;
+	}
+
+	&-select {
+		background-color: white;
+		border: 0;
+		color: $gray-600;
+		font-weight: 600;
+		width: 140px;
+	}
+
+	&-add,
+	&-list {
+		.lexicon-icon {
+			fill: $gray-600;
+		}
+	}
+}

@@ -14,14 +14,29 @@
 
 package com.liferay.asset.service.test;
 
-import com.liferay.portlet.usersadmin.util.OrganizationIndexer;
+import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.search.BaseIndexer;
+import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Summary;
+
+import java.util.Locale;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 
 import org.junit.Assert;
 
 /**
  * @author Michael C. Han
  */
-public class TestAssetIndexer extends OrganizationIndexer {
+public class TestAssetIndexer extends BaseIndexer<Organization> {
+
+	public static final String CLASS_NAME = TestAssetIndexer.class.getName();
+
+	@Override
+	public String getClassName() {
+		return CLASS_NAME;
+	}
 
 	@Override
 	public void reindex(String className, long classPK) {
@@ -32,6 +47,35 @@ public class TestAssetIndexer extends OrganizationIndexer {
 	public void setExpectedValues(String className, long classPK) {
 		_className = className;
 		_classPK = classPK;
+	}
+
+	@Override
+	protected void doDelete(Organization organization) {
+	}
+
+	@Override
+	protected Document doGetDocument(Organization organization) {
+		return null;
+	}
+
+	@Override
+	protected Summary doGetSummary(
+		Document document, Locale locale, String snippet,
+		PortletRequest portletRequest, PortletResponse portletResponse) {
+
+		return null;
+	}
+
+	@Override
+	protected void doReindex(Organization organization) {
+	}
+
+	@Override
+	protected void doReindex(String className, long classPK) {
+	}
+
+	@Override
+	protected void doReindex(String[] ids) {
 	}
 
 	private String _className;

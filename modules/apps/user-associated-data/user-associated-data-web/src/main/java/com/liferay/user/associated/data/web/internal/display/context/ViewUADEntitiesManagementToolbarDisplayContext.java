@@ -16,7 +16,7 @@ package com.liferay.user.associated.data.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -46,13 +46,13 @@ public class ViewUADEntitiesManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public ViewUADEntitiesManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		ViewUADEntitiesDisplay viewUADEntitiesDisplay) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			viewUADEntitiesDisplay.getSearchContainer());
 
 		_viewUADEntitiesDisplay = viewUADEntitiesDisplay;
@@ -60,29 +60,22 @@ public class ViewUADEntitiesManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							StringBundler.concat(
-								"javascript:", getNamespace(),
-								"doAnonymizeMultiple();"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "anonymize"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							StringBundler.concat(
-								"javascript:", getNamespace(),
-								"doDeleteMultiple();"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setHref(
+					StringBundler.concat(
+						"javascript:", getNamespace(),
+						"doAnonymizeMultiple();"));
+				dropdownItem.setLabel(LanguageUtil.get(request, "anonymize"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref(
+					StringBundler.concat(
+						"javascript:", getNamespace(), "doDeleteMultiple();"));
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+			}
+		).build();
 	}
 
 	@Override
@@ -142,9 +135,9 @@ public class ViewUADEntitiesManagementToolbarDisplayContext
 			portletURL = PortletURLUtil.clone(
 				portletURL, liferayPortletResponse);
 		}
-		catch (PortletException pe) {
+		catch (PortletException portletException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portletException, portletException);
 			}
 
 			portletURL = liferayPortletResponse.createRenderURL();

@@ -14,6 +14,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ICON_DOCUMENT_TITLE</td>
+	<td>//div[contains(@data-title,'${key_dmDocumentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LINK_TO_PAGE_NEXT_PAGE</td>
+	<td>//a[contains(@class,'collapse-icon')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>LINK_TO_PAGE_SELECT_PAGE_BUTTON</td>
 	<td>//button[contains(@id,'SelectButton')]</td>
 	<td></td>
@@ -77,17 +87,22 @@
 </tr>
 <tr>
 	<td>ENTRY_LIST_TITLE_ON_LIVE</td>
-	<td>//li[contains(@data-title,'${key_webContentTitle}')]//*[@data-qa-id='rowItemContent']//h2</td>
+	<td>//li[contains(@data-title,'${key_webContentTitle}')]//*[@data-qa-id='rowItemContent']//p</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENTRY_LIST_LAST_MODIFIED</td>
-	<td>//*[@data-qa-id='row' and contains(.,'${key_webContentTitle}')]//span[contains(.,'modified')]</td>
+	<td>//*[@data-qa-id='row' and contains(.,'${key_webContentTitle}')]//span[contains(.,'Modified')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENTRY_LIST_WORKFLOW_STATUS</td>
 	<td>//li[contains(@data-title,'${key_webContentTitle}')]//span[contains(@class,'label')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENTRY_LIST_WORKFLOW_TRANSLATIONE_STATUS</td>
+	<td>//li[contains(@data-title,'${key_webContentTitle}')]//span[contains(@class,'label-info')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -130,6 +145,11 @@
 <tr>
 	<td>SIDEBAR_BUTTON</td>
 	<td>//button[contains(@class,'btn-borderless') and contains(@id,'SidebarButton')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIDEBAR_TAG</td>
+	<td>//span//span[contains(.,'${key_tagName}')]</td>
 	<td></td>
 </tr>
 </tbody>

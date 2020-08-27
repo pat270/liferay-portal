@@ -1,18 +1,19 @@
 definition {
+
 	var userFirstName = "Test";
 	var userLastName = "Test";
 
 	@summary-ignore = "true"
 	macro runSmoke {
 		task ("Ensure that the super admin can add a Blank Site") {
-			ProductMenu.gotoPortlet(
+			ApplicationsMenu.gotoPortlet(
 				category = "Sites",
 				panel = "Control Panel",
 				portlet = "Sites");
 
 			Site.addBlankCP(siteName = "Site Name");
 
-			ProductMenu.gotoPortlet(
+			ApplicationsMenu.gotoPortlet(
 				category = "Sites",
 				panel = "Control Panel",
 				portlet = "Sites");
@@ -22,8 +23,8 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+			portlet = "Pages",
+			site = "Site Name");
 
 		SitePages.addPublicPage(pageName = "Test Page1");
 
@@ -34,11 +35,12 @@ definition {
 		var pageName = "Test Page1";
 		var portletBody = "Welcome to Liferay";
 		var portletName = "Hello World";
+		var siteName = "Site Name";
 
 		task ("Add a '${portletName}' portlet to the page named '${pageName}'") {
 			Navigator.gotoSitePage(
 				pageName = "${pageName}",
-				siteName = "Site Name");
+				siteName = "${siteName}");
 
 			Portlet.addPG(
 				i = "${i}",
@@ -52,13 +54,47 @@ definition {
 
 			Navigator.gotoSitePage(
 				pageName = "${pageName}",
-				siteName = "Site Name");
+				siteName = "${siteName}");
 
 			Portlet.viewTitle(portletName = "${portletName}");
 
 			Portlet.viewBody(
 				portletBody = "${portletBody}",
 				portletName = "${portletName}");
+		}
+
+		var collectionName = "Basic Components";
+		var contentPageName = "Test Content Page";
+		var fragmentId = "Heading";
+		var fragmentName = "Heading";
+
+		task ("Add a '${fragmentName}' fragment to the content page named '${contentPageName}'") {
+			task ("Create a Content Page") {
+				SitePages.openPagesAdmin(siteURLKey = "${siteName}");
+
+				ContentPages.addPage(pageName = "${contentPageName}");
+			}
+
+			task ("Add a basic '${fragmentName}' component") {
+				PageEditor.addFragment(
+					collectionName = "${collectionName}",
+					fragmentName = "${fragmentName}");
+			}
+
+			task ("Publish Content Page") {
+				PageEditor.clickPublish();
+			}
+
+			task ("Navigate to the content page") {
+				Navigator.gotoSitePage(
+					pageName = "${contentPageName}",
+					siteName = "${siteName}");
+			}
+
+			task ("Assert the '${fragmentName}' fragment is present") {
+				AssertElementPresent(locator1 = "//h1[contains(.,'Heading Example')]");
+			}
+
 		}
 
 		var portlet = "Web Content";
@@ -68,7 +104,6 @@ definition {
 
 			ProductMenu.gotoPortlet(
 				category = "Content &amp; Data",
-				panel = "Site Administration",
 				portlet = "${portlet}");
 
 			SiteAdmin.viewPortletTitle(portletTitle = "${portlet}");
@@ -92,7 +127,7 @@ definition {
 
 	@summary = "View default welcome page while signed in as '${userFirstName} ${userLastName}'"
 	macro viewWelcomePage {
-		AssertTextEquals(
+		AssertTextPresent(
 			locator1 = "HelloWorld#PORTLET_TITLE",
 			value1 = "Hello World");
 
@@ -100,4 +135,5 @@ definition {
 			locator1 = "HelloWorld#PORTLET_CONTENT",
 			value1 = "Welcome to Liferay");
 	}
+
 }

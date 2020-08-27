@@ -18,6 +18,7 @@ import com.liferay.headless.admin.user.client.function.UnsafeSupplier;
 import com.liferay.headless.admin.user.client.serdes.v1_0.OrganizationSerDes;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Generated;
@@ -27,7 +28,33 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class Organization {
+public class Organization implements Cloneable {
+
+	public static Organization toDTO(String json) {
+		return OrganizationSerDes.toDTO(json);
+	}
+
+	public Map<String, Map<String, String>> getActions() {
+		return actions;
+	}
+
+	public void setActions(Map<String, Map<String, String>> actions) {
+		this.actions = actions;
+	}
+
+	public void setActions(
+		UnsafeSupplier<Map<String, Map<String, String>>, Exception>
+			actionsUnsafeSupplier) {
+
+		try {
+			actions = actionsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Map<String, Map<String, String>> actions;
 
 	public String getComment() {
 		return comment;
@@ -50,27 +77,26 @@ public class Organization {
 
 	protected String comment;
 
-	public ContactInformation getContactInformation() {
-		return contactInformation;
+	public CustomField[] getCustomFields() {
+		return customFields;
 	}
 
-	public void setContactInformation(ContactInformation contactInformation) {
-		this.contactInformation = contactInformation;
+	public void setCustomFields(CustomField[] customFields) {
+		this.customFields = customFields;
 	}
 
-	public void setContactInformation(
-		UnsafeSupplier<ContactInformation, Exception>
-			contactInformationUnsafeSupplier) {
+	public void setCustomFields(
+		UnsafeSupplier<CustomField[], Exception> customFieldsUnsafeSupplier) {
 
 		try {
-			contactInformation = contactInformationUnsafeSupplier.get();
+			customFields = customFieldsUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected ContactInformation contactInformation;
+	protected CustomField[] customFields;
 
 	public Date getDateCreated() {
 		return dateCreated;
@@ -114,15 +140,15 @@ public class Organization {
 
 	protected Date dateModified;
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
-	public void setId(UnsafeSupplier<Long, Exception> idUnsafeSupplier) {
+	public void setId(UnsafeSupplier<String, Exception> idUnsafeSupplier) {
 		try {
 			id = idUnsafeSupplier.get();
 		}
@@ -131,7 +157,7 @@ public class Organization {
 		}
 	}
 
-	protected Long id;
+	protected String id;
 
 	public String getImage() {
 		return image;
@@ -237,6 +263,31 @@ public class Organization {
 
 	protected Integer numberOfOrganizations;
 
+	public OrganizationContactInformation getOrganizationContactInformation() {
+		return organizationContactInformation;
+	}
+
+	public void setOrganizationContactInformation(
+		OrganizationContactInformation organizationContactInformation) {
+
+		this.organizationContactInformation = organizationContactInformation;
+	}
+
+	public void setOrganizationContactInformation(
+		UnsafeSupplier<OrganizationContactInformation, Exception>
+			organizationContactInformationUnsafeSupplier) {
+
+		try {
+			organizationContactInformation =
+				organizationContactInformationUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected OrganizationContactInformation organizationContactInformation;
+
 	public Organization getParentOrganization() {
 		return parentOrganization;
 	}
@@ -279,6 +330,11 @@ public class Organization {
 	}
 
 	protected Service[] services;
+
+	@Override
+	public Organization clone() throws CloneNotSupportedException {
+		return (Organization)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

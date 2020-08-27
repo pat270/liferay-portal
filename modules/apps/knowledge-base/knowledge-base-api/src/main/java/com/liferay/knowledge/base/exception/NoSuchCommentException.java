@@ -16,12 +16,9 @@ package com.liferay.knowledge.base.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchCommentException extends NoSuchModelException {
 
 	public NoSuchCommentException() {
@@ -31,12 +28,12 @@ public class NoSuchCommentException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchCommentException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchCommentException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchCommentException(Throwable cause) {
-		super(cause);
+	public NoSuchCommentException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

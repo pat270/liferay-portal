@@ -14,12 +14,10 @@
 
 package com.liferay.source.formatter.checks.configuration;
 
-import com.liferay.source.formatter.checkstyle.util.AlloyMVCCheckstyleUtil;
 import com.liferay.source.formatter.util.CheckType;
-import com.liferay.source.formatter.util.SourceFormatterUtil;
 
 import com.puppycrawl.tools.checkstyle.api.FilterSet;
-import com.puppycrawl.tools.checkstyle.filters.SuppressElement;
+import com.puppycrawl.tools.checkstyle.filters.SuppressFilterElement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,9 +33,18 @@ public class SourceFormatterSuppressions {
 		CheckType checkType, String suppressionsFileLocation, String checkName,
 		String fileNameRegex) {
 
+		if (fileNameRegex == null) {
+			fileNameRegex = ".*";
+		}
+
+		if (!suppressionsFileLocation.endsWith(
+				"/test/resources/com/liferay/source/formatter/")) {
+
+			fileNameRegex = suppressionsFileLocation + fileNameRegex;
+		}
+
 		if (checkType.equals(CheckType.SOURCE_CHECK)) {
-			_addSourceCheckSuppression(
-				suppressionsFileLocation, checkName, fileNameRegex);
+			_addSourceCheckSuppression(checkName, fileNameRegex);
 		}
 		else {
 			_addCheckstyleSuppression(checkName, fileNameRegex);
@@ -49,38 +56,16 @@ public class SourceFormatterSuppressions {
 	}
 
 	public boolean isSuppressed(String sourceCheckName, String absolutePath) {
-		Map<String, List<String>> sourceCheckSuppressionsMap =
-			_sourceChecksSuppressionsMap.get(sourceCheckName);
+		List<String> fileNameRegexes = _sourceChecksSuppressionsMap.get(
+			sourceCheckName);
 
-		if (sourceCheckSuppressionsMap == null) {
+		if (fileNameRegexes == null) {
 			return false;
 		}
 
-		for (Map.Entry<String, List<String>> entry :
-				sourceCheckSuppressionsMap.entrySet()) {
-
-			String suppressionsFileLocation = entry.getKey();
-
-			if (!absolutePath.startsWith(suppressionsFileLocation) &&
-				!absolutePath.contains(
-					SourceFormatterUtil.SOURCE_FORMATTER_TEST_PATH)) {
-
-				continue;
-			}
-
-			List<String> fileNameRegexes = entry.getValue();
-
-			for (String fileNameRegex : fileNameRegexes) {
-				if (absolutePath.matches(".*" + fileNameRegex)) {
-					return true;
-				}
-
-				String fileName = AlloyMVCCheckstyleUtil.getSourceFileName(
-					absolutePath);
-
-				if (fileName.matches(".*" + fileNameRegex)) {
-					return true;
-				}
+		for (String fileNameRegex : fileNameRegexes) {
+			if (absolutePath.matches(".*" + fileNameRegex)) {
+				return true;
 			}
 		}
 
@@ -91,23 +76,15 @@ public class SourceFormatterSuppressions {
 		String checkName, String fileNameRegex) {
 
 		_checkstyleFilterSet.addFilter(
-			new SuppressElement(
+			new SuppressFilterElement(
 				fileNameRegex, checkName, null, null, null, null));
 	}
 
 	private void _addSourceCheckSuppression(
-		String suppressionsFileLocation, String checkName,
-		String fileNameRegex) {
+		String checkName, String fileNameRegex) {
 
-		Map<String, List<String>> sourceCheckSuppressionsMap =
-			_sourceChecksSuppressionsMap.get(checkName);
-
-		if (sourceCheckSuppressionsMap == null) {
-			sourceCheckSuppressionsMap = new HashMap<>();
-		}
-
-		List<String> fileNameRegexes = sourceCheckSuppressionsMap.get(
-			suppressionsFileLocation);
+		List<String> fileNameRegexes = _sourceChecksSuppressionsMap.get(
+			checkName);
 
 		if (fileNameRegexes == null) {
 			fileNameRegexes = new ArrayList<>();
@@ -115,14 +92,11 @@ public class SourceFormatterSuppressions {
 
 		fileNameRegexes.add(fileNameRegex);
 
-		sourceCheckSuppressionsMap.put(
-			suppressionsFileLocation, fileNameRegexes);
-
-		_sourceChecksSuppressionsMap.put(checkName, sourceCheckSuppressionsMap);
+		_sourceChecksSuppressionsMap.put(checkName, fileNameRegexes);
 	}
 
 	private final FilterSet _checkstyleFilterSet = new FilterSet();
-	private final Map<String, Map<String, List<String>>>
-		_sourceChecksSuppressionsMap = new HashMap<>();
+	private final Map<String, List<String>> _sourceChecksSuppressionsMap =
+		new HashMap<>();
 
 }

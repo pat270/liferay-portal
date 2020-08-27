@@ -1,55 +1,67 @@
-ckEditor.on(
-	'dialogShow',
-	function(event) {
-		var A = AUI();
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-		var MODIFIED = 'modified';
+ckEditor.on('dialogShow', (event) => {
+	var A = AUI();
 
-		var SELECTOR_HBOX_FIRST = '.cke_dialog_ui_hbox_first';
+	var MODIFIED = 'modified';
 
-		var dialog = event.data.definition.dialog;
+	var SELECTOR_HBOX_FIRST = '.cke_dialog_ui_hbox_first';
 
-		if (dialog.getName() == 'image') {
-			var lockButton = A.one('.cke_btn_locked');
+	var dialog = event.data.definition.dialog;
 
-			if (lockButton) {
-				var imageProperties = lockButton.ancestor(SELECTOR_HBOX_FIRST);
+	if (dialog.getName() == 'image') {
+		var lockButton = A.one('.cke_btn_locked');
 
-				if (imageProperties) {
-					imageProperties.hide();
-				}
-			}
+		if (lockButton) {
+			var imageProperties = lockButton.ancestor(SELECTOR_HBOX_FIRST);
 
-			var imagePreviewBox = A.one('.ImagePreviewBox');
-
-			if (imagePreviewBox) {
-				imagePreviewBox.setStyle('width', 410);
+			if (imageProperties) {
+				imageProperties.hide();
 			}
 		}
-		else if (dialog.getName() == 'cellProperties') {
-			var containerNode = A.one('#' + dialog.getElement('cellType').$.id);
 
-			if (!containerNode.getData(MODIFIED)) {
-				containerNode.one(SELECTOR_HBOX_FIRST).hide();
+		var imagePreviewBox = A.one('.ImagePreviewBox');
 
-				containerNode.one('.cke_dialog_ui_hbox_child').hide();
-
-				var cellTypeWrapper = containerNode.one('.cke_dialog_ui_hbox_last');
-
-				cellTypeWrapper.replaceClass('cke_dialog_ui_hbox_last', 'cke_dialog_ui_hbox_first');
-
-				cellTypeWrapper.setStyle('width', '100%');
-
-				cellTypeWrapper.all('tr').each(
-					function(item, index, collection) {
-						if (index > 0) {
-							item.hide();
-						}
-					}
-				);
-
-				containerNode.setData(MODIFIED, true);
-			}
+		if (imagePreviewBox) {
+			imagePreviewBox.setStyle('width', 410);
 		}
 	}
-);
+	else if (dialog.getName() == 'cellProperties') {
+		var containerNode = A.one('#' + dialog.getElement('cellType').$.id);
+
+		if (!containerNode.getData(MODIFIED)) {
+			containerNode.one(SELECTOR_HBOX_FIRST).hide();
+
+			containerNode.one('.cke_dialog_ui_hbox_child').hide();
+
+			var cellTypeWrapper = containerNode.one('.cke_dialog_ui_hbox_last');
+
+			cellTypeWrapper.replaceClass(
+				'cke_dialog_ui_hbox_last',
+				'cke_dialog_ui_hbox_first'
+			);
+
+			cellTypeWrapper.setStyle('width', '100%');
+
+			cellTypeWrapper.all('tr').each((item, index) => {
+				if (index > 0) {
+					item.hide();
+				}
+			});
+
+			containerNode.setData(MODIFIED, true);
+		}
+	}
+});

@@ -19,8 +19,8 @@ import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Field;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
 import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.dynamic.data.mapping.util.DDMFieldsCounter;
 import com.liferay.dynamic.data.mapping.util.FieldsToDDMFormValuesConverter;
@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -66,7 +67,6 @@ import com.liferay.portal.kernel.xml.XPath;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -85,64 +85,108 @@ import org.osgi.service.component.annotations.Reference;
 public class JournalConverterImpl implements JournalConverter {
 
 	public JournalConverterImpl() {
-		_ddmDataTypes = new HashMap<>();
+		_ddmDataTypes = HashMapBuilder.put(
+			"boolean", "boolean"
+		).put(
+			"document_library", "document-library"
+		).put(
+			"image", "image"
+		).put(
+			"link_to_layout", "link-to-page"
+		).put(
+			"list", "string"
+		).put(
+			"multi-list", "string"
+		).put(
+			"text", "string"
+		).put(
+			"text_area", "html"
+		).put(
+			"text_box", "string"
+		).build();
 
-		_ddmDataTypes.put("boolean", "boolean");
-		_ddmDataTypes.put("document_library", "document-library");
-		_ddmDataTypes.put("image", "image");
-		_ddmDataTypes.put("link_to_layout", "link-to-page");
-		_ddmDataTypes.put("list", "string");
-		_ddmDataTypes.put("multi-list", "string");
-		_ddmDataTypes.put("text", "string");
-		_ddmDataTypes.put("text_area", "html");
-		_ddmDataTypes.put("text_box", "string");
+		_ddmMetadataAttributes = HashMapBuilder.put(
+			"instructions", "tip"
+		).put(
+			"label", "label"
+		).put(
+			"predefinedValue", "predefinedValue"
+		).build();
 
-		_ddmMetadataAttributes = new HashMap<>();
+		_ddmTypesToJournalTypes = HashMapBuilder.put(
+			"checkbox", "boolean"
+		).put(
+			"ddm-documentlibrary", "document_library"
+		).put(
+			"ddm-image", "image"
+		).put(
+			"ddm-link-to-page", "link_to_layout"
+		).put(
+			"ddm-separator", "selection_break"
+		).put(
+			"ddm-text-html", "text_area"
+		).put(
+			"select", "list"
+		).put(
+			"text", "text"
+		).put(
+			"textarea", "text_box"
+		).build();
 
-		_ddmMetadataAttributes.put("instructions", "tip");
-		_ddmMetadataAttributes.put("label", "label");
-		_ddmMetadataAttributes.put("predefinedValue", "predefinedValue");
+		_journalTypesToDDMTypes = HashMapBuilder.put(
+			"boolean", "checkbox"
+		).put(
+			"document_library", "ddm-documentlibrary"
+		).put(
+			"image", "ddm-image"
+		).put(
+			"image_gallery", "ddm-documentlibrary"
+		).put(
+			"link_to_layout", "ddm-link-to-page"
+		).put(
+			"list", "select"
+		).put(
+			"multi-list", "select"
+		).put(
+			"selection_break", "ddm-separator"
+		).put(
+			"text", "text"
+		).put(
+			"text_area", "ddm-text-html"
+		).put(
+			"text_box", "textarea"
+		).build();
+	}
 
-		_ddmTypesToJournalTypes = new HashMap<>();
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getContent(DDMStructure, Fields, long)}
+	 */
+	@Deprecated
+	@Override
+	public String getContent(DDMStructure ddmStructure, Fields ddmFields)
+		throws Exception {
 
-		_ddmTypesToJournalTypes.put("checkbox", "boolean");
-		_ddmTypesToJournalTypes.put("ddm-documentlibrary", "document_library");
-		_ddmTypesToJournalTypes.put("ddm-image", "image");
-		_ddmTypesToJournalTypes.put("ddm-link-to-page", "link_to_layout");
-		_ddmTypesToJournalTypes.put("ddm-separator", "selection_break");
-		_ddmTypesToJournalTypes.put("ddm-text-html", "text_area");
-		_ddmTypesToJournalTypes.put("select", "list");
-		_ddmTypesToJournalTypes.put("text", "text");
-		_ddmTypesToJournalTypes.put("textarea", "text_box");
-
-		_journalTypesToDDMTypes = new HashMap<>();
-
-		_journalTypesToDDMTypes.put("boolean", "checkbox");
-		_journalTypesToDDMTypes.put("document_library", "ddm-documentlibrary");
-		_journalTypesToDDMTypes.put("image", "ddm-image");
-		_journalTypesToDDMTypes.put("image_gallery", "ddm-documentlibrary");
-		_journalTypesToDDMTypes.put("link_to_layout", "ddm-link-to-page");
-		_journalTypesToDDMTypes.put("list", "select");
-		_journalTypesToDDMTypes.put("multi-list", "select");
-		_journalTypesToDDMTypes.put("selection_break", "ddm-separator");
-		_journalTypesToDDMTypes.put("text", "text");
-		_journalTypesToDDMTypes.put("text_area", "ddm-text-html");
-		_journalTypesToDDMTypes.put("text_box", "textarea");
+		return getContent(ddmStructure, ddmFields, ddmStructure.getGroupId());
 	}
 
 	@Override
-	public String getContent(DDMStructure ddmStructure, Fields ddmFields)
+	public String getContent(
+			DDMStructure ddmStructure, Fields ddmFields, long groupId)
 		throws Exception {
 
 		Document document = SAXReaderUtil.createDocument();
 
 		Element rootElement = document.addElement("root");
 
-		String availableLocales = getAvailableLocales(ddmFields);
-
-		rootElement.addAttribute("available-locales", availableLocales);
+		rootElement.addAttribute(
+			"available-locales", getAvailableLocales(ddmFields));
 
 		Locale defaultLocale = ddmFields.getDefaultLocale();
+
+		if (!LanguageUtil.isAvailableLocale(groupId, defaultLocale)) {
+			defaultLocale = LocaleUtil.getSiteDefault();
+		}
 
 		rootElement.addAttribute(
 			"default-locale", LocaleUtil.toLanguageId(defaultLocale));
@@ -166,11 +210,13 @@ public class JournalConverterImpl implements JournalConverter {
 		}
 
 		try {
-			return XMLUtil.formatXML(document.asXML());
+			String content = XMLUtil.stripInvalidChars(document.asXML());
+
+			return XMLUtil.formatXML(content);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new ArticleContentException(
-				"Unable to read content with an XML parser", e);
+				"Unable to read content with an XML parser", exception);
 		}
 	}
 
@@ -211,8 +257,8 @@ public class JournalConverterImpl implements JournalConverter {
 		try {
 			return getDDMFields(ddmStructure, SAXReaderUtil.read(content));
 		}
-		catch (DocumentException de) {
-			throw new PortalException(de);
+		catch (DocumentException documentException) {
+			throw new PortalException(documentException);
 		}
 	}
 
@@ -400,7 +446,7 @@ public class JournalConverterImpl implements JournalConverter {
 		try {
 			return _http.decodeURL(url);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			return url;
 		}
 	}
@@ -454,8 +500,8 @@ public class JournalConverterImpl implements JournalConverter {
 
 			return fieldsDisplayValues.toArray(new String[0]);
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
 	}
 
@@ -501,7 +547,11 @@ public class JournalConverterImpl implements JournalConverter {
 				"language-id");
 
 			if (Validator.isNotNull(languageId)) {
-				locale = LocaleUtil.fromLanguageId(languageId);
+				locale = LocaleUtil.fromLanguageId(languageId, true, false);
+
+				if (locale == null) {
+					continue;
+				}
 
 				missingLanguageIds.remove(languageId);
 			}
@@ -560,9 +610,9 @@ public class JournalConverterImpl implements JournalConverter {
 						uuid, groupId);
 				}
 
-				serializable = jsonObject.toString();
+				serializable = dynamicContentElement.getText();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				return StringPool.BLANK;
 			}
 		}
@@ -608,7 +658,7 @@ public class JournalConverterImpl implements JournalConverter {
 
 				serializable = jsonObject.toString();
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				serializable = StringPool.BLANK;
 			}
 		}
@@ -788,6 +838,11 @@ public class JournalConverterImpl implements JournalConverter {
 
 				Serializable fieldValue = ddmField.getValue(locale, count);
 
+				if (fieldValue == null) {
+					fieldValue = ddmField.getValue(
+						ddmField.getDefaultLocale(), count);
+				}
+
 				String valueString = String.valueOf(fieldValue);
 
 				updateDynamicContentValue(
@@ -955,9 +1010,9 @@ public class JournalConverterImpl implements JournalConverter {
 			try {
 				jsonArray = JSONFactoryUtil.createJSONArray(fieldValue);
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to parse object", jsone);
+					_log.debug("Unable to parse object", jsonException);
 				}
 
 				return;
@@ -987,11 +1042,8 @@ public class JournalConverterImpl implements JournalConverter {
 			instanceId = StringUtil.randomString();
 		}
 
-		String fieldsDisplayValue = fieldName.concat(
-			DDM.INSTANCE_SEPARATOR
-		).concat(
-			instanceId
-		);
+		String fieldsDisplayValue = StringBundler.concat(
+			fieldName, DDM.INSTANCE_SEPARATOR, instanceId);
 
 		Field fieldsDisplayField = ddmFields.get(DDM.FIELDS_DISPLAY_NAME);
 

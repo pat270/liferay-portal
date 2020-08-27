@@ -37,6 +37,11 @@ public class CIFailureMessageGenerator extends BaseFailureMessageGenerator {
 		return Dom4JUtil.toCodeSnippetElement(snippet);
 	}
 
+	@Override
+	public boolean isGenericCIFailure() {
+		return true;
+	}
+
 	private static final String _TOKEN_CI_ERROR = "A CI failure has occurred.";
 
 }

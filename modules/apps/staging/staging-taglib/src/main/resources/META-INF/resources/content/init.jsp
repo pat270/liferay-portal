@@ -23,7 +23,6 @@ long exportImportConfigurationId = GetterUtil.getLong(request.getAttribute("life
 boolean showAllPortlets = GetterUtil.getBoolean(request.getAttribute("liferay-staging:content:showAllPortlets"));
 String type = GetterUtil.getString(request.getAttribute("liferay-staging:content:type"));
 
-DateRange dateRange = null;
 String defaultRange = null;
 long exportGroupId = groupId;
 
@@ -42,21 +41,25 @@ else {
 	}
 }
 
-dateRange = ExportImportDateUtil.getDateRange(renderRequest, exportGroupId, privateLayout, 0, null, defaultRange);
-
-Date startDate = dateRange.getStartDate();
-Date endDate = dateRange.getEndDate();
-
 List<Portlet> dataSiteLevelPortlets = ExportImportHelperUtil.getDataSiteLevelPortlets(company.getCompanyId(), false);
 
+DateRange dateRange = null;
 Map<String, Serializable> settingsMap = Collections.emptyMap();
 Map<String, String[]> parameterMap = Collections.emptyMap();
 
 ExportImportConfiguration exportImportConfiguration = ExportImportConfigurationLocalServiceUtil.fetchExportImportConfiguration(exportImportConfigurationId);
 
 if (exportImportConfiguration != null) {
+	dateRange = ExportImportDateUtil.getDateRange(exportImportConfiguration);
+
 	settingsMap = exportImportConfiguration.getSettingsMap();
 
 	parameterMap = (Map<String, String[]>)settingsMap.get("parameterMap");
 }
+else {
+	dateRange = ExportImportDateUtil.getDateRange(renderRequest, exportGroupId, privateLayout, 0, null, defaultRange);
+}
+
+Date startDate = dateRange.getStartDate();
+Date endDate = dateRange.getEndDate();
 %>

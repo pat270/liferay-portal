@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link MDRAction}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MDRAction
  * @generated
  */
-@ProviderType
 public class MDRActionWrapper
 	extends BaseModelWrapper<MDRAction>
 	implements MDRAction, ModelWrapper<MDRAction> {
@@ -46,6 +43,7 @@ public class MDRActionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("actionId", getActionId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +66,12 @@ public class MDRActionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -339,6 +343,16 @@ public class MDRActionWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this mdr action.
+	 *
+	 * @return the mvcc version of this mdr action
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -677,6 +691,16 @@ public class MDRActionWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this mdr action.
+	 *
+	 * @param mvccVersion the mvcc version of this mdr action
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the name of this mdr action.
 	 *
 	 * @param name the name of this mdr action
@@ -782,9 +806,9 @@ public class MDRActionWrapper
 	@Override
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties) {
+			typeSettingsUnicodeProperties) {
 
-		model.setTypeSettingsProperties(typeSettingsProperties);
+		model.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 	}
 
 	/**

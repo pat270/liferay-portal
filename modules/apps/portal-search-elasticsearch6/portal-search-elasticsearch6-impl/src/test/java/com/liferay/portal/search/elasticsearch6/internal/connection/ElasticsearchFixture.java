@@ -15,6 +15,7 @@
 package com.liferay.portal.search.elasticsearch6.internal.connection;
 
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SystemProperties;
@@ -28,7 +29,6 @@ import com.liferay.portal.util.FileImpl;
 import java.io.File;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -56,7 +56,7 @@ import org.osgi.framework.BundleContext;
  */
 public class ElasticsearchFixture implements ElasticsearchClientResolver {
 
-	public ElasticsearchFixture(Class clazz) {
+	public ElasticsearchFixture(Class<?> clazz) {
 		this(getSimpleName(clazz));
 	}
 
@@ -185,7 +185,7 @@ public class ElasticsearchFixture implements ElasticsearchClientResolver {
 			});
 	}
 
-	protected static String getSimpleName(Class clazz) {
+	protected static String getSimpleName(Class<?> clazz) {
 		while (clazz.isAnonymousClass()) {
 			clazz = clazz.getEnclosingClass();
 		}
@@ -251,15 +251,15 @@ public class ElasticsearchFixture implements ElasticsearchClientResolver {
 	protected Map<String, Object> createElasticsearchConfigurationProperties(
 		Map<String, Object> elasticsearchConfigurationProperties) {
 
-		Map<String, Object> map = new HashMap<>();
-
-		map.put("configurationPid", ElasticsearchConfiguration.class.getName());
-		map.put("httpCORSAllowOrigin", "*");
-		map.put("logExceptionsOnly", false);
-
-		map.putAll(elasticsearchConfigurationProperties);
-
-		return map;
+		return HashMapBuilder.<String, Object>put(
+			"configurationPid", ElasticsearchConfiguration.class.getName()
+		).put(
+			"httpCORSAllowOrigin", "*"
+		).put(
+			"logExceptionsOnly", false
+		).putAll(
+			elasticsearchConfigurationProperties
+		).build();
 	}
 
 	protected EmbeddedElasticsearchConnection createElasticsearchConnection() {

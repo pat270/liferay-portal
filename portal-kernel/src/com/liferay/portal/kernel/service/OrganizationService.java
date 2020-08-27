@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -42,6 +43,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -53,7 +55,7 @@ public interface OrganizationService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link OrganizationServiceUtil} to access the organization remote service. Add custom service methods to <code>com.liferay.portal.service.impl.OrganizationServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.OrganizationServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the organization remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link OrganizationServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**
@@ -319,7 +321,7 @@ public interface OrganizationService extends BaseService {
 	 * @param countryId the primary key of the organization's country
 	 * @param statusId the organization's workflow status
 	 * @param comments the comments about the organization
-	 * @param logo whether to update the ogranization's logo
+	 * @param hasLogo if the organization has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param site whether the organization is to be associated with a main
 	 site
@@ -337,7 +339,7 @@ public interface OrganizationService extends BaseService {
 	public Organization updateOrganization(
 			long organizationId, long parentOrganizationId, String name,
 			String type, long regionId, long countryId, long statusId,
-			String comments, boolean logo, byte[] logoBytes, boolean site,
+			String comments, boolean hasLogo, byte[] logoBytes, boolean site,
 			List<Address> addresses, List<EmailAddress> emailAddresses,
 			List<OrgLabor> orgLabors, List<Phone> phones,
 			List<Website> websites, ServiceContext serviceContext)

@@ -29,8 +29,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
-import java.io.InputStream;
-
 import java.util.Date;
 import java.util.List;
 
@@ -57,25 +55,9 @@ public interface BlogsEntryService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link BlogsEntryServiceUtil} to access the blogs entry remote service. Add custom service methods to <code>com.liferay.blogs.service.impl.BlogsEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.blogs.service.impl.BlogsEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the blogs entry remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link BlogsEntryServiceUtil} if injection and service tracking are not available.
 	 */
 	public Folder addAttachmentsFolder(long groupId) throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #addEntry(String,
-	 String, String, String, int, int, int, int, int, boolean,
-	 boolean, String[], String, ImageSelector, ImageSelector,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public BlogsEntry addEntry(
-			String title, String description, String content,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, boolean allowPingbacks,
-			boolean allowTrackbacks, String[] trackbacks, boolean smallImage,
-			String smallImageURL, String smallImageFileName,
-			InputStream smallImageInputStream, ServiceContext serviceContext)
-		throws PortalException;
 
 	public BlogsEntry addEntry(
 			String title, String subtitle, String description, String content,
@@ -141,7 +123,7 @@ public interface BlogsEntryService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<BlogsEntry> getGroupEntries(
 		long groupId, int status, int start, int end,
-		OrderByComparator<BlogsEntry> obc);
+		OrderByComparator<BlogsEntry> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getGroupEntriesCount(long groupId, Date displayDate, int status);
@@ -164,12 +146,12 @@ public interface BlogsEntryService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<BlogsEntry> getGroupUserEntries(
 		long groupId, long userId, int status, int start, int end,
-		OrderByComparator<BlogsEntry> obc);
+		OrderByComparator<BlogsEntry> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<BlogsEntry> getGroupUserEntries(
 		long groupId, long userId, int[] statuses, int start, int end,
-		OrderByComparator<BlogsEntry> obc);
+		OrderByComparator<BlogsEntry> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getGroupUserEntriesCount(long groupId, long userId, int status);
@@ -204,22 +186,6 @@ public interface BlogsEntryService extends BaseService {
 	public void subscribe(long groupId) throws PortalException;
 
 	public void unsubscribe(long groupId) throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
-	 String, String, String, String, int, int, int, int, int,
-	 boolean, boolean, String[], String, ImageSelector,
-	 ImageSelector, ServiceContext)}
-	 */
-	@Deprecated
-	public BlogsEntry updateEntry(
-			long entryId, String title, String description, String content,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, boolean allowPingbacks,
-			boolean allowTrackbacks, String[] trackbacks, boolean smallImage,
-			String smallImageURL, String smallImageFileName,
-			InputStream smallImageInputStream, ServiceContext serviceContext)
-		throws PortalException;
 
 	public BlogsEntry updateEntry(
 			long entryId, String title, String subtitle, String description,

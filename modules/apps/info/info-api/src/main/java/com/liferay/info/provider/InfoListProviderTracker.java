@@ -19,8 +19,11 @@ import java.util.List;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * @author Eudaldo Alonso
+ * @author     Eudaldo Alonso
+ * @deprecated As of Mueller (7.2.x), moved to {@link
+ *             com.liferay.info.list.provider.InfoListProviderTracker}
  */
+@Deprecated
 @ProviderType
 public interface InfoListProviderTracker {
 

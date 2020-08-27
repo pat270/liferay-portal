@@ -14,8 +14,7 @@
 
 package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -32,10 +31,10 @@ import com.liferay.portal.kernel.service.persistence.impl.NestedSetsTreeManager;
 import com.liferay.portal.kernel.service.persistence.impl.PersistenceNestedSetsTreeManager;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.tools.service.builder.test.exception.NoSuchNestedSetsTreeEntryException;
 import com.liferay.portal.tools.service.builder.test.model.NestedSetsTreeEntry;
+import com.liferay.portal.tools.service.builder.test.model.NestedSetsTreeEntryTable;
 import com.liferay.portal.tools.service.builder.test.model.impl.NestedSetsTreeEntryImpl;
 import com.liferay.portal.tools.service.builder.test.model.impl.NestedSetsTreeEntryModelImpl;
 import com.liferay.portal.tools.service.builder.test.service.persistence.NestedSetsTreeEntryPersistence;
@@ -44,12 +43,9 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -62,7 +58,6 @@ import java.util.Set;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class NestedSetsTreeEntryPersistenceImpl
 	extends BasePersistenceImpl<NestedSetsTreeEntry>
 	implements NestedSetsTreeEntryPersistence {
@@ -91,6 +86,11 @@ public class NestedSetsTreeEntryPersistenceImpl
 
 	public NestedSetsTreeEntryPersistenceImpl() {
 		setModelClass(NestedSetsTreeEntry.class);
+
+		setModelImplClass(NestedSetsTreeEntryImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(NestedSetsTreeEntryTable.INSTANCE);
 	}
 
 	/**
@@ -101,11 +101,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 	@Override
 	public void cacheResult(NestedSetsTreeEntry nestedSetsTreeEntry) {
 		entityCache.putResult(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class, nestedSetsTreeEntry.getPrimaryKey(),
 			nestedSetsTreeEntry);
-
-		nestedSetsTreeEntry.resetOriginalValues();
 	}
 
 	/**
@@ -117,14 +114,10 @@ public class NestedSetsTreeEntryPersistenceImpl
 	public void cacheResult(List<NestedSetsTreeEntry> nestedSetsTreeEntries) {
 		for (NestedSetsTreeEntry nestedSetsTreeEntry : nestedSetsTreeEntries) {
 			if (entityCache.getResult(
-					NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
 					NestedSetsTreeEntryImpl.class,
 					nestedSetsTreeEntry.getPrimaryKey()) == null) {
 
 				cacheResult(nestedSetsTreeEntry);
-			}
-			else {
-				nestedSetsTreeEntry.resetOriginalValues();
 			}
 		}
 	}
@@ -155,7 +148,6 @@ public class NestedSetsTreeEntryPersistenceImpl
 	@Override
 	public void clearCache(NestedSetsTreeEntry nestedSetsTreeEntry) {
 		entityCache.removeResult(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class, nestedSetsTreeEntry.getPrimaryKey());
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
@@ -169,9 +161,19 @@ public class NestedSetsTreeEntryPersistenceImpl
 
 		for (NestedSetsTreeEntry nestedSetsTreeEntry : nestedSetsTreeEntries) {
 			entityCache.removeResult(
-				NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
 				NestedSetsTreeEntryImpl.class,
 				nestedSetsTreeEntry.getPrimaryKey());
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(NestedSetsTreeEntryImpl.class, primaryKey);
 		}
 	}
 
@@ -236,11 +238,11 @@ public class NestedSetsTreeEntryPersistenceImpl
 
 			return remove(nestedSetsTreeEntry);
 		}
-		catch (NoSuchNestedSetsTreeEntryException nsee) {
-			throw nsee;
+		catch (NoSuchNestedSetsTreeEntryException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -278,8 +280,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 				session.delete(nestedSetsTreeEntry);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -335,15 +337,20 @@ public class NestedSetsTreeEntryPersistenceImpl
 							nestedSetsTreeEntry.
 								getParentNestedSetsTreeEntryId()));
 				}
-				else if (nestedSetsTreeEntry.getParentNestedSetsTreeEntryId() !=
-							nestedSetsTreeEntryModelImpl.
-								getOriginalParentNestedSetsTreeEntryId()) {
+				else if ((nestedSetsTreeEntryModelImpl.getColumnOriginalValue(
+							"parentNestedSetsTreeEntryId") != null) &&
+						 !Objects.equals(
+							 nestedSetsTreeEntry.
+								 getParentNestedSetsTreeEntryId(),
+							 nestedSetsTreeEntryModelImpl.
+								 getColumnOriginalValue(
+									 "parentNestedSetsTreeEntryId"))) {
 
 					nestedSetsTreeManager.move(
 						nestedSetsTreeEntry,
 						fetchByPrimaryKey(
-							nestedSetsTreeEntryModelImpl.
-								getOriginalParentNestedSetsTreeEntryId()),
+							nestedSetsTreeEntryModelImpl.getColumnOriginalValue(
+								"parentNestedSetsTreeEntryId")),
 						fetchByPrimaryKey(
 							nestedSetsTreeEntry.
 								getParentNestedSetsTreeEntryId()));
@@ -364,8 +371,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 					nestedSetsTreeEntry);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -380,7 +387,6 @@ public class NestedSetsTreeEntryPersistenceImpl
 		}
 
 		entityCache.putResult(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class, nestedSetsTreeEntry.getPrimaryKey(),
 			nestedSetsTreeEntry, false);
 
@@ -431,168 +437,12 @@ public class NestedSetsTreeEntryPersistenceImpl
 	/**
 	 * Returns the nested sets tree entry with the primary key or returns <code>null</code> if it could not be found.
 	 *
-	 * @param primaryKey the primary key of the nested sets tree entry
-	 * @return the nested sets tree entry, or <code>null</code> if a nested sets tree entry with the primary key could not be found
-	 */
-	@Override
-	public NestedSetsTreeEntry fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryImpl.class, primaryKey);
-
-		if (serializable == nullModel) {
-			return null;
-		}
-
-		NestedSetsTreeEntry nestedSetsTreeEntry =
-			(NestedSetsTreeEntry)serializable;
-
-		if (nestedSetsTreeEntry == null) {
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				nestedSetsTreeEntry = (NestedSetsTreeEntry)session.get(
-					NestedSetsTreeEntryImpl.class, primaryKey);
-
-				if (nestedSetsTreeEntry != null) {
-					cacheResult(nestedSetsTreeEntry);
-				}
-				else {
-					entityCache.putResult(
-						NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-						NestedSetsTreeEntryImpl.class, primaryKey, nullModel);
-				}
-			}
-			catch (Exception e) {
-				entityCache.removeResult(
-					NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-					NestedSetsTreeEntryImpl.class, primaryKey);
-
-				throw processException(e);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return nestedSetsTreeEntry;
-	}
-
-	/**
-	 * Returns the nested sets tree entry with the primary key or returns <code>null</code> if it could not be found.
-	 *
 	 * @param nestedSetsTreeEntryId the primary key of the nested sets tree entry
 	 * @return the nested sets tree entry, or <code>null</code> if a nested sets tree entry with the primary key could not be found
 	 */
 	@Override
 	public NestedSetsTreeEntry fetchByPrimaryKey(long nestedSetsTreeEntryId) {
 		return fetchByPrimaryKey((Serializable)nestedSetsTreeEntryId);
-	}
-
-	@Override
-	public Map<Serializable, NestedSetsTreeEntry> fetchByPrimaryKeys(
-		Set<Serializable> primaryKeys) {
-
-		if (primaryKeys.isEmpty()) {
-			return Collections.emptyMap();
-		}
-
-		Map<Serializable, NestedSetsTreeEntry> map =
-			new HashMap<Serializable, NestedSetsTreeEntry>();
-
-		if (primaryKeys.size() == 1) {
-			Iterator<Serializable> iterator = primaryKeys.iterator();
-
-			Serializable primaryKey = iterator.next();
-
-			NestedSetsTreeEntry nestedSetsTreeEntry = fetchByPrimaryKey(
-				primaryKey);
-
-			if (nestedSetsTreeEntry != null) {
-				map.put(primaryKey, nestedSetsTreeEntry);
-			}
-
-			return map;
-		}
-
-		Set<Serializable> uncachedPrimaryKeys = null;
-
-		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(
-				NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-				NestedSetsTreeEntryImpl.class, primaryKey);
-
-			if (serializable != nullModel) {
-				if (serializable == null) {
-					if (uncachedPrimaryKeys == null) {
-						uncachedPrimaryKeys = new HashSet<Serializable>();
-					}
-
-					uncachedPrimaryKeys.add(primaryKey);
-				}
-				else {
-					map.put(primaryKey, (NestedSetsTreeEntry)serializable);
-				}
-			}
-		}
-
-		if (uncachedPrimaryKeys == null) {
-			return map;
-		}
-
-		StringBundler query = new StringBundler(
-			uncachedPrimaryKeys.size() * 2 + 1);
-
-		query.append(_SQL_SELECT_NESTEDSETSTREEENTRY_WHERE_PKS_IN);
-
-		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append((long)primaryKey);
-
-			query.append(",");
-		}
-
-		query.setIndex(query.index() - 1);
-
-		query.append(")");
-
-		String sql = query.toString();
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			Query q = session.createQuery(sql);
-
-			for (NestedSetsTreeEntry nestedSetsTreeEntry :
-					(List<NestedSetsTreeEntry>)q.list()) {
-
-				map.put(
-					nestedSetsTreeEntry.getPrimaryKeyObj(),
-					nestedSetsTreeEntry);
-
-				cacheResult(nestedSetsTreeEntry);
-
-				uncachedPrimaryKeys.remove(
-					nestedSetsTreeEntry.getPrimaryKeyObj());
-			}
-
-			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(
-					NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-					NestedSetsTreeEntryImpl.class, primaryKey, nullModel);
-			}
-		}
-		catch (Exception e) {
-			throw processException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-
-		return map;
 	}
 
 	/**
@@ -609,7 +459,7 @@ public class NestedSetsTreeEntryPersistenceImpl
 	 * Returns a range of all the nested sets tree entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>NestedSetsTreeEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>NestedSetsTreeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of nested sets tree entries
@@ -625,7 +475,7 @@ public class NestedSetsTreeEntryPersistenceImpl
 	 * Returns an ordered range of all the nested sets tree entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>NestedSetsTreeEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>NestedSetsTreeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of nested sets tree entries
@@ -645,66 +495,63 @@ public class NestedSetsTreeEntryPersistenceImpl
 	 * Returns an ordered range of all the nested sets tree entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>NestedSetsTreeEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>NestedSetsTreeEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of nested sets tree entries
 	 * @param end the upper bound of the range of nested sets tree entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of nested sets tree entries
 	 */
 	@Override
 	public List<NestedSetsTreeEntry> findAll(
 		int start, int end,
 		OrderByComparator<NestedSetsTreeEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<NestedSetsTreeEntry> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<NestedSetsTreeEntry>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_NESTEDSETSTREEENTRY);
+				sb.append(_SQL_SELECT_NESTEDSETSTREEENTRY);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_NESTEDSETSTREEENTRY;
 
-				if (pagination) {
-					sql = sql.concat(
-						NestedSetsTreeEntryModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(NestedSetsTreeEntryModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -712,29 +559,19 @@ public class NestedSetsTreeEntryPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<NestedSetsTreeEntry>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<NestedSetsTreeEntry>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<NestedSetsTreeEntry>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -771,18 +608,16 @@ public class NestedSetsTreeEntryPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_NESTEDSETSTREEENTRY);
+				Query query = session.createQuery(
+					_SQL_COUNT_NESTEDSETSTREEENTRY);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -790,6 +625,21 @@ public class NestedSetsTreeEntryPersistenceImpl
 		}
 
 		return count.intValue();
+	}
+
+	@Override
+	protected EntityCache getEntityCache() {
+		return entityCache;
+	}
+
+	@Override
+	protected String getPKDBName() {
+		return "nestedSetsTreeEntryId";
+	}
+
+	@Override
+	protected String getSelectSQL() {
+		return _SQL_SELECT_NESTEDSETSTREEENTRY;
 	}
 
 	@Override
@@ -816,11 +666,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 				finderCache.putResult(
 					_finderPathWithPaginationCountAncestors, finderArgs, count);
 			}
-			catch (SystemException se) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountAncestors, finderArgs);
-
-				throw se;
+			catch (SystemException systemException) {
+				throw systemException;
 			}
 		}
 
@@ -847,11 +694,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 					_finderPathWithPaginationCountDescendants, finderArgs,
 					count);
 			}
-			catch (SystemException se) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountDescendants, finderArgs);
-
-				throw se;
+			catch (SystemException systemException) {
+				throw systemException;
 			}
 		}
 
@@ -897,11 +741,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 				finderCache.putResult(
 					_finderPathWithPaginationGetAncestors, finderArgs, list);
 			}
-			catch (SystemException se) {
-				finderCache.removeResult(
-					_finderPathWithPaginationGetAncestors, finderArgs);
-
-				throw se;
+			catch (SystemException systemException) {
+				throw systemException;
 			}
 		}
 
@@ -948,11 +789,8 @@ public class NestedSetsTreeEntryPersistenceImpl
 				finderCache.putResult(
 					_finderPathWithPaginationGetDescendants, finderArgs, list);
 			}
-			catch (SystemException se) {
-				finderCache.removeResult(
-					_finderPathWithPaginationGetDescendants, finderArgs);
-
-				throw se;
+			catch (SystemException systemException) {
+				throw systemException;
 			}
 		}
 
@@ -985,20 +823,21 @@ public class NestedSetsTreeEntryPersistenceImpl
 					session.flush();
 				}
 
-				SQLQuery selectQuery = session.createSQLQuery(
+				SQLQuery selectSQLQuery = session.createSQLQuery(
 					"SELECT nestedSetsTreeEntryId FROM NestedSetsTreeEntry WHERE groupId = ? AND parentNestedSetsTreeEntryId = ? ORDER BY nestedSetsTreeEntryId ASC");
 
-				selectQuery.addScalar(
+				selectSQLQuery.addScalar(
 					"nestedSetsTreeEntryId",
 					com.liferay.portal.kernel.dao.orm.Type.LONG);
 
-				SQLQuery updateQuery = session.createSQLQuery(
+				SQLQuery updateSQLQuery = session.createSQLQuery(
 					"UPDATE NestedSetsTreeEntry SET leftNestedSetsTreeEntryId = ?, rightNestedSetsTreeEntryId = ? WHERE nestedSetsTreeEntryId = ?");
 
-				rebuildTree(session, selectQuery, updateQuery, groupId, 0, 0);
+				rebuildTree(
+					session, selectSQLQuery, updateSQLQuery, groupId, 0, 0);
 			}
-			catch (Exception e) {
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1019,20 +858,20 @@ public class NestedSetsTreeEntryPersistenceImpl
 		try {
 			session = openSession();
 
-			SQLQuery q = session.createSynchronizedSQLQuery(
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
 				"SELECT COUNT(*) AS COUNT_VALUE FROM NestedSetsTreeEntry WHERE groupId = ? AND (leftNestedSetsTreeEntryId = 0 OR leftNestedSetsTreeEntryId IS NULL OR rightNestedSetsTreeEntryId = 0 OR rightNestedSetsTreeEntryId IS NULL)");
 
-			q.addScalar(
+			sqlQuery.addScalar(
 				COUNT_COLUMN_NAME, com.liferay.portal.kernel.dao.orm.Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
+			queryPos.add(groupId);
 
-			return (Long)q.uniqueResult();
+			return (Long)sqlQuery.uniqueResult();
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1040,33 +879,33 @@ public class NestedSetsTreeEntryPersistenceImpl
 	}
 
 	protected long rebuildTree(
-		Session session, SQLQuery selectQuery, SQLQuery updateQuery,
+		Session session, SQLQuery selectSQLQuery, SQLQuery updateSQLQuery,
 		long groupId, long parentNestedSetsTreeEntryId,
 		long leftNestedSetsTreeEntryId) {
 
 		long rightNestedSetsTreeEntryId = leftNestedSetsTreeEntryId + 1;
 
-		QueryPos qPos = QueryPos.getInstance(selectQuery);
+		QueryPos queryPos = QueryPos.getInstance(selectSQLQuery);
 
-		qPos.add(groupId);
-		qPos.add(parentNestedSetsTreeEntryId);
+		queryPos.add(groupId);
+		queryPos.add(parentNestedSetsTreeEntryId);
 
-		List<Long> nestedSetsTreeEntryIds = selectQuery.list();
+		List<Long> nestedSetsTreeEntryIds = selectSQLQuery.list();
 
 		for (long nestedSetsTreeEntryId : nestedSetsTreeEntryIds) {
 			rightNestedSetsTreeEntryId = rebuildTree(
-				session, selectQuery, updateQuery, groupId,
+				session, selectSQLQuery, updateSQLQuery, groupId,
 				nestedSetsTreeEntryId, rightNestedSetsTreeEntryId);
 		}
 
 		if (parentNestedSetsTreeEntryId > 0) {
-			qPos = QueryPos.getInstance(updateQuery);
+			queryPos = QueryPos.getInstance(updateSQLQuery);
 
-			qPos.add(leftNestedSetsTreeEntryId);
-			qPos.add(rightNestedSetsTreeEntryId);
-			qPos.add(parentNestedSetsTreeEntryId);
+			queryPos.add(leftNestedSetsTreeEntryId);
+			queryPos.add(rightNestedSetsTreeEntryId);
+			queryPos.add(parentNestedSetsTreeEntryId);
 
-			updateQuery.executeUpdate();
+			updateSQLQuery.executeUpdate();
 		}
 
 		return rightNestedSetsTreeEntryId + 1;
@@ -1077,43 +916,33 @@ public class NestedSetsTreeEntryPersistenceImpl
 	 */
 	public void afterPropertiesSet() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationCountAncestors = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countAncestors",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countAncestors",
 			new String[] {
 				Long.class.getName(), Long.class.getName(), Long.class.getName()
 			});
 
 		_finderPathWithPaginationCountDescendants = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countDescendants",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countDescendants",
 			new String[] {
 				Long.class.getName(), Long.class.getName(), Long.class.getName()
 			});
 
 		_finderPathWithPaginationGetAncestors = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "getAncestors",
 			new String[] {
@@ -1121,8 +950,6 @@ public class NestedSetsTreeEntryPersistenceImpl
 			});
 
 		_finderPathWithPaginationGetDescendants = new FinderPath(
-			NestedSetsTreeEntryModelImpl.ENTITY_CACHE_ENABLED,
-			NestedSetsTreeEntryModelImpl.FINDER_CACHE_ENABLED,
 			NestedSetsTreeEntryImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "getDescendants",
 			new String[] {
@@ -1152,9 +979,6 @@ public class NestedSetsTreeEntryPersistenceImpl
 
 	private static final String _SQL_SELECT_NESTEDSETSTREEENTRY =
 		"SELECT nestedSetsTreeEntry FROM NestedSetsTreeEntry nestedSetsTreeEntry";
-
-	private static final String _SQL_SELECT_NESTEDSETSTREEENTRY_WHERE_PKS_IN =
-		"SELECT nestedSetsTreeEntry FROM NestedSetsTreeEntry nestedSetsTreeEntry WHERE nestedSetsTreeEntryId IN (";
 
 	private static final String _SQL_COUNT_NESTEDSETSTREEENTRY =
 		"SELECT COUNT(nestedSetsTreeEntry) FROM NestedSetsTreeEntry nestedSetsTreeEntry";

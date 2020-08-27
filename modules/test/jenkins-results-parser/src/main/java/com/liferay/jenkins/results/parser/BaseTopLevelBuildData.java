@@ -153,15 +153,15 @@ public abstract class BaseTopLevelBuildData
 			buildProperties = JenkinsResultsParserUtil.getBuildProperties(
 				false);
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 
 		String cohortName = getCohortName();
 
 		List<JenkinsMaster> jenkinsMasters =
 			JenkinsResultsParserUtil.getJenkinsMasters(
-				buildProperties, cohortName);
+				buildProperties, JenkinsMaster.SLAVE_RAM_DEFAULT, cohortName);
 
 		List<String> slaves = JenkinsResultsParserUtil.getSlaves(
 			buildProperties, cohortName + "-[1-9]{1}[0-9]?");

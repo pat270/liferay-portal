@@ -21,32 +21,29 @@ import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBInspector;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
-import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionLocalServiceUtil;
-import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalServiceUtil;
+import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionLocalService;
+import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalService;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 
-import java.io.IOException;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import java.util.function.BiConsumer;
@@ -61,6 +58,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Inácio Nery
  */
+@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class UpgradeKaleoDefinitionVersionTest {
 
@@ -71,52 +69,54 @@ public class UpgradeKaleoDefinitionVersionTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_company1 = CompanyTestUtil.addCompany();
-		_company2 = CompanyTestUtil.addCompany();
 		_name = StringUtil.randomString();
 		_timestamp = new Timestamp(System.currentTimeMillis());
 
 		_db = DBManagerUtil.getDB();
 
-		setUpUpgradeKaleoDefinitionVersion();
+		_setUpUpgradeKaleoDefinitionVersion();
 
-		setUpOldColumnsAndIndexes();
+		_setUpOldColumnsAndIndexes();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		deleteKaleoDefinitionVersion(_name);
+		_deleteKaleoDefinitionVersion(_name);
 	}
 
 	@Test
 	public void testCreateKaleoDefinitionVersion() throws Exception {
-		addKaleoDefinition(
-			_company1.getCompanyId(), _company1.getGroupId(), _name, 1);
-		addKaleoDefinition(
-			_company1.getCompanyId(), _company1.getGroupId(), _name, 2);
-		addKaleoDefinition(
-			_company2.getCompanyId(), _company2.getGroupId(), _name, 3);
+		Company company1 = CompanyTestUtil.addCompany();
+		Company company2 = CompanyTestUtil.addCompany();
+
+		_addKaleoDefinition(
+			company1.getCompanyId(), company1.getGroupId(), _name, 1);
+		_addKaleoDefinition(
+			company1.getCompanyId(), company1.getGroupId(), _name, 2);
+		_addKaleoDefinition(
+			company2.getCompanyId(), company2.getGroupId(), _name, 3);
 
 		_upgradeKaleoDefinitionVersion.upgrade();
 
-		getKaleoDefinition(_company1.getCompanyId(), _name);
-		getKaleoDefinitionVersion(_company1.getCompanyId(), _name, 1);
-		getKaleoDefinitionVersion(_company1.getCompanyId(), _name, 2);
-		getKaleoDefinition(_company2.getCompanyId(), _name);
-		getKaleoDefinitionVersion(_company2.getCompanyId(), _name, 3);
+		_getKaleoDefinition(company1.getCompanyId(), _name);
+		_getKaleoDefinitionVersion(company1.getCompanyId(), _name, 1);
+		_getKaleoDefinitionVersion(company1.getCompanyId(), _name, 2);
+		_getKaleoDefinition(company2.getCompanyId(), _name);
+		_getKaleoDefinitionVersion(company2.getCompanyId(), _name, 3);
 	}
 
-	protected void addColumn(String table, String column) throws Exception {
-		addColumn(table, column, null);
+	private void _addColumn(String table, String column) throws Exception {
+		_addColumn(table, column, null);
 	}
 
-	protected void addColumn(
+	private void _addColumn(
 			String table, String column, BiConsumer<String, String> postProcess)
 		throws Exception {
 
 		if (!_dbInspector.hasColumn(table, column)) {
 			_db.runSQLTemplateString(
-				"alter table " + table + " add " + column + " LONG;", false,
+				StringBundler.concat(
+					"alter table ", table, " add ", column, " LONG;"),
 				true);
 
 			if (postProcess != null) {
@@ -125,26 +125,7 @@ public class UpgradeKaleoDefinitionVersionTest {
 		}
 	}
 
-	protected void addColumnAndIndex(String table, String column, String index)
-		throws Exception {
-
-		addColumn(
-			table, column,
-			(table2, column2) -> addIndex(table2, index, column2));
-	}
-
-	protected void addIndex(String table, String index, String... columns) {
-		try {
-			_db.runSQL(
-				"create index " + index + " on " + table + " (" +
-					StringUtil.merge(columns) + ");");
-		}
-		catch (IOException | SQLException e) {
-			throw new AssertionError(e);
-		}
-	}
-
-	protected void addKaleoDefinition(
+	private void _addKaleoDefinition(
 			long companyId, long groupId, String name, int version)
 		throws Exception {
 
@@ -184,105 +165,56 @@ public class UpgradeKaleoDefinitionVersionTest {
 		}
 	}
 
-	protected void deleteKaleoDefinitionVersion(String name) throws Exception {
+	private void _deleteKaleoDefinitionVersion(String name) throws Exception {
 		_db.runSQL(
 			"delete from KaleoDefinitionVersion where name = '" + name + "'");
 
 		_db.runSQL("delete from KaleoDefinition where name = '" + name + "'");
 	}
 
-	protected KaleoDefinition getKaleoDefinition(long companyId, String name)
-		throws PortalException {
+	private KaleoDefinition _getKaleoDefinition(long companyId, String name)
+		throws Exception {
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setCompanyId(companyId);
 
-		return KaleoDefinitionLocalServiceUtil.getKaleoDefinition(
+		return _kaleoDefinitionLocalService.getKaleoDefinition(
 			name, serviceContext);
 	}
 
-	protected KaleoDefinitionVersion getKaleoDefinitionVersion(
+	private KaleoDefinitionVersion _getKaleoDefinitionVersion(
 			long companyId, String name, int version)
-		throws PortalException {
+		throws Exception {
 
-		return KaleoDefinitionVersionLocalServiceUtil.getKaleoDefinitionVersion(
-			companyId, name, getVersion(version));
+		return _kaleoDefinitionVersionLocalService.getKaleoDefinitionVersion(
+			companyId, name, _getVersion(version));
 	}
 
-	protected String getVersion(int version) {
+	private String _getVersion(int version) {
 		return version + StringPool.PERIOD + 0;
 	}
 
-	protected void setUpOldColumnsAndIndexes() throws Exception {
+	private void _setUpOldColumnsAndIndexes() throws Exception {
 		try (Connection con = DataAccess.getConnection()) {
 			_dbInspector = new DBInspector(con);
 
-			addColumn("KaleoDefinition", "startKaleoNodeId");
-
-			addColumnAndIndex("KaleoAction", "kaleoDefinitionId", "IX_F95A622");
-			addColumnAndIndex(
-				"KaleoCondition", "kaleoDefinitionId", "IX_DC978A5D");
-			addColumnAndIndex(
-				"KaleoInstance", "kaleoDefinitionId", "IX_ACF16238");
-			addColumnAndIndex(
-				"KaleoInstanceToken", "kaleoDefinitionId", "IX_7BDB04B4");
-			addColumnAndIndex("KaleoLog", "kaleoDefinitionId", "IX_6C64B7D4");
-
-			addColumn(
-				"KaleoNode", "kaleoDefinitionId",
-				(table, column) -> {
-					addIndex("KaleoNode", "IX_32E94DD6", "kaleoDefinitionId");
-					addIndex(
-						"KaleoNode", "IX_F28C443E", "companyId",
-						"kaleoDefinitionId");
-				});
-
-			addColumnAndIndex(
-				"KaleoNotification", "kaleoDefinitionId", "IX_4B968E8D");
-			addColumnAndIndex(
-				"KaleoNotificationRecipient", "kaleoDefinitionId",
-				"IX_AA6697EA");
-			addColumnAndIndex("KaleoTask", "kaleoDefinitionId", "IX_3FFA633");
-			addColumnAndIndex(
-				"KaleoTaskAssignment", "kaleoDefinitionId", "IX_575C03A6");
-			addColumnAndIndex(
-				"KaleoTaskAssignmentInstance", "kaleoDefinitionId",
-				"IX_C851011");
-			addColumnAndIndex(
-				"KaleoTaskForm", "kaleoDefinitionId", "IX_60D1964F");
-			addColumnAndIndex(
-				"KaleoTaskFormInstance", "kaleoDefinitionId", "IX_B975E9BA");
-			addColumnAndIndex(
-				"KaleoTaskInstanceToken", "kaleoDefinitionId", "IX_608E9519");
-			addColumn("KaleoTimer", "kaleoDefinitionId");
-			addColumn("KaleoTimerInstanceToken", "kaleoDefinitionId");
-			addColumnAndIndex(
-				"KaleoTransition", "kaleoDefinitionId", "IX_479F3063");
+			_addColumn("KaleoDefinition", "startKaleoNodeId");
 
 			_dbInspector = null;
 		}
 	}
 
-	protected void setUpUpgradeKaleoDefinitionVersion() {
+	private void _setUpUpgradeKaleoDefinitionVersion() {
 		Registry registry = RegistryUtil.getRegistry();
 
 		UpgradeStepRegistrator upgradeStepRegistror = registry.getService(
-			"com.liferay.portal.workflow.kaleo.internal.upgrade." +
-				"KaleoServiceUpgrade");
+			registry.getServiceReference(
+				"com.liferay.portal.workflow.kaleo.internal.upgrade." +
+					"KaleoServiceUpgrade"));
 
 		upgradeStepRegistror.register(
 			new UpgradeStepRegistrator.Registry() {
-
-				@Override
-				public void register(
-					String bundleSymbolicName, String fromSchemaVersionString,
-					String toSchemaVersionString, UpgradeStep... upgradeSteps) {
-
-					register(
-						fromSchemaVersionString, toSchemaVersionString,
-						upgradeSteps);
-				}
 
 				@Override
 				public void register(
@@ -306,14 +238,16 @@ public class UpgradeKaleoDefinitionVersionTest {
 			});
 	}
 
-	@DeleteAfterTestRun
-	private Company _company1;
-
-	@DeleteAfterTestRun
-	private Company _company2;
-
 	private DB _db;
 	private DBInspector _dbInspector;
+
+	@Inject
+	private KaleoDefinitionLocalService _kaleoDefinitionLocalService;
+
+	@Inject
+	private KaleoDefinitionVersionLocalService
+		_kaleoDefinitionVersionLocalService;
+
 	private String _name;
 	private Timestamp _timestamp;
 	private UpgradeProcess _upgradeKaleoDefinitionVersion;

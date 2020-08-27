@@ -23,15 +23,13 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.facet.Facet;
-import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcherManager;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.search.test.util.AssertUtils;
-import com.liferay.portal.search.test.util.TermCollectorUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
@@ -64,6 +62,9 @@ public abstract class BaseFacetedSearcherTestCase {
 		journalArticleSearchFixture.tearDown();
 		userSearchFixture.tearDown();
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	@Rule
 	public TestName testName = new TestName();
@@ -99,21 +100,6 @@ public abstract class BaseFacetedSearcherTestCase {
 			documents.isEmpty());
 	}
 
-	protected void assertFrequencies(
-		String fieldName, SearchContext searchContext,
-		Map<String, Integer> expected) {
-
-		Map<String, Facet> facets = searchContext.getFacets();
-
-		Facet facet = facets.get(fieldName);
-
-		FacetCollector facetCollector = facet.getFacetCollector();
-
-		AssertUtils.assertEquals(
-			(String)searchContext.getAttribute("queryString"), expected,
-			TermCollectorUtil.toMap(facetCollector.getTermCollectors()));
-	}
-
 	protected void assertTags(
 		String keywords, Hits hits, Map<String, String> expected,
 		SearchContext searchContext) {
@@ -130,6 +116,23 @@ public abstract class BaseFacetedSearcherTestCase {
 	}
 
 	protected SearchContext getSearchContext(String keywords) throws Exception {
+		SearchContext searchContext = userSearchFixture.getSearchContext(
+			keywords);
+
+		Stream<Group> stream = _groups.stream();
+
+		long[] groupIds = stream.mapToLong(
+			Group::getGroupId
+		).toArray();
+
+		searchContext.setGroupIds(groupIds);
+
+		return searchContext;
+	}
+
+	protected SearchContext getSearchContextWithGroupIdsUnset(String keywords)
+		throws Exception {
+
 		return userSearchFixture.getSearchContext(keywords);
 	}
 

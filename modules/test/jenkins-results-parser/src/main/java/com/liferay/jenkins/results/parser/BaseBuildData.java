@@ -319,10 +319,10 @@ public abstract class BaseBuildData implements BuildData {
 			return false;
 		}
 
-		if (jsonObject.has("type")) {
-			if (type.equals(jsonObject.getString("type"))) {
-				return true;
-			}
+		if (jsonObject.has("type") &&
+			type.equals(jsonObject.getString("type"))) {
+
+			return true;
 		}
 
 		return false;
@@ -342,8 +342,8 @@ public abstract class BaseBuildData implements BuildData {
 					runID = jsonObject.getString("run_id");
 				}
 			}
-			catch (MalformedURLException murle) {
-				throw new RuntimeException(murle);
+			catch (MalformedURLException malformedURLException) {
+				throw new RuntimeException(malformedURLException);
 			}
 		}
 
@@ -495,8 +495,8 @@ public abstract class BaseBuildData implements BuildData {
 			return JenkinsResultsParserUtil.toJSONObject(
 				JenkinsResultsParserUtil.getLocalURL(buildURL + "/api/json"));
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 

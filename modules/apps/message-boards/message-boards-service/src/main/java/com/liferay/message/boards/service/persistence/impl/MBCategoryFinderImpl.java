@@ -14,20 +14,16 @@
 
 package com.liferay.message.boards.service.persistence.impl;
 
-import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.model.MBCategory;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.impl.MBCategoryImpl;
 import com.liferay.message.boards.model.impl.MBThreadImpl;
-import com.liferay.message.boards.service.MBMessageLocalService;
-import com.liferay.message.boards.service.MBThreadLocalService;
 import com.liferay.message.boards.service.persistence.MBCategoryFinder;
 import com.liferay.message.boards.service.persistence.MBCategoryUtil;
 import com.liferay.message.boards.service.persistence.MBThreadUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
-import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -40,10 +36,10 @@ import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.subscription.model.Subscription;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
@@ -52,10 +48,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Raymond Augé
  * @author Sergio González
  */
+@Component(service = MBCategoryFinder.class)
 public class MBCategoryFinderImpl
 	extends MBCategoryFinderBaseImpl implements MBCategoryFinder {
 
@@ -205,28 +205,28 @@ public class MBCategoryFinderImpl
 				sql, MBCategory.class.getName(), "MBCategory.categoryId",
 				groupId);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(parentCategoryId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(parentCategoryId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long count = itr.next();
+			while (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -235,8 +235,8 @@ public class MBCategoryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -255,17 +255,16 @@ public class MBCategoryFinderImpl
 			String sql = _customSQL.get(getClass(), COUNT_C_BY_S_G_U_P);
 
 			if (ArrayUtil.isEmpty(parentCategoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(MBCategory.parentCategoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(MBCategory.parentCategoryId = ?) AND");
 			}
 			else {
+				String mergedParentCategoryIds = StringUtil.merge(
+					parentCategoryIds, " OR MBCategory.parentCategoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "MBCategory.parentCategoryId = ?",
-					"MBCategory.parentCategoryId = " +
-						StringUtil.merge(
-							parentCategoryIds,
-							" OR MBCategory.parentCategoryId = "));
+					"MBCategory.parentCategoryId = " + mergedParentCategoryIds);
 			}
 
 			sql = updateSQL(sql, queryDefinition);
@@ -276,26 +275,26 @@ public class MBCategoryFinderImpl
 					groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(PortalUtil.getClassNameId(MBCategory.class.getName()));
-			qPos.add(groupId);
-			qPos.add(userId);
+			queryPos.add(_portal.getClassNameId(MBCategory.class.getName()));
+			queryPos.add(groupId);
+			queryPos.add(userId);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
 			int count = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long l = itr.next();
+			if (iterator.hasNext()) {
+				Long l = iterator.next();
 
 				if (l != null) {
 					count = l.intValue();
@@ -315,8 +314,8 @@ public class MBCategoryFinderImpl
 
 			return count;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -364,42 +363,42 @@ public class MBCategoryFinderImpl
 
 			sql = sb.toString();
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(categoryId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(categoryId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
-			qPos.add(groupId);
-			qPos.add(categoryId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(categoryId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
 			int count = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long l = itr.next();
+			while (iterator.hasNext()) {
+				Long l = iterator.next();
 
 				if (l != null) {
 					count += l.intValue();
@@ -408,8 +407,8 @@ public class MBCategoryFinderImpl
 
 			return count;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -457,33 +456,33 @@ public class MBCategoryFinderImpl
 			sql = _customSQL.replaceOrderBy(
 				sql, queryDefinition.getOrderByComparator());
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("modelId", Type.LONG);
-			q.addScalar("modelCategory", Type.LONG);
+			sqlQuery.addScalar("modelId", Type.LONG);
+			sqlQuery.addScalar("modelCategory", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(parentCategoryId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(parentCategoryId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
 			List<MBCategory> categories = new ArrayList<>();
 
-			Iterator<Object[]> itr = (Iterator<Object[]>)QueryUtil.iterate(
-				q, getDialect(), queryDefinition.getStart(),
+			Iterator<Object[]> iterator = (Iterator<Object[]>)QueryUtil.iterate(
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				long modelId = (Long)array[0];
 
@@ -494,8 +493,8 @@ public class MBCategoryFinderImpl
 
 			return categories;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -514,17 +513,16 @@ public class MBCategoryFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_C_BY_S_G_U_P);
 
 			if (ArrayUtil.isEmpty(parentCategoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(MBCategory.parentCategoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(MBCategory.parentCategoryId = ?) AND");
 			}
 			else {
+				String mergedParentCategoryIds = StringUtil.merge(
+					parentCategoryIds, " OR MBCategory.parentCategoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "MBCategory.parentCategoryId = ?",
-					"MBCategory.parentCategoryId = " +
-						StringUtil.merge(
-							parentCategoryIds,
-							" OR MBCategory.parentCategoryId = "));
+					"MBCategory.parentCategoryId = " + mergedParentCategoryIds);
 			}
 
 			sql = updateSQL(sql, queryDefinition);
@@ -535,22 +533,23 @@ public class MBCategoryFinderImpl
 					groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MBCategory", MBCategoryImpl.class);
+			sqlQuery.addEntity("MBCategory", MBCategoryImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(PortalUtil.getClassNameId(MBCategory.class.getName()));
-			qPos.add(groupId);
-			qPos.add(userId);
+			queryPos.add(_portal.getClassNameId(MBCategory.class.getName()));
+			queryPos.add(groupId);
+			queryPos.add(userId);
 
 			if (queryDefinition.getStatus() != WorkflowConstants.STATUS_ANY) {
-				qPos.add(queryDefinition.getStatus());
+				queryPos.add(queryDefinition.getStatus());
 			}
 
 			List<MBCategory> list = (List<MBCategory>)QueryUtil.list(
-				q, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS, false);
+				sqlQuery, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				false);
 
 			Group group = _groupLocalService.getGroup(groupId);
 
@@ -560,22 +559,13 @@ public class MBCategoryFinderImpl
 					groupId);
 
 			if (subscription != null) {
-				int threadCount = _mbThreadLocalService.getCategoryThreadsCount(
-					groupId, MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
-					WorkflowConstants.STATUS_APPROVED);
-				int messageCount =
-					_mbMessageLocalService.getCategoryMessagesCount(
-						groupId, MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
-						WorkflowConstants.STATUS_APPROVED);
-
 				MBCategory category = new MBCategoryImpl();
 
 				category.setGroupId(group.getGroupId());
 				category.setCompanyId(group.getCompanyId());
 				category.setName(group.getDescriptiveName());
-				category.setDescription(group.getDescription());
-				category.setThreadCount(threadCount);
-				category.setMessageCount(messageCount);
+				category.setDescription(
+					group.getDescription(LocaleUtil.getMostRelevantLocale()));
 
 				list.add(category);
 			}
@@ -585,8 +575,8 @@ public class MBCategoryFinderImpl
 					list, queryDefinition.getStart(),
 					queryDefinition.getEnd()));
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -638,65 +628,65 @@ public class MBCategoryFinderImpl
 			sql = _customSQL.replaceOrderBy(
 				sql, queryDefinition.getOrderByComparator());
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("modelId", Type.LONG);
-			q.addScalar("modelCategory", Type.LONG);
+			sqlQuery.addScalar("modelId", Type.LONG);
+			sqlQuery.addScalar("modelCategory", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(categoryId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(categoryId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
-			qPos.add(groupId);
-			qPos.add(categoryId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(categoryId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
 			List<Object> models = new ArrayList<>();
 
-			Iterator<Object[]> itr = (Iterator<Object[]>)QueryUtil.iterate(
-				q, getDialect(), queryDefinition.getStart(),
+			Iterator<Object[]> iterator = (Iterator<Object[]>)QueryUtil.iterate(
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				long modelId = (Long)array[0];
 				long modelCategory = (Long)array[1];
 
-				Object obj = null;
+				Object object = null;
 
 				if (modelCategory == 1) {
-					obj = MBThreadUtil.findByPrimaryKey(modelId);
+					object = MBThreadUtil.findByPrimaryKey(modelId);
 				}
 				else {
-					obj = MBCategoryUtil.findByPrimaryKey(modelId);
+					object = MBCategoryUtil.findByPrimaryKey(modelId);
 				}
 
-				models.add(obj);
+				models.add(object);
 			}
 
 			return models;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -718,19 +708,16 @@ public class MBCategoryFinderImpl
 		return _customSQL.appendCriteria(sql, "AND (MBCategory.status = ?)");
 	}
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
 
-	@ServiceReference(type = GroupLocalService.class)
+	@Reference
 	private GroupLocalService _groupLocalService;
 
-	@BeanReference(type = MBMessageLocalService.class)
-	private MBMessageLocalService _mbMessageLocalService;
+	@Reference
+	private Portal _portal;
 
-	@BeanReference(type = MBThreadLocalService.class)
-	private MBThreadLocalService _mbThreadLocalService;
-
-	@ServiceReference(type = SubscriptionLocalService.class)
+	@Reference
 	private SubscriptionLocalService _subscriptionLocalService;
 
 }

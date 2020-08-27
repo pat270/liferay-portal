@@ -18,10 +18,8 @@ import com.liferay.document.library.util.DLURLHelperUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.service.ImageLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
@@ -33,6 +31,20 @@ import java.util.Date;
  * @author Juan Fernández
  */
 public class BlogsEntryImpl extends BlogsEntryBaseImpl {
+
+	@Override
+	public String getCoverImageAlt() throws PortalException {
+		long coverImageFileEntryId = getCoverImageFileEntryId();
+
+		if (coverImageFileEntryId == 0) {
+			return null;
+		}
+
+		FileEntry fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(
+			coverImageFileEntryId);
+
+		return fileEntry.getTitle();
+	}
 
 	@Override
 	public String getCoverImageURL(ThemeDisplay themeDisplay)
@@ -52,41 +64,28 @@ public class BlogsEntryImpl extends BlogsEntryBaseImpl {
 			StringPool.BLANK);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getSmallImageURL(ThemeDisplay)}
-	 */
-	@Deprecated
 	@Override
-	public String getEntryImageURL(ThemeDisplay themeDisplay) {
-		if (!isSmallImage()) {
-			return null;
-		}
-
+	public String getSmallImageAlt() throws PortalException {
 		if (Validator.isNotNull(getSmallImageURL())) {
-			return getSmallImageURL();
+			return StringPool.BLANK;
 		}
 
-		return StringBundler.concat(
-			themeDisplay.getPathImage(), "/blogs/entry?img_id=",
-			getSmallImageId(), "&t=",
-			WebServerServletTokenUtil.getToken(getSmallImageId()));
-	}
+		long smallImageFileEntryId = getSmallImageFileEntryId();
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getSmallImageType() throws PortalException {
-		if ((_smallImageType == null) && isSmallImage()) {
-			Image smallImage = ImageLocalServiceUtil.getImage(
-				getSmallImageId());
+		if (smallImageFileEntryId != 0) {
+			FileEntry fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(
+				smallImageFileEntryId);
 
-			_smallImageType = smallImage.getType();
+			return fileEntry.getTitle();
 		}
 
-		return _smallImageType;
+		long smallImageId = getSmallImageId();
+
+		if ((smallImageId != 0) && isSmallImage()) {
+			return StringPool.BLANK;
+		}
+
+		return getCoverImageAlt();
 	}
 
 	@Override

@@ -18,10 +18,11 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.exception.AssetTagException;
 import com.liferay.asset.kernel.exception.AssetTagNameException;
 import com.liferay.asset.kernel.exception.DuplicateTagException;
+import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetTag;
+import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
-import com.liferay.asset.tag.stats.model.AssetTagStats;
-import com.liferay.asset.tag.stats.service.AssetTagStatsLocalServiceUtil;
+import com.liferay.asset.test.util.AssetTestUtil;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -39,8 +40,9 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -265,13 +267,25 @@ public class AssetTagLocalServiceTest {
 
 		Assert.assertNull(
 			AssetTagLocalServiceUtil.fetchAssetTag(assetTag.getTagId()));
+	}
 
-		long classNameId = PortalUtil.getClassNameId(Organization.class);
+	@Test
+	public void testIncrementAssetCountWhenUpdatingAssetEntry()
+		throws PortalException {
 
-		AssetTagStats assetTagStats = AssetTagStatsLocalServiceUtil.getTagStats(
-			assetTag.getTagId(), classNameId);
+		AssetEntry assetEntry = AssetTestUtil.addAssetEntry(
+			_group.getGroupId());
 
-		Assert.assertEquals(0, assetTagStats.getAssetCount());
+		assetEntry = AssetEntryLocalServiceUtil.updateEntry(
+			TestPropsValues.getUserId(), assetEntry.getGroupId(),
+			assetEntry.getClassName(), assetEntry.getClassPK(), null,
+			new String[] {"tag"});
+
+		List<AssetTag> assetTags = assetEntry.getTags();
+
+		AssetTag assetTag = assetTags.get(0);
+
+		Assert.assertEquals(1, assetTag.getAssetCount());
 	}
 
 	@Test(expected = AssetTagException.class)

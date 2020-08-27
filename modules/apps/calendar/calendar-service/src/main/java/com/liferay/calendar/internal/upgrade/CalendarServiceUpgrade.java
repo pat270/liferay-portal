@@ -14,6 +14,7 @@
 
 package com.liferay.calendar.internal.upgrade;
 
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.calendar.internal.upgrade.v1_0_2.UpgradeCalendar;
 import com.liferay.calendar.internal.upgrade.v1_0_4.UpgradeClassNames;
 import com.liferay.calendar.internal.upgrade.v1_0_5.UpgradeCalendarResource;
@@ -38,6 +39,7 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
+import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
@@ -97,8 +99,9 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"3.0.0", "3.0.1",
 			new UpgradeDiscussionSubscriptionClassName(
+				_assetEntryLocalService, _classNameLocalService,
 				_subscriptionLocalService, CalendarBooking.class.getName(),
-				UpgradeDiscussionSubscriptionClassName.DeletionMode.ADD_NEW));
+				UpgradeDiscussionSubscriptionClassName.DeletionMode.UPDATE));
 
 		registry.register(
 			"3.0.1", "4.0.0",
@@ -112,10 +115,28 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"4.0.0", "4.0.1",
 			new UpgradeDiscussionSubscriptionClassName(
+				_assetEntryLocalService, _classNameLocalService,
 				_subscriptionLocalService, CalendarBooking.class.getName(),
 				UpgradeDiscussionSubscriptionClassName.DeletionMode.
 					DELETE_OLD));
+
+		registry.register(
+			"4.0.1", "4.1.0",
+			new UpgradeMVCCVersion() {
+
+				@Override
+				protected String[] getModuleTableNames() {
+					return new String[] {
+						"Calendar", "CalendarBooking",
+						"CalendarNotificationTemplate", "CalendarResource"
+					};
+				}
+
+			});
 	}
+
+	@Reference
+	private AssetEntryLocalService _assetEntryLocalService;
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;

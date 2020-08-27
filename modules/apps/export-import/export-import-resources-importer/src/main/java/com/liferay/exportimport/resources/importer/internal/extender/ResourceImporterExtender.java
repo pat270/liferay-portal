@@ -116,9 +116,8 @@ public class ResourceImporterExtender {
 			String bundleSymbolicName = bundle.getSymbolicName();
 
 			try {
-				PluginPackage pluginPackage = getPluginPackage(bundle);
-
-				PluginPackageUtil.registerInstalledPluginPackage(pluginPackage);
+				PluginPackageUtil.registerInstalledPluginPackage(
+					getPluginPackage(bundle));
 
 				ServletContext servletContext = new BundleServletContextAdapter(
 					bundle);
@@ -138,11 +137,11 @@ public class ResourceImporterExtender {
 
 				_messageBus.sendMessage(DestinationNames.HOT_DEPLOY, message);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to initialize bundle: " + bundleSymbolicName,
-						e);
+						exception);
 				}
 			}
 
@@ -172,16 +171,14 @@ public class ResourceImporterExtender {
 			}
 
 			try {
-				PluginPackage pluginPackage = getPluginPackage(bundle);
-
 				PluginPackageUtil.unregisterInstalledPluginPackage(
-					pluginPackage);
+					getPluginPackage(bundle));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister bundle: " + bundleSymbolicName,
-						e);
+						exception);
 				}
 			}
 		}

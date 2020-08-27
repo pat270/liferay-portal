@@ -14,9 +14,9 @@
 
 package com.liferay.dynamic.data.mapping.web.internal.portlet.action;
 
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.PortletPreferencesException;
 import com.liferay.portal.kernel.model.Layout;
@@ -85,12 +85,10 @@ public abstract class DDMBaseMVCActionCommand extends BaseMVCActionCommand {
 		portletURL.setParameter("redirect", redirect, false);
 		portletURL.setParameter(
 			"groupId", String.valueOf(structure.getGroupId()), false);
-
-		long classNameId = PortalUtil.getClassNameId(DDMStructure.class);
-
 		portletURL.setParameter(
-			"classNameId", String.valueOf(classNameId), false);
-
+			"classNameId",
+			String.valueOf(PortalUtil.getClassNameId(DDMStructure.class)),
+			false);
 		portletURL.setParameter(
 			"classPK", String.valueOf(structure.getStructureId()), false);
 		portletURL.setParameter("availableFields", availableFields, false);
@@ -170,9 +168,8 @@ public abstract class DDMBaseMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	protected void setRedirectAttribute(ActionRequest actionRequest) {
-		String redirect = getRedirect(actionRequest);
-
-		actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
+		actionRequest.setAttribute(
+			WebKeys.REDIRECT, getRedirect(actionRequest));
 	}
 
 	protected void setRedirectAttribute(

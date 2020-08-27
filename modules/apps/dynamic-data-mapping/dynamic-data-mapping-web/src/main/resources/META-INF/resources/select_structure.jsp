@@ -32,7 +32,7 @@ SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSe
 	disabled="<%= ddmDisplayContext.isDisabledManagementBar(DDMWebKeys.DYNAMIC_DATA_MAPPING_STRUCTURE) %>"
 	filterDropdownItems="<%= ddmDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddmDisplayContext.getTotalItems(DDMWebKeys.DYNAMIC_DATA_MAPPING_STRUCTURE) %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= ddmDisplayContext.getSelectStructureSearchActionURL() %>"
 	searchContainerId="<%= ddmDisplayContext.getStructureSearchContainerId() %>"
 	searchFormName="searchForm"
@@ -88,7 +88,7 @@ SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSe
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-content"
 				name="description"
-				truncate="<% true %>"
+				truncate="<%= true %>"
 				value="<%= HtmlUtil.escape(structure.getDescription(locale)) %>"
 			/>
 
@@ -106,7 +106,12 @@ SearchContainer<DDMStructure> structureSearch = ddmDisplayContext.getStructureSe
 </aui:form>
 
 <aui:script>
-	Liferay.Util.focusFormField(document.<portlet:namespace />searchForm.<portlet:namespace />keywords);
+	Liferay.Util.focusFormField(
+		document.<portlet:namespace />searchForm.<portlet:namespace />keywords
+	);
 
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectStructureFm', '<%= HtmlUtil.escapeJS(eventName) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectStructureFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>'
+	);
 </aui:script>

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class JavaForStatement extends JavaLoopStatement {
+public class JavaForStatement extends BaseJavaLoopStatement {
 
 	public void setConditionJavaExpression(
 		JavaExpression conditionJavaExpression) {
@@ -132,6 +132,13 @@ public class JavaForStatement extends JavaLoopStatement {
 					sb.append(indent);
 				}
 			}
+			else if (getLineLength(getIndent(getLastLine(sb))) > getLineLength(
+						indent)) {
+
+				appendNewLine(
+					sb, _conditionJavaExpression, indent, "",
+					conditionJavaExpressionSuffix, maxLineLength);
+			}
 			else {
 				append(
 					sb, _conditionJavaExpression, indent, "",
@@ -140,9 +147,9 @@ public class JavaForStatement extends JavaLoopStatement {
 		}
 
 		if (!_iteratorJavaExpressions.isEmpty()) {
-			String lastLineIndent = getIndent(getLastLine(sb));
+			if (getLineLength(getIndent(getLastLine(sb))) > getLineLength(
+					indent)) {
 
-			if (lastLineIndent.length() > indent.length()) {
 				appendNewLine(
 					sb, _iteratorJavaExpressions, indent,
 					_getIteratorJavaExpressionsPrefix(prefix), ")" + suffix,

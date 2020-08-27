@@ -14,27 +14,41 @@
 
 package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 
-import com.liferay.petra.string.CharPool;
+import com.liferay.headless.common.spi.odata.entity.EntityFieldsMapFactory;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.odata.entity.BooleanEntityField;
+import com.liferay.portal.odata.entity.CollectionEntityField;
+import com.liferay.portal.odata.entity.ComplexEntityField;
 import com.liferay.portal.odata.entity.DateTimeEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.entity.IntegerEntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Javier Gamarra
  */
 public class MessageBoardMessageEntityModel implements EntityModel {
 
-	public MessageBoardMessageEntityModel() {
-		_entityFieldsMap = Stream.of(
+	public MessageBoardMessageEntityModel(List<EntityField> entityFields) {
+		_entityFieldsMap = EntityFieldsMapFactory.create(
+			new BooleanEntityField("showAsQuestion", locale -> "question"),
+			new CollectionEntityField(
+				new IntegerEntityField(
+					"taxonomyCategoryIds", locale -> "assetCategoryIds")),
+			new CollectionEntityField(
+				new StringEntityField(
+					"keywords", locale -> "assetTagNames.raw")),
+			new ComplexEntityField(
+				"creator",
+				Collections.singletonList(
+					new IntegerEntityField("id", locale -> "userId"))),
+			new ComplexEntityField("customFields", entityFields),
 			new DateTimeEntityField(
 				"dateCreated",
 				locale -> Field.getSortableFieldName(Field.CREATE_DATE),
@@ -43,28 +57,33 @@ public class MessageBoardMessageEntityModel implements EntityModel {
 				"dateModified",
 				locale -> Field.getSortableFieldName(Field.MODIFIED_DATE),
 				locale -> Field.MODIFIED_DATE),
+			new EntityField(
+				"showAsAnswer", EntityField.Type.BOOLEAN,
+				locale -> Field.getSortableFieldName("answer_String"),
+				locale -> "answer", String::valueOf),
 			new IntegerEntityField("creatorId", locale -> Field.USER_ID),
 			new IntegerEntityField(
 				"messageBoardSectionId", locale -> Field.CATEGORY_ID),
+			new IntegerEntityField(
+				"messageBoardThreadId", locale -> Field.ROOT_ENTRY_CLASS_PK),
+			new IntegerEntityField(
+				"parentMessageBoardMessageId", locale -> "parentMessageId"),
+			new IntegerEntityField(
+				"ratingValue",
+				locale -> Field.getSortableFieldName("totalScore")),
+			new StringEntityField(
+				"friendlyUrlPath",
+				locale -> Field.getSortableFieldName("urlSubject_String")),
 			new StringEntityField(
 				"headline",
 				locale -> Field.getSortableFieldName(
-					"localized_title_".concat(LocaleUtil.toLanguageId(locale))))
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+					"localized_title_".concat(
+						LocaleUtil.toLanguageId(locale)))));
 	}
 
 	@Override
 	public Map<String, EntityField> getEntityFieldsMap() {
 		return _entityFieldsMap;
-	}
-
-	@Override
-	public String getName() {
-		String name = MessageBoardMessageEntityModel.class.getName();
-
-		return name.replace(CharPool.PERIOD, CharPool.UNDERLINE);
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

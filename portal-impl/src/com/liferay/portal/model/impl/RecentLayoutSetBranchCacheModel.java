@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing RecentLayoutSetBranch in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class RecentLayoutSetBranchCacheModel
 	implements CacheModel<RecentLayoutSetBranch>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RecentLayoutSetBranchCacheModel)) {
+		if (!(object instanceof RecentLayoutSetBranchCacheModel)) {
 			return false;
 		}
 
 		RecentLayoutSetBranchCacheModel recentLayoutSetBranchCacheModel =
-			(RecentLayoutSetBranchCacheModel)obj;
+			(RecentLayoutSetBranchCacheModel)object;
 
 		if ((recentLayoutSetBranchId ==
 				recentLayoutSetBranchCacheModel.recentLayoutSetBranchId) &&

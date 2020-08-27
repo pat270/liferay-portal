@@ -21,6 +21,15 @@ public class UpgradeMVCCVersion
 	extends com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion {
 
 	@Override
+	protected String[] getExcludedTableNames() {
+		return new String[] {
+			"CompanyInfo", "SocialActivity", "SocialActivityAchievement",
+			"SocialActivityCounter", "SocialActivityLimit", "SocialActivitySet",
+			"SocialActivitySetting", "SocialRelation", "SocialRequest"
+		};
+	}
+
+	@Override
 	protected String[] getModuleTableNames() {
 		return new String[] {"Subscription"};
 	}

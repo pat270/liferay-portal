@@ -16,12 +16,9 @@ package com.liferay.asset.category.property.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateCategoryPropertyException extends PortalException {
 
 	public DuplicateCategoryPropertyException() {
@@ -31,12 +28,12 @@ public class DuplicateCategoryPropertyException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateCategoryPropertyException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateCategoryPropertyException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateCategoryPropertyException(Throwable cause) {
-		super(cause);
+	public DuplicateCategoryPropertyException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

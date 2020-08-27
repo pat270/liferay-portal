@@ -14,6 +14,8 @@
 
 package com.liferay.osgi.service.tracker.collections.map;
 
+import java.util.Collection;
+
 import org.osgi.framework.ServiceReference;
 
 /**
@@ -34,7 +36,12 @@ public class PropertyServiceReferenceMapper<T, S>
 			return;
 		}
 
-		if (propertyValue instanceof Object[]) {
+		if (propertyValue instanceof Collection) {
+			for (T t : (Collection<T>)propertyValue) {
+				emitter.emit(t);
+			}
+		}
+		else if (propertyValue instanceof Object[]) {
 			for (T t : (T[])propertyValue) {
 				emitter.emit(t);
 			}

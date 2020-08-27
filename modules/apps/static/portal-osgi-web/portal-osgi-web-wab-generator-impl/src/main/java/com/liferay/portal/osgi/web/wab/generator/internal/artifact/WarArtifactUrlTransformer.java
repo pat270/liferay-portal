@@ -14,6 +14,7 @@
 
 package com.liferay.portal.osgi.web.wab.generator.internal.artifact;
 
+import com.liferay.portal.file.install.FileInstaller;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.net.URI;
 import java.net.URL;
 
 import java.util.Properties;
@@ -29,20 +31,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.felix.fileinstall.ArtifactUrlTransformer;
-
 /**
  * @author Miguel Pastor
  * @author Raymond Augé
  */
-public class WarArtifactUrlTransformer implements ArtifactUrlTransformer {
+public class WarArtifactUrlTransformer implements FileInstaller {
 
 	public WarArtifactUrlTransformer(AtomicBoolean portalIsReady) {
 		_portalIsReady = portalIsReady;
 	}
 
 	@Override
-	public boolean canHandle(File artifact) {
+	public boolean canTransformURL(File artifact) {
 		String name = artifact.getName();
 
 		if (!name.endsWith(".war")) {
@@ -57,8 +57,14 @@ public class WarArtifactUrlTransformer implements ArtifactUrlTransformer {
 	}
 
 	@Override
-	public URL transform(URL artifact) throws Exception {
-		return ArtifactURLUtil.transform(artifact);
+	public URL transformURL(File artifact) throws Exception {
+		URI uri = artifact.toURI();
+
+		return ArtifactURLUtil.transform(uri.toURL());
+	}
+
+	@Override
+	public void uninstall(File file) {
 	}
 
 	private boolean _hasResources(File artifact) {
@@ -91,8 +97,8 @@ public class WarArtifactUrlTransformer implements ArtifactUrlTransformer {
 					properties.getProperty("resources-importer-external-dir"));
 			}
 		}
-		catch (IOException ioe) {
-			_log.error("Unable to check resources in " + artifact, ioe);
+		catch (IOException ioException) {
+			_log.error("Unable to check resources in " + artifact, ioException);
 		}
 
 		return false;

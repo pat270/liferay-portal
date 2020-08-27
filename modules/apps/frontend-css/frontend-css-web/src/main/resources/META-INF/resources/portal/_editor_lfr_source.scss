@@ -18,17 +18,9 @@
 
 	.lfr-fullscreen-source-editor-header {
 		height: 40px;
+		margin-right: 4px;
+		margin-top: 4px;
 		min-height: 40px;
-
-		.layout-selector {
-			text-align: right;
-
-			span {
-				cursor: pointer;
-				font-size: 12px;
-				margin: 0 5px;
-			}
-		}
 	}
 
 	.lfr-fullscreen-source-editor-content {
@@ -51,7 +43,8 @@
 		}
 
 		&.vertical {
-			.source-panel, .preview-panel {
+			.source-panel,
+			.preview-panel {
 				height: 100%;
 				width: 50%;
 			}
@@ -64,7 +57,8 @@
 		}
 
 		&.horizontal {
-			.source-panel, .preview-panel {
+			.source-panel,
+			.preview-panel {
 				height: 50%;
 				width: 100%;
 			}
@@ -76,7 +70,8 @@
 		}
 
 		&.simple {
-			.panel-splitter, .preview-panel {
+			.panel-splitter,
+			.preview-panel {
 				display: none;
 			}
 

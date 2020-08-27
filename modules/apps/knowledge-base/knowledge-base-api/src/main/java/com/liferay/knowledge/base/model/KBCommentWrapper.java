@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link KBComment}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KBComment
  * @generated
  */
-@ProviderType
 public class KBCommentWrapper
 	extends BaseModelWrapper<KBComment>
 	implements KBComment, ModelWrapper<KBComment> {
@@ -46,6 +43,7 @@ public class KBCommentWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("kbCommentId", getKbCommentId());
 		attributes.put("groupId", getGroupId());
@@ -66,6 +64,12 @@ public class KBCommentWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -252,6 +256,16 @@ public class KBCommentWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this kb comment.
+	 *
+	 * @return the mvcc version of this kb comment
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this kb comment.
 	 *
 	 * @return the primary key of this kb comment
@@ -419,6 +433,16 @@ public class KBCommentWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this kb comment.
+	 *
+	 * @param mvccVersion the mvcc version of this kb comment
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

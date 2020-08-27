@@ -1,0 +1,166 @@
+definition {
+
+	macro _addTag {
+		Type(
+			locator1 = "AssetCategorization#TAGS_FIELD",
+			value1 = "${tagName}");
+
+		ScrollWebElementIntoView(locator1 = "AssetCategorization#TAGS_FIELD");
+
+		if (IsElementPresent(key_tagName = "${tagName}", locator1 = "AssetCategorization#TAG_AUTOCOMPLETE_SPECIFIC")) {
+			Click(
+				key_tagName = "${tagName}",
+				locator1 = "AssetCategorization#TAG_AUTOCOMPLETE_SPECIFIC");
+		}
+		else {
+			KeyPress(
+				locator1 = "AssetCategorization#TAGS_FIELD",
+				value1 = ",");
+		}
+	}
+
+	macro addCategory {
+		var key_categoryName = "${categoryName}";
+
+		Type(
+			key_vocabularyName = "${vocabularyName}",
+			locator1 = "AssetCategorization#CATEGORIES_FIELD",
+			value1 = "${categoryName}");
+
+		Click.mouseDownMouseUp(locator1 = "AssetCategorization#CATEGORY_AUTOCOMPLETE_SPECIFIC");
+
+		AssertTextEquals(
+			locator1 = "AssetCategorization#CATEGORY",
+			value1 = "${categoryName}");
+	}
+
+	macro addDuplicateTag {
+		AssetCategorization._addTag(tagName = "${tagName}");
+
+		AssertTextEquals(
+			locator1 = "//div[contains(@class,'form-feedback-item')]",
+			value1 = "Duplicate Tag: ${tagName}");
+	}
+
+	macro addMultipleCategories {
+		for (var categoryName : list "${categoryNameList}") {
+			AssetCategorization.addCategory(
+				categoryName = "${categoryName}",
+				vocabularyName = "${vocabularyName}");
+		}
+	}
+
+	macro addTag {
+		AssetCategorization._addTag(tagName = "${tagName}");
+
+		AssertTextEquals(
+			key_tagName = "${tagName}",
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
+	}
+
+	macro gotoSelectCategory {
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "IFrame#SELECT_CATEGORY")) {
+			IFrame.selectCategoryFrame();
+		}
+
+		Pause(locator1 = "3000");
+
+		Portlet.expandTree();
+	}
+
+	macro removeTag {
+		var key_tagName = "${tagName}";
+
+		AssertTextEquals(
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
+
+		Click(locator1 = "AssetCategorization#TAG_REMOVE");
+
+		AssertElementNotPresent(locator1 = "AssetCategorization#TAG");
+	}
+
+	macro selectCategory {
+		AssetCategorization.gotoSelectCategory();
+
+		Pause(locator1 = "3000");
+
+		Portlet.selectTreeNode(nodeName = "${categoryName}");
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "//button[contains(@class,'toolbar') and contains(.,'Add')]")) {
+			AssertClick(
+				locator1 = "//button[contains(@class,'toolbar') and contains(.,'Add')]",
+				value1 = "Add");
+		}
+		else if (IsElementPresent(locator1 = "Button#DONE")) {
+			AssertClick(
+				locator1 = "Button#DONE",
+				value1 = "Done");
+		}
+		else {
+			Click(locator1 = "Icon#CLOSE");
+		}
+
+		Pause(locator1 = "3000");
+
+		if (IsElementPresent(locator1 = "IFrame#MODAL_IFRAME")) {
+			IFrame.selectModalFrame();
+		}
+	}
+
+	macro selectTag {
+		Click(locator1 = "AssetCategorization#TAGS_SELECT_BUTTON");
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "IFrame#SELECT_TAG")) {
+			SelectFrame(locator1 = "IFrame#SELECT_TAG");
+		}
+
+		for (var tagName : list "${tagNameList}") {
+			Check(
+				key_rowEntry = "${tagName}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+		}
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "Button#DONE")) {
+			AssertClick(
+				locator1 = "Button#DONE",
+				value1 = "Done");
+		}
+		else {
+			Click(locator1 = "Icon#CLOSE");
+		}
+
+		if (IsElementPresent(locator1 = "IFrame#MODAL_IFRAME")) {
+			IFrame.selectModalFrame();
+		}
+
+		AssertTextEquals(
+			key_tagName = "${tagName}",
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
+	}
+
+	macro viewCategory {
+		AssertTextEquals(
+			key_categoryName = "${categoryName}",
+			locator1 = "AssetCategorization#CATEGORY",
+			value1 = "${categoryName}");
+	}
+
+	macro viewVocabulary {
+		AssertTextEquals(
+			key_vocabularyName = "${vocabularyName}",
+			locator1 = "UsersAndOrganizationsEditUser#VOCABULARY_LABEL",
+			value1 = "${vocabularyName}");
+	}
+
+}

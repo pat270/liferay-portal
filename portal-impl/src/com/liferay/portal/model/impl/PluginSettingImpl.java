@@ -17,8 +17,8 @@ package com.liferay.portal.model.impl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PluginSetting;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -90,9 +90,10 @@ public class PluginSettingImpl extends PluginSettingBaseImpl {
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
-				"Unable to check if user " + userId + " has permission", e);
+				"Unable to check if user " + userId + " has permission",
+				exception);
 		}
 
 		return false;

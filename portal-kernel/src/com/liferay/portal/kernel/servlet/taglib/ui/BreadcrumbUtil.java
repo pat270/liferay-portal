@@ -283,7 +283,7 @@ public class BreadcrumbUtil {
 			layoutsPageCount = group.getPublicLayoutsPageCount();
 		}
 
-		if ((layoutsPageCount > 0) && !group.isGuest()) {
+		if ((layoutsPageCount > 0) && !_isGuestGroup(group)) {
 			String layoutSetFriendlyURL = PortalUtil.getLayoutSetFriendlyURL(
 				layoutSet, themeDisplay);
 
@@ -310,11 +310,9 @@ public class BreadcrumbUtil {
 		if (layout.getParentLayoutId() !=
 				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
 
-			Layout parentLayout = LayoutLocalServiceUtil.getParentLayout(
-				layout);
-
 			_addLayoutBreadcrumbEntries(
-				breadcrumbEntries, themeDisplay, parentLayout);
+				breadcrumbEntries, themeDisplay,
+				LayoutLocalServiceUtil.getParentLayout(layout));
 		}
 
 		BreadcrumbEntry breadcrumbEntry = new BreadcrumbEntry();
@@ -329,11 +327,11 @@ public class BreadcrumbUtil {
 
 		String layoutName = layout.getName(themeDisplay.getLocale());
 
-		if (layout.isTypeControlPanel()) {
-			if (layoutName.equals(LayoutConstants.NAME_CONTROL_PANEL_DEFAULT)) {
-				layoutName = LanguageUtil.get(
-					themeDisplay.getLocale(), "control-panel");
-			}
+		if (layout.isTypeControlPanel() &&
+			layoutName.equals(LayoutConstants.NAME_CONTROL_PANEL_DEFAULT)) {
+
+			layoutName = LanguageUtil.get(
+				themeDisplay.getLocale(), "control-panel");
 		}
 
 		breadcrumbEntry.setTitle(layoutName);
@@ -381,6 +379,26 @@ public class BreadcrumbUtil {
 		}
 
 		return null;
+	}
+
+	private static boolean _isGuestGroup(Group group) {
+		if (group.isGuest()) {
+			return true;
+		}
+
+		if (group.isStaged()) {
+			Group liveGroup = group.getLiveGroup();
+
+			if (liveGroup != null) {
+				String groupKey = liveGroup.getGroupKey();
+
+				if (groupKey.equals(GroupConstants.GUEST)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

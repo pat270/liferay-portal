@@ -40,6 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +48,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -59,6 +62,9 @@ import java.util.StringTokenizer;
  * @author Glen Daniels (gdaniels@apache.org)
  */
 public class JavaServiceDesc implements ServiceDesc {
+    private static final Pattern _xsdAnyTypePattern = Pattern.compile(
+        Pattern.quote(Constants.XSD_ANYTYPE.toString()));
+
     protected static Log log =
             LogFactory.getLog(JavaServiceDesc.class.getName());
 
@@ -794,6 +800,18 @@ public class JavaServiceDesc implements ServiceDesc {
             List methodsList = new ArrayList();
             Method[] methods = implClass.getMethods();
             if (methods != null) {
+                Arrays.sort(methods, new Comparator<Method>() {
+                    @Override
+                    public int compare(Method m1, Method m2) {
+                        if (m1.getName().equals(m2.getName())) {
+                            return (m1.getParameterTypes().length -
+                                    m2.getParameterTypes().length);
+                        }
+
+                        return 0;
+                    }
+                });
+
                 for (int i = 0; i < methods.length; i++) {
                     String declaringClass = methods[i].getDeclaringClass().getName();
                     if (!declaringClass.startsWith("java.") &&
@@ -804,7 +822,23 @@ public class JavaServiceDesc implements ServiceDesc {
             }
             return (Method[])methodsList.toArray(new Method[]{}); 
         } else {
-            return implClass.getDeclaredMethods();
+            Method[] methods = implClass.getDeclaredMethods();
+
+            if (methods != null) {
+                Arrays.sort(methods, new Comparator<Method>() {
+                    @Override
+                    public int compare(Method m1, Method m2) {
+                        if (m1.getName().equals(m2.getName())) {
+                            return (m1.getParameterTypes().length -
+                                    m2.getParameterTypes().length);
+                        }
+
+                        return 0;
+                    }
+                });
+            }
+
+            return methods;
         }
     }
 
@@ -1096,6 +1130,28 @@ public class JavaServiceDesc implements ServiceDesc {
             ArrayList currentOverloads =
                     (ArrayList)name2OperationsMap.get(methodName);
             if (currentOverloads != null) {
+                Collections.sort(currentOverloads, new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        int o1AnyTypeParamCount = 0;
+                        int o2AnyTypeParamCount = 0;
+
+                        Matcher matcher = _xsdAnyTypePattern.matcher(
+                            o1.toString());
+
+                        while (matcher.find()) {
+                            o1AnyTypeParamCount++;
+                        }
+
+                        matcher = _xsdAnyTypePattern.matcher(o2.toString());
+
+                        while (matcher.find()) {
+                            o2AnyTypeParamCount++;
+                        }
+
+                        return o1AnyTypeParamCount - o2AnyTypeParamCount;
+                    }
+                });
+
                 // For each one, sync it to the implementation class' methods
                 for (Iterator i = currentOverloads.iterator(); i.hasNext();) {
                     OperationDesc oper = (OperationDesc) i.next();

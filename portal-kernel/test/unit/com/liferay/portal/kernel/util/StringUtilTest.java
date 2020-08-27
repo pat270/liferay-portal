@@ -28,7 +28,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -115,7 +114,7 @@ public class StringUtilTest {
 				hexString.charAt(i * 2),
 				StringUtil.HEX_DIGITS[(data[i] & 0xFF) >> 4]);
 			Assert.assertEquals(
-				hexString.charAt(i * 2 + 1),
+				hexString.charAt((i * 2) + 1),
 				StringUtil.HEX_DIGITS[data[i] & 0x0F]);
 		}
 	}
@@ -298,6 +297,8 @@ public class StringUtilTest {
 		Assert.assertEquals("1", StringUtil.merge(new int[] {1}));
 		Assert.assertEquals("1,2,3", StringUtil.merge(new long[] {1, 2, 3}));
 		Assert.assertEquals("1", StringUtil.merge(new long[] {1}));
+		Assert.assertEquals(
+			"123", StringUtil.merge(Arrays.asList("1", "2", "3"), ""));
 	}
 
 	@Test
@@ -529,10 +530,11 @@ public class StringUtilTest {
 
 	@Test(timeout = 1000)
 	public void testReplaceMap() {
-		Map<String, String> map = new HashMap<>();
-
-		map.put("Hallo", "Hello");
-		map.put("Wirld", "World");
+		Map<String, String> map = HashMapBuilder.put(
+			"Hallo", "Hello"
+		).put(
+			"Wirld", "World"
+		).build();
 
 		Assert.assertEquals(
 			"Hello World",
@@ -571,10 +573,12 @@ public class StringUtilTest {
 
 	@Test(timeout = 1000)
 	public void testReplaceWithStringBundle() {
-		Map<String, StringBundler> map = new HashMap<>();
-
-		map.put("Hallo", new StringBundler("Hello"));
-		map.put("Wirld", new StringBundler("World"));
+		Map<String, StringBundler> map =
+			HashMapBuilder.<String, StringBundler>put(
+				"Hallo", new StringBundler("Hello")
+			).put(
+				"Wirld", new StringBundler("World")
+			).build();
 
 		Assert.assertEquals(
 			"Hello World",

@@ -108,7 +108,7 @@ public class ServiceProxyFactoryTest {
 
 		ServiceProxyFactory.newServiceTrackedInstance(
 			TestService.class, TestServiceUtil.class, testServiceUtil,
-			"nonStaticField", null, false);
+			"nonstaticField", null, false);
 
 		FinalizeAction finalizeAction = null;
 
@@ -241,7 +241,7 @@ public class ServiceProxyFactoryTest {
 
 		try {
 			ServiceProxyFactory.newServiceTrackedInstance(
-				TestService.class, TestServiceUtil.class, "nonStaticField",
+				TestService.class, TestServiceUtil.class, "nonstaticField",
 				false);
 
 			Assert.fail();
@@ -251,7 +251,7 @@ public class ServiceProxyFactoryTest {
 				IllegalArgumentException.class, throwable.getClass());
 
 			Field testServiceField = ReflectionUtil.getDeclaredField(
-				TestServiceUtil.class, "nonStaticField");
+				TestServiceUtil.class, "nonstaticField");
 
 			Assert.assertEquals(
 				testServiceField + " is not static", throwable.getMessage());
@@ -263,13 +263,13 @@ public class ServiceProxyFactoryTest {
 
 		TestService testService = new TestServiceImpl();
 
-		testServiceUtil.nonStaticField = testService;
+		testServiceUtil.nonstaticField = testService;
 
 		ServiceProxyFactory.newServiceTrackedInstance(
 			TestService.class, TestServiceUtil.class, testServiceUtil,
-			"nonStaticField", null, false);
+			"nonstaticField", null, false);
 
-		Assert.assertSame(testService, testServiceUtil.nonStaticField);
+		Assert.assertSame(testService, testServiceUtil.nonstaticField);
 
 		// Test 5, test constructor
 
@@ -292,7 +292,7 @@ public class ServiceProxyFactoryTest {
 
 		TestService testService = ServiceProxyFactory.newServiceTrackedInstance(
 			TestService.class, TestServiceUtil.class, testServiceUtil,
-			"nonStaticField", null, false);
+			"nonstaticField", null, false);
 
 		_testNonblockingProxy(false, testService, testServiceUtil);
 	}
@@ -322,8 +322,8 @@ public class ServiceProxyFactoryTest {
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Assert.assertSame(TestServiceImpl._exception, e);
+		catch (Exception exception) {
+			Assert.assertSame(TestServiceImpl._exception, exception);
 		}
 
 		Assert.assertFalse(ProxyUtil.isProxyClass(newTestService.getClass()));
@@ -390,8 +390,9 @@ public class ServiceProxyFactoryTest {
 
 						Assert.fail();
 					}
-					catch (Exception e) {
-						Assert.assertSame(TestServiceImpl._exception, e);
+					catch (Exception exception) {
+						Assert.assertSame(
+							TestServiceImpl._exception, exception);
 					}
 
 					TestService newTestService = TestServiceUtil.testService;
@@ -465,12 +466,18 @@ public class ServiceProxyFactoryTest {
 
 					@Override
 					public boolean add(LogRecord e) {
-						Thread currentThread = Thread.currentThread();
+						if (_logged) {
+							Thread currentThread = Thread.currentThread();
 
-						currentThread.interrupt();
+							currentThread.interrupt();
+						}
+
+						_logged = true;
 
 						return super.add(e);
 					}
+
+					private boolean _logged;
 
 				});
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
@@ -484,7 +491,7 @@ public class ServiceProxyFactoryTest {
 
 			thread.join();
 
-			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -557,7 +564,7 @@ public class ServiceProxyFactoryTest {
 			newTestService = TestServiceUtil.testService;
 		}
 		else {
-			newTestService = testServiceUtil.nonStaticField;
+			newTestService = testServiceUtil.nonstaticField;
 		}
 
 		Assert.assertEquals(
@@ -570,8 +577,8 @@ public class ServiceProxyFactoryTest {
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Assert.assertSame(TestServiceImpl._exception, e);
+		catch (Exception exception) {
+			Assert.assertSame(TestServiceImpl._exception, exception);
 		}
 
 		Assert.assertFalse(ProxyUtil.isProxyClass(newTestService.getClass()));
@@ -623,7 +630,7 @@ public class ServiceProxyFactoryTest {
 
 		public static volatile TestService testService;
 
-		public volatile TestService nonStaticField;
+		public volatile TestService nonstaticField;
 
 	}
 

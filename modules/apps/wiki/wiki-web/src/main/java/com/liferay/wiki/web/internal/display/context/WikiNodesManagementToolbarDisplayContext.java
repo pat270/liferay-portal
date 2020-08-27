@@ -15,8 +15,10 @@
 package com.liferay.wiki.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -25,8 +27,8 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.trash.TrashHelper;
 import com.liferay.wiki.model.WikiNode;
@@ -34,7 +36,6 @@ import com.liferay.wiki.web.internal.security.permission.resource.WikiNodePermis
 import com.liferay.wiki.web.internal.security.permission.resource.WikiResourcePermission;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,7 +53,7 @@ public class WikiNodesManagementToolbarDisplayContext {
 	public WikiNodesManagementToolbarDisplayContext(
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse, String displayStyle,
-		SearchContainer searchContainer, TrashHelper trashHelper) {
+		SearchContainer<WikiNode> searchContainer, TrashHelper trashHelper) {
 
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
@@ -70,49 +71,42 @@ public class WikiNodesManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteNodes");
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteNodes");
 
-						if (_trashHelper.isTrashEnabled(
-								_themeDisplay.getScopeGroupId())) {
+				if (_trashHelper.isTrashEnabled(
+						_themeDisplay.getScopeGroupId())) {
 
-							dropdownItem.setIcon("trash");
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest,
-									"move-to-recycle-bin"));
-						}
-						else {
-							dropdownItem.setIcon("times-circle");
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest, "delete"));
-						}
+					dropdownItem.setIcon("trash");
+					dropdownItem.setLabel(
+						LanguageUtil.get(
+							_httpServletRequest, "move-to-recycle-bin"));
+				}
+				else {
+					dropdownItem.setIcon("times-circle");
+					dropdownItem.setLabel(
+						LanguageUtil.get(_httpServletRequest, "delete"));
+				}
 
-						dropdownItem.setQuickAction(true);
-					});
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
-	public List<String> getAvailableActionDropdownItems(WikiNode wikiNode)
+	public List<String> getAvailableActions(WikiNode wikiNode)
 		throws PortalException {
 
-		List<String> availableActionDropdownItems = new ArrayList<>();
-
-		PermissionChecker permissionChecker =
-			_themeDisplay.getPermissionChecker();
+		List<String> availableActions = new ArrayList<>();
 
 		if (WikiNodePermission.contains(
-				permissionChecker, wikiNode, ActionKeys.DELETE)) {
+				_themeDisplay.getPermissionChecker(), wikiNode,
+				ActionKeys.DELETE)) {
 
-			availableActionDropdownItems.add("deleteNodes");
+			availableActions.add("deleteNodes");
 		}
 
-		return availableActionDropdownItems;
+		return availableActions;
 	}
 
 	public CreationMenu getCreationMenu() {
@@ -123,40 +117,33 @@ public class WikiNodesManagementToolbarDisplayContext {
 			return null;
 		}
 
-		return new CreationMenu() {
-			{
-				addDropdownItem(
-					dropdownItem -> {
-						PortletURL viewNodesURL =
-							_liferayPortletResponse.createRenderURL();
+		return CreationMenuBuilder.addDropdownItem(
+			dropdownItem -> {
+				PortletURL viewNodesURL =
+					_liferayPortletResponse.createRenderURL();
 
-						viewNodesURL.setParameter(
-							"mvcRenderCommandName", "/wiki_admin/view");
+				viewNodesURL.setParameter(
+					"mvcRenderCommandName", "/wiki_admin/view");
 
-						dropdownItem.setHref(
-							_liferayPortletResponse.createRenderURL(),
-							"mvcRenderCommandName", "/wiki/edit_node",
-							"redirect", viewNodesURL.toString());
+				dropdownItem.setHref(
+					_liferayPortletResponse.createRenderURL(),
+					"mvcRenderCommandName", "/wiki/edit_node", "redirect",
+					viewNodesURL.toString());
 
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "add-wiki"));
-					});
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "add-wiki"));
 			}
-		};
+		).build();
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
 			}
-		};
+		).build();
 	}
 
 	public String getSortingOrder() {
@@ -207,10 +194,11 @@ public class WikiNodesManagementToolbarDisplayContext {
 	private List<DropdownItem> _getOrderByDropdownItems() {
 		return new DropdownItemList() {
 			{
-				final Map<String, String> orderColumns = new HashMap<>();
-
-				orderColumns.put("lastPostDate", "last-post-date");
-				orderColumns.put("name", "name");
+				final Map<String, String> orderColumns = HashMapBuilder.put(
+					"lastPostDate", "last-post-date"
+				).put(
+					"name", "name"
+				).build();
 
 				for (Map.Entry<String, String> orderByColEntry :
 						orderColumns.entrySet()) {
@@ -251,7 +239,7 @@ public class WikiNodesManagementToolbarDisplayContext {
 	private final HttpServletRequest _httpServletRequest;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
-	private final SearchContainer _searchContainer;
+	private final SearchContainer<WikiNode> _searchContainer;
 	private final ThemeDisplay _themeDisplay;
 	private final TrashHelper _trashHelper;
 

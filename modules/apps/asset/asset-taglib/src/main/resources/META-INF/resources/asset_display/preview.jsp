@@ -73,17 +73,19 @@ AssetRenderer<?> assetRenderer = (AssetRenderer<?>)request.getAttribute(WebKeys.
 	</div>
 
 	<%
-	Map<String, Object> data = new HashMap<String, Object>();
-
-	data.put("class-name", assetEntry.getClassName());
-	data.put("class-pk", assetEntry.getClassPK());
-	data.put("instanceable", Boolean.TRUE);
-
 	String portletId = PortletProviderUtil.getPortletId(assetEntry.getClassName(), PortletProvider.Action.ADD);
 
-	data.put("portlet-id", portletId);
-
-	data.put("title", HtmlUtil.escape(assetRenderer.getTitle(themeDisplay.getLocale())));
+	Map<String, Object> data = HashMapBuilder.<String, Object>put(
+		"class-name", assetEntry.getClassName()
+	).put(
+		"class-pk", assetEntry.getClassPK()
+	).put(
+		"instanceable", Boolean.TRUE
+	).put(
+		"portlet-id", portletId
+	).put(
+		"title", HtmlUtil.escape(assetRenderer.getTitle(themeDisplay.getLocale()))
+	).build();
 	%>
 
 	<c:if test="<%= PortletPermissionUtil.contains(permissionChecker, layout, portletId, ActionKeys.ADD_TO_PAGE) %>">

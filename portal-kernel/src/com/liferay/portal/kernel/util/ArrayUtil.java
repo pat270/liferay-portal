@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -24,6 +25,7 @@ import java.lang.reflect.Array;
 import java.text.DateFormat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -659,8 +661,8 @@ public class ArrayUtil {
 			return false;
 		}
 
-		for (Object obj : array) {
-			if (Objects.equals(value, obj)) {
+		for (Object object : array) {
+			if (Objects.equals(value, object)) {
 				return true;
 			}
 		}
@@ -808,8 +810,8 @@ public class ArrayUtil {
 			return false;
 		}
 
-		for (Object obj : array2) {
-			if (!contains(array1, obj)) {
+		for (Object object : array2) {
+			if (!contains(array1, object)) {
 				return false;
 			}
 		}
@@ -1313,9 +1315,9 @@ public class ArrayUtil {
 
 		List<T> list = new ArrayList<>();
 
-		for (T obj : array) {
-			if (value != obj) {
-				list.add(obj);
+		for (T object : array) {
+			if (value != object) {
+				list.add(object);
 			}
 		}
 
@@ -1426,6 +1428,132 @@ public class ArrayUtil {
 			array[left] = array[right];
 			array[right] = value;
 		}
+	}
+
+	public static byte[] sortedUnique(byte[] array) {
+		Arrays.sort(array);
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if ((array[index] != array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
+	}
+
+	public static double[] sortedUnique(double[] array) {
+		Arrays.sort(array);
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if ((array[index] != array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
+	}
+
+	public static float[] sortedUnique(float[] array) {
+		Arrays.sort(array);
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if ((array[index] != array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
+	}
+
+	public static int[] sortedUnique(int[] array) {
+		Arrays.sort(array);
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if ((array[index] != array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
+	}
+
+	public static long[] sortedUnique(long[] array) {
+		Arrays.sort(array);
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if ((array[index] != array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
+	}
+
+	public static short[] sortedUnique(short[] array) {
+		Arrays.sort(array);
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if ((array[index] != array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
+	}
+
+	public static String[] sortedUnique(String[] array) {
+		Arrays.sort(array, Comparator.nullsLast(Comparator.naturalOrder()));
+
+		int index = 0;
+
+		for (int i = 1; i < array.length; i++) {
+			if (!Objects.equals(array[index], array[i]) && (++index != i)) {
+				array[index] = array[i];
+			}
+		}
+
+		if (++index != array.length) {
+			return Arrays.copyOf(array, index);
+		}
+
+		return array;
 	}
 
 	public static Object split(Object array, int splitSize) {
@@ -1737,14 +1865,12 @@ public class ArrayUtil {
 		return newArray;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static String[] toArray(String[] array) {
-		String[] newArray = new String[array.length];
-
-		for (int i = 0; i < array.length; i++) {
-			newArray[i] = array[i].toString();
-		}
-
-		return newArray;
+		return array.clone();
 	}
 
 	public static <T, A> A[] toArray(T[] list, Accessor<T, A> accessor) {
@@ -1950,7 +2076,7 @@ public class ArrayUtil {
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(2 * array.length - 1);
+		StringBundler sb = new StringBundler((2 * array.length) - 1);
 
 		for (int i = 0; i < array.length; i++) {
 			Object bean = array[i];
@@ -1997,7 +2123,7 @@ public class ArrayUtil {
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(2 * list.length - 1);
+		StringBundler sb = new StringBundler((2 * list.length) - 1);
 
 		for (int i = 0; i < list.length; i++) {
 			T bean = list[i];
@@ -2165,6 +2291,10 @@ public class ArrayUtil {
 			set.add(b);
 		}
 
+		if (array.length == set.size()) {
+			return array;
+		}
+
 		return toArray(set.toArray(new Byte[0]));
 	}
 
@@ -2173,6 +2303,10 @@ public class ArrayUtil {
 
 		for (double d : array) {
 			set.add(d);
+		}
+
+		if (array.length == set.size()) {
+			return array;
 		}
 
 		return toArray(set.toArray(new Double[0]));
@@ -2185,6 +2319,10 @@ public class ArrayUtil {
 			set.add(f);
 		}
 
+		if (array.length == set.size()) {
+			return array;
+		}
+
 		return toArray(set.toArray(new Float[0]));
 	}
 
@@ -2193,6 +2331,10 @@ public class ArrayUtil {
 
 		for (int i : array) {
 			set.add(i);
+		}
+
+		if (array.length == set.size()) {
+			return array;
 		}
 
 		return toArray(set.toArray(new Integer[0]));
@@ -2205,6 +2347,10 @@ public class ArrayUtil {
 			set.add(l);
 		}
 
+		if (array.length == set.size()) {
+			return array;
+		}
+
 		return toArray(set.toArray(new Long[0]));
 	}
 
@@ -2213,6 +2359,10 @@ public class ArrayUtil {
 
 		for (short s : array) {
 			set.add(s);
+		}
+
+		if (array.length == set.size()) {
+			return array;
 		}
 
 		return toArray(set.toArray(new Short[0]));
@@ -2225,7 +2375,11 @@ public class ArrayUtil {
 			set.add(s);
 		}
 
-		return toArray(set.toArray(new String[0]));
+		if (array.length == set.size()) {
+			return array;
+		}
+
+		return set.toArray(new String[0]);
 	}
 
 }

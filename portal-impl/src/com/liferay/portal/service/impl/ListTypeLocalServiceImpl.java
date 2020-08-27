@@ -44,9 +44,7 @@ public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 		listType.setName(name);
 		listType.setType(type);
 
-		listTypePersistence.update(listType);
-
-		return listType;
+		return listTypePersistence.update(listType);
 	}
 
 	@Override
@@ -78,11 +76,12 @@ public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 		ListType listType = listTypePersistence.fetchByPrimaryKey(listTypeId);
 
 		if ((listType == null) || !Objects.equals(listType.getType(), type)) {
-			NoSuchListTypeException nslte = new NoSuchListTypeException();
+			NoSuchListTypeException noSuchListTypeException =
+				new NoSuchListTypeException();
 
-			nslte.setType(type);
+			noSuchListTypeException.setType(type);
 
-			throw nslte;
+			throw noSuchListTypeException;
 		}
 	}
 

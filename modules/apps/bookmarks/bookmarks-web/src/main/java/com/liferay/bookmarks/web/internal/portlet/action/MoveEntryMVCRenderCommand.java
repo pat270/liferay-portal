@@ -55,9 +55,9 @@ public class MoveEntryMVCRenderCommand implements MVCRenderCommand {
 			renderRequest.setAttribute(
 				BookmarksWebKeys.BOOKMARKS_ENTRIES, entries);
 
-			BookmarksEntry entry = ActionUtil.getEntry(renderRequest);
-
-			renderRequest.setAttribute(BookmarksWebKeys.BOOKMARKS_ENTRY, entry);
+			renderRequest.setAttribute(
+				BookmarksWebKeys.BOOKMARKS_ENTRY,
+				ActionUtil.getEntry(renderRequest));
 
 			List<BookmarksFolder> folders = ActionUtil.getFolders(
 				renderRequest);
@@ -65,16 +65,16 @@ public class MoveEntryMVCRenderCommand implements MVCRenderCommand {
 			renderRequest.setAttribute(
 				BookmarksWebKeys.BOOKMARKS_FOLDERS, folders);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchEntryException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchEntryException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/bookmarks/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/bookmarks/move_entries.jsp";

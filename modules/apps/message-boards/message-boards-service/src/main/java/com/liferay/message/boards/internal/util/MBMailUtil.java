@@ -27,14 +27,12 @@ import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.InputStream;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -68,7 +66,9 @@ public class MBMailUtil {
 			byte[] bytes = null;
 
 			if (partContent instanceof String) {
-				bytes = ((String)partContent).getBytes();
+				String s = (String)partContent;
+
+				bytes = s.getBytes();
 			}
 			else if (partContent instanceof InputStream) {
 				bytes = JavaMailUtil.getBytes(part);
@@ -87,13 +87,12 @@ public class MBMailUtil {
 				}
 			}
 			else if (partContent instanceof String) {
-				Map<String, Object> options = new HashMap<>();
-
-				options.put("emailPartToMBMessageBody", Boolean.TRUE);
-
 				String messageBody = SanitizerUtil.sanitize(
 					0, 0, 0, MBMessage.class.getName(), 0, contentType,
-					Sanitizer.MODE_ALL, (String)partContent, options);
+					Sanitizer.MODE_ALL, (String)partContent,
+					HashMapBuilder.<String, Object>put(
+						"emailPartToMBMessageBody", Boolean.TRUE
+					).build());
 
 				if (contentType.startsWith(ContentTypes.TEXT_HTML)) {
 					mbMailMessage.setHtmlBody(messageBody);

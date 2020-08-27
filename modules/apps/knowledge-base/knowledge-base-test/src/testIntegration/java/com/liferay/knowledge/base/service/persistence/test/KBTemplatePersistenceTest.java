@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,8 @@ public class KBTemplatePersistenceTest {
 
 		KBTemplate newKBTemplate = _persistence.create(pk);
 
+		newKBTemplate.setMvccVersion(RandomTestUtil.nextLong());
+
 		newKBTemplate.setUuid(RandomTestUtil.randomString());
 
 		newKBTemplate.setGroupId(RandomTestUtil.nextLong());
@@ -149,6 +151,9 @@ public class KBTemplatePersistenceTest {
 		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(
 			newKBTemplate.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingKBTemplate.getMvccVersion(),
+			newKBTemplate.getMvccVersion());
 		Assert.assertEquals(
 			existingKBTemplate.getUuid(), newKBTemplate.getUuid());
 		Assert.assertEquals(
@@ -242,9 +247,10 @@ public class KBTemplatePersistenceTest {
 
 	protected OrderByComparator<KBTemplate> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"KBTemplate", "uuid", true, "kbTemplateId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "title", true, "lastPublishDate", true);
+			"KBTemplate", "mvccVersion", true, "uuid", true, "kbTemplateId",
+			true, "groupId", true, "companyId", true, "userId", true,
+			"userName", true, "createDate", true, "modifiedDate", true, "title",
+			true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -462,24 +468,69 @@ public class KBTemplatePersistenceTest {
 
 		_persistence.clearCache();
 
-		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(
-			newKBTemplate.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newKBTemplate.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingKBTemplate.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingKBTemplate, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		KBTemplate newKBTemplate = addKBTemplate();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBTemplate.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbTemplateId", newKBTemplate.getKbTemplateId()));
+
+		List<KBTemplate> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(KBTemplate kbTemplate) {
 		Assert.assertEquals(
-			Long.valueOf(existingKBTemplate.getGroupId()),
+			kbTemplate.getUuid(),
+			ReflectionTestUtil.invoke(
+				kbTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(kbTemplate.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingKBTemplate, "getOriginalGroupId", new Class<?>[0]));
+				kbTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected KBTemplate addKBTemplate() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		KBTemplate kbTemplate = _persistence.create(pk);
+
+		kbTemplate.setMvccVersion(RandomTestUtil.nextLong());
 
 		kbTemplate.setUuid(RandomTestUtil.randomString());
 

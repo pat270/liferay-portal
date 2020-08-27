@@ -14,7 +14,6 @@
 
 package com.liferay.portal.security.audit.storage.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see AuditEventService
  * @generated
  */
-@ProviderType
 public class AuditEventServiceUtil {
 
 	/*
@@ -52,7 +50,8 @@ public class AuditEventServiceUtil {
 				getAuditEvents(
 					long companyId, int start, int end,
 					com.liferay.portal.kernel.util.OrderByComparator
-						orderByComparator)
+						<com.liferay.portal.security.audit.storage.model.
+							AuditEvent> orderByComparator)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().getAuditEvents(
@@ -86,7 +85,8 @@ public class AuditEventServiceUtil {
 					int serverPort, String sessionID, boolean andSearch,
 					int start, int end,
 					com.liferay.portal.kernel.util.OrderByComparator
-						orderByComparator)
+						<com.liferay.portal.security.audit.storage.model.
+							AuditEvent> orderByComparator)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().getAuditEvents(

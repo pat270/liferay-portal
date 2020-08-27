@@ -1,8 +1,44 @@
 definition {
+
 	var formName = "Created Form Name";
 	var rowIndexNumber = "1";
 
+	macro enableLocalNetworkDataProvider {
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Data Providers",
+			configurationName = "Data Providers",
+			configurationScope = "Site Scope");
+
+		WaitForElementPresent(
+			key_checkboxOption = "Access Local Network",
+			locator1 = "Checkbox#ENABLE_CHECKBOX_VIA_SPAN");
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			Button.clickUpdate();
+		}
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			Click(
+				key_checkboxOption = "Access Local Network",
+				locator1 = "Checkbox#ENABLE_CHECKBOX_VIA_SPAN");
+
+			Button.clickSave();
+
+			Pause(locator1 = "5000");
+		}
+	}
+
 	macro gotoAddDataProvider {
+		LexiconEntry.gotoAdd();
+	}
+
+	macro gotoAddElementSet {
 		LexiconEntry.gotoAdd();
 	}
 
@@ -23,19 +59,19 @@ definition {
 
 		var key_fieldName = "${fieldName}";
 
+		ScrollBy(value1 = "0, 230");
+
 		while (IsElementNotPresent(locator1 = "Form#SIDEBAR_MENUITEM_REMOVE_FIELD")) {
 			Click(locator1 = "Form#SIDEBAR_ELLIPSIS");
 		}
 
 		Click(locator1 = "Form#SIDEBAR_MENUITEM_REMOVE_FIELD");
-
-		Click(locator1 = "Button#DELETE");
-
-		AssertElementNotPresent(locator1 = "Form#SIDEBAR_CLOSE");
 	}
 
 	macro gotoEditField {
 		var key_fieldName = "${fieldName}";
+
+		WaitForElementPresent(locator1 = "Form#FIELD_BODY");
 
 		Click(locator1 = "Form#FIELD_BODY");
 
@@ -52,8 +88,12 @@ definition {
 	macro gotoFormBuilder {
 		var key_assetTitle = "Form";
 
+		WaitForElementPresent(
+			locator1 = "NavBar#ASSET_TITLE",
+			value1 = "Form");
+
 		AssertClick(
-			locator1 = "NavBar#ASSET_TITLE_LINK",
+			locator1 = "NavBar#ASSET_TITLE",
 			value1 = "Form");
 	}
 
@@ -62,16 +102,22 @@ definition {
 			menuItem = "Permissions",
 			rowEntry = "${formName}");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoPreviewForm {
+		WaitForElementPresent(
+			locator1 = "Form#PREVIEW_FORM_BUTTON",
+			value1 = "Preview");
+
 		AssertClick(
-			locator1 = "Button#PREVIEW",
-			value1 = "Preview Form");
+			locator1 = "Form#PREVIEW_FORM_BUTTON",
+			value1 = "Preview");
 	}
 
 	macro gotoPublishCopyURLLink {
+		WaitForElementPresent(locator1 = "Form#PUBLISH_ICON");
+
 		Click(locator1 = "Form#PUBLISH_ICON");
 	}
 
@@ -88,8 +134,12 @@ definition {
 	macro gotoRules {
 		var key_assetTitle = "Rules";
 
+		WaitForElementPresent(
+			locator1 = "NavBar#ASSET_TITLE",
+			value1 = "Rules");
+
 		AssertClick(
-			locator1 = "NavBar#ASSET_TITLE_LINK",
+			locator1 = "NavBar#ASSET_TITLE",
 			value1 = "Rules");
 	}
 
@@ -108,7 +158,12 @@ definition {
 	}
 
 	macro gotoViewEntries {
-		AssertElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+		if (IsElementNotPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			AssertElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS_IE");
+		}
+		else {
+			AssertElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+		}
 
 		LexiconEntry.gotoEllipsisMenuItem(menuItem = "View Entries");
 	}
@@ -122,4 +177,5 @@ definition {
 
 		Navigator.openSpecificURL(url = "${publishFormURL}");
 	}
+
 }

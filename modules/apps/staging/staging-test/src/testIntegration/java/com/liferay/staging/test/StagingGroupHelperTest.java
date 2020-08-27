@@ -16,6 +16,7 @@ package com.liferay.staging.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.model.Group;
@@ -29,21 +30,18 @@ import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.staging.StagingGroupHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -65,10 +63,13 @@ public class StagingGroupHelperTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE,
 			SynchronousDestinationTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
+		UserTestUtil.setUser(TestPropsValues.getUser());
+
 		_addLocalStagingGroups();
 
 		_addRemoteStagingGroups();
@@ -86,31 +87,31 @@ public class StagingGroupHelperTest {
 		try {
 			GroupLocalServiceUtil.deleteGroup(_localLiveGroup.getGroupId());
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 		}
 
 		try {
 			GroupLocalServiceUtil.deleteGroup(_localStagingGroup.getGroupId());
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 		}
 
 		try {
 			GroupLocalServiceUtil.deleteGroup(_regularGroup.getGroupId());
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 		}
 
 		try {
 			GroupLocalServiceUtil.deleteGroup(_remoteLiveGroup.getGroupId());
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 		}
 
 		try {
 			GroupLocalServiceUtil.deleteGroup(_remoteStagingGroup.getGroupId());
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 		}
 	}
 
@@ -900,7 +901,7 @@ public class StagingGroupHelperTest {
 
 		String pathContext = PortalUtil.getPathContext();
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		ServiceContext serviceContext = new ServiceContext();
 
@@ -923,16 +924,15 @@ public class StagingGroupHelperTest {
 	private Group _addScopeGroup(Group group) throws Exception {
 		Layout layout = LayoutTestUtil.addLayout(group);
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.getDefault(), String.valueOf(layout.getPlid()));
-
 		return GroupLocalServiceUtil.addGroup(
 			TestPropsValues.getUserId(), GroupConstants.DEFAULT_PARENT_GROUP_ID,
 			Layout.class.getName(), layout.getPlid(),
-			GroupConstants.DEFAULT_LIVE_GROUP_ID, nameMap, null, 0, true,
-			GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null, false, true,
-			null);
+			GroupConstants.DEFAULT_LIVE_GROUP_ID,
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), String.valueOf(layout.getPlid())
+			).build(),
+			null, 0, true, GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION, null,
+			false, true, null);
 	}
 
 	private void _setPortalProperty(String propertyName, Object value)

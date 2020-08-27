@@ -35,7 +35,6 @@ import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.Filter;
 import com.liferay.portal.odata.filter.FilterParser;
 import com.liferay.portal.odata.filter.InvalidFilterException;
-import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 import com.liferay.segments.odata.search.ODataSearchAdapter;
 
 import java.util.Locale;
@@ -83,9 +82,9 @@ public class ODataSearchAdapterImpl implements ODataSearchAdapter {
 
 			return searchResultPermissionFilter.search(searchContext);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new PortalException(
-				"Unable to search with filter " + filterString, e);
+				"Unable to search with filter " + filterString, exception);
 		}
 	}
 
@@ -124,9 +123,9 @@ public class ODataSearchAdapterImpl implements ODataSearchAdapter {
 
 			return hits.getLength();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new PortalException(
-				"Unable to search with filter " + filterString, e);
+				"Unable to search with filter " + filterString, exception);
 		}
 	}
 
@@ -172,7 +171,7 @@ public class ODataSearchAdapterImpl implements ODataSearchAdapter {
 	private com.liferay.portal.kernel.search.filter.Filter _getSearchFilter(
 			String filterString, EntityModel entityModel,
 			FilterParser filterParser, Locale locale)
-		throws ExpressionVisitException {
+		throws Exception {
 
 		Filter filter = new Filter(filterParser.parse(filterString));
 
@@ -184,9 +183,9 @@ public class ODataSearchAdapterImpl implements ODataSearchAdapter {
 			return _expressionConvert.convert(
 				filter.getExpression(), locale, entityModel);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new InvalidFilterException(
-				"Invalid filter: " + e.getMessage(), e);
+				"Invalid filter: " + exception.getMessage(), exception);
 		}
 	}
 

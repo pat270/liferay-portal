@@ -1,0 +1,17 @@
+.ddm-field-renderer {
+	&--error {
+		background-color: #feefef;
+		border: 2px dashed #f48989;
+		border-radius: 4px;
+		color: #da1414;
+		padding: 20px;
+	}
+
+	&--title {
+		margin-bottom: 0;
+	}
+
+	&--button {
+		margin-top: 15px;
+	}
+}

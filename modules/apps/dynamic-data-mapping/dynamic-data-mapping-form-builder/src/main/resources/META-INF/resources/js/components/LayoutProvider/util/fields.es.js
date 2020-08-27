@@ -1,62 +1,74 @@
-import {findFieldByName} from '../../Form/FormSupport.es';
-import {PagesVisitor} from '../../../util/visitors.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-export const generateFieldName = (pages, desiredName, currentName = null) => {
-	let counter = 0;
-	let name = normalizeFieldName(desiredName);
+import {
+	FormSupport,
+	PagesVisitor,
+	normalizeFieldName,
+} from 'dynamic-data-mapping-form-renderer';
 
-	let existingField = findFieldByName(pages, name);
+import {getDefaultFieldName} from '../../../util/fieldSupport.es';
 
-	while (existingField && existingField.fieldName !== currentName) {
-		if (counter > 0) {
-			name = normalizeFieldName(desiredName) + counter;
+export const generateFieldName = (
+	pages,
+	desiredName,
+	currentName = null,
+	blacklist = [],
+	generateFieldNameUsingFieldLabel
+) => {
+	let fieldName;
+	let existingField;
+
+	if (generateFieldNameUsingFieldLabel) {
+		let counter = 0;
+
+		fieldName = normalizeFieldName(desiredName);
+
+		existingField = FormSupport.findFieldByFieldName(pages, fieldName);
+
+		while (
+			(existingField && existingField.fieldName !== currentName) ||
+			blacklist.includes(fieldName)
+		) {
+			if (counter > 0) {
+				fieldName = normalizeFieldName(desiredName) + counter;
+			}
+
+			existingField = FormSupport.findFieldByFieldName(pages, fieldName);
+
+			counter++;
 		}
 
-		existingField = findFieldByName(pages, name);
-
-		counter++;
+		return normalizeFieldName(fieldName);
 	}
+	else {
+		fieldName = desiredName;
 
-	return normalizeFieldName(name);
+		existingField = FormSupport.findFieldByFieldName(pages, fieldName);
+
+		while (
+			(existingField && existingField.fieldName !== currentName) ||
+			blacklist.includes(fieldName)
+		) {
+			fieldName = getDefaultFieldName();
+
+			existingField = FormSupport.findFieldByFieldName(pages, fieldName);
+		}
+
+		return fieldName;
+	}
 };
-
-export const checkInvalidFieldNameCharacter = character => {
-	return /[\\~`!@#$%^&*(){}[\];:"'<,.>?/\-+=|]/g.test(character);
-};
-
-export function normalizeFieldName(fieldName) {
-	let nextUpperCase = false;
-	let normalizedFieldName = '';
-
-	fieldName = fieldName.trim();
-
-	for (let i = 0; i < fieldName.length; i++) {
-		let item = fieldName[i];
-
-		if (item === ' ') {
-			nextUpperCase = true;
-
-			continue;
-		}
-		else if (checkInvalidFieldNameCharacter(item)) {
-			continue;
-		}
-
-		if (nextUpperCase) {
-			item = item.toUpperCase();
-
-			nextUpperCase = false;
-		}
-
-		normalizedFieldName += item;
-	}
-
-	if (/^\d/.test(normalizedFieldName)) {
-		normalizedFieldName = `_${normalizedFieldName}`;
-	}
-
-	return normalizedFieldName;
-}
 
 export const getFieldValue = (pages, fieldName) => {
 	return getFieldProperty(pages, fieldName, 'value');
@@ -67,11 +79,13 @@ export const getFieldProperty = (pages, fieldName, propertyName) => {
 	let propertyValue;
 
 	visitor.mapFields(
-		field => {
+		(field) => {
 			if (field.fieldName === fieldName) {
 				propertyValue = field[propertyName];
 			}
-		}
+		},
+		true,
+		true
 	);
 
 	return propertyValue;
@@ -81,49 +95,61 @@ export const getField = (pages, fieldName) => {
 	const visitor = new PagesVisitor(pages);
 	let field;
 
-	visitor.mapFields(
-		currentField => {
-			if (currentField.fieldName === fieldName) {
-				field = currentField;
-			}
+	visitor.mapFields((currentField) => {
+		if (currentField.fieldName === fieldName) {
+			field = currentField;
 		}
-	);
+	});
 
 	return field;
 };
 
 export const getFieldLocalizedValue = (pages, fieldName, locale) => {
-	const fieldLocalizedValue = getFieldProperty(pages, fieldName, 'localizedValue');
+	const fieldLocalizedValue = getFieldProperty(
+		pages,
+		fieldName,
+		'localizedValue'
+	);
 
 	return fieldLocalizedValue[locale];
 };
 
-export const updateFieldValidationProperty = (pages, fieldName, propertyName, propertyValue) => {
+export const updateFieldValidationProperty = (
+	pages,
+	fieldName,
+	propertyName,
+	propertyValue
+) => {
 	const visitor = new PagesVisitor(pages);
 
-	return visitor.mapFields(
-		field => {
-			if (field.fieldName === 'validation' && field.value) {
-				let expression = field.value.expression;
+	return visitor.mapFields((field) => {
+		if (field.fieldName === 'validation' && field.value) {
+			const expression = field.value.expression;
 
-				if (propertyName === 'fieldName' && expression) {
-					expression = expression.replace(fieldName, propertyValue);
-				}
-
-				field = {
-					...field,
-					validation: {
-						...field.validation,
-						[propertyName]: propertyValue
-					},
-					value: {
-						...field.value,
-						expression
-					}
-				};
+			if (
+				propertyName === 'fieldName' &&
+				expression &&
+				expression.value
+			) {
+				expression.value = expression.value.replace(
+					fieldName,
+					propertyValue
+				);
 			}
 
-			return field;
+			field = {
+				...field,
+				validation: {
+					...field.validation,
+					[propertyName]: propertyValue,
+				},
+				value: {
+					...field.value,
+					expression,
+				},
+			};
 		}
-	);
+
+		return field;
+	});
 };

@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class FormInstanceRecordExporterException extends PortalException {
 
 	public FormInstanceRecordExporterException() {
@@ -31,12 +28,14 @@ public class FormInstanceRecordExporterException extends PortalException {
 		super(msg);
 	}
 
-	public FormInstanceRecordExporterException(String msg, Throwable cause) {
-		super(msg, cause);
+	public FormInstanceRecordExporterException(
+		String msg, Throwable throwable) {
+
+		super(msg, throwable);
 	}
 
-	public FormInstanceRecordExporterException(Throwable cause) {
-		super(cause);
+	public FormInstanceRecordExporterException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -16,12 +16,9 @@ package com.liferay.change.tracking.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchProcessException extends NoSuchModelException {
 
 	public NoSuchProcessException() {
@@ -31,12 +28,12 @@ public class NoSuchProcessException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchProcessException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchProcessException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchProcessException(Throwable cause) {
-		super(cause);
+	public NoSuchProcessException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

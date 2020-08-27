@@ -255,7 +255,7 @@ The uad-application-name value specifies the name of the application that the
 entity type belongs to in the GDPR UI.
 -->
 <!ATTLIST entity
-	uad-applicaiton-name CDATA #IMPLIED
+	uad-application-name CDATA #IMPLIED
 >
 
 <!--

@@ -17,8 +17,6 @@
 <%@ include file="/definition_link/init.jsp" %>
 
 <%
-String redirect = ParamUtil.getString(request, "redirect");
-
 ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 
 String randomNamespace = (String)row.getParameter("randomNamespace");
@@ -33,7 +31,7 @@ String resource = workflowDefinitionLinkSearchEntry.getResource();
 	<portlet:param name="redirect" value="<%= currentURL %>" />
 </portlet:actionURL>
 
-<div hidden="true" id="<%= randomNamespace %>formContainer">
+<div class="d-none" id="<%= randomNamespace %>formContainer">
 	<aui:form action="<%= updateWorkflowDefinitionLinkURL %>" cssClass="workflow-definition-form" method="post">
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 		<aui:input name="namespace" type="hidden" value="<%= randomNamespace %>" />

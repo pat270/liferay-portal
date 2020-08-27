@@ -1,0 +1,221 @@
+<?xml version="1.0"?>
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
+
+<service-builder auto-import-default-references="false" auto-namespace-tables="false" mvcc-enabled="true" package-path="com.liferay.account">
+	<namespace>Account</namespace>
+	<entity external-reference-code="true" local-service="true" name="AccountEntry" remote-service="true">
+
+		<!-- PK fields -->
+
+		<column name="accountEntryId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="parentAccountEntryId" type="long" />
+		<column name="name" type="String" />
+		<column name="description" type="String" />
+		<column name="domains" type="String" />
+		<column name="logoId" type="long" />
+		<column name="taxIdNumber" type="String" />
+		<column name="type" type="String" />
+		<column name="status" type="int" />
+
+		<!-- Order -->
+
+		<order by="asc">
+			<order-column name="name" />
+		</order>
+
+		<!-- Finder methods -->
+
+		<finder name="CompanyId" return-type="Collection">
+			<finder-column name="companyId" />
+		</finder>
+		<finder name="C_S" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="status" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="Group" package-path="com.liferay.portal" />
+		<reference entity="Resource" package-path="com.liferay.portal" />
+		<reference entity="User" package-path="com.liferay.portal" />
+		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
+	</entity>
+	<entity local-service="true" name="AccountEntryOrganizationRel">
+
+		<!-- PK fields -->
+
+		<column name="accountEntryOrganizationRelId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="accountEntryId" type="long" />
+		<column name="organizationId" type="long" />
+
+		<!-- Finder methods -->
+
+		<finder name="AccountEntryId" return-type="Collection">
+			<finder-column name="accountEntryId" />
+		</finder>
+		<finder name="OrganizationId" return-type="Collection">
+			<finder-column name="organizationId" />
+		</finder>
+		<finder name="A_O" return-type="AccountEntryOrganizationRel">
+			<finder-column name="accountEntryId" />
+			<finder-column name="organizationId" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="AccountEntry" package-path="com.liferay.account" />
+		<reference entity="Organization" package-path="com.liferay.portal" />
+	</entity>
+	<entity local-service="true" name="AccountEntryUserRel">
+
+		<!-- PK fields -->
+
+		<column name="accountEntryUserRelId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="accountEntryId" type="long" />
+		<column name="accountUserId" type="long" />
+
+		<!-- Finder methods -->
+
+		<finder name="AEI" return-type="Collection">
+			<finder-column name="accountEntryId" />
+		</finder>
+		<finder name="AUI" return-type="Collection">
+			<finder-column name="accountUserId" />
+		</finder>
+		<finder name="AEI_AUI" return-type="AccountEntryUserRel">
+			<finder-column name="accountEntryId" />
+			<finder-column name="accountUserId" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="AccountEntry" package-path="com.liferay.account" />
+		<reference entity="User" package-path="com.liferay.portal" />
+	</entity>
+	<entity external-reference-code="true" local-service="true" name="AccountGroup" remote-service="true">
+
+		<!-- PK fields -->
+
+		<column name="accountGroupId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+		<column name="userId" type="long" />
+		<column name="userName" type="String" />
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="name" type="String" />
+		<column name="description" type="String" />
+
+		<!-- Finder methods -->
+
+		<finder name="CompanyId" return-type="Collection">
+			<finder-column name="companyId" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="AccountGroupAccountEntryRel" package-path="com.liferay.account" />
+		<reference entity="User" package-path="com.liferay.portal" />
+	</entity>
+	<entity local-service="true" name="AccountGroupAccountEntryRel">
+
+		<!-- PK fields -->
+
+		<column name="AccountGroupAccountEntryRelId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="accountGroupId" type="long" />
+		<column name="accountEntryId" type="long" />
+
+		<!-- Finder methods -->
+
+		<finder name="AccountGroupId" return-type="Collection">
+			<finder-column name="accountGroupId" />
+		</finder>
+		<finder name="AccountEntryId" return-type="Collection">
+			<finder-column name="accountEntryId" />
+		</finder>
+		<finder name="AGI_AEI" return-type="AccountGroupAccountEntryRel">
+			<finder-column name="accountGroupId" />
+			<finder-column name="accountEntryId" />
+		</finder>
+	</entity>
+	<entity local-service="true" name="AccountRole">
+
+		<!-- PK fields -->
+
+		<column name="accountRoleId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="accountEntryId" type="long" />
+		<column name="roleId" type="long" />
+
+		<!-- Finder methods -->
+
+		<finder name="CompanyId" return-type="Collection">
+			<finder-column name="companyId" />
+		</finder>
+		<finder name="AccountEntryId" return-type="Collection">
+			<finder-column arrayable-operator="OR" name="accountEntryId" />
+		</finder>
+		<finder name="RoleId" return-type="AccountRole">
+			<finder-column name="roleId" />
+		</finder>
+
+		<!-- References -->
+
+		<reference entity="AccountEntry" package-path="com.liferay.account" />
+		<reference entity="Role" package-path="com.liferay.portal" />
+		<reference entity="User" package-path="com.liferay.portal" />
+		<reference entity="UserGroupRole" package-path="com.liferay.portal" />
+	</entity>
+	<exceptions>
+		<exception>AccountEntryDomains</exception>
+		<exception>AccountEntryName</exception>
+		<exception>AccountEntryType</exception>
+		<exception>DuplicateAccountEntryId</exception>
+		<exception>DuplicateAccountEntryOrganizationRel</exception>
+		<exception>DuplicateAccountEntryUserRel</exception>
+		<exception>DuplicateAccountGroupAccountEntryRel</exception>
+	</exceptions>
+</service-builder>

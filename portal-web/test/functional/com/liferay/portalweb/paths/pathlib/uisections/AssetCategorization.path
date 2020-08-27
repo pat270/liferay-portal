@@ -15,7 +15,7 @@
 </tr>
 <tr>
 	<td>CATEGORY</td>
-	<td>//div[contains(@id,'assetCategoriesSelector')]//span[@id='item-tag'][contains(.,'${key_categoryName}')]</td>
+	<td>//div[contains(@id,'assetCategoriesSelector') or contains(@class,'field-content')]//span[contains(.,'${key_categoryName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -25,7 +25,7 @@
 </tr>
 <tr>
 	<td>CATEGORY_AUTOCOMPLETE_SPECIFIC</td>
-	<td>//div[contains(@id,'clay_dropdown_portal')]//ul/li/a[.='${key_categoryName}']</td>
+	<td>//div[contains(@class,'autocomplete-dropdown-menu')]//ul/li//div[.='${key_categoryName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -35,17 +35,17 @@
 </tr>
 <tr>
 	<td>VOCABULARY_LIST_ITEM</td>
-	<td>//*[@class='field-content'][${key_count}]/label</td>
+	<td>//*[@class='field-content']//label[normalize-space(text())='${key_fieldLabel}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TAG</td>
-	<td>//div[contains(@id,'assetTagsSelector')]//span[@id='item-tag'][contains(.,'${key_tagName}')]</td>
+	<td>//div[contains(@id,'assetTagsSelector')]//span[(contains(@class,'label-dismissible'))][contains(.,'${key_tagName}')] | //div[contains(@class,'tags-selector')]//span[(contains(@class,'label-dismissible'))][contains(.,'${key_tagName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TAG_REMOVE</td>
-	<td>//span[@id='item-tag'][contains(.,'${key_tagName}')]//button[contains(@class,'close')]</td>
+	<td>//span[(contains(@class,'label-dismissible'))][contains(.,'${key_tagName}')]//button[contains(@class,'close')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -55,22 +55,22 @@
 </tr>
 <tr>
 	<td>TAG_AUTOCOMPLETE_CONTAINER</td>
-	<td>//ul[contains(@class,'dropdown-menu')][contains(@class,'show')]</td>
+	<td>//div[contains(@class,'dropdown-menu')][contains(@class,'show')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TAG_AUTOCOMPLETE_SPECIFIC</td>
-	<td>//ul[contains(@class,'dropdown-menu')][contains(@class,'show')]/li/a[.='${key_tagName}']</td>
+	<td>//div[contains(@class,'dropdown-menu')]/ul[contains(@class,'list-unstyled')]//div[.='${key_tagName}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TAGS_SELECT_BUTTON</td>
-	<td>//div[contains(@id,'assetTagsSelector')]//button[contains(.,'Select')]</td>
+	<td>//div[contains(@class,'tags-selector')]//button[contains(.,'Select')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TAGS_REMOVE_ICON_GENERIC</td>
-	<td>//span[@id='item-tag']//button[contains(@class,'close')]</td>
+	<td>//span[(contains(@class,'label-dismissible'))]//button[contains(@class,'close')]</td>
 	<td></td>
 </tr>
 </tbody>

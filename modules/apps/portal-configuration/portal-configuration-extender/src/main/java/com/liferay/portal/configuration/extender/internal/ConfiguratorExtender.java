@@ -124,8 +124,8 @@ public class ConfiguratorExtender implements BundleTrackerCustomizer<Bundle> {
 					configurationAdmin, symbolicName,
 					namedConfigurationContent);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 	}
@@ -171,13 +171,13 @@ public class ConfiguratorExtender implements BundleTrackerCustomizer<Bundle> {
 		try {
 			properties = namedConfigurationContent.getProperties();
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
 						"Supplier from description ", namedConfigurationContent,
 						" threw an exception: "),
-					t);
+					throwable);
 			}
 
 			return;
@@ -197,15 +197,15 @@ public class ConfiguratorExtender implements BundleTrackerCustomizer<Bundle> {
 			propertyFunction,
 		String filePattern) {
 
-		Enumeration<URL> entries = bundle.findEntries(
+		Enumeration<URL> enumeration = bundle.findEntries(
 			configurationPath, filePattern, true);
 
-		if (entries == null) {
+		if (enumeration == null) {
 			return;
 		}
 
-		while (entries.hasMoreElements()) {
-			URL url = entries.nextElement();
+		while (enumeration.hasMoreElements()) {
+			URL url = enumeration.nextElement();
 
 			String name = url.getFile();
 

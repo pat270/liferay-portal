@@ -26,6 +26,8 @@ import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.document.library.kernel.store.Store;
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.internal.util.DDMImpl;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
@@ -48,9 +50,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStorageLink;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.UnlocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
@@ -81,8 +81,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -92,6 +93,7 @@ import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -110,8 +112,11 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.Node;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.XPath;
+import com.liferay.view.count.service.ViewCountEntryLocalService;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -140,7 +145,8 @@ import java.util.regex.Pattern;
 public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 	public UpgradeDynamicDataMapping(
-		AssetEntryLocalService assetEntryLocalService, DDM ddm,
+		AssetEntryLocalService assetEntryLocalService,
+		ClassNameLocalService classNameLocalService, DDM ddm,
 		DDMFormDeserializer ddmFormJSONDeserializer,
 		DDMFormDeserializer ddmFormXSDDeserializer,
 		DDMFormLayoutSerializer ddmFormLayoutSerializer,
@@ -156,9 +162,10 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		ResourceActions resourceActions,
 		ResourceLocalService resourceLocalService,
 		ResourcePermissionLocalService resourcePermissionLocalService,
-		Store store) {
+		Store store, ViewCountEntryLocalService viewCountEntryLocalService) {
 
 		_assetEntryLocalService = assetEntryLocalService;
+		_classNameLocalService = classNameLocalService;
 		_ddm = ddm;
 		_ddmFormJSONDeserializer = ddmFormJSONDeserializer;
 		_ddmFormXSDDeserializer = ddmFormXSDDeserializer;
@@ -175,9 +182,11 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		_resourceLocalService = resourceLocalService;
 		_resourcePermissionLocalService = resourcePermissionLocalService;
 		_store = store;
+		_viewCountEntryLocalService = viewCountEntryLocalService;
 
 		_dlFolderModelPermissions = ModelPermissionsFactory.create(
-			_DLFOLDER_GROUP_PERMISSIONS, _DLFOLDER_GUEST_PERMISSIONS);
+			_DLFOLDER_GROUP_PERMISSIONS, _DLFOLDER_GUEST_PERMISSIONS,
+			DLFolder.class.getName());
 
 		_dlFolderModelPermissions.addRolePermissions(
 			RoleConstants.OWNER, _DLFOLDER_OWNER_PERMISSIONS);
@@ -253,15 +262,17 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			try {
 				_expandoTableLocalService.deleteTable(expandoTableId);
 			}
-			catch (PortalException pe) {
-				_log.error("Unable delete expando table", pe);
+			catch (PortalException portalException) {
+				_log.error("Unable delete expando table", portalException);
 
-				throw pe;
+				throw portalException;
 			}
 		}
 	}
 
-	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
+	protected DDMFormValues deserialize(String content, DDMForm ddmForm)
+		throws Exception {
+
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
@@ -270,10 +281,19 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			ddmFormValuesDeserializerDeserializeResponse =
 				_ddmFormValuesDeserializer.deserialize(builder.build());
 
+		Exception exception =
+			ddmFormValuesDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
+
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
 
-	protected DDMForm deserialize(String content, String type) {
+	protected DDMForm deserialize(String content, String type)
+		throws Exception {
+
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
 
@@ -289,6 +309,13 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		DDMFormDeserializerDeserializeResponse
 			ddmFormDeserializerDeserializeResponse =
 				ddmFormDeserializer.deserialize(builder.build());
+
+		Exception exception =
+			ddmFormDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
 
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
@@ -379,9 +406,11 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 						}
 					}
 
-					_ddmForms.put(structureId, ddmForm);
+					DDMForm updatedDDMForm = updateDDMFormFields(ddmForm);
 
-					return ddmForm;
+					_ddmForms.put(structureId, updatedDDMForm);
+
+					return updatedDDMForm;
 				}
 			}
 
@@ -395,7 +424,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		Map<String, DDMFormField> ddmFormFieldsMap =
 			ddmForm.getDDMFormFieldsMap(true);
 
-		Set<String> ddmFormFieldsNames = new HashSet<>(ddmFormFieldsMap.size());
+		Set<String> ddmFormFieldsNames = new HashSet<>();
 
 		for (String ddmFormFieldName : ddmFormFieldsMap.keySet()) {
 			ddmFormFieldsNames.add(StringUtil.toLowerCase(ddmFormFieldName));
@@ -611,10 +640,10 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 		Map<String, String> ddmFormFieldNamesMap = new HashMap<>();
 
-		Map<String, DDMFormField> ddmFormFieldMap = ddmForm.getDDMFormFieldsMap(
-			true);
+		Map<String, DDMFormField> ddmFormFieldsMap =
+			ddmForm.getDDMFormFieldsMap(true);
 
-		for (DDMFormField ddmFormField : ddmFormFieldMap.values()) {
+		for (DDMFormField ddmFormField : ddmFormFieldsMap.values()) {
 			String oldName = (String)ddmFormField.getProperty("oldName");
 
 			if (oldName == null) {
@@ -789,12 +818,12 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 			ps.executeUpdate();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				"Unable to update dynamic data mapping template with " +
 					"template ID " + templateId);
 
-			throw e;
+			throw exception;
 		}
 	}
 
@@ -1126,10 +1155,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 					long expandoRowId = rs.getLong("classPK");
 
-					Map<String, String> expandoValuesMap = getExpandoValuesMap(
-						expandoRowId);
-
-					String xml = toXML(expandoValuesMap);
+					String xml = toXML(getExpandoValuesMap(expandoRowId));
 
 					ps2.setString(1, PortalUUIDUtil.generate());
 					ps2.setLong(2, expandoRowId);
@@ -1247,8 +1273,6 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 				// Structure content
 
 				DDMForm ddmForm = getDDMForm(structureId);
-
-				ddmForm = updateDDMFormFields(ddmForm);
 
 				populateStructureInvalidDDMFormFieldNamesMap(
 					structureId, ddmForm);
@@ -1453,32 +1477,34 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 				// Template version
 
-				if (!hasTemplateVersion(templateId, version)) {
-					long userId = rs.getLong("userId");
-					String userName = rs.getString("userName");
-					Timestamp modifiedDate = rs.getTimestamp("modifiedDate");
-
-					ps4.setLong(1, increment());
-					ps4.setLong(2, rs.getLong("groupId"));
-					ps4.setLong(3, rs.getLong("companyId"));
-					ps4.setLong(4, userId);
-					ps4.setString(5, userName);
-					ps4.setTimestamp(6, modifiedDate);
-					ps4.setLong(7, classNameId);
-					ps4.setLong(8, classPK);
-					ps4.setLong(9, templateId);
-					ps4.setString(10, DDMStructureConstants.VERSION_DEFAULT);
-					ps4.setString(11, rs.getString("name"));
-					ps4.setString(12, rs.getString("description"));
-					ps4.setString(13, language);
-					ps4.setString(14, updatedScript);
-					ps4.setInt(15, WorkflowConstants.STATUS_APPROVED);
-					ps4.setLong(16, userId);
-					ps4.setString(17, userName);
-					ps4.setTimestamp(18, modifiedDate);
-
-					ps4.addBatch();
+				if (hasTemplateVersion(templateId, version)) {
+					continue;
 				}
+
+				long userId = rs.getLong("userId");
+				String userName = rs.getString("userName");
+				Timestamp modifiedDate = rs.getTimestamp("modifiedDate");
+
+				ps4.setLong(1, increment());
+				ps4.setLong(2, rs.getLong("groupId"));
+				ps4.setLong(3, rs.getLong("companyId"));
+				ps4.setLong(4, userId);
+				ps4.setString(5, userName);
+				ps4.setTimestamp(6, modifiedDate);
+				ps4.setLong(7, classNameId);
+				ps4.setLong(8, classPK);
+				ps4.setLong(9, templateId);
+				ps4.setString(10, DDMStructureConstants.VERSION_DEFAULT);
+				ps4.setString(11, rs.getString("name"));
+				ps4.setString(12, rs.getString("description"));
+				ps4.setString(13, language);
+				ps4.setString(14, updatedScript);
+				ps4.setInt(15, WorkflowConstants.STATUS_APPROVED);
+				ps4.setLong(16, userId);
+				ps4.setString(17, userName);
+				ps4.setTimestamp(18, modifiedDate);
+
+				ps4.addBatch();
 			}
 
 			ps2.executeBatch();
@@ -1539,15 +1565,14 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 						try (ResultSet rs2 = ps2.executeQuery()) {
 							if (rs2.next()) {
 								long companyId = rs2.getLong("companyId");
-								String xml = rs2.getString("data_");
+
+								String xml = renameInvalidDDMFormFieldNames(
+									structureId, rs2.getString("data_"));
 
 								DDMFormValues ddmFormValues = getDDMFormValues(
 									companyId, ddmForm, xml);
 
 								String content = toJSON(ddmFormValues);
-
-								content = renameInvalidDDMFormFieldNames(
-									structureId, content);
 
 								ps3.setString(1, content);
 
@@ -1683,6 +1708,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		Pattern.compile(_INVALID_FIELD_NAME_CHARS_REGEX);
 
 	private final AssetEntryLocalService _assetEntryLocalService;
+	private final ClassNameLocalService _classNameLocalService;
 	private final DDM _ddm;
 	private long _ddmContentClassNameId;
 	private final DDMFormDeserializer _ddmFormJSONDeserializer;
@@ -1714,6 +1740,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		new HashMap<>();
 	private final Map<Long, Long> _templateResourceClassNameIds =
 		new HashMap<>();
+	private final ViewCountEntryLocalService _viewCountEntryLocalService;
 
 	private static class DateDDMFormFieldValueTransformer
 		implements DDMFormFieldValueTransformer {
@@ -1781,20 +1808,21 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 					for (int i = 0; i < repetitions; i++) {
 						DDMFormFieldValue ddmFormFieldValue =
-							createDDMFormFieldValue(fieldName);
+							createDDMFormFieldValue(
+								ddmFormField, ddmFieldsCounter, fieldName,
+								rootElement);
 
-						setDDMFormFieldValueProperties(
-							ddmFormFieldValue, ddmFormField, rootElement,
-							ddmFieldsCounter);
-
-						ddmFormValues.addDDMFormFieldValue(ddmFormFieldValue);
+						if (ddmFormFieldValue != null) {
+							ddmFormValues.addDDMFormFieldValue(
+								ddmFormFieldValue);
+						}
 					}
 				}
 
 				return ddmFormValues;
 			}
-			catch (DocumentException de) {
-				throw new UpgradeException(de);
+			catch (DocumentException documentException) {
+				throw new UpgradeException(documentException);
 			}
 		}
 
@@ -1848,12 +1876,89 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			return repetitions;
 		}
 
-		protected DDMFormFieldValue createDDMFormFieldValue(String name) {
-			DDMFormFieldValue ddmFormFieldValue = new DDMFormFieldValue();
+		protected DDMFormFieldValue createDDMFormFieldValue(
+				DDMFormField ddmFormField, DDMFieldsCounter ddmFieldsCounter,
+				String fieldName, Element rootElement)
+			throws PortalException {
 
-			ddmFormFieldValue.setName(name);
+			Value value = extractDDMFormFieldValue(
+				ddmFormField, ddmFieldsCounter, fieldName, rootElement);
+
+			if ((value == null) && !ddmFormField.isTransient()) {
+				return null;
+			}
+
+			DDMFormFieldValue ddmFormFieldValue = new DDMFormFieldValue() {
+				{
+					setName(fieldName);
+					setValue(value);
+				}
+			};
+
+			setDDMFormFieldValueInstanceId(
+				ddmFormFieldValue, rootElement, ddmFieldsCounter);
+
+			setNestedDDMFormFieldValues(
+				ddmFormFieldValue, ddmFormField, rootElement, ddmFieldsCounter);
+
+			ddmFieldsCounter.incrementKey(fieldName);
 
 			return ddmFormFieldValue;
+		}
+
+		protected Value extractDDMFormFieldLocalizedValue(
+			Element element, int index) {
+
+			Value value = new LocalizedValue(getDefaultLocale(element));
+
+			Map<String, Integer> dynamicContentValues = new HashMap<>();
+
+			for (Element dynamicContentElement :
+					element.elements("dynamic-content")) {
+
+				String languageId = dynamicContentElement.attributeValue(
+					"language-id");
+
+				int localizedContentIndex = dynamicContentValues.getOrDefault(
+					languageId, 0);
+
+				if (localizedContentIndex == index) {
+					value.addString(
+						LocaleUtil.fromLanguageId(languageId),
+						dynamicContentElement.getText());
+				}
+
+				dynamicContentValues.put(languageId, localizedContentIndex + 1);
+			}
+
+			return value;
+		}
+
+		protected Value extractDDMFormFieldValue(
+			DDMFormField ddmFormField, DDMFieldsCounter ddmFieldsCounter,
+			String fieldName, Element rootElement) {
+
+			Value value = null;
+
+			Element element = getDynamicElementElementByName(
+				rootElement, fieldName);
+
+			if (Validator.isNotNull(ddmFormField.getDataType()) &&
+				(element != null)) {
+
+				if (ddmFormField.isLocalizable()) {
+					value = extractDDMFormFieldLocalizedValue(
+						element, ddmFieldsCounter.get(fieldName));
+				}
+				else {
+					value = new UnlocalizedValue(
+						getDDMFormFieldValueValueString(
+							element, getDefaultLocale(element),
+							ddmFieldsCounter.get(fieldName)));
+				}
+			}
+
+			return value;
 		}
 
 		protected Set<Locale> getAvailableLocales(
@@ -1998,13 +2103,13 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 					locale = UpgradeProcessUtil.getDefaultLanguageId(
 						_companyId);
 				}
-				catch (SQLException sqle) {
+				catch (SQLException sqlException) {
 					_log.error(
 						"Unable to get default locale for company " +
 							_companyId,
-						sqle);
+						sqlException);
 
-					throw new RuntimeException(sqle);
+					throw new RuntimeException(sqlException);
 				}
 
 				return LocaleUtil.fromLanguageId(locale);
@@ -2108,97 +2213,6 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			ddmFormFieldValue.setInstanceId(instanceId);
 		}
 
-		protected void setDDMFormFieldValueLocalizedValue(
-			DDMFormFieldValue ddmFormFieldValue, Element dynamicElementElement,
-			int index) {
-
-			Value value = new LocalizedValue(
-				getDefaultLocale(dynamicElementElement));
-
-			Map<String, Integer> dynamicContentValuesMap = new HashMap<>();
-
-			for (Element dynamicContentElement :
-					dynamicElementElement.elements("dynamic-content")) {
-
-				String languageId = dynamicContentElement.attributeValue(
-					"language-id");
-
-				int localizedContentIndex = 0;
-
-				if (dynamicContentValuesMap.containsKey(languageId)) {
-					localizedContentIndex = dynamicContentValuesMap.get(
-						languageId);
-				}
-
-				if (localizedContentIndex == index) {
-					Locale locale = LocaleUtil.fromLanguageId(languageId);
-
-					String content = dynamicContentElement.getText();
-
-					value.addString(locale, content);
-				}
-
-				dynamicContentValuesMap.put(
-					languageId, localizedContentIndex + 1);
-			}
-
-			ddmFormFieldValue.setValue(value);
-		}
-
-		protected void setDDMFormFieldValueProperties(
-				DDMFormFieldValue ddmFormFieldValue, DDMFormField ddmFormField,
-				Element rootElement, DDMFieldsCounter ddmFieldsCounter)
-			throws PortalException {
-
-			setDDMFormFieldValueInstanceId(
-				ddmFormFieldValue, rootElement, ddmFieldsCounter);
-
-			setNestedDDMFormFieldValues(
-				ddmFormFieldValue, ddmFormField, rootElement, ddmFieldsCounter);
-
-			setDDMFormFieldValueValues(
-				ddmFormFieldValue, ddmFormField, rootElement, ddmFieldsCounter);
-		}
-
-		protected void setDDMFormFieldValueUnlocalizedValue(
-			DDMFormFieldValue ddmFormFieldValue, Element dynamicElement,
-			int index) {
-
-			String valueString = getDDMFormFieldValueValueString(
-				dynamicElement, getDefaultLocale(dynamicElement), index);
-
-			Value value = new UnlocalizedValue(valueString);
-
-			ddmFormFieldValue.setValue(value);
-		}
-
-		protected void setDDMFormFieldValueValues(
-			DDMFormFieldValue ddmFormFieldValue, DDMFormField ddmFormField,
-			Element rootElement, DDMFieldsCounter ddmFieldsCounter) {
-
-			String fieldName = ddmFormFieldValue.getName();
-
-			Element dynamicElement = getDynamicElementElementByName(
-				rootElement, fieldName);
-
-			if (Validator.isNotNull(ddmFormField.getDataType()) &&
-				(dynamicElement != null)) {
-
-				if (ddmFormField.isLocalizable()) {
-					setDDMFormFieldValueLocalizedValue(
-						ddmFormFieldValue, dynamicElement,
-						ddmFieldsCounter.get(fieldName));
-				}
-				else {
-					setDDMFormFieldValueUnlocalizedValue(
-						ddmFormFieldValue, dynamicElement,
-						ddmFieldsCounter.get(fieldName));
-				}
-			}
-
-			ddmFieldsCounter.incrementKey(fieldName);
-		}
-
 		protected void setDDMFormValuesAvailableLocales(
 			DDMFormValues ddmFormValues, Element rootElement) {
 
@@ -2247,14 +2261,14 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 				for (int i = 0; i < repetitions; i++) {
 					DDMFormFieldValue nestedDDMFormFieldValue =
-						createDDMFormFieldValue(nestedDDMFormFieldName);
+						createDDMFormFieldValue(
+							nestedDDMFormField, ddmFieldsCounter,
+							nestedDDMFormFieldName, rootElement);
 
-					setDDMFormFieldValueProperties(
-						nestedDDMFormFieldValue, nestedDDMFormField,
-						rootElement, ddmFieldsCounter);
-
-					ddmFormFieldValue.addNestedDDMFormFieldValue(
-						nestedDDMFormFieldValue);
+					if (nestedDDMFormFieldValue != null) {
+						ddmFormFieldValue.addNestedDDMFormFieldValue(
+							nestedDDMFormFieldValue);
+					}
 				}
 			}
 		}
@@ -2280,10 +2294,11 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			_entryVersion = entryVersion;
 			_entryModelName = entryModelName;
 
-			_modelPermissions = ModelPermissionsFactory.create(
-				_groupPermissions, _guestPermissions);
+			_dlFileEntryModelPermissions = ModelPermissionsFactory.create(
+				_groupPermissions, _guestPermissions,
+				DLFileEntry.class.getName());
 
-			_modelPermissions.addRolePermissions(
+			_dlFileEntryModelPermissions.addRolePermissions(
 				RoleConstants.OWNER, _ownerPermissions);
 		}
 
@@ -2356,9 +2371,13 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			assetEntry.setHeight(height);
 			assetEntry.setWidth(width);
 			assetEntry.setPriority(priority);
-			assetEntry.setViewCount(viewCount);
 
 			_assetEntryLocalService.updateAssetEntry(assetEntry);
+
+			_viewCountEntryLocalService.incrementViewCount(
+				companyId,
+				_classNameLocalService.getClassNameId(AssetEntry.class),
+				entryId, viewCount);
 		}
 
 		protected long addDDMDLFolder() throws Exception {
@@ -2417,12 +2436,16 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			dlFileEntry.setFileEntryTypeId(fileEntryTypeId);
 			dlFileEntry.setVersion(version);
 			dlFileEntry.setSize(size);
-			dlFileEntry.setReadCount(readCount);
 			dlFileEntry.setSmallImageId(smallImageId);
 			dlFileEntry.setLargeImageId(largeImageId);
 			dlFileEntry.setCustom1ImageId(custom1ImageId);
 			dlFileEntry.setCustom2ImageId(custom2ImageId);
 			dlFileEntry.setManualCheckInRequired(manualCheckInRequired);
+
+			_viewCountEntryLocalService.incrementViewCount(
+				dlFileEntry.getCompanyId(),
+				_classNameLocalService.getClassNameId(DLFileEntry.class),
+				dlFileEntry.getFileEntryId(), readCount);
 
 			return dlFileEntry;
 		}
@@ -2568,19 +2591,21 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 			return entryVersionFolderId;
 		}
 
-		protected File fetchFile(String filePath) throws PortalException {
+		protected File fetchFile(String filePath) throws Exception {
 			try {
-				return _store.getFile(
-					_companyId, CompanyConstants.SYSTEM, filePath);
+				return FileUtil.createTempFile(
+					_store.getFileAsStream(
+						_companyId, CompanyConstants.SYSTEM, filePath,
+						StringPool.BLANK));
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				_log.error(
 					String.format(
 						"Unable to find the binary file with path \"%s\" " +
 							"referenced by %s",
 						filePath, getModelInfo()));
 
-				throw pe;
+				throw portalException;
 			}
 		}
 
@@ -2679,7 +2704,8 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 				ServiceContext serviceContext = new ServiceContext();
 
-				serviceContext.setModelPermissions(_modelPermissions);
+				serviceContext.setModelPermissions(
+					_dlFileEntryModelPermissions);
 
 				_resourceLocalService.addModelResources(
 					dlFileEntry, serviceContext);
@@ -2698,24 +2724,30 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 				// File
 
-				_store.addFile(_companyId, dlFolderId, name, file);
+				try (InputStream is = new FileInputStream(file)) {
+					_store.addFile(
+						_companyId, dlFolderId, name, Store.VERSION_DEFAULT,
+						is);
+				}
+
+				file.delete();
 
 				return fileEntryUuid;
 			}
-			catch (Exception e) {
-				throw new UpgradeException(e);
+			catch (Exception exception) {
+				throw new UpgradeException(exception);
 			}
 		}
 
 		private final long _companyId;
 		private final Timestamp _createDate;
+		private final ModelPermissions _dlFileEntryModelPermissions;
 		private final long _entryId;
 		private final String _entryModelName;
 		private final String _entryVersion;
 		private final long _groupId;
 		private final String[] _groupPermissions = {"ADD_DISCUSSION", "VIEW"};
 		private final String[] _guestPermissions = {"ADD_DISCUSSION", "VIEW"};
-		private final ModelPermissions _modelPermissions;
 		private final Timestamp _now = new Timestamp(
 			System.currentTimeMillis());
 		private final String[] _ownerPermissions = {

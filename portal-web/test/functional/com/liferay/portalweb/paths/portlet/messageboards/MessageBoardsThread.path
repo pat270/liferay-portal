@@ -10,7 +10,7 @@
 <tbody>
 <tr>
 	<td>TITLE_HEADER</td>
-	<td>//h3</td>
+	<td>//div[contains(@class,'message_boards')]//h3</td>
 	<td></td>
 </tr>
 <tr>
@@ -40,13 +40,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>THREAD_REPLY_EDITOR</td>
-	<td>//div[(contains(@id,'replyMessageBody') or contains(@id,'content')) and contains(@class,'alloy-editor-container')]//div[contains(@class,'alloy-editor-placeholder')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>THREAD_REPLY_SUBJECT</td>
-	<td>//div[contains(@class,'list-group-card') and contains(.,'${key_threadBody}')]//h4[contains(.,'${key_threadSubject}')]</td>
+	<td>//div[contains(@class,'autofit-col')]//h4[contains(.,'${key_threadSubject}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -121,13 +116,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>MESSAGE_RATING_1_UPVOTE</td>
-	<td>xpath=(//div[contains(@id,'ratingThumbContent')]/a[contains(@class,'rating-thumb-up')])[1]</td>
+	<td>MESSAGE_RATING_THUMBS_DOWN</td>
+	<td>//div[contains(@class,'card panel') and contains(.,'${key_threadBody}')]//button[contains(@title,'Rate this as bad.')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>MESSAGE_RATING_2_UPVOTE</td>
-	<td>xpath=(//div[contains(@id,'ratingThumbContent')]/a[contains(@class,'rating-thumb-up')])[2]</td>
+	<td>MESSAGE_RATING_THUMBS_UP</td>
+	<td>//div[contains(@class,'card panel') and contains(.,'${key_threadBody}')]//button[contains(@title,'Rate this as good.')]</td>
 	<td></td>
 </tr>
 <tr>

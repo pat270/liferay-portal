@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBus;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.Validator;
@@ -45,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Shuyang Zhou
  */
-@Component(immediate = true, service = ClusterLink.class)
+@Component(enabled = false, immediate = true, service = ClusterLink.class)
 public class ClusterLinkImpl implements ClusterLink {
 
 	@Override
@@ -55,10 +54,6 @@ public class ClusterLinkImpl implements ClusterLink {
 
 	@Override
 	public void sendMulticastMessage(Message message, Priority priority) {
-		if (!isEnabled()) {
-			return;
-		}
-
 		ClusterChannel clusterChannel = getChannel(priority);
 
 		clusterChannel.sendMulticastMessage(message);
@@ -67,10 +62,6 @@ public class ClusterLinkImpl implements ClusterLink {
 	@Override
 	public void sendUnicastMessage(
 		Address address, Message message, Priority priority) {
-
-		if (!isEnabled()) {
-			return;
-		}
 
 		if (_localAddresses.contains(address)) {
 			sendLocalMessage(message);
@@ -85,26 +76,18 @@ public class ClusterLinkImpl implements ClusterLink {
 
 	@Activate
 	protected void activate() {
-		_enabled = GetterUtil.getBoolean(
-			_props.get(PropsKeys.CLUSTER_LINK_ENABLED));
+		_enabled = true;
 
-		if (_enabled) {
-			initialize(
-				getChannelSettings(
-					PropsKeys.CLUSTER_LINK_CHANNEL_LOGIC_NAME_TRANSPORT),
-				getChannelSettings(
-					PropsKeys.CLUSTER_LINK_CHANNEL_PROPERTIES_TRANSPORT),
-				getChannelSettings(
-					PropsKeys.CLUSTER_LINK_CHANNEL_NAME_TRANSPORT));
-		}
+		initialize(
+			getChannelSettings(
+				PropsKeys.CLUSTER_LINK_CHANNEL_LOGIC_NAME_TRANSPORT),
+			getChannelSettings(
+				PropsKeys.CLUSTER_LINK_CHANNEL_PROPERTIES_TRANSPORT),
+			getChannelSettings(PropsKeys.CLUSTER_LINK_CHANNEL_NAME_TRANSPORT));
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		if (!_enabled) {
-			return;
-		}
-
 		if (_clusterChannels != null) {
 			for (ClusterChannel clusterChannel : _clusterChannels) {
 				clusterChannel.close();
@@ -160,11 +143,11 @@ public class ClusterLinkImpl implements ClusterLink {
 
 	protected void initChannels(
 			Map<String, String> channelLogicNames,
-			Map<String, String> channelPropertiesStrings,
+			Map<String, String> channelPropertiesLocations,
 			Map<String, String> channelNames)
 		throws Exception {
 
-		_channelCount = channelPropertiesStrings.size();
+		_channelCount = channelPropertiesLocations.size();
 
 		if ((_channelCount <= 0) || (_channelCount > MAX_CHANNEL_COUNT)) {
 			throw new IllegalArgumentException(
@@ -175,15 +158,17 @@ public class ClusterLinkImpl implements ClusterLink {
 		_clusterChannels = new ArrayList<>(_channelCount);
 		_clusterReceivers = new ArrayList<>(_channelCount);
 
-		List<String> keys = new ArrayList<>(channelPropertiesStrings.keySet());
+		List<String> keys = new ArrayList<>(
+			channelPropertiesLocations.keySet());
 
 		Collections.sort(keys);
 
 		for (String key : keys) {
-			String channelPropertiesString = channelPropertiesStrings.get(key);
+			String channelPropertiesLocation = channelPropertiesLocations.get(
+				key);
 			String channelName = channelNames.get(key);
 
-			if (Validator.isNull(channelPropertiesString) ||
+			if (Validator.isNull(channelPropertiesLocation) ||
 				Validator.isNull(channelName)) {
 
 				continue;
@@ -194,8 +179,8 @@ public class ClusterLinkImpl implements ClusterLink {
 
 			ClusterChannel clusterChannel =
 				_clusterChannelFactory.createClusterChannel(
-					channelLogicName, channelPropertiesString, channelName,
-					clusterReceiver);
+					_executorService, channelLogicName,
+					channelPropertiesLocation, channelName, clusterReceiver);
 
 			_clusterChannels.add(clusterChannel);
 
@@ -206,7 +191,7 @@ public class ClusterLinkImpl implements ClusterLink {
 
 	protected void initialize(
 		Map<String, String> channelLogicNames,
-		Map<String, String> channelPropertiesStrings,
+		Map<String, String> channelPropertiesLocations,
 		Map<String, String> channelNames) {
 
 		_executorService = _portalExecutorManager.getPortalExecutor(
@@ -214,12 +199,12 @@ public class ClusterLinkImpl implements ClusterLink {
 
 		try {
 			initChannels(
-				channelLogicNames, channelPropertiesStrings, channelNames);
+				channelLogicNames, channelPropertiesLocations, channelNames);
 		}
-		catch (Exception e) {
-			_log.error("Unable to initialize channels", e);
+		catch (Exception exception) {
+			_log.error("Unable to initialize channels", exception);
 
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(exception);
 		}
 
 		for (ClusterReceiver clusterReceiver : _clusterReceivers) {

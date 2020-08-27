@@ -24,101 +24,55 @@ Object[] objArray = (Object[])row.getObject();
 Role role = (Role)objArray[0];
 String target = (String)objArray[3];
 Boolean supportsFilterByGroup = (Boolean)objArray[5];
-List groups = (List)objArray[6];
 long[] groupIdsArray = (long[])objArray[7];
-List groupNames = (List)objArray[8];
+List<String> groupNames = (List<String>)objArray[8];
+String portletId = (String)objArray[9];
 %>
 
 <aui:input name='<%= "groupIds" + HtmlUtil.escapeAttribute(target) %>' type="hidden" value="<%= StringUtil.merge(groupIdsArray) %>" />
 <aui:input name='<%= "groupNames" + HtmlUtil.escapeAttribute(target) %>' type="hidden" value='<%= StringUtil.merge(groupNames, "@@") %>' />
 
 <div id="<portlet:namespace />groupDiv<%= HtmlUtil.escapeAttribute(target) %>">
-	<span class="permission-scopes" id="<portlet:namespace />groupHTML<%= HtmlUtil.escapeAttribute(target) %>">
+	<span id="<portlet:namespace />groupHTML<%= HtmlUtil.escapeAttribute(target) %>">
 
 		<%
-		if (supportsFilterByGroup && !groups.isEmpty()) {
-			for (int i = 0; i < groups.size(); i++) {
-				Group group = (Group)groups.get(i);
+		if (supportsFilterByGroup) {
+			ItemSelector itemSelector = (ItemSelector)request.getAttribute(RolesAdminWebKeys.ITEM_SELECTOR);
 
-				String taglibHREF = "javascript:" + liferayPortletResponse.getNamespace() + "removeGroup(" + i + ", '" + HtmlUtil.escapeJS(target) + "');";
+			GroupItemSelectorCriterion groupItemSelectorCriterion = new GroupItemSelectorCriterion();
+
+			groupItemSelectorCriterion.setAllowNavigation(false);
+			groupItemSelectorCriterion.setDesiredItemSelectorReturnTypes(new URLItemSelectorReturnType());
+			groupItemSelectorCriterion.setIncludeAllVisibleGroups(true);
+			groupItemSelectorCriterion.setIncludeFormsSite(true);
+			groupItemSelectorCriterion.setIncludeUserPersonalSite(true);
+			groupItemSelectorCriterion.setPortletId(portletId);
+			groupItemSelectorCriterion.setTarget(target);
+
+			PortletURL itemSelectorURL = itemSelector.getItemSelectorURL(RequestBackedPortletURLFactoryUtil.create(liferayPortletRequest), liferayPortletResponse.getNamespace() + "selectGroup", groupItemSelectorCriterion);
 		%>
 
-				<span class="lfr-token">
-					<span class="lfr-token-text"><%= HtmlUtil.escape(group.getDescriptiveName(locale)) %></span>
-
-					<aui:a cssClass="icon icon-remove lfr-token-close" href="<%= taglibHREF %>" />
-				</span>
+			<react:component
+				module="js/GroupLabels.es"
+				props='<%=
+					HashMapBuilder.<String, Object>put(
+						"itemSelectorURL", itemSelectorURL.toString()
+					).put(
+						"target", target
+					).build()
+				%>'
+			/>
 
 		<%
-			}
 		}
 		else if (role.getType() == RoleConstants.TYPE_REGULAR) {
 		%>
 
-			<liferay-ui:message key="all-sites" />
+			<liferay-ui:message key="all-sites-and-asset-libraries" />
 
 		<%
 		}
 		%>
 
 	</span>
-
-	<%
-	String targetId = target.replace(".", "");
-	%>
-
-	<c:if test="<%= supportsFilterByGroup %>">
-		<liferay-ui:icon
-			iconCssClass="icon-cog"
-			id="<%= HtmlUtil.escapeAttribute(targetId) %>"
-			label="<%= true %>"
-			message="change"
-			url="javascript:;"
-		/>
-
-		<aui:script sandbox="<%= true %>">
-			var targetNode = document.getElementById('<portlet:namespace /><%= HtmlUtil.escapeJS(targetId) %>');
-
-			if (targetNode) {
-				targetNode.addEventListener(
-					'click',
-					function(event) {
-						var selectedGroupIds = [];
-
-						var selectedGroupIdsNode = document.getElementById('<portlet:namespace />groupIds<%= HtmlUtil.escapeJS(targetId) %>');
-
-						if (selectedGroupIdsNode && selectedGroupIdsNode.value) {
-							selectedGroupIds = selectedGroupIdsNode.value.split(',');
-						}
-
-						Liferay.Util.selectEntity(
-							{
-								dialog: {
-									constrain: true,
-									modal: true,
-									width: 600
-								},
-								id: '<portlet:namespace />selectGroup<%= HtmlUtil.escapeJS(targetId) %>',
-								selectedData: selectedGroupIds,
-								title: '<liferay-ui:message arguments="site" key="select-x" />',
-
-								<%
-								PortletURL groupSelectorURL = PortletProviderUtil.getPortletURL(request, Group.class.getName(), PortletProvider.Action.BROWSE);
-
-								groupSelectorURL.setParameter("includeCompany", Boolean.TRUE.toString());
-								groupSelectorURL.setParameter("includeCurrentGroup", Boolean.FALSE.toString());
-								groupSelectorURL.setParameter("includeUserPersonalSite", Boolean.TRUE.toString());
-								groupSelectorURL.setParameter("eventName", liferayPortletResponse.getNamespace() + "selectGroup");
-								groupSelectorURL.setParameter("target", target);
-								groupSelectorURL.setWindowState(LiferayWindowState.POP_UP);
-								%>
-
-								uri: '<%= groupSelectorURL.toString() %>'
-							}
-						);
-					}
-				);
-			}
-		</aui:script>
-	</c:if>
 </div>

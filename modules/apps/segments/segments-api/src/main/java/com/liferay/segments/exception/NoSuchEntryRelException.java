@@ -16,12 +16,9 @@ package com.liferay.segments.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eduardo García
  */
-@ProviderType
 public class NoSuchEntryRelException extends NoSuchModelException {
 
 	public NoSuchEntryRelException() {
@@ -31,12 +28,12 @@ public class NoSuchEntryRelException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchEntryRelException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchEntryRelException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchEntryRelException(Throwable cause) {
-		super(cause);
+	public NoSuchEntryRelException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

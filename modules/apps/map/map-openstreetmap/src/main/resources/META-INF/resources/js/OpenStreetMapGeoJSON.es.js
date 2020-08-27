@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import GeoJSONBase from 'map-common/js/GeoJSONBase.es';
 
 /**
@@ -24,15 +38,13 @@ class OpenStreetMapGeoJSONBase extends GeoJSONBase {
 	_getNativeFeatures(geoJSONData) {
 		const features = [];
 
-		L.geoJson(
-			geoJSONData, {
-				onEachFeature: (feature, layer) => {
-					layer.on('click', this._handleFeatureClicked);
+		L.geoJson(geoJSONData, {
+			onEachFeature: (feature, layer) => {
+				layer.on('click', this._handleFeatureClicked);
 
-					features.push(feature);
-				}
-			}
-		).addTo(this.map);
+				features.push(feature);
+			},
+		}).addTo(this.map);
 
 		return features;
 	}
@@ -42,17 +54,20 @@ class OpenStreetMapGeoJSONBase extends GeoJSONBase {
 	 * @review
 	 */
 	_wrapNativeFeature(nativeFeature) {
-		const feature = nativeFeature.geometry ?
-			nativeFeature :
-			nativeFeature.target.feature;
+		const feature = nativeFeature.geometry
+			? nativeFeature
+			: nativeFeature.target.feature;
 		const geometry = feature.geometry;
 
 		return {
 			getGeometry() {
 				return {
 					get() {
-						return L.latLng(geometry.coordinates[1], geometry.coordinates[0]);
-					}
+						return L.latLng(
+							geometry.coordinates[1],
+							geometry.coordinates[0]
+						);
+					},
 				};
 			},
 
@@ -62,7 +77,7 @@ class OpenStreetMapGeoJSONBase extends GeoJSONBase {
 
 			getProperty(prop) {
 				return feature.properties[prop];
-			}
+			},
 		};
 	}
 }

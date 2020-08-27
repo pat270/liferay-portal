@@ -29,12 +29,10 @@
 
 	full_css_path = fullCssPath
 	full_templates_path = fullTemplatesPath
-/>
 
-<#assign css_main_file = htmlUtil.escape(portalUtil.getStaticResourceURL(request, "${css_folder}/main.css")) />
-<#assign js_main_file = htmlUtil.escape(portalUtil.getStaticResourceURL(request, "${javascript_folder}/main.js")) />
+	css_main_file = htmlUtil.escape(portalUtil.getStaticResourceURL(request, "${css_folder}/main.css"))
+	js_main_file = htmlUtil.escape(portalUtil.getStaticResourceURL(request, "${javascript_folder}/main.js"))
 
-<#assign
 	company_id = company.getCompanyId()
 	company_name = htmlUtil.escape(company.getName())
 	company_logo = htmlUtil.escape(theme_display.getCompanyLogo())
@@ -272,6 +270,12 @@
 	<#assign the_title = the_title + " - " + site_name />
 </#if>
 
+<#if htmlTitle??>
+	<#assign html_title = htmlUtil.escape(htmlTitle) />
+<#else>
+	<#assign html_title = the_title + " - " + company_name />
+</#if>
+
 <#if layouts??>
 	<#assign pages = layouts />
 </#if>
@@ -320,8 +324,11 @@
 <#assign has_navigation = false />
 
 <#if navItems??>
-	<#assign nav_items = navItems />
-	<#assign has_navigation = (nav_items?size > 0) />
+	<#assign
+		nav_items = navItems
+
+		has_navigation = (nav_items?size > 0)
+	/>
 </#if>
 
 <#assign nav_css_class = "sort-pages modify-pages" />
@@ -348,18 +355,22 @@
 
 <#-- ---------- Includes ---------- -->
 
-<#assign dir_include = "/html" />
-<#assign body_bottom_include = "${dir_include}/common/themes/body_bottom.jsp" />
-<#assign body_top_include = "${dir_include}/common/themes/body_top.jsp" />
-<#assign bottom_include = "${dir_include}/common/themes/bottom.jsp" />
-<#assign bottom_ext_include = bottom_include />
+<#assign
+	dir_include = "/html"
+	body_bottom_include = "${dir_include}/common/themes/body_bottom.jsp"
+	body_top_include = "${dir_include}/common/themes/body_top.jsp"
+	bottom_include = "${dir_include}/common/themes/bottom.jsp"
+	bottom_ext_include = bottom_include
+/>
 
 <#if tilesContent?has_content>
 	<#assign content_include = "${dir_include}${tilesContent}" />
 </#if>
 
-<#assign top_head_include = "${dir_include}/common/themes/top_head.jsp" />
-<#assign top_messages_include = "${dir_include}/common/themes/top_messages.jsp" />
+<#assign
+	top_head_include = "${dir_include}/common/themes/top_head.jsp"
+	top_messages_include = "${dir_include}/common/themes/top_messages.jsp"
+/>
 
 <#-- ---------- Date ---------- -->
 

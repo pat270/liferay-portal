@@ -14,7 +14,6 @@
 
 package com.liferay.segments.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see SegmentsEntryService
  * @generated
  */
-@ProviderType
 public class SegmentsEntryServiceUtil {
 
 	/*
@@ -39,6 +37,19 @@ public class SegmentsEntryServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsEntryServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static com.liferay.segments.model.SegmentsEntry addSegmentsEntry(
+			String segmentsEntryKey,
+			java.util.Map<java.util.Locale, String> nameMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			boolean active, String criteria, String type,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addSegmentsEntry(
+			segmentsEntryKey, nameMap, descriptionMap, active, criteria, type,
+			serviceContext);
+	}
+
 	public static com.liferay.segments.model.SegmentsEntry addSegmentsEntry(
 			String segmentsEntryKey,
 			java.util.Map<java.util.Locale, String> nameMap,
@@ -52,11 +63,27 @@ public class SegmentsEntryServiceUtil {
 			type, serviceContext);
 	}
 
+	public static void addSegmentsEntryClassPKs(
+			long segmentsEntryId, long[] classPKs,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().addSegmentsEntryClassPKs(
+			segmentsEntryId, classPKs, serviceContext);
+	}
+
 	public static com.liferay.segments.model.SegmentsEntry deleteSegmentsEntry(
 			long segmentsEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().deleteSegmentsEntry(segmentsEntryId);
+	}
+
+	public static void deleteSegmentsEntryClassPKs(
+			long segmentsEntryId, long[] classPKs)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().deleteSegmentsEntryClassPKs(segmentsEntryId, classPKs);
 	}
 
 	/**

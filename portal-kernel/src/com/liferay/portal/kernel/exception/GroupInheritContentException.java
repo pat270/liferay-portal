@@ -14,12 +14,9 @@
 
 package com.liferay.portal.kernel.exception;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class GroupInheritContentException extends PortalException {
 
 	public GroupInheritContentException() {
@@ -29,12 +26,12 @@ public class GroupInheritContentException extends PortalException {
 		super(msg);
 	}
 
-	public GroupInheritContentException(String msg, Throwable cause) {
-		super(msg, cause);
+	public GroupInheritContentException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public GroupInheritContentException(Throwable cause) {
-		super(cause);
+	public GroupInheritContentException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

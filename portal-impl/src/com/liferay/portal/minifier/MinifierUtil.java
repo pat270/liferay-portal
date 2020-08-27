@@ -14,10 +14,10 @@
 
 package com.liferay.portal.minifier;
 
+import com.liferay.petra.io.unsync.UnsyncStringReader;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.internal.minifier.MinifierThreadLocal;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.util.PropsValues;
@@ -66,8 +66,8 @@ public class MinifierUtil {
 
 			return unsyncStringWriter.toString();
 		}
-		catch (Exception e) {
-			_log.error("Unable to minify CSS:\n" + content, e);
+		catch (Exception exception) {
+			_log.error("Unable to minify CSS:\n" + content, exception);
 
 			unsyncStringWriter.append(content);
 

@@ -59,14 +59,14 @@ if (deployed && oAuthEnabled) {
 
 <liferay-portlet:actionURL var="configurationActionURL" />
 
-<aui:form action="<%= configurationActionURL %>" cssClass="container-fluid container-fluid-max-xl container-form-lg" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "updatePreferences();" %>'>
+<aui:form action="<%= configurationActionURL %>" cssClass="container-fluid container-fluid-max-xl container-form-lg" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "updatePreferences();" %>'>
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 
-	<div class="sheet sheet-lg">
+	<clay:sheet>
 		<liferay-ui:error exception="<%= OAuthPortletUndeployedException.class %>" message="oauth-publisher-is-not-deployed" />
 
 		<aui:fieldset>
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<h3 class="sheet-subtitle"><liferay-ui:message key="general" /></h3>
 
 				<aui:input label="allow-the-use-of-sync" name="enabled" type="toggle-switch" value="<%= enabled %>" />
@@ -75,10 +75,10 @@ if (deployed && oAuthEnabled) {
 				<c:if test="<%= deployed %>">
 					<aui:input helpMessage="oauth-enabled-help" label="oauth-enabled" name="oAuthEnabled" type="toggle-switch" value="<%= oAuthEnabled %>" />
 				</c:if>
-			</div>
+			</clay:sheet-section>
 		</aui:fieldset>
 
-		<div class="sheet-section">
+		<clay:sheet-section>
 			<h3 class="sheet-subtitle"><liferay-ui:message key="desktop" /></h3>
 
 			<aui:input helpMessage="allow-lan-syncing-help" label="allow-lan-syncing" name="lanEnabled" type="toggle-switch" value="<%= lanEnabled %>" />
@@ -112,32 +112,35 @@ if (deployed && oAuthEnabled) {
 					</aui:input>
 				</div>
 			</div>
-		</div>
+		</clay:sheet-section>
 
 		<aui:fieldset>
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<h3 class="sheet-subtitle"><liferay-ui:message key="mobile" /></h3>
 
 				<aui:input helpMessage="force-security-mode-help" label="force-security-mode" name="forceSecurityMode" type="toggle-switch" value="<%= forceSecurityMode %>" />
-			</div>
+			</clay:sheet-section>
 		</aui:fieldset>
 
-		<div class="sheet-footer">
+		<clay:sheet-footer>
 			<div class="btn-group">
 				<div class="btn-group-item">
 					<clay:button
-						label='<%= LanguageUtil.get(request, "save") %>'
-						style="primary"
+						displayType="primary"
+						label="save"
 						type="submit"
 					/>
 				</div>
 			</div>
-		</div>
-	</div>
+		</clay:sheet-footer>
+	</clay:sheet>
 </aui:form>
 
 <aui:script>
 	function <portlet:namespace />updatePreferences() {
-		submitForm(document.<portlet:namespace />fm, '<portlet:actionURL name="updatePreferences" />');
+		submitForm(
+			document.<portlet:namespace />fm,
+			'<portlet:actionURL name="updatePreferences" />'
+		);
 	}
 </aui:script>

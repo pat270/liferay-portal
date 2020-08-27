@@ -11,6 +11,7 @@
 	<short-name>liferay-asset</short-name>
 	<uri>http://liferay.com/tld/asset</uri>
 	<tag>
+		<description>Deprecated as of 7.3.0, with no direct replacement.</description>
 		<name>asset-add-button</name>
 		<tag-class>com.liferay.asset.taglib.servlet.taglib.AssetAddButtonTag</tag-class>
 		<body-content>JSP</body-content>
@@ -56,6 +57,7 @@
 		</attribute>
 	</tag>
 	<tag>
+		<description>Deprecated as of 7.3.0, with no direct replacement.</description>
 		<name>asset-addon-entry-display</name>
 		<tag-class>com.liferay.asset.taglib.servlet.taglib.AssetAddonEntryDisplayTag</tag-class>
 		<body-content>JSP</body-content>
@@ -66,6 +68,7 @@
 		</attribute>
 	</tag>
 	<tag>
+		<description>Deprecated as of 7.3.0, with no direct replacement.</description>
 		<name>asset-addon-entry-selector</name>
 		<tag-class>com.liferay.asset.taglib.servlet.taglib.AssetAddonEntrySelectorTag</tag-class>
 		<body-content>JSP</body-content>
@@ -137,7 +140,7 @@
 	</tag>
 	<tag>
 		<name>asset-categories-selector</name>
-		<tag-class>com.liferay.asset.taglib.servlet.taglib.soy.AssetCategoriesSelectorTag</tag-class>
+		<tag-class>com.liferay.asset.taglib.servlet.taglib.AssetCategoriesSelectorTag</tag-class>
 		<body-content>JSP</body-content>
 		<attribute>
 			<name>categoryIds</name>
@@ -170,7 +173,18 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
+			<description>The component instance's ID.</description>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
 			<name>ignoreRequestValue</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>showOnlyRequiredVocabularies</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
@@ -216,6 +230,11 @@
 		</attribute>
 		<attribute>
 			<name>portletURL</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>visibleTypes</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
@@ -414,7 +433,7 @@
 	<tag>
 		<description>Creates a component to create and select tags to add to an asset, such as a blog entry, bookmark, or wiki page.</description>
 		<name>asset-tags-selector</name>
-		<tag-class>com.liferay.asset.taglib.servlet.taglib.soy.AssetTagsSelectorTag</tag-class>
+		<tag-class>com.liferay.asset.taglib.servlet.taglib.AssetTagsSelectorTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
 			<description>A function to call when a tag is added.</description>

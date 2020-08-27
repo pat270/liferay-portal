@@ -14,6 +14,7 @@
 
 package com.liferay.message.boards.web.internal.exportimport.portlet.preferences.processor;
 
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
@@ -33,6 +34,7 @@ import com.liferay.message.boards.service.MBCategoryLocalService;
 import com.liferay.message.boards.service.MBThreadFlagLocalService;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.xml.Element;
 
 import java.util.List;
@@ -55,12 +57,12 @@ public class MBExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return null;
+		return ListUtil.fromArray(_mbRatingsExporterImporterCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return null;
+		return ListUtil.fromArray(_mbRatingsExporterImporterCapability);
 	}
 
 	@Override
@@ -69,16 +71,22 @@ public class MBExportImportPortletPreferencesProcessor
 			PortletPreferences portletPreferences)
 		throws PortletDataException {
 
+		if (!_exportImportHelper.isExportPortletData(portletDataContext)) {
+			return portletPreferences;
+		}
+
 		try {
 			portletDataContext.addPortletPermissions(MBConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(MBPortletKeys.MESSAGE_BOARDS);
-			pde.setType(PortletDataException.EXPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(MBPortletKeys.MESSAGE_BOARDS);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		try {
@@ -149,13 +157,15 @@ public class MBExportImportPortletPreferencesProcessor
 				banActionableDynamicQuery.performActions();
 			}
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(MBPortletKeys.MESSAGE_BOARDS);
-			pde.setType(PortletDataException.EXPORT_PORTLET_DATA);
+			portletDataException.setPortletId(MBPortletKeys.MESSAGE_BOARDS);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_DATA);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		return portletPreferences;
@@ -171,13 +181,15 @@ public class MBExportImportPortletPreferencesProcessor
 			portletDataContext.importPortletPermissions(
 				MBConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(MBPortletKeys.MESSAGE_BOARDS);
-			pde.setType(PortletDataException.IMPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(MBPortletKeys.MESSAGE_BOARDS);
+			portletDataException.setType(
+				PortletDataException.IMPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		String namespace = _mbPortletDataHandler.getNamespace();
@@ -255,6 +267,9 @@ public class MBExportImportPortletPreferencesProcessor
 		_mbThreadFlagLocalService = mbThreadFlagLocalService;
 	}
 
+	@Reference
+	private ExportImportHelper _exportImportHelper;
+
 	private MBBanLocalService _mbBanLocalService;
 	private MBCategoryLocalService _mbCategoryLocalService;
 
@@ -262,6 +277,10 @@ public class MBExportImportPortletPreferencesProcessor
 		target = "(javax.portlet.name=" + MBPortletKeys.MESSAGE_BOARDS + ")"
 	)
 	private PortletDataHandler _mbPortletDataHandler;
+
+	@Reference
+	private MBRatingsExporterImporterCapability
+		_mbRatingsExporterImporterCapability;
 
 	private MBThreadFlagLocalService _mbThreadFlagLocalService;
 

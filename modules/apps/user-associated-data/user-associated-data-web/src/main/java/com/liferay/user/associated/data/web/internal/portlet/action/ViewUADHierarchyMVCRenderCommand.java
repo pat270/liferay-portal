@@ -14,27 +14,27 @@
 
 package com.liferay.user.associated.data.web.internal.portlet.action;
 
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.user.associated.data.constants.UserAssociatedDataPortletKeys;
 import com.liferay.user.associated.data.display.UADDisplay;
+import com.liferay.user.associated.data.web.internal.constants.UADConstants;
 import com.liferay.user.associated.data.web.internal.constants.UADWebKeys;
+import com.liferay.user.associated.data.web.internal.dao.search.UADHierarchyResultRowSplitter;
 import com.liferay.user.associated.data.web.internal.display.UADHierarchyDisplay;
 import com.liferay.user.associated.data.web.internal.display.UADInfoPanelDisplay;
 import com.liferay.user.associated.data.web.internal.display.ViewUADEntitiesDisplay;
 import com.liferay.user.associated.data.web.internal.registry.UADRegistry;
-import com.liferay.user.associated.data.web.internal.search.UADHierarchyResultRowSplitter;
+import com.liferay.user.associated.data.web.internal.util.GroupUtil;
 import com.liferay.user.associated.data.web.internal.util.SelectedUserHelper;
 import com.liferay.user.associated.data.web.internal.util.UADApplicationSummaryHelper;
 import com.liferay.user.associated.data.web.internal.util.UADSearchContainerBuilder;
 
 import javax.portlet.PortletException;
-import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -60,69 +60,94 @@ public class ViewUADHierarchyMVCRenderCommand implements MVCRenderCommand {
 		throws PortletException {
 
 		try {
-			User selectedUser = _selectedUserHelper.getSelectedUser(
-				renderRequest);
-
 			String applicationKey = ParamUtil.getString(
 				renderRequest, "applicationKey");
 
-			ViewUADEntitiesDisplay viewUADEntitiesDisplay =
-				new ViewUADEntitiesDisplay();
-
-			viewUADEntitiesDisplay.setApplicationKey(applicationKey);
-			viewUADEntitiesDisplay.setHierarchy(true);
-
-			LiferayPortletResponse liferayPortletResponse =
-				_portal.getLiferayPortletResponse(renderResponse);
-
-			PortletURL currentURL = PortletURLUtil.getCurrent(
-				renderRequest, renderResponse);
-
-			UADHierarchyDisplay uadHierarchyDisplay =
-				_uadRegistry.getUADHierarchyDisplay(applicationKey);
-
-			viewUADEntitiesDisplay.setResultRowSplitter(
-				new UADHierarchyResultRowSplitter(
-					LocaleThreadLocal.getThemeDisplayLocale(),
-					uadHierarchyDisplay.getUADDisplays()));
-			viewUADEntitiesDisplay.setTypeClasses(
-				uadHierarchyDisplay.getTypeClasses());
-
-			String className = ParamUtil.getString(
-				renderRequest, "parentContainerClass");
-
-			UADDisplay uadDisplay = _uadRegistry.getUADDisplay(className);
-
-			UADInfoPanelDisplay uadInfoPanelDisplay = new UADInfoPanelDisplay();
-
-			uadInfoPanelDisplay.setHierarchyView(true);
-			uadInfoPanelDisplay.setTopLevelView(false);
-			uadInfoPanelDisplay.setUADDisplay(uadDisplay);
-
-			Class<?> typeClass = uadDisplay.getTypeClass();
-
-			long parentContainerId = ParamUtil.getLong(
-				renderRequest, "parentContainerId");
-
-			viewUADEntitiesDisplay.setSearchContainer(
-				_uadSearchContainerBuilder.getSearchContainer(
-					renderRequest, liferayPortletResponse, applicationKey,
-					currentURL, null, typeClass, parentContainerId,
-					selectedUser, uadHierarchyDisplay));
+			UADHierarchyDisplay uadHierarchyDisplay = _getUADHierarchyDisplay(
+				applicationKey);
 
 			renderRequest.setAttribute(
 				UADWebKeys.UAD_HIERARCHY_DISPLAY, uadHierarchyDisplay);
+
+			UADDisplay<Object> uadDisplay =
+				(UADDisplay<Object>)_uadRegistry.getUADDisplay(
+					ParamUtil.getString(renderRequest, "parentContainerClass"));
+
 			renderRequest.setAttribute(
-				UADWebKeys.UAD_INFO_PANEL_DISPLAY, uadInfoPanelDisplay);
+				UADWebKeys.UAD_INFO_PANEL_DISPLAY,
+				_getUADInfoPanelDisplay(uadDisplay));
 			renderRequest.setAttribute(
-				UADWebKeys.VIEW_UAD_ENTITIES_DISPLAY, viewUADEntitiesDisplay);
+				UADWebKeys.VIEW_UAD_ENTITIES_DISPLAY,
+				_getViewUADEntitiesDisplay(
+					applicationKey, renderRequest, renderResponse, uadDisplay,
+					uadHierarchyDisplay));
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 
 		return "/view_uad_hierarchy.jsp";
 	}
+
+	private UADHierarchyDisplay _getUADHierarchyDisplay(String applicationKey) {
+		return _uadRegistry.getUADHierarchyDisplay(applicationKey);
+	}
+
+	private UADInfoPanelDisplay _getUADInfoPanelDisplay(
+		UADDisplay<Object> uadDisplay) {
+
+		UADInfoPanelDisplay uadInfoPanelDisplay = new UADInfoPanelDisplay();
+
+		uadInfoPanelDisplay.setHierarchyView(true);
+		uadInfoPanelDisplay.setTopLevelView(false);
+		uadInfoPanelDisplay.setUADDisplay(uadDisplay);
+
+		return uadInfoPanelDisplay;
+	}
+
+	private ViewUADEntitiesDisplay _getViewUADEntitiesDisplay(
+			String applicationKey, RenderRequest renderRequest,
+			RenderResponse renderResponse, UADDisplay<?> uadDisplay,
+			UADHierarchyDisplay uadHierarchyDisplay)
+		throws Exception {
+
+		ViewUADEntitiesDisplay viewUADEntitiesDisplay =
+			new ViewUADEntitiesDisplay();
+
+		viewUADEntitiesDisplay.setApplicationKey(applicationKey);
+
+		String scope = ParamUtil.getString(
+			renderRequest, "scope", UADConstants.SCOPE_PERSONAL_SITE);
+
+		long[] groupIds = GroupUtil.getGroupIds(
+			_groupLocalService,
+			_selectedUserHelper.getSelectedUser(renderRequest), scope);
+
+		viewUADEntitiesDisplay.setGroupIds(groupIds);
+
+		viewUADEntitiesDisplay.setHierarchy(true);
+		viewUADEntitiesDisplay.setResultRowSplitter(
+			new UADHierarchyResultRowSplitter(
+				LocaleThreadLocal.getThemeDisplayLocale(),
+				uadHierarchyDisplay.getUADDisplays()));
+		viewUADEntitiesDisplay.setScope(scope);
+		viewUADEntitiesDisplay.setSearchContainer(
+			_uadSearchContainerBuilder.getSearchContainer(
+				_portal.getLiferayPortletResponse(renderResponse),
+				renderRequest, applicationKey,
+				PortletURLUtil.getCurrent(renderRequest, renderResponse),
+				groupIds, uadDisplay.getTypeClass(),
+				ParamUtil.getLong(renderRequest, "parentContainerId"),
+				_selectedUserHelper.getSelectedUser(renderRequest),
+				uadHierarchyDisplay));
+		viewUADEntitiesDisplay.setTypeClasses(
+			uadHierarchyDisplay.getTypeClasses());
+
+		return viewUADEntitiesDisplay;
+	}
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private Portal _portal;

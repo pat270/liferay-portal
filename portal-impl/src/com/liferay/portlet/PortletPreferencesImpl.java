@@ -72,23 +72,24 @@ public class PortletPreferencesImpl
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PortletPreferencesImpl)) {
+		if (!(object instanceof PortletPreferencesImpl)) {
 			return false;
 		}
 
-		PortletPreferencesImpl portletPreferences = (PortletPreferencesImpl)obj;
+		PortletPreferencesImpl portletPreferencesImpl =
+			(PortletPreferencesImpl)object;
 
-		if ((companyId == portletPreferences.companyId) &&
-			(getOwnerId() == portletPreferences.getOwnerId()) &&
-			(getOwnerType() == portletPreferences.getOwnerType()) &&
-			(getPlid() == portletPreferences.getPlid()) &&
-			getPortletId().equals(portletPreferences.getPortletId()) &&
-			getPreferences().equals(portletPreferences.getPreferences())) {
+		if ((companyId == portletPreferencesImpl.companyId) &&
+			(getOwnerId() == portletPreferencesImpl.getOwnerId()) &&
+			(getOwnerType() == portletPreferencesImpl.getOwnerType()) &&
+			(getPlid() == portletPreferencesImpl.getPlid()) &&
+			getPortletId().equals(portletPreferencesImpl.getPortletId()) &&
+			getPreferences().equals(portletPreferencesImpl.getPreferences())) {
 
 			return true;
 		}
@@ -125,9 +126,9 @@ public class PortletPreferencesImpl
 					PortletPreferencesLocalServiceUtil.getDefaultPreferences(
 						companyId, _portletId);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 		}
@@ -175,8 +176,8 @@ public class PortletPreferencesImpl
 			PortletPreferencesLocalServiceUtil.updatePreferences(
 				getOwnerId(), getOwnerType(), _plid, _portletId, this);
 		}
-		catch (SystemException se) {
-			throw new IOException(se);
+		catch (SystemException systemException) {
+			throw new IOException(systemException);
 		}
 	}
 

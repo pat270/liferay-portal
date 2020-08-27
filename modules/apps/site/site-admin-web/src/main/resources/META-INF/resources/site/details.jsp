@@ -66,6 +66,7 @@ else {
 	</p>
 </liferay-ui:error>
 
+<liferay-ui:error exception="<%= GroupNameException.class %>" message="site-name-is-required-for-the-default-language" />
 <liferay-ui:error exception="<%= GroupParentException.MustNotBeOwnParent.class %>" message="the-site-cannot-be-its-own-parent-site" />
 <liferay-ui:error exception="<%= GroupParentException.MustNotHaveChildParent.class %>" message="the-site-cannot-have-a-child-as-its-parent-site" />
 <liferay-ui:error exception="<%= GroupParentException.MustNotHaveStagingParent.class %>" message="the-site-cannot-have-a-staging-site-as-its-parent-site" />
@@ -206,55 +207,66 @@ else {
 	</div>
 
 	<aui:script use="liferay-search-container">
-		A.one('#<portlet:namespace />selectParentSiteLink').on(
-			'click',
-			function(event) {
-				Liferay.Util.selectEntity(
-					{
-						dialog: {
-							constrain: true,
-							modal: true
-						},
-						id: '<portlet:namespace />selectGroup',
-						title: '<liferay-ui:message arguments="site" key="select-x" />',
-
-						<%
-						PortletURL groupSelectorURL = PortletProviderUtil.getPortletURL(request, Group.class.getName(), PortletProvider.Action.BROWSE);
-
-						groupSelectorURL.setParameter("includeCurrentGroup", Boolean.FALSE.toString());
-						groupSelectorURL.setParameter("groupId", String.valueOf(group.getGroupId()));
-						groupSelectorURL.setParameter("eventName", liferayPortletResponse.getNamespace() + "selectGroup");
-						groupSelectorURL.setWindowState(LiferayWindowState.POP_UP);
-						%>
-
-						uri: '<%= groupSelectorURL.toString() %>'
+		A.one('#<portlet:namespace />selectParentSiteLink').on('click', function (
+			event
+		) {
+			Liferay.Util.selectEntity(
+				{
+					dialog: {
+						constrain: true,
+						modal: true,
 					},
-					function(event) {
-						var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />parentGroupSearchContainer');
+					id: '<portlet:namespace />selectGroup',
+					title: '<liferay-ui:message arguments="site" key="select-x" />',
 
-						var rowColumns = [];
+					<%
+					PortletURL groupSelectorURL = PortletProviderUtil.getPortletURL(request, Group.class.getName(), PortletProvider.Action.BROWSE);
 
-						var href = '<portlet:renderURL><portlet:param name="mvcPath" value="/edit_site.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>&<portlet:namespace />groupId=' + event.entityid;
+					groupSelectorURL.setParameter("includeCurrentGroup", Boolean.FALSE.toString());
+					groupSelectorURL.setParameter("groupId", String.valueOf(group.getGroupId()));
+					groupSelectorURL.setParameter("eventName", liferayPortletResponse.getNamespace() + "selectGroup");
+					groupSelectorURL.setWindowState(LiferayWindowState.POP_UP);
+					%>
 
-						rowColumns.push(event.entityname);
-						rowColumns.push(event.grouptype);
-						rowColumns.push('<a class="modify-link" data-rowId="' + event.entityid + '" href="javascript:;"><%= UnicodeFormatter.toString(removeGroupIcon) %></a>');
+					uri: '<%= groupSelectorURL.toString() %>',
+				},
+				function (event) {
+					var searchContainer = Liferay.SearchContainer.get(
+						'<portlet:namespace />parentGroupSearchContainer'
+					);
 
-						searchContainer.deleteRow(1, searchContainer.getData());
-						searchContainer.addRow(rowColumns, event.entityid);
-						searchContainer.updateDataStore(event.entityid);
+					var rowColumns = [];
 
-						A.one('#<portlet:namespace />membershipRestrictionContainer').show();
-					}
-				);
-			}
+					var href =
+						'<portlet:renderURL><portlet:param name="mvcPath" value="/edit_site.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>&<portlet:namespace />groupId=' +
+						event.entityid;
+
+					rowColumns.push(event.entityname);
+					rowColumns.push(event.grouptype);
+					rowColumns.push(
+						'<a class="modify-link" data-rowId="' +
+							event.entityid +
+							'" href="javascript:;"><%= UnicodeFormatter.toString(removeGroupIcon) %></a>'
+					);
+
+					searchContainer.deleteRow(1, searchContainer.getData());
+					searchContainer.addRow(rowColumns, event.entityid);
+					searchContainer.updateDataStore(event.entityid);
+
+					A.one(
+						'#<portlet:namespace />membershipRestrictionContainer'
+					).show();
+				}
+			);
+		});
+
+		var searchContainer = Liferay.SearchContainer.get(
+			'<portlet:namespace />parentGroupSearchContainer'
 		);
-
-		var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />parentGroupSearchContainer');
 
 		searchContainer.get('contentBox').delegate(
 			'click',
-			function(event) {
+			function (event) {
 				var link = event.currentTarget;
 
 				var tr = link.ancestor('tr');

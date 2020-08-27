@@ -118,7 +118,7 @@ public abstract class SettingsConfigurationAction
 			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroupId(),
 			layout, portletResource, ActionKeys.CONFIGURATION);
 
-		UnicodeProperties properties = PropertiesParamUtil.getProperties(
+		UnicodeProperties unicodeProperties = PropertiesParamUtil.getProperties(
 			actionRequest, _parameterNamePrefix);
 
 		Settings settings = getSettings(actionRequest);
@@ -126,7 +126,7 @@ public abstract class SettingsConfigurationAction
 		ModifiableSettings modifiableSettings =
 			settings.getModifiableSettings();
 
-		for (Map.Entry<String, String> entry : properties.entrySet()) {
+		for (Map.Entry<String, String> entry : unicodeProperties.entrySet()) {
 			String name = entry.getKey();
 			String value = entry.getValue();
 
@@ -158,34 +158,37 @@ public abstract class SettingsConfigurationAction
 
 		postProcess(themeDisplay.getCompanyId(), actionRequest, settings);
 
-		if (SessionErrors.isEmpty(actionRequest)) {
-			try {
-				modifiableSettings.store();
-			}
-			catch (ValidatorException ve) {
-				SessionErrors.add(
-					actionRequest, ValidatorException.class.getName(), ve);
+		if (!SessionErrors.isEmpty(actionRequest)) {
+			return;
+		}
 
-				return;
-			}
+		try {
+			modifiableSettings.store();
+		}
+		catch (ValidatorException validatorException) {
+			SessionErrors.add(
+				actionRequest, ValidatorException.class.getName(),
+				validatorException);
 
-			SessionMessages.add(
-				actionRequest,
-				PortalUtil.getPortletId(actionRequest) +
-					SessionMessages.KEY_SUFFIX_REFRESH_PORTLET,
-				portletResource);
+			return;
+		}
 
-			SessionMessages.add(
-				actionRequest,
-				PortalUtil.getPortletId(actionRequest) +
-					SessionMessages.KEY_SUFFIX_UPDATED_CONFIGURATION);
+		SessionMessages.add(
+			actionRequest,
+			PortalUtil.getPortletId(actionRequest) +
+				SessionMessages.KEY_SUFFIX_REFRESH_PORTLET,
+			portletResource);
 
-			String redirect = PortalUtil.escapeRedirect(
-				ParamUtil.getString(actionRequest, "redirect"));
+		SessionMessages.add(
+			actionRequest,
+			PortalUtil.getPortletId(actionRequest) +
+				SessionMessages.KEY_SUFFIX_UPDATED_CONFIGURATION);
 
-			if (Validator.isNotNull(redirect)) {
-				actionResponse.sendRedirect(redirect);
-			}
+		String redirect = PortalUtil.escapeRedirect(
+			ParamUtil.getString(actionRequest, "redirect"));
+
+		if (Validator.isNotNull(redirect)) {
+			actionResponse.sendRedirect(redirect);
 		}
 	}
 
@@ -295,10 +298,9 @@ public abstract class SettingsConfigurationAction
 	}
 
 	protected void updateMultiValuedKeys(ActionRequest actionRequest) {
-		String settingsId = getSettingsId(actionRequest);
-
 		SettingsDescriptor settingsDescriptor =
-			SettingsFactoryUtil.getSettingsDescriptor(settingsId);
+			SettingsFactoryUtil.getSettingsDescriptor(
+				getSettingsId(actionRequest));
 
 		Set<String> multiValuedKeys = settingsDescriptor.getMultiValuedKeys();
 
@@ -319,24 +321,24 @@ public abstract class SettingsConfigurationAction
 
 		boolean emailEnabled = GetterUtil.getBoolean(
 			getParameter(actionRequest, emailParam + "Enabled"));
-		String emailSubject = null;
-		String emailBody = null;
+
+		if (!emailEnabled) {
+			return;
+		}
 
 		String languageId = LocaleUtil.toLanguageId(
 			LocaleUtil.getSiteDefault());
 
-		emailSubject = getLocalizedParameter(
+		String emailSubject = getLocalizedParameter(
 			actionRequest, emailParam + "Subject", languageId);
-		emailBody = getLocalizedParameter(
+		String emailBody = getLocalizedParameter(
 			actionRequest, emailParam + "Body", languageId);
 
-		if (emailEnabled) {
-			if (Validator.isNull(emailSubject)) {
-				SessionErrors.add(actionRequest, emailParam + "Subject");
-			}
-			else if (Validator.isNull(emailBody)) {
-				SessionErrors.add(actionRequest, emailParam + "Body");
-			}
+		if (Validator.isNull(emailSubject)) {
+			SessionErrors.add(actionRequest, emailParam + "Subject");
+		}
+		else if (Validator.isNull(emailBody)) {
+			SessionErrors.add(actionRequest, emailParam + "Body");
 		}
 	}
 

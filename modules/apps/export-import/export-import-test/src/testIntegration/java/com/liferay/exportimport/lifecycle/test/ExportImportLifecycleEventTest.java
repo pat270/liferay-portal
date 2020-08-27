@@ -15,19 +15,20 @@
 package com.liferay.exportimport.lifecycle.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
-import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEventListenerRegistryUtil;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleListener;
+import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.journal.model.JournalFolderConstants;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -40,12 +41,13 @@ import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.test.log.CaptureAppender;
 import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.File;
 import java.io.Serializable;
@@ -75,10 +77,14 @@ public class ExportImportLifecycleEventTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
+		UserTestUtil.setUser(TestPropsValues.getUser());
+
 		_group = GroupTestUtil.addGroup();
 		_liveGroup = GroupTestUtil.addGroup();
 
@@ -113,15 +119,16 @@ public class ExportImportLifecycleEventTest {
 
 			Assert.fail();
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 			Assert.assertEquals(
-				"No Group exists with the primary key 0", nsge.getMessage());
+				"No Group exists with the primary key 0",
+				noSuchGroupException.getMessage());
 		}
-		catch (NoSuchLayoutSetException nslse) {
+		catch (NoSuchLayoutSetException noSuchLayoutSetException) {
 			Assert.assertEquals(
 				"No LayoutSet exists with the key {groupId=0, " +
 					"privateLayout=false}",
-				nslse.getMessage());
+				noSuchLayoutSetException.getMessage());
 		}
 
 		Assert.assertTrue(
@@ -150,9 +157,10 @@ public class ExportImportLifecycleEventTest {
 
 			Assert.fail();
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 			Assert.assertEquals(
-				"No Group exists with the primary key 0", nsge.getMessage());
+				"No Group exists with the primary key 0",
+				noSuchGroupException.getMessage());
 		}
 
 		Assert.assertTrue(
@@ -220,10 +228,10 @@ public class ExportImportLifecycleEventTest {
 
 			Assert.fail();
 		}
-		catch (NoSuchLayoutException nsle) {
+		catch (NoSuchLayoutException noSuchLayoutException) {
 			Assert.assertEquals(
 				"No Layout exists with the primary key " + plid,
-				nsle.getMessage());
+				noSuchLayoutException.getMessage());
 		}
 
 		Assert.assertTrue(
@@ -253,9 +261,10 @@ public class ExportImportLifecycleEventTest {
 
 			Assert.fail();
 		}
-		catch (NoSuchLayoutException nsle) {
+		catch (NoSuchLayoutException noSuchLayoutException) {
 			Assert.assertEquals(
-				"No Layout exists with the primary key 0", nsle.getMessage());
+				"No Layout exists with the primary key 0",
+				noSuchLayoutException.getMessage());
 		}
 
 		Assert.assertTrue(

@@ -1,7 +1,5 @@
 package ${packagePath}.service.http;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 <#if hasHttpMethods>
 	import ${apiPackagePath}.service.${entity.name}ServiceUtil;
 </#if>
@@ -47,8 +45,6 @@ import com.liferay.portal.kernel.util.MethodKey;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}ServiceHttp {
 
 	<#assign hasMethods = false />
@@ -105,14 +101,14 @@ public class ${entity.name}ServiceHttp {
 
 						TunnelUtil.invoke(httpPrincipal, methodHandler);
 					}
-					catch (Exception e) {
-						<#list method.exceptions as exception>
-							if (e instanceof ${exception.fullyQualifiedName}) {
-								throw (${exception.fullyQualifiedName})e;
+					catch (Exception exception) {
+						<#list method.exceptions as methodException>
+							if (exception instanceof ${methodException.fullyQualifiedName}) {
+								throw (${methodException.fullyQualifiedName})exception;
 							}
 						</#list>
 
-						throw new com.liferay.portal.kernel.exception.SystemException(e);
+						throw new com.liferay.portal.kernel.exception.SystemException(exception);
 					}
 
 					<#if !stringUtil.equals(returnTypeName, "void")>
@@ -135,10 +131,10 @@ public class ${entity.name}ServiceHttp {
 						</#if>
 					</#if>
 				}
-				catch (com.liferay.portal.kernel.exception.SystemException se) {
-					_log.error(se, se);
+				catch (com.liferay.portal.kernel.exception.SystemException systemException) {
+					_log.error(systemException, systemException);
 
-					throw se;
+					throw systemException;
 				}
 			}
 		</#if>

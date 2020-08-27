@@ -14,11 +14,11 @@
 
 package com.liferay.dynamic.data.mapping.test.util;
 
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
@@ -28,6 +28,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -106,9 +107,9 @@ public class DDMStructureTestUtil {
 			ServiceContext serviceContext)
 		throws Exception {
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(defaultLocale, "Test Structure");
+		Map<Locale, String> nameMap = HashMapBuilder.put(
+			defaultLocale, "Test Structure"
+		).build();
 
 		DDMFormLayout ddmFormLayout = DDMUtil.getDefaultDDMFormLayout(ddmForm);
 
@@ -283,12 +284,13 @@ public class DDMStructureTestUtil {
 	public static String getSampleStructuredContent(
 		String name, String keywords) {
 
-		Map<Locale, String> contents = new HashMap<>();
-
-		contents.put(LocaleUtil.US, keywords);
-
 		return getSampleStructuredContent(
-			name, Collections.singletonList(contents), "en_US");
+			name,
+			Collections.singletonList(
+				HashMapBuilder.put(
+					LocaleUtil.US, keywords
+				).build()),
+			"en_US");
 	}
 
 	public static Map<String, Map<String, String>> getXSDMap(String xsd)
@@ -305,9 +307,9 @@ public class DDMStructureTestUtil {
 		for (Node node : nodes) {
 			Element dynamicElementElement = (Element)node;
 
-			String elementName = getElementName(dynamicElementElement);
-
-			map.put(elementName, getElementMap(dynamicElementElement));
+			map.put(
+				getElementName(dynamicElementElement),
+				getElementMap(dynamicElementElement));
 		}
 
 		return map;

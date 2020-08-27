@@ -14,6 +14,7 @@
 
 package com.liferay.segments.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -24,9 +25,15 @@ import com.liferay.segments.service.base.SegmentsEntryRelLocalServiceBaseImpl;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Eduardo García
  */
+@Component(
+	property = "model.class.name=com.liferay.segments.model.SegmentsEntryRel",
+	service = AopService.class
+)
 public class SegmentsEntryRelLocalServiceImpl
 	extends SegmentsEntryRelLocalServiceBaseImpl {
 
@@ -55,9 +62,19 @@ public class SegmentsEntryRelLocalServiceImpl
 		segmentsEntryRel.setClassNameId(classNameId);
 		segmentsEntryRel.setClassPK(classPK);
 
-		segmentsEntryRelPersistence.update(segmentsEntryRel);
+		return segmentsEntryRelPersistence.update(segmentsEntryRel);
+	}
 
-		return segmentsEntryRel;
+	@Override
+	public void addSegmentsEntryRels(
+			long segmentsEntryId, long classNameId, long[] classPKs,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		for (long classPK : classPKs) {
+			addSegmentsEntryRel(
+				segmentsEntryId, classNameId, classPK, serviceContext);
+		}
 	}
 
 	@Override
@@ -77,6 +94,16 @@ public class SegmentsEntryRelLocalServiceImpl
 	@Override
 	public void deleteSegmentsEntryRels(long classNameId, long classPK) {
 		segmentsEntryRelPersistence.removeByCN_CPK(classNameId, classPK);
+	}
+
+	@Override
+	public void deleteSegmentsEntryRels(
+			long segmentsEntryId, long classNameId, long[] classPKs)
+		throws PortalException {
+
+		for (long classPK : classPKs) {
+			deleteSegmentsEntryRel(segmentsEntryId, classNameId, classPK);
+		}
 	}
 
 	@Override

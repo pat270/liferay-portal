@@ -28,20 +28,6 @@ import java.util.List;
  */
 public class WorkflowDefinitionManagerUtil {
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #deployWorkflowDefinition(long, long, String, String,
-	 *             byte[])}
-	 */
-	@Deprecated
-	public static WorkflowDefinition deployWorkflowDefinition(
-			long companyId, long userId, String title, byte[] bytes)
-		throws WorkflowException {
-
-		return getWorkflowDefinitionManager().deployWorkflowDefinition(
-			companyId, userId, title, bytes);
-	}
-
 	public static WorkflowDefinition deployWorkflowDefinition(
 			long companyId, long userId, String title, String name,
 			byte[] bytes)
@@ -51,6 +37,11 @@ public class WorkflowDefinitionManagerUtil {
 			companyId, userId, title, name, bytes);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getActiveWorkflowDefinitionsCount(long)}
+	 */
+	@Deprecated
 	public static int getActiveWorkflowDefinitionCount(long companyId)
 		throws WorkflowException {
 
@@ -58,6 +49,10 @@ public class WorkflowDefinitionManagerUtil {
 			companyId);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static int getActiveWorkflowDefinitionCount(
 			long companyId, String name)
 		throws WorkflowException {
@@ -84,17 +79,11 @@ public class WorkflowDefinitionManagerUtil {
 			companyId, name, start, end, orderByComparator);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getLatestWorkflowDefinition(long, String)}
-	 */
-	@Deprecated
-	public static WorkflowDefinition getLatestKaleoDefinition(
-			long companyId, String name)
+	public static int getActiveWorkflowDefinitionsCount(long companyId)
 		throws WorkflowException {
 
-		return getWorkflowDefinitionManager().getLatestKaleoDefinition(
-			companyId, name);
+		return getWorkflowDefinitionManager().getActiveWorkflowDefinitionsCount(
+			companyId);
 	}
 
 	public static WorkflowDefinition getLatestWorkflowDefinition(
@@ -114,6 +103,13 @@ public class WorkflowDefinitionManagerUtil {
 			companyId, start, end, orderByComparator);
 	}
 
+	public static int getLatestWorkflowDefinitionsCount(long companyId)
+		throws WorkflowException {
+
+		return getWorkflowDefinitionManager().getLatestWorkflowDefinitionsCount(
+			companyId);
+	}
+
 	public static WorkflowDefinition getWorkflowDefinition(
 			long companyId, String name, int version)
 		throws WorkflowException {
@@ -122,6 +118,10 @@ public class WorkflowDefinitionManagerUtil {
 			companyId, name, version);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static int getWorkflowDefinitionCount(long companyId)
 		throws WorkflowException {
 
@@ -129,6 +129,11 @@ public class WorkflowDefinitionManagerUtil {
 			companyId);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getWorkflowDefinitionsCount(long, String)}
+	 */
+	@Deprecated
 	public static int getWorkflowDefinitionCount(long companyId, String name)
 		throws WorkflowException {
 
@@ -140,6 +145,10 @@ public class WorkflowDefinitionManagerUtil {
 		return _workflowDefinitionManager;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static List<WorkflowDefinition> getWorkflowDefinitions(
 			long companyId, int start, int end,
 			OrderByComparator<WorkflowDefinition> orderByComparator)
@@ -156,6 +165,13 @@ public class WorkflowDefinitionManagerUtil {
 
 		return getWorkflowDefinitionManager().getWorkflowDefinitions(
 			companyId, name, start, end, orderByComparator);
+	}
+
+	public static int getWorkflowDefinitionsCount(long companyId, String name)
+		throws WorkflowException {
+
+		return getWorkflowDefinitionManager().getWorkflowDefinitionsCount(
+			companyId, name);
 	}
 
 	/**
@@ -198,6 +214,10 @@ public class WorkflowDefinitionManagerUtil {
 			companyId, userId, name, version, active);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement}
+	 */
+	@Deprecated
 	public static WorkflowDefinition updateTitle(
 			long companyId, long userId, String name, int version, String title)
 		throws WorkflowException {

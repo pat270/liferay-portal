@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Role in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class RoleCacheModel
 	implements CacheModel<Role>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RoleCacheModel)) {
+		if (!(object instanceof RoleCacheModel)) {
 			return false;
 		}
 
-		RoleCacheModel roleCacheModel = (RoleCacheModel)obj;
+		RoleCacheModel roleCacheModel = (RoleCacheModel)object;
 
 		if ((roleId == roleCacheModel.roleId) &&
 			(mvccVersion == roleCacheModel.mvccVersion)) {
@@ -79,10 +76,12 @@ public class RoleCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(33);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", roleId=");
@@ -121,6 +120,7 @@ public class RoleCacheModel
 		RoleImpl roleImpl = new RoleImpl();
 
 		roleImpl.setMvccVersion(mvccVersion);
+		roleImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			roleImpl.setUuid("");
@@ -195,6 +195,8 @@ public class RoleCacheModel
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		roleId = objectInput.readLong();
@@ -220,6 +222,8 @@ public class RoleCacheModel
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		if (uuid == null) {
 			objectOutput.writeUTF("");
@@ -280,6 +284,7 @@ public class RoleCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long roleId;
 	public long companyId;

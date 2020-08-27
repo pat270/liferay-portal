@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class OAuth2ApplicationServiceBaseImpl
 	extends BaseServiceImpl
-	implements OAuth2ApplicationService, AopService, IdentifiableOSGiService {
+	implements AopService, IdentifiableOSGiService, OAuth2ApplicationService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -101,8 +101,8 @@ public abstract class OAuth2ApplicationServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

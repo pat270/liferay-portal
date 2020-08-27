@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for Repository. This utility wraps
  * <code>com.liferay.portal.service.impl.RepositoryServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see RepositoryService
  * @generated
  */
-@ProviderType
 public class RepositoryServiceUtil {
 
 	/*
@@ -42,13 +39,13 @@ public class RepositoryServiceUtil {
 			long groupId, long classNameId, long parentFolderId, String name,
 			String description, String portletId,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				typeSettingsProperties,
+				typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().addRepository(
 			groupId, classNameId, parentFolderId, name, description, portletId,
-			typeSettingsProperties, serviceContext);
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	public static void checkRepository(long repositoryId)
@@ -77,6 +74,13 @@ public class RepositoryServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().getRepository(repositoryId);
+	}
+
+	public static com.liferay.portal.kernel.model.Repository getRepository(
+			long groupId, String portletId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getRepository(groupId, portletId);
 	}
 
 	public static com.liferay.portal.kernel.util.UnicodeProperties

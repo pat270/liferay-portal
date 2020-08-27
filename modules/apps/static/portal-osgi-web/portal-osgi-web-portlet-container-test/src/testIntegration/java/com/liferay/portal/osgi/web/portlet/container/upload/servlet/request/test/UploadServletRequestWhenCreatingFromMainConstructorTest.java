@@ -18,10 +18,10 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.upload.FileItem;
 import com.liferay.portal.kernel.util.ProgressTracker;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadServletRequestImpl;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -79,18 +79,18 @@ public class UploadServletRequestWhenCreatingFromMainConstructorTest {
 		HttpServletRequest mockHttpServletRequest =
 			(HttpServletRequest)liferayServletRequest.getRequest();
 
-		UploadServletRequestImpl uploadServletRequest =
+		UploadServletRequestImpl uploadServletRequestImpl =
 			new UploadServletRequestImpl(mockHttpServletRequest);
 
 		Map<String, FileItem[]> multipartParameterMap =
-			uploadServletRequest.getMultipartParameterMap();
+			uploadServletRequestImpl.getMultipartParameterMap();
 
 		Assert.assertNotNull(multipartParameterMap);
 		Assert.assertTrue(
 			multipartParameterMap.toString(), multipartParameterMap.isEmpty());
 
 		Map<String, List<String>> regularParameterMap =
-			uploadServletRequest.getRegularParameterMap();
+			uploadServletRequestImpl.getRegularParameterMap();
 
 		Assert.assertNotNull(regularParameterMap);
 		Assert.assertTrue(

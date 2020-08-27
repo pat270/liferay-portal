@@ -1,5 +1,4 @@
-@import "bourbon";
-@import "mixins";
+@import 'atlas-variables';
 
 .portlet-adaptive-media {
 	.lfr-adapted-images-column {
@@ -11,6 +10,16 @@
 
 			&.disabled .progress-bar {
 				opacity: 0.5;
+			}
+		}
+
+		.progress-error-container {
+			button {
+				padding-top: 5px;
+			}
+
+			span {
+				padding-left: 0.25rem;
 			}
 		}
 

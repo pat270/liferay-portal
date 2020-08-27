@@ -19,6 +19,7 @@ import com.liferay.poshi.runner.util.RegexUtil;
 import com.liferay.poshi.runner.util.StringUtil;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.dom4j.Attribute;
 import org.dom4j.Element;
@@ -81,6 +82,7 @@ public class ReturnPoshiElement extends PoshiElement {
 	}
 
 	protected ReturnPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected ReturnPoshiElement(Element element) {
@@ -102,12 +104,9 @@ public class ReturnPoshiElement extends PoshiElement {
 	protected String createPoshiScriptSnippet(String content) {
 		StringBuilder sb = new StringBuilder();
 
-		String blockName = getBlockName();
-		String pad = getPad();
-
 		sb.append("\n\n");
-		sb.append(pad);
-		sb.append(blockName);
+		sb.append(getPad());
+		sb.append(getBlockName());
 		sb.append(content.trim());
 
 		return sb.toString();
@@ -141,15 +140,12 @@ public class ReturnPoshiElement extends PoshiElement {
 			return false;
 		}
 
-		if (poshiScript.startsWith("return ") &&
-			isBalancedPoshiScript(poshiScript)) {
-
-			return true;
-		}
-
-		return false;
+		return isValidPoshiScriptStatement(_returnPattern, poshiScript);
 	}
 
 	private static final String _ELEMENT_NAME = "return";
+
+	private Pattern _returnPattern = Pattern.compile(
+		"^return[\\s]*\"[\\s\\S]*\"[\\s]*;$");
 
 }

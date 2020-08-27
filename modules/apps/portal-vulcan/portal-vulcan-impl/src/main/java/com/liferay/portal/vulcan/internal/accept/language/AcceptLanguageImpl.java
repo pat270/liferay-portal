@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -27,12 +28,11 @@ import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.HttpHeaders;
 
@@ -59,28 +59,32 @@ public class AcceptLanguageImpl implements AcceptLanguage {
 			return Collections.emptyList();
 		}
 
+		if (acceptLanguage.equals("zh-Hans-CN")) {
+			acceptLanguage = "zh-CN";
+		}
+		else if (acceptLanguage.equals("zh-Hant-TW")) {
+			acceptLanguage = "zh-TW";
+		}
+
 		try {
 			Company company = _portal.getCompany(_httpServletRequest);
 
-			Set<Locale> companyAvailableLocales =
-				_language.getCompanyAvailableLocales(company.getCompanyId());
-
 			List<Locale> locales = Locale.filter(
 				Locale.LanguageRange.parse(acceptLanguage),
-				companyAvailableLocales);
+				_language.getCompanyAvailableLocales(company.getCompanyId()));
 
 			if (ListUtil.isEmpty(locales)) {
-				throw new ClientErrorException(
-					"No available locale matches the accepted languages: " +
-						acceptLanguage,
-					422);
+				throw new NotAcceptableException(
+					"No locales match the accepted languages: " +
+						acceptLanguage);
 			}
 
 			return locales;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new InternalServerErrorException(
-				"Unable to get preferred locale: " + pe.getMessage(), pe);
+				"Unable to get locales: " + portalException.getMessage(),
+				portalException);
 		}
 	}
 
@@ -102,14 +106,22 @@ public class AcceptLanguageImpl implements AcceptLanguage {
 
 			return user.getLocale();
 		}
-		catch (NoSuchUserException nsue) {
+		catch (NoSuchUserException noSuchUserException) {
 			throw new NotFoundException(
-				"Unable to get preferred locale from nonexistent user", nsue);
+				"Unable to get preferred locale from nonexistent user",
+				noSuchUserException);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new InternalServerErrorException(
-				"Unable to get preferred locale: " + e.getMessage(), e);
+				"Unable to get preferred locale: " + exception.getMessage(),
+				exception);
 		}
+	}
+
+	@Override
+	public boolean isAcceptAllLanguages() {
+		return GetterUtil.getBoolean(
+			_httpServletRequest.getHeader("X-Accept-All-Languages"));
 	}
 
 	private final HttpServletRequest _httpServletRequest;

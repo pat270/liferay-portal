@@ -44,11 +44,11 @@ public class BrowserLauncher implements Runnable {
 				try {
 					launchBrowser();
 				}
-				catch (Exception e2) {
+				catch (Exception exception) {
 				}
 			}
 		}
-		catch (Exception e1) {
+		catch (Exception exception) {
 		}
 	}
 
@@ -71,7 +71,7 @@ public class BrowserLauncher implements Runnable {
 	}
 
 	protected void launchBrowserUnix(Runtime runtime) throws Exception {
-		StringBundler sb = new StringBundler(_BROWSERS.length * 5 - 1);
+		StringBundler sb = new StringBundler((_BROWSERS.length * 5) - 1);
 
 		for (int i = 0; i < _BROWSERS.length; i++) {
 			if (i != 0) {

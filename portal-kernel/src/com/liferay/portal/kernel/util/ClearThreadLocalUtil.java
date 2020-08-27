@@ -81,7 +81,10 @@ public class ClearThreadLocalUtil {
 				continue;
 			}
 
-			Object key = ((Reference<?>)tableEntry).get();
+			Reference<?> reference = (Reference<?>)tableEntry;
+
+			Object key = reference.get();
+
 			Object value = _valueField.get(tableEntry);
 
 			boolean remove = false;
@@ -175,9 +178,10 @@ public class ClearThreadLocalUtil {
 
 			initialized = true;
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Failed to initialize ClearThreadLocalUtil", t);
+				_log.warn(
+					"Failed to initialize ClearThreadLocalUtil", throwable);
 			}
 		}
 

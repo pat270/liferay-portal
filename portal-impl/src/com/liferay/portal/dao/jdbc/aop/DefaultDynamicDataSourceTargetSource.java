@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Stack;
 
 import javax.sql.DataSource;
 
@@ -33,15 +32,6 @@ import org.springframework.aop.TargetSource;
  */
 public class DefaultDynamicDataSourceTargetSource
 	implements DynamicDataSourceTargetSource, TargetSource {
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public Stack<String> getMethodStack() {
-		return new Stack<>();
-	}
 
 	@Override
 	public Operation getOperation() {
@@ -95,28 +85,11 @@ public class DefaultDynamicDataSourceTargetSource
 		return false;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String popMethod() {
-		return null;
-	}
-
 	@Override
 	public Operation popOperation() {
 		Deque<Operation> operations = _operations.get();
 
 		return operations.pop();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void pushMethod(String method) {
 	}
 
 	@Override
@@ -130,14 +103,6 @@ public class DefaultDynamicDataSourceTargetSource
 	public void releaseTarget(Object target) throws Exception {
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void setOperation(Operation operation) {
-	}
-
 	@Override
 	public void setReadDataSource(DataSource readDataSource) {
 		_readDataSource = readDataSource;
@@ -146,14 +111,6 @@ public class DefaultDynamicDataSourceTargetSource
 	@Override
 	public void setWriteDataSource(DataSource writeDataSource) {
 		_writeDataSource = writeDataSource;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected boolean inOperation() {
-		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -78,7 +78,7 @@ public class FolderPermissionsPortletConfigurationIcon
 				resourcePrimKey, LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return url;
@@ -104,15 +104,14 @@ public class FolderPermissionsPortletConfigurationIcon
 			themeDisplay.getPermissionChecker();
 
 		try {
-			BookmarksFolder folder = ActionUtil.getFolder(portletRequest);
-
 			if (!_bookmarksFolderModelResourcePermission.contains(
-					permissionChecker, folder, ActionKeys.PERMISSIONS)) {
+					permissionChecker, ActionUtil.getFolder(portletRequest),
+					ActionKeys.PERMISSIONS)) {
 
 				return false;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 

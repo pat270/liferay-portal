@@ -18,6 +18,7 @@ import com.liferay.calendar.model.CalendarNotificationTemplate;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,35 +27,35 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing CalendarNotificationTemplate in entity cache.
  *
  * @author Eduardo Lundgren
  * @generated
  */
-@ProviderType
 public class CalendarNotificationTemplateCacheModel
-	implements CacheModel<CalendarNotificationTemplate>, Externalizable {
+	implements CacheModel<CalendarNotificationTemplate>, Externalizable,
+			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof CalendarNotificationTemplateCacheModel)) {
+		if (!(object instanceof CalendarNotificationTemplateCacheModel)) {
 			return false;
 		}
 
 		CalendarNotificationTemplateCacheModel
 			calendarNotificationTemplateCacheModel =
-				(CalendarNotificationTemplateCacheModel)obj;
+				(CalendarNotificationTemplateCacheModel)object;
 
-		if (calendarNotificationTemplateId ==
+		if ((calendarNotificationTemplateId ==
 				calendarNotificationTemplateCacheModel.
-					calendarNotificationTemplateId) {
+					calendarNotificationTemplateId) &&
+			(mvccVersion ==
+				calendarNotificationTemplateCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -64,14 +65,28 @@ public class CalendarNotificationTemplateCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, calendarNotificationTemplateId);
+		int hashCode = HashUtil.hash(0, calendarNotificationTemplateId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(33);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", calendarNotificationTemplateId=");
 		sb.append(calendarNotificationTemplateId);
@@ -110,6 +125,8 @@ public class CalendarNotificationTemplateCacheModel
 	public CalendarNotificationTemplate toEntityModel() {
 		CalendarNotificationTemplateImpl calendarNotificationTemplateImpl =
 			new CalendarNotificationTemplateImpl();
+
+		calendarNotificationTemplateImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			calendarNotificationTemplateImpl.setUuid("");
@@ -201,7 +218,10 @@ public class CalendarNotificationTemplateCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		calendarNotificationTemplateId = objectInput.readLong();
@@ -220,12 +240,14 @@ public class CalendarNotificationTemplateCacheModel
 		notificationTypeSettings = objectInput.readUTF();
 		notificationTemplateType = objectInput.readUTF();
 		subject = objectInput.readUTF();
-		body = objectInput.readUTF();
+		body = (String)objectInput.readObject();
 		lastPublishDate = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -282,15 +304,16 @@ public class CalendarNotificationTemplateCacheModel
 		}
 
 		if (body == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(body);
+			objectOutput.writeObject(body);
 		}
 
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long calendarNotificationTemplateId;
 	public long groupId;

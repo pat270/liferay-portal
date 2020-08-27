@@ -16,12 +16,9 @@ package com.liferay.friendly.url.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchFriendlyURLEntryException extends NoSuchModelException {
 
 	public NoSuchFriendlyURLEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchFriendlyURLEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchFriendlyURLEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchFriendlyURLEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchFriendlyURLEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchFriendlyURLEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

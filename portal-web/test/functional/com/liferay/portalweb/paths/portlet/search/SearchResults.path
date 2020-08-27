@@ -8,20 +8,31 @@
 <tr><td rowspan="1" colspan="3">SearchResults</td></tr>
 </thead>
 <tbody>
+<!--ASSET_DETAILS-->
+<tr>
+	<td>ASSET_DETAILS_TITLE</td>
+	<td>//div[contains(@id,'SearchResultsPortlet')]//span[contains(@class,'asset-title')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_DETAILS_EDIT_BUTTON</td>
+	<td>//span[contains(@class,'d-inline-flex')]</td>
+	<td></td>
+</tr>
 <!--ASSET_TYPE_FACET-->
 <tr>
 	<td>ASSET_TYPE_FACET_ANY_ASSET</td>
-	<td>//div[contains(@class,'search-facet')]/ul/li[contains(@class,'facet-value') and contains(@class,'default')]/a[contains(.,'Any Asset')]</td>
+	<td>//div[contains(@class,'search-facet')]//ul/li[contains(@class,'facet-value') and contains(@class,'default')]/a[contains(.,'Any Asset')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_TYPE_FACET_FREQUENCY</td>
-	<td>//div[contains(@class,'search-facet')]/ul/li[contains(@class,'facet-value') and contains(.,'${key_searchAssetType}')]/a/span</td>
+	<td>//div[contains(@class,'search-facet')]//ul/li[contains(@class,'facet-value') and contains(.,'${key_searchAssetType}')]/a/span</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_TYPE_FACET_ASSET</td>
-	<td>//div[contains(@class,'search-facet')]/ul/li[contains(@class,'facet-value') and contains(.,'${key_searchAssetType}')]/a</td>
+	<td>//div[contains(@class,'search-facet')]//ul/li[contains(@class,'facet-value') and contains(.,'${key_searchAssetType}')]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -32,17 +43,17 @@
 <!--USER_FACET-->
 <tr>
 	<td>USER_FACET_ANY_USER</td>
-	<td>//div[contains(@class,'search-facet')]/ul/li[contains(@class,'facet-value') and contains(@class,'default') and contains(.,'Any User')]/a</td>
+	<td>//div[contains(@class,'search-facet')]//ul/li[contains(@class,'facet-value') and contains(@class,'default') and contains(.,'Any User')]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_FACET_FREQUENCY</td>
-	<td>//div[contains(@class,'search-facet')]/ul/li[contains(@class,'facet-value') and contains(.,'${key_userLoginFullName}')]/a/span</td>
+	<td>//div[contains(@class,'search-facet')]//ul/li[contains(@class,'facet-value') and contains(.,'${key_userLoginFullName}')]/a/span</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_FACET_USER_NAME</td>
-	<td>//div[contains(@class,'search-facet')]/ul/li[contains(@class,'facet-value') and contains(.,'${key_userLoginFullName}')]/a</td>
+	<td>//div[contains(@class,'search-facet')]//ul/li[contains(@class,'facet-value') and contains(.,'${key_userLoginFullName}')]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -64,12 +75,12 @@
 <!--ASSET_ENTRY_TABLE-->
 <tr>
 	<td>ASSET_ENTRY_TABLE_TITLE</td>
-	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//a</td>
+	<td>//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')]//a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_ENTRY_TABLE_TITLE_SPECIFIC</td>
-	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[contains(.,'${key_searchAssetType}')]/..//a</td>
+	<td>//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')][.//span[@class='subtext-item' and contains(.,'${key_searchAssetType}')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,21 +90,68 @@
 </tr>
 <tr>
 	<td>ASSET_ENTRY_TABLE_TYPE</td>
-	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[1]</td>
+	<td>//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')]//span[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_ENTRY_TABLE_TYPE_SPECIFIC</td>
-	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[contains(.,'${key_searchAssetType}')]</td>
+	<td>//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')]//span[contains(.,'${key_searchAssetType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_ENTRY_TABLE_TYPE_SPECIFIC_DATE</td>
+	<td>//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')]//span[contains(.,'${key_searchAssetType}')]/../span[3]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_ENTRY_TABLE_SUMMARY</td>
-	<td>xpath=(//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6)[2]</td>
+	<td>xpath=(//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')])span[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_ENTRY_TABLE_SUMMARY_SPECIFIC</td>
+	<td>//li[contains(@class,'list-group-item') and contains(.,'${key_searchAssetTitle}')]//span[contains(.,'${searchAssetSummary}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--CLASSIC_ASSET_DETAILS-->
+<tr>
+	<td>CLASSIC_ASSET_DETAILS_TITLE</td>
+	<td>//section[contains(@id,'templateSearch')]//span[contains(@class,'asset-title')]</td>
+	<td></td>
+</tr>
+<!--CLASSIC_ASSET_ENTRY_TABLE-->
+<tr>
+	<td>CLASSIC_ASSET_ENTRY_TABLE_TITLE</td>
+	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLASSIC_ASSET_ENTRY_TABLE_TITLE_SPECIFIC</td>
+	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[contains(.,'${key_searchAssetType}')]/..//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLASSIC_ASSET_ENTRY_TABLE_TYPE</td>
+	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLASSIC_ASSET_ENTRY_TABLE_TYPE_SPECIFIC</td>
+	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[contains(.,'${key_searchAssetType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLASSIC_ASSET_ENTRY_TABLE_SUMMARY</td>
+	<td>xpath=(//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6)[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CLASSIC_ASSET_ENTRY_TABLE_SUMMARY_SPECIFIC</td>
 	<td>//li[@data-qa-id='row' and contains(.,'${key_searchAssetTitle}')]//h6[contains(.,'${key_searchAssetType}')]/../h6[2]</td>
 	<td></td>
 </tr>
@@ -110,7 +168,7 @@
 </tr>
 <tr>
 	<td>RESULTS_PORTLET_SEARCH_QUERY</td>
-	<td>//p[contains(@class,'search-total-label')]</td>
+	<td>//div[contains(@class,'search-total-label')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -125,13 +183,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FACET_PORTLET_CHECKBOX_SPECIFIC</td>
-	<td>//div[contains(@class,'portlet-content')][contains(.,'${key_facetClass}')]//label[contains(.,'${key_checkboxName}')]/input[@type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>FACET_PORTLET_CLEAR_GENERIC</td>
-	<td>//div[contains(@class,'search-facet')]//a[contains(@onclick,'clearSelections(event);')]</td>
+	<td>//div[contains(@class,'search-facet')]//button[contains(@onclick,'clearSelections(event);')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -141,7 +194,7 @@
 </tr>
 <tr>
 	<td>FACET_PORTLET_CLEAR_SPECIFIC</td>
-	<td>//div[contains(@class,'search-facet') and contains(@id,'${key_facetClass}')]//a[contains(@onclick,'clearSelections(event);')]</td>
+	<td>//div[contains(@class,'search-facet') and contains(@id,'${key_facetClass}')]//button[contains(@onclick,'clearSelections(event);')]</td>
 	<td></td>
 </tr>
 <tr>

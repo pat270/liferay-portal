@@ -15,7 +15,10 @@
 package com.liferay.roles.admin.web.internal.portlet.configuration.icon;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
@@ -28,13 +31,13 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.roles.admin.constants.RolesAdminPortletKeys;
+import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
+import com.liferay.roles.admin.web.internal.role.type.contributor.util.RoleTypeContributorRetrieverUtil;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -76,7 +79,7 @@ public class DeleteRolePortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -98,7 +101,11 @@ public class DeleteRolePortletConfigurationIcon
 
 			Role role = _roleService.fetchRole(roleId);
 
-			if (!role.isSystem() &&
+			RoleTypeContributor currentRoleTypeContributor =
+				RoleTypeContributorRetrieverUtil.getCurrentRoleTypeContributor(
+					portletRequest);
+
+			if (currentRoleTypeContributor.isAllowDelete(role) &&
 				RolePermissionUtil.contains(
 					themeDisplay.getPermissionChecker(), roleId,
 					ActionKeys.DELETE)) {
@@ -108,7 +115,8 @@ public class DeleteRolePortletConfigurationIcon
 
 			return false;
 		}
-		catch (Exception e) {
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		return false;
@@ -120,11 +128,12 @@ public class DeleteRolePortletConfigurationIcon
 	}
 
 	private long _getRoleId(PortletRequest portletRequest) {
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			portletRequest);
-
-		return ParamUtil.getLong(httpServletRequest, "roleId");
+		return ParamUtil.getLong(
+			_portal.getHttpServletRequest(portletRequest), "roleId");
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DeleteRolePortletConfigurationIcon.class);
 
 	@Reference
 	private Portal _portal;

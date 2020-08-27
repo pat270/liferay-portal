@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = DLStoreConvertProcess.class)
+@Component(service = DLStoreConvertProcess.class)
 public class DLFileVersionDLStoreConvertProcess
 	implements DLStoreConvertProcess {
 
@@ -77,21 +77,15 @@ public class DLFileVersionDLStoreConvertProcess
 					dlFileVersion.getFolderId());
 
 				try {
-					if (delete) {
-						sourceStore.moveFileToStore(
-							dlFileVersion.getCompanyId(), repositoryId,
-							dlFileEntry.getName(), dlFileVersion.getVersion(),
-							targetStore);
-					}
-					else {
-						sourceStore.copyFileToStore(
-							dlFileVersion.getCompanyId(), repositoryId,
-							dlFileEntry.getName(), dlFileVersion.getVersion(),
-							targetStore);
-					}
+					transferFile(
+						sourceStore, targetStore, dlFileVersion.getCompanyId(),
+						repositoryId, dlFileEntry.getName(),
+						dlFileVersion.getVersion(), delete);
 				}
-				catch (Exception e) {
-					_log.error("Unable to migrate " + dlFileEntry.getName(), e);
+				catch (Exception exception) {
+					_log.error(
+						"Unable to migrate " + dlFileEntry.getName(),
+						exception);
 				}
 			});
 

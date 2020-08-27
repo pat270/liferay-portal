@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchVirtualHostException;
 import com.liferay.portal.kernel.model.VirtualHost;
 import com.liferay.portal.kernel.service.VirtualHostLocalServiceUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,11 +124,17 @@ public class VirtualHostPersistenceTest {
 
 		newVirtualHost.setMvccVersion(RandomTestUtil.nextLong());
 
+		newVirtualHost.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newVirtualHost.setCompanyId(RandomTestUtil.nextLong());
 
 		newVirtualHost.setLayoutSetId(RandomTestUtil.nextLong());
 
 		newVirtualHost.setHostname(RandomTestUtil.randomString());
+
+		newVirtualHost.setDefaultVirtualHost(RandomTestUtil.randomBoolean());
+
+		newVirtualHost.setLanguageId(RandomTestUtil.randomString());
 
 		_virtualHosts.add(_persistence.update(newVirtualHost));
 
@@ -139,6 +145,9 @@ public class VirtualHostPersistenceTest {
 			existingVirtualHost.getMvccVersion(),
 			newVirtualHost.getMvccVersion());
 		Assert.assertEquals(
+			existingVirtualHost.getCtCollectionId(),
+			newVirtualHost.getCtCollectionId());
+		Assert.assertEquals(
 			existingVirtualHost.getVirtualHostId(),
 			newVirtualHost.getVirtualHostId());
 		Assert.assertEquals(
@@ -148,6 +157,12 @@ public class VirtualHostPersistenceTest {
 			newVirtualHost.getLayoutSetId());
 		Assert.assertEquals(
 			existingVirtualHost.getHostname(), newVirtualHost.getHostname());
+		Assert.assertEquals(
+			existingVirtualHost.isDefaultVirtualHost(),
+			newVirtualHost.isDefaultVirtualHost());
+		Assert.assertEquals(
+			existingVirtualHost.getLanguageId(),
+			newVirtualHost.getLanguageId());
 	}
 
 	@Test
@@ -165,6 +180,15 @@ public class VirtualHostPersistenceTest {
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
 		_persistence.countByC_L(0L, 0L);
+	}
+
+	@Test
+	public void testCountByC_L_D() throws Exception {
+		_persistence.countByC_L_D(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean());
+
+		_persistence.countByC_L_D(0L, 0L, RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -192,8 +216,9 @@ public class VirtualHostPersistenceTest {
 
 	protected OrderByComparator<VirtualHost> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"VirtualHost", "mvccVersion", true, "virtualHostId", true,
-			"companyId", true, "layoutSetId", true, "hostname", true);
+			"VirtualHost", "mvccVersion", true, "ctCollectionId", true,
+			"virtualHostId", true, "companyId", true, "layoutSetId", true,
+			"hostname", true, "defaultVirtualHost", true, "languageId", true);
 	}
 
 	@Test
@@ -411,25 +436,72 @@ public class VirtualHostPersistenceTest {
 
 		_persistence.clearCache();
 
-		VirtualHost existingVirtualHost = _persistence.findByPrimaryKey(
-			newVirtualHost.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newVirtualHost.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingVirtualHost.getHostname(),
-				ReflectionTestUtil.invoke(
-					existingVirtualHost, "getOriginalHostname",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		VirtualHost newVirtualHost = addVirtualHost();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			VirtualHost.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"virtualHostId", newVirtualHost.getVirtualHostId()));
+
+		List<VirtualHost> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(VirtualHost virtualHost) {
+		Assert.assertEquals(
+			virtualHost.getHostname(),
+			ReflectionTestUtil.invoke(
+				virtualHost, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "hostname"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingVirtualHost.getCompanyId()),
+			Long.valueOf(virtualHost.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingVirtualHost, "getOriginalCompanyId", new Class<?>[0]));
+				virtualHost, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 		Assert.assertEquals(
-			Long.valueOf(existingVirtualHost.getLayoutSetId()),
+			Long.valueOf(virtualHost.getLayoutSetId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingVirtualHost, "getOriginalLayoutSetId",
-				new Class<?>[0]));
+				virtualHost, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "layoutSetId"));
+		Assert.assertEquals(
+			Boolean.valueOf(virtualHost.getDefaultVirtualHost()),
+			ReflectionTestUtil.<Boolean>invoke(
+				virtualHost, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "defaultVirtualHost"));
 	}
 
 	protected VirtualHost addVirtualHost() throws Exception {
@@ -439,11 +511,17 @@ public class VirtualHostPersistenceTest {
 
 		virtualHost.setMvccVersion(RandomTestUtil.nextLong());
 
+		virtualHost.setCtCollectionId(RandomTestUtil.nextLong());
+
 		virtualHost.setCompanyId(RandomTestUtil.nextLong());
 
 		virtualHost.setLayoutSetId(RandomTestUtil.nextLong());
 
 		virtualHost.setHostname(RandomTestUtil.randomString());
+
+		virtualHost.setDefaultVirtualHost(RandomTestUtil.randomBoolean());
+
+		virtualHost.setLanguageId(RandomTestUtil.randomString());
 
 		_virtualHosts.add(_persistence.update(virtualHost));
 

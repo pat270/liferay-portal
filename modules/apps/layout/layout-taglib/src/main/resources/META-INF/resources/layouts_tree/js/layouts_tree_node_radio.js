@@ -1,65 +1,85 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-layouts-tree-node-radio',
-	function(A) {
+	(A) => {
 		var TPL_RADIO = '<label><input type="radio"></label>';
 
-		var LayoutsTreeNodeRadio = A.Component.create(
-			{
-				ATTRS: {
-					checkEl: {
-						setter: A.one,
-						valueFn: '_valueCheckEl'
-					}
+		var LayoutsTreeNodeRadio = A.Component.create({
+			ATTRS: {
+				checkEl: {
+					setter: A.one,
+					valueFn: '_valueCheckEl',
+				},
+			},
+
+			EXTENDS: A.TreeNodeRadio,
+
+			NAME: 'layoutstreenoderadio',
+
+			prototype: {
+				_uiSetChecked(val) {
+					var instance = this;
+
+					instance
+						.get('checkEl')
+						.one('input')
+						.attr('checked', val ? 'checked' : '');
 				},
 
-				EXTENDS: A.TreeNodeRadio,
+				_valueCheckEl() {
+					var instance = this;
 
-				NAME: 'layoutstreenoderadio',
+					var checkName = instance.get('checkName');
 
-				prototype: {
-					renderUI: function() {
-						var instance = this;
+					return A.Node.create(TPL_RADIO).attr('name', checkName);
+				},
 
-						LayoutsTreeNodeRadio.superclass.renderUI.apply(instance, arguments);
+				renderUI() {
+					var instance = this;
 
-						var checkEl = instance.get('checkEl');
+					LayoutsTreeNodeRadio.superclass.renderUI.apply(
+						instance,
+						arguments
+					);
 
-						checkEl.append(instance.get('label'));
+					var checkEl = instance.get('checkEl');
 
-						checkEl.show();
+					checkEl.append(instance.get('label'));
 
-						var labelEl = instance.get('labelEl');
+					checkEl.show();
 
-						labelEl.empty();
+					var labelEl = instance.get('labelEl');
 
-						labelEl.addClass('radio');
+					labelEl.empty();
 
-						var checkContainerEl = instance.get('checkContainerEl');
+					labelEl.addClass('radio');
 
-						checkContainerEl.removeClass('tree-node-checkbox-container');
+					var checkContainerEl = instance.get('checkContainerEl');
 
-						labelEl.append(checkContainerEl);
+					checkContainerEl.removeClass(
+						'tree-node-checkbox-container'
+					);
 
-						instance.get('hitAreaEl').remove();
-						instance.get('iconEl').remove();
-					},
+					labelEl.append(checkContainerEl);
 
-					_uiSetChecked: function(val) {
-						var instance = this;
-
-						instance.get('checkEl').one('input').attr('checked', val ? 'checked' : '');
-					},
-
-					_valueCheckEl: function() {
-						var instance = this;
-
-						var checkName = instance.get('checkName');
-
-						return A.Node.create(TPL_RADIO).attr('name', checkName);
-					}
-				}
-			}
-		);
+					instance.get('hitAreaEl').remove();
+					instance.get('iconEl').remove();
+				},
+			},
+		});
 
 		A.LayoutsTreeNodeRadio = LayoutsTreeNodeRadio;
 
@@ -67,6 +87,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-tree-node']
+		requires: ['aui-tree-node'],
 	}
 );

@@ -14,48 +14,69 @@
 
 package com.liferay.portal.scripting.groovy.internal;
 
-import com.liferay.portal.kernel.scripting.ScriptingExecutor;
-import com.liferay.portal.scripting.ScriptingExecutorTestCase;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Miguel Pastor
  */
-@RunWith(PowerMockRunner.class)
-public class GroovyExecutorTest extends ScriptingExecutorTestCase {
+public class GroovyExecutorTest {
 
-	@Override
-	public String getScriptExtension() {
-		return ".groovy";
+	@Test
+	public void testBindingInputVariables() throws Exception {
+		_execute(
+			Collections.singletonMap("variable", "string"),
+			Collections.emptySet(), "binding-input");
 	}
 
-	@Override
-	public ScriptingExecutor getScriptingExecutor() {
-		return new GroovyExecutor();
-	}
-
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void testRuntimeError() throws Exception {
-		Map<String, Object> inputObjects = Collections.emptyMap();
-		Set<String> outputNames = Collections.emptySet();
+		try {
+			_execute(
+				Collections.emptyMap(), Collections.emptySet(),
+				"runtime-error");
 
-		execute(inputObjects, outputNames, "runtime-error");
+			Assert.fail("Should throw RuntimeException");
+		}
+		catch (RuntimeException runtimeException) {
+		}
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void testSyntaxError() throws Exception {
-		Map<String, Object> inputObjects = Collections.emptyMap();
-		Set<String> outputNames = Collections.emptySet();
+	@Test
+	public void testSimpleScript() throws Exception {
+		_execute(Collections.emptyMap(), Collections.emptySet(), "simple");
+	}
 
-		execute(inputObjects, outputNames, "syntax-error");
+	@Test
+	public void testSyntaxError() throws Exception {
+		try {
+			_execute(
+				Collections.emptyMap(), Collections.emptySet(), "syntax-error");
+
+			Assert.fail("Should throw UnsupportedOperationException");
+		}
+		catch (UnsupportedOperationException unsupportedOperationException) {
+		}
+	}
+
+	private Map<String, Object> _execute(
+			Map<String, Object> inputObjects, Set<String> outputNames,
+			String fileName)
+		throws Exception {
+
+		GroovyExecutor groovyExecutor = new GroovyExecutor();
+
+		return groovyExecutor.eval(
+			null, inputObjects, outputNames,
+			StringUtil.read(
+				getClass().getResourceAsStream(
+					"dependencies/" + fileName + ".groovy")));
 	}
 
 }

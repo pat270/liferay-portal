@@ -17,8 +17,6 @@ package com.liferay.portal.workflow.web.internal.portlet.action;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.portlet.LiferayPortletURL;
-import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -32,16 +30,16 @@ import com.liferay.portal.kernel.workflow.WorkflowDefinitionFileException;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionTitleException;
 import com.liferay.portal.kernel.workflow.WorkflowException;
+import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
 import com.liferay.portal.workflow.constants.WorkflowWebKeys;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -71,13 +69,7 @@ public class DeployWorkflowDefinitionMVCActionCommand
 		Map<Locale, String> titleMap = LocalizationUtil.getLocalizationMap(
 			actionRequest, "title");
 
-		String title = titleMap.get(LocaleUtil.getDefault());
-
-		if (titleMap.isEmpty() || Validator.isNull(title)) {
-			throw new WorkflowDefinitionTitleException();
-		}
-
-		String name = ParamUtil.getString(actionRequest, "name");
+		validateTitle(actionRequest, titleMap);
 
 		String content = ParamUtil.getString(actionRequest, "content");
 
@@ -87,6 +79,8 @@ public class DeployWorkflowDefinitionMVCActionCommand
 		}
 
 		validateWorkflowDefinition(actionRequest, content.getBytes());
+
+		String name = ParamUtil.getString(actionRequest, "name");
 
 		WorkflowDefinition latestWorkflowDefinition =
 			getLatestWorkflowDefinition(themeDisplay.getCompanyId(), name);
@@ -116,9 +110,9 @@ public class DeployWorkflowDefinitionMVCActionCommand
 			return unproxiedWorkflowDefinitionManager.
 				getLatestWorkflowDefinition(companyId, name);
 		}
-		catch (WorkflowException we) {
+		catch (WorkflowException workflowException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(we, we);
+				_log.debug(workflowException, workflowException);
 			}
 
 			return null;
@@ -142,29 +136,20 @@ public class DeployWorkflowDefinitionMVCActionCommand
 			resourceBundle, "workflow-updated-successfully");
 	}
 
-	protected void setRedirectAttribute(
-			ActionRequest actionRequest, WorkflowDefinition workflowDefinition)
-		throws Exception {
+	protected void validateTitle(
+			ActionRequest actionRequest, Map<Locale, String> titleMap)
+		throws WorkflowDefinitionTitleException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		String title = titleMap.get(LocaleUtil.getDefault());
 
-		LiferayPortletURL portletURL = PortletURLFactoryUtil.create(
-			actionRequest, themeDisplay.getPpid(), PortletRequest.RENDER_PHASE);
+		String defaultTitle = LanguageUtil.get(
+			getResourceBundle(actionRequest), "untitled-workflow");
 
-		portletURL.setParameter(
-			"mvcPath", "/definition/edit_workflow_definition.jsp");
+		if (titleMap.isEmpty() || Validator.isNull(title) ||
+			Objects.equals(title, defaultTitle)) {
 
-		String redirect = ParamUtil.getString(actionRequest, "redirect");
-
-		portletURL.setParameter("redirect", redirect, false);
-
-		portletURL.setParameter("name", workflowDefinition.getName(), false);
-		portletURL.setParameter(
-			"version", String.valueOf(workflowDefinition.getVersion()), false);
-		portletURL.setWindowState(actionRequest.getWindowState());
-
-		actionRequest.setAttribute(WebKeys.REDIRECT, portletURL.toString());
+			throw new WorkflowDefinitionTitleException();
+		}
 	}
 
 	protected void validateWorkflowDefinition(
@@ -175,12 +160,13 @@ public class DeployWorkflowDefinitionMVCActionCommand
 			unproxiedWorkflowDefinitionManager.validateWorkflowDefinition(
 				bytes);
 		}
-		catch (WorkflowException we) {
+		catch (WorkflowException workflowException) {
 			String message = LanguageUtil.get(
 				getResourceBundle(actionRequest),
 				"please-enter-a-valid-definition-before-publishing");
 
-			throw new WorkflowDefinitionFileException(message, we);
+			throw new WorkflowDefinitionFileException(
+				message, workflowException);
 		}
 	}
 

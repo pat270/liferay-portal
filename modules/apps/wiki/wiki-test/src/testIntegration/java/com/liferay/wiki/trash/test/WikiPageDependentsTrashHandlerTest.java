@@ -25,9 +25,9 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.trash.service.TrashEntryLocalServiceUtil;
 import com.liferay.trash.service.TrashVersionLocalServiceUtil;
@@ -36,8 +36,8 @@ import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.model.WikiPageResource;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageResourceLocalServiceUtil;
-import com.liferay.wiki.util.test.WikiPageTrashHandlerTestUtil;
-import com.liferay.wiki.util.test.WikiTestUtil;
+import com.liferay.wiki.test.util.WikiPageTrashHandlerTestUtil;
+import com.liferay.wiki.test.util.WikiTestUtil;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -59,7 +59,7 @@ public class WikiPageDependentsTrashHandlerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_group = GroupTestUtil.addGroup();
 
@@ -315,12 +315,10 @@ public class WikiPageDependentsTrashHandlerTest {
 			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
 			RandomTestUtil.randomString(), true);
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		WikiPageLocalServiceUtil.changeParent(
 			TestPropsValues.getUserId(), _node.getNodeId(), page.getTitle(),
-			newParentPage.getTitle(), serviceContext);
+			newParentPage.getTitle(),
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		movePageToTrash(parentPage);
 
@@ -1028,12 +1026,10 @@ public class WikiPageDependentsTrashHandlerTest {
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
 			WikiPage.class.getName());
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		trashHandler.moveEntry(
 			TestPropsValues.getUserId(), trashedPage.getResourcePrimKey(),
-			newParentPage.getResourcePrimKey(), serviceContext);
+			newParentPage.getResourcePrimKey(),
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 	}
 
 	protected void movePageToTrash(WikiPage page) throws PortalException {
@@ -1047,12 +1043,9 @@ public class WikiPageDependentsTrashHandlerTest {
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
 			WikiPage.class.getName());
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		trashHandler.moveTrashEntry(
 			TestPropsValues.getUserId(), classPK, newContainerId,
-			serviceContext);
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 	}
 
 	protected void restoreFromTrash(WikiPage page) throws Exception {

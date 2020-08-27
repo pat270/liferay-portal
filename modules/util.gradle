@@ -1,16 +1,8 @@
 import com.liferay.gradle.plugins.defaults.tasks.CopyIvyDependenciesTask
-import com.liferay.gradle.plugins.node.internal.util.FileUtil
-import com.liferay.gradle.plugins.node.tasks.ExecuteNpmTask
 import com.liferay.gradle.plugins.source.formatter.FormatSourceTask
 import com.liferay.gradle.plugins.util.PortalTools
-import com.liferay.gradle.util.OSDetector
+import com.liferay.gradle.util.FileUtil
 import com.liferay.gradle.util.StringUtil
-
-import groovy.io.FileType
-import groovy.io.FileVisitResult
-
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
 
 import java.util.regex.Matcher
 
@@ -20,21 +12,21 @@ buildscript {
 	apply from: file("build-buildscript.gradle"), to: buildscript
 }
 
-apply plugin: "com.liferay.node"
-apply plugin: "com.liferay.node.defaults"
 apply plugin: "com.liferay.source.formatter"
 apply plugin: "com.liferay.source.formatter.defaults"
 
-buildDir = new File(rootDir.parentFile, "build")
-
+task appendHotfixQualifier
 task formatSourceCurrentBranch(type: FormatSourceTask)
 task formatSourceLatestAuthor(type: FormatSourceTask)
 task formatSourceLocalChanges(type: FormatSourceTask)
 task printDependencyPath
+task removeHotfixQualifier
 task setUpLibs
 task setUpPortalTools
-task setUpYarn(type: ExecuteNpmTask)
-task wrapper(type: Wrapper)
+task setUpYarnOfflineCache
+task updateYarnBinariesCache
+task wrapperPortal(type: Wrapper)
+task wrapperProjectTemplates(type: Wrapper)
 task wrapperSubrepo(type: Wrapper)
 
 FileTree libDependenciesFileTree = fileTree(dir: "../lib", include: "*/dependencies.properties")
@@ -43,6 +35,34 @@ Map<File, Properties> libDependenciesMap = libDependenciesFileTree.collectEntrie
 	Properties properties = GUtil.loadProperties(it)
 
 	[it.parentFile, properties]
+}
+
+appendHotfixQualifier {
+	doLast {
+		String dirs = System.getProperty("patcher.hotfix.dirs", "")
+		String qualifier = System.getProperty("patcher.hotfix.qualifier", "")
+
+		for (String dirName : dirs.split(",")) {
+			File bndBndFile = new File(new File(projectDir, dirName), "bnd.bnd")
+
+			if (bndBndFile.exists()) {
+				Properties properties = GUtil.loadProperties(bndBndFile)
+
+				String version = properties.getProperty("Bundle-Version")
+
+				if ((version != null) && (version.indexOf(qualifier) == -1)) {
+					String newLine = "Bundle-Version: " + version + qualifier
+					String oldLine = bndBndFile.filterLine {
+						it =~ "^Bundle-Version.*"
+					}
+
+					bndBndFile.text = bndBndFile.text.replace(oldLine.trim(), newLine)
+
+					logger.lifecycle "Appended {}:{}", project.relativePath(bndBndFile), qualifier
+				}
+			}
+		}
+	}
 }
 
 formatSourceCurrentBranch {
@@ -74,6 +94,29 @@ printDependencyPath {
 	}
 }
 
+removeHotfixQualifier {
+	doLast {
+		String dirs = System.getProperty("patcher.hotfix.dirs", "")
+		String qualifier = System.getProperty("patcher.hotfix.qualifier", "")
+
+		for (String dirName : dirs.split(",")) {
+			File bndBndFile = new File(new File(projectDir, dirName), "bnd.bnd")
+
+			if (bndBndFile.exists()) {
+				Properties properties = GUtil.loadProperties(bndBndFile)
+
+				String version = properties.getProperty("Bundle-Version")
+
+				if ((version != null) && (version.indexOf(qualifier) != -1)) {
+					bndBndFile.text = bndBndFile.text.replace(version, version.minus(qualifier))
+
+					logger.lifecycle "Removed {}:{}", project.relativePath(bndBndFile), qualifier
+				}
+			}
+		}
+	}
+}
+
 repositories {
 	mavenLocal()
 
@@ -88,51 +131,36 @@ repositories {
 	maven {
 		url System.properties["repository.url"] ?: "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
-}
 
-setUpYarn {
-	args "install"
-	args "--frozen-lockfile"
+	String repositoryPrivateURL = System.getProperty("repository.private.url")
 
-	scriptFile = new File(projectDir, "yarn-1.13.0.js")
-
-	doFirst {
-		String buildBinariesCacheDir = project.findProperty("build.binaries.cache.dir")
-
-		if (buildBinariesCacheDir) {
-			File cacheDir = new File(rootDir.parentFile, buildBinariesCacheDir)
-
-			if (cacheDir.exists()) {
-				File fromDir = new File(cacheDir, ".yarn/offline-cache")
-				File intoDir = new File(rootDir, "node_modules_cache")
-
-				logger.lifecycle "Copying {} into {}", fromDir, intoDir
-
-				copy {
-					from fromDir
-					into intoDir
-				}
+	if (repositoryPrivateURL) {
+		maven {
+			credentials {
+				password System.properties["repository.private.password"]
+				username System.properties["repository.private.username"]
 			}
-		}
-
-		String registry = project.findProperty("nodejs.npm.ci.registry")
-
-		if (registry) {
-			File yarnLockFile = new File(rootDir, "yarn.lock")
-
-			if (yarnLockFile.exists()) {
-				logger.lifecycle "Using registry {}", registry
-
-				yarnLockFile.text = yarnLockFile.text.replaceAll("https://registry.yarnpkg.com", registry)
-			}
+			url repositoryPrivateURL
 		}
 	}
 }
 
-wrapper {
+setUpYarnOfflineCache {
+	doFirst {
+		logger.lifecycle "Checking Yarn binaries cache directories"
+	}
+}
+
+updateYarnBinariesCache {
+	doFirst {
+		logger.lifecycle "Updating Yarn binaries cache directories"
+	}
+}
+
+wrapperPortal {
 	File wrapperDir = projectDir.parentFile
 
-	distributionUrl = "../../tools/gradle-${gradle.gradleVersion}.LIFERAY-PATCHED-3-bin.zip"
+	distributionUrl = "../../tools/gradle-${gradle.gradleVersion}.LIFERAY-PATCHED-2-bin.zip"
 	dependsOn wrapperSubrepo
 
 	doLast {
@@ -177,6 +205,19 @@ set DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% "-Dgradle.user.home=%APP_HOME%\\.gradle"
 	scriptFile = new File(wrapperDir, "gradlew")
 }
 
+wrapperProjectTemplates {
+	File wrapperDir = new File(projectDir.parentFile, "modules/sdk/project-templates/project-templates/src/main/resources/gradle-wrapper")
+
+	jarFile = new File(wrapperDir, "gradle/wrapper/gradle-wrapper.jar")
+	scriptFile = new File(wrapperDir, "gradlew")
+
+	doLast {
+		File gradleWrapperPropertiesFile = new File(wrapperDir, "gradle/wrapper/gradle-wrapper.properties")
+
+		gradleWrapperPropertiesFile.text = gradleWrapperPropertiesFile.text.trim()
+	}
+}
+
 wrapperSubrepo {
 	File wrapperDir = new File(projectDir.parentFile, "tools/subrepo")
 
@@ -216,6 +257,17 @@ tasks.withType(FormatSourceTask) {
 
 _createSetUpLibTasks(libDependenciesMap)
 _createSetUpPortalToolTasks()
+_createYarnTasks()
+
+private String _camelCase(String dirName) {
+	String suffix = dirName.replaceAll(/\.(\w)/) {
+		String s = it[1]
+
+		s.toUpperCase()
+	}
+
+	return StringUtil.capitalize(suffix)
+}
 
 private void _createSetUpLibTasks(Map<File, Properties> libDependenciesMap) {
 	libDependenciesMap.each {
@@ -254,16 +306,12 @@ private void _createSetUpLibTasks(Map<File, Properties> libDependenciesMap) {
 private void _createSetUpPortalToolTasks() {
 	FileTree ivyXmlFileTree = fileTree(dir: "../tools/sdk", includes: ["ivy.xml", "dependencies/*/ivy.xml"])
 
-	XmlSlurper xmlSlurper = new XmlSlurper()
-
 	ivyXmlFileTree.each {
 		File ivyXmlFile ->
 
 		File portalToolDir = ivyXmlFile.parentFile
 
-		String portalToolSuffix = _getPortalToolSuffix(portalToolDir.name)
-
-		CopyIvyDependenciesTask copyIvyDependenciesTask = tasks.create(name: "setUp" + portalToolSuffix, type: CopyIvyDependenciesTask) {
+		CopyIvyDependenciesTask copyIvyDependenciesTask = tasks.create(name: "setUp" + _camelCase(portalToolDir.name), type: CopyIvyDependenciesTask) {
 			configuration.exclude group: "com.liferay.portal"
 
 			dependencyTransformClosure = {
@@ -296,12 +344,40 @@ private void _createSetUpPortalToolTasks() {
 	}
 }
 
-private String _getPortalToolSuffix(String name) {
-	String suffix = name.replaceAll(/\.(\w)/) {
-		String s = it[1]
+private void _createYarnTasks() {
+	FileTree yarnLockFileTree = fileTree(dir: rootDir, includes: ["yarn.lock", "private/yarn.lock", "apps/*/yarn.lock", "private/apps/*/yarn.lock"])
 
-		s.toUpperCase()
+	yarnLockFileTree.each {
+		File yarnLockFile ->
+
+		if (project.findProperty("build.binaries.cache.dir")) {
+			File cacheDir = new File(rootDir.parentFile, project.findProperty("build.binaries.cache.dir"))
+			String relativePath = FileUtil.relativize(yarnLockFile.parentFile, rootDir)
+
+			File nodeModulesCacheDir = new File(yarnLockFile.parentFile, "node_modules_cache")
+			File offlineCacheDir = new File(cacheDir, ".yarn/" + relativePath + "/offline-cache")
+
+			Task yarnTask = tasks.create(name: "setUpYarnOfflineCache" + _camelCase(yarnLockFile.parentFile.name), type: Copy) {
+				from offlineCacheDir
+				into nodeModulesCacheDir
+
+				doFirst {
+					logger.lifecycle "Copying {} into {}", offlineCacheDir, nodeModulesCacheDir
+				}
+			}
+
+			setUpYarnOfflineCache.finalizedBy yarnTask
+
+			yarnTask = tasks.create(name: "updateYarnBinariesCache" + _camelCase(yarnLockFile.parentFile.name), type: Copy) {
+				from nodeModulesCacheDir
+				into offlineCacheDir
+
+				doFirst {
+					logger.lifecycle "Copying {} into {}", nodeModulesCacheDir, offlineCacheDir
+				}
+			}
+
+			updateYarnBinariesCache.finalizedBy yarnTask
+		}
 	}
-
-	return StringUtil.capitalize(suffix)
 }

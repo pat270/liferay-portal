@@ -14,24 +14,20 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.stream.Stream;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = DDMExpressionFunction.Function1.class
-)
 public class IsEmptyFunction
 	implements DDMExpressionFunction.Function1<Object, Boolean> {
+
+	public static final String NAME = "isEmpty";
 
 	@Override
 	public Boolean apply(Object parameter) {
@@ -55,12 +51,18 @@ public class IsEmptyFunction
 			return jsonArray.length() == 0;
 		}
 
+		if (parameter instanceof JSONObject) {
+			JSONObject jsonObject = (JSONObject)parameter;
+
+			return jsonObject.length() == 0;
+		}
+
 		return Validator.isNull(parameter);
 	}
 
 	@Override
 	public String getName() {
-		return "isEmpty";
+		return NAME;
 	}
 
 	protected boolean isArray(Object parameter) {

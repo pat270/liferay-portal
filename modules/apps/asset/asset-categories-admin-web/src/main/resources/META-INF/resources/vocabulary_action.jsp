@@ -17,9 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
-
-AssetVocabulary vocabulary = (AssetVocabulary)row.getObject();
+AssetVocabulary vocabulary = assetCategoriesDisplayContext.getVocabulary();
 %>
 
 <liferay-ui:icon-menu
@@ -38,18 +36,6 @@ AssetVocabulary vocabulary = (AssetVocabulary)row.getObject();
 		<liferay-ui:icon
 			message="edit"
 			url="<%= editVocabularyURL %>"
-		/>
-	</c:if>
-
-	<c:if test="<%= assetCategoriesDisplayContext.isShowCategoriesAddButton() %>">
-		<portlet:renderURL var="addCategoryURL">
-			<portlet:param name="mvcPath" value="/edit_category.jsp" />
-			<portlet:param name="vocabularyId" value="<%= String.valueOf(vocabulary.getVocabularyId()) %>" />
-		</portlet:renderURL>
-
-		<liferay-ui:icon
-			message="add-category"
-			url="<%= addCategoryURL %>"
 		/>
 	</c:if>
 
@@ -72,11 +58,22 @@ AssetVocabulary vocabulary = (AssetVocabulary)row.getObject();
 
 	<c:if test="<%= assetCategoriesDisplayContext.hasPermission(vocabulary, ActionKeys.DELETE) %>">
 		<portlet:actionURL name="deleteVocabulary" var="deleteVocabularyURL">
-			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="redirect" value="<%= assetCategoriesDisplayContext.getDefaultRedirect() %>" />
 			<portlet:param name="vocabularyId" value="<%= String.valueOf(vocabulary.getVocabularyId()) %>" />
 		</portlet:actionURL>
 
+		<%
+		String confirmationMessage = StringPool.BLANK;
+
+		int categoriesCount = vocabulary.getCategoriesCount();
+
+		if (categoriesCount > 0) {
+			confirmationMessage = LanguageUtil.format(request, "this-vocabulary-has-x-categories-that-might-be-being-used-in-some-contents", categoriesCount);
+		}
+		%>
+
 		<liferay-ui:icon-delete
+			confirmation="<%= confirmationMessage %>"
 			url="<%= deleteVocabularyURL %>"
 		/>
 	</c:if>

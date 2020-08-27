@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"product.navigation.control.menu.category.key=" + ProductNavigationControlMenuCategoryKeys.USER,
-		"product.navigation.control.menu.entry.order:Integer=400"
+		"product.navigation.control.menu.entry.order:Integer=700"
 	},
 	service = ProductNavigationControlMenuEntry.class
 )
@@ -75,9 +75,10 @@ public class PersonalMenuProductNavigationControlMenuEntry
 			httpServletRequest.setAttribute(
 				PersonalMenuWebKeys.NOTIFICATIONS_COUNT,
 				_userNotificationEventLocalService.
-					getArchivedUserNotificationEventsCount(
+					getUserNotificationEventsCount(
 						themeDisplay.getUserId(),
-						UserNotificationDeliveryConstants.TYPE_WEBSITE, false));
+						UserNotificationDeliveryConstants.TYPE_WEBSITE, true,
+						false));
 		}
 
 		return super.includeIcon(httpServletRequest, httpServletResponse);

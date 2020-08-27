@@ -37,16 +37,16 @@ public class UserRecipient extends Recipient {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof UserRecipient)) {
+		if (!(object instanceof UserRecipient)) {
 			return false;
 		}
 
-		UserRecipient userRecipient = (UserRecipient)obj;
+		UserRecipient userRecipient = (UserRecipient)object;
 
 		if (Objects.equals(_emailAddress, userRecipient._emailAddress) &&
 			Objects.equals(_screenName, userRecipient._screenName) &&
@@ -72,11 +72,9 @@ public class UserRecipient extends Recipient {
 
 	@Override
 	public int hashCode() {
-		return _emailAddress.concat(
-			_screenName
-		).concat(
-			String.valueOf(_userId)
-		).hashCode();
+		String s = StringBundler.concat(_emailAddress, _screenName, _userId);
+
+		return s.hashCode();
 	}
 
 	@Override

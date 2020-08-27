@@ -1,25 +1,22 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 'use strict';
 
-const fs = require('fs-extra');
 const gulp = require('gulp');
-const path = require('path');
-
-const liferayFontAwesome = path.dirname(require.resolve('liferay-font-awesome/package.json'));
 const liferayThemeTasks = require('liferay-theme-tasks');
 
-liferayThemeTasks.registerTasks(
-	{
-		gulp: gulp,
-		hookFn: function(gulp) {
-			gulp.hook(
-				'before:build:war',
-				function(done) {
-					fs.copy(
-						path.join(liferayFontAwesome, 'font'),
-						path.join('build', 'font')
-					).then(done).catch(done);
-				}
-			);
-		}
-	}
-);
+liferayThemeTasks.registerTasks({
+	gulp,
+});

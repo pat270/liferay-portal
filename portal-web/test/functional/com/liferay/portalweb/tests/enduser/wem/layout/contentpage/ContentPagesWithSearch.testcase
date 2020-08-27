@@ -1,0 +1,292 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Content Pages";
+
+	setUp {
+		task ("Set up instance and sign in") {
+			TestCase.setUpPortalInstance();
+
+			User.firstLoginPG();
+		}
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+
+		task ("Add a site via JSON") {
+			JSONGroup.addGroup(groupName = "Test Site Name");
+		}
+
+		task ("Add a destination page for the Search Bar widget") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Search");
+
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/search");
+
+			Portlet.addPG(portletName = "Search Results");
+
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name/search");
+
+			Portlet.addPG(portletName = "Type Facet");
+		}
+
+		task ("Import test fragments from dependencies folder") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+		}
+
+		task ("Add a content page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Content Page Name",
+				type = "content");
+		}
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-78928. Content pages will appear when users filter search results by page facet."
+	@priority = "5"
+	test FilterByPageFacet {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "ContentPagesWithSearch#FilterByPageFacet";
+
+		task ("Add a Static Text fragment to the content page") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Static Text");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Navigate to the content page") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Add a web content article with the same text as the Static Text fragment") {
+			JSONWebcontent.addWebContent(
+				content = "This is static text",
+				groupName = "Test Site Name",
+				title = "Web Content Title");
+		}
+
+		task ("Search by text that appears in both the content page and web content article") {
+			Search.searchCP(searchTerm = "static");
+		}
+
+		task ("Assert both the content page and web content article appear in the search results") {
+			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+
+			Search.viewResultAssetTitle(searchAssetTitle = "Web Content Title");
+		}
+
+		task ("Flag the Page facet in the search results to filter results to only show pages") {
+			SearchFacetPortlet.checkFacet(facetValueName = "Page");
+		}
+
+		task ("Assert the content page appears in the search results") {
+			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+
+		task ("Assert the web content article does not appear in the search results") {
+			Search.viewNoResultAssetTitle(searchAssetTitle = "Web Content Title");
+		}
+	}
+
+	@description = "This is a test for LPS-91405. Content page associated with category will not display after category deleted."
+	@priority = "3"
+	test SearchContentPagesWithDeletedCategory {
+		property test.name.skip.portal.instance = "ContentPagesWithSearch#SearchContentPagesWithDeletedCategory";
+
+		task ("Add a a vocabulary with a category") {
+			JSONCategory.addVocabulary(
+				groupName = "Test Site Name",
+				title = "Vocabulary Name");
+
+			JSONCategory.addCategory(
+				groupName = "Test Site Name",
+				title = "New Category",
+				vocabularyName = "Vocabulary Name");
+		}
+
+		task ("Modify page so that it contains created category") {
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+			SitePages.gotoPageMenuItem(
+				menuItem = "Configure",
+				pageName = "Test Content Page Name");
+
+			Page.addCategory(
+				categoryName = "New Category",
+				vocabularyName = "Vocabulary Name");
+
+			PortletEntry.save();
+		}
+
+		task ("Navigate to the search page") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name");
+		}
+
+		task ("Search for created category") {
+			Search.searchCP(searchTerm = "New Category");
+		}
+
+		task ("Assert the content page appears in the search results") {
+			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+
+		task ("Delete created vocabulary") {
+			Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+			Vocabulary.deleteByIconCP(vocabularyName = "Vocabulary Name");
+		}
+
+		task ("Navigate to the search page") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name");
+		}
+
+		task ("Search for created category") {
+			Search.searchCP(searchTerm = "New Category");
+		}
+
+		task ("Assert the content page does not appear in the search results") {
+			Search.viewNoResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+	}
+
+	@description = "This is a test for LPS-78928. Editable text in content pages is searchable."
+	@priority = "5"
+	test SearchEditableText {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "ContentPagesWithSearch#SearchEditableText";
+
+		task ("Add a Rich Text fragment to the content page") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Rich Text");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Navigate to the content page") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Search by text that appears in the editable text field in the Rich Text fragment") {
+			Search.searchCP(searchTerm = "duis");
+		}
+
+		task ("Assert the content page appears in the search results") {
+			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+
+		task ("Navigate to the content page's 'Edit Mode'") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Edit the Rich Text fragment's editable text") {
+			PageEditor.editFragmentText(
+				contributed = "false",
+				fragmentName = "Rich Text",
+				id = "rich-text",
+				text = "New editable fragment text");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Navigate to the content page") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Search by the new text that appears in the editable text field in the Rich Text fragment") {
+			Search.searchCP(searchTerm = "editable");
+		}
+
+		task ("Assert the content page appears in the search results") {
+			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+
+		task ("Search by the old text that appeared in the editable text field in the Rich Text fragment") {
+			Search.searchCP(searchTerm = "duis");
+		}
+
+		task ("Assert the content page does not appear in the search results") {
+			Search.viewNoResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+	}
+
+	@description = "This is a test for LPS-78928. Static text in content pages is searchable."
+	@priority = "5"
+	test SearchStaticText {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "ContentPagesWithSearch#SearchStaticText";
+
+		task ("Add a Static Text fragment to the content page") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Static Text");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Navigate to the content page") {
+			ContentPagesNavigator.openViewContentPage(
+				pageName = "Test Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Search by the static text in the Static Text fragment") {
+			Search.searchCP(searchTerm = "static");
+		}
+
+		task ("Assert the content page appears in the search results") {
+			Search.viewResultAssetTitle(searchAssetTitle = "Test Content Page Name");
+		}
+	}
+
+}

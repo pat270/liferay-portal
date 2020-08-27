@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link CTProcess}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CTProcess
  * @generated
  */
-@ProviderType
 public class CTProcessWrapper
 	extends BaseModelWrapper<CTProcess>
 	implements CTProcess, ModelWrapper<CTProcess> {
@@ -45,6 +42,7 @@ public class CTProcessWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("ctProcessId", getCtProcessId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -57,6 +55,12 @@ public class CTProcessWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long ctProcessId = (Long)attributes.get("ctProcessId");
 
 		if (ctProcessId != null) {
@@ -145,6 +149,16 @@ public class CTProcessWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this ct process.
+	 *
+	 * @return the mvcc version of this ct process
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this ct process.
 	 *
 	 * @return the primary key of this ct process
@@ -152,11 +166,6 @@ public class CTProcessWrapper
 	@Override
 	public long getPrimaryKey() {
 		return model.getPrimaryKey();
-	}
-
-	@Override
-	public int getStatus() {
-		return model.getStatus();
 	}
 
 	/**
@@ -232,6 +241,16 @@ public class CTProcessWrapper
 	@Override
 	public void setCtProcessId(long ctProcessId) {
 		model.setCtProcessId(ctProcessId);
+	}
+
+	/**
+	 * Sets the mvcc version of this ct process.
+	 *
+	 * @param mvccVersion the mvcc version of this ct process
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

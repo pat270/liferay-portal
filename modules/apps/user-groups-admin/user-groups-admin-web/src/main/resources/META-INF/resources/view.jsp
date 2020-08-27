@@ -34,26 +34,9 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "user-gr
 <liferay-ui:error exception="<%= RequiredUserGroupException.class %>" message="you-cannot-delete-user-groups-that-have-users" />
 
 <%
-List<NavigationItem> navigationItems = new ArrayList<>();
-
-NavigationItem entriesNavigationItem = new NavigationItem();
-
-entriesNavigationItem.setActive(true);
-entriesNavigationItem.setHref(StringPool.BLANK);
-entriesNavigationItem.setLabel(LanguageUtil.get(request, "user-groups"));
-
-navigationItems.add(entriesNavigationItem);
-%>
-
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems="<%= navigationItems %>"
-/>
-
-<%
 ViewUserGroupsManagementToolbarDisplayContext viewUserGroupsManagementToolbarDisplayContext = new ViewUserGroupsManagementToolbarDisplayContext(request, renderRequest, renderResponse, displayStyle);
 
-SearchContainer searchContainer = viewUserGroupsManagementToolbarDisplayContext.getSearchContainer();
+SearchContainer<UserGroup> searchContainer = viewUserGroupsManagementToolbarDisplayContext.getSearchContainer();
 
 PortletURL portletURL = viewUserGroupsManagementToolbarDisplayContext.getPortletURL();
 %>
@@ -92,63 +75,71 @@ PortletURL portletURL = viewUserGroupsManagementToolbarDisplayContext.getPortlet
 	<%@ include file="/view_flat_user_groups.jspf" %>
 </aui:form>
 
-<aui:script require="metal-uri/src/Uri">
-	const Uri = metalUriSrcUri.default;
-
-	window.<portlet:namespace />deleteUserGroups = function() {
+<aui:script>
+	window.<portlet:namespace />deleteUserGroups = function () {
 		<portlet:namespace />doDeleteUserGroup(
 			'<%= UserGroup.class.getName() %>',
-			Liferay.Util.listCheckedExcept(document.<portlet:namespace />fm, '<portlet:namespace />allRowIds')
+			Liferay.Util.listCheckedExcept(
+				document.<portlet:namespace />fm,
+				'<portlet:namespace />allRowIds'
+			)
 		);
 	};
 
-	window.<portlet:namespace />doDeleteUserGroup = function(className, ids) {
+	window.<portlet:namespace />doDeleteUserGroup = function (className, ids) {
 		var status = <%= WorkflowConstants.STATUS_INACTIVE %>;
 
-		<portlet:namespace />getUsersCount(
-			className,
-			ids,
-			status,
-			function(responseData) {
-				var count = parseInt(responseData, 10);
+		<portlet:namespace />getUsersCount(className, ids, status, function (
+			responseData
+		) {
+			var count = parseInt(responseData, 10);
 
-				if (count > 0) {
-					status = <%= WorkflowConstants.STATUS_APPROVED %>;
+			if (count > 0) {
+				status = <%= WorkflowConstants.STATUS_APPROVED %>;
 
-					<portlet:namespace />getUsersCount(
-						className,
-						ids,
-						status,
-						function(responseData) {
-							count = parseInt(responseData, 10);
+				<portlet:namespace />getUsersCount(
+					className,
+					ids,
+					status,
+					function (responseData) {
+						count = parseInt(responseData, 10);
 
-							if (count > 0) {
-								if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>')) {
-									<portlet:namespace />doDeleteUserGroups(ids);
-								}
-							}
-							else {
-								var message;
-
-								if (ids && (ids.toString().split(',').length > 1)) {
-									message = '<%= UnicodeLanguageUtil.get(request, "one-or-more-user-groups-are-associated-with-deactivated-users.-do-you-want-to-proceed-with-deleting-the-selected-user-groups-by-automatically-unassociating-the-deactivated-users") %>';
-								}
-								else {
-									message = '<%= UnicodeLanguageUtil.get(request, "the-selected-user-group-is-associated-with-deactivated-users.-do-you-want-to-proceed-with-deleting-the-selected-user-group-by-automatically-unassociating-the-deactivated-users") %>';
-								}
-
-								if (confirm(message)) {
-									<portlet:namespace />doDeleteUserGroups(ids);
-								}
+						if (count > 0) {
+							if (
+								confirm(
+									'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>'
+								)
+							) {
+								<portlet:namespace />doDeleteUserGroups(ids);
 							}
 						}
-					);
-				}
-				else if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>')) {
-					<portlet:namespace />doDeleteUserGroups(ids);
-				}
+						else {
+							var message;
+
+							if (ids && ids.toString().split(',').length > 1) {
+								message =
+									'<%= UnicodeLanguageUtil.get(request, "one-or-more-user-groups-are-associated-with-deactivated-users.-do-you-want-to-proceed-with-deleting-the-selected-user-groups-by-automatically-unassociating-the-deactivated-users") %>';
+							}
+							else {
+								message =
+									'<%= UnicodeLanguageUtil.get(request, "the-selected-user-group-is-associated-with-deactivated-users.-do-you-want-to-proceed-with-deleting-the-selected-user-group-by-automatically-unassociating-the-deactivated-users") %>';
+							}
+
+							if (confirm(message)) {
+								<portlet:namespace />doDeleteUserGroups(ids);
+							}
+						}
+					}
+				);
 			}
-		);
+			else if (
+				confirm(
+					'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>'
+				)
+			) {
+				<portlet:namespace />doDeleteUserGroups(ids);
+			}
+		});
 	};
 
 	function <portlet:namespace />doDeleteUserGroups(userGroupIds) {
@@ -164,40 +155,33 @@ PortletURL portletURL = viewUserGroupsManagementToolbarDisplayContext.getPortlet
 			<portlet:param name="mvcPath" value="/view.jsp" />
 		</portlet:renderURL>
 
-		Liferay.Util.postForm(
-			form,
-			{
-				data: {
-					deleteUserGroupIds: userGroupIds,
-					redirect: '<%= userGroupsRenderURL %>'
-				},
-				url: '<portlet:actionURL name="deleteUserGroups" />'
-			}
-		);
+		Liferay.Util.postForm(form, {
+			data: {
+				deleteUserGroupIds: userGroupIds,
+				redirect: '<%= userGroupsRenderURL %>',
+			},
+			url: '<portlet:actionURL name="deleteUserGroups" />',
+		});
 	}
 
 	<liferay-portlet:resourceURL id="/users_admin/get_users_count" portletName="<%= UsersAdminPortletKeys.USERS_ADMIN %>" var="getUsersCountResourceURL" />
 
 	function <portlet:namespace />getUsersCount(className, ids, status, callback) {
-		const url = new Uri('<%= getUsersCountResourceURL %>');
-
-		url.setParameterValue('className', className);
-		url.setParameterValue('ids', ids);
-		url.setParameterValue('status', status);
-
-		fetch(
-			url.toString(),
-			{
-				credentials: 'include'
-			}
-		).then(
-			function(response) {
-				return response.text();
-			}
-		).then(
-			function(response) {
-				callback(response);
-			}
+		var url = new URL(
+			'<%= getUsersCountResourceURL %>',
+			window.location.origin
 		);
+
+		url.searchParams.set('className', className);
+		url.searchParams.set('ids', ids);
+		url.searchParams.set('status', status);
+
+		Liferay.Util.fetch(url.toString())
+			.then(function (response) {
+				return response.text();
+			})
+			.then(function (response) {
+				callback(response);
+			});
 	}
 </aui:script>

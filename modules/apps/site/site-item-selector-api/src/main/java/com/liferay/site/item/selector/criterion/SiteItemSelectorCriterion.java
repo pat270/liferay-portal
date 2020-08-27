@@ -14,10 +14,10 @@
 
 package com.liferay.site.item.selector.criterion;
 
-import com.liferay.item.selector.BaseItemSelectorCriterion;
+import com.liferay.item.selector.criteria.group.criterion.GroupItemSelectorCriterion;
 
 /**
  * @author Julio Camarero
  */
-public class SiteItemSelectorCriterion extends BaseItemSelectorCriterion {
+public class SiteItemSelectorCriterion extends GroupItemSelectorCriterion {
 }

@@ -14,6 +14,8 @@
 
 package com.liferay.fragment.web.internal.handler;
 
+import com.liferay.fragment.exception.FragmentEntryConfigurationException;
+import com.liferay.fragment.exception.FragmentEntryContentException;
 import com.liferay.fragment.exception.FragmentEntryNameException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -38,20 +40,29 @@ public class FragmentEntryExceptionRequestHandler {
 
 	public void handlePortalException(
 			ActionRequest actionRequest, ActionResponse actionResponse,
-			PortalException pe)
+			PortalException portalException)
 		throws Exception {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String errorMessage = "an-unexpected-error-occurred";
+		String errorMessage = LanguageUtil.get(
+			themeDisplay.getRequest(), "an-unexpected-error-occurred");
 
-		if (pe instanceof FragmentEntryNameException) {
-			errorMessage = "please-enter-a-valid-name";
+		if (portalException instanceof FragmentEntryConfigurationException) {
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getRequest(),
+				"please-provide-a-valid-configuration-for-the-fragment");
+		}
+		else if (portalException instanceof FragmentEntryContentException) {
+			errorMessage = portalException.getLocalizedMessage();
+		}
+		else if (portalException instanceof FragmentEntryNameException) {
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getRequest(), "please-enter-a-valid-name");
 		}
 
-		JSONObject jsonObject = JSONUtil.put(
-			"error", LanguageUtil.get(themeDisplay.getRequest(), errorMessage));
+		JSONObject jsonObject = JSONUtil.put("error", errorMessage);
 
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse, jsonObject);

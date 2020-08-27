@@ -48,7 +48,7 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = new ArrayList<>
 	request.setAttribute("configuration.jsp-redirect", redirect);
 	%>
 
-	<liferay-ui:success key='<%= portletResource + "requestProcessed" %>' message="the-content-set-was-created-successfully" />
+	<liferay-ui:success key='<%= portletResource + "requestProcessed" %>' message="the-collection-was-created-successfully" />
 
 	<liferay-frontend:edit-form-body>
 		<liferay-frontend:form-navigator
@@ -58,7 +58,7 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = new ArrayList<>
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
-		<aui:button onClick='<%= renderResponse.getNamespace() + "saveSelectBoxes();" %>' type="submit" />
+		<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "saveSelectBoxes();" %>' type="submit" />
 
 		<aui:button type="cancel" />
 	</liferay-frontend:edit-form-footer>
@@ -70,43 +70,51 @@ List<AssetRendererFactory<?>> classTypesAssetRendererFactories = new ArrayList<>
 
 		<%
 		for (AssetRendererFactory<?> curRendererFactory : classTypesAssetRendererFactories) {
-			String className = assetPublisherWebUtil.getClassName(curRendererFactory);
+			String className = assetPublisherWebHelper.getClassName(curRendererFactory);
 		%>
 
-			Liferay.Util.setFormValues(
-				form,
-				{
-					classTypeIds<%= className %>: Liferay.Util.listSelect(Liferay.Util.getFormElement(form, '<%= className %>currentClassTypeIds'))
-				}
-			);
+			Liferay.Util.setFormValues(form, {
+				classTypeIds<%= className %>: Liferay.Util.listSelect(
+					Liferay.Util.getFormElement(
+						form,
+						'<%= className %>currentClassTypeIds'
+					)
+				),
+			});
 
 		<%
 		}
 		%>
 
-		var currentClassNameIdsSelect = Liferay.Util.getFormElement(form, 'currentClassNameIds');
-		var currentMetadataFieldsInput = Liferay.Util.getFormElement(form, 'currentMetadataFields');
+		var currentClassNameIdsSelect = Liferay.Util.getFormElement(
+			form,
+			'currentClassNameIds'
+		);
+		var currentMetadataFieldsInput = Liferay.Util.getFormElement(
+			form,
+			'currentMetadataFields'
+		);
 
 		if (currentClassNameIdsSelect && currentMetadataFieldsInput) {
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						classNameIds: Liferay.Util.listSelect(currentClassNameIdsSelect),
-						metadataFields: Liferay.Util.listSelect(currentMetadataFieldsInput)
-					}
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					classNameIds: Liferay.Util.listSelect(
+						currentClassNameIdsSelect
+					),
+					metadataFields: Liferay.Util.listSelect(
+						currentMetadataFieldsInput
+					),
+				},
+			});
 		}
 		else if (currentMetadataFieldsInput) {
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						metadataFields: Liferay.Util.listSelect(currentMetadataFieldsInput)
-					}
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					metadataFields: Liferay.Util.listSelect(
+						currentMetadataFieldsInput
+					),
+				},
+			});
 		}
 		else {
 			submitForm(form);

@@ -101,7 +101,7 @@ public class DefaultJSONWebServiceRegistrator
 		try {
 			bean = beanLocator.locate(beanName);
 		}
-		catch (BeanLocatorException ble) {
+		catch (BeanLocatorException beanLocatorException) {
 			return;
 		}
 
@@ -109,18 +109,16 @@ public class DefaultJSONWebServiceRegistrator
 			return;
 		}
 
-		Class<?> targetClass = getTargetClass(bean);
-
 		JSONWebService jsonWebService = AnnotationLocator.locate(
-			targetClass, JSONWebService.class);
+			getTargetClass(bean), JSONWebService.class);
 
 		if (jsonWebService != null) {
 			try {
 				onJSONWebServiceBean(
 					contextName, contextPath, bean, jsonWebService);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 	}
@@ -144,8 +142,8 @@ public class DefaultJSONWebServiceRegistrator
 			onJSONWebServiceBean(
 				contextName, contextPath, bean, jsonWebService);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -272,7 +270,7 @@ public class DefaultJSONWebServiceRegistrator
 					method = utilClass.getMethod(
 						method.getName(), method.getParameterTypes());
 				}
-				catch (NoSuchMethodException nsme) {
+				catch (NoSuchMethodException noSuchMethodException) {
 					continue;
 				}
 			}

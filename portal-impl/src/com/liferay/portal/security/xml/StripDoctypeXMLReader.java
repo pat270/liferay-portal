@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import java.util.Objects;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.EntityResolver;
@@ -165,7 +167,9 @@ public class StripDoctypeXMLReader implements XMLReader {
 	public void setFeature(String name, boolean value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 
-		if (_FEATURES_DISALLOW_DOCTYPE_DECL.equals(name)) {
+		if (Objects.equals(
+				name, "http://apache.org/xml/features/disallow-doctype-decl")) {
+
 			_disallowDoctypeDecl = value;
 		}
 
@@ -176,11 +180,14 @@ public class StripDoctypeXMLReader implements XMLReader {
 	public void setProperty(String name, Object value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 
+		if (Objects.equals(
+				name, "http://xml.org/sax/handlers/LexicalHandler")) {
+
+			return;
+		}
+
 		_xmlReader.setProperty(name, value);
 	}
-
-	private static final String _FEATURES_DISALLOW_DOCTYPE_DECL =
-		"http://apache.org/xml/features/disallow-doctype-decl";
 
 	private boolean _disallowDoctypeDecl;
 	private final XMLReader _xmlReader;

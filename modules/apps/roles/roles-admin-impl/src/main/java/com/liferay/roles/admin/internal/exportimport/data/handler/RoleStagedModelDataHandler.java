@@ -82,7 +82,7 @@ public class RoleStagedModelDataHandler
 	public List<Role> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return ListUtil.toList(
+		return ListUtil.fromArray(
 			_roleLocalService.fetchRoleByUuidAndCompanyId(uuid, companyId));
 	}
 
@@ -204,11 +204,13 @@ public class RoleStagedModelDataHandler
 				importResourcePermissions(
 					portletDataContext, importedRole, permission);
 			}
-			catch (NoSuchResourceActionException nsrae) {
+			catch (NoSuchResourceActionException
+						noSuchResourceActionException) {
+
 				if (_log.isDebugEnabled()) {
 					_log.debug(
 						"Skip importing individually scoped permissions",
-						nsrae);
+						noSuchResourceActionException);
 				}
 			}
 		}

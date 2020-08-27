@@ -33,16 +33,17 @@ public class CustomFieldsUtil {
 		ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(
 			companyId, clazz.getName());
 
-		Enumeration<String> attributeNames = expandoBridge.getAttributeNames();
+		Enumeration<String> enumeration = expandoBridge.getAttributeNames();
 
-		while (attributeNames.hasMoreElements()) {
-			String attributeName = attributeNames.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String attributeName = enumeration.nextElement();
 
-			UnicodeProperties properties = expandoBridge.getAttributeProperties(
-				attributeName);
+			UnicodeProperties unicodeProperties =
+				expandoBridge.getAttributeProperties(attributeName);
 
 			if (!GetterUtil.getBoolean(
-					properties.get(ExpandoColumnConstants.PROPERTY_HIDDEN))) {
+					unicodeProperties.get(
+						ExpandoColumnConstants.PROPERTY_HIDDEN))) {
 
 				return true;
 			}

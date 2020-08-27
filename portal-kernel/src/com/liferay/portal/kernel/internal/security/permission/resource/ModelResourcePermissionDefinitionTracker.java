@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionLogic;
 import com.liferay.portal.kernel.security.permission.resource.definition.ModelResourcePermissionDefinition;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -26,7 +27,6 @@ import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,8 @@ public class ModelResourcePermissionDefinitionTracker {
 		Registry registry = RegistryUtil.getRegistry();
 
 		_serviceTracker = registry.trackServices(
-			ModelResourcePermissionDefinition.class,
+			(Class<ModelResourcePermissionDefinition<?>>)
+				(Class<?>)ModelResourcePermissionDefinition.class,
 			new ModelResourcePermissionDefinitionServiceTrackerCustomizer());
 
 		_serviceTracker.open();
@@ -68,17 +69,17 @@ public class ModelResourcePermissionDefinitionTracker {
 	}
 
 	private ServiceTracker
-		<ModelResourcePermissionDefinition, ServiceRegistration<?>>
+		<ModelResourcePermissionDefinition<?>, ServiceRegistration<?>>
 			_serviceTracker;
 
 	private static class
 		ModelResourcePermissionDefinitionServiceTrackerCustomizer
 			implements ServiceTrackerCustomizer
-				<ModelResourcePermissionDefinition, ServiceRegistration<?>> {
+				<ModelResourcePermissionDefinition<?>, ServiceRegistration<?>> {
 
 		@Override
 		public ServiceRegistration<?> addingService(
-			ServiceReference<ModelResourcePermissionDefinition>
+			ServiceReference<ModelResourcePermissionDefinition<?>>
 				serviceReference) {
 
 			Registry registry = RegistryUtil.getRegistry();
@@ -90,12 +91,15 @@ public class ModelResourcePermissionDefinitionTracker {
 			ModelResourcePermission<?> modelResourcePermission = _create(
 				modelResourcePermissionDefinition);
 
-			Map<String, Object> properties = new HashMap<>();
+			Map<String, Object> properties = HashMapBuilder.<String, Object>put(
+				"model.class.name",
+				() -> {
+					Class<?> modelClass =
+						modelResourcePermissionDefinition.getModelClass();
 
-			Class<?> modelClass =
-				modelResourcePermissionDefinition.getModelClass();
-
-			properties.put("model.class.name", modelClass.getName());
+					return modelClass.getName();
+				}
+			).build();
 
 			Object serviceRanking = serviceReference.getProperty(
 				"service.ranking");
@@ -111,14 +115,14 @@ public class ModelResourcePermissionDefinitionTracker {
 
 		@Override
 		public void modifiedService(
-			ServiceReference<ModelResourcePermissionDefinition>
+			ServiceReference<ModelResourcePermissionDefinition<?>>
 				serviceReference,
 			ServiceRegistration<?> serviceRegistration) {
 		}
 
 		@Override
 		public void removedService(
-			ServiceReference<ModelResourcePermissionDefinition>
+			ServiceReference<ModelResourcePermissionDefinition<?>>
 				serviceReference,
 			ServiceRegistration<?> serviceRegistration) {
 

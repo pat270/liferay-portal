@@ -14,19 +14,11 @@
 
 package com.liferay.portal.search.elasticsearch6.internal;
 
-import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnection;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchFixture;
-import com.liferay.portal.search.elasticsearch6.internal.connection.EmbeddedElasticsearchConnection;
-import com.liferay.portal.search.elasticsearch6.internal.connection.OperationMode;
-import com.liferay.portal.search.elasticsearch6.internal.index.CompanyIdIndexNameBuilder;
-import com.liferay.portal.search.elasticsearch6.internal.index.CompanyIndexFactory;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
-import com.liferay.portal.search.elasticsearch6.internal.search.engine.adapter.ElasticsearchEngineAdapterFixture;
-import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 
 import java.util.List;
 
@@ -51,39 +43,25 @@ public class ElasticsearchSearchEngineTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_elasticsearchFixture = new ElasticsearchFixture(
-			ElasticsearchSearchEngineTest.class.getSimpleName());
+		_elasticsearchSearchEngineFixture =
+			new ElasticsearchSearchEngineFixture(
+				ElasticsearchSearchEngineTest.class.getSimpleName());
 
-		_elasticsearchFixture.setUp();
+		_elasticsearchSearchEngineFixture.setUp();
 
-		_elasticsearchConnectionManager = createElasticsearchConnectionManager(
-			_elasticsearchFixture.getEmbeddedElasticsearchConnection());
-
-		_elasticsearchConnectionManager.activate(OperationMode.EMBEDDED);
-
-		ElasticsearchEngineAdapterFixture elasticsearchEngineAdapterFixture =
-			new ElasticsearchEngineAdapterFixture() {
-				{
-					setElasticsearchClientResolver(_elasticsearchFixture);
-				}
-			};
-
-		elasticsearchEngineAdapterFixture.setUp();
-
-		_searchEngineAdapter =
-			elasticsearchEngineAdapterFixture.getSearchEngineAdapter();
+		_elasticsearchFixture =
+			_elasticsearchSearchEngineFixture.getElasticsearchFixture();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		_elasticsearchFixture.tearDown();
+		_elasticsearchSearchEngineFixture.tearDown();
 	}
 
 	@Test
 	public void testBackup() throws SearchException {
 		ElasticsearchSearchEngine elasticsearchSearchEngine =
-			createElasticsearchSearchEngine(
-				_elasticsearchConnectionManager, _searchEngineAdapter);
+			_elasticsearchSearchEngineFixture.getElasticsearchSearchEngine();
 
 		long companyId = RandomTestUtil.randomLong();
 
@@ -119,14 +97,15 @@ public class ElasticsearchSearchEngineTest {
 	@Test
 	public void testInitializeAfterReconnect() {
 		ElasticsearchSearchEngine elasticsearchSearchEngine =
-			createElasticsearchSearchEngine(
-				_elasticsearchConnectionManager, _searchEngineAdapter);
+			_elasticsearchSearchEngineFixture.getElasticsearchSearchEngine();
 
 		long companyId = RandomTestUtil.randomLong();
 
 		elasticsearchSearchEngine.initialize(companyId);
 
-		reconnect(_elasticsearchConnectionManager);
+		reconnect(
+			_elasticsearchSearchEngineFixture.
+				getElasticsearchConnectionManager());
 
 		elasticsearchSearchEngine.initialize(companyId);
 	}
@@ -134,8 +113,7 @@ public class ElasticsearchSearchEngineTest {
 	@Test
 	public void testRestore() throws SearchException {
 		ElasticsearchSearchEngine elasticsearchSearchEngine =
-			createElasticsearchSearchEngine(
-				_elasticsearchConnectionManager, _searchEngineAdapter);
+			_elasticsearchSearchEngineFixture.getElasticsearchSearchEngine();
 
 		long companyId = RandomTestUtil.randomLong();
 
@@ -166,51 +144,6 @@ public class ElasticsearchSearchEngineTest {
 		deleteSnapshotRequestBuilder.get();
 	}
 
-	protected static CompanyIndexFactory createCompanyIndexFactory() {
-		return new CompanyIndexFactory() {
-			{
-				indexNameBuilder = createIndexNameBuilder();
-				jsonFactory = new JSONFactoryImpl();
-			}
-		};
-	}
-
-	protected static IndexNameBuilder createIndexNameBuilder() {
-		return new CompanyIdIndexNameBuilder() {
-			{
-				setIndexNamePrefix(null);
-			}
-		};
-	}
-
-	protected ElasticsearchConnectionManager
-		createElasticsearchConnectionManager(
-			EmbeddedElasticsearchConnection embeddedElasticsearchConnection) {
-
-		ElasticsearchConnectionManager elasticsearchConnectionManager =
-			new ElasticsearchConnectionManager();
-
-		elasticsearchConnectionManager.setEmbeddedElasticsearchConnection(
-			embeddedElasticsearchConnection);
-
-		return elasticsearchConnectionManager;
-	}
-
-	protected ElasticsearchSearchEngine createElasticsearchSearchEngine(
-		final ElasticsearchConnectionManager elasticsearchConnectionManager,
-		final SearchEngineAdapter searchEngineAdapter) {
-
-		return new ElasticsearchSearchEngine() {
-			{
-				setIndexFactory(createCompanyIndexFactory());
-				setIndexNameBuilder(String::valueOf);
-				setElasticsearchConnectionManager(
-					elasticsearchConnectionManager);
-				setSearchEngineAdapter(searchEngineAdapter);
-			}
-		};
-	}
-
 	protected void reconnect(
 		ElasticsearchConnectionManager elasticsearchConnectionManager) {
 
@@ -222,8 +155,7 @@ public class ElasticsearchSearchEngineTest {
 		elasticsearchConnectionManager.connect();
 	}
 
-	private ElasticsearchConnectionManager _elasticsearchConnectionManager;
 	private ElasticsearchFixture _elasticsearchFixture;
-	private SearchEngineAdapter _searchEngineAdapter;
+	private ElasticsearchSearchEngineFixture _elasticsearchSearchEngineFixture;
 
 }

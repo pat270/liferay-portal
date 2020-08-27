@@ -51,7 +51,7 @@ announcementsPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(Ann
 	action="<%= configurationActionURL %>"
 	method="post"
 	name="fm"
-	onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveConfigurations();" %>'
+	onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveConfigurations();" %>'
 >
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
@@ -264,30 +264,45 @@ announcementsPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(Ann
 </liferay-frontend:edit-form>
 
 <aui:script require="metal-dom/src/dom">
-	let dom = metalDomSrcDom.default;
+	var dom = metalDomSrcDom.default;
 
 	var form = document.getElementById('<portlet:namespace />fm');
 
 	if (form) {
-		var <portlet:namespace />modified = function(panel) {
-			var modifiedNotice = panel.querySelector('.panel-heading .sheet-subtitle .modified-notice');
+		var <portlet:namespace />modified = function (panel) {
+			var modifiedNotice = panel.querySelector(
+				'.panel-heading .sheet-subtitle .modified-notice'
+			);
 
 			if (!modifiedNotice) {
-				var displayTitle = panel.querySelector('.panel-heading .sheet-subtitle');
+				var displayTitle = panel.querySelector(
+					'.panel-heading .sheet-subtitle'
+				);
 
-				dom.append(displayTitle, '<span class="modified-notice"> (<liferay-ui:message key="modified" />) </span>');
+				dom.append(
+					displayTitle,
+					'<span class="modified-notice"> (<liferay-ui:message key="modified" />) </span>'
+				);
 			}
-		}
+		};
 
-		var customizeAnnouncementsDisplayedCheckbox = form.querySelector('#<portlet:namespace />customizeAnnouncementsDisplayed');
+		var customizeAnnouncementsDisplayedCheckbox = form.querySelector(
+			'#<portlet:namespace />customizeAnnouncementsDisplayed'
+		);
 
 		if (customizeAnnouncementsDisplayedCheckbox) {
 			customizeAnnouncementsDisplayedCheckbox.addEventListener(
 				'change',
-				function() {
-					<portlet:namespace />modified(document.getElementById('<portlet:namespace />announcementsDisplayedPanel'));
+				function () {
+					<portlet:namespace />modified(
+						document.getElementById(
+							'<portlet:namespace />announcementsDisplayedPanel'
+						)
+					);
 
-					var announcementsDisplayed = form.querySelector('#<portlet:namespace />announcementsDisplayed');
+					var announcementsDisplayed = form.querySelector(
+						'#<portlet:namespace />announcementsDisplayed'
+					);
 
 					if (announcementsDisplayed) {
 						dom.toggleClasses(announcementsDisplayed, 'hide');
@@ -299,7 +314,9 @@ announcementsPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(Ann
 </aui:script>
 
 <aui:script>
-	var <portlet:namespace />form = document.getElementById('<portlet:namespace />fm');
+	var <portlet:namespace />form = document.getElementById(
+		'<portlet:namespace />fm'
+	);
 
 	if (<portlet:namespace />form) {
 		var selected = <portlet:namespace />form.querySelectorAll('.left-selector');
@@ -310,67 +327,95 @@ announcementsPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(Ann
 			selectedHTML = selectedHTML.concat(selected[i].innerHTML);
 		}
 
-		Liferay.on(
-			'inputmoveboxes:moveItem',
-			function(event) {
-				var currSelectedHTML = '';
+		Liferay.on('inputmoveboxes:moveItem', function (event) {
+			var currSelectedHTML = '';
 
-				for (var i = selected.length - 1; i >= 0; --i) {
-					currSelectedHTML = currSelectedHTML.concat(selected[i].innerHTML);
-				}
+			for (var i = selected.length - 1; i >= 0; --i) {
+				currSelectedHTML = currSelectedHTML.concat(selected[i].innerHTML);
+			}
 
-				if (selectedHTML != currSelectedHTML) {
-					var announcementsDisplayedPanel = document.getElementById('<portlet:namespace />announcementsDisplayedPanel');
+			if (selectedHTML != currSelectedHTML) {
+				var announcementsDisplayedPanel = document.getElementById(
+					'<portlet:namespace />announcementsDisplayedPanel'
+				);
 
-					if (announcementsDisplayedPanel) {
-						modified(announcementsDisplayedPanel);
-					}
+				if (announcementsDisplayedPanel) {
+					modified(announcementsDisplayedPanel);
 				}
 			}
+		});
+
+		var pageDeltaInput = <portlet:namespace />form.querySelector(
+			'select[name=<portlet:namespace />preferences--pageDelta--]'
 		);
 
-		var pageDeltaInput = <portlet:namespace />form.querySelector('select[name=<portlet:namespace />preferences--pageDelta--]');
-
 		if (pageDeltaInput) {
-			pageDeltaInput.addEventListener(
-				'change',
-				function(event) {
-					var displaySettingsPanel = document.getElementById('<portlet:namespace />displaySettingsPanel');
+			pageDeltaInput.addEventListener('change', function (event) {
+				var displaySettingsPanel = document.getElementById(
+					'<portlet:namespace />displaySettingsPanel'
+				);
 
-					if (displaySettingsPanel) {
-						modified(displaySettingsPanel);
-					}
+				if (displaySettingsPanel) {
+					modified(displaySettingsPanel);
 				}
-			);
+			});
 		}
 
 		function <portlet:namespace />saveConfigurations() {
-			var currentScopeGroupIds = <portlet:namespace />form.querySelector('#<portlet:namespace />currentScopeGroupIds');
-			var selectedScopeGroupIds = <portlet:namespace />form.querySelector('#<portlet:namespace />selectedScopeGroupIds');
+			var currentScopeGroupIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />currentScopeGroupIds'
+			);
+			var selectedScopeGroupIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />selectedScopeGroupIds'
+			);
 
 			if (currentScopeGroupIds && selectedScopeGroupIds) {
-				selectedScopeGroupIds.setAttribute('value', Liferay.Util.listSelect(currentScopeGroupIds));
+				selectedScopeGroupIds.setAttribute(
+					'value',
+					Liferay.Util.listSelect(currentScopeGroupIds)
+				);
 			}
 
-			var currentScopeOrganizationIds = <portlet:namespace />form.querySelector('#<portlet:namespace />currentScopeOrganizationIds');
-			var selectedScopeOrganizationIds = <portlet:namespace />form.querySelector('#<portlet:namespace />selectedScopeOrganizationIds');
+			var currentScopeOrganizationIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />currentScopeOrganizationIds'
+			);
+			var selectedScopeOrganizationIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />selectedScopeOrganizationIds'
+			);
 
 			if (currentScopeOrganizationIds && selectedScopeOrganizationIds) {
-				selectedScopeOrganizationIds.setAttribute('value', Liferay.Util.listSelect(currentScopeOrganizationIds));
+				selectedScopeOrganizationIds.setAttribute(
+					'value',
+					Liferay.Util.listSelect(currentScopeOrganizationIds)
+				);
 			}
 
-			var currentScopeRoleIds = <portlet:namespace />form.querySelector('#<portlet:namespace />currentScopeRoleIds');
-			var selectedScopeRoleIds = <portlet:namespace />form.querySelector('#<portlet:namespace />selectedScopeRoleIds');
+			var currentScopeRoleIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />currentScopeRoleIds'
+			);
+			var selectedScopeRoleIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />selectedScopeRoleIds'
+			);
 
 			if (currentScopeRoleIds && selectedScopeRoleIds) {
-				selectedScopeRoleIds.setAttribute('value', Liferay.Util.listSelect(currentScopeRoleIds));
+				selectedScopeRoleIds.setAttribute(
+					'value',
+					Liferay.Util.listSelect(currentScopeRoleIds)
+				);
 			}
 
-			var currentScopeUserGroupIds = <portlet:namespace />form.querySelector('#<portlet:namespace />selectedScopeUserGroupIds');
-			var selectedScopeUserGroupIds =<portlet:namespace />form.querySelector('#<portlet:namespace />currentScopeUserGroupIds');
+			var currentScopeUserGroupIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />selectedScopeUserGroupIds'
+			);
+			var selectedScopeUserGroupIds = <portlet:namespace />form.querySelector(
+				'#<portlet:namespace />currentScopeUserGroupIds'
+			);
 
 			if (currentScopeUserGroupIds && selectedScopeUserGroupIds) {
-				selectedScopeUserGroupIds.setAttribute('value', Liferay.Util.listSelect(currentScopeUserGroupIds));
+				selectedScopeUserGroupIds.setAttribute(
+					'value',
+					Liferay.Util.listSelect(currentScopeUserGroupIds)
+				);
 			}
 
 			submitForm(<portlet:namespace />form);

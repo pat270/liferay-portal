@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SyncDLFileVersionDiff}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SyncDLFileVersionDiff
  * @generated
  */
-@ProviderType
 public class SyncDLFileVersionDiffWrapper
 	extends BaseModelWrapper<SyncDLFileVersionDiff>
-	implements SyncDLFileVersionDiff, ModelWrapper<SyncDLFileVersionDiff> {
+	implements ModelWrapper<SyncDLFileVersionDiff>, SyncDLFileVersionDiff {
 
 	public SyncDLFileVersionDiffWrapper(
 		SyncDLFileVersionDiff syncDLFileVersionDiff) {
@@ -48,6 +45,7 @@ public class SyncDLFileVersionDiffWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("syncDLFileVersionDiffId", getSyncDLFileVersionDiffId());
+		attributes.put("companyId", getCompanyId());
 		attributes.put("fileEntryId", getFileEntryId());
 		attributes.put("sourceFileVersionId", getSourceFileVersionId());
 		attributes.put("targetFileVersionId", getTargetFileVersionId());
@@ -65,6 +63,12 @@ public class SyncDLFileVersionDiffWrapper
 
 		if (syncDLFileVersionDiffId != null) {
 			setSyncDLFileVersionDiffId(syncDLFileVersionDiffId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
 		}
 
 		Long fileEntryId = (Long)attributes.get("fileEntryId");
@@ -102,6 +106,16 @@ public class SyncDLFileVersionDiffWrapper
 		if (expirationDate != null) {
 			setExpirationDate(expirationDate);
 		}
+	}
+
+	/**
+	 * Returns the company ID of this sync dl file version diff.
+	 *
+	 * @return the company ID of this sync dl file version diff
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
 	}
 
 	/**
@@ -187,6 +201,16 @@ public class SyncDLFileVersionDiffWrapper
 	@Override
 	public void persist() {
 		model.persist();
+	}
+
+	/**
+	 * Sets the company ID of this sync dl file version diff.
+	 *
+	 * @param companyId the company ID of this sync dl file version diff
+	 */
+	@Override
+	public void setCompanyId(long companyId) {
+		model.setCompanyId(companyId);
 	}
 
 	/**

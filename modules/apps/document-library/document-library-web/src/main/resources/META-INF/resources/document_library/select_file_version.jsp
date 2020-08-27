@@ -20,7 +20,7 @@
 FileEntry fileEntry = (FileEntry)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY);
 FileVersion fileVersion = (FileVersion)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_VERSION);
 
-String eventName = ParamUtil.getString(request, "eventName", renderResponse.getNamespace() + "selectFileVersionFm");
+String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectFileVersionFm");
 
 int status = WorkflowConstants.STATUS_APPROVED;
 
@@ -36,7 +36,7 @@ if ((user.getUserId() == fileEntry.getUserId()) || permissionChecker.isContentRe
 	<portlet:param name="version" value="<%= String.valueOf(fileVersion.getVersion()) %>" />
 </liferay-portlet:renderURL>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= portletURL.toString() %>" method="post" name="selectFileVersionFm">
 		<liferay-ui:search-container
 			id="fileVersionSearchContainer"
@@ -52,20 +52,22 @@ if ((user.getUserId() == fileEntry.getUserId()) || permissionChecker.isContentRe
 				modelVar="curFileVersion"
 			>
 				<liferay-ui:search-container-column-text
-					name="title"
+					name="name"
 					truncate="<%= true %>"
 				>
 					<c:choose>
 						<c:when test="<%= fileVersion.getFileVersionId() != curFileVersion.getFileVersionId() %>">
-
-							<%
-							Map<String, Object> data = new HashMap<String, Object>();
-
-							data.put("sourceversion", curFileVersion.getFileVersionId());
-							data.put("targetversion", fileVersion.getFileVersionId());
-							%>
-
-							<aui:a cssClass="selector-button" data="<%= data %>" href="javascript:;">
+							<aui:a
+								cssClass="selector-button"
+								data='<%=
+									HashMapBuilder.<String, Object>put(
+										"sourceversion", curFileVersion.getFileVersionId()
+									).put(
+										"targetversion", fileVersion.getFileVersionId()
+									).build()
+								%>'
+								href="javascript:;"
+							>
 								<%= HtmlUtil.escape(curFileVersion.getTitle()) %>
 							</aui:a>
 						</c:when>
@@ -91,8 +93,11 @@ if ((user.getUserId() == fileEntry.getUserId()) || permissionChecker.isContentRe
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectFileVersionFm', '<%= HtmlUtil.escapeJS(eventName) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectFileVersionFm',
+		'<%= HtmlUtil.escapeJS(eventName) %>'
+	);
 </aui:script>

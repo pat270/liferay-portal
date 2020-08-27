@@ -62,16 +62,16 @@ public class JSPRenderer {
 		try {
 			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
-		catch (ServletException se) {
-			_log.error("Unable to render JSP " + path, se);
+		catch (ServletException servletException) {
+			_log.error("Unable to render JSP " + path, servletException);
 
-			throw new IOException("Unable to render " + path, se);
+			throw new IOException("Unable to render " + path, servletException);
 		}
 	}
 
 	/**
+	 * @param      servletContext
 	 * @deprecated As of Mueller (7.2.x), with no direct replacement
-	 * @param servletContext
 	 */
 	@Deprecated
 	public void setServletContext(ServletContext servletContext) {

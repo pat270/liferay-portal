@@ -25,10 +25,13 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 <c:choose>
 	<c:when test="<%= trashHandler.isContainerModel() %>">
 		<clay:management-toolbar
-			displayContext="<%= new TrashContainerManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, trashDisplayContext) %>"
+			displayContext="<%= new TrashContainerManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, trashDisplayContext) %>"
 		/>
 
-		<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+		<clay:container-fluid
+			cssClass="closed sidenav-container sidenav-right"
+			id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+		>
 			<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/trash/info_panel" var="sidebarPanelURL" />
 
 			<liferay-frontend:sidebar-panel
@@ -52,7 +55,9 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 					>
 
 						<%
-						String modelClassName = ((ClassedModel)curTrashedModel).getModelClassName();
+						ClassedModel classedModel = (ClassedModel)curTrashedModel;
+
+						String modelClassName = classedModel.getModelClassName();
 
 						TrashHandler curTrashHandler = TrashHandlerRegistryUtil.getTrashHandler(modelClassName);
 
@@ -89,7 +94,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 								<liferay-ui:search-container-column-text>
 									<clay:dropdown-actions
 										defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
-										dropdownItems="<%= trashDisplayContext.getTrashContainerActionDropdownItems(curTrashedModel) %>"
+										dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(modelClassName, curTrashedModel.getTrashEntryClassPK()) %>"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:when>
@@ -103,12 +108,12 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 									<c:choose>
 										<c:when test="<%= !curTrashHandler.isContainerModel() %>">
 											<clay:vertical-card
-												verticalCard="<%= new TrashContentVerticalCard(curTrashedModel, curTrashRenderer, renderRequest, liferayPortletResponse, rowURL.toString()) %>"
+												verticalCard="<%= new TrashContentVerticalCard(curTrashedModel, curTrashRenderer, liferayPortletResponse, renderRequest, rowURL.toString()) %>"
 											/>
 										</c:when>
 										<c:otherwise>
 											<clay:horizontal-card
-												horizontalCard="<%= new TrashContentHorizontalCard(curTrashedModel, curTrashRenderer, renderRequest, liferayPortletResponse, rowURL.toString()) %>"
+												horizontalCard="<%= new TrashContentHorizontalCard(curTrashedModel, curTrashRenderer, liferayPortletResponse, renderRequest, rowURL.toString()) %>"
 											/>
 										</c:otherwise>
 									</c:choose>
@@ -127,7 +132,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 								<liferay-ui:search-container-column-text>
 									<clay:dropdown-actions
 										defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
-										dropdownItems="<%= trashDisplayContext.getTrashContainerActionDropdownItems(curTrashedModel) %>"
+										dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(modelClassName, curTrashedModel.getTrashEntryClassPK()) %>"
 									/>
 								</liferay-ui:search-container-column-text>
 							</c:when>
@@ -141,7 +146,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 					/>
 				</liferay-ui:search-container>
 			</div>
-		</div>
+		</clay:container-fluid>
 	</c:when>
 	<c:otherwise>
 
@@ -154,7 +159,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 		renderResponse.setTitle(trashRenderer.getTitle(locale));
 		%>
 
-		<div class="container-fluid-1280">
+		<clay:container-fluid>
 			<aui:fieldset-group markupView="lexicon">
 				<aui:fieldset>
 					<liferay-asset:asset-display
@@ -162,7 +167,7 @@ TrashHandler trashHandler = trashDisplayContext.getTrashHandler();
 					/>
 				</aui:fieldset>
 			</aui:fieldset-group>
-		</div>
+		</clay:container-fluid>
 	</c:otherwise>
 </c:choose>
 

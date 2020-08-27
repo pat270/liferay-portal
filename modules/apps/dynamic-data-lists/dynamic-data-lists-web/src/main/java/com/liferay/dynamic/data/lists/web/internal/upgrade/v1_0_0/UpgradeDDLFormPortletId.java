@@ -133,10 +133,8 @@ public class UpgradeDDLFormPortletId extends BaseUpgradePortletId {
 			});
 		actionableDynamicQuery.setParallel(true);
 		actionableDynamicQuery.setPerformActionMethod(
-			(PortletPreferences portletPreference) -> {
-				updatePortletPreferences(
-					portletPreference, oldRootPortletId, newRootPortletId);
-			});
+			(PortletPreferences portletPreference) -> updatePortletPreferences(
+				portletPreference, oldRootPortletId, newRootPortletId));
 
 		actionableDynamicQuery.performActions();
 	}
@@ -154,9 +152,9 @@ public class UpgradeDDLFormPortletId extends BaseUpgradePortletId {
 
 			updateLayouts(oldRootPortletId, newRootPortletId, false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 	}
@@ -175,6 +173,10 @@ public class UpgradeDDLFormPortletId extends BaseUpgradePortletId {
 			portletPreferences.getPreferences(), "</portlet-preferences>",
 			"<preference><name>formView</name><value>true</value>" +
 				"</preference></portlet-preferences>");
+
+		newPreferences = StringUtil.replace(
+			newPreferences, "#portlet_" + oldRootPortletId,
+			"#portlet_" + newRootPortletId);
 
 		portletPreferences.setPreferences(newPreferences);
 

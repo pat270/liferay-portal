@@ -80,7 +80,7 @@ public class DLFileShortcutLocalServiceImpl
 		fileShortcut.setStatusByUserName(user.getFullName());
 		fileShortcut.setStatusDate(new Date());
 
-		dlFileShortcutPersistence.update(fileShortcut);
+		fileShortcut = dlFileShortcutPersistence.update(fileShortcut);
 
 		// Resources
 
@@ -105,9 +105,8 @@ public class DLFileShortcutLocalServiceImpl
 
 		// Asset
 
-		FileEntry fileEntry = dlAppLocalService.getFileEntry(toFileEntryId);
-
-		copyAssetTags(fileEntry, serviceContext);
+		copyAssetTags(
+			dlAppLocalService.getFileEntry(toFileEntryId), serviceContext);
 
 		updateAsset(
 			userId, fileShortcut, serviceContext.getAssetCategoryIds(),
@@ -389,7 +388,7 @@ public class DLFileShortcutLocalServiceImpl
 		fileShortcut.setToFileEntryId(toFileEntryId);
 		fileShortcut.setTreePath(fileShortcut.buildTreePath());
 
-		dlFileShortcutPersistence.update(fileShortcut);
+		fileShortcut = dlFileShortcutPersistence.update(fileShortcut);
 
 		// Folder
 
@@ -400,9 +399,8 @@ public class DLFileShortcutLocalServiceImpl
 
 		// Asset
 
-		FileEntry fileEntry = dlAppLocalService.getFileEntry(toFileEntryId);
-
-		copyAssetTags(fileEntry, serviceContext);
+		copyAssetTags(
+			dlAppLocalService.getFileEntry(toFileEntryId), serviceContext);
 
 		updateAsset(
 			userId, fileShortcut, serviceContext.getAssetCategoryIds(),

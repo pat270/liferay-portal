@@ -72,10 +72,12 @@ public class UpgradeAssetDisplayLayout extends UpgradeProcess {
 		LayoutPageTemplateEntry layoutPageTemplateEntry = Optional.ofNullable(
 			_layoutPageTemplateEntryLocalService.fetchLayoutPageTemplateEntry(
 				layoutPageTemplateEntryId)
-		).orElse(
-			_layoutPageTemplateEntryService.fetchDefaultLayoutPageTemplateEntry(
-				groupId, assetEntry.getClassNameId(),
-				assetEntry.getClassTypeId())
+		).orElseGet(
+			() ->
+				_layoutPageTemplateEntryService.
+					fetchDefaultLayoutPageTemplateEntry(
+						groupId, assetEntry.getClassNameId(),
+						assetEntry.getClassTypeId())
 		);
 
 		if (layoutPageTemplateEntry == null) {
@@ -124,7 +126,7 @@ public class UpgradeAssetDisplayLayout extends UpgradeProcess {
 	private void _upgradeSchema() throws Exception {
 		alter(
 			AssetDisplayPageEntryTable.class,
-			new AlterTableAddColumn("plid LONG"));
+			new AlterTableAddColumn("plid", "LONG"));
 
 		StringBundler sb = new StringBundler(3);
 

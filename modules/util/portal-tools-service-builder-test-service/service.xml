@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.1.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_1_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
 <service-builder auto-import-default-references="false" auto-namespace-tables="false" package-path="com.liferay.portal.tools.service.builder.test">
 	<namespace>SBTest</namespace>
@@ -42,6 +42,35 @@
 		<!-- References -->
 
 		<reference entity="LVEntry" package-path="com.liferay.portal.tools.service.builder.test" />
+	</entity>
+	<entity local-service="true" name="EagerBlobEntity" remote-service="true" uuid="true">
+
+		<!-- PK fields -->
+
+		<column name="eagerBlobEntityId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Other fields -->
+
+		<column lazy="false" name="blob" type="Blob" />
+	</entity>
+	<entity local-service="true" name="LazyBlobEntity" remote-service="true" uuid="true">
+
+		<!-- PK fields -->
+
+		<column name="lazyBlobEntityId" primary="true" type="long" />
+
+		<!-- Group instance -->
+
+		<column name="groupId" type="long" />
+
+		<!-- Other fields -->
+
+		<column name="blob1" type="Blob" />
+		<column name="blob2" type="Blob" />
 	</entity>
 	<entity local-service="true" name="LocalizedEntry" remote-service="false">
 

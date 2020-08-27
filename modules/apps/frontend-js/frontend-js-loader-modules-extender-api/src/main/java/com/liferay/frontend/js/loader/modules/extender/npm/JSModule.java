@@ -14,10 +14,14 @@
 
 package com.liferay.frontend.js.loader.modules.extender.npm;
 
+import com.liferay.portal.kernel.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.Collection;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Represents an NPM module inside a {@link JSBundle}.
@@ -76,6 +80,7 @@ import java.util.Collection;
  *
  * @author Iván Zaera
  */
+@ProviderType
 public interface JSModule extends JSResolvableBundleAsset {
 
 	/**
@@ -91,6 +96,13 @@ public interface JSModule extends JSResolvableBundleAsset {
 	 * @return the NPM package names
 	 */
 	public Collection<String> getDependencyPackageNames();
+
+	/**
+	 * Get the metadata that describe the module.
+	 *
+	 * @review
+	 */
+	public JSONObject getFlagsJSONObject();
 
 	/**
 	 * Returns the module's NPM package.

@@ -14,9 +14,14 @@
 
 package com.liferay.portal.kernel.dao.db;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -83,11 +88,7 @@ public abstract class BaseDBProcess implements DBProcess {
 	public void runSQLTemplate(String path)
 		throws IOException, NamingException, SQLException {
 
-		try (LoggingTimer loggingTimer = new LoggingTimer(path)) {
-			DB db = DBManagerUtil.getDB();
-
-			db.runSQLTemplate(path);
-		}
+		runSQLTemplate(path, true);
 	}
 
 	@Override
@@ -95,28 +96,66 @@ public abstract class BaseDBProcess implements DBProcess {
 		throws IOException, NamingException, SQLException {
 
 		try (LoggingTimer loggingTimer = new LoggingTimer(path)) {
-			DB db = DBManagerUtil.getDB();
+			ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
 
-			db.runSQLTemplate(path, failOnError);
+			InputStream inputStream = classLoader.getResourceAsStream(
+				"com/liferay/portal/tools/sql/dependencies/" + path);
+
+			if (inputStream == null) {
+				inputStream = classLoader.getResourceAsStream(path);
+			}
+
+			if (inputStream == null) {
+				Thread currentThread = Thread.currentThread();
+
+				classLoader = currentThread.getContextClassLoader();
+
+				inputStream = classLoader.getResourceAsStream(path);
+			}
+
+			if (inputStream == null) {
+				_log.error("Invalid path " + path);
+
+				if (failOnError) {
+					throw new IOException("Invalid path " + path);
+				}
+
+				return;
+			}
+
+			String template = StringUtil.read(inputStream);
+
+			runSQLTemplateString(template, failOnError);
 		}
 	}
 
 	@Override
-	public void runSQLTemplateString(
-			String template, boolean evaluate, boolean failOnError)
+	public void runSQLTemplateString(String template, boolean failOnError)
 		throws IOException, NamingException, SQLException {
 
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			DB db = DBManagerUtil.getDB();
 
 			if (connection == null) {
-				db.runSQLTemplateString(template, evaluate, failOnError);
+				db.runSQLTemplateString(template, failOnError);
 			}
 			else {
-				db.runSQLTemplateString(
-					connection, template, evaluate, failOnError);
+				db.runSQLTemplateString(connection, template, failOnError);
 			}
 		}
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #runSQLTemplateString(String, boolean)}
+	 */
+	@Deprecated
+	@Override
+	public void runSQLTemplateString(
+			String template, boolean evaluate, boolean failOnError)
+		throws IOException, NamingException, SQLException {
+
+		runSQLTemplateString(template, failOnError);
 	}
 
 	protected boolean doHasTable(String tableName) throws Exception {
@@ -133,6 +172,11 @@ public abstract class BaseDBProcess implements DBProcess {
 		return dbInspector.hasColumn(tableName, columnName);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #hasColumnType(String, String, String)}
+	 */
+	@Deprecated
 	protected boolean hasColumnType(
 			Class<?> tableClass, String columnName, String columnType)
 		throws Exception {
@@ -140,6 +184,15 @@ public abstract class BaseDBProcess implements DBProcess {
 		DBInspector dbInspector = new DBInspector(connection);
 
 		return dbInspector.hasColumnType(tableClass, columnName, columnType);
+	}
+
+	protected boolean hasColumnType(
+			String tableName, String columnName, String columnType)
+		throws Exception {
+
+		DBInspector dbInspector = new DBInspector(connection);
+
+		return dbInspector.hasColumnType(tableName, columnName, columnType);
 	}
 
 	protected boolean hasRows(Connection connection, String tableName) {
@@ -159,5 +212,7 @@ public abstract class BaseDBProcess implements DBProcess {
 	}
 
 	protected Connection connection;
+
+	private static final Log _log = LogFactoryUtil.getLog(BaseDBProcess.class);
 
 }

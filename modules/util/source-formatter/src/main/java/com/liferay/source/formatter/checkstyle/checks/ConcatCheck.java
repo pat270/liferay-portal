@@ -14,8 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
@@ -25,7 +23,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class ConcatCheck extends StringConcatenationCheck {
+public class ConcatCheck extends BaseStringConcatenationCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -36,7 +34,7 @@ public class ConcatCheck extends StringConcatenationCheck {
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		List<DetailAST> methodCallDetailASTList = DetailASTUtil.getMethodCalls(
+		List<DetailAST> methodCallDetailASTList = getMethodCalls(
 			detailAST, "StringBundler", "concat");
 
 		for (DetailAST methodCallDetailAST : methodCallDetailASTList) {
@@ -73,6 +71,16 @@ public class ConcatCheck extends StringConcatenationCheck {
 					}
 
 					previousLiteralStringDetailAST = grandChildDetailAST;
+				}
+
+				if (grandChildDetailAST.getType() == TokenTypes.PLUS) {
+					DetailAST literalStringDetailAST =
+						grandChildDetailAST.findFirstToken(
+							TokenTypes.STRING_LITERAL);
+
+					if (literalStringDetailAST != null) {
+						log(grandChildDetailAST, MSG_INCORRECT_PLUS);
+					}
 				}
 			}
 
@@ -118,7 +126,7 @@ public class ConcatCheck extends StringConcatenationCheck {
 
 		int pos = getStringBreakPos(
 			literalStringValue1, literalStringValue2,
-			maxLineLength - lineLength);
+			getMaxLineLength() - lineLength);
 
 		if (pos != -1) {
 			log(

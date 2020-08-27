@@ -24,13 +24,13 @@ import java.util.Set;
 public class ComponentDescriptor {
 
 	public ComponentDescriptor(String templateNamespace, String module) {
-		this(templateNamespace, module, null, null);
+		this(templateNamespace, module, null, null, true, true, false);
 	}
 
 	public ComponentDescriptor(
 		String templateNamespace, String module, String componentId) {
 
-		this(templateNamespace, module, componentId, null);
+		this(templateNamespace, module, componentId, null, true, true, false);
 	}
 
 	public ComponentDescriptor(
@@ -49,12 +49,12 @@ public class ComponentDescriptor {
 
 		_templateNamespace = templateNamespace;
 		_module = module;
+		_componentId = componentId;
 
 		if (dependencies != null) {
 			_dependencies.addAll(dependencies);
 		}
 
-		_componentId = componentId;
 		_wrapper = wrapper;
 		_renderJavascript = renderJavascript;
 		_positionInLine = positionInLine;
@@ -89,7 +89,7 @@ public class ComponentDescriptor {
 	}
 
 	private String _componentId;
-	private Set<String> _dependencies = new HashSet<>();
+	private final Set<String> _dependencies = new HashSet<>();
 	private String _module;
 	private boolean _positionInLine;
 	private boolean _renderJavascript;

@@ -48,18 +48,19 @@ public class StagingProcessesControlPanelEntry extends BaseControlPanelEntry {
 			return true;
 		}
 
-		if (group.isLayoutPrototype() || group.isLayoutSetPrototype()) {
+		if (group.isLayoutPrototype() || group.isLayoutSetPrototype() ||
+			group.isUser() || group.isUserGroup()) {
+
 			return true;
 		}
 
-		if (!group.isStaged() && !group.hasLocalOrRemoteStagingGroup()) {
-			if (!GroupPermissionUtil.contains(
-					permissionChecker, group, ActionKeys.MANAGE_STAGING) ||
-				!GroupPermissionUtil.contains(
-					permissionChecker, group, ActionKeys.VIEW_STAGING)) {
+		if (!group.isStaged() && !group.hasLocalOrRemoteStagingGroup() &&
+			(!GroupPermissionUtil.contains(
+				permissionChecker, group, ActionKeys.MANAGE_STAGING) ||
+			 !GroupPermissionUtil.contains(
+				 permissionChecker, group, ActionKeys.VIEW_STAGING))) {
 
-				return true;
-			}
+			return true;
 		}
 
 		if (!GroupPermissionUtil.contains(

@@ -1,4 +1,5 @@
 definition {
+
 	macro click {
 		Click.mouseDownMouseUp(
 			key_text = "${button}",
@@ -17,8 +18,20 @@ definition {
 		Button.click(button = "Apply");
 	}
 
+	macro clickAssign {
+		Button.click(button = "Assign");
+	}
+
 	macro clickCancel {
 		Button.click(button = "Cancel");
+	}
+
+	macro clickComment {
+		Click(locator1 = "Button#COMMENT");
+	}
+
+	macro clickConfirm {
+		Click(locator1 = "Button#CONFIRM");
 	}
 
 	macro clickDelete {
@@ -31,6 +44,10 @@ definition {
 
 	macro clickEdit {
 		Button.click(button = "Edit");
+	}
+
+	macro clickImport {
+		Button.click(button = "Import");
 	}
 
 	macro clickInstall {
@@ -63,16 +80,14 @@ definition {
 		Button.click(button = "Publish");
 	}
 
-	macro clickPublishToChangeList {
-		Button.click(button = "Publish to Change List");
-	}
-
 	macro clickRemove {
 		Button.click(button = "Remove");
 	}
 
 	macro clickSave {
 		Button.click(button = "Save");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
 	}
 
 	macro clickSaveAsDraft {
@@ -87,12 +102,24 @@ definition {
 		Button.click(button = "Share");
 	}
 
+	macro clickSubmitButton {
+		Click(locator1 = "Button#SUBMIT");
+	}
+
 	macro clickSubmitForPublication {
 		Button.click(button = "Submit for Publication");
 	}
 
 	macro clickUpdate {
+		ScrollWebElementIntoView(
+			key_text = "Update",
+			locator1 = "Button#ANY");
+
 		Button.click(button = "Update");
+	}
+
+	macro clickVerifyButton {
+		Click(locator1 = "Button#VERIFY");
 	}
 
 	macro viewNotPresent {
@@ -106,4 +133,5 @@ definition {
 			key_text = "${button}",
 			locator1 = "Button#ANY");
 	}
+
 }

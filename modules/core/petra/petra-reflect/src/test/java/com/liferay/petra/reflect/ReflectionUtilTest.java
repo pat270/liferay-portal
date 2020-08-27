@@ -57,9 +57,10 @@ public class ReflectionUtilTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				"Input object is not an array: " + object, iae.getMessage());
+				"Input object is not an array: " + object,
+				illegalArgumentException.getMessage());
 		}
 
 		object = new long[] {1, 2, 3};
@@ -79,8 +80,8 @@ public class ReflectionUtilTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertNull(npe.getCause());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertNull(nullPointerException.getCause());
 		}
 	}
 
@@ -123,12 +124,32 @@ public class ReflectionUtilTest {
 
 	@Test
 	public void testGetDeclaredField() throws Exception {
-		Field field = ReflectionUtil.getDeclaredField(
+		Field staticField = ReflectionUtil.getDeclaredField(
 			TestClass.class, "_privateStaticFinalObject");
 
+		Assert.assertTrue(staticField.isAccessible());
+		Assert.assertFalse(Modifier.isFinal(staticField.getModifiers()));
+		Assert.assertSame(
+			TestClass._privateStaticFinalObject, staticField.get(null));
+
+		Object object = new Object();
+
+		staticField.set(null, object);
+
+		Assert.assertSame(object, TestClass._privateStaticFinalObject);
+
+		TestClass testClass = new TestClass();
+
+		Field field = ReflectionUtil.getDeclaredField(
+			TestClass.class, "_privateFinalObject");
+
 		Assert.assertTrue(field.isAccessible());
-		Assert.assertFalse(Modifier.isFinal(field.getModifiers()));
-		Assert.assertSame(TestClass._privateStaticFinalObject, field.get(null));
+		Assert.assertTrue(Modifier.isFinal(field.getModifiers()));
+		Assert.assertSame(testClass._privateFinalObject, field.get(testClass));
+
+		field.set(testClass, object);
+
+		Assert.assertSame(object, testClass._privateFinalObject);
 	}
 
 	@Test
@@ -137,7 +158,12 @@ public class ReflectionUtilTest {
 
 		for (Field field : fields) {
 			Assert.assertTrue(field.isAccessible());
-			Assert.assertFalse(Modifier.isFinal(field.getModifiers()));
+
+			int modifier = field.getModifiers();
+
+			if (Modifier.isStatic(modifier)) {
+				Assert.assertFalse(Modifier.isFinal(modifier));
+			}
 
 			String name = field.getName();
 
@@ -187,15 +213,15 @@ public class ReflectionUtilTest {
 
 	@Test
 	public void testThrowException() {
-		Exception exception = new Exception();
+		Exception exception1 = new Exception();
 
 		try {
-			ReflectionUtil.throwException(exception);
+			ReflectionUtil.throwException(exception1);
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Assert.assertSame(exception, e);
+		catch (Exception exception2) {
+			Assert.assertSame(exception1, exception2);
 		}
 	}
 
@@ -227,13 +253,25 @@ public class ReflectionUtilTest {
 			_privateStaticObject = privateStaticObject;
 		}
 
+		public void setPrivateObject(Object privateObject) {
+			_privateObject = privateObject;
+		}
+
 		@SuppressWarnings("unused")
 		private static Object _getPrivateStaticObject() {
 			return _privateStaticObject;
 		}
 
+		@SuppressWarnings("unused")
+		private Object _getPrivateObject() {
+			return _privateObject;
+		}
+
 		private static final Object _privateStaticFinalObject = new Object();
 		private static Object _privateStaticObject = new Object();
+
+		private final Object _privateFinalObject = new Object();
+		private Object _privateObject = new Object();
 
 	}
 

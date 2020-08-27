@@ -88,8 +88,8 @@ public class ServletContextIncludeFilter extends BasePortalFilter {
 				return true;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -101,9 +101,8 @@ public class ServletContextIncludeFilter extends BasePortalFilter {
 		String themeId = ParamUtil.getString(httpServletRequest, "themeId");
 
 		if (Validator.isNotNull(themeId)) {
-			long companyId = PortalUtil.getCompanyId(httpServletRequest);
-
-			return ThemeLocalServiceUtil.getTheme(companyId, themeId);
+			return ThemeLocalServiceUtil.getTheme(
+				PortalUtil.getCompanyId(httpServletRequest), themeId);
 		}
 
 		long plid = ParamUtil.getLong(httpServletRequest, "plid");

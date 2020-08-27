@@ -28,10 +28,13 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 
 /**
@@ -39,6 +42,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class PhoneResourceTest extends BasePhoneResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final SynchronousMailTestRule synchronousMailTestRule =
+		SynchronousMailTestRule.INSTANCE;
 
 	@Before
 	@Override
@@ -67,7 +75,7 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 
 	@Override
 	protected Phone testGetOrganizationPhonesPage_addPhone(
-			Long organizationId, Phone phone)
+			String organizationId, Phone phone)
 		throws Exception {
 
 		return _addPhone(
@@ -77,8 +85,8 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 	}
 
 	@Override
-	protected Long testGetOrganizationPhonesPage_getOrganizationId() {
-		return _organization.getOrganizationId();
+	protected String testGetOrganizationPhonesPage_getOrganizationId() {
+		return String.valueOf(_organization.getOrganizationId());
 	}
 
 	@Override
@@ -101,6 +109,11 @@ public class PhoneResourceTest extends BasePhoneResourceTestCase {
 	@Override
 	protected Long testGetUserAccountPhonesPage_getUserAccountId() {
 		return _user.getUserId();
+	}
+
+	@Override
+	protected Phone testGraphQLPhone_addPhone() throws Exception {
+		return testGetPhone_addPhone();
 	}
 
 	private Phone _addPhone(

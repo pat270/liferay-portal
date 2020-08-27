@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class InvalidStructureVersionException extends PortalException {
 
 	public InvalidStructureVersionException() {
@@ -31,12 +28,12 @@ public class InvalidStructureVersionException extends PortalException {
 		super(msg);
 	}
 
-	public InvalidStructureVersionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public InvalidStructureVersionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public InvalidStructureVersionException(Throwable cause) {
-		super(cause);
+	public InvalidStructureVersionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

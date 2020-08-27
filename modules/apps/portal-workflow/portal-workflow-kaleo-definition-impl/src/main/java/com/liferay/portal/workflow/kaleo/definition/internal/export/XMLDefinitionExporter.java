@@ -26,9 +26,10 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.workflow.kaleo.definition.Definition;
 import com.liferay.portal.workflow.kaleo.definition.Node;
+import com.liferay.portal.workflow.kaleo.definition.exception.KaleoDefinitionValidationException;
 import com.liferay.portal.workflow.kaleo.definition.export.DefinitionExporter;
 import com.liferay.portal.workflow.kaleo.definition.export.NodeExporter;
-import com.liferay.portal.workflow.kaleo.definition.internal.export.builder.DefinitionBuilder;
+import com.liferay.portal.workflow.kaleo.definition.export.builder.DefinitionBuilder;
 
 import java.io.IOException;
 
@@ -44,6 +45,11 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(immediate = true, service = DefinitionExporter.class)
 public class XMLDefinitionExporter implements DefinitionExporter {
+
+	@Override
+	public String export(Definition definition) throws PortalException {
+		return doExport(definition);
+	}
 
 	@Override
 	public String export(long kaleoDefinitionId) throws PortalException {
@@ -74,7 +80,9 @@ public class XMLDefinitionExporter implements DefinitionExporter {
 			_version, CharPool.PERIOD, CharPool.UNDERLINE);
 	}
 
-	protected String doExport(Definition definition) {
+	protected String doExport(Definition definition)
+		throws KaleoDefinitionValidationException {
+
 		try {
 			Document document = SAXReaderUtil.createDocument();
 
@@ -122,8 +130,9 @@ public class XMLDefinitionExporter implements DefinitionExporter {
 
 			return document.formattedString();
 		}
-		catch (IOException ioe) {
-			throw new SystemException("Unable to export definition", ioe);
+		catch (IOException ioException) {
+			throw new SystemException(
+				"Unable to export definition", ioException);
 		}
 	}
 

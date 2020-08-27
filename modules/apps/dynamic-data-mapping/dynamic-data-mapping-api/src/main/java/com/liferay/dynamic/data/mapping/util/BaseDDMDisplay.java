@@ -14,6 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.util;
 
+import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
@@ -65,7 +65,7 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 
 	@Override
 	public String getAvailableFields() {
-		return "Liferay.FormBuilder.AVAILABLE_FIELDS.DDM_STRUCTURE";
+		return DDMConstants.AVAILABLE_FIELDS;
 	}
 
 	@Override
@@ -147,10 +147,8 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 				template.getName(locale), structure.getName(locale));
 		}
 		else if (structure != null) {
-			ResourceBundle resourceBundle = getResourceBundle(locale);
-
 			return LanguageUtil.format(
-				resourceBundle, "new-template-for-structure-x",
+				getResourceBundle(locale), "new-template-for-structure-x",
 				structure.getName(locale), false);
 		}
 		else if (template != null) {
@@ -182,9 +180,7 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 
 	@Override
 	public String getStructureName(Locale locale) {
-		ResourceBundle resourceBundle = getResourceBundle(locale);
-
-		return LanguageUtil.get(resourceBundle, "structure");
+		return LanguageUtil.get(getResourceBundle(locale), "structure");
 	}
 
 	@Override
@@ -338,25 +334,12 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 		Locale locale) {
 
 		if (structure != null) {
-			ResourceBundle resourceBundle = getResourceBundle(locale);
-
 			return LanguageUtil.format(
-				resourceBundle, "templates-for-structure-x",
+				getResourceBundle(locale), "templates-for-structure-x",
 				structure.getName(locale), false);
 		}
 
 		return getDefaultViewTemplateTitle(locale);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x)
-	 */
-	@Deprecated
-	@Override
-	public String getViewTemplatesTitle(
-		DDMStructure structure, boolean controlPanel, Locale locale) {
-
-		return getViewTemplatesTitle(structure, controlPanel, false, locale);
 	}
 
 	@Override
@@ -417,20 +400,6 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 	}
 
 	@Override
-	public boolean isShowAddStructureButton() {
-		String portletId = getPortletId();
-
-		String ddmStructurePortletId = PortletProviderUtil.getPortletId(
-			DDMStructure.class.getName(), PortletProvider.Action.VIEW);
-
-		if (portletId.equals(ddmStructurePortletId)) {
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
 	public boolean isShowBackURLInTitleBar() {
 		return false;
 	}
@@ -455,58 +424,12 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 		return false;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected ResourceBundle getBaseDDMDisplayResourceBundle(
-		String languageId) {
-
-		Class<?> baseDDMDisplayClazz = BaseDDMDisplay.class;
-
-		return ResourceBundleUtil.getBundle(
-			"content.Language", LocaleUtil.fromLanguageId(languageId),
-			baseDDMDisplayClazz.getClassLoader());
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected ResourceBundle getDDMDisplayResourceBundle(String languageId) {
-		Bundle bundle = FrameworkUtil.getBundle(getClass());
-
-		ResourceBundleLoader resourceBundleLoader =
-			ResourceBundleLoaderUtil.
-				getResourceBundleLoaderByBundleSymbolicName(
-					bundle.getSymbolicName());
-
-		if (resourceBundleLoader == null) {
-			return null;
-		}
-
-		return resourceBundleLoader.loadResourceBundle(languageId);
-	}
-
 	protected String getDefaultEditTemplateTitle(Locale locale) {
-		ResourceBundle resourceBundle = getResourceBundle(locale);
-
-		return LanguageUtil.get(resourceBundle, "new-template");
+		return LanguageUtil.get(getResourceBundle(locale), "new-template");
 	}
 
 	protected String getDefaultViewTemplateTitle(Locale locale) {
 		return LanguageUtil.get(locale, "templates");
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected ResourceBundle getPortalResourceBundle(String languageId) {
-		ResourceBundleLoader portalResourceBundleLoader =
-			ResourceBundleLoaderUtil.getPortalResourceBundleLoader();
-
-		return portalResourceBundleLoader.loadResourceBundle(languageId);
 	}
 
 	protected ResourceBundle getResourceBundle(Locale locale) {

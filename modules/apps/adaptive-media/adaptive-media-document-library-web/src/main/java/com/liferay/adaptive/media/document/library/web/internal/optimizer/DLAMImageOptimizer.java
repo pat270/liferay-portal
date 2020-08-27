@@ -24,9 +24,9 @@ import com.liferay.adaptive.media.image.processor.AMImageProcessor;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusMessageSender;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
@@ -37,10 +37,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
-import com.liferay.trash.kernel.service.TrashEntryLocalService;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,14 +65,15 @@ public class DLAMImageOptimizer implements AMImageOptimizer {
 
 		int total = count * amImageConfigurationEntries.size();
 
-		final AtomicInteger atomicCounter = new AtomicInteger(0);
+		AtomicInteger successCount = new AtomicInteger(0);
+		AtomicInteger errorCount = new AtomicInteger(0);
 
 		for (AMImageConfigurationEntry amImageConfigurationEntry :
 				amImageConfigurationEntries) {
 
 			_optimize(
 				companyId, amImageConfigurationEntry.getUUID(), total,
-				atomicCounter);
+				successCount, errorCount);
 		}
 	}
 
@@ -82,14 +81,16 @@ public class DLAMImageOptimizer implements AMImageOptimizer {
 	public void optimize(long companyId, String configurationEntryUuid) {
 		int total = _amImageCounter.countExpectedAMImageEntries(companyId);
 
-		final AtomicInteger atomiCounter = new AtomicInteger(0);
+		AtomicInteger successCount = new AtomicInteger(0);
+		AtomicInteger errorCount = new AtomicInteger(0);
 
-		_optimize(companyId, configurationEntryUuid, total, atomiCounter);
+		_optimize(
+			companyId, configurationEntryUuid, total, successCount, errorCount);
 	}
 
 	private void _optimize(
 		long companyId, String configurationEntryUuid, int total,
-		AtomicInteger atomicCounter) {
+		AtomicInteger successCount, AtomicInteger errorCount) {
 
 		ActionableDynamicQuery actionableDynamicQuery =
 			_dlFileEntryLocalService.getActionableDynamicQuery();
@@ -151,25 +152,33 @@ public class DLAMImageOptimizer implements AMImageOptimizer {
 					_amImageProcessor.process(
 						fileEntry.getFileVersion(), configurationEntryUuid);
 
-					_sendStatusMessage(atomicCounter.incrementAndGet(), total);
+					_sendStatusMessage(
+						successCount.incrementAndGet(), total,
+						errorCount.get());
 				}
-				catch (PortalException pe) {
-					_log.error(
-						"Unable to process file entry " +
-							fileEntry.getFileEntryId(),
-						pe);
+				catch (Exception exception) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to process file entry " +
+								fileEntry.getFileEntryId(),
+							exception);
+					}
+
+					_sendStatusMessage(
+						successCount.get(), total,
+						errorCount.incrementAndGet());
 				}
 			});
 
 		try {
 			actionableDynamicQuery.performActions();
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 	}
 
-	private void _sendStatusMessage(int count, int total) {
+	private void _sendStatusMessage(int count, int total, int errors) {
 		Message message = new Message();
 
 		message.put(
@@ -183,6 +192,7 @@ public class DLAMImageOptimizer implements AMImageOptimizer {
 			clazz.getName());
 
 		message.put(AMOptimizeImagesBackgroundTaskConstants.COUNT, count);
+		message.put(AMOptimizeImagesBackgroundTaskConstants.ERRORS, errors);
 		message.put(AMOptimizeImagesBackgroundTaskConstants.TOTAL, total);
 
 		message.put("status", BackgroundTaskConstants.STATUS_IN_PROGRESS);
@@ -211,15 +221,9 @@ public class DLAMImageOptimizer implements AMImageOptimizer {
 		_backgroundTaskStatusMessageSender;
 
 	@Reference
-	private ClassNameLocalService _classNameLocalService;
-
-	@Reference
 	private DLFileEntryLocalService _dlFileEntryLocalService;
 
 	@Reference
 	private DLFileVersionLocalService _dlFileVersionLocalService;
-
-	@Reference
-	private TrashEntryLocalService _trashEntryLocalService;
 
 }

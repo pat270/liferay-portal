@@ -14,6 +14,10 @@
 
 package com.liferay.segments.web.internal.portlet.action;
 
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -21,11 +25,9 @@ import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.field.customizer.SegmentsFieldCustomizer;
 import com.liferay.segments.field.customizer.SegmentsFieldCustomizerRegistry;
 
-import java.io.PrintWriter;
-
+import java.util.Locale;
 import java.util.Optional;
 
-import javax.portlet.PortletException;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
@@ -33,8 +35,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Gavin Wan
- * @author Pei-Jung Lan
+ * @author David Arques
+ * @author Eduardo García
  */
 @Component(
 	immediate = true,
@@ -45,45 +47,48 @@ import org.osgi.service.component.annotations.Reference;
 	service = MVCResourceCommand.class
 )
 public class GetSegmentsFieldValueNameMVCResourceCommand
-	implements MVCResourceCommand {
+	extends BaseMVCResourceCommand {
 
 	@Override
-	public boolean serveResource(
+	protected void doServeResource(
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
-		throws PortletException {
+		throws Exception {
 
-		try {
-			PrintWriter printWriter = resourceResponse.getWriter();
-
-			printWriter.write(getText(resourceRequest, resourceResponse));
-
-			return false;
-		}
-		catch (Exception e) {
-			throw new PortletException(e);
-		}
+		JSONPortletResponseUtil.writeJSON(
+			resourceRequest, resourceResponse,
+			getFieldValueNameJSONObject(
+				ParamUtil.getString(resourceRequest, "entityName"),
+				ParamUtil.getString(resourceRequest, "fieldName"),
+				ParamUtil.getString(resourceRequest, "fieldValue"),
+				_portal.getLocale(resourceRequest)));
 	}
 
-	protected String getText(
-		ResourceRequest resourceRequest, ResourceResponse resourceResponse) {
+	protected JSONObject getFieldValueNameJSONObject(
+		String entityName, String fieldName, String fieldValue, Locale locale) {
 
-		String entityName = ParamUtil.getString(resourceRequest, "entityName");
-		String fieldName = ParamUtil.getString(resourceRequest, "fieldName");
-		String fieldValue = ParamUtil.getString(resourceRequest, "fieldValue");
+		Optional<String> fieldValueNameOptional = _getFieldValueName(
+			entityName, fieldName, fieldValue, locale);
 
-		Optional<SegmentsFieldCustomizer> segmentFieldCustomizerOptional =
-			_segmentsFieldCustomizerRegistry.getSegmentFieldCustomizerOptional(
+		return JSONUtil.put(
+			"fieldValueName", fieldValueNameOptional.orElse(null));
+	}
+
+	private Optional<String> _getFieldValueName(
+		String entityName, String fieldName, String fieldValue, Locale locale) {
+
+		Optional<SegmentsFieldCustomizer> segmentsFieldCustomizerOptional =
+			_segmentsFieldCustomizerRegistry.getSegmentsFieldCustomizerOptional(
 				entityName, fieldName);
 
-		if (!segmentFieldCustomizerOptional.isPresent()) {
-			return fieldValue;
+		if (!segmentsFieldCustomizerOptional.isPresent()) {
+			return Optional.empty();
 		}
 
 		SegmentsFieldCustomizer segmentsFieldCustomizer =
-			segmentFieldCustomizerOptional.get();
+			segmentsFieldCustomizerOptional.get();
 
-		return segmentsFieldCustomizer.getFieldValueName(
-			fieldValue, _portal.getLocale(resourceRequest));
+		return Optional.ofNullable(
+			segmentsFieldCustomizer.getFieldValueName(fieldValue, locale));
 	}
 
 	@Reference

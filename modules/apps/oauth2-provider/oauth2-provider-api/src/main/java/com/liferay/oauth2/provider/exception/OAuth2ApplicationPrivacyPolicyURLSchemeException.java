@@ -16,12 +16,9 @@ package com.liferay.oauth2.provider.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class OAuth2ApplicationPrivacyPolicyURLSchemeException
 	extends PortalException {
 
@@ -33,13 +30,15 @@ public class OAuth2ApplicationPrivacyPolicyURLSchemeException
 	}
 
 	public OAuth2ApplicationPrivacyPolicyURLSchemeException(
-		String msg, Throwable cause) {
+		String msg, Throwable throwable) {
 
-		super(msg, cause);
+		super(msg, throwable);
 	}
 
-	public OAuth2ApplicationPrivacyPolicyURLSchemeException(Throwable cause) {
-		super(cause);
+	public OAuth2ApplicationPrivacyPolicyURLSchemeException(
+		Throwable throwable) {
+
+		super(throwable);
 	}
 
 }

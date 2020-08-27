@@ -28,7 +28,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 	action="<%= configurationActionURL %>"
 	method="post"
 	name="fm"
-	onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveConfiguration();" %>'
+	onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveConfiguration();" %>'
 >
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
@@ -81,7 +81,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 						<aui:button name="openFolderSelectorButton" value="select" />
 
 						<%
-						String taglibRemoveFolder = "Liferay.Util.removeEntitySelection('rootFolderId', 'rootFolderName', this, '" + renderResponse.getNamespace() + "');";
+						String taglibRemoveFolder = "Liferay.Util.removeEntitySelection('rootFolderId', 'rootFolderName', this, '" + liferayPortletResponse.getNamespace() + "');";
 						%>
 
 						<aui:button disabled="<%= rootFolderId <= 0 %>" name="removeFolderButton" onClick="<%= taglibRemoveFolder %>" value="remove" />
@@ -99,56 +99,49 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 </liferay-frontend:edit-form>
 
 <script>
-	var openFolderSelectorButton = document.getElementById('<portlet:namespace />openFolderSelectorButton');
+	var openFolderSelectorButton = document.getElementById(
+		'<portlet:namespace />openFolderSelectorButton'
+	);
 
 	if (openFolderSelectorButton) {
-		openFolderSelectorButton.addEventListener(
-			'click',
-			function(event) {
-				Liferay.Util.selectEntity(
-					{
-						dialog: {
-							constrain: true,
-							destroyOnHide: true,
-							modal: true,
-							width: 680
-						},
-						id: '_<%= HtmlUtil.escapeJS(portletResource) %>_selectFolder',
-						title: '<liferay-ui:message arguments="folder" key="select-x" />',
+		openFolderSelectorButton.addEventListener('click', function (event) {
+			Liferay.Util.getOpener().Liferay.Util.openModal({
+				id:
+					'_<%= HtmlUtil.escapeJS(igRequestHelper.getPortletResource()) %>_selectFolder',
+				onSelect: function (selectedItem) {
+					var folderData = {
+						idString: 'rootFolderId',
+						idValue: selectedItem.folderid,
+						nameString: 'rootFolderName',
+						nameValue: selectedItem.foldername,
+					};
 
-						<liferay-portlet:renderURL portletName="<%= portletResource %>" var="selectFolderURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-							<portlet:param name="mvcRenderCommandName" value='<%= "/document_library/select_folder" %>' />
-							<portlet:param name="folderId" value="<%= String.valueOf(rootFolderId) %>" />
-							<portlet:param name="ignoreRootFolder" value="<%= Boolean.TRUE.toString() %>" />
-						</liferay-portlet:renderURL>
+					Liferay.Util.selectFolder(folderData, '<portlet:namespace />');
+				},
+				selectEventName:
+					'_<%= HtmlUtil.escapeJS(igRequestHelper.getPortletResource()) %>_selectFolder',
+				title: '<liferay-ui:message arguments="folder" key="select-x" />',
 
-						uri: '<%= HtmlUtil.escapeJS(selectFolderURL.toString()) %>'
-					},
-					function(event) {
-						var folderData = {
-							idString: 'rootFolderId',
-							idValue: event.folderid,
-							nameString: 'rootFolderName',
-							nameValue: event.foldername
-						};
+				<liferay-portlet:renderURL portletName="<%= igRequestHelper.getPortletResource() %>" var="selectFolderURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+					<portlet:param name="mvcRenderCommandName" value="/document_library/select_folder" />
+					<portlet:param name="folderId" value="<%= String.valueOf(rootFolderId) %>" />
+					<portlet:param name="ignoreRootFolder" value="<%= Boolean.TRUE.toString() %>" />
+				</liferay-portlet:renderURL>
 
-						Liferay.Util.selectFolder(folderData, '<portlet:namespace />');
-					}
-				);
-			}
-		);
+				url: '<%= HtmlUtil.escapeJS(selectFolderURL.toString()) %>',
+			});
+		});
 	}
 
 	function <portlet:namespace />saveConfiguration() {
 		var form = document.<portlet:namespace />fm;
 
-		Liferay.Util.postForm(
-			form,
-			{
-				data: {
-					mimeTypes: Liferay.Util.listSelect(Liferay.Util.getFormElement(form, 'currentMimeTypes'))
-				}
-			}
-		);
+		Liferay.Util.postForm(form, {
+			data: {
+				mimeTypes: Liferay.Util.listSelect(
+					Liferay.Util.getFormElement(form, 'currentMimeTypes')
+				),
+			},
+		});
 	}
 </script>

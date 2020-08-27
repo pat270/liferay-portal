@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
-import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionParameterAccessor;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionParameterAccessorAware;
@@ -22,27 +21,29 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Leonardo Barros
  */
-@Component(
-	factory = DDMConstants.EXPRESSION_FUNCTION_FACTORY_NAME,
-	service = {
-		DDMExpressionFunction.Function1.class,
-		DDMExpressionParameterAccessorAware.class
-	}
-)
 public class BelongsToRoleFunction
 	implements DDMExpressionFunction.Function1<String[], Boolean>,
 			   DDMExpressionParameterAccessorAware {
+
+	public static final String NAME = "belongsTo";
+
+	public BelongsToRoleFunction(
+		RoleLocalService roleLocalService,
+		UserGroupRoleLocalService userGroupRoleLocalService,
+		UserLocalService userLocalService) {
+
+		this.roleLocalService = roleLocalService;
+		this.userGroupRoleLocalService = userGroupRoleLocalService;
+		this.userLocalService = userLocalService;
+	}
 
 	@Override
 	public Boolean apply(String[] roles) {
@@ -86,9 +87,9 @@ public class BelongsToRoleFunction
 				}
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
@@ -97,7 +98,7 @@ public class BelongsToRoleFunction
 
 	@Override
 	public String getName() {
-		return "belongsTo";
+		return NAME;
 	}
 
 	@Override
@@ -107,13 +108,8 @@ public class BelongsToRoleFunction
 		_ddmExpressionParameterAccessor = ddmExpressionParameterAccessor;
 	}
 
-	@Reference
 	protected RoleLocalService roleLocalService;
-
-	@Reference
 	protected UserGroupRoleLocalService userGroupRoleLocalService;
-
-	@Reference
 	protected UserLocalService userLocalService;
 
 	private static final Log _log = LogFactoryUtil.getLog(

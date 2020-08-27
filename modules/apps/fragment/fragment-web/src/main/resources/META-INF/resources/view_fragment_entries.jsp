@@ -17,7 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-FragmentManagementToolbarDisplayContext fragmentManagementToolbarDisplayContext = new FragmentManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, fragmentDisplayContext);
+FragmentManagementToolbarDisplayContextFactory fragmentManagementToolbarDisplayContextFactory = FragmentManagementToolbarDisplayContextFactory.getInstance();
+
+FragmentManagementToolbarDisplayContext fragmentManagementToolbarDisplayContext = fragmentManagementToolbarDisplayContextFactory.getFragmentManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, fragmentDisplayContext);
 %>
 
 <liferay-ui:error exception="<%= RequiredFragmentEntryException.class %>" message="the-fragment-entry-cannot-be-deleted-because-it-is-required-by-one-or-more-page-templates" />
@@ -31,29 +33,59 @@ FragmentManagementToolbarDisplayContext fragmentManagementToolbarDisplayContext 
 		searchContainer="<%= fragmentDisplayContext.getFragmentEntriesSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
-			className="com.liferay.fragment.model.FragmentEntry"
-			keyProperty="fragmentEntryId"
-			modelVar="fragmentEntry"
+			className="Object"
+			modelVar="object"
 		>
 
 			<%
 			row.setCssClass("card-page-item-asset " + row.getCssClass());
+
+			row.setData(
+				HashMapBuilder.<String, Object>put(
+					"actions", fragmentDisplayContext.getAvailableActions(object)
+				).build());
+
+			FragmentEntryVerticalCardFactory fragmentEntryVerticalCardFactory = FragmentEntryVerticalCardFactory.getInstance();
 			%>
 
 			<liferay-ui:search-container-column-text>
-				<clay:vertical-card
-					verticalCard="<%= new FragmentEntryVerticalCard(fragmentEntry, renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
-				/>
+				<c:choose>
+					<c:when test="<%= object instanceof FragmentComposition %>">
+						<clay:vertical-card
+							verticalCard="<%= fragmentEntryVerticalCardFactory.getVerticalCard((FragmentComposition)object, renderRequest, renderResponse, searchContainer.getRowChecker(), fragmentDisplayContext.getFragmentType()) %>"
+						/>
+					</c:when>
+					<c:otherwise>
+						<clay:vertical-card
+							verticalCard="<%= fragmentEntryVerticalCardFactory.getVerticalCard((FragmentEntry)object, renderRequest, renderResponse, searchContainer.getRowChecker(), fragmentDisplayContext.getFragmentType()) %>"
+						/>
+					</c:otherwise>
+				</c:choose>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
 
 		<liferay-ui:search-iterator
 			displayStyle="icon"
 			markupView="lexicon"
-			resultRowSplitter="<%= fragmentDisplayContext.isSearch() ? null : new FragmentEntryResultRowSplitter() %>"
 			searchResultCssClass="card-page"
 		/>
 	</liferay-ui:search-container>
+</aui:form>
+
+<portlet:actionURL name="/fragment/update_fragment_composition_preview" var="updateFragmentCompositionPreviewURL">
+	<portlet:param name="redirect" value="<%= currentURL %>" />
+</portlet:actionURL>
+
+<aui:form action="<%= updateFragmentCompositionPreviewURL %>" name="fragmentCompositionPreviewFm">
+	<aui:input name="fragmentCompositionId" type="hidden" />
+	<aui:input id="fragmentCompositionFileEntryId" name="fileEntryId" type="hidden" />
+</aui:form>
+
+<aui:form name="fragmentEntryFm">
+	<aui:input name="fragmentCollectionId" type="hidden" />
+	<aui:input name="fragmentCompositionId" type="hidden" />
+	<aui:input name="fragmentCompositionIds" type="hidden" />
+	<aui:input name="fragmentEntryIds" type="hidden" />
 </aui:form>
 
 <portlet:actionURL name="/fragment/update_fragment_entry_preview" var="updateFragmentEntryPreviewURL">
@@ -65,17 +97,15 @@ FragmentManagementToolbarDisplayContext fragmentManagementToolbarDisplayContext 
 	<aui:input name="fileEntryId" type="hidden" />
 </aui:form>
 
-<aui:form name="fragmentEntryFm">
-	<aui:input name="fragmentEntryIds" type="hidden" />
-	<aui:input name="fragmentCollectionId" type="hidden" />
-</aui:form>
+<liferay-frontend:component
+	componentId="<%= FragmentWebKeys.FRAGMENT_COMPOSITION_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
+	module="js/FragmentCompositionDropdownDefaultEventHandler.es"
+/>
 
-<c:if test="<%= FragmentPermission.contains(permissionChecker, scopeGroupId, FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES) %>">
-	<liferay-frontend:component
-		componentId="<%= FragmentWebKeys.FRAGMENT_ENTRY_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
-		module="js/FragmentEntryDropdownDefaultEventHandler.es"
-	/>
-</c:if>
+<liferay-frontend:component
+	componentId="<%= FragmentWebKeys.FRAGMENT_ENTRY_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
+	module="js/FragmentEntryDropdownDefaultEventHandler.es"
+/>
 
 <liferay-frontend:component
 	componentId="<%= fragmentManagementToolbarDisplayContext.getDefaultEventHandler() %>"

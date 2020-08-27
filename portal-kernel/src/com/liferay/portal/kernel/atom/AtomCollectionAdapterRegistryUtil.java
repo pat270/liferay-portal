@@ -27,22 +27,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Igor Spasic
  */
-@ProviderType
 public class AtomCollectionAdapterRegistryUtil {
 
 	public static AtomCollectionAdapter<?> getAtomCollectionAdapter(
 		String collectionName) {
 
-		return _instance._getAtomCollectionAdapter(collectionName);
+		return _atomCollectionAdapterRegistryUtil._getAtomCollectionAdapter(
+			collectionName);
 	}
 
 	public static List<AtomCollectionAdapter<?>> getAtomCollectionAdapters() {
-		return _instance._getAtomCollectionAdapters();
+		return _atomCollectionAdapterRegistryUtil._getAtomCollectionAdapters();
 	}
 
 	private AtomCollectionAdapterRegistryUtil() {
@@ -69,8 +67,9 @@ public class AtomCollectionAdapterRegistryUtil {
 	private static final Log _log = LogFactoryUtil.getLog(
 		AtomCollectionAdapterRegistryUtil.class);
 
-	private static final AtomCollectionAdapterRegistryUtil _instance =
-		new AtomCollectionAdapterRegistryUtil();
+	private static final AtomCollectionAdapterRegistryUtil
+		_atomCollectionAdapterRegistryUtil =
+			new AtomCollectionAdapterRegistryUtil();
 
 	private final Map<String, AtomCollectionAdapter<?>>
 		_atomCollectionAdapters = new ConcurrentHashMap<>();

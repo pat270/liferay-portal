@@ -20,7 +20,6 @@ import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
 import com.liferay.item.selector.criteria.url.criterion.URLItemSelectorCriterion;
 import com.liferay.item.selector.url.web.internal.display.context.ItemSelectorURLViewDisplayContext;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 
 import java.io.IOException;
@@ -70,13 +69,8 @@ public class ItemSelectorURLView
 	}
 
 	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
-	}
-
-	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			URLItemSelectorCriterion urlItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
@@ -89,11 +83,11 @@ public class ItemSelectorURLView
 		ItemSelectorURLViewDisplayContext itemSelectorURLViewDisplayContext =
 			new ItemSelectorURLViewDisplayContext(this, itemSelectedEventName);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			ITEM_SELECTOR_URL_VIEW_DISPLAY_CONTEXT,
 			itemSelectorURLViewDisplayContext);
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	@Reference(
@@ -106,10 +100,7 @@ public class ItemSelectorURLView
 
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new URLItemSelectorReturnType()
-				}));
+			ListUtil.fromArray(new URLItemSelectorReturnType()));
 
 	private ServletContext _servletContext;
 

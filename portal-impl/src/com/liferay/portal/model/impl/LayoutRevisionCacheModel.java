@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing LayoutRevision in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutRevisionCacheModel
 	implements CacheModel<LayoutRevision>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LayoutRevisionCacheModel)) {
+		if (!(object instanceof LayoutRevisionCacheModel)) {
 			return false;
 		}
 
 		LayoutRevisionCacheModel layoutRevisionCacheModel =
-			(LayoutRevisionCacheModel)obj;
+			(LayoutRevisionCacheModel)object;
 
 		if ((layoutRevisionId == layoutRevisionCacheModel.layoutRevisionId) &&
 			(mvccVersion == layoutRevisionCacheModel.mvccVersion)) {
@@ -272,7 +269,9 @@ public class LayoutRevisionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		layoutRevisionId = objectInput.readLong();
@@ -304,12 +303,12 @@ public class LayoutRevisionCacheModel
 		description = objectInput.readUTF();
 		keywords = objectInput.readUTF();
 		robots = objectInput.readUTF();
-		typeSettings = objectInput.readUTF();
+		typeSettings = (String)objectInput.readObject();
 
 		iconImageId = objectInput.readLong();
 		themeId = objectInput.readUTF();
 		colorSchemeId = objectInput.readUTF();
-		css = objectInput.readUTF();
+		css = (String)objectInput.readObject();
 
 		status = objectInput.readInt();
 
@@ -390,10 +389,10 @@ public class LayoutRevisionCacheModel
 		}
 
 		if (typeSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(typeSettings);
+			objectOutput.writeObject(typeSettings);
 		}
 
 		objectOutput.writeLong(iconImageId);
@@ -413,10 +412,10 @@ public class LayoutRevisionCacheModel
 		}
 
 		if (css == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(css);
+			objectOutput.writeObject(css);
 		}
 
 		objectOutput.writeInt(status);

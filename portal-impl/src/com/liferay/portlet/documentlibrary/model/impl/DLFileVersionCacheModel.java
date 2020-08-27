@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DLFileVersion in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DLFileVersionCacheModel
-	implements CacheModel<DLFileVersion>, Externalizable {
+	implements CacheModel<DLFileVersion>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DLFileVersionCacheModel)) {
+		if (!(object instanceof DLFileVersionCacheModel)) {
 			return false;
 		}
 
 		DLFileVersionCacheModel dlFileVersionCacheModel =
-			(DLFileVersionCacheModel)obj;
+			(DLFileVersionCacheModel)object;
 
-		if (fileVersionId == dlFileVersionCacheModel.fileVersionId) {
+		if ((fileVersionId == dlFileVersionCacheModel.fileVersionId) &&
+			(mvccVersion == dlFileVersionCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class DLFileVersionCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, fileVersionId);
+		int hashCode = HashUtil.hash(0, fileVersionId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(57);
+		StringBundler sb = new StringBundler(61);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", fileVersionId=");
 		sb.append(fileVersionId);
@@ -131,6 +147,9 @@ public class DLFileVersionCacheModel
 	@Override
 	public DLFileVersion toEntityModel() {
 		DLFileVersionImpl dlFileVersionImpl = new DLFileVersionImpl();
+
+		dlFileVersionImpl.setMvccVersion(mvccVersion);
+		dlFileVersionImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			dlFileVersionImpl.setUuid("");
@@ -273,7 +292,12 @@ public class DLFileVersionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		fileVersionId = objectInput.readLong();
@@ -299,7 +323,7 @@ public class DLFileVersionCacheModel
 		title = objectInput.readUTF();
 		description = objectInput.readUTF();
 		changeLog = objectInput.readUTF();
-		extraSettings = objectInput.readUTF();
+		extraSettings = (String)objectInput.readObject();
 
 		fileEntryTypeId = objectInput.readLong();
 		version = objectInput.readUTF();
@@ -317,6 +341,10 @@ public class DLFileVersionCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -398,10 +426,10 @@ public class DLFileVersionCacheModel
 		}
 
 		if (extraSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(extraSettings);
+			objectOutput.writeObject(extraSettings);
 		}
 
 		objectOutput.writeLong(fileEntryTypeId);
@@ -438,6 +466,8 @@ public class DLFileVersionCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long fileVersionId;
 	public long groupId;

@@ -15,8 +15,10 @@
 package com.liferay.portal.search.elasticsearch6.internal.search.engine.adapter.search;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.search.GroupBy;
 import com.liferay.portal.kernel.search.Stats;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch6.internal.groupby.GroupByTranslator;
@@ -26,6 +28,8 @@ import com.liferay.portal.search.elasticsearch6.internal.query.QueryToQueryBuild
 import com.liferay.portal.search.elasticsearch6.internal.sort.SortTranslator;
 import com.liferay.portal.search.elasticsearch6.internal.stats.StatsTranslator;
 import com.liferay.portal.search.engine.adapter.search.SearchSearchRequest;
+import com.liferay.portal.search.groupby.GroupByRequest;
+import com.liferay.portal.search.legacy.groupby.GroupByRequestFactory;
 import com.liferay.portal.search.legacy.stats.StatsRequestBuilderFactory;
 import com.liferay.portal.search.sort.Sort;
 import com.liferay.portal.search.sort.SortFieldTranslator;
@@ -34,7 +38,6 @@ import com.liferay.portal.search.stats.StatsRequestBuilder;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
@@ -59,6 +62,7 @@ public class SearchSearchRequestAssemblerImpl
 
 		setFetchSource(searchRequestBuilder, searchSearchRequest);
 		setGroupBy(searchRequestBuilder, searchSearchRequest);
+		setGroupByRequests(searchRequestBuilder, searchSearchRequest);
 		setHighlighter(searchRequestBuilder, searchSearchRequest);
 		setPagination(searchRequestBuilder, searchSearchRequest);
 		setPreference(searchRequestBuilder, searchSearchRequest);
@@ -82,9 +86,21 @@ public class SearchSearchRequestAssemblerImpl
 		SearchRequestBuilder searchRequestBuilder,
 		SearchSearchRequest searchSearchRequest) {
 
-		if (searchSearchRequest.getFetchSource() != null) {
+		if ((searchSearchRequest.getFetchSource() != null) ||
+			(searchSearchRequest.getFetchSourceExcludes() != null) ||
+			(searchSearchRequest.getFetchSourceIncludes() != null)) {
+
+			if (searchSearchRequest.getFetchSource() == null) {
+				searchRequestBuilder.setFetchSource(true);
+			}
+			else {
+				searchRequestBuilder.setFetchSource(
+					searchSearchRequest.getFetchSource());
+			}
+
 			searchRequestBuilder.setFetchSource(
-				searchSearchRequest.getFetchSource());
+				searchSearchRequest.getFetchSourceIncludes(),
+				searchSearchRequest.getFetchSourceExcludes());
 		}
 	}
 
@@ -94,16 +110,43 @@ public class SearchSearchRequestAssemblerImpl
 
 		if (searchSearchRequest.getGroupBy() != null) {
 			_groupByTranslator.translate(
-				searchRequestBuilder, searchSearchRequest.getGroupBy(),
-				searchSearchRequest.getSorts71(),
+				searchRequestBuilder,
+				translate(searchSearchRequest.getGroupBy()),
 				searchSearchRequest.getLocale(),
 				searchSearchRequest.getSelectedFieldNames(),
 				searchSearchRequest.getHighlightFieldNames(),
 				searchSearchRequest.isHighlightEnabled(),
 				searchSearchRequest.isHighlightRequireFieldMatch(),
 				searchSearchRequest.getHighlightFragmentSize(),
-				searchSearchRequest.getHighlightSnippetSize(),
-				searchSearchRequest.getStart(), searchSearchRequest.getSize());
+				searchSearchRequest.getHighlightSnippetSize());
+		}
+	}
+
+	@Reference(unbind = "-")
+	protected void setGroupByRequestFactory(
+		GroupByRequestFactory groupByRequestFactory) {
+
+		_groupByRequestFactory = groupByRequestFactory;
+	}
+
+	protected void setGroupByRequests(
+		SearchRequestBuilder searchRequestBuilder,
+		SearchSearchRequest searchSearchRequest) {
+
+		List<GroupByRequest> groupByRequests =
+			searchSearchRequest.getGroupByRequests();
+
+		if (ListUtil.isNotEmpty(groupByRequests)) {
+			groupByRequests.forEach(
+				groupByRequest -> _groupByTranslator.translate(
+					searchRequestBuilder, groupByRequest,
+					searchSearchRequest.getLocale(),
+					searchSearchRequest.getSelectedFieldNames(),
+					searchSearchRequest.getHighlightFieldNames(),
+					searchSearchRequest.isHighlightEnabled(),
+					searchSearchRequest.isHighlightRequireFieldMatch(),
+					searchSearchRequest.getHighlightFragmentSize(),
+					searchSearchRequest.getHighlightSnippetSize()));
 		}
 	}
 
@@ -173,7 +216,7 @@ public class SearchSearchRequestAssemblerImpl
 
 	@Reference(unbind = "-")
 	protected void setSortFieldTranslator(
-		SortFieldTranslator<SortBuilder> sortFieldTranslator) {
+		SortFieldTranslator<SortBuilder<?>> sortFieldTranslator) {
 
 		_sortFieldTranslator = sortFieldTranslator;
 	}
@@ -182,15 +225,9 @@ public class SearchSearchRequestAssemblerImpl
 		SearchRequestBuilder searchRequestBuilder,
 		SearchSearchRequest searchSearchRequest) {
 
-		List<Sort> sorts = searchSearchRequest.getSorts();
-
-		Stream<Sort> stream = sorts.stream();
-
-		stream.map(
-			_sortFieldTranslator::translate
-		).forEach(
-			searchRequestBuilder::addSort
-		);
+		for (Sort sort : searchSearchRequest.getSorts()) {
+			searchRequestBuilder.addSort(_sortFieldTranslator.translate(sort));
+		}
 
 		_sortTranslator.translate(
 			searchRequestBuilder, searchSearchRequest.getSorts71());
@@ -260,6 +297,10 @@ public class SearchSearchRequestAssemblerImpl
 		}
 	}
 
+	protected GroupByRequest translate(GroupBy groupBy) {
+		return _groupByRequestFactory.getGroupByRequest(groupBy);
+	}
+
 	protected StatsRequest translate(Stats stats) {
 		StatsRequestBuilder statsRequestBuilder =
 			_statsRequestBuilderFactory.getStatsRequestBuilder(stats);
@@ -269,12 +310,13 @@ public class SearchSearchRequestAssemblerImpl
 
 	private CommonSearchRequestBuilderAssembler
 		_commonSearchRequestBuilderAssembler;
+	private GroupByRequestFactory _groupByRequestFactory;
 	private GroupByTranslator _groupByTranslator;
 	private HighlighterTranslator _highlighterTranslator;
 	private final HighlightTranslator _highlightTranslator =
 		new HighlightTranslator();
 	private QueryToQueryBuilderTranslator _queryToQueryBuilderTranslator;
-	private SortFieldTranslator<SortBuilder> _sortFieldTranslator;
+	private SortFieldTranslator<SortBuilder<?>> _sortFieldTranslator;
 	private SortTranslator _sortTranslator;
 	private StatsRequestBuilderFactory _statsRequestBuilderFactory;
 	private StatsTranslator _statsTranslator;

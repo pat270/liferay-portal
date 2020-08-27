@@ -26,15 +26,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Carlos Sierra Andrés
  */
-@Component(
-	immediate = true, property = "name=temp_file",
-	service = OutputStreamContainerFactory.class
-)
 public class TempFileOutputStreamContainerFactory
 	implements OutputStreamContainerFactory {
 
@@ -63,15 +57,15 @@ public class TempFileOutputStreamContainerFactory
 						return StreamUtil.uncloseable(
 							new FileOutputStream(tempFilePath.toFile()));
 					}
-					catch (FileNotFoundException fnfe) {
-						throw new RuntimeException(fnfe);
+					catch (FileNotFoundException fileNotFoundException) {
+						throw new RuntimeException(fileNotFoundException);
 					}
 				}
 
 			};
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 

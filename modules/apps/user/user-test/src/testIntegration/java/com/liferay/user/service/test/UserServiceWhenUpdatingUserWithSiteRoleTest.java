@@ -19,14 +19,13 @@ import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserService;
-import com.liferay.portal.kernel.service.persistence.UserGroupRolePK;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -77,11 +76,12 @@ public class UserServiceWhenUpdatingUserWithSiteRoleTest {
 
 		_role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
 
-		UserGroupRolePK userGroupRolePK = new UserGroupRolePK(
-			_user.getUserId(), _group.getGroupId(), _role.getRoleId());
-
 		UserGroupRole userGroupRole =
-			_userGroupRoleLocalService.createUserGroupRole(userGroupRolePK);
+			_userGroupRoleLocalService.createUserGroupRole(0);
+
+		userGroupRole.setUserId(_user.getUserId());
+		userGroupRole.setGroupId(_group.getGroupId());
+		userGroupRole.setRoleId(_role.getRoleId());
 
 		_user = _updateUser(_user, Collections.singletonList(userGroupRole));
 
@@ -106,14 +106,14 @@ public class UserServiceWhenUpdatingUserWithSiteRoleTest {
 		return _userService.updateUser(
 			user.getUserId(), user.getPassword(), null, null,
 			user.isPasswordReset(), null, null, user.getScreenName(),
-			user.getEmailAddress(), user.getFacebookId(), user.getOpenId(),
-			user.getLanguageId(), user.getTimeZoneId(), user.getGreeting(),
-			user.getComments(), user.getFirstName(), user.getMiddleName(),
-			user.getLastName(), contact.getPrefixId(), contact.getSuffixId(),
-			user.isMale(), birthdayMonth, birthdayDay, birthdayYear,
-			contact.getSmsSn(), contact.getFacebookSn(), contact.getJabberSn(),
-			contact.getSkypeSn(), contact.getTwitterSn(), user.getJobTitle(),
-			null, null, null, userGroupRoles, null, new ServiceContext());
+			user.getEmailAddress(), user.getLanguageId(), user.getTimeZoneId(),
+			user.getGreeting(), user.getComments(), user.getFirstName(),
+			user.getMiddleName(), user.getLastName(), contact.getPrefixId(),
+			contact.getSuffixId(), user.isMale(), birthdayMonth, birthdayDay,
+			birthdayYear, contact.getSmsSn(), contact.getFacebookSn(),
+			contact.getJabberSn(), contact.getSkypeSn(), contact.getTwitterSn(),
+			user.getJobTitle(), null, null, null, userGroupRoles, null,
+			new ServiceContext());
 	}
 
 	@DeleteAfterTestRun

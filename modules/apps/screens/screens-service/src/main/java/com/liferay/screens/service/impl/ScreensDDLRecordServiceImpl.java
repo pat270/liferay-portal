@@ -19,7 +19,8 @@ import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -27,7 +28,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.screens.service.base.ScreensDDLRecordServiceBaseImpl;
@@ -38,9 +38,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author José Manuel Navarro
  */
+@Component(
+	property = {
+		"json.web.service.context.name=screens",
+		"json.web.service.context.path=ScreensDDLRecord"
+	},
+	service = AopService.class
+)
 public class ScreensDDLRecordServiceImpl
 	extends ScreensDDLRecordServiceBaseImpl {
 
@@ -68,14 +78,14 @@ public class ScreensDDLRecordServiceImpl
 	@Override
 	public JSONArray getDDLRecords(
 			long ddlRecordSetId, Locale locale, int start, int end,
-			OrderByComparator<DDLRecord> obc)
+			OrderByComparator<DDLRecord> orderByComparator)
 		throws PortalException {
 
 		_ddlRecordSetModelResourcePermission.check(
 			getPermissionChecker(), ddlRecordSetId, ActionKeys.VIEW);
 
 		List<DDLRecord> ddlRecords = ddlRecordLocalService.getRecords(
-			ddlRecordSetId, start, end, obc);
+			ddlRecordSetId, start, end, orderByComparator);
 
 		return getDDLRecordsJSONArray(ddlRecords, locale);
 	}
@@ -83,14 +93,14 @@ public class ScreensDDLRecordServiceImpl
 	@Override
 	public JSONArray getDDLRecords(
 			long ddlRecordSetId, long userId, Locale locale, int start, int end,
-			OrderByComparator<DDLRecord> obc)
+			OrderByComparator<DDLRecord> orderByComparator)
 		throws PortalException {
 
 		_ddlRecordSetModelResourcePermission.check(
 			getPermissionChecker(), ddlRecordSetId, ActionKeys.VIEW);
 
 		List<DDLRecord> ddlRecords = ddlRecordLocalService.getRecords(
-			ddlRecordSetId, userId, start, end, obc);
+			ddlRecordSetId, userId, start, end, orderByComparator);
 
 		return getDDLRecordsJSONArray(ddlRecords, locale);
 	}
@@ -242,10 +252,10 @@ public class ScreensDDLRecordServiceImpl
 		return fieldValueString;
 	}
 
-	private static volatile ModelResourcePermission<DDLRecordSet>
-		_ddlRecordSetModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				ScreensDDLRecordServiceImpl.class,
-				"_ddlRecordSetModelResourcePermission", DDLRecordSet.class);
+	@Reference(
+		target = "(model.class.name=com.liferay.dynamic.data.lists.model.DDLRecordSet)"
+	)
+	private ModelResourcePermission<DDLRecordSet>
+		_ddlRecordSetModelResourcePermission;
 
 }

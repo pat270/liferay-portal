@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.repository.capabilities.TemporaryFileEntriesCapability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.InetAddressUtil;
@@ -45,8 +46,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -71,7 +71,7 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 			if (!msCognitiveServicesAssetAutoTagProviderCompanyConfiguration.
 					enabled() ||
 				_isTemporary(fileEntry) || (fileEntry.getSize() > _MAX_SIZE) ||
-				!_isSupportedFormat(fileEntry)) {
+				!_isSupportedMimeType(fileEntry.getMimeType())) {
 
 				return Collections.emptyList();
 			}
@@ -80,21 +80,21 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 				msCognitiveServicesAssetAutoTagProviderCompanyConfiguration.
 					apiEndpoint());
 
-			FileVersion fileVersion = fileEntry.getFileVersion();
-
 			JSONObject responseJSONObject = _queryComputerVisionJSONObject(
 				msCognitiveServicesAssetAutoTagProviderCompanyConfiguration.
 					apiEndpoint(),
 				msCognitiveServicesAssetAutoTagProviderCompanyConfiguration.
 					apiKey(),
-				fileVersion);
+				fileEntry.getFileVersion());
 
 			JSONArray tagsJSONArray = responseJSONObject.getJSONArray("tags");
 
 			return JSONUtil.toStringList(tagsJSONArray, "name");
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
+			}
 
 			return Collections.emptyList();
 		}
@@ -123,10 +123,8 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 			fileEntry.getCompanyId());
 	}
 
-	private boolean _isSupportedFormat(FileEntry fileEntry) {
-		String extension = fileEntry.getExtension();
-
-		return _supportedFormats.contains(StringUtil.toUpperCase(extension));
+	private boolean _isSupportedMimeType(String mimeType) {
+		return _supportedMimeTypes.contains(mimeType);
 	}
 
 	private boolean _isTemporary(FileEntry fileEntry) {
@@ -161,13 +159,13 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 			return JSONFactoryUtil.createJSONObject(
 				StringUtil.read(inputStream));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			try (InputStream inputStream = httpURLConnection.getErrorStream()) {
 				throw new PortalException(
 					StringBundler.concat(
 						"Response code ", httpURLConnection.getResponseCode(),
 						":", StringUtil.read(inputStream)),
-					e);
+					exception);
 			}
 		}
 	}
@@ -177,8 +175,9 @@ public class MSCognitiveServicesImageAssetAutoTagProvider
 	private static final Log _log = LogFactoryUtil.getLog(
 		MSCognitiveServicesImageAssetAutoTagProvider.class);
 
-	private static final Set<String> _supportedFormats = new HashSet<>(
-		Arrays.asList("BMP", "GIF", "JPEG", "JPG", "PNG"));
+	private static final List<String> _supportedMimeTypes = Arrays.asList(
+		ContentTypes.IMAGE_BMP, ContentTypes.IMAGE_GIF, ContentTypes.IMAGE_JPEG,
+		ContentTypes.IMAGE_PNG);
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;

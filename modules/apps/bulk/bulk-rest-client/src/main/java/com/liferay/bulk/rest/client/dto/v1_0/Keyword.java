@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class Keyword {
+public class Keyword implements Cloneable {
+
+	public static Keyword toDTO(String json) {
+		return KeywordSerDes.toDTO(json);
+	}
 
 	public String getName() {
 		return name;
@@ -46,6 +50,11 @@ public class Keyword {
 	}
 
 	protected String name;
+
+	@Override
+	public Keyword clone() throws CloneNotSupportedException {
+		return (Keyword)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

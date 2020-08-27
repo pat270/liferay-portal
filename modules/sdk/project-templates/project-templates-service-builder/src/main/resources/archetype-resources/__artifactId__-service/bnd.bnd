@@ -3,12 +3,13 @@ Bundle-SymbolicName: ${package}.service
 Bundle-Version: ${version}
 Liferay-Require-SchemaVersion: 1.0.0
 Liferay-Service: true
-#if (${liferayVersion.startsWith("7.2")})
+#if ((${liferayVersion.startsWith("7.2")} || ${liferayVersion.startsWith("7.3")}) && (${dependencyInjector} == "ds"))
 -dsannotations-options: inherit
 #end
 #if (${buildType} != "gradle")
 -includeresource: META-INF/service.xml=service.xml
 -liferay-service-xml: META-INF/service.xml
+-plugin.metatype: com.liferay.ant.bnd.metatype.MetatypePlugin
 -plugin.service: com.liferay.ant.bnd.service.ServiceAnalyzerPlugin
-#if (${liferayVersion.startsWith("7.0")} || ${liferayVersion.startsWith("7.1")})
+#if (${liferayVersion.startsWith("7.0")} || ${liferayVersion.startsWith("7.1")} || (${dependencyInjector} == "spring"))
 -plugin.spring: com.liferay.ant.bnd.spring.SpringDependencyAnalyzerPlugin#end#end

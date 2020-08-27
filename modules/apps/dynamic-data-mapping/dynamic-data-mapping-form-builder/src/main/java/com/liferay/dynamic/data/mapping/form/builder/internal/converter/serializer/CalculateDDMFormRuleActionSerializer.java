@@ -17,6 +17,8 @@ package com.liferay.dynamic.data.mapping.form.builder.internal.converter.seriali
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action.CalculateDDMFormRuleAction;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleActionSerializer;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -29,7 +31,7 @@ import java.util.stream.Stream;
  * @author Leonardo Barros
  */
 public class CalculateDDMFormRuleActionSerializer
-	implements DDMFormRuleActionSerializer {
+	implements SPIDDMFormRuleActionSerializer {
 
 	public CalculateDDMFormRuleActionSerializer(
 		CalculateDDMFormRuleAction calculateDDMFormRuleAction) {
@@ -39,17 +41,17 @@ public class CalculateDDMFormRuleActionSerializer
 
 	@Override
 	public String serialize(
-		DDMFormRuleSerializerContext ddmFormRuleSerializerContext) {
+		SPIDDMFormRuleSerializerContext spiDDMFormRuleSerializerContext) {
 
-		DDMForm ddmForm = ddmFormRuleSerializerContext.getAttribute("form");
+		DDMForm ddmForm = spiDDMFormRuleSerializerContext.getAttribute("form");
 
-		Map<String, DDMFormField> ddmFormFieldMap = ddmForm.getDDMFormFieldsMap(
-			true);
+		Map<String, DDMFormField> ddmFormFieldsMap =
+			ddmForm.getDDMFormFieldsMap(true);
 
 		String expression = removeBrackets(
 			_calculateDDMFormRuleAction.getExpression());
 
-		Set<String> keySet = ddmFormFieldMap.keySet();
+		Set<String> keySet = ddmFormFieldsMap.keySet();
 
 		Stream<String> ddmFormFieldStream = keySet.stream();
 

@@ -25,7 +25,7 @@ import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.segments.context.Context;
 import com.liferay.segments.model.SegmentsEntry;
-import com.liferay.segments.provider.SegmentsEntryProvider;
+import com.liferay.segments.provider.SegmentsEntryProviderRegistry;
 import com.liferay.segments.service.SegmentsEntryService;
 
 import java.time.LocalDate;
@@ -71,9 +71,10 @@ public class SegmentResourceImpl extends BaseSegmentResourceImpl {
 
 		User user = _userService.getUserById(userAccountId);
 
-		long[] segmentsEntryIds = _segmentsEntryProvider.getSegmentsEntryIds(
-			siteId, user.getModelClassName(), user.getPrimaryKey(),
-			_createSegmentsContext());
+		long[] segmentsEntryIds =
+			_segmentsEntryProviderRegistry.getSegmentsEntryIds(
+				siteId, user.getModelClassName(), user.getPrimaryKey(),
+				_createSegmentsContext());
 
 		return Page.of(
 			transformToList(
@@ -99,10 +100,13 @@ public class SegmentResourceImpl extends BaseSegmentResourceImpl {
 
 			if (key.startsWith("x-")) {
 				context.put(
-					CamelCaseUtil.toCamelCase(key.replace("x-", "")), value);
+					CamelCaseUtil.toCamelCase(
+						StringUtil.removeSubstring(key, "x-")),
+					value);
 			}
 			else if (key.equals("accept-language")) {
-				context.put(Context.LANGUAGE_ID, value.replace("-", "_"));
+				context.put(
+					Context.LANGUAGE_ID, StringUtil.replace(value, '-', '_'));
 			}
 			else if (key.equals("host")) {
 				context.put(Context.URL, value);
@@ -143,7 +147,7 @@ public class SegmentResourceImpl extends BaseSegmentResourceImpl {
 	private HttpHeaders _httpHeaders;
 
 	@Reference
-	private SegmentsEntryProvider _segmentsEntryProvider;
+	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;
 
 	@Reference
 	private SegmentsEntryService _segmentsEntryService;

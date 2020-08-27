@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,10 +33,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperience
  * @generated
  */
-@ProviderType
 public class SegmentsExperienceWrapper
 	extends BaseModelWrapper<SegmentsExperience>
-	implements SegmentsExperience, ModelWrapper<SegmentsExperience> {
+	implements ModelWrapper<SegmentsExperience>, SegmentsExperience {
 
 	public SegmentsExperienceWrapper(SegmentsExperience segmentsExperience) {
 		super(segmentsExperience);
@@ -46,6 +45,8 @@ public class SegmentsExperienceWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("segmentsExperienceId", getSegmentsExperienceId());
 		attributes.put("groupId", getGroupId());
@@ -55,6 +56,7 @@ public class SegmentsExperienceWrapper
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("segmentsEntryId", getSegmentsEntryId());
+		attributes.put("segmentsExperienceKey", getSegmentsExperienceKey());
 		attributes.put("classNameId", getClassNameId());
 		attributes.put("classPK", getClassPK());
 		attributes.put("name", getName());
@@ -67,6 +69,18 @@ public class SegmentsExperienceWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -120,6 +134,13 @@ public class SegmentsExperienceWrapper
 
 		if (segmentsEntryId != null) {
 			setSegmentsEntryId(segmentsEntryId);
+		}
+
+		String segmentsExperienceKey = (String)attributes.get(
+			"segmentsExperienceKey");
+
+		if (segmentsExperienceKey != null) {
+			setSegmentsExperienceKey(segmentsExperienceKey);
 		}
 
 		Long classNameId = (Long)attributes.get("classNameId");
@@ -224,6 +245,16 @@ public class SegmentsExperienceWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this segments experience.
+	 *
+	 * @return the ct collection ID of this segments experience
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public String getDefaultLanguageId() {
 		return model.getDefaultLanguageId();
@@ -257,6 +288,16 @@ public class SegmentsExperienceWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this segments experience.
+	 *
+	 * @return the mvcc version of this segments experience
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -376,6 +417,16 @@ public class SegmentsExperienceWrapper
 	}
 
 	/**
+	 * Returns the segments experience key of this segments experience.
+	 *
+	 * @return the segments experience key of this segments experience
+	 */
+	@Override
+	public String getSegmentsExperienceKey() {
+		return model.getSegmentsExperienceKey();
+	}
+
+	/**
 	 * Returns the user ID of this segments experience.
 	 *
 	 * @return the user ID of this segments experience
@@ -413,6 +464,11 @@ public class SegmentsExperienceWrapper
 	@Override
 	public String getUuid() {
 		return model.getUuid();
+	}
+
+	@Override
+	public boolean hasSegmentsExperiment() {
+		return model.hasSegmentsExperiment();
 	}
 
 	/**
@@ -501,6 +557,16 @@ public class SegmentsExperienceWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this segments experience.
+	 *
+	 * @param ctCollectionId the ct collection ID of this segments experience
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this segments experience.
 	 *
 	 * @param groupId the group ID of this segments experience
@@ -528,6 +594,16 @@ public class SegmentsExperienceWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments experience.
+	 *
+	 * @param mvccVersion the mvcc version of this segments experience
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -634,6 +710,16 @@ public class SegmentsExperienceWrapper
 	}
 
 	/**
+	 * Sets the segments experience key of this segments experience.
+	 *
+	 * @param segmentsExperienceKey the segments experience key of this segments experience
+	 */
+	@Override
+	public void setSegmentsExperienceKey(String segmentsExperienceKey) {
+		model.setSegmentsExperienceKey(segmentsExperienceKey);
+	}
+
+	/**
 	 * Sets the user ID of this segments experience.
 	 *
 	 * @param userId the user ID of this segments experience
@@ -671,6 +757,20 @@ public class SegmentsExperienceWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<SegmentsExperience, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<SegmentsExperience, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

@@ -20,10 +20,16 @@
 >
 
 	<%
-	String localizedName = LanguageUtil.get(request, name);
+	String localizedName = name;
 
-	if (name.equals(localizedName)) {
-		localizedName = TextFormatter.format(name, TextFormatter.J);
+	boolean propertyLocalizeFieldName = GetterUtil.getBoolean(typeSettings.getProperty(ExpandoColumnConstants.PROPERTY_LOCALIZE_FIELD_NAME), true);
+
+	if (propertyLocalizeFieldName) {
+		localizedName = LanguageUtil.get(request, name);
+
+		if (name.equals(localizedName)) {
+			localizedName = TextFormatter.format(name, TextFormatter.J);
+		}
 	}
 	%>
 

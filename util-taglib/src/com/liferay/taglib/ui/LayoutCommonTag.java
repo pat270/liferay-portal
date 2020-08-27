@@ -51,13 +51,16 @@ public class LayoutCommonTag extends IncludeTag {
 
 	@Override
 	protected boolean isCleanUpSetAttributes() {
-		return _CLEAN_UP_SET_ATTRIBUTES;
+		return super.isCleanUpSetAttributes();
 	}
 
 	@Override
 	protected int processEndTag() throws Exception {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		if (!themeDisplay.isStatePopUp()) {
 			if (!themeDisplay.isStateExclusive() && !themeDisplay.isWidget()) {
@@ -79,7 +82,8 @@ public class LayoutCommonTag extends IncludeTag {
 						company.getCompanyId(), portletId)) {
 
 					RuntimeTag.doTag(
-						portletId, pageContext, request, httpServletResponse);
+						portletId, pageContext, httpServletRequest,
+						httpServletResponse);
 				}
 			}
 		}
@@ -101,9 +105,9 @@ public class LayoutCommonTag extends IncludeTag {
 		}
 
 		jspWriter.write(
-			"<form action=\"#\" class=\"hide\" id=\"hrefFm\" method=\"post\" " +
-				"name=\"hrefFm\"><span></span><input hidden type=\"submit\"/>" +
-					"</form>");
+			"<form action=\"#\" aria-hidden=\"true\" class=\"hide\" " +
+				"id=\"hrefFm\" method=\"post\" name=\"hrefFm\"><span>" +
+					"</span><input hidden type=\"submit\"/></form>");
 
 		return EVAL_PAGE;
 	}
@@ -111,8 +115,6 @@ public class LayoutCommonTag extends IncludeTag {
 	@Override
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
 	}
-
-	private static final boolean _CLEAN_UP_SET_ATTRIBUTES = true;
 
 	private static final String[] _LAYOUT_STATIC_PORTLETS_ALL =
 		PropsUtil.getArray(PropsKeys.LAYOUT_STATIC_PORTLETS_ALL);

@@ -16,6 +16,7 @@ package com.liferay.portal.template.soy.internal.data;
 
 import com.liferay.portal.template.soy.data.SoyDataFactory;
 import com.liferay.portal.template.soy.data.SoyHTMLData;
+import com.liferay.portal.template.soy.util.SoyRawData;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -25,9 +26,19 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = SoyDataFactory.class)
 public class SoyDataFactoryImpl implements SoyDataFactory {
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #createSoyRawData(String)}
+	 */
+	@Deprecated
 	@Override
 	public SoyHTMLData createSoyHTMLData(String html) {
 		return new SoyHTMLDataImpl(html);
+	}
+
+	@Override
+	public SoyRawData createSoyRawData(String html) {
+		return new SoyRawDataImpl(html);
 	}
 
 }

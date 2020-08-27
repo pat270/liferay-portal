@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.liferay.multi.factor.authentication.timebased.otp.model.MFATimeBasedOTPEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="mfaTimeBasedOTPEntryId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="failedAttempts" type="int" />
+		<field name="lastFailDate" type="Date" />
+		<field name="lastFailIP" type="String" />
+		<field name="lastSuccessDate" type="Date" />
+		<field name="lastSuccessIP" type="String" />
+		<field name="sharedSecret" type="String" />
+	</model>
+</model-hints>

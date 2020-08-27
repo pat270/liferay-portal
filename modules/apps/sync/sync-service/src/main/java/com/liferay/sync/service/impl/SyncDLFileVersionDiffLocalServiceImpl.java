@@ -17,25 +17,33 @@ package com.liferay.sync.service.impl;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.sync.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.model.SyncDLFileVersionDiff;
 import com.liferay.sync.service.base.SyncDLFileVersionDiffLocalServiceBaseImpl;
-import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
 
 import java.io.File;
 
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Dennis Ju
  */
+@Component(
+	property = "model.class.name=com.liferay.sync.model.SyncDLFileVersionDiff",
+	service = AopService.class
+)
 public class SyncDLFileVersionDiffLocalServiceImpl
 	extends SyncDLFileVersionDiffLocalServiceBaseImpl {
 
@@ -62,7 +70,7 @@ public class SyncDLFileVersionDiffLocalServiceImpl
 		String dataFileName = getDataFileName(
 			fileEntryId, sourceFileVersionId, targetFileVersionId);
 
-		FileEntry dataFileEntry = PortletFileRepositoryUtil.addPortletFileEntry(
+		FileEntry dataFileEntry = _portletFileRepository.addPortletFileEntry(
 			company.getGroupId(), fileEntry.getUserId(),
 			SyncDLFileVersionDiff.class.getName(),
 			syncDLFileVersionDiff.getSyncDLFileVersionDiffId(),
@@ -77,16 +85,15 @@ public class SyncDLFileVersionDiffLocalServiceImpl
 
 		Date expirationDate = new Date();
 
-		expirationDate.setTime(
-			expirationDate.getTime() +
-				SyncServiceConfigurationValues.
-					SYNC_FILE_DIFF_CACHE_EXPIRATION_TIME * 3600000);
+		long cacheExpirationTime =
+			SyncServiceConfigurationValues.
+				SYNC_FILE_DIFF_CACHE_EXPIRATION_TIME * 3600000;
+
+		expirationDate.setTime(expirationDate.getTime() + cacheExpirationTime);
 
 		syncDLFileVersionDiff.setExpirationDate(expirationDate);
 
-		syncDLFileVersionDiffPersistence.update(syncDLFileVersionDiff);
-
-		return syncDLFileVersionDiff;
+		return syncDLFileVersionDiffPersistence.update(syncDLFileVersionDiff);
 	}
 
 	@Override
@@ -107,10 +114,10 @@ public class SyncDLFileVersionDiffLocalServiceImpl
 		throws PortalException {
 
 		try {
-			PortletFileRepositoryUtil.deletePortletFileEntry(
+			_portletFileRepository.deletePortletFileEntry(
 				syncDLFileVersionDiff.getDataFileEntryId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to delete file entry " +
@@ -153,10 +160,11 @@ public class SyncDLFileVersionDiffLocalServiceImpl
 
 		Date expirationDate = new Date();
 
-		expirationDate.setTime(
-			expirationDate.getTime() +
-				SyncServiceConfigurationValues.
-					SYNC_FILE_DIFF_CACHE_EXPIRATION_TIME * 3600000);
+		long cacheExpirationTime =
+			SyncServiceConfigurationValues.
+				SYNC_FILE_DIFF_CACHE_EXPIRATION_TIME * 3600000;
+
+		expirationDate.setTime(expirationDate.getTime() + cacheExpirationTime);
 
 		syncDLFileVersionDiff.setExpirationDate(expirationDate);
 
@@ -179,5 +187,8 @@ public class SyncDLFileVersionDiffLocalServiceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SyncDLFileVersionDiffLocalServiceImpl.class);
+
+	@Reference
+	private PortletFileRepository _portletFileRepository;
 
 }

@@ -1,4 +1,4 @@
-@import "bourbon";
+@import 'atlas-variables';
 
 .portlet-login {
 	.form {
@@ -8,20 +8,21 @@
 			padding: 0;
 		}
 
-		.button-holder, .form-column {
+		.button-holder,
+		.form-column {
 			margin-bottom: 10px;
 		}
 	}
 
 	.navigation {
-		background: #EEE;
-		border-top: 1px solid #BFBFBF;
+		background: #eee;
+		border-top: 1px solid #bfbfbf;
 		padding: 10px;
 	}
 
 	.signed-in {
 		display: inline-block;
 
-		@include hyphens;
+		@include hyphens();
 	}
 }

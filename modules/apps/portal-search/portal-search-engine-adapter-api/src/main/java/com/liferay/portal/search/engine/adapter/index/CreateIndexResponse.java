@@ -14,16 +14,23 @@
 
 package com.liferay.portal.search.engine.adapter.index;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class CreateIndexResponse implements IndexResponse {
 
 	public CreateIndexResponse(boolean acknowledged) {
 		_acknowledged = acknowledged;
+		_indexName = null;
+	}
+
+	public CreateIndexResponse(boolean acknowledged, String indexName) {
+		_acknowledged = acknowledged;
+		_indexName = indexName;
+	}
+
+	public String getIndexName() {
+		return _indexName;
 	}
 
 	public boolean isAcknowledged() {
@@ -31,5 +38,6 @@ public class CreateIndexResponse implements IndexResponse {
 	}
 
 	private final boolean _acknowledged;
+	private final String _indexName;
 
 }

@@ -66,7 +66,7 @@
 </tr>
 <tr>
 	<td>EMAIL_ADDRESS_VERIFICATION_URL</td>
-	<td>//div[@class='msg']/a</td>
+	<td>//div[@class='msg']//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -144,6 +144,11 @@
 <tr>
 	<td>GMAIL_HTML_MODE_BACK_TO_INBOX_LINK</td>
 	<td>//a[contains(.,'Back to Inbox')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GMAIL_HTML_MODE_REFRESH</td>
+	<td>//a[contains(.,'Refresh')]</td>
 	<td></td>
 </tr>
 <tr>

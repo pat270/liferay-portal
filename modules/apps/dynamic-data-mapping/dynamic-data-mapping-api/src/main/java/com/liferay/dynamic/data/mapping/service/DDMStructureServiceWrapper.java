@@ -14,9 +14,8 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link DDMStructureService}.
@@ -25,7 +24,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMStructureService
  * @generated
  */
-@ProviderType
 public class DDMStructureServiceWrapper
 	implements DDMStructureService, ServiceWrapper<DDMStructureService> {
 
@@ -34,7 +32,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure addStructure(
+	public DDMStructure addStructure(
 			long groupId, long parentStructureId, long classNameId,
 			String structureKey,
 			java.util.Map<java.util.Locale, String> nameMap,
@@ -52,7 +50,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure addStructure(
+	public DDMStructure addStructure(
 			long groupId, long classNameId,
 			java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,
@@ -68,7 +66,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure addStructure(
+	public DDMStructure addStructure(
 			long groupId, String parentStructureKey, long classNameId,
 			String structureKey,
 			java.util.Map<java.util.Locale, String> nameMap,
@@ -100,7 +98,7 @@ public class DDMStructureServiceWrapper
 	 * @return the new structure
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure copyStructure(
+	public DDMStructure copyStructure(
 			long structureId, java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -111,7 +109,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure copyStructure(
+	public DDMStructure copyStructure(
 			long structureId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -148,7 +146,7 @@ public class DDMStructureServiceWrapper
 	 structure could not be found
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure fetchStructure(
+	public DDMStructure fetchStructure(
 			long groupId, long classNameId, String structureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -157,7 +155,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure fetchStructure(
+	public DDMStructure fetchStructure(
 			long groupId, long classNameId, String structureKey,
 			boolean includeAncestorStructures)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -183,8 +181,7 @@ public class DDMStructureServiceWrapper
 	 * @return the structure with the ID
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure getStructure(
-			long structureId)
+	public DDMStructure getStructure(long structureId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ddmStructureService.getStructure(structureId);
@@ -201,7 +198,7 @@ public class DDMStructureServiceWrapper
 	 * @return the matching structure
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure getStructure(
+	public DDMStructure getStructure(
 			long groupId, long classNameId, String structureKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -231,7 +228,7 @@ public class DDMStructureServiceWrapper
 	 * @return the matching structure
 	 */
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure getStructure(
+	public DDMStructure getStructure(
 			long groupId, long classNameId, String structureKey,
 			boolean includeAncestorStructures)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -241,22 +238,19 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
-		getStructures(
-			long companyId, long[] groupIds, long classNameId, int status) {
+	public java.util.List<DDMStructure> getStructures(
+		long companyId, long[] groupIds, long classNameId, int status) {
 
 		return _ddmStructureService.getStructures(
 			companyId, groupIds, classNameId, status);
 	}
 
 	@Override
-	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
-		getStructures(
-			long companyId, long[] groupIds, long classNameId, int status,
-			int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMStructure>
-					orderByComparator) {
+	public java.util.List<DDMStructure> getStructures(
+		long companyId, long[] groupIds, long classNameId, int status,
+		int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMStructure>
+			orderByComparator) {
 
 		return _ddmStructureService.getStructures(
 			companyId, groupIds, classNameId, status, start, end,
@@ -264,16 +258,25 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
-		getStructures(
-			long companyId, long[] groupIds, long classNameId, int start,
-			int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMStructure>
-					orderByComparator) {
+	public java.util.List<DDMStructure> getStructures(
+		long companyId, long[] groupIds, long classNameId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMStructure>
+			orderByComparator) {
 
 		return _ddmStructureService.getStructures(
 			companyId, groupIds, classNameId, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<DDMStructure> getStructures(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMStructure>
+			orderByComparator) {
+
+		return _ddmStructureService.getStructures(
+			companyId, groupIds, classNameId, keywords, status, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -282,6 +285,15 @@ public class DDMStructureServiceWrapper
 
 		return _ddmStructureService.getStructuresCount(
 			companyId, groupIds, classNameId);
+	}
+
+	@Override
+	public int getStructuresCount(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status) {
+
+		return _ddmStructureService.getStructuresCount(
+			companyId, groupIds, classNameId, keywords, status);
 	}
 
 	@Override
@@ -315,7 +327,7 @@ public class DDMStructureServiceWrapper
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param start the lower bound of the range of structures to return
 	 * @param end the upper bound of the range of structures to return (not
@@ -325,13 +337,11 @@ public class DDMStructureServiceWrapper
 	 * @return the range of matching structures ordered by the comparator
 	 */
 	@Override
-	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
-		search(
-			long companyId, long[] groupIds, long classNameId, String keywords,
-			int type, int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMStructure>
-					orderByComparator) {
+	public java.util.List<DDMStructure> search(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int type, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMStructure>
+			orderByComparator) {
 
 		return _ddmStructureService.search(
 			companyId, groupIds, classNameId, keywords, type, status, start,
@@ -367,13 +377,11 @@ public class DDMStructureServiceWrapper
 	 * @return the range of matching structures ordered by the comparator
 	 */
 	@Override
-	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
-		search(
-			long companyId, long[] groupIds, long classNameId, String keywords,
-			int status, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMStructure>
-					orderByComparator) {
+	public java.util.List<DDMStructure> search(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMStructure>
+			orderByComparator) {
 
 		return _ddmStructureService.search(
 			companyId, groupIds, classNameId, keywords, status, start, end,
@@ -403,7 +411,7 @@ public class DDMStructureServiceWrapper
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
@@ -415,14 +423,12 @@ public class DDMStructureServiceWrapper
 	 * @return the range of matching structures ordered by the comparator
 	 */
 	@Override
-	public java.util.List<com.liferay.dynamic.data.mapping.model.DDMStructure>
-		search(
-			long companyId, long[] groupIds, long classNameId, String name,
-			String description, String storageType, int type, int status,
-			boolean andOperator, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.mapping.model.DDMStructure>
-					orderByComparator) {
+	public java.util.List<DDMStructure> search(
+		long companyId, long[] groupIds, long classNameId, String name,
+		String description, String storageType, int type, int status,
+		boolean andOperator, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<DDMStructure>
+			orderByComparator) {
 
 		return _ddmStructureService.search(
 			companyId, groupIds, classNameId, name, description, storageType,
@@ -462,7 +468,7 @@ public class DDMStructureServiceWrapper
 	 * @param keywords the keywords (space separated), which may occur in the
 	 structure's name or description (optionally <code>null</code>)
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param status the workflow's status.
 	 * @return the number of matching structures
 	 */
@@ -489,7 +495,7 @@ public class DDMStructureServiceWrapper
 	 "expando". For more information, see {@link
 	 com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param type the structure's type. For more information, see {@link
-	 com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param andOperator whether every field must match its keywords, or just
 	 one field
 	 * @return the number of matching structures
@@ -506,7 +512,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure updateStructure(
+	public DDMStructure updateStructure(
 			long groupId, long parentStructureId, long classNameId,
 			String structureKey,
 			java.util.Map<java.util.Locale, String> nameMap,
@@ -522,7 +528,7 @@ public class DDMStructureServiceWrapper
 	}
 
 	@Override
-	public com.liferay.dynamic.data.mapping.model.DDMStructure updateStructure(
+	public DDMStructure updateStructure(
 			long structureId, long parentStructureId,
 			java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,

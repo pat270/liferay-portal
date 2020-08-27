@@ -1,9 +1,38 @@
 Bundle-Name: Liferay Dynamic Data Mapping Service
 Bundle-SymbolicName: com.liferay.dynamic.data.mapping.service
-Bundle-Version: 5.0.0
-Liferay-Require-SchemaVersion: 3.1.0
+Bundle-Version: 5.3.0
+Export-Package: com.liferay.dynamic.data.mapping.service.http
+Import-Package:\
+	com.github.*;resolution:=optional,\
+	\
+	com.graphbuilder.*;resolution:=optional,\
+	\
+	com.microsoft.schemas.office.powerpoint.*;resolution:=optional,\
+	com.microsoft.schemas.office.word.*;resolution:=optional,\
+	\
+	com.sun.*;resolution:=optional,\
+	\
+	net.sf.*;resolution:=optional,\
+	\
+	org.apache.batik.*;resolution:=optional,\
+	org.apache.commons.math3.*;resolution:=optional,\
+	org.apache.jcp.*;resolution:=optional,\
+	\
+	org.bouncycastle.*;resolution:=optional,\
+	\
+	org.brotli.*;resolution:=optional,\
+	\
+	org.etsi.*;resolution:=optional,\
+	\
+	org.openxmlformats.schemas.*;resolution:=optional,\
+	\
+	org.tukaani.*;resolution:=optional,\
+	\
+	*
+Liferay-Require-SchemaVersion: 3.8.1
 Liferay-Service: true
 Provide-Capability:\
 	liferay.resource.bundle;\
 		resource.bundle.aggregate:String="(bundle.symbolic.name=com.liferay.dynamic.data.mapping.lang)";\
 		resource.bundle.base.name="content.Language"
+-dsannotations-options: inherit

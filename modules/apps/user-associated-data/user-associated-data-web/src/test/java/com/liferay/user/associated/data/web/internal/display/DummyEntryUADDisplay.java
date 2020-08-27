@@ -29,6 +29,11 @@ public class DummyEntryUADDisplay extends DummyUADDisplay<DummyEntry> {
 	}
 
 	@Override
+	public boolean isInTrash(DummyEntry dummyEntry) {
+		return false;
+	}
+
+	@Override
 	protected DummyService<DummyEntry> getDummyService() {
 		return _dummyEntryService;
 	}

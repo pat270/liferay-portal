@@ -31,8 +31,7 @@
 		</requiredProperty>
 		<requiredProperty key="hostBundleVersion">
 		</requiredProperty>
-		<requiredProperty key="projectType">
-			<defaultValue>standalone</defaultValue>
+		<requiredProperty key="liferayVersion">
 		</requiredProperty>
 	</requiredProperties>
 </archetype-descriptor>

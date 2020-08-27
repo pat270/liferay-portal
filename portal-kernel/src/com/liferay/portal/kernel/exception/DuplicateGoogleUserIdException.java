@@ -14,12 +14,9 @@
 
 package com.liferay.portal.kernel.exception;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateGoogleUserIdException extends PortalException {
 
 	public DuplicateGoogleUserIdException() {
@@ -29,12 +26,12 @@ public class DuplicateGoogleUserIdException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateGoogleUserIdException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateGoogleUserIdException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateGoogleUserIdException(Throwable cause) {
-		super(cause);
+	public DuplicateGoogleUserIdException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

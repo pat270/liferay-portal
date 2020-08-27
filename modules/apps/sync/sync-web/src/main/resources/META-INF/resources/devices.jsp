@@ -72,7 +72,7 @@ portletURL.setParameter("delta", String.valueOf(delta));
 	</c:if>
 </liferay-frontend:management-bar>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form method="post" name="fm">
 		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 
@@ -84,7 +84,7 @@ portletURL.setParameter("delta", String.valueOf(delta));
 			<%
 			List<SyncDevice> syncDevices = new ArrayList<>();
 
-			OrderByComparator orderByComparator = null;
+			OrderByComparator<SyncDevice> orderByComparator = null;
 
 			if (orderByCol.equals("name")) {
 				orderByComparator = OrderByComparatorFactoryUtil.create("SyncDevice", "userName", orderByType.equals("asc"));
@@ -96,7 +96,7 @@ portletURL.setParameter("delta", String.valueOf(delta));
 				orderByComparator = OrderByComparatorFactoryUtil.create("SyncDevice", "modifiedDate", orderByType.equals("asc"));
 			}
 			else {
-				OrderByComparatorFactoryUtil.create("SyncDevice", orderByCol, orderByType.equals("asc"));
+				orderByComparator = OrderByComparatorFactoryUtil.create("SyncDevice", orderByCol, orderByType.equals("asc"));
 			}
 
 			String portletId = (String)request.getAttribute(WebKeys.PORTLET_ID);
@@ -163,4 +163,4 @@ portletURL.setParameter("delta", String.valueOf(delta));
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>

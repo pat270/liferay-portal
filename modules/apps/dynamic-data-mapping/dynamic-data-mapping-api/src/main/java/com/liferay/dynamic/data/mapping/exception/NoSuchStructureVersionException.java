@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchStructureVersionException extends NoSuchModelException {
 
 	public NoSuchStructureVersionException() {
@@ -31,12 +28,12 @@ public class NoSuchStructureVersionException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchStructureVersionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchStructureVersionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchStructureVersionException(Throwable cause) {
-		super(cause);
+	public NoSuchStructureVersionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

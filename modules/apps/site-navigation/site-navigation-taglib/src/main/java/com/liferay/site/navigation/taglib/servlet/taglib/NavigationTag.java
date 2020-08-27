@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateManagerUtil;
 import com.liferay.portal.kernel.theme.NavItem;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
@@ -31,9 +32,7 @@ import com.liferay.site.navigation.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.site.navigation.taglib.internal.util.NavItemUtil;
 import com.liferay.taglib.util.IncludeTag;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -108,25 +107,28 @@ public class NavigationTag extends IncludeTag {
 				request, _rootLayoutType, _rootLayoutLevel, _rootLayoutUuid,
 				branchNavItems);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		HttpServletResponse httpServletResponse =
 			(HttpServletResponse)pageContext.getResponse();
 
-		Map<String, Object> contextObjects = new HashMap<>();
-
-		contextObjects.put("branchNavItems", branchNavItems);
-		contextObjects.put("displayDepth", _displayDepth);
-		contextObjects.put("includedLayouts", _includedLayouts);
-		contextObjects.put("preview", _preview);
-		contextObjects.put("rootLayoutLevel", _rootLayoutLevel);
-		contextObjects.put("rootLayoutType", _rootLayoutType);
-
 		String result = portletDisplayTemplate.renderDDMTemplate(
 			request, httpServletResponse, portletDisplayDDMTemplate, navItems,
-			contextObjects);
+			HashMapBuilder.<String, Object>put(
+				"branchNavItems", branchNavItems
+			).put(
+				"displayDepth", _displayDepth
+			).put(
+				"includedLayouts", _includedLayouts
+			).put(
+				"preview", _preview
+			).put(
+				"rootLayoutLevel", _rootLayoutLevel
+			).put(
+				"rootLayoutType", _rootLayoutType
+			).build());
 
 		JspWriter jspWriter = pageContext.getOut();
 
@@ -213,18 +215,6 @@ public class NavigationTag extends IncludeTag {
 			WebKeys.THEME_DISPLAY);
 
 		return themeDisplay.getScopeGroupId();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected List<NavItem> getNavItems(List<NavItem> branchNavItems)
-		throws Exception {
-
-		return NavItemUtil.getNavItems(
-			request, _rootLayoutType, _rootLayoutLevel, _rootLayoutUuid,
-			branchNavItems);
 	}
 
 	@Override

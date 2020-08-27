@@ -1,9 +1,33 @@
+buildscript {
+	dependencies {
+		classpath(group: "com.liferay", name: "com.liferay.gradle.plugins", version: "11.0.27") {
+			exclude group: "com.liferay", module: "com.liferay.gradle.util"
+		}
+	}
+
+	repositories {
+		maven {
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
+		}
+	}
+}
+
 apply plugin: "com.liferay.target.platform"
 
 task checkApi
 task checkPortlet
 task checkService
 task runGradleTest
+
+allprojects {
+	apply plugin: "com.liferay.plugin"
+
+	repositories {
+		maven {
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
+		}
+	}
+}
 
 checkApi {
 	dependsOn ":modules:foo-api:resolve"
@@ -45,11 +69,11 @@ checkService {
 }
 
 dependencies {
-	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom", version: "7.1.3"
-	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.compile.only", version: "7.1.3"
-	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.third.party", version: "7.1.3"
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom", version: "7.2.1"
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.compile.only", version: "7.2.1"
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.third.party", version: "7.2.1"
 
-	targetPlatformDistro group: "com.liferay.portal", name: "release.portal.distro", version: "7.1.3"
+	targetPlatformDistro group: "com.liferay.portal", name: "release.portal.distro", version: "7.2.1"
 }
 
 runGradleTest {

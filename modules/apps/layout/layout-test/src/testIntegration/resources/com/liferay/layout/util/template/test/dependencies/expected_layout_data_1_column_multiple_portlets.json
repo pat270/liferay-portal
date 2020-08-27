@@ -1,0 +1,292 @@
+{
+	"items": {
+		"ROOT": {
+			"children": [
+				"ROOT-CONTAINER0"
+			],
+			"config": {
+			},
+			"itemId": "ROOT",
+			"parentId": "",
+			"type": "root"
+		},
+		"ROOT-CONTAINER0": {
+			"children": [
+				"ROOT-CONTAINER0-ROW0"
+			],
+			"config": {
+				"landscapeMobile": {
+					"styles": {
+					}
+				},
+				"portraitMobile": {
+					"styles": {
+					}
+				},
+				"styles": {
+					"backgroundImage": {
+					},
+					"borderRadius": "rounded-0",
+					"borderWidth": 0,
+					"fontFamily": "sans-serif",
+					"fontSize": "medium",
+					"fontWeight": "font-weight-normal",
+					"height": "",
+					"marginBottom": "0",
+					"marginLeft": "0",
+					"marginRight": "0",
+					"marginTop": "0",
+					"maxHeight": "",
+					"maxWidth": "",
+					"minHeight": "",
+					"minWidth": "",
+					"opacity": 100,
+					"overflow": "visible",
+					"paddingBottom": "0",
+					"paddingLeft": "0",
+					"paddingRight": "0",
+					"paddingTop": "0",
+					"shadow": "shadow-none",
+					"textAlign": "none",
+					"width": ""
+				},
+				"tablet": {
+					"styles": {
+					}
+				},
+				"widthType": "fluid"
+			},
+			"itemId": "ROOT-CONTAINER0",
+			"parentId": "ROOT",
+			"type": "container"
+		},
+		"ROOT-CONTAINER0-ROW0": {
+			"children": [
+				"ROOT-CONTAINER0-ROW0-COLUMN0"
+			],
+			"config": {
+				"gutters": true,
+				"landscapeMobile": {
+					"gutters": true,
+					"modulesPerRow": 1,
+					"numberOfColumns": 1,
+					"reverseOrder": false,
+					"verticalAlignment": "top"
+				},
+				"modulesPerRow": 1,
+				"numberOfColumns": 1,
+				"portraitMobile": {
+					"gutters": true,
+					"modulesPerRow": 1,
+					"numberOfColumns": 1,
+					"reverseOrder": false,
+					"verticalAlignment": "top"
+				},
+				"reverseOrder": false,
+				"styles": {
+					"backgroundImage": {
+					},
+					"borderRadius": "rounded-0",
+					"borderWidth": 0,
+					"fontFamily": "sans-serif",
+					"fontSize": "medium",
+					"fontWeight": "font-weight-normal",
+					"height": "",
+					"marginBottom": "0",
+					"marginLeft": "0",
+					"marginRight": "0",
+					"marginTop": "0",
+					"maxHeight": "",
+					"maxWidth": "",
+					"minHeight": "",
+					"minWidth": "",
+					"opacity": 100,
+					"overflow": "visible",
+					"paddingBottom": "0",
+					"paddingLeft": "0",
+					"paddingRight": "0",
+					"paddingTop": "0",
+					"shadow": "shadow-none",
+					"textAlign": "none",
+					"width": ""
+				},
+				"tablet": {
+					"gutters": true,
+					"modulesPerRow": 1,
+					"numberOfColumns": 1,
+					"reverseOrder": false,
+					"verticalAlignment": "top"
+				},
+				"verticalAlignment": "top"
+			},
+			"itemId": "ROOT-CONTAINER0-ROW0",
+			"parentId": "ROOT-CONTAINER0",
+			"type": "row"
+		},
+		"ROOT-CONTAINER0-ROW0-COLUMN0": {
+			"children": [
+				"ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT0",
+				"ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT1",
+				"ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT2"
+			],
+			"config": {
+				"size": 12
+			},
+			"itemId": "ROOT-CONTAINER0-ROW0-COLUMN0",
+			"parentId": "ROOT-CONTAINER0-ROW0",
+			"type": "column"
+		},
+		"ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT0": {
+			"children": [
+			],
+			"config": {
+				"fragmentEntryLinkId": "column-1:${TEST_PORTLET_NAME_1}",
+				"landscapeMobile": {
+					"styles": {
+					}
+				},
+				"portraitMobile": {
+					"styles": {
+					}
+				},
+				"styles": {
+					"backgroundImage": {
+					},
+					"borderRadius": "rounded-0",
+					"borderWidth": 0,
+					"fontFamily": "sans-serif",
+					"fontSize": "medium",
+					"fontWeight": "font-weight-normal",
+					"height": "",
+					"marginBottom": "0",
+					"marginLeft": "0",
+					"marginRight": "0",
+					"marginTop": "0",
+					"maxHeight": "",
+					"maxWidth": "",
+					"minHeight": "",
+					"minWidth": "",
+					"opacity": 100,
+					"overflow": "visible",
+					"paddingBottom": "0",
+					"paddingLeft": "0",
+					"paddingRight": "0",
+					"paddingTop": "0",
+					"shadow": "shadow-none",
+					"textAlign": "none",
+					"width": ""
+				},
+				"tablet": {
+					"styles": {
+					}
+				}
+			},
+			"itemId": "ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT0",
+			"parentId": "ROOT-CONTAINER0-ROW0-COLUMN0",
+			"type": "fragment"
+		},
+		"ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT1": {
+			"children": [
+			],
+			"config": {
+				"fragmentEntryLinkId": "column-1:${TEST_PORTLET_NAME_2}",
+				"landscapeMobile": {
+					"styles": {
+					}
+				},
+				"portraitMobile": {
+					"styles": {
+					}
+				},
+				"styles": {
+					"backgroundImage": {
+					},
+					"borderRadius": "rounded-0",
+					"borderWidth": 0,
+					"fontFamily": "sans-serif",
+					"fontSize": "medium",
+					"fontWeight": "font-weight-normal",
+					"height": "",
+					"marginBottom": "0",
+					"marginLeft": "0",
+					"marginRight": "0",
+					"marginTop": "0",
+					"maxHeight": "",
+					"maxWidth": "",
+					"minHeight": "",
+					"minWidth": "",
+					"opacity": 100,
+					"overflow": "visible",
+					"paddingBottom": "0",
+					"paddingLeft": "0",
+					"paddingRight": "0",
+					"paddingTop": "0",
+					"shadow": "shadow-none",
+					"textAlign": "none",
+					"width": ""
+				},
+				"tablet": {
+					"styles": {
+					}
+				}
+			},
+			"itemId": "ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT1",
+			"parentId": "ROOT-CONTAINER0-ROW0-COLUMN0",
+			"type": "fragment"
+		},
+		"ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT2": {
+			"children": [
+			],
+			"config": {
+				"fragmentEntryLinkId": "column-1:${TEST_PORTLET_NAME_3}",
+				"landscapeMobile": {
+					"styles": {
+					}
+				},
+				"portraitMobile": {
+					"styles": {
+					}
+				},
+				"styles": {
+					"backgroundImage": {
+					},
+					"borderRadius": "rounded-0",
+					"borderWidth": 0,
+					"fontFamily": "sans-serif",
+					"fontSize": "medium",
+					"fontWeight": "font-weight-normal",
+					"height": "",
+					"marginBottom": "0",
+					"marginLeft": "0",
+					"marginRight": "0",
+					"marginTop": "0",
+					"maxHeight": "",
+					"maxWidth": "",
+					"minHeight": "",
+					"minWidth": "",
+					"opacity": 100,
+					"overflow": "visible",
+					"paddingBottom": "0",
+					"paddingLeft": "0",
+					"paddingRight": "0",
+					"paddingTop": "0",
+					"shadow": "shadow-none",
+					"textAlign": "none",
+					"width": ""
+				},
+				"tablet": {
+					"styles": {
+					}
+				}
+			},
+			"itemId": "ROOT-CONTAINER0-ROW0-COLUMN0-FRAGMENT2",
+			"parentId": "ROOT-CONTAINER0-ROW0-COLUMN0",
+			"type": "fragment"
+		}
+	},
+	"rootItems": {
+		"dropZone": "",
+		"main": "ROOT"
+	},
+	"version": 1
+}

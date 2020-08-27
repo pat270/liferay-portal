@@ -90,8 +90,10 @@ public class TensorFlowImageAssetAutoTagProvider
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
+			}
 		}
 
 		return Collections.emptyList();
@@ -156,12 +158,16 @@ public class TensorFlowImageAssetAutoTagProvider
 	private List<String> _label(
 		byte[] imageBytes, String mimeType, float confidenceThreshold) {
 
+		int maximumNumberOfRelaunches =
+			_tensorFlowImageAssetAutoTagProviderProcessConfiguration.
+				maximumNumberOfRelaunches();
+		long maximumNumberOfRelaunchesTimeout =
+			_tensorFlowImageAssetAutoTagProviderProcessConfiguration.
+				maximumNumberOfRelaunchesTimeout();
+
 		float[] labelProbabilities = _tensorflowProcessHolder.execute(
 			new GetLabelProbabilitiesProcessCallable(imageBytes, mimeType),
-			_tensorFlowImageAssetAutoTagProviderProcessConfiguration.
-				maximumNumberOfRelaunches(),
-			_tensorFlowImageAssetAutoTagProviderProcessConfiguration.
-				maximumNumberOfRelaunchesTimeout() * 1000);
+			maximumNumberOfRelaunches, maximumNumberOfRelaunchesTimeout * 1000);
 
 		Stream<Integer> stream = _getBestIndexesStream(
 			labelProbabilities, confidenceThreshold);

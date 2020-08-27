@@ -64,6 +64,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_CHECKBOX_CHECKED</td>
+	<td>//label[contains(.,'${checkboxName}')]/input[@type='checkbox' and @checked]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BLOGS_ENTRY</td>
 	<td>//input[contains(@id,'BlogsEntry')]</td>
 	<td></td>
@@ -84,8 +89,33 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHECKBOX_LABEL</td>
+	<td>//label[input]//*[normalize-space(text())='${key_fieldLabel}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DELETIONS</td>
 	<td>//label[contains(.,'Deletions')]/input[contains(@id,'DELETIONS')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_LANGUAGE_CHECKBOX</td>
+	<td>//div[contains(@class,'custom-control') and contains(.,'${key_language}')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_LANGUAGE_CHECKBOX_CHECKED</td>
+	<td>//div[contains(@class,'custom-control') and contains(.,'${key_language}')]//input[@type='checkbox' and @checked]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_DEFAULT_LANGUAGE_CHECKBOX_DISABLED</td>
+	<td>//div[contains(@class,'custom-control') and contains(.,'${key_language}')]//input[@disabled and @checked]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DISABLED_EXPORT_TRANSLATION</td>
+	<td>//label[contains(.,'${key_checkboxName}')]/input[@disabled]</td>
 	<td></td>
 </tr>
 <tr>
@@ -149,6 +179,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ENABLE_DIRECTORY_INDEXING</td>
+	<td>//label[contains(.,'Enable Directory Indexing')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENABLE_FULLSCREEN</td>
 	<td>//input[contains(@id,'enableFullscreen')]</td>
 	<td></td>
@@ -156,6 +191,11 @@
 <tr>
 	<td>ENABLE_GOOGLE_AUTHENTICATION</td>
 	<td>//input[contains(@id,'google-auth')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_EXPIRATION</td>
+	<td>//label[contains(.,'Enable Expiration')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -274,6 +314,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MAKE_PRIMARY</td>
+	<td>//label[contains(.,'Primary')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MARK_AS_A_QUESTION</td>
 	<td>//label[contains(.,'Mark as a Question')]/input[@type='checkbox']</td>
 	<td></td>
@@ -304,6 +349,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>OPEN_GRAPH_CHECKBOX_DISABLED</td>
+	<td>//div[contains(@class,'open-graph-settings') and contains(@class,'disabled')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>PERMISSIONS</td>
 	<td>//label[contains(.,'Permissions')]/input[contains(@id,'PERMISSIONS')]</td>
 	<td></td>
@@ -321,6 +371,16 @@
 <tr>
 	<td>RANK_BY_CONTRIBUTION</td>
 	<td>//label[contains(.,'Rank by Contribution')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ALL_FRAGMENTS</td>
+	<td>//label[contains(.,'All Fragments')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ALLOWED_FRAGMENT</td>
+	<td>//label[contains(.,'${key_fragmentName}')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -394,11 +454,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SITE_OWNER</td>
-	<td>//tr[contains(.,'Site Owner')]//input[@type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>SITE_TEMPLATE</td>
 	<td>//tr[contains(.,'${key_siteTemplateName}')]//input</td>
 	<td></td>
@@ -436,6 +491,16 @@
 <tr>
 	<td>ENABLE_EXPERIMENTAL_INTERFACE</td>
 	<td>//label[contains(@for,'enableExperimentalInterface')]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_CHECKBOX_VIA_SPAN</td>
+	<td>//label[contains(.,'${key_checkboxOption}')]/input[@type='checkbox']/../span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>UPLOAD_FILE_ENTRY</td>
+	<td>//li[contains(@class,'upload-file')]//input[@type='checkbox' and contains(@data-title,'${key_fileName}')]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -28,7 +28,7 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
@@ -82,13 +82,13 @@ public class PanelAppMyAccountPermissions {
 					companyId, portlet.getPortletId(),
 					portlet.getRootPortletId(), userRole, actionIds);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
 						"Unable to initialize My Account panel permissions ",
 						"for portlet ", portlet.getPortletId(), " in company ",
 						companyId),
-					e);
+					exception);
 			}
 		}
 	}
@@ -99,7 +99,8 @@ public class PanelAppMyAccountPermissions {
 
 		String filter = StringBundler.concat(
 			"(&(objectClass=", PanelApp.class.getName(), ")",
-			"(panel.category.key=", PanelCategoryKeys.USER_MY_ACCOUNT, "*))");
+			"(panel.category.key=", PanelCategoryKeys.USER_MY_ACCOUNT,
+			"*)(!(depot.panel.app.wrapper=*)))");
 
 		_serviceTracker = ServiceTrackerFactory.open(
 			bundleContext, filter, new PanelAppServiceTrackerCustomizer());
@@ -114,8 +115,10 @@ public class PanelAppMyAccountPermissions {
 		try {
 			return _roleLocalService.getRole(companyId, RoleConstants.USER);
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to get user role in company " + companyId, pe);
+		catch (PortalException portalException) {
+			_log.error(
+				"Unable to get user role in company " + companyId,
+				portalException);
 		}
 
 		return null;
@@ -208,10 +211,10 @@ public class PanelAppMyAccountPermissions {
 
 				return panelApp;
 			}
-			catch (Throwable t) {
+			catch (Throwable throwable) {
 				_bundleContext.ungetService(reference);
 
-				throw t;
+				throw throwable;
 			}
 		}
 

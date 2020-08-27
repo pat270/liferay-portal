@@ -17,15 +17,13 @@ package com.liferay.source.formatter.checks;
 /**
  * @author Peter Shin
  */
-public class SoyEmptyLinesCheck extends EmptyLinesCheck {
+public class SoyEmptyLinesCheck extends BaseEmptyLinesCheck {
 
 	@Override
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
 
-		content = fixEmptyLinesBetweenTags(content);
-
-		return content;
+		return fixEmptyLinesBetweenTags(content);
 	}
 
 }

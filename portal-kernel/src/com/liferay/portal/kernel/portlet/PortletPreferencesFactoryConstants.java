@@ -15,8 +15,11 @@
 package com.liferay.portal.kernel.portlet;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.kernel.portlet.constants.PortletPreferencesFactoryConstants}
  */
+@Deprecated
 public interface PortletPreferencesFactoryConstants {
 
 	public static final String SETTINGS_SCOPE_COMPANY = "company";

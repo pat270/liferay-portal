@@ -22,7 +22,7 @@ import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport
 import com.liferay.dynamic.data.mapping.service.base.DDMStructureServiceBaseImpl;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMStructureFinder;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -35,12 +35,14 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the remote service for accessing, adding, deleting, and updating
@@ -51,6 +53,13 @@ import java.util.Map;
  * @author Marcellus Tavares
  * @see    DDMStructureLocalServiceImpl
  */
+@Component(
+	property = {
+		"json.web.service.context.name=ddm",
+		"json.web.service.context.path=DDMStructure"
+	},
+	service = AopService.class
+)
 public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 
 	@Override
@@ -309,9 +318,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 				searchContext, DDMStructure.class,
 				ddmStructurePersistence::findByPrimaryKey);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -334,9 +343,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 				searchContext, DDMStructure.class,
 				ddmStructurePersistence::findByPrimaryKey);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -348,16 +357,37 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 		long companyId, long[] groupIds, long classNameId, int start, int end,
 		OrderByComparator<DDMStructure> orderByComparator) {
 
+		return ddmStructureFinder.filterFindByC_G_C_S(
+			companyId, groupIds, classNameId, WorkflowConstants.STATUS_ANY,
+			start, end, orderByComparator);
+	}
+
+	@Override
+	public List<DDMStructure> getStructures(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status, int start, int end,
+		OrderByComparator<DDMStructure> orderByComparator) {
+
 		return ddmStructureLocalService.getStructures(
-			companyId, groupIds, classNameId, start, end, orderByComparator);
+			companyId, groupIds, classNameId, keywords, status, start, end,
+			orderByComparator);
 	}
 
 	@Override
 	public int getStructuresCount(
 		long companyId, long[] groupIds, long classNameId) {
 
-		return _ddmStructureFinder.countByC_G_C_S(
+		return _ddmStructureFinder.filterCountByC_G_C_S(
 			companyId, groupIds, classNameId, WorkflowConstants.STATUS_ANY);
+	}
+
+	@Override
+	public int getStructuresCount(
+		long companyId, long[] groupIds, long classNameId, String keywords,
+		int status) {
+
+		return ddmStructureLocalService.getStructuresCount(
+			companyId, groupIds, classNameId, keywords, status);
 	}
 
 	@Override
@@ -393,7 +423,7 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 	 * @param  keywords the keywords (space separated), which may occur in the
 	 *         structure's name or description (optionally <code>null</code>)
 	 * @param  type the structure's type. For more information, see {@link
-	 *         com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 *         com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param  status the workflow's status.
 	 * @param  start the lower bound of the range of structures to return
 	 * @param  end the upper bound of the range of structures to return (not
@@ -419,9 +449,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 				searchContext, DDMStructure.class,
 				ddmStructurePersistence::findByPrimaryKey);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -473,9 +503,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 				searchContext, DDMStructure.class,
 				ddmStructureLocalService::fetchStructure);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -505,7 +535,7 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 	 *         "expando". For more information, see {@link
 	 *         com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param  type the structure's type. For more information, see {@link
-	 *         com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 *         com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param  status the workflow's status.
 	 * @param  andOperator whether every field must match its keywords, or just
 	 *         one field
@@ -534,9 +564,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 				searchContext, DDMStructure.class,
 				ddmStructurePersistence::findByPrimaryKey);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -571,9 +601,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 			return _ddmSearchHelper.doSearchCount(
 				searchContext, DDMStructure.class);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -591,7 +621,7 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 	 * @param  keywords the keywords (space separated), which may occur in the
 	 *         structure's name or description (optionally <code>null</code>)
 	 * @param  type the structure's type. For more information, see {@link
-	 *         com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 *         com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param  status the workflow's status.
 	 * @return the number of matching structures
 	 */
@@ -610,9 +640,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 			return _ddmSearchHelper.doSearchCount(
 				searchContext, DDMStructure.class);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -633,7 +663,7 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 	 *         "expando". For more information, see {@link
 	 *         com.liferay.dynamic.data.mapping.storage.StorageType}.
 	 * @param  type the structure's type. For more information, see {@link
-	 *         com.liferay.dynamic.data.mapping.model.DDMStructureConstants}.
+	 *         com.liferay.dynamic.data.mapping.constants.DDMStructureConstants}.
 	 * @param  andOperator whether every field must match its keywords, or just
 	 *         one field
 	 * @return the number of matching structures
@@ -654,9 +684,9 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 			return _ddmSearchHelper.doSearchCount(
 				searchContext, DDMStructure.class);
 		}
-		catch (PrincipalException pe) {
+		catch (PrincipalException principalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(principalException, principalException);
 			}
 		}
 
@@ -707,13 +737,13 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 				DDMStructureServiceImpl.class,
 				"_ddmStructureModelResourcePermission", DDMStructure.class);
 
-	@ServiceReference(type = DDMPermissionSupport.class)
+	@Reference
 	private DDMPermissionSupport _ddmPermissionSupport;
 
-	@ServiceReference(type = DDMSearchHelper.class)
+	@Reference
 	private DDMSearchHelper _ddmSearchHelper;
 
-	@BeanReference(type = DDMStructureFinder.class)
+	@Reference
 	private DDMStructureFinder _ddmStructureFinder;
 
 }

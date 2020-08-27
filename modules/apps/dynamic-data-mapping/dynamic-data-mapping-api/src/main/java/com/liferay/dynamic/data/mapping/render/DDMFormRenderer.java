@@ -18,8 +18,10 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.portal.kernel.exception.PortalException;
 
 /**
- * @author Marcellus Tavares
+ * @author     Marcellus Tavares
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public interface DDMFormRenderer {
 
 	public String render(

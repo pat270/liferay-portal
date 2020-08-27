@@ -1,5 +1,6 @@
 @component-name = "portal-social-networking"
 definition {
+
 	property dummy.socket.proxy.disabled = "true";
 	property osgi.app.includes = "social-networking";
 	property portal.upstream = "true";
@@ -15,7 +16,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
@@ -40,7 +40,7 @@ definition {
 			PortalInstances.tearDownCP();
 		}
 		else {
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 
 			Page.tearDownCP();
 
@@ -50,8 +50,11 @@ definition {
 		}
 	}
 
+	@ignore = "true"
 	@priority = "3"
 	test SearchFriendsDirectory {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		var pageName = "Friends Directory Page";
 		var userEmailAddress = "userea@liferay.com";
 		var userFirstName = "userfn";
@@ -59,26 +62,22 @@ definition {
 		var userMiddleName = "usermn";
 		var userScreenName = "usersn";
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
 
-		User.addCP(
+		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userMiddleName = "usermn",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
 		ProductMenuHelper.openProductMenu();
 
@@ -86,7 +85,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
@@ -98,10 +96,6 @@ definition {
 			pageName = "Friends Request Page",
 			privacy = "Public Pages",
 			sitePageType = "Widget Page");
-
-		Navigator.gotoPage(pageName = "Friends Directory Page");
-
-		ProductMenuHelper.openProductMenu();
 
 		Navigator.gotoPersonalSite();
 
@@ -242,4 +236,5 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 	}
+
 }

@@ -39,17 +39,20 @@ public class ProcessingInstructionImpl
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ProcessingInstructionImpl)) {
+		if (!(object instanceof ProcessingInstructionImpl)) {
 			return false;
 		}
 
+		ProcessingInstructionImpl processingInstructionImpl =
+			(ProcessingInstructionImpl)object;
+
 		org.dom4j.ProcessingInstruction processingInstruction =
-			((ProcessingInstructionImpl)obj).getWrappedProcessingInstruction();
+			processingInstructionImpl.getWrappedProcessingInstruction();
 
 		return _processingInstruction.equals(processingInstruction);
 	}

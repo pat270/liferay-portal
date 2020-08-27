@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing UserTracker in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class UserTrackerCacheModel
 	implements CacheModel<UserTracker>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof UserTrackerCacheModel)) {
+		if (!(object instanceof UserTrackerCacheModel)) {
 			return false;
 		}
 
 		UserTrackerCacheModel userTrackerCacheModel =
-			(UserTrackerCacheModel)obj;
+			(UserTrackerCacheModel)object;
 
 		if ((userTrackerId == userTrackerCacheModel.userTrackerId) &&
 			(mvccVersion == userTrackerCacheModel.mvccVersion)) {

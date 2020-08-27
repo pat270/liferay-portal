@@ -32,15 +32,13 @@ Contact selContact = (Contact)request.getAttribute("user.selContact");
 			<aui:input label="skype" name="skypeSn" />
 
 			<c:if test="<%= Validator.isNotNull(selContact.getSkypeSn()) %>">
-				<a href="callto://<%= HtmlUtil.escapeAttribute(selContact.getSkypeSn()) %>"><img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="call-this-user" />" src="http://mystatus.skype.com/smallicon/<%= HtmlUtil.escapeAttribute(selContact.getSkypeSn()) %>" /></a>
+				<a href="skype:<%= HtmlUtil.escapeAttribute(selContact.getSkypeSn()) %>?call"><liferay-ui:message escapeAttribute="<%= true %>" key="call-this-user" /></a>
 			</c:if>
 		</div>
 	</c:when>
 	<c:otherwise>
 		<clay:alert
-			message='<%= LanguageUtil.get(request, "this-section-will-be-editable-after-creating-the-user") %>'
-			style="info"
-			title='<%= LanguageUtil.get(request, "info") + ":" %>'
+			message="this-section-will-be-editable-after-creating-the-user"
 		/>
 	</c:otherwise>
 </c:choose>

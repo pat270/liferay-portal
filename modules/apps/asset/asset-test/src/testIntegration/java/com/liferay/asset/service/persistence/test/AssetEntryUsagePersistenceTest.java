@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -57,8 +57,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ com.liferay.layout.model.impl.LayoutClassedModelUsageImpl}
  * @generated
  */
+@Deprecated
 @RunWith(Arquillian.class)
 public class AssetEntryUsagePersistenceTest {
 
@@ -124,9 +127,15 @@ public class AssetEntryUsagePersistenceTest {
 
 		AssetEntryUsage newAssetEntryUsage = _persistence.create(pk);
 
+		newAssetEntryUsage.setMvccVersion(RandomTestUtil.nextLong());
+
+		newAssetEntryUsage.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newAssetEntryUsage.setUuid(RandomTestUtil.randomString());
 
 		newAssetEntryUsage.setGroupId(RandomTestUtil.nextLong());
+
+		newAssetEntryUsage.setCompanyId(RandomTestUtil.nextLong());
 
 		newAssetEntryUsage.setCreateDate(RandomTestUtil.nextDate());
 
@@ -150,6 +159,12 @@ public class AssetEntryUsagePersistenceTest {
 			newAssetEntryUsage.getPrimaryKey());
 
 		Assert.assertEquals(
+			existingAssetEntryUsage.getMvccVersion(),
+			newAssetEntryUsage.getMvccVersion());
+		Assert.assertEquals(
+			existingAssetEntryUsage.getCtCollectionId(),
+			newAssetEntryUsage.getCtCollectionId());
+		Assert.assertEquals(
 			existingAssetEntryUsage.getUuid(), newAssetEntryUsage.getUuid());
 		Assert.assertEquals(
 			existingAssetEntryUsage.getAssetEntryUsageId(),
@@ -157,6 +172,9 @@ public class AssetEntryUsagePersistenceTest {
 		Assert.assertEquals(
 			existingAssetEntryUsage.getGroupId(),
 			newAssetEntryUsage.getGroupId());
+		Assert.assertEquals(
+			existingAssetEntryUsage.getCompanyId(),
+			newAssetEntryUsage.getCompanyId());
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingAssetEntryUsage.getCreateDate()),
 			Time.getShortTimestamp(newAssetEntryUsage.getCreateDate()));
@@ -198,6 +216,15 @@ public class AssetEntryUsagePersistenceTest {
 		_persistence.countByUUID_G("null", 0L);
 
 		_persistence.countByUUID_G((String)null, 0L);
+	}
+
+	@Test
+	public void testCountByUuid_C() throws Exception {
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
+
+		_persistence.countByUuid_C("null", 0L);
+
+		_persistence.countByUuid_C((String)null, 0L);
 	}
 
 	@Test
@@ -268,8 +295,9 @@ public class AssetEntryUsagePersistenceTest {
 
 	protected OrderByComparator<AssetEntryUsage> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AssetEntryUsage", "uuid", true, "assetEntryUsageId", true,
-			"groupId", true, "createDate", true, "modifiedDate", true,
+			"AssetEntryUsage", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "assetEntryUsageId", true, "groupId", true,
+			"companyId", true, "createDate", true, "modifiedDate", true,
 			"assetEntryId", true, "containerType", true, "containerKey", true,
 			"plid", true, "type", true, "lastPublishDate", true);
 	}
@@ -495,41 +523,83 @@ public class AssetEntryUsagePersistenceTest {
 
 		_persistence.clearCache();
 
-		AssetEntryUsage existingAssetEntryUsage = _persistence.findByPrimaryKey(
-			newAssetEntryUsage.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newAssetEntryUsage.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetEntryUsage.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingAssetEntryUsage, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AssetEntryUsage newAssetEntryUsage = addAssetEntryUsage();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AssetEntryUsage.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"assetEntryUsageId",
+				newAssetEntryUsage.getAssetEntryUsageId()));
+
+		List<AssetEntryUsage> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(AssetEntryUsage assetEntryUsage) {
 		Assert.assertEquals(
-			Long.valueOf(existingAssetEntryUsage.getGroupId()),
+			assetEntryUsage.getUuid(),
+			ReflectionTestUtil.invoke(
+				assetEntryUsage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(assetEntryUsage.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntryUsage, "getOriginalGroupId",
-				new Class<?>[0]));
+				assetEntryUsage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetEntryUsage.getAssetEntryId()),
+			Long.valueOf(assetEntryUsage.getAssetEntryId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntryUsage, "getOriginalAssetEntryId",
-				new Class<?>[0]));
+				assetEntryUsage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "assetEntryId"));
 		Assert.assertEquals(
-			Long.valueOf(existingAssetEntryUsage.getContainerType()),
+			Long.valueOf(assetEntryUsage.getContainerType()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntryUsage, "getOriginalContainerType",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetEntryUsage.getContainerKey(),
-				ReflectionTestUtil.invoke(
-					existingAssetEntryUsage, "getOriginalContainerKey",
-					new Class<?>[0])));
+				assetEntryUsage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "containerType"));
 		Assert.assertEquals(
-			Long.valueOf(existingAssetEntryUsage.getPlid()),
+			assetEntryUsage.getContainerKey(),
+			ReflectionTestUtil.invoke(
+				assetEntryUsage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "containerKey"));
+		Assert.assertEquals(
+			Long.valueOf(assetEntryUsage.getPlid()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntryUsage, "getOriginalPlid", new Class<?>[0]));
+				assetEntryUsage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "plid"));
 	}
 
 	protected AssetEntryUsage addAssetEntryUsage() throws Exception {
@@ -537,9 +607,15 @@ public class AssetEntryUsagePersistenceTest {
 
 		AssetEntryUsage assetEntryUsage = _persistence.create(pk);
 
+		assetEntryUsage.setMvccVersion(RandomTestUtil.nextLong());
+
+		assetEntryUsage.setCtCollectionId(RandomTestUtil.nextLong());
+
 		assetEntryUsage.setUuid(RandomTestUtil.randomString());
 
 		assetEntryUsage.setGroupId(RandomTestUtil.nextLong());
+
+		assetEntryUsage.setCompanyId(RandomTestUtil.nextLong());
 
 		assetEntryUsage.setCreateDate(RandomTestUtil.nextDate());
 

@@ -20,10 +20,10 @@ import com.liferay.bulk.selection.BulkSelectionFactory;
 import com.liferay.bulk.selection.BulkSelectionInputParameters;
 import com.liferay.bulk.selection.internal.constants.BulkSelectionBackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
 import com.liferay.portal.kernel.backgroundtask.BaseBackgroundTaskExecutor;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplay;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -72,8 +72,11 @@ public class BulkSelectionBackgroundTaskExecutor
 			BulkSelectionBackgroundTaskConstants.
 				BULK_SELECTION_ACTION_CLASS_NAME);
 
-		Optional<BulkSelectionAction> bulkSelectionActionOptional = _getService(
-			BulkSelectionAction.class, bulkSelectionActionClassName);
+		Optional<BulkSelectionAction<Object>> bulkSelectionActionOptional =
+			_getService(
+				(Class<BulkSelectionAction<Object>>)
+					(Class<?>)BulkSelectionAction.class,
+				bulkSelectionActionClassName);
 
 		bulkSelectionActionOptional.ifPresent(
 			bulkSelectionAction -> {
@@ -87,15 +90,16 @@ public class BulkSelectionBackgroundTaskExecutor
 						BulkSelectionBackgroundTaskConstants.
 							BULK_SELECTION_FACTORY_CLASS_NAME);
 
-				Optional<BulkSelectionFactory> bulkSelectionFactoryOptional =
+				Optional<BulkSelectionFactory<?>> bulkSelectionFactoryOptional =
 					_getService(
-						BulkSelectionFactory.class,
+						(Class<BulkSelectionFactory<?>>)
+							(Class<?>)BulkSelectionFactory.class,
 						bulkSelectionFactoryClassName);
 
 				bulkSelectionFactoryOptional.ifPresent(
 					bulkSelectionFactory -> {
 						try {
-							BulkSelection bulkSelection =
+							BulkSelection<?> bulkSelection =
 								bulkSelectionFactory.create(parameterMap);
 
 							Map<String, Serializable> inputMap =
@@ -117,10 +121,10 @@ public class BulkSelectionBackgroundTaskExecutor
 							bulkSelectionAction.execute(
 								_userLocalService.getUser(
 									backgroundTask.getUserId()),
-								bulkSelection, inputMap);
+								(BulkSelection<Object>)bulkSelection, inputMap);
 						}
-						catch (Exception e) {
-							_log.error(e, e);
+						catch (Exception exception) {
+							_log.error(exception, exception);
 						}
 					});
 			});
@@ -157,7 +161,7 @@ public class BulkSelectionBackgroundTaskExecutor
 
 			return Optional.empty();
 		}
-		catch (InvalidSyntaxException ise) {
+		catch (InvalidSyntaxException invalidSyntaxException) {
 			return Optional.empty();
 		}
 	}

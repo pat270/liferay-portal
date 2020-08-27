@@ -180,13 +180,20 @@ public class LayoutImpl extends LayoutBaseImpl {
 		String keyword = _getFriendlyURLKeyword(friendlyURL);
 
 		if (Validator.isNotNull(keyword)) {
-			LayoutFriendlyURLException lfurle = new LayoutFriendlyURLException(
-				LayoutFriendlyURLException.KEYWORD_CONFLICT);
+			LayoutFriendlyURLException layoutFriendlyURLException =
+				new LayoutFriendlyURLException(
+					LayoutFriendlyURLException.KEYWORD_CONFLICT);
 
-			lfurle.setKeywordConflict(keyword);
+			layoutFriendlyURLException.setKeywordConflict(keyword);
 
-			throw lfurle;
+			throw layoutFriendlyURLException;
 		}
+	}
+
+	@Override
+	public Layout fetchDraftLayout() {
+		return LayoutLocalServiceUtil.fetchLayout(
+			PortalUtil.getClassNameId(Layout.class), getPlid());
 	}
 
 	/**
@@ -318,16 +325,16 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 		List<Layout> layouts = ListUtil.copy(getChildren());
 
-		Iterator<Layout> itr = layouts.iterator();
+		Iterator<Layout> iterator = layouts.iterator();
 
-		while (itr.hasNext()) {
-			Layout layout = itr.next();
+		while (iterator.hasNext()) {
+			Layout layout = iterator.next();
 
 			if (layout.isHidden() ||
 				!LayoutPermissionUtil.contains(
 					permissionChecker, layout, ActionKeys.VIEW)) {
 
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -390,7 +397,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 				return theme.getSetting(key);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -399,7 +406,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 			return layoutSet.getThemeSetting(key, device);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -493,16 +500,17 @@ public class LayoutImpl extends LayoutBaseImpl {
 		try {
 			Group group = getGroup();
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				group.getTypeSettingsProperties();
 
 			if (!GetterUtil.getBoolean(
-					typeSettingsProperties.getProperty(
+					typeSettingsUnicodeProperties.getProperty(
 						GroupConstants.TYPE_SETTINGS_KEY_INHERIT_LOCALES),
 					true)) {
 
 				String[] locales = StringUtil.split(
-					typeSettingsProperties.getProperty(PropsKeys.LOCALES));
+					typeSettingsUnicodeProperties.getProperty(
+						PropsKeys.LOCALES));
 
 				if (!ArrayUtil.contains(
 						locales, LanguageUtil.getLanguageId(locale))) {
@@ -517,7 +525,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 			friendlyURL = layoutFriendlyURL.getFriendlyURL();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return friendlyURL;
@@ -561,10 +569,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	@Override
 	public String getFriendlyURLsXML() {
-		Map<Locale, String> friendlyURLMap = getFriendlyURLMap();
-
 		return LocalizationUtil.updateLocalization(
-			friendlyURLMap, StringPool.BLANK, "FriendlyURL",
+			getFriendlyURLMap(), StringPool.BLANK, "FriendlyURL",
 			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()));
 	}
 
@@ -582,8 +588,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 		try {
 			return GroupLocalServiceUtil.getGroup(getGroupId());
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -651,8 +657,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 				_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 					getGroupId(), isPrivateLayout());
 			}
-			catch (PortalException pe) {
-				ReflectionUtil.throwException(pe);
+			catch (PortalException portalException) {
+				ReflectionUtil.throwException(portalException);
 			}
 		}
 
@@ -727,12 +733,12 @@ public class LayoutImpl extends LayoutBaseImpl {
 			group = GroupLocalServiceUtil.getLayoutGroup(
 				getCompanyId(), getPlid());
 		}
-		catch (NoSuchGroupException nsge) {
+		catch (NoSuchGroupException noSuchGroupException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsge, nsge);
+				_log.debug(noSuchGroupException, noSuchGroupException);
 			}
 		}
 
@@ -771,9 +777,17 @@ public class LayoutImpl extends LayoutBaseImpl {
 	public String getThemeSetting(
 		String key, String device, boolean inheritLookAndFeel) {
 
-		UnicodeProperties typeSettingsProperties = getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			getTypeSettingsProperties();
 
-		String value = typeSettingsProperties.getProperty(
+		Layout masterLayout = _getMasterLayout();
+
+		if (masterLayout != null) {
+			typeSettingsUnicodeProperties =
+				masterLayout.getTypeSettingsProperties();
+		}
+
+		String value = typeSettingsUnicodeProperties.getProperty(
 			ThemeSettingImpl.namespaceProperty(device, key));
 
 		if (value != null) {
@@ -785,36 +799,38 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	@Override
 	public String getTypeSettings() {
-		if (_typeSettingsProperties == null) {
+		if (_typeSettingsUnicodeProperties == null) {
 			return super.getTypeSettings();
 		}
 
-		return _typeSettingsProperties.toString();
+		return _typeSettingsUnicodeProperties.toString();
 	}
 
 	@Override
 	public UnicodeProperties getTypeSettingsProperties() {
-		if (_typeSettingsProperties == null) {
-			_typeSettingsProperties = new UnicodeProperties(true);
+		if (_typeSettingsUnicodeProperties == null) {
+			_typeSettingsUnicodeProperties = new UnicodeProperties(true);
 
-			_typeSettingsProperties.fastLoad(super.getTypeSettings());
+			_typeSettingsUnicodeProperties.fastLoad(super.getTypeSettings());
 		}
 
-		return _typeSettingsProperties;
+		return _typeSettingsUnicodeProperties;
 	}
 
 	@Override
 	public String getTypeSettingsProperty(String key) {
-		UnicodeProperties typeSettingsProperties = getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			getTypeSettingsProperties();
 
-		return typeSettingsProperties.getProperty(key);
+		return typeSettingsUnicodeProperties.getProperty(key);
 	}
 
 	@Override
 	public String getTypeSettingsProperty(String key, String defaultValue) {
-		UnicodeProperties typeSettingsProperties = getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			getTypeSettingsProperties();
 
-		return typeSettingsProperties.getProperty(key, defaultValue);
+		return typeSettingsUnicodeProperties.getProperty(key, defaultValue);
 	}
 
 	/**
@@ -919,10 +935,11 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public boolean isContentDisplayPage() {
-		UnicodeProperties typeSettingsProperties = getTypeSettingsProperties();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			getTypeSettingsProperties();
 
 		String defaultAssetPublisherPortletId =
-			typeSettingsProperties.getProperty(
+			typeSettingsUnicodeProperties.getProperty(
 				LayoutTypePortletConstants.DEFAULT_ASSET_PUBLISHER_PORTLET_ID);
 
 		if (Validator.isNotNull(defaultAssetPublisherPortletId)) {
@@ -1143,6 +1160,32 @@ public class LayoutImpl extends LayoutBaseImpl {
 	}
 
 	@Override
+	public boolean isTypeAssetDisplay() {
+		if (Objects.equals(getType(), LayoutConstants.TYPE_ASSET_DISPLAY) ||
+			Objects.equals(
+				_getLayoutTypeControllerType(),
+				LayoutConstants.TYPE_ASSET_DISPLAY)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isTypeContent() {
+		if (Objects.equals(getType(), LayoutConstants.TYPE_COLLECTION) ||
+			Objects.equals(getType(), LayoutConstants.TYPE_CONTENT) ||
+			Objects.equals(
+				_getLayoutTypeControllerType(), LayoutConstants.TYPE_CONTENT)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isTypeControlPanel() {
 		if (Objects.equals(getType(), LayoutConstants.TYPE_CONTROL_PANEL) ||
 			Objects.equals(
@@ -1205,19 +1248,6 @@ public class LayoutImpl extends LayoutBaseImpl {
 		return false;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public boolean isTypeSharedPortlet() {
-		if (Objects.equals(getType(), LayoutConstants.TYPE_SHARED_PORTLET)) {
-			return true;
-		}
-
-		return false;
-	}
-
 	@Override
 	public boolean isTypeURL() {
 		if (Objects.equals(getType(), LayoutConstants.TYPE_URL)) {
@@ -1261,18 +1291,18 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	@Override
 	public void setTypeSettings(String typeSettings) {
-		_typeSettingsProperties = null;
+		_typeSettingsUnicodeProperties = null;
 
 		super.setTypeSettings(typeSettings);
 	}
 
 	@Override
 	public void setTypeSettingsProperties(
-		UnicodeProperties typeSettingsProperties) {
+		UnicodeProperties typeSettingsUnicodeProperties) {
 
-		_typeSettingsProperties = typeSettingsProperties;
+		_typeSettingsUnicodeProperties = typeSettingsUnicodeProperties;
 
-		super.setTypeSettings(_typeSettingsProperties.toString());
+		super.setTypeSettings(_typeSettingsUnicodeProperties.toString());
 	}
 
 	private static String _getFriendlyURLKeyword(String friendlyURL) {
@@ -1350,14 +1380,14 @@ public class LayoutImpl extends LayoutBaseImpl {
 				httpServletRequest, getPlid());
 
 			if (typeSettings != null) {
-				UnicodeProperties typeSettingsProperties =
+				UnicodeProperties typeSettingsUnicodeProperties =
 					new UnicodeProperties(true);
 
-				typeSettingsProperties.load(typeSettings);
+				typeSettingsUnicodeProperties.load(typeSettings);
 
-				String stateMax = typeSettingsProperties.getProperty(
+				String stateMax = typeSettingsUnicodeProperties.getProperty(
 					LayoutTypePortletConstants.STATE_MAX);
-				String stateMin = typeSettingsProperties.getProperty(
+				String stateMin = typeSettingsUnicodeProperties.getProperty(
 					LayoutTypePortletConstants.STATE_MIN);
 
 				Layout layout = (Layout)clone();
@@ -1374,6 +1404,21 @@ public class LayoutImpl extends LayoutBaseImpl {
 		}
 
 		return layoutTypePortlet;
+	}
+
+	private Layout _getMasterLayout() {
+		if (_masterLayout != null) {
+			return _masterLayout;
+		}
+
+		if (getMasterLayoutPlid() <= 0) {
+			return null;
+		}
+
+		_masterLayout = LayoutLocalServiceUtil.fetchLayout(
+			getMasterLayoutPlid());
+
+		return _masterLayout;
 	}
 
 	private List<PortletPreferences> _getPortletPreferences(long groupId) {
@@ -1426,8 +1471,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 					layoutTypePortlet = _getLayoutTypePortletClone(
 						httpServletRequest);
 				}
-				catch (IOException ioe) {
-					_log.error("Unable to clone layout settings", ioe);
+				catch (IOException ioException) {
+					_log.error("Unable to clone layout settings", ioException);
 
 					layoutTypePortlet = (LayoutTypePortlet)getLayoutType();
 				}
@@ -1445,8 +1490,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 					portletURL.setWindowState(WindowState.NORMAL);
 					portletURL.setPortletMode(PortletMode.VIEW);
 				}
-				catch (PortletException pe) {
-					throw new SystemException(pe);
+				catch (PortletException portletException) {
+					throw new SystemException(portletException);
 				}
 
 				portletURL.setAnchor(false);
@@ -1468,14 +1513,13 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 		String url = PortalUtil.getLayoutURL(this, themeDisplay);
 
-		if (!CookieKeys.hasSessionId(httpServletRequest)) {
-			String portalURL = PortalUtil.getPortalURL(httpServletRequest);
+		if (!CookieKeys.hasSessionId(httpServletRequest) &&
+			(url.startsWith(PortalUtil.getPortalURL(httpServletRequest)) ||
+			 url.startsWith(StringPool.SLASH))) {
 
-			if (url.startsWith(portalURL) || url.startsWith(StringPool.SLASH)) {
-				HttpSession session = httpServletRequest.getSession();
+			HttpSession session = httpServletRequest.getSession();
 
-				url = PortalUtil.getURLWithSessionId(url, session.getId());
-			}
+			url = PortalUtil.getURLWithSessionId(url, session.getId());
 		}
 
 		if (!resetMaxState) {
@@ -1504,6 +1548,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	private LayoutSet _layoutSet;
 	private transient LayoutType _layoutType;
-	private UnicodeProperties _typeSettingsProperties;
+	private Layout _masterLayout;
+	private UnicodeProperties _typeSettingsUnicodeProperties;
 
 }

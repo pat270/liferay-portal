@@ -1,9 +1,10 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property custom.properties = "default.layout.template.id=1_column";
-	property testray.component.names = "Blogs,Notifications";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}jsonws.web.service.paths.excludes=";
+	property testray.component.names = "Notification";
 	property testray.main.component.name = "Notifications";
 	var pageName = "Blogs Page";
 	var portletName = "Blogs";
@@ -15,17 +16,10 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "Blogs Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Blogs Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "Blogs Page");
@@ -38,17 +32,12 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		User.editPasswordCP(
-			password = "password",
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
-
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -73,7 +62,7 @@ definition {
 
 			Page.tearDownCP();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 		}
 	}
 
@@ -259,7 +248,7 @@ definition {
 	test ViewNoWebsiteNotificationForNewBlogsEntry {
 		NotificationsPortlet.gotoNotificationDelivery();
 
-		AssertElementPresent(locator1 = "IFrame#DIALOG");
+		AssertElementPresent(locator1 = "IFrame#MODAL_BODY");
 
 		IFrame.selectConfigurationFrame();
 
@@ -335,9 +324,85 @@ definition {
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryPG(
 			entryContent = "Blogs Entry Content Edit",
 			entryTitle = "Blogs Entry Title Edit");
+	}
+
+	@description = "This test covers LPS-103502. It ensures that notifications are displayed correctly after being mentioned."
+	@priority = "3"
+	test ViewWebsiteNotificationdForMention {
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Blogs.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		Mentions.addMentionViaComments(
+			entryComment = "Comment mentioning",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Notifications.viewBadgeCount(notificationCount = "1");
+
+		Notifications.gotoNotifications();
+
+		Notifications.viewNewComment(
+			assetType = "Blogs Entry",
+			contentBody = "Comment mentioning @usersn",
+			mentioned = "true",
+			user = "Test Test");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		Mentions.addMentionViaComments(
+			entryComment = "Reply comment mentioning",
+			mentionsUserFullName = "test test",
+			mentionsUserScreenName = "test");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Notifications.viewBadgeCount(notificationCount = "2");
+
+		Notifications.gotoNotifications();
+
+		AssertTextEquals(
+			key_notificationsTitle = "userfn userln added a new comment to Blogs Entry Title",
+			locator1 = "Notifications#NOTIFICATIONS_TITLE_SPECIFIC",
+			value1 = "userfn userln added a new comment to Blogs Entry Title.");
+
+		AssertTextEquals(
+			key_notificationsTitle = "userfn userln added a new comment to Blogs Entry Title",
+			locator1 = "Notifications#NOTIFICATIONS_CONTENT_SPECIFIC",
+			value1 = "Reply comment mentioning @test");
+
+		AssertTextEquals(
+			key_notificationsTitle = "userfn userln mentioned you in a comment in a blogs entry",
+			locator1 = "Notifications#NOTIFICATIONS_TITLE_SPECIFIC",
+			value1 = "userfn userln mentioned you in a comment in a blogs entry.");
+
+		AssertTextEquals(
+			key_notificationsTitle = "userfn userln mentioned you in a comment in a blogs entry",
+			locator1 = "Notifications#NOTIFICATIONS_CONTENT_SPECIFIC",
+			value1 = "Reply comment mentioning @test");
 	}
 
 	@priority = "4"
@@ -379,7 +444,7 @@ definition {
 
 		Notifications.navigateToContent(contentBody = "Blogs Entry Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryPG(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
@@ -414,7 +479,7 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		BlogsEntryComment.add(entryComment = "Blogs Entry Comment");
+		Comments.addPG(entryComment = "Blogs Entry Comment");
 
 		Notifications.viewBadgeCount(notificationCount = "0");
 
@@ -440,11 +505,12 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
 
-		BlogsEntryComment.viewPG(
+		Comments.viewPG(
 			commentCount = "1",
 			entryComment = "Blogs Entry Comment",
 			userFullName = "userfn userln");
 
 		Notifications.viewBadgeCount(notificationCount = "0");
 	}
+
 }

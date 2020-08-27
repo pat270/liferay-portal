@@ -18,10 +18,41 @@
 
 <%
 ItemSelectorUploadViewDisplayContext itemSelectorUploadViewDisplayContext = (ItemSelectorUploadViewDisplayContext)request.getAttribute(ItemSelectorUploadView.ITEM_SELECTOR_UPLOAD_VIEW_DISPLAY_CONTEXT);
+
+ItemSelectorReturnTypeResolver<?, ?> itemSelectorReturnTypeResolver = itemSelectorUploadViewDisplayContext.getItemSelectorReturnTypeResolver();
+
+Class<?> itemSelectorReturnTypeClass = itemSelectorReturnTypeResolver.getItemSelectorReturnTypeClass();
+
+String uploadURL = itemSelectorUploadViewDisplayContext.getURL();
+
+String namespace = itemSelectorUploadViewDisplayContext.getNamespace();
+
+if (Validator.isNotNull(namespace)) {
+	uploadURL = HttpUtil.addParameter(uploadURL, namespace + "returnType", itemSelectorReturnTypeClass.getName());
+}
+
+Map<String, Object> context = HashMapBuilder.<String, Object>put(
+	"closeCaption", itemSelectorUploadViewDisplayContext.getTitle(locale)
+).put(
+	"eventName", itemSelectorUploadViewDisplayContext.getItemSelectedEventName()
+).put(
+	"maxFileSize", itemSelectorUploadViewDisplayContext.getMaxFileSize()
+).put(
+	"rootNode", "#itemSelectorUploadContainer"
+).put(
+	"uploadItemReturnType", HtmlUtil.escapeAttribute(itemSelectorReturnTypeClass.getName())
+).put(
+	"uploadItemURL", uploadURL
+).put(
+	"validExtensions", ArrayUtil.isEmpty(itemSelectorUploadViewDisplayContext.getExtensions()) ? "*" : StringUtil.merge(itemSelectorUploadViewDisplayContext.getExtensions())
+).build();
 %>
 
-<div class="container-fluid-1280 lfr-item-viewer" id="itemSelectorUploadContainer">
-	<div class="drop-enabled drop-zone upload-view">
+<clay:container-fluid
+	cssClass="lfr-item-viewer"
+	id="itemSelectorUploadContainer"
+>
+	<div class="drop-enabled drop-zone item-selector upload-view">
 		<div id="uploadDescription">
 			<c:if test="<%= !BrowserSnifferUtil.isMobile(request) %>">
 				<p>
@@ -30,9 +61,9 @@ ItemSelectorUploadViewDisplayContext itemSelectorUploadViewDisplayContext = (Ite
 			</c:if>
 
 			<p>
-				<label class="btn btn-default" for="<portlet:namespace />inputFile"><liferay-ui:message key="select-file" /></label>
+				<input accept="<%= ArrayUtil.isEmpty(itemSelectorUploadViewDisplayContext.getExtensions()) ? "*" : StringUtil.merge(itemSelectorUploadViewDisplayContext.getExtensions()) %>" class="input-file" id="<portlet:namespace />inputFile" type="file" />
 
-				<input accept="<%= ArrayUtil.isEmpty(itemSelectorUploadViewDisplayContext.getExtensions()) ? "*" : StringUtil.merge(itemSelectorUploadViewDisplayContext.getExtensions()) %>" class="hide" id="<portlet:namespace />inputFile" type="file" />
+				<label class="btn btn-secondary" for="<portlet:namespace />inputFile"><liferay-ui:message key="select-file" /></label>
 			</p>
 		</div>
 	</div>
@@ -40,37 +71,11 @@ ItemSelectorUploadViewDisplayContext itemSelectorUploadViewDisplayContext = (Ite
 	<liferay-ui:drop-here-info
 		message="drop-files-here"
 	/>
-</div>
 
-<aui:script use="liferay-item-selector-repository-entry-browser">
+	<div class="item-selector-preview-container"></div>
+</clay:container-fluid>
 
-	<%
-	ItemSelectorReturnTypeResolver itemSelectorReturnTypeResolver = itemSelectorUploadViewDisplayContext.getItemSelectorReturnTypeResolver();
-
-	Class<?> itemSelectorReturnTypeClass = itemSelectorReturnTypeResolver.getItemSelectorReturnTypeClass();
-
-	String uploadURL = itemSelectorUploadViewDisplayContext.getURL();
-
-	String namespace = itemSelectorUploadViewDisplayContext.getNamespace();
-
-	if (Validator.isNotNull(namespace)) {
-		uploadURL = HttpUtil.addParameter(uploadURL, namespace + "returnType", itemSelectorReturnTypeClass.getName());
-	}
-	%>
-
-	new Liferay.ItemSelectorRepositoryEntryBrowser(
-		{
-			closeCaption: '<%= itemSelectorUploadViewDisplayContext.getTitle(locale) %>',
-			maxFileSize: '<%= itemSelectorUploadViewDisplayContext.getMaxFileSize() %>',
-			on: {
-				selectedItem: function(event) {
-					Liferay.Util.getOpener().Liferay.fire('<%= itemSelectorUploadViewDisplayContext.getItemSelectedEventName() %>', event);
-				}
-			},
-			rootNode: '#itemSelectorUploadContainer',
-			uploadItemReturnType: '<%= HtmlUtil.escapeAttribute(itemSelectorReturnTypeClass.getName()) %>',
-			uploadItemURL: '<%= uploadURL.toString() %>',
-			validExtensions: '<%= ArrayUtil.isEmpty(itemSelectorUploadViewDisplayContext.getExtensions()) ? "*" : StringUtil.merge(itemSelectorUploadViewDisplayContext.getExtensions()) %>'
-		}
-	);
-</aui:script>
+<liferay-frontend:component
+	context="<%= context %>"
+	module="js/index.es"
+/>

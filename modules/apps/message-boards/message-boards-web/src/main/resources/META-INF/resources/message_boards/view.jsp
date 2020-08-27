@@ -79,12 +79,11 @@ if (orderByCol.equals("modified-date")) {
 	threadOrderByComparator = new ThreadModifiedDateComparator(orderByAsc);
 }
 
-MBListDisplayContext mbListDisplayContext = mbDisplayContextProvider.getMbListDisplayContext(request, response, categoryId);
+MBListDisplayContext mbListDisplayContext = mbDisplayContextProvider.getMbListDisplayContext(request, response, categoryId, mvcRenderCommandName);
 
 request.setAttribute("view.jsp-categorySubscriptionClassPKs", categorySubscriptionClassPKs);
 request.setAttribute("view.jsp-threadSubscriptionClassPKs", threadSubscriptionClassPKs);
 
-request.setAttribute("view.jsp-categoryId", categoryId);
 request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 %>
 
@@ -96,7 +95,7 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 	portletURL="<%= restoreTrashEntriesURL %>"
 />
 
-<liferay-util:include page="/message_boards/nav.jsp" servletContext="<%= application %>" />
+<%@ include file="/message_boards/nav.jspf" %>
 
 <c:choose>
 	<c:when test='<%= mvcRenderCommandName.equals("/message_boards/view_my_subscriptions") %>'>
@@ -181,10 +180,8 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 					boolean showAddMessageButton = MBCategoryPermission.contains(permissionChecker, scopeGroupId, categoryId, ActionKeys.ADD_MESSAGE);
 					boolean showPermissionsButton = MBResourcePermission.contains(permissionChecker, scopeGroupId, ActionKeys.PERMISSIONS);
 
-					if (showAddMessageButton && !themeDisplay.isSignedIn()) {
-						if (!allowAnonymousPosting) {
-							showAddMessageButton = false;
-						}
+					if (showAddMessageButton && !themeDisplay.isSignedIn() && !allowAnonymousPosting) {
+						showAddMessageButton = false;
 					}
 					%>
 
@@ -202,8 +199,12 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 						/>
 					</c:if>
 
-					<div class="autofit-float autofit-row">
-						<div class="autofit-col autofit-col-expand">
+					<clay:content-row
+						floatElements="end"
+					>
+						<clay:content-col
+							expand="<%= true %>"
+						>
 							<c:choose>
 								<c:when test="<%= category != null %>">
 									<h3><%= HtmlUtil.escape(category.getName()) %></h3>
@@ -222,9 +223,9 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 									/>
 								</c:otherwise>
 							</c:choose>
-						</div>
+						</clay:content-col>
 
-						<div class="autofit-col autofit-col-end">
+						<clay:content-col>
 							<div class="btn-group">
 								<c:if test="<%= showAddCategoryButton %>">
 									<portlet:renderURL var="editCategoryURL">
@@ -235,10 +236,11 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 
 									<div class="btn-group-item">
 										<clay:link
-											buttonStyle="secondary"
-											elementClasses="btn-sm"
+											displayType="secondary"
 											href="<%= editCategoryURL %>"
-											label='<%= LanguageUtil.get(request, "add-category[message-board]") %>'
+											label="add-category[message-board]"
+											small="<%= true %>"
+											type="button"
 										/>
 									</div>
 								</c:if>
@@ -252,10 +254,11 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 
 									<div class="btn-group-item">
 										<clay:link
-											buttonStyle="primary"
-											elementClasses="btn-sm"
+											displayType="primary"
 											href="<%= editMessageURL %>"
-											label='<%= LanguageUtil.get(request, "new-thread") %>'
+											label="new-thread"
+											small="<%= true %>"
+											type="button"
 										/>
 									</div>
 								</c:if>
@@ -384,8 +387,8 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 									</c:choose>
 								</liferay-ui:icon-menu>
 							</div>
-						</div>
-					</div>
+						</clay:content-col>
+					</clay:content-row>
 
 					<%
 					SearchContainer categoryEntriesSearchContainer = new SearchContainer(renderRequest, null, null, "cur1", 0, mbListDisplayContext.getCategoryEntriesDelta(), PortletURLUtil.clone(portletURL, renderResponse), null, "there-are-no-threads-or-categories");
@@ -402,25 +405,23 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 					%>
 
 					<c:if test="<%= categoryEntriesSearchContainer.getTotal() > 0 %>">
-						<liferay-util:include page='<%= "/message_boards/view_category_entries.jsp" %>' servletContext="<%= application %>" />
+						<%@ include file="/message_boards/view_category_entries.jspf" %>
 					</c:if>
 
 					<%
 					SearchContainer threadEntriesSearchContainer = new SearchContainer(renderRequest, null, null, "cur2", 0, mbListDisplayContext.getThreadEntriesDelta(), PortletURLUtil.clone(portletURL, renderResponse), null, "there-are-no-threads-or-categories");
 
-					mbListDisplayContext.setThreadEntriesDelta(categoryEntriesSearchContainer);
+					mbListDisplayContext.setThreadEntriesDelta(threadEntriesSearchContainer);
 
 					threadEntriesSearchContainer.setOrderByCol(orderByCol);
 					threadEntriesSearchContainer.setOrderByComparator(threadOrderByComparator);
 					threadEntriesSearchContainer.setOrderByType(orderByType);
 
 					mbListDisplayContext.populateThreadsResultsAndTotal(threadEntriesSearchContainer);
-
-					request.setAttribute("view.jsp-threadEntriesSearchContainer", threadEntriesSearchContainer);
 					%>
 
 					<c:if test="<%= threadEntriesSearchContainer.getTotal() > 0 %>">
-						<liferay-util:include page='<%= "/message_boards/view_thread_entries.jsp" %>' servletContext="<%= application %>" />
+						<%@ include file="/message_boards/view_thread_entries.jspf" %>
 					</c:if>
 
 					<c:if test="<%= (categoryEntriesSearchContainer.getTotal() <= 0) && (threadEntriesSearchContainer.getTotal() <= 0) %>">
@@ -442,12 +443,16 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 				<div class="main-content-body">
 					<c:choose>
 						<c:when test="<%= mbListDisplayContext.isShowRecentPosts() %>">
-							<div class="autofit-float autofit-row">
-								<div class="autofit-col autofit-col-expand">
+							<clay:content-row
+								floatElements="end"
+							>
+								<clay:content-col
+									expand="<%= true %>"
+								>
 									<h3><liferay-ui:message key="recent-posts" /></h3>
-								</div>
+								</clay:content-col>
 
-								<div class="autofit-col autofit-col-end">
+								<clay:content-col>
 									<div class="btn-group">
 										<c:if test="<%= enableRSS %>">
 											<liferay-ui:icon-menu
@@ -467,8 +472,8 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 											</liferay-ui:icon-menu>
 										</c:if>
 									</div>
-								</div>
-							</div>
+								</clay:content-col>
+							</clay:content-row>
 
 							<c:if test="<%= groupThreadsUserId > 0 %>">
 								<div class="alert alert-info">
@@ -484,12 +489,16 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 							}
 							%>
 
-							<div class="autofit-float autofit-row">
-								<div class="autofit-col autofit-col-expand">
+							<clay:content-row
+								floatElements="end"
+							>
+								<clay:content-col
+									expand="<%= true %>"
+								>
 									<h3><liferay-ui:message key="my-posts" /></h3>
-								</div>
+								</clay:content-col>
 
-								<div class="autofit-col autofit-col-end">
+								<clay:content-col>
 									<div class="btn-group">
 										<c:if test="<%= enableRSS %>">
 											<liferay-ui:icon-menu
@@ -509,8 +518,8 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 											</liferay-ui:icon-menu>
 										</c:if>
 									</div>
-								</div>
-							</div>
+								</clay:content-col>
+							</clay:content-row>
 						</c:otherwise>
 					</c:choose>
 
@@ -530,11 +539,9 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 					threadEntriesSearchContainer.setOrderByType(orderByType);
 
 					mbListDisplayContext.populateThreadsResultsAndTotal(threadEntriesSearchContainer);
-
-					request.setAttribute("view.jsp-threadEntriesSearchContainer", threadEntriesSearchContainer);
 					%>
 
-					<liferay-util:include page='<%= "/message_boards/view_thread_entries.jsp" %>' servletContext="<%= application %>" />
+					<%@ include file="/message_boards/view_thread_entries.jspf" %>
 
 					<%
 					String pageSubtitle = null;

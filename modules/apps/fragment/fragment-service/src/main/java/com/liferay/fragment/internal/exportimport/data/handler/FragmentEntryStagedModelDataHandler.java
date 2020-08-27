@@ -14,6 +14,7 @@
 
 package com.liferay.fragment.internal.exportimport.data.handler;
 
+import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -92,6 +93,14 @@ public class FragmentEntryStagedModelDataHandler
 				PortletDataContext.REFERENCE_TYPE_WEAK);
 		}
 
+		String html =
+			_dlReferencesExportImportContentProcessor.
+				replaceExportContentReferences(
+					portletDataContext, fragmentEntry, fragmentEntry.getHtml(),
+					true, false);
+
+		fragmentEntry.setHtml(html);
+
 		Element entryElement = portletDataContext.getExportDataElement(
 			fragmentEntry);
 
@@ -140,6 +149,13 @@ public class FragmentEntryStagedModelDataHandler
 		importedFragmentEntry.setGroupId(portletDataContext.getScopeGroupId());
 		importedFragmentEntry.setFragmentCollectionId(fragmentCollectionId);
 
+		String html =
+			_dlReferencesExportImportContentProcessor.
+				replaceImportContentReferences(
+					portletDataContext, fragmentEntry, fragmentEntry.getHtml());
+
+		importedFragmentEntry.setHtml(html);
+
 		FragmentEntry existingFragmentEntry =
 			_stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 				fragmentEntry.getUuid(), portletDataContext.getScopeGroupId());
@@ -151,6 +167,8 @@ public class FragmentEntryStagedModelDataHandler
 				portletDataContext, importedFragmentEntry);
 		}
 		else {
+			importedFragmentEntry.setMvccVersion(
+				existingFragmentEntry.getMvccVersion());
 			importedFragmentEntry.setFragmentEntryId(
 				existingFragmentEntry.getFragmentEntryId());
 
@@ -181,6 +199,10 @@ public class FragmentEntryStagedModelDataHandler
 	protected StagedModelRepository<FragmentEntry> getStagedModelRepository() {
 		return _stagedModelRepository;
 	}
+
+	@Reference(target = "(content.processor.type=DLReferences)")
+	private ExportImportContentProcessor<String>
+		_dlReferencesExportImportContentProcessor;
 
 	@Reference
 	private FragmentCollectionLocalService _fragmentCollectionLocalService;

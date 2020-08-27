@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for Company. This utility wraps
  * <code>com.liferay.portal.service.impl.CompanyServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CompanyService
  * @generated
  */
-@ProviderType
 public class CompanyServiceUtil {
 
 	/*
@@ -206,7 +203,7 @@ public class CompanyServiceUtil {
 	 * @param virtualHost the company's virtual host name
 	 * @param mx the company's mail domain
 	 * @param homeURL the company's home URL (optionally <code>null</code>)
-	 * @param logo whether to update the company's logo
+	 * @param hasLogo if the company has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param name the company's account name (optionally <code>null</code>)
 	 * @param legalName the company's account legal name (optionally
@@ -227,13 +224,13 @@ public class CompanyServiceUtil {
 	 */
 	public static com.liferay.portal.kernel.model.Company updateCompany(
 			long companyId, String virtualHost, String mx, String homeURL,
-			boolean logo, byte[] logoBytes, String name, String legalName,
+			boolean hasLogo, byte[] logoBytes, String name, String legalName,
 			String legalId, String legalType, String sicCode,
 			String tickerSymbol, String industry, String type, String size)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateCompany(
-			companyId, virtualHost, mx, homeURL, logo, logoBytes, name,
+			companyId, virtualHost, mx, homeURL, hasLogo, logoBytes, name,
 			legalName, legalId, legalType, sicCode, tickerSymbol, industry,
 			type, size);
 	}
@@ -245,7 +242,7 @@ public class CompanyServiceUtil {
 	 * @param virtualHost the company's virtual host name
 	 * @param mx the company's mail domain
 	 * @param homeURL the company's home URL (optionally <code>null</code>)
-	 * @param logo if the company has a custom logo
+	 * @param hasLogo if the company has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param name the company's account name (optionally <code>null</code>)
 	 * @param legalName the company's account legal name (optionally
@@ -268,12 +265,12 @@ public class CompanyServiceUtil {
 	 * @param emailAddresses the company's email addresses
 	 * @param phones the company's phone numbers
 	 * @param websites the company's websites
-	 * @param properties the company's properties
+	 * @param unicodeProperties the company's properties
 	 * @return the company with the primary key
 	 */
 	public static com.liferay.portal.kernel.model.Company updateCompany(
 			long companyId, String virtualHost, String mx, String homeURL,
-			boolean logo, byte[] logoBytes, String name, String legalName,
+			boolean hasLogo, byte[] logoBytes, String name, String legalName,
 			String legalId, String legalType, String sicCode,
 			String tickerSymbol, String industry, String type, String size,
 			String languageId, String timeZoneId,
@@ -282,14 +279,14 @@ public class CompanyServiceUtil {
 				emailAddresses,
 			java.util.List<com.liferay.portal.kernel.model.Phone> phones,
 			java.util.List<com.liferay.portal.kernel.model.Website> websites,
-			com.liferay.portal.kernel.util.UnicodeProperties properties)
+			com.liferay.portal.kernel.util.UnicodeProperties unicodeProperties)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateCompany(
-			companyId, virtualHost, mx, homeURL, logo, logoBytes, name,
+			companyId, virtualHost, mx, homeURL, hasLogo, logoBytes, name,
 			legalName, legalId, legalType, sicCode, tickerSymbol, industry,
 			type, size, languageId, timeZoneId, addresses, emailAddresses,
-			phones, websites, properties);
+			phones, websites, unicodeProperties);
 	}
 
 	/**
@@ -339,14 +336,15 @@ public class CompanyServiceUtil {
 	 * found in portal.properties.
 	 *
 	 * @param companyId the primary key of the company
-	 * @param properties the company's properties. See {@link UnicodeProperties}
+	 * @param unicodeProperties the company's properties. See {@link
+	 UnicodeProperties}
 	 */
 	public static void updatePreferences(
 			long companyId,
-			com.liferay.portal.kernel.util.UnicodeProperties properties)
+			com.liferay.portal.kernel.util.UnicodeProperties unicodeProperties)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		getService().updatePreferences(companyId, properties);
+		getService().updatePreferences(companyId, unicodeProperties);
 	}
 
 	/**

@@ -19,7 +19,7 @@
 <%
 JournalDDMTemplateDisplayContext journalDDMTemplateDisplayContext = new JournalDDMTemplateDisplayContext(renderRequest, renderResponse);
 
-JournalDDMTemplateManagementToolbarDisplayContext journalDDMTemplateManagementToolbarDisplayContext = new JournalDDMTemplateManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, journalDDMTemplateDisplayContext);
+JournalDDMTemplateManagementToolbarDisplayContext journalDDMTemplateManagementToolbarDisplayContext = new JournalDDMTemplateManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, journalDDMTemplateDisplayContext);
 
 DDMStructure ddmStructure = journalDDMTemplateDisplayContext.getDDMStructure();
 
@@ -30,7 +30,7 @@ if (ddmStructure != null) {
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems='<%= journalDisplayContext.getNavigationBarItems("templates") %>'
+	navigationItems='<%= journalDisplayContext.getNavigationItems("templates") %>'
 />
 
 <clay:management-toolbar
@@ -43,6 +43,12 @@ if (ddmStructure != null) {
 
 <aui:form action="<%= deleteDDMTemplateURL %>" cssClass="container-fluid-1280" method="post" name="fm">
 	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
+
+	<c:if test="<%= !journalDisplayContext.isNavigationMine() && !journalDisplayContext.isNavigationRecent() %>">
+		<liferay-site-navigation:breadcrumb
+			breadcrumbEntries="<%= new ArrayList<>() %>"
+		/>
+	</c:if>
 
 	<liferay-ui:error exception="<%= RequiredTemplateException.MustNotDeleteTemplateReferencedByTemplateLinks.class %>" message="the-template-cannot-be-deleted-because-it-is-required-by-one-or-more-template-links" />
 
@@ -69,9 +75,9 @@ if (ddmStructure != null) {
 				rowHREF = rowURL.toString();
 			}
 
-			Map<String, Object> rowData = new HashMap<>();
-
-			rowData.put("actions", journalDDMTemplateManagementToolbarDisplayContext.getAvailableActions(ddmTemplate));
+			Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+				"actions", journalDDMTemplateManagementToolbarDisplayContext.getAvailableActions(ddmTemplate)
+			).build();
 
 			row.setData(rowData);
 			%>

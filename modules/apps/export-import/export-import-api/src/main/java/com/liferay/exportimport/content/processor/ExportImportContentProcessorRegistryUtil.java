@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -35,19 +34,20 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
  * @author Gergely Mathe
  * @author Máté Thurzó
  */
-@ProviderType
 public class ExportImportContentProcessorRegistryUtil {
 
-	public static ExportImportContentProcessor getExportImportContentProcessor(
-		String className) {
+	public static ExportImportContentProcessor<String>
+		getExportImportContentProcessor(String className) {
 
-		return _instance._getExportImportContentProcessor(className);
+		return _exportImportContentProcessorRegistryUtil.
+			_getExportImportContentProcessor(className);
 	}
 
-	public static List<ExportImportContentProcessor>
+	public static List<ExportImportContentProcessor<String>>
 		getExportImportContentProcessors() {
 
-		return _instance._getExportImportContentProcessors();
+		return _exportImportContentProcessorRegistryUtil.
+			_getExportImportContentProcessors();
 	}
 
 	private ExportImportContentProcessorRegistryUtil() {
@@ -57,44 +57,49 @@ public class ExportImportContentProcessorRegistryUtil {
 		_bundleContext = bundle.getBundleContext();
 
 		_serviceTracker = ServiceTrackerFactory.open(
-			_bundleContext, ExportImportContentProcessor.class,
+			_bundleContext,
+			(Class<ExportImportContentProcessor<String>>)
+				(Class<?>)ExportImportContentProcessor.class,
 			new ExportImportContentProcessorServiceTrackerCustomizer());
 	}
 
-	private ExportImportContentProcessor _getExportImportContentProcessor(
-		String className) {
+	private ExportImportContentProcessor<String>
+		_getExportImportContentProcessor(String className) {
 
 		return _exportImportContentProcessors.get(className);
 	}
 
-	private List<ExportImportContentProcessor>
+	private List<ExportImportContentProcessor<String>>
 		_getExportImportContentProcessors() {
 
-		Collection<ExportImportContentProcessor> values =
+		Collection<ExportImportContentProcessor<String>> values =
 			_exportImportContentProcessors.values();
 
 		return ListUtil.fromCollection(values);
 	}
 
-	private static final ExportImportContentProcessorRegistryUtil _instance =
-		new ExportImportContentProcessorRegistryUtil();
+	private static final ExportImportContentProcessorRegistryUtil
+		_exportImportContentProcessorRegistryUtil =
+			new ExportImportContentProcessorRegistryUtil();
 
 	private final BundleContext _bundleContext;
-	private final Map<String, ExportImportContentProcessor>
+	private final Map<String, ExportImportContentProcessor<String>>
 		_exportImportContentProcessors = new ConcurrentHashMap<>();
 	private final ServiceTracker
-		<ExportImportContentProcessor, ExportImportContentProcessor>
-			_serviceTracker;
+		<ExportImportContentProcessor<String>,
+		 ExportImportContentProcessor<String>> _serviceTracker;
 
 	private class ExportImportContentProcessorServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
-			<ExportImportContentProcessor, ExportImportContentProcessor> {
+			<ExportImportContentProcessor<String>,
+			 ExportImportContentProcessor<String>> {
 
 		@Override
-		public ExportImportContentProcessor addingService(
-			ServiceReference<ExportImportContentProcessor> serviceReference) {
+		public ExportImportContentProcessor<String> addingService(
+			ServiceReference<ExportImportContentProcessor<String>>
+				serviceReference) {
 
-			ExportImportContentProcessor exportImportContentProcessor =
+			ExportImportContentProcessor<String> exportImportContentProcessor =
 				_bundleContext.getService(serviceReference);
 
 			List<String> modelClassNames = StringPlus.asList(
@@ -110,8 +115,9 @@ public class ExportImportContentProcessorRegistryUtil {
 
 		@Override
 		public void modifiedService(
-			ServiceReference<ExportImportContentProcessor> serviceReference,
-			ExportImportContentProcessor exportImportContentProcessor) {
+			ServiceReference<ExportImportContentProcessor<String>>
+				serviceReference,
+			ExportImportContentProcessor<String> exportImportContentProcessor) {
 
 			removedService(serviceReference, exportImportContentProcessor);
 
@@ -120,8 +126,9 @@ public class ExportImportContentProcessorRegistryUtil {
 
 		@Override
 		public void removedService(
-			ServiceReference<ExportImportContentProcessor> serviceReference,
-			ExportImportContentProcessor exportImportContentProcessor) {
+			ServiceReference<ExportImportContentProcessor<String>>
+				serviceReference,
+			ExportImportContentProcessor<String> exportImportContentProcessor) {
 
 			_bundleContext.ungetService(serviceReference);
 

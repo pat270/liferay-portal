@@ -26,8 +26,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.Team;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
@@ -168,8 +168,6 @@ public class PermissionImporterImpl implements PermissionImporter {
 
 		String name = roleElement.attributeValue("name");
 
-		Role role = null;
-
 		if (ExportImportPermissionUtil.isTeamRoleName(name)) {
 			name = name.substring(
 				ExportImportPermissionUtil.ROLE_TEAM_PREFIX.length());
@@ -181,28 +179,26 @@ public class PermissionImporterImpl implements PermissionImporter {
 			try {
 				team = _teamLocalService.getTeam(groupId, name);
 			}
-			catch (NoSuchTeamException nste) {
+			catch (NoSuchTeamException noSuchTeamException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nste, nste);
+					_log.debug(noSuchTeamException, noSuchTeamException);
 				}
 
 				team = _teamLocalService.addTeam(
 					userId, groupId, name, description, new ServiceContext());
 			}
 
-			role = _roleLocalService.getTeamRole(companyId, team.getTeamId());
-
-			return role;
+			return _roleLocalService.getTeamRole(companyId, team.getTeamId());
 		}
 
 		String uuid = roleElement.attributeValue("uuid");
 
 		LayoutCache layoutCache = _layoutCacheThreadLocal.get();
 
-		role = layoutCache.getUuidRole(companyId, uuid);
+		Role role = layoutCache.getUuidRole(companyId, uuid);
 
 		if (role == null) {
 			role = layoutCache.getNameRole(companyId, name);
@@ -229,11 +225,9 @@ public class PermissionImporterImpl implements PermissionImporter {
 
 		serviceContext.setUuid(uuid);
 
-		role = _roleLocalService.addRole(
+		return _roleLocalService.addRole(
 			userId, null, 0, name, titleMap, descriptionMap, type, subtype,
 			serviceContext);
-
-		return role;
 	}
 
 	private List<String> _getActions(Element element) {

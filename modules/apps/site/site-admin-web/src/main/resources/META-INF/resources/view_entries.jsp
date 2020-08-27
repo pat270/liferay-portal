@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <liferay-ui:search-container
-	searchContainer="<%= siteAdminDisplayContext.getSearchContainer() %>"
+	searchContainer="<%= siteAdminDisplayContext.getGroupSearch() %>"
 >
 	<liferay-ui:search-container-row
 		className="com.liferay.portal.kernel.model.Group"
@@ -32,9 +32,9 @@
 
 		String siteImageURL = curGroup.getLogoURL(themeDisplay, false);
 
-		Map<String, Object> rowData = new HashMap<>();
-
-		rowData.put("actions", siteAdminManagementToolbarDisplayContext.getAvailableActions(curGroup));
+		Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+			"actions", siteAdminManagementToolbarDisplayContext.getAvailableActions(curGroup)
+		).build();
 
 		row.setData(rowData);
 		%>
@@ -138,7 +138,9 @@
 							message = LanguageUtil.format(request, "you-are-a-member-of-x-because-you-belong-to-x", new Object[] {HtmlUtil.escape(curGroup.getDescriptiveName(locale)), HtmlUtil.escape(names.get(0))}, false);
 						}
 						else {
-							message = LanguageUtil.format(request, "you-are-a-member-of-x-because-you-belong-to-x-and-x", new Object[] {HtmlUtil.escape(curGroup.getDescriptiveName(locale)), HtmlUtil.escape(StringUtil.merge(names.subList(0, names.size() - 1).toArray(new String[names.size() - 1]), ", ")), HtmlUtil.escape(names.get(names.size() - 1))}, false);
+							List<String> namesList = names.subList(0, names.size() - 1);
+
+							message = LanguageUtil.format(request, "you-are-a-member-of-x-because-you-belong-to-x-and-x", new Object[] {HtmlUtil.escape(curGroup.getDescriptiveName(locale)), HtmlUtil.escape(StringUtil.merge(namesList.toArray(new String[names.size() - 1]), ", ")), HtmlUtil.escape(names.get(names.size() - 1))}, false);
 						}
 					%>
 
@@ -174,10 +176,10 @@
 					cssClass="table-cell-expand-smallest table-cell-minw-150"
 					name="members"
 				>
-					<span onmouseover="Liferay.Portal.ToolTip.show(this, '<liferay-ui:message key="inherited-memberships-are-not-included-in-members-count" unicode="<%= true %>" />');">
+					<span class="lfr-portal-tooltip" title="<liferay-ui:message key="inherited-memberships-are-not-included-in-members-count" />">
 
 						<%
-						int usersCount = UserLocalServiceUtil.getGroupUsersCount(curGroup.getGroupId());
+						int usersCount = UserLocalServiceUtil.getGroupUsersCount(curGroup.getGroupId(), WorkflowConstants.STATUS_APPROVED);
 						%>
 
 						<c:if test="<%= usersCount > 0 %>">
@@ -229,6 +231,7 @@
 					<clay:dropdown-actions
 						defaultEventHandler="<%= SiteAdminWebKeys.SITE_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
 						dropdownItems="<%= siteAdminDisplayContext.getActionDropdownItems(curGroup) %>"
+						itemsIconAlignment="right"
 					/>
 				</liferay-ui:search-container-column-text>
 			</c:otherwise>

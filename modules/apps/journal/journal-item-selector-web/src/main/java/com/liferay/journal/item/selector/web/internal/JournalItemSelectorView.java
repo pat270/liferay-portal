@@ -17,13 +17,14 @@ package com.liferay.journal.item.selector.web.internal;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.ItemSelectorView;
+import com.liferay.item.selector.PortletItemSelectorView;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
+import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.item.selector.criterion.JournalItemSelectorCriterion;
 import com.liferay.journal.item.selector.web.internal.constants.JournalItemSelectorWebKeys;
 import com.liferay.journal.item.selector.web.internal.display.context.JournalItemSelectorViewDisplayContext;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.ListUtil;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -51,11 +53,16 @@ import org.osgi.service.component.annotations.Reference;
 	service = ItemSelectorView.class
 )
 public class JournalItemSelectorView
-	implements ItemSelectorView<JournalItemSelectorCriterion> {
+	implements PortletItemSelectorView<JournalItemSelectorCriterion> {
 
 	@Override
 	public Class<JournalItemSelectorCriterion> getItemSelectorCriterionClass() {
 		return JournalItemSelectorCriterion.class;
+	}
+
+	@Override
+	public List<String> getPortletIds() {
+		return _portletIds;
 	}
 
 	public ServletContext getServletContext() {
@@ -69,17 +76,12 @@ public class JournalItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		return LanguageUtil.get(locale, "web-content-images");
-	}
-
-	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
+		return _language.get(locale, "web-content-images");
 	}
 
 	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			JournalItemSelectorCriterion journalItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
@@ -87,11 +89,11 @@ public class JournalItemSelectorView
 		JournalItemSelectorViewDisplayContext
 			journalItemSelectorViewDisplayContext =
 				new JournalItemSelectorViewDisplayContext(
-					journalItemSelectorCriterion, this,
+					(HttpServletRequest)servletRequest, itemSelectedEventName,
 					_itemSelectorReturnTypeResolverHandler,
-					itemSelectedEventName, search, portletURL);
+					journalItemSelectorCriterion, this, portletURL, search);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			JournalItemSelectorWebKeys.
 				JOURNAL_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			journalItemSelectorViewDisplayContext);
@@ -101,7 +103,7 @@ public class JournalItemSelectorView
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher("/journal_images.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	@Reference(unbind = "-")
@@ -121,16 +123,20 @@ public class JournalItemSelectorView
 		_servletContext = servletContext;
 	}
 
+	private static final List<String> _portletIds = Collections.singletonList(
+		JournalPortletKeys.JOURNAL);
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
 			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new FileEntryItemSelectorReturnType(),
-					new URLItemSelectorReturnType()
-				}));
+				new FileEntryItemSelectorReturnType(),
+				new URLItemSelectorReturnType()));
 
 	private ItemSelectorReturnTypeResolverHandler
 		_itemSelectorReturnTypeResolverHandler;
+
+	@Reference
+	private Language _language;
+
 	private ServletContext _servletContext;
 
 }

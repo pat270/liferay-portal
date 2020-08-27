@@ -44,20 +44,21 @@ import org.osgi.service.component.annotations.Reference;
 public class KBFolderModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", KBFolder.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<KBFolder>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				KBFolder.class, KBFolder::getKbFolderId,
 				_kbFolderLocalService::getKBFolder, _portletResourcePermission,
 				(modelResourcePermission, consumer) -> {
 					if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
 						consumer.accept(
-							new KBFolderDynamicInheritancePermissionLogic(
+							new KBFolderDynamicInheritanceModelResourcePermissionLogic(
 								modelResourcePermission));
 					}
 				}),
@@ -65,7 +66,7 @@ public class KBFolderModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -77,9 +78,10 @@ public class KBFolderModelResourcePermissionRegistrar {
 	)
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<KBFolder>>
+		_serviceRegistration;
 
-	private class KBFolderDynamicInheritancePermissionLogic
+	private class KBFolderDynamicInheritanceModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<KBFolder> {
 
 		@Override
@@ -106,10 +108,10 @@ public class KBFolderModelResourcePermissionRegistrar {
 				permissionChecker, kbFolder, actionId);
 		}
 
-		private KBFolderDynamicInheritancePermissionLogic(
-			ModelResourcePermission<KBFolder> modelResourcePermission) {
+		private KBFolderDynamicInheritanceModelResourcePermissionLogic(
+			ModelResourcePermission<KBFolder> kbFolderModelResourcePermission) {
 
-			_kbFolderModelResourcePermission = modelResourcePermission;
+			_kbFolderModelResourcePermission = kbFolderModelResourcePermission;
 		}
 
 		private final ModelResourcePermission<KBFolder>

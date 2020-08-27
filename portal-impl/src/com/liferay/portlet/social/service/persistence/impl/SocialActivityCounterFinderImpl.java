@@ -75,24 +75,24 @@ public class SocialActivityCounterFinderImpl
 
 			sql = StringUtil.replace(sql, "[$NAME$]", getNames(names));
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(PortalUtil.getClassNameId(User.class.getName()));
+			queryPos.add(groupId);
+			queryPos.add(PortalUtil.getClassNameId(User.class.getName()));
 
-			setNames(qPos, names);
+			setNames(queryPos, names);
 
-			qPos.add(SocialCounterPeriodUtil.getPeriodLength());
-			qPos.add(SocialCounterPeriodUtil.getActivityDay());
+			queryPos.add(SocialCounterPeriodUtil.getPeriodLength());
+			queryPos.add(SocialCounterPeriodUtil.getActivityDay());
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -101,8 +101,8 @@ public class SocialActivityCounterFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -146,23 +146,23 @@ public class SocialActivityCounterFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_AC_BY_G_N_S_E_1);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(name);
-			qPos.add(startPeriod);
-			qPos.add(endPeriod);
-			qPos.add(periodLength);
-			qPos.add(endPeriod);
+			queryPos.add(groupId);
+			queryPos.add(name);
+			queryPos.add(startPeriod);
+			queryPos.add(endPeriod);
+			queryPos.add(periodLength);
+			queryPos.add(endPeriod);
 
 			activityCounters = new ArrayList<>();
 
-			Iterator<Object[]> itr = q.iterate();
+			Iterator<Object[]> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				SocialActivityCounter activityCounter =
 					new SocialActivityCounterImpl();
@@ -176,8 +176,8 @@ public class SocialActivityCounterFinderImpl
 				activityCounters.add(activityCounter);
 			}
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			if (activityCounters == null) {
@@ -207,23 +207,23 @@ public class SocialActivityCounterFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_AC_BY_G_N_S_E_2);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(counterName);
-			qPos.add(startPeriod);
-			qPos.add(endPeriod);
-			qPos.add(periodLength);
-			qPos.add(endPeriod);
+			queryPos.add(groupId);
+			queryPos.add(counterName);
+			queryPos.add(startPeriod);
+			queryPos.add(endPeriod);
+			queryPos.add(periodLength);
+			queryPos.add(endPeriod);
 
 			List<SocialActivityCounter> activityCounters = new ArrayList<>();
 
-			Iterator<Object[]> itr = q.iterate();
+			Iterator<Object[]> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				SocialActivityCounter activityCounter =
 					new SocialActivityCounterImpl();
@@ -238,8 +238,8 @@ public class SocialActivityCounterFinderImpl
 
 			return activityCounters;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -265,23 +265,23 @@ public class SocialActivityCounterFinderImpl
 				sql, new String[] {"[$CLASS_PK$]", "[$NAME$]"},
 				new String[] {StringUtil.merge(userIds), getNames(names)});
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity(
+			sqlQuery.addEntity(
 				"SocialActivityCounter", SocialActivityCounterImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(PortalUtil.getClassNameId(User.class.getName()));
+			queryPos.add(groupId);
+			queryPos.add(PortalUtil.getClassNameId(User.class.getName()));
 
-			setNames(qPos, names);
+			setNames(queryPos, names);
 
 			return (List<SocialActivityCounter>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -305,23 +305,24 @@ public class SocialActivityCounterFinderImpl
 
 			sql = StringUtil.replace(sql, "[$NAME$]", getNames(names));
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("classPK", Type.LONG);
+			sqlQuery.addScalar("classPK", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(PortalUtil.getClassNameId(User.class.getName()));
+			queryPos.add(groupId);
+			queryPos.add(PortalUtil.getClassNameId(User.class.getName()));
 
-			setNames(qPos, names);
+			setNames(queryPos, names);
 
-			qPos.add(SocialCounterPeriodUtil.getStartPeriod());
+			queryPos.add(SocialCounterPeriodUtil.getStartPeriod());
 
-			return (List<Long>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<Long>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -333,7 +334,7 @@ public class SocialActivityCounterFinderImpl
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(names.length * 2 - 1);
+		StringBundler sb = new StringBundler((names.length * 2) - 1);
 
 		for (int i = 0; i < names.length; i++) {
 			sb.append(StringPool.QUESTION);
@@ -346,10 +347,10 @@ public class SocialActivityCounterFinderImpl
 		return sb.toString();
 	}
 
-	protected void setNames(QueryPos qPos, String[] names) {
+	protected void setNames(QueryPos queryPos, String[] names) {
 		if (ArrayUtil.isNotEmpty(names)) {
 			for (String name : names) {
-				qPos.add(name);
+				queryPos.add(name);
 			}
 		}
 	}

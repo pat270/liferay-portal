@@ -18,10 +18,10 @@ import com.liferay.portal.configuration.persistence.ReloadablePersistenceManager
 import com.liferay.portal.configuration.persistence.internal.ConfigurationPersistenceManager;
 import com.liferay.portal.configuration.persistence.internal.upgrade.ConfigurationUpgradeStepFactoryImpl;
 import com.liferay.portal.configuration.persistence.upgrade.ConfigurationUpgradeStepFactory;
+import com.liferay.portal.kernel.util.HashMapDictionary;
 
 import java.util.Collection;
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.sql.DataSource;
@@ -51,20 +51,17 @@ public class ConfigurationPersistenceImplBundleActivator
 				"Liferay data source is not available");
 		}
 
-		_configurationPersistenceManager =
-			new ConfigurationPersistenceManager();
-
 		Iterator<ServiceReference<DataSource>> iterator =
 			serviceReferences.iterator();
 
 		_serviceReference = iterator.next();
 
-		_configurationPersistenceManager.setDataSource(
-			bundleContext.getService(_serviceReference));
+		_configurationPersistenceManager = new ConfigurationPersistenceManager(
+			bundleContext, bundleContext.getService(_serviceReference));
 
 		_configurationPersistenceManager.start();
 
-		Dictionary<String, Object> properties = new Hashtable<>();
+		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put(
 			PersistenceManager.PROPERTY_NAME,

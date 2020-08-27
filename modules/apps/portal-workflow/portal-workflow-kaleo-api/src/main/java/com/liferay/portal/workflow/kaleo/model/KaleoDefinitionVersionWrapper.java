@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link KaleoDefinitionVersion}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KaleoDefinitionVersion
  * @generated
  */
-@ProviderType
 public class KaleoDefinitionVersionWrapper
 	extends BaseModelWrapper<KaleoDefinitionVersion>
 	implements KaleoDefinitionVersion, ModelWrapper<KaleoDefinitionVersion> {
@@ -59,6 +56,7 @@ public class KaleoDefinitionVersionWrapper
 		attributes.put("statusDate", getStatusDate());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("kaleoDefinitionId", getKaleoDefinitionId());
 		attributes.put("name", getName());
 		attributes.put("title", getTitle());
 		attributes.put("description", getDescription());
@@ -139,6 +137,12 @@ public class KaleoDefinitionVersionWrapper
 			setModifiedDate(modifiedDate);
 		}
 
+		Long kaleoDefinitionId = (Long)attributes.get("kaleoDefinitionId");
+
+		if (kaleoDefinitionId != null) {
+			setKaleoDefinitionId(kaleoDefinitionId);
+		}
+
 		String name = (String)attributes.get("name");
 
 		if (name != null) {
@@ -182,6 +186,10 @@ public class KaleoDefinitionVersionWrapper
 		}
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public KaleoDefinition fetchKaleoDefinition() {
 		return model.fetchKaleoDefinition();
@@ -252,6 +260,16 @@ public class KaleoDefinitionVersionWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return model.getKaleoDefinition();
+	}
+
+	/**
+	 * Returns the kaleo definition ID of this kaleo definition version.
+	 *
+	 * @return the kaleo definition ID of this kaleo definition version
+	 */
+	@Override
+	public long getKaleoDefinitionId() {
+		return model.getKaleoDefinitionId();
 	}
 
 	/**
@@ -487,6 +505,10 @@ public class KaleoDefinitionVersionWrapper
 		return model.getVersion();
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean hasIncompleteKaleoInstances() {
 		return model.hasIncompleteKaleoInstances();
@@ -640,6 +662,16 @@ public class KaleoDefinitionVersionWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the kaleo definition ID of this kaleo definition version.
+	 *
+	 * @param kaleoDefinitionId the kaleo definition ID of this kaleo definition version
+	 */
+	@Override
+	public void setKaleoDefinitionId(long kaleoDefinitionId) {
+		model.setKaleoDefinitionId(kaleoDefinitionId);
 	}
 
 	/**

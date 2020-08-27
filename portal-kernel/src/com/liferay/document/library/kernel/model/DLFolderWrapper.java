@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFolder
  * @generated
  */
-@ProviderType
 public class DLFolderWrapper
 	extends BaseModelWrapper<DLFolder>
 	implements DLFolder, ModelWrapper<DLFolder> {
@@ -46,6 +45,8 @@ public class DLFolderWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("folderId", getFolderId());
 		attributes.put("groupId", getGroupId());
@@ -75,6 +76,18 @@ public class DLFolderWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -277,6 +290,16 @@ public class DLFolderWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this document library folder.
+	 *
+	 * @return the ct collection ID of this document library folder
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the default file entry type ID of this document library folder.
 	 *
 	 * @return the default file entry type ID of this document library folder
@@ -364,6 +387,16 @@ public class DLFolderWrapper
 	@Override
 	public boolean getMountPoint() {
 		return model.getMountPoint();
+	}
+
+	/**
+	 * Returns the mvcc version of this document library folder.
+	 *
+	 * @return the mvcc version of this document library folder
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -772,6 +805,16 @@ public class DLFolderWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this document library folder.
+	 *
+	 * @param ctCollectionId the ct collection ID of this document library folder
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the default file entry type ID of this document library folder.
 	 *
 	 * @param defaultFileEntryTypeId the default file entry type ID of this document library folder
@@ -859,6 +902,16 @@ public class DLFolderWrapper
 	@Override
 	public void setMountPoint(boolean mountPoint) {
 		model.setMountPoint(mountPoint);
+	}
+
+	/**
+	 * Sets the mvcc version of this document library folder.
+	 *
+	 * @param mvccVersion the mvcc version of this document library folder
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -1024,6 +1077,20 @@ public class DLFolderWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<DLFolder, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DLFolder, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

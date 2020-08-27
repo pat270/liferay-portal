@@ -19,6 +19,7 @@ import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.message.boards.model.MBDiscussion;
@@ -93,9 +94,25 @@ public class MBDiscussionStagedModelDataHandler
 
 			return assetEntry.getTitleCurrentValue();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return discussion.getUuid();
 		}
+	}
+
+	@Override
+	public void importStagedModel(
+			PortletDataContext portletDataContext, MBDiscussion discussion)
+		throws PortletDataException {
+
+		Map<Long, Long> relatedClassPKs =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				discussion.getClassName());
+
+		if (!relatedClassPKs.containsKey(discussion.getClassPK())) {
+			return;
+		}
+
+		super.importStagedModel(portletDataContext, discussion);
 	}
 
 	@Override
@@ -136,6 +153,10 @@ public class MBDiscussionStagedModelDataHandler
 				userId, discussion.getUserName(),
 				portletDataContext.getScopeGroupId(), className, newClassPK,
 				WorkflowConstants.ACTION_PUBLISH);
+
+			rootMessage.setCreateDate(discussion.getCreateDate());
+
+			_mbMessageLocalService.updateMBMessage(rootMessage);
 
 			existingDiscussion = _mbDiscussionLocalService.getThreadDiscussion(
 				rootMessage.getThreadId());

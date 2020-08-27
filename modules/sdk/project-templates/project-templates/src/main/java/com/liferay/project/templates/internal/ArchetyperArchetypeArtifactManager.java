@@ -14,8 +14,8 @@
 
 package com.liferay.project.templates.internal;
 
-import com.liferay.project.templates.internal.util.FileUtil;
-import com.liferay.project.templates.internal.util.ProjectTemplatesUtil;
+import com.liferay.project.templates.extensions.util.FileUtil;
+import com.liferay.project.templates.extensions.util.ProjectTemplatesUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-
-import java.nio.file.Path;
 
 import java.util.List;
 
@@ -66,12 +64,25 @@ public class ArchetyperArchetypeArtifactManager
 		for (File archetypesFile : _archetypesFiles) {
 			try {
 				if (archetypesFile.isDirectory()) {
-					Path archetypePath = FileUtil.getFile(
-						archetypesFile.toPath(),
-						artifactId + "-" + version + ".jar");
+					for (File file : archetypesFile.listFiles()) {
+						try {
+							String bundleVersion = FileUtil.getManifestProperty(
+								file, "Bundle-Version");
 
-					if (archetypePath != null) {
-						archetypeFile = archetypePath.toFile();
+							String bundleSymbolicName =
+								FileUtil.getManifestProperty(
+									file, "Bundle-SymbolicName");
+
+							if (bundleVersion.equals(version) &&
+								bundleSymbolicName.equals(artifactId)) {
+
+								archetypeFile = file;
+
+								break;
+							}
+						}
+						catch (IOException ioException) {
+						}
 					}
 				}
 
@@ -79,8 +90,7 @@ public class ArchetyperArchetypeArtifactManager
 					break;
 				}
 			}
-			catch (Exception e) {
-				continue;
+			catch (Exception exception) {
 			}
 		}
 
@@ -89,7 +99,7 @@ public class ArchetyperArchetypeArtifactManager
 				archetypeFile = ProjectTemplatesUtil.getArchetypeFile(
 					artifactId);
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 			}
 		}
 
@@ -109,8 +119,8 @@ public class ArchetyperArchetypeArtifactManager
 
 			return new URLClassLoader(new URL[] {uri.toURL()}, null);
 		}
-		catch (MalformedURLException murle) {
-			throw new UnknownArchetype(murle);
+		catch (MalformedURLException malformedURLException) {
+			throw new UnknownArchetype(malformedURLException);
 		}
 	}
 

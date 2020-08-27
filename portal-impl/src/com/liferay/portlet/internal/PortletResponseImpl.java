@@ -14,8 +14,8 @@
 
 package com.liferay.portlet.internal;
 
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -156,38 +156,40 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 			throw new IllegalArgumentException();
 		}
 
-		if (StringUtil.equalsIgnoreCase(
+		if (!StringUtil.equalsIgnoreCase(
 				key, MimeResponse.MARKUP_HEAD_ELEMENT)) {
 
-			if ((element != null) &&
-				StringUtil.equalsIgnoreCase(element.getNodeName(), "script") &&
-				!element.hasChildNodes()) {
+			return;
+		}
 
-				// LPS-77798
+		if ((element != null) &&
+			StringUtil.equalsIgnoreCase(element.getNodeName(), "script") &&
+			!element.hasChildNodes()) {
 
-				element = (Element)element.cloneNode(true);
+			// LPS-77798
 
-				element.appendChild(_document.createTextNode(StringPool.SPACE));
+			element = (Element)element.cloneNode(true);
+
+			element.appendChild(_document.createTextNode(StringPool.SPACE));
+		}
+
+		List<Element> values = _markupHeadElements.get(key);
+
+		if (values == null) {
+			if (element != null) {
+				values = new ArrayList<>();
+
+				values.add(element);
+
+				_markupHeadElements.put(key, values);
 			}
-
-			List<Element> values = _markupHeadElements.get(key);
-
-			if (values == null) {
-				if (element != null) {
-					values = new ArrayList<>();
-
-					values.add(element);
-
-					_markupHeadElements.put(key, values);
-				}
+		}
+		else {
+			if (element == null) {
+				_markupHeadElements.remove(key);
 			}
 			else {
-				if (element == null) {
-					_markupHeadElements.remove(key);
-				}
-				else {
-					values.add(element);
-				}
+				values.add(element);
 			}
 		}
 	}
@@ -245,9 +247,10 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 				_document = documentBuilder.newDocument();
 			}
-			catch (ParserConfigurationException pce) {
+			catch (ParserConfigurationException parserConfigurationException) {
 				throw new DOMException(
-					DOMException.INVALID_STATE_ERR, pce.getMessage());
+					DOMException.INVALID_STATE_ERR,
+					parserConfigurationException.getMessage());
 			}
 		}
 
@@ -623,9 +626,9 @@ public abstract class PortletResponseImpl implements LiferayPortletResponse {
 
 				markupHeadElements.add(writer.toString());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 		}

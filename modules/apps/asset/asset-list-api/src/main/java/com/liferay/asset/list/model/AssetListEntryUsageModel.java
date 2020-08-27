@@ -17,8 +17,10 @@ package com.liferay.asset.list.model;
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -37,7 +39,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetListEntryUsageModel
-	extends AttachedModel, BaseModel<AssetListEntryUsage>, ShardedModel,
+	extends AttachedModel, BaseModel<AssetListEntryUsage>,
+			CTModel<AssetListEntryUsage>, MVCCModel, ShardedModel,
 			StagedGroupedModel {
 
 	/*
@@ -51,6 +54,7 @@ public interface AssetListEntryUsageModel
 	 *
 	 * @return the primary key of this asset list entry usage
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -58,7 +62,40 @@ public interface AssetListEntryUsageModel
 	 *
 	 * @param primaryKey the primary key of this asset list entry usage
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset list entry usage.
+	 *
+	 * @return the mvcc version of this asset list entry usage
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset list entry usage.
+	 *
+	 * @param mvccVersion the mvcc version of this asset list entry usage
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset list entry usage.
+	 *
+	 * @return the ct collection ID of this asset list entry usage
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset list entry usage.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset list entry usage
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this asset list entry usage.

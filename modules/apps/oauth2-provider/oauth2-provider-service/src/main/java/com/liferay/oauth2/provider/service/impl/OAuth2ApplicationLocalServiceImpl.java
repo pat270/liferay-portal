@@ -16,7 +16,6 @@ package com.liferay.oauth2.provider.service.impl;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.store.Store;
 import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.constants.OAuth2ProviderConstants;
 import com.liferay.oauth2.provider.exception.DuplicateOAuth2ApplicationClientIdException;
@@ -39,6 +38,7 @@ import com.liferay.oauth2.provider.service.OAuth2ApplicationScopeAliasesLocalSer
 import com.liferay.oauth2.provider.service.OAuth2AuthorizationLocalService;
 import com.liferay.oauth2.provider.service.base.OAuth2ApplicationLocalServiceBaseImpl;
 import com.liferay.oauth2.provider.util.OAuth2SecureRandomGenerator;
+import com.liferay.oauth2.provider.util.builder.OAuth2ScopeBuilder;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.ImageTypeException;
@@ -50,7 +50,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.RepositoryFactory;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -79,6 +79,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -88,21 +89,94 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  */
 @Component(
+	enabled = false,
 	property = "model.class.name=com.liferay.oauth2.provider.model.OAuth2Application",
 	service = AopService.class
 )
 public class OAuth2ApplicationLocalServiceImpl
 	extends OAuth2ApplicationLocalServiceBaseImpl {
 
-	@Activate
-	public void activate() {
-		String ianaRegisteredSchemes = PropsUtil.get(
-			"iana.registered.uri.schemes");
+	@Override
+	public OAuth2Application addOAuth2Application(
+			long companyId, long userId, String userName,
+			List<GrantType> allowedGrantTypesList, long clientCredentialUserId,
+			String clientId, int clientProfile, String clientSecret,
+			String description, List<String> featuresList, String homePageURL,
+			long iconFileEntryId, String name, String privacyPolicyURL,
+			List<String> redirectURIsList,
+			Consumer<OAuth2ScopeBuilder> builderConsumer,
+			ServiceContext serviceContext)
+		throws PortalException {
 
-		if (!Validator.isBlank(ianaRegisteredSchemes)) {
-			_ianaRegisteredUriSchemes = new HashSet<>(
-				Arrays.asList(StringUtil.split(ianaRegisteredSchemes)));
+		if (allowedGrantTypesList == null) {
+			allowedGrantTypesList = new ArrayList<>();
 		}
+
+		if (Validator.isBlank(clientId)) {
+			clientId = OAuth2SecureRandomGenerator.generateClientId();
+		}
+		else {
+			clientId = StringUtil.trim(clientId);
+		}
+
+		homePageURL = StringUtil.trim(homePageURL);
+		name = StringUtil.trim(name);
+		privacyPolicyURL = StringUtil.trim(privacyPolicyURL);
+
+		if (redirectURIsList == null) {
+			redirectURIsList = new ArrayList<>();
+		}
+
+		validate(
+			companyId, allowedGrantTypesList, clientId, clientProfile,
+			clientSecret, homePageURL, name, privacyPolicyURL,
+			redirectURIsList);
+
+		long oAuth2ApplicationId = counterLocalService.increment(
+			OAuth2Application.class.getName());
+
+		User user = _userLocalService.getUser(clientCredentialUserId);
+
+		OAuth2Application oAuth2Application =
+			oAuth2ApplicationPersistence.create(oAuth2ApplicationId);
+
+		oAuth2Application.setCompanyId(companyId);
+		oAuth2Application.setUserId(userId);
+		oAuth2Application.setUserName(userName);
+		oAuth2Application.setCreateDate(new Date());
+		oAuth2Application.setModifiedDate(new Date());
+		oAuth2Application.setAllowedGrantTypesList(allowedGrantTypesList);
+		oAuth2Application.setClientCredentialUserId(user.getUserId());
+		oAuth2Application.setClientCredentialUserName(user.getScreenName());
+		oAuth2Application.setClientId(clientId);
+		oAuth2Application.setClientProfile(clientProfile);
+		oAuth2Application.setClientSecret(clientSecret);
+		oAuth2Application.setDescription(description);
+		oAuth2Application.setFeaturesList(featuresList);
+		oAuth2Application.setHomePageURL(homePageURL);
+		oAuth2Application.setIconFileEntryId(iconFileEntryId);
+		oAuth2Application.setName(name);
+		oAuth2Application.setPrivacyPolicyURL(privacyPolicyURL);
+		oAuth2Application.setRedirectURIsList(redirectURIsList);
+
+		if (builderConsumer != null) {
+			OAuth2ApplicationScopeAliases oAuth2ApplicationScopeAliases =
+				_oAuth2ApplicationScopeAliasesLocalService.
+					addOAuth2ApplicationScopeAliases(
+						companyId, userId, userName, oAuth2ApplicationId,
+						builderConsumer);
+
+			oAuth2Application.setOAuth2ApplicationScopeAliasesId(
+				oAuth2ApplicationScopeAliases.
+					getOAuth2ApplicationScopeAliasesId());
+		}
+
+		resourceLocalService.addResources(
+			oAuth2Application.getCompanyId(), 0, oAuth2Application.getUserId(),
+			OAuth2Application.class.getName(),
+			oAuth2Application.getOAuth2ApplicationId(), false, false, false);
+
+		return oAuth2ApplicationPersistence.update(oAuth2Application);
 	}
 
 	@Override
@@ -192,7 +266,7 @@ public class OAuth2ApplicationLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), since 7.2, unused
+	 * @deprecated As of Mueller (7.2.x)
 	 */
 	@Deprecated
 	@Override
@@ -287,7 +361,7 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		if (inputStream == null) {
 			if (oldIconFileEntryId > 0) {
-				PortletFileRepositoryUtil.deletePortletFileEntry(
+				_portletFileRepository.deletePortletFileEntry(
 					oldIconFileEntryId);
 
 				oAuth2Application.setIconFileEntryId(-1);
@@ -305,11 +379,11 @@ public class OAuth2ApplicationLocalServiceImpl
 
 		serviceContext.setAddGuestPermissions(true);
 
-		Repository repository = PortletFileRepositoryUtil.addPortletRepository(
+		Repository repository = _portletFileRepository.addPortletRepository(
 			group.getGroupId(), OAuth2ProviderConstants.SERVICE_NAME,
 			serviceContext);
 
-		Folder folder = PortletFileRepositoryUtil.addPortletFolder(
+		Folder folder = _portletFileRepository.addPortletFolder(
 			userLocalService.getDefaultUserId(oAuth2Application.getCompanyId()),
 			repository.getRepositoryId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, "icons",
@@ -332,15 +406,15 @@ public class OAuth2ApplicationLocalServiceImpl
 			ImageToolUtil.write(
 				renderedImage, imageBag.getType(), unsyncByteArrayOutputStream);
 		}
-		catch (IOException ioe) {
-			throw new PortalException(ioe);
+		catch (IOException ioException) {
+			throw new PortalException(ioException);
 		}
 
-		String fileName = PortletFileRepositoryUtil.getUniqueFileName(
+		String fileName = _portletFileRepository.getUniqueFileName(
 			group.getGroupId(), folder.getFolderId(),
 			oAuth2Application.getClientId());
 
-		FileEntry fileEntry = PortletFileRepositoryUtil.addPortletFileEntry(
+		FileEntry fileEntry = _portletFileRepository.addPortletFileEntry(
 			group.getGroupId(), oAuth2Application.getUserId(),
 			OAuth2Application.class.getName(),
 			oAuth2Application.getOAuth2ApplicationId(),
@@ -354,8 +428,7 @@ public class OAuth2ApplicationLocalServiceImpl
 		oAuth2Application = updateOAuth2Application(oAuth2Application);
 
 		if (oldIconFileEntryId > 0) {
-			PortletFileRepositoryUtil.deletePortletFileEntry(
-				oldIconFileEntryId);
+			_portletFileRepository.deletePortletFileEntry(oldIconFileEntryId);
 		}
 
 		return oAuth2Application;
@@ -411,9 +484,10 @@ public class OAuth2ApplicationLocalServiceImpl
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), since 7.2, unused
+	 * @deprecated As of Mueller (7.2.x)
 	 */
 	@Deprecated
+	@Override
 	public OAuth2Application updateOAuth2Application(
 			long oAuth2ApplicationId, List<GrantType> allowedGrantTypesList,
 			String clientId, int clientProfile, String clientSecret,
@@ -489,6 +563,17 @@ public class OAuth2ApplicationLocalServiceImpl
 		}
 
 		return oAuth2Application;
+	}
+
+	@Activate
+	protected void activate() {
+		String ianaRegisteredSchemes = PropsUtil.get(
+			"iana.registered.uri.schemes");
+
+		if (!Validator.isBlank(ianaRegisteredSchemes)) {
+			_ianaRegisteredUriSchemes = new HashSet<>(
+				Arrays.asList(StringUtil.split(ianaRegisteredSchemes)));
+		}
 	}
 
 	protected void validate(
@@ -614,9 +699,9 @@ public class OAuth2ApplicationLocalServiceImpl
 						redirectURI);
 				}
 			}
-			catch (URISyntaxException urise) {
+			catch (URISyntaxException uriSyntaxException) {
 				throw new OAuth2ApplicationRedirectURIException(
-					redirectURI, urise);
+					redirectURI, uriSyntaxException);
 			}
 		}
 	}
@@ -692,13 +777,13 @@ public class OAuth2ApplicationLocalServiceImpl
 	@Reference
 	private OAuth2AuthorizationLocalService _oAuth2AuthorizationLocalService;
 
+	@Reference
+	private PortletFileRepository _portletFileRepository;
+
 	@Reference(
 		target = "(class.name=com.liferay.portal.repository.portletrepository.PortletRepository)"
 	)
 	private RepositoryFactory _repositoryFactory;
-
-	@Reference(target = "(current.store=true)")
-	private Store _store;
 
 	@Reference
 	private UserLocalService _userLocalService;

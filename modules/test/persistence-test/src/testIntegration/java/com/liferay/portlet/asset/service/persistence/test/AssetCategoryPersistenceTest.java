@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -123,6 +123,10 @@ public class AssetCategoryPersistenceTest {
 
 		AssetCategory newAssetCategory = _persistence.create(pk);
 
+		newAssetCategory.setMvccVersion(RandomTestUtil.nextLong());
+
+		newAssetCategory.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newAssetCategory.setUuid(RandomTestUtil.randomString());
 
 		newAssetCategory.setExternalReferenceCode(
@@ -140,9 +144,9 @@ public class AssetCategoryPersistenceTest {
 
 		newAssetCategory.setModifiedDate(RandomTestUtil.nextDate());
 
-		newAssetCategory.setLeftCategoryId(RandomTestUtil.nextLong());
+		newAssetCategory.setParentCategoryId(RandomTestUtil.nextLong());
 
-		newAssetCategory.setRightCategoryId(RandomTestUtil.nextLong());
+		newAssetCategory.setTreePath(RandomTestUtil.randomString());
 
 		newAssetCategory.setName(RandomTestUtil.randomString());
 
@@ -159,6 +163,12 @@ public class AssetCategoryPersistenceTest {
 		AssetCategory existingAssetCategory = _persistence.findByPrimaryKey(
 			newAssetCategory.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingAssetCategory.getMvccVersion(),
+			newAssetCategory.getMvccVersion());
+		Assert.assertEquals(
+			existingAssetCategory.getCtCollectionId(),
+			newAssetCategory.getCtCollectionId());
 		Assert.assertEquals(
 			existingAssetCategory.getUuid(), newAssetCategory.getUuid());
 		Assert.assertEquals(
@@ -187,11 +197,8 @@ public class AssetCategoryPersistenceTest {
 			existingAssetCategory.getParentCategoryId(),
 			newAssetCategory.getParentCategoryId());
 		Assert.assertEquals(
-			existingAssetCategory.getLeftCategoryId(),
-			newAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			existingAssetCategory.getRightCategoryId(),
-			newAssetCategory.getRightCategoryId());
+			existingAssetCategory.getTreePath(),
+			newAssetCategory.getTreePath());
 		Assert.assertEquals(
 			existingAssetCategory.getName(), newAssetCategory.getName());
 		Assert.assertEquals(
@@ -314,6 +321,16 @@ public class AssetCategoryPersistenceTest {
 	}
 
 	@Test
+	public void testCountByG_LikeT_V() throws Exception {
+		_persistence.countByG_LikeT_V(
+			RandomTestUtil.nextLong(), "", RandomTestUtil.nextLong());
+
+		_persistence.countByG_LikeT_V(0L, "null", 0L);
+
+		_persistence.countByG_LikeT_V(0L, (String)null, 0L);
+	}
+
+	@Test
 	public void testCountByG_LikeN_V() throws Exception {
 		_persistence.countByG_LikeN_V(
 			RandomTestUtil.nextLong(), "", RandomTestUtil.nextLong());
@@ -338,17 +355,6 @@ public class AssetCategoryPersistenceTest {
 		_persistence.countByP_N_V(0L, "null", 0L);
 
 		_persistence.countByP_N_V(0L, (String)null, 0L);
-	}
-
-	@Test
-	public void testCountByG_P_N_V() throws Exception {
-		_persistence.countByG_P_N_V(
-			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "",
-			RandomTestUtil.nextLong());
-
-		_persistence.countByG_P_N_V(0L, 0L, "null", 0L);
-
-		_persistence.countByG_P_N_V(0L, 0L, (String)null, 0L);
 	}
 
 	@Test
@@ -391,12 +397,12 @@ public class AssetCategoryPersistenceTest {
 
 	protected OrderByComparator<AssetCategory> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AssetCategory", "uuid", true, "externalReferenceCode", true,
-			"categoryId", true, "groupId", true, "companyId", true, "userId",
-			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"parentCategoryId", true, "leftCategoryId", true, "rightCategoryId",
-			true, "name", true, "title", true, "description", true,
-			"vocabularyId", true, "lastPublishDate", true);
+			"AssetCategory", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "externalReferenceCode", true, "categoryId", true,
+			"groupId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true, "parentCategoryId",
+			true, "treePath", true, "name", true, "title", true, "description",
+			true, "vocabularyId", true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -618,54 +624,98 @@ public class AssetCategoryPersistenceTest {
 
 		_persistence.clearCache();
 
-		AssetCategory existingAssetCategory = _persistence.findByPrimaryKey(
-			newAssetCategory.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newAssetCategory.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetCategory.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingAssetCategory, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AssetCategory newAssetCategory = addAssetCategory();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AssetCategory.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"categoryId", newAssetCategory.getCategoryId()));
+
+		List<AssetCategory> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(AssetCategory assetCategory) {
 		Assert.assertEquals(
-			Long.valueOf(existingAssetCategory.getGroupId()),
+			assetCategory.getUuid(),
+			ReflectionTestUtil.invoke(
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(assetCategory.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetCategory, "getOriginalGroupId", new Class<?>[0]));
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetCategory.getParentCategoryId()),
+			Long.valueOf(assetCategory.getParentCategoryId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetCategory, "getOriginalParentCategoryId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetCategory.getName(),
-				ReflectionTestUtil.invoke(
-					existingAssetCategory, "getOriginalName",
-					new Class<?>[0])));
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "parentCategoryId"));
 		Assert.assertEquals(
-			Long.valueOf(existingAssetCategory.getVocabularyId()),
+			assetCategory.getName(),
+			ReflectionTestUtil.invoke(
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
+		Assert.assertEquals(
+			Long.valueOf(assetCategory.getVocabularyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetCategory, "getOriginalVocabularyId",
-				new Class<?>[0]));
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "vocabularyId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetCategory.getCompanyId()),
+			Long.valueOf(assetCategory.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetCategory, "getOriginalCompanyId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetCategory.getExternalReferenceCode(),
-				ReflectionTestUtil.invoke(
-					existingAssetCategory, "getOriginalExternalReferenceCode",
-					new Class<?>[0])));
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
+		Assert.assertEquals(
+			assetCategory.getExternalReferenceCode(),
+			ReflectionTestUtil.invoke(
+				assetCategory, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "externalReferenceCode"));
 	}
 
 	protected AssetCategory addAssetCategory() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		AssetCategory assetCategory = _persistence.create(pk);
+
+		assetCategory.setMvccVersion(RandomTestUtil.nextLong());
+
+		assetCategory.setCtCollectionId(RandomTestUtil.nextLong());
 
 		assetCategory.setUuid(RandomTestUtil.randomString());
 
@@ -683,9 +733,9 @@ public class AssetCategoryPersistenceTest {
 
 		assetCategory.setModifiedDate(RandomTestUtil.nextDate());
 
-		assetCategory.setLeftCategoryId(RandomTestUtil.nextLong());
+		assetCategory.setParentCategoryId(RandomTestUtil.nextLong());
 
-		assetCategory.setRightCategoryId(RandomTestUtil.nextLong());
+		assetCategory.setTreePath(RandomTestUtil.randomString());
 
 		assetCategory.setName(RandomTestUtil.randomString());
 
@@ -698,327 +748,6 @@ public class AssetCategoryPersistenceTest {
 		assetCategory.setLastPublishDate(RandomTestUtil.nextDate());
 
 		_assetCategories.add(_persistence.update(assetCategory));
-
-		return assetCategory;
-	}
-
-	@Test
-	public void testMoveTree() throws Exception {
-		long groupId = RandomTestUtil.nextLong();
-
-		AssetCategory rootAssetCategory = addAssetCategory(groupId, null);
-
-		long previousRootLeftCategoryId = rootAssetCategory.getLeftCategoryId();
-		long previousRootRightCategoryId =
-			rootAssetCategory.getRightCategoryId();
-
-		AssetCategory childAssetCategory = addAssetCategory(
-			groupId, rootAssetCategory.getCategoryId());
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-
-		Assert.assertEquals(
-			previousRootLeftCategoryId, rootAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			previousRootRightCategoryId + 2,
-			rootAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 1,
-			childAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 1,
-			childAssetCategory.getRightCategoryId());
-	}
-
-	@Test
-	public void testMoveTreeFromLeft() throws Exception {
-		long groupId = RandomTestUtil.nextLong();
-
-		AssetCategory parentAssetCategory = addAssetCategory(groupId, null);
-
-		AssetCategory childAssetCategory = addAssetCategory(
-			groupId, parentAssetCategory.getCategoryId());
-
-		parentAssetCategory = _persistence.fetchByPrimaryKey(
-			parentAssetCategory.getPrimaryKey());
-
-		AssetCategory rootAssetCategory = addAssetCategory(groupId, null);
-
-		long previousRootLeftCategoryId = rootAssetCategory.getLeftCategoryId();
-		long previousRootRightCategoryId =
-			rootAssetCategory.getRightCategoryId();
-
-		parentAssetCategory.setParentCategoryId(
-			rootAssetCategory.getCategoryId());
-
-		_persistence.update(parentAssetCategory);
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-		childAssetCategory = _persistence.fetchByPrimaryKey(
-			childAssetCategory.getPrimaryKey());
-
-		Assert.assertEquals(
-			previousRootLeftCategoryId - 4,
-			rootAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			previousRootRightCategoryId,
-			rootAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 1,
-			parentAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 1,
-			parentAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getLeftCategoryId() + 1,
-			childAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getRightCategoryId() - 1,
-			childAssetCategory.getRightCategoryId());
-	}
-
-	@Test
-	public void testMoveTreeFromRight() throws Exception {
-		long groupId = RandomTestUtil.nextLong();
-
-		AssetCategory rootAssetCategory = addAssetCategory(groupId, null);
-
-		long previousRootLeftCategoryId = rootAssetCategory.getLeftCategoryId();
-		long previousRootRightCategoryId =
-			rootAssetCategory.getRightCategoryId();
-
-		AssetCategory parentAssetCategory = addAssetCategory(groupId, null);
-
-		AssetCategory childAssetCategory = addAssetCategory(
-			groupId, parentAssetCategory.getCategoryId());
-
-		parentAssetCategory = _persistence.fetchByPrimaryKey(
-			parentAssetCategory.getPrimaryKey());
-
-		parentAssetCategory.setParentCategoryId(
-			rootAssetCategory.getCategoryId());
-
-		_persistence.update(parentAssetCategory);
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-		childAssetCategory = _persistence.fetchByPrimaryKey(
-			childAssetCategory.getPrimaryKey());
-
-		Assert.assertEquals(
-			previousRootLeftCategoryId, rootAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			previousRootRightCategoryId + 4,
-			rootAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 1,
-			parentAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 1,
-			parentAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getLeftCategoryId() + 1,
-			childAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getRightCategoryId() - 1,
-			childAssetCategory.getRightCategoryId());
-	}
-
-	@Test
-	public void testMoveTreeIntoTreeFromLeft() throws Exception {
-		long groupId = RandomTestUtil.nextLong();
-
-		AssetCategory parentAssetCategory = addAssetCategory(groupId, null);
-
-		AssetCategory parentChildAssetCategory = addAssetCategory(
-			groupId, parentAssetCategory.getCategoryId());
-
-		parentAssetCategory = _persistence.fetchByPrimaryKey(
-			parentAssetCategory.getPrimaryKey());
-
-		AssetCategory rootAssetCategory = addAssetCategory(groupId, null);
-
-		AssetCategory leftRootChildAssetCategory = addAssetCategory(
-			groupId, rootAssetCategory.getCategoryId());
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-
-		AssetCategory rightRootChildAssetCategory = addAssetCategory(
-			groupId, rootAssetCategory.getCategoryId());
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-
-		long previousRootLeftCategoryId = rootAssetCategory.getLeftCategoryId();
-		long previousRootRightCategoryId =
-			rootAssetCategory.getRightCategoryId();
-
-		parentAssetCategory.setParentCategoryId(
-			rightRootChildAssetCategory.getCategoryId());
-
-		_persistence.update(parentAssetCategory);
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-		leftRootChildAssetCategory = _persistence.fetchByPrimaryKey(
-			leftRootChildAssetCategory.getPrimaryKey());
-		rightRootChildAssetCategory = _persistence.fetchByPrimaryKey(
-			rightRootChildAssetCategory.getPrimaryKey());
-		parentChildAssetCategory = _persistence.fetchByPrimaryKey(
-			parentChildAssetCategory.getPrimaryKey());
-
-		Assert.assertEquals(
-			previousRootLeftCategoryId - 4,
-			rootAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			previousRootRightCategoryId,
-			rootAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 1,
-			leftRootChildAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 7,
-			leftRootChildAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 3,
-			rightRootChildAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 1,
-			rightRootChildAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rightRootChildAssetCategory.getLeftCategoryId() + 1,
-			parentAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rightRootChildAssetCategory.getRightCategoryId() - 1,
-			parentAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getLeftCategoryId() + 1,
-			parentChildAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getRightCategoryId() - 1,
-			parentChildAssetCategory.getRightCategoryId());
-	}
-
-	@Test
-	public void testMoveTreeIntoTreeFromRight() throws Exception {
-		long groupId = RandomTestUtil.nextLong();
-
-		AssetCategory rootAssetCategory = addAssetCategory(groupId, null);
-
-		AssetCategory leftRootChildAssetCategory = addAssetCategory(
-			groupId, rootAssetCategory.getCategoryId());
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-
-		AssetCategory rightRootChildAssetCategory = addAssetCategory(
-			groupId, rootAssetCategory.getCategoryId());
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-
-		long previousRootLeftCategoryId = rootAssetCategory.getLeftCategoryId();
-		long previousRootRightCategoryId =
-			rootAssetCategory.getRightCategoryId();
-
-		AssetCategory parentAssetCategory = addAssetCategory(groupId, null);
-
-		AssetCategory parentChildAssetCategory = addAssetCategory(
-			groupId, parentAssetCategory.getCategoryId());
-
-		parentAssetCategory = _persistence.fetchByPrimaryKey(
-			parentAssetCategory.getPrimaryKey());
-
-		parentAssetCategory.setParentCategoryId(
-			leftRootChildAssetCategory.getCategoryId());
-
-		_persistence.update(parentAssetCategory);
-
-		rootAssetCategory = _persistence.fetchByPrimaryKey(
-			rootAssetCategory.getPrimaryKey());
-		leftRootChildAssetCategory = _persistence.fetchByPrimaryKey(
-			leftRootChildAssetCategory.getPrimaryKey());
-		rightRootChildAssetCategory = _persistence.fetchByPrimaryKey(
-			rightRootChildAssetCategory.getPrimaryKey());
-		parentChildAssetCategory = _persistence.fetchByPrimaryKey(
-			parentChildAssetCategory.getPrimaryKey());
-
-		Assert.assertEquals(
-			previousRootLeftCategoryId, rootAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			previousRootRightCategoryId + 4,
-			rootAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 1,
-			leftRootChildAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 3,
-			leftRootChildAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getLeftCategoryId() + 7,
-			rightRootChildAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			rootAssetCategory.getRightCategoryId() - 1,
-			rightRootChildAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			leftRootChildAssetCategory.getLeftCategoryId() + 1,
-			parentAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			leftRootChildAssetCategory.getRightCategoryId() - 1,
-			parentAssetCategory.getRightCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getLeftCategoryId() + 1,
-			parentChildAssetCategory.getLeftCategoryId());
-		Assert.assertEquals(
-			parentAssetCategory.getRightCategoryId() - 1,
-			parentChildAssetCategory.getRightCategoryId());
-	}
-
-	protected AssetCategory addAssetCategory(
-			long groupId, Long parentCategoryId)
-		throws Exception {
-
-		long pk = RandomTestUtil.nextLong();
-
-		AssetCategory assetCategory = _persistence.create(pk);
-
-		assetCategory.setUuid(RandomTestUtil.randomString());
-
-		assetCategory.setExternalReferenceCode(RandomTestUtil.randomString());
-		assetCategory.setGroupId(groupId);
-
-		assetCategory.setCompanyId(RandomTestUtil.nextLong());
-
-		assetCategory.setUserId(RandomTestUtil.nextLong());
-
-		assetCategory.setUserName(RandomTestUtil.randomString());
-
-		assetCategory.setCreateDate(RandomTestUtil.nextDate());
-
-		assetCategory.setModifiedDate(RandomTestUtil.nextDate());
-
-		assetCategory.setLeftCategoryId(RandomTestUtil.nextLong());
-
-		assetCategory.setRightCategoryId(RandomTestUtil.nextLong());
-
-		assetCategory.setName(RandomTestUtil.randomString());
-
-		assetCategory.setTitle(RandomTestUtil.randomString());
-
-		assetCategory.setDescription(RandomTestUtil.randomString());
-
-		assetCategory.setVocabularyId(RandomTestUtil.nextLong());
-
-		assetCategory.setLastPublishDate(RandomTestUtil.nextDate());
-
-		if (parentCategoryId != null) {
-			assetCategory.setParentCategoryId(parentCategoryId);
-		}
-
-		_persistence.update(assetCategory);
 
 		return assetCategory;
 	}

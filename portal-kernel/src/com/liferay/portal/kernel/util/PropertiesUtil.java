@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
@@ -79,11 +80,11 @@ public class PropertiesUtil {
 
 		Properties newProperties = new Properties();
 
-		Enumeration<String> enu =
+		Enumeration<String> enumeration =
 			(Enumeration<String>)properties.propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String key = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
 			if (key.startsWith(prefix)) {
 				String value = properties.getProperty(key);
@@ -128,10 +129,10 @@ public class PropertiesUtil {
 		return unsyncByteArrayOutputStream.toString();
 	}
 
-	public static Properties load(InputStream is, String charsetName)
+	public static Properties load(InputStream inputStream, String charsetName)
 		throws IOException {
 
-		return load(new InputStreamReader(is, charsetName));
+		return load(new InputStreamReader(inputStream, charsetName));
 	}
 
 	public static void load(Properties properties, String s)
@@ -183,11 +184,11 @@ public class PropertiesUtil {
 	}
 
 	public static void merge(Properties properties1, Properties properties2) {
-		Enumeration<String> enu =
+		Enumeration<String> enumeration =
 			(Enumeration<String>)properties2.propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String key = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
 			String value = properties2.getProperty(key);
 
@@ -228,11 +229,11 @@ public class PropertiesUtil {
 			sb = new StringBundler(properties.size() * 4);
 		}
 
-		Enumeration<String> enu =
+		Enumeration<String> enumeration =
 			(Enumeration<String>)properties.propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String key = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
 			sb.append(key);
 
@@ -252,11 +253,11 @@ public class PropertiesUtil {
 	}
 
 	public static void trimKeys(Properties properties) {
-		Enumeration<String> enu =
+		Enumeration<String> enumeration =
 			(Enumeration<String>)properties.propertyNames();
 
-		while (enu.hasMoreElements()) {
-			String key = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String key = enumeration.nextElement();
 
 			String trimmedKey = key.trim();
 

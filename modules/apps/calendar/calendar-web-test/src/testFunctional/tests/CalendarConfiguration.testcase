@@ -1,0 +1,387 @@
+@component-name = "portal-calendar"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property testray.main.component.name = "Calendar";
+	var pageName = "Calendar Page";
+	var portletName = "Calendar";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Calendar Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Calendar Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Portlet.addPG(
+			pageName = "Calendar Page",
+			portletName = "Calendar");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.gotoPage(pageName = "Calendar Page");
+
+			if (IsElementPresent(locator1 = "Calendar#SCHEDULER_EVENT_GENERIC")) {
+				CalendarEvent.tearDown();
+			}
+
+			Calendar.tearDown();
+
+			CalendarConfiguration.tearDown();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "3"
+	test ConfigureDefaultView {
+		for (var defaultView : list "Day,Week,Month,Agenda") {
+			Navigator.gotoPage(pageName = "Calendar Page");
+
+			CalendarNavigator.gotoConfiguration();
+
+			CalendarConfiguration.selectDefaultView(defaultView = "${defaultView}");
+
+			CalendarConfiguration.save();
+
+			Navigator.gotoPage(pageName = "Calendar Page");
+
+			CalendarScheduler.viewSelectedView(view = "${defaultView}");
+		}
+	}
+
+	@priority = "5"
+	test ConfigureDisplayTimeZone {
+
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.editTimeZoneUTC();
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.editTitle(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.setDatesToday();
+
+		CalendarEvent.setTimes(
+			endDateTime = "03:00 PM",
+			startDateTime = "02:00 PM");
+
+		CalendarEvent.publish();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarScheduler.selectSpecificEvent(eventTitle = "Calendar Event Title");
+
+		CalendarScheduler.viewEventTimesViaDialogBox(
+			endDateTime = "3:00pm",
+			startDateTime = "2:00pm");
+
+		CalendarScheduler.gotoDetailsViaDialogBox();
+
+		CalendarEvent.viewTimesViaDetails(
+			endDateTime = "03:00 PM",
+			startDateTime = "02:00 PM");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoEditEvent(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.viewTimes(
+			endDateTime = "03:00 PM",
+			startDateTime = "02:00 PM");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.enableGlobalTimeZone();
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarScheduler.selectSpecificEvent(eventTitle = "Calendar Event Title");
+
+		CalendarScheduler.viewEventTimesViaDialogBox(
+			endDateTime = "am",
+			startDateTime = "am");
+
+		CalendarScheduler.gotoDetailsViaDialogBox();
+
+		CalendarEvent.viewTimesViaDetails(
+			endDateTime = "AM",
+			startDateTime = "AM");
+	}
+
+	@priority = "4"
+	test ConfigureEventsDisplaySettingsAndViewEvents {
+		property portal.upstream = "quarantine";
+
+		for (var eventNumber : list "1,2,3,4,5,6") {
+			CalendarNavigator.gotoAddEvent();
+
+			CalendarEvent.add(
+				eventTitle = "Calendar Event ${eventNumber}",
+				eventType = "All Day",
+				pageName = "Calendar Page");
+		}
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoView(viewType = "Agenda");
+
+		for (var eventNumber : list "1,2,3,4,5,6") {
+			CalendarEvent.viewViaAgendaView(eventNumber = "${eventNumber}");
+		}
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.editNumberOfEventsDisplayed(maxNumberOfEvents = "5");
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoView(viewType = "Agenda");
+
+		for (var eventNumber : list "1,2,3,4,5") {
+			CalendarEvent.viewViaAgendaView(eventNumber = "${eventNumber}");
+		}
+
+		CalendarEvent.viewNotPresentViaAgendaView(eventNumber = "6");
+	}
+
+	@priority = "4"
+	test View24hourTimeFormat {
+		property portal.upstream = "quarantine";
+
+		CalendarScheduler.viewFirstHour(firstHour = "12am");
+
+		CalendarScheduler.viewLastHour(lastHour = "11pm");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.editTitle(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.setDatesToday();
+
+		CalendarEvent.setTimes(
+			endDateTime = "11:00 PM",
+			startDateTime = "09:00 PM");
+
+		CalendarEvent.publish();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.selectTimeFormat(timeFormat = "24 Hour");
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarScheduler.viewFirstHour(firstHour = "00:00");
+
+		CalendarScheduler.viewLastHour(lastHour = "23:00");
+
+		CalendarScheduler.selectSpecificEvent(eventTitle = "Calendar Event Title");
+
+		CalendarScheduler.viewEventTimesViaDialogBox(
+			endDateTime = "23:00",
+			startDateTime = "21:00");
+
+		CalendarScheduler.gotoDetailsViaDialogBox();
+
+		CalendarEvent.viewTimesViaDetails(
+			endDateTime = "23:00",
+			startDateTime = "21:00");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoEditEvent(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.viewTimes24Hour(
+			endDateTime = "23:00",
+			startDateTime = "21:00");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.selectTimeFormat(timeFormat = "AM/PM");
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarScheduler.viewFirstHour(firstHour = "12am");
+
+		CalendarScheduler.viewLastHour(lastHour = "11pm");
+
+		CalendarScheduler.selectSpecificEvent(eventTitle = "Calendar Event Title");
+
+		CalendarScheduler.viewEventTimesViaDialogBox(
+			endDateTime = "11:00pm",
+			startDateTime = "9:00pm");
+
+		CalendarScheduler.gotoDetailsViaDialogBox();
+
+		CalendarEvent.viewTimesViaDetails(
+			endDateTime = "11:00 PM",
+			startDateTime = "09:00 PM");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoEditEvent(eventTitle = "Calendar Event Title");
+
+		CalendarEvent.viewTimes(
+			endDateTime = "11:00 PM",
+			startDateTime = "09:00 PM");
+	}
+
+	@priority = "5"
+	test ViewCalendarTimeZoneDefaults {
+		property test.name.skip.portal.instance = "CalendarConfiguration#ViewCalendarTimeZoneDefaults";
+
+		UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
+
+		User.editUserDisplaySettingsTimeZonePacific(displaySettingsGreeting = "Welcome Test Test!");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Time Zone",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.configureTimeZone(timeZone = "(UTC +08:00) China Standard Time");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoAddMyCalendars();
+
+		Calendar.viewSelectedTimeZone(timeZone = "(UTC -08:00) Pacific Standard Time");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoAddCurrentSiteCalendars();
+
+		Calendar.viewSelectedTimeZone(timeZone = "(UTC +08:00) China Standard Time");
+	}
+
+	@description = "This is a use case for LPS-51783."
+	@priority = "4"
+	test ViewEventDetailsAllDayWithModifiedUserTimeZone {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
+
+		User.editUserDisplaySettingsTimeZonePacific(displaySettingsGreeting = "Welcome Test Test!");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.editTitle(eventTitle = "Calendar Event All Day Title");
+
+		CalendarEvent.setAllDay();
+
+		CalendarEvent.publish();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarEvent.viewDetails(
+			calendarName = "${siteName}",
+			eventTitle = "Calendar Event All Day Title",
+			eventType = "All Day");
+
+		CalendarEvent.viewTimesViaDetails(
+			endDateTime = "11:59 PM",
+			startDateTime = "12:00 AM");
+	}
+
+	@description = "This is a use case for LPS-51127."
+	@priority = "5"
+	test ViewWeekStartMonday {
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.selectWeekStartsOn(weekStartDay = "Monday");
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarScheduler.viewWeekStartDayViaWeekView(weekStartDay = "Mon");
+
+		Calendar.viewWeekStartDayViaMonthView(weekStartDay = "Mon");
+
+		Calendar.viewWeekStartDayViaSmallCalendar(weekStartDay = "Mo");
+
+		CalendarNavigator.gotoAddEvent();
+
+		Calendar.viewWeekStartDayViaAddEventMiniCalendar(weekStartDay = "Mo");
+
+		CalendarEvent.gotoRepeatConfiguration();
+
+		CalendarEvent.selectRepeatFrequency(frequency = "Weekly");
+
+		CalendarEvent.viewRepeatWeekStartDay(weekStartDay = "Monday");
+	}
+
+	@description = "This is a use case for 51127."
+	@priority = "3"
+	test ViewWeekStartSaturday {
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.selectWeekStartsOn(weekStartDay = "Saturday");
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		CalendarScheduler.viewWeekStartDayViaWeekView(weekStartDay = "Sat");
+
+		Calendar.viewWeekStartDayViaMonthView(weekStartDay = "Sat");
+
+		Calendar.viewWeekStartDayViaSmallCalendar(weekStartDay = "Sa");
+
+		CalendarNavigator.gotoAddEvent();
+
+		Calendar.viewWeekStartDayViaAddEventMiniCalendar(weekStartDay = "Sa");
+
+		CalendarEvent.gotoRepeatConfiguration();
+
+		CalendarEvent.selectRepeatFrequency(frequency = "Weekly");
+
+		CalendarEvent.viewRepeatWeekStartDay(weekStartDay = "Saturday");
+	}
+
+}

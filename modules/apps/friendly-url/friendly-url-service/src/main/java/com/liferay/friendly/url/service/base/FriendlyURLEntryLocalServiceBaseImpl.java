@@ -25,7 +25,9 @@ import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryLocalizationPersistence;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryMappingPersistence;
 import com.liferay.friendly.url.service.persistence.FriendlyURLEntryPersistence;
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -46,13 +48,13 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
-import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
-import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
@@ -63,7 +65,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the friendly url entry local service.
@@ -76,10 +78,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.friendly.url.service.impl.FriendlyURLEntryLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements FriendlyURLEntryLocalService, IdentifiableOSGiService {
+	implements AopService, FriendlyURLEntryLocalService,
+			   IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -89,6 +91,10 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 
 	/**
 	 * Adds the friendly url entry to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FriendlyURLEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param friendlyURLEntry the friendly url entry
 	 * @return the friendly url entry that was added
@@ -118,6 +124,10 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	/**
 	 * Deletes the friendly url entry with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FriendlyURLEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param friendlyURLEntryId the primary key of the friendly url entry
 	 * @return the friendly url entry that was removed
 	 * @throws PortalException if a friendly url entry with the primary key could not be found
@@ -133,6 +143,10 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	/**
 	 * Deletes the friendly url entry from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FriendlyURLEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param friendlyURLEntry the friendly url entry
 	 * @return the friendly url entry that was removed
 	 */
@@ -142,6 +156,11 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 		FriendlyURLEntry friendlyURLEntry) {
 
 		return friendlyURLEntryPersistence.remove(friendlyURLEntry);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return friendlyURLEntryPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -167,7 +186,7 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -187,7 +206,7 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -403,6 +422,16 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return friendlyURLEntryPersistence.create(
+			((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -411,6 +440,13 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 			(FriendlyURLEntry)persistedModel);
 	}
 
+	public BasePersistence<FriendlyURLEntry> getBasePersistence() {
+		return friendlyURLEntryPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -471,7 +507,7 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 	 * Returns a range of all the friendly url entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.friendly.url.model.impl.FriendlyURLEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of friendly url entries
@@ -495,6 +531,10 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 
 	/**
 	 * Updates the friendly url entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FriendlyURLEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param friendlyURLEntry the friendly url entry
 	 * @return the friendly url entry that was updated
@@ -596,6 +636,8 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 					friendlyURLEntryLocalization);
 			}
 			else {
+				friendlyURLEntryLocalization.setCtCollectionId(
+					friendlyURLEntry.getCtCollectionId());
 				friendlyURLEntryLocalization.setGroupId(
 					friendlyURLEntry.getGroupId());
 				friendlyURLEntryLocalization.setCompanyId(
@@ -627,6 +669,8 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 			FriendlyURLEntryLocalization friendlyURLEntryLocalization =
 				friendlyURLEntryLocalizationPersistence.create(++batchCounter);
 
+			friendlyURLEntryLocalization.setCtCollectionId(
+				friendlyURLEntry.getCtCollectionId());
 			friendlyURLEntryLocalization.setFriendlyURLEntryId(
 				friendlyURLEntry.getFriendlyURLEntryId());
 			friendlyURLEntryLocalization.setGroupId(
@@ -669,6 +713,8 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 			friendlyURLEntryLocalization.setLanguageId(languageId);
 		}
 
+		friendlyURLEntryLocalization.setCtCollectionId(
+			friendlyURLEntry.getCtCollectionId());
 		friendlyURLEntryLocalization.setGroupId(friendlyURLEntry.getGroupId());
 		friendlyURLEntryLocalization.setCompanyId(
 			friendlyURLEntry.getCompanyId());
@@ -682,231 +728,17 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 			friendlyURLEntryLocalization);
 	}
 
-	/**
-	 * Returns the friendly url entry local service.
-	 *
-	 * @return the friendly url entry local service
-	 */
-	public FriendlyURLEntryLocalService getFriendlyURLEntryLocalService() {
-		return friendlyURLEntryLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			FriendlyURLEntryLocalService.class, IdentifiableOSGiService.class,
+			CTService.class, PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Sets the friendly url entry local service.
-	 *
-	 * @param friendlyURLEntryLocalService the friendly url entry local service
-	 */
-	public void setFriendlyURLEntryLocalService(
-		FriendlyURLEntryLocalService friendlyURLEntryLocalService) {
-
-		this.friendlyURLEntryLocalService = friendlyURLEntryLocalService;
-	}
-
-	/**
-	 * Returns the friendly url entry persistence.
-	 *
-	 * @return the friendly url entry persistence
-	 */
-	public FriendlyURLEntryPersistence getFriendlyURLEntryPersistence() {
-		return friendlyURLEntryPersistence;
-	}
-
-	/**
-	 * Sets the friendly url entry persistence.
-	 *
-	 * @param friendlyURLEntryPersistence the friendly url entry persistence
-	 */
-	public void setFriendlyURLEntryPersistence(
-		FriendlyURLEntryPersistence friendlyURLEntryPersistence) {
-
-		this.friendlyURLEntryPersistence = friendlyURLEntryPersistence;
-	}
-
-	/**
-	 * Returns the friendly url entry localization persistence.
-	 *
-	 * @return the friendly url entry localization persistence
-	 */
-	public FriendlyURLEntryLocalizationPersistence
-		getFriendlyURLEntryLocalizationPersistence() {
-
-		return friendlyURLEntryLocalizationPersistence;
-	}
-
-	/**
-	 * Sets the friendly url entry localization persistence.
-	 *
-	 * @param friendlyURLEntryLocalizationPersistence the friendly url entry localization persistence
-	 */
-	public void setFriendlyURLEntryLocalizationPersistence(
-		FriendlyURLEntryLocalizationPersistence
-			friendlyURLEntryLocalizationPersistence) {
-
-		this.friendlyURLEntryLocalizationPersistence =
-			friendlyURLEntryLocalizationPersistence;
-	}
-
-	/**
-	 * Returns the friendly url entry mapping persistence.
-	 *
-	 * @return the friendly url entry mapping persistence
-	 */
-	public FriendlyURLEntryMappingPersistence
-		getFriendlyURLEntryMappingPersistence() {
-
-		return friendlyURLEntryMappingPersistence;
-	}
-
-	/**
-	 * Sets the friendly url entry mapping persistence.
-	 *
-	 * @param friendlyURLEntryMappingPersistence the friendly url entry mapping persistence
-	 */
-	public void setFriendlyURLEntryMappingPersistence(
-		FriendlyURLEntryMappingPersistence friendlyURLEntryMappingPersistence) {
-
-		this.friendlyURLEntryMappingPersistence =
-			friendlyURLEntryMappingPersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the class name local service.
-	 *
-	 * @return the class name local service
-	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService
-		getClassNameLocalService() {
-
-		return classNameLocalService;
-	}
-
-	/**
-	 * Sets the class name local service.
-	 *
-	 * @param classNameLocalService the class name local service
-	 */
-	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService
-			classNameLocalService) {
-
-		this.classNameLocalService = classNameLocalService;
-	}
-
-	/**
-	 * Returns the class name persistence.
-	 *
-	 * @return the class name persistence
-	 */
-	public ClassNamePersistence getClassNamePersistence() {
-		return classNamePersistence;
-	}
-
-	/**
-	 * Sets the class name persistence.
-	 *
-	 * @param classNamePersistence the class name persistence
-	 */
-	public void setClassNamePersistence(
-		ClassNamePersistence classNamePersistence) {
-
-		this.classNamePersistence = classNamePersistence;
-	}
-
-	/**
-	 * Returns the resource local service.
-	 *
-	 * @return the resource local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceLocalService
-		getResourceLocalService() {
-
-		return resourceLocalService;
-	}
-
-	/**
-	 * Sets the resource local service.
-	 *
-	 * @param resourceLocalService the resource local service
-	 */
-	public void setResourceLocalService(
-		com.liferay.portal.kernel.service.ResourceLocalService
-			resourceLocalService) {
-
-		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the user local service.
-	 *
-	 * @return the user local service
-	 */
-	public com.liferay.portal.kernel.service.UserLocalService
-		getUserLocalService() {
-
-		return userLocalService;
-	}
-
-	/**
-	 * Sets the user local service.
-	 *
-	 * @param userLocalService the user local service
-	 */
-	public void setUserLocalService(
-		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
-
-		this.userLocalService = userLocalService;
-	}
-
-	/**
-	 * Returns the user persistence.
-	 *
-	 * @return the user persistence
-	 */
-	public UserPersistence getUserPersistence() {
-		return userPersistence;
-	}
-
-	/**
-	 * Sets the user persistence.
-	 *
-	 * @param userPersistence the user persistence
-	 */
-	public void setUserPersistence(UserPersistence userPersistence) {
-		this.userPersistence = userPersistence;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.friendly.url.model.FriendlyURLEntry",
-			friendlyURLEntryLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.friendly.url.model.FriendlyURLEntry");
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		friendlyURLEntryLocalService = (FriendlyURLEntryLocalService)aopProxy;
 	}
 
 	/**
@@ -919,8 +751,23 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 		return FriendlyURLEntryLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<FriendlyURLEntry> getCTPersistence() {
+		return friendlyURLEntryPersistence;
+	}
+
+	@Override
+	public Class<FriendlyURLEntry> getModelClass() {
 		return FriendlyURLEntry.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<FriendlyURLEntry>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(friendlyURLEntryPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -946,57 +793,38 @@ public abstract class FriendlyURLEntryLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
-	@BeanReference(type = FriendlyURLEntryLocalService.class)
 	protected FriendlyURLEntryLocalService friendlyURLEntryLocalService;
 
-	@BeanReference(type = FriendlyURLEntryPersistence.class)
+	@Reference
 	protected FriendlyURLEntryPersistence friendlyURLEntryPersistence;
 
-	@BeanReference(type = FriendlyURLEntryLocalizationPersistence.class)
+	@Reference
 	protected FriendlyURLEntryLocalizationPersistence
 		friendlyURLEntryLocalizationPersistence;
 
-	@BeanReference(type = FriendlyURLEntryMappingPersistence.class)
+	@Reference
 	protected FriendlyURLEntryMappingPersistence
 		friendlyURLEntryMappingPersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.ClassNameLocalService
 		classNameLocalService;
 
-	@ServiceReference(type = ClassNamePersistence.class)
-	protected ClassNamePersistence classNamePersistence;
-
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.ResourceLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.ResourceLocalService
 		resourceLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.UserLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.UserLocalService
 		userLocalService;
-
-	@ServiceReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

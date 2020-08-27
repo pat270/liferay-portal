@@ -98,10 +98,8 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 
 			Thread currentThread = Thread.currentThread();
 
-			ClassLoader contextClassLoader =
-				currentThread.getContextClassLoader();
-
-			invokerFilterChain.setContextClassLoader(contextClassLoader);
+			invokerFilterChain.setContextClassLoader(
+				currentThread.getContextClassLoader());
 
 			invokerFilterChain.doFilter(
 				httpServletRequest, httpServletResponse);
@@ -129,10 +127,10 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 			try {
 				doPortalInit();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 
-				throw new ServletException(e);
+				throw new ServletException(exception);
 			}
 		}
 	}
@@ -207,11 +205,7 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 		String queryString = httpServletRequest.getQueryString();
 
 		if (Validator.isNotNull(queryString)) {
-			key = key.concat(
-				StringPool.QUESTION
-			).concat(
-				queryString
-			);
+			key = StringBundler.concat(key, StringPool.QUESTION, queryString);
 		}
 
 		InvokerFilterChain invokerFilterChain = _filterChains.get(key);
@@ -307,13 +301,12 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 	protected HttpServletRequest handleNonSerializableRequest(
 		HttpServletRequest httpServletRequest) {
 
-		if (ServerDetector.isWebLogic()) {
-			if (!NonSerializableObjectRequestWrapper.isWrapped(
-					httpServletRequest)) {
+		if (ServerDetector.isWebLogic() &&
+			!NonSerializableObjectRequestWrapper.isWrapped(
+				httpServletRequest)) {
 
-				httpServletRequest = new NonSerializableObjectRequestWrapper(
-					httpServletRequest);
-			}
+			httpServletRequest = new NonSerializableObjectRequestWrapper(
+				httpServletRequest);
 		}
 
 		return httpServletRequest;

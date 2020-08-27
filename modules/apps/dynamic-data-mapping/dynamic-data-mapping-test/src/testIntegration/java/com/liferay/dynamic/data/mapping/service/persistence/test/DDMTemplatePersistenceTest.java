@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class DDMTemplatePersistenceTest {
 
 		DDMTemplate newDDMTemplate = _persistence.create(pk);
 
+		newDDMTemplate.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMTemplate.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMTemplate.setUuid(RandomTestUtil.randomString());
 
 		newDDMTemplate.setGroupId(RandomTestUtil.nextLong());
@@ -180,6 +184,12 @@ public class DDMTemplatePersistenceTest {
 		DDMTemplate existingDDMTemplate = _persistence.findByPrimaryKey(
 			newDDMTemplate.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMTemplate.getMvccVersion(),
+			newDDMTemplate.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMTemplate.getCtCollectionId(),
+			newDDMTemplate.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMTemplate.getUuid(), newDDMTemplate.getUuid());
 		Assert.assertEquals(
@@ -433,14 +443,15 @@ public class DDMTemplatePersistenceTest {
 
 	protected OrderByComparator<DDMTemplate> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMTemplate", "uuid", true, "templateId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true,
-			"versionUserId", true, "versionUserName", true, "createDate", true,
-			"modifiedDate", true, "classNameId", true, "classPK", true,
-			"resourceClassNameId", true, "templateKey", true, "version", true,
-			"type", true, "mode", true, "language", true, "cacheable", true,
-			"smallImage", true, "smallImageId", true, "smallImageURL", true,
-			"lastPublishDate", true);
+			"DDMTemplate", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "templateId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "versionUserId", true,
+			"versionUserName", true, "createDate", true, "modifiedDate", true,
+			"classNameId", true, "classPK", true, "resourceClassNameId", true,
+			"templateKey", true, "version", true, "type", true, "mode", true,
+			"language", true, "cacheable", true, "smallImage", true,
+			"smallImageId", true, "smallImageURL", true, "lastPublishDate",
+			true);
 	}
 
 	@Test
@@ -658,46 +669,93 @@ public class DDMTemplatePersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMTemplate existingDDMTemplate = _persistence.findByPrimaryKey(
-			newDDMTemplate.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDDMTemplate.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMTemplate.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDDMTemplate, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMTemplate newDDMTemplate = addDDMTemplate();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMTemplate.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"templateId", newDDMTemplate.getTemplateId()));
+
+		List<DDMTemplate> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMTemplate ddmTemplate) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMTemplate.getGroupId()),
+			ddmTemplate.getUuid(),
+			ReflectionTestUtil.invoke(
+				ddmTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(ddmTemplate.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMTemplate, "getOriginalGroupId", new Class<?>[0]));
+				ddmTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDDMTemplate.getSmallImageId()),
+			Long.valueOf(ddmTemplate.getSmallImageId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMTemplate, "getOriginalSmallImageId",
-				new Class<?>[0]));
+				ddmTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "smallImageId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDDMTemplate.getGroupId()),
+			Long.valueOf(ddmTemplate.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMTemplate, "getOriginalGroupId", new Class<?>[0]));
+				ddmTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDDMTemplate.getClassNameId()),
+			Long.valueOf(ddmTemplate.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMTemplate, "getOriginalClassNameId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMTemplate.getTemplateKey(),
-				ReflectionTestUtil.invoke(
-					existingDDMTemplate, "getOriginalTemplateKey",
-					new Class<?>[0])));
+				ddmTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
+		Assert.assertEquals(
+			ddmTemplate.getTemplateKey(),
+			ReflectionTestUtil.invoke(
+				ddmTemplate, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "templateKey"));
 	}
 
 	protected DDMTemplate addDDMTemplate() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMTemplate ddmTemplate = _persistence.create(pk);
+
+		ddmTemplate.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmTemplate.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmTemplate.setUuid(RandomTestUtil.randomString());
 

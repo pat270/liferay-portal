@@ -88,7 +88,7 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 	<portlet:param name="mvcPath" value="/edit_template.jsp" />
 </portlet:actionURL>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= (template == null) ? addTemplateURL : updateTemplateURL %>" cssClass="container-fluid-1280" enctype="multipart/form-data" method="post" name="fm" onSubmit='<%= "event.preventDefault();" %>'>
 		<aui:input name="redirect" type="hidden" value="<%= ddmDisplay.getEditTemplateBackURL(liferayPortletRequest, liferayPortletResponse, classNameId, classPK, resourceClassNameId, portletResource) %>" />
 		<aui:input name="closeRedirect" type="hidden" value="<%= closeRedirect %>" />
@@ -124,7 +124,7 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 				long imageMaxSize = ddmDisplayContext.smallImageMaxSize();
 				%>
 
-				<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(imageMaxSize, locale) %>" key="please-enter-a-small-image-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
+				<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(imageMaxSize, locale) %>" key="please-enter-a-small-image-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
 			</liferay-ui:error>
 
 			<c:if test="<%= showHeader %>">
@@ -169,7 +169,7 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 
 				<div class="template-history-toolbar" id="<portlet:namespace />templateHistoryToolbar"></div>
 
-				<aui:script use="aui-toolbar,aui-dialog-iframe-deprecated,liferay-util-window">
+				<aui:script use="aui-dialog-iframe-deprecated,aui-toolbar,liferay-util-window">
 					var toolbarChildren = [
 						<portlet:renderURL var="viewHistoryURL">
 							<portlet:param name="mvcPath" value="/view_template_history.jsp" />
@@ -178,24 +178,21 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 						</portlet:renderURL>
 
 						{
-							icon: 'icon-time',
 							label: '<%= UnicodeLanguageUtil.get(request, "view-history") %>',
 							on: {
-								click: function(event) {
+								click: function (event) {
 									event.domEvent.preventDefault();
 
 									window.location.href = '<%= viewHistoryURL %>';
-								}
-							}
-						}
+								},
+							},
+						},
 					];
 
-					new A.Toolbar(
-						{
-							boundingBox: '#<portlet:namespace />templateHistoryToolbar',
-							children: toolbarChildren
-						}
-					).render();
+					new A.Toolbar({
+						boundingBox: '#<portlet:namespace />templateHistoryToolbar',
+						children: toolbarChildren,
+					}).render();
 				</aui:script>
 			</c:if>
 
@@ -232,11 +229,12 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 
 									<c:if test="<%= ddmNavigationHelper.isNavigationStartsOnViewTemplates(liferayPortletRequest) && ((template == null) || (template.getClassPK() == 0)) %>">
 										<liferay-ui:icon
-											iconCssClass="icon-search"
+											icon="search"
 											label="<%= true %>"
-											linkCssClass="btn btn-default"
+											linkCssClass="btn btn-secondary"
+											markupView="lexicon"
 											message="select"
-											url='<%= "javascript:" + renderResponse.getNamespace() + "openDDMStructureSelector();" %>'
+											url='<%= "javascript:" + liferayPortletResponse.getNamespace() + "openDDMStructureSelector();" %>'
 										/>
 									</c:if>
 								</div>
@@ -304,14 +302,18 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 										</div>
 
 										<div class="lfr-ddm-small-image-content toggler-content-collapsed">
-											<aui:row>
+											<clay:row>
 												<c:if test="<%= smallImage && (template != null) %>">
-													<aui:col width="<%= 50 %>">
+													<clay:col
+														md="6"
+													>
 														<img alt="<liferay-ui:message escapeAttribute="<%= true %>" key="preview" />" class="lfr-ddm-small-image-preview" src="<%= HtmlUtil.escapeAttribute(template.getTemplateImageURL(themeDisplay)) %>" />
-													</aui:col>
+													</clay:col>
 												</c:if>
 
-												<aui:col width="<%= (smallImage && (template != null)) ? 50 : 100 %>">
+												<clay:col
+													md="<%= (smallImage && (template != null)) ? String.valueOf(6) : String.valueOf(12) %>"
+												>
 													<aui:fieldset>
 														<aui:input cssClass="lfr-ddm-small-image-type" inlineField="<%= true %>" label="small-image-url" name="type" type="radio" />
 
@@ -323,8 +325,8 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 
 														<aui:input cssClass="lfr-ddm-small-image-value" inlineField="<%= true %>" label="" name="smallImageFile" type="file" />
 													</aui:fieldset>
-												</aui:col>
-											</aui:row>
+												</clay:col>
+											</clay:row>
 										</div>
 									</div>
 								</c:otherwise>
@@ -352,7 +354,7 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 			var types = container.all('.lfr-ddm-small-image-type');
 			var values = container.all('.lfr-ddm-small-image-value');
 
-			var selectSmallImageType = function(index) {
+			var selectSmallImageType = function (index) {
 				types.attr('checked', false);
 
 				types.item(index).attr('checked', true);
@@ -364,7 +366,7 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 
 			container.delegate(
 				'change',
-				function(event) {
+				function (event) {
 					var index = types.indexOf(event.currentTarget);
 
 					selectSmallImageType(index);
@@ -372,38 +374,38 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 				'.lfr-ddm-small-image-type'
 			);
 
-			new A.Toggler(
-				{
-					animated: true,
-					content: '#<portlet:namespace />smallImageContainer .lfr-ddm-small-image-content',
-					expanded: <%= smallImage %>,
-					header: '#<portlet:namespace />smallImageContainer .lfr-ddm-small-image-header',
-					on: {
-						animatingChange: function(event) {
-							var instance = this;
+			new A.Toggler({
+				animated: true,
+				content:
+					'#<portlet:namespace />smallImageContainer .lfr-ddm-small-image-content',
+				expanded: <%= smallImage %>,
+				header:
+					'#<portlet:namespace />smallImageContainer .lfr-ddm-small-image-header',
+				on: {
+					animatingChange: function (event) {
+						var instance = this;
 
-							var expanded = !instance.get('expanded');
+						var expanded = !instance.get('expanded');
 
-							A.one('#<portlet:namespace />smallImage').attr('checked', expanded);
+						A.one('#<portlet:namespace />smallImage').attr('checked', expanded);
 
-							if (expanded) {
-								types.each(
-									function(item, index) {
-										if (item.get('checked')) {
-											values.item(index).attr('disabled', false);
-										}
-									}
-								);
-							}
-							else {
-								values.attr('disabled', true);
-							}
+						if (expanded) {
+							types.each(function (item, index) {
+								if (item.get('checked')) {
+									values.item(index).attr('disabled', false);
+								}
+							});
 						}
-					}
-				}
-			);
+						else {
+							values.attr('disabled', true);
+						}
+					},
+				},
+			});
 
-			selectSmallImageType('<%= ((template != null) && Validator.isNotNull(template.getSmallImageURL())) ? 0 : 1 %>');
+			selectSmallImageType(
+				'<%= ((template != null) && Validator.isNotNull(template.getSmallImageURL())) ? 0 : 1 %>'
+			);
 		</aui:script>
 	</c:if>
 
@@ -412,7 +414,8 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 			function <portlet:namespace />openDDMStructureSelector() {
 				Liferay.Util.openDDMPortlet(
 					{
-						basePortletURL: '<%= PortletURLFactoryUtil.create(request, DDMPortletKeys.DYNAMIC_DATA_MAPPING, PortletRequest.RENDER_PHASE) %>',
+						basePortletURL:
+							'<%= PortletURLFactoryUtil.create(request, DDMPortletKeys.DYNAMIC_DATA_MAPPING, PortletRequest.RENDER_PHASE) %>',
 						classNameId: '<%= PortalUtil.getClassNameId(DDMStructure.class) %>',
 						classPK: 0,
 						eventName: '<portlet:namespace />selectStructure',
@@ -420,11 +423,15 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 						mvcPath: '/select_structure.jsp',
 						navigationStartsOn: '<%= DDMNavigationHelper.SELECT_STRUCTURE %>',
 						showAncestorScopes: true,
-						title: '<%= UnicodeLanguageUtil.get(request, "structures") %>'
+						title: '<%= UnicodeLanguageUtil.get(request, "structures") %>',
 					},
-					function(event) {
-						if (document.<portlet:namespace />fm.<portlet:namespace />classPK.value != event.ddmstructureid) {
-							document.<portlet:namespace />fm.<portlet:namespace />classPK.value = event.ddmstructureid;
+					function (event) {
+						if (
+							document.<portlet:namespace />fm.<portlet:namespace />classPK
+								.value != event.ddmstructureid
+						) {
+							document.<portlet:namespace />fm.<portlet:namespace />classPK.value =
+								event.ddmstructureid;
 
 							Liferay.fire('<portlet:namespace />refreshEditor');
 						}
@@ -436,12 +443,9 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 
 	<aui:button-row>
 		<aui:script>
-			Liferay.after(
-				'<portlet:namespace />saveTemplate',
-				function() {
-					submitForm(document.<portlet:namespace />fm);
-				}
-			);
+			Liferay.after('<portlet:namespace />saveTemplate', function () {
+				submitForm(document.<portlet:namespace />fm);
+			});
 
 			function <portlet:namespace />saveDraftTemplate() {
 				var form = document.<portlet:namespace />fm;
@@ -449,22 +453,29 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 				var statusInput = Liferay.Util.getFormElement(form, 'status');
 
 				if (statusInput) {
-					Liferay.Util.setFormValues(
-						form,
-						{
-							statusInput: <%= String.valueOf(WorkflowConstants.STATUS_DRAFT) %>
-						}
-					);
+					Liferay.Util.setFormValues(form, {
+						statusInput: <%= String.valueOf(WorkflowConstants.STATUS_DRAFT) %>,
+					});
 				}
 
-				Liferay.fire('<%= renderResponse.getNamespace() + "saveTemplate" %>');
+				Liferay.fire(
+					'<%= liferayPortletResponse.getNamespace() + "saveTemplate" %>'
+				);
 			}
 
 			function <portlet:namespace />saveAndContinueTemplate() {
-				document.<portlet:namespace />fm.<portlet:namespace />saveAndContinue.value = '1';
+				document.<portlet:namespace />fm.<portlet:namespace />saveAndContinue.value =
+					'1';
 
 				Liferay.fire('<portlet:namespace />saveTemplate');
 			}
+
+			var onDestroyPortlet = function (event) {
+				Liferay.detach('destroyPortlet', onDestroyPortlet);
+				Liferay.detach('<portlet:namespace />saveTemplate');
+			};
+
+			Liferay.on('destroyPortlet', onDestroyPortlet);
 		</aui:script>
 
 		<%
@@ -473,12 +484,12 @@ DDMNavigationHelper ddmNavigationHelper = ddmDisplay.getDDMNavigationHelper();
 
 		<aui:button onClick="<%= taglibOnClick %>" primary="<%= true %>" value='<%= LanguageUtil.get(request, "save") %>' />
 
-		<aui:button onClick='<%= renderResponse.getNamespace() + "saveAndContinueTemplate();" %>' value='<%= LanguageUtil.get(resourceBundle, "save-and-continue") %>' />
+		<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "saveAndContinueTemplate();" %>' value='<%= LanguageUtil.get(resourceBundle, "save-and-continue") %>' />
 
 		<c:if test="<%= ddmDisplay.isVersioningEnabled() %>">
-			<aui:button onClick='<%= renderResponse.getNamespace() + "saveDraftTemplate();" %>' value='<%= LanguageUtil.get(request, "save-draft") %>' />
+			<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "saveDraftTemplate();" %>' value='<%= LanguageUtil.get(request, "save-draft") %>' />
 		</c:if>
 
 		<aui:button href="<%= ddmDisplay.getEditTemplateBackURL(liferayPortletRequest, liferayPortletResponse, classNameId, classPK, resourceClassNameId, portletResource) %>" type="cancel" />
 	</aui:button-row>
-</div>
+</clay:container-fluid>

@@ -17,6 +17,7 @@ package com.liferay.jenkins.results.parser;
 import java.io.IOException;
 import java.io.StringReader;
 
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -28,11 +29,26 @@ public class BuildFactory {
 		url = JenkinsResultsParserUtil.getLocalURL(url);
 
 		if (url.contains("AXIS_VARIABLE=")) {
+			String jobVariant = JenkinsResultsParserUtil.getBuildParameter(
+				url, "JOB_VARIANT");
+
+			if ((jobVariant != null) && jobVariant.contains("cucumber")) {
+				return new CucumberAxisBuild(url, (BatchBuild)parentBuild);
+			}
+
+			if ((jobVariant != null) && jobVariant.contains("functional")) {
+				return new PoshiAxisBuild(url, (BatchBuild)parentBuild);
+			}
+
 			return new AxisBuild(url, (BatchBuild)parentBuild);
 		}
 
 		if (url.contains("subrepository-source-format")) {
 			return new BatchBuild(url, (TopLevelBuild)parentBuild);
+		}
+
+		if (url.contains("-controller")) {
+			return new DefaultTopLevelBuild(url, (TopLevelBuild)parentBuild);
 		}
 
 		if (url.contains("-source-format")) {
@@ -53,11 +69,16 @@ public class BuildFactory {
 
 		for (String batchToken : _TOKENS_BATCH) {
 			if (url.contains(batchToken)) {
+				if (url.contains("qa-websites")) {
+					return new QAWebsitesBatchBuild(
+						url, (TopLevelBuild)parentBuild);
+				}
+
 				return new BatchBuild(url, (TopLevelBuild)parentBuild);
 			}
 		}
 
-		TopLevelBuild topLevelBuild = new TopLevelBuild(
+		TopLevelBuild topLevelBuild = new DefaultTopLevelBuild(
 			url, (TopLevelBuild)parentBuild);
 
 		String jobName = topLevelBuild.getJobName();
@@ -67,18 +88,53 @@ public class BuildFactory {
 				url, (TopLevelBuild)parentBuild);
 		}
 
-		if ((parentBuild != null) &&
-			jobName.equals("test-portal-acceptance-pullrequest(ee-6.2.x)")) {
+		if (jobName.startsWith("test-portal-acceptance-pullrequest")) {
+			String testSuite = topLevelBuild.getParameterValue("CI_TEST_SUITE");
 
-			String jenkinsJobVariant = topLevelBuild.getParameterValue(
-				"JENKINS_JOB_VARIANT");
-
-			if ((jenkinsJobVariant != null) &&
-				jenkinsJobVariant.equals("rebase-error")) {
-
-				return new RebaseErrorTopLevelBuild(
+			if (Objects.equals(testSuite, "bundle")) {
+				return new StandaloneTopLevelBuild(
 					url, (TopLevelBuild)parentBuild);
 			}
+
+			return new PullRequestPortalTopLevelBuild(
+				url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.startsWith("test-plugins-acceptance-pullrequest")) {
+			return new PullRequestPluginsTopLevelBuild(
+				url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.equals("test-plugins-extraapps")) {
+			return new ExtraAppsPluginsTopLevelBuild(
+				url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.equals("test-plugins-marketplaceapp")) {
+			return new MarketplaceAppPluginsTopLevelBuild(
+				url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.equals("test-portal-fixpack-release")) {
+			return new PortalFixpackReleasePortalTopLevelBuild(
+				url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.equals("test-portal-release")) {
+			return new PortalReleasePortalTopLevelBuild(
+				url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.contains("plugins")) {
+			return new PluginsTopLevelBuild(url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.contains("portal")) {
+			return new PortalTopLevelBuild(url, (TopLevelBuild)parentBuild);
+		}
+
+		if (jobName.contains("qa-websites")) {
+			return new QAWebsitesTopLevelBuild(url, (TopLevelBuild)parentBuild);
 		}
 
 		return topLevelBuild;
@@ -96,9 +152,9 @@ public class BuildFactory {
 					JenkinsResultsParserUtil.toString(
 						JenkinsResultsParserUtil.getLocalURL(url))));
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
-				"Unable to find archive " + archiveName, ioe);
+				"Unable to find archive " + archiveName, ioException);
 		}
 
 		return newBuild(

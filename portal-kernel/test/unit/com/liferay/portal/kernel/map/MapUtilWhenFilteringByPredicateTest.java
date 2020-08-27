@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.map;
 
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.MapUtil;
 
 import java.util.HashMap;
@@ -32,16 +33,19 @@ public class MapUtilWhenFilteringByPredicateTest {
 
 	@Test
 	public void testShouldAllowFilterBySuperType() {
-		Map<String, Integer> inputMap = new HashMap<>();
-
-		inputMap.put("1", 1);
-		inputMap.put("2", 2);
-		inputMap.put("3", 3);
-		inputMap.put("4", 4);
-		inputMap.put("5", 5);
-
 		Map<String, Integer> outputMap = MapUtil.filterByValues(
-			inputMap, number -> (number.intValue() % 2) == 0);
+			HashMapBuilder.put(
+				"1", 1
+			).put(
+				"2", 2
+			).put(
+				"3", 3
+			).put(
+				"4", 4
+			).put(
+				"5", 5
+			).build(),
+			number -> (number.intValue() % 2) == 0);
 
 		Assert.assertEquals(outputMap.toString(), 2, outputMap.size());
 		Assert.assertEquals((Integer)2, outputMap.get("2"));
@@ -50,13 +54,17 @@ public class MapUtilWhenFilteringByPredicateTest {
 
 	@Test
 	public void testShouldAllowFilterBySuperTypeAndOutputToSupertype() {
-		Map<String, Integer> inputMap = new HashMap<>();
-
-		inputMap.put("1", 1);
-		inputMap.put("2", 2);
-		inputMap.put("3", 3);
-		inputMap.put("4", 4);
-		inputMap.put("5", 5);
+		Map<String, Integer> inputMap = HashMapBuilder.put(
+			"1", 1
+		).put(
+			"2", 2
+		).put(
+			"3", 3
+		).put(
+			"4", 4
+		).put(
+			"5", 5
+		).build();
 
 		HashMap<String, Number> outputMap = new HashMap<>();
 
@@ -79,16 +87,18 @@ public class MapUtilWhenFilteringByPredicateTest {
 
 	@Test
 	public void testShouldReturnMapFilteredByEven() {
-		Map<String, String> inputMap = new HashMap<>();
-
-		inputMap.put("1", "one");
-		inputMap.put("2", "two");
-		inputMap.put("3", "three");
-		inputMap.put("4", "four");
-		inputMap.put("5", "five");
-
 		Map<String, String> outputMap = MapUtil.filter(
-			inputMap,
+			HashMapBuilder.put(
+				"1", "one"
+			).put(
+				"2", "two"
+			).put(
+				"3", "three"
+			).put(
+				"4", "four"
+			).put(
+				"5", "five"
+			).build(),
 			entry -> (GetterUtil.getInteger(entry.getKey()) % 2) == 0);
 
 		Assert.assertEquals(outputMap.toString(), 2, outputMap.size());
@@ -98,16 +108,19 @@ public class MapUtilWhenFilteringByPredicateTest {
 
 	@Test
 	public void testShouldReturnMapFilteredByPrefix() {
-		Map<String, String> inputMap = new HashMap<>();
-
-		inputMap.put("2", "two");
-		inputMap.put("4", "four");
-		inputMap.put("x1", "one");
-		inputMap.put("x3", "three");
-		inputMap.put("x5", "five");
-
 		Map<String, String> outputMap = MapUtil.filterByKeys(
-			inputMap, key -> !key.startsWith("x"));
+			HashMapBuilder.put(
+				"2", "two"
+			).put(
+				"4", "four"
+			).put(
+				"x1", "one"
+			).put(
+				"x3", "three"
+			).put(
+				"x5", "five"
+			).build(),
+			key -> !key.startsWith("x"));
 
 		Assert.assertEquals(outputMap.toString(), 2, outputMap.size());
 		Assert.assertEquals("two", outputMap.get("2"));

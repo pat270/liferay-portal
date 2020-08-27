@@ -14,8 +14,11 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,15 +31,22 @@ public class JSONValidationCheck extends BaseFileCheck {
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
 
-		if (Validator.isNull(content) || content.startsWith("[")) {
+		if (Validator.isNull(content)) {
 			return content;
 		}
 
 		try {
-			new JSONObject(content);
+			if (StringUtil.startsWith(
+					StringUtil.trim(content), StringPool.OPEN_BRACKET)) {
+
+				new JSONArray(content);
+			}
+			else {
+				new JSONObject(content);
+			}
 		}
-		catch (JSONException jsone) {
-			addMessage(fileName, jsone.getMessage());
+		catch (JSONException jsonException) {
+			addMessage(fileName, jsonException.getMessage());
 		}
 
 		return content;

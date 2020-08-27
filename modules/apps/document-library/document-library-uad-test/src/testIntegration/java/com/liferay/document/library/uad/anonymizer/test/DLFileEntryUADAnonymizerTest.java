@@ -30,9 +30,12 @@ import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.service.MBThreadLocalService;
 import com.liferay.message.boards.test.util.MBTestUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -40,15 +43,14 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
-import com.liferay.user.associated.data.test.util.BaseUADAnonymizerTestCase;
+import com.liferay.user.associated.data.test.util.BaseHasAssetEntryUADAnonymizerTestCase;
 
 import java.io.InputStream;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,20 +61,19 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class DLFileEntryUADAnonymizerTest
-	extends BaseUADAnonymizerTestCase<DLFileEntry> {
+	extends BaseHasAssetEntryUADAnonymizerTestCase<DLFileEntry> {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
-	@After
-	public void tearDown() throws Exception {
-		DLFileEntryUADTestUtil.cleanUpDependencies(
-			_dlAppLocalService, _dlFileEntryLocalService, _dlFolderLocalService,
-			_dlFileEntries);
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
 
-		_dlFileEntries.clear();
+		_group = GroupTestUtil.addGroup();
 	}
 
 	@Test
@@ -178,15 +179,9 @@ public class DLFileEntryUADAnonymizerTest
 	protected DLFileEntry addBaseModel(long userId, boolean deleteAfterTestRun)
 		throws Exception {
 
-		DLFileEntry dlFileEntry = DLFileEntryUADTestUtil.addDLFileEntry(
+		return DLFileEntryUADTestUtil.addDLFileEntry(
 			_dlAppLocalService, _dlFileEntryLocalService, _dlFolderLocalService,
-			userId);
-
-		if (deleteAfterTestRun) {
-			_dlFileEntries.add(dlFileEntry);
-		}
-
-		return dlFileEntry;
+			userId, _group.getGroupId());
 	}
 
 	@Override
@@ -199,7 +194,7 @@ public class DLFileEntryUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<DLFileEntry> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -213,7 +208,10 @@ public class DLFileEntryUADAnonymizerTest
 		String userName = dlFileEntry.getUserName();
 
 		if ((dlFileEntry.getUserId() != user.getUserId()) &&
-			!userName.equals(user.getFullName())) {
+			!userName.equals(user.getFullName()) &&
+			isAssetEntryAutoAnonymized(
+				DLFileEntry.class.getName(), dlFileEntry.getFileEntryId(),
+				user)) {
 
 			return true;
 		}
@@ -258,16 +256,13 @@ public class DLFileEntryUADAnonymizerTest
 		String description = RandomTestUtil.randomString();
 		String changeLog = RandomTestUtil.randomString();
 		boolean majorVersion = true;
-		InputStream is = dlFileEntry.getContentStream();
-		long size = dlFileEntry.getSize();
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext();
+		InputStream inputStream = dlFileEntry.getContentStream();
 
 		_dlAppLocalService.updateFileEntry(
 			userId, fileEntryId, sourceFileName, contentType, title,
 			description, changeLog,
-			DLVersionNumberIncrease.fromMajorVersion(majorVersion), is, size,
-			serviceContext);
+			DLVersionNumberIncrease.fromMajorVersion(majorVersion), inputStream,
+			dlFileEntry.getSize(), ServiceContextTestUtil.getServiceContext());
 	}
 
 	@Inject
@@ -279,18 +274,19 @@ public class DLFileEntryUADAnonymizerTest
 	@Inject
 	private DLAppLocalService _dlAppLocalService;
 
-	private final List<DLFileEntry> _dlFileEntries = new ArrayList<>();
-
 	@Inject
 	private DLFileEntryLocalService _dlFileEntryLocalService;
 
 	@Inject
 	private DLFolderLocalService _dlFolderLocalService;
 
+	@DeleteAfterTestRun
+	private Group _group;
+
 	@Inject
 	private MBThreadLocalService _mbThreadLocalService;
 
 	@Inject(filter = "component.name=*.DLFileEntryUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<DLFileEntry> _uadAnonymizer;
 
 }

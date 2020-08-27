@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.model;
 
-import com.liferay.portal.kernel.service.persistence.UserGroupGroupRolePK;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -31,7 +31,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface UserGroupGroupRoleModel
-	extends BaseModel<UserGroupGroupRole>, MVCCModel, ShardedModel {
+	extends BaseModel<UserGroupGroupRole>, CTModel<UserGroupGroupRole>,
+			MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -44,14 +45,16 @@ public interface UserGroupGroupRoleModel
 	 *
 	 * @return the primary key of this user group group role
 	 */
-	public UserGroupGroupRolePK getPrimaryKey();
+	@Override
+	public long getPrimaryKey();
 
 	/**
 	 * Sets the primary key of this user group group role.
 	 *
 	 * @param primaryKey the primary key of this user group group role
 	 */
-	public void setPrimaryKey(UserGroupGroupRolePK primaryKey);
+	@Override
+	public void setPrimaryKey(long primaryKey);
 
 	/**
 	 * Returns the mvcc version of this user group group role.
@@ -68,6 +71,52 @@ public interface UserGroupGroupRoleModel
 	 */
 	@Override
 	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this user group group role.
+	 *
+	 * @return the ct collection ID of this user group group role
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this user group group role.
+	 *
+	 * @param ctCollectionId the ct collection ID of this user group group role
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
+
+	/**
+	 * Returns the user group group role ID of this user group group role.
+	 *
+	 * @return the user group group role ID of this user group group role
+	 */
+	public long getUserGroupGroupRoleId();
+
+	/**
+	 * Sets the user group group role ID of this user group group role.
+	 *
+	 * @param userGroupGroupRoleId the user group group role ID of this user group group role
+	 */
+	public void setUserGroupGroupRoleId(long userGroupGroupRoleId);
+
+	/**
+	 * Returns the company ID of this user group group role.
+	 *
+	 * @return the company ID of this user group group role
+	 */
+	@Override
+	public long getCompanyId();
+
+	/**
+	 * Sets the company ID of this user group group role.
+	 *
+	 * @param companyId the company ID of this user group group role
+	 */
+	@Override
+	public void setCompanyId(long companyId);
 
 	/**
 	 * Returns the user group ID of this user group group role.
@@ -110,21 +159,5 @@ public interface UserGroupGroupRoleModel
 	 * @param roleId the role ID of this user group group role
 	 */
 	public void setRoleId(long roleId);
-
-	/**
-	 * Returns the company ID of this user group group role.
-	 *
-	 * @return the company ID of this user group group role
-	 */
-	@Override
-	public long getCompanyId();
-
-	/**
-	 * Sets the company ID of this user group group role.
-	 *
-	 * @param companyId the company ID of this user group group role
-	 */
-	@Override
-	public void setCompanyId(long companyId);
 
 }

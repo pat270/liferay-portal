@@ -39,15 +39,14 @@ public class ExternalMethod {
 		try {
 			returnObject = method.invoke(object, parameters);
 		}
-		catch (Exception e) {
-			Throwable throwable = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
 			if ((throwable != null) && (throwable.getMessage() != null)) {
-				throw new Exception(throwable.getMessage(), e);
+				throw new Exception(throwable.getMessage(), exception);
 			}
-			else {
-				throw e;
-			}
+
+			throw exception;
 		}
 
 		if (returnObject == null) {
@@ -63,9 +62,8 @@ public class ExternalMethod {
 
 		Class<?> clazz = object.getClass();
 
-		Method method = getMethod(clazz, methodName, parameters);
-
-		return execute(method, object, parameters);
+		return execute(
+			getMethod(clazz, methodName, parameters), object, parameters);
 	}
 
 	public static Object execute(String className, String methodName)

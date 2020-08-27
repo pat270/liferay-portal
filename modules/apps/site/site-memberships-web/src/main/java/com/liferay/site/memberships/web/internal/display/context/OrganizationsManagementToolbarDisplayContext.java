@@ -16,8 +16,9 @@ package com.liferay.site.memberships.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -27,6 +28,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.site.memberships.web.internal.util.GroupUtil;
 
 import java.util.List;
 
@@ -41,13 +43,13 @@ public class OrganizationsManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public OrganizationsManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		OrganizationsDisplayContext organizationsDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			organizationsDisplayContext.getOrganizationSearchContainer());
 
 		_organizationsDisplayContext = organizationsDisplayContext;
@@ -61,28 +63,24 @@ public class OrganizationsManagementToolbarDisplayContext
 		try {
 			if (!GroupPermissionUtil.contains(
 					themeDisplay.getPermissionChecker(),
-					themeDisplay.getScopeGroup(), ActionKeys.ASSIGN_MEMBERS)) {
+					themeDisplay.getSiteGroupIdOrLiveGroupId(),
+					ActionKeys.ASSIGN_MEMBERS)) {
 
 				return null;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData(
-							"action", "deleteSelectedOrganizations");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteSelectedOrganizations");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -109,22 +107,28 @@ public class OrganizationsManagementToolbarDisplayContext
 				"mvcPath", "/select_organizations.jsp");
 			selectOrganizationsURL.setWindowState(LiferayWindowState.POP_UP);
 
-			return new CreationMenu() {
-				{
-					addDropdownItem(
-						dropdownItem -> {
-							dropdownItem.putData(
-								"action", "selectOrganizations");
-							dropdownItem.putData(
-								"selectOrganizationsURL",
-								selectOrganizationsURL.toString());
-							dropdownItem.setLabel(
-								LanguageUtil.get(request, "add"));
-						});
+			return CreationMenuBuilder.addDropdownItem(
+				dropdownItem -> {
+					dropdownItem.putData("action", "selectOrganizations");
+
+					ThemeDisplay themeDisplay =
+						(ThemeDisplay)request.getAttribute(
+							WebKeys.THEME_DISPLAY);
+
+					dropdownItem.putData(
+						"groupTypeLabel",
+						GroupUtil.getGroupTypeLabel(
+							_organizationsDisplayContext.getGroupId(),
+							themeDisplay.getLocale()));
+
+					dropdownItem.putData(
+						"selectOrganizationsURL",
+						selectOrganizationsURL.toString());
+					dropdownItem.setLabel(LanguageUtil.get(request, "add"));
 				}
-			};
+			).build();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
@@ -165,7 +169,7 @@ public class OrganizationsManagementToolbarDisplayContext
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

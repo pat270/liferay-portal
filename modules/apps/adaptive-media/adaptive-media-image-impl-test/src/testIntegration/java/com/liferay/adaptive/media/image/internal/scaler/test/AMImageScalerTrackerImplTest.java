@@ -165,10 +165,9 @@ public class AMImageScalerTrackerImplTest {
 			amImageScalerServiceRegistration = _registerAMImageScaler(
 				disabledAMImageScaler, "image/test", 10);
 
-			AMImageScaler amImageScaler =
-				_amImageScalerTracker.getAMImageScaler("image/test");
-
-			Assert.assertEquals(_amDefaultImageScaler, amImageScaler);
+			Assert.assertEquals(
+				_amDefaultImageScaler,
+				_amImageScalerTracker.getAMImageScaler("image/test"));
 		}
 		finally {
 			_unregisterAMImageScaler(amImageScalerServiceRegistration);
@@ -188,10 +187,9 @@ public class AMImageScalerTrackerImplTest {
 			amImageScalerServiceRegistration = _registerAMImageScaler(
 				testAMImageScaler, "image/test", 10);
 
-			AMImageScaler amImageScaler =
-				_amImageScalerTracker.getAMImageScaler("image/test");
-
-			Assert.assertEquals(testAMImageScaler, amImageScaler);
+			Assert.assertEquals(
+				testAMImageScaler,
+				_amImageScalerTracker.getAMImageScaler("image/test"));
 		}
 		finally {
 			_unregisterAMImageScaler(amImageScalerServiceRegistration);
@@ -239,10 +237,9 @@ public class AMImageScalerTrackerImplTest {
 			amImageScalerServiceRegistration5 = _registerAMImageScaler(
 				enabledAMImageScaler5, "image/test", 40);
 
-			AMImageScaler amImageScaler =
-				_amImageScalerTracker.getAMImageScaler("image/test");
-
-			Assert.assertEquals(enabledAMImageScaler3, amImageScaler);
+			Assert.assertEquals(
+				enabledAMImageScaler3,
+				_amImageScalerTracker.getAMImageScaler("image/test"));
 		}
 		finally {
 			_unregisterAMImageScaler(amImageScalerServiceRegistration1);
@@ -303,16 +300,16 @@ public class AMImageScalerTrackerImplTest {
 		Registry registry = RegistryUtil.getRegistry();
 
 		ServiceComponentRuntime serviceComponentRuntime = registry.getService(
-			ServiceComponentRuntime.class);
+			registry.getServiceReference(ServiceComponentRuntime.class));
 
 		Object service = registry.getService(
-			_CLASS_NAME_ADAPTIVE_MEDIA_IMAGE_SCALER_TRACKER);
-
-		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
+			registry.getServiceReference(
+				_CLASS_NAME_ADAPTIVE_MEDIA_IMAGE_SCALER_TRACKER));
 
 		ComponentDescriptionDTO componentDescriptionDTO =
 			serviceComponentRuntime.getComponentDescriptionDTO(
-				bundle, _CLASS_NAME_ADAPTIVE_MEDIA_DEFAULT_IMAGE_SCALER);
+				FrameworkUtil.getBundle(service.getClass()),
+				_CLASS_NAME_ADAPTIVE_MEDIA_DEFAULT_IMAGE_SCALER);
 
 		Promise<Void> voidPromise = serviceComponentRuntime.disableComponent(
 			componentDescriptionDTO);
@@ -324,16 +321,16 @@ public class AMImageScalerTrackerImplTest {
 		Registry registry = RegistryUtil.getRegistry();
 
 		ServiceComponentRuntime serviceComponentRuntime = registry.getService(
-			ServiceComponentRuntime.class);
+			registry.getServiceReference(ServiceComponentRuntime.class));
 
 		Object service = registry.getService(
-			_CLASS_NAME_ADAPTIVE_MEDIA_IMAGE_SCALER_TRACKER);
-
-		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
+			registry.getServiceReference(
+				_CLASS_NAME_ADAPTIVE_MEDIA_IMAGE_SCALER_TRACKER));
 
 		ComponentDescriptionDTO componentDescriptionDTO =
 			serviceComponentRuntime.getComponentDescriptionDTO(
-				bundle, _CLASS_NAME_ADAPTIVE_MEDIA_DEFAULT_IMAGE_SCALER);
+				FrameworkUtil.getBundle(service.getClass()),
+				_CLASS_NAME_ADAPTIVE_MEDIA_DEFAULT_IMAGE_SCALER);
 
 		Promise<Void> voidPromise = serviceComponentRuntime.enableComponent(
 			componentDescriptionDTO);
@@ -348,7 +345,8 @@ public class AMImageScalerTrackerImplTest {
 		Registry registry = RegistryUtil.getRegistry();
 
 		Object service = registry.getService(
-			_CLASS_NAME_ADAPTIVE_MEDIA_IMAGE_SCALER_TRACKER);
+			registry.getServiceReference(
+				_CLASS_NAME_ADAPTIVE_MEDIA_IMAGE_SCALER_TRACKER));
 
 		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
 

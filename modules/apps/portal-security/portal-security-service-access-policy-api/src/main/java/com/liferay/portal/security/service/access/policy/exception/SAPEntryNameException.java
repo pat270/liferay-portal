@@ -16,12 +16,9 @@ package com.liferay.portal.security.service.access.policy.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class SAPEntryNameException extends PortalException {
 
 	public SAPEntryNameException() {
@@ -31,12 +28,12 @@ public class SAPEntryNameException extends PortalException {
 		super(msg);
 	}
 
-	public SAPEntryNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public SAPEntryNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public SAPEntryNameException(Throwable cause) {
-		super(cause);
+	public SAPEntryNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

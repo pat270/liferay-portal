@@ -15,6 +15,7 @@
 package com.liferay.sync.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -22,36 +23,40 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.sync.exception.NoSuchDLObjectException;
 import com.liferay.sync.model.SyncDLObject;
+import com.liferay.sync.model.SyncDLObjectTable;
 import com.liferay.sync.model.impl.SyncDLObjectImpl;
 import com.liferay.sync.model.impl.SyncDLObjectModelImpl;
 import com.liferay.sync.service.persistence.SyncDLObjectPersistence;
+import com.liferay.sync.service.persistence.impl.constants.SyncPersistenceConstants;
 
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The persistence implementation for the sync dl object service.
@@ -63,7 +68,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
+@Component(service = SyncDLObjectPersistence.class)
 public class SyncDLObjectPersistenceImpl
 	extends BasePersistenceImpl<SyncDLObject>
 	implements SyncDLObjectPersistence {
@@ -104,7 +109,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where treePath LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param treePath the tree path
@@ -123,7 +128,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where treePath LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param treePath the tree path
@@ -144,25 +149,24 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where treePath LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param treePath the tree path
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByTreePath(
 		String treePath, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		treePath = Objects.toString(treePath, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -171,7 +175,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -190,73 +194,63 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 			boolean bindTreePath = false;
 
 			if (treePath.isEmpty()) {
-				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
+				sb.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
 			}
 			else {
 				bindTreePath = true;
 
-				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_2);
+				sb.append(_FINDER_COLUMN_TREEPATH_TREEPATH_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindTreePath) {
-					qPos.add(treePath);
+					queryPos.add(treePath);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -286,16 +280,16 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("treePath=");
-		msg.append(treePath);
+		sb.append("treePathLIKE");
+		sb.append(treePath);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -339,16 +333,16 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("treePath=");
-		msg.append(treePath);
+		sb.append("treePathLIKE");
+		sb.append(treePath);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -414,8 +408,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -426,28 +420,28 @@ public class SyncDLObjectPersistenceImpl
 		Session session, SyncDLObject syncDLObject, String treePath,
 		OrderByComparator<SyncDLObject> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 		boolean bindTreePath = false;
 
 		if (treePath.isEmpty()) {
-			query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
+			sb.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
 		}
 		else {
 			bindTreePath = true;
 
-			query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_2);
+			sb.append(_FINDER_COLUMN_TREEPATH_TREEPATH_2);
 		}
 
 		if (orderByComparator != null) {
@@ -455,83 +449,83 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindTreePath) {
-			qPos.add(treePath);
+			queryPos.add(treePath);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -573,44 +567,42 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
 			boolean bindTreePath = false;
 
 			if (treePath.isEmpty()) {
-				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
+				sb.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
 			}
 			else {
 				bindTreePath = true;
 
-				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_2);
+				sb.append(_FINDER_COLUMN_TREEPATH_TREEPATH_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindTreePath) {
-					qPos.add(treePath);
+					queryPos.add(treePath);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -647,7 +639,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -667,7 +659,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -690,7 +682,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -698,16 +690,15 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByM_R(
 		long modifiedTime, long repositoryId, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -718,7 +709,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -736,66 +727,56 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_M_R_MODIFIEDTIME_2);
+			sb.append(_FINDER_COLUMN_M_R_MODIFIEDTIME_2);
 
-			query.append(_FINDER_COLUMN_M_R_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_M_R_REPOSITORYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(modifiedTime);
+				queryPos.add(modifiedTime);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -827,19 +808,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("modifiedTime=");
-		msg.append(modifiedTime);
+		sb.append("modifiedTime>");
+		sb.append(modifiedTime);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -887,19 +868,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("modifiedTime=");
-		msg.append(modifiedTime);
+		sb.append("modifiedTime>");
+		sb.append(modifiedTime);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -968,8 +949,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -981,105 +962,105 @@ public class SyncDLObjectPersistenceImpl
 		long repositoryId, OrderByComparator<SyncDLObject> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-		query.append(_FINDER_COLUMN_M_R_MODIFIEDTIME_2);
+		sb.append(_FINDER_COLUMN_M_R_MODIFIEDTIME_2);
 
-		query.append(_FINDER_COLUMN_M_R_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_M_R_REPOSITORYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(modifiedTime);
+		queryPos.add(modifiedTime);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1122,37 +1103,35 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_M_R_MODIFIEDTIME_2);
+			sb.append(_FINDER_COLUMN_M_R_MODIFIEDTIME_2);
 
-			query.append(_FINDER_COLUMN_M_R_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_M_R_REPOSITORYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(modifiedTime);
+				queryPos.add(modifiedTime);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1192,7 +1171,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1212,7 +1191,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1235,7 +1214,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1243,27 +1222,27 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByR_P(
 		long repositoryId, long parentFolderId, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByR_P;
-			finderArgs = new Object[] {repositoryId, parentFolderId};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByR_P;
+				finderArgs = new Object[] {repositoryId, parentFolderId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByR_P;
 			finderArgs = new Object[] {
 				repositoryId, parentFolderId, start, end, orderByComparator
@@ -1272,7 +1251,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1290,66 +1269,56 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_P_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_P_REPOSITORYID_2);
 
-			query.append(_FINDER_COLUMN_R_P_PARENTFOLDERID_2);
+			sb.append(_FINDER_COLUMN_R_P_PARENTFOLDERID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				qPos.add(parentFolderId);
+				queryPos.add(parentFolderId);
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1381,19 +1350,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", parentFolderId=");
-		msg.append(parentFolderId);
+		sb.append(", parentFolderId=");
+		sb.append(parentFolderId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -1441,19 +1410,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", parentFolderId=");
-		msg.append(parentFolderId);
+		sb.append(", parentFolderId=");
+		sb.append(parentFolderId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -1522,8 +1491,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1535,105 +1504,105 @@ public class SyncDLObjectPersistenceImpl
 		long parentFolderId, OrderByComparator<SyncDLObject> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-		query.append(_FINDER_COLUMN_R_P_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_R_P_REPOSITORYID_2);
 
-		query.append(_FINDER_COLUMN_R_P_PARENTFOLDERID_2);
+		sb.append(_FINDER_COLUMN_R_P_PARENTFOLDERID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
-		qPos.add(parentFolderId);
+		queryPos.add(parentFolderId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1676,37 +1645,35 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_P_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_P_REPOSITORYID_2);
 
-			query.append(_FINDER_COLUMN_R_P_PARENTFOLDERID_2);
+			sb.append(_FINDER_COLUMN_R_P_PARENTFOLDERID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				qPos.add(parentFolderId);
+				queryPos.add(parentFolderId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1742,7 +1709,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where repositoryId = &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1762,7 +1729,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1785,7 +1752,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -1793,18 +1760,17 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByR_NotE(
 		long repositoryId, String event, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		event = Objects.toString(event, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -1815,7 +1781,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1833,77 +1799,67 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_NOTE_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_NOTE_REPOSITORYID_2);
 
 			boolean bindEvent = false;
 
 			if (event.isEmpty()) {
-				query.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
+				sb.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
 			}
 			else {
 				bindEvent = true;
 
-				query.append(_FINDER_COLUMN_R_NOTE_EVENT_2);
+				sb.append(_FINDER_COLUMN_R_NOTE_EVENT_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindEvent) {
-					qPos.add(event);
+					queryPos.add(event);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1935,19 +1891,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", event=");
-		msg.append(event);
+		sb.append(", event!=");
+		sb.append(event);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -1995,19 +1951,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", event=");
-		msg.append(event);
+		sb.append(", event!=");
+		sb.append(event);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -2078,8 +2034,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2091,30 +2047,30 @@ public class SyncDLObjectPersistenceImpl
 		String event, OrderByComparator<SyncDLObject> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-		query.append(_FINDER_COLUMN_R_NOTE_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_R_NOTE_REPOSITORYID_2);
 
 		boolean bindEvent = false;
 
 		if (event.isEmpty()) {
-			query.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
+			sb.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
 		}
 		else {
 			bindEvent = true;
 
-			query.append(_FINDER_COLUMN_R_NOTE_EVENT_2);
+			sb.append(_FINDER_COLUMN_R_NOTE_EVENT_2);
 		}
 
 		if (orderByComparator != null) {
@@ -2122,85 +2078,85 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (bindEvent) {
-			qPos.add(event);
+			queryPos.add(event);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2245,48 +2201,46 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_NOTE_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_NOTE_REPOSITORYID_2);
 
 			boolean bindEvent = false;
 
 			if (event.isEmpty()) {
-				query.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
+				sb.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
 			}
 			else {
 				bindEvent = true;
 
-				query.append(_FINDER_COLUMN_R_NOTE_EVENT_2);
+				sb.append(_FINDER_COLUMN_R_NOTE_EVENT_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindEvent) {
-					qPos.add(event);
+					queryPos.add(event);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2326,7 +2280,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where repositoryId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -2346,7 +2300,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -2369,7 +2323,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -2377,29 +2331,29 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByR_T(
 		long repositoryId, String type, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		type = Objects.toString(type, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByR_T;
-			finderArgs = new Object[] {repositoryId, type};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByR_T;
+				finderArgs = new Object[] {repositoryId, type};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByR_T;
 			finderArgs = new Object[] {
 				repositoryId, type, start, end, orderByComparator
@@ -2408,7 +2362,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -2426,77 +2380,67 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_T_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_T_REPOSITORYID_2);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_R_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_R_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_R_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_R_T_TYPE_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2528,19 +2472,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -2588,19 +2532,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -2671,8 +2615,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2684,30 +2628,30 @@ public class SyncDLObjectPersistenceImpl
 		String type, OrderByComparator<SyncDLObject> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-		query.append(_FINDER_COLUMN_R_T_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_R_T_REPOSITORYID_2);
 
 		boolean bindType = false;
 
 		if (type.isEmpty()) {
-			query.append(_FINDER_COLUMN_R_T_TYPE_3);
+			sb.append(_FINDER_COLUMN_R_T_TYPE_3);
 		}
 		else {
 			bindType = true;
 
-			query.append(_FINDER_COLUMN_R_T_TYPE_2);
+			sb.append(_FINDER_COLUMN_R_T_TYPE_2);
 		}
 
 		if (orderByComparator != null) {
@@ -2715,85 +2659,85 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (bindType) {
-			qPos.add(type);
+			queryPos.add(type);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2838,48 +2782,46 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_T_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_T_REPOSITORYID_2);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_R_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_R_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_R_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_R_T_TYPE_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2918,7 +2860,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where treePath LIKE &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param treePath the tree path
@@ -2938,7 +2880,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where treePath LIKE &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param treePath the tree path
@@ -2961,7 +2903,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where treePath LIKE &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param treePath the tree path
@@ -2969,19 +2911,18 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByT_NotE(
 		String treePath, String event, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		treePath = Objects.toString(treePath, "");
 		event = Objects.toString(event, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -2992,7 +2933,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -3012,88 +2953,78 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 			boolean bindTreePath = false;
 
 			if (treePath.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
+				sb.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
 			}
 			else {
 				bindTreePath = true;
 
-				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_2);
+				sb.append(_FINDER_COLUMN_T_NOTE_TREEPATH_2);
 			}
 
 			boolean bindEvent = false;
 
 			if (event.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
+				sb.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
 			}
 			else {
 				bindEvent = true;
 
-				query.append(_FINDER_COLUMN_T_NOTE_EVENT_2);
+				sb.append(_FINDER_COLUMN_T_NOTE_EVENT_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindTreePath) {
-					qPos.add(treePath);
+					queryPos.add(treePath);
 				}
 
 				if (bindEvent) {
-					qPos.add(event);
+					queryPos.add(event);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3125,19 +3056,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("treePath=");
-		msg.append(treePath);
+		sb.append("treePathLIKE");
+		sb.append(treePath);
 
-		msg.append(", event=");
-		msg.append(event);
+		sb.append(", event!=");
+		sb.append(event);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -3185,19 +3116,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("treePath=");
-		msg.append(treePath);
+		sb.append("treePathLIKE");
+		sb.append(treePath);
 
-		msg.append(", event=");
-		msg.append(event);
+		sb.append(", event!=");
+		sb.append(event);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -3269,8 +3200,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3282,39 +3213,39 @@ public class SyncDLObjectPersistenceImpl
 		String event, OrderByComparator<SyncDLObject> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 		boolean bindTreePath = false;
 
 		if (treePath.isEmpty()) {
-			query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
+			sb.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
 		}
 		else {
 			bindTreePath = true;
 
-			query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_2);
+			sb.append(_FINDER_COLUMN_T_NOTE_TREEPATH_2);
 		}
 
 		boolean bindEvent = false;
 
 		if (event.isEmpty()) {
-			query.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
+			sb.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
 		}
 		else {
 			bindEvent = true;
 
-			query.append(_FINDER_COLUMN_T_NOTE_EVENT_2);
+			sb.append(_FINDER_COLUMN_T_NOTE_EVENT_2);
 		}
 
 		if (orderByComparator != null) {
@@ -3322,87 +3253,87 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindTreePath) {
-			qPos.add(treePath);
+			queryPos.add(treePath);
 		}
 
 		if (bindEvent) {
-			qPos.add(event);
+			queryPos.add(event);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3448,59 +3379,57 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
 			boolean bindTreePath = false;
 
 			if (treePath.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
+				sb.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
 			}
 			else {
 				bindTreePath = true;
 
-				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_2);
+				sb.append(_FINDER_COLUMN_T_NOTE_TREEPATH_2);
 			}
 
 			boolean bindEvent = false;
 
 			if (event.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
+				sb.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
 			}
 			else {
 				bindEvent = true;
 
-				query.append(_FINDER_COLUMN_T_NOTE_EVENT_2);
+				sb.append(_FINDER_COLUMN_T_NOTE_EVENT_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindTreePath) {
-					qPos.add(treePath);
+					queryPos.add(treePath);
 				}
 
 				if (bindEvent) {
-					qPos.add(event);
+					queryPos.add(event);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3543,7 +3472,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where version = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param version the version
@@ -3563,7 +3492,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where version = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param version the version
@@ -3585,7 +3514,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where version = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param version the version
@@ -3593,30 +3522,30 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByV_T(
 		String version, String type, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		version = Objects.toString(version, "");
 		type = Objects.toString(type, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByV_T;
-			finderArgs = new Object[] {version, type};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByV_T;
+				finderArgs = new Object[] {version, type};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByV_T;
 			finderArgs = new Object[] {
 				version, type, start, end, orderByComparator
@@ -3625,7 +3554,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -3643,88 +3572,78 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_V_T_VERSION_3);
+				sb.append(_FINDER_COLUMN_V_T_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_V_T_VERSION_2);
+				sb.append(_FINDER_COLUMN_V_T_VERSION_2);
 			}
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_V_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_V_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_V_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_V_T_TYPE_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3756,19 +3675,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("version=");
-		msg.append(version);
+		sb.append("version=");
+		sb.append(version);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -3816,19 +3735,19 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("version=");
-		msg.append(version);
+		sb.append("version=");
+		sb.append(version);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -3898,8 +3817,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3910,39 +3829,39 @@ public class SyncDLObjectPersistenceImpl
 		Session session, SyncDLObject syncDLObject, String version, String type,
 		OrderByComparator<SyncDLObject> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 		boolean bindVersion = false;
 
 		if (version.isEmpty()) {
-			query.append(_FINDER_COLUMN_V_T_VERSION_3);
+			sb.append(_FINDER_COLUMN_V_T_VERSION_3);
 		}
 		else {
 			bindVersion = true;
 
-			query.append(_FINDER_COLUMN_V_T_VERSION_2);
+			sb.append(_FINDER_COLUMN_V_T_VERSION_2);
 		}
 
 		boolean bindType = false;
 
 		if (type.isEmpty()) {
-			query.append(_FINDER_COLUMN_V_T_TYPE_3);
+			sb.append(_FINDER_COLUMN_V_T_TYPE_3);
 		}
 		else {
 			bindType = true;
 
-			query.append(_FINDER_COLUMN_V_T_TYPE_2);
+			sb.append(_FINDER_COLUMN_V_T_TYPE_2);
 		}
 
 		if (orderByComparator != null) {
@@ -3950,87 +3869,87 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindVersion) {
-			qPos.add(version);
+			queryPos.add(version);
 		}
 
 		if (bindType) {
-			qPos.add(type);
+			queryPos.add(type);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4076,59 +3995,57 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_V_T_VERSION_3);
+				sb.append(_FINDER_COLUMN_V_T_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_V_T_VERSION_2);
+				sb.append(_FINDER_COLUMN_V_T_VERSION_2);
 			}
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_V_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_V_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_V_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_V_T_TYPE_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4168,23 +4085,23 @@ public class SyncDLObjectPersistenceImpl
 		SyncDLObject syncDLObject = fetchByT_T(type, typePK);
 
 		if (syncDLObject == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("type=");
-			msg.append(type);
+			sb.append("type=");
+			sb.append(type);
 
-			msg.append(", typePK=");
-			msg.append(typePK);
+			sb.append(", typePK=");
+			sb.append(typePK);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchDLObjectException(msg.toString());
+			throw new NoSuchDLObjectException(sb.toString());
 		}
 
 		return syncDLObject;
@@ -4207,20 +4124,24 @@ public class SyncDLObjectPersistenceImpl
 	 *
 	 * @param type the type
 	 * @param typePK the type pk
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching sync dl object, or <code>null</code> if a matching sync dl object could not be found
 	 */
 	@Override
 	public SyncDLObject fetchByT_T(
-		String type, long typePK, boolean retrieveFromCache) {
+		String type, long typePK, boolean useFinderCache) {
 
 		type = Objects.toString(type, "");
 
-		Object[] finderArgs = new Object[] {type, typePK};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {type, typePK};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = finderCache.getResult(
 				_finderPathFetchByT_T, finderArgs, this);
 		}
@@ -4236,45 +4157,47 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_T_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_T_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_T_T_TYPE_2);
 			}
 
-			query.append(_FINDER_COLUMN_T_T_TYPEPK_2);
+			sb.append(_FINDER_COLUMN_T_T_TYPEPK_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				qPos.add(typePK);
+				queryPos.add(typePK);
 
-				List<SyncDLObject> list = q.list();
+				List<SyncDLObject> list = query.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(
-						_finderPathFetchByT_T, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(
+							_finderPathFetchByT_T, finderArgs, list);
+					}
 				}
 				else {
 					SyncDLObject syncDLObject = list.get(0);
@@ -4284,10 +4207,8 @@ public class SyncDLObjectPersistenceImpl
 					cacheResult(syncDLObject);
 				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(_finderPathFetchByT_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4336,48 +4257,46 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_T_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_T_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_T_T_TYPE_2);
 			}
 
-			query.append(_FINDER_COLUMN_T_T_TYPEPK_2);
+			sb.append(_FINDER_COLUMN_T_T_TYPEPK_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				qPos.add(typePK);
+				queryPos.add(typePK);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4420,7 +4339,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4443,7 +4362,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4468,7 +4387,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4477,18 +4396,17 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByM_R_NotE(
 		long modifiedTime, long repositoryId, String event, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		event = Objects.toString(event, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
@@ -4499,7 +4417,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -4518,81 +4436,71 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 			boolean bindEvent = false;
 
 			if (event.isEmpty()) {
-				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
+				sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 			}
 			else {
 				bindEvent = true;
 
-				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
+				sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(modifiedTime);
+				queryPos.add(modifiedTime);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindEvent) {
-					qPos.add(event);
+					queryPos.add(event);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4625,22 +4533,22 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("modifiedTime=");
-		msg.append(modifiedTime);
+		sb.append("modifiedTime>");
+		sb.append(modifiedTime);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", event=");
-		msg.append(event);
+		sb.append(", event!=");
+		sb.append(event);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -4690,22 +4598,22 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("modifiedTime=");
-		msg.append(modifiedTime);
+		sb.append("modifiedTime>");
+		sb.append(modifiedTime);
 
-		msg.append(", repositoryId=");
-		msg.append(repositoryId);
+		sb.append(", repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", event=");
-		msg.append(event);
+		sb.append(", event!=");
+		sb.append(event);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -4779,8 +4687,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4792,32 +4700,32 @@ public class SyncDLObjectPersistenceImpl
 		long repositoryId, String event,
 		OrderByComparator<SyncDLObject> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-		query.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
+		sb.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
 
-		query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 		boolean bindEvent = false;
 
 		if (event.isEmpty()) {
-			query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 		}
 		else {
 			bindEvent = true;
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
 		}
 
 		if (orderByComparator != null) {
@@ -4825,87 +4733,87 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(modifiedTime);
+		queryPos.add(modifiedTime);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
 		if (bindEvent) {
-			qPos.add(event);
+			queryPos.add(event);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4919,7 +4827,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; all &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4940,7 +4848,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; all &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4963,7 +4871,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; all &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4988,7 +4896,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where modifiedTime &gt; &#63; and repositoryId = &#63; and event &ne; &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param modifiedTime the modified time
@@ -4997,14 +4905,14 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByM_R_NotE(
 		long modifiedTime, long repositoryId, String[] events, int start,
 		int end, OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (events == null) {
 			events = new String[0];
@@ -5014,9 +4922,7 @@ public class SyncDLObjectPersistenceImpl
 				events[i] = Objects.toString(events[i], "");
 			}
 
-			events = ArrayUtil.unique(events);
-
-			Arrays.sort(events);
+			events = ArrayUtil.sortedUnique(events);
 		}
 
 		if (events.length == 1) {
@@ -5025,18 +4931,18 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				modifiedTime, repositoryId, StringUtil.merge(events)
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					modifiedTime, repositoryId, StringUtil.merge(events)
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				modifiedTime, repositoryId, StringUtil.merge(events), start,
 				end, orderByComparator
@@ -5045,7 +4951,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				_finderPathWithPaginationFindByM_R_NotE, finderArgs, this);
 
@@ -5064,91 +4970,80 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 			if (events.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < events.length; i++) {
 					String event = events[i];
 
 					if (event.isEmpty()) {
-						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
+						sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 					}
 					else {
-						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
+						sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
 					}
 
 					if ((i + 1) < events.length) {
-						query.append(WHERE_AND);
+						sb.append(WHERE_AND);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(modifiedTime);
+				queryPos.add(modifiedTime);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				for (String event : events) {
-					if (event != null && !event.isEmpty()) {
-						qPos.add(event);
+					if ((event != null) && !event.isEmpty()) {
+						queryPos.add(event);
 					}
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByM_R_NotE, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByM_R_NotE, finderArgs,
+						list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByM_R_NotE, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5199,52 +5094,50 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 			boolean bindEvent = false;
 
 			if (event.isEmpty()) {
-				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
+				sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 			}
 			else {
 				bindEvent = true;
 
-				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
+				sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(modifiedTime);
+				queryPos.add(modifiedTime);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				if (bindEvent) {
-					qPos.add(event);
+					queryPos.add(event);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5274,9 +5167,7 @@ public class SyncDLObjectPersistenceImpl
 				events[i] = Objects.toString(events[i], "");
 			}
 
-			events = ArrayUtil.unique(events);
-
-			Arrays.sort(events);
+			events = ArrayUtil.sortedUnique(events);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -5287,71 +5178,67 @@ public class SyncDLObjectPersistenceImpl
 			_finderPathWithPaginationCountByM_R_NotE, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_MODIFIEDTIME_2);
 
-			query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 			if (events.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < events.length; i++) {
 					String event = events[i];
 
 					if (event.isEmpty()) {
-						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
+						sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 					}
 					else {
-						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
+						sb.append(_FINDER_COLUMN_M_R_NOTE_EVENT_2);
 					}
 
 					if ((i + 1) < events.length) {
-						query.append(WHERE_AND);
+						sb.append(WHERE_AND);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(modifiedTime);
+				queryPos.add(modifiedTime);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
 				for (String event : events) {
-					if (event != null && !event.isEmpty()) {
-						qPos.add(event);
+					if ((event != null) && !event.isEmpty()) {
+						queryPos.add(event);
 					}
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByM_R_NotE, finderArgs,
 					count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByM_R_NotE, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5399,7 +5286,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5422,7 +5309,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5447,7 +5334,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5456,29 +5343,29 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByR_P_T(
 		long repositoryId, long parentFolderId, String type, int start, int end,
 		OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		type = Objects.toString(type, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByR_P_T;
-			finderArgs = new Object[] {repositoryId, parentFolderId, type};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByR_P_T;
+				finderArgs = new Object[] {repositoryId, parentFolderId, type};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByR_P_T;
 			finderArgs = new Object[] {
 				repositoryId, parentFolderId, type, start, end,
@@ -5488,7 +5375,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -5507,81 +5394,71 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
 
-			query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_R_P_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_R_P_T_TYPE_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				qPos.add(parentFolderId);
+				queryPos.add(parentFolderId);
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5614,22 +5491,22 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", parentFolderId=");
-		msg.append(parentFolderId);
+		sb.append(", parentFolderId=");
+		sb.append(parentFolderId);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -5679,22 +5556,22 @@ public class SyncDLObjectPersistenceImpl
 			return syncDLObject;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("repositoryId=");
-		msg.append(repositoryId);
+		sb.append("repositoryId=");
+		sb.append(repositoryId);
 
-		msg.append(", parentFolderId=");
-		msg.append(parentFolderId);
+		sb.append(", parentFolderId=");
+		sb.append(parentFolderId);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchDLObjectException(msg.toString());
+		throw new NoSuchDLObjectException(sb.toString());
 	}
 
 	/**
@@ -5768,8 +5645,8 @@ public class SyncDLObjectPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5781,32 +5658,32 @@ public class SyncDLObjectPersistenceImpl
 		long parentFolderId, String type,
 		OrderByComparator<SyncDLObject> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+		sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-		query.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
+		sb.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
 
-		query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
+		sb.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 		boolean bindType = false;
 
 		if (type.isEmpty()) {
-			query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
+			sb.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 		}
 		else {
 			bindType = true;
 
-			query.append(_FINDER_COLUMN_R_P_T_TYPE_2);
+			sb.append(_FINDER_COLUMN_R_P_T_TYPE_2);
 		}
 
 		if (orderByComparator != null) {
@@ -5814,87 +5691,87 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(repositoryId);
+		queryPos.add(repositoryId);
 
-		qPos.add(parentFolderId);
+		queryPos.add(parentFolderId);
 
 		if (bindType) {
-			qPos.add(type);
+			queryPos.add(type);
 		}
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(syncDLObject)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SyncDLObject> list = q.list();
+		List<SyncDLObject> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -5908,7 +5785,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5929,7 +5806,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5952,7 +5829,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5977,7 +5854,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects where repositoryId = &#63; and parentFolderId = &#63; and type = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param repositoryId the repository ID
@@ -5986,14 +5863,14 @@ public class SyncDLObjectPersistenceImpl
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findByR_P_T(
 		long repositoryId, long parentFolderId, String[] types, int start,
 		int end, OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (types == null) {
 			types = new String[0];
@@ -6003,9 +5880,7 @@ public class SyncDLObjectPersistenceImpl
 				types[i] = Objects.toString(types[i], "");
 			}
 
-			types = ArrayUtil.unique(types);
-
-			Arrays.sort(types);
+			types = ArrayUtil.sortedUnique(types);
 		}
 
 		if (types.length == 1) {
@@ -6014,18 +5889,18 @@ public class SyncDLObjectPersistenceImpl
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				repositoryId, parentFolderId, StringUtil.merge(types)
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					repositoryId, parentFolderId, StringUtil.merge(types)
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				repositoryId, parentFolderId, StringUtil.merge(types), start,
 				end, orderByComparator
@@ -6034,7 +5909,7 @@ public class SyncDLObjectPersistenceImpl
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				_finderPathWithPaginationFindByR_P_T, finderArgs, this);
 
@@ -6053,91 +5928,79 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_SELECT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
 
-			query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 			if (types.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < types.length; i++) {
 					String type = types[i];
 
 					if (type.isEmpty()) {
-						query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
+						sb.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 					}
 					else {
-						query.append(_FINDER_COLUMN_R_P_T_TYPE_2);
+						sb.append(_FINDER_COLUMN_R_P_T_TYPE_2);
 					}
 
 					if ((i + 1) < types.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				qPos.add(parentFolderId);
+				queryPos.add(parentFolderId);
 
 				for (String type : types) {
-					if (type != null && !type.isEmpty()) {
-						qPos.add(type);
+					if ((type != null) && !type.isEmpty()) {
+						queryPos.add(type);
 					}
 				}
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByR_P_T, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByR_P_T, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByR_P_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6188,52 +6051,50 @@ public class SyncDLObjectPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
 
-			query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 			boolean bindType = false;
 
 			if (type.isEmpty()) {
-				query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
+				sb.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 			}
 			else {
 				bindType = true;
 
-				query.append(_FINDER_COLUMN_R_P_T_TYPE_2);
+				sb.append(_FINDER_COLUMN_R_P_T_TYPE_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				qPos.add(parentFolderId);
+				queryPos.add(parentFolderId);
 
 				if (bindType) {
-					qPos.add(type);
+					queryPos.add(type);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6263,9 +6124,7 @@ public class SyncDLObjectPersistenceImpl
 				types[i] = Objects.toString(types[i], "");
 			}
 
-			types = ArrayUtil.unique(types);
-
-			Arrays.sort(types);
+			types = ArrayUtil.sortedUnique(types);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -6276,70 +6135,66 @@ public class SyncDLObjectPersistenceImpl
 			_finderPathWithPaginationCountByR_P_T, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
+			sb.append(_SQL_COUNT_SYNCDLOBJECT_WHERE);
 
-			query.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_REPOSITORYID_2);
 
-			query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
+			sb.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 			if (types.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < types.length; i++) {
 					String type = types[i];
 
 					if (type.isEmpty()) {
-						query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
+						sb.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 					}
 					else {
-						query.append(_FINDER_COLUMN_R_P_T_TYPE_2);
+						sb.append(_FINDER_COLUMN_R_P_T_TYPE_2);
 					}
 
 					if ((i + 1) < types.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(repositoryId);
+				queryPos.add(repositoryId);
 
-				qPos.add(parentFolderId);
+				queryPos.add(parentFolderId);
 
 				for (String type : types) {
-					if (type != null && !type.isEmpty()) {
-						qPos.add(type);
+					if ((type != null) && !type.isEmpty()) {
+						queryPos.add(type);
 					}
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByR_P_T, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByR_P_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6362,18 +6217,19 @@ public class SyncDLObjectPersistenceImpl
 		"(syncDLObject.type IS NULL OR syncDLObject.type = '')";
 
 	public SyncDLObjectPersistenceImpl() {
-		setModelClass(SyncDLObject.class);
-
-		setModelImplClass(SyncDLObjectImpl.class);
-		setModelPKClass(long.class);
-		setEntityCacheEnabled(SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED);
-
 		Map<String, String> dbColumnNames = new HashMap<String, String>();
 
 		dbColumnNames.put("size", "size_");
 		dbColumnNames.put("type", "type_");
 
 		setDBColumnNames(dbColumnNames);
+
+		setModelClass(SyncDLObject.class);
+
+		setModelImplClass(SyncDLObjectImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(SyncDLObjectTable.INSTANCE);
 	}
 
 	/**
@@ -6384,15 +6240,12 @@ public class SyncDLObjectPersistenceImpl
 	@Override
 	public void cacheResult(SyncDLObject syncDLObject) {
 		entityCache.putResult(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED, SyncDLObjectImpl.class,
-			syncDLObject.getPrimaryKey(), syncDLObject);
+			SyncDLObjectImpl.class, syncDLObject.getPrimaryKey(), syncDLObject);
 
 		finderCache.putResult(
 			_finderPathFetchByT_T,
 			new Object[] {syncDLObject.getType(), syncDLObject.getTypePK()},
 			syncDLObject);
-
-		syncDLObject.resetOriginalValues();
 	}
 
 	/**
@@ -6404,14 +6257,10 @@ public class SyncDLObjectPersistenceImpl
 	public void cacheResult(List<SyncDLObject> syncDLObjects) {
 		for (SyncDLObject syncDLObject : syncDLObjects) {
 			if (entityCache.getResult(
-					SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
 					SyncDLObjectImpl.class, syncDLObject.getPrimaryKey()) ==
 						null) {
 
 				cacheResult(syncDLObject);
-			}
-			else {
-				syncDLObject.resetOriginalValues();
 			}
 		}
 	}
@@ -6442,8 +6291,7 @@ public class SyncDLObjectPersistenceImpl
 	@Override
 	public void clearCache(SyncDLObject syncDLObject) {
 		entityCache.removeResult(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED, SyncDLObjectImpl.class,
-			syncDLObject.getPrimaryKey());
+			SyncDLObjectImpl.class, syncDLObject.getPrimaryKey());
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
@@ -6458,10 +6306,20 @@ public class SyncDLObjectPersistenceImpl
 
 		for (SyncDLObject syncDLObject : syncDLObjects) {
 			entityCache.removeResult(
-				SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
 				SyncDLObjectImpl.class, syncDLObject.getPrimaryKey());
 
 			clearUniqueFindersCache((SyncDLObjectModelImpl)syncDLObject, true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(SyncDLObjectImpl.class, primaryKey);
 		}
 	}
 
@@ -6495,8 +6353,8 @@ public class SyncDLObjectPersistenceImpl
 			 _finderPathFetchByT_T.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				syncDLObjectModelImpl.getOriginalType(),
-				syncDLObjectModelImpl.getOriginalTypePK()
+				syncDLObjectModelImpl.getColumnOriginalValue("type_"),
+				syncDLObjectModelImpl.getColumnOriginalValue("typePK")
 			};
 
 			finderCache.removeResult(_finderPathCountByT_T, args);
@@ -6517,7 +6375,7 @@ public class SyncDLObjectPersistenceImpl
 		syncDLObject.setNew(true);
 		syncDLObject.setPrimaryKey(syncDLObjectId);
 
-		syncDLObject.setCompanyId(companyProvider.getCompanyId());
+		syncDLObject.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return syncDLObject;
 	}
@@ -6566,11 +6424,11 @@ public class SyncDLObjectPersistenceImpl
 
 			return remove(syncDLObject);
 		}
-		catch (NoSuchDLObjectException nsee) {
-			throw nsee;
+		catch (NoSuchDLObjectException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -6593,8 +6451,8 @@ public class SyncDLObjectPersistenceImpl
 				session.delete(syncDLObject);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -6645,8 +6503,8 @@ public class SyncDLObjectPersistenceImpl
 				syncDLObject = (SyncDLObject)session.merge(syncDLObject);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -6654,10 +6512,7 @@ public class SyncDLObjectPersistenceImpl
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!SyncDLObjectModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				syncDLObjectModelImpl.getRepositoryId(),
 				syncDLObjectModelImpl.getParentFolderId()
@@ -6705,8 +6560,10 @@ public class SyncDLObjectPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					syncDLObjectModelImpl.getOriginalRepositoryId(),
-					syncDLObjectModelImpl.getOriginalParentFolderId()
+					syncDLObjectModelImpl.getColumnOriginalValue(
+						"repositoryId"),
+					syncDLObjectModelImpl.getColumnOriginalValue(
+						"parentFolderId")
 				};
 
 				finderCache.removeResult(_finderPathCountByR_P, args);
@@ -6728,8 +6585,9 @@ public class SyncDLObjectPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					syncDLObjectModelImpl.getOriginalRepositoryId(),
-					syncDLObjectModelImpl.getOriginalType()
+					syncDLObjectModelImpl.getColumnOriginalValue(
+						"repositoryId"),
+					syncDLObjectModelImpl.getColumnOriginalValue("type_")
 				};
 
 				finderCache.removeResult(_finderPathCountByR_T, args);
@@ -6751,8 +6609,8 @@ public class SyncDLObjectPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					syncDLObjectModelImpl.getOriginalVersion(),
-					syncDLObjectModelImpl.getOriginalType()
+					syncDLObjectModelImpl.getColumnOriginalValue("version"),
+					syncDLObjectModelImpl.getColumnOriginalValue("type_")
 				};
 
 				finderCache.removeResult(_finderPathCountByV_T, args);
@@ -6774,9 +6632,11 @@ public class SyncDLObjectPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					syncDLObjectModelImpl.getOriginalRepositoryId(),
-					syncDLObjectModelImpl.getOriginalParentFolderId(),
-					syncDLObjectModelImpl.getOriginalType()
+					syncDLObjectModelImpl.getColumnOriginalValue(
+						"repositoryId"),
+					syncDLObjectModelImpl.getColumnOriginalValue(
+						"parentFolderId"),
+					syncDLObjectModelImpl.getColumnOriginalValue("type_")
 				};
 
 				finderCache.removeResult(_finderPathCountByR_P_T, args);
@@ -6796,8 +6656,8 @@ public class SyncDLObjectPersistenceImpl
 		}
 
 		entityCache.putResult(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED, SyncDLObjectImpl.class,
-			syncDLObject.getPrimaryKey(), syncDLObject, false);
+			SyncDLObjectImpl.class, syncDLObject.getPrimaryKey(), syncDLObject,
+			false);
 
 		clearUniqueFindersCache(syncDLObjectModelImpl, false);
 		cacheUniqueFindersCache(syncDLObjectModelImpl);
@@ -6871,7 +6731,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns a range of all the sync dl objects.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of sync dl objects
@@ -6887,7 +6747,7 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of sync dl objects
@@ -6906,64 +6766,62 @@ public class SyncDLObjectPersistenceImpl
 	 * Returns an ordered range of all the sync dl objects.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SyncDLObjectModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of sync dl objects
 	 * @param end the upper bound of the range of sync dl objects (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of sync dl objects
 	 */
 	@Override
 	public List<SyncDLObject> findAll(
 		int start, int end, OrderByComparator<SyncDLObject> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<SyncDLObject> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<SyncDLObject>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_SYNCDLOBJECT);
+				sb.append(_SQL_SELECT_SYNCDLOBJECT);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_SYNCDLOBJECT;
 
-				if (pagination) {
-					sql = sql.concat(SyncDLObjectModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(SyncDLObjectModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -6971,29 +6829,19 @@ public class SyncDLObjectPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SyncDLObject>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<SyncDLObject>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7030,18 +6878,15 @@ public class SyncDLObjectPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_SYNCDLOBJECT);
+				Query query = session.createQuery(_SQL_COUNT_SYNCDLOBJECT);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7079,43 +6924,35 @@ public class SyncDLObjectPersistenceImpl
 	/**
 	 * Initializes the sync dl object persistence.
 	 */
-	public void afterPropertiesSet() {
+	@Activate
+	public void activate() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
-			new String[0]);
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByTreePath = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByTreePath",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByTreePath",
 			new String[] {
 				String.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			});
 
 		_finderPathWithPaginationCountByTreePath = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByTreePath",
-			new String[] {String.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countByTreePath", new String[] {String.class.getName()});
 
 		_finderPathWithPaginationFindByM_R = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByM_R",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByM_R",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -7123,15 +6960,12 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithPaginationCountByM_R = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByM_R",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByM_R",
 			new String[] {Long.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByR_P = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_P",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByR_P",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -7139,24 +6973,20 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByR_P = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_P",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByR_P",
 			new String[] {Long.class.getName(), Long.class.getName()},
-			SyncDLObjectModelImpl.REPOSITORYID_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.PARENTFOLDERID_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.MODIFIEDTIME_COLUMN_BITMASK);
+			SyncDLObjectModelImpl.getColumnBitmask("repositoryId") |
+			SyncDLObjectModelImpl.getColumnBitmask("parentFolderId") |
+			SyncDLObjectModelImpl.getColumnBitmask("modifiedTime"));
 
 		_finderPathCountByR_P = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_P",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_P",
 			new String[] {Long.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByR_NotE = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_NotE",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByR_NotE",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -7164,15 +6994,12 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithPaginationCountByR_NotE = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByR_NotE",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByR_NotE",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByR_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByR_T",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -7180,24 +7007,20 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByR_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByR_T",
 			new String[] {Long.class.getName(), String.class.getName()},
-			SyncDLObjectModelImpl.REPOSITORYID_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.TYPE_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.MODIFIEDTIME_COLUMN_BITMASK);
+			SyncDLObjectModelImpl.getColumnBitmask("repositoryId") |
+			SyncDLObjectModelImpl.getColumnBitmask("type_") |
+			SyncDLObjectModelImpl.getColumnBitmask("modifiedTime"));
 
 		_finderPathCountByR_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_T",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByT_NotE = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_NotE",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByT_NotE",
 			new String[] {
 				String.class.getName(), String.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -7205,15 +7028,12 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithPaginationCountByT_NotE = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_NotE",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_NotE",
 			new String[] {String.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByV_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByV_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByV_T",
 			new String[] {
 				String.class.getName(), String.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -7221,39 +7041,31 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByV_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByV_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByV_T",
 			new String[] {String.class.getName(), String.class.getName()},
-			SyncDLObjectModelImpl.VERSION_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.TYPE_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.MODIFIEDTIME_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.REPOSITORYID_COLUMN_BITMASK);
+			SyncDLObjectModelImpl.getColumnBitmask("version") |
+			SyncDLObjectModelImpl.getColumnBitmask("type_") |
+			SyncDLObjectModelImpl.getColumnBitmask("modifiedTime") |
+			SyncDLObjectModelImpl.getColumnBitmask("repositoryId"));
 
 		_finderPathCountByV_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByV_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByV_T",
 			new String[] {String.class.getName(), String.class.getName()});
 
 		_finderPathFetchByT_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_ENTITY, "fetchByT_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_ENTITY, "fetchByT_T",
 			new String[] {String.class.getName(), Long.class.getName()},
-			SyncDLObjectModelImpl.TYPE_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.TYPEPK_COLUMN_BITMASK);
+			SyncDLObjectModelImpl.getColumnBitmask("type_") |
+			SyncDLObjectModelImpl.getColumnBitmask("typePK"));
 
 		_finderPathCountByT_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_T",
 			new String[] {String.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByM_R_NotE = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByM_R_NotE",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByM_R_NotE",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), Integer.class.getName(),
@@ -7261,18 +7073,16 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithPaginationCountByM_R_NotE = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByM_R_NotE",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countByM_R_NotE",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationFindByR_P_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByR_P_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByR_P_T",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), Integer.class.getName(),
@@ -7280,51 +7090,71 @@ public class SyncDLObjectPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByR_P_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, SyncDLObjectImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByR_P_T",
+			SyncDLObjectImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByR_P_T",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			},
-			SyncDLObjectModelImpl.REPOSITORYID_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.PARENTFOLDERID_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.TYPE_COLUMN_BITMASK |
-			SyncDLObjectModelImpl.MODIFIEDTIME_COLUMN_BITMASK);
+			SyncDLObjectModelImpl.getColumnBitmask("repositoryId") |
+			SyncDLObjectModelImpl.getColumnBitmask("parentFolderId") |
+			SyncDLObjectModelImpl.getColumnBitmask("type_") |
+			SyncDLObjectModelImpl.getColumnBitmask("modifiedTime"));
 
 		_finderPathCountByR_P_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByR_P_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByR_P_T",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationCountByR_P_T = new FinderPath(
-			SyncDLObjectModelImpl.ENTITY_CACHE_ENABLED,
-			SyncDLObjectModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByR_P_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByR_P_T",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName()
 			});
 	}
 
-	public void destroy() {
+	@Deactivate
+	public void deactivate() {
 		entityCache.removeCache(SyncDLObjectImpl.class.getName());
 		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@ServiceReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
+	@Override
+	@Reference(
+		target = SyncPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
+	public void setConfiguration(Configuration configuration) {
+	}
 
-	@ServiceReference(type = EntityCache.class)
+	@Override
+	@Reference(
+		target = SyncPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+	}
+
+	@Override
+	@Reference(
+		target = SyncPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		super.setSessionFactory(sessionFactory);
+	}
+
+	@Reference
 	protected EntityCache entityCache;
 
-	@ServiceReference(type = FinderCache.class)
+	@Reference
 	protected FinderCache finderCache;
 
 	private static final String _SQL_SELECT_SYNCDLOBJECT =
@@ -7352,5 +7182,14 @@ public class SyncDLObjectPersistenceImpl
 
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"size", "type"});
+
+	static {
+		try {
+			Class.forName(SyncPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

@@ -25,12 +25,18 @@ String emptyResultsMessage = ParamUtil.getString(request, "emptyResultsMessage")
 List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 %>
 
-<div class="sheet-header">
-	<h2 class="autofit-row sheet-title">
-		<span class="autofit-col autofit-col-expand">
+<clay:sheet-header>
+	<clay:content-row
+		containerElement="h2"
+		cssClass="sheet-title"
+	>
+		<clay:content-col
+			expand="<%= true %>"
+		>
 			<span class="heading-text"><liferay-ui:message key="addresses" /></span>
-		</span>
-		<span class="autofit-col">
+		</clay:content-col>
+
+		<clay:content-col>
 			<span class="heading-end">
 
 				<%
@@ -49,9 +55,9 @@ List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 					url="<%= editURL.toString() %>"
 				/>
 			</span>
-		</span>
-	</h2>
-</div>
+		</clay:content-col>
+	</clay:content-row>
+</clay:sheet-header>
 
 <c:if test="<%= addresses.isEmpty() %>">
 	<div class="contact-information-empty-results-message-wrapper">
@@ -79,9 +85,11 @@ List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 
 				<tr>
 					<td>
-						<div class="sticker sticker-secondary sticker-static">
-							<aui:icon image="picture" markupView="lexicon" />
-						</div>
+						<clay:sticker
+							cssClass="sticker-static"
+							displayType="secondary"
+							icon="picture"
+						/>
 					</td>
 					<td class="table-cell-expand">
 						<h4>
@@ -101,18 +109,21 @@ List<Address> addresses = AddressServiceUtil.getAddresses(className, classPK);
 
 						<c:if test="<%= address.isPrimary() %>">
 							<div class="address-primary-label-wrapper">
-								<span class="label label-primary">
-									<span class="label-item label-item-expand"><%= StringUtil.toUpperCase(LanguageUtil.get(request, "primary"), locale) %></span>
-								</span>
+								<clay:label
+									displayType="primary"
+									label="primary"
+								/>
 							</div>
 						</c:if>
 					</td>
 					<td>
-						<span class="autofit-col lfr-search-container-wrapper">
+						<clay:content-col
+							cssClass="lfr-search-container-wrapper"
+						>
 							<liferay-util:include page="/common/address_action.jsp" servletContext="<%= application %>">
 								<liferay-util:param name="addressId" value="<%= String.valueOf(address.getAddressId()) %>" />
 							</liferay-util:include>
-						</span>
+						</clay:content-col>
 					</td>
 				</tr>
 

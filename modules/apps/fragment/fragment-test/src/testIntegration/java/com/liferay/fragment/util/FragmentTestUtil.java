@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Date;
 
@@ -85,27 +84,8 @@ public class FragmentTestUtil {
 			StringPool.BLANK, serviceContext);
 	}
 
-	public static FragmentEntry addFragmentEntry(long fragmentCollectionId)
-		throws PortalException {
-
-		FragmentCollection fragmentCollection =
-			FragmentCollectionLocalServiceUtil.getFragmentCollection(
-				fragmentCollectionId);
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(
-				fragmentCollection.getGroupId());
-
-		return FragmentEntryLocalServiceUtil.addFragmentEntry(
-			TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
-			fragmentCollectionId, StringPool.BLANK,
-			RandomTestUtil.randomString(), StringPool.BLANK, "<div></div>",
-			StringPool.BLANK, WorkflowConstants.STATUS_APPROVED,
-			serviceContext);
-	}
-
 	public static FragmentEntryLink addFragmentEntryLink(
-			FragmentEntry fragmentEntry, long classNameId, long classPK)
+			FragmentEntry fragmentEntry, long plid)
 		throws PortalException {
 
 		ServiceContext serviceContext =
@@ -114,9 +94,28 @@ public class FragmentTestUtil {
 
 		return FragmentEntryLinkLocalServiceUtil.addFragmentEntryLink(
 			TestPropsValues.getUserId(), serviceContext.getScopeGroupId(), 0,
-			fragmentEntry.getFragmentEntryId(), classNameId, classPK,
-			fragmentEntry.getCss(), fragmentEntry.getHtml(),
-			fragmentEntry.getJs(), StringPool.BLANK, 1, serviceContext);
+			fragmentEntry.getFragmentEntryId(), 0, plid, fragmentEntry.getCss(),
+			fragmentEntry.getHtml(), fragmentEntry.getJs(),
+			fragmentEntry.getConfiguration(), StringPool.BLANK,
+			StringPool.BLANK, 1, StringPool.BLANK, serviceContext);
+	}
+
+	public static FragmentEntryLink addFragmentEntryLink(
+			long groupId, long fragmentEntryId, long plid)
+		throws PortalException {
+
+		FragmentEntry fragmentEntry =
+			FragmentEntryLocalServiceUtil.getFragmentEntry(fragmentEntryId);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(groupId);
+
+		return FragmentEntryLinkLocalServiceUtil.addFragmentEntryLink(
+			TestPropsValues.getUserId(), groupId, 0,
+			fragmentEntry.getFragmentEntryId(), 0, plid, fragmentEntry.getCss(),
+			fragmentEntry.getHtml(), fragmentEntry.getJs(),
+			fragmentEntry.getConfiguration(), StringPool.BLANK,
+			StringPool.BLANK, 1, StringPool.BLANK, serviceContext);
 	}
 
 	public static FragmentEntryLink fetchFragmentEntryLink(

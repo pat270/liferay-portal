@@ -20,6 +20,7 @@
 
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
 taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
+taglib uri="http://liferay.com/tld/editor" prefix="liferay-editor" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
@@ -27,14 +28,14 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
 taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.dynamic.data.mapping.constants.DDMWebKeys" %><%@
+<%@ page import="com.liferay.dynamic.data.mapping.constants.DDMPortletKeys" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.FormInstanceNameException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.FormInstanceSettingsRedirectURLException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.StorageException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.StructureDefinitionException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.StructureLayoutException" %><%@
 page import="com.liferay.dynamic.data.mapping.exception.StructureNameException" %><%@
-page import="com.liferay.dynamic.data.mapping.form.web.FormInstanceFieldSettingsException" %><%@
+page import="com.liferay.dynamic.data.mapping.form.web.internal.FormInstanceFieldSettingsException" %><%@
 page import="com.liferay.dynamic.data.mapping.form.web.internal.display.context.DDMFormAdminDisplayContext" %><%@
 page import="com.liferay.dynamic.data.mapping.form.web.internal.display.context.DDMFormViewFormInstanceRecordsDisplayContext" %><%@
 page import="com.liferay.dynamic.data.mapping.form.web.internal.display.context.util.FieldSetPermissionCheckerHelper" %><%@
@@ -46,7 +47,6 @@ page import="com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord" %><%@
 page import="com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion" %><%@
 page import="com.liferay.dynamic.data.mapping.model.DDMStructure" %><%@
 page import="com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue" %><%@
-page import="com.liferay.dynamic.data.mapping.storage.DDMFormValues" %><%@
 page import="com.liferay.dynamic.data.mapping.validator.DDMFormLayoutValidationException" %><%@
 page import="com.liferay.dynamic.data.mapping.validator.DDMFormValidationException" %><%@
 page import="com.liferay.petra.string.StringBundler" %><%@
@@ -71,7 +71,8 @@ page import="java.util.Map.Entry" %><%@
 page import="java.util.Objects" %><%@
 page import="java.util.Set" %>
 
-<%@ page import="javax.portlet.PortletURL" %>
+<%@ page import="javax.portlet.PortletRequest" %><%@
+page import="javax.portlet.PortletURL" %>
 
 <liferay-frontend:defineObjects />
 
@@ -84,6 +85,7 @@ DDMFormAdminDisplayContext ddmFormAdminDisplayContext = (DDMFormAdminDisplayCont
 
 String dataProviderInstanceParameterSettingsURL = ddmFormAdminDisplayContext.getDataProviderInstanceParameterSettingsURL();
 String dataProviderInstancesURL = ddmFormAdminDisplayContext.getDataProviderInstancesURL();
+String displayStyle = ddmFormAdminDisplayContext.getDisplayStyle();
 String functionsMetadata = ddmFormAdminDisplayContext.getFunctionsMetadata();
 String functionsURL = ddmFormAdminDisplayContext.getFunctionsURL();
 String mainRequire = ddmFormAdminDisplayContext.getMainRequire();

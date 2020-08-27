@@ -1,55 +1,68 @@
-import * as FormSupport from '../../Form/FormSupport.es';
-import {PagesVisitor} from '../../../util/visitors.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-const handleFieldClicked = (state, event) => {
-	const {columnIndex, pageIndex, rowIndex} = event;
+import {FormSupport, PagesVisitor} from 'dynamic-data-mapping-form-renderer';
+
+import {getParentFieldSet, localizeField} from '../../../util/fieldSupport.es';
+
+const handleFieldClicked = (props, state, event) => {
+	let {fieldName} = event;
+	const {activePage} = event;
 	const {pages} = state;
 
-	const fieldProperties = FormSupport.getField(pages, pageIndex, rowIndex, columnIndex);
+	const parentFieldSet = getParentFieldSet(pages, fieldName);
+
+	if (parentFieldSet) {
+		fieldName = parentFieldSet.fieldName;
+	}
+
+	const fieldProperties = FormSupport.findFieldByFieldName(pages, fieldName);
 	const {settingsContext} = fieldProperties;
 	const visitor = new PagesVisitor(settingsContext.pages);
 
 	const focusedField = {
 		...fieldProperties,
-		columnIndex,
-		pageIndex,
-		rowIndex,
 		settingsContext: {
 			...settingsContext,
-			pages: visitor.mapFields(
-				field => {
-					const {fieldName} = field;
+			currentPage: activePage,
+			pages: visitor.mapFields((field) => {
+				const {fieldName} = field;
+				const {defaultLanguageId, editingLanguageId} = props;
 
-					if (fieldName === 'name') {
-						field.visible = true;
-					}
-					else if (fieldName === 'label') {
-						field.type = 'text';
-					}
-					else if (fieldName === 'validation') {
-						field = {
-							...field,
-							validation: {
-								...field.validation,
-								fieldName: fieldProperties.fieldName
-							}
-						};
-					}
-
-					return field;
+				if (fieldName === 'validation') {
+					field = {
+						...field,
+						validation: {
+							...field.validation,
+							fieldName: fieldProperties.fieldName,
+						},
+					};
 				}
-			)
-		}
+
+				return localizeField(
+					field,
+					defaultLanguageId,
+					editingLanguageId
+				);
+			}),
+		},
 	};
 
 	return {
-		focusedField: {
-			...focusedField,
-			columnIndex,
-			originalContext: focusedField,
-			pageIndex,
-			rowIndex
-		}
+		activePage,
+		focusedField,
+		previousFocusedField: focusedField,
 	};
 };
 

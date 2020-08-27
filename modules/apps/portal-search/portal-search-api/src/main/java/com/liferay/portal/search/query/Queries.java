@@ -20,6 +20,7 @@ import com.liferay.portal.search.geolocation.Shape;
 import com.liferay.portal.search.script.Script;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.osgi.annotation.versioning.ProviderType;
@@ -43,6 +44,9 @@ public interface Queries {
 		String startDate, String endDate);
 
 	public DisMaxQuery disMax();
+
+	public MoreLikeThisQuery.DocumentIdentifier documentIdentifier(
+		String index, String type, String id);
 
 	public ExistsQuery exists(String field);
 
@@ -80,9 +84,30 @@ public interface Queries {
 
 	public MatchPhrasePrefixQuery matchPhrasePrefix(String field, Object value);
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #moreLikeThis(List, String...)}
+	 */
+	@Deprecated
 	public MoreLikeThisQuery moreLikeThis(List<String> likeTexts);
 
+	public MoreLikeThisQuery moreLikeThis(
+		List<String> fields, String... likeTexts);
+
+	public MoreLikeThisQuery moreLikeThis(
+		Set<MoreLikeThisQuery.DocumentIdentifier> documentIdentifiers);
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #moreLikeThis(List, String...)}
+	 */
+	@Deprecated
 	public MoreLikeThisQuery moreLikeThis(String... likeTexts);
+
+	public MoreLikeThisQuery moreLikeThis(String[] fields, String... likeTexts);
+
+	public MultiMatchQuery multiMatch(
+		Object value, Map<String, Float> fieldsBoosts);
 
 	public MultiMatchQuery multiMatch(Object value, Set<String> fields);
 
@@ -116,5 +141,9 @@ public interface Queries {
 	public TermsSetQuery termsSet(String fieldName, List<Object> values);
 
 	public WildcardQuery wildcard(String field, String value);
+
+	public WrapperQuery wrapper(byte[] source);
+
+	public WrapperQuery wrapper(String source);
 
 }

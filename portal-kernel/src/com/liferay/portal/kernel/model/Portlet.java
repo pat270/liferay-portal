@@ -139,11 +139,11 @@ public interface Portlet extends PersistedModel, PortletModel {
 	/**
 	 * Checks whether this portlet is equal to the specified object.
 	 *
-	 * @param obj the object to compare this portlet against
+	 * @param object the object to compare this portlet against
 	 * @return <code>true</code> if the portlet is equal to the specified object
 	 */
 	@Override
-	public boolean equals(Object obj);
+	public boolean equals(Object object);
 
 	/**
 	 * Returns the action timeout of the portlet.
@@ -373,15 +373,6 @@ public interface Portlet extends PersistedModel, PortletModel {
 	 * @return expiration cache of the portlet
 	 */
 	public Integer getExpCache();
-
-	/**
-	 * Returns the Facebook integration method of the portlet.
-	 *
-	 * @return the Facebook integration method of the portlet
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public String getFacebookIntegration();
 
 	/**
 	 * Returns a list of CSS files that will be referenced from the page's
@@ -1823,16 +1814,6 @@ public interface Portlet extends PersistedModel, PortletModel {
 	 * @param expCache expiration cache of the portlet
 	 */
 	public void setExpCache(Integer expCache);
-
-	/**
-	 * Sets the Facebook integration method of the portlet.
-	 *
-	 * @param facebookIntegration the Facebook integration method of the
-	 portlet
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public void setFacebookIntegration(String facebookIntegration);
 
 	/**
 	 * Sets a list of CSS files that will be referenced from the page's footer

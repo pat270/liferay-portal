@@ -16,9 +16,12 @@ package com.liferay.fragment.service.base;
 
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentEntryService;
+import com.liferay.fragment.service.persistence.FragmentCollectionPersistence;
+import com.liferay.fragment.service.persistence.FragmentEntryFinder;
 import com.liferay.fragment.service.persistence.FragmentEntryLinkFinder;
 import com.liferay.fragment.service.persistence.FragmentEntryLinkPersistence;
 import com.liferay.fragment.service.persistence.FragmentEntryPersistence;
+import com.liferay.fragment.service.persistence.FragmentEntryVersionPersistence;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -46,7 +49,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class FragmentEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements FragmentEntryService, AopService, IdentifiableOSGiService {
+	implements AopService, FragmentEntryService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -102,8 +105,8 @@ public abstract class FragmentEntryServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -117,8 +120,14 @@ public abstract class FragmentEntryServiceBaseImpl
 	protected FragmentEntryPersistence fragmentEntryPersistence;
 
 	@Reference
+	protected FragmentEntryFinder fragmentEntryFinder;
+
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
+
+	@Reference
+	protected FragmentCollectionPersistence fragmentCollectionPersistence;
 
 	@Reference
 	protected com.liferay.portal.kernel.service.ResourceLocalService
@@ -130,6 +139,9 @@ public abstract class FragmentEntryServiceBaseImpl
 
 	@Reference
 	protected com.liferay.portal.kernel.service.UserService userService;
+
+	@Reference
+	protected FragmentEntryVersionPersistence fragmentEntryVersionPersistence;
 
 	@Reference
 	protected FragmentEntryLinkPersistence fragmentEntryLinkPersistence;

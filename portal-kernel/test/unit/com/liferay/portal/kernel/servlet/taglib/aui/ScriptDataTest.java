@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.servlet.taglib.aui;
 
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
+import com.liferay.petra.string.StringBundler;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,7 +58,7 @@ public class ScriptDataTest {
 
 		scriptData.writeTo(unsyncStringWriter);
 
-		assertVariables(unsyncStringWriter, "var", "vAr", "vaR", "var1");
+		assertVariables(unsyncStringWriter, "_var", "vAr", "vaR", "var1");
 	}
 
 	@Test
@@ -74,7 +74,7 @@ public class ScriptDataTest {
 
 		scriptData.writeTo(unsyncStringWriter);
 
-		assertVariables(unsyncStringWriter, "var");
+		assertVariables(unsyncStringWriter, "_var");
 	}
 
 	protected void assertVariables(

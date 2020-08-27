@@ -53,14 +53,13 @@ public class AssetRendererFactoryRegistryUtilTest {
 		Stream<AssetRendererFactory<?>> assetRendererFactoriesStream =
 			assetRendererFactories.stream();
 
-		assetRendererFactoriesStream = assetRendererFactoriesStream.filter(
-			assetRendererFactory -> {
-				Class<?> clazz = assetRendererFactory.getClass();
-
-				return className.equals(clazz.getName());
-			});
-
-		Assert.assertEquals(1, assetRendererFactoriesStream.count());
+		Assert.assertEquals(
+			1,
+			assetRendererFactoriesStream.map(
+				AssetRendererFactory::getClassName
+			).filter(
+				className::equals
+			).count());
 	}
 
 	@Test
@@ -71,9 +70,7 @@ public class AssetRendererFactoryRegistryUtilTest {
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
 				className);
 
-		Class<?> clazz = assetRendererFactory.getClass();
-
-		Assert.assertEquals(className, clazz.getName());
+		Assert.assertEquals(className, assetRendererFactory.getClassName());
 	}
 
 	@Test
@@ -87,10 +84,9 @@ public class AssetRendererFactoryRegistryUtilTest {
 			AssetRendererFactoryRegistryUtil.
 				getAssetRendererFactoryByClassNameId(classNameId);
 
-		Class<?> clazz = assetRendererFactory.getClass();
-
 		Assert.assertEquals(
-			TestAssetRendererFactory.class.getName(), clazz.getName());
+			TestAssetRendererFactory.class.getName(),
+			assetRendererFactory.getClassName());
 	}
 
 	@Test
@@ -99,10 +95,9 @@ public class AssetRendererFactoryRegistryUtilTest {
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByType(
 				TestAssetRendererFactory.class.getName());
 
-		Class<?> clazz = assetRendererFactory.getClass();
-
 		Assert.assertEquals(
-			TestAssetRendererFactory.class.getName(), clazz.getName());
+			TestAssetRendererFactory.class.getName(),
+			assetRendererFactory.getClassName());
 	}
 
 	@Test
@@ -110,7 +105,7 @@ public class AssetRendererFactoryRegistryUtilTest {
 		long[] classNameIds = AssetRendererFactoryRegistryUtil.getClassNameIds(
 			1);
 
-		List<Long> classNameIdsList = ListUtil.toList(classNameIds);
+		List<Long> classNameIdsList = ListUtil.fromArray(classNameIds);
 
 		Assert.assertTrue(
 			classNameIdsList.toString(),
@@ -122,7 +117,7 @@ public class AssetRendererFactoryRegistryUtilTest {
 		long[] classNameIds = AssetRendererFactoryRegistryUtil.getClassNameIds(
 			1, true);
 
-		List<Long> classNameIdsList = ListUtil.toList(classNameIds);
+		List<Long> classNameIdsList = ListUtil.fromArray(classNameIds);
 
 		Assert.assertTrue(
 			classNameIdsList.toString(),
@@ -134,7 +129,7 @@ public class AssetRendererFactoryRegistryUtilTest {
 		long[] classNameIds = AssetRendererFactoryRegistryUtil.getClassNameIds(
 			1, false);
 
-		List<Long> classNameIdsList = ListUtil.toList(classNameIds);
+		List<Long> classNameIdsList = ListUtil.fromArray(classNameIds);
 
 		Assert.assertTrue(
 			classNameIdsList.toString(),

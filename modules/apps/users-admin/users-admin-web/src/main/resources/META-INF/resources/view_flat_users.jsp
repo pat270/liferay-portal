@@ -32,6 +32,7 @@ else {
 	request.setAttribute(WebKeys.SINGLE_PAGE_APPLICATION_CLEAR_CACHE, Boolean.TRUE);
 }
 
+String domain = ParamUtil.getString(request, "domain", "company-users");
 String navigation = ParamUtil.getString(request, "navigation", "active");
 String toolbarItem = ParamUtil.getString(request, "toolbarItem", "view-all-users");
 
@@ -48,9 +49,9 @@ if (!ParamUtil.getBoolean(renderRequest, "advancedSearch")) {
 
 request.setAttribute(UsersAdminWebKeys.STATUS, status);
 
-ViewUsersManagementToolbarDisplayContext viewUsersManagementToolbarDisplayContext = new ViewUsersManagementToolbarDisplayContext(request, renderRequest, renderResponse, displayStyle, navigation, status);
+ViewUsersManagementToolbarDisplayContext viewUsersManagementToolbarDisplayContext = new ViewUsersManagementToolbarDisplayContext(request, renderRequest, renderResponse, displayStyle, domain, navigation, status);
 
-SearchContainer searchContainer = viewUsersManagementToolbarDisplayContext.getSearchContainer();
+SearchContainer<User> searchContainer = viewUsersManagementToolbarDisplayContext.getSearchContainer();
 
 PortletURL portletURL = viewUsersManagementToolbarDisplayContext.getPortletURL();
 
@@ -78,7 +79,7 @@ boolean showRestoreButton = viewUsersManagementToolbarDisplayContext.isShowResto
 	viewTypeItems="<%= viewUsersManagementToolbarDisplayContext.getViewTypeItems() %>"
 />
 
-<aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "search();" %>'>
+<aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "search();" %>'>
 	<liferay-portlet:renderURLParams varImpl="portletURL" />
 	<aui:input name="<%= Constants.CMD %>" type="hidden" />
 	<aui:input name="toolbarItem" type="hidden" value="<%= toolbarItem %>" />
@@ -108,9 +109,9 @@ boolean showRestoreButton = viewUsersManagementToolbarDisplayContext.isShowResto
 			rowIdProperty="screenName"
 		>
 			<liferay-portlet:renderURL varImpl="rowURL">
-				<portlet:param name="mvcRenderCommandName" value="/users_admin/edit_user" />
-				<portlet:param name="redirect" value="<%= userSearchContainer.getIteratorURL().toString() %>" />
 				<portlet:param name="p_u_i_d" value="<%= String.valueOf(user2.getUserId()) %>" />
+				<portlet:param name="mvcRenderCommandName" value="/users_admin/edit_user" />
+				<portlet:param name="backURL" value="<%= currentURL %>" />
 			</liferay-portlet:renderURL>
 
 			<%

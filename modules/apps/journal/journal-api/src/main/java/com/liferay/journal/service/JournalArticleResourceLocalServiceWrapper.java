@@ -14,9 +14,10 @@
 
 package com.liferay.journal.service;
 
+import com.liferay.journal.model.JournalArticleResource;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link JournalArticleResourceLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalArticleResourceLocalService
  * @generated
  */
-@ProviderType
 public class JournalArticleResourceLocalServiceWrapper
 	implements JournalArticleResourceLocalService,
 			   ServiceWrapper<JournalArticleResourceLocalService> {
@@ -40,14 +40,16 @@ public class JournalArticleResourceLocalServiceWrapper
 	/**
 	 * Adds the journal article resource to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalArticleResourceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param journalArticleResource the journal article resource
 	 * @return the journal article resource that was added
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		addJournalArticleResource(
-			com.liferay.journal.model.JournalArticleResource
-				journalArticleResource) {
+	public JournalArticleResource addJournalArticleResource(
+		JournalArticleResource journalArticleResource) {
 
 		return _journalArticleResourceLocalService.addJournalArticleResource(
 			journalArticleResource);
@@ -60,11 +62,23 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @return the new journal article resource
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		createJournalArticleResource(long resourcePrimKey) {
+	public JournalArticleResource createJournalArticleResource(
+		long resourcePrimKey) {
 
 		return _journalArticleResourceLocalService.createJournalArticleResource(
 			resourcePrimKey);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleResourceLocalService.createPersistedModel(
+			primaryKeyObj);
 	}
 
 	@Override
@@ -78,14 +92,16 @@ public class JournalArticleResourceLocalServiceWrapper
 	/**
 	 * Deletes the journal article resource from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalArticleResourceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param journalArticleResource the journal article resource
 	 * @return the journal article resource that was removed
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		deleteJournalArticleResource(
-			com.liferay.journal.model.JournalArticleResource
-				journalArticleResource) {
+	public JournalArticleResource deleteJournalArticleResource(
+		JournalArticleResource journalArticleResource) {
 
 		return _journalArticleResourceLocalService.deleteJournalArticleResource(
 			journalArticleResource);
@@ -94,13 +110,17 @@ public class JournalArticleResourceLocalServiceWrapper
 	/**
 	 * Deletes the journal article resource with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalArticleResourceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param resourcePrimKey the primary key of the journal article resource
 	 * @return the journal article resource that was removed
 	 * @throws PortalException if a journal article resource with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-			deleteJournalArticleResource(long resourcePrimKey)
+	public JournalArticleResource deleteJournalArticleResource(
+			long resourcePrimKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _journalArticleResourceLocalService.deleteJournalArticleResource(
@@ -117,6 +137,11 @@ public class JournalArticleResourceLocalServiceWrapper
 
 		return _journalArticleResourceLocalService.deletePersistedModel(
 			persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _journalArticleResourceLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -141,7 +166,7 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalArticleResourceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalArticleResourceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -162,7 +187,7 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalArticleResourceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalArticleResourceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -212,24 +237,24 @@ public class JournalArticleResourceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		fetchArticleResource(long groupId, String articleId) {
+	public JournalArticleResource fetchArticleResource(
+		long groupId, String articleId) {
 
 		return _journalArticleResourceLocalService.fetchArticleResource(
 			groupId, articleId);
 	}
 
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		fetchArticleResource(String uuid, long groupId) {
+	public JournalArticleResource fetchArticleResource(
+		String uuid, long groupId) {
 
 		return _journalArticleResourceLocalService.fetchArticleResource(
 			uuid, groupId);
 	}
 
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		fetchJournalArticleResource(long resourcePrimKey) {
+	public JournalArticleResource fetchJournalArticleResource(
+		long resourcePrimKey) {
 
 		return _journalArticleResourceLocalService.fetchJournalArticleResource(
 			resourcePrimKey);
@@ -243,8 +268,8 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @return the matching journal article resource, or <code>null</code> if a matching journal article resource could not be found
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		fetchJournalArticleResourceByUuidAndGroupId(String uuid, long groupId) {
+	public JournalArticleResource fetchJournalArticleResourceByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _journalArticleResourceLocalService.
 			fetchJournalArticleResourceByUuidAndGroupId(uuid, groupId);
@@ -258,7 +283,7 @@ public class JournalArticleResourceLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.journal.model.JournalArticleResource getArticleResource(
+	public JournalArticleResource getArticleResource(
 			long articleResourcePrimKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -281,8 +306,8 @@ public class JournalArticleResourceLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.journal.model.JournalArticleResource>
-		getArticleResources(long groupId) {
+	public java.util.List<JournalArticleResource> getArticleResources(
+		long groupId) {
 
 		return _journalArticleResourceLocalService.getArticleResources(groupId);
 	}
@@ -303,8 +328,8 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @throws PortalException if a journal article resource with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-			getJournalArticleResource(long resourcePrimKey)
+	public JournalArticleResource getJournalArticleResource(
+			long resourcePrimKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _journalArticleResourceLocalService.getJournalArticleResource(
@@ -320,8 +345,8 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @throws PortalException if a matching journal article resource could not be found
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-			getJournalArticleResourceByUuidAndGroupId(String uuid, long groupId)
+	public JournalArticleResource getJournalArticleResourceByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _journalArticleResourceLocalService.
@@ -332,7 +357,7 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * Returns a range of all the journal article resources.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalArticleResourceModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalArticleResourceModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of journal article resources
@@ -340,8 +365,8 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @return the range of journal article resources
 	 */
 	@Override
-	public java.util.List<com.liferay.journal.model.JournalArticleResource>
-		getJournalArticleResources(int start, int end) {
+	public java.util.List<JournalArticleResource> getJournalArticleResources(
+		int start, int end) {
 
 		return _journalArticleResourceLocalService.getJournalArticleResources(
 			start, end);
@@ -355,7 +380,7 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @return the matching journal article resources, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.journal.model.JournalArticleResource>
+	public java.util.List<JournalArticleResource>
 		getJournalArticleResourcesByUuidAndCompanyId(
 			String uuid, long companyId) {
 
@@ -374,12 +399,11 @@ public class JournalArticleResourceLocalServiceWrapper
 	 * @return the range of matching journal article resources, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.journal.model.JournalArticleResource>
+	public java.util.List<JournalArticleResource>
 		getJournalArticleResourcesByUuidAndCompanyId(
 			String uuid, long companyId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.journal.model.JournalArticleResource>
-					orderByComparator) {
+				<JournalArticleResource> orderByComparator) {
 
 		return _journalArticleResourceLocalService.
 			getJournalArticleResourcesByUuidAndCompanyId(
@@ -407,6 +431,9 @@ public class JournalArticleResourceLocalServiceWrapper
 		return _journalArticleResourceLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -419,17 +446,39 @@ public class JournalArticleResourceLocalServiceWrapper
 	/**
 	 * Updates the journal article resource in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalArticleResourceLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param journalArticleResource the journal article resource
 	 * @return the journal article resource that was updated
 	 */
 	@Override
-	public com.liferay.journal.model.JournalArticleResource
-		updateJournalArticleResource(
-			com.liferay.journal.model.JournalArticleResource
-				journalArticleResource) {
+	public JournalArticleResource updateJournalArticleResource(
+		JournalArticleResource journalArticleResource) {
 
 		return _journalArticleResourceLocalService.updateJournalArticleResource(
 			journalArticleResource);
+	}
+
+	@Override
+	public CTPersistence<JournalArticleResource> getCTPersistence() {
+		return _journalArticleResourceLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<JournalArticleResource> getModelClass() {
+		return _journalArticleResourceLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<JournalArticleResource>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _journalArticleResourceLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

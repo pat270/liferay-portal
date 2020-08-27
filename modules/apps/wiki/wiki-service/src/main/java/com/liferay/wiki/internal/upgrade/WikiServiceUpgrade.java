@@ -14,9 +14,13 @@
 
 package com.liferay.wiki.internal.upgrade;
 
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.comment.upgrade.UpgradeDiscussionSubscriptionClassName;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
+import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
+import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.subscription.service.SubscriptionLocalService;
 import com.liferay.wiki.internal.upgrade.v1_0_0.UpgradeCompanyId;
@@ -57,16 +61,38 @@ public class WikiServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register("1.0.0", "1.1.0", new UpgradeWikiNode());
 
 		registry.register(
-			"1.1.0", "1.2.0",
+			"1.1.0", "1.1.1",
 			new UpgradeDiscussionSubscriptionClassName(
+				_assetEntryLocalService, _classNameLocalService,
 				_subscriptionLocalService, WikiPage.class.getName(),
-				UpgradeDiscussionSubscriptionClassName.DeletionMode.ADD_NEW));
+				UpgradeDiscussionSubscriptionClassName.DeletionMode.UPDATE));
 
 		registry.register(
-			"1.2.0", "2.0.0",
+			"1.1.1", "2.0.0",
 			new BaseUpgradeSQLServerDatetime(
 				new Class<?>[] {WikiNodeTable.class, WikiPageTable.class}));
+
+		registry.register(
+			"2.0.0", "2.1.0",
+			new UpgradeMVCCVersion() {
+
+				@Override
+				protected String[] getModuleTableNames() {
+					return new String[] {
+						"WikiNode", "WikiPage", "WikiPageResource"
+					};
+				}
+
+			});
+
+		registry.register("2.1.0", "2.1.1", new DummyUpgradeStep());
 	}
+
+	@Reference
+	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private SettingsFactory _settingsFactory;

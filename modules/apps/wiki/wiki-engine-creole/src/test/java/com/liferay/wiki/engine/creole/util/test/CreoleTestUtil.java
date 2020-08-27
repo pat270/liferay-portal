@@ -14,6 +14,7 @@
 
 package com.liferay.wiki.engine.creole.util.test;
 
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
 import com.liferay.wiki.engine.creole.internal.parser.ast.WikiPageNode;
 import com.liferay.wiki.engine.creole.internal.parser.parser.Creole10Lexer;
@@ -40,7 +41,8 @@ public class CreoleTestUtil {
 		WikiEngineCreoleComponentProvider wikiEngineCreoleComponentProvider =
 			new WikiEngineCreoleComponentProvider();
 
-		wikiEngineCreoleComponentProvider.activate();
+		ReflectionTestUtil.invoke(
+			wikiEngineCreoleComponentProvider, "activate", new Class<?>[0]);
 
 		WikiGroupServiceConfiguration wikiGroupServiceConfiguration =
 			Mockito.mock(WikiGroupServiceConfiguration.class);
@@ -67,11 +69,11 @@ public class CreoleTestUtil {
 
 			creole10Parser.wikipage();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException("File " + fileName + " does not exist");
 		}
-		catch (RecognitionException re) {
-			throw new RuntimeException("Uanble to parse " + fileName);
+		catch (RecognitionException recognitionException) {
+			throw new RuntimeException("Unable to parse " + fileName);
 		}
 
 		return creole10Parser.getWikiPageNode();

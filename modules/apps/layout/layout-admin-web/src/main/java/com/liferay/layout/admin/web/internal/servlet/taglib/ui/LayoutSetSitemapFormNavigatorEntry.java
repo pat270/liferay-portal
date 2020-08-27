@@ -14,6 +14,8 @@
 
 package com.liferay.layout.admin.web.internal.servlet.taglib.ui;
 
+import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants;
 import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorEntry;
 
@@ -40,6 +42,15 @@ public class LayoutSetSitemapFormNavigatorEntry
 	@Override
 	public String getKey() {
 		return "sitemap";
+	}
+
+	@Override
+	public boolean isVisible(User user, LayoutSet layoutSet) {
+		if (layoutSet.isPrivateLayout()) {
+			return false;
+		}
+
+		return super.isVisible(user, layoutSet);
 	}
 
 	@Override

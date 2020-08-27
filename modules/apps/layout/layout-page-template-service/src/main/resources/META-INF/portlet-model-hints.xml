@@ -2,6 +2,8 @@
 
 <model-hints>
 	<model name="com.liferay.layout.page.template.model.LayoutPageTemplateCollection">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="layoutPageTemplateCollectionId" type="long" />
 		<field name="groupId" type="long" />
@@ -10,6 +12,7 @@
 		<field name="userName" type="String" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
+		<field name="layoutPageTemplateCollectionKey" type="String" />
 		<field name="name" type="String">
 			<validator name="required" />
 		</field>
@@ -19,6 +22,8 @@
 		<field name="lastPublishDate" type="Date" />
 	</model>
 	<model name="com.liferay.layout.page.template.model.LayoutPageTemplateEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="layoutPageTemplateEntryId" type="long" />
 		<field name="groupId" type="long" />
@@ -28,6 +33,7 @@
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
 		<field name="layoutPageTemplateCollectionId" type="long" />
+		<field name="layoutPageTemplateEntryKey" type="String" />
 		<field name="classNameId" type="long" />
 		<field name="classTypeId" type="long" />
 		<field name="name" type="String" />
@@ -43,6 +49,8 @@
 		<field name="statusDate" type="Date" />
 	</model>
 	<model name="com.liferay.layout.page.template.model.LayoutPageTemplateStructure">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="layoutPageTemplateStructureId" type="long" />
 		<field name="groupId" type="long" />
@@ -55,6 +63,8 @@
 		<field name="classPK" type="long" />
 	</model>
 	<model name="com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="uuid" type="String" />
 		<field name="layoutPageTemplateStructureRelId" type="long" />
 		<field name="groupId" type="long" />
@@ -66,7 +76,7 @@
 		<field name="layoutPageTemplateStructureId" type="long" />
 		<field name="segmentsExperienceId" type="long" />
 		<field name="data" type="String">
-			<hint name="max-length">4000</hint>
+			<hint-collection name="CLOB" />
 		</field>
 	</model>
 </model-hints>

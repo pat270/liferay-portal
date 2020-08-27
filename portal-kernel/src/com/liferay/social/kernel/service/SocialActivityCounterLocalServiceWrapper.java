@@ -14,9 +14,10 @@
 
 package com.liferay.social.kernel.service;
 
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.social.kernel.model.SocialActivityCounter;
 
 /**
  * Provides a wrapper for {@link SocialActivityCounterLocalService}.
@@ -25,10 +26,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivityCounterLocalService
  * @generated
  */
-@ProviderType
 public class SocialActivityCounterLocalServiceWrapper
-	implements SocialActivityCounterLocalService,
-			   ServiceWrapper<SocialActivityCounterLocalService> {
+	implements ServiceWrapper<SocialActivityCounterLocalService>,
+			   SocialActivityCounterLocalService {
 
 	public SocialActivityCounterLocalServiceWrapper(
 		SocialActivityCounterLocalService socialActivityCounterLocalService) {
@@ -67,11 +67,10 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the added activity counter
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-			addActivityCounter(
-				long groupId, long classNameId, long classPK, String name,
-				int ownerType, int totalValue, long previousActivityCounterId,
-				int periodLength)
+	public SocialActivityCounter addActivityCounter(
+			long groupId, long classNameId, long classPK, String name,
+			int ownerType, int totalValue, long previousActivityCounterId,
+			int periodLength)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _socialActivityCounterLocalService.addActivityCounter(
@@ -110,17 +109,31 @@ public class SocialActivityCounterLocalServiceWrapper
 	/**
 	 * Adds the social activity counter to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivityCounterLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param socialActivityCounter the social activity counter
 	 * @return the social activity counter that was added
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		addSocialActivityCounter(
-			com.liferay.social.kernel.model.SocialActivityCounter
-				socialActivityCounter) {
+	public SocialActivityCounter addSocialActivityCounter(
+		SocialActivityCounter socialActivityCounter) {
 
 		return _socialActivityCounterLocalService.addSocialActivityCounter(
 			socialActivityCounter);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _socialActivityCounterLocalService.createPersistedModel(
+			primaryKeyObj);
 	}
 
 	/**
@@ -130,8 +143,8 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the new social activity counter
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		createSocialActivityCounter(long activityCounterId) {
+	public SocialActivityCounter createSocialActivityCounter(
+		long activityCounterId) {
 
 		return _socialActivityCounterLocalService.createSocialActivityCounter(
 			activityCounterId);
@@ -201,13 +214,17 @@ public class SocialActivityCounterLocalServiceWrapper
 	/**
 	 * Deletes the social activity counter with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivityCounterLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param activityCounterId the primary key of the social activity counter
 	 * @return the social activity counter that was removed
 	 * @throws PortalException if a social activity counter with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-			deleteSocialActivityCounter(long activityCounterId)
+	public SocialActivityCounter deleteSocialActivityCounter(
+			long activityCounterId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _socialActivityCounterLocalService.deleteSocialActivityCounter(
@@ -217,14 +234,16 @@ public class SocialActivityCounterLocalServiceWrapper
 	/**
 	 * Deletes the social activity counter from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivityCounterLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param socialActivityCounter the social activity counter
 	 * @return the social activity counter that was removed
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		deleteSocialActivityCounter(
-			com.liferay.social.kernel.model.SocialActivityCounter
-				socialActivityCounter) {
+	public SocialActivityCounter deleteSocialActivityCounter(
+		SocialActivityCounter socialActivityCounter) {
 
 		return _socialActivityCounterLocalService.deleteSocialActivityCounter(
 			socialActivityCounter);
@@ -271,6 +290,11 @@ public class SocialActivityCounterLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _socialActivityCounterLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _socialActivityCounterLocalService.dynamicQuery();
 	}
@@ -292,7 +316,7 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -313,7 +337,7 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -415,10 +439,9 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the matching activity counter
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		fetchActivityCounterByEndPeriod(
-			long groupId, long classNameId, long classPK, String name,
-			int ownerType, int endPeriod) {
+	public SocialActivityCounter fetchActivityCounterByEndPeriod(
+		long groupId, long classNameId, long classPK, String name,
+		int ownerType, int endPeriod) {
 
 		return _socialActivityCounterLocalService.
 			fetchActivityCounterByEndPeriod(
@@ -438,10 +461,9 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the matching activity counter
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		fetchActivityCounterByStartPeriod(
-			long groupId, long classNameId, long classPK, String name,
-			int ownerType, int startPeriod) {
+	public SocialActivityCounter fetchActivityCounterByStartPeriod(
+		long groupId, long classNameId, long classPK, String name,
+		int ownerType, int startPeriod) {
 
 		return _socialActivityCounterLocalService.
 			fetchActivityCounterByStartPeriod(
@@ -460,18 +482,17 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the matching activity counter
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		fetchLatestActivityCounter(
-			long groupId, long classNameId, long classPK, String name,
-			int ownerType) {
+	public SocialActivityCounter fetchLatestActivityCounter(
+		long groupId, long classNameId, long classPK, String name,
+		int ownerType) {
 
 		return _socialActivityCounterLocalService.fetchLatestActivityCounter(
 			groupId, classNameId, classPK, name, ownerType);
 	}
 
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		fetchSocialActivityCounter(long activityCounterId) {
+	public SocialActivityCounter fetchSocialActivityCounter(
+		long activityCounterId) {
 
 		return _socialActivityCounterLocalService.fetchSocialActivityCounter(
 			activityCounterId);
@@ -507,9 +528,8 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the matching activity counters
 	 */
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivityCounter>
-		getOffsetActivityCounters(
-			long groupId, String name, int startOffset, int endOffset) {
+	public java.util.List<SocialActivityCounter> getOffsetActivityCounters(
+		long groupId, String name, int startOffset, int endOffset) {
 
 		return _socialActivityCounterLocalService.getOffsetActivityCounters(
 			groupId, name, startOffset, endOffset);
@@ -533,7 +553,7 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the distribution of matching activity counters
 	 */
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivityCounter>
+	public java.util.List<SocialActivityCounter>
 		getOffsetDistributionActivityCounters(
 			long groupId, String name, int startOffset, int endOffset) {
 
@@ -568,9 +588,8 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the matching activity counters
 	 */
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivityCounter>
-		getPeriodActivityCounters(
-			long groupId, String name, int startPeriod, int endPeriod) {
+	public java.util.List<SocialActivityCounter> getPeriodActivityCounters(
+		long groupId, String name, int startPeriod, int endPeriod) {
 
 		return _socialActivityCounterLocalService.getPeriodActivityCounters(
 			groupId, name, startPeriod, endPeriod);
@@ -594,7 +613,7 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the distribution of matching activity counters
 	 */
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivityCounter>
+	public java.util.List<SocialActivityCounter>
 		getPeriodDistributionActivityCounters(
 			long groupId, String name, int startPeriod, int endPeriod) {
 
@@ -603,6 +622,9 @@ public class SocialActivityCounterLocalServiceWrapper
 				groupId, name, startPeriod, endPeriod);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -620,8 +642,8 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @throws PortalException if a social activity counter with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-			getSocialActivityCounter(long activityCounterId)
+	public SocialActivityCounter getSocialActivityCounter(
+			long activityCounterId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _socialActivityCounterLocalService.getSocialActivityCounter(
@@ -632,7 +654,7 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * Returns a range of all the social activity counters.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activity counters
@@ -640,8 +662,8 @@ public class SocialActivityCounterLocalServiceWrapper
 	 * @return the range of social activity counters
 	 */
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivityCounter>
-		getSocialActivityCounters(int start, int end) {
+	public java.util.List<SocialActivityCounter> getSocialActivityCounters(
+		int start, int end) {
 
 		return _socialActivityCounterLocalService.getSocialActivityCounters(
 			start, end);
@@ -732,17 +754,39 @@ public class SocialActivityCounterLocalServiceWrapper
 	/**
 	 * Updates the social activity counter in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivityCounterLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param socialActivityCounter the social activity counter
 	 * @return the social activity counter that was updated
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivityCounter
-		updateSocialActivityCounter(
-			com.liferay.social.kernel.model.SocialActivityCounter
-				socialActivityCounter) {
+	public SocialActivityCounter updateSocialActivityCounter(
+		SocialActivityCounter socialActivityCounter) {
 
 		return _socialActivityCounterLocalService.updateSocialActivityCounter(
 			socialActivityCounter);
+	}
+
+	@Override
+	public CTPersistence<SocialActivityCounter> getCTPersistence() {
+		return _socialActivityCounterLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<SocialActivityCounter> getModelClass() {
+		return _socialActivityCounterLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<SocialActivityCounter>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _socialActivityCounterLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

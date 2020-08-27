@@ -75,9 +75,9 @@ public abstract class FindStrutsAction implements StrutsAction {
 						groupId = overrideGroupId;
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isDebugEnabled()) {
-						_log.debug(e, e);
+						_log.debug(exception, exception);
 					}
 				}
 			}
@@ -87,13 +87,27 @@ public abstract class FindStrutsAction implements StrutsAction {
 			PortletLayoutFinder.Result result = portletLayoutFinder.find(
 				themeDisplay, groupId);
 
-			long plid = result.getPlid();
+			Layout layout = _setTargetLayout(
+				httpServletRequest, groupId, result.getPlid());
 
-			Layout layout = _setTargetLayout(httpServletRequest, groupId, plid);
+			if (!LayoutPermissionUtil.contains(
+					themeDisplay.getPermissionChecker(), layout, true,
+					ActionKeys.VIEW)) {
 
-			LayoutPermissionUtil.check(
-				themeDisplay.getPermissionChecker(), layout, true,
-				ActionKeys.VIEW);
+				if (!themeDisplay.isSignedIn() && result.isSignInRequired()) {
+					String redirect = HttpUtil.addParameter(
+						PortalUtil.getPathMain() + "/portal/login", "redirect",
+						PortalUtil.getCurrentCompleteURL(httpServletRequest));
+
+					httpServletResponse.sendRedirect(redirect);
+
+					return null;
+				}
+
+				throw new PrincipalException.MustHavePermission(
+					themeDisplay.getPermissionChecker(), Layout.class.getName(),
+					layout.getLayoutId(), ActionKeys.VIEW);
+			}
 
 			String portletId = result.getPortletId();
 
@@ -134,7 +148,7 @@ public abstract class FindStrutsAction implements StrutsAction {
 
 			httpServletResponse.sendRedirect(portletURL.toString());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			String noSuchEntryRedirect = ParamUtil.getString(
 				httpServletRequest, "noSuchEntryRedirect");
 
@@ -142,14 +156,14 @@ public abstract class FindStrutsAction implements StrutsAction {
 				noSuchEntryRedirect);
 
 			if (Validator.isNotNull(noSuchEntryRedirect) &&
-				(e instanceof NoSuchLayoutException ||
-				 e instanceof PrincipalException)) {
+				(exception instanceof NoSuchLayoutException ||
+				 exception instanceof PrincipalException)) {
 
 				httpServletResponse.sendRedirect(noSuchEntryRedirect);
 			}
 			else {
 				PortalUtil.sendError(
-					e, httpServletRequest, httpServletResponse);
+					exception, httpServletRequest, httpServletResponse);
 			}
 		}
 

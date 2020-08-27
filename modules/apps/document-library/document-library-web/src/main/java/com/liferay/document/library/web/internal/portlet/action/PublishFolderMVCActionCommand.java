@@ -49,7 +49,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Máté Thurzó
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 		"mvc.command.name=/document_library/publish_folder"
@@ -83,9 +82,9 @@ public class PublishFolderMVCActionCommand extends BaseMVCActionCommand {
 		try {
 			return _dlAppLocalService.getFolder(folderId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get folder " + folderId, pe);
+				_log.warn("Unable to get folder " + folderId, portalException);
 			}
 
 			return null;
@@ -136,12 +135,12 @@ public class PublishFolderMVCActionCommand extends BaseMVCActionCommand {
 				}
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to get folders, file entries, and file shortcuts " +
 						"for folder " + folder.getFolderId(),
-					pe);
+					portalException);
 			}
 		}
 

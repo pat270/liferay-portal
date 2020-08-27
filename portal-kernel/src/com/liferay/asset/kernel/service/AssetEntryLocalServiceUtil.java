@@ -16,8 +16,6 @@ package com.liferay.asset.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the local service utility for AssetEntry. This utility wraps
  * <code>com.liferay.portlet.asset.service.impl.AssetEntryLocalServiceImpl</code> and
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntryLocalService
  * @generated
  */
-@ProviderType
 public class AssetEntryLocalServiceUtil {
 
 	/*
@@ -66,6 +63,10 @@ public class AssetEntryLocalServiceUtil {
 
 	/**
 	 * Adds the asset entry to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param assetEntry the asset entry
 	 * @return the asset entry that was added
@@ -118,6 +119,16 @@ public class AssetEntryLocalServiceUtil {
 		return getService().createAssetEntry(entryId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
 	public static void deleteAssetCategoryAssetEntries(
 		long categoryId,
 		java.util.List<com.liferay.asset.kernel.model.AssetEntry>
@@ -147,6 +158,10 @@ public class AssetEntryLocalServiceUtil {
 	/**
 	 * Deletes the asset entry from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetEntry the asset entry
 	 * @return the asset entry that was removed
 	 */
@@ -158,6 +173,10 @@ public class AssetEntryLocalServiceUtil {
 
 	/**
 	 * Deletes the asset entry with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param entryId the primary key of the asset entry
 	 * @return the asset entry that was removed
@@ -228,6 +247,12 @@ public class AssetEntryLocalServiceUtil {
 		return getService().deletePersistedModel(persistedModel);
 	}
 
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
 		dynamicQuery() {
 
@@ -250,7 +275,7 @@ public class AssetEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -269,7 +294,7 @@ public class AssetEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -397,7 +422,7 @@ public class AssetEntryLocalServiceUtil {
 	 * Returns a range of all the asset entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.asset.model.impl.AssetEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset entries
@@ -614,6 +639,9 @@ public class AssetEntryLocalServiceUtil {
 		return getService().getParentEntry(entryId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -667,17 +695,20 @@ public class AssetEntryLocalServiceUtil {
 	}
 
 	public static com.liferay.asset.kernel.model.AssetEntry
-			incrementViewCounter(long userId, String className, long classPK)
+			incrementViewCounter(
+				long companyId, long userId, String className, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return getService().incrementViewCounter(userId, className, classPK);
+		return getService().incrementViewCounter(
+			companyId, userId, className, classPK);
 	}
 
 	public static void incrementViewCounter(
-		long userId, String className, long classPK, int increment) {
+		long companyId, long userId, String className, long classPK,
+		int increment) {
 
 		getService().incrementViewCounter(
-			userId, className, classPK, increment);
+			companyId, userId, className, classPK, increment);
 	}
 
 	public static void reindex(
@@ -864,6 +895,10 @@ public class AssetEntryLocalServiceUtil {
 	/**
 	 * Updates the asset entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetEntry the asset entry
 	 * @return the asset entry that was updated
 	 */
@@ -892,57 +927,6 @@ public class AssetEntryLocalServiceUtil {
 			description, summary, url, layoutUuid, height, width, priority);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
-	 long, Date, Date, String, long, String, long, long[],
-	 String[], boolean, boolean, Date, Date, Date, Date, String,
-	 String, String, String, String, String, int, int, Double)}
-	 */
-	@Deprecated
-	public static com.liferay.asset.kernel.model.AssetEntry updateEntry(
-			long userId, long groupId, java.util.Date createDate,
-			java.util.Date modifiedDate, String className, long classPK,
-			String classUuid, long classTypeId, long[] categoryIds,
-			String[] tagNames, boolean listable, boolean visible,
-			java.util.Date startDate, java.util.Date endDate,
-			java.util.Date expirationDate, String mimeType, String title,
-			String description, String summary, String url, String layoutUuid,
-			int height, int width, Double priority)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateEntry(
-			userId, groupId, createDate, modifiedDate, className, classPK,
-			classUuid, classTypeId, categoryIds, tagNames, listable, visible,
-			startDate, endDate, expirationDate, mimeType, title, description,
-			summary, url, layoutUuid, height, width, priority);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateEntry(long, long, Date, Date, String, long, String,
-	 long, long[], String[], boolean, boolean, Date, Date, Date,
-	 Date, String, String, String, String, String, String, int,
-	 int, Double)}
-	 */
-	@Deprecated
-	public static com.liferay.asset.kernel.model.AssetEntry updateEntry(
-			long userId, long groupId, java.util.Date createDate,
-			java.util.Date modifiedDate, String className, long classPK,
-			String classUuid, long classTypeId, long[] categoryIds,
-			String[] tagNames, boolean visible, java.util.Date startDate,
-			java.util.Date endDate, java.util.Date expirationDate,
-			String mimeType, String title, String description, String summary,
-			String url, String layoutUuid, int height, int width,
-			Integer priority, boolean sync)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateEntry(
-			userId, groupId, createDate, modifiedDate, className, classPK,
-			classUuid, classTypeId, categoryIds, tagNames, visible, startDate,
-			endDate, expirationDate, mimeType, title, description, summary, url,
-			layoutUuid, height, width, priority, sync);
-	}
-
 	public static com.liferay.asset.kernel.model.AssetEntry updateEntry(
 			long userId, long groupId, String className, long classPK,
 			long[] categoryIds, String[] tagNames)
@@ -950,34 +934,6 @@ public class AssetEntryLocalServiceUtil {
 
 		return getService().updateEntry(
 			userId, groupId, className, classPK, categoryIds, tagNames);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateEntry(String, long, Date, Date, boolean, boolean)}
-	 */
-	@Deprecated
-	public static com.liferay.asset.kernel.model.AssetEntry updateEntry(
-			String className, long classPK, java.util.Date publishDate,
-			boolean visible)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateEntry(
-			className, classPK, publishDate, visible);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateEntry(String, long, Date, Date, boolean, boolean)}
-	 */
-	@Deprecated
-	public static com.liferay.asset.kernel.model.AssetEntry updateEntry(
-			String className, long classPK, java.util.Date publishDate,
-			java.util.Date expirationDate, boolean visible)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateEntry(
-			className, classPK, publishDate, expirationDate, visible);
 	}
 
 	public static com.liferay.asset.kernel.model.AssetEntry updateEntry(
@@ -1019,19 +975,6 @@ public class AssetEntryLocalServiceUtil {
 
 		getService().validate(
 			groupId, className, classTypePK, categoryIds, tagNames);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #validate(long,
-	 String, long, long[], String[])}
-	 */
-	@Deprecated
-	public static void validate(
-			long groupId, String className, long[] categoryIds,
-			String[] tagNames)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().validate(groupId, className, categoryIds, tagNames);
 	}
 
 	public static AssetEntryLocalService getService() {

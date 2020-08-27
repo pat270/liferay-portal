@@ -51,7 +51,7 @@ import javax.sql.DataSource;
  */
 public abstract class LayoutSetBranchServiceBaseImpl
 	extends BaseServiceImpl
-	implements LayoutSetBranchService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, LayoutSetBranchService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -672,8 +672,8 @@ public abstract class LayoutSetBranchServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

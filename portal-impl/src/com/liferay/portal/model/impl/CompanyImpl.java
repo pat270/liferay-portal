@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
 import com.liferay.petra.encryptor.Encryptor;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
@@ -25,12 +26,14 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Account;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
+import com.liferay.portal.kernel.model.CompanyInfo;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualHost;
 import com.liferay.portal.kernel.model.cache.CacheField;
 import com.liferay.portal.kernel.service.AccountLocalServiceUtil;
+import com.liferay.portal.kernel.service.CompanyInfoLocalServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -50,6 +53,7 @@ import java.security.Key;
 
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 import javax.portlet.PortletPreferences;
 
@@ -95,6 +99,25 @@ public class CompanyImpl extends CompanyBaseImpl {
 		CompanySecurityBag companySecurityBag = getCompanySecurityBag();
 
 		return companySecurityBag._authType;
+	}
+
+	@Override
+	public CompanyInfo getCompanyInfo() {
+		if (_companyInfo == null) {
+			CompanyInfo companyInfo = CompanyInfoLocalServiceUtil.fetchCompany(
+				getCompanyId());
+
+			if (companyInfo == null) {
+				companyInfo = CompanyInfoLocalServiceUtil.createCompanyInfo(
+					CounterLocalServiceUtil.increment());
+
+				companyInfo.setCompanyId(getCompanyId());
+			}
+
+			_companyInfo = companyInfo;
+		}
+
+		return _companyInfo;
 	}
 
 	@Override
@@ -156,6 +179,13 @@ public class CompanyImpl extends CompanyBaseImpl {
 	}
 
 	@Override
+	public String getKey() {
+		CompanyInfo companyInfo = getCompanyInfo();
+
+		return companyInfo.getKey();
+	}
+
+	@Override
 	public Key getKeyObj() {
 		if (_keyObj == null) {
 			String key = getKey();
@@ -181,10 +211,10 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 	@Override
 	public String getPortalURL(long groupId) throws PortalException {
-		int portalPort = PortalUtil.getPortalServerPort(false);
+		int portalServerPort = PortalUtil.getPortalServerPort(false);
 
 		String portalURL = PortalUtil.getPortalURL(
-			getVirtualHostname(), portalPort, false);
+			getVirtualHostname(), portalServerPort, false);
 
 		if (groupId <= 0) {
 			return portalURL;
@@ -196,19 +226,52 @@ public class CompanyImpl extends CompanyBaseImpl {
 			LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 				groupId, false);
 
-			if (Validator.isNotNull(layoutSet.getVirtualHostname())) {
+			TreeMap<String, String> virtualHostnames =
+				layoutSet.getVirtualHostnames();
+
+			if (!virtualHostnames.isEmpty()) {
 				portalURL = PortalUtil.getPortalURL(
-					layoutSet.getVirtualHostname(), portalPort, false);
+					virtualHostnames.firstKey(), portalServerPort, false);
 			}
 		}
 		else if (group.hasPrivateLayouts()) {
 			LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 				groupId, true);
 
-			if (Validator.isNotNull(layoutSet.getVirtualHostname())) {
+			TreeMap<String, String> virtualHostnames =
+				layoutSet.getVirtualHostnames();
+
+			if (!virtualHostnames.isEmpty()) {
 				portalURL = PortalUtil.getPortalURL(
-					layoutSet.getVirtualHostname(), portalPort, false);
+					virtualHostnames.firstKey(), portalServerPort, false);
 			}
+		}
+
+		return portalURL;
+	}
+
+	@Override
+	public String getPortalURL(long groupId, boolean privateLayout)
+		throws PortalException {
+
+		int portalServerPort = PortalUtil.getPortalServerPort(false);
+
+		String portalURL = PortalUtil.getPortalURL(
+			getVirtualHostname(), portalServerPort, false);
+
+		if (groupId <= 0) {
+			return portalURL;
+		}
+
+		LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
+			groupId, privateLayout);
+
+		TreeMap<String, String> virtualHostnames =
+			layoutSet.getVirtualHostnames();
+
+		if (!virtualHostnames.isEmpty()) {
+			portalURL = PortalUtil.getPortalURL(
+				virtualHostnames.firstKey(), portalServerPort, false);
 		}
 
 		return portalURL;
@@ -236,7 +299,7 @@ public class CompanyImpl extends CompanyBaseImpl {
 			virtualHost = VirtualHostLocalServiceUtil.fetchVirtualHost(
 				getCompanyId(), 0);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		if (virtualHost == null) {
@@ -284,11 +347,13 @@ public class CompanyImpl extends CompanyBaseImpl {
 		return companySecurityBag._autoLogin;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isSendPassword() {
-		CompanySecurityBag companySecurityBag = getCompanySecurityBag();
-
-		return companySecurityBag._sendPassword;
+		return false;
 	}
 
 	@Override
@@ -332,9 +397,11 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 	@Override
 	public void setKey(String key) {
-		_keyObj = null;
+		CompanyInfo companyInfo = getCompanyInfo();
 
-		super.setKey(key);
+		companyInfo.setKey(key);
+
+		_keyObj = null;
 	}
 
 	@Override
@@ -359,9 +426,6 @@ public class CompanyImpl extends CompanyBaseImpl {
 			_autoLogin = _getPrefsPropsBoolean(
 				preferences, company, PropsKeys.COMPANY_SECURITY_AUTO_LOGIN,
 				PropsValues.COMPANY_SECURITY_AUTO_LOGIN);
-			_sendPassword = _getPrefsPropsBoolean(
-				preferences, company, PropsKeys.COMPANY_SECURITY_SEND_PASSWORD,
-				PropsValues.COMPANY_SECURITY_SEND_PASSWORD);
 			_siteLogo = _getPrefsPropsBoolean(
 				preferences, company, PropsKeys.COMPANY_SECURITY_SITE_LOGO,
 				PropsValues.COMPANY_SECURITY_SITE_LOGO);
@@ -380,7 +444,6 @@ public class CompanyImpl extends CompanyBaseImpl {
 
 		private final String _authType;
 		private final boolean _autoLogin;
-		private final boolean _sendPassword;
 		private final boolean _siteLogo;
 		private final boolean _strangers;
 		private final boolean _strangersVerify;
@@ -417,11 +480,11 @@ public class CompanyImpl extends CompanyBaseImpl {
 	}
 
 	private Account _account;
+	private CompanyInfo _companyInfo;
 
 	@CacheField
 	private CompanySecurityBag _companySecurityBag;
 
-	@CacheField(propagateToInterface = true)
 	private Key _keyObj;
 
 	@CacheField(propagateToInterface = true)

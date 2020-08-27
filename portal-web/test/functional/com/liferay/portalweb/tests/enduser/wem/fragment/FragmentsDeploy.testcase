@@ -1,0 +1,452 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Fragments";
+
+	setUp {
+		task ("Set up instance and sign in") {
+			TestCase.setUpPortalInstance();
+
+			User.firstLoginPG();
+
+			JSONGroup.addGroup(groupName = "Test Site Name");
+		}
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-106253. Can delete read-only deployed fragments of site-scoped in that site."
+	@priority = "5"
+	test CanDeleteSiteScopedReadOnlyDeployedFragmentInThatSite {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "FragmentsDeploy#CanDeleteSiteScopedReadOnlyDeployedFragmentInThatSite";
+
+		task ("Deploy fragments zip to Test Site Name") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "card.zip");
+		}
+
+		task ("Assert deployed fragment is read-only") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Test Site Name");
+
+			LexiconCard.clickCardTitle(card = "Card");
+
+			AssertElementPresent(locator1 = "FragmentEditor#READ_ONLY_VIEW");
+
+			Navigator.gotoBack();
+		}
+
+		task ("Delete the deployed collection") {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+		}
+
+		task ("Assert the deployed collection is not present") {
+			AssertElementNotPresent(
+				collectionName = "imported",
+				locator1 = "FragmentAdmin#FRAGMENT_COLLECTION_SPECIFIC_SCOPE",
+				scope = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-106253. Can delete read-only deployed fragments of system-scoped in Global site of the default virtual instance."
+	@priority = "5"
+	test CanDeleteSystemScopedReadOnlyDeployedFragmentInGlobalSiteOfDefaultInstance {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "FragmentsDeploy#CanDeleteSystemScopedReadOnlyDeployedFragmentInGlobalSiteOfDefaultInstance";
+
+		task ("Deploy fragments zip are available in System wide") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
+		}
+
+		task ("Assert deployed fragment is read-only") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "global");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			LexiconCard.clickCardTitle(card = "Image");
+
+			AssertElementPresent(locator1 = "FragmentEditor#READ_ONLY_VIEW");
+
+			Navigator.gotoBack();
+		}
+
+		task ("Delete the deployed collection") {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+		}
+
+		task ("Assert the deployed collection is not present") {
+			AssertElementNotPresent(
+				collectionName = "imported",
+				locator1 = "FragmentAdmin#FRAGMENT_COLLECTION_SPECIFIC_SCOPE",
+				scope = "Default");
+		}
+	}
+
+	@description = "This is a test for LPS-106253. Can delete read-only deployed fragments of virtual instance-scoped in Global site of that virtual instance."
+	@priority = "5"
+	test CanDeleteVirtualInstanceScopedReadOnlyDeployedFragmentInGlobalSiteOfThatInstance {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "FragmentsDeploy#CanDeleteVirtualInstanceScopedReadOnlyDeployedFragmentInGlobalSiteOfThatInstance";
+
+		task ("Deploy fragments zip are available in Liferay.com intance") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "link.zip");
+		}
+
+		task ("Assert deployed fragment is read-only") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "global");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Global");
+
+			LexiconCard.clickCardTitle(card = "Link");
+
+			AssertElementPresent(locator1 = "FragmentEditor#READ_ONLY_VIEW");
+
+			Navigator.gotoBack();
+		}
+
+		task ("Delete the deployed collection") {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+		}
+
+		task ("Assert the deployed collection is not present") {
+			AssertElementNotPresent(
+				collectionName = "imported",
+				locator1 = "FragmentAdmin#FRAGMENT_COLLECTION_SPECIFIC_SCOPE",
+				scope = "Global");
+		}
+	}
+
+	@description = "This is a test for LPS-106253. Can not delete read-only deployed fragments of virtual instance-scoped and system-scoped in normal site."
+	@priority = "3"
+	test CannotDeleteSystemAndVirtualInstanceScopedReadOnlyDeployedFragmentInNormalSite {
+		property test.name.skip.portal.instance = "FragmentsDeploy#CannotDeleteSystemAndVirtualInstanceScopedReadOnlyDeployedFragmentInNormalSite";
+
+		task ("Deploy fragments zip are available in Liferay.com intance") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "link.zip");
+		}
+
+		task ("Deploy fragments zip are available in System wide") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
+		}
+
+		task ("Assert can not delete virtual instance read-only scoped deployed fragment in normal site") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Global");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Link");
+
+			Click.waitForMenuToggleJSClick(
+				key_card = "Link",
+				locator1 = "Card#CARD_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Global");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+		}
+
+		task ("Assert can not delete system scoped read-only deployed fragment in normal site") {
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+
+			Click.waitForMenuToggleJSClick(
+				key_card = "Image",
+				locator1 = "Card#CARD_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+		}
+	}
+
+	@description = "This is a test for LPS-106253. Can not delete read-only deployed fragments of system-scoped in other virtual instances."
+	@priority = "3"
+	test CannotDeleteSystemScopedReadOnlyDeployedFragmentInOtherVirtualInstance {
+		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
+		property test.name.skip.portal.instance = "FragmentsDeploy#CannotDeleteSystemScopedReadOnlyDeployedFragmentInOtherVirtualInstance";
+
+		task ("Add a new Virtual Instance") {
+			ApplicationsMenu.gotoPortlet(
+				category = "System",
+				panel = "Control Panel",
+				portlet = "Virtual Instances");
+
+			PortalInstances.addCP(
+				mailDomain = "www.able.com",
+				virtualHost = "www.able.com",
+				webId = "www.able.com");
+
+			PortalInstances.viewCP(virtualHost = "www.able.com");
+		}
+
+		task ("Deploy fragments zip are available in System wide") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
+		}
+
+		task ("Assert can not delete system scoped read-only deployed fragment in Global site") {
+			User.firstLoginPG(
+				password = "test",
+				userEmailAddress = "test@www.able.com",
+				virtualHostsURL = "http://www.able.com:8080");
+
+			FragmentsAdminNavigator.openFragmentsAdmin(
+				baseURL = "http://www.able.com:8080",
+				siteURLKey = "global");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+
+			Click.waitForMenuToggleJSClick(
+				key_card = "Image",
+				locator1 = "Card#CARD_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Delete");
+		}
+	}
+
+	@description = "This is a test for LPS-105110. A system administrator can deploy a zip file of fragments in the deploy folder to a specific site. Fragments deployed to a specific site are not available in other sites."
+	@priority = "5"
+	test DeployFragmentsToSpecificSite {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "FragmentsDeploy#DeployFragmentsToSpecificSite";
+
+		task ("Deploy fragments zip to Test Site Name") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "card.zip");
+		}
+
+		task ("Assert there is no error in console") {
+			AssertConsoleTextNotPresent(value1 = "com.liferay.portal.kernel.repository.InvalidRepositoryIdException");
+		}
+
+		task ("Assert new fragment exists in specific site") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Test Site Name");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and normalize-space(text())='imported']");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Card");
+		}
+
+		task ("Assert new fragment not exists in other sites") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "guest");
+
+			AssertElementNotPresent(
+				collectionName = "imported",
+				locator1 = "FragmentAdmin#FRAGMENT_COLLECTION_SPECIFIC_SCOPE",
+				scope = "Liferay");
+		}
+	}
+
+	@description = "This is a test for LPS-105110. A system administrator can deploy a zip file of fragments in the deploy folder to a specific virtual instance"
+	@priority = "5"
+	test DeployFragmentsToSpecificVirtualInstance {
+		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "FragmentsDeploy#DeployFragmentsToSpecificVirtualInstance";
+
+		task ("Add a new Virtual Instance") {
+			ApplicationsMenu.gotoPortlet(
+				category = "System",
+				panel = "Control Panel",
+				portlet = "Virtual Instances");
+
+			PortalInstances.addCP(
+				mailDomain = "www.able.com",
+				virtualHost = "www.able.com",
+				webId = "www.able.com");
+
+			PortalInstances.viewCP(virtualHost = "www.able.com");
+		}
+
+		task ("Deploy fragments zip to specific virtual instance") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "title.zip");
+		}
+
+		task ("Assert there is no error in console") {
+			AssertConsoleTextNotPresent(value1 = "com.liferay.portal.kernel.repository.InvalidRepositoryIdException");
+		}
+
+		task ("Assert new fragment exists in specific virtual instance") {
+			User.firstLoginPG(
+				password = "test",
+				userEmailAddress = "test@www.able.com",
+				virtualHostsURL = "http://www.able.com:8080");
+
+			FragmentsAdminNavigator.openFragmentsAdmin(
+				baseURL = "http://www.able.com:8080",
+				siteURLKey = "guest");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Global");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and contains(.,'imported (Global)')]");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Title");
+		}
+	}
+
+	@description = "This is a test for LPS-105625. A system administrator can deploy a zip file of fragments in the deploy folder that are available system wide for future and existing site instances"
+	@priority = "5"
+	test ViewFragmentsDeployedToSystemWideAreAvailableForExistAndFutureSite {
+		property portal.acceptance = "true";
+
+		task ("Deploy fragments zip are available in System wide") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
+		}
+
+		task ("Assert there is no error in console") {
+			AssertConsoleTextNotPresent(value1 = "com.liferay.portal.kernel.repository.InvalidRepositoryIdException");
+		}
+
+		task ("Assert new fragment exists in exist sites") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "guest");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and contains(.,'imported (System)')]");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and contains(.,'imported (System)')]");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+		}
+
+		task ("Assert new fragments exist in future site") {
+			JSONGroup.addGroup(groupName = "Test Future Site");
+
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-future-site");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and contains(.,'imported (System)')]");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+		}
+	}
+
+	@description = "This is a test for LPS-105625. A system administrator can deploy a zip file of fragments in the deploy folder that are available system wide for future and existing virtual instances"
+	@priority = "3"
+	test ViewFragmentsDeployedToSystemWideAreAvailableForExistAndFutureVirtualInstance {
+		property custom.properties = "virtual.hosts.valid.hosts=localhost,127.0.0.1,www.able.com";
+		property test.name.skip.portal.instance = "FragmentsDeploy#ViewFragmentsDeployedToSystemWideAreAvailableForExistAndFutureVirtualInstance";
+
+		task ("Deploy fragments zip are available in System wide") {
+			FragmentsDeploy.deployZipOnLiferayPortal(fragmentsZip = "image.zip");
+		}
+
+		task ("Assert there is no error in console") {
+			AssertConsoleTextNotPresent(value1 = "com.liferay.portal.kernel.repository.InvalidRepositoryIdException");
+		}
+
+		task ("Assert new fragment exists in exist virtual instance") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "guest");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and contains(.,'imported (System)')]");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+		}
+
+		task ("Assert new fragment exists in future virtual instance") {
+			ApplicationsMenu.gotoPortlet(
+				category = "System",
+				panel = "Control Panel",
+				portlet = "Virtual Instances");
+
+			PortalInstances.addCP(
+				mailDomain = "www.able.com",
+				virtualHost = "www.able.com",
+				webId = "www.able.com");
+
+			PortalInstances.viewCP(virtualHost = "www.able.com");
+
+			User.firstLoginPG(
+				password = "test",
+				userEmailAddress = "test@www.able.com",
+				virtualHostsURL = "http://www.able.com:8080");
+
+			FragmentsAdminNavigator.openFragmentsAdmin(
+				baseURL = "http://www.able.com:8080",
+				siteURLKey = "guest");
+
+			FragmentsAdminNavigator.gotoSpecificScopeCollection(
+				collectionName = "imported",
+				scope = "Default");
+
+			AssertElementPresent(locator1 = "//div[@class='autofit-col' and contains(.,'imported (System)')]");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+		}
+	}
+
+}

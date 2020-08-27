@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -46,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class MBMessagePersistenceTest {
 
 		MBMessage newMBMessage = _persistence.create(pk);
 
+		newMBMessage.setMvccVersion(RandomTestUtil.nextLong());
+
+		newMBMessage.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newMBMessage.setUuid(RandomTestUtil.randomString());
 
 		newMBMessage.setGroupId(RandomTestUtil.nextLong());
@@ -151,7 +155,11 @@ public class MBMessagePersistenceTest {
 
 		newMBMessage.setParentMessageId(RandomTestUtil.nextLong());
 
+		newMBMessage.setTreePath(RandomTestUtil.randomString());
+
 		newMBMessage.setSubject(RandomTestUtil.randomString());
+
+		newMBMessage.setUrlSubject(RandomTestUtil.randomString());
 
 		newMBMessage.setBody(RandomTestUtil.randomString());
 
@@ -180,6 +188,11 @@ public class MBMessagePersistenceTest {
 		MBMessage existingMBMessage = _persistence.findByPrimaryKey(
 			newMBMessage.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingMBMessage.getMvccVersion(), newMBMessage.getMvccVersion());
+		Assert.assertEquals(
+			existingMBMessage.getCtCollectionId(),
+			newMBMessage.getCtCollectionId());
 		Assert.assertEquals(
 			existingMBMessage.getUuid(), newMBMessage.getUuid());
 		Assert.assertEquals(
@@ -213,7 +226,11 @@ public class MBMessagePersistenceTest {
 			existingMBMessage.getParentMessageId(),
 			newMBMessage.getParentMessageId());
 		Assert.assertEquals(
+			existingMBMessage.getTreePath(), newMBMessage.getTreePath());
+		Assert.assertEquals(
 			existingMBMessage.getSubject(), newMBMessage.getSubject());
+		Assert.assertEquals(
+			existingMBMessage.getUrlSubject(), newMBMessage.getUrlSubject());
 		Assert.assertEquals(
 			existingMBMessage.getBody(), newMBMessage.getBody());
 		Assert.assertEquals(
@@ -306,6 +323,13 @@ public class MBMessagePersistenceTest {
 	}
 
 	@Test
+	public void testCountByParentMessageId() throws Exception {
+		_persistence.countByParentMessageId(RandomTestUtil.nextLong());
+
+		_persistence.countByParentMessageId(0L);
+	}
+
+	@Test
 	public void testCountByG_U() throws Exception {
 		_persistence.countByG_U(
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
@@ -319,6 +343,15 @@ public class MBMessagePersistenceTest {
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
 		_persistence.countByG_C(0L, 0L);
+	}
+
+	@Test
+	public void testCountByG_US() throws Exception {
+		_persistence.countByG_US(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByG_US(0L, "null");
+
+		_persistence.countByG_US(0L, (String)null);
 	}
 
 	@Test
@@ -528,15 +561,16 @@ public class MBMessagePersistenceTest {
 
 	protected OrderByComparator<MBMessage> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"MBMessage", "uuid", true, "messageId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "classNameId", true, "classPK", true,
+			"MBMessage", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "messageId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "classNameId", true, "classPK", true,
 			"categoryId", true, "threadId", true, "rootMessageId", true,
-			"parentMessageId", true, "subject", true, "format", true,
-			"anonymous", true, "priority", true, "allowPingbacks", true,
-			"answer", true, "lastPublishDate", true, "status", true,
-			"statusByUserId", true, "statusByUserName", true, "statusDate",
-			true);
+			"parentMessageId", true, "treePath", true, "subject", true,
+			"urlSubject", true, "format", true, "anonymous", true, "priority",
+			true, "allowPingbacks", true, "answer", true, "lastPublishDate",
+			true, "status", true, "statusByUserId", true, "statusByUserName",
+			true, "statusDate", true);
 	}
 
 	@Test
@@ -751,24 +785,82 @@ public class MBMessagePersistenceTest {
 
 		_persistence.clearCache();
 
-		MBMessage existingMBMessage = _persistence.findByPrimaryKey(
-			newMBMessage.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newMBMessage.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingMBMessage.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingMBMessage, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		MBMessage newMBMessage = addMBMessage();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			MBMessage.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"messageId", newMBMessage.getMessageId()));
+
+		List<MBMessage> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(MBMessage mbMessage) {
 		Assert.assertEquals(
-			Long.valueOf(existingMBMessage.getGroupId()),
+			mbMessage.getUuid(),
+			ReflectionTestUtil.invoke(
+				mbMessage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(mbMessage.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingMBMessage, "getOriginalGroupId", new Class<?>[0]));
+				mbMessage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+
+		Assert.assertEquals(
+			Long.valueOf(mbMessage.getGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				mbMessage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			mbMessage.getUrlSubject(),
+			ReflectionTestUtil.invoke(
+				mbMessage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "urlSubject"));
 	}
 
 	protected MBMessage addMBMessage() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		MBMessage mbMessage = _persistence.create(pk);
+
+		mbMessage.setMvccVersion(RandomTestUtil.nextLong());
+
+		mbMessage.setCtCollectionId(RandomTestUtil.nextLong());
 
 		mbMessage.setUuid(RandomTestUtil.randomString());
 
@@ -796,7 +888,11 @@ public class MBMessagePersistenceTest {
 
 		mbMessage.setParentMessageId(RandomTestUtil.nextLong());
 
+		mbMessage.setTreePath(RandomTestUtil.randomString());
+
 		mbMessage.setSubject(RandomTestUtil.randomString());
+
+		mbMessage.setUrlSubject(RandomTestUtil.randomString());
 
 		mbMessage.setBody(RandomTestUtil.randomString());
 

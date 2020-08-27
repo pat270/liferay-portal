@@ -44,6 +44,10 @@ public class MapUtil {
 		merge(master, copy);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static <K1, V1, K2 extends K1, V2 extends V1> void filter(
 		Map<? extends K2, ? extends V2> inputMap,
 		Map<? super K2, ? super V2> outputMap,
@@ -58,6 +62,10 @@ public class MapUtil {
 		}
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static <K1, V1, K2 extends K1, V2 extends V1> Map<K2, V2> filter(
 		Map<K2, V2> inputMap, Predicate<? super Map.Entry<K1, V1>> predicate) {
 
@@ -68,6 +76,10 @@ public class MapUtil {
 		return outputMap;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static <K, V> void filterByKeys(
 		Map<? extends K, ? extends V> inputMap,
 		Map<? super K, ? super V> outputMap,
@@ -76,12 +88,20 @@ public class MapUtil {
 		filter(inputMap, outputMap, entry -> keyPredicate.test(entry.getKey()));
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static <K, V> Map<K, V> filterByKeys(
 		Map<K, V> inputMap, Predicate<? super K> keyPredicate) {
 
 		return filter(inputMap, entry -> keyPredicate.test(entry.getKey()));
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static <K, V> void filterByValues(
 		Map<? extends K, ? extends V> inputMap,
 		Map<? super K, ? super V> outputMap,
@@ -92,6 +112,10 @@ public class MapUtil {
 			entry -> valuePredicate.test(entry.getValue()));
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static <K, V> Map<K, V> filterByValues(
 		Map<K, V> inputMap, Predicate<? super V> valuePredicate) {
 
@@ -411,8 +435,8 @@ public class MapUtil {
 
 						map.put(kvp[0], constructor.newInstance(kvp[1]));
 					}
-					catch (Exception e) {
-						_log.error(e.getMessage(), e);
+					catch (Exception exception) {
+						_log.error(exception.getMessage(), exception);
 					}
 				}
 			}
@@ -432,26 +456,25 @@ public class MapUtil {
 			return StringPool.OPEN_CURLY_BRACE + StringPool.CLOSE_CURLY_BRACE;
 		}
 
-		StringBundler sb = new StringBundler(map.size() * 4 + 1);
+		StringBundler sb = new StringBundler((map.size() * 4) + 1);
 
 		sb.append(StringPool.OPEN_CURLY_BRACE);
 
 		for (Map.Entry<?, ?> entry : map.entrySet()) {
-			Object key = entry.getKey();
 			Object value = entry.getValue();
 
-			String keyString = String.valueOf(key);
+			String keyString = String.valueOf(entry.getKey());
 
-			if (hideIncludesRegex != null) {
-				if (!keyString.matches(hideIncludesRegex)) {
-					value = "********";
-				}
+			if ((hideIncludesRegex != null) &&
+				!keyString.matches(hideIncludesRegex)) {
+
+				value = "********";
 			}
 
-			if (hideExcludesRegex != null) {
-				if (keyString.matches(hideExcludesRegex)) {
-					value = "********";
-				}
+			if ((hideExcludesRegex != null) &&
+				keyString.matches(hideExcludesRegex)) {
+
+				value = "********";
 			}
 
 			sb.append(keyString);
@@ -465,11 +488,9 @@ public class MapUtil {
 					(String[])value, StringPool.COMMA_AND_SPACE);
 
 				sb.append(
-					StringPool.OPEN_BRACKET.concat(
-						valueString
-					).concat(
-						StringPool.CLOSE_BRACKET
-					));
+					StringBundler.concat(
+						StringPool.OPEN_BRACKET, valueString,
+						StringPool.CLOSE_BRACKET));
 			}
 			else {
 				sb.append(value);

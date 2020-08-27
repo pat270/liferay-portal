@@ -1,7 +1,9 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
+	property testray.component.names = "WYSIWYG";
 	property testray.main.component.name = "User Interface";
 	var pageName = "CKEditor Page";
 
@@ -26,7 +28,6 @@ definition {
 	test AddBlogsEntryWithImageViaBlogsImages {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "${pageName}");
@@ -42,7 +43,7 @@ definition {
 			entryContent = "Blogs Entry Content",
 			entrySubtitle = "Blogs Entry Subtitle",
 			entryTitle = "Blogs Entry Title",
-			navTab = "Upload Image",
+			navTab = "Blog Images",
 			uploadFileName = "Document_1.jpg");
 
 		Pause(locator1 = "1000");
@@ -73,12 +74,107 @@ definition {
 	}
 
 	@priority = "4"
+	test AddWebContentArticleCopyPasteContent {
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
+		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
+		property environment.acceptance = "true";
+
+		Open(locator1 = "http://www.standards-schmandards.com/exhibits/wysiwyg/sampledoc.htm");
+
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "safari") {
+			KeyPress.keyDown(
+				locator1 = "//body",
+				value1 = "\COMMAND");
+
+			KeyPress(
+				locator1 = "//body",
+				value1 = "a");
+
+			Pause(locator1 = "1000");
+
+			KeyPress(
+				locator1 = "//body",
+				value1 = "c");
+
+			KeyPress.keyUp(
+				locator1 = "//body",
+				value1 = "\COMMAND");
+		}
+
+		else {
+			SelectFieldText(locator1 = "//body");
+
+			RobotType.robotTypeShortcut(locator1 = "Ctrl + c");
+		}
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddCP();
+
+		PortletEntry.inputTitle(title = "Web Content Title");
+
+		SelectFrame.selectFrameNoLoading(
+			key_fieldLabel = "content",
+			locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE");
+
+		Click(locator1 = "CKEditor#BODY");
+
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "safari") {
+			KeyPress.keyDown(
+				key_editor = "content",
+				locator1 = "AlloyEditor#EDITOR",
+				value1 = "\COMMAND");
+
+			KeyPress(
+				key_editor = "content",
+				locator1 = "AlloyEditor#EDITOR",
+				value1 = "v");
+
+			KeyPress.keyUp(
+				key_editor = "content",
+				locator1 = "AlloyEditor#EDITOR",
+				value1 = "\COMMAND");
+		}
+
+		else {
+			RobotType.robotTypeShortcut(locator1 = "Ctrl + v");
+		}
+
+		Pause(locator1 = "5000");
+
+		takeScreenshot();
+
+		SelectFrame(value1 = "relative=top");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Title");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "//div[@class='portlet-body']/div[contains(@class,'mt-2')]",
+			value1 = "Sample document for editor area test");
+
+		AssertElementPresent(locator1 = "//img[contains(@src,'redhead.JPG')]");
+
+		takeScreenshot();
+	}
+
+	@priority = "4"
 	test AddWebContentArticleWithImageViaURL {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -97,15 +193,11 @@ definition {
 			imageSourceURL = "https://raw.githubusercontent.com/liferay/liferay-portal/master/portal-web/test/functional/com/liferay/portalweb/dependencies/Document_1.jpg",
 			navTab = "URL");
 
-		WebContent.selectTemplateCP(
-			structureName = "Basic Web Content",
-			templateName = "Basic Web Content");
-
 		PortletEntry.publish();
 
 		WebContentNavigator.gotoPreviewEntryCP(webContentTitle = "Web Content Title");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		AssertElementPresent(locator1 = "//img[contains(@src,'Document_1.jpg')]");
 	}
@@ -117,7 +209,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddCP();
@@ -137,7 +228,6 @@ definition {
 	test ViewWikiFrontPageLeftToRight {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "${pageName}");
@@ -164,7 +254,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "${pageName}");
@@ -197,4 +286,5 @@ definition {
 			locale = "en_US",
 			textIcon = "english-United States");
 	}
+
 }

@@ -14,6 +14,8 @@
 
 package com.liferay.gradle.plugins.extensions;
 
+import com.liferay.gradle.plugins.internal.util.GradleUtil;
+
 import java.util.HashMap;
 
 /**
@@ -21,13 +23,21 @@ import java.util.HashMap;
  */
 public class BundleExtension extends HashMap<String, Object> {
 
-	public Object instruction(String key, Object value) {
-		return put(key, value);
+	public String getInstruction(String key) {
+		return GradleUtil.toString(super.get(key));
 	}
 
+	public Object instruction(String key, Object value) {
+		return super.put(key, value);
+	}
+
+	/**
+	 * @deprecated Replaced by {@link #instruction(String, Object)}
+	 */
+	@Deprecated
 	@Override
 	public Object put(String key, Object value) {
-		return super.put(key, value);
+		return instruction(key, value);
 	}
 
 	private static final long serialVersionUID = 1L;

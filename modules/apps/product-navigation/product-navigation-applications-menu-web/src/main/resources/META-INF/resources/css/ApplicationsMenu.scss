@@ -1,0 +1,169 @@
+@import 'atlas-variables';
+
+.applications-menu-modal {
+	.modal-full {
+		margin-top: 0;
+		width: 100%;
+
+		@include media-breakpoint-down(xs) {
+			margin: 0;
+		}
+
+		.modal-body {
+			padding: 0;
+		}
+
+		.modal-content {
+			border-radius: 0;
+			box-shadow: none;
+		}
+	}
+
+	.modal-info .btn-monospaced {
+		color: $secondary;
+	}
+}
+
+.applications-menu-header .nav-link {
+	color: $secondary;
+	padding-bottom: 1rem;
+	padding-top: 1rem;
+
+	&.active {
+		color: $dark;
+	}
+}
+
+.applications-menu-wrapper {
+	display: flex;
+	flex-direction: column;
+	height: -moz-available;
+	height: -webkit-fill-available;
+	height: stretch;
+	max-height: 100vh;
+}
+
+.applications-menu-bg {
+	@include media-breakpoint-up(md) {
+		background: linear-gradient(
+			to right,
+			$white 0%,
+			$white 50%,
+			$light-l1 51%,
+			$light-l1 100%
+		);
+
+		.container-fluid {
+			background-color: $white;
+		}
+	}
+}
+
+.applications-menu-border-top {
+	border-top: 1px solid $light;
+}
+
+.applications-menu-nav-columns {
+	column-count: 1;
+	margin-left: -$grid-gutter-width / 2;
+	margin-right: -$grid-gutter-width / 2;
+	orphans: 1;
+	widows: 1;
+
+	@include media-breakpoint-up(sm) {
+		column-count: 2;
+	}
+
+	@include media-breakpoint-up(md) {
+		column-count: 3;
+	}
+
+	@include media-breakpoint-up(lg) {
+		column-count: 4;
+	}
+
+	.col-md {
+		display: inline-block;
+	}
+}
+
+.applications-menu-nav-header {
+	color: $secondary;
+	font-size: 0.875rem;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.applications-menu-nav-link {
+	color: $dark;
+
+	&:hover {
+		color: $dark;
+		text-decoration: none;
+	}
+
+	&.active {
+		font-weight: 600;
+	}
+
+	.sticker-sm {
+		height: 1.25rem;
+		width: 1.25rem;
+	}
+}
+
+.applications-menu-sites-label {
+	background-color: $light-l1;
+	color: $secondary;
+	font-size: 0.875rem;
+	font-weight: 600;
+	margin-bottom: 0;
+	text-transform: uppercase;
+
+	@include media-breakpoint-up(md) {
+		bottom: 100%;
+		left: 0.5rem;
+		padding: 1.375rem 1.5rem;
+		position: absolute;
+	}
+}
+
+.applications-menu-sites {
+	background-color: $light-l1;
+	height: 100%;
+}
+
+.applications-menu-shrink {
+	flex-shrink: 1;
+	min-width: 0;
+}
+
+.applications-menu-btn {
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.applications-menu-nav-divider {
+	border-top: 1px solid $secondary;
+	width: 1.25rem;
+}
+
+.applications-menu-company {
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.applications-menu-powered {
+	color: $secondary;
+	font-size: 0.625rem;
+	text-align: right;
+	text-transform: uppercase;
+}
+
+.applications-menu-copyright {
+	color: $secondary;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: right;
+}

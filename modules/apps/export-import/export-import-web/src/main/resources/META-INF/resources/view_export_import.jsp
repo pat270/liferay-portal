@@ -31,9 +31,11 @@ if (Validator.isNotNull(backURL)) {
 renderResponse.setTitle(LanguageUtil.get(request, "process-details"));
 %>
 
-<div class="container-fluid-1280" id="<portlet:namespace />exportImportProcessContainer">
+<clay:container-fluid
+	id='<%= liferayPortletResponse.getNamespace() + "exportImportProcessContainer" %>'
+>
 	<liferay-util:include page="/export_import_process.jsp" servletContext="<%= application %>" />
-</div>
+</clay:container-fluid>
 
 <aui:script use="liferay-export-import-export-import">
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="exportImport" var="exportImportProcessURL">
@@ -41,14 +43,13 @@ renderResponse.setTitle(LanguageUtil.get(request, "process-details"));
 		<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTaskId) %>" />
 	</liferay-portlet:resourceURL>
 
-	new Liferay.ExportImport(
-		{
-			incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',
-			locale: '<%= locale.toLanguageTag() %>',
-			namespace: '<portlet:namespace />',
-			processesNode: '#exportImportProcessContainer',
-			processesResourceURL: '<%= HtmlUtil.escapeJS(exportImportProcessURL) %>',
-			timeZoneOffset: <%= timeZoneOffset %>
-		}
-	);
+	new Liferay.ExportImport({
+		incompleteProcessMessageNode:
+			'#<portlet:namespace />incompleteProcessMessage',
+		locale: '<%= locale.toLanguageTag() %>',
+		namespace: '<portlet:namespace />',
+		processesNode: '#exportImportProcessContainer',
+		processesResourceURL: '<%= HtmlUtil.escapeJS(exportImportProcessURL) %>',
+		timeZoneOffset: <%= timeZoneOffset %>,
+	});
 </aui:script>

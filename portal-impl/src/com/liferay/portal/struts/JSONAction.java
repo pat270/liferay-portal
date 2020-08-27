@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.servlet.SharedSessionServletRequest;
+import com.liferay.portal.struts.constants.ActionConstants;
 import com.liferay.portal.struts.model.ActionForward;
 import com.liferay.portal.struts.model.ActionMapping;
 import com.liferay.portal.util.PropsValues;
@@ -85,27 +86,27 @@ public abstract class JSONAction implements Action {
 				json = sb.toString();
 			}
 		}
-		catch (PrincipalException pe) {
-			_log.error(pe.getMessage());
+		catch (PrincipalException principalException) {
+			_log.error(principalException.getMessage());
 
 			PortalUtil.sendError(
-				HttpServletResponse.SC_FORBIDDEN, pe, httpServletRequest,
-				httpServletResponse);
+				HttpServletResponse.SC_FORBIDDEN, principalException,
+				httpServletRequest, httpServletResponse);
 
 			return null;
 		}
-		catch (SecurityException se) {
+		catch (SecurityException securityException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(se.getMessage());
+				_log.warn(securityException.getMessage());
 			}
 
-			json = JSONFactoryUtil.serializeThrowable(se);
+			json = JSONFactoryUtil.serializeThrowable(securityException);
 		}
-		catch (Exception e) {
-			_log.error(e.getMessage());
+		catch (Exception exception) {
+			_log.error(exception.getMessage());
 
 			PortalUtil.sendError(
-				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e,
+				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, exception,
 				httpServletRequest, httpServletResponse);
 
 			return null;
@@ -127,9 +128,7 @@ public abstract class JSONAction implements Action {
 			try (OutputStream outputStream =
 					httpServletResponse.getOutputStream()) {
 
-				byte[] bytes = json.getBytes(StringPool.UTF8);
-
-				outputStream.write(bytes);
+				outputStream.write(json.getBytes(StringPool.UTF8));
 			}
 		}
 
@@ -170,13 +169,12 @@ public abstract class JSONAction implements Action {
 			}
 		}
 
-		if (PropsValues.JSON_SERVICE_AUTH_TOKEN_ENABLED) {
-			if (!AccessControlUtil.isAccessAllowed(
-					httpServletRequest, _hostsAllowed)) {
+		if (PropsValues.JSON_SERVICE_AUTH_TOKEN_ENABLED &&
+			!AccessControlUtil.isAccessAllowed(
+				httpServletRequest, _hostsAllowed)) {
 
-				AuthTokenUtil.checkCSRFToken(
-					httpServletRequest, getCSRFOrigin(httpServletRequest));
-			}
+			AuthTokenUtil.checkCSRFToken(
+				httpServletRequest, getCSRFOrigin(httpServletRequest));
 		}
 	}
 

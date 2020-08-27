@@ -17,6 +17,7 @@ package com.liferay.poshi.runner.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -25,6 +26,9 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,22 +40,13 @@ public class ArchiveUtil {
 	public static void archive(File sourceFile, File targetFile) {
 		String targetFileName = targetFile.getName();
 
-		if (!(targetFileName.endsWith(".jar") ||
-			  targetFileName.endsWith(".war") ||
-			  targetFileName.endsWith(".zip"))) {
-
+		if (!targetFileName.matches(".*\\.(jar|lar|war|zip)")) {
 			throw new RuntimeException("Invalid archive path " + targetFile);
 		}
 
-		targetFile.delete();
+		List<ArchiveZipEntry> archiveZipEntries = new ArrayList<>();
 
-		File parentFile = targetFile.getParentFile();
-
-		parentFile.mkdirs();
-
-		try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-				new FileOutputStream(targetFile))) {
-
+		try {
 			Path sourceFilePath = Paths.get(sourceFile.getCanonicalPath());
 
 			Files.walkFileTree(
@@ -62,31 +57,55 @@ public class ArchiveUtil {
 					public FileVisitResult visitFile(
 						Path file, BasicFileAttributes attributes) {
 
-						try {
-							Path targetFilePath = sourceFilePath.relativize(
-								file);
+						Path targetFilePath = sourceFilePath.relativize(file);
 
-							zipOutputStream.putNextEntry(
-								new ZipEntry(targetFilePath.toString()));
+						String targetFilePathString = targetFilePath.toString();
 
-							byte[] bytes = Files.readAllBytes(file);
+						targetFilePathString = StringUtil.replace(
+							targetFilePathString, "\\", "/");
 
-							zipOutputStream.write(bytes, 0, bytes.length);
-
-							zipOutputStream.closeEntry();
-						}
-						catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
+						archiveZipEntries.add(
+							new ArchiveZipEntry(targetFilePathString, file));
 
 						return FileVisitResult.CONTINUE;
 					}
 
 				});
+
+			targetFile.delete();
+
+			File parentFile = targetFile.getParentFile();
+
+			parentFile.mkdirs();
+
+			File tmpDir = new File(sourceFile.getParentFile(), "tmp");
+
+			tmpDir.mkdir();
+
+			tmpDir.deleteOnExit();
+
+			File tmpFile = new File(tmpDir, targetFileName);
+
+			tmpFile.delete();
+
+			Collections.sort(archiveZipEntries);
+
+			try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+					new FileOutputStream(tmpFile))) {
+
+				for (ArchiveZipEntry archiveZipEntry : archiveZipEntries) {
+					archiveZipEntry.writeToZipOutputStream(zipOutputStream);
+				}
+			}
+
+			Files.move(
+				Paths.get(tmpFile.getCanonicalPath()),
+				Paths.get(targetFile.getCanonicalPath()));
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
-				"Unable to archive " + sourceFile + " to " + targetFile, ioe);
+				"Unable to archive " + sourceFile + " to " + targetFile,
+				ioException);
 		}
 	}
 
@@ -103,6 +122,59 @@ public class ArchiveUtil {
 			targetDir + "/" + sourceDirPath.getFileName() + "." + archiveType;
 
 		archive(sourceFile, archiveFilePath);
+	}
+
+	private static final class ArchiveZipEntry
+		extends ZipEntry implements Comparable<ArchiveZipEntry> {
+
+		public ArchiveZipEntry(String name, Path path) {
+			super(name);
+
+			_path = path;
+		}
+
+		@Override
+		public int compareTo(ArchiveZipEntry archiveZipEntry) {
+			String manifestFileName = "META-INF/MANIFEST.MF";
+
+			if (manifestFileName.equals(archiveZipEntry.getName())) {
+				return 1;
+			}
+
+			String name = getName();
+
+			if (manifestFileName.equals(name)) {
+				return -1;
+			}
+
+			return name.compareTo(archiveZipEntry.getName());
+		}
+
+		public void writeToZipOutputStream(ZipOutputStream zipOutputStream) {
+			try (InputStream inputStream = Files.newInputStream(_path)) {
+				zipOutputStream.putNextEntry(this);
+
+				byte[] bytes = new byte[1024];
+
+				int bytesRead = inputStream.read(bytes);
+
+				while (bytesRead > 0) {
+					zipOutputStream.write(bytes, 0, bytesRead);
+
+					bytesRead = inputStream.read(bytes);
+				}
+
+				zipOutputStream.flush();
+
+				zipOutputStream.closeEntry();
+			}
+			catch (IOException ioException) {
+				ioException.printStackTrace();
+			}
+		}
+
+		private final Path _path;
+
 	}
 
 }

@@ -30,7 +30,7 @@ ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_
 
 Folder folder = null;
 
-if (row != null) {
+if ((row != null) && (row.getObject() instanceof Folder)) {
 	folder = (Folder)row.getObject();
 }
 else {
@@ -55,10 +55,10 @@ else {
 		String webDavHelpMessage = null;
 
 		if (BrowserSnifferUtil.isWindows(request)) {
-			webDavHelpMessage = LanguageUtil.format(request, "webdav-windows-help", new Object[] {"https://support.microsoft.com/en-us/kb/892211", "https://dev.liferay.com/discover/portal/-/knowledge_base/7-0/publishing-files#desktop-access-to-documents-and-media"}, false);
+			webDavHelpMessage = LanguageUtil.format(request, "webdav-windows-help", new Object[] {"https://support.microsoft.com/en-us/kb/892211", "https://help.liferay.com/hc/en-us/articles/360028720352-Desktop-Access-to-Documents-and-Media"}, false);
 		}
 		else {
-			webDavHelpMessage = LanguageUtil.format(request, "webdav-help", "https://dev.liferay.com/discover/portal/-/knowledge_base/7-0/publishing-files#desktop-access-to-documents-and-media", false);
+			webDavHelpMessage = LanguageUtil.format(request, "webdav-help", "https://help.liferay.com/hc/en-us/articles/360028720352-Desktop-Access-to-Documents-and-Media", false);
 		}
 		%>
 
@@ -66,40 +66,49 @@ else {
 
 		<br /><br />
 
-		<aui:input cssClass="webdav-url-resource" name="webDavURL" type="resource" value="<%= DLURLHelperUtil.getWebDavURL(themeDisplay, folder, null) %>" />
+		<aui:input cssClass="webdav-url-resource" id='<%= randomNamespace + "webDavURL" %>' name="webDavURL" type="resource" value="<%= DLURLHelperUtil.getWebDavURL(themeDisplay, folder, null) %>" />
 	</div>
 </div>
 
-<aui:script use="liferay-util-window">
-	var webdavAction = A.one('.<%= randomNamespace %>-webdav-action');
+<aui:script>
+	(function () {
+		var webdavContentContainer = document.getElementById(
+			'<%= randomNamespace %>webDav'
+		);
 
-	if (webdavAction) {
-		webdavAction.on(
-			'click',
-			function(event) {
+		var html = '';
+
+		if (webdavContentContainer) {
+			html = webdavContentContainer.innerHTML;
+
+			webdavContentContainer.remove();
+		}
+
+		var webdavActionLink = document.querySelector(
+			'.<%= randomNamespace %>-webdav-action'
+		);
+
+		if (webdavActionLink) {
+			webdavActionLink.addEventListener('click', function (event) {
 				event.preventDefault();
 
-				var webdavDialog = Liferay.Util.Window.getWindow(
-					{
-						dialog: {
-							bodyContent: A.one('#<%= randomNamespace %>webDav').html(),
-							destroyOnHide: true
+				if (webdavContentContainer) {
+					Liferay.Util.openModal({
+						bodyHTML: html,
+						onOpen: function (event) {
+							var webdavURLInput = document.getElementById(
+								'<portlet:namespace /><%= randomNamespace %>webDavURL'
+							);
+
+							if (webdavURLInput) {
+								webdavURLInput.focus();
+							}
 						},
-						title: '<%= UnicodeLanguageUtil.get(request, "access-from-desktop") %>'
-					}
-				);
-
-				webdavDialog.after(
-					'render',
-					function(event) {
-						var webdavURLInput = webdavDialog.get('boundingBox').one('#<portlet:namespace />webDavURL');
-
-						webdavURLInput.focus();
-					}
-				);
-
-				webdavDialog.render();
-			}
-		);
-	}
+						title:
+							'<%= UnicodeLanguageUtil.get(request, "access-from-desktop") %>',
+					});
+				}
+			});
+		}
+	})();
 </aui:script>

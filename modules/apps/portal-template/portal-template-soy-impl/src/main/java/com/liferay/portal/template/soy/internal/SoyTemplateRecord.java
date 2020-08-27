@@ -91,8 +91,8 @@ public class SoyTemplateRecord extends SoyAbstractValue implements SoyRecord {
 		try {
 			render(appendable);
 		}
-		catch (IOException ioe) {
-			throw new AssertionError(ioe);
+		catch (IOException ioException) {
+			throw new AssertionError(ioException);
 		}
 
 		return appendable.toString();
@@ -185,9 +185,7 @@ public class SoyTemplateRecord extends SoyAbstractValue implements SoyRecord {
 				appendable.append(", ");
 			}
 
-			String key = entry.getKey();
-
-			StringData stringData = StringData.forValue(key);
+			StringData stringData = StringData.forValue(entry.getKey());
 
 			stringData.render(appendable);
 
@@ -209,6 +207,9 @@ public class SoyTemplateRecord extends SoyAbstractValue implements SoyRecord {
 
 	private SoyValue _toSoyValue(Object object) {
 		if (object == null) {
+			return NullData.INSTANCE;
+		}
+		else if (object == org.json.JSONObject.NULL) {
 			return NullData.INSTANCE;
 		}
 		else if (object instanceof BigDecimal) {
@@ -246,9 +247,10 @@ public class SoyTemplateRecord extends SoyAbstractValue implements SoyRecord {
 
 			SoyListData soyListData = new SoyListData();
 
-			Iterator it = jsonArray.iterator();
+			Iterator<JSONObject> iterator = jsonArray.iterator();
 
-			it.forEachRemaining(value -> soyListData.add(_toSoyValue(value)));
+			iterator.forEachRemaining(
+				value -> soyListData.add(_toSoyValue(value)));
 
 			return soyListData;
 		}
@@ -257,9 +259,9 @@ public class SoyTemplateRecord extends SoyAbstractValue implements SoyRecord {
 
 			SoyMapData soyMapData = new SoyMapData();
 
-			Iterator<String> it = jsonObject.keys();
+			Iterator<String> iterator = jsonObject.keys();
 
-			it.forEachRemaining(
+			iterator.forEachRemaining(
 				key -> soyMapData.put(key, _toSoyValue(jsonObject.get(key))));
 
 			return soyMapData;
@@ -339,11 +341,11 @@ public class SoyTemplateRecord extends SoyAbstractValue implements SoyRecord {
 				}
 			}
 		}
-		catch (RuntimeException re) {
-			throw re;
+		catch (RuntimeException runtimeException) {
+			throw runtimeException;
 		}
-		catch (Exception e) {
-			throw new SoyDataException(e.getMessage(), e);
+		catch (Exception exception) {
+			throw new SoyDataException(exception.getMessage(), exception);
 		}
 
 		return soyMapData;

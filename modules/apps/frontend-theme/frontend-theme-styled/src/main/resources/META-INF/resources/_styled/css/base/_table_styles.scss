@@ -1,4 +1,4 @@
-@include media-query(null, $screen-sm-max) {
+@include media-breakpoint-down(md) {
 	.responsive-table-horizontal {
 		display: block;
 		position: relative;
@@ -42,7 +42,7 @@
 
 			&:after {
 				clear: both;
-				content: "";
+				content: '';
 				display: block;
 				font-size: 0;
 				height: 0;
@@ -58,12 +58,6 @@
 					text-align: right;
 				}
 			}
-		}
-	}
-
-	.ie9 {
-		.responsive-table-horizontal thead {
-			float: none;
 		}
 	}
 }

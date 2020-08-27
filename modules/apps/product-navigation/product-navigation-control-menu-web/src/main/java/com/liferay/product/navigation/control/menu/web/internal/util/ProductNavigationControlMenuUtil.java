@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.model.impl.LayoutTypeControllerImpl;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -49,6 +48,10 @@ public class ProductNavigationControlMenuUtil {
 			return false;
 		}
 
+		if (layout.isTypeAssetDisplay() || layout.isTypeContent()) {
+			return false;
+		}
+
 		if (StagingUtil.isIncomplete(layout)) {
 			return false;
 		}
@@ -60,10 +63,6 @@ public class ProductNavigationControlMenuUtil {
 			layoutTypePortlet.getLayoutTypeController();
 
 		if (layoutTypeController.isFullPageDisplayable()) {
-			return false;
-		}
-
-		if (!(layoutTypeController instanceof LayoutTypeControllerImpl)) {
 			return false;
 		}
 

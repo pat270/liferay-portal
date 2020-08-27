@@ -99,21 +99,21 @@ public class TestExecutorRunnable implements Runnable {
 				objectOutputStream.flush();
 			}
 		}
-		catch (EOFException eofe) {
+		catch (EOFException eofException) {
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			try {
 				_bundle.uninstall();
 			}
-			catch (BundleException be) {
-				e.addSuppressed(be);
+			catch (BundleException bundleException) {
+				exception.addSuppressed(bundleException);
 			}
 
 			_logger.log(
 				Level.SEVERE,
 				"Unable to report back to client. Uninstalled test bundle " +
 					"and abort test.",
-				e);
+				exception);
 		}
 	}
 
@@ -142,9 +142,9 @@ public class TestExecutorRunnable implements Runnable {
 
 						statement.evaluate();
 					}
-					catch (Throwable t) {
+					catch (Throwable throwable) {
 						_processThrowable(
-							false, t, objectOutputStream, description);
+							false, throwable, objectOutputStream, description);
 					}
 					finally {
 						objectOutputStream.writeObject(
@@ -180,9 +180,35 @@ public class TestExecutorRunnable implements Runnable {
 
 			statement.evaluate();
 		}
-		catch (Throwable t) {
-			_processThrowable(true, t, objectOutputStream, description);
+		catch (Throwable throwable) {
+			_processThrowable(true, throwable, objectOutputStream, description);
 		}
+	}
+
+	private static Throwable _findAssumptionViolatedException(
+		Throwable throwable) {
+
+		if (throwable instanceof AssumptionViolatedException) {
+			return throwable;
+		}
+
+		Throwable[] suppressionThrowables = throwable.getSuppressed();
+
+		for (Throwable suppressionThrowable : suppressionThrowables) {
+			return _findAssumptionViolatedException(suppressionThrowable);
+		}
+
+		return null;
+	}
+
+	private static Class<?> _getExpectedExceptionClass(Method method) {
+		Test test = method.getAnnotation(Test.class);
+
+		if (test == null) {
+			return Test.None.class;
+		}
+
+		return test.expected();
 	}
 
 	private static Statement _methodBlock(TestClass testClass, Method method)
@@ -202,22 +228,37 @@ public class TestExecutorRunnable implements Runnable {
 
 				currentThread.setContextClassLoader(clazz.getClassLoader());
 
+				Throwable throwable1 = null;
+
 				try {
 					method.invoke(target);
 				}
-				catch (Throwable t) {
-					if (t instanceof InvocationTargetException) {
-						t = t.getCause();
-					}
-
-					if (t instanceof AssumptionViolatedException) {
-						throw t;
-					}
-
-					_processExpectedException(t, method);
+				catch (Throwable throwable2) {
+					throwable1 = throwable2;
 				}
 				finally {
 					currentThread.setContextClassLoader(classLoader);
+				}
+
+				if (throwable1 == null) {
+					Class<?> throwableClass = _getExpectedExceptionClass(
+						method);
+
+					if (Test.None.class != throwableClass) {
+						throw new AssertionError(
+							"Expected test to throw " + throwableClass);
+					}
+				}
+				else {
+					if (throwable1 instanceof InvocationTargetException) {
+						throwable1 = throwable1.getCause();
+					}
+
+					if (throwable1 instanceof AssumptionViolatedException) {
+						throw throwable1;
+					}
+
+					_processExpectedException(throwable1, method);
 				}
 			}
 
@@ -241,23 +282,17 @@ public class TestExecutorRunnable implements Runnable {
 			Throwable throwable, Method method)
 		throws Throwable {
 
-		Test test = method.getAnnotation(Test.class);
+		Class<?> expectedThrown = _getExpectedExceptionClass(method);
 
-		if (test == null) {
-			throw throwable;
-		}
-
-		Class<?> expected = test.expected();
-
-		if (test.expected() == Test.None.class) {
+		if (expectedThrown == Test.None.class) {
 			throw throwable;
 		}
 
 		Class<?> clazz = throwable.getClass();
 
-		if (!expected.isAssignableFrom(clazz)) {
+		if (!expectedThrown.isAssignableFrom(clazz)) {
 			String message =
-				"Unexpected exception, expected<" + expected.getName() +
+				"Unexpected exception, expected<" + expectedThrown.getName() +
 					"> but was<" + clazz.getName() + ">";
 
 			throw new Exception(message, throwable);
@@ -269,7 +304,10 @@ public class TestExecutorRunnable implements Runnable {
 			ObjectOutputStream objectOutputStream, Description description)
 		throws IOException {
 
-		if (throwable instanceof AssumptionViolatedException) {
+		Throwable assumptionViolatedThrowable =
+			_findAssumptionViolatedException(throwable);
+
+		if (assumptionViolatedThrowable != null) {
 			if (classLevel) {
 				objectOutputStream.writeObject(
 					RunNotifierCommand.testStarted(description));
@@ -278,13 +316,16 @@ public class TestExecutorRunnable implements Runnable {
 			// To neutralize the nonserializable Matcher field inside
 			// AssumptionViolatedException
 
-			AssumptionViolatedException ave = new AssumptionViolatedException(
-				throwable.getMessage());
+			AssumptionViolatedException assumptionViolatedException =
+				new AssumptionViolatedException(
+					assumptionViolatedThrowable.getMessage());
 
-			ave.setStackTrace(throwable.getStackTrace());
+			assumptionViolatedException.setStackTrace(
+				assumptionViolatedThrowable.getStackTrace());
 
 			objectOutputStream.writeObject(
-				RunNotifierCommand.assumptionFailed(description, ave));
+				RunNotifierCommand.assumptionFailed(
+					description, assumptionViolatedException));
 
 			if (classLevel) {
 				objectOutputStream.writeObject(
@@ -292,10 +333,14 @@ public class TestExecutorRunnable implements Runnable {
 			}
 		}
 		else if (throwable instanceof MultipleFailureException) {
-			MultipleFailureException mfe = (MultipleFailureException)throwable;
+			MultipleFailureException multipleFailureException =
+				(MultipleFailureException)throwable;
 
-			for (Throwable t : mfe.getFailures()) {
-				_processThrowable(objectOutputStream, description, t);
+			for (Throwable curThrowable :
+					multipleFailureException.getFailures()) {
+
+				_processThrowable(
+					objectOutputStream, description, curThrowable);
 			}
 		}
 		else {
@@ -307,27 +352,28 @@ public class TestExecutorRunnable implements Runnable {
 
 	private static void _processThrowable(
 			ObjectOutputStream objectOutputStream, Description description,
-			Throwable t)
+			Throwable throwable)
 		throws IOException {
 
 		try {
 			objectOutputStream.writeObject(
-				RunNotifierCommand.testFailure(description, t));
+				RunNotifierCommand.testFailure(description, throwable));
 		}
-		catch (NotSerializableException nse) {
+		catch (NotSerializableException notSerializableException) {
 			objectOutputStream.reset();
 
-			Class<? extends Throwable> clazz = t.getClass();
+			Class<? extends Throwable> clazz = throwable.getClass();
 
-			Exception serializableException = new Exception(
-				clazz.getName() + ": " + t.getMessage());
+			Exception exception = new Exception(
+				clazz.getName() + ": " + throwable.getMessage());
 
-			serializableException.setStackTrace(t.getStackTrace());
+			exception.setStackTrace(throwable.getStackTrace());
 
-			nse.initCause(serializableException);
+			notSerializableException.initCause(exception);
 
 			objectOutputStream.writeObject(
-				RunNotifierCommand.testFailure(description, nse));
+				RunNotifierCommand.testFailure(
+					description, notSerializableException));
 		}
 	}
 

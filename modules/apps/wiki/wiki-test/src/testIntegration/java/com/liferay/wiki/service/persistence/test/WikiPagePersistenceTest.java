@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -46,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,8 @@ public class WikiPagePersistenceTest {
 
 		WikiPage newWikiPage = _persistence.create(pk);
 
+		newWikiPage.setMvccVersion(RandomTestUtil.nextLong());
+
 		newWikiPage.setUuid(RandomTestUtil.randomString());
 
 		newWikiPage.setResourcePrimKey(RandomTestUtil.nextLong());
@@ -176,6 +178,8 @@ public class WikiPagePersistenceTest {
 		WikiPage existingWikiPage = _persistence.findByPrimaryKey(
 			newWikiPage.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingWikiPage.getMvccVersion(), newWikiPage.getMvccVersion());
 		Assert.assertEquals(existingWikiPage.getUuid(), newWikiPage.getUuid());
 		Assert.assertEquals(
 			existingWikiPage.getPageId(), newWikiPage.getPageId());
@@ -587,13 +591,14 @@ public class WikiPagePersistenceTest {
 
 	protected OrderByComparator<WikiPage> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"WikiPage", "uuid", true, "pageId", true, "resourcePrimKey", true,
-			"groupId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true, "nodeId", true,
-			"title", true, "version", true, "minorEdit", true, "summary", true,
-			"format", true, "head", true, "parentTitle", true, "redirectTitle",
-			true, "lastPublishDate", true, "status", true, "statusByUserId",
-			true, "statusByUserName", true, "statusDate", true);
+			"WikiPage", "mvccVersion", true, "uuid", true, "pageId", true,
+			"resourcePrimKey", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "nodeId", true, "title", true, "version",
+			true, "minorEdit", true, "summary", true, "format", true, "head",
+			true, "parentTitle", true, "redirectTitle", true, "lastPublishDate",
+			true, "status", true, "statusByUserId", true, "statusByUserName",
+			true, "statusDate", true);
 	}
 
 	@Test
@@ -804,52 +809,99 @@ public class WikiPagePersistenceTest {
 
 		_persistence.clearCache();
 
-		WikiPage existingWikiPage = _persistence.findByPrimaryKey(
-			newWikiPage.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newWikiPage.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingWikiPage.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingWikiPage, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		WikiPage newWikiPage = addWikiPage();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			WikiPage.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("pageId", newWikiPage.getPageId()));
+
+		List<WikiPage> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(WikiPage wikiPage) {
 		Assert.assertEquals(
-			Long.valueOf(existingWikiPage.getGroupId()),
+			wikiPage.getUuid(),
+			ReflectionTestUtil.invoke(
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(wikiPage.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWikiPage, "getOriginalGroupId", new Class<?>[0]));
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingWikiPage.getResourcePrimKey()),
+			Long.valueOf(wikiPage.getResourcePrimKey()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWikiPage, "getOriginalResourcePrimKey",
-				new Class<?>[0]));
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "resourcePrimKey"));
 		Assert.assertEquals(
-			Long.valueOf(existingWikiPage.getNodeId()),
+			Long.valueOf(wikiPage.getNodeId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWikiPage, "getOriginalNodeId", new Class<?>[0]));
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "nodeId"));
 		AssertUtils.assertEquals(
-			existingWikiPage.getVersion(),
+			wikiPage.getVersion(),
 			ReflectionTestUtil.<Double>invoke(
-				existingWikiPage, "getOriginalVersion", new Class<?>[0]));
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "version"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingWikiPage.getNodeId()),
+			Long.valueOf(wikiPage.getNodeId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingWikiPage, "getOriginalNodeId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingWikiPage.getTitle(),
-				ReflectionTestUtil.invoke(
-					existingWikiPage, "getOriginalTitle", new Class<?>[0])));
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "nodeId"));
+		Assert.assertEquals(
+			wikiPage.getTitle(),
+			ReflectionTestUtil.invoke(
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "title"));
 		AssertUtils.assertEquals(
-			existingWikiPage.getVersion(),
+			wikiPage.getVersion(),
 			ReflectionTestUtil.<Double>invoke(
-				existingWikiPage, "getOriginalVersion", new Class<?>[0]));
+				wikiPage, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "version"));
 	}
 
 	protected WikiPage addWikiPage() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		WikiPage wikiPage = _persistence.create(pk);
+
+		wikiPage.setMvccVersion(RandomTestUtil.nextLong());
 
 		wikiPage.setUuid(RandomTestUtil.randomString());
 

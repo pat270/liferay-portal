@@ -14,17 +14,7 @@
  */
 --%>
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
-<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
-
-<%@ page contentType="text/html; charset=UTF-8" %>
-
-<%@ page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
-page import="com.liferay.portal.kernel.util.Validator" %><%@
-page import="com.liferay.taglib.aui.AUIUtil" %>
-
-<%@ page import="java.util.Map" %>
+<%@ include file="/html/taglib/init.jsp" %>
 
 <%
 String cssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:icon-menu:cssClass"));
@@ -45,7 +35,7 @@ if (Validator.isNull(icon)) {
 
 <div class="dropdown lfr-icon-menu <%= cssClass %>" <%= AUIUtil.buildData(data) %>>
 	<c:choose>
-		<c:when test="<%= triggerType.equals(\"button\") %>">
+		<c:when test='<%= triggerType.equals("button") %>'>
 			<button aria-expanded="false" aria-haspopup="true" class="btn btn-monospaced btn-secondary dropdown-toggle <%= triggerCssClass %>" id="<%= id %>" title="<%= message %>" type="button">
 				<aui:icon cssClass="inline-item" image="<%= icon %>" markupView="lexicon" />
 

@@ -14,7 +14,9 @@
 
 package com.liferay.segments.service.base;
 
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
@@ -32,18 +34,22 @@ import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiServic
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
-import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
-import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
-import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.segments.model.SegmentsEntryRel;
 import com.liferay.segments.service.SegmentsEntryRelLocalService;
 import com.liferay.segments.service.persistence.SegmentsEntryPersistence;
 import com.liferay.segments.service.persistence.SegmentsEntryRelPersistence;
+import com.liferay.segments.service.persistence.SegmentsEntryRolePersistence;
 import com.liferay.segments.service.persistence.SegmentsExperiencePersistence;
+import com.liferay.segments.service.persistence.SegmentsExperimentFinder;
+import com.liferay.segments.service.persistence.SegmentsExperimentPersistence;
+import com.liferay.segments.service.persistence.SegmentsExperimentRelPersistence;
 
 import java.io.Serializable;
 
@@ -51,7 +57,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * Provides the base implementation for the segments entry rel local service.
@@ -64,10 +70,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see com.liferay.segments.service.impl.SegmentsEntryRelLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements SegmentsEntryRelLocalService, IdentifiableOSGiService {
+	implements AopService, IdentifiableOSGiService,
+			   SegmentsEntryRelLocalService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -77,6 +83,10 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 
 	/**
 	 * Adds the segments entry rel to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param segmentsEntryRel the segments entry rel
 	 * @return the segments entry rel that was added
@@ -106,6 +116,10 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	/**
 	 * Deletes the segments entry rel with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param segmentsEntryRelId the primary key of the segments entry rel
 	 * @return the segments entry rel that was removed
 	 * @throws PortalException if a segments entry rel with the primary key could not be found
@@ -121,6 +135,10 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	/**
 	 * Deletes the segments entry rel from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param segmentsEntryRel the segments entry rel
 	 * @return the segments entry rel that was removed
 	 */
@@ -130,6 +148,11 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 		SegmentsEntryRel segmentsEntryRel) {
 
 		return segmentsEntryRelPersistence.remove(segmentsEntryRel);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return segmentsEntryRelPersistence.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -155,7 +178,7 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.segments.model.impl.SegmentsEntryRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.segments.model.impl.SegmentsEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -175,7 +198,7 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.segments.model.impl.SegmentsEntryRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.segments.model.impl.SegmentsEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -286,6 +309,16 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return segmentsEntryRelPersistence.create(
+			((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
@@ -294,6 +327,13 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 			(SegmentsEntryRel)persistedModel);
 	}
 
+	public BasePersistence<SegmentsEntryRel> getBasePersistence() {
+		return segmentsEntryRelPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
@@ -305,7 +345,7 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	 * Returns a range of all the segments entry rels.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.segments.model.impl.SegmentsEntryRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.segments.model.impl.SegmentsEntryRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of segments entry rels
@@ -330,6 +370,10 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 	/**
 	 * Updates the segments entry rel in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SegmentsEntryRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param segmentsEntryRel the segments entry rel
 	 * @return the segments entry rel that was updated
 	 */
@@ -341,270 +385,17 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 		return segmentsEntryRelPersistence.update(segmentsEntryRel);
 	}
 
-	/**
-	 * Returns the segments entry local service.
-	 *
-	 * @return the segments entry local service
-	 */
-	public com.liferay.segments.service.SegmentsEntryLocalService
-		getSegmentsEntryLocalService() {
-
-		return segmentsEntryLocalService;
+	@Override
+	public Class<?>[] getAopInterfaces() {
+		return new Class<?>[] {
+			SegmentsEntryRelLocalService.class, IdentifiableOSGiService.class,
+			CTService.class, PersistedModelLocalService.class
+		};
 	}
 
-	/**
-	 * Sets the segments entry local service.
-	 *
-	 * @param segmentsEntryLocalService the segments entry local service
-	 */
-	public void setSegmentsEntryLocalService(
-		com.liferay.segments.service.SegmentsEntryLocalService
-			segmentsEntryLocalService) {
-
-		this.segmentsEntryLocalService = segmentsEntryLocalService;
-	}
-
-	/**
-	 * Returns the segments entry persistence.
-	 *
-	 * @return the segments entry persistence
-	 */
-	public SegmentsEntryPersistence getSegmentsEntryPersistence() {
-		return segmentsEntryPersistence;
-	}
-
-	/**
-	 * Sets the segments entry persistence.
-	 *
-	 * @param segmentsEntryPersistence the segments entry persistence
-	 */
-	public void setSegmentsEntryPersistence(
-		SegmentsEntryPersistence segmentsEntryPersistence) {
-
-		this.segmentsEntryPersistence = segmentsEntryPersistence;
-	}
-
-	/**
-	 * Returns the segments entry rel local service.
-	 *
-	 * @return the segments entry rel local service
-	 */
-	public SegmentsEntryRelLocalService getSegmentsEntryRelLocalService() {
-		return segmentsEntryRelLocalService;
-	}
-
-	/**
-	 * Sets the segments entry rel local service.
-	 *
-	 * @param segmentsEntryRelLocalService the segments entry rel local service
-	 */
-	public void setSegmentsEntryRelLocalService(
-		SegmentsEntryRelLocalService segmentsEntryRelLocalService) {
-
-		this.segmentsEntryRelLocalService = segmentsEntryRelLocalService;
-	}
-
-	/**
-	 * Returns the segments entry rel persistence.
-	 *
-	 * @return the segments entry rel persistence
-	 */
-	public SegmentsEntryRelPersistence getSegmentsEntryRelPersistence() {
-		return segmentsEntryRelPersistence;
-	}
-
-	/**
-	 * Sets the segments entry rel persistence.
-	 *
-	 * @param segmentsEntryRelPersistence the segments entry rel persistence
-	 */
-	public void setSegmentsEntryRelPersistence(
-		SegmentsEntryRelPersistence segmentsEntryRelPersistence) {
-
-		this.segmentsEntryRelPersistence = segmentsEntryRelPersistence;
-	}
-
-	/**
-	 * Returns the segments experience local service.
-	 *
-	 * @return the segments experience local service
-	 */
-	public com.liferay.segments.service.SegmentsExperienceLocalService
-		getSegmentsExperienceLocalService() {
-
-		return segmentsExperienceLocalService;
-	}
-
-	/**
-	 * Sets the segments experience local service.
-	 *
-	 * @param segmentsExperienceLocalService the segments experience local service
-	 */
-	public void setSegmentsExperienceLocalService(
-		com.liferay.segments.service.SegmentsExperienceLocalService
-			segmentsExperienceLocalService) {
-
-		this.segmentsExperienceLocalService = segmentsExperienceLocalService;
-	}
-
-	/**
-	 * Returns the segments experience persistence.
-	 *
-	 * @return the segments experience persistence
-	 */
-	public SegmentsExperiencePersistence getSegmentsExperiencePersistence() {
-		return segmentsExperiencePersistence;
-	}
-
-	/**
-	 * Sets the segments experience persistence.
-	 *
-	 * @param segmentsExperiencePersistence the segments experience persistence
-	 */
-	public void setSegmentsExperiencePersistence(
-		SegmentsExperiencePersistence segmentsExperiencePersistence) {
-
-		this.segmentsExperiencePersistence = segmentsExperiencePersistence;
-	}
-
-	/**
-	 * Returns the counter local service.
-	 *
-	 * @return the counter local service
-	 */
-	public com.liferay.counter.kernel.service.CounterLocalService
-		getCounterLocalService() {
-
-		return counterLocalService;
-	}
-
-	/**
-	 * Sets the counter local service.
-	 *
-	 * @param counterLocalService the counter local service
-	 */
-	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService
-			counterLocalService) {
-
-		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the class name local service.
-	 *
-	 * @return the class name local service
-	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService
-		getClassNameLocalService() {
-
-		return classNameLocalService;
-	}
-
-	/**
-	 * Sets the class name local service.
-	 *
-	 * @param classNameLocalService the class name local service
-	 */
-	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService
-			classNameLocalService) {
-
-		this.classNameLocalService = classNameLocalService;
-	}
-
-	/**
-	 * Returns the class name persistence.
-	 *
-	 * @return the class name persistence
-	 */
-	public ClassNamePersistence getClassNamePersistence() {
-		return classNamePersistence;
-	}
-
-	/**
-	 * Sets the class name persistence.
-	 *
-	 * @param classNamePersistence the class name persistence
-	 */
-	public void setClassNamePersistence(
-		ClassNamePersistence classNamePersistence) {
-
-		this.classNamePersistence = classNamePersistence;
-	}
-
-	/**
-	 * Returns the resource local service.
-	 *
-	 * @return the resource local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceLocalService
-		getResourceLocalService() {
-
-		return resourceLocalService;
-	}
-
-	/**
-	 * Sets the resource local service.
-	 *
-	 * @param resourceLocalService the resource local service
-	 */
-	public void setResourceLocalService(
-		com.liferay.portal.kernel.service.ResourceLocalService
-			resourceLocalService) {
-
-		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the user local service.
-	 *
-	 * @return the user local service
-	 */
-	public com.liferay.portal.kernel.service.UserLocalService
-		getUserLocalService() {
-
-		return userLocalService;
-	}
-
-	/**
-	 * Sets the user local service.
-	 *
-	 * @param userLocalService the user local service
-	 */
-	public void setUserLocalService(
-		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
-
-		this.userLocalService = userLocalService;
-	}
-
-	/**
-	 * Returns the user persistence.
-	 *
-	 * @return the user persistence
-	 */
-	public UserPersistence getUserPersistence() {
-		return userPersistence;
-	}
-
-	/**
-	 * Sets the user persistence.
-	 *
-	 * @param userPersistence the user persistence
-	 */
-	public void setUserPersistence(UserPersistence userPersistence) {
-		this.userPersistence = userPersistence;
-	}
-
-	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register(
-			"com.liferay.segments.model.SegmentsEntryRel",
-			segmentsEntryRelLocalService);
-	}
-
-	public void destroy() {
-		persistedModelLocalServiceRegistry.unregister(
-			"com.liferay.segments.model.SegmentsEntryRel");
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		segmentsEntryRelLocalService = (SegmentsEntryRelLocalService)aopProxy;
 	}
 
 	/**
@@ -617,8 +408,23 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 		return SegmentsEntryRelLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<SegmentsEntryRel> getCTPersistence() {
+		return segmentsEntryRelPersistence;
+	}
+
+	@Override
+	public Class<SegmentsEntryRel> getModelClass() {
 		return SegmentsEntryRel.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<SegmentsEntryRel>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(segmentsEntryRelPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -644,67 +450,48 @@ public abstract class SegmentsEntryRelLocalServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
-	@BeanReference(
-		type = com.liferay.segments.service.SegmentsEntryLocalService.class
-	)
-	protected com.liferay.segments.service.SegmentsEntryLocalService
-		segmentsEntryLocalService;
-
-	@BeanReference(type = SegmentsEntryPersistence.class)
+	@Reference
 	protected SegmentsEntryPersistence segmentsEntryPersistence;
 
-	@BeanReference(type = SegmentsEntryRelLocalService.class)
 	protected SegmentsEntryRelLocalService segmentsEntryRelLocalService;
 
-	@BeanReference(type = SegmentsEntryRelPersistence.class)
+	@Reference
 	protected SegmentsEntryRelPersistence segmentsEntryRelPersistence;
 
-	@BeanReference(
-		type = com.liferay.segments.service.SegmentsExperienceLocalService.class
-	)
-	protected com.liferay.segments.service.SegmentsExperienceLocalService
-		segmentsExperienceLocalService;
+	@Reference
+	protected SegmentsEntryRolePersistence segmentsEntryRolePersistence;
 
-	@BeanReference(type = SegmentsExperiencePersistence.class)
+	@Reference
 	protected SegmentsExperiencePersistence segmentsExperiencePersistence;
 
-	@ServiceReference(
-		type = com.liferay.counter.kernel.service.CounterLocalService.class
-	)
+	@Reference
+	protected SegmentsExperimentPersistence segmentsExperimentPersistence;
+
+	@Reference
+	protected SegmentsExperimentFinder segmentsExperimentFinder;
+
+	@Reference
+	protected SegmentsExperimentRelPersistence segmentsExperimentRelPersistence;
+
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.ClassNameLocalService
 		classNameLocalService;
 
-	@ServiceReference(type = ClassNamePersistence.class)
-	protected ClassNamePersistence classNamePersistence;
-
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.ResourceLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.ResourceLocalService
 		resourceLocalService;
 
-	@ServiceReference(
-		type = com.liferay.portal.kernel.service.UserLocalService.class
-	)
+	@Reference
 	protected com.liferay.portal.kernel.service.UserLocalService
 		userLocalService;
-
-	@ServiceReference(type = UserPersistence.class)
-	protected UserPersistence userPersistence;
-
-	@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry
-		persistedModelLocalServiceRegistry;
 
 }

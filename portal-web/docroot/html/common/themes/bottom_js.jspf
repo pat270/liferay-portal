@@ -14,7 +14,20 @@
  */
 --%>
 
-<%@ include file="/html/portal/layout/view/portlet_js.jspf" %>
+<c:if test="<%= (layout != null) && LayoutPermissionUtil.contains(permissionChecker, layout, ActionKeys.UPDATE) %>">
+	<aui:script>
+		Liferay.provide(
+			Liferay.Portlet,
+			'refreshLayout',
+			function(portletBound) {
+				if (!portletBound.isStatic) {
+					Liferay.Layout.refresh(portletBound);
+				}
+			},
+			['liferay-layout']
+		);
+	</aui:script>
+</c:if>
 
 <aui:script position="inline">
 	<c:choose>
@@ -44,16 +57,16 @@
 			</c:if>
 		</c:otherwise>
 	</c:choose>
-
-	Liferay.BrowserSelectors.run();
 </aui:script>
 
 <aui:script>
-	if (Liferay.Data.ICONS_INLINE_SVG) {
+	if (window.svg4everybody && Liferay.Data.ICONS_INLINE_SVG) {
 		svg4everybody(
 			{
-				attributeName: 'data-href',
-				polyfill: true
+				polyfill: true,
+				validate: function (src, svg, use) {
+					return !src || !src.startsWith('#');
+				}
 			}
 		);
 	}
@@ -82,54 +95,6 @@
 <aui:script use="aui-base">
 	if (A.UA.mobile) {
 		Liferay.Util.addInputCancel();
-	}
-</aui:script>
-
-<aui:script require="clay-tooltip/src/ClayTooltip as ClayTooltip">
-	if (!Liferay.Data.LFR_PORTAL_CLAY_TOOLTIP) {
-		Liferay.Data.LFR_PORTAL_CLAY_TOOLTIP = ClayTooltip.default.init(
-			{
-				selectors: [
-					'.manage-collaborators-dialog .lexicon-icon[data-title]:not(.lfr-portal-tooltip)',
-					'.manage-collaborators-dialog .lexicon-icon[title]:not(.lfr-portal-tooltip)',
-					'.management-bar [data-title]:not(.lfr-portal-tooltip)',
-					'.management-bar [title]:not(.lfr-portal-tooltip)',
-					'.preview-toolbar-container [data-title]:not(.lfr-portal-tooltip)',
-					'.preview-toolbar-container [title]:not(.lfr-portal-tooltip)',
-					'.taglib-discussion [data-title]:not(.lfr-portal-tooltip)',
-					'.taglib-discussion [title]:not(.lfr-portal-tooltip):not([title=""])'
-				]
-			}
-		);
-	}
-</aui:script>
-
-<aui:script use="aui-tooltip">
-	if (!Liferay.Data.LFR_PORTAL_TOOLTIP) {
-		var triggerShowEvent = ['mouseenter', 'MSPointerDown', 'touchstart'];
-
-		if (A.UA.ios) {
-			triggerShowEvent = ['touchstart'];
-		}
-
-		Liferay.Data.LFR_PORTAL_TOOLTIP = new A.TooltipDelegate(
-			{
-				constrain: true,
-				opacity: 1,
-				trigger: '.lfr-portal-tooltip',
-				triggerHideEvent: ['click', 'mouseleave', 'MSPointerUp', 'touchend'],
-				triggerShowEvent: triggerShowEvent,
-				visible: false,
-				zIndex: Liferay.zIndex.TOOLTIP
-			}
-		);
-
-		Liferay.on(
-			'beforeNavigate',
-			function(event) {
-				Liferay.Data.LFR_PORTAL_TOOLTIP.getTooltip().hide();
-			}
-		);
 	}
 </aui:script>
 
@@ -194,10 +159,15 @@ if (layout != null) {
 
 		if (navBlock) {
 			if (A.UA.touchMobile) {
-				AUI.$(Liferay.Data.NAV_SELECTOR_MOBILE).one(
-					'shown.bs.collapse',
-					function() {
-						Liferay.fire('initNavigation');
+				var panel = document.querySelector(Liferay.Data.NAV_SELECTOR_MOBILE);
+
+				Liferay.on('liferay.collapse.shown',
+					function(event) {
+						var panelId = event.panel.geAttribute('id');
+
+						if (panelId === panel.geAttribute('id')) {
+							Liferay.fire('initNavigation');
+						}
 					}
 				);
 			}
@@ -220,23 +190,15 @@ if (layout != null) {
 	</aui:script>
 </c:if>
 
-<aui:script use="liferay-menu,liferay-notice,liferay-poller">
+<aui:script use="liferay-menu">
 	new Liferay.Menu();
 
 	var liferayNotices = Liferay.Data.notices;
 
-	for (var i = 1; i < liferayNotices.length; i++) {
-		new Liferay.Notice(liferayNotices[i]);
+	for (var i = 0; i < liferayNotices.length; i++) {
+		Liferay.Util.openToast(liferayNotices[i]);
 	}
 
-	<c:if test="<%= themeDisplay.isSignedIn() %>">
-		Liferay.Poller.init(
-			{
-				encryptedUserId: '<%= Encryptor.encrypt(company.getKeyObj(), String.valueOf(themeDisplay.getUserId())) %>',
-				supportsComet: <%= ServerDetector.isSupportsComet() %>
-			}
-		);
-	</c:if>
 </aui:script>
 
 <script type="text/javascript">
@@ -261,6 +223,16 @@ if (layout != null) {
 
 	UnicodeProperties layoutSetSettings = layoutSet.getSettingsProperties();
 
+	UnicodeProperties masterLayoutTypeSettings = new UnicodeProperties();
+
+	if (layout.getMasterLayoutPlid() > 0) {
+		Layout masterLayout = LayoutLocalServiceUtil.fetchLayout(layout.getMasterLayoutPlid());
+
+		if (masterLayout != null) {
+			masterLayoutTypeSettings = masterLayout.getTypeSettingsProperties();
+		}
+	}
+
 	UnicodeProperties layoutTypeSettings = layout.getTypeSettingsProperties();
 	%>
 
@@ -268,6 +240,8 @@ if (layout != null) {
 		// <![CDATA[
 			<c:if test="<%= !layout.isTypeControlPanel() %>">
 				<%= GetterUtil.getString(layoutSetSettings.getProperty("javascript")) %>
+
+				<%= GetterUtil.getString(masterLayoutTypeSettings.getProperty("javascript")) %>
 
 				<%= GetterUtil.getString(layoutTypeSettings.getProperty("javascript")) %>
 			</c:if>

@@ -26,9 +26,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Marcellus Tavares
- * @author Eduardo Lundgren
+ * @author     Marcellus Tavares
+ * @author     Eduardo Lundgren
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.dynamic.data.mapping.storage.constants.FieldConstants}
  */
+@Deprecated
 public class FieldConstants {
 
 	public static final String BOOLEAN = "boolean";

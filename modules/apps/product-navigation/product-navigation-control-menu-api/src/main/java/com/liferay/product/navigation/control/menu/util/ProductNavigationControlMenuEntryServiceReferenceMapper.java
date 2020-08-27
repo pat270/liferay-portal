@@ -23,8 +23,10 @@ import com.liferay.product.navigation.control.menu.ProductNavigationControlMenuE
 import org.osgi.framework.ServiceReference;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class ProductNavigationControlMenuEntryServiceReferenceMapper
 	implements ServiceReferenceMapper
 		<String, ProductNavigationControlMenuEntry> {

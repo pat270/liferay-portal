@@ -41,7 +41,7 @@
 </aui:form>
 
 <aui:script require="metal-dom/src/all/dom as dom">
-	var onSendPushNotification = function(result) {
+	var onSendPushNotification = function (result) {
 		var success = document.getElementById('<portlet:namespace />success');
 
 		if (success) {
@@ -79,24 +79,21 @@
 	var form = document.getElementById('<portlet:namespace />fm');
 
 	if (form) {
-		form.addEventListener(
-			'submit',
-			function(event) {
-				event.preventDefault();
+		form.addEventListener('submit', function (event) {
+			event.preventDefault();
 
-				var message = form.querySelector('#<portlet:namespace />message');
+			var message = form.querySelector('#<portlet:namespace />message');
 
-				if (message) {
-					Liferay.Service(
-						'/pushnotifications.pushnotificationsdevice/send-push-notification',
-						{
-							payload: message.value,
-							toUserIds: []
-						},
-						onSendPushNotification
-					);
-				}
+			if (message) {
+				Liferay.Service(
+					'/pushnotifications.pushnotificationsdevice/send-push-notification',
+					{
+						payload: message.value,
+						toUserIds: [],
+					},
+					onSendPushNotification
+				);
 			}
-		);
+		});
 	}
 </aui:script>

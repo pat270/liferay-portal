@@ -38,10 +38,10 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.DateTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFolder;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -225,7 +225,7 @@ public class FolderStagedModelDataHandlerTest
 		DLFolderLocalServiceUtil.updateDLFolder(dlFolder);
 
 		DLFileEntryTypeLocalServiceUtil.updateFolderFileEntryTypes(
-			dlFolder, ListUtil.toList(dlFileEntryType.getFileEntryTypeId()),
+			dlFolder, ListUtil.fromArray(dlFileEntryType.getFileEntryTypeId()),
 			dlFileEntryType.getFileEntryTypeId(), serviceContext);
 
 		return folder;
@@ -365,12 +365,9 @@ public class FolderStagedModelDataHandlerTest
 			StagedModel stagedModel, StagedModel importedStagedModel)
 		throws Exception {
 
-		Assert.assertTrue(
-			stagedModel.getCreateDate() + " " +
-				importedStagedModel.getCreateDate(),
-			DateUtil.equals(
-				stagedModel.getCreateDate(),
-				importedStagedModel.getCreateDate()));
+		DateTestUtil.assertEquals(
+			stagedModel.getCreateDate(), importedStagedModel.getCreateDate());
+
 		Assert.assertEquals(
 			stagedModel.getUuid(), importedStagedModel.getUuid());
 

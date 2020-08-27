@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DDLRecordSetVersion in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDLRecordSetVersionCacheModel
 	implements CacheModel<DDLRecordSetVersion>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDLRecordSetVersionCacheModel)) {
+		if (!(object instanceof DDLRecordSetVersionCacheModel)) {
 			return false;
 		}
 
 		DDLRecordSetVersionCacheModel ddlRecordSetVersionCacheModel =
-			(DDLRecordSetVersionCacheModel)obj;
+			(DDLRecordSetVersionCacheModel)object;
 
 		if ((recordSetVersionId ==
 				ddlRecordSetVersionCacheModel.recordSetVersionId) &&
@@ -201,7 +198,9 @@ public class DDLRecordSetVersionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		recordSetVersionId = objectInput.readLong();
@@ -219,7 +218,7 @@ public class DDLRecordSetVersionCacheModel
 		DDMStructureVersionId = objectInput.readLong();
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
-		settings = objectInput.readUTF();
+		settings = (String)objectInput.readObject();
 		version = objectInput.readUTF();
 
 		status = objectInput.readInt();
@@ -269,10 +268,10 @@ public class DDLRecordSetVersionCacheModel
 		}
 
 		if (settings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(settings);
+			objectOutput.writeObject(settings);
 		}
 
 		if (version == null) {

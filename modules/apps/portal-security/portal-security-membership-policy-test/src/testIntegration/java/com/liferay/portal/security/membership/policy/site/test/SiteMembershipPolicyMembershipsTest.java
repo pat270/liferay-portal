@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.security.membership.policy.site.BaseSiteMembershipPolicyTestCase;
@@ -37,10 +38,7 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -125,11 +123,9 @@ public class SiteMembershipPolicyMembershipsTest
 	public void testAssignUserToForbiddenGroups() throws Exception {
 		long[] userIds = addUsers();
 
-		User user = UserLocalServiceUtil.getUser(userIds[0]);
-
 		MembershipPolicyTestUtil.updateUser(
-			user, null, null, addForbiddenGroups(), null,
-			Collections.<UserGroupRole>emptyList());
+			UserLocalServiceUtil.getUser(userIds[0]), null, null,
+			addForbiddenGroups(), null, Collections.<UserGroupRole>emptyList());
 	}
 
 	@Test
@@ -141,15 +137,15 @@ public class SiteMembershipPolicyMembershipsTest
 		int initialGroupUsersCount = UserLocalServiceUtil.getGroupUsersCount(
 			requiredGroupIds[0]);
 
-		User user = UserLocalServiceUtil.getUser(userIds[0]);
-
 		MembershipPolicyTestUtil.updateUser(
-			user, null, null, new long[] {requiredGroupIds[0]}, null,
+			UserLocalServiceUtil.getUser(userIds[0]), null, null,
+			new long[] {requiredGroupIds[0]}, null,
 			Collections.<UserGroupRole>emptyList());
 
 		Assert.assertEquals(
 			initialGroupUsersCount + 1,
 			UserLocalServiceUtil.getGroupUsersCount(requiredGroupIds[0]));
+
 		Assert.assertTrue(isPropagateMembership());
 	}
 
@@ -179,11 +175,9 @@ public class SiteMembershipPolicyMembershipsTest
 
 		long[] userIds = addUsers();
 
-		User user = UserLocalServiceUtil.getUser(userIds[0]);
-
 		MembershipPolicyTestUtil.updateUser(
-			user, null, null, addRequiredGroups(), null,
-			Collections.<UserGroupRole>emptyList());
+			UserLocalServiceUtil.getUser(userIds[0]), null, null,
+			addRequiredGroups(), null, Collections.<UserGroupRole>emptyList());
 
 		Assert.assertTrue(isPropagateMembership());
 	}
@@ -300,12 +294,11 @@ public class SiteMembershipPolicyMembershipsTest
 	public void testVerifyWhenUpdatingGroup() throws Exception {
 		Group group = MembershipPolicyTestUtil.addGroup();
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.getDefault(), RandomTestUtil.randomString());
-
 		GroupServiceUtil.updateGroup(
-			group.getGroupId(), group.getParentGroupId(), nameMap,
+			group.getGroupId(), group.getParentGroupId(),
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()
+			).build(),
 			group.getDescriptionMap(), group.getType(),
 			group.isManualMembership(), group.getMembershipRestriction(),
 			group.getFriendlyURL(), group.isInheritContent(), group.isActive(),

@@ -24,6 +24,7 @@ import com.liferay.message.boards.model.MBTreeWalker;
 import com.liferay.message.boards.service.MBDiscussionLocalService;
 import com.liferay.message.boards.service.MBMessageLocalService;
 import com.liferay.message.boards.service.MBThreadLocalService;
+import com.liferay.message.boards.util.MBUtil;
 import com.liferay.message.boards.util.comparator.MessageThreadComparator;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.Comment;
@@ -34,6 +35,7 @@ import com.liferay.portal.kernel.comment.DiscussionPermission;
 import com.liferay.portal.kernel.comment.DiscussionStagingHandler;
 import com.liferay.portal.kernel.comment.DuplicateCommentException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -43,6 +45,8 @@ import com.liferay.ratings.kernel.model.RatingsEntry;
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
+import com.liferay.subscription.model.Subscription;
+import com.liferay.subscription.service.SubscriptionLocalService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -157,6 +161,47 @@ public class MBCommentManagerImpl implements CommentManager {
 	}
 
 	@Override
+	public Discussion copyDiscussion(
+			long userId, long groupId, String className, long classPK,
+			long newClassPK,
+			Function<String, ServiceContext> serviceContextFunction)
+		throws PortalException {
+
+		if (!hasDiscussion(className, classPK)) {
+			return null;
+		}
+
+		MBMessage newRootMBMessage = _copyRootMessage(
+			userId, groupId, className, classPK, newClassPK,
+			serviceContextFunction);
+
+		List<Comment> rootComments = getRootComments(
+			className, classPK, WorkflowConstants.STATUS_ANY, 0,
+			getRootCommentsCount(
+				className, classPK, WorkflowConstants.STATUS_ANY));
+
+		for (Comment rootComment : rootComments) {
+			_duplicateComment(
+				rootComment, newRootMBMessage.getMessageId(), newClassPK,
+				serviceContextFunction);
+		}
+
+		List<Subscription> subscriptions =
+			_subscriptionLocalService.getSubscriptions(
+				CompanyThreadLocal.getCompanyId(),
+				MBUtil.getSubscriptionClassName(className), classPK);
+
+		for (Subscription subscription : subscriptions) {
+			subscribeDiscussion(
+				subscription.getUserId(), subscription.getGroupId(), className,
+				newClassPK);
+		}
+
+		return getDiscussion(
+			userId, groupId, className, newClassPK, serviceContextFunction);
+	}
+
+	@Override
 	public void deleteComment(long commentId) throws PortalException {
 		_mbMessageLocalService.deleteDiscussionMessage(commentId);
 	}
@@ -228,10 +273,9 @@ public class MBCommentManagerImpl implements CommentManager {
 
 	@Override
 	public int getCommentsCount(String className, long classPK) {
-		long classNameId = _portal.getClassNameId(className);
-
 		return _mbMessageLocalService.getDiscussionMessagesCount(
-			classNameId, classPK, WorkflowConstants.STATUS_APPROVED);
+			_portal.getClassNameId(className), classPK,
+			WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@Override
@@ -408,6 +452,69 @@ public class MBCommentManagerImpl implements CommentManager {
 			treeWalker.getRoot(), treeWalker, ratingsEntries, ratingsStats);
 	}
 
+	private MBMessage _copyRootMessage(
+			long userId, long groupId, String className, long classPK,
+			long newClassPK,
+			Function<String, ServiceContext> serviceContextFunction)
+		throws PortalException {
+
+		Discussion discussion = getDiscussion(
+			userId, groupId, className, classPK, serviceContextFunction);
+
+		DiscussionComment rootDiscussionComment =
+			discussion.getRootDiscussionComment();
+
+		MBMessage rootMBMessage = _mbMessageLocalService.addDiscussionMessage(
+			rootDiscussionComment.getUserId(),
+			rootDiscussionComment.getUserName(),
+			rootDiscussionComment.getGroupId(),
+			rootDiscussionComment.getClassName(), newClassPK,
+			WorkflowConstants.ACTION_PUBLISH);
+
+		rootMBMessage.setCreateDate(rootDiscussionComment.getCreateDate());
+		rootMBMessage.setModifiedDate(rootDiscussionComment.getModifiedDate());
+
+		return _mbMessageLocalService.updateMBMessage(rootMBMessage);
+	}
+
+	private void _duplicateComment(
+			Comment comment, long parentCommentId, long newClassPK,
+			Function<String, ServiceContext> serviceContextFunction)
+		throws PortalException {
+
+		MBMessage mbMessage = _mbMessageLocalService.getMBMessage(
+			comment.getCommentId());
+
+		long newCommentId = addComment(
+			comment.getUserId(), comment.getClassName(), newClassPK,
+			comment.getUserName(), parentCommentId, mbMessage.getSubject(),
+			comment.getBody(), serviceContextFunction);
+
+		MBMessage newMBMessage = _mbMessageLocalService.fetchMBMessage(
+			newCommentId);
+
+		int childCommentsCount = getChildCommentsCount(
+			comment.getCommentId(), WorkflowConstants.STATUS_ANY);
+
+		if (childCommentsCount > 0) {
+			List<Comment> childComments = getChildComments(
+				comment.getCommentId(), WorkflowConstants.STATUS_ANY, 0,
+				childCommentsCount);
+
+			for (Comment childComment : childComments) {
+				_duplicateComment(
+					childComment, newCommentId, newClassPK,
+					serviceContextFunction);
+			}
+		}
+
+		newMBMessage.setCreateDate(mbMessage.getCreateDate());
+		newMBMessage.setModifiedDate(mbMessage.getModifiedDate());
+		newMBMessage.setStatus(mbMessage.getStatus());
+
+		_mbMessageLocalService.updateMBMessage(newMBMessage);
+	}
+
 	@Reference
 	private MBDiscussionLocalService _mbDiscussionLocalService;
 
@@ -425,5 +532,8 @@ public class MBCommentManagerImpl implements CommentManager {
 
 	@Reference
 	private RatingsStatsLocalService _ratingsStatsLocalService;
+
+	@Reference
+	private SubscriptionLocalService _subscriptionLocalService;
 
 }

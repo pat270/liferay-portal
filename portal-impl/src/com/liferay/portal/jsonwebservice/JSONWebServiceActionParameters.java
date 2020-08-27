@@ -55,7 +55,7 @@ public class JSONWebServiceActionParameters {
 			_serviceContext = ServiceContextFactory.getInstance(
 				httpServletRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		_addDefaultParameters();
@@ -113,10 +113,11 @@ public class JSONWebServiceActionParameters {
 	private void _collectDefaultsFromRequestAttributes(
 		HttpServletRequest httpServletRequest) {
 
-		Enumeration<String> enu = httpServletRequest.getAttributeNames();
+		Enumeration<String> enumeration =
+			httpServletRequest.getAttributeNames();
 
-		while (enu.hasMoreElements()) {
-			String attributeName = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String attributeName = enumeration.nextElement();
 
 			Object value = httpServletRequest.getAttribute(attributeName);
 
@@ -149,9 +150,8 @@ public class JSONWebServiceActionParameters {
 		for (Map.Entry<String, Object> entry : parameterMap.entrySet()) {
 			String parameterName = entry.getKey();
 
-			Object value = entry.getValue();
-
-			_jsonWebServiceActionParameters.put(parameterName, value);
+			_jsonWebServiceActionParameters.put(
+				parameterName, entry.getValue());
 		}
 	}
 
@@ -239,12 +239,12 @@ public class JSONWebServiceActionParameters {
 						try {
 							FileUtil.write(file, fileItem.getInputStream());
 						}
-						catch (IOException ioe) {
+						catch (IOException ioException) {
 							if (_log.isWarnEnabled()) {
 								_log.warn(
 									"Unable to write temporary file " +
 										file.getAbsolutePath(),
-									ioe);
+									ioException);
 							}
 						}
 					}

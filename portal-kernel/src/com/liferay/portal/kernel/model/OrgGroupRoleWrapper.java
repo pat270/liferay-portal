@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link OrgGroupRole}.
@@ -28,12 +26,13 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see OrgGroupRole
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class OrgGroupRoleWrapper
 	extends BaseModelWrapper<OrgGroupRole>
-	implements OrgGroupRole, ModelWrapper<OrgGroupRole> {
+	implements ModelWrapper<OrgGroupRole>, OrgGroupRole {
 
 	public OrgGroupRoleWrapper(OrgGroupRole orgGroupRole) {
 		super(orgGroupRole);

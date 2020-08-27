@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.util;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 
 /**
@@ -71,8 +72,8 @@ public class TableNameOrderByComparator<T> extends OrderByComparator<T> {
 	}
 
 	@Override
-	public Object[] getOrderByConditionValues(Object obj) {
-		return _orderByComparator.getOrderByConditionValues(obj);
+	public Object[] getOrderByConditionValues(Object object) {
+		return _orderByComparator.getOrderByConditionValues(object);
 	}
 
 	@Override

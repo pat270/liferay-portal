@@ -14,9 +14,10 @@
 
 package com.liferay.social.kernel.service;
 
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.social.kernel.model.SocialActivitySetting;
 
 /**
  * Provides a wrapper for {@link SocialActivitySettingLocalService}.
@@ -25,10 +26,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivitySettingLocalService
  * @generated
  */
-@ProviderType
 public class SocialActivitySettingLocalServiceWrapper
-	implements SocialActivitySettingLocalService,
-			   ServiceWrapper<SocialActivitySettingLocalService> {
+	implements ServiceWrapper<SocialActivitySettingLocalService>,
+			   SocialActivitySettingLocalService {
 
 	public SocialActivitySettingLocalServiceWrapper(
 		SocialActivitySettingLocalService socialActivitySettingLocalService) {
@@ -39,17 +39,31 @@ public class SocialActivitySettingLocalServiceWrapper
 	/**
 	 * Adds the social activity setting to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivitySettingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param socialActivitySetting the social activity setting
 	 * @return the social activity setting that was added
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-		addSocialActivitySetting(
-			com.liferay.social.kernel.model.SocialActivitySetting
-				socialActivitySetting) {
+	public SocialActivitySetting addSocialActivitySetting(
+		SocialActivitySetting socialActivitySetting) {
 
 		return _socialActivitySettingLocalService.addSocialActivitySetting(
 			socialActivitySetting);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _socialActivitySettingLocalService.createPersistedModel(
+			primaryKeyObj);
 	}
 
 	/**
@@ -59,8 +73,8 @@ public class SocialActivitySettingLocalServiceWrapper
 	 * @return the new social activity setting
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-		createSocialActivitySetting(long activitySettingId) {
+	public SocialActivitySetting createSocialActivitySetting(
+		long activitySettingId) {
 
 		return _socialActivitySettingLocalService.createSocialActivitySetting(
 			activitySettingId);
@@ -94,13 +108,17 @@ public class SocialActivitySettingLocalServiceWrapper
 	/**
 	 * Deletes the social activity setting with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivitySettingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param activitySettingId the primary key of the social activity setting
 	 * @return the social activity setting that was removed
 	 * @throws PortalException if a social activity setting with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-			deleteSocialActivitySetting(long activitySettingId)
+	public SocialActivitySetting deleteSocialActivitySetting(
+			long activitySettingId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _socialActivitySettingLocalService.deleteSocialActivitySetting(
@@ -110,17 +128,24 @@ public class SocialActivitySettingLocalServiceWrapper
 	/**
 	 * Deletes the social activity setting from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivitySettingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param socialActivitySetting the social activity setting
 	 * @return the social activity setting that was removed
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-		deleteSocialActivitySetting(
-			com.liferay.social.kernel.model.SocialActivitySetting
-				socialActivitySetting) {
+	public SocialActivitySetting deleteSocialActivitySetting(
+		SocialActivitySetting socialActivitySetting) {
 
 		return _socialActivitySettingLocalService.deleteSocialActivitySetting(
 			socialActivitySetting);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _socialActivitySettingLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -145,7 +170,7 @@ public class SocialActivitySettingLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivitySettingModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivitySettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -166,7 +191,7 @@ public class SocialActivitySettingLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivitySettingModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivitySettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -216,8 +241,8 @@ public class SocialActivitySettingLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-		fetchSocialActivitySetting(long activitySettingId) {
+	public SocialActivitySetting fetchSocialActivitySetting(
+		long activitySettingId) {
 
 		return _socialActivitySettingLocalService.fetchSocialActivitySetting(
 			activitySettingId);
@@ -249,8 +274,8 @@ public class SocialActivitySettingLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivitySetting>
-		getActivitySettings(long groupId) {
+	public java.util.List<SocialActivitySetting> getActivitySettings(
+		long groupId) {
 
 		return _socialActivitySettingLocalService.getActivitySettings(groupId);
 	}
@@ -273,6 +298,9 @@ public class SocialActivitySettingLocalServiceWrapper
 		return _socialActivitySettingLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -290,8 +318,8 @@ public class SocialActivitySettingLocalServiceWrapper
 	 * @throws PortalException if a social activity setting with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-			getSocialActivitySetting(long activitySettingId)
+	public SocialActivitySetting getSocialActivitySetting(
+			long activitySettingId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _socialActivitySettingLocalService.getSocialActivitySetting(
@@ -302,7 +330,7 @@ public class SocialActivitySettingLocalServiceWrapper
 	 * Returns a range of all the social activity settings.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivitySettingModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivitySettingModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activity settings
@@ -310,8 +338,8 @@ public class SocialActivitySettingLocalServiceWrapper
 	 * @return the range of social activity settings
 	 */
 	@Override
-	public java.util.List<com.liferay.social.kernel.model.SocialActivitySetting>
-		getSocialActivitySettings(int start, int end) {
+	public java.util.List<SocialActivitySetting> getSocialActivitySettings(
+		int start, int end) {
 
 		return _socialActivitySettingLocalService.getSocialActivitySettings(
 			start, end);
@@ -384,17 +412,39 @@ public class SocialActivitySettingLocalServiceWrapper
 	/**
 	 * Updates the social activity setting in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect SocialActivitySettingLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param socialActivitySetting the social activity setting
 	 * @return the social activity setting that was updated
 	 */
 	@Override
-	public com.liferay.social.kernel.model.SocialActivitySetting
-		updateSocialActivitySetting(
-			com.liferay.social.kernel.model.SocialActivitySetting
-				socialActivitySetting) {
+	public SocialActivitySetting updateSocialActivitySetting(
+		SocialActivitySetting socialActivitySetting) {
 
 		return _socialActivitySettingLocalService.updateSocialActivitySetting(
 			socialActivitySetting);
+	}
+
+	@Override
+	public CTPersistence<SocialActivitySetting> getCTPersistence() {
+		return _socialActivitySettingLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<SocialActivitySetting> getModelClass() {
+		return _socialActivitySettingLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<SocialActivitySetting>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _socialActivitySettingLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

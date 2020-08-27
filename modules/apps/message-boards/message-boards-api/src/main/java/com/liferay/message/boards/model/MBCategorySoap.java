@@ -20,20 +20,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.message.boards.service.http.MBCategoryServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class MBCategorySoap implements Serializable {
 
 	public static MBCategorySoap toSoapModel(MBCategory model) {
 		MBCategorySoap soapModel = new MBCategorySoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setCategoryId(model.getCategoryId());
 		soapModel.setGroupId(model.getGroupId());
@@ -46,9 +47,6 @@ public class MBCategorySoap implements Serializable {
 		soapModel.setName(model.getName());
 		soapModel.setDescription(model.getDescription());
 		soapModel.setDisplayStyle(model.getDisplayStyle());
-		soapModel.setThreadCount(model.getThreadCount());
-		soapModel.setMessageCount(model.getMessageCount());
-		soapModel.setLastPostDate(model.getLastPostDate());
 		soapModel.setLastPublishDate(model.getLastPublishDate());
 		soapModel.setStatus(model.getStatus());
 		soapModel.setStatusByUserId(model.getStatusByUserId());
@@ -105,6 +103,22 @@ public class MBCategorySoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setCategoryId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public String getUuid() {
@@ -203,30 +217,6 @@ public class MBCategorySoap implements Serializable {
 		_displayStyle = displayStyle;
 	}
 
-	public int getThreadCount() {
-		return _threadCount;
-	}
-
-	public void setThreadCount(int threadCount) {
-		_threadCount = threadCount;
-	}
-
-	public int getMessageCount() {
-		return _messageCount;
-	}
-
-	public void setMessageCount(int messageCount) {
-		_messageCount = messageCount;
-	}
-
-	public Date getLastPostDate() {
-		return _lastPostDate;
-	}
-
-	public void setLastPostDate(Date lastPostDate) {
-		_lastPostDate = lastPostDate;
-	}
-
 	public Date getLastPublishDate() {
 		return _lastPublishDate;
 	}
@@ -267,6 +257,8 @@ public class MBCategorySoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
 	private long _categoryId;
 	private long _groupId;
@@ -279,9 +271,6 @@ public class MBCategorySoap implements Serializable {
 	private String _name;
 	private String _description;
 	private String _displayStyle;
-	private int _threadCount;
-	private int _messageCount;
-	private Date _lastPostDate;
 	private Date _lastPublishDate;
 	private int _status;
 	private long _statusByUserId;

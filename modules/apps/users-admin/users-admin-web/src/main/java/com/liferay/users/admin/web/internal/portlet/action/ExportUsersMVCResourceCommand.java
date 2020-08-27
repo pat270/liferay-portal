@@ -94,10 +94,10 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 				resourceRequest, resourceResponse, "users.csv", csv.getBytes(),
 				ContentTypes.TEXT_CSV_UTF8);
 		}
-		catch (Exception e) {
-			SessionErrors.add(resourceRequest, e.getClass());
+		catch (Exception exception) {
+			SessionErrors.add(resourceRequest, exception.getClass());
 
-			_log.error(e, e);
+			_log.error(exception, exception);
 		}
 	}
 
@@ -256,7 +256,7 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 
 			sb.append(getUserCSV(user));
 
-			percentage = Math.min(10 + (i * 90) / total, 99);
+			percentage = Math.min(10 + ((i * 90) / total), 99);
 
 			progressTracker.setPercent(percentage);
 		}

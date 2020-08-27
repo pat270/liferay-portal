@@ -45,7 +45,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class BackgroundTaskServiceBaseImpl
 	extends BaseServiceImpl
-	implements BackgroundTaskService, AopService, IdentifiableOSGiService {
+	implements AopService, BackgroundTaskService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -101,8 +101,8 @@ public abstract class BackgroundTaskServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

@@ -15,6 +15,7 @@
 package com.liferay.portal.security.audit.storage.service.impl;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.audit.AuditMessage;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Junction;
@@ -31,9 +32,15 @@ import com.liferay.portal.security.audit.storage.service.base.AuditEventLocalSer
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.security.audit.storage.model.AuditEvent",
+	service = AopService.class
+)
 public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 
 	@Override
@@ -55,13 +62,10 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		auditEvent.setServerName(auditMessage.getServerName());
 		auditEvent.setServerPort(auditMessage.getServerPort());
 		auditEvent.setSessionID(auditMessage.getSessionID());
-		auditEvent.setServerPort(auditMessage.getServerPort());
 		auditEvent.setAdditionalInfo(
 			String.valueOf(auditMessage.getAdditionalInfo()));
 
-		auditEventPersistence.update(auditEvent);
-
-		return auditEvent;
+		return auditEventPersistence.update(auditEvent);
 	}
 
 	@Override
@@ -78,7 +82,7 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 	@Override
 	public List<AuditEvent> getAuditEvents(
 		long companyId, int start, int end,
-		OrderByComparator orderByComparator) {
+		OrderByComparator<AuditEvent> orderByComparator) {
 
 		return auditEventPersistence.findByCompanyId(
 			companyId, start, end, orderByComparator);
@@ -104,7 +108,7 @@ public class AuditEventLocalServiceImpl extends AuditEventLocalServiceBaseImpl {
 		Date createDateLT, String eventType, String className, String classPK,
 		String clientHost, String clientIP, String serverName, int serverPort,
 		String sessionID, boolean andSearch, int start, int end,
-		OrderByComparator orderByComparator) {
+		OrderByComparator<AuditEvent> orderByComparator) {
 
 		DynamicQuery dynamicQuery = buildDynamicQuery(
 			companyId, userId, userName, createDateGT, createDateLT, eventType,

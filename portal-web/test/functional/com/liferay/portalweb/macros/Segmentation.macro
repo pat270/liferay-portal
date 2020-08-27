@@ -1,0 +1,100 @@
+definition {
+
+	macro _deleteAllSegments {
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro addProperties {
+		var key_propertyOption = "${propertyOption}";
+
+		Click(locator1 = "Segmentation#PROPERTIES_SEARCH");
+
+		DragAndDrop.javaScriptDragAndDropToObject(
+			locator1 = "Segmentation#ADD_FIELD_TYPE",
+			locator2 = "Segmentation#ADD_FIELD_POSITION",
+			value1 = "${propertyOption}");
+	}
+
+	macro changeCriterionInputEmailAddress {
+		var key_criterionInputOption = "${criterionInputOption}";
+
+		Click(locator1 = "Segmentation#CRITERION_INPUT");
+
+		Click(
+			locator1 = "Segmentation#CRITERION_INPUT_OPTION",
+			value1 = "${criterionInputOption}");
+	}
+
+	macro deleteProperties {
+		Click(locator1 = "Segmentation#DELETE_SEGMENT");
+	}
+
+	macro editSegment {
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Edit");
+		}
+	}
+
+	macro fillProperty {
+		Click(locator1 = "Segmentation#PROPERTY_FIELD");
+
+		Type(
+			locator1 = "Segmentation#PROPERTY_FIELD",
+			value1 = "${PropertyField}");
+	}
+
+	macro fillTitle {
+		Click(locator1 = "Segmentation#TITLE_FIELD");
+
+		Type(
+			locator1 = "Segmentation#TITLE_FIELD",
+			value1 = "${titleField}");
+	}
+
+	macro openSegmentsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_segments_web_internal_portlet_SegmentsPortlet");
+	}
+
+	macro selectOrganization {
+		Click(locator1 = "Segmentation#ORGANIZATION_MENU");
+	}
+
+	macro selectSession {
+		Click(locator1 = "Segmentation#SESSION_MENU");
+	}
+
+	macro selectTag {
+		Click(locator1 = "Segmentation#ADD_TAG_BUTTON");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#DIALOG");
+
+		Click(locator1 = "Segmentation#SEARCH_TAG_FIELD");
+
+		Type(
+			locator1 = "Segmentation#SEARCH_TAG_FIELD",
+			value1 = "${tagOption}");
+
+		KeyPress(
+			locator1 = "Segmentation#SEARCH_TAG_FIELD",
+			value1 = "\ENTER");
+
+		Click(locator1 = "Segmentation#TAG_OPTION");
+	}
+
+	macro tearDown {
+		while (IsElementPresent(locator1 = "Segmentation#SEGMENT_LIST")) {
+			Segmentation._deleteAllSegments();
+		}
+
+		AssertElementNotPresent(locator1 = "Segmentation#SEGMENT_LIST");
+	}
+
+}

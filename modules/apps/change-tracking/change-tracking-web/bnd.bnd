@@ -1,0 +1,5 @@
+Bundle-Name: Liferay Change Tracking Web
+Bundle-SymbolicName: com.liferay.change.tracking.web
+Bundle-Version: 1.0.0
+Web-ContextPath: /change-tracking-web
+-dsannotations-options: inherit

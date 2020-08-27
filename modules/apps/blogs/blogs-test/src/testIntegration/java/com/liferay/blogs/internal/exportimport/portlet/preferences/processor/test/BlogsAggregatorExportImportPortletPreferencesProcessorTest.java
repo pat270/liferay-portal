@@ -19,6 +19,7 @@ import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.test.util.ExportImportTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -30,11 +31,9 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
-import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
@@ -75,9 +74,8 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessorTest {
 		sb.append(BlogsPortletKeys.BLOGS_AGGREGATOR);
 		sb.append("))");
 
-		Filter filter = registry.getFilter(sb.toString());
-
-		_serviceTracker = registry.trackServices(filter);
+		_serviceTracker = registry.trackServices(
+			registry.getFilter(sb.toString()));
 
 		_serviceTracker.open();
 	}
@@ -89,7 +87,7 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_group = GroupTestUtil.addGroup();
 
@@ -123,10 +121,9 @@ public class BlogsAggregatorExportImportPortletPreferencesProcessorTest {
 			PortletPreferencesFactoryUtil.getStrictPortletSetup(
 				_layout, BlogsPortletKeys.BLOGS_AGGREGATOR);
 
-		long organizationId = _organization.getOrganizationId();
-
 		portletPreferences.setValue(
-			"organizationId", String.valueOf(organizationId));
+			"organizationId",
+			String.valueOf(_organization.getOrganizationId()));
 
 		portletPreferences.store();
 

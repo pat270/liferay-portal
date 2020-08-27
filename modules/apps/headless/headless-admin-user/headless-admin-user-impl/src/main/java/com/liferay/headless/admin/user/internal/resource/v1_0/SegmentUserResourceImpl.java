@@ -21,7 +21,9 @@ import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.segments.provider.SegmentsEntryProvider;
+import com.liferay.segments.model.SegmentsEntry;
+import com.liferay.segments.provider.SegmentsEntryProviderRegistry;
+import com.liferay.segments.service.SegmentsEntryLocalService;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -41,16 +43,20 @@ public class SegmentUserResourceImpl extends BaseSegmentUserResourceImpl {
 			Long segmentId, Pagination pagination)
 		throws Exception {
 
+		SegmentsEntry segmentsEntry =
+			_segmentsEntryLocalService.getSegmentsEntry(segmentId);
+
 		long[] segmentsEntryClassPKs =
-			_segmentsEntryProvider.getSegmentsEntryClassPKs(
-				segmentId, pagination.getStartPosition(),
-				pagination.getEndPosition());
+			_segmentsEntryProviderRegistry.getSegmentsEntryClassPKs(
+				segmentsEntry.getSegmentsEntryId(),
+				pagination.getStartPosition(), pagination.getEndPosition());
 
 		return Page.of(
 			transformToList(
 				ArrayUtil.toArray(segmentsEntryClassPKs), this::_toSegmentUser),
 			pagination,
-			_segmentsEntryProvider.getSegmentsEntryClassPKsCount(segmentId));
+			_segmentsEntryProviderRegistry.getSegmentsEntryClassPKsCount(
+				segmentsEntry.getSegmentsEntryId()));
 	}
 
 	private SegmentUser _toSegmentUser(long segmentsEntryClassPK)
@@ -68,7 +74,10 @@ public class SegmentUserResourceImpl extends BaseSegmentUserResourceImpl {
 	}
 
 	@Reference
-	private SegmentsEntryProvider _segmentsEntryProvider;
+	private SegmentsEntryLocalService _segmentsEntryLocalService;
+
+	@Reference
+	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;
 
 	@Reference
 	private UserService _userService;

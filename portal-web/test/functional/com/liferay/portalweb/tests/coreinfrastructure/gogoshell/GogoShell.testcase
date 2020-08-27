@@ -1,0 +1,191 @@
+@component-name = "portal-gogo-shell"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Gogo Shell";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONUser.tearDownNonAdminUsers();
+
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test AccessGogoShellCommandViaPortlet {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "GogoShell#AccessGogoShellCommandViaPortlet";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Gogo Shell");
+
+		GogoShell.executeCommand(commandName = "scr:list");
+
+		GogoShell.viewOutput(outputContent = "State:ACTIVE");
+
+		GogoShell.executeCommand(commandName = "system:check");
+
+		for (var outputContent : list "Declarative Service Soft Circular Dependency Checker check result: No issues were found,Declarative Service Unsatisfied Component Checker check result: No issues were found,Spring Extender Unavailable Component Checker check result: No issues were found") {
+			GogoShell.viewOutput(outputContent = "${outputContent}");
+		}
+	}
+
+	@description = "This is a use case for LPS-83660."
+	@priority = "3"
+	test GogoShellCommandDisconnectNotSupported {
+		property test.name.skip.portal.instance = "GogoShell#GogoShellCommandDisconnectNotSupported";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Gogo Shell");
+
+		GogoShell.executeCommand(commandName = "disconnect");
+
+		Alert.viewErrorMessage(errorMessage = "Error: The command &quot;Disconnect&quot; is not supported.");
+
+		AssertConsoleTextNotPresent(value1 = "is not serializable and will prevent this session from being replicated");
+	}
+
+	@priority = "4"
+	test GogoShellPortletOnlyOnMainInstance {
+		property test.name.skip.portal.instance = "GogoShell#GogoShellPortletOnlyOnMainInstance";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
+
+		PortalInstances.addCP(
+			mailDomain = "www.able.com",
+			virtualHost = "www.able.com",
+			webId = "www.able.com");
+
+		PortalInstances.viewCP(virtualHost = "www.able.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Gogo Shell");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@www.able.com",
+			virtualHostsURL = "http://www.able.com:8080");
+
+		Navigator.openSpecificURL(url = "http://www.able.com:8080");
+
+		Portlet.viewNoPortletsPresentCP(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Gogo Shell");
+	}
+
+	@priority = "4"
+	test OmniAdminCanAccessGogoShellCommandViaPortlet {
+		property test.name.skip.portal.instance = "GogoShell#OmniAdminCanAccessGogoShellCommandViaPortlet";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "userea@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			requirePasswordReset = "true",
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Gogo Shell");
+
+		GogoShell.executeCommand(commandName = "lb | grep Liferay");
+
+		GogoShell.viewOutput(outputContent = "Liferay Portal");
+	}
+
+	@priority = "4"
+	test SiteAdminCannotAccessGogoShellPortlet {
+		property test.name.skip.portal.instance = "GogoShell#SiteAdminCannotAccessGogoShellPortlet";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			requirePasswordReset = "true",
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Site.assignUserSitesCP(
+			siteName = "${siteName}",
+			userScreenName = "usersn");
+
+		ProductMenu.gotoPortlet(
+			category = "People",
+			portlet = "Memberships",
+			site = "${siteName}");
+
+		Site.assignSiteRoleCP(
+			resourceName = "userfn userln",
+			roleTitle = "Site Administrator");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Gogo Shell");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		GogoShell.openGogoShellAdmin();
+
+		Alert.viewErrorMessage(errorMessage = "You do not have the roles required to access this portlet.");
+	}
+
+}

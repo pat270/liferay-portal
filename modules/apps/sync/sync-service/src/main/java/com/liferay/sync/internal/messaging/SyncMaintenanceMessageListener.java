@@ -22,7 +22,9 @@ import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
+import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelper;
 import com.liferay.portal.kernel.scheduler.SchedulerEntry;
@@ -30,10 +32,15 @@ import com.liferay.portal.kernel.scheduler.SchedulerEntryImpl;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.scheduler.Trigger;
 import com.liferay.portal.kernel.scheduler.TriggerFactory;
+import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.sync.internal.configuration.SyncServiceConfigurationValues;
+import com.liferay.sync.model.SyncDLObject;
 import com.liferay.sync.service.SyncDLFileVersionDiffLocalService;
 import com.liferay.sync.service.SyncDLObjectLocalService;
-import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
+
+import java.util.Date;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -55,8 +62,10 @@ public class SyncMaintenanceMessageListener extends BaseMessageListener {
 
 		String className = clazz.getName();
 
+		Date startDate = new Date(System.currentTimeMillis() + Time.HOUR);
+
 		Trigger trigger = _triggerFactory.createTrigger(
-			className, className, null, null, 1, TimeUnit.HOUR);
+			className, className, startDate, null, 1, TimeUnit.HOUR);
 
 		SchedulerEntry schedulerEntry = new SchedulerEntryImpl(
 			className, trigger);
@@ -79,8 +88,8 @@ public class SyncMaintenanceMessageListener extends BaseMessageListener {
 				_syncDLFileVersionDiffLocalService.
 					deleteExpiredSyncDLFileVersionDiffs();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -90,24 +99,59 @@ public class SyncMaintenanceMessageListener extends BaseMessageListener {
 
 			actionableDynamicQuery.setAddCriteriaMethod(
 				dynamicQuery -> {
-					Property modifiedTime = PropertyFactoryUtil.forName(
+					Property modifiedTimeProperty = PropertyFactoryUtil.forName(
 						"modifiedTime");
 
-					long latestModifiedTime =
-						_syncDLObjectLocalService.getLatestModifiedTime();
-
 					dynamicQuery.add(
-						modifiedTime.le(latestModifiedTime - Time.HOUR));
+						modifiedTimeProperty.le(
+							_syncDLObjectLocalService.getLatestModifiedTime()));
 				});
 			actionableDynamicQuery.setPerformActionMethod(
 				(DLSyncEvent dlSyncEvent) -> {
-					_dlSyncEventLocalService.deleteDLSyncEvent(dlSyncEvent);
+					SyncDLObject syncDLObject =
+						_syncDLObjectLocalService.fetchSyncDLObject(
+							dlSyncEvent.getType(), dlSyncEvent.getTypePK());
+
+					if ((syncDLObject == null) ||
+						(dlSyncEvent.getModifiedTime() >
+							syncDLObject.getModifiedTime())) {
+
+						TransactionCommitCallbackUtil.registerCallback(
+							() -> {
+								Message dlSyncEventMessage = new Message();
+
+								long lastModifiedTime =
+									_syncDLObjectLocalService.
+										getLatestModifiedTime();
+
+								dlSyncEventMessage.setValues(
+									HashMapBuilder.<String, Object>put(
+										"event", dlSyncEvent.getEvent()
+									).put(
+										"modifiedTime", ++lastModifiedTime
+									).put(
+										"type", dlSyncEvent.getType()
+									).put(
+										"typePK", dlSyncEvent.getTypePK()
+									).build());
+
+								MessageBusUtil.sendMessage(
+									DestinationNames.
+										DOCUMENT_LIBRARY_SYNC_EVENT_PROCESSOR,
+									dlSyncEventMessage);
+
+								return null;
+							});
+					}
+					else {
+						_dlSyncEventLocalService.deleteDLSyncEvent(dlSyncEvent);
+					}
 				});
 
 			actionableDynamicQuery.performActions();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

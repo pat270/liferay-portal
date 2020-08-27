@@ -54,8 +54,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + StagingProcessesPortletKeys.STAGING_PROCESSES,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -67,9 +66,9 @@ public class StagingProcessesPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		boolean localStagingEnabled = ParamUtil.getBoolean(
-			renderRequest, "localStagingEnabled", false);
+			renderRequest, "localStagingEnabled");
 		boolean remoteStagingEnabled = ParamUtil.getBoolean(
-			renderRequest, "remoteStagingEnabled", false);
+			renderRequest, "remoteStagingEnabled");
 
 		if (localStagingEnabled) {
 			SessionMessages.add(renderRequest, "localStagingEnabled");

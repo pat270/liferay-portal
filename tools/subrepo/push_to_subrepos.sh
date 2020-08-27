@@ -145,11 +145,11 @@ fi
 #
 
 SUBREPO_SEARCH_PARAMETERS=(
-	"7.0.x:../..:modules"
-	"7.0.x-private:../../../liferay-portal-ee:modules/private"
-	"7.1.x:../..:modules"
-	"7.1.x-private:../../../liferay-portal-ee:modules/private"
-	"master-private:../../../liferay-portal-ee:modules/private"
+	"7.0.x:../../../liferay-portal-ee:modules"
+	"7.0.x-private:../../../liferay-portal-ee:modules/dxp"
+	"7.1.x:../../../liferay-portal-ee:modules"
+	"7.1.x-private:../../../liferay-portal-ee:modules/dxp"
+	"master-private:../../../liferay-portal-ee:modules/dxp"
 	"master:../..:modules"
 )
 
@@ -324,7 +324,6 @@ then
 else
 	info "Updating ${TOTAL_BRANCHES} branches across ${TOTAL_SUBREPOS} subrepos..."
 fi
-
 
 MINIMUM_API_CALLS_PER_BRANCH=3
 MAXIMUM_API_CALLS_PER_BRANCH=7

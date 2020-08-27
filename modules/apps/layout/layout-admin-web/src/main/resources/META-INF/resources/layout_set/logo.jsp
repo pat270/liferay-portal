@@ -19,6 +19,7 @@
 <%
 Group liveGroup = layoutsAdminDisplayContext.getLiveGroup();
 LayoutSet selLayoutSet = layoutsAdminDisplayContext.getSelLayoutSet();
+
 boolean showButtons = GroupPermissionUtil.contains(permissionChecker, layoutsAdminDisplayContext.getSelGroup(), ActionKeys.MANAGE_LAYOUTS) && SitesUtil.isLayoutSetPrototypeUpdateable(selLayoutSet);
 %>
 
@@ -28,7 +29,7 @@ boolean showButtons = GroupPermissionUtil.contains(permissionChecker, layoutsAdm
 />
 
 <liferay-ui:error exception="<%= FileSizeException.class %>">
-	<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(DLValidatorUtil.getMaxAllowableSize(), locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
+	<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(DLValidatorUtil.getMaxAllowableSize(), locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
 </liferay-ui:error>
 
 <p class="text-muted">
@@ -43,11 +44,24 @@ boolean showButtons = GroupPermissionUtil.contains(permissionChecker, layoutsAdm
 
 <%
 String companyLogoURL = themeDisplay.getPathImage() + "/company_logo?img_id=" + company.getLogoId() + "&t=" + WebServerServletTokenUtil.getToken(company.getLogoId());
+
+boolean defaultLogo = false;
+
+if (selLayoutSet.getLogoId() == 0) {
+	defaultLogo = true;
+}
+else {
+	LayoutSet guestGroupLayoutSet = layoutsAdminDisplayContext.getGuestGroupLayoutSet(company.getCompanyId());
+
+	if (selLayoutSet.getLogoId() == guestGroupLayoutSet.getLogoId()) {
+		defaultLogo = true;
+	}
+}
 %>
 
 <liferay-ui:logo-selector
 	currentLogoURL='<%= (selLayoutSet.getLogoId() == 0) ? companyLogoURL : themeDisplay.getPathImage() + "/layout_set_logo?img_id=" + selLayoutSet.getLogoId() + "&t=" + WebServerServletTokenUtil.getToken(selLayoutSet.getLogoId()) %>'
-	defaultLogo="<%= selLayoutSet.getLogoId() == 0 %>"
+	defaultLogo="<%= defaultLogo %>"
 	defaultLogoURL="<%= companyLogoURL %>"
 	logoDisplaySelector=".layoutset-logo"
 	showButtons="<%= showButtons %>"
@@ -55,11 +69,11 @@ String companyLogoURL = themeDisplay.getPathImage() + "/company_logo?img_id=" + 
 />
 
 <%
-boolean showSiteNameSupported = GetterUtil.getBoolean(selLayoutSet.getTheme().getSetting("show-site-name-supported"), true);
+Theme selTheme = selLayoutSet.getTheme();
 
-boolean showSiteNameDefault = GetterUtil.getBoolean(selLayoutSet.getTheme().getSetting("show-site-name-default"), showSiteNameSupported);
+boolean showSiteNameSupported = GetterUtil.getBoolean(selTheme.getSetting("show-site-name-supported"), true);
 
-boolean showSiteName = GetterUtil.getBoolean(selLayoutSet.getSettingsProperty("showSiteName"), showSiteNameDefault);
+boolean showSiteNameDefault = GetterUtil.getBoolean(selTheme.getSetting("show-site-name-default"), showSiteNameSupported);
 %>
 
-<aui:input disabled="<%= !showSiteNameSupported %>" helpMessage='<%= showSiteNameSupported ? StringPool.BLANK : "the-theme-selected-for-the-site-does-not-support-displaying-the-title" %>' label="show-site-name" name="TypeSettingsProperties--showSiteName--" type="toggle-switch" value="<%= showSiteName %>" />
+<aui:input disabled="<%= !showSiteNameSupported %>" helpMessage='<%= showSiteNameSupported ? StringPool.BLANK : "the-theme-selected-for-the-site-does-not-support-displaying-the-title" %>' label="show-site-name" name="TypeSettingsProperties--showSiteName--" type="toggle-switch" value='<%= GetterUtil.getBoolean(selLayoutSet.getSettingsProperty("showSiteName"), showSiteNameDefault) %>' />

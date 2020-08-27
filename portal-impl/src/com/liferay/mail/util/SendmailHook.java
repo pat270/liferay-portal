@@ -68,8 +68,8 @@ public class SendmailHook implements Hook {
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -103,8 +103,8 @@ public class SendmailHook implements Hook {
 
 			future.get();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		updatePassword(companyId, userId, password);
@@ -151,8 +151,8 @@ public class SendmailHook implements Hook {
 
 			future.get();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -171,7 +171,7 @@ public class SendmailHook implements Hook {
 			return;
 		}
 
-		StringBundler sb = new StringBundler(blocked.size() * 9 + 3);
+		StringBundler sb = new StringBundler((blocked.size() * 9) + 3);
 
 		sb.append("ORGMAIL /var/spool/mail/$LOGNAME\n");
 		sb.append("MAILDIR $HOME/\n");
@@ -192,8 +192,8 @@ public class SendmailHook implements Hook {
 		try {
 			FileUtil.write(file, sb.toString());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -247,8 +247,8 @@ public class SendmailHook implements Hook {
 
 			future.get();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -289,8 +289,8 @@ public class SendmailHook implements Hook {
 
 			future.get();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 

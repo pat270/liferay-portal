@@ -14,10 +14,11 @@
 
 package com.liferay.portal.background.task.internal.messaging;
 
+import com.liferay.portal.background.task.internal.lock.BackgroundTaskLockHelper;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskLockHelperUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
+import com.liferay.portal.kernel.lock.LockManager;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
@@ -30,9 +31,10 @@ import com.liferay.portal.kernel.util.Validator;
 public class BackgroundTaskQueuingMessageListener extends BaseMessageListener {
 
 	public BackgroundTaskQueuingMessageListener(
-		BackgroundTaskManager backgroundTaskManager) {
+		BackgroundTaskManager backgroundTaskManager, LockManager lockManager) {
 
 		_backgroundTaskManager = backgroundTaskManager;
+		_backgroundTaskLockHelper = new BackgroundTaskLockHelper(lockManager);
 	}
 
 	@Override
@@ -65,7 +67,7 @@ public class BackgroundTaskQueuingMessageListener extends BaseMessageListener {
 			BackgroundTask backgroundTask =
 				_backgroundTaskManager.fetchBackgroundTask(backgroundTaskId);
 
-			if (!BackgroundTaskLockHelperUtil.isLockedBackgroundTask(
+			if (!_backgroundTaskLockHelper.isLockedBackgroundTask(
 					backgroundTask)) {
 
 				_executeQueuedBackgroundTasks(taskExecutorClassName);
@@ -101,6 +103,7 @@ public class BackgroundTaskQueuingMessageListener extends BaseMessageListener {
 	private static final Log _log = LogFactoryUtil.getLog(
 		BackgroundTaskQueuingMessageListener.class);
 
+	private final BackgroundTaskLockHelper _backgroundTaskLockHelper;
 	private final BackgroundTaskManager _backgroundTaskManager;
 
 }

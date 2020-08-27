@@ -52,8 +52,8 @@ public class AssetAutoTaggerConfigurationFactoryImpl
 		try {
 			return new CompanyAssetAutoTaggerConfiguration(company);
 		}
-		catch (ConfigurationException ce) {
-			_log.error(ce, ce);
+		catch (ConfigurationException configurationException) {
+			_log.error(configurationException, configurationException);
 
 			return getSystemAssetAutoTaggerConfiguration();
 		}
@@ -66,8 +66,8 @@ public class AssetAutoTaggerConfigurationFactoryImpl
 		try {
 			return new GroupAssetAutoTaggerConfiguration(group);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return getSystemAssetAutoTaggerConfiguration();
 		}
@@ -201,14 +201,15 @@ public class AssetAutoTaggerConfigurationFactoryImpl
 					return false;
 				}
 
-				UnicodeProperties typeSettingsProperties =
+				UnicodeProperties typeSettingsUnicodeProperties =
 					_group.getTypeSettingsProperties();
 
-				if (typeSettingsProperties.containsKey(
+				if (typeSettingsUnicodeProperties.containsKey(
 						"assetAutoTaggingEnabled")) {
 
 					return GetterUtil.getBoolean(
-						typeSettingsProperties.get("assetAutoTaggingEnabled"));
+						typeSettingsUnicodeProperties.get(
+							"assetAutoTaggingEnabled"));
 				}
 
 				AssetAutoTaggerGroupConfiguration
@@ -219,9 +220,9 @@ public class AssetAutoTaggerConfigurationFactoryImpl
 
 				return assetAutoTaggerGroupConfiguration.enabled();
 			}
-			catch (ConfigurationException ce) {
+			catch (ConfigurationException configurationException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(ce, ce);
+					_log.debug(configurationException, configurationException);
 				}
 
 				return _assetAutoTaggerCompanyConfiguration.isEnabled();

@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>KaleoFormsAdmin</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">KaleoFormsAdmin</td></tr>
+</thead>
+<tbody>
+<!--PROCESS_TABLE-->
+<tr>
+	<td>PROCESS_TABLE_NAME</td>
+	<td>//tr[contains(.,'${key_kfProcessName}')]/td[contains(.,'${key_kfProcessName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>KALEO_WORKFLOW_PUBLISHED_EMPTY_MESSAGE</td>
+	<td>//div[contains(@class,'empty-result')]//div[contains(text(),'There are no published definitions.')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>KALEO_WORKFLOW_UNPUBLISHED_EMPTY_MESSAGE</td>
+	<td>//div[contains(@class,'empty-result')]//div[contains(text(),'There are no unpublished definitions.')]</td>
+	<td></td>
+</tr>
+<!--WORKFLOW_MODAL-->
+<tr>
+	<td>CLOSE_BUTTON</td>
+	<td>//button[contains(@aria-label,'close')]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

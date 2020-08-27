@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing ResourceAction in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class ResourceActionCacheModel
 	implements CacheModel<ResourceAction>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ResourceActionCacheModel)) {
+		if (!(object instanceof ResourceActionCacheModel)) {
 			return false;
 		}
 
 		ResourceActionCacheModel resourceActionCacheModel =
-			(ResourceActionCacheModel)obj;
+			(ResourceActionCacheModel)object;
 
 		if ((resourceActionId == resourceActionCacheModel.resourceActionId) &&
 			(mvccVersion == resourceActionCacheModel.mvccVersion)) {

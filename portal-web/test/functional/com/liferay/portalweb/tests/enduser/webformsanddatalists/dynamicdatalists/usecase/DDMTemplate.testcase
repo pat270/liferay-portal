@@ -1,5 +1,6 @@
 @component-name = "portal-web-forms-and-data-lists"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Dynamic Data Lists";
@@ -30,7 +31,6 @@ definition {
 	test ViewCacheableCheckbox {
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Structures");
@@ -48,7 +48,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
@@ -69,7 +68,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		Navigator.gotoNavItem(navItem = "Templates");
@@ -78,15 +76,12 @@ definition {
 			menuItem = "Edit",
 			rowEntry = "WC Template Name");
 
-		Panel.expandPanel(panel = "Details");
-
 		AssertElementPresent(locator1 = "DDMEditTemplate#CACHEABLE_CHECKBOX");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Web Content");
 
 		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
@@ -103,7 +98,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Page");
@@ -118,10 +112,7 @@ definition {
 
 		WebContentDisplayPortlet.gotoEditTemplate(webContentTitle = "WC WebContent Title");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
-
-		Panel.expandPanel(panel = "Details");
-
 		AssertElementPresent(locator1 = "DDMEditTemplate#CACHEABLE_CHECKBOX");
 	}
+
 }

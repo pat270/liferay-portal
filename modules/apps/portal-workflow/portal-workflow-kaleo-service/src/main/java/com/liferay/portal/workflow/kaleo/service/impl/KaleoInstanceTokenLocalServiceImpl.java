@@ -14,7 +14,8 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
-import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -30,10 +31,11 @@ import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.workflow.kaleo.constants.KaleoInstanceTokenConstants;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstance;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
-import com.liferay.portal.workflow.kaleo.model.KaleoInstanceTokenConstants;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
+import com.liferay.portal.workflow.kaleo.service.KaleoNodeLocalService;
 import com.liferay.portal.workflow.kaleo.service.base.KaleoInstanceTokenLocalServiceBaseImpl;
 import com.liferay.portal.workflow.kaleo.service.persistence.KaleoInstanceTokenQuery;
 
@@ -43,17 +45,25 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken",
+	service = AopService.class
+)
 public class KaleoInstanceTokenLocalServiceImpl
 	extends KaleoInstanceTokenLocalServiceBaseImpl {
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public KaleoInstanceToken addKaleoInstanceToken(
-			long currentKaleoNodeId, long kaleoDefinitionVersionId,
-			long kaleoInstanceId, long parentKaleoInstanceTokenId,
+			long currentKaleoNodeId, long kaleoDefinitionId,
+			long kaleoDefinitionVersionId, long kaleoInstanceId,
+			long parentKaleoInstanceTokenId,
 			Map<String, Serializable> workflowContext,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -66,7 +76,7 @@ public class KaleoInstanceTokenLocalServiceImpl
 		KaleoInstanceToken kaleoInstanceToken =
 			kaleoInstanceTokenPersistence.create(kaleoInstanceTokenId);
 
-		long groupId = StagingUtil.getLiveGroupId(
+		long groupId = _staging.getLiveGroupId(
 			serviceContext.getScopeGroupId());
 
 		kaleoInstanceToken.setGroupId(groupId);
@@ -76,6 +86,7 @@ public class KaleoInstanceTokenLocalServiceImpl
 		kaleoInstanceToken.setUserName(user.getFullName());
 		kaleoInstanceToken.setCreateDate(now);
 		kaleoInstanceToken.setModifiedDate(now);
+		kaleoInstanceToken.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoInstanceToken.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoInstanceToken.setKaleoInstanceId(kaleoInstanceId);
@@ -101,9 +112,7 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 		kaleoInstanceToken.setCompleted(false);
 
-		kaleoInstanceTokenPersistence.update(kaleoInstanceToken);
-
-		return kaleoInstanceToken;
+		return kaleoInstanceTokenPersistence.update(kaleoInstanceToken);
 	}
 
 	@Override
@@ -119,6 +128,7 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 		return kaleoInstanceTokenLocalService.addKaleoInstanceToken(
 			parentKaleoInstanceToken.getCurrentKaleoNodeId(),
+			parentKaleoInstanceToken.getKaleoDefinitionId(),
 			parentKaleoInstanceToken.getKaleoDefinitionVersionId(),
 			parentKaleoInstanceToken.getKaleoInstanceId(),
 			parentKaleoInstanceToken.getKaleoInstanceTokenId(), workflowContext,
@@ -138,9 +148,7 @@ public class KaleoInstanceTokenLocalServiceImpl
 		kaleoInstanceToken.setCompleted(true);
 		kaleoInstanceToken.setCompletionDate(new Date());
 
-		kaleoInstanceTokenPersistence.update(kaleoInstanceToken);
-
-		return kaleoInstanceToken;
+		return kaleoInstanceTokenPersistence.update(kaleoInstanceToken);
 	}
 
 	@Override
@@ -234,7 +242,8 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 		KaleoInstanceToken kaleoInstanceToken =
 			kaleoInstanceTokenLocalService.addKaleoInstanceToken(
-				0, kaleoInstance.getKaleoDefinitionVersionId(),
+				0, kaleoInstance.getKaleoDefinitionId(),
+				kaleoInstance.getKaleoDefinitionVersionId(),
 				kaleoInstance.getKaleoInstanceId(),
 				KaleoInstanceTokenConstants.
 					PARENT_KALEO_INSTANCE_TOKEN_ID_DEFAULT,
@@ -242,8 +251,10 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 		// Kaleo instance
 
-		kaleoInstanceLocalService.updateKaleoInstance(
-			kaleoInstanceId, kaleoInstanceToken.getKaleoInstanceTokenId());
+		kaleoInstance.setRootKaleoInstanceTokenId(
+			kaleoInstanceToken.getKaleoInstanceTokenId());
+
+		kaleoInstancePersistence.update(kaleoInstance);
 
 		return kaleoInstanceToken;
 	}
@@ -277,8 +288,8 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 			return indexer.search(searchContext);
 		}
-		catch (SearchException se) {
-			throw new SystemException(se);
+		catch (SearchException searchException) {
+			throw new SystemException(searchException);
 		}
 	}
 
@@ -311,8 +322,8 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 			return (int)indexer.searchCount(searchContext);
 		}
-		catch (SearchException se) {
-			throw new SystemException(se);
+		catch (SearchException searchException) {
+			throw new SystemException(searchException);
 		}
 	}
 
@@ -341,6 +352,7 @@ public class KaleoInstanceTokenLocalServiceImpl
 			"kaleoInstanceTokenQuery", kaleoInstanceTokenQuery);
 		searchContext.setCompanyId(kaleoInstanceTokenQuery.getCompanyId());
 		searchContext.setEnd(end);
+		searchContext.setGroupIds(new long[] {-1L});
 		searchContext.setStart(start);
 
 		if (sorts != null) {
@@ -358,10 +370,16 @@ public class KaleoInstanceTokenLocalServiceImpl
 
 		kaleoInstanceToken.setCurrentKaleoNodeId(currentKaleoNodeId);
 
-		KaleoNode currentKaleoNode = kaleoNodeLocalService.getKaleoNode(
+		KaleoNode currentKaleoNode = _kaleoNodeLocalService.getKaleoNode(
 			currentKaleoNodeId);
 
 		kaleoInstanceToken.setCurrentKaleoNodeName(currentKaleoNode.getName());
 	}
+
+	@Reference
+	private KaleoNodeLocalService _kaleoNodeLocalService;
+
+	@Reference
+	private Staging _staging;
 
 }

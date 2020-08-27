@@ -9,18 +9,53 @@
 </thead>
 <tbody>
 <tr>
+	<td>CHILD_PAGE_NAME</td>
+	<td>//li[contains(@class,'tree-node') and div[contains(.,'${key_parentPageName}')]]/ul[contains(@class,'tree-container')]//a[contains(@class,'layout-tree')][contains(.,'${key_childPageName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>INPUT_FIELD</td>
-	<td>//div[contains(@id,'layoutFinder')]//input</td>
+	<td>//div[contains(@id,'layout-finder')]//input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>OUTLINE_ICON</td>
-	<td>//button[contains(@data-title,"Find a Page")]</td>
+	<td>//button[contains(.,'Page Tree')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_ELLIPSIS_ICON</td>
+	<td>//span[contains(@class,'tree-label') and contains(.,'${key_pageName}')]//button[contains(@class,'dropdown')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_NAME</td>
+	<td>//a[contains(@class,'layout-tree')][contains(.,'${pageName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_SEARCH_RESULT</td>
+	<td>//a[contains(@class,'mb-2')][normalize-space(text())='${key_pageName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TYPE_SELECTOR</td>
+	<td>//div[contains(@class,'page-type-selector')]//select[contains(@class,'form-control')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TYPE_SELECTOR_ELLIPSIS_ICON</td>
+	<td>//div[contains(@class,'page-type-selector')]//button[contains(@class,'dropdown')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TREE_NODE_ITEM</td>
+	<td>//ul[contains(@class,'tree-container')]/li[contains(@class,'tree-node')][${key_index}][contains(.,'${key_pageName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>VIEW_IN_PAGE_ADMINISTRATION</td>
-	<td>//div[contains(@id,'layoutFinder')]//a[contains(.,"View in Page Administration")]</td>
+	<td>//div[contains(@id,'layout-finder')]//a[contains(.,"View in Page Administration")]</td>
 	<td></td>
 </tr>
 </tbody>

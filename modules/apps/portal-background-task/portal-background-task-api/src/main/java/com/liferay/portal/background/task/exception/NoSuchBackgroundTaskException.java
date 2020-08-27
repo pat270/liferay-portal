@@ -16,12 +16,9 @@ package com.liferay.portal.background.task.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchBackgroundTaskException extends NoSuchModelException {
 
 	public NoSuchBackgroundTaskException() {
@@ -31,12 +28,12 @@ public class NoSuchBackgroundTaskException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchBackgroundTaskException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchBackgroundTaskException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchBackgroundTaskException(Throwable cause) {
-		super(cause);
+	public NoSuchBackgroundTaskException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -21,12 +21,11 @@ import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.service.base.DDMFormInstanceServiceBaseImpl;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
@@ -34,10 +33,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Leonardo Barros
  */
+@Component(
+	property = {
+		"json.web.service.context.name=ddm",
+		"json.web.service.context.path=DDMFormInstance"
+	},
+	service = AopService.class
+)
 public class DDMFormInstanceServiceImpl extends DDMFormInstanceServiceBaseImpl {
 
 	@Override
@@ -92,6 +101,13 @@ public class DDMFormInstanceServiceImpl extends DDMFormInstanceServiceBaseImpl {
 			return null;
 		}
 
+		if (_ddmFormInstanceModelResourcePermission.contains(
+				getPermissionChecker(), ddmFormInstance.getFormInstanceId(),
+				DDMActionKeys.ADD_FORM_INSTANCE_RECORD)) {
+
+			return ddmFormInstance;
+		}
+
 		_ddmFormInstanceModelResourcePermission.check(
 			getPermissionChecker(), ddmFormInstance.getFormInstanceId(),
 			ActionKeys.VIEW);
@@ -102,6 +118,14 @@ public class DDMFormInstanceServiceImpl extends DDMFormInstanceServiceBaseImpl {
 	@Override
 	public DDMFormInstance getFormInstance(long ddmFormInstanceId)
 		throws PortalException {
+
+		if (_ddmFormInstanceModelResourcePermission.contains(
+				getPermissionChecker(), ddmFormInstanceId,
+				DDMActionKeys.ADD_FORM_INSTANCE_RECORD)) {
+
+			return ddmFormInstanceLocalService.getFormInstance(
+				ddmFormInstanceId);
+		}
 
 		_ddmFormInstanceModelResourcePermission.check(
 			getPermissionChecker(), ddmFormInstanceId, ActionKeys.VIEW);
@@ -120,6 +144,21 @@ public class DDMFormInstanceServiceImpl extends DDMFormInstanceServiceBaseImpl {
 	@Override
 	public int getFormInstancesCount(long companyId, long groupId) {
 		return ddmFormInstanceFinder.filterCountByC_G(companyId, groupId);
+	}
+
+	@Override
+	public int getFormInstancesCount(String uuid) throws PortalException {
+		return ddmFormInstanceLocalService.getFormInstancesCount(uuid);
+	}
+
+	@Override
+	public List<DDMFormInstance> search(
+		long companyId, long groupId, String keywords, int status, int start,
+		int end, OrderByComparator<DDMFormInstance> orderByComparator) {
+
+		return ddmFormInstanceFinder.filterFindByKeywords(
+			companyId, groupId, keywords, status, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -150,11 +189,32 @@ public class DDMFormInstanceServiceImpl extends DDMFormInstanceServiceBaseImpl {
 
 	@Override
 	public int searchCount(
+		long companyId, long groupId, String keywords, int status) {
+
+		return ddmFormInstanceFinder.filterCountByKeywords(
+			companyId, groupId, keywords, status);
+	}
+
+	@Override
+	public int searchCount(
 		long companyId, long groupId, String[] names, String[] descriptions,
 		boolean andOperator) {
 
 		return ddmFormInstanceFinder.filterCountByC_G_N_D(
 			companyId, groupId, names, descriptions, andOperator);
+	}
+
+	@Override
+	public void sendEmail(
+			long formInstanceId, String message, String subject,
+			String[] toEmailAddresses)
+		throws Exception {
+
+		_ddmFormInstanceModelResourcePermission.check(
+			getPermissionChecker(), formInstanceId, ActionKeys.UPDATE);
+
+		ddmFormInstanceLocalService.sendEmail(
+			getUserId(), message, subject, toEmailAddresses);
 	}
 
 	/**
@@ -195,16 +255,13 @@ public class DDMFormInstanceServiceImpl extends DDMFormInstanceServiceBaseImpl {
 			ddmFormLayout, settingsDDMFormValues, serviceContext);
 	}
 
-	private static volatile ModelResourcePermission<DDMFormInstance>
-		_ddmFormInstanceModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				DDMFormInstanceServiceImpl.class,
-				"_ddmFormInstanceModelResourcePermission",
-				DDMFormInstance.class);
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				DDMFormInstanceServiceImpl.class, "_portletResourcePermission",
-				DDMConstants.RESOURCE_NAME);
+	@Reference(
+		target = "(model.class.name=com.liferay.dynamic.data.mapping.model.DDMFormInstance)"
+	)
+	private ModelResourcePermission<DDMFormInstance>
+		_ddmFormInstanceModelResourcePermission;
+
+	@Reference(target = "(resource.name=" + DDMConstants.RESOURCE_NAME + ")")
+	private PortletResourcePermission _portletResourcePermission;
 
 }

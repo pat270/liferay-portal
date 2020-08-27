@@ -27,15 +27,15 @@ import java.util.Properties;
 public class PropsUtil {
 
 	public static String get(String key) {
-		return _instance._get(key);
+		return _propsUtil._get(key);
 	}
 
 	public static Properties getProperties() {
-		return _instance._props;
+		return _propsUtil._props;
 	}
 
 	public static void set(String key, String value) {
-		_instance._set(key, value);
+		_propsUtil._set(key, value);
 	}
 
 	private PropsUtil() {
@@ -59,8 +59,8 @@ public class PropsUtil {
 
 			_printProperties(false);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
@@ -98,7 +98,7 @@ public class PropsUtil {
 		_props.setProperty(key, value);
 	}
 
-	private static final PropsUtil _instance = new PropsUtil();
+	private static final PropsUtil _propsUtil = new PropsUtil();
 
 	private final Properties _props = new Properties();
 

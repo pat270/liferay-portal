@@ -15,6 +15,7 @@
 package com.liferay.portal.servlet;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.BrowserMetadata;
 import com.liferay.portal.kernel.servlet.BrowserSniffer;
@@ -51,7 +52,10 @@ public class BrowserSnifferImpl implements BrowserSniffer {
 		BrowserMetadata browserMetadata = getBrowserMetadata(
 			httpServletRequest);
 
-		if (browserMetadata.isEdge()) {
+		if (browserMetadata.isChrome()) {
+			return BROWSER_ID_CHROME;
+		}
+		else if (browserMetadata.isEdge()) {
 			return BROWSER_ID_EDGE;
 		}
 		else if (browserMetadata.isIe()) {
@@ -325,7 +329,9 @@ public class BrowserSnifferImpl implements BrowserSniffer {
 
 			String major = userAgent.substring(majorStart, majorEnd);
 
-			if (userAgent.charAt(majorEnd) != '.') {
+			if ((majorEnd >= userAgent.length()) ||
+				(userAgent.charAt(majorEnd) != '.')) {
+
 				return major;
 			}
 
@@ -346,11 +352,8 @@ public class BrowserSnifferImpl implements BrowserSniffer {
 
 			String minor = userAgent.substring(minorStart, minorEnd);
 
-			String version = major.concat(
-				StringPool.PERIOD
-			).concat(
-				minor
-			);
+			String version = StringBundler.concat(
+				major, StringPool.PERIOD, minor);
 
 			if (leading.equals("trident")) {
 				if (version.equals("7.0")) {
@@ -425,17 +428,6 @@ public class BrowserSnifferImpl implements BrowserSniffer {
 		httpServletRequest.setAttribute(HttpHeaders.USER_AGENT, userAgent);
 
 		return userAgent;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             BrowserMetadata#isIe()}
-	 */
-	@Deprecated
-	protected boolean isIe(String userAgent) {
-		BrowserMetadata browserMetadata = new BrowserMetadata(userAgent);
-
-		return browserMetadata.isIe();
 	}
 
 	protected static String[] revisionLeadings = {

@@ -42,11 +42,11 @@ public abstract class BaseMVCResourceCommand implements MVCResourceCommand {
 
 			return !SessionErrors.isEmpty(resourceRequest);
 		}
-		catch (PortletException pe) {
-			throw pe;
+		catch (PortletException portletException) {
+			throw portletException;
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 	}
 
@@ -55,9 +55,8 @@ public abstract class BaseMVCResourceCommand implements MVCResourceCommand {
 		throws Exception;
 
 	protected PortletConfig getPortletConfig(ResourceRequest resourceRequest) {
-		String portletId = PortalUtil.getPortletId(resourceRequest);
-
-		return PortletConfigFactoryUtil.get(portletId);
+		return PortletConfigFactoryUtil.get(
+			PortalUtil.getPortletId(resourceRequest));
 	}
 
 	protected PortletRequestDispatcher getPortletRequestDispatcher(

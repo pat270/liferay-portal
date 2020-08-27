@@ -16,7 +16,6 @@ package com.liferay.taglib.util;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -29,29 +28,6 @@ import javax.servlet.jsp.JspWriter;
  * @author Shuyang Zhou
  */
 public class OutputTag extends PositionTagSupport {
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getDataSB(ServletRequest, String)}
-	 */
-	@Deprecated
-	public static com.liferay.portal.kernel.util.StringBundler getData(
-		ServletRequest servletRequest, String webKey) {
-
-		StringBundler petraSB = getDataSB(servletRequest, webKey);
-
-		if (petraSB == null) {
-			return null;
-		}
-
-		com.liferay.portal.kernel.util.StringBundler sb =
-			new com.liferay.portal.kernel.util.StringBundler(
-				petraSB.getStrings());
-
-		sb.setIndex(petraSB.index());
-
-		return sb;
-	}
 
 	public static StringBundler getDataSB(
 		ServletRequest servletRequest, String webKey) {
@@ -66,8 +42,8 @@ public class OutputTag extends PositionTagSupport {
 		return outputData.getMergedDataSB(webKey);
 	}
 
-	public OutputTag(String stringBundlerKey) {
-		_webKey = stringBundlerKey;
+	public OutputTag(String webKey) {
+		_webKey = webKey;
 	}
 
 	@Override
@@ -104,13 +80,11 @@ public class OutputTag extends PositionTagSupport {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				cleanUp();
-			}
+			cleanUp();
 		}
 	}
 

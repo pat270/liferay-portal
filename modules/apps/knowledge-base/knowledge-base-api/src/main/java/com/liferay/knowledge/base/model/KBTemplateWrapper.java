@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link KBTemplate}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KBTemplate
  * @generated
  */
-@ProviderType
 public class KBTemplateWrapper
 	extends BaseModelWrapper<KBTemplate>
 	implements KBTemplate, ModelWrapper<KBTemplate> {
@@ -46,6 +43,7 @@ public class KBTemplateWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("kbTemplateId", getKbTemplateId());
 		attributes.put("groupId", getGroupId());
@@ -63,6 +61,12 @@ public class KBTemplateWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -201,6 +205,16 @@ public class KBTemplateWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this kb template.
+	 *
+	 * @return the mvcc version of this kb template
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this kb template.
 	 *
 	 * @return the primary key of this kb template
@@ -333,6 +347,16 @@ public class KBTemplateWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this kb template.
+	 *
+	 * @param mvccVersion the mvcc version of this kb template
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -16,19 +16,19 @@
 
 <%@ include file="/select_pages/init.jsp" %>
 
-<aui:input name="layoutIds" type="hidden" value="<%= ExportImportHelperUtil.getSelectedLayoutsJSON(selectPagesGroupId, selectPagesPrivteLayout, selectedLayoutIds) %>" />
+<aui:input name="layoutIds" type="hidden" value="<%= ExportImportHelperUtil.getSelectedLayoutsJSON(selectPagesGroupId, selectPagesPrivateLayout, selectedLayoutIds) %>" />
 
 <aui:fieldset cssClass="options-group" id="pages-fieldset" markupView="lexicon">
-	<div class="sheet-section">
+	<clay:sheet-section>
 		<h3 class="sheet-subtitle"><liferay-ui:message key="pages" /></h3>
 
 		<ul class="flex-container layout-selector" id="<portlet:namespace />pages">
-			<c:if test="<%= !disableInputs || LayoutStagingUtil.isBranchingLayoutSet(selectPagesGroup, selectPagesPrivteLayout) %>">
+			<c:if test="<%= !disableInputs || LayoutStagingUtil.isBranchingLayoutSet(selectPagesGroup, selectPagesPrivateLayout) %>">
 				<li class="layout-selector-options">
 					<aui:fieldset label="pages-options">
 						<c:if test="<%= !disableInputs %>">
 							<c:choose>
-								<c:when test="<%= selectPagesPrivteLayout %>">
+								<c:when test="<%= selectPagesPrivateLayout %>">
 									<aui:button id="changeToPublicLayoutsButton" value="change-to-public-pages" />
 								</c:when>
 								<c:otherwise>
@@ -37,7 +37,7 @@
 							</c:choose>
 						</c:if>
 
-						<c:if test="<%= LayoutStagingUtil.isBranchingLayoutSet(selectPagesGroup, selectPagesPrivteLayout) %>">
+						<c:if test="<%= LayoutStagingUtil.isBranchingLayoutSet(selectPagesGroup, selectPagesPrivateLayout) %>">
 
 							<%
 							List<LayoutSetBranch> layoutSetBranches = null;
@@ -50,7 +50,7 @@
 								layoutSetBranches.add(LayoutSetBranchLocalServiceUtil.getLayoutSetBranch(layoutSetBranchId));
 							}
 							else {
-								layoutSetBranches = LayoutSetBranchLocalServiceUtil.getLayoutSetBranches(selectPagesGroupId, selectPagesPrivteLayout);
+								layoutSetBranches = LayoutSetBranchLocalServiceUtil.getLayoutSetBranches(selectPagesGroupId, selectPagesPrivateLayout);
 							}
 							%>
 
@@ -80,7 +80,7 @@
 			</c:if>
 
 			<li class="layout-selector-options">
-				<aui:fieldset label='<%= "pages-to-" + action %>'>
+				<aui:fieldset helpMessage="child-page-publication-warning" label='<%= "pages-to-" + action %>'>
 
 					<%
 					long selPlid = ParamUtil.getLong(request, "selPlid", LayoutConstants.DEFAULT_PLID);
@@ -94,9 +94,9 @@
 								<span class="badge badge-info">
 
 									<%
-									int messageKeyLayoutsCount = LayoutLocalServiceUtil.getLayoutsCount(selectPagesGroup, selectPagesPrivteLayout, selectedLayoutIdsArray);
+									int messageKeyLayoutsCount = LayoutLocalServiceUtil.getLayoutsCount(selectPagesGroup, selectPagesPrivateLayout, selectedLayoutIdsArray);
 
-									int totalLayoutsCount = LayoutLocalServiceUtil.getLayoutsCount(selectPagesGroup, selectPagesPrivteLayout);
+									int totalLayoutsCount = LayoutLocalServiceUtil.getLayoutsCount(selectPagesGroup, selectPagesPrivateLayout);
 
 									if (messageKeyLayoutsCount > totalLayoutsCount) {
 										messageKeyLayoutsCount = totalLayoutsCount;
@@ -126,8 +126,8 @@
 									groupId="<%= selectPagesGroupId %>"
 									incomplete="<%= false %>"
 									portletURL="<%= renderResponse.createRenderURL() %>"
-									privateLayout="<%= selectPagesPrivteLayout %>"
-									rootNodeName="<%= selectPagesGroup.getLayoutRootNodeName(selectPagesPrivteLayout, locale) %>"
+									privateLayout="<%= selectPagesPrivateLayout %>"
+									rootNodeName="<%= selectPagesGroup.getLayoutRootNodeName(selectPagesPrivateLayout, locale) %>"
 									selectableTree="<%= true %>"
 									selectedLayoutIds="<%= selectedLayoutIds %>"
 									selPlid="<%= selPlid %>"
@@ -181,5 +181,40 @@
 				</aui:fieldset>
 			</li>
 		</ul>
-	</div>
+
+		<c:if test="<%= action.equals(Constants.PUBLISH) %>">
+			<ul class="deletions flex-container layout-selector" id="<portlet:namespace />pagedeletions">
+				<li class="layout-selector-options">
+					<aui:fieldset label="page-deletions">
+
+						<%
+						DateRange dateRange = null;
+
+						if (useRequestValues) {
+							dateRange = ExportImportDateUtil.getDateRange(renderRequest, selectPagesGroupId, selectPagesPrivateLayout, 0, null, ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE);
+						}
+						else {
+							dateRange = ExportImportDateUtil.getDateRange(exportImportConfiguration);
+						}
+
+						PortletDataContext portletDataContext = PortletDataContextFactoryUtil.createPreparePortletDataContext(company.getCompanyId(), selectPagesGroupId, (range != null) ? range : ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE, dateRange.getStartDate(), dateRange.getEndDate());
+
+						long layoutModelDeletionCount = ExportImportHelperUtil.getLayoutModelDeletionCount(portletDataContext, selectPagesPrivateLayout);
+						%>
+
+						<span>
+							<liferay-staging:checkbox
+								checked="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_LAYOUTS, false) %>"
+								deletions="<%= layoutModelDeletionCount %>"
+								disabled="<%= disableInputs %>"
+								label="publish-page-deletions"
+								name="<%= PortletDataHandlerKeys.DELETE_LAYOUTS %>"
+								popover="affected-by-the-content-sections-date-range-selector"
+							/>
+						</span>
+					</aui:fieldset>
+				</li>
+			</ul>
+		</c:if>
+	</clay:sheet-section>
 </aui:fieldset>

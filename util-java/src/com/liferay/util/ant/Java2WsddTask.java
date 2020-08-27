@@ -203,7 +203,8 @@ public class Java2WsddTask {
 
 				List<Element> parameters = element.elements("parameter");
 
-				StringBundler sb = new StringBundler(2 * parameters.size() + 2);
+				StringBundler sb = new StringBundler(
+					(2 * parameters.size()) + 2);
 
 				String name = element.attributeValue("name");
 
@@ -262,10 +263,7 @@ public class Java2WsddTask {
 		_addElements(serviceElement, operationElements);
 		_addElements(serviceElement, parameterElements);
 
-		content = StringUtil.replace(
-			_formattedString(document), "\"/>", "\" />");
-
-		return content;
+		return StringUtil.replace(_formattedString(document), "\"/>", "\" />");
 	}
 
 	private static String _formattedString(Node node) throws Exception {

@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBStatsUser
  * @generated
  */
-@ProviderType
 public class MBStatsUserWrapper
 	extends BaseModelWrapper<MBStatsUser>
 	implements MBStatsUser, ModelWrapper<MBStatsUser> {
@@ -45,6 +44,8 @@ public class MBStatsUserWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("statsUserId", getStatsUserId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -57,6 +58,18 @@ public class MBStatsUserWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long statsUserId = (Long)attributes.get("statsUserId");
 
 		if (statsUserId != null) {
@@ -105,6 +118,16 @@ public class MBStatsUserWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this message boards stats user.
+	 *
+	 * @return the ct collection ID of this message boards stats user
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this message boards stats user.
 	 *
 	 * @return the group ID of this message boards stats user
@@ -132,6 +155,16 @@ public class MBStatsUserWrapper
 	@Override
 	public int getMessageCount() {
 		return model.getMessageCount();
+	}
+
+	/**
+	 * Returns the mvcc version of this message boards stats user.
+	 *
+	 * @return the mvcc version of this message boards stats user
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -200,6 +233,16 @@ public class MBStatsUserWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this message boards stats user.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards stats user
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this message boards stats user.
 	 *
 	 * @param groupId the group ID of this message boards stats user
@@ -227,6 +270,16 @@ public class MBStatsUserWrapper
 	@Override
 	public void setMessageCount(int messageCount) {
 		model.setMessageCount(messageCount);
+	}
+
+	/**
+	 * Sets the mvcc version of this message boards stats user.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards stats user
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -277,6 +330,20 @@ public class MBStatsUserWrapper
 	@Override
 	public void setUserUuid(String userUuid) {
 		model.setUserUuid(userUuid);
+	}
+
+	@Override
+	public Map<String, Function<MBStatsUser, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<MBStatsUser, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

@@ -14,14 +14,11 @@
 
 package com.liferay.external.data.source.test.exception;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchTestEntityException extends NoSuchModelException {
 
 	public NoSuchTestEntityException() {
@@ -31,12 +28,12 @@ public class NoSuchTestEntityException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchTestEntityException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchTestEntityException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchTestEntityException(Throwable cause) {
-		super(cause);
+	public NoSuchTestEntityException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

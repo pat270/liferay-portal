@@ -35,16 +35,14 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ClassUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.TextFormatter;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.util.WebKeys;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.portlet.PortletException;
 import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +60,7 @@ public class ItemSelectorRepositoryEntryBrowserUtil {
 			PortletURL portletURL)
 		throws Exception {
 
-		addGroupSelectorBreadcrumbEntry(
+		_addGroupSelectorBreadcrumbEntry(
 			httpServletRequest, liferayPortletResponse, portletURL);
 
 		portletURL.setParameter("displayStyle", displayStyle);
@@ -73,7 +71,7 @@ public class ItemSelectorRepositoryEntryBrowserUtil {
 
 		Group scopeGroup = themeDisplay.getScopeGroup();
 
-		addPortletBreadcrumbEntry(
+		_addPortletBreadcrumbEntry(
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, httpServletRequest,
 			scopeGroup.getDescriptiveName(httpServletRequest.getLocale()),
 			portletURL);
@@ -86,12 +84,12 @@ public class ItemSelectorRepositoryEntryBrowserUtil {
 			Collections.reverse(ancestorFolders);
 
 			for (Folder ancestorFolder : ancestorFolders) {
-				addPortletBreadcrumbEntry(
+				_addPortletBreadcrumbEntry(
 					ancestorFolder.getFolderId(), httpServletRequest,
 					ancestorFolder.getName(), portletURL);
 			}
 
-			addPortletBreadcrumbEntry(
+			_addPortletBreadcrumbEntry(
 				folder.getFolderId(), httpServletRequest, folder.getName(),
 				portletURL);
 		}
@@ -110,7 +108,7 @@ public class ItemSelectorRepositoryEntryBrowserUtil {
 				HtmlUtil.escape(latestFileVersion.getExtension())),
 			_createJSONObject(
 				LanguageUtil.get(locale, "size"),
-				TextFormatter.formatStorageSize(fileEntry.getSize(), locale)),
+				LanguageUtil.formatStorageSize(fileEntry.getSize(), locale)),
 			_createJSONObject(
 				LanguageUtil.get(locale, "name"),
 				HtmlUtil.escape(DLUtil.getTitleWithExtension(fileEntry))),
@@ -126,39 +124,36 @@ public class ItemSelectorRepositoryEntryBrowserUtil {
 						HtmlUtil.escape(fileEntry.getUserName())
 					})));
 
-		JSONObject firstTabJSONObject = JSONUtil.put(
-			"data", firstTabDataJSONArray
-		).put(
-			"title", LanguageUtil.get(locale, "file-info")
-		);
+		JSONArray groupsJSONArray = JSONUtil.put(
+			JSONUtil.put(
+				"data", firstTabDataJSONArray
+			).put(
+				"title", LanguageUtil.get(locale, "file-info")
+			));
 
-		JSONArray groupsJSONArray = JSONUtil.put(firstTabJSONObject);
-
-		JSONObject secondTabJSONObject = JSONUtil.put(
-			"data",
-			JSONUtil.putAll(
-				_createJSONObject(
-					LanguageUtil.get(locale, "version"),
-					HtmlUtil.escape(latestFileVersion.getVersion())),
-				_createJSONObject(
-					LanguageUtil.get(locale, "status"),
-					WorkflowConstants.getStatusLabel(
-						latestFileVersion.getStatus())))
-		).put(
-			"title", LanguageUtil.get(locale, "version")
-		);
-
-		groupsJSONArray.put(secondTabJSONObject);
+		groupsJSONArray.put(
+			JSONUtil.put(
+				"data",
+				JSONUtil.putAll(
+					_createJSONObject(
+						LanguageUtil.get(locale, "version"),
+						HtmlUtil.escape(latestFileVersion.getVersion())),
+					_createJSONObject(
+						LanguageUtil.get(locale, "status"),
+						WorkflowConstants.getStatusLabel(
+							latestFileVersion.getStatus())))
+			).put(
+				"title", LanguageUtil.get(locale, "version")
+			));
 
 		return JSONUtil.put("groups", groupsJSONArray);
 	}
 
 	public static String getItemSelectorReturnTypeClassName(
-			ItemSelectorReturnTypeResolver
-				<? extends ItemSelectorReturnType, FileEntry>
-					itemSelectorReturnTypeResolver,
-			ItemSelectorReturnType itemSelectorReturnType)
-		throws Exception {
+		ItemSelectorReturnTypeResolver
+			<? extends ItemSelectorReturnType, FileEntry>
+				itemSelectorReturnTypeResolver,
+		ItemSelectorReturnType itemSelectorReturnType) {
 
 		if (itemSelectorReturnTypeResolver != null) {
 			Class<? extends ItemSelectorReturnType>
@@ -189,23 +184,26 @@ public class ItemSelectorRepositoryEntryBrowserUtil {
 			itemSelectorReturnType, fileEntry, themeDisplay);
 	}
 
-	protected static void addGroupSelectorBreadcrumbEntry(
+	private static void _addGroupSelectorBreadcrumbEntry(
 			HttpServletRequest httpServletRequest,
 			LiferayPortletResponse liferayPortletResponse,
 			PortletURL portletURL)
-		throws PortalException, PortletException {
+		throws Exception {
 
 		PortletURL viewGroupSelectorURL = PortletURLUtil.clone(
 			portletURL, liferayPortletResponse);
 
+		viewGroupSelectorURL.setParameter("groupType", "site");
 		viewGroupSelectorURL.setParameter(
 			"showGroupSelector", Boolean.TRUE.toString());
 
 		PortalUtil.addPortletBreadcrumbEntry(
-			httpServletRequest, "sites", viewGroupSelectorURL.toString());
+			httpServletRequest,
+			LanguageUtil.get(httpServletRequest, "sites-and-libraries"),
+			viewGroupSelectorURL.toString());
 	}
 
-	protected static void addPortletBreadcrumbEntry(
+	private static void _addPortletBreadcrumbEntry(
 		long folderId, HttpServletRequest httpServletRequest, String title,
 		PortletURL portletURL) {
 

@@ -18,7 +18,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.oauth2.provider.constants.GrantType;
-import com.liferay.oauth2.provider.test.internal.TestPreviewURLApplication;
+import com.liferay.oauth2.provider.internal.test.TestPreviewURLApplication;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -133,11 +133,11 @@ public class OAuth2WebServerServletTest extends BaseClientTestCase {
 					fileEntry, fileEntry.getFileVersion(), null, "", false,
 					false);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				bundleContext.ungetService(dlAppLocalServiceServiceReference);
 				bundleContext.ungetService(dlUrlHelperServiceReference);
 
-				throw e;
+				throw exception;
 			}
 
 			Dictionary<String, Object> properties = new HashMapDictionary<>();

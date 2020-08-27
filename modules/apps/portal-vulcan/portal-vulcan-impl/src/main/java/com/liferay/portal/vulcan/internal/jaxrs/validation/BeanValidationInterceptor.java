@@ -14,17 +14,14 @@
 
 package com.liferay.portal.vulcan.internal.jaxrs.validation;
 
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.vulcan.internal.jaxrs.context.provider.ContextProviderUtil;
+
 import java.io.IOException;
 
 import java.lang.reflect.Method;
 
 import java.util.List;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validator;
-import javax.validation.executable.ExecutableValidator;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -32,10 +29,6 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.InterceptorChain;
-import org.apache.cxf.jaxrs.lifecycle.ResourceProvider;
-import org.apache.cxf.jaxrs.model.ClassResourceInfo;
-import org.apache.cxf.jaxrs.model.OperationResourceInfo;
-import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageContentsList;
 import org.apache.cxf.phase.PhaseInterceptorChain;
@@ -87,52 +80,19 @@ public class BeanValidationInterceptor
 
 	@Override
 	protected Object getServiceObject(Message message) {
-		Exchange exchange = message.getExchange();
-
-		OperationResourceInfo operationResourceInfo = exchange.get(
-			OperationResourceInfo.class);
-
-		if (operationResourceInfo == null) {
-			return null;
-		}
-
-		ClassResourceInfo classResourceInfo =
-			operationResourceInfo.getClassResourceInfo();
-
-		if (!classResourceInfo.isRoot()) {
-			return exchange.get("org.apache.cxf.service.object.last");
-		}
-
-		ResourceProvider resourceProvider =
-			classResourceInfo.getResourceProvider();
-
-		Object instance = resourceProvider.getInstance(message);
-
-		resourceProvider.releaseInstance(message, instance);
-
-		return instance;
+		return ContextProviderUtil.getMatchedResource(message);
 	}
 
 	@Override
 	protected void handleValidation(
-		Message message, Object resourceInstance, Method method,
+		Message message, Object resource, Method method,
 		List<Object> arguments) {
 
-		if (arguments.isEmpty()) {
+		if (ListUtil.isEmpty(arguments)) {
 			return;
 		}
 
-		Validator validator = ValidatorFactory.getValidator();
-
-		ExecutableValidator executableValidator = validator.forExecutables();
-
-		Set<ConstraintViolation<Object>> constraintViolations =
-			executableValidator.validateParameters(
-				resourceInstance, method, arguments.toArray());
-
-		if (!constraintViolations.isEmpty()) {
-			throw new ConstraintViolationException(constraintViolations);
-		}
+		ValidationUtil.validateArguments(resource, method, arguments.toArray());
 	}
 
 }

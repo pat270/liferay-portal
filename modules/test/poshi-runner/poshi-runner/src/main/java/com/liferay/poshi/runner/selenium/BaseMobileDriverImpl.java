@@ -15,6 +15,7 @@
 package com.liferay.poshi.runner.selenium;
 
 import com.liferay.poshi.runner.util.PropsValues;
+import com.liferay.poshi.runner.util.StringUtil;
 
 import io.appium.java_client.MobileDriver;
 import io.appium.java_client.MultiTouchAction;
@@ -55,7 +56,7 @@ public abstract class BaseMobileDriverImpl
 		try {
 			tap(locator);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (!isInViewport(locator)) {
 				swipeWebElementIntoView(locator);
 			}
@@ -217,7 +218,7 @@ public abstract class BaseMobileDriverImpl
 
 		text = text.trim();
 
-		return text.replace("\n", " ");
+		return StringUtil.replace(text, "\n", " ");
 	}
 
 	public void hideKeyboard() {
@@ -269,9 +270,8 @@ public abstract class BaseMobileDriverImpl
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -295,11 +295,10 @@ public abstract class BaseMobileDriverImpl
 
 			return isInViewport(locator);
 		}
-		else {
-			scrollWebElementIntoView(webElement);
 
-			return webElement.isDisplayed();
-		}
+		scrollWebElementIntoView(webElement);
+
+		return webElement.isDisplayed();
 	}
 
 	@Override
@@ -551,9 +550,7 @@ public abstract class BaseMobileDriverImpl
 	}
 
 	protected void swipeWebElementIntoView(String locator) {
-		WebElement webElement = getWebElement(locator);
-
-		scrollWebElementIntoView(webElement);
+		scrollWebElementIntoView(getWebElement(locator));
 	}
 
 	protected void tap(String locator) {

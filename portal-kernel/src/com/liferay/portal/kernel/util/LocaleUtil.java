@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.util;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -120,7 +121,7 @@ public class LocaleUtil {
 	}
 
 	public static LocaleUtil getInstance() {
-		return _instance;
+		return _localeUtil;
 	}
 
 	public static Map<String, String> getISOLanguages(Locale locale) {
@@ -223,7 +224,7 @@ public class LocaleUtil {
 
 		if (languageId == null) {
 			if (useDefault) {
-				return _locale;
+				return _getDefault();
 			}
 
 			return null;
@@ -233,6 +234,17 @@ public class LocaleUtil {
 
 		if (locale != null) {
 			return locale;
+		}
+
+		if (languageId.equals("zh-Hans-CN")) {
+			languageId = "zh_CN";
+		}
+		else if (languageId.equals("zh-Hant-TW")) {
+			languageId = "zh_TW";
+		}
+		else {
+			languageId = StringUtil.replace(
+				languageId, CharPool.MINUS, CharPool.UNDERLINE);
 		}
 
 		try {
@@ -268,7 +280,7 @@ public class LocaleUtil {
 
 			_locales.put(languageId, locale);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			locale = null;
 
 			if (_log.isWarnEnabled()) {
@@ -376,10 +388,8 @@ public class LocaleUtil {
 			language = StringUtil.toUpperCase(language);
 		}
 
-		String country = locale.getCountry();
-
 		return _getDisplayName(
-			language, StringUtil.toUpperCase(country), locale,
+			language, StringUtil.toUpperCase(locale.getCountry()), locale,
 			duplicateLanguages);
 	}
 
@@ -558,7 +568,7 @@ public class LocaleUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(LocaleUtil.class);
 
-	private static final LocaleUtil _instance = new LocaleUtil();
+	private static final LocaleUtil _localeUtil = new LocaleUtil();
 
 	private Locale _locale;
 	private final Map<String, Locale> _locales = new HashMap<>();

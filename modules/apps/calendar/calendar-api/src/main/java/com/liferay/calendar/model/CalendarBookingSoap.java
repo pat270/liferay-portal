@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.calendar.service.http.CalendarBookingServiceSoap}.
  *
  * @author Eduardo Lundgren
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class CalendarBookingSoap implements Serializable {
 
 	public static CalendarBookingSoap toSoapModel(CalendarBooking model) {
 		CalendarBookingSoap soapModel = new CalendarBookingSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setCalendarBookingId(model.getCalendarBookingId());
 		soapModel.setGroupId(model.getGroupId());
@@ -122,6 +122,14 @@ public class CalendarBookingSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setCalendarBookingId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -360,6 +368,7 @@ public class CalendarBookingSoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _calendarBookingId;
 	private long _groupId;

@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.RandomAccessInputStream;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -60,8 +59,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ServletResponseUtil {
 
-	public static boolean isClientAbortException(IOException ioe) {
-		Class<?> clazz = ioe.getClass();
+	public static boolean isClientAbortException(IOException ioException) {
+		Class<?> clazz = ioException.getClass();
 
 		String className = clazz.getName();
 
@@ -171,8 +170,8 @@ public class ServletResponseUtil {
 		try {
 			ranges = _getRanges(httpServletRequest, contentLength);
 		}
-		catch (IOException ioe) {
-			_log.error("Unable to get ranges", ioe);
+		catch (IOException ioException) {
+			_log.error("Unable to get ranges", ioException);
 
 			httpServletResponse.setHeader(
 				HttpHeaders.CONTENT_RANGE, "bytes */" + contentLength);
@@ -254,28 +253,15 @@ public class ServletResponseUtil {
 						ByteBuffer.wrap(bytes, offset, contentLength));
 				}
 				else {
-					if ((contentLength == 0) && ServerDetector.isJetty()) {
-					}
-					else {
-						ServletOutputStream servletOutputStream =
-							httpServletResponse.getOutputStream();
+					ServletOutputStream servletOutputStream =
+						httpServletResponse.getOutputStream();
 
-						servletOutputStream.write(bytes, offset, contentLength);
-					}
+					servletOutputStream.write(bytes, offset, contentLength);
 				}
 			}
 		}
-		catch (IOException ioe) {
-			if ((ioe instanceof SocketException) ||
-				isClientAbortException(ioe)) {
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(ioe, ioe);
-				}
-			}
-			else {
-				throw ioe;
-			}
+		catch (IOException ioException) {
+			_checkSocketException(ioException);
 		}
 	}
 
@@ -306,17 +292,8 @@ public class ServletResponseUtil {
 				}
 			}
 		}
-		catch (IOException ioe) {
-			if ((ioe instanceof SocketException) ||
-				isClientAbortException(ioe)) {
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(ioe, ioe);
-				}
-			}
-			else {
-				throw ioe;
-			}
+		catch (IOException ioException) {
+			_checkSocketException(ioException);
 		}
 	}
 
@@ -381,6 +358,9 @@ public class ServletResponseUtil {
 					0, contentLength,
 					Channels.newChannel(httpServletResponse.getOutputStream()));
 			}
+			catch (IOException ioException) {
+				_checkSocketException(ioException);
+			}
 		}
 	}
 
@@ -401,9 +381,9 @@ public class ServletResponseUtil {
 				try {
 					inputStream.close();
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
+						_log.warn(ioException, ioException);
 					}
 				}
 			}
@@ -418,7 +398,13 @@ public class ServletResponseUtil {
 
 		httpServletResponse.flushBuffer();
 
-		StreamUtil.transfer(inputStream, httpServletResponse.getOutputStream());
+		try {
+			StreamUtil.transfer(
+				inputStream, httpServletResponse.getOutputStream());
+		}
+		catch (IOException ioException) {
+			_checkSocketException(ioException);
+		}
 	}
 
 	public static void write(HttpServletResponse httpServletResponse, String s)
@@ -510,7 +496,7 @@ public class ServletResponseUtil {
 				mimeTypesContentDispositionInline = PropsUtil.getArray(
 					PropsKeys.MIME_TYPES_CONTENT_DISPOSITION_INLINE);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				mimeTypesContentDispositionInline = new String[0];
 			}
 
@@ -562,6 +548,21 @@ public class ServletResponseUtil {
 		}
 	}
 
+	private static void _checkSocketException(IOException ioException)
+		throws IOException {
+
+		if ((ioException instanceof SocketException) ||
+			isClientAbortException(ioException)) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(ioException, ioException);
+			}
+		}
+		else {
+			throw ioException;
+		}
+	}
+
 	private static InputStream _copyRange(
 			InputStream inputStream, OutputStream outputStream, long start,
 			long length)
@@ -575,9 +576,14 @@ public class ServletResponseUtil {
 
 			byteArrayInputStream.skip(start);
 
-			StreamUtil.transfer(
-				byteArrayInputStream, outputStream, StreamUtil.BUFFER_SIZE,
-				false, length);
+			try {
+				StreamUtil.transfer(
+					byteArrayInputStream, outputStream, StreamUtil.BUFFER_SIZE,
+					false, length);
+			}
+			catch (IOException ioException) {
+				_checkSocketException(ioException);
+			}
 
 			return byteArrayInputStream;
 		}
@@ -586,8 +592,13 @@ public class ServletResponseUtil {
 
 			FileChannel fileChannel = fileInputStream.getChannel();
 
-			fileChannel.transferTo(
-				start, length, Channels.newChannel(outputStream));
+			try {
+				fileChannel.transferTo(
+					start, length, Channels.newChannel(outputStream));
+			}
+			catch (IOException ioException) {
+				_checkSocketException(ioException);
+			}
 
 			return fileInputStream;
 		}
@@ -597,17 +608,28 @@ public class ServletResponseUtil {
 
 			randomAccessInputStream.seek(start);
 
-			StreamUtil.transfer(
-				randomAccessInputStream, outputStream, StreamUtil.BUFFER_SIZE,
-				false, length);
+			try {
+				StreamUtil.transfer(
+					randomAccessInputStream, outputStream,
+					StreamUtil.BUFFER_SIZE, false, length);
+			}
+			catch (IOException ioException) {
+				_checkSocketException(ioException);
+			}
 
 			return randomAccessInputStream;
 		}
 
 		inputStream.skip(start);
 
-		StreamUtil.transfer(
-			inputStream, outputStream, StreamUtil.BUFFER_SIZE, false, length);
+		try {
+			StreamUtil.transfer(
+				inputStream, outputStream, StreamUtil.BUFFER_SIZE, false,
+				length);
+		}
+		catch (IOException ioException) {
+			_checkSocketException(ioException);
+		}
 
 		return inputStream;
 	}
@@ -829,7 +851,7 @@ public class ServletResponseUtil {
 			}
 		}
 		finally {
-			StreamUtil.cleanUp(inputStream);
+			StreamUtil.cleanUp(true, inputStream);
 		}
 	}
 

@@ -14,11 +14,13 @@
 
 package com.liferay.source.formatter.checks;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
+import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -42,7 +46,7 @@ import java.util.regex.Pattern;
 public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -67,7 +71,7 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 		sb.append("#build.include.dirs=\\");
 		sb.append(StringPool.NEW_LINE);
 
-		Set<String> buildIncludeDirs = _getBuildIncludeDirs();
+		Set<String> buildIncludeDirs = _getBuildIncludeDirs(absolutePath);
 
 		for (String buildIncludeDir : buildIncludeDirs) {
 			sb.append(matcher.group(1));
@@ -85,10 +89,15 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 		return StringUtil.replaceFirst(content, matcher.group(), sb.toString());
 	}
 
-	private Set<String> _getBuildIncludeDirs() throws IOException {
+	private Set<String> _getBuildIncludeDirs(String absolutePath)
+		throws IOException {
+
 		File modulesDir = new File(getPortalDir(), "modules");
 
-		final Set<String> buildIncludeDirs = new TreeSet<>();
+		List<String> ignoredModuleNames = _getIgnoredModuleNames(
+			SourceUtil.getRootDirName(absolutePath));
+
+		Set<String> buildIncludeDirs = new TreeSet<>();
 
 		Files.walkFileTree(
 			modulesDir.toPath(), EnumSet.noneOf(FileVisitOption.class), 15,
@@ -96,7 +105,8 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 
 				@Override
 				public FileVisitResult preVisitDirectory(
-					Path dirPath, BasicFileAttributes basicFileAttributes) {
+						Path dirPath, BasicFileAttributes basicFileAttributes)
+					throws IOException {
 
 					if (ArrayUtil.contains(
 							_SKIP_DIR_NAMES,
@@ -105,7 +115,8 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 
-					String moduleDirName = _getModuleDirName(dirPath);
+					String moduleDirName = _getModuleDirName(
+						dirPath, ignoredModuleNames);
 
 					if (moduleDirName == null) {
 						return FileVisitResult.CONTINUE;
@@ -131,8 +142,32 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 		return buildIncludeDirs;
 	}
 
-	private String _getModuleDirName(Path dirPath) {
-		String absolutePath = SourceUtil.getAbsolutePath(dirPath) + "/";
+	private List<String> _getIgnoredModuleNames(String rootDirName)
+		throws IOException {
+
+		List<String> ignoredModuleNames = new ArrayList<>();
+
+		File file = new File(rootDirName + "/.gitignore");
+
+		if (!file.exists()) {
+			return ignoredModuleNames;
+		}
+
+		Matcher matcher = _ignoredModuleNamePattern.matcher(
+			FileUtil.read(file));
+
+		while (matcher.find()) {
+			ignoredModuleNames.add(matcher.group());
+		}
+
+		return ignoredModuleNames;
+	}
+
+	private String _getModuleDirName(
+			Path dirPath, List<String> ignoredModuleNames)
+		throws IOException {
+
+		String absolutePath = SourceUtil.getAbsolutePath(dirPath);
 
 		int x = absolutePath.indexOf("/modules/");
 
@@ -140,28 +175,49 @@ public class PropertiesBuildIncludeDirsCheck extends BaseFileCheck {
 			return null;
 		}
 
-		int y = absolutePath.indexOf("/", x + 9);
+		String directoryPath = absolutePath.substring(x + 9);
 
-		if (y == -1) {
+		for (String ignoredModuleName : ignoredModuleNames) {
+			String modulePath = "/modules/" + directoryPath + "/";
+
+			if (modulePath.startsWith(ignoredModuleName + "/")) {
+				return null;
+			}
+		}
+
+		String[] directoryNames = StringUtil.split(
+			directoryPath, CharPool.SLASH);
+
+		if (directoryNames.length < 2) {
 			return null;
 		}
 
-		y = absolutePath.indexOf("/", y + 1);
+		List<String> buildIncludeCategoryNames = getAttributeValues(
+			_BUILD_INCLUDE_CATEGORY_NAMES, absolutePath);
 
-		if (y != -1) {
-			return absolutePath.substring(x + 9, y);
+		for (int i = 0; i < (directoryNames.length - 1); i++) {
+			if (buildIncludeCategoryNames.contains(directoryNames[i])) {
+				return StringUtil.merge(
+					ArrayUtil.subset(directoryNames, 0, i + 2),
+					StringPool.SLASH);
+			}
 		}
 
 		return null;
 	}
 
+	private static final String _BUILD_INCLUDE_CATEGORY_NAMES =
+		"buildIncludeCategoryNames";
+
 	private static final String[] _SKIP_DIR_NAMES = {
-		".git", ".gradle", ".idea", ".m2", ".settings", "bin", "build",
-		"classes", "dependencies", "node_modules", "node_modules_cache",
-		"private", "sql", "src", "test", "test-classes", "test-coverage",
-		"test-results", "tmp"
+		".git", ".gradle", ".idea", ".m2", ".releng", ".settings", "bin",
+		"build", "classes", "dependencies", "node_modules",
+		"node_modules_cache", "private", "sql", "src", "test", "test-classes",
+		"test-coverage", "test-results", "tmp"
 	};
 
+	private static final Pattern _ignoredModuleNamePattern = Pattern.compile(
+		"^/modules/([^/\n]+/)*\\w+$", Pattern.MULTILINE);
 	private static final Pattern _pattern = Pattern.compile(
 		"([^\\S\\n]*)#build\\.include\\.dirs=\\\\(\\s*#.*)*");
 

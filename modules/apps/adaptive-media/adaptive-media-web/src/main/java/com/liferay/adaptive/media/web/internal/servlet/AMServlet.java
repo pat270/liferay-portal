@@ -20,6 +20,8 @@ import com.liferay.adaptive.media.exception.AMException;
 import com.liferay.adaptive.media.handler.AMRequestHandler;
 import com.liferay.adaptive.media.web.internal.constants.AMWebConstants;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
@@ -62,7 +64,7 @@ public class AMServlet extends HttpServlet {
 		throws IOException, ServletException {
 
 		try {
-			AMRequestHandler amRequestHandler =
+			AMRequestHandler<?> amRequestHandler =
 				_amRequestHandlerLocator.locateForPattern(
 					_getRequestHandlerPattern(httpServletRequest));
 
@@ -75,7 +77,8 @@ public class AMServlet extends HttpServlet {
 			}
 
 			Optional<AdaptiveMedia<?>> adaptiveMediaOptional =
-				amRequestHandler.handleRequest(httpServletRequest);
+				(Optional<AdaptiveMedia<?>>)amRequestHandler.handleRequest(
+					httpServletRequest);
 
 			AdaptiveMedia<?> adaptiveMedia = adaptiveMediaOptional.orElseThrow(
 				AMException.AMNotFound::new);
@@ -113,15 +116,19 @@ public class AMServlet extends HttpServlet {
 					adaptiveMedia.getInputStream(), contentLength, contentType);
 			}
 		}
-		catch (AMException.AMNotFound amnf) {
+		catch (AMException.AMNotFound amException) {
 			httpServletResponse.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				httpServletRequest.getRequestURI());
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
+			}
 
-			if (cause instanceof PrincipalException) {
+			Throwable throwable = exception.getCause();
+
+			if (throwable instanceof PrincipalException) {
 				httpServletResponse.sendError(
 					HttpServletResponse.SC_FORBIDDEN,
 					httpServletRequest.getRequestURI());
@@ -146,9 +153,8 @@ public class AMServlet extends HttpServlet {
 	private String _getRequestHandlerPattern(
 		HttpServletRequest httpServletRequest) {
 
-		String pathInfo = httpServletRequest.getPathInfo();
-
-		Matcher matcher = _requestHandlerPattern.matcher(pathInfo);
+		Matcher matcher = _requestHandlerPattern.matcher(
+			httpServletRequest.getPathInfo());
 
 		if (matcher.find()) {
 			return matcher.group(1);
@@ -156,6 +162,8 @@ public class AMServlet extends HttpServlet {
 
 		return StringPool.BLANK;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(AMServlet.class);
 
 	private static final Pattern _requestHandlerPattern = Pattern.compile(
 		"^/([^/]*)");

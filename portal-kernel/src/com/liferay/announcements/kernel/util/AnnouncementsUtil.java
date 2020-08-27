@@ -18,12 +18,12 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.UserBag;
@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.service.TeamLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.RolePermissionUtil;
@@ -43,6 +42,7 @@ import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -59,31 +59,21 @@ import java.util.Set;
  */
 public class AnnouncementsUtil {
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getAnnouncementScopes(User)}
-	 */
-	@Deprecated
-	public static LinkedHashMap<Long, long[]> getAnnouncementScopes(long userId)
-		throws PortalException {
-
-		return getAnnouncementScopes(UserLocalServiceUtil.getUserById(userId));
-	}
-
 	public static LinkedHashMap<Long, long[]> getAnnouncementScopes(User user)
 		throws PortalException {
 
 		long userId = user.getUserId();
 
-		LinkedHashMap<Long, long[]> scopes = new LinkedHashMap<>();
-
 		// General announcements
-
-		scopes.put(0L, new long[] {0});
 
 		// Personal announcements
 
-		scopes.put(_USER_CLASS_NAME_ID, new long[] {userId});
+		LinkedHashMap<Long, long[]> scopes =
+			LinkedHashMapBuilder.<Long, long[]>put(
+				0L, new long[] {0}
+			).put(
+				_USER_CLASS_NAME_ID, new long[] {userId}
+			).build();
 
 		// Organization announcements
 

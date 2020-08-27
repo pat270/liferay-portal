@@ -26,7 +26,7 @@ if (referer.equals(themeDisplay.getPathMain() + "/portal/update_reminder_query")
 }
 %>
 
-<div class="sheet sheet-lg">
+<div class="mt-4 sheet sheet-lg">
 	<div class="sheet-header">
 		<div class="autofit-padded-no-gutters-x autofit-row">
 			<div class="autofit-col autofit-col-expand">

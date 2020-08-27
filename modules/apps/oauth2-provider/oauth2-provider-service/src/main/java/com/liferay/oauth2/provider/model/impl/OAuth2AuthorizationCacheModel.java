@@ -26,30 +26,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing OAuth2Authorization in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class OAuth2AuthorizationCacheModel
 	implements CacheModel<OAuth2Authorization>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof OAuth2AuthorizationCacheModel)) {
+		if (!(object instanceof OAuth2AuthorizationCacheModel)) {
 			return false;
 		}
 
 		OAuth2AuthorizationCacheModel oAuth2AuthorizationCacheModel =
-			(OAuth2AuthorizationCacheModel)obj;
+			(OAuth2AuthorizationCacheModel)object;
 
 		if (oAuth2AuthorizationId ==
 				oAuth2AuthorizationCacheModel.oAuth2AuthorizationId) {
@@ -207,7 +204,9 @@ public class OAuth2AuthorizationCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		oAuth2AuthorizationId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
@@ -219,14 +218,14 @@ public class OAuth2AuthorizationCacheModel
 		oAuth2ApplicationId = objectInput.readLong();
 
 		oAuth2ApplicationScopeAliasesId = objectInput.readLong();
-		accessTokenContent = objectInput.readUTF();
+		accessTokenContent = (String)objectInput.readObject();
 
 		accessTokenContentHash = objectInput.readLong();
 		accessTokenCreateDate = objectInput.readLong();
 		accessTokenExpirationDate = objectInput.readLong();
 		remoteHostInfo = objectInput.readUTF();
 		remoteIPInfo = objectInput.readUTF();
-		refreshTokenContent = objectInput.readUTF();
+		refreshTokenContent = (String)objectInput.readObject();
 
 		refreshTokenContentHash = objectInput.readLong();
 		refreshTokenCreateDate = objectInput.readLong();
@@ -255,10 +254,10 @@ public class OAuth2AuthorizationCacheModel
 		objectOutput.writeLong(oAuth2ApplicationScopeAliasesId);
 
 		if (accessTokenContent == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(accessTokenContent);
+			objectOutput.writeObject(accessTokenContent);
 		}
 
 		objectOutput.writeLong(accessTokenContentHash);
@@ -280,10 +279,10 @@ public class OAuth2AuthorizationCacheModel
 		}
 
 		if (refreshTokenContent == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(refreshTokenContent);
+			objectOutput.writeObject(refreshTokenContent);
 		}
 
 		objectOutput.writeLong(refreshTokenContentHash);

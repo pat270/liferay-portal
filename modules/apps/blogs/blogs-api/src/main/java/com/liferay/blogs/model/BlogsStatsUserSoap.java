@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class BlogsStatsUserSoap implements Serializable {
 
 	public static BlogsStatsUserSoap toSoapModel(BlogsStatsUser model) {
 		BlogsStatsUserSoap soapModel = new BlogsStatsUserSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setStatsUserId(model.getStatsUserId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -99,6 +99,14 @@ public class BlogsStatsUserSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setStatsUserId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public long getStatsUserId() {
@@ -173,6 +181,7 @@ public class BlogsStatsUserSoap implements Serializable {
 		_ratingsAverageScore = ratingsAverageScore;
 	}
 
+	private long _mvccVersion;
 	private long _statsUserId;
 	private long _groupId;
 	private long _companyId;

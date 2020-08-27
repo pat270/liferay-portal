@@ -25,6 +25,8 @@ import aQute.bnd.version.Version;
 
 import aQute.lib.utf8properties.UTF8Properties;
 
+import aQute.service.reporter.Report;
+
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -44,15 +46,19 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
 /**
  * @author Andrea Di Giorgi
  * @author Raymond Augé
  */
+@CacheableTask
 public class ExecuteBndTask extends DefaultTask {
 
 	public ExecuteBndTask() {
@@ -156,15 +162,15 @@ public class ExecuteBndTask extends DefaultTask {
 
 					manifest.write(outputStream);
 				}
-				catch (IOException ioe) {
-					throw new GradleException(this + " failed", ioe);
+				catch (IOException ioException) {
+					throw new GradleException(this + " failed", ioException);
 				}
 			}
 			else {
 				jar.write(outputFile);
 			}
 
-			BndUtils.logReport(builder, logger);
+			_logReport(builder, logger);
 
 			if (!builder.isOk()) {
 				throw new GradleException(this + " failed");
@@ -181,11 +187,13 @@ public class ExecuteBndTask extends DefaultTask {
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getBaseDir() {
 		return GradleUtil.toFile(getProject(), _baseDir);
 	}
 
 	@InputFiles
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public FileCollection getClasspath() {
 		return _classpath;
 	}
@@ -208,11 +216,13 @@ public class ExecuteBndTask extends DefaultTask {
 	}
 
 	@InputFiles
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public FileCollection getResourceDirs() {
 		return _resourceDirs;
 	}
 
 	@InputFiles
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public FileCollection getSourceDirs() {
 		return _sourceDirs;
 	}
@@ -274,7 +284,37 @@ public class ExecuteBndTask extends DefaultTask {
 		_writeManifest = writeManifest;
 	}
 
-	private static File[] _toArray(FileCollection fileCollection) {
+	private void _logReport(Report report, Logger logger) {
+		if (logger.isWarnEnabled()) {
+			for (String warning : report.getWarnings()) {
+				Report.Location location = report.getLocation(warning);
+
+				if ((location != null) && (location.file != null)) {
+					logger.warn(
+						"{}:{}:{}", location.file, location.line, warning);
+				}
+				else {
+					logger.warn(warning);
+				}
+			}
+		}
+
+		if (logger.isErrorEnabled()) {
+			for (String error : report.getErrors()) {
+				Report.Location location = report.getLocation(error);
+
+				if ((location != null) && (location.file != null)) {
+					logger.error(
+						"{}:{}:{}", location.file, location.line, error);
+				}
+				else {
+					logger.error(error);
+				}
+			}
+		}
+	}
+
+	private File[] _toArray(FileCollection fileCollection) {
 		Set<File> files = fileCollection.getFiles();
 
 		return files.toArray(new File[0]);

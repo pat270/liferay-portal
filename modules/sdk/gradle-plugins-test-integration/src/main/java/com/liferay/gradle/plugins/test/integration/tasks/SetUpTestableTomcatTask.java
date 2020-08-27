@@ -50,8 +50,11 @@ import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.file.CopySpec;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.VersionNumber;
 
@@ -63,9 +66,9 @@ import org.w3c.dom.NodeList;
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class SetUpTestableTomcatTask
-	extends DefaultTask
-	implements JmxRemotePortSpec, ManagerSpec, ModuleFrameworkBaseDirSpec {
+	extends DefaultTask implements ManagerSpec, ModuleFrameworkBaseDirSpec {
 
 	public SetUpTestableTomcatTask() {
 		_zipUrl = new Callable<String>() {
@@ -122,6 +125,7 @@ public class SetUpTestableTomcatTask
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getDir() {
 		return GradleUtil.toFile(getProject(), _dir);
 	}
@@ -134,14 +138,9 @@ public class SetUpTestableTomcatTask
 
 	@Input
 	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getJaCoCoAgentFile() {
 		return GradleUtil.toFile(getProject(), _jaCoCoAgentFile);
-	}
-
-	@Input
-	@Override
-	public int getJmxRemotePort() {
-		return GradleUtil.toInteger(_jmxRemotePort);
 	}
 
 	@Input
@@ -158,6 +157,7 @@ public class SetUpTestableTomcatTask
 
 	@Input
 	@Override
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getModuleFrameworkBaseDir() {
 		return GradleUtil.toFile(getProject(), _moduleFrameworkBaseDir);
 	}
@@ -170,16 +170,6 @@ public class SetUpTestableTomcatTask
 	@Input
 	public boolean isDebugLogging() {
 		return _debugLogging;
-	}
-
-	@Input
-	public boolean isJmxRemoteAuthenticate() {
-		return _jmxRemoteAuthenticate;
-	}
-
-	@Input
-	public boolean isJmxRemoteSsl() {
-		return _jmxRemoteSsl;
 	}
 
 	@Input
@@ -209,19 +199,6 @@ public class SetUpTestableTomcatTask
 
 	public void setJaCoCoAgentFile(Object jaCoCoAgentFile) {
 		_jaCoCoAgentFile = jaCoCoAgentFile;
-	}
-
-	public void setJmxRemoteAuthenticate(boolean jmxRemoteAuthenticate) {
-		_jmxRemoteAuthenticate = jmxRemoteAuthenticate;
-	}
-
-	@Override
-	public void setJmxRemotePort(Object jmxRemotePort) {
-		_jmxRemotePort = jmxRemotePort;
-	}
-
-	public void setJmxRemoteSsl(boolean jmxRemoteSsl) {
-		_jmxRemoteSsl = jmxRemoteSsl;
 	}
 
 	@Override
@@ -256,7 +233,7 @@ public class SetUpTestableTomcatTask
 		_zipUrl = zipUrl;
 	}
 
-	private boolean _contains(String fileName, String s) throws IOException {
+	private boolean _contains(String fileName, String s) throws Exception {
 		File file = new File(getDir(), fileName);
 
 		String fileContent = new String(Files.readAllBytes(file.toPath()));
@@ -279,21 +256,7 @@ public class SetUpTestableTomcatTask
 				StandardOpenOption.APPEND, StandardOpenOption.WRITE));
 	}
 
-	private String _getJmxOptions() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("-Dcom.sun.management.jmxremote ");
-		sb.append("-Dcom.sun.management.jmxremote.authenticate=");
-		sb.append(isJmxRemoteAuthenticate());
-		sb.append(" -Dcom.sun.management.jmxremote.port=");
-		sb.append(getJmxRemotePort());
-		sb.append(" -Dcom.sun.management.jmxremote.ssl=");
-		sb.append(isJmxRemoteSsl());
-
-		return sb.toString();
-	}
-
-	private void _setUpAspectJ() throws IOException {
+	private void _setUpAspectJ() throws Exception {
 		String aspectJAgent = getAspectJAgent();
 
 		if (Validator.isNotNull(aspectJAgent) &&
@@ -340,7 +303,7 @@ public class SetUpTestableTomcatTask
 		}
 	}
 
-	private void _setUpJaCoCo() throws IOException {
+	private void _setUpJaCoCo() throws Exception {
 		File jaCoCoAgentFile = getJaCoCoAgentFile();
 		File targetJaCoCoAgentFile = new File(getDir(), "bin/jacocoagent.jar");
 
@@ -375,45 +338,7 @@ public class SetUpTestableTomcatTask
 		}
 	}
 
-	private void _setUpJmx() throws IOException {
-		String jmxOptions = _getJmxOptions();
-
-		if (!_contains("bin/setenv.bat", jmxOptions)) {
-			try (PrintWriter printWriter = _getAppendPrintWriter(
-					"bin/setenv.bat")) {
-
-				printWriter.println();
-
-				printWriter.print("set \"JMX_OPTS=");
-				printWriter.print(jmxOptions);
-				printWriter.println('\"');
-
-				printWriter.println();
-
-				printWriter.println(
-					"set \"CATALINA_OPTS=%CATALINA_OPTS% %JMX_OPTS%\"");
-			}
-		}
-
-		if (!_contains("bin/setenv.sh", jmxOptions)) {
-			try (PrintWriter printWriter = _getAppendPrintWriter(
-					"bin/setenv.sh")) {
-
-				printWriter.println();
-
-				printWriter.print("JMX_OPTS=\"");
-				printWriter.print(jmxOptions);
-				printWriter.println('\"');
-
-				printWriter.println();
-
-				printWriter.println(
-					"CATALINA_OPTS=\"${CATALINA_OPTS} ${JMX_OPTS}\"");
-			}
-		}
-	}
-
-	private void _setUpJpda() throws IOException {
+	private void _setUpJpda() throws Exception {
 		if (!_contains("bin/setenv.sh", "JPDA_ADDRESS")) {
 			try (PrintWriter printWriter = _getAppendPrintWriter(
 					"bin/setenv.sh")) {
@@ -425,7 +350,7 @@ public class SetUpTestableTomcatTask
 		}
 	}
 
-	private void _setUpLogging() throws IOException {
+	private void _setUpLogging() throws Exception {
 		if (!isDebugLogging() ||
 			_contains("conf/Logging.properties", "org.apache.catalina.level")) {
 
@@ -584,11 +509,10 @@ public class SetUpTestableTomcatTask
 			});
 	}
 
-	private void _setUpSetEnv() throws IOException {
+	private void _setUpSetEnv() throws Exception {
 		_setUpJaCoCo();
 
 		_setUpAspectJ();
-		_setUpJmx();
 		_setUpJpda();
 	}
 
@@ -603,9 +527,6 @@ public class SetUpTestableTomcatTask
 	private Object _dir;
 	private Object _jaCoCoAgentConfiguration;
 	private Object _jaCoCoAgentFile;
-	private boolean _jmxRemoteAuthenticate;
-	private Object _jmxRemotePort;
-	private boolean _jmxRemoteSsl;
 	private Object _managerPassword;
 	private Object _managerUserName;
 	private Object _moduleFrameworkBaseDir;

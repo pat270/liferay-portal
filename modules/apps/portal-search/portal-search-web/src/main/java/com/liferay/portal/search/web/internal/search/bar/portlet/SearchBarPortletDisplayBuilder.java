@@ -19,8 +19,9 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Http;
@@ -31,22 +32,29 @@ import com.liferay.portal.search.web.internal.display.context.SearchScopePrefere
 
 import java.util.Optional;
 
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
+
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author André de Oliveira
  */
 public class SearchBarPortletDisplayBuilder {
 
 	public SearchBarPortletDisplayBuilder(
-		Http http, LayoutLocalService layoutLocalService, Portal portal) {
+		Http http, LayoutLocalService layoutLocalService, Portal portal,
+		RenderRequest renderRequest) {
 
 		_http = http;
 		_layoutLocalService = layoutLocalService;
 		_portal = portal;
+		_renderRequest = renderRequest;
 	}
 
-	public SearchBarPortletDisplayContext build() {
+	public SearchBarPortletDisplayContext build() throws PortletException {
 		SearchBarPortletDisplayContext searchBarPortletDisplayContext =
-			new SearchBarPortletDisplayContext();
+			createSearchBarPortletDisplayContext();
 
 		searchBarPortletDisplayContext.setAvailableEverythingSearchScope(
 			isAvailableEverythingSearchScope());
@@ -67,6 +75,8 @@ public class SearchBarPortletDisplayBuilder {
 				true);
 		}
 
+		searchBarPortletDisplayContext.setPaginationStartParameterName(
+			getPaginationStartParameterName());
 		searchBarPortletDisplayContext.setScopeParameterName(
 			_scopeParameterName);
 		searchBarPortletDisplayContext.setScopeParameterValue(
@@ -132,6 +142,14 @@ public class SearchBarPortletDisplayBuilder {
 		return this;
 	}
 
+	public SearchBarPortletDisplayBuilder setPaginationStartParameterName(
+		String paginationStartParameterName) {
+
+		_paginationStartParameterName = paginationStartParameterName;
+
+		return this;
+	}
+
 	public SearchBarPortletDisplayBuilder setScopeParameterName(
 		String scopeParameterName) {
 
@@ -173,6 +191,18 @@ public class SearchBarPortletDisplayBuilder {
 		return StringPool.SLASH.concat(s);
 	}
 
+	protected SearchBarPortletDisplayContext
+		createSearchBarPortletDisplayContext() {
+
+		try {
+			return new SearchBarPortletDisplayContext(
+				getHttpServletRequest(_renderRequest));
+		}
+		catch (ConfigurationException configurationException) {
+			throw new RuntimeException(configurationException);
+		}
+	}
+
 	protected Layout fetchLayoutByFriendlyURL(
 		long groupId, String friendlyURL) {
 
@@ -198,6 +228,15 @@ public class SearchBarPortletDisplayBuilder {
 		return getLayoutFriendlyURL(layout);
 	}
 
+	protected HttpServletRequest getHttpServletRequest(
+		RenderRequest renderRequest) {
+
+		LiferayPortletRequest liferayPortletRequest =
+			_portal.getLiferayPortletRequest(renderRequest);
+
+		return liferayPortletRequest.getHttpServletRequest();
+	}
+
 	protected String getKeywords() {
 		if (_keywords != null) {
 			return _keywords;
@@ -210,16 +249,24 @@ public class SearchBarPortletDisplayBuilder {
 		try {
 			return _portal.getLayoutFriendlyURL(layout, _themeDisplay);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to get friendly URL for layout " +
 						layout.getLinkedToLayout(),
-					pe);
+					portalException);
 			}
 
 			return null;
 		}
+	}
+
+	protected String getPaginationStartParameterName() {
+		if (_paginationStartParameterName != null) {
+			return _paginationStartParameterName;
+		}
+
+		return StringPool.BLANK;
 	}
 
 	protected String getScopeParameterValue() {
@@ -249,12 +296,6 @@ public class SearchBarPortletDisplayBuilder {
 	}
 
 	protected boolean isAvailableEverythingSearchScope() {
-		Group group = _themeDisplay.getScopeGroup();
-
-		if (group.isStagingGroup()) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -284,7 +325,9 @@ public class SearchBarPortletDisplayBuilder {
 	private String _keywords;
 	private String _keywordsParameterName;
 	private final LayoutLocalService _layoutLocalService;
+	private String _paginationStartParameterName;
 	private final Portal _portal;
+	private final RenderRequest _renderRequest;
 	private String _scopeParameterName;
 	private String _scopeParameterValue;
 	private SearchScopePreference _searchScopePreference;

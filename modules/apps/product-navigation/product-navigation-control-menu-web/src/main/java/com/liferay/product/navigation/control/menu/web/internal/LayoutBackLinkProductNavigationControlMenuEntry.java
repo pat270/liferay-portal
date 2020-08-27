@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.control.menu.BaseProductNavigationControlMenuEntry;
@@ -30,6 +31,7 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eudaldo Alonso
@@ -63,7 +65,8 @@ public class LayoutBackLinkProductNavigationControlMenuEntry
 
 	@Override
 	public String getURL(HttpServletRequest httpServletRequest) {
-		return ParamUtil.getString(httpServletRequest, "p_l_back_url");
+		return _portal.escapeRedirect(
+			ParamUtil.getString(httpServletRequest, "p_l_back_url"));
 	}
 
 	@Override
@@ -80,8 +83,8 @@ public class LayoutBackLinkProductNavigationControlMenuEntry
 			return false;
 		}
 
-		String layoutBackURL = ParamUtil.getString(
-			httpServletRequest, "p_l_back_url");
+		String layoutBackURL = _portal.escapeRedirect(
+			ParamUtil.getString(httpServletRequest, "p_l_back_url"));
 
 		if (Validator.isNull(layoutBackURL)) {
 			return false;
@@ -89,5 +92,8 @@ public class LayoutBackLinkProductNavigationControlMenuEntry
 
 		return super.isShow(httpServletRequest);
 	}
+
+	@Reference
+	private Portal _portal;
 
 }

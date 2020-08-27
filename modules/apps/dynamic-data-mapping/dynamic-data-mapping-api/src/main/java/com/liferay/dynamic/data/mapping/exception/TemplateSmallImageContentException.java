@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class TemplateSmallImageContentException extends PortalException {
 
 	public TemplateSmallImageContentException() {
@@ -31,12 +28,12 @@ public class TemplateSmallImageContentException extends PortalException {
 		super(msg);
 	}
 
-	public TemplateSmallImageContentException(String msg, Throwable cause) {
-		super(msg, cause);
+	public TemplateSmallImageContentException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public TemplateSmallImageContentException(Throwable cause) {
-		super(cause);
+	public TemplateSmallImageContentException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

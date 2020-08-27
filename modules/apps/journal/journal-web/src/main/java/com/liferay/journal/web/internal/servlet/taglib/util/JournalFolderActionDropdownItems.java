@@ -15,11 +15,11 @@
 package com.liferay.journal.web.internal.servlet.taglib.util;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.web.internal.security.permission.resource.JournalFolderPermission;
 import com.liferay.journal.web.internal.security.permission.resource.JournalPermission;
 import com.liferay.petra.function.UnsafeConsumer;
@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil;
+import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
@@ -75,43 +76,35 @@ public class JournalFolderActionDropdownItems {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() throws Exception {
-		return new DropdownItemList() {
-			{
-				if (JournalFolderPermission.contains(
-						_themeDisplay.getPermissionChecker(), _folder,
-						ActionKeys.UPDATE)) {
+		boolean hasUpdatePermission = JournalFolderPermission.contains(
+			_themeDisplay.getPermissionChecker(), _folder, ActionKeys.UPDATE);
 
-					add(_getEditFolderActionUnsafeConsumer());
-				}
-
-				if (JournalFolderPermission.contains(
-						_themeDisplay.getPermissionChecker(), _folder,
-						ActionKeys.UPDATE)) {
-
-					add(_getMoveFolderActionUnsafeConsumer());
-				}
-
-				if (JournalFolderPermission.contains(
-						_themeDisplay.getPermissionChecker(), _folder,
-						ActionKeys.PERMISSIONS)) {
-
-					add(_getPermissionsFolderActionUnsafeConsumer());
-				}
-
-				if (JournalFolderPermission.contains(
-						_themeDisplay.getPermissionChecker(), _folder,
-						ActionKeys.DELETE)) {
-
-					add(_getDeleteFolderActionUnsafeConsumer());
-				}
-
+		return DropdownItemListBuilder.add(
+			() -> hasUpdatePermission, _getEditFolderActionUnsafeConsumer()
+		).add(
+			() -> hasUpdatePermission, _getMoveFolderActionUnsafeConsumer()
+		).add(
+			() -> JournalFolderPermission.contains(
+				_themeDisplay.getPermissionChecker(), _folder,
+				ActionKeys.PERMISSIONS),
+			_getPermissionsFolderActionUnsafeConsumer()
+		).add(
+			() -> JournalFolderPermission.contains(
+				_themeDisplay.getPermissionChecker(), _folder,
+				ActionKeys.DELETE),
+			_getDeleteFolderActionUnsafeConsumer()
+		).add(
+			() -> {
 				Group group = _themeDisplay.getScopeGroup();
 
 				if (_isShowPublishFolderAction() && !group.isLayout()) {
-					add(_getPublishToLiveFolderActionUnsafeConsumer());
+					return true;
 				}
-			}
-		};
+
+				return false;
+			},
+			_getPublishToLiveFolderActionUnsafeConsumer()
+		).build();
 	}
 
 	public List<DropdownItem> getInfoPanelActionDropdownItems()
@@ -140,23 +133,23 @@ public class JournalFolderActionDropdownItems {
 			return actionDropdownItems;
 		}
 
-		return new DropdownItemList() {
-			{
-				if (JournalPermission.contains(
-						_themeDisplay.getPermissionChecker(),
-						_themeDisplay.getScopeGroupId(),
-						ActionKeys.ADD_FOLDER)) {
-
-					add(_getAddHomeFolderActionUnsafeConsumer());
-				}
-
+		return DropdownItemListBuilder.add(
+			() -> JournalPermission.contains(
+				_themeDisplay.getPermissionChecker(),
+				_themeDisplay.getScopeGroupId(), ActionKeys.ADD_FOLDER),
+			_getAddHomeFolderActionUnsafeConsumer()
+		).add(
+			() -> {
 				boolean workflowEnabled = false;
 
-				if (WorkflowEngineManagerUtil.isDeployed() &&
-					(WorkflowHandlerRegistryUtil.getWorkflowHandler(
-						JournalArticle.class.getName()) != null)) {
+				if (WorkflowEngineManagerUtil.isDeployed()) {
+					WorkflowHandler<?> workflowHandler =
+						WorkflowHandlerRegistryUtil.getWorkflowHandler(
+							JournalArticle.class.getName());
 
-					workflowEnabled = true;
+					if (workflowHandler != null) {
+						workflowEnabled = true;
+					}
 				}
 
 				if (workflowEnabled &&
@@ -166,24 +159,29 @@ public class JournalFolderActionDropdownItems {
 						JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 						ActionKeys.UPDATE)) {
 
-					add(_getEditHomeFolderActionUnsafeConsumer());
+					return true;
 				}
 
-				if (JournalPermission.contains(
-						_themeDisplay.getPermissionChecker(),
-						_themeDisplay.getScopeGroupId(),
-						ActionKeys.PERMISSIONS)) {
-
-					add(_getPermissionsHomeFolderActionUnsafeConsumer());
-				}
-
+				return false;
+			},
+			_getEditHomeFolderActionUnsafeConsumer()
+		).add(
+			() -> JournalPermission.contains(
+				_themeDisplay.getPermissionChecker(),
+				_themeDisplay.getScopeGroupId(), ActionKeys.PERMISSIONS),
+			_getPermissionsHomeFolderActionUnsafeConsumer()
+		).add(
+			() -> {
 				Group group = _themeDisplay.getScopeGroup();
 
 				if (_isShowPublishFolderAction() && !group.isLayout()) {
-					add(_getPublishToLiveFolderActionUnsafeConsumer());
+					return true;
 				}
-			}
-		};
+
+				return false;
+			},
+			_getPublishToLiveFolderActionUnsafeConsumer()
+		).build();
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
@@ -202,7 +200,7 @@ public class JournalFolderActionDropdownItems {
 
 	private UnsafeConsumer<DropdownItem, Exception>
 			_getDeleteFolderActionUnsafeConsumer()
-		throws PortalException {
+		throws Exception {
 
 		String redirect = _getRedirect();
 
@@ -222,11 +220,11 @@ public class JournalFolderActionDropdownItems {
 
 		PortletURL deleteURL = _liferayPortletResponse.createActionURL();
 
-		String actionName = "deleteFolder";
+		String actionName = "/journal/delete_folder";
 		String key = "delete";
 
 		if (_trashHelper.isTrashEnabled(_themeDisplay.getScopeGroupId())) {
-			actionName = "moveFolderToTrash";
+			actionName = "/journal/move_folder_to_trash";
 			key = "move-to-recycle-bin";
 		}
 
@@ -280,7 +278,7 @@ public class JournalFolderActionDropdownItems {
 		return dropdownItem -> {
 			dropdownItem.setHref(
 				_liferayPortletResponse.createRenderURL(), "mvcPath",
-				"/move_entries.jsp", "redirect", _getRedirect(),
+				"/move_articles_and_folders.jsp", "redirect", _getRedirect(),
 				"rowIdsJournalFolder", _folder.getFolderId());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "move"));
@@ -331,11 +329,14 @@ public class JournalFolderActionDropdownItems {
 			ActionRequest.ACTION_NAME, "/journal/publish_folder");
 
 		publishFolderURL.setParameter("backURL", _getRedirect());
-		publishFolderURL.setParameter(
-			"folderId", String.valueOf(_folder.getFolderId()));
+
+		if (_folder != null) {
+			publishFolderURL.setParameter(
+				"folderId", String.valueOf(_folder.getFolderId()));
+		}
 
 		return dropdownItem -> {
-			dropdownItem.putData("action", "publishToLive");
+			dropdownItem.putData("action", "publishFolderToLive");
 			dropdownItem.putData(
 				"publishFolderURL", publishFolderURL.toString());
 			dropdownItem.setLabel(
@@ -376,12 +377,12 @@ public class JournalFolderActionDropdownItems {
 
 			return false;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"An exception occured when checking if the publish " +
 						"action should be displayed",
-					pe);
+					portalException);
 			}
 
 			return false;

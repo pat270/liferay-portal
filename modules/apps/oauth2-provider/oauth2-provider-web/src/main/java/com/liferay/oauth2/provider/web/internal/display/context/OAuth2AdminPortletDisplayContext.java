@@ -43,22 +43,20 @@ public class OAuth2AdminPortletDisplayContext
 	extends BaseOAuth2PortletDisplayContext {
 
 	public OAuth2AdminPortletDisplayContext(
-		OAuth2ApplicationService oAuth2ApplicationService,
+		DLURLHelper dlURLHelper,
 		OAuth2ApplicationScopeAliasesLocalService
 			oAuth2ApplicationScopeAliasesLocalService,
+		OAuth2ApplicationService oAuth2ApplicationService,
 		OAuth2ProviderConfiguration oAuth2ProviderConfiguration,
-		PortletRequest portletRequest, ThemeDisplay themeDisplay,
-		DLURLHelper dlURLHelper) {
+		PortletRequest portletRequest, ThemeDisplay themeDisplay) {
 
-		_oAuth2ProviderConfiguration = oAuth2ProviderConfiguration;
-
-		super.oAuth2ApplicationService = oAuth2ApplicationService;
-		super.portletRequest = portletRequest;
-		super.themeDisplay = themeDisplay;
-		super.dlURLHelper = dlURLHelper;
+		super(
+			dlURLHelper, oAuth2ApplicationService, portletRequest,
+			themeDisplay);
 
 		this.oAuth2ApplicationScopeAliasesLocalService =
 			oAuth2ApplicationScopeAliasesLocalService;
+		_oAuth2ProviderConfiguration = oAuth2ProviderConfiguration;
 	}
 
 	public List<GrantType> getGrantTypes(
@@ -113,16 +111,6 @@ public class OAuth2AdminPortletDisplayContext
 	public String[] getOAuth2Features(PortletPreferences portletPreferences) {
 		return StringUtil.split(
 			portletPreferences.getValue("oAuth2Features", StringPool.BLANK));
-	}
-
-	public int getScopeAliasesSize(OAuth2Application oAuth2Application)
-		throws PortalException {
-
-		List<String> scopeAliasesList =
-			oAuth2ApplicationScopeAliasesLocalService.getScopeAliasesList(
-				oAuth2Application.getOAuth2ApplicationScopeAliasesId());
-
-		return scopeAliasesList.size();
 	}
 
 	public ClientProfile[] getSortedClientProfiles() {

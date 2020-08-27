@@ -20,15 +20,14 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.sync.constants.DLSyncConstants;
+import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.Folder;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.service.test.BaseDLAppTestCase;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,12 +50,10 @@ public class DLAppServiceWhenAddingAFolderTest extends BaseDLAppTestCase {
 
 	@Test
 	public void testShouldAddAssetEntry() throws PortalException {
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		Folder folder = DLAppServiceUtil.addFolder(
 			group.getGroupId(), parentFolder.getFolderId(),
-			RandomTestUtil.randomString(), StringPool.BLANK, serviceContext);
+			RandomTestUtil.randomString(), StringPool.BLANK,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
 			DLFolderConstants.getClassName(), folder.getFolderId());
@@ -70,13 +67,10 @@ public class DLAppServiceWhenAddingAFolderTest extends BaseDLAppTestCase {
 			DLAppServiceTestUtil.registerDLSyncEventProcessorMessageListener(
 				DLSyncConstants.EVENT_ADD);
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 		DLAppServiceUtil.addFolder(
 			group.getGroupId(), parentFolder.getFolderId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			serviceContext);
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		Assert.assertEquals(1, counter.get());
 	}

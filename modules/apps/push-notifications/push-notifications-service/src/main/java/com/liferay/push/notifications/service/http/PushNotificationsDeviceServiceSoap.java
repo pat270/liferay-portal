@@ -20,8 +20,6 @@ import com.liferay.push.notifications.service.PushNotificationsDeviceServiceUtil
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>PushNotificationsDeviceServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Bruno Farache
  * @see PushNotificationsDeviceServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class PushNotificationsDeviceServiceSoap {
 
 	public static
@@ -78,10 +77,10 @@ public class PushNotificationsDeviceServiceSoap {
 			return com.liferay.push.notifications.model.
 				PushNotificationsDeviceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -100,10 +99,10 @@ public class PushNotificationsDeviceServiceSoap {
 			return com.liferay.push.notifications.model.
 				PushNotificationsDeviceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -121,10 +120,10 @@ public class PushNotificationsDeviceServiceSoap {
 			return com.liferay.push.notifications.model.
 				PushNotificationsDeviceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -135,10 +134,10 @@ public class PushNotificationsDeviceServiceSoap {
 			PushNotificationsDeviceServiceUtil.sendPushNotification(
 				toUserIds, payload);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -150,10 +149,10 @@ public class PushNotificationsDeviceServiceSoap {
 			PushNotificationsDeviceServiceUtil.sendPushNotification(
 				platform, tokens, payload);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

@@ -15,13 +15,18 @@
 package com.liferay.headless.form.client.resource.v1_0;
 
 import com.liferay.headless.form.client.dto.v1_0.Form;
+import com.liferay.headless.form.client.dto.v1_0.FormContext;
+import com.liferay.headless.form.client.dto.v1_0.FormDocument;
 import com.liferay.headless.form.client.http.HttpInvoker;
 import com.liferay.headless.form.client.pagination.Page;
 import com.liferay.headless.form.client.pagination.Pagination;
+import com.liferay.headless.form.client.problem.Problem;
 import com.liferay.headless.form.client.serdes.v1_0.FormSerDes;
 
 import java.io.File;
 
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,156 +38,372 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class FormResource {
+public interface FormResource {
 
-	public Form getForm(Long formId) throws Exception {
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-form/v1.0/forms/{formId}",
-			formId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return FormSerDes.toDTO(content);
-		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
-
-			throw e;
-		}
+	public static Builder builder() {
+		return new Builder();
 	}
 
-	public com.liferay.headless.form.client.dto.v1_0.FormContext
-			postFormEvaluateContext(
-				Long formId,
-				com.liferay.headless.form.client.dto.v1_0.FormContext
-					formContext)
-		throws Exception {
+	public Form getForm(Long formId) throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public HttpInvoker.HttpResponse getFormHttpResponse(Long formId)
+		throws Exception;
 
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+	public FormContext postFormEvaluateContext(
+			Long formId, FormContext formContext)
+		throws Exception;
 
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-form/v1.0/forms/{formId}/evaluate-context",
-			formId);
+	public HttpInvoker.HttpResponse postFormEvaluateContextHttpResponse(
+			Long formId, FormContext formContext)
+		throws Exception;
 
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
+	public FormDocument postFormFormDocument(
+			Long formId, Form form, Map<String, File> multipartFiles)
+		throws Exception;
 
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return com.liferay.headless.form.client.serdes.v1_0.
-				FormContextSerDes.toDTO(content);
-		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
-
-			throw e;
-		}
-	}
-
-	public com.liferay.headless.form.client.dto.v1_0.FormDocument
-			postFormFormDocument(
-				Long formId, Form form, Map<String, File> files)
-		throws Exception {
-
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-		httpInvoker.multipart();
-
-		httpInvoker.part("form", FormSerDes.toJSON(form));
-
-		for (Map.Entry<String, File> entry : files.entrySet()) {
-			httpInvoker.part(entry.getKey(), entry.getValue());
-		}
-
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-form/v1.0/forms/{formId}/form-document",
-			formId);
-
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
-
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
-
-		String content = httpResponse.getContent();
-
-		_logger.fine("HTTP response content: " + content);
-
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
-
-		try {
-			return com.liferay.headless.form.client.serdes.v1_0.
-				FormDocumentSerDes.toDTO(content);
-		}
-		catch (Exception e) {
-			_logger.log(
-				Level.WARNING, "Unable to process HTTP response: " + content,
-				e);
-
-			throw e;
-		}
-	}
+	public HttpInvoker.HttpResponse postFormFormDocumentHttpResponse(
+			Long formId, Form form, Map<String, File> multipartFiles)
+		throws Exception;
 
 	public Page<Form> getSiteFormsPage(Long siteId, Pagination pagination)
-		throws Exception {
+		throws Exception;
 
-		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+	public HttpInvoker.HttpResponse getSiteFormsPageHttpResponse(
+			Long siteId, Pagination pagination)
+		throws Exception;
 
-		httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+	public static class Builder {
 
-		if (pagination != null) {
-			httpInvoker.parameter("page", String.valueOf(pagination.getPage()));
-			httpInvoker.parameter(
-				"pageSize", String.valueOf(pagination.getPageSize()));
+		public Builder authentication(String login, String password) {
+			_login = login;
+			_password = password;
+
+			return this;
 		}
 
-		httpInvoker.path(
-			"http://localhost:8080/o/headless-form/v1.0/sites/{siteId}/forms",
-			siteId);
+		public FormResource build() {
+			return new FormResourceImpl(this);
+		}
 
-		httpInvoker.userNameAndPassword("test@liferay.com:test");
+		public Builder endpoint(String host, int port, String scheme) {
+			_host = host;
+			_port = port;
+			_scheme = scheme;
 
-		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+			return this;
+		}
 
-		String content = httpResponse.getContent();
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
 
-		_logger.fine("HTTP response content: " + content);
+			return this;
+		}
 
-		_logger.fine("HTTP response message: " + httpResponse.getMessage());
-		_logger.fine("HTTP response status: " + httpResponse.getStatus());
+		public Builder locale(Locale locale) {
+			_locale = locale;
 
-		return Page.of(content, FormSerDes::toDTO);
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
+
+			return this;
+		}
+
+		private Builder() {
+		}
+
+		private Map<String, String> _headers = new LinkedHashMap<>();
+		private String _host = "localhost";
+		private Locale _locale;
+		private String _login = "";
+		private String _password = "";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
+		private int _port = 8080;
+		private String _scheme = "http";
+
 	}
 
-	private static final Logger _logger = Logger.getLogger(
-		FormResource.class.getName());
+	public static class FormResourceImpl implements FormResource {
+
+		public Form getForm(Long formId) throws Exception {
+			HttpInvoker.HttpResponse httpResponse = getFormHttpResponse(formId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return FormSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse getFormHttpResponse(Long formId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + "/o/headless-form/v1.0/forms/{formId}",
+				formId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public FormContext postFormEvaluateContext(
+				Long formId, FormContext formContext)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postFormEvaluateContextHttpResponse(formId, formContext);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return com.liferay.headless.form.client.serdes.v1_0.
+					FormContextSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse postFormEvaluateContextHttpResponse(
+				Long formId, FormContext formContext)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(formContext.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/forms/{formId}/evaluate-context",
+				formId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public FormDocument postFormFormDocument(
+				Long formId, Form form, Map<String, File> multipartFiles)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postFormFormDocumentHttpResponse(formId, form, multipartFiles);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return com.liferay.headless.form.client.serdes.v1_0.
+					FormDocumentSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse postFormFormDocumentHttpResponse(
+				Long formId, Form form, Map<String, File> multipartFiles)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.multipart();
+
+			httpInvoker.part("form", FormSerDes.toJSON(form));
+
+			for (Map.Entry<String, File> entry : multipartFiles.entrySet()) {
+				httpInvoker.part(entry.getKey(), entry.getValue());
+			}
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/forms/{formId}/form-document",
+				formId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<Form> getSiteFormsPage(Long siteId, Pagination pagination)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getSiteFormsPageHttpResponse(siteId, pagination);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return Page.of(content, FormSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse getSiteFormsPageHttpResponse(
+				Long siteId, Pagination pagination)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (pagination != null) {
+				httpInvoker.parameter(
+					"page", String.valueOf(pagination.getPage()));
+				httpInvoker.parameter(
+					"pageSize", String.valueOf(pagination.getPageSize()));
+			}
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-form/v1.0/sites/{siteId}/forms",
+				siteId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		private FormResourceImpl(Builder builder) {
+			_builder = builder;
+		}
+
+		private static final Logger _logger = Logger.getLogger(
+			FormResource.class.getName());
+
+		private Builder _builder;
+
+	}
 
 }

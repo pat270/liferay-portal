@@ -15,13 +15,16 @@
 package com.liferay.frontend.taglib.clay.servlet.taglib.model.table;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Iván Zaera Avellón
+ * @author     Iván Zaera Avellón
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class Field {
 
 	public Field(String fieldName, String label) {
@@ -74,15 +77,21 @@ public class Field {
 	}
 
 	public Map<String, ?> toMap() {
-		Map<String, Object> map = new HashMap<>();
-
-		map.put("contentRenderer", _contentRenderer);
-		map.put("contentRendererMap", _contentRendererMap);
-		map.putAll(_customProperties);
-		map.put("fieldName", _fieldName);
-		map.put("fieldsMap", _fieldsMap);
-		map.put("label", _label);
-		map.put("sortable", _sortable);
+		Map<String, Object> map = HashMapBuilder.<String, Object>put(
+			"contentRenderer", _contentRenderer
+		).put(
+			"contentRendererMap", _contentRendererMap
+		).putAll(
+			_customProperties
+		).put(
+			"fieldName", _fieldName
+		).put(
+			"fieldsMap", _fieldsMap
+		).put(
+			"label", _label
+		).put(
+			"sortable", _sortable
+		).build();
 
 		if (_sortingOrder != null) {
 			map.put("sortingOrder", _sortingOrder.getValue());

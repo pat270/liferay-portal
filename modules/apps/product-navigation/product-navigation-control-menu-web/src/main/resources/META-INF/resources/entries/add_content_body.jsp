@@ -24,8 +24,8 @@
 	String portletNamespace = PortalUtil.getPortletNamespace(ProductNavigationControlMenuPortletKeys.PRODUCT_NAVIGATION_CONTROL_MENU);
 	%>
 
-	<div class="closed hidden-print lfr-add-panel lfr-admin-panel sidenav-fixed sidenav-menu-slider sidenav-right" id="<%= portletNamespace %>addPanelId">
-		<div class="product-menu sidebar sidebar-inverse sidenav-menu">
+	<div class="closed d-print-none lfr-add-panel lfr-admin-panel sidenav-fixed sidenav-menu-slider sidenav-right" id="<%= portletNamespace %>addPanelId">
+		<div class="light product-menu sidebar sidebar-inverse sidenav-menu">
 			<div class="sidebar-header">
 				<h1 class="sr-only"><liferay-ui:message key="widget-selection-panel" /></h1>
 
@@ -40,20 +40,13 @@
 		</div>
 	</div>
 
-	<aui:script use="liferay-store,io-request,parse-content">
-		var addToggle = $('#<%= portletNamespace %>addToggleId');
+	<aui:script>
+		var addToggle = document.getElementById('<%= portletNamespace %>addToggleId');
 
-		addToggle.sideNavigation();
+		Liferay.SideNavigation.initialize(addToggle);
 
-		Liferay.once(
-			'screenLoad',
-			function() {
-				var sideNavigation = addToggle.data('lexicon.sidenav');
-
-				if (sideNavigation) {
-					sideNavigation.destroy();
-				}
-			}
-		);
+		Liferay.once('screenLoad', function () {
+			Liferay.SideNavigation.destroy(addToggle);
+		});
 	</aui:script>
 </liferay-util:body-bottom>

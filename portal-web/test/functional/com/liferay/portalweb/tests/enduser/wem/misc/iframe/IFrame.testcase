@@ -1,5 +1,6 @@
 @component-name = "portal-util-misc"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "IFrame Portlet";
@@ -10,16 +11,14 @@ definition {
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "IFrame Page");
 
-		SitePages.addPublicPage(pageName = "IFrame Page");
-
-		Navigator.gotoPage(pageName = "IFrame Page");
-
-		Portlet.addPG(portletName = "IFrame");
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "IFrame Page",
+			widgetName = "IFrame");
 	}
 
 	tearDown {
@@ -38,4 +37,5 @@ definition {
 			portletBody = "Please configure this portlet to make it visible to all users.",
 			portletName = "IFrame");
 	}
+
 }

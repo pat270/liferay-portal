@@ -27,32 +27,29 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoNotificationRecipient in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoNotificationRecipientCacheModel
 	implements CacheModel<KaleoNotificationRecipient>, Externalizable,
 			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoNotificationRecipientCacheModel)) {
+		if (!(object instanceof KaleoNotificationRecipientCacheModel)) {
 			return false;
 		}
 
 		KaleoNotificationRecipientCacheModel
 			kaleoNotificationRecipientCacheModel =
-				(KaleoNotificationRecipientCacheModel)obj;
+				(KaleoNotificationRecipientCacheModel)object;
 
 		if ((kaleoNotificationRecipientId ==
 				kaleoNotificationRecipientCacheModel.
@@ -84,7 +81,7 @@ public class KaleoNotificationRecipientCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(37);
+		StringBundler sb = new StringBundler(39);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -102,6 +99,8 @@ public class KaleoNotificationRecipientCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoNotificationId=");
@@ -161,6 +160,7 @@ public class KaleoNotificationRecipientCacheModel
 				new Date(modifiedDate));
 		}
 
+		kaleoNotificationRecipientImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoNotificationRecipientImpl.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoNotificationRecipientImpl.setKaleoNotificationId(
@@ -221,7 +221,9 @@ public class KaleoNotificationRecipientCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoNotificationRecipientId = objectInput.readLong();
@@ -235,6 +237,8 @@ public class KaleoNotificationRecipientCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
+		kaleoDefinitionId = objectInput.readLong();
+
 		kaleoDefinitionVersionId = objectInput.readLong();
 
 		kaleoNotificationId = objectInput.readLong();
@@ -243,7 +247,7 @@ public class KaleoNotificationRecipientCacheModel
 		recipientClassPK = objectInput.readLong();
 
 		recipientRoleType = objectInput.readInt();
-		recipientScript = objectInput.readUTF();
+		recipientScript = (String)objectInput.readObject();
 		recipientScriptLanguage = objectInput.readUTF();
 		recipientScriptContexts = objectInput.readUTF();
 		address = objectInput.readUTF();
@@ -272,6 +276,8 @@ public class KaleoNotificationRecipientCacheModel
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		objectOutput.writeLong(kaleoDefinitionId);
+
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		objectOutput.writeLong(kaleoNotificationId);
@@ -288,10 +294,10 @@ public class KaleoNotificationRecipientCacheModel
 		objectOutput.writeInt(recipientRoleType);
 
 		if (recipientScript == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(recipientScript);
+			objectOutput.writeObject(recipientScript);
 		}
 
 		if (recipientScriptLanguage == null) {
@@ -331,6 +337,7 @@ public class KaleoNotificationRecipientCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoNotificationId;
 	public String recipientClassName;

@@ -14,8 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.definition;
 
-import com.liferay.portal.kernel.util.HashCode;
-import com.liferay.portal.kernel.util.HashCodeFactoryUtil;
+import com.liferay.petra.lang.HashUtil;
 
 import java.util.Objects;
 
@@ -32,6 +31,14 @@ public class RoleAssignment extends Assignment {
 		_roleType = null;
 	}
 
+	public RoleAssignment(long roleId, String roleName, String roleType) {
+		super(AssignmentType.ROLE);
+
+		_roleId = roleId;
+		_roleName = roleName;
+		_roleType = roleType;
+	}
+
 	public RoleAssignment(String roleName, String roleType) {
 		super(AssignmentType.ROLE);
 
@@ -40,16 +47,16 @@ public class RoleAssignment extends Assignment {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RoleAssignment)) {
+		if (!(object instanceof RoleAssignment)) {
 			return false;
 		}
 
-		RoleAssignment roleAssignment = (RoleAssignment)obj;
+		RoleAssignment roleAssignment = (RoleAssignment)object;
 
 		if (Objects.equals(_roleName, roleAssignment._roleName) &&
 			(_roleId == roleAssignment._roleId)) {
@@ -74,13 +81,11 @@ public class RoleAssignment extends Assignment {
 
 	@Override
 	public int hashCode() {
-		HashCode hashCode = HashCodeFactoryUtil.getHashCode();
+		int hash = HashUtil.hash(0, _roleId);
 
-		hashCode.append(_roleId);
-		hashCode.append(_roleName);
-		hashCode.append(_roleType);
+		hash = HashUtil.hash(hash, _roleName);
 
-		return hashCode.toHashCode();
+		return HashUtil.hash(hash, _roleType);
 	}
 
 	public boolean isAutoCreate() {

@@ -38,6 +38,7 @@ import com.liferay.segments.field.customizer.SegmentsFieldCustomizerRegistry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -75,9 +76,10 @@ public class EntityModelFieldMapper {
 		try {
 			return _expandoColumnLocalService.getColumn(expandoColumnId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
-				"Unable to find Expando Column with id " + expandoColumnId, pe);
+				"Unable to find Expando Column with id " + expandoColumnId,
+				portalException);
 
 			return null;
 		}
@@ -146,22 +148,25 @@ public class EntityModelFieldMapper {
 		EntityModel entityModel, EntityField entityField,
 		PortletRequest portletRequest) {
 
+		Locale locale = _portal.getLocale(portletRequest);
+
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-			_portal.getLocale(portletRequest), getClass());
+			locale, getClass());
 
 		EntityField.Type entityFieldType = entityField.getType();
 
 		if (entityFieldType == EntityField.Type.COMPLEX) {
-			Map<String, EntityField> entityFieldsMap =
-				((ComplexEntityField)entityField).getEntityFieldsMap();
+			ComplexEntityField complexEntityField =
+				(ComplexEntityField)entityField;
 
 			return _getComplexFields(
-				entityModel.getName(), entityField.getName(), entityFieldsMap,
-				portletRequest, resourceBundle);
+				entityModel.getName(), entityField.getName(),
+				complexEntityField.getEntityFieldsMap(), locale, portletRequest,
+				resourceBundle);
 		}
 
 		Optional<SegmentsFieldCustomizer> segmentsFieldCustomizerOptional =
-			_segmentsFieldCustomizerRegistry.getSegmentFieldCustomizerOptional(
+			_segmentsFieldCustomizerRegistry.getSegmentsFieldCustomizerOptional(
 				entityModel.getName(), entityField.getName());
 
 		if ((entityFieldType == EntityField.Type.ID) &&
@@ -205,11 +210,11 @@ public class EntityModelFieldMapper {
 
 	private List<Field> _getComplexFields(
 		String entityModelName, String complexEntityFieldName,
-		Map<String, EntityField> entityFieldsMap, PortletRequest portletRequest,
-		ResourceBundle resourceBundle) {
+		Map<String, EntityField> entityFieldsMap, Locale locale,
+		PortletRequest portletRequest, ResourceBundle resourceBundle) {
 
 		if (complexEntityFieldName.equals("customField")) {
-			return _getCustomFields(entityFieldsMap, resourceBundle);
+			return _getCustomFields(entityFieldsMap, locale);
 		}
 
 		List<Field> complexFields = new ArrayList<>();
@@ -219,8 +224,14 @@ public class EntityModelFieldMapper {
 				Optional<SegmentsFieldCustomizer>
 					segmentsFieldCustomizerOptional =
 						_segmentsFieldCustomizerRegistry.
-							getSegmentFieldCustomizerOptional(
+							getSegmentsFieldCustomizerOptional(
 								entityModelName, entityField.getName());
+
+				if ((entityField.getType() == EntityField.Type.ID) &&
+					!segmentsFieldCustomizerOptional.isPresent()) {
+
+					return;
+				}
 
 				complexFields.add(
 					getField(
@@ -233,27 +244,26 @@ public class EntityModelFieldMapper {
 	}
 
 	private List<Field> _getCustomFields(
-		Map<String, EntityField> entityFieldsMap,
-		ResourceBundle resourceBundle) {
+		Map<String, EntityField> entityFieldsMap, Locale locale) {
 
 		List<Field> customFields = new ArrayList<>();
 
 		entityFieldsMap.forEach(
 			(entityFieldName, entityField) -> {
-				ExpandoColumn expandoColumn = getExpandoColumn(entityFieldName);
+				ExpandoColumn expandoColumn =
+					_expandoColumnLocalService.fetchExpandoColumn(
+						getExpandoColumnId(entityFieldName));
 
 				if (expandoColumn == null) {
 					return;
 				}
 
-				String label = expandoColumn.getDisplayName(
-					resourceBundle.getLocale());
-
-				String type = getType(entityField.getType());
+				String label = expandoColumn.getDisplayName(locale);
 
 				customFields.add(
 					new Field(
-						"customField/" + entityFieldName, label, type,
+						"customField/" + entityFieldName, label,
+						getType(entityField.getType()),
 						_getExpandoColumnFieldOptions(expandoColumn), null));
 			});
 
@@ -273,9 +283,34 @@ public class EntityModelFieldMapper {
 			}
 		}
 		else if (expandoColumn.getType() ==
+					ExpandoColumnConstants.FLOAT_ARRAY) {
+
+			for (float value : (float[])expandoColumn.getDefaultValue()) {
+				fieldOptions.add(
+					new Field.Option(
+						String.valueOf(value), String.valueOf(value)));
+			}
+		}
+		else if (expandoColumn.getType() ==
 					ExpandoColumnConstants.INTEGER_ARRAY) {
 
 			for (int value : (int[])expandoColumn.getDefaultValue()) {
+				fieldOptions.add(
+					new Field.Option(
+						String.valueOf(value), String.valueOf(value)));
+			}
+		}
+		else if (expandoColumn.getType() == ExpandoColumnConstants.LONG_ARRAY) {
+			for (long value : (long[])expandoColumn.getDefaultValue()) {
+				fieldOptions.add(
+					new Field.Option(
+						String.valueOf(value), String.valueOf(value)));
+			}
+		}
+		else if (expandoColumn.getType() ==
+					ExpandoColumnConstants.SHORT_ARRAY) {
+
+			for (short value : (short[])expandoColumn.getDefaultValue()) {
 				fieldOptions.add(
 					new Field.Option(
 						String.valueOf(value), String.valueOf(value)));

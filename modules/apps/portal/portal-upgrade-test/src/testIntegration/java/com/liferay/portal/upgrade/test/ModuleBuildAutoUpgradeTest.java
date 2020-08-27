@@ -18,7 +18,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import java.sql.Types;
@@ -69,7 +68,7 @@ public class ModuleBuildAutoUpgradeTest extends BaseBuildAutoUpgradeTestCase {
 	}
 
 	private byte[] _createBundleBytes(Object[][] tableColumns, int version)
-		throws IOException {
+		throws Exception {
 
 		try (UnsyncByteArrayOutputStream unsyncbyteArrayOutputStream =
 				new UnsyncByteArrayOutputStream();
@@ -85,7 +84,7 @@ public class ModuleBuildAutoUpgradeTest extends BaseBuildAutoUpgradeTestCase {
 			attributes.putValue(
 				Constants.BUNDLE_NAME, "Build Auto Upgrade Test");
 			attributes.putValue(
-				Constants.BUNDLE_SYMBOLICNAME, BUNDLE_SYMBOLICNAME);
+				Constants.BUNDLE_SYMBOLICNAME, BUNDLE_SYMBOLIC_NAME);
 			attributes.putValue(Constants.BUNDLE_VERSION, "1.0.0");
 			attributes.putValue("Liferay-Require-SchemaVersion", "1.0.0");
 			attributes.putValue("Liferay-Service", Boolean.TRUE.toString());

@@ -18,6 +18,7 @@ import com.liferay.message.boards.model.MBThread;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,30 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MBThread in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class MBThreadCacheModel
-	implements CacheModel<MBThread>, Externalizable {
+	implements CacheModel<MBThread>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MBThreadCacheModel)) {
+		if (!(object instanceof MBThreadCacheModel)) {
 			return false;
 		}
 
-		MBThreadCacheModel mbThreadCacheModel = (MBThreadCacheModel)obj;
+		MBThreadCacheModel mbThreadCacheModel = (MBThreadCacheModel)object;
 
-		if (threadId == mbThreadCacheModel.threadId) {
+		if ((threadId == mbThreadCacheModel.threadId) &&
+			(mvccVersion == mbThreadCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,30 @@ public class MBThreadCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, threadId);
+		int hashCode = HashUtil.hash(0, threadId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
 		StringBundler sb = new StringBundler(47);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", threadId=");
 		sb.append(threadId);
@@ -90,10 +106,6 @@ public class MBThreadCacheModel
 		sb.append(rootMessageUserId);
 		sb.append(", title=");
 		sb.append(title);
-		sb.append(", messageCount=");
-		sb.append(messageCount);
-		sb.append(", viewCount=");
-		sb.append(viewCount);
 		sb.append(", lastPostByUserId=");
 		sb.append(lastPostByUserId);
 		sb.append(", lastPostDate=");
@@ -120,6 +132,9 @@ public class MBThreadCacheModel
 	@Override
 	public MBThread toEntityModel() {
 		MBThreadImpl mbThreadImpl = new MBThreadImpl();
+
+		mbThreadImpl.setMvccVersion(mvccVersion);
+		mbThreadImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			mbThreadImpl.setUuid("");
@@ -165,8 +180,6 @@ public class MBThreadCacheModel
 			mbThreadImpl.setTitle(title);
 		}
 
-		mbThreadImpl.setMessageCount(messageCount);
-		mbThreadImpl.setViewCount(viewCount);
 		mbThreadImpl.setLastPostByUserId(lastPostByUserId);
 
 		if (lastPostDate == Long.MIN_VALUE) {
@@ -210,6 +223,9 @@ public class MBThreadCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		threadId = objectInput.readLong();
@@ -230,10 +246,6 @@ public class MBThreadCacheModel
 		rootMessageUserId = objectInput.readLong();
 		title = objectInput.readUTF();
 
-		messageCount = objectInput.readInt();
-
-		viewCount = objectInput.readInt();
-
 		lastPostByUserId = objectInput.readLong();
 		lastPostDate = objectInput.readLong();
 
@@ -251,6 +263,10 @@ public class MBThreadCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -289,10 +305,6 @@ public class MBThreadCacheModel
 			objectOutput.writeUTF(title);
 		}
 
-		objectOutput.writeInt(messageCount);
-
-		objectOutput.writeInt(viewCount);
-
 		objectOutput.writeLong(lastPostByUserId);
 		objectOutput.writeLong(lastPostDate);
 
@@ -315,6 +327,8 @@ public class MBThreadCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long threadId;
 	public long groupId;
@@ -327,8 +341,6 @@ public class MBThreadCacheModel
 	public long rootMessageId;
 	public long rootMessageUserId;
 	public String title;
-	public int messageCount;
-	public int viewCount;
 	public long lastPostByUserId;
 	public long lastPostDate;
 	public double priority;

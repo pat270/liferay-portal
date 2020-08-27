@@ -27,9 +27,11 @@ import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBCategory;
 import com.liferay.message.boards.model.MBMessage;
+import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBCategoryLocalServiceUtil;
 import com.liferay.message.boards.service.MBCategoryServiceUtil;
 import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
+import com.liferay.message.boards.service.MBThreadLocalService;
 import com.liferay.message.boards.test.util.MBTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
@@ -47,6 +49,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.io.InputStream;
@@ -75,6 +78,40 @@ public class MBMessageStagedModelDataHandlerTest
 		new LiferayIntegrationTestRule();
 
 	@Test
+	public void testDeleteAttachmentFileEntry() throws Exception {
+		Map<String, List<StagedModel>> dependentStagedModelsMap =
+			addDependentStagedModelsMap(stagingGroup);
+
+		MBMessage mbMessage = (MBMessage)addStagedModel(
+			stagingGroup, dependentStagedModelsMap);
+
+		exportImportStagedModel(mbMessage);
+
+		MBMessage importedMBMessage = (MBMessage)getStagedModel(
+			mbMessage.getUuid(), liveGroup);
+
+		Assert.assertEquals(
+			1, importedMBMessage.getAttachmentsFileEntriesCount());
+
+		List<FileEntry> attachmentsFileEntries =
+			importedMBMessage.getAttachmentsFileEntries();
+
+		FileEntry attachmentFileEntry = attachmentsFileEntries.get(0);
+
+		MBMessageLocalServiceUtil.moveMessageAttachmentToTrash(
+			mbMessage.getUserId(), mbMessage.getMessageId(),
+			attachmentFileEntry.getFileName());
+
+		exportImportStagedModel(mbMessage);
+
+		importedMBMessage = (MBMessage)getStagedModel(
+			mbMessage.getUuid(), liveGroup);
+
+		Assert.assertEquals(
+			0, importedMBMessage.getAttachmentsFileEntriesCount());
+	}
+
+	@Test
 	public void testDoubleExportImport() throws Exception {
 		Map<String, List<StagedModel>> dependentStagedModelsMap =
 			addDependentStagedModelsMap(stagingGroup);
@@ -94,6 +131,45 @@ public class MBMessageStagedModelDataHandlerTest
 		importedStagedModel = getStagedModel(stagedModel.getUuid(), liveGroup);
 
 		Assert.assertNotNull(importedStagedModel);
+	}
+
+	@Test
+	public void testMoveCategory() throws Exception {
+		Map<String, List<StagedModel>> dependentStagedModelsMap =
+			addDependentStagedModelsMap(stagingGroup);
+
+		MBMessage mbMessage = (MBMessage)addStagedModel(
+			stagingGroup, dependentStagedModelsMap);
+
+		exportImportStagedModel(mbMessage);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				stagingGroup.getGroupId(), TestPropsValues.getUserId());
+
+		MBCategory mbCategory = MBCategoryServiceUtil.addCategory(
+			TestPropsValues.getUserId(),
+			MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
+			RandomTestUtil.randomString(), StringPool.BLANK, serviceContext);
+
+		MBThread mbThread = mbMessage.getThread();
+
+		_mbThreadLocalService.moveThread(
+			stagingGroup.getGroupId(), mbCategory.getCategoryId(),
+			mbThread.getThreadId());
+
+		MBMessage movedMbMessage = (MBMessage)getStagedModel(
+			mbMessage.getUuid(), stagingGroup);
+
+		exportImportStagedModel(movedMbMessage);
+
+		MBMessage importedMBMessage = (MBMessage)getStagedModel(
+			mbMessage.getUuid(), liveGroup);
+
+		MBCategory importedCategory = MBCategoryServiceUtil.getCategory(
+			importedMBMessage.getCategoryId());
+
+		Assert.assertEquals(mbCategory.getName(), importedCategory.getName());
 	}
 
 	@Override
@@ -231,11 +307,13 @@ public class MBMessageStagedModelDataHandlerTest
 					stagedModelDataHandler.deleteStagedModel(
 						dependentStagedModel);
 				}
-				catch (NoSuchModelException nsme) {
-					if (!(nsme instanceof NoSuchFileEntryException) &&
-						!(nsme instanceof NoSuchFolderException)) {
+				catch (NoSuchModelException noSuchModelException) {
+					if (!(noSuchModelException instanceof
+							NoSuchFileEntryException) &&
+						!(noSuchModelException instanceof
+							NoSuchFolderException)) {
 
-						throw nsme;
+						throw noSuchModelException;
 					}
 				}
 			}
@@ -311,5 +389,8 @@ public class MBMessageStagedModelDataHandlerTest
 			message.isAllowPingbacks(), importedMessage.isAllowPingbacks());
 		Assert.assertEquals(message.isAnswer(), importedMessage.isAnswer());
 	}
+
+	@Inject
+	private MBThreadLocalService _mbThreadLocalService;
 
 }

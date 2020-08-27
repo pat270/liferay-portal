@@ -1,9 +1,10 @@
 Bundle-Name: Liferay Trash Service
 Bundle-SymbolicName: com.liferay.trash.service
-Bundle-Version: 4.0.0
+Bundle-Version: 4.0.15
 Import-Package:\
 	com.liferay.trash.util.comparator,\
 	\
 	*
-Liferay-Require-SchemaVersion: 2.0.0
+Liferay-Require-SchemaVersion: 2.2.0
 Liferay-Service: true
+-dsannotations-options: inherit

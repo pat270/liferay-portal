@@ -41,18 +41,6 @@ String sectionName = StringPool.BLANK;
 		/>
 	</aui:field-wrapper>
 
-	<liferay-ui:error key="emailUserAddedBody" message="please-enter-a-valid-body" />
-
-	<liferay-frontend:email-notification-settings
-		bodyLabel='<%= LanguageUtil.get(resourceBundle, "body-with-password") %>'
-		emailBody='<%= LocalizationUtil.getLocalizationXmlFromPreferences(companyPortletPreferences, renderRequest, "adminEmailUserAddedBody", "settings", ContentUtil.get(PortalClassLoaderUtil.getClassLoader(), PropsValues.ADMIN_EMAIL_USER_ADDED_BODY)) %>'
-		emailParam="adminEmailUserAdded"
-		fieldPrefix="settings"
-		helpMessage='<%= LanguageUtil.get(resourceBundle, "account-created-notification-body-with-password-help") %>'
-		showEmailEnabled="<%= false %>"
-		showSubject="<%= false %>"
-	/>
-
 	<liferay-ui:error key="emailUserAddedNoPasswordBody" message="please-enter-a-valid-body" />
 
 	<liferay-frontend:email-notification-settings
@@ -65,7 +53,44 @@ String sectionName = StringPool.BLANK;
 		showSubject="<%= false %>"
 	/>
 
+	<liferay-ui:error key="adminEmailUserAddedResetPasswordBody" message="please-enter-a-valid-body" />
+
+	<liferay-frontend:email-notification-settings
+		bodyLabel='<%= LanguageUtil.get(resourceBundle, "body-with-password-link") %>'
+		emailBody='<%= LocalizationUtil.getLocalizationXmlFromPreferences(companyPortletPreferences, renderRequest, "adminEmailUserAddedResetPasswordBody", "settings", ContentUtil.get(PortalClassLoaderUtil.getClassLoader(), PropsValues.ADMIN_EMAIL_USER_ADDED_RESET_PASSWORD_BODY)) %>'
+		emailParam="adminEmailUserAddedResetPassword"
+		fieldPrefix="settings"
+		helpMessage='<%= LanguageUtil.get(resourceBundle, "account-created-notification-body-with-password-reset-help") %>'
+		showEmailEnabled="<%= false %>"
+		showSubject="<%= false %>"
+	/>
+
 	<aui:fieldset cssClass="definition-of-terms email-user-add terms" label="definition-of-terms">
 		<%@ include file="/email.notifications/definition_of_terms.jspf" %>
 	</aui:fieldset>
 </aui:fieldset>
+
+<%
+String adminEmailUserAddedBody = LocalizationUtil.getLocalizationXmlFromPreferences(companyPortletPreferences, renderRequest, "adminEmailUserAddedBody", "preferences", null);
+%>
+
+<c:if test="<%= Validator.isNotNull(adminEmailUserAddedBody) %>">
+	<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="legacy-template-no-longer-used" markupView="lexicon">
+		<aui:input checked="<%= false %>" label="discard" name="discardLegacyKey" type="checkbox" value="adminEmailUserAddedBody" />
+
+		<div class="alert alert-info">
+			<liferay-ui:message key="sending-of-passwords-by-email-is-no-longer-supported-the-template-below-is-not-used-and-can-be-discarded" />
+		</div>
+
+		<aui:field-wrapper label="body-with-password">
+			<liferay-ui:input-localized
+				fieldPrefix="settings"
+				fieldPrefixSeparator="--"
+				name="adminEmailUserAddedBody"
+				readonly="<%= true %>"
+				type="textarea"
+				xml="<%= adminEmailUserAddedBody %>"
+			/>
+		</aui:field-wrapper>
+	</aui:fieldset>
+</c:if>

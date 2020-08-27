@@ -43,7 +43,7 @@ import javax.sql.DataSource;
  */
 public abstract class OrgLaborServiceBaseImpl
 	extends BaseServiceImpl
-	implements OrgLaborService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, OrgLaborService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -243,8 +243,8 @@ public abstract class OrgLaborServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

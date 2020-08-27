@@ -97,9 +97,9 @@ public class PortletDataContextZipWriterTest {
 	public void testMultipleInputStreamsAddition() throws Exception {
 		byte[] bytes = {Byte.MIN_VALUE, Byte.MAX_VALUE};
 
-		InputStream is = new ByteArrayInputStream(bytes);
+		InputStream inputStream = new ByteArrayInputStream(bytes);
 
-		_portletDataContext.addZipEntry(_PATH, is);
+		_portletDataContext.addZipEntry(_PATH, inputStream);
 
 		List<MethodHandler> methodHandlers =
 			_recorderZipWriter.getMethodHandlers();
@@ -121,9 +121,9 @@ public class PortletDataContextZipWriterTest {
 
 		Assert.assertEquals(Arrays.toString(arguments), 2, arguments.length);
 		Assert.assertSame(_PATH, arguments[0]);
-		Assert.assertSame(is, arguments[1]);
+		Assert.assertSame(inputStream, arguments[1]);
 
-		_portletDataContext.addZipEntry(_PATH, is);
+		_portletDataContext.addZipEntry(_PATH, inputStream);
 
 		Assert.assertTrue(methodHandlers.toString(), methodHandlers.isEmpty());
 	}

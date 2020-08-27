@@ -11,11 +11,13 @@ dependencies {
 	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
 	compileOnly project(":apps:asset:asset-api")
 	compileOnly project(":apps:asset:asset-category-property-api")
+	compileOnly project(":apps:change-tracking:change-tracking-spi")
 	compileOnly project(":apps:petra:petra-model-adapter")
 	compileOnly project(":apps:portal:portal-aop-api")
 	compileOnly project(":apps:portal:portal-dao-orm-custom-sql-api")
-	compileOnly project(":apps:portal:portal-spring-extender-api")
 	compileOnly project(":apps:portal:portal-upgrade-api")
+	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-lang")
+	compileOnly project(":core:petra:petra-sql-dsl-api")
 	compileOnly project(":core:petra:petra-string")
 }

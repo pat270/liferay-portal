@@ -14,7 +14,9 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.portal.kernel.model.WorkflowInstanceLink;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link WorkflowInstanceLinkLocalService}.
@@ -23,10 +25,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WorkflowInstanceLinkLocalService
  * @generated
  */
-@ProviderType
 public class WorkflowInstanceLinkLocalServiceWrapper
-	implements WorkflowInstanceLinkLocalService,
-			   ServiceWrapper<WorkflowInstanceLinkLocalService> {
+	implements ServiceWrapper<WorkflowInstanceLinkLocalService>,
+			   WorkflowInstanceLinkLocalService {
 
 	public WorkflowInstanceLinkLocalServiceWrapper(
 		WorkflowInstanceLinkLocalService workflowInstanceLinkLocalService) {
@@ -35,10 +36,9 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-			addWorkflowInstanceLink(
-				long userId, long companyId, long groupId, String className,
-				long classPK, long workflowInstanceId)
+	public WorkflowInstanceLink addWorkflowInstanceLink(
+			long userId, long companyId, long groupId, String className,
+			long classPK, long workflowInstanceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _workflowInstanceLinkLocalService.addWorkflowInstanceLink(
@@ -48,17 +48,31 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	/**
 	 * Adds the workflow instance link to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param workflowInstanceLink the workflow instance link
 	 * @return the workflow instance link that was added
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-		addWorkflowInstanceLink(
-			com.liferay.portal.kernel.model.WorkflowInstanceLink
-				workflowInstanceLink) {
+	public WorkflowInstanceLink addWorkflowInstanceLink(
+		WorkflowInstanceLink workflowInstanceLink) {
 
 		return _workflowInstanceLinkLocalService.addWorkflowInstanceLink(
 			workflowInstanceLink);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _workflowInstanceLinkLocalService.createPersistedModel(
+			primaryKeyObj);
 	}
 
 	/**
@@ -68,8 +82,8 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	 * @return the new workflow instance link
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-		createWorkflowInstanceLink(long workflowInstanceLinkId) {
+	public WorkflowInstanceLink createWorkflowInstanceLink(
+		long workflowInstanceLinkId) {
 
 		return _workflowInstanceLinkLocalService.createWorkflowInstanceLink(
 			workflowInstanceLinkId);
@@ -90,13 +104,17 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	/**
 	 * Deletes the workflow instance link with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param workflowInstanceLinkId the primary key of the workflow instance link
 	 * @return the workflow instance link that was removed
 	 * @throws PortalException if a workflow instance link with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-			deleteWorkflowInstanceLink(long workflowInstanceLinkId)
+	public WorkflowInstanceLink deleteWorkflowInstanceLink(
+			long workflowInstanceLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _workflowInstanceLinkLocalService.deleteWorkflowInstanceLink(
@@ -104,9 +122,8 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-			deleteWorkflowInstanceLink(
-				long companyId, long groupId, String className, long classPK)
+	public WorkflowInstanceLink deleteWorkflowInstanceLink(
+			long companyId, long groupId, String className, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _workflowInstanceLinkLocalService.deleteWorkflowInstanceLink(
@@ -116,15 +133,17 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	/**
 	 * Deletes the workflow instance link from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param workflowInstanceLink the workflow instance link
 	 * @return the workflow instance link that was removed
 	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-			deleteWorkflowInstanceLink(
-				com.liferay.portal.kernel.model.WorkflowInstanceLink
-					workflowInstanceLink)
+	public WorkflowInstanceLink deleteWorkflowInstanceLink(
+			WorkflowInstanceLink workflowInstanceLink)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _workflowInstanceLinkLocalService.deleteWorkflowInstanceLink(
@@ -138,6 +157,11 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 
 		_workflowInstanceLinkLocalService.deleteWorkflowInstanceLinks(
 			companyId, groupId, className, classPK);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _workflowInstanceLinkLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -162,7 +186,7 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -183,7 +207,7 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -233,17 +257,16 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-		fetchWorkflowInstanceLink(long workflowInstanceLinkId) {
+	public WorkflowInstanceLink fetchWorkflowInstanceLink(
+		long workflowInstanceLinkId) {
 
 		return _workflowInstanceLinkLocalService.fetchWorkflowInstanceLink(
 			workflowInstanceLinkId);
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-		fetchWorkflowInstanceLink(
-			long companyId, long groupId, String className, long classPK) {
+	public WorkflowInstanceLink fetchWorkflowInstanceLink(
+		long companyId, long groupId, String className, long classPK) {
 
 		return _workflowInstanceLinkLocalService.fetchWorkflowInstanceLink(
 			companyId, groupId, className, classPK);
@@ -274,6 +297,9 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 		return _workflowInstanceLinkLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -300,8 +326,8 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	 * @throws PortalException if a workflow instance link with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-			getWorkflowInstanceLink(long workflowInstanceLinkId)
+	public WorkflowInstanceLink getWorkflowInstanceLink(
+			long workflowInstanceLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _workflowInstanceLinkLocalService.getWorkflowInstanceLink(
@@ -309,9 +335,8 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-			getWorkflowInstanceLink(
-				long companyId, long groupId, String className, long classPK)
+	public WorkflowInstanceLink getWorkflowInstanceLink(
+			long companyId, long groupId, String className, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _workflowInstanceLinkLocalService.getWorkflowInstanceLink(
@@ -322,7 +347,7 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	 * Returns a range of all the workflow instance links.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of workflow instance links
@@ -330,17 +355,16 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	 * @return the range of workflow instance links
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.WorkflowInstanceLink>
-		getWorkflowInstanceLinks(int start, int end) {
+	public java.util.List<WorkflowInstanceLink> getWorkflowInstanceLinks(
+		int start, int end) {
 
 		return _workflowInstanceLinkLocalService.getWorkflowInstanceLinks(
 			start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.WorkflowInstanceLink>
-		getWorkflowInstanceLinks(
-			long companyId, long groupId, String className, long classPK) {
+	public java.util.List<WorkflowInstanceLink> getWorkflowInstanceLinks(
+		long companyId, long groupId, String className, long classPK) {
 
 		return _workflowInstanceLinkLocalService.getWorkflowInstanceLinks(
 			companyId, groupId, className, classPK);
@@ -398,17 +422,39 @@ public class WorkflowInstanceLinkLocalServiceWrapper
 	/**
 	 * Updates the workflow instance link in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param workflowInstanceLink the workflow instance link
 	 * @return the workflow instance link that was updated
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.WorkflowInstanceLink
-		updateWorkflowInstanceLink(
-			com.liferay.portal.kernel.model.WorkflowInstanceLink
-				workflowInstanceLink) {
+	public WorkflowInstanceLink updateWorkflowInstanceLink(
+		WorkflowInstanceLink workflowInstanceLink) {
 
 		return _workflowInstanceLinkLocalService.updateWorkflowInstanceLink(
 			workflowInstanceLink);
+	}
+
+	@Override
+	public CTPersistence<WorkflowInstanceLink> getCTPersistence() {
+		return _workflowInstanceLinkLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<WorkflowInstanceLink> getModelClass() {
+		return _workflowInstanceLinkLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<WorkflowInstanceLink>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _workflowInstanceLinkLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

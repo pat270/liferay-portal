@@ -17,8 +17,10 @@ package com.liferay.portal.kernel.plugin;
 import com.liferay.portal.kernel.exception.PortalException;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class RequiredPluginPackageException extends PortalException {
 
 	public RequiredPluginPackageException() {
@@ -28,12 +30,12 @@ public class RequiredPluginPackageException extends PortalException {
 		super(msg);
 	}
 
-	public RequiredPluginPackageException(String msg, Throwable cause) {
-		super(msg, cause);
+	public RequiredPluginPackageException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public RequiredPluginPackageException(Throwable cause) {
-		super(cause);
+	public RequiredPluginPackageException(Throwable throwable) {
+		super(throwable);
 	}
 
 	public String getContext() {

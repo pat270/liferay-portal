@@ -23,12 +23,13 @@ import com.liferay.message.boards.test.util.MBTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.subscriptions.test.BaseSubscriptionRootContainerModelTestCase;
+import com.liferay.subscription.test.util.BaseSubscriptionRootContainerModelTestCase;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -38,6 +39,7 @@ import org.junit.runner.RunWith;
  * @author Roberto Díaz
  */
 @RunWith(Arquillian.class)
+@Sync
 public class MBSubscriptionRootContainerModelTest
 	extends BaseSubscriptionRootContainerModelTestCase {
 

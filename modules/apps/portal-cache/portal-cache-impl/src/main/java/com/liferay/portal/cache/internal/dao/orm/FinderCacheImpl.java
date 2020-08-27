@@ -15,6 +15,7 @@
 package com.liferay.portal.cache.internal.dao.orm;
 
 import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.CacheRegistryItem;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
@@ -33,20 +34,13 @@ import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.servlet.filters.threadlocal.ThreadLocalFilterThreadLocal;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -108,46 +102,75 @@ public class FinderCacheImpl
 		FinderPath finderPath, Object[] args,
 		BasePersistenceImpl<? extends BaseModel<?>> basePersistenceImpl) {
 
-		if (!_valueObjectFinderCacheEnabled ||
-			!finderPath.isFinderCacheEnabled() ||
-			!CacheRegistryUtil.isActive()) {
-
+		if (!_valueObjectFinderCacheEnabled || !CacheRegistryUtil.isActive()) {
 			return null;
 		}
 
-		String encodedArguments = finderPath.encodeArguments(args);
-		Map<Serializable, Serializable> localCache = null;
-		Serializable localCacheKey = null;
-		Serializable primaryKey = null;
+		Serializable cacheKey = finderPath.encodeCacheKey(args);
+		Serializable cacheValue = null;
+		Map<LocalCacheKey, Serializable> localCache = null;
+		LocalCacheKey localCacheKey = null;
 
 		if (_isLocalCacheEnabled()) {
 			localCache = _localCache.get();
 
-			localCacheKey = finderPath.encodeLocalCacheKey(encodedArguments);
+			localCacheKey = new LocalCacheKey(
+				finderPath.getCacheName(), cacheKey);
 
-			primaryKey = localCache.get(localCacheKey);
+			cacheValue = localCache.get(localCacheKey);
 		}
 
-		if (primaryKey == null) {
+		if (cacheValue == null) {
 			PortalCache<Serializable, Serializable> portalCache =
 				_getPortalCache(finderPath.getCacheName());
 
-			primaryKey = portalCache.get(
-				finderPath.encodeCacheKey(encodedArguments));
+			cacheValue = portalCache.get(cacheKey);
 
-			if (primaryKey != null) {
-				if (localCache != null) {
-					localCache.put(localCacheKey, primaryKey);
-				}
+			if ((cacheValue != null) && (localCache != null)) {
+				localCache.put(localCacheKey, cacheValue);
 			}
 		}
 
-		if (primaryKey != null) {
-			return _primaryKeyToResult(
-				finderPath, args, basePersistenceImpl, primaryKey);
+		if (cacheValue == null) {
+			return null;
 		}
 
-		return null;
+		if (cacheValue instanceof EmptyResult) {
+			EmptyResult emptyResult = (EmptyResult)cacheValue;
+
+			if (emptyResult.matches(args)) {
+				return Collections.emptyList();
+			}
+
+			return null;
+		}
+
+		if (cacheValue instanceof List<?>) {
+			List<Serializable> primaryKeys = (List<Serializable>)cacheValue;
+
+			Set<Serializable> primaryKeysSet = new HashSet<>(primaryKeys);
+
+			Map<Serializable, ? extends BaseModel<?>> map =
+				basePersistenceImpl.fetchByPrimaryKeys(primaryKeysSet);
+
+			if (map.size() < primaryKeysSet.size()) {
+				return null;
+			}
+
+			List<Serializable> list = new ArrayList<>(primaryKeys.size());
+
+			for (Serializable curPrimaryKey : primaryKeys) {
+				list.add(map.get(curPrimaryKey));
+			}
+
+			return Collections.unmodifiableList(list);
+		}
+
+		if (BaseModel.class.isAssignableFrom(finderPath.getResultClass())) {
+			return basePersistenceImpl.fetchByPrimaryKey(cacheValue);
+		}
+
+		return cacheValue;
 	}
 
 	@Override
@@ -180,55 +203,64 @@ public class FinderCacheImpl
 	public void putResult(
 		FinderPath finderPath, Object[] args, Object result, boolean quiet) {
 
-		if (!_valueObjectFinderCacheEnabled ||
-			!finderPath.isFinderCacheEnabled() ||
-			!CacheRegistryUtil.isActive() || (result == null)) {
+		if (!_valueObjectFinderCacheEnabled || !CacheRegistryUtil.isActive() ||
+			(result == null)) {
 
 			return;
 		}
 
-		Serializable primaryKey = _resultToPrimaryKey(
-			args, (Serializable)result);
+		Serializable cacheValue = (Serializable)result;
+
+		if (result instanceof BaseModel<?>) {
+			BaseModel<?> model = (BaseModel<?>)result;
+
+			cacheValue = model.getPrimaryKeyObj();
+		}
+		else if (result instanceof List<?>) {
+			List<BaseModel<?>> baseModels = (List<BaseModel<?>>)result;
+
+			if (baseModels.isEmpty()) {
+				cacheValue = new EmptyResult(args);
+			}
+			else if ((baseModels.size() >
+						_valueObjectFinderCacheListThreshold) &&
+					 (_valueObjectFinderCacheListThreshold > 0)) {
+
+				_removeResult(finderPath, args);
+
+				return;
+			}
+			else {
+				ArrayList<Serializable> primaryKeys = new ArrayList<>(
+					baseModels.size());
+
+				for (BaseModel<?> baseModel : baseModels) {
+					primaryKeys.add(baseModel.getPrimaryKeyObj());
+				}
+
+				cacheValue = primaryKeys;
+			}
+		}
+
+		Serializable cacheKey = finderPath.encodeCacheKey(args);
+
+		if (_isLocalCacheEnabled()) {
+			Map<LocalCacheKey, Serializable> localCache = _localCache.get();
+
+			localCache.put(
+				new LocalCacheKey(finderPath.getCacheName(), cacheKey),
+				cacheValue);
+		}
 
 		PortalCache<Serializable, Serializable> portalCache = _getPortalCache(
 			finderPath.getCacheName());
 
-		String encodedArguments = finderPath.encodeArguments(args);
-
-		Serializable cacheKey = finderPath.encodeCacheKey(encodedArguments);
-
-		if (primaryKey == null) {
-			if (_isLocalCacheEnabled()) {
-				Map<Serializable, Serializable> localCache = _localCache.get();
-
-				localCache.remove(
-					finderPath.encodeLocalCacheKey(encodedArguments));
-			}
-
-			if (quiet) {
-				PortalCacheHelperUtil.removeWithoutReplicator(
-					portalCache, cacheKey);
-			}
-			else {
-				portalCache.remove(cacheKey);
-			}
+		if (quiet) {
+			PortalCacheHelperUtil.putWithoutReplicator(
+				portalCache, cacheKey, cacheValue);
 		}
 		else {
-			if (_isLocalCacheEnabled()) {
-				Map<Serializable, Serializable> localCache = _localCache.get();
-
-				localCache.put(
-					finderPath.encodeLocalCacheKey(encodedArguments),
-					primaryKey);
-			}
-
-			if (quiet) {
-				PortalCacheHelperUtil.putWithoutReplicator(
-					portalCache, cacheKey, primaryKey);
-			}
-			else {
-				portalCache.put(cacheKey, primaryKey);
-			}
+			portalCache.put(cacheKey, cacheValue);
 		}
 	}
 
@@ -243,25 +275,11 @@ public class FinderCacheImpl
 
 	@Override
 	public void removeResult(FinderPath finderPath, Object[] args) {
-		if (!_valueObjectFinderCacheEnabled ||
-			!finderPath.isFinderCacheEnabled() ||
-			!CacheRegistryUtil.isActive()) {
-
+		if (!_valueObjectFinderCacheEnabled || !CacheRegistryUtil.isActive()) {
 			return;
 		}
 
-		String encodedArguments = finderPath.encodeArguments(args);
-
-		if (_isLocalCacheEnabled()) {
-			Map<Serializable, Serializable> localCache = _localCache.get();
-
-			localCache.remove(finderPath.encodeLocalCacheKey(encodedArguments));
-		}
-
-		PortalCache<Serializable, Serializable> portalCache = _getPortalCache(
-			finderPath.getCacheName());
-
-		portalCache.remove(finderPath.encodeCacheKey(encodedArguments));
+		_removeResult(finderPath, args);
 	}
 
 	@Activate
@@ -297,7 +315,6 @@ public class FinderCacheImpl
 
 	@Reference(unbind = "-")
 	protected void setEntityCache(EntityCache entityCache) {
-		_entityCache = entityCache;
 	}
 
 	@Reference(unbind = "-")
@@ -344,113 +361,25 @@ public class FinderCacheImpl
 		return ThreadLocalFilterThreadLocal.isFilterInvoked();
 	}
 
-	private Serializable _primaryKeyToResult(
-		FinderPath finderPath, Object[] args,
-		BasePersistenceImpl<? extends BaseModel<?>> basePersistenceImpl,
-		Serializable primaryKey) {
+	private void _removeResult(FinderPath finderPath, Object[] args) {
+		Serializable cacheKey = finderPath.encodeCacheKey(args);
 
-		if (primaryKey instanceof EmptyResult) {
-			EmptyResult emptyResult = (EmptyResult)primaryKey;
+		if (_isLocalCacheEnabled()) {
+			Map<LocalCacheKey, Serializable> localCache = _localCache.get();
 
-			if (emptyResult.matches(args)) {
-				return (Serializable)Collections.emptyList();
-			}
-
-			return null;
+			localCache.remove(
+				new LocalCacheKey(finderPath.getCacheName(), cacheKey));
 		}
 
-		if (primaryKey instanceof List<?>) {
-			List<Serializable> primaryKeys = (List<Serializable>)primaryKey;
+		PortalCache<Serializable, Serializable> portalCache = _getPortalCache(
+			finderPath.getCacheName());
 
-			Set<Serializable> primaryKeysSet = new HashSet<>(primaryKeys);
-
-			Map<Serializable, ? extends BaseModel<?>> map =
-				basePersistenceImpl.fetchByPrimaryKeys(primaryKeysSet);
-
-			if (map.size() < primaryKeysSet.size()) {
-				return null;
-			}
-
-			List<Serializable> list = new ArrayList<>(primaryKeys.size());
-
-			for (Serializable curPrimaryKey : primaryKeys) {
-				list.add(map.get(curPrimaryKey));
-			}
-
-			return (Serializable)Collections.unmodifiableList(list);
-		}
-
-		if (BaseModel.class.isAssignableFrom(finderPath.getResultClass())) {
-			Serializable result = _entityCache.loadResult(
-				finderPath.isEntityCacheEnabled(), finderPath.getResultClass(),
-				primaryKey, basePersistenceImpl);
-
-			if (result == _NULL_MODEL) {
-				return null;
-			}
-
-			return result;
-		}
-
-		return primaryKey;
-	}
-
-	private Serializable _resultToPrimaryKey(
-		Object[] args, Serializable result) {
-
-		if (result instanceof BaseModel<?>) {
-			BaseModel<?> model = (BaseModel<?>)result;
-
-			return model.getPrimaryKeyObj();
-		}
-
-		if (result instanceof List<?>) {
-			List<Serializable> list = (List<Serializable>)result;
-
-			if (list.isEmpty()) {
-				return new EmptyResult(args);
-			}
-
-			if ((list.size() > _valueObjectFinderCacheListThreshold) &&
-				(_valueObjectFinderCacheListThreshold > 0)) {
-
-				return null;
-			}
-
-			ArrayList<Serializable> cachedList = new ArrayList<>(list.size());
-
-			for (Serializable curResult : list) {
-				Serializable primaryKey = _resultToPrimaryKey(args, curResult);
-
-				cachedList.add(primaryKey);
-			}
-
-			return cachedList;
-		}
-
-		return result;
+		portalCache.remove(cacheKey);
 	}
 
 	private static final String _GROUP_KEY_PREFIX =
 		FinderCache.class.getName() + StringPool.PERIOD;
 
-	private static final Object _NULL_MODEL;
-
-	static {
-		try {
-			Field field = BasePersistenceImpl.class.getDeclaredField(
-				"nullModel");
-
-			field.setAccessible(true);
-
-			_NULL_MODEL = field.get(null);
-		}
-		catch (ReflectiveOperationException roe) {
-			throw new ExceptionInInitializerError(roe);
-		}
-	}
-
-	private EntityCache _entityCache;
 	private ThreadLocal<LRUMap> _localCache;
 	private MultiVMPool _multiVMPool;
 	private final ConcurrentMap<String, PortalCache<Serializable, Serializable>>
@@ -459,44 +388,33 @@ public class FinderCacheImpl
 	private boolean _valueObjectFinderCacheEnabled;
 	private int _valueObjectFinderCacheListThreshold;
 
-	private static class EmptyResult implements Externalizable {
+	private static class LocalCacheKey {
 
-		public EmptyResult() {
-		}
+		@Override
+		public boolean equals(Object object) {
+			LocalCacheKey localCacheKey = (LocalCacheKey)object;
 
-		public boolean matches(Object[] args) {
-			if (args.length != _args.length) {
-				return false;
+			if (_className.equals(localCacheKey._className) &&
+				_cacheKey.equals(localCacheKey._cacheKey)) {
+
+				return true;
 			}
 
-			for (int i = 0; i < _args.length; i++) {
-				if (!Objects.equals(args[i], _args[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return false;
 		}
 
 		@Override
-		public void readExternal(ObjectInput objectInput)
-			throws ClassNotFoundException, IOException {
-
-			_args = (Object[])objectInput.readObject();
+		public int hashCode() {
+			return HashUtil.hash(_className.hashCode(), _cacheKey.hashCode());
 		}
 
-		@Override
-		public void writeExternal(ObjectOutput objectOutput)
-			throws IOException {
-
-			objectOutput.writeObject(_args);
+		private LocalCacheKey(String className, Serializable cacheKey) {
+			_className = className;
+			_cacheKey = cacheKey;
 		}
 
-		private EmptyResult(Object[] args) {
-			_args = args;
-		}
-
-		private Object[] _args;
+		private final Serializable _cacheKey;
+		private final String _className;
 
 	}
 

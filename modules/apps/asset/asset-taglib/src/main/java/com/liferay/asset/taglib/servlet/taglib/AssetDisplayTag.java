@@ -22,7 +22,6 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
@@ -49,8 +48,8 @@ public class AssetDisplayTag extends IncludeTag {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
 			clearDynamicAttributes();
@@ -59,12 +58,10 @@ public class AssetDisplayTag extends IncludeTag {
 
 			cleanUpSetAttributes();
 
-			if (!ServerDetector.isResin()) {
-				setPage(null);
-				setUseCustomPage(true);
+			setPage(null);
+			setUseCustomPage(true);
 
-				cleanUp();
-			}
+			cleanUp();
 		}
 	}
 
@@ -213,8 +210,8 @@ public class AssetDisplayTag extends IncludeTag {
 				return;
 			}
 		}
-		catch (Exception e) {
-			_log.error("Unable to include asset renderer template", e);
+		catch (Exception exception) {
+			_log.error("Unable to include asset renderer template", exception);
 		}
 
 		super.includePage(

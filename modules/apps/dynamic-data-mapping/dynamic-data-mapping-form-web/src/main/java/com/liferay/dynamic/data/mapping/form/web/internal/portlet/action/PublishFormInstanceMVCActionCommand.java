@@ -31,7 +31,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
@@ -102,7 +102,7 @@ public class PublishFormInstanceMVCActionCommand
 		DDMStructureVersion latestDDMStructureVersion =
 			ddmStructure.getLatestStructureVersion();
 
-		ddmFormInstance = _formInstanceService.updateFormInstance(
+		ddmFormInstance = _ddmFormInstanceService.updateFormInstance(
 			ddmFormInstance.getFormInstanceId(), ddmFormInstance.getNameMap(),
 			ddmFormInstance.getDescriptionMap(),
 			latestDDMStructureVersion.getDDMForm(),
@@ -118,9 +118,9 @@ public class PublishFormInstanceMVCActionCommand
 
 	@Reference(unbind = "-")
 	protected void setDDMFormInstanceService(
-		DDMFormInstanceService formInstanceService) {
+		DDMFormInstanceService ddmFormInstanceService) {
 
-		_formInstanceService = formInstanceService;
+		_ddmFormInstanceService = ddmFormInstanceService;
 	}
 
 	@Reference(unbind = "-")
@@ -146,15 +146,28 @@ public class PublishFormInstanceMVCActionCommand
 			ActionRequest actionRequest, long formInstanceId, boolean published)
 		throws PortalException {
 
-		long companyId = _portal.getCompanyId(actionRequest);
-
-		Role role = _roleLocalService.getRole(companyId, RoleConstants.GUEST);
+		Role role = _roleLocalService.getRole(
+			_portal.getCompanyId(actionRequest), RoleConstants.GUEST);
 
 		ResourcePermission resourcePermission =
-			_resourcePermissionLocalService.getResourcePermission(
+			_resourcePermissionLocalService.fetchResourcePermission(
 				role.getCompanyId(), DDMFormInstance.class.getName(),
 				ResourceConstants.SCOPE_INDIVIDUAL,
 				String.valueOf(formInstanceId), role.getRoleId());
+
+		if (resourcePermission == null) {
+			_resourcePermissionLocalService.setResourcePermissions(
+				role.getCompanyId(), DDMFormInstance.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL,
+				String.valueOf(formInstanceId), role.getRoleId(),
+				new String[] {DDMActionKeys.ADD_FORM_INSTANCE_RECORD});
+
+			resourcePermission =
+				_resourcePermissionLocalService.fetchResourcePermission(
+					role.getCompanyId(), DDMFormInstance.class.getName(),
+					ResourceConstants.SCOPE_INDIVIDUAL,
+					String.valueOf(formInstanceId), role.getRoleId());
+		}
 
 		if (published) {
 			resourcePermission.addResourceAction(
@@ -186,7 +199,7 @@ public class PublishFormInstanceMVCActionCommand
 	}
 
 	private boolean _isFormInstancePublished(DDMFormInstance formInstance)
-		throws PortalException {
+		throws Exception {
 
 		DDMFormInstanceSettings ddmFormInstanceSettings =
 			formInstance.getSettingsModel();
@@ -194,8 +207,8 @@ public class PublishFormInstanceMVCActionCommand
 		return ddmFormInstanceSettings.published();
 	}
 
+	private DDMFormInstanceService _ddmFormInstanceService;
 	private DDMFormValuesQueryFactory _ddmFormValuesQueryFactory;
-	private DDMFormInstanceService _formInstanceService;
 
 	@Reference
 	private Portal _portal;

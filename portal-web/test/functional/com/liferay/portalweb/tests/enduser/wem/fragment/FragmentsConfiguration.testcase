@@ -1,0 +1,75 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Fragments";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONFragment.addFragmentCollection(
+			groupName = "Test Site Name",
+			name = "Collection Name");
+
+		FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+		FragmentsAdminNavigator.gotoCollection(collectionName = "Collection Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-97184. Invalid fragment configuration cannot be published and offers useful advice."
+	@priority = "4"
+	test AddInvalidConfiguration {
+		FragmentsAdmin.addFragment(fragmentName = "Fragment Name");
+
+		FragmentsEditor.gotoConfigurationTab();
+
+		Pause(locator1 = "3000");
+
+		FragmentsEditor.typeFileContent(fileName = "fragment_configuration_invalid.json");
+
+		FragmentsEditor.gotoCodeTab();
+
+		task ("Publish the fragment and assert there is an error message") {
+			Button.clickPublish();
+
+			Alert.viewErrorMessage(errorMessage = "Please provide a valid configuration for the fragment.");
+		}
+	}
+
+	@description = "This is a test for LPS-97184. Valid fragment configuration can be published."
+	@priority = "4"
+	test AddValidConfiguration {
+		FragmentsAdmin.addFragment(fragmentName = "Fragment Name");
+
+		FragmentsEditor.gotoConfigurationTab();
+
+		Pause(locator1 = "3000");
+
+		FragmentsEditor.typeFileContent(fileName = "fragment_configuration.json");
+
+		FragmentsEditor.gotoCodeTab();
+
+		Pause(locator1 = "3000");
+
+		FragmentsEditor.typeFileContent(fileName = "fragment_configuration.html");
+
+		FragmentsEditor.publish();
+	}
+
+}

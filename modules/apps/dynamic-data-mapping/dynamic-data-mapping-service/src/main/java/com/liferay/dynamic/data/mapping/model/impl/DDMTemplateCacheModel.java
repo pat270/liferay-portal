@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DDMTemplate in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDMTemplateCacheModel
-	implements CacheModel<DDMTemplate>, Externalizable {
+	implements CacheModel<DDMTemplate>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMTemplateCacheModel)) {
+		if (!(object instanceof DDMTemplateCacheModel)) {
 			return false;
 		}
 
 		DDMTemplateCacheModel ddmTemplateCacheModel =
-			(DDMTemplateCacheModel)obj;
+			(DDMTemplateCacheModel)object;
 
-		if (templateId == ddmTemplateCacheModel.templateId) {
+		if ((templateId == ddmTemplateCacheModel.templateId) &&
+			(mvccVersion == ddmTemplateCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class DDMTemplateCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, templateId);
+		int hashCode = HashUtil.hash(0, templateId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(53);
+		StringBundler sb = new StringBundler(57);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", templateId=");
 		sb.append(templateId);
@@ -127,6 +143,9 @@ public class DDMTemplateCacheModel
 	@Override
 	public DDMTemplate toEntityModel() {
 		DDMTemplateImpl ddmTemplateImpl = new DDMTemplateImpl();
+
+		ddmTemplateImpl.setMvccVersion(mvccVersion);
+		ddmTemplateImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			ddmTemplateImpl.setUuid("");
@@ -259,6 +278,9 @@ public class DDMTemplateCacheModel
 	public void readExternal(ObjectInput objectInput)
 		throws ClassNotFoundException, IOException {
 
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		templateId = objectInput.readLong();
@@ -282,12 +304,12 @@ public class DDMTemplateCacheModel
 		resourceClassNameId = objectInput.readLong();
 		templateKey = objectInput.readUTF();
 		version = objectInput.readUTF();
-		name = objectInput.readUTF();
-		description = objectInput.readUTF();
+		name = (String)objectInput.readObject();
+		description = (String)objectInput.readObject();
 		type = objectInput.readUTF();
 		mode = objectInput.readUTF();
 		language = objectInput.readUTF();
-		script = objectInput.readUTF();
+		script = (String)objectInput.readObject();
 
 		cacheable = objectInput.readBoolean();
 
@@ -302,6 +324,10 @@ public class DDMTemplateCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -357,17 +383,17 @@ public class DDMTemplateCacheModel
 		}
 
 		if (name == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(name);
+			objectOutput.writeObject(name);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(description);
+			objectOutput.writeObject(description);
 		}
 
 		if (type == null) {
@@ -392,10 +418,10 @@ public class DDMTemplateCacheModel
 		}
 
 		if (script == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(script);
+			objectOutput.writeObject(script);
 		}
 
 		objectOutput.writeBoolean(cacheable);
@@ -416,6 +442,8 @@ public class DDMTemplateCacheModel
 		objectOutput.writeObject(_resourceClassName);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long templateId;
 	public long groupId;

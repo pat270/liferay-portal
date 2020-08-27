@@ -1,0 +1,20 @@
+definition {
+
+	macro gotoPortletConfiguration {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+	}
+
+	@summary = "Assert that the Site Admin portlet title displays the text '${portletTitle}'"
+	macro viewPortletTitle {
+		var key_portletTitle = "${portletTitle}";
+
+		AssertElementPresent(locator1 = "Home#SITE_ADMINISTRATION_PORTLET_TITLE");
+
+		AssertTextEquals(
+			locator1 = "Home#SITE_ADMINISTRATION_PORTLET_TITLE",
+			value1 = "${portletTitle}");
+	}
+
+}

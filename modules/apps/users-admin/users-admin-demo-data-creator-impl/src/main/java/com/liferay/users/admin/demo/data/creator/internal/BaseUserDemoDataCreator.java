@@ -75,30 +75,35 @@ public abstract class BaseUserDemoDataCreator implements UserDemoDataCreator {
 		Date birthDate = new Date();
 		byte[] portraitBytes = null;
 
-		try (InputStream is = new URL(_RANDOM_USER_API).openStream()) {
-			String json = StringUtil.read(is);
+		try {
+			URL url = new URL(_RANDOM_USER_API);
 
-			JSONObject rootJSONObject = JSONFactoryUtil.createJSONObject(json);
+			try (InputStream is = url.openStream()) {
+				String json = StringUtil.read(is);
 
-			JSONArray jsonArray = rootJSONObject.getJSONArray("results");
+				JSONObject rootJSONObject = JSONFactoryUtil.createJSONObject(
+					json);
 
-			JSONObject userJSONObject = jsonArray.getJSONObject(0);
+				JSONArray jsonArray = rootJSONObject.getJSONArray("results");
 
-			emailAddress = _getEmailAddress(emailAddress, userJSONObject);
-			male = StringUtil.equalsIgnoreCase(
-				userJSONObject.getString("gender"), "male");
-			birthDate = _getBirthDate(birthDate, userJSONObject);
+				JSONObject userJSONObject = jsonArray.getJSONObject(0);
 
-			JSONObject pictureJSONObject = userJSONObject.getJSONObject(
-				"picture");
+				emailAddress = _getEmailAddress(emailAddress, userJSONObject);
+				male = StringUtil.equalsIgnoreCase(
+					userJSONObject.getString("gender"), "male");
+				birthDate = _getBirthDate(birthDate, userJSONObject);
 
-			String portraitURL = pictureJSONObject.getString("large");
+				JSONObject pictureJSONObject = userJSONObject.getJSONObject(
+					"picture");
 
-			portraitBytes = _getBytes(new URL(portraitURL));
+				String portraitURL = pictureJSONObject.getString("large");
+
+				portraitBytes = _getBytes(new URL(portraitURL));
+			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe, ioe);
+				_log.warn(ioException, ioException);
 			}
 
 			if (Validator.isNull(emailAddress)) {
@@ -137,9 +142,9 @@ public abstract class BaseUserDemoDataCreator implements UserDemoDataCreator {
 				userLocalService.deleteUser(userId);
 			}
 		}
-		catch (NoSuchUserException nsue) {
+		catch (NoSuchUserException noSuchUserException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(nsue, nsue);
+				_log.warn(noSuchUserException, noSuchUserException);
 			}
 		}
 	}
@@ -200,8 +205,6 @@ public abstract class BaseUserDemoDataCreator implements UserDemoDataCreator {
 		String password1 = "test";
 		String password2 = "test";
 		boolean autoScreenName = Validator.isNull(screenName);
-		long facebookId = 0;
-		String openId = StringPool.BLANK;
 		Locale locale = LocaleUtil.getDefault();
 		String middleName = StringPool.BLANK;
 		long prefixId = 0;
@@ -224,9 +227,9 @@ public abstract class BaseUserDemoDataCreator implements UserDemoDataCreator {
 
 		return userLocalService.addUser(
 			UserConstants.USER_ID_DEFAULT, companyId, autoPassword, password1,
-			password2, autoScreenName, screenName, emailAddress, facebookId,
-			openId, locale, firstName, middleName, lastName, prefixId, suffixId,
-			male, birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
+			password2, autoScreenName, screenName, emailAddress, locale,
+			firstName, middleName, lastName, prefixId, suffixId, male,
+			birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
 			organizationIds, roleIds, userGroupIds, sendMail,
 			new ServiceContext());
 	}
@@ -240,9 +243,9 @@ public abstract class BaseUserDemoDataCreator implements UserDemoDataCreator {
 
 			birthDate = dateFormat.parse(dob);
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(parseException, parseException);
 			}
 		}
 

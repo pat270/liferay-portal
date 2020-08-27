@@ -14,8 +14,11 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.net.URL;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.dom4j.Element;
 
@@ -34,6 +37,8 @@ public interface Build {
 
 	public String getArchivePath();
 
+	public URL getArtifactsBaseURL();
+
 	public long getAverageDelayTime();
 
 	public List<String> getBadBuildURLs();
@@ -45,6 +50,8 @@ public interface Build {
 	public String getBranchName();
 
 	public String getBrowser();
+
+	public String getBuildDescription();
 
 	public JSONObject getBuildJSONObject();
 
@@ -90,15 +97,21 @@ public interface Build {
 
 	public JenkinsSlave getJenkinsSlave();
 
+	public Job getJob();
+
 	public String getJobName();
+
+	public Properties getJobProperties();
 
 	public String getJobURL();
 
 	public String getJobVariant();
 
-	public int getJobVariantsDownstreamBuildCount(List<String> jobVariants);
+	public int getJobVariantsDownstreamBuildCount(
+		List<String> jobVariants, String result, String status);
 
-	public List<Build> getJobVariantsDownstreamBuilds(List<String> jobVariants);
+	public List<Build> getJobVariantsDownstreamBuilds(
+		Iterable<String> jobVariants, String result, String status);
 
 	public Long getLatestStartTimestamp();
 
@@ -142,9 +155,11 @@ public interface Build {
 
 	public Map<String, String> getStopPropertiesTempMap();
 
-	public JSONObject getTestReportJSONObject();
+	public JSONObject getTestReportJSONObject(boolean checkCache);
 
 	public List<TestResult> getTestResults(String testStatus);
+
+	public String getTestSuiteName();
 
 	public TopLevelBuild getTopLevelBuild();
 
@@ -158,7 +173,13 @@ public interface Build {
 	public int getTotalSlavesUsedCount(
 		String status, boolean modifiedBuildsOnly, boolean ignoreCurrentBuild);
 
+	public List<TestResult> getUniqueFailureTestResults();
+
+	public List<TestResult> getUpstreamJobFailureTestResults();
+
 	public boolean hasBuildURL(String buildURL);
+
+	public boolean hasGenericCIFailure();
 
 	public boolean hasModifiedDownstreamBuilds();
 
@@ -167,6 +188,8 @@ public interface Build {
 	public boolean isFromArchive();
 
 	public boolean isFromCompletedBuild();
+
+	public boolean isUniqueFailure();
 
 	public void reinvoke();
 
@@ -179,5 +202,31 @@ public interface Build {
 	public void takeSlaveOffline(SlaveOfflineRule slaveOfflineRule);
 
 	public void update();
+
+	public interface BranchInformation {
+
+		public String getCachedRemoteGitRefName();
+
+		public String getOriginName();
+
+		public Integer getPullRequestNumber();
+
+		public String getReceiverUsername();
+
+		public String getRepositoryName();
+
+		public String getSenderBranchName();
+
+		public String getSenderBranchSHA();
+
+		public RemoteGitRef getSenderRemoteGitRef();
+
+		public String getSenderUsername();
+
+		public String getUpstreamBranchName();
+
+		public String getUpstreamBranchSHA();
+
+	}
 
 }

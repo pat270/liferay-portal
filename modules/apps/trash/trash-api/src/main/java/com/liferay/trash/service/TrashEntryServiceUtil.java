@@ -14,7 +14,6 @@
 
 package com.liferay.trash.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see TrashEntryService
  * @generated
  */
-@ProviderType
 public class TrashEntryServiceUtil {
 
 	/*
@@ -118,18 +116,18 @@ public class TrashEntryServiceUtil {
 	 * @param start the lower bound of the range of trash entries to return
 	 * @param end the upper bound of the range of trash entries to return (not
 	 inclusive)
-	 * @param obc the comparator to order the trash entries (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the trash entries
+	 (optionally <code>null</code>)
 	 * @return the range of matching trash entries ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 */
 	public static com.liferay.trash.model.TrashEntryList getEntries(
 			long groupId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.trash.model.TrashEntry> obc)
+				<com.liferay.trash.model.TrashEntry> orderByComparator)
 		throws com.liferay.portal.kernel.security.auth.PrincipalException {
 
-		return getService().getEntries(groupId, start, end, obc);
+		return getService().getEntries(groupId, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.trash.model.TrashEntry> getEntries(
@@ -147,18 +145,19 @@ public class TrashEntryServiceUtil {
 	 * @param start the lower bound of the range of trash entries to return
 	 * @param end the upper bound of the range of trash entries to return (not
 	 inclusive)
-	 * @param obc the comparator to order the trash entries (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the trash entries
+	 (optionally <code>null</code>)
 	 * @return the range of matching trash entries ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 */
 	public static com.liferay.trash.model.TrashEntryList getEntries(
 			long groupId, String className, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.trash.model.TrashEntry> obc)
+				<com.liferay.trash.model.TrashEntry> orderByComparator)
 		throws com.liferay.portal.kernel.security.auth.PrincipalException {
 
-		return getService().getEntries(groupId, className, start, end, obc);
+		return getService().getEntries(
+			groupId, className, start, end, orderByComparator);
 	}
 
 	/**

@@ -24,8 +24,6 @@ import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>DDMDataProviderInstanceServiceUtil</code> service
@@ -63,9 +61,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see DDMDataProviderInstanceServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DDMDataProviderInstanceServiceSoap {
 
 	public static
@@ -97,10 +96,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -111,10 +110,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			DDMDataProviderInstanceServiceUtil.deleteDataProviderInstance(
 				dataProviderInstanceId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -132,10 +131,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -153,10 +152,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -174,10 +173,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -195,10 +194,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -219,10 +218,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -237,10 +236,10 @@ public class DDMDataProviderInstanceServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -264,10 +263,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -291,10 +290,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModels(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -308,10 +307,10 @@ public class DDMDataProviderInstanceServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -326,10 +325,10 @@ public class DDMDataProviderInstanceServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -362,10 +361,10 @@ public class DDMDataProviderInstanceServiceSoap {
 			return com.liferay.dynamic.data.mapping.model.
 				DDMDataProviderInstanceSoap.toSoapModel(returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

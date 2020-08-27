@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SAPEntry}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SAPEntry
  * @generated
  */
-@ProviderType
 public class SAPEntryWrapper
 	extends BaseModelWrapper<SAPEntry>
-	implements SAPEntry, ModelWrapper<SAPEntry> {
+	implements ModelWrapper<SAPEntry>, SAPEntry {
 
 	public SAPEntryWrapper(SAPEntry sapEntry) {
 		super(sapEntry);

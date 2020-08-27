@@ -29,7 +29,7 @@ renderResponse.setTitle(LanguageUtil.get(resourceBundle, "import"));
 	<portlet:param name="redirect" value="<%= redirect %>" />
 </portlet:actionURL>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= importFileURL %>" class="lfr-dynamic-form" enctype="multipart/form-data" method="post" name="fm">
 		<aui:input name="mvcPath" type="hidden" value="/admin/import.jsp" />
 		<aui:input name="parentKBFolderId" type="hidden" value="<%= String.valueOf(parentKBFolderId) %>" />
@@ -48,7 +48,7 @@ renderResponse.setTitle(LanguageUtil.get(resourceBundle, "import"));
 		</liferay-ui:error>
 
 		<liferay-ui:error exception="<%= UploadRequestSizeException.class %>">
-			<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(UploadServletRequestConfigurationHelperUtil.getMaxSize(), locale) %>" key="request-is-larger-than-x-and-could-not-be-processed" translateArguments="<%= false %>" />
+			<liferay-ui:message arguments="<%= LanguageUtil.formatStorageSize(UploadServletRequestConfigurationHelperUtil.getMaxSize(), locale) %>" key="request-is-larger-than-x-and-could-not-be-processed" translateArguments="<%= false %>" />
 		</liferay-ui:error>
 
 		<aui:fieldset-group markupView="lexicon">
@@ -71,4 +71,4 @@ renderResponse.setTitle(LanguageUtil.get(resourceBundle, "import"));
 			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
-</div>
+</clay:container-fluid>

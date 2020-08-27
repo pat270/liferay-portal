@@ -1,38 +1,55 @@
-import {isFunction} from 'metal';
-import Uri from 'metal-uri';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-let componentConfigs = {};
+import {isFunction} from 'metal';
+
+const componentConfigs = {};
 let componentPromiseWrappers = {};
-let components = {};
+const components = {};
 let componentsCache = {};
-let componentsFn = {};
+const componentsFn = {};
 
 const DEFAULT_CACHE_VALIDATION_PARAMS = ['p_p_id', 'p_p_lifecycle'];
-const DEFAULT_CACHE_VALIDATION_PORTLET_PARAMS = ['ddmStructureKey', 'fileEntryTypeId', 'folderId', 'navigation', 'status'];
+const DEFAULT_CACHE_VALIDATION_PORTLET_PARAMS = [
+	'ddmStructureKey',
+	'fileEntryTypeId',
+	'folderId',
+	'navigation',
+	'status',
+];
 
 const LIFERAY_COMPONENT = 'liferay.component';
 
-const _createPromiseWrapper = function(value) {
+const _createPromiseWrapper = function (value) {
 	let promiseWrapper;
 
 	if (value) {
 		promiseWrapper = {
 			promise: Promise.resolve(value),
-			resolve: function() {}
+			resolve() {},
 		};
 	}
 	else {
 		let promiseResolve;
 
-		const promise = new Promise(
-			function(resolve) {
-				promiseResolve = resolve;
-			}
-		);
+		const promise = new Promise((resolve) => {
+			promiseResolve = resolve;
+		});
 
 		promiseWrapper = {
-			promise: promise,
-			resolve: promiseResolve
+			promise,
+			resolve: promiseResolve,
 		};
 	}
 
@@ -40,125 +57,125 @@ const _createPromiseWrapper = function(value) {
 };
 
 /**
- * Restores a previously cached component markup
+ * Restores a previously cached component markup.
  *
- * @param {object} state Stored state associated with the registered task
- * @param {object} params Additional params passed in the task registration
- * @param {Fragment} node Temporary fragment holding the new markup
+ * @param {object} state The stored state associated with the registered task.
+ * @param {object} params The additional params passed in the task registration.
+ * @param {Fragment} node The temporary fragment holding the new markup.
  * @private
- * @review
  */
-const _restoreTask = function(state, params, node) {
+const _restoreTask = function (state, params, node) {
 	const cache = state.data;
 	const componentIds = Object.keys(cache);
 
-	componentIds.forEach(
-		componentId => {
-			const container = node.querySelector(`#${componentId}`);
+	componentIds.forEach((componentId) => {
+		const container = node.querySelector(`#${componentId}`);
 
-			if (container) {
-				container.innerHTML = cache[componentId].html;
-			}
+		if (container) {
+			container.innerHTML = cache[componentId].html;
 		}
-	);
+	});
 };
 
 /**
- * Runs when an SPA navigation start is detected to:
- * - Cache the state and current markup of registered components matching that
- * have requested it through the `cacheState` configuration option. This state
- * can be used to initialize the component in the same state if it persists
- * throughout navigations.
- * - Register a DOM task to restore the markup of those components that are
- * present in the next screen to avoid a flickering effect due to state changes.
- * This can be done by querying the components screen cache using the
- * `Liferay.getComponentsCache` method.
+ * Runs when an SPA navigation start is detected to
+ *
+ * <ul>
+ * <li>
+ * Cache the state and current markup of registered components that have
+ * requested it through the <code>cacheState</code> configuration option. This
+ * state can be used to initialize the component in the same state if it
+ * persists throughout navigations.
+ * </li>
+ * <li>
+ * Register a DOM task to restore the markup of components that are present in
+ * the next screen to avoid a flickering effect due to state changes. This can
+ * be done by querying the components screen cache using the
+ * <code>Liferay.getComponentsCache</code> method.
+ * </li>
+ * </ul>
  *
  * @private
- * @review
  */
 
-const _onStartNavigate = function(event) {
-	const currentUri = new Uri(window.location.href);
-	const uri = new Uri(event.path);
+const _onStartNavigate = function (event) {
+	const currentUri = new URL(window.location.href);
+	const uri = new URL(event.path, window.location.href);
 
-	const cacheableUri = DEFAULT_CACHE_VALIDATION_PARAMS.every(
-		param => {
-			return uri.getParameterValue(param) === currentUri.getParameterValue(param);
-		}
-	);
+	const cacheableUri = DEFAULT_CACHE_VALIDATION_PARAMS.every((param) => {
+		return (
+			uri.searchParams.get(param) === currentUri.searchParams.get(param)
+		);
+	});
 
 	if (cacheableUri) {
 		var componentIds = Object.keys(components);
 
-		componentIds = componentIds.filter(
-			componentId => {
-				const component = components[componentId];
-				const componentConfig = componentConfigs[componentId];
+		componentIds = componentIds.filter((componentId) => {
+			const component = components[componentId];
+			const componentConfig = componentConfigs[componentId];
 
-				const cacheablePortletUri = DEFAULT_CACHE_VALIDATION_PORTLET_PARAMS.every(
-					param => {
-						let cacheable = false;
+			const cacheablePortletUri = DEFAULT_CACHE_VALIDATION_PORTLET_PARAMS.every(
+				(param) => {
+					let cacheable = false;
 
-						if (componentConfig) {
-							const namespacedParam = `_${componentConfig.portletId}_${param}`;
+					if (componentConfig) {
+						const namespacedParam = `_${componentConfig.portletId}_${param}`;
 
-							cacheable = uri.getParameterValue(namespacedParam) === currentUri.getParameterValue(namespacedParam);
-						}
-
-						return cacheable;
+						cacheable =
+							uri.searchParams.get(namespacedParam) ===
+							currentUri.searchParams.get(namespacedParam);
 					}
-				);
 
-				const cacheableComponent = isFunction(component.isCacheable) ? component.isCacheable(uri) : false;
+					return cacheable;
+				}
+			);
 
-				return cacheableComponent &&
-					cacheablePortletUri &&
-					componentConfig &&
-					componentConfig.cacheState &&
-					component.element &&
-					component.getState;
-			}
-		);
+			const cacheableComponent = isFunction(component.isCacheable)
+				? component.isCacheable(uri)
+				: false;
 
-		componentsCache = componentIds.reduce(
-			(cache, componentId) => {
-				const component = components[componentId];
-				const componentConfig = componentConfigs[componentId];
-				const componentState = component.getState();
+			return (
+				cacheableComponent &&
+				cacheablePortletUri &&
+				componentConfig &&
+				componentConfig.cacheState &&
+				component.element &&
+				component.getState
+			);
+		});
 
-				const componentCache = componentConfig.cacheState.reduce(
-					(cache, stateKey) => {
-						cache[stateKey] = componentState[stateKey];
+		componentsCache = componentIds.reduce((cache, componentId) => {
+			const component = components[componentId];
+			const componentConfig = componentConfigs[componentId];
+			const componentState = component.getState();
 
-						return cache;
-					},
-					{}
-				);
+			const componentCache = componentConfig.cacheState.reduce(
+				(cache, stateKey) => {
+					cache[stateKey] = componentState[stateKey];
 
-				cache[componentId] = {
-					html: component.element.innerHTML,
-					state: componentCache
-				};
+					return cache;
+				},
+				{}
+			);
 
-				return cache;
-			},
-			[]
-		);
+			cache[componentId] = {
+				html: component.element.innerHTML,
+				state: componentCache,
+			};
 
-		Liferay.DOMTaskRunner.addTask(
-			{
-				action: _restoreTask,
-				condition: state => state.owner === LIFERAY_COMPONENT
-			}
-		);
+			return cache;
+		}, []);
 
-		Liferay.DOMTaskRunner.addTaskState(
-			{
-				data: componentsCache,
-				owner: LIFERAY_COMPONENT
-			}
-		);
+		Liferay.DOMTaskRunner.addTask({
+			action: _restoreTask,
+			condition: (state) => state.owner === LIFERAY_COMPONENT,
+		});
+
+		Liferay.DOMTaskRunner.addTaskState({
+			data: componentsCache,
+			owner: LIFERAY_COMPONENT,
+		});
 	}
 	else {
 		componentsCache = {};
@@ -166,19 +183,20 @@ const _onStartNavigate = function(event) {
 };
 
 /**
- * This method acts in a dual way. It allows both to register a component and to
- * retrieve its instance from the global register.
+ * Registers a component and retrieves its instance from the global registry.
  *
- * @param {string} id The id of the component to retrieve or register
- * @param {object} value The component instance or a component constructor. If a
- * constructor is provided, it will be invoked the first time the component is
- * requested and its result will be stored and returned as the component
- * @param {object} componentConfig Custom component configuration. Can be used to
- * provide additional hints for the system handling of the component lifecycle
- * @return {object} The passed value, or the stored component for the provided id
+ * @param  {string} id The ID of the component to retrieve or register.
+ * @param  {object} value The component instance or a component constructor. If
+ *         a constructor is provided, it will be invoked the first time the
+ *         component is requested and its result will be stored and returned as
+ *         the component.
+ * @param  {object} componentConfig The Custom component configuration. This can
+ *         be used to provide additional hints for the system handling of the
+ *         component lifecycle.
+ * @return {object} The passed value, or the stored component for the provided
+ *         ID.
  */
-
-const component = function(id, value, componentConfig) {
+const component = function (id, value, componentConfig) {
 	let retVal;
 
 	if (arguments.length === 1) {
@@ -199,10 +217,14 @@ const component = function(id, value, componentConfig) {
 			delete componentConfigs[id];
 			delete componentPromiseWrappers[id];
 
-			console.warn('Component with id "' + id + '" is being registered twice. This can lead to unexpected behaviour in the "Liferay.component" and "Liferay.componentReady" APIs, as well as in the "*:registered" events.');
+			console.warn(
+				'Component with id "' +
+					id +
+					'" is being registered twice. This can lead to unexpected behaviour in the "Liferay.component" and "Liferay.componentReady" APIs, as well as in the "*:registered" events.'
+			);
 		}
 
-		retVal = (components[id] = value);
+		retVal = components[id] = value;
 
 		if (value === null) {
 			delete componentConfigs[id];
@@ -230,13 +252,11 @@ const component = function(id, value, componentConfig) {
 /**
  * Retrieves a list of component instances after they've been registered.
  *
- * @param {...string} componentId The ids of the components to be received
+ * @param {...string} componentId The IDs of the components to receive.
  * @return {Promise} A promise to be resolved with all the requested component
- * instances after they've been successfully registered
- * @review
+ *         instances after they've been successfully registered.
  */
-
-const componentReady = function() {
+const componentReady = function () {
 	let component;
 	let componentPromise;
 
@@ -253,16 +273,16 @@ const componentReady = function() {
 
 	if (Array.isArray(component)) {
 		componentPromise = Promise.all(
-			component.map(
-				id => componentReady(id)
-			)
+			component.map((id) => componentReady(id))
 		);
 	}
 	else {
 		let componentPromiseWrapper = componentPromiseWrappers[component];
 
 		if (!componentPromiseWrapper) {
-			componentPromiseWrappers[component] = componentPromiseWrapper = _createPromiseWrapper();
+			componentPromiseWrappers[
+				component
+			] = componentPromiseWrapper = _createPromiseWrapper();
 		}
 
 		componentPromise = componentPromiseWrapper.promise;
@@ -272,15 +292,13 @@ const componentReady = function() {
 };
 
 /**
- * Destroys the component registered by the provided component id. Invokes the
- * component's own destroy lifecycle methods (destroy or dispose) and deletes
- * the internal references to the component in the component registry.
+ * Destroys the component registered by the provided component ID. This invokes
+ * the component's own destroy lifecycle methods (destroy or dispose) and
+ * deletes the internal references to the component in the component registry.
  *
- * @param {string} componentId The id of the component to destroy
- * @review
+ * @param {string} componentId The ID of the component to destroy.
  */
-
-const destroyComponent = function(componentId) {
+const destroyComponent = function (componentId) {
 	const component = components[componentId];
 
 	if (component) {
@@ -298,60 +316,53 @@ const destroyComponent = function(componentId) {
 };
 
 /**
- * Destroys registered components matching the provided filter function. If
- * no filter function is provided, it will destroy all registered components.
+ * Destroys registered components matching the provided filter function. If no
+ * filter function is provided, it destroys all registered components.
  *
- * @param {Function} filterFn A method that receives a component destroy options
- * and the component itself and returns true if the component should be destroyed
- * @review
+ * @param {Function} filterFn A method that receives a component's destroy
+ *        options and the component itself, and returns <code>true</code> if the
+ *        component should be destroyed.
  */
-
-const destroyComponents = function(filterFn) {
+const destroyComponents = function (filterFn) {
 	var componentIds = Object.keys(components);
 
 	if (filterFn) {
-		componentIds = componentIds.filter(
-			componentId => {
-				return filterFn(
-					components[componentId],
-					componentConfigs[componentId] || {}
-				);
-			}
-		);
+		componentIds = componentIds.filter((componentId) => {
+			return filterFn(
+				components[componentId],
+				componentConfigs[componentId] || {}
+			);
+		});
 	}
 
 	componentIds.forEach(destroyComponent);
 };
 
 /**
- * Clears the component promises map to make sure pending promises won't get
- * accidentally resolved at a later stage if a component with the same id appears
- * causing stale code to run.
+ * Clears the component promises map to make sure pending promises don't get
+ * accidentally resolved at a later stage if a component with the same ID
+ * appears, causing stale code to run.
  */
-
-const destroyUnfulfilledPromises = function() {
+const destroyUnfulfilledPromises = function () {
 	componentPromiseWrappers = {};
 };
 
 /**
- * Retrieves a registered component cached state.
+ * Retrieves a registered component's cached state.
  *
- * @param {string} componentId The id used to register the component
- * @return {object} The state the component had prior to the previous navigation
- * @review
+ * @param {string} componentId The ID used to register the component.
+ * @return {object} The state the component had prior to the previous navigation.
  */
-
-const getComponentCache = function(componentId) {
+const getComponentCache = function (componentId) {
 	const componentCache = componentsCache[componentId];
 
 	return componentCache ? componentCache.state : {};
 };
 
 /**
- * Initializes the component cache mechanism
+ * Initializes the component cache mechanism.
  */
-
-const initComponentCache = function() {
+const initComponentCache = function () {
 	Liferay.on('startNavigate', _onStartNavigate);
 };
 
@@ -362,6 +373,6 @@ export {
 	destroyComponents,
 	destroyUnfulfilledPromises,
 	getComponentCache,
-	initComponentCache
+	initComponentCache,
 };
 export default component;

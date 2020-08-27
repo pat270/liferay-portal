@@ -41,8 +41,7 @@ String[] tempFileNames = LayoutServiceUtil.getTempFileNames(scopeGroupId, Export
 						navigationItem.setActive(tabs3.equals("new-import-process"));
 						navigationItem.setHref(portletURL.toString());
 						navigationItem.setLabel(LanguageUtil.get(request, "new-import-process"));
-					}
-				);
+					});
 
 				portletURL.setParameter("tabs3", "current-and-previous");
 
@@ -51,8 +50,7 @@ String[] tempFileNames = LayoutServiceUtil.getTempFileNames(scopeGroupId, Export
 						navigationItem.setActive(tabs3.equals("current-and-previous"));
 						navigationItem.setHref(portletURL.toString());
 						navigationItem.setLabel(LanguageUtil.get(request, "current-and-previous"));
-					}
-				);
+					});
 			}
 		}
 	%>'
@@ -60,7 +58,7 @@ String[] tempFileNames = LayoutServiceUtil.getTempFileNames(scopeGroupId, Export
 
 <c:choose>
 	<c:when test='<%= tabs3.equals("new-import-process") %>'>
-		<div id="<portlet:namespace />exportImportOptions">
+		<div class="export-import-options" id="<portlet:namespace />exportImportOptions">
 
 			<%
 			int incompleteBackgroundTaskCount = BackgroundTaskManagerUtil.getBackgroundTasksCount(themeDisplay.getScopeGroupId(), selPortlet.getPortletId(), BackgroundTaskExecutorNames.PORTLET_IMPORT_BACKGROUND_TASK_EXECUTOR, false);
@@ -99,15 +97,15 @@ String[] tempFileNames = LayoutServiceUtil.getTempFileNames(scopeGroupId, Export
 		<portlet:param name="portletResource" value="<%= portletResource %>" />
 	</liferay-portlet:resourceURL>
 
-	new Liferay.ExportImport(
-		{
-			form: document.<portlet:namespace />fm1,
-			incompleteProcessMessageNode: '#<portlet:namespace />incompleteProcessMessage',
-			locale: '<%= locale.toLanguageTag() %>',
-			namespace: '<portlet:namespace />',
-			processesNode: '#importProcesses',
-			processesResourceURL: '<%= HtmlUtil.escapeJS(importProcessesURL.toString()) %>',
-			timeZoneOffset: <%= timeZoneOffset %>
-		}
-	);
+	new Liferay.ExportImport({
+		form: document.<portlet:namespace />fm1,
+		incompleteProcessMessageNode:
+			'#<portlet:namespace />incompleteProcessMessage',
+		locale: '<%= locale.toLanguageTag() %>',
+		namespace: '<portlet:namespace />',
+		processesNode: '#importProcesses',
+		processesResourceURL:
+			'<%= HtmlUtil.escapeJS(importProcessesURL.toString()) %>',
+		timeZoneOffset: <%= timeZoneOffset %>,
+	});
 </aui:script>

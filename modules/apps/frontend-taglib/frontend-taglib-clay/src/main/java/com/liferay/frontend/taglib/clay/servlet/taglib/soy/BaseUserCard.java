@@ -35,8 +35,9 @@ public abstract class BaseUserCard
 
 		super(baseModel, rowChecker);
 
-		user = (User)baseModel;
 		this.renderRequest = renderRequest;
+
+		user = (User)baseModel;
 
 		themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -51,7 +52,7 @@ public abstract class BaseUserCard
 		try {
 			return user.getPortraitURL(themeDisplay);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;

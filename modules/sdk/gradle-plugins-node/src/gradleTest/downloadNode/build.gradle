@@ -1,0 +1,16 @@
+apply plugin: "com.liferay.node"
+
+task runGradleTest
+
+node {
+	download = false
+}
+
+runGradleTest {
+	dependsOn downloadNode
+
+	doLast {
+		assert npmInstall.nodeDir == null
+		assert npmInstall.scriptFile == null
+	}
+}

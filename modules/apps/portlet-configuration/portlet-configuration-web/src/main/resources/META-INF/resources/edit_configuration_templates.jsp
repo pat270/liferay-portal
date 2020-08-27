@@ -19,7 +19,7 @@
 <%
 PortletConfigurationTemplatesDisplayContext portletConfigurationTemplatesDisplayContext = new PortletConfigurationTemplatesDisplayContext(request, renderRequest, renderResponse);
 
-PortletConfigurationTemplatesManagementToolbarDisplayContext portletConfigurationTemplatesManagementToolbarDisplayContext = new PortletConfigurationTemplatesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, portletConfigurationTemplatesDisplayContext);
+PortletConfigurationTemplatesManagementToolbarDisplayContext portletConfigurationTemplatesManagementToolbarDisplayContext = new PortletConfigurationTemplatesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, portletConfigurationTemplatesDisplayContext);
 %>
 
 <div class="portlet-configuration-edit-templates">
@@ -36,7 +36,7 @@ PortletConfigurationTemplatesManagementToolbarDisplayContext portletConfiguratio
 				displayContext="<%= portletConfigurationTemplatesManagementToolbarDisplayContext %>"
 			/>
 
-			<div class="container-fluid-1280">
+			<clay:container-fluid>
 				<liferay-ui:error exception="<%= NoSuchPortletItemException.class %>" message="the-setup-could-not-be-found" />
 
 				<div class="button-holder text-center">
@@ -130,7 +130,7 @@ PortletConfigurationTemplatesManagementToolbarDisplayContext portletConfiguratio
 						markupView="lexicon"
 					/>
 				</liferay-ui:search-container>
-			</div>
+			</clay:container-fluid>
 		</div>
 	</aui:form>
 </div>
@@ -138,14 +138,12 @@ PortletConfigurationTemplatesManagementToolbarDisplayContext portletConfiguratio
 <aui:script require='<%= portletConfigurationTemplatesDisplayContext.getModuleName() + "/js/ArchivedSetuptsDropdownDefaultEventHandler.es as ArchivedSetuptsDropdownDefaultEventHandler" %>'>
 	Liferay.component(
 		'<%= PortletConfigurationWebKeys.ARCHIVED_SETUPS_DROPDOWN_DEFAULT_EVENT_HANDLER %>',
-		new ArchivedSetuptsDropdownDefaultEventHandler.default(
-			{
-				namespace: '<portlet:namespace />'
-			}
-		),
+		new ArchivedSetuptsDropdownDefaultEventHandler.default({
+			namespace: '<portlet:namespace />',
+		}),
 		{
 			destroyOnNavigate: true,
-			portletId: '<%= HtmlUtil.escapeJS(portletDisplay.getId()) %>'
+			portletId: '<%= HtmlUtil.escapeJS(portletDisplay.getId()) %>',
 		}
 	);
 </aui:script>
@@ -153,14 +151,12 @@ PortletConfigurationTemplatesManagementToolbarDisplayContext portletConfiguratio
 <aui:script require='<%= portletConfigurationTemplatesDisplayContext.getModuleName() + "/js/ManagementToolbarDefaultEventHandler.es as ManagementToolbarDefaultEventHandler" %>'>
 	Liferay.component(
 		'<%= portletConfigurationTemplatesManagementToolbarDisplayContext.getDefaultEventHandler() %>',
-		new ManagementToolbarDefaultEventHandler.default(
-			{
-				namespace: '<portlet:namespace />'
-			}
-		),
+		new ManagementToolbarDefaultEventHandler.default({
+			namespace: '<portlet:namespace />',
+		}),
 		{
 			destroyOnNavigate: true,
-			portletId: '<%= HtmlUtil.escapeJS(portletDisplay.getId()) %>'
+			portletId: '<%= HtmlUtil.escapeJS(portletDisplay.getId()) %>',
 		}
 	);
 </aui:script>

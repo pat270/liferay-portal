@@ -17,13 +17,17 @@ package com.liferay.source.formatter.checks;
 /**
  * @author Hugo Huijser
  */
-public class JavaLogParametersCheck extends LogParametersCheck {
+public class JavaLogParametersCheck extends BaseLogParametersCheck {
 
 	@Override
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
 
-		return formatLogParameters(content);
+		if (content.contains("import com.liferay.portal.kernel.log.Log;")) {
+			return formatLogParameters(content);
+		}
+
+		return content;
 	}
 
 }

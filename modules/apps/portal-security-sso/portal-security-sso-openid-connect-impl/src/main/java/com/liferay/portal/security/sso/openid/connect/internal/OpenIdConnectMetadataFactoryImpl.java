@@ -18,6 +18,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.security.sso.openid.connect.OpenIdConnectServiceException;
 
 import com.nimbusds.jose.JWEAlgorithm;
@@ -89,16 +90,20 @@ public class OpenIdConnectMetadataFactoryImpl
 
 			refreshClientMetadata(_oidcProviderMetadata);
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
 			throw new OpenIdConnectServiceException.ProviderException(
-				"Invalid subject types for OpenId Connect provider " +
-					_providerName,
-				pe);
+				StringBundler.concat(
+					"Invalid subject types ", StringUtil.merge(subjectTypes),
+					"for OpenId Connect provider \"", _providerName, "\": ",
+					parseException.getMessage()),
+				parseException);
 		}
-		catch (URISyntaxException urise) {
+		catch (URISyntaxException uriSyntaxException) {
 			throw new OpenIdConnectServiceException.ProviderException(
-				"Invalid URLs for OpenId Connect provider " + _providerName,
-				urise);
+				StringBundler.concat(
+					"Invalid URLs for OpenId Connect provider \"",
+					_providerName, "\": ", uriSyntaxException.getMessage()),
+				uriSyntaxException);
 		}
 	}
 
@@ -139,7 +144,8 @@ public class OpenIdConnectMetadataFactoryImpl
 		if (_oidcProviderMetadata == null) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Refreshing new OpenId Connect provider " + _providerName);
+					"Refreshing new OpenId Connect provider \"" +
+						_providerName + "\"");
 			}
 
 			return true;
@@ -152,8 +158,8 @@ public class OpenIdConnectMetadataFactoryImpl
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Refreshing stale OpenId Connect provider " +
-						_providerName);
+					"Refreshing stale OpenId Connect provider \"" +
+						_providerName + "\"");
 			}
 
 			return true;
@@ -165,41 +171,45 @@ public class OpenIdConnectMetadataFactoryImpl
 	protected synchronized void refresh(long time)
 		throws OpenIdConnectServiceException.ProviderException {
 
-		if (needsRefresh(time)) {
-			StopWatch stopWatch = new StopWatch();
+		if (!needsRefresh(time)) {
+			return;
+		}
 
-			stopWatch.start();
+		StopWatch stopWatch = new StopWatch();
 
-			try {
-				HTTPRequest httpRequest = new HTTPRequest(
-					HTTPRequest.Method.GET, _discoveryEndPointURL);
+		stopWatch.start();
 
-				HTTPResponse httpResponse = httpRequest.send();
+		try {
+			HTTPRequest httpRequest = new HTTPRequest(
+				HTTPRequest.Method.GET, _discoveryEndPointURL);
 
-				JSONObject jsonObject = httpResponse.getContentAsJSONObject();
+			HTTPResponse httpResponse = httpRequest.send();
 
-				_oidcProviderMetadata = OIDCProviderMetadata.parse(jsonObject);
+			JSONObject jsonObject = httpResponse.getContentAsJSONObject();
 
-				refreshClientMetadata(_oidcProviderMetadata);
+			_oidcProviderMetadata = OIDCProviderMetadata.parse(jsonObject);
 
-				_lastRefreshTimestamp = time;
-			}
-			catch (IOException | ParseException e) {
-				throw new OpenIdConnectServiceException.ProviderException(
-					"Unable to get OpenId Connect provider metadata for " +
-						_providerName,
-					e);
-			}
-			finally {
-				stopWatch.stop();
+			refreshClientMetadata(_oidcProviderMetadata);
 
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Getting OpenId Connect provider metadata from ",
-							_discoveryEndPointURL, " took ",
-							stopWatch.getTime(), "ms"));
-				}
+			_lastRefreshTimestamp = time;
+		}
+		catch (IOException | ParseException exception) {
+			throw new OpenIdConnectServiceException.ProviderException(
+				StringBundler.concat(
+					"Unable to get metadata for OpenId Connect provider \"",
+					_providerName, "\" from ", _discoveryEndPointURL, ": ",
+					exception.getMessage()),
+				exception);
+		}
+		finally {
+			stopWatch.stop();
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Getting OpenId Connect provider metadata from ",
+						_discoveryEndPointURL, " took ", stopWatch.getTime(),
+						"ms"));
 			}
 		}
 	}

@@ -17,6 +17,7 @@ package com.liferay.mobile.device.rules.service.impl;
 import com.liferay.mobile.device.rules.model.MDRRule;
 import com.liferay.mobile.device.rules.model.MDRRuleGroup;
 import com.liferay.mobile.device.rules.service.base.MDRRuleLocalServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -30,9 +31,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Edward C. Han
  */
+@Component(
+	property = "model.class.name=com.liferay.mobile.device.rules.model.MDRRule",
+	service = AopService.class
+)
 public class MDRRuleLocalServiceImpl extends MDRRuleLocalServiceBaseImpl {
 
 	@Override
@@ -74,13 +81,13 @@ public class MDRRuleLocalServiceImpl extends MDRRuleLocalServiceBaseImpl {
 	public MDRRule addRule(
 			long ruleGroupId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		return addRule(
 			ruleGroupId, nameMap, descriptionMap, type,
-			typeSettingsProperties.toString(), serviceContext);
+			typeSettingsUnicodeProperties.toString(), serviceContext);
 	}
 
 	@Override
@@ -162,10 +169,11 @@ public class MDRRuleLocalServiceImpl extends MDRRuleLocalServiceBaseImpl {
 
 	@Override
 	public List<MDRRule> getRules(
-		long ruleGroupId, int start, int end, OrderByComparator<MDRRule> obc) {
+		long ruleGroupId, int start, int end,
+		OrderByComparator<MDRRule> orderByComparator) {
 
 		return mdrRulePersistence.findByRuleGroupId(
-			ruleGroupId, start, end, obc);
+			ruleGroupId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -187,7 +195,7 @@ public class MDRRuleLocalServiceImpl extends MDRRuleLocalServiceBaseImpl {
 		rule.setType(type);
 		rule.setTypeSettings(typeSettings);
 
-		mdrRulePersistence.update(rule);
+		rule = mdrRulePersistence.update(rule);
 
 		MDRRuleGroup ruleGroup = mdrRuleGroupPersistence.findByPrimaryKey(
 			rule.getRuleGroupId());
@@ -203,13 +211,13 @@ public class MDRRuleLocalServiceImpl extends MDRRuleLocalServiceBaseImpl {
 	public MDRRule updateRule(
 			long ruleId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		return updateRule(
 			ruleId, nameMap, descriptionMap, type,
-			typeSettingsProperties.toString(), serviceContext);
+			typeSettingsUnicodeProperties.toString(), serviceContext);
 	}
 
 }

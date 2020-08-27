@@ -35,16 +35,17 @@ if (ListUtil.isEmpty(groups)) {
 	}
 }
 
-List<NavigationItem> navigationItems = new JSPNavigationItemList(pageContext) {
-	{
-		add(
-			navigationItem -> {
-				navigationItem.setActive(true);
-				navigationItem.setHref(currentURL);
-				navigationItem.setLabel(LanguageUtil.get(request, "details"));
-			});
-	}
-};
+List<NavigationItem> navigationItems =
+	new JSPNavigationItemList(pageContext) {
+		{
+			add(
+				navigationItem -> {
+					navigationItem.setActive(true);
+					navigationItem.setHref(currentURL);
+					navigationItem.setLabel(LanguageUtil.get(request, "details"));
+				});
+		}
+	};
 
 request.removeAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 %>
@@ -67,7 +68,7 @@ request.removeAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 				/>
 
 				<div class="sidebar-body">
-					<h5><liferay-ui:message key="num-of-items" /></h5>
+					<h5><liferay-ui:message key="num-of-sites" /></h5>
 
 					<p>
 						<%= GroupLocalServiceUtil.getGroupsCount(company.getCompanyId(), siteAdminDisplayContext.getGroupId(), true) %>

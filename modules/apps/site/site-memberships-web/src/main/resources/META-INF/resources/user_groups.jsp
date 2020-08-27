@@ -19,7 +19,7 @@
 <%
 UserGroupsDisplayContext userGroupsDisplayContext = new UserGroupsDisplayContext(request, renderRequest, renderResponse);
 
-UserGroupsManagementToolbarDisplayContext userGroupsManagementToolbarDisplayContext = new UserGroupsManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, userGroupsDisplayContext);
+UserGroupsManagementToolbarDisplayContext userGroupsManagementToolbarDisplayContext = new UserGroupsManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, userGroupsDisplayContext);
 
 Role role = userGroupsDisplayContext.getRole();
 %>
@@ -41,6 +41,10 @@ Role role = userGroupsDisplayContext.getRole();
 	<aui:input name="tabs1" type="hidden" value="user-groups" />
 	<aui:input name="navigation" type="hidden" value="<%= userGroupsDisplayContext.getNavigation() %>" />
 	<aui:input name="roleId" type="hidden" value="<%= (role != null) ? role.getRoleId() : 0 %>" />
+
+	<liferay-ui:breadcrumb
+		showLayout="<%= false %>"
+	/>
 
 	<liferay-ui:search-container
 		id="userGroups"

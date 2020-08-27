@@ -83,7 +83,6 @@ import java.util.Locale;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletSession;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -118,7 +117,6 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 		String screenName = ParamUtil.getString(actionRequest, "screenName");
 		String emailAddress = ParamUtil.getString(
 			actionRequest, "emailAddress");
-		long facebookId = 0;
 		String languageId = ParamUtil.getString(actionRequest, "languageId");
 		String firstName = ParamUtil.getString(actionRequest, "firstName");
 		String middleName = ParamUtil.getString(actionRequest, "middleName");
@@ -141,19 +139,17 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 
 		User user = _userService.addUser(
 			themeDisplay.getCompanyId(), true, null, null, autoScreenName,
-			screenName, emailAddress, facebookId, null,
-			LocaleUtil.fromLanguageId(languageId), firstName, middleName,
-			lastName, prefixId, suffixId, male, birthdayMonth, birthdayDay,
-			birthdayYear, jobTitle, null, organizationIds, null, null,
-			new ArrayList<Address>(), new ArrayList<EmailAddress>(),
-			new ArrayList<Phone>(), new ArrayList<Website>(),
-			new ArrayList<AnnouncementsDelivery>(), sendEmail, serviceContext);
+			screenName, emailAddress, LocaleUtil.fromLanguageId(languageId),
+			firstName, middleName, lastName, prefixId, suffixId, male,
+			birthdayMonth, birthdayDay, birthdayYear, jobTitle, null,
+			organizationIds, null, null, new ArrayList<Address>(),
+			new ArrayList<EmailAddress>(), new ArrayList<Phone>(),
+			new ArrayList<Website>(), new ArrayList<AnnouncementsDelivery>(),
+			sendEmail, serviceContext);
 
 		user.setComments(comments);
 
-		user = userLocalService.updateUser(user);
-
-		return user;
+		return userLocalService.updateUser(user);
 	}
 
 	protected void deleteRole(ActionRequest actionRequest) throws Exception {
@@ -210,6 +206,8 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 				user = addUser(actionRequest);
 
 				SessionMessages.add(actionRequest, "userAdded");
+
+				hideDefaultSuccessMessage(actionRequest);
 			}
 			else if (cmd.equals(Constants.DEACTIVATE) ||
 					 cmd.equals(Constants.DELETE) ||
@@ -300,45 +298,48 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 
 			sendRedirect(actionRequest, actionResponse, redirect);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			String mvcPath = "/edit_user.jsp";
 
-			if (e instanceof NoSuchUserException ||
-				e instanceof PrincipalException) {
+			if (exception instanceof NoSuchUserException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				mvcPath = "/error.jsp";
 			}
-			else if (e instanceof AssetCategoryException ||
-					 e instanceof AssetTagException ||
-					 e instanceof CompanyMaxUsersException ||
-					 e instanceof ContactBirthdayException ||
-					 e instanceof ContactNameException ||
-					 e instanceof GroupFriendlyURLException ||
-					 e instanceof MembershipPolicyException ||
-					 e instanceof NoSuchListTypeException ||
-					 e instanceof RequiredUserException ||
-					 e instanceof UserEmailAddressException ||
-					 e instanceof UserFieldException ||
-					 e instanceof UserIdException ||
-					 e instanceof UserReminderQueryException ||
-					 e instanceof UserScreenNameException) {
+			else if (exception instanceof AssetCategoryException ||
+					 exception instanceof AssetTagException ||
+					 exception instanceof CompanyMaxUsersException ||
+					 exception instanceof ContactBirthdayException ||
+					 exception instanceof ContactNameException ||
+					 exception instanceof GroupFriendlyURLException ||
+					 exception instanceof MembershipPolicyException ||
+					 exception instanceof NoSuchListTypeException ||
+					 exception instanceof RequiredUserException ||
+					 exception instanceof UserEmailAddressException ||
+					 exception instanceof UserFieldException ||
+					 exception instanceof UserIdException ||
+					 exception instanceof UserReminderQueryException ||
+					 exception instanceof UserScreenNameException) {
 
-				if (e instanceof NoSuchListTypeException) {
-					NoSuchListTypeException nslte = (NoSuchListTypeException)e;
+				if (exception instanceof NoSuchListTypeException) {
+					NoSuchListTypeException noSuchListTypeException =
+						(NoSuchListTypeException)exception;
 
-					Class<?> clazz = e.getClass();
+					Class<?> clazz = exception.getClass();
 
 					SessionErrors.add(
-						actionRequest, clazz.getName() + nslte.getType());
+						actionRequest,
+						clazz.getName() + noSuchListTypeException.getType());
 				}
 				else {
-					SessionErrors.add(actionRequest, e.getClass(), e);
+					SessionErrors.add(
+						actionRequest, exception.getClass(), exception);
 				}
 
-				if (e instanceof CompanyMaxUsersException ||
-					e instanceof RequiredUserException) {
+				if (exception instanceof CompanyMaxUsersException ||
+					exception instanceof RequiredUserException) {
 
 					String redirect = portal.escapeRedirect(
 						ParamUtil.getString(actionRequest, "redirect"));
@@ -351,7 +352,7 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 				}
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 
 			actionResponse.setRenderParameter("mvcPath", mvcPath);
@@ -421,7 +422,6 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 		String oldEmailAddress = user.getEmailAddress();
 		String emailAddress = BeanParamUtil.getString(
 			user, actionRequest, "emailAddress");
-		long facebookId = user.getFacebookId();
 
 		boolean deleteLogo = ParamUtil.getBoolean(actionRequest, "deleteLogo");
 
@@ -471,12 +471,13 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 
 		user = _userService.updateUser(
 			user.getUserId(), oldPassword, null, null, user.isPasswordReset(),
-			null, null, screenName, emailAddress, facebookId, user.getOpenId(),
-			!deleteLogo, portraitBytes, languageId, user.getTimeZoneId(),
-			user.getGreeting(), comments, firstName, middleName, lastName,
-			prefixId, suffixId, male, birthdayMonth, birthdayDay, birthdayYear,
-			null, null, null, null, null, jobTitle, null, null, null, null,
-			null, null, null, null, null, null, serviceContext);
+			null, null, screenName, emailAddress, !deleteLogo, portraitBytes,
+			languageId, user.getTimeZoneId(), user.getGreeting(), comments,
+			firstName, middleName, lastName, prefixId, suffixId, male,
+			birthdayMonth, birthdayDay, birthdayYear, contact.getSmsSn(),
+			contact.getFacebookSn(), contact.getJabberSn(),
+			contact.getSkypeSn(), contact.getTwitterSn(), jobTitle, null, null,
+			null, null, null, null, null, null, null, null, serviceContext);
 
 		if (oldScreenName.equals(user.getScreenName())) {
 			oldScreenName = StringPool.BLANK;
@@ -505,9 +506,8 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 
 			// Clear cached portlet responses
 
-			PortletSession portletSession = actionRequest.getPortletSession();
-
-			InvokerPortletUtil.clearResponses(portletSession);
+			InvokerPortletUtil.clearResponses(
+				actionRequest.getPortletSession());
 
 			updateLanguageId = true;
 		}
@@ -518,6 +518,8 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 			!StringUtil.equalsIgnoreCase(oldEmailAddress, emailAddress)) {
 
 			SessionMessages.add(actionRequest, "verificationEmailSent");
+
+			hideDefaultSuccessMessage(actionRequest);
 		}
 
 		return new Object[] {user, oldScreenName, updateLanguageId};

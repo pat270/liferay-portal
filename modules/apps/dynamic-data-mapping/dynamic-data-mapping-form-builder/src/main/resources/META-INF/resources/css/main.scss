@@ -1,12 +1,8 @@
-@import "./config/config";
+@import './config/config';
 
-@import "./components/components";
-@import "./form-builder/form-builder";
-@import "./rule-builder/rule-builder";
-
-.ddm-btn-full button {
-	width: 100%;
-}
+@import './components/components';
+@import './form-builder/form-builder';
+@import './rule-builder/rule-builder';
 
 .col-empty > p {
 	margin: 0;
@@ -22,17 +18,8 @@
 	min-width: 100%;
 }
 
-.ddm-field-actions-container {
-	display: flex;
-	justify-content: space-between;
-	opacity: 0;
-	position: absolute;
-	right: 15px;
-	top: calc(-32px / 2);
-	transition: all ease 0.3s;
-	visibility: hidden;
-	width: 78px;
-	z-index: 11;
+.dropdown-menu.show {
+	z-index: 1200;
 }
 
 .liferay-ddm-form-builder-calculator {
@@ -47,13 +34,21 @@
 
 .ddm-field-container {
 	border: 1px solid transparent;
-	cursor: -webkit-grab;
+	cursor: grab;
 	position: relative;
+
+	.input-group-inset-item-after .btn {
+		padding-bottom: 0.5rem;
+		padding-right: 0.18rem;
+	}
 }
 
-.ddm-field-container:hover .ddm-field-actions-container {
-	opacity: 1;
-	visibility: visible;
+.ddm-form-builder-wrapper {
+	button[disabled],
+	input[disabled],
+	textarea[disabled] {
+		pointer-events: none;
+	}
 }
 
 .ddm-target {
@@ -61,30 +56,18 @@
 	width: 100%;
 }
 
-textarea[class^="form-builder-page-header"] {
-	background: transparent;
-	border: none;
-	height: 36px;
-	margin: 0;
-	padding-top: 0;
-
-	&:focus {
-		background: none;
-		border: none;
-	}
-}
-
 .liferay-ddm-form-rule-builder-timeline .timeline-item .panel-body .dropdown {
-	&.dropdown-action, &.calculator-add-field-button-container {
+	&.dropdown-action,
+	&.calculator-add-field-button-container {
 		position: relative;
 		right: 0;
 		top: 0;
 	}
 
 	.calculator-add-operator-button-area {
-		background-color: #FFF;
-		border: solid 1px #CDCED9;
-		color: #6B6C7E;
+		background-color: #fff;
+		border: solid 1px #cdced9;
+		color: #6b6c7e;
 	}
 }
 
@@ -106,7 +89,8 @@ textarea[class^="form-builder-page-header"] {
 			max-width: max-content;
 		}
 
-		&.liferay-ddm-form-builder-rule-action-list .timeline-item:last-child:before {
+		&.liferay-ddm-form-builder-rule-action-list
+			.timeline-item:last-child:before {
 			bottom: 0;
 		}
 
@@ -119,7 +103,7 @@ textarea[class^="form-builder-page-header"] {
 			top: 13px;
 
 			&:hover {
-				color: #65B6F0;
+				color: #65b6f0;
 			}
 		}
 	}
@@ -139,7 +123,7 @@ textarea[class^="form-builder-page-header"] {
 }
 
 .form-builder-select-field .option-selected-placeholder {
-	color: #6A6C7D;
+	color: #6a6c7d;
 }
 
 .form-builder-select-field .dropdown-menu {
@@ -150,16 +134,18 @@ textarea[class^="form-builder-page-header"] {
 	width: 100%;
 }
 
-.form-builder-select-field .dropdown-menu .dropdown-section, .form-builder-select-field .dropdown-menu .dropdown-item, .form-builder-select-field .dropdown-menu .no-results-list {
+.form-builder-select-field .dropdown-menu .dropdown-section,
+.form-builder-select-field .dropdown-menu .dropdown-item,
+.form-builder-select-field .dropdown-menu .no-results-list {
 	padding: 0.5rem 1rem;
 }
 
 .form-builder-select-field .dropdown-menu .placeholder-dropdown-item {
-	color: #A7A9BC;
+	color: #a7a9bc;
 }
 
 .form-builder-select-field .dropdown-menu .placeholder-dropdown-item:hover {
-	color: #A7A9BC;
+	color: #a7a9bc;
 }
 
 .form-builder-select-field .dropdown-menu .custom-control {
@@ -167,11 +153,11 @@ textarea[class^="form-builder-page-header"] {
 }
 
 .form-builder-select-field .select-arrow-down-container {
-	color: #6B6C7E;
+	color: #6b6c7e;
 }
 
 .form-builder-select-field .search-chosen {
-	border-bottom: 1px solid #E4E9EC;
+	border-bottom: 1px solid #e4e9ec;
 	position: relative;
 }
 
@@ -182,20 +168,22 @@ textarea[class^="form-builder-page-header"] {
 }
 
 .form-builder-select-field .select-search-container a {
-	color: #869CAD;
+	color: #869cad;
 }
 
 .form-builder-select-field.active .select-field-trigger {
-	border-bottom: 2px solid #65B6F0;
+	border-bottom: 2px solid #65b6f0;
 }
 
-.form-builder-select-field .form-control[disabled] > a.select-arrow-down-container {
+.form-builder-select-field
+	.form-control[disabled]
+	> a.select-arrow-down-container {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
 
 .form-builder-select-field .form-control[disabled]:focus {
-	border-bottom: 2px solid #869CAD;
+	border-bottom: 2px solid #869cad;
 	text-decoration: none;
 }
 
@@ -208,7 +196,7 @@ textarea[class^="form-builder-page-header"] {
 }
 
 .form-builder-select-field .drop-chosen {
-	background-color: #FFF;
+	background-color: #fff;
 	border-radius: 0 0 4px 4px;
 	box-shadow: 0 2px 14px 0 rgba(58, 75, 87, 0.1);
 	left: 0;
@@ -229,7 +217,11 @@ textarea[class^="form-builder-page-header"] {
 	padding: 0;
 }
 
-.form-builder-select-field .drop-chosen .results-chosen .inline-scroller > span {
+.form-builder-select-field
+	.drop-chosen
+	.results-chosen
+	.inline-scroller
+	> span {
 	padding-left: 16px;
 }
 
@@ -238,39 +230,38 @@ textarea[class^="form-builder-page-header"] {
 	flex-flow: wrap;
 	list-style: none;
 	margin: 0;
-	padding: 0;
 	padding-right: 20px;
 	width: auto;
-}
 
-.form-builder-select-field .multiple-label-list li {
-	overflow: hidden;
-}
+	li {
+		overflow: hidden;
+	}
 
-.form-builder-select-field .multiple-label-list span.label-secondary {
-	max-width: 200px;
-}
+	span.label-secondary {
+		max-width: 200px;
+	}
 
-.form-builder-select-field .multiple-label-list .multiple-label {
-	margin-bottom: 4px;
-	margin-right: 6px;
-	margin-top: 0;
-	overflow: hidden;
-	padding-right: 20px;
-	position: relative;
-}
+	.multiple-label {
+		margin-bottom: 4px;
+		margin-right: 6px;
+		margin-top: 0;
+		overflow: hidden;
+		padding-right: 20px;
+		position: relative;
 
-.form-builder-select-field .multiple-label-list .multiple-label a {
-	font-size: 6px;
-	position: absolute;
-	right: 5px;
-	top: 1px;
-}
+		a {
+			font-size: 6px;
+			position: absolute;
+			right: 5px;
+			top: 1px;
 
-.form-builder-select-field .multiple-label-list .multiple-label a .icon-monospaced.lexicon-icon {
-	margin-bottom: 1px;
-	margin-left: 5px;
-	padding: 0;
+			.icon-monospaced.lexicon-icon {
+				margin-bottom: 1px;
+				margin-left: 5px;
+				padding: 0;
+			}
+		}
+	}
 }
 
 .ddm-form-builder {
@@ -291,5 +282,18 @@ textarea[class^="form-builder-page-header"] {
 @media (min-width: 576px) {
 	.ddm-form-builder .modal-sm {
 		max-width: 300px;
+	}
+}
+
+input[class^='form-builder-page-header'] {
+	background: transparent;
+	border: none;
+	height: 36px;
+	margin: 0;
+	padding-top: 0;
+
+	&:focus {
+		background: none;
+		border: none;
 	}
 }

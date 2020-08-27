@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link BlogsEntry}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BlogsEntry
  * @generated
  */
-@ProviderType
 public class BlogsEntryWrapper
 	extends BaseModelWrapper<BlogsEntry>
 	implements BlogsEntry, ModelWrapper<BlogsEntry> {
@@ -46,6 +43,7 @@ public class BlogsEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("entryId", getEntryId());
 		attributes.put("groupId", getGroupId());
@@ -81,6 +79,12 @@ public class BlogsEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -298,6 +302,13 @@ public class BlogsEntryWrapper
 		return model.getContent();
 	}
 
+	@Override
+	public String getCoverImageAlt()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getCoverImageAlt();
+	}
+
 	/**
 	 * Returns the cover image caption of this blogs entry.
 	 *
@@ -377,18 +388,6 @@ public class BlogsEntryWrapper
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getSmallImageURL(ThemeDisplay)}
-	 */
-	@Deprecated
-	@Override
-	public String getEntryImageURL(
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay) {
-
-		return model.getEntryImageURL(themeDisplay);
-	}
-
-	/**
 	 * Returns the group ID of this blogs entry.
 	 *
 	 * @return the group ID of this blogs entry
@@ -419,6 +418,16 @@ public class BlogsEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this blogs entry.
+	 *
+	 * @return the mvcc version of this blogs entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this blogs entry.
 	 *
 	 * @return the primary key of this blogs entry
@@ -436,6 +445,13 @@ public class BlogsEntryWrapper
 	@Override
 	public boolean getSmallImage() {
 		return model.getSmallImage();
+	}
+
+	@Override
+	public String getSmallImageAlt()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getSmallImageAlt();
 	}
 
 	/**
@@ -456,17 +472,6 @@ public class BlogsEntryWrapper
 	@Override
 	public long getSmallImageId() {
 		return model.getSmallImageId();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getSmallImageType()
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return model.getSmallImageType();
 	}
 
 	/**
@@ -939,6 +944,16 @@ public class BlogsEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this blogs entry.
+	 *
+	 * @param mvccVersion the mvcc version of this blogs entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

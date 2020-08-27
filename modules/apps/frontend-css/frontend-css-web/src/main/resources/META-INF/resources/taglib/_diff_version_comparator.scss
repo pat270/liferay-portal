@@ -4,7 +4,8 @@
 			border-bottom: 2px dotted transparent;
 		}
 
-		.diff-added-image, .diff-removed-image {
+		.diff-added-image,
+		.diff-removed-image {
 			display: none;
 		}
 
@@ -23,10 +24,6 @@
 			min-height: 400px;
 		}
 
-		.user-name {
-			margin-right: 5px;
-		}
-
 		.legend-item {
 			margin-right: 15px;
 		}
@@ -36,11 +33,7 @@
 		margin-bottom: 20px;
 	}
 
-	.input-group-search {
-		padding-bottom: 20px;
-	}
-
-	.version-item {
+	.list-group-item {
 		cursor: pointer;
 	}
 }

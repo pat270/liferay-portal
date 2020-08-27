@@ -14,6 +14,9 @@
 
 package com.liferay.portal.search.web.internal.site.facet.portlet;
 
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.facet.Facet;
@@ -41,6 +44,8 @@ import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -53,6 +58,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-site-facet",
 		"com.liferay.portlet.display-category=category.search",
+		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/search.png",
 		"com.liferay.portlet.instanceable=true",
 		"com.liferay.portlet.layout-cacheable=true",
@@ -67,8 +73,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/site/facet/view.jsp",
 		"javax.portlet.name=" + SiteFacetPortletKeys.SITE_FACET,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=guest,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -112,7 +117,7 @@ public class SiteFacetPortlet extends MVCPortlet {
 					renderRequest));
 
 		ScopeSearchFacetDisplayBuilder scopeSearchFacetDisplayBuilder =
-			new ScopeSearchFacetDisplayBuilder();
+			createScopeSearchFacetDisplayBuilder(renderRequest);
 
 		scopeSearchFacetDisplayBuilder.setFacet(facet);
 
@@ -125,6 +130,7 @@ public class SiteFacetPortlet extends MVCPortlet {
 		scopeSearchFacetDisplayBuilder.setFrequenciesVisible(
 			siteFacetPortletPreferences.isFrequenciesVisible());
 		scopeSearchFacetDisplayBuilder.setGroupLocalService(groupLocalService);
+		scopeSearchFacetDisplayBuilder.setLanguage(language);
 		scopeSearchFacetDisplayBuilder.setLocale(
 			getLocale(portletSharedSearchResponse, renderRequest));
 		scopeSearchFacetDisplayBuilder.setMaxTerms(
@@ -139,7 +145,21 @@ public class SiteFacetPortlet extends MVCPortlet {
 				parameterName, portletSharedSearchResponse, renderRequest),
 			scopeSearchFacetDisplayBuilder::setParameterValues);
 
+		scopeSearchFacetDisplayBuilder.setRequest(
+			getHttpServletRequest(renderRequest));
+
 		return scopeSearchFacetDisplayBuilder.build();
+	}
+
+	protected ScopeSearchFacetDisplayBuilder
+		createScopeSearchFacetDisplayBuilder(RenderRequest renderRequest) {
+
+		try {
+			return new ScopeSearchFacetDisplayBuilder(renderRequest);
+		}
+		catch (ConfigurationException configurationException) {
+			throw new RuntimeException(configurationException);
+		}
 	}
 
 	protected String getAggregationName(RenderRequest renderRequest) {
@@ -155,6 +175,15 @@ public class SiteFacetPortlet extends MVCPortlet {
 		SearchContext searchContext = searchSettings.getSearchContext();
 
 		return Optional.ofNullable(searchContext.getGroupIds());
+	}
+
+	protected HttpServletRequest getHttpServletRequest(
+		RenderRequest renderRequest) {
+
+		LiferayPortletRequest liferayPortletRequest =
+			portal.getLiferayPortletRequest(renderRequest);
+
+		return liferayPortletRequest.getHttpServletRequest();
 	}
 
 	protected Locale getLocale(
@@ -181,6 +210,9 @@ public class SiteFacetPortlet extends MVCPortlet {
 
 	@Reference
 	protected GroupLocalService groupLocalService;
+
+	@Reference
+	protected Language language;
 
 	@Reference
 	protected Portal portal;

@@ -29,8 +29,8 @@ import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.security.auto.login.internal.request.header.configuration.RequestHeaderAutoLoginConfiguration;
 import com.liferay.portal.security.auto.login.internal.request.header.constants.RequestHeaderAutoLoginConstants;
-import com.liferay.portal.security.auto.login.request.header.module.configuration.RequestHeaderAutoLoginConfiguration;
 import com.liferay.portal.security.exportimport.UserImporter;
 
 import java.util.HashSet;
@@ -47,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Wesley Gong
  */
 @Component(
-	configurationPid = "com.liferay.portal.security.auto.login.request.header.module.configuration.RequestHeaderAutoLoginConfiguration",
+	configurationPid = "com.liferay.portal.security.auto.login.internal.request.header.configuration.RequestHeaderAutoLoginConfiguration",
 	immediate = true, service = AutoLogin.class
 )
 public class RequestHeaderAutoLogin extends BaseAutoLogin {
@@ -93,7 +93,7 @@ public class RequestHeaderAutoLogin extends BaseAutoLogin {
 				user = _userImporter.importUser(
 					companyId, StringPool.BLANK, screenName);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -184,9 +184,10 @@ public class RequestHeaderAutoLogin extends BaseAutoLogin {
 				new CompanyServiceSettingsLocator(
 					companyId, RequestHeaderAutoLoginConstants.SERVICE_NAME));
 		}
-		catch (ConfigurationException ce) {
+		catch (ConfigurationException configurationException) {
 			_log.error(
-				"Unable to get request header auto login configuration", ce);
+				"Unable to get request header auto login configuration",
+				configurationException);
 		}
 
 		return null;

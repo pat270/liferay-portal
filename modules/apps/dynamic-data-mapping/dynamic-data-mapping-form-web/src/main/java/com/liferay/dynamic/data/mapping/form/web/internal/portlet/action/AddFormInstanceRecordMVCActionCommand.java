@@ -16,8 +16,10 @@ package com.liferay.dynamic.data.mapping.form.web.internal.portlet.action;
 
 import com.liferay.captcha.util.CaptchaUtil;
 import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
+import com.liferay.dynamic.data.mapping.exception.FormInstanceNotPublishedException;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.form.web.internal.constants.DDMFormWebKeys;
+import com.liferay.dynamic.data.mapping.form.web.internal.instance.lifecycle.AddDefaultSharedFormLayoutPortalInstanceLifecycleListener;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
@@ -29,8 +31,8 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordService;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.portal.kernel.captcha.CaptchaTextException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -39,8 +41,10 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -59,6 +63,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM,
+		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN,
 		"mvc.command.name=addFormInstanceRecord"
 	},
 	service = MVCActionCommand.class
@@ -92,14 +97,9 @@ public class AddFormInstanceRecordMVCActionCommand
 		DDMFormInstance ddmFormInstance =
 			_ddmFormInstanceService.getFormInstance(formInstanceId);
 
-		try {
-			validateCaptcha(actionRequest, ddmFormInstance);
-		}
-		catch (CaptchaTextException cte) {
-			SessionErrors.add(actionRequest, cte.getClass());
+		_validatePublishStatus(actionRequest, ddmFormInstance);
 
-			return;
-		}
+		validateCaptcha(actionRequest, ddmFormInstance);
 
 		DDMForm ddmForm = getDDMForm(ddmFormInstance);
 
@@ -112,57 +112,48 @@ public class AddFormInstanceRecordMVCActionCommand
 		_addFormInstanceMVCCommandHelper.
 			updateRequiredFieldsAccordingToVisibility(
 				actionRequest, ddmForm, ddmFormValues,
-				themeDisplay.getLocale());
+				LocaleUtil.fromLanguageId(
+					LanguageUtil.getLanguageId(actionRequest)));
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DDMFormInstanceRecord.class.getName(), actionRequest);
 
 		serviceContext.setRequest(_portal.getHttpServletRequest(actionRequest));
 
-		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion =
-			_ddmFormInstanceRecordVersionLocalService.
-				fetchLatestFormInstanceRecordVersion(
-					themeDisplay.getUserId(), formInstanceId,
-					ddmFormInstance.getVersion(),
-					WorkflowConstants.STATUS_DRAFT);
+		_updateFormInstanceRecord(
+			actionRequest, ddmFormInstance, ddmFormValues, groupId,
+			serviceContext, themeDisplay.getUserId());
 
-		if (ddmFormInstanceRecordVersion == null) {
-			_ddmFormInstanceRecordService.addFormInstanceRecord(
-				groupId, formInstanceId, ddmFormValues, serviceContext);
+		if (!SessionErrors.isEmpty(actionRequest)) {
+			return;
+		}
+
+		DDMFormInstanceSettings formInstanceSettings =
+			ddmFormInstance.getSettingsModel();
+
+		String redirectURL = ParamUtil.getString(
+			actionRequest, "redirect", formInstanceSettings.redirectURL());
+
+		if (Validator.isNotNull(redirectURL)) {
+			portletSession.setAttribute(
+				DDMFormWebKeys.DYNAMIC_DATA_MAPPING_FORM_INSTANCE_ID,
+				formInstanceId);
+			portletSession.setAttribute(DDMFormWebKeys.GROUP_ID, groupId);
+
+			sendRedirect(actionRequest, actionResponse, redirectURL);
 		}
 		else {
-			_ddmFormInstanceRecordService.updateFormInstanceRecord(
-				ddmFormInstanceRecordVersion.getFormInstanceRecordId(), false,
-				ddmFormValues, serviceContext);
-		}
+			DDMFormSuccessPageSettings ddmFormSuccessPageSettings =
+				ddmForm.getDDMFormSuccessPageSettings();
 
-		if (SessionErrors.isEmpty(actionRequest)) {
-			DDMFormInstanceSettings formInstanceSettings =
-				ddmFormInstance.getSettingsModel();
+			if (ddmFormSuccessPageSettings.isEnabled()) {
+				String portletId = _portal.getPortletId(actionRequest);
 
-			String redirectURL = formInstanceSettings.redirectURL();
-
-			if (Validator.isNotNull(redirectURL)) {
-				portletSession.setAttribute(
-					DDMFormWebKeys.DYNAMIC_DATA_MAPPING_FORM_INSTANCE_ID,
-					formInstanceId);
-				portletSession.setAttribute(DDMFormWebKeys.GROUP_ID, groupId);
-
-				sendRedirect(actionRequest, actionResponse, redirectURL);
-			}
-			else {
-				DDMFormSuccessPageSettings ddmFormSuccessPageSettings =
-					ddmForm.getDDMFormSuccessPageSettings();
-
-				if (ddmFormSuccessPageSettings.isEnabled()) {
-					String portletId = _portal.getPortletId(actionRequest);
-
-					SessionMessages.add(
-						actionRequest,
-						portletId.concat(
-							SessionMessages.
-								KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE));
-				}
+				SessionMessages.add(
+					actionRequest,
+					portletId.concat(
+						SessionMessages.
+							KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE));
 			}
 		}
 	}
@@ -207,6 +198,71 @@ public class AddFormInstanceRecordMVCActionCommand
 			CaptchaUtil.check(actionRequest);
 		}
 	}
+
+	private void _updateFormInstanceRecord(
+			ActionRequest actionRequest, DDMFormInstance ddmFormInstance,
+			DDMFormValues ddmFormValues, long groupId,
+			ServiceContext serviceContext, long userId)
+		throws Exception {
+
+		long ddmFormInstanceRecordId = ParamUtil.getLong(
+			actionRequest, "formInstanceRecordId");
+
+		if (ddmFormInstanceRecordId != 0) {
+			_ddmFormInstanceRecordService.updateFormInstanceRecord(
+				ddmFormInstanceRecordId, false, ddmFormValues, serviceContext);
+		}
+		else {
+			DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion =
+				_ddmFormInstanceRecordVersionLocalService.
+					fetchLatestFormInstanceRecordVersion(
+						userId, ddmFormInstance.getFormInstanceId(),
+						ddmFormInstance.getVersion(),
+						WorkflowConstants.STATUS_DRAFT);
+
+			if (ddmFormInstanceRecordVersion == null) {
+				_ddmFormInstanceRecordService.addFormInstanceRecord(
+					groupId, ddmFormInstance.getFormInstanceId(), ddmFormValues,
+					serviceContext);
+			}
+			else {
+				_ddmFormInstanceRecordService.updateFormInstanceRecord(
+					ddmFormInstanceRecordVersion.getFormInstanceRecordId(),
+					false, ddmFormValues, serviceContext);
+			}
+		}
+	}
+
+	private void _validatePublishStatus(
+			ActionRequest actionRequest, DDMFormInstance ddmFormInstance)
+		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		String currentURL = ParamUtil.getString(actionRequest, "currentURL");
+
+		DDMFormInstanceSettings ddmFormInstanceSettings =
+			ddmFormInstance.getSettingsModel();
+
+		String formLayoutURL =
+			_addDefaultSharedFormLayoutPortalInstanceLifecycleListener.
+				getFormLayoutURL(
+					themeDisplay,
+					ddmFormInstanceSettings.requireAuthentication());
+
+		if (StringUtil.startsWith(currentURL, formLayoutURL) &&
+			!ddmFormInstanceSettings.published()) {
+
+			throw new FormInstanceNotPublishedException(
+				"Form instance " + ddmFormInstance.getFormInstanceId() +
+					" is not published");
+		}
+	}
+
+	@Reference
+	private AddDefaultSharedFormLayoutPortalInstanceLifecycleListener
+		_addDefaultSharedFormLayoutPortalInstanceLifecycleListener;
 
 	@Reference
 	private AddFormInstanceRecordMVCCommandHelper

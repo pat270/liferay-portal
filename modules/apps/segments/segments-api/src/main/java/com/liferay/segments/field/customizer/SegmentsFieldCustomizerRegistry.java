@@ -23,12 +23,19 @@ import org.osgi.annotation.versioning.ProviderType;
  * SegmentsFieldCustomizer} implementations.
  *
  * @author Eduardo García
- * @review
  */
 @ProviderType
 public interface SegmentsFieldCustomizerRegistry {
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getSegmentsFieldCustomizerOptional(String, String)}
+	 */
+	@Deprecated
 	public Optional<SegmentsFieldCustomizer> getSegmentFieldCustomizerOptional(
+		String entityName, String fieldName);
+
+	public Optional<SegmentsFieldCustomizer> getSegmentsFieldCustomizerOptional(
 		String entityName, String fieldName);
 
 }

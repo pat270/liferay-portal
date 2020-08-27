@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -46,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,10 @@ public class AssetEntryPersistenceTest {
 
 		AssetEntry newAssetEntry = _persistence.create(pk);
 
+		newAssetEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		newAssetEntry.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newAssetEntry.setGroupId(RandomTestUtil.nextLong());
 
 		newAssetEntry.setCompanyId(RandomTestUtil.nextLong());
@@ -174,13 +178,17 @@ public class AssetEntryPersistenceTest {
 
 		newAssetEntry.setPriority(RandomTestUtil.nextDouble());
 
-		newAssetEntry.setViewCount(RandomTestUtil.nextInt());
-
 		_assetEntries.add(_persistence.update(newAssetEntry));
 
 		AssetEntry existingAssetEntry = _persistence.findByPrimaryKey(
 			newAssetEntry.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingAssetEntry.getMvccVersion(),
+			newAssetEntry.getMvccVersion());
+		Assert.assertEquals(
+			existingAssetEntry.getCtCollectionId(),
+			newAssetEntry.getCtCollectionId());
 		Assert.assertEquals(
 			existingAssetEntry.getEntryId(), newAssetEntry.getEntryId());
 		Assert.assertEquals(
@@ -242,8 +250,6 @@ public class AssetEntryPersistenceTest {
 			existingAssetEntry.getWidth(), newAssetEntry.getWidth());
 		AssertUtils.assertEquals(
 			existingAssetEntry.getPriority(), newAssetEntry.getPriority());
-		Assert.assertEquals(
-			existingAssetEntry.getViewCount(), newAssetEntry.getViewCount());
 	}
 
 	@Test
@@ -351,14 +357,14 @@ public class AssetEntryPersistenceTest {
 
 	protected OrderByComparator<AssetEntry> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"AssetEntry", "entryId", true, "groupId", true, "companyId", true,
-			"userId", true, "userName", true, "createDate", true,
-			"modifiedDate", true, "classNameId", true, "classPK", true,
-			"classUuid", true, "classTypeId", true, "listable", true, "visible",
-			true, "startDate", true, "endDate", true, "publishDate", true,
-			"expirationDate", true, "mimeType", true, "title", true, "url",
-			true, "layoutUuid", true, "height", true, "width", true, "priority",
-			true, "viewCount", true);
+			"AssetEntry", "mvccVersion", true, "ctCollectionId", true,
+			"entryId", true, "groupId", true, "companyId", true, "userId", true,
+			"userName", true, "createDate", true, "modifiedDate", true,
+			"classNameId", true, "classPK", true, "classUuid", true,
+			"classTypeId", true, "listable", true, "visible", true, "startDate",
+			true, "endDate", true, "publishDate", true, "expirationDate", true,
+			"mimeType", true, "title", true, "url", true, "layoutUuid", true,
+			"height", true, "width", true, "priority", true);
 	}
 
 	@Test
@@ -571,34 +577,81 @@ public class AssetEntryPersistenceTest {
 
 		_persistence.clearCache();
 
-		AssetEntry existingAssetEntry = _persistence.findByPrimaryKey(
-			newAssetEntry.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newAssetEntry.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		AssetEntry newAssetEntry = addAssetEntry();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			AssetEntry.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("entryId", newAssetEntry.getEntryId()));
+
+		List<AssetEntry> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(AssetEntry assetEntry) {
+		Assert.assertEquals(
+			Long.valueOf(assetEntry.getGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				assetEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
+		Assert.assertEquals(
+			assetEntry.getClassUuid(),
+			ReflectionTestUtil.invoke(
+				assetEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classUuid"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingAssetEntry.getGroupId()),
+			Long.valueOf(assetEntry.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntry, "getOriginalGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingAssetEntry.getClassUuid(),
-				ReflectionTestUtil.invoke(
-					existingAssetEntry, "getOriginalClassUuid",
-					new Class<?>[0])));
-
+				assetEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingAssetEntry.getClassNameId()),
+			Long.valueOf(assetEntry.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntry, "getOriginalClassNameId", new Class<?>[0]));
-		Assert.assertEquals(
-			Long.valueOf(existingAssetEntry.getClassPK()),
-			ReflectionTestUtil.<Long>invoke(
-				existingAssetEntry, "getOriginalClassPK", new Class<?>[0]));
+				assetEntry, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 	}
 
 	protected AssetEntry addAssetEntry() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		AssetEntry assetEntry = _persistence.create(pk);
+
+		assetEntry.setMvccVersion(RandomTestUtil.nextLong());
+
+		assetEntry.setCtCollectionId(RandomTestUtil.nextLong());
 
 		assetEntry.setGroupId(RandomTestUtil.nextLong());
 
@@ -649,8 +702,6 @@ public class AssetEntryPersistenceTest {
 		assetEntry.setWidth(RandomTestUtil.nextInt());
 
 		assetEntry.setPriority(RandomTestUtil.nextDouble());
-
-		assetEntry.setViewCount(RandomTestUtil.nextInt());
 
 		_assetEntries.add(_persistence.update(assetEntry));
 

@@ -27,18 +27,49 @@ public class SegmentsConstants {
 
 	public static final String RESOURCE_NAME = "com.liferay.segments";
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static final long SEGMENTS_ENTRY_ID_DEFAULT = 0;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static final long SEGMENTS_EXPERIENCE_ID_DEFAULT = 0;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
+	public static final String SEGMENTS_EXPERIENCE_ID_PREFIX =
+		"segments-experience-id-";
+
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static final int SEGMENTS_EXPERIENCE_PRIORITY_DEFAULT = -1;
 
 	public static final String SERVICE_NAME = "com.liferay.segments";
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static final String SOURCE_ASAH_FARO_BACKEND = "ASAH_FARO_BACKEND";
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static final String SOURCE_DEFAULT = "DEFAULT";
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static String getDefaultSegmentsEntryName(Locale locale) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			"content.Language", locale, SegmentsConstants.class);
@@ -46,6 +77,10 @@ public class SegmentsConstants {
 		return LanguageUtil.get(resourceBundle, "default-segment-name");
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static String getDefaultSegmentsExperienceName(Locale locale) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			"content.Language", locale, SegmentsConstants.class);

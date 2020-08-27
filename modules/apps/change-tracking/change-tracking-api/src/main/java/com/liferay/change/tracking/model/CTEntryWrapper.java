@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link CTEntry}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CTEntry
  * @generated
  */
-@ProviderType
 public class CTEntryWrapper
 	extends BaseModelWrapper<CTEntry>
 	implements CTEntry, ModelWrapper<CTEntry> {
@@ -45,25 +42,29 @@ public class CTEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("ctEntryId", getCtEntryId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
-		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("originalCTCollectionId", getOriginalCTCollectionId());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("modelClassNameId", getModelClassNameId());
 		attributes.put("modelClassPK", getModelClassPK());
-		attributes.put("modelResourcePrimKey", getModelResourcePrimKey());
+		attributes.put("modelMvccVersion", getModelMvccVersion());
 		attributes.put("changeType", getChangeType());
-		attributes.put("collision", isCollision());
-		attributes.put("status", getStatus());
 
 		return attributes;
 	}
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long ctEntryId = (Long)attributes.get("ctEntryId");
 
 		if (ctEntryId != null) {
@@ -82,12 +83,6 @@ public class CTEntryWrapper
 			setUserId(userId);
 		}
 
-		String userName = (String)attributes.get("userName");
-
-		if (userName != null) {
-			setUserName(userName);
-		}
-
 		Date createDate = (Date)attributes.get("createDate");
 
 		if (createDate != null) {
@@ -100,11 +95,10 @@ public class CTEntryWrapper
 			setModifiedDate(modifiedDate);
 		}
 
-		Long originalCTCollectionId = (Long)attributes.get(
-			"originalCTCollectionId");
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
 
-		if (originalCTCollectionId != null) {
-			setOriginalCTCollectionId(originalCTCollectionId);
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
 		}
 
 		Long modelClassNameId = (Long)attributes.get("modelClassNameId");
@@ -119,29 +113,16 @@ public class CTEntryWrapper
 			setModelClassPK(modelClassPK);
 		}
 
-		Long modelResourcePrimKey = (Long)attributes.get(
-			"modelResourcePrimKey");
+		Long modelMvccVersion = (Long)attributes.get("modelMvccVersion");
 
-		if (modelResourcePrimKey != null) {
-			setModelResourcePrimKey(modelResourcePrimKey);
+		if (modelMvccVersion != null) {
+			setModelMvccVersion(modelMvccVersion);
 		}
 
 		Integer changeType = (Integer)attributes.get("changeType");
 
 		if (changeType != null) {
 			setChangeType(changeType);
-		}
-
-		Boolean collision = (Boolean)attributes.get("collision");
-
-		if (collision != null) {
-			setCollision(collision);
-		}
-
-		Integer status = (Integer)attributes.get("status");
-
-		if (status != null) {
-			setStatus(status);
 		}
 	}
 
@@ -153,16 +134,6 @@ public class CTEntryWrapper
 	@Override
 	public int getChangeType() {
 		return model.getChangeType();
-	}
-
-	/**
-	 * Returns the collision of this ct entry.
-	 *
-	 * @return the collision of this ct entry
-	 */
-	@Override
-	public boolean getCollision() {
-		return model.getCollision();
 	}
 
 	/**
@@ -185,9 +156,14 @@ public class CTEntryWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this ct entry.
+	 *
+	 * @return the ct collection ID of this ct entry
+	 */
 	@Override
-	public java.util.List<CTEntryAggregate> getCTEntryAggregates() {
-		return model.getCTEntryAggregates();
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	/**
@@ -221,13 +197,13 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Returns the model resource prim key of this ct entry.
+	 * Returns the model mvcc version of this ct entry.
 	 *
-	 * @return the model resource prim key of this ct entry
+	 * @return the model mvcc version of this ct entry
 	 */
 	@Override
-	public long getModelResourcePrimKey() {
-		return model.getModelResourcePrimKey();
+	public long getModelMvccVersion() {
+		return model.getModelMvccVersion();
 	}
 
 	/**
@@ -241,13 +217,13 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Returns the original ct collection ID of this ct entry.
+	 * Returns the mvcc version of this ct entry.
 	 *
-	 * @return the original ct collection ID of this ct entry
+	 * @return the mvcc version of this ct entry
 	 */
 	@Override
-	public long getOriginalCTCollectionId() {
-		return model.getOriginalCTCollectionId();
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -261,16 +237,6 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Returns the status of this ct entry.
-	 *
-	 * @return the status of this ct entry
-	 */
-	@Override
-	public int getStatus() {
-		return model.getStatus();
-	}
-
-	/**
 	 * Returns the user ID of this ct entry.
 	 *
 	 * @return the user ID of this ct entry
@@ -280,11 +246,6 @@ public class CTEntryWrapper
 		return model.getUserId();
 	}
 
-	/**
-	 * Returns the user name of this ct entry.
-	 *
-	 * @return the user name of this ct entry
-	 */
 	@Override
 	public String getUserName() {
 		return model.getUserName();
@@ -301,21 +262,6 @@ public class CTEntryWrapper
 	}
 
 	@Override
-	public boolean hasCTEntryAggregate() {
-		return model.hasCTEntryAggregate();
-	}
-
-	/**
-	 * Returns <code>true</code> if this ct entry is collision.
-	 *
-	 * @return <code>true</code> if this ct entry is collision; <code>false</code> otherwise
-	 */
-	@Override
-	public boolean isCollision() {
-		return model.isCollision();
-	}
-
-	@Override
 	public void persist() {
 		model.persist();
 	}
@@ -328,16 +274,6 @@ public class CTEntryWrapper
 	@Override
 	public void setChangeType(int changeType) {
 		model.setChangeType(changeType);
-	}
-
-	/**
-	 * Sets whether this ct entry is collision.
-	 *
-	 * @param collision the collision of this ct entry
-	 */
-	@Override
-	public void setCollision(boolean collision) {
-		model.setCollision(collision);
 	}
 
 	/**
@@ -358,6 +294,16 @@ public class CTEntryWrapper
 	@Override
 	public void setCreateDate(Date createDate) {
 		model.setCreateDate(createDate);
+	}
+
+	/**
+	 * Sets the ct collection ID of this ct entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ct entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -391,13 +337,13 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Sets the model resource prim key of this ct entry.
+	 * Sets the model mvcc version of this ct entry.
 	 *
-	 * @param modelResourcePrimKey the model resource prim key of this ct entry
+	 * @param modelMvccVersion the model mvcc version of this ct entry
 	 */
 	@Override
-	public void setModelResourcePrimKey(long modelResourcePrimKey) {
-		model.setModelResourcePrimKey(modelResourcePrimKey);
+	public void setModelMvccVersion(long modelMvccVersion) {
+		model.setModelMvccVersion(modelMvccVersion);
 	}
 
 	/**
@@ -411,13 +357,13 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Sets the original ct collection ID of this ct entry.
+	 * Sets the mvcc version of this ct entry.
 	 *
-	 * @param originalCTCollectionId the original ct collection ID of this ct entry
+	 * @param mvccVersion the mvcc version of this ct entry
 	 */
 	@Override
-	public void setOriginalCTCollectionId(long originalCTCollectionId) {
-		model.setOriginalCTCollectionId(originalCTCollectionId);
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -431,16 +377,6 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Sets the status of this ct entry.
-	 *
-	 * @param status the status of this ct entry
-	 */
-	@Override
-	public void setStatus(int status) {
-		model.setStatus(status);
-	}
-
-	/**
 	 * Sets the user ID of this ct entry.
 	 *
 	 * @param userId the user ID of this ct entry
@@ -448,16 +384,6 @@ public class CTEntryWrapper
 	@Override
 	public void setUserId(long userId) {
 		model.setUserId(userId);
-	}
-
-	/**
-	 * Sets the user name of this ct entry.
-	 *
-	 * @param userName the user name of this ct entry
-	 */
-	@Override
-	public void setUserName(String userName) {
-		model.setUserName(userName);
 	}
 
 	/**

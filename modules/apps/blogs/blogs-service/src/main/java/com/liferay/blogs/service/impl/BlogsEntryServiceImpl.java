@@ -24,8 +24,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
@@ -36,9 +34,7 @@ import com.liferay.portal.kernel.security.permission.resource.PortletResourcePer
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.servlet.taglib.ui.ImageSelector;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -52,9 +48,6 @@ import com.liferay.rss.model.SyndFeed;
 import com.liferay.rss.model.SyndLink;
 import com.liferay.rss.model.SyndModelFactory;
 import com.liferay.rss.util.RSSUtil;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,56 +82,6 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		return blogsEntryLocalService.addAttachmentsFolder(
 			getUserId(), groupId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #addEntry(String,
-	 *             String, String, String, int, int, int, int, int, boolean,
-	 *             boolean, String[], String, ImageSelector, ImageSelector,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public BlogsEntry addEntry(
-			String title, String description, String content,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, boolean allowPingbacks,
-			boolean allowTrackbacks, String[] trackbacks, boolean smallImage,
-			String smallImageURL, String smallImageFileName,
-			InputStream smallImageInputStream, ServiceContext serviceContext)
-		throws PortalException {
-
-		_portletResourcePermission.check(
-			getPermissionChecker(), serviceContext.getScopeGroupId(),
-			ActionKeys.ADD_ENTRY);
-
-		ImageSelector smallImageImageSelector = null;
-
-		if (smallImage) {
-			if (Validator.isNotNull(smallImageFileName) &&
-				(smallImageInputStream != null)) {
-
-				try {
-					byte[] bytes = FileUtil.getBytes(smallImageInputStream);
-
-					smallImageImageSelector = new ImageSelector(
-						bytes, smallImageFileName,
-						MimeTypesUtil.getContentType(smallImageFileName), null);
-				}
-				catch (IOException ioe) {
-					_log.error("Unable to create image selector", ioe);
-				}
-			}
-			else if (Validator.isNotNull(smallImageURL)) {
-				smallImageImageSelector = new ImageSelector(smallImageURL);
-			}
-		}
-
-		return addEntry(
-			title, StringPool.BLANK, description, content, displayDateMonth,
-			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
-			allowPingbacks, allowTrackbacks, trackbacks, StringPool.BLANK, null,
-			smallImageImageSelector, serviceContext);
 	}
 
 	@Override
@@ -367,15 +310,16 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 	@Override
 	public List<BlogsEntry> getGroupEntries(
 		long groupId, int status, int start, int end,
-		OrderByComparator<BlogsEntry> obc) {
+		OrderByComparator<BlogsEntry> orderByComparator) {
 
 		if (status == WorkflowConstants.STATUS_ANY) {
 			return blogsEntryPersistence.filterFindByG_NotS(
-				groupId, WorkflowConstants.STATUS_IN_TRASH, start, end, obc);
+				groupId, WorkflowConstants.STATUS_IN_TRASH, start, end,
+				orderByComparator);
 		}
 
 		return blogsEntryPersistence.filterFindByG_S(
-			groupId, status, start, end, obc);
+			groupId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -466,25 +410,25 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 	@Override
 	public List<BlogsEntry> getGroupUserEntries(
 		long groupId, long userId, int status, int start, int end,
-		OrderByComparator<BlogsEntry> obc) {
+		OrderByComparator<BlogsEntry> orderByComparator) {
 
 		if (status == WorkflowConstants.STATUS_ANY) {
 			return blogsEntryPersistence.filterFindByG_U_NotS(
 				groupId, userId, WorkflowConstants.STATUS_IN_TRASH, start, end,
-				obc);
+				orderByComparator);
 		}
 
 		return blogsEntryPersistence.filterFindByG_U_S(
-			groupId, userId, status, start, end, obc);
+			groupId, userId, status, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<BlogsEntry> getGroupUserEntries(
 		long groupId, long userId, int[] statuses, int start, int end,
-		OrderByComparator<BlogsEntry> obc) {
+		OrderByComparator<BlogsEntry> orderByComparator) {
 
 		return blogsEntryPersistence.filterFindByG_U_S(
-			groupId, userId, statuses, start, end, obc);
+			groupId, userId, statuses, start, end, orderByComparator);
 	}
 
 	@Override
@@ -598,58 +542,6 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 			getPermissionChecker(), groupId, ActionKeys.SUBSCRIBE);
 
 		blogsEntryLocalService.unsubscribe(getUserId(), groupId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
-	 *             String, String, String, String, int, int, int, int, int,
-	 *             boolean, boolean, String[], String, ImageSelector,
-	 *             ImageSelector, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public BlogsEntry updateEntry(
-			long entryId, String title, String description, String content,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, boolean allowPingbacks,
-			boolean allowTrackbacks, String[] trackbacks, boolean smallImage,
-			String smallImageURL, String smallImageFileName,
-			InputStream smallImageInputStream, ServiceContext serviceContext)
-		throws PortalException {
-
-		_blogsEntryModelResourcePermission.check(
-			getPermissionChecker(), entryId, ActionKeys.UPDATE);
-
-		ImageSelector smallImageImageSelector = null;
-
-		if (smallImage) {
-			if (Validator.isNotNull(smallImageFileName) &&
-				(smallImageInputStream != null)) {
-
-				try {
-					byte[] bytes = FileUtil.getBytes(smallImageInputStream);
-
-					smallImageImageSelector = new ImageSelector(
-						bytes, smallImageFileName,
-						MimeTypesUtil.getContentType(smallImageFileName), null);
-				}
-				catch (IOException ioe) {
-					_log.error("Unable to create image selector", ioe);
-				}
-			}
-			else if (Validator.isNotNull(smallImageURL)) {
-				smallImageImageSelector = new ImageSelector(smallImageURL);
-			}
-		}
-		else {
-			smallImageImageSelector = new ImageSelector();
-		}
-
-		return updateEntry(
-			entryId, title, StringPool.BLANK, description, content,
-			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
-			displayDateMinute, allowPingbacks, allowTrackbacks, trackbacks,
-			StringPool.BLANK, null, smallImageImageSelector, serviceContext);
 	}
 
 	@Override
@@ -790,9 +682,6 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		return _rssExporter.export(syndFeed);
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		BlogsEntryServiceImpl.class);
 
 	@Reference(
 		policy = ReferencePolicy.DYNAMIC,

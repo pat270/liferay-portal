@@ -20,8 +20,16 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.checks.comparator.ElementComparator;
+import com.liferay.source.formatter.util.FileUtil;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import java.util.Iterator;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -142,5 +150,144 @@ public abstract class BaseFileCheck
 
 		return lineLength;
 	}
+
+	protected String getPortalVersion(boolean privateApp) throws IOException {
+		String portalVersion = _getPublicPortalVersion();
+
+		if (privateApp) {
+			portalVersion = _getPrivatePortalVersion();
+		}
+
+		if (Validator.isNull(portalVersion) || privateApp) {
+			return portalVersion;
+		}
+
+		Matcher matcher = _portalVersionPattern.matcher(portalVersion);
+
+		if (matcher.find()) {
+			portalVersion = matcher.group(1) + ".0";
+		}
+
+		return portalVersion;
+	}
+
+	private synchronized String _getPrivatePortalVersion() throws IOException {
+		if (_privatePortalVersion != null) {
+			return _privatePortalVersion;
+		}
+
+		_privatePortalVersion = StringPool.BLANK;
+
+		if (!isPortalSource()) {
+			return _privatePortalVersion;
+		}
+
+		File workingDirPropertiesFile = new File(
+			getPortalDir(), "working.dir.properties");
+
+		if (!workingDirPropertiesFile.exists()) {
+			return _privatePortalVersion;
+		}
+
+		String content = FileUtil.read(workingDirPropertiesFile);
+
+		Matcher matcher = _privateBranchNamePattern.matcher(content);
+
+		if (!matcher.find()) {
+			return _privatePortalVersion;
+		}
+
+		String privateBranchName = StringUtil.trim(matcher.group(1));
+
+		if (Validator.isNull(privateBranchName)) {
+			return _privatePortalVersion;
+		}
+
+		String s = Pattern.quote("lp.version[" + privateBranchName + "]=");
+
+		Pattern pattern = Pattern.compile(s + "(.*)");
+
+		matcher = pattern.matcher(content);
+
+		if (!matcher.find()) {
+			return _privatePortalVersion;
+		}
+
+		_privatePortalVersion = StringUtil.trim(matcher.group(1));
+
+		return _privatePortalVersion;
+	}
+
+	private synchronized String _getPublicPortalVersion() throws IOException {
+		if (_publicPortalVersion != null) {
+			return _publicPortalVersion;
+		}
+
+		_publicPortalVersion = StringPool.BLANK;
+
+		if (!isPortalSource()) {
+			return _publicPortalVersion;
+		}
+
+		File workingDirPropertiesFile = new File(
+			getPortalDir(), "working.dir.properties");
+
+		if (workingDirPropertiesFile.exists()) {
+			String content = FileUtil.read(workingDirPropertiesFile);
+
+			Matcher matcher = _privateBranchNamePattern.matcher(content);
+
+			if (matcher.find()) {
+				String privateBranchName = StringUtil.trim(matcher.group(1));
+
+				if (Validator.isNotNull(privateBranchName) &&
+					privateBranchName.endsWith("-private")) {
+
+					String branchName = StringUtil.replaceLast(
+						privateBranchName, "-private", StringPool.BLANK);
+
+					String s = Pattern.quote("lp.version[" + branchName + "]=");
+
+					Pattern pattern = Pattern.compile(s + "(.*)");
+
+					matcher = pattern.matcher(content);
+
+					if (matcher.find()) {
+						String match = matcher.group(1);
+
+						_publicPortalVersion = StringUtil.trim(match);
+					}
+				}
+			}
+		}
+		else {
+			File releasePropertiesFile = new File(
+				getPortalDir(), _RELEASE_PROPERTIES_FILE_NAME);
+
+			if (releasePropertiesFile.exists()) {
+				Properties properties = new Properties();
+
+				properties.load(new FileInputStream(releasePropertiesFile));
+
+				if (properties.containsKey("release.info.version")) {
+					_publicPortalVersion = properties.getProperty(
+						"release.info.version");
+				}
+			}
+		}
+
+		return _publicPortalVersion;
+	}
+
+	private static final String _RELEASE_PROPERTIES_FILE_NAME =
+		"release.properties";
+
+	private static final Pattern _portalVersionPattern = Pattern.compile(
+		"(\\w+\\.\\w+)\\.\\w+");
+	private static final Pattern _privateBranchNamePattern = Pattern.compile(
+		"private.branch.name=(.*)\n");
+
+	private String _privatePortalVersion;
+	private String _publicPortalVersion;
 
 }

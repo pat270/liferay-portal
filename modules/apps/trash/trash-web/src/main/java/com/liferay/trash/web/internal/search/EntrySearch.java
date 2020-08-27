@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -31,7 +32,6 @@ import com.liferay.trash.util.comparator.EntryTypeComparator;
 import com.liferay.trash.util.comparator.EntryUserNameComparator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,15 +60,15 @@ public class EntrySearch extends SearchContainer<TrashEntry> {
 			add("removed-by");
 		}
 	};
-	public static Map<String, String> orderableHeaders =
-		new HashMap<String, String>() {
-			{
-				put("name", "name");
-				put("removed-by", "removed-by");
-				put("removed-date", "removed-date");
-				put("type", "type");
-			}
-		};
+	public static Map<String, String> orderableHeaders = HashMapBuilder.put(
+		"name", "name"
+	).put(
+		"removed-by", "removed-by"
+	).put(
+		"removed-date", "removed-date"
+	).put(
+		"type", "type"
+	).build();
 
 	public EntrySearch(PortletRequest portletRequest, PortletURL iteratorURL) {
 		super(
@@ -112,8 +112,8 @@ public class EntrySearch extends SearchContainer<TrashEntry> {
 			setOrderByType(orderByType);
 			setOrderByComparator(orderByComparator);
 		}
-		catch (Exception e) {
-			_log.error("Unable to initialize entry search", e);
+		catch (Exception exception) {
+			_log.error("Unable to initialize entry search", exception);
 		}
 	}
 

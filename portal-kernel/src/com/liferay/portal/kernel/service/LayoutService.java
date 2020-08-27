@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -25,6 +26,7 @@ import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.io.InputStream;
 
@@ -45,6 +47,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -56,8 +59,69 @@ public interface LayoutService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link LayoutServiceUtil} to access the layout remote service. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the layout remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link LayoutServiceUtil} if injection and service tracking are not available.
 	 */
+
+	/**
+	 * Adds a layout with additional parameters.
+	 *
+	 * <p>
+	 * This method handles the creation of the layout including its resources,
+	 * metadata, and internal data structures. It is not necessary to make
+	 * subsequent calls to any methods to setup default groups, resources, ...
+	 * etc.
+	 * </p>
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param parentLayoutId the layout ID of the parent layout (optionally
+	 {@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID})
+	 * @param classNameId the class name ID of the entity
+	 * @param classPK the primary key of the entity
+	 * @param localeNamesMap the layout's locales and localized names
+	 * @param localeTitlesMap the layout's locales and localized titles
+	 * @param descriptionMap the layout's locales and localized
+	 descriptions
+	 * @param keywordsMap the layout's locales and localized keywords
+	 * @param robotsMap the layout's locales and localized robots
+	 * @param type the layout's type (optionally {@link
+	 LayoutConstants#TYPE_PORTLET}). The possible types can be
+	 found in {@link LayoutConstants}.
+	 * @param typeSettings the settings to load the unicode properties
+	 object. See {@link
+	 com.liferay.portal.kernel.util.UnicodeProperties
+	 #fastLoad(String)}.
+	 * @param hidden whether the layout is hidden
+	 * @param system whether the layout is system
+	 * @param masterLayoutPlid the primary key of the master layout
+	 * @param friendlyURLMap the layout's locales and localized friendly
+	 URLs. To see how the URL is normalized when accessed, see
+	 {@link
+	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
+	 String)}.
+	 * @param serviceContext the service context to be applied. Must set
+	 the UUID for the layout. Can set the creation date,
+	 modification date, and expando bridge attributes for the
+	 layout. For layouts that belong to a layout set prototype, an
+	 attribute named <code>layoutUpdateable</code> can be used to
+	 specify whether site administrators can modify this page
+	 within their site.
+	 * @return the layout
+	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #addLayout(long,
+	 boolean, long, long, long, Map, Map, Map, Map, Map, String,
+	 String, boolean, boolean, Map, long, ServiceContext)}
+	 */
+	@Deprecated
+	public Layout addLayout(
+			long groupId, boolean privateLayout, long parentLayoutId,
+			long classNameId, long classPK, Map<Locale, String> localeNamesMap,
+			Map<Locale, String> localeTitlesMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
+			Map<Locale, String> robotsMap, String type, String typeSettings,
+			boolean hidden, boolean system, long masterLayoutPlid,
+			Map<Locale, String> friendlyURLMap, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	 * Adds a layout with additional parameters.
@@ -92,6 +156,7 @@ public interface LayoutService extends BaseService {
 	 To see how the URL is normalized when accessed, see {@link
 	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
 	 String)}.
+	 * @param masterLayoutPlid the primary key of the master layout
 	 * @param serviceContext the service context to be applied. Must set the
 	 UUID for the layout. Can set the creation date, modification
 	 date, and expando bridge attributes for the layout. For layouts
@@ -108,7 +173,175 @@ public interface LayoutService extends BaseService {
 			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
 			Map<Locale, String> robotsMap, String type, String typeSettings,
 			boolean hidden, boolean system, Map<Locale, String> friendlyURLMap,
+			long masterLayoutPlid, ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Adds a layout with additional parameters.
+	 *
+	 * <p>
+	 * This method handles the creation of the layout including its resources,
+	 * metadata, and internal data structures. It is not necessary to make
+	 * subsequent calls to any methods to setup default groups, resources, ...
+	 * etc.
+	 * </p>
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param parentLayoutId the layout ID of the parent layout (optionally
+	 {@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID})
+	 * @param classNameId the class name ID of the entity
+	 * @param classPK the primary key of the entity
+	 * @param localeNamesMap the layout's locales and localized names
+	 * @param localeTitlesMap the layout's locales and localized titles
+	 * @param descriptionMap the layout's locales and localized
+	 descriptions
+	 * @param keywordsMap the layout's locales and localized keywords
+	 * @param robotsMap the layout's locales and localized robots
+	 * @param type the layout's type (optionally {@link
+	 LayoutConstants#TYPE_PORTLET}). The possible types can be
+	 found in {@link LayoutConstants}.
+	 * @param typeSettings the settings to load the unicode properties
+	 object. See {@link
+	 com.liferay.portal.kernel.util.UnicodeProperties
+	 #fastLoad(String)}.
+	 * @param hidden whether the layout is hidden
+	 * @param system whether the layout is system
+	 * @param friendlyURLMap the layout's locales and localized friendly
+	 URLs. To see how the URL is normalized when accessed, see
+	 {@link
+	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
+	 String)}.
+	 * @param serviceContext the service context to be applied. Must set
+	 the UUID for the layout. Can set the creation date,
+	 modification date, and expando bridge attributes for the
+	 layout. For layouts that belong to a layout set prototype, an
+	 attribute named <code>layoutUpdateable</code> can be used to
+	 specify whether site administrators can modify this page
+	 within their site.
+	 * @return the layout
+	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #addLayout(long,
+	 boolean, long, long, long, Map, Map, Map, Map, Map, String,
+	 String, boolean, boolean, long, Map, ServiceContext)}
+	 */
+	@Deprecated
+	public Layout addLayout(
+			long groupId, boolean privateLayout, long parentLayoutId,
+			long classNameId, long classPK, Map<Locale, String> localeNamesMap,
+			Map<Locale, String> localeTitlesMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
+			Map<Locale, String> robotsMap, String type, String typeSettings,
+			boolean hidden, boolean system, Map<Locale, String> friendlyURLMap,
 			ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Adds a layout with additional parameters.
+	 *
+	 * <p>
+	 * This method handles the creation of the layout including its resources,
+	 * metadata, and internal data structures. It is not necessary to make
+	 * subsequent calls to any methods to setup default groups, resources, ...
+	 * etc.
+	 * </p>
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param parentLayoutId the layout ID of the parent layout (optionally
+	 {@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID})
+	 * @param localeNamesMap the layout's locales and localized names
+	 * @param localeTitlesMap the layout's locales and localized titles
+	 * @param descriptionMap the layout's locales and localized
+	 descriptions
+	 * @param keywordsMap the layout's locales and localized keywords
+	 * @param robotsMap the layout's locales and localized robots
+	 * @param type the layout's type (optionally {@link
+	 LayoutConstants#TYPE_PORTLET}). The possible types can be
+	 found in {@link LayoutConstants}.
+	 * @param typeSettings the settings to load the unicode properties
+	 object. See {@link
+	 com.liferay.portal.kernel.util.UnicodeProperties
+	 #fastLoad(String)}.
+	 * @param hidden whether the layout is hidden
+	 * @param masterLayoutPlid the primary key of the master layout
+	 * @param friendlyURLMap the layout's locales and localized friendly
+	 URLs. To see how the URL is normalized when accessed, see
+	 {@link
+	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
+	 String)}.
+	 * @param serviceContext the service context to be applied. Must set
+	 the UUID for the layout. Can set the creation date,
+	 modification date, and expando bridge attributes for the
+	 layout. For layouts that belong to a layout set prototype, an
+	 attribute named <code>layoutUpdateable</code> can be used to
+	 specify whether site administrators can modify this page
+	 within their site.
+	 * @return the layout
+	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #addLayout(long,
+	 boolean, long, long, long, Map, Map, Map, Map, Map, String,
+	 String, boolean, boolean, Map, long, ServiceContext)}
+	 */
+	@Deprecated
+	public Layout addLayout(
+			long groupId, boolean privateLayout, long parentLayoutId,
+			Map<Locale, String> localeNamesMap,
+			Map<Locale, String> localeTitlesMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
+			Map<Locale, String> robotsMap, String type, String typeSettings,
+			boolean hidden, long masterLayoutPlid,
+			Map<Locale, String> friendlyURLMap, ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Adds a layout with additional parameters.
+	 *
+	 * <p>
+	 * This method handles the creation of the layout including its resources,
+	 * metadata, and internal data structures. It is not necessary to make
+	 * subsequent calls to any methods to setup default groups, resources, ...
+	 * etc.
+	 * </p>
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param parentLayoutId the layout ID of the parent layout (optionally
+	 {@link LayoutConstants#DEFAULT_PARENT_LAYOUT_ID})
+	 * @param localeNamesMap the layout's locales and localized names
+	 * @param localeTitlesMap the layout's locales and localized titles
+	 * @param descriptionMap the layout's locales and localized descriptions
+	 * @param keywordsMap the layout's locales and localized keywords
+	 * @param robotsMap the layout's locales and localized robots
+	 * @param type the layout's type (optionally {@link
+	 LayoutConstants#TYPE_PORTLET}). The possible types can be found
+	 in {@link LayoutConstants}.
+	 * @param typeSettings the settings to load the unicode properties object.
+	 See {@link com.liferay.portal.kernel.util.UnicodeProperties
+	 #fastLoad(String)}.
+	 * @param hidden whether the layout is hidden
+	 * @param friendlyURLMap the layout's locales and localized friendly URLs.
+	 To see how the URL is normalized when accessed, see {@link
+	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
+	 String)}.
+	 * @param masterLayoutPlid the primary key of the master layout
+	 * @param serviceContext the service context to be applied. Must set the
+	 UUID for the layout. Can set the creation date, modification
+	 date, and expando bridge attributes for the layout. For layouts
+	 that belong to a layout set prototype, an attribute named
+	 <code>layoutUpdateable</code> can be used to specify whether site
+	 administrators can modify this page within their site.
+	 * @return the layout
+	 * @throws PortalException if a portal exception occurred
+	 */
+	public Layout addLayout(
+			long groupId, boolean privateLayout, long parentLayoutId,
+			Map<Locale, String> localeNamesMap,
+			Map<Locale, String> localeTitlesMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
+			Map<Locale, String> robotsMap, String type, String typeSettings,
+			boolean hidden, Map<Locale, String> friendlyURLMap,
+			long masterLayoutPlid, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -234,6 +467,11 @@ public interface LayoutService extends BaseService {
 
 	public void deleteTempFileEntry(
 			long groupId, String folderName, String fileName)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public Layout fetchLayout(
+			long groupId, boolean privateLayout, long layoutId)
 		throws PortalException;
 
 	/**
@@ -364,6 +602,24 @@ public interface LayoutService extends BaseService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Layout> getLayouts(
+			long groupId, boolean privateLayout, String type)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Layout> getLayouts(
+			long groupId, boolean privateLayout, String type, int start,
+			int end)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Layout> getLayouts(
+			long groupId, boolean privateLayout, String keywords,
+			String[] types, int start, int end,
+			OrderByComparator<Layout> orderByComparator)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Layout> getLayouts(long groupId, String type);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -380,6 +636,16 @@ public interface LayoutService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutsCount(
 		long groupId, boolean privateLayout, long parentLayoutId, int priority);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutsCount(
+		long groupId, boolean privateLayout, String type);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutsCount(
+			long groupId, boolean privateLayout, String keywords,
+			String[] types)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutsCount(long groupId, String type);
@@ -549,8 +815,10 @@ public interface LayoutService extends BaseService {
 	 To see how the URL is normalized when accessed see {@link
 	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
 	 String)}.
-	 * @param iconImage whether the icon image will be updated
+	 * @param hasIconImage if the layout has a custom icon image
 	 * @param iconBytes the byte array of the layout's new icon image
+	 * @param masterLayoutPlid the primary key of the master layout
+	 * @param styleBookEntryId the primary key of the style book entry
 	 * @param serviceContext the service context to be applied. Can set the
 	 modification date and expando bridge attributes for the layout.
 	 * @return the updated layout
@@ -562,7 +830,104 @@ public interface LayoutService extends BaseService {
 			Map<Locale, String> localeTitlesMap,
 			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
 			Map<Locale, String> robotsMap, String type, boolean hidden,
-			Map<Locale, String> friendlyURLMap, boolean iconImage,
+			Map<Locale, String> friendlyURLMap, boolean hasIconImage,
+			byte[] iconBytes, long masterLayoutPlid, long styleBookEntryId,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Updates the layout with additional parameters.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param layoutId the layout ID of the layout
+	 * @param parentLayoutId the layout ID of the layout's new parent
+	 layout
+	 * @param localeNamesMap the layout's locales and localized names
+	 * @param localeTitlesMap the layout's locales and localized titles
+	 * @param descriptionMap the locales and localized descriptions to
+	 merge (optionally <code>null</code>)
+	 * @param keywordsMap the locales and localized keywords to merge
+	 (optionally <code>null</code>)
+	 * @param robotsMap the locales and localized robots to merge
+	 (optionally <code>null</code>)
+	 * @param type the layout's new type (optionally {@link
+	 LayoutConstants#TYPE_PORTLET})
+	 * @param hidden whether the layout is hidden
+	 * @param friendlyURLMap the layout's locales and localized friendly
+	 URLs. To see how the URL is normalized when accessed see
+	 {@link
+	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
+	 String)}.
+	 * @param hasIconImage if the layout has a custom icon image
+	 * @param iconBytes the byte array of the layout's new icon image
+	 * @param masterLayoutPlid the primary key of the master layout
+	 * @param serviceContext the service context to be applied. Can set the
+	 modification date and expando bridge attributes for the
+	 layout.
+	 * @return the updated layout
+	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #updateLayout(long, boolean, long, long, Map, Map, Map, Map,
+	 Map, String, boolean, Map, boolean, byte[], long, long,
+	 ServiceContext)}
+	 */
+	@Deprecated
+	public Layout updateLayout(
+			long groupId, boolean privateLayout, long layoutId,
+			long parentLayoutId, Map<Locale, String> localeNamesMap,
+			Map<Locale, String> localeTitlesMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
+			Map<Locale, String> robotsMap, String type, boolean hidden,
+			Map<Locale, String> friendlyURLMap, boolean hasIconImage,
+			byte[] iconBytes, long masterLayoutPlid,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Updates the layout with additional parameters.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param privateLayout whether the layout is private to the group
+	 * @param layoutId the layout ID of the layout
+	 * @param parentLayoutId the layout ID of the layout's new parent
+	 layout
+	 * @param localeNamesMap the layout's locales and localized names
+	 * @param localeTitlesMap the layout's locales and localized titles
+	 * @param descriptionMap the locales and localized descriptions to
+	 merge (optionally <code>null</code>)
+	 * @param keywordsMap the locales and localized keywords to merge
+	 (optionally <code>null</code>)
+	 * @param robotsMap the locales and localized robots to merge
+	 (optionally <code>null</code>)
+	 * @param type the layout's new type (optionally {@link
+	 LayoutConstants#TYPE_PORTLET})
+	 * @param hidden whether the layout is hidden
+	 * @param friendlyURLMap the layout's locales and localized friendly
+	 URLs. To see how the URL is normalized when accessed see
+	 {@link
+	 com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil#normalize(
+	 String)}.
+	 * @param hasIconImage if the layout has a custom icon image
+	 * @param iconBytes the byte array of the layout's new icon image
+	 * @param serviceContext the service context to be applied. Can set the
+	 modification date and expando bridge attributes for the
+	 layout.
+	 * @return the updated layout
+	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #updateLayout(long, boolean, long, long, Map, Map, Map, Map,
+	 Map, String, boolean, Map, boolean, byte[], long,
+	 ServiceContext)}
+	 */
+	@Deprecated
+	public Layout updateLayout(
+			long groupId, boolean privateLayout, long layoutId,
+			long parentLayoutId, Map<Locale, String> localeNamesMap,
+			Map<Locale, String> localeTitlesMap,
+			Map<Locale, String> descriptionMap, Map<Locale, String> keywordsMap,
+			Map<Locale, String> robotsMap, String type, boolean hidden,
+			Map<Locale, String> friendlyURLMap, boolean hasIconImage,
 			byte[] iconBytes, ServiceContext serviceContext)
 		throws PortalException;
 
@@ -717,5 +1082,7 @@ public interface LayoutService extends BaseService {
 	 */
 	public Layout updatePriority(long plid, int priority)
 		throws PortalException;
+
+	public Layout updateType(long plid, String type) throws PortalException;
 
 }

@@ -16,6 +16,11 @@ package com.liferay.portlet.social.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.messaging.async.Async;
@@ -29,6 +34,7 @@ import com.liferay.portlet.social.util.SocialActivityHierarchyEntryThreadLocal;
 import com.liferay.social.kernel.model.SocialActivity;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 import com.liferay.social.kernel.model.SocialActivityDefinition;
+import com.liferay.social.kernel.model.SocialActivityTable;
 
 import java.util.Date;
 import java.util.List;
@@ -233,7 +239,7 @@ public class SocialActivityLocalServiceImpl
 
 			activity.setActivityId(activityId);
 
-			socialActivityPersistence.update(activity);
+			activity = socialActivityPersistence.update(activity);
 
 			if (mirrorActivity != null) {
 				long mirrorActivityId = counterLocalService.increment(
@@ -277,12 +283,11 @@ public class SocialActivityLocalServiceImpl
 			long classPK, int type, String extraData, long receiverUserId)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		SocialActivity socialActivity =
 			socialActivityPersistence.fetchByG_U_CD_C_C_T_R(
-				groupId, userId, createDate.getTime(), classNameId, classPK,
-				type, receiverUserId);
+				groupId, userId, createDate.getTime(),
+				classNameLocalService.getClassNameId(className), classPK, type,
+				receiverUserId);
 
 		if (socialActivity != null) {
 			return;
@@ -316,10 +321,9 @@ public class SocialActivityLocalServiceImpl
 			String extraData, long receiverUserId)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		int count = socialActivityPersistence.countByG_U_C_C_T_R(
-			groupId, userId, classNameId, classPK, type, receiverUserId);
+			groupId, userId, classNameLocalService.getClassNameId(className),
+			classPK, type, receiverUserId);
 
 		if (count > 0) {
 			return;
@@ -364,9 +368,8 @@ public class SocialActivityLocalServiceImpl
 	public void deleteActivities(String className, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		deleteActivities(classNameId, classPK);
+		deleteActivities(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	/**
@@ -444,36 +447,40 @@ public class SocialActivityLocalServiceImpl
 	public SocialActivity fetchFirstActivity(
 		String className, long classPK, int type) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return socialActivityPersistence.fetchByC_C_T_First(
-			classNameId, classPK, type, null);
+			classNameLocalService.getClassNameId(className), classPK, type,
+			null);
 	}
 
 	/**
-	 * Returns a range of all the activities done on assets identified by the
-	 * class name ID.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  classNameId the target asset's class name ID
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of matching activities
+	 * @param      classNameId the target asset's class name ID
+	 * @param      start the lower bound of the range of results
+	 * @param      end the upper bound of the range of results (not inclusive)
+	 * @return     the range of matching activities
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getActivities(long, String, int, int)}  Returns a range of
+	 *             all the activities done on assets identified by the class
+	 *             name ID.  <p> Useful when paginating results. Returns a
+	 *             maximum of <code>end - start</code> instances.
+	 *             <code>start</code> and <code>end</code> are not primary keys,
+	 *             they are indexes in the result set. Thus, <code>0</code>
+	 *             refers to the first result in the set. Setting both
+	 *             <code>start</code> and <code>end</code> to {@link
+	 *             QueryUtil#ALL_POS} will return the full result set.</p>
 	 */
+	@Deprecated
 	@Override
 	public List<SocialActivity> getActivities(
 		long classNameId, int start, int end) {
 
-		return socialActivityPersistence.findByClassNameId(
-			classNameId, start, end);
+		DynamicQuery dynamicQuery = dynamicQuery();
+
+		Property classNameIdProperty = PropertyFactoryUtil.forName(
+			"classNameId");
+
+		dynamicQuery.add(classNameIdProperty.eq(classNameId));
+
+		return dynamicQuery(dynamicQuery);
 	}
 
 	/**
@@ -507,6 +514,47 @@ public class SocialActivityLocalServiceImpl
 	}
 
 	/**
+	 * Returns a range of all the activities done on assets identified by the
+	 * company ID and class name.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  className the target asset's class name
+	 * @param  start the lower bound of the range of results
+	 * @param  end the upper bound of the range of results (not inclusive)
+	 * @return the range of matching activities
+	 */
+	@Override
+	public List<SocialActivity> getActivities(
+		long companyId, String className, int start, int end) {
+
+		DSLQuery dslQuery = DSLQueryFactoryUtil.select(
+			SocialActivityTable.INSTANCE
+		).from(
+			SocialActivityTable.INSTANCE
+		).where(
+			SocialActivityTable.INSTANCE.companyId.eq(
+				companyId
+			).and(
+				SocialActivityTable.INSTANCE.classNameId.eq(
+					classNameLocalService.getClassNameId(className))
+			)
+		).limit(
+			start, end
+		);
+
+		return socialActivityPersistence.dslQuery(dslQuery);
+	}
+
+	/**
 	 * Returns a range of all the activities done on the asset identified by the
 	 * class name and the class primary key that are mirrors of the activity
 	 * identified by the mirror activity ID.
@@ -532,49 +580,55 @@ public class SocialActivityLocalServiceImpl
 		long mirrorActivityId, String className, long classPK, int start,
 		int end) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return getActivities(
-			mirrorActivityId, classNameId, classPK, start, end);
+			mirrorActivityId, classNameLocalService.getClassNameId(className),
+			classPK, start, end);
 	}
 
 	/**
-	 * Returns a range of all the activities done on assets identified by the
-	 * class name.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end -
-	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
-	 * refers to the first result in the set. Setting both <code>start</code>
-	 * and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full
-	 * result set.
-	 * </p>
-	 *
-	 * @param  className the target asset's class name
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of matching activities
+	 * @param      className the target asset's class name
+	 * @param      start the lower bound of the range of results
+	 * @param      end the upper bound of the range of results (not inclusive)
+	 * @return     the range of matching activities
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getActivities(long, String, int, int)}  Returns a range of
+	 *             all the activities done on assets identified by the class
+	 *             name.  <p> Useful when paginating results. Returns a maximum
+	 *             of <code>end - start</code> instances. <code>start</code> and
+	 *             <code>end</code> are not primary keys, they are indexes in
+	 *             the result set. Thus, <code>0</code> refers to the first
+	 *             result in the set. Setting both <code>start</code> and
+	 *             <code>end</code> to {@link QueryUtil#ALL_POS} will return the
+	 *             full result set.</p>
 	 */
+	@Deprecated
 	@Override
 	public List<SocialActivity> getActivities(
 		String className, int start, int end) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return getActivities(classNameId, start, end);
+		return getActivities(
+			classNameLocalService.getClassNameId(className), start, end);
 	}
 
 	/**
-	 * Returns the number of activities done on assets identified by the class
-	 * name ID.
-	 *
-	 * @param  classNameId the target asset's class name ID
-	 * @return the number of matching activities
+	 * @param      classNameId the target asset's class name ID
+	 * @return     the number of matching activities
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getActivitiesCount(long, String)}
 	 */
+	@Deprecated
 	@Override
 	public int getActivitiesCount(long classNameId) {
-		return socialActivityPersistence.countByClassNameId(classNameId);
+		DynamicQuery dynamicQuery = dynamicQuery();
+
+		Property classNameIdProperty = PropertyFactoryUtil.forName(
+			"classNameId");
+
+		dynamicQuery.add(classNameIdProperty.eq(classNameId));
+
+		Long count = dynamicQueryCount(dynamicQuery);
+
+		return count.intValue();
 	}
 
 	@Override
@@ -582,10 +636,9 @@ public class SocialActivityLocalServiceImpl
 		long userId, long groupId, Date createDate, String className,
 		long classPK, int type, long receiverUserId) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return socialActivityPersistence.countByG_U_CD_C_C_T_R(
-			groupId, userId, createDate.getTime(), classNameId, classPK, type,
+			groupId, userId, createDate.getTime(),
+			classNameLocalService.getClassNameId(className), classPK, type,
 			receiverUserId);
 	}
 
@@ -608,6 +661,33 @@ public class SocialActivityLocalServiceImpl
 	}
 
 	/**
+	 * Returns the number of activities done on assets identified by company ID
+	 * and class name.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  className the target asset's class name
+	 * @return the number of matching activities
+	 */
+	@Override
+	public int getActivitiesCount(long companyId, String className) {
+		DSLQuery dslQuery = DSLQueryFactoryUtil.count(
+		).from(
+			SocialActivityTable.INSTANCE
+		).where(
+			SocialActivityTable.INSTANCE.companyId.eq(
+				companyId
+			).and(
+				SocialActivityTable.INSTANCE.classNameId.eq(
+					classNameLocalService.getClassNameId(className))
+			)
+		);
+
+		Long count = socialActivityPersistence.dslQuery(dslQuery);
+
+		return count.intValue();
+	}
+
+	/**
 	 * Returns the number of activities done on the asset identified by the
 	 * class name and class primary key that are mirrors of the activity
 	 * identified by the mirror activity ID.
@@ -621,22 +701,22 @@ public class SocialActivityLocalServiceImpl
 	public int getActivitiesCount(
 		long mirrorActivityId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return getActivitiesCount(mirrorActivityId, classNameId, classPK);
+		return getActivitiesCount(
+			mirrorActivityId, classNameLocalService.getClassNameId(className),
+			classPK);
 	}
 
 	/**
-	 * Returns the number of activities done on assets identified by class name.
-	 *
-	 * @param  className the target asset's class name
-	 * @return the number of matching activities
+	 * @param      className the target asset's class name
+	 * @return     the number of matching activities
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getActivitiesCount(long, String)}
 	 */
+	@Deprecated
 	@Override
 	public int getActivitiesCount(String className) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return getActivitiesCount(classNameId);
+		return getActivitiesCount(
+			classNameLocalService.getClassNameId(className));
 	}
 
 	/**

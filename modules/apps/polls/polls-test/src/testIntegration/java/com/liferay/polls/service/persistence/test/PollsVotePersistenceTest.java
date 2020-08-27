@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,8 @@ public class PollsVotePersistenceTest {
 
 		PollsVote newPollsVote = _persistence.create(pk);
 
+		newPollsVote.setMvccVersion(RandomTestUtil.nextLong());
+
 		newPollsVote.setUuid(RandomTestUtil.randomString());
 
 		newPollsVote.setGroupId(RandomTestUtil.nextLong());
@@ -151,6 +153,8 @@ public class PollsVotePersistenceTest {
 		PollsVote existingPollsVote = _persistence.findByPrimaryKey(
 			newPollsVote.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingPollsVote.getMvccVersion(), newPollsVote.getMvccVersion());
 		Assert.assertEquals(
 			existingPollsVote.getUuid(), newPollsVote.getUuid());
 		Assert.assertEquals(
@@ -255,10 +259,10 @@ public class PollsVotePersistenceTest {
 
 	protected OrderByComparator<PollsVote> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"PollsVote", "uuid", true, "voteId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "questionId", true, "choiceId", true,
-			"lastPublishDate", true, "voteDate", true);
+			"PollsVote", "mvccVersion", true, "uuid", true, "voteId", true,
+			"groupId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true, "questionId", true,
+			"choiceId", true, "lastPublishDate", true, "voteDate", true);
 	}
 
 	@Test
@@ -471,24 +475,68 @@ public class PollsVotePersistenceTest {
 
 		_persistence.clearCache();
 
-		PollsVote existingPollsVote = _persistence.findByPrimaryKey(
-			newPollsVote.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newPollsVote.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingPollsVote.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingPollsVote, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		PollsVote newPollsVote = addPollsVote();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			PollsVote.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("voteId", newPollsVote.getVoteId()));
+
+		List<PollsVote> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(PollsVote pollsVote) {
 		Assert.assertEquals(
-			Long.valueOf(existingPollsVote.getGroupId()),
+			pollsVote.getUuid(),
+			ReflectionTestUtil.invoke(
+				pollsVote, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(pollsVote.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingPollsVote, "getOriginalGroupId", new Class<?>[0]));
+				pollsVote, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected PollsVote addPollsVote() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		PollsVote pollsVote = _persistence.create(pk);
+
+		pollsVote.setMvccVersion(RandomTestUtil.nextLong());
 
 		pollsVote.setUuid(RandomTestUtil.randomString());
 

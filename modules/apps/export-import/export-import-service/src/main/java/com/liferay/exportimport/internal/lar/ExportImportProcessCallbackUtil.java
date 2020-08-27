@@ -26,12 +26,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class ExportImportProcessCallbackUtil {
 
 	public static List<Callable<?>> popCallbackList(String processId) {
@@ -78,16 +75,16 @@ public class ExportImportProcessCallbackUtil {
 			try {
 				callable.call();
 			}
-			catch (Exception e) {
-				ExportImportRuntimeException eire =
+			catch (Exception exception) {
+				ExportImportRuntimeException exportImportRuntimeException =
 					new ExportImportRuntimeException(
-						e.getLocalizedMessage(), e);
+						exception.getLocalizedMessage(), exception);
 
 				Class<?> clazz = callable.getClass();
 
-				eire.setClassName(clazz.getName());
+				exportImportRuntimeException.setClassName(clazz.getName());
 
-				throw eire;
+				throw exportImportRuntimeException;
 			}
 
 			return;
@@ -110,6 +107,6 @@ public class ExportImportProcessCallbackUtil {
 		ExportImportProcessCallbackUtil.class);
 
 	private static final Map<String, List<List<Callable<?>>>>
-		_callbackListListMap = new ConcurrentHashMap();
+		_callbackListListMap = new ConcurrentHashMap<>();
 
 }

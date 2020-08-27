@@ -16,9 +16,11 @@ package com.liferay.journal.internal.upgrade.v0_0_8;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
@@ -72,10 +74,23 @@ public class UpgradeArticleAssets extends UpgradeProcess {
 
 			while (rs.next()) {
 				long resourcePrimKey = rs.getLong("resourcePrimKey");
-				boolean indexable = rs.getBoolean("indexable");
 
-				AssetEntry assetEntry = _assetEntryLocalService.getEntry(
+				AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
 					JournalArticle.class.getName(), resourcePrimKey);
+
+				if (assetEntry == null) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Journal article with resource primary key ",
+								resourcePrimKey, " does not have associated ",
+								"asset entry"));
+					}
+
+					continue;
+				}
+
+				boolean indexable = rs.getBoolean("indexable");
 
 				_assetEntryLocalService.updateEntry(
 					assetEntry.getClassName(), assetEntry.getClassPK(), null,
@@ -83,6 +98,9 @@ public class UpgradeArticleAssets extends UpgradeProcess {
 			}
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpgradeArticleAssets.class);
 
 	private final AssetEntryLocalService _assetEntryLocalService;
 	private final CompanyLocalService _companyLocalService;

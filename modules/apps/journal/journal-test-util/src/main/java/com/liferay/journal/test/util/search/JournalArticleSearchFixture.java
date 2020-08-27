@@ -14,8 +14,8 @@
 
 package com.liferay.journal.test.util.search;
 
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -116,8 +116,8 @@ public class JournalArticleSearchFixture {
 				userId, groupId, folderId, titleMap, descriptionMap,
 				contentString, ddmStructureKey, ddmTemplateKey, serviceContext);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -125,8 +125,8 @@ public class JournalArticleSearchFixture {
 		try {
 			return ServiceContextTestUtil.getServiceContext(groupId, userId);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 

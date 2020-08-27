@@ -16,11 +16,11 @@ package com.liferay.frontend.taglib.clay.servlet.taglib.soy;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.base.BaseClayTag;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,13 +54,15 @@ public class DropdownActionsTag extends BaseClayTag {
 		Map<String, Object> context = getContext();
 
 		if (Validator.isNotNull(context.get("buttonLabel"))) {
-			Map<String, String> button = new HashMap();
-
-			button.put("label", (String)context.get("buttonLabel"));
-			button.put("style", (String)context.get("buttonStyle"));
-			button.put("type", (String)context.get("buttonType"));
-
-			putValue("button", button);
+			putValue(
+				"button",
+				HashMapBuilder.put(
+					"label", (String)context.get("buttonLabel")
+				).put(
+					"style", (String)context.get("buttonStyle")
+				).put(
+					"type", (String)context.get("buttonType")
+				).build());
 		}
 
 		if (PortalUtil.isRightToLeft(request)) {
@@ -96,6 +98,10 @@ public class DropdownActionsTag extends BaseClayTag {
 
 	public void setHelpText(String helpText) {
 		putValue("helpText", helpText);
+	}
+
+	public void setItemsIconAlignment(String itemsIconAlignment) {
+		putValue("itemsIconAlignment", itemsIconAlignment);
 	}
 
 	public void setTriggerCssClasses(String triggerCssClasses) {

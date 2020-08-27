@@ -64,15 +64,13 @@ public class StrutsPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 		String strutsAction = httpServletRequest.getParameter(
 			namespace.concat("struts_action"));
 
-		if (Validator.isNotNull(strutsAction)) {
-			if (_portletCSRFWhitelist.contains(strutsAction) &&
-				isValidStrutsAction(
-					portlet.getCompanyId(),
-					PortletIdCodec.decodePortletName(portletId),
-					strutsAction)) {
+		if (Validator.isNotNull(strutsAction) &&
+			_portletCSRFWhitelist.contains(strutsAction) &&
+			isValidStrutsAction(
+				portlet.getCompanyId(),
+				PortletIdCodec.decodePortletName(portletId), strutsAction)) {
 
-				return true;
-			}
+			return true;
 		}
 
 		return false;
@@ -93,13 +91,12 @@ public class StrutsPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 			strutsAction = httpServletRequest.getParameter("struts_action");
 		}
 
-		if (Validator.isNotNull(strutsAction)) {
-			if (_portletInvocationWhitelist.contains(strutsAction) &&
-				isValidStrutsAction(
-					portlet.getCompanyId(), portletId, strutsAction)) {
+		if (Validator.isNotNull(strutsAction) &&
+			_portletInvocationWhitelist.contains(strutsAction) &&
+			isValidStrutsAction(
+				portlet.getCompanyId(), portletId, strutsAction)) {
 
-				return true;
-			}
+			return true;
 		}
 
 		return false;
@@ -128,9 +125,8 @@ public class StrutsPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 				return false;
 			}
 
-			String portletId = liferayPortletURL.getPortletId();
-
-			String rootPortletId = PortletIdCodec.decodePortletName(portletId);
+			String rootPortletId = PortletIdCodec.decodePortletName(
+				liferayPortletURL.getPortletId());
 
 			if (isValidStrutsAction(0, rootPortletId, strutsAction)) {
 				return true;
@@ -163,9 +159,9 @@ public class StrutsPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 				return false;
 			}
 
-			String portletId = liferayPortletURL.getPortletId();
+			if (isValidStrutsAction(
+					0, liferayPortletURL.getPortletId(), strutsAction)) {
 
-			if (isValidStrutsAction(0, portletId, strutsAction)) {
 				return true;
 			}
 		}
@@ -193,9 +189,9 @@ public class StrutsPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 

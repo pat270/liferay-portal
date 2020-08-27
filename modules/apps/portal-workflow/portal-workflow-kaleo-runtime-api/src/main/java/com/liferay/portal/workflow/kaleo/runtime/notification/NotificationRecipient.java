@@ -14,9 +14,8 @@
 
 package com.liferay.portal.workflow.kaleo.runtime.notification;
 
+import com.liferay.petra.lang.HashUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.util.HashCode;
-import com.liferay.portal.kernel.util.HashCodeFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.definition.NotificationReceptionType;
 
@@ -56,17 +55,17 @@ public class NotificationRecipient {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof NotificationRecipient)) {
+		if (!(object instanceof NotificationRecipient)) {
 			return false;
 		}
 
 		NotificationRecipient notificationRecipient =
-			(NotificationRecipient)obj;
+			(NotificationRecipient)object;
 
 		if ((_companyId == notificationRecipient._companyId) &&
 			Objects.equals(
@@ -115,17 +114,13 @@ public class NotificationRecipient {
 
 	@Override
 	public int hashCode() {
-		HashCode hashCode = HashCodeFactoryUtil.getHashCode();
-
-		hashCode.append(_companyId);
+		int hash = HashUtil.hash(0, _companyId);
 
 		if (Validator.isNotNull(_emailAddress)) {
-			hashCode.append(_emailAddress);
+			hash = HashUtil.hash(hash, _emailAddress);
 		}
 
-		hashCode.append(_userId);
-
-		return hashCode.toHashCode();
+		return HashUtil.hash(hash, _userId);
 	}
 
 	private final long _companyId;

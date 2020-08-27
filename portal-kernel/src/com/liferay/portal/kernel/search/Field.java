@@ -30,15 +30,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Bruno Farache
  * @author Brian Wing Shun Chan
  * @author Allen Chiang
  * @author Alex Wallace
  */
-@ProviderType
 public class Field implements Serializable {
 
 	public static final String ANY = StringPool.STAR;
@@ -52,6 +49,18 @@ public class Field implements Serializable {
 	public static final String ASSET_CATEGORY_TITLE = "assetCategoryTitle";
 
 	public static final String ASSET_CATEGORY_TITLES = "assetCategoryTitles";
+
+	public static final String ASSET_INTERNAL_CATEGORY_ID =
+		"assetInternalCategoryId";
+
+	public static final String ASSET_INTERNAL_CATEGORY_IDS =
+		"assetInternalCategoryIds";
+
+	public static final String ASSET_INTERNAL_CATEGORY_TITLE =
+		"assetInternalCategoryTitle";
+
+	public static final String ASSET_INTERNAL_CATEGORY_TITLES =
+		"assetInternalCategoryTitles";
 
 	public static final String ASSET_PARENT_CATEGORY_ID = "parentCategoryId";
 
@@ -130,12 +139,6 @@ public class Field implements Serializable {
 
 	public static final String PUBLISH_DATE = "publishDate";
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String RATINGS = "ratings";
-
 	public static final String RELATED_ENTRY = "relatedEntry";
 
 	public static final String REMOVED_BY_USER_NAME = "removedByUserName";
@@ -143,6 +146,8 @@ public class Field implements Serializable {
 	public static final String REMOVED_DATE = "removedDate";
 
 	public static final String ROLE_ID = "roleId";
+
+	public static final String ROLE_IDS = "roleIds";
 
 	public static final String ROOT_ENTRY_CLASS_NAME = "rootEntryClassName";
 
@@ -188,12 +193,6 @@ public class Field implements Serializable {
 
 	public static final String VIEW_ACTION_ID = "viewActionId";
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String VIEW_COUNT = "viewCount";
-
 	public static String getLocalizedName(Locale locale, String name) {
 		if (locale == null) {
 			return name;
@@ -209,11 +208,8 @@ public class Field implements Serializable {
 	}
 
 	public static String getSortableFieldName(String name) {
-		return name.concat(
-			StringPool.UNDERLINE
-		).concat(
-			SORTABLE_FIELD_SUFFIX
-		);
+		return StringBundler.concat(
+			name, StringPool.UNDERLINE, SORTABLE_FIELD_SUFFIX);
 	}
 
 	public static String getSortFieldName(Sort sort, String scoreFieldName) {

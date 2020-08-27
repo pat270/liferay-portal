@@ -26,13 +26,11 @@ taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
-<%@ page import="com.liferay.asset.categories.navigation.web.configuration.AssetCategoriesNavigationPortletInstanceConfiguration" %><%@
+<%@ page import="com.liferay.asset.categories.navigation.web.internal.configuration.AssetCategoriesNavigationPortletInstanceConfiguration" %><%@
 page import="com.liferay.asset.categories.navigation.web.internal.display.context.AssetCategoriesNavigationDisplayContext" %><%@
 page import="com.liferay.asset.kernel.model.AssetCategory" %><%@
-page import="com.liferay.portal.kernel.util.Constants" %>
-
-<%@ page import="java.util.HashMap" %><%@
-page import="java.util.Map" %>
+page import="com.liferay.portal.kernel.util.Constants" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %>
 
 <liferay-theme:defineObjects />
 

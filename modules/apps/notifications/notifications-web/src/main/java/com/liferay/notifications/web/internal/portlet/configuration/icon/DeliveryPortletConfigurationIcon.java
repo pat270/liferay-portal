@@ -59,10 +59,9 @@ public class DeliveryPortletConfigurationIcon
 	public String getOnClick(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		StringBundler sb = new StringBundler(12);
+		StringBundler sb = new StringBundler(11);
 
-		sb.append("Liferay.Portlet.openWindow({bodyCssClass: ");
-		sb.append("'dialog-with-footer', namespace: '");
+		sb.append("Liferay.Portlet.openModal({namespace: '");
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -71,13 +70,13 @@ public class DeliveryPortletConfigurationIcon
 
 		sb.append(portletDisplay.getNamespace());
 
-		sb.append("', portlet: '#p_p_id_");
+		sb.append("', portletSelector: '#p_p_id_");
 		sb.append(portletDisplay.getId());
 		sb.append("_', portletId: '");
 		sb.append(portletDisplay.getId());
 		sb.append("', title: '");
 		sb.append(LanguageUtil.get(themeDisplay.getLocale(), "configuration"));
-		sb.append("', uri: '");
+		sb.append("', url: '");
 
 		PortletURL deliveryURL = getDeliveryURL(portletRequest);
 
@@ -122,7 +121,7 @@ public class DeliveryPortletConfigurationIcon
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 
 		return portletURL;

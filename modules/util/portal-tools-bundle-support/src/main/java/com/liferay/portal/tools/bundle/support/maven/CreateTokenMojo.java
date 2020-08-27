@@ -47,9 +47,9 @@ public class CreateTokenMojo extends AbstractMojo {
 
 			createTokenCommand.execute();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new MojoExecutionException(
-				"Unable to create liferay.com download token", e);
+				"Unable to create liferay.com download token", exception);
 		}
 	}
 
@@ -70,7 +70,7 @@ public class CreateTokenMojo extends AbstractMojo {
 	)
 	protected File tokenFile;
 
-	@Parameter(defaultValue = BundleSupportConstants.DEFAULT_BUNDLE_URL)
+	@Parameter(defaultValue = BundleSupportConstants.DEFAULT_TOKEN_URL)
 	protected URL tokenUrl;
 
 }

@@ -27,7 +27,7 @@ PortletURL portletURL = PortletURLUtil.clone(currentURLObj, liferayPortletRespon
 
 WikiListPagesDisplayContext wikiListPagesDisplayContext = wikiDisplayContextProvider.getWikiListPagesDisplayContext(request, response, node);
 
-SearchContainer wikiPagesSearchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, null, wikiListPagesDisplayContext.getEmptyResultsMessage());
+SearchContainer<WikiPage> wikiPagesSearchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, null, wikiListPagesDisplayContext.getEmptyResultsMessage());
 
 if (Validator.isNull(keywords)) {
 	String orderByCol = ParamUtil.getString(request, "orderByCol");
@@ -95,14 +95,17 @@ WikiPagesManagementToolbarDisplayContext wikiPagesManagementToolbarDisplayContex
 	searchActionURL="<%= String.valueOf(wikiPagesManagementToolbarDisplayContext.getSearchActionURL()) %>"
 	searchContainerId="wikiPages"
 	selectable="<%= wikiPagesManagementToolbarDisplayContext.isSelectable() %>"
-	showInfoButton="<%= true %>"
+	showInfoButton="<%= wikiPagesManagementToolbarDisplayContext.isShowInfoButton() %>"
 	showSearch="<%= wikiPagesManagementToolbarDisplayContext.isShowSearch() %>"
 	sortingOrder="<%= wikiPagesManagementToolbarDisplayContext.getSortingOrder() %>"
 	sortingURL="<%= String.valueOf(wikiPagesManagementToolbarDisplayContext.getSortingURL()) %>"
 	viewTypeItems="<%= wikiPagesManagementToolbarDisplayContext.getViewTypes() %>"
 />
 
-<div class="closed container-fluid-1280 sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/wiki/page_info_panel" var="sidebarPanelURL">
 		<portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" />
 		<portlet:param name="showSidebarHeader" value="<%= Boolean.TRUE.toString() %>" />
@@ -172,9 +175,9 @@ WikiPagesManagementToolbarDisplayContext wikiPagesManagementToolbarDisplayContex
 				>
 
 					<%
-					Map<String, Object> rowData = new HashMap<>();
-
-					rowData.put("actions", String.join(StringPool.COMMA, wikiPagesManagementToolbarDisplayContext.getAvailableActionDropdownItems(curPage)));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", StringUtil.merge(wikiPagesManagementToolbarDisplayContext.getAvailableActions(curPage))
+					).build();
 
 					row.setData(rowData);
 
@@ -183,7 +186,10 @@ WikiPagesManagementToolbarDisplayContext wikiPagesManagementToolbarDisplayContex
 					if (!navigation.equals("draft-pages") || Validator.isNotNull(keywords)) {
 						rowURL.setParameter("mvcRenderCommandName", "/wiki/view");
 						rowURL.setParameter("redirect", currentURL);
-						rowURL.setParameter("nodeName", curPage.getNode().getName());
+
+						WikiNode wikiNode = curPage.getNode();
+
+						rowURL.setParameter("nodeName", wikiNode.getName());
 					}
 					else {
 						rowURL.setParameter("mvcRenderCommandName", "/wiki/edit_page");
@@ -222,7 +228,7 @@ WikiPagesManagementToolbarDisplayContext wikiPagesManagementToolbarDisplayContex
 											<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(curPage.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 										</c:when>
 										<c:otherwise>
-											<liferay-ui:message arguments="<%= new String[] {modifiedDateDescription} %>" key="modified-x-ago" />
+											<liferay-ui:message arguments="<%= modifiedDateDescription %>" key="modified-x-ago" />
 										</c:otherwise>
 									</c:choose>
 								</span>
@@ -289,41 +295,41 @@ WikiPagesManagementToolbarDisplayContext wikiPagesManagementToolbarDisplayContex
 			</liferay-ui:search-container>
 		</aui:form>
 	</div>
-</div>
+</clay:container-fluid>
 
 <script>
-	var deletePages = function() {
-		if (<%= trashHelper.isTrashEnabled(scopeGroupId) %> || confirm(' <%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>')) {
+	var deletePages = function () {
+		if (
+			<%= trashHelper.isTrashEnabled(scopeGroupId) %> ||
+			confirm(
+				' <%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						'<%= Constants.CMD %>': '<%= trashHelper.isTrashEnabled(scopeGroupId) ? Constants.MOVE_TO_TRASH : Constants.DELETE %>'
-					},
-					url: '<portlet:actionURL name="/wiki/edit_page" />'
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					<%= Constants.CMD %>:
+						'<%= trashHelper.isTrashEnabled(scopeGroupId) ? Constants.MOVE_TO_TRASH : Constants.DELETE %>',
+				},
+				url: '<portlet:actionURL name="/wiki/edit_page" />',
+			});
 		}
 	};
 
 	var ACTIONS = {
-		'deletePages': deletePages
+		deletePages: deletePages,
 	};
 
-	Liferay.componentReady('wikiPagesManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'actionItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	Liferay.componentReady('wikiPagesManagementToolbar').then(function (
+		managementToolbar
+	) {
+		managementToolbar.on('actionItemClicked', function (event) {
+			var itemData = event.data.item.data;
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action]();
-					}
-				}
-			);
-		}
-	);
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action]();
+			}
+		});
+	});
 </script>

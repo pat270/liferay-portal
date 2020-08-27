@@ -16,12 +16,9 @@ package com.liferay.change.tracking.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateCTEntryException extends PortalException {
 
 	public DuplicateCTEntryException() {
@@ -31,12 +28,12 @@ public class DuplicateCTEntryException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateCTEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateCTEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateCTEntryException(Throwable cause) {
-		super(cause);
+	public DuplicateCTEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

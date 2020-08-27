@@ -18,11 +18,14 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CSVUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.xml.SAXReaderFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,6 +38,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import javax.xml.transform.Transformer;
@@ -65,22 +70,57 @@ public class SPDXBuilder {
 			xmls = bufferedReader.readLine();
 		}
 
-		new SPDXBuilder(StringUtil.split(xmls), args[0]);
+		Map<String, String> arguments = ArgumentsUtil.parseArguments(args);
+
+		String spdxFileName = ArgumentsUtil.getString(
+			arguments, "spdx.file", null);
+		String licenseOverridePropertiesFileName = ArgumentsUtil.getString(
+			arguments, "license.override.properties.file", null);
+
+		new SPDXBuilder(
+			StringUtil.split(xmls), spdxFileName,
+			licenseOverridePropertiesFileName);
 	}
 
-	public SPDXBuilder(String[] xmls, String rdf) {
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #SPDXBuilder(String[], String, String)}
+	 */
+	@Deprecated
+	public SPDXBuilder(String[] xmls, String spdxFileName) {
+		new SPDXBuilder(xmls, spdxFileName, null);
+	}
+
+	public SPDXBuilder(
+		String[] xmls, String spdxFileName,
+		String licenseOverridePropertiesFileName) {
+
 		try {
 			System.setProperty("line.separator", StringPool.NEW_LINE);
 
-			Document document = _getDocument(xmls, rdf);
-			File rdfFile = new File(rdf);
+			File spdxFile = new File(spdxFileName);
+
+			Properties licenseOverrideProperties = new Properties();
+
+			if (Validator.isNotNull(licenseOverridePropertiesFileName)) {
+				File licenseOverridePropertiesfile = new File(
+					licenseOverridePropertiesFileName);
+
+				if (licenseOverridePropertiesfile.exists()) {
+					licenseOverrideProperties.load(
+						new FileInputStream(licenseOverridePropertiesfile));
+				}
+			}
+
+			Document document = _getDocument(
+				xmls, spdxFile, licenseOverrideProperties);
 
 			_write(
-				new File(rdfFile.getParentFile(), "versions-spdx.xml"),
+				new File(spdxFile.getParentFile(), "versions-spdx.xml"),
 				Dom4jUtil.toString(document));
 
 			_write(
-				new File(rdfFile.getParentFile(), "versions-spdx.csv"),
+				new File(spdxFile.getParentFile(), "versions-spdx.csv"),
 				_toCSV(document));
 
 			TransformerFactory transformerFactory =
@@ -88,35 +128,38 @@ public class SPDXBuilder {
 
 			Transformer transformer = transformerFactory.newTransformer(
 				new StreamSource(
-					new File(rdfFile.getParentFile(), "versions.xsl")));
+					new File(spdxFile.getParentFile(), "versions.xsl")));
 
 			File versionHtmlFile = new File(
-				rdfFile.getParentFile(), "versions-spdx.html");
+				spdxFile.getParentFile(), "versions-spdx.html");
 
 			transformer.transform(
 				new DocumentSource(document),
 				new StreamResult(new FileOutputStream(versionHtmlFile)));
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<Element> _createLibraryElements(Element packageElement) {
+	private List<Element> _createLibraryElements(
+		Element packageElement, Properties licenseOverrideProperties) {
+
 		List<Element> libraryElements = new ArrayList<>();
 
 		String downloadLocation = packageElement.elementText(
-			_QNAME_DOWNLOAD_LOCATION);
-		String licenseConcluded = packageElement.elementText(
-			_QNAME_LICENSE_CONCLUDED);
-		String name = packageElement.elementText(_QNAME_NAME);
-		String versionInfo = packageElement.elementText(_QNAME_VERSION_INFO);
+			_getQName("downloadLocation"));
+		String name = packageElement.elementText(_getQName("name"));
+		String versionInfo = packageElement.elementText(
+			_getQName("versionInfo"));
 
-		List<Element> fileElements = packageElement.elements(_QNAME_FILE);
+		Element hasFileElement = packageElement.element(_getQName("hasFile"));
+
+		List<Element> fileElements = hasFileElement.elements(_getQName("File"));
 
 		for (Element fileElement : fileElements) {
-			String fileName = fileElement.elementText(_QNAME_FILE_NAME);
+			String fileName = fileElement.elementText(_getQName("fileName"));
 
 			String dirName = fileName.substring(0, fileName.indexOf('/') + 1);
 
@@ -139,25 +182,35 @@ public class SPDXBuilder {
 
 			projectNameElement.addText(name);
 
-			if ((downloadLocation != null) && !downloadLocation.isEmpty()) {
+			if ((downloadLocation != null) &&
+				downloadLocation.startsWith("http")) {
+
 				Element element = libraryElement.addElement("project-url");
 
-				element.addText(name);
+				element.addText(downloadLocation);
 			}
 
-			if ((licenseConcluded != null) && !licenseConcluded.isEmpty()) {
+			String licenseName = _getLicenseName(
+				packageElement, fileName, licenseOverrideProperties);
+
+			if (licenseName != null) {
 				Element licensesElement = libraryElement.addElement("licenses");
 
 				Element licenseElement = licensesElement.addElement("license");
 
 				Element element = licenseElement.addElement("license-name");
 
-				element.addText(licenseConcluded);
+				element.addText(licenseName);
+
+				String licenseURL = _getLicenseURL(
+					packageElement, fileName, licenseOverrideProperties);
+
+				if (licenseURL != null) {
+					element = licenseElement.addElement("license-url");
+
+					element.addText(licenseURL);
+				}
 			}
-
-			Element commentsElement = libraryElement.addElement("comments");
-
-			commentsElement.addText("This was autogenerated by SPDX");
 
 			libraryElements.add(libraryElement);
 		}
@@ -178,7 +231,10 @@ public class SPDXBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document _getDocument(String[] xmls, String rdf) throws Exception {
+	private Document _getDocument(
+			String[] xmls, File spdxFile, Properties licenseOverrideProperties)
+		throws Exception {
+
 		Comparator<String> comparator = String.CASE_INSENSITIVE_ORDER;
 
 		Map<String, Element> libraryElementMap = new TreeMap<>(comparator);
@@ -199,17 +255,28 @@ public class SPDXBuilder {
 			}
 		}
 
-		Document spdxDocument = saxReader.read(new File(rdf));
+		Document spdxDocument = saxReader.read(spdxFile);
 
 		Element spdxRootElement = spdxDocument.getRootElement();
 
 		Element spdxDocumentElement = spdxRootElement.element(
-			_QNAME_SPDX_DOCUMENT);
+			_getQName("SpdxDocument"));
 
-		List<Element> elements = spdxDocumentElement.elements(_QNAME_PACKAGE);
+		List<Element> elements = spdxDocumentElement.elements(
+			_getQName("relationship"));
 
 		for (Element element : elements) {
-			List<Element> libraryElements = _createLibraryElements(element);
+			Element relationshipElement = element.element(
+				_getQName("Relationship"));
+
+			Element relatedSPDXElement = relationshipElement.element(
+				_getQName("relatedSpdxElement"));
+
+			Element packageElement = relatedSPDXElement.element(
+				_getQName("Package"));
+
+			List<Element> libraryElements = _createLibraryElements(
+				packageElement, licenseOverrideProperties);
 
 			for (Element libraryElement : libraryElements) {
 				String key = _getKey("spdx", libraryElement);
@@ -220,12 +287,13 @@ public class SPDXBuilder {
 
 		Document document = DocumentHelper.createDocument();
 
-		Map<String, String> args = new HashMap<>();
-
-		args.put("href", "versions.xsl");
-		args.put("type", "text/xsl");
-
-		document.addProcessingInstruction("xml-stylesheet", args);
+		document.addProcessingInstruction(
+			"xml-stylesheet",
+			HashMapBuilder.put(
+				"href", "versions.xsl"
+			).put(
+				"type", "text/xsl"
+			).build());
 
 		Element versionsElement = document.addElement("versions");
 
@@ -257,6 +325,73 @@ public class SPDXBuilder {
 		sb.append(versionNode.getText());
 
 		return sb.toString();
+	}
+
+	private String _getLicenseName(
+		Element packageElement, String fileName,
+		Properties licenseOverrideProperties) {
+
+		String key = "license.name[" + fileName + "]";
+
+		if (licenseOverrideProperties.containsKey(key)) {
+			return licenseOverrideProperties.getProperty(key);
+		}
+
+		Element licenseConcludedElement = packageElement.element(
+			_getQName("licenseConcluded"));
+
+		if (licenseConcludedElement == null) {
+			return null;
+		}
+
+		String resource = licenseConcludedElement.attributeValue(
+			_getQName("resource"));
+
+		if (resource.startsWith("http://spdx.org/licenses/")) {
+			return resource.substring(25);
+		}
+
+		if (resource.startsWith("LicenseRef-")) {
+			return resource.substring(11);
+		}
+
+		return null;
+	}
+
+	private String _getLicenseURL(
+		Element packageElement, String fileName, Properties licenseProperties) {
+
+		String key = "license.url[" + fileName + "]";
+
+		if (licenseProperties.containsKey(key)) {
+			return licenseProperties.getProperty(key);
+		}
+
+		Element licenseConcludedElement = packageElement.element(
+			_getQName("licenseConcluded"));
+
+		String resource = licenseConcludedElement.attributeValue(
+			_getQName("resource"));
+
+		if (!resource.startsWith("http")) {
+			return null;
+		}
+
+		return resource;
+	}
+
+	private QName _getQName(String name) {
+		if (!_qNameMap.containsKey(name)) {
+			QName qName = new QName(name, _NAMESPACE_SPDX, "spdx:" + name);
+
+			if (Objects.equals(name, "resource")) {
+				qName = new QName(name, _NAMESPACE_RDF, "rdf:" + name);
+			}
+
+			_qNameMap.put(name, qName);
+		}
+
+		return _qNameMap.get(name);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -309,36 +444,12 @@ public class SPDXBuilder {
 		Files.write(file.toPath(), s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private static final QName _QNAME_DOWNLOAD_LOCATION = new QName(
-		"downloadLocation", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:downloadLocation");
+	private static final Namespace _NAMESPACE_RDF = new Namespace(
+		"rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 
-	private static final QName _QNAME_FILE = new QName(
-		"File", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:File");
+	private static final Namespace _NAMESPACE_SPDX = new Namespace(
+		"spdx", "http://spdx.org/rdf/terms#");
 
-	private static final QName _QNAME_FILE_NAME = new QName(
-		"fileName", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:fileName");
-
-	private static final QName _QNAME_LICENSE_CONCLUDED = new QName(
-		"licenseConcluded", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:licenseConcluded");
-
-	private static final QName _QNAME_NAME = new QName(
-		"name", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:name");
-
-	private static final QName _QNAME_PACKAGE = new QName(
-		"Package", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:Package");
-
-	private static final QName _QNAME_SPDX_DOCUMENT = new QName(
-		"SpdxDocument", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:SpdxDocument");
-
-	private static final QName _QNAME_VERSION_INFO = new QName(
-		"versionInfo", new Namespace("spdx", "http://spdx.org/rdf/terms#"),
-		"spdx:versionInfo");
+	private static final Map<String, QName> _qNameMap = new HashMap<>();
 
 }

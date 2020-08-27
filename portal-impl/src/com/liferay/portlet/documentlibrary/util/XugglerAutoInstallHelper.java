@@ -53,8 +53,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             XugglerAutoInstallUtil}
  */
+@Deprecated
 public class XugglerAutoInstallHelper {
 
 	public static void installNativeLibraries() throws ProcessException {
@@ -89,13 +92,16 @@ public class XugglerAutoInstallHelper {
 			try {
 				xuggler.installNativeLibraries(xugglerJarFile);
 			}
-			catch (XugglerInstallException.MustBeURLClassLoader xie) {
+			catch (XugglerInstallException.MustBeURLClassLoader
+						xugglerInstallException) {
+
 				if (_log.isDebugEnabled()) {
-					_log.debug(xie, xie);
+					_log.debug(
+						xugglerInstallException, xugglerInstallException);
 				}
 			}
-			catch (Exception e) {
-				throw new ProcessException(e);
+			catch (Exception exception) {
+				throw new ProcessException(exception);
 			}
 
 			if (xuggler.isNativeLibraryInstalled()) {
@@ -162,27 +168,27 @@ public class XugglerAutoInstallHelper {
 	}
 
 	private static String _getXugglerJarFileName() {
-		String bitmode = OSDetector.getBitmode();
+		String bitMode = OSDetector.getBitMode();
 
-		if (Validator.isNull(bitmode) ||
-			(!bitmode.equals("32") && !bitmode.equals("64"))) {
+		if (Validator.isNull(bitMode) ||
+			(!bitMode.equals("32") && !bitMode.equals("64"))) {
 
 			return null;
 		}
 
 		if (OSDetector.isApple()) {
 			return PropsUtil.get(
-				PropsKeys.XUGGLER_JAR_FILE, new Filter(bitmode + "-mac"));
+				PropsKeys.XUGGLER_JAR_FILE, new Filter(bitMode + "-mac"));
 		}
 
 		if (OSDetector.isLinux()) {
 			return PropsUtil.get(
-				PropsKeys.XUGGLER_JAR_FILE, new Filter(bitmode + "-linux"));
+				PropsKeys.XUGGLER_JAR_FILE, new Filter(bitMode + "-linux"));
 		}
 
 		if (OSDetector.isWindows()) {
 			return PropsUtil.get(
-				PropsKeys.XUGGLER_JAR_FILE, new Filter(bitmode + "-win"));
+				PropsKeys.XUGGLER_JAR_FILE, new Filter(bitMode + "-win"));
 		}
 
 		return null;
@@ -226,12 +232,12 @@ public class XugglerAutoInstallHelper {
 
 				Matcher matcher = _pattern.matcher(file.getName());
 
-				if (matcher.matches()) {
-					if (jarFiles.contains(matcher.replaceAll("$1$2"))) {
-						file.delete();
+				if (matcher.matches() &&
+					jarFiles.contains(matcher.replaceAll("$1$2"))) {
 
-						iterator.remove();
-					}
+					file.delete();
+
+					iterator.remove();
 				}
 			}
 		}
@@ -250,7 +256,7 @@ public class XugglerAutoInstallHelper {
 
 			return callable.call();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 		finally {

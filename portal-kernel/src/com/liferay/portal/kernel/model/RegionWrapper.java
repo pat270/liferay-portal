@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Region}.
@@ -30,9 +28,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Region
  * @generated
  */
-@ProviderType
 public class RegionWrapper
-	extends BaseModelWrapper<Region> implements Region, ModelWrapper<Region> {
+	extends BaseModelWrapper<Region> implements ModelWrapper<Region>, Region {
 
 	public RegionWrapper(Region region) {
 		super(region);

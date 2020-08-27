@@ -16,6 +16,9 @@ package com.liferay.portal.vulcan.internal.jaxrs.message.body;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.vulcan.internal.multipart.MultipartUtil;
 import com.liferay.portal.vulcan.multipart.BinaryFile;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 
@@ -24,11 +27,13 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -41,6 +46,7 @@ import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
@@ -53,6 +59,10 @@ import org.apache.commons.fileupload.util.Streams;
 @Provider
 public class MultipartBodyMessageBodyReader
 	implements MessageBodyReader<MultipartBody> {
+
+	public MultipartBodyMessageBodyReader(long fileMaxSize) {
+		_fileMaxSize = fileMaxSize;
+	}
 
 	@Override
 	public boolean isReadable(
@@ -72,40 +82,86 @@ public class MultipartBodyMessageBodyReader
 			_providers.getContextResolver(
 				ObjectMapper.class, MediaType.MULTIPART_FORM_DATA_TYPE);
 
+		Map<String, BinaryFile> binaryFiles = new HashMap<>();
+		Map<String, String> values = new HashMap<>();
+
 		try {
-			Map<String, BinaryFile> binaryFiles = new HashMap<>();
-			Map<String, String> values = new HashMap<>();
+			Collection<Part> parts = _httpServletRequest.getParts();
 
-			ServletFileUpload servletFileUpload = new ServletFileUpload(
-				new DiskFileItemFactory());
+			if ((parts != null) && !parts.isEmpty()) {
+				for (Part part : parts) {
+					String fileName = MultipartUtil.getFileName(part);
 
-			List<FileItem> fileItems = servletFileUpload.parseRequest(
-				_httpServletRequest);
-
-			for (FileItem fileItem : fileItems) {
-				String name = fileItem.getFieldName();
-
-				if (fileItem.isFormField()) {
-					values.put(
-						name, Streams.asString(fileItem.getInputStream()));
-				}
-				else {
-					BinaryFile binaryFile = new BinaryFile(
-						fileItem.getContentType(), fileItem.getName(),
-						fileItem.getInputStream(), fileItem.getSize());
-
-					binaryFiles.put(name, binaryFile);
+					if (fileName == null) {
+						values.put(
+							part.getName(),
+							Streams.asString(part.getInputStream()));
+					}
+					else {
+						binaryFiles.put(
+							part.getName(),
+							new BinaryFile(
+								part.getContentType(), fileName,
+								part.getInputStream(), part.getSize()));
+					}
 				}
 			}
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+		}
 
-			return MultipartBody.of(
-				binaryFiles, contextResolver::getContext, values);
+		if (binaryFiles.isEmpty() && values.isEmpty()) {
+			try {
+				ServletFileUpload servletFileUpload = new ServletFileUpload(
+					new DiskFileItemFactory());
+
+				servletFileUpload.setFileSizeMax(_fileMaxSize);
+				servletFileUpload.setSizeMax(_fileMaxSize);
+
+				List<FileItem> fileItems = servletFileUpload.parseRequest(
+					_httpServletRequest);
+
+				for (FileItem fileItem : fileItems) {
+					String name = fileItem.getFieldName();
+
+					if (fileItem.isFormField()) {
+						values.put(
+							name, Streams.asString(fileItem.getInputStream()));
+					}
+					else {
+						binaryFiles.put(
+							name,
+							new BinaryFile(
+								fileItem.getContentType(), fileItem.getName(),
+								fileItem.getInputStream(), fileItem.getSize()));
+					}
+				}
+			}
+			catch (FileUploadBase.SizeLimitExceededException
+						sizeLimitExceededException) {
+
+				throw new BadRequestException(
+					"Please enter a file with a valid file size no larger " +
+						"than " + _fileMaxSize,
+					sizeLimitExceededException);
+			}
+			catch (Exception exception) {
+				throw new BadRequestException(
+					"Request body is not a valid multipart form", exception);
+			}
 		}
-		catch (Exception e) {
-			throw new BadRequestException(
-				"Request body is not a valid multipart form", e);
-		}
+
+		return MultipartBody.of(
+			binaryFiles, contextResolver::getContext, values);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MultipartBodyMessageBodyReader.class);
+
+	private final long _fileMaxSize;
 
 	@Context
 	private HttpServletRequest _httpServletRequest;

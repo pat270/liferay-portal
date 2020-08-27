@@ -242,18 +242,18 @@ public class CalendarBookingFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_FUTURE_REMINDERS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("CalendarBooking", CalendarBookingImpl.class);
+			sqlQuery.addEntity("CalendarBooking", CalendarBookingImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(startTime);
+			queryPos.add(startTime);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -359,8 +359,8 @@ public class CalendarBookingFinderImpl
 			sql = StringUtil.replace(sql, "[$STATUS$]", getStatuses(statuses));
 
 			if (parentCalendarBookingId < 0) {
-				sql = StringUtil.replace(
-					sql, "(parentCalendarBookingId = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(parentCalendarBookingId = ?) AND");
 			}
 
 			sql = _customSQL.replaceKeywords(
@@ -371,49 +371,49 @@ public class CalendarBookingFinderImpl
 				sql, "LOWER(location)", StringPool.LIKE, true, locations);
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(groupIds);
+			queryPos.add(companyId);
+			queryPos.add(groupIds);
 
 			if (ArrayUtil.isNotEmpty(calendarIds)) {
-				qPos.add(calendarIds);
+				queryPos.add(calendarIds);
 			}
 
 			if (ArrayUtil.isNotEmpty(calendarResourceIds)) {
-				qPos.add(calendarResourceIds);
+				queryPos.add(calendarResourceIds);
 			}
 
 			if (parentCalendarBookingId >= 0) {
-				qPos.add(parentCalendarBookingId);
+				queryPos.add(parentCalendarBookingId);
 			}
 
-			qPos.add(titles, 2);
-			qPos.add(descriptions, 2);
-			qPos.add(locations, 2);
-			qPos.add(startTime);
-			qPos.add(endTime);
-			qPos.add(startTime);
-			qPos.add(endTime);
-			qPos.add(startTime);
-			qPos.add(endTime);
-			qPos.add(endTime);
-			qPos.add(startTime);
-			qPos.add(startTime);
-			qPos.add(endTime);
+			queryPos.add(titles, 2);
+			queryPos.add(descriptions, 2);
+			queryPos.add(locations, 2);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
+			queryPos.add(endTime);
+			queryPos.add(startTime);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
 
 			if (ArrayUtil.isNotEmpty(statuses)) {
-				qPos.add(statuses);
+				queryPos.add(statuses);
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -422,8 +422,8 @@ public class CalendarBookingFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -469,8 +469,8 @@ public class CalendarBookingFinderImpl
 			sql = StringUtil.replace(sql, "[$STATUS$]", getStatuses(statuses));
 
 			if (parentCalendarBookingId < 0) {
-				sql = StringUtil.replace(
-					sql, "(parentCalendarBookingId = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(parentCalendarBookingId = ?) AND");
 			}
 
 			sql = _customSQL.replaceKeywords(
@@ -490,53 +490,53 @@ public class CalendarBookingFinderImpl
 
 			sql = StringUtil.replace(sql, "[$ORDER_BY$]", sb.toString());
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("CalendarBooking", CalendarBookingImpl.class);
+			sqlQuery.addEntity("CalendarBooking", CalendarBookingImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (ArrayUtil.isNotEmpty(groupIds)) {
-				qPos.add(groupIds);
+				queryPos.add(groupIds);
 			}
 
 			if (ArrayUtil.isNotEmpty(calendarIds)) {
-				qPos.add(calendarIds);
+				queryPos.add(calendarIds);
 			}
 
 			if (ArrayUtil.isNotEmpty(calendarResourceIds)) {
-				qPos.add(calendarResourceIds);
+				queryPos.add(calendarResourceIds);
 			}
 
 			if (parentCalendarBookingId >= 0) {
-				qPos.add(parentCalendarBookingId);
+				queryPos.add(parentCalendarBookingId);
 			}
 
-			qPos.add(titles, 2);
-			qPos.add(descriptions, 2);
-			qPos.add(locations, 2);
-			qPos.add(startTime);
-			qPos.add(endTime);
-			qPos.add(startTime);
-			qPos.add(endTime);
-			qPos.add(startTime);
-			qPos.add(endTime);
-			qPos.add(endTime);
-			qPos.add(startTime);
-			qPos.add(startTime);
-			qPos.add(endTime);
+			queryPos.add(titles, 2);
+			queryPos.add(descriptions, 2);
+			queryPos.add(locations, 2);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
+			queryPos.add(endTime);
+			queryPos.add(startTime);
+			queryPos.add(startTime);
+			queryPos.add(endTime);
 
 			if (ArrayUtil.isNotEmpty(statuses)) {
-				qPos.add(statuses);
+				queryPos.add(statuses);
 			}
 
 			return (List<CalendarBooking>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -548,7 +548,7 @@ public class CalendarBookingFinderImpl
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(calendarIds.length * 2 + 1);
+		StringBundler sb = new StringBundler((calendarIds.length * 2) + 1);
 
 		sb.append(" (");
 
@@ -571,7 +571,7 @@ public class CalendarBookingFinderImpl
 		}
 
 		StringBundler sb = new StringBundler(
-			calendarResourceIds.length * 2 + 1);
+			(calendarResourceIds.length * 2) + 1);
 
 		sb.append(" (");
 
@@ -623,7 +623,7 @@ public class CalendarBookingFinderImpl
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(statuses.length * 2 + 1);
+		StringBundler sb = new StringBundler((statuses.length * 2) + 1);
 
 		sb.append("AND (");
 

@@ -16,10 +16,15 @@
 
 <%@ include file="/init.jsp" %>
 
+<%
+String languageId = LanguageUtil.getLanguageId(request);
+%>
+
 <div class="calendar-asset-abstract">
 	<p>
 		<liferay-ui:icon
-			iconCssClass="icon-user"
+			icon="user"
+			markupView="lexicon"
 			message=""
 		/>
 
@@ -27,7 +32,7 @@
 		Calendar calendar = calendarBooking.getCalendar();
 		%>
 
-		<strong><%= HtmlUtil.escape(calendar.getName(locale)) %></strong>
+		<strong><%= HtmlUtil.escape(calendar.getName(languageId)) %></strong>
 
 		<%
 		List<CalendarBooking> childCalendarBookings = calendarBooking.getChildCalendarBookings();
@@ -37,7 +42,8 @@
 			<br />
 
 			<liferay-ui:icon
-				iconCssClass="icon-globe"
+				icon="globe"
+				markupView="lexicon"
 				message="resources"
 			/>
 
@@ -49,7 +55,7 @@
 			for (CalendarBooking childCalendarBooking : childCalendarBookings) {
 				CalendarResource calendarResource = childCalendarBooking.getCalendarResource();
 
-				calendarResourcesNames.add(calendarResource.getName(locale));
+				calendarResourcesNames.add(calendarResource.getName(languageId));
 			}
 			%>
 
@@ -60,7 +66,8 @@
 		<br />
 
 		<liferay-ui:icon
-			iconCssClass="icon-calendar"
+			icon="calendar"
+			markupView="lexicon"
 			message="starts"
 		/>
 
@@ -73,7 +80,8 @@
 		<br />
 
 		<liferay-ui:icon
-			iconCssClass="icon-calendar"
+			icon="calendar"
+			markupView="lexicon"
 			message="ends"
 		/>
 

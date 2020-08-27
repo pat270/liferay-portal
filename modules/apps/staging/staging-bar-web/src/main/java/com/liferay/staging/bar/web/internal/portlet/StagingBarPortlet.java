@@ -100,8 +100,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + StagingBarPortletKeys.STAGING_BAR,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -125,12 +124,9 @@ public class StagingBarPortlet extends MVCPortlet {
 			actionRequest, "updateRecentLayoutRevisionId");
 
 		if (updateRecentLayoutRevisionId) {
-			HttpServletRequest httpServletRequest =
-				_portal.getHttpServletRequest(actionRequest);
-
 			_staging.setRecentLayoutRevisionId(
-				httpServletRequest, layoutRevision.getLayoutSetBranchId(),
-				layoutRevision.getPlid(),
+				_portal.getHttpServletRequest(actionRequest),
+				layoutRevision.getLayoutSetBranchId(), layoutRevision.getPlid(),
 				layoutRevision.getParentLayoutRevisionId());
 		}
 
@@ -158,8 +154,8 @@ public class StagingBarPortlet extends MVCPortlet {
 			try {
 				selLayout = _layoutLocalService.getLayout(selPlid);
 			}
-			catch (PortalException pe) {
-				throw new PortletException(pe);
+			catch (PortalException portalException) {
+				throw new PortletException(portalException);
 			}
 		}
 
@@ -191,8 +187,8 @@ public class StagingBarPortlet extends MVCPortlet {
 
 					layoutBranch = layoutRevision.getLayoutBranch();
 				}
-				catch (PortalException pe) {
-					throw new PortletException(pe);
+				catch (PortalException portalException) {
+					throw new PortletException(portalException);
 				}
 			}
 		}
@@ -216,8 +212,8 @@ public class StagingBarPortlet extends MVCPortlet {
 						liveURL = _portal.getLayoutURL(
 							liveLayout, themeDisplay);
 					}
-					catch (PortalException pe) {
-						throw new PortletException(pe);
+					catch (PortalException portalException) {
+						throw new PortletException(portalException);
 					}
 				}
 				else if ((layout.isPrivateLayout() &&
@@ -241,8 +237,8 @@ public class StagingBarPortlet extends MVCPortlet {
 						stagingURL = _portal.getLayoutURL(
 							stagingLayout, themeDisplay);
 					}
-					catch (PortalException pe) {
-						throw new PortletException(pe);
+					catch (PortalException portalException) {
+						throw new PortletException(portalException);
 					}
 				}
 				else {
@@ -257,17 +253,17 @@ public class StagingBarPortlet extends MVCPortlet {
 						stagingGroup.getGroupId(), layout.isPrivateLayout());
 			}
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				group.getTypeSettingsProperties();
 
-			String remoteAddress = typeSettingsProperties.getProperty(
+			String remoteAddress = typeSettingsUnicodeProperties.getProperty(
 				"remoteAddress");
 			int remotePort = GetterUtil.getInteger(
-				typeSettingsProperties.getProperty("remotePort"));
-			String remotePathContext = typeSettingsProperties.getProperty(
-				"remotePathContext");
+				typeSettingsUnicodeProperties.getProperty("remotePort"));
+			String remotePathContext =
+				typeSettingsUnicodeProperties.getProperty("remotePathContext");
 			boolean secureConnection = GetterUtil.getBoolean(
-				typeSettingsProperties.getProperty("secureConnection"));
+				typeSettingsUnicodeProperties.getProperty("secureConnection"));
 
 			remoteURL = _stagingURLHelper.buildRemoteURL(
 				remoteAddress, remotePort, remotePathContext, secureConnection);
@@ -277,29 +273,29 @@ public class StagingBarPortlet extends MVCPortlet {
 					remoteSiteURL = _staging.getRemoteSiteURL(
 						group, layout.isPrivateLayout());
 				}
-				catch (AuthException ae) {
-					_log.error(ae.getMessage());
+				catch (AuthException authException) {
+					_log.error(authException.getMessage());
 
 					SessionErrors.add(renderRequest, AuthException.class);
 				}
-				catch (SystemException se) {
-					Throwable cause = se.getCause();
+				catch (SystemException systemException) {
+					Throwable throwable = systemException.getCause();
 
-					if (!(cause instanceof ConnectException)) {
-						throw se;
+					if (!(throwable instanceof ConnectException)) {
+						throw systemException;
 					}
 
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to connect to remote live: " +
-								cause.getMessage());
+								throwable.getMessage());
 					}
 
 					SessionErrors.add(
 						renderRequest, RemoteExportException.class);
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 
 					SessionErrors.add(renderRequest, Exception.class);
 				}
@@ -442,10 +438,10 @@ public class StagingBarPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof LayoutBranchNameException ||
-			cause instanceof LayoutSetBranchNameException ||
-			super.isSessionErrorException(cause)) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof LayoutBranchNameException ||
+			throwable instanceof LayoutSetBranchNameException ||
+			super.isSessionErrorException(throwable)) {
 
 			return true;
 		}
@@ -489,7 +485,7 @@ public class StagingBarPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.staging.bar.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.staging.bar.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
@@ -547,33 +543,40 @@ public class StagingBarPortlet extends MVCPortlet {
 				break;
 			}
 
-			LayoutRevision parentLayoutsRevision =
-				_layoutRevisionLocalService.fetchLatestLayoutRevision(
+			List<LayoutRevision> parentHeadLayoutRevisions =
+				_layoutRevisionLocalService.getLayoutRevisions(
 					layoutRevision.getLayoutSetBranchId(),
-					parentLayout.getPlid());
+					parentLayout.getPlid(), true);
 
-			_layoutRevisionLocalService.updateLayoutRevision(
-				serviceContext.getUserId(),
-				parentLayoutsRevision.getLayoutRevisionId(),
-				parentLayoutsRevision.getLayoutBranchId(),
-				parentLayoutsRevision.getName(),
-				parentLayoutsRevision.getTitle(),
-				parentLayoutsRevision.getDescription(),
-				parentLayoutsRevision.getKeywords(),
-				parentLayoutsRevision.getRobots(),
-				parentLayoutsRevision.getTypeSettings(),
-				parentLayoutsRevision.getIconImage(),
-				parentLayoutsRevision.getIconImageId(),
-				parentLayoutsRevision.getThemeId(),
-				parentLayoutsRevision.getColorSchemeId(),
-				parentLayoutsRevision.getCss(), serviceContext);
+			if (parentHeadLayoutRevisions.isEmpty()) {
+				LayoutRevision parentLayoutsRevision =
+					_layoutRevisionLocalService.fetchLatestLayoutRevision(
+						layoutRevision.getLayoutSetBranchId(),
+						parentLayout.getPlid());
+
+				_layoutRevisionLocalService.updateLayoutRevision(
+					serviceContext.getUserId(),
+					parentLayoutsRevision.getLayoutRevisionId(),
+					parentLayoutsRevision.getLayoutBranchId(),
+					parentLayoutsRevision.getName(),
+					parentLayoutsRevision.getTitle(),
+					parentLayoutsRevision.getDescription(),
+					parentLayoutsRevision.getKeywords(),
+					parentLayoutsRevision.getRobots(),
+					parentLayoutsRevision.getTypeSettings(),
+					parentLayoutsRevision.getIconImage(),
+					parentLayoutsRevision.getIconImageId(),
+					parentLayoutsRevision.getThemeId(),
+					parentLayoutsRevision.getColorSchemeId(),
+					parentLayoutsRevision.getCss(), serviceContext);
+			}
 
 			parentPlid = parentLayout.getParentPlid();
 		}
 	}
 
 	private void _deleteUnusedLayoutIconImage(LayoutRevision layoutRevision)
-		throws PortalException {
+		throws Exception {
 
 		Layout layout = _layoutLocalService.fetchLayout(
 			layoutRevision.getPlid());

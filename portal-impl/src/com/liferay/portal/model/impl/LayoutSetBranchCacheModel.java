@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing LayoutSetBranch in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutSetBranchCacheModel
 	implements CacheModel<LayoutSetBranch>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LayoutSetBranchCacheModel)) {
+		if (!(object instanceof LayoutSetBranchCacheModel)) {
 			return false;
 		}
 
 		LayoutSetBranchCacheModel layoutSetBranchCacheModel =
-			(LayoutSetBranchCacheModel)obj;
+			(LayoutSetBranchCacheModel)object;
 
 		if ((layoutSetBranchId ==
 				layoutSetBranchCacheModel.layoutSetBranchId) &&
@@ -221,7 +218,9 @@ public class LayoutSetBranchCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		layoutSetBranchId = objectInput.readLong();
@@ -244,8 +243,8 @@ public class LayoutSetBranchCacheModel
 		logoId = objectInput.readLong();
 		themeId = objectInput.readUTF();
 		colorSchemeId = objectInput.readUTF();
-		css = objectInput.readUTF();
-		settings = objectInput.readUTF();
+		css = (String)objectInput.readObject();
+		settings = (String)objectInput.readObject();
 		layoutSetPrototypeUuid = objectInput.readUTF();
 
 		layoutSetPrototypeLinkEnabled = objectInput.readBoolean();
@@ -308,17 +307,17 @@ public class LayoutSetBranchCacheModel
 		}
 
 		if (css == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(css);
+			objectOutput.writeObject(css);
 		}
 
 		if (settings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(settings);
+			objectOutput.writeObject(settings);
 		}
 
 		if (layoutSetPrototypeUuid == null) {

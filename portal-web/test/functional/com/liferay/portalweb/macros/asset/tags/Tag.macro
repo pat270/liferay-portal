@@ -1,0 +1,142 @@
+definition {
+
+	macro _addCP {
+		LexiconEntry.gotoAdd();
+
+		AssertElementPresent(locator1 = "TextInput#NAME");
+
+		PortletEntry.inputName(name = "${tagName}");
+	}
+
+	macro addAutoAssertionTagViaBlogsPG {
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entryTitle = "${entryTitle}");
+
+		Panel.expandPanel(panel = "Categorization");
+
+		Type.sendKeys(
+			locator1 = "AssetCategorization#TAGS_FIELD",
+			value1 = "tag ");
+
+		AssertClick(
+			key_tagName = "${tagName}",
+			locator1 = "AssetCategorization#TAG_AUTOCOMPLETE_SPECIFIC",
+			value1 = "${tagName}");
+
+		PortletEntry.publish();
+	}
+
+	macro addCP {
+		Tag._addCP(tagName = "${tagName}");
+
+		PortletEntry.save();
+	}
+
+	macro addViaSiteCP {
+		Panel.expandPanel(panel = "Categorization");
+
+		AssetCategorization.addTag(tagName = "${tagName}");
+
+		PortletEntry.save();
+	}
+
+	macro addWithNullTitleCP {
+		Tag._addCP(tagName = "${tagName}");
+
+		Button.clickSave();
+
+		AssertElementPresent(locator1 = "Icon#ASTERISK");
+
+		Alert.viewRequiredField();
+	}
+
+	macro gotoMerge {
+		if ("${mergeMethod}" == "menuItem") {
+			LexiconEntry.gotoEntryMenuItem(
+				menuItem = "Merge",
+				rowEntry = "${tagName}");
+		}
+		else {
+			Click(locator1 = "Icon#TOOLBAR_ELLIPSIS");
+
+			Click(locator1 = "Button#MERGE");
+		}
+	}
+
+	macro mergeSingleTagWarning {
+		AssertClickNoError(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertConfirm(value1 = "Please choose at least 2 tags.");
+	}
+
+	macro mergeTags {
+		ClickNoError(locator1 = "Button#SAVE");
+
+		var message = "Are you sure you want to merge &quot;${tagNameList}&quot; into &quot;${mergedTag}&quot;? This will change all items tagged with &quot;${tagNameList}&quot; to instead be tagged with &quot;${mergedTag}&quot;.";
+
+		AssertConfirm(value1 = "${message}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro mergeTagsSelectAdditionalTags {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		Click(locator1 = "Button#SELECT");
+
+		SelectFrameTop();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconEntry.selectEntry(rowEntry = "${tagName}");
+
+		SelectFrameTop();
+
+		Button.clickDone();
+	}
+
+	macro openTagsAdmin {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/tags_admin/");
+	}
+
+	macro tearDownCP {
+		if ("${stagingSite}" == "true") {
+			ProductMenu.gotoStagingSite(site = "${site}");
+		}
+		else {
+			Navigator.openURL();
+		}
+
+		ProductMenu.gotoPortlet(
+			category = "Categorization",
+			portlet = "Tags");
+
+		while (IsElementNotPresent(locator1 = "Message#EMPTY_INFO")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#DELETE");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+		}
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "There are no tags.");
+	}
+
+	macro viewCP {
+		var key_tagName = "${tagName}";
+
+		AssertTextEquals(
+			locator1 = "Tags#TAG_ENTRY_TABLE_NAME",
+			value1 = "${tagName}");
+	}
+
+}

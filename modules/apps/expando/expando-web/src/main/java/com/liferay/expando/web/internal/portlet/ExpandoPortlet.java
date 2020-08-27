@@ -82,7 +82,6 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + ExpandoPortletKeys.EXPANDO,
-		"javax.portlet.portlet-mode=text/html",
 		"javax.portlet.resource-bundle=content.Language"
 	},
 	service = Portlet.class
@@ -124,9 +123,8 @@ public class ExpandoPortlet extends MVCPortlet {
 
 		expandoBridge.addAttribute(name, type);
 
-		Serializable defaultValue = getDefaultValue(actionRequest, type);
-
-		expandoBridge.setAttributeDefault(name, defaultValue);
+		expandoBridge.setAttributeDefault(
+			name, getDefaultValue(actionRequest, type));
 
 		updateProperties(actionRequest, expandoBridge, name);
 	}
@@ -363,13 +361,13 @@ public class ExpandoPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof ColumnNameException ||
-			cause instanceof ColumnTypeException ||
-			cause instanceof DuplicateColumnNameException ||
-			cause instanceof NoSuchColumnException ||
-			cause instanceof PrincipalException ||
-			cause instanceof ValueDataException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof ColumnNameException ||
+			throwable instanceof ColumnTypeException ||
+			throwable instanceof DuplicateColumnNameException ||
+			throwable instanceof NoSuchColumnException ||
+			throwable instanceof PrincipalException ||
+			throwable instanceof ValueDataException) {
 
 			return true;
 		}
@@ -389,18 +387,18 @@ public class ExpandoPortlet extends MVCPortlet {
 			String name)
 		throws Exception {
 
-		UnicodeProperties properties = PropertiesParamUtil.getProperties(
+		UnicodeProperties unicodeProperties = PropertiesParamUtil.getProperties(
 			actionRequest, "Property--");
 
 		boolean searchable = ParamUtil.getBoolean(actionRequest, "searchable");
 
 		if (!searchable) {
-			properties.setProperty(
+			unicodeProperties.setProperty(
 				ExpandoColumnConstants.INDEX_TYPE,
 				String.valueOf(ExpandoColumnConstants.INDEX_TYPE_NONE));
 		}
 
-		expandoBridge.setAttributeProperties(name, properties);
+		expandoBridge.setAttributeProperties(name, unicodeProperties);
 	}
 
 	private int _getNumberType(

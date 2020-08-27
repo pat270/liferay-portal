@@ -15,7 +15,6 @@
 package com.liferay.util.xml;
 
 import com.liferay.petra.string.CharPool;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -32,19 +31,19 @@ import java.util.List;
  */
 public class BeanToXMLUtil {
 
-	public static void addBean(Object obj, Element parentEl) {
-		Class<?> clazz = obj.getClass();
+	public static void addBean(Object object, Element parentEl) {
+		Class<?> clazz = object.getClass();
 
 		String classNameWithoutPackage = getClassNameWithoutPackage(
 			clazz.getName());
 
 		Element el = parentEl.addElement(classNameWithoutPackage);
 
-		addFields(obj, el);
+		addFields(object, el);
 	}
 
-	public static void addFields(Object obj, Element parentEl) {
-		Class<?> clazz = obj.getClass();
+	public static void addFields(Object object, Element parentEl) {
+		Class<?> clazz = object.getClass();
 
 		Method[] methods = clazz.getMethods();
 
@@ -54,31 +53,31 @@ public class BeanToXMLUtil {
 			if (methodName.startsWith("get") &&
 				!methodName.equals("getClass")) {
 
-				String memberName = StringUtil.replace(
-					methodName, "get", StringPool.BLANK);
+				String memberName = StringUtil.removeSubstring(
+					methodName, "get");
 
 				memberName = TextFormatter.format(memberName, TextFormatter.I);
 				memberName = TextFormatter.format(memberName, TextFormatter.K);
 
 				try {
-					Object returnValue = method.invoke(obj, new Object[0]);
+					Object returnValue = method.invoke(object, new Object[0]);
 
 					if (returnValue instanceof List<?>) {
 						List<Object> list = (List<Object>)returnValue;
 
 						Element listEl = parentEl.addElement(memberName);
 
-						for (Object curObj : list) {
-							addBean(curObj, listEl);
+						for (Object curObject : list) {
+							addBean(curObject, listEl);
 						}
 					}
 					else {
 						_add(parentEl, memberName, returnValue.toString());
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(e.getMessage());
+						_log.warn(exception.getMessage());
 					}
 				}
 			}

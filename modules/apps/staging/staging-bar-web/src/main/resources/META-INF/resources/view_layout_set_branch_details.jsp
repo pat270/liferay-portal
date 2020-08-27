@@ -29,7 +29,7 @@ String stagingURL = (String)request.getAttribute(StagingProcessesWebKeys.STAGING
 	</div>
 
 	<div class="dropdown">
-		<a class="dropdown-toggle layout-set-branch-selector staging-variation-selector" data-toggle="dropdown" href="#1">
+		<a class="dropdown-toggle layout-set-branch-selector staging-variation-selector" data-toggle="liferay-dropdown" href="#1">
 			<liferay-ui:message key="<%= HtmlUtil.escape(layoutSetBranchDisplayContext.getLayoutSetBranchDisplayName(layoutSetBranch)) %>" localizeKey="<%= false %>" />
 
 			<aui:icon image="caret-double-l" markupView="lexicon" />
@@ -50,7 +50,7 @@ String stagingURL = (String)request.getAttribute(StagingProcessesWebKeys.STAGING
 				</portlet:actionURL>
 
 				<li>
-					<a class="<%= selected ? "disabled" : StringPool.BLANK %>" href="<%= selected ? "javascript:;" : "javascript:submitForm(document.hrefFm, '" + HtmlUtil.escapeJS(curLayoutSetBranchURL) + "');" %>">
+					<a class="<%= selected ? "disabled" : StringPool.BLANK %> dropdown-item" href="<%= selected ? "javascript:;" : "javascript:submitForm(document.hrefFm, '" + HtmlUtil.escapeJS(curLayoutSetBranchURL) + "');" %>">
 						<liferay-ui:message key="<%= HtmlUtil.escape(layoutSetBranchDisplayContext.getLayoutSetBranchDisplayName(curLayoutSetBranch)) %>" localizeKey="<%= false %>" />
 					</a>
 				</li>

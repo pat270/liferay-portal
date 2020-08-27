@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Michael C. Han
@@ -41,6 +42,16 @@ public class DocumentImpl implements Document {
 
 	public DocumentImpl(DocumentImpl documentImpl) {
 		_fields = new LinkedHashMap<>(documentImpl._fields);
+	}
+
+	@Override
+	public Boolean getBoolean(String name) {
+		return GetterUtil.getBoolean(getValue(name));
+	}
+
+	@Override
+	public List<Boolean> getBooleans(String name) {
+		return getValues(name, GetterUtil::getBoolean);
 	}
 
 	@Override
@@ -153,8 +164,9 @@ public class DocumentImpl implements Document {
 	public <T> List<T> getValues(String name, Function<Object, T> function) {
 		List<Object> values = getValues(name);
 
-		return values.stream(
-		).map(
+		Stream<Object> stream = values.stream();
+
+		return stream.map(
 			function
 		).collect(
 			Collectors.toList()
@@ -168,6 +180,11 @@ public class DocumentImpl implements Document {
 		else {
 			putField(name, values);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return _fields.toString();
 	}
 
 	public void unsetField(String name) {
@@ -213,7 +230,9 @@ public class DocumentImpl implements Document {
 		}
 
 		if (value instanceof Collection) {
-			if (((Collection)value).isEmpty()) {
+			Collection<?> collection = (Collection<?>)value;
+
+			if (collection.isEmpty()) {
 				return true;
 			}
 		}

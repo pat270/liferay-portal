@@ -21,7 +21,9 @@ import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.web.internal.security.permission.resource.DLFileEntryPermission;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.flash.FlashMagicBytesUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -86,31 +88,32 @@ public class GetFileActionHelper {
 			long groupId = ParamUtil.getLong(
 				httpServletRequest, "groupId", themeDisplay.getScopeGroupId());
 
-			getFile(
+			_getFile(
 				fileEntryId, folderId, name, title, version, fileShortcutId,
 				uuid, groupId, targetExtension, httpServletRequest,
 				httpServletResponse);
 		}
-		catch (NoSuchFileEntryException nsfee) {
+		catch (NoSuchFileEntryException noSuchFileEntryException) {
 			PortalUtil.sendError(
-				HttpServletResponse.SC_NOT_FOUND, nsfee, httpServletRequest,
-				httpServletResponse);
+				HttpServletResponse.SC_NOT_FOUND, noSuchFileEntryException,
+				httpServletRequest, httpServletResponse);
 		}
-		catch (PrincipalException pe) {
-			processPrincipalException(
-				pe, httpServletRequest, httpServletResponse);
+		catch (PrincipalException principalException) {
+			_processPrincipalException(
+				principalException, httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
+		catch (Exception exception) {
+			PortalUtil.sendError(
+				exception, httpServletRequest, httpServletResponse);
 		}
 	}
 
-	protected void getFile(
+	private void _getFile(
 			long fileEntryId, long folderId, String name, String title,
 			String version, long fileShortcutId, String uuid, long groupId,
 			String targetExtension, HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
-		throws Exception {
+		throws IOException, PortalException {
 
 		if (name.startsWith("DLFE-")) {
 			name = name.substring(5);
@@ -158,11 +161,9 @@ public class GetFileActionHelper {
 						(ThemeDisplay)httpServletRequest.getAttribute(
 							WebKeys.THEME_DISPLAY);
 
-					PermissionChecker permissionChecker =
-						themeDisplay.getPermissionChecker();
-
 					DLFileEntryPermission.check(
-						permissionChecker, dlFileEntry, ActionKeys.VIEW);
+						themeDisplay.getPermissionChecker(), dlFileEntry,
+						ActionKeys.VIEW);
 
 					fileEntry = new LiferayFileEntry(dlFileEntry);
 				}
@@ -191,7 +192,7 @@ public class GetFileActionHelper {
 
 		FileVersion fileVersion = fileEntry.getFileVersion(version);
 
-		InputStream is = fileVersion.getContentStream(true);
+		InputStream inputStream = fileVersion.getContentStream(true);
 
 		String fileName = fileVersion.getTitle();
 
@@ -211,38 +212,34 @@ public class GetFileActionHelper {
 				fileEntry.getFileEntryId(), version);
 
 			File convertedFile = DocumentConversionUtil.convert(
-				id, is, sourceExtension, targetExtension);
+				id, inputStream, sourceExtension, targetExtension);
 
 			if (convertedFile != null) {
-				fileName = FileUtil.stripExtension(
-					fileName
-				).concat(
-					StringPool.PERIOD
-				).concat(
-					targetExtension
-				);
-				is = new FileInputStream(convertedFile);
+				fileName = StringBundler.concat(
+					FileUtil.stripExtension(fileName), StringPool.PERIOD,
+					targetExtension);
+				inputStream = new FileInputStream(convertedFile);
 				contentLength = convertedFile.length();
 				contentType = MimeTypesUtil.getContentType(fileName);
 			}
 		}
 
 		FlashMagicBytesUtil.Result flashMagicBytesUtilResult =
-			FlashMagicBytesUtil.check(is);
+			FlashMagicBytesUtil.check(inputStream);
 
 		if (flashMagicBytesUtilResult.isFlash()) {
 			fileName = FileUtil.stripExtension(fileName) + ".swf";
 		}
 
-		is = flashMagicBytesUtilResult.getInputStream();
+		inputStream = flashMagicBytesUtilResult.getInputStream();
 
 		ServletResponseUtil.sendFile(
-			httpServletRequest, httpServletResponse, fileName, is,
+			httpServletRequest, httpServletResponse, fileName, inputStream,
 			contentLength, contentType);
 	}
 
-	protected void processPrincipalException(
-			Throwable t, HttpServletRequest httpServletRequest,
+	private void _processPrincipalException(
+			Throwable throwable, HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
@@ -257,7 +254,7 @@ public class GetFileActionHelper {
 
 		if ((user != null) && !user.isDefaultUser()) {
 			PortalUtil.sendError(
-				HttpServletResponse.SC_UNAUTHORIZED, (Exception)t,
+				HttpServletResponse.SC_UNAUTHORIZED, (Exception)throwable,
 				httpServletRequest, httpServletResponse);
 
 			return;
@@ -265,9 +262,8 @@ public class GetFileActionHelper {
 
 		String redirect = PortalUtil.getPathMain() + "/portal/login";
 
-		String currentURL = PortalUtil.getCurrentURL(httpServletRequest);
-
-		redirect = HttpUtil.addParameter(redirect, "redirect", currentURL);
+		redirect = HttpUtil.addParameter(
+			redirect, "redirect", PortalUtil.getCurrentURL(httpServletRequest));
 
 		httpServletResponse.sendRedirect(redirect);
 	}

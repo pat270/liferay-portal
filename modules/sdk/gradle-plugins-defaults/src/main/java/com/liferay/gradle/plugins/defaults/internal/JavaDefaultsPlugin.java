@@ -39,10 +39,8 @@ public class JavaDefaultsPlugin extends BaseDefaultsPlugin<JavaPlugin> {
 	public static final Plugin<Project> INSTANCE = new JavaDefaultsPlugin();
 
 	@Override
-	protected void configureDefaults(Project project, JavaPlugin javaPlugin) {
-		String portalVersion = PortalTools.getPortalVersion(project);
-
-		_configureTasksJar(project, portalVersion);
+	protected void applyPluginDefaults(Project project, JavaPlugin javaPlugin) {
+		_configureTasksJar(project, PortalTools.getPortalVersion(project));
 
 		_configureTasksTest(project);
 	}

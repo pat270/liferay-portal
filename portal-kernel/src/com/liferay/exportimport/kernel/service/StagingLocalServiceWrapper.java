@@ -16,8 +16,6 @@ package com.liferay.exportimport.kernel.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link StagingLocalService}.
  *
@@ -25,9 +23,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see StagingLocalService
  * @generated
  */
-@ProviderType
 public class StagingLocalServiceWrapper
-	implements StagingLocalService, ServiceWrapper<StagingLocalService> {
+	implements ServiceWrapper<StagingLocalService>, StagingLocalService {
 
 	public StagingLocalServiceWrapper(StagingLocalService stagingLocalService) {
 		_stagingLocalService = stagingLocalService;
@@ -117,21 +114,6 @@ public class StagingLocalServiceWrapper
 		return _stagingLocalService.getOSGiServiceIdentifier();
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.exportimport.kernel.lar.MissingReferences
-			publishStagingRequest(
-				long userId, long stagingRequestId, boolean privateLayout,
-				java.util.Map<String, String[]> parameterMap)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _stagingLocalService.publishStagingRequest(
-			userId, stagingRequestId, privateLayout, parameterMap);
-	}
-
 	@Override
 	public com.liferay.exportimport.kernel.lar.MissingReferences
 			publishStagingRequest(
@@ -151,21 +133,6 @@ public class StagingLocalServiceWrapper
 
 		_stagingLocalService.updateStagingRequest(
 			userId, stagingRequestId, fileName, bytes);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #publishStagingRequest(long, long, boolean, Map)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.exportimport.kernel.lar.MissingReferences
-		validateStagingRequest(
-			long userId, long stagingRequestId, boolean privateLayout,
-			java.util.Map<String, String[]> parameterMap) {
-
-		return _stagingLocalService.validateStagingRequest(
-			userId, stagingRequestId, privateLayout, parameterMap);
 	}
 
 	@Override

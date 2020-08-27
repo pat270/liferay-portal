@@ -18,6 +18,7 @@ import com.liferay.announcements.kernel.model.AnnouncementsFlag;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AnnouncementsFlag in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AnnouncementsFlagCacheModel
-	implements CacheModel<AnnouncementsFlag>, Externalizable {
+	implements CacheModel<AnnouncementsFlag>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AnnouncementsFlagCacheModel)) {
+		if (!(object instanceof AnnouncementsFlagCacheModel)) {
 			return false;
 		}
 
 		AnnouncementsFlagCacheModel announcementsFlagCacheModel =
-			(AnnouncementsFlagCacheModel)obj;
+			(AnnouncementsFlagCacheModel)object;
 
-		if (flagId == announcementsFlagCacheModel.flagId) {
+		if ((flagId == announcementsFlagCacheModel.flagId) &&
+			(mvccVersion == announcementsFlagCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,28 @@ public class AnnouncementsFlagCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, flagId);
+		int hashCode = HashUtil.hash(0, flagId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(13);
+		StringBundler sb = new StringBundler(15);
 
-		sb.append("{flagId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", flagId=");
 		sb.append(flagId);
 		sb.append(", companyId=");
 		sb.append(companyId);
@@ -89,6 +103,7 @@ public class AnnouncementsFlagCacheModel
 		AnnouncementsFlagImpl announcementsFlagImpl =
 			new AnnouncementsFlagImpl();
 
+		announcementsFlagImpl.setMvccVersion(mvccVersion);
 		announcementsFlagImpl.setFlagId(flagId);
 		announcementsFlagImpl.setCompanyId(companyId);
 		announcementsFlagImpl.setUserId(userId);
@@ -110,6 +125,8 @@ public class AnnouncementsFlagCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
 		flagId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
@@ -124,6 +141,8 @@ public class AnnouncementsFlagCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		objectOutput.writeLong(flagId);
 
 		objectOutput.writeLong(companyId);
@@ -136,6 +155,7 @@ public class AnnouncementsFlagCacheModel
 		objectOutput.writeInt(value);
 	}
 
+	public long mvccVersion;
 	public long flagId;
 	public long companyId;
 	public long userId;

@@ -14,14 +14,11 @@
 
 package com.liferay.portal.tools.service.builder.test.exception;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchUADPartialEntryException extends NoSuchModelException {
 
 	public NoSuchUADPartialEntryException() {
@@ -31,12 +28,12 @@ public class NoSuchUADPartialEntryException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchUADPartialEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchUADPartialEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchUADPartialEntryException(Throwable cause) {
-		super(cause);
+	public NoSuchUADPartialEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

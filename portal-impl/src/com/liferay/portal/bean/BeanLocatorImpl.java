@@ -73,8 +73,8 @@ public class BeanLocatorImpl implements BeanLocator {
 		try {
 			return _applicationContext.getType(name);
 		}
-		catch (Exception e) {
-			throw new BeanLocatorException(e);
+		catch (Exception exception) {
+			throw new BeanLocatorException(exception);
 		}
 	}
 
@@ -85,11 +85,11 @@ public class BeanLocatorImpl implements BeanLocator {
 		try {
 			return doLocate(clazz);
 		}
-		catch (SecurityException se) {
-			throw se;
+		catch (SecurityException securityException) {
+			throw securityException;
 		}
-		catch (Exception e) {
-			throw new BeanLocatorException(e);
+		catch (Exception exception) {
+			throw new BeanLocatorException(exception);
 		}
 	}
 
@@ -98,29 +98,12 @@ public class BeanLocatorImpl implements BeanLocator {
 		try {
 			return doLocate(name);
 		}
-		catch (SecurityException se) {
-			throw se;
+		catch (SecurityException securityException) {
+			throw securityException;
 		}
-		catch (Exception e) {
-			throw new BeanLocatorException(e);
+		catch (Exception exception) {
+			throw new BeanLocatorException(exception);
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public void setPACLServletContextName(String paclServletContextName) {
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public interface PACL {
-
-		public Object getBean(Object bean, ClassLoader classLoader);
-
 	}
 
 	/**

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class DDMFormInstancePersistenceTest {
 
 		DDMFormInstance newDDMFormInstance = _persistence.create(pk);
 
+		newDDMFormInstance.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMFormInstance.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMFormInstance.setUuid(RandomTestUtil.randomString());
 
 		newDDMFormInstance.setGroupId(RandomTestUtil.nextLong());
@@ -160,6 +164,12 @@ public class DDMFormInstancePersistenceTest {
 		DDMFormInstance existingDDMFormInstance = _persistence.findByPrimaryKey(
 			newDDMFormInstance.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMFormInstance.getMvccVersion(),
+			newDDMFormInstance.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMFormInstance.getCtCollectionId(),
+			newDDMFormInstance.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMFormInstance.getUuid(), newDDMFormInstance.getUuid());
 		Assert.assertEquals(
@@ -279,11 +289,12 @@ public class DDMFormInstancePersistenceTest {
 
 	protected OrderByComparator<DDMFormInstance> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMFormInstance", "uuid", true, "formInstanceId", true, "groupId",
-			true, "companyId", true, "userId", true, "userName", true,
-			"versionUserId", true, "versionUserName", true, "createDate", true,
-			"modifiedDate", true, "structureId", true, "version", true, "name",
-			true, "description", true, "lastPublishDate", true);
+			"DDMFormInstance", "mvccVersion", true, "ctCollectionId", true,
+			"uuid", true, "formInstanceId", true, "groupId", true, "companyId",
+			true, "userId", true, "userName", true, "versionUserId", true,
+			"versionUserName", true, "createDate", true, "modifiedDate", true,
+			"structureId", true, "version", true, "name", true,
+			"lastPublishDate", true);
 	}
 
 	@Test
@@ -506,26 +517,71 @@ public class DDMFormInstancePersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMFormInstance existingDDMFormInstance = _persistence.findByPrimaryKey(
-			newDDMFormInstance.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDDMFormInstance.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMFormInstance.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDDMFormInstance, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMFormInstance newDDMFormInstance = addDDMFormInstance();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMFormInstance.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"formInstanceId", newDDMFormInstance.getFormInstanceId()));
+
+		List<DDMFormInstance> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMFormInstance ddmFormInstance) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMFormInstance.getGroupId()),
+			ddmFormInstance.getUuid(),
+			ReflectionTestUtil.invoke(
+				ddmFormInstance, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(ddmFormInstance.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMFormInstance, "getOriginalGroupId",
-				new Class<?>[0]));
+				ddmFormInstance, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected DDMFormInstance addDDMFormInstance() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMFormInstance ddmFormInstance = _persistence.create(pk);
+
+		ddmFormInstance.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmFormInstance.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmFormInstance.setUuid(RandomTestUtil.randomString());
 

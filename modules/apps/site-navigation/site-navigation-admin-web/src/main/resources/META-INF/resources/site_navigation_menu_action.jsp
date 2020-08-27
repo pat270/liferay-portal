@@ -50,17 +50,17 @@ PortletURL portletURL = renderResponse.createRenderURL();
 			<portlet:param name="siteNavigationMenuId" value="<%= String.valueOf(siteNavigationMenu.getSiteNavigationMenuId()) %>" />
 		</portlet:actionURL>
 
-		<%
-		Map<String, Object> updateSiteNavigationMenuData = new HashMap<String, Object>();
-
-		updateSiteNavigationMenuData.put("form-submit-url", updateSiteNavigationMenuURL.toString());
-		updateSiteNavigationMenuData.put("id-field-value", siteNavigationMenu.getSiteNavigationMenuId());
-		updateSiteNavigationMenuData.put("main-field-value", siteNavigationMenu.getName());
-		%>
-
 		<liferay-ui:icon
-			cssClass='<%= renderResponse.getNamespace() + "update-site-navigation-menu-action-option" %>'
-			data="<%= updateSiteNavigationMenuData %>"
+			cssClass='<%= liferayPortletResponse.getNamespace() + "update-site-navigation-menu-action-option" %>'
+			data='<%=
+				HashMapBuilder.<String, Object>put(
+					"form-submit-url", updateSiteNavigationMenuURL.toString()
+				).put(
+					"id-field-value", siteNavigationMenu.getSiteNavigationMenuId()
+				).put(
+					"main-field-value", siteNavigationMenu.getName()
+				).build()
+			%>'
 			message="rename"
 			url="javascript:;"
 		/>
@@ -107,7 +107,7 @@ PortletURL portletURL = renderResponse.createRenderURL();
 
 		<liferay-ui:icon
 			icon='<%= (siteNavigationMenu.getType() == SiteNavigationConstants.TYPE_PRIMARY) ? "check" : StringPool.BLANK %>'
-			iconCssClass="pull-right"
+			iconCssClass="float-right"
 			markupView="lexicon"
 			message="primary-navigation"
 			onClick="<%= taglibOnClickPrimary %>"
@@ -127,7 +127,7 @@ PortletURL portletURL = renderResponse.createRenderURL();
 
 		<liferay-ui:icon
 			icon='<%= (siteNavigationMenu.getType() == SiteNavigationConstants.TYPE_SECONDARY) ? "check" : StringPool.BLANK %>'
-			iconCssClass="pull-right"
+			iconCssClass="float-right"
 			markupView="lexicon"
 			message="secondary-navigation"
 			onClick="<%= taglibOnClickSecondary %>"
@@ -147,7 +147,7 @@ PortletURL portletURL = renderResponse.createRenderURL();
 
 		<liferay-ui:icon
 			icon='<%= (siteNavigationMenu.getType() == SiteNavigationConstants.TYPE_SOCIAL) ? "check" : StringPool.BLANK %>'
-			iconCssClass="pull-right"
+			iconCssClass="float-right"
 			markupView="lexicon"
 			message="social-navigation"
 			onClick="<%= taglibOnClickSocial %>"

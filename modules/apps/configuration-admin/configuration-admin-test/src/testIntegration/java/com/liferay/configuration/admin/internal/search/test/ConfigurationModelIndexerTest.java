@@ -29,7 +29,9 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -39,7 +41,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,8 +84,8 @@ public class ConfigurationModelIndexerTest {
 				"ConfigurationModel");
 
 		_configurationModelConstructor = configurationModelClass.getConstructor(
-			ExtendedObjectClassDefinition.class, Configuration.class,
-			String.class, String.class, boolean.class);
+			String.class, String.class, Configuration.class,
+			ExtendedObjectClassDefinition.class, boolean.class);
 	}
 
 	@After
@@ -100,10 +101,11 @@ public class ConfigurationModelIndexerTest {
 
 	@Test
 	public void testLocalizedAttributes() throws Exception {
-		Map<String, String> extensionAttributes = new HashMap<>();
-
-		extensionAttributes.put("factoryInstanceLabelAttribute", "companyId");
-		extensionAttributes.put("scope", Scope.COMPANY.toString());
+		Map<String, String> extensionAttributes = HashMapBuilder.put(
+			"factoryInstanceLabelAttribute", "companyId"
+		).put(
+			"scope", Scope.COMPANY.toString()
+		).build();
 
 		ExtendedAttributeDefinition[] extendedAttributeDefinitions = {
 			new SimpleExtendedAttributeDefinition(
@@ -117,8 +119,8 @@ public class ConfigurationModelIndexerTest {
 				extendedAttributeDefinitions, extensionAttributes);
 
 		Object configurationModel = _configurationModelConstructor.newInstance(
-			extendedObjectClassDefinition, null,
-			"com.liferay.configuration.admin.web", StringPool.QUESTION, true);
+			StringPool.QUESTION, "com.liferay.configuration.admin.web", null,
+			extendedObjectClassDefinition, true);
 
 		Document document = _indexer.getDocument(configurationModel);
 
@@ -145,24 +147,27 @@ public class ConfigurationModelIndexerTest {
 		_assertSearchResults();
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	private Configuration _addCompanyFactoryConfiguration() throws Exception {
 		Configuration configuration = OSGiServiceUtil.callService(
 			_bundleContext, ConfigurationAdmin.class,
 			configurationAdmin -> configurationAdmin.createFactoryConfiguration(
 				_PID, StringPool.QUESTION));
 
-		Map<String, String> extensionAttributes = new HashMap<>();
-
-		extensionAttributes.put("factoryInstanceLabelAttribute", "companyId");
-		extensionAttributes.put("scope", Scope.COMPANY.toString());
-
 		ExtendedObjectClassDefinition extendedObjectClassDefinition =
 			new SimpleExtendedObjectClassDefinition(
-				configuration, extensionAttributes);
+				configuration,
+				HashMapBuilder.put(
+					"factoryInstanceLabelAttribute", "companyId"
+				).put(
+					"scope", Scope.COMPANY.toString()
+				).build());
 
 		Object configurationModel = _configurationModelConstructor.newInstance(
-			extendedObjectClassDefinition, configuration,
-			_bundle.getSymbolicName(), StringPool.QUESTION, true);
+			StringPool.QUESTION, _bundle.getSymbolicName(), configuration,
+			extendedObjectClassDefinition, true);
 
 		Document document = _indexer.getDocument(configurationModel);
 
@@ -204,11 +209,11 @@ public class ConfigurationModelIndexerTest {
 
 	private Bundle _bundle;
 	private BundleContext _bundleContext;
-	private Constructor _configurationModelConstructor;
+	private Constructor<?> _configurationModelConstructor;
 	private final List<Document> _documents = new ArrayList<>();
 
 	@Inject(filter = "component.name=*.ConfigurationModelIndexer")
-	private Indexer _indexer;
+	private Indexer<Object> _indexer;
 
 	@Inject
 	private IndexWriterHelper _indexWriterHelper;

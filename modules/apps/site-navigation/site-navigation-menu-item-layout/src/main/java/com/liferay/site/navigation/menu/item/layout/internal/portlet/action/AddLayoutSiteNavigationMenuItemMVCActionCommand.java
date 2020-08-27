@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -43,8 +44,6 @@ import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -76,7 +75,7 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 
 		String type = ParamUtil.getString(actionRequest, "type");
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			SiteNavigationMenuItemUtil.getSiteNavigationMenuItemProperties(
 				actionRequest, "TypeSettingsProperties--");
 
@@ -84,7 +83,7 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 			actionRequest);
 
 		List<String> layoutUUIDs = StringUtil.split(
-			typeSettingsProperties.getProperty("layoutUuid"));
+			typeSettingsUnicodeProperties.getProperty("layoutUuid"));
 
 		Map<Long, SiteNavigationMenuItem> layoutSiteNavigationMenuItemMap =
 			new HashMap<>();
@@ -94,9 +93,9 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 		try {
 			for (String layoutUuid : layoutUUIDs) {
 				long groupId = GetterUtil.getLong(
-					typeSettingsProperties.get("groupId"));
+					typeSettingsUnicodeProperties.get("groupId"));
 				boolean privateLayout = GetterUtil.getBoolean(
-					typeSettingsProperties.get("privateLayout"));
+					typeSettingsUnicodeProperties.get("privateLayout"));
 
 				Layout layout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
 					layoutUuid, groupId, privateLayout);
@@ -105,21 +104,22 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 					continue;
 				}
 
-				UnicodeProperties curTypeSettingsProperties =
+				UnicodeProperties curTypeSettingsUnicodeProperties =
 					new UnicodeProperties(true);
 
-				curTypeSettingsProperties.setProperty(
+				curTypeSettingsUnicodeProperties.setProperty(
 					"groupId", String.valueOf(groupId));
-				curTypeSettingsProperties.setProperty("layoutUuid", layoutUuid);
-				curTypeSettingsProperties.setProperty(
+				curTypeSettingsUnicodeProperties.setProperty(
+					"layoutUuid", layoutUuid);
+				curTypeSettingsUnicodeProperties.setProperty(
 					"privateLayout", String.valueOf(privateLayout));
-				curTypeSettingsProperties.setProperty(
+				curTypeSettingsUnicodeProperties.setProperty(
 					"title", layout.getName(themeDisplay.getLocale()));
 
 				SiteNavigationMenuItem siteNavigationMenuItem =
 					_siteNavigationMenuItemService.addSiteNavigationMenuItem(
 						themeDisplay.getScopeGroupId(), siteNavigationMenuId, 0,
-						type, curTypeSettingsProperties.toString(),
+						type, curTypeSettingsUnicodeProperties.toString(),
 						serviceContext);
 
 				layoutSiteNavigationMenuItemMap.put(
@@ -151,17 +151,27 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 					layout.getPriority());
 			}
 
-			jsonObject.put(
-				"siteNavigationMenuItemId", layoutSiteNavigationMenuItemMap);
+			if (MapUtil.isEmpty(layoutSiteNavigationMenuItemMap)) {
+				jsonObject.put(
+					"errorMessage",
+					LanguageUtil.get(
+						_portal.getHttpServletRequest(actionRequest),
+						"please-choose-at-least-one-page"));
+			}
+			else {
+				jsonObject.put(
+					"siteNavigationMenuItemId",
+					layoutSiteNavigationMenuItemMap);
+			}
 		}
-		catch (SiteNavigationMenuItemNameException snmine) {
-			HttpServletRequest httpServletRequest =
-				_portal.getHttpServletRequest(actionRequest);
+		catch (SiteNavigationMenuItemNameException
+					siteNavigationMenuItemNameException) {
 
 			jsonObject.put(
 				"errorMessage",
 				LanguageUtil.get(
-					httpServletRequest, "an-unexpected-error-occurred"));
+					_portal.getHttpServletRequest(actionRequest),
+					"an-unexpected-error-occurred"));
 		}
 
 		JSONPortletResponseUtil.writeJSON(

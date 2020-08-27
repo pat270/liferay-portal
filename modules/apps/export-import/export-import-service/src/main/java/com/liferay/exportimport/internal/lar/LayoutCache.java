@@ -33,12 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Charles May
  */
-@ProviderType
 public class LayoutCache {
 
 	public Role getNameRole(long companyId, String roleName)
@@ -52,12 +49,12 @@ public class LayoutCache {
 
 				nameRolesMap.put(roleName, role);
 			}
-			catch (NoSuchRoleException nsre) {
+			catch (NoSuchRoleException noSuchRoleException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsre, nsre);
+					_log.debug(noSuchRoleException, noSuchRoleException);
 				}
 			}
 		}
@@ -77,12 +74,12 @@ public class LayoutCache {
 
 				uuidRolesMap.put(uuid, role);
 			}
-			catch (NoSuchRoleException nsre) {
+			catch (NoSuchRoleException noSuchRoleException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsre, nsre);
+					_log.debug(noSuchRoleException, noSuchRoleException);
 				}
 			}
 		}

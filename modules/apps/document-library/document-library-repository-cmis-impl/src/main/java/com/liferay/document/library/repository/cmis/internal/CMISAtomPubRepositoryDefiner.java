@@ -28,7 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = RepositoryDefiner.class)
+@Component(service = RepositoryDefiner.class)
 public class CMISAtomPubRepositoryDefiner extends BaseCMISRepositoryDefiner {
 
 	public CMISAtomPubRepositoryDefiner() {
@@ -69,7 +69,7 @@ public class CMISAtomPubRepositoryDefiner extends BaseCMISRepositoryDefiner {
 	}
 
 	@Reference(
-		target = "(repository.target.class.name=" + CMISRepositoryConstants.CMIS_ATOMPUB_REPOSITORY_CLASSNAME + ")",
+		target = "(repository.target.class.name=" + CMISRepositoryConstants.CMIS_ATOMPUB_REPOSITORY_CLASS_NAME + ")",
 		unbind = "-"
 	)
 	protected void setRepositoryFactory(RepositoryFactory repositoryFactory) {

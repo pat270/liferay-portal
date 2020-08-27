@@ -37,10 +37,11 @@ import javax.servlet.http.HttpServletRequest;
 public class GroupPortletRatingsDefinitionDisplayContext {
 
 	public GroupPortletRatingsDefinitionDisplayContext(
-		UnicodeProperties groupTypeSettings,
+		UnicodeProperties groupTypeSettingsUnicodeProperties,
 		HttpServletRequest httpServletRequest) {
 
-		_populateRatingsTypeMaps(groupTypeSettings, httpServletRequest);
+		_populateRatingsTypeMaps(
+			groupTypeSettingsUnicodeProperties, httpServletRequest);
 	}
 
 	public Map<String, Map<String, RatingsType>> getGroupRatingsTypeMaps() {
@@ -48,7 +49,7 @@ public class GroupPortletRatingsDefinitionDisplayContext {
 	}
 
 	private void _populateRatingsTypeMaps(
-		UnicodeProperties groupTypeSettings,
+		UnicodeProperties groupTypeSettingsUnicodeProperties,
 		HttpServletRequest httpServletRequest) {
 
 		Map<String, PortletRatingsDefinitionValues>
@@ -80,19 +81,17 @@ public class GroupPortletRatingsDefinitionDisplayContext {
 
 			String className = entry.getKey();
 
-			Map<String, RatingsType> ratingsTypeMap = new HashMap<>();
-
-			String propertyKey = RatingsDataTransformerUtil.getPropertyKey(
-				className);
-
 			String groupRatingsTypeString = PropertiesParamUtil.getString(
-				groupTypeSettings, httpServletRequest, propertyKey);
+				groupTypeSettingsUnicodeProperties, httpServletRequest,
+				RatingsDataTransformerUtil.getPropertyKey(className));
 
 			RatingsType ratingsType = null;
 
 			if (Validator.isNotNull(groupRatingsTypeString)) {
 				ratingsType = RatingsType.parse(groupRatingsTypeString);
 			}
+
+			Map<String, RatingsType> ratingsTypeMap = new HashMap<>();
 
 			ratingsTypeMap.put(className, ratingsType);
 

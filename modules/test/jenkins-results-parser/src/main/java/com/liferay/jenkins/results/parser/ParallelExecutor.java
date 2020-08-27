@@ -32,6 +32,7 @@ public class ParallelExecutor<T> {
 		Collection<Callable<T>> callables, ExecutorService executorService) {
 
 		_callables = callables;
+
 		_executorService = executorService;
 
 		if (_executorService == null) {
@@ -57,8 +58,8 @@ public class ParallelExecutor<T> {
 				try {
 					results.add(future.get());
 				}
-				catch (ExecutionException | InterruptedException e) {
-					throw new RuntimeException(e);
+				catch (ExecutionException | InterruptedException exception) {
+					throw new RuntimeException(exception);
 				}
 			}
 

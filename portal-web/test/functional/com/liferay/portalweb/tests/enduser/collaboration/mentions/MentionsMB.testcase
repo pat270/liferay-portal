@@ -1,5 +1,7 @@
 @component-name = "portal-collaboration"
 definition {
+
+	property custom.properties = "jsonws.web.service.paths.excludes=";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Mentions";
@@ -15,15 +17,20 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		User.editPasswordCP(
-			password = "password",
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		User.logoutPG();
+
+		User.loginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		User.logoutPG();
+
+		User.loginPG();
 	}
 
 	tearDown {
@@ -47,7 +54,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Mentions.addMentionViaMessageBoardThread(
@@ -59,7 +65,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.gotoCP(threadSubject = "Thread Subject");
@@ -75,7 +80,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.addCP(
@@ -86,7 +90,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Mentions.addMentionViaMessageBoardsReply(
@@ -99,7 +102,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.gotoCP(threadSubject = "Thread Subject");
@@ -123,7 +125,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.addCP(
@@ -134,29 +135,28 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Mentions.addMentionViaMessageBoardThreadEdit(
 			mentionsUserFullName = "userfn userln",
 			mentionsUserScreenName = "usersn",
-			threadBody = "Thread Body",
+			threadBody = "Thread Body Edit",
 			threadSubject = "Thread Subject");
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		MessageboardsThread.viewCP(
 			replyCount = "0",
-			threadBody = "Thread Body",
+			threadBody = "Thread Body Edit",
 			threadSubject = "Thread Subject");
 
 		Mentions.viewMentionTagLink(
 			mentionsUserFullName = "userfn userln",
 			mentionsUserScreenName = "usersn");
 	}
+
 }

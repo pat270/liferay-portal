@@ -118,7 +118,7 @@ public class FileUtil {
 
 				@Override
 				public FileVisitResult postVisitDirectory(
-						Path path, IOException ioe)
+						Path path, IOException ioException)
 					throws IOException {
 
 					Files.delete(path);
@@ -384,7 +384,7 @@ public class FileUtil {
 
 	private static void _unsevenZip(
 			Path sevenZipPath, Path destinationDirPath, int stripComponents)
-		throws IOException {
+		throws Exception {
 
 		try (SevenZFile sevenZFile = new SevenZFile(sevenZipPath.toFile())) {
 			SevenZArchiveEntry sevenZArchiveEntry = null;
@@ -418,7 +418,7 @@ public class FileUtil {
 
 	private static void _untar(
 			Path tarPath, Path destinationDirPath, int stripComponents)
-		throws IOException {
+		throws Exception {
 
 		try (InputStream inputStream = Files.newInputStream(tarPath);
 			TarArchiveInputStream tarArchiveInputStream =

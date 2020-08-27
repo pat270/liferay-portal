@@ -15,6 +15,7 @@
 package com.liferay.portal.search.web.internal.custom.facet.display.context;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
@@ -28,15 +29,21 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Wade Cao
  */
 public class CustomFacetDisplayBuilder {
 
-	public CustomFacetDisplayContext build() {
+	public CustomFacetDisplayBuilder(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
+	}
+
+	public CustomFacetDisplayContext build() throws ConfigurationException {
 		boolean nothingSelected = isNothingSelected();
 
-		List<TermCollector> termCollectors = getTermsCollectors();
+		List<TermCollector> termCollectors = getTermCollectors();
 
 		boolean renderNothing = false;
 
@@ -45,7 +52,7 @@ public class CustomFacetDisplayBuilder {
 		}
 
 		CustomFacetDisplayContext customFacetDisplayContext =
-			new CustomFacetDisplayContext();
+			new CustomFacetDisplayContext(_httpServletRequest);
 
 		customFacetDisplayContext.setDisplayCaption(getDisplayCaption());
 		customFacetDisplayContext.setNothingSelected(nothingSelected);
@@ -211,7 +218,7 @@ public class CustomFacetDisplayBuilder {
 		return _parameterValues.get(0);
 	}
 
-	protected List<TermCollector> getTermsCollectors() {
+	protected List<TermCollector> getTermCollectors() {
 		if (_facet != null) {
 			FacetCollector facetCollector = _facet.getFacetCollector();
 
@@ -244,6 +251,7 @@ public class CustomFacetDisplayBuilder {
 	private String _fieldToAggregate;
 	private boolean _frequenciesVisible;
 	private int _frequencyThreshold;
+	private final HttpServletRequest _httpServletRequest;
 	private int _maxTerms;
 	private String _parameterName;
 	private List<String> _parameterValues = Collections.emptyList();

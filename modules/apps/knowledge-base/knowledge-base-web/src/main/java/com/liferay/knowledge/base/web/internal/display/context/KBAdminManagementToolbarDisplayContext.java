@@ -17,6 +17,7 @@ package com.liferay.knowledge.base.web.internal.display.context;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.constants.KBFolderConstants;
 import com.liferay.knowledge.base.model.KBArticle;
@@ -26,11 +27,13 @@ import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.KBArticleServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
 import com.liferay.knowledge.base.service.KBTemplateServiceUtil;
+import com.liferay.knowledge.base.web.internal.KBUtil;
 import com.liferay.knowledge.base.web.internal.search.EntriesChecker;
 import com.liferay.knowledge.base.web.internal.search.KBObjectsSearch;
 import com.liferay.knowledge.base.web.internal.security.permission.resource.AdminPermission;
 import com.liferay.knowledge.base.web.internal.security.permission.resource.KBArticlePermission;
 import com.liferay.knowledge.base.web.internal.security.permission.resource.KBFolderPermission;
+import com.liferay.knowledge.base.web.internal.util.comparator.KBOrderByComparatorAdapter;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -41,6 +44,7 @@ import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -50,7 +54,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,15 +72,16 @@ import javax.servlet.http.HttpServletRequest;
 public class KBAdminManagementToolbarDisplayContext {
 
 	public KBAdminManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest, RenderRequest renderRequest,
-			RenderResponse renderResponse, PortletConfig portletConfig)
+			RenderRequest renderRequest, RenderResponse renderResponse,
+			PortletConfig portletConfig)
 		throws PortalException, PortletException {
 
+		_httpServletRequest = httpServletRequest;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
-		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 		_portletConfig = portletConfig;
@@ -89,52 +93,45 @@ public class KBAdminManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteEntries");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteEntries");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
-	public List<String> getAvailableActionDropdownItems(KBArticle kbArticle)
+	public List<String> getAvailableActions(KBArticle kbArticle)
 		throws PortalException {
 
-		List<String> availableActionDropdownItems = new ArrayList<>();
-
-		PermissionChecker permissionChecker =
-			_themeDisplay.getPermissionChecker();
+		List<String> availableActions = new ArrayList<>();
 
 		if (KBArticlePermission.contains(
-				permissionChecker, kbArticle, ActionKeys.DELETE)) {
+				_themeDisplay.getPermissionChecker(), kbArticle,
+				ActionKeys.DELETE)) {
 
-			availableActionDropdownItems.add("deleteEntries");
+			availableActions.add("deleteEntries");
 		}
 
-		return availableActionDropdownItems;
+		return availableActions;
 	}
 
-	public List<String> getAvailableActionDropdownItems(KBFolder kbFolder)
+	public List<String> getAvailableActions(KBFolder kbFolder)
 		throws PortalException {
 
-		List<String> availableActionDropdownItems = new ArrayList<>();
-
-		PermissionChecker permissionChecker =
-			_themeDisplay.getPermissionChecker();
+		List<String> availableActions = new ArrayList<>();
 
 		if (KBFolderPermission.contains(
-				permissionChecker, kbFolder, ActionKeys.DELETE)) {
+				_themeDisplay.getPermissionChecker(), kbFolder,
+				ActionKeys.DELETE)) {
 
-			availableActionDropdownItems.add("deleteEntries");
+			availableActions.add("deleteEntries");
 		}
 
-		return availableActionDropdownItems;
+		return availableActions;
 	}
 
 	public CreationMenu getCreationMenu() throws PortalException {
@@ -233,14 +230,14 @@ public class KBAdminManagementToolbarDisplayContext {
 						LanguageUtil.get(_httpServletRequest, "basic-article"));
 				});
 
-			OrderByComparator<KBTemplate> obc =
+			OrderByComparator<KBTemplate> orderByComparator =
 				OrderByComparatorFactoryUtil.create(
 					"KBTemplate", "title", false);
 
 			List<KBTemplate> kbTemplates =
 				KBTemplateServiceUtil.getGroupKBTemplates(
 					_themeDisplay.getScopeGroupId(), QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS, obc);
+					QueryUtil.ALL_POS, orderByComparator);
 
 			if (!kbTemplates.isEmpty()) {
 				for (KBTemplate kbTemplate : kbTemplates) {
@@ -308,24 +305,20 @@ public class KBAdminManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
 			}
-		};
+		).build();
 	}
 
 	public String getOrderByType() {
 		return _searchContainer.getOrderByType();
 	}
 
-	public SearchContainer getSearchContainer() {
+	public SearchContainer<Object> getSearchContainer() {
 		return _searchContainer;
 	}
 
@@ -362,7 +355,7 @@ public class KBAdminManagementToolbarDisplayContext {
 		return Validator.isNull(keywords);
 	}
 
-	private SearchContainer _createSearchContainer()
+	private SearchContainer<Object> _createSearchContainer()
 		throws PortalException, PortletException {
 
 		long kbFolderClassNameId = PortalUtil.getClassNameId(
@@ -392,14 +385,23 @@ public class KBAdminManagementToolbarDisplayContext {
 		String keywords = _getKeywords();
 
 		if (Validator.isNotNull(keywords)) {
+			OrderByComparator<KBArticle> kbArticleOrderByComparator =
+				KBUtil.getKBArticleOrderByComparator(
+					_searchContainer.getOrderByCol(),
+					_searchContainer.getOrderByType());
+
+			_searchContainer.setOrderByComparator(
+				new KBOrderByComparatorAdapter<>(kbArticleOrderByComparator));
+
 			KBArticleSearchDisplay kbArticleSearchDisplay =
 				KBArticleServiceUtil.getKBArticleSearchDisplay(
 					_themeDisplay.getScopeGroupId(), keywords, keywords,
 					WorkflowConstants.STATUS_ANY, null, null, false, new int[0],
 					_searchContainer.getCur(), _searchContainer.getDelta(),
-					_searchContainer.getOrderByComparator());
+					kbArticleOrderByComparator);
 
-			_searchContainer.setResults(kbArticleSearchDisplay.getResults());
+			_searchContainer.setResults(
+				new ArrayList<>(kbArticleSearchDisplay.getResults()));
 			_searchContainer.setTotal(kbArticleSearchDisplay.getTotal());
 		}
 		else if (kbFolderView) {
@@ -415,16 +417,25 @@ public class KBAdminManagementToolbarDisplayContext {
 					_searchContainer.getOrderByComparator()));
 		}
 		else {
+			OrderByComparator<KBArticle> kbArticleOrderByComparator =
+				KBUtil.getKBArticleOrderByComparator(
+					_searchContainer.getOrderByCol(),
+					_searchContainer.getOrderByType());
+
+			_searchContainer.setOrderByComparator(
+				new KBOrderByComparatorAdapter<>(kbArticleOrderByComparator));
+
 			_searchContainer.setTotal(
 				KBArticleServiceUtil.getKBArticlesCount(
 					_themeDisplay.getScopeGroupId(), parentResourcePrimKey,
 					WorkflowConstants.STATUS_ANY));
 			_searchContainer.setResults(
-				KBArticleServiceUtil.getKBArticles(
-					_themeDisplay.getScopeGroupId(), parentResourcePrimKey,
-					WorkflowConstants.STATUS_ANY, _searchContainer.getStart(),
-					_searchContainer.getEnd(),
-					_searchContainer.getOrderByComparator()));
+				new ArrayList<>(
+					KBArticleServiceUtil.getKBArticles(
+						_themeDisplay.getScopeGroupId(), parentResourcePrimKey,
+						WorkflowConstants.STATUS_ANY,
+						_searchContainer.getStart(), _searchContainer.getEnd(),
+						kbArticleOrderByComparator)));
 		}
 
 		_searchContainer.setRowChecker(
@@ -460,12 +471,15 @@ public class KBAdminManagementToolbarDisplayContext {
 	private List<DropdownItem> _getOrderByDropdownItems() {
 		return new DropdownItemList() {
 			{
-				final Map<String, String> orderColumnsMap = new HashMap<>();
-
-				orderColumnsMap.put("modifiedDate", "modified-date");
-				orderColumnsMap.put("priority", "priority");
-				orderColumnsMap.put("title", "title");
-				orderColumnsMap.put("viewCount", "view-count");
+				final Map<String, String> orderColumnsMap = HashMapBuilder.put(
+					"modifiedDate", "modified-date"
+				).put(
+					"priority", "priority"
+				).put(
+					"title", "title"
+				).put(
+					"viewCount", "view-count"
+				).build();
 
 				String[] orderColumns = {
 					"priority", "modifiedDate", "title", "viewCount"
@@ -506,7 +520,7 @@ public class KBAdminManagementToolbarDisplayContext {
 	private final PortletConfig _portletConfig;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
-	private SearchContainer _searchContainer;
+	private SearchContainer<Object> _searchContainer;
 	private final ThemeDisplay _themeDisplay;
 
 }

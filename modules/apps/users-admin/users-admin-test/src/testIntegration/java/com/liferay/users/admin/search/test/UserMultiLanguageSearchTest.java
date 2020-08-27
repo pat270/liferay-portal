@@ -22,17 +22,18 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.users.admin.test.util.search.GroupBlueprint;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -63,6 +64,7 @@ public class UserMultiLanguageSearchTest {
 		setUpIndexerFixture();
 
 		setUpUserSearchFixture();
+
 		_defaultLocale = LocaleThreadLocal.getDefaultLocale();
 	}
 
@@ -119,6 +121,9 @@ public class UserMultiLanguageSearchTest {
 		assertFieldValues(_PREFIX, locale, map, keywords);
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected void assertFieldValues(
 		String prefix, Locale locale, Map<String, String> map,
 		String searchTerm) {
@@ -160,12 +165,11 @@ public class UserMultiLanguageSearchTest {
 	protected UserSearchFixture userSearchFixture;
 
 	private Map<String, String> _getMapResult(String keywords) {
-		return new HashMap<String, String>() {
-			{
-				put(_PREFIX, keywords);
-				put(_PREFIX + "_sortable", keywords);
-			}
-		};
+		return HashMapBuilder.put(
+			_PREFIX, keywords
+		).put(
+			_PREFIX + "_sortable", keywords
+		).build();
 	}
 
 	private static final String _PREFIX = "firstName";

@@ -16,12 +16,9 @@ package com.liferay.portal.security.service.access.policy.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class RequiredSAPEntryException extends PortalException {
 
 	public RequiredSAPEntryException() {
@@ -31,12 +28,12 @@ public class RequiredSAPEntryException extends PortalException {
 		super(msg);
 	}
 
-	public RequiredSAPEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public RequiredSAPEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public RequiredSAPEntryException(Throwable cause) {
-		super(cause);
+	public RequiredSAPEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

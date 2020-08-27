@@ -23,16 +23,14 @@ import com.liferay.portal.kernel.security.auth.AccessControlContext;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
 import com.liferay.portal.kernel.servlet.ProtectedServletRequest;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.auth.AuthVerifierPipeline;
 import com.liferay.portal.servlet.filters.BasePortalFilter;
 import com.liferay.portal.util.PropsUtil;
-
-import java.io.IOException;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -60,10 +58,10 @@ public class AuthVerifierFilter extends BasePortalFilter {
 	public void init(FilterConfig filterConfig) {
 		super.init(filterConfig);
 
-		Enumeration<String> enu = filterConfig.getInitParameterNames();
+		Enumeration<String> enumeration = filterConfig.getInitParameterNames();
 
-		while (enu.hasMoreElements()) {
-			String name = enu.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			String value = filterConfig.getInitParameter(name);
 
@@ -207,7 +205,7 @@ public class AuthVerifierFilter extends BasePortalFilter {
 	private boolean _isAccessAllowed(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
-		throws IOException {
+		throws Exception {
 
 		String remoteAddr = httpServletRequest.getRemoteAddr();
 
@@ -235,9 +233,9 @@ public class AuthVerifierFilter extends BasePortalFilter {
 	private boolean _isApplySSL(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
-		throws IOException {
+		throws Exception {
 
-		if (!_httpsRequired || httpServletRequest.isSecure()) {
+		if (!_httpsRequired || PortalUtil.isSecure(httpServletRequest)) {
 			return false;
 		}
 
@@ -249,13 +247,11 @@ public class AuthVerifierFilter extends BasePortalFilter {
 
 		StringBundler sb = new StringBundler(5);
 
-		sb.append(Http.HTTPS_WITH_SLASH);
-		sb.append(httpServletRequest.getServerName());
-		sb.append(httpServletRequest.getServletPath());
+		sb.append(PortalUtil.getPortalURL(httpServletRequest, true));
+		sb.append(PortalUtil.getPathContext(httpServletRequest));
+		sb.append(httpServletRequest.getRequestURI());
 
-		String queryString = httpServletRequest.getQueryString();
-
-		if (Validator.isNotNull(queryString)) {
+		if (Validator.isNotNull(httpServletRequest.getQueryString())) {
 			sb.append(StringPool.QUESTION);
 			sb.append(httpServletRequest.getQueryString());
 		}

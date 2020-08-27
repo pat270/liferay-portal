@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * This class is used by SOAP remote services, specifically {@link com.liferay.portal.workflow.kaleo.service.http.KaleoDefinitionServiceSoap}.
+ * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class KaleoDefinitionSoap implements Serializable {
 
 	public static KaleoDefinitionSoap toSoapModel(KaleoDefinition model) {
@@ -46,6 +45,7 @@ public class KaleoDefinitionSoap implements Serializable {
 		soapModel.setTitle(model.getTitle());
 		soapModel.setDescription(model.getDescription());
 		soapModel.setContent(model.getContent());
+		soapModel.setScope(model.getScope());
 		soapModel.setVersion(model.getVersion());
 		soapModel.setActive(model.isActive());
 
@@ -203,6 +203,14 @@ public class KaleoDefinitionSoap implements Serializable {
 		_content = content;
 	}
 
+	public String getScope() {
+		return _scope;
+	}
+
+	public void setScope(String scope) {
+		_scope = scope;
+	}
+
 	public int getVersion() {
 		return _version;
 	}
@@ -235,6 +243,7 @@ public class KaleoDefinitionSoap implements Serializable {
 	private String _title;
 	private String _description;
 	private String _content;
+	private String _scope;
 	private int _version;
 	private boolean _active;
 

@@ -1,17 +1,20 @@
 Bundle-Name: Liferay Portal Search API
 Bundle-SymbolicName: com.liferay.portal.search.api
-Bundle-Version: 4.0.0
+Bundle-Version: 4.11.0
 Export-Package:\
 	com.liferay.portal.search.aggregation,\
 	com.liferay.portal.search.aggregation.bucket,\
 	com.liferay.portal.search.aggregation.metrics,\
 	com.liferay.portal.search.aggregation.pipeline,\
 	com.liferay.portal.search.analysis,\
+	com.liferay.portal.search.asset,\
 	com.liferay.portal.search.batch,\
 	com.liferay.portal.search.buffer,\
+	com.liferay.portal.search.ccr,\
 	com.liferay.portal.search.configuration,\
 	com.liferay.portal.search.constants,\
 	com.liferay.portal.search.contributor,\
+	com.liferay.portal.search.contributor.constants,\
 	com.liferay.portal.search.contributor.sort,\
 	com.liferay.portal.search.document,\
 	com.liferay.portal.search.engine,\
@@ -26,14 +29,17 @@ Export-Package:\
 	com.liferay.portal.search.facet.user,\
 	com.liferay.portal.search.filter,\
 	com.liferay.portal.search.geolocation,\
+	com.liferay.portal.search.groupby,\
 	com.liferay.portal.search.highlight,\
 	com.liferay.portal.search.hits,\
 	com.liferay.portal.search.index,\
 	com.liferay.portal.search.indexer,\
 	com.liferay.portal.search.legacy.document,\
+	com.liferay.portal.search.legacy.groupby,\
 	com.liferay.portal.search.legacy.searcher,\
 	com.liferay.portal.search.legacy.stats,\
 	com.liferay.portal.search.localization,\
+	com.liferay.portal.search.model.uid,\
 	com.liferay.portal.search.permission,\
 	com.liferay.portal.search.query,\
 	com.liferay.portal.search.query.field,\
@@ -41,6 +47,8 @@ Export-Package:\
 	com.liferay.portal.search.query.function.score,\
 	com.liferay.portal.search.query.geolocation,\
 	com.liferay.portal.search.query.util,\
+	com.liferay.portal.search.reindexer,\
+	com.liferay.portal.search.rescore,\
 	com.liferay.portal.search.script,\
 	com.liferay.portal.search.searcher,\
 	com.liferay.portal.search.significance,\
@@ -50,7 +58,7 @@ Export-Package:\
 	com.liferay.portal.search.summary,\
 	com.liferay.portal.search.synonym
 Import-Package:\
-	com.liferay.portal.kernel.search;version="[7.1.0,8.1.0)",\
+	com.liferay.portal.kernel.search;version="[8.1.0,9.3.0)",\
 	\
 	*
 -dsannotations-options: inherit

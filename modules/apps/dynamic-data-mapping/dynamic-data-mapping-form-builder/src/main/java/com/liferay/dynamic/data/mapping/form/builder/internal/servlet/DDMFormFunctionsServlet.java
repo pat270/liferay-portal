@@ -14,7 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.form.builder.internal.servlet;
 
-import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunctionFactory;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunctionTracker;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -36,7 +36,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,52 +61,45 @@ public class DDMFormFunctionsServlet extends BaseDDMFormBuilderServlet {
 	protected void doGet(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
-		throws IOException, ServletException {
+		throws IOException {
 
-		Map<String, DDMExpressionFunction> ddmExpressionFunctions = null;
+		Map<String, DDMExpressionFunctionFactory>
+			ddmExpressionFunctionFactories =
+				getDDMExpressionFunctionFactories();
 
-		try {
-			ddmExpressionFunctions = getDDMExpressionFunctions();
+		JSONArray jsonArray = toJSONArray(
+			ddmExpressionFunctionFactories.entrySet(),
+			LocaleUtil.fromLanguageId(
+				ParamUtil.getString(httpServletRequest, "languageId")));
 
-			String languageId = ParamUtil.getString(
-				httpServletRequest, "languageId");
+		httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
+		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 
-			JSONArray jsonArray = toJSONArray(
-				ddmExpressionFunctions.entrySet(),
-				LocaleUtil.fromLanguageId(languageId));
-
-			httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
-			httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-
-			ServletResponseUtil.write(
-				httpServletResponse, jsonArray.toJSONString());
-		}
-		finally {
-			if (ddmExpressionFunctions != null) {
-				_ddmExpressionFunctionTracker.ungetDDMExpressionFunctions(
-					ddmExpressionFunctions);
-			}
-		}
+		ServletResponseUtil.write(
+			httpServletResponse, jsonArray.toJSONString());
 	}
 
-	protected Map<String, DDMExpressionFunction> getDDMExpressionFunctions() {
+	protected Map<String, DDMExpressionFunctionFactory>
+		getDDMExpressionFunctionFactories() {
+
 		Set<String> functionNames = new HashSet<>();
 
 		functionNames.add("sum");
 
-		return _ddmExpressionFunctionTracker.getDDMExpressionFunctions(
+		return _ddmExpressionFunctionTracker.getDDMExpressionFunctionFactories(
 			functionNames);
 	}
 
 	protected JSONArray toJSONArray(
-		Set<Map.Entry<String, DDMExpressionFunction>> entries, Locale locale) {
+		Set<Map.Entry<String, DDMExpressionFunctionFactory>> entries,
+		Locale locale) {
 
 		JSONArray jsonArray = _jsonFactory.createJSONArray();
 
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			"content.Language", locale, getClass());
 
-		for (Map.Entry<String, DDMExpressionFunction> entry : entries) {
+		for (Map.Entry<String, DDMExpressionFunctionFactory> entry : entries) {
 			jsonArray.put(toJSONObject(entry, resourceBundle));
 		}
 
@@ -115,7 +107,7 @@ public class DDMFormFunctionsServlet extends BaseDDMFormBuilderServlet {
 	}
 
 	protected JSONObject toJSONObject(
-		Map.Entry<String, DDMExpressionFunction> entry,
+		Map.Entry<String, DDMExpressionFunctionFactory> entry,
 		ResourceBundle resourceBundle) {
 
 		JSONObject jsonObject = _jsonFactory.createJSONObject();

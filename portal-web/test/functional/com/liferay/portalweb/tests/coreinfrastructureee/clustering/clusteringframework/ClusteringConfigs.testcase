@@ -1,9 +1,10 @@
 @component-name = "portal-clustering"
 definition {
+
 	property app.server.bundles.size = "1";
 	property cluster.enabled = "true";
 	property portal.release = "true";
-	property portal.upstream = "true";
+	property portal.upstream = "quarantine";
 	property remote.elasticsearch.enabled = "true";
 	property test.assert.warning.exceptions = "true";
 	property testray.main.component.name = "Clustering";
@@ -30,6 +31,7 @@ definition {
 	@priority = "5"
 	test StartupJDBCPING {
 		property cluster.jdbc.ping = "true";
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "ClusteringConfigs#StartupJDBCPING";
 
 		Clustering.viewClusterStatusInConsole();
@@ -49,4 +51,5 @@ definition {
 
 		echo("Successfully logged in to both nodes on JDBC_PING");
 	}
+
 }

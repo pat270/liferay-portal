@@ -18,8 +18,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -30,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ResourcePermission
  * @generated
  */
-@ProviderType
 public class ResourcePermissionWrapper
 	extends BaseModelWrapper<ResourcePermission>
-	implements ResourcePermission, ModelWrapper<ResourcePermission> {
+	implements ModelWrapper<ResourcePermission>, ResourcePermission {
 
 	public ResourcePermissionWrapper(ResourcePermission resourcePermission) {
 		super(resourcePermission);
@@ -44,6 +43,7 @@ public class ResourcePermissionWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("resourcePermissionId", getResourcePermissionId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("name", getName());
@@ -64,6 +64,12 @@ public class ResourcePermissionWrapper
 
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
 		}
 
 		Long resourcePermissionId = (Long)attributes.get(
@@ -153,6 +159,16 @@ public class ResourcePermissionWrapper
 	@Override
 	public long getCompanyId() {
 		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the ct collection ID of this resource permission.
+	 *
+	 * @return the ct collection ID of this resource permission
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	/**
@@ -308,6 +324,16 @@ public class ResourcePermissionWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this resource permission.
+	 *
+	 * @param ctCollectionId the ct collection ID of this resource permission
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the mvcc version of this resource permission.
 	 *
 	 * @param mvccVersion the mvcc version of this resource permission
@@ -405,6 +431,20 @@ public class ResourcePermissionWrapper
 	@Override
 	public void setViewActionId(boolean viewActionId) {
 		model.setViewActionId(viewActionId);
+	}
+
+	@Override
+	public Map<String, Function<ResourcePermission, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<ResourcePermission, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

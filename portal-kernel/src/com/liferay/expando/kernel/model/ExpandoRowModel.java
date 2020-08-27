@@ -15,7 +15,9 @@
 package com.liferay.expando.kernel.model;
 
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -33,7 +35,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @ProviderType
-public interface ExpandoRowModel extends BaseModel<ExpandoRow>, ShardedModel {
+public interface ExpandoRowModel
+	extends BaseModel<ExpandoRow>, CTModel<ExpandoRow>, MVCCModel,
+			ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -46,6 +50,7 @@ public interface ExpandoRowModel extends BaseModel<ExpandoRow>, ShardedModel {
 	 *
 	 * @return the primary key of this expando row
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -53,7 +58,40 @@ public interface ExpandoRowModel extends BaseModel<ExpandoRow>, ShardedModel {
 	 *
 	 * @param primaryKey the primary key of this expando row
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this expando row.
+	 *
+	 * @return the mvcc version of this expando row
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this expando row.
+	 *
+	 * @param mvccVersion the mvcc version of this expando row
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this expando row.
+	 *
+	 * @return the ct collection ID of this expando row
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this expando row.
+	 *
+	 * @param ctCollectionId the ct collection ID of this expando row
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the row ID of this expando row.

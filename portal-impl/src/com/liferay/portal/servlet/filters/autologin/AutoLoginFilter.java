@@ -38,11 +38,9 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
-import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
-
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerList;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
@@ -66,14 +64,14 @@ public class AutoLoginFilter extends BasePortalFilter {
 			return null;
 		}
 
-		String jUsername = credentials[0];
+		String jUserName = credentials[0];
 		String jPassword = credentials[1];
 
-		if (Validator.isNull(jUsername) || Validator.isNull(jPassword)) {
+		if (Validator.isNull(jUserName) || Validator.isNull(jPassword)) {
 			return null;
 		}
 
-		long userId = GetterUtil.getLong(jUsername);
+		long userId = GetterUtil.getLong(jUserName);
 
 		if (userId <= 0) {
 			return null;
@@ -94,7 +92,7 @@ public class AutoLoginFilter extends BasePortalFilter {
 				httpServletRequest, session);
 		}
 
-		session.setAttribute("j_username", jUsername);
+		session.setAttribute("j_username", jUserName);
 
 		// Not having access to the unencrypted password will not allow you to
 		// connect to external resources that require it (mail server)
@@ -112,7 +110,7 @@ public class AutoLoginFilter extends BasePortalFilter {
 			}
 		}
 
-		session.setAttribute("j_remoteuser", jUsername);
+		session.setAttribute("j_remoteuser", jUserName);
 
 		if (PropsValues.PORTAL_JAAS_ENABLE) {
 			String mainPath = PortalUtil.getPathMain();
@@ -138,7 +136,7 @@ public class AutoLoginFilter extends BasePortalFilter {
 			httpServletResponse.sendRedirect(redirect);
 		}
 
-		return jUsername;
+		return jUserName;
 	}
 
 	@Override
@@ -169,7 +167,7 @@ public class AutoLoginFilter extends BasePortalFilter {
 			httpServletRequest.getRequestURI());
 
 		if (!contextPath.equals(StringPool.SLASH) &&
-			path.contains(contextPath)) {
+			path.startsWith(contextPath)) {
 
 			path = path.substring(contextPath.length());
 		}
@@ -233,7 +231,7 @@ public class AutoLoginFilter extends BasePortalFilter {
 						}
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					StringBundler sb = new StringBundler(6);
 
 					sb.append("Current URL ");
@@ -244,11 +242,11 @@ public class AutoLoginFilter extends BasePortalFilter {
 					sb.append(currentURL);
 
 					sb.append(" generates exception: ");
-					sb.append(e.getMessage());
+					sb.append(exception.getMessage());
 
 					if (_log.isInfoEnabled()) {
 						sb.append(" stack: ");
-						sb.append(StackTraceUtil.getStackTrace(e));
+						sb.append(StackTraceUtil.getStackTrace(exception));
 					}
 
 					if (currentURL.endsWith(_PATH_CHAT_LATEST)) {
@@ -273,9 +271,9 @@ public class AutoLoginFilter extends BasePortalFilter {
 	private static final Log _log = LogFactoryUtil.getLog(
 		AutoLoginFilter.class);
 
-	private static final Set<AutoLogin> _autoLogins =
-		new CopyOnWriteArraySet<>();
-	private static final ServiceTracker<?, AutoLogin> _serviceTracker;
+	private static final ServiceTrackerList<AutoLogin> _autoLogins =
+		ServiceTrackerCollections.openList(
+			AutoLogin.class, new AutoLoginServiceTrackerCustomizer());
 
 	private static class AutoLoginServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<AutoLogin, AutoLogin> {
@@ -298,8 +296,6 @@ public class AutoLoginFilter extends BasePortalFilter {
 				return null;
 			}
 
-			_autoLogins.add(autoLogin);
-
 			return autoLogin;
 		}
 
@@ -319,15 +315,6 @@ public class AutoLoginFilter extends BasePortalFilter {
 			_autoLogins.remove(autoLogin);
 		}
 
-	}
-
-	static {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			AutoLogin.class, new AutoLoginServiceTrackerCustomizer());
-
-		_serviceTracker.open();
 	}
 
 }

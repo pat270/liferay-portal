@@ -169,10 +169,8 @@ public class UpgradeDDMFormInstanceSettingsTest {
 
 		DDMFormInstanceLocalServiceUtil.updateDDMFormInstance(formInstance);
 
-		formInstance = DDMFormInstanceLocalServiceUtil.getFormInstance(
+		return DDMFormInstanceLocalServiceUtil.getFormInstance(
 			formInstance.getFormInstanceId());
-
-		return formInstance;
 	}
 
 	protected String createSettings(boolean hasSetting) {
@@ -229,25 +227,13 @@ public class UpgradeDDMFormInstanceSettingsTest {
 
 		EntityCacheUtil.clearCache();
 
-		formInstance = DDMFormInstanceLocalServiceUtil.getDDMFormInstance(
+		return DDMFormInstanceLocalServiceUtil.getDDMFormInstance(
 			formInstance.getFormInstanceId());
-
-		return formInstance;
 	}
 
 	protected void setUpUpgradeDDMFormInstanceSettings() {
 		_upgradeStepRegistrator.register(
 			new UpgradeStepRegistrator.Registry() {
-
-				@Override
-				public void register(
-					String bundleSymbolicName, String fromSchemaVersionString,
-					String toSchemaVersionString, UpgradeStep... upgradeSteps) {
-
-					register(
-						fromSchemaVersionString, toSchemaVersionString,
-						upgradeSteps);
-				}
 
 				@Override
 				public void register(

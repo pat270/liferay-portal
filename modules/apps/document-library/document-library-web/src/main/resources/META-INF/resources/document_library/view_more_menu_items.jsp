@@ -48,9 +48,9 @@ DLViewMoreMenuItemsDisplayContext dlViewMoreMenuItemsDisplayContext = new DLView
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("fileEntryTypeId", String.valueOf(fileEntryType.getFileEntryTypeId()));
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"fileEntryTypeId", String.valueOf(fileEntryType.getFileEntryTypeId())
+			).build();
 			%>
 
 			<liferay-ui:search-container-column-text
@@ -60,6 +60,11 @@ DLViewMoreMenuItemsDisplayContext dlViewMoreMenuItemsDisplayContext = new DLView
 					<%= HtmlUtil.escape(fileEntryType.getName(locale)) %>
 				</aui:a>
 			</liferay-ui:search-container-column-text>
+
+			<liferay-ui:search-container-column-text
+				name="scope"
+				value="<%= dlViewMoreMenuItemsDisplayContext.getDLFileEntryTypeScopeName(fileEntryType, locale) %>"
+			/>
 
 			<liferay-ui:search-container-column-text
 				name="description"
@@ -83,15 +88,15 @@ DLViewMoreMenuItemsDisplayContext dlViewMoreMenuItemsDisplayContext = new DLView
 
 	A.one('#<portlet:namespace />addMenuItemFm').delegate(
 		'click',
-		function(event) {
+		function (event) {
 			Util.getOpener().Liferay.fire(
 				'<%= HtmlUtil.escapeJS(dlViewMoreMenuItemsDisplayContext.getEventName()) %>',
 				{
-					fileEntryTypeId: event.currentTarget.attr('data-fileEntryTypeId')
+					fileEntryTypeId: event.currentTarget.attr(
+						'data-fileEntryTypeId'
+					),
 				}
 			);
-
-			Util.getWindow().destroy();
 		},
 		'.selector-button'
 	);

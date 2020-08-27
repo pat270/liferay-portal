@@ -15,22 +15,22 @@
 </tr>
 <tr>
 	<td>DROPDOWN_MENU</td>
-	<td>//label[contains(.,'${key_fieldLabel}')]/parent::div//div[contains(@class,'option-selected')]</td>
+	<td>//*[contains(.,'${key_fieldLabel}')]/parent::div//div[contains(@class,'option-selected')] | //p[contains(.,'${key_fieldLabel}')]/following-sibling::div//button[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DROPDOWN_MENU_OPTION</td>
-	<td>//a[contains(@class,'dropdown-item') and @title='${key_selectOption}']</td>
+	<td>//button[contains(@class,'dropdown-item') and @label='${key_selectOption}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SCOPED_CONFIGURATION_NAME</td>
-	<td>//a[contains(.,'${key_configurationScope}')]/following-sibling::div//a[contains(@class,'nav-link') and normalize-space(./text())='${key_configurationName}']</td>
+	<td>//a[contains(.,'${key_configurationScope}')]/following-sibling::div//*[contains(@class,'nav-link') and normalize-space(./text())='${key_configurationName}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SECURITY_CREDENTIAL_FIELD</td>
-	<td>//div[contains(@data-fieldname,'securityCredential')]//input[@type='password' and @value='TEMP_OBFUSCATION_VALUE']</td>
+	<td>//div[contains(@data-field-name,'securityCredential')]//input[@type='password']</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,7 +51,7 @@
 <!--ASSETS-->
 <tr>
 	<td>ASSETS_DYNAMIC_EXPORT_LIMIT</td>
-	<td>//div[contains(@data-fieldname,'dynamicExportLimit')]//input[@type='text']</td>
+	<td>//div[contains(@data-field-name,'dynamicExportLimit')]//input[@type='text']</td>
 	<td></td>
 </tr>
 </tbody>

@@ -27,7 +27,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sergio González
  */
 @Component(
-	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.application-type=full-page-application",
@@ -36,8 +35,8 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.css-class-wrapper=portlet-document-library",
 		"com.liferay.portlet.display-category=category.cms",
 		"com.liferay.portlet.display-category=category.highlighted",
-		"com.liferay.portlet.footer-portlet-javascript=/document_library/js/main.js",
-		"com.liferay.portlet.footer-portlet-javascript=/document_library/js/upload.js",
+		"com.liferay.portlet.footer-portlet-javascript=/document_library/js/legacy/main.js",
+		"com.liferay.portlet.footer-portlet-javascript=/document_library/js/legacy/upload.js",
 		"com.liferay.portlet.header-portlet-css=/document_library/css/main.css",
 		"com.liferay.portlet.icon=/document_library/icons/document_library.png",
 		"com.liferay.portlet.instanceable=true",
@@ -60,15 +59,14 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.security-role-ref=guest,power-user,user",
 		"javax.portlet.supported-public-render-parameter=categoryId",
 		"javax.portlet.supported-public-render-parameter=resetCur",
-		"javax.portlet.supported-public-render-parameter=tag",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.supported-public-render-parameter=tag"
 	},
 	service = Portlet.class
 )
 public class DLPortlet extends MVCPortlet {
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.document.library.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.document.library.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

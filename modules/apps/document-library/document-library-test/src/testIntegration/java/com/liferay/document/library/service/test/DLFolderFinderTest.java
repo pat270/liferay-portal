@@ -30,11 +30,11 @@ import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -330,7 +330,7 @@ public class DLFolderFinderTest {
 				FileShortcut fileShortcut = (FileShortcut)result;
 
 				Assert.assertEquals(
-					this._fileShortcut.getFileShortcutId(),
+					_fileShortcut.getFileShortcutId(),
 					fileShortcut.getFileShortcutId());
 			}
 			else if (result instanceof DLFolder) {

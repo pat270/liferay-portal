@@ -1,13 +1,11 @@
-/* ---------- Column widths ---------- */
+// ---------- Column widths ----------
 
 .portlet-column-content.empty {
 	padding: $portlet-column-content-empty-padding;
 }
 
-/* ---------- Wrapper ---------- */
+// ---------- Wrapper ----------
 
 #wrapper {
-	padding-bottom: $wrapper-padding-bottom;
-	padding-top: $wrapper-padding-top;
 	position: relative;
 }

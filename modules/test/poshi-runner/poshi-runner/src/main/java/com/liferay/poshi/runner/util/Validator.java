@@ -34,9 +34,8 @@ public class Validator {
 		if (boolean1 == boolean2) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -51,9 +50,8 @@ public class Validator {
 		if (byte1 == byte2) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -68,9 +66,8 @@ public class Validator {
 		if (char1 == char2) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -85,9 +82,8 @@ public class Validator {
 		if (Double.compare(double1, double2) == 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -102,9 +98,8 @@ public class Validator {
 		if (Float.compare(float1, float2) == 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -119,9 +114,8 @@ public class Validator {
 		if (int1 == int2) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -136,29 +130,28 @@ public class Validator {
 		if (long1 == long2) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
 	 * Returns <code>true</code> if the objects are either equal, the same
 	 * instance, or both <code>null</code>.
 	 *
-	 * @param  obj1 the first object
-	 * @param  obj2 the second object
+	 * @param  object1 the first object
+	 * @param  object2 the second object
 	 * @return <code>true</code> if the objects are either equal, the same
 	 *         instance, or both <code>null</code>; <code>false</code> otherwise
 	 */
-	public static boolean equals(Object obj1, Object obj2) {
-		if (obj1 == obj2) {
+	public static boolean equals(Object object1, Object object2) {
+		if (object1 == object2) {
 			return true;
 		}
-		else if ((obj1 == null) || (obj2 == null)) {
+		else if ((object1 == null) || (object2 == null)) {
 			return false;
 		}
 		else {
-			return obj1.equals(obj2);
+			return object1.equals(object2);
 		}
 	}
 
@@ -174,9 +167,8 @@ public class Validator {
 		if (short1 == short2) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public static boolean isBlank(String s) {
@@ -256,12 +248,12 @@ public class Validator {
 	 * the rules from {@link #isNotNull(Long)} or {@link #isNotNull(String)} if
 	 * the object is one of these types.
 	 *
-	 * @param  obj the object to check
+	 * @param  object the object to check
 	 * @return <code>true</code> if the object is not <code>null</code>;
 	 *         <code>false</code> otherwise
 	 */
-	public static boolean isNotNull(Object obj) {
-		return !isNull(obj);
+	public static boolean isNotNull(Object object) {
+		return !isNull(object);
 	}
 
 	/**
@@ -281,15 +273,15 @@ public class Validator {
 	 * Returns <code>true</code> if the object is <code>null</code>, using the
 	 * rules from {@link #isNull(String)} if the object is one of these types.
 	 *
-	 * @param  obj the object to check
+	 * @param  object the object to check
 	 * @return <code>true</code> if the object is <code>null</code>;
 	 *         <code>false</code> otherwise
 	 */
-	public static boolean isNull(Object obj) {
-		if (obj instanceof String) {
-			return isNull((String)obj);
+	public static boolean isNull(Object object) {
+		if (object instanceof String) {
+			return isNull((String)object);
 		}
-		else if (obj == null) {
+		else if (object == null) {
 			return true;
 		}
 		else {

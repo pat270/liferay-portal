@@ -25,10 +25,6 @@ List<Folder> folders = (List<Folder>)request.getAttribute(WebKeys.DOCUMENT_LIBRA
 List<FileEntry> fileEntries = (List<FileEntry>)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_ENTRIES);
 List<FileShortcut> fileShortcuts = (List<FileShortcut>)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_SHORTCUTS);
 
-Map<String, Object> infoPanelToggleData = new HashMap<>();
-
-infoPanelToggleData.put("toggle", liferayPortletResponse.getNamespace() + "infoPanelId");
-
 if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmpty(fileShortcuts)) {
 	long folderId = GetterUtil.getLong((String)request.getAttribute("view.jsp-folderId"), ParamUtil.getLong(request, "folderId"));
 
@@ -67,11 +63,13 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 				</li>
 			</ul>
 
-			<h4 class="sidebar-title"><%= (folder != null) ? HtmlUtil.escape(folder.getName()) : LanguageUtil.get(request, "home") %></h4>
+			<h1 class="sidebar-title">
+				<%= (folder != null) ? HtmlUtil.escape(folder.getName()) : LanguageUtil.get(request, "home") %>
+			</h1>
 
-			<h5 class="sidebar-subtitle">
+			<h2 class="sidebar-subtitle">
 				<liferay-ui:message key="folder" />
-			</h5>
+			</h2>
 		</div>
 
 		<div class="sidebar-body">
@@ -105,6 +103,12 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 							<dd class="sidebar-dd">
 								<%= HtmlUtil.escape(folder.getUserName()) %>
 							</dd>
+
+							<%
+							request.setAttribute("info_panel_location.jsp-parentFolder", folder.getParentFolder());
+							%>
+
+							<liferay-util:include page="/document_library/info_panel_location.jsp" servletContext="<%= application %>" />
 						</c:if>
 					</dl>
 				</liferay-ui:section>
@@ -146,11 +150,13 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 				</li>
 			</ul>
 
-			<h4 class="sidebar-title"><%= HtmlUtil.escape(fileShortcut.getToTitle()) %></h4>
+			<h1 class="sidebar-title">
+				<%= HtmlUtil.escape(fileShortcut.getToTitle()) %>
+			</h1>
 
-			<h5>
+			<h2 class="sidebar-subtitle">
 				<liferay-ui:message key="shortcut" />
-			</h5>
+			</h2>
 		</div>
 
 		<div class="sidebar-body">
@@ -221,7 +227,7 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 							<liferay-ui:message key="size" />
 						</dt>
 						<dd class="sidebar-dd">
-							<%= TextFormatter.formatStorageSize(fileEntry.getSize(), locale) %>
+							<%= LanguageUtil.formatStorageSize(fileEntry.getSize(), locale) %>
 						</dd>
 
 						<c:if test="<%= fileEntry.getModel() instanceof DLFileEntry %>">
@@ -253,7 +259,9 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 	</c:when>
 	<c:otherwise>
 		<div class="sidebar-header">
-			<h4 class="sidebar-title"><liferay-ui:message arguments="<%= folders.size() + fileEntries.size() + fileShortcuts.size() %>" key="x-items-are-selected" /></h4>
+			<h1 class="sidebar-title">
+				<liferay-ui:message key="selection" />
+			</h1>
 		</div>
 
 		<div class="sidebar-body">
@@ -263,9 +271,9 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 				refresh="<%= false %>"
 			>
 				<liferay-ui:section>
-					<h5>
+					<strong>
 						<liferay-ui:message arguments="<%= folders.size() + fileEntries.size() + fileShortcuts.size() %>" key="x-items-are-selected" />
-					</h5>
+					</strong>
 				</liferay-ui:section>
 			</liferay-ui:tabs>
 		</div>

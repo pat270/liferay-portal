@@ -16,6 +16,7 @@ package com.liferay.portal.search.internal.filter;
 
 import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.filter.ComplexQueryPartBuilder;
+import com.liferay.portal.search.query.Query;
 
 /**
  * @author André de Oliveira
@@ -26,12 +27,14 @@ public class ComplexQueryPartImpl implements ComplexQueryPart {
 	}
 
 	public ComplexQueryPartImpl(ComplexQueryPartImpl complexQueryPartImpl) {
+		_additive = complexQueryPartImpl._additive;
 		_boost = complexQueryPartImpl._boost;
 		_disabled = complexQueryPartImpl._disabled;
 		_field = complexQueryPartImpl._field;
 		_name = complexQueryPartImpl._name;
 		_occur = complexQueryPartImpl._occur;
 		_parent = complexQueryPartImpl._parent;
+		_query = complexQueryPartImpl._query;
 		_type = complexQueryPartImpl._type;
 		_value = complexQueryPartImpl._value;
 	}
@@ -62,6 +65,11 @@ public class ComplexQueryPartImpl implements ComplexQueryPart {
 	}
 
 	@Override
+	public Query getQuery() {
+		return _query;
+	}
+
+	@Override
 	public String getType() {
 		return _type;
 	}
@@ -72,11 +80,23 @@ public class ComplexQueryPartImpl implements ComplexQueryPart {
 	}
 
 	@Override
+	public boolean isAdditive() {
+		return _additive;
+	}
+
+	@Override
 	public boolean isDisabled() {
 		return _disabled;
 	}
 
 	public static class Builder implements ComplexQueryPartBuilder {
+
+		@Override
+		public ComplexQueryPartBuilder additive(boolean additive) {
+			_complexQueryPartImpl._additive = additive;
+
+			return this;
+		}
 
 		@Override
 		public ComplexQueryPartBuilder boost(Float boost) {
@@ -126,6 +146,13 @@ public class ComplexQueryPartImpl implements ComplexQueryPart {
 		}
 
 		@Override
+		public ComplexQueryPartBuilder query(Query query) {
+			_complexQueryPartImpl._query = query;
+
+			return this;
+		}
+
+		@Override
 		public Builder type(String type) {
 			_complexQueryPartImpl._type = type;
 
@@ -144,12 +171,14 @@ public class ComplexQueryPartImpl implements ComplexQueryPart {
 
 	}
 
+	private boolean _additive;
 	private Float _boost;
 	private boolean _disabled;
 	private String _field;
 	private String _name;
 	private String _occur;
 	private String _parent;
+	private Query _query;
 	private String _type;
 	private String _value;
 

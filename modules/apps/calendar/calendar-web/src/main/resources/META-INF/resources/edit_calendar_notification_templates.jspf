@@ -35,6 +35,7 @@ String notificationTemplateSubject = BeanPropertiesUtil.getString(calendarNotifi
 <liferay-ui:header
 	backURL="<%= backURL %>"
 	cssClass="container-fluid-1280"
+	localizeTitle="<%= false %>"
 	title="<%= calendarName %>"
 />
 
@@ -57,7 +58,7 @@ String notificationTemplateSubject = BeanPropertiesUtil.getString(calendarNotifi
 
 <liferay-portlet:actionURL name="updateCalendarNotificationTemplate" var="updateCalendarNotificationTemplateURL" />
 
-<aui:form action="<%= updateCalendarNotificationTemplateURL %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "updateCalendarNotificationTemplate();" %>'>
+<aui:form action="<%= updateCalendarNotificationTemplateURL %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "updateCalendarNotificationTemplate();" %>'>
 	<aui:input name="mvcPath" type="hidden" value="/edit_calendar.jsp" />
 	<aui:input name="calendarNotificationTemplateId" type="hidden" value="<%= calendarNotificationTemplateId %>" />
 	<aui:input name="tabs2" type="hidden" value="<%= tabs2 %>" />
@@ -78,9 +79,9 @@ String notificationTemplateSubject = BeanPropertiesUtil.getString(calendarNotifi
 		<aui:input name="subject" value="<%= notificationTemplateSubject %>" />
 
 		<aui:field-wrapper label="body">
-			<liferay-ui:input-editor
+			<liferay-editor:editor
 				contents="<%= notificationTemplateBody %>"
-				editorImpl="ckeditor"
+				editorName="ckeditor"
 			/>
 
 			<aui:input name="body" type="hidden" value="<%= notificationTemplateBody %>" />
@@ -91,6 +92,18 @@ String notificationTemplateSubject = BeanPropertiesUtil.getString(calendarNotifi
 		<h4><liferay-ui:message key="definition-of-terms" /></h4>
 
 		<dl>
+			<dt>
+				[$COMPANY_ID$]
+			</dt>
+			<dd>
+				<liferay-ui:message key="the-company-id-associated-with-the-calendar-booking" />
+			</dd>
+			<dt>
+				[$CALENDAR_NAME$]
+			</dt>
+			<dd>
+				<liferay-ui:message key="the-calendar-name" />
+			</dd>
 			<dt>
 				[$EVENT_LOCATION$]
 			</dt>
@@ -137,6 +150,20 @@ String notificationTemplateSubject = BeanPropertiesUtil.getString(calendarNotifi
 			<dd>
 				<%= company.getVirtualHostname() %>
 			</dd>
+
+			<%
+			Group calendarGroup = GroupLocalServiceUtil.getGroup(calendar.getGroupId());
+			%>
+
+			<c:if test="<%= calendarGroup.isSite() %>">
+				<dt>
+					[$SITE_NAME$]
+				</dt>
+				<dd>
+					<liferay-ui:message key="the-site-name-associated-with-the-calendar-booking" />
+				</dd>
+			</c:if>
+
 			<dt>
 				[$TO_ADDRESS$]
 			</dt>
@@ -161,7 +188,9 @@ String notificationTemplateSubject = BeanPropertiesUtil.getString(calendarNotifi
 
 <aui:script>
 	function <portlet:namespace />updateCalendarNotificationTemplate() {
-		var notificationTemplateContentBody = document.getElementById('<portlet:namespace />body');
+		var notificationTemplateContentBody = document.getElementById(
+			'<portlet:namespace />body'
+		);
 
 		if (notificationTemplateContentBody) {
 			notificationTemplateContentBody.value = window.<portlet:namespace />editor.getHTML();

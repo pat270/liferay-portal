@@ -33,7 +33,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 
 <c:if test="<%= Validator.isNotNull(openId) %>">
 	<div class="alert alert-info">
-		<liferay-ui:message arguments="<%= openId %>" key="you-are-about-to-create-an-account-with-openid-x" translateArguments="<%= false %>" />
+		<liferay-ui:message arguments="<%= HtmlUtil.escape(openId) %>" key="you-are-about-to-create-an-account-with-openid-x" translateArguments="<%= false %>" />
 	</div>
 </c:if>
 
@@ -41,7 +41,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 	<portlet:param name="mvcRenderCommandName" value="/login/create_account" />
 </portlet:actionURL>
 
-<aui:form action="<%= createAccountURL %>" method="post" name="fm">
+<aui:form action="<%= createAccountURL %>" method="post" name="fm" validateOnBlur="<%= false %>">
 	<aui:input name="saveLastPath" type="hidden" value="<%= false %>" />
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.ADD %>" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
@@ -51,6 +51,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 	<liferay-ui:error exception="<%= AddressStreetException.class %>" message="please-enter-a-valid-street" />
 	<liferay-ui:error exception="<%= AddressZipException.class %>" message="please-enter-a-valid-postal-code" />
 	<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
+	<liferay-ui:error exception="<%= CaptchaException.class %>" message="captcha-verification-failed" />
 	<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 	<liferay-ui:error exception="<%= CompanyMaxUsersException.class %>" message="unable-to-create-user-account-because-the-maximum-number-of-users-has-been-reached" />
 	<liferay-ui:error exception="<%= ContactBirthdayException.class %>" message="please-enter-a-valid-birthday" />
@@ -139,7 +140,9 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 	<aui:model-context model="<%= Contact.class %>" />
 
 	<aui:fieldset column="<%= true %>">
-		<aui:col width="<%= 50 %>">
+		<clay:col
+			md="6"
+		>
 
 			<%
 			Boolean autoGenerateScreenName = PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_SCREEN_NAME_ALWAYS_AUTOGENERATE);
@@ -167,9 +170,11 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 			</aui:input>
 
 			<liferay-ui:user-name-fields />
-		</aui:col>
+		</clay:col>
 
-		<aui:col width="<%= 50 %>">
+		<clay:col
+			md="6"
+		>
 			<c:if test="<%= PropsValues.LOGIN_CREATE_ACCOUNT_ALLOW_CUSTOM_PASSWORD %>">
 				<aui:input label="password" name="password1" size="30" type="password" value="">
 					<aui:validator name="required" />
@@ -203,13 +208,9 @@ renderResponse.setTitle(LanguageUtil.get(request, "create-account"));
 			</c:if>
 
 			<c:if test="<%= captchaConfiguration.createAccountCaptchaEnabled() %>">
-				<portlet:resourceURL id="/login/captcha" var="captchaURL" />
-
-				<liferay-captcha:captcha
-					url="<%= captchaURL %>"
-				/>
+				<liferay-captcha:captcha />
 			</c:if>
-		</aui:col>
+		</clay:col>
 	</aui:fieldset>
 
 	<aui:button-row>

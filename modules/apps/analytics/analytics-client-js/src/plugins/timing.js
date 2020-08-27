@@ -1,8 +1,25 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {MARK_NAVIGATION_START, MARK_VIEW_DURATION} from '../utils/constants';
+import {getDuration} from '../utils/performance';
+
 const applicationId = 'Page';
 
 /**
  * Sends page load information on the window load event
- * @param {object} analytics The Analytics client
+ * @param {Object} analytics The Analytics client
  */
 function onload(analytics) {
 	const perfData = window.performance.timing;
@@ -10,7 +27,7 @@ function onload(analytics) {
 	const pageLoadTime = perfData.loadEventStart - perfData.navigationStart;
 
 	const props = {
-		pageLoadTime
+		pageLoadTime,
 	};
 
 	analytics.send('pageLoaded', applicationId, props);
@@ -18,14 +35,20 @@ function onload(analytics) {
 
 /**
  * Sends view duration information on the window unload event
- * @param {object} analytics The Analytics client
+ * @param {Object} analytics The Analytics client
  */
 function unload(analytics) {
-	const perfData = window.performance.timing;
-	const viewDuration = new Date().getTime() - perfData.navigationStart;
+	const navigationStartMark = window.performance.getEntriesByName(
+		MARK_NAVIGATION_START
+	);
+	const navigationStart = navigationStartMark.length
+		? MARK_NAVIGATION_START
+		: 'navigationStart';
+
+	const duration = getDuration(MARK_VIEW_DURATION, navigationStart);
 
 	const props = {
-		viewDuration
+		viewDuration: duration,
 	};
 
 	analytics.send('pageUnloaded', applicationId, props);
@@ -33,7 +56,7 @@ function unload(analytics) {
 
 /**
  * Plugin function that registers listeners against browser time events
- * @param {object} analytics The Analytics client
+ * @param {Object} analytics The Analytics client
  */
 function timing(analytics) {
 	const onLoad = onload.bind(null, analytics);

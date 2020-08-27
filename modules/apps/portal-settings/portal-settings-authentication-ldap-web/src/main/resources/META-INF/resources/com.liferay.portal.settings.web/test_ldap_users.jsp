@@ -17,7 +17,7 @@
 <%@ include file="/com.liferay.portal.settings.web/init.jsp" %>
 
 <%
-long ldapServerId = ParamUtil.getLong(request, "ldapServerId", 0);
+long ldapServerId = ParamUtil.getLong(request, "ldapServerId");
 
 String baseProviderURL = ParamUtil.getString(request, "baseProviderURL");
 String baseDN = ParamUtil.getString(request, "baseDN");
@@ -29,12 +29,13 @@ if (credentials.equals(Portal.TEMP_OBFUSCATION_VALUE)) {
 	LDAPServerConfiguration ldapServerConfiguration = ldapServerConfigurationProvider.getConfiguration(themeDisplay.getCompanyId(), ldapServerId);
 
 	credentials = ldapServerConfiguration.securityCredential();
-
 }
 
-LdapContext ldapContext = PortalLDAPUtil.getContext(themeDisplay.getCompanyId(), baseProviderURL, principal, credentials);
+SafePortalLDAP safePortalLDAP = SafePortalLDAPUtil.getSafePortalLDAP();
 
-if (ldapContext == null) {
+SafeLdapContext safeLdapContext = safePortalLDAP.getSafeLdapContext(themeDisplay.getCompanyId(), baseProviderURL, principal, credentials);
+
+if (safeLdapContext == null) {
 %>
 
 	<liferay-ui:message key="liferay-has-failed-to-connect-to-the-ldap-server" />
@@ -54,9 +55,11 @@ if (Validator.isNull(ParamUtil.getString(request, "userMappingScreenName")) || V
 	return;
 }
 
+LDAPFilterValidator ldapFilterValidator = LDAPFilterValidatorUtil.getLDAPFilterValidator();
+
 String userFilter = ParamUtil.getString(request, "importUserSearchFilter");
 
-if (!LDAPFilterValidatorUtil.isValidFilter(userFilter)) {
+if (!ldapFilterValidator.isValid(userFilter)) {
 %>
 
 	<liferay-ui:message key="please-enter-a-valid-ldap-search-filter" />
@@ -65,15 +68,33 @@ if (!LDAPFilterValidatorUtil.isValidFilter(userFilter)) {
 	return;
 }
 
-String userMappingsParams =
-	"screenName=" + ParamUtil.getString(request, "userMappingScreenName") +
-	"\npassword=" + ParamUtil.getString(request, "userMappingPassword") +
-	"\nemailAddress=" + ParamUtil.getString(request, "userMappingEmailAddress") +
-	"\nfullName=" + ParamUtil.getString(request, "userMappingFullName") +
-	"\nfirstName=" + ParamUtil.getString(request, "userMappingFirstName") +
-	"\nlastName=" + ParamUtil.getString(request, "userMappingLastName") +
-	"\njobTitle=" + ParamUtil.getString(request, "userMappingJobTitle") +
-	"\ngroup=" + ParamUtil.getString(request, "userMappingGroup");
+StringBundler sb = new StringBundler(23);
+
+sb.append("screenName=");
+sb.append(ParamUtil.getString(request, "userMappingScreenName"));
+sb.append("\n");
+sb.append("password=");
+sb.append(ParamUtil.getString(request, "userMappingPassword"));
+sb.append("\n");
+sb.append("emailAddress=");
+sb.append(ParamUtil.getString(request, "userMappingEmailAddress"));
+sb.append("\n");
+sb.append("fullName=");
+sb.append(ParamUtil.getString(request, "userMappingFullName"));
+sb.append("\n");
+sb.append("firstName=");
+sb.append(ParamUtil.getString(request, "userMappingFirstName"));
+sb.append("\n");
+sb.append("lastName=");
+sb.append(ParamUtil.getString(request, "userMappingLastName"));
+sb.append("\n");
+sb.append("jobTitle=");
+sb.append(ParamUtil.getString(request, "userMappingJobTitle"));
+sb.append("\n");
+sb.append("group=");
+sb.append(ParamUtil.getString(request, "userMappingGroup"));
+
+String userMappingsParams = sb.toString();
 
 Properties userMappings = PropertiesUtil.load(userMappingsParams);
 
@@ -83,9 +104,9 @@ List<SearchResult> searchResults = new ArrayList<SearchResult>();
 
 if (Validator.isNotNull(userFilter) && !userFilter.equals(StringPool.STAR)) {
 	try {
-		PortalLDAPUtil.getUsers(themeDisplay.getCompanyId(), ldapContext, new byte[0], 20, baseDN, userFilter, attributeIds, searchResults);
+		safePortalLDAP.getUsers(themeDisplay.getCompanyId(), safeLdapContext, new byte[0], 20, SafeLdapNameFactory.fromUnsafe(baseDN), SafeLdapFilterFactory.fromUnsafeFilter(userFilter, ldapFilterValidator), attributeIds, searchResults);
 	}
-	catch (NameNotFoundException nnfe) {
+	catch (InvalidNameException | NameNotFoundException exception) {
 %>
 
 		<liferay-ui:message key="please-enter-a-valid-ldap-base-dn" />
@@ -199,7 +220,7 @@ if (showMissingAttributeMessage) {
 <%
 }
 
-if (ldapContext != null) {
-	ldapContext.close();
+if (safeLdapContext != null) {
+	safeLdapContext.close();
 }
 %>

@@ -32,13 +32,10 @@ import com.sforce.ws.ConnectionException;
 import java.util.Calendar;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Peter Shin
  */
-@ProviderType
 public interface SalesforcePartnerClient extends SalesforceClient {
 
 	public List<SaveResult> create(SObject[] sObjects)
@@ -66,7 +63,7 @@ public interface SalesforcePartnerClient extends SalesforceClient {
 
 	public GetUserInfoResult getUserInfo() throws ConnectionException;
 
-	public LoginResult login(String username, String password, int retryCount)
+	public LoginResult login(String userName, String password, int retryCount)
 		throws ConnectionException;
 
 	public QueryResult query(String queryString, int retryCount)

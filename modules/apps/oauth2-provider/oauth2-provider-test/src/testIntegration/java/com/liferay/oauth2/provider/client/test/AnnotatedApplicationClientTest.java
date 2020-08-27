@@ -15,8 +15,8 @@
 package com.liferay.oauth2.provider.client.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.oauth2.provider.test.internal.TestAnnotatedApplication;
-import com.liferay.oauth2.provider.test.internal.TestInterfaceAnnotatedApplication;
+import com.liferay.oauth2.provider.internal.test.TestAnnotatedApplication;
+import com.liferay.oauth2.provider.internal.test.TestInterfaceAnnotatedApplication;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -119,7 +119,7 @@ public class AnnotatedApplicationClientTest extends BaseClientTestCase {
 				getClientCredentialsResponseBiFunction(StringPool.BLANK),
 				this::parseTokenString));
 
-		response = invocationBuilder.get();
+		invocationBuilder.get();
 
 		Assert.assertEquals("no-scope", invocationBuilder.get(String.class));
 	}
@@ -151,7 +151,7 @@ public class AnnotatedApplicationClientTest extends BaseClientTestCase {
 				getClientCredentialsResponseBiFunction("everything.read"),
 				this::parseTokenString));
 
-		response = invocationBuilder.get();
+		invocationBuilder.get();
 
 		Assert.assertEquals(
 			"everything.read", invocationBuilder.get(String.class));

@@ -14,9 +14,9 @@
 
 package com.liferay.users.admin.web.internal.portlet.action;
 
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.portal.kernel.exception.NoSuchOrganizationException;
 import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocal;
-import com.liferay.portal.kernel.messaging.proxy.ProxyModeThreadLocalCloseable;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
@@ -67,19 +67,20 @@ public class EditOrganizationAssignmentsMVCActionCommand
 
 			sendRedirect(actionRequest, actionResponse, redirect);
 		}
-		catch (Exception e) {
-			if (e instanceof MembershipPolicyException) {
-				SessionErrors.add(actionRequest, e.getClass(), e);
+		catch (Exception exception) {
+			if (exception instanceof MembershipPolicyException) {
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
 			}
-			else if (e instanceof NoSuchOrganizationException ||
-					 e instanceof PrincipalException) {
+			else if (exception instanceof NoSuchOrganizationException ||
+					 exception instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 
 				actionResponse.setRenderParameter("mvcPath", "/error.jsp");
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
 	}
@@ -100,10 +101,8 @@ public class EditOrganizationAssignmentsMVCActionCommand
 		long[] removeUserIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "removeUserIds"), 0L);
 
-		try (ProxyModeThreadLocalCloseable proxyModeThreadLocalCloseable =
-				new ProxyModeThreadLocalCloseable()) {
-
-			ProxyModeThreadLocal.setForceSync(true);
+		try (SafeClosable safeClosable =
+				ProxyModeThreadLocal.setWithSafeClosable(true)) {
 
 			_userService.addOrganizationUsers(organizationId, addUserIds);
 			_userService.unsetOrganizationUsers(organizationId, removeUserIds);

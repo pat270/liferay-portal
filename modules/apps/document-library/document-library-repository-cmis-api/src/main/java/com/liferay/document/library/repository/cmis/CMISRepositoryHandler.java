@@ -53,13 +53,13 @@ public abstract class CMISRepositoryHandler
 	@Override
 	public FileEntry addFileEntry(
 			long userId, long folderId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog, InputStream is,
-			long size, ServiceContext serviceContext)
+			String title, String description, String changeLog,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		return _baseCmisRepository.addFileEntry(
 			userId, folderId, sourceFileName, mimeType, title, description,
-			changeLog, is, size, serviceContext);
+			changeLog, inputStream, size, serviceContext);
 	}
 
 	@Override
@@ -85,24 +85,6 @@ public abstract class CMISRepositoryHandler
 	@Override
 	public FileVersion cancelCheckOut(long fileEntryId) throws PortalException {
 		return _baseCmisRepository.cancelCheckOut(fileEntryId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #checkInFileEntry(long, long, DLVersionNumberIncrease,
-	 *             String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public void checkInFileEntry(
-			long userId, long fileEntryId, boolean majorVersion,
-			String changeLog, ServiceContext serviceContext)
-		throws PortalException {
-
-		checkInFileEntry(
-			userId, fileEntryId,
-			DLVersionNumberIncrease.fromMajorVersion(majorVersion), changeLog,
-			serviceContext);
 	}
 
 	@Override
@@ -183,39 +165,41 @@ public abstract class CMISRepositoryHandler
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, int status, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return _baseCmisRepository.getFileEntries(
-			folderId, status, start, end, obc);
+			folderId, status, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
-			long folderId, int start, int end, OrderByComparator<FileEntry> obc)
+			long folderId, int start, int end,
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
-		return _baseCmisRepository.getFileEntries(folderId, start, end, obc);
+		return _baseCmisRepository.getFileEntries(
+			folderId, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, long fileEntryTypeId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return _baseCmisRepository.getFileEntries(
-			folderId, fileEntryTypeId, start, end, obc);
+			folderId, fileEntryTypeId, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, String[] mimeTypes, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return _baseCmisRepository.getFileEntries(
-			folderId, mimeTypes, start, end, obc);
+			folderId, mimeTypes, start, end, orderByComparator);
 	}
 
 	@Override
@@ -291,29 +275,30 @@ public abstract class CMISRepositoryHandler
 	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountfolders, int start,
-			int end, OrderByComparator<Folder> obc)
+			int end, OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
 		return _baseCmisRepository.getFolders(
-			parentFolderId, includeMountfolders, start, end, obc);
+			parentFolderId, includeMountfolders, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<Object> getFoldersAndFileEntries(
-		long folderId, int start, int end, OrderByComparator<?> obc) {
+		long folderId, int start, int end,
+		OrderByComparator<?> orderByComparator) {
 
 		return _baseCmisRepository.getFoldersAndFileEntries(
-			folderId, start, end, obc);
+			folderId, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<Object> getFoldersAndFileEntries(
 			long folderId, String[] mimeTypes, int start, int end,
-			OrderByComparator<?> obc)
+			OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		return _baseCmisRepository.getFoldersAndFileEntries(
-			folderId, mimeTypes, start, end, obc);
+			folderId, mimeTypes, start, end, orderByComparator);
 	}
 
 	@Override
@@ -372,8 +357,8 @@ public abstract class CMISRepositoryHandler
 				}
 			}
 		}
-		catch (Exception e) {
-			throw new RepositoryException(e);
+		catch (Exception exception) {
+			throw new RepositoryException(exception);
 		}
 
 		return login;
@@ -382,11 +367,11 @@ public abstract class CMISRepositoryHandler
 	@Override
 	public List<Folder> getMountFolders(
 			long parentFolderId, int start, int end,
-			OrderByComparator<Folder> obc)
+			OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
 		return _baseCmisRepository.getMountFolders(
-			parentFolderId, start, end, obc);
+			parentFolderId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -571,48 +556,28 @@ public abstract class CMISRepositoryHandler
 		_baseCmisRepository.unlockFolder(folderId, lockUuid);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #updateFileEntry(long, long, String, String, String, String,
-	 *             String, DLVersionNumberIncrease, InputStream, long,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
 	@Override
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return updateFileEntry(
-			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
-			is, size, serviceContext);
-	}
-
-	@Override
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		return _baseCmisRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, inputStream, size,
+			serviceContext);
 	}
 
 	public FileEntry updateFileEntry(
 			String objectId, String mimeType, Map<String, Object> properties,
-			InputStream is, String sourceFileName, long size,
+			InputStream inputStream, String sourceFileName, long size,
 			ServiceContext serviceContext)
 		throws PortalException {
 
 		return _baseCmisRepository.updateFileEntry(
-			objectId, mimeType, properties, is, sourceFileName, size,
+			objectId, mimeType, properties, inputStream, sourceFileName, size,
 			serviceContext);
 	}
 

@@ -14,14 +14,14 @@
 
 package com.liferay.portal.search.engine.adapter.index;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Dylan Rebelak
  */
-@ProviderType
 public class GetFieldMappingIndexRequest
-	implements IndexRequest<GetFieldMappingIndexResponse> {
+	extends CrossClusterRequest
+	implements MappingIndexRequest<GetFieldMappingIndexResponse> {
 
 	public GetFieldMappingIndexRequest(
 		String[] indexNames, String mappingName, String[] fields) {
@@ -29,6 +29,8 @@ public class GetFieldMappingIndexRequest
 		_indexNames = indexNames;
 		_mappingName = mappingName;
 		_fields = fields;
+
+		setPreferLocalCluster(true);
 	}
 
 	@Override

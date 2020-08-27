@@ -1,5 +1,6 @@
 @component-name = "portal-staging"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Export/Import Framework";
@@ -13,7 +14,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Export");
 	}
 
@@ -48,7 +48,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.viewCP(
@@ -62,7 +61,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Export");
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Export Templates");
@@ -74,7 +72,7 @@ definition {
 
 	@priority = "3"
 	test ExportWithRelaunchedProcess {
-		LAR.exportSiteCP();
+		LAR.exportSiteCP(siteScopeName = "Guest");
 
 		var key_larFileName = "${larFileName}";
 
@@ -113,7 +111,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Export");
 
 		LexiconEntry.gotoHeaderMenuItem(menuItem = "Export Templates");
@@ -122,4 +119,5 @@ definition {
 			exportTemplateDescription = "Export Template Description",
 			exportTemplateName = "Export Template Name");
 	}
+
 }

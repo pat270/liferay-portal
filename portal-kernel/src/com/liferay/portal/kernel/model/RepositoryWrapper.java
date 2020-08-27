@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Repository}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Repository
  * @generated
  */
-@ProviderType
 public class RepositoryWrapper
 	extends BaseModelWrapper<Repository>
-	implements Repository, ModelWrapper<Repository> {
+	implements ModelWrapper<Repository>, Repository {
 
 	public RepositoryWrapper(Repository repository) {
 		super(repository);
@@ -514,9 +511,9 @@ public class RepositoryWrapper
 	@Override
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties) {
+			typeSettingsUnicodeProperties) {
 
-		model.setTypeSettingsProperties(typeSettingsProperties);
+		model.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 	}
 
 	/**

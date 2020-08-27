@@ -16,6 +16,7 @@ package com.liferay.message.boards.service;
 
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBMessageDisplay;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -48,14 +48,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=mb",
-		"json.web.service.context.path=MBMessage"
-	},
-	service = MBMessageService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -66,7 +60,7 @@ public interface MBMessageService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link MBMessageServiceUtil} to access the message-boards message remote service. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBMessageServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.message.boards.service.impl.MBMessageServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the message-boards message remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link MBMessageServiceUtil} if injection and service tracking are not available.
 	 */
 	public MBMessage addDiscussionMessage(
 			long groupId, String className, long classPK, long threadId,
@@ -124,6 +118,10 @@ public interface MBMessageService extends BaseService {
 		throws PortalException;
 
 	public void emptyMessageAttachments(long messageId) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public MBMessage fetchMBMessageByUrlSubject(long groupId, String urlSubject)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<MBMessage> getCategoryMessages(
@@ -226,18 +224,6 @@ public interface MBMessageService extends BaseService {
 			long messageId, String subject, String body,
 			List<ObjectValuePair<String, InputStream>> inputStreamOVPs,
 			double priority, boolean allowPingbacks,
-			ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
-	 String, String, List, double, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	public MBMessage updateMessage(
-			long messageId, String subject, String body,
-			List<ObjectValuePair<String, InputStream>> inputStreamOVPs,
-			List<String> existingFiles, double priority, boolean allowPingbacks,
 			ServiceContext serviceContext)
 		throws PortalException;
 

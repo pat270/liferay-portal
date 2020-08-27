@@ -17,6 +17,7 @@ package com.liferay.dynamic.data.mapping.form.builder.internal.converter.seriali
 import com.liferay.dynamic.data.mapping.form.builder.internal.converter.model.action.CalculateDDMFormRuleAction;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.spi.converter.serializer.SPIDDMFormRuleSerializerContext;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 
@@ -189,13 +190,13 @@ public class CalculateDDMFormRuleActionSerializerTest extends PowerMockito {
 					_calculateDDMFormRuleAction);
 
 		PowerMockito.when(
-			_ddmFormRuleSerializerContext.getAttribute("form")
+			_spiDDMFormRuleSerializerContext.getAttribute("form")
 		).thenReturn(
 			ddmForm
 		);
 
 		String result = calculateDDMFormRuleActionSerializer.serialize(
-			_ddmFormRuleSerializerContext);
+			_spiDDMFormRuleSerializerContext);
 
 		Assert.assertEquals(
 			"calculate('text2', (getValue('text') + getValue('text1')) * 2)",
@@ -216,9 +217,9 @@ public class CalculateDDMFormRuleActionSerializerTest extends PowerMockito {
 	private CalculateDDMFormRuleAction _calculateDDMFormRuleAction;
 
 	@Mock
-	private DDMFormRuleSerializerContext _ddmFormRuleSerializerContext;
+	private ServiceContext _serviceContext;
 
 	@Mock
-	private ServiceContext _serviceContext;
+	private SPIDDMFormRuleSerializerContext _spiDDMFormRuleSerializerContext;
 
 }

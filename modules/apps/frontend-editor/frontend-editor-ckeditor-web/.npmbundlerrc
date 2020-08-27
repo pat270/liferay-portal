@@ -1,0 +1,8 @@
+{
+	"exclude": {
+		"liferay-ckeditor": true
+	},
+	"ignore": [
+		"_diffs/**/*"
+	]
+}

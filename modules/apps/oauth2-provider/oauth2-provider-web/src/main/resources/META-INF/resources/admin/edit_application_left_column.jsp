@@ -37,7 +37,7 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 		<aui:input helpMessage="privacy-policy-url-help" name="privacyPolicyURL" />
 	</c:if>
 
-	<aui:select name="clientProfile">
+	<aui:select helpMessage="client-profile-help" name="clientProfile">
 
 		<%
 		ClientProfile[] clientProfiles = oAuth2AdminPortletDisplayContext.getSortedClientProfiles();
@@ -53,13 +53,17 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 
 	</aui:select>
 
-	<div class="row">
-		<div class="col-lg-7" id="<portlet:namespace />allowedGrantTypesSection">
-			<h3 class="sheet-subtitle"><liferay-ui:message key="allowed-grant-types" /></h3>
+	<clay:row>
 
-			<%
-			String clientCredentialsCheckboxName = null;
-			%>
+		<%
+		String clientCredentialsCheckboxName = null;
+		%>
+
+		<clay:col
+			id='<%= liferayPortletResponse.getNamespace() + "allowedGrantTypesSection" %>'
+			lg="7"
+		>
+			<h3 class="sheet-subtitle"><liferay-ui:message key="allowed-grant-types" /></h3>
 
 			<aui:field-wrapper>
 				<div id="<portlet:namespace />allowedGrantTypes">
@@ -77,7 +81,9 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 						Set<String> cssClasses = new HashSet<>();
 
 						for (ClientProfile clientProfile : ClientProfile.values()) {
-							if (clientProfile.grantTypes().contains(grantType)) {
+							Set<GrantType> grantTypes = clientProfile.grantTypes();
+
+							if (grantTypes.contains(grantType)) {
 								cssClasses.add("client-profile-" + clientProfile.id());
 							}
 						}
@@ -98,17 +104,19 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 
 						checked = ParamUtil.getBoolean(request, name, checked);
 
-						Map<String, Object> data = new HashMap<>();
-
-						data.put("isredirect", grantType.isRequiresRedirectURI());
-						data.put("issupportsconfidentialclients", grantType.isSupportsConfidentialClients());
-						data.put("issupportspublicclients", grantType.isSupportsPublicClients());
+						Map<String, Object> data = HashMapBuilder.<String, Object>put(
+							"isredirect", grantType.isRequiresRedirectURI()
+						).put(
+							"issupportsconfidentialclients", grantType.isSupportsConfidentialClients()
+						).put(
+							"issupportspublicclients", grantType.isSupportsPublicClients()
+						).build();
 					%>
 
 						<div class="allowedGrantType <%= cssClassesStr %>">
 							<c:choose>
 								<c:when test="<%= grantType.equals(GrantType.CLIENT_CREDENTIALS) %>">
-									<aui:input checked="<%= checked %>" data="<%= data %>" helpMessage="the-client-will-impersonate-the-selected-client-credential-user-but-will-be-restricted-to-the-selected-scopes" label="<%= grantType.name() %>" name="<%= clientCredentialsCheckboxName %>" onchange='<%= renderResponse.getNamespace() + "updateClientCredentialsSection();" %>' type="checkbox" />
+									<aui:input checked="<%= checked %>" data="<%= data %>" helpMessage="the-client-will-impersonate-the-selected-client-credential-user-but-will-be-restricted-to-the-selected-scopes" label="<%= grantType.name() %>" name="<%= clientCredentialsCheckboxName %>" onchange='<%= liferayPortletResponse.getNamespace() + "updateClientCredentialsSection();" %>' type="checkbox" />
 								</c:when>
 								<c:otherwise>
 									<aui:input checked="<%= checked %>" data="<%= data %>" label="<%= grantType.name() %>" name="<%= name %>" type="checkbox" />
@@ -121,15 +129,16 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 						%>
 
 							<script>
-								var allowedAuthorizationTypeCheckbox = document.getElementById('<portlet:namespace /><%= name %>');
+								var allowedAuthorizationTypeCheckbox = document.getElementById(
+									'<portlet:namespace /><%= name %>'
+								);
 
 								if (allowedAuthorizationTypeCheckbox) {
-									allowedAuthorizationTypeCheckbox.addEventListener(
-										'click',
-										function(event) {
-											<portlet:namespace />requiredRedirectURIs();
-										}
-									);
+									allowedAuthorizationTypeCheckbox.addEventListener('click', function (
+										event
+									) {
+										<portlet:namespace />requiredRedirectURIs();
+									});
 								}
 							</script>
 
@@ -140,10 +149,13 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 
 				</div>
 			</aui:field-wrapper>
-		</div>
+		</clay:col>
 
 		<c:if test="<%= clientCredentialsCheckboxName != null %>">
-			<div class="col-lg-5" id="<portlet:namespace />clientCredentialsSection">
+			<clay:col
+				id='<%= liferayPortletResponse.getNamespace() + "clientCredentialsSection" %>'
+				lg="5"
+			>
 				<h3 class="sheet-subtitle"><liferay-ui:message key="client-credentials-user" /></h3>
 
 				<aui:field-wrapper>
@@ -168,55 +180,62 @@ OAuth2Application oAuth2Application = oAuth2AdminPortletDisplayContext.getOAuth2
 				</aui:field-wrapper>
 
 				<aui:script use="aui-base,aui-io">
-					var useSignedInUserButton = document.getElementById('<portlet:namespace />useSignedInUserButton');
+					var useSignedInUserButton = document.getElementById(
+						'<portlet:namespace />useSignedInUserButton'
+					);
 
 					if (useSignedInUserButton) {
-
-						useSignedInUserButton.addEventListener(
-							'click',
-							function(event) {
-								A.one('#<portlet:namespace />clientCredentialUserId').val('<%= user.getUserId() %>');
-								A.one('#<portlet:namespace />clientCredentialUserName').val('<%= user.getScreenName() %>');
-							}
-						);
+						useSignedInUserButton.addEventListener('click', function (event) {
+							A.one('#<portlet:namespace />clientCredentialUserId').val(
+								'<%= user.getUserId() %>'
+							);
+							A.one('#<portlet:namespace />clientCredentialUserName').val(
+								'<%= user.getScreenName() %>'
+							);
+						});
 					}
 
-					var selectUserButton = document.getElementById('<portlet:namespace />selectUserButton');
+					var selectUserButton = document.getElementById(
+						'<portlet:namespace />selectUserButton'
+					);
 
 					if (selectUserButton) {
-						selectUserButton.addEventListener(
-							'click',
-							function(event) {
-								Liferay.Util.selectEntity(
-									{
-										dialog: {
-											modal: true,
-											destroyOnHide: true
-										},
-
-										<%
-										SelectUsersDisplayContext selectUsersDisplayContext = new SelectUsersDisplayContext(request, renderRequest, renderResponse);
-										%>
-
-										eventName: '<%= HtmlUtil.escapeJS(selectUsersDisplayContext.getEventName()) %>',
-										id: '<%= HtmlUtil.escapeJS(selectUsersDisplayContext.getEventName()) %>',
-
-										title: '<liferay-ui:message key="users" />',
-										uri: '<%= HtmlUtil.escapeJS(String.valueOf(selectUsersDisplayContext.getPortletURL())) %>'
+						selectUserButton.addEventListener('click', function (event) {
+							Liferay.Util.selectEntity(
+								{
+									dialog: {
+										modal: true,
+										destroyOnHide: true,
 									},
-									function(event) {
-										A.one('#<portlet:namespace />clientCredentialUserId').val(event.userid);
-										A.one('#<portlet:namespace />clientCredentialUserName').val(event.screenname);
-									}
-								);
-							}
-						);
-					}
 
+									<%
+									SelectUsersDisplayContext selectUsersDisplayContext = new SelectUsersDisplayContext(request, renderRequest, renderResponse);
+									%>
+
+									eventName:
+										'<%= HtmlUtil.escapeJS(selectUsersDisplayContext.getEventName()) %>',
+									id:
+										'<%= HtmlUtil.escapeJS(selectUsersDisplayContext.getEventName()) %>',
+
+									title: '<liferay-ui:message key="users" />',
+									uri:
+										'<%= HtmlUtil.escapeJS(String.valueOf(selectUsersDisplayContext.getPortletURL())) %>',
+								},
+								function (event) {
+									A.one('#<portlet:namespace />clientCredentialUserId').val(
+										event.userid
+									);
+									A.one('#<portlet:namespace />clientCredentialUserName').val(
+										event.screenname
+									);
+								}
+							);
+						});
+					}
 				</aui:script>
-			</div>
+			</clay:col>
 		</c:if>
-	</div>
+	</clay:row>
 
 	<c:if test="<%= oAuth2Application != null %>">
 		<h3 class="sheet-subtitle"><liferay-ui:message key="supported-features" /></h3>

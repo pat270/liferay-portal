@@ -111,15 +111,15 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 
 					bean = _layoutRevision;
 				}
-				catch (NoSuchMethodException nsme) {
-					_log.error(nsme, nsme);
+				catch (NoSuchMethodException noSuchMethodException) {
+					_log.error(noSuchMethodException, noSuchMethodException);
 				}
 			}
 
 			return method.invoke(bean, arguments);
 		}
-		catch (InvocationTargetException ite) {
-			throw ite.getTargetException();
+		catch (InvocationTargetException invocationTargetException) {
+			throw invocationTargetException.getTargetException();
 		}
 	}
 
@@ -133,10 +133,10 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 		try {
 			_layoutRevision = _getLayoutRevision(layout, layoutRevision);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(exception);
 		}
 	}
 
@@ -207,13 +207,11 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 				layoutRevisionId);
 		}
 
-		if ((layoutRevision != null) && !layoutRevision.isInactive()) {
-			return layoutRevision;
+		if ((layoutRevision == null) || layoutRevision.isInactive()) {
+			layoutRevision =
+				LayoutRevisionLocalServiceUtil.fetchLatestLayoutRevision(
+					layoutSetBranchId, layout.getPlid());
 		}
-
-		layoutRevision =
-			LayoutRevisionLocalServiceUtil.fetchLatestLayoutRevision(
-				layoutSetBranchId, layout.getPlid());
 
 		if (layoutRevision != null) {
 			StagingUtil.setRecentLayoutRevisionId(
@@ -303,8 +301,8 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 			"getName", "getRobots", "getTarget", "getTheme", "getThemeId",
 			"getThemeSetting", "getTitle", "getTypeSettings",
 			"getTypeSettingsProperties", "getTypeSettingsProperty",
-			"isContentDisplayPage", "isEscapedModel", "isIconImage",
-			"isInheritLookAndFeel", "setColorSchemeId", "setCss",
+			"isContentDisplayPage", "isCustomizable", "isEscapedModel",
+			"isIconImage", "isInheritLookAndFeel", "setColorSchemeId", "setCss",
 			"setDescription", "setDescriptionMap", "setEscapedModel",
 			"setGroupId", "setIconImage", "setIconImageId", "setKeywords",
 			"setKeywordsMap", "setModifiedDate", "setName", "setNameMap",

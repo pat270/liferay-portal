@@ -22,25 +22,25 @@ final String navigation = ParamUtil.getString(request, "navigation", "entries");
 
 <clay:navigation-bar
 	inverted="<%= true %>"
-	navigationItems="<%=
+	navigationItems='<%=
 		new JSPNavigationItemList(pageContext) {
 			{
 				add(
-				navigationItem -> {
-					navigationItem.setActive(navigation.equals("entries"));
-					navigationItem.setHref(renderResponse.createRenderURL());
-					navigationItem.setLabel(LanguageUtil.get(request, "entries"));
-				});
+					navigationItem -> {
+						navigationItem.setActive(navigation.equals("entries"));
+						navigationItem.setHref(renderResponse.createRenderURL());
+						navigationItem.setLabel(LanguageUtil.get(request, "entries"));
+					});
 
 				add(
-				navigationItem -> {
-					navigationItem.setActive(navigation.equals("images"));
-					navigationItem.setHref(renderResponse.createRenderURL(), "navigation", "images");
-					navigationItem.setLabel(LanguageUtil.get(request, "images"));
-				});
+					navigationItem -> {
+						navigationItem.setActive(navigation.equals("images"));
+						navigationItem.setHref(renderResponse.createRenderURL(), "navigation", "images");
+						navigationItem.setLabel(LanguageUtil.get(request, "images"));
+					});
 			}
 		}
-	%>"
+	%>'
 />
 
 <c:choose>

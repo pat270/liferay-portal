@@ -81,21 +81,21 @@ public class DSSignaturePackageBuilderImpl
 
 	@Override
 	public DSSignaturePackage getDSSignatureRequest() {
-		DSSignaturePackageImpl dsSignatureRequest =
+		DSSignaturePackageImpl dsSignaturePackageImpl =
 			new DSSignaturePackageImpl();
 
-		dsSignatureRequest.setAuthoritative(_authoritative);
-		dsSignatureRequest.setDSEmailNotification(_dsEmailNotification);
-		dsSignatureRequest.addDSDocuments(_dsDocuments);
-		dsSignatureRequest.setDSParticipantMap(_dsParticipantsMap);
+		dsSignaturePackageImpl.setAuthoritative(_authoritative);
+		dsSignaturePackageImpl.setDSEmailNotification(_dsEmailNotification);
+		dsSignaturePackageImpl.addDSDocuments(_dsDocuments);
+		dsSignaturePackageImpl.setDSParticipantMap(_dsParticipantsMap);
 
 		if (Validator.isNull(_dsSignatureRequestKey)) {
 			_dsSignatureRequestKey = _portalUUID.generate();
 		}
 
-		dsSignatureRequest.setDSSignatureRequestKey(_dsSignatureRequestKey);
+		dsSignaturePackageImpl.setDSSignatureRequestKey(_dsSignatureRequestKey);
 
-		return dsSignatureRequest;
+		return dsSignaturePackageImpl;
 	}
 
 	@Override
@@ -129,9 +129,7 @@ public class DSSignaturePackageBuilderImpl
 				dsParticipant.getDSParticipantRole(),
 				participantRole -> new ArrayList<>());
 
-		String participantKey = dsParticipant.getParticipantKey();
-
-		if (Validator.isNull(participantKey)) {
+		if (Validator.isNull(dsParticipant.getParticipantKey())) {
 			BeanPropertiesUtil.setPropertySilent(
 				dsParticipant, "participantKey",
 				String.valueOf(_participantCounter));

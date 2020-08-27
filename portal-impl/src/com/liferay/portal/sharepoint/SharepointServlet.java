@@ -56,8 +56,8 @@ public class SharepointServlet extends HttpServlet {
 				vtiInfHtml(httpServletResponse);
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -103,9 +103,8 @@ public class SharepointServlet extends HttpServlet {
 
 				sharepointRequest.setRootPath(rootPath);
 
-				SharepointStorage storage = SharepointUtil.getStorage(rootPath);
-
-				sharepointRequest.setSharepointStorage(storage);
+				sharepointRequest.setSharepointStorage(
+					SharepointUtil.getStorage(rootPath));
 
 				if (_log.isInfoEnabled()) {
 					_log.info(
@@ -128,8 +127,8 @@ public class SharepointServlet extends HttpServlet {
 				}
 			}
 		}
-		catch (SharepointException se) {
-			_log.error(se, se);
+		catch (SharepointException sharepointException) {
+			_log.error(sharepointException, sharepointException);
 		}
 	}
 

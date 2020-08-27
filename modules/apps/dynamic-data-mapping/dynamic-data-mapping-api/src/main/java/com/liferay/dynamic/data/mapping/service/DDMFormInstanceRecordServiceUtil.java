@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see DDMFormInstanceRecordService
  * @generated
  */
-@ProviderType
 public class DDMFormInstanceRecordServiceUtil {
 
 	/*
@@ -107,6 +105,18 @@ public class DDMFormInstanceRecordServiceUtil {
 
 		getService().revertFormInstanceRecord(
 			ddmFormInstanceRecordId, version, serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.search.BaseModelSearchResult
+		<com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord>
+				searchFormInstanceRecords(
+					long ddmFormInstanceId, String[] notEmptyFields, int status,
+					int start, int end,
+					com.liferay.portal.kernel.search.Sort sort)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().searchFormInstanceRecords(
+			ddmFormInstanceId, notEmptyFields, status, start, end, sort);
 	}
 
 	public static com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord

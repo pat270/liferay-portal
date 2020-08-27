@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.Dictionary;
@@ -251,15 +250,17 @@ public class ConfigurationProviderTest {
 
 		Assert.assertNotNull(configurationProperties);
 
-		for (Enumeration keys = properties.keys(); keys.hasMoreElements();) {
-			String key = (String)keys.nextElement();
+		for (Enumeration<String> enumeration = properties.keys();
+			 enumeration.hasMoreElements();) {
+
+			String key = enumeration.nextElement();
 
 			Assert.assertEquals(
 				properties.get(key), configurationProperties.get(key));
 		}
 	}
 
-	private Configuration _getConfiguration(String pid) throws IOException {
+	private Configuration _getConfiguration(String pid) throws Exception {
 		return _configurationAdmin.getConfiguration(pid, StringPool.QUESTION);
 	}
 

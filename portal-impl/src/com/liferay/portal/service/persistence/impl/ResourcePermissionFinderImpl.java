@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.service.persistence.ResourcePermissionFinder;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.ResourcePermissionImpl;
-import com.liferay.portal.model.impl.ResourcePermissionModelImpl;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.io.Serializable;
@@ -60,8 +59,7 @@ public class ResourcePermissionFinderImpl
 
 	public static final FinderPath FINDER_PATH_COUNT_BY_C_N_S_P_R_A =
 		new FinderPath(
-			ResourcePermissionModelImpl.ENTITY_CACHE_ENABLED,
-			ResourcePermissionModelImpl.FINDER_CACHE_ENABLED, Long.class,
+			Long.class,
 			ResourcePermissionPersistenceImpl.
 				FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"countByC_N_S_P_R_A",
@@ -82,19 +80,19 @@ public class ResourcePermissionFinderImpl
 
 			sql = StringUtil.replace(sql, "[$SCOPE$]", getScopes(scopes));
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(roleId);
-			qPos.add(scopes);
+			queryPos.add(roleId);
+			queryPos.add(scopes);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -103,8 +101,8 @@ public class ResourcePermissionFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -135,7 +133,7 @@ public class ResourcePermissionFinderImpl
 			String sql = CustomSQLUtil.get(COUNT_BY_C_N_S_P_R_A);
 
 			if (roleIds.length > 1) {
-				StringBundler sb = new StringBundler(roleIds.length * 2 - 1);
+				StringBundler sb = new StringBundler((roleIds.length * 2) - 1);
 
 				for (int i = 0; i < roleIds.length; i++) {
 					if (i > 0) {
@@ -149,24 +147,24 @@ public class ResourcePermissionFinderImpl
 					sql, "ResourcePermission.roleId = ?", sb.toString());
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(name);
-			qPos.add(scope);
-			qPos.add(primKey);
-			qPos.add(roleIds);
-			qPos.add(actionId);
-			qPos.add(actionId);
+			queryPos.add(companyId);
+			queryPos.add(name);
+			queryPos.add(scope);
+			queryPos.add(primKey);
+			queryPos.add(roleIds);
+			queryPos.add(actionId);
+			queryPos.add(actionId);
 
-			count = (Long)q.uniqueResult();
+			count = (Long)sqlQuery.uniqueResult();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			if (count == null) {
@@ -200,22 +198,23 @@ public class ResourcePermissionFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_RESOURCE);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("ResourcePermission", ResourcePermissionImpl.class);
+			sqlQuery.addEntity(
+				"ResourcePermission", ResourcePermissionImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(name);
-			qPos.add(primKey);
-			qPos.add(String.valueOf(groupId));
+			queryPos.add(companyId);
+			queryPos.add(name);
+			queryPos.add(primKey);
+			queryPos.add(String.valueOf(groupId));
 
 			return (List<ResourcePermission>)QueryUtil.list(
-				q, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+				sqlQuery, getDialect(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -235,20 +234,21 @@ public class ResourcePermissionFinderImpl
 
 			sql = StringUtil.replace(sql, "[$SCOPE$]", getScopes(scopes));
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("ResourcePermission", ResourcePermissionImpl.class);
+			sqlQuery.addEntity(
+				"ResourcePermission", ResourcePermissionImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(roleId);
-			qPos.add(scopes);
+			queryPos.add(roleId);
+			queryPos.add(scopes);
 
 			return (List<ResourcePermission>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -260,7 +260,7 @@ public class ResourcePermissionFinderImpl
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(scopes.length * 2 + 1);
+		StringBundler sb = new StringBundler((scopes.length * 2) + 1);
 
 		sb.append(StringPool.OPEN_PARENTHESIS);
 

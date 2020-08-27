@@ -17,7 +17,9 @@ package com.liferay.fragment.service.impl;
 import com.liferay.fragment.exception.DuplicateFragmentCollectionKeyException;
 import com.liferay.fragment.exception.FragmentCollectionNameException;
 import com.liferay.fragment.model.FragmentCollection;
+import com.liferay.fragment.model.FragmentComposition;
 import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.service.FragmentCompositionLocalService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.service.base.FragmentCollectionLocalServiceBaseImpl;
 import com.liferay.petra.string.CharPool;
@@ -72,6 +74,15 @@ public class FragmentCollectionLocalServiceImpl
 
 		User user = userLocalService.getUser(userId);
 
+		long companyId = user.getCompanyId();
+
+		if (serviceContext != null) {
+			companyId = serviceContext.getCompanyId();
+		}
+		else {
+			serviceContext = new ServiceContext();
+		}
+
 		validate(name);
 
 		if (Validator.isNull(fragmentCollectionKey)) {
@@ -91,7 +102,7 @@ public class FragmentCollectionLocalServiceImpl
 
 		fragmentCollection.setUuid(serviceContext.getUuid());
 		fragmentCollection.setGroupId(groupId);
-		fragmentCollection.setCompanyId(user.getCompanyId());
+		fragmentCollection.setCompanyId(companyId);
 		fragmentCollection.setUserId(user.getUserId());
 		fragmentCollection.setUserName(user.getFullName());
 		fragmentCollection.setCreateDate(
@@ -102,14 +113,7 @@ public class FragmentCollectionLocalServiceImpl
 		fragmentCollection.setName(name);
 		fragmentCollection.setDescription(description);
 
-		fragmentCollectionPersistence.update(fragmentCollection);
-
-		// Resources
-
-		resourceLocalService.addModelResources(
-			fragmentCollection, serviceContext);
-
-		return fragmentCollection;
+		return fragmentCollectionPersistence.update(fragmentCollection);
 	}
 
 	@Override
@@ -133,7 +137,18 @@ public class FragmentCollectionLocalServiceImpl
 		// Images
 
 		PortletFileRepositoryUtil.deletePortletFolder(
-			fragmentCollection.getResourcesFolderId());
+			fragmentCollection.getResourcesFolderId(false));
+
+		// Fragment compositions
+
+		List<FragmentComposition> fragmentCompositions =
+			fragmentCompositionPersistence.findByFragmentCollectionId(
+				fragmentCollection.getFragmentCollectionId());
+
+		for (FragmentComposition fragmentComposition : fragmentCompositions) {
+			_fragmentCompositionLocalService.deleteFragmentComposition(
+				fragmentComposition);
+		}
 
 		// Fragment entries
 
@@ -153,11 +168,8 @@ public class FragmentCollectionLocalServiceImpl
 			long fragmentCollectionId)
 		throws PortalException {
 
-		FragmentCollection fragmentCollection = getFragmentCollection(
-			fragmentCollectionId);
-
 		return fragmentCollectionLocalService.deleteFragmentCollection(
-			fragmentCollection);
+			getFragmentCollection(fragmentCollectionId));
 	}
 
 	@Override
@@ -254,14 +266,19 @@ public class FragmentCollectionLocalServiceImpl
 		fragmentCollection.setName(name);
 		fragmentCollection.setDescription(description);
 
-		fragmentCollectionPersistence.update(fragmentCollection);
-
-		return fragmentCollection;
+		return fragmentCollectionPersistence.update(fragmentCollection);
 	}
 
 	protected void validate(String name) throws PortalException {
 		if (Validator.isNull(name)) {
 			throw new FragmentCollectionNameException("Name must not be null");
+		}
+
+		if (name.contains(StringPool.PERIOD) ||
+			name.contains(StringPool.SLASH)) {
+
+			throw new FragmentCollectionNameException(
+				"Name contains invalid characters");
 		}
 	}
 
@@ -290,6 +307,9 @@ public class FragmentCollectionLocalServiceImpl
 
 		return StringPool.BLANK;
 	}
+
+	@Reference
+	private FragmentCompositionLocalService _fragmentCompositionLocalService;
 
 	@Reference
 	private FragmentEntryLocalService _fragmentEntryLocalService;

@@ -33,10 +33,9 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 		long companyId, String className, long classPK, int type,
 		String extraInfo, Date expirationDate, ServiceContext serviceContext) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		ticketPersistence.removeByC_C_C_T(
-			companyId, classNameId, classPK, type);
+			companyId, classNameLocalService.getClassNameId(className), classPK,
+			type);
 
 		return addTicket(
 			companyId, className, classPK, type, extraInfo, expirationDate,
@@ -63,9 +62,7 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 		ticket.setExtraInfo(extraInfo);
 		ticket.setExpirationDate(expirationDate);
 
-		ticketPersistence.update(ticket);
-
-		return ticket;
+		return ticketPersistence.update(ticket);
 	}
 
 	@Override
@@ -82,17 +79,15 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 	public List<Ticket> getTickets(
 		long companyId, String className, long classPK, int type) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return ticketPersistence.findByC_C_C_T(
-			companyId, classNameId, classPK, type);
+			companyId, classNameLocalService.getClassNameId(className), classPK,
+			type);
 	}
 
 	@Override
 	public List<Ticket> getTickets(String className, long classPK, int type) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return ticketPersistence.findByC_C_T(classNameId, classPK, type);
+		return ticketPersistence.findByC_C_T(
+			classNameLocalService.getClassNameId(className), classPK, type);
 	}
 
 	@Override
@@ -111,9 +106,7 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 		ticket.setExtraInfo(extraInfo);
 		ticket.setExpirationDate(expirationDate);
 
-		ticketPersistence.update(ticket);
-
-		return ticket;
+		return ticketPersistence.update(ticket);
 	}
 
 }

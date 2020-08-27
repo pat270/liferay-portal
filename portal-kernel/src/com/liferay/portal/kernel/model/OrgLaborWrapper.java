@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link OrgLabor}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OrgLabor
  * @generated
  */
-@ProviderType
 public class OrgLaborWrapper
 	extends BaseModelWrapper<OrgLabor>
-	implements OrgLabor, ModelWrapper<OrgLabor> {
+	implements ModelWrapper<OrgLabor>, OrgLabor {
 
 	public OrgLaborWrapper(OrgLabor orgLabor) {
 		super(orgLabor);

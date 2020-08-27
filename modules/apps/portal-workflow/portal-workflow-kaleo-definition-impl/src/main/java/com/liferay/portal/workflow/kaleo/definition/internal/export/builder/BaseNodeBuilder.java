@@ -43,6 +43,7 @@ import com.liferay.portal.workflow.kaleo.definition.ScriptRecipient;
 import com.liferay.portal.workflow.kaleo.definition.Timer;
 import com.liferay.portal.workflow.kaleo.definition.UserAssignment;
 import com.liferay.portal.workflow.kaleo.definition.UserRecipient;
+import com.liferay.portal.workflow.kaleo.definition.exception.KaleoDefinitionValidationException;
 import com.liferay.portal.workflow.kaleo.model.KaleoAction;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.model.KaleoNotification;
@@ -71,7 +72,8 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 		T node = createNode(kaleoNode);
 
 		Set<Action> actions = buildActions(
-			KaleoNode.class.getName(), kaleoNode.getKaleoNodeId());
+			kaleoNode.getCompanyId(), KaleoNode.class.getName(),
+			kaleoNode.getKaleoNodeId());
 
 		node.setActions(actions);
 
@@ -155,13 +157,14 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 	}
 
 	protected Set<Action> buildActions(
-		String kaleoClassName, long kaleoClassPK) {
+			long companyId, String kaleoClassName, long kaleoClassPK)
+		throws KaleoDefinitionValidationException {
 
 		List<KaleoAction> kaleoActions =
 			kaleoActionLocalService.getKaleoActions(
-				kaleoClassName, kaleoClassPK);
+				companyId, kaleoClassName, kaleoClassPK);
 
-		Set<Action> actions = new HashSet<>(kaleoActions.size());
+		Set<Action> actions = new HashSet<>();
 
 		for (KaleoAction kaleoAction : kaleoActions) {
 			Action action = new Action(
@@ -185,8 +188,7 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 			kaleoTaskAssignmentLocalService.getKaleoTaskAssignments(
 				kaleoClassName, kaleoClassPK);
 
-		Set<Assignment> assignments = new HashSet<>(
-			kaleoTaskAssignments.size());
+		Set<Assignment> assignments = new HashSet<>();
 
 		for (KaleoTaskAssignment kaleoTaskAssignment : kaleoTaskAssignments) {
 			String assigneeClassName =
@@ -210,7 +212,7 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 				Role role = roleLocalService.fetchRole(assigneeClassPK);
 
 				assignment = new RoleAssignment(
-					role.getName(), role.getTypeLabel());
+					role.getRoleId(), role.getName(), role.getTypeLabel());
 			}
 			else if (assigneeClassName.equals(User.class.getName())) {
 				if (assigneeClassPK == 0) {
@@ -239,8 +241,7 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 			kaleoNotificationLocalService.getKaleoNotifications(
 				kaleoClassName, kaleoClassPK);
 
-		Set<Notification> notifications = new HashSet<>(
-			kaleoNotifications.size());
+		Set<Notification> notifications = new HashSet<>();
 
 		for (KaleoNotification kaleoNotification : kaleoNotifications) {
 			Notification notification = new Notification(
@@ -251,10 +252,8 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 
 			notifications.add(notification);
 
-			String notificationTypes = kaleoNotification.getNotificationTypes();
-
 			String[] notificationTypeValues = StringUtil.split(
-				notificationTypes, StringPool.COMMA);
+				kaleoNotification.getNotificationTypes(), StringPool.COMMA);
 
 			for (String notificationTypeValue : notificationTypeValues) {
 				notification.addNotificationType(notificationTypeValue);
@@ -272,7 +271,7 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 		List<KaleoTimer> kaleoTimers = kaleoTimerLocalService.getKaleoTimers(
 			kaleoClassName, kaleoClassPK);
 
-		Set<Timer> timers = new HashSet<>(kaleoTimers.size());
+		Set<Timer> timers = new HashSet<>();
 
 		for (KaleoTimer kaleoTimer : kaleoTimers) {
 			Timer timer = new Timer(
@@ -283,8 +282,7 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 
 			DelayDuration delayDuration = new DelayDuration(
 				kaleoTimer.getDuration(),
-				DurationScale.valueOf(
-					StringUtil.toUpperCase(kaleoTimer.getScale())));
+				DurationScale.parse(kaleoTimer.getScale()));
 
 			timer.setDelayDuration(delayDuration);
 
@@ -293,14 +291,14 @@ public abstract class BaseNodeBuilder<T extends Node> implements NodeBuilder {
 			if (Validator.isNotNull(recurrenceScale)) {
 				DelayDuration recurrenceDelayDuration = new DelayDuration(
 					kaleoTimer.getRecurrenceDuration(),
-					DurationScale.valueOf(
-						StringUtil.toUpperCase(recurrenceScale)));
+					DurationScale.parse(recurrenceScale));
 
 				timer.setRecurrence(recurrenceDelayDuration);
 			}
 
 			Set<Action> timerActions = buildActions(
-				KaleoTimer.class.getName(), kaleoTimer.getKaleoTimerId());
+				kaleoTimer.getCompanyId(), KaleoTimer.class.getName(),
+				kaleoTimer.getKaleoTimerId());
 
 			timer.setActions(timerActions);
 

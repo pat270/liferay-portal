@@ -90,14 +90,20 @@ public class UpgradeClient {
 						"y,suspend=y");
 			}
 
+			File logDir = new File(_jarDir, "logs");
+
+			if ((logDir != null) && !logDir.exists()) {
+				logDir.mkdirs();
+			}
+
 			File logFile = null;
 
 			if (commandLine.hasOption("log-file")) {
 				logFile = new File(
-					_jarDir, commandLine.getOptionValue("log-file"));
+					logDir, commandLine.getOptionValue("log-file"));
 			}
 			else {
-				logFile = new File(_jarDir, "upgrade.log");
+				logFile = new File(logDir, "upgrade.log");
 			}
 
 			if (logFile.exists()) {
@@ -105,9 +111,9 @@ public class UpgradeClient {
 
 				logFile.renameTo(
 					new File(
-						_jarDir, logFileName + "." + logFile.lastModified()));
+						logDir, logFileName + "." + logFile.lastModified()));
 
-				logFile = new File(_jarDir, logFileName);
+				logFile = new File(logDir, logFileName);
 			}
 
 			boolean shell = false;
@@ -121,15 +127,15 @@ public class UpgradeClient {
 
 			upgradeClient.upgrade();
 		}
-		catch (ParseException pe) {
+		catch (ParseException parseException) {
 			System.err.println("Unable to parse command line properties");
 
-			pe.printStackTrace();
+			parseException.printStackTrace();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			System.err.println("Error running upgrade");
 
-			e.printStackTrace();
+			exception.printStackTrace();
 		}
 	}
 
@@ -143,6 +149,8 @@ public class UpgradeClient {
 		_appServerPropertiesFile = new File(_jarDir, "app-server.properties");
 
 		_appServerProperties = _readProperties(_appServerPropertiesFile);
+
+		_fileOutputStream = new FileOutputStream(_logFile);
 
 		_portalUpgradeDatabasePropertiesFile = new File(
 			_jarDir, "portal-upgrade-database.properties");
@@ -160,8 +168,7 @@ public class UpgradeClient {
 	public void upgrade() throws IOException {
 		verifyProperties();
 
-		System.setOut(
-			new TeePrintStream(new FileOutputStream(_logFile), System.out));
+		System.setOut(new TeePrintStream(_fileOutputStream, System.out));
 
 		ProcessBuilder processBuilder = new ProcessBuilder();
 
@@ -221,8 +228,8 @@ public class UpgradeClient {
 
 			System.out.flush();
 		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
+		catch (IOException ioException) {
+			ioException.printStackTrace();
 		}
 
 		try (GogoShellClient gogoShellClient = new GogoShellClient()) {
@@ -233,7 +240,7 @@ public class UpgradeClient {
 
 				_printHelp();
 
-				_consoleReader.setPrompt("g! ");
+				_consoleReader.setPrompt(_GOGO_SHELL_PREFIX);
 
 				String line = _consoleReader.readLine();
 
@@ -250,7 +257,7 @@ public class UpgradeClient {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		_close(process.getErrorStream());
@@ -268,8 +275,8 @@ public class UpgradeClient {
 
 			_saveProperties();
 		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
+		catch (IOException ioException) {
+			ioException.printStackTrace();
 		}
 	}
 
@@ -394,11 +401,29 @@ public class UpgradeClient {
 			GogoShellClient gogoShellClient, String command)
 		throws IOException {
 
+		if (command.equals("")) {
+			return true;
+		}
+
+		String line = _GOGO_SHELL_PREFIX + command + System.lineSeparator();
+
+		_fileOutputStream.write(line.getBytes());
+
 		if (command.equals("exit") || command.equals("quit")) {
 			return false;
 		}
 
-		System.out.println(gogoShellClient.send(command));
+		String output = gogoShellClient.send(command);
+
+		int index = output.indexOf(System.lineSeparator());
+
+		if (index == -1) {
+			return true;
+		}
+
+		output = output.substring(index + 1);
+
+		System.out.println(output);
 
 		return true;
 	}
@@ -410,7 +435,7 @@ public class UpgradeClient {
 			try {
 				properties.load(file);
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				System.err.println("Unable to load " + file);
 			}
 		}
@@ -537,116 +562,115 @@ public class UpgradeClient {
 		String value = _portalUpgradeDatabaseProperties.getProperty(
 			"jdbc.default.driverClassName");
 
-		if ((value == null) || value.isEmpty()) {
-			String response = null;
+		if ((value != null) && !value.isEmpty()) {
+			return;
+		}
 
-			Database dataSource = null;
+		String response = null;
 
-			while (dataSource == null) {
-				System.out.print("[ ");
+		Database dataSource = null;
 
-				for (String database : _databases.keySet()) {
-					System.out.print(database + " ");
-				}
+		while (dataSource == null) {
+			System.out.print("[ ");
 
-				System.out.println("]");
-
-				System.out.println("Please enter your database (mysql): ");
-
-				response = _consoleReader.readLine();
-
-				if (response.isEmpty()) {
-					response = "mysql";
-				}
-
-				dataSource = _databases.get(response);
-
-				if (dataSource == null) {
-					System.err.println(
-						response + " is an unsupported database.");
-				}
+			for (String database : _databases.keySet()) {
+				System.out.print(database + " ");
 			}
 
-			System.out.println(
-				"Please enter your database JDBC driver class name (" +
-					dataSource.getClassName() + "): ");
+			System.out.println("]");
+
+			System.out.println("Please enter your database (mysql): ");
 
 			response = _consoleReader.readLine();
 
-			if (!response.isEmpty()) {
-				dataSource.setClassName(response);
+			if (response.isEmpty()) {
+				response = "mysql";
 			}
 
-			System.out.println(
-				"Please enter your database JDBC driver protocol (" +
-					dataSource.getProtocol() + "): ");
+			dataSource = _databases.get(response);
 
-			response = _consoleReader.readLine();
-
-			if (!response.isEmpty()) {
-				dataSource.setProtocol(response);
+			if (dataSource == null) {
+				System.err.println(response + " is an unsupported database.");
 			}
+		}
 
-			System.out.println(
-				"Please enter your database host (" + dataSource.getHost() +
-					"): ");
+		System.out.println(
+			"Please enter your database JDBC driver class name (" +
+				dataSource.getClassName() + "): ");
 
-			response = _consoleReader.readLine();
+		response = _consoleReader.readLine();
 
-			if (!response.isEmpty()) {
-				dataSource.setHost(response);
-			}
+		if (!response.isEmpty()) {
+			dataSource.setClassName(response);
+		}
 
-			String port = null;
+		System.out.println(
+			"Please enter your database JDBC driver protocol (" +
+				dataSource.getProtocol() + "): ");
 
-			if (dataSource.getPort() > 0) {
-				port = String.valueOf(dataSource.getPort());
+		response = _consoleReader.readLine();
+
+		if (!response.isEmpty()) {
+			dataSource.setProtocol(response);
+		}
+
+		System.out.println(
+			"Please enter your database host (" + dataSource.getHost() + "): ");
+
+		response = _consoleReader.readLine();
+
+		if (!response.isEmpty()) {
+			dataSource.setHost(response);
+		}
+
+		String port = null;
+
+		if (dataSource.getPort() > 0) {
+			port = String.valueOf(dataSource.getPort());
+		}
+		else {
+			port = "none";
+		}
+
+		System.out.println("Please enter your database port (" + port + "): ");
+
+		response = _consoleReader.readLine();
+
+		if (!response.isEmpty()) {
+			if (response.equals("none")) {
+				dataSource.setPort(0);
 			}
 			else {
-				port = "none";
+				dataSource.setPort(Integer.parseInt(response));
 			}
-
-			System.out.println(
-				"Please enter your database port (" + port + "): ");
-
-			response = _consoleReader.readLine();
-
-			if (!response.isEmpty()) {
-				if (response.equals("none")) {
-					dataSource.setPort(0);
-				}
-				else {
-					dataSource.setPort(Integer.parseInt(response));
-				}
-			}
-
-			System.out.println(
-				"Please enter your database name (" +
-					dataSource.getDatabaseName() + "): ");
-
-			response = _consoleReader.readLine();
-
-			if (!response.isEmpty()) {
-				dataSource.setDatabaseName(response);
-			}
-
-			System.out.println("Please enter your database username: ");
-
-			String username = _consoleReader.readLine();
-
-			System.out.println("Please enter your database password: ");
-
-			String password = _consoleReader.readLine('*');
-
-			_portalUpgradeDatabaseProperties.setProperty(
-				"jdbc.default.driverClassName", dataSource.getClassName());
-			_portalUpgradeDatabaseProperties.setProperty(
-				"jdbc.default.password", password);
-			_portalUpgradeDatabaseProperties.setProperty(
-				"jdbc.default.url", dataSource.getURL());
-			_portalUpgradeDatabaseProperties.setProperty(
-				"jdbc.default.username", username);
 		}
+
+		System.out.println(
+			"Please enter your database name (" + dataSource.getDatabaseName() +
+				"): ");
+
+		response = _consoleReader.readLine();
+
+		if (!response.isEmpty()) {
+			dataSource.setDatabaseName(response);
+		}
+
+		System.out.println("Please enter your database username: ");
+
+		String userName = _consoleReader.readLine();
+
+		System.out.println("Please enter your database password: ");
+
+		String password = _consoleReader.readLine('*');
+
+		_portalUpgradeDatabaseProperties.setProperty(
+			"jdbc.default.driverClassName", dataSource.getClassName());
+		_portalUpgradeDatabaseProperties.setProperty(
+			"jdbc.default.password", password);
+		_portalUpgradeDatabaseProperties.setProperty(
+			"jdbc.default.url", dataSource.getURL());
+		_portalUpgradeDatabaseProperties.setProperty(
+			"jdbc.default.username", userName);
 	}
 
 	private void _verifyPortalUpgradeExtProperties() throws IOException {
@@ -681,14 +705,14 @@ public class UpgradeClient {
 			"liferay.home", liferayHome.getCanonicalPath());
 	}
 
+	private static final String _GOGO_SHELL_PREFIX = "g! ";
+
 	private static final String _JAVA_HOME = System.getenv("JAVA_HOME");
 
 	private static final Map<String, AppServer> _appServers =
 		new LinkedHashMap<String, AppServer>() {
 			{
 				put("jboss", AppServer.getJBossEAPAppServer());
-				put("jonas", AppServer.getJOnASAppServer());
-				put("resin", AppServer.getResinAppServer());
 				put("tcserver", AppServer.getTCServerAppServer());
 				put("tomcat", AppServer.getTomcatAppServer());
 				put("weblogic", AppServer.getWebLogicAppServer());
@@ -725,8 +749,8 @@ public class UpgradeClient {
 
 			_jarDir = jarFile.getParentFile();
 		}
-		catch (URISyntaxException urise) {
-			throw new ExceptionInInitializerError(urise);
+		catch (URISyntaxException uriSyntaxException) {
+			throw new ExceptionInInitializerError(uriSyntaxException);
 		}
 	}
 
@@ -734,6 +758,7 @@ public class UpgradeClient {
 	private final Properties _appServerProperties;
 	private final File _appServerPropertiesFile;
 	private final ConsoleReader _consoleReader = new ConsoleReader();
+	private final FileOutputStream _fileOutputStream;
 	private final String _jvmOpts;
 	private final File _logFile;
 	private final Properties _portalUpgradeDatabaseProperties;

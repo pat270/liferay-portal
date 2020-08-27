@@ -1,47 +1,95 @@
-@import "bourbon";
-@import "mixins";
+@import 'atlas-variables';
 
-.control-menu {
-	.staging-links {
-		position: static;
+.staging {
+	background-color: $white;
+	border-bottom: 1px solid $secondary-l3;
+}
 
-		.live-link, .staging-link {
-			font-size: 16px;
-			padding: 0 8px;
+.staging-bar {
+	padding-bottom: 0.5rem;
+
+	.row {
+		align-items: center;
+		.col {
+			margin-top: 0.5rem;
 		}
 	}
 
-	.staging-message {
-		margin: 0 auto;
-		width: 100%;
-	}
-}
+	@include media-breakpoint-down(xs) {
+		display: none;
 
-.control-menu-nav {
-	.staging-bar {
-		position: absolute;
-
-		@include sm() {
-			position: static;
+		.staging-show & {
+			display: block;
 		}
 	}
 }
 
-.custom-info-alert {
-	background: #FFF;
+.staging-alert-container .alert {
+	background-color: transparent;
 	border: none;
+	margin-bottom: 0;
+	padding-bottom: 0;
+	padding-top: 0;
+}
+
+.staging-button-container {
+	display: flex;
+	justify-content: center;
+
+	@include media-breakpoint-down(xs) {
+		margin-bottom: 1rem;
+		margin-top: 1rem;
+	}
+
+	@include media-breakpoint-up(sm) {
+		justify-content: flex-end;
+	}
+}
+
+.staging-toggle {
+	color: inherit;
+
+	&:hover,
+	&:focus,
+	&.focus {
+		color: inherit;
+	}
+
+	> span:nth-child(2) {
+		display: none;
+	}
+
+	.staging-show & {
+		> span {
+			&:nth-child(1) {
+				display: none;
+			}
+			&:nth-child(2) {
+				display: block;
+			}
+		}
+	}
+
+	@include media-breakpoint-up(sm) {
+		display: none;
+	}
+}
+
+.staging-message {
+	margin: 0 auto;
+	width: 100%;
 }
 
 .publish-btn-group {
 	vertical-align: middle;
 
-	@include sm() {
+	@include media-breakpoint-up(sm) {
 		border-radius: 3px;
 		overflow: hidden;
 	}
 
 	.btn {
-		@include media-query(null, $screen-xs-max) {
+		@include media-breakpoint-down(sm) {
 			font-size: 1em;
 			padding: 13px 15px;
 
@@ -54,7 +102,7 @@
 	}
 
 	.dropdown-toggle {
-		@include media-query(null, $screen-xs-max) {
+		@include media-breakpoint-down(sm) {
 			border-bottom-left-radius: 0;
 			border-top-left-radius: 0;
 			position: absolute;
@@ -62,7 +110,7 @@
 			top: 0;
 
 			&:after {
-				background-color: #FFF;
+				background-color: #fff;
 				bottom: 7px;
 				content: '';
 				display: block;
@@ -80,10 +128,6 @@
 	padding-top: 10px;
 }
 
-.staging-alert-container {
-	padding: 1.09375rem 0;
-}
-
 .staging-bar-control-toggle {
 	div {
 		margin-bottom: 0;
@@ -92,7 +136,7 @@
 			margin-bottom: 0;
 			min-width: 210px;
 
-			@include sm() {
+			@include media-breakpoint-up(sm) {
 				float: left;
 			}
 
@@ -108,22 +152,32 @@
 	}
 }
 
-.staging-bar-workflow-text .status{
-	color: #2E5AAC;
-}
-
-.staging-ready {
-	padding-top: 69px;
-}
-.staging-ready-level-3 {
-	padding-top: 126px;
+.staging-bar-workflow-text .status {
+	color: #2e5aac;
 }
 
 .staging-layout-revision-details-list {
-	@include justify-content(space-between);
+	justify-content: space-between;
 
 	> li.control-menu-nav-item {
 		padding: 0 8px;
+	}
+
+	.btn-group {
+		@include media-breakpoint-down(xs) {
+			margin-top: 0.5rem;
+		}
+
+		@include media-breakpoint-up(sm) {
+			.btn:first-child {
+				border-bottom-right-radius: $btn-border-radius;
+				border-top-right-radius: $btn-border-radius;
+			}
+		}
+	}
+
+	@include media-breakpoint-down(xs) {
+		flex-direction: column;
 	}
 }
 
@@ -136,7 +190,7 @@
 		text-decoration: none;
 	}
 
-	@include sm() {
+	@include media-breakpoint-up(sm) {
 		font-size: 14px;
 	}
 }
@@ -149,10 +203,10 @@
 }
 
 .staging-variation-selector {
-	background: #F5F7F8;
-	border: 1px solid #E9E9EF;
+	background: #f5f7f8;
+	border: 1px solid #e9e9ef;
 	border-radius: 4px;
-	color: #000000;
+	color: #000;
 	display: block;
 	font-size: 14px;
 	max-width: 16ch;
@@ -163,7 +217,7 @@
 	white-space: nowrap;
 	width: 100%;
 
-	@include sm() {
+	@include media-breakpoint-up(sm) {
 		font-size: 14px;
 	}
 
@@ -177,6 +231,11 @@
 
 .staging-bar-level-2-nav {
 	display: flex;
+
+	.control-menu-nav-item {
+		margin-left: 1rem;
+		margin-right: 1rem;
+	}
 
 	.staging-bar-level-2-nav-item {
 		display: flex;
@@ -192,15 +251,7 @@
 }
 
 .staging-bar-level-3-message {
-	display: inline-block;
-	position: static;
-
-	.staging-bar-level-3-message-container {
-		left: 0;
-		position: absolute;
-		right: 0;
-		top: 100%;
-	}
+	margin-top: 0.5rem;
 }
 
 .header-title-with-overflow {

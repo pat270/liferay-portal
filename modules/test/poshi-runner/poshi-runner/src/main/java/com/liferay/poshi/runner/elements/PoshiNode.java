@@ -17,6 +17,8 @@ package com.liferay.poshi.runner.elements;
 import com.liferay.poshi.runner.script.PoshiScriptParserException;
 import com.liferay.poshi.runner.util.StringUtil;
 
+import java.net.URL;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -35,15 +37,9 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 	public B clone(String poshiScript) throws PoshiScriptParserException;
 
 	public default String getFileExtension() {
-		PoshiNode parentPoshiNode = (PoshiNode)getParent();
+		PoshiNode<?, ?> parentPoshiNode = (PoshiNode<?, ?>)getParent();
 
 		return parentPoshiNode.getFileExtension();
-	}
-
-	public default String getFilePath() {
-		PoshiNode parentPoshiNode = (PoshiNode)getParent();
-
-		return parentPoshiNode.getFilePath();
 	}
 
 	public String getPoshiScript();
@@ -55,14 +51,14 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 			return 1;
 		}
 
-		List<PoshiNode> poshiNodes = parentPoshiElement.getPoshiNodes();
+		List<PoshiNode<?, ?>> poshiNodes = parentPoshiElement.getPoshiNodes();
 
-		PoshiNode previousPoshiNode = null;
+		PoshiNode<?, ?> previousPoshiNode = null;
 
-		for (Iterator<PoshiNode> iterator = poshiNodes.iterator();
+		for (Iterator<PoshiNode<?, ?>> iterator = poshiNodes.iterator();
 			 iterator.hasNext();) {
 
-			PoshiNode poshiNode = iterator.next();
+			PoshiNode<?, ?> poshiNode = iterator.next();
 
 			if (poshiNode instanceof DescriptionPoshiElement) {
 				continue;
@@ -106,11 +102,10 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 					previousPoshiScript);
 
 			if (poshiScriptBlockMatcher.find()) {
-				String blockName = parentPoshiElement.getBlockName(
-					previousPoshiScript);
+				int newLineCount = StringUtil.count(
+					parentPoshiElement.getBlockName(previousPoshiScript), "\n");
 
-				poshiScriptLineNumber =
-					poshiScriptLineNumber - StringUtil.count(blockName, "\n");
+				poshiScriptLineNumber = poshiScriptLineNumber - newLineCount;
 			}
 
 			return poshiScriptLineNumber;
@@ -123,6 +118,18 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 
 		return previousPoshiNode.getPoshiScriptLineNumber() +
 			StringUtil.count(previousPoshiNode.getPoshiScript(), "\n");
+	}
+
+	public default URL getURL() {
+		PoshiNode<?, ?> parentPoshiNode = (PoshiNode<?, ?>)getParent();
+
+		return parentPoshiNode.getURL();
+	}
+
+	public default boolean isValidPoshiXML() throws PoshiScriptParserException {
+		PoshiNode<?, ?> parentPoshiNode = (PoshiNode<?, ?>)getParent();
+
+		return parentPoshiNode.isValidPoshiXML();
 	}
 
 	public void parsePoshiScript(String poshiScript)
@@ -143,10 +150,11 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 		generatedPoshiScript = generatedPoshiScript.replaceAll("\\s+", "");
 
 		if (!originalPoshiScript.equals(generatedPoshiScript)) {
-			PoshiScriptParserException pspe = new PoshiScriptParserException(
-				PoshiScriptParserException.TRANSLATION_LOSS_MESSAGE, this);
+			PoshiScriptParserException poshiScriptParserException =
+				new PoshiScriptParserException(
+					PoshiScriptParserException.TRANSLATION_LOSS_MESSAGE, this);
 
-			throw pspe;
+			throw poshiScriptParserException;
 		}
 	}
 

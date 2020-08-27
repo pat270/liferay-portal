@@ -27,12 +27,12 @@ public class DocumentLibraryExtraSettingsConvertProcess
 
 	@Override
 	public String getDescription() {
-		return "convert-extra-settings-from-document-library-files";
+		return "convert-extra-settings-from-documents-and-media-files";
 	}
 
 	@Override
-	public String getPath() {
-		return "/admin_server/edit_document_library_extra_settings";
+	public boolean hasCustomView() {
+		return true;
 	}
 
 	@Override
@@ -40,15 +40,20 @@ public class DocumentLibraryExtraSettingsConvertProcess
 		try {
 			return DLFileEntryLocalServiceUtil.hasExtraSettings();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return false;
 		}
 	}
 
 	@Override
-	protected void doConvert() throws Exception {
+	protected void doConvert() {
+	}
+
+	@Override
+	protected String getJspPath() {
+		return "/edit_document_library_extra_settings.jsp";
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

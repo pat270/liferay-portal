@@ -18,7 +18,6 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checks.util.PoshiSourceUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
 
 import java.io.IOException;
@@ -46,6 +45,18 @@ public class PoshiParametersOrderCheck extends BaseFileCheck {
 
 		outerLoop:
 		while (matcher1.find()) {
+			int x = matcher1.start(2);
+
+			int[] multiLineCommentsPositions = SourceUtil.getMultiLinePositions(
+				content, _multiLineCommentsPattern);
+
+			if (SourceUtil.isInsideMultiLines(
+					SourceUtil.getLineNumber(content, x),
+					multiLineCommentsPositions)) {
+
+				continue;
+			}
+
 			Map<String, String> parametersMap = new TreeMap<>(
 				new NaturalOrderStringComparator());
 
@@ -97,27 +108,8 @@ public class PoshiParametersOrderCheck extends BaseFileCheck {
 				sb.setIndex(sb.index() - 1);
 			}
 
-			int x = content.indexOf(parameters);
-
-			int[] multiLineCommentsPositions =
-				PoshiSourceUtil.getMultiLinePositions(
-					content, _multiLineCommentsPattern);
-
-			while (content.indexOf(parameters, x) != -1) {
-				if (!PoshiSourceUtil.isInsideMultiLines(
-						SourceUtil.getLineNumber(content, x),
-						multiLineCommentsPositions)) {
-
-					break;
-				}
-
-				x = x + parameters.length();
-			}
-
-			if (content.indexOf(parameters, x) != -1) {
-				content = StringUtil.replaceFirst(
-					content, parameters, sb.toString(), x);
-			}
+			content = StringUtil.replaceFirst(
+				content, parameters, sb.toString(), x);
 		}
 
 		return content;

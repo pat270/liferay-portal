@@ -1,0 +1,833 @@
+definition {
+
+	var calendarDefault = "Yes";
+	var calendarDescription = "";
+	var siteName = "Liferay";
+
+	macro _checkForRSSTitle {
+		if (IsElementNotPresent(locator1 = "RSS#FEED_TITLE")) {
+			Navigator.gotoPage(pageName = "${pageName}");
+
+			Calendar.chooseSiteCalendarMenulistOption(
+				menuListOption = "RSS",
+				siteCalendarName = "${siteCalendarName}",
+				siteName = "${siteName}");
+		}
+	}
+
+	macro _deleteCalendar {
+		var key_menuListOption = "Delete";
+
+		AssertClickNoError(
+			locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_OPTION",
+			value1 = "Delete");
+
+		AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Calendar#DELETED_CALENDAR_SUCCESS_MESSAGE",
+			value1 = "The calendar was deleted successfully.");
+	}
+
+	macro _editName {
+		PortletEntry.inputName(name = "${calendarName}");
+	}
+
+	macro _gotoMenulistOption {
+		var key_menuListOption = "${menuListOption}";
+
+		AssertClick(
+			locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_OPTION",
+			value1 = "${menuListOption}");
+
+		if ("${menuListOption}" == "RSS") {
+			SelectWindow.selectPopUp(locator1 = "null");
+		}
+	}
+
+	macro _gotoOtherCalendarMenulist {
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "Calendar#OTHER_CALENDARS_CALENDAR",
+			value1 = "${calendarName}");
+
+		Click(
+			locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_ARROW",
+			value1 = "${calendarName}");
+	}
+
+	macro _gotoSiteCalendarMenulist {
+		var key_siteCalendarName = "${siteCalendarName}";
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals(
+			locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR",
+			value1 = "${siteCalendarName}");
+
+		Click(
+			locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_MENULIST_ARROW",
+			value1 = "${siteCalendarName}");
+	}
+
+	macro _viewCalendarHidden {
+		var key_calendarName = "${calendarName}";
+
+		AssertElementNotPresent(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR");
+	}
+
+	macro _viewCalendarSettingsIframe {
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "Portlet#H3_HEADER",
+			value1 = "${calendarName}");
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro _viewEmailHeader {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertTextEquals(
+			locator1 = "Portlet#H3_HEADER",
+			value1 = "${header}");
+
+		AssertClick(
+			locator1 = "CalendarEditCalendar#NAVIGATION_NOTIFICATION_TEMPLATES_TAB",
+			value1 = "Notification Templates");
+
+		var key_calendarName = "${header}";
+
+		AssertTextEquals(
+			locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_HEADER_TITLE",
+			value1 = "${header}");
+	}
+
+	macro add {
+		if ("${calendarType}" == "My Calendars") {
+			CalendarNavigator.gotoAddMyCalendars();
+
+			Calendar._editName(calendarName = "${calendarName}");
+
+			PortletEntry.save();
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			CalendarNavigator.gotoAddCurrentSiteCalendars();
+
+			Calendar._editName(calendarName = "${calendarName}");
+
+			PortletEntry.save();
+		}
+		else if ("${calendarType}" == "Other Calendars") {
+			Calendar.searchOtherCalendars(searchValue = "${calendarName}");
+
+			Calendar.viewOtherCalendarsSearchResult(calendarName = "${calendarName}");
+
+			var key_calendarName = "${calendarName}";
+
+			AssertClick(
+				locator1 = "Calendar#OTHER_CALENDARS_SEARCH_LIST_RESULT",
+				value1 = "${calendarName}");
+
+			AssertTextEquals(
+				locator1 = "Calendar#OTHER_CALENDARS_CALENDAR",
+				value1 = "${calendarName}");
+		}
+	}
+
+	macro changeColor {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_user = "${user}";
+
+			AssertElementPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW");
+
+			var key_color = "${myCalendarColor}";
+
+			Click(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_COLOR_PICKER");
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_site = "${site}";
+
+			AssertElementPresent(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW");
+
+			var key_color = "${siteCalendarColor}";
+
+			Click(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_COLOR_PICKER");
+		}
+	}
+
+	macro chooseOtherCalendarMenulistOption {
+		Calendar._gotoOtherCalendarMenulist(calendarName = "${calendarName}");
+
+		Calendar._gotoMenulistOption(menuListOption = "${menuListOption}");
+	}
+
+	macro chooseSiteCalendarMenulistOption {
+		Calendar._gotoSiteCalendarMenulist(
+			siteCalendarName = "${siteCalendarName}",
+			siteName = "${siteName}");
+
+		Calendar._gotoMenulistOption(menuListOption = "${menuListOption}");
+	}
+
+	macro delete {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_calendarName = "${calendarName}";
+			var key_user = "${user}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL",
+				value1 = "${calendarName}");
+
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_MENULIST_ARROW");
+
+			Calendar._deleteCalendar();
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_calendarName = "${calendarName}";
+			var key_site = "${site}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY",
+				value1 = "${calendarName}");
+
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_MENULIST_ARROW");
+
+			Calendar._deleteCalendar();
+		}
+	}
+
+	macro edit {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_calendarName = "${calendarName}";
+			var key_user = "${user}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL",
+				value1 = "${calendarName}");
+
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Calendar Settings");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			PortletEntry.inputName(name = "${calendarNameEdit}");
+
+			PortletEntry.save();
+
+			SelectFrame(value1 = "relative=top");
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_calendarName = "${calendarName}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY",
+				value1 = "${calendarName}");
+
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Calendar Settings");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			PortletEntry.inputName(name = "${calendarNameEdit}");
+
+			PortletEntry.save();
+
+			SelectFrame(value1 = "relative=top");
+		}
+		else if ("${calendarType}" == "Other Calendars") {
+			Calendar.chooseOtherCalendarMenulistOption(
+				calendarName = "${calendarName}",
+				menuListOption = "Calendar Settings");
+
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+			PortletEntry.inputName(name = "${calendarNameEdit}");
+
+			PortletEntry.save();
+
+			SelectFrame(value1 = "relative=top");
+		}
+	}
+
+	macro editEmailTemplate {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_calendarName = "${calendarName}";
+			var key_user = "${user}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL",
+				value1 = "${calendarName}");
+
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Calendar Settings");
+
+			Calendar._viewEmailHeader(header = "${user} - ${calendarName}");
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_calendarName = "${calendarName}";
+			var key_site = "${site}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY",
+				value1 = "${calendarName}");
+
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Calendar Settings");
+
+			Calendar._viewEmailHeader(header = "${site} - ${calendarName}");
+		}
+		else if ("${calendarType}" == "Other Calendars") {
+			Calendar.chooseOtherCalendarMenulistOption(
+				calendarName = "${calendarName}",
+				menuListOption = "Calendar Settings");
+
+			Calendar._viewEmailHeader(header = "${calendarName}");
+		}
+		else {
+			Calendar._viewEmailHeader(header = "${calendarName}");
+		}
+
+		Pause(locator1 = "5000");
+
+		if ("${inviteEmail}" == "true") {
+			AssertElementPresent(locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_INVITE_EMAIL_TAB_ACTIVE");
+		}
+		else if (IsElementNotPresent(locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_INVITE_EMAIL_TAB_ACTIVE")) {
+			AssertClick(
+				locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_INVITE_EMAIL_TAB_INACTIVE",
+				value1 = "Invite Email");
+		}
+
+		if ("${reminderEmail}" == "true") {
+			AssertElementNotPresent(locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_REMINDER_EMAIL_TAB_ACTIVE");
+
+			AssertClick(
+				locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_REMINDER_EMAIL_TAB_INACTIVE",
+				value1 = "Reminder Email");
+		}
+		else if (IsElementPresent(locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_REMINDER_EMAIL_TAB_ACTIVE")) {
+			AssertElementPresent(locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_INVITE_EMAIL_TAB_ACTIVE");
+		}
+
+		Type(
+			locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_FROM_NAME_FIELD",
+			value1 = "${fromNameEdit}");
+
+		Type(
+			locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_FROM_ADDRESS_FIELD",
+			value1 = "${fromAddressEdit}");
+
+		if ("${inviteEmail}" == "true") {
+			Type(
+				locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_SUBJECT_FIELD",
+				value1 = "[$PORTLET_NAME$]: Edited Event Notification for [$EVENT_TITLE$]");
+
+			Type.typeCKEditorWaitForCKEditor(
+				locator1 = "CKEditor#BODY_FIELD",
+				value1 = "[$TO_NAME$],      This is an edited event invite email.      Sincerely,     [$FROM_NAME$]     [$FROM_ADDRESS$]     [$PORTAL_URL$]");
+		}
+
+		if ("${reminderEmail}" == "true") {
+			Type(
+				locator1 = "CalendarEditCalendar#NOTIFICATION_TEMPLATES_SUBJECT_FIELD",
+				value1 = "[$PORTLET_NAME$]: Edited Event Reminder for [$EVENT_TITLE$]");
+
+			Type.typeCKEditorWaitForCKEditor(
+				locator1 = "CKEditor#BODY_FIELD",
+				value1 = "[$TO_NAME$],      This is an edited event reminder email.      Sincerely,     [$FROM_NAME$]     [$FROM_ADDRESS$]     [$PORTAL_URL$]");
+		}
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro enableComments {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_user = "${user}";
+
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Calendar Settings");
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_site = "${site}";
+
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Calendar Settings");
+		}
+		else if ("${calendarType}" == "Other Calendars") {
+			Calendar.chooseOtherCalendarMenulistOption(
+				calendarName = "${calendarName}",
+				menuListOption = "Calendar Settings");
+		}
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "Portlet#H3_HEADER",
+			value1 = "${calendarName}");
+
+		Check(locator1 = "CalendarEditCalendar#ENABLE_COMMENTS_CHECKBOX");
+
+		Button.clickSave();
+
+		if (IsElementPresent(locator1 = "Message#SUCCESS")) {
+			Alert.viewSuccessMessage();
+
+			SelectFrame(value1 = "relative=top");
+		}
+		else {
+			SelectFrame(value1 = "relative=top");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro exportCalendarFile {
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarManageCalendars#CALENDAR_TABLE_NAME",
+			value1 = "${calendarName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${calendarName}");
+
+		MenuItem.click(menuItem = "Export");
+
+		Pause(locator1 = "5000");
+
+		AssertConsoleTextNotPresent(value1 = "ClassNotFoundException");
+	}
+
+	macro hideCurrentSiteCalendar {
+		ScrollWebElementIntoView(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+
+		Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+
+		AssertElementPresent(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_HIDDEN");
+	}
+
+	macro hideMyCalendarsCalendar {
+		Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+
+		AssertElementPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_HIDDEN");
+	}
+
+	macro importCalendarFile {
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarManageCalendars#CALENDAR_TABLE_NAME",
+			value1 = "${calendarName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${calendarName}");
+
+		MenuItem.click(menuItem = "Import");
+
+		UploadCommonFile(
+			locator1 = "CalendarImport#FILE_FIELD",
+			value1 = "${calendarFile}");
+
+		ScrollWebElementIntoView(locator1 = "CalendarImport#IMPORT_BUTTON");
+
+		Click(locator1 = "CalendarImport#IMPORT_BUTTON");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "CalendarImport#SUCCESS_MESSAGE",
+			value1 = "Your request completed successfully.");
+	}
+
+	macro removeViewPermissions {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_user = "${user}";
+
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Permissions");
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_site = "${site}";
+
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Permissions");
+		}
+		else if ("${calendarType}" == "Other Calendars") {
+			Calendar.chooseOtherCalendarMenulistOption(
+				calendarName = "${calendarName}",
+				menuListOption = "Permissions");
+		}
+
+		var key_roleTitle = StringUtil.replace("${roleTitle}", " ", "-");
+		var key_roleTitle = StringUtil.lowerCase("${key_roleTitle}");
+
+		IFrame.selectPermissionsFrame();
+
+		Uncheck(
+			locator1 = "Permissions#EVENT_PERMISSIONS_VIEW_CHECKBOX",
+			value1 = "${roleTitle}");
+
+		Button.clickSave();
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro searchOtherCalendars {
+		Type(
+			locator1 = "Calendar#OTHER_CALENDARS_SEARCH",
+			value1 = "${searchValue}");
+	}
+
+	macro showCurrentSiteCalendar {
+		ScrollWebElementIntoView(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_HIDDEN");
+
+		Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_HIDDEN");
+
+		AssertElementPresent(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+	}
+
+	macro showMyCalendarsCalendar {
+		Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_HIDDEN");
+
+		AssertElementPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+	}
+
+	macro tearDown {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		while (IsElementPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_GENERIC")) {
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_GENERIC_MENULIST_ARROW");
+
+			Calendar._deleteCalendar();
+		}
+
+		while (IsElementPresent(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_GENERIC")) {
+			Click(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_GENERIC_MENULIST_ARROW");
+
+			Calendar._deleteCalendar();
+		}
+
+		while (IsElementPresent(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_GENERIC")) {
+			Click(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_GENERIC_MENULIST_ARROW");
+
+			Calendar._gotoMenulistOption(menuListOption = "Hide Calendar");
+		}
+
+		AssertElementNotPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_GENERIC");
+
+		AssertElementNotPresent(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_GENERIC");
+
+		AssertElementNotPresent(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_GENERIC");
+	}
+
+	macro tearDownColor {
+		CalendarNavigator.gotoView(viewType = "Week");
+
+		if (IsElementNotPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT")) {
+			Click(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_GENERIC_MENULIST_ARROW");
+
+			var key_color = "D96666";
+
+			Click(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_COLOR_PICKER");
+		}
+	}
+
+	macro view {
+		var key_calendarName = "${calendarName}";
+
+		if ("${calendarType}" == "My Calendars") {
+			var key_user = "${user}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL",
+				value1 = "${calendarName}");
+		}
+		else if ("${calendarType}" == "Current Site Calendars") {
+			var key_site = "${site}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY",
+				value1 = "${calendarName}");
+		}
+		else if ("${calendarType}" == "Other Calendars") {
+			var key_calendarName = "${calendarName}";
+
+			AssertTextEquals(
+				locator1 = "Calendar#OTHER_CALENDARS_CALENDAR",
+				value1 = "${calendarName}");
+		}
+	}
+
+	macro viewCalendarColorPicker {
+		Calendar._gotoOtherCalendarMenulist(calendarName = "${calendarName}");
+
+		var key_color = "${color}";
+
+		AssertElementPresent(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_COLOR_PICKER");
+	}
+
+	macro viewColor {
+		var key_color = "${myCalendarColor}";
+
+		if ("${calendarType}" == "My Calendars") {
+			AssertElementPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR");
+
+			AssertElementNotPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_PRIMARY_COLOR_DEFAULT");
+		}
+	}
+
+	macro viewCurrentSiteCalendarName {
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals(
+			locator1 = "Calendar#CURRENT_SITE_CALENDARS_HEADER",
+			value1 = "${siteName}'s Calendars");
+
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_PRIMARY",
+			value1 = "${calendarName}");
+	}
+
+	macro viewDefault {
+		AssertElementNotPresent(locator1 = "Calendar#MY_CALENDARS_CALENDAR_ADDITIONAL_GENERIC");
+
+		AssertElementNotPresent(locator1 = "Calendar#CURRENT_SITE_CALENDARS_CALENDAR_ADDITIONAL_GENERIC");
+
+		AssertElementNotPresent(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_GENERIC");
+	}
+
+	macro viewMonth {
+		CalendarNavigator.gotoView(viewType = "Month");
+
+		/*
+		To ensure the desired month will always be reached, click "Previous"
+		until it reaches our baseline of February 2016. Then click "Next" until
+		it reaches ${dateMonth}.
+		*/
+
+		while (IsTextNotEqual(locator1 = "Calendar#SCHEDULER_VIEW_MONTH_DATE", value1 = "February 2016") && (maxIterations = "100")) {
+			Click(locator1 = "Calendar#VIEW_PREVIOUS_BUTTON");
+		}
+
+		while (IsTextNotEqual(locator1 = "Calendar#SCHEDULER_VIEW_MONTH_DATE", value1 = "${dateMonth}") && (maxIterations = "100")) {
+			Click(locator1 = "Calendar#VIEW_NEXT_BUTTON");
+		}
+	}
+
+	macro viewNoRSS {
+		Navigator.openSpecificURL(url = "${rssURL}");
+
+		SelectWindow.selectPopUp(locator1 = "null");
+
+		AssertElementNotPresent(locator1 = "RSS#FEED_TITLE");
+	}
+
+	macro viewOtherCalendarMenulist {
+		Calendar.chooseOtherCalendarMenulistOption(
+			calendarName = "${calendarName}",
+			menuListOption = "Add Event");
+
+		CalendarEvent.selectEventIframe();
+
+		CalendarEvent._viewNewEventIframe();
+
+		SelectFrameTop(value1 = "relative=top");
+
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		Calendar.chooseOtherCalendarMenulistOption(
+			calendarName = "${calendarName}",
+			menuListOption = "Calendar Settings");
+
+		CalendarNavigator._selectCalendarSettingsIframe();
+
+		Calendar._viewCalendarSettingsIframe(calendarName = "${calendarName}");
+
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		Calendar.chooseOtherCalendarMenulistOption(
+			calendarName = "${calendarName}",
+			menuListOption = "Permissions");
+
+		CalendarNavigator._selectPermissionsIframe();
+
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		Calendar.viewCalendarColorPicker(
+			calendarName = "${calendarName}",
+			color = "${color}");
+
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		Calendar.chooseOtherCalendarMenulistOption(
+			calendarName = "${calendarName}",
+			menuListOption = "Hide Calendar");
+
+		Calendar._viewCalendarHidden(calendarName = "${calendarName}");
+	}
+
+	macro viewOtherCalendarsSearchResult {
+		var key_calendarName = "${calendarName}";
+
+		AssertTextEquals(
+			locator1 = "Calendar#OTHER_CALENDARS_SEARCH_LIST_RESULT",
+			value1 = "${calendarName}");
+	}
+
+	macro viewOtherCalendarsSearchResultNotPresent {
+		var key_calendarName = "${calendarName}";
+
+		AssertElementNotPresent(locator1 = "Calendar#OTHER_CALENDARS_SEARCH_LIST_RESULT");
+	}
+
+	macro viewRSSFeedEventNotPresent {
+		Calendar._checkForRSSTitle(
+			pageName = "${pageName}",
+			siteCalendarName = "${siteCalendarName}",
+			siteName = "${siteName}");
+
+		SelectWindow(locator1 = "title=${siteName}");
+
+		AssertTextEquals(
+			locator1 = "RSS#FEED_TITLE",
+			value1 = "${calendarName}");
+
+		var key_eventTitle = "${eventTitle}";
+
+		AssertElementNotPresent(locator1 = "CalendarRSS#FEED_EVENT_TITLE");
+
+		AssertElementNotPresent(locator1 = "CalendarRSS#FEED_EVENT_DATES");
+	}
+
+	macro viewRSSFeedEventPresent {
+		Calendar._checkForRSSTitle(
+			pageName = "${pageName}",
+			siteCalendarName = "${siteCalendarName}",
+			siteName = "${siteName}");
+
+		SelectWindow(locator1 = "title=${siteName}");
+
+		AssertTextEquals(
+			locator1 = "RSS#FEED_TITLE",
+			value1 = "${calendarName}");
+
+		var key_eventTitle = "${eventTitle}";
+
+		AssertTextEquals(
+			locator1 = "CalendarRSS#FEED_EVENT_LINK",
+			value1 = "${eventTitle}");
+
+		AssertTextEquals(
+			locator1 = "CalendarRSS#FEED_EVENT_TITLE",
+			value1 = "${eventTitle}");
+
+		AssertElementPresent(locator1 = "CalendarRSS#FEED_EVENT_DATES");
+	}
+
+	macro viewSelectedTimeZone {
+		if ("${timeZone}" == "(UTC -08:00) Pacific Standard Time") {
+			if (IsTextNotEqual(locator1 = "Select#LOS_ANGELES_TIME_ZONE", value1 = "(UTC -07:00) Pacific Daylight Time")) {
+				AssertSelectedLabel(
+					locator1 = "Select#TIME_ZONE",
+					value1 = "${timeZone}");
+			}
+			else {
+				AssertSelectedLabel(
+					locator1 = "Select#TIME_ZONE",
+					value1 = "(UTC -07:00) Pacific Daylight Time");
+			}
+		}
+		else {
+			AssertSelectedLabel(
+				locator1 = "Select#TIME_ZONE",
+				value1 = "${timeZone}");
+		}
+	}
+
+	macro viewSiteCalendarNoMenulistOption {
+		Calendar._gotoSiteCalendarMenulist(
+			siteCalendarName = "${siteCalendarName}",
+			siteName = "${siteName}");
+
+		var key_menuListOption = "${menuListOption}";
+
+		AssertElementNotPresent(locator1 = "Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_OPTION");
+	}
+
+	macro viewWeekCountViaMonthView {
+		var key_weekNumber = "${weekNumber}";
+
+		AssertElementPresent(locator1 = "Calendar#SCHEDULER_VIEW_MONTH_WEEK_NUMBER");
+
+		SelectFrame(value1 = "relative=top");
+
+		Pause(locator1 = "3000");
+
+		var key_weekNumber = ${weekNumber} + 1;
+
+		AssertElementNotPresent(locator1 = "Calendar#SCHEDULER_VIEW_MONTH_WEEK_NUMBER");
+	}
+
+	macro viewWeekStartDayViaAddEventMiniCalendar {
+		Click(locator1 = "CalendarEditEvent#START_DATE");
+
+		AssertTextEquals(
+			locator1 = "CalendarEditEvent#MINI_CALENDAR_WEEK_START_DAY_START_DATE",
+			value1 = "${weekStartDay}");
+
+		Click(locator1 = "CalendarEditEvent#DATE_CONTAINER");
+
+		Click(locator1 = "CalendarEditEvent#END_DATE");
+
+		AssertTextEquals(
+			locator1 = "CalendarEditEvent#MINI_CALENDAR_WEEK_START_DAY_END_DATE",
+			value1 = "${weekStartDay}");
+
+		Click(locator1 = "CalendarEditEvent#FORM_CONTENT");
+	}
+
+	macro viewWeekStartDayViaMonthView {
+		CalendarNavigator.gotoView(viewType = "Month");
+
+		AssertTextEquals(
+			locator1 = "Calendar#SCHEDULER_VIEW_MONTH_WEEK_START_DAY",
+			value1 = "${weekStartDay}");
+	}
+
+	macro viewWeekStartDayViaSmallCalendar {
+		AssertTextEquals(
+			locator1 = "Calendar#SMALL_CALENDAR_WEEK_START_DAY",
+			value1 = "${weekStartDay}");
+	}
+
+}

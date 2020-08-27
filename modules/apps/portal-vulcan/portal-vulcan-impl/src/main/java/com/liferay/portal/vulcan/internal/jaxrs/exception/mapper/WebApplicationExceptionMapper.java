@@ -14,10 +14,13 @@
 
 package com.liferay.portal.vulcan.internal.jaxrs.exception.mapper;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
+
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
 
 /**
  * Converts any {@code WebApplicationException} to a {@code 500} error.
@@ -26,19 +29,22 @@ import javax.ws.rs.ext.ExceptionMapper;
  * @review
  */
 public class WebApplicationExceptionMapper
-	implements ExceptionMapper<WebApplicationException> {
+	extends BaseExceptionMapper<WebApplicationException> {
 
 	@Override
-	public Response toResponse(WebApplicationException wae) {
-		Response response = wae.getResponse();
+	protected Problem getProblem(
+		WebApplicationException webApplicationException) {
 
-		return Response.status(
-			response.getStatus()
-		).type(
-			MediaType.TEXT_PLAIN
-		).entity(
-			wae.getMessage()
-		).build();
+		_log.error(webApplicationException, webApplicationException);
+
+		Response response = webApplicationException.getResponse();
+
+		return new Problem(
+			Response.Status.fromStatusCode(response.getStatus()),
+			webApplicationException.getMessage());
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		WebApplicationExceptionMapper.class);
 
 }

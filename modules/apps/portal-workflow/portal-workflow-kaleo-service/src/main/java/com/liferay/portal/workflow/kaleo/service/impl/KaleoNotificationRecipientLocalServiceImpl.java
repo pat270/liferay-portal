@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
@@ -34,16 +35,23 @@ import com.liferay.portal.workflow.kaleo.service.base.KaleoNotificationRecipient
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoNotificationRecipient",
+	service = AopService.class
+)
 public class KaleoNotificationRecipientLocalServiceImpl
 	extends KaleoNotificationRecipientLocalServiceBaseImpl {
 
 	@Override
 	public KaleoNotificationRecipient addKaleoNotificationRecipient(
-			long kaleoDefinitionVersionId, long kaleoNotificationId,
-			Recipient recipient, ServiceContext serviceContext)
+			long kaleoDefinitionId, long kaleoDefinitionVersionId,
+			long kaleoNotificationId, Recipient recipient,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		User user = userLocalService.getUser(serviceContext.getGuestOrUserId());
@@ -60,6 +68,7 @@ public class KaleoNotificationRecipientLocalServiceImpl
 		kaleoNotificationRecipient.setUserName(user.getFullName());
 		kaleoNotificationRecipient.setCreateDate(now);
 		kaleoNotificationRecipient.setModifiedDate(now);
+		kaleoNotificationRecipient.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoNotificationRecipient.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoNotificationRecipient.setKaleoNotificationId(kaleoNotificationId);
@@ -72,10 +81,8 @@ public class KaleoNotificationRecipientLocalServiceImpl
 
 		setRecipient(kaleoNotificationRecipient, recipient, serviceContext);
 
-		kaleoNotificationRecipientPersistence.update(
+		return kaleoNotificationRecipientPersistence.update(
 			kaleoNotificationRecipient);
-
-		return kaleoNotificationRecipient;
 	}
 
 	@Override

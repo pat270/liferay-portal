@@ -16,12 +16,9 @@ package com.liferay.oauth2.provider.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateOAuth2ScopeGrantException extends PortalException {
 
 	public DuplicateOAuth2ScopeGrantException() {
@@ -31,12 +28,12 @@ public class DuplicateOAuth2ScopeGrantException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateOAuth2ScopeGrantException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateOAuth2ScopeGrantException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateOAuth2ScopeGrantException(Throwable cause) {
-		super(cause);
+	public DuplicateOAuth2ScopeGrantException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

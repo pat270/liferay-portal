@@ -27,7 +27,7 @@ long questionId = BeanParamUtil.getLong(question, request, "questionId");
 
 boolean neverExpire = ParamUtil.getBoolean(request, "neverExpire", true);
 
-String choicesAction = ParamUtil.getString(request, "choicesAction", StringPool.BLANK);
+String choicesAction = ParamUtil.getString(request, "choicesAction");
 
 int choiceName = ParamUtil.getInteger(request, "choiceName");
 
@@ -60,7 +60,7 @@ else if (StringUtil.equals(choicesAction, "deleteChoice")) {
 }
 
 if (showHeader) {
-	renderResponse.setTitle(question == null ? LanguageUtil.get(request, "new-poll") : question.getTitle(locale));
+	renderResponse.setTitle((question == null) ? LanguageUtil.get(request, "new-poll") : question.getTitle(locale));
 }
 
 portletDisplay.setShowBackIcon(true);
@@ -71,7 +71,7 @@ portletDisplay.setURLBack(redirect);
 	<portlet:param name="mvcPath" value="/polls/edit_question.jsp" />
 </liferay-portlet:actionURL>
 
-<aui:form action="<%= editQuestionURL %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveQuestion();" %>'>
+<aui:form action="<%= editQuestionURL %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveQuestion();" %>'>
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="referringPortletResource" type="hidden" value="<%= referringPortletResource %>" />
@@ -107,7 +107,7 @@ portletDisplay.setURLBack(redirect);
 					String paramName = null;
 
 					if (deleteChoice && (i >= choiceName)) {
-						paramName = EditQuestionMVCActionCommand.CHOICE_DESCRIPTION_PREFIX + ((char)(c + 1));
+						paramName = EditQuestionMVCActionCommand.CHOICE_DESCRIPTION_PREFIX + (char)(c + 1);
 					}
 					else {
 						paramName = EditQuestionMVCActionCommand.CHOICE_DESCRIPTION_PREFIX + c;
@@ -118,7 +118,7 @@ portletDisplay.setURLBack(redirect);
 					String value = GetterUtil.getString(LocalizationUtil.updateLocalization(localeChoiceDescriptionMap, "", "Description", LocaleUtil.toLanguageId(locale)));
 
 					if ((question != null) && !addChoice && !deleteChoice) {
-						choice = (PollsChoice)choices.get(i - 1);
+						choice = choices.get(i - 1);
 
 						value = choice.getDescription();
 					}
@@ -133,7 +133,7 @@ portletDisplay.setURLBack(redirect);
 
 						<c:if test="<%= choicesCount > 2 %>">
 							<div class="delete-poll-choice">
-								<aui:button cssClass="btn-delete" onClick='<%= renderResponse.getNamespace() + "deletePollChoice(" + i + ");" %>' value="delete" />
+								<aui:button cssClass="btn-delete" onClick='<%= liferayPortletResponse.getNamespace() + "deletePollChoice(" + i + ");" %>' value="delete" />
 							</div>
 						</c:if>
 					</div>
@@ -143,7 +143,7 @@ portletDisplay.setURLBack(redirect);
 				%>
 
 				<div class="button-holder">
-					<aui:button cssClass="add-choice" onClick='<%= renderResponse.getNamespace() + "addPollChoice();" %>' value="add-choice" />
+					<aui:button cssClass="add-choice" onClick='<%= liferayPortletResponse.getNamespace() + "addPollChoice();" %>' value="add-choice" />
 				</div>
 			</aui:field-wrapper>
 		</aui:fieldset>
@@ -164,25 +164,52 @@ portletDisplay.setURLBack(redirect);
 	</aui:button-row>
 </aui:form>
 
+<aui:script use="aui-char-counter">
+
+	<%
+	for (int i = 1; i <= choicesCount; i++) {
+		char c = (char)(96 + i);
+	%>
+
+		new A.CharCounter({
+			input:
+				'#<portlet:namespace /><%= EditQuestionMVCActionCommand.CHOICE_DESCRIPTION_PREFIX + c %>',
+			maxLength: <%= ModelHintsUtil.getMaxLength(PollsChoice.class.getName(), "description") %>,
+		});
+
+	<%
+	}
+	%>
+
+</aui:script>
+
 <aui:script>
 	function <portlet:namespace />addPollChoice() {
 		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
-			var choicesAction = form.querySelector('#<portlet:namespace />choicesAction');
+			var choicesAction = form.querySelector(
+				'#<portlet:namespace />choicesAction'
+			);
 
 			if (choicesAction) {
-				choicesAction.setAttribute('value', '<%= "addChoice" %>');
+				choicesAction.setAttribute('value', 'addChoice');
 			}
 
-			var choicesCount = form.querySelector('#<portlet:namespace />choicesCount');
+			var choicesCount = form.querySelector(
+				'#<portlet:namespace />choicesCount'
+			);
 
 			if (choicesCount) {
 				choicesCount.setAttribute('value', '<%= choicesCount + 1 %>');
 			}
 
-			var expirationDate = form.querySelector('#<portlet:namespace />fmexpirationDate');
-			var neverExpire = form.querySelector('#<portlet:namespace />neverExpire');
+			var expirationDate = form.querySelector(
+				'#<portlet:namespace />fmexpirationDate'
+			);
+			var neverExpire = form.querySelector(
+				'#<portlet:namespace />neverExpire'
+			);
 
 			if (expirationDate && neverExpire) {
 				neverExpire.setAttribute('value', expirationDate.checked);
@@ -201,13 +228,17 @@ portletDisplay.setURLBack(redirect);
 		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
-			var choicesAction = form.querySelector('#<portlet:namespace />choicesAction');
+			var choicesAction = form.querySelector(
+				'#<portlet:namespace />choicesAction'
+			);
 
 			if (choicesAction) {
-				choicesAction.setAttribute('value', '<%= "deleteChoice" %>');
+				choicesAction.setAttribute('value', 'deleteChoice');
 			}
 
-			var choicesCount = form.querySelector('#<portlet:namespace />choicesCount');
+			var choicesCount = form.querySelector(
+				'#<portlet:namespace />choicesCount'
+			);
 
 			if (choicesCount) {
 				choicesCount.setAttribute('value', '<%= choicesCount - 1 %>');
@@ -219,8 +250,12 @@ portletDisplay.setURLBack(redirect);
 				choiceName.setAttribute('value', pollName);
 			}
 
-			var expirationDate = form.querySelector('#<portlet:namespace />fmexpirationDate');
-			var neverExpire = form.querySelector('#<portlet:namespace />neverExpire');
+			var expirationDate = form.querySelector(
+				'#<portlet:namespace />fmexpirationDate'
+			);
+			var neverExpire = form.querySelector(
+				'#<portlet:namespace />neverExpire'
+			);
 
 			if (expirationDate && neverExpire) {
 				neverExpire.setAttribute('value', expirationDate.checked);
@@ -239,14 +274,23 @@ portletDisplay.setURLBack(redirect);
 		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
-			var cmd = form.querySelector('#<portlet:namespace /><%= Constants.CMD %>');
+			var cmd = form.querySelector(
+				'#<portlet:namespace /><%= Constants.CMD %>'
+			);
 
 			if (cmd) {
-				cmd.setAttribute('value', '<%= (question == null) ? Constants.ADD : Constants.UPDATE %>');
+				cmd.setAttribute(
+					'value',
+					'<%= (question == null) ? Constants.ADD : Constants.UPDATE %>'
+				);
 			}
 
-			var expirationDate = form.querySelector('#<portlet:namespace />fmexpirationDate');
-			var neverExpire = form.querySelector('#<portlet:namespace />neverExpire');
+			var expirationDate = form.querySelector(
+				'#<portlet:namespace />fmexpirationDate'
+			);
+			var neverExpire = form.querySelector(
+				'#<portlet:namespace />neverExpire'
+			);
 
 			if (expirationDate && neverExpire) {
 				neverExpire.setAttribute('value', expirationDate.checked);

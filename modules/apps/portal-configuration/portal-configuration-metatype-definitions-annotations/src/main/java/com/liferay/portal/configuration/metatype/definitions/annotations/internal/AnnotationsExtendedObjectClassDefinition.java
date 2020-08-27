@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -43,7 +44,7 @@ import org.osgi.service.metatype.ObjectClassDefinition;
  */
 public class AnnotationsExtendedObjectClassDefinition
 	implements com.liferay.portal.configuration.metatype.definitions.
-		ExtendedObjectClassDefinition {
+				   ExtendedObjectClassDefinition {
 
 	public AnnotationsExtendedObjectClassDefinition(
 		Bundle bundle, ObjectClassDefinition objectClassDefinition) {
@@ -129,8 +130,9 @@ public class AnnotationsExtendedObjectClassDefinition
 			try (InputStream is = url.openStream()) {
 				return JSONFactoryUtil.createJSONObject(StringUtil.read(is));
 			}
-			catch (Exception e) {
-				_log.error("Unable to process resource " + resourcePath, e);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to process resource " + resourcePath, exception);
 			}
 		}
 
@@ -146,7 +148,7 @@ public class AnnotationsExtendedObjectClassDefinition
 			_configurationBeanClass = classLoader.loadClass(
 				_objectClassDefinition.getID());
 		}
-		catch (ClassNotFoundException cnfe) {
+		catch (ClassNotFoundException classNotFoundException) {
 		}
 	}
 
@@ -184,34 +186,34 @@ public class AnnotationsExtendedObjectClassDefinition
 			configurationBeanClass.getAnnotation(
 				ExtendedObjectClassDefinition.class);
 
-		if (extendedObjectClassDefinition != null) {
-			Map<String, String> attributes = new HashMap<>();
-
-			attributes.put(
-				"category", extendedObjectClassDefinition.category());
-			attributes.put(
-				"description-arguments",
-				StringUtil.merge(
-					extendedObjectClassDefinition.descriptionArguments()));
-			attributes.put(
-				"factoryInstanceLabelAttribute",
-				extendedObjectClassDefinition.factoryInstanceLabelAttribute());
-			attributes.put(
-				"generateUI",
-				Boolean.toString(extendedObjectClassDefinition.generateUI()));
-			attributes.put(
-				"name-arguments",
-				StringUtil.merge(
-					extendedObjectClassDefinition.nameArguments()));
-
-			ExtendedObjectClassDefinition.Scope scope =
-				extendedObjectClassDefinition.scope();
-
-			attributes.put("scope", scope.toString());
-
-			_extensionAttributes.put(
-				ExtendedObjectClassDefinition.XML_NAMESPACE, attributes);
+		if (extendedObjectClassDefinition == null) {
+			return;
 		}
+
+		Map<String, String> attributes = HashMapBuilder.put(
+			"category", extendedObjectClassDefinition.category()
+		).put(
+			"description-arguments",
+			StringUtil.merge(
+				extendedObjectClassDefinition.descriptionArguments())
+		).put(
+			"factoryInstanceLabelAttribute",
+			extendedObjectClassDefinition.factoryInstanceLabelAttribute()
+		).put(
+			"generateUI",
+			Boolean.toString(extendedObjectClassDefinition.generateUI())
+		).put(
+			"name-arguments",
+			StringUtil.merge(extendedObjectClassDefinition.nameArguments())
+		).build();
+
+		ExtendedObjectClassDefinition.Scope scope =
+			extendedObjectClassDefinition.scope();
+
+		attributes.put("scope", scope.toString());
+
+		_extensionAttributes.put(
+			ExtendedObjectClassDefinition.XML_NAMESPACE, attributes);
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(

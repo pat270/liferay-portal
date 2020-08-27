@@ -16,17 +16,20 @@ package com.liferay.document.library.opener.google.drive.web.internal.portlet.ac
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.service.DLAppService;
-import com.liferay.document.library.opener.google.drive.DLOpenerGoogleDriveManager;
+import com.liferay.document.library.opener.google.drive.web.internal.DLOpenerGoogleDriveManager;
 import com.liferay.document.library.opener.google.drive.web.internal.constants.DLOpenerGoogleDriveWebKeys;
+import com.liferay.document.library.opener.google.drive.web.internal.oauth.OAuth2StateUtil;
 import com.liferay.document.library.opener.google.drive.web.internal.util.GoogleDrivePortletRequestAuthorizationHelper;
-import com.liferay.document.library.opener.google.drive.web.internal.util.State;
+import com.liferay.document.library.opener.oauth.OAuth2State;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 
 import java.io.IOException;
+
+import java.util.Optional;
 
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
@@ -58,11 +61,12 @@ public class OpenGoogleDocsMVCRenderCommand implements MVCRenderCommand {
 		throws PortletException {
 
 		try {
-			State state = State.get(
-				_portal.getOriginalServletRequest(
-					_portal.getHttpServletRequest(renderRequest)));
+			Optional<OAuth2State> oAuth2StateOptional =
+				OAuth2StateUtil.getOAuth2StateOptional(
+					_portal.getOriginalServletRequest(
+						_portal.getHttpServletRequest(renderRequest)));
 
-			if (state == null) {
+			if (!oAuth2StateOptional.isPresent()) {
 				_googleDrivePortletRequestAuthorizationHelper.
 					performAuthorizationFlow(renderRequest, renderResponse);
 			}
@@ -86,8 +90,8 @@ public class OpenGoogleDocsMVCRenderCommand implements MVCRenderCommand {
 
 			return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;
 		}
-		catch (IOException | PortalException | ServletException e) {
-			throw new PortletException(e);
+		catch (IOException | PortalException | ServletException exception) {
+			throw new PortletException(exception);
 		}
 	}
 

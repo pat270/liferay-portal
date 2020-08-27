@@ -106,9 +106,8 @@ public abstract class BaseOpenSearchImpl implements OpenSearch {
 			long userId = PortalUtil.getUserId(httpServletRequest);
 
 			if (userId == 0) {
-				long companyId = PortalUtil.getCompanyId(httpServletRequest);
-
-				userId = UserLocalServiceUtil.getDefaultUserId(companyId);
+				userId = UserLocalServiceUtil.getDefaultUserId(
+					PortalUtil.getCompanyId(httpServletRequest));
 			}
 
 			String keywords = GetterUtil.getString(
@@ -125,11 +124,11 @@ public abstract class BaseOpenSearchImpl implements OpenSearch {
 				httpServletRequest, userId, keywords, startPage, itemsPerPage,
 				format);
 		}
-		catch (SearchException se) {
-			throw se;
+		catch (SearchException searchException) {
+			throw searchException;
 		}
-		catch (Exception e) {
-			throw new SearchException(e);
+		catch (Exception exception) {
+			throw new SearchException(exception);
 		}
 	}
 
@@ -552,10 +551,8 @@ public abstract class BaseOpenSearchImpl implements OpenSearch {
 				layoutGroupId, scopeGroupId, true, portletId);
 		}
 
-		if (plid == 0) {
-			if (layout != null) {
-				plid = layout.getPlid();
-			}
+		if ((plid == 0) && (layout != null)) {
+			plid = layout.getPlid();
 		}
 
 		return plid;
@@ -573,10 +570,10 @@ public abstract class BaseOpenSearchImpl implements OpenSearch {
 			long scopeGroupId)
 		throws Exception {
 
-		long plid = getPlid(httpServletRequest, portletId, scopeGroupId);
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			httpServletRequest, portletId, plid, PortletRequest.RENDER_PHASE);
+			httpServletRequest, portletId,
+			getPlid(httpServletRequest, portletId, scopeGroupId),
+			PortletRequest.RENDER_PHASE);
 
 		portletURL.setPortletMode(PortletMode.VIEW);
 		portletURL.setWindowState(WindowState.MAXIMIZED);

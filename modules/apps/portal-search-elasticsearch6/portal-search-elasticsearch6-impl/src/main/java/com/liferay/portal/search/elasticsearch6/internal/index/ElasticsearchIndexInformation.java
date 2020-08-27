@@ -16,6 +16,7 @@ package com.liferay.portal.search.elasticsearch6.internal.index;
 
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchClientResolver;
 import com.liferay.portal.search.index.IndexInformation;
+import com.liferay.portal.search.index.IndexNameBuilder;
 
 import org.elasticsearch.action.admin.indices.get.GetIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;

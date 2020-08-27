@@ -17,8 +17,11 @@ package com.liferay.frontend.taglib.clay.servlet.taglib.soy;
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.base.BaseClayTag;
 
 /**
- * @author Chema Balsas
+ * @author     Chema Balsas
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.frontend.taglib.clay.servlet.taglib.LabelTag}
  */
+@Deprecated
 public class LabelTag extends BaseClayTag {
 
 	@Override

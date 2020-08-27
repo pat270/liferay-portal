@@ -26,12 +26,12 @@ import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -68,13 +68,12 @@ public class EditImageConfigurationEntryMVCActionCommand
 		String name = ParamUtil.getString(actionRequest, "name");
 		String description = ParamUtil.getString(actionRequest, "description");
 		String uuid = ParamUtil.getString(actionRequest, "uuid");
-		String maxHeight = ParamUtil.getString(actionRequest, "maxHeight");
-		String maxWidth = ParamUtil.getString(actionRequest, "maxWidth");
 
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", maxHeight);
-		properties.put("max-width", maxWidth);
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", ParamUtil.getString(actionRequest, "maxHeight")
+		).put(
+			"max-width", ParamUtil.getString(actionRequest, "maxWidth")
+		).build();
 
 		Optional<AMImageConfigurationEntry> amImageConfigurationEntryOptional =
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
@@ -172,8 +171,9 @@ public class EditImageConfigurationEntryMVCActionCommand
 				}
 			}
 		}
-		catch (AMImageConfigurationException amice) {
-			SessionErrors.add(actionRequest, amice.getClass());
+		catch (AMImageConfigurationException amImageConfigurationException) {
+			SessionErrors.add(
+				actionRequest, amImageConfigurationException.getClass());
 		}
 	}
 

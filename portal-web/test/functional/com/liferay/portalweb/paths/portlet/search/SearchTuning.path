@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>SearchTuning</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">SearchTuning</td></tr>
+</thead>
+<tbody>
+<!--RESULT_RANKINGS-->
+<tr>
+	<td>RESULT_RANKINGS_ACTIVE_TOGGLE_SWITCH</td>
+	<td>//input[@id="active-switch-input"]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ACTIVE_RANKING</td>
+	<td>//tr[@data-qa-id='row'][.//descendant::td[contains(@class,'lfr-status-column') and contains(.,'Active')]]//a[normalize-space(text())='${key_query}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ADD_RESULT_SEARCH_BAR</td>
+	<td>//div[@data-testid='add-result-modal']//input[contains(@aria-label,'Search')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ALIAS_FIELD</td>
+	<td>//div[contains(@class,'form-group') and contains(.,'Alias')]//input[contains(@class,'form-control-inset')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ALIAS_REMOVE</td>
+	<td>//span[contains(@class,'label-dismissible') and contains(.,'${key_alias}')]//button[contains(@class,'close')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ALIAS_VALUE</td>
+	<td>//span[contains(@class,'label-dismissible') and contains(.,'${key_alias}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ASSET_DETAILS_TITLE</td>
+	<td>//div[contains(@class,'result-rankings-view-content')]//div[contains(@class,'sheet-title') and contains(.,'${key_assetTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_DUPLICATE_ENTRY</td>
+	<td>//tr[@data-qa-id='row']//td[contains(@class,'query-column') and contains(.,'${key_query}')][2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_ENTRY</td>
+	<td>//tr[@data-qa-id='row']//td[contains(@class,'query-column') and contains(.,'${key_query}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_INACTIVE_RANKING</td>
+	<td>//tr[@data-qa-id='row'][.//descendant::td[contains(@class,'lfr-status-column') and contains(.,'Inactive')]]//a[normalize-space(text())='${key_query}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_RANKING_WITH_SPECIFIC_ALIAS</td>
+	<td>//tr[@data-qa-id='row'][.//descendant::td[contains(@class,'lfr-aliases-column') and contains(.,'${key_alias}')]]//a[normalize-space(text())='${key_query}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_RESULT</td>
+	<td>//div[contains(@class,'active')]//li[contains(@class,'list-item-root') and contains(.,'${key_assetTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_RESULT_TITLE</td>
+	<td>//div[contains(@class,'active')]//li[contains(@class,'list-item-root') and contains(.,'${key_assetTitle}')]//a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_RESULT_DRAG_HANDLE</td>
+	<td>//li[contains(@class,'result-ranking-item-pinned') and contains(.,'${key_assetTitle}')]//span[@draggable]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_RESULT_ELLIPSIS</td>
+	<td>//div[contains(@class,'active')]//li[contains(@class,'list-item-root') and contains(.,'${key_assetTitle}')]//button[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT_RANKINGS_RESULT_PINNED</td>
+	<td>//div[contains(@class,'active')]//li[contains(@class,'list-item-root') and contains(.,'${key_assetTitle}')]//div[contains(@class,'result-pin-icon-display')]</td>
+	<td></td>
+</tr>
+<!--SYNONYMS-->
+<tr>
+	<td>SYNONYMS_ENTRY</td>
+	<td>//table[contains(@id, synonymSetsEntries)]//a[contains(.,'${key_synonyms}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SYNONYMS_MULTI_SELECT_FIELD</td>
+	<td>//div[contains(@id,'SynonymsPortlet')]//input[@class='form-control-inset']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SYNONYMS_MULTI_SELECT_REMOVE</td>
+	<td>//span[contains(@class,'label-dismissible') and contains(.,'${key_synonym}')]//button[contains(@class,'close')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SYNONYMS_MULTI_SELECT_VALUE</td>
+	<td>//span[contains(@class,'label-dismissible') and contains(.,'${key_synonym}')]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

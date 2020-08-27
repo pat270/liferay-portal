@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CollectionInput should render collection type 1`] = `
+exports[`CollectionInput renders collection type 1`] = `
 <DocumentFragment>
   <input
     class="criterion-input form-control"

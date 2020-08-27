@@ -34,7 +34,7 @@ backURL.setParameter("redirect", redirect);
 backURL.setParameter("templateId", String.valueOf(template.getTemplateId()));
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<c:choose>
 		<c:when test="<%= ddmDisplay.isShowBackURLInTitleBar() %>">
 
@@ -69,7 +69,7 @@ backURL.setParameter("templateId", String.valueOf(template.getTemplateId()));
 			<%
 			DDMStructure structure = ddmDisplayContext.fetchStructure(template);
 
-			String portletResourceNamespace = ParamUtil.getString(request, "portletResourceNamespace", renderResponse.getNamespace());
+			String portletResourceNamespace = ParamUtil.getString(request, "portletResourceNamespace", liferayPortletResponse.getNamespace());
 
 			String script = templateVersion.getScript();
 
@@ -88,4 +88,4 @@ backURL.setParameter("templateId", String.valueOf(template.getTemplateId()));
 	<aui:button-row>
 		<aui:button href="<%= backURL.toString() %>" type="cancel" />
 	</aui:button-row>
-</div>
+</clay:container-fluid>

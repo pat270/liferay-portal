@@ -1,35 +1,26 @@
 @component-name = "portal-knowledge-base"
 definition {
-	property custom.properties = "default.layout.template.id=1_column";
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Knowledge Base";
-	var pageName = "Knowledge Base Article Page";
-	var portletName = "Knowledge Base Article";
 
 	setUp {
 		TestCase.setUpPortalInstance();
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Knowledge Base Article Page");
 
-		SitePages.addPublicPage(
-			pageName = "${pageName}",
-			sitePageType = "Widget Page");
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Knowledge Base Article Page",
+			widgetName = "Knowledge Base Article");
 
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "${pageName}",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
-
-		Navigator.gotoPage(pageName = "${pageName}");
-
-		Portlet.addPG(portletName = "${portletName}");
+		Navigator.gotoPage(pageName = "Knowledge Base Article Page");
 	}
 
 	tearDown {
@@ -47,12 +38,7 @@ definition {
 
 	@priority = "3"
 	test DeleteKBArticleViaKBArticle {
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Knowledge Base");
+		KBAdmin.openKBAdmin(siteURLKey = "guest");
 
 		KBArticle.addCP(
 			kbArticleContent = "Knowledge Base Article Content",
@@ -74,13 +60,9 @@ definition {
 			deleteViaKBArticle = "true",
 			kbArticleTitle = "Knowledge Base Article Title");
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Knowledge Base");
+		KBAdmin.openKBAdmin(siteURLKey = "guest");
 
 		KBArticle.viewDefaultCP();
 	}
+
 }

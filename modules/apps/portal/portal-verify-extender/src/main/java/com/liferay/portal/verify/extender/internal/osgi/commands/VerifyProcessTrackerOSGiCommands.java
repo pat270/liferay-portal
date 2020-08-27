@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.output.stream.container.OutputStreamContainer;
 import com.liferay.portal.output.stream.container.OutputStreamContainerFactory;
 import com.liferay.portal.output.stream.container.OutputStreamContainerFactoryTracker;
+import com.liferay.portal.output.stream.container.constants.OutputStreamContainerConstants;
 import com.liferay.portal.search.index.IndexStatusManager;
 import com.liferay.portal.verify.VerifyException;
 import com.liferay.portal.verify.VerifyProcess;
@@ -83,7 +84,7 @@ public class VerifyProcessTrackerOSGiCommands {
 		try {
 			getVerifyProcesses(_verifyProcesses, verifyProcessName);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			System.out.println(
 				"No verify process with name " + verifyProcessName);
 
@@ -136,35 +137,33 @@ public class VerifyProcessTrackerOSGiCommands {
 
 	@Descriptor("Execute all verify processes")
 	public void executeAll() {
-		OutputStreamContainerFactory outputStreamContainerFactory =
-			outputStreamContainerFactoryTracker.
-				getOutputStreamContainerFactory();
-
-		_runAllVerifiersWithFactory(outputStreamContainerFactory, true);
+		_runAllVerifiersWithFactory(
+			outputStreamContainerFactoryTracker.getOutputStreamContainerFactory(
+				null),
+			true);
 	}
 
 	@Descriptor("Execute all verify processes with a specific output")
 	public void executeAll(String outputStreamContainerFactoryName) {
-		OutputStreamContainerFactory outputStreamContainerFactory =
+		_runAllVerifiersWithFactory(
 			outputStreamContainerFactoryTracker.getOutputStreamContainerFactory(
-				outputStreamContainerFactoryName);
-
-		_runAllVerifiersWithFactory(outputStreamContainerFactory, true);
+				outputStreamContainerFactoryName),
+			true);
 	}
 
-	@Descriptor("Execute all registered verify processes")
+	@Descriptor("List all registered verify processes")
 	public void list() {
 		for (String verifyProcessName : _verifyProcesses.keySet()) {
 			show(verifyProcessName);
 		}
 	}
 
-	@Descriptor("Show all registered verify processes")
+	@Descriptor("Show all verify processes for a specific verify process name")
 	public void show(String verifyProcessName) {
 		try {
 			getVerifyProcesses(_verifyProcesses, verifyProcessName);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			System.out.println(
 				"No verify process with name " + verifyProcessName);
 
@@ -219,8 +218,8 @@ public class VerifyProcessTrackerOSGiCommands {
 		try {
 			outputStream.close();
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -248,11 +247,6 @@ public class VerifyProcessTrackerOSGiCommands {
 
 		List<VerifyProcess> verifyProcesses = getVerifyProcesses(
 			verifyProcessTrackerMap, verifyProcessName);
-
-		boolean indexReadOnly = indexStatusManager.isIndexReadOnly();
-
-		indexStatusManager.setIndexReadOnly(
-			_verifyProcessTrackerConfiguration.indexReadOnly());
 
 		NotificationThreadLocal.setEnabled(false);
 		StagingAdvicesThreadLocal.setEnabled(false);
@@ -285,20 +279,20 @@ public class VerifyProcessTrackerOSGiCommands {
 			printWriter.println(
 				"Executing verifiers registered for " + verifyProcessName);
 
-			VerifyException verifyException = null;
+			VerifyException verifyException1 = null;
 
 			for (VerifyProcess verifyProcess : verifyProcesses) {
 				try {
 					verifyProcess.verify();
 				}
-				catch (VerifyException ve) {
-					_log.error(ve, ve);
+				catch (VerifyException verifyException2) {
+					_log.error(verifyException2, verifyException2);
 
-					verifyException = ve;
+					verifyException1 = verifyException2;
 				}
 			}
 
-			if (verifyException == null) {
+			if (verifyException1 == null) {
 				release.setVerified(true);
 				release.setState(ReleaseConstants.STATE_GOOD);
 
@@ -307,14 +301,13 @@ public class VerifyProcessTrackerOSGiCommands {
 				_registerMarkerObject(verifyProcessName);
 			}
 			else {
-				release.setState(ReleaseConstants.STATE_VERIFY_FAILURE);
 				release.setVerified(false);
+				release.setState(ReleaseConstants.STATE_VERIFY_FAILURE);
 
 				releaseLocalService.updateRelease(release);
 			}
 		}
 		finally {
-			indexStatusManager.setIndexReadOnly(indexReadOnly);
 			NotificationThreadLocal.setEnabled(true);
 			StagingAdvicesThreadLocal.setEnabled(true);
 			WorkflowThreadLocal.setEnabled(true);
@@ -327,19 +320,9 @@ public class VerifyProcessTrackerOSGiCommands {
 		final String verifyProcessName, String outputStreamContainerFactoryName,
 		String outputStreamName, final boolean force) {
 
-		OutputStreamContainerFactory outputStreamContainerFactory;
-
-		if (outputStreamContainerFactoryName != null) {
-			outputStreamContainerFactory =
-				outputStreamContainerFactoryTracker.
-					getOutputStreamContainerFactory(
-						outputStreamContainerFactoryName);
-		}
-		else {
-			outputStreamContainerFactory =
-				outputStreamContainerFactoryTracker.
-					getOutputStreamContainerFactory();
-		}
+		OutputStreamContainerFactory outputStreamContainerFactory =
+			outputStreamContainerFactoryTracker.getOutputStreamContainerFactory(
+				outputStreamContainerFactoryName);
 
 		OutputStreamContainer outputStreamContainer =
 			outputStreamContainerFactory.create(outputStreamName);
@@ -476,7 +459,9 @@ public class VerifyProcessTrackerOSGiCommands {
 			String key, VerifyProcess serviceVerifyProcess,
 			List<VerifyProcess> contentVerifyProcesses) {
 
-			_execute(verifyProcessTrackerMap, key, null, false);
+			_execute(
+				verifyProcessTrackerMap, key,
+				OutputStreamContainerConstants.FACTORY_NAME_DUMMY, false);
 		}
 
 		@Override

@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link TicketLocalService}.
  *
@@ -23,9 +21,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TicketLocalService
  * @generated
  */
-@ProviderType
 public class TicketLocalServiceWrapper
-	implements TicketLocalService, ServiceWrapper<TicketLocalService> {
+	implements ServiceWrapper<TicketLocalService>, TicketLocalService {
 
 	public TicketLocalServiceWrapper(TicketLocalService ticketLocalService) {
 		_ticketLocalService = ticketLocalService;
@@ -33,8 +30,8 @@ public class TicketLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Ticket addDistinctTicket(
-		long companyId, String className, long classPK, int type,
-		String extraInfo, java.util.Date expirationDate,
+		long companyId, java.lang.String className, long classPK, int type,
+		java.lang.String extraInfo, java.util.Date expirationDate,
 		ServiceContext serviceContext) {
 
 		return _ticketLocalService.addDistinctTicket(
@@ -44,8 +41,8 @@ public class TicketLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Ticket addTicket(
-		long companyId, String className, long classPK, int type,
-		String extraInfo, java.util.Date expirationDate,
+		long companyId, java.lang.String className, long classPK, int type,
+		java.lang.String extraInfo, java.util.Date expirationDate,
 		ServiceContext serviceContext) {
 
 		return _ticketLocalService.addTicket(
@@ -56,6 +53,10 @@ public class TicketLocalServiceWrapper
 	/**
 	 * Adds the ticket to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TicketLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ticket the ticket
 	 * @return the ticket that was added
 	 */
@@ -64,6 +65,17 @@ public class TicketLocalServiceWrapper
 		com.liferay.portal.kernel.model.Ticket ticket) {
 
 		return _ticketLocalService.addTicket(ticket);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ticketLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -91,6 +103,10 @@ public class TicketLocalServiceWrapper
 	/**
 	 * Deletes the ticket with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TicketLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ticketId the primary key of the ticket
 	 * @return the ticket that was removed
 	 * @throws PortalException if a ticket with the primary key could not be found
@@ -105,6 +121,10 @@ public class TicketLocalServiceWrapper
 	/**
 	 * Deletes the ticket from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TicketLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ticket the ticket
 	 * @return the ticket that was removed
 	 */
@@ -113,6 +133,11 @@ public class TicketLocalServiceWrapper
 		com.liferay.portal.kernel.model.Ticket ticket) {
 
 		return _ticketLocalService.deleteTicket(ticket);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _ticketLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -137,7 +162,7 @@ public class TicketLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -157,7 +182,7 @@ public class TicketLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -210,7 +235,9 @@ public class TicketLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Ticket fetchTicket(String key) {
+	public com.liferay.portal.kernel.model.Ticket fetchTicket(
+		java.lang.String key) {
+
 		return _ticketLocalService.fetchTicket(key);
 	}
 
@@ -234,10 +261,13 @@ public class TicketLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _ticketLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -261,7 +291,8 @@ public class TicketLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Ticket getTicket(String key)
+	public com.liferay.portal.kernel.model.Ticket getTicket(
+			java.lang.String key)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ticketLocalService.getTicket(key);
@@ -271,7 +302,7 @@ public class TicketLocalServiceWrapper
 	 * Returns a range of all the tickets.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.TicketModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of tickets
@@ -287,7 +318,7 @@ public class TicketLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Ticket> getTickets(
-		long companyId, String className, long classPK, int type) {
+		long companyId, java.lang.String className, long classPK, int type) {
 
 		return _ticketLocalService.getTickets(
 			companyId, className, classPK, type);
@@ -295,7 +326,7 @@ public class TicketLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Ticket> getTickets(
-		String className, long classPK, int type) {
+		java.lang.String className, long classPK, int type) {
 
 		return _ticketLocalService.getTickets(className, classPK, type);
 	}
@@ -312,8 +343,8 @@ public class TicketLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Ticket updateTicket(
-			long ticketId, String className, long classPK, int type,
-			String extraInfo, java.util.Date expirationDate)
+			long ticketId, java.lang.String className, long classPK, int type,
+			java.lang.String extraInfo, java.util.Date expirationDate)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ticketLocalService.updateTicket(
@@ -322,6 +353,10 @@ public class TicketLocalServiceWrapper
 
 	/**
 	 * Updates the ticket in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TicketLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ticket the ticket
 	 * @return the ticket that was updated

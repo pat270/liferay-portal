@@ -19,11 +19,10 @@
 <%
 String googleAuthURL = PortalUtil.getPathContext() + "/c/portal/google_login?cmd=login";
 
-String taglibOpenGoogleLoginWindow = "javascript:var googleLoginWindow = window.open('" + googleAuthURL.toString() + "', 'google', 'align=center,directories=no,height=560,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1000'); void(''); googleLoginWindow.focus();";
+String taglibOpenGoogleLoginWindow = "javascript:var googleLoginWindow = window.open('" + googleAuthURL + "', 'google', 'align=center,directories=no,height=560,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1000'); void(''); googleLoginWindow.focus();";
 %>
 
 <liferay-ui:icon
-	iconCssClass="icon-google-plus-sign"
 	message="google"
 	url="<%= taglibOpenGoogleLoginWindow %>"
 />

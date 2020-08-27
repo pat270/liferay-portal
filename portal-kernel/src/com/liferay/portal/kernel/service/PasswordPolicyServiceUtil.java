@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for PasswordPolicy. This utility wraps
  * <code>com.liferay.portal.service.impl.PasswordPolicyServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PasswordPolicyService
  * @generated
  */
-@ProviderType
 public class PasswordPolicyServiceUtil {
 
 	/*
@@ -86,9 +83,11 @@ public class PasswordPolicyServiceUtil {
 		search(
 			long companyId, String name, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.PasswordPolicy> obc) {
+				<com.liferay.portal.kernel.model.PasswordPolicy>
+					orderByComparator) {
 
-		return getService().search(companyId, name, start, end, obc);
+		return getService().search(
+			companyId, name, start, end, orderByComparator);
 	}
 
 	public static int searchCount(long companyId, String name) {

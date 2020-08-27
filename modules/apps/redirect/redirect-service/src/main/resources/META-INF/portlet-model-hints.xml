@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.liferay.redirect.model.RedirectEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="uuid" type="String" />
+		<field name="redirectEntryId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="destinationURL" type="String">
+			<hint-collection name="URL" />
+			<sanitize content-type="text/plain" modes="ALL" />
+		</field>
+		<field name="expirationDate" type="Date" />
+		<field name="lastOccurrenceDate" type="Date" />
+		<field name="permanent" type="boolean" />
+		<field name="sourceURL" type="String">
+			<hint-collection name="URL" />
+			<sanitize content-type="text/plain" modes="ALL" />
+		</field>
+	</model>
+	<model name="com.liferay.redirect.model.RedirectNotFoundEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="redirectNotFoundEntryId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="ignored" type="boolean" />
+		<field name="url" type="String">
+			<hint-collection name="URL" />
+			<sanitize content-type="text/plain" modes="ALL" />
+		</field>
+	</model>
+</model-hints>

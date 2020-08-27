@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TreeNode;
+import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
 import com.liferay.wiki.engine.creole.internal.antlrwiki.translator.internal.UnformattedHeadingTextVisitor;
 import com.liferay.wiki.engine.creole.internal.antlrwiki.translator.internal.UnformattedLinksTextVisitor;
 import com.liferay.wiki.engine.creole.internal.parser.ast.CollectionNode;
@@ -32,6 +33,7 @@ import com.liferay.wiki.engine.creole.internal.parser.ast.WikiPageNode;
 import com.liferay.wiki.engine.creole.internal.parser.ast.extension.TableOfContentsNode;
 import com.liferay.wiki.engine.creole.internal.parser.ast.link.LinkNode;
 import com.liferay.wiki.engine.creole.internal.parser.visitor.XhtmlTranslationVisitor;
+import com.liferay.wiki.engine.creole.internal.util.WikiEngineCreoleComponentProvider;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 
@@ -113,11 +115,37 @@ public class XhtmlTranslator extends XhtmlTranslationVisitor {
 
 	@Override
 	public void visit(LinkNode linkNode) {
+		String title = StringUtil.replace(
+			linkNode.getLink(), CharPool.NO_BREAK_SPACE, StringPool.SPACE);
+
+		WikiPage wikiPage = null;
+
+		if ((title != null) && !linkNode.isAbsoluteLink()) {
+			wikiPage = WikiPageLocalServiceUtil.fetchPage(
+				_page.getNodeId(), title);
+		}
+
 		append("<a href=\"");
 
-		appendHref(linkNode);
+		appendHref(linkNode, title, wikiPage);
 
-		append("\">");
+		append(StringPool.QUOTE);
+
+		WikiEngineCreoleComponentProvider wikiEngineCreoleComponentProvider =
+			WikiEngineCreoleComponentProvider.
+				getWikiEngineCreoleComponentProvider();
+
+		WikiGroupServiceConfiguration wikiGroupServiceConfiguration =
+			wikiEngineCreoleComponentProvider.
+				getWikiGroupServiceConfiguration();
+
+		if (!linkNode.isAbsoluteLink() && (wikiPage == null) &&
+			wikiGroupServiceConfiguration.enableHighlightCreoleFormat()) {
+
+			append(" class=\"new-wiki-page\"");
+		}
+
+		append(">");
 
 		if (linkNode.hasAltCollectionNode()) {
 			CollectionNode altCollectionNode = linkNode.getAltCollectionNode();
@@ -168,7 +196,9 @@ public class XhtmlTranslator extends XhtmlTranslationVisitor {
 		append(HtmlUtil.escape(linkNode.getLink()));
 	}
 
-	protected void appendHref(LinkNode linkNode) {
+	protected void appendHref(
+		LinkNode linkNode, String title, WikiPage wikiPage) {
+
 		if (linkNode.getLink() == null) {
 			UnformattedLinksTextVisitor unformattedLinksTextVisitor =
 				new UnformattedLinksTextVisitor();
@@ -181,7 +211,7 @@ public class XhtmlTranslator extends XhtmlTranslationVisitor {
 			appendAbsoluteHref(linkNode);
 		}
 		else {
-			appendWikiHref(linkNode);
+			appendWikiHref(linkNode, wikiPage, title);
 		}
 	}
 
@@ -239,18 +269,8 @@ public class XhtmlTranslator extends XhtmlTranslationVisitor {
 		append("</ol>");
 	}
 
-	protected void appendWikiHref(LinkNode linkNode) {
-		WikiPage page = null;
-
-		String title = StringUtil.replace(
-			linkNode.getLink(), CharPool.NO_BREAK_SPACE, StringPool.SPACE);
-
-		try {
-			page = WikiPageLocalServiceUtil.fetchPage(_page.getNodeId(), title);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
+	protected void appendWikiHref(
+		LinkNode linkNode, WikiPage wikiPage, String title) {
 
 		String attachmentLink = searchLinkInAttachments(linkNode);
 
@@ -263,7 +283,7 @@ public class XhtmlTranslator extends XhtmlTranslationVisitor {
 			return;
 		}
 
-		if ((page != null) && (_viewPageURL != null)) {
+		if ((wikiPage != null) && (_viewPageURL != null)) {
 			_viewPageURL.setParameter("title", title);
 
 			append(_viewPageURL.toString());
@@ -312,9 +332,9 @@ public class XhtmlTranslator extends XhtmlTranslationVisitor {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+				_log.debug(exception, exception);
 			}
 		}
 

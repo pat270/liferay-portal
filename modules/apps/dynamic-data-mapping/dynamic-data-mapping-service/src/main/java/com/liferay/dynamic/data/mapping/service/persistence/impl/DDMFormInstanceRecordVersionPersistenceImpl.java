@@ -16,10 +16,14 @@ package com.liferay.dynamic.data.mapping.service.persistence.impl;
 
 import com.liferay.dynamic.data.mapping.exception.NoSuchFormInstanceRecordVersionException;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersionTable;
 import com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionImpl;
 import com.liferay.dynamic.data.mapping.model.impl.DDMFormInstanceRecordVersionModelImpl;
 import com.liferay.dynamic.data.mapping.service.persistence.DDMFormInstanceRecordVersionPersistence;
+import com.liferay.dynamic.data.mapping.service.persistence.impl.constants.DDMPersistenceConstants;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
+import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -27,25 +31,36 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The persistence implementation for the ddm form instance record version service.
@@ -57,7 +72,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
+@Component(service = DDMFormInstanceRecordVersionPersistence.class)
 public class DDMFormInstanceRecordVersionPersistenceImpl
 	extends BasePersistenceImpl<DDMFormInstanceRecordVersion>
 	implements DDMFormInstanceRecordVersionPersistence {
@@ -101,7 +116,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns a range of all the ddm form instance record versions where formInstanceRecordId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceRecordId the form instance record ID
@@ -121,7 +136,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where formInstanceRecordId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceRecordId the form instance record ID
@@ -143,34 +158,38 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where formInstanceRecordId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceRecordId the form instance record ID
 	 * @param start the lower bound of the range of ddm form instance record versions
 	 * @param end the upper bound of the range of ddm form instance record versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching ddm form instance record versions
 	 */
 	@Override
 	public List<DDMFormInstanceRecordVersion> findByFormInstanceRecordId(
 		long formInstanceRecordId, int start, int end,
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByFormInstanceRecordId;
-			finderArgs = new Object[] {formInstanceRecordId};
+			if (useFinderCache && productionMode) {
+				finderPath =
+					_finderPathWithoutPaginationFindByFormInstanceRecordId;
+				finderArgs = new Object[] {formInstanceRecordId};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByFormInstanceRecordId;
 			finderArgs = new Object[] {
 				formInstanceRecordId, start, end, orderByComparator
@@ -179,7 +198,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 		List<DDMFormInstanceRecordVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMFormInstanceRecordVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -187,9 +206,9 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 				for (DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion :
 						list) {
 
-					if ((formInstanceRecordId !=
+					if (formInstanceRecordId !=
 							ddmFormInstanceRecordVersion.
-								getFormInstanceRecordId())) {
+								getFormInstanceRecordId()) {
 
 						list = null;
 
@@ -200,64 +219,53 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(
+			sb.append(
 				_FINDER_COLUMN_FORMINSTANCERECORDID_FORMINSTANCERECORDID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceRecordId);
+				queryPos.add(formInstanceRecordId);
 
-				if (!pagination) {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -289,16 +297,16 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("formInstanceRecordId=");
-		msg.append(formInstanceRecordId);
+		sb.append("formInstanceRecordId=");
+		sb.append(formInstanceRecordId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -345,16 +353,16 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("formInstanceRecordId=");
-		msg.append(formInstanceRecordId);
+		sb.append("formInstanceRecordId=");
+		sb.append(formInstanceRecordId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -425,8 +433,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -441,103 +449,102 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
 			boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+		sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-		query.append(
-			_FINDER_COLUMN_FORMINSTANCERECORDID_FORMINSTANCERECORDID_2);
+		sb.append(_FINDER_COLUMN_FORMINSTANCERECORDID_FORMINSTANCERECORDID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(formInstanceRecordId);
+		queryPos.add(formInstanceRecordId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						ddmFormInstanceRecordVersion)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DDMFormInstanceRecordVersion> list = q.list();
+		List<DDMFormInstanceRecordVersion> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -571,41 +578,51 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 */
 	@Override
 	public int countByFormInstanceRecordId(long formInstanceRecordId) {
-		FinderPath finderPath = _finderPathCountByFormInstanceRecordId;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
 
-		Object[] finderArgs = new Object[] {formInstanceRecordId};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByFormInstanceRecordId;
+
+			finderArgs = new Object[] {formInstanceRecordId};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(
+			sb.append(
 				_FINDER_COLUMN_FORMINSTANCERECORDID_FORMINSTANCERECORDID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceRecordId);
+				queryPos.add(formInstanceRecordId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -643,7 +660,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns a range of all the ddm form instance record versions where formInstanceId = &#63; and formInstanceVersion = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceId the form instance ID
@@ -663,7 +680,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where formInstanceId = &#63; and formInstanceVersion = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceId the form instance ID
@@ -687,7 +704,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where formInstanceId = &#63; and formInstanceVersion = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceId the form instance ID
@@ -695,29 +712,32 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * @param start the lower bound of the range of ddm form instance record versions
 	 * @param end the upper bound of the range of ddm form instance record versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching ddm form instance record versions
 	 */
 	@Override
 	public List<DDMFormInstanceRecordVersion> findByF_F(
 		long formInstanceId, String formInstanceVersion, int start, int end,
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		formInstanceVersion = Objects.toString(formInstanceVersion, "");
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByF_F;
-			finderArgs = new Object[] {formInstanceId, formInstanceVersion};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByF_F;
+				finderArgs = new Object[] {formInstanceId, formInstanceVersion};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByF_F;
 			finderArgs = new Object[] {
 				formInstanceId, formInstanceVersion, start, end,
@@ -727,7 +747,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 		List<DDMFormInstanceRecordVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMFormInstanceRecordVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -750,78 +770,67 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_F_F_FORMINSTANCEID_2);
+			sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEID_2);
 
 			boolean bindFormInstanceVersion = false;
 
 			if (formInstanceVersion.isEmpty()) {
-				query.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3);
+				sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3);
 			}
 			else {
 				bindFormInstanceVersion = true;
 
-				query.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_2);
+				sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceId);
+				queryPos.add(formInstanceId);
 
 				if (bindFormInstanceVersion) {
-					qPos.add(formInstanceVersion);
+					queryPos.add(formInstanceVersion);
 				}
 
-				if (!pagination) {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -854,19 +863,19 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("formInstanceId=");
-		msg.append(formInstanceId);
+		sb.append("formInstanceId=");
+		sb.append(formInstanceId);
 
-		msg.append(", formInstanceVersion=");
-		msg.append(formInstanceVersion);
+		sb.append(", formInstanceVersion=");
+		sb.append(formInstanceVersion);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -915,19 +924,19 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("formInstanceId=");
-		msg.append(formInstanceId);
+		sb.append("formInstanceId=");
+		sb.append(formInstanceId);
 
-		msg.append(", formInstanceVersion=");
-		msg.append(formInstanceVersion);
+		sb.append(", formInstanceVersion=");
+		sb.append(formInstanceVersion);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -1002,8 +1011,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1017,30 +1026,30 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+		sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-		query.append(_FINDER_COLUMN_F_F_FORMINSTANCEID_2);
+		sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEID_2);
 
 		boolean bindFormInstanceVersion = false;
 
 		if (formInstanceVersion.isEmpty()) {
-			query.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3);
+			sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3);
 		}
 		else {
 			bindFormInstanceVersion = true;
 
-			query.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_2);
+			sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_2);
 		}
 
 		if (orderByComparator != null) {
@@ -1048,74 +1057,74 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(formInstanceId);
+		queryPos.add(formInstanceId);
 
 		if (bindFormInstanceVersion) {
-			qPos.add(formInstanceVersion);
+			queryPos.add(formInstanceVersion);
 		}
 
 		if (orderByComparator != null) {
@@ -1123,11 +1132,11 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						ddmFormInstanceRecordVersion)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DDMFormInstanceRecordVersion> list = q.list();
+		List<DDMFormInstanceRecordVersion> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1165,57 +1174,65 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	public int countByF_F(long formInstanceId, String formInstanceVersion) {
 		formInstanceVersion = Objects.toString(formInstanceVersion, "");
 
-		FinderPath finderPath = _finderPathCountByF_F;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
 
-		Object[] finderArgs = new Object[] {
-			formInstanceId, formInstanceVersion
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByF_F;
+
+			finderArgs = new Object[] {formInstanceId, formInstanceVersion};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_F_F_FORMINSTANCEID_2);
+			sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEID_2);
 
 			boolean bindFormInstanceVersion = false;
 
 			if (formInstanceVersion.isEmpty()) {
-				query.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3);
+				sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_3);
 			}
 			else {
 				bindFormInstanceVersion = true;
 
-				query.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_2);
+				sb.append(_FINDER_COLUMN_F_F_FORMINSTANCEVERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceId);
+				queryPos.add(formInstanceId);
 
 				if (bindFormInstanceVersion) {
-					qPos.add(formInstanceVersion);
+					queryPos.add(formInstanceVersion);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1254,23 +1271,23 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			formInstanceRecordId, version);
 
 		if (ddmFormInstanceRecordVersion == null) {
-			StringBundler msg = new StringBundler(6);
+			StringBundler sb = new StringBundler(6);
 
-			msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+			sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-			msg.append("formInstanceRecordId=");
-			msg.append(formInstanceRecordId);
+			sb.append("formInstanceRecordId=");
+			sb.append(formInstanceRecordId);
 
-			msg.append(", version=");
-			msg.append(version);
+			sb.append(", version=");
+			sb.append(version);
 
-			msg.append("}");
+			sb.append("}");
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(msg.toString());
+				_log.debug(sb.toString());
 			}
 
-			throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+			throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 		}
 
 		return ddmFormInstanceRecordVersion;
@@ -1295,20 +1312,27 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 *
 	 * @param formInstanceRecordId the form instance record ID
 	 * @param version the version
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching ddm form instance record version, or <code>null</code> if a matching ddm form instance record version could not be found
 	 */
 	@Override
 	public DDMFormInstanceRecordVersion fetchByF_V(
-		long formInstanceRecordId, String version, boolean retrieveFromCache) {
+		long formInstanceRecordId, String version, boolean useFinderCache) {
 
 		version = Objects.toString(version, "");
 
-		Object[] finderArgs = new Object[] {formInstanceRecordId, version};
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
+		Object[] finderArgs = null;
+
+		if (useFinderCache && productionMode) {
+			finderArgs = new Object[] {formInstanceRecordId, version};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			result = finderCache.getResult(
 				_finderPathFetchByF_V, finderArgs, this);
 		}
@@ -1327,45 +1351,47 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		}
 
 		if (result == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_F_V_FORMINSTANCERECORDID_2);
+			sb.append(_FINDER_COLUMN_F_V_FORMINSTANCERECORDID_2);
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_F_V_VERSION_3);
+				sb.append(_FINDER_COLUMN_F_V_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_F_V_VERSION_2);
+				sb.append(_FINDER_COLUMN_F_V_VERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceRecordId);
+				queryPos.add(formInstanceRecordId);
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
-				List<DDMFormInstanceRecordVersion> list = q.list();
+				List<DDMFormInstanceRecordVersion> list = query.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(
-						_finderPathFetchByF_V, finderArgs, list);
+					if (useFinderCache && productionMode) {
+						finderCache.putResult(
+							_finderPathFetchByF_V, finderArgs, list);
+					}
 				}
 				else {
 					DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion =
@@ -1376,10 +1402,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 					cacheResult(ddmFormInstanceRecordVersion);
 				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(_finderPathFetchByF_V, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1423,55 +1447,65 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	public int countByF_V(long formInstanceRecordId, String version) {
 		version = Objects.toString(version, "");
 
-		FinderPath finderPath = _finderPathCountByF_V;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
 
-		Object[] finderArgs = new Object[] {formInstanceRecordId, version};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByF_V;
+
+			finderArgs = new Object[] {formInstanceRecordId, version};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_F_V_FORMINSTANCERECORDID_2);
+			sb.append(_FINDER_COLUMN_F_V_FORMINSTANCERECORDID_2);
 
 			boolean bindVersion = false;
 
 			if (version.isEmpty()) {
-				query.append(_FINDER_COLUMN_F_V_VERSION_3);
+				sb.append(_FINDER_COLUMN_F_V_VERSION_3);
 			}
 			else {
 				bindVersion = true;
 
-				query.append(_FINDER_COLUMN_F_V_VERSION_2);
+				sb.append(_FINDER_COLUMN_F_V_VERSION_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceRecordId);
+				queryPos.add(formInstanceRecordId);
 
 				if (bindVersion) {
-					qPos.add(version);
+					queryPos.add(version);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1514,7 +1548,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns a range of all the ddm form instance record versions where formInstanceRecordId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceRecordId the form instance record ID
@@ -1534,7 +1568,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where formInstanceRecordId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceRecordId the form instance record ID
@@ -1557,7 +1591,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where formInstanceRecordId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param formInstanceRecordId the form instance record ID
@@ -1565,27 +1599,30 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * @param start the lower bound of the range of ddm form instance record versions
 	 * @param end the upper bound of the range of ddm form instance record versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching ddm form instance record versions
 	 */
 	@Override
 	public List<DDMFormInstanceRecordVersion> findByF_S(
 		long formInstanceRecordId, int status, int start, int end,
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByF_S;
-			finderArgs = new Object[] {formInstanceRecordId, status};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByF_S;
+				finderArgs = new Object[] {formInstanceRecordId, status};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByF_S;
 			finderArgs = new Object[] {
 				formInstanceRecordId, status, start, end, orderByComparator
@@ -1594,7 +1631,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 		List<DDMFormInstanceRecordVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMFormInstanceRecordVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1616,67 +1653,56 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_F_S_FORMINSTANCERECORDID_2);
+			sb.append(_FINDER_COLUMN_F_S_FORMINSTANCERECORDID_2);
 
-			query.append(_FINDER_COLUMN_F_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_F_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceRecordId);
+				queryPos.add(formInstanceRecordId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1708,19 +1734,19 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("formInstanceRecordId=");
-		msg.append(formInstanceRecordId);
+		sb.append("formInstanceRecordId=");
+		sb.append(formInstanceRecordId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -1768,19 +1794,19 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("formInstanceRecordId=");
-		msg.append(formInstanceRecordId);
+		sb.append("formInstanceRecordId=");
+		sb.append(formInstanceRecordId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -1852,8 +1878,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1867,106 +1893,106 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+		sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-		query.append(_FINDER_COLUMN_F_S_FORMINSTANCERECORDID_2);
+		sb.append(_FINDER_COLUMN_F_S_FORMINSTANCERECORDID_2);
 
-		query.append(_FINDER_COLUMN_F_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_F_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(formInstanceRecordId);
+		queryPos.add(formInstanceRecordId);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						ddmFormInstanceRecordVersion)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DDMFormInstanceRecordVersion> list = q.list();
+		List<DDMFormInstanceRecordVersion> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2002,44 +2028,54 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 */
 	@Override
 	public int countByF_S(long formInstanceRecordId, int status) {
-		FinderPath finderPath = _finderPathCountByF_S;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
 
-		Object[] finderArgs = new Object[] {formInstanceRecordId, status};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByF_S;
+
+			finderArgs = new Object[] {formInstanceRecordId, status};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_F_S_FORMINSTANCERECORDID_2);
+			sb.append(_FINDER_COLUMN_F_S_FORMINSTANCERECORDID_2);
 
-			query.append(_FINDER_COLUMN_F_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_F_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(formInstanceRecordId);
+				queryPos.add(formInstanceRecordId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2082,7 +2118,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns a range of all the ddm form instance record versions where userId = &#63; and formInstanceId = &#63; and formInstanceVersion = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -2107,7 +2143,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where userId = &#63; and formInstanceId = &#63; and formInstanceVersion = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -2134,7 +2170,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions where userId = &#63; and formInstanceId = &#63; and formInstanceVersion = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param userId the user ID
@@ -2144,7 +2180,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * @param start the lower bound of the range of ddm form instance record versions
 	 * @param end the upper bound of the range of ddm form instance record versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching ddm form instance record versions
 	 */
 	@Override
@@ -2152,24 +2188,27 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		long userId, long formInstanceId, String formInstanceVersion,
 		int status, int start, int end,
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		formInstanceVersion = Objects.toString(formInstanceVersion, "");
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByU_F_F_S;
-			finderArgs = new Object[] {
-				userId, formInstanceId, formInstanceVersion, status
-			};
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByU_F_F_S;
+				finderArgs = new Object[] {
+					userId, formInstanceId, formInstanceVersion, status
+				};
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindByU_F_F_S;
 			finderArgs = new Object[] {
 				userId, formInstanceId, formInstanceVersion, status, start, end,
@@ -2179,7 +2218,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 		List<DDMFormInstanceRecordVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMFormInstanceRecordVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -2204,86 +2243,75 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					6 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(6);
+				sb = new StringBundler(6);
 			}
 
-			query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_U_F_F_S_USERID_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_USERID_2);
 
-			query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEID_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEID_2);
 
 			boolean bindFormInstanceVersion = false;
 
 			if (formInstanceVersion.isEmpty()) {
-				query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_3);
+				sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_3);
 			}
 			else {
 				bindFormInstanceVersion = true;
 
-				query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_2);
+				sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_2);
 			}
 
-			query.append(_FINDER_COLUMN_U_F_F_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(
-					DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
-				qPos.add(formInstanceId);
+				queryPos.add(formInstanceId);
 
 				if (bindFormInstanceVersion) {
-					qPos.add(formInstanceVersion);
+					queryPos.add(formInstanceVersion);
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2320,25 +2348,25 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("userId=");
-		msg.append(userId);
+		sb.append("userId=");
+		sb.append(userId);
 
-		msg.append(", formInstanceId=");
-		msg.append(formInstanceId);
+		sb.append(", formInstanceId=");
+		sb.append(formInstanceId);
 
-		msg.append(", formInstanceVersion=");
-		msg.append(formInstanceVersion);
+		sb.append(", formInstanceVersion=");
+		sb.append(formInstanceVersion);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -2395,25 +2423,25 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			return ddmFormInstanceRecordVersion;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("userId=");
-		msg.append(userId);
+		sb.append("userId=");
+		sb.append(userId);
 
-		msg.append(", formInstanceId=");
-		msg.append(formInstanceId);
+		sb.append(", formInstanceId=");
+		sb.append(formInstanceId);
 
-		msg.append(", formInstanceVersion=");
-		msg.append(formInstanceVersion);
+		sb.append(", formInstanceVersion=");
+		sb.append(formInstanceVersion);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchFormInstanceRecordVersionException(msg.toString());
+		throw new NoSuchFormInstanceRecordVersionException(sb.toString());
 	}
 
 	/**
@@ -2494,8 +2522,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2509,125 +2537,125 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				7 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(6);
+			sb = new StringBundler(6);
 		}
 
-		query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
+		sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-		query.append(_FINDER_COLUMN_U_F_F_S_USERID_2);
+		sb.append(_FINDER_COLUMN_U_F_F_S_USERID_2);
 
-		query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEID_2);
+		sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEID_2);
 
 		boolean bindFormInstanceVersion = false;
 
 		if (formInstanceVersion.isEmpty()) {
-			query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_3);
+			sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_3);
 		}
 		else {
 			bindFormInstanceVersion = true;
 
-			query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_2);
 		}
 
-		query.append(_FINDER_COLUMN_U_F_F_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_U_F_F_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
+			sb.append(DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(userId);
+		queryPos.add(userId);
 
-		qPos.add(formInstanceId);
+		queryPos.add(formInstanceId);
 
 		if (bindFormInstanceVersion) {
-			qPos.add(formInstanceVersion);
+			queryPos.add(formInstanceVersion);
 		}
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						ddmFormInstanceRecordVersion)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<DDMFormInstanceRecordVersion> list = q.list();
+		List<DDMFormInstanceRecordVersion> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2675,65 +2703,75 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 		formInstanceVersion = Objects.toString(formInstanceVersion, "");
 
-		FinderPath finderPath = _finderPathCountByU_F_F_S;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
 
-		Object[] finderArgs = new Object[] {
-			userId, formInstanceId, formInstanceVersion, status
-		};
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByU_F_F_S;
+
+			finderArgs = new Object[] {
+				userId, formInstanceId, formInstanceVersion, status
+			};
+
+			count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
+			sb.append(_SQL_COUNT_DDMFORMINSTANCERECORDVERSION_WHERE);
 
-			query.append(_FINDER_COLUMN_U_F_F_S_USERID_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_USERID_2);
 
-			query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEID_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEID_2);
 
 			boolean bindFormInstanceVersion = false;
 
 			if (formInstanceVersion.isEmpty()) {
-				query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_3);
+				sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_3);
 			}
 			else {
 				bindFormInstanceVersion = true;
 
-				query.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_2);
+				sb.append(_FINDER_COLUMN_U_F_F_S_FORMINSTANCEVERSION_2);
 			}
 
-			query.append(_FINDER_COLUMN_U_F_F_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_U_F_F_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(userId);
+				queryPos.add(userId);
 
-				qPos.add(formInstanceId);
+				queryPos.add(formInstanceId);
 
 				if (bindFormInstanceVersion) {
-					qPos.add(formInstanceVersion);
+					queryPos.add(formInstanceVersion);
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					finderCache.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2763,8 +2801,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 		setModelImplClass(DDMFormInstanceRecordVersionImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(DDMFormInstanceRecordVersionTable.INSTANCE);
 	}
 
 	/**
@@ -2776,8 +2814,11 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	public void cacheResult(
 		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion) {
 
+		if (ddmFormInstanceRecordVersion.getCtCollectionId() != 0) {
+			return;
+		}
+
 		entityCache.putResult(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			ddmFormInstanceRecordVersion.getPrimaryKey(),
 			ddmFormInstanceRecordVersion);
@@ -2789,8 +2830,6 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 				ddmFormInstanceRecordVersion.getVersion()
 			},
 			ddmFormInstanceRecordVersion);
-
-		ddmFormInstanceRecordVersion.resetOriginalValues();
 	}
 
 	/**
@@ -2805,15 +2844,15 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		for (DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion :
 				ddmFormInstanceRecordVersions) {
 
+			if (ddmFormInstanceRecordVersion.getCtCollectionId() != 0) {
+				continue;
+			}
+
 			if (entityCache.getResult(
-					DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
 					DDMFormInstanceRecordVersionImpl.class,
 					ddmFormInstanceRecordVersion.getPrimaryKey()) == null) {
 
 				cacheResult(ddmFormInstanceRecordVersion);
-			}
-			else {
-				ddmFormInstanceRecordVersion.resetOriginalValues();
 			}
 		}
 	}
@@ -2846,7 +2885,6 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion) {
 
 		entityCache.removeResult(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			ddmFormInstanceRecordVersion.getPrimaryKey());
 
@@ -2869,7 +2907,6 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 				ddmFormInstanceRecordVersions) {
 
 			entityCache.removeResult(
-				DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
 				DDMFormInstanceRecordVersionImpl.class,
 				ddmFormInstanceRecordVersion.getPrimaryKey());
 
@@ -2877,6 +2914,18 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 				(DDMFormInstanceRecordVersionModelImpl)
 					ddmFormInstanceRecordVersion,
 				true);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(
+				DDMFormInstanceRecordVersionImpl.class, primaryKey);
 		}
 	}
 
@@ -2915,9 +2964,10 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			 _finderPathFetchByF_V.getColumnBitmask()) != 0) {
 
 			Object[] args = new Object[] {
-				ddmFormInstanceRecordVersionModelImpl.
-					getOriginalFormInstanceRecordId(),
-				ddmFormInstanceRecordVersionModelImpl.getOriginalVersion()
+				ddmFormInstanceRecordVersionModelImpl.getColumnOriginalValue(
+					"formInstanceRecordId"),
+				ddmFormInstanceRecordVersionModelImpl.getColumnOriginalValue(
+					"version")
 			};
 
 			finderCache.removeResult(_finderPathCountByF_V, args);
@@ -2942,7 +2992,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		ddmFormInstanceRecordVersion.setPrimaryKey(formInstanceRecordVersionId);
 
 		ddmFormInstanceRecordVersion.setCompanyId(
-			companyProvider.getCompanyId());
+			CompanyThreadLocal.getCompanyId());
 
 		return ddmFormInstanceRecordVersion;
 	}
@@ -2992,11 +3042,11 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 			return remove(ddmFormInstanceRecordVersion);
 		}
-		catch (NoSuchFormInstanceRecordVersionException nsee) {
-			throw nsee;
+		catch (NoSuchFormInstanceRecordVersionException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3006,6 +3056,10 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	@Override
 	protected DDMFormInstanceRecordVersion removeImpl(
 		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion) {
+
+		if (!ctPersistenceHelper.isRemove(ddmFormInstanceRecordVersion)) {
+			return ddmFormInstanceRecordVersion;
+		}
 
 		Session session = null;
 
@@ -3023,8 +3077,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 				session.delete(ddmFormInstanceRecordVersion);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3074,7 +3128,13 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		try {
 			session = openSession();
 
-			if (ddmFormInstanceRecordVersion.isNew()) {
+			if (ctPersistenceHelper.isInsert(ddmFormInstanceRecordVersion)) {
+				if (!isNew) {
+					session.evict(
+						DDMFormInstanceRecordVersionImpl.class,
+						ddmFormInstanceRecordVersion.getPrimaryKeyObj());
+				}
+
 				session.save(ddmFormInstanceRecordVersion);
 
 				ddmFormInstanceRecordVersion.setNew(false);
@@ -3085,19 +3145,22 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 						ddmFormInstanceRecordVersion);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
+		if (ddmFormInstanceRecordVersion.getCtCollectionId() != 0) {
+			ddmFormInstanceRecordVersion.resetOriginalValues();
+
+			return ddmFormInstanceRecordVersion;
+		}
+
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!DDMFormInstanceRecordVersionModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				ddmFormInstanceRecordVersionModelImpl.getFormInstanceRecordId()
 			};
@@ -3147,7 +3210,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 				Object[] args = new Object[] {
 					ddmFormInstanceRecordVersionModelImpl.
-						getOriginalFormInstanceRecordId()
+						getColumnOriginalValue("formInstanceRecordId")
 				};
 
 				finderCache.removeResult(
@@ -3174,9 +3237,9 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 				Object[] args = new Object[] {
 					ddmFormInstanceRecordVersionModelImpl.
-						getOriginalFormInstanceId(),
+						getColumnOriginalValue("formInstanceId"),
 					ddmFormInstanceRecordVersionModelImpl.
-						getOriginalFormInstanceVersion()
+						getColumnOriginalValue("formInstanceVersion")
 				};
 
 				finderCache.removeResult(_finderPathCountByF_F, args);
@@ -3200,8 +3263,9 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 				Object[] args = new Object[] {
 					ddmFormInstanceRecordVersionModelImpl.
-						getOriginalFormInstanceRecordId(),
-					ddmFormInstanceRecordVersionModelImpl.getOriginalStatus()
+						getColumnOriginalValue("formInstanceRecordId"),
+					ddmFormInstanceRecordVersionModelImpl.
+						getColumnOriginalValue("status")
 				};
 
 				finderCache.removeResult(_finderPathCountByF_S, args);
@@ -3224,12 +3288,14 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					ddmFormInstanceRecordVersionModelImpl.getOriginalUserId(),
 					ddmFormInstanceRecordVersionModelImpl.
-						getOriginalFormInstanceId(),
+						getColumnOriginalValue("userId"),
 					ddmFormInstanceRecordVersionModelImpl.
-						getOriginalFormInstanceVersion(),
-					ddmFormInstanceRecordVersionModelImpl.getOriginalStatus()
+						getColumnOriginalValue("formInstanceId"),
+					ddmFormInstanceRecordVersionModelImpl.
+						getColumnOriginalValue("formInstanceVersion"),
+					ddmFormInstanceRecordVersionModelImpl.
+						getColumnOriginalValue("status")
 				};
 
 				finderCache.removeResult(_finderPathCountByU_F_F_S, args);
@@ -3251,7 +3317,6 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		}
 
 		entityCache.putResult(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			ddmFormInstanceRecordVersion.getPrimaryKey(),
 			ddmFormInstanceRecordVersion, false);
@@ -3309,6 +3374,47 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	/**
 	 * Returns the ddm form instance record version with the primary key or returns <code>null</code> if it could not be found.
 	 *
+	 * @param primaryKey the primary key of the ddm form instance record version
+	 * @return the ddm form instance record version, or <code>null</code> if a ddm form instance record version with the primary key could not be found
+	 */
+	@Override
+	public DDMFormInstanceRecordVersion fetchByPrimaryKey(
+		Serializable primaryKey) {
+
+		if (ctPersistenceHelper.isProductionMode(
+				DDMFormInstanceRecordVersion.class)) {
+
+			return super.fetchByPrimaryKey(primaryKey);
+		}
+
+		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion = null;
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			ddmFormInstanceRecordVersion =
+				(DDMFormInstanceRecordVersion)session.get(
+					DDMFormInstanceRecordVersionImpl.class, primaryKey);
+
+			if (ddmFormInstanceRecordVersion != null) {
+				cacheResult(ddmFormInstanceRecordVersion);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return ddmFormInstanceRecordVersion;
+	}
+
+	/**
+	 * Returns the ddm form instance record version with the primary key or returns <code>null</code> if it could not be found.
+	 *
 	 * @param formInstanceRecordVersionId the primary key of the ddm form instance record version
 	 * @return the ddm form instance record version, or <code>null</code> if a ddm form instance record version with the primary key could not be found
 	 */
@@ -3317,6 +3423,84 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		long formInstanceRecordVersionId) {
 
 		return fetchByPrimaryKey((Serializable)formInstanceRecordVersionId);
+	}
+
+	@Override
+	public Map<Serializable, DDMFormInstanceRecordVersion> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		if (ctPersistenceHelper.isProductionMode(
+				DDMFormInstanceRecordVersion.class)) {
+
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
+		if (primaryKeys.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<Serializable, DDMFormInstanceRecordVersion> map =
+			new HashMap<Serializable, DDMFormInstanceRecordVersion>();
+
+		if (primaryKeys.size() == 1) {
+			Iterator<Serializable> iterator = primaryKeys.iterator();
+
+			Serializable primaryKey = iterator.next();
+
+			DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion =
+				fetchByPrimaryKey(primaryKey);
+
+			if (ddmFormInstanceRecordVersion != null) {
+				map.put(primaryKey, ddmFormInstanceRecordVersion);
+			}
+
+			return map;
+		}
+
+		StringBundler sb = new StringBundler(primaryKeys.size() * 2 + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
+
+		for (Serializable primaryKey : primaryKeys) {
+			sb.append((long)primaryKey);
+
+			sb.append(",");
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Query query = session.createQuery(sql);
+
+			for (DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion :
+					(List<DDMFormInstanceRecordVersion>)query.list()) {
+
+				map.put(
+					ddmFormInstanceRecordVersion.getPrimaryKeyObj(),
+					ddmFormInstanceRecordVersion);
+
+				cacheResult(ddmFormInstanceRecordVersion);
+			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+
+		return map;
 	}
 
 	/**
@@ -3333,7 +3517,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns a range of all the ddm form instance record versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm form instance record versions
@@ -3349,7 +3533,7 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm form instance record versions
@@ -3369,66 +3553,67 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 * Returns an ordered range of all the ddm form instance record versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>DDMFormInstanceRecordVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddm form instance record versions
 	 * @param end the upper bound of the range of ddm form instance record versions (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of ddm form instance record versions
 	 */
 	@Override
 	public List<DDMFormInstanceRecordVersion> findAll(
 		int start, int end,
 		OrderByComparator<DDMFormInstanceRecordVersion> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache && productionMode) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<DDMFormInstanceRecordVersion> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache && productionMode) {
 			list = (List<DDMFormInstanceRecordVersion>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION);
+				sb.append(_SQL_SELECT_DDMFORMINSTANCERECORDVERSION);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_DDMFORMINSTANCERECORDVERSION;
 
-				if (pagination) {
-					sql = sql.concat(
-						DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(
+					DDMFormInstanceRecordVersionModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -3436,29 +3621,19 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<DDMFormInstanceRecordVersion>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3488,8 +3663,15 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(
-			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		boolean productionMode = ctPersistenceHelper.isProductionMode(
+			DDMFormInstanceRecordVersion.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)finderCache.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY, this);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -3497,19 +3679,18 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(
+				Query query = session.createQuery(
 					_SQL_COUNT_DDMFORMINSTANCERECORDVERSION);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				if (productionMode) {
+					finderCache.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3535,36 +3716,97 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.get(ctColumnResolutionType);
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return DDMFormInstanceRecordVersionModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "DDMFormInstanceRecordVersion";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctIgnoreColumnNames = new HashSet<String>();
+		Set<String> ctMergeColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("groupId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("userId");
+		ctStrictColumnNames.add("userName");
+		ctStrictColumnNames.add("createDate");
+		ctStrictColumnNames.add("formInstanceId");
+		ctStrictColumnNames.add("formInstanceVersion");
+		ctStrictColumnNames.add("formInstanceRecordId");
+		ctStrictColumnNames.add("version");
+		ctStrictColumnNames.add("storageId");
+		ctStrictColumnNames.add("status");
+		ctStrictColumnNames.add("statusByUserId");
+		ctStrictColumnNames.add("statusByUserName");
+		ctStrictColumnNames.add("statusDate");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
+		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK,
+			Collections.singleton("formInstanceRecordVersionId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
+
+		_uniqueIndexColumnNames.add(
+			new String[] {"formInstanceRecordId", "version"});
 	}
 
 	/**
 	 * Initializes the ddm form instance record version persistence.
 	 */
-	public void afterPropertiesSet() {
+	@Activate
+	public void activate() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
 			new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByFormInstanceRecordId = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 			"findByFormInstanceRecordId",
@@ -3574,23 +3816,17 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByFormInstanceRecordId = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"findByFormInstanceRecordId", new String[] {Long.class.getName()},
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCERECORDID_COLUMN_BITMASK);
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceRecordId"));
 
 		_finderPathCountByFormInstanceRecordId = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByFormInstanceRecordId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByF_F = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByF_F",
 			new String[] {
@@ -3600,41 +3836,31 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByF_F = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByF_F",
 			new String[] {Long.class.getName(), String.class.getName()},
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCEID_COLUMN_BITMASK |
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCEVERSION_COLUMN_BITMASK);
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceId") |
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceVersion"));
 
 		_finderPathCountByF_F = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByF_F",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathFetchByF_V = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class, FINDER_CLASS_NAME_ENTITY,
 			"fetchByF_V",
 			new String[] {Long.class.getName(), String.class.getName()},
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCERECORDID_COLUMN_BITMASK |
-			DDMFormInstanceRecordVersionModelImpl.VERSION_COLUMN_BITMASK);
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceRecordId") |
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask("version"));
 
 		_finderPathCountByF_V = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByF_V",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByF_S = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByF_S",
 			new String[] {
@@ -3644,24 +3870,18 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByF_S = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByF_S",
 			new String[] {Long.class.getName(), Integer.class.getName()},
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCERECORDID_COLUMN_BITMASK |
-			DDMFormInstanceRecordVersionModelImpl.STATUS_COLUMN_BITMASK);
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceRecordId") |
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask("status"));
 
 		_finderPathCountByF_S = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByF_S",
 			new String[] {Long.class.getName(), Integer.class.getName()});
 
 		_finderPathWithPaginationFindByU_F_F_S = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByU_F_F_S",
 			new String[] {
@@ -3672,24 +3892,20 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByU_F_F_S = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			DDMFormInstanceRecordVersionImpl.class,
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByU_F_F_S",
 			new String[] {
 				Long.class.getName(), Long.class.getName(),
 				String.class.getName(), Integer.class.getName()
 			},
-			DDMFormInstanceRecordVersionModelImpl.USERID_COLUMN_BITMASK |
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCEID_COLUMN_BITMASK |
-			DDMFormInstanceRecordVersionModelImpl.
-				FORMINSTANCEVERSION_COLUMN_BITMASK |
-			DDMFormInstanceRecordVersionModelImpl.STATUS_COLUMN_BITMASK);
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask("userId") |
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceId") |
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask(
+				"formInstanceVersion") |
+			DDMFormInstanceRecordVersionModelImpl.getColumnBitmask("status"));
 
 		_finderPathCountByU_F_F_S = new FinderPath(
-			DDMFormInstanceRecordVersionModelImpl.ENTITY_CACHE_ENABLED,
-			DDMFormInstanceRecordVersionModelImpl.FINDER_CACHE_ENABLED,
 			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByU_F_F_S",
 			new String[] {
@@ -3698,7 +3914,8 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 			});
 	}
 
-	public void destroy() {
+	@Deactivate
+	public void deactivate() {
 		entityCache.removeCache(
 			DDMFormInstanceRecordVersionImpl.class.getName());
 		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
@@ -3706,13 +3923,39 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@ServiceReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
+	@Override
+	@Reference(
+		target = DDMPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
+	public void setConfiguration(Configuration configuration) {
+	}
 
-	@ServiceReference(type = EntityCache.class)
+	@Override
+	@Reference(
+		target = DDMPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+	}
+
+	@Override
+	@Reference(
+		target = DDMPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		super.setSessionFactory(sessionFactory);
+	}
+
+	@Reference
+	protected CTPersistenceHelper ctPersistenceHelper;
+
+	@Reference
 	protected EntityCache entityCache;
 
-	@ServiceReference(type = FinderCache.class)
+	@Reference
 	protected FinderCache finderCache;
 
 	private static final String _SQL_SELECT_DDMFORMINSTANCERECORDVERSION =
@@ -3738,5 +3981,14 @@ public class DDMFormInstanceRecordVersionPersistenceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMFormInstanceRecordVersionPersistenceImpl.class);
+
+	static {
+		try {
+			Class.forName(DDMPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

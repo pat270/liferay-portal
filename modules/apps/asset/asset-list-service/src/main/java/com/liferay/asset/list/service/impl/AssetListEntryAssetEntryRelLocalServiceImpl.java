@@ -170,6 +170,17 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 	}
 
 	@Override
+	public List<AssetListEntryAssetEntryRel> getAssetListEntryAssetEntryRels(
+		long assetListEntryId, long[] segmentsEntryIds, int start, int end) {
+
+		List<AssetListEntryAssetEntryRel> assetListEntryAssetEntryRels =
+			assetListEntryAssetEntryRelPersistence.findByA_S(
+				assetListEntryId, segmentsEntryIds, start, end);
+
+		return _getAssetListEntryAssetEntryRels(assetListEntryAssetEntryRels);
+	}
+
+	@Override
 	public int getAssetListEntryAssetEntryRelsCount(long assetListEntryId) {
 		return assetListEntryAssetEntryRelPersistence.countByAssetListEntryId(
 			assetListEntryId);
@@ -181,6 +192,22 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 
 		return assetListEntryAssetEntryRelPersistence.countByA_S(
 			assetListEntryId, segmentsEntryId);
+	}
+
+	@Override
+	public int getAssetListEntryAssetEntryRelsCount(
+		long assetLIstEntryId, long segmentsEntryId, boolean visible) {
+
+		return assetListEntryAssetEntryRelFinder.countByA_S(
+			assetLIstEntryId, segmentsEntryId, visible);
+	}
+
+	@Override
+	public int getAssetListEntryAssetEntryRelsCount(
+		long assetListEntryId, long[] segmentsEntryIds) {
+
+		return assetListEntryAssetEntryRelPersistence.countByA_S(
+			assetListEntryId, segmentsEntryIds);
 	}
 
 	@Override
@@ -214,27 +241,46 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 
 		assetListEntryAssetEntryRel.setPosition(-1);
 
-		assetListEntryAssetEntryRelPersistence.update(
-			assetListEntryAssetEntryRel);
+		assetListEntryAssetEntryRel =
+			assetListEntryAssetEntryRelPersistence.update(
+				assetListEntryAssetEntryRel);
+
+		long assetListEntryAssetEntryRelId =
+			assetListEntryAssetEntryRel.getAssetListEntryAssetEntryRelId();
 
 		swapAssetListEntryAssetEntryRel.setPosition(-2);
 
-		assetListEntryAssetEntryRelPersistence.update(
-			swapAssetListEntryAssetEntryRel);
+		swapAssetListEntryAssetEntryRel =
+			assetListEntryAssetEntryRelPersistence.update(
+				swapAssetListEntryAssetEntryRel);
+
+		long swapAssetListEntryAssetEntryRelId =
+			swapAssetListEntryAssetEntryRel.getAssetListEntryAssetEntryRelId();
 
 		TransactionCommitCallbackUtil.registerCallback(
 			() -> {
-				assetListEntryAssetEntryRel.setPosition(newPosition);
+				AssetListEntryAssetEntryRel
+					callbackAssetListEntryAssetEntryRel =
+						assetListEntryAssetEntryRelLocalService.
+							fetchAssetListEntryAssetEntryRel(
+								assetListEntryAssetEntryRelId);
+
+				callbackAssetListEntryAssetEntryRel.setPosition(newPosition);
 
 				assetListEntryAssetEntryRelLocalService.
 					updateAssetListEntryAssetEntryRel(
-						assetListEntryAssetEntryRel);
+						callbackAssetListEntryAssetEntryRel);
 
-				swapAssetListEntryAssetEntryRel.setPosition(position);
+				callbackAssetListEntryAssetEntryRel =
+					assetListEntryAssetEntryRelLocalService.
+						fetchAssetListEntryAssetEntryRel(
+							swapAssetListEntryAssetEntryRelId);
+
+				callbackAssetListEntryAssetEntryRel.setPosition(position);
 
 				assetListEntryAssetEntryRelLocalService.
 					updateAssetListEntryAssetEntryRel(
-						swapAssetListEntryAssetEntryRel);
+						callbackAssetListEntryAssetEntryRel);
 
 				return null;
 			});
@@ -257,10 +303,8 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 		assetListEntryAssetEntryRel.setSegmentsEntryId(segmentsEntryId);
 		assetListEntryAssetEntryRel.setPosition(position);
 
-		assetListEntryAssetEntryRelPersistence.update(
+		return assetListEntryAssetEntryRelPersistence.update(
 			assetListEntryAssetEntryRel);
-
-		return assetListEntryAssetEntryRel;
 	}
 
 	private List<AssetListEntryAssetEntryRel> _getAssetListEntryAssetEntryRels(
@@ -282,7 +326,7 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 					return false;
 				}
 
-				AssetRendererFactory assetRendererFactory =
+				AssetRendererFactory<?> assetRendererFactory =
 					AssetRendererFactoryRegistryUtil.
 						getAssetRendererFactoryByClassName(
 							assetEntry.getClassName());

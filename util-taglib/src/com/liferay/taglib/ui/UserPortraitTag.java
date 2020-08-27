@@ -61,7 +61,7 @@ public class UserPortraitTag extends IncludeTag {
 			sb.append("<svg class=\"lexicon-icon\">");
 			sb.append("<use href=\"");
 			sb.append(themeDisplay.getPathThemeImages());
-			sb.append("/lexicon/icons.svg#user\" /></svg>");
+			sb.append("/clay/icons.svg#user\" /></svg>");
 			sb.append("</span></span>");
 
 			return sb.toString();
@@ -138,8 +138,11 @@ public class UserPortraitTag extends IncludeTag {
 
 		User user = getUser();
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		String userPortraitHTML = getUserPortraitHTML(
 			_cssClass, _size, user, themeDisplay);
@@ -200,8 +203,11 @@ public class UserPortraitTag extends IncludeTag {
 	 */
 	@Deprecated
 	protected String getPortraitURL(User user) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return _getPortraitURL(user, themeDisplay);
 	}
@@ -225,8 +231,8 @@ public class UserPortraitTag extends IncludeTag {
 
 			return user.getPortraitURL(themeDisplay);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return null;
 		}

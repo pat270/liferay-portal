@@ -101,6 +101,10 @@ public class ImageCardTag extends BaseClayCardTag {
 	private void _populateContext() {
 		Map<String, Object> context = getContext();
 
+		if (context.get("aspectRatioClasses") == null) {
+			setAspectRatioCssClasses(_imageCard.getAspectRatioCssClasses());
+		}
+
 		if (context.get("icon") == null) {
 			setIcon(_imageCard.getIcon());
 		}

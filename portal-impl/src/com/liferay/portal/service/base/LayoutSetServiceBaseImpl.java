@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.service.persistence.LayoutFinder;
 import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetBranchPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetPersistence;
-import com.liferay.portal.kernel.service.persistence.LayoutSetVersionPersistence;
 import com.liferay.portal.kernel.service.persistence.PluginSettingPersistence;
 import com.liferay.portal.kernel.service.persistence.VirtualHostPersistence;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -51,7 +50,7 @@ import javax.sql.DataSource;
  */
 public abstract class LayoutSetServiceBaseImpl
 	extends BaseServiceImpl
-	implements LayoutSetService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, LayoutSetService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -361,26 +360,6 @@ public abstract class LayoutSetServiceBaseImpl
 	}
 
 	/**
-	 * Returns the layout set version persistence.
-	 *
-	 * @return the layout set version persistence
-	 */
-	public LayoutSetVersionPersistence getLayoutSetVersionPersistence() {
-		return layoutSetVersionPersistence;
-	}
-
-	/**
-	 * Sets the layout set version persistence.
-	 *
-	 * @param layoutSetVersionPersistence the layout set version persistence
-	 */
-	public void setLayoutSetVersionPersistence(
-		LayoutSetVersionPersistence layoutSetVersionPersistence) {
-
-		this.layoutSetVersionPersistence = layoutSetVersionPersistence;
-	}
-
-	/**
 	 * Returns the layout set branch local service.
 	 *
 	 * @return the layout set branch local service
@@ -598,8 +577,8 @@ public abstract class LayoutSetServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
@@ -662,9 +641,6 @@ public abstract class LayoutSetServiceBaseImpl
 
 	@BeanReference(type = LayoutFinder.class)
 	protected LayoutFinder layoutFinder;
-
-	@BeanReference(type = LayoutSetVersionPersistence.class)
-	protected LayoutSetVersionPersistence layoutSetVersionPersistence;
 
 	@BeanReference(
 		type = com.liferay.portal.kernel.service.LayoutSetBranchLocalService.class

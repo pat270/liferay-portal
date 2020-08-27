@@ -110,7 +110,7 @@ public class DeletePagePortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -127,12 +127,11 @@ public class DeletePagePortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		try {
-			WikiPage page = ActionUtil.getPage(portletRequest);
-
 			return _wikiPageModelResourcePermission.contains(
-				themeDisplay.getPermissionChecker(), page, ActionKeys.DELETE);
+				themeDisplay.getPermissionChecker(),
+				ActionUtil.getPage(portletRequest), ActionKeys.DELETE);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;
@@ -144,7 +143,7 @@ public class DeletePagePortletConfigurationIcon
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

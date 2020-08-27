@@ -21,9 +21,9 @@ import com.liferay.portal.kernel.model.ColorScheme;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.model.ThemeSetting;
-import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.LayoutService;
-import com.liferay.portal.kernel.service.ThemeLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.service.LayoutServiceUtil;
+import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThemeFactoryUtil;
@@ -38,45 +38,41 @@ import java.util.Set;
 
 import javax.portlet.ActionRequest;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Eudaldo Alonso
  */
-@Component(immediate = true, service = ActionUtil.class)
 public class ActionUtil {
 
-	public void deleteThemeSettingsProperties(
-		UnicodeProperties typeSettingsProperties, String device) {
+	public static void deleteThemeSettingsProperties(
+		UnicodeProperties typeSettingsUnicodeProperties, String device) {
 
 		String keyPrefix = ThemeSettingImpl.namespaceProperty(device);
 
-		Set<String> keys = typeSettingsProperties.keySet();
+		Set<String> keys = typeSettingsUnicodeProperties.keySet();
 
-		Iterator<String> itr = keys.iterator();
+		Iterator<String> iterator = keys.iterator();
 
-		while (itr.hasNext()) {
-			String key = itr.next();
+		while (iterator.hasNext()) {
+			String key = iterator.next();
 
 			if (key.startsWith(keyPrefix)) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 	}
 
-	public String getColorSchemeId(
+	public static String getColorSchemeId(
 			long companyId, String themeId, String colorSchemeId)
 		throws Exception {
 
-		Theme theme = _themeLocalService.getTheme(companyId, themeId);
+		Theme theme = ThemeLocalServiceUtil.getTheme(companyId, themeId);
 
 		if (!theme.hasColorSchemes()) {
 			colorSchemeId = StringPool.BLANK;
 		}
 
 		if (Validator.isNull(colorSchemeId)) {
-			ColorScheme colorScheme = _themeLocalService.getColorScheme(
+			ColorScheme colorScheme = ThemeLocalServiceUtil.getColorScheme(
 				companyId, themeId, colorSchemeId);
 
 			colorSchemeId = colorScheme.getColorSchemeId();
@@ -85,10 +81,10 @@ public class ActionUtil {
 		return colorSchemeId;
 	}
 
-	public void updateLookAndFeel(
+	public static void updateLookAndFeel(
 			ActionRequest actionRequest, long companyId, long liveGroupId,
 			long stagingGroupId, boolean privateLayout, long layoutId,
-			UnicodeProperties typeSettingsProperties)
+			UnicodeProperties typeSettingsUnicodeProperties)
 		throws Exception {
 
 		String[] devices = StringUtil.split(
@@ -110,15 +106,16 @@ public class ActionUtil {
 					companyId);
 				deviceColorSchemeId = StringPool.BLANK;
 
-				deleteThemeSettingsProperties(typeSettingsProperties, device);
+				deleteThemeSettingsProperties(
+					typeSettingsUnicodeProperties, device);
 			}
 			else if (Validator.isNotNull(deviceThemeId)) {
 				deviceColorSchemeId = getColorSchemeId(
 					companyId, deviceThemeId, deviceColorSchemeId);
 
 				updateThemeSettingsProperties(
-					actionRequest, companyId, typeSettingsProperties, device,
-					deviceThemeId, true);
+					actionRequest, companyId, typeSettingsUnicodeProperties,
+					device, deviceThemeId, true);
 			}
 
 			long groupId = liveGroupId;
@@ -127,43 +124,43 @@ public class ActionUtil {
 				groupId = stagingGroupId;
 			}
 
-			_layoutService.updateLayout(
+			LayoutServiceUtil.updateLayout(
 				groupId, privateLayout, layoutId,
-				typeSettingsProperties.toString());
+				typeSettingsUnicodeProperties.toString());
 
-			_layoutService.updateLookAndFeel(
+			LayoutServiceUtil.updateLookAndFeel(
 				groupId, privateLayout, layoutId, deviceThemeId,
 				deviceColorSchemeId, deviceCss);
 		}
 	}
 
-	public UnicodeProperties updateThemeSettingsProperties(
+	public static UnicodeProperties updateThemeSettingsProperties(
 			ActionRequest actionRequest, long companyId,
-			UnicodeProperties typeSettingsProperties, String device,
+			UnicodeProperties typeSettingsUnicodeProperties, String device,
 			String deviceThemeId, boolean layout)
 		throws Exception {
 
-		Theme theme = _themeLocalService.getTheme(companyId, deviceThemeId);
+		Theme theme = ThemeLocalServiceUtil.getTheme(companyId, deviceThemeId);
 
-		deleteThemeSettingsProperties(typeSettingsProperties, device);
+		deleteThemeSettingsProperties(typeSettingsUnicodeProperties, device);
 
 		Map<String, ThemeSetting> themeSettings =
 			theme.getConfigurableSettings();
 
 		if (themeSettings.isEmpty()) {
-			return typeSettingsProperties;
+			return typeSettingsUnicodeProperties;
 		}
 
 		setThemeSettingProperties(
-			actionRequest, typeSettingsProperties, themeSettings, device,
+			actionRequest, typeSettingsUnicodeProperties, themeSettings, device,
 			layout);
 
-		return typeSettingsProperties;
+		return typeSettingsUnicodeProperties;
 	}
 
-	protected void setThemeSettingProperties(
+	protected static void setThemeSettingProperties(
 			ActionRequest actionRequest,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			Map<String, ThemeSetting> themeSettings, String device,
 			boolean isLayout)
 		throws PortalException {
@@ -176,7 +173,7 @@ public class ActionUtil {
 				actionRequest, "privateLayout");
 			long layoutId = ParamUtil.getLong(actionRequest, "layoutId");
 
-			layout = _layoutLocalService.getLayout(
+			layout = LayoutLocalServiceUtil.getLayout(
 				groupId, privateLayout, layoutId);
 		}
 
@@ -197,19 +194,10 @@ public class ActionUtil {
 					 layout.getDefaultThemeSetting(key, device, false))) ||
 				(!isLayout && !value.equals(themeSetting.getValue()))) {
 
-				typeSettingsProperties.setProperty(
+				typeSettingsUnicodeProperties.setProperty(
 					ThemeSettingImpl.namespaceProperty(device, key), value);
 			}
 		}
 	}
-
-	@Reference
-	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private LayoutService _layoutService;
-
-	@Reference
-	private ThemeLocalService _themeLocalService;
 
 }

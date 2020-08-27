@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
@@ -58,12 +57,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.util.tracker.BundleTracker;
 
 /**
  * @author Brian Wing Shun Chan
@@ -96,160 +95,6 @@ public class CustomSQLImpl implements CustomSQL {
 	public static final String SYBASE_FUNCTION_IS_NULL =
 		"CONVERT(VARCHAR,?) IS NULL";
 
-	@Activate
-	public void activate(BundleContext bundleContext) throws SQLException {
-		_portal.initCustomSQL();
-
-		Connection con = DataAccess.getConnection();
-
-		String functionIsNull = _portal.getCustomSQLFunctionIsNull();
-		String functionIsNotNull = _portal.getCustomSQLFunctionIsNotNull();
-
-		try {
-			if (Validator.isNotNull(functionIsNull) &&
-				Validator.isNotNull(functionIsNotNull)) {
-
-				_functionIsNull = functionIsNull;
-				_functionIsNotNull = functionIsNotNull;
-
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"functionIsNull is manually set to " + functionIsNull);
-					_log.debug(
-						"functionIsNotNull is manually set to " +
-							functionIsNotNull);
-				}
-			}
-			else if (con != null) {
-				DatabaseMetaData metaData = con.getMetaData();
-
-				String dbName = GetterUtil.getString(
-					metaData.getDatabaseProductName());
-
-				if (_log.isInfoEnabled()) {
-					_log.info("Database name " + dbName);
-				}
-
-				if (dbName.startsWith("DB2")) {
-					_vendorDB2 = true;
-					_functionIsNull = DB2_FUNCTION_IS_NULL;
-					_functionIsNotNull = DB2_FUNCTION_IS_NOT_NULL;
-
-					if (_log.isInfoEnabled()) {
-						_log.info("Detected DB2 with database name " + dbName);
-					}
-				}
-				else if (dbName.startsWith("HSQL")) {
-					_vendorHSQL = true;
-
-					if (_log.isInfoEnabled()) {
-						_log.info("Detected HSQL with database name " + dbName);
-					}
-				}
-				else if (dbName.startsWith("Informix")) {
-					_vendorInformix = true;
-					_functionIsNull = INFORMIX_FUNCTION_IS_NULL;
-					_functionIsNotNull = INFORMIX_FUNCTION_IS_NOT_NULL;
-
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							"Detected Informix with database name " + dbName);
-					}
-				}
-				else if (dbName.startsWith("MySQL")) {
-					_vendorMySQL = true;
-					//_functionIsNull = MYSQL_FUNCTION_IS_NULL;
-					//_functionIsNotNull = MYSQL_FUNCTION_IS_NOT_NULL;
-
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							"Detected MySQL with database name " + dbName);
-					}
-				}
-				else if (dbName.startsWith("Sybase") || dbName.equals("ASE")) {
-					_vendorSybase = true;
-					_functionIsNull = SYBASE_FUNCTION_IS_NULL;
-					_functionIsNotNull = SYBASE_FUNCTION_IS_NOT_NULL;
-
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							"Detected Sybase with database name " + dbName);
-					}
-				}
-				else if (dbName.startsWith("Oracle")) {
-					_vendorOracle = true;
-
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							"Detected Oracle with database name " + dbName);
-					}
-				}
-				else if (dbName.startsWith("PostgreSQL")) {
-					_vendorPostgreSQL = true;
-
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							"Detected PostgreSQL with database name " + dbName);
-					}
-				}
-				else {
-					if (_log.isDebugEnabled()) {
-						_log.debug(
-							"Unable to detect database with name " + dbName);
-					}
-				}
-			}
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-		finally {
-			DataAccess.cleanUp(con);
-		}
-
-		_bundleTracker = new BundleTracker<ClassLoader>(
-			bundleContext, Bundle.ACTIVE, null) {
-
-			@Override
-			public ClassLoader addingBundle(
-				Bundle bundle, BundleEvent bundleEvent) {
-
-				BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-
-				ClassLoader classLoader = bundleWiring.getClassLoader();
-
-				URL sourceURL = classLoader.getResource(
-					"custom-sql/default.xml");
-
-				if (sourceURL == null) {
-					sourceURL = classLoader.getResource(
-						"META-INF/custom-sql/default.xml");
-				}
-
-				if (sourceURL == null) {
-					return null;
-				}
-
-				_customSQLContainerPool.put(
-					classLoader,
-					new CustomSQLContainer(classLoader, sourceURL));
-
-				return classLoader;
-			}
-
-			@Override
-			public void removedBundle(
-				Bundle bundle, BundleEvent bundleEvent,
-				ClassLoader classLoader) {
-
-				_customSQLContainerPool.remove(classLoader);
-			}
-
-		};
-
-		_bundleTracker.open();
-	}
-
 	@Override
 	public String appendCriteria(String sql, String criteria) {
 		if (Validator.isNull(criteria)) {
@@ -267,39 +112,25 @@ public class CustomSQLImpl implements CustomSQL {
 		int pos = sql.indexOf(_GROUP_BY_CLAUSE);
 
 		if (pos != -1) {
-			return sql.substring(
-				0, pos + 1
-			).concat(
-				criteria
-			).concat(
-				sql.substring(pos + 1)
-			);
+			return StringBundler.concat(
+				sql.substring(0, pos + 1), criteria, sql.substring(pos + 1));
 		}
 
 		pos = sql.indexOf(_ORDER_BY_CLAUSE);
 
 		if (pos != -1) {
-			return sql.substring(
-				0, pos + 1
-			).concat(
-				criteria
-			).concat(
-				sql.substring(pos + 1)
-			);
+			return StringBundler.concat(
+				sql.substring(0, pos + 1), criteria, sql.substring(pos + 1));
 		}
 
 		return sql.concat(criteria);
 	}
 
-	@Deactivate
-	public void deactive() {
-		_bundleTracker.close();
-	}
-
 	@Override
 	public String get(Class<?> clazz, String id) {
-		CustomSQLContainer customSQLContainer = _customSQLContainerPool.get(
-			clazz.getClassLoader());
+		CustomSQLContainer customSQLContainer =
+			_customSQLContainerPool.computeIfAbsent(
+				clazz.getClassLoader(), this::_getCustomSQLContainer);
 
 		if (customSQLContainer != null) {
 			return customSQLContainer.get(id);
@@ -329,17 +160,18 @@ public class CustomSQLImpl implements CustomSQL {
 		}
 
 		if (queryDefinition.getStatus() == WorkflowConstants.STATUS_ANY) {
-			sql = sql.replace(_STATUS_KEYWORD, _STATUS_CONDITION_EMPTY);
+			sql = StringUtil.replace(
+				sql, _STATUS_KEYWORD, _STATUS_CONDITION_EMPTY);
 		}
 		else {
 			if (queryDefinition.isExcludeStatus()) {
-				sql = sql.replace(
-					_STATUS_KEYWORD,
+				sql = StringUtil.replace(
+					sql, _STATUS_KEYWORD,
 					tableName.concat(_STATUS_CONDITION_INVERSE));
 			}
 			else {
-				sql = sql.replace(
-					_STATUS_KEYWORD,
+				sql = StringUtil.replace(
+					sql, _STATUS_KEYWORD,
 					tableName.concat(_STATUS_CONDITION_DEFAULT));
 			}
 		}
@@ -356,23 +188,26 @@ public class CustomSQLImpl implements CustomSQL {
 				sb.append(_STATUS_CONDITION_INVERSE);
 				sb.append(StringPool.CLOSE_PARENTHESIS);
 
-				sql = sql.replace(_OWNER_USER_ID_KEYWORD, sb.toString());
+				sql = StringUtil.replace(
+					sql, _OWNER_USER_ID_KEYWORD, sb.toString());
 
-				sql = sql.replace(_OWNER_USER_ID_AND_OR_CONNECTOR, " OR ");
+				sql = StringUtil.replace(
+					sql, _OWNER_USER_ID_AND_OR_CONNECTOR, " OR ");
 			}
 			else {
-				sql = sql.replace(
-					_OWNER_USER_ID_KEYWORD,
+				sql = StringUtil.replace(
+					sql, _OWNER_USER_ID_KEYWORD,
 					tableName.concat(_OWNER_USER_ID_CONDITION_DEFAULT));
 
-				sql = sql.replace(_OWNER_USER_ID_AND_OR_CONNECTOR, " AND ");
+				sql = StringUtil.replace(
+					sql, _OWNER_USER_ID_AND_OR_CONNECTOR, " AND ");
 			}
 		}
 		else {
-			sql = sql.replace(_OWNER_USER_ID_KEYWORD, StringPool.BLANK);
+			sql = StringUtil.removeSubstring(sql, _OWNER_USER_ID_KEYWORD);
 
-			sql = sql.replace(
-				_OWNER_USER_ID_AND_OR_CONNECTOR, StringPool.BLANK);
+			sql = StringUtil.removeSubstring(
+				sql, _OWNER_USER_ID_AND_OR_CONNECTOR);
 		}
 
 		return sql;
@@ -613,9 +448,7 @@ public class CustomSQLImpl implements CustomSQL {
 				});
 		}
 
-		sql = replaceIsNull(sql);
-
-		return sql;
+		return replaceIsNull(sql);
 	}
 
 	@Override
@@ -635,24 +468,16 @@ public class CustomSQLImpl implements CustomSQL {
 				sql = sql.concat(groupBy);
 			}
 			else {
-				sql = sql.substring(
-					0, x + _GROUP_BY_CLAUSE.length()
-				).concat(
-					groupBy
-				).concat(
-					sql.substring(y)
-				);
+				sql = StringBundler.concat(
+					sql.substring(0, x + _GROUP_BY_CLAUSE.length()), groupBy,
+					sql.substring(y));
 			}
 		}
 		else {
 			int y = sql.indexOf(_ORDER_BY_CLAUSE);
 
 			if (y == -1) {
-				sql = sql.concat(
-					_GROUP_BY_CLAUSE
-				).concat(
-					groupBy
-				);
+				sql = StringBundler.concat(sql, _GROUP_BY_CLAUSE, groupBy);
 			}
 			else {
 				StringBundler sb = new StringBundler(4);
@@ -699,11 +524,10 @@ public class CustomSQLImpl implements CustomSQL {
 		}
 
 		if (ArrayUtil.isEmpty(values)) {
-			return StringUtil.replace(
-				sql, oldSqlSB.toString(), StringPool.BLANK);
+			return StringUtil.removeSubstring(sql, oldSqlSB.toString());
 		}
 
-		StringBundler newSqlSB = new StringBundler(values.length * 4 + 3);
+		StringBundler newSqlSB = new StringBundler((values.length * 4) + 3);
 
 		newSqlSB.append(StringPool.OPEN_PARENTHESIS);
 
@@ -746,11 +570,10 @@ public class CustomSQLImpl implements CustomSQL {
 		}
 
 		if (ArrayUtil.isEmpty(values)) {
-			return StringUtil.replace(
-				sql, oldSqlSB.toString(), StringPool.BLANK);
+			return StringUtil.removeSubstring(sql, oldSqlSB.toString());
 		}
 
-		StringBundler newSqlSB = new StringBundler(values.length * 4 + 3);
+		StringBundler newSqlSB = new StringBundler((values.length * 4) + 3);
 
 		newSqlSB.append(StringPool.OPEN_PARENTHESIS);
 
@@ -795,7 +618,7 @@ public class CustomSQLImpl implements CustomSQL {
 			oldSqlSB.append(" [$AND_OR_CONNECTOR$]");
 		}
 
-		StringBundler newSqlSB = new StringBundler(values.length * 6 + 2);
+		StringBundler newSqlSB = new StringBundler((values.length * 6) + 2);
 
 		newSqlSB.append(StringPool.OPEN_PARENTHESIS);
 
@@ -822,12 +645,14 @@ public class CustomSQLImpl implements CustomSQL {
 	}
 
 	@Override
-	public String replaceOrderBy(String sql, OrderByComparator<?> obc) {
-		if (obc == null) {
+	public String replaceOrderBy(
+		String sql, OrderByComparator<?> orderByComparator) {
+
+		if (orderByComparator == null) {
 			return sql;
 		}
 
-		String orderBy = obc.getOrderBy();
+		String orderBy = orderByComparator.getOrderBy();
 
 		int pos = sql.indexOf(_ORDER_BY_CLAUSE);
 
@@ -837,14 +662,126 @@ public class CustomSQLImpl implements CustomSQL {
 			sql = sql.concat(orderBy);
 		}
 		else {
-			sql = sql.concat(
-				_ORDER_BY_CLAUSE
-			).concat(
-				orderBy
-			);
+			sql = StringBundler.concat(sql, _ORDER_BY_CLAUSE, orderBy);
 		}
 
 		return sql;
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) throws SQLException {
+		_bundleContext = bundleContext;
+
+		_portal.initCustomSQL();
+
+		String functionIsNull = _portal.getCustomSQLFunctionIsNull();
+		String functionIsNotNull = _portal.getCustomSQLFunctionIsNotNull();
+
+		try (Connection con = DataAccess.getConnection()) {
+			if (Validator.isNotNull(functionIsNull) &&
+				Validator.isNotNull(functionIsNotNull)) {
+
+				_functionIsNull = functionIsNull;
+				_functionIsNotNull = functionIsNotNull;
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"functionIsNull is manually set to " + functionIsNull);
+					_log.debug(
+						"functionIsNotNull is manually set to " +
+							functionIsNotNull);
+				}
+			}
+			else if (con != null) {
+				DatabaseMetaData metaData = con.getMetaData();
+
+				String dbName = GetterUtil.getString(
+					metaData.getDatabaseProductName());
+
+				if (_log.isInfoEnabled()) {
+					_log.info("Database name " + dbName);
+				}
+
+				if (dbName.startsWith("DB2")) {
+					_vendorDB2 = true;
+					_functionIsNull = DB2_FUNCTION_IS_NULL;
+					_functionIsNotNull = DB2_FUNCTION_IS_NOT_NULL;
+
+					if (_log.isInfoEnabled()) {
+						_log.info("Detected DB2 with database name " + dbName);
+					}
+				}
+				else if (dbName.startsWith("HSQL")) {
+					_vendorHSQL = true;
+
+					if (_log.isInfoEnabled()) {
+						_log.info("Detected HSQL with database name " + dbName);
+					}
+				}
+				else if (dbName.startsWith("Informix")) {
+					_vendorInformix = true;
+					_functionIsNull = INFORMIX_FUNCTION_IS_NULL;
+					_functionIsNotNull = INFORMIX_FUNCTION_IS_NOT_NULL;
+
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Detected Informix with database name " + dbName);
+					}
+				}
+				else if (dbName.startsWith("MySQL")) {
+					_vendorMySQL = true;
+					//_functionIsNull = MYSQL_FUNCTION_IS_NULL;
+					//_functionIsNotNull = MYSQL_FUNCTION_IS_NOT_NULL;
+
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Detected MySQL with database name " + dbName);
+					}
+				}
+				else if (dbName.startsWith("Sybase") || dbName.equals("ASE")) {
+					_vendorSybase = true;
+					_functionIsNull = SYBASE_FUNCTION_IS_NULL;
+					_functionIsNotNull = SYBASE_FUNCTION_IS_NOT_NULL;
+
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Detected Sybase with database name " + dbName);
+					}
+				}
+				else if (dbName.startsWith("Oracle")) {
+					_vendorOracle = true;
+
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Detected Oracle with database name " + dbName);
+					}
+				}
+				else if (dbName.startsWith("PostgreSQL")) {
+					_vendorPostgreSQL = true;
+
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Detected PostgreSQL with database name " + dbName);
+					}
+				}
+				else {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							"Unable to detect database with name " + dbName);
+					}
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+		}
+
+		_bundleContext.addBundleListener(_synchronousBundleListener);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_bundleContext.removeBundleListener(_synchronousBundleListener);
 	}
 
 	protected String insertWildcard(String keyword, WildcardMode wildcardMode) {
@@ -887,7 +824,7 @@ public class CustomSQLImpl implements CustomSQL {
 				}
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return sql;
 		}
 
@@ -914,12 +851,25 @@ public class CustomSQLImpl implements CustomSQL {
 				sb.insert(i, CharPool.BACK_SLASH);
 
 				i++;
-
-				continue;
 			}
 		}
 
 		return sb.toString();
+	}
+
+	private CustomSQLContainer _getCustomSQLContainer(ClassLoader classLoader) {
+		URL sourceURL = classLoader.getResource("custom-sql/default.xml");
+
+		if (sourceURL == null) {
+			sourceURL = classLoader.getResource(
+				"META-INF/custom-sql/default.xml");
+		}
+
+		if (sourceURL == null) {
+			return null;
+		}
+
+		return new CustomSQLContainer(classLoader, sourceURL);
 	}
 
 	private void _read(
@@ -982,17 +932,25 @@ public class CustomSQLImpl implements CustomSQL {
 
 	private static final Log _log = LogFactoryUtil.getLog(CustomSQLImpl.class);
 
-	private BundleTracker<ClassLoader> _bundleTracker;
+	private BundleContext _bundleContext;
 	private final Map<ClassLoader, CustomSQLContainer> _customSQLContainerPool =
 		new ConcurrentHashMap<>();
 	private String _functionIsNotNull;
 	private String _functionIsNull;
 
-	@Reference(target = ModuleServiceLifecycle.DATABASE_INITIALIZED)
-	private ModuleServiceLifecycle _moduleServiceLifecycle;
-
 	@Reference
 	private Portal _portal;
+
+	private final SynchronousBundleListener _synchronousBundleListener =
+		bundleEvent -> {
+			if (bundleEvent.getType() == BundleEvent.STOPPING) {
+				Bundle bundle = bundleEvent.getBundle();
+
+				BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+
+				_customSQLContainerPool.remove(bundleWiring.getClassLoader());
+			}
+		};
 
 	private boolean _vendorDB2;
 	private boolean _vendorHSQL;
@@ -1010,18 +968,18 @@ public class CustomSQLImpl implements CustomSQL {
 
 			if (objectValuePair == null) {
 				Map<String, String> sqlPool = new HashMap<>();
-				Exception exception = null;
+				Exception exception1 = null;
 
 				try {
 					_read(_classLoader, _sourceURL, sqlPool);
 				}
-				catch (Exception e) {
-					exception = e;
+				catch (Exception exception2) {
+					exception1 = exception2;
 
-					_log.error(e, e);
+					_log.error(exception2, exception2);
 				}
 
-				objectValuePair = new ObjectValuePair<>(sqlPool, exception);
+				objectValuePair = new ObjectValuePair<>(sqlPool, exception1);
 
 				_objectValuePair = objectValuePair;
 			}

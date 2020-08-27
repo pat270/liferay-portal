@@ -14,10 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
@@ -37,11 +33,6 @@ public class StaticBlockCheck extends BaseCheck {
 		return new int[] {TokenTypes.STATIC_INIT};
 	}
 
-	public void setImmutableFieldTypes(String immutableFieldTypes) {
-		_immutableFieldTypes = ArrayUtil.append(
-			_immutableFieldTypes, StringUtil.split(immutableFieldTypes));
-	}
-
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
 		List<String> classObjectNames = _getClassObjectNames(detailAST);
@@ -50,9 +41,8 @@ public class StaticBlockCheck extends BaseCheck {
 			return;
 		}
 
-		List<DetailAST> methodCallDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				detailAST, true, TokenTypes.METHOD_CALL);
+		List<DetailAST> methodCallDetailASTList = getAllChildTokens(
+			detailAST, true, TokenTypes.METHOD_CALL);
 
 		if (methodCallDetailASTList.isEmpty()) {
 			return;
@@ -76,8 +66,7 @@ public class StaticBlockCheck extends BaseCheck {
 		Map<String, List<DetailAST>> identDetailASTMap,
 		Map<String, DetailAST[]> variableDefMap) {
 
-		String variableName = DetailASTUtil.getVariableName(
-			methodCallDetailAST);
+		String variableName = getVariableName(methodCallDetailAST);
 
 		if (!classObjectNames.contains(variableName) ||
 			variableName.equals("_log")) {
@@ -88,8 +77,7 @@ public class StaticBlockCheck extends BaseCheck {
 		DetailAST topLevelDetailAST = _getTopLevelDetailAST(
 			methodCallDetailAST);
 
-		int statementEndLineNumber = DetailASTUtil.getEndLineNumber(
-			topLevelDetailAST);
+		int statementEndLineNumber = getEndLineNumber(topLevelDetailAST);
 
 		List<DetailAST> variableDetailASTList = identDetailASTMap.get(
 			variableName);
@@ -98,8 +86,7 @@ public class StaticBlockCheck extends BaseCheck {
 
 		topLevelDetailAST = _getTopLevelDetailAST(firstUseVariableDetailAST);
 
-		int statementStartLineNumber = DetailASTUtil.getStartLineNumber(
-			topLevelDetailAST);
+		int statementStartLineNumber = getStartLineNumber(topLevelDetailAST);
 
 		if (!_isRequiredMethodCall(
 				variableName, classObjectNames, identDetailASTMap,
@@ -119,6 +106,9 @@ public class StaticBlockCheck extends BaseCheck {
 
 	private List<String> _getClassObjectNames(DetailAST staticInitDetailAST) {
 		List<String> staticObjectNames = new ArrayList<>();
+
+		List<String> immutableFieldTypes = getAttributeValues(
+			_IMMUTABLE_FIELD_TYPES_KEY);
 
 		DetailAST previousSiblingDetailAST =
 			staticInitDetailAST.getPreviousSibling();
@@ -143,10 +133,9 @@ public class StaticBlockCheck extends BaseCheck {
 				staticObjectNames.add(name);
 			}
 			else {
-				String typeName = DetailASTUtil.getTypeName(
-					previousSiblingDetailAST, true);
+				if (!immutableFieldTypes.contains(
+						getTypeName(previousSiblingDetailAST, true))) {
 
-				if (!ArrayUtil.contains(_immutableFieldTypes, typeName)) {
 					staticObjectNames.add(name);
 				}
 			}
@@ -163,7 +152,7 @@ public class StaticBlockCheck extends BaseCheck {
 
 		Map<String, List<DetailAST>> identDetailASTMap = new HashMap<>();
 
-		List<DetailAST> identDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> identDetailASTList = getAllChildTokens(
 			staticInitDetailAST, true, TokenTypes.IDENT);
 
 		for (DetailAST identDetailAST : identDetailASTList) {
@@ -208,9 +197,8 @@ public class StaticBlockCheck extends BaseCheck {
 
 		Map<String, DetailAST[]> variableDefMap = new HashMap<>();
 
-		List<DetailAST> variableDefinitionDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				staticInitDetailAST, true, TokenTypes.VARIABLE_DEF);
+		List<DetailAST> variableDefinitionDetailASTList = getAllChildTokens(
+			staticInitDetailAST, true, TokenTypes.VARIABLE_DEF);
 
 		for (DetailAST variableDefinitionDetailAST :
 				variableDefinitionDetailASTList) {
@@ -303,8 +291,8 @@ public class StaticBlockCheck extends BaseCheck {
 					DetailAST topLevelDetailAST = _getTopLevelDetailAST(
 						firstUsedDetailAST);
 
-					int statementStartLineNumber =
-						DetailASTUtil.getStartLineNumber(topLevelDetailAST);
+					int statementStartLineNumber = getStartLineNumber(
+						topLevelDetailAST);
 
 					return _isRequiredMethodCall(
 						variableName, classObjectNames, identDetailASTMap,
@@ -316,9 +304,10 @@ public class StaticBlockCheck extends BaseCheck {
 		return false;
 	}
 
+	private static final String _IMMUTABLE_FIELD_TYPES_KEY =
+		"immutableFieldTypes";
+
 	private static final String _MSG_UNNEEDED_STATIC_BLOCK =
 		"static.block.unneeded";
-
-	private String[] _immutableFieldTypes = new String[0];
 
 }

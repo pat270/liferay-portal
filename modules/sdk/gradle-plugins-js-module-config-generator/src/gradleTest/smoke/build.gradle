@@ -1,6 +1,10 @@
 apply plugin: "com.liferay.js.module.config.generator"
 apply plugin: "java"
 
+node {
+	useNpm = true
+}
+
 task runGradleTest
 
 configJSModules {
@@ -20,7 +24,7 @@ runGradleTest {
 
 			File expectedFile = file(generatedFile.name + ".expected")
 
-			assert expectedFile.text.normalize() == generatedFile.text.normalize()
+			assert expectedFile.text.normalize() == generatedFile.text.normalize().trim()
 		}
 	}
 }

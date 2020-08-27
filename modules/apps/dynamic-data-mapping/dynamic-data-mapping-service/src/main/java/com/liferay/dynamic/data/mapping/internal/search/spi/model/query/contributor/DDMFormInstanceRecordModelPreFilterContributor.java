@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.internal.search.spi.model.query.contributor;
 
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
@@ -26,12 +27,18 @@ import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.spi.model.query.contributor.ModelPreFilterContributor;
 import com.liferay.portal.search.spi.model.registrar.ModelSearchSettings;
 
 import java.io.Serializable;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -60,12 +67,49 @@ public class DDMFormInstanceRecordModelPreFilterContributor
 			booleanFilter.addRequiredTerm(Field.STATUS, status);
 		}
 
-		long ddmFormInstanceId = GetterUtil.getLong(
-			searchContext.getAttribute("ddmFormInstanceId"));
+		long formInstanceId = GetterUtil.getLong(
+			searchContext.getAttribute("formInstanceId"));
 
-		if (ddmFormInstanceId > 0) {
-			booleanFilter.addRequiredTerm(
-				"ddmFormInstanceId", ddmFormInstanceId);
+		if (formInstanceId > 0) {
+			booleanFilter.addRequiredTerm("formInstanceId", formInstanceId);
+		}
+
+		String[] languageIds = GetterUtil.getStringValues(
+			searchContext.getAttribute("languageIds"));
+		String[] notEmptyFields = GetterUtil.getStringValues(
+			searchContext.getAttribute("notEmptyFields"));
+		long structureId = GetterUtil.getLong(
+			searchContext.getAttribute("structureId"));
+
+		if ((languageIds.length > 0) && (notEmptyFields.length > 0) &&
+			(structureId > 0)) {
+
+			List<Locale> locales = Stream.of(
+				languageIds
+			).map(
+				languageId -> LocaleUtil.fromLanguageId(languageId)
+			).collect(
+				Collectors.toList()
+			);
+
+			Stream.of(
+				notEmptyFields
+			).forEach(
+				notEmptyField -> {
+					BooleanFilter notEmptyFieldBooleanFilter =
+						new BooleanFilter();
+
+					locales.forEach(
+						locale -> notEmptyFieldBooleanFilter.addTerm(
+							ddmIndexer.encodeName(
+								structureId, notEmptyField, locale),
+							StringPool.BLANK, BooleanClauseOccur.MUST));
+
+					booleanFilter.add(
+						notEmptyFieldBooleanFilter,
+						BooleanClauseOccur.MUST_NOT);
+				}
+			);
 		}
 
 		addSearchClassTypeIds(booleanFilter, searchContext);
@@ -86,9 +130,9 @@ public class DDMFormInstanceRecordModelPreFilterContributor
 
 				booleanFilter.add(queryFilter, BooleanClauseOccur.MUST);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug(e, e);
+					_log.debug(exception, exception);
 				}
 			}
 		}

@@ -16,12 +16,9 @@ package com.liferay.marketplace.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Douglas Wong
  */
-@ProviderType
 public class FileExtensionException extends PortalException {
 
 	public FileExtensionException() {
@@ -31,12 +28,12 @@ public class FileExtensionException extends PortalException {
 		super(msg);
 	}
 
-	public FileExtensionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public FileExtensionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public FileExtensionException(Throwable cause) {
-		super(cause);
+	public FileExtensionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

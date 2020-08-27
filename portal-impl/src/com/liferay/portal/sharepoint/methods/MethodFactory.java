@@ -16,12 +16,12 @@ package com.liferay.portal.sharepoint.methods;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.sharepoint.SharepointException;
 import com.liferay.portal.sharepoint.SharepointRequest;
 import com.liferay.portal.util.PropsUtil;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,15 +32,15 @@ public class MethodFactory {
 	public static Method create(SharepointRequest sharepointRequest)
 		throws SharepointException {
 
-		return _instance._create(sharepointRequest);
+		return _methodFactory._create(sharepointRequest);
 	}
 
 	private MethodFactory() {
-		_methods = new HashMap<>();
-
 		Method method = (Method)InstancePool.get(_CHECKOUT_METHOD_IMPL);
 
-		_methods.put(method.getMethodName(), method);
+		_methods = HashMapBuilder.<String, Object>put(
+			method.getMethodName(), method
+		).build();
 
 		method = (Method)InstancePool.get(_CREATE_URL_DIRECTORIES_METHOD_IMPL);
 
@@ -166,7 +166,7 @@ public class MethodFactory {
 			PropsUtil.get(MethodFactory.class.getName() + ".URL_TO_WEB_URL"),
 			UrlToWebUrlMethodImpl.class.getName());
 
-	private static final MethodFactory _instance = new MethodFactory();
+	private static final MethodFactory _methodFactory = new MethodFactory();
 
 	private final Map<String, Object> _methods;
 

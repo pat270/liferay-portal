@@ -1,4 +1,5 @@
 definition {
+
 	macro click {
 		var key_navItem = "${navItem}";
 
@@ -21,6 +22,10 @@ definition {
 
 	macro gotoDisplayPages {
 		NavItem.click(navItem = "Display Page Templates");
+	}
+
+	macro gotoFeeds {
+		NavItem.click(navItem = "Feeds");
 	}
 
 	macro gotoOrganizations {
@@ -56,4 +61,5 @@ definition {
 			key_navItem = "${navItem}",
 			locator1 = "NavBar#ACTIVE_NAV_ITEM_LINK");
 	}
+
 }

@@ -1,0 +1,1398 @@
+definition {
+
+	macro _deleteAllSLAs {
+		while (IsElementPresent(locator1 = "WorkflowMetricsSLA#SLA_ELLIPSIS_BUTTON")) {
+			Click(locator1 = "WorkflowMetricsSLA#SLA_ELLIPSIS_BUTTON");
+
+			Click(locator1 = "WorkflowMetricsSLA#DELETE_SLA_BUTTON");
+
+			Click(locator1 = "WorkflowMetricsSLA#SLA_REMOVE_CONFIRMATION_BUTTON");
+
+		}
+	}
+
+	macro allItemPageFilterCheck {
+		var key_allItemsFilterName = "${allItemsFilterName}";
+
+		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_BY");
+
+		for (var assigneeName : list "${assigneeName}") {
+			while (IsElementNotPresent(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_BY_ASSIGNEE_VALUE") && (maxIterations = "10")) {
+
+				Refresh();
+
+				WaitForSPARefresh();
+
+				Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_BY");
+
+				Pause(locator1 = "6000");
+			}
+
+			if (IsElementNotPresent(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_BY_ASSIGNEE_VALUE")) {
+
+				echo("timeout exceeded");
+			}
+
+			Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_BY_ASSIGNEE_VALUE");
+		}
+
+		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_TITLE");
+	}
+
+	macro assertAllItemsValues {
+
+		var key_assigneeName = "${assigneeName}";
+		var key_taskName = "${taskName}";
+
+		for (var isInstancePresent : list "${isPresent}") {
+			var key_instanceInfo = "${isInstancePresent}";
+
+			while (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME") && (maxIterations = "10")) {
+
+				Refresh();
+
+				WaitForSPARefresh();
+
+				Pause(locator1 = "6000");
+			}
+
+			if (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME")) {
+
+				echo("timeout exceeded");
+			}
+
+			AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME");
+
+			AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_INSTANCE");
+
+			AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_TASK");
+		}
+
+		for (var isAssigneeNotPresent : list "${isNotPresent}") {
+			var key_assigneeName = "${isAssigneeNotPresent}";
+
+			AssertElementNotPresent(locator1 = "WorkflowMetrics#METRICS_ALL_ITEMS_TABLE_NAME");
+		}
+	}
+
+	macro assertAssignees {
+		Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE");
+
+		AssertElementPresent(
+			key_nameOfAssignee = "Test Test",
+			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
+
+		AssertElementNotPresent(
+			key_nameOfAssignee = "userfn userls",
+			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
+	}
+
+	macro assertBulkCount {
+		Click(
+			key_rowNumber = "1",
+			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ROW");
+
+		AssertTextEquals(
+			locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECTED_TEXT",
+			value1 = "1 of 5 Selected");
+
+		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ALL");
+	}
+
+	macro assertChartIsPresent {
+		MouseOver(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART");
+
+		AssertTextPresent(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_TOOLTIP_UNIT_VALUE",
+			value1 = "${chartVelocityUnit}");
+	}
+
+	macro assertChartTotalValue {
+		var key_completionVelocityUnitTotal = "${velocityUnitTotal}";
+		var key_completionVelocityValueTotal = "${velocityValueTotal}";
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_ITEMS_UNIT",
+			value1 = "${velocityUnitTotal}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_ITEMS_VALUE",
+			value1 = "${velocityValueTotal}");
+	}
+
+	macro assertChartTotalValuePerformanceByStep {
+		var key_avgCompletionTime = "${avgCompletionTime}";
+		var key_SLABreachedValue = "${slaBreachedValue}";
+		var key_rowName = "${rowName}";
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_STEP_SLA_BREACHED_VALUE",
+			value1 = "${key_SLABreachedValue}");
+
+		if ("${key_avgCompletionTime}" != "0min") {
+			AssertTextNotEquals(
+				locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_STEP_AVG_COMPLETION_TIME_VALUE",
+				value1 = "0min");
+		}
+
+		else {
+			AssertTextEquals(
+				locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_STEP_AVG_COMPLETION_TIME_VALUE",
+				value1 = "${key_avgCompletionTime}");
+
+		}
+	}
+
+	macro assertCheckboxChecked {
+
+		for (var itemName : list "${taskList}") {
+			var key_itemName = "${itemName}";
+			AssertElementPresent(locator1 = "WorkflowReassignModal#ITEM_CHECKBOX_CHECKED");
+		}
+	}
+
+	macro assertCheckboxUnchecked {
+		for (var itemName : list "${taskListUnchecked}") {
+			var key_itemName = "${itemName}";
+			AssertElementNotPresent(locator1 = "WorkflowReassignModal#ITEM_CHECKBOX_CHECKED");
+		}
+	}
+
+	macro assertDefaultChartRangesAndUnits {
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETED_ITEMS_DATE_RANGE_DROPDOWN",
+			value1 = "Last 30 Days");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN",
+			value1 = "Last 30 Days");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN",
+			value1 = "Inst / Day");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
+			value1 = "inst / day");
+	}
+
+	macro assertNewAssigneeModalTable {
+
+		AssertTextEquals(
+			key_columnName = "ID",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "ID");
+
+		AssertTextEquals(
+			key_columnName = "Item Subject",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "Item Subject");
+
+		AssertTextEquals(
+			key_columnName = "Process Step",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "Process Step");
+
+		AssertTextEquals(
+			key_columnName = "Current Assignee",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "Current Assignee");
+
+		AssertTextEquals(
+			key_columnName = "New Assignee",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "New Assignee");
+	}
+
+	macro assertNoAssignees {
+		Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE");
+
+		AssertElementPresent(
+			key_nameOfAssignee = "No results were found.",
+			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
+	}
+
+	macro assertSelectTasksModalTable {
+
+		AssertTextEquals(
+			key_columnName = "ID",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "ID");
+
+		AssertTextEquals(
+			key_columnName = "Item Subject",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "Item Subject");
+
+		AssertTextEquals(
+			key_columnName = "Process Step",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "Process Step");
+
+		AssertTextEquals(
+			key_columnName = "Current Assignee",
+			locator1 = "WorkflowReassignModal#COLUMN_CHECK",
+			value1 = "Current Assignee");
+	}
+
+	macro assertWorkloadByAssigneeCardEmptyMessage {
+		var key_tabName = "${tabName}";
+		var key_emptyMessage = "${emptyMessage}";
+
+		Click(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_TAB",
+			value1 = "${tabName}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_EMPTY_MESSAGE",
+			value1 = "${emptyMessage}");
+	}
+
+	macro bulkReassignExceptionsSetup {
+		Workflow.duplicateSingleApproverWorkflow(workflowName = "Single Approver Alternative");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${site}");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver Alternative",
+			workflowResourceValue = "Blogs Entry");
+
+		WorkflowMetrics.createAlternativeBlogInstances(
+			numberOfBlogInstances = "3",
+			numberOfUsers = "3");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title 1",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title 2",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title 3",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+	}
+
+	macro bulkReassignSetup {
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		WorkflowMetrics.createUsersAndInstancesWithGroovy(
+			numberOfBlogInstances = "5",
+			numberOfUsers = "3",
+			site = "${siteName}");
+	}
+
+	macro checkCompletedWorkflowValues {
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#PERFORMANCE_TOTAL_COMPLETED_ITEMS_VALUE",
+			value1 = "${key_completed}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#PERFORMANCE_TOTAL_OVERDUE_ITEMS_VALUE",
+			value1 = "${key_overdue}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#PERFORMANCE_TOTAL_ONTIME_ITEMS_VALUE",
+			value1 = "${key_ontime}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#PERFORMANCE_TOTAL_UNTRACKED_ITEMS_VALUE",
+			value1 = "${key_untracked}");
+	}
+
+	macro checkPendingWorkflowValues {
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_OVERDUE_ITEMS_VALUE",
+			value1 = "${key_overdue}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_ONTIME_ITEMS_VALUE",
+			value1 = "${key_ontime}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_PENDING_ITEMS_VALUE",
+			value1 = "${key_pending}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_UNTRACKED_ITEMS_VALUE",
+			value1 = "${key_untracked}");
+	}
+
+	macro checkWorkflowReports {
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_VALUE_OVERDUE",
+			value1 = "${key_overdueValue}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_VALUE_ON_TIME",
+			value1 = "${key_onTimeValue}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_VALUE_TOTAL_PENDING",
+			value1 = "${key_totalPendingValue}");
+	}
+
+	macro checkWorkflowTaskCrossover {
+		AssertElementNotPresent(
+			key_itemName = "Blogs Alternative",
+			locator1 = "WorkflowReassignModal#ITEM_SUBJECT_CHECK");
+	}
+
+	macro clearAllFilter {
+		Click(locator1 = "WorkflowMetrics#FILTER_CLEAR_ALL");
+	}
+
+	macro createAlternativeBlogInstances {
+		var iterator = "1";
+		var numberOfBlogInstances = MathUtil.sum("${numberOfBlogInstances}", "1");
+
+		while ("${iterator}" != "${numberOfBlogInstances}") {
+			JSONBlog.addEntry(
+				entryContent = "Blogs Alternative Entry ${iterator} Content",
+				entryTitle = "Blogs Alternative Title ${iterator}");
+
+			var iterator = MathUtil.sum("${iterator}", "1");
+		}
+	}
+
+	macro createBlogInstances {
+		var iterator = "1";
+		var numberOfBlogInstances = MathUtil.sum("${numberOfBlogInstances}", "1");
+
+		while ("${iterator}" != "${numberOfBlogInstances}") {
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry ${iterator} Content",
+				entryTitle = "Blogs Entry Title ${iterator}");
+
+			var iterator = MathUtil.sum("${iterator}", "1");
+		}
+	}
+
+	macro createUsersAndAssignInstances {
+		var iterator = "1";
+		var numberOfBlogInstances = MathUtil.sum("${numberOfBlogInstances}", "1");
+
+		WorkflowMetrics.createUsersGroovy(numberOfUsers = "${numberOfUsers}");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${site}");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		while ("${iterator}" != "${numberOfBlogInstances}") {
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry ${iterator} Content",
+				entryTitle = "Blogs Entry Title ${iterator}");
+
+			var iterator = MathUtil.sum("${iterator}", "1");
+		}
+
+		Workflow.assignBlogEntriesToUsers(
+			numberOfBlogInstances = MathUtil.sum("${numberOfBlogInstances}", "-1"),
+			numberOfUsers = "${numberOfUsers}");
+	}
+
+	macro createUsersAndAssignInstancesWithGroovy {
+		var iterator = "1";
+		var numberOfBlogInstances = MathUtil.sum("${numberOfBlogInstances}", "1");
+
+		WorkflowMetrics.createUsersGroovy(numberOfUsers = "${numberOfUsers}");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${site}");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		while ("${iterator}" != "${numberOfBlogInstances}") {
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry ${iterator} Content",
+				entryTitle = "Blogs Entry Title ${iterator}");
+
+			var iterator = MathUtil.sum("${iterator}", "1");
+		}
+
+		WorkflowMetrics.executeWorkflowScript(scriptName = "assignOpenTasksToUsers.groovy");
+	}
+
+	macro createUsersAndInstancesWithGroovy {
+		var iterator = "1";
+		var numberOfBlogInstances = MathUtil.sum("${numberOfBlogInstances}", "1");
+
+		WorkflowMetrics.createUsersGroovy(numberOfUsers = "${numberOfUsers}");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${site}");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		while ("${iterator}" != "${numberOfBlogInstances}") {
+			JSONBlog.addEntry(
+				entryContent = "Blogs Entry ${iterator} Content",
+				entryTitle = "Blogs Entry Title ${iterator}");
+
+			var iterator = MathUtil.sum("${iterator}", "1");
+		}
+	}
+
+	macro createUsersGroovy {
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Server Administration");
+
+		var scriptContent = TestCase.getFileContent(fileName = "addUsersWithRoles.groovy");
+
+		var scriptContent = StringUtil.regexReplaceFirst("${scriptContent}","numberOfUsers = 0","numberOfUsers = ${numberOfUsers}");
+
+		ServerAdministration.executeScript(
+			language = "Groovy",
+			script = "${scriptContent}");
+	}
+
+	macro executeIndexActions {
+
+		var key_actionDescription = "${actionDescription}";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
+
+		WaitForSPARefresh();
+
+		Click(locator1 = "WorkflowMetricsIndex#METRICS_MENU_INDEX");
+
+		while (IsElementNotPresent(locator1 = "WorkflowMetricsIndex#METRICS_INDEX_SETTINGS") && (maxIterations = "5")) {
+
+			Click(locator1 = "WorkflowMetricsIndex#METRICS_MENU_INDEX");
+
+			Pause(locator1 = "1000");
+		}
+
+		if (IsElementNotPresent(locator1 = "WorkflowMetricsIndex#METRICS_INDEX_SETTINGS")) {
+
+			echo("timeout exceeded");
+		}
+
+		Click(locator1 = "WorkflowMetricsIndex#METRICS_INDEX_SETTINGS");
+
+		if ("${actionDescription}" == "Workflow Indexes") {
+			Click(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_ALL_BUTTON");
+		}
+		else {
+			Click(locator1 = "WorkflowMetricsIndex#METRICS_REINDEX_SPECIFIC_BUTTON");
+		}
+
+		if (contains("${actionDescription}", "Indexes")) {
+			Alert.viewSuccessMessage();
+		}
+		else {
+			Alert.viewSuccessMessageText(successMessage = "${key_actionDescription} has reindexed successfully.");
+		}
+	}
+
+	macro executeWorkflowScript {
+		var key_scriptName = "${scriptName}";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Server Administration");
+
+		var scriptContent = TestCase.getFileContent(fileName = "${key_scriptName}");
+
+		ServerAdministration.executeScript(
+			language = "Groovy",
+			script = "${scriptContent}");
+	}
+
+	macro fillSLAForm {
+		var key_slaDefinitionCalendar = "${slaDefinitionCalendar}";
+		var key_slaDefinitionDays = "${slaDefinitionDays}";
+		var key_slaDefinitionHours = "${slaDefinitionHours}";
+		var key_slaDefinitionDescription = "${slaDefinitionDescription}";
+		var key_slaDefinitionEnd = "${slaDefinitionEnd}";
+		var key_slaDefinitionName = "${slaDefinitionName}";
+		var key_slaDefinitionPause = "${slaDefinitionPause}";
+		var key_slaDefinitionStart = "${slaDefinitionStart}";
+
+		Type(
+			locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_NAME",
+			value1 = "${key_slaDefinitionName}");
+
+		Type(
+			locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_DESCRIPTION",
+			value1 = "${key_slaDefinitionDescription}");
+
+		if (isSet(slaDefinitionStart)) {
+			Click(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_START");
+
+			if (IsElementNotPresent(locator1 = "WorkflowMetricsSLA#SLA_DROPDOWN_START_OPTION")) {
+
+				Refresh();
+
+				WaitForSPARefresh();
+
+				Click(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_START");
+			}
+
+			AssertClick(
+				locator1 = "WorkflowMetricsSLA#SLA_DROPDOWN_START_OPTION",
+				value1 = "${key_slaDefinitionStart}");
+		}
+
+		if (isSet(slaDefinitionPause)) {
+			Click(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_PAUSE");
+
+			AssertClick(
+				locator1 = "WorkflowMetricsSLA#SLA_DROPDOWN_PAUSE_OPTION",
+				value1 = "${key_slaDefinitionPause}");
+		}
+
+		if (isSet(slaDefinitionEnd)) {
+			Click(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_STOP");
+
+			AssertClick(
+				locator1 = "WorkflowMetricsSLA#SLA_DROPDOWN_STOP_OPTION",
+				value1 = "${key_slaDefinitionEnd}");
+		}
+		Type(
+			locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_DAYS",
+			value1 = "${key_slaDefinitionDays}");
+
+		Type(
+			locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_HOURS",
+			value1 = "${key_slaDefinitionHours}");
+
+		if (isSet(slaDefinitionCalendar)) {
+			Click(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_CALENDAR_SELECT");
+
+			AssertClick(
+				locator1 = "WorkflowMetricsSLA#SLA_DROPDOWN_CALENDAR_OPTION",
+				value1 = "${key_slaDefinitionCalendar}");
+		}
+	}
+
+	macro goToBulkReassignSelectNewAssignee {
+		Click(locator1 = "WorkflowReassignModal#SELECT_ALL");
+		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
+	}
+
+	macro goToBulkReassignSelectTasks {
+		Pause(locator1 = "2000");
+		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ALL");
+		Click(
+			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
+			task = "1");
+		Click(locator1 = "WorkflowAllItems#REASSIGN_TASK_DROPDOWN");
+	}
+
+	macro goToCreatedSLAForm {
+		var key_workflowSLAName = "${workflowSLAName}";
+
+		Click(
+			locator1 = "WorkflowMetricsSLA#SLA_CREATED_FORM",
+			value1 = "${workflowSLAName}");
+	}
+
+	macro goToDashboardAllItemsWithFilter {
+		var key_workflowProcess = "${workflowProcess}";
+		var key_workflowMetricsTab = "${workflowMetricsTab}";
+		var key_workflowFilterOption = "${workflowFilterOption}";
+
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "${key_workflowProcess}");
+
+		if ("${workflowMetricsTab}" == "PERFORMANCE") {
+			Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
+		}
+
+		if ("${workflowMetricsTab}" == "DASHBOARD") {
+			Click(locator1 = "WorkflowMetrics#METRICS_DASHBOARD_TAB");
+		}
+
+		Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_workflowFilterOption}_ITEMS_TITLE");
+	}
+
+	macro goToDeleteSLA {
+		var key_slaName = "${slaName}";
+
+		Click(locator1 = "WorkflowMetricsSLA#SLA_RECORD_ELLIPSIS");
+
+		Click(locator1 = "WorkflowMetricsSLA#DELETE_SLA_BUTTON");
+
+		Click(locator1 = "WorkflowMetricsSLA#SLA_REMOVE_CONFIRMATION_BUTTON");
+	}
+
+	macro goToEditSLA {
+		var key_slaName = "${slaName}";
+
+		Click(locator1 = "WorkflowMetricsSLA#SLA_RECORD_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Edit");
+	}
+
+	macro goToReassignSelectTask {
+
+		Click(
+			locator1 = "WorkflowAllItems#KEBAB_DROPDOWN",
+			task = "1");
+
+		Click(locator1 = "WorkflowAllItems#REASSIGN_TASK_DROPDOWN");
+	}
+
+	macro goToWorkflowAllItems {
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
+
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+
+		Click(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_PENDING_ITEMS_VALUE");
+	}
+
+	macro goToWorkflowProcessMetrics {
+		var key_workflowProcessName = "${workflowProcessName}";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Metrics");
+
+		while (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_NAME") && (maxIterations = "10")) {
+			ApplicationsMenu.gotoPortlet(
+				category = "Workflow",
+				panel = "Applications",
+				portlet = "Metrics");
+
+			Pause(locator1 = "6000");
+		}
+
+		if (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_NAME")) {
+
+			echo("timeout exceeded");
+		}
+
+		Click(locator1 = "WorkflowMetrics#METRICS_WORKFLOW_PROCESS_NAME");
+	}
+
+	macro goToWorkflowSLASettings {
+		var key_workflowProcessName = "${workflowProcessName}";
+
+		WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "${workflowProcessName}");
+
+		Click(locator1 = "WorkflowMetricsSLA#METRICS_MENU_SLA");
+
+		Click(locator1 = "WorkflowMetricsSLA#METRICS_SLA_SETTINGS");
+	}
+
+	macro searchForAssigneeName {
+		var key_assigneeName = "${assigneeName}";
+
+		Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME",
+			value1 = "${assigneeName}");
+
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
+	}
+
+	macro selectAllReassignTasks {
+		var key_taskList = "${taskList}";
+		var key_taskListUnchecked = "${taskListUnchecked}";
+		Click(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_SELECT_ALL_MODAL");
+		Click(locator1 = "WorkflowReassignModal#NEXT_PAGINATION_BUTTON");
+		WorkflowMetrics.assertCheckboxUnchecked(taskListUnchecked = "${taskListUnchecked}");
+		Click(locator1 = "WorkflowReassignModal#PREVIOUS_PAGINATION_BUTTON");
+		WorkflowMetrics.assertCheckboxChecked(taskList = "${taskList}");
+		AssertElementPresent(locator1 = "WorkflowReassignModal#SELECT_ALL_REASSIGN");
+		Click(locator1 = "WorkflowReassignModal#SELECT_ALL_REASSIGN");
+		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
+	}
+
+	macro selectDateRange {
+		var key_completionVelocityDateRange = "${selectVelocityDateRange}";
+		var key_endDateRange = "${endDateRange}";
+		var key_startDateRange = "${startDateRange}";
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN_OPTION");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_FROM",
+			value1 = "${startDateRange}");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_TO",
+			value1 = "${endDateRange}");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_APPLY");
+	}
+
+	macro selectDateRangePerformanceByAssignee {
+		var key_completionVelocityDateRange = "${selectVelocityDateRange}";
+		var key_endDateRange = "${endDateRange}";
+		var key_startDateRange = "${startDateRange}";
+
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_DATE_RANGE_DROPDOWN");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN_OPTION");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_FROM",
+			value1 = "${startDateRange}");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_TO",
+			value1 = "${endDateRange}");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_APPLY");
+	}
+
+	macro selectDateRangePerformanceByStep {
+		var key_completionVelocityDateRange = "${selectVelocityDateRange}";
+		var key_endDateRange = "${endDateRange}";
+		var key_startDateRange = "${startDateRange}";
+
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_STEP_RANGE_DROPDOWN");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN_OPTION");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_FROM",
+			value1 = "${startDateRange}");
+
+		Type(
+			locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_TO",
+			value1 = "${endDateRange}");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CUSTOM_RANGE_APPLY");
+	}
+
+	macro selectNewAssignee {
+
+		for (var itemName : list "${taskList}") {
+			var key_itemName = "${itemName}";
+
+			while (!(IsElementPresent(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC"))) {
+				Click(locator1 = "WorkflowReassignModal#NEXT_PAGINATION_BUTTON");
+			}
+
+			Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC");
+
+			Click(
+				key_nameOfAssignee = "Test Test",
+				locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
+		}
+
+		Button.click(button = "Reassign");
+	}
+
+	macro selectNewAssigneeBulkTask {
+		Click(locator1 = "WorkflowReassignModal#SELECT_ALL");
+
+		Click(locator1 = "WorkflowReassignModal#BULK_NEW_ASSIGNEE");
+
+		Click(
+			key_nameOfAssignee = "${nameOfAssignee}",
+			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
+
+		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
+	}
+
+	macro selectNewAssigneePagination {
+
+		for (var itemName : list "${taskList}") {
+			var key_itemName = "${itemName}";
+
+			while (!(IsElementPresent(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC"))) {
+				Click(locator1 = "WorkflowReassignModal#NEXT_PAGINATION_BUTTON");
+			}
+
+			Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC");
+
+			Click(
+				key_nameOfAssignee = "Test Test",
+				locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
+		}
+		AssertTextEquals(
+			locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC",
+			value1 = "Test Test");
+
+		Click(locator1 = "WorkflowReassignModal#PREVIOUS_PAGINATION_BUTTON");
+		var key_itemName = "Blogs Entry: Blogs Entry Title 1";
+
+		AssertTextEquals(
+			button = "Reassign",
+			locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC",
+			value1 = "Test Test");
+
+		Button.click(button = "Reassign");
+	}
+
+	macro selectReassignTasks {
+
+		for (var itemName : list "${taskList}") {
+			var key_itemName = "${itemName}";
+
+			while (!(IsElementPresent(locator1 = "WorkflowReassignModal#ITEM_CHECKBOX"))) {
+				Click(locator1 = "WorkflowReassignModal#NEXT_PAGINATION_BUTTON");
+			}
+
+			Check.checkNotVisible(locator1 = "WorkflowReassignModal#ITEM_CHECKBOX");
+		}
+
+		Click(locator1 = "WorkflowReassignModal#NEXT_BUTTON");
+	}
+
+	macro selectStepFilterPerformaceByAssignee {
+		var key_velocityUnit = "${velocityUnit}";
+
+		ScrollWebElementIntoView(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_VIEW_STEPS_DROPDOWN");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_VIEW_STEPS_DROPDOWN");
+
+		while (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_DROPDOWN_STEP_${velocityUnit}") && (maxIterations = "10")) {
+
+			Refresh();
+
+			ScrollWebElementIntoView(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_VIEW_STEPS_DROPDOWN");
+
+			Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_VIEW_STEPS_DROPDOWN");
+
+			Pause(locator1 = "6000");
+		}
+
+		if (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_DROPDOWN_STEP_${velocityUnit}")) {
+
+			echo("timeout exceeded");
+		}
+
+		Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_DROPDOWN_STEP_${velocityUnit}");
+	}
+
+	macro selectVelocityUnit {
+		var key_velocityUnit = "${velocityUnit}";
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN");
+
+		Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${velocityUnit}");
+	}
+
+	macro selectWorkloadByAssigneeCardFilterValue {
+
+		for (var key_workflowStep : list "${workflowStep}") {
+			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER");
+
+			while (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_OPTION") && (maxIterations = "10")) {
+
+				Refresh();
+
+				Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER");
+
+				Pause(locator1 = "6000");
+			}
+
+			if (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_OPTION")) {
+
+				echo("timeout exceeded");
+			}
+
+			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_OPTION");
+
+			if (IsElementPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME")) {
+				Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME");
+			}
+		}
+	}
+
+	macro selectWorkloadByAssigneeCardFilterValueProcessStep {
+		var key_workflowStep = "${workflowStep}";
+
+		Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_PROCESS_STEP");
+
+		while (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_OPTION") && (maxIterations = "10")) {
+
+			Refresh();
+
+			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_PROCESS_STEP");
+
+			Pause(locator1 = "6000");
+		}
+
+		if (IsElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_OPTION")) {
+
+			echo("timeout exceeded");
+		}
+
+		Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_FILTER_OPTION");
+
+		if (IsElementPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME")) {
+			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_SEARCH_ASSIGNEE_NAME");
+		}
+	}
+
+	macro singleReassignSetup {
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Workflow",
+			site = "${site}");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry 1 Content",
+			entryTitle = "Blogs Entry Title 1");
+	}
+
+	macro tearDown {
+		WorkflowMetrics.goToWorkflowSLASettings(workflowProcessName = "Single Approver");
+
+		if (IsElementPresent(locator1 = "WorkflowMetricsSLA#SLA_TABLE")) {
+			WorkflowMetrics._deleteAllSLAs();
+		}
+	}
+
+	macro validateInstanceDetails {
+		var key_instanceId = "${instanceId}";
+		var key_slaMessage = "${slaMessage}";
+		var key_processStatus = "${processStatus}";
+		var key_createdBy = "${createdBy}";
+		var key_assetType = "${assetType}";
+		var key_assetTitle = "${assetTitle}";
+		var key_currentStep = "${currentStep}";
+		var key_currentAssignee = "${currentAssignee}";
+		var key_currentDateDay = DateUtil.getFormattedDate("0", "dd");
+		var key_currentDateMonth = DateUtil.getCurrentMonthName();
+		var key_currentDateMonthShort = StringUtil.substring("${key_currentDateMonth}", "0", "3");
+		var key_currentDateYear = DateUtil.getCurrentYear();
+		var key_currentDate = "${key_currentDateMonthShort} ${key_currentDateDay}, ${key_currentDateYear}";
+
+		Click(locator1 = "WorkflowAllItems#WORKFLOW_INSTANCE_ID");
+
+		if ("${processStatus}" == "Pending") {
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_TITLE",
+				value1 = "Item #${key_instanceId}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_SLA_MESSAGE",
+				value1 = "${key_slaMessage}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_PROCESS_STATUS",
+				value1 = "${key_processStatus}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_CREATED_BY",
+				value1 = "${key_createdBy}");
+
+			if (!(IsTextEqual.isPartialText(locator1 = "WorkflowAllItems#DETAIL_PAGE_CREATION_DATE", value1 = "${key_currentDate}"))) {
+
+				var key_currentDateDay = MathUtil.sum("${key_currentDateDay}", "1");
+				var key_currentDate = "${key_currentDateMonthShort} ${key_currentDateDay}, ${key_currentDateYear}";
+
+				var isLessThan10 = MathUtil.isLessThan("${key_currentDateDay}", "10");
+				if ("${isLessThan10}" == "true") {
+					var key_currentDateDay = "0${key_currentDateDay}";
+				}
+			}
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_CREATION_DATE",
+				value1 = "${key_currentDate}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_ASSET_TYPE",
+				value1 = "${key_assetType}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_ASSET_TITLE",
+				value1 = "${key_assetTitle}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_CURRENT_STEP",
+				value1 = "${key_currentStep}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_CURRENT_ASSIGNEE",
+				value1 = "${key_currentAssignee}");
+
+			Click(locator1 = "WorkflowAllItems#DETAIL_PAGE_CLOSE");
+		}
+		else if ("${processStatus}" == "Completed") {
+			AssertTextEquals(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_PROCESS_STATUS",
+				value1 = "Completed");
+
+			if (!(IsTextEqual.isPartialText(locator1 = "WorkflowAllItems#DETAIL_PAGE_END_DATE", value1 = "${key_currentDate}"))) {
+
+				var key_currentDateDay = MathUtil.sum("${key_currentDateDay}", "1");
+				var key_currentDate = "${key_currentDateMonthShort} ${key_currentDateDay}, ${key_currentDateYear}";
+
+				var isLessThan10 = MathUtil.isLessThan("${key_currentDateDay}", "10");
+				if ("${isLessThan10}" == "true") {
+					var key_currentDateDay = "0${key_currentDateDay}";
+				}
+			}
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_END_DATE",
+				value1 = "${key_currentDate}");
+
+			AssertTextNotPresent(value1 = "Current Step");
+
+			AssertTextNotPresent(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_CURRENT_STEP",
+				value1 = "Review");
+
+			AssertTextNotPresent(value1 = "Current Assignee");
+
+			AssertTextNotPresent(
+				locator1 = "WorkflowAllItems#DETAIL_PAGE_CURRENT_ASSIGNEE",
+				value1 = "Unassigned");
+		}
+	}
+
+	macro verifyCustomCalendarExistOrNot {
+		var key_calendar = "${calendar}";
+		var key_durationMessage = "${durationMessage}";
+
+		if ("${key_calendar}" == "") {
+			AssertTextEquals(
+				locator1 = "WorkflowMetricsSLA#METRICS_SLA_DURATION_MESSAGE",
+				value1 = "${key_durationMessage}");
+
+			AssertElementNotPresent(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_CALENDAR_TITLE");
+		}
+		else if ("${key_calendar}" == "Calendar") {
+			AssertTextEquals(
+				locator1 = "WorkflowMetricsSLA#METRICS_SLA_DURATION_MESSAGE",
+				value1 = "${key_durationMessage}");
+
+			AssertTextEquals(
+				locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_CALENDAR_TITLE",
+				value1 = "Calendar");
+
+			AssertElementPresent(locator1 = "WorkflowMetricsSLA#SLA_DEFINITION_CALENDAR_SELECT");
+		}
+	}
+
+	macro verifyDefaultUnitsForEachDateRange {
+		var key_completionVelocityDateRange = "${completionVelocityDateRange}";
+
+		for (var isUnitPresent : list "${isPresent}") {
+
+			Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN");
+
+			Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN_OPTION");
+
+			Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN");
+
+			AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitPresent}");
+
+			if ("${isUnitPresent}" == "INST_HOUR") {
+				Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitPresent}");
+
+				AssertTextEquals(
+					locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
+					value1 = "inst / hour");
+
+				WorkflowMetrics.assertChartIsPresent(chartVelocityUnit = "Inst / Hour");
+			}
+
+			if ("${isUnitPresent}" == "INST_DAY") {
+				Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitPresent}");
+
+				AssertTextEquals(
+					locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
+					value1 = "inst / day");
+
+				WorkflowMetrics.assertChartIsPresent(chartVelocityUnit = "Inst / Day");
+			}
+
+			if ("${isUnitPresent}" == "INST_WEEK") {
+				Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitPresent}");
+
+				AssertTextEquals(
+					locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
+					value1 = "inst / week");
+
+				WorkflowMetrics.assertChartIsPresent(chartVelocityUnit = "Inst / Week");
+			}
+
+			if ("${isUnitPresent}" == "INST_MONTH") {
+				Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitPresent}");
+
+				AssertTextEquals(
+					locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
+					value1 = "inst / month");
+
+				WorkflowMetrics.assertChartIsPresent(chartVelocityUnit = "Inst / Month");
+			}
+
+			if ("${isUnitPresent}" == "INST_YEAR") {
+				Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitPresent}");
+
+				AssertTextEquals(
+					locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_CHART_UNIT_LABEL",
+					value1 = "inst / year");
+
+				WorkflowMetrics.assertChartIsPresent(chartVelocityUnit = "Inst / Year");
+			}
+		}
+
+		for (var isUnitNotPresent : list "${isNotPresent}") {
+			Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN");
+
+			Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_DATE_RANGE_DROPDOWN_OPTION");
+
+			Click(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN");
+
+			AssertElementNotPresent(locator1 = "WorkflowMetrics#METRICS_COMPLETION_VELOCITY_UNIT_DROPDOWN_OPTION_${isUnitNotPresent}");
+		}
+	}
+
+	macro verifyFiltersFromDashboard {
+		for (var key_workflowFilterValue : list "${isFilterOptionPresent}") {
+			AssertElementPresent(locator1 = "WorkflowAllItems#WORKFLOW_ALL_ITEMS_FILTER_VALUE");
+		}
+	}
+
+	macro viewItemFilterByOnAllItemsPage {
+		var key_allItemsFilterName = "${allItemsFilterName}";
+		var key_assigneeName = "${assigneeName}";
+		var key_taskName = "${taskName}";
+
+		if (isSet(filterValueName)) {
+			WorkflowMetrics.allItemPageFilterCheck(
+				allItemsFilterName = "${key_allItemsFilterName}",
+				assigneeName = "${filterValueName}");
+		}
+
+		else {
+			WorkflowMetrics.allItemPageFilterCheck(
+				allItemsFilterName = "${key_allItemsFilterName}",
+				assigneeName = "${key_assigneeName}");
+		}
+
+		WorkflowMetrics.assertAllItemsValues(
+			assigneeName = "${key_assigneeName}",
+			isNotPresent = "${isNotPresent}",
+			isPresent = "${isPresent}",
+			taskName = "${key_taskName}");
+
+		if (isSet(filterValueName)) {
+			WorkflowMetrics.allItemPageFilterCheck(
+				allItemsFilterName = "${key_allItemsFilterName}",
+				assigneeName = "${filterValueName}");
+		}
+
+		else {
+			WorkflowMetrics.allItemPageFilterCheck(
+				allItemsFilterName = "${key_allItemsFilterName}",
+				assigneeName = "${key_assigneeName}");
+		}
+	}
+
+	macro viewPerformanceByAssignee {
+		var key_assignee = "${assignee}";
+		var key_avgCompletionTime = "${avgCompletionTime}";
+		var key_taskCount = "${taskCount}";
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_NAME",
+			value1 = "${assignee}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_TASK_COUNT",
+			value1 = "${taskCount}");
+
+		AssertTextNotEquals(
+			locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_BY_ASSIGNEE_AVG_COMPLETION_TIME",
+			value1 = "0min");
+
+		for (var isAssigneeNotPresent : list "${isNotPresent}") {
+			var key_assignee = "${isAssigneeNotPresent}";
+
+			AssertElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_NAME_TABLE");
+		}
+	}
+
+	macro viewSLAErrorMessage {
+		var key_errorMessage = "${errorMessage}";
+
+		AssertElementPresent(locator1 = "WorkflowMetricsSLA#SLA_ERROR_MESSAGE");
+	}
+
+	macro viewUserWorkloadByStepOnAllItems {
+		var key_assigneeName = "${assigneeName}";
+		var key_taskName = "${taskName}";
+
+		if ("${callingFrom}" == "CARD") {
+			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_NAME");
+		}
+
+		if ("${callingFrom}" == "PAGE") {
+			Click(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_PAGE_NAME");
+		}
+
+		WorkflowMetrics.assertAllItemsValues(
+			assigneeName = "${key_assigneeName}",
+			isNotPresent = "${isNotPresent}",
+			isPresent = "${isPresent}",
+			taskName = "${key_taskName}");
+	}
+
+	macro viewWorkloadByAssignee {
+		var key_assigneeName = "${assigneeName}";
+		var key_overdueTaskCount = "${overdueTaskCount}";
+		var key_onTimeTaskCount = "${onTimeTaskCount}";
+		var key_totalPendingTaskCount = "${totalPendingTaskCount}";
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_NAME_TABLE",
+			value1 = "${assigneeName}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_TASKCOUNT_OVERDUE",
+			value1 = "${overdueTaskCount}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_TASKCOUNT_ON_TIME",
+			value1 = "${onTimeTaskCount}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_TASKCOUNT_TOTAL_PENDING",
+			value1 = "${totalPendingTaskCount}");
+
+		for (var isAssigneeNotPresent : list "${isNotPresent}") {
+			var key_assigneeName = "${isAssigneeNotPresent}";
+
+			AssertElementNotPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_NAME_TABLE");
+		}
+	}
+
+	macro viewWorkloadByAssigneeCard {
+		var key_tabName = "${tabName}";
+		var key_taskCount = "${taskCount}";
+		var key_assigneeName = "${assigneeName}";
+
+		Click(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_TAB",
+			value1 = "${tabName}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_NAME",
+			value1 = "${assigneeName}");
+
+		AssertTextEquals(
+			locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_CARD_TASKCOUNT",
+			value1 = "${taskCount}");
+	}
+
+	macro viewWorkloadByAssigneePage {
+		var key_taskCount = "${taskCount}";
+		var key_assigneeName = "${assigneeName}";
+
+		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_PAGE_NAME");
+
+		AssertElementPresent(locator1 = "WorkflowMetrics#METRICS_WORKLOAD_BY_ASSIGNEE_PAGE_TASKCOUNT");
+	}
+
+	macro waitForCompletedSLA {
+
+		while (IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = "${key_expectedValue}") && (maxIterations = "24")) {
+
+			echo("Waiting 5 seconds, until the Completed SLA shows up");
+
+			Pause(locator1 = "5000");
+
+			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+
+			Click(locator1 = "WorkflowMetrics#METRICS_PERFORMANCE_TAB");
+		}
+
+		if (IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = "${key_expectedValue}")) {
+
+			echo("timeout exceeded");
+		}
+	}
+
+	macro waitForSLA {
+
+		while (IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = "${key_expectedValue}") && (maxIterations = "24")) {
+
+			echo("Waiting 5 seconds to recheck");
+
+			Pause(locator1 = "5000");
+
+			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+		}
+
+		if (IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = "${key_expectedValue}")) {
+
+			echo("timeout exceeded");
+		}
+	}
+
+	macro waitForSLAPendingNotChange {
+		var count = "1";
+
+		while (IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = "${key_expectedValue}") && ("${count}" != "${key_pauseTime}") && (maxIterations = "48")) {
+
+			var count = ${count} + 1;
+
+			echo("Waiting 5 seconds to recheck");
+
+			Pause(locator1 = "5000");
+
+			WorkflowMetrics.goToWorkflowProcessMetrics(workflowProcessName = "Single Approver");
+		}
+
+		if (IsTextEqual(locator1 = "WorkflowMetrics#DASHBOARD_TOTAL_${key_status}_ITEMS_VALUE", value1 = "${key_expectedValue}")) {
+
+			echo("timeout exceeded");
+		}
+	}
+
+}

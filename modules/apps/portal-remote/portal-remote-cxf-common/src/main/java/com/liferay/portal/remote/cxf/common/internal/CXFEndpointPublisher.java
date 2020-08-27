@@ -18,6 +18,7 @@ import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.access.control.AccessControlThreadLocal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.remote.cxf.common.configuration.CXFEndpointPublisherConfiguration;
 import com.liferay.portal.servlet.filters.authverifier.AuthVerifierFilter;
 
@@ -88,7 +89,7 @@ public class CXFEndpointPublisher {
 					_dependencyManager.createServiceDependency();
 
 				serviceDependency.setCallbacks(
-					servicesRegistrator, "addExtension", "-");
+					servicesRegistrator, "addExtension", null);
 				serviceDependency.setRequired(true);
 				serviceDependency.setService(Object.class, extension);
 
@@ -148,7 +149,7 @@ public class CXFEndpointPublisher {
 
 			String contextName = contextPath.substring(1);
 
-			contextName = contextName.replace("/", ".");
+			contextName = StringUtil.replace(contextName, '/', '.');
 
 			properties.put(
 				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_NAME,
@@ -274,7 +275,7 @@ public class CXFEndpointPublisher {
 			try {
 				_busServiceRegistration.unregister();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister CXF bus service registration " +
@@ -286,7 +287,7 @@ public class CXFEndpointPublisher {
 				try {
 					_remoteAccessFilterServiceRegistration.unregister();
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to unregister RemoteAccessFilter " +
@@ -300,7 +301,7 @@ public class CXFEndpointPublisher {
 				try {
 					_authVerifierFilterServiceRegistration.unregister();
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to unregister AuthVerifierFilter " +
@@ -313,7 +314,7 @@ public class CXFEndpointPublisher {
 			try {
 				_servletServiceRegistration.unregister();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister servlet service registration " +
@@ -324,7 +325,7 @@ public class CXFEndpointPublisher {
 			try {
 				_servletContextHelperServiceRegistration.unregister();
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to unregister servlet context helper service " +
@@ -357,8 +358,8 @@ public class CXFEndpointPublisher {
 
 			@Override
 			public void doFilter(
-					ServletRequest request, ServletResponse response,
-					FilterChain chain)
+					ServletRequest servletRequest,
+					ServletResponse servletResponse, FilterChain chain)
 				throws IOException, ServletException {
 
 				boolean remoteAccess =
@@ -367,10 +368,10 @@ public class CXFEndpointPublisher {
 				try {
 					AccessControlThreadLocal.setRemoteAccess(true);
 
-					chain.doFilter(request, response);
+					chain.doFilter(servletRequest, servletResponse);
 				}
-				catch (Exception e) {
-					throw new ServletException(e);
+				catch (Exception exception) {
+					throw new ServletException(exception);
 				}
 				finally {
 					AccessControlThreadLocal.setRemoteAccess(remoteAccess);

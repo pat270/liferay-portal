@@ -31,26 +31,36 @@ public class DDMFormFieldValidation implements Serializable {
 	public DDMFormFieldValidation(
 		DDMFormFieldValidation ddmFormFieldValidation) {
 
-		_expression = ddmFormFieldValidation._expression;
-		_errorMessage = ddmFormFieldValidation._errorMessage;
+		_ddmFormFieldValidationExpression =
+			ddmFormFieldValidation._ddmFormFieldValidationExpression;
+		_errorMessageLocalizedValue =
+			ddmFormFieldValidation._errorMessageLocalizedValue;
+		_parameterLocalizedValue =
+			ddmFormFieldValidation._parameterLocalizedValue;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMFormFieldValidation)) {
+		if (!(object instanceof DDMFormFieldValidation)) {
 			return false;
 		}
 
 		DDMFormFieldValidation ddmFormFieldValidation =
-			(DDMFormFieldValidation)obj;
+			(DDMFormFieldValidation)object;
 
 		if (Objects.equals(
-				_errorMessage, ddmFormFieldValidation._errorMessage) &&
-			Objects.equals(_expression, ddmFormFieldValidation._expression)) {
+				_ddmFormFieldValidationExpression,
+				ddmFormFieldValidation._ddmFormFieldValidationExpression) &&
+			Objects.equals(
+				_errorMessageLocalizedValue,
+				ddmFormFieldValidation._errorMessageLocalizedValue) &&
+			Objects.equals(
+				_parameterLocalizedValue,
+				ddmFormFieldValidation._parameterLocalizedValue)) {
 
 			return true;
 		}
@@ -58,30 +68,94 @@ public class DDMFormFieldValidation implements Serializable {
 		return false;
 	}
 
-	public String getErrorMessage() {
-		return _errorMessage;
+	public DDMFormFieldValidationExpression
+		getDDMFormFieldValidationExpression() {
+
+		return _ddmFormFieldValidationExpression;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #getErrorMessageLocalizedValue()}
+	 */
+	@Deprecated
+	public String getErrorMessage() {
+		return _errorMessageLocalizedValue.getString(
+			_errorMessageLocalizedValue.getDefaultLocale());
+	}
+
+	public LocalizedValue getErrorMessageLocalizedValue() {
+		return _errorMessageLocalizedValue;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #getDDMFormFieldValidationExpression()}
+	 */
+	@Deprecated
 	public String getExpression() {
 		return _expression;
 	}
 
+	public LocalizedValue getParameterLocalizedValue() {
+		return _parameterLocalizedValue;
+	}
+
 	@Override
 	public int hashCode() {
-		int hash = HashUtil.hash(0, _errorMessage);
+		int hash = HashUtil.hash(0, _ddmFormFieldValidationExpression);
 
-		return HashUtil.hash(hash, _expression);
+		hash = hash + HashUtil.hash(hash, _errorMessageLocalizedValue);
+
+		return HashUtil.hash(hash, _parameterLocalizedValue);
 	}
 
+	public void setDDMFormFieldValidationExpression(
+		DDMFormFieldValidationExpression ddmFormFieldValidationExpression) {
+
+		_ddmFormFieldValidationExpression = ddmFormFieldValidationExpression;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #setErrorMessageLocalizedValue(LocalizedValue)}
+	 */
+	@Deprecated
 	public void setErrorMessage(String errorMessage) {
-		_errorMessage = errorMessage;
+		LocalizedValue errorMessageLocalizedValue = new LocalizedValue();
+
+		errorMessageLocalizedValue.addString(
+			errorMessageLocalizedValue.getDefaultLocale(), errorMessage);
+
+		setErrorMessageLocalizedValue(errorMessageLocalizedValue);
 	}
 
+	public void setErrorMessageLocalizedValue(
+		LocalizedValue errorMessageLocalizedValue) {
+
+		_errorMessageLocalizedValue = errorMessageLocalizedValue;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #setDDMFormFieldValidationExpression(
+	 *             DDMFormFieldValidationExpression)}
+	 */
+	@Deprecated
 	public void setExpression(String expression) {
 		_expression = expression;
 	}
 
-	private String _errorMessage;
+	public void setParameterLocalizedValue(
+		LocalizedValue parameterLocalizedValue) {
+
+		_parameterLocalizedValue = parameterLocalizedValue;
+	}
+
+	private DDMFormFieldValidationExpression _ddmFormFieldValidationExpression =
+		new DDMFormFieldValidationExpression();
+	private LocalizedValue _errorMessageLocalizedValue;
 	private String _expression;
+	private LocalizedValue _parameterLocalizedValue;
 
 }

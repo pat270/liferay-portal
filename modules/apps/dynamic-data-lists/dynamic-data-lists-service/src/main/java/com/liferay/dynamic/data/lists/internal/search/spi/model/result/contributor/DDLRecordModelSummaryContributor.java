@@ -14,8 +14,10 @@
 
 package com.liferay.dynamic.data.lists.internal.search.spi.model.result.contributor;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -49,15 +51,13 @@ public class DDLRecordModelSummaryContributor
 	public Summary getSummary(
 		Document document, Locale locale, String snippet) {
 
-		long ddlRecordId = GetterUtil.getLong(document.get("recordId"));
-
-		String prefix = Field.SNIPPET + StringPool.UNDERLINE;
-
-		String description = document.get(
-			locale, prefix + Field.DESCRIPTION, Field.DESCRIPTION);
-
 		Summary summary = new Summary(
-			getTitle(ddlRecordId, locale), description);
+			getTitle(GetterUtil.getLong(document.get("recordSetId")), locale),
+			document.get(
+				locale,
+				StringBundler.concat(
+					Field.SNIPPET, StringPool.UNDERLINE, Field.DESCRIPTION),
+				Field.DESCRIPTION));
 
 		summary.setMaxContentLength(200);
 
@@ -79,11 +79,11 @@ public class DDLRecordModelSummaryContributor
 			String recordSetName = ddlRecordSet.getName(locale);
 
 			return LanguageUtil.format(
-				getResourceBundle(locale), "new-entry-for-form-x",
+				getResourceBundle(locale), _getLanguageKey(ddlRecordSet),
 				recordSetName, false);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return StringPool.BLANK;
@@ -91,6 +91,16 @@ public class DDLRecordModelSummaryContributor
 
 	@Reference
 	protected DDLRecordSetLocalService ddlRecordSetLocalService;
+
+	private String _getLanguageKey(DDLRecordSet ddlRecordSet) {
+		if (ddlRecordSet.getScope() ==
+				DDLRecordSetConstants.SCOPE_DYNAMIC_DATA_LISTS) {
+
+			return "record-for-list-x";
+		}
+
+		return "form-record-for-form-x";
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDLRecordModelSummaryContributor.class);

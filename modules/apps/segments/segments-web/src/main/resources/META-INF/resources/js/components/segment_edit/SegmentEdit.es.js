@@ -1,34 +1,49 @@
-import ClayButton from '../shared/ClayButton.es';
-import ClayToggle from '../shared/ClayToggle.es';
-import ContributorBuilder from '../criteria_builder/ContributorBuilder.es';
-import LocalizedInput from '../title_editor/LocalizedInput.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import ClayButton from '@clayui/button';
+import ClayLayout from '@clayui/layout';
+import {FieldArray, withFormik} from 'formik';
+import {debounce, fetch, openModal} from 'frontend-js-web';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
+
 import ThemeContext from '../../ThemeContext.es';
-import {FieldArray, withFormik} from 'formik';
 import {
 	SOURCES,
 	SUPPORTED_CONJUNCTIONS,
 	SUPPORTED_OPERATORS,
-	SUPPORTED_PROPERTY_TYPES
+	SUPPORTED_PROPERTY_TYPES,
 } from '../../utils/constants.es';
+import {
+	applyConjunctionChangeToContributor,
+	applyCriteriaChangeToContributors,
+	initialContributorsToContributors,
+} from '../../utils/contributors.es';
+import {initialContributorShape} from '../../utils/types.es';
+import {sub} from '../../utils/utils.es';
+import ContributorInputs from '../criteria_builder/ContributorInputs.es';
+import ContributorsBuilder from '../criteria_builder/ContributorsBuilder.es';
+import ClayToggle from '../shared/ClayToggle.es';
+import LocalizedInput from '../title_editor/LocalizedInput.es';
 
 class SegmentEdit extends Component {
 	static contextType = ThemeContext;
 
 	static propTypes = {
 		availableLocales: PropTypes.object.isRequired,
-		contributors: PropTypes.arrayOf(
-			PropTypes.shape(
-				{
-					conjunctionId: PropTypes.string,
-					conjunctionInputId: PropTypes.string,
-					initialQuery: PropTypes.string,
-					inputId: PropTypes.string,
-					propertyKey: PropTypes.string
-				}
-			)
-		),
+		contributors: PropTypes.arrayOf(initialContributorShape),
 		defaultLanguageId: PropTypes.string.isRequired,
 		errors: PropTypes.object,
 		formId: PropTypes.string,
@@ -49,107 +64,226 @@ class SegmentEdit extends Component {
 		showInEditMode: PropTypes.bool,
 		source: PropTypes.string,
 		validateForm: PropTypes.func,
-		values: PropTypes.object
+		values: PropTypes.object,
 	};
 
 	static defaultProps = {
 		contributors: [],
+		handleBlur: () => {},
 		initialSegmentActive: true,
 		initialSegmentName: {},
-		portletNamespace: ''
+		portletNamespace: '',
+		showInEditMode: false,
 	};
 
 	constructor(props) {
 		super(props);
 
+		const {
+			contributors: initialContributors,
+			initialMembersCount,
+			propertyGroups,
+			showInEditMode,
+			values,
+		} = props;
+
+		const contributors = initialContributorsToContributors(
+			initialContributors,
+			propertyGroups
+		);
+
 		this.state = {
-			disabledSave: this._isQueryEmpty(),
-			editing: this.props.showInEditMode,
-			validTitle: !!props.values.name[props.defaultLanguageId]
+			contributors,
+			disabledSave: this._isQueryEmpty(contributors),
+			editing: showInEditMode,
+			hasChanged: false,
+			membersCount: initialMembersCount,
+			validTitle: !!values.name[props.defaultLanguageId],
 		};
+
+		this._debouncedFetchMembersCount = debounce(
+			this._fetchMembersCount,
+			500
+		);
 	}
 
 	_handleCriteriaEdit = () => {
-		this.setState(
-			{
-				editing: !this.state.editing
-			}
-		);
-	}
+		this.setState({
+			editing: !this.state.editing,
+		});
+	};
 
 	_handleLocalizedInputChange = (event, newValues, invalid) => {
 		this.props.setFieldValue('name', newValues);
-		this.setState(
-			{
-				validTitle: !invalid
-			}
-		);
-	}
-
-	_handleQueryChange = () => {
-		this.setState(
-			{
-				disabledSave: this._isQueryEmpty()
-			},
-		);
+		this.setState({
+			hasChanged: true,
+			validTitle: !invalid,
+		});
 	};
 
-	_handleSegmentNameBlur = event => {
-		const {
-			handleBlur
-		} = this.props;
+	_fetchMembersCount = () => {
+		const formElement = document.getElementById(this.props.formId);
+
+		const formData = new FormData(formElement);
+
+		fetch(this.props.requestMembersCountURL, {
+			body: formData,
+			method: 'POST',
+		})
+			.then((response) => response.json())
+			.then((membersCount) => {
+				this.setState({
+					membersCount,
+					membersCountLoading: false,
+				});
+			})
+			.catch(() => {
+				this.setState({membersCountLoading: false});
+
+				Liferay.Util.openToast({
+					message: Liferay.Language.get(
+						'an-unexpected-error-occurred'
+					),
+					type: 'danger',
+				});
+			});
+	};
+
+	_handleQueryChange = (criteriaChange, index) => {
+		this.setState((prevState) => {
+			const contributors = applyCriteriaChangeToContributors(
+				prevState.contributors,
+				{
+					criteriaChange,
+					propertyKey: index,
+				}
+			);
+
+			return {
+				contributors,
+				disabledSave: this._isQueryEmpty(contributors),
+				hasChanged: true,
+				membersCountLoading: true,
+			};
+		}, this._debouncedFetchMembersCount);
+	};
+
+	_handleSegmentNameBlur = (event) => {
+		const {handleBlur} = this.props;
 
 		handleBlur(event);
 	};
 
-	_handleSourceIconMouseOver = event => {
-		const message = this.props.source === SOURCES.ASAH_FARO_BACKEND.name ?
-			SOURCES.ASAH_FARO_BACKEND.label :
-			SOURCES.DEFAULT.label;
+	_handleConjunctionChange = (conjunctionName) => {
+		this.setState((prevState) => {
+			const contributors = applyConjunctionChangeToContributor(
+				prevState.contributors,
+				conjunctionName
+			);
 
-		Liferay.Portal.ToolTip.show(event.currentTarget, message);
+			return {
+				contributors,
+				hasChanged: true,
+				membersCountLoading: true,
+			};
+		}, this._debouncedFetchMembersCount);
 	};
 
 	/**
 	 * Checks if every query in each contributor has a value.
 	 * @return {boolean} True if none of the contributor's queries have a value.
 	 */
-	_isQueryEmpty = () => this.props.contributors.every(
-		({initialQuery, inputId}) => {
-			const input = document.getElementById(inputId);
-
-			return input ? !input.value : !initialQuery;
-		}
-	);
+	_isQueryEmpty = (contributors) =>
+		contributors.every((contributor) => !contributor.query);
 
 	_renderContributors = () => {
-		const {contributors, formId, initialMembersCount, locale, previewMembersURL, propertyGroups, requestMembersCountURL, values} = this.props;
+		const {
+			locale,
+			propertyGroups,
+			requestMembersCountURL,
+			values,
+		} = this.props;
 
-		const {editing} = this.state;
+		const {
+			contributors,
+			editing,
+			membersCount,
+			membersCountLoading,
+		} = this.state;
 
-		const emptyContributors = this._isQueryEmpty();
+		const emptyContributors = this._isQueryEmpty(contributors);
 
 		const segmentName = values.name[locale];
 
-		return (
-			(propertyGroups && contributors) ?
-				<ContributorBuilder
-					editing={editing}
-					emptyContributors={emptyContributors}
-					formId={formId}
-					initialContributors={contributors}
-					membersCount={initialMembersCount}
-					onQueryChange={this._handleQueryChange}
-					previewMembersURL={previewMembersURL}
-					propertyGroups={propertyGroups}
-					requestMembersCountURL={requestMembersCountURL}
-					segmentName={segmentName}
-					supportedConjunctions={SUPPORTED_CONJUNCTIONS}
-					supportedOperators={SUPPORTED_OPERATORS}
-					supportedPropertyTypes={SUPPORTED_PROPERTY_TYPES}
-				/> :
-				null
-		);
+		return propertyGroups && contributors ? (
+			<ContributorsBuilder
+				contributors={contributors}
+				editing={editing}
+				emptyContributors={emptyContributors}
+				membersCount={membersCount}
+				membersCountLoading={membersCountLoading}
+				onConjunctionChange={this._handleConjunctionChange}
+				onPreviewMembers={this._handlePreviewMembers}
+				onQueryChange={this._handleQueryChange}
+				propertyGroups={propertyGroups}
+				requestMembersCountURL={requestMembersCountURL}
+				segmentName={segmentName}
+				supportedConjunctions={SUPPORTED_CONJUNCTIONS}
+				supportedOperators={SUPPORTED_OPERATORS}
+				supportedPropertyTypes={SUPPORTED_PROPERTY_TYPES}
+			/>
+		) : null;
+	};
+
+	/**
+	 * Decides wether to redirect the user or warn
+	 *
+	 * @memberof SegmentEdit
+	 */
+	_handleCancelButton = () => {
+		const {hasChanged} = this.state;
+
+		if (hasChanged) {
+			const confirmed = confirm(
+				Liferay.Language.get('criteria-cancel-confirmation-message')
+			);
+
+			if (confirmed) {
+				this._redirect();
+			}
+		}
+		else {
+			this._redirect();
+		}
+	};
+
+	/**
+	 * This redirects to the `redirect` prop.
+	 *
+	 * @memberof SegmentEdit
+	 */
+	_redirect = () => {
+		Liferay.Util.navigate(this.props.redirect);
+	};
+
+	/**
+	 * Opens a modal from to show the view from `this.props.previewMembersURL`
+	 *
+	 * @memberof SegmentEdit
+	 */
+	_handlePreviewMembers = () => {
+		const {locale, previewMembersURL, values} = this.props;
+		const {name} = values;
+		const segmentLocalizedName = name[locale];
+
+		openModal({
+			id: 'segment-members-dialog',
+			size: 'full-screen',
+			title: sub(Liferay.Language.get('x-members'), [
+				Liferay.Util.escape(segmentLocalizedName),
+			]),
+			url: previewMembersURL,
+		});
 	};
 
 	/**
@@ -163,88 +297,76 @@ class SegmentEdit extends Component {
 	 * from being called.
 	 * @param {Class} event Event to prevent a form submission from occurring.
 	 */
-	_handleValidate = event => {
+	_handleValidate = (event) => {
 		const {validateForm} = this.props;
 
 		event.persist();
 
-		validateForm().then(
-			errors => {
-				const errorMessages = Object.values(errors);
+		validateForm().then((errors) => {
+			const errorMessages = Object.values(errors);
 
-				if (errorMessages.length) {
-					event.preventDefault();
+			if (errorMessages.length) {
+				event.preventDefault();
 
-					errorMessages.forEach(
-						message => {
-							Liferay.Util.openToast(
-								{
-									message,
-									title: Liferay.Language.get('error'),
-									type: 'danger'
-								}
-							);
-						}
-					);
-				}
+				errorMessages.forEach((message) => {
+					Liferay.Util.openToast({
+						message,
+						type: 'danger',
+					});
+				});
 			}
-		);
+		});
 	};
 
 	_renderLocalizedInputs = () => {
-		const {
-			defaultLanguageId,
-			portletNamespace,
-			values
-		} = this.props;
+		const {defaultLanguageId, portletNamespace, values} = this.props;
 
 		const langs = Object.keys(values.name);
 
-		return (
-			langs.map(
-				key => {
-					let returnVal;
-					const value = values.name[key];
+		return langs.map((key) => {
+			let returnVal;
+			const value = values.name[key];
 
-					if (key === defaultLanguageId) {
-						returnVal = (
-							<React.Fragment key={key}>
-								<input
-									name={`${portletNamespace}name_${key}`}
-									readOnly
-									type="hidden"
-									value={value}
-								/>
-								<input
-									name={`${portletNamespace}key`}
-									readOnly
-									type="hidden"
-									value={value}
-								/>
-								<input
-									name={`${portletNamespace}name`}
-									readOnly
-									type="hidden"
-									value={value}
-								/>
-							</React.Fragment>
-						);
-					}
-					else {
-						returnVal = (<React.Fragment key={key}>
-							<input
-								name={`${portletNamespace}name_${key}`}
-								readOnly
-								type="hidden"
-								value={value}
-							/>
-						</React.Fragment>);
-					}
-					return returnVal;
-				}
-			)
-		);
-	}
+			if (key === defaultLanguageId) {
+				returnVal = (
+					<React.Fragment key={key}>
+						<input
+							name={`${portletNamespace}name_${key}`}
+							readOnly
+							type="hidden"
+							value={value}
+						/>
+						<input
+							name={`${portletNamespace}key`}
+							readOnly
+							type="hidden"
+							value={value}
+						/>
+						<input
+							name={`${portletNamespace}name`}
+							readOnly
+							type="hidden"
+							value={value}
+						/>
+					</React.Fragment>
+				);
+			}
+			else {
+				returnVal = (
+					<React.Fragment key={key}>
+						<input
+							name={`${portletNamespace}name_${key}`}
+							readOnly
+							type="hidden"
+							value={value}
+						/>
+					</React.Fragment>
+				);
+			}
+
+			return returnVal;
+		});
+	};
 
 	render() {
 		const {
@@ -252,16 +374,17 @@ class SegmentEdit extends Component {
 			defaultLanguageId,
 			hasUpdatePermission,
 			portletNamespace,
-			redirect,
 			source,
-			values
+			values,
 		} = this.props;
 
-		const {disabledSave, editing, validTitle} = this.state;
+		const {contributors, disabledSave, editing, validTitle} = this.state;
 
 		const {assetsPath} = this.context;
 
 		const disabledSaveButton = disabledSave || !validTitle;
+
+		const placeholder = Liferay.Language.get('untitled-segment');
 
 		return (
 			<div className="segment-edit-page-root">
@@ -272,7 +395,7 @@ class SegmentEdit extends Component {
 				/>
 
 				<div className="form-header">
-					<div className="container-fluid container-fluid-max-xl form-header-container">
+					<ClayLayout.ContainerFluid className="form-header-container">
 						<div className="form-header-section-left">
 							<FieldArray
 								name="values.name"
@@ -286,22 +409,32 @@ class SegmentEdit extends Component {
 								initialOpen={false}
 								initialValues={values.name}
 								onChange={this._handleLocalizedInputChange}
+								placeholder={placeholder}
 								portletNamespace={portletNamespace}
 								readOnly={!editing}
 							/>
 
-							<img
-								className="source-icon"
-								data-testid="source-icon"
-								onMouseOver={this._handleSourceIconMouseOver}
-								src={source === SOURCES.ASAH_FARO_BACKEND.name ?
-									`${assetsPath}${SOURCES.ASAH_FARO_BACKEND.icon}` :
-									`${assetsPath}${SOURCES.DEFAULT.icon}`
-								}
-							/>
+							<div className="align-self-center">
+								<img
+									className="lfr-portal-tooltip source-icon"
+									data-testid="source-icon"
+									src={
+										source ===
+										SOURCES.ASAH_FARO_BACKEND.name
+											? `${assetsPath}${SOURCES.ASAH_FARO_BACKEND.icon}`
+											: `${assetsPath}${SOURCES.DEFAULT.icon}`
+									}
+									title={
+										source ===
+										SOURCES.ASAH_FARO_BACKEND.name
+											? SOURCES.ASAH_FARO_BACKEND.label
+											: SOURCES.DEFAULT.label
+									}
+								/>
+							</div>
 						</div>
 
-						{hasUpdatePermission &&
+						{hasUpdatePermission && (
 							<div className="form-header-section-right">
 								<div className="btn-group">
 									<div className="btn-group-item mr-2">
@@ -319,27 +452,30 @@ class SegmentEdit extends Component {
 									<div className="btn-group-item">
 										<ClayButton
 											className="text-capitalize"
-											href={redirect}
-											label={Liferay.Language.get('cancel')}
-											size="sm"
-										/>
+											displayType="secondary"
+											onClick={this._handleCancelButton}
+											small
+										>
+											{Liferay.Language.get('cancel')}
+										</ClayButton>
 									</div>
 
 									<div className="btn-group-item">
 										<ClayButton
 											className="text-capitalize"
 											disabled={disabledSaveButton}
-											label={Liferay.Language.get('save')}
+											displayType="primary"
 											onClick={this._handleValidate}
-											size="sm"
-											style="primary"
+											small={true}
 											type="submit"
-										/>
+										>
+											{Liferay.Language.get('save')}
+										</ClayButton>
 									</div>
 								</div>
 							</div>
-						}
-					</div>
+						)}
+					</ClayLayout.ContainerFluid>
 				</div>
 
 				<div className="form-body">
@@ -347,29 +483,26 @@ class SegmentEdit extends Component {
 						name="contributors"
 						render={this._renderContributors}
 					/>
+					<ContributorInputs contributors={contributors} />
 				</div>
 			</div>
 		);
 	}
 }
 
-export default withFormik(
-	{
-		mapPropsToValues: props => (
-			{
-				active: props.initialSegmentActive || true,
-				contributors: props.contributors || [],
-				name: props.initialSegmentName || {}
-			}
-		),
-		validate: values => {
-			const errors = {};
+export default withFormik({
+	mapPropsToValues: (props) => ({
+		active: props.initialSegmentActive || true,
+		contributors: props.contributors || [],
+		name: props.initialSegmentName || {},
+	}),
+	validate: (values) => {
+		const errors = {};
 
-			if (!values.name) {
-				errors.name = Liferay.Language.get('segment-name-is-required');
-			}
-
-			return errors;
+		if (!values.name) {
+			errors.name = Liferay.Language.get('segment-name-is-required');
 		}
-	}
-)(SegmentEdit);
+
+		return errors;
+	},
+})(SegmentEdit);

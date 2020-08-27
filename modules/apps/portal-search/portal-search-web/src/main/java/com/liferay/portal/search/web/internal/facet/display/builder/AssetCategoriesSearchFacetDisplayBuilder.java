@@ -17,10 +17,12 @@ package com.liferay.portal.search.web.internal.facet.display.builder;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.collector.FacetCollector;
 import com.liferay.portal.kernel.search.facet.collector.TermCollector;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.search.web.internal.facet.display.context.AssetCategoriesSearchFacetDisplayContext;
 import com.liferay.portal.search.web.internal.facet.display.context.AssetCategoriesSearchFacetTermDisplayContext;
@@ -36,17 +38,25 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.portlet.RenderRequest;
+
 /**
  * @author Lino Alves
  */
 public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
+
+	public AssetCategoriesSearchFacetDisplayBuilder(
+		RenderRequest renderRequest) {
+
+		_renderRequest = renderRequest;
+	}
 
 	public AssetCategoriesSearchFacetDisplayContext build() {
 		_buckets = collectBuckets(_facet.getFacetCollector());
 
 		AssetCategoriesSearchFacetDisplayContext
 			assetCategoriesSearchFacetDisplayContext =
-				new AssetCategoriesSearchFacetDisplayContext();
+				createAssetCategoriesSearchFacetDisplayContext();
 
 		assetCategoriesSearchFacetDisplayContext.setCloud(isCloud());
 		assetCategoriesSearchFacetDisplayContext.setNothingSelected(
@@ -65,6 +75,10 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 		return assetCategoriesSearchFacetDisplayContext;
 	}
 
+	public long getExcludedGroupId() {
+		return _excludedGroupId;
+	}
+
 	public void setAssetCategoryLocalService(
 		AssetCategoryLocalService assetCategoryLocalService) {
 
@@ -79,6 +93,10 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 
 	public void setDisplayStyle(String displayStyle) {
 		_displayStyle = displayStyle;
+	}
+
+	public void setExcludedGroupId(long excludedGroupId) {
+		_excludedGroupId = excludedGroupId;
 	}
 
 	public void setFacet(Facet facet) {
@@ -121,6 +139,10 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 		);
 	}
 
+	public void setPortal(Portal portal) {
+		_portal = portal;
+	}
+
 	protected AssetCategoriesSearchFacetTermDisplayContext
 		buildTermDisplayContext(
 			AssetCategory assetCategory, int frequency, boolean selected,
@@ -149,6 +171,8 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 		if (_buckets.isEmpty()) {
 			return getEmptyTermDisplayContexts();
 		}
+
+		_removeExcludedGroup();
 
 		List<AssetCategoriesSearchFacetTermDisplayContext>
 			assetCategoriesSearchFacetTermDisplayContexts = new ArrayList<>(
@@ -240,6 +264,18 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 		return buckets;
 	}
 
+	protected AssetCategoriesSearchFacetDisplayContext
+		createAssetCategoriesSearchFacetDisplayContext() {
+
+		try {
+			return new AssetCategoriesSearchFacetDisplayContext(
+				_portal.getHttpServletRequest(_renderRequest));
+		}
+		catch (ConfigurationException configurationException) {
+			throw new RuntimeException(configurationException);
+		}
+	}
+
 	protected Optional<AssetCategoriesSearchFacetTermDisplayContext>
 		getEmptyTermDisplayContext(long assetCategoryId) {
 
@@ -289,9 +325,7 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 
 		double popularity = maxCount - (maxCount - (frequency - minCount));
 
-		popularity = 1 + (popularity * multiplier);
-
-		return popularity;
+		return 1 + (popularity * multiplier);
 	}
 
 	protected boolean isCloud() {
@@ -339,16 +373,41 @@ public class AssetCategoriesSearchFacetDisplayBuilder implements Serializable {
 		return null;
 	}
 
+	private void _removeExcludedGroup() {
+		Stream<Tuple> stream = _buckets.stream();
+
+		_buckets = stream.filter(
+			tuple -> {
+				if (_excludedGroupId == 0) {
+					return true;
+				}
+
+				AssetCategory assetCategory = (AssetCategory)tuple.getObject(0);
+
+				if (assetCategory.getGroupId() == _excludedGroupId) {
+					return false;
+				}
+
+				return true;
+			}
+		).collect(
+			Collectors.toList()
+		);
+	}
+
 	private AssetCategoryLocalService _assetCategoryLocalService;
 	private AssetCategoryPermissionChecker _assetCategoryPermissionChecker;
 	private List<Tuple> _buckets;
 	private String _displayStyle;
+	private long _excludedGroupId;
 	private Facet _facet;
 	private boolean _frequenciesVisible;
 	private int _frequencyThreshold;
 	private Locale _locale;
 	private int _maxTerms;
 	private String _parameterName;
+	private Portal _portal;
+	private final RenderRequest _renderRequest;
 	private List<Long> _selectedCategoryIds = Collections.emptyList();
 
 }

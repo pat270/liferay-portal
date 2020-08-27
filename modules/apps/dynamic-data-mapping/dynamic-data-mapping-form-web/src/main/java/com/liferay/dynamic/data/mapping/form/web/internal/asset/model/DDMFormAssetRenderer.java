@@ -16,6 +16,8 @@ package com.liferay.dynamic.data.mapping.form.web.internal.asset.model;
 
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.BaseJSPAssetRenderer;
+import com.liferay.dynamic.data.mapping.constants.DDMActionKeys;
+import com.liferay.dynamic.data.mapping.constants.DDMPortletKeys;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.form.web.internal.constants.DDMFormWebKeys;
@@ -36,12 +38,14 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,43 +57,45 @@ public class DDMFormAssetRenderer
 	extends BaseJSPAssetRenderer<DDMFormInstanceRecord> {
 
 	public DDMFormAssetRenderer(
-		DDMFormInstanceRecord formInstanceRecord,
-		DDMFormInstanceRecordVersion formInstanceRecordVersion,
+		DDMFormInstanceRecord ddmFormInstanceRecord,
 		DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService,
-		DDMFormInstanceVersionLocalService formInstanceVersionLocalService,
+		ModelResourcePermission<DDMFormInstanceRecord>
+			ddmFormInstanceRecordModelResourcePermission,
+		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion,
+		DDMFormInstanceVersionLocalService ddmFormInstanceVersionLocalService,
 		DDMFormRenderer ddmFormRenderer,
 		DDMFormValuesFactory ddmFormValuesFactory,
-		DDMFormValuesMerger ddmFormValuesMerger,
-		ModelResourcePermission<DDMFormInstance>
-			ddmFormInstanceModelResourcePermission) {
+		DDMFormValuesMerger ddmFormValuesMerger, Portal portal) {
 
-		_formInstanceRecord = formInstanceRecord;
-		_formInstanceRecordVersion = formInstanceRecordVersion;
+		_ddmFormInstanceRecord = ddmFormInstanceRecord;
 		_ddmFormInstanceRecordLocalService = ddmFormInstanceRecordLocalService;
-		_ddmFormInstanceVersionLocalService = formInstanceVersionLocalService;
+		_ddmFormInstanceRecordModelResourcePermission =
+			ddmFormInstanceRecordModelResourcePermission;
+		_ddmFormInstanceRecordVersion = ddmFormInstanceRecordVersion;
+		_ddmFormInstanceVersionLocalService =
+			ddmFormInstanceVersionLocalService;
 		_ddmFormRenderer = ddmFormRenderer;
 		_ddmFormValuesFactory = ddmFormValuesFactory;
 		_ddmFormValuesMerger = ddmFormValuesMerger;
-		_ddmFormInstanceModelResourcePermission =
-			ddmFormInstanceModelResourcePermission;
+		_portal = portal;
 
-		DDMFormInstance formInstance = null;
+		DDMFormInstance ddmFormInstance = null;
 
 		try {
-			formInstance = _formInstanceRecordVersion.getFormInstance();
+			ddmFormInstance = _ddmFormInstanceRecordVersion.getFormInstance();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 
-		_formInstance = formInstance;
+		_ddmFormInstance = ddmFormInstance;
 	}
 
 	@Override
 	public DDMFormInstanceRecord getAssetObject() {
-		return _formInstanceRecord;
+		return _ddmFormInstanceRecord;
 	}
 
 	@Override
@@ -101,7 +107,7 @@ public class DDMFormAssetRenderer
 
 	@Override
 	public String[] getAvailableLanguageIds() {
-		return _formInstance.getAvailableLanguageIds();
+		return _ddmFormInstance.getAvailableLanguageIds();
 	}
 
 	@Override
@@ -111,12 +117,12 @@ public class DDMFormAssetRenderer
 
 	@Override
 	public long getClassPK() {
-		return _formInstanceRecord.getFormInstanceRecordId();
+		return _ddmFormInstanceRecord.getFormInstanceRecordId();
 	}
 
 	@Override
 	public long getGroupId() {
-		return _formInstanceRecord.getGroupId();
+		return _ddmFormInstanceRecord.getGroupId();
 	}
 
 	@Override
@@ -134,7 +140,7 @@ public class DDMFormAssetRenderer
 
 	@Override
 	public int getStatus() {
-		return _formInstanceRecordVersion.getStatus();
+		return _ddmFormInstanceRecordVersion.getStatus();
 	}
 
 	@Override
@@ -147,8 +153,36 @@ public class DDMFormAssetRenderer
 	@Override
 	public String getTitle(Locale locale) {
 		return LanguageUtil.format(
-			locale, "new-entry-for-form-x", _formInstance.getName(locale),
+			locale, "form-record-for-form-x", _ddmFormInstance.getName(locale),
 			false);
+	}
+
+	@Override
+	public PortletURL getURLEdit(
+			LiferayPortletRequest liferayPortletRequest,
+			LiferayPortletResponse liferayPortletResponse)
+		throws Exception {
+
+		HttpServletRequest httpServletRequest =
+			liferayPortletRequest.getHttpServletRequest();
+
+		String portletNamespace = DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM;
+
+		PortletURL portletURL = _portal.getControlPanelPortletURL(
+			httpServletRequest, portletNamespace, PortletRequest.RENDER_PHASE);
+
+		portletURL.setParameter(
+			"mvcPath", "/display/edit_form_instance_record.jsp");
+		portletURL.setParameter(
+			"redirect", _portal.getCurrentURL(httpServletRequest));
+		portletURL.setParameter(
+			"formInstanceRecordId",
+			String.valueOf(_ddmFormInstanceRecord.getFormInstanceRecordId()));
+		portletURL.setParameter(
+			"formInstanceId",
+			String.valueOf(_ddmFormInstanceRecord.getFormInstanceId()));
+
+		return portletURL;
 	}
 
 	@Override
@@ -163,27 +197,51 @@ public class DDMFormAssetRenderer
 
 	@Override
 	public long getUserId() {
-		return _formInstanceRecord.getUserId();
+		return _ddmFormInstanceRecord.getUserId();
 	}
 
 	@Override
 	public String getUserName() {
-		return _formInstanceRecord.getUserName();
+		return _ddmFormInstanceRecord.getUserName();
 	}
 
 	@Override
 	public String getUuid() {
-		return _formInstanceRecord.getUuid();
+		return _ddmFormInstanceRecord.getUuid();
+	}
+
+	@Override
+	public boolean hasEditPermission(PermissionChecker permissionChecker)
+		throws PortalException {
+
+		try {
+			if (_ddmFormInstanceRecordModelResourcePermission.contains(
+					permissionChecker, _ddmFormInstanceRecord,
+					ActionKeys.UPDATE) ||
+				_ddmFormInstanceRecordModelResourcePermission.contains(
+					permissionChecker, _ddmFormInstanceRecord,
+					DDMActionKeys.ADD_FORM_INSTANCE_RECORD)) {
+
+				return true;
+			}
+
+			return false;
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
+		}
+
+		return false;
 	}
 
 	@Override
 	public boolean hasViewPermission(PermissionChecker permissionChecker) {
 		try {
-			return _ddmFormInstanceModelResourcePermission.contains(
-				permissionChecker, _formInstance, ActionKeys.VIEW);
+			return _ddmFormInstanceRecordModelResourcePermission.contains(
+				permissionChecker, _ddmFormInstanceRecord, ActionKeys.VIEW);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		return false;
@@ -197,7 +255,7 @@ public class DDMFormAssetRenderer
 
 		httpServletRequest.setAttribute(
 			DDMFormWebKeys.DYNAMIC_DATA_MAPPING_FORM_INSTANCE_RECORD,
-			_formInstanceRecord);
+			_ddmFormInstanceRecord);
 
 		DDMFormViewFormInstanceRecordDisplayContext
 			ddmFormViewFormInstanceRecordDisplayContext =
@@ -217,17 +275,18 @@ public class DDMFormAssetRenderer
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMFormAssetRenderer.class);
 
-	private final ModelResourcePermission<DDMFormInstance>
-		_ddmFormInstanceModelResourcePermission;
+	private final DDMFormInstance _ddmFormInstance;
+	private final DDMFormInstanceRecord _ddmFormInstanceRecord;
 	private final DDMFormInstanceRecordLocalService
 		_ddmFormInstanceRecordLocalService;
+	private final ModelResourcePermission<DDMFormInstanceRecord>
+		_ddmFormInstanceRecordModelResourcePermission;
+	private final DDMFormInstanceRecordVersion _ddmFormInstanceRecordVersion;
 	private final DDMFormInstanceVersionLocalService
 		_ddmFormInstanceVersionLocalService;
 	private final DDMFormRenderer _ddmFormRenderer;
 	private final DDMFormValuesFactory _ddmFormValuesFactory;
 	private final DDMFormValuesMerger _ddmFormValuesMerger;
-	private final DDMFormInstance _formInstance;
-	private final DDMFormInstanceRecord _formInstanceRecord;
-	private final DDMFormInstanceRecordVersion _formInstanceRecordVersion;
+	private final Portal _portal;
 
 }

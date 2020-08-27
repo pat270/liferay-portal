@@ -16,6 +16,7 @@ package com.liferay.wiki.editor.configuration.internal;
 
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorCriterion;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -25,10 +26,12 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLWrapper;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.language.LanguageImpl;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.RegistryUtil;
+import com.liferay.wiki.configuration.WikiFileUploadConfiguration;
 import com.liferay.wiki.constants.WikiPortletKeys;
 
 import java.util.HashMap;
@@ -164,6 +167,21 @@ public class WikiAttachmentImageCreoleEditorConfigContributorTest
 
 		wikiAttachmentImageCreoleEditorConfigContributor.setItemSelector(
 			_itemSelector);
+		wikiAttachmentImageCreoleEditorConfigContributor.
+			setWikiFileUploadConfiguration(
+				new WikiFileUploadConfiguration() {
+
+					@Override
+					public long attachmentMaxSize() {
+						return 0;
+					}
+
+					@Override
+					public String[] attachmentMimeTypes() {
+						return new String[] {StringPool.STAR};
+					}
+
+				});
 
 		wikiAttachmentImageCreoleEditorConfigContributor.
 			populateConfigJSONObject(
@@ -269,13 +287,11 @@ public class WikiAttachmentImageCreoleEditorConfigContributorTest
 	}
 
 	protected void setWikiPageResourcePrimKey(long primKey) {
-		Map<String, String> fileBrowserParamsMap = new HashMap<>();
-
-		fileBrowserParamsMap.put(
-			"wikiPageResourcePrimKey", String.valueOf(primKey));
-
 		_inputEditorTaglibAttributes.put(
-			"liferay-ui:input-editor:fileBrowserParams", fileBrowserParamsMap);
+			"liferay-ui:input-editor:fileBrowserParams",
+			HashMapBuilder.put(
+				"wikiPageResourcePrimKey", String.valueOf(primKey)
+			).build());
 	}
 
 	private final Map<String, Object> _inputEditorTaglibAttributes =

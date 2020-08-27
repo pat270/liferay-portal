@@ -29,11 +29,12 @@ import javax.xml.namespace.QName;
 /**
  * @author Javier Gamarra
  */
-public class PageJsonSerializer extends JsonSerializer<Page> {
+public class PageJsonSerializer extends JsonSerializer<Page<Object>> {
 
 	@Override
 	public void serialize(
-			Page page, JsonGenerator jsonGenerator, SerializerProvider provider)
+			Page<Object> page, JsonGenerator jsonGenerator,
+			SerializerProvider provider)
 		throws IOException {
 
 		ToXmlGenerator toXmlGenerator = (ToXmlGenerator)jsonGenerator;
@@ -51,9 +52,9 @@ public class PageJsonSerializer extends JsonSerializer<Page> {
 		for (Object item : page.getItems()) {
 			Class<?> clazz = item.getClass();
 
-			Class<?> superclass = clazz.getSuperclass();
+			Class<?> superClass = clazz.getSuperclass();
 
-			XmlRootElement xmlRootElement = superclass.getAnnotation(
+			XmlRootElement xmlRootElement = superClass.getAnnotation(
 				XmlRootElement.class);
 
 			if (xmlRootElement != null) {

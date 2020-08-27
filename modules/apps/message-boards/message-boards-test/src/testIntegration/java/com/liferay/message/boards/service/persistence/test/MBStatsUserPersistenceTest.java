@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -123,6 +124,10 @@ public class MBStatsUserPersistenceTest {
 
 		MBStatsUser newMBStatsUser = _persistence.create(pk);
 
+		newMBStatsUser.setMvccVersion(RandomTestUtil.nextLong());
+
+		newMBStatsUser.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newMBStatsUser.setGroupId(RandomTestUtil.nextLong());
 
 		newMBStatsUser.setCompanyId(RandomTestUtil.nextLong());
@@ -138,6 +143,12 @@ public class MBStatsUserPersistenceTest {
 		MBStatsUser existingMBStatsUser = _persistence.findByPrimaryKey(
 			newMBStatsUser.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingMBStatsUser.getMvccVersion(),
+			newMBStatsUser.getMvccVersion());
+		Assert.assertEquals(
+			existingMBStatsUser.getCtCollectionId(),
+			newMBStatsUser.getCtCollectionId());
 		Assert.assertEquals(
 			existingMBStatsUser.getStatsUserId(),
 			newMBStatsUser.getStatsUserId());
@@ -211,8 +222,9 @@ public class MBStatsUserPersistenceTest {
 
 	protected OrderByComparator<MBStatsUser> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"MBStatsUser", "statsUserId", true, "groupId", true, "companyId",
-			true, "userId", true, "messageCount", true, "lastPostDate", true);
+			"MBStatsUser", "mvccVersion", true, "ctCollectionId", true,
+			"statsUserId", true, "groupId", true, "companyId", true, "userId",
+			true, "messageCount", true, "lastPostDate", true);
 	}
 
 	@Test
@@ -430,23 +442,71 @@ public class MBStatsUserPersistenceTest {
 
 		_persistence.clearCache();
 
-		MBStatsUser existingMBStatsUser = _persistence.findByPrimaryKey(
-			newMBStatsUser.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newMBStatsUser.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		MBStatsUser newMBStatsUser = addMBStatsUser();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			MBStatsUser.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"statsUserId", newMBStatsUser.getStatsUserId()));
+
+		List<MBStatsUser> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(MBStatsUser mbStatsUser) {
 		Assert.assertEquals(
-			Long.valueOf(existingMBStatsUser.getGroupId()),
+			Long.valueOf(mbStatsUser.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingMBStatsUser, "getOriginalGroupId", new Class<?>[0]));
+				mbStatsUser, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingMBStatsUser.getUserId()),
+			Long.valueOf(mbStatsUser.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingMBStatsUser, "getOriginalUserId", new Class<?>[0]));
+				mbStatsUser, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
 	}
 
 	protected MBStatsUser addMBStatsUser() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		MBStatsUser mbStatsUser = _persistence.create(pk);
+
+		mbStatsUser.setMvccVersion(RandomTestUtil.nextLong());
+
+		mbStatsUser.setCtCollectionId(RandomTestUtil.nextLong());
 
 		mbStatsUser.setGroupId(RandomTestUtil.nextLong());
 

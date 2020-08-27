@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 /**
  * @author Hugo Huijser
  */
-public class BNDDefinitionKeysCheck extends DefinitionKeysCheck {
+public class BNDDefinitionKeysCheck extends BaseDefinitionKeysCheck {
 
 	@Override
 	protected String doProcess(
@@ -75,6 +75,11 @@ public class BNDDefinitionKeysCheck extends DefinitionKeysCheck {
 
 		String definitionKey = matcher.group(1);
 
+		if (definitionKey.contains(StringPool.PERIOD)) {
+			definitionKey = StringUtil.extractFirst(
+				definitionKey, StringPool.PERIOD);
+		}
+
 		String lowerCaseDefinitionKey = StringUtil.toLowerCase(definitionKey);
 
 		String correctKey = null;
@@ -100,9 +105,7 @@ public class BNDDefinitionKeysCheck extends DefinitionKeysCheck {
 		}
 
 		if (correctKey == null) {
-			addMessage(
-				fileName, "Unknown key \"" + definitionKey + "\"",
-				"bnd_definition_keys.markdown");
+			addMessage(fileName, "Unknown key \"" + definitionKey + "\"");
 
 			return content;
 		}
@@ -121,7 +124,7 @@ public class BNDDefinitionKeysCheck extends DefinitionKeysCheck {
 	}
 
 	private static final Pattern _definitionKeyPattern = Pattern.compile(
-		"([A-Za-z-]+?)[:=]");
+		"([A-Za-z-.]+?)[:=]");
 
 	private static class DefinitionComparator implements Comparator<String> {
 

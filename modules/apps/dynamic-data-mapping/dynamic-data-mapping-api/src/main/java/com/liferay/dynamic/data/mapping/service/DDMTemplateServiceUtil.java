@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see DDMTemplateService
  * @generated
  */
-@ProviderType
 public class DDMTemplateServiceUtil {
 
 	/*
@@ -359,6 +357,19 @@ public class DDMTemplateServiceUtil {
 			mode, status);
 	}
 
+	public static java.util.List
+		<com.liferay.dynamic.data.mapping.model.DDMTemplate> getTemplates(
+			long companyId, long[] groupIds, long[] classNameIds,
+			long[] classPKs, long resourceClassNameId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.dynamic.data.mapping.model.DDMTemplate>
+					orderByComparator) {
+
+		return getService().getTemplates(
+			companyId, groupIds, classNameIds, classPKs, resourceClassNameId,
+			start, end, orderByComparator);
+	}
+
 	/**
 	 * Returns all the templates matching the group, class PK, and resource
 	 * class name ID.
@@ -434,6 +445,14 @@ public class DDMTemplateServiceUtil {
 
 		return getService().getTemplatesByStructureClassNameIdCount(
 			groupId, structureClassNameId, status);
+	}
+
+	public static int getTemplatesCount(
+		long companyId, long[] groupIds, long[] classNameIds, long[] classPKs,
+		long resourceClassNameId) {
+
+		return getService().getTemplatesCount(
+			companyId, groupIds, classNameIds, classPKs, resourceClassNameId);
 	}
 
 	public static void revertTemplate(

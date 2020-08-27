@@ -16,12 +16,9 @@ package com.liferay.fragment.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchEntryLinkException extends NoSuchModelException {
 
 	public NoSuchEntryLinkException() {
@@ -31,12 +28,12 @@ public class NoSuchEntryLinkException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchEntryLinkException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchEntryLinkException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchEntryLinkException(Throwable cause) {
-		super(cause);
+	public NoSuchEntryLinkException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

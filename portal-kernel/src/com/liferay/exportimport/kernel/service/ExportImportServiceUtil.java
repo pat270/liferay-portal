@@ -16,8 +16,6 @@ package com.liferay.exportimport.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for ExportImport. This utility wraps
  * <code>com.liferay.portlet.exportimport.service.impl.ExportImportServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ExportImportService
  * @generated
  */
-@ProviderType
 public class ExportImportServiceUtil {
 
 	/*
@@ -44,19 +41,6 @@ public class ExportImportServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().exportLayoutsAsFile(exportImportConfiguration);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static java.io.File exportLayoutsAsFile(
-			long userId, long groupId, boolean privateLayout,
-			java.util.Map<String, String[]> parameterMap)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().exportLayoutsAsFile(
-			userId, groupId, privateLayout, parameterMap);
 	}
 
 	public static long exportLayoutsAsFileInBackground(
@@ -118,19 +102,6 @@ public class ExportImportServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().importLayouts(exportImportConfiguration, inputStream);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	public static void importLayouts(
-			long userId, long groupId, boolean privateLayout,
-			java.util.Map<String, String[]> parameterMap, java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().importLayouts(
-			userId, groupId, privateLayout, parameterMap, file);
 	}
 
 	public static long importLayoutsInBackground(

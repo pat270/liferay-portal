@@ -20,8 +20,6 @@ import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.constants.WikiWebKeys;
 import com.liferay.wiki.engine.WikiEngineRenderer;
 import com.liferay.wiki.exception.NoSuchPageException;
-import com.liferay.wiki.model.WikiNode;
-import com.liferay.wiki.model.WikiPage;
 
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
@@ -52,25 +50,23 @@ public class CompareVersionsMVCRenderCommand implements MVCRenderCommand {
 		throws PortletException {
 
 		try {
-			WikiNode node = ActionUtil.getNode(renderRequest);
+			renderRequest.setAttribute(
+				WikiWebKeys.WIKI_NODE, ActionUtil.getNode(renderRequest));
 
-			renderRequest.setAttribute(WikiWebKeys.WIKI_NODE, node);
-
-			WikiPage page = ActionUtil.getPage(renderRequest);
-
-			renderRequest.setAttribute(WikiWebKeys.WIKI_PAGE, page);
+			renderRequest.setAttribute(
+				WikiWebKeys.WIKI_PAGE, ActionUtil.getPage(renderRequest));
 
 			ActionUtil.compareVersions(
 				renderRequest, renderResponse, _wikiEngineRenderer);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchPageException) {
-				SessionErrors.add(renderRequest, e.getClass());
+		catch (Exception exception) {
+			if (exception instanceof NoSuchPageException) {
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/wiki/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/wiki/compare_versions.jsp";

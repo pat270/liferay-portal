@@ -14,11 +14,13 @@
 
 package com.liferay.portal.security.sso.cas.internal.servlet.filter;
 
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.servlet.BaseFilter;
 import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -27,7 +29,6 @@ import com.liferay.portal.security.sso.cas.configuration.CASConfiguration;
 import com.liferay.portal.security.sso.cas.constants.CASConstants;
 import com.liferay.portal.security.sso.cas.internal.constants.CASWebKeys;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,6 +42,7 @@ import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.util.CommonUtils;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.Cas20ProxyTicketValidator;
+import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
 
 import org.osgi.service.component.annotations.Component;
@@ -102,20 +104,19 @@ public class CASFilter extends BaseFilter {
 		HttpServletResponse httpServletResponse) {
 
 		try {
-			long companyId = _portal.getCompanyId(httpServletRequest);
-
 			CASConfiguration casConfiguration =
 				_configurationProvider.getConfiguration(
 					CASConfiguration.class,
 					new CompanyServiceSettingsLocator(
-						companyId, CASConstants.SERVICE_NAME));
+						_portal.getCompanyId(httpServletRequest),
+						CASConstants.SERVICE_NAME));
 
 			if (casConfiguration.enabled()) {
 				return true;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -141,21 +142,21 @@ public class CASFilter extends BaseFilter {
 				new CompanyServiceSettingsLocator(
 					companyId, CASConstants.SERVICE_NAME));
 
-		String serverName = casConfiguration.serverName();
 		String serverUrl = casConfiguration.serverURL();
-		String loginUrl = casConfiguration.loginURL();
 
 		Cas20ProxyTicketValidator cas20ProxyTicketValidator =
 			new Cas20ProxyTicketValidator(serverUrl);
 
-		Map<String, String> parameters = new HashMap<>();
-
-		parameters.put("casServerLoginUrl", loginUrl);
-		parameters.put("casServerUrlPrefix", serverUrl);
-		parameters.put("redirectAfterValidation", "false");
-		parameters.put("serverName", serverName);
-
-		cas20ProxyTicketValidator.setCustomParameters(parameters);
+		cas20ProxyTicketValidator.setCustomParameters(
+			HashMapBuilder.put(
+				"casServerLoginUrl", casConfiguration.loginURL()
+			).put(
+				"casServerUrlPrefix", serverUrl
+			).put(
+				"redirectAfterValidation", "false"
+			).put(
+				"serverName", casConfiguration.serverName()
+			).build());
 
 		_ticketValidators.put(companyId, cas20ProxyTicketValidator);
 
@@ -221,7 +222,7 @@ public class CASFilter extends BaseFilter {
 		if (Validator.isNull(serviceURL)) {
 			serviceURL = CommonUtils.constructServiceUrl(
 				httpServletRequest, httpServletResponse, serviceURL, serverName,
-				"ticket", false);
+				"service", "ticket", true);
 		}
 
 		String ticket = ParamUtil.getString(httpServletRequest, "ticket");
@@ -238,7 +239,29 @@ public class CASFilter extends BaseFilter {
 
 		TicketValidator ticketValidator = getTicketValidator(companyId);
 
-		Assertion assertion = ticketValidator.validate(ticket, serviceURL);
+		Assertion assertion = null;
+
+		try {
+			assertion = ticketValidator.validate(ticket, serviceURL);
+		}
+		catch (TicketValidationException ticketValidationException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					ticketValidationException.getMessage(),
+					ticketValidationException);
+			}
+			else if (_log.isInfoEnabled()) {
+				_log.info(ticketValidationException.getMessage());
+			}
+
+			_portal.sendError(
+				new PortalException(
+					"Unable to validate CAS ticket: " + ticket,
+					ticketValidationException),
+				httpServletRequest, httpServletResponse);
+
+			return;
+		}
 
 		if (assertion != null) {
 			AttributePrincipal attributePrincipal = assertion.getPrincipal();

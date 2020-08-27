@@ -18,12 +18,9 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class RelatedEntryIndexerRegistryUtil {
 
 	public static List<RelatedEntryIndexer> getRelatedEntryIndexers() {
@@ -31,7 +28,7 @@ public class RelatedEntryIndexerRegistryUtil {
 	}
 
 	public static List<RelatedEntryIndexer> getRelatedEntryIndexers(
-		Class clazz) {
+		Class<?> clazz) {
 
 		return _relatedEntryIndexerRegistry.getRelatedEntryIndexers(clazz);
 	}

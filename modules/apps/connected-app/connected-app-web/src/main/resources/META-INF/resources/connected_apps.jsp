@@ -34,8 +34,8 @@
 			User selUser = PortalUtil.getSelectedUser(request);
 			%>
 
-			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 			<aui:input name="p_u_i_d" type="hidden" value="<%= selUser.getUserId() %>" />
+			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 			<aui:input name="connectedAppKey" type="hidden" value="<%= StringPool.BLANK %>" />
 
 			<%
@@ -46,32 +46,31 @@
 			for (ConnectedApp connectedApp : connectedApps) {
 			%>
 
-				<div class="autofit-padded-no-gutters-x autofit-row autofit-row-center mb-3">
-					<div class="autofit-col">
+				<clay:content-row
+					cssClass="mb-3"
+					noGutters="x"
+					verticalAlign="center"
+				>
+					<clay:content-col>
 						<img class="icon-monospaced" src="<%= HtmlUtil.escapeAttribute(connectedApp.getImageURL()) %>" />
-					</div>
+					</clay:content-col>
 
-					<div class="autofit-col autofit-col-expand">
+					<clay:content-col
+						expand="<%= true %>"
+					>
 						<%= HtmlUtil.escape(connectedApp.getName(locale)) %>
-					</div>
+					</clay:content-col>
 
-					<div class="autofit-col">
-
-						<%
-						Map<String, String> data = new HashMap<>();
-
-						data.put("key", connectedApp.getKey());
-						%>
-
+					<clay:content-col>
 						<clay:button
-							data="<%= data %>"
-							label='<%= LanguageUtil.get(resourceBundle, "revoke") %>'
-							size="sm"
-							style="secondary"
+							data-key="<%= connectedApp.getKey() %>"
+							displayType="secondary"
+							label="revoke"
+							small="<%= true %>"
 							type="submit"
 						/>
-					</div>
-				</div>
+					</clay:content-col>
+				</clay:content-row>
 
 			<%
 			}
@@ -87,13 +86,15 @@
 </div>
 
 <aui:script require="metal-dom/src/dom as dom">
-	var connectedAppKeyInput = document.querySelector('[name=<portlet:namespace/>connectedAppKey]');
+	var connectedAppKeyInput = document.querySelector(
+		'[name=<portlet:namespace/>connectedAppKey]'
+	);
 
 	dom.delegate(
 		document.getElementById('<portlet:namespace/>connectedApp'),
 		'click',
 		'[data-key]',
-		function(event) {
+		function (event) {
 			connectedAppKeyInput.setAttribute('value', event.target.dataset.key);
 		}
 	);

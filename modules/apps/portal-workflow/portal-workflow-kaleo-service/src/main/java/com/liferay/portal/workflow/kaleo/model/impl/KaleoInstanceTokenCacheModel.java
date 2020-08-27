@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoInstanceToken in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoInstanceTokenCacheModel
 	implements CacheModel<KaleoInstanceToken>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoInstanceTokenCacheModel)) {
+		if (!(object instanceof KaleoInstanceTokenCacheModel)) {
 			return false;
 		}
 
 		KaleoInstanceTokenCacheModel kaleoInstanceTokenCacheModel =
-			(KaleoInstanceTokenCacheModel)obj;
+			(KaleoInstanceTokenCacheModel)object;
 
 		if ((kaleoInstanceTokenId ==
 				kaleoInstanceTokenCacheModel.kaleoInstanceTokenId) &&
@@ -81,7 +78,7 @@ public class KaleoInstanceTokenCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(35);
+		StringBundler sb = new StringBundler(37);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -99,6 +96,8 @@ public class KaleoInstanceTokenCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoInstanceId=");
@@ -154,6 +153,7 @@ public class KaleoInstanceTokenCacheModel
 			kaleoInstanceTokenImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
+		kaleoInstanceTokenImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoInstanceTokenImpl.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoInstanceTokenImpl.setKaleoInstanceId(kaleoInstanceId);
@@ -206,6 +206,8 @@ public class KaleoInstanceTokenCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
+		kaleoDefinitionId = objectInput.readLong();
+
 		kaleoDefinitionVersionId = objectInput.readLong();
 
 		kaleoInstanceId = objectInput.readLong();
@@ -244,6 +246,8 @@ public class KaleoInstanceTokenCacheModel
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		objectOutput.writeLong(kaleoDefinitionId);
+
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		objectOutput.writeLong(kaleoInstanceId);
@@ -280,6 +284,7 @@ public class KaleoInstanceTokenCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoInstanceId;
 	public long parentKaleoInstanceTokenId;

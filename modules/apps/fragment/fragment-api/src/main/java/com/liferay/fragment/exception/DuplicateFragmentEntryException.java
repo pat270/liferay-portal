@@ -16,12 +16,9 @@ package com.liferay.fragment.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateFragmentEntryException extends PortalException {
 
 	public DuplicateFragmentEntryException() {
@@ -31,12 +28,12 @@ public class DuplicateFragmentEntryException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateFragmentEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateFragmentEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateFragmentEntryException(Throwable cause) {
-		super(cause);
+	public DuplicateFragmentEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

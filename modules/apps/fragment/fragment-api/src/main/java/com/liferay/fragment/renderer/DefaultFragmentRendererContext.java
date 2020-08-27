@@ -31,6 +31,12 @@ public class DefaultFragmentRendererContext implements FragmentRendererContext {
 		_fragmentEntryLink = fragmentEntryLink;
 	}
 
+	@Override
+	public Optional<Object> getDisplayObjectOptional() {
+		return Optional.ofNullable(_displayObject);
+	}
+
+	@Override
 	public Optional<Map<String, Object>> getFieldValuesOptional() {
 		return Optional.ofNullable(_fieldValues);
 	}
@@ -51,6 +57,11 @@ public class DefaultFragmentRendererContext implements FragmentRendererContext {
 	}
 
 	@Override
+	public long getPreviewClassNameId() {
+		return _previewClassNameId;
+	}
+
+	@Override
 	public long getPreviewClassPK() {
 		return _previewClassPK;
 	}
@@ -61,8 +72,22 @@ public class DefaultFragmentRendererContext implements FragmentRendererContext {
 	}
 
 	@Override
+	public String getPreviewVersion() {
+		return _previewVersion;
+	}
+
+	@Override
 	public long[] getSegmentsExperienceIds() {
 		return _segmentsExperienceIds;
+	}
+
+	@Override
+	public boolean isUseCachedContent() {
+		return _useCachedContent;
+	}
+
+	public void setDisplayObject(Object object) {
+		_displayObject = object;
 	}
 
 	public void setFieldValues(Map<String, Object> fieldValues) {
@@ -77,6 +102,10 @@ public class DefaultFragmentRendererContext implements FragmentRendererContext {
 		_mode = mode;
 	}
 
+	public void setPreviewClassNameId(long previewClassNameId) {
+		_previewClassNameId = previewClassNameId;
+	}
+
 	public void setPreviewClassPK(long previewClassPK) {
 		_previewClassPK = previewClassPK;
 	}
@@ -85,16 +114,28 @@ public class DefaultFragmentRendererContext implements FragmentRendererContext {
 		_previewType = previewType;
 	}
 
+	public void setPreviewVersion(String previewVersion) {
+		_previewVersion = previewVersion;
+	}
+
 	public void setSegmentsExperienceIds(long[] segmentsExperienceIds) {
 		_segmentsExperienceIds = segmentsExperienceIds;
 	}
 
+	public void setUseCachedContent(boolean useCachedContent) {
+		_useCachedContent = useCachedContent;
+	}
+
+	private Object _displayObject;
 	private Map<String, Object> _fieldValues;
 	private final FragmentEntryLink _fragmentEntryLink;
 	private Locale _locale = LocaleUtil.getMostRelevantLocale();
 	private String _mode = FragmentEntryLinkConstants.VIEW;
+	private long _previewClassNameId;
 	private long _previewClassPK;
 	private int _previewType;
+	private String _previewVersion;
 	private long[] _segmentsExperienceIds = new long[0];
+	private boolean _useCachedContent = true;
 
 }

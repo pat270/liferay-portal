@@ -28,11 +28,12 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 	</portlet:resourceURL>
 
 	<aui:script>
-		(function() {
+		(function () {
 			var TIME_POLLING = 500;
 			var TIME_SHOW_MSG = 2000;
 
-			var defaultError = '<liferay-ui:message key="an-unexpected-error-occurred" />';
+			var defaultError =
+				'<liferay-ui:message key="an-unexpected-error-occurred" />';
 			var dialogId = '<portlet:namespace />LoadingDialog';
 
 			var isTimeConsumed = false;
@@ -41,20 +42,10 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 
 			showStatusMessage = Liferay.lazyLoad(
 				'frontend-js-web/liferay/toast/commands/OpenToast.es',
-				function(toastCommands, data) {
+				function (toastCommands, data) {
 					toastCommands.openToast(data);
 				}
 			);
-
-			function showError(message) {
-				showStatusMessage(
-					{
-						message: message,
-						title: '<liferay-ui:message key="error" />:',
-						type: 'danger'
-					}
-				);
-			}
 
 			function navigate() {
 				if (url && isTimeConsumed) {
@@ -63,28 +54,21 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 			}
 
 			function polling() {
-				fetch(
-					'<%= googleDriveBackgroundTaskStatusURL %>',
-					{
-						credentials: 'include',
-						method: 'POST'
-					}
-				)
-				.then(
-					function(response) {
+				Liferay.Util.fetch('<%= googleDriveBackgroundTaskStatusURL %>', {
+					method: 'POST',
+				})
+					.then(function (response) {
 						if (!response.ok) {
 							throw defaultError;
 						}
 
 						return response.json();
-					}
-				)
-				.then(
-					function(response) {
+					})
+					.then(function (response) {
 						if (response.complete) {
-								url = response.googleDocsEditURL;
+							url = response.googleDocsEditURL;
 
-								navigate();
+							navigate();
 						}
 						else if (response.error) {
 							throw defaultError;
@@ -92,15 +76,19 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 						else {
 							setTimeout(polling, TIME_POLLING);
 						}
-					}
-				)
-				.catch(
-					function(error) {
+					})
+					.catch(function (error) {
 						showError(error);
 
 						Liferay.Util.getWindow(dialogId).hide();
-					}
-				);
+					});
+			}
+
+			function showError(message) {
+				showStatusMessage({
+					message: message,
+					type: 'danger',
+				});
 			}
 
 			<%
@@ -108,7 +96,7 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 
 			String cmd = ParamUtil.getString(request, Constants.CMD);
 
-			if (cmd.equals(DLOpenerGoogleDriveWebConstants.GOOGLE_DRIVE_ADD)) {
+			if (cmd.equals(Constants.ADD)) {
 				messageKey = "you-are-being-redirected-to-an-external-editor-to-create-this-document";
 			}
 			%>
@@ -117,29 +105,26 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 				{
 					id: dialogId,
 					dialog: {
-						bodyContent: '<p><liferay-ui:message key="<%= messageKey %>" /></p><div aria-hidden="true" class="loading-animation"></div>',
+						bodyContent:
+							'<p><liferay-ui:message key="<%= messageKey %>" /></p><div aria-hidden="true" class="loading-animation"></div>',
 						cssClass: 'google-docs-redirect-modal',
 						height: 172,
 						modal: true,
 						resizable: false,
 						title: '',
-						width: 320
-					}
+						width: 320,
+					},
 				},
-				function() {
+				function () {
 					setTimeout(polling, TIME_POLLING);
 
-					setTimeout(
-						function() {
-							isTimeConsumed = true;
+					setTimeout(function () {
+						isTimeConsumed = true;
 
-							navigate();
-						},
-						TIME_SHOW_MSG
-					);
+						navigate();
+					}, TIME_SHOW_MSG);
 				}
 			);
-
 		})();
 	</aui:script>
 </c:if>

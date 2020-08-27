@@ -31,8 +31,9 @@ import com.liferay.calendar.web.internal.search.CalendarResourceSearch;
 import com.liferay.calendar.web.internal.security.permission.resource.CalendarPermission;
 import com.liferay.calendar.web.internal.security.permission.resource.CalendarPortletPermission;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
 import com.liferay.petra.string.StringBundler;
@@ -115,24 +116,21 @@ public class CalendarDisplayContext {
 			return null;
 		}
 
-		return new CreationMenu() {
-			{
+		return CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
 				HttpServletRequest httpServletRequest =
 					PortalUtil.getHttpServletRequest(_renderRequest);
 
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							_renderResponse.createRenderURL(), "mvcPath",
-							"/edit_calendar_resource.jsp", "redirect",
-							PortalUtil.getCurrentURL(httpServletRequest));
+				dropdownItem.setHref(
+					_renderResponse.createRenderURL(), "mvcPath",
+					"/edit_calendar_resource.jsp", "redirect",
+					PortalUtil.getCurrentURL(httpServletRequest));
 
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								httpServletRequest, "add-calendar-resource"));
-					});
+				dropdownItem.setLabel(
+					LanguageUtil.get(
+						httpServletRequest, "add-calendar-resource"));
 			}
-		};
+		).build();
 	}
 
 	public Calendar getDefaultCalendar(
@@ -202,25 +200,20 @@ public class CalendarDisplayContext {
 	public List<DropdownItem> getFilterItemsDropdownItems() {
 		HttpServletRequest httpServletRequest = _themeDisplay.getRequest();
 
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getFilterActiveDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(httpServletRequest, "active"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getScopeDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(httpServletRequest, "scope"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					getFilterActiveDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "active"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(getScopeDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "scope"));
+			}
+		).build();
 	}
 
 	public String getKeywords() {
@@ -290,7 +283,7 @@ public class CalendarDisplayContext {
 			try {
 				calendar = _calendarService.fetchCalendar(calendarId);
 			}
-			catch (PrincipalException pe) {
+			catch (PrincipalException principalException) {
 				if (_log.isInfoEnabled()) {
 					StringBundler sb = new StringBundler(4);
 
@@ -299,7 +292,7 @@ public class CalendarDisplayContext {
 					sb.append(" permission for user ");
 					sb.append(user.getUserId());
 
-					_log.info(sb.toString(), pe);
+					_log.info(sb.toString(), principalException);
 				}
 
 				continue;
@@ -317,9 +310,6 @@ public class CalendarDisplayContext {
 
 			Group scopeGroup = _themeDisplay.getScopeGroup();
 
-			long scopeGroupId = scopeGroup.getGroupId();
-			long scopeLiveGroupId = scopeGroup.getLiveGroupId();
-
 			Group calendarGroup = _groupLocalService.getGroup(
 				calendar.getGroupId());
 
@@ -327,14 +317,14 @@ public class CalendarDisplayContext {
 				long calendarGroupId = calendarGroup.getGroupId();
 
 				if (calendarGroup.isStagingGroup()) {
-					if (scopeGroupId != calendarGroupId) {
+					if (scopeGroup.getGroupId() != calendarGroupId) {
 						calendar =
 							_calendarLocalService.fetchCalendarByUuidAndGroupId(
 								calendar.getUuid(),
 								calendarGroup.getLiveGroupId());
 					}
 				}
-				else if (scopeLiveGroupId == calendarGroupId) {
+				else if (scopeGroup.getLiveGroupId() == calendarGroupId) {
 					Group stagingGroup = calendarGroup.getStagingGroup();
 
 					calendar =
@@ -421,60 +411,48 @@ public class CalendarDisplayContext {
 		CalendarResourceDisplayTerms displayTerms =
 			new CalendarResourceDisplayTerms(_renderRequest);
 
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(displayTerms.isActive());
-						dropdownItem.setHref(getPortletURL(), "active", "true");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_themeDisplay.getRequest(), "yes"));
-					});
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(!displayTerms.isActive());
-						dropdownItem.setHref(
-							getPortletURL(), "active", "false");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_themeDisplay.getRequest(), "no"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(displayTerms.isActive());
+				dropdownItem.setHref(getPortletURL(), "active", "true");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_themeDisplay.getRequest(), "yes"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(!displayTerms.isActive());
+				dropdownItem.setHref(getPortletURL(), "active", "false");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_themeDisplay.getRequest(), "no"));
+			}
+		).build();
 	}
 
 	protected List<DropdownItem> getScopeDropdownItems() {
 		CalendarResourceDisplayTerms displayTerms =
 			new CalendarResourceDisplayTerms(_renderRequest);
 
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							displayTerms.getScope() ==
-								_themeDisplay.getScopeGroupId());
-						dropdownItem.setHref(
-							getPortletURL(), "scope",
-							_themeDisplay.getScopeGroupId());
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_themeDisplay.getRequest(), "current"));
-					});
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							displayTerms.getScope() ==
-								_themeDisplay.getCompanyGroupId());
-						dropdownItem.setHref(
-							getPortletURL(), "scope",
-							_themeDisplay.getCompanyGroupId());
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_themeDisplay.getRequest(), "global"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					displayTerms.getScope() == _themeDisplay.getScopeGroupId());
+				dropdownItem.setHref(
+					getPortletURL(), "scope", _themeDisplay.getScopeGroupId());
+				dropdownItem.setLabel(
+					LanguageUtil.get(_themeDisplay.getRequest(), "current"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					displayTerms.getScope() ==
+						_themeDisplay.getCompanyGroupId());
+				dropdownItem.setHref(
+					getPortletURL(), "scope",
+					_themeDisplay.getCompanyGroupId());
+				dropdownItem.setLabel(
+					LanguageUtil.get(_themeDisplay.getRequest(), "global"));
+			}
+		).build();
 	}
 
 	protected boolean hasResults() {

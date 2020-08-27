@@ -19,6 +19,7 @@ import com.liferay.item.selector.web.internal.FlickrItemSelectorCriterion;
 import com.liferay.item.selector.web.internal.TestFileEntryItemSelectorReturnType;
 import com.liferay.item.selector.web.internal.TestStringItemSelectorReturnType;
 import com.liferay.item.selector.web.internal.TestURLItemSelectorReturnType;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -62,13 +63,13 @@ public class ItemSelectorCriterionSerializerImplTest {
 		String json = _stubItemSelectorCriterionSerializerImpl.serialize(
 			_flickrItemSelectorCriterion);
 
-		Class<? extends ItemSelectorReturnType>
-			testURLItemSelectorReturnTypeClass =
-				_testURLItemSelectorReturnType.getClass();
+		String itemSelectorReturnTypeKey =
+			ItemSelectorKeyUtil.getItemSelectorReturnTypeKey(
+				TestURLItemSelectorReturnType.class);
 
 		json = _assert(
 			"\"desiredItemSelectorReturnTypes\":\"" +
-				testURLItemSelectorReturnTypeClass.getName() + "\"",
+				itemSelectorReturnTypeKey + "\"",
 			json);
 
 		json = _assert("\"tags\":[\"me\",\"photo\",\"picture\"]", json);
@@ -83,10 +84,10 @@ public class ItemSelectorCriterionSerializerImplTest {
 			testURLItemSelectorReturnTypeClass =
 				_testURLItemSelectorReturnType.getClass();
 
-		String json =
-			"{\"desiredItemSelectorReturnTypes\":\"" +
-				testURLItemSelectorReturnTypeClass.getName() + "\",\"tags\":" +
-					"[\"tag1\",\"tag2\",\"tag3\"],\"user\":\"Joe Bloggs\"}";
+		String json = StringBundler.concat(
+			"{\"desiredItemSelectorReturnTypes\":\"",
+			testURLItemSelectorReturnTypeClass.getName(), "\",\"tags\":",
+			"[\"tag1\",\"tag2\",\"tag3\"],\"user\":\"Joe Bloggs\"}");
 
 		_flickrItemSelectorCriterion =
 			_stubItemSelectorCriterionSerializerImpl.deserialize(
@@ -99,7 +100,7 @@ public class ItemSelectorCriterionSerializerImplTest {
 			_flickrItemSelectorCriterion.getTags());
 
 		Assert.assertEquals(
-			ListUtil.toList(_testURLItemSelectorReturnType),
+			ListUtil.fromArray(_testURLItemSelectorReturnType),
 			_flickrItemSelectorCriterion.getDesiredItemSelectorReturnTypes());
 	}
 

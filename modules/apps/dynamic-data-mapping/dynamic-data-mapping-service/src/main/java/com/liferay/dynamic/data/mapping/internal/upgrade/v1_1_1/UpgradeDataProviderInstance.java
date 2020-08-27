@@ -14,8 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.internal.upgrade.v1_1_1;
 
-import com.liferay.dynamic.data.mapping.data.provider.DDMDataProvider;
-import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderTracker;
+import com.liferay.dynamic.data.mapping.data.provider.settings.DDMDataProviderSettingsProvider;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
@@ -28,10 +27,12 @@ import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
+import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
+import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -49,11 +50,13 @@ import java.util.Map;
 public class UpgradeDataProviderInstance extends UpgradeProcess {
 
 	public UpgradeDataProviderInstance(
-		DDMDataProviderTracker ddmDataProviderTracker,
+		ServiceTrackerMap<String, DDMDataProviderSettingsProvider>
+			ddmDataProviderSettingsProviderServiceTracker,
 		DDMFormValuesDeserializer ddmFormValuesDeserializer,
 		DDMFormValuesSerializer ddmFormValuesSerializer) {
 
-		_ddmDataProviderTracker = ddmDataProviderTracker;
+		_ddmDataProviderSettingsProviderServiceTracker =
+			ddmDataProviderSettingsProviderServiceTracker;
 		_ddmFormValuesDeserializer = ddmFormValuesDeserializer;
 		_ddmFormValuesSerializer = ddmFormValuesSerializer;
 	}
@@ -192,7 +195,9 @@ public class UpgradeDataProviderInstance extends UpgradeProcess {
 		return sb.toString();
 	}
 
-	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
+	protected DDMFormValues deserialize(String content, DDMForm ddmForm)
+		throws Exception {
+
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
@@ -200,6 +205,13 @@ public class UpgradeDataProviderInstance extends UpgradeProcess {
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
 				_ddmFormValuesDeserializer.deserialize(builder.build());
+
+		Exception exception =
+			ddmFormValuesDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -249,14 +261,16 @@ public class UpgradeDataProviderInstance extends UpgradeProcess {
 	}
 
 	protected String upgradeDataProviderInstanceDefinition(
-		String dataProviderInstanceDefinition, String type) {
+			String dataProviderInstanceDefinition, String type)
+		throws Exception {
 
-		DDMDataProvider ddmDataProvider =
-			_ddmDataProviderTracker.getDDMDataProvider(type);
+		DDMDataProviderSettingsProvider ddmDataProviderSettingsProvider =
+			_ddmDataProviderSettingsProviderServiceTracker.getService(type);
 
 		DDMFormValues ddmFormValues = deserialize(
 			dataProviderInstanceDefinition,
-			DDMFormFactory.create(ddmDataProvider.getSettings()));
+			DDMFormFactory.create(
+				ddmDataProviderSettingsProvider.getSettings()));
 
 		addDefaultInputParameters(ddmFormValues);
 
@@ -275,7 +289,8 @@ public class UpgradeDataProviderInstance extends UpgradeProcess {
 	private static final String _DEFAULT_OUTPUT_PARAMETER_NAME =
 		"Default-Output";
 
-	private final DDMDataProviderTracker _ddmDataProviderTracker;
+	private final ServiceTrackerMap<String, DDMDataProviderSettingsProvider>
+		_ddmDataProviderSettingsProviderServiceTracker;
 	private final DDMFormValuesDeserializer _ddmFormValuesDeserializer;
 	private final DDMFormValuesSerializer _ddmFormValuesSerializer;
 

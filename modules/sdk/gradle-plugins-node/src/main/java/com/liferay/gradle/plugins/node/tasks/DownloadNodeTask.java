@@ -15,6 +15,7 @@
 package com.liferay.gradle.plugins.node.tasks;
 
 import com.liferay.gradle.plugins.node.internal.NodeExecutor;
+import com.liferay.gradle.plugins.node.internal.util.DigestUtil;
 import com.liferay.gradle.plugins.node.internal.util.FileUtil;
 import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.node.internal.util.NodePluginUtil;
@@ -25,11 +26,13 @@ import com.liferay.gradle.util.copy.StripPathSegmentsAction;
 import java.io.File;
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.gradle.api.Action;
 import org.gradle.api.AntBuilder;
@@ -38,6 +41,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
@@ -46,6 +50,7 @@ import org.gradle.api.tasks.TaskAction;
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class DownloadNodeTask extends DefaultTask {
 
 	public DownloadNodeTask() {
@@ -56,9 +61,9 @@ public class DownloadNodeTask extends DefaultTask {
 
 				@Override
 				public boolean isSatisfiedBy(Task task) {
-					File nodeDir = getNodeDir();
+					String oldDigest = DigestUtil.getDigest(_getDigestFile());
 
-					if ((nodeDir != null) && nodeDir.exists()) {
+					if (Objects.equals(oldDigest, _getDigest())) {
 						return false;
 					}
 
@@ -127,6 +132,27 @@ public class DownloadNodeTask extends DefaultTask {
 				});
 		}
 
+		String yarnUrl = getYarnUrl();
+
+		final File yarnDir = NodePluginUtil.getYarnDir(nodeDir);
+
+		if (Validator.isNotNull(yarnUrl)) {
+			final File yarnFile = _download(yarnUrl, null);
+
+			project.delete(yarnDir);
+
+			project.copy(
+				new Action<CopySpec>() {
+
+					@Override
+					public void execute(CopySpec copySpec) {
+						copySpec.from(yarnFile);
+						copySpec.into(yarnDir);
+					}
+
+				});
+		}
+
 		if (!OSDetector.isWindows()) {
 			File binDir = new File(nodeDir, "bin");
 
@@ -140,6 +166,11 @@ public class DownloadNodeTask extends DefaultTask {
 
 			Files.createSymbolicLink(linkPath, linkTargetFile.toPath());
 		}
+
+		String digest = _getDigest();
+		File digestFile = _getDigestFile();
+
+		FileUtil.write(digestFile, digest.getBytes(StandardCharsets.UTF_8));
 	}
 
 	@OutputDirectory
@@ -158,6 +189,12 @@ public class DownloadNodeTask extends DefaultTask {
 		return GradleUtil.toString(_npmUrl);
 	}
 
+	@Input
+	@Optional
+	public String getYarnUrl() {
+		return GradleUtil.toString(_yarnUrl);
+	}
+
 	public void setNodeDir(Object nodeDir) {
 		_nodeExecutor.setNodeDir(nodeDir);
 	}
@@ -168,6 +205,10 @@ public class DownloadNodeTask extends DefaultTask {
 
 	public void setNpmUrl(Object npmUrl) {
 		_npmUrl = npmUrl;
+	}
+
+	public void setYarnUrl(Object yarnUrl) {
+		_yarnUrl = yarnUrl;
 	}
 
 	private File _download(String url, File destinationFile)
@@ -204,8 +245,17 @@ public class DownloadNodeTask extends DefaultTask {
 		return FileUtil.get(getProject(), url, destinationFile);
 	}
 
+	private String _getDigest() {
+		return DigestUtil.getDigest(getNodeUrl(), getNpmUrl(), getYarnUrl());
+	}
+
+	private File _getDigestFile() {
+		return new File(getNodeDir(), ".digest");
+	}
+
 	private final NodeExecutor _nodeExecutor;
 	private Object _nodeUrl;
 	private Object _npmUrl;
+	private Object _yarnUrl;
 
 }

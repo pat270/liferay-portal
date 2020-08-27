@@ -65,13 +65,13 @@ public class LiferayWorkflowLocalRepositoryWrapper
 	@Override
 	public FileEntry addFileEntry(
 			long userId, long folderId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog, InputStream is,
-			long size, ServiceContext serviceContext)
+			String title, String description, String changeLog,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.addFileEntry(
 			userId, folderId, sourceFileName, mimeType, title, description,
-			changeLog, is, size, serviceContext);
+			changeLog, inputStream, size, serviceContext);
 
 		DLAppHelperLocalServiceUtil.updateAsset(
 			userId, fileEntry, fileEntry.getFileVersion(),
@@ -95,10 +95,9 @@ public class LiferayWorkflowLocalRepositoryWrapper
 			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
 			serviceContext);
 
-		FileEntry fileEntry = super.getFileEntry(fileEntryId);
-
 		_workflowSupport.checkInFileEntry(
-			userId, fileEntry, dlVersionNumberIncrease, serviceContext);
+			userId, super.getFileEntry(fileEntryId), dlVersionNumberIncrease,
+			serviceContext);
 	}
 
 	@Override
@@ -109,10 +108,9 @@ public class LiferayWorkflowLocalRepositoryWrapper
 
 		super.checkInFileEntry(userId, fileEntryId, lockUuid, serviceContext);
 
-		FileEntry fileEntry = super.getFileEntry(fileEntryId);
-
 		_workflowSupport.checkInFileEntry(
-			userId, fileEntry, DLVersionNumberIncrease.MINOR, serviceContext);
+			userId, super.getFileEntry(fileEntryId),
+			DLVersionNumberIncrease.MINOR, serviceContext);
 	}
 
 	@Override
@@ -143,9 +141,8 @@ public class LiferayWorkflowLocalRepositoryWrapper
 
 		super.revertFileEntry(userId, fileEntryId, version, serviceContext);
 
-		FileEntry fileEntry = super.getFileEntry(fileEntryId);
-
-		_workflowSupport.revertFileEntry(userId, fileEntry, serviceContext);
+		_workflowSupport.revertFileEntry(
+			userId, super.getFileEntry(fileEntryId), serviceContext);
 	}
 
 	@Override
@@ -170,13 +167,14 @@ public class LiferayWorkflowLocalRepositoryWrapper
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, inputStream, size,
+			serviceContext);
 
 		_workflowSupport.updateFileEntry(
 			userId, fileEntry, dlVersionNumberIncrease, serviceContext);

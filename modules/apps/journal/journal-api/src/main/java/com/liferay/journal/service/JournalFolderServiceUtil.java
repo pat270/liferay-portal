@@ -14,7 +14,6 @@
 
 package com.liferay.journal.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see JournalFolderService
  * @generated
  */
-@ProviderType
 public class JournalFolderServiceUtil {
 
 	/*
@@ -124,35 +122,37 @@ public class JournalFolderServiceUtil {
 
 	public static java.util.List<Object> getFoldersAndArticles(
 		long groupId, long folderId, int status, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
 
 		return getService().getFoldersAndArticles(
-			groupId, folderId, status, start, end, obc);
+			groupId, folderId, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<Object> getFoldersAndArticles(
 		long groupId, long folderId, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
 
 		return getService().getFoldersAndArticles(
-			groupId, folderId, start, end, obc);
+			groupId, folderId, start, end, orderByComparator);
 	}
 
 	public static java.util.List<Object> getFoldersAndArticles(
 		long groupId, long userId, long folderId, int status, int start,
-		int end, com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
 
 		return getService().getFoldersAndArticles(
-			groupId, userId, folderId, status, start, end, obc);
+			groupId, userId, folderId, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<Object> getFoldersAndArticles(
 		long groupId, long userId, long folderId, int status,
 		java.util.Locale locale, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
 
 		return getService().getFoldersAndArticles(
-			groupId, userId, folderId, status, locale, start, end, obc);
+			groupId, userId, folderId, status, locale, start, end,
+			orderByComparator);
 	}
 
 	public static int getFoldersAndArticlesCount(
@@ -197,17 +197,6 @@ public class JournalFolderServiceUtil {
 	 */
 	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getSubfolderIds(List, long, long, boolean)}
-	 */
-	@Deprecated
-	public static void getSubfolderIds(
-		java.util.List<Long> folderIds, long groupId, long folderId) {
-
-		getService().getSubfolderIds(folderIds, groupId, folderId);
 	}
 
 	public static void getSubfolderIds(
@@ -261,12 +250,12 @@ public class JournalFolderServiceUtil {
 					int restrictionType, String keywords, int start, int end,
 					com.liferay.portal.kernel.util.OrderByComparator
 						<com.liferay.dynamic.data.mapping.model.DDMStructure>
-							obc)
+							orderByComparator)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().searchDDMStructures(
 			companyId, groupIds, folderId, restrictionType, keywords, start,
-			end, obc);
+			end, orderByComparator);
 	}
 
 	public static void subscribe(long groupId, long folderId)

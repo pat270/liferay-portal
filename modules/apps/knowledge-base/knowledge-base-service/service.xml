@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
-<service-builder auto-namespace-tables="false" package-path="com.liferay.knowledge.base">
+<service-builder auto-namespace-tables="false" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.knowledge.base">
 	<namespace>KB</namespace>
 	<entity local-service="true" name="KBArticle" remote-service="true" uuid="true">
 
@@ -38,7 +38,6 @@
 		<column name="description" type="String" />
 		<column name="priority" type="double" />
 		<column name="sections" type="String" />
-		<column name="viewCount" type="int" />
 		<column name="latest" type="boolean" />
 		<column name="main" type="boolean" />
 		<column name="sourceURL" type="String" />

@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMFormInstanceRecordVersion
  * @generated
  */
-@ProviderType
 public class DDMFormInstanceRecordVersionWrapper
 	extends BaseModelWrapper<DDMFormInstanceRecordVersion>
 	implements DDMFormInstanceRecordVersion,
@@ -48,6 +47,8 @@ public class DDMFormInstanceRecordVersionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put(
 			"formInstanceRecordVersionId", getFormInstanceRecordVersionId());
 		attributes.put("groupId", getGroupId());
@@ -59,17 +60,29 @@ public class DDMFormInstanceRecordVersionWrapper
 		attributes.put("formInstanceVersion", getFormInstanceVersion());
 		attributes.put("formInstanceRecordId", getFormInstanceRecordId());
 		attributes.put("version", getVersion());
+		attributes.put("storageId", getStorageId());
 		attributes.put("status", getStatus());
 		attributes.put("statusByUserId", getStatusByUserId());
 		attributes.put("statusByUserName", getStatusByUserName());
 		attributes.put("statusDate", getStatusDate());
-		attributes.put("storageId", getStorageId());
 
 		return attributes;
 	}
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long formInstanceRecordVersionId = (Long)attributes.get(
 			"formInstanceRecordVersionId");
 
@@ -133,6 +146,12 @@ public class DDMFormInstanceRecordVersionWrapper
 			setVersion(version);
 		}
 
+		Long storageId = (Long)attributes.get("storageId");
+
+		if (storageId != null) {
+			setStorageId(storageId);
+		}
+
 		Integer status = (Integer)attributes.get("status");
 
 		if (status != null) {
@@ -156,12 +175,6 @@ public class DDMFormInstanceRecordVersionWrapper
 		if (statusDate != null) {
 			setStatusDate(statusDate);
 		}
-
-		Long storageId = (Long)attributes.get("storageId");
-
-		if (storageId != null) {
-			setStorageId(storageId);
-		}
 	}
 
 	/**
@@ -182,6 +195,16 @@ public class DDMFormInstanceRecordVersionWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this ddm form instance record version.
+	 *
+	 * @return the ct collection ID of this ddm form instance record version
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	@Override
@@ -261,6 +284,16 @@ public class DDMFormInstanceRecordVersionWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this ddm form instance record version.
+	 *
+	 * @return the mvcc version of this ddm form instance record version
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -479,6 +512,16 @@ public class DDMFormInstanceRecordVersionWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this ddm form instance record version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm form instance record version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the form instance ID of this ddm form instance record version.
 	 *
 	 * @param formInstanceId the form instance ID of this ddm form instance record version
@@ -528,6 +571,16 @@ public class DDMFormInstanceRecordVersionWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm form instance record version.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm form instance record version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -638,6 +691,20 @@ public class DDMFormInstanceRecordVersionWrapper
 	@Override
 	public void setVersion(String version) {
 		model.setVersion(version);
+	}
+
+	@Override
+	public Map<String, Function<DDMFormInstanceRecordVersion, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMFormInstanceRecordVersion, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

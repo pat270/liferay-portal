@@ -20,8 +20,8 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -33,7 +33,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.subscriptions.test.BaseSubscriptionClassTypeTestCase;
+import com.liferay.subscription.test.util.BaseSubscriptionClassTypeTestCase;
 
 import java.util.List;
 
@@ -72,7 +72,7 @@ public class JournalSubscriptionClassTypeTest
 		serviceContext.setLayoutFullURL("http://layout_url");
 
 		JournalArticle article = JournalTestUtil.addArticleWithXMLContent(
-			containerId, JournalArticleConstants.CLASSNAME_ID_DEFAULT,
+			containerId, JournalArticleConstants.CLASS_NAME_ID_DEFAULT,
 			"<title>Test Article</title>", ddmStructure.getStructureKey(),
 			ddmTemplate.getTemplateKey(), LocaleUtil.getSiteDefault(), null,
 			serviceContext);

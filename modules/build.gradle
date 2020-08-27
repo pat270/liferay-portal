@@ -1,5 +1,3 @@
-import com.liferay.gradle.plugins.node.tasks.ExecuteNpmTask
-import com.liferay.gradle.plugins.node.tasks.NpmRunTask
 import com.liferay.gradle.util.FileUtil
 import com.liferay.gradle.util.GradleUtil
 import com.liferay.gradle.util.copy.StripPathSegmentsAction
@@ -15,36 +13,67 @@ import org.gradle.plugins.ide.eclipse.model.Classpath
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.EclipseClasspath
 import org.gradle.plugins.ide.eclipse.model.EclipseModel
+import org.gradle.util.GUtil
 
 buildscript {
 	apply from: rootProject.file("build-buildscript.gradle"), to: buildscript
 }
 
+apply plugin: "com.liferay.yarn.defaults.plugin"
+
 ext {
 	projectTemplateTokens = [
-		"biz.aQute.bnd.version": "3.5.0",
-		"com.liferay.ant.bnd.version": "3.0.7",
-		"com.liferay.css.builder.version": "2.1.3",
-		"com.liferay.gradle.plugins.css.builder.version": "2.2.6",
-		"com.liferay.gradle.plugins.theme.builder.version": "2.0.6",
-		"com.liferay.gradle.plugins.version": "3.13.196",
-		"com.liferay.gradle.plugins.workspace.version": "2.0.2",
-		"com.liferay.portal.tools.bundle.support.version": "3.4.2",
-		"com.liferay.portal.tools.service.builder.version": "1.0.286",
+		"biz.aQute.bnd.version": "4.3.0",
+		"com.liferay.ant.bnd.version": "3.2.6",
+		"com.liferay.css.builder.version": "3.0.2",
+		"com.liferay.gradle.plugins.css.builder.version": "3.0.3",
+		"com.liferay.gradle.plugins.theme.builder.version": "2.0.7",
+		"com.liferay.gradle.plugins.version": "11.0.26",
+		"com.liferay.gradle.plugins.workspace.version": "3.0.7",
+		"com.liferay.portal.tools.bundle.support.version": "3.7.1",
+		"com.liferay.portal.tools.service.builder.version": "1.0.356",
+		"com.liferay.portal.tools.rest.builder.version": "1.0.114",
 		"com.liferay.portal.tools.soy.builder.version": "3.0.4",
-		"com.liferay.portal.tools.theme.builder.version": "1.1.7"
+		"com.liferay.portal.tools.theme.builder.version": "1.1.8",
+		"com.liferay.portal.vulcan.api.version": "7.7.1"
 	]
+}
+
+task portalYarnCheckFormat
+task portalYarnFormat
+task portalYarnInstall
+
+if (Boolean.getBoolean("gradle.build.scan.enabled")) {
+	apply plugin: "com.gradle.build-scan"
+
+	buildScan {
+		allowUntrustedServer = true
+		captureTaskInputFiles = true
+		server = System.getProperty("gradle.build.scan.server.url") ?: null
+
+		publishAlwaysIf true
+		tag System.getenv("JENKINS_HOME") ? "CI" : "LOCAL"
+
+		if (System.getProperty("gradle.build.scan.tag")) {
+			tag System.getProperty("gradle.build.scan.tag")
+		}
+
+		if (!System.getProperty("gradle.build.scan.server.url")) {
+			termsOfServiceAgree = "yes"
+			termsOfServiceUrl = "https://gradle.com/terms-of-service"
+		}
+	}
 }
 
 Set<File> bndPrintJarFiles = null
 
-if (Boolean.getBoolean("build.bnd.print.enabled") && System.getenv("JENKINS_HOME")) {
+if (Boolean.getBoolean("build.bnd.print.enabled")) {
 	configurations {
 		bnd
 	}
 
 	dependencies {
-		bnd group: "biz.aQute.bnd", name: "biz.aQute.bnd", version: "3.5.0"
+		bnd group: "biz.aQute.bnd", name: "biz.aQute.bnd", version: "4.3.0"
 	}
 
 	repositories {
@@ -56,9 +85,31 @@ if (Boolean.getBoolean("build.bnd.print.enabled") && System.getenv("JENKINS_HOME
 	bndPrintJarFiles = new ConcurrentSkipListSet<File>()
 }
 
+if (FileUtil.exists(rootProject, "private/yarn.lock")) {
+	gradle.beforeProject {
+		if (it.path.equals(":private")) {
+			configure(it) {
+				apply plugin: "com.liferay.yarn.defaults.plugin"
+			}
+		}
+	}
+
+	portalYarnCheckFormat {
+		dependsOn ":private:packageRunCheckFormat"
+	}
+
+	portalYarnFormat {
+		dependsOn ":private:packageRunFormat"
+	}
+
+	portalYarnInstall {
+		dependsOn ":private:yarnInstall"
+	}
+}
+
 buildDir = new File(rootDir.parentFile, "build")
 
-for (String gradleVersion in ["2.5", "2.14", "4.10.2"]) {
+for (String gradleVersion in ["5.6.4"]) {
 	String gradleDistributionURL = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 	String suffix = gradleVersion.replace(".", "")
 
@@ -91,6 +142,18 @@ for (String gradleVersion in ["2.5", "2.14", "4.10.2"]) {
 		includeEmptyDirs = false
 		into new File(buildDir, "gradle-${gradleVersion}-sources")
 	}
+}
+
+portalYarnCheckFormat {
+	dependsOn ":packageRunCheckFormat"
+}
+
+portalYarnFormat {
+	dependsOn ":packageRunFormat"
+}
+
+portalYarnInstall {
+	dependsOn ":yarnInstall"
 }
 
 gradle.beforeProject {
@@ -142,6 +205,56 @@ gradle.beforeProject {
 			}
 		}
 
+		if (project.path.startsWith(":sdk:project-templates:project-templates")) {
+			File mavenWrapperPropertiesFile = project.project(":sdk:project-templates:project-templates").file("src/main/resources/maven-wrapper/.mvn/wrapper/maven-wrapper.properties")
+
+			Properties mavenWrapperProperties = GUtil.loadProperties(mavenWrapperPropertiesFile)
+
+			String mavenDistributionVersion = mavenWrapperProperties["distributionUrl"]
+
+			mavenDistributionVersion = mavenDistributionVersion.find(/\d+\.\d+\.\d+/)
+
+			configurations {
+				mavenDistribution
+			}
+
+			dependencies {
+				mavenDistribution classifier: "bin", ext: "zip", group: "org.apache.maven", name: "apache-maven", version: mavenDistributionVersion
+			}
+
+			test {
+				doFirst {
+					Properties gradleWrapperProperties = new Properties()
+
+					File gradleWrapperPropertiesFile = project.project(":sdk:project-templates:project-templates").file("src/main/resources/gradle-wrapper/gradle/wrapper/gradle-wrapper.properties")
+
+					gradleWrapperPropertiesFile.withInputStream {
+						gradleWrapperProperties.load it
+					}
+
+					String gradleDistributionUrl = gradleWrapperProperties["distributionUrl"]
+
+					File gradleDistributionFile = FileUtil.get(project, gradleDistributionUrl)
+
+					systemProperty "gradle.distribution", uri(gradleDistributionFile)
+					systemProperty "maven.distribution.file.name", configurations.mavenDistribution.singleFile
+				}
+
+				jvmArgs "-XX:MaxMetaspaceSize=256m"
+				maxHeapSize = "1024m"
+
+				systemProperty "http.proxyHost", System.properties["http.proxyHost"]
+				systemProperty "http.proxyPort", System.properties["http.proxyPort"]
+				systemProperty "maven.debug", System.properties["maven.debug"]
+				systemProperty "maven.repo.local", System.properties["maven.repo.local"]
+				systemProperty "nodejs.npm.ci.registry", project.findProperty("nodejs.npm.ci.registry")
+				systemProperty "nodejs.npm.ci.sass.binary.site", project.findProperty("nodejs.npm.ci.sass.binary.site")
+				systemProperty "project.templates.test.builds", project.findProperty("project.templates.test.builds")
+				systemProperty "repository.url", System.properties["repository.url"]
+				systemProperty "test.debug.bundle.diffs", System.properties["test.debug.bundle.diffs"]
+			}
+		}
+
 		if (project.path.startsWith(":sdk:project-templates:project-templates-")) {
 			task generateSampleProject(type:JavaExec)
 
@@ -189,6 +302,12 @@ gradle.beforeProject {
 			}
 		}
 
+		if (project.path.startsWith(":third-party:")) {
+			bundle {
+				instruction "-includeresource.thirdparty", "-classes"
+			}
+		}
+
 		pluginManager.withPlugin("com.liferay.ant.plugin") {
 			task buildLang(dependsOn: "build-lang")
 
@@ -205,6 +324,20 @@ gradle.beforeProject {
 			}
 		}
 
+		pluginManager.withPlugin("com.liferay.baseline") {
+			if (project.path.startsWith(":third-party:")) {
+				baseline {
+					enabled = false
+				}
+			}
+		}
+
+		pluginManager.withPlugin("com.liferay.css.builder") {
+			buildCSS {
+				rtlExcludedPathRegexps = [".+"]
+			}
+		}
+
 		pluginManager.withPlugin("com.liferay.js.module.config.generator") {
 			downloadLiferayModuleConfigGenerator {
 				enabled = false
@@ -214,27 +347,6 @@ gradle.beforeProject {
 		pluginManager.withPlugin("com.liferay.js.transpiler") {
 			downloadMetalCli {
 				enabled = false
-			}
-		}
-
-		pluginManager.withPlugin("com.liferay.node") {
-			afterEvaluate {
-				tasks.withType(ExecuteNpmTask) {
-					if (npmInstall.packageLockJsonFile == null) {
-						scriptFile = new File(rootDir, "yarn-1.13.0.js")
-					}
-				}
-
-				tasks.withType(NpmRunTask) {
-					npmCommand = "run"
-				}
-			}
-
-			npmInstall {
-				if (npmInstall.packageLockJsonFile == null) {
-					enabled = false
-					nodeModulesDir = new File(rootDir, "node_modules")
-				}
 			}
 		}
 
@@ -291,12 +403,38 @@ gradle.beforeProject {
 			}
 
 			if (System.getenv("JENKINS_HOME")) {
-				buildCSS {
-					jvmArgs "-Xss4m"
-				}
-
 				startTestableTomcat {
 					deleteLiferayHome = false
+				}
+			}
+		}
+
+		pluginManager.withPlugin("com.liferay.portal.tools.rest.builder") {
+			File dir = new File(rootDir.parentFile, "modules/util/portal-tools-rest-builder")
+
+			if (dir.exists() && !GradleUtil.getProperty(project, "com.liferay.portal.tools.rest.builder.ignore.local", true)) {
+				buildREST {
+					dependsOn ":util:portal-tools-rest-builder:deploy"
+				}
+			}
+		}
+
+		pluginManager.withPlugin("com.liferay.portal.tools.service.builder") {
+			File dir = new File(rootDir.parentFile, "modules/util/portal-tools-service-builder")
+
+			if (dir.exists() && !GradleUtil.getProperty(project, "com.liferay.portal.tools.service.builder.ignore.local", true)) {
+				buildService {
+					dependsOn ":util:portal-tools-service-builder:deploy"
+				}
+			}
+		}
+
+		pluginManager.withPlugin("com.liferay.portal.tools.wsdd.builder") {
+			if (bndPrintJarFiles != null) {
+				buildWSDDJar {
+					doLast {
+						bndPrintJarFiles << archivePath
+					}
 				}
 			}
 		}
@@ -315,6 +453,14 @@ gradle.beforeProject {
 					ProjectDependency projectDependency ->
 
 					"${projectDependency.dependencyProject.path}:eclipse"
+				}
+			}
+		}
+
+		pluginManager.withPlugin("java") {
+			compileJava {
+				outputs.cacheIf {
+					false
 				}
 			}
 		}
@@ -386,6 +532,12 @@ gradle.taskGraph.useFilter {
 		}
 	}
 	else if (task.name == "deploy") {
+		String buildProfile = System.getProperty("build.profile")
+
+		if ((buildProfile != null) && FileUtil.exists(task.project, ".lfrbuild-portal-skip-deploy")) {
+			return false
+		}
+
 		String deployOnlyProfile = System.properties["deploy.only.profile"]
 
 		if (deployOnlyProfile && !FileUtil.exists(task.project, ".lfrbuild-${deployOnlyProfile}")) {

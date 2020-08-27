@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link PollsQuestion}.
@@ -34,10 +32,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PollsQuestion
  * @generated
  */
-@ProviderType
 public class PollsQuestionWrapper
 	extends BaseModelWrapper<PollsQuestion>
-	implements PollsQuestion, ModelWrapper<PollsQuestion> {
+	implements ModelWrapper<PollsQuestion>, PollsQuestion {
 
 	public PollsQuestionWrapper(PollsQuestion pollsQuestion) {
 		super(pollsQuestion);
@@ -47,6 +44,7 @@ public class PollsQuestionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("questionId", getQuestionId());
 		attributes.put("groupId", getGroupId());
@@ -66,6 +64,12 @@ public class PollsQuestionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -304,6 +308,16 @@ public class PollsQuestionWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this polls question.
+	 *
+	 * @return the mvcc version of this polls question
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -624,6 +638,16 @@ public class PollsQuestionWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this polls question.
+	 *
+	 * @param mvccVersion the mvcc version of this polls question
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -22,11 +22,12 @@ import com.liferay.bulk.selection.internal.constants.BulkSelectionBackgroundTask
 import com.liferay.portal.background.task.constants.BackgroundTaskContextMapConstants;
 import com.liferay.portal.background.task.model.BackgroundTask;
 import com.liferay.portal.background.task.service.BackgroundTaskLocalService;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.io.Serializable;
 
@@ -71,34 +72,35 @@ public class BulkSelectionSelectionRunnerImpl implements BulkSelectionRunner {
 			Map<String, Serializable> inputMap)
 		throws PortalException {
 
-		Map<String, Serializable> taskContextMap = new HashMap<>();
-
 		Class<? extends BulkSelectionAction> bulkSelectionActionClass =
 			bulkSelectionAction.getClass();
 
-		taskContextMap.put(
-			BulkSelectionBackgroundTaskConstants.
-				BULK_SELECTION_ACTION_CLASS_NAME,
-			bulkSelectionActionClass.getName());
+		Map<String, Serializable> taskContextMap =
+			HashMapBuilder.<String, Serializable>put(
+				BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true
+			).put(
+				BulkSelectionBackgroundTaskConstants.
+					BULK_SELECTION_ACTION_CLASS_NAME,
+				bulkSelectionActionClass.getName()
+			).put(
+				BulkSelectionBackgroundTaskConstants.
+					BULK_SELECTION_ACTION_INPUT_MAP,
+				new HashMap<>(inputMap)
+			).put(
+				BulkSelectionBackgroundTaskConstants.
+					BULK_SELECTION_FACTORY_CLASS_NAME,
+				() -> {
+					Class<? extends BulkSelectionFactory>
+						bulkSelectionFactoryClass =
+							bulkSelection.getBulkSelectionFactoryClass();
 
-		taskContextMap.put(
-			BulkSelectionBackgroundTaskConstants.
-				BULK_SELECTION_ACTION_INPUT_MAP,
-			new HashMap<>(inputMap));
-
-		Class<? extends BulkSelectionFactory> bulkSelectionFactoryClass =
-			bulkSelection.getBulkSelectionFactoryClass();
-
-		taskContextMap.put(
-			BulkSelectionBackgroundTaskConstants.
-				BULK_SELECTION_FACTORY_CLASS_NAME,
-			bulkSelectionFactoryClass.getName());
-
-		taskContextMap.put(
-			BulkSelectionBackgroundTaskConstants.BULK_SELECTION_PARAMETER_MAP,
-			new HashMap<>(bulkSelection.getParameterMap()));
-		taskContextMap.put(
-			BackgroundTaskContextMapConstants.DELETE_ON_SUCCESS, true);
+					return bulkSelectionFactoryClass.getName();
+				}
+			).put(
+				BulkSelectionBackgroundTaskConstants.
+					BULK_SELECTION_PARAMETER_MAP,
+				new HashMap<>(bulkSelection.getParameterMap())
+			).build();
 
 		_backgroundTaskLocalService.addBackgroundTask(
 			user.getUserId(), CompanyConstants.SYSTEM,

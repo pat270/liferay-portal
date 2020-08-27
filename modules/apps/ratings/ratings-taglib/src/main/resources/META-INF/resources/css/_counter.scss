@@ -1,0 +1,79 @@
+.counter {
+	$animation-duration: 300ms;
+
+	display: inline-flex;
+	justify-content: center;
+	position: relative;
+
+	&.counter-animated-down {
+		.current {
+			animation-duration: $animation-duration;
+			animation-name: fade-in-down;
+		}
+
+		.previous {
+			animation-duration: $animation-duration;
+			animation-name: fade-out-down;
+		}
+	}
+
+	&.counter-animated-up {
+		.current {
+			animation-duration: $animation-duration;
+			animation-name: fade-in-up;
+		}
+
+		.previous {
+			animation-duration: $animation-duration;
+			animation-name: fade-out-up;
+		}
+	}
+
+	.previous {
+		position: absolute;
+	}
+}
+
+@keyframes fade-in-down {
+	from {
+		opacity: 0;
+		transform: translate3d(0, -1.5rem, 0);
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes fade-in-up {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 1.5rem, 0);
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes fade-out-down {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+		transform: translate3d(0, 1.5rem, 0);
+	}
+}
+
+@keyframes fade-out-up {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+		transform: translate3d(0, -1.5rem, 0);
+	}
+}

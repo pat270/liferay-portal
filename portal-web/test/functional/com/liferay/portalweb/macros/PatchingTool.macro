@@ -1,19 +1,30 @@
 definition {
+
 	@summary = "Install the following patch onto Liferay Portal. ${patchFileZipURL}"
 	macro installPatch {
-		AntCommand(
-			locator1 = "build-test.xml",
-			value1 = "install-patch -Dpatch.file.zip.url=${patchFileZipURL}");
+		if (!(contains("${patchFileZipURL}", "dxp-0-"))) {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "install-patch -Dpatch.file.zip.url=${patchFileZipURL}");
+		}
+		else {
+			echo("No previous fix pack available to install");
+		}
 	}
 
 	@summary = "Install the following patch onto Liferay Portal server with port ${nodePort}: ${patchFileZipURL}"
 	macro installPatchOnSpecificServer {
 		var leadingPortNumber = StringUtil.replace("${nodePort}", "080", "");
-		var bundleIndex = MathUtil.difference("${leadingPortNumber}", "8");
+		var bundleIndex = ${leadingPortNumber} - 8;
 
-		AntCommand(
-			locator1 = "build-test.xml",
-			value1 = "install-patch -Dpatch.file.zip.url=${patchFileZipURL} -Dinstall.patch.cluster.node.index=${bundleIndex}");
+		if (!(contains("${patchFileZipURL}", "dxp-0-"))) {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "install-patch -Dpatch.file.zip.url=${patchFileZipURL} -Dinstall.patch.cluster.node.index=${bundleIndex}");
+		}
+		else {
+			echo("No previous fix pack available to install");
+		}
 	}
 
 	@summary = "Uninstall all patches from Liferay Portal."
@@ -26,7 +37,7 @@ definition {
 	@summary = "Uninstall the following patch onto Liferay Portal server with port ${nodePort}"
 	macro uninstallPatchOnSpecificServer {
 		var leadingPortNumber = StringUtil.replace("${nodePort}", "080", "");
-		var bundleIndex = MathUtil.difference("${leadingPortNumber}", "8");
+		var bundleIndex = ${leadingPortNumber} - 8;
 
 		AntCommand(
 			locator1 = "build-test.xml",
@@ -36,10 +47,11 @@ definition {
 	@summary = "Update the following osgi configuration onto Liferay Portal server with port ${nodePort}: ${updateConfiguration}"
 	macro updateConfigurationOnSpecificServer {
 		var leadingPortNumber = StringUtil.replace("${nodePort}", "080", "");
-		var bundleIndex = MathUtil.difference("${leadingPortNumber}", "8");
+		var bundleIndex = ${leadingPortNumber} - 8;
 
 		AntCommand(
 			locator1 = "build-test.xml",
 			value1 = "update-osgi-module-configuration -Dupdate.configuration=&quot;${updateConfiguration}&quot; -Dinstall.patch.cluster.node.index=${bundleIndex}");
 	}
+
 }

@@ -14,31 +14,30 @@
 
 package com.liferay.portal.messaging.internal.sender;
 
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
-import com.liferay.portal.kernel.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusException;
 import com.liferay.portal.kernel.messaging.MessageListener;
-import com.liferay.portal.kernel.messaging.SerialDestination;
-import com.liferay.portal.kernel.messaging.SynchronousDestination;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.messaging.internal.DefaultMessageBus;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
-import com.liferay.registry.ServiceTrackerCustomizer;
+import com.liferay.portal.messaging.internal.SerialDestination;
+import com.liferay.portal.messaging.internal.SynchronousDestination;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 /**
@@ -48,35 +47,30 @@ public class DefaultSynchronousMessageSenderTest {
 
 	@Before
 	public void setUp() {
-		Registry registry = Mockito.mock(Registry.class);
-
-		Mockito.when(
-			registry.getRegistry()
-		).thenReturn(
-			registry
-		);
-
-		Mockito.when(
-			registry.setRegistry(registry)
-		).thenReturn(
-			registry
-		);
-
-		ServiceTracker<Object, Object> serviceTracker = Mockito.mock(
-			ServiceTracker.class);
-
-		Mockito.when(
-			registry.trackServices(
-				(Class<Object>)Matchers.any(),
-				(ServiceTrackerCustomizer<Object, Object>)Matchers.any())
-		).thenReturn(
-			serviceTracker
-		);
-
-		RegistryUtil.setRegistry(null);
-		RegistryUtil.setRegistry(registry);
-
 		_messageBus = new DefaultMessageBus();
+
+		ReflectionTestUtil.setFieldValue(
+			_messageBus, "_serviceTrackerList",
+			new ServiceTrackerList() {
+
+				@Override
+				public void close() {
+				}
+
+				@Override
+				public Iterator iterator() {
+					return Collections.emptyIterator();
+				}
+
+				@Override
+				public int size() {
+					return 0;
+				}
+
+			});
+
+		_destinations = ReflectionTestUtil.getFieldValue(
+			_messageBus, "_destinations");
 
 		SynchronousDestination synchronousDestination =
 			new SynchronousDestination();
@@ -84,7 +78,8 @@ public class DefaultSynchronousMessageSenderTest {
 		synchronousDestination.setName(
 			DestinationNames.MESSAGE_BUS_DEFAULT_RESPONSE);
 
-		_messageBus.addDestination(synchronousDestination);
+		_destinations.put(
+			synchronousDestination.getName(), synchronousDestination);
 
 		_defaultSynchronousMessageSender =
 			new DefaultSynchronousMessageSender();
@@ -102,18 +97,6 @@ public class DefaultSynchronousMessageSenderTest {
 
 		_portalExecutorManager = Mockito.mock(PortalExecutorManager.class);
 
-		Mockito.when(
-			_portalExecutorManager.getPortalExecutor(Mockito.anyString())
-		).thenReturn(
-			new ThreadPoolExecutor(1, 1)
-		);
-
-		Mockito.when(
-			serviceTracker.getService()
-		).thenReturn(
-			_portalExecutorManager
-		);
-
 		synchronousDestination.open();
 	}
 
@@ -124,18 +107,10 @@ public class DefaultSynchronousMessageSenderTest {
 
 	@Test
 	public void testSendToAsyncDestination() throws MessageBusException {
-		SerialDestination serialDestination = new SerialDestination() {
-
-			@Override
-			public void open() {
-				portalExecutorManager = _portalExecutorManager;
-
-				super.open();
-			}
-
-		};
+		SerialDestination serialDestination = new SerialDestination();
 
 		serialDestination.setName("testSerialDestination");
+		serialDestination.setPortalExecutorManager(_portalExecutorManager);
 
 		serialDestination.afterPropertiesSet();
 
@@ -165,7 +140,7 @@ public class DefaultSynchronousMessageSenderTest {
 
 		destination.register(new ReplayMessageListener(response));
 
-		_messageBus.addDestination(destination);
+		_destinations.put(destination.getName(), destination);
 
 		try {
 			Assert.assertSame(
@@ -174,13 +149,14 @@ public class DefaultSynchronousMessageSenderTest {
 					destination.getName(), new Message()));
 		}
 		finally {
-			_messageBus.removeDestination(destination.getName());
+			_destinations.remove(destination.getName());
 
-			destination.close(true);
+			destination.destroy();
 		}
 	}
 
 	private DefaultSynchronousMessageSender _defaultSynchronousMessageSender;
+	private Map<String, Destination> _destinations;
 	private MessageBus _messageBus;
 	private PortalExecutorManager _portalExecutorManager;
 

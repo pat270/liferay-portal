@@ -1,7 +1,7 @@
 @component-name = "portal-upgrades"
 definition {
+
 	property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
-	property ignore.errors = "Plugin security management is not enabled. Enable a security manager, then restart.";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Upgrades WEM,Web Content Administration";
@@ -12,7 +12,7 @@ definition {
 
 		Smoke.viewWelcomePage();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -38,6 +38,7 @@ definition {
 	@priority = "5"
 	test ViewLayoutArchive621015 {
 		property data.archive.type = "data-archive-pages-administration";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "6.2.10.15";
 
 		Navigator.openURL();
@@ -51,6 +52,7 @@ definition {
 	@priority = "5"
 	test ViewLayoutArchive621021 {
 		property data.archive.type = "data-archive-pages-administration";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "6.2.10.21";
 
 		Navigator.openURL();
@@ -116,6 +118,7 @@ definition {
 	@priority = "5"
 	test ViewWebContentArchive621015 {
 		property data.archive.type = "data-archive-web-content-draft";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "6.2.10.15";
 
 		Upgrade.addWCStructureAndTemplate();
@@ -126,10 +129,81 @@ definition {
 	@priority = "5"
 	test ViewWebContentArchive621021 {
 		property data.archive.type = "data-archive-web-content-draft";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
 		property portal.version = "6.2.10.21";
 
 		Upgrade.addWCStructureAndTemplate();
 
 		Upgrade.publishWCDraft();
 	}
+
+	@description = "This is a use case for LPS-98619."
+	@priority = "3"
+	test ViewWebContentWithImageArchive704 {
+		property data.archive.type = "data-archive-web-content-with-image";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "7.0.4";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content",
+			site = "${siteName}");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
+
+		AssertTextEquals(
+			locator1 = "TextInput#TITLE",
+			value1 = "WC WebContent Title");
+
+		AssertVisible(locator1 = "Button#PREVIEW");
+	}
+
+	@description = "This is a use case for LPS-98619."
+	@priority = "3"
+	test ViewWebContentWithImageArchive70106 {
+		property data.archive.type = "data-archive-web-content-with-image";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+		property portal.version = "7.0.10.6";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content",
+			site = "${siteName}");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
+
+		AssertTextEquals(
+			locator1 = "TextInput#TITLE",
+			value1 = "WC WebContent Title");
+
+		AssertVisible(locator1 = "Button#PREVIEW");
+	}
+
+	@description = "This is a use case for LPS-98619."
+	@priority = "3"
+	test ViewWebContentWithImageArchive621021 {
+		property data.archive.type = "data-archive-web-content-with-image";
+		property database.types = "db2,mysql,oracle,postgresql,sybase";
+		property portal.version = "6.2.10.21";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content",
+			site = "${siteName}");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
+
+		AssertTextEquals(
+			locator1 = "TextInput#TITLE",
+			value1 = "Web Content Title");
+
+		AssertVisible(locator1 = "Button#PREVIEW");
+	}
+
 }

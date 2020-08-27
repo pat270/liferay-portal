@@ -17,13 +17,13 @@
 <%@ include file="/init.jsp" %>
 
 <%
-WorkflowTask workflowTask = workflowTaskDisplayContext.getWorkflowTask();
-
-boolean hasOtherAssignees = workflowTaskDisplayContext.hasOtherAssignees(workflowTask);
+String redirect = ParamUtil.getString(request, "redirect");
 
 long assigneeUserId = ParamUtil.getLong(renderRequest, "assigneeUserId");
 
-String redirect = ParamUtil.getString(request, "redirect");
+WorkflowTask workflowTask = workflowTaskDisplayContext.getWorkflowTask();
+
+boolean hasAssignableUsers = workflowTaskDisplayContext.hasAssignableUsers(workflowTask);
 %>
 
 <liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="assignWorkflowTask" var="assignURL" />
@@ -38,13 +38,13 @@ String redirect = ParamUtil.getString(request, "redirect");
 					<aui:input name="assigneeUserId" type="hidden" value="<%= String.valueOf(assigneeUserId) %>" />
 				</c:when>
 				<c:otherwise>
-					<aui:select disabled="<%= !hasOtherAssignees %>" label="assign-to" name="assigneeUserId">
+					<aui:select disabled="<%= !hasAssignableUsers %>" label="assign-to" name="assigneeUserId">
 
 						<%
-						for (long pooledActorId : workflowTaskDisplayContext.getActorsIds(workflowTask)) {
+						for (User assignableUser : workflowTaskDisplayContext.getAssignableUsers(workflowTask)) {
 						%>
 
-							<aui:option label="<%= workflowTaskDisplayContext.getActorName(pooledActorId) %>" selected="<%= workflowTask.getAssigneeUserId() == pooledActorId %>" value="<%= String.valueOf(pooledActorId) %>" />
+							<aui:option label="<%= HtmlUtil.escape(assignableUser.getScreenName()) + StringPool.SPACE + StringPool.OPEN_PARENTHESIS + HtmlUtil.escape(assignableUser.getFullName()) + StringPool.CLOSE_PARENTHESIS %>" selected="<%= workflowTask.getAssigneeUserId() == assignableUser.getUserId() %>" value="<%= String.valueOf(assignableUser.getUserId()) %>" />
 
 						<%
 						}
@@ -54,44 +54,45 @@ String redirect = ParamUtil.getString(request, "redirect");
 				</c:otherwise>
 			</c:choose>
 
-			<aui:input cols="55" cssClass="task-action-comment" disabled="<%= !hasOtherAssignees && (assigneeUserId <= 0) %>" name="comment" placeholder="comment" rows="1" type="textarea" />
+			<aui:input cols="55" cssClass="task-action-comment" disabled="<%= !hasAssignableUsers && (assigneeUserId <= 0) %>" name="comment" placeholder="comment" rows="1" type="textarea" />
 		</div>
 
 		<div class="modal-footer">
-			<div class="btn-group">
-				<div class="btn-group-item">
-					<aui:button name="close" type="cancel" />
-				</div>
+			<div class="modal-item-last">
+				<div class="btn-group">
+					<div class="btn-group-item">
+						<aui:button name="close" type="cancel" />
+					</div>
 
-				<div class="btn-group-item">
-					<aui:button disabled="<%= !hasOtherAssignees && (assigneeUserId <= 0) %>" name="done" primary="<%= true %>" value="done" />
+					<div class="btn-group-item">
+						<aui:button disabled="<%= !hasAssignableUsers && (assigneeUserId <= 0) %>" name="done" primary="<%= true %>" value="done" />
+					</div>
 				</div>
 			</div>
 		</div>
 	</aui:form>
 </div>
 
-<aui:script use="aui-base,aui-io-request">
+<aui:script use="aui-base">
 	var done = A.one('#<portlet:namespace />done');
 
 	if (done) {
-		done.on(
-			'click',
-			function(event) {
-				A.io.request(
-					'<%= assignURL.toString() %>',
-					{
-						form: {id: '<portlet:namespace />assignFm'},
-						method: 'POST',
-						on: {
-							success: function() {
-								Liferay.Util.getOpener().<portlet:namespace />refreshPortlet('<%= redirect.toString() %>');
-								Liferay.Util.getWindow('<portlet:namespace />assignToDialog').destroy();
-							}
-						}
-					}
+		done.on('click', function (event) {
+			var data = new FormData(
+				document.querySelector('#<portlet:namespace />assignFm')
+			);
+
+			Liferay.Util.fetch('<%= assignURL.toString() %>', {
+				body: data,
+				method: 'POST',
+			}).then(function () {
+				Liferay.Util.getOpener().<portlet:namespace />refreshPortlet(
+					'<%= PortalUtil.escapeRedirect(redirect.toString()) %>'
 				);
-			}
-		);
+				Liferay.Util.getWindow(
+					'<portlet:namespace />assignToDialog'
+				).destroy();
+			});
+		});
 	}
 </aui:script>

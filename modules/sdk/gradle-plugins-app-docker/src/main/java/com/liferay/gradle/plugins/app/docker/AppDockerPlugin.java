@@ -120,10 +120,9 @@ public class AppDockerPlugin implements Plugin<Project> {
 		final Sync prepareAppDockerImageInputDirTask,
 		final AppDockerExtension appDockerExtension) {
 
-		Project project = prepareAppDockerImageInputDirTask.getProject();
-
 		final DockerBuildImage dockerBuildImage = GradleUtil.addTask(
-			project, BUILD_APP_DOCKER_IMAGE_TASK_NAME, DockerBuildImage.class);
+			prepareAppDockerImageInputDirTask.getProject(),
+			BUILD_APP_DOCKER_IMAGE_TASK_NAME, DockerBuildImage.class);
 
 		dockerBuildImage.setDependsOn(
 			Collections.singleton(prepareAppDockerImageInputDirTask));
@@ -243,10 +242,11 @@ public class AppDockerPlugin implements Plugin<Project> {
 		String imageRepositoryAndTag = _getImageRepositoryAndTag(
 			dockerTagImage.getRepository(), dockerTagImage.getTag());
 
+		String taskName = _getTaskName(
+			PUSH_APP_DOCKER_IMAGE_TASK_NAME, imageRepositoryAndTag);
+
 		DockerPushImage dockerPushImage = GradleUtil.addTask(
-			dockerTagImage.getProject(),
-			PUSH_APP_DOCKER_IMAGE_TASK_NAME + "_" + imageRepositoryAndTag,
-			DockerPushImage.class);
+			dockerTagImage.getProject(), taskName, DockerPushImage.class);
 
 		dockerPushImage.setDependsOn(Collections.singleton(dockerTagImage));
 		dockerPushImage.setDescription(
@@ -291,10 +291,11 @@ public class AppDockerPlugin implements Plugin<Project> {
 		String imageRepositoryAndTag = _getImageRepositoryAndTag(
 			imageRepository, imageTag);
 
+		String taskName = _getTaskName(
+			TAG_APP_DOCKER_IMAGE_TASK_NAME, imageRepositoryAndTag);
+
 		DockerTagImage dockerTagImage = GradleUtil.addTask(
-			project,
-			TAG_APP_DOCKER_IMAGE_TASK_NAME + "_" + imageRepositoryAndTag,
-			DockerTagImage.class);
+			project, taskName, DockerTagImage.class);
 
 		dockerTagImage.setDependsOn(
 			Collections.singleton(buildAppDockerImagetask));
@@ -375,7 +376,7 @@ public class AppDockerPlugin implements Plugin<Project> {
 			return imageName;
 		}
 
-		return imageUser + "/" + imageName;
+		return imageUser + '/' + imageName;
 	}
 
 	private String _getImageRepositoryAndTag(
@@ -385,7 +386,26 @@ public class AppDockerPlugin implements Plugin<Project> {
 			return imageRepository;
 		}
 
-		return imageRepository + ":" + imageTag;
+		return imageRepository + ':' + imageTag;
+	}
+
+	private String _getTaskName(String... values) {
+		StringBuilder sb = new StringBuilder();
+
+		for (String value : values) {
+			String s = value;
+
+			s = s.replace(':', '_');
+			s = s.replace('/', '_');
+
+			sb.append(s);
+
+			sb.append('_');
+		}
+
+		sb.setLength(sb.length() - 1);
+
+		return sb.toString();
 	}
 
 	private static final Map<String, Object> _fixCrLfArgs =

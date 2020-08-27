@@ -1,7 +1,5 @@
 package ${packagePath}.service.http;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 import ${apiPackagePath}.service.${entity.name}ServiceUtil;
 
 import com.liferay.portal.kernel.log.Log;
@@ -54,17 +52,17 @@ import java.util.Map;
  *
  * @author ${author}
  * @see ${entity.name}ServiceHttp
-<#if classDeprecated>
+<#if serviceBuilder.isVersionGTE_7_3_0()>
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
+<#elseif classDeprecated>
  * @deprecated ${classDeprecatedComment}
 </#if>
  * @generated
  */
 
-<#if classDeprecated>
+<#if serviceBuilder.isVersionGTE_7_3_0() || classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}ServiceSoap {
 
 	<#assign hasMethods = false />
@@ -266,10 +264,10 @@ public class ${entity.name}ServiceSoap {
 						</#if>
 					</#if>
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 
-					throw new RemoteException(e.getMessage());
+					throw new RemoteException(exception.getMessage());
 				}
 			}
 		</#if>

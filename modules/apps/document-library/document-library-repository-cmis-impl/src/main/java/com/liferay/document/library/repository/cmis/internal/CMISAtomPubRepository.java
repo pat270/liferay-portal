@@ -21,13 +21,12 @@ import com.liferay.portal.kernel.exception.InvalidRepositoryException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -41,22 +40,7 @@ public class CMISAtomPubRepository extends CMISRepositoryHandler {
 
 	@Override
 	public Session getSession() throws PortalException {
-		Map<String, String> parameters = new HashMap<>();
-
-		parameters.put(
-			SessionParameter.ATOMPUB_URL,
-			getTypeSettingsValue(
-				CMISRepositoryConstants.CMIS_ATOMPUB_URL_PARAMETER));
-		parameters.put(
-			SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
-		parameters.put(SessionParameter.COMPRESSION, Boolean.TRUE.toString());
-
 		Locale locale = LocaleUtil.getSiteDefault();
-
-		parameters.put(
-			SessionParameter.LOCALE_ISO3166_COUNTRY, locale.getCountry());
-		parameters.put(
-			SessionParameter.LOCALE_ISO639_LANGUAGE, locale.getLanguage());
 
 		String login = getLogin();
 		String password = null;
@@ -69,8 +53,23 @@ public class CMISAtomPubRepository extends CMISRepositoryHandler {
 			password = _DL_REPOSITORY_GUEST_PASSWORD;
 		}
 
-		parameters.put(SessionParameter.PASSWORD, password);
-		parameters.put(SessionParameter.USER, login);
+		Map<String, String> parameters = HashMapBuilder.put(
+			SessionParameter.ATOMPUB_URL,
+			getTypeSettingsValue(
+				CMISRepositoryConstants.CMIS_ATOMPUB_URL_PARAMETER)
+		).put(
+			SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value()
+		).put(
+			SessionParameter.COMPRESSION, Boolean.TRUE.toString()
+		).put(
+			SessionParameter.LOCALE_ISO639_LANGUAGE, locale.getLanguage()
+		).put(
+			SessionParameter.LOCALE_ISO3166_COUNTRY, locale.getCountry()
+		).put(
+			SessionParameter.PASSWORD, password
+		).put(
+			SessionParameter.USER, login
+		).build();
 
 		Thread thread = Thread.currentThread();
 
@@ -78,9 +77,7 @@ public class CMISAtomPubRepository extends CMISRepositoryHandler {
 
 		Class<?> clazz = getClass();
 
-		ClassLoader classLoader = clazz.getClassLoader();
-
-		thread.setContextClassLoader(classLoader);
+		thread.setContextClassLoader(clazz.getClassLoader());
 
 		try {
 			CMISRepositoryUtil.checkRepository(
@@ -97,10 +94,8 @@ public class CMISAtomPubRepository extends CMISRepositoryHandler {
 	protected String getTypeSettingsValue(String typeSettingsKey)
 		throws InvalidRepositoryException {
 
-		UnicodeProperties typeSettingsProperties = getTypeSettingsProperties();
-
 		return CMISRepositoryUtil.getTypeSettingsValue(
-			typeSettingsProperties, typeSettingsKey);
+			getTypeSettingsProperties(), typeSettingsKey);
 	}
 
 	private static final String _DL_REPOSITORY_GUEST_PASSWORD =

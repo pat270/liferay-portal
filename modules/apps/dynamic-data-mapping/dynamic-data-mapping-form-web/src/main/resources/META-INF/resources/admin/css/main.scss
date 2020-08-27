@@ -1,10 +1,11 @@
-@import "bourbon";
-@import "mixins";
-@import "variables";
+@import 'atlas-variables';
 
-@import "general";
-@import "toolbar";
+@import 'variables';
 
-@import "portlet-forms";
+@import 'general';
+@import 'report';
+@import 'toolbar';
 
-@import "portlet-forms-admin";
+@import 'portlet-forms';
+
+@import 'portlet-forms-admin';

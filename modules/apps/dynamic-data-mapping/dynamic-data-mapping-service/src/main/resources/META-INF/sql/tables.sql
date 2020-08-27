@@ -1,6 +1,8 @@
 create table DDMContent (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	contentId LONG not null primary key,
+	contentId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -9,12 +11,15 @@ create table DDMContent (
 	modifiedDate DATE null,
 	name STRING null,
 	description STRING null,
-	data_ TEXT null
+	data_ TEXT null,
+	primary key (contentId, ctCollectionId)
 );
 
 create table DDMDataProviderInstance (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	dataProviderInstanceId LONG not null primary key,
+	dataProviderInstanceId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -24,19 +29,26 @@ create table DDMDataProviderInstance (
 	name STRING null,
 	description TEXT null,
 	definition TEXT null,
-	type_ VARCHAR(75) null
+	type_ VARCHAR(75) null,
+	lastPublishDate DATE null,
+	primary key (dataProviderInstanceId, ctCollectionId)
 );
 
 create table DDMDataProviderInstanceLink (
-	dataProviderInstanceLinkId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	dataProviderInstanceLinkId LONG not null,
 	companyId LONG,
 	dataProviderInstanceId LONG,
-	structureId LONG
+	structureId LONG,
+	primary key (dataProviderInstanceLinkId, ctCollectionId)
 );
 
 create table DDMFormInstance (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	formInstanceId LONG not null primary key,
+	formInstanceId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -48,14 +60,17 @@ create table DDMFormInstance (
 	structureId LONG,
 	version VARCHAR(75) null,
 	name STRING null,
-	description STRING null,
+	description TEXT null,
 	settings_ TEXT null,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (formInstanceId, ctCollectionId)
 );
 
 create table DDMFormInstanceRecord (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	formInstanceRecordId LONG not null primary key,
+	formInstanceRecordId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -68,11 +83,14 @@ create table DDMFormInstanceRecord (
 	formInstanceVersion VARCHAR(75) null,
 	storageId LONG,
 	version VARCHAR(75) null,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (formInstanceRecordId, ctCollectionId)
 );
 
 create table DDMFormInstanceRecordVersion (
-	formInstanceRecordVersionId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	formInstanceRecordVersionId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -82,15 +100,31 @@ create table DDMFormInstanceRecordVersion (
 	formInstanceVersion VARCHAR(75) null,
 	formInstanceRecordId LONG,
 	version VARCHAR(75) null,
+	storageId LONG,
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
 	statusDate DATE null,
-	storageId LONG
+	primary key (formInstanceRecordVersionId, ctCollectionId)
+);
+
+create table DDMFormInstanceReport (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	formInstanceReportId LONG not null,
+	groupId LONG,
+	companyId LONG,
+	createDate DATE null,
+	modifiedDate DATE null,
+	formInstanceId LONG,
+	data_ TEXT null,
+	primary key (formInstanceReportId, ctCollectionId)
 );
 
 create table DDMFormInstanceVersion (
-	formInstanceVersionId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	formInstanceVersionId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -99,28 +133,34 @@ create table DDMFormInstanceVersion (
 	formInstanceId LONG,
 	structureVersionId LONG,
 	name STRING null,
-	description STRING null,
+	description TEXT null,
 	settings_ TEXT null,
 	version VARCHAR(75) null,
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
-	statusDate DATE null
+	statusDate DATE null,
+	primary key (formInstanceVersionId, ctCollectionId)
 );
 
 create table DDMStorageLink (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	storageLinkId LONG not null primary key,
+	storageLinkId LONG not null,
 	companyId LONG,
 	classNameId LONG,
 	classPK LONG,
 	structureId LONG,
-	structureVersionId LONG
+	structureVersionId LONG,
+	primary key (storageLinkId, ctCollectionId)
 );
 
 create table DDMStructure (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	structureId LONG not null primary key,
+	structureId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -138,34 +178,45 @@ create table DDMStructure (
 	definition TEXT null,
 	storageType VARCHAR(75) null,
 	type_ INTEGER,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (structureId, ctCollectionId)
 );
 
 create table DDMStructureLayout (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	structureLayoutId LONG not null primary key,
+	structureLayoutId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
 	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
+	classNameId LONG,
+	structureLayoutKey VARCHAR(75) null,
 	structureVersionId LONG,
 	name TEXT null,
 	description TEXT null,
-	definition TEXT null
+	definition TEXT null,
+	primary key (structureLayoutId, ctCollectionId)
 );
 
 create table DDMStructureLink (
-	structureLinkId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	structureLinkId LONG not null,
 	companyId LONG,
 	classNameId LONG,
 	classPK LONG,
-	structureId LONG
+	structureId LONG,
+	primary key (structureLinkId, ctCollectionId)
 );
 
 create table DDMStructureVersion (
-	structureVersionId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	structureVersionId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -182,12 +233,15 @@ create table DDMStructureVersion (
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
-	statusDate DATE null
+	statusDate DATE null,
+	primary key (structureVersionId, ctCollectionId)
 );
 
 create table DDMTemplate (
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	templateId LONG not null primary key,
+	templateId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -211,19 +265,25 @@ create table DDMTemplate (
 	smallImage BOOLEAN,
 	smallImageId LONG,
 	smallImageURL STRING null,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (templateId, ctCollectionId)
 );
 
 create table DDMTemplateLink (
-	templateLinkId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	templateLinkId LONG not null,
 	companyId LONG,
 	classNameId LONG,
 	classPK LONG,
-	templateId LONG
+	templateId LONG,
+	primary key (templateLinkId, ctCollectionId)
 );
 
 create table DDMTemplateVersion (
-	templateVersionId LONG not null primary key,
+	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
+	templateVersionId LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -240,5 +300,6 @@ create table DDMTemplateVersion (
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
-	statusDate DATE null
+	statusDate DATE null,
+	primary key (templateVersionId, ctCollectionId)
 );

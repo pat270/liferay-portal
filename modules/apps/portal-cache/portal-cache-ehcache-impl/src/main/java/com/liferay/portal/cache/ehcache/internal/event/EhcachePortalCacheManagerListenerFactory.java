@@ -15,9 +15,8 @@
 package com.liferay.portal.cache.ehcache.internal.event;
 
 import com.liferay.portal.cache.PortalCacheManagerListenerFactory;
-import com.liferay.portal.cache.ehcache.internal.EhcacheConstants;
 import com.liferay.portal.cache.ehcache.internal.EhcachePortalCacheManager;
-import com.liferay.portal.cache.ehcache.spi.event.EhcachePortalCacheManagerListenerAdapter;
+import com.liferay.portal.cache.ehcache.internal.constants.EhcacheConstants;
 import com.liferay.portal.kernel.cache.PortalCacheManagerListener;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.InstanceFactory;
@@ -69,11 +68,11 @@ public class EhcachePortalCacheManagerListenerFactory
 						ehcachePortalCacheManager.getEhcacheManager(),
 						properties));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SystemException(
 				"Unable to instantiate cache manager event listener " +
 					className,
-				e);
+				exception);
 		}
 	}
 

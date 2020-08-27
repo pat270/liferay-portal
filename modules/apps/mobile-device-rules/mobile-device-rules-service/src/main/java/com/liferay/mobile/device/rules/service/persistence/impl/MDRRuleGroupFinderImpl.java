@@ -28,22 +28,25 @@ import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Edward Han
  * @author Eduardo Lundgren
  * @author Manuel de la Peña
  */
+@Component(service = MDRRuleGroupFinder.class)
 public class MDRRuleGroupFinderImpl
 	extends MDRRuleGroupFinderBaseImpl implements MDRRuleGroupFinder {
 
@@ -103,20 +106,20 @@ public class MDRRuleGroupFinderImpl
 				sql, "LOWER(name)", StringPool.LIKE, true, names);
 			sql = _customSQL.replaceAndOperator(sql, true);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			setGroupIds(qPos, groupId, params);
+			setGroupIds(queryPos, groupId, params);
 
-			qPos.add(names, 2);
+			queryPos.add(names, 2);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -125,8 +128,8 @@ public class MDRRuleGroupFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -146,7 +149,7 @@ public class MDRRuleGroupFinderImpl
 	@Override
 	public List<MDRRuleGroup> findByKeywords(
 		long groupId, String keywords, LinkedHashMap<String, Object> params,
-		int start, int end, OrderByComparator<MDRRuleGroup> obc) {
+		int start, int end, OrderByComparator<MDRRuleGroup> orderByComparator) {
 
 		String[] names = null;
 		boolean andOperator = false;
@@ -158,7 +161,8 @@ public class MDRRuleGroupFinderImpl
 			andOperator = true;
 		}
 
-		return findByG_N(groupId, names, params, andOperator, start, end, obc);
+		return findByG_N(
+			groupId, names, params, andOperator, start, end, orderByComparator);
 	}
 
 	@Override
@@ -195,7 +199,7 @@ public class MDRRuleGroupFinderImpl
 	public List<MDRRuleGroup> findByG_N(
 		long groupId, String[] names, LinkedHashMap<String, Object> params,
 		boolean andOperator, int start, int end,
-		OrderByComparator<MDRRuleGroup> obc) {
+		OrderByComparator<MDRRuleGroup> orderByComparator) {
 
 		names = _customSQL.keywords(names);
 
@@ -214,23 +218,23 @@ public class MDRRuleGroupFinderImpl
 			sql = _customSQL.replaceKeywords(
 				sql, "LOWER(name)", StringPool.LIKE, true, names);
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
-			sql = _customSQL.replaceOrderBy(sql, obc);
+			sql = _customSQL.replaceOrderBy(sql, orderByComparator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MDRRuleGroup", MDRRuleGroupImpl.class);
+			sqlQuery.addEntity("MDRRuleGroup", MDRRuleGroupImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			setGroupIds(qPos, groupId, params);
+			setGroupIds(queryPos, groupId, params);
 
-			qPos.add(names, 2);
+			queryPos.add(names, 2);
 
 			return (List<MDRRuleGroup>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -248,30 +252,33 @@ public class MDRRuleGroupFinderImpl
 	}
 
 	protected void setGroupIds(
-			QueryPos qPos, long groupId, Map<String, Object> params)
+			QueryPos queryPos, long groupId, Map<String, Object> params)
 		throws PortalException {
 
 		Boolean includeGlobalScope = (Boolean)params.get("includeGlobalScope");
 
 		if ((includeGlobalScope != null) && includeGlobalScope) {
-			qPos.add(groupId);
+			queryPos.add(groupId);
 
-			Group group = GroupLocalServiceUtil.getGroup(groupId);
+			Group group = _groupLocalService.getGroup(groupId);
 
-			Group companyGroup = GroupLocalServiceUtil.getCompanyGroup(
+			Group companyGroup = _groupLocalService.getCompanyGroup(
 				group.getCompanyId());
 
-			qPos.add(companyGroup.getGroupId());
+			queryPos.add(companyGroup.getGroupId());
 		}
 		else {
-			qPos.add(groupId);
+			queryPos.add(groupId);
 		}
 	}
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
 
 	private final LinkedHashMap<String, Object> _emptyLinkedHashMap =
-		new LinkedHashMap<>(0);
+		new LinkedHashMap<>();
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 }

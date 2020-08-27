@@ -50,12 +50,12 @@ public class SiteNavigationMenuExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(new Capability[] {_exportCapability});
+		return ListUtil.fromArray(_exportCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(new Capability[] {_importCapability});
+		return ListUtil.fromArray(_importCapability);
 	}
 
 	@Override
@@ -68,9 +68,9 @@ public class SiteNavigationMenuExportImportPortletPreferencesProcessor
 			portletDataContext.addPortletPermissions(
 				SiteNavigationConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new PortletDataException(
-				"Unable to export portlet permissions", pe);
+				"Unable to export portlet permissions", portalException);
 		}
 
 		long siteNavigationMenuId = GetterUtil.getLong(
@@ -84,12 +84,11 @@ public class SiteNavigationMenuExportImportPortletPreferencesProcessor
 			if (siteNavigationMenu != null) {
 				String siteNavigationMenuUuid = siteNavigationMenu.getUuid();
 
-				long scopeGroupId = portletDataContext.getScopeGroupId();
-
 				SiteNavigationMenu siteNavigationMenuToExport =
 					_siteNavigationMenuLocalService.
 						fetchSiteNavigationMenuByUuidAndGroupId(
-							siteNavigationMenuUuid, scopeGroupId);
+							siteNavigationMenuUuid,
+							portletDataContext.getScopeGroupId());
 
 				if (siteNavigationMenuToExport != null) {
 					StagedModelDataHandlerUtil.exportReferenceStagedModel(
@@ -112,9 +111,9 @@ public class SiteNavigationMenuExportImportPortletPreferencesProcessor
 			portletDataContext.importPortletPermissions(
 				SiteNavigationConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new PortletDataException(
-				"Unable to import portlet permissions", pe);
+				"Unable to import portlet permissions", portalException);
 		}
 
 		long importedSiteNavigationMenuId = GetterUtil.getLong(
@@ -141,10 +140,11 @@ public class SiteNavigationMenuExportImportPortletPreferencesProcessor
 				}
 			}
 		}
-		catch (ReadOnlyException roe) {
-			PortletDataException pde = new PortletDataException(roe);
+		catch (ReadOnlyException readOnlyException) {
+			PortletDataException portletDataException =
+				new PortletDataException(readOnlyException);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		return portletPreferences;

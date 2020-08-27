@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
@@ -38,13 +37,6 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @AccessControlled
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=polls",
-		"json.web.service.context.path=PollsVote"
-	},
-	service = PollsVoteService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -55,7 +47,7 @@ public interface PollsVoteService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link PollsVoteServiceUtil} to access the polls vote remote service. Add custom service methods to <code>com.liferay.polls.service.impl.PollsVoteServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.polls.service.impl.PollsVoteServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the polls vote remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link PollsVoteServiceUtil} if injection and service tracking are not available.
 	 */
 	public PollsVote addVote(
 			long questionId, long choiceId, ServiceContext serviceContext)

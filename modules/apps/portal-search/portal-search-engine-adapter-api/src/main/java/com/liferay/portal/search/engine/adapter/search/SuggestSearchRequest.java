@@ -15,21 +15,22 @@
 package com.liferay.portal.search.engine.adapter.search;
 
 import com.liferay.portal.kernel.search.suggest.Suggester;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class SuggestSearchRequest
+	extends CrossClusterRequest
 	implements SearchRequest<SuggestSearchResponse> {
 
 	public SuggestSearchRequest(String... indexNames) {
 		_indexNames = indexNames;
+
+		setPreferLocalCluster(true);
 	}
 
 	@Override

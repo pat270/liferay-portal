@@ -20,21 +20,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class FriendlyURLEntrySoap implements Serializable {
 
 	public static FriendlyURLEntrySoap toSoapModel(FriendlyURLEntry model) {
 		FriendlyURLEntrySoap soapModel = new FriendlyURLEntrySoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setDefaultLanguageId(model.getDefaultLanguageId());
 		soapModel.setFriendlyURLEntryId(model.getFriendlyURLEntryId());
@@ -113,6 +113,14 @@ public class FriendlyURLEntrySoap implements Serializable {
 		_mvccVersion = mvccVersion;
 	}
 
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public String getUuid() {
 		return _uuid;
 	}
@@ -186,6 +194,7 @@ public class FriendlyURLEntrySoap implements Serializable {
 	}
 
 	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
 	private String _defaultLanguageId;
 	private long _friendlyURLEntryId;

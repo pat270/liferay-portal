@@ -194,7 +194,7 @@ public class PropertyImpl extends ProjectionImpl implements Property {
 
 	@Override
 	public Criterion in(char[] values) {
-		return in(ListUtil.toList(values));
+		return in(ListUtil.fromArray(values));
 	}
 
 	@Override
@@ -204,7 +204,7 @@ public class PropertyImpl extends ProjectionImpl implements Property {
 
 	@Override
 	public Criterion in(double[] values) {
-		return in(ListUtil.toList(values));
+		return in(ListUtil.fromArray(values));
 	}
 
 	@Override
@@ -217,17 +217,17 @@ public class PropertyImpl extends ProjectionImpl implements Property {
 
 	@Override
 	public Criterion in(float[] values) {
-		return in(ListUtil.toList(values));
+		return in(ListUtil.fromArray(values));
 	}
 
 	@Override
 	public Criterion in(int[] values) {
-		return in(ListUtil.toList(values));
+		return in(ListUtil.fromArray(values));
 	}
 
 	@Override
 	public Criterion in(long[] values) {
-		return in(ListUtil.toList(values));
+		return in(ListUtil.fromArray(values));
 	}
 
 	@Override
@@ -237,7 +237,7 @@ public class PropertyImpl extends ProjectionImpl implements Property {
 
 	@Override
 	public Criterion in(short[] values) {
-		return in(ListUtil.toList(values));
+		return in(ListUtil.fromArray(values));
 	}
 
 	@Override
@@ -402,14 +402,6 @@ public class PropertyImpl extends ProjectionImpl implements Property {
 		sb.append("}");
 
 		return sb.toString();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected DynamicQueryImpl getDynamicQueryImpl(DynamicQuery subselect) {
-		return (DynamicQueryImpl)subselect;
 	}
 
 	private final org.hibernate.criterion.Property _property;

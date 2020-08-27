@@ -14,6 +14,10 @@
 
 package com.liferay.sharing.filter;
 
+import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
+import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
+
 import java.util.Locale;
 
 /**
@@ -34,10 +38,29 @@ public interface SharedAssetsFilterItem {
 	public String getClassName();
 
 	/**
+	 * Returns the icon displayed in the user interface.
+	 *
+	 * @return the icon
+	 */
+	public default String getIcon() {
+		AssetRendererFactory<?> assetRendererFactory =
+			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
+				getClassName());
+
+		if (assetRendererFactory != null) {
+			return assetRendererFactory.getIconCssClass();
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns the label displayed in the user interface.
 	 *
 	 * @return the label
 	 */
-	public String getLabel(Locale locale);
+	public default String getLabel(Locale locale) {
+		return ResourceActionsUtil.getModelResource(locale, getClassName());
+	}
 
 }

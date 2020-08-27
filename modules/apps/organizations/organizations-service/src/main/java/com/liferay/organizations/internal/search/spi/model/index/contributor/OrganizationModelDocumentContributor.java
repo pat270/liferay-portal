@@ -64,6 +64,7 @@ public class OrganizationModelDocumentContributor
 				Field.ORGANIZATION_ID, organization.getOrganizationId());
 			document.addKeyword(Field.TREE_PATH, organization.buildTreePath());
 			document.addKeyword(Field.TYPE, organization.getType());
+			document.addTextSortable(Field.TYPE, organization.getType());
 			document.addTextSortable(
 				"nameTreePath", _buildNameTreePath(organization));
 			document.addKeyword(
@@ -73,8 +74,8 @@ public class OrganizationModelDocumentContributor
 				document, organization.getAddresses(),
 				organization.getRegionId(), organization.getCountryId());
 		}
-		catch (PortalException pe) {
-			throw new SystemException(pe);
+		catch (PortalException portalException) {
+			throw new SystemException(portalException);
 		}
 	}
 
@@ -135,13 +136,13 @@ public class OrganizationModelDocumentContributor
 
 		if (countryId > 0) {
 			try {
-				Country country = _countryService.getCountry(countryId);
-
-				countries.addAll(_getLocalizedCountryNames(country));
+				countries.addAll(
+					_getLocalizedCountryNames(
+						_countryService.getCountry(countryId)));
 			}
-			catch (NoSuchCountryException nsce) {
+			catch (NoSuchCountryException noSuchCountryException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nsce.getMessage());
+					_log.warn(noSuchCountryException.getMessage());
 				}
 			}
 		}
@@ -154,9 +155,9 @@ public class OrganizationModelDocumentContributor
 
 				regions.add(StringUtil.toLowerCase(region.getName()));
 			}
-			catch (NoSuchRegionException nsre) {
+			catch (NoSuchRegionException noSuchRegionException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nsre.getMessage());
+					_log.warn(noSuchRegionException.getMessage());
 				}
 			}
 		}

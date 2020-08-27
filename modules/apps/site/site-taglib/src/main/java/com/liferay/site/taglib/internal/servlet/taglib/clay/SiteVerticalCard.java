@@ -55,14 +55,17 @@ public class SiteVerticalCard implements VerticalCard {
 				"groupdescriptivename",
 				_group.getDescriptiveName(_themeDisplay.getLocale()));
 			data.put("groupid", String.valueOf(_group.getGroupId()));
-			data.put("groupscopelabel", _group.getScopeLabel(_themeDisplay));
+			data.put(
+				"groupscopelabel",
+				LanguageUtil.get(
+					_httpServletRequest, _group.getScopeLabel(_themeDisplay)));
 			data.put(
 				"grouptype",
 				LanguageUtil.get(_httpServletRequest, _group.getTypeLabel()));
 			data.put("url", _group.getDisplayURL(_themeDisplay));
 			data.put("uuid", _group.getUuid());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return data;
@@ -98,7 +101,7 @@ public class SiteVerticalCard implements VerticalCard {
 			return HtmlUtil.escape(
 				_group.getDescriptiveName(_themeDisplay.getLocale()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;

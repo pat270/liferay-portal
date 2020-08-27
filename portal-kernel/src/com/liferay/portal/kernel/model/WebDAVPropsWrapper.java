@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link WebDAVProps}.
@@ -31,10 +29,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WebDAVProps
  * @generated
  */
-@ProviderType
 public class WebDAVPropsWrapper
 	extends BaseModelWrapper<WebDAVProps>
-	implements WebDAVProps, ModelWrapper<WebDAVProps> {
+	implements ModelWrapper<WebDAVProps>, WebDAVProps {
 
 	public WebDAVPropsWrapper(WebDAVProps webDAVProps) {
 		super(webDAVProps);

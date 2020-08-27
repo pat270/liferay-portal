@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new TrashManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, trashDisplayContext);
+TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new TrashManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, trashDisplayContext);
 %>
 
 <clay:management-toolbar
@@ -26,59 +26,10 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 
 <liferay-util:include page="/restore_path.jsp" servletContext="<%= application %>" />
 
-<liferay-ui:error exception="<%= RestoreEntryException.class %>">
-
-	<%
-	RestoreEntryException ree = (RestoreEntryException)errorException;
-	%>
-
-	<c:if test="<%= ree.getType() == RestoreEntryException.DUPLICATE %>">
-		<liferay-ui:message key="unable-to-move-this-item-to-the-selected-destination" />
-	</c:if>
-
-	<c:if test="<%= ree.getType() == RestoreEntryException.INVALID_CONTAINER %>">
-		<liferay-ui:message key="the-destination-you-selected-is-an-invalid-container.-please-select-a-different-destination" />
-	</c:if>
-
-	<c:if test="<%= ree.getType() == RestoreEntryException.INVALID_STATUS %>">
-		<liferay-ui:message key="unable-to-restore-this-item" />
-	</c:if>
-</liferay-ui:error>
-
-<liferay-ui:error exception="<%= TrashEntryException.class %>" message="unable-to-move-this-item-to-the-recycle-bin" />
-
-<liferay-ui:error exception="<%= TrashPermissionException.class %>">
-
-	<%
-	TrashPermissionException tpe = (TrashPermissionException)errorException;
-	%>
-
-	<c:if test="<%= tpe.getType() == TrashPermissionException.DELETE %>">
-		<liferay-ui:message key="you-do-not-have-permission-to-delete-this-item" />
-	</c:if>
-
-	<c:if test="<%= tpe.getType() == TrashPermissionException.EMPTY_TRASH %>">
-		<liferay-ui:message key="unable-to-completely-empty-trash-you-do-not-have-permission-to-delete-one-or-more-items" />
-	</c:if>
-
-	<c:if test="<%= tpe.getType() == TrashPermissionException.MOVE %>">
-		<liferay-ui:message key="you-do-not-have-permission-to-move-this-item-to-the-selected-destination" />
-	</c:if>
-
-	<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE %>">
-		<liferay-ui:message key="you-do-not-have-permission-to-restore-this-item" />
-	</c:if>
-
-	<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE_OVERWRITE %>">
-		<liferay-ui:message key="you-do-not-have-permission-to-replace-an-existing-item-with-the-selected-one" />
-	</c:if>
-
-	<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE_RENAME %>">
-		<liferay-ui:message key="you-do-not-have-permission-to-rename-this-item" />
-	</c:if>
-</liferay-ui:error>
-
-<div class="closed container-fluid container-fluid-max-xl sidenav-container sidenav-right" id="<portlet:namespace />infoPanelId">
+<clay:container-fluid
+	cssClass="closed sidenav-container sidenav-right"
+	id='<%= liferayPortletResponse.getNamespace() + "infoPanelId" %>'
+>
 	<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="/trash/info_panel" var="sidebarPanelURL" />
 
 	<liferay-frontend:sidebar-panel
@@ -100,6 +51,58 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 		</portlet:actionURL>
 
 		<aui:form action="<%= deleteTrashEntriesURL %>" name="fm">
+			<liferay-ui:error exception="<%= RestoreEntryException.class %>">
+
+				<%
+				RestoreEntryException ree = (RestoreEntryException)errorException;
+				%>
+
+				<c:if test="<%= ree.getType() == RestoreEntryException.DUPLICATE %>">
+					<liferay-ui:message key="unable-to-move-this-item-to-the-selected-destination" />
+				</c:if>
+
+				<c:if test="<%= ree.getType() == RestoreEntryException.INVALID_CONTAINER %>">
+					<liferay-ui:message key="the-destination-you-selected-is-an-invalid-container.-please-select-a-different-destination" />
+				</c:if>
+
+				<c:if test="<%= ree.getType() == RestoreEntryException.INVALID_STATUS %>">
+					<liferay-ui:message key="unable-to-restore-this-item" />
+				</c:if>
+			</liferay-ui:error>
+
+			<liferay-ui:error exception="<%= TrashEntryException.class %>" message="unable-to-move-this-item-to-the-recycle-bin" />
+
+			<liferay-ui:error exception="<%= TrashPermissionException.class %>">
+
+				<%
+				TrashPermissionException tpe = (TrashPermissionException)errorException;
+				%>
+
+				<c:if test="<%= tpe.getType() == TrashPermissionException.DELETE %>">
+					<liferay-ui:message key="you-do-not-have-permission-to-delete-this-item" />
+				</c:if>
+
+				<c:if test="<%= tpe.getType() == TrashPermissionException.EMPTY_TRASH %>">
+					<liferay-ui:message key="unable-to-completely-empty-trash-you-do-not-have-permission-to-delete-one-or-more-items" />
+				</c:if>
+
+				<c:if test="<%= tpe.getType() == TrashPermissionException.MOVE %>">
+					<liferay-ui:message key="you-do-not-have-permission-to-move-this-item-to-the-selected-destination" />
+				</c:if>
+
+				<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE %>">
+					<liferay-ui:message key="you-do-not-have-permission-to-restore-this-item" />
+				</c:if>
+
+				<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE_OVERWRITE %>">
+					<liferay-ui:message key="you-do-not-have-permission-to-replace-an-existing-item-with-the-selected-one" />
+				</c:if>
+
+				<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE_RENAME %>">
+					<liferay-ui:message key="you-do-not-have-permission-to-rename-this-item" />
+				</c:if>
+			</liferay-ui:error>
+
 			<liferay-ui:search-container
 				id="trash"
 				searchContainer="<%= trashDisplayContext.getEntrySearch() %>"
@@ -134,9 +137,9 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 						viewContentURLString = viewContentURL.toString();
 					}
 
-					Map<String, Object> rowData = new HashMap<>();
-
-					rowData.put("actions", trashManagementToolbarDisplayContext.getAvailableActions(trashEntry));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", trashManagementToolbarDisplayContext.getAvailableActions(trashEntry)
+					).build();
 
 					row.setData(rowData);
 					%>
@@ -167,10 +170,20 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 							</liferay-ui:search-container-column-text>
 
 							<liferay-ui:search-container-column-text>
-								<clay:dropdown-actions
-									defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
-									dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
-								/>
+								<c:choose>
+									<c:when test="<%= trashEntry.getRootEntry() == null %>">
+										<clay:dropdown-actions
+											defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
+											dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
+										/>
+									</c:when>
+									<c:otherwise>
+										<clay:dropdown-actions
+											defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
+											dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(trashRenderer.getClassName(), trashRenderer.getClassPK()) %>"
+										/>
+									</c:otherwise>
+								</c:choose>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 						<c:when test="<%= trashDisplayContext.isIconView() %>">
@@ -181,7 +194,7 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 
 							<liferay-ui:search-container-column-text>
 								<clay:vertical-card
-									verticalCard="<%= new TrashEntryVerticalCard(trashEntry, trashRenderer, renderRequest, liferayPortletResponse, searchContainer.getRowChecker(), viewContentURLString) %>"
+									verticalCard="<%= new TrashEntryVerticalCard(trashEntry, trashRenderer, liferayPortletResponse, renderRequest, searchContainer.getRowChecker(), viewContentURLString) %>"
 								/>
 							</liferay-ui:search-container-column-text>
 						</c:when>
@@ -249,10 +262,20 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 							/>
 
 							<liferay-ui:search-container-column-text>
-								<clay:dropdown-actions
-									defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
-									dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
-								/>
+								<c:choose>
+									<c:when test="<%= trashEntry.getRootEntry() == null %>">
+										<clay:dropdown-actions
+											defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
+											dropdownItems="<%= trashDisplayContext.getTrashEntryActionDropdownItems(trashEntry) %>"
+										/>
+									</c:when>
+									<c:otherwise>
+										<clay:dropdown-actions
+											defaultEventHandler="<%= TrashWebKeys.TRASH_ENTRIES_DEFAULT_EVENT_HANDLER %>"
+											dropdownItems="<%= trashDisplayContext.getTrashViewContentActionDropdownItems(trashRenderer.getClassName(), trashRenderer.getClassPK()) %>"
+										/>
+									</c:otherwise>
+								</c:choose>
 							</liferay-ui:search-container-column-text>
 						</c:when>
 					</c:choose>
@@ -266,10 +289,11 @@ TrashManagementToolbarDisplayContext trashManagementToolbarDisplayContext = new 
 			</liferay-ui:search-container>
 		</aui:form>
 	</div>
-</div>
+</clay:container-fluid>
 
 <liferay-frontend:component
 	componentId="<%= trashManagementToolbarDisplayContext.getDefaultEventHandler() %>"
+	context="<%= trashManagementToolbarDisplayContext.getComponentContext() %>"
 	module="js/ManagementToolbarDefaultEventHandler.es"
 />
 

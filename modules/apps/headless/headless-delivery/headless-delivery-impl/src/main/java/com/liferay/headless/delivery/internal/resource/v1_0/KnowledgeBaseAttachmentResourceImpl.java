@@ -16,11 +16,11 @@ package com.liferay.headless.delivery.internal.resource.v1_0;
 
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.headless.delivery.dto.v1_0.KnowledgeBaseAttachment;
+import com.liferay.headless.delivery.internal.dto.v1_0.util.ContentValueUtil;
 import com.liferay.headless.delivery.resource.v1_0.KnowledgeBaseAttachmentResource;
 import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleService;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -28,8 +28,9 @@ import com.liferay.portal.vulcan.multipart.BinaryFile;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
 
+import java.util.Optional;
+
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Context;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -96,7 +97,7 @@ public class KnowledgeBaseAttachmentResourceImpl
 
 		return _toKnowledgeBaseAttachment(
 			_portletFileRepository.addPortletFileEntry(
-				kbArticle.getGroupId(), _user.getUserId(),
+				kbArticle.getGroupId(), contextUser.getUserId(),
 				KBArticle.class.getName(), kbArticle.getClassPK(),
 				KBConstants.SERVICE_NAME, kbArticle.getAttachmentsFolderId(),
 				binaryFile.getInputStream(), binaryFile.getFileName(),
@@ -112,6 +113,9 @@ public class KnowledgeBaseAttachmentResourceImpl
 				contentUrl = _dlURLHelper.getPreviewURL(
 					fileEntry, fileEntry.getFileVersion(), null, "", false,
 					false);
+				contentValue = ContentValueUtil.toContentValue(
+					"contentValue", fileEntry::getContentStream,
+					Optional.of(contextUriInfo));
 				encodingFormat = fileEntry.getMimeType();
 				fileExtension = fileEntry.getExtension();
 				id = fileEntry.getFileEntryId();
@@ -129,8 +133,5 @@ public class KnowledgeBaseAttachmentResourceImpl
 
 	@Reference
 	private PortletFileRepository _portletFileRepository;
-
-	@Context
-	private User _user;
 
 }

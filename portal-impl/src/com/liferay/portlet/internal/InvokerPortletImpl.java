@@ -156,14 +156,9 @@ public class InvokerPortletImpl
 				currentThread.setContextClassLoader(_portletClassLoader);
 			}
 
-			Closeable closeable = (Closeable)_invokerFilterContainer;
-
-			closeable.close();
+			cleanUp();
 
 			_portlet.destroy();
-		}
-		catch (IOException ioe) {
-			_log.error(ioe, ioe);
 		}
 		finally {
 			if (_portletClassLoader != null) {
@@ -252,6 +247,11 @@ public class InvokerPortletImpl
 
 			_portlet.init(portletConfig);
 		}
+		catch (Throwable throwable) {
+			cleanUp();
+
+			throw throwable;
+		}
 		finally {
 			if (_portletClassLoader != null) {
 				currentThread.setContextClassLoader(contextClassLoader);
@@ -274,24 +274,6 @@ public class InvokerPortletImpl
 		return _headerPortlet;
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public boolean isStrutsBridgePortlet() {
-		return false;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public boolean isStrutsPortlet() {
-		return false;
-	}
-
 	@Override
 	public void processAction(
 		ActionRequest actionRequest, ActionResponse actionResponse) {
@@ -303,8 +285,8 @@ public class InvokerPortletImpl
 		try {
 			invokeAction(actionRequest, actionResponse);
 		}
-		catch (Exception e) {
-			processException(e, actionRequest, actionResponse);
+		catch (Exception exception) {
+			processException(exception, actionRequest, actionResponse);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -326,8 +308,8 @@ public class InvokerPortletImpl
 		try {
 			invokeEvent(eventRequest, eventResponse);
 		}
-		catch (Exception e) {
-			processException(e, eventRequest, eventResponse);
+		catch (Exception exception) {
+			processException(exception, eventRequest, eventResponse);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -390,7 +372,7 @@ public class InvokerPortletImpl
 
 				response = new InvokerPortletResponse(
 					title, bufferCacheServletResponse.getString(),
-					now + Time.SECOND * _expCache.intValue());
+					now + (Time.SECOND * _expCache.intValue()));
 
 				sessionResponses.put(sessionResponseId, response);
 			}
@@ -400,7 +382,7 @@ public class InvokerPortletImpl
 				response.setTitle(title);
 
 				response.setContent(bufferCacheServletResponse.getString());
-				response.setTime(now + Time.SECOND * _expCache.intValue());
+				response.setTime(now + (Time.SECOND * _expCache.intValue()));
 			}
 			else {
 				renderResponseImpl.setTitle(response.getTitle());
@@ -412,11 +394,16 @@ public class InvokerPortletImpl
 			}
 		}
 
-		Map<String, String[]> properties =
-			((RenderResponseImpl)renderResponse).getProperties();
+		RenderResponseImpl renderResponseImpl =
+			(RenderResponseImpl)renderResponse;
+
+		Map<String, String[]> properties = renderResponseImpl.getProperties();
 
 		if (properties.containsKey("clear-request-parameters")) {
-			((RenderRequestImpl)renderRequest).clearRenderParameters();
+			RenderRequestImpl renderRequestImpl =
+				(RenderRequestImpl)renderRequest;
+
+			renderRequestImpl.clearRenderParameters();
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -508,8 +495,8 @@ public class InvokerPortletImpl
 		try {
 			invokeResource(resourceRequest, resourceResponse);
 		}
-		catch (Exception e) {
-			processException(e, resourceRequest, resourceResponse);
+		catch (Exception exception) {
+			processException(exception, resourceRequest, resourceResponse);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -524,9 +511,20 @@ public class InvokerPortletImpl
 	public void setPortletFilters() {
 	}
 
+	protected void cleanUp() {
+		try {
+			Closeable closeable = (Closeable)_invokerFilterContainer;
+
+			closeable.close();
+		}
+		catch (IOException ioException) {
+			_log.error("Unable to close invoker filter container", ioException);
+		}
+	}
+
 	protected void invoke(
-			LiferayPortletRequest portletRequest,
-			LiferayPortletResponse portletResponse, String lifecycle,
+			LiferayPortletRequest liferayPortletRequest,
+			LiferayPortletResponse liferayPortletResponse, String lifecycle,
 			List<? extends PortletFilter> filters)
 		throws IOException, PortletException {
 
@@ -549,9 +547,9 @@ public class InvokerPortletImpl
 				servletContext.getRequestDispatcher(path);
 
 			HttpServletRequest httpServletRequest =
-				portletRequest.getHttpServletRequest();
+				liferayPortletRequest.getHttpServletRequest();
 			HttpServletResponse httpServletResponse =
-				portletResponse.getHttpServletResponse();
+				liferayPortletResponse.getHttpServletResponse();
 
 			httpServletRequest.setAttribute(
 				JavaConstants.JAVAX_PORTLET_PORTLET, _portlet);
@@ -574,36 +572,34 @@ public class InvokerPortletImpl
 						httpServletRequest, httpServletResponse);
 				}
 			}
-			catch (ServletException se) {
-				Throwable cause = se.getRootCause();
+			catch (ServletException servletException) {
+				Throwable throwable = servletException.getRootCause();
 
-				if (cause instanceof PortletException) {
-					throw (PortletException)cause;
+				if (throwable instanceof PortletException) {
+					throw (PortletException)throwable;
 				}
 
-				throw new PortletException(cause);
+				throw new PortletException(throwable);
 			}
 		}
 		else {
 			PortletFilterUtil.doFilter(
-				portletRequest, portletResponse, lifecycle, filterChain);
+				liferayPortletRequest, liferayPortletResponse, lifecycle,
+				filterChain);
 		}
 
-		portletResponse.transferMarkupHeadElements();
+		liferayPortletResponse.transferMarkupHeadElements();
 
-		Map<String, String[]> properties = portletResponse.getProperties();
+		Map<String, String[]> properties =
+			liferayPortletResponse.getProperties();
 
-		if (MapUtil.isNotEmpty(properties)) {
-			if (_expCache != null) {
-				String[] expCache = properties.get(
-					RenderResponse.EXPIRATION_CACHE);
+		if (MapUtil.isNotEmpty(properties) && (_expCache != null)) {
+			String[] expCache = properties.get(RenderResponse.EXPIRATION_CACHE);
 
-				if ((expCache != null) && (expCache.length > 0) &&
-					(expCache[0] != null)) {
+			if ((expCache != null) && (expCache.length > 0) &&
+				(expCache[0] != null)) {
 
-					_expCache = Integer.valueOf(
-						GetterUtil.getInteger(expCache[0]));
-				}
+				_expCache = Integer.valueOf(GetterUtil.getInteger(expCache[0]));
 			}
 		}
 	}
@@ -612,13 +608,10 @@ public class InvokerPortletImpl
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws IOException, PortletException {
 
-		LiferayPortletRequest portletRequest =
-			PortalUtil.getLiferayPortletRequest(actionRequest);
-		LiferayPortletResponse portletResponse =
-			PortalUtil.getLiferayPortletResponse(actionResponse);
-
 		invoke(
-			portletRequest, portletResponse, PortletRequest.ACTION_PHASE,
+			PortalUtil.getLiferayPortletRequest(actionRequest),
+			PortalUtil.getLiferayPortletResponse(actionResponse),
+			PortletRequest.ACTION_PHASE,
 			_invokerFilterContainer.getActionFilters());
 	}
 
@@ -626,13 +619,10 @@ public class InvokerPortletImpl
 			EventRequest eventRequest, EventResponse eventResponse)
 		throws IOException, PortletException {
 
-		LiferayPortletRequest portletRequest =
-			PortalUtil.getLiferayPortletRequest(eventRequest);
-		LiferayPortletResponse portletResponse =
-			PortalUtil.getLiferayPortletResponse(eventResponse);
-
 		invoke(
-			portletRequest, portletResponse, PortletRequest.EVENT_PHASE,
+			PortalUtil.getLiferayPortletRequest(eventRequest),
+			PortalUtil.getLiferayPortletResponse(eventResponse),
+			PortletRequest.EVENT_PHASE,
 			_invokerFilterContainer.getEventFilters());
 	}
 
@@ -640,20 +630,21 @@ public class InvokerPortletImpl
 			HeaderRequest headerRequest, HeaderResponse headerResponse)
 		throws IOException, PortletException {
 
-		LiferayPortletRequest portletRequest =
+		LiferayPortletRequest liferayPortletRequest =
 			PortalUtil.getLiferayPortletRequest(headerRequest);
-		LiferayPortletResponse portletResponse =
+		LiferayPortletResponse liferayPortletResponse =
 			PortalUtil.getLiferayPortletResponse(headerResponse);
 
 		try {
 			invoke(
-				portletRequest, portletResponse, PortletRequest.HEADER_PHASE,
+				liferayPortletRequest, liferayPortletResponse,
+				PortletRequest.HEADER_PHASE,
 				_invokerFilterContainer.getHeaderFilters());
 		}
-		catch (Exception e) {
-			processException(e, headerRequest, headerResponse);
+		catch (Exception exception) {
+			processException(exception, headerRequest, headerResponse);
 
-			throw e;
+			throw exception;
 		}
 	}
 
@@ -661,20 +652,21 @@ public class InvokerPortletImpl
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
-		LiferayPortletRequest portletRequest =
+		LiferayPortletRequest liferayPortletRequest =
 			PortalUtil.getLiferayPortletRequest(renderRequest);
-		LiferayPortletResponse portletResponse =
+		LiferayPortletResponse liferayPortletResponse =
 			PortalUtil.getLiferayPortletResponse(renderResponse);
 
 		try {
 			invoke(
-				portletRequest, portletResponse, PortletRequest.RENDER_PHASE,
+				liferayPortletRequest, liferayPortletResponse,
+				PortletRequest.RENDER_PHASE,
 				_invokerFilterContainer.getRenderFilters());
 		}
-		catch (Exception e) {
-			processException(e, renderRequest, renderResponse);
+		catch (Exception exception) {
+			processException(exception, renderRequest, renderResponse);
 
-			throw e;
+			throw exception;
 		}
 
 		RenderResponseImpl renderResponseImpl =
@@ -687,38 +679,35 @@ public class InvokerPortletImpl
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws IOException, PortletException {
 
-		LiferayPortletRequest portletRequest =
-			PortalUtil.getLiferayPortletRequest(resourceRequest);
-		LiferayPortletResponse portletResponse =
-			PortalUtil.getLiferayPortletResponse(resourceResponse);
-
 		invoke(
-			portletRequest, portletResponse, PortletRequest.RESOURCE_PHASE,
+			PortalUtil.getLiferayPortletRequest(resourceRequest),
+			PortalUtil.getLiferayPortletResponse(resourceResponse),
+			PortletRequest.RESOURCE_PHASE,
 			_invokerFilterContainer.getResourceFilters());
 	}
 
 	protected void processException(
-		Exception e, PortletRequest portletRequest,
-		PortletResponse portletResponse) {
+		Exception exception, PortletRequest liferayPortletRequest,
+		PortletResponse liferayPortletResponse) {
 
-		if (portletResponse instanceof StateAwareResponseImpl) {
+		if (liferayPortletResponse instanceof StateAwareResponseImpl) {
 
 			// PLT.5.4.7, TCK xxiii and PLT.15.2.6, cxlvi
 
 			StateAwareResponseImpl stateAwareResponseImpl =
-				(StateAwareResponseImpl)portletResponse;
+				(StateAwareResponseImpl)liferayPortletResponse;
 
 			stateAwareResponseImpl.reset();
 		}
 
-		if (e instanceof RuntimeException) {
+		if (exception instanceof RuntimeException) {
 
 			// PLT.5.4.7, TCK xxv
 
-			e = new PortletException(e);
+			exception = new PortletException(exception);
 		}
 
-		if (e instanceof UnavailableException) {
+		if (exception instanceof UnavailableException) {
 
 			// PLT.5.4.7, TCK xxiv
 
@@ -727,19 +716,19 @@ public class InvokerPortletImpl
 			PortletLocalServiceUtil.deletePortlet(_portletModel);
 		}
 
-		if (e instanceof PortletException) {
-			if ((portletResponse instanceof StateAwareResponseImpl) &&
-				!(e instanceof UnavailableException)) {
+		if (exception instanceof PortletException) {
+			if ((liferayPortletResponse instanceof StateAwareResponseImpl) &&
+				!(exception instanceof UnavailableException)) {
 
 				return;
 			}
 
-			if (!(portletRequest instanceof RenderRequest)) {
-				portletRequest.setAttribute(_errorKey, e);
+			if (!(liferayPortletRequest instanceof RenderRequest)) {
+				liferayPortletRequest.setAttribute(_errorKey, exception);
 			}
 		}
 		else {
-			ReflectionUtil.throwException(e);
+			ReflectionUtil.throwException(exception);
 		}
 	}
 
@@ -759,6 +748,7 @@ public class InvokerPortletImpl
 		_expCache = portletModel.getExpCache();
 		_liferayPortletConfig = (LiferayPortletConfig)portletConfig;
 		_liferayPortletContext = (LiferayPortletContext)portletContext;
+
 		_portletId = _portletModel.getPortletId();
 
 		_errorKey = _portletId.concat(PortletException.class.getName());

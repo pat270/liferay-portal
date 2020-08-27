@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for LayoutSetPrototype. This utility wraps
  * <code>com.liferay.portal.service.impl.LayoutSetPrototypeServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetPrototypeService
  * @generated
  */
-@ProviderType
 public class LayoutSetPrototypeServiceUtil {
 
 	/*
@@ -83,10 +80,11 @@ public class LayoutSetPrototypeServiceUtil {
 		<com.liferay.portal.kernel.model.LayoutSetPrototype> search(
 				long companyId, Boolean active,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.portal.kernel.model.LayoutSetPrototype> obc)
+					<com.liferay.portal.kernel.model.LayoutSetPrototype>
+						orderByComparator)
 			throws com.liferay.portal.kernel.exception.PortalException {
 
-		return getService().search(companyId, active, obc);
+		return getService().search(companyId, active, orderByComparator);
 	}
 
 	public static com.liferay.portal.kernel.model.LayoutSetPrototype

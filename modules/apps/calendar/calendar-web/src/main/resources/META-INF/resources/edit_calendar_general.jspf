@@ -17,7 +17,8 @@
 <liferay-ui:header
 	backURL="<%= backURL %>"
 	cssClass="container-fluid-1280"
-	title='<%= (calendar == null) ? LanguageUtil.format(request, "new-calendar-for-x", calendarResourceName) : calendarName %>'
+	localizeTitle="<%= false %>"
+	title='<%= (calendar == null) ? LanguageUtil.format(request, "new-calendar-for-x", calendarResourceName, false) : calendarName %>'
 />
 
 <liferay-portlet:actionURL name="updateCalendar" var="updateCalendarURL" />
@@ -79,19 +80,22 @@
 </aui:form>
 
 <aui:script>
-	Liferay.Util.focusFormField(document.<portlet:namespace />fm.<portlet:namespace />name);
+	Liferay.Util.focusFormField(
+		document.<portlet:namespace />fm.<portlet:namespace />name
+	);
 </aui:script>
 
 <aui:script use="liferay-calendar-simple-color-picker">
-	window.<portlet:namespace />colorPicker = new Liferay.SimpleColorPicker(
-		{
-			color: '<%= ColorUtil.toHexString((calendar != null) ? calendar.getColor() : CalendarServiceConfigurationValues.CALENDAR_COLOR_DEFAULT) %>',
-			on: {
-				colorChange: function(event) {
-					A.one('#<portlet:namespace />color').val(parseInt(event.newVal.substring(1), 16));
-				}
+	window.<portlet:namespace />colorPicker = new Liferay.SimpleColorPicker({
+		color:
+			'<%= ColorUtil.toHexString((calendar != null) ? calendar.getColor() : CalendarServiceConfigurationValues.CALENDAR_COLOR_DEFAULT) %>',
+		on: {
+			colorChange: function (event) {
+				A.one('#<portlet:namespace />color').val(
+					parseInt(event.newVal.substring(1), 16)
+				);
 			},
-			render: '#<portlet:namespace />colorPicker'
-		}
-	);
+		},
+		render: '#<portlet:namespace />colorPicker',
+	});
 </aui:script>

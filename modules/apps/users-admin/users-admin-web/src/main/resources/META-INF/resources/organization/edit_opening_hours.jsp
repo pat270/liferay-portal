@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-EditContactInformationDisplayContext editContactInformationDisplayContext = new EditContactInformationDisplayContext("opening-hours", renderResponse, request);
+EditContactInformationDisplayContext editContactInformationDisplayContext = new EditContactInformationDisplayContext("opening-hours", request, renderResponse);
 
 editContactInformationDisplayContext.setPortletDisplay(portletDisplay, portletName);
 
@@ -43,7 +43,7 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 	<aui:input name="listType" type="hidden" value="<%= ListTypeConstants.ORGANIZATION_SERVICE %>" />
 	<aui:input name="primaryKey" type="hidden" value="<%= String.valueOf(editContactInformationDisplayContext.getPrimaryKey()) %>" />
 
-	<div class="container-fluid container-fluid-max-xl">
+	<clay:container-fluid>
 		<div class="sheet-lg" id="breadcrumb">
 			<liferay-ui:breadcrumb
 				showCurrentGroup="<%= false %>"
@@ -53,17 +53,17 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 			/>
 		</div>
 
-		<div class="sheet sheet-lg">
-			<div class="sheet-header">
+		<clay:sheet>
+			<clay:sheet-header>
 				<h2 class="sheet-title"><%= editContactInformationDisplayContext.getSheetTitle() %></h2>
-			</div>
+			</clay:sheet-header>
 
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<aui:model-context bean="<%= orgLabor %>" model="<%= OrgLabor.class %>" />
 
 				<liferay-ui:error key="<%= NoSuchListTypeException.class.getName() + editContactInformationDisplayContext.getClassName() + ListTypeConstants.ORGANIZATION_SERVICE %>" message="please-select-a-type" />
 
-				<aui:select label="type-of-service" listType="<%= ListTypeConstants.ORGANIZATION_SERVICE %>" name='<%= "orgLaborTypeId" %>' />
+				<aui:select label="type-of-service" listType="<%= ListTypeConstants.ORGANIZATION_SERVICE %>" name="orgLaborTypeId" />
 
 				<table border="0">
 
@@ -74,8 +74,9 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 					%>
 
 						<tr>
-							<td><h5><%= dayRowDisplay.getLongDayName() %></h5></td>
-
+							<td>
+								<h5><%= dayRowDisplay.getLongDayName() %></h5>
+							</td>
 							<td>
 								<aui:select cssClass="input-container" label="" name='<%= dayRowDisplay.getShortDayName() + "Open" %>'>
 									<aui:option value="-1" />
@@ -92,8 +93,9 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 
 								</aui:select>
 							</td>
-							<td><h5><%= StringUtil.lowerCase(LanguageUtil.get(request, "to")) %></h5></td>
-
+							<td>
+								<h5><%= StringUtil.lowerCase(LanguageUtil.get(request, "to")) %></h5>
+							</td>
 							<td>
 								<aui:select cssClass="input-container" label="" name='<%= dayRowDisplay.getShortDayName() + "Close" %>'>
 									<aui:option value="-1" />
@@ -117,13 +119,13 @@ PortalUtil.addPortletBreadcrumbEntry(request, editContactInformationDisplayConte
 					%>
 
 				</table>
-			</div>
+			</clay:sheet-section>
 
-			<div class="sheet-footer">
+			<clay:sheet-footer>
 				<aui:button primary="<%= true %>" type="submit" />
 
 				<aui:button href="<%= editContactInformationDisplayContext.getRedirect() %>" type="cancel" />
-			</div>
-		</div>
-	</div>
+			</clay:sheet-footer>
+		</clay:sheet>
+	</clay:container-fluid>
 </aui:form>

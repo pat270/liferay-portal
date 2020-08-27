@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBBan
  * @generated
  */
-@ProviderType
 public class MBBanWrapper
 	extends BaseModelWrapper<MBBan> implements MBBan, ModelWrapper<MBBan> {
 
@@ -45,6 +44,8 @@ public class MBBanWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("banId", getBanId());
 		attributes.put("groupId", getGroupId());
@@ -61,6 +62,18 @@ public class MBBanWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -173,6 +186,16 @@ public class MBBanWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this message boards ban.
+	 *
+	 * @return the ct collection ID of this message boards ban
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this message boards ban.
 	 *
 	 * @return the group ID of this message boards ban
@@ -200,6 +223,16 @@ public class MBBanWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this message boards ban.
+	 *
+	 * @return the mvcc version of this message boards ban
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -308,6 +341,16 @@ public class MBBanWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this message boards ban.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards ban
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this message boards ban.
 	 *
 	 * @param groupId the group ID of this message boards ban
@@ -335,6 +378,16 @@ public class MBBanWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this message boards ban.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards ban
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -385,6 +438,18 @@ public class MBBanWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<MBBan, Object>> getAttributeGetterFunctions() {
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<MBBan, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

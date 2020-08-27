@@ -60,8 +60,7 @@ public class LayoutPageTemplateStructureStagedModelRepository
 		return _layoutPageTemplateStructureLocalService.
 			addLayoutPageTemplateStructure(
 				userId, serviceContext.getScopeGroupId(),
-				layoutPageTemplateStructure.getClassNameId(),
-				layoutPageTemplateStructure.getClassPK(), null, serviceContext);
+				layoutPageTemplateStructure.getPlid(), null, serviceContext);
 	}
 
 	@Override

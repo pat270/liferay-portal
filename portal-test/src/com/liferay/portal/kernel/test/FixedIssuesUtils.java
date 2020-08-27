@@ -21,8 +21,10 @@ import com.liferay.portal.kernel.util.StringUtil;
 import org.junit.Assume;
 
 /**
- * @author Zsolt Balogh
+ * @author     Zsolt Balogh
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class FixedIssuesUtils {
 
 	public static void assumeIssueIsFixed(String issue) {
@@ -34,7 +36,7 @@ public class FixedIssuesUtils {
 	}
 
 	public static boolean isIssueFixed(String issue) {
-		return ArrayUtil.contains(_instance._fixedIssues, issue);
+		return ArrayUtil.contains(_fixedIssuesUtils._fixedIssues, issue);
 	}
 
 	private FixedIssuesUtils() {
@@ -42,7 +44,8 @@ public class FixedIssuesUtils {
 			GetterUtil.getString(System.getProperty("fixed.issues")));
 	}
 
-	private static final FixedIssuesUtils _instance = new FixedIssuesUtils();
+	private static final FixedIssuesUtils _fixedIssuesUtils =
+		new FixedIssuesUtils();
 
 	private final String[] _fixedIssues;
 

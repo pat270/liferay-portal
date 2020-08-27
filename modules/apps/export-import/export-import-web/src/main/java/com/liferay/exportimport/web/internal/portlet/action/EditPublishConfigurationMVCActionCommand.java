@@ -15,13 +15,13 @@
 package com.liferay.exportimport.web.internal.portlet.action;
 
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationHelper;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationUtil;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -155,10 +155,10 @@ public class EditPublishConfigurationMVCActionCommand
 
 			sendRedirect(actionRequest, actionResponse);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			SessionErrors.add(actionRequest, e.getClass(), e);
+			SessionErrors.add(actionRequest, exception.getClass(), exception);
 		}
 	}
 
@@ -172,12 +172,11 @@ public class EditPublishConfigurationMVCActionCommand
 		BackgroundTask backgroundTask =
 			BackgroundTaskManagerUtil.getBackgroundTask(backgroundTaskId);
 
-		Map<String, Serializable> taskContextMap =
-			backgroundTask.getTaskContextMap();
-
 		ExportImportConfiguration exportImportConfiguration =
 			exportImportConfigurationLocalService.getExportImportConfiguration(
-				MapUtil.getLong(taskContextMap, "exportImportConfigurationId"));
+				MapUtil.getLong(
+					backgroundTask.getTaskContextMap(),
+					"exportImportConfigurationId"));
 
 		if (exportImportConfiguration.getType() ==
 				ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_LOCAL) {
@@ -250,22 +249,22 @@ public class EditPublishConfigurationMVCActionCommand
 
 		if (exportImportConfigurationId > 0) {
 			if (localPublishing) {
-				return ExportImportConfigurationHelper.
+				return ExportImportConfigurationUtil.
 					updatePublishLayoutLocalExportImportConfiguration(
 						actionRequest);
 			}
 
-			return ExportImportConfigurationHelper.
+			return ExportImportConfigurationUtil.
 				updatePublishLayoutRemoteExportImportConfiguration(
 					actionRequest);
 		}
 
 		if (localPublishing) {
-			return ExportImportConfigurationHelper.
+			return ExportImportConfigurationUtil.
 				addPublishLayoutLocalExportImportConfiguration(actionRequest);
 		}
 
-		return ExportImportConfigurationHelper.
+		return ExportImportConfigurationUtil.
 			addPublishLayoutRemoteExportImportConfiguration(actionRequest);
 	}
 

@@ -31,7 +31,7 @@ JournalArticle article = journalDisplayContext.getArticle();
 		<%
 		JournalHistoryDisplayContext journalHistoryDisplayContext = new JournalHistoryDisplayContext(renderRequest, renderResponse, journalDisplayContext.getArticle());
 
-		JournalHistoryManagementToolbarDisplayContext journalHistoryManagementToolbarDisplayContext = new JournalHistoryManagementToolbarDisplayContext(article, liferayPortletRequest, liferayPortletResponse, request, journalHistoryDisplayContext);
+		JournalHistoryManagementToolbarDisplayContext journalHistoryManagementToolbarDisplayContext = new JournalHistoryManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, article, journalHistoryDisplayContext);
 
 		portletDisplay.setShowBackIcon(true);
 		portletDisplay.setURLBack(journalHistoryDisplayContext.getBackURL());
@@ -66,9 +66,9 @@ JournalArticle article = journalDisplayContext.getArticle();
 				>
 
 					<%
-					Map<String, Object> rowData = new HashMap<>();
-
-					rowData.put("actions", journalHistoryManagementToolbarDisplayContext.getAvailableActions(articleVersion));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", journalHistoryManagementToolbarDisplayContext.getAvailableActions(articleVersion)
+					).build();
 
 					row.setData(rowData);
 
@@ -137,14 +137,6 @@ JournalArticle article = journalDisplayContext.getArticle();
 								value="<%= HtmlUtil.escape(articleVersion.getTitle(locale)) %>"
 							/>
 
-							<c:if test="<%= journalDisplayContext.isChangeListColumnVisible() %>">
-								<liferay-ui:search-container-column-text
-									cssClass="change-list-title table-cell-content"
-									name="change-list"
-									value="<%= HtmlUtil.escape(journalDisplayContext.getChangeListName(articleVersion)) %>"
-								/>
-							</c:if>
-
 							<liferay-ui:search-container-column-text
 								cssClass="table-cell-expand-smallest table-cell-minw-100"
 								name="version"
@@ -196,7 +188,6 @@ JournalArticle article = journalDisplayContext.getArticle();
 
 		<liferay-frontend:component
 			componentId="<%= JournalWebConstants.JOURNAL_ELEMENTS_DEFAULT_EVENT_HANDLER %>"
-			context="<%= journalDisplayContext.getComponentContext() %>"
 			module="js/ElementsDefaultEventHandler.es"
 		/>
 

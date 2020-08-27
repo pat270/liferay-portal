@@ -14,6 +14,9 @@
 
 package com.liferay.petra.io;
 
+import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
+import com.liferay.petra.string.StringPool;
+
 import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,29 +38,71 @@ public class StreamUtil {
 		StreamUtil.class.getName() + ".force.tio");
 
 	public static void cleanUp(Closeable... closeables) throws IOException {
-		IOException ioException = null;
+		IOException ioException1 = null;
 
 		for (Closeable closeable : closeables) {
 			if (closeable != null) {
 				try {
 					closeable.close();
 				}
-				catch (IOException ioe) {
-					if (ioException == null) {
-						ioException = ioe;
+				catch (IOException ioException2) {
+					if (ioException1 == null) {
+						ioException1 = ioException2;
 					}
 					else {
-						ioException.addSuppressed(ioe);
+						ioException1.addSuppressed(ioException2);
 					}
 				}
 			}
 		}
 
-		if (ioException == null) {
+		if (ioException1 == null) {
 			return;
 		}
 
-		throw ioException;
+		throw ioException1;
+	}
+
+	public static byte[] toByteArray(InputStream inputStream)
+		throws IOException {
+
+		if (inputStream == null) {
+			return null;
+		}
+
+		try {
+			UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
+				new UnsyncByteArrayOutputStream(inputStream.available());
+
+			_transferByteArray(
+				inputStream, unsyncByteArrayOutputStream, BUFFER_SIZE, -1);
+
+			byte[] unsafeByteArray =
+				unsyncByteArrayOutputStream.unsafeGetByteArray();
+
+			if (unsafeByteArray.length == unsyncByteArrayOutputStream.size()) {
+				return unsafeByteArray;
+			}
+
+			return unsyncByteArrayOutputStream.toByteArray();
+		}
+		finally {
+			inputStream.close();
+		}
+	}
+
+	public static String toString(InputStream inputStream) throws IOException {
+		return toString(inputStream, StringPool.UTF8);
+	}
+
+	public static String toString(InputStream inputStream, String charsetName)
+		throws IOException {
+
+		if (inputStream == null) {
+			return null;
+		}
+
+		return new String(toByteArray(inputStream), charsetName);
 	}
 
 	public static void transfer(

@@ -15,6 +15,7 @@
 package com.liferay.portal.workflow.kaleo.service.persistence.impl;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -22,33 +23,39 @@ import com.liferay.portal.kernel.dao.orm.Query;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.workflow.kaleo.exception.NoSuchTimerException;
 import com.liferay.portal.workflow.kaleo.model.KaleoTimer;
+import com.liferay.portal.workflow.kaleo.model.KaleoTimerTable;
 import com.liferay.portal.workflow.kaleo.model.impl.KaleoTimerImpl;
 import com.liferay.portal.workflow.kaleo.model.impl.KaleoTimerModelImpl;
 import com.liferay.portal.workflow.kaleo.service.persistence.KaleoTimerPersistence;
+import com.liferay.portal.workflow.kaleo.service.persistence.impl.constants.KaleoPersistenceConstants;
 
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The persistence implementation for the kaleo timer service.
@@ -60,7 +67,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
+@Component(service = KaleoTimerPersistence.class)
 public class KaleoTimerPersistenceImpl
 	extends BasePersistenceImpl<KaleoTimer> implements KaleoTimerPersistence {
 
@@ -105,7 +112,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns a range of all the kaleo timers where kaleoClassName = &#63; and kaleoClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -125,7 +132,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns an ordered range of all the kaleo timers where kaleoClassName = &#63; and kaleoClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -148,7 +155,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns an ordered range of all the kaleo timers where kaleoClassName = &#63; and kaleoClassPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -156,29 +163,29 @@ public class KaleoTimerPersistenceImpl
 	 * @param start the lower bound of the range of kaleo timers
 	 * @param end the upper bound of the range of kaleo timers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo timers
 	 */
 	@Override
 	public List<KaleoTimer> findByKCN_KCPK(
 		String kaleoClassName, long kaleoClassPK, int start, int end,
 		OrderByComparator<KaleoTimer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		kaleoClassName = Objects.toString(kaleoClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByKCN_KCPK;
-			finderArgs = new Object[] {kaleoClassName, kaleoClassPK};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByKCN_KCPK;
+				finderArgs = new Object[] {kaleoClassName, kaleoClassPK};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByKCN_KCPK;
 			finderArgs = new Object[] {
 				kaleoClassName, kaleoClassPK, start, end, orderByComparator
@@ -187,7 +194,7 @@ public class KaleoTimerPersistenceImpl
 
 		List<KaleoTimer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTimer>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -206,77 +213,67 @@ public class KaleoTimerPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_KALEOTIMER_WHERE);
+			sb.append(_SQL_SELECT_KALEOTIMER_WHERE);
 
 			boolean bindKaleoClassName = false;
 
 			if (kaleoClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_3);
 			}
 			else {
 				bindKaleoClassName = true;
 
-				query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSPK_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSPK_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindKaleoClassName) {
-					qPos.add(kaleoClassName);
+					queryPos.add(kaleoClassName);
 				}
 
-				qPos.add(kaleoClassPK);
+				queryPos.add(kaleoClassPK);
 
-				if (!pagination) {
-					list = (List<KaleoTimer>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTimer>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTimer>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -308,19 +305,19 @@ public class KaleoTimerPersistenceImpl
 			return kaleoTimer;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoClassName=");
-		msg.append(kaleoClassName);
+		sb.append("kaleoClassName=");
+		sb.append(kaleoClassName);
 
-		msg.append(", kaleoClassPK=");
-		msg.append(kaleoClassPK);
+		sb.append(", kaleoClassPK=");
+		sb.append(kaleoClassPK);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTimerException(msg.toString());
+		throw new NoSuchTimerException(sb.toString());
 	}
 
 	/**
@@ -368,19 +365,19 @@ public class KaleoTimerPersistenceImpl
 			return kaleoTimer;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoClassName=");
-		msg.append(kaleoClassName);
+		sb.append("kaleoClassName=");
+		sb.append(kaleoClassName);
 
-		msg.append(", kaleoClassPK=");
-		msg.append(kaleoClassPK);
+		sb.append(", kaleoClassPK=");
+		sb.append(kaleoClassPK);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTimerException(msg.toString());
+		throw new NoSuchTimerException(sb.toString());
 	}
 
 	/**
@@ -451,8 +448,8 @@ public class KaleoTimerPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -464,116 +461,116 @@ public class KaleoTimerPersistenceImpl
 		long kaleoClassPK, OrderByComparator<KaleoTimer> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_KALEOTIMER_WHERE);
+		sb.append(_SQL_SELECT_KALEOTIMER_WHERE);
 
 		boolean bindKaleoClassName = false;
 
 		if (kaleoClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_3);
 		}
 		else {
 			bindKaleoClassName = true;
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSPK_2);
+		sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSPK_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindKaleoClassName) {
-			qPos.add(kaleoClassName);
+			queryPos.add(kaleoClassName);
 		}
 
-		qPos.add(kaleoClassPK);
+		queryPos.add(kaleoClassPK);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(kaleoTimer)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTimer> list = q.list();
+		List<KaleoTimer> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -618,48 +615,46 @@ public class KaleoTimerPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_KALEOTIMER_WHERE);
+			sb.append(_SQL_COUNT_KALEOTIMER_WHERE);
 
 			boolean bindKaleoClassName = false;
 
 			if (kaleoClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_3);
 			}
 			else {
 				bindKaleoClassName = true;
 
-				query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSPK_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_KALEOCLASSPK_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindKaleoClassName) {
-					qPos.add(kaleoClassName);
+					queryPos.add(kaleoClassName);
 				}
 
-				qPos.add(kaleoClassPK);
+				queryPos.add(kaleoClassPK);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -703,7 +698,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns a range of all the kaleo timers where kaleoClassName = &#63; and kaleoClassPK = &#63; and blocking = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -726,7 +721,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns an ordered range of all the kaleo timers where kaleoClassName = &#63; and kaleoClassPK = &#63; and blocking = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -751,7 +746,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns an ordered range of all the kaleo timers where kaleoClassName = &#63; and kaleoClassPK = &#63; and blocking = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param kaleoClassName the kaleo class name
@@ -760,29 +755,32 @@ public class KaleoTimerPersistenceImpl
 	 * @param start the lower bound of the range of kaleo timers
 	 * @param end the upper bound of the range of kaleo timers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching kaleo timers
 	 */
 	@Override
 	public List<KaleoTimer> findByKCN_KCPK_Blocking(
 		String kaleoClassName, long kaleoClassPK, boolean blocking, int start,
 		int end, OrderByComparator<KaleoTimer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		kaleoClassName = Objects.toString(kaleoClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByKCN_KCPK_Blocking;
-			finderArgs = new Object[] {kaleoClassName, kaleoClassPK, blocking};
+			if (useFinderCache) {
+				finderPath =
+					_finderPathWithoutPaginationFindByKCN_KCPK_Blocking;
+				finderArgs = new Object[] {
+					kaleoClassName, kaleoClassPK, blocking
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByKCN_KCPK_Blocking;
 			finderArgs = new Object[] {
 				kaleoClassName, kaleoClassPK, blocking, start, end,
@@ -792,7 +790,7 @@ public class KaleoTimerPersistenceImpl
 
 		List<KaleoTimer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTimer>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -812,81 +810,71 @@ public class KaleoTimerPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_KALEOTIMER_WHERE);
+			sb.append(_SQL_SELECT_KALEOTIMER_WHERE);
 
 			boolean bindKaleoClassName = false;
 
 			if (kaleoClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_3);
 			}
 			else {
 				bindKaleoClassName = true;
 
-				query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSPK_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSPK_2);
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_BLOCKING_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_BLOCKING_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindKaleoClassName) {
-					qPos.add(kaleoClassName);
+					queryPos.add(kaleoClassName);
 				}
 
-				qPos.add(kaleoClassPK);
+				queryPos.add(kaleoClassPK);
 
-				qPos.add(blocking);
+				queryPos.add(blocking);
 
-				if (!pagination) {
-					list = (List<KaleoTimer>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTimer>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTimer>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -919,22 +907,22 @@ public class KaleoTimerPersistenceImpl
 			return kaleoTimer;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoClassName=");
-		msg.append(kaleoClassName);
+		sb.append("kaleoClassName=");
+		sb.append(kaleoClassName);
 
-		msg.append(", kaleoClassPK=");
-		msg.append(kaleoClassPK);
+		sb.append(", kaleoClassPK=");
+		sb.append(kaleoClassPK);
 
-		msg.append(", blocking=");
-		msg.append(blocking);
+		sb.append(", blocking=");
+		sb.append(blocking);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTimerException(msg.toString());
+		throw new NoSuchTimerException(sb.toString());
 	}
 
 	/**
@@ -984,22 +972,22 @@ public class KaleoTimerPersistenceImpl
 			return kaleoTimer;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("kaleoClassName=");
-		msg.append(kaleoClassName);
+		sb.append("kaleoClassName=");
+		sb.append(kaleoClassName);
 
-		msg.append(", kaleoClassPK=");
-		msg.append(kaleoClassPK);
+		sb.append(", kaleoClassPK=");
+		sb.append(kaleoClassPK);
 
-		msg.append(", blocking=");
-		msg.append(blocking);
+		sb.append(", blocking=");
+		sb.append(blocking);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchTimerException(msg.toString());
+		throw new NoSuchTimerException(sb.toString());
 	}
 
 	/**
@@ -1074,8 +1062,8 @@ public class KaleoTimerPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1087,120 +1075,120 @@ public class KaleoTimerPersistenceImpl
 		long kaleoClassPK, boolean blocking,
 		OrderByComparator<KaleoTimer> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_KALEOTIMER_WHERE);
+		sb.append(_SQL_SELECT_KALEOTIMER_WHERE);
 
 		boolean bindKaleoClassName = false;
 
 		if (kaleoClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_3);
 		}
 		else {
 			bindKaleoClassName = true;
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSPK_2);
+		sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSPK_2);
 
-		query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_BLOCKING_2);
+		sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_BLOCKING_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
+			sb.append(KaleoTimerModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindKaleoClassName) {
-			qPos.add(kaleoClassName);
+			queryPos.add(kaleoClassName);
 		}
 
-		qPos.add(kaleoClassPK);
+		queryPos.add(kaleoClassPK);
 
-		qPos.add(blocking);
+		queryPos.add(blocking);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(kaleoTimer)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<KaleoTimer> list = q.list();
+		List<KaleoTimer> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1253,52 +1241,50 @@ public class KaleoTimerPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_KALEOTIMER_WHERE);
+			sb.append(_SQL_COUNT_KALEOTIMER_WHERE);
 
 			boolean bindKaleoClassName = false;
 
 			if (kaleoClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_3);
 			}
 			else {
 				bindKaleoClassName = true;
 
-				query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSPK_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_KALEOCLASSPK_2);
 
-			query.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_BLOCKING_2);
+			sb.append(_FINDER_COLUMN_KCN_KCPK_BLOCKING_BLOCKING_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindKaleoClassName) {
-					qPos.add(kaleoClassName);
+					queryPos.add(kaleoClassName);
 				}
 
-				qPos.add(kaleoClassPK);
+				queryPos.add(kaleoClassPK);
 
-				qPos.add(blocking);
+				queryPos.add(blocking);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1328,7 +1314,8 @@ public class KaleoTimerPersistenceImpl
 
 		setModelImplClass(KaleoTimerImpl.class);
 		setModelPKClass(long.class);
-		setEntityCacheEnabled(KaleoTimerModelImpl.ENTITY_CACHE_ENABLED);
+
+		setTable(KaleoTimerTable.INSTANCE);
 	}
 
 	/**
@@ -1339,10 +1326,7 @@ public class KaleoTimerPersistenceImpl
 	@Override
 	public void cacheResult(KaleoTimer kaleoTimer) {
 		entityCache.putResult(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED, KaleoTimerImpl.class,
-			kaleoTimer.getPrimaryKey(), kaleoTimer);
-
-		kaleoTimer.resetOriginalValues();
+			KaleoTimerImpl.class, kaleoTimer.getPrimaryKey(), kaleoTimer);
 	}
 
 	/**
@@ -1354,13 +1338,9 @@ public class KaleoTimerPersistenceImpl
 	public void cacheResult(List<KaleoTimer> kaleoTimers) {
 		for (KaleoTimer kaleoTimer : kaleoTimers) {
 			if (entityCache.getResult(
-					KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
 					KaleoTimerImpl.class, kaleoTimer.getPrimaryKey()) == null) {
 
 				cacheResult(kaleoTimer);
-			}
-			else {
-				kaleoTimer.resetOriginalValues();
 			}
 		}
 	}
@@ -1391,8 +1371,7 @@ public class KaleoTimerPersistenceImpl
 	@Override
 	public void clearCache(KaleoTimer kaleoTimer) {
 		entityCache.removeResult(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED, KaleoTimerImpl.class,
-			kaleoTimer.getPrimaryKey());
+			KaleoTimerImpl.class, kaleoTimer.getPrimaryKey());
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
@@ -1405,8 +1384,18 @@ public class KaleoTimerPersistenceImpl
 
 		for (KaleoTimer kaleoTimer : kaleoTimers) {
 			entityCache.removeResult(
-				KaleoTimerModelImpl.ENTITY_CACHE_ENABLED, KaleoTimerImpl.class,
-				kaleoTimer.getPrimaryKey());
+				KaleoTimerImpl.class, kaleoTimer.getPrimaryKey());
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(KaleoTimerImpl.class, primaryKey);
 		}
 	}
 
@@ -1423,7 +1412,7 @@ public class KaleoTimerPersistenceImpl
 		kaleoTimer.setNew(true);
 		kaleoTimer.setPrimaryKey(kaleoTimerId);
 
-		kaleoTimer.setCompanyId(companyProvider.getCompanyId());
+		kaleoTimer.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return kaleoTimer;
 	}
@@ -1470,11 +1459,11 @@ public class KaleoTimerPersistenceImpl
 
 			return remove(kaleoTimer);
 		}
-		catch (NoSuchTimerException nsee) {
-			throw nsee;
+		catch (NoSuchTimerException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1497,8 +1486,8 @@ public class KaleoTimerPersistenceImpl
 				session.delete(kaleoTimer);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1571,8 +1560,8 @@ public class KaleoTimerPersistenceImpl
 				kaleoTimer = (KaleoTimer)session.merge(kaleoTimer);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1580,10 +1569,7 @@ public class KaleoTimerPersistenceImpl
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!KaleoTimerModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 				kaleoTimerModelImpl.getKaleoClassName(),
 				kaleoTimerModelImpl.getKaleoClassPK()
@@ -1613,8 +1599,9 @@ public class KaleoTimerPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTimerModelImpl.getOriginalKaleoClassName(),
-					kaleoTimerModelImpl.getOriginalKaleoClassPK()
+					kaleoTimerModelImpl.getColumnOriginalValue(
+						"kaleoClassName"),
+					kaleoTimerModelImpl.getColumnOriginalValue("kaleoClassPK")
 				};
 
 				finderCache.removeResult(_finderPathCountByKCN_KCPK, args);
@@ -1636,9 +1623,10 @@ public class KaleoTimerPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					kaleoTimerModelImpl.getOriginalKaleoClassName(),
-					kaleoTimerModelImpl.getOriginalKaleoClassPK(),
-					kaleoTimerModelImpl.getOriginalBlocking()
+					kaleoTimerModelImpl.getColumnOriginalValue(
+						"kaleoClassName"),
+					kaleoTimerModelImpl.getColumnOriginalValue("kaleoClassPK"),
+					kaleoTimerModelImpl.getColumnOriginalValue("blocking")
 				};
 
 				finderCache.removeResult(
@@ -1660,8 +1648,8 @@ public class KaleoTimerPersistenceImpl
 		}
 
 		entityCache.putResult(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED, KaleoTimerImpl.class,
-			kaleoTimer.getPrimaryKey(), kaleoTimer, false);
+			KaleoTimerImpl.class, kaleoTimer.getPrimaryKey(), kaleoTimer,
+			false);
 
 		kaleoTimer.resetOriginalValues();
 
@@ -1732,7 +1720,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns a range of all the kaleo timers.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo timers
@@ -1748,7 +1736,7 @@ public class KaleoTimerPersistenceImpl
 	 * Returns an ordered range of all the kaleo timers.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo timers
@@ -1767,64 +1755,62 @@ public class KaleoTimerPersistenceImpl
 	 * Returns an ordered range of all the kaleo timers.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>KaleoTimerModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo timers
 	 * @param end the upper bound of the range of kaleo timers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of kaleo timers
 	 */
 	@Override
 	public List<KaleoTimer> findAll(
 		int start, int end, OrderByComparator<KaleoTimer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<KaleoTimer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<KaleoTimer>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_KALEOTIMER);
+				sb.append(_SQL_SELECT_KALEOTIMER);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_KALEOTIMER;
 
-				if (pagination) {
-					sql = sql.concat(KaleoTimerModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(KaleoTimerModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -1832,29 +1818,19 @@ public class KaleoTimerPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<KaleoTimer>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<KaleoTimer>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<KaleoTimer>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1891,18 +1867,15 @@ public class KaleoTimerPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_KALEOTIMER);
+				Query query = session.createQuery(_SQL_COUNT_KALEOTIMER);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1935,28 +1908,23 @@ public class KaleoTimerPersistenceImpl
 	/**
 	 * Initializes the kaleo timer persistence.
 	 */
-	public void afterPropertiesSet() {
+	@Activate
+	public void activate() {
 		_finderPathWithPaginationFindAll = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, KaleoTimerImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+			KaleoTimerImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, KaleoTimerImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
-			new String[0]);
+			KaleoTimerImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByKCN_KCPK = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, KaleoTimerImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByKCN_KCPK",
+			KaleoTimerImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByKCN_KCPK",
 			new String[] {
 				String.class.getName(), Long.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -1964,23 +1932,20 @@ public class KaleoTimerPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByKCN_KCPK = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, KaleoTimerImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByKCN_KCPK",
+			KaleoTimerImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByKCN_KCPK",
 			new String[] {String.class.getName(), Long.class.getName()},
-			KaleoTimerModelImpl.KALEOCLASSNAME_COLUMN_BITMASK |
-			KaleoTimerModelImpl.KALEOCLASSPK_COLUMN_BITMASK);
+			KaleoTimerModelImpl.getColumnBitmask("kaleoClassName") |
+			KaleoTimerModelImpl.getColumnBitmask("kaleoClassPK"));
 
 		_finderPathCountByKCN_KCPK = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByKCN_KCPK",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByKCN_KCPK",
 			new String[] {String.class.getName(), Long.class.getName()});
 
 		_finderPathWithPaginationFindByKCN_KCPK_Blocking = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, KaleoTimerImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByKCN_KCPK_Blocking",
+			KaleoTimerImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByKCN_KCPK_Blocking",
 			new String[] {
 				String.class.getName(), Long.class.getName(),
 				Boolean.class.getName(), Integer.class.getName(),
@@ -1988,22 +1953,18 @@ public class KaleoTimerPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByKCN_KCPK_Blocking = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, KaleoTimerImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			KaleoTimerImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"findByKCN_KCPK_Blocking",
 			new String[] {
 				String.class.getName(), Long.class.getName(),
 				Boolean.class.getName()
 			},
-			KaleoTimerModelImpl.KALEOCLASSNAME_COLUMN_BITMASK |
-			KaleoTimerModelImpl.KALEOCLASSPK_COLUMN_BITMASK |
-			KaleoTimerModelImpl.BLOCKING_COLUMN_BITMASK);
+			KaleoTimerModelImpl.getColumnBitmask("kaleoClassName") |
+			KaleoTimerModelImpl.getColumnBitmask("kaleoClassPK") |
+			KaleoTimerModelImpl.getColumnBitmask("blocking"));
 
 		_finderPathCountByKCN_KCPK_Blocking = new FinderPath(
-			KaleoTimerModelImpl.ENTITY_CACHE_ENABLED,
-			KaleoTimerModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 			"countByKCN_KCPK_Blocking",
 			new String[] {
 				String.class.getName(), Long.class.getName(),
@@ -2011,20 +1972,44 @@ public class KaleoTimerPersistenceImpl
 			});
 	}
 
-	public void destroy() {
+	@Deactivate
+	public void deactivate() {
 		entityCache.removeCache(KaleoTimerImpl.class.getName());
 		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	@ServiceReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
+	@Override
+	@Reference(
+		target = KaleoPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
+	public void setConfiguration(Configuration configuration) {
+	}
 
-	@ServiceReference(type = EntityCache.class)
+	@Override
+	@Reference(
+		target = KaleoPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+	}
+
+	@Override
+	@Reference(
+		target = KaleoPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		super.setSessionFactory(sessionFactory);
+	}
+
+	@Reference
 	protected EntityCache entityCache;
 
-	@ServiceReference(type = FinderCache.class)
+	@Reference
 	protected FinderCache finderCache;
 
 	private static final String _SQL_SELECT_KALEOTIMER =
@@ -2049,5 +2034,14 @@ public class KaleoTimerPersistenceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		KaleoTimerPersistenceImpl.class);
+
+	static {
+		try {
+			Class.forName(KaleoPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

@@ -1,4 +1,5 @@
 definition {
+
 	var ddlDataDefinitionDescription = "Data Definition Description";
 	var ddlDataDefinitionName = "Data Definition Name";
 	var ddlListName = "List Name";
@@ -33,10 +34,10 @@ definition {
 			value1 = "Add List");
 
 		AssertTextEquals(
-			locator1 = "Portlet#H3_MODAL_TITLE",
+			locator1 = "Portlet#MODAL_TITLE",
 			value1 = "Add List");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PortletEntry.inputName(name = "${ddlListName}");
 
@@ -108,7 +109,7 @@ definition {
 			locator1 = "DDL#PORTLET_ACTIONS_EDIT_LIST",
 			value1 = "Edit List");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		PortletEntry.inputName(name = "${ddlListNameEdit}");
 
@@ -158,7 +159,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Dynamic Data Lists");
 
 		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
@@ -197,4 +197,5 @@ definition {
 			locator1 = "Portlet#H2_HEADER",
 			value1 = "${ddlListName}");
 	}
+
 }

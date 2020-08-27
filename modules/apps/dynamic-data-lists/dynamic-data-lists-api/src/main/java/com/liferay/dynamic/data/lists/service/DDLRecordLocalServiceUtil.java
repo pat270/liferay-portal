@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.lists.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see DDLRecordLocalService
  * @generated
  */
-@ProviderType
 public class DDLRecordLocalServiceUtil {
 
 	/*
@@ -42,6 +40,10 @@ public class DDLRecordLocalServiceUtil {
 
 	/**
 	 * Adds the ddl record to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddlRecord the ddl record
 	 * @return the ddl record that was added
@@ -81,66 +83,9 @@ public class DDLRecordLocalServiceUtil {
 	}
 
 	/**
-	 * Adds a record that's based on the fields object and that references the
-	 * record set.
-	 *
-	 * @param userId the primary key of the record's creator/owner
-	 * @param groupId the primary key of the record's group
-	 * @param recordSetId the primary key of the record set
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view.
-	 * @param fields the record values. See the dynamic-data-mapping-api
-	 module's Fields class for more information.
-	 * @param serviceContext the service context to be applied. This can
-	 set the UUID, guest permissions, and group permissions for
-	 the record.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addRecord(long, long, int, DDMFormValues, ServiceContext)}
+	 * @deprecated As of Athanasius (7.3.x)
 	 */
 	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecord addRecord(
-			long userId, long groupId, long recordSetId, int displayIndex,
-			com.liferay.dynamic.data.mapping.storage.Fields fields,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().addRecord(
-			userId, groupId, recordSetId, displayIndex, fields, serviceContext);
-	}
-
-	/**
-	 * Adds a record that's based on the fields map and that references the
-	 * record set.
-	 *
-	 * @param userId the primary key of the record's creator/owner
-	 * @param groupId the primary key of the record's group
-	 * @param recordSetId the primary key of the record set
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view
-	 * @param fieldsMap the record values. The fieldsMap is a map of field
-	 names and their serializable values.
-	 * @param serviceContext the service context to be applied. This can
-	 set the UUID, guest permissions, and group permissions for
-	 the record.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addRecord(long, long, int, DDMFormValues, ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecord addRecord(
-			long userId, long groupId, long recordSetId, int displayIndex,
-			java.util.Map<String, java.io.Serializable> fieldsMap,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().addRecord(
-			userId, groupId, recordSetId, displayIndex, fieldsMap,
-			serviceContext);
-	}
-
 	public static com.liferay.dynamic.data.lists.model.DDLRecord addRecord(
 			long userId, long groupId, long ddmStorageId, long ddlRecordSetId,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -148,6 +93,17 @@ public class DDLRecordLocalServiceUtil {
 
 		return getService().addRecord(
 			userId, groupId, ddmStorageId, ddlRecordSetId, serviceContext);
+	}
+
+	public static com.liferay.dynamic.data.lists.model.DDLRecord addRecord(
+			long userId, long groupId, long ddmStorageId, long ddlRecordSetId,
+			String className, long classPK,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addRecord(
+			userId, groupId, ddmStorageId, ddlRecordSetId, className, classPK,
+			serviceContext);
 	}
 
 	/**
@@ -163,7 +119,21 @@ public class DDLRecordLocalServiceUtil {
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the ddl record from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ddlRecord the ddl record
 	 * @return the ddl record that was removed
@@ -177,6 +147,10 @@ public class DDLRecordLocalServiceUtil {
 
 	/**
 	 * Deletes the ddl record with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param recordId the primary key of the ddl record
 	 * @return the ddl record that was removed
@@ -227,30 +201,6 @@ public class DDLRecordLocalServiceUtil {
 	}
 
 	/**
-	 * Disassociates the locale from the record.
-	 *
-	 * @param recordId the primary key of the record
-	 * @param locale the locale of the record values to be removed
-	 * @param serviceContext the service context to be applied. This can
-	 set the record modified date.
-	 * @return the affected record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateRecord(long, boolean, int, DDMFormValues,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecord
-			deleteRecordLocale(
-				long recordId, java.util.Locale locale,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().deleteRecordLocale(
-			recordId, locale, serviceContext);
-	}
-
-	/**
 	 * Deletes all the record set's records.
 	 *
 	 * @param recordSetId the primary key of the record set from which to
@@ -261,6 +211,12 @@ public class DDLRecordLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().deleteRecords(recordSetId);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -285,7 +241,7 @@ public class DDLRecordLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -304,7 +260,7 @@ public class DDLRecordLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -365,6 +321,12 @@ public class DDLRecordLocalServiceUtil {
 		fetchDDLRecordByUuidAndGroupId(String uuid, long groupId) {
 
 		return getService().fetchDDLRecordByUuidAndGroupId(uuid, groupId);
+	}
+
+	public static com.liferay.dynamic.data.lists.model.DDLRecord
+		fetchFirstRecord(String className, long classPK) {
+
+		return getService().fetchFirstRecord(className, classPK);
 	}
 
 	/**
@@ -475,7 +437,7 @@ public class DDLRecordLocalServiceUtil {
 	 * Returns a range of all the ddl records.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.dynamic.data.lists.model.impl.DDLRecordModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ddl records
@@ -561,18 +523,6 @@ public class DDLRecordLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getLatestRecordVersion(long)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecordVersion
-			getLatestRecordVersion(long recordId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getLatestRecordVersion(recordId);
-	}
-
 	public static Long[] getMinAndMaxCompanyRecordIds(
 		long companyId, int status, int scope) {
 
@@ -598,6 +548,9 @@ public class DDLRecordLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -669,9 +622,11 @@ public class DDLRecordLocalServiceUtil {
 		getRecords(
 			long recordSetId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.lists.model.DDLRecord> obc) {
+				<com.liferay.dynamic.data.lists.model.DDLRecord>
+					orderByComparator) {
 
-		return getService().getRecords(recordSetId, start, end, obc);
+		return getService().getRecords(
+			recordSetId, start, end, orderByComparator);
 	}
 
 	/**
@@ -691,9 +646,11 @@ public class DDLRecordLocalServiceUtil {
 		getRecords(
 			long recordSetId, long userId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.dynamic.data.lists.model.DDLRecord> obc) {
+				<com.liferay.dynamic.data.lists.model.DDLRecord>
+					orderByComparator) {
 
-		return getService().getRecords(recordSetId, userId, start, end, obc);
+		return getService().getRecords(
+			recordSetId, userId, start, end, orderByComparator);
 	}
 
 	public static int getRecordsCount(long recordSetId) {
@@ -719,60 +676,6 @@ public class DDLRecordLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersion(
-	 long)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecordVersion
-			getRecordVersion(long recordVersionId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getRecordVersion(recordVersionId);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersion(
-	 long, String)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecordVersion
-			getRecordVersion(long recordId, String version)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getRecordVersion(recordId, version);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersions(
-	 long, int, int, OrderByComparator)}
-	 */
-	@Deprecated
-	public static java.util.List
-		<com.liferay.dynamic.data.lists.model.DDLRecordVersion>
-			getRecordVersions(
-				long recordId, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.dynamic.data.lists.model.DDLRecordVersion>
-						orderByComparator) {
-
-		return getService().getRecordVersions(
-			recordId, start, end, orderByComparator);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 DDLRecordVersionLocalService#getRecordVersionsCount(
-	 long)}
-	 */
-	@Deprecated
-	public static int getRecordVersionsCount(long recordId) {
-		return getService().getRecordVersionsCount(recordId);
-	}
-
-	/**
 	 * Reverts the record to the given version.
 	 *
 	 * @param userId the primary key of the user who is reverting the record
@@ -788,20 +691,6 @@ public class DDLRecordLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().revertRecord(userId, recordId, version, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #revertRecord(long, long, String, ServiceContext)}
-	 */
-	@Deprecated
-	public static void revertRecordVersion(
-			long userId, long recordId, String version,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().revertRecordVersion(
-			userId, recordId, version, serviceContext);
 	}
 
 	/**
@@ -863,6 +752,10 @@ public class DDLRecordLocalServiceUtil {
 	/**
 	 * Updates the ddl record in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DDLRecordLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param ddlRecord the ddl record
 	 * @return the ddl record that was updated
 	 */
@@ -898,72 +791,6 @@ public class DDLRecordLocalServiceUtil {
 
 		return getService().updateRecord(
 			userId, recordId, majorVersion, displayIndex, ddmFormValues,
-			serviceContext);
-	}
-
-	/**
-	 * Updates a record, replacing its display index and values.
-	 *
-	 * @param userId the primary key of the user updating the record
-	 * @param recordId the primary key of the record
-	 * @param majorVersion whether this update is a major change. A major
-	 change increments the record's major version number
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view.
-	 * @param fields the record values. See <code>Fields</code> in the
-	 <code>dynamic.data.mapping.api</code> module.
-	 * @param mergeFields whether to merge the new fields with the existing
-	 ones; otherwise replace the existing fields
-	 * @param serviceContext the service context to be applied. This can
-	 set the record modified date.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateRecord(long, long, boolean, int, DDMFormValues,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecord updateRecord(
-			long userId, long recordId, boolean majorVersion, int displayIndex,
-			com.liferay.dynamic.data.mapping.storage.Fields fields,
-			boolean mergeFields,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateRecord(
-			userId, recordId, majorVersion, displayIndex, fields, mergeFields,
-			serviceContext);
-	}
-
-	/**
-	 * Updates a record, replacing its display index and values.
-	 *
-	 * @param userId the primary key of the user updating the record
-	 * @param recordId the primary key of the record
-	 * @param displayIndex the index position in which the record is
-	 displayed in the spreadsheet view
-	 * @param fieldsMap the record values. The fieldsMap is a map of field
-	 names and its Serializable values.
-	 * @param mergeFields whether to merge the new fields with the existing
-	 ones; otherwise replace the existing fields
-	 * @param serviceContext the service context to be applied. This can
-	 set the record modified date.
-	 * @return the record
-	 * @throws PortalException if a portal exception occurred
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateRecord(long, long, boolean, int, DDMFormValues,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.dynamic.data.lists.model.DDLRecord updateRecord(
-			long userId, long recordId, int displayIndex,
-			java.util.Map<String, java.io.Serializable> fieldsMap,
-			boolean mergeFields,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateRecord(
-			userId, recordId, displayIndex, fieldsMap, mergeFields,
 			serviceContext);
 	}
 

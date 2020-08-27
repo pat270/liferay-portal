@@ -1,0 +1,498 @@
+@component-name = "portal-collaboration"
+definition {
+
+	property portal.release = "true";
+	property portal.ssl.enabled = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "SEO";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Page Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This makes sure that the user can edit OG image tag."
+	@priority = "5"
+	test ChangeImageTag {
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		Click(locator1 = "Button#CLEAR_OPEN_GRAPH_IMAGE");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_2.jpg");
+
+		var siteID = Site.getSiteId();
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''"og:image" content="${portalURL}/documents/${siteID}/0/Document_2.jpg''');
+	}
+
+	@description = "This makes sure that the user can change the default image for OpenGraph at the site level."
+	@priority = "5"
+	test ChangeSiteImage {
+		property portal.acceptance = "true";
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		for (var imageNumber : list "1,2") {
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+			ProductMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Site Administration",
+				portlet = "Settings");
+
+			Panel.expandPanel(panel = "Open Graph");
+
+			OpenGraph.configureOpenGraph(
+				customImage = "true",
+				uploadFileName = "Document_${imageNumber}.jpg");
+
+			AssertElementPresent(
+				key_imageName = "Document_${imageNumber}.jpg",
+				locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+		}
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		AssertElementPresent(
+			key_imageName = "Document_2.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		var siteID = Site.getSiteId();
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''"og:image" content="${portalURL}/documents/${siteID}/0/Document_2.jpg''');
+	}
+
+	@description = "This makes sure that the previously added image can be cleared at the page level."
+	@priority = "5"
+	test ClearImageAtPageLevel {
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		AssertElementPresent(locator1 = "TextInput#OPEN_GRAPH_CUSTOM_IMAGE_DEFAULT_VALUE");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		ScrollWebElementIntoView(locator1 = "//label[contains(.,'Preview')]");
+
+		AssertVisible(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_2.jpg");
+
+		Click(locator1 = "Button#CLEAR_OPEN_GRAPH_IMAGE");
+
+		Button.click(button = "Save");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		ScrollWebElementIntoView(locator1 = "//label[contains(.,'Preview')]");
+
+		AssertVisible(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		var siteID = Site.getSiteId();
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''"og:image" content="${portalURL}/documents/${siteID}/0/Document_1.jpg''');
+	}
+
+	@description = "This makes sure that it will apply the OG image of the page when images are set at both the site level and the page level."
+	@priority = "5"
+	test ClearImageAtSiteLevel {
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		Pause(locator1 = "1000");
+
+		AssertVisible(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		AssertVisible(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		Click(locator1 = "Button#CLEAR_OPEN_GRAPH_IMAGE");
+
+		Button.click(button = "Save");
+
+		AssertElementNotPresent(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		AssertElementNotPresent(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewNoOpenGraphProperties(ogPropertyList = '''property="og:image"''');
+	}
+
+	@description = "This ensures that the OG image alt description configuration at page level overrides its configuration at the site level."
+	@priority = "4"
+	test ConfigurePageSpecificAltDescription {
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			altDescription = "This is image alternative description",
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''property="og:image:alt" content="This is image alternative description"''');
+
+		User.firstLoginPG();
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			altDescription = "This is new image alternative description",
+			customImage = "true",
+			uploadFileName = "Document_2.jpg");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''property="og:image:alt" content="This is new image alternative description"''');
+	}
+
+	@description = "This makes sure that it will apply the OG image of the page when images are set at both the site level and the page level."
+	@priority = "5"
+	test ConfigurePageSpecificImage {
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		AssertElementPresent(locator1 = "TextInput#OPEN_GRAPH_CUSTOM_IMAGE_DEFAULT_VALUE");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		AssertVisible(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			uploadFileName = "Document_2.jpg");
+
+		AssertVisible(
+			key_imageName = "Document_2.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		Panel.expandPanel(panel = "Open Graph");
+
+		AssertVisible(
+			key_imageName = "Document_1.jpg",
+			locator1 = "SitePagesEditPage#PREVIEW_IMAGE");
+
+		var siteID = Site.getSiteId();
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''"og:image" content="${portalURL}/documents/${siteID}/0/Document_2.jpg''');
+	}
+
+	@description = "This ensures that the OG image tags will not appear when the HTTPS user disables Open Graph."
+	@priority = "5"
+	test DisableAfterAddingImage {
+		property test.name.skip.portal.instance = "OpenGraphImages#DisableAfterAddingImage";
+
+		Navigator.openSpecificURL(url = "https://localhost:8443/web/test-site-name/test-page-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			pageName = "Test Page Name",
+			uploadFileName = "Document_1.jpg");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Pages",
+			configurationName = "SEO",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.disableCheckbox(fieldName = "Enable Open Graph");
+
+		SystemSettings.saveConfiguration();
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "https://localhost:8443/web/test-site-name/test-page-name");
+
+		OpenGraph.viewNoOpenGraphProperties(ogPropertyList = '''og:image:url,og:image:secure_url,og:image:type,og:image:width,og:image:height''');
+	}
+
+	@description = "This ensures that users can introduce an alternative text for the image."
+	@priority = "5"
+	test EditAltDescription {
+		property portal.acceptance = "true";
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		AssertElementPresent(
+			key_text = "openGraphImageAlt",
+			locator1 = "TextInput#OPEN_GRAPH_IMAGE_ALT_DESCRIPTION_DISABLED");
+
+		OpenGraph.configureOpenGraph(
+			altDescription = "This is image alternative description",
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		Type(
+			locator1 = "TextInput#OPEN_GRAPH_IMAGE_ALT_DESCRIPTION",
+			value1 = "This is new image alternative description");
+
+		Button.click(button = "Save");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''property="og:image:alt" content="This is new image alternative description"''');
+	}
+
+	@description = "This ensures that the HTTPS users can customize OG image tags and generate special tags."
+	@priority = "5"
+	test ViewImageWithMetaTags {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "OpenGraphImages#ViewImageWithMetaTags";
+
+		Navigator.openSpecificURL(url = "https://localhost:8443/web/test-site-name/test-page-name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			customImage = "true",
+			pageName = "Test Page Name",
+			uploadFileName = "Document_1.jpg");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "https://localhost:8443/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''og:image:url,og:image:secure_url,og:image:type,og:image:width,og:image:height''');
+	}
+
+	@description = "This ensures that the users can introduce an alternative text with translated language for the image."
+	@priority = "4"
+	test ViewTranslatedAltDescription {
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		Navigator.gotoNavTab(navTab = "Open Graph");
+
+		OpenGraph.configureOpenGraph(
+			altDescription = "This is image alternative description",
+			customImage = "true",
+			uploadFileName = "Document_1.jpg");
+
+		OpenGraph.changeLocale(
+			fieldName = "openGraphImageAltBoundingBox",
+			locale = "ca-ES");
+
+		Type(
+			locator1 = "TextInput#OPEN_GRAPH_IMAGE_ALT_DESCRIPTION",
+			value1 = "Esta es una descripción de imagen alternativa");
+
+		Button.click(button = "Save");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/ca/web/test-site-name/test-page-name");
+
+		OpenGraph.viewOpenGraphProperties(ogPropertyList = '''property="og:image:alt" content="Esta es una descripción de imagen alternativa"''');
+	}
+
+}

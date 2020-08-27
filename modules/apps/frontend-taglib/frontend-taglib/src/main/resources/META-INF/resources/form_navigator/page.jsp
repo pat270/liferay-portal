@@ -72,49 +72,41 @@ String tabs1Value = GetterUtil.getString(SessionClicks.get(request, namespace + 
 	</div>
 </c:if>
 
-<aui:script require="metal-dom/src/dom,metal-uri/src/Uri">
-	AUI().use(
-		'liferay-store',
-		function(A) {
-			var dom = metalDomSrcDom.default;
-			var uri = metalUriSrcUri.default;
-
-			var redirectField = dom.toElement('input[name="<portlet:namespace />redirect"]');
-			var tabs1Param = '<portlet:namespace /><%= tabs1Param %>';
-
-			var updateRedirectField = function(event) {
-				var redirectURL = new uri(redirectField.value);
-
-				redirectURL.setParameterValue(tabs1Param, event.id);
-
-				redirectField.value = redirectURL.toString();
-
-				Liferay.Store('<portlet:namespace /><%= id %>', event.id);
-			};
-
-			var clearFormNavigatorHandles = function(event) {
-				if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
-					Liferay.detach('showTab', updateRedirectField);
-					Liferay.detach('destroyPortlet', clearFormNavigatorHandles);
-				}
-			};
-
-			if (redirectField) {
-				var currentURL = new uri(document.location.href);
-
-				var tabs1Value = currentURL.getParameterValue(tabs1Param);
-
-				if (tabs1Value) {
-					updateRedirectField(
-						{
-							id: tabs1Value
-						}
-					);
-				}
-
-				Liferay.on('showTab', updateRedirectField);
-				Liferay.on('destroyPortlet', clearFormNavigatorHandles);
-			}
-		}
+<aui:script require="metal-dom/src/dom as dom">
+	var redirectField = dom.toElement(
+		'input[name="<portlet:namespace />redirect"]'
 	);
+	var tabs1Param = '<portlet:namespace /><%= tabs1Param %>';
+
+	var updateRedirectField = function (event) {
+		var redirectURL = new URL(redirectField.value, window.location.origin);
+
+		redirectURL.searchParams.set(tabs1Param, event.id);
+
+		redirectField.value = redirectURL.toString();
+
+		Liferay.Util.Session.set('<portlet:namespace /><%= id %>', event.id);
+	};
+
+	var clearFormNavigatorHandles = function (event) {
+		if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
+			Liferay.detach('showTab', updateRedirectField);
+			Liferay.detach('destroyPortlet', clearFormNavigatorHandles);
+		}
+	};
+
+	if (redirectField) {
+		var currentURL = new URL(document.location.href);
+
+		var tabs1Value = currentURL.searchParams.get(tabs1Param);
+
+		if (tabs1Value) {
+			updateRedirectField({
+				id: tabs1Value,
+			});
+		}
+
+		Liferay.on('showTab', updateRedirectField);
+		Liferay.on('destroyPortlet', clearFormNavigatorHandles);
+	}
 </aui:script>

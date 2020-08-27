@@ -16,8 +16,6 @@ package com.liferay.announcements.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for AnnouncementsDelivery. This utility wraps
  * <code>com.liferay.portlet.announcements.service.impl.AnnouncementsDeliveryServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsDeliveryService
  * @generated
  */
-@ProviderType
 public class AnnouncementsDeliveryServiceUtil {
 
 	/*
@@ -53,20 +50,6 @@ public class AnnouncementsDeliveryServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateDelivery(userId, type, email, sms);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateDelivery(long, String, boolean, boolean)}
-	 */
-	@Deprecated
-	public static com.liferay.announcements.kernel.model.AnnouncementsDelivery
-			updateDelivery(
-				long userId, String type, boolean email, boolean sms,
-				boolean website)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateDelivery(userId, type, email, sms, website);
 	}
 
 	public static AnnouncementsDeliveryService getService() {

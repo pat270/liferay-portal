@@ -17,19 +17,29 @@ package com.liferay.mobile.device.rules.service.impl;
 import com.liferay.mobile.device.rules.model.MDRAction;
 import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.service.base.MDRActionServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Edward C. Han
  */
+@Component(
+	property = {
+		"json.web.service.context.name=mdr",
+		"json.web.service.context.path=MDRAction"
+	},
+	service = AopService.class
+)
 public class MDRActionServiceImpl extends MDRActionServiceBaseImpl {
 
 	@Override
@@ -51,7 +61,7 @@ public class MDRActionServiceImpl extends MDRActionServiceBaseImpl {
 	public MDRAction addAction(
 			long ruleGroupInstanceId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -60,7 +70,7 @@ public class MDRActionServiceImpl extends MDRActionServiceBaseImpl {
 
 		return mdrActionLocalService.addAction(
 			ruleGroupInstanceId, nameMap, descriptionMap, type,
-			typeSettingsProperties, serviceContext);
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	@Override
@@ -120,7 +130,7 @@ public class MDRActionServiceImpl extends MDRActionServiceBaseImpl {
 	public MDRAction updateAction(
 			long actionId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -131,15 +141,14 @@ public class MDRActionServiceImpl extends MDRActionServiceBaseImpl {
 			ActionKeys.UPDATE);
 
 		return mdrActionLocalService.updateAction(
-			actionId, nameMap, descriptionMap, type, typeSettingsProperties,
-			serviceContext);
+			actionId, nameMap, descriptionMap, type,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
-	private static volatile ModelResourcePermission<MDRRuleGroupInstance>
-		_mdrRuleGroupInstanceModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				MDRActionServiceImpl.class,
-				"_mdrRuleGroupInstanceModelResourcePermission",
-				MDRRuleGroupInstance.class);
+	@Reference(
+		target = "(model.class.name=com.liferay.mobile.device.rules.model.MDRRuleGroupInstance)"
+	)
+	private ModelResourcePermission<MDRRuleGroupInstance>
+		_mdrRuleGroupInstanceModelResourcePermission;
 
 }

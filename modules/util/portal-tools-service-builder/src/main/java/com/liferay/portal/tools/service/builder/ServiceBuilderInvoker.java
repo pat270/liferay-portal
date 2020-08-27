@@ -59,6 +59,7 @@ public class ServiceBuilderInvoker {
 			serviceBuilderArgs.getDatabaseNameMaxLength(),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getHbmFileName()),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getImplDirName()),
+			serviceBuilderArgs.getIncubationFeatures(),
 			_getAbsolutePath(baseDir, serviceBuilderArgs.getInputFileName()),
 			_getAbsolutePath(
 				baseDir, serviceBuilderArgs.getModelHintsFileName()),

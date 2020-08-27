@@ -18,11 +18,11 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.cluster.multiple.configuration.ClusterExecutorConfiguration;
-import com.liferay.portal.cluster.multiple.internal.ClusterChannel;
+import com.liferay.portal.cluster.multiple.internal.BaseClusterChannel;
 import com.liferay.portal.cluster.multiple.internal.ClusterReceiver;
-import com.liferay.portal.cluster.multiple.internal.io.ClusterSerializationUtil;
 import com.liferay.portal.kernel.cluster.Address;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.io.Serializer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -33,10 +33,14 @@ import java.lang.reflect.Method;
 
 import java.net.InetAddress;
 
+import java.nio.ByteBuffer;
+
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import org.jgroups.JChannel;
+import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
@@ -44,16 +48,19 @@ import org.jgroups.stack.ProtocolStack;
 /**
  * @author Tina Tian
  */
-public class JGroupsClusterChannel implements ClusterChannel {
+public class JGroupsClusterChannel extends BaseClusterChannel {
 
 	public JGroupsClusterChannel(
-		String channelLogicName, String channelProperties, String clusterName,
+		ExecutorService executorService, String channelLogicName,
+		ProtocolStackConfigurator protocolStackConfigurator, String clusterName,
 		ClusterReceiver clusterReceiver, InetAddress bindInetAddress,
 		ClusterExecutorConfiguration clusterExecutorConfiguration,
 		Map<ClassLoader, ClassLoader> classLoaders) {
 
-		if (Validator.isNull(channelProperties)) {
-			throw new NullPointerException("Channel properties is null");
+		super(executorService);
+
+		if (protocolStackConfigurator == null) {
+			throw new NullPointerException("ProtocolStackConfigurator is null");
 		}
 
 		if (Validator.isNull(clusterName)) {
@@ -68,7 +75,7 @@ public class JGroupsClusterChannel implements ClusterChannel {
 		_clusterReceiver = clusterReceiver;
 
 		try {
-			_jChannel = new JChannel(channelProperties);
+			_jChannel = new JChannel(protocolStackConfigurator);
 
 			if (Validator.isNotNull(channelLogicName)) {
 				_jChannel.setName(channelLogicName);
@@ -105,9 +112,9 @@ public class JGroupsClusterChannel implements ClusterChannel {
 				_log.info(sb.toString());
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SystemException(
-				"Unable to initial cluster channel " + clusterName, e);
+				"Unable to initial cluster channel " + clusterName, exception);
 		}
 	}
 
@@ -150,22 +157,7 @@ public class JGroupsClusterChannel implements ClusterChannel {
 	}
 
 	@Override
-	public void sendMulticastMessage(Serializable message) {
-		sendMessage(message, null);
-	}
-
-	@Override
-	public void sendUnicastMessage(Serializable message, Address address) {
-		if (address == null) {
-			throw new SystemException("Target address is null");
-		}
-
-		sendMessage(message, (org.jgroups.Address)address.getRealAddress());
-	}
-
-	protected void sendMessage(
-		Serializable message, org.jgroups.Address address) {
-
+	protected void doSendMessage(Serializable message, Address address) {
 		if (_jChannel.isClosed()) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
@@ -175,14 +167,22 @@ public class JGroupsClusterChannel implements ClusterChannel {
 			return;
 		}
 
-		if (message == null) {
-			throw new IllegalArgumentException(
-				"Message sent to address " + address + " cannot be null");
+		org.jgroups.Address jgroupsAddress = null;
+
+		if (address != null) {
+			jgroupsAddress = (org.jgroups.Address)address.getRealAddress();
 		}
+
+		Serializer serializer = new Serializer();
+
+		serializer.writeObject(message);
+
+		ByteBuffer byteBuffer = serializer.toByteBuffer();
 
 		try {
 			_jChannel.send(
-				address, ClusterSerializationUtil.writeObject(message));
+				jgroupsAddress, byteBuffer.array(), byteBuffer.position(),
+				byteBuffer.remaining());
 
 			if (_log.isDebugEnabled()) {
 				if (address == null) {
@@ -193,13 +193,14 @@ public class JGroupsClusterChannel implements ClusterChannel {
 				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (address == null) {
 				throw new SystemException(
-					"Unable to send multicast message", e);
+					"Unable to send multicast message", exception);
 			}
 
-			throw new SystemException("Unable to send unicast message", e);
+			throw new SystemException(
+				"Unable to send unicast message", exception);
 		}
 	}
 
@@ -257,8 +258,8 @@ public class JGroupsClusterChannel implements ClusterChannel {
 			_getPropsMethod = ReflectionUtil.getDeclaredMethod(
 				ProtocolStack.class, "getProps", Protocol.class);
 		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
 		}
 	}
 

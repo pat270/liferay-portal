@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.validator.internal;
 
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunction;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunctionFactory;
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionFunctionTracker;
 import com.liferay.dynamic.data.mapping.expression.internal.DDMExpressionFactoryImpl;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
@@ -22,6 +23,7 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.UnlocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
@@ -73,8 +75,18 @@ public class DDMFormValuesValidatorTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		ddmFormFieldValidation.setExpression("Height <= 3.5");
-		ddmFormFieldValidation.setErrorMessage("maximum height allowed 3.5.");
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setName("lteq");
+					setValue("Height<={parameter}");
+				}
+			});
+		ddmFormFieldValidation.setErrorMessageLocalizedValue(
+			DDMFormValuesTestUtil.createLocalizedValue(
+				"maximum height allowed 3.5.", LocaleUtil.US));
+		ddmFormFieldValidation.setParameterLocalizedValue(
+			DDMFormValuesTestUtil.createLocalizedValue("3.5", LocaleUtil.US));
 
 		ddmFormField.setDDMFormFieldValidation(ddmFormFieldValidation);
 
@@ -103,8 +115,18 @@ public class DDMFormValuesValidatorTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		ddmFormFieldValidation.setExpression("Age > 18");
-		ddmFormFieldValidation.setErrorMessage("Age must be greater than 18.");
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setName("gt");
+					setValue("Age>{parameter}");
+				}
+			});
+		ddmFormFieldValidation.setErrorMessageLocalizedValue(
+			DDMFormValuesTestUtil.createLocalizedValue(
+				"Age must be greater than 18.", LocaleUtil.US));
+		ddmFormFieldValidation.setParameterLocalizedValue(
+			DDMFormValuesTestUtil.createLocalizedValue("18", LocaleUtil.US));
 
 		ddmFormField.setDDMFormFieldValidation(ddmFormFieldValidation);
 
@@ -486,7 +508,7 @@ public class DDMFormValuesValidatorTest {
 
 		LocalizedValue localizedValue = new LocalizedValue(LocaleUtil.US);
 
-		localizedValue.addString(LocaleUtil.US, StringUtil.randomString());
+		localizedValue.addString(LocaleUtil.US, StringPool.BLANK);
 		localizedValue.addString(LocaleUtil.BRAZIL, StringPool.BLANK);
 
 		DDMFormFieldValue ddmFormFieldValue =
@@ -498,7 +520,7 @@ public class DDMFormValuesValidatorTest {
 		_ddmFormValuesValidatorImpl.validate(ddmFormValues);
 	}
 
-	@Test(expected = MustSetValidAvailableLocales.class)
+	@Test(expected = RequiredValue.class)
 	public void testValidationWithRequiredFieldAndNullValue() throws Exception {
 		DDMForm ddmForm = DDMFormTestUtil.createDDMForm(
 			DDMFormTestUtil.createAvailableLocales(LocaleUtil.US),
@@ -707,8 +729,18 @@ public class DDMFormValuesValidatorTest {
 		DDMFormFieldValidation ddmFormFieldValidation =
 			new DDMFormFieldValidation();
 
-		ddmFormFieldValidation.setExpression("Age > 18");
-		ddmFormFieldValidation.setErrorMessage("Age must be greater than 18.");
+		ddmFormFieldValidation.setDDMFormFieldValidationExpression(
+			new DDMFormFieldValidationExpression() {
+				{
+					setName("gt");
+					setValue("Age>{parameter}");
+				}
+			});
+		ddmFormFieldValidation.setErrorMessageLocalizedValue(
+			DDMFormValuesTestUtil.createLocalizedValue(
+				"Age must be greater than 18.", LocaleUtil.US));
+		ddmFormFieldValidation.setParameterLocalizedValue(
+			DDMFormValuesTestUtil.createLocalizedValue("18", LocaleUtil.US));
 
 		ddmFormField.setDDMFormFieldValidation(ddmFormFieldValidation);
 
@@ -770,6 +802,14 @@ public class DDMFormValuesValidatorTest {
 		ReflectionTestUtil.setFieldValue(
 			ddmExpressionFactoryImpl, "ddmExpressionFunctionTracker",
 			new DDMExpressionFunctionTracker() {
+
+				@Override
+				public Map<String, DDMExpressionFunctionFactory>
+					getDDMExpressionFunctionFactories(
+						Set<String> functionNames) {
+
+					return Collections.emptyMap();
+				}
 
 				@Override
 				public Map<String, DDMExpressionFunction>

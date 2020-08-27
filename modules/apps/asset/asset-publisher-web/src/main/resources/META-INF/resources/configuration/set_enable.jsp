@@ -34,7 +34,7 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 <aui:input name="preferences--showAvailableLocales--" type="checkbox" value="<%= assetPublisherDisplayContext.isShowAvailableLocales() %>" />
 
 <c:if test="<%= assetPublisherDisplayContext.isEnableSetAsDefaultAssetPublisher() %>">
-	<aui:input helpMessage="set-as-the-default-asset-publisher-for-this-page-help" label="set-as-the-default-asset-publisher-for-this-page" name="defaultAssetPublisher" type="checkbox" value="<%= assetPublisherWebUtil.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) %>" />
+	<aui:input helpMessage="set-as-the-default-asset-publisher-for-this-page-help" label="set-as-the-default-asset-publisher-for-this-page" name="defaultAssetPublisher" type="checkbox" value="<%= assetPublisherWebHelper.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) %>" />
 </c:if>
 
 <aui:input label='<%= LanguageUtil.format(request, "show-only-assets-with-x-as-its-display-page-template", HtmlUtil.escape(layout.getName(locale)), false) %>' name="preferences--showOnlyLayoutAssets--" type="checkbox" value="<%= assetPublisherDisplayContext.isShowOnlyLayoutAssets() %>" />
@@ -45,8 +45,10 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 	<liferay-ui:message key="enable" />
 </h4>
 
-<aui:row>
-	<aui:col width="<%= 50 %>">
+<clay:row>
+	<clay:col
+		md="6"
+	>
 		<aui:input label="print" name="preferences--enablePrint--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnablePrint() %>" />
 
 		<aui:input label="flags" name="preferences--enableFlags--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnableFlags() %>" />
@@ -61,9 +63,11 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 				<aui:input label="related-assets" name="preferences--enableRelatedAssets--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnableRelatedAssets() %>" />
 			</c:otherwise>
 		</c:choose>
-	</aui:col>
+	</clay:col>
 
-	<aui:col width="<%= 50 %>">
+	<clay:col
+		md="6"
+	>
 		<aui:input label="subscribe" name="preferences--enableSubscriptions--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnableSubscriptions() %>" />
 
 		<aui:input label="comments" name="preferences--enableComments--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnableComments() %>" />
@@ -86,8 +90,8 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 				<aui:input label="permissions" name="preferences--enablePermissions--" type="checkbox" value="<%= assetPublisherDisplayContext.isEnablePermissions() %>" />
 			</c:otherwise>
 		</c:choose>
-	</aui:col>
-</aui:row>
+	</clay:col>
+</clay:row>
 
 <c:if test="<%= assetPublisherDisplayContext.isOpenOfficeServerEnabled() %>">
 
@@ -101,8 +105,10 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 		<liferay-ui:icon-help message="enabling-openoffice-integration-provides-document-conversion-functionality" />
 	</h4>
 
-	<aui:row>
-		<aui:col width="<%= 50 %>">
+	<clay:row>
+		<clay:col
+			md="6"
+		>
 
 			<%
 			for (int i = 0; i < (conversions.length / 2); i++) {
@@ -115,12 +121,14 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 			}
 			%>
 
-		</aui:col>
+		</clay:col>
 
-		<aui:col width="<%= 50 %>">
+		<clay:col
+			md="6"
+		>
 
 			<%
-			for (int i = (conversions.length/ 2); i < conversions.length; i++) {
+			for (int i = conversions.length / 2; i < conversions.length; i++) {
 				String conversion = conversions[i];
 			%>
 
@@ -130,8 +138,8 @@ String helpMessage2 = "<em>" + LanguageUtil.format(request, "content-with-tag-x"
 			}
 			%>
 
-		</aui:col>
-	</aui:row>
+		</clay:col>
+	</clay:row>
 </c:if>
 
 <h4 class="sheet-tertiary-title">

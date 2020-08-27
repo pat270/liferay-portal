@@ -28,7 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = RepositoryDefiner.class)
+@Component(service = RepositoryDefiner.class)
 public class CMISWebServicesRepositoryDefiner
 	extends BaseCMISRepositoryDefiner {
 
@@ -87,7 +87,7 @@ public class CMISWebServicesRepositoryDefiner
 	}
 
 	@Reference(
-		target = "(repository.target.class.name=" + CMISRepositoryConstants.CMIS_WEB_SERVICES_REPOSITORY_CLASSNAME + ")",
+		target = "(repository.target.class.name=" + CMISRepositoryConstants.CMIS_WEB_SERVICES_REPOSITORY_CLASS_NAME + ")",
 		unbind = "-"
 	)
 	protected void setRepositoryFactory(RepositoryFactory repositoryFactory) {

@@ -23,7 +23,7 @@ public class DefaultBatchTestClassGroup extends BatchTestClassGroup {
 
 	@Override
 	public int getAxisCount() {
-		if (testRelevantIntegrationUnitOnly) {
+		if (!isStableTestSuiteBatch() && testRelevantIntegrationUnitOnly) {
 			return 0;
 		}
 
@@ -31,9 +31,10 @@ public class DefaultBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected DefaultBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 
 		addTestClass(
 			BatchTestClass.getInstance(batchName, portalGitWorkingDirectory));

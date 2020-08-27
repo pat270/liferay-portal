@@ -16,7 +16,11 @@ package com.liferay.document.library.web.internal.portlet.configuration.icon;
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
+import com.liferay.document.library.web.internal.util.DLFolderUtil;
+import com.liferay.document.library.web.internal.util.DLPortletConfigurationIconUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
@@ -24,7 +28,7 @@ import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfiguration
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -39,7 +43,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 		"path=/document_library/view_folder"
@@ -69,8 +72,8 @@ public class MoveFolderPortletConfigurationIcon
 				"javascript: ", liferayPortletResponse.getNamespace(),
 				"move(1, 'rowIdsFolder', ", folder.getFolderId(), ");");
 		}
-		catch (Exception e) {
-			return null;
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -81,26 +84,30 @@ public class MoveFolderPortletConfigurationIcon
 
 	@Override
 	public boolean isShow(PortletRequest portletRequest) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		return DLPortletConfigurationIconUtil.runWithDefaultValueOnError(
+			false,
+			() -> {
+				Folder folder = ActionUtil.getFolder(portletRequest);
 
-		try {
-			Folder folder = ActionUtil.getFolder(portletRequest);
+				if (DLFolderUtil.isRepositoryRoot(folder)) {
+					return false;
+				}
 
-			if (ModelResourcePermissionHelper.contains(
-					_folderModelResourcePermission,
-					themeDisplay.getPermissionChecker(),
-					themeDisplay.getScopeGroupId(), folder.getFolderId(),
-					ActionKeys.UPDATE) &&
-				!folder.isMountPoint()) {
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)portletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
-				return true;
-			}
-		}
-		catch (Exception e) {
-		}
+				if (ModelResourcePermissionUtil.contains(
+						_folderModelResourcePermission,
+						themeDisplay.getPermissionChecker(),
+						themeDisplay.getScopeGroupId(), folder.getFolderId(),
+						ActionKeys.UPDATE)) {
 
-		return false;
+					return true;
+				}
+
+				return false;
+			});
 	}
 
 	@Override

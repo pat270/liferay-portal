@@ -25,8 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This is the central class to store template arguments. It stores everything
@@ -65,8 +63,9 @@ public class SoyContextImpl implements SoyContext {
 	public SoyContextImpl(
 		Map<String, Object> context, Set<String> restrictedVariables) {
 
-		_map = new HashMap<>(context);
 		_restrictedVariables = restrictedVariables;
+
+		_map = new HashMap<>(context);
 	}
 
 	@Override
@@ -160,8 +159,8 @@ public class SoyContextImpl implements SoyContext {
 			try {
 				value = unsafeSupplier.get();
 			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
 			}
 		}
 
@@ -182,7 +181,7 @@ public class SoyContextImpl implements SoyContext {
 		SoyDataFactory soyDataFactory =
 			SoyDataFactoryProvider.getSoyDataFactory();
 
-		_map.put(key, soyDataFactory.createSoyHTMLData(value));
+		_map.put(key, soyDataFactory.createSoyRawData(value));
 
 		return this;
 	}
@@ -233,17 +232,23 @@ public class SoyContextImpl implements SoyContext {
 	private Map<String, Object> _filterRestrictedVariables(
 		Map<String, Object> map) {
 
-		Set<Entry<String, Object>> entries = map.entrySet();
+		Map<String, Object> filteredMap = new HashMap<>();
 
-		Stream<Entry<String, Object>> stream = entries.stream();
+		for (Entry<String, Object> entry : map.entrySet()) {
+			Object value = entry.getValue();
 
-		return stream.filter(
-			entry -> entry.getValue() != null
-		).filter(
-			entry -> !_restrictedVariables.contains(entry.getKey())
-		).collect(
-			Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)
-		);
+			if (value == null) {
+				continue;
+			}
+
+			String key = entry.getKey();
+
+			if (!_restrictedVariables.contains(key)) {
+				filteredMap.put(key, value);
+			}
+		}
+
+		return filteredMap;
 	}
 
 	private final Map<String, Object> _map;

@@ -1,7 +1,6 @@
-@import "bourbon";
-@import "mixins";
+@import 'atlas-variables';
 
-@import "common_main";
+@import 'common_main';
 
 .portlet-blogs {
 	.entry-options {
@@ -50,7 +49,7 @@
 			margin-top: 1em;
 			text-align: center;
 
-			@include respond-to(desktop) {
+			@include media-breakpoint-up(lg) {
 				float: right;
 				margin-top: 0;
 			}
@@ -91,7 +90,9 @@
 	.entry-footer {
 		vertical-align: middle;
 
-		.entry-social, .flags, .social-bookmarks {
+		.entry-social,
+		.flags,
+		.social-bookmarks {
 			display: inline-block;
 		}
 
@@ -126,7 +127,7 @@
 				vertical-align: middle;
 			}
 
-			@include respond-to(phone, tablet) {
+			@include media-breakpoint-down(md) {
 				clear: both;
 				display: block;
 
@@ -154,18 +155,6 @@
 			width: 100%;
 		}
 
-		.entry-title h1 p {
-			line-height: 80px;
-		}
-
-		.entry-subtitle {
-			margin-bottom: 30px;
-
-			h4 p {
-				line-height: 45px;
-			}
-		}
-
 		.cover-image-caption .alloy-editor {
 			padding-left: 0;
 			text-align: center;
@@ -174,9 +163,54 @@
 				border-left-width: 0;
 			}
 		}
+
+		.entry-subtitle {
+			margin-bottom: 0;
+
+			> .form-group {
+				margin-bottom: 0;
+			}
+		}
+
+		.form-control.form-control-edit {
+			overflow: hidden;
+			resize: none;
+
+			&::placeholder {
+				border-color: #b0b4bb;
+				border-left: 2px solid;
+				color: #b0b4bb;
+				padding-left: 10px;
+			}
+
+			&:focus::placeholder {
+				border-color: transparent;
+			}
+		}
+
+		.has-error .form-control.form-control-edit:not(:focus)::placeholder {
+			border-color: #c67;
+		}
+
+		.form-control.form-control-unstyled {
+			background: transparent;
+			border-width: 0;
+			box-shadow: none;
+			padding: 0;
+
+			&:focus {
+				box-shadow: none;
+			}
+		}
+
+		.help-block {
+			line-height: 1;
+		}
 	}
 
-	.entry.draft, .entry.pending, .entry.scheduled {
+	.entry.draft,
+	.entry.pending,
+	.entry.scheduled {
 		border: 1px solid transparent;
 		padding: 5px;
 
@@ -209,7 +243,7 @@
 
 	.entry-card {
 		.aspect-ratio.aspect-ratio-bg-cover {
-			@include media-query(null, $screen-xs-max) {
+			@include media-breakpoint-down(sm) {
 				padding-bottom: 50%;
 			}
 		}
@@ -219,30 +253,20 @@
 		display: block;
 		position: relative;
 
-		h1 {
-			font-size: 60px;
-			line-height: 80px;
-			margin-bottom: 25px;
-		}
-
 		h2 {
 			margin-right: 30px;
 			margin-top: 0;
-
-			.alloy-editor-placeholder p {
-				margin-bottom: 0;
-			}
 		}
 
 		.social-bookmarks {
 			z-index: 1;
 
-			@include respond-to(desktop) {
+			@include media-breakpoint-up(lg) {
 				display: inline-block;
 				right: 35px;
 				top: 0;
 
-				&:not(.pull-right) {
+				&:not(.float-right) {
 					position: absolute;
 				}
 			}
@@ -253,11 +277,11 @@
 		}
 	}
 
-	.info-bar-container.affix + .entry-body {
-		margin-top: 47px;
+	.info-bar-container {
+		min-height: 35px;
 
-		@include sm() {
-			margin-top: 59px;
+		.info-bar-center {
+			margin-top: 5px;
 		}
 	}
 
@@ -294,6 +318,15 @@
 		margin-bottom: 1.25rem;
 	}
 
+	.widget-mode-card {
+		.card-footer {
+			padding: 0;
+		}
+		.widget-resume {
+			margin-bottom: 0.75rem;
+		}
+	}
+
 	.widget-mode-detail {
 		padding-top: 0.5rem;
 	}
@@ -315,41 +348,43 @@
 	}
 }
 
-.firefox .portlet-blogs fieldset.input-container {
-	display: table-column;
-}
-
 .social-boomarks-options {
 	margin-left: 2em;
 }
 
-/* ---------- Skin ---------- */
+// ---------- Skin ----------
 
 .portlet-blogs {
 	.border-top {
-		border-color: #EDEEF0;
+		border-color: #edeef0;
 	}
 
 	.edit-entry {
 		.cover-image-caption .alloy-editor {
-			color: #A7A9BC;
+			color: #a7a9bc;
 		}
 
-		.entry-title, .entry-content {
-			.alloy-editor-placeholder {
-				color: #272833;
-			}
+		.entry-title textarea {
+			color: #272833;
+			font-size: 60px;
+			line-height: 80px;
 		}
 
-		.entry-subtitle {
-			.alloy-editor-placeholder {
-				color: #A7A9BC;
-			}
+		.entry-content .alloy-editor-placeholder {
+			color: #272833;
+		}
+
+		.entry-subtitle textarea {
+			color: #a7a9bc;
+			font-size: 32px;
+			line-height: 45px;
 		}
 	}
 
-	.entry.draft, .entry.pending, .entry.scheduled {
-		border-color: #CCC;
+	.entry.draft,
+	.entry.pending,
+	.entry.scheduled {
+		border-color: #ccc;
 	}
 
 	.entry-footer .entry-social {
@@ -378,8 +413,10 @@
 		}
 	}
 
-	.entry.draft, .entry.pending, .entry.scheduled {
-		background: #EEE;
+	.entry.draft,
+	.entry.pending,
+	.entry.scheduled {
+		background: #eee;
 		color: #555;
 	}
 

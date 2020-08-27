@@ -38,7 +38,6 @@ import com.liferay.staging.StagingGroupHelper;
 import java.util.Collections;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -46,7 +45,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Akos Thurzo
  */
 @Component(immediate = true, service = StagingGroupHelper.class)
-@ProviderType
 public class StagingGroupHelperImpl implements StagingGroupHelper {
 
 	@Override
@@ -132,10 +130,11 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 
 			return GroupServiceHttp.getGroup(httpPrincipal, remoteGroupId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to get remote live group: " + pe.getMessage());
+					"Unable to get remote live group: " +
+						portalException.getMessage());
 			}
 
 			return null;
@@ -305,7 +304,7 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 				_exportImportHelper.getDataSiteLevelPortlets(
 					group.getCompanyId(), true);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return true;
 		}
 
@@ -313,9 +312,9 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 			PortletDataHandler portletDataHandler =
 				dataSiteLevelPortlet.getPortletDataHandlerInstance();
 
-			String[] classNames = portletDataHandler.getClassNames();
+			if (ArrayUtil.contains(
+					portletDataHandler.getClassNames(), className)) {
 
-			if (ArrayUtil.contains(classNames, className)) {
 				return isStagedPortlet(
 					groupId, dataSiteLevelPortlet.getRootPortletId());
 			}
@@ -361,10 +360,10 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 	}
 
 	private String _getTypeSettingsProperty(Group group, String key) {
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getTypeSettingsProperties();
 
-		return typeSettingsProperties.getProperty(key);
+		return typeSettingsUnicodeProperties.getProperty(key);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

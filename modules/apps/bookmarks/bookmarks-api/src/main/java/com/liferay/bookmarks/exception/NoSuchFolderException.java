@@ -16,12 +16,9 @@ package com.liferay.bookmarks.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchFolderException extends NoSuchModelException {
 
 	public NoSuchFolderException() {
@@ -31,12 +28,12 @@ public class NoSuchFolderException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchFolderException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchFolderException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchFolderException(Throwable cause) {
-		super(cause);
+	public NoSuchFolderException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

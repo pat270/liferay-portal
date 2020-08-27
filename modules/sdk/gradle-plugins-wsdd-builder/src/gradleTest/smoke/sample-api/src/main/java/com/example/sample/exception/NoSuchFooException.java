@@ -14,14 +14,11 @@
 
 package com.example.sample.exception;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchFooException extends NoSuchModelException {
 
 	public NoSuchFooException() {
@@ -31,12 +28,12 @@ public class NoSuchFooException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchFooException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchFooException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchFooException(Throwable cause) {
-		super(cause);
+	public NoSuchFooException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

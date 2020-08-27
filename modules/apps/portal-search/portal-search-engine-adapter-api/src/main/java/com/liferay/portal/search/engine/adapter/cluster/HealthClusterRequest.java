@@ -14,20 +14,23 @@
 
 package com.liferay.portal.search.engine.adapter.cluster;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Dylan Rebelak
  */
-@ProviderType
 public class HealthClusterRequest
+	extends CrossClusterRequest
 	implements ClusterRequest<HealthClusterResponse> {
 
 	public HealthClusterRequest() {
+		setPreferLocalCluster(true);
 	}
 
 	public HealthClusterRequest(String... indexNames) {
 		_indexNames = indexNames;
+
+		setPreferLocalCluster(true);
 	}
 
 	@Override

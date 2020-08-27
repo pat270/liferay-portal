@@ -22,8 +22,11 @@ import groovy.lang.Closure;
 
 import java.io.File;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.gradle.api.Project;
@@ -141,8 +144,20 @@ public class TargetPlatformExtension {
 				_project,
 				TargetPlatformPlugin.TARGET_PLATFORM_BOMS_CONFIGURATION_NAME);
 
-		TargetPlatformPluginUtil.configureDependencyManagement(
-			_project, targetPlatformBomsConfiguration, configurationNames);
+		List<String> configurationNamesList = new ArrayList<>();
+
+		Iterator<?> iterator = configurationNames.iterator();
+
+		while (iterator.hasNext()) {
+			Object object = iterator.next();
+
+			if (object instanceof String) {
+				configurationNamesList.add((String)object);
+			}
+		}
+
+		TargetPlatformPluginUtil.configureTargetPlatform(
+			_project, configurationNamesList, targetPlatformBomsConfiguration);
 
 		return this;
 	}
@@ -199,6 +214,7 @@ public class TargetPlatformExtension {
 		_onlyIfSpec.and(onlyIfClosure);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setOnlyIf(Spec<Project> onlyIfSpec) {
 		_onlyIfSpec = new AndSpec<>(onlyIfSpec);
 	}
@@ -209,6 +225,7 @@ public class TargetPlatformExtension {
 		_resolveOnlyIfSpec.and(resolveOnlyIfClosure);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setResolveOnlyIf(Spec<Project> resolveOnlyIfSpec) {
 		_resolveOnlyIfSpec = new AndSpec<>(resolveOnlyIfSpec);
 	}
@@ -223,6 +240,7 @@ public class TargetPlatformExtension {
 		setSubprojects(Arrays.asList(subprojects));
 	}
 
+	@SuppressWarnings("unchecked")
 	public TargetPlatformExtension subprojects(Iterable<Project> subprojects) {
 		GUtil.addToCollection(_subprojects, subprojects);
 

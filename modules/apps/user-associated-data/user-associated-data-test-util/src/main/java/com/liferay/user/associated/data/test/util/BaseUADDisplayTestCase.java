@@ -38,15 +38,16 @@ public abstract class BaseUADDisplayTestCase<T> {
 
 	@Before
 	public void setUp() throws Exception {
+		user = UserTestUtil.addUser();
+
 		_uadDisplay = getUADDisplay();
-		_user = UserTestUtil.addUser();
 	}
 
 	@Test
 	public void testCount() throws Exception {
-		addBaseModel(_user.getUserId());
+		addBaseModel(user.getUserId());
 
-		Assert.assertEquals(1, _uadDisplay.count(_user.getUserId()));
+		Assert.assertEquals(1, _uadDisplay.count(user.getUserId()));
 	}
 
 	@Test
@@ -57,10 +58,10 @@ public abstract class BaseUADDisplayTestCase<T> {
 			(WhenHasStatusByUserIdField)this;
 
 		T baseModel = whenHasStatusByUserIdField.addBaseModelWithStatusByUserId(
-			TestPropsValues.getUserId(), _user.getUserId());
+			TestPropsValues.getUserId(), user.getUserId());
 
 		List<T> baseModels = _uadDisplay.getRange(
-			_user.getUserId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			user.getUserId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		Assert.assertEquals(baseModels.toString(), 1, baseModels.size());
 
@@ -69,7 +70,7 @@ public abstract class BaseUADDisplayTestCase<T> {
 
 	@Test
 	public void testGetAllWithNoBaseModel() throws Exception {
-		Assert.assertEquals(0, _uadDisplay.count(_user.getUserId()));
+		Assert.assertEquals(0, _uadDisplay.count(user.getUserId()));
 	}
 
 	@Test
@@ -83,9 +84,9 @@ public abstract class BaseUADDisplayTestCase<T> {
 
 	protected abstract UADDisplay<T> getUADDisplay();
 
-	private UADDisplay<T> _uadDisplay;
-
 	@DeleteAfterTestRun
-	private User _user;
+	protected User user;
+
+	private UADDisplay<T> _uadDisplay;
 
 }

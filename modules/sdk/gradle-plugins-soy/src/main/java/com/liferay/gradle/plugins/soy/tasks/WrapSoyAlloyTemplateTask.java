@@ -20,13 +20,17 @@ import com.liferay.portal.tools.soy.builder.commands.WrapSoyAlloyTemplateCommand
 import java.io.File;
 import java.io.IOException;
 
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceTask;
 import org.gradle.api.tasks.TaskAction;
 
 /**
- * @author Andrea Di Giorgi
+ * @author     Andrea Di Giorgi
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@CacheableTask
+@Deprecated
 public class WrapSoyAlloyTemplateTask extends SourceTask {
 
 	@Input

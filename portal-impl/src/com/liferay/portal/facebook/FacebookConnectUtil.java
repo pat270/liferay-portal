@@ -22,14 +22,13 @@ import com.liferay.registry.ServiceTracker;
 
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Wilson Man
  * @author Brian Wing Shun Chan
  * @author Mika Koivisto
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
-@ProviderType
+@Deprecated
 public class FacebookConnectUtil {
 
 	public static String getAccessToken(
@@ -55,7 +54,7 @@ public class FacebookConnectUtil {
 	}
 
 	public static FacebookConnect getFacebookConnect() {
-		return _instance._serviceTracker.getService();
+		return _facebookConnectUtil._serviceTracker.getService();
 	}
 
 	public static JSONObject getGraphResources(
@@ -93,7 +92,7 @@ public class FacebookConnectUtil {
 		_serviceTracker.open();
 	}
 
-	private static final FacebookConnectUtil _instance =
+	private static final FacebookConnectUtil _facebookConnectUtil =
 		new FacebookConnectUtil();
 
 	private final ServiceTracker<FacebookConnect, FacebookConnect>

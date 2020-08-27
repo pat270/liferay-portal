@@ -15,8 +15,11 @@
 package com.liferay.dynamic.data.lists.model;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants}
  */
+@Deprecated
 public class DDLRecordSetConstants {
 
 	public static final int MIN_DISPLAY_ROWS_DEFAULT = 10;

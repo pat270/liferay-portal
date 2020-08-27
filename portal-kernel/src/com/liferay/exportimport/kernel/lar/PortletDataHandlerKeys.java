@@ -14,19 +14,10 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Raymond Augé
  */
-@ProviderType
 public class PortletDataHandlerKeys {
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String CATEGORIES = "CATEGORIES";
 
 	public static final String COMMENTS = "COMMENTS";
 
@@ -39,6 +30,8 @@ public class PortletDataHandlerKeys {
 
 	public static final String DATA_STRATEGY_MIRROR_OVERWRITE =
 		"DATA_STRATEGY_MIRROR_OVERWRITE";
+
+	public static final String DELETE_LAYOUTS = "DELETE_LAYOUTS";
 
 	public static final String DELETE_MISSING_LAYOUTS =
 		"DELETE_MISSING_LAYOUTS";
@@ -62,6 +55,9 @@ public class PortletDataHandlerKeys {
 
 	public static final String LAYOUTS_IMPORT_MODE_ADD_AS_NEW = "ADD_AS_NEW";
 
+	public static final String LAYOUTS_IMPORT_MODE_ADD_AS_NEW_PROTOTYPE =
+		"ADD_AS_NEW_PROTOTYPE";
+
 	public static final String LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE =
 		"CREATED_FROM_PROTOTYPE";
 
@@ -70,6 +66,8 @@ public class PortletDataHandlerKeys {
 
 	public static final String LAYOUTS_IMPORT_MODE_MERGE_BY_LAYOUT_UUID =
 		"MERGE_BY_LAYOUT_UUID";
+
+	public static final String LOCKS = "LOCKS";
 
 	public static final String LOGO = "LOGO";
 
@@ -111,26 +109,7 @@ public class PortletDataHandlerKeys {
 	public static final String PORTLETS_MERGE_MODE_ADD_TO_BOTTOM =
 		"ADD_TO_BOTTOM";
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PORTLETS_MERGE_MODE_ADD_TO_TOP = "ADD_TO_TOP";
-
 	public static final String PORTLETS_MERGE_MODE_REPLACE = "REPLACE";
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PUBLIC_LAYOUT_PERMISSIONS =
-		"PUBLIC_LAYOUT_PERMISSIONS";
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PUBLISH_TO_REMOTE = "PUBLISH_TO_REMOTE";
 
 	public static final String RATINGS = "RATINGS";
 

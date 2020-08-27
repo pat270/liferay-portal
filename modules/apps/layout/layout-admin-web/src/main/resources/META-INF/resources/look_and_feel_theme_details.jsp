@@ -50,18 +50,24 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 <aui:input name="regularThemeId" type="hidden" value="<%= selTheme.getThemeId() %>" />
 <aui:input name="regularColorSchemeId" type="hidden" value="<%= selColorScheme.getColorSchemeId() %>" />
 
-<aui:row>
-	<div class="col-6 col-sm-4">
-		<div class="card image-card img-thumbnail">
-			<div class="aspect-ratio aspect-ratio-16-to-9">
-				<img alt="<%= HtmlUtil.escapeAttribute(selTheme.getName()) %>" class="aspect-ratio-item-flush aspect-ratio-item-top-center img-thumbnail theme-screenshot" src="<%= themeDisplay.getCDNBaseURL() %><%= HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) %><%= HtmlUtil.escapeAttribute(selTheme.getImagesPath()) %>/thumbnail.png" title="<%= HtmlUtil.escapeAttribute(selTheme.getName()) %>" />
+<clay:row>
+	<clay:col
+		size="6"
+		sm="4"
+	>
+		<div class="card card-type-asset image-card">
+			<div class="aspect-ratio card-item-first card-item-last">
+				<img alt="<%= HtmlUtil.escapeAttribute(selTheme.getName()) %>" class="aspect-ratio-item aspect-ratio-item-center-middle aspect-ratio-item-fluid" src="<%= themeDisplay.getCDNBaseURL() %><%= HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) %><%= HtmlUtil.escapeAttribute(selTheme.getImagesPath()) %>/thumbnail.png" />
 			</div>
 		</div>
-	</div>
+	</clay:col>
 
-	<div class="col-6 col-sm-8">
+	<clay:col
+		size="6"
+		sm="8"
+	>
 		<c:if test="<%= Validator.isNotNull(selTheme.getName()) %>">
-			<h4><liferay-ui:message key="name" /></h4>
+			<h2 class="h4"><liferay-ui:message key="name" /></h2>
 
 			<p class="text-default">
 				<%= HtmlUtil.escape(selTheme.getName()) %>
@@ -69,14 +75,14 @@ PluginPackage selPluginPackage = selTheme.getPluginPackage();
 		</c:if>
 
 		<c:if test="<%= (selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getAuthor()) %>">
-			<h4><liferay-ui:message key="author" /></h4>
+			<h2 class="h4"><liferay-ui:message key="author" /></h2>
 
 			<p class="text-default">
 				<aui:a href="<%= HtmlUtil.escapeHREF(selPluginPackage.getPageURL()) %>" target="_blank"><%= HtmlUtil.escape(selPluginPackage.getAuthor()) %></aui:a>
 			</p>
 		</c:if>
-	</div>
-</aui:row>
+	</clay:col>
+</clay:row>
 
 <c:if test="<%= (selPluginPackage != null) && Validator.isNotNull(selPluginPackage.getShortDescription()) %>">
 	<h4><liferay-ui:message key="description" /></h4>
@@ -91,10 +97,10 @@ List<ColorScheme> colorSchemes = selTheme.getColorSchemes();
 %>
 
 <c:if test="<%= !colorSchemes.isEmpty() %>">
-	<h4><liferay-ui:message key="color-schemes" /></h4>
+	<h2 class="h4"><liferay-ui:message key="color-schemes" /></h2>
 
 	<div class="clearfix" id="<portlet:namespace />colorSchemesContainer">
-		<aui:row>
+		<clay:row>
 
 			<%
 			String selColorSchemeId = selColorScheme.getColorSchemeId();
@@ -102,7 +108,11 @@ List<ColorScheme> colorSchemes = selTheme.getColorSchemes();
 			for (ColorScheme curColorScheme : colorSchemes) {
 			%>
 
-				<div class="col-6 col-md-3 col-sm-4">
+				<clay:col
+					md="3"
+					size="6"
+					sm="4"
+				>
 					<div class="card card-interactive card-interactive-secondary card-type-asset color-scheme-selector image-card img-thumbnail <%= selColorSchemeId.equals(curColorScheme.getColorSchemeId()) ? "selected" : StringPool.BLANK %>" data-color-scheme-id="<%= curColorScheme.getColorSchemeId() %>" tabindex="0">
 						<div class="aspect-ratio aspect-ratio-16-to-9">
 							<img alt="" class="aspect-ratio-item-flush aspect-ratio-item-top-center" src="<%= themeDisplay.getCDNBaseURL() %><%= HtmlUtil.escapeAttribute(selTheme.getStaticResourcePath()) %><%= HtmlUtil.escapeAttribute(curColorScheme.getColorSchemeThumbnailPath()) %>/thumbnail.png" />
@@ -116,13 +126,13 @@ List<ColorScheme> colorSchemes = selTheme.getColorSchemes();
 							</div>
 						</div>
 					</div>
-				</div>
+				</clay:col>
 
 			<%
 			}
 			%>
 
-		</aui:row>
+		</clay:row>
 	</div>
 </c:if>
 
@@ -131,7 +141,7 @@ Map<String, ThemeSetting> configurableSettings = selTheme.getConfigurableSetting
 %>
 
 <c:if test="<%= !configurableSettings.isEmpty() %>">
-	<h4><liferay-ui:message key="settings" /></h4>
+	<h2 class="h4"><liferay-ui:message key="settings" /></h2>
 
 	<%
 	ServletContext servletContext = ServletContextPool.get(selTheme.getServletContextName());
@@ -192,7 +202,7 @@ Map<String, ThemeSetting> configurableSettings = selTheme.getConfigurableSetting
 
 		<c:if test="<%= Validator.isNotNull(themeSetting.getScript()) %>">
 			<aui:script position="inline">
-				<%= StringUtil.replace(themeSetting.getScript(), "[@NAMESPACE@]", liferayPortletResponse.getNamespace()) %>
+				<%= StringUtil.replace(themeSetting.getScript(), "[@NAMESPACE@]", liferayPortletResponse.getNamespace()) %>;
 			</aui:script>
 		</c:if>
 
@@ -204,21 +214,27 @@ Map<String, ThemeSetting> configurableSettings = selTheme.getConfigurableSetting
 
 <c:if test="<%= !colorSchemes.isEmpty() %>">
 	<aui:script use="aui-base,aui-event-key">
-		var colorSchemesContainer = A.one('#<portlet:namespace />colorSchemesContainer');
+		var colorSchemesContainer = A.one(
+			'#<portlet:namespace />colorSchemesContainer'
+		);
 
 		colorSchemesContainer.delegate(
 			['click', 'keydown'],
-			function(event) {
+			function (event) {
 				if (!event.keyCode || event.keyCode === 13 || event.keyCode === 32) {
 					event.preventDefault();
 
 					var currentTarget = event.currentTarget;
 
-					colorSchemesContainer.all('.color-scheme-selector').removeClass('selected');
+					colorSchemesContainer
+						.all('.color-scheme-selector')
+						.removeClass('selected');
 
 					currentTarget.addClass('selected');
 
-					A.one('#<portlet:namespace />regularColorSchemeId').val(currentTarget.attr('data-color-scheme-id'));
+					A.one('#<portlet:namespace />regularColorSchemeId').val(
+						currentTarget.attr('data-color-scheme-id')
+					);
 				}
 			},
 			'.color-scheme-selector'

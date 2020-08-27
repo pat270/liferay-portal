@@ -14,15 +14,14 @@
 
 package com.liferay.portal.workflow.kaleo.runtime.form.internal;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
-import com.liferay.dynamic.data.lists.model.DDLRecordConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -53,9 +52,8 @@ public class DDMFormValueProcessor implements FormValueProcessor {
 
 		DDMStructure ddmStructure = ddlRecordSet.getDDMStructure();
 
-		DDMForm ddmForm = ddmStructure.getDDMForm();
-
-		DDMFormValues ddmFormValues = deserialize(formValues, ddmForm);
+		DDMFormValues ddmFormValues = deserialize(
+			formValues, ddmStructure.getDDMForm());
 
 		DDLRecord ddlRecord = _ddlRecordLocalService.addRecord(
 			kaleoTaskFormInstance.getUserId(),
@@ -71,17 +69,13 @@ public class DDMFormValueProcessor implements FormValueProcessor {
 	}
 
 	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
-		DDMFormValuesDeserializer ddmFormValuesDeserializer =
-			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				"json");
-
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
 
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
-				ddmFormValuesDeserializer.deserialize(builder.build());
+				_jsonDDMFormValuesDeserializer.deserialize(builder.build());
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -92,7 +86,7 @@ public class DDMFormValueProcessor implements FormValueProcessor {
 	@Reference
 	private DDLRecordSetLocalService _ddlRecordSetLocalService;
 
-	@Reference
-	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
+	@Reference(target = "(ddm.form.values.deserializer.type=json)")
+	private DDMFormValuesDeserializer _jsonDDMFormValuesDeserializer;
 
 }

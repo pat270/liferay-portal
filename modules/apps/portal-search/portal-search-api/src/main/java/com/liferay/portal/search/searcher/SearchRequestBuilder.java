@@ -18,10 +18,14 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
 import com.liferay.portal.search.filter.ComplexQueryPart;
+import com.liferay.portal.search.groupby.GroupByRequest;
 import com.liferay.portal.search.query.Query;
+import com.liferay.portal.search.rescore.Rescore;
 import com.liferay.portal.search.sort.Sort;
 import com.liferay.portal.search.stats.StatsRequest;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -67,9 +71,15 @@ public interface SearchRequestBuilder {
 	 */
 	public SearchRequest build();
 
+	public SearchRequestBuilder companyId(Long companyId);
+
+	public SearchRequestBuilder connectionId(String connectionId);
+
 	public SearchRequestBuilder emptySearchEnabled(boolean emptySearchEnabled);
 
 	public SearchRequestBuilder entryClassNames(String... entryClassNames);
+
+	public SearchRequestBuilder excludeContributors(String... ids);
 
 	/**
 	 * Enables explanation of how each hit's score was computed.
@@ -81,6 +91,14 @@ public interface SearchRequestBuilder {
 
 	public SearchRequestBuilder federatedSearchKey(String federatedSearchKey);
 
+	public SearchRequestBuilder fetchSource(boolean fetchSource);
+
+	public SearchRequestBuilder fetchSourceExcludes(
+		String[] fetchSourceExcludes);
+
+	public SearchRequestBuilder fetchSourceIncludes(
+		String[] fetchSourceIncludes);
+
 	public SearchRequestBuilder fields(String... fields);
 
 	public SearchRequestBuilder from(Integer from);
@@ -88,9 +106,23 @@ public interface SearchRequestBuilder {
 	public SearchRequestBuilder getFederatedSearchRequestBuilder(
 		String federatedSearchKey);
 
+	/**
+	 * Provides a top hits aggregations for each of the specified fields.
+	 *
+	 * @param  groupByRequests the grouping that is enabled for each field
+	 * @return the search request builder
+	 * @review
+	 */
+	public SearchRequestBuilder groupByRequests(
+		GroupByRequest... groupByRequests);
+
+	public SearchRequestBuilder groupIds(long... groupIds);
+
 	public SearchRequestBuilder highlightEnabled(boolean highlightEnabled);
 
 	public SearchRequestBuilder highlightFields(String... highlightFields);
+
+	public SearchRequestBuilder includeContributors(String... ids);
 
 	/**
 	 * Enables inclusion of the search engine's response string with the
@@ -104,7 +136,14 @@ public interface SearchRequestBuilder {
 
 	public SearchRequestBuilder indexes(String... indexes);
 
+	public SearchRequestBuilder locale(Locale locale);
+
 	public SearchRequestBuilder modelIndexerClasses(Class<?>... classes);
+
+	public SearchRequestBuilder ownerUserId(Long userId);
+
+	public void paginationStartParameterName(
+		String paginationStartParameterName);
 
 	public SearchRequestBuilder postFilterQuery(Query query);
 
@@ -113,12 +152,18 @@ public interface SearchRequestBuilder {
 	public SearchRequestBuilder queryString(String queryString);
 
 	/**
-	 * Provides a secondary query to reorder the top documents returned.
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #rescores(List)}
+	 */
+	@Deprecated
+	public SearchRequestBuilder rescoreQuery(Query rescoreQuery);
+
+	/**
+	 * Provides secondary queries to reorder the top documents returned.
 	 *
-	 * @param  rescoreQuery the rescore query
+	 * @param  rescores the rescore queries
 	 * @return the search request builder
 	 */
-	public SearchRequestBuilder rescoreQuery(Query rescoreQuery);
+	public SearchRequestBuilder rescores(List<Rescore> rescores);
 
 	public SearchRequestBuilder size(Integer size);
 
@@ -143,5 +188,8 @@ public interface SearchRequestBuilder {
 
 	public <T> T withSearchContextGet(
 		Function<SearchContext, T> searchContextFunction);
+
+	public SearchRequestBuilder withSearchRequestBuilder(
+		Consumer<SearchRequestBuilder>... searchRequestBuilderConsumers);
 
 }

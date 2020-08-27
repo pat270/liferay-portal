@@ -16,6 +16,7 @@ package com.liferay.ratings.kernel.display.context;
 
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PrefsParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.ratings.kernel.RatingsType;
@@ -87,20 +88,21 @@ public class CompanyPortletRatingsDefinitionDisplayContext {
 
 			String className = entry.getKey();
 
-			Map<String, RatingsType> ratingsTypeMap = new HashMap<>();
+			Map<String, RatingsType> ratingsTypeMap = HashMapBuilder.put(
+				className,
+				() -> {
+					String propertyKey =
+						RatingsDataTransformerUtil.getPropertyKey(className);
 
-			String propertyKey = RatingsDataTransformerUtil.getPropertyKey(
-				className);
+					RatingsType ratingsType =
+						portletRatingsDefinitionValues.getDefaultRatingsType();
 
-			RatingsType ratingsType =
-				portletRatingsDefinitionValues.getDefaultRatingsType();
-
-			String companyRatingsTypeString = PrefsParamUtil.getString(
-				companyPortletPreferences, httpServletRequest, propertyKey,
-				ratingsType.getValue());
-
-			ratingsTypeMap.put(
-				className, RatingsType.parse(companyRatingsTypeString));
+					return RatingsType.parse(
+						PrefsParamUtil.getString(
+							companyPortletPreferences, httpServletRequest,
+							propertyKey, ratingsType.getValue()));
+				}
+			).build();
 
 			_companyRatingsTypeMaps.put(portletId, ratingsTypeMap);
 		}

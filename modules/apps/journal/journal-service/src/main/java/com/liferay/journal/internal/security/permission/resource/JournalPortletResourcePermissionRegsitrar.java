@@ -17,6 +17,9 @@ package com.liferay.journal.internal.security.permission.resource;
 import com.liferay.exportimport.kernel.staging.permission.StagingPermission;
 import com.liferay.journal.constants.JournalConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.StagedPortletPermissionLogic;
@@ -38,7 +41,7 @@ import org.osgi.service.component.annotations.Reference;
 public class JournalPortletResourcePermissionRegsitrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("resource.name", JournalConstants.RESOURCE_NAME);
@@ -48,12 +51,27 @@ public class JournalPortletResourcePermissionRegsitrar {
 			PortletResourcePermissionFactory.create(
 				JournalConstants.RESOURCE_NAME,
 				new StagedPortletPermissionLogic(
-					_stagingPermission, JournalPortletKeys.JOURNAL)),
+					_stagingPermission, JournalPortletKeys.JOURNAL) {
+
+					@Override
+					public Boolean contains(
+						PermissionChecker permissionChecker, String name,
+						Group group, String actionId) {
+
+						if (actionId.equals(ActionKeys.SUBSCRIBE)) {
+							return null;
+						}
+
+						return super.contains(
+							permissionChecker, name, group, actionId);
+					}
+
+				}),
 			properties);
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 

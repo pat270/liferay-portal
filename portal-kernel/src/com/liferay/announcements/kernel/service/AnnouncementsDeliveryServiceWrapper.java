@@ -16,8 +16,6 @@ package com.liferay.announcements.kernel.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link AnnouncementsDeliveryService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsDeliveryService
  * @generated
  */
-@ProviderType
 public class AnnouncementsDeliveryServiceWrapper
 	implements AnnouncementsDeliveryService,
 			   ServiceWrapper<AnnouncementsDeliveryService> {
@@ -53,22 +50,6 @@ public class AnnouncementsDeliveryServiceWrapper
 
 		return _announcementsDeliveryService.updateDelivery(
 			userId, type, email, sms);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateDelivery(long, String, boolean, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.announcements.kernel.model.AnnouncementsDelivery
-			updateDelivery(
-				long userId, String type, boolean email, boolean sms,
-				boolean website)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _announcementsDeliveryService.updateDelivery(
-			userId, type, email, sms, website);
 	}
 
 	@Override

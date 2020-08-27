@@ -67,10 +67,8 @@ public class SocialAnalyzerPlugin implements AnalyzerPlugin {
 				continue;
 			}
 
-			String packageName = getPackageName(className);
-
 			Descriptors.PackageRef packageRef = analyzer.getPackageRef(
-				packageName);
+				getPackageName(className));
 
 			packages.put(packageRef);
 		}
@@ -99,9 +97,7 @@ public class SocialAnalyzerPlugin implements AnalyzerPlugin {
 	}
 
 	protected Document readXMLResource(Resource resource) throws Exception {
-		InputStream inputStream = resource.openInputStream();
-
-		try {
+		try (InputStream inputStream = resource.openInputStream()) {
 			DocumentBuilder documentBuilder =
 				_documentBuilderFactory.newDocumentBuilder();
 
@@ -134,9 +130,6 @@ public class SocialAnalyzerPlugin implements AnalyzerPlugin {
 				});
 
 			return documentBuilder.parse(inputStream);
-		}
-		finally {
-			inputStream.close();
 		}
 	}
 

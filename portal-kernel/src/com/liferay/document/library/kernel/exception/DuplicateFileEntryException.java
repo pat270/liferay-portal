@@ -16,12 +16,9 @@ package com.liferay.document.library.kernel.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateFileEntryException extends PortalException {
 
 	public DuplicateFileEntryException() {
@@ -31,12 +28,12 @@ public class DuplicateFileEntryException extends PortalException {
 		super(msg);
 	}
 
-	public DuplicateFileEntryException(String msg, Throwable cause) {
-		super(msg, cause);
+	public DuplicateFileEntryException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public DuplicateFileEntryException(Throwable cause) {
-		super(cause);
+	public DuplicateFileEntryException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

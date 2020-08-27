@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.SortFactoryUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -54,12 +55,15 @@ import javax.servlet.http.HttpServletRequest;
 public class AssetTagsDisplayContext {
 
 	public AssetTagsDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
+		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
-		_httpServletRequest = httpServletRequest;
+
+		_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	public String getAssetTitle() {
@@ -89,14 +93,12 @@ public class AssetTagsDisplayContext {
 			WorkflowConstants.STATUS_SCHEDULED
 		};
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		Hits hits = AssetEntryLocalServiceUtil.search(
+			tag.getCompanyId(), new long[] {_themeDisplay.getScopeGroupId()},
+			_themeDisplay.getUserId(), null, 0, null, null, null, null,
+			tag.getName(), true, statuses, false, 0, 1);
 
-		return AssetEntryLocalServiceUtil.searchCount(
-			tag.getCompanyId(), new long[] {themeDisplay.getScopeGroupId()},
-			themeDisplay.getUserId(), null, 0, null, null, null, null,
-			tag.getName(), true, true, statuses, false);
+		return hits.getLength();
 	}
 
 	public String getKeywords() {
@@ -117,7 +119,7 @@ public class AssetTagsDisplayContext {
 		long[] mergeTagIds = StringUtil.split(
 			ParamUtil.getString(_renderRequest, "mergeTagIds"), 0L);
 
-		List<String> mergeTagNames = new ArrayList();
+		List<String> mergeTagNames = new ArrayList<>();
 
 		for (long mergeTagId : mergeTagIds) {
 			AssetTag tag = AssetTagLocalServiceUtil.fetchAssetTag(mergeTagId);
@@ -184,21 +186,19 @@ public class AssetTagsDisplayContext {
 		return _tagId;
 	}
 
-	public SearchContainer getTagsSearchContainer() throws PortalException {
+	public SearchContainer<AssetTag> getTagsSearchContainer()
+		throws PortalException {
+
 		if (_tagsSearchContainer != null) {
 			return _tagsSearchContainer;
 		}
 
-		SearchContainer tagsSearchContainer = new SearchContainer(
+		SearchContainer<AssetTag> tagsSearchContainer = new SearchContainer(
 			_renderRequest, _renderResponse.createRenderURL(), null,
 			"there-are-no-tags");
 
 		tagsSearchContainer.setRowChecker(
 			new EmptyOnClickRowChecker(_renderResponse));
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
 
 		String keywords = getKeywords();
 
@@ -220,7 +220,7 @@ public class AssetTagsDisplayContext {
 
 			BaseModelSearchResult<AssetTag> baseModelSearchResult =
 				AssetTagLocalServiceUtil.searchTags(
-					new long[] {themeDisplay.getScopeGroupId()}, keywords,
+					new long[] {_themeDisplay.getScopeGroupId()}, keywords,
 					tagsSearchContainer.getStart(),
 					tagsSearchContainer.getEnd(), sort);
 
@@ -255,7 +255,7 @@ public class AssetTagsDisplayContext {
 
 			tagsSearchContainer.setOrderByType(orderByType);
 
-			long scopeGroupId = themeDisplay.getScopeGroupId();
+			long scopeGroupId = _themeDisplay.getScopeGroupId();
 
 			int tagsCount = AssetTagServiceUtil.getTagsCount(
 				scopeGroupId, keywords);
@@ -285,11 +285,7 @@ public class AssetTagsDisplayContext {
 		StagingGroupHelper stagingGroupHelper =
 			StagingGroupHelperUtil.getStagingGroupHelper();
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Group group = themeDisplay.getScopeGroup();
+		Group group = _themeDisplay.getScopeGroup();
 
 		if (stagingGroupHelper.isLocalLiveGroup(group) ||
 			stagingGroupHelper.isRemoteLiveGroup(group)) {
@@ -313,6 +309,7 @@ public class AssetTagsDisplayContext {
 	private Boolean _showTagsActions;
 	private AssetTag _tag;
 	private Long _tagId;
-	private SearchContainer _tagsSearchContainer;
+	private SearchContainer<AssetTag> _tagsSearchContainer;
+	private final ThemeDisplay _themeDisplay;
 
 }

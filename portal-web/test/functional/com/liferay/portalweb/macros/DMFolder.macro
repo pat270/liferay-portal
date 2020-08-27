@@ -1,4 +1,5 @@
 definition {
+
 	var assetType = "Documents Folder";
 
 	macro addCP {
@@ -33,12 +34,12 @@ definition {
 		}
 
 		if (isSet(siteName)) {
-			ProductMenu.gotoSite(site = "${siteName}");
+			Navigator.openSiteURL(siteName = "${siteName}");
 
 			ProductMenu.gotoPortlet(
 				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Documents and Media");
+				portlet = "Documents and Media",
+				site = "${siteName}");
 		}
 
 		DMFolder.viewEntryPresent(dmFolderName = "${dmFolderName}");
@@ -184,7 +185,7 @@ definition {
 		else {
 			PortletEntry.clickMoveToRecycleBin();
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 	}
 
@@ -199,7 +200,7 @@ definition {
 
 		Click(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
 		AssertElementNotPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_ICON");
 	}
@@ -340,7 +341,7 @@ definition {
 
 		PortletEntry.clickMoveToRecycleBin();
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
 		AssertTextEquals(
 			locator1 = "Message#EMPTY_INFO",
@@ -374,8 +375,8 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Documents and Media");
+			portlet = "Documents and Media",
+			site = "${site}");
 
 		if (IsElementNotPresent(locator1 = "Message#EMPTY_INFO")) {
 			Check(locator1 = "DocumentsAndMedia#TOOLBAR_SELECT_ALL_CHECKBOX");
@@ -393,7 +394,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();
@@ -409,14 +409,13 @@ definition {
 				locator1 = "MediaGallery#ENTRY_RECYCLE_BIN_ICON",
 				value1 = "Move to Recycle Bin");
 
-			AssertElementPresent(locator1 = "Message#SUCCESS");
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();
@@ -496,4 +495,5 @@ definition {
 			locator1 = "MediaGallery#FOLDER_HEADER_TITLE",
 			value1 = "${mgFolderName}");
 	}
+
 }

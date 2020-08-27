@@ -21,6 +21,7 @@ import com.liferay.message.boards.model.MBMessageDisplay;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBBanLocalServiceUtil;
 import com.liferay.message.boards.service.MBCategoryServiceUtil;
+import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
 import com.liferay.message.boards.service.MBMessageServiceUtil;
 import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
 import com.liferay.message.boards.web.internal.security.permission.MBResourcePermission;
@@ -87,10 +88,7 @@ public class ActionUtil {
 	public static MBCategory getCategory(PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getCategory(httpServletRequest);
+		return getCategory(PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	public static MBMessage getMessage(HttpServletRequest httpServletRequest)
@@ -114,10 +112,7 @@ public class ActionUtil {
 	public static MBMessage getMessage(PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getMessage(httpServletRequest);
+		return getMessage(PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	public static MBMessageDisplay getMessageDisplay(
@@ -133,16 +128,19 @@ public class ActionUtil {
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
 
-		int status = WorkflowConstants.STATUS_APPROVED;
+		MBMessageDisplay messageDisplay = null;
 
 		if (permissionChecker.isContentReviewer(
 				themeDisplay.getUserId(), themeDisplay.getScopeGroupId())) {
 
-			status = WorkflowConstants.STATUS_ANY;
+			messageDisplay = MBMessageLocalServiceUtil.getMessageDisplay(
+				themeDisplay.getUserId(), messageId,
+				WorkflowConstants.STATUS_ANY);
 		}
-
-		MBMessageDisplay messageDisplay =
-			MBMessageServiceUtil.getMessageDisplay(messageId, status);
+		else {
+			messageDisplay = MBMessageServiceUtil.getMessageDisplay(
+				messageId, WorkflowConstants.STATUS_APPROVED);
+		}
 
 		if (messageDisplay != null) {
 			MBMessage message = messageDisplay.getMessage();
@@ -160,10 +158,8 @@ public class ActionUtil {
 			PortletRequest portletRequest)
 		throws PortalException {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getMessageDisplay(httpServletRequest);
+		return getMessageDisplay(
+			PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	public static MBMessage getThreadMessage(
@@ -191,10 +187,8 @@ public class ActionUtil {
 	public static MBMessage getThreadMessage(PortletRequest portletRequest)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(portletRequest);
-
-		return getThreadMessage(httpServletRequest);
+		return getThreadMessage(
+			PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 }

@@ -61,6 +61,8 @@ public interface DDMStructure extends DDMStructureModel, PersistedModel {
 	public DDMForm createFullHierarchyDDMForm()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
+	public DDMStructureLayout fetchDDMStructureLayout();
+
 	public java.util.List<String> getChildrenFieldNames(String fieldName)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
@@ -74,6 +76,8 @@ public interface DDMStructure extends DDMStructureModel, PersistedModel {
 
 	public DDMFormLayout getDDMFormLayout()
 		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public long getDefaultDDMStructureLayoutId();
 
 	public String getFieldDataType(String fieldName)
 		throws com.liferay.portal.kernel.exception.PortalException;

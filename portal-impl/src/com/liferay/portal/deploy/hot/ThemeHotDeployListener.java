@@ -14,6 +14,7 @@
 
 package com.liferay.portal.deploy.hot;
 
+import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.deploy.hot.BaseHotDeployListener;
 import com.liferay.portal.kernel.deploy.hot.HotDeployEvent;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.FileTimestampUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -49,9 +49,9 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeDeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
-				hotDeployEvent, "Error registering themes for ", t);
+				hotDeployEvent, "Error registering themes for ", throwable);
 		}
 	}
 
@@ -62,9 +62,9 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeUndeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
-				hotDeployEvent, "Error unregistering themes for ", t);
+				hotDeployEvent, "Error unregistering themes for ", throwable);
 		}
 	}
 
@@ -80,8 +80,8 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 		}
 
 		String[] xmls = {
-			HttpUtil.URLtoString(
-				servletContext.getResource(
+			StreamUtil.toString(
+				servletContext.getResourceAsStream(
 					"/WEB-INF/liferay-look-and-feel.xml"))
 		};
 
@@ -139,8 +139,8 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			try {
 				ThemeLocalServiceUtil.uninstallThemes(themes);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 		else {

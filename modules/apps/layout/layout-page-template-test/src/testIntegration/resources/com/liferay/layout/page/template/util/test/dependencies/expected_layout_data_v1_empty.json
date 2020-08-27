@@ -1,0 +1,18 @@
+{
+	"items": {
+		"MAIN-UUID": {
+			"children": [
+			],
+			"config": {
+			},
+			"itemId": "MAIN-UUID",
+			"parentId": "",
+			"type": "root"
+		}
+	},
+	"rootItems": {
+		"dropZone": "",
+		"main": "MAIN-UUID"
+	},
+	"version": 1
+}

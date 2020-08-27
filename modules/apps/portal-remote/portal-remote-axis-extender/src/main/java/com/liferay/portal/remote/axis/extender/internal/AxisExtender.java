@@ -76,13 +76,13 @@ public class AxisExtender {
 			ServiceRegistration<Filter> authVerifierFilterServiceRegistration,
 			ServiceRegistration<Servlet> axisServletServiceRegistration,
 			ServiceRegistration<ServletContextHelper>
-				bundleServletContextServiceRegistration) {
+				bundleServletContextHelperServiceRegistration) {
 
 			_authVerifierFilterServiceRegistration =
 				authVerifierFilterServiceRegistration;
 			_axisServletServiceRegistration = axisServletServiceRegistration;
 			_bundleServletContextHelperServiceRegistration =
-				bundleServletContextServiceRegistration;
+				bundleServletContextHelperServiceRegistration;
 		}
 
 		public ServiceRegistration<Filter>
@@ -231,8 +231,8 @@ public class AxisExtender {
 			try {
 				axisServletServiceRegistration.unregister();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			ServiceRegistration<Filter> authVerifierFilterServiceRegistration =
@@ -242,8 +242,8 @@ public class AxisExtender {
 			try {
 				authVerifierFilterServiceRegistration.unregister();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			ServiceRegistration<ServletContextHelper>
@@ -254,8 +254,8 @@ public class AxisExtender {
 			try {
 				bundleServletContextHelperServiceRegistration.unregister();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 

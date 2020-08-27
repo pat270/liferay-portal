@@ -14,7 +14,6 @@
 
 package com.liferay.journal.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see JournalFeedLocalService
  * @generated
  */
-@ProviderType
 public class JournalFeedLocalServiceUtil {
 
 	/*
@@ -74,19 +72,6 @@ public class JournalFeedLocalServiceUtil {
 		getService().addFeedResources(feed, modelPermissions);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addFeedResources(JournalFeed, ModelPermissions)}
-	 */
-	@Deprecated
-	public static void addFeedResources(
-			com.liferay.journal.model.JournalFeed feed,
-			String[] groupPermissions, String[] guestPermissions)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().addFeedResources(feed, groupPermissions, guestPermissions);
-	}
-
 	public static void addFeedResources(
 			long feedId, boolean addGroupPermissions,
 			boolean addGuestPermissions)
@@ -97,20 +82,11 @@ public class JournalFeedLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #addFeedResources(JournalFeed, ModelPermissions)}
-	 */
-	@Deprecated
-	public static void addFeedResources(
-			long feedId, String[] groupPermissions, String[] guestPermissions)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		getService().addFeedResources(
-			feedId, groupPermissions, guestPermissions);
-	}
-
-	/**
 	 * Adds the journal feed to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalFeedLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param journalFeed the journal feed
 	 * @return the journal feed that was added
@@ -131,6 +107,16 @@ public class JournalFeedLocalServiceUtil {
 		long id) {
 
 		return getService().createJournalFeed(id);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
 	}
 
 	public static void deleteFeed(com.liferay.journal.model.JournalFeed feed)
@@ -154,6 +140,10 @@ public class JournalFeedLocalServiceUtil {
 	/**
 	 * Deletes the journal feed from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalFeedLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param journalFeed the journal feed
 	 * @return the journal feed that was removed
 	 */
@@ -165,6 +155,10 @@ public class JournalFeedLocalServiceUtil {
 
 	/**
 	 * Deletes the journal feed with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalFeedLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param id the primary key of the journal feed
 	 * @return the journal feed that was removed
@@ -186,6 +180,12 @@ public class JournalFeedLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().deletePersistedModel(persistedModel);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -210,7 +210,7 @@ public class JournalFeedLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalFeedModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalFeedModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -229,7 +229,7 @@ public class JournalFeedLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalFeedModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalFeedModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -386,7 +386,7 @@ public class JournalFeedLocalServiceUtil {
 	 * Returns a range of all the journal feeds.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalFeedModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.journal.model.impl.JournalFeedModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of journal feeds
@@ -450,6 +450,9 @@ public class JournalFeedLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -460,21 +463,21 @@ public class JournalFeedLocalServiceUtil {
 	public static java.util.List<com.liferay.journal.model.JournalFeed> search(
 		long companyId, long groupId, String keywords, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.journal.model.JournalFeed> obc) {
+			<com.liferay.journal.model.JournalFeed> orderByComparator) {
 
 		return getService().search(
-			companyId, groupId, keywords, start, end, obc);
+			companyId, groupId, keywords, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.journal.model.JournalFeed> search(
 		long companyId, long groupId, String feedId, String name,
 		String description, boolean andOperator, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.journal.model.JournalFeed> obc) {
+			<com.liferay.journal.model.JournalFeed> orderByComparator) {
 
 		return getService().search(
 			companyId, groupId, feedId, name, description, andOperator, start,
-			end, obc);
+			end, orderByComparator);
 	}
 
 	public static int searchCount(
@@ -510,6 +513,10 @@ public class JournalFeedLocalServiceUtil {
 
 	/**
 	 * Updates the journal feed in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect JournalFeedLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param journalFeed the journal feed
 	 * @return the journal feed that was updated

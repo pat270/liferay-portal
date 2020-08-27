@@ -17,10 +17,12 @@
 <%@ include file="/init.jsp" %>
 
 <%
-PortletConfigurationPermissionsDisplayContext portletConfigurationPermissionsDisplayContext = new PortletConfigurationPermissionsDisplayContext(request, renderRequest);
+RoleTypeContributorProvider roleTypeContributorProvider = (RoleTypeContributorProvider)request.getAttribute(RolesAdminWebKeys.ROLE_TYPE_CONTRIBUTOR_PROVIDER);
+
+PortletConfigurationPermissionsDisplayContext portletConfigurationPermissionsDisplayContext = new PortletConfigurationPermissionsDisplayContext(request, renderRequest, roleTypeContributorProvider);
 
 Resource resource = portletConfigurationPermissionsDisplayContext.getResource();
-SearchContainer roleSearchContainer = portletConfigurationPermissionsDisplayContext.getRoleSearchContainer();
+SearchContainer<Role> roleSearchContainer = portletConfigurationPermissionsDisplayContext.getRoleSearchContainer();
 
 if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelResource())) {
 	PortalUtil.addPortletBreadcrumbEntry(request, HtmlUtil.unescape(portletConfigurationPermissionsDisplayContext.getSelResourceDescription()), null);
@@ -61,26 +63,14 @@ if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelRe
 					>
 
 						<%
-						String icon = "user";
-						String message = "regular-role";
-
-						int roleType = role.getType();
-
-						if (roleType == RoleConstants.TYPE_SITE) {
-							icon = "sites";
-							message = "site-role";
-						}
-						else if (roleType == RoleConstants.TYPE_ORGANIZATION) {
-							icon = "organizations";
-							message = "organization-role";
-						}
+						RoleTypeContributor roleTypeContributor = roleTypeContributorProvider.getRoleTypeContributor(role.getType());
 						%>
 
 						<liferay-ui:icon
-							icon="<%= icon %>"
+							icon='<%= (roleTypeContributor != null) ? roleTypeContributor.getIcon() : "users" %>'
 							label="<%= false %>"
 							markupView="lexicon"
-							message="<%= LanguageUtil.get(request, message) %>"
+							message='<%= LanguageUtil.get(request, (roleTypeContributor != null) ? roleTypeContributor.getTitle(locale) : "team") %>'
 						/>
 
 						<%= role.getTitle(locale) %>
@@ -149,10 +139,10 @@ if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelRe
 							name="<%= ResourceActionsUtil.getAction(request, action) %>"
 						>
 							<c:if test="<%= disabled && checked %>">
-								<input name="<%= renderResponse.getNamespace() + role.getRoleId() + actionSeparator + action %>" type="hidden" value="<%= true %>" />
+								<input name="<%= liferayPortletResponse.getNamespace() + role.getRoleId() + actionSeparator + action %>" type="hidden" value="<%= true %>" />
 							</c:if>
 
-							<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= Validator.isNotNull(preselectedMsg) ? "lfr-checkbox-preselected" : StringPool.BLANK %>" data-message="<%= dataMessage %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= FriendlyURLNormalizerUtil.normalize(role.getName()) + actionSeparator + action %>" name="<%= renderResponse.getNamespace() + role.getRoleId() + actionSeparator + action %>" onclick="<%= Validator.isNotNull(preselectedMsg) ? "return false;" : StringPool.BLANK %>" type="checkbox" />
+							<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= Validator.isNotNull(preselectedMsg) ? "lfr-checkbox-preselected lfr-portal-tooltip" : StringPool.BLANK %>" title="<%= dataMessage %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= FriendlyURLNormalizerUtil.normalize(role.getName()) + actionSeparator + action %>" name="<%= liferayPortletResponse.getNamespace() + role.getRoleId() + actionSeparator + action %>" onclick="<%= Validator.isNotNull(preselectedMsg) ? "return false;" : StringPool.BLANK %>" type="checkbox" />
 						</liferay-ui:search-container-column-text>
 
 					<%
@@ -162,6 +152,7 @@ if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelRe
 				</liferay-ui:search-container-row>
 
 				<liferay-ui:search-iterator
+					fixedHeader="<%= true %>"
 					markupView="lexicon"
 				/>
 			</liferay-ui:search-container>
@@ -175,38 +166,24 @@ if (Validator.isNotNull(portletConfigurationPermissionsDisplayContext.getModelRe
 	</aui:button-row>
 </div>
 
-<aui:script require="metal-dom/src/all/dom as dom">
-	var form = document.getElementById('<portlet:namespace />fm');
-
-	var preSelectedHandler = dom.delegate(
-		form,
-		'mouseover',
-		'.lfr-checkbox-preselected',
-		function(event) {
-			var target = event.target;
-
-			Liferay.Portal.ToolTip.show(target, target.getAttribute('data-message'));
-		}
-	);
-</aui:script>
-
 <aui:script>
-	var <portlet:namespace />saveButton = document.getElementById('<portlet:namespace />saveButton');
+	var <portlet:namespace />saveButton = document.getElementById(
+		'<portlet:namespace />saveButton'
+	);
 
 	if (<portlet:namespace />saveButton) {
-		<portlet:namespace />saveButton.addEventListener(
-			'click',
-			function(event) {
-				event.preventDefault();
+		<portlet:namespace />saveButton.addEventListener('click', function (event) {
+			event.preventDefault();
 
-				if (<%= portletConfigurationPermissionsDisplayContext.getRoleSearchContainer().getTotal() != 0 %>) {
-					var form = document.getElementById('<portlet:namespace />fm');
+			if (
+				<%= portletConfigurationPermissionsDisplayContext.getRoleSearchContainer().getTotal() != 0 %>
+			) {
+				var form = document.getElementById('<portlet:namespace />fm');
 
-					if (form) {
-						submitForm(form);
-					}
+				if (form) {
+					submitForm(form);
 				}
 			}
-		);
+		});
 	}
 </aui:script>

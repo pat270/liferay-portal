@@ -18,6 +18,7 @@ import com.liferay.journal.model.JournalFeed;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing JournalFeed in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class JournalFeedCacheModel
-	implements CacheModel<JournalFeed>, Externalizable {
+	implements CacheModel<JournalFeed>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof JournalFeedCacheModel)) {
+		if (!(object instanceof JournalFeedCacheModel)) {
 			return false;
 		}
 
 		JournalFeedCacheModel journalFeedCacheModel =
-			(JournalFeedCacheModel)obj;
+			(JournalFeedCacheModel)object;
 
-		if (id == journalFeedCacheModel.id) {
+		if ((id == journalFeedCacheModel.id) &&
+			(mvccVersion == journalFeedCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class JournalFeedCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, id);
+		int hashCode = HashUtil.hash(0, id);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(47);
+		StringBundler sb = new StringBundler(51);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", id=");
 		sb.append(id);
@@ -121,6 +137,9 @@ public class JournalFeedCacheModel
 	@Override
 	public JournalFeed toEntityModel() {
 		JournalFeedImpl journalFeedImpl = new JournalFeedImpl();
+
+		journalFeedImpl.setMvccVersion(mvccVersion);
+		journalFeedImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			journalFeedImpl.setUuid("");
@@ -257,6 +276,9 @@ public class JournalFeedCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		id = objectInput.readLong();
@@ -290,6 +312,10 @@ public class JournalFeedCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -405,6 +431,8 @@ public class JournalFeedCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long id;
 	public long groupId;

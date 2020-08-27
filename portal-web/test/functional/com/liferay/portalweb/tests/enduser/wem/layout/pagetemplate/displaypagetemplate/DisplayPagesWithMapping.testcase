@@ -1,0 +1,149 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Display Pages";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayoutpagetemplate.addDisplayPageTemplateEntry(
+			contentType = "Web Content Article",
+			displayPageTemplateEntryName = "Display Page Name",
+			groupName = "Test Site Name",
+			subType = "Basic Web Content");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-98031."
+	@priority = "5"
+	test MapManualURLToLinkFragment {
+		property portal.acceptance = "true";
+
+		DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+		DisplayPageTemplatesAdmin.gotoDisplayPage(displayPageName = "Display Page Name");
+
+		PageEditor.addFragment(
+			collectionName = "Featured Content",
+			fragmentName = "Banner Center");
+
+		PageEditorEditableLink.gotoEditableFieldLink(
+			fragmentName = "Banner Center",
+			id = "link");
+
+		PageEditorEditableLink.updateURL(url = "https://liferay.com");
+
+		PageEditor.clickPublish();
+
+		DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+		DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+			displayPageName = "Display Page Name",
+			item = "Edit");
+
+		task ("Assert editable has the specified URL mapped correctly") {
+			Click(locator1 = "//a[contains(@class,'btn')][contains(@href,'https://liferay.com')]");
+		}
+	}
+
+	@description = "This is a test for LPS-118060. The contributed content types and their subtypes are available when creating a display page template."
+	@priority = "5"
+	test ViewTypesDuringCreation {
+		property osgi.app.includes = "document-library-google-docs";
+
+		task ("Add a custom Web Content structure") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			NavItem.gotoStructures();
+
+			WebContentStructures.addCP(
+				structureDescription = "WC Structure Description",
+				structureName = "WC Structure Name");
+
+			DynamicDataMapping.addField(
+				field = "Text",
+				fieldFieldLabel = "Text",
+				fieldName = "Text");
+
+			WebContentStructures.saveCP(structureName = "WC Structure Name");
+		}
+
+		task ("Add a custom Document type") {
+			DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "test-site-name");
+
+			DMNavigator.gotoDocumentType();
+
+			DMDocumentType.add(
+				dmDocumentTypeDescription = "DM Document Type Description",
+				dmDocumentTypeFieldNames = "Text",
+				dmDocumentTypeName = "DM Document Type Name");
+		}
+
+		task ("View all contributed content types and their subtypes when creating a display page template") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name");
+
+			LexiconEntry.gotoAdd();
+
+			LexiconCard.clickCard(card = "Blank");
+
+			PortletEntry.inputName(name = "Display Page Template Name");
+
+			for (var contentType : list "Web Content Article,Document,Blogs Entry") {
+				AssertElementPresent(
+					key_fieldLabel = "Content Type",
+					key_value = "${contentType}",
+					locator1 = "Select#GENERIC_SELECT_VALUE");
+			}
+
+			AssertElementNotPresent(
+				key_fieldLabel = "Content Type",
+				key_value = "Asset",
+				locator1 = "Select#GENERIC_SELECT_VALUE");
+
+			Select(
+				key_fieldLabel = "Content Type",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Web Content Article");
+
+			Pause(locator1 = "3000");
+
+			for (var subtype : list "Basic Web Content,WC Structure Name") {
+				AssertElementPresent(
+					key_fieldLabel = "Subtype",
+					key_value = "${subtype}",
+					locator1 = "Select#GENERIC_SELECT_VALUE");
+			}
+
+			Select(
+				key_fieldLabel = "Content Type",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "Document");
+
+			Pause(locator1 = "3000");
+
+			for (var subtype : list "Basic Document,Google Drive Shortcut,DM Document Type Name") {
+				AssertElementPresent(
+					key_fieldLabel = "Subtype",
+					key_value = "${subtype}",
+					locator1 = "Select#GENERIC_SELECT_VALUE");
+			}
+		}
+	}
+
+}

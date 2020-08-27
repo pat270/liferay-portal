@@ -74,18 +74,18 @@ public class DLSyncEventMessageListener extends BaseMessageListener {
 				try {
 					processDLSyncEvent(
 						dlSyncEvent.getModifiedTime(), dlSyncEvent.getEvent(),
-						dlSyncEvent.getType(), dlSyncEvent.getTypePK());
+						dlSyncEvent.getType(), dlSyncEvent.getTypePK(), false);
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 				}
 			});
 
 		try {
 			actionableDynamicQuery.performActions();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -97,15 +97,16 @@ public class DLSyncEventMessageListener extends BaseMessageListener {
 		long typePK = message.getLong("typePK");
 
 		try {
-			processDLSyncEvent(modifiedTime, event, type, typePK);
+			processDLSyncEvent(modifiedTime, event, type, typePK, true);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
 	protected void processDLSyncEvent(
-			long modifiedTime, String event, String type, long typePK)
+			long modifiedTime, String event, String type, long typePK,
+			boolean calculateChecksum)
 		throws Exception {
 
 		SyncDLObject syncDLObject = null;
@@ -134,12 +135,12 @@ public class DLSyncEventMessageListener extends BaseMessageListener {
 				return;
 			}
 
-			boolean calculateChecksum = false;
-
 			String checksum = _syncHelper.getChecksum(modifiedTime, typePK);
 
-			if ((checksum == null) && !dlFileEntry.isInTrash()) {
-				calculateChecksum = true;
+			if (calculateChecksum &&
+				((checksum != null) || dlFileEntry.isInTrash())) {
+
+				calculateChecksum = false;
 			}
 
 			syncDLObject = _syncHelper.toSyncDLObject(

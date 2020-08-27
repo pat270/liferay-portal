@@ -1,5 +1,3 @@
-@import "mixins";
-
 .lfr-edit-layout-panel {
 	width: 440px;
 
@@ -8,7 +6,7 @@
 		margin-top: 20px;
 
 		.container-fluid {
-			@include respond-to(desktop) {
+			@include media-breakpoint-up(lg) {
 				padding: 0;
 			}
 		}
@@ -49,7 +47,8 @@
 			}
 		}
 
-		.lfr-theme-options, .lfr-inherit-theme-options {
+		.lfr-theme-options,
+		.lfr-inherit-theme-options {
 			padding: 10px 20px;
 		}
 	}

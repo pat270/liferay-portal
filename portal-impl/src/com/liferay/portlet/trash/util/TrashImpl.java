@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -65,9 +66,7 @@ import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletException;
@@ -143,16 +142,15 @@ public class TrashImpl implements Trash {
 		ActionRequest actionRequest, List<TrashedModel> trashedModels,
 		String cmd) {
 
-		Map<String, Object> data = new HashMap<>();
-
-		data.put(Constants.CMD, new String[] {cmd});
-		data.put("trashedModels", trashedModels);
-
 		SessionMessages.add(
 			actionRequest,
 			PortalUtil.getPortletId(actionRequest) +
 				SessionMessages.KEY_SUFFIX_DELETE_SUCCESS_DATA,
-			data);
+			HashMapBuilder.<String, Object>put(
+				Constants.CMD, new String[] {cmd}
+			).put(
+				"trashedModels", trashedModels
+			).build());
 	}
 
 	@Override
@@ -168,7 +166,7 @@ public class TrashImpl implements Trash {
 		ActionRequest actionRequest, TrashedModel trashedModel, String cmd) {
 
 		addTrashSessionMessages(
-			actionRequest, ListUtil.toList(trashedModel), cmd);
+			actionRequest, ListUtil.fromArray(trashedModel), cmd);
 	}
 
 	@Override
@@ -191,12 +189,13 @@ public class TrashImpl implements Trash {
 
 	@Override
 	public Group disableTrash(Group group) {
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getParentLiveGroupTypeSettingsProperties();
 
-		typeSettingsProperties.setProperty("trashEnabled", StringPool.FALSE);
+		typeSettingsUnicodeProperties.setProperty(
+			"trashEnabled", StringPool.FALSE);
 
-		group.setTypeSettingsProperties(typeSettingsProperties);
+		group.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 		return GroupLocalServiceUtil.updateGroup(group);
 	}
@@ -252,7 +251,7 @@ public class TrashImpl implements Trash {
 
 				entries.add(entry);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						StringBundler.concat(
@@ -296,11 +295,11 @@ public class TrashImpl implements Trash {
 			group.getCompanyId(), PropsKeys.TRASH_ENTRIES_MAX_AGE,
 			PropsValues.TRASH_ENTRIES_MAX_AGE);
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getParentLiveGroupTypeSettingsProperties();
 
 		return GetterUtil.getInteger(
-			typeSettingsProperties.getProperty("trashEntriesMaxAge"),
+			typeSettingsUnicodeProperties.getProperty("trashEntriesMaxAge"),
 			trashEntriesMaxAge);
 	}
 
@@ -423,6 +422,10 @@ public class TrashImpl implements Trash {
 			httpServletRequest, TrashEntry.class.getName(),
 			PortletProvider.Action.VIEW);
 
+		if (portletURL == null) {
+			return null;
+		}
+
 		portletURL.setParameter("mvcPath", "/view_content.jsp");
 		portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
 
@@ -475,11 +478,11 @@ public class TrashImpl implements Trash {
 			return false;
 		}
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getParentLiveGroupTypeSettingsProperties();
 
 		return GetterUtil.getBoolean(
-			typeSettingsProperties.getProperty("trashEnabled"), true);
+			typeSettingsUnicodeProperties.getProperty("trashEnabled"), true);
 	}
 
 	@Override
@@ -578,7 +581,7 @@ public class TrashImpl implements Trash {
 				title = trashEntry.getTypeSettingsProperty(paramName);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"No trash entry or trash version exists with ID " +

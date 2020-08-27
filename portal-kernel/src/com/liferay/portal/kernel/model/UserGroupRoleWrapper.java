@@ -18,8 +18,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -30,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserGroupRole
  * @generated
  */
-@ProviderType
 public class UserGroupRoleWrapper
 	extends BaseModelWrapper<UserGroupRole>
-	implements UserGroupRole, ModelWrapper<UserGroupRole> {
+	implements ModelWrapper<UserGroupRole>, UserGroupRole {
 
 	public UserGroupRoleWrapper(UserGroupRole userGroupRole) {
 		super(userGroupRole);
@@ -44,10 +43,12 @@ public class UserGroupRoleWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
+		attributes.put("userGroupRoleId", getUserGroupRoleId());
+		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("roleId", getRoleId());
-		attributes.put("companyId", getCompanyId());
 
 		return attributes;
 	}
@@ -58,6 +59,24 @@ public class UserGroupRoleWrapper
 
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
+		Long userGroupRoleId = (Long)attributes.get("userGroupRoleId");
+
+		if (userGroupRoleId != null) {
+			setUserGroupRoleId(userGroupRoleId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
 		}
 
 		Long userId = (Long)attributes.get("userId");
@@ -77,12 +96,11 @@ public class UserGroupRoleWrapper
 		if (roleId != null) {
 			setRoleId(roleId);
 		}
+	}
 
-		Long companyId = (Long)attributes.get("companyId");
-
-		if (companyId != null) {
-			setCompanyId(companyId);
-		}
+	@Override
+	public boolean equals(Object object) {
+		return model.equals(object);
 	}
 
 	/**
@@ -93,6 +111,16 @@ public class UserGroupRoleWrapper
 	@Override
 	public long getCompanyId() {
 		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the ct collection ID of this user group role.
+	 *
+	 * @return the ct collection ID of this user group role
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	@Override
@@ -128,9 +156,7 @@ public class UserGroupRoleWrapper
 	 * @return the primary key of this user group role
 	 */
 	@Override
-	public com.liferay.portal.kernel.service.persistence.UserGroupRolePK
-		getPrimaryKey() {
-
+	public long getPrimaryKey() {
 		return model.getPrimaryKey();
 	}
 
@@ -159,6 +185,16 @@ public class UserGroupRoleWrapper
 	}
 
 	/**
+	 * Returns the user group role ID of this user group role.
+	 *
+	 * @return the user group role ID of this user group role
+	 */
+	@Override
+	public long getUserGroupRoleId() {
+		return model.getUserGroupRoleId();
+	}
+
+	/**
 	 * Returns the user ID of this user group role.
 	 *
 	 * @return the user ID of this user group role
@@ -179,6 +215,11 @@ public class UserGroupRoleWrapper
 	}
 
 	@Override
+	public int hashCode() {
+		return model.hashCode();
+	}
+
+	@Override
 	public void persist() {
 		model.persist();
 	}
@@ -191,6 +232,16 @@ public class UserGroupRoleWrapper
 	@Override
 	public void setCompanyId(long companyId) {
 		model.setCompanyId(companyId);
+	}
+
+	/**
+	 * Sets the ct collection ID of this user group role.
+	 *
+	 * @param ctCollectionId the ct collection ID of this user group role
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -219,10 +270,7 @@ public class UserGroupRoleWrapper
 	 * @param primaryKey the primary key of this user group role
 	 */
 	@Override
-	public void setPrimaryKey(
-		com.liferay.portal.kernel.service.persistence.UserGroupRolePK
-			primaryKey) {
-
+	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
 	}
 
@@ -234,6 +282,16 @@ public class UserGroupRoleWrapper
 	@Override
 	public void setRoleId(long roleId) {
 		model.setRoleId(roleId);
+	}
+
+	/**
+	 * Sets the user group role ID of this user group role.
+	 *
+	 * @param userGroupRoleId the user group role ID of this user group role
+	 */
+	@Override
+	public void setUserGroupRoleId(long userGroupRoleId) {
+		model.setUserGroupRoleId(userGroupRoleId);
 	}
 
 	/**
@@ -254,6 +312,20 @@ public class UserGroupRoleWrapper
 	@Override
 	public void setUserUuid(String userUuid) {
 		model.setUserUuid(userUuid);
+	}
+
+	@Override
+	public Map<String, Function<UserGroupRole, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<UserGroupRole, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

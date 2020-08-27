@@ -18,8 +18,9 @@ import com.liferay.alloy.mvc.internal.json.web.service.AlloyControllerInvokerMan
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.MessageListener;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.Router;
@@ -51,6 +52,8 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
+import org.osgi.framework.ServiceRegistration;
+
 /**
  * @author Brian Wing Shun Chan
  */
@@ -61,18 +64,26 @@ public abstract class AlloyPortlet extends GenericPortlet {
 		for (BaseAlloyControllerImpl baseAlloyControllerImpl :
 				_alloyControllers.values()) {
 
-			Indexer indexer = baseAlloyControllerImpl.indexer;
+			Indexer<BaseModel<?>> indexer = baseAlloyControllerImpl.indexer;
 
 			if (indexer != null) {
 				IndexerRegistryUtil.unregister(indexer);
 			}
 
+			Map<String, ServiceRegistration<Destination>> serviceRegistrations =
+				baseAlloyControllerImpl.destinationServiceRegistrations;
+
 			MessageListener controllerMessageListener =
 				baseAlloyControllerImpl.controllerMessageListener;
 
 			if (controllerMessageListener != null) {
-				MessageBusUtil.removeDestination(
-					baseAlloyControllerImpl.getControllerDestinationName());
+				ServiceRegistration<Destination> serviceRegistration =
+					serviceRegistrations.remove(
+						baseAlloyControllerImpl.getControllerDestinationName());
+
+				if (serviceRegistration != null) {
+					serviceRegistration.unregister();
+				}
 			}
 
 			MessageListener schedulerMessageListener =
@@ -85,11 +96,17 @@ public abstract class AlloyPortlet extends GenericPortlet {
 						baseAlloyControllerImpl.getMessageListenerGroupName(),
 						StorageType.MEMORY_CLUSTERED);
 
-					MessageBusUtil.removeDestination(
-						baseAlloyControllerImpl.getSchedulerDestinationName());
+					ServiceRegistration<Destination> serviceRegistration =
+						serviceRegistrations.remove(
+							baseAlloyControllerImpl.
+								getSchedulerDestinationName());
+
+					if (serviceRegistration != null) {
+						serviceRegistration.unregister();
+					}
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				catch (Exception exception) {
+					_log.error(exception, exception);
 				}
 			}
 		}
@@ -114,9 +131,7 @@ public abstract class AlloyPortlet extends GenericPortlet {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws IOException, PortletException {
 
-		String path = getPath(actionRequest);
-
-		include(path, actionRequest, actionResponse);
+		include(getPath(actionRequest), actionRequest, actionResponse);
 	}
 
 	@Override
@@ -124,9 +139,7 @@ public abstract class AlloyPortlet extends GenericPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
-		String path = getPath(renderRequest);
-
-		include(path, renderRequest, renderResponse);
+		include(getPath(renderRequest), renderRequest, renderResponse);
 	}
 
 	@Override
@@ -134,9 +147,7 @@ public abstract class AlloyPortlet extends GenericPortlet {
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws IOException, PortletException {
 
-		String path = getPath(resourceRequest);
-
-		include(path, resourceRequest, resourceResponse);
+		include(getPath(resourceRequest), resourceRequest, resourceResponse);
 	}
 
 	protected AlloyControllerInvokerManager getAlloyInvokerManager() {

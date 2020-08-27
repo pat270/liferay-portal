@@ -105,6 +105,18 @@
 					<encoding>UTF-8</encoding>
 				</source-folder>
 				<source-folder>
+					<label>modules\core\petra\petra-sql-dsl-api\src\main\java</label>
+					<type>java</type>
+					<location>modules/core/petra/petra-sql-dsl-api/src/main/java</location>
+					<encoding>UTF-8</encoding>
+				</source-folder>
+				<source-folder>
+					<label>modules\core\petra\petra-sql-dsl-spi\src\main\java</label>
+					<type>java</type>
+					<location>modules/core/petra/petra-sql-dsl-spi/src/main/java</location>
+					<encoding>UTF-8</encoding>
+				</source-folder>
+				<source-folder>
 					<label>modules\core\petra\petra-string\src\main\java</label>
 					<type>java</type>
 					<location>modules/core/petra/petra-string/src/main/java</location>
@@ -123,12 +135,6 @@
 					<encoding>UTF-8</encoding>
 				</source-folder>
 				<source-folder>
-					<label>portal-impl\test\integration</label>
-					<type>java</type>
-					<location>portal-impl/test/integration</location>
-					<encoding>UTF-8</encoding>
-				</source-folder>
-				<source-folder>
 					<label>portal-impl\test\unit</label>
 					<type>java</type>
 					<location>portal-impl/test/unit</location>
@@ -140,12 +146,6 @@
 					<location>portal-kernel/src</location>
 					<encoding>UTF-8</encoding>
 				</source-folder>
-				<!--<source-folder>
-					<label>portal-kernel\test\integration</label>
-					<type>java</type>
-					<location>portal-kernel/test/integration</location>
-					<encoding>UTF-8</encoding>
-				</source-folder>-->
 				<source-folder>
 					<label>portal-kernel\test\unit</label>
 					<type>java</type>
@@ -156,12 +156,6 @@
 					<label>portal-test\src</label>
 					<type>java</type>
 					<location>portal-test/src</location>
-					<encoding>UTF-8</encoding>
-				</source-folder>
-				<source-folder>
-					<label>portal-test-integration\src</label>
-					<type>java</type>
-					<location>portal-test-integration/src</location>
 					<encoding>UTF-8</encoding>
 				</source-folder>
 				<source-folder>
@@ -188,12 +182,6 @@
 					<location>util-java/src</location>
 					<encoding>UTF-8</encoding>
 				</source-folder>
-				<!--<source-folder>
-					<label>util-java\test\integration</label>
-					<type>java</type>
-					<location>util-java/test/integration</location>
-					<encoding>UTF-8</encoding>
-				</source-folder-->
 				<source-folder>
 					<label>util-java\test\unit</label>
 					<type>java</type>
@@ -311,10 +299,6 @@
 						<location>portal-impl/src</location>
 					</source-folder>
 					<source-folder style="packages">
-						<label>portal-impl\test\integration</label>
-						<location>portal-impl/test/integration</location>
-					</source-folder>
-					<source-folder style="packages">
 						<label>portal-impl\test\unit</label>
 						<location>portal-impl/test/unit</location>
 					</source-folder>
@@ -322,10 +306,6 @@
 						<label>portal-kernel\src</label>
 						<location>portal-kernel/src</location>
 					</source-folder>
-					<!--<source-folder style="packages">
-						<label>portal-kernel\test\integration</label>
-						<location>portal-kernel/test/integration</location>
-					</source-folder>-->
 					<source-folder style="packages">
 						<label>portal-kernel\test\unit</label>
 						<location>portal-kernel/test/unit</location>
@@ -350,10 +330,6 @@
 						<label>util-java\src</label>
 						<location>util-java/src</location>
 					</source-folder>
-					<!--<source-folder style="packages">
-						<label>util-java\test\integration</label>
-						<location>util-java/test/integration</location>
-					</source-folder>-->
 					<source-folder style="packages">
 						<label>util-java\test\unit</label>
 						<location>util-java/test/unit</location>
@@ -399,15 +375,15 @@
 				<package-root>modules/core/petra/petra-nio/src/main/java</package-root>
 				<package-root>modules/core/petra/petra-process/src/main/java</package-root>
 				<package-root>modules/core/petra/petra-reflect/src/main/java</package-root>
+				<package-root>modules/core/petra/petra-sql-dsl-api/src/main/java</package-root>
+				<package-root>modules/core/petra/petra-sql-dsl-spi/src/main/java</package-root>
 				<package-root>modules/core/petra/petra-string/src/main/java</package-root>
 				<package-root>modules/core/registry-api/src/main/java</package-root>
 				<package-root>portal-impl/src</package-root>
-				<package-root>portal-impl/test/integration</package-root>
 				<package-root>portal-impl/test/unit</package-root>
 				<package-root>portal-kernel/src</package-root>
 				<package-root>portal-kernel/test/unit</package-root>
 				<package-root>portal-test/src</package-root>
-				<package-root>portal-test-integration/src</package-root>
 				<package-root>portal-web/test/functional</package-root>
 				<package-root>support-tomcat/src</package-root>
 				<package-root>util-bridges/src</package-root>

@@ -16,19 +16,20 @@ package com.liferay.document.library.uad.exporter.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.document.library.uad.test.DLFolderUADTestUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.user.associated.data.exporter.UADExporter;
 import com.liferay.user.associated.data.test.util.BaseUADExporterTestCase;
 import com.liferay.user.associated.data.test.util.WhenHasStatusByUserIdField;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -51,22 +52,24 @@ public class DLFolderUADExporterTest
 			long userId, long statusByUserId)
 		throws Exception {
 
-		DLFolder dlFolder = DLFolderUADTestUtil.addDLFolderWithStatusByUserId(
-			_dlFolderLocalService, userId, statusByUserId);
+		return DLFolderUADTestUtil.addDLFolderWithStatusByUserId(
+			_dlAppLocalService, _dlFolderLocalService, userId,
+			_group.getGroupId(), statusByUserId);
+	}
 
-		_dlFolders.add(dlFolder);
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
 
-		return dlFolder;
+		_group = GroupTestUtil.addGroup();
 	}
 
 	@Override
 	protected DLFolder addBaseModel(long userId) throws Exception {
-		DLFolder dlFolder = DLFolderUADTestUtil.addDLFolder(
-			_dlFolderLocalService, userId);
-
-		_dlFolders.add(dlFolder);
-
-		return dlFolder;
+		return DLFolderUADTestUtil.addDLFolder(
+			_dlAppLocalService, _dlFolderLocalService, userId,
+			_group.getGroupId());
 	}
 
 	@Override
@@ -75,17 +78,20 @@ public class DLFolderUADExporterTest
 	}
 
 	@Override
-	protected UADExporter getUADExporter() {
+	protected UADExporter<DLFolder> getUADExporter() {
 		return _uadExporter;
 	}
+
+	@Inject
+	private DLAppLocalService _dlAppLocalService;
 
 	@Inject
 	private DLFolderLocalService _dlFolderLocalService;
 
 	@DeleteAfterTestRun
-	private final List<DLFolder> _dlFolders = new ArrayList<>();
+	private Group _group;
 
 	@Inject(filter = "component.name=*.DLFolderUADExporter")
-	private UADExporter _uadExporter;
+	private UADExporter<DLFolder> _uadExporter;
 
 }

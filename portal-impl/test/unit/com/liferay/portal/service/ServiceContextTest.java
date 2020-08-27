@@ -17,10 +17,8 @@ package com.liferay.portal.service;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ProxyFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,11 +40,10 @@ public class ServiceContextTest {
 
 		serviceContext.setAttribute("TestName", "TestValue");
 
-		Map<String, String> headers = new HashMap<>();
-
-		headers.put("TestHeaderName", "TestHeaderValue");
-
-		serviceContext.setHeaders(headers);
+		serviceContext.setHeaders(
+			HashMapBuilder.put(
+				"TestHeaderName", "TestHeaderValue"
+			).build());
 
 		serviceContext.setRequest(
 			ProxyFactory.newDummyInstance(HttpServletRequest.class));

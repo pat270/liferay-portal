@@ -14,13 +14,11 @@
 
 package com.liferay.portal.security.ldap.internal.validator;
 
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.ldap.internal.validator.parser.LDAPFilterLexer;
 import com.liferay.portal.security.ldap.internal.validator.parser.LDAPFilterParser;
-import com.liferay.portal.security.ldap.validator.LDAPFilterException;
 import com.liferay.portal.security.ldap.validator.LDAPFilterValidator;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -53,34 +51,15 @@ public class LDAPFilterValidatorImpl implements LDAPFilterValidator {
 		try {
 			ldapFilterParser.parse();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isInfoEnabled()) {
-				_log.info("Unable to parse filter " + filter, e);
+				_log.info("Unable to parse filter " + filter, exception);
 			}
 
 			return false;
 		}
 
 		return true;
-	}
-
-	@Override
-	public void validate(String filter) throws LDAPFilterException {
-		if (!isValid(filter)) {
-			throw new LDAPFilterException("Invalid filter " + filter);
-		}
-	}
-
-	@Override
-	public void validate(String filter, String filterPropertyName)
-		throws LDAPFilterException {
-
-		if (!isValid(filter)) {
-			throw new LDAPFilterException(
-				StringBundler.concat(
-					"Invalid filter ", filter, " defined by ",
-					filterPropertyName));
-		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

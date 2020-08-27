@@ -20,12 +20,10 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.web.internal.constants.SegmentsWebKeys;
 import com.liferay.segments.web.internal.display.context.SelectUsersDisplayContext;
+import com.liferay.segments.web.internal.display.context.SelectUsersManagementToolbarDisplayContext;
 
-import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -45,17 +43,21 @@ public class SelectUsersMVCRenderCommand implements MVCRenderCommand {
 
 	@Override
 	public String render(
-			RenderRequest renderRequest, RenderResponse renderResponse)
-		throws PortletException {
-
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			renderRequest);
+		RenderRequest renderRequest, RenderResponse renderResponse) {
 
 		SelectUsersDisplayContext selectUsersDisplayContext =
 			new SelectUsersDisplayContext(
-				httpServletRequest, renderRequest, renderResponse,
-				_userLocalService);
+				_portal.getHttpServletRequest(renderRequest), renderRequest,
+				renderResponse, _userLocalService);
 
+		renderRequest.setAttribute(
+			SegmentsWebKeys.
+				SEGMENTS_SELECT_USER_MANAGEMENT_TOOLBAL_DISPLAY_CONTEXT,
+			new SelectUsersManagementToolbarDisplayContext(
+				_portal.getHttpServletRequest(renderRequest),
+				_portal.getLiferayPortletRequest(renderRequest),
+				_portal.getLiferayPortletResponse(renderResponse),
+				selectUsersDisplayContext));
 		renderRequest.setAttribute(
 			SegmentsWebKeys.SELECT_USERS_DISPLAY_CONTEXT,
 			selectUsersDisplayContext);

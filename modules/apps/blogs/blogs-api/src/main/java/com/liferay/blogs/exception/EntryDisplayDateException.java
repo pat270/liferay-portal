@@ -16,12 +16,9 @@ package com.liferay.blogs.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class EntryDisplayDateException extends PortalException {
 
 	public EntryDisplayDateException() {
@@ -31,12 +28,12 @@ public class EntryDisplayDateException extends PortalException {
 		super(msg);
 	}
 
-	public EntryDisplayDateException(String msg, Throwable cause) {
-		super(msg, cause);
+	public EntryDisplayDateException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public EntryDisplayDateException(Throwable cause) {
-		super(cause);
+	public EntryDisplayDateException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

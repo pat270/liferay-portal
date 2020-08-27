@@ -25,29 +25,26 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing ListType in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class ListTypeCacheModel
 	implements CacheModel<ListType>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ListTypeCacheModel)) {
+		if (!(object instanceof ListTypeCacheModel)) {
 			return false;
 		}
 
-		ListTypeCacheModel listTypeCacheModel = (ListTypeCacheModel)obj;
+		ListTypeCacheModel listTypeCacheModel = (ListTypeCacheModel)object;
 
 		if ((listTypeId == listTypeCacheModel.listTypeId) &&
 			(mvccVersion == listTypeCacheModel.mvccVersion)) {

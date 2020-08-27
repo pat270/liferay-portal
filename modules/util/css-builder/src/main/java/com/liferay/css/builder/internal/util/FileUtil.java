@@ -50,7 +50,7 @@ public class FileUtil {
 
 				@Override
 				public FileVisitResult postVisitDirectory(
-						Path dirPath, IOException ioe)
+						Path dirPath, IOException ioException)
 					throws IOException {
 
 					Files.delete(dirPath);
@@ -138,7 +138,7 @@ public class FileUtil {
 
 			return fileTime.toMillis();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return -1;
 		}
 	}
@@ -168,9 +168,7 @@ public class FileUtil {
 			pattern = pattern.replace("/", "\\\\");
 		}
 
-		PathMatcher pathMatcher = fileSystem.getPathMatcher("glob:" + pattern);
-
-		pathMatchers.add(pathMatcher);
+		pathMatchers.add(fileSystem.getPathMatcher("glob:" + pattern));
 	}
 
 	private static List<PathMatcher> _getPathMatchers(

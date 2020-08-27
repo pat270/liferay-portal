@@ -30,15 +30,15 @@ public class JournalSelectDDMTemplateManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public JournalSelectDDMTemplateManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			JournalSelectDDMTemplateDisplayContext
 				journalSelectDDMTemplateDisplayContext)
 		throws Exception {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			journalSelectDDMTemplateDisplayContext.getTemplateSearch());
 
 		_journalSelectDDMTemplateDisplayContext =

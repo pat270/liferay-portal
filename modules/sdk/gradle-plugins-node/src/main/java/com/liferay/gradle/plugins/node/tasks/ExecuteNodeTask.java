@@ -26,11 +26,13 @@ import java.util.Map;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.TaskAction;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class ExecuteNodeTask extends DefaultTask {
 
 	public ExecuteNodeTask() {
@@ -71,8 +73,8 @@ public class ExecuteNodeTask extends DefaultTask {
 			getProject(), NodePlugin.NPM_INSTALL_TASK_NAME,
 			NpmInstallTask.class);
 
-		if ((this instanceof ExecuteNpmTask) || (npmInstallRetries <= 0) ||
-			(npmInstallTask == null)) {
+		if ((this instanceof ExecutePackageManagerTask) ||
+			(npmInstallRetries <= 0) || (npmInstallTask == null)) {
 
 			_result = _nodeExecutor.execute();
 
@@ -87,14 +89,15 @@ public class ExecuteNodeTask extends DefaultTask {
 
 				break;
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				if (i == npmInstallRetries) {
-					throw ioe;
+					throw ioException;
 				}
 
 				if (logger.isWarnEnabled()) {
 					logger.warn(
-						ioe.getMessage() + ". Running \"npm install\" again");
+						ioException.getMessage() +
+							". Running \"npm install\" again");
 				}
 
 				npmInstallTask.executeNpmInstall(true);

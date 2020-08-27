@@ -45,7 +45,7 @@ import com.liferay.message.boards.web.internal.upload.format.MBMessageFormatUplo
 import com.liferay.message.boards.web.internal.util.MBAttachmentFileEntryReference;
 import com.liferay.message.boards.web.internal.util.MBAttachmentFileEntryUtil;
 import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
-import com.liferay.portal.kernel.captcha.CaptchaTextException;
+import com.liferay.portal.kernel.captcha.CaptchaException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -54,6 +54,7 @@ import com.liferay.portal.kernel.portlet.LiferayActionResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -81,6 +82,7 @@ import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.upload.UniqueFileNameProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -144,21 +146,21 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 					WebKeys.UPLOAD_EXCEPTION);
 
 			if (uploadException != null) {
-				Throwable cause = uploadException.getCause();
+				Throwable throwable = uploadException.getCause();
 
 				if (uploadException.isExceededFileSizeLimit()) {
-					throw new FileSizeException(cause);
+					throw new FileSizeException(throwable);
 				}
 
 				if (uploadException.isExceededLiferayFileItemSizeLimit()) {
-					throw new LiferayFileItemException(cause);
+					throw new LiferayFileItemException(throwable);
 				}
 
 				if (uploadException.isExceededUploadRequestSizeLimit()) {
-					throw new UploadRequestSizeException(cause);
+					throw new UploadRequestSizeException(throwable);
 				}
 
-				throw new PortalException(cause);
+				throw new PortalException(throwable);
 			}
 			else if (cmd.equals(Constants.ADD) ||
 					 cmd.equals(Constants.UPDATE)) {
@@ -209,42 +211,43 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 			}
 		}
 		catch (NoSuchMessageException | PrincipalException |
-			   RequiredMessageException e) {
+			   RequiredMessageException exception) {
 
-			SessionErrors.add(actionRequest, e.getClass());
+			SessionErrors.add(actionRequest, exception.getClass());
 
 			actionResponse.setRenderParameter(
 				"mvcPath", "/message_boards/error.jsp");
 		}
-		catch (AntivirusScannerException | CaptchaConfigurationException |
-			   CaptchaTextException | DuplicateFileEntryException |
-			   FileExtensionException | FileNameException | FileSizeException |
+		catch (AntivirusScannerException | CaptchaException |
+			   DuplicateFileEntryException | FileExtensionException |
+			   FileNameException | FileSizeException |
 			   LiferayFileItemException | LockedThreadException |
 			   MessageBodyException | MessageSubjectException |
-			   SanitizerException | UploadRequestSizeException e) {
+			   SanitizerException | UploadRequestSizeException exception) {
 
-			if (e instanceof AntivirusScannerException) {
-				SessionErrors.add(actionRequest, e.getClass(), e);
+			if (exception instanceof AntivirusScannerException) {
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
 			}
 			else {
-				SessionErrors.add(actionRequest, e.getClass());
+				SessionErrors.add(actionRequest, exception.getClass());
 			}
 		}
-		catch (AssetCategoryException | AssetTagException e) {
-			SessionErrors.add(actionRequest, e.getClass(), e);
+		catch (AssetCategoryException | AssetTagException exception) {
+			SessionErrors.add(actionRequest, exception.getClass(), exception);
 		}
-		catch (Exception e) {
-			Throwable cause = e.getCause();
+		catch (Exception exception) {
+			Throwable throwable = exception.getCause();
 
-			if (cause instanceof SanitizerException) {
+			if (throwable instanceof SanitizerException) {
 				SessionErrors.add(actionRequest, SanitizerException.class);
 			}
 			else {
-				throw e;
+				throw exception;
 			}
 		}
-		catch (Throwable t) {
-			_log.error("Unable to process action", t);
+		catch (Throwable throwable) {
+			_log.error("Unable to process action", throwable);
 
 			actionResponse.setRenderParameter(
 				"mvcPath", "/message_boards/error.jsp");
@@ -260,8 +263,8 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 			return _configurationProvider.getSystemConfiguration(
 				CaptchaConfiguration.class);
 		}
-		catch (Exception e) {
-			throw new CaptchaConfigurationException(e);
+		catch (Exception exception) {
+			throw new CaptchaConfigurationException(exception);
 		}
 	}
 
@@ -459,13 +462,19 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 					_formatHandlerProvider.provide(message.getFormat());
 
 				if (formatHandler != null) {
-					body = _addBodyAttachmentTempFiles(
-						themeDisplay, message.getBody(), message,
-						formatHandler);
+					List<FileEntry> tempMBAttachmentFileEntries =
+						MBAttachmentFileEntryUtil.
+							getTempMBAttachmentFileEntries(message.getBody());
 
-					message.setBody(body);
+					if (!tempMBAttachmentFileEntries.isEmpty()) {
+						body = _addBodyAttachmentTempFiles(
+							tempMBAttachmentFileEntries, themeDisplay,
+							message.getBody(), message, formatHandler);
 
-					_mbMessageLocalService.updateMBMessage(message);
+						message.setBody(body);
+
+						_mbMessageLocalService.updateMBMessage(message);
+					}
 				}
 			}
 			else {
@@ -475,8 +484,15 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 					_formatHandlerProvider.provide(message.getFormat());
 
 				if (formatHandler != null) {
-					body = _addBodyAttachmentTempFiles(
-						themeDisplay, body, message, formatHandler);
+					List<FileEntry> tempMBAttachmentFileEntries =
+						MBAttachmentFileEntryUtil.
+							getTempMBAttachmentFileEntries(body);
+
+					if (!tempMBAttachmentFileEntries.isEmpty()) {
+						body = _addBodyAttachmentTempFiles(
+							tempMBAttachmentFileEntries, themeDisplay, body,
+							message, formatHandler);
+					}
 				}
 
 				// Update message
@@ -517,9 +533,9 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 
 				try (InputStream inputStream = inputStreamOVP.getValue()) {
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
+						_log.warn(ioException, ioException);
 					}
 				}
 			}
@@ -527,16 +543,10 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	private String _addBodyAttachmentTempFiles(
+			List<FileEntry> tempMBAttachmentFileEntries,
 			ThemeDisplay themeDisplay, String body, MBMessage message,
 			MBMessageFormatUploadHandler formatHandler)
 		throws PortalException {
-
-		List<FileEntry> tempMBAttachmentFileEntries =
-			MBAttachmentFileEntryUtil.getTempMBAttachmentFileEntries(body);
-
-		if (tempMBAttachmentFileEntries.isEmpty()) {
-			return body;
-		}
 
 		Folder folder = message.addAttachmentsFolder();
 
@@ -544,7 +554,12 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 			MBAttachmentFileEntryUtil.addMBAttachmentFileEntries(
 				message.getGroupId(), themeDisplay.getUserId(),
 				message.getMessageId(), folder.getFolderId(),
-				tempMBAttachmentFileEntries);
+				tempMBAttachmentFileEntries,
+				fileName -> _uniqueFileNameProvider.provide(
+					fileName,
+					curFileName -> _hasFileEntry(
+						message.getGroupId(), folder.getFolderId(),
+						curFileName)));
 
 		for (FileEntry tempMBAttachment : tempMBAttachmentFileEntries) {
 			PortletFileRepositoryUtil.deletePortletFileEntry(
@@ -553,6 +568,19 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 
 		return formatHandler.replaceImageReferences(
 			body, mbAttachmentFileEntryReferences);
+	}
+
+	private boolean _hasFileEntry(
+		long groupId, long folderId, String fileName) {
+
+		FileEntry fileEntry = _portletFileRepository.fetchPortletFileEntry(
+			groupId, folderId, fileName);
+
+		if (fileEntry == null) {
+			return false;
+		}
+
+		return true;
 	}
 
 	private List<FileEntry> _populateInputStreamOVPs(
@@ -635,5 +663,11 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private PortletFileRepository _portletFileRepository;
+
+	@Reference
+	private UniqueFileNameProvider _uniqueFileNameProvider;
 
 }

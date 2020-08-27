@@ -19,26 +19,19 @@ import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.entity.StringEntityField;
 
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
- * Provides the entity data model from the Indexed Entity (KBArticle).
+ * Provides the entity data model from the KB Article.
  *
  * @author Eduardo García
- * @review
  */
 public class KBArticleEntityModel implements EntityModel {
 
 	public static final String NAME = "KBArticle";
 
 	public KBArticleEntityModel() {
-		_entityFieldsMap = Stream.of(
-			new StringEntityField("title", locale -> "titleKeyword")
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+		_entityFieldsMap = EntityModel.toEntityFieldsMap(
+			new StringEntityField("title", locale -> "titleKeyword"));
 	}
 
 	@Override

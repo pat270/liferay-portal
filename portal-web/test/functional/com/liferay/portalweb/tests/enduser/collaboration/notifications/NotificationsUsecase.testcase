@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property custom.properties = "default.layout.template.id=1_column";
@@ -24,29 +25,28 @@ definition {
 
 			Page.tearDownCP();
 
-			User.tearDownCP();
+			JSONUser.tearDownNonAdminUsers();
 		}
 	}
 
 	@priority = "4"
 	test MarkNotificationAsReadAndAcceptRequest {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",
 			userFirstName = "userfn",
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		User.editPasswordCP(
-			password = "password",
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
-
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Users and Organizations");
@@ -57,17 +57,11 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+			portlet = "Pages",
+			site = "${siteName}");
 
 		SitePages.addPublicPage(
 			pageName = "Blogs Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Blogs Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "Blogs Page");
@@ -76,7 +70,7 @@ definition {
 
 		Navigator.gotoPage(pageName = "Blogs Page");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
@@ -91,27 +85,14 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "Blank Page",
 			sitePageType = "Widget Page");
 
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Blank Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
-
 		SitePages.addPublicPage(
 			pageName = "Invite Members Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Invite Members Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoSitePage(
@@ -180,17 +161,200 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	@priority = "3"
-	test ViewDefaultNotificationsPortletDeliveryOptions {
-		property osgi.app.includes = "bookmarks";
+	@description = "This test covers LPS-102749. It views a notification of the edited Web Content Article when staging is turned on."
+	@priority = "4"
+	test StagingViewEditedArticleNotification {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
 
-		Navigator.openURL();
+		JSONGroup.addGroup(groupName = "Subscribe Site");
 
-		NotificationsPortlet.gotoNotificationDelivery(notificationPG = "true");
+		JSONLayout.addPublicLayout(
+			groupName = "Subscribe Site",
+			layoutName = "Staging Test Page");
 
-		IFrame.selectConfigurationFrame();
+		SitePages.openPagesAdmin(siteURLKey = "Subscribe Site");
 
-		NotificationsPortlet.viewDefaultNotificationDeliveries();
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "Subscribe Site");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.assignRegularRoleCP(
+			roleTitle = "Administrator",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.openSiteURL(siteName = "Subscribe Site");
+
+		ProductMenu.gotoLiveSite(site = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContent.subscribeToCurrentFolderCP();
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.openSiteURL(siteName = "Subscribe Site");
+
+		Navigator.gotoStagedView();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddCP();
+
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		PortletEntry.publish();
+
+		Staging.publishToLiveNowViaPortletCP();
+
+		Navigator.openSiteURL(siteName = "Subscribe Site");
+
+		Navigator.gotoStagedView();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
+
+		WebContent.editCP(
+			webContentTitle = "WC WebContent Title",
+			webContentTitleEdit = "WC WebContent Title Edit");
+
+		Staging.publishToLiveNowViaPortletCP();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Notifications.viewBadgeCount(notificationCount = "2");
+
+		Notifications.gotoNotifications();
+
+		Notifications.viewUpdatedContent(
+			assetType = "web content article",
+			contentBody = "WC WebContent Title Edit",
+			user = "Test Test");
+
+		Notifications.navigateToContent(contentBody = "WC WebContent Title Edit");
+
+		WebContent.viewTitle(
+			onLive = "true",
+			webContentTitle = "WC WebContent Title Edit");
+
+		AssertConsoleTextNotPresent(value1 = "java.lang.IllegalArgumentException");
+	}
+
+	@description = "This test covers LPS-104398. It views a notification of a web content article created in a folder."
+	@priority = "4"
+	test ViewFolderArticleNotification {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Site Page");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.assignRegularRoleCP(
+			roleTitle = "Administrator",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContent.subscribeToCurrentFolderCP();
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		JSONWebcontent.addFolder(
+			folderName = "WC Folder Name",
+			groupName = "Test Site Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentFolder.gotoCP(
+			folderName = "WC Folder Name",
+			webContentTitle = "WC Folder Name");
+
+		WebContentNavigator.gotoAddCP();
+
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		PortletEntry.publish();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Notifications.viewBadgeCount(notificationCount = "1");
+
+		Notifications.gotoNotifications();
+
+		Notifications.viewNewContent(
+			assetType = "web content article",
+			contentBody = "WC WebContent Title",
+			user = "Test Test");
+
+		Notifications.navigateToContent(contentBody = "WC WebContent Title");
+
+		WebContent.viewTitle(webContentTitle = "WC WebContent Title");
 	}
 
 	@priority = "5"
@@ -201,4 +365,5 @@ definition {
 
 		Notifications.viewNoNotificationEntry();
 	}
+
 }

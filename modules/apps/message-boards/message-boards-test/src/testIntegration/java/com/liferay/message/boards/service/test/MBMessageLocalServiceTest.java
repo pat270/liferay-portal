@@ -25,9 +25,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
-import com.liferay.portal.kernel.repository.capabilities.WorkflowCapability;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -44,7 +41,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.trash.kernel.util.TrashUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -269,62 +265,6 @@ public class MBMessageLocalServiceTest {
 	}
 
 	@Test
-	public void testDeleteAttachmentsWhenUpdatingMessageAndTrashDisabled()
-		throws Exception {
-
-		TrashUtil.disableTrash(_group);
-
-		MBMessage message = addMessage(null, true);
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(
-				_group.getGroupId(), TestPropsValues.getUserId());
-
-		MBMessageLocalServiceUtil.updateMessage(
-			TestPropsValues.getUserId(), message.getMessageId(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			Collections.<ObjectValuePair<String, InputStream>>emptyList(),
-			Collections.<String>emptyList(), 0, false, serviceContext);
-
-		Assert.assertEquals(
-			0,
-			PortletFileRepositoryUtil.getPortletFileEntriesCount(
-				message.getGroupId(), message.getAttachmentsFolderId()));
-	}
-
-	@Test
-	public void testDeleteAttachmentsWhenUpdatingMessageAndTrashEnabled()
-		throws Exception {
-
-		MBMessage message = addMessage(null, true);
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(
-				_group.getGroupId(), TestPropsValues.getUserId());
-
-		MBMessageLocalServiceUtil.updateMessage(
-			TestPropsValues.getUserId(), message.getMessageId(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			Collections.<ObjectValuePair<String, InputStream>>emptyList(),
-			Collections.<String>emptyList(), 0, false, serviceContext);
-
-		List<FileEntry> fileEntries =
-			PortletFileRepositoryUtil.getPortletFileEntries(
-				message.getGroupId(), message.getAttachmentsFolderId());
-
-		Assert.assertEquals(fileEntries.toString(), 1, fileEntries.size());
-
-		FileEntry fileEntry = fileEntries.get(0);
-
-		WorkflowCapability workflowCapability =
-			fileEntry.getRepositoryCapability(WorkflowCapability.class);
-
-		Assert.assertEquals(
-			WorkflowConstants.STATUS_IN_TRASH,
-			workflowCapability.getStatus(fileEntry));
-	}
-
-	@Test
 	public void testDeleteMessageAttachment() throws Exception {
 		MBMessage message = addMessage(null, false);
 
@@ -346,6 +286,38 @@ public class MBMessageLocalServiceTest {
 	}
 
 	@Test
+	public void testGetChildMessagesWithStatusAny() throws Exception {
+		MBMessage parentMessage = addMessage();
+
+		MBMessage childMessage1 = addMessage(
+			parentMessage, WorkflowConstants.ACTION_PUBLISH);
+		MBMessage childMessage2 = addMessage(
+			parentMessage, WorkflowConstants.ACTION_SAVE_DRAFT);
+
+		Assert.assertEquals(
+			2,
+			MBMessageLocalServiceUtil.getChildMessagesCount(
+				parentMessage.getMessageId(), WorkflowConstants.STATUS_ANY));
+
+		List<MBMessage> childMessages =
+			MBMessageLocalServiceUtil.getChildMessages(
+				parentMessage.getMessageId(), WorkflowConstants.STATUS_ANY);
+
+		Assert.assertEquals(childMessages.toString(), 2, childMessages.size());
+
+		Assert.assertTrue(childMessages.contains(childMessage1));
+		Assert.assertTrue(childMessages.contains(childMessage2));
+
+		childMessages = MBMessageLocalServiceUtil.getChildMessages(
+			parentMessage.getMessageId(), WorkflowConstants.STATUS_ANY, 0, 100);
+
+		Assert.assertEquals(childMessages.toString(), 2, childMessages.size());
+
+		Assert.assertTrue(childMessages.contains(childMessage1));
+		Assert.assertTrue(childMessages.contains(childMessage2));
+	}
+
+	@Test
 	public void testThreadLastPostDate() throws Exception {
 		Date date = new Date();
 
@@ -355,7 +327,7 @@ public class MBMessageLocalServiceTest {
 			parentMessage, false, new Date(date.getTime() + Time.SECOND));
 
 		MBMessage secondReplyMessage = addMessage(
-			parentMessage, false, new Date(date.getTime() + Time.SECOND * 2));
+			parentMessage, false, new Date(date.getTime() + (Time.SECOND * 2)));
 
 		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
 			PropsValues.INDEX_DATE_FORMAT_PATTERN);
@@ -426,15 +398,31 @@ public class MBMessageLocalServiceTest {
 		Assert.assertNotEquals(mbThread.getModifiedDate(), date);
 	}
 
+	protected MBMessage addMessage() throws Exception {
+		return addMessage(null, false);
+	}
+
 	protected MBMessage addMessage(
 			MBMessage parentMessage, boolean addAttachments)
 		throws Exception {
 
-		return addMessage(parentMessage, addAttachments, new Date());
+		return addMessage(
+			parentMessage, addAttachments, new Date(),
+			WorkflowConstants.ACTION_PUBLISH);
 	}
 
 	protected MBMessage addMessage(
 			MBMessage parentMessage, boolean addAttachments, Date date)
+		throws Exception {
+
+		return addMessage(
+			parentMessage, addAttachments, date,
+			WorkflowConstants.ACTION_PUBLISH);
+	}
+
+	protected MBMessage addMessage(
+			MBMessage parentMessage, boolean addAttachments, Date date,
+			int workflowAction)
 		throws Exception {
 
 		ServiceContext serviceContext =
@@ -443,6 +431,7 @@ public class MBMessageLocalServiceTest {
 
 		serviceContext.setCreateDate(date);
 		serviceContext.setModifiedDate(date);
+		serviceContext.setWorkflowAction(workflowAction);
 
 		long categoryId = MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID;
 		long parentMessageId = MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID;
@@ -468,6 +457,12 @@ public class MBMessageLocalServiceTest {
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			MBMessageConstants.DEFAULT_FORMAT, inputStreamOVPs, false, 0.0,
 			false, serviceContext);
+	}
+
+	protected MBMessage addMessage(MBMessage parentMessage, int workflowAction)
+		throws Exception {
+
+		return addMessage(parentMessage, false, new Date(), workflowAction);
 	}
 
 	@DeleteAfterTestRun

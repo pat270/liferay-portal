@@ -27,13 +27,13 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.servlet.ServletResponseConstants;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.upload.UploadResponseHandler;
 
@@ -58,17 +58,17 @@ public class MultipleUploadResponseHandler implements UploadResponseHandler {
 
 	@Override
 	public JSONObject onFailure(
-			PortletRequest portletRequest, PortalException pe)
+			PortletRequest portletRequest, PortalException portalException)
 		throws PortalException {
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
-		if (pe instanceof AntivirusScannerException ||
-			pe instanceof DuplicateFileEntryException ||
-			pe instanceof FileExtensionException ||
-			pe instanceof FileNameException ||
-			pe instanceof FileSizeException ||
-			pe instanceof UploadRequestSizeException) {
+		if (portalException instanceof AntivirusScannerException ||
+			portalException instanceof DuplicateFileEntryException ||
+			portalException instanceof FileExtensionException ||
+			portalException instanceof FileNameException ||
+			portalException instanceof FileSizeException ||
+			portalException instanceof UploadRequestSizeException) {
 
 			String errorMessage = StringPool.BLANK;
 			int errorType = 0;
@@ -77,41 +77,43 @@ public class MultipleUploadResponseHandler implements UploadResponseHandler {
 				(ThemeDisplay)portletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			if (pe instanceof AntivirusScannerException) {
-				AntivirusScannerException ase = (AntivirusScannerException)pe;
+			if (portalException instanceof AntivirusScannerException) {
+				AntivirusScannerException antivirusScannerException =
+					(AntivirusScannerException)portalException;
 
-				errorMessage = themeDisplay.translate(ase.getMessageKey());
+				errorMessage = themeDisplay.translate(
+					antivirusScannerException.getMessageKey());
 
 				errorType =
 					ServletResponseConstants.SC_FILE_ANTIVIRUS_EXCEPTION;
 			}
 
-			if (pe instanceof DuplicateFileEntryException) {
+			if (portalException instanceof DuplicateFileEntryException) {
 				errorMessage = themeDisplay.translate(
 					"please-enter-a-unique-document-name");
 				errorType =
 					ServletResponseConstants.SC_DUPLICATE_FILE_EXCEPTION;
 			}
-			else if (pe instanceof FileExtensionException) {
+			else if (portalException instanceof FileExtensionException) {
 				errorMessage = themeDisplay.translate(
 					"please-enter-a-file-with-a-valid-extension-x",
 					_getAllowedFileExtensions());
 				errorType =
 					ServletResponseConstants.SC_FILE_EXTENSION_EXCEPTION;
 			}
-			else if (pe instanceof FileNameException) {
+			else if (portalException instanceof FileNameException) {
 				errorMessage = themeDisplay.translate(
 					"please-enter-a-file-with-a-valid-file-name");
 			}
-			else if (pe instanceof FileSizeException) {
+			else if (portalException instanceof FileSizeException) {
 				errorMessage = themeDisplay.translate(
 					"please-enter-a-file-with-a-valid-file-size-no-larger-" +
 						"than-x",
-					TextFormatter.formatStorageSize(
+					LanguageUtil.formatStorageSize(
 						_dlValidator.getMaxAllowableSize(),
 						themeDisplay.getLocale()));
 			}
-			else if (pe instanceof UploadRequestSizeException) {
+			else if (portalException instanceof UploadRequestSizeException) {
 				errorType =
 					ServletResponseConstants.SC_UPLOAD_REQUEST_SIZE_EXCEPTION;
 			}
@@ -152,14 +154,10 @@ public class MultipleUploadResponseHandler implements UploadResponseHandler {
 	}
 
 	private String _getAllowedFileExtensions() {
-		String allowedFileExtensionsString = StringPool.BLANK;
-
 		String[] allowedFileExtensions = _dlConfiguration.fileExtensions();
 
-		allowedFileExtensionsString = StringUtil.merge(
+		return StringUtil.merge(
 			allowedFileExtensions, StringPool.COMMA_AND_SPACE);
-
-		return allowedFileExtensionsString;
 	}
 
 	private volatile DLConfiguration _dlConfiguration;

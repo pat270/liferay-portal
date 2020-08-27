@@ -92,8 +92,8 @@ public abstract class BaseElasticsearchConnection
 		try {
 			return future.get();
 		}
-		catch (Exception e) {
-			throw new IllegalStateException(e);
+		catch (Exception exception) {
+			throw new IllegalStateException(exception);
 		}
 	}
 
@@ -136,18 +136,16 @@ public abstract class BaseElasticsearchConnection
 	protected abstract void loadRequiredDefaultConfigurations();
 
 	protected void loadSettingsContributors() {
-		final Settings.Builder builder = settingsBuilder.getBuilder();
-
 		ClientSettingsHelper clientSettingsHelper = new ClientSettingsHelper() {
 
 			@Override
 			public void put(String setting, String value) {
-				builder.put(setting, value);
+				settingsBuilder.put(setting, value);
 			}
 
 			@Override
 			public void putArray(String setting, String... values) {
-				builder.putList(setting, values);
+				settingsBuilder.putList(setting, values);
 			}
 
 		};

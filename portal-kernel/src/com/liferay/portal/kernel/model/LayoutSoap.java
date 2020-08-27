@@ -20,23 +20,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.LayoutServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class LayoutSoap implements Serializable {
 
 	public static LayoutSoap toSoapModel(Layout model) {
 		LayoutSoap soapModel = new LayoutSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
-		soapModel.setHeadId(model.getHeadId());
 		soapModel.setPlid(model.getPlid());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -63,8 +62,10 @@ public class LayoutSoap implements Serializable {
 		soapModel.setIconImageId(model.getIconImageId());
 		soapModel.setThemeId(model.getThemeId());
 		soapModel.setColorSchemeId(model.getColorSchemeId());
+		soapModel.setStyleBookEntryId(model.getStyleBookEntryId());
 		soapModel.setCss(model.getCss());
 		soapModel.setPriority(model.getPriority());
+		soapModel.setMasterLayoutPlid(model.getMasterLayoutPlid());
 		soapModel.setLayoutPrototypeUuid(model.getLayoutPrototypeUuid());
 		soapModel.setLayoutPrototypeLinkEnabled(
 			model.isLayoutPrototypeLinkEnabled());
@@ -72,6 +73,10 @@ public class LayoutSoap implements Serializable {
 			model.getSourcePrototypeLayoutUuid());
 		soapModel.setPublishDate(model.getPublishDate());
 		soapModel.setLastPublishDate(model.getLastPublishDate());
+		soapModel.setStatus(model.getStatus());
+		soapModel.setStatusByUserId(model.getStatusByUserId());
+		soapModel.setStatusByUserName(model.getStatusByUserName());
+		soapModel.setStatusDate(model.getStatusDate());
 
 		return soapModel;
 	}
@@ -132,20 +137,20 @@ public class LayoutSoap implements Serializable {
 		_mvccVersion = mvccVersion;
 	}
 
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public String getUuid() {
 		return _uuid;
 	}
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
-	}
-
-	public long getHeadId() {
-		return _headId;
-	}
-
-	public void setHeadId(long headId) {
-		_headId = headId;
 	}
 
 	public long getPlid() {
@@ -368,6 +373,14 @@ public class LayoutSoap implements Serializable {
 		_colorSchemeId = colorSchemeId;
 	}
 
+	public long getStyleBookEntryId() {
+		return _styleBookEntryId;
+	}
+
+	public void setStyleBookEntryId(long styleBookEntryId) {
+		_styleBookEntryId = styleBookEntryId;
+	}
+
 	public String getCss() {
 		return _css;
 	}
@@ -382,6 +395,14 @@ public class LayoutSoap implements Serializable {
 
 	public void setPriority(int priority) {
 		_priority = priority;
+	}
+
+	public long getMasterLayoutPlid() {
+		return _masterLayoutPlid;
+	}
+
+	public void setMasterLayoutPlid(long masterLayoutPlid) {
+		_masterLayoutPlid = masterLayoutPlid;
 	}
 
 	public String getLayoutPrototypeUuid() {
@@ -430,9 +451,41 @@ public class LayoutSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	public int getStatus() {
+		return _status;
+	}
+
+	public void setStatus(int status) {
+		_status = status;
+	}
+
+	public long getStatusByUserId() {
+		return _statusByUserId;
+	}
+
+	public void setStatusByUserId(long statusByUserId) {
+		_statusByUserId = statusByUserId;
+	}
+
+	public String getStatusByUserName() {
+		return _statusByUserName;
+	}
+
+	public void setStatusByUserName(String statusByUserName) {
+		_statusByUserName = statusByUserName;
+	}
+
+	public Date getStatusDate() {
+		return _statusDate;
+	}
+
+	public void setStatusDate(Date statusDate) {
+		_statusDate = statusDate;
+	}
+
 	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
-	private long _headId;
 	private long _plid;
 	private long _groupId;
 	private long _companyId;
@@ -459,12 +512,18 @@ public class LayoutSoap implements Serializable {
 	private long _iconImageId;
 	private String _themeId;
 	private String _colorSchemeId;
+	private long _styleBookEntryId;
 	private String _css;
 	private int _priority;
+	private long _masterLayoutPlid;
 	private String _layoutPrototypeUuid;
 	private boolean _layoutPrototypeLinkEnabled;
 	private String _sourcePrototypeLayoutUuid;
 	private Date _publishDate;
 	private Date _lastPublishDate;
+	private int _status;
+	private long _statusByUserId;
+	private String _statusByUserName;
+	private Date _statusDate;
 
 }

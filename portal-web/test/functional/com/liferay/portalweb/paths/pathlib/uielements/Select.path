@@ -19,8 +19,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_DISABLED</td>
+	<td>//div[not(contains(@class,'hide'))]/div[contains(@class,'input-select-wrapper')][label[contains(.,'${key_selectFieldLabel}')]]/select[contains(@class,'disabled')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ASSIGNMENT_TYPE</td>
 	<td>//select[@name='assignmentType']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BORDER_BOTTOM_SELECT_FIELD</td>
+	<td>//div[contains(@class,'label')][normalize-space()='${key_borderBottom}']/following-sibling::div[1]//div[label[contains(.,'${key_fieldLabel}')]]/select</td>
 	<td></td>
 </tr>
 <tr>
@@ -39,6 +49,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>APPLICATIONS_RATING</td>
+	<td>//select[contains(@id,'${key_applications}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>COUNTRY</td>
 	<td>//div[label[contains(.,'Country')]]/select</td>
 	<td></td>
@@ -49,8 +64,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DATE_RANGE_START_DATE_VALUE</td>
+	<td>//ul[contains(@class,'date-range-options')]//input[contains(@name,'startDate') and contains(@value,'${key_dateRangeStartDate}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DATE_RANGE_END_DATE</td>
 	<td>xpath=(//ul[contains(@class,'date-range-options')]//input[contains(@name,'endDate') and contains(@type,'text')])[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DATE_RANGE_END_DATE_VALUE</td>
+	<td>//ul[contains(@class,'date-range-options')]//input[contains(@name,'endDate') and contains(@value,'${key_dateRangeEndDate}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -69,6 +94,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>EXPORT_FILE_FORMAT</td>
+	<td>//div[contains(.,'Export File Format')]//select</td>
+	<td></td>
+</tr>
+<tr>
 	<td>FEED_ITEM_CONTENT</td>
 	<td>//select[contains(@id,'contentFieldSelector')]</td>
 	<td></td>
@@ -84,6 +114,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>GENERIC_SELECT_VALUE</td>
+	<td>//div[label[contains(.,'${key_fieldLabel}')]]/select/option[normalize-space(text())='${key_value}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>KNOWLEDGE_BASE_RATING</td>
 	<td>//select[contains(@id,'knowledge-base')]</td>
 	<td></td>
@@ -91,6 +126,11 @@
 <tr>
 	<td>LOS_ANGELES_TIME_ZONE</td>
 	<td>//select[contains(@id,'timeZoneId')]/option[@value='America/Los_Angeles']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MINIMUM_AGE</td>
+	<td>//select[contains(@id,'maxAge')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -124,6 +164,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REDIRECT_TYPE</td>
+	<td>//div[label[contains(.,'Type')]]/select</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REGION</td>
 	<td>//div[label[contains(.,'Region')]]/select</td>
 	<td></td>
@@ -154,6 +199,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SCOPE_SELECTED</td>
+	<td>//div[label[contains(.,'Scope')]]//option[contains(.,'${key_scopeName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TIME_ZONE</td>
 	<td>//select[contains(@id,'timeZoneId')]</td>
 	<td></td>
@@ -161,6 +211,16 @@
 <tr>
 	<td>TYPE</td>
 	<td>//div[label[contains(.,'Type')]]/select</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TYPE_SELECTED</td>
+	<td>//div[label[contains(.,'Type')]]//option[contains(.,'${key_typeName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WARNING_TIME</td>
+	<td>//select[contains(@id,'warningTime')]</td>
 	<td></td>
 </tr>
 <tr>

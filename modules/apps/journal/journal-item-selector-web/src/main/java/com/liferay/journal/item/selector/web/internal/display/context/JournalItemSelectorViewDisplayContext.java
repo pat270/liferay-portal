@@ -14,18 +14,22 @@
 
 package com.liferay.journal.item.selector.web.internal.display.context;
 
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
+import com.liferay.item.selector.taglib.servlet.taglib.util.RepositoryEntryBrowserTagUtil;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.item.selector.criterion.JournalItemSelectorCriterion;
 import com.liferay.journal.item.selector.web.internal.JournalItemSelectorView;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.PortalPreferences;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.Locale;
 
@@ -41,19 +45,24 @@ import javax.servlet.http.HttpServletRequest;
 public class JournalItemSelectorViewDisplayContext {
 
 	public JournalItemSelectorViewDisplayContext(
-		JournalItemSelectorCriterion journalItemSelectorCriterion,
-		JournalItemSelectorView journalItemSelectorView,
+		HttpServletRequest httpServletRequest, String itemSelectedEventName,
 		ItemSelectorReturnTypeResolverHandler
 			itemSelectorReturnTypeResolverHandler,
-		String itemSelectedEventName, boolean search, PortletURL portletURL) {
+		JournalItemSelectorCriterion journalItemSelectorCriterion,
+		JournalItemSelectorView journalItemSelectorView, PortletURL portletURL,
+		boolean search) {
 
-		_journalItemSelectorCriterion = journalItemSelectorCriterion;
-		_journalItemSelectorView = journalItemSelectorView;
+		_httpServletRequest = httpServletRequest;
+		_itemSelectedEventName = itemSelectedEventName;
 		_itemSelectorReturnTypeResolverHandler =
 			itemSelectorReturnTypeResolverHandler;
-		_itemSelectedEventName = itemSelectedEventName;
-		_search = search;
+		_journalItemSelectorCriterion = journalItemSelectorCriterion;
+		_journalItemSelectorView = journalItemSelectorView;
 		_portletURL = portletURL;
+		_search = search;
+
+		_portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(
+			_httpServletRequest);
 	}
 
 	public Folder fetchAttachmentsFolder(long userId, long groupId) {
@@ -64,20 +73,30 @@ public class JournalItemSelectorViewDisplayContext {
 		return _itemSelectedEventName;
 	}
 
-	public ItemSelectorReturnTypeResolver getItemSelectorReturnTypeResolver() {
+	public ItemSelectorReturnTypeResolver<?, ?>
+		getItemSelectorReturnTypeResolver() {
+
 		return _itemSelectorReturnTypeResolverHandler.
 			getItemSelectorReturnTypeResolver(
 				_journalItemSelectorCriterion, _journalItemSelectorView,
 				FileEntry.class);
 	}
 
-	public JournalArticle getJournalArticle() throws PortalException {
+	public JournalArticle getJournalArticle() {
 		return JournalArticleLocalServiceUtil.fetchLatestArticle(
 			_journalItemSelectorCriterion.getResourcePrimKey());
 	}
 
 	public JournalItemSelectorCriterion getJournalItemSelectorCriterion() {
 		return _journalItemSelectorCriterion;
+	}
+
+	public OrderByComparator<?> getOrderByComparator() {
+		return DLUtil.getRepositoryModelOrderByComparator(
+			RepositoryEntryBrowserTagUtil.getOrderByCol(
+				_httpServletRequest, _portalPreferences),
+			RepositoryEntryBrowserTagUtil.getOrderByType(
+				_httpServletRequest, _portalPreferences));
 	}
 
 	public PortletURL getPortletURL(
@@ -124,11 +143,13 @@ public class JournalItemSelectorViewDisplayContext {
 		return _search;
 	}
 
+	private final HttpServletRequest _httpServletRequest;
 	private final String _itemSelectedEventName;
 	private final ItemSelectorReturnTypeResolverHandler
 		_itemSelectorReturnTypeResolverHandler;
 	private final JournalItemSelectorCriterion _journalItemSelectorCriterion;
 	private final JournalItemSelectorView _journalItemSelectorView;
+	private final PortalPreferences _portalPreferences;
 	private final PortletURL _portletURL;
 	private final boolean _search;
 

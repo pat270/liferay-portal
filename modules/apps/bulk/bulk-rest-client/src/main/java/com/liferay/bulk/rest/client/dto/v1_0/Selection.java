@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class Selection {
+public class Selection implements Cloneable {
+
+	public static Selection toDTO(String json) {
+		return SelectionSerDes.toDTO(json);
+	}
 
 	public Long getSize() {
 		return size;
@@ -46,6 +50,11 @@ public class Selection {
 	}
 
 	protected Long size;
+
+	@Override
+	public Selection clone() throws CloneNotSupportedException {
+		return (Selection)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

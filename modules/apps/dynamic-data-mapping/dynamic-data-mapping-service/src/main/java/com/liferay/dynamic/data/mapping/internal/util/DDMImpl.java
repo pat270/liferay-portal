@@ -19,19 +19,15 @@ import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerTracker;
 import com.liferay.dynamic.data.mapping.io.DDMFormSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormSerializerTracker;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerTracker;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
@@ -47,8 +43,8 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Field;
-import com.liferay.dynamic.data.mapping.storage.FieldConstants;
 import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
 import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
 import com.liferay.dynamic.data.mapping.util.FieldsToDDMFormValuesConverter;
@@ -89,7 +85,6 @@ import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.UnicodeFormatter;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.io.File;
 import java.io.Serializable;
 
 import java.text.DateFormat;
@@ -180,15 +175,12 @@ public class DDMImpl implements DDM {
 
 	@Override
 	public DDMForm getDDMForm(String content) throws PortalException {
-		DDMFormDeserializer ddmFormDeserializer =
-			_ddmFormDeserializerTracker.getDDMFormDeserializer("json");
-
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
 
 		DDMFormDeserializerDeserializeResponse
 			ddmFormDeserializerDeserializeResponse =
-				ddmFormDeserializer.deserialize(builder.build());
+				_jsonDDMFormDeserializer.deserialize(builder.build());
 
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
@@ -221,14 +213,11 @@ public class DDMImpl implements DDM {
 
 	@Override
 	public String getDDMFormJSONString(DDMForm ddmForm) {
-		DDMFormSerializer ddmFormSerializer =
-			_ddmFormSerializerTracker.getDDMFormSerializer("json");
-
 		DDMFormSerializerSerializeRequest.Builder builder =
 			DDMFormSerializerSerializeRequest.Builder.newBuilder(ddmForm);
 
 		DDMFormSerializerSerializeResponse ddmFormSerializerSerializeResponse =
-			ddmFormSerializer.serialize(builder.build());
+			_jsonDDMFormSerializer.serialize(builder.build());
 
 		return ddmFormSerializerSerializeResponse.getContent();
 	}
@@ -237,17 +226,13 @@ public class DDMImpl implements DDM {
 	public DDMFormValues getDDMFormValues(
 		DDMForm ddmForm, String serializedJSONDDMFormValues) {
 
-		DDMFormValuesDeserializer ddmFormValuesDeserializer =
-			_ddmFormValuesDeserializerTracker.getDDMFormValuesDeserializer(
-				"json");
-
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				serializedJSONDDMFormValues, ddmForm);
 
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
-				ddmFormValuesDeserializer.deserialize(builder.build());
+				_jsonDDMFormValuesDeserializer.deserialize(builder.build());
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -269,16 +254,13 @@ public class DDMImpl implements DDM {
 
 	@Override
 	public String getDDMFormValuesJSONString(DDMFormValues ddmFormValues) {
-		DDMFormValuesSerializer ddmFormValuesSerializer =
-			_ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
-
 		DDMFormValuesSerializerSerializeRequest.Builder builder =
 			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
 				ddmFormValues);
 
 		DDMFormValuesSerializerSerializeResponse
 			ddmFormValuesSerializerSerializeResponse =
-				ddmFormValuesSerializer.serialize(builder.build());
+				_jsonDDMFormValuesSerializer.serialize(builder.build());
 
 		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
@@ -374,7 +356,8 @@ public class DDMImpl implements DDM {
 
 			String[] stringArray = ArrayUtil.toStringArray(jsonArray);
 
-			fieldValue = stringArray[0];
+			fieldValue = StringUtil.merge(
+				stringArray, StringPool.COMMA_AND_SPACE);
 		}
 
 		return fieldValue;
@@ -503,7 +486,12 @@ public class DDMImpl implements DDM {
 
 			String[] stringArray = ArrayUtil.toStringArray(jsonArray);
 
-			fieldValue = stringArray[0];
+			if (stringArray.length > 1) {
+				fieldValue = stringArray;
+			}
+			else {
+				fieldValue = stringArray[0];
+			}
 		}
 
 		return fieldValue;
@@ -561,10 +549,10 @@ public class DDMImpl implements DDM {
 		String[] existingFieldsDisplayValues = splitFieldsDisplayValue(
 			existingFields.get(DDMImpl.FIELDS_DISPLAY_NAME));
 
-		Iterator<Field> itr = newFields.iterator(true);
+		Iterator<Field> iterator = newFields.iterator(true);
 
-		while (itr.hasNext()) {
-			Field newField = itr.next();
+		while (iterator.hasNext()) {
+			Field newField = iterator.next();
 
 			Field existingField = existingFields.get(newField.getName());
 
@@ -606,9 +594,9 @@ public class DDMImpl implements DDM {
 
 		DDMForm ddmFormCopy = new DDMForm(ddmForm);
 
-		Locale defautLocale = ddmForm.getDefaultLocale();
+		Locale defaultLocale = ddmForm.getDefaultLocale();
 
-		if (defautLocale.equals(newDefaultLocale)) {
+		if (defaultLocale.equals(newDefaultLocale)) {
 			return ddmFormCopy;
 		}
 
@@ -647,18 +635,18 @@ public class DDMImpl implements DDM {
 			propertyValue = localizedValue.getString(defaultLocale);
 		}
 
-		if (type.equals(DDMImpl.TYPE_SELECT)) {
-			if (propertyName.equals("predefinedValue")) {
-				try {
-					jsonObject.put(
-						propertyName,
-						JSONFactoryUtil.createJSONArray(propertyValue));
-				}
-				catch (Exception e) {
-				}
+		if (type.equals(DDMImpl.TYPE_SELECT) &&
+			propertyName.equals("predefinedValue")) {
 
-				return;
+			try {
+				jsonObject.put(
+					propertyName,
+					JSONFactoryUtil.createJSONArray(propertyValue));
 			}
+			catch (Exception exception) {
+			}
+
+			return;
 		}
 
 		jsonObject.put(propertyName, propertyValue);
@@ -793,9 +781,9 @@ public class DDMImpl implements DDM {
 					scriptDDMForm.getAvailableLocales(),
 					scriptDDMForm.getDefaultLocale());
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(pe, pe);
+					_log.warn(portalException, portalException);
 				}
 			}
 		}
@@ -949,7 +937,7 @@ public class DDMImpl implements DDM {
 				fieldNamespace + FIELDS_DISPLAY_NAME));
 
 		List<String> privateFieldNames = ListUtil.fromArray(
-			new String[] {FIELDS_DISPLAY_NAME});
+			FIELDS_DISPLAY_NAME);
 
 		List<String> fieldNames = new ArrayList<>();
 
@@ -1065,7 +1053,7 @@ public class DDMImpl implements DDM {
 							String.valueOf(fieldValue),
 							serviceContext.getLocale());
 					}
-					catch (ParseException pe) {
+					catch (ParseException parseException) {
 						_log.error("Unable to parse date " + fieldValue);
 					}
 				}
@@ -1127,9 +1115,8 @@ public class DDMImpl implements DDM {
 			UploadRequest uploadRequest, String fieldNameValue)
 		throws Exception {
 
-		File file = uploadRequest.getFile(fieldNameValue + "File");
-
-		byte[] bytes = FileUtil.getBytes(file);
+		byte[] bytes = FileUtil.getBytes(
+			uploadRequest.getFile(fieldNameValue + "File"));
 
 		if (ArrayUtil.isNotEmpty(bytes)) {
 			return bytes;
@@ -1165,7 +1152,7 @@ public class DDMImpl implements DDM {
 				return jsonObject.toString();
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -1249,34 +1236,6 @@ public class DDMImpl implements DDM {
 		}
 
 		return existingField.getValuesMap();
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMFormDeserializerTracker(
-		DDMFormDeserializerTracker ddmFormDeserializerTracker) {
-
-		_ddmFormDeserializerTracker = ddmFormDeserializerTracker;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMFormSerializerTracker(
-		DDMFormSerializerTracker ddmFormSerializerTracker) {
-
-		_ddmFormSerializerTracker = ddmFormSerializerTracker;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMFormValuesDeserializerTracker(
-		DDMFormValuesDeserializerTracker ddmFormValuesDeserializerTracker) {
-
-		_ddmFormValuesDeserializerTracker = ddmFormValuesDeserializerTracker;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMFormValuesSerializerTracker(
-		DDMFormValuesSerializerTracker ddmFormValuesSerializerTracker) {
-
-		_ddmFormValuesSerializerTracker = ddmFormValuesSerializerTracker;
 	}
 
 	@Reference(unbind = "-")
@@ -1372,10 +1331,6 @@ public class DDMImpl implements DDM {
 
 	private static final Log _log = LogFactoryUtil.getLog(DDMImpl.class);
 
-	private DDMFormDeserializerTracker _ddmFormDeserializerTracker;
-	private DDMFormSerializerTracker _ddmFormSerializerTracker;
-	private DDMFormValuesDeserializerTracker _ddmFormValuesDeserializerTracker;
-	private DDMFormValuesSerializerTracker _ddmFormValuesSerializerTracker;
 	private DDMFormValuesToFieldsConverter _ddmFormValuesToFieldsConverter;
 	private DLAppLocalService _dlAppLocalService;
 
@@ -1388,6 +1343,19 @@ public class DDMImpl implements DDM {
 	private Http _http;
 
 	private ImageLocalService _imageLocalService;
+
+	@Reference(target = "(ddm.form.deserializer.type=json)")
+	private DDMFormDeserializer _jsonDDMFormDeserializer;
+
+	@Reference(target = "(ddm.form.serializer.type=json)")
+	private DDMFormSerializer _jsonDDMFormSerializer;
+
+	@Reference(target = "(ddm.form.values.deserializer.type=json)")
+	private DDMFormValuesDeserializer _jsonDDMFormValuesDeserializer;
+
+	@Reference(target = "(ddm.form.values.serializer.type=json)")
+	private DDMFormValuesSerializer _jsonDDMFormValuesSerializer;
+
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference

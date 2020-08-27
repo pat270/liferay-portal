@@ -1,0 +1,7 @@
+task runGradleTest
+
+runGradleTest {
+	doLast {
+		assert gradle.liferayWorkspace.appServerTomcatVersion == null
+	}
+}

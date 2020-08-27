@@ -17,12 +17,12 @@ package com.liferay.fragment.entry.processor.nullable;
 import com.liferay.fragment.exception.FragmentEntryContentException;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.FragmentEntryProcessor;
+import com.liferay.fragment.processor.FragmentEntryProcessorContext;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.osgi.service.component.annotations.Component;
@@ -38,15 +38,17 @@ public class NullableFragmentEntryProcessor implements FragmentEntryProcessor {
 
 	@Override
 	public String processFragmentEntryLinkHTML(
-		FragmentEntryLink fragmentEntryLink, String html, String mode,
-		Locale locale, long[] segmentsExperienceIds, long previewClassPK,
-		int previewType) {
+			FragmentEntryLink fragmentEntryLink, String html,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
+		throws PortalException {
 
 		return html;
 	}
 
 	@Override
-	public void validateFragmentEntryHTML(String html) throws PortalException {
+	public void validateFragmentEntryHTML(String html, String configuration)
+		throws PortalException {
+
 		if (Validator.isNull(html)) {
 			ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 				"content.Language", getClass());

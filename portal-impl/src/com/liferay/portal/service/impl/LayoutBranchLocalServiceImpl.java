@@ -69,7 +69,7 @@ public class LayoutBranchLocalServiceImpl
 		layoutBranch.setDescription(description);
 		layoutBranch.setMaster(master);
 
-		layoutBranchPersistence.update(layoutBranch);
+		layoutBranch = layoutBranchPersistence.update(layoutBranch);
 
 		// Resources
 
@@ -204,9 +204,7 @@ public class LayoutBranchLocalServiceImpl
 		layoutBranch.setName(name);
 		layoutBranch.setDescription(description);
 
-		layoutBranchPersistence.update(layoutBranch);
-
-		return layoutBranch;
+		return layoutBranchPersistence.update(layoutBranch);
 	}
 
 	protected void validate(
@@ -232,12 +230,13 @@ public class LayoutBranchLocalServiceImpl
 					LayoutBranchNameException.DUPLICATE);
 			}
 		}
-		catch (NoSuchLayoutBranchException nslbe) {
+		catch (NoSuchLayoutBranchException noSuchLayoutBranchException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nslbe, nslbe);
+				_log.debug(
+					noSuchLayoutBranchException, noSuchLayoutBranchException);
 			}
 		}
 	}

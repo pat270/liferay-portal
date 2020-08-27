@@ -15,13 +15,13 @@
 package com.liferay.dynamic.data.mapping.service;
 
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -45,14 +45,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=ddm",
-		"json.web.service.context.path=DDMTemplate"
-	},
-	service = DDMTemplateService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -63,7 +57,7 @@ public interface DDMTemplateService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DDMTemplateServiceUtil} to access the ddm template remote service. Add custom service methods to <code>com.liferay.dynamic.data.mapping.service.impl.DDMTemplateServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.dynamic.data.mapping.service.impl.DDMTemplateServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the ddm template remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DDMTemplateServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**
@@ -307,6 +301,12 @@ public interface DDMTemplateService extends BaseService {
 		long companyId, long groupId, long classNameId, long classPK,
 		long resourceClassNameId, String type, String mode, int status);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<DDMTemplate> getTemplates(
+		long companyId, long[] groupIds, long[] classNameIds, long[] classPKs,
+		long resourceClassNameId, int start, int end,
+		OrderByComparator<DDMTemplate> orderByComparator);
+
 	/**
 	 * Returns all the templates matching the group, class PK, and resource
 	 * class name ID.
@@ -366,6 +366,11 @@ public interface DDMTemplateService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getTemplatesByStructureClassNameIdCount(
 		long groupId, long structureClassNameId, int status);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getTemplatesCount(
+		long companyId, long[] groupIds, long[] classNameIds, long[] classPKs,
+		long resourceClassNameId);
 
 	public void revertTemplate(
 			long templateId, String version, ServiceContext serviceContext)

@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -55,39 +56,38 @@ public class DDMFormFieldOptionsFactoryImpl
 		DDMFormField ddmFormField,
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
-		String dataSourceType = GetterUtil.getString(
-			ddmFormField.getProperty("dataSourceType"), "manual");
+		String dataSourceType = ddmFormField.getDataSourceType();
 
-		if (Objects.equals(dataSourceType, "from-autofill")) {
-			DDMFormFieldOptions ddmFormFieldOptions = new DDMFormFieldOptions();
-
-			ddmFormFieldOptions.setDefaultLocale(
-				ddmFormFieldRenderingContext.getLocale());
-
-			return ddmFormFieldOptions;
-		}
-		else if (Objects.equals(dataSourceType, "data-provider")) {
+		if (Objects.equals(dataSourceType, "data-provider")) {
 			return createDDMFormFieldOptionsFromDataProvider(
 				ddmFormField, ddmFormFieldRenderingContext);
 		}
 
 		return createDDMFormFieldOptions(
-			ddmFormField, ddmFormFieldRenderingContext);
+			ddmFormField, ddmFormFieldRenderingContext, dataSourceType);
 	}
 
 	protected DDMFormFieldOptions createDDMFormFieldOptions(
 		DDMFormField ddmFormField,
-		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
+		DDMFormFieldRenderingContext ddmFormFieldRenderingContext,
+		String dataSourceType) {
+
+		DDMFormFieldOptions ddmFormFieldOptions = new DDMFormFieldOptions();
+
+		ddmFormFieldOptions.setDefaultLocale(
+			ddmFormFieldRenderingContext.getLocale());
 
 		List<Map<String, String>> options =
 			(List<Map<String, String>>)ddmFormFieldRenderingContext.getProperty(
 				"options");
 
-		if (options == null) {
+		if (ListUtil.isEmpty(options)) {
+			if (dataSourceType.equals("from-autofill")) {
+				return ddmFormFieldOptions;
+			}
+
 			return ddmFormField.getDDMFormFieldOptions();
 		}
-
-		DDMFormFieldOptions ddmFormFieldOptions = new DDMFormFieldOptions();
 
 		for (Map<String, String> option : options) {
 			ddmFormFieldOptions.addOptionLabel(
@@ -158,9 +158,9 @@ public class DDMFormFieldOptionsFactoryImpl
 					keyValuePair.getValue());
 			}
 		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(e, e);
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
 			}
 		}
 
@@ -188,7 +188,7 @@ public class DDMFormFieldOptionsFactoryImpl
 
 			return jsonArray.getString(0);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return value;
 		}
 	}

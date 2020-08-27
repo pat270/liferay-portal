@@ -47,64 +47,77 @@ public class CMISRepositoryUtil {
 
 	public static void checkRepository(
 			long repositoryId, Map<String, String> parameters,
-			UnicodeProperties typeSettingsProperties, String typeSettingsKey)
+			UnicodeProperties typeSettingsUnicodeProperties,
+			String typeSettingsKey)
 		throws PortalException, RepositoryException {
 
-		if (!typeSettingsProperties.containsKey(typeSettingsKey) ||
+		if (!typeSettingsUnicodeProperties.containsKey(typeSettingsKey) ||
 			Validator.isNull(
-				typeSettingsProperties.getProperty(typeSettingsKey))) {
+				typeSettingsUnicodeProperties.getProperty(typeSettingsKey))) {
 
 			Repository cmisRepository = getCMISRepository(parameters);
 
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				typeSettingsKey, cmisRepository.getId());
 
 			try {
 				RepositoryLocalServiceUtil.updateRepository(
-					repositoryId, typeSettingsProperties);
+					repositoryId, typeSettingsUnicodeProperties);
 			}
-			catch (PortalException | SystemException e) {
-				throw new RepositoryException(e);
+			catch (PortalException | SystemException exception) {
+				throw new RepositoryException(exception);
 			}
 		}
 
 		parameters.put(
 			SessionParameter.REPOSITORY_ID,
-			getTypeSettingsValue(typeSettingsProperties, typeSettingsKey));
+			getTypeSettingsValue(
+				typeSettingsUnicodeProperties, typeSettingsKey));
 	}
 
 	public static com.liferay.document.library.repository.cmis.Session
 			createSession(Map<String, String> parameters)
 		throws PrincipalException, RepositoryException {
 
-		try (ContextClassLoaderSetter contextClassLoaderSetter =
-				new ContextClassLoaderSetter(
-					CMISRepositoryUtil.class.getClassLoader())) {
+		Thread currentThread = Thread.currentThread();
 
+		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+
+		currentThread.setContextClassLoader(
+			CMISRepositoryUtil.class.getClassLoader());
+
+		try {
 			Session session = _sessionFactory.createSession(parameters);
 
 			session.setDefaultContext(_operationContext);
 
 			return new SessionImpl(session);
 		}
-		catch (CmisPermissionDeniedException cpde) {
+		catch (CmisPermissionDeniedException cmisPermissionDeniedException) {
 			throw new PrincipalException.MustBeAuthenticated(
-				parameters.get(SessionParameter.USER), cpde);
+				parameters.get(SessionParameter.USER),
+				cmisPermissionDeniedException);
 		}
-		catch (CmisUnauthorizedException cue) {
+		catch (CmisUnauthorizedException cmisUnauthorizedException) {
 			throw new PrincipalException.MustBeAuthenticated(
-				parameters.get(SessionParameter.USER), cue);
+				parameters.get(SessionParameter.USER),
+				cmisUnauthorizedException);
 		}
-		catch (Exception e) {
-			throw new RepositoryException(e);
+		catch (Exception exception) {
+			throw new RepositoryException(exception);
+		}
+		finally {
+			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}
 
 	public static String getTypeSettingsValue(
-			UnicodeProperties typeSettingsProperties, String typeSettingsKey)
+			UnicodeProperties typeSettingsUnicodeProperties,
+			String typeSettingsKey)
 		throws InvalidRepositoryException {
 
-		String value = typeSettingsProperties.getProperty(typeSettingsKey);
+		String value = typeSettingsUnicodeProperties.getProperty(
+			typeSettingsKey);
 
 		if (Validator.isNull(value)) {
 			throw new InvalidRepositoryException(
@@ -117,14 +130,21 @@ public class CMISRepositoryUtil {
 	protected static Repository getCMISRepository(
 		Map<String, String> parameters) {
 
-		try (ContextClassLoaderSetter contextClassLoaderSetter =
-				new ContextClassLoaderSetter(
-					CMISRepositoryUtil.class.getClassLoader())) {
+		Thread currentThread = Thread.currentThread();
 
+		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+
+		currentThread.setContextClassLoader(
+			CMISRepositoryUtil.class.getClassLoader());
+
+		try {
 			List<Repository> repositories = _sessionFactory.getRepositories(
 				parameters);
 
 			return repositories.get(0);
+		}
+		finally {
+			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}
 
@@ -140,8 +160,8 @@ public class CMISRepositoryUtil {
 		defaultFilterSet.add(PropertyIds.BASE_TYPE_ID);
 		defaultFilterSet.add(PropertyIds.CREATED_BY);
 		defaultFilterSet.add(PropertyIds.CREATION_DATE);
-		defaultFilterSet.add(PropertyIds.LAST_MODIFIED_BY);
 		defaultFilterSet.add(PropertyIds.LAST_MODIFICATION_DATE);
+		defaultFilterSet.add(PropertyIds.LAST_MODIFIED_BY);
 		defaultFilterSet.add(PropertyIds.NAME);
 		defaultFilterSet.add(PropertyIds.OBJECT_ID);
 		defaultFilterSet.add(PropertyIds.OBJECT_TYPE_ID);

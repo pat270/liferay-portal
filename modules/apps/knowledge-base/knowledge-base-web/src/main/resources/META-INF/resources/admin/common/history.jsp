@@ -163,8 +163,9 @@ if (portletTitleBasedNavigation) {
 					%>
 
 					<liferay-ui:icon
-						iconCssClass="icon-undo"
+						icon="undo"
 						label="<%= true %>"
+						markupView="lexicon"
 						message="revert"
 						url="<%= revertURL.toString() %>"
 					/>
@@ -182,83 +183,78 @@ if (portletTitleBasedNavigation) {
 	</liferay-ui:search-container>
 </aui:fieldset>
 
-<aui:script>
-	var compareVersionsButton = document.getElementById('<portlet:namespace />compare');
+<aui:script require="metal-dom/src/dom as dom">
+	var compareVersionsButton = document.getElementById(
+		'<portlet:namespace />compare'
+	);
 
 	if (compareVersionsButton) {
-		compareVersionsButton.addEventListener(
-			'click',
-			function(event) {
-				var rowIds = document.querySelectorAll('input[name="<portlet:namespace />rowIds"]:checked');
+		compareVersionsButton.addEventListener('click', function (event) {
+			var rowIds = document.querySelectorAll(
+				'input[name="<portlet:namespace />rowIds"]:checked'
+			);
 
-				if (rowIds.length === 2) {
-					<portlet:renderURL var="compareVersionURL">
-						<portlet:param name="mvcPath" value='<%= templatePath + "compare_versions.jsp" %>' />
-						<portlet:param name="<%= Constants.CMD %>" value="compareVersions" />
-						<portlet:param name="backURL" value="<%= currentURL %>" />
-						<portlet:param name="redirect" value="<%= redirect %>" />
-						<portlet:param name="resourcePrimKey" value="<%= String.valueOf(kbArticle.getResourcePrimKey()) %>" />
-					</portlet:renderURL>
+			if (rowIds.length === 2) {
+				<portlet:renderURL var="compareVersionURL">
+					<portlet:param name="mvcPath" value='<%= templatePath + "compare_versions.jsp" %>' />
+					<portlet:param name="<%= Constants.CMD %>" value="compareVersions" />
+					<portlet:param name="backURL" value="<%= currentURL %>" />
+					<portlet:param name="redirect" value="<%= redirect %>" />
+					<portlet:param name="resourcePrimKey" value="<%= String.valueOf(kbArticle.getResourcePrimKey()) %>" />
+				</portlet:renderURL>
 
-					var uri = '<%= HtmlUtil.escapeJS(compareVersionURL) %>';
+				var uri = '<%= HtmlUtil.escapeJS(compareVersionURL) %>';
 
-					uri = Liferay.Util.addParams('<portlet:namespace />sourceVersion=' + rowIds[1].value, uri);
-					uri = Liferay.Util.addParams('<portlet:namespace />targetVersion=' + rowIds[0].value, uri);
+				uri = Liferay.Util.addParams(
+					'<portlet:namespace />sourceVersion=' + rowIds[1].value,
+					uri
+				);
+				uri = Liferay.Util.addParams(
+					'<portlet:namespace />targetVersion=' + rowIds[0].value,
+					uri
+				);
 
-					location.href = uri;
-				}
+				location.href = uri;
 			}
-		);
+		});
 	}
 
-	Liferay.provide(
-		window,
-		'<portlet:namespace />initRowsChecked',
-		function() {
-			var A = AUI();
-
-			var rowIds = A.all('input[name=<portlet:namespace />rowIds]');
-
-			rowIds.each(
-				function(item, index, collection) {
-					if (index >= 2) {
-						item.attr('checked', false);
-					}
-				}
-			);
-		},
-		['aui-base']
-	);
-
-	Liferay.provide(
-		window,
-		'<portlet:namespace />updateRowsChecked',
-		function(element) {
-			var A = AUI();
-
-			var rowsChecked = A.all('input[name=<portlet:namespace />rowIds]:checked');
-
-			if (rowsChecked.size() > 2) {
-				var index = 2;
-
-				if (rowsChecked.item(2).compareTo(element)) {
-					index = 1;
-				}
-
-				rowsChecked.item(index).attr('checked', false);
+	function <portlet:namespace />initRowsChecked() {
+		Array.from(
+			document.querySelectorAll('input[name=<portlet:namespace />rowIds]')
+		).forEach(function (item, index, collection) {
+			if (index >= 2) {
+				item.checked = false;
 			}
-		},
-		['aui-base', 'selector-css3']
-	);
-</aui:script>
+		});
+	}
 
-<aui:script use="aui-base">
+	function <portlet:namespace />updateRowsChecked(element) {
+		var rowsChecked = Array.from(
+			document.querySelectorAll(
+				'input[name=<portlet:namespace />rowIds]:checked'
+			)
+		);
+
+		if (rowsChecked.length > 2) {
+			var index = 2;
+
+			if (rowsChecked[2] === element) {
+				index = 1;
+			}
+
+			rowsChecked[index].checked = false;
+		}
+	}
+
 	<portlet:namespace />initRowsChecked();
 
-	A.all('input[name=<portlet:namespace />rowIds]').on(
+	dom.delegate(
+		document.body,
 		'click',
-		function(event) {
-			<portlet:namespace />updateRowsChecked(event.currentTarget);
+		'input[name=<portlet:namespace />rowIds]',
+		function (event) {
+			<portlet:namespace />updateRowsChecked(event.delegateTarget);
 		}
 	);
 </aui:script>

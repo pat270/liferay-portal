@@ -28,6 +28,5 @@ String redirect = ParamUtil.getString(renderRequest, "redirect");
 
 <liferay-ui:icon
 	message="openid-connect"
-	src='<%= themeDisplay.getPathThemeImages() + "/common/openid.gif" %>'
 	url="<%= openIdConnectURL %>"
 />

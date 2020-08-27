@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing LayoutSet in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutSetCacheModel
 	implements CacheModel<LayoutSet>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LayoutSetCacheModel)) {
+		if (!(object instanceof LayoutSetCacheModel)) {
 			return false;
 		}
 
-		LayoutSetCacheModel layoutSetCacheModel = (LayoutSetCacheModel)obj;
+		LayoutSetCacheModel layoutSetCacheModel = (LayoutSetCacheModel)object;
 
 		if ((layoutSetId == layoutSetCacheModel.layoutSetId) &&
 			(mvccVersion == layoutSetCacheModel.mvccVersion)) {
@@ -79,12 +76,12 @@ public class LayoutSetCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(33);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
-		sb.append(", headId=");
-		sb.append(headId);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", layoutSetId=");
 		sb.append(layoutSetId);
 		sb.append(", groupId=");
@@ -105,8 +102,6 @@ public class LayoutSetCacheModel
 		sb.append(colorSchemeId);
 		sb.append(", css=");
 		sb.append(css);
-		sb.append(", pageCount=");
-		sb.append(pageCount);
 		sb.append(", settings=");
 		sb.append(settings);
 		sb.append(", layoutSetPrototypeUuid=");
@@ -123,8 +118,7 @@ public class LayoutSetCacheModel
 		LayoutSetImpl layoutSetImpl = new LayoutSetImpl();
 
 		layoutSetImpl.setMvccVersion(mvccVersion);
-		layoutSetImpl.setHeadId(headId);
-		layoutSetImpl.setHead(head);
+		layoutSetImpl.setCtCollectionId(ctCollectionId);
 		layoutSetImpl.setLayoutSetId(layoutSetId);
 		layoutSetImpl.setGroupId(groupId);
 		layoutSetImpl.setCompanyId(companyId);
@@ -167,8 +161,6 @@ public class LayoutSetCacheModel
 			layoutSetImpl.setCss(css);
 		}
 
-		layoutSetImpl.setPageCount(pageCount);
-
 		if (settings == null) {
 			layoutSetImpl.setSettings("");
 		}
@@ -191,7 +183,7 @@ public class LayoutSetCacheModel
 		layoutSetImpl.setCompanyFallbackVirtualHostname(
 			_companyFallbackVirtualHostname);
 
-		layoutSetImpl.setVirtualHostname(_virtualHostname);
+		layoutSetImpl.setVirtualHostnames(_virtualHostnames);
 
 		return layoutSetImpl;
 	}
@@ -202,9 +194,7 @@ public class LayoutSetCacheModel
 
 		mvccVersion = objectInput.readLong();
 
-		headId = objectInput.readLong();
-
-		head = objectInput.readBoolean();
+		ctCollectionId = objectInput.readLong();
 
 		layoutSetId = objectInput.readLong();
 
@@ -219,25 +209,21 @@ public class LayoutSetCacheModel
 		logoId = objectInput.readLong();
 		themeId = objectInput.readUTF();
 		colorSchemeId = objectInput.readUTF();
-		css = objectInput.readUTF();
-
-		pageCount = objectInput.readInt();
-		settings = objectInput.readUTF();
+		css = (String)objectInput.readObject();
+		settings = (String)objectInput.readObject();
 		layoutSetPrototypeUuid = objectInput.readUTF();
 
 		layoutSetPrototypeLinkEnabled = objectInput.readBoolean();
 
 		_companyFallbackVirtualHostname = (String)objectInput.readObject();
-		_virtualHostname = (String)objectInput.readObject();
+		_virtualHostnames = (java.util.TreeMap)objectInput.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
-		objectOutput.writeLong(headId);
-
-		objectOutput.writeBoolean(head);
+		objectOutput.writeLong(ctCollectionId);
 
 		objectOutput.writeLong(layoutSetId);
 
@@ -266,19 +252,17 @@ public class LayoutSetCacheModel
 		}
 
 		if (css == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(css);
+			objectOutput.writeObject(css);
 		}
-
-		objectOutput.writeInt(pageCount);
 
 		if (settings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(settings);
+			objectOutput.writeObject(settings);
 		}
 
 		if (layoutSetPrototypeUuid == null) {
@@ -291,12 +275,11 @@ public class LayoutSetCacheModel
 		objectOutput.writeBoolean(layoutSetPrototypeLinkEnabled);
 
 		objectOutput.writeObject(_companyFallbackVirtualHostname);
-		objectOutput.writeObject(_virtualHostname);
+		objectOutput.writeObject(_virtualHostnames);
 	}
 
 	public long mvccVersion;
-	public long headId;
-	public boolean head;
+	public long ctCollectionId;
 	public long layoutSetId;
 	public long groupId;
 	public long companyId;
@@ -307,11 +290,10 @@ public class LayoutSetCacheModel
 	public String themeId;
 	public String colorSchemeId;
 	public String css;
-	public int pageCount;
 	public String settings;
 	public String layoutSetPrototypeUuid;
 	public boolean layoutSetPrototypeLinkEnabled;
 	public String _companyFallbackVirtualHostname;
-	public String _virtualHostname;
+	public java.util.TreeMap _virtualHostnames;
 
 }

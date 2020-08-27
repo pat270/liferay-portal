@@ -54,6 +54,8 @@ public class TruncateLongLines extends ThisIsASuperClassThatAlsoHasASuperLongNam
 
 		for (String stringWithAveryVeryVeryVeryVeryLongName : listWithFairlyLongName) {
 			stringWithAveryVeryVeryVeryVeryLongName = variable1;	
+
+			listWithFairlyLongName.add(stringWithAveryVeryVeryVeryVeryLongName);
 		}
 	}
 
@@ -107,7 +109,6 @@ public class TruncateLongLines extends ThisIsASuperClassThatAlsoHasASuperLongNam
 		int thisIsAnIntegerWithARatherLongName2 = 0;
 
 		if ((thisIsAnIntegerWithARatherLongName1 == thisIsAnIntegerWithARatherLongName2) && testString1.equals(testString2)) {
-			return;
 		}
 	}
 

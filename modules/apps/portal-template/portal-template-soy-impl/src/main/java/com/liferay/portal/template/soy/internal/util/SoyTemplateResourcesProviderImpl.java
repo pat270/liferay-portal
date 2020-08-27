@@ -35,14 +35,13 @@ import org.osgi.service.component.annotations.Reference;
 public class SoyTemplateResourcesProviderImpl
 	implements SoyTemplateResourcesProvider {
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<TemplateResource> getAllTemplateResources() {
-		if (_soyManager == null) {
-			return Collections.<TemplateResource>emptyList();
-		}
-
-		return Collections.unmodifiableList(
-			_soyManager.getAllTemplateResources());
+		return Collections.<TemplateResource>emptyList();
 	}
 
 	@Override
@@ -50,17 +49,15 @@ public class SoyTemplateResourcesProviderImpl
 		Bundle bundle, String templatePath) {
 
 		try {
-			SoyTemplateResourcesCollector soyTemplateResourcesCollector =
-				new SoyTemplateResourcesCollector(bundle, templatePath);
-
-			return soyTemplateResourcesCollector.getTemplateResources();
+			return SoyTemplateResourcesCollectorUtil.getTemplateResources(
+				bundle, templatePath);
 		}
-		catch (TemplateException te) {
+		catch (TemplateException templateException) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Unable to get template resources for bundle " +
 						bundle.getBundleId(),
-					te);
+					templateException);
 			}
 		}
 

@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.dao.db;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
@@ -49,9 +50,9 @@ public class DBInspector {
 		try {
 			return _connection.getSchema();
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(t, t);
+				_log.debug(throwable, throwable);
 			}
 
 			return null;
@@ -73,20 +74,31 @@ public class DBInspector {
 
 			return true;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #hasColumnType(String, String, String)}
+	 */
+	@Deprecated
 	public boolean hasColumnType(
 			Class<?> tableClass, String columnName, String columnType)
 		throws Exception {
 
 		Field tableNameField = tableClass.getField("TABLE_NAME");
 
-		String tableName = (String)tableNameField.get(null);
+		return hasColumnType(
+			(String)tableNameField.get(null), columnName, columnType);
+	}
+
+	public boolean hasColumnType(
+			String tableName, String columnName, String columnType)
+		throws Exception {
 
 		DatabaseMetaData databaseMetaData = _connection.getMetaData();
 
@@ -109,12 +121,13 @@ public class DBInspector {
 				return false;
 			}
 
-			int expectedColumnDataType = _getColumnDataType(
-				tableClass, columnName);
+			Integer expectedColumnDataType = _getColumnDataType(columnType);
 
 			int actualColumnDataType = rs.getInt("DATA_TYPE");
 
-			if (expectedColumnDataType != actualColumnDataType) {
+			if ((expectedColumnDataType == null) ||
+				(expectedColumnDataType != actualColumnDataType)) {
+
 				return false;
 			}
 
@@ -147,8 +160,8 @@ public class DBInspector {
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -178,6 +191,31 @@ public class DBInspector {
 		return false;
 	}
 
+	public boolean isNullable(String tableName, String columnName)
+		throws SQLException {
+
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
+
+		try (ResultSet rs = databaseMetaData.getColumns(
+				getCatalog(), getSchema(),
+				normalizeName(tableName, databaseMetaData),
+				normalizeName(columnName, databaseMetaData))) {
+
+			if (!rs.next()) {
+				throw new SQLException(
+					StringBundler.concat(
+						"Column ", tableName, StringPool.PERIOD, columnName,
+						" does not exist"));
+			}
+
+			if (rs.getInt("NULLABLE") == DatabaseMetaData.columnNullable) {
+				return true;
+			}
+
+			return false;
+		}
+	}
+
 	public String normalizeName(String name) throws SQLException {
 		return normalizeName(name, _connection.getMetaData());
 	}
@@ -196,23 +234,16 @@ public class DBInspector {
 		return name;
 	}
 
-	private int _getColumnDataType(Class<?> tableClass, String columnName)
-		throws Exception {
+	private Integer _getColumnDataType(String columnType) {
+		Matcher matcher = _columnTypePattern.matcher(columnType);
 
-		Field tableColumnsField = tableClass.getField("TABLE_COLUMNS");
-
-		Object[][] tableColumns = (Object[][])tableColumnsField.get(null);
-
-		for (Object[] tableColumn : tableColumns) {
-			if (tableColumn[0].equals(columnName)) {
-				return (int)tableColumn[1];
-			}
+		if (!matcher.lookingAt()) {
+			return null;
 		}
 
-		throw new UpgradeException(
-			StringBundler.concat(
-				"Table class ", tableClass, " does not have column ",
-				columnName));
+		DB db = DBManagerUtil.getDB();
+
+		return db.getSQLType(matcher.group(1));
 	}
 
 	private int _getColumnSize(String columnType) throws UpgradeException {
@@ -228,12 +259,12 @@ public class DBInspector {
 			try {
 				return Integer.parseInt(columnSize);
 			}
-			catch (NumberFormatException nfe) {
+			catch (NumberFormatException numberFormatException) {
 				throw new UpgradeException(
 					StringBundler.concat(
 						"Column type ", columnType,
 						" has an invalid column size ", columnSize),
-					nfe);
+					numberFormatException);
 			}
 		}
 
@@ -257,17 +288,9 @@ public class DBInspector {
 	private boolean _isColumnNullable(String typeName) {
 		typeName = typeName.trim();
 
-		int i = typeName.indexOf("null");
+		typeName = StringUtil.toLowerCase(typeName);
 
-		if (i == -1) {
-			return false;
-		}
-
-		if ((i > 0) && !Character.isSpaceChar(typeName.charAt(i - 1))) {
-			return false;
-		}
-
-		if ((i + 4) < typeName.length()) {
+		if (typeName.endsWith("not null")) {
 			return false;
 		}
 
@@ -278,6 +301,8 @@ public class DBInspector {
 
 	private static final Pattern _columnSizePattern = Pattern.compile(
 		"^\\w+(?:\\((\\d+)\\))?.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern _columnTypePattern = Pattern.compile(
+		"(^\\w+)", Pattern.CASE_INSENSITIVE);
 
 	private final Connection _connection;
 

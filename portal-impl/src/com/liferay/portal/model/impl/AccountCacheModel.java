@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Account in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AccountCacheModel
 	implements CacheModel<Account>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AccountCacheModel)) {
+		if (!(object instanceof AccountCacheModel)) {
 			return false;
 		}
 
-		AccountCacheModel accountCacheModel = (AccountCacheModel)obj;
+		AccountCacheModel accountCacheModel = (AccountCacheModel)object;
 
 		if ((accountId == accountCacheModel.accountId) &&
 			(mvccVersion == accountCacheModel.mvccVersion)) {

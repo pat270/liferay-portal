@@ -14,15 +14,15 @@
 
 package com.liferay.dynamic.data.mapping.service.test;
 
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureLayoutTestHelper;
@@ -125,6 +125,19 @@ public abstract class BaseDDMServiceTestCase {
 			DDMTemplateConstants.TEMPLATE_TYPE_FORM,
 			DDMTemplateConstants.TEMPLATE_MODE_CREATE, "xsd", definition,
 			status);
+	}
+
+	protected DDMStructure addStructure(
+			Group group, long classNameId, String name)
+		throws Exception {
+
+		DDMForm ddmForm = toDDMForm(read("test-structure.xsd"));
+
+		return ddmStructureTestHelper.addStructure(
+			group, 0, classNameId, null, name, StringPool.BLANK, ddmForm,
+			DDMUtil.getDefaultDDMFormLayout(ddmForm),
+			StorageType.JSON.getValue(), DDMStructureConstants.TYPE_DEFAULT,
+			WorkflowConstants.STATUS_APPROVED);
 	}
 
 	protected DDMStructure addStructure(
@@ -288,10 +301,11 @@ public abstract class BaseDDMServiceTestCase {
 			clazz.getClassLoader(), getBasePath() + fileName);
 	}
 
-	protected void setUpDDMXML() throws Exception {
+	protected void setUpDDMXML() {
 		Registry registry = RegistryUtil.getRegistry();
 
-		ddmXML = registry.getService(DDMXML.class);
+		ddmXML = registry.getService(
+			registry.getServiceReference(DDMXML.class));
 	}
 
 	protected DDMForm toDDMForm(String definition) throws Exception {

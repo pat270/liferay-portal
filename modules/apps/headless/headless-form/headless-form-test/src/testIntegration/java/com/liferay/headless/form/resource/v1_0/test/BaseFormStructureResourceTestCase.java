@@ -14,57 +14,59 @@
 
 package com.liferay.headless.form.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.form.client.dto.v1_0.FormStructure;
+import com.liferay.headless.form.client.http.HttpInvoker;
 import com.liferay.headless.form.client.pagination.Page;
+import com.liferay.headless.form.client.pagination.Pagination;
+import com.liferay.headless.form.client.resource.v1_0.FormStructureResource;
 import com.liferay.headless.form.client.serdes.v1_0.FormStructureSerDes;
-import com.liferay.headless.form.resource.v1_0.FormStructureResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
@@ -99,9 +101,19 @@ public abstract class BaseFormStructureResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL("http://localhost:8080/o/headless-form/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_formStructureResource.setContextCompany(testCompany);
+
+		FormStructureResource.Builder builder = FormStructureResource.builder();
+
+		formStructureResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -115,10 +127,16 @@ public abstract class BaseFormStructureResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -136,9 +154,15 @@ public abstract class BaseFormStructureResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -152,11 +176,30 @@ public abstract class BaseFormStructureResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		FormStructure formStructure = randomFormStructure();
+
+		formStructure.setDescription(regex);
+		formStructure.setName(regex);
+
+		String json = FormStructureSerDes.toJSON(formStructure);
+
+		Assert.assertFalse(json.contains(regex));
+
+		formStructure = FormStructureSerDes.toDTO(json);
+
+		Assert.assertEquals(regex, formStructure.getDescription());
+		Assert.assertEquals(regex, formStructure.getName());
+	}
+
+	@Test
 	public void testGetFormStructure() throws Exception {
 		FormStructure postFormStructure =
 			testGetFormStructure_addFormStructure();
 
-		FormStructure getFormStructure = invokeGetFormStructure(
+		FormStructure getFormStructure = formStructureResource.getFormStructure(
 			postFormStructure.getId());
 
 		assertEquals(postFormStructure, getFormStructure);
@@ -170,53 +213,60 @@ public abstract class BaseFormStructureResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected FormStructure invokeGetFormStructure(Long formStructureId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetFormStructure() throws Exception {
+		FormStructure formStructure =
+			testGraphQLFormStructure_addFormStructure();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/form-structures/{formStructureId}", formStructureId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return FormStructureSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				formStructure,
+				FormStructureSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"formStructure",
+								new HashMap<String, Object>() {
+									{
+										put(
+											"formStructureId",
+											formStructure.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/formStructure"))));
 	}
 
-	protected Http.Response invokeGetFormStructureResponse(Long formStructureId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetFormStructureNotFound() throws Exception {
+		Long irrelevantFormStructureId = RandomTestUtil.randomLong();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/form-structures/{formStructureId}", formStructureId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"formStructure",
+						new HashMap<String, Object>() {
+							{
+								put(
+									"formStructureId",
+									irrelevantFormStructureId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Test
 	public void testGetSiteFormStructuresPage() throws Exception {
+		Page<FormStructure> page =
+			formStructureResource.getSiteFormStructuresPage(
+				testGetSiteFormStructuresPage_getSiteId(), Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		Long siteId = testGetSiteFormStructuresPage_getSiteId();
 		Long irrelevantSiteId =
 			testGetSiteFormStructuresPage_getIrrelevantSiteId();
@@ -226,7 +276,7 @@ public abstract class BaseFormStructureResourceTestCase {
 				testGetSiteFormStructuresPage_addFormStructure(
 					irrelevantSiteId, randomIrrelevantFormStructure());
 
-			Page<FormStructure> page = invokeGetSiteFormStructuresPage(
+			page = formStructureResource.getSiteFormStructuresPage(
 				irrelevantSiteId, Pagination.of(1, 2));
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -245,7 +295,7 @@ public abstract class BaseFormStructureResourceTestCase {
 			testGetSiteFormStructuresPage_addFormStructure(
 				siteId, randomFormStructure());
 
-		Page<FormStructure> page = invokeGetSiteFormStructuresPage(
+		page = formStructureResource.getSiteFormStructuresPage(
 			siteId, Pagination.of(1, 2));
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -272,8 +322,9 @@ public abstract class BaseFormStructureResourceTestCase {
 			testGetSiteFormStructuresPage_addFormStructure(
 				siteId, randomFormStructure());
 
-		Page<FormStructure> page1 = invokeGetSiteFormStructuresPage(
-			siteId, Pagination.of(1, 2));
+		Page<FormStructure> page1 =
+			formStructureResource.getSiteFormStructuresPage(
+				siteId, Pagination.of(1, 2));
 
 		List<FormStructure> formStructures1 =
 			(List<FormStructure>)page1.getItems();
@@ -281,8 +332,9 @@ public abstract class BaseFormStructureResourceTestCase {
 		Assert.assertEquals(
 			formStructures1.toString(), 2, formStructures1.size());
 
-		Page<FormStructure> page2 = invokeGetSiteFormStructuresPage(
-			siteId, Pagination.of(2, 2));
+		Page<FormStructure> page2 =
+			formStructureResource.getSiteFormStructuresPage(
+				siteId, Pagination.of(2, 2));
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -292,14 +344,13 @@ public abstract class BaseFormStructureResourceTestCase {
 		Assert.assertEquals(
 			formStructures2.toString(), 1, formStructures2.size());
 
+		Page<FormStructure> page3 =
+			formStructureResource.getSiteFormStructuresPage(
+				siteId, Pagination.of(1, 3));
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(formStructure1, formStructure2, formStructure3),
-			new ArrayList<FormStructure>() {
-				{
-					addAll(formStructures1);
-					addAll(formStructures2);
-				}
-			});
+			(List<FormStructure>)page3.getItems());
 	}
 
 	protected FormStructure testGetSiteFormStructuresPage_addFormStructure(
@@ -320,61 +371,60 @@ public abstract class BaseFormStructureResourceTestCase {
 		return irrelevantGroup.getGroupId();
 	}
 
-	protected Page<FormStructure> invokeGetSiteFormStructuresPage(
-			Long siteId, Pagination pagination)
-		throws Exception {
+	@Test
+	public void testGraphQLGetSiteFormStructuresPage() throws Exception {
+		Long siteId = testGetSiteFormStructuresPage_getSiteId();
 
-		Http.Options options = _createHttpOptions();
+		GraphQLField graphQLField = new GraphQLField(
+			"formStructures",
+			new HashMap<String, Object>() {
+				{
+					put("page", 1);
+					put("pageSize", 2);
 
-		String location =
-			_resourceURL + _toPath("/sites/{siteId}/form-structures", siteId);
+					put("siteKey", "\"" + siteId + "\"");
+				}
+			},
+			new GraphQLField("items", getGraphQLFields()),
+			new GraphQLField("page"), new GraphQLField("totalCount"));
 
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
+		JSONObject formStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/formStructures");
 
-		options.setLocation(location);
+		Assert.assertEquals(0, formStructuresJSONObject.get("totalCount"));
 
-		String string = HttpUtil.URLtoString(options);
+		FormStructure formStructure1 =
+			testGraphQLFormStructure_addFormStructure();
+		FormStructure formStructure2 =
+			testGraphQLFormStructure_addFormStructure();
 
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
+		formStructuresJSONObject = JSONUtil.getValueAsJSONObject(
+			invokeGraphQLQuery(graphQLField), "JSONObject/data",
+			"JSONObject/formStructures");
 
-		return Page.of(string, FormStructureSerDes::toDTO);
+		Assert.assertEquals(2, formStructuresJSONObject.get("totalCount"));
+
+		assertEqualsIgnoringOrder(
+			Arrays.asList(formStructure1, formStructure2),
+			Arrays.asList(
+				FormStructureSerDes.toDTOs(
+					formStructuresJSONObject.getString("items"))));
 	}
 
-	protected Http.Response invokeGetSiteFormStructuresPageResponse(
-			Long siteId, Pagination pagination)
+	protected FormStructure testGraphQLFormStructure_addFormStructure()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL + _toPath("/sites/{siteId}/form-structures", siteId);
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -422,7 +472,7 @@ public abstract class BaseFormStructureResourceTestCase {
 		}
 	}
 
-	protected void assertValid(FormStructure formStructure) {
+	protected void assertValid(FormStructure formStructure) throws Exception {
 		boolean valid = true;
 
 		if (formStructure.getDateCreated() == null) {
@@ -472,6 +522,14 @@ public abstract class BaseFormStructureResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("description_i18n", additionalAssertFieldName)) {
+				if (formStructure.getDescription_i18n() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("formPages", additionalAssertFieldName)) {
 				if (formStructure.getFormPages() == null) {
 					valid = false;
@@ -496,6 +554,14 @@ public abstract class BaseFormStructureResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("name_i18n", additionalAssertFieldName)) {
+				if (formStructure.getName_i18n() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -507,7 +573,7 @@ public abstract class BaseFormStructureResourceTestCase {
 	protected void assertValid(Page<FormStructure> page) {
 		boolean valid = false;
 
-		Collection<FormStructure> formStructures = page.getItems();
+		java.util.Collection<FormStructure> formStructures = page.getItems();
 
 		int size = formStructures.size();
 
@@ -522,6 +588,60 @@ public abstract class BaseFormStructureResourceTestCase {
 	}
 
 	protected String[] getAdditionalAssertFieldNames() {
+		return new String[0];
+	}
+
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		graphQLFields.add(new GraphQLField("siteId"));
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.form.dto.v1_0.FormStructure.class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
 		return new String[0];
 	}
 
@@ -598,6 +718,17 @@ public abstract class BaseFormStructureResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("description_i18n", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)formStructure1.getDescription_i18n(),
+						(Map)formStructure2.getDescription_i18n())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("formPages", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						formStructure1.getFormPages(),
@@ -640,6 +771,17 @@ public abstract class BaseFormStructureResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("name_i18n", additionalAssertFieldName)) {
+				if (!equals(
+						(Map)formStructure1.getName_i18n(),
+						(Map)formStructure2.getName_i18n())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
@@ -648,7 +790,33 @@ public abstract class BaseFormStructureResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_formStructureResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -669,12 +837,15 @@ public abstract class BaseFormStructureResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -777,6 +948,11 @@ public abstract class BaseFormStructureResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("description_i18n")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("formPages")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -800,6 +976,11 @@ public abstract class BaseFormStructureResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("name_i18n")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("siteId")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -809,14 +990,52 @@ public abstract class BaseFormStructureResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
+	}
+
 	protected FormStructure randomFormStructure() throws Exception {
 		return new FormStructure() {
 			{
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
-				description = RandomTestUtil.randomString();
+				description = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				id = RandomTestUtil.randomLong();
-				name = RandomTestUtil.randomString();
+				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				siteId = testGroup.getGroupId();
 			}
 		};
@@ -834,76 +1053,80 @@ public abstract class BaseFormStructureResourceTestCase {
 		return randomFormStructure();
 	}
 
+	protected FormStructureResource formStructureResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -924,8 +1147,7 @@ public abstract class BaseFormStructureResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private FormStructureResource _formStructureResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.form.resource.v1_0.FormStructureResource
+		_formStructureResource;
 
 }

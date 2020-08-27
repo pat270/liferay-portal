@@ -15,7 +15,9 @@
 package com.liferay.dynamic.data.mapping.model;
 
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -32,7 +34,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDMDataProviderInstanceLinkModel
-	extends BaseModel<DDMDataProviderInstanceLink>, ShardedModel {
+	extends BaseModel<DDMDataProviderInstanceLink>,
+			CTModel<DDMDataProviderInstanceLink>, MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -45,6 +48,7 @@ public interface DDMDataProviderInstanceLinkModel
 	 *
 	 * @return the primary key of this ddm data provider instance link
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -52,7 +56,40 @@ public interface DDMDataProviderInstanceLinkModel
 	 *
 	 * @param primaryKey the primary key of this ddm data provider instance link
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this ddm data provider instance link.
+	 *
+	 * @return the mvcc version of this ddm data provider instance link
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this ddm data provider instance link.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm data provider instance link
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddm data provider instance link.
+	 *
+	 * @return the ct collection ID of this ddm data provider instance link
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddm data provider instance link.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm data provider instance link
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the data provider instance link ID of this ddm data provider instance link.

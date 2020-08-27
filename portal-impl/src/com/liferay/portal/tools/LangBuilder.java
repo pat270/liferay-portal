@@ -15,8 +15,10 @@
 package com.liferay.portal.tools;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class LangBuilder {
 
 	public static final String AUTOMATIC_COPY = " (Automatic Copy)";

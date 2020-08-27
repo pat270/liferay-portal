@@ -50,10 +50,11 @@ public class XSLTemplate extends BaseTemplate {
 	public XSLTemplate(
 		XSLTemplateResource xslTemplateResource,
 		TemplateContextHelper templateContextHelper,
-		XSLEngineConfiguration xslEngineConfiguration) {
+		XSLEngineConfiguration xslEngineConfiguration, boolean restricted) {
 
 		super(
-			xslTemplateResource, Collections.emptyMap(), templateContextHelper);
+			xslTemplateResource, Collections.emptyMap(), templateContextHelper,
+			restricted);
 
 		_preventLocalConnections =
 			xslEngineConfiguration.preventLocalConnections();
@@ -66,14 +67,15 @@ public class XSLTemplate extends BaseTemplate {
 				XMLConstants.FEATURE_SECURE_PROCESSING,
 				xslEngineConfiguration.secureProcessingEnabled());
 		}
-		catch (TransformerConfigurationException tce) {
+		catch (TransformerConfigurationException
+					transformerConfigurationException) {
 		}
 	}
 
 	@Override
 	protected void handleException(
 			TemplateResource templateResource,
-			TemplateResource errorTemplateResource, Exception exception,
+			TemplateResource errorTemplateResource, Exception exception1,
 			Writer writer)
 		throws TemplateException {
 
@@ -117,11 +119,11 @@ public class XSLTemplate extends BaseTemplate {
 				errorTransformer.transform(
 					_xmlStreamSource, new StreamResult(writer));
 			}
-			catch (Exception e) {
+			catch (Exception exception2) {
 				throw new TemplateException(
 					"Unable to process XSL template " +
 						errorTemplateResource.getTemplateId(),
-					e);
+					exception2);
 			}
 		}
 		finally {
@@ -195,11 +197,11 @@ public class XSLTemplate extends BaseTemplate {
 
 			return transformer;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new TemplateException(
 				"Unable to get Transformer for template " +
 					templateResource.getTemplateId(),
-				e);
+				exception);
 		}
 	}
 

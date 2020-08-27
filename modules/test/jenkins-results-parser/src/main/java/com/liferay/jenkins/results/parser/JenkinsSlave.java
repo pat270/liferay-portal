@@ -16,34 +16,137 @@ package com.liferay.jenkins.results.parser;
 
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * @author Michael Hashimoto
  */
-public class JenkinsSlave {
+public class JenkinsSlave implements JenkinsNode<JenkinsSlave> {
 
-	public JenkinsSlave(JenkinsMaster jenkinsMaster, String slaveName) {
-		_jenkinsMaster = jenkinsMaster;
-		_slaveName = slaveName;
-
-		_localURL = JenkinsResultsParserUtil.combine(
-			"http://", _jenkinsMaster.getName(), "/computer/", _slaveName, "/");
+	public JenkinsSlave() {
+		this(
+			JenkinsResultsParserUtil.getHostName(
+				JenkinsResultsParserUtil.getHostIPAddress()));
 	}
 
+	public JenkinsSlave(String hostname) {
+		hostname = hostname.replaceAll("([^\\.]+).*", "$1");
+
+		String jenkinsMasterName =
+			JenkinsResultsParserUtil.getJenkinsMasterName(hostname);
+
+		if (jenkinsMasterName == null) {
+			throw new RuntimeException(
+				JenkinsResultsParserUtil.combine(
+					"Unable to find Jenkins master name for Jenkins slave ",
+					"hostname ", hostname));
+		}
+
+		_jenkinsMaster = new JenkinsMaster(jenkinsMasterName);
+
+		String jenkinsSlaveJSONObjectURL = JenkinsResultsParserUtil.getLocalURL(
+			JenkinsResultsParserUtil.combine(
+				_jenkinsMaster.getURL(), "/computer/", hostname,
+				"/api/json?tree=displayName,", "idle,offline"));
+
+		JSONObject jenkinsSlaveJSONObject = null;
+
+		try {
+			jenkinsSlaveJSONObject = JenkinsResultsParserUtil.toJSONObject(
+				jenkinsSlaveJSONObjectURL, false);
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to retrieve Jenkins slave node JSON object from " +
+					jenkinsSlaveJSONObjectURL,
+				ioException);
+		}
+
+		_name = jenkinsSlaveJSONObject.getString("displayName");
+
+		update(jenkinsSlaveJSONObject);
+	}
+
+	@Override
+	public int compareTo(JenkinsSlave jenkinsSlave) {
+		return _name.compareTo(jenkinsSlave.getName());
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (object instanceof JenkinsSlave) {
+			JenkinsSlave jenkinsSlave = (JenkinsSlave)object;
+
+			if (compareTo(jenkinsSlave) == 0) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return super.equals(object);
+	}
+
+	public Build getCurrentBuild() {
+		JSONObject jsonObject = null;
+
+		String jsonObjectURL = JenkinsResultsParserUtil.combine(
+			_jenkinsMaster.getURL(), "computer/", getName(),
+			"/api/json?tree=executors[currentExecutable[url]]");
+
+		try {
+			jsonObject = JenkinsResultsParserUtil.toJSONObject(
+				jsonObjectURL, false);
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(
+				"Unable to determine current build", ioException);
+		}
+
+		JSONArray jsonArray = jsonObject.getJSONArray("executors");
+
+		jsonObject = jsonArray.getJSONObject(0);
+
+		JSONObject currentExecutableJSONObject = jsonObject.getJSONObject(
+			"currentExecutable");
+
+		String buildURL = currentExecutableJSONObject.optString("url");
+
+		if (buildURL == null) {
+			return null;
+		}
+
+		return BuildFactory.newBuild(buildURL, null);
+	}
+
+	@Override
 	public JenkinsMaster getJenkinsMaster() {
 		return _jenkinsMaster;
 	}
 
+	@Override
 	public String getName() {
-		return _slaveName;
+		return _name;
 	}
 
-	public boolean isOffline() throws IOException {
-		JSONObject jsonObject = JenkinsResultsParserUtil.toJSONObject(
-			_localURL + "api/json?tree=offline");
+	@Override
+	public int hashCode() {
+		String hashCodeString = _jenkinsMaster.getName() + "_" + _name;
 
-		return jsonObject.getBoolean("offline");
+		return hashCodeString.hashCode();
+	}
+
+	public boolean isIdle() {
+		return _idle;
+	}
+
+	public boolean isOffline() {
+		return _offline;
+	}
+
+	public boolean isReachable() {
+		return JenkinsResultsParserUtil.isReachable(getName());
 	}
 
 	public void takeSlavesOffline(String offlineReason) {
@@ -54,17 +157,38 @@ public class JenkinsSlave {
 		_setSlaveStatus(offlineReason, false);
 	}
 
+	@Override
+	public String toString() {
+		return getName();
+	}
+
+	public void update() {
+		_jenkinsMaster.update();
+	}
+
+	protected JenkinsSlave(
+		JenkinsMaster jenkinsMaster, JSONObject jenkinsSlaveJSONObject) {
+
+		_jenkinsMaster = jenkinsMaster;
+		_name = jenkinsSlaveJSONObject.getString("displayName");
+
+		update(jenkinsSlaveJSONObject);
+	}
+
+	protected void update(JSONObject jenkinsSlaveJSONObject) {
+		_idle = jenkinsSlaveJSONObject.getBoolean("idle");
+		_offline = jenkinsSlaveJSONObject.getBoolean("offline");
+	}
+
 	private void _setSlaveStatus(String offlineReason, boolean offlineStatus) {
 		try {
-			String script = "script=";
-
 			Class<?> clazz = JenkinsSlave.class;
 
-			script += JenkinsResultsParserUtil.readInputStream(
+			String script = JenkinsResultsParserUtil.readInputStream(
 				clazz.getResourceAsStream(
 					"dependencies/set-slave-status.groovy"));
 
-			script = script.replace("${slaves}", _slaveName);
+			script = script.replace("${slaves}", _name);
 			script = script.replace(
 				"${offline.reason}",
 				offlineReason.replaceAll("\n", "<br />\\\\n"));
@@ -74,16 +198,16 @@ public class JenkinsSlave {
 			JenkinsResultsParserUtil.executeJenkinsScript(
 				_jenkinsMaster.getName(), script);
 		}
-		catch (IOException ioe) {
-			System.out.println(
-				"Unable to set the status for slaves: " + _slaveName);
+		catch (IOException ioException) {
+			System.out.println("Unable to set the status for slaves: " + _name);
 
-			ioe.printStackTrace();
+			ioException.printStackTrace();
 		}
 	}
 
+	private boolean _idle;
 	private final JenkinsMaster _jenkinsMaster;
-	private final String _localURL;
-	private final String _slaveName;
+	private final String _name;
+	private boolean _offline;
 
 }

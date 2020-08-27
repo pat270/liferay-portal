@@ -17,24 +17,28 @@ package com.liferay.ratings.kernel.model;
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class RatingsStatsSoap implements Serializable {
 
 	public static RatingsStatsSoap toSoapModel(RatingsStats model) {
 		RatingsStatsSoap soapModel = new RatingsStatsSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setStatsId(model.getStatsId());
 		soapModel.setCompanyId(model.getCompanyId());
+		soapModel.setCreateDate(model.getCreateDate());
+		soapModel.setModifiedDate(model.getModifiedDate());
 		soapModel.setClassNameId(model.getClassNameId());
 		soapModel.setClassPK(model.getClassPK());
 		soapModel.setTotalEntries(model.getTotalEntries());
@@ -93,6 +97,22 @@ public class RatingsStatsSoap implements Serializable {
 		setStatsId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public long getStatsId() {
 		return _statsId;
 	}
@@ -107,6 +127,22 @@ public class RatingsStatsSoap implements Serializable {
 
 	public void setCompanyId(long companyId) {
 		_companyId = companyId;
+	}
+
+	public Date getCreateDate() {
+		return _createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		_createDate = createDate;
+	}
+
+	public Date getModifiedDate() {
+		return _modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		_modifiedDate = modifiedDate;
 	}
 
 	public long getClassNameId() {
@@ -149,8 +185,12 @@ public class RatingsStatsSoap implements Serializable {
 		_averageScore = averageScore;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _statsId;
 	private long _companyId;
+	private Date _createDate;
+	private Date _modifiedDate;
 	private long _classNameId;
 	private long _classPK;
 	private int _totalEntries;

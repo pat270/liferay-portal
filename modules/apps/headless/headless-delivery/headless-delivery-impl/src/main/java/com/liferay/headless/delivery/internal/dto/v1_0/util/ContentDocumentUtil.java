@@ -18,20 +18,29 @@ import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.headless.delivery.dto.v1_0.ContentDocument;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 
+import java.util.Optional;
+
+import javax.ws.rs.core.UriInfo;
+
 /**
  * @author Javier Gamarra
  */
 public class ContentDocumentUtil {
 
 	public static ContentDocument toContentDocument(
-			DLURLHelper dlURLHelper, FileEntry fileEntry)
+			DLURLHelper dlURLHelper, String fieldName, FileEntry fileEntry,
+			Optional<UriInfo> uriInfoOptional)
 		throws Exception {
 
 		return new ContentDocument() {
 			{
+				contentType = "Document";
 				contentUrl = dlURLHelper.getPreviewURL(
 					fileEntry, fileEntry.getFileVersion(), null, "", false,
 					false);
+				contentValue = ContentValueUtil.toContentValue(
+					fieldName + ".contentValue", fileEntry::getContentStream,
+					uriInfoOptional);
 				description = fileEntry.getDescription();
 				encodingFormat = fileEntry.getMimeType();
 				fileExtension = fileEntry.getExtension();

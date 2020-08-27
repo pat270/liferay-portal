@@ -14,6 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.internal.util;
 
+import com.liferay.dynamic.data.mapping.configuration.DDMIndexerConfiguration;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
@@ -25,6 +26,7 @@ import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -33,8 +35,11 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.DocumentImpl;
+import com.liferay.portal.kernel.search.FieldArray;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
+import com.liferay.portal.kernel.search.generic.NestedQuery;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -44,6 +49,7 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.search.engine.SearchEngineInformation;
 
 import java.io.Serializable;
 
@@ -53,21 +59,38 @@ import java.text.Format;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alexander Chow
  */
-@Component(immediate = true, service = DDMIndexer.class)
+@Component(
+	configurationPid = "com.liferay.dynamic.data.mapping.configuration.DDMIndexerConfiguration",
+	immediate = true, service = DDMIndexer.class
+)
 public class DDMIndexerImpl implements DDMIndexer {
 
 	@Override
 	public void addAttributes(
 		Document document, DDMStructure ddmStructure,
 		DDMFormValues ddmFormValues) {
+
+		boolean legacyDDMIndexFieldsEnabled = isLegacyDDMIndexFieldsEnabled();
+
+		FieldArray fieldArray = (FieldArray)document.getField(DDM_FIELD_ARRAY);
+
+		if ((fieldArray == null) && !legacyDDMIndexFieldsEnabled) {
+			fieldArray = new FieldArray(DDM_FIELD_ARRAY);
+
+			document.add(fieldArray);
+		}
 
 		Set<Locale> locales = ddmFormValues.getAvailableLocales();
 
@@ -82,122 +105,48 @@ public class DDMIndexerImpl implements DDMIndexer {
 					continue;
 				}
 
-				for (Locale locale : locales) {
-					String name = encodeName(
-						ddmStructure.getStructureId(), field.getName(), locale,
-						indexType);
+				String name = null;
+				Serializable value = null;
 
-					Serializable value = field.getValue(locale);
+				if (GetterUtil.getBoolean(
+						ddmStructure.getFieldProperty(
+							field.getName(), "localizable"))) {
 
-					if (value instanceof BigDecimal) {
-						document.addNumberSortable(name, (BigDecimal)value);
-					}
-					else if (value instanceof BigDecimal[]) {
-						document.addNumberSortable(name, (BigDecimal[])value);
-					}
-					else if (value instanceof Boolean) {
-						document.addKeywordSortable(name, (Boolean)value);
-					}
-					else if (value instanceof Boolean[]) {
-						document.addKeywordSortable(name, (Boolean[])value);
-					}
-					else if (value instanceof Date) {
-						document.addDateSortable(name, (Date)value);
-					}
-					else if (value instanceof Date[]) {
-						document.addDateSortable(name, (Date[])value);
-					}
-					else if (value instanceof Double) {
-						document.addNumberSortable(name, (Double)value);
-					}
-					else if (value instanceof Double[]) {
-						document.addNumberSortable(name, (Double[])value);
-					}
-					else if (value instanceof Integer) {
-						document.addNumberSortable(name, (Integer)value);
-					}
-					else if (value instanceof Integer[]) {
-						document.addNumberSortable(name, (Integer[])value);
-					}
-					else if (value instanceof Long) {
-						document.addNumberSortable(name, (Long)value);
-					}
-					else if (value instanceof Long[]) {
-						document.addNumberSortable(name, (Long[])value);
-					}
-					else if (value instanceof Float) {
-						document.addNumberSortable(name, (Float)value);
-					}
-					else if (value instanceof Float[]) {
-						document.addNumberSortable(name, (Float[])value);
-					}
-					else if (value instanceof Number[]) {
-						Number[] numbers = (Number[])value;
+					for (Locale locale : locales) {
+						name = encodeName(
+							ddmStructure.getStructureId(), field.getName(),
+							locale, indexType);
+						value = field.getValue(locale);
 
-						Double[] doubles = new Double[numbers.length];
-
-						for (int i = 0; i < numbers.length; i++) {
-							doubles[i] = numbers[i].doubleValue();
-						}
-
-						document.addNumberSortable(name, doubles);
-					}
-					else if (value instanceof Object[]) {
-						String[] valuesString = ArrayUtil.toStringArray(
-							(Object[])value);
-
-						if (indexType.equals("keyword")) {
-							document.addKeywordSortable(name, valuesString);
+						if (legacyDDMIndexFieldsEnabled) {
+							addToDocument(
+								document, field, name, value, indexType);
 						}
 						else {
-							document.addTextSortable(name, valuesString);
-						}
-					}
-					else {
-						String valueString = String.valueOf(value);
-
-						String type = field.getType();
-
-						if (type.equals(DDMFormFieldType.GEOLOCATION)) {
-							JSONObject jsonObject =
-								JSONFactoryUtil.createJSONObject(valueString);
-
-							double latitude = jsonObject.getDouble(
-								"latitude", 0);
-							double longitude = jsonObject.getDouble(
-								"longitude", 0);
-
-							document.addGeoLocation(
-								name.concat("_geolocation"), latitude,
-								longitude);
-						}
-						else if (type.equals(DDMImpl.TYPE_SELECT)) {
-							JSONArray jsonArray =
-								JSONFactoryUtil.createJSONArray(valueString);
-
-							String[] stringArray = ArrayUtil.toStringArray(
-								jsonArray);
-
-							document.addKeywordSortable(name, stringArray);
-						}
-						else {
-							if (type.equals(DDMImpl.TYPE_DDM_TEXT_HTML)) {
-								valueString = HtmlUtil.extractText(valueString);
-							}
-
-							if (indexType.equals("keyword")) {
-								document.addKeywordSortable(name, valueString);
-							}
-							else {
-								document.addTextSortable(name, valueString);
-							}
+							fieldArray.addField(
+								createField(
+									field, name, value, indexType, locale));
 						}
 					}
 				}
+				else {
+					name = encodeName(
+						ddmStructure.getStructureId(), field.getName(), null,
+						indexType);
+					value = field.getValue(ddmFormValues.getDefaultLocale());
+
+					if (legacyDDMIndexFieldsEnabled) {
+						addToDocument(document, field, name, value, indexType);
+					}
+					else {
+						fieldArray.addField(
+							createField(field, name, value, indexType, null));
+					}
+				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 		}
@@ -212,7 +161,7 @@ public class DDMIndexerImpl implements DDMIndexer {
 		BooleanQuery booleanQuery = new BooleanQueryImpl();
 
 		String[] ddmStructureFieldNameParts = StringUtil.split(
-			ddmStructureFieldName, DDMIndexer.DDM_FIELD_SEPARATOR);
+			ddmStructureFieldName, DDM_FIELD_SEPARATOR);
 
 		DDMStructure structure = _ddmStructureLocalService.getStructure(
 			GetterUtil.getLong(ddmStructureFieldNameParts[2]));
@@ -227,11 +176,29 @@ public class DDMIndexerImpl implements DDMIndexer {
 				ddmStructureFieldValue, structure.getFieldType(fieldName));
 		}
 
-		booleanQuery.addRequiredTerm(
-			ddmStructureFieldName,
-			StringPool.QUOTE + ddmStructureFieldValue + StringPool.QUOTE);
+		if (ddmStructureFieldValue instanceof String[]) {
+			String[] ddmStructureFieldValueArray =
+				(String[])ddmStructureFieldValue;
 
-		return new QueryFilter(booleanQuery);
+			for (String ddmStructureFieldValueString :
+					ddmStructureFieldValueArray) {
+
+				addFieldValueRequiredTerm(
+					booleanQuery, ddmStructureFieldName,
+					ddmStructureFieldValueString, locale);
+			}
+		}
+		else {
+			addFieldValueRequiredTerm(
+				booleanQuery, ddmStructureFieldName,
+				String.valueOf(ddmStructureFieldValue), locale);
+		}
+
+		if (isLegacyDDMIndexFieldsEnabled()) {
+			return new QueryFilter(booleanQuery);
+		}
+
+		return new QueryFilter(new NestedQuery(DDM_FIELD_ARRAY, booleanQuery));
 	}
 
 	@Override
@@ -244,6 +211,7 @@ public class DDMIndexerImpl implements DDMIndexer {
 		long ddmStructureId, String fieldName, Locale locale) {
 
 		String indexType = StringPool.BLANK;
+		boolean localizable = true;
 
 		if (ddmStructureId > 0) {
 			DDMStructure ddmStructure =
@@ -253,18 +221,25 @@ public class DDMIndexerImpl implements DDMIndexer {
 				try {
 					indexType = ddmStructure.getFieldProperty(
 						fieldName, "indexType");
+					localizable = GetterUtil.getBoolean(
+						ddmStructure.getFieldProperty(
+							fieldName, "localizable"));
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					throw new IllegalArgumentException(
 						StringBundler.concat(
 							"Unable to obtain index tpe for field ", fieldName,
 							" and DDM structure ID ", ddmStructureId),
-						pe);
+						portalException);
 				}
 			}
 		}
 
-		return encodeName(ddmStructureId, fieldName, locale, indexType);
+		if (localizable) {
+			return encodeName(ddmStructureId, fieldName, locale, indexType);
+		}
+
+		return encodeName(ddmStructureId, fieldName, null, indexType);
 	}
 
 	@Override
@@ -283,7 +258,7 @@ public class DDMIndexerImpl implements DDMIndexer {
 				String indexType = ddmStructure.getFieldProperty(
 					field.getName(), "indexType");
 
-				if (Validator.isNull(indexType)) {
+				if (Validator.isNull(indexType) || indexType.equals("none")) {
 					continue;
 				}
 
@@ -339,14 +314,219 @@ public class DDMIndexerImpl implements DDMIndexer {
 					}
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public String getValueFieldName(String indexType) {
+		return getValueFieldName(indexType, null);
+	}
+
+	@Override
+	public String getValueFieldName(String indexType, Locale locale) {
+		String valueFieldName = DDM_VALUE_FIELD_NAME_PREFIX;
+
+		if (indexType != null) {
+			valueFieldName = valueFieldName.concat(
+				StringUtil.upperCaseFirstLetter(indexType));
+		}
+
+		if (locale != null) {
+			valueFieldName = StringBundler.concat(
+				valueFieldName, StringPool.UNDERLINE,
+				LocaleUtil.toLanguageId(locale));
+		}
+
+		return valueFieldName;
+	}
+
+	@Override
+	public boolean isLegacyDDMIndexFieldsEnabled() {
+		if (Objects.equals(searchEngineInformation.getVendorString(), "Solr")) {
+			return true;
+		}
+
+		return _ddmIndexerConfiguration.enableLegacyDDMIndexFields();
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_ddmIndexerConfiguration = ConfigurableUtil.createConfigurable(
+			DDMIndexerConfiguration.class, properties);
+	}
+
+	protected void addFieldValueRequiredTerm(
+		BooleanQuery booleanQuery, String ddmStructureFieldName,
+		String ddmStructureFieldValue, Locale locale) {
+
+		if (isLegacyDDMIndexFieldsEnabled()) {
+			booleanQuery.addRequiredTerm(
+				ddmStructureFieldName,
+				StringPool.QUOTE + ddmStructureFieldValue + StringPool.QUOTE);
+
+			return;
+		}
+
+		String[] ddmStructureFieldNameParts = StringUtil.split(
+			ddmStructureFieldName, DDM_FIELD_SEPARATOR);
+
+		String valueFieldName = getValueFieldName(
+			ddmStructureFieldNameParts[1], locale);
+
+		booleanQuery.addRequiredTerm(
+			StringBundler.concat(
+				DDM_FIELD_ARRAY, StringPool.PERIOD, DDM_FIELD_NAME),
+			ddmStructureFieldName);
+		booleanQuery.addRequiredTerm(
+			StringBundler.concat(
+				DDM_FIELD_ARRAY, StringPool.PERIOD, valueFieldName),
+			StringPool.QUOTE + ddmStructureFieldValue + StringPool.QUOTE);
+	}
+
+	protected void addToDocument(
+			Document document, Field field, String name, Serializable value,
+			String indexType)
+		throws PortalException {
+
+		if (value instanceof BigDecimal) {
+			document.addNumberSortable(name, (BigDecimal)value);
+		}
+		else if (value instanceof BigDecimal[]) {
+			document.addNumberSortable(name, (BigDecimal[])value);
+		}
+		else if (value instanceof Boolean) {
+			document.addKeywordSortable(name, (Boolean)value);
+		}
+		else if (value instanceof Boolean[]) {
+			document.addKeywordSortable(name, (Boolean[])value);
+		}
+		else if (value instanceof Date) {
+			document.addDateSortable(name, (Date)value);
+		}
+		else if (value instanceof Date[]) {
+			document.addDateSortable(name, (Date[])value);
+		}
+		else if (value instanceof Double) {
+			document.addNumberSortable(name, (Double)value);
+		}
+		else if (value instanceof Double[]) {
+			document.addNumberSortable(name, (Double[])value);
+		}
+		else if (value instanceof Integer) {
+			document.addNumberSortable(name, (Integer)value);
+		}
+		else if (value instanceof Integer[]) {
+			document.addNumberSortable(name, (Integer[])value);
+		}
+		else if (value instanceof Long) {
+			document.addNumberSortable(name, (Long)value);
+		}
+		else if (value instanceof Long[]) {
+			document.addNumberSortable(name, (Long[])value);
+		}
+		else if (value instanceof Float) {
+			document.addNumberSortable(name, (Float)value);
+		}
+		else if (value instanceof Float[]) {
+			document.addNumberSortable(name, (Float[])value);
+		}
+		else if (value instanceof Number[]) {
+			Number[] numbers = (Number[])value;
+
+			Double[] doubles = new Double[numbers.length];
+
+			for (int i = 0; i < numbers.length; i++) {
+				doubles[i] = numbers[i].doubleValue();
+			}
+
+			document.addNumberSortable(name, doubles);
+		}
+		else if (value instanceof Object[]) {
+			String[] valuesString = ArrayUtil.toStringArray((Object[])value);
+
+			if (indexType.equals("keyword")) {
+				document.addKeywordSortable(name, valuesString);
+			}
+			else {
+				document.addTextSortable(name, valuesString);
+			}
+		}
+		else {
+			String valueString = String.valueOf(value);
+
+			String type = field.getType();
+
+			if (type.equals(DDMFormFieldType.GEOLOCATION)) {
+				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+					valueString);
+
+				double latitude = jsonObject.getDouble("latitude", 0);
+				double longitude = jsonObject.getDouble("longitude", 0);
+
+				document.addGeoLocation(
+					name.concat("_geolocation"), latitude, longitude);
+			}
+			else if (type.equals(DDMImpl.TYPE_SELECT)) {
+				JSONArray jsonArray = JSONFactoryUtil.createJSONArray(
+					valueString);
+
+				String[] stringArray = ArrayUtil.toStringArray(jsonArray);
+
+				document.addKeywordSortable(name, stringArray);
+			}
+			else {
+				if (type.equals(DDMImpl.TYPE_DDM_TEXT_HTML)) {
+					valueString = HtmlUtil.extractText(valueString);
+				}
+
+				if (indexType.equals("keyword")) {
+					document.addKeywordSortable(name, valueString);
+				}
+				else {
+					document.addTextSortable(name, valueString);
+				}
+			}
+		}
+	}
+
+	protected com.liferay.portal.kernel.search.Field createField(
+			Field ddmStructureField, String name, Serializable value,
+			String indexType, Locale locale)
+		throws PortalException {
+
+		Document document = new DocumentImpl();
+
+		String valueFieldName = getValueFieldName(indexType, locale);
+
+		addToDocument(
+			document, ddmStructureField, valueFieldName, value, indexType);
+
+		Map<String, com.liferay.portal.kernel.search.Field> fields =
+			document.getFields();
+
+		com.liferay.portal.kernel.search.Field ddmField =
+			new com.liferay.portal.kernel.search.Field("");
+
+		ddmField.addField(
+			new com.liferay.portal.kernel.search.Field(DDM_FIELD_NAME, name));
+
+		ddmField.addField(
+			new com.liferay.portal.kernel.search.Field(
+				DDM_VALUE_FIELD_NAME, valueFieldName));
+
+		for (com.liferay.portal.kernel.search.Field field : fields.values()) {
+			ddmField.addField(field);
+		}
+
+		return ddmField;
 	}
 
 	protected String encodeName(
@@ -400,17 +580,22 @@ public class DDMIndexerImpl implements DDMIndexer {
 			return _ddmFormValuesToFieldsConverter.convert(
 				ddmStructure, ddmFormValues);
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to convert DDMFormValues to Fields", pe);
+		catch (PortalException portalException) {
+			_log.error(
+				"Unable to convert DDMFormValues to Fields", portalException);
 		}
 
 		return new Fields();
 	}
 
+	@Reference
+	protected SearchEngineInformation searchEngineInformation;
+
 	private static final Log _log = LogFactoryUtil.getLog(DDMIndexerImpl.class);
 
 	private DDM _ddm;
 	private DDMFormValuesToFieldsConverter _ddmFormValuesToFieldsConverter;
+	private volatile DDMIndexerConfiguration _ddmIndexerConfiguration;
 	private DDMStructureLocalService _ddmStructureLocalService;
 
 }

@@ -30,6 +30,7 @@ import com.liferay.dynamic.data.mapping.util.DDMFormValuesMerger;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.util.Portal;
 
 import javax.servlet.ServletContext;
 
@@ -138,11 +139,11 @@ public class DDMFormAssetRendererFactory
 		DDMFormInstanceRecordVersion formInstanceRecordVersion, int type) {
 
 		DDMFormAssetRenderer ddmFormAssetRenderer = new DDMFormAssetRenderer(
-			formInstanceRecord, formInstanceRecordVersion,
-			_ddmFormInstanceRecordLocalService,
-			_ddmFormInstanceVersionLocalService, _ddmFormRenderer,
-			_ddmFormValuesFactory, _ddmFormValuesMerger,
-			_ddmFormInstanceModelResourcePermission);
+			formInstanceRecord, _ddmFormInstanceRecordLocalService,
+			_ddmFormInstanceRecordModelResourcePermission,
+			formInstanceRecordVersion, _ddmFormInstanceVersionLocalService,
+			_ddmFormRenderer, _ddmFormValuesFactory, _ddmFormValuesMerger,
+			_portal);
 
 		ddmFormAssetRenderer.setAssetRendererType(type);
 		ddmFormAssetRenderer.setServletContext(_servletContext);
@@ -160,6 +161,12 @@ public class DDMFormAssetRendererFactory
 	private DDMFormInstanceRecordLocalService
 		_ddmFormInstanceRecordLocalService;
 
+	@Reference(
+		target = "(model.class.name=com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord)"
+	)
+	private ModelResourcePermission<DDMFormInstanceRecord>
+		_ddmFormInstanceRecordModelResourcePermission;
+
 	@Reference
 	private DDMFormInstanceRecordVersionLocalService
 		_ddmFormInstanceRecordVersionLocalService;
@@ -176,6 +183,9 @@ public class DDMFormAssetRendererFactory
 
 	@Reference
 	private DDMFormValuesMerger _ddmFormValuesMerger;
+
+	@Reference
+	private Portal _portal;
 
 	private ServletContext _servletContext;
 

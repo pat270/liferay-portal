@@ -17,12 +17,12 @@ package com.liferay.exportimport.kernel.staging;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.exportimport.kernel.staging.constants.StagingConstants}
  */
-@ProviderType
+@Deprecated
 public class StagingConstants {
 
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(

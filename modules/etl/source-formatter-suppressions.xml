@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<suppressions>
+	<checkstyle>
+		<suppress checks="ChainingCheck" files="talend/talend-definition/src/test/java/com/liferay/talend/OSGiTLiferayInputTestIT\.java" />
+		<suppress checks="JSONNamingCheck" files="talend/talend-common/src/main/java/com/liferay/talend/common/oas/OASExplorer\.java" />
+	</checkstyle>
+	<source-check>
+		<suppress checks="JavaComponentAnnotationsCheck" files="talend/talend-definition/src/main/java/org/talend/components/liferay/LiferayFamilyDefinition\.java" />
+		<suppress checks="JavaModuleTestCheck" files="talend/talend-definition/src/test/java/com/liferay/talend/OSGiTLiferayInputTestIT\.java" />
+	</source-check>
+</suppressions>

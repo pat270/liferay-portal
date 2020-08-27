@@ -1,9 +1,26 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+/**
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
+ */
 AUI.add(
 	'liferay-poller',
-	function(A) {
+	(A) => {
 		var AObject = A.Object;
 
-		var _browserKey = Liferay.Util.randomInt();
+		var _browserKey = Math.ceil(Math.random() * Number.MAX_SAFE_INTEGER);
 		var _enabled = false;
 		var _encryptedUserId = null;
 		var _supportsComet = false;
@@ -12,7 +29,7 @@ AUI.add(
 		var _delayIndex = 0;
 		var _delays = [1, 2, 3, 4, 5, 7, 10];
 
-		var _getEncryptedUserId = function() {
+		var _getEncryptedUserId = function () {
 			return _encryptedUserId;
 		};
 
@@ -27,7 +44,7 @@ AUI.add(
 			browserKey: _browserKey,
 			companyId: themeDisplay.getCompanyId(),
 			portletIdsMap: _portletIdsMap,
-			startPolling: true
+			startPolling: true,
 		};
 
 		var _customDelay = null;
@@ -48,13 +65,13 @@ AUI.add(
 		var _escapedCloseCurlyBrace = '[$CLOSE_CURLY_BRACE$]';
 		var _escapedOpenCurlyBrace = '[$OPEN_CURLY_BRACE$]';
 
-		var _cancelRequestTimer = function() {
+		var _cancelRequestTimer = function () {
 			clearTimeout(_timerId);
 
 			_timerId = null;
 		};
 
-		var _createRequestTimer = function() {
+		var _createRequestTimer = function () {
 			_cancelRequestTimer();
 
 			if (_enabled) {
@@ -67,21 +84,21 @@ AUI.add(
 			}
 		};
 
-		var _freezeConnection = function() {
+		var _freezeConnection = function () {
 			_frozen = true;
 
 			_cancelRequestTimer();
 		};
 
-		var _getReceiveUrl = function() {
+		var _getReceiveUrl = function () {
 			return _receiveChannel;
 		};
 
-		var _getSendUrl = function() {
+		var _getSendUrl = function () {
 			return _sendChannel;
 		};
 
-		var _processResponse = function(id, obj) {
+		var _processResponse = function (id, obj) {
 			var response = JSON.parse(obj.responseText);
 			var send = false;
 
@@ -104,7 +121,11 @@ AUI.add(
 							chunkData.initialRequest = portlet.initialRequest;
 						}
 
-						portlet.listener.call(portlet.scope || Poller, chunkData, chunk.chunkId);
+						portlet.listener.call(
+							portlet.scope || Poller,
+							chunkData,
+							chunk.chunkId
+						);
 
 						if (chunkData && chunkData.pollerHintHighConnectivity) {
 							_requestDelay = _delays[0];
@@ -136,90 +157,89 @@ AUI.add(
 			}
 		};
 
-		var _receive = function() {
+		var _receive = function () {
 			if (!_suspended && !_frozen) {
 				_metaData.userId = _getEncryptedUserId();
-				_metaData.timestamp = (new Date()).getTime();
+				_metaData.timestamp = new Date().getTime();
 
 				AObject.each(_portlets, _updatePortletIdsMap);
 
 				var requestStr = JSON.stringify([_metaData]);
 
-				A.io(
-					_getReceiveUrl(),
-					{
-						data: {
-							pollerRequest: requestStr
-						},
-						method: A.config.io.method,
-						on: {
-							success: _processResponse
-						}
-					}
-				);
+				const body = new URLSearchParams();
+				body.append('pollerRequest', requestStr);
+
+				Liferay.Util.fetch(_getReceiveUrl(), {
+					body,
+					method: 'POST',
+				})
+					.then((response) => {
+						return response.text();
+					})
+					.then((responseText) => {
+						_processResponse(null, {responseText});
+					});
 			}
 		};
 
-		var _releaseLock = function() {
+		var _releaseLock = function () {
 			_locked = false;
 		};
 
-		var _sendComplete = function() {
+		var _sendComplete = function () {
 			_releaseLock();
 			_send();
 		};
 
-		var _send = function() {
-			if (_enabled && !_locked && _sendQueue.length && !_suspended && !_frozen) {
+		var _send = function () {
+			if (
+				_enabled &&
+				!_locked &&
+				_sendQueue.length &&
+				!_suspended &&
+				!_frozen
+			) {
 				_locked = true;
 
 				var data = _sendQueue.shift();
 
 				_metaData.userId = _getEncryptedUserId();
-				_metaData.timestamp = (new Date()).getTime();
+				_metaData.timestamp = new Date().getTime();
 
 				AObject.each(_portlets, _updatePortletIdsMap);
 
 				var requestStr = JSON.stringify([_metaData].concat(data));
 
-				A.io(
-					_getSendUrl(),
-					{
-						data: {
-							pollerRequest: requestStr
-						},
-						method: A.config.io.method,
-						on: {
-							complete: _sendComplete
-						}
-					}
-				);
+				const body = new URLSearchParams();
+				body.append('pollerRequest', requestStr);
+
+				Liferay.Util.fetch(_getSendUrl(), {
+					body,
+					method: 'POST',
+				})
+					.then((response) => {
+						return response.text();
+					})
+					.then(_sendComplete);
 			}
 		};
 
-		var _thawConnection = function() {
+		var _thawConnection = function () {
 			_frozen = false;
 
 			_createRequestTimer();
 		};
 
-		var _updatePortletIdsMap = function(item, index) {
+		var _updatePortletIdsMap = function (item, index) {
 			_portletIdsMap[index] = item.initialRequest;
 		};
 
 		var Poller = {
-			init: function(options) {
-				var instance = this;
-
-				instance.setEncryptedUserId(options.encryptedUserId);
-				instance.setSupportsComet(options.supportsComet);
-			},
-
-			addListener: function(key, listener, scope) {
+			addListener(key, listener, scope) {
 				_portlets[key] = {
 					initialRequest: true,
-					listener: listener,
-					scope: scope
+					listener,
+					scope,
 				};
 
 				if (!_enabled) {
@@ -229,11 +249,11 @@ AUI.add(
 				}
 			},
 
-			cancelCustomDelay: function() {
+			cancelCustomDelay() {
 				_customDelay = null;
 			},
 
-			getDelay: function() {
+			getDelay() {
 				if (_customDelay !== null) {
 					_requestDelay = _customDelay;
 				}
@@ -253,15 +273,20 @@ AUI.add(
 			getReceiveUrl: _getReceiveUrl,
 			getSendUrl: _getSendUrl,
 
-			isSupportsComet: function() {
+			init(options) {
+				var instance = this;
+
+				instance.setEncryptedUserId(options.encryptedUserId);
+				instance.setSupportsComet(options.supportsComet);
+			},
+
+			isSupportsComet() {
 				return _supportsComet;
 			},
 
 			processResponse: _processResponse,
 
-			removeListener: function(key) {
-				var instance = this;
-
+			removeListener(key) {
 				if (key in _portlets) {
 					delete _portlets[key];
 				}
@@ -273,13 +298,13 @@ AUI.add(
 				}
 			},
 
-			resume: function() {
+			resume() {
 				_suspended = false;
 
 				_createRequestTimer();
 			},
 
-			setCustomDelay: function(delay) {
+			setCustomDelay(delay) {
 				if (delay === null) {
 					_customDelay = delay;
 				}
@@ -288,31 +313,37 @@ AUI.add(
 				}
 			},
 
-			setDelay: function(delay) {
+			setDelay(delay) {
 				_requestDelay = delay / 1000;
 			},
 
-			setEncryptedUserId: function(encryptedUserId) {
+			setEncryptedUserId(encryptedUserId) {
 				_encryptedUserId = encryptedUserId;
 			},
 
-			setSupportsComet: function(supportsComet) {
+			setSupportsComet(supportsComet) {
 				_supportsComet = supportsComet;
 			},
 
-			setUrl: function(url) {
+			setUrl(url) {
 				_url = url;
 			},
 
-			submitRequest: function(key, data, chunkId) {
+			submitRequest(key, data, chunkId) {
 				if (!_frozen && key in _portlets) {
 					for (var i in data) {
-						if (data.hasOwnProperty(i)) {
+						if (Object.prototype.hasOwnProperty.call(data, i)) {
 							var content = data[i];
 
 							if (content.replace) {
-								content = content.replace(_openCurlyBrace, _escapedOpenCurlyBrace);
-								content = content.replace(_closeCurlyBrace, _escapedCloseCurlyBrace);
+								content = content.replace(
+									_openCurlyBrace,
+									_escapedOpenCurlyBrace
+								);
+								content = content.replace(
+									_closeCurlyBrace,
+									_escapedCloseCurlyBrace
+								);
 
 								data[i] = content;
 							}
@@ -320,8 +351,8 @@ AUI.add(
 					}
 
 					var requestData = {
-						data: data,
-						portletId: key
+						data,
+						portletId: key,
 					};
 
 					if (chunkId) {
@@ -334,28 +365,25 @@ AUI.add(
 				}
 			},
 
-			suspend: function() {
+			suspend() {
 				_cancelRequestTimer();
 
 				_suspended = true;
 			},
 
-			url: _url
+			url: _url,
 		};
 
-		A.getWin().on(
-			'focus',
-			function(event) {
-				_metaData.startPolling = true;
+		A.getWin().on('focus', () => {
+			_metaData.startPolling = true;
 
-				_thawConnection();
-			}
-		);
+			_thawConnection();
+		});
 
 		Liferay.Poller = Poller;
 	},
 	'',
 	{
-		requires: ['aui-base', 'io', 'json']
+		requires: ['aui-base', 'json'],
 	}
 );

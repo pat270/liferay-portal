@@ -16,17 +16,15 @@ package com.liferay.dynamic.data.mapping.internal.search.spi.model.index.contrib
 
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.model.DDMTemplateVersion;
+import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateVersionLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
-
-import java.util.Locale;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -46,6 +44,8 @@ public class DDMTemplateModelDocumentContributor
 	public void contribute(Document document, DDMTemplate ddmTemplate) {
 		document.addKeyword(Field.CLASS_NAME_ID, ddmTemplate.getClassNameId());
 		document.addKeyword(Field.CLASS_PK, ddmTemplate.getClassPK());
+		document.addKeyword("language", ddmTemplate.getLanguage());
+		document.addKeyword("mode", ddmTemplate.getMode());
 		document.addKeyword(
 			"resourceClassNameId", ddmTemplate.getResourceClassNameId());
 
@@ -57,38 +57,35 @@ public class DDMTemplateModelDocumentContributor
 			document.addKeyword(Field.STATUS, templateVersion.getStatus());
 			document.addKeyword(Field.VERSION, templateVersion.getVersion());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
-		document.addKeyword("language", ddmTemplate.getLanguage());
-		document.addKeyword("mode", ddmTemplate.getMode());
+		try {
+			document.addKeyword(
+				"resourcePermissionName",
+				_ddmPermissionSupport.getTemplateModelResourceName(
+					ddmTemplate.getResourceClassNameId()));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+		}
+
 		document.addKeyword("type", ddmTemplate.getType());
-
-		Locale defaultLocale = LocaleUtil.getSiteDefault();
-
-		String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
-
-		String[] descriptionLanguageIds = getLanguageIds(
-			defaultLanguageId, ddmTemplate.getDescription());
-
-		for (String descriptionLanguageId : descriptionLanguageIds) {
-			document.addText(
-				LocalizationUtil.getLocalizedName(
-					Field.DESCRIPTION, descriptionLanguageId),
-				ddmTemplate.getDescription(descriptionLanguageId));
-		}
-
-		String[] nameLanguageIds = getLanguageIds(
-			defaultLanguageId, ddmTemplate.getName());
-
-		for (String nameLanguageId : nameLanguageIds) {
-			document.addText(
-				LocalizationUtil.getLocalizedName(Field.NAME, nameLanguageId),
-				ddmTemplate.getName(nameLanguageId));
-		}
+		document.addLocalizedText(
+			Field.DESCRIPTION,
+			LocalizationUtil.populateLocalizationMap(
+				ddmTemplate.getDescriptionMap(),
+				ddmTemplate.getDefaultLanguageId(), ddmTemplate.getGroupId()));
+		document.addLocalizedText(
+			Field.NAME,
+			LocalizationUtil.populateLocalizationMap(
+				ddmTemplate.getNameMap(), ddmTemplate.getDefaultLanguageId(),
+				ddmTemplate.getGroupId()));
 	}
 
 	protected String[] getLanguageIds(
@@ -109,5 +106,8 @@ public class DDMTemplateModelDocumentContributor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMTemplateModelDocumentContributor.class);
+
+	@Reference
+	private DDMPermissionSupport _ddmPermissionSupport;
 
 }

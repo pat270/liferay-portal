@@ -21,15 +21,13 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerStatusMessageSender
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusMessageSender;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.model.StagedModel;
-import com.liferay.portal.kernel.util.LongWrapper;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -42,18 +40,6 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class PortletDataHandlerStatusMessageSenderImpl
 	implements PortletDataHandlerStatusMessageSender {
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #sendStatusMessage(String, String[], ManifestSummary)}
-	 */
-	@Deprecated
-	@Override
-	public void sendStatusMessage(
-		String messageType, ManifestSummary manifestSummary) {
-
-		sendStatusMessage(messageType, (String[])null, manifestSummary);
-	}
 
 	@Override
 	public void sendStatusMessage(
@@ -139,17 +125,13 @@ public class PortletDataHandlerStatusMessageSenderImpl
 			BackgroundTaskThreadLocal.getBackgroundTaskId());
 		message.put("messageType", messageType);
 
-		Map<String, LongWrapper> modelAdditionCounters =
-			manifestSummary.getModelAdditionCounters();
+		message.put(
+			"modelAdditionCounters",
+			new HashMap<>(manifestSummary.getModelAdditionCounters()));
 
 		message.put(
-			"modelAdditionCounters", new HashMap<>(modelAdditionCounters));
-
-		Map<String, LongWrapper> modelDeletionCounters =
-			manifestSummary.getModelDeletionCounters();
-
-		message.put(
-			"modelDeletionCounters", new HashMap<>(modelDeletionCounters));
+			"modelDeletionCounters",
+			new HashMap<>(manifestSummary.getModelDeletionCounters()));
 	}
 
 	@Reference

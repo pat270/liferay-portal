@@ -22,16 +22,18 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.BaseMessageListener;
+import com.liferay.portal.kernel.messaging.DestinationConfiguration;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageListener;
+import com.liferay.portal.kernel.messaging.config.DefaultMessagingConfigurator;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -48,13 +50,16 @@ import com.liferay.portal.kernel.util.SubscriptionSender;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -68,6 +73,24 @@ import org.osgi.service.component.annotations.Reference;
 	service = MessageListener.class
 )
 public class FlagsRequestMessageListener extends BaseMessageListener {
+
+	@Activate
+	protected void activate() {
+		_defaultMessagingConfigurator = new DefaultMessagingConfigurator();
+
+		_defaultMessagingConfigurator.setDestinationConfigurations(
+			Collections.singleton(
+				new DestinationConfiguration(
+					DestinationConfiguration.DESTINATION_TYPE_PARALLEL,
+					DestinationNames.FLAGS)));
+
+		_defaultMessagingConfigurator.afterPropertiesSet();
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_defaultMessagingConfigurator.destroy();
+	}
 
 	@Override
 	protected void doReceive(Message message) throws Exception {
@@ -168,9 +191,9 @@ public class FlagsRequestMessageListener extends BaseMessageListener {
 					fromAddress, recipient.getFullName(),
 					recipient.getEmailAddress(), subject, body, serviceContext);
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(ioe, ioe);
+					_log.warn(ioException, ioException);
 				}
 			}
 		}
@@ -238,16 +261,13 @@ public class FlagsRequestMessageListener extends BaseMessageListener {
 		subscriptionSender.setBody(body);
 		subscriptionSender.setCompanyId(company.getCompanyId());
 		subscriptionSender.setContextAttributes(
-			"[$CONTENT_ID$]", contentId, "[$CONTENT_TYPE$]", contentType,
+			"[$CONTENT_ID$]", contentId, "[$CONTENT_TITLE$]", contentTitle,
+			"[$CONTENT_TYPE$]", contentType, "[$CONTENT_URL$]", contentURL,
 			"[$DATE$]", now.toString(), "[$REASON$]", reason,
 			"[$REPORTED_USER_ADDRESS$]", reportedEmailAddress,
 			"[$REPORTED_USER_NAME$]", reportedUserName, "[$REPORTED_USER_URL$]",
 			reportedUserURL, "[$REPORTER_USER_ADDRESS$]", reporterEmailAddress,
 			"[$REPORTER_USER_NAME$]", reporterUserName);
-		subscriptionSender.setContextAttribute(
-			"[$CONTENT_TITLE$]", contentTitle, false);
-		subscriptionSender.setContextAttribute(
-			"[$CONTENT_URL$]", contentURL, false);
 		subscriptionSender.setCreatorUserId(reporterUserId);
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
@@ -303,11 +323,11 @@ public class FlagsRequestMessageListener extends BaseMessageListener {
 		try {
 			return group.getDescriptiveName(locale);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				"Unable to get descriptive name for group " +
 					group.getGroupId(),
-				pe);
+				portalException);
 		}
 
 		return StringPool.BLANK;
@@ -317,6 +337,7 @@ public class FlagsRequestMessageListener extends BaseMessageListener {
 		FlagsRequestMessageListener.class);
 
 	private CompanyLocalService _companyLocalService;
+	private DefaultMessagingConfigurator _defaultMessagingConfigurator;
 	private GroupLocalService _groupLocalService;
 	private LayoutLocalService _layoutLocalService;
 	private RoleLocalService _roleLocalService;

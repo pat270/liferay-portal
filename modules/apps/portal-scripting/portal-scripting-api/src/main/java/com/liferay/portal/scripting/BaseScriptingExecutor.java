@@ -47,8 +47,8 @@ public abstract class BaseScriptingExecutor implements ScriptingExecutor {
 
 			return eval(allowedClasses, inputObjects, outputNames, script);
 		}
-		catch (IOException ioe) {
-			throw new ScriptingException(ioe);
+		catch (IOException ioException) {
+			throw new ScriptingException(ioException);
 		}
 	}
 
@@ -64,10 +64,8 @@ public abstract class BaseScriptingExecutor implements ScriptingExecutor {
 
 		Thread currentThread = Thread.currentThread();
 
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
 		return AggregateClassLoader.getAggregateClassLoader(
-			classLoader, contextClassLoader);
+			classLoader, currentThread.getContextClassLoader());
 	}
 
 }

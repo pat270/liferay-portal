@@ -219,30 +219,30 @@ public class WikiSocialActivityHelper {
 		int type = socialActivity.getType();
 
 		if (type == SocialActivityConstants.TYPE_ADD_ATTACHMENT) {
-			return "icon-paperclip";
+			return "paperclip";
 		}
 		else if (type ==
 					SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH) {
 
-			return "icon-remove";
+			return "times";
 		}
 		else if (type == SocialActivityConstants.TYPE_MOVE_TO_TRASH) {
-			return "icon-trash";
+			return "trash";
 		}
 		else if (type ==
 					SocialActivityConstants.
 						TYPE_RESTORE_ATTACHMENT_FROM_TRASH) {
 
-			return "icon-undo";
+			return "undo";
 		}
 		else if (type == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) {
-			return "icon-undo";
+			return "undo";
 		}
 		else if (type == WikiActivityKeys.ADD_PAGE) {
-			return "icon-plus";
+			return "plus";
 		}
 		else if (type == WikiActivityKeys.UPDATE_PAGE) {
-			return "icon-edit";
+			return "pencil";
 		}
 
 		return StringPool.BLANK;
@@ -338,12 +338,12 @@ public class WikiSocialActivityHelper {
 		try {
 			return PortletFileRepositoryUtil.getPortletFileEntry(fileEntryId);
 		}
-		catch (NoSuchFileEntryException nsfee) {
+		catch (NoSuchFileEntryException noSuchFileEntryException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(nsfee, nsfee);
+				_log.debug(noSuchFileEntryException, noSuchFileEntryException);
 			}
 		}
 

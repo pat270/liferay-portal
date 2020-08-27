@@ -34,6 +34,8 @@ page import="com.liferay.asset.kernel.model.AssetRendererFactory" %><%@
 page import="com.liferay.dynamic.data.mapping.model.DDMStructure" %><%@
 page import="com.liferay.dynamic.data.mapping.model.DDMTemplate" %><%@
 page import="com.liferay.journal.constants.JournalContentPortletKeys" %><%@
+page import="com.liferay.journal.content.asset.addon.entry.ContentMetadataAssetAddonEntry" %><%@
+page import="com.liferay.journal.content.asset.addon.entry.UserToolAssetAddonEntry" %><%@
 page import="com.liferay.journal.content.web.internal.constants.JournalContentWebKeys" %><%@
 page import="com.liferay.journal.content.web.internal.display.context.JournalContentDisplayContext" %><%@
 page import="com.liferay.journal.content.web.internal.servlet.taglib.clay.JournalArticleVerticalCard" %><%@
@@ -46,18 +48,19 @@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletProvider" %><%@
 page import="com.liferay.portal.kernel.portlet.PortletProviderUtil" %><%@
-page import="com.liferay.portal.kernel.servlet.taglib.ui.AssetAddonEntry" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
+page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
-page import="com.liferay.portal.kernel.util.StringUtil" %><%@
-page import="com.liferay.portal.kernel.util.Validator" %>
+page import="com.liferay.portal.kernel.util.Validator" %><%@
+page import="com.liferay.taglib.aui.AUIUtil" %>
 
 <%@ page import="java.text.Format" %>
 
-<%@ page import="java.util.HashMap" %><%@
+<%@ page import="java.util.Collections" %><%@
 page import="java.util.List" %><%@
 page import="java.util.Map" %>
 

@@ -16,8 +16,6 @@ package com.liferay.mobile.device.rules.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link MDRRuleService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MDRRuleService
  * @generated
  */
-@ProviderType
 public class MDRRuleServiceWrapper
 	implements MDRRuleService, ServiceWrapper<MDRRuleService> {
 
@@ -50,13 +47,14 @@ public class MDRRuleServiceWrapper
 	public com.liferay.mobile.device.rules.model.MDRRule addRule(
 			long ruleGroupId, java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap, String type,
-			com.liferay.portal.kernel.util.UnicodeProperties typeSettings,
+			com.liferay.portal.kernel.util.UnicodeProperties
+				typeSettingsUnicodeProperties,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mdrRuleService.addRule(
-			ruleGroupId, nameMap, descriptionMap, type, typeSettings,
-			serviceContext);
+			ruleGroupId, nameMap, descriptionMap, type,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	@Override
@@ -108,13 +106,13 @@ public class MDRRuleServiceWrapper
 			long ruleId, java.util.Map<java.util.Locale, String> nameMap,
 			java.util.Map<java.util.Locale, String> descriptionMap, String type,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				typeSettingsProperties,
+				typeSettingsUnicodeProperties,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _mdrRuleService.updateRule(
-			ruleId, nameMap, descriptionMap, type, typeSettingsProperties,
-			serviceContext);
+			ruleId, nameMap, descriptionMap, type,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	@Override

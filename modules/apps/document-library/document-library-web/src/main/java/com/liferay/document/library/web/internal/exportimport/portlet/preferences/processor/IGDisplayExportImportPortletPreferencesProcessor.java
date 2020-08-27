@@ -31,7 +31,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Marcellus Tavares
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + DLPortletKeys.MEDIA_GALLERY_DISPLAY,
 	service = ExportImportPortletPreferencesProcessor.class
 )
@@ -40,14 +39,22 @@ public class IGDisplayExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return _dlExportImportPortletPreferencesProcessor.
-			getExportCapabilities();
+		List<Capability> exportCapabilities =
+			_dlExportImportPortletPreferencesProcessor.getExportCapabilities();
+
+		exportCapabilities.add(_igDisplayExportCapability);
+
+		return exportCapabilities;
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return _dlExportImportPortletPreferencesProcessor.
-			getImportCapabilities();
+		List<Capability> importCapabilities =
+			_dlExportImportPortletPreferencesProcessor.getImportCapabilities();
+
+		importCapabilities.add(_igDisplayImportCapability);
+
+		return importCapabilities;
 	}
 
 	@Override
@@ -75,5 +82,11 @@ public class IGDisplayExportImportPortletPreferencesProcessor
 	@Reference
 	private DLExportImportPortletPreferencesProcessor
 		_dlExportImportPortletPreferencesProcessor;
+
+	@Reference(target = "(name=IGDisplayExportCapability)")
+	private Capability _igDisplayExportCapability;
+
+	@Reference(target = "(name=IGDisplayImportCapability)")
+	private Capability _igDisplayImportCapability;
 
 }

@@ -24,10 +24,12 @@ import com.liferay.portal.odata.entity.ComplexEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
+import com.liferay.portal.odata.filter.expression.CollectionPropertyExpression;
 import com.liferay.portal.odata.filter.expression.ComplexPropertyExpression;
 import com.liferay.portal.odata.filter.expression.Expression;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitor;
+import com.liferay.portal.odata.filter.expression.ListExpression;
 import com.liferay.portal.odata.filter.expression.LiteralExpression;
 import com.liferay.portal.odata.filter.expression.MemberExpression;
 import com.liferay.portal.odata.filter.expression.MethodExpression;
@@ -85,6 +87,13 @@ public class ImportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 	}
 
 	@Override
+	public Object visitCollectionPropertyExpression(
+		CollectionPropertyExpression collectionPropertyExpression) {
+
+		return _filterStringSB.toString();
+	}
+
+	@Override
 	public Object visitComplexPropertyExpression(
 		ComplexPropertyExpression complexPropertyExpression) {
 
@@ -103,6 +112,27 @@ public class ImportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 
 		return complexEntityFieldEntityFieldsMap.get(
 			propertyExpression.getName());
+	}
+
+	@Override
+	public Object visitListExpressionOperation(
+			ListExpression.Operation operation, Object left,
+			List<Object> rights)
+		throws ExpressionVisitException {
+
+		if (!Objects.equals(ListExpression.Operation.IN, operation)) {
+			return _filterStringSB.toString();
+		}
+
+		EntityField entityField = (EntityField)left;
+
+		if (Objects.equals(EntityField.Type.ID, entityField.getType())) {
+			for (Object right : rights) {
+				_importEntityFieldIDReferences(entityField, right);
+			}
+		}
+
+		return _filterStringSB.toString();
 	}
 
 	@Override
@@ -171,7 +201,7 @@ public class ImportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 		}
 
 		Optional<SegmentsFieldCustomizer> segmentsFieldCustomizerOptional =
-			_segmentsFieldCustomizerRegistry.getSegmentFieldCustomizerOptional(
+			_segmentsFieldCustomizerRegistry.getSegmentsFieldCustomizerOptional(
 				_entityModel.getName(), entityField.getName());
 
 		if (!segmentsFieldCustomizerOptional.isPresent()) {

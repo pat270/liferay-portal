@@ -16,12 +16,9 @@ package com.liferay.dynamic.data.mapping.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchTemplateLinkException extends NoSuchModelException {
 
 	public NoSuchTemplateLinkException() {
@@ -31,12 +28,12 @@ public class NoSuchTemplateLinkException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchTemplateLinkException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchTemplateLinkException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchTemplateLinkException(Throwable cause) {
-		super(cause);
+	public NoSuchTemplateLinkException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

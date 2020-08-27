@@ -17,8 +17,8 @@ package com.liferay.portal.security.permission.test.util;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
 
 import java.util.Map;
 
@@ -53,7 +52,7 @@ public abstract class BasePermissionTestCase {
 
 		doSetUp();
 
-		ServiceTestUtil.setUser(user);
+		UserTestUtil.setUser(user);
 
 		permissionChecker = PermissionThreadLocal.getPermissionChecker();
 
@@ -62,7 +61,7 @@ public abstract class BasePermissionTestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		removePortletModelViewPermission();
 	}

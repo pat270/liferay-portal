@@ -60,7 +60,12 @@ public interface FragmentEntryLink
 
 			};
 
+	public boolean isCacheable();
+
 	public boolean isLatestVersion()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public boolean isSystem()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 }

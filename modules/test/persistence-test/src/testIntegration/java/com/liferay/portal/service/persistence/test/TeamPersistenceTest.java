@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchTeamException;
 import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.service.TeamLocalServiceUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,8 @@ public class TeamPersistenceTest {
 
 		newTeam.setMvccVersion(RandomTestUtil.nextLong());
 
+		newTeam.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newTeam.setUuid(RandomTestUtil.randomString());
 
 		newTeam.setCompanyId(RandomTestUtil.nextLong());
@@ -152,6 +154,8 @@ public class TeamPersistenceTest {
 
 		Assert.assertEquals(
 			existingTeam.getMvccVersion(), newTeam.getMvccVersion());
+		Assert.assertEquals(
+			existingTeam.getCtCollectionId(), newTeam.getCtCollectionId());
 		Assert.assertEquals(existingTeam.getUuid(), newTeam.getUuid());
 		Assert.assertEquals(existingTeam.getTeamId(), newTeam.getTeamId());
 		Assert.assertEquals(
@@ -247,10 +251,10 @@ public class TeamPersistenceTest {
 
 	protected OrderByComparator<Team> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"Team", "mvccVersion", true, "uuid", true, "teamId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "groupId", true, "name", true,
-			"description", true, "lastPublishDate", true);
+			"Team", "mvccVersion", true, "ctCollectionId", true, "uuid", true,
+			"teamId", true, "companyId", true, "userId", true, "userName", true,
+			"createDate", true, "modifiedDate", true, "groupId", true, "name",
+			true, "description", true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -457,28 +461,70 @@ public class TeamPersistenceTest {
 
 		_persistence.clearCache();
 
-		Team existingTeam = _persistence.findByPrimaryKey(
-			newTeam.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newTeam.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingTeam.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingTeam, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		Team newTeam = addTeam();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Team.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("teamId", newTeam.getTeamId()));
+
+		List<Team> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(Team team) {
 		Assert.assertEquals(
-			Long.valueOf(existingTeam.getGroupId()),
+			team.getUuid(),
+			ReflectionTestUtil.invoke(
+				team, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(team.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingTeam, "getOriginalGroupId", new Class<?>[0]));
+				team, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingTeam.getGroupId()),
+			Long.valueOf(team.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingTeam, "getOriginalGroupId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingTeam.getName(),
-				ReflectionTestUtil.invoke(
-					existingTeam, "getOriginalName", new Class<?>[0])));
+				team, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"groupId"));
+		Assert.assertEquals(
+			team.getName(),
+			ReflectionTestUtil.invoke(
+				team, "getColumnOriginalValue", new Class<?>[] {String.class},
+				"name"));
 	}
 
 	protected Team addTeam() throws Exception {
@@ -487,6 +533,8 @@ public class TeamPersistenceTest {
 		Team team = _persistence.create(pk);
 
 		team.setMvccVersion(RandomTestUtil.nextLong());
+
+		team.setCtCollectionId(RandomTestUtil.nextLong());
 
 		team.setUuid(RandomTestUtil.randomString());
 

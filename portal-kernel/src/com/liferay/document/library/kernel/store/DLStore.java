@@ -21,16 +21,16 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import java.io.File;
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Alexander Chow
  * @author Edward Han
  */
+@ProviderType
 @Transactional(rollbackFor = {PortalException.class, SystemException.class})
 public interface DLStore {
-
-	public void addDirectory(long companyId, long repositoryId, String dirName)
-		throws PortalException;
 
 	public void addFile(
 			long companyId, long repositoryId, String fileName,
@@ -44,7 +44,7 @@ public interface DLStore {
 
 	public void addFile(
 			long companyId, long repositoryId, String fileName,
-			boolean validateFileExtension, InputStream is)
+			boolean validateFileExtension, InputStream inputStream)
 		throws PortalException;
 
 	public void addFile(
@@ -56,10 +56,9 @@ public interface DLStore {
 		throws PortalException;
 
 	public void addFile(
-			long companyId, long repositoryId, String fileName, InputStream is)
+			long companyId, long repositoryId, String fileName,
+			InputStream inputStream)
 		throws PortalException;
-
-	public void checkRoot(long companyId);
 
 	public void copyFileVersion(
 			long companyId, long repositoryId, String fileName,
@@ -73,14 +72,6 @@ public interface DLStore {
 		throws PortalException;
 
 	public void deleteFile(
-			long companyId, long repositoryId, String fileName,
-			String versionLabel)
-		throws PortalException;
-
-	public File getFile(long companyId, long repositoryId, String fileName)
-		throws PortalException;
-
-	public File getFile(
 			long companyId, long repositoryId, String fileName,
 			String versionLabel)
 		throws PortalException;
@@ -110,10 +101,6 @@ public interface DLStore {
 	public long getFileSize(long companyId, long repositoryId, String fileName)
 		throws PortalException;
 
-	public boolean hasDirectory(
-			long companyId, long repositoryId, String dirName)
-		throws PortalException;
-
 	public boolean hasFile(long companyId, long repositoryId, String fileName)
 		throws PortalException;
 
@@ -122,18 +109,9 @@ public interface DLStore {
 			String versionLabel)
 		throws PortalException;
 
-	public boolean isValidName(String name);
-
-	public void move(String srcDir, String destDir);
-
 	public void updateFile(
 			long companyId, long repositoryId, long newRepositoryId,
 			String fileName)
-		throws PortalException;
-
-	public void updateFile(
-			long companyId, long repositoryId, String fileName,
-			String newFileName)
 		throws PortalException;
 
 	public void updateFile(
@@ -145,7 +123,7 @@ public interface DLStore {
 	public void updateFile(
 			long companyId, long repositoryId, String fileName,
 			String fileExtension, boolean validateFileExtension,
-			String versionLabel, String sourceFileName, InputStream is)
+			String versionLabel, String sourceFileName, InputStream inputStream)
 		throws PortalException;
 
 	public void updateFileVersion(
@@ -165,7 +143,8 @@ public interface DLStore {
 		throws PortalException;
 
 	public void validate(
-			String fileName, boolean validateFileExtension, InputStream is)
+			String fileName, boolean validateFileExtension,
+			InputStream inputStream)
 		throws PortalException;
 
 	public void validate(
@@ -180,10 +159,7 @@ public interface DLStore {
 
 	public void validate(
 			String fileName, String fileExtension, String sourceFileName,
-			boolean validateFileExtension, InputStream is)
-		throws PortalException;
-
-	public void validateDirectoryName(String directoryName)
+			boolean validateFileExtension, InputStream inputStream)
 		throws PortalException;
 
 }

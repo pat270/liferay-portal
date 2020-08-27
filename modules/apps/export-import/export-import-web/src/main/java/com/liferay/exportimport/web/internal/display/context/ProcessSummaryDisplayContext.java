@@ -14,37 +14,94 @@
 
 package com.liferay.exportimport.web.internal.display.context;
 
+import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.model.LayoutRevision;
+import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.LayoutSetBranch;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.service.LayoutRevisionLocalServiceUtil;
+import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Péter Alius
+ * @author Zoltan Csaszi
  */
 public class ProcessSummaryDisplayContext {
 
-	public List<String> getPageNames(JSONArray layoutsJSONArray) {
-		List<String> pageNames = new ArrayList<>();
+	public ProcessSummaryDisplayContext() {
+	}
 
-		for (int i = 0; i < layoutsJSONArray.length(); ++i) {
-			JSONObject layoutJSONObject = layoutsJSONArray.getJSONObject(i);
+	public List<String> getPageNames(
+		long groupId, boolean privateLayout, long[] selectedLayoutIds,
+		String languageId) {
 
-			String pageName = layoutJSONObject.getString("name");
+		Set<String> pageNames = new LinkedHashSet<>();
 
-			pageNames.add(pageName);
+		Arrays.sort(selectedLayoutIds);
 
-			if (layoutJSONObject.getBoolean("hasChildren")) {
-				List<String> childPageNames = _getChildPageNames(
-					pageName, layoutJSONObject.getJSONObject("children"));
+		for (long selectedLayoutId : selectedLayoutIds) {
+			_addPageNames(
+				groupId, privateLayout, selectedLayoutId, pageNames,
+				languageId);
+		}
 
-				pageNames.addAll(childPageNames);
+		return new ArrayList<>(pageNames);
+	}
+
+	private void _addPageNames(
+		long groupId, boolean privateLayout, long selectedLayoutId,
+		Set<String> pageNames, String languageId) {
+
+		Layout layout = LayoutLocalServiceUtil.fetchLayout(
+			groupId, privateLayout, selectedLayoutId);
+
+		if (layout == null) {
+			return;
+		}
+
+		if (LayoutStagingUtil.isBranchingLayout(layout) &&
+			!_hasApprovedLayoutRevision(layout)) {
+
+			return;
+		}
+
+		StringBuilder sb = new StringBuilder(layout.getName(languageId));
+
+		while (layout.getParentLayoutId() !=
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
+
+			try {
+				layout = LayoutLocalServiceUtil.getParentLayout(layout);
+
+				_addPageNames(
+					groupId, privateLayout, layout.getLayoutId(), pageNames,
+					languageId);
+
+				sb.insert(0, layout.getName() + StringPool.FORWARD_SLASH);
+			}
+			catch (PortalException portalException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(portalException, portalException);
+				}
 			}
 		}
 
-		return pageNames;
+		pageNames.add(sb.toString());
 	}
 
 	private List<String> _getChildPageNames(
@@ -76,5 +133,23 @@ public class ProcessSummaryDisplayContext {
 
 		return pageNames;
 	}
+
+	private boolean _hasApprovedLayoutRevision(Layout layout) {
+		LayoutSet layoutSet = LayoutSetLocalServiceUtil.fetchLayoutSet(
+			layout.getGroupId(), layout.isPrivateLayout());
+
+		LayoutSetBranch layoutSetBranch = LayoutStagingUtil.getLayoutSetBranch(
+			layoutSet);
+
+		List<LayoutRevision> approvedLayoutRevisions =
+			LayoutRevisionLocalServiceUtil.getLayoutRevisions(
+				layoutSetBranch.getLayoutSetBranchId(), layout.getPlid(),
+				WorkflowConstants.STATUS_APPROVED);
+
+		return !approvedLayoutRevisions.isEmpty();
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ProcessSummaryDisplayContext.class);
 
 }

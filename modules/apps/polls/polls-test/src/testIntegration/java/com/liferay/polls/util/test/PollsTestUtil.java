@@ -24,6 +24,9 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 
+import java.util.Locale;
+import java.util.Map;
+
 /**
  * @author Shinn Lok
  */
@@ -39,10 +42,19 @@ public class PollsTestUtil {
 	}
 
 	public static PollsQuestion addQuestion(long groupId) throws Exception {
+		return addQuestion(
+			groupId, RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap());
+	}
+
+	public static PollsQuestion addQuestion(
+			long groupId, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap)
+		throws Exception {
+
 		return PollsQuestionLocalServiceUtil.addQuestion(
-			TestPropsValues.getUserId(), RandomTestUtil.randomLocaleStringMap(),
-			RandomTestUtil.randomLocaleStringMap(), 0, 0, 0, 0, 0, true, null,
-			ServiceContextTestUtil.getServiceContext(groupId));
+			TestPropsValues.getUserId(), titleMap, descriptionMap, 0, 0, 0, 0,
+			0, true, null, ServiceContextTestUtil.getServiceContext(groupId));
 	}
 
 	public static PollsVote addVote(

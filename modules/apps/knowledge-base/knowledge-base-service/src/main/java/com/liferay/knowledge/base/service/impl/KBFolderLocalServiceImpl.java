@@ -20,9 +20,11 @@ import com.liferay.knowledge.base.exception.InvalidKBFolderNameException;
 import com.liferay.knowledge.base.exception.KBFolderParentException;
 import com.liferay.knowledge.base.exception.NoSuchFolderException;
 import com.liferay.knowledge.base.model.KBFolder;
+import com.liferay.knowledge.base.service.KBArticleLocalService;
 import com.liferay.knowledge.base.service.base.KBFolderLocalServiceBaseImpl;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -36,9 +38,16 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.knowledge.base.model.KBFolder",
+	service = AopService.class
+)
 public class KBFolderLocalServiceImpl extends KBFolderLocalServiceBaseImpl {
 
 	@Override
@@ -75,7 +84,7 @@ public class KBFolderLocalServiceImpl extends KBFolderLocalServiceBaseImpl {
 		kbFolder.setDescription(description);
 		kbFolder.setExpandoBridgeAttributes(serviceContext);
 
-		kbFolderPersistence.update(kbFolder);
+		kbFolder = kbFolderPersistence.update(kbFolder);
 
 		// Resources
 
@@ -98,7 +107,7 @@ public class KBFolderLocalServiceImpl extends KBFolderLocalServiceBaseImpl {
 	public KBFolder deleteKBFolder(long kbFolderId) throws PortalException {
 		KBFolder kbFolder = kbFolderPersistence.findByPrimaryKey(kbFolderId);
 
-		kbArticleLocalService.deleteKBArticles(
+		_kbArticleLocalService.deleteKBArticles(
 			kbFolder.getGroupId(), kbFolder.getKbFolderId());
 
 		List<KBFolder> childKBFolders = kbFolderPersistence.findByG_P(
@@ -135,10 +144,12 @@ public class KBFolderLocalServiceImpl extends KBFolderLocalServiceBaseImpl {
 
 	@Override
 	public KBFolder fetchFirstChildKBFolder(
-			long groupId, long kbFolderId, OrderByComparator<KBFolder> obc)
+			long groupId, long kbFolderId,
+			OrderByComparator<KBFolder> orderByComparator)
 		throws PortalException {
 
-		return kbFolderPersistence.fetchByG_P_First(groupId, kbFolderId, obc);
+		return kbFolderPersistence.fetchByG_P_First(
+			groupId, kbFolderId, orderByComparator);
 	}
 
 	@Override
@@ -225,23 +236,6 @@ public class KBFolderLocalServiceImpl extends KBFolderLocalServiceBaseImpl {
 		kbFolder.setParentKBFolderId(parentKBFolderId);
 
 		kbFolderPersistence.update(kbFolder);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #updateKBFolder(long, long, long, String, String,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public KBFolder updateKBFolder(
-			long parentResourceClassNameId, long parentResourcePrimKey,
-			long kbFolderId, String name, String description)
-		throws PortalException {
-
-		return updateKBFolder(
-			parentResourceClassNameId, parentResourcePrimKey, kbFolderId, name,
-			description, new ServiceContext());
 	}
 
 	@Override
@@ -375,5 +369,8 @@ public class KBFolderLocalServiceImpl extends KBFolderLocalServiceBaseImpl {
 					parentResourcePrimKey));
 		}
 	}
+
+	@Reference
+	private KBArticleLocalService _kbArticleLocalService;
 
 }

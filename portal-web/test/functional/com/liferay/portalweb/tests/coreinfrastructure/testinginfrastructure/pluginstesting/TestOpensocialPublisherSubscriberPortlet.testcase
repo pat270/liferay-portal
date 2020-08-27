@@ -1,5 +1,6 @@
 @component-name = "portal-test-plugins"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Test Plugins";
@@ -17,7 +18,6 @@ definition {
 	test ViewPublisherSubscriber {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Publisher Subscriber Page");
@@ -39,4 +39,5 @@ definition {
 		<execute function="AssertTextEquals#assertPartialText" locator1="TestPublisher#PUBLISHER_PORTLET_MESSAGE" value1="${randomNumber}" />
 		<execute function="AssertTextEquals#assertPartialText" locator1=" TestSubscriber#SUBSCRIBER_PORTLET_MESSAGE" value1="${randomNumber}" />*/
 	}
+
 }

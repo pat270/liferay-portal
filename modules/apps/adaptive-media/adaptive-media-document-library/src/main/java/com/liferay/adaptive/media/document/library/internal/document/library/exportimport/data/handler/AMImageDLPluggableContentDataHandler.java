@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.xml.Element;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.Collection;
@@ -106,7 +105,7 @@ public class AMImageDLPluggableContentDataHandler
 
 	private void _exportMedia(
 			PortletDataContext portletDataContext, FileEntry fileEntry)
-		throws IOException, PortalException {
+		throws Exception {
 
 		FileVersion fileVersion = fileEntry.getFileVersion();
 
@@ -127,7 +126,7 @@ public class AMImageDLPluggableContentDataHandler
 	private void _exportMedia(
 			PortletDataContext portletDataContext, FileEntry fileEntry,
 			AdaptiveMedia<AMImageProcessor> adaptiveMedia)
-		throws IOException {
+		throws Exception {
 
 		Optional<String> configurationUuidOptional =
 			adaptiveMedia.getValueOptional(
@@ -143,6 +142,18 @@ public class AMImageDLPluggableContentDataHandler
 		if (!portletDataContext.isPerformDirectBinaryImport()) {
 			try (InputStream inputStream = adaptiveMedia.getInputStream()) {
 				portletDataContext.addZipEntry(basePath + ".bin", inputStream);
+			}
+			catch (Exception exception) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Unable to find adaptive media for file entry ",
+							fileEntry.getFileEntryId(), " and configuration ",
+							configurationUuidOptional.get()),
+						exception);
+				}
+
+				return;
 			}
 		}
 
@@ -164,7 +175,7 @@ public class AMImageDLPluggableContentDataHandler
 					amImageConfigurationEntry.getUUID()
 				).done());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			StringBundler sb = new StringBundler(4);
 
 			sb.append("Unable to find adaptive media for file entry ");
@@ -172,7 +183,7 @@ public class AMImageDLPluggableContentDataHandler
 			sb.append(" and configuration ");
 			sb.append(amImageConfigurationEntry.getUUID());
 
-			_log.error(sb.toString(), pe);
+			_log.error(sb.toString(), portalException);
 		}
 
 		return Stream.empty();
@@ -220,7 +231,7 @@ public class AMImageDLPluggableContentDataHandler
 
 		return firstAdaptiveMediaOptional.map(
 			adaptiveMedia -> _amImageSerializer.deserialize(
-				serializedAdaptiveMedia, () -> adaptiveMedia.getInputStream())
+				serializedAdaptiveMedia, adaptiveMedia::getInputStream)
 		).orElse(
 			null
 		);
@@ -230,7 +241,7 @@ public class AMImageDLPluggableContentDataHandler
 			PortletDataContext portletDataContext, FileEntry fileEntry,
 			FileEntry importedFileEntry,
 			AMImageConfigurationEntry amImageConfigurationEntry)
-		throws IOException, PortalException {
+		throws Exception {
 
 		String configuration = portletDataContext.getZipEntryAsString(
 			_getConfigurationEntryBinPath(amImageConfigurationEntry));

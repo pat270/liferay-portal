@@ -14,30 +14,35 @@
 
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
+import com.liferay.fragment.processor.PortletRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
+import com.liferay.layout.content.page.editor.listener.ContentPageEditorListenerTracker;
+import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.servlet.SessionMessages;
-import com.liferay.portal.kernel.transaction.Propagation;
-import com.liferay.portal.kernel.transaction.TransactionConfig;
-import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
-import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Date;
-import java.util.concurrent.Callable;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletException;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -51,33 +56,100 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.name=" + ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 		"mvc.command.name=/content_layout/publish_layout_page_template_entry"
 	},
-	service = MVCActionCommand.class
+	service = {AopService.class, MVCActionCommand.class}
 )
 public class PublishLayoutPageTemplateEntryMVCActionCommand
-	extends BaseMVCActionCommand {
+	extends BaseMVCActionCommand implements AopService, MVCActionCommand {
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public boolean processAction(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws PortletException {
+
+		return super.processAction(actionRequest, actionResponse);
+	}
 
 	@Override
 	protected void doProcessAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		PublishLayoutPageTemplateEntryCallable publishLayoutCallable =
-			new PublishLayoutPageTemplateEntryCallable(actionRequest);
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 
-		try {
-			TransactionInvokerUtil.invoke(
-				_transactionConfig, publishLayoutCallable);
+		Layout draftLayout = _layoutLocalService.getLayout(
+			themeDisplay.getPlid());
+
+		Layout layout = _layoutLocalService.getLayout(draftLayout.getClassPK());
+
+		LayoutPermissionUtil.check(
+			themeDisplay.getPermissionChecker(), layout, ActionKeys.UPDATE);
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_publishLayoutPageTemplateEntry(draftLayout, layout);
+
+		String portletId = _portal.getPortletId(actionRequest);
+
+		if (SessionMessages.contains(
+				actionRequest,
+				portletId.concat(
+					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE))) {
+
+			SessionMessages.clear(actionRequest);
 		}
-		catch (Throwable t) {
-			throw new Exception(t);
+
+		String key = "layoutPageTemplatePublished";
+
+		if (layoutPageTemplateEntry.getType() ==
+				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE) {
+
+			key = "displayPagePublished";
 		}
+		else if (layoutPageTemplateEntry.getType() ==
+					LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) {
+
+			key = "masterPagePublished";
+		}
+
+		MultiSessionMessages.add(actionRequest, key);
 
 		sendRedirect(actionRequest, actionResponse);
 	}
 
-	private static final TransactionConfig _transactionConfig =
-		TransactionConfig.Factory.create(
-			Propagation.REQUIRED, new Class<?>[] {Exception.class});
+	private LayoutPageTemplateEntry _publishLayoutPageTemplateEntry(
+			Layout draftLayout, Layout layout)
+		throws Exception {
+
+		LayoutStructureUtil.deleteMarkedForDeletionItems(
+			draftLayout.getCompanyId(), _contentPageEditorListenerTracker,
+			draftLayout.getGroupId(), draftLayout.getPlid(), _portletRegistry);
+
+		draftLayout = _layoutLocalService.fetchLayout(draftLayout.getPlid());
+
+		draftLayout.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+		draftLayout = _layoutLocalService.updateLayout(draftLayout);
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByPlid(draftLayout.getClassPK());
+
+		_layoutCopyHelper.copyLayout(draftLayout, layout);
+
+		_layoutPageTemplateEntryService.updateStatus(
+			layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		_layoutLocalService.updateLayout(
+			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
+			new Date());
+
+		return layoutPageTemplateEntry;
+	}
+
+	@Reference
+	private ContentPageEditorListenerTracker _contentPageEditorListenerTracker;
 
 	@Reference
 	private LayoutCopyHelper _layoutCopyHelper;
@@ -95,65 +167,7 @@ public class PublishLayoutPageTemplateEntryMVCActionCommand
 	@Reference
 	private Portal _portal;
 
-	private class PublishLayoutPageTemplateEntryCallable
-		implements Callable<Void> {
-
-		@Override
-		public Void call() throws Exception {
-			long draftPlid = ParamUtil.getLong(_actionRequest, "classPK");
-
-			Layout draftLayout = _layoutLocalService.getLayout(draftPlid);
-
-			Layout layout = _layoutLocalService.getLayout(
-				draftLayout.getClassPK());
-
-			LayoutPageTemplateEntry layoutPageTemplateEntry =
-				_layoutPageTemplateEntryLocalService.
-					fetchLayoutPageTemplateEntryByPlid(
-						draftLayout.getClassPK());
-
-			_layoutCopyHelper.copyLayout(draftLayout, layout);
-
-			_layoutPageTemplateEntryService.updateStatus(
-				layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
-				WorkflowConstants.STATUS_APPROVED);
-
-			_layoutLocalService.updateLayout(
-				layout.getGroupId(), layout.isPrivateLayout(),
-				layout.getLayoutId(), new Date());
-
-			String portletId = _portal.getPortletId(_actionRequest);
-
-			if (SessionMessages.contains(
-					_actionRequest,
-					portletId.concat(
-						SessionMessages.
-							KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE))) {
-
-				SessionMessages.clear(_actionRequest);
-			}
-
-			String key = "layoutPageTemplatePublished";
-
-			if (layoutPageTemplateEntry.getType() ==
-					LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE) {
-
-				key = "displayPagePublished";
-			}
-
-			MultiSessionMessages.add(_actionRequest, key);
-
-			return null;
-		}
-
-		private PublishLayoutPageTemplateEntryCallable(
-			ActionRequest actionRequest) {
-
-			_actionRequest = actionRequest;
-		}
-
-		private final ActionRequest _actionRequest;
-
-	}
+	@Reference
+	private PortletRegistry _portletRegistry;
 
 }

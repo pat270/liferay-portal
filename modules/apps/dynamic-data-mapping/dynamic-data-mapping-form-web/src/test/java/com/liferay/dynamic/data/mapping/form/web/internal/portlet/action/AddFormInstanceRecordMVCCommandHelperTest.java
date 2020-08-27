@@ -32,6 +32,7 @@ import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -39,7 +40,6 @@ import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.util.PropsImpl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -77,15 +77,16 @@ public class AddFormInstanceRecordMVCCommandHelperTest extends PowerMockito {
 		setUpAddRecordMVCCommandHelper();
 		setUpLanguageUtil();
 		setUpResourceBundleUtil();
+
+		mockGetDDMFormLayout();
 	}
 
 	@Test
 	public void testNotRequiredAndInvisibleField() throws Exception {
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("visible", false);
-
-		mockDDMFormEvaluator(changedProperties);
+		mockDDMFormEvaluator(
+			HashMapBuilder.<String, Object>put(
+				"visible", false
+			).build());
 
 		_ddmFormField.setRequired(false);
 
@@ -97,11 +98,10 @@ public class AddFormInstanceRecordMVCCommandHelperTest extends PowerMockito {
 
 	@Test
 	public void testNotRequiredAndVisibleField() throws Exception {
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("visible", true);
-
-		mockDDMFormEvaluator(changedProperties);
+		mockDDMFormEvaluator(
+			HashMapBuilder.<String, Object>put(
+				"visible", true
+			).build());
 
 		_ddmFormField.setRequired(false);
 
@@ -113,13 +113,10 @@ public class AddFormInstanceRecordMVCCommandHelperTest extends PowerMockito {
 
 	@Test
 	public void testRequiredAndInvisibleField() throws Exception {
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("visible", false);
-
-		mockDDMFormEvaluator(changedProperties);
-
-		mockGetDDMFormLayout();
+		mockDDMFormEvaluator(
+			HashMapBuilder.<String, Object>put(
+				"visible", false
+			).build());
 
 		_addRecordMVCCommandHelper.updateRequiredFieldsAccordingToVisibility(
 			_actionRequest, _ddmForm, _ddmFormValues, LocaleUtil.US);
@@ -129,13 +126,10 @@ public class AddFormInstanceRecordMVCCommandHelperTest extends PowerMockito {
 
 	@Test
 	public void testRequiredAndVisibleField() throws Exception {
-		Map<String, Object> changedProperties = new HashMap<>();
-
-		changedProperties.put("visible", true);
-
-		mockDDMFormEvaluator(changedProperties);
-
-		mockGetDDMFormLayout();
+		mockDDMFormEvaluator(
+			HashMapBuilder.<String, Object>put(
+				"visible", true
+			).build());
 
 		_addRecordMVCCommandHelper.updateRequiredFieldsAccordingToVisibility(
 			_actionRequest, _ddmForm, _ddmFormValues, LocaleUtil.US);
@@ -164,17 +158,14 @@ public class AddFormInstanceRecordMVCCommandHelperTest extends PowerMockito {
 
 		_ddmFormValues.addDDMFormFieldValue(ddmFormFieldValue);
 
-		Map<DDMFormEvaluatorFieldContextKey, Map<String, Object>>
-			ddmFormFieldsPropertyChanges = new HashMap<>();
-
-		ddmFormFieldsPropertyChanges.put(
-			new DDMFormEvaluatorFieldContextKey(
-				"field0", ddmFormFieldValue.getInstanceId()),
-			fieldChangesProperties);
-
 		DDMFormEvaluatorEvaluateResponse.Builder builder =
 			DDMFormEvaluatorEvaluateResponse.Builder.newBuilder(
-				ddmFormFieldsPropertyChanges);
+				HashMapBuilder.
+					<DDMFormEvaluatorFieldContextKey, Map<String, Object>>put(
+						new DDMFormEvaluatorFieldContextKey(
+							"field0", ddmFormFieldValue.getInstanceId()),
+						fieldChangesProperties
+					).build());
 
 		builder.withDisabledPagesIndexes(Collections.emptySet());
 

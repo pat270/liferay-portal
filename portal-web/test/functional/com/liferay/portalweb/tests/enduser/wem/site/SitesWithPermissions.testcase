@@ -1,0 +1,176 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.firstLoginPG();
+
+			Site.tearDownCP();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "3"
+	test SitesTemplatePermissionPersistence {
+		property testray.component.names = "Permissions,Site Administration";
+
+		SiteTemplates.addSitePageViaSiteTemplateCP(
+			pageName = "search",
+			pageTemplateName = "Search",
+			siteTemplateName = "Community Site");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCommunityCP(siteName = "Site Name");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		PermissionsInline.gotoConfigurationPG(portletName = "Polls Display");
+
+		PermissionsInline.assertDefaultPG(roleList = "Guest,Owner,Power User,Site Member,User");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		PermissionsInline.gotoConfigurationPG(portletName = "Message Boards");
+
+		PermissionsInline.assertDefaultPG(roleList = "Guest,Owner,Power User,Site Member,User");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Portlet.viewTitle(portletName = "Asset Publisher");
+
+		SiteTemplates.resetPageChanges(
+			columnNumberTo = "1",
+			portletName = "Asset Publisher");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Portlet.viewNoSpecificPG(portletName = "Asset Publisher");
+
+		PermissionsInline.gotoConfigurationPG(portletName = "Polls Display");
+
+		PermissionsInline.assertDefaultPG(roleList = "Guest,Owner,Power User,Site Member,User");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Polls.addPollPG(
+			pollsQuestion = "What is the most important issue for this election?",
+			pollsQuestionChoiceA = "The Economy",
+			pollsQuestionChoiceB = "The National Debt",
+			pollsQuestionTitle = "Election Poll");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Polls.selectPollPG(pollsQuestionTitle = "Election Poll");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Polls.viewPollPG(
+			pollsQuestion = "What is the most important issue for this election?",
+			pollsQuestionChoiceList = "The Economy,The National Debt");
+
+		PermissionsInline.gotoConfigurationPG(portletName = "Message Boards");
+
+		PermissionsInline.assertDefaultPG(roleList = "Guest,Owner,Power User,Site Member,User");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		MessageboardsThread.addPG(
+			threadBody = "This is the message boards thread.",
+			threadSubject = "Thread");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		MessageboardsThread.gotoPG(
+			lastPostUserName = "Test Test",
+			replyCount = "0",
+			threadBody = "This is the message boards thread.",
+			threadSubject = "Thread");
+
+		MessageboardsThread.viewPG(
+			threadBody = "This is the message boards thread.",
+			threadSubject = "Thread");
+
+		User.logoutPG();
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/site-name/home");
+
+		Portlet.viewTitle(portletName = "Message Boards");
+
+		MessageboardsThread.gotoPG(
+			lastPostUserName = "Test Test",
+			replyCount = "0",
+			threadBody = "This is the message boards thread.",
+			threadSubject = "Thread");
+
+		MessageboardsThread.viewPG(
+			threadBody = "This is the message boards thread.",
+			threadSubject = "Thread");
+
+		Portlet.viewTitle(portletName = "Election Poll");
+
+		AssertTextEquals(
+			locator1 = "Message#INFO",
+			value1 = "Please sign in to vote.");
+
+		AssertElementPresent(locator1 = "Search#EMBEDDED_SEARCH_BAR");
+
+		SignIn.signIn(
+			userEmailAddress = "test@liferay.com",
+			userPassword = "test");
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/site-name/home");
+
+		PermissionsInline.gotoConfigurationPG(portletName = "Polls Display");
+
+		PermissionsInline.addOrRemoveViewPermissionFromAllRoles(
+			addOrRemoveViewPermission = "Remove",
+			roleList = "Guest,Owner,Power User,Site Member,User");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		PermissionsInline.gotoConfigurationPG(portletName = "Message Boards");
+
+		PermissionsInline.addOrRemoveViewPermissionFromAllRoles(
+			addOrRemoveViewPermission = "Remove",
+			roleList = "Guest,Owner,Power User,Site Member,User");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/web/site-name/home");
+
+		AssertTextEquals(
+			locator1 = "Message#ERROR_1_COLUMN_1",
+			value1 = "You do not have the roles required to access this portlet.");
+
+		AssertTextEquals(
+			locator1 = "Message#ERROR_1_COLUMN_2",
+			value1 = "You do not have the roles required to access this portlet.");
+	}
+
+}

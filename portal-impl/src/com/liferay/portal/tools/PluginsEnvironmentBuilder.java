@@ -15,10 +15,10 @@
 package com.liferay.portal.tools;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.FileComparator;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -58,8 +58,8 @@ public class PluginsEnvironmentBuilder {
 
 			new PluginsEnvironmentBuilder(dir);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Exception exception) {
+			exception.printStackTrace();
 		}
 	}
 
@@ -86,7 +86,7 @@ public class PluginsEnvironmentBuilder {
 		directoryScanner.scan();
 
 		for (String fileName : directoryScanner.getIncludedFiles()) {
-			String content = _fileUtil.read(dirName + "/" + fileName);
+			String content = _fileImpl.read(dirName + "/" + fileName);
 
 			boolean osgiProject = false;
 
@@ -129,6 +129,29 @@ public class PluginsEnvironmentBuilder {
 		}
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addClasspathEntry(StringBundler, String)}
+	 */
+	@Deprecated
+	protected void addClasspathEntry(
+		com.liferay.portal.kernel.util.StringBundler sb, String jar) {
+
+		addClasspathEntry(new StringBundler(sb.getStrings()), jar);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addClasspathEntry(StringBundler, String, Map)}
+	 */
+	@Deprecated
+	protected void addClasspathEntry(
+		com.liferay.portal.kernel.util.StringBundler sb, String jar,
+		Map<String, String> attributes) {
+
+		addClasspathEntry(new StringBundler(sb.getStrings()), jar, attributes);
+	}
+
 	protected void addClasspathEntry(StringBundler sb, String jar) {
 		addClasspathEntry(sb, jar, null);
 	}
@@ -156,6 +179,21 @@ public class PluginsEnvironmentBuilder {
 		}
 
 		sb.append("\t\t</attributes>\n\t</classpathentry>\n");
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addIvyCacheJar(StringBundler, String, String, String)}
+	 */
+	@Deprecated
+	protected void addIvyCacheJar(
+			com.liferay.portal.kernel.util.StringBundler sb, String ivyDirName,
+			String dependencyName, String version)
+		throws Exception {
+
+		addIvyCacheJar(
+			new StringBundler(sb.getStrings()), ivyDirName, dependencyName,
+			version);
 	}
 
 	protected void addIvyCacheJar(
@@ -206,7 +244,7 @@ public class PluginsEnvironmentBuilder {
 		String ivyFileName = StringBundler.concat(
 			ivyDirName, "/cache/", dependencyName, "/ivy-", version, ".xml");
 
-		if (_fileUtil.exists(ivyFileName)) {
+		if (_fileImpl.exists(ivyFileName)) {
 			Document document = _saxReader.read(new File(ivyFileName));
 
 			Element rootElement = document.getRootElement();
@@ -247,11 +285,11 @@ public class PluginsEnvironmentBuilder {
 		String dirName = StringBundler.concat(
 			ivyDirName, "/cache/", dependencyName, "/bundles");
 
-		if (!_fileUtil.exists(dirName)) {
+		if (!_fileImpl.exists(dirName)) {
 			dirName = StringBundler.concat(
 				ivyDirName, "/cache/", dependencyName, "/jars");
 
-			if (!_fileUtil.exists(dirName)) {
+			if (!_fileImpl.exists(dirName)) {
 				System.out.println("Unable to find jars in " + dirName);
 
 				return;
@@ -286,6 +324,20 @@ public class PluginsEnvironmentBuilder {
 		System.out.println(
 			StringBundler.concat(
 				"Unable to find jars in ", dirName, " for ", version));
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #addIvyCacheJars(StringBundler, String, String)}
+	 */
+	@Deprecated
+	protected void addIvyCacheJars(
+			com.liferay.portal.kernel.util.StringBundler sb, String content,
+			String ivyDirName)
+		throws Exception {
+
+		addIvyCacheJars(
+			new StringBundler(sb.getStrings()), content, ivyDirName);
 	}
 
 	protected void addIvyCacheJars(
@@ -337,7 +389,7 @@ public class PluginsEnvironmentBuilder {
 
 		File buildXmlFile = new File(projectDir, "build.xml");
 
-		String content = _fileUtil.read(buildXmlFile);
+		String content = _fileImpl.read(buildXmlFile);
 
 		int x = content.indexOf("import.shared");
 
@@ -386,7 +438,7 @@ public class PluginsEnvironmentBuilder {
 				"portal-dependency-jars",
 				properties.getProperty("portal.dependency.jars")));
 
-		return ListUtil.toList(dependencyJars);
+		return ListUtil.fromArray(dependencyJars);
 	}
 
 	protected List<String> getRequiredDeploymentContextsJars(
@@ -399,7 +451,7 @@ public class PluginsEnvironmentBuilder {
 			properties.getProperty("required-deployment-contexts"));
 
 		for (String requiredDeploymentContext : requiredDeploymentContexts) {
-			if (_fileUtil.exists(
+			if (_fileImpl.exists(
 					StringBundler.concat(
 						libDir.getCanonicalPath(), "/",
 						requiredDeploymentContext, "-service.jar"))) {
@@ -418,7 +470,7 @@ public class PluginsEnvironmentBuilder {
 			return false;
 		}
 
-		return _fileUtil.exists(
+		return _fileImpl.exists(
 			dirName.substring(0, index) + "/modules/.gitignore");
 	}
 
@@ -441,10 +493,10 @@ public class PluginsEnvironmentBuilder {
 
 		List<String> importSharedJars = getImportSharedJars(projectDir);
 
-		if (sharedProject) {
-			if (!importSharedJars.contains("portal-compat-shared.jar")) {
-				importSharedJars.add("portal-compat-shared.jar");
-			}
+		if (sharedProject &&
+			!importSharedJars.contains("portal-compat-shared.jar")) {
+
+			importSharedJars.add("portal-compat-shared.jar");
 		}
 
 		File gitignoreFile = new File(
@@ -469,7 +521,7 @@ public class PluginsEnvironmentBuilder {
 		if (gitIgnores.length > 0) {
 			System.out.println("Updating " + gitignoreFile);
 
-			_fileUtil.write(gitignoreFile, StringUtil.merge(gitIgnores, "\n"));
+			_fileImpl.write(gitignoreFile, StringUtil.merge(gitIgnores, "\n"));
 		}
 	}
 
@@ -525,7 +577,7 @@ public class PluginsEnvironmentBuilder {
 			}
 		}
 
-		_fileUtil.write(gitignoreFile, StringUtil.merge(gitIgnores, "\n"));
+		_fileImpl.write(gitignoreFile, StringUtil.merge(gitIgnores, "\n"));
 	}
 
 	protected void writeClasspathFile(
@@ -556,7 +608,8 @@ public class PluginsEnvironmentBuilder {
 			for (String dirName : new String[] {"global", "portal"}) {
 				File file = new File(libDirPath + "/../ext-lib/" + dirName);
 
-				List<String> jars = ListUtil.toList(file.list(filenameFilter));
+				List<String> jars = ListUtil.fromArray(
+					file.list(filenameFilter));
 
 				if (dirName.equals("global")) {
 					extGlobalJars.addAll(ListUtil.sort(jars));
@@ -566,7 +619,7 @@ public class PluginsEnvironmentBuilder {
 					String[] fileNames = dir.list(filenameFilter);
 
 					globalJars.addAll(
-						ListUtil.sort(ListUtil.toList(fileNames)));
+						ListUtil.sort(ListUtil.fromArray(fileNames)));
 
 					globalJars.removeAll(extGlobalJars);
 				}
@@ -578,7 +631,7 @@ public class PluginsEnvironmentBuilder {
 					String[] fileNames = dir.list(filenameFilter);
 
 					portalJars.addAll(
-						ListUtil.sort(ListUtil.toList(fileNames)));
+						ListUtil.sort(ListUtil.fromArray(fileNames)));
 
 					portalJars.removeAll(extPortalJars);
 				}
@@ -601,7 +654,7 @@ public class PluginsEnvironmentBuilder {
 		List<String> customJars = null;
 
 		if (customJarsArray != null) {
-			customJars = ListUtil.toList(customJarsArray);
+			customJars = ListUtil.fromArray(customJarsArray);
 
 			for (String jar : portalJars) {
 				customJars.remove(jar);
@@ -624,7 +677,7 @@ public class PluginsEnvironmentBuilder {
 		sb.append("<classpath>\n");
 
 		for (String sourceDirName : _SOURCE_DIR_NAMES) {
-			if (_fileUtil.exists(projectDirName + "/" + sourceDirName)) {
+			if (_fileImpl.exists(projectDirName + "/" + sourceDirName)) {
 				sb.append("\t<classpathentry excluding=\"**/.svn/**|.svn/\" ");
 				sb.append("kind=\"src\" path=\"");
 				sb.append(sourceDirName);
@@ -641,7 +694,7 @@ public class PluginsEnvironmentBuilder {
 		for (String testType : _TEST_TYPES) {
 			String testFolder = "test/" + testType;
 
-			if (_fileUtil.exists(projectDirName + "/" + testFolder)) {
+			if (_fileImpl.exists(projectDirName + "/" + testFolder)) {
 				addJunitJars = true;
 
 				sb.append("\t<classpathentry excluding=\"**/.svn/**|.svn/\" ");
@@ -729,13 +782,13 @@ public class PluginsEnvironmentBuilder {
 		File ivyXmlFile = new File(projectDirName, "ivy.xml");
 
 		if (ivyXmlFile.exists()) {
-			String content = _fileUtil.read(ivyXmlFile);
+			String content = _fileImpl.read(ivyXmlFile);
 
 			if (content.contains("test->default")) {
 				String ivyDirName = ".ivy";
 
 				for (int i = 0; i < 10; i++) {
-					if (_fileUtil.exists(ivyDirName)) {
+					if (_fileImpl.exists(ivyDirName)) {
 						break;
 					}
 
@@ -754,7 +807,7 @@ public class PluginsEnvironmentBuilder {
 		String content = StringUtil.replace(
 			sb.toString(), "\"/portal", "\"/portal-" + _BRANCH);
 
-		_fileUtil.write(classpathFile, content);
+		_fileImpl.write(classpathFile, content);
 	}
 
 	protected void writeEclipseFiles(
@@ -769,7 +822,7 @@ public class PluginsEnvironmentBuilder {
 		boolean javaProject = false;
 
 		for (String sourceDirName : _SOURCE_DIR_NAMES) {
-			if (_fileUtil.exists(projectDirName + "/" + sourceDirName)) {
+			if (_fileImpl.exists(projectDirName + "/" + sourceDirName)) {
 				javaProject = true;
 
 				break;
@@ -788,54 +841,55 @@ public class PluginsEnvironmentBuilder {
 			libDir, dependencyJars, projectDirName, projectName, javaProject);
 
 		for (String sourceDirName : _SOURCE_DIR_NAMES) {
-			if (_fileUtil.exists(projectDirName + "/" + sourceDirName)) {
-				List<String> gitIgnores = new ArrayList<>();
+			if (!_fileImpl.exists(projectDirName + "/" + sourceDirName)) {
+				continue;
+			}
 
-				if (sourceDirName.endsWith("ext-impl/src")) {
-					gitIgnores.add("/classes");
-					gitIgnores.add("/ext-impl.jar");
-				}
-				else if (sourceDirName.endsWith("ext-kernel/src")) {
-					gitIgnores.add("/classes");
-					gitIgnores.add("/ext-kernel.jar");
-				}
-				else if (sourceDirName.endsWith("ext-util-bridges/src")) {
-					gitIgnores.add("/classes");
-					gitIgnores.add("/ext-util-bridges.jar");
-				}
-				else if (sourceDirName.endsWith("ext-util-java/src")) {
-					gitIgnores.add("/classes");
-					gitIgnores.add("/ext-util-java.jar");
-				}
-				else if (sourceDirName.endsWith("ext-util-taglib/src")) {
-					gitIgnores.add("/classes");
-					gitIgnores.add("/ext-util-taglib.jar");
-				}
-				else {
-					continue;
-				}
+			List<String> gitIgnores = new ArrayList<>();
 
-				String dirName = StringBundler.concat(
-					projectDirName, "/", sourceDirName, "/../");
+			if (sourceDirName.endsWith("ext-impl/src")) {
+				gitIgnores.add("/classes");
+				gitIgnores.add("/ext-impl.jar");
+			}
+			else if (sourceDirName.endsWith("ext-kernel/src")) {
+				gitIgnores.add("/classes");
+				gitIgnores.add("/ext-kernel.jar");
+			}
+			else if (sourceDirName.endsWith("ext-util-bridges/src")) {
+				gitIgnores.add("/classes");
+				gitIgnores.add("/ext-util-bridges.jar");
+			}
+			else if (sourceDirName.endsWith("ext-util-java/src")) {
+				gitIgnores.add("/classes");
+				gitIgnores.add("/ext-util-java.jar");
+			}
+			else if (sourceDirName.endsWith("ext-util-taglib/src")) {
+				gitIgnores.add("/classes");
+				gitIgnores.add("/ext-util-taglib.jar");
+			}
+			else {
+				continue;
+			}
 
-				if (gitIgnores.isEmpty()) {
-					_fileUtil.delete(dirName + ".gitignore");
-				}
-				else {
-					String gitIgnoresString = StringUtil.merge(
-						gitIgnores, "\n");
+			String dirName = StringBundler.concat(
+				projectDirName, "/", sourceDirName, "/../");
 
-					_fileUtil.write(dirName + ".gitignore", gitIgnoresString);
-				}
+			if (gitIgnores.isEmpty()) {
+				_fileImpl.delete(dirName + ".gitignore");
+			}
+			else {
+				String gitIgnoresString = StringUtil.merge(gitIgnores, "\n");
+
+				_fileImpl.write(dirName + ".gitignore", gitIgnoresString);
 			}
 		}
 
-		if (_fileUtil.exists(projectDirName + "/test")) {
-			_fileUtil.write(
+		if (_fileImpl.exists(projectDirName + "/test")) {
+			_fileImpl.write(
 				projectDirName + "/.gitignore", "/test-classes\n/test-results");
 		}
 		else {
-			_fileUtil.delete(projectDirName + "/.gitignore");
+			_fileImpl.delete(projectDirName + "/.gitignore");
 		}
 	}
 
@@ -877,7 +931,7 @@ public class PluginsEnvironmentBuilder {
 
 		System.out.println("Updating " + projectFile);
 
-		_fileUtil.write(projectFile, sb.toString());
+		_fileImpl.write(projectFile, sb.toString());
 	}
 
 	private static final String _BRANCH = "master";
@@ -892,7 +946,7 @@ public class PluginsEnvironmentBuilder {
 
 	private static final String[] _TEST_TYPES = {"integration", "unit"};
 
-	private static final FileImpl _fileUtil = FileImpl.getInstance();
+	private static final FileImpl _fileImpl = FileImpl.getInstance();
 	private static final SAXReader _saxReader = new SAXReaderImpl();
 
 }

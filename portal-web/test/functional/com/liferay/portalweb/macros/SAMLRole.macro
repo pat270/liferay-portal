@@ -1,4 +1,5 @@
 definition {
+
 	macro configure {
 		Select(
 			locator1 = "CPSAMLAdmin#SAML_ROLE_SELECT",
@@ -18,12 +19,14 @@ definition {
 	}
 
 	macro configureCertificateAndPrivateKey {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
 		AssertClick(
 			key_certificateUsage = "${certificateUsage}",
-			locator1 = "Button#CREATE_CERTIFICATE",
+			locator1 = "CPSAMLAdmin#CREATE_CERTIFICATE",
 			value1 = "Create Certificate");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		Type(
 			locator1 = "CPSAMLAdmin#CERTIFICATE_AND_PRIVATE_KEY_COMMON_NAME_FIELD",
@@ -55,13 +58,15 @@ definition {
 			locator1 = "Button#SUBMIT",
 			value1 = "Save");
 
-		AssertElementPresent(
-			key_certificateUsage = "${certificateUsage}",
-			locator1 = "Button#DOWNLOAD_CERTIFICATE");
+		WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
 
 		AssertElementPresent(
 			key_certificateUsage = "${certificateUsage}",
-			locator1 = "Button#REPLACE_CERTIFICATE");
+			locator1 = "CPSAMLAdmin#DOWNLOAD_CERTIFICATE");
+
+		AssertElementPresent(
+			key_certificateUsage = "${certificateUsage}",
+			locator1 = "CPSAMLAdmin#REPLACE_CERTIFICATE");
 	}
 
 	macro configureIdentityProvider {
@@ -82,9 +87,21 @@ definition {
 			value1 = "Save");
 	}
 
+	macro convertEncryptionCertificate {
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "prepare-encryption-PCKS12-certificate");
+	}
+
+	macro convertSingingCertificate {
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "prepare-signing-PCKS12-certificate");
+	}
+
 	macro deleteCertificate {
 		ClickNoError(
-			locator1 = "Button#DELETE_CERTIFICATE",
+			locator1 = "CPSAMLAdmin#DELETE_CERTIFICATE",
 			value1 = "Delete Certificate");
 
 		AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to delete this certificate from the keystore?");
@@ -107,4 +124,69 @@ definition {
 			locator1 = "Message#SUCCESS",
 			value1 = "Your request completed successfully.");
 	}
+
+	macro importCertificateAndPrivateKey {
+		if ("${certificateUsage}" == "SIGNING") {
+			AssertClick(
+				key_certificateUsage = "SIGNING",
+				locator1 = "CPSAMLAdmin#REPLACE_CERTIFICATE",
+				value1 = "Replace Certificate");
+		}
+		else {
+			AssertClick(
+				key_certificateUsage = "ENCRYPTION",
+				locator1 = "CPSAMLAdmin#REPLACE_CERTIFICATE",
+				value1 = "Replace Certificate");
+		}
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Click(locator1 = "CPSAMLAdmin#IMPORT_CERTIFICATE");
+
+		Pause(locator1 = "1000");
+
+		AssertElementPresent(locator1 = "Button#SELECT_FILE");
+
+		if ("${certificateUsage}" == "SIGNING") {
+			UploadTempFile(
+				locator1 = "TextInput#FILE",
+				value1 = "samlidp.p12");
+
+			Type(
+				locator1 = "CPSAMLAdmin#CERTIFICATE_AND_PRIVATE_KEY_KEYSTORE_PASSWORD_FIELD",
+				value1 = "samlidp");
+		}
+		else {
+			var liferayHome = PropsUtil.get("liferay.home.dir.name");
+			var filePath = "${liferayHome}-1/data";
+
+			UploadTempFile(
+				locator1 = "TextInput#FILE",
+				value1 = "samlsp_encryption.p12");
+
+			Type(
+				locator1 = "CPSAMLAdmin#CERTIFICATE_AND_PRIVATE_KEY_KEYSTORE_PASSWORD_FIELD",
+				value1 = "samlsp");
+		}
+
+		Click(locator1 = "Button#CONTINUE");
+
+		var key_keyStoreAlias = "${keyStoreAlias}";
+
+		Click(locator1 = "CPSAMLAdmin#CERTIFICATE_AND_PRIVATE_KEY_KEYSTORE_ALIAS_RADIO");
+
+		Button.clickImport();
+
+		if ("${certificateUsage}" == "SIGNING") {
+			AssertElementPresent(
+				key_certificateUsage = "SIGNING",
+				locator1 = "CPSAMLAdmin#REPLACE_CERTIFICATE");
+		}
+		else {
+			AssertElementPresent(
+				key_certificateUsage = "ENCRYPTION",
+				locator1 = "CPSAMLAdmin#REPLACE_CERTIFICATE");
+		}
+	}
+
 }

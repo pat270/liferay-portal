@@ -25,24 +25,24 @@ import java.lang.reflect.Field;
 public class StaticFieldGetter {
 
 	public static StaticFieldGetter getInstance() {
-		return _instance;
+		return _staticFieldGetter;
 	}
 
 	public Object getFieldValue(String className, String fieldName) {
-		Object obj = null;
+		Object object = null;
 
 		try {
 			Class<?> objClass = Class.forName(className);
 
 			Field field = objClass.getField(fieldName);
 
-			obj = field.get(objClass);
+			object = field.get(objClass);
 		}
-		catch (Exception e) {
-			_log.error("Unable to access static field", e);
+		catch (Exception exception) {
+			_log.error("Unable to access static field", exception);
 		}
 
-		return obj;
+		return object;
 	}
 
 	private StaticFieldGetter() {
@@ -51,6 +51,7 @@ public class StaticFieldGetter {
 	private static final Log _log = LogFactoryUtil.getLog(
 		StaticFieldGetter.class);
 
-	private static final StaticFieldGetter _instance = new StaticFieldGetter();
+	private static final StaticFieldGetter _staticFieldGetter =
+		new StaticFieldGetter();
 
 }

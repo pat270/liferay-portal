@@ -17,6 +17,7 @@ package com.liferay.portal.background.task.service.persistence.impl;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.background.task.exception.NoSuchBackgroundTaskException;
 import com.liferay.portal.background.task.model.BackgroundTask;
+import com.liferay.portal.background.task.model.BackgroundTaskTable;
 import com.liferay.portal.background.task.model.impl.BackgroundTaskImpl;
 import com.liferay.portal.background.task.model.impl.BackgroundTaskModelImpl;
 import com.liferay.portal.background.task.service.persistence.BackgroundTaskPersistence;
@@ -32,13 +33,11 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -47,16 +46,14 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -73,7 +70,6 @@ import org.osgi.service.component.annotations.Reference;
  * @generated
  */
 @Component(service = BackgroundTaskPersistence.class)
-@ProviderType
 public class BackgroundTaskPersistenceImpl
 	extends BasePersistenceImpl<BackgroundTask>
 	implements BackgroundTaskPersistence {
@@ -115,7 +111,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -134,7 +130,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -155,47 +151,47 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByGroupId(
 		long groupId, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByGroupId;
-			finderArgs = new Object[] {groupId};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByGroupId;
+				finderArgs = new Object[] {groupId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByGroupId;
 			finderArgs = new Object[] {groupId, start, end, orderByComparator};
 		}
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BackgroundTask backgroundTask : list) {
-					if ((groupId != backgroundTask.getGroupId())) {
+					if (groupId != backgroundTask.getGroupId()) {
 						list = null;
 
 						break;
@@ -205,62 +201,52 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -290,16 +276,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -343,16 +329,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -416,8 +402,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -428,102 +414,102 @@ public class BackgroundTaskPersistenceImpl
 		Session session, BackgroundTask backgroundTask, long groupId,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -563,33 +549,31 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -622,7 +606,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -641,7 +625,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
@@ -662,34 +646,34 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param companyId the company ID
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByCompanyId(
 		long companyId, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByCompanyId;
-			finderArgs = new Object[] {companyId};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByCompanyId;
+				finderArgs = new Object[] {companyId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByCompanyId;
 			finderArgs = new Object[] {
 				companyId, start, end, orderByComparator
@@ -698,13 +682,13 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BackgroundTask backgroundTask : list) {
-					if ((companyId != backgroundTask.getCompanyId())) {
+					if (companyId != backgroundTask.getCompanyId()) {
 						list = null;
 
 						break;
@@ -714,62 +698,52 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -799,16 +773,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -852,16 +826,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("companyId=");
-		msg.append(companyId);
+		sb.append("companyId=");
+		sb.append(companyId);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -925,8 +899,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -937,102 +911,102 @@ public class BackgroundTaskPersistenceImpl
 		Session session, BackgroundTask backgroundTask, long companyId,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+		sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(companyId);
+		queryPos.add(companyId);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1072,33 +1046,31 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
+			sb.append(_FINDER_COLUMN_COMPANYID_COMPANYID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(companyId);
+				queryPos.add(companyId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1131,7 +1103,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param completed the completed
@@ -1150,7 +1122,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param completed the completed
@@ -1171,34 +1143,34 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param completed the completed
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByCompleted(
 		boolean completed, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByCompleted;
-			finderArgs = new Object[] {completed};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByCompleted;
+				finderArgs = new Object[] {completed};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByCompleted;
 			finderArgs = new Object[] {
 				completed, start, end, orderByComparator
@@ -1207,13 +1179,13 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BackgroundTask backgroundTask : list) {
-					if ((completed != backgroundTask.isCompleted())) {
+					if (completed != backgroundTask.isCompleted()) {
 						list = null;
 
 						break;
@@ -1223,62 +1195,52 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPLETED_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_COMPLETED_COMPLETED_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1309,16 +1271,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("completed=");
-		msg.append(completed);
+		sb.append("completed=");
+		sb.append(completed);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -1364,16 +1326,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("completed=");
-		msg.append(completed);
+		sb.append("completed=");
+		sb.append(completed);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -1438,8 +1400,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1450,102 +1412,102 @@ public class BackgroundTaskPersistenceImpl
 		Session session, BackgroundTask backgroundTask, boolean completed,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_COMPLETED_COMPLETED_2);
+		sb.append(_FINDER_COLUMN_COMPLETED_COMPLETED_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(completed);
+		queryPos.add(completed);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1585,33 +1547,31 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_COMPLETED_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_COMPLETED_COMPLETED_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1643,7 +1603,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param status the status
@@ -1660,7 +1620,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param status the status
@@ -1681,47 +1641,47 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param status the status
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByStatus(
 		int status, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByStatus;
-			finderArgs = new Object[] {status};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByStatus;
+				finderArgs = new Object[] {status};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByStatus;
 			finderArgs = new Object[] {status, start, end, orderByComparator};
 		}
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BackgroundTask backgroundTask : list) {
-					if ((status != backgroundTask.getStatus())) {
+					if (status != backgroundTask.getStatus()) {
 						list = null;
 
 						break;
@@ -1731,62 +1691,52 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_STATUS_STATUS_2);
+			sb.append(_FINDER_COLUMN_STATUS_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1816,16 +1766,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("status=");
-		msg.append(status);
+		sb.append("status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -1869,16 +1819,16 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("status=");
-		msg.append(status);
+		sb.append("status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -1942,8 +1892,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -1954,102 +1904,102 @@ public class BackgroundTaskPersistenceImpl
 		Session session, BackgroundTask backgroundTask, int status,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_STATUS_STATUS_2);
+		sb.append(_FINDER_COLUMN_STATUS_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2089,33 +2039,31 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_STATUS_STATUS_2);
+			sb.append(_FINDER_COLUMN_STATUS_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2153,7 +2101,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2173,7 +2121,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2197,7 +2145,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2205,29 +2153,29 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_T(
 		long groupId, String taskExecutorClassName, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		taskExecutorClassName = Objects.toString(taskExecutorClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_T;
-			finderArgs = new Object[] {groupId, taskExecutorClassName};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_T;
+				finderArgs = new Object[] {groupId, taskExecutorClassName};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_T;
 			finderArgs = new Object[] {
 				groupId, taskExecutorClassName, start, end, orderByComparator
@@ -2236,7 +2184,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -2255,77 +2203,67 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_GROUPID_2);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2357,19 +2295,19 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -2417,19 +2355,19 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -2501,8 +2439,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2514,30 +2452,30 @@ public class BackgroundTaskPersistenceImpl
 		String taskExecutorClassName,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_G_T_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_T_GROUPID_2);
 
 		boolean bindTaskExecutorClassName = false;
 
 		if (taskExecutorClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
 		}
 		else {
 			bindTaskExecutorClassName = true;
 
-			query.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
 		}
 
 		if (orderByComparator != null) {
@@ -2545,74 +2483,74 @@ public class BackgroundTaskPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (bindTaskExecutorClassName) {
-			qPos.add(taskExecutorClassName);
+			queryPos.add(taskExecutorClassName);
 		}
 
 		if (orderByComparator != null) {
@@ -2620,11 +2558,11 @@ public class BackgroundTaskPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2638,7 +2576,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns all the background tasks where groupId = any &#63; and taskExecutorClassName = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -2658,7 +2596,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = any &#63; and taskExecutorClassName = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -2678,7 +2616,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = any &#63; and taskExecutorClassName = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -2702,7 +2640,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -2710,22 +2648,20 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_T(
 		long[] groupIds, String[] taskExecutorClassNames, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (groupIds == null) {
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		if (taskExecutorClassNames == null) {
@@ -2737,30 +2673,29 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
-		if (groupIds.length == 1 && taskExecutorClassNames.length == 1) {
+		if ((groupIds.length == 1) && (taskExecutorClassNames.length == 1)) {
 			return findByG_T(
 				groupIds[0], taskExecutorClassNames[0], start, end,
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				StringUtil.merge(groupIds),
-				StringUtil.merge(taskExecutorClassNames)
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					StringUtil.merge(groupIds),
+					StringUtil.merge(taskExecutorClassNames)
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				StringUtil.merge(groupIds),
 				StringUtil.merge(taskExecutorClassNames), start, end,
@@ -2770,7 +2705,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				_finderPathWithPaginationFindByG_T, finderArgs, this);
 
@@ -2791,101 +2726,87 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_T_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_T_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
+						sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
+						sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByG_T, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByG_T, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByG_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2930,48 +2851,46 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_GROUPID_2);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2994,9 +2913,7 @@ public class BackgroundTaskPersistenceImpl
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		if (taskExecutorClassNames == null) {
@@ -3008,9 +2925,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -3021,80 +2937,74 @@ public class BackgroundTaskPersistenceImpl
 			_finderPathWithPaginationCountByG_T, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_T_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_T_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
+						sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_3);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
+						sb.append(_FINDER_COLUMN_G_T_TASKEXECUTORCLASSNAME_2);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByG_T, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByG_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3137,7 +3047,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3157,7 +3067,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3179,7 +3089,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -3187,27 +3097,27 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_S(
 		long groupId, int status, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_S;
-			finderArgs = new Object[] {groupId, status};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_S;
+				finderArgs = new Object[] {groupId, status};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_S;
 			finderArgs = new Object[] {
 				groupId, status, start, end, orderByComparator
@@ -3216,7 +3126,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -3234,66 +3144,56 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_G_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3325,19 +3225,19 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -3385,19 +3285,19 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -3466,8 +3366,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -3479,106 +3379,106 @@ public class BackgroundTaskPersistenceImpl
 		int status, OrderByComparator<BackgroundTask> orderByComparator,
 		boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_G_S_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_G_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -3621,37 +3521,35 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_G_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3692,7 +3590,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where taskExecutorClassName = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassName the task executor class name
@@ -3712,7 +3610,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where taskExecutorClassName = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassName the task executor class name
@@ -3735,7 +3633,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where taskExecutorClassName = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassName the task executor class name
@@ -3743,29 +3641,29 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByT_S(
 		String taskExecutorClassName, int status, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		taskExecutorClassName = Objects.toString(taskExecutorClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByT_S;
-			finderArgs = new Object[] {taskExecutorClassName, status};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByT_S;
+				finderArgs = new Object[] {taskExecutorClassName, status};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByT_S;
 			finderArgs = new Object[] {
 				taskExecutorClassName, status, start, end, orderByComparator
@@ -3774,7 +3672,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -3793,77 +3691,67 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_T_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3895,19 +3783,19 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append("taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -3955,19 +3843,19 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append("taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -4038,8 +3926,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -4051,117 +3939,117 @@ public class BackgroundTaskPersistenceImpl
 		String taskExecutorClassName, int status,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 		boolean bindTaskExecutorClassName = false;
 
 		if (taskExecutorClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_3);
 		}
 		else {
 			bindTaskExecutorClassName = true;
 
-			query.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_T_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_T_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindTaskExecutorClassName) {
-			qPos.add(taskExecutorClassName);
+			queryPos.add(taskExecutorClassName);
 		}
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -4175,7 +4063,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns all the background tasks where taskExecutorClassName = any &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassNames the task executor class names
@@ -4195,7 +4083,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where taskExecutorClassName = any &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassNames the task executor class names
@@ -4215,7 +4103,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where taskExecutorClassName = any &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassNames the task executor class names
@@ -4239,7 +4127,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where taskExecutorClassName = &#63; and status = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param taskExecutorClassName the task executor class name
@@ -4247,14 +4135,14 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByT_S(
 		String[] taskExecutorClassNames, int status, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (taskExecutorClassNames == null) {
 			taskExecutorClassNames = new String[0];
@@ -4265,9 +4153,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		if (taskExecutorClassNames.length == 1) {
@@ -4276,18 +4163,18 @@ public class BackgroundTaskPersistenceImpl
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				StringUtil.merge(taskExecutorClassNames), status
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					StringUtil.merge(taskExecutorClassNames), status
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				StringUtil.merge(taskExecutorClassNames), status, start, end,
 				orderByComparator
@@ -4296,7 +4183,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				_finderPathWithPaginationFindByT_S, finderArgs, this);
 
@@ -4316,93 +4203,79 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_6);
+						sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_6);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_5);
+						sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_5);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
-			query.append(_FINDER_COLUMN_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_T_S_STATUS_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByT_S, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByT_S, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByT_S, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4447,48 +4320,46 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_T_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4516,9 +4387,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -4529,72 +4399,66 @@ public class BackgroundTaskPersistenceImpl
 			_finderPathWithPaginationCountByT_S, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_6);
+						sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_6);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_5);
+						sb.append(_FINDER_COLUMN_T_S_TASKEXECUTORCLASSNAME_5);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
-			query.append(_FINDER_COLUMN_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_T_S_STATUS_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByT_S, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByT_S, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4647,7 +4511,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4670,7 +4534,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4695,7 +4559,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -4704,30 +4568,32 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_N_T(
 		long groupId, String name, String taskExecutorClassName, int start,
 		int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		name = Objects.toString(name, "");
 		taskExecutorClassName = Objects.toString(taskExecutorClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_N_T;
-			finderArgs = new Object[] {groupId, name, taskExecutorClassName};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_N_T;
+				finderArgs = new Object[] {
+					groupId, name, taskExecutorClassName
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_N_T;
 			finderArgs = new Object[] {
 				groupId, name, taskExecutorClassName, start, end,
@@ -4737,7 +4603,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -4757,92 +4623,82 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_N_T_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_N_T_GROUPID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_2);
 			}
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
 			}
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -4875,22 +4731,22 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", name=");
-		msg.append(name);
+		sb.append(", name=");
+		sb.append(name);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -4940,22 +4796,22 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", name=");
-		msg.append(name);
+		sb.append(", name=");
+		sb.append(name);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -5031,8 +4887,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -5044,41 +4900,41 @@ public class BackgroundTaskPersistenceImpl
 		String name, String taskExecutorClassName,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_G_N_T_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_N_T_GROUPID_2);
 
 		boolean bindName = false;
 
 		if (name.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_N_T_NAME_3);
+			sb.append(_FINDER_COLUMN_G_N_T_NAME_3);
 		}
 		else {
 			bindName = true;
 
-			query.append(_FINDER_COLUMN_G_N_T_NAME_2);
+			sb.append(_FINDER_COLUMN_G_N_T_NAME_2);
 		}
 
 		boolean bindTaskExecutorClassName = false;
 
 		if (taskExecutorClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
 		}
 		else {
 			bindTaskExecutorClassName = true;
 
-			query.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
 		}
 
 		if (orderByComparator != null) {
@@ -5086,78 +4942,78 @@ public class BackgroundTaskPersistenceImpl
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (bindName) {
-			qPos.add(name);
+			queryPos.add(name);
 		}
 
 		if (bindTaskExecutorClassName) {
-			qPos.add(taskExecutorClassName);
+			queryPos.add(taskExecutorClassName);
 		}
 
 		if (orderByComparator != null) {
@@ -5165,11 +5021,11 @@ public class BackgroundTaskPersistenceImpl
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -5183,7 +5039,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns all the background tasks where groupId = any &#63; and name = &#63; and taskExecutorClassName = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -5204,7 +5060,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = any &#63; and name = &#63; and taskExecutorClassName = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -5227,7 +5083,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = any &#63; and name = &#63; and taskExecutorClassName = any &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -5253,7 +5109,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5262,22 +5118,20 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_N_T(
 		long[] groupIds, String name, String[] taskExecutorClassNames,
 		int start, int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (groupIds == null) {
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		name = Objects.toString(name, "");
@@ -5291,30 +5145,29 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
-		if (groupIds.length == 1 && taskExecutorClassNames.length == 1) {
+		if ((groupIds.length == 1) && (taskExecutorClassNames.length == 1)) {
 			return findByG_N_T(
 				groupIds[0], name, taskExecutorClassNames[0], start, end,
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				StringUtil.merge(groupIds), name,
-				StringUtil.merge(taskExecutorClassNames)
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					StringUtil.merge(groupIds), name,
+					StringUtil.merge(taskExecutorClassNames)
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				StringUtil.merge(groupIds), name,
 				StringUtil.merge(taskExecutorClassNames), start, end,
@@ -5324,7 +5177,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				_finderPathWithPaginationFindByG_N_T, finderArgs, this);
 
@@ -5346,116 +5199,102 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_N_T_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_N_T_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_2);
 			}
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
+						sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
+						sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByG_N_T, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByG_N_T, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByG_N_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5509,63 +5348,61 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_N_T_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_N_T_GROUPID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_2);
 			}
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5591,9 +5428,7 @@ public class BackgroundTaskPersistenceImpl
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		name = Objects.toString(name, "");
@@ -5607,9 +5442,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -5621,95 +5455,89 @@ public class BackgroundTaskPersistenceImpl
 			_finderPathWithPaginationCountByG_N_T, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_N_T_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_N_T_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_NAME_2);
 			}
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
+						sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_3);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
+						sb.append(_FINDER_COLUMN_G_N_T_TASKEXECUTORCLASSNAME_2);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 			}
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByG_N_T, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByG_N_T, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5763,7 +5591,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5786,7 +5614,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5812,7 +5640,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -5821,31 +5649,31 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_T_C(
 		long groupId, String taskExecutorClassName, boolean completed,
 		int start, int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		taskExecutorClassName = Objects.toString(taskExecutorClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_T_C;
-			finderArgs = new Object[] {
-				groupId, taskExecutorClassName, completed
-			};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_T_C;
+				finderArgs = new Object[] {
+					groupId, taskExecutorClassName, completed
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_T_C;
 			finderArgs = new Object[] {
 				groupId, taskExecutorClassName, completed, start, end,
@@ -5855,7 +5683,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -5875,81 +5703,71 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_C_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_C_GROUPID_2);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -5982,22 +5800,22 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", completed=");
-		msg.append(completed);
+		sb.append(", completed=");
+		sb.append(completed);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -6047,22 +5865,22 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", completed=");
-		msg.append(completed);
+		sb.append(", completed=");
+		sb.append(completed);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -6137,8 +5955,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -6150,121 +5968,121 @@ public class BackgroundTaskPersistenceImpl
 		String taskExecutorClassName, boolean completed,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_G_T_C_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_T_C_GROUPID_2);
 
 		boolean bindTaskExecutorClassName = false;
 
 		if (taskExecutorClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_3);
 		}
 		else {
 			bindTaskExecutorClassName = true;
 
-			query.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
+		sb.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (bindTaskExecutorClassName) {
-			qPos.add(taskExecutorClassName);
+			queryPos.add(taskExecutorClassName);
 		}
 
-		qPos.add(completed);
+		queryPos.add(completed);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -6278,7 +6096,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns all the background tasks where groupId = any &#63; and taskExecutorClassName = any &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -6299,7 +6117,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = any &#63; and taskExecutorClassName = any &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -6322,7 +6140,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = any &#63; and taskExecutorClassName = any &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -6348,7 +6166,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and completed = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -6357,22 +6175,20 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_T_C(
 		long[] groupIds, String[] taskExecutorClassNames, boolean completed,
 		int start, int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (groupIds == null) {
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		if (taskExecutorClassNames == null) {
@@ -6384,30 +6200,29 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
-		if (groupIds.length == 1 && taskExecutorClassNames.length == 1) {
+		if ((groupIds.length == 1) && (taskExecutorClassNames.length == 1)) {
 			return findByG_T_C(
 				groupIds[0], taskExecutorClassNames[0], completed, start, end,
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				StringUtil.merge(groupIds),
-				StringUtil.merge(taskExecutorClassNames), completed
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					StringUtil.merge(groupIds),
+					StringUtil.merge(taskExecutorClassNames), completed
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				StringUtil.merge(groupIds),
 				StringUtil.merge(taskExecutorClassNames), completed, start, end,
@@ -6417,7 +6232,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				_finderPathWithPaginationFindByG_T_C, finderArgs, this);
 
@@ -6439,107 +6254,93 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_T_C_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_T_C_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_6);
+						sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_6);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_5);
+						sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_5);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByG_T_C, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByG_T_C, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByG_T_C, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6592,52 +6393,50 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_C_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_C_GROUPID_2);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6663,9 +6462,7 @@ public class BackgroundTaskPersistenceImpl
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		if (taskExecutorClassNames == null) {
@@ -6677,9 +6474,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -6691,86 +6487,80 @@ public class BackgroundTaskPersistenceImpl
 			_finderPathWithPaginationCountByG_T_C, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_T_C_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_T_C_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_6);
+						sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_6);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_5);
+						sb.append(_FINDER_COLUMN_G_T_C_TASKEXECUTORCLASSNAME_5);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_T_C_COMPLETED_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByG_T_C, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByG_T_C, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -6829,7 +6619,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -6852,7 +6642,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -6877,7 +6667,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -6886,29 +6676,31 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_T_S(
 		long groupId, String taskExecutorClassName, int status, int start,
 		int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		taskExecutorClassName = Objects.toString(taskExecutorClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_T_S;
-			finderArgs = new Object[] {groupId, taskExecutorClassName, status};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_T_S;
+				finderArgs = new Object[] {
+					groupId, taskExecutorClassName, status
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_T_S;
 			finderArgs = new Object[] {
 				groupId, taskExecutorClassName, status, start, end,
@@ -6918,7 +6710,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -6938,81 +6730,71 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_G_T_S_STATUS_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7045,22 +6827,22 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -7110,22 +6892,22 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", status=");
-		msg.append(status);
+		sb.append(", status=");
+		sb.append(status);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -7199,8 +6981,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -7212,121 +6994,121 @@ public class BackgroundTaskPersistenceImpl
 		String taskExecutorClassName, int status,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
 
 		boolean bindTaskExecutorClassName = false;
 
 		if (taskExecutorClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_3);
 		}
 		else {
 			bindTaskExecutorClassName = true;
 
-			query.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_G_T_S_STATUS_2);
+		sb.append(_FINDER_COLUMN_G_T_S_STATUS_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (bindTaskExecutorClassName) {
-			qPos.add(taskExecutorClassName);
+			queryPos.add(taskExecutorClassName);
 		}
 
-		qPos.add(status);
+		queryPos.add(status);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -7340,7 +7122,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns all the background tasks where groupId = &#63; and taskExecutorClassName = any &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7361,7 +7143,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and taskExecutorClassName = any &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7384,7 +7166,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = any &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7409,7 +7191,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and taskExecutorClassName = &#63; and status = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7418,14 +7200,14 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findByG_T_S(
 		long groupId, String[] taskExecutorClassNames, int status, int start,
 		int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (taskExecutorClassNames == null) {
 			taskExecutorClassNames = new String[0];
@@ -7436,9 +7218,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		if (taskExecutorClassNames.length == 1) {
@@ -7447,18 +7228,18 @@ public class BackgroundTaskPersistenceImpl
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				groupId, StringUtil.merge(taskExecutorClassNames), status
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					groupId, StringUtil.merge(taskExecutorClassNames), status
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				groupId, StringUtil.merge(taskExecutorClassNames), status,
 				start, end, orderByComparator
@@ -7467,7 +7248,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				_finderPathWithPaginationFindByG_T_S, finderArgs, this);
 
@@ -7488,97 +7269,83 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_6);
+						sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_6);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_5);
+						sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_5);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_G_T_S_STATUS_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByG_T_S, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByG_T_S, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByG_T_S, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7631,52 +7398,50 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_G_T_S_STATUS_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7707,9 +7472,8 @@ public class BackgroundTaskPersistenceImpl
 					taskExecutorClassNames[i], "");
 			}
 
-			taskExecutorClassNames = ArrayUtil.unique(taskExecutorClassNames);
-
-			Arrays.sort(taskExecutorClassNames);
+			taskExecutorClassNames = ArrayUtil.sortedUnique(
+				taskExecutorClassNames);
 		}
 
 		Object[] finderArgs = new Object[] {
@@ -7720,76 +7484,70 @@ public class BackgroundTaskPersistenceImpl
 			_finderPathWithPaginationCountByG_T_S, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_T_S_GROUPID_2);
 
 			if (taskExecutorClassNames.length > 0) {
-				query.append("(");
+				sb.append("(");
 
 				for (int i = 0; i < taskExecutorClassNames.length; i++) {
 					String taskExecutorClassName = taskExecutorClassNames[i];
 
 					if (taskExecutorClassName.isEmpty()) {
-						query.append(
-							_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_6);
+						sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_6);
 					}
 					else {
-						query.append(
-							_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_5);
+						sb.append(_FINDER_COLUMN_G_T_S_TASKEXECUTORCLASSNAME_5);
 					}
 
 					if ((i + 1) < taskExecutorClassNames.length) {
-						query.append(WHERE_OR);
+						sb.append(WHERE_OR);
 					}
 				}
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
-			query.append(_FINDER_COLUMN_G_T_S_STATUS_2);
+			sb.append(_FINDER_COLUMN_G_T_S_STATUS_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				for (String taskExecutorClassName : taskExecutorClassNames) {
-					if (taskExecutorClassName != null &&
+					if ((taskExecutorClassName != null) &&
 						!taskExecutorClassName.isEmpty()) {
 
-						qPos.add(taskExecutorClassName);
+						queryPos.add(taskExecutorClassName);
 					}
 				}
 
-				qPos.add(status);
+				queryPos.add(status);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByG_T_S, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByG_T_S, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -7847,7 +7605,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7871,7 +7629,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7898,7 +7656,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -7908,7 +7666,7 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
@@ -7916,25 +7674,25 @@ public class BackgroundTaskPersistenceImpl
 		long groupId, String name, String taskExecutorClassName,
 		boolean completed, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		name = Objects.toString(name, "");
 		taskExecutorClassName = Objects.toString(taskExecutorClassName, "");
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByG_N_T_C;
-			finderArgs = new Object[] {
-				groupId, name, taskExecutorClassName, completed
-			};
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByG_N_T_C;
+				finderArgs = new Object[] {
+					groupId, name, taskExecutorClassName, completed
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByG_N_T_C;
 			finderArgs = new Object[] {
 				groupId, name, taskExecutorClassName, completed, start, end,
@@ -7944,7 +7702,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -7965,96 +7723,86 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					6 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(6);
+				sb = new StringBundler(6);
 			}
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_N_T_C_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_GROUPID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
 			}
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -8089,25 +7837,25 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", name=");
-		msg.append(name);
+		sb.append(", name=");
+		sb.append(name);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", completed=");
-		msg.append(completed);
+		sb.append(", completed=");
+		sb.append(completed);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -8162,25 +7910,25 @@ public class BackgroundTaskPersistenceImpl
 			return backgroundTask;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", name=");
-		msg.append(name);
+		sb.append(", name=");
+		sb.append(name);
 
-		msg.append(", taskExecutorClassName=");
-		msg.append(taskExecutorClassName);
+		sb.append(", taskExecutorClassName=");
+		sb.append(taskExecutorClassName);
 
-		msg.append(", completed=");
-		msg.append(completed);
+		sb.append(", completed=");
+		sb.append(completed);
 
-		msg.append("}");
+		sb.append("}");
 
-		throw new NoSuchBackgroundTaskException(msg.toString());
+		throw new NoSuchBackgroundTaskException(sb.toString());
 	}
 
 	/**
@@ -8260,8 +8008,8 @@ public class BackgroundTaskPersistenceImpl
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -8273,136 +8021,136 @@ public class BackgroundTaskPersistenceImpl
 		String name, String taskExecutorClassName, boolean completed,
 		OrderByComparator<BackgroundTask> orderByComparator, boolean previous) {
 
-		StringBundler query = null;
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(
+			sb = new StringBundler(
 				7 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(6);
+			sb = new StringBundler(6);
 		}
 
-		query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+		sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
-		query.append(_FINDER_COLUMN_G_N_T_C_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_N_T_C_GROUPID_2);
 
 		boolean bindName = false;
 
 		if (name.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
+			sb.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
 		}
 		else {
 			bindName = true;
 
-			query.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
 		}
 
 		boolean bindTaskExecutorClassName = false;
 
 		if (taskExecutorClassName.isEmpty()) {
-			query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
+			sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
 		}
 		else {
 			bindTaskExecutorClassName = true;
 
-			query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
 		}
 
-		query.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
+		sb.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
 
 		if (orderByComparator != null) {
 			String[] orderByConditionFields =
 				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (bindName) {
-			qPos.add(name);
+			queryPos.add(name);
 		}
 
 		if (bindTaskExecutorClassName) {
-			qPos.add(taskExecutorClassName);
+			queryPos.add(taskExecutorClassName);
 		}
 
-		qPos.add(completed);
+		queryPos.add(completed);
 
 		if (orderByComparator != null) {
 			for (Object orderByConditionValue :
 					orderByComparator.getOrderByConditionValues(
 						backgroundTask)) {
 
-				qPos.add(orderByConditionValue);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<BackgroundTask> list = q.list();
+		List<BackgroundTask> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -8416,7 +8164,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns all the background tasks where groupId = any &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -8439,7 +8187,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks where groupId = any &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -8463,7 +8211,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = any &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupIds the group IDs
@@ -8490,7 +8238,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks where groupId = &#63; and name = &#63; and taskExecutorClassName = &#63; and completed = &#63;, optionally using the finder cache.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -8500,7 +8248,7 @@ public class BackgroundTaskPersistenceImpl
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching background tasks
 	 */
 	@Override
@@ -8508,15 +8256,13 @@ public class BackgroundTaskPersistenceImpl
 		long[] groupIds, String name, String taskExecutorClassName,
 		boolean completed, int start, int end,
 		OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		if (groupIds == null) {
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		name = Objects.toString(name, "");
@@ -8528,19 +8274,19 @@ public class BackgroundTaskPersistenceImpl
 				orderByComparator);
 		}
 
-		boolean pagination = true;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderArgs = new Object[] {
-				StringUtil.merge(groupIds), name, taskExecutorClassName,
-				completed
-			};
+			if (useFinderCache) {
+				finderArgs = new Object[] {
+					StringUtil.merge(groupIds), name, taskExecutorClassName,
+					completed
+				};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderArgs = new Object[] {
 				StringUtil.merge(groupIds), name, taskExecutorClassName,
 				completed, start, end, orderByComparator
@@ -8549,7 +8295,7 @@ public class BackgroundTaskPersistenceImpl
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				_finderPathWithPaginationFindByG_N_T_C, finderArgs, this);
 
@@ -8571,104 +8317,93 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		if (list == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_SELECT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_N_T_C_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_N_T_C_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
 			}
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
 			if (orderByComparator != null) {
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else if (pagination) {
-				query.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(
-					_finderPathWithPaginationFindByG_N_T_C, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(
+						_finderPathWithPaginationFindByG_N_T_C, finderArgs,
+						list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationFindByG_N_T_C, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -8726,67 +8461,65 @@ public class BackgroundTaskPersistenceImpl
 		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
-			query.append(_FINDER_COLUMN_G_N_T_C_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_GROUPID_2);
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
 			}
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(finderPath, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -8814,9 +8547,7 @@ public class BackgroundTaskPersistenceImpl
 			groupIds = new long[0];
 		}
 		else if (groupIds.length > 1) {
-			groupIds = ArrayUtil.unique(groupIds);
-
-			Arrays.sort(groupIds);
+			groupIds = ArrayUtil.sortedUnique(groupIds);
 		}
 
 		name = Objects.toString(name, "");
@@ -8830,83 +8561,79 @@ public class BackgroundTaskPersistenceImpl
 			_finderPathWithPaginationCountByG_N_T_C, finderArgs, this);
 
 		if (count == null) {
-			StringBundler query = new StringBundler();
+			StringBundler sb = new StringBundler();
 
-			query.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
+			sb.append(_SQL_COUNT_BACKGROUNDTASK_WHERE);
 
 			if (groupIds.length > 0) {
-				query.append("(");
+				sb.append("(");
 
-				query.append(_FINDER_COLUMN_G_N_T_C_GROUPID_7);
+				sb.append(_FINDER_COLUMN_G_N_T_C_GROUPID_7);
 
-				query.append(StringUtil.merge(groupIds));
+				sb.append(StringUtil.merge(groupIds));
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(")");
+				sb.append(")");
 
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			boolean bindName = false;
 
 			if (name.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_3);
 			}
 			else {
 				bindName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_NAME_2);
 			}
 
 			boolean bindTaskExecutorClassName = false;
 
 			if (taskExecutorClassName.isEmpty()) {
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_3);
 			}
 			else {
 				bindTaskExecutorClassName = true;
 
-				query.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
+				sb.append(_FINDER_COLUMN_G_N_T_C_TASKEXECUTORCLASSNAME_2);
 			}
 
-			query.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
+			sb.append(_FINDER_COLUMN_G_N_T_C_COMPLETED_2);
 
-			query.setStringAt(
-				removeConjunction(query.stringAt(query.index() - 1)),
-				query.index() - 1);
+			sb.setStringAt(
+				removeConjunction(sb.stringAt(sb.index() - 1)), sb.index() - 1);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					qPos.add(name);
+					queryPos.add(name);
 				}
 
 				if (bindTaskExecutorClassName) {
-					qPos.add(taskExecutorClassName);
+					queryPos.add(taskExecutorClassName);
 				}
 
-				qPos.add(completed);
+				queryPos.add(completed);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathWithPaginationCountByG_N_T_C, finderArgs, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathWithPaginationCountByG_N_T_C, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -8942,6 +8669,8 @@ public class BackgroundTaskPersistenceImpl
 
 		setModelImplClass(BackgroundTaskImpl.class);
 		setModelPKClass(long.class);
+
+		setTable(BackgroundTaskTable.INSTANCE);
 	}
 
 	/**
@@ -8952,10 +8681,8 @@ public class BackgroundTaskPersistenceImpl
 	@Override
 	public void cacheResult(BackgroundTask backgroundTask) {
 		entityCache.putResult(
-			entityCacheEnabled, BackgroundTaskImpl.class,
-			backgroundTask.getPrimaryKey(), backgroundTask);
-
-		backgroundTask.resetOriginalValues();
+			BackgroundTaskImpl.class, backgroundTask.getPrimaryKey(),
+			backgroundTask);
 	}
 
 	/**
@@ -8967,13 +8694,10 @@ public class BackgroundTaskPersistenceImpl
 	public void cacheResult(List<BackgroundTask> backgroundTasks) {
 		for (BackgroundTask backgroundTask : backgroundTasks) {
 			if (entityCache.getResult(
-					entityCacheEnabled, BackgroundTaskImpl.class,
-					backgroundTask.getPrimaryKey()) == null) {
+					BackgroundTaskImpl.class, backgroundTask.getPrimaryKey()) ==
+						null) {
 
 				cacheResult(backgroundTask);
-			}
-			else {
-				backgroundTask.resetOriginalValues();
 			}
 		}
 	}
@@ -9004,8 +8728,7 @@ public class BackgroundTaskPersistenceImpl
 	@Override
 	public void clearCache(BackgroundTask backgroundTask) {
 		entityCache.removeResult(
-			entityCacheEnabled, BackgroundTaskImpl.class,
-			backgroundTask.getPrimaryKey());
+			BackgroundTaskImpl.class, backgroundTask.getPrimaryKey());
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
@@ -9018,8 +8741,18 @@ public class BackgroundTaskPersistenceImpl
 
 		for (BackgroundTask backgroundTask : backgroundTasks) {
 			entityCache.removeResult(
-				entityCacheEnabled, BackgroundTaskImpl.class,
-				backgroundTask.getPrimaryKey());
+				BackgroundTaskImpl.class, backgroundTask.getPrimaryKey());
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+		for (Serializable primaryKey : primaryKeys) {
+			entityCache.removeResult(BackgroundTaskImpl.class, primaryKey);
 		}
 	}
 
@@ -9036,7 +8769,7 @@ public class BackgroundTaskPersistenceImpl
 		backgroundTask.setNew(true);
 		backgroundTask.setPrimaryKey(backgroundTaskId);
 
-		backgroundTask.setCompanyId(companyProvider.getCompanyId());
+		backgroundTask.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return backgroundTask;
 	}
@@ -9085,11 +8818,11 @@ public class BackgroundTaskPersistenceImpl
 
 			return remove(backgroundTask);
 		}
-		catch (NoSuchBackgroundTaskException nsee) {
-			throw nsee;
+		catch (NoSuchBackgroundTaskException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -9113,8 +8846,8 @@ public class BackgroundTaskPersistenceImpl
 				session.delete(backgroundTask);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -9189,8 +8922,8 @@ public class BackgroundTaskPersistenceImpl
 				backgroundTask = (BackgroundTask)session.merge(backgroundTask);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -9198,10 +8931,7 @@ public class BackgroundTaskPersistenceImpl
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (!_columnBitmaskEnabled) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-		}
-		else if (isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {backgroundTaskModelImpl.getGroupId()};
 
 			finderCache.removeResult(_finderPathCountByGroupId, args);
@@ -9304,7 +9034,7 @@ public class BackgroundTaskPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId")
 				};
 
 				finderCache.removeResult(_finderPathCountByGroupId, args);
@@ -9323,7 +9053,7 @@ public class BackgroundTaskPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalCompanyId()
+					backgroundTaskModelImpl.getColumnOriginalValue("companyId")
 				};
 
 				finderCache.removeResult(_finderPathCountByCompanyId, args);
@@ -9342,7 +9072,7 @@ public class BackgroundTaskPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalCompleted()
+					backgroundTaskModelImpl.getColumnOriginalValue("completed")
 				};
 
 				finderCache.removeResult(_finderPathCountByCompleted, args);
@@ -9361,7 +9091,7 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalStatus()
+					backgroundTaskModelImpl.getColumnOriginalValue("status")
 				};
 
 				finderCache.removeResult(_finderPathCountByStatus, args);
@@ -9380,8 +9110,9 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId(),
-					backgroundTaskModelImpl.getOriginalTaskExecutorClassName()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId"),
+					backgroundTaskModelImpl.getColumnOriginalValue(
+						"taskExecutorClassName")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_T, args);
@@ -9403,8 +9134,8 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId(),
-					backgroundTaskModelImpl.getOriginalStatus()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId"),
+					backgroundTaskModelImpl.getColumnOriginalValue("status")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_S, args);
@@ -9426,8 +9157,9 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalTaskExecutorClassName(),
-					backgroundTaskModelImpl.getOriginalStatus()
+					backgroundTaskModelImpl.getColumnOriginalValue(
+						"taskExecutorClassName"),
+					backgroundTaskModelImpl.getColumnOriginalValue("status")
 				};
 
 				finderCache.removeResult(_finderPathCountByT_S, args);
@@ -9449,9 +9181,10 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId(),
-					backgroundTaskModelImpl.getOriginalName(),
-					backgroundTaskModelImpl.getOriginalTaskExecutorClassName()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId"),
+					backgroundTaskModelImpl.getColumnOriginalValue("name"),
+					backgroundTaskModelImpl.getColumnOriginalValue(
+						"taskExecutorClassName")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_N_T, args);
@@ -9474,9 +9207,10 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId(),
-					backgroundTaskModelImpl.getOriginalTaskExecutorClassName(),
-					backgroundTaskModelImpl.getOriginalCompleted()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId"),
+					backgroundTaskModelImpl.getColumnOriginalValue(
+						"taskExecutorClassName"),
+					backgroundTaskModelImpl.getColumnOriginalValue("completed")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_T_C, args);
@@ -9499,9 +9233,10 @@ public class BackgroundTaskPersistenceImpl
 					 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId(),
-					backgroundTaskModelImpl.getOriginalTaskExecutorClassName(),
-					backgroundTaskModelImpl.getOriginalStatus()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId"),
+					backgroundTaskModelImpl.getColumnOriginalValue(
+						"taskExecutorClassName"),
+					backgroundTaskModelImpl.getColumnOriginalValue("status")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_T_S, args);
@@ -9524,10 +9259,11 @@ public class BackgroundTaskPersistenceImpl
 					 getColumnBitmask()) != 0) {
 
 				Object[] args = new Object[] {
-					backgroundTaskModelImpl.getOriginalGroupId(),
-					backgroundTaskModelImpl.getOriginalName(),
-					backgroundTaskModelImpl.getOriginalTaskExecutorClassName(),
-					backgroundTaskModelImpl.getOriginalCompleted()
+					backgroundTaskModelImpl.getColumnOriginalValue("groupId"),
+					backgroundTaskModelImpl.getColumnOriginalValue("name"),
+					backgroundTaskModelImpl.getColumnOriginalValue(
+						"taskExecutorClassName"),
+					backgroundTaskModelImpl.getColumnOriginalValue("completed")
 				};
 
 				finderCache.removeResult(_finderPathCountByG_N_T_C, args);
@@ -9548,8 +9284,8 @@ public class BackgroundTaskPersistenceImpl
 		}
 
 		entityCache.putResult(
-			entityCacheEnabled, BackgroundTaskImpl.class,
-			backgroundTask.getPrimaryKey(), backgroundTask, false);
+			BackgroundTaskImpl.class, backgroundTask.getPrimaryKey(),
+			backgroundTask, false);
 
 		backgroundTask.resetOriginalValues();
 
@@ -9620,7 +9356,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns a range of all the background tasks.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of background tasks
@@ -9636,7 +9372,7 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of background tasks
@@ -9656,64 +9392,62 @@ public class BackgroundTaskPersistenceImpl
 	 * Returns an ordered range of all the background tasks.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>BackgroundTaskModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of background tasks
 	 * @param end the upper bound of the range of background tasks (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of background tasks
 	 */
 	@Override
 	public List<BackgroundTask> findAll(
 		int start, int end, OrderByComparator<BackgroundTask> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
-		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
 			(orderByComparator == null)) {
 
-			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<BackgroundTask> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BackgroundTask>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(
+				sb = new StringBundler(
 					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_BACKGROUNDTASK);
+				sb.append(_SQL_SELECT_BACKGROUNDTASK);
 
 				appendOrderByComparator(
-					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_BACKGROUNDTASK;
 
-				if (pagination) {
-					sql = sql.concat(BackgroundTaskModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(BackgroundTaskModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -9721,29 +9455,19 @@ public class BackgroundTaskPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<BackgroundTask>)QueryUtil.list(
-						q, getDialect(), start, end);
-				}
+				list = (List<BackgroundTask>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -9780,18 +9504,15 @@ public class BackgroundTaskPersistenceImpl
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_BACKGROUNDTASK);
+				Query query = session.createQuery(_SQL_COUNT_BACKGROUNDTASK);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
 				finderCache.putResult(
 					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
-			catch (Exception e) {
-				finderCache.removeResult(
-					_finderPathCountAll, FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -9826,106 +9547,93 @@ public class BackgroundTaskPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		BackgroundTaskModelImpl.setEntityCacheEnabled(entityCacheEnabled);
-		BackgroundTaskModelImpl.setFinderCacheEnabled(finderCacheEnabled);
-
 		_finderPathWithPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathWithoutPaginationFindAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
-			new String[0]);
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findAll", new String[0]);
 
 		_finderPathCountAll = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0]);
 
 		_finderPathWithPaginationFindByGroupId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByGroupId",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			});
 
 		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] {Long.class.getName()},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByGroupId", new String[] {Long.class.getName()},
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByGroupId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByGroupId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByCompanyId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByCompanyId",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			});
 
 		_finderPathWithoutPaginationFindByCompanyId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompanyId",
-			new String[] {Long.class.getName()},
-			BackgroundTaskModelImpl.COMPANYID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByCompanyId", new String[] {Long.class.getName()},
+			BackgroundTaskModelImpl.getColumnBitmask("companyId") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByCompanyId = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompanyId",
-			new String[] {Long.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByCompanyId", new String[] {Long.class.getName()});
 
 		_finderPathWithPaginationFindByCompleted = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompleted",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByCompleted",
 			new String[] {
 				Boolean.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			});
 
 		_finderPathWithoutPaginationFindByCompleted = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByCompleted",
-			new String[] {Boolean.class.getName()},
-			BackgroundTaskModelImpl.COMPLETED_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByCompleted", new String[] {Boolean.class.getName()},
+			BackgroundTaskModelImpl.getColumnBitmask("completed") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByCompleted = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByCompleted",
-			new String[] {Boolean.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByCompleted", new String[] {Boolean.class.getName()});
 
 		_finderPathWithPaginationFindByStatus = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByStatus",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByStatus",
 			new String[] {
 				Integer.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			});
 
 		_finderPathWithoutPaginationFindByStatus = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByStatus",
-			new String[] {Integer.class.getName()},
-			BackgroundTaskModelImpl.STATUS_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByStatus", new String[] {Integer.class.getName()},
+			BackgroundTaskModelImpl.getColumnBitmask("status") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByStatus = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByStatus",
-			new String[] {Integer.class.getName()});
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByStatus", new String[] {Integer.class.getName()});
 
 		_finderPathWithPaginationFindByG_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_T",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByG_T",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -9933,26 +9641,24 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_T",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByG_T",
 			new String[] {Long.class.getName(), String.class.getName()},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.TASKEXECUTORCLASSNAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("taskExecutorClassName") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByG_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_T",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationCountByG_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_T",
 			new String[] {Long.class.getName(), String.class.getName()});
 
 		_finderPathWithPaginationFindByG_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByG_S",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -9960,21 +9666,20 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByG_S",
 			new String[] {Long.class.getName(), Integer.class.getName()},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.STATUS_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("status") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByG_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
 			new String[] {Long.class.getName(), Integer.class.getName()});
 
 		_finderPathWithPaginationFindByT_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_S",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByT_S",
 			new String[] {
 				String.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -9982,26 +9687,24 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByT_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByT_S",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByT_S",
 			new String[] {String.class.getName(), Integer.class.getName()},
-			BackgroundTaskModelImpl.TASKEXECUTORCLASSNAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.STATUS_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("taskExecutorClassName") |
+			BackgroundTaskModelImpl.getColumnBitmask("status") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByT_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_S",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByT_S",
 			new String[] {String.class.getName(), Integer.class.getName()});
 
 		_finderPathWithPaginationCountByT_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_S",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_S",
 			new String[] {String.class.getName(), Integer.class.getName()});
 
 		_finderPathWithPaginationFindByG_N_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_N_T",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByG_N_T",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName(), Integer.class.getName(),
@@ -10009,36 +9712,35 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_N_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_N_T",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByG_N_T",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName()
 			},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.NAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.TASKEXECUTORCLASSNAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("name") |
+			BackgroundTaskModelImpl.getColumnBitmask("taskExecutorClassName") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByG_N_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_N_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_N_T",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationCountByG_N_T = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_N_T",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_N_T",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName()
 			});
 
 		_finderPathWithPaginationFindByG_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_T_C",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByG_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Boolean.class.getName(), Integer.class.getName(),
@@ -10046,36 +9748,35 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_T_C",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByG_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Boolean.class.getName()
 			},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.TASKEXECUTORCLASSNAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.COMPLETED_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("taskExecutorClassName") |
+			BackgroundTaskModelImpl.getColumnBitmask("completed") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByG_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_T_C",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Boolean.class.getName()
 			});
 
 		_finderPathWithPaginationCountByG_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_T_C",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Boolean.class.getName()
 			});
 
 		_finderPathWithPaginationFindByG_T_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_T_S",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByG_T_S",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -10083,36 +9784,35 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_T_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_T_S",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByG_T_S",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName()
 			},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.TASKEXECUTORCLASSNAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.STATUS_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("taskExecutorClassName") |
+			BackgroundTaskModelImpl.getColumnBitmask("status") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByG_T_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_T_S",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_T_S",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName()
 			});
 
 		_finderPathWithPaginationCountByG_T_S = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_T_S",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_T_S",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				Integer.class.getName()
 			});
 
 		_finderPathWithPaginationFindByG_N_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_N_T_C",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"findByG_N_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName(), Boolean.class.getName(),
@@ -10121,29 +9821,29 @@ public class BackgroundTaskPersistenceImpl
 			});
 
 		_finderPathWithoutPaginationFindByG_N_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, BackgroundTaskImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_N_T_C",
+			BackgroundTaskImpl.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"findByG_N_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName(), Boolean.class.getName()
 			},
-			BackgroundTaskModelImpl.GROUPID_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.NAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.TASKEXECUTORCLASSNAME_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.COMPLETED_COLUMN_BITMASK |
-			BackgroundTaskModelImpl.CREATEDATE_COLUMN_BITMASK);
+			BackgroundTaskModelImpl.getColumnBitmask("groupId") |
+			BackgroundTaskModelImpl.getColumnBitmask("name") |
+			BackgroundTaskModelImpl.getColumnBitmask("taskExecutorClassName") |
+			BackgroundTaskModelImpl.getColumnBitmask("completed") |
+			BackgroundTaskModelImpl.getColumnBitmask("createDate"));
 
 		_finderPathCountByG_N_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_N_T_C",
+			Long.class, FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+			"countByG_N_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName(), Boolean.class.getName()
 			});
 
 		_finderPathWithPaginationCountByG_N_T_C = new FinderPath(
-			entityCacheEnabled, finderCacheEnabled, Long.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByG_N_T_C",
+			Long.class, FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+			"countByG_N_T_C",
 			new String[] {
 				Long.class.getName(), String.class.getName(),
 				String.class.getName(), Boolean.class.getName()
@@ -10160,16 +9860,10 @@ public class BackgroundTaskPersistenceImpl
 
 	@Override
 	@Reference(
-		target = BackgroundTaskPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = BackgroundTaskPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
-
-		_columnBitmaskEnabled = GetterUtil.getBoolean(
-			configuration.get(
-				"value.object.column.bitmask.enabled.com.liferay.portal.background.task.model.BackgroundTask"),
-			true);
 	}
 
 	@Override
@@ -10189,11 +9883,6 @@ public class BackgroundTaskPersistenceImpl
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		super.setSessionFactory(sessionFactory);
 	}
-
-	private boolean _columnBitmaskEnabled;
-
-	@Reference(service = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
 
 	@Reference
 	protected EntityCache entityCache;
@@ -10223,5 +9912,14 @@ public class BackgroundTaskPersistenceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BackgroundTaskPersistenceImpl.class);
+
+	static {
+		try {
+			Class.forName(BackgroundTaskPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

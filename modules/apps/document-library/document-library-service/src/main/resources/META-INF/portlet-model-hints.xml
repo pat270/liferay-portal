@@ -2,8 +2,11 @@
 
 <model-hints>
 	<model name="com.liferay.document.library.model.DLFileVersionPreview">
+		<field name="mvccVersion" type="long" />
+		<field name="ctCollectionId" type="long" />
 		<field name="dlFileVersionPreviewId" type="long" />
 		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
 		<field name="fileEntryId" type="long" />
 		<field name="fileVersionId" type="long" />
 		<field name="previewStatus" type="int" />

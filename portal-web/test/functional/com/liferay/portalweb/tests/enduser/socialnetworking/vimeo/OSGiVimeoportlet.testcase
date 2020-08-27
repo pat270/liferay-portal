@@ -1,5 +1,6 @@
 @component-name = "portal-plugins-osgi"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property plugins.deployment.type = "osgi";
@@ -10,7 +11,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Page");
@@ -20,6 +20,7 @@ definition {
 		Page.tearDownCP();
 	}
 
+	@ignore = "true"
 	@priority = "4"
 	test VimeoPortletSmoke {
 		property portlet.plugins.includes = "vimeo-portlet";
@@ -33,4 +34,5 @@ definition {
 			locator1 = "build-test.xml",
 			value1 = "remove-plugin -Dplugin.name=vimeo-portlet");
 	}
+
 }

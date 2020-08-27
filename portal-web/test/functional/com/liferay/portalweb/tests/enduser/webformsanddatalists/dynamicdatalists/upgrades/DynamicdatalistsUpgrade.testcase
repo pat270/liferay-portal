@@ -1,17 +1,17 @@
 @component-name = "portal-upgrades"
 definition {
-	property ignore.errors = "Plugin security management is not enabled. Enable a security manager, then restart.";
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Dynamic Data Lists";
-	property testray.main.component.name = "Upgrades Forms and Workflow";
+	property testray.main.component.name = "Upgrades Forms";
 
 	setUp {
 		SignIn.signIn();
 
 		Smoke.viewWelcomePage();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Search");
@@ -26,6 +26,7 @@ definition {
 		property database.types = "db2";
 		property portal.version = "6.2.10.21";
 
-		Upgrade.addDataDefinitionWithDB2();
+		Upgrade.addDataDefinitionWithDB2(site = "Guest");
 	}
+
 }

@@ -15,17 +15,17 @@
 package com.liferay.portal.kernel.templateparser;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
-import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
-import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -136,10 +136,7 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 	public String getData() {
 		String type = getType();
 
-		if (type.equals("ddm-journal-article")) {
-			return _getDDMJournalArticleData();
-		}
-		else if (type.equals("document_library") || type.equals("image")) {
+		if (type.equals("document_library") || type.equals("image")) {
 			return _getFileEntryData();
 		}
 		else if (type.equals("link_to_layout")) {
@@ -152,7 +149,9 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 	public String getFriendlyUrl() {
 		String type = getType();
 
-		if (type.equals("ddm-journal-article")) {
+		if (type.equals("ddm-journal-article") ||
+			type.equals("journal_article")) {
+
 			return _getDDMJournalArticleFriendlyURL();
 		}
 		else if (type.equals("link_to_layout")) {
@@ -189,7 +188,34 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 			return StringPool.BLANK;
 		}
 
+		long layoutGroupId = getLayoutGroupId();
+		long layoutId = getLayoutId();
 		String layoutType = getLayoutType();
+
+		String data = (String)get("data");
+
+		if (JSONUtil.isValid(data)) {
+			try {
+				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(data);
+
+				layoutGroupId = jsonObject.getLong("groupId");
+				layoutId = jsonObject.getLong("layoutId");
+
+				if (jsonObject.getBoolean("privateLayout")) {
+					layoutType = _LAYOUT_TYPE_PRIVATE_GROUP;
+				}
+				else {
+					layoutType = _LAYOUT_TYPE_PUBLIC;
+				}
+			}
+			catch (JSONException jsonException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug("Unable to parse JSON from data: " + data);
+				}
+
+				return StringPool.BLANK;
+			}
+		}
 
 		if (Validator.isNull(layoutType)) {
 			return StringPool.BLANK;
@@ -213,7 +239,7 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 		sb.append(StringPool.SLASH);
 
 		try {
-			Group group = GroupLocalServiceUtil.getGroup(getLayoutGroupId());
+			Group group = GroupLocalServiceUtil.getGroup(layoutGroupId);
 
 			String name = group.getFriendlyURL();
 
@@ -221,12 +247,12 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 
 			sb.append(name);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			sb.append("@group_id@");
 		}
 
 		sb.append(StringPool.SLASH);
-		sb.append(getLayoutId());
+		sb.append(layoutId);
 
 		return sb.toString();
 	}
@@ -268,34 +294,6 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 			else {
 				data = data.substring(x + 1, y);
 			}
-		}
-
-		return data;
-	}
-
-	private String _getDDMJournalArticleData() {
-		String data = (String)get("data");
-
-		if (_themeDisplay == null) {
-			return data;
-		}
-
-		try {
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(data);
-
-			String className = jsonObject.getString("className");
-			long classPK = jsonObject.getLong("classPK");
-
-			if (Validator.isNull(className) && (classPK == 0)) {
-				return StringPool.BLANK;
-			}
-
-			AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(
-				className, classPK);
-
-			return assetEntry.getTitle(_themeDisplay.getLocale());
-		}
-		catch (Exception e) {
 		}
 
 		return data;
@@ -343,7 +341,7 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 				PortalUtil.getLiferayPortletResponse(portletResponse),
 				StringPool.BLANK);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -370,7 +368,7 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
 				false, true);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -416,12 +414,12 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 
 			return HttpUtil.removeDomain(layoutFriendlyURL);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Unable to get friendly URL for URL " +
 						_themeDisplay.getURLCurrent(),
-					e);
+					exception);
 			}
 
 			return getUrl();

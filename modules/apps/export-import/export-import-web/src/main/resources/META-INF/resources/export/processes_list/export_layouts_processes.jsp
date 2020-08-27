@@ -195,9 +195,14 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 							</c:if>
 						</c:if>
 
-						<span class="background-task-status-row background-task-status-<%= BackgroundTaskConstants.getStatusLabel(backgroundTask.getStatus()) %> <%= BackgroundTaskConstants.getStatusCssClass(backgroundTask.getStatus()) %>">
-							<liferay-ui:message key="<%= backgroundTask.getStatusLabel() %>" />
-						</span>
+						<clay:row>
+							<clay:col>
+								<liferay-staging:process-status
+									backgroundTaskStatus="<%= backgroundTask.getStatus() %>"
+									backgroundTaskStatusLabel="<%= backgroundTask.getStatusLabel() %>"
+								/>
+							</clay:col>
+						</clay:row>
 
 						<c:if test="<%= Validator.isNotNull(backgroundTask.getStatusMessage()) %>">
 							<span class="background-task-status-row">
@@ -235,11 +240,15 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 						</span>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-jsp
-						cssClass="table-cell-minw-150"
+					<liferay-ui:search-container-column-text
+						cssClass="background-task-status-column"
 						name="status"
-						path="/publish_process_message.jsp"
-					/>
+					>
+						<liferay-staging:process-status
+							backgroundTaskStatus="<%= backgroundTask.getStatus() %>"
+							backgroundTaskStatusLabel="<%= backgroundTask.getStatusLabel() %>"
+						/>
+					</liferay-ui:search-container-column-text>
 
 					<liferay-ui:search-container-column-date
 						cssClass="table-cell-expand-smallest table-cell-ws-nowrap"
@@ -271,12 +280,12 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 
 							sb.append(fileEntry.getTitle());
 							sb.append(StringPool.OPEN_PARENTHESIS);
-							sb.append(TextFormatter.formatStorageSize(fileEntry.getSize(), locale));
+							sb.append(LanguageUtil.formatStorageSize(fileEntry.getSize(), locale));
 							sb.append(StringPool.CLOSE_PARENTHESIS);
 							%>
 
 							<liferay-ui:icon
-								iconCssClass="download"
+								icon="download"
 								label="<%= true %>"
 								linkCssClass="table-link"
 								markupView="lexicon"
@@ -354,36 +363,39 @@ int incompleteBackgroundTaskCount = BackgroundTaskManagerUtil.getBackgroundTasks
 
 <script>
 	function <portlet:namespace />deleteEntries() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>')) {
+		if (
+			confirm(
+				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			Liferay.Util.postForm(
-				form,
-				{
-					data: {
-						'<%= Constants.CMD %>': '<%= Constants.DELETE %>',
-						'deleteBackgroundTaskIds': Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds')
-					}
-				}
-			);
+			Liferay.Util.postForm(form, {
+				data: {
+					<%= Constants.CMD %>: '<%= Constants.DELETE %>',
+					deleteBackgroundTaskIds: Liferay.Util.listCheckedExcept(
+						form,
+						'<portlet:namespace />allRowIds'
+					),
+				},
+			});
 		}
 	}
 
 	function <portlet:namespace />viewBackgroundTaskDetails(backgroundTaskId) {
 		var title = '';
 
-		var backgroundTaskNameElement = document.getElementById('<portlet:namespace />backgroundTaskName' + backgroundTaskId);
+		var backgroundTaskNameElement = document.getElementById(
+			'<portlet:namespace />backgroundTaskName' + backgroundTaskId
+		);
 
 		if (backgroundTaskNameElement) {
 			title = backgroundTaskNameElement.textContent;
 		}
 
-		Liferay.fire(
-			'<portlet:namespace />viewBackgroundTaskDetails',
-			{
-				nodeId: 'backgroundTaskStatusMessage' + backgroundTaskId,
-				title: title
-			}
-		);
+		Liferay.fire('<portlet:namespace />viewBackgroundTaskDetails', {
+			nodeId: 'backgroundTaskStatusMessage' + backgroundTaskId,
+			title: title,
+		});
 	}
 </script>

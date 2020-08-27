@@ -24,7 +24,9 @@ import org.dom4j.Element;
 /**
  * @author Cesar Polanco
  */
-public class SourceFormatBuild extends TopLevelBuild {
+public class SourceFormatBuild
+	extends DefaultTopLevelBuild
+	implements PortalBranchInformationBuild, PullRequestBuild {
 
 	@Override
 	public String getBaseGitRepositoryName() {
@@ -46,8 +48,24 @@ public class SourceFormatBuild extends TopLevelBuild {
 		return new Element[] {getFailureMessageElement()};
 	}
 
+	@Override
+	public BranchInformation getPortalBaseBranchInformation() {
+		return null;
+	}
+
+	@Override
+	public BranchInformation getPortalBranchInformation() {
+		return new PullRequestBranchInformation(this, _pullRequest);
+	}
+
+	@Override
 	public PullRequest getPullRequest() {
 		return _pullRequest;
+	}
+
+	@Override
+	public String getTestSuiteName() {
+		return _NAME_TEST_SUITE;
 	}
 
 	@Override
@@ -104,6 +122,74 @@ public class SourceFormatBuild extends TopLevelBuild {
 			"html", null, getResultElement(), detailsElement);
 	}
 
+	public static class PullRequestBranchInformation
+		extends DefaultBranchInformation {
+
+		@Override
+		public String getOriginName() {
+			return _pullRequest.getSenderUsername();
+		}
+
+		@Override
+		public Integer getPullRequestNumber() {
+			String pullRequestNumber = _pullRequest.getNumber();
+
+			if ((pullRequestNumber == null) ||
+				!pullRequestNumber.matches("\\d+")) {
+
+				pullRequestNumber = "0";
+			}
+
+			return Integer.valueOf(pullRequestNumber);
+		}
+
+		@Override
+		public String getReceiverUsername() {
+			return _pullRequest.getReceiverUsername();
+		}
+
+		@Override
+		public String getRepositoryName() {
+			return _pullRequest.getGitRepositoryName();
+		}
+
+		@Override
+		public String getSenderBranchName() {
+			return _pullRequest.getSenderBranchName();
+		}
+
+		@Override
+		public String getSenderBranchSHA() {
+			return _pullRequest.getSenderSHA();
+		}
+
+		@Override
+		public String getSenderUsername() {
+			return _pullRequest.getSenderUsername();
+		}
+
+		@Override
+		public String getUpstreamBranchName() {
+			return _pullRequest.getUpstreamBranchName();
+		}
+
+		@Override
+		public String getUpstreamBranchSHA() {
+			return _pullRequest.getUpstreamBranchSHA();
+		}
+
+		protected PullRequestBranchInformation(
+			Build build, PullRequest pullRequest) {
+
+			super(build, "portal");
+
+			_pullRequest = pullRequest;
+		}
+
+		private final PullRequest _pullRequest;
+
+	}
+
 	protected SourceFormatBuild(String url) {
 		this(url, null);
 	}
@@ -116,13 +202,10 @@ public class SourceFormatBuild extends TopLevelBuild {
 
 	@Override
 	protected FailureMessageGenerator[] getFailureMessageGenerators() {
-
-		// Skip JavaParser
-
 		return new FailureMessageGenerator[] {
 			new RebaseFailureMessageGenerator(),
 			new SourceFormatFailureMessageGenerator(),
-
+			//
 			new GenericFailureMessageGenerator()
 		};
 	}
@@ -150,12 +233,7 @@ public class SourceFormatBuild extends TopLevelBuild {
 			Dom4JUtil.getNewAnchorElement(senderCommitURL, senderSHA));
 	}
 
-	@Override
-	protected String getTestSuiteName() {
-		return _NAME_TEST_SUITE;
-	}
-
-	private static final String _NAME_TEST_SUITE = "ci:test:sf";
+	private static final String _NAME_TEST_SUITE = "sf";
 
 	private PullRequest _pullRequest;
 

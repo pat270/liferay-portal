@@ -1,0 +1,978 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "quarantine";
+	property testray.main.component.name = "Web Content Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+
+			WebContentStructures.tearDownCP(siteScopeName = "Global");
+		}
+	}
+
+	@description = "This is a use case for LPS-82492."
+	@priority = "5"
+	test AddCreatedStructureForImportedTemplate {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		JSONGroup.addGroup(groupName = "Site Name 2");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			templateDescription = "Content List Display Description",
+			templateFile = "content-list-display-template.txt",
+			templateName = "Content List Display");
+
+		WebContentTemplates.addCP(
+			templateDescription = "Thumbnail Display Description",
+			templateFile = "thumbnail-display-template.txt",
+			templateName = "Thumbnail Display");
+
+		WebContentTemplates.addCP(
+			templateDescription = "Carousel Display Description",
+			templateFile = "carousel-display-template.txt",
+			templateName = "Carousel Display");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		LAR.exportPortlet(larFileName = "content-display-templates.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(structureName = "Content List");
+
+		DynamicDataMapping.addField(
+			field = "Web Content",
+			fieldFieldLabel = "Web Content",
+			fieldName = "contents");
+
+		DynamicDataMapping.editFieldTip(
+			fieldFieldLabel = "Web Content",
+			fieldTip = "Choose as many content pieces as you would like to feature.");
+
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Web Content");
+
+		WebContentStructures.saveCP(structureName = "Content List");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.importPortlet(larFileName = "content-display-templates.lar");
+
+		Refresh();
+
+		NavItem.gotoTemplates();
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		for (var templateName : list "Carousel Display,Thumbnail Display,Content List Display") {
+			WebContentNavigator.gotoViewTemplate(templateName = "${templateName}");
+
+			WebContentTemplates.inputTemplateAddScreenFields(structureName = "Content List");
+
+			DDLDataDefinition.save();
+		}
+
+		for (var templateName : list "Carousel Display,Thumbnail Display,Content List Display") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			Navigator.gotoNavItem(navItem = "Templates");
+
+			WebContentTemplates.viewCP(
+				structureName = "Content List",
+				templateDescription = "",
+				templateName = "${templateName}");
+		}
+	}
+
+	@description = "This is a use case for LPS-82492."
+	@priority = "5"
+	test AddWebContentFromImportedStructureAndTemplate {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		JSONGroup.addGroup(groupName = "Site Name 2");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "3 Columns with Images Description",
+			structureName = "3 Columns with Images");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Heading",
+			fieldName = "ColumnHeading");
+
+		for (var position : list "Left,Middle,Right") {
+			DynamicDataMapping.addField(
+				field = "Image",
+				fieldFieldLabel = "${position} Image",
+				fieldName = "${position}Image");
+
+			DynamicDataMapping.addField(
+				field = "Text Box",
+				fieldFieldLabel = "${position} Subheading",
+				fieldName = "${position}Subheading");
+
+			DynamicDataMapping.addField(
+				field = "Text Box",
+				fieldFieldLabel = "${position} Content",
+				fieldName = "${position}content");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "Footer Content Description",
+			structureName = "Footer Content");
+
+		DynamicDataMapping.addField(
+			field = "Image",
+			fieldFieldLabel = "Main Image",
+			fieldName = "FooterMainImage");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Heading",
+			fieldName = "FooterHeading");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Text",
+			fieldName = "FooterText");
+
+		DynamicDataMapping.addField(
+			field = "Image",
+			fieldFieldLabel = "Background Image",
+			fieldName = "FooterBgImage");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "1 Column Banner Description",
+			structureName = "1 Column Banner");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Title",
+			fieldName = "BannerTitle");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Heading",
+			fieldName = "BannerHeading");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Content",
+			fieldName = "BannerContent");
+
+		DynamicDataMapping.addField(
+			field = "Image",
+			fieldFieldLabel = "Banner Image",
+			fieldName = "BannerImage");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		LAR.exportPortlet(larFileName = "frontPage-structures.lar");
+
+		JSONGroup.addGroup(groupName = "Site Name 3");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-3");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "3 Columns with Images",
+			templateDescription = "3 Columns with Images Template Description",
+			templateFile = "3-columns-with-images-template.txt",
+			templateName = "3 Columns with Images Template");
+
+		WebContentTemplates.addCP(
+			structureName = "Footer Content",
+			templateDescription = "Footer Content Template Description",
+			templateFile = "footer-content-template.txt",
+			templateName = "Footer Content Template");
+
+		WebContentTemplates.addCP(
+			structureName = "1 Column Banner",
+			templateDescription = "1 Column Banner Template Description",
+			templateFile = "1-column-banner-template.txt",
+			templateName = "1 Column Banner Template");
+
+		WebContentTemplates.addCP(
+			structureName = "News",
+			templateDescription = "News Description",
+			templateFile = "news-template.txt",
+			templateName = "News");
+
+		WebContentTemplates.addCP(
+			structureName = "Events",
+			templateDescription = "News Description",
+			templateFile = "events-template.txt",
+			templateName = "Events");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		LAR.exportPortlet(larFileName = "space-templates.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.importPortlet(larFileName = "frontPage-structures.lar");
+
+		Refresh();
+
+		NavItem.gotoStructures();
+
+		for (var structureName : list "3 Columns with Images,Footer Content,1 Column Banner") {
+			WebContentStructures.viewCP(structureName = "${structureName}");
+		}
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.importPortlet(larFileName = "space-templates.lar");
+
+		for (var templateName : list "3 Columns with Images Template,Footer Content Template,1 Column Banner Template,News,Events") {
+			Navigator.gotoNavItem(navItem = "Templates");
+
+			WebContentTemplates.viewCP(
+				templateDescription = "",
+				templateName = "${templateName}");
+
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+		}
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "1 Column Banner");
+
+		WebContent.addWithStructureCP(
+			description = "The Structured Banner for the S.P.A.C.E. FrontPage",
+			fieldName = "BannerTitle",
+			fieldName2 = "BannerHeading",
+			webContentImage = "Spaceport.jpg",
+			webContentTextBox = "Space Program Academy of Continuing Education",
+			webContentTextBox2 = "Dare to dream out of this world",
+			webContentTitle = "S.P.A.C.E. Banner");
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "S.P.A.C.E. Banner");
+
+		WebContent.viewWithStructureCP(
+			description = "The Structured Banner for the S.P.A.C.E. FrontPage",
+			fieldName = "BannerTitle",
+			fieldName2 = "BannerHeading",
+			webContentImage = "Spaceport.jpg",
+			webContentTextBox = "Space Program Academy of Continuing Education",
+			webContentTextBox2 = "Dare to dream out of this world",
+			webContentTitle = "S.P.A.C.E. Banner");
+	}
+
+	@priority = "4"
+	test ExportLARWithNestedWebContent {
+		property testray.component.names = "Web Content Administration";
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "WC Structure Description",
+			structureName = "WC Structure Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.addFieldNested(
+			field = "Web Content",
+			fieldFieldLabel = "Web Content",
+			fieldName = "webContent");
+
+		WebContentStructures.saveCP(structureName = "WC Structure Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "WC Structure Name",
+			templateDescription = "WC Template Description",
+			templateFieldNames = "Text",
+			templateName = "WC Template Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Basic Web Content");
+
+		WebContent.addWithStructureCP(
+			structureName = "Basic Web Content",
+			templateName = "Basic Web Content",
+			webContentTitle = "Basic WebContent Title");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
+
+		WebContent.addWithStructureCP(
+			fieldName = "webContent",
+			structureName = "WC Structure Name",
+			templateName = "WC Template Name",
+			webContentSelectWCFile = "Basic WebContent Title",
+			webContentTitle = "WC WebContent Title");
+
+		FormFields.editText(
+			fieldName = "Text",
+			fieldValue = "WC WebContent Text");
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "WC WebContent Title");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.exportPortlet(larFileName = "WebContent_portlet.lar");
+	}
+
+	@description = "This is a use case for LPS-95441."
+	@priority = "3"
+	test ExportWebContentWithEditedStructure {
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "Structure Description",
+			structureName = "Structure Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "TestName");
+
+		WebContentStructures.saveCP(structureName = "Structure Name");
+
+		WebContentStructures.viewCP(
+			structureDescription = "Structure Description",
+			structureName = "Structure Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Structure Name");
+
+		WebContent.addWithStructureCP(
+			description = "WC WebContent 1 Description",
+			fieldName = "TestName",
+			webContentTitle = "WC WebContent 1 Title");
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "WC WebContent 1 Title");
+
+		NavItem.gotoStructures();
+
+		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
+
+		DynamicDataMapping.deleteField(fieldFieldLabel = "Text");
+
+		DynamicDataMapping.addField(
+			field = "Web Content",
+			fieldFieldLabel = "Web Content",
+			fieldName = "TestName");
+
+		WebContentStructures.saveCP(structureName = "Structure Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.exportPortlet(larFileName = "WebContent_portlet.lar");
+	}
+
+	@priority = "5"
+	test ImportAndUseGlobalStructureAndTemplate {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "3 Column with Images Description",
+			structureName = "3 Column with Images");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Title",
+			fieldName = "title");
+
+		for (var count : list "1,2,3") {
+			DynamicDataMapping.addField(
+				field = "Image",
+				fieldFieldLabel = "Image ${count}",
+				fieldName = "image${count}");
+
+			DynamicDataMapping.addField(
+				field = "Text Box",
+				fieldFieldLabel = "Heading ${count}1",
+				fieldName = "heading${count}");
+
+			DynamicDataMapping.addField(
+				field = "Text Box",
+				fieldFieldLabel = "Content ${count}",
+				fieldName = "content${count}");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			siteURLKey = "test-site-name",
+			structureName = "3 Column with Images",
+			templateDescription = "Frontpage 3 Column with Images Template Description",
+			templateFile = "Frontpage 3 Column with Images Template.txt",
+			templateName = "Frontpage 3 Column with Images Template");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.exportPortlet(larFileName = "structure-templates.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
+
+		LAR.importPortlet(larFileName = "structure-templates.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "3 Column with Images");
+
+		WebContent.addWithStructureCP(
+			fieldName = "title",
+			webContentTextBox = "Green Waste",
+			webContentTextBoxList = "Mowed Lawns,Mulched Branches,Compost Bin",
+			webContentTitle = "Agricultural Science Front Page");
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "Agricultural Science Front Page");
+
+		WebContent.viewWithStructureCP(
+			fieldName = "title",
+			webContentTextBox = "Green Waste",
+			webContentTextBoxList = "Mowed Lawns,Mulched Branches,Compost Bin",
+			webContentTitle = "Agricultural Science Front Page");
+	}
+
+	@priority = "4"
+	test ImportLAR {
+		property testray.component.names = "Web Content Administration";
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "WC Structure Description",
+			structureName = "WC Structure Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		WebContentStructures.saveCP(structureName = "WC Structure Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "WC Structure Name",
+			templateDescription = "WC Template Description",
+			templateFieldNames = "Text",
+			templateName = "WC Template Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
+
+		WebContent.addWithStructureCP(
+			structureName = "WC Structure Name",
+			templateName = "WC Template Name",
+			webContentText = "WC WebContent Text",
+			webContentTitle = "WC WebContent Title");
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "WC WebContent Title");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.exportPortlet(larFileName = "WebContent_portlet2.lar");
+
+		JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.importPortlet(larFileName = "WebContent_portlet2.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContent.viewWithStructureCP(
+			webContentText = "WC WebContent Text",
+			webContentTitle = "WC WebContent Title");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.viewCP(
+			structureDescription = "WC Structure Description",
+			structureName = "WC Structure Name");
+
+		LexiconEntry.gotoEntry(rowEntry = "WC Structure Name");
+
+		DynamicDataMapping.viewField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		Navigator.gotoNavItem(navItem = "Templates");
+
+		WebContentTemplates.viewCP(
+			templateDescription = "WC Template Description",
+			templateName = "WC Template Name");
+	}
+
+	@priority = "4"
+	test ImportLARLinkToPageValidation {
+		property testray.component.names = "Web Content Administration";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Page");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "Test Structure Description",
+			structureName = "Test Structure");
+
+		DynamicDataMapping.addField(
+			field = "Link to Page",
+			fieldFieldLabel = "Link to Page",
+			fieldName = "LinkToPage");
+
+		WebContentStructures.saveCP(structureName = "Test Structure");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "Test Structure",
+			templateDescription = "Test Template Description",
+			templateName = "Test Template");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Test Structure");
+
+		WebContent.addWithStructureCP(
+			linkedPageName = "Test Page",
+			linkFieldName = "LinkToPage",
+			structureName = "Test Structure",
+			templateName = "Test Template",
+			webContentTitle = "WC Title");
+
+		PortletEntry.publish();
+
+		WebContent.viewTitle(webContentTitle = "WC Title");
+
+		LAR.exportPortlet(larFileName = "WebContent_portlet.lar");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+		LAR.importPortlet(
+			importValidationMissingItem = "Linked Page",
+			larFileName = "WebContent_portlet.lar",
+			linkedPageName = "Test Page",
+			siteName = "Site Name");
+	}
+
+	@description = "This is a use case for LPS-88893."
+	@priority = "3"
+	test ImportLARWithTheSameTitle {
+		property testray.component.names = "Training";
+
+		JSONGroup.addGroup(groupName = "Site Name 1");
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Site Name 1",
+			title = "WC WebContent Title");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-1");
+
+		LAR.exportPortlet(larFileName = "WebContent_portlet.lar");
+
+		JSONGroup.addGroup(groupName = "Site Name 2");
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Site Name 2",
+			title = "WC WebContent Title");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		LAR.importPortlet(larFileName = "WebContent_portlet.lar");
+
+		AssertConsoleTextNotPresent(value1 = "DuplicateFriendlyURLEntryException");
+	}
+
+	@priority = "5"
+	test MoveImportedWebContentArticlesToFolders {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training,Web Content Administration";
+
+		JSONGroup.addGroup(groupName = "Site Name 2");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "News Description",
+			structureName = "News");
+
+		DynamicDataMapping.addField(
+			field = "Image",
+			fieldFieldLabel = "Cover Image",
+			fieldName = "NewsCoverImage");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Content",
+			fieldName = "NewsContent");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "Events Description",
+			structureName = "Events");
+
+		DynamicDataMapping.addField(
+			field = "Image",
+			fieldFieldLabel = "Cover Image",
+			fieldName = "EventCoverImage");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Headline",
+			fieldName = "EventHeadline");
+
+		DynamicDataMapping.addField(
+			field = "Date",
+			fieldFieldLabel = "EventDate",
+			fieldName = "EventDate");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Lead Text",
+			fieldName = "EventLeadText");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "News",
+			templateDescription = "News Template Description",
+			templateFile = "news-template.txt",
+			templateName = "News");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "Events",
+			templateDescription = "Events Template Description",
+			templateFile = "events-template.txt",
+			templateName = "Events");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "News");
+
+		WebContent.addWithStructureCP(
+			fieldName = "Content",
+			structureName = "News",
+			templateName = "News",
+			webContentTextBox = "As the 96th anniversary of Apollo 11’s historic landing on the moon approaches, Dr. Peter Vance and Dr. Alessandro Mancelli of the Astronautics Department discuss the profound impact the vision of Apollo 11 and NASA had on both the world and on the foundation of The Space Program itself.",
+			webContentTitle = "When It All Began...");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "News");
+
+		WebContent.addWithStructureCP(
+			fieldName = "Content",
+			structureName = "News",
+			templateName = "News",
+			webContentTextBox = "A new study shows a correlation between the mathematics of music and planetary rings. “It’s possible,” says lead researcher Dr. Agatha Saylor, “that this evidence could help us understand some of space’s greatest mysteries.”",
+			webContentTitle = "Stravinksy in Space?");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "News");
+
+		WebContent.addWithStructureCP(
+			fieldName = "Content",
+			structureName = "News",
+			templateName = "News",
+			webContentTextBox = "Omar Qasim, ’68, dishes on what it was like to grow up as the son of an astronaut, how a Chemistry class saved his life, and the one weird thing he does to keep himself focused.",
+			webContentTitle = "Student Spotlight");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Events");
+
+		WebContent.addWithStructureCP(
+			fieldName = "LeadText",
+			key_fieldName = "EventDate",
+			structureName = "Events",
+			templateName = "Events",
+			webContentDate = "05/12/2065",
+			webContentTextBox = "S.P.A.C.E. Board of Governors member Antony Carelli and president Dr. Asmund Grey will hold a press conference Tuesday, July 9th to address recent security questions and put to rest faculty hiring rumors.",
+			webContentTitle = "Upcoming Press Conference");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Events");
+
+		WebContent.addWithStructureCP(
+			fieldName = "LeadText",
+			key_fieldName = "EventDate",
+			structureName = "Events",
+			templateName = "Events",
+			webContentDate = "05/31/2065",
+			webContentTextBox = "Attention, incoming students: New Student Orientation begins at 2:00 P.M. Monday, August 17th in the Carelli Auditorium on South Campus. Please check your emails for more information.",
+			webContentTitle = "New Student Orientation");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-2");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Events");
+
+		WebContent.addWithStructureCP(
+			fieldName = "LeadText",
+			key_fieldName = "EventDate",
+			structureName = "Events",
+			templateName = "Events",
+			webContentDate = "05/31/2065",
+			webContentTextBox = "Dr. Josiah Andrews, retired former director of ISRI, will be speaking in Allen Hall as part of our Special Speakers lineup. At 7:00 P.M. from Wednesday, August 26-Friday, August 28, Dr. Andrews will discuss the current landscape of planet-discovering technology.",
+			webContentTitle = "Fall Special Speaker Series");
+
+		PortletEntry.publish();
+
+		LAR.exportPortlet(larFileName = "space-web-content.lar");
+
+		JSONWebcontent.addFolder(
+			folderDescription = "News Folder Description",
+			folderName = "News",
+			groupName = "Test Site Name");
+
+		JSONWebcontent.addFolder(
+			folderDescription = "Events Folder Description",
+			folderName = "Events",
+			groupName = "Test Site Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.importPortlet(larFileName = "space-web-content.lar");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		for (var webContentTitle : list "When It All Began...,Stravinksy in Space?,Student Spotlight,Upcoming Press Conference,New Student Orientation,Fall Special Speaker Series") {
+			WebContent.viewTitle(webContentTitle = "${webContentTitle}");
+		}
+
+		WebContent.moveArticlesToFolderCP(
+			folderName = "News",
+			webContentArticlesList = "When It All Began...,Stravinksy in Space?,Student Spotlight");
+
+		WebContent.moveArticlesToFolderCP(
+			folderName = "Events",
+			webContentArticlesList = "Upcoming Press Conference,New Student Orientation,Fall Special Speaker Series");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentFolder.gotoCP(
+			folderName = "News",
+			webContentTitle = "News");
+
+		for (var webContentTitle : list "When It All Began...,Stravinksy in Space?,Student Spotlight") {
+			WebContent.viewTitle(webContentTitle = "${webContentTitle}");
+		}
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentFolder.gotoCP(
+			folderName = "Events",
+			webContentTitle = "Events");
+
+		for (var webContentTitle : list "Upcoming Press Conference,New Student Orientation,Fall Special Speaker Series") {
+			WebContent.viewTitle(webContentTitle = "${webContentTitle}");
+		}
+	}
+
+	@description = "This test ensures that all the default values for an imported structure can be reset."
+	@priority = "4"
+	test ResetImportedStructureDefaultValues {
+		property test.name.skip.portal.instance = "WebContentExportImport#ResetImportedStructureDefaultValues";
+		property testray.component.names = "Web Content Administration";
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "WC Structure Description",
+			structureName = "WC Structure Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.editFieldPredefinedValue(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text",
+			fieldPredefinedValue = "(Enter Text Here)");
+
+		DynamicDataMapping.editFieldRequired(fieldFieldLabel = "Text");
+
+		WebContentStructures.saveCP(structureName = "WC Structure Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "WC Structure Name",
+			templateDescription = "WC Template Description",
+			templateFieldNames = "Text",
+			templateName = "WC Template Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.exportPortlet(larFileName = "WebContent_portlet2.lar");
+
+		JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		LAR.importPortlet(larFileName = "WebContent_portlet2.lar");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title",
+			groupName = "Test Site Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		NavItem.gotoStructures();
+
+		Search.searchCP(searchTerm = "WC Structure Name");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit Default Values",
+			rowEntry = "WC Structure Name");
+
+		RelatedAssets.selectAsset(
+			assetTitle = "Blogs Entry Title",
+			assetType = "Blogs Entry",
+			scopeSite = "Test Site Name");
+
+		SelectFrame(value1 = "relative=top");
+
+		WebContentStructures.resetStructureDefaultValuesCP(
+			assetTitle = "Blogs Entry Title",
+			templateName = "WC Template Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Name");
+
+		Button.clickPublish();
+
+		AssertTextEquals.assertPartialText(
+			key_fieldName = "Text",
+			locator1 = "TextInput#SPECIFIC_FIELD_REQUIRED_ALERT",
+			value1 = "This field is required.");
+	}
+
+}

@@ -69,6 +69,11 @@ public class StagedAssetLinkImpl implements StagedAssetLink {
 	}
 
 	@Override
+	public long getCtCollectionId() {
+		return _assetLink.getCtCollectionId();
+	}
+
+	@Override
 	public String getEntry1ClassName() {
 		if (Validator.isNotNull(_entry1ClassName)) {
 			return _entry1ClassName;
@@ -150,6 +155,11 @@ public class StagedAssetLinkImpl implements StagedAssetLink {
 	@Override
 	public Date getModifiedDate() {
 		return _assetLink.getCreateDate();
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _assetLink.getMvccVersion();
 	}
 
 	@Override
@@ -258,6 +268,11 @@ public class StagedAssetLinkImpl implements StagedAssetLink {
 	}
 
 	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void setEntryId1(long entryId1) {
 		throw new UnsupportedOperationException();
 	}
@@ -294,6 +309,11 @@ public class StagedAssetLinkImpl implements StagedAssetLink {
 
 	@Override
 	public void setModifiedDate(Date date) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -18,7 +18,10 @@ import com.liferay.asset.constants.AssetWebKeys;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.product.navigation.control.menu.web.internal.constants.ProductNavigationControlMenuPortletKeys;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.product.navigation.control.menu.constants.ProductNavigationControlMenuPortletKeys;
 
 import java.io.IOException;
 
@@ -28,6 +31,8 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -47,8 +52,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.display-name=Control Menu",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + ProductNavigationControlMenuPortletKeys.PRODUCT_NAVIGATION_CONTROL_MENU,
-		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.resource-bundle=content.Language"
 	},
 	service = Portlet.class
 )
@@ -69,15 +73,26 @@ public class ProductNavigationControlMenuPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
+		HttpServletRequest originalHttpServletRequest =
+			_portal.getOriginalServletRequest(
+				_portal.getHttpServletRequest(renderRequest));
+
+		String layoutMode = ParamUtil.getString(
+			originalHttpServletRequest, "p_l_mode", Constants.VIEW);
+
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return;
+		}
+
 		renderRequest.setAttribute(AssetWebKeys.ASSET_HELPER, _assetHelper);
 
 		super.doDispatch(renderRequest, renderResponse);
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if ((cause instanceof SystemException) ||
-			super.isSessionErrorException(cause)) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if ((throwable instanceof SystemException) ||
+			super.isSessionErrorException(throwable)) {
 
 			return true;
 		}
@@ -87,5 +102,8 @@ public class ProductNavigationControlMenuPortlet extends MVCPortlet {
 
 	@Reference
 	private AssetHelper _assetHelper;
+
+	@Reference
+	private Portal _portal;
 
 }

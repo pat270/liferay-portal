@@ -16,8 +16,9 @@ package com.liferay.headless.delivery.internal.jaxrs.exception.mapper;
 
 import com.liferay.knowledge.base.exception.KBArticleUrlTitleException;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
@@ -37,23 +38,25 @@ import org.osgi.service.component.annotations.Component;
 	service = ExceptionMapper.class
 )
 public class KnowledgeBaseArticleFriendlyURLExceptionMapper
-	implements ExceptionMapper<KBArticleUrlTitleException> {
+	extends BaseExceptionMapper<KBArticleUrlTitleException> {
 
 	@Override
-	public Response toResponse(KBArticleUrlTitleException kbaute) {
+	protected Problem getProblem(
+		KBArticleUrlTitleException kbArticleUrlTitleException) {
+
 		int statusCode = 400;
 
-		if (kbaute instanceof KBArticleUrlTitleException.MustNotBeDuplicate) {
+		if (kbArticleUrlTitleException instanceof
+				KBArticleUrlTitleException.MustNotBeDuplicate) {
+
 			statusCode = 409;
 		}
 
-		return Response.status(
-			statusCode
-		).type(
-			MediaType.TEXT_PLAIN
-		).entity(
-			StringUtil.replace(kbaute.getMessage(), "URL title", "Friendly URL")
-		).build();
+		return new Problem(
+			Response.Status.fromStatusCode(statusCode),
+			StringUtil.replace(
+				kbArticleUrlTitleException.getMessage(), "URL title",
+				"Friendly URL"));
 	}
 
 }

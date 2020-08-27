@@ -16,8 +16,6 @@ package com.liferay.portal.workflow.kaleo.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link KaleoTaskInstanceTokenLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KaleoTaskInstanceTokenLocalService
  * @generated
  */
-@ProviderType
 public class KaleoTaskInstanceTokenLocalServiceWrapper
 	implements KaleoTaskInstanceTokenLocalService,
 			   ServiceWrapper<KaleoTaskInstanceTokenLocalService> {
@@ -39,6 +36,10 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 
 	/**
 	 * Adds the kaleo task instance token to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoTaskInstanceTokenLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param kaleoTaskInstanceToken the kaleo task instance token
 	 * @return the kaleo task instance token that was added
@@ -69,6 +70,22 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 		return _kaleoTaskInstanceTokenLocalService.addKaleoTaskInstanceToken(
 			kaleoInstanceTokenId, kaleoTaskId, kaleoTaskName,
 			kaleoTaskAssignments, dueDate, workflowContext, serviceContext);
+	}
+
+	@Override
+	public com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken
+			assignKaleoTaskInstanceToken(
+				long kaleoTaskInstanceTokenId,
+				java.util.Collection
+					<com.liferay.portal.workflow.kaleo.model.
+						KaleoTaskAssignment> kaleoTaskAssignments,
+				java.util.Map<String, java.io.Serializable> workflowContext,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _kaleoTaskInstanceTokenLocalService.assignKaleoTaskInstanceToken(
+			kaleoTaskInstanceTokenId, kaleoTaskAssignments, workflowContext,
+			serviceContext);
 	}
 
 	@Override
@@ -111,6 +128,18 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 			kaleoTaskInstanceTokenId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _kaleoTaskInstanceTokenLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
 	@Override
 	public void deleteCompanyKaleoTaskInstanceTokens(long companyId) {
 		_kaleoTaskInstanceTokenLocalService.
@@ -137,6 +166,10 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	/**
 	 * Deletes the kaleo task instance token from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoTaskInstanceTokenLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param kaleoTaskInstanceToken the kaleo task instance token
 	 * @return the kaleo task instance token that was removed
 	 */
@@ -152,6 +185,10 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 
 	/**
 	 * Deletes the kaleo task instance token with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoTaskInstanceTokenLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param kaleoTaskInstanceTokenId the primary key of the kaleo task instance token
 	 * @return the kaleo task instance token that was removed
@@ -179,6 +216,11 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _kaleoTaskInstanceTokenLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _kaleoTaskInstanceTokenLocalService.dynamicQuery();
 	}
@@ -200,7 +242,7 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -221,7 +263,7 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -344,7 +386,7 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	 * Returns a range of all the kaleo task instance tokens.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoTaskInstanceTokenModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo task instance tokens
@@ -477,6 +519,9 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 		return _kaleoTaskInstanceTokenLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -588,6 +633,47 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.List
+		<com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken> search(
+			String assetTitle, String[] taskNames, String[] assetTypes,
+			Long[] assetPrimaryKeys, Long[] assigneeClassPKs,
+			java.util.Date dueDateGT, java.util.Date dueDateLT,
+			Boolean completed, Long[] kaleoInstanceIds,
+			Boolean searchByUserRoles, boolean andOperator, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken>
+					orderByComparator,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext) {
+
+		return _kaleoTaskInstanceTokenLocalService.search(
+			assetTitle, taskNames, assetTypes, assetPrimaryKeys,
+			assigneeClassPKs, dueDateGT, dueDateLT, completed, kaleoInstanceIds,
+			searchByUserRoles, andOperator, start, end, orderByComparator,
+			serviceContext);
+	}
+
+	@Override
+	public java.util.List
+		<com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken> search(
+			String assetTitle, String[] taskNames, String[] assetTypes,
+			Long[] assetPrimaryKeys, String assigneeClassName,
+			Long[] assigneeClassPKs, java.util.Date dueDateGT,
+			java.util.Date dueDateLT, Boolean completed, Long kaleoDefinitionId,
+			Long[] kaleoInstanceIds, Boolean searchByUserRoles,
+			boolean andOperator, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken>
+					orderByComparator,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext) {
+
+		return _kaleoTaskInstanceTokenLocalService.search(
+			assetTitle, taskNames, assetTypes, assetPrimaryKeys,
+			assigneeClassName, assigneeClassPKs, dueDateGT, dueDateLT,
+			completed, kaleoDefinitionId, kaleoInstanceIds, searchByUserRoles,
+			andOperator, start, end, orderByComparator, serviceContext);
+	}
+
+	@Override
 	public int searchCount(
 		long kaleoInstanceId, Boolean completed, Boolean searchByUserRoles,
 		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
@@ -642,6 +728,63 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 	}
 
 	@Override
+	public int searchCount(
+		String assetTitle, String[] taskNames, String[] assetTypes,
+		Long[] assetPrimaryKeys, Long[] assigneeClassPKs,
+		java.util.Date dueDateGT, java.util.Date dueDateLT, Boolean completed,
+		Long[] kaleoInstanceIds, Boolean searchByUserRoles, boolean andOperator,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
+
+		return _kaleoTaskInstanceTokenLocalService.searchCount(
+			assetTitle, taskNames, assetTypes, assetPrimaryKeys,
+			assigneeClassPKs, dueDateGT, dueDateLT, completed, kaleoInstanceIds,
+			searchByUserRoles, andOperator, serviceContext);
+	}
+
+	@Override
+	public int searchCount(
+		String assetTitle, String[] taskNames, String[] assetTypes,
+		Long[] assetPrimaryKeys, String assigneeClassName,
+		Long[] assigneeClassPKs, java.util.Date dueDateGT,
+		java.util.Date dueDateLT, Boolean completed, Long kaleoDefinitionId,
+		Long[] kaleoInstanceIds, Boolean searchByUserRoles, boolean andOperator,
+		com.liferay.portal.kernel.service.ServiceContext serviceContext) {
+
+		return _kaleoTaskInstanceTokenLocalService.searchCount(
+			assetTitle, taskNames, assetTypes, assetPrimaryKeys,
+			assigneeClassName, assigneeClassPKs, dueDateGT, dueDateLT,
+			completed, kaleoDefinitionId, kaleoInstanceIds, searchByUserRoles,
+			andOperator, serviceContext);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.search.BaseModelSearchResult
+		<com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken>
+				searchKaleoTaskInstanceTokens(
+					String assetTitle, String[] taskNames, String[] assetTypes,
+					Long[] assetPrimaryKeys, String assigneeClassName,
+					Long[] assigneeClassPKs, java.util.Date dueDateGT,
+					java.util.Date dueDateLT, Boolean completed,
+					Long kaleoDefinitionId, Long[] kaleoInstanceIds,
+					Boolean searchByUserRoles, boolean andOperator, int start,
+					int end,
+					com.liferay.portal.kernel.util.OrderByComparator
+						<com.liferay.portal.workflow.kaleo.model.
+							KaleoTaskInstanceToken> orderByComparator,
+					com.liferay.portal.kernel.service.ServiceContext
+						serviceContext)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _kaleoTaskInstanceTokenLocalService.
+			searchKaleoTaskInstanceTokens(
+				assetTitle, taskNames, assetTypes, assetPrimaryKeys,
+				assigneeClassName, assigneeClassPKs, dueDateGT, dueDateLT,
+				completed, kaleoDefinitionId, kaleoInstanceIds,
+				searchByUserRoles, andOperator, start, end, orderByComparator,
+				serviceContext);
+	}
+
+	@Override
 	public com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken
 			updateDueDate(
 				long kaleoTaskInstanceTokenId, java.util.Date dueDate,
@@ -654,6 +797,10 @@ public class KaleoTaskInstanceTokenLocalServiceWrapper
 
 	/**
 	 * Updates the kaleo task instance token in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoTaskInstanceTokenLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param kaleoTaskInstanceToken the kaleo task instance token
 	 * @return the kaleo task instance token that was updated

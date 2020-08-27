@@ -40,32 +40,9 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 public class JSONWebServiceTracker
 	implements ServiceTrackerCustomizer<Object, Object> {
 
-	@Activate
-	public void activate(ComponentContext componentContext) {
-		_componentContext = componentContext;
-
-		BundleContext bundleContext = componentContext.getBundleContext();
-
-		_serviceTracker = ServiceTrackerFactory.open(
-			bundleContext,
-			StringBundler.concat(
-				"(&(json.web.service.context.name=*)(json.web.service.context.",
-				"path=*)(!(objectClass=", AopService.class.getName(), ")))"),
-			this);
-	}
-
 	@Override
 	public Object addingService(ServiceReference<Object> serviceReference) {
 		return registerService(serviceReference);
-	}
-
-	@Deactivate
-	public void deactivate() {
-		_componentContext = null;
-
-		_serviceTracker.close();
-
-		_serviceTracker = null;
 	}
 
 	@Override
@@ -82,6 +59,27 @@ public class JSONWebServiceTracker
 		ServiceReference<Object> serviceReference, Object service) {
 
 		unregisterService(service);
+	}
+
+	@Activate
+	protected void activate(ComponentContext componentContext) {
+		_componentContext = componentContext;
+
+		_serviceTracker = ServiceTrackerFactory.open(
+			componentContext.getBundleContext(),
+			StringBundler.concat(
+				"(&(json.web.service.context.name=*)(json.web.service.context.",
+				"path=*)(!(objectClass=", AopService.class.getName(), ")))"),
+			this);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_componentContext = null;
+
+		_serviceTracker.close();
+
+		_serviceTracker = null;
 	}
 
 	protected ClassLoader getBundleClassLoader(Bundle bundle) {

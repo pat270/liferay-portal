@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link LayoutRevisionLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutRevisionLocalService
  * @generated
  */
-@ProviderType
 public class LayoutRevisionLocalServiceWrapper
 	implements LayoutRevisionLocalService,
 			   ServiceWrapper<LayoutRevisionLocalService> {
@@ -36,6 +33,10 @@ public class LayoutRevisionLocalServiceWrapper
 
 	/**
 	 * Adds the layout revision to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutRevisionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutRevision the layout revision
 	 * @return the layout revision that was added
@@ -51,10 +52,12 @@ public class LayoutRevisionLocalServiceWrapper
 	public com.liferay.portal.kernel.model.LayoutRevision addLayoutRevision(
 			long userId, long layoutSetBranchId, long layoutBranchId,
 			long parentLayoutRevisionId, boolean head, long plid,
-			long portletPreferencesPlid, boolean privateLayout, String name,
-			String title, String description, String keywords, String robots,
-			String typeSettings, boolean iconImage, long iconImageId,
-			String themeId, String colorSchemeId, String css,
+			long portletPreferencesPlid, boolean privateLayout,
+			java.lang.String name, java.lang.String title,
+			java.lang.String description, java.lang.String keywords,
+			java.lang.String robots, java.lang.String typeSettings,
+			boolean iconImage, long iconImageId, java.lang.String themeId,
+			java.lang.String colorSchemeId, java.lang.String css,
 			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -79,6 +82,17 @@ public class LayoutRevisionLocalServiceWrapper
 			layoutRevisionId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutRevisionLocalService.createPersistedModel(primaryKeyObj);
+	}
+
 	@Override
 	public void deleteLayoutLayoutRevisions(long plid)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -88,6 +102,10 @@ public class LayoutRevisionLocalServiceWrapper
 
 	/**
 	 * Deletes the layout revision from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutRevisionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutRevision the layout revision
 	 * @return the layout revision that was removed
@@ -103,6 +121,10 @@ public class LayoutRevisionLocalServiceWrapper
 
 	/**
 	 * Deletes the layout revision with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutRevisionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutRevisionId the primary key of the layout revision
 	 * @return the layout revision that was removed
@@ -154,6 +176,11 @@ public class LayoutRevisionLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _layoutRevisionLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _layoutRevisionLocalService.dynamicQuery();
 	}
@@ -175,7 +202,7 @@ public class LayoutRevisionLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutRevisionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutRevisionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -196,7 +223,7 @@ public class LayoutRevisionLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutRevisionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutRevisionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -267,18 +294,6 @@ public class LayoutRevisionLocalServiceWrapper
 			layoutRevisionId);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.portal.kernel.model.LayoutRevision fetchLayoutRevision(
-		long layoutSetBranchId, boolean head, long plid) {
-
-		return _layoutRevisionLocalService.fetchLayoutRevision(
-			layoutSetBranchId, head, plid);
-	}
-
 	@Override
 	public com.liferay.portal.kernel.model.LayoutRevision fetchLayoutRevision(
 		long layoutSetBranchId, long layoutBranchId, boolean head, long plid) {
@@ -347,19 +362,6 @@ public class LayoutRevisionLocalServiceWrapper
 		return _layoutRevisionLocalService.getLayoutRevision(layoutRevisionId);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.portal.kernel.model.LayoutRevision getLayoutRevision(
-			long layoutSetBranchId, long plid, boolean head)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _layoutRevisionLocalService.getLayoutRevision(
-			layoutSetBranchId, plid, head);
-	}
-
 	@Override
 	public com.liferay.portal.kernel.model.LayoutRevision getLayoutRevision(
 			long layoutSetBranchId, long layoutBranchId, long plid)
@@ -373,7 +375,7 @@ public class LayoutRevisionLocalServiceWrapper
 	 * Returns a range of all the layout revisions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutRevisionModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutRevisionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout revisions
@@ -499,10 +501,13 @@ public class LayoutRevisionLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _layoutRevisionLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -513,6 +518,10 @@ public class LayoutRevisionLocalServiceWrapper
 
 	/**
 	 * Updates the layout revision in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutRevisionLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutRevision the layout revision
 	 * @return the layout revision that was updated
@@ -527,9 +536,11 @@ public class LayoutRevisionLocalServiceWrapper
 	@Override
 	public com.liferay.portal.kernel.model.LayoutRevision updateLayoutRevision(
 			long userId, long layoutRevisionId, long layoutBranchId,
-			String name, String title, String description, String keywords,
-			String robots, String typeSettings, boolean iconImage,
-			long iconImageId, String themeId, String colorSchemeId, String css,
+			java.lang.String name, java.lang.String title,
+			java.lang.String description, java.lang.String keywords,
+			java.lang.String robots, java.lang.String typeSettings,
+			boolean iconImage, long iconImageId, java.lang.String themeId,
+			java.lang.String colorSchemeId, java.lang.String css,
 			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 

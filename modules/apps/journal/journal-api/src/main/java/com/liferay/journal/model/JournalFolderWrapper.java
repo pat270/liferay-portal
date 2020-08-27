@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalFolder
  * @generated
  */
-@ProviderType
 public class JournalFolderWrapper
 	extends BaseModelWrapper<JournalFolder>
 	implements JournalFolder, ModelWrapper<JournalFolder> {
@@ -46,6 +45,8 @@ public class JournalFolderWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("folderId", getFolderId());
 		attributes.put("groupId", getGroupId());
@@ -70,6 +71,18 @@ public class JournalFolderWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -241,6 +254,16 @@ public class JournalFolderWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this journal folder.
+	 *
+	 * @return the ct collection ID of this journal folder
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the description of this journal folder.
 	 *
 	 * @return the description of this journal folder
@@ -288,6 +311,16 @@ public class JournalFolderWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this journal folder.
+	 *
+	 * @return the mvcc version of this journal folder
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -632,6 +665,16 @@ public class JournalFolderWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this journal folder.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal folder
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this journal folder.
 	 *
 	 * @param description the description of this journal folder
@@ -679,6 +722,16 @@ public class JournalFolderWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this journal folder.
+	 *
+	 * @param mvccVersion the mvcc version of this journal folder
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -834,6 +887,20 @@ public class JournalFolderWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<JournalFolder, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<JournalFolder, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

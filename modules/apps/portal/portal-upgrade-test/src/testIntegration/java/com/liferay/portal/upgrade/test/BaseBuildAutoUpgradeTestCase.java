@@ -21,13 +21,17 @@ import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.service.ReleaseLocalService;
+import com.liferay.portal.kernel.service.ServiceComponentLocalService;
 import com.liferay.portal.kernel.service.persistence.ServiceComponentPersistence;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.DBAssertionUtil;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StreamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.spring.aop.AopInvocationHandler;
 import com.liferay.portal.test.log.CaptureAppender;
 import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
@@ -37,6 +41,8 @@ import com.liferay.portal.util.PropsValues;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import java.lang.reflect.Field;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -91,7 +97,7 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 
 			ps.executeUpdate();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		_previousSchemaModuleBuildAutoUpgrade =
@@ -115,11 +121,11 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 
 			ps.executeUpdate();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		Release release = _releaseLocalService.fetchRelease(
-			BUNDLE_SYMBOLICNAME);
+			BUNDLE_SYMBOLIC_NAME);
 
 		if (release != null) {
 			_releaseLocalService.deleteRelease(release);
@@ -135,6 +141,21 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 
 				return null;
 			});
+
+		AopInvocationHandler aopInvocationHandler =
+			(AopInvocationHandler)ProxyUtil.getInvocationHandler(
+				_serviceComponentLocalService);
+
+		Object serviceComponentLocalServiceImpl =
+			aopInvocationHandler.getTarget();
+
+		Class<?> clazz = serviceComponentLocalServiceImpl.getClass();
+
+		Field field = clazz.getDeclaredField("_serviceComponents");
+
+		field.setAccessible(true);
+
+		field.set(serviceComponentLocalServiceImpl, null);
 	}
 
 	@Test
@@ -372,7 +393,7 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 		throws IOException;
 
 	protected String toCreateSQL(Object[][] tableColumns) {
-		StringBundler sb = new StringBundler(tableColumns.length * 5 + 1);
+		StringBundler sb = new StringBundler((tableColumns.length * 5) + 1);
 
 		sb.append("create table BuildAutoUpgradeTestEntity (");
 
@@ -411,7 +432,7 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 		return sb.toString();
 	}
 
-	protected static final String BUNDLE_SYMBOLICNAME =
+	protected static final String BUNDLE_SYMBOLIC_NAME =
 		"build.auto.upgrade.test";
 
 	protected static final String ENTITY_PATH;
@@ -419,7 +440,7 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 	static {
 		String path = BuildAutoUpgradeTestEntityModelImpl.class.getName();
 
-		path = path.replace('.', '/');
+		path = StringUtil.replace(path, '.', '/');
 
 		ENTITY_PATH = path.concat(".class");
 	}
@@ -516,6 +537,9 @@ public abstract class BaseBuildAutoUpgradeTestCase {
 
 	@Inject
 	private ReleaseLocalService _releaseLocalService;
+
+	@Inject
+	private ServiceComponentLocalService _serviceComponentLocalService;
 
 	@Inject
 	private ServiceComponentPersistence _serviceComponentPersistence;

@@ -50,11 +50,13 @@ public class PoshiLogger {
 
 		String indexHTMLContent = FileUtil.read(url);
 
-		indexHTMLContent = indexHTMLContent.replace(
+		indexHTMLContent = StringUtil.replace(
+			indexHTMLContent,
 			"<ul class=\"command-log\" data-logid=\"01\" " +
 				"id=\"commandLog\"></ul>",
 			_commandLogger.getCommandLogText());
-		indexHTMLContent = indexHTMLContent.replace(
+		indexHTMLContent = StringUtil.replace(
+			indexHTMLContent,
 			"<ul class=\"syntax-log-container\" id=\"syntaxLogContainer\"" +
 				"></ul>",
 			_syntaxLogger.getSyntaxLogText());
@@ -108,8 +110,8 @@ public class PoshiLogger {
 		syntaxLoggerElement.setAttribute("data-status01", "fail");
 	}
 
-	public int getErrorLinkId() {
-		return _commandLogger.getErrorLinkId();
+	public int getDetailsLinkId() {
+		return _commandLogger.getDetailsLinkId();
 	}
 
 	public void logExternalMethodCommand(
@@ -160,6 +162,19 @@ public class PoshiLogger {
 		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
 
 		syntaxLoggerElement.setAttribute("data-status01", "pending");
+
+		_linkLoggerElements(
+			syntaxLoggerElement, _commandLogger.lineGroupLoggerElement);
+	}
+
+	public void takeScreenshotCommand(Element element)
+		throws PoshiRunnerLoggerException {
+
+		_commandLogger.takeScreenshotCommand(element, _syntaxLogger);
+
+		LoggerElement syntaxLoggerElement = _getSyntaxLoggerElement();
+
+		syntaxLoggerElement.setAttribute("data-status01", "screenshot");
 
 		_linkLoggerElements(
 			syntaxLoggerElement, _commandLogger.lineGroupLoggerElement);

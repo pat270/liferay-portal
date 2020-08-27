@@ -17,11 +17,11 @@ package com.liferay.item.selector.upload.web.internal;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.item.selector.ItemSelectorView;
+import com.liferay.item.selector.criteria.DownloadFileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.upload.criterion.UploadItemSelectorCriterion;
 import com.liferay.item.selector.upload.web.internal.display.context.ItemSelectorUploadViewDisplayContext;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 
 import java.io.IOException;
@@ -73,13 +73,8 @@ public class ItemSelectorUploadView
 	}
 
 	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
-	}
-
-	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			UploadItemSelectorCriterion uploadItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
@@ -95,11 +90,11 @@ public class ItemSelectorUploadView
 					uploadItemSelectorCriterion, this, itemSelectedEventName,
 					_itemSelectorReturnTypeResolverHandler);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			ITEM_SELECTOR_UPLOAD_VIEW_DISPLAY_CONTEXT,
 			itemSelectorUploadViewDisplayContext);
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	@Reference(
@@ -113,9 +108,8 @@ public class ItemSelectorUploadView
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
 			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new FileEntryItemSelectorReturnType()
-				}));
+				new DownloadFileEntryItemSelectorReturnType(),
+				new FileEntryItemSelectorReturnType()));
 
 	@Reference
 	private ItemSelectorReturnTypeResolverHandler

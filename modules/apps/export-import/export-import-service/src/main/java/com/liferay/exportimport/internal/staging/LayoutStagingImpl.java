@@ -38,7 +38,6 @@ import java.lang.reflect.InvocationHandler;
 
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -46,7 +45,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Raymond Augé
  */
 @Component(immediate = true, service = LayoutStaging.class)
-@ProviderType
 public class LayoutStagingImpl implements LayoutStaging {
 
 	@Override
@@ -113,7 +111,7 @@ public class LayoutStagingImpl implements LayoutStaging {
 
 	@Override
 	public boolean isBranchingLayout(Layout layout) {
-		if ((layout == null) || layout.isSystem()) {
+		if ((layout == null) || layout.isSystem() || layout.isTypeContent()) {
 			return false;
 		}
 
@@ -131,10 +129,10 @@ public class LayoutStagingImpl implements LayoutStaging {
 			group = group.getLiveGroup();
 		}
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			group.getTypeSettingsProperties();
 
-		if (typeSettingsProperties.isEmpty()) {
+		if (typeSettingsUnicodeProperties.isEmpty()) {
 			return false;
 		}
 
@@ -142,11 +140,11 @@ public class LayoutStagingImpl implements LayoutStaging {
 
 		if (privateLayout) {
 			branchingEnabled = GetterUtil.getBoolean(
-				typeSettingsProperties.getProperty("branchingPrivate"));
+				typeSettingsUnicodeProperties.getProperty("branchingPrivate"));
 		}
 		else {
 			branchingEnabled = GetterUtil.getBoolean(
-				typeSettingsProperties.getProperty("branchingPublic"));
+				typeSettingsUnicodeProperties.getProperty("branchingPublic"));
 		}
 
 		if (!branchingEnabled || !group.isStaged() ||
@@ -167,12 +165,12 @@ public class LayoutStagingImpl implements LayoutStaging {
 
 			return true;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return false;

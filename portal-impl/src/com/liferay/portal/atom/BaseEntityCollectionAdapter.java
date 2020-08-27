@@ -48,8 +48,8 @@ public abstract class BaseEntityCollectionAdapter<T>
 
 			author = company.getName();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return author;
@@ -65,9 +65,7 @@ public abstract class BaseEntityCollectionAdapter<T>
 	public String getId(RequestContext requestContext) {
 		String id = AtomUtil.createIdTagPrefix(collectionName);
 
-		id = id.concat("feed");
-
-		return id;
+		return id.concat("feed");
 	}
 
 	@Override

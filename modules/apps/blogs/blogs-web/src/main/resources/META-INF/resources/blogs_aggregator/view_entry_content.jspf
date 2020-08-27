@@ -44,7 +44,7 @@
 							userId="<%= entry.getUserId() %>"
 						/>
 
-						<div class="entry-info text-muted ">
+						<div class="entry-info text-muted">
 							<small>
 								<strong><%= HtmlUtil.escape(entry.getUserName()) %></strong>
 
@@ -55,7 +55,7 @@
 						</div>
 					</c:when>
 					<c:otherwise>
-						<div class="entry-info text-muted ">
+						<div class="entry-info text-muted">
 							<small>
 								<strong><%= HtmlUtil.escape(entry.getUserName()) %></strong>
 
@@ -125,7 +125,10 @@
 				<div class="entry-social">
 					<div class="comments">
 						<a href="<%= viewEntryURL %>">
-							<i class="icon-comment icon-monospaced"></i>
+							<liferay-ui:icon
+								icon="comments"
+								markupView="lexicon"
+							/>
 
 							<span><%= String.valueOf(commentsCount) %></span>
 						</a>

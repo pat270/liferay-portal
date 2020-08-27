@@ -53,7 +53,7 @@ public class ArrayCheck extends BaseFileCheck {
 		while (matcher.find()) {
 			if (!ToolsUtil.isInsideQuotes(content, matcher.start())) {
 				addMessage(
-					fileName, "Use Collections.addAll", "collections.markdown",
+					fileName, "Use Collections.addAll",
 					getLineNumber(content, matcher.start()));
 			}
 		}
@@ -73,9 +73,9 @@ public class ArrayCheck extends BaseFileCheck {
 
 			int lineNumber = getLineNumber(content, matcher.end(3));
 
-			String line = getLine(content, lineNumber);
+			if (getLineLength(getLine(content, lineNumber)) >
+					(getMaxLineLength() - 2)) {
 
-			if (getLineLength(line) > (getMaxLineLength() - 2)) {
 				String whitespace2 = matcher.group(3);
 
 				if (whitespace2.contains(StringPool.NEW_LINE)) {

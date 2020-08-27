@@ -14,23 +14,33 @@
  */
 --%>
 
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/ddm" prefix="liferay-ddm" %><%@
+taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
+taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+
 <%@ page import="com.liferay.portal.kernel.json.JSONArray" %><%@
 page import="com.liferay.portal.kernel.json.JSONObject" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
+page import="com.liferay.portal.kernel.util.WebKeys" %><%@
+page import="com.liferay.portal.search.web.internal.modified.facet.configuration.ModifiedFacetPortletInstanceConfiguration" %><%@
+page import="com.liferay.portal.search.web.internal.modified.facet.display.context.ModifiedFacetDisplayContext" %><%@
+page import="com.liferay.portal.search.web.internal.modified.facet.display.context.ModifiedFacetTermDisplayContext" %><%@
 page import="com.liferay.portal.search.web.internal.modified.facet.portlet.ModifiedFacetPortletPreferences" %><%@
 page import="com.liferay.portal.search.web.internal.modified.facet.portlet.ModifiedFacetPortletPreferencesImpl" %><%@
 page import="com.liferay.portal.search.web.internal.util.PortletPreferencesJspUtil" %>
 
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
-
-<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
-taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
-taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %>
-
 <portlet:defineObjects />
 
 <%
+ModifiedFacetDisplayContext modifiedFacetDisplayContext = (ModifiedFacetDisplayContext)java.util.Objects.requireNonNull(request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT));
+
+ModifiedFacetPortletInstanceConfiguration modifiedFacetPortletInstanceConfiguration = modifiedFacetDisplayContext.getModifiedFacetPortletInstanceConfiguration();
+
 ModifiedFacetPortletPreferences modifiedFacetPortletPreferences = new ModifiedFacetPortletPreferencesImpl(java.util.Optional.ofNullable(portletPreferences));
 
 JSONArray rangesJSONArray = modifiedFacetPortletPreferences.getRangesJSONArray();
@@ -49,34 +59,56 @@ JSONArray rangesJSONArray = modifiedFacetPortletPreferences.getRangesJSONArray()
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
 
 	<liferay-frontend:edit-form-body>
+		<liferay-ui:error key="unparsableDate" message="unparsable-date" />
+
 		<liferay-frontend:fieldset-group>
-			<aui:fieldset id='<%= renderResponse.getNamespace() + "rangesId" %>'>
+			<liferay-frontend:fieldset
+				collapsible="<%= true %>"
+				label="display-settings"
+			>
+				<div class="display-template">
+					<liferay-ddm:template-selector
+						className="<%= ModifiedFacetTermDisplayContext.class.getName() %>"
+						displayStyle="<%= modifiedFacetPortletInstanceConfiguration.displayStyle() %>"
+						displayStyleGroupId="<%= modifiedFacetDisplayContext.getDisplayStyleGroupId() %>"
+						refreshURL="<%= configurationRenderURL %>"
+						showEmptyOption="<%= true %>"
+					/>
+				</div>
+			</liferay-frontend:fieldset>
 
-				<%
-				int[] rangesIndexes = new int[rangesJSONArray.length()];
+			<liferay-frontend:fieldset
+				collapsible="<%= true %>"
+				label="advanced-configuration"
+			>
+				<aui:fieldset id='<%= liferayPortletResponse.getNamespace() + "rangesId" %>'>
 
-				for (int i = 0; i < rangesJSONArray.length(); i++) {
-					rangesIndexes[i] = i;
+					<%
+					int[] rangesIndexes = new int[rangesJSONArray.length()];
 
-					JSONObject jsonObject = rangesJSONArray.getJSONObject(i);
-				%>
+					for (int i = 0; i < rangesJSONArray.length(); i++) {
+						rangesIndexes[i] = i;
 
-					<div class="lfr-form-row lfr-form-row-inline range-form-row">
-						<div class="row-fields">
-							<aui:input cssClass="label-input" label="label" name='<%= "label_" + i %>' value='<%= jsonObject.getString("label") %>' />
+						JSONObject jsonObject = rangesJSONArray.getJSONObject(i);
+					%>
 
-							<aui:input cssClass="range-input" label="range" name='<%= "range_" + i %>' value='<%= jsonObject.getString("range") %>' />
+						<div class="lfr-form-row lfr-form-row-inline range-form-row">
+							<div class="row-fields">
+								<aui:input cssClass="label-input" label="label" name='<%= "label_" + i %>' required="<%= true %>" value='<%= jsonObject.getString("label") %>' />
+
+								<aui:input cssClass="range-input" label="range" name='<%= "range_" + i %>' required="<%= true %>" value='<%= jsonObject.getString("range") %>' />
+							</div>
 						</div>
-					</div>
 
-				<%
-				}
-				%>
+					<%
+					}
+					%>
 
-				<aui:input cssClass="ranges-input" name="<%= PortletPreferencesJspUtil.getInputName(ModifiedFacetPortletPreferences.PREFERENCE_KEY_RANGES) %>" type="hidden" value="<%= modifiedFacetPortletPreferences.getRangesString() %>" />
+					<aui:input cssClass="ranges-input" name="<%= PortletPreferencesJspUtil.getInputName(ModifiedFacetPortletPreferences.PREFERENCE_KEY_RANGES) %>" type="hidden" value="<%= modifiedFacetPortletPreferences.getRangesString() %>" />
 
-				<aui:input name='<%= "rangesIndexes" %>' type="hidden" value="<%= StringUtil.merge(rangesIndexes) %>" />
-			</aui:fieldset>
+					<aui:input name="rangesIndexes" type="hidden" value="<%= StringUtil.merge(rangesIndexes) %>" />
+				</aui:fieldset>
+			</liferay-frontend:fieldset>
 		</liferay-frontend:fieldset-group>
 	</liferay-frontend:edit-form-body>
 
@@ -88,15 +120,15 @@ JSONArray rangesJSONArray = modifiedFacetPortletPreferences.getRangesJSONArray()
 </liferay-frontend:edit-form>
 
 <aui:script use="liferay-auto-fields">
-	var autoFields = new Liferay.AutoFields(
-		{
-			contentBox: 'fieldset#<portlet:namespace />rangesId',
-			fieldIndexes: '<portlet:namespace />rangesIndexes',
-			namespace: '<portlet:namespace />'
-		}
-	).render();
+	new Liferay.AutoFields({
+		contentBox: 'fieldset#<portlet:namespace />rangesId',
+		fieldIndexes: '<portlet:namespace />rangesIndexes',
+		namespace: '<portlet:namespace />',
+	}).render();
 </aui:script>
 
 <aui:script use="liferay-search-modified-facet-configuration">
-	new Liferay.Search.ModifiedFacetConfiguration(A.one(document.<portlet:namespace />fm));
+	new Liferay.Search.ModifiedFacetConfiguration(
+		A.one(document.<portlet:namespace />fm)
+	);
 </aui:script>

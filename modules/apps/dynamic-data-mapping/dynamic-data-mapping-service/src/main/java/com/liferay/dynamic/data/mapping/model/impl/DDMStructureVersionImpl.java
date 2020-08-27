@@ -26,13 +26,10 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.cache.CacheField;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Leonardo Barros
  */
-@ProviderType
 public class DDMStructureVersionImpl extends DDMStructureVersionBaseImpl {
 
 	@Override
@@ -43,8 +40,8 @@ public class DDMStructureVersionImpl extends DDMStructureVersionBaseImpl {
 					DDMStructureVersionLocalServiceUtil.
 						getStructureVersionDDMForm(this);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 
 				return new DDMForm();
 			}

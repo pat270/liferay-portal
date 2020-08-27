@@ -19,12 +19,14 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.asset.util.AssetRendererFactoryLookup;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
@@ -32,6 +34,7 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatConstants;
@@ -100,8 +103,10 @@ public class SearchResultSummaryDisplayBuilder {
 
 			return build(className, classPK);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 
 			return buildTemporarilyUnavailable();
 		}
@@ -155,6 +160,14 @@ public class SearchResultSummaryDisplayBuilder {
 		FastDateFormatFactory fastDateFormatFactory) {
 
 		_fastDateFormatFactory = fastDateFormatFactory;
+
+		return this;
+	}
+
+	public SearchResultSummaryDisplayBuilder setGroupLocalService(
+		GroupLocalService groupLocalService) {
+
+		_groupLocalService = groupLocalService;
 
 		return this;
 	}
@@ -278,6 +291,26 @@ public class SearchResultSummaryDisplayBuilder {
 		return this;
 	}
 
+	protected String appendStagingLabel(
+		String title, AssetRenderer<?> assetRenderer) {
+
+		Group group = _groupLocalService.fetchGroup(assetRenderer.getGroupId());
+
+		if ((group != null) && group.isStagingGroup()) {
+			StringBundler sb = new StringBundler(5);
+
+			sb.append(title);
+			sb.append(StringPool.SPACE);
+			sb.append(StringPool.OPEN_PARENTHESIS);
+			sb.append(_language.get(_httpServletRequest, "staged"));
+			sb.append(StringPool.CLOSE_PARENTHESIS);
+
+			title = sb.toString();
+		}
+
+		return title;
+	}
+
 	protected SearchResultSummaryDisplayContext build(
 			String className, long classPK)
 		throws Exception {
@@ -362,9 +395,8 @@ public class SearchResultSummaryDisplayBuilder {
 			searchResultSummaryDisplayContext.setAssetCategoriesOrTagsVisible(
 				true);
 			searchResultSummaryDisplayContext.setFieldAssetCategoryIds(
-				Field.ASSET_CATEGORY_IDS);
-			searchResultSummaryDisplayContext.setFieldAssetTagNames(
-				Field.ASSET_TAG_NAMES);
+				"category");
+			searchResultSummaryDisplayContext.setFieldAssetTagNames("tag");
 		}
 	}
 
@@ -581,9 +613,8 @@ public class SearchResultSummaryDisplayBuilder {
 		};
 
 		_searchResultImageContributorsStream.forEach(
-			searchResultImageContributor -> {
-				searchResultImageContributor.contribute(searchResultImage);
-			});
+			searchResultImageContributor ->
+				searchResultImageContributor.contribute(searchResultImage));
 	}
 
 	protected void buildLocaleReminder(
@@ -631,10 +662,8 @@ public class SearchResultSummaryDisplayBuilder {
 		SearchResultSummaryDisplayContext searchResultSummaryDisplayContext,
 		AssetEntry assetEntry, String className) {
 
-		long entryClassPK = getEntryClassPK();
-
 		AssetEntry childAssetEntry = _assetEntryLocalService.fetchEntry(
-			className, entryClassPK);
+			className, getEntryClassPK());
 
 		if (childAssetEntry != null) {
 			assetEntry = childAssetEntry;
@@ -692,12 +721,12 @@ public class SearchResultSummaryDisplayBuilder {
 		try {
 			return assetRendererFactory.getAssetRenderer(classPK);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new IllegalStateException(
 				StringBundler.concat(
 					"Unable to get asset renderer for class ", className,
 					" with primary key ", classPK),
-				e);
+				exception);
 		}
 	}
 
@@ -748,11 +777,8 @@ public class SearchResultSummaryDisplayBuilder {
 			return fieldName;
 		}
 
-		String snippetFieldName = Field.SNIPPET.concat(
-			StringPool.UNDERLINE
-		).concat(
-			fieldName
-		);
+		String snippetFieldName = StringBundler.concat(
+			Field.SNIPPET, StringPool.UNDERLINE, fieldName);
 
 		if (isFieldPresent(snippetFieldName)) {
 			return snippetFieldName;
@@ -816,7 +842,14 @@ public class SearchResultSummaryDisplayBuilder {
 				summaryBuilder.setLocale(summary.getLocale());
 				summaryBuilder.setMaxContentLength(
 					summary.getMaxContentLength());
-				summaryBuilder.setTitle(summary.getTitle());
+
+				if (assetRenderer != null) {
+					summaryBuilder.setTitle(
+						appendStagingLabel(summary.getTitle(), assetRenderer));
+				}
+				else {
+					summaryBuilder.setTitle(summary.getTitle());
+				}
 
 				return summaryBuilder.build();
 			}
@@ -824,7 +857,9 @@ public class SearchResultSummaryDisplayBuilder {
 		else if (assetRenderer != null) {
 			summaryBuilder.setContent(assetRenderer.getSearchSummary(_locale));
 			summaryBuilder.setLocale(_locale);
-			summaryBuilder.setTitle(assetRenderer.getTitle(_locale));
+			summaryBuilder.setTitle(
+				appendStagingLabel(
+					assetRenderer.getTitle(_locale), assetRenderer));
 
 			return summaryBuilder.build();
 		}
@@ -893,9 +928,10 @@ public class SearchResultSummaryDisplayBuilder {
 		try {
 			return dateFormat.parse(dateStringFieldValue);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new IllegalArgumentException(
-				"Unable to parse date string: " + dateStringFieldValue, e);
+				"Unable to parse date string: " + dateStringFieldValue,
+				exception);
 		}
 	}
 
@@ -909,6 +945,7 @@ public class SearchResultSummaryDisplayBuilder {
 	private Document _document;
 	private DocumentBuilderFactory _documentBuilderFactory;
 	private FastDateFormatFactory _fastDateFormatFactory;
+	private GroupLocalService _groupLocalService;
 	private boolean _highlightEnabled;
 	private HttpServletRequest _httpServletRequest;
 	private boolean _imageRequested;

@@ -245,7 +245,7 @@ public class JspAnalyzerPlugin implements AnalyzerPlugin {
 					}
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 	}
@@ -272,19 +272,12 @@ public class JspAnalyzerPlugin implements AnalyzerPlugin {
 
 		Clazz clazz = null;
 
-		try {
-			InputStream inputStream = resource.openInputStream();
-
+		try (InputStream inputStream = resource.openInputStream()) {
 			clazz = new Clazz(analyzer, fqnToPath, resource);
 
-			try {
-				clazz.parseClassFile();
-			}
-			finally {
-				inputStream.close();
-			}
+			clazz.parseClassFile();
 		}
-		catch (Throwable e) {
+		catch (Throwable throwable) {
 			return;
 		}
 
@@ -329,8 +322,12 @@ public class JspAnalyzerPlugin implements AnalyzerPlugin {
 			// indicate that it already has access to the required classes
 
 			if (containsTLD(analyzer, analyzer.getJar(), "META-INF", uri) ||
+				containsTLD(
+					analyzer, analyzer.getJar(), "META-INF/resources", uri) ||
 				containsTLD(analyzer, analyzer.getJar(), "WEB-INF/tld", uri) ||
-				containsTLDInBundleClassPath(analyzer, "META-INF", uri)) {
+				containsTLDInBundleClassPath(analyzer, "META-INF", uri) ||
+				containsTLDInBundleClassPath(
+					analyzer, "META-INF/resources", uri)) {
 
 				continue;
 			}
@@ -447,8 +444,7 @@ public class JspAnalyzerPlugin implements AnalyzerPlugin {
 					}
 				}
 			}
-			catch (Exception e) {
-				continue;
+			catch (Exception exception) {
 			}
 		}
 
@@ -512,9 +508,10 @@ public class JspAnalyzerPlugin implements AnalyzerPlugin {
 
 			return uriFinder.hasURI();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			analyzer.error(
-				"Unexpected exception in processing TLD " + path + ": " + e);
+				"Unexpected exception in processing TLD " + path + ": " +
+					exception);
 		}
 
 		return false;

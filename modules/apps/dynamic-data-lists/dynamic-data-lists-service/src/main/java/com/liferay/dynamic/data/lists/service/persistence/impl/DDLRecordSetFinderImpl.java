@@ -14,8 +14,8 @@
 
 package com.liferay.dynamic.data.lists.service.persistence.impl;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
-import com.liferay.dynamic.data.lists.model.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.impl.DDLRecordSetImpl;
 import com.liferay.dynamic.data.lists.service.persistence.DDLRecordSetFinder;
 import com.liferay.petra.string.StringPool;
@@ -232,35 +232,35 @@ public class DDLRecordSetFinderImpl
 			}
 
 			if (groupId <= 0) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordSet.groupId = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordSet.groupId = ?) AND");
 			}
 
 			if (ddmStructureId <= 0) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordSet.DDMStructureId = ?)", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordSet.DDMStructureId = ?)");
 			}
 
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (groupId > 0) {
-				qPos.add(groupId);
+				queryPos.add(groupId);
 			}
 
 			if (ddmStructureId > 0) {
-				qPos.add(ddmStructureId);
+				queryPos.add(ddmStructureId);
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -269,8 +269,8 @@ public class DDLRecordSetFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -298,13 +298,13 @@ public class DDLRecordSetFinderImpl
 			}
 
 			if (groupId <= 0) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordSet.groupId = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordSet.groupId = ?) AND");
 			}
 
 			if (scope == DDLRecordSetConstants.SCOPE_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordSet.scope = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordSet.scope = ?) AND");
 			}
 
 			sql = _customSQL.replaceKeywords(
@@ -314,29 +314,29 @@ public class DDLRecordSetFinderImpl
 				descriptions);
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (groupId > 0) {
-				qPos.add(groupId);
+				queryPos.add(groupId);
 			}
 
 			if (scope != DDLRecordSetConstants.SCOPE_ANY) {
-				qPos.add(scope);
+				queryPos.add(scope);
 			}
 
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -345,8 +345,8 @@ public class DDLRecordSetFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -376,13 +376,13 @@ public class DDLRecordSetFinderImpl
 			}
 
 			if (groupId <= 0) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordSet.groupId = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordSet.groupId = ?) AND");
 			}
 
 			if (scope == DDLRecordSetConstants.SCOPE_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordSet.scope = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordSet.scope = ?) AND");
 			}
 
 			sql = _customSQL.replaceKeywords(
@@ -393,30 +393,30 @@ public class DDLRecordSetFinderImpl
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 			sql = _customSQL.replaceOrderBy(sql, orderByComparator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("DDLRecordSet", DDLRecordSetImpl.class);
+			sqlQuery.addEntity("DDLRecordSet", DDLRecordSetImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
+			queryPos.add(companyId);
 
 			if (groupId > 0) {
-				qPos.add(groupId);
+				queryPos.add(groupId);
 			}
 
 			if (scope != DDLRecordSetConstants.SCOPE_ANY) {
-				qPos.add(scope);
+				queryPos.add(scope);
 			}
 
-			qPos.add(names, 2);
-			qPos.add(descriptions, 2);
+			queryPos.add(names, 2);
+			queryPos.add(descriptions, 2);
 
 			return (List<DDLRecordSet>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

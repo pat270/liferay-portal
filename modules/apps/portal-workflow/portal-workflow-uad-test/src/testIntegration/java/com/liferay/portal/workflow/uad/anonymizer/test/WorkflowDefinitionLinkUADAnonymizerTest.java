@@ -72,7 +72,7 @@ public class WorkflowDefinitionLinkUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<WorkflowDefinitionLink> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -97,9 +97,11 @@ public class WorkflowDefinitionLinkUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_workflowDefinitionLinkLocalService.fetchWorkflowDefinitionLink(
-				baseModelPK) == null) {
+		WorkflowDefinitionLink workflowDefinitionLink =
+			_workflowDefinitionLinkLocalService.fetchWorkflowDefinitionLink(
+				baseModelPK);
 
+		if (workflowDefinitionLink == null) {
 			return true;
 		}
 
@@ -107,7 +109,7 @@ public class WorkflowDefinitionLinkUADAnonymizerTest
 	}
 
 	@Inject(filter = "component.name=*.WorkflowDefinitionLinkUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<WorkflowDefinitionLink> _uadAnonymizer;
 
 	@Inject
 	private WorkflowDefinitionLinkLocalService

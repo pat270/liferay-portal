@@ -16,8 +16,6 @@ package com.liferay.change.tracking.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link CTProcessLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CTProcessLocalService
  * @generated
  */
-@ProviderType
 public class CTProcessLocalServiceWrapper
 	implements CTProcessLocalService, ServiceWrapper<CTProcessLocalService> {
 
@@ -37,6 +34,10 @@ public class CTProcessLocalServiceWrapper
 
 	/**
 	 * Adds the ct process to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CTProcessLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ctProcess the ct process
 	 * @return the ct process that was added
@@ -50,12 +51,10 @@ public class CTProcessLocalServiceWrapper
 
 	@Override
 	public com.liferay.change.tracking.model.CTProcess addCTProcess(
-			long userId, long ctCollectionId, boolean ignoreCollision,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+			long userId, long ctCollectionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _ctProcessLocalService.addCTProcess(
-			userId, ctCollectionId, ignoreCollision, serviceContext);
+		return _ctProcessLocalService.addCTProcess(userId, ctCollectionId);
 	}
 
 	/**
@@ -72,22 +71,39 @@ public class CTProcessLocalServiceWrapper
 	}
 
 	/**
-	 * Deletes the ct process from the database. Also notifies the appropriate model listeners.
-	 *
-	 * @param ctProcess the ct process
-	 * @return the ct process that was removed
 	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.change.tracking.model.CTProcess deleteCTProcess(
-			com.liferay.change.tracking.model.CTProcess ctProcess)
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _ctProcessLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
+	 * Deletes the ct process from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CTProcessLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
+	 * @param ctProcess the ct process
+	 * @return the ct process that was removed
+	 */
+	@Override
+	public com.liferay.change.tracking.model.CTProcess deleteCTProcess(
+		com.liferay.change.tracking.model.CTProcess ctProcess) {
 
 		return _ctProcessLocalService.deleteCTProcess(ctProcess);
 	}
 
 	/**
 	 * Deletes the ct process with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CTProcessLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ctProcessId the primary key of the ct process
 	 * @return the ct process that was removed
@@ -113,6 +129,11 @@ public class CTProcessLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _ctProcessLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _ctProcessLocalService.dynamicQuery();
 	}
@@ -134,7 +155,7 @@ public class CTProcessLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.change.tracking.model.impl.CTProcessModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.change.tracking.model.impl.CTProcessModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -154,7 +175,7 @@ public class CTProcessLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.change.tracking.model.impl.CTProcessModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.change.tracking.model.impl.CTProcessModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -242,7 +263,7 @@ public class CTProcessLocalServiceWrapper
 	 * Returns a range of all the ct processes.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.change.tracking.model.impl.CTProcessModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.change.tracking.model.impl.CTProcessModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of ct processes
@@ -261,28 +282,6 @@ public class CTProcessLocalServiceWrapper
 		getCTProcesses(long ctCollectionId) {
 
 		return _ctProcessLocalService.getCTProcesses(ctCollectionId);
-	}
-
-	@Override
-	public java.util.List<com.liferay.change.tracking.model.CTProcess>
-		getCTProcesses(
-			long companyId, int status,
-			com.liferay.portal.kernel.dao.orm.QueryDefinition<?>
-				queryDefinition) {
-
-		return _ctProcessLocalService.getCTProcesses(
-			companyId, status, queryDefinition);
-	}
-
-	@Override
-	public java.util.List<com.liferay.change.tracking.model.CTProcess>
-		getCTProcesses(
-			long companyId,
-			com.liferay.portal.kernel.dao.orm.QueryDefinition<?>
-				queryDefinition) {
-
-		return _ctProcessLocalService.getCTProcesses(
-			companyId, queryDefinition);
 	}
 
 	/**
@@ -312,6 +311,9 @@ public class CTProcessLocalServiceWrapper
 		return _ctProcessLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -322,6 +324,10 @@ public class CTProcessLocalServiceWrapper
 
 	/**
 	 * Updates the ct process in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CTProcessLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param ctProcess the ct process
 	 * @return the ct process that was updated

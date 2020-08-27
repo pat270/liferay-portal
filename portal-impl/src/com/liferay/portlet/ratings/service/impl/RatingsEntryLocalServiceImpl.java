@@ -29,6 +29,7 @@ import com.liferay.ratings.kernel.model.RatingsEntry;
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +45,8 @@ public class RatingsEntryLocalServiceImpl
 	public void deleteEntry(long userId, String className, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		RatingsEntry entry = ratingsEntryPersistence.fetchByU_C_C(
-			userId, classNameId, classPK);
+			userId, classNameLocalService.getClassNameId(className), classPK);
 
 		ratingsEntryLocalService.deleteEntry(entry, userId, className, classPK);
 	}
@@ -64,9 +63,8 @@ public class RatingsEntryLocalServiceImpl
 			return;
 		}
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		ratingsEntryPersistence.removeByU_C_C(userId, classNameId, classPK);
+		ratingsEntryPersistence.removeByU_C_C(
+			userId, classNameLocalService.getClassNameId(className), classPK);
 
 		// Stats
 
@@ -115,23 +113,8 @@ public class RatingsEntryLocalServiceImpl
 	public RatingsEntry fetchEntry(
 		long userId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return ratingsEntryPersistence.fetchByU_C_C(
-			userId, classNameId, classPK);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public List<RatingsEntry> getEntries(
-		long userId, String className, List<Long> classPKs) {
-
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return ratingsEntryFinder.findByU_C_C(userId, classNameId, classPKs);
+			userId, classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -154,36 +137,30 @@ public class RatingsEntryLocalServiceImpl
 
 	@Override
 	public List<RatingsEntry> getEntries(String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return ratingsEntryPersistence.findByC_C(classNameId, classPK);
+		return ratingsEntryPersistence.findByC_C(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
 	public List<RatingsEntry> getEntries(
 		String className, long classPK, double score) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return ratingsEntryPersistence.findByC_C_S(classNameId, classPK, score);
+		return ratingsEntryPersistence.findByC_C_S(
+			classNameLocalService.getClassNameId(className), classPK, score);
 	}
 
 	@Override
 	public int getEntriesCount(String className, long classPK, double score) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return ratingsEntryPersistence.countByC_C_S(
-			classNameId, classPK, score);
+			classNameLocalService.getClassNameId(className), classPK, score);
 	}
 
 	@Override
 	public RatingsEntry getEntry(long userId, String className, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		return ratingsEntryPersistence.findByU_C_C(
-			userId, classNameId, classPK);
+			userId, classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -206,7 +183,7 @@ public class RatingsEntryLocalServiceImpl
 
 			entry.setScore(score);
 
-			ratingsEntryPersistence.update(entry);
+			entry = ratingsEntryPersistence.update(entry);
 
 			// Stats
 
@@ -217,6 +194,7 @@ public class RatingsEntryLocalServiceImpl
 				stats = ratingsStatsLocalService.addStats(classNameId, classPK);
 			}
 
+			stats.setModifiedDate(new Date());
 			stats.setTotalScore(stats.getTotalScore() - oldScore + score);
 			stats.setAverageScore(
 				stats.getTotalScore() / stats.getTotalEntries());
@@ -237,7 +215,7 @@ public class RatingsEntryLocalServiceImpl
 			entry.setClassPK(classPK);
 			entry.setScore(score);
 
-			ratingsEntryPersistence.update(entry);
+			entry = ratingsEntryPersistence.update(entry);
 
 			// Stats
 
@@ -248,6 +226,7 @@ public class RatingsEntryLocalServiceImpl
 				stats = ratingsStatsLocalService.addStats(classNameId, classPK);
 			}
 
+			stats.setModifiedDate(new Date());
 			stats.setTotalEntries(stats.getTotalEntries() + 1);
 			stats.setTotalScore(stats.getTotalScore() + score);
 			stats.setAverageScore(

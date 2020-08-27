@@ -54,6 +54,7 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
 
@@ -81,7 +82,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -128,8 +128,9 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Repository is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Repository is null", nullPointerException.getMessage());
 		}
 
 		try {
@@ -138,8 +139,9 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Fabric agent is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Fabric agent is null", nullPointerException.getMessage());
 		}
 
 		new NettyFabricWorkerExecutionChannelHandler(
@@ -211,10 +213,10 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ProcessException pe) {
+		catch (ProcessException processException) {
 			Assert.assertEquals(
 				"Unable to locate fabric agent on channel " + _embeddedChannel,
-				pe.getMessage());
+				processException.getMessage());
 		}
 
 		NettyFabricAgentStub nettyFabricAgentStub =
@@ -248,10 +250,10 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ProcessException pe) {
+		catch (ProcessException processException) {
 			Assert.assertEquals(
 				"Unable to locate fabric agent on channel " + _embeddedChannel,
-				pe.getMessage());
+				processException.getMessage());
 		}
 
 		// Unable to locate fabric worker
@@ -263,11 +265,11 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ProcessException pe) {
+		catch (ProcessException processException) {
 			Assert.assertEquals(
 				"Unable to locate fabric worker on channel " +
 					_embeddedChannel + ", with fabric worker id 0",
-				pe.getMessage());
+				processException.getMessage());
 		}
 
 		// Finish with result
@@ -299,8 +301,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(throwable, executionException.getCause());
 		}
 	}
 
@@ -419,8 +421,9 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ProcessException pe) {
-			Assert.assertSame(malformedURLException, pe.getCause());
+		catch (ProcessException processException) {
+			Assert.assertSame(
+				malformedURLException, processException.getCause());
 		}
 		finally {
 			handlers.clear();
@@ -429,16 +432,6 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 	@Test
 	public void testLoadPaths() throws Exception {
-		final Map<Path, Path> mergedPaths = new HashMap<>();
-
-		Path inputPath1 = Paths.get("inputPaths1");
-		Path mappedInputPath1 = Paths.get("mappedInputPath1");
-		Path inputPath2 = Paths.get("inputPaths2");
-		Path mappedInputPath2 = Paths.get("mappedInputPath2");
-
-		mergedPaths.put(inputPath1, mappedInputPath1);
-		mergedPaths.put(inputPath2, mappedInputPath2);
-
 		Path bootstrapPath1 = Paths.get("bootstrapPath1");
 		Path mappedBootstrapPath1 = Paths.get("mappedBootstrapPath1");
 		Path bootstrapPath2 = Paths.get("bootstrapPath2");
@@ -446,9 +439,10 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 		Path bootstrapPath3 = Paths.get("bootstrapPath3");
 		Path mappedBootstrapPath3 = Paths.get("mappedBootstrapPath3");
 
-		mergedPaths.put(bootstrapPath1, mappedBootstrapPath1);
-		mergedPaths.put(bootstrapPath2, mappedBootstrapPath2);
-		mergedPaths.put(bootstrapPath3, mappedBootstrapPath3);
+		Path inputPath1 = Paths.get("inputPaths1");
+		Path mappedInputPath1 = Paths.get("mappedInputPath1");
+		Path inputPath2 = Paths.get("inputPaths2");
+		Path mappedInputPath2 = Paths.get("mappedInputPath2");
 
 		Path runtimePath1 = Paths.get("runtimePath1");
 		Path mappedRuntimePath1 = Paths.get("mappedRuntimePath1");
@@ -457,9 +451,23 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 		Path runtimePath3 = Paths.get("runtimePath3");
 		Path mappedRuntimePath3 = Paths.get("mappedRuntimePath3");
 
-		mergedPaths.put(runtimePath1, mappedRuntimePath1);
-		mergedPaths.put(runtimePath2, mappedRuntimePath2);
-		mergedPaths.put(runtimePath3, mappedRuntimePath3);
+		final Map<Path, Path> mergedPaths = HashMapBuilder.<Path, Path>put(
+			bootstrapPath1, mappedBootstrapPath1
+		).put(
+			bootstrapPath2, mappedBootstrapPath2
+		).put(
+			bootstrapPath3, mappedBootstrapPath3
+		).put(
+			inputPath1, mappedInputPath1
+		).put(
+			inputPath2, mappedInputPath2
+		).put(
+			runtimePath1, mappedRuntimePath1
+		).put(
+			runtimePath2, mappedRuntimePath2
+		).put(
+			runtimePath3, mappedRuntimePath3
+		).build();
 
 		NettyFabricWorkerExecutionChannelHandler
 			nettyFabricWorkerExecutionChannelHandler =
@@ -542,14 +550,14 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 		// With log
 
-		final Map<Path, Path> mergedPaths = new HashMap<>();
-
 		Path bootstrapPath1 = Paths.get("bootstrapPath1");
 		Path mappedBootstrapPath1 = Paths.get("mappedBootstrapPath1");
 		Path bootstrapPath2 = Paths.get("bootstrapPath2");
 		Path bootstrapPath3 = Paths.get("bootstrapPath3");
 
-		mergedPaths.put(bootstrapPath1, mappedBootstrapPath1);
+		final Map<Path, Path> mergedPaths = HashMapBuilder.<Path, Path>put(
+			bootstrapPath1, mappedBootstrapPath1
+		).build();
 
 		NettyFabricWorkerExecutionChannelHandler
 			nettyFabricWorkerExecutionChannelHandler =
@@ -671,13 +679,11 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 	@Test
 	public void testLoadPathsMissedInputPaths() throws InterruptedException {
-		final Map<Path, Path> mergedPaths = new HashMap<>();
-
 		Path inputPath1 = Paths.get("inputPaths1");
-		Path mappedInputPath1 = Paths.get("mappedInputPath1");
-		Path inputPath2 = Paths.get("inputPaths2");
 
-		mergedPaths.put(inputPath1, mappedInputPath1);
+		final Map<Path, Path> mergedPaths = HashMapBuilder.<Path, Path>put(
+			inputPath1, Paths.get("mappedInputPath1")
+		).build();
 
 		NettyFabricWorkerExecutionChannelHandler
 			nettyFabricWorkerExecutionChannelHandler =
@@ -708,6 +714,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 		ProcessConfig processConfig = builder.build();
 
+		Path inputPath2 = Paths.get("inputPaths2");
+
 		ProcessCallable<Serializable> processCallable =
 			new LoadPathProcessCallable(
 				inputPath1.toFile(), inputPath2.toFile());
@@ -729,8 +737,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 		try {
 			noticeableFuture.get();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertSame(IOException.class, throwable.getClass());
 			Assert.assertEquals(
@@ -744,16 +752,17 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 		// With log
 
-		final Map<Path, Path> mergedPaths = new HashMap<>();
-
 		Path runtimePath1 = Paths.get("runtimePath1");
 		Path mappedRuntimePath1 = Paths.get("mappedRuntimePath1");
 		Path runtimePath2 = Paths.get("runtimePath2");
 		Path runtimePath3 = Paths.get("runtimePath3");
 		Path mappedRuntimePath3 = Paths.get("mappedRuntimePath3");
 
-		mergedPaths.put(runtimePath1, mappedRuntimePath1);
-		mergedPaths.put(runtimePath3, mappedRuntimePath3);
+		final Map<Path, Path> mergedPaths = HashMapBuilder.<Path, Path>put(
+			runtimePath1, mappedRuntimePath1
+		).put(
+			runtimePath3, mappedRuntimePath3
+		).build();
 
 		NettyFabricWorkerExecutionChannelHandler
 			nettyFabricWorkerExecutionChannelHandler =
@@ -918,8 +927,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertEquals(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertEquals(throwable, executionException.getCause());
 		}
 
 		// Finish startup failure
@@ -940,10 +949,6 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 			new EmbeddedProcessChannel<Serializable>(processNoticeableFuture));
 
 		defaultPromise.setSuccess(fabricWorker);
-
-		nettyFabricWorkerStub = installNettyFabricWorkerStub();
-
-		noticeableFuture = nettyFabricWorkerStub.getProcessNoticeableFuture();
 
 		try (CaptureHandler captureHandler =
 				JDKLoggerTestUtil.configureJDKLogger(
@@ -1008,10 +1013,11 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 		Path inputPath2 = FileServerTestUtil.createEmptyFile(
 			Paths.get("inputPath2"));
 
-		Map<Path, Path> inputPaths = new HashMap<>();
-
-		inputPaths.put(inputPath1, inputPath1);
-		inputPaths.put(inputPath2, inputPath2);
+		Map<Path, Path> inputPaths = HashMapBuilder.<Path, Path>put(
+			inputPath1, inputPath1
+		).put(
+			inputPath2, inputPath2
+		).build();
 
 		PostFabricWorkerFinishFutureListener
 			postFabricWorkerFinishFutureListener =
@@ -1048,8 +1054,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertEquals(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertEquals(throwable, executionException.getCause());
 		}
 
 		// Finish with null pointer exception
@@ -1067,10 +1073,10 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable t = ee.getCause();
+		catch (ExecutionException executionException) {
+			throwable = executionException.getCause();
 
-			Assert.assertSame(NullPointerException.class, t.getClass());
+			Assert.assertSame(NullPointerException.class, throwable.getClass());
 		}
 
 		// Finish with result
@@ -1080,10 +1086,11 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 		inputPath2 = FileServerTestUtil.createEmptyFile(
 			Paths.get("inputPath2"));
 
-		inputPaths = new HashMap<>();
-
-		inputPaths.put(inputPath1, inputPath1);
-		inputPaths.put(inputPath2, inputPath2);
+		inputPaths = HashMapBuilder.<Path, Path>put(
+			inputPath1, inputPath1
+		).put(
+			inputPath2, inputPath2
+		).build();
 
 		postFabricWorkerFinishFutureListener =
 			nettyFabricWorkerExecutionChannelHandler.
@@ -1160,8 +1167,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(throwable, executionException.getCause());
 		}
 
 		// Loaded paths
@@ -1263,8 +1270,8 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(throwable, executionException.getCause());
 		}
 	}
 
@@ -1295,12 +1302,11 @@ public class NettyFabricWorkerExecutionChannelHandlerTest {
 	protected NettyFabricWorkerStub<Serializable>
 		installNettyFabricWorkerStub() {
 
-		NettyFabricAgentStub nettyFabricAgentStub =
-			NettyChannelAttributes.getNettyFabricAgentStub(_embeddedChannel);
-
 		Map<Long, NettyFabricWorkerStub<?>> nettyFabricWorkerStubs =
 			ReflectionTestUtil.getFieldValue(
-				nettyFabricAgentStub, "_nettyFabricWorkerStubs");
+				NettyChannelAttributes.getNettyFabricAgentStub(
+					_embeddedChannel),
+				"_nettyFabricWorkerStubs");
 
 		NettyFabricWorkerStub<Serializable> nettyFabricWorkerStub =
 			new NettyFabricWorkerStub<>(

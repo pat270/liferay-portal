@@ -1,0 +1,69 @@
+definition {
+
+	@summary = "This calls the JSON WS API to add a Blog entry"
+	macro addEntry {
+		Variables.assertDefined(parameterList = "${entryContent},${entryTitle}");
+
+		var portalURL = JSONCompany.getPortalURL();
+
+		var contentXML = JSONBlogSetter.setContentXML(content = "${entryContent}");
+
+		if (!(isSet(entrySubtitle))) {
+			var entrySubtitle = "";
+		}
+
+		if (isSet(groupName)) {
+			var serviceContext = JSONBlogSetter.setServiceContext(
+				assetCategoryIds = "${assetCategoryIds}",
+				assetTagNames = "${assetTagNames}",
+				groupName = "${groupName}",
+				site = "${site}",
+				workflowAction = "${workflowAction}");
+		}
+		else {
+			var serviceContext = JSONBlogSetter.setServiceContext(
+				assetCategoryIds = "${assetCategoryIds}",
+				assetTagNames = "${assetTagNames}",
+				groupName = "Guest",
+				workflowAction = "${workflowAction}");
+		}
+
+		if (!(isSet(userEmailAddress))) {
+			var userEmailAddress = "test@liferay.com";
+		}
+
+		if (!(isSet(userPassword))) {
+			var userPassword = "test";
+		}
+
+		var curl = '''
+			${portalURL}/api/jsonws/blogs.blogsentry/add-entry \
+			-u ${userEmailAddress}:${userPassword} \
+			-d title=${entryTitle} \
+			-d subtitle=${entrySubtitle} \
+			-d description= \
+			-d content=${contentXML} \
+			-d displayDateMonth=01 \
+			-d displayDateDay=01 \
+			-d displayDateYear=2004 \
+			-d displayDateHour=01 \
+			-d displayDateMinute=01 \
+			-d allowPingbacks=true \
+			-d allowTrackbacks=true \
+			-d trackbacks= \
+			-d coverImageCaption='' \
+			-d -coverImageImageSelector= \
+			-d -smallImageImageSelector= \
+			-d serviceContext=${serviceContext}
+		''';
+
+		echo("## Adding a 'Blog' with the following info using JSONWS:");
+
+		echo("## * Title: ${entryTitle}");
+
+		echo("## * Content: ${entryContent}");
+
+		var messageId = JSONCurlUtil.post("${curl}");
+	}
+
+}

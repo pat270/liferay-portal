@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property custom.properties = "default.layout.template.id=1_column";
 	property osgi.app.includes = "my-subscriptions";
 	property portal.release = "false";
@@ -15,17 +16,10 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "My Subscriptions Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "My Subscriptions Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "My Subscriptions Page");
@@ -47,17 +41,10 @@ definition {
 	test SubscribeAndUnsubscribetoBookmarksRootFolder {
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "Bookmarks Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Bookmarks Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "Bookmarks Page");
@@ -83,4 +70,5 @@ definition {
 
 		Subscriptions.viewUnsubscribedViaInfoPanel();
 	}
+
 }

@@ -1,0 +1,772 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Localization";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Page.tearDownCP();
+
+			Site.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AddSiteNameTranslations {
+		property testray.component.names = "Localization,Site Administration";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		PortletEntry.inputLocalizedName(
+			language = "es_ES",
+			localizedName = "Nombre del Sitio");
+
+		PortletEntry.inputLocalizedName(
+			language = "zh_CN",
+			localizedName = "站点名称");
+
+		PortletEntry.save();
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Language Selector");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		Page.viewSiteNameTranslationsPG(
+			locale = "en-US",
+			siteName = "Site Name",
+			textIcon = "english-United States");
+
+		Page.viewSiteNameTranslationsPG(
+			locale = "es-ES",
+			siteName = "Nombre del Sitio",
+			textIcon = "español-España");
+
+		Page.viewSiteNameTranslationsPG(
+			locale = "zh-CN",
+			siteName = "站点名称",
+			textIcon = "中文-中国");
+
+		LanguagePortlet.tearDownLanguagePG();
+	}
+
+	@priority = "5"
+	test AvailableSiteLocalesSubsetNotAllowed {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "LocalizationWithSites#AvailableSiteLocalesSubsetOfAvailablePortalLocales";
+		property testray.component.names = "Site Localization";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "English (United States),German (Germany),Spanish (Spain)",
+			defaultSiteLanguage = "Spanish (Spain)",
+			displaySettings = "Display Settings");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.configureCurrentLanguagesCP(
+			currentPortalLanguages = "Arabic (Saudi Arabia),Czech (Czech Republic),French (France)",
+			errorMessage = "Error: You cannot remove a language that is the current default language.",
+			failExpected = "true");
+	}
+
+	@priority = "3"
+	test LocalizationStyle0 {
+		property custom.properties = "locale.prepend.friendly.url.style=0";
+		property test.name.skip.portal.instance = "LocalizationWithSites#LocalizationStyle0";
+		property testray.component.names = "Site Localization";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page",
+			widgetName = "Language Selector");
+
+		Navigator.gotoPage(pageName = "Language Test Page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "es_ES",
+			textIcon = "español-España");
+
+		AssertLocation(value1 = "${portalURL}/web/guest/language-test-page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "ja_JP",
+			textIcon = "日本語-日本");
+
+		AssertLocation(value1 = "${portalURL}/web/guest/language-test-page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "en_US",
+			textIcon = "english-United States");
+
+		Navigator.gotoPage(pageName = "Language Test Page");
+	}
+
+	@priority = "3"
+	test LocalizationStyle1 {
+		property custom.properties = "locale.prepend.friendly.url.style=1";
+		property test.name.skip.portal.instance = "LocalizationWithSites#LocalizationStyle1";
+		property testray.component.names = "Site Localization";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page",
+			widgetName = "Language Selector");
+
+		Navigator.gotoPage(pageName = "Language Test Page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "es_ES",
+			textIcon = "español-España");
+
+		AssertLocation(value1 = "${portalURL}/es/web/guest/language-test-page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "ja_JP",
+			textIcon = "日本語-日本");
+
+		AssertLocation(value1 = "${portalURL}/ja/web/guest/language-test-page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "en_US",
+			textIcon = "english-United States");
+
+		Navigator.gotoPage(pageName = "Language Test Page");
+	}
+
+	@priority = "3"
+	test LocalizationStyle2 {
+		property custom.properties = "locale.prepend.friendly.url.style=2";
+		property test.name.skip.portal.instance = "LocalizationWithSites#LOcalizationStyle2";
+		property testray.component.names = "Site Localization";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Language Test Page",
+			widgetName = "Language Selector");
+
+		Navigator.gotoPage(pageName = "Language Test Page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "es_ES",
+			textIcon = "español-España");
+
+		AssertLocation(value1 = "${portalURL}/es/web/guest/language-test-page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "ja_JP",
+			textIcon = "日本語-日本");
+
+		AssertLocation(value1 = "${portalURL}/ja/web/guest/language-test-page");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "en_US",
+			textIcon = "english-United States");
+
+		Navigator.gotoPage(pageName = "Language Test Page");
+	}
+
+	@priority = "3"
+	test LocalizeCountryName {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property testray.component.names = "Site Localization,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		User.openUsersAdmin();
+
+		User.editDisplaySettingsCP(
+			languageName = "español (España)",
+			userScreenName = "usersn");
+
+		User.openUsersAdmin();
+
+		User.assignRegularRoleCP(
+			roleTitle = "Administrator",
+			userScreenName = "usersn");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Usuarios",
+			panel = "Panel de control",
+			portlet = "Usuarios y organizaciones");
+
+		Organization.addWithLocalizedCountryCP(
+			countryName = "Estados Unidos",
+			localizedOption = "Organización",
+			navItem = "Organizaciones",
+			orgName = "Organization Name",
+			saveButton = "Guardar");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Usuarios",
+			panel = "Panel de control",
+			portlet = "Usuarios y organizaciones");
+
+		Organization.viewLocalizedCountryCP(
+			countryName = "Estados Unidos",
+			editLocalized = "Editar",
+			navItem = "Organizaciones",
+			orgName = "Organization Name");
+	}
+
+	@priority = "3"
+	test NoLocalePrependedWhenLocaleMatchMyPreferredLocalization {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property test.name.skip.portal.instance = "LocalizationWithSites#NoLocalePrependedWhenLocaleMatchMyPreferredLocalization";
+		property testray.component.names = "Site Localization";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page Name");
+
+		JSONGroup.addGroup(groupName = "Site2 Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site2 Name",
+			layoutName = "Site Page Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.configureCurrentLanguagesCP(defaultSiteLanguage = "English (United States)");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site2-name");
+
+		Site.configureCurrentLanguagesCP(defaultSiteLanguage = "Spanish (Spain)");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		User.openUsersAdmin();
+
+		User.editUserSiteCP(
+			siteName = "Site Name",
+			userScreenName = "usersn");
+
+		User.openUsersAdmin();
+
+		User.editUserSiteCP(
+			siteName = "Site2 Name",
+			userScreenName = "usersn");
+
+		User.openUsersAdmin();
+
+		User.editDisplaySettingsCP(
+			languageName = "español (España)",
+			userScreenName = "usersn");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Page.openURLLocale(localizationPageURL = "${portalURL}/web/site2-name");
+
+		Page.viewURLLocale(localizationPageURL = "${portalURL}/web/site2-name");
+
+		Page.openURLLocale(localizationPageURL = "${portalURL}/web/site-name");
+
+		Page.viewURLLocale(localizationPageURL = "${portalURL}/web/site-name");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Page.openURLLocale(localizationPageURL = "${portalURL}/es/web/site2-name");
+
+		Page.viewURLLocale(
+			localizationOption = "Display the page in English (United States).",
+			localizationPageURL = "${portalURL}/web/site2-name/");
+	}
+
+	@priority = "4"
+	test PortletInteractionLocalization {
+		property test.name.skip.portal.instance = "LocalizationWithSites#PortletInteractionLocalization";
+		property testray.component.names = "Site Localization";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		PortletEntry.inputLocalizedName(
+			language = "es_ES",
+			localizedName = "Nombre del Sitio");
+
+		PortletEntry.save();
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page 1");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page 2");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page 1",
+			widgetName = "Language Selector");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Site Page 1",
+			widgetName = "Web Content Display");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "Spanish (Spain),German (Germany)",
+			defaultSiteLanguage = "Spanish (Spain)",
+			displaySettings = "Display Settings");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page 1",
+			siteName = "Site Name");
+
+		Alert.closePortalLocalizationWarning();
+
+		ProductMenu.gotoPortlet(
+			category = "Generador del sitio",
+			portlet = "Páginas del sitio web");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configurar",
+			pageName = "Site Page 1");
+
+		Navigator.gotoNavTab(navTab = "SEO");
+
+		Page.viewPageLocalization(
+			defaultSiteLanguageKey = "es-ES",
+			fieldName = "Título HTML");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page 2",
+			siteName = "Site Name");
+
+		Alert.closePortalLocalizationWarning();
+
+		ProductMenu.gotoPortlet(
+			category = "Generador del sitio",
+			portlet = "Páginas del sitio web");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configurar",
+			pageName = "Site Page 2");
+
+		Navigator.gotoNavTab(navTab = "SEO");
+
+		Page.viewPageLocalization(
+			defaultSiteLanguageKey = "es-ES",
+			fieldName = "Título HTML");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page 1",
+			siteName = "Site Name");
+
+		ProductMenuHelper.closeProductMenu();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuración",
+			panel = "Panel de control",
+			portlet = "Configuración de instancia");
+
+		PortalSettings.viewCurrentDefaultPortalLanguageCP(
+			defaultPortalLanguage = "inglés (Estados Unidos)",
+			localizationTranslation = "Localización");
+
+		ProductMenu.gotoLocalizedSite(
+			displayStyle = "tabla",
+			navItem = "Mis Sitios",
+			site = "Nombre del Sitio");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuración",
+			portlet = "Ajustes del sitio");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "español (España),alemán (Alemania)",
+			displaySettings = "Display Settings",
+			localizedLanguageTab = "Idiomas",
+			localizedSaveButton = "Guardar",
+			localizedSuccessMessage = "Su petición ha terminado con éxito.");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page 1",
+			siteName = "Site Name");
+
+		WebContent.addLocalizedPGViaWCD(
+			localizedBasicWebContent = "Contenido web básico",
+			portletNameTranslation = "Visor de contenido web",
+			webContentContent = "Web Content1 Content",
+			webContentTitle = "Web Content1 Title");
+
+		WebContent.viewPGViaWCD(webContentContent = "Web Content1 Content");
+
+		WebContentDisplayPortletNavigator.gotoEdit(
+			menuItem = "Editar contenido web",
+			webContentTitle = "Web Content1 Title");
+
+		WebContent.viewAvailableLanguagesPGViaWCD(
+			fieldName = "Título",
+			locale1 = "de-DE",
+			locale2 = "en-US");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page 1",
+			siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuración",
+			portlet = "Ajustes del sitio");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "español (España),alemán (Alemania),inglés (Estados Unidos)",
+			displaySettings = "Display Settings",
+			localizedLanguageTab = "Idiomas",
+			localizedSaveButton = "Guardar",
+			localizedSuccessMessage = "Su petición ha terminado con éxito.");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page 1",
+			siteName = "Site Name");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "de-DE",
+			textIcon = "deutsch-Deutschland");
+	}
+
+	@description = "This is a use case for LPS-59345"
+	@priority = "4"
+	test RedirectLocalizedFriendlyURL {
+		property test.name.skip.portal.instance = "LocalizationWithSites#RedirectLocalizedFriendlyURL";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "English (United States),Hungarian (Hungary)",
+			defaultSiteLanguage = "English (United States)");
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		SitePages.addPublicPage(pageName = "Dummy Page");
+
+		SitePages.addPublicPage(pageName = "Language Page");
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Language Page");
+
+		Page.addFriendlyURLLocalizedPG(
+			friendlyUrlLocalized = "hu_HU",
+			localizedFriendlyURL = "/teszt");
+
+		Page.addFriendlyURLLocalizedPG(
+			friendlyUrlLocalized = "en_US",
+			localizedFriendlyURL = "/test");
+
+		Button.clickSave();
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/hu/web/site-name/test");
+
+		Alert.closePortalLocalizationWarning();
+
+		AssertLocation(value1 = "${portalURL}/hu/web/site-name/teszt");
+	}
+
+	@priority = "5"
+	test SiteTemplateLocalization {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "LocalizationWithSites#SiteTemplateLocalization";
+		property testray.component.names = "Site and Page Templates,Site Localization";
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewNoSiteOrWorkflowLinksCP();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCP(
+			portletNames = "Site Settings,Social Activities,Workflow Configuration",
+			siteName = "Site Name from Template",
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name",
+			siteType = "Site Template",
+			uncheckPropagation = "true");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name-from-template");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "English (United States),German (Germany),Spanish (Spain)",
+			defaultSiteLanguage = "Spanish (Spain)",
+			displaySettings = "Display Settings");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name-from-template");
+
+		Site.viewSiteClonedFromSiteTemplateCP(
+			clonedFromTemplate = "true",
+			siteTemplateName = "Site Template Name");
+	}
+
+	@priority = "4"
+	test ViewAvailableSiteLocaleAlternatives {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property test.name.skip.portal.instance = "LocalizationWithSites#ViewAvailableSiteLocaleAlternatives";
+		property testray.component.names = "Site Localization";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		User.openUsersAdmin();
+
+		User.editDisplaySettingsCP(
+			languageName = "español (España)",
+			userScreenName = "usersn");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "English (United States)",
+			defaultSiteLanguage = "English (United States)",
+			displaySettings = "Display Settings");
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		SitePages.addPublicPage(pageName = "Site Page Name");
+
+		User.logoutPG();
+
+		User.loginPG(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Alert.viewLocalizationMessage(
+			preferredLanguageLocalizationMessage = "Set English (United States) as your preferred language.",
+			translationLanguageLocalizationMessage = "Esta página se muestra en inglés (Estados Unidos).");
+
+		User.logoutPG();
+
+		User.loginPG();
+	}
+
+	@priority = "4"
+	test ViewEditURLLocale {
+		property custom.properties = "locale.use.default.if.not.available=true";
+		property testray.component.names = "Site Localization";
+		var portalURL = PropsUtil.get("portal.url");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "guest");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "English (United States),Hungarian (Hungary)",
+			defaultSiteLanguage = "English (United States)");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		SitePages.addPublicPage(pageName = "Language Page");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "English (United States),Hungarian (Hungary)",
+			defaultSiteLanguage = "English (United States)");
+
+		Navigator.gotoNavTab(navTab = "General");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${portalURL}/fr/web/site-name/language-page");
+
+		AssertLocation(value1 = "${portalURL}/fr/web/site-name/language-page");
+
+		AssertTextNotPresent(value1 = "The requested resource could not be found.");
+
+		AssertTextEquals(
+			key_pageName = "Language Page",
+			locator1 = "Home#PAGE",
+			value1 = "Language Page");
+
+		Navigator.openSpecificURL(url = "${portalURL}/fr");
+
+		AssertTextNotPresent(value1 = "The requested resource could not be found.");
+
+		AssertTextEquals(
+			key_pageName = "Home",
+			locator1 = "Home#PAGE",
+			value1 = "Home");
+
+		User.loginPG(specificURL = "${portalURL}/fr");
+
+		AssertLocation(value1 = "${portalURL}/web/guest");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.addVirtualHostsURLCP(
+			publicPageVirtualHostURL = "www.able.com",
+			publicVirtualHosts = "true");
+
+		Navigator.openSpecificURL(url = "http://www.able.com:8080/fr/");
+
+		Site.viewVirtualHostsURLPG(
+			pageName = "Language Page",
+			siteName = "Site Name",
+			sitePageURL = "http://www.able.com:8080/fr/");
+
+		AssertTextNotPresent(value1 = "The requested resource could not be found.");
+
+		AssertTextEquals(
+			key_pageName = "Language Page",
+			locator1 = "Home#PAGE",
+			value1 = "Language Page");
+	}
+
+	@priority = "5"
+	test ViewSiteLocalizationAfterDeletingOriginalLocale {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "LocalizationWithSites#ViewSiteLocalizationAfterDeletingOriginalLocale";
+		property testray.component.names = "Site Localization";
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.viewDefaultLanguageCP(defaultPortalLanguage = "English (United States)");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
+
+		Site.configureCurrentLanguagesCP(
+			currentSiteLanguages = "Portuguese (Brazil),Spanish (Spain)",
+			defaultSiteLanguage = "Spanish (Spain)",
+			displaySettings = "Display Settings");
+
+		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+
+		SitePages.addPublicPage(pageName = "Site Page Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Generador del sitio",
+			portlet = "Páginas del sitio web");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configurar",
+			pageName = "Site Page Name");
+
+		Page.viewFriendlyURLLanguageOptionsPG(
+			assertUnavailableLanguages = "true",
+			currentLanguageList = "es_ES,pt_BR",
+			fieldName = "Nombre",
+			unavailableLanguageList = "en_US");
+	}
+
+}

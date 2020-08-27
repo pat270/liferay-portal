@@ -17,10 +17,6 @@
 			<matches>.*The web application \[.*\] appears to have started a thread.*\[Thread-[0-9]+\].*</matches>
 		</ignore-error>
 		<ignore-error description="">
-			<contains></contains>
-			<matches>.*The web application \[.*\] appears to have started a thread.*\[TrueZIP InputStream Reader\].*</matches>
-		</ignore-error>
-		<ignore-error description="">
 			<contains>[antelope:post]</contains>
 			<matches></matches>
 		</ignore-error>
@@ -53,7 +49,7 @@
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="">
-			<contains>Do NOT use embedded Elasticsearch in production</contains>
+			<contains>Do NOT use sidecar in production</contains>
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="">
@@ -176,6 +172,10 @@
 			<contains>The addSearchEngineConfigurator method has thrown an exception</contains>
 			<matches></matches>
 		</ignore-error>
+		<ignore-error description="LPS-68846 and LPS-66321">
+			<contains>Unable to call .* of /documents</contains>
+			<matches></matches>
+		</ignore-error>
 		<ignore-error description="LPS-81732">
 			<contains>There are no actions associated with the resource com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion</contains>
 			<matches></matches>
@@ -228,16 +228,16 @@
 			<contains>Returning the default theme</contains>
 			<matches></matches>
 		</ignore-error>
+		<ignore-error description="LPS-97522 - temporarily ignore until fixed">
+			<contains>IX_14E638B0</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-111433 - temporarily ignore until fixed">
+			<contains>IX_EE41CBEB</contains>
+			<matches></matches>
+		</ignore-error>
 		<ignore-error description="LRQA-24859">
 			<contains>No binary licenses found</contains>
-			<matches></matches>
-		</ignore-error>
-		<ignore-error description="LRQA-34199, temporarily ignore SAMLBootstrap error">
-			<contains>The activate method has thrown an exception</contains>
-			<matches></matches>
-		</ignore-error>
-		<ignore-error description="LRQA-46637, temporarily ignore metadata errors">
-			<contains>Unable to save metadata for file version</contains>
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="WCM-202">

@@ -19,21 +19,22 @@ import com.liferay.asset.kernel.exception.AssetTagException;
 import com.liferay.asset.kernel.exception.DuplicateQueryRuleException;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.list.asset.entry.provider.AssetListAssetEntryProvider;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.util.AssetPublisherHelper;
+import com.liferay.asset.publisher.util.AssetQueryRule;
 import com.liferay.asset.publisher.web.internal.action.AssetEntryActionRegistry;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherPortletInstanceConfiguration;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.display.context.AssetPublisherDisplayContext;
+import com.liferay.asset.publisher.web.internal.helper.AssetPublisherWebHelper;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherCustomizer;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherCustomizerRegistry;
-import com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil;
-import com.liferay.asset.publisher.web.internal.util.AssetQueryRule;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
-import com.liferay.info.provider.InfoListProviderTracker;
+import com.liferay.info.list.provider.InfoListProviderTracker;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -86,6 +87,9 @@ import javax.portlet.RenderResponse;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.text.StrMatcher;
+import org.apache.commons.lang.text.StrTokenizer;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -141,10 +145,11 @@ public class AssetPublisherConfigurationAction
 
 		AssetPublisherDisplayContext assetPublisherDisplayContext =
 			new AssetPublisherDisplayContext(
-				assetEntryActionRegistry, assetHelper, assetPublisherCustomizer,
+				assetEntryActionRegistry, assetHelper,
+				assetListAssetEntryProvider, assetPublisherCustomizer,
 				assetPublisherHelper, assetPublisherWebConfiguration,
-				assetPublisherWebUtil, infoListProviderTracker, renderRequest,
-				renderResponse, renderRequest.getPreferences());
+				assetPublisherWebHelper, infoListProviderTracker, itemSelector,
+				renderRequest, renderResponse, renderRequest.getPreferences());
 
 		httpServletRequest.setAttribute(
 			AssetPublisherWebKeys.ASSET_PUBLISHER_DISPLAY_CONTEXT,
@@ -154,8 +159,8 @@ public class AssetPublisherConfigurationAction
 			AssetPublisherWebKeys.ASSET_PUBLISHER_HELPER, assetPublisherHelper);
 
 		httpServletRequest.setAttribute(
-			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_UTIL,
-			assetPublisherWebUtil);
+			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_HELPER,
+			assetPublisherWebHelper);
 
 		httpServletRequest.setAttribute(
 			AssetPublisherWebKeys.ITEM_SELECTOR, itemSelector);
@@ -210,13 +215,10 @@ public class AssetPublisherConfigurationAction
 		}
 		else if (cmd.equals(Constants.UPDATE)) {
 			try {
-				HttpServletRequest httpServletRequest =
-					portal.getHttpServletRequest(actionRequest);
-
 				AssetPublisherPortletInstanceConfiguration
 					assetPublisherPortletInstanceConfiguration =
 						_getAssetPublisherPortletInstanceConfiguration(
-							httpServletRequest);
+							portal.getHttpServletRequest(actionRequest));
 
 				boolean emailAssetEntryAddedEnabled = GetterUtil.getBoolean(
 					getParameter(actionRequest, "emailAssetEntryAddedEnabled"),
@@ -235,6 +237,10 @@ public class AssetPublisherConfigurationAction
 				String selectionStyle = getParameter(
 					actionRequest, "selectionStyle");
 
+				if (Validator.isNull(selectionStyle)) {
+					selectionStyle = "dynamic";
+				}
+
 				if (selectionStyle.equals("dynamic")) {
 					updateQueryLogic(actionRequest, preferences);
 				}
@@ -244,14 +250,15 @@ public class AssetPublisherConfigurationAction
 				super.processAction(
 					portletConfig, actionRequest, actionResponse);
 			}
-			catch (Exception e) {
-				if (e instanceof AssetTagException ||
-					e instanceof DuplicateQueryRuleException) {
+			catch (Exception exception) {
+				if (exception instanceof AssetTagException ||
+					exception instanceof DuplicateQueryRuleException) {
 
-					SessionErrors.add(actionRequest, e.getClass(), e);
+					SessionErrors.add(
+						actionRequest, exception.getClass(), exception);
 				}
 				else {
-					throw e;
+					throw exception;
 				}
 			}
 		}
@@ -366,7 +373,7 @@ public class AssetPublisherConfigurationAction
 			actionRequest, "assetEntryType");
 
 		for (long assetEntryId : assetEntryIds) {
-			assetPublisherWebUtil.addSelection(
+			assetPublisherWebHelper.addSelection(
 				preferences, assetEntryId, assetEntryOrder, assetEntryType);
 		}
 	}
@@ -377,11 +384,10 @@ public class AssetPublisherConfigurationAction
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Layout layout = themeDisplay.getLayout();
-
-		if (!assetPublisherWebUtil.isScopeIdSelectable(
+		if (!assetPublisherWebHelper.isScopeIdSelectable(
 				themeDisplay.getPermissionChecker(), scopeId,
-				themeDisplay.getCompanyGroupId(), layout, true)) {
+				themeDisplay.getCompanyGroupId(), themeDisplay.getLayout(),
+				true)) {
 
 			throw new PrincipalException();
 		}
@@ -408,13 +414,11 @@ public class AssetPublisherConfigurationAction
 			return null;
 		}
 
-		String className = portal.getClassName(defaultAssetTypeId);
-
 		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
-				className);
+				portal.getClassName(defaultAssetTypeId));
 
-		return assetPublisherWebUtil.getClassName(assetRendererFactory);
+		return assetPublisherWebHelper.getClassName(assetRendererFactory);
 	}
 
 	protected String[] getClassTypeIds(
@@ -463,6 +467,16 @@ public class AssetPublisherConfigurationAction
 			values = ParamUtil.getStringValues(
 				actionRequest, "queryTagNames" + index);
 		}
+		else if (name.equals("keywords")) {
+			StrTokenizer strTokenizer = new StrTokenizer(
+				ParamUtil.getString(actionRequest, "keywords" + index));
+
+			strTokenizer.setQuoteMatcher(StrMatcher.quoteMatcher());
+
+			List<String> valuesList = (List<String>)strTokenizer.getTokenList();
+
+			values = valuesList.toArray(new String[0]);
+		}
 		else {
 			values = ParamUtil.getStringValues(
 				actionRequest, "queryCategoryIds" + index);
@@ -471,7 +485,7 @@ public class AssetPublisherConfigurationAction
 		return new AssetQueryRule(contains, andOperator, name, values);
 	}
 
-	protected boolean getSubtypesFieldsFilterEnabled(
+	protected boolean getSubtypeFieldsFilterEnabled(
 		ActionRequest actionRequest, String[] classNameIds) {
 
 		String assetClassName = getAssetClassName(actionRequest, classNameIds);
@@ -636,24 +650,24 @@ public class AssetPublisherConfigurationAction
 		String portletResource = ParamUtil.getString(
 			actionRequest, "portletResource");
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
 		if (defaultAssetPublisher) {
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				LayoutTypePortletConstants.DEFAULT_ASSET_PUBLISHER_PORTLET_ID,
 				portletResource);
 		}
 		else {
 			String defaultAssetPublisherPortletId =
-				typeSettingsProperties.getProperty(
+				typeSettingsUnicodeProperties.getProperty(
 					LayoutTypePortletConstants.
 						DEFAULT_ASSET_PUBLISHER_PORTLET_ID);
 
 			if (Validator.isNotNull(defaultAssetPublisherPortletId) &&
 				defaultAssetPublisherPortletId.equals(portletResource)) {
 
-				typeSettingsProperties.setProperty(
+				typeSettingsUnicodeProperties.setProperty(
 					LayoutTypePortletConstants.
 						DEFAULT_ASSET_PUBLISHER_PORTLET_ID,
 					StringPool.BLANK);
@@ -677,19 +691,18 @@ public class AssetPublisherConfigurationAction
 			LayoutSetBranch layoutSetBranch =
 				LayoutStagingUtil.getLayoutSetBranch(layout.getLayoutSet());
 
-			long layoutSetBranchId = layoutSetBranch.getLayoutSetBranchId();
-
 			long layoutRevisionId = staging.getRecentLayoutRevisionId(
-				httpServletRequest, layoutSetBranchId, layout.getPlid());
+				httpServletRequest, layoutSetBranch.getLayoutSetBranchId(),
+				layout.getPlid());
 
 			LayoutRevision layoutRevision =
 				layoutRevisionLocalService.getLayoutRevision(layoutRevisionId);
 
 			if (layoutRevision != null) {
-				PortletPreferencesImpl portletPreferences =
+				PortletPreferencesImpl portletPreferencesImpl =
 					(PortletPreferencesImpl)actionRequest.getPreferences();
 
-				portletPreferences.setPlid(
+				portletPreferencesImpl.setPlid(
 					layoutRevision.getLayoutRevisionId());
 			}
 		}
@@ -709,7 +722,7 @@ public class AssetPublisherConfigurationAction
 			extensions = new String[0];
 		}
 
-		boolean subtypeFieldsFilterEnabled = getSubtypesFieldsFilterEnabled(
+		boolean subtypeFieldsFilterEnabled = getSubtypeFieldsFilterEnabled(
 			actionRequest, classNameIds);
 
 		setPreference(actionRequest, "classNameIds", classNameIds);
@@ -810,6 +823,9 @@ public class AssetPublisherConfigurationAction
 	protected AssetHelper assetHelper;
 
 	@Reference
+	protected AssetListAssetEntryProvider assetListAssetEntryProvider;
+
+	@Reference
 	protected AssetPublisherCustomizerRegistry assetPublisherCustomizerRegistry;
 
 	@Reference
@@ -818,7 +834,7 @@ public class AssetPublisherConfigurationAction
 	protected AssetPublisherWebConfiguration assetPublisherWebConfiguration;
 
 	@Reference
-	protected AssetPublisherWebUtil assetPublisherWebUtil;
+	protected AssetPublisherWebHelper assetPublisherWebHelper;
 
 	@Reference
 	protected AssetTagLocalService assetTagLocalService;

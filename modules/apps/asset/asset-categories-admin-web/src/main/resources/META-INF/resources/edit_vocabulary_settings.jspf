@@ -19,8 +19,8 @@ List<AssetRendererFactory<?>> availableAssetRendererFactories = ListUtil.filter(
 
 List<AssetRendererFactory<?>> classTypedAssetRendererFactories = ListUtil.filter(availableAssetRendererFactories, AssetRendererFactory::isSupportsClassTypes);
 
-long[] selectedClassNameIds = AssetVocabularySettingsHelper.DEFAULT_SELECTED_CLASSNAME_IDS;
-long[] selectedClassTypePKs = AssetVocabularySettingsHelper.DEFAULT_SELECTED_CLASSTYPE_PKS;
+long[] selectedClassNameIds = AssetVocabularySettingsHelper.DEFAULT_SELECTED_CLASS_NAME_IDS;
+long[] selectedClassTypePKs = AssetVocabularySettingsHelper.DEFAULT_SELECTED_CLASS_TYPE_PKS;
 
 if (vocabulary != null) {
 	selectedClassNameIds = vocabulary.getSelectedClassNameIds();
@@ -33,7 +33,7 @@ if (vocabulary != null) {
 <liferay-frontend:fieldset
 	collapsed="<%= true %>"
 	collapsible="<%= true %>"
-	id='<%= renderResponse.getNamespace() + "extraFields" %>'
+	id='<%= liferayPortletResponse.getNamespace() + "extraFields" %>'
 	label="associated-asset-types"
 >
 
@@ -49,7 +49,7 @@ if (vocabulary != null) {
 		boolean exist = true;
 
 		if ((classNameId > 0) && (classTypePK != AssetCategoryConstants.ALL_CLASS_TYPE_PK)) {
-			AssetRendererFactory assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassNameId(classNameId);
+			AssetRendererFactory<?> assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassNameId(classNameId);
 
 			ClassTypeReader classTypeReader = assetRendererFactory.getClassTypeReader();
 
@@ -114,7 +114,7 @@ if (vocabulary != null) {
 
 				<c:if test="<%= !exist %>">
 					<div class="has-warning">
-						<div class="help-block">
+						<div class="form-feedback-item">
 							<liferay-ui:message key="the-asset-subtype-no-longer-exists" />
 						</div>
 					</div>
@@ -134,19 +134,17 @@ if (vocabulary != null) {
 <aui:script use="liferay-auto-fields">
 	var extraFields = A.one('#<portlet:namespace />extraFields');
 
-	var autoFields = new Liferay.AutoFields(
-		{
-			contentBox: '#<portlet:namespace />extraFields',
-			fieldIndexes: '<portlet:namespace />indexes',
-			minimumRows: 1,
-			namespace: '<portlet:namespace />',
-			on: {
-				clone: function(event) {
-					event.row.all('.subtype-select').hide();
-				}
-			}
-		}
-	).render();
+	var autoFields = new Liferay.AutoFields({
+		contentBox: '#<portlet:namespace />extraFields',
+		fieldIndexes: '<portlet:namespace />indexes',
+		minimumRows: 1,
+		namespace: '<portlet:namespace />',
+		on: {
+			clone: function (event) {
+				event.row.all('.subtype-select').hide();
+			},
+		},
+	}).render();
 
 	extraFields.setData('autoFieldsInstance', autoFields);
 
@@ -154,7 +152,7 @@ if (vocabulary != null) {
 
 	form.delegate(
 		'change',
-		function(event) {
+		function (event) {
 			var target = event.currentTarget;
 
 			var row = target.ancestor('.lfr-form-row');

@@ -19,12 +19,13 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.HitsOpenSearchImpl;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             com.liferay.document.library.internal.search.DLOpenSearchImpl}
  */
-@OSGiBeanProperties
+@Deprecated
 public class DLOpenSearchImpl extends HitsOpenSearchImpl {
 
 	public static final String TITLE = "Liferay Documents and Media Search: ";

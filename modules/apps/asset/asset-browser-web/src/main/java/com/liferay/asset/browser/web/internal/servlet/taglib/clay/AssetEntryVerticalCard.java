@@ -19,15 +19,19 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.RenderRequest;
@@ -65,18 +69,22 @@ public class AssetEntryVerticalCard implements VerticalCard {
 			return null;
 		}
 
-		Map<String, String> data = new HashMap<>();
-
-		data.put("assetclassname", _assetEntry.getClassName());
-		data.put("assetclasspk", String.valueOf(_assetEntry.getClassPK()));
-		data.put(
-			"assettitle", _assetRenderer.getTitle(_themeDisplay.getLocale()));
-		data.put(
+		Map<String, String> data = HashMapBuilder.put(
+			"assetclassname", _assetEntry.getClassName()
+		).put(
+			"assetclassnameid", String.valueOf(_assetEntry.getClassNameId())
+		).put(
+			"assetclasspk", String.valueOf(_assetEntry.getClassPK())
+		).put(
+			"assettitle", _assetRenderer.getTitle(_themeDisplay.getLocale())
+		).put(
 			"assettype",
 			_assetRendererFactory.getTypeName(
 				_themeDisplay.getLocale(),
-				_assetBrowserDisplayContext.getSubtypeSelectionId()));
-		data.put("entityid", String.valueOf(_assetEntry.getEntryId()));
+				_assetBrowserDisplayContext.getSubtypeSelectionId())
+		).put(
+			"entityid", String.valueOf(_assetEntry.getEntryId())
+		).build();
 
 		Group group = GroupLocalServiceUtil.fetchGroup(
 			_assetEntry.getGroupId());
@@ -87,7 +95,7 @@ public class AssetEntryVerticalCard implements VerticalCard {
 					"groupdescriptivename",
 					group.getDescriptiveName(_themeDisplay.getLocale()));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 			}
 		}
 
@@ -116,10 +124,21 @@ public class AssetEntryVerticalCard implements VerticalCard {
 		try {
 			return _assetRenderer.getThumbnailPath(_renderRequest);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;
+	}
+
+	@Override
+	public List<LabelItem> getLabels() {
+		if (!_assetBrowserDisplayContext.isShowAssetEntryStatus()) {
+			return Collections.emptyList();
+		}
+
+		return LabelItemListBuilder.add(
+			labelItem -> labelItem.setStatus(_assetRenderer.getStatus())
+		).build();
 	}
 
 	@Override
@@ -138,7 +157,7 @@ public class AssetEntryVerticalCard implements VerticalCard {
 			return HtmlUtil.escape(
 				group.getDescriptiveName(_themeDisplay.getLocale()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;
@@ -156,8 +175,8 @@ public class AssetEntryVerticalCard implements VerticalCard {
 
 	private final AssetBrowserDisplayContext _assetBrowserDisplayContext;
 	private final AssetEntry _assetEntry;
-	private final AssetRenderer _assetRenderer;
-	private final AssetRendererFactory _assetRendererFactory;
+	private final AssetRenderer<?> _assetRenderer;
+	private final AssetRendererFactory<?> _assetRendererFactory;
 	private final RenderRequest _renderRequest;
 	private final ThemeDisplay _themeDisplay;
 

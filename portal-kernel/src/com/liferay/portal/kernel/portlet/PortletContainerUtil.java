@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.servlet.TempAttributesServletRequest;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -66,8 +65,8 @@ public class PortletContainerUtil {
 					layout.getGroupId(), layout.isPrivateLayout(),
 					LayoutConstants.TYPE_PORTLET);
 			}
-			catch (PortalException pe) {
-				throw new PortletContainerException(pe);
+			catch (PortalException portalException) {
+				throw new PortletContainerException(portalException);
 			}
 
 			List<LayoutTypePortlet> layoutTypePortlets = new ArrayList<>(
@@ -120,8 +119,8 @@ public class PortletContainerUtil {
 
 		String location = actionResult.getLocation();
 
-		if (Validator.isNull(location) ||
-			(Validator.isNotNull(location) && portlet.isActionURLRedirect())) {
+		if (_PORTLET_EVENT_DISTRIBUTION_LAYOUT_SET ||
+			portlet.isActionURLRedirect() || Validator.isNull(location)) {
 
 			List<Event> events = actionResult.getEvents();
 
@@ -164,16 +163,16 @@ public class PortletContainerUtil {
 					location = liferayPortletURL.toString();
 				}
 			}
-			catch (MalformedURLException murle) {
-				throw new PortletContainerException(murle);
+			catch (MalformedURLException malformedURLException) {
+				throw new PortletContainerException(malformedURLException);
 			}
 		}
 
 		try {
 			httpServletResponse.sendRedirect(location);
 		}
-		catch (IOException ioe) {
-			throw new PortletContainerException(ioe);
+		catch (IOException ioException) {
+			throw new PortletContainerException(ioException);
 		}
 	}
 
@@ -248,9 +247,7 @@ public class PortletContainerUtil {
 		String columnId, Integer columnPos, Integer columnCount,
 		Boolean boundary, Boolean decorate) {
 
-		if ((_LAYOUT_PARALLEL_RENDER_ENABLE && ServerDetector.isTomcat()) ||
-			_PORTLET_CONTAINER_RESTRICT) {
-
+		if (_PORTLET_CONTAINER_RESTRICT) {
 			RestrictPortletServletRequest restrictPortletServletRequest =
 				new RestrictPortletServletRequest(httpServletRequest);
 
@@ -382,8 +379,8 @@ public class PortletContainerUtil {
 			try {
 				portlets = layoutTypePortlet.getAllPortlets();
 			}
-			catch (Exception e) {
-				throw new PortletContainerException(e);
+			catch (Exception exception) {
+				throw new PortletContainerException(exception);
 			}
 
 			for (Portlet portlet : portlets) {
@@ -404,8 +401,6 @@ public class PortletContainerUtil {
 			}
 		}
 	}
-
-	private static final boolean _LAYOUT_PARALLEL_RENDER_ENABLE = false;
 
 	private static final boolean _PORTLET_CONTAINER_RESTRICT =
 		GetterUtil.getBoolean(

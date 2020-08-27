@@ -36,16 +36,6 @@ import org.osgi.service.component.annotations.Component;
 @Component(factory = "OAuthJSONWebServiceClient", service = {})
 public class OAuthJSONWebServiceClientImpl extends JSONWebServiceClientImpl {
 
-	@Activate
-	public void activate(Map<String, Object> properties)
-		throws IOReactorException {
-
-		setOAuthConsumerKey(getString("oAuthConsumerKey", properties));
-		setOAuthConsumerSecret(getString("oAuthConsumerSecret", properties));
-
-		super.activate(properties);
-	}
-
 	@Override
 	public void setOAuthAccessSecret(String oAuthAccessSecret) {
 		_oAuthAccessSecret = oAuthAccessSecret;
@@ -64,6 +54,17 @@ public class OAuthJSONWebServiceClientImpl extends JSONWebServiceClientImpl {
 	@Override
 	public void setOAuthConsumerSecret(String oAuthConsumerSecret) {
 		_oAuthConsumerSecret = oAuthConsumerSecret;
+	}
+
+	@Activate
+	@Override
+	protected void activate(Map<String, Object> properties)
+		throws IOReactorException {
+
+		setOAuthConsumerKey(getString("oAuthConsumerKey", properties));
+		setOAuthConsumerSecret(getString("oAuthConsumerSecret", properties));
+
+		super.activate(properties);
 	}
 
 	protected String buildURL(
@@ -120,9 +121,9 @@ public class OAuthJSONWebServiceClientImpl extends JSONWebServiceClientImpl {
 		try {
 			oAuthConsumer.sign(httpRequestBase);
 		}
-		catch (OAuthException oae) {
+		catch (OAuthException oAuthException) {
 			throw new JSONWebServiceTransportException.SigningFailure(
-				"Unable to sign HTTP request", oae);
+				"Unable to sign HTTP request", oAuthException);
 		}
 	}
 

@@ -102,14 +102,17 @@ public class ItemSelectorCriterionSerializerImpl
 		_bundleContext = bundleContext;
 
 		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
-			bundleContext, ItemSelectorView.class, "item.selector.view.key");
+			bundleContext,
+			(Class<ItemSelectorView<?>>)(Class<?>)ItemSelectorView.class,
+			"item.selector.view.key");
 
 		_serviceTracker = ServiceTrackerFactory.open(
 			bundleContext, ItemSelectorViewReturnTypeProvider.class,
 			new ItemSelectorViewReturnTypeProviderServiceTrackerCustomizer());
 
 		_serviceTrackerItemSelectorView = ServiceTrackerFactory.open(
-			bundleContext, ItemSelectorView.class,
+			bundleContext,
+			(Class<ItemSelectorView<?>>)(Class<?>)ItemSelectorView.class,
 			new ItemSelectorReturnTypeServiceTrackerCustomizer());
 	}
 
@@ -119,16 +122,26 @@ public class ItemSelectorCriterionSerializerImpl
 		Class<? extends ItemSelectorReturnType> itemSelectorReturnTypeClass =
 			itemSelectorReturnType.getClass();
 
+		addItemSelectorReturnType(
+			itemSelectorReturnTypeClass.getName(), itemSelectorReturnType);
+		addItemSelectorReturnType(
+			ItemSelectorKeyUtil.getItemSelectorReturnTypeKey(
+				itemSelectorReturnTypeClass),
+			itemSelectorReturnType);
+	}
+
+	protected void addItemSelectorReturnType(
+		String key, ItemSelectorReturnType itemSelectorReturnType) {
+
 		List<ItemSelectorReturnType> itemSelectorReturnTypes =
-			_itemSelectorReturnTypes.get(itemSelectorReturnTypeClass.getName());
+			_itemSelectorReturnTypes.get(key);
 
 		if (itemSelectorReturnTypes == null) {
 			itemSelectorReturnTypes = new CopyOnWriteArrayList<>();
 
 			List<ItemSelectorReturnType> previousItemSelectorReturnTypes =
 				_itemSelectorReturnTypes.putIfAbsent(
-					itemSelectorReturnTypeClass.getName(),
-					itemSelectorReturnTypes);
+					key, itemSelectorReturnTypes);
 
 			if (previousItemSelectorReturnTypes != null) {
 				itemSelectorReturnTypes = previousItemSelectorReturnTypes;
@@ -166,9 +179,9 @@ public class ItemSelectorCriterionSerializerImpl
 	private ServiceTracker
 		<ItemSelectorViewReturnTypeProvider, ItemSelectorViewReturnTypeProvider>
 			_serviceTracker;
-	private ServiceTracker<ItemSelectorView, ItemSelectorView>
+	private ServiceTracker<ItemSelectorView<?>, ItemSelectorView<?>>
 		_serviceTrackerItemSelectorView;
-	private ServiceTrackerMap<String, ItemSelectorView> _serviceTrackerMap;
+	private ServiceTrackerMap<String, ItemSelectorView<?>> _serviceTrackerMap;
 
 	private static class DesiredItemSelectorReturnTypesJSONTransformer
 		implements JSONTransformer {
@@ -179,18 +192,16 @@ public class ItemSelectorCriterionSerializerImpl
 				(List<ItemSelectorReturnType>)object;
 
 			StringBundler sb = new StringBundler(
-				desiredItemSelectorReturnTypes.size() * 2 + 1);
+				(desiredItemSelectorReturnTypes.size() * 2) + 1);
 
 			sb.append(StringPool.QUOTE);
 
 			for (ItemSelectorReturnType itemSelectorReturnType :
 					desiredItemSelectorReturnTypes) {
 
-				Class<? extends ItemSelectorReturnType>
-					itemSelectorReturnTypeClass =
-						itemSelectorReturnType.getClass();
-
-				sb.append(itemSelectorReturnTypeClass.getName());
+				sb.append(
+					ItemSelectorKeyUtil.getItemSelectorReturnTypeKey(
+						itemSelectorReturnType.getClass()));
 
 				sb.append(StringPool.COMMA);
 			}
@@ -257,13 +268,13 @@ public class ItemSelectorCriterionSerializerImpl
 
 	private class ItemSelectorReturnTypeServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
-			<ItemSelectorView, ItemSelectorView> {
+			<ItemSelectorView<?>, ItemSelectorView<?>> {
 
 		@Override
-		public ItemSelectorView addingService(
-			ServiceReference<ItemSelectorView> serviceReference) {
+		public ItemSelectorView<?> addingService(
+			ServiceReference<ItemSelectorView<?>> serviceReference) {
 
-			ItemSelectorView itemSelectorView = _bundleContext.getService(
+			ItemSelectorView<?> itemSelectorView = _bundleContext.getService(
 				serviceReference);
 
 			String itemSelectorViewKey = GetterUtil.getString(
@@ -286,14 +297,14 @@ public class ItemSelectorCriterionSerializerImpl
 
 		@Override
 		public void modifiedService(
-			ServiceReference<ItemSelectorView> serviceReference,
-			ItemSelectorView itemSelectorView) {
+			ServiceReference<ItemSelectorView<?>> serviceReference,
+			ItemSelectorView<?> itemSelectorView) {
 		}
 
 		@Override
 		public void removedService(
-			ServiceReference<ItemSelectorView> serviceReference,
-			ItemSelectorView itemSelectorView) {
+			ServiceReference<ItemSelectorView<?>> serviceReference,
+			ItemSelectorView<?> itemSelectorView) {
 
 			try {
 				List<ItemSelectorReturnType> supportedItemSelectorReturnTypes =
@@ -309,6 +320,12 @@ public class ItemSelectorCriterionSerializerImpl
 					List<ItemSelectorReturnType> itemSelectorReturnTypes =
 						_itemSelectorReturnTypes.get(
 							supportedItemSelectorReturnTypeClass.getName());
+
+					itemSelectorReturnTypes.remove(0);
+
+					itemSelectorReturnTypes = _itemSelectorReturnTypes.get(
+						ItemSelectorKeyUtil.getItemSelectorReturnTypeKey(
+							supportedItemSelectorReturnTypeClass));
 
 					itemSelectorReturnTypes.remove(0);
 				}
@@ -333,8 +350,8 @@ public class ItemSelectorCriterionSerializerImpl
 			String itemSelectorViewKey = GetterUtil.getString(
 				serviceReference.getProperty("item.selector.view.key"));
 
-			ItemSelectorView itemSelectorView = _serviceTrackerMap.getService(
-				itemSelectorViewKey);
+			ItemSelectorView<?> itemSelectorView =
+				_serviceTrackerMap.getService(itemSelectorViewKey);
 
 			if (itemSelectorView == null) {
 				return null;

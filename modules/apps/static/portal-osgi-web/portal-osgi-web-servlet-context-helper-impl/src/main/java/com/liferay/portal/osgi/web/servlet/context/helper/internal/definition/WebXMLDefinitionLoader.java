@@ -14,7 +14,6 @@
 
 package com.liferay.portal.osgi.web.servlet.context.helper.internal.definition;
 
-import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -39,7 +38,6 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.EventListener;
@@ -47,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.servlet.DispatcherType;
@@ -61,7 +60,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.wiring.BundleWiring;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -77,11 +75,14 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 
 	public WebXMLDefinitionLoader(
 		Bundle bundle, JSPServletFactory jspServletFactory,
-		SAXParserFactory saxParserFactory) {
+		SAXParserFactory saxParserFactory, Set<Class<?>> classes,
+		Set<Class<?>> annotatedClasses) {
 
 		_bundle = bundle;
 		_jspServletFactory = jspServletFactory;
 		_saxParserFactory = saxParserFactory;
+		_classes = classes;
+		_annotatedClasses = annotatedClasses;
 
 		_webXMLDefinition = new WebXMLDefinition();
 	}
@@ -448,8 +449,9 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 	}
 
 	@Override
-	public void error(SAXParseException e) {
-		_log.error(_bundle + ": " + e.getMessage(), e);
+	public void error(SAXParseException saxParseException) {
+		_log.error(
+			_bundle + ": " + saxParseException.getMessage(), saxParseException);
 	}
 
 	public WebXMLDefinition loadWebXML() throws Exception {
@@ -471,26 +473,17 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 
 				WebXMLDefinitionLoader webXMLDefinitionLoader =
 					new WebXMLDefinitionLoader(
-						_bundle, _jspServletFactory, _saxParserFactory);
+						_bundle, _jspServletFactory, _saxParserFactory,
+						_classes, _annotatedClasses);
 
 				webXMLDefinitions.add(
 					webXMLDefinitionLoader.loadWebXMLDefinition(url));
 			}
 		}
 
-		BundleWiring bundleWiring = _bundle.adapt(BundleWiring.class);
-
 		WebXMLDefinition annotationWebXMLDefinition = new WebXMLDefinition();
 
-		Collection<String> classResources = bundleWiring.listResources(
-			"/", "*.class", BundleWiring.LISTRESOURCES_RECURSE);
-
-		if (classResources == null) {
-			classResources = new ArrayList<>(0);
-		}
-
-		_collectAnnotatedClasses(
-			annotationWebXMLDefinition, _bundle, classResources);
+		_collectAnnotatedClasses(annotationWebXMLDefinition);
 
 		webXMLDefinitions.add(annotationWebXMLDefinition);
 
@@ -521,15 +514,15 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 
 			return _webXMLDefinition;
 		}
-		catch (SAXParseException saxpe) {
-			String message = saxpe.getMessage();
+		catch (SAXParseException saxParseException) {
+			String message = saxParseException.getMessage();
 
 			if (message.contains("DOCTYPE is disallowed")) {
 				throw new Exception(
 					url + " must be updated to the Servlet 3.0 specification");
 			}
 
-			throw saxpe;
+			throw saxParseException;
 		}
 	}
 
@@ -929,55 +922,21 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 		return assembledWebXMLDefinition;
 	}
 
-	private void _collectAnnotatedClasses(
-			WebXMLDefinition webXMLDefinition, Bundle bundle,
-			Collection<String> classResources)
-		throws Exception {
-
-		for (String classResource : classResources) {
-			_collectAnnotatedClasses(webXMLDefinition, bundle, classResource);
+	private void _collectAnnotatedClasses(WebXMLDefinition webXMLDefinition) {
+		for (Class<?> clazz : _classes) {
+			_collectAnnotatedClasses(webXMLDefinition, clazz);
 		}
 	}
 
 	private void _collectAnnotatedClasses(
-			WebXMLDefinition webXMLDefinition, Bundle bundle,
-			String classResource)
-		throws Exception {
-
-		URL url = _bundle.getResource(classResource);
-
-		if (url == null) {
-			return;
-		}
-
-		String className = classResource;
-
-		if (classResource.endsWith(".class")) {
-			className = classResource.substring(0, classResource.length() - 6);
-		}
-
-		className = StringUtil.replace(
-			className, CharPool.SLASH, CharPool.PERIOD);
-
-		Class<?> clazz = null;
-
-		try {
-			clazz = bundle.loadClass(className);
-		}
-		catch (Throwable t) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(t.getMessage());
-			}
-
-			return;
-		}
+		WebXMLDefinition webXMLDefinition, Class<?> clazz) {
 
 		WebServlet webServlet = null;
 
 		try {
 			webServlet = clazz.getAnnotation(WebServlet.class);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 
 			// See http://bugs.java.com/view_bug.do?bug_id=7183985 and LPS-69679
 
@@ -991,13 +950,17 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 				sb.append(" because a some dependency may not be present in ");
 				sb.append("the classpath");
 
-				_log.debug(sb.toString(), e);
+				_log.debug(sb.toString(), exception);
 			}
 
 			return;
 		}
 
+		boolean annotated = false;
+
 		if (webServlet != null) {
+			annotated = true;
+
 			ServletDefinition servletDefinition = new ServletDefinition();
 
 			servletDefinition.setAsyncSupported(webServlet.asyncSupported());
@@ -1027,6 +990,8 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 		WebFilter webFilter = clazz.getAnnotation(WebFilter.class);
 
 		if (webFilter != null) {
+			annotated = true;
+
 			FilterDefinition filterDefinition = new FilterDefinition();
 
 			filterDefinition.setAsyncSupported(webFilter.asyncSupported());
@@ -1071,11 +1036,17 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 		WebListener webListener = clazz.getAnnotation(WebListener.class);
 
 		if (webListener != null) {
+			annotated = true;
+
 			ListenerDefinition listenerDefinition = new ListenerDefinition();
 
 			_setEventListener(listenerDefinition, clazz.getCanonicalName());
 
 			webXMLDefinition.addListenerDefinition(listenerDefinition);
+		}
+
+		if (annotated) {
+			_annotatedClasses.add(clazz);
 		}
 	}
 
@@ -1088,7 +1059,7 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 
 			return filterClass.newInstance();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				StringBundler.concat(
 					"Bundle ", _bundle, " is unable to load filter ",
@@ -1107,7 +1078,7 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 
 			return eventListenerClass.newInstance();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
 				StringBundler.concat(
 					"Bundle ", _bundle, " is unable to load listener ",
@@ -1126,9 +1097,10 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 
 			return servletClass.newInstance();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_log.error(
-				_bundle + " unable to load servlet " + servletClassName, e);
+				_bundle + " unable to load servlet " + servletClassName,
+				exception);
 
 			return null;
 		}
@@ -1178,9 +1150,11 @@ public class WebXMLDefinitionLoader extends DefaultHandler {
 	private List<String> _absoluteOrderingNames;
 	private boolean _after;
 	private String _afterName;
+	private final Set<Class<?>> _annotatedClasses;
 	private boolean _before;
 	private String _beforeName;
 	private final Bundle _bundle;
+	private final Set<Class<?>> _classes;
 	private FilterDefinition _filterDefinition;
 	private FilterMapping _filterMapping;
 	private JSPConfig _jspConfig;

@@ -22,6 +22,7 @@ import com.liferay.portal.search.elasticsearch6.internal.ElasticsearchSearchEngi
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnection;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch6.internal.connection.OperationMode;
+import com.liferay.portal.search.engine.ConnectionInformation;
 import com.liferay.portal.search.engine.SearchEngineInformation;
 
 import java.util.List;
@@ -51,6 +52,11 @@ public class ElasticsearchSearchEngineInformation
 	@Override
 	public String getClientVersionString() {
 		return Version.CURRENT.toString();
+	}
+
+	@Override
+	public List<ConnectionInformation> getConnectionInformationList() {
+		return null;
 	}
 
 	@Override
@@ -84,38 +90,18 @@ public class ElasticsearchSearchEngineInformation
 				Collectors.joining(StringPool.COMMA_AND_SPACE)
 			);
 		}
-		catch (Exception e) {
-			_log.error("Unable to get node information", e);
+		catch (Exception exception) {
+			_log.error("Unable to get node information", exception);
 
 			StringBundler sb = new StringBundler(4);
 
 			sb.append(StringPool.OPEN_PARENTHESIS);
 			sb.append("Error: ");
-			sb.append(e.toString());
+			sb.append(exception.toString());
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 
 			return sb.toString();
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public String getStatusString() {
-		StringBundler sb = new StringBundler(8);
-
-		sb.append("Vendor: ");
-		sb.append(getVendorString());
-		sb.append(StringPool.COMMA_AND_SPACE);
-		sb.append("Client Version: ");
-		sb.append(getClientVersionString());
-		sb.append(StringPool.COMMA_AND_SPACE);
-		sb.append("Nodes: ");
-		sb.append(getNodesString());
-
-		return sb.toString();
 	}
 
 	@Override

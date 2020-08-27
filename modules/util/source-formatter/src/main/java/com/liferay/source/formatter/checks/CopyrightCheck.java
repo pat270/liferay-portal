@@ -110,7 +110,7 @@ public class CopyrightCheck extends BaseFileCheck {
 				classLoader.getResourceAsStream(
 					"dependencies/copyright-commercial.txt"));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_commercialCopyright = StringPool.BLANK;
 		}
 
@@ -125,7 +125,7 @@ public class CopyrightCheck extends BaseFileCheck {
 		}
 
 		String copyRightFileName = getAttributeValue(
-			_COPYRIGHT_FILE_NAME_KEY, absolutePath, "copyright.txt");
+			_COPYRIGHT_FILE_NAME_KEY, "copyright.txt", absolutePath);
 
 		_copyright = getContent(
 			copyRightFileName, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
@@ -142,7 +142,7 @@ public class CopyrightCheck extends BaseFileCheck {
 			_copyright = StringUtil.read(
 				classLoader.getResourceAsStream("dependencies/copyright.txt"));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_copyright = StringPool.BLANK;
 		}
 

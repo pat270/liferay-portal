@@ -36,8 +36,8 @@ public class RuleGroupChecker extends EmptyOnClickRowChecker {
 	}
 
 	@Override
-	public boolean isDisabled(Object obj) {
-		MDRRuleGroup ruleGroup = (MDRRuleGroup)obj;
+	public boolean isDisabled(Object object) {
+		MDRRuleGroup ruleGroup = (MDRRuleGroup)object;
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
@@ -49,13 +49,13 @@ public class RuleGroupChecker extends EmptyOnClickRowChecker {
 				return true;
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 		}
 
-		return super.isDisabled(obj);
+		return super.isDisabled(object);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -23,6 +23,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.increment.BufferedIncrement;
+import com.liferay.portal.kernel.increment.NumberIncrement;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -44,6 +46,7 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -56,9 +59,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provides the local service for accessing, adding, checking, deleting,
@@ -113,9 +114,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 
 		tag.setName(name);
 
-		assetTagPersistence.update(tag);
-
-		return tag;
+		return assetTagPersistence.update(tag);
 	}
 
 	/**
@@ -177,9 +176,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 	public List<AssetTag> checkTags(long userId, long groupId, String[] names)
 		throws PortalException {
 
-		Group group = groupLocalService.getGroup(groupId);
-
-		return checkTags(userId, group, names);
+		return checkTags(userId, groupLocalService.getGroup(groupId), names);
 	}
 
 	/**
@@ -199,9 +196,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 
 		tag.setAssetCount(Math.max(0, tag.getAssetCount() - 1));
 
-		assetTagPersistence.update(tag);
-
-		return tag;
+		return assetTagPersistence.update(tag);
 	}
 
 	/**
@@ -294,9 +289,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 		List<AssetTag> groupsTags = new ArrayList<>();
 
 		for (long groupId : groupIds) {
-			List<AssetTag> groupTags = getGroupTags(groupId);
-
-			groupsTags.addAll(groupTags);
+			groupsTags.addAll(getGroupTags(groupId));
 		}
 
 		return groupsTags;
@@ -342,11 +335,10 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 		long groupId, String socialActivityCounterName, int startOffset,
 		int endOffset) {
 
-		int startPeriod = SocialCounterPeriodUtil.getStartPeriod(startOffset);
-		int endPeriod = SocialCounterPeriodUtil.getEndPeriod(endOffset);
-
 		return getSocialActivityCounterPeriodTags(
-			groupId, socialActivityCounterName, startPeriod, endPeriod);
+			groupId, socialActivityCounterName,
+			SocialCounterPeriodUtil.getStartPeriod(startOffset),
+			SocialCounterPeriodUtil.getEndPeriod(endOffset));
 	}
 
 	@Override
@@ -354,9 +346,8 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 		long groupId, String socialActivityCounterName, int startPeriod,
 		int endPeriod) {
 
-		int offset = SocialCounterPeriodUtil.getOffset(endPeriod);
-
-		int periodLength = SocialCounterPeriodUtil.getPeriodLength(offset);
+		int periodLength = SocialCounterPeriodUtil.getPeriodLength(
+			SocialCounterPeriodUtil.getOffset(endPeriod));
 
 		return assetTagFinder.findByG_N_S_E(
 			groupId, socialActivityCounterName, startPeriod, endPeriod,
@@ -559,9 +550,8 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 	@Override
 	@ThreadLocalCachable
 	public List<AssetTag> getTags(String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return getTags(classNameId, classPK);
+		return getTags(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -602,6 +592,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 	 *         tag is being applied
 	 * @return the asset tag
 	 */
+	@BufferedIncrement(incrementClass = NumberIncrement.class)
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public AssetTag incrementAssetCount(long tagId, long classNameId)
@@ -611,9 +602,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 
 		tag.setAssetCount(tag.getAssetCount() + 1);
 
-		assetTagPersistence.update(tag);
-
-		return tag;
+		return assetTagPersistence.update(tag);
 	}
 
 	/**
@@ -721,7 +710,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 
 		tag.setName(name);
 
-		assetTagPersistence.update(tag);
+		tag = assetTagPersistence.update(tag);
 
 		// Indexer
 
@@ -741,11 +730,10 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes = new HashMap<>();
-
-		attributes.put(Field.NAME, name);
-
-		searchContext.setAttributes(attributes);
+		searchContext.setAttributes(
+			HashMapBuilder.<String, Serializable>put(
+				Field.NAME, name
+			).build());
 
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);

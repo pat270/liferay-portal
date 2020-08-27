@@ -56,11 +56,10 @@ public abstract class OAuth2ScopeGrantFinderBaseImpl
 
 	@Override
 	@Reference(
-		target = OAuthTwoPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = OAuthTwoPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
 	}
 
 	@Override
@@ -86,5 +85,14 @@ public abstract class OAuth2ScopeGrantFinderBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		OAuth2ScopeGrantFinderBaseImpl.class);
+
+	static {
+		try {
+			Class.forName(OAuthTwoPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

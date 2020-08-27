@@ -124,8 +124,8 @@ public class CentralizedThreadLocal<T> extends ThreadLocal<T> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
@@ -168,6 +168,24 @@ public class CentralizedThreadLocal<T> extends ThreadLocal<T> {
 		threadLocalMap.putEntry(this, value);
 	}
 
+	public SafeClosable setWithSafeClosable(T value) {
+		ThreadLocalMap threadLocalMap = _getThreadLocalMap();
+
+		Entry entry = threadLocalMap.getEntry(this);
+
+		if (entry == null) {
+			threadLocalMap.putEntry(this, value);
+
+			return () -> threadLocalMap.removeEntry(this);
+		}
+
+		Object originalValue = entry._value;
+
+		entry._value = value;
+
+		return () -> entry._value = originalValue;
+	}
+
 	@Override
 	public String toString() {
 		return _name;
@@ -181,8 +199,7 @@ public class CentralizedThreadLocal<T> extends ThreadLocal<T> {
 	private static Map<CentralizedThreadLocal<?>, Object> _toMap(
 		ThreadLocalMap threadLocalMap) {
 
-		Map<CentralizedThreadLocal<?>, Object> map = new HashMap<>(
-			threadLocalMap._table.length);
+		Map<CentralizedThreadLocal<?>, Object> map = new HashMap<>();
 
 		for (Entry entry : threadLocalMap._table) {
 			while (entry != null) {

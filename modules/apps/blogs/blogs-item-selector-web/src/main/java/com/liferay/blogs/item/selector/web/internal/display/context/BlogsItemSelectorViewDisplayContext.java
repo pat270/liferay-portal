@@ -14,15 +14,23 @@
 
 package com.liferay.blogs.item.selector.web.internal.display.context;
 
+import com.liferay.blogs.configuration.BlogsFileUploadsConfiguration;
 import com.liferay.blogs.item.selector.criterion.BlogsItemSelectorCriterion;
 import com.liferay.blogs.item.selector.web.internal.BlogsItemSelectorView;
 import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
+import com.liferay.item.selector.taglib.servlet.taglib.util.RepositoryEntryBrowserTagUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.PortalPreferences;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortletKeys;
 
 import java.util.Locale;
@@ -39,40 +47,59 @@ import javax.servlet.http.HttpServletRequest;
 public class BlogsItemSelectorViewDisplayContext {
 
 	public BlogsItemSelectorViewDisplayContext(
+		BlogsEntryLocalService blogsEntryLocalService,
 		BlogsItemSelectorCriterion blogsItemSelectorCriterion,
 		BlogsItemSelectorView blogsItemSelectorView,
+		HttpServletRequest httpServletRequest, String itemSelectedEventName,
 		ItemSelectorReturnTypeResolverHandler
 			itemSelectorReturnTypeResolverHandler,
-		String itemSelectedEventName, boolean search, PortletURL portletURL,
-		BlogsEntryLocalService blogsEntryLocalService) {
+		PortletURL portletURL, boolean search) {
 
+		_blogsEntryLocalService = blogsEntryLocalService;
 		_blogsItemSelectorCriterion = blogsItemSelectorCriterion;
 		_blogsItemSelectorView = blogsItemSelectorView;
+		_httpServletRequest = httpServletRequest;
+		_itemSelectedEventName = itemSelectedEventName;
 		_itemSelectorReturnTypeResolverHandler =
 			itemSelectorReturnTypeResolverHandler;
-		_itemSelectedEventName = itemSelectedEventName;
-		_search = search;
 		_portletURL = portletURL;
-		_blogsEntryLocalService = blogsEntryLocalService;
+		_search = search;
+
+		_portalPreferences = PortletPreferencesFactoryUtil.getPortalPreferences(
+			_httpServletRequest);
 	}
 
 	public Folder fetchAttachmentsFolder(long userId, long groupId) {
 		return _blogsEntryLocalService.fetchAttachmentsFolder(userId, groupId);
 	}
 
-	public BlogsItemSelectorCriterion getBlogsItemSelectorCriterion() {
-		return _blogsItemSelectorCriterion;
+	public String[] getImageExtensions() throws ConfigurationException {
+		return _getBlogsFileUploadsConfiguration().imageExtensions();
+	}
+
+	public long getImageMaxSize() throws ConfigurationException {
+		return _getBlogsFileUploadsConfiguration().imageMaxSize();
 	}
 
 	public String getItemSelectedEventName() {
 		return _itemSelectedEventName;
 	}
 
-	public ItemSelectorReturnTypeResolver getItemSelectorReturnTypeResolver() {
+	public ItemSelectorReturnTypeResolver<?, ?>
+		getItemSelectorReturnTypeResolver() {
+
 		return _itemSelectorReturnTypeResolverHandler.
 			getItemSelectorReturnTypeResolver(
 				_blogsItemSelectorCriterion, _blogsItemSelectorView,
 				FileEntry.class);
+	}
+
+	public OrderByComparator<FileEntry> getOrderByComparator() {
+		return DLUtil.getRepositoryModelOrderByComparator(
+			RepositoryEntryBrowserTagUtil.getOrderByCol(
+				_httpServletRequest, _portalPreferences),
+			RepositoryEntryBrowserTagUtil.getOrderByType(
+				_httpServletRequest, _portalPreferences));
 	}
 
 	public PortletURL getPortletURL(
@@ -110,12 +137,27 @@ public class BlogsItemSelectorViewDisplayContext {
 		return _search;
 	}
 
+	private BlogsFileUploadsConfiguration _getBlogsFileUploadsConfiguration()
+		throws ConfigurationException {
+
+		if (_blogsFileUploadsConfiguration == null) {
+			_blogsFileUploadsConfiguration =
+				ConfigurationProviderUtil.getSystemConfiguration(
+					BlogsFileUploadsConfiguration.class);
+		}
+
+		return _blogsFileUploadsConfiguration;
+	}
+
 	private final BlogsEntryLocalService _blogsEntryLocalService;
+	private BlogsFileUploadsConfiguration _blogsFileUploadsConfiguration;
 	private final BlogsItemSelectorCriterion _blogsItemSelectorCriterion;
 	private final BlogsItemSelectorView _blogsItemSelectorView;
+	private final HttpServletRequest _httpServletRequest;
 	private final String _itemSelectedEventName;
 	private final ItemSelectorReturnTypeResolverHandler
 		_itemSelectorReturnTypeResolverHandler;
+	private final PortalPreferences _portalPreferences;
 	private final PortletURL _portletURL;
 	private final boolean _search;
 

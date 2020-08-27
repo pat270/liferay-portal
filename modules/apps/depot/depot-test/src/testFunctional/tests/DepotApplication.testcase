@@ -1,0 +1,524 @@
+@component-name = "portal-document-management"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Depot";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.logoutPG();
+		}
+	}
+
+	@description = "This ensures that previous asset selections persist in collections after DM and WC applications are disabled."
+	@priority = "5"
+	test SelectDisabledAssetsFromCollections {
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Test Depot Name",
+			site = "false",
+			title = "WC WebContent Title");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_2.jpeg",
+			groupName = "Test Depot Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_2.jpeg");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.addManualSelection(
+			assetListTitle = "Depot Manual Asset List",
+			depotName = "Test Depot Name");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.selectAsset(
+			assetListName = "Depot Manual Asset List",
+			assetName = "Document_2.jpeg",
+			assetType = "Basic Document",
+			itemType = "All Types");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.selectAsset(
+			assetListName = "Depot Manual Asset List",
+			assetName = "WC WebContent Title",
+			assetType = "Basic Web Content");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Web Content,Documents and Media",
+			status = "Disabled");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.viewContent(
+			assetListTitle = "Depot Manual Asset List",
+			assetTitle = "WC WebContent Title",
+			assetType = "Web Content Article");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.viewContent(
+			assetListTitle = "Depot Manual Asset List",
+			assetTitle = "Document_2.jpeg",
+			assetType = "Document");
+	}
+
+	@description = "This ensures that the Applications can be set in a depot."
+	@priority = "5"
+	test Smoke {
+		property portal.acceptance = "true";
+		property portal.upstream = "quarantine";
+		property testray.component.names = "Asset Lists";
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		for (var application : list "Collections,Documents and Media,Web Content") {
+			AssertChecked(
+				checkboxName = "${application}",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		Depot.configureApplication(
+			applicationList = "Collections,Documents and Media,Web Content",
+			status = "Disabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Collections,Documents and Media,Web Content",
+			depotName = "Test Depot Name",
+			noApplication = "true");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Collections,Documents and Media,Web Content",
+			status = "Enabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Web Content");
+
+		DepotNavigator.gotoDepotPortletViaBreadcrumb(
+			depotName = "Test Depot Name",
+			portlet = "Documents and Media");
+
+		DepotNavigator.gotoDepotPortletViaBreadcrumb(
+			otherDepotName = "Test Depot Name",
+			portlet = "Collections");
+	}
+
+	@description = "This ensures that the Collections application can be viewed after reactivating in a depot."
+	@priority = "5"
+	test ViewCollectionsAfterReactivating {
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.addManualSelection(assetListTitle = "Depot Manual Asset List");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.addDynamicSelection(assetListTitle = "Depot Dynamic Asset List");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Collections",
+			status = "Disabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Collections",
+			depotName = "Test Depot Name",
+			noApplication = "true");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Web Content,Documents and Media",
+			depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Collections",
+			status = "Enabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Collections",
+			depotName = "Test Depot Name");
+
+		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-depot-name");
+
+		AssetListsAdmin.viewAssetList(
+			assetListTitle = "Depot Manual Asset List",
+			type = "Manual");
+
+		AssetListsAdmin.viewAssetList(
+			assetListTitle = "Depot Dynamic Asset List",
+			type = "Dynamic");
+	}
+
+	@description = "This ensures that a user cannot see the sections of both the product menu and the dashboard that contain disabled applications."
+	@priority = "5"
+	test ViewDepotWithAllAppsDisabled {
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Collections,Documents and Media,Web Content",
+			status = "Disabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Click(
+			key_card = "Test Depot Name",
+			locator1 = "Card#CARD_TITLE");
+
+		AssertTextEquals(
+			locator1 = "ControlMenu#HEADING",
+			value1 = "Asset Libraries");
+
+		for (var portletName : list "Web Content,Documents and Media,Collections,Recycle Bin") {
+			AssertElementNotPresent(
+				key_card = "${portletName}",
+				locator1 = "Card#CARD");
+		}
+
+		DepotNavigator.gotoPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		AssertElementNotPresent(
+			key_category = "Content &amp; Data",
+			locator1 = "ProductMenu#CATEGORY_COLLAPSED");
+
+		AssertElementNotPresent(
+			key_category = "Recycle Bin",
+			locator1 = "ProductMenu#CATEGORY_COLLAPSED");
+	}
+
+	@description = "This ensures that a depot web content persists in WCD as previously and it's not appeared in the item selector on a connected site when WC application is disabled."
+	@priority = "5"
+	test ViewDisabledAssetViaWCD {
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Page Name",
+			widgetName = "Web Content Display");
+
+		JSONWebcontent.addWebContent(
+			content = "WC Depot Content",
+			groupName = "Test Depot Name",
+			site = "false",
+			title = "WC Depot Title");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoSites(depotName = "Test Depot Name");
+
+		Depot.connectSite(siteList = "Test Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page Name",
+			siteName = "Test Site Name");
+
+		WebContentDisplayPortlet.selectWebContent(
+			depotName = "Test Depot Name",
+			webContentTitle = "WC Depot Title");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Web Content",
+			status = "Disabled");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page Name",
+			siteName = "Test Site Name");
+
+		WebContent.viewPGViaWCD(webContentContent = "WC Depot Content");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page Name",
+			siteName = "Test Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Web Content Display",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Pause(locator1 = "3000");
+
+		Click(locator1 = "Button#CHANGE");
+
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame.selectSecondFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertClick(
+			key_breadcrumbName = "Sites and Libraries",
+			locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+			value1 = "Sites and Libraries");
+
+		AssertClick(
+			key_groupTab = "Asset Library",
+			locator1 = "ItemSelector#NAVIGATION_GROUP_TAB",
+			value1 = "Asset Library");
+
+		LexiconCard.clickCard(card = "Test Depot Name");
+
+		AssertElementNotPresent(
+			key_contentName = "WC Depot Title",
+			locator1 = "ItemSelector#SELECT_FILE_WEB_CONTENT");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#INFO",
+			value1 = "Info:Web Content is disabled for this scope.");
+	}
+
+	@description = "This ensures that a depot image persists in blog entry as previously and it's not appeared in the item selector on a connected site when DM application is disabled."
+	@priority = "5"
+	test ViewDisabledImageViaBlogs {
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.jpg",
+			groupName = "Test Depot Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpg");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoSites(depotName = "Test Depot Name");
+
+		Depot.connectSite(siteList = "Test Site Name");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "test-site-name");
+
+		BlogsNavigator.gotoAddEntry();
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.selectRepositoryImage(
+			depotName = "Test Depot Name",
+			imageFileName = "Document_1.jpg",
+			navTab = "Documents and Media");
+
+		BlogsEntry.addTitle(entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.addEntryContent(
+			entryContent = "Blogs Entry Content",
+			entrySubtitle = "Blogs Entry Subtitle",
+			entryTitle = "Blogs Entry Title");
+
+		Button.clickPublish();
+
+		Pause(locator1 = "10000");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Documents and Media",
+			status = "Disabled");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "test-site-name");
+
+		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewEntryCP(
+			entryContent = "Blogs Entry Content",
+			entrySubtitle = "Blogs Entry Subtitle",
+			entryTitle = "Blogs Entry Title",
+			uploadFileName = "Document_1");
+
+		BlogsNavigator.gotoBrowseImage();
+
+		ItemSelector.changeWorkspaces(
+			navTab = "Documents and Media",
+			workspacesType = "Asset Library");
+
+		LexiconCard.clickCard(card = "Test Depot Name");
+
+		LexiconCard.viewCardNotPresent(card = "Document_1.jpg");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#INFO",
+			value1 = "This application is not supported for Asset Libraries.");
+	}
+
+	@description = "This ensures that the DM application can be viewed after reactivating in a depot."
+	@priority = "5"
+	test ViewDMAfterReactivating {
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Documents and Media",
+			status = "Disabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Documents and Media",
+			depotName = "Test Depot Name",
+			noApplication = "true");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Collections,Web Content",
+			depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Documents and Media",
+			status = "Enabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Documents and Media",
+			depotName = "Test Depot Name");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "test-depot-name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document Title");
+	}
+
+	@description = "This ensures that the WC application can be viewed after reactivating in a depot."
+	@priority = "5"
+	test ViewWCAfterReactivating {
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Test Depot Name",
+			site = "false",
+			title = "WC WebContent Title");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Web Content",
+			status = "Disabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Web Content",
+			depotName = "Test Depot Name",
+			noApplication = "true");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Collections,Documents and Media",
+			depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Settings");
+
+		Depot.configureApplication(
+			applicationList = "Web Content",
+			status = "Enabled");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.viewApplication(
+			applicationList = "Web Content",
+			depotName = "Test Depot Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-depot-name");
+
+		WebContent.viewTitle(webContentTitle = "WC WebContent Title");
+	}
+
+}

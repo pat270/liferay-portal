@@ -14,7 +14,6 @@
 
 package com.liferay.oauth2.provider.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see OAuth2ApplicationService
  * @generated
  */
-@ProviderType
 public class OAuth2ApplicationServiceUtil {
 
 	/*
@@ -60,7 +58,7 @@ public class OAuth2ApplicationServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), since 7.2, unused
+	 * @deprecated As of Mueller (7.2.x)
 	 */
 	@Deprecated
 	public static com.liferay.oauth2.provider.model.OAuth2Application
@@ -166,7 +164,7 @@ public class OAuth2ApplicationServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Mueller (7.2.x), since 7.2, unused
+	 * @deprecated As of Mueller (7.2.x)
 	 */
 	@Deprecated
 	public static com.liferay.oauth2.provider.model.OAuth2Application

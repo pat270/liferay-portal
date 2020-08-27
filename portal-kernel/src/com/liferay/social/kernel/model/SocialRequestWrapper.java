@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialRequest
  * @generated
  */
-@ProviderType
 public class SocialRequestWrapper
 	extends BaseModelWrapper<SocialRequest>
-	implements SocialRequest, ModelWrapper<SocialRequest> {
+	implements ModelWrapper<SocialRequest>, SocialRequest {
 
 	public SocialRequestWrapper(SocialRequest socialRequest) {
 		super(socialRequest);
@@ -44,6 +43,8 @@ public class SocialRequestWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("requestId", getRequestId());
 		attributes.put("groupId", getGroupId());
@@ -63,6 +64,18 @@ public class SocialRequestWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -193,6 +206,16 @@ public class SocialRequestWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this social request.
+	 *
+	 * @return the ct collection ID of this social request
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the extra data of this social request.
 	 *
 	 * @return the extra data of this social request
@@ -220,6 +243,16 @@ public class SocialRequestWrapper
 	@Override
 	public long getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this social request.
+	 *
+	 * @return the mvcc version of this social request
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -363,6 +396,16 @@ public class SocialRequestWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this social request.
+	 *
+	 * @param ctCollectionId the ct collection ID of this social request
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the extra data of this social request.
 	 *
 	 * @param extraData the extra data of this social request
@@ -390,6 +433,16 @@ public class SocialRequestWrapper
 	@Override
 	public void setModifiedDate(long modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this social request.
+	 *
+	 * @param mvccVersion the mvcc version of this social request
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -480,6 +533,20 @@ public class SocialRequestWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<SocialRequest, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<SocialRequest, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

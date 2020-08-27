@@ -32,7 +32,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryRegistryUtil;
 import com.liferay.petra.string.StringPool;
@@ -54,7 +54,6 @@ import com.liferay.portal.kernel.xml.Element;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.portlet.PortletPreferences;
@@ -122,6 +121,13 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 			PortletPreferences portletPreferences)
 		throws Exception {
 
+		String[] portletResourceNames = _getPortletResourceNames(
+			portletDataContext);
+
+		for (String portletResourceName : portletResourceNames) {
+			portletDataContext.addPortletPermissions(portletResourceName);
+		}
+
 		Element rootElement = addExportDataRootElement(portletDataContext);
 
 		rootElement.addAttribute(
@@ -166,14 +172,12 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 			_exportChangesetCollection(portletDataContext, changesetCollection);
 		}
 		else {
-			Optional<Changeset> changesetOptional =
-				_changesetManager.popChangeset(changesetUuid);
+			Changeset changeset = _changesetManager.removeChangeset(
+				changesetUuid);
 
-			if (!changesetOptional.isPresent()) {
+			if (changeset == null) {
 				return getExportDataRootElementString(rootElement);
 			}
-
-			Changeset changeset = changesetOptional.get();
 
 			Stream<StagedModel> stream = changeset.stream();
 
@@ -185,8 +189,9 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 						StagedModelDataHandlerUtil.exportStagedModel(
 							portletDataContext, stagedModel);
 					}
-					catch (PortletDataException pde) {
-						throw new ExportImportRuntimeException(pde);
+					catch (PortletDataException portletDataException) {
+						throw new ExportImportRuntimeException(
+							portletDataException);
 					}
 				}
 			);
@@ -217,11 +222,20 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 			}
 		}
 
+		String[] portletResourceNames = _getPortletResourceNames(
+			portletDataContext);
+
+		for (String portletResourceName : portletResourceNames) {
+			portletDataContext.importPermissions(
+				portletResourceName, portletDataContext.getSourceGroupId(),
+				portletDataContext.getGroupId());
+		}
+
 		return portletPreferences;
 	}
 
 	private void _exportAssetLinks(PortletDataContext portletDataContext)
-		throws PortletDataException {
+		throws Exception {
 
 		for (Long linkId : portletDataContext.getAssetLinkIds()) {
 			AssetLink assetLink = _assetLinkLocalService.fetchAssetLink(linkId);
@@ -241,7 +255,7 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 	private void _exportChangesetCollection(
 			PortletDataContext portletDataContext,
 			ChangesetCollection changesetCollection)
-		throws PortalException {
+		throws Exception {
 
 		ActionableDynamicQuery actionableDynamicQuery =
 			_changesetEntryLocalService.getActionableDynamicQuery();
@@ -313,6 +327,15 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 			portletDataContext, stagedModel);
 
 		return true;
+	}
+
+	private String[] _getPortletResourceNames(
+		PortletDataContext portletDataContext) {
+
+		Map<String, String[]> parameterMap =
+			portletDataContext.getParameterMap();
+
+		return parameterMap.getOrDefault("portletResourceNames", new String[0]);
 	}
 
 	private boolean _isExportModel(

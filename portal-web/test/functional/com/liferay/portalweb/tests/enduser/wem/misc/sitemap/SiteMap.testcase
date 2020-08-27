@@ -1,5 +1,6 @@
 @component-name = "portal-wcm"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Sitemap";
@@ -10,11 +11,6 @@ definition {
 		User.firstLoginPG();
 
 		JSONGroup.addGroup(groupName = "Test Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
 
 		JSONLayout.addPrivateLayout(
 			groupName = "Test Site Name",
@@ -39,11 +35,14 @@ definition {
 
 	@priority = "4"
 	test DisplayPrivatePageWithChildPage {
-		Navigator.gotoPrivateSitePage(
+		JSONLayout.addWidgetToPrivateLayout(
+			groupName = "Test Site Name",
+			layoutName = "Child Page Name",
+			widgetName = "Site Map");
+
+		Navigator.openPrivateSitePageURL(
 			pageName = "Child Page Name",
 			siteName = "Test Site Name");
-
-		Portlet.addPG(portletName = "Site Map");
 
 		Portlet.viewSpecificPG(portletName = "Site Map");
 
@@ -51,4 +50,5 @@ definition {
 			listChildPageName = "Child Page Name",
 			listPageName = "Site Page Name");
 	}
+
 }

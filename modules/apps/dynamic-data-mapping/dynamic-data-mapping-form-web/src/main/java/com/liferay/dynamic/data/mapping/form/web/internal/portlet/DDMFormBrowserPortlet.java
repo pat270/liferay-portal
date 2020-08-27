@@ -44,8 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_BROWSER,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator,guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator,guest,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -58,7 +57,7 @@ public class DDMFormBrowserPortlet extends MVCPortlet {
 
 		DDMFormBrowserDisplayContext ddlFormBrowserDisplayContext =
 			new DDMFormBrowserDisplayContext(
-				_formInstanceService, renderRequest, renderResponse);
+				_ddmFormInstanceService, renderRequest, renderResponse);
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, ddlFormBrowserDisplayContext);
@@ -68,17 +67,17 @@ public class DDMFormBrowserPortlet extends MVCPortlet {
 
 	@Reference
 	protected void setDDMFormInstanceService(
-		DDMFormInstanceService formInstanceService) {
+		DDMFormInstanceService ddmFormInstanceService) {
 
-		_formInstanceService = formInstanceService;
+		_ddmFormInstanceService = ddmFormInstanceService;
 	}
 
 	protected void unsetDDMFormInstanceService(
-		DDMFormInstanceService formInstanceService) {
+		DDMFormInstanceService ddmFormInstanceService) {
 
-		_formInstanceService = null;
+		_ddmFormInstanceService = null;
 	}
 
-	private DDMFormInstanceService _formInstanceService;
+	private DDMFormInstanceService _ddmFormInstanceService;
 
 }

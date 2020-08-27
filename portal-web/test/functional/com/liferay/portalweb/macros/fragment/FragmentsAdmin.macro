@@ -1,0 +1,119 @@
+definition {
+
+	macro addCollection {
+		FragmentsAdminNavigator.gotoAddCollection();
+
+		Collection.editCollection(
+			collectionDescription = "${collectionDescription}",
+			collectionName = "${collectionName}");
+
+		Button.clickSave();
+	}
+
+	macro addFragment {
+		LexiconEntry.gotoAdd();
+
+		AssertTextEquals(
+			locator1 = "Modal#HEADER",
+			value1 = "Add Component");
+
+		PortletEntry.inputName(name = "${fragmentName}");
+
+		Button.clickSave();
+	}
+
+	macro addResource {
+		LexiconEntry.gotoAdd();
+
+		IFrame.selectConfigurationFrame();
+
+		Pause(locator1 = "3000");
+
+		AssertVisible(locator1 = "ItemSelector#SELECT_FILE_UPLOAD_IMAGE");
+
+		UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+			locator1 = "TextInput#FILE",
+			value1 = "${resourceFile}");
+
+		IFrame.selectConfigurationFrame();
+
+		Button.clickAdd();
+	}
+
+	macro deleteEntry {
+		LexiconCard.delete(card = "${entry}");
+	}
+
+	macro exportCollection {
+		Navigator.gotoNavNested(navNested = "${collectionName}");
+
+		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Export");
+	}
+
+	macro importCollectionFromDependenciesFolder {
+		FragmentsAdminNavigator.gotoImportCollection();
+
+		UploadCommonFile(
+			locator1 = "TextInput#FILE",
+			value1 = "${collectionZipFile}");
+
+		SelectFrameTop();
+
+		Button.clickImport();
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_IFRAME");
+
+		Alert.viewSuccessMessage();
+
+		SelectFrameTop();
+
+		IFrame.closeFrame();
+	}
+
+	macro importCollectionFromTempFolder {
+		FragmentsAdminNavigator.gotoImportCollection();
+
+		var collectionsZipFileName = TestCase.getDownloadedTempFileName(fileNamePattern = "collections-*.zip");
+
+		UploadTempFile(
+			locator1 = "TextInput#FILE",
+			value1 = "${collectionsZipFileName}");
+
+		SelectFrameTop();
+
+		Button.clickImport();
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_IFRAME");
+
+		Alert.viewSuccessMessage();
+
+		SelectFrameTop();
+
+		IFrame.closeFrame();
+	}
+
+	macro openFragmentsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/fragments");
+	}
+
+	macro selectCollection {
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		LexiconCard.clickCard(card = "${collectionName}");
+	}
+
+	macro viewEntryNotPresent {
+		LexiconCard.viewCardNotPresent(card = "${entry}");
+	}
+
+	macro viewEntryPresent {
+		LexiconCard.viewCardPresent(card = "${entry}");
+	}
+
+	macro viewEntryWorkflowStatus {
+		LexiconCard.viewCardLabel(
+			card = "${entry}",
+			cardLabel = "${workflowStatus}");
+	}
+
+}

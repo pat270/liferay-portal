@@ -17,9 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-EditSiteTeamAssignmentsUsersDisplayContext editSiteTeamAssignmentsUsersDisplayContext = new EditSiteTeamAssignmentsUsersDisplayContext(renderRequest, renderResponse, request);
+EditSiteTeamAssignmentsUsersDisplayContext editSiteTeamAssignmentsUsersDisplayContext = new EditSiteTeamAssignmentsUsersDisplayContext(request, renderRequest, renderResponse);
 
-EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext editSiteTeamAssignmentsUsersManagementToolbarDisplayContext = new EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, editSiteTeamAssignmentsUsersDisplayContext);
+EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext editSiteTeamAssignmentsUsersManagementToolbarDisplayContext = new EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, editSiteTeamAssignmentsUsersDisplayContext);
 %>
 
 <clay:navigation-bar
@@ -60,6 +60,7 @@ EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext editSiteTeamAssignme
 					<liferay-ui:search-container-column-text>
 						<clay:user-card
 							userCard="<%= new UserUserCard(user2, editSiteTeamAssignmentsUsersDisplayContext.getTeamId(), renderRequest, renderResponse, searchContainer.getRowChecker()) %>"
+							userColorClass='<%= "user-icon " + LexiconUtil.getUserColorCssClass(user2) %>'
 						/>
 					</liferay-ui:search-container-column-text>
 				</c:when>

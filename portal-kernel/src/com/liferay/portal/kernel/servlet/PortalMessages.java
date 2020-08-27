@@ -265,10 +265,10 @@ public class PortalMessages {
 	}
 
 	public static void print(HttpSession session) {
-		Iterator<String> itr = iterator(session);
+		Iterator<String> iterator = iterator(session);
 
-		while (itr.hasNext()) {
-			System.out.println(itr.next());
+		while (iterator.hasNext()) {
+			System.out.println(iterator.next());
 		}
 	}
 
@@ -309,7 +309,7 @@ public class PortalMessages {
 				session.setAttribute(WebKeys.PORTAL_MESSAGES, map);
 			}
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 
 			// Session is already invalidated, just return a null map
 

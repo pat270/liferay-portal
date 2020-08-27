@@ -1,4 +1,5 @@
 definition {
+
 	macro _saveDisplaySettings {
 		PortletEntry.save();
 	}
@@ -154,6 +155,18 @@ definition {
 		}
 	}
 
+	macro configureEmailSender {
+		Type(
+			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_SENDER_NAME_FIELD",
+			value1 = "${emailSenderName}");
+
+		Type(
+			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_SENDER_ADDRESS_FIELD",
+			value1 = "${emailAddress}");
+
+		PortalSettings._saveDisplaySettings();
+	}
+
 	macro configureGoogleDrive {
 		Type(
 			key_text = "clientId",
@@ -176,7 +189,7 @@ definition {
 			locator1 = "Button#SAVE",
 			value1 = "Save");
 
-		AssertElementPresent(locator1 = "Message#SUCCESS");
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 	}
 
 	macro configureLDAPSetting {
@@ -243,24 +256,58 @@ definition {
 			value1 = "${editor}");
 	}
 
+	macro disableApplicationsMenu {
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Navigation",
+			configurationName = "Applications Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		AssertElementNotPresent(locator1 = "ProductMenu#TOGGLE");
+
+		AssertElementPresent(locator1 = "ApplicationsMenu#TOGGLE");
+
+		FormFields.disableCheckbox(fieldName = "enableApplicationsMenu");
+
+		if (IsElementPresent(locator1 = "Button#SAVE")) {
+			AssertClick(
+				locator1 = "Button#SAVE",
+				value1 = "Save");
+		}
+		else if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			AssertClick(
+				locator1 = "Button#UPDATE",
+				value1 = "Update");
+		}
+
+		Alert.viewSuccessMessage();
+
+		AssertElementPresent(locator1 = "ProductMenu#TOGGLE");
+
+		AssertElementNotPresent(locator1 = "ApplicationsMenu#TOGGLE");
+	}
+
 	macro editConfigurationAuthenticationCAS {
 		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_CAS_ENABLED_CHECKBOX");
 
 		FormFields.editText(
 			fieldName = "loginURL",
-			fieldValue = "${casLoginURL}");
+			fieldValue = "http://localhost:8080/cas-web/login");
 
 		FormFields.editText(
 			fieldName = "logoutURL",
-			fieldValue = "${casLogoutURL}");
+			fieldValue = "http://localhost:8080/cas-web/logout");
 
 		FormFields.editText(
-			fieldName = "ServerURL",
-			fieldValue = "${casServerURL}");
+			fieldName = "serverName",
+			fieldValue = "http://localhost:8080");
 
-		FormFields.editTextMultiline(
+		FormFields.editText(
+			fieldName = "serverURL",
+			fieldValue = "http://localhost:8080/cas-web");
+
+		FormFields.editText(
 			fieldName = "serviceURL",
-			fieldValue = "${casServiceURL}");
+			fieldValue = "http://localhost:8080/c/portal/login");
 
 		Click.waitForMenuToggleJSClick(locator1 = "PortalSettingsAuthentication#VERTICAL_ELLIPSIS");
 
@@ -442,17 +489,45 @@ definition {
 			configurationScope = "Virtual Instance Scope");
 
 		if ("${emailVerificationURL}" == "true") {
-			Type.typeEditor(
-				locator1 = "PortalSettingsEmailNotifications#NAVIGATION_EMAIL_VERIFICATION_NOTIFICATION_BODY",
+			Type.typeCKEditor(
+				locator1 = "CKEditor#BODY_FIELD",
 				value1 = "[$EMAIL_VERIFICATION_URL$]");
 		}
 		else {
-			Type.typeEditor(
-				locator1 = "PortalSettingsEmailNotifications#NAVIGATION_EMAIL_VERIFICATION_NOTIFICATION_BODY",
+			Type.typeCKEditor(
+				locator1 = "CKEditor#BODY_FIELD",
 				value1 = "[$EMAIL_VERIFICATION_CODE$]");
 		}
 
 		PortletEntry.save();
+	}
+
+	macro editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel {
+		SystemSettings.selectOptionSetting(
+			fieldName = "Personal Applications Look and Feel",
+			selectOption = "${selectOption}");
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro editConfigurationUsersPersonalMenuShowInControlMenu {
+		Check.checkToggleSwitch(
+			key_toggleSwitchLabel = "${toggleSwitchLabel}",
+			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
 	}
 
 	macro editDefaultLandingPageCP {
@@ -486,6 +561,41 @@ definition {
 			value1 = "${virtualHostName}");
 	}
 
+	macro enableApplicationsMenu {
+		ProductMenu.gotoPortletWhenDisableApplicationsMenu(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Navigation",
+			configurationName = "Applications Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		AssertElementPresent(locator1 = "ProductMenu#TOGGLE");
+
+		AssertElementNotPresent(locator1 = "ApplicationsMenu#TOGGLE");
+
+		FormFields.enableCheckbox(fieldName = "enableApplicationsMenu");
+
+		if (IsElementPresent(locator1 = "Button#SAVE")) {
+			AssertClick(
+				locator1 = "Button#SAVE",
+				value1 = "Save");
+		}
+		else if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			AssertClick(
+				locator1 = "Button#UPDATE",
+				value1 = "Update");
+		}
+
+		Alert.viewSuccessMessage();
+
+		AssertElementNotPresent(locator1 = "ProductMenu#TOGGLE");
+
+		AssertElementPresent(locator1 = "ApplicationsMenu#TOGGLE");
+	}
+
 	macro enableGoogleSSOCP {
 		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GOOGLE_ENABLED_CHECKBOX");
 
@@ -501,19 +611,20 @@ definition {
 	}
 
 	macro enableOpenIDConnectCP {
-		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX");
+		if (isSet(systemLevel)) {
+			Click.clickAtNotVisible(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX_SYSTEM_LEVEL");
 
-		PortletEntry.save();
+			PortletEntry.save();
 
-		AssertChecked(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX");
-	}
+			AssertChecked.assertCheckedNotVisible(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX_SYSTEM_LEVEL");
+		}
+		else {
+			Click.clickAtNotVisible(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX");
 
-	macro enableOpenIDCP {
-		Check(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_ENABLED_CHECKBOX");
+			PortletEntry.save();
 
-		PortletEntry.save();
-
-		AssertChecked(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_ENABLED_CHECKBOX");
+			AssertChecked.assertCheckedNotVisible(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_CONNECT_ENABLED_CHECKBOX");
+		}
 	}
 
 	macro enterReservedEmailAddressCP {
@@ -569,7 +680,7 @@ definition {
 	}
 
 	macro gotoConfiguration {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Instance Settings");
@@ -581,7 +692,7 @@ definition {
 	}
 
 	macro gotoPortalSettings {
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "Instance Settings");
@@ -927,15 +1038,6 @@ definition {
 			value1 = "TEMP_OBFUSCATION_VALUE");
 	}
 
-	macro viewAuthenticationOpenIDCP {
-		PortalSettings.gotoConfiguration(
-			configurationCategory = "SSO",
-			configurationName = "OpenID",
-			configurationScope = "Virtual Instance Scope");
-
-		AssertElementPresent(locator1 = "PortalSettingsAuthentication#AUTHENTICATION_OPEN_ID_ENABLED_CHECKBOX");
-	}
-
 	macro viewAuthenticationOpenSSOCP {
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "SSO",
@@ -1129,10 +1231,10 @@ definition {
 			value1 = "[$PORTAL_URL$]: Your New Account");
 
 		AssertTextEquals.assertPartialText(
-			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD_HEADER",
-			value1 = "Body with Password");
+			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD_LINK_HEADER",
+			value1 = "Body with Password Link");
 
-		AssertElementPresent(locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD_FIELD");
+		AssertElementPresent(locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD_LINK_FIELD");
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITHOUT_PASSWORD_HEADER",
@@ -1151,7 +1253,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_PASSWORD_CHANGED_NOTIFICATION_SUBJECT_FIELD",
-			value1 = "[$PORTAL_URL$]: Your New Password");
+			value1 = "[$PORTAL_URL$]: Your Password Has Been Changed");
 
 		AssertTextEquals.assertPartialText(
 			locator1 = "PortalSettingsEmailNotifications#EMAIL_NOTIFICATIONS_PASSWORD_CHANGED_NOTIFICATION_BODY_HEADER",
@@ -1233,4 +1335,5 @@ definition {
 			locator1 = "PortalSettingsUsers#RESERVED_CREDENTIALS_EMAIL_ADDRESSES_FIELD",
 			value1 = "");
 	}
+
 }

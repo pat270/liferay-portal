@@ -16,10 +16,14 @@
 
 <%@ include file="/init.jsp" %>
 
-<div class="sheet-section">
-	<liferay-util:include page="/user/sites.jsp" servletContext="<%= application %>" />
-</div>
+<liferay-util:dynamic-include key="com.liferay.users.admin.web#/user/memberships.jsp#pre" />
 
-<div class="sheet-section">
+<clay:sheet-section>
+	<liferay-util:include page="/user/sites.jsp" servletContext="<%= application %>" />
+</clay:sheet-section>
+
+<clay:sheet-section>
 	<liferay-util:include page="/user/user_groups.jsp" servletContext="<%= application %>" />
-</div>
+</clay:sheet-section>
+
+<liferay-util:dynamic-include key="com.liferay.users.admin.web#/user/memberships.jsp#post" />

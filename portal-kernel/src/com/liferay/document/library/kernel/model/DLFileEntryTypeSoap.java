@@ -20,20 +20,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.documentlibrary.service.http.DLFileEntryTypeServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DLFileEntryTypeSoap implements Serializable {
 
 	public static DLFileEntryTypeSoap toSoapModel(DLFileEntryType model) {
 		DLFileEntryTypeSoap soapModel = new DLFileEntryTypeSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setFileEntryTypeId(model.getFileEntryTypeId());
 		soapModel.setGroupId(model.getGroupId());
@@ -42,6 +43,7 @@ public class DLFileEntryTypeSoap implements Serializable {
 		soapModel.setUserName(model.getUserName());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
+		soapModel.setDataDefinitionId(model.getDataDefinitionId());
 		soapModel.setFileEntryTypeKey(model.getFileEntryTypeKey());
 		soapModel.setName(model.getName());
 		soapModel.setDescription(model.getDescription());
@@ -103,6 +105,22 @@ public class DLFileEntryTypeSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setFileEntryTypeId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public String getUuid() {
@@ -169,6 +187,14 @@ public class DLFileEntryTypeSoap implements Serializable {
 		_modifiedDate = modifiedDate;
 	}
 
+	public long getDataDefinitionId() {
+		return _dataDefinitionId;
+	}
+
+	public void setDataDefinitionId(long dataDefinitionId) {
+		_dataDefinitionId = dataDefinitionId;
+	}
+
 	public String getFileEntryTypeKey() {
 		return _fileEntryTypeKey;
 	}
@@ -201,6 +227,8 @@ public class DLFileEntryTypeSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
 	private long _fileEntryTypeId;
 	private long _groupId;
@@ -209,6 +237,7 @@ public class DLFileEntryTypeSoap implements Serializable {
 	private String _userName;
 	private Date _createDate;
 	private Date _modifiedDate;
+	private long _dataDefinitionId;
 	private String _fileEntryTypeKey;
 	private String _name;
 	private String _description;

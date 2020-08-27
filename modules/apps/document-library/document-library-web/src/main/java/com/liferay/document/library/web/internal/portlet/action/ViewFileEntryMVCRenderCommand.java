@@ -18,19 +18,20 @@ import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvide
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.exception.NoSuchFileVersionException;
-import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.repository.authorization.capability.AuthorizationCapability;
 import com.liferay.portal.kernel.exception.NoSuchRepositoryEntryException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.repository.Repository;
 import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -90,32 +91,37 @@ public class ViewFileEntryMVCRenderCommand
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)renderRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
-			String assetDisplayPageFriendlyURL =
-				_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
-					DLFileEntryConstants.getClassName(), fileEntryId,
-					themeDisplay);
+			if (!StringUtil.equals(
+					DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
+					_portal.getPortletId(renderRequest))) {
 
-			if (assetDisplayPageFriendlyURL != null) {
-				HttpServletResponse httpServletResponse =
-					_portal.getHttpServletResponse(renderResponse);
+				String assetDisplayPageFriendlyURL =
+					_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
+						FileEntry.class.getName(), fileEntryId, themeDisplay);
 
-				httpServletResponse.sendRedirect(assetDisplayPageFriendlyURL);
+				if (assetDisplayPageFriendlyURL != null) {
+					HttpServletResponse httpServletResponse =
+						_portal.getHttpServletResponse(renderResponse);
 
-				return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;
+					httpServletResponse.sendRedirect(
+						assetDisplayPageFriendlyURL);
+
+					return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;
+				}
 			}
+
+			return super.render(renderRequest, renderResponse);
 		}
 		catch (NoSuchFileEntryException | NoSuchFileVersionException |
-			   NoSuchRepositoryEntryException | PrincipalException e) {
+			   NoSuchRepositoryEntryException | PrincipalException exception) {
 
-			SessionErrors.add(renderRequest, e.getClass());
+			SessionErrors.add(renderRequest, exception.getClass());
 
 			return "/document_library/error.jsp";
 		}
-		catch (IOException | PortalException e) {
-			throw new PortletException(e);
+		catch (IOException | PortalException exception) {
+			throw new PortletException(exception);
 		}
-
-		return super.render(renderRequest, renderResponse);
 	}
 
 	@Override

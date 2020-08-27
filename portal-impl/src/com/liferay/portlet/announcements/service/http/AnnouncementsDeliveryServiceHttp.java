@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>AnnouncementsDeliveryServiceUtil</code> service
@@ -51,7 +49,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsDeliveryServiceSoap
  * @generated
  */
-@ProviderType
 public class AnnouncementsDeliveryServiceHttp {
 
 	public static com.liferay.announcements.kernel.model.AnnouncementsDelivery
@@ -73,66 +70,27 @@ public class AnnouncementsDeliveryServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.announcements.kernel.model.
 				AnnouncementsDelivery)returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
-		}
-	}
+			_log.error(systemException, systemException);
 
-	public static com.liferay.announcements.kernel.model.AnnouncementsDelivery
-			updateDelivery(
-				HttpPrincipal httpPrincipal, long userId, String type,
-				boolean email, boolean sms, boolean website)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		try {
-			MethodKey methodKey = new MethodKey(
-				AnnouncementsDeliveryServiceUtil.class, "updateDelivery",
-				_updateDeliveryParameterTypes1);
-
-			MethodHandler methodHandler = new MethodHandler(
-				methodKey, userId, type, email, sms, website);
-
-			Object returnObj = null;
-
-			try {
-				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
-			}
-			catch (Exception e) {
-				if (e instanceof
-						com.liferay.portal.kernel.exception.PortalException) {
-
-					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
-				}
-
-				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
-			}
-
-			return (com.liferay.announcements.kernel.model.
-				AnnouncementsDelivery)returnObj;
-		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
-
-			throw se;
+			throw systemException;
 		}
 	}
 
@@ -141,10 +99,5 @@ public class AnnouncementsDeliveryServiceHttp {
 
 	private static final Class<?>[] _updateDeliveryParameterTypes0 =
 		new Class[] {long.class, String.class, boolean.class, boolean.class};
-	private static final Class<?>[] _updateDeliveryParameterTypes1 =
-		new Class[] {
-			long.class, String.class, boolean.class, boolean.class,
-			boolean.class
-		};
 
 }

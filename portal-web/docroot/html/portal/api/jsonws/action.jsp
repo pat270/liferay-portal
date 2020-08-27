@@ -400,7 +400,7 @@ String signature = ParamUtil.getString(request, "signature");
 			</aui:form>
 		</div>
 
-		<aui:script use="aui-io,aui-template-deprecated,querystring-parse">
+		<aui:script use="aui-io,aui-template-deprecated,io-form,querystring-parse">
 			var REGEX_QUERY_STRING = new RegExp('([^?=&]+)(?:=([^&]*))?', 'g');
 
 			var form = A.one('#execute');
@@ -527,7 +527,7 @@ String signature = ParamUtil.getString(request, "signature");
 						'<%= jsonWebServiceActionMapping.getPath() %>',
 						formEl,
 						function(obj) {
-							serviceOutput.html(A.Lang.String.escapeHTML(JSON.stringify(obj, null, 2)));
+							serviceOutput.html(Liferay.Util.escapeHTML(JSON.stringify(obj, null, 2)));
 
 							output.removeClass('loading-results');
 

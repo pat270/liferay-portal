@@ -18,13 +18,21 @@ import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
 import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.asm.ASMWrapperUtil;
+import com.liferay.portal.change.tracking.registry.CTModelRegistration;
+import com.liferay.portal.change.tracking.registry.CTModelRegistry;
 import com.liferay.portal.dao.orm.hibernate.event.MVCCSynchronizerPostUpdateEventListener;
 import com.liferay.portal.dao.orm.hibernate.event.NestableAutoFlushEventListener;
 import com.liferay.portal.dao.orm.hibernate.event.NestableFlushEventListener;
+import com.liferay.portal.dao.orm.hibernate.event.ResetOriginalValuesLoadEventListener;
+import com.liferay.portal.dao.orm.hibernate.event.ResetOriginalValuesPostLoadEventListener;
+import com.liferay.portal.internal.change.tracking.hibernate.CTSQLInterceptor;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
+import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PreloadClassLoader;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -48,6 +56,7 @@ import java.util.regex.Pattern;
 
 import javassist.util.proxy.ProxyFactory;
 
+import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -58,7 +67,11 @@ import org.hibernate.engine.query.QueryPlanCache;
 import org.hibernate.event.AutoFlushEventListener;
 import org.hibernate.event.EventListeners;
 import org.hibernate.event.FlushEventListener;
+import org.hibernate.event.LoadEventListener;
+import org.hibernate.event.PostLoadEventListener;
 import org.hibernate.event.PostUpdateEventListener;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.persister.entity.OuterJoinLoadable;
 
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
@@ -82,11 +95,69 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 	public SessionFactory buildSessionFactory() throws Exception {
 		setBeanClassLoader(getConfigurationClassLoader());
 
-		return super.buildSessionFactory();
+		SessionFactoryImplementor sessionFactoryImplementor =
+			(SessionFactoryImplementor)super.buildSessionFactory();
+
+		if (!_mvccEnabled) {
+			return sessionFactoryImplementor;
+		}
+
+		boolean containCTModel = false;
+
+		Map<String, ClassMetadata> classMetadatas =
+			sessionFactoryImplementor.getAllClassMetadata();
+
+		for (ClassMetadata classMetadata : classMetadatas.values()) {
+			Class<?> mappedClass = classMetadata.getMappedClass(
+				EntityMode.POJO);
+
+			if (!CTModel.class.isAssignableFrom(mappedClass)) {
+				continue;
+			}
+
+			Class<?> modelClass = _findCTModelClass(
+				classMetadata, mappedClass.getSuperclass());
+
+			if (modelClass == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Unable to find CT model class for " + mappedClass);
+				}
+			}
+			else {
+				containCTModel = true;
+			}
+		}
+
+		CTSQLInterceptor ctSQLInterceptor =
+			(CTSQLInterceptor)sessionFactoryImplementor.getInterceptor();
+
+		ctSQLInterceptor.setEnabled(containCTModel);
+
+		return sessionFactoryImplementor;
 	}
 
 	@Override
 	public void destroy() throws HibernateException {
+		SessionFactory sessionFactory = getSessionFactory();
+
+		Map<String, ClassMetadata> classMetadatas =
+			sessionFactory.getAllClassMetadata();
+
+		for (ClassMetadata classMetadata : classMetadatas.values()) {
+			Class<?> mappedClass = classMetadata.getMappedClass(
+				EntityMode.POJO);
+
+			if (!CTModel.class.isAssignableFrom(mappedClass)) {
+				continue;
+			}
+
+			OuterJoinLoadable outerJoinLoadable =
+				(OuterJoinLoadable)classMetadata;
+
+			CTModelRegistry.unregisterCTModel(outerJoinLoadable.getTableName());
+		}
+
 		setBeanClassLoader(null);
 
 		super.destroy();
@@ -111,8 +182,8 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 			return classes;
 		}
-		catch (ClassNotFoundException cnfe) {
-			throw new RuntimeException(cnfe);
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new RuntimeException(classNotFoundException);
 		}
 	}
 
@@ -128,6 +199,18 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 	@Override
 	protected Configuration newConfiguration() {
+		Dialect dialect = DialectDetector.getDialect(getDataSource());
+
+		if (DBManagerUtil.getDBType(dialect) == DBType.ORACLE) {
+
+			// This must be done before the instantiating Configuration to
+			// ensure that org.hibernate.cfg.Environment's static init block can
+			// see it
+
+			System.setProperty(
+				PropsKeys.HIBERNATE_JDBC_USE_STREAMS_FOR_BINARY, "true");
+		}
+
 		Configuration configuration = new Configuration();
 
 		Properties properties = PropsUtil.getProperties();
@@ -141,15 +224,11 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 			properties.setProperty(key, value);
 		}
 
-		Dialect dialect = DialectDetector.getDialect(getDataSource());
-
 		if (DBManagerUtil.getDBType(dialect) == DBType.SYBASE) {
 			properties.setProperty(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 		}
 
 		if (Validator.isNull(PropsValues.HIBERNATE_DIALECT)) {
-			DBManagerUtil.setDB(dialect, getDataSource());
-
 			Class<?> clazz = dialect.getClass();
 
 			properties.setProperty("hibernate.dialect", clazz.getName());
@@ -170,17 +249,25 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 				try {
 					readResource(configuration, resource);
 				}
-				catch (Exception e2) {
+				catch (Exception exception) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(e2, e2);
+						_log.warn(exception, exception);
 					}
 				}
 			}
 
-			if (_mvccEnabled) {
-				EventListeners eventListeners =
-					configuration.getEventListeners();
+			EventListeners eventListeners = configuration.getEventListeners();
 
+			eventListeners.setLoadEventListeners(
+				new LoadEventListener[] {
+					ResetOriginalValuesLoadEventListener.INSTANCE
+				});
+			eventListeners.setPostLoadEventListeners(
+				new PostLoadEventListener[] {
+					ResetOriginalValuesPostLoadEventListener.INSTANCE
+				});
+
+			if (_mvccEnabled) {
 				eventListeners.setAutoFlushEventListeners(
 					new AutoFlushEventListener[] {
 						NestableAutoFlushEventListener.INSTANCE
@@ -193,10 +280,12 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 					new PostUpdateEventListener[] {
 						MVCCSynchronizerPostUpdateEventListener.INSTANCE
 					});
+
+				configuration.setInterceptor(new CTSQLInterceptor());
 			}
 		}
-		catch (Exception e1) {
-			_log.error(e1, e1);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return configuration;
@@ -234,9 +323,10 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 					(SessionFactoryImplementor)sessionFactory,
 					configuration.getImports()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to inject optimized query plan cache", e);
+				_log.warn(
+					"Unable to inject optimized query plan cache", exception);
 			}
 		}
 
@@ -281,14 +371,14 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 		if (resource.startsWith("classpath*:")) {
 			String name = resource.substring("classpath*:".length());
 
-			Enumeration<URL> enu = classLoader.getResources(name);
+			Enumeration<URL> enumeration = classLoader.getResources(name);
 
-			if (_log.isDebugEnabled() && !enu.hasMoreElements()) {
+			if (_log.isDebugEnabled() && !enumeration.hasMoreElements()) {
 				_log.debug("No resources found for " + name);
 			}
 
-			while (enu.hasMoreElements()) {
-				URL url = enu.nextElement();
+			while (enumeration.hasMoreElements()) {
+				URL url = enumeration.nextElement();
 
 				InputStream inputStream = url.openStream();
 
@@ -300,6 +390,34 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 			readResource(configuration, inputStream);
 		}
+	}
+
+	private Class<?> _findCTModelClass(
+		ClassMetadata classMetadata, Class<?> modelClass) {
+
+		while (BaseModelImpl.class != modelClass) {
+			for (Class<?> interfaceClazz : modelClass.getInterfaces()) {
+				if (BaseModel.class.isAssignableFrom(interfaceClazz)) {
+					OuterJoinLoadable outerJoinLoadable =
+						(OuterJoinLoadable)classMetadata;
+
+					String[] identifierColumnNames =
+						outerJoinLoadable.getPropertyColumnNames(
+							outerJoinLoadable.getIdentifierPropertyName());
+
+					CTModelRegistry.registerCTModel(
+						new CTModelRegistration(
+							interfaceClazz, outerJoinLoadable.getTableName(),
+							identifierColumnNames[0]));
+
+					return interfaceClazz;
+				}
+			}
+
+			modelClass = modelClass.getSuperclass();
+		}
+
+		return null;
 	}
 
 	private SessionFactoryImplementor _wrapSessionFactoryImplementor(

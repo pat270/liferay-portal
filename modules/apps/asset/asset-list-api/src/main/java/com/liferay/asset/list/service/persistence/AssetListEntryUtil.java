@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -41,7 +40,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see AssetListEntryPersistence
  * @generated
  */
-@ProviderType
 public class AssetListEntryUtil {
 
 	/*
@@ -139,7 +137,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -157,7 +155,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -177,23 +175,23 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where uuid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
 	 * @param start the lower bound of the range of asset list entries
 	 * @param end the upper bound of the range of asset list entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching asset list entries
 	 */
 	public static List<AssetListEntry> findByUuid(
 		String uuid, int start, int end,
 		OrderByComparator<AssetListEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByUuid(
-			uuid, start, end, orderByComparator, retrieveFromCache);
+			uuid, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -319,13 +317,13 @@ public class AssetListEntryUtil {
 	 *
 	 * @param uuid the uuid
 	 * @param groupId the group ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
 	 */
 	public static AssetListEntry fetchByUUID_G(
-		String uuid, long groupId, boolean retrieveFromCache) {
+		String uuid, long groupId, boolean useFinderCache) {
 
-		return getPersistence().fetchByUUID_G(uuid, groupId, retrieveFromCache);
+		return getPersistence().fetchByUUID_G(uuid, groupId, useFinderCache);
 	}
 
 	/**
@@ -369,7 +367,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -388,7 +386,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -410,7 +408,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where uuid = &#63; and companyId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param uuid the uuid
@@ -418,16 +416,16 @@ public class AssetListEntryUtil {
 	 * @param start the lower bound of the range of asset list entries
 	 * @param end the upper bound of the range of asset list entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching asset list entries
 	 */
 	public static List<AssetListEntry> findByUuid_C(
 		String uuid, long companyId, int start, int end,
 		OrderByComparator<AssetListEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByUuid_C(
-			uuid, companyId, start, end, orderByComparator, retrieveFromCache);
+			uuid, companyId, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -552,7 +550,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -570,7 +568,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -591,23 +589,23 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param start the lower bound of the range of asset list entries
 	 * @param end the upper bound of the range of asset list entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching asset list entries
 	 */
 	public static List<AssetListEntry> findByGroupId(
 		long groupId, int start, int end,
 		OrderByComparator<AssetListEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByGroupId(
-			groupId, start, end, orderByComparator, retrieveFromCache);
+			groupId, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -699,7 +697,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -717,7 +715,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -753,6 +751,131 @@ public class AssetListEntryUtil {
 	}
 
 	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByGroupId(long[] groupIds) {
+		return getPersistence().filterFindByGroupId(groupIds);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByGroupId(
+		long[] groupIds, int start, int end) {
+
+		return getPersistence().filterFindByGroupId(groupIds, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permission to view where groupId = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByGroupId(
+		long[] groupIds, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByGroupId(
+			groupIds, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByGroupId(long[] groupIds) {
+		return getPersistence().findByGroupId(groupIds);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByGroupId(
+		long[] groupIds, int start, int end) {
+
+		return getPersistence().findByGroupId(groupIds, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByGroupId(
+		long[] groupIds, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByGroupId(
+			groupIds, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63;, optionally using the finder cache.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByGroupId(
+		long[] groupIds, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByGroupId(
+			groupIds, start, end, orderByComparator, useFinderCache);
+	}
+
+	/**
 	 * Removes all the asset list entries where groupId = &#63; from the database.
 	 *
 	 * @param groupId the group ID
@@ -772,6 +895,16 @@ public class AssetListEntryUtil {
 	}
 
 	/**
+	 * Returns the number of asset list entries where groupId = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByGroupId(long[] groupIds) {
+		return getPersistence().countByGroupId(groupIds);
+	}
+
+	/**
 	 * Returns the number of asset list entries that the user has permission to view where groupId = &#63;.
 	 *
 	 * @param groupId the group ID
@@ -779,6 +912,16 @@ public class AssetListEntryUtil {
 	 */
 	public static int filterCountByGroupId(long groupId) {
 		return getPersistence().filterCountByGroupId(groupId);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByGroupId(long[] groupIds) {
+		return getPersistence().filterCountByGroupId(groupIds);
 	}
 
 	/**
@@ -814,14 +957,14 @@ public class AssetListEntryUtil {
 	 *
 	 * @param groupId the group ID
 	 * @param assetListEntryKey the asset list entry key
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
 	 */
 	public static AssetListEntry fetchByG_ALEK(
-		long groupId, String assetListEntryKey, boolean retrieveFromCache) {
+		long groupId, String assetListEntryKey, boolean useFinderCache) {
 
 		return getPersistence().fetchByG_ALEK(
-			groupId, assetListEntryKey, retrieveFromCache);
+			groupId, assetListEntryKey, useFinderCache);
 	}
 
 	/**
@@ -879,13 +1022,13 @@ public class AssetListEntryUtil {
 	 *
 	 * @param groupId the group ID
 	 * @param title the title
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
 	 */
 	public static AssetListEntry fetchByG_T(
-		long groupId, String title, boolean retrieveFromCache) {
+		long groupId, String title, boolean useFinderCache) {
 
-		return getPersistence().fetchByG_T(groupId, title, retrieveFromCache);
+		return getPersistence().fetchByG_T(groupId, title, useFinderCache);
 	}
 
 	/**
@@ -929,7 +1072,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries where groupId = &#63; and title LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -948,7 +1091,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -970,7 +1113,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -978,16 +1121,16 @@ public class AssetListEntryUtil {
 	 * @param start the lower bound of the range of asset list entries
 	 * @param end the upper bound of the range of asset list entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching asset list entries
 	 */
 	public static List<AssetListEntry> findByG_LikeT(
 		long groupId, String title, int start, int end,
 		OrderByComparator<AssetListEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByG_LikeT(
-			groupId, title, start, end, orderByComparator, retrieveFromCache);
+			groupId, title, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1094,7 +1237,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1113,7 +1256,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63; and title LIKE &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1151,6 +1294,143 @@ public class AssetListEntryUtil {
 	}
 
 	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT(
+		long[] groupIds, String title) {
+
+		return getPersistence().filterFindByG_LikeT(groupIds, title);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT(
+		long[] groupIds, String title, int start, int end) {
+
+		return getPersistence().filterFindByG_LikeT(
+			groupIds, title, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT(
+		long[] groupIds, String title, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_LikeT(
+			groupIds, title, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT(
+		long[] groupIds, String title) {
+
+		return getPersistence().findByG_LikeT(groupIds, title);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT(
+		long[] groupIds, String title, int start, int end) {
+
+		return getPersistence().findByG_LikeT(groupIds, title, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT(
+		long[] groupIds, String title, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_LikeT(
+			groupIds, title, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63;, optionally using the finder cache.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT(
+		long[] groupIds, String title, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_LikeT(
+			groupIds, title, start, end, orderByComparator, useFinderCache);
+	}
+
+	/**
 	 * Removes all the asset list entries where groupId = &#63; and title LIKE &#63; from the database.
 	 *
 	 * @param groupId the group ID
@@ -1172,6 +1452,17 @@ public class AssetListEntryUtil {
 	}
 
 	/**
+	 * Returns the number of asset list entries where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_LikeT(long[] groupIds, String title) {
+		return getPersistence().countByG_LikeT(groupIds, title);
+	}
+
+	/**
 	 * Returns the number of asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63;.
 	 *
 	 * @param groupId the group ID
@@ -1180,6 +1471,17 @@ public class AssetListEntryUtil {
 	 */
 	public static int filterCountByG_LikeT(long groupId, String title) {
 		return getPersistence().filterCountByG_LikeT(groupId, title);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_LikeT(long[] groupIds, String title) {
+		return getPersistence().filterCountByG_LikeT(groupIds, title);
 	}
 
 	/**
@@ -1197,7 +1499,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries where groupId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1216,7 +1518,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where groupId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1238,7 +1540,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries where groupId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1246,16 +1548,16 @@ public class AssetListEntryUtil {
 	 * @param start the lower bound of the range of asset list entries
 	 * @param end the upper bound of the range of asset list entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching asset list entries
 	 */
 	public static List<AssetListEntry> findByG_TY(
 		long groupId, int type, int start, int end,
 		OrderByComparator<AssetListEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findByG_TY(
-			groupId, type, start, end, orderByComparator, retrieveFromCache);
+			groupId, type, start, end, orderByComparator, useFinderCache);
 	}
 
 	/**
@@ -1362,7 +1664,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1381,7 +1683,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -1448,6 +1750,1957 @@ public class AssetListEntryUtil {
 	 */
 	public static int filterCountByG_TY(long groupId, int type) {
 		return getPersistence().filterCountByG_TY(groupId, type);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long groupId, String assetEntryType) {
+
+		return getPersistence().findByG_AET(groupId, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long groupId, String assetEntryType, int start, int end) {
+
+		return getPersistence().findByG_AET(
+			groupId, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long groupId, String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_AET(
+			groupId, assetEntryType, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long groupId, String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_AET(
+			groupId, assetEntryType, start, end, orderByComparator,
+			useFinderCache);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_AET_First(
+			long groupId, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_AET_First(
+			groupId, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_AET_First(
+		long groupId, String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_AET_First(
+			groupId, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_AET_Last(
+			long groupId, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_AET_Last(
+			groupId, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_AET_Last(
+		long groupId, String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_AET_Last(
+			groupId, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] findByG_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_AET_PrevAndNext(
+			assetListEntryId, groupId, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AET(
+		long groupId, String assetEntryType) {
+
+		return getPersistence().filterFindByG_AET(groupId, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AET(
+		long groupId, String assetEntryType, int start, int end) {
+
+		return getPersistence().filterFindByG_AET(
+			groupId, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AET(
+		long groupId, String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_AET(
+			groupId, assetEntryType, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set of asset list entries that the user has permission to view where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] filterFindByG_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().filterFindByG_AET_PrevAndNext(
+			assetListEntryId, groupId, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AET(
+		long[] groupIds, String[] assetEntryTypes) {
+
+		return getPersistence().filterFindByG_AET(groupIds, assetEntryTypes);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AET(
+		long[] groupIds, String[] assetEntryTypes, int start, int end) {
+
+		return getPersistence().filterFindByG_AET(
+			groupIds, assetEntryTypes, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permission to view where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AET(
+		long[] groupIds, String[] assetEntryTypes, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_AET(
+			groupIds, assetEntryTypes, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long[] groupIds, String[] assetEntryTypes) {
+
+		return getPersistence().findByG_AET(groupIds, assetEntryTypes);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long[] groupIds, String[] assetEntryTypes, int start, int end) {
+
+		return getPersistence().findByG_AET(
+			groupIds, assetEntryTypes, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long[] groupIds, String[] assetEntryTypes, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_AET(
+			groupIds, assetEntryTypes, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and assetEntryType = &#63;, optionally using the finder cache.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AET(
+		long[] groupIds, String[] assetEntryTypes, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_AET(
+			groupIds, assetEntryTypes, start, end, orderByComparator,
+			useFinderCache);
+	}
+
+	/**
+	 * Removes all the asset list entries where groupId = &#63; and assetEntryType = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 */
+	public static void removeByG_AET(long groupId, String assetEntryType) {
+		getPersistence().removeByG_AET(groupId, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_AET(long groupId, String assetEntryType) {
+		return getPersistence().countByG_AET(groupId, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_AET(long[] groupIds, String[] assetEntryTypes) {
+		return getPersistence().countByG_AET(groupIds, assetEntryTypes);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_AET(long groupId, String assetEntryType) {
+		return getPersistence().filterCountByG_AET(groupId, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = any &#63; and assetEntryType = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntryTypes the asset entry types
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_AET(
+		long[] groupIds, String[] assetEntryTypes) {
+
+		return getPersistence().filterCountByG_AET(groupIds, assetEntryTypes);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long groupId, String title, String assetEntryType) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupId, title, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long groupId, String title, String assetEntryType, int start, int end) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupId, title, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long groupId, String title, String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupId, title, assetEntryType, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long groupId, String title, String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupId, title, assetEntryType, start, end, orderByComparator,
+			useFinderCache);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_LikeT_AET_First(
+			long groupId, String title, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_LikeT_AET_First(
+			groupId, title, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_LikeT_AET_First(
+		long groupId, String title, String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_LikeT_AET_First(
+			groupId, title, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_LikeT_AET_Last(
+			long groupId, String title, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_LikeT_AET_Last(
+			groupId, title, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_LikeT_AET_Last(
+		long groupId, String title, String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_LikeT_AET_Last(
+			groupId, title, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] findByG_LikeT_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String title,
+			String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_LikeT_AET_PrevAndNext(
+			assetListEntryId, groupId, title, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AET(
+		long groupId, String title, String assetEntryType) {
+
+		return getPersistence().filterFindByG_LikeT_AET(
+			groupId, title, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AET(
+		long groupId, String title, String assetEntryType, int start, int end) {
+
+		return getPersistence().filterFindByG_LikeT_AET(
+			groupId, title, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AET(
+		long groupId, String title, String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_LikeT_AET(
+			groupId, title, assetEntryType, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set of asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] filterFindByG_LikeT_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String title,
+			String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().filterFindByG_LikeT_AET_PrevAndNext(
+			assetListEntryId, groupId, title, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes) {
+
+		return getPersistence().filterFindByG_LikeT_AET(
+			groupIds, title, assetEntryTypes);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes, int start,
+		int end) {
+
+		return getPersistence().filterFindByG_LikeT_AET(
+			groupIds, title, assetEntryTypes, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes, int start,
+		int end, OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_LikeT_AET(
+			groupIds, title, assetEntryTypes, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupIds, title, assetEntryTypes);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes, int start,
+		int end) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupIds, title, assetEntryTypes, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes, int start,
+		int end, OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupIds, title, assetEntryTypes, start, end, orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;, optionally using the finder cache.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes, int start,
+		int end, OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_LikeT_AET(
+			groupIds, title, assetEntryTypes, start, end, orderByComparator,
+			useFinderCache);
+	}
+
+	/**
+	 * Removes all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 */
+	public static void removeByG_LikeT_AET(
+		long groupId, String title, String assetEntryType) {
+
+		getPersistence().removeByG_LikeT_AET(groupId, title, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_LikeT_AET(
+		long groupId, String title, String assetEntryType) {
+
+		return getPersistence().countByG_LikeT_AET(
+			groupId, title, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes) {
+
+		return getPersistence().countByG_LikeT_AET(
+			groupIds, title, assetEntryTypes);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_LikeT_AET(
+		long groupId, String title, String assetEntryType) {
+
+		return getPersistence().filterCountByG_LikeT_AET(
+			groupId, title, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntryType = any &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntryTypes the asset entry types
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_LikeT_AET(
+		long[] groupIds, String title, String[] assetEntryTypes) {
+
+		return getPersistence().filterCountByG_LikeT_AET(
+			groupIds, title, assetEntryTypes);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().findByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		int start, int end) {
+
+		return getPersistence().findByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		int start, int end, OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator, useFinderCache);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_AES_AET_First(
+			long groupId, String assetEntrySubtype, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_AES_AET_First(
+			groupId, assetEntrySubtype, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_AES_AET_First(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_AES_AET_First(
+			groupId, assetEntrySubtype, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_AES_AET_Last(
+			long groupId, String assetEntrySubtype, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_AES_AET_Last(
+			groupId, assetEntrySubtype, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_AES_AET_Last(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_AES_AET_Last(
+			groupId, assetEntrySubtype, assetEntryType, orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] findByG_AES_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String assetEntrySubtype,
+			String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_AES_AET_PrevAndNext(
+			assetListEntryId, groupId, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().filterFindByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		int start, int end) {
+
+		return getPersistence().filterFindByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType,
+		int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set of asset list entries that the user has permission to view where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] filterFindByG_AES_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String assetEntrySubtype,
+			String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().filterFindByG_AES_AET_PrevAndNext(
+			assetListEntryId, groupId, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().filterFindByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType,
+		int start, int end) {
+
+		return getPersistence().filterFindByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permission to view where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType,
+		int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().findByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType,
+		int start, int end) {
+
+		return getPersistence().findByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType,
+		int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;, optionally using the finder cache.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType,
+		int start, int end, OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator, useFinderCache);
+	}
+
+	/**
+	 * Removes all the asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 */
+	public static void removeByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType) {
+
+		getPersistence().removeByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().countByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().countByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_AES_AET(
+		long groupId, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().filterCountByG_AES_AET(
+			groupId, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = any &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_AES_AET(
+		long[] groupIds, String assetEntrySubtype, String assetEntryType) {
+
+		return getPersistence().filterCountByG_AES_AET(
+			groupIds, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator, useFinderCache);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_LikeT_AES_AET_First(
+			long groupId, String title, String assetEntrySubtype,
+			String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_LikeT_AES_AET_First(
+			groupId, title, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the first asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_LikeT_AES_AET_First(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_LikeT_AES_AET_First(
+			groupId, title, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry
+	 * @throws NoSuchEntryException if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry findByG_LikeT_AES_AET_Last(
+			long groupId, String title, String assetEntrySubtype,
+			String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_LikeT_AES_AET_Last(
+			groupId, title, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the last asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
+	 */
+	public static AssetListEntry fetchByG_LikeT_AES_AET_Last(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().fetchByG_LikeT_AES_AET_Last(
+			groupId, title, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] findByG_LikeT_AES_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String title,
+			String assetEntrySubtype, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().findByG_LikeT_AES_AET_PrevAndNext(
+			assetListEntryId, groupId, title, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end) {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permissions to view where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns the asset list entries before and after the current asset list entry in the ordered set of asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param assetListEntryId the primary key of the current asset list entry
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset list entry
+	 * @throws NoSuchEntryException if a asset list entry with the primary key could not be found
+	 */
+	public static AssetListEntry[] filterFindByG_LikeT_AES_AET_PrevAndNext(
+			long assetListEntryId, long groupId, String title,
+			String assetEntrySubtype, String assetEntryType,
+			OrderByComparator<AssetListEntry> orderByComparator)
+		throws com.liferay.asset.list.exception.NoSuchEntryException {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET_PrevAndNext(
+			assetListEntryId, groupId, title, assetEntrySubtype, assetEntryType,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end) {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries that the user has permission to view
+	 */
+	public static List<AssetListEntry> filterFindByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().filterFindByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns all the asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns a range of all the asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @return the range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType, start, end);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;, optionally using the finder cache.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @param start the lower bound of the range of asset list entries
+	 * @param end the upper bound of the range of asset list entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param useFinderCache whether to use the finder cache
+	 * @return the ordered range of matching asset list entries
+	 */
+	public static List<AssetListEntry> findByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType, int start, int end,
+		OrderByComparator<AssetListEntry> orderByComparator,
+		boolean useFinderCache) {
+
+		return getPersistence().findByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType, start, end,
+			orderByComparator, useFinderCache);
+	}
+
+	/**
+	 * Removes all the asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 */
+	public static void removeByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		getPersistence().removeByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().countByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries
+	 */
+	public static int countByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().countByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_LikeT_AES_AET(
+		long groupId, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().filterCountByG_LikeT_AES_AET(
+			groupId, title, assetEntrySubtype, assetEntryType);
+	}
+
+	/**
+	 * Returns the number of asset list entries that the user has permission to view where groupId = any &#63; and title LIKE &#63; and assetEntrySubtype = &#63; and assetEntryType = &#63;.
+	 *
+	 * @param groupIds the group IDs
+	 * @param title the title
+	 * @param assetEntrySubtype the asset entry subtype
+	 * @param assetEntryType the asset entry type
+	 * @return the number of matching asset list entries that the user has permission to view
+	 */
+	public static int filterCountByG_LikeT_AES_AET(
+		long[] groupIds, String title, String assetEntrySubtype,
+		String assetEntryType) {
+
+		return getPersistence().filterCountByG_LikeT_AES_AET(
+			groupIds, title, assetEntrySubtype, assetEntryType);
 	}
 
 	/**
@@ -1531,7 +3784,7 @@ public class AssetListEntryUtil {
 	 * Returns a range of all the asset list entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset list entries
@@ -1546,7 +3799,7 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset list entries
@@ -1565,21 +3818,21 @@ public class AssetListEntryUtil {
 	 * Returns an ordered range of all the asset list entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset list entries
 	 * @param end the upper bound of the range of asset list entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of asset list entries
 	 */
 	public static List<AssetListEntry> findAll(
 		int start, int end, OrderByComparator<AssetListEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		return getPersistence().findAll(
-			start, end, orderByComparator, retrieveFromCache);
+			start, end, orderByComparator, useFinderCache);
 	}
 
 	/**

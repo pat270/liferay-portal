@@ -29,6 +29,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CHOOSE_CONTENT_ALL_CHANGE</td>
+	<td>//input[contains(@id,'rangeAll')]//following-sibling::span</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CHOOSE_CONTENT_DATE_RANGE_CHANGE</td>
 	<td>//input[contains(@id,'rangeDateRange')]//following-sibling::span</td>
 	<td></td>
@@ -36,6 +41,11 @@
 <tr>
 	<td>CUSTOM_ABSTRACT</td>
 	<td>//label[contains(.,'Custom Abstract')]/input[contains(@id,'customAbstract')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_LANGUAGES_OPTION</td>
+	<td>//div[contains(@class,'custom-radio') and contains(.,'${key_languagesOption}')]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -50,17 +60,17 @@
 </tr>
 <tr>
 	<td>CURRENT_VERSION</td>
-	<td>//label[contains(.,'Current Version')]/input</td>
+	<td>//label[contains(.,'Current Version')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MAJOR_VERSION</td>
-	<td>//label[contains(.,'Major Version')]/input</td>
+	<td>//label[contains(.,'Major Version')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MINOR_VERSION</td>
-	<td>//label[contains(.,'Minor Version')]/input</td>
+	<td>//label[contains(.,'Minor Version')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.model.MembershipRequest;
 import com.liferay.portal.kernel.model.MembershipRequestConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroupRole;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.membershippolicy.MembershipPolicyException;
@@ -45,7 +44,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.liveusers.LiveUsers;
-import com.liferay.site.memberships.web.internal.constants.SiteMembershipsPortletKeys;
+import com.liferay.site.memberships.constants.SiteMembershipsPortletKeys;
 import com.liferay.site.memberships.web.internal.display.context.SiteMembershipsDisplayContext;
 import com.liferay.users.admin.kernel.util.UsersAdmin;
 
@@ -64,8 +63,6 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -91,8 +88,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SiteMembershipsPortletKeys.SITE_MEMBERSHIPS_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -276,7 +272,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 			ArrayUtil.toLongArray(removeRoleIds));
 	}
 
-	public void editUserGroupsSiteRoles(
+	public void editUserGroupsRoles(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -292,7 +288,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 		}
 	}
 
-	public void editUsersSiteRoles(
+	public void editUsersRoles(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -308,7 +304,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 		}
 	}
 
-	public void removeUserGroupSiteRole(
+	public void removeUserGroupRole(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -320,7 +316,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 			userIds, group.getGroupId(), roleId);
 	}
 
-	public void removeUserSiteRole(
+	public void removeUserRole(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
@@ -399,14 +395,14 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof MembershipPolicyException ||
-			cause instanceof MembershipRequestCommentsException ||
-			cause instanceof NoSuchGroupException ||
-			cause instanceof NoSuchRoleException ||
-			cause instanceof PrincipalException ||
-			cause instanceof RequiredUserException ||
-			super.isSessionErrorException(cause)) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof MembershipPolicyException ||
+			throwable instanceof MembershipRequestCommentsException ||
+			throwable instanceof NoSuchGroupException ||
+			throwable instanceof NoSuchRoleException ||
+			throwable instanceof PrincipalException ||
+			throwable instanceof RequiredUserException ||
+			super.isSessionErrorException(throwable)) {
 
 			return true;
 		}
@@ -415,7 +411,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 	}
 
 	private long[] _filterAddUserIds(long groupId, long[] userIds) {
-		Set<Long> filteredUserIds = new HashSet<>(userIds.length);
+		Set<Long> filteredUserIds = new HashSet<>();
 
 		for (long userId : userIds) {
 			if (!_userLocalService.hasGroupUser(groupId, userId)) {
@@ -427,7 +423,7 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 	}
 
 	private long[] _filterRemoveUserIds(long groupId, long[] userIds) {
-		Set<Long> filteredUserIds = new HashSet<>(userIds.length);
+		Set<Long> filteredUserIds = new HashSet<>();
 
 		for (long userId : userIds) {
 			if (_userLocalService.hasGroupUser(groupId, userId)) {
@@ -441,15 +437,10 @@ public class SiteMembershipsPortlet extends MVCPortlet {
 	private Group _getGroup(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			portletRequest);
-
-		LiferayPortletResponse liferayPortletResponse =
-			_portal.getLiferayPortletResponse(portletResponse);
-
 		SiteMembershipsDisplayContext siteMembershipsDisplayContext =
 			new SiteMembershipsDisplayContext(
-				httpServletRequest, liferayPortletResponse);
+				_portal.getHttpServletRequest(portletRequest),
+				_portal.getLiferayPortletResponse(portletResponse));
 
 		return siteMembershipsDisplayContext.getGroup();
 	}

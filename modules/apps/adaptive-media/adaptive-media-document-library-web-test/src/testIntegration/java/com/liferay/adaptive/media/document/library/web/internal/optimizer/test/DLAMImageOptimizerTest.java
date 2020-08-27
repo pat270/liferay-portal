@@ -30,22 +30,21 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -363,16 +362,14 @@ public class DLAMImageOptimizerTest {
 
 		String amImageConfigurationEntry1Name = RandomTestUtil.randomString();
 
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put(
-			"max-height", String.valueOf(RandomTestUtil.randomLong()));
-		properties.put(
-			"max-width", String.valueOf(RandomTestUtil.randomLong()));
-
 		return _amImageConfigurationHelper.addAMImageConfigurationEntry(
 			companyId, amImageConfigurationEntry1Name, StringPool.BLANK,
-			amImageConfigurationEntry1Name, properties);
+			amImageConfigurationEntry1Name,
+			HashMapBuilder.put(
+				"max-height", String.valueOf(RandomTestUtil.randomLong())
+			).put(
+				"max-width", String.valueOf(RandomTestUtil.randomLong())
+			).build());
 	}
 
 	private void _deleteAllAMImageConfigurationEntries(long companyId)

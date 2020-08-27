@@ -18,6 +18,7 @@ import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,33 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing FragmentCollection in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class FragmentCollectionCacheModel
-	implements CacheModel<FragmentCollection>, Externalizable {
+	implements CacheModel<FragmentCollection>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof FragmentCollectionCacheModel)) {
+		if (!(object instanceof FragmentCollectionCacheModel)) {
 			return false;
 		}
 
 		FragmentCollectionCacheModel fragmentCollectionCacheModel =
-			(FragmentCollectionCacheModel)obj;
+			(FragmentCollectionCacheModel)object;
 
-		if (fragmentCollectionId ==
-				fragmentCollectionCacheModel.fragmentCollectionId) {
+		if ((fragmentCollectionId ==
+				fragmentCollectionCacheModel.fragmentCollectionId) &&
+			(mvccVersion == fragmentCollectionCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,30 @@ public class FragmentCollectionCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, fragmentCollectionId);
+		int hashCode = HashUtil.hash(0, fragmentCollectionId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(29);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", fragmentCollectionId=");
 		sb.append(fragmentCollectionId);
@@ -102,6 +117,9 @@ public class FragmentCollectionCacheModel
 	public FragmentCollection toEntityModel() {
 		FragmentCollectionImpl fragmentCollectionImpl =
 			new FragmentCollectionImpl();
+
+		fragmentCollectionImpl.setMvccVersion(mvccVersion);
+		fragmentCollectionImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			fragmentCollectionImpl.setUuid("");
@@ -173,6 +191,9 @@ public class FragmentCollectionCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		fragmentCollectionId = objectInput.readLong();
@@ -193,6 +214,10 @@ public class FragmentCollectionCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -242,6 +267,8 @@ public class FragmentCollectionCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long fragmentCollectionId;
 	public long groupId;

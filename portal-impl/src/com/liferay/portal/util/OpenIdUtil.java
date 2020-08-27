@@ -19,12 +19,9 @@ import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Jorge Ferrer
  */
-@ProviderType
 public class OpenIdUtil {
 
 	public static boolean isEnabled(long companyId) {
@@ -32,7 +29,7 @@ public class OpenIdUtil {
 	}
 
 	protected static OpenId getOpenId() {
-		return _instance._serviceTracker.getService();
+		return _openIdUtil._serviceTracker.getService();
 	}
 
 	private OpenIdUtil() {
@@ -43,7 +40,7 @@ public class OpenIdUtil {
 		_serviceTracker.open();
 	}
 
-	private static final OpenIdUtil _instance = new OpenIdUtil();
+	private static final OpenIdUtil _openIdUtil = new OpenIdUtil();
 
 	private final ServiceTracker<OpenId, OpenId> _serviceTracker;
 

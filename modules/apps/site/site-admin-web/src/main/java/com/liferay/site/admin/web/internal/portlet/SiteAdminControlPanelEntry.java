@@ -20,10 +20,9 @@ import com.liferay.portal.kernel.portlet.BaseControlPanelEntry;
 import com.liferay.portal.kernel.portlet.ControlPanelEntry;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.site.admin.web.internal.constants.SiteAdminPortletKeys;
-
-import java.util.LinkedHashMap;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -46,13 +45,13 @@ public class SiteAdminControlPanelEntry extends BaseControlPanelEntry {
 		throws Exception {
 
 		if (PropsValues.SITES_CONTROL_PANEL_MEMBERS_VISIBLE) {
-			LinkedHashMap<String, Object> groupParams = new LinkedHashMap<>();
-
-			groupParams.put("site", Boolean.TRUE);
-			groupParams.put("usersGroups", permissionChecker.getUserId());
-
 			int count = _groupLocalService.searchCount(
-				permissionChecker.getCompanyId(), null, null, groupParams);
+				permissionChecker.getCompanyId(), null, null,
+				LinkedHashMapBuilder.<String, Object>put(
+					"site", Boolean.TRUE
+				).put(
+					"usersGroups", permissionChecker.getUserId()
+				).build());
 
 			if (count > 0) {
 				return true;

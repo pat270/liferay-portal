@@ -14,6 +14,8 @@
 
 package com.liferay.portal.security.ldap.internal.validator;
 
+import com.liferay.portal.security.ldap.SafeLdapFilterTemplate;
+import com.liferay.portal.security.ldap.validator.LDAPFilterException;
 import com.liferay.portal.security.ldap.validator.LDAPFilterValidator;
 
 import org.junit.Assert;
@@ -407,6 +409,27 @@ public class LDAPFilterValidatorImplTest {
 		Assert.assertFalse(isValidFilter("(:DN:2.4.6.8.10:=Dino)"));
 		Assert.assertFalse(
 			isValidFilter("(1.3.6.1.4.1.1466.0=\\04\\02\\48\\69)"));
+	}
+
+	@Test
+	public void testSafeLdapFilterTemplateValidations()
+		throws LDAPFilterException {
+
+		SafeLdapFilterTemplate safeLdapFilterTemplate =
+			new SafeLdapFilterTemplate(
+				"(mail=@email_address@)",
+				new String[] {
+					"@company_id@", "@email_address@", "@screen_name@",
+					"@user_id@"
+				},
+				_ldapFilterValidator);
+
+		safeLdapFilterTemplate = safeLdapFilterTemplate.replace(
+			new String[] {"@email_address@"},
+			new String[] {"test@liferay.com"});
+
+		Assert.assertTrue(
+			isValidFilter(safeLdapFilterTemplate.getFilterString()));
 	}
 
 	protected boolean isValidFilter(String filter) {

@@ -49,7 +49,7 @@ public class JavaSignature {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(_parameters.size() * 2 + 1);
+		StringBundler sb = new StringBundler((_parameters.size() * 2) + 1);
 
 		sb.append(CharPool.OPEN_PARENTHESIS);
 

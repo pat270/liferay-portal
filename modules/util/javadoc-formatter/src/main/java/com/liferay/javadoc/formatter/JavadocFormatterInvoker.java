@@ -15,13 +15,10 @@
 package com.liferay.javadoc.formatter;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.File;
-import java.io.IOException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Andrea Di Giorgi
@@ -32,33 +29,34 @@ public class JavadocFormatterInvoker {
 			File baseDir, JavadocFormatterArgs javadocFormatterArgs)
 		throws Exception {
 
-		Map<String, String> arguments = new HashMap<>();
-
-		arguments.put("javadoc.author", javadocFormatterArgs.getAuthor());
-		arguments.put(
-			"javadoc.generate.xml",
-			String.valueOf(javadocFormatterArgs.isGenerateXml()));
-		arguments.put(
-			"javadoc.init",
-			String.valueOf(javadocFormatterArgs.isInitializeMissingJavadocs()));
-		arguments.put(
-			"javadoc.input.dir",
-			_getCanonicalPath(baseDir, javadocFormatterArgs.getInputDirName()));
-		arguments.put(
-			"javadoc.limit",
-			StringUtil.merge(javadocFormatterArgs.getLimits()));
-		arguments.put(
-			"javadoc.output.file.prefix",
-			javadocFormatterArgs.getOutputFilePrefix());
-		arguments.put(
-			"javadoc.update",
-			String.valueOf(javadocFormatterArgs.isUpdateJavadocs()));
-
-		return new JavadocFormatter(arguments);
+		return new JavadocFormatter(
+			HashMapBuilder.put(
+				"javadoc.author", javadocFormatterArgs.getAuthor()
+			).put(
+				"javadoc.generate.xml",
+				String.valueOf(javadocFormatterArgs.isGenerateXml())
+			).put(
+				"javadoc.init",
+				String.valueOf(
+					javadocFormatterArgs.isInitializeMissingJavadocs())
+			).put(
+				"javadoc.input.dir",
+				_getCanonicalPath(
+					baseDir, javadocFormatterArgs.getInputDirName())
+			).put(
+				"javadoc.limit",
+				StringUtil.merge(javadocFormatterArgs.getLimits())
+			).put(
+				"javadoc.output.file.prefix",
+				javadocFormatterArgs.getOutputFilePrefix()
+			).put(
+				"javadoc.update",
+				String.valueOf(javadocFormatterArgs.isUpdateJavadocs())
+			).build());
 	}
 
 	private static String _getCanonicalPath(File baseDir, String fileName)
-		throws IOException {
+		throws Exception {
 
 		File file = new File(baseDir, fileName);
 

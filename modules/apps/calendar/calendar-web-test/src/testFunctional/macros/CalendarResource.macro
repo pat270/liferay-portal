@@ -1,0 +1,163 @@
+definition {
+
+	macro _expandDetailsPanel {
+		if (IsElementPresent(locator1 = "CalendarEditResource#DETAILS_PANEL_COLLAPSED")) {
+			Click(locator1 = "CalendarEditResource#DETAILS_PANEL_COLLAPSED");
+
+			AssertElementPresent(locator1 = "CalendarEditResource#DETAILS_PANEL_EXPANDED");
+		}
+	}
+
+	macro add {
+		CalendarNavigator.gotoAddResource();
+
+		CalendarResource.editResourceName(calendarResourceName = "${calendarResourceName}");
+
+		CalendarResource.save();
+
+		CalendarResource.view(calendarResourceName = "${calendarResourceName}");
+	}
+
+	macro deactivate {
+		CalendarResource._expandDetailsPanel();
+
+		Uncheck(locator1 = "CalendarEditResource#DETAILS_PANEL_ACTIVE_CHECKBOX");
+	}
+
+	macro delete {
+		CalendarNavigator.gotoResources();
+
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_NAME",
+			value1 = "${calendarResourceName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${calendarResourceName}");
+
+		MenuItem.clickNoError(menuItem = "Delete");
+
+		AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+
+		AssertElementNotPresent(locator1 = "CalendarResources#RESOURCE_TABLE_NAME");
+
+		AssertTextNotPresent(value1 = "${calendarResourceName}");
+	}
+
+	macro edit {
+		CalendarNavigator.gotoResources();
+
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_NAME",
+			value1 = "${calendarResourceName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${calendarResourceName}");
+
+		MenuItem.click(menuItem = "Edit");
+
+		AssertTextEquals(
+			locator1 = "Portlet#H3_HEADER",
+			value1 = "${calendarResourceName}");
+
+		PortletEntry.inputName(name = "${calendarResourceNameEdit}");
+
+		CalendarResource.save();
+
+		CalendarResource.view(calendarResourceName = "${calendarResourceNameEdit}");
+	}
+
+	macro editResourceName {
+		PortletEntry.inputName(name = "${calendarResourceName}");
+	}
+
+	macro save {
+		Click(locator1 = "Button#SAVE");
+
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro tearDown {
+		CalendarNavigator.gotoResources();
+
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No resources were found.");
+
+		AssertElementNotPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+	}
+
+	macro view {
+		CalendarNavigator.gotoResources();
+
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_NAME",
+			value1 = "${calendarResourceName}");
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_DESCRIPTION",
+			value1 = "");
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_ACTIVE",
+			value1 = "Yes");
+
+		AssertElementPresent(locator1 = "CalendarResources#RESOURCE_TABLE_ACTIONS");
+	}
+
+	macro viewDefault {
+		CalendarNavigator.gotoResources();
+
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No resources were found.");
+
+		AssertElementNotPresent(locator1 = "CalendarResources#RESOURCE_TABLE_NAME");
+	}
+
+	macro viewResourceCalendars {
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_NAME",
+			value1 = "${calendarResourceName}");
+
+		AssertTextEquals(
+			locator1 = "Portlet#H3_HEADER",
+			value1 = "${calendarResourceName}'s Calendars");
+	}
+
+	macro viewResourceName {
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertTextEquals(
+			locator1 = "CalendarResources#RESOURCE_TABLE_NAME",
+			value1 = "${calendarResourceName}");
+	}
+
+	macro viewResourceNameNotPresent {
+		var key_calendarResourceName = "${calendarResourceName}";
+
+		AssertElementNotPresent(locator1 = "CalendarResources#RESOURCE_TABLE_NAME");
+
+		AssertTextNotPresent(value1 = "${calendarResourceName}");
+	}
+
+}

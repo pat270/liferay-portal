@@ -14,8 +14,8 @@
 
 package com.liferay.dynamic.data.lists.internal.search.spi.model.index.contributor;
 
+import com.liferay.dynamic.data.lists.constants.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
-import com.liferay.dynamic.data.lists.model.DDLRecordSetConstants;
 import com.liferay.dynamic.data.lists.service.DDLRecordLocalService;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
 import com.liferay.dynamic.data.lists.service.DDLRecordVersionLocalService;
@@ -77,10 +77,8 @@ public class DDLRecordModelIndexerWriterContributor
 				dynamicQuery.add(recordSetProperty.in(recordSetDynamicQuery));
 			});
 		batchIndexingActionable.setPerformActionMethod(
-			(DDLRecord record) -> {
-				batchIndexingActionable.addDocuments(
-					modelIndexerWriterDocumentHelper.getDocument(record));
-			});
+			(DDLRecord record) -> batchIndexingActionable.addDocuments(
+				modelIndexerWriterDocumentHelper.getDocument(record)));
 	}
 
 	@Override

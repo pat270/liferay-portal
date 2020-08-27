@@ -112,8 +112,8 @@ public class SelectorIntraband extends BaseIntraband {
 		try {
 			return registerFutureTask.get();
 		}
-		catch (Exception e) {
-			throw new IOException(e);
+		catch (Exception exception) {
+			throw new IOException(exception);
 		}
 	}
 
@@ -173,8 +173,8 @@ public class SelectorIntraband extends BaseIntraband {
 		try {
 			return registerFutureTask.get();
 		}
-		catch (Exception e) {
-			throw new IOException(e);
+		catch (Exception exception) {
+			throw new IOException(exception);
 		}
 	}
 
@@ -333,10 +333,10 @@ public class SelectorIntraband extends BaseIntraband {
 		boolean backOff = false;
 
 		if (channelContext.getWritingDatagram() != null) {
-			if (handleWriting(gatheringByteChannel, channelContext)) {
-				if (sendingQueue.isEmpty()) {
-					backOff = true;
-				}
+			if (handleWriting(gatheringByteChannel, channelContext) &&
+				sendingQueue.isEmpty()) {
+
+				backOff = true;
 			}
 		}
 		else {
@@ -393,7 +393,8 @@ public class SelectorIntraband extends BaseIntraband {
 										_processWriting(selectionKey);
 									}
 								}
-								catch (CancelledKeyException cke) {
+								catch (CancelledKeyException
+											cancelledKeyException) {
 
 									// Concurrent cancelling, move to next key
 
@@ -412,7 +413,7 @@ public class SelectorIntraband extends BaseIntraband {
 					selector.close();
 				}
 			}
-			catch (ClosedSelectorException cse) {
+			catch (ClosedSelectorException closedSelectorException) {
 				if (_log.isInfoEnabled()) {
 					Thread currentThread = Thread.currentThread();
 
@@ -421,11 +422,12 @@ public class SelectorIntraband extends BaseIntraband {
 							" exiting gracefully on selector closure");
 				}
 			}
-			catch (Throwable t) {
+			catch (Throwable throwable) {
 				Thread currentThread = Thread.currentThread();
 
 				_log.error(
-					currentThread.getName() + " exiting exceptionally", t);
+					currentThread.getName() + " exiting exceptionally",
+					throwable);
 			}
 
 			// Flush out pending register requests to unblock their invokers,

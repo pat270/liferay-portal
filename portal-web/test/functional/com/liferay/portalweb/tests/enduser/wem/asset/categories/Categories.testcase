@@ -1,0 +1,763 @@
+@component-name = "portal-categories"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Categories";
+	property testray.main.component.name = "Categories";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Page Name");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@priority = "4"
+	test AddCategories {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 2",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 3",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 2",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 3",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@description = "Ensure that a user can add a category."
+	@priority = "4"
+	test AddCategory {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "3"
+	test AddCategoryProperties {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.addPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "2");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryPropertyCP(
+			categoryName = "Category Name",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "2",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test AddCategoryProperty {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.addPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "0");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "0",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test AddCategoryViewableByAnyone {
+		Category.addCategoryViewableByCP(
+			categoryName = "Category Name",
+			viewableBy = "Anyone (Guest Role)",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryViewableByCP(
+			categoryName = "Category Name",
+			viewableBy = "Anyone (Guest Role)",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test AddCategoryViewableByOwner {
+		Category.addCategoryViewableByCP(
+			categoryName = "Category Name",
+			viewableBy = "Owner",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryViewableByCP(
+			categoryName = "Category Name",
+			viewableBy = "Owner",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test AddCategoryViewableBySiteMembers {
+		Category.addCategoryViewableByCP(
+			categoryName = "Category Name",
+			viewableBy = "Site Members",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryViewableByCP(
+			categoryName = "Category Name",
+			viewableBy = "Site Members",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test AddSubcategories {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 2",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 3",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addSubcategory(
+			groupName = "Test Site Name",
+			parentCategoryName = "Category Name 1",
+			title = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addSubcategory(
+			groupName = "Test Site Name",
+			parentCategoryName = "Category Name 2",
+			title = "Subcategory Name 2",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addSubcategory(
+			groupName = "Test Site Name",
+			parentCategoryName = "Category Name 3",
+			title = "Subcategory Name 3",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Subcategory.viewCP(
+			categoryName = "Category Name 1",
+			subcategoryName = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Subcategory.viewCP(
+			categoryName = "Category Name 2",
+			subcategoryName = "Subcategory Name 2",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Subcategory.viewCP(
+			categoryName = "Category Name 3",
+			subcategoryName = "Subcategory Name 3",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test AddVocabularies {
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 1");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 2");
+
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 3");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.viewCP(vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewCP(vocabularyName = "Vocabulary Name 2");
+
+		Vocabulary.viewCP(vocabularyName = "Vocabulary Name 3");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeAllAssetTypes {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "All Asset Types",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "All Asset Types",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeBlogsEntry {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Blogs Entry",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Blogs Entry",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeBookmarksEntry {
+		property portal.release = "false";
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Bookmarks Entry",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Bookmarks Entry",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeDocument {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Document",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Document",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypes {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Blogs Entry",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Blogs Entry",
+			vocabularyName = "Vocabulary Name 1");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Web Content Article",
+			vocabularyName = "Vocabulary Name 2");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Web Content Article",
+			vocabularyName = "Vocabulary Name 2");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeUser {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "User",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "User",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeWebContent {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Web Content Article",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Web Content Article",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyAssetTypeWikiPage {
+		Vocabulary.addWithAssociatedAssetTypeCP(
+			assetType = "Wiki Page",
+			vocabularyName = "Vocabulary Name 1");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Wiki Page",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyDisallowMultipleCategories {
+		Vocabulary.addCP(
+			allowMultipleCategories = "false",
+			vocabularyName = "Vocabulary Name 2");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.viewCP(
+			allowMultipleCategories = "false",
+			vocabularyName = "Vocabulary Name 2");
+	}
+
+	@priority = "3"
+	test AddVocabularyViewableByGuest {
+		Vocabulary.addViewableByCP(
+			viewableBy = "Anyone (Guest Role)",
+			vocabularyName = "Vocabulary Name 1");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.viewVocabularyPermissionsCP(
+			viewableBy = "Anyone (Guest Role)",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyViewableByOwner {
+		Vocabulary.addViewableByCP(
+			viewableBy = "Owner",
+			vocabularyName = "Vocabulary Name 1");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.viewVocabularyPermissionsCP(
+			viewableBy = "Owner",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test AddVocabularyViewableBySiteMembers {
+		Vocabulary.addViewableByCP(
+			viewableBy = "Site Members",
+			vocabularyName = "Vocabulary Name 1");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.viewVocabularyPermissionsCP(
+			viewableBy = "Site Members",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "3"
+	test CannotAddCategoryWithNullTitle {
+		Category.addWithNullTitleCP(vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "3"
+	test CannotAddVocabularyWithNullTitle {
+		Vocabulary.addVocabularyWithNullTitle();
+	}
+
+	@priority = "3"
+	test DeleteAssociatedAssetTypeViaVocabulary {
+		Vocabulary.gotoAddVocabulary();
+
+		PortletEntry.inputName(name = "Vocabulary Name 1");
+
+		Vocabulary.addAssociatedAssetType(
+			assetType = "Blogs Entry",
+			required = "true");
+
+		Button.clickAddRow();
+
+		Vocabulary.addAssociatedAssetType(
+			assetType = "Web Content Article",
+			required = "true",
+			rowNumber = "2");
+
+		Button.clickSave();
+
+		Vocabulary.deleteAssociatedAssetTypeViaVocabularyCP(vocabularyName = "Vocabulary Name 1");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Vocabulary.viewWithAssociatedAssetTypeCP(
+			vocabularyAssociatedAssetType = "Blogs Entry",
+			vocabularyName = "Vocabulary Name 1");
+	}
+
+	@priority = "4"
+	test DeleteCategories {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 2",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 3",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.deleteCategoriesCP(vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "5"
+	test DeleteCategory {
+		property portal.acceptance = "true";
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.deleteByIconCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test DeleteCategoryByMenu {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.deleteCategoryByMenuCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "3"
+	test DeleteCategoryProperty2 {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.addPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "2");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.deleteCategoryProperty2CP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Property",
+			propertiesValueField = "Category Property",
+			propertyNumber = "1",
+			vocabularyName = "Vocabulary Name");
+
+		var key_pathNumber = "1";
+
+		AssertElementNotPresent(locator1 = "Categories#CATEGORY_DETAILS_PROPERTY_KEY_2");
+
+		AssertElementNotPresent(locator1 = "Categories#CATEGORY_DETAILS_PROPERTY_VALUE_2");
+	}
+
+	@priority = "3"
+	test DeleteSubcategoryViaIcon {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addSubcategory(
+			groupName = "Test Site Name",
+			parentCategoryName = "Category Name 1",
+			title = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Subcategory.deleteViaIconCP(
+			categoryName = "Category Name 1",
+			subcategoryName = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "5"
+	test DeleteSubcategoryViaMenu {
+		property portal.acceptance = "true";
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addSubcategory(
+			groupName = "Test Site Name",
+			parentCategoryName = "Category Name 1",
+			title = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Subcategory.deleteViaMenuCP(
+			categoryName = "Category Name 1",
+			subcategoryName = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "5"
+	test DeleteVocabulary {
+		property portal.acceptance = "true";
+
+		Vocabulary.deleteByIconCP(vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test DeleteVocabularyByMenu {
+		Vocabulary.deleteByMenuCP(vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "5"
+	test EditCategory {
+		property portal.acceptance = "true";
+
+		Category.addCP(
+			categoryName = "Category Name",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.editCP(
+			categoryName = "Category Name",
+			categoryNameEdit = "Category Name Edit",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "4"
+	test EditCategoryProperty {
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.addPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Key",
+			propertiesValueField = "Category Value",
+			propertyNumber = "1");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryPropertyCP(
+			categoryName = "Category Name 1",
+			propertiesKeyField = "Category Key",
+			propertiesValueField = "Category Value",
+			propertyNumber = "1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.editCP(
+			categoryName = "Category Name 1",
+			categoryNameEdit = "Category Name Edit",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.editPropertyCP(
+			categoryName = "Category Name Edit",
+			propertiesKeyFieldEdit = "Category Key Edit 1",
+			propertiesValueFieldEdit = "Category Value Edit 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCategoryPropertyCP(
+			categoryName = "Category Name Edit",
+			propertiesKeyField = "Category Key Edit",
+			propertiesValueField = "Category Value Edit",
+			propertyNumber = "1",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "5"
+	test EditSubcategory {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		JSONCategory.addSubcategory(
+			groupName = "Test Site Name",
+			parentCategoryName = "Category Name 1",
+			title = "Subcategory Name 1",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Subcategory.editCP(
+			categoryName = "Category Name 1",
+			subcategoryName = "Subcategory Name 1",
+			subcategoryNameEdit = "Subcategory Name 1 Edit",
+			vocabularyName = "Vocabulary Name");
+	}
+
+	@priority = "5"
+	test EditVocabulary {
+		property portal.acceptance = "true";
+
+		Vocabulary.editCP(
+			vocabularyName = "Vocabulary Name",
+			vocabularyNameEdit = "Vocabulary Name Edit");
+	}
+
+	@priority = "3"
+	test MoveCategoryViaEdit {
+		JSONCategory.addVocabulary(
+			groupName = "Test Site Name",
+			title = "Vocabulary Name 2");
+
+		JSONCategory.addCategory(
+			groupName = "Test Site Name",
+			title = "Category Name",
+			vocabularyName = "Vocabulary Name");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.moveViaEditCP(
+			categoryName = "Category Name",
+			vocabularyName = "Vocabulary Name",
+			vocabularyName2 = "Vocabulary Name 2");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		Category.viewCP(
+			categoryName = "Category Name",
+			vocabularyName = "Vocabulary Name 2");
+	}
+
+	@priority = "3"
+	test ValidateClickingCloseButtonDoesNotSaveVocabulary {
+		Vocabulary.gotoAddVocabulary();
+
+		PortletEntry.inputName(name = "Vocabulary Name Test Close");
+
+		Click(locator1 = "Button#CANCEL");
+
+		Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+		AssertTextNotPresent(value1 = "Vocabulary Name Test Close");
+	}
+
+}

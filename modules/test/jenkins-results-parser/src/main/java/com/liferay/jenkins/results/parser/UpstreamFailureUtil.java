@@ -38,32 +38,35 @@ public class UpstreamFailureUtil {
 			getUpstreamJobFailuresJSONObject(topLevelBuild);
 
 		JSONArray failedBatchesJSONArray =
-			upstreamJobFailuresJSONObject.getJSONArray("failedBatches");
+			upstreamJobFailuresJSONObject.optJSONArray("failedBatches");
+
+		if (failedBatchesJSONArray == null) {
+			return upstreamFailures;
+		}
 
 		for (int i = 0; i < failedBatchesJSONArray.length(); i++) {
 			JSONObject failedBatchJSONObject =
 				failedBatchesJSONArray.getJSONObject(i);
 
-			JSONArray failedTestsJSONArray = failedBatchJSONObject.getJSONArray(
-				"failedTests");
-
 			String jobVariant = failedBatchJSONObject.getString("jobVariant");
 
+			jobVariant = jobVariant.replaceAll("(.*)/.*", "$1");
+
 			if (type.equals("build")) {
-				if (failedTestsJSONArray.length() == 0) {
-					upstreamFailures.add(
-						JenkinsResultsParserUtil.combine(
-							jobVariant, ",",
-							failedBatchJSONObject.getString("result")));
-				}
+				upstreamFailures.add(
+					_formatUpstreamBuildFailure(
+						jobVariant, failedBatchJSONObject.getString("result")));
 			}
 			else if (type.equals("test")) {
+				JSONArray failedTestsJSONArray =
+					failedBatchJSONObject.getJSONArray("failedTests");
+
 				for (int j = 0; j < failedTestsJSONArray.length(); j++) {
 					Object object = failedTestsJSONArray.get(j);
 
 					upstreamFailures.add(
-						JenkinsResultsParserUtil.combine(
-							object.toString(), ",", jobVariant));
+						_formatUpstreamTestFailure(
+							jobVariant, object.toString()));
 				}
 			}
 		}
@@ -90,11 +93,11 @@ public class UpstreamFailureUtil {
 
 			return upstreamJobFailuresJSONObject.getString("SHA");
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			System.out.println(
 				"Unable to get upstream acceptance failure data");
 
-			jsone.printStackTrace();
+			jsonException.printStackTrace();
 
 			return "";
 		}
@@ -106,50 +109,27 @@ public class UpstreamFailureUtil {
 		}
 
 		try {
-			List<TestResult> testResults = new ArrayList<>();
+			if (!_isBuildFailingInUpstreamJob(build)) {
+				return false;
+			}
 
-			testResults.addAll(build.getTestResults("FAILED"));
-			testResults.addAll(build.getTestResults("REGRESSION"));
+			for (TestResult testResult : build.getTestResults(null)) {
+				if (!testResult.isFailing()) {
+					continue;
+				}
 
-			if (testResults.isEmpty()) {
-				String jobVariant = build.getJobVariant();
-
-				if (jobVariant == null) {
+				if (testResult.isUniqueFailure()) {
 					return false;
-				}
-
-				String result = build.getResult();
-
-				if (result == null) {
-					return false;
-				}
-
-				if (jobVariant.contains("/")) {
-					int index = jobVariant.lastIndexOf("/");
-
-					jobVariant = jobVariant.substring(0, index);
-				}
-
-				TopLevelBuild topLevelBuild = build.getTopLevelBuild();
-
-				for (String upstreamJobFailure :
-						getUpstreamJobFailures("build", topLevelBuild)) {
-
-					if (upstreamJobFailure.contains(jobVariant) &&
-						upstreamJobFailure.contains(result)) {
-
-						return true;
-					}
 				}
 			}
 
-			return false;
+			return true;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			System.out.println(
 				"Unable to get upstream acceptance failure data.");
 
-			e.printStackTrace();
+			exception.printStackTrace();
 
 			return false;
 		}
@@ -165,19 +145,16 @@ public class UpstreamFailureUtil {
 		TopLevelBuild topLevelBuild = build.getTopLevelBuild();
 
 		try {
+			String jobVariant = build.getJobVariant();
+
+			jobVariant = jobVariant.replaceAll("(.*)/.*", "$1");
+
 			for (String failure :
 					getUpstreamJobFailures("test", topLevelBuild)) {
 
-				String jobVariant = build.getJobVariant();
-
-				if (jobVariant.contains("/")) {
-					int index = jobVariant.lastIndexOf("/");
-
-					jobVariant = jobVariant.substring(0, index);
-				}
-
-				if (failure.contains(jobVariant) &&
-					failure.contains(testResult.getDisplayName())) {
+				if (failure.equals(
+						_formatUpstreamTestFailure(
+							jobVariant, testResult.getDisplayName()))) {
 
 					return true;
 				}
@@ -185,11 +162,11 @@ public class UpstreamFailureUtil {
 
 			return false;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			System.out.println(
 				"Unable to get upstream acceptance failure data.");
 
-			e.printStackTrace();
+			exception.printStackTrace();
 
 			return false;
 		}
@@ -216,7 +193,7 @@ public class UpstreamFailureUtil {
 		String url = JenkinsResultsParserUtil.getLocalURL(
 			JenkinsResultsParserUtil.combine(
 				_URL_BASE_UPSTREAM_FAILURES_JOB,
-				jobName.replace("pullrequest", "upstream"),
+				topLevelBuild.getAcceptanceUpstreamJobName(),
 				"/builds/latest/test.results.json"));
 
 		try {
@@ -244,8 +221,8 @@ public class UpstreamFailureUtil {
 				"Using upstream failures at: " +
 					getUpstreamJobFailuresSHA(topLevelBuild));
 		}
-		catch (Exception e) {
-			System.out.println(e);
+		catch (Exception exception) {
+			System.out.println(exception);
 
 			System.out.println(
 				"Unable to load upstream acceptance failure data from URL: " +
@@ -256,6 +233,48 @@ public class UpstreamFailureUtil {
 
 			_upstreamComparisonAvailable = false;
 		}
+	}
+
+	private static String _formatUpstreamBuildFailure(
+		String jobVariant, String testResult) {
+
+		return JenkinsResultsParserUtil.combine(jobVariant, ",", testResult);
+	}
+
+	private static String _formatUpstreamTestFailure(
+		String jobVariant, String testName) {
+
+		return JenkinsResultsParserUtil.combine(testName, ",", jobVariant);
+	}
+
+	private static boolean _isBuildFailingInUpstreamJob(Build build) {
+		String jobVariant = build.getJobVariant();
+
+		if (jobVariant == null) {
+			return false;
+		}
+
+		String result = build.getResult();
+
+		if (result == null) {
+			return false;
+		}
+
+		jobVariant = jobVariant.replaceAll("(.*)/.*", "$1");
+
+		TopLevelBuild topLevelBuild = build.getTopLevelBuild();
+
+		for (String upstreamJobFailure :
+				getUpstreamJobFailures("build", topLevelBuild)) {
+
+			if (upstreamJobFailure.equals(
+					_formatUpstreamBuildFailure(jobVariant, result))) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static final String _URL_BASE_UPSTREAM_FAILURES_JOB =

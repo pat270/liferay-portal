@@ -38,19 +38,11 @@ public class BlogsEntryModelPreFilterContributor
 		BooleanFilter booleanFilter, ModelSearchSettings modelSearchSettings,
 		SearchContext searchContext) {
 
-		addWorkflowStatusFilter(
-			booleanFilter, modelSearchSettings, searchContext);
-	}
-
-	protected void addWorkflowStatusFilter(
-		BooleanFilter booleanFilter, ModelSearchSettings modelSearchSettings,
-		SearchContext searchContext) {
-
-		workflowStatusModelPreFilterContributor.contribute(
+		_workflowStatusModelPreFilterContributor.contribute(
 			booleanFilter, modelSearchSettings, searchContext);
 	}
 
 	@Reference(target = "(model.pre.filter.contributor.id=WorkflowStatus)")
-	protected ModelPreFilterContributor workflowStatusModelPreFilterContributor;
+	private ModelPreFilterContributor _workflowStatusModelPreFilterContributor;
 
 }

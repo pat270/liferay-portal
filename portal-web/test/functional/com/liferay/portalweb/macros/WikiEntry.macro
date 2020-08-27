@@ -1,10 +1,25 @@
 definition {
+
 	macro addPageContent {
-		AlloyEditor.addContent(content = "${wikiPageContent}");
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${wikiPageContent}");
 	}
 
 	macro addPageTitle {
-		AlloyEditor.addTitle(title = "${wikiPageTitle}");
+		if (isSet(wikiPageTitle)) {
+			var title = "${wikiPageTitle}";
+		}
+
+		else if (isSet(wikiChildPageTitle)) {
+			var title = "${wikiChildPageTitle}";
+		}
+
+		Type(
+			locator1 = "Wiki#ENTRY_TITLE",
+			value1 = "${title}");
 	}
 
 	macro cancel {
@@ -45,4 +60,5 @@ definition {
 			locator1 = "WikiEntry#BODY",
 			value1 = "${wikiPageContent}");
 	}
+
 }

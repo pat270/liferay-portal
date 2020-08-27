@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Release;
-import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.service.ServiceComponentLocalService;
 
@@ -139,7 +138,7 @@ public class ServiceConfigurationExtender
 
 				versionRangeFilter = _getVersionRangerFilter(version);
 			}
-			catch (IllegalArgumentException iae) {
+			catch (IllegalArgumentException illegalArgumentException1) {
 				try {
 					VersionRange versionRange = new VersionRange(
 						requireSchemaVersion);
@@ -147,14 +146,15 @@ public class ServiceConfigurationExtender
 					versionRangeFilter = versionRange.toFilterString(
 						"release.schema.version");
 				}
-				catch (IllegalArgumentException iae2) {
-					iae.addSuppressed(iae2);
+				catch (IllegalArgumentException illegalArgumentException2) {
+					illegalArgumentException1.addSuppressed(
+						illegalArgumentException2);
 
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Invalid \"Liferay-Require-SchemaVersion\" " +
 								"header for bundle: " + bundle.getBundleId(),
-							iae);
+							illegalArgumentException1);
 					}
 				}
 			}
@@ -179,17 +179,15 @@ public class ServiceConfigurationExtender
 		}
 
 		private String _getVersionRangerFilter(Version version) {
-			StringBundler sb = new StringBundler(9);
+			StringBundler sb = new StringBundler(7);
 
 			sb.append("(&(release.schema.version>=");
 			sb.append(version.getMajor());
 			sb.append(".");
 			sb.append(version.getMinor());
 			sb.append(".0)(!(release.schema.version>=");
-			sb.append(version.getMajor());
-			sb.append(".");
-			sb.append(version.getMinor() + 1);
-			sb.append(".0)))");
+			sb.append(version.getMajor() + 1);
+			sb.append(".0.0)))");
 
 			return sb.toString();
 		}
@@ -216,9 +214,6 @@ public class ServiceConfigurationExtender
 		ServiceConfigurationExtender.class);
 
 	private BundleTracker<?> _bundleTracker;
-
-	@Reference(target = ModuleServiceLifecycle.DATABASE_INITIALIZED)
-	private ModuleServiceLifecycle _moduleServiceLifecycle;
 
 	@Reference
 	private ResourceActions _resourceActions;

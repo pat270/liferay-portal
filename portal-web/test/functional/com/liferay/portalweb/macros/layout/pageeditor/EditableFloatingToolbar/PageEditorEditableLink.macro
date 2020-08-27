@@ -1,0 +1,70 @@
+definition {
+
+	@summary = "gotoEditableFieldLink must be called first"
+	macro _gotoFromContentField {
+		Select(
+			locator1 = "PageEditorEditableLink#LINK_TYPE",
+			value1 = "From Content Field");
+	}
+
+	macro _selectContent {
+		Click(locator1 = "PageEditor#EDITABLE_FIELD_TOOLBAR_MAP_ASSET_SELECT_POPUP_BUTTON");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		NavItem.click(navItem = "${navItem}");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+		Click(
+			key_card = "${entryTitle}",
+			locator1 = "Card#CARD_TITLE");
+	}
+
+	macro _selectField {
+		Select(
+			locator1 = "PageEditorEditableLink#FIELD",
+			value1 = "${field}");
+	}
+
+	macro gotoEditableFieldLink {
+		PageEditor.clickEditableField(
+			contributed = "${contributed}",
+			fragmentName = "${fragmentName}",
+			id = "${id}");
+
+		PageEditor.gotoTab(tabName = "Selection");
+
+		AssertClick(
+			key_navItem = "Link",
+			locator1 = "PageEditor#NAV_ITEM_BUTTON",
+			value1 = "Link");
+	}
+
+	macro mapURLToAsset {
+		Variables.assertDefined(parameterList = "${entryTitle},${field},${navItem}");
+
+		PageEditorEditableLink._gotoFromContentField();
+
+		PageEditorEditableLink._selectContent(
+			entryTitle = "${entryTitle}",
+			navItem = "${navItem}");
+
+		PageEditorEditableLink._selectField(field = "${field}");
+	}
+
+	macro updateURL {
+		Variables.assertDefined(parameterList = "${url}");
+
+		Type(
+			locator1 = "PageEditorEditableLink#URL",
+			value1 = "${url}");
+
+		Click(
+			key_sidebarButton = "Selection",
+			locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
+
+		PageEditor.waitForAutoSave();
+	}
+
+}

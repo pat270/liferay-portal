@@ -1,33 +1,25 @@
 {
-	"csfConfig": {
-		"path:**/*.js": {
-			"js": {
-				"lint": {
-					"globals": {
-						"$": true,
-						"AlloyEditor": true,
-						"CKEDITOR": true,
-						"MODULE_PATH": true
-					}
-				}
-			}
-		}
-	},
 	"dependencies": {
-		"clay-dropdown": "2.15.1",
-		"clay-modal": "2.15.1",
-		"metal": "2.16.8",
-		"metal-ajax": "2.1.1",
-		"metal-component": "2.16.8",
-		"metal-soy": "2.16.8",
-		"metal-state": "2.16.8",
-		"metal-structs": "1.0.2"
+		"@clayui/alert": "3.4.1",
+		"@clayui/button": "3.4.0",
+		"@clayui/card": "3.3.1",
+		"@clayui/drop-down": "3.6.0",
+		"@clayui/form": "3.10.0",
+		"@clayui/icon": "3.0.5",
+		"@clayui/list": "3.3.1",
+		"@clayui/modal": "3.6.5",
+		"@clayui/tabs": "3.2.3",
+		"frontend-js-react-web": "*",
+		"frontend-js-web": "*",
+		"prop-types": "15.7.2",
+		"react": "16.12.0",
+		"react-dom": "16.12.0"
 	},
 	"name": "frontend-taglib",
 	"scripts": {
 		"build": "liferay-npm-scripts build",
-		"checkFormat": "liferay-npm-scripts lint",
-		"format": "liferay-npm-scripts format"
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix"
 	},
-	"version": "5.0.0"
+	"version": "5.3.7"
 }

@@ -15,7 +15,6 @@
 package com.liferay.segments.internal.events;
 
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.events.ActionException;
 import com.liferay.portal.kernel.events.LifecycleAction;
@@ -30,19 +29,17 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsEntryConstants;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.constants.SegmentsWebKeys;
+import com.liferay.segments.context.RequestContextMapper;
 import com.liferay.segments.internal.configuration.SegmentsServiceConfiguration;
-import com.liferay.segments.internal.context.RequestContextMapper;
-import com.liferay.segments.model.SegmentsExperience;
-import com.liferay.segments.model.SegmentsExperienceModel;
-import com.liferay.segments.provider.SegmentsEntryProvider;
+import com.liferay.segments.processor.SegmentsExperienceRequestProcessorRegistry;
+import com.liferay.segments.provider.SegmentsEntryProviderRegistry;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.simulator.SegmentsEntrySimulator;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,10 +70,10 @@ public class SegmentsServicePreAction extends Action {
 		throws ActionException {
 
 		try {
-			doRun(httpServletRequest);
+			doRun(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			throw new ActionException(e);
+		catch (Exception exception) {
+			throw new ActionException(exception);
 		}
 	}
 
@@ -103,7 +100,10 @@ public class SegmentsServicePreAction extends Action {
 		}
 	}
 
-	protected void doRun(HttpServletRequest httpServletRequest) {
+	protected void doRun(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
+
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
@@ -112,69 +112,83 @@ public class SegmentsServicePreAction extends Action {
 			return;
 		}
 
-		long[] segmentsEntryIds = new long[0];
-
 		Layout layout = themeDisplay.getLayout();
 
-		if (!layout.isTypeControlPanel()) {
-			segmentsEntryIds = _getSegmentsEntryIds(
-				httpServletRequest, themeDisplay.getScopeGroupId(),
-				themeDisplay.getUserId());
+		if ((layout == null) || layout.isTypeControlPanel()) {
+			return;
 		}
 
-		segmentsEntryIds = ArrayUtil.append(
-			segmentsEntryIds, SegmentsConstants.SEGMENTS_ENTRY_ID_DEFAULT);
+		long[] segmentsEntryIds = _getSegmentsEntryIds(
+			httpServletRequest, themeDisplay.getScopeGroupId(),
+			themeDisplay.getUserId());
 
 		httpServletRequest.setAttribute(
 			SegmentsWebKeys.SEGMENTS_ENTRY_IDS, segmentsEntryIds);
 
-		long[] segmentsExperienceIds = _getSegmentsExperienceIds(
-			layout.getGroupId(), segmentsEntryIds,
-			_portal.getClassNameId(Layout.class.getName()), layout.getPlid());
+		if (!layout.isTypeContent()) {
+			return;
+		}
 
 		httpServletRequest.setAttribute(
 			SegmentsWebKeys.SEGMENTS_EXPERIENCE_IDS,
-			ArrayUtil.append(
-				segmentsExperienceIds,
-				SegmentsConstants.SEGMENTS_EXPERIENCE_ID_DEFAULT));
+			_getSegmentsExperienceIds(
+				httpServletRequest, httpServletResponse, layout.getGroupId(),
+				segmentsEntryIds,
+				_portal.getClassNameId(Layout.class.getName()),
+				layout.getPlid()));
 	}
 
 	private long[] _getSegmentsEntryIds(
 		HttpServletRequest httpServletRequest, long groupId, long userId) {
 
+		long[] segmentsEntryIds = new long[0];
+
 		if ((_segmentsEntrySimulator != null) &&
 			_segmentsEntrySimulator.isSimulationActive(userId)) {
 
-			return _segmentsEntrySimulator.getSimulatedSegmentsEntryIds(userId);
+			segmentsEntryIds =
+				_segmentsEntrySimulator.getSimulatedSegmentsEntryIds(userId);
 		}
-
-		try {
-			return _segmentsEntryProvider.getSegmentsEntryIds(
-				groupId, User.class.getName(), userId,
-				_requestContextMapper.map(httpServletRequest));
-		}
-		catch (PortalException pe) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(pe.getMessage());
+		else {
+			try {
+				segmentsEntryIds =
+					_segmentsEntryProviderRegistry.getSegmentsEntryIds(
+						groupId, User.class.getName(), userId,
+						_requestContextMapper.map(httpServletRequest));
 			}
-
-			return new long[0];
+			catch (PortalException portalException) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(portalException.getMessage());
+				}
+			}
 		}
+
+		return ArrayUtil.append(
+			segmentsEntryIds, SegmentsEntryConstants.ID_DEFAULT);
 	}
 
 	private long[] _getSegmentsExperienceIds(
-		long groupId, long[] segmentsEntryIds, long classNameId, long classPK) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, long groupId,
+		long[] segmentsEntryIds, long classNameId, long classPK) {
 
-		List<SegmentsExperience> segmentsExperiences =
-			_segmentsExperienceLocalService.getSegmentsExperiences(
-				groupId, segmentsEntryIds, classNameId, classPK, true,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+		long[] segmentsExperienceIds = new long[0];
 
-		Stream<SegmentsExperience> stream = segmentsExperiences.stream();
+		try {
+			segmentsExperienceIds =
+				_segmentsExperienceRequestProcessorRegistry.
+					getSegmentsExperienceIds(
+						httpServletRequest, httpServletResponse, groupId,
+						classNameId, classPK, segmentsEntryIds);
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException, portalException);
+			}
+		}
 
-		return stream.mapToLong(
-			SegmentsExperienceModel::getSegmentsExperienceId
-		).toArray();
+		return ArrayUtil.append(
+			segmentsExperienceIds, SegmentsExperienceConstants.ID_DEFAULT);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -190,7 +204,7 @@ public class SegmentsServicePreAction extends Action {
 	private RequestContextMapper _requestContextMapper;
 
 	@Reference
-	private SegmentsEntryProvider _segmentsEntryProvider;
+	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;
 
 	@Reference(
 		cardinality = ReferenceCardinality.OPTIONAL,
@@ -202,6 +216,10 @@ public class SegmentsServicePreAction extends Action {
 
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+
+	@Reference
+	private SegmentsExperienceRequestProcessorRegistry
+		_segmentsExperienceRequestProcessorRegistry;
 
 	private ServiceRegistration<LifecycleAction> _serviceRegistration;
 

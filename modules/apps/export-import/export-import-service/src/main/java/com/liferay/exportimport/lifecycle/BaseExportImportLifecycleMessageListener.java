@@ -23,12 +23,9 @@ import com.liferay.portal.kernel.messaging.Message;
 
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public abstract class BaseExportImportLifecycleMessageListener
 	extends BaseMessageListener {
 
@@ -48,12 +45,12 @@ public abstract class BaseExportImportLifecycleMessageListener
 				exportImportLifecycleListener.onExportImportLifecycleEvent(
 					exportImportLifecycleEvent);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						"Unable to call " +
 							exportImportLifecycleListener.getClass(),
-						e);
+						exception);
 				}
 			}
 		}

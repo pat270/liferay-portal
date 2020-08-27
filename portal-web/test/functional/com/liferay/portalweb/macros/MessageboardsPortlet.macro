@@ -1,10 +1,10 @@
 definition {
+
 	macro configureAnonymousPostingCP {
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -30,7 +30,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -53,7 +52,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -81,7 +79,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -114,7 +111,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -137,30 +133,12 @@ definition {
 		PortletEntry.save();
 	}
 
-	macro configureScopePG {
-		Portlet.gotoPortletOptions(
-			portletName = "${portletName}",
-			portletOption = "Configuration");
-
-		SelectFrame(locator1 = "IFrame#CONFIGURATION");
-
-		AssertClick(
-			locator1 = "MessageBoardsConfiguration#NAVIGATION_SCOPE",
-			value1 = "Scope");
-
-		Select(
-			locator1 = "Select#SCOPE",
-			value1 = "${scopeName}");
-
-		PortletEntry.save();
-	}
-
 	macro gotoInlinePermissionsPG {
 		Click(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 
 		MenuItem.click(menuItem = "Permissions");
 
-		SelectFrame(locator1 = "IFrame#DIALOG");
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 	}
 
 	macro gotoRecentPostsPG {
@@ -182,7 +160,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -213,7 +190,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -241,8 +217,8 @@ definition {
 	macro viewBannedUserCP {
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Message Boards");
+			portlet = "Message Boards",
+			site = "${site}");
 
 		AssertClick(
 			locator1 = "MessageBoards#NAVIGATION_BANNED_USERS",
@@ -280,7 +256,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Message Boards");
 
 		Click(locator1 = "Portlet#OPTIONS_ICON");
@@ -300,6 +275,14 @@ definition {
 		AssertTextEquals(
 			locator1 = "TextInput#EMAIL_FROM_ADDRESS",
 			value1 = "test@liferay.com");
+
+		if (isSet(emailFromAddress)) {
+			Type(
+				locator1 = "TextInput#EMAIL_FROM_ADDRESS",
+				value1 = "${emailFromAddress}");
+
+			PortletEntry.save();
+		}
 	}
 
 	macro viewNoPermissionCP {
@@ -337,4 +320,5 @@ definition {
 			AssertVisible(locator1 = "Link#MESSAGE_BOARDS_ATTACHMENT");
 		}
 	}
+
 }

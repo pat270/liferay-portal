@@ -10,27 +10,32 @@
 <tbody>
 <tr>
 	<td>AUTOCOMPLETE_FIELD</td>
-	<td>//ul[contains(@class,'ace-autocomplete-results')]//li[contains(.,'${autocompleteField}')]</td>
+	<td>//ul[contains(@class,'CodeMirror-hints')]//li[contains(.,'${autocompleteField}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>AUTOSAVE_MESSAGE</td>
+	<td>//span[contains(@class,'navbar-text')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HTML_EDITOR</td>
-	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'source-editor')][1]//textarea</td>
+	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'html')]//div[contains(@class,'CodeMirror cm-s-default')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HTML_EDITOR_CONTENT</td>
-	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'source-editor')][1]//div[contains(@class,'ace_content')]</td>
+	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'html')]//div[contains(@class,'CodeMirror-code')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CSS_EDITOR</td>
-	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'source-editor')][2]//textarea</td>
+	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'css')]//div[contains(@class,'CodeMirror cm-s-default')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>JAVASCRIPT_EDITOR</td>
-	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'source-editor')][3]//textarea</td>
+	<td>JS_EDITOR</td>
+	<td>//div[contains(@class,'fragment-editor')]/div[contains(@class,'javascript')]//div[contains(@class,'CodeMirror cm-s-default')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -41,6 +46,41 @@
 <tr>
 	<td>FRAGMENTS_TOOLKIT_LINK</td>
 	<td>//a[@title='Fragments Toolkit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CONFIGURATION_EDITOR</td>
+	<td>//div[@aria-labelledby='configuration']//div[contains(@class,'CodeMirror cm-s-default')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FRAGMENTS_EDITOR_FLOATING_CONFIGURATION_PANEL</td>
+	<td>//div[@class='form-group']//input[contains(@placeholder,'Set Button Name')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FRAGMENTS_EDITOR_FLOATING_TOOLBAR</td>
+	<td>//div[contains(@class,'floating-toolbar')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FRAGMENTS_EDITOR_FLOATING_TOOLBAR_FIELD_SELECT</td>
+	<td>//div[contains(@role,'tabpanel') and contains(@class,'active')]//select[contains(@class,'form-control')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FRAGMENTS_EDITOR_FLOATING_TOOLBAR_INPUT</td>
+	<td>//div[contains(@role,'tabpanel') and contains(@class,'active')]//div[contains(@class,'floating-toolbar')]//input[contains(@value,'${key_contentName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FRAGMENTS_EDITOR_FLOATING_TOOLBAR_PALETTE_SELECT</td>
+	<td>//div[contains(@role,'tabpanel') and contains(@class,'active')]//button[contains(@class,'${colorPalette}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>READ_ONLY_VIEW</td>
+	<td>//span[contains(@class,'text-info')]//*[contains(.,'Read Only View')]</td>
 	<td></td>
 </tr>
 </tbody>

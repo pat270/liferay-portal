@@ -38,7 +38,7 @@ import org.osgi.service.log.LoggerFactory;
 public class ArquillianConnector {
 
 	@Activate
-	public void activate(
+	protected void activate(
 		BundleContext bundleContext, Map<String, String> properties) {
 
 		int port = _DEFAULT_PORT;
@@ -58,10 +58,10 @@ public class ArquillianConnector {
 				bundleContext, _inetAddress, port, properties.get("passcode"),
 				logger);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			logger.error(
 				"Encountered a problem while using {}:{}. Shutting down now.",
-				_inetAddress.getHostAddress(), port, ioe);
+				_inetAddress.getHostAddress(), port, ioException);
 
 			System.exit(-10);
 		}
@@ -70,7 +70,7 @@ public class ArquillianConnector {
 	}
 
 	@Deactivate
-	public void deacticate() throws Exception {
+	protected void deactivate() throws Exception {
 		_arquillianConnectorThread.close();
 
 		_arquillianConnectorThread.join();

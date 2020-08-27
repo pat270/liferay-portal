@@ -32,11 +32,18 @@ import java.util.Set;
 public class MoreLikeThisQueryImpl
 	extends BaseQueryImpl implements MoreLikeThisQuery {
 
-	public MoreLikeThisQueryImpl(List<String> likeTexts) {
-		_likeTexts.addAll(likeTexts);
+	public MoreLikeThisQueryImpl(List<String> fields, String... likeTexts) {
+		_fields.addAll(fields);
+
+		Collections.addAll(_likeTexts, likeTexts);
 	}
 
-	public MoreLikeThisQueryImpl(String... likeTexts) {
+	public MoreLikeThisQueryImpl(Set<DocumentIdentifier> documentIdentifiers) {
+		_documentIdentifiers.addAll(documentIdentifiers);
+	}
+
+	public MoreLikeThisQueryImpl(String[] fields, String... likeTexts) {
+		Collections.addAll(_fields, fields);
 		Collections.addAll(_likeTexts, likeTexts);
 	}
 
@@ -49,6 +56,7 @@ public class MoreLikeThisQueryImpl
 		_documentIdentifiers.add(documentIdentifier);
 	}
 
+	@Override
 	public void addDocumentIdentifiers(
 		Collection<DocumentIdentifier> documentIdentifiers) {
 
@@ -61,10 +69,27 @@ public class MoreLikeThisQueryImpl
 		Collections.addAll(_documentIdentifiers, documentIdentifiers);
 	}
 
+	@Override
+	public void addField(String field) {
+		_fields.add(field);
+	}
+
+	@Override
+	public void addFields(Collection<String> fields) {
+		_fields.addAll(fields);
+	}
+
+	@Override
+	public void addFields(String... fields) {
+		Collections.addAll(_fields, fields);
+	}
+
+	@Override
 	public void addLikeText(String likeText) {
 		_likeTexts.add(likeText);
 	}
 
+	@Override
 	public void addLikeTexts(Collection<String> likeTexts) {
 		_likeTexts.addAll(likeTexts);
 	}
@@ -73,10 +98,12 @@ public class MoreLikeThisQueryImpl
 		Collections.addAll(_likeTexts, likeTexts);
 	}
 
+	@Override
 	public void addStopWord(String stopWord) {
 		_stopWords.add(stopWord);
 	}
 
+	@Override
 	public void addStopWords(Collection<String> stopWords) {
 		_stopWords.addAll(stopWords);
 	}
@@ -85,110 +112,142 @@ public class MoreLikeThisQueryImpl
 		Collections.addAll(_stopWords, stopWords);
 	}
 
+	@Override
 	public String getAnalyzer() {
 		return _analyzer;
 	}
 
+	@Override
 	public Set<DocumentIdentifier> getDocumentIdentifiers() {
 		return Collections.unmodifiableSet(_documentIdentifiers);
 	}
 
+	@Override
+	public List<String> getFields() {
+		return Collections.unmodifiableList(_fields);
+	}
+
+	@Override
 	public List<String> getLikeTexts() {
 		return Collections.unmodifiableList(_likeTexts);
 	}
 
+	@Override
 	public Integer getMaxDocFrequency() {
 		return _maxDocFrequency;
 	}
 
+	@Override
 	public Integer getMaxQueryTerms() {
 		return _maxQueryTerms;
 	}
 
+	@Override
 	public Integer getMaxWordLength() {
 		return _maxWordLength;
 	}
 
+	@Override
 	public Integer getMinDocFrequency() {
 		return _minDocFrequency;
 	}
 
+	@Override
 	public String getMinShouldMatch() {
 		return _minShouldMatch;
 	}
 
+	@Override
 	public Integer getMinTermFrequency() {
 		return _minTermFrequency;
 	}
 
+	@Override
 	public Integer getMinWordLength() {
 		return _minWordLength;
 	}
 
+	@Override
 	public Set<String> getStopWords() {
 		return Collections.unmodifiableSet(_stopWords);
 	}
 
+	@Override
 	public Float getTermBoost() {
 		return _termBoost;
 	}
 
+	@Override
 	public String getType() {
 		return _type;
 	}
 
+	@Override
 	public boolean isDocumentUIDsEmpty() {
 		return _documentIdentifiers.isEmpty();
 	}
 
+	@Override
 	public boolean isFieldsEmpty() {
 		return _likeTexts.isEmpty();
 	}
 
+	@Override
 	public Boolean isIncludeInput() {
 		return _includeInput;
 	}
 
+	@Override
 	public void setAnalyzer(String analyzer) {
 		_analyzer = analyzer;
 	}
 
+	@Override
 	public void setIncludeInput(Boolean includeInput) {
 		_includeInput = includeInput;
 	}
 
+	@Override
 	public void setMaxDocFrequency(Integer maxDocFrequency) {
 		_maxDocFrequency = maxDocFrequency;
 	}
 
+	@Override
 	public void setMaxQueryTerms(Integer maxQueryTerms) {
 		_maxQueryTerms = maxQueryTerms;
 	}
 
+	@Override
 	public void setMaxWordLength(Integer maxWordLength) {
 		_maxWordLength = maxWordLength;
 	}
 
+	@Override
 	public void setMinDocFrequency(Integer minDocFrequency) {
 		_minDocFrequency = minDocFrequency;
 	}
 
+	@Override
 	public void setMinShouldMatch(String minShouldMatch) {
 		_minShouldMatch = minShouldMatch;
 	}
 
+	@Override
 	public void setMinTermFrequency(Integer minTermFrequency) {
 		_minTermFrequency = minTermFrequency;
 	}
 
+	@Override
 	public void setMinWordLength(Integer minWordLength) {
 		_minWordLength = minWordLength;
 	}
 
+	@Override
 	public void setTermBoost(Float termBoost) {
 		_termBoost = termBoost;
 	}
 
+	@Override
 	public void setType(String type) {
 		_type = type;
 	}
@@ -208,7 +267,7 @@ public class MoreLikeThisQueryImpl
 		sb.append(", documentIdentifiers=");
 		sb.append(_documentIdentifiers);
 		sb.append(", fields=");
-		sb.append(_likeTexts);
+		sb.append(_fields);
 		sb.append(", includeInput=");
 		sb.append(_includeInput);
 		sb.append(", likeTexts=");
@@ -238,7 +297,7 @@ public class MoreLikeThisQueryImpl
 		return sb.toString();
 	}
 
-	public class DocumentIdentifierImpl implements DocumentIdentifier {
+	public static class DocumentIdentifierImpl implements DocumentIdentifier {
 
 		public DocumentIdentifierImpl(String index, String id) {
 			_index = index;
@@ -323,6 +382,7 @@ public class MoreLikeThisQueryImpl
 	private String _analyzer;
 	private final Set<DocumentIdentifier> _documentIdentifiers =
 		new HashSet<>();
+	private final List<String> _fields = new ArrayList<>();
 	private Boolean _includeInput;
 	private final List<String> _likeTexts = new ArrayList<>();
 	private Integer _maxDocFrequency;

@@ -72,7 +72,7 @@ public class UserNotificationDeliveryUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<UserNotificationDelivery> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -85,9 +85,11 @@ public class UserNotificationDeliveryUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_userNotificationDeliveryLocalService.fetchUserNotificationDelivery(
-				baseModelPK) == null) {
+		UserNotificationDelivery userNotificationDelivery =
+			_userNotificationDeliveryLocalService.fetchUserNotificationDelivery(
+				baseModelPK);
 
+		if (userNotificationDelivery == null) {
 			return true;
 		}
 
@@ -95,7 +97,7 @@ public class UserNotificationDeliveryUADAnonymizerTest
 	}
 
 	@Inject(filter = "component.name=*.UserNotificationDeliveryUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<UserNotificationDelivery> _uadAnonymizer;
 
 	@DeleteAfterTestRun
 	private final List<UserNotificationDelivery> _userNotificationDeliveries =

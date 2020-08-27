@@ -24,7 +24,7 @@ import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_3_0.UpgradeClassNam
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_3_0.UpgradeKaleoAction;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_3_0.UpgradeKaleoDefinition;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_3_2.UpgradeKaleoClassNameAndKaleoClassPK;
-import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_3_3.UpgradeBlogsEntryClassName;
+import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_3_3.UpgradeBlogsClassName;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v1_4_1.UpgradeKaleoDefinitionVersion;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.util.KaleoActionTable;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.util.KaleoConditionTable;
@@ -45,6 +45,7 @@ import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.util.KaleoTaskT
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.util.KaleoTimerInstanceTokenTable;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.util.KaleoTimerTable;
 import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.util.KaleoTransitionTable;
+import com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_1.UpgradeMessageBoardsClassName;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -87,7 +88,7 @@ public class KaleoServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"1.3.1", "1.3.2", new UpgradeKaleoClassNameAndKaleoClassPK());
 
-		registry.register("1.3.2", "1.3.3", new UpgradeBlogsEntryClassName());
+		registry.register("1.3.2", "1.3.3", new UpgradeBlogsClassName());
 
 		registry.register(
 			"1.3.3", "1.4.0",
@@ -116,6 +117,19 @@ public class KaleoServiceUpgrade implements UpgradeStepRegistrator {
 				}),
 			new com.liferay.portal.workflow.kaleo.internal.upgrade.v2_0_0.
 				UpgradeSchema());
+
+		registry.register(
+			"2.0.0", "2.0.1", new UpgradeMessageBoardsClassName());
+
+		registry.register(
+			"2.0.1", "3.0.0",
+			new com.liferay.portal.workflow.kaleo.internal.upgrade.v3_0_0.
+				UpgradeSchema());
+
+		registry.register(
+			"3.0.0", "3.1.0",
+			new com.liferay.portal.workflow.kaleo.internal.upgrade.v3_1_0.
+				UpgradeKaleoDefinition());
 	}
 
 }

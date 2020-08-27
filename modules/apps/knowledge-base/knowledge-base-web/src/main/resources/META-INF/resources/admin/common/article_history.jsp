@@ -24,13 +24,13 @@ int selStatus = KBArticlePermission.contains(permissionChecker, kbArticle, KBAct
 String orderByCol = ParamUtil.getString(request, "orderByCol", "version");
 String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 
-OrderByComparator orderByComparator = KBUtil.getKBArticleOrderByComparator(orderByCol, orderByType);
+OrderByComparator<KBArticle> orderByComparator = KBUtil.getKBArticleOrderByComparator(orderByCol, orderByType);
 
 List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGroupId, kbArticle.getResourcePrimKey(), selStatus, QueryUtil.ALL_POS, QueryUtil.ALL_POS, orderByComparator);
 %>
 
-<aui:row>
-	<aui:col width="<%= 100 %>">
+<clay:row>
+	<clay:col>
 		<ul class="sidebar-block tabular-list-group-unstyled">
 
 			<%
@@ -70,8 +70,9 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 								%>
 
 								<liferay-ui:icon
-									iconCssClass="icon-undo"
+									icon="undo"
 									label="<%= true %>"
+									markupView="lexicon"
 									message="revert"
 									url="<%= revertURL.toString() %>"
 								/>
@@ -84,15 +85,13 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 								<portlet:param name="sourceVersion" value="<%= String.valueOf(curKBArticle.getVersion()) %>" />
 							</portlet:renderURL>
 
-							<%
-							Map<String, Object> data = new HashMap<String, Object>();
-
-							data.put("uri", compareVersionsURL);
-							%>
-
 							<liferay-ui:icon
 								cssClass="compare-to-link"
-								data="<%= data %>"
+								data='<%=
+									HashMapBuilder.<String, Object>put(
+										"uri", compareVersionsURL
+									).build()
+								%>'
 								label="<%= true %>"
 								message="compare-to"
 								url="javascript:;"
@@ -106,8 +105,8 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 			%>
 
 		</ul>
-	</aui:col>
-</aui:row>
+	</clay:col>
+</clay:row>
 
 <portlet:renderURL var="compareVersionURL">
 	<portlet:param name="mvcPath" value="/admin/common/compare_versions.jsp" />
@@ -117,34 +116,35 @@ List<KBArticle> kbArticles = KBArticleServiceUtil.getKBArticleVersions(scopeGrou
 </portlet:renderURL>
 
 <aui:script require="metal-dom/src/dom as dom">
-	dom.delegate(
-		document.body,
-		'click',
-		'.compare-to-link > a',
-		function(event) {
-			var currentTarget = event.delegateTarget;
+	dom.delegate(document.body, 'click', '.compare-to-link > a', function (event) {
+		var currentTarget = event.delegateTarget;
 
-			Liferay.Util.selectEntity(
-				{
-					dialog: {
-						constrain: true,
-						destroyOnHide: true,
-						modal: true
-					},
-					eventName: '<portlet:namespace />selectVersionFm',
-					id: '<portlet:namespace />compareVersions' + currentTarget.id,
-					title: '<liferay-ui:message key="compare-versions" />',
-					uri: currentTarget.dataset.uri
+		Liferay.Util.selectEntity(
+			{
+				dialog: {
+					constrain: true,
+					destroyOnHide: true,
+					modal: true,
 				},
-				function(event) {
-					var uri = '<%= HtmlUtil.escapeJS(compareVersionURL) %>';
+				eventName: '<portlet:namespace />selectVersionFm',
+				id: '<portlet:namespace />compareVersions' + currentTarget.id,
+				title: '<liferay-ui:message key="compare-versions" />',
+				uri: currentTarget.dataset.uri,
+			},
+			function (event) {
+				var uri = '<%= HtmlUtil.escapeJS(compareVersionURL) %>';
 
-					uri = Liferay.Util.addParams('<portlet:namespace />sourceVersion=' + event.sourceversion, uri);
-					uri = Liferay.Util.addParams('<portlet:namespace />targetVersion=' + event.targetversion, uri);
+				uri = Liferay.Util.addParams(
+					'<portlet:namespace />sourceVersion=' + event.sourceversion,
+					uri
+				);
+				uri = Liferay.Util.addParams(
+					'<portlet:namespace />targetVersion=' + event.targetversion,
+					uri
+				);
 
-					location.href = uri;
-				}
-			);
-		}
-	);
+				location.href = uri;
+			}
+		);
+	});
 </aui:script>

@@ -16,12 +16,9 @@ package com.liferay.message.boards.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchThreadException extends NoSuchModelException {
 
 	public NoSuchThreadException() {
@@ -31,12 +28,12 @@ public class NoSuchThreadException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchThreadException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchThreadException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchThreadException(Throwable cause) {
-		super(cause);
+	public NoSuchThreadException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

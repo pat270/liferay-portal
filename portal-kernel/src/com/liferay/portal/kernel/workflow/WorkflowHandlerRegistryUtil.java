@@ -24,54 +24,62 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalServiceUtil;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
 import com.liferay.registry.ServiceRegistration;
-import com.liferay.registry.ServiceTracker;
-import com.liferay.registry.ServiceTrackerCustomizer;
+import com.liferay.registry.collections.ServiceReferenceMapper;
 import com.liferay.registry.collections.ServiceRegistrationMap;
 import com.liferay.registry.collections.ServiceRegistrationMapImpl;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerMap;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListMap;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.Predicate;
 
 /**
  * @author Bruno Farache
  * @author Marcellus Tavares
  */
-@ProviderType
 public class WorkflowHandlerRegistryUtil {
 
 	public static List<WorkflowHandler<?>> getScopeableWorkflowHandlers() {
-		return ListUtil.fromMapValues(_scopeableWorkflowHandlerMap);
+		return _getWorkflowHandlers(_scopeableWorkflowHandlerServiceTrackerMap);
 	}
 
 	public static <T> WorkflowHandler<T> getWorkflowHandler(String className) {
-		return (WorkflowHandler<T>)_workflowHandlerMap.get(className);
+		return (WorkflowHandler<T>)_workflowHandlerServiceTrackerMap.getService(
+			className);
 	}
 
 	public static List<WorkflowHandler<?>> getWorkflowHandlers() {
-		return ListUtil.fromMapValues(_workflowHandlerMap);
+		return _getWorkflowHandlers(_workflowHandlerServiceTrackerMap);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), in favor of {@link
+	 *             Registry#registerService(String, Object, Map)}
+	 */
+	@Deprecated
 	public static void register(List<WorkflowHandler<?>> workflowHandlers) {
 		for (WorkflowHandler<?> workflowHandler : workflowHandlers) {
 			register(workflowHandler);
 		}
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), in favor of {@link
+	 *             Registry#registerService(String, Object, Map)}
+	 */
+	@Deprecated
 	public static void register(WorkflowHandler<?> workflowHandler) {
 		Registry registry = RegistryUtil.getRegistry();
 
@@ -160,10 +168,6 @@ public class WorkflowHandlerRegistryUtil {
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_COMPANY_ID, String.valueOf(companyId));
 		workflowContext.put(
-			WorkflowConstants.CONTEXT_GROUP_ID, String.valueOf(groupId));
-		workflowContext.put(
-			WorkflowConstants.CONTEXT_USER_ID, String.valueOf(userId));
-		workflowContext.put(
 			WorkflowConstants.CONTEXT_ENTRY_CLASS_NAME, className);
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_ENTRY_CLASS_PK, String.valueOf(classPK));
@@ -171,10 +175,14 @@ public class WorkflowHandlerRegistryUtil {
 			WorkflowConstants.CONTEXT_ENTRY_TYPE,
 			workflowHandler.getType(LocaleUtil.getDefault()));
 		workflowContext.put(
+			WorkflowConstants.CONTEXT_GROUP_ID, String.valueOf(groupId));
+		workflowContext.put(
 			WorkflowConstants.CONTEXT_SERVICE_CONTEXT, serviceContext);
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_TASK_COMMENTS,
 			GetterUtil.getString(serviceContext.getAttribute("comments")));
+		workflowContext.put(
+			WorkflowConstants.CONTEXT_USER_ID, String.valueOf(userId));
 
 		T updatedModel = workflowHandler.updateStatus(status, workflowContext);
 
@@ -235,12 +243,22 @@ public class WorkflowHandlerRegistryUtil {
 			classPK, model, serviceContext, workflowContext);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), use {@link
+	 *             ServiceRegistration#unregister()}
+	 */
+	@Deprecated
 	public static void unregister(List<WorkflowHandler<?>> workflowHandlers) {
 		for (WorkflowHandler<?> workflowHandler : workflowHandlers) {
 			unregister(workflowHandler);
 		}
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), use {@link
+	 *             ServiceRegistration#unregister()}
+	 */
+	@Deprecated
 	public static void unregister(WorkflowHandler<?> workflowHandler) {
 		ServiceRegistration<WorkflowHandler<?>> serviceRegistration =
 			_serviceRegistrations.remove(workflowHandler);
@@ -264,6 +282,22 @@ public class WorkflowHandlerRegistryUtil {
 		}
 
 		return null;
+	}
+
+	private static List<WorkflowHandler<?>> _getWorkflowHandlers(
+		ServiceTrackerMap<String, WorkflowHandler<?>>
+			workflowHandlerServiceTrackerMap) {
+
+		List<WorkflowHandler<?>> workflowHandlers = new ArrayList<>();
+
+		for (String modelClassName :
+				workflowHandlerServiceTrackerMap.keySet()) {
+
+			workflowHandlers.add(
+				workflowHandlerServiceTrackerMap.getService(modelClassName));
+		}
+
+		return workflowHandlers;
 	}
 
 	private static boolean _hasWorkflowInstanceInProgress(
@@ -292,72 +326,54 @@ public class WorkflowHandlerRegistryUtil {
 	private static final Log _log = LogFactoryUtil.getLog(
 		WorkflowHandlerRegistryUtil.class);
 
-	private static final Map<String, WorkflowHandler<?>>
-		_scopeableWorkflowHandlerMap = new ConcurrentSkipListMap<>();
+	private static final ServiceTrackerMap<String, WorkflowHandler<?>>
+		_scopeableWorkflowHandlerServiceTrackerMap;
 	private static final ServiceRegistrationMap<WorkflowHandler<?>>
 		_serviceRegistrations = new ServiceRegistrationMapImpl<>();
-	private static final ServiceTracker<WorkflowHandler<?>, WorkflowHandler<?>>
-		_serviceTracker;
-	private static final Map<String, WorkflowHandler<?>> _workflowHandlerMap =
-		new TreeMap<>();
+	private static final ServiceTrackerMap<String, WorkflowHandler<?>>
+		_workflowHandlerServiceTrackerMap;
 
-	private static class WorkflowHandlerServiceTrackerCustomizer
-		implements ServiceTrackerCustomizer
-			<WorkflowHandler<?>, WorkflowHandler<?>> {
+	private static class WorkflowHandlerServiceReferenceMapper
+		implements ServiceReferenceMapper<String, WorkflowHandler<?>> {
 
 		@Override
-		public WorkflowHandler<?> addingService(
-			ServiceReference<WorkflowHandler<?>> serviceReference) {
+		public void map(
+			ServiceReference<WorkflowHandler<?>> serviceReference,
+			Emitter<String> emitter) {
 
 			Registry registry = RegistryUtil.getRegistry();
 
 			WorkflowHandler<?> workflowHandler = registry.getService(
 				serviceReference);
 
-			_workflowHandlerMap.put(
-				workflowHandler.getClassName(), workflowHandler);
-
-			if (workflowHandler.isScopeable()) {
-				_scopeableWorkflowHandlerMap.put(
-					workflowHandler.getClassName(), workflowHandler);
-			}
-
-			return workflowHandler;
-		}
-
-		@Override
-		public void modifiedService(
-			ServiceReference<WorkflowHandler<?>> serviceReference,
-			WorkflowHandler<?> workflowHandler) {
-		}
-
-		@Override
-		public void removedService(
-			ServiceReference<WorkflowHandler<?>> serviceReference,
-			WorkflowHandler<?> workflowHandler) {
-
-			Registry registry = RegistryUtil.getRegistry();
-
-			registry.ungetService(serviceReference);
-
-			_workflowHandlerMap.remove(workflowHandler.getClassName());
-
-			if (workflowHandler.isScopeable()) {
-				_scopeableWorkflowHandlerMap.remove(
-					workflowHandler.getClassName());
+			if (_predicate.test(workflowHandler)) {
+				emitter.emit(workflowHandler.getClassName());
 			}
 		}
+
+		private WorkflowHandlerServiceReferenceMapper(
+			Predicate<WorkflowHandler<?>> predicate) {
+
+			_predicate = predicate;
+		}
+
+		private final Predicate<WorkflowHandler<?>> _predicate;
 
 	}
 
 	static {
-		Registry registry = RegistryUtil.getRegistry();
+		_workflowHandlerServiceTrackerMap =
+			ServiceTrackerCollections.openSingleValueMap(
+				(Class<WorkflowHandler<?>>)(Class<?>)WorkflowHandler.class,
+				null,
+				new WorkflowHandlerServiceReferenceMapper(handler -> true));
 
-		_serviceTracker = registry.trackServices(
-			(Class<WorkflowHandler<?>>)(Class<?>)WorkflowHandler.class,
-			new WorkflowHandlerServiceTrackerCustomizer());
-
-		_serviceTracker.open();
+		_scopeableWorkflowHandlerServiceTrackerMap =
+			ServiceTrackerCollections.openSingleValueMap(
+				(Class<WorkflowHandler<?>>)(Class<?>)WorkflowHandler.class,
+				null,
+				new WorkflowHandlerServiceReferenceMapper(
+					handler -> handler.isScopeable()));
 	}
 
 }

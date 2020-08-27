@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link LayoutSetBranchLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSetBranchLocalService
  * @generated
  */
-@ProviderType
 public class LayoutSetBranchLocalServiceWrapper
 	implements LayoutSetBranchLocalService,
 			   ServiceWrapper<LayoutSetBranchLocalService> {
@@ -37,6 +34,10 @@ public class LayoutSetBranchLocalServiceWrapper
 	/**
 	 * Adds the layout set branch to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetBranchLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutSetBranch the layout set branch
 	 * @return the layout set branch that was added
 	 */
@@ -49,9 +50,9 @@ public class LayoutSetBranchLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetBranch addLayoutSetBranch(
-			long userId, long groupId, boolean privateLayout, String name,
-			String description, boolean master, long copyLayoutSetBranchId,
-			ServiceContext serviceContext)
+			long userId, long groupId, boolean privateLayout,
+			java.lang.String name, java.lang.String description, boolean master,
+			long copyLayoutSetBranchId, ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetBranchLocalService.addLayoutSetBranch(
@@ -74,7 +75,22 @@ public class LayoutSetBranchLocalServiceWrapper
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutSetBranchLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the layout set branch from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetBranchLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutSetBranch the layout set branch
 	 * @return the layout set branch that was removed
@@ -103,6 +119,10 @@ public class LayoutSetBranchLocalServiceWrapper
 
 	/**
 	 * Deletes the layout set branch with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetBranchLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutSetBranchId the primary key of the layout set branch
 	 * @return the layout set branch that was removed
@@ -147,6 +167,11 @@ public class LayoutSetBranchLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _layoutSetBranchLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _layoutSetBranchLocalService.dynamicQuery();
 	}
@@ -168,7 +193,7 @@ public class LayoutSetBranchLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetBranchModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetBranchModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -189,7 +214,7 @@ public class LayoutSetBranchLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetBranchModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetBranchModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -247,7 +272,7 @@ public class LayoutSetBranchLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetBranch fetchLayoutSetBranch(
-		long groupId, boolean privateLayout, String name) {
+		long groupId, boolean privateLayout, java.lang.String name) {
 
 		return _layoutSetBranchLocalService.fetchLayoutSetBranch(
 			groupId, privateLayout, name);
@@ -286,7 +311,7 @@ public class LayoutSetBranchLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetBranch getLayoutSetBranch(
-			long groupId, boolean privateLayout, String name)
+			long groupId, boolean privateLayout, java.lang.String name)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetBranchLocalService.getLayoutSetBranch(
@@ -302,15 +327,15 @@ public class LayoutSetBranchLocalServiceWrapper
 	}
 
 	/**
-	 * Returns a range of all the layout set branchs.
+	 * Returns a range of all the layout set branches.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetBranchModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.LayoutSetBranchModelImpl</code>.
 	 * </p>
 	 *
-	 * @param start the lower bound of the range of layout set branchs
-	 * @param end the upper bound of the range of layout set branchs (not inclusive)
-	 * @return the range of layout set branchs
+	 * @param start the lower bound of the range of layout set branches
+	 * @param end the upper bound of the range of layout set branches (not inclusive)
+	 * @return the range of layout set branches
 	 */
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.LayoutSetBranch>
@@ -320,9 +345,9 @@ public class LayoutSetBranchLocalServiceWrapper
 	}
 
 	/**
-	 * Returns the number of layout set branchs.
+	 * Returns the number of layout set branches.
 	 *
-	 * @return the number of layout set branchs
+	 * @return the number of layout set branches
 	 */
 	@Override
 	public int getLayoutSetBranchsCount() {
@@ -344,10 +369,13 @@ public class LayoutSetBranchLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _layoutSetBranchLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -380,6 +408,10 @@ public class LayoutSetBranchLocalServiceWrapper
 	/**
 	 * Updates the layout set branch in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutSetBranchLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutSetBranch the layout set branch
 	 * @return the layout set branch that was updated
 	 */
@@ -395,8 +427,8 @@ public class LayoutSetBranchLocalServiceWrapper
 	@Override
 	public com.liferay.portal.kernel.model.LayoutSetBranch
 			updateLayoutSetBranch(
-				long layoutSetBranchId, String name, String description,
-				ServiceContext serviceContext)
+				long layoutSetBranchId, java.lang.String name,
+				java.lang.String description, ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutSetBranchLocalService.updateLayoutSetBranch(

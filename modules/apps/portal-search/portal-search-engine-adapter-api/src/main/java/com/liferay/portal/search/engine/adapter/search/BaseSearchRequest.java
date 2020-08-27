@@ -18,7 +18,10 @@ import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.search.aggregation.Aggregation;
 import com.liferay.portal.search.aggregation.pipeline.PipelineAggregation;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
+import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.query.Query;
+import com.liferay.portal.search.rescore.Rescore;
 import com.liferay.portal.search.stats.StatsRequest;
 
 import java.util.ArrayList;
@@ -34,10 +37,16 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Michael C. Han
  */
 @ProviderType
-public abstract class BaseSearchRequest {
+public abstract class BaseSearchRequest extends CrossClusterRequest {
 
 	public void addAggregation(Aggregation aggregation) {
 		_aggregationsMap.put(aggregation.getName(), aggregation);
+	}
+
+	public void addComplexQueryParts(
+		Collection<ComplexQueryPart> complexQueryParts) {
+
+		_complexQueryParts.addAll(complexQueryParts);
 	}
 
 	public void addIndexBoost(String index, float boost) {
@@ -53,6 +62,10 @@ public abstract class BaseSearchRequest {
 
 	public Map<String, Aggregation> getAggregationsMap() {
 		return Collections.unmodifiableMap(_aggregationsMap);
+	}
+
+	public List<ComplexQueryPart> getComplexQueryParts() {
+		return Collections.unmodifiableList(_complexQueryParts);
 	}
 
 	public Boolean getExplain() {
@@ -99,8 +112,16 @@ public abstract class BaseSearchRequest {
 		return _requestCache;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getRescores()}
+	 */
+	@Deprecated
 	public Query getRescoreQuery() {
 		return _rescoreQuery;
+	}
+
+	public List<Rescore> getRescores() {
+		return _rescores;
 	}
 
 	public List<StatsRequest> getStatsRequests() {
@@ -199,8 +220,17 @@ public abstract class BaseSearchRequest {
 		_requestCache = requestCache;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #setRescores(List)}
+	 */
+	@Deprecated
 	public void setRescoreQuery(Query rescoreQuery) {
 		_rescoreQuery = rescoreQuery;
+	}
+
+	public void setRescores(List<Rescore> rescores) {
+		_rescores = rescores;
 	}
 
 	public void setStatsRequests(Collection<StatsRequest> statsRequests) {
@@ -222,6 +252,7 @@ public abstract class BaseSearchRequest {
 	private final Map<String, Aggregation> _aggregationsMap =
 		new LinkedHashMap<>();
 	private boolean _basicFacetSelection;
+	private final List<ComplexQueryPart> _complexQueryParts = new ArrayList<>();
 	private Boolean _explain;
 	private final Map<String, Facet> _facets = new LinkedHashMap<>();
 	private boolean _includeResponseString;
@@ -236,6 +267,7 @@ public abstract class BaseSearchRequest {
 	private Query _query;
 	private Boolean _requestCache;
 	private Query _rescoreQuery;
+	private List<Rescore> _rescores;
 	private List<StatsRequest> _statsRequests = Collections.emptyList();
 	private Long _timeoutInMilliseconds;
 	private Boolean _trackTotalHits;

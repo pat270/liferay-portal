@@ -18,6 +18,7 @@ import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AssetVocabulary in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetVocabularyCacheModel
-	implements CacheModel<AssetVocabulary>, Externalizable {
+	implements CacheModel<AssetVocabulary>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof AssetVocabularyCacheModel)) {
+		if (!(object instanceof AssetVocabularyCacheModel)) {
 			return false;
 		}
 
 		AssetVocabularyCacheModel assetVocabularyCacheModel =
-			(AssetVocabularyCacheModel)obj;
+			(AssetVocabularyCacheModel)object;
 
-		if (vocabularyId == assetVocabularyCacheModel.vocabularyId) {
+		if ((vocabularyId == assetVocabularyCacheModel.vocabularyId) &&
+			(mvccVersion == assetVocabularyCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class AssetVocabularyCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, vocabularyId);
+		int hashCode = HashUtil.hash(0, vocabularyId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(29);
+		StringBundler sb = new StringBundler(35);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", externalReferenceCode=");
 		sb.append(externalReferenceCode);
@@ -93,6 +109,8 @@ public class AssetVocabularyCacheModel
 		sb.append(description);
 		sb.append(", settings=");
 		sb.append(settings);
+		sb.append(", visibilityType=");
+		sb.append(visibilityType);
 		sb.append(", lastPublishDate=");
 		sb.append(lastPublishDate);
 		sb.append("}");
@@ -103,6 +121,9 @@ public class AssetVocabularyCacheModel
 	@Override
 	public AssetVocabulary toEntityModel() {
 		AssetVocabularyImpl assetVocabularyImpl = new AssetVocabularyImpl();
+
+		assetVocabularyImpl.setMvccVersion(mvccVersion);
+		assetVocabularyImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			assetVocabularyImpl.setUuid("");
@@ -172,6 +193,8 @@ public class AssetVocabularyCacheModel
 			assetVocabularyImpl.setSettings(settings);
 		}
 
+		assetVocabularyImpl.setVisibilityType(visibilityType);
+
 		if (lastPublishDate == Long.MIN_VALUE) {
 			assetVocabularyImpl.setLastPublishDate(null);
 		}
@@ -186,6 +209,9 @@ public class AssetVocabularyCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 		externalReferenceCode = objectInput.readUTF();
 
@@ -203,11 +229,17 @@ public class AssetVocabularyCacheModel
 		title = objectInput.readUTF();
 		description = objectInput.readUTF();
 		settings = objectInput.readUTF();
+
+		visibilityType = objectInput.readInt();
 		lastPublishDate = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -268,9 +300,12 @@ public class AssetVocabularyCacheModel
 			objectOutput.writeUTF(settings);
 		}
 
+		objectOutput.writeInt(visibilityType);
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public String externalReferenceCode;
 	public long vocabularyId;
@@ -284,6 +319,7 @@ public class AssetVocabularyCacheModel
 	public String title;
 	public String description;
 	public String settings;
+	public int visibilityType;
 	public long lastPublishDate;
 
 }

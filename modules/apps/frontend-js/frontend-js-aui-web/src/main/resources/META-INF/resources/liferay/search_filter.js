@@ -1,107 +1,113 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-search-filter',
-	function(A) {
+	(A) => {
 		var Lang = A.Lang;
 
-		var SearchImpl = A.Component.create(
-			{
-				AUGMENTS: [A.AutoCompleteBase],
+		var SearchImpl = A.Component.create({
+			AUGMENTS: [A.AutoCompleteBase],
 
-				EXTENDS: A.Base,
+			EXTENDS: A.Base,
 
-				NAME: 'searchimpl',
+			NAME: 'searchimpl',
 
-				prototype: {
-					initializer: function() {
-						var instance = this;
+			prototype: {
+				initializer() {
+					this._bindUIACBase();
+					this._syncUIACBase();
+				},
+			},
+		});
 
-						this._bindUIACBase();
-						this._syncUIACBase();
-					}
-				}
-			}
-		);
-
-		var SearchFilter = A.Component.create(
-			{
-				ATTRS: {
-					minQueryLength: {
-						validator: Lang.isNumber,
-						value: 0
-					},
-
-					nodeList: {
-						setter: A.one
-					},
-
-					nodeSelector: {
-						validator: Lang.isString
-					},
-
-					queryDelay: {
-						validator: Lang.isNumber,
-						value: 300
-					},
-
-					resultFilters: {
-						setter: '_setResultFilters',
-						value: 'phraseMatch'
-					},
-
-					resultTextLocator: {
-						setter: '_setLocator',
-						value: 'search'
-					},
-
-					searchDataLocator: {
-						value: 'data-search'
-					}
+		var SearchFilter = A.Component.create({
+			ATTRS: {
+				minQueryLength: {
+					validator: Lang.isNumber,
+					value: 0,
 				},
 
-				EXTENDS: SearchImpl,
+				nodeList: {
+					setter: A.one,
+				},
 
-				NAME: 'searchfilter',
+				nodeSelector: {
+					validator: Lang.isString,
+				},
 
-				prototype: {
-					initializer: function(config) {
-						var instance = this;
+				queryDelay: {
+					validator: Lang.isNumber,
+					value: 300,
+				},
 
-						var nodeList = instance.get('nodeList');
+				resultFilters: {
+					setter: '_setResultFilters',
+					value: 'phraseMatch',
+				},
 
-						if (nodeList) {
-							var nodeSelector = instance.get('nodeSelector');
+				resultTextLocator: {
+					setter: '_setLocator',
+					value: 'search',
+				},
 
-							var nodes = nodeList.all(nodeSelector);
+				searchDataLocator: {
+					value: 'data-search',
+				},
+			},
 
-							var searchDataLocator = instance.get('searchDataLocator');
+			EXTENDS: SearchImpl,
 
-							var searchData = [];
+			NAME: 'searchfilter',
 
-							nodes.each(
-								function(item, index) {
-									searchData.push(
-										{
-											node: item,
-											search: item.attr(searchDataLocator)
-										}
-									);
-								}
-							);
+			prototype: {
+				initializer() {
+					var instance = this;
 
-							instance.set('source', searchData);
+					var nodeList = instance.get('nodeList');
 
-							instance._nodes = nodes;
-							instance._searchData = searchData;
-						}
+					if (nodeList) {
+						var nodeSelector = instance.get('nodeSelector');
+
+						var nodes = nodeList.all(nodeSelector);
+
+						var searchDataLocator = instance.get(
+							'searchDataLocator'
+						);
+
+						var searchData = [];
+
+						nodes.each((item) => {
+							searchData.push({
+								node: item,
+								search: item.attr(searchDataLocator),
+							});
+						});
+
+						instance.set('source', searchData);
+
+						instance._nodes = nodes;
+						instance._searchData = searchData;
 					}
-				}
-			}
-		);
+				},
+			},
+		});
 
 		Liferay.SearchFilter = SearchFilter;
 	},
 	'',
 	{
-		requires: ['aui-base', 'autocomplete-base', 'autocomplete-filters']
+		requires: ['aui-base', 'autocomplete-base', 'autocomplete-filters'],
 	}
 );

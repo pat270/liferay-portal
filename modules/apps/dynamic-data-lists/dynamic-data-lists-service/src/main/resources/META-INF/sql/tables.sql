@@ -13,6 +13,8 @@ create table DDLRecord (
 	DDMStorageId LONG,
 	recordSetId LONG,
 	recordSetVersion VARCHAR(75) null,
+	className VARCHAR(300) null,
+	classPK LONG,
 	version VARCHAR(75) null,
 	displayIndex INTEGER,
 	lastPublishDate DATE null

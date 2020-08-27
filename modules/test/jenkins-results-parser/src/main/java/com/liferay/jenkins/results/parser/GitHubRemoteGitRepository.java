@@ -49,18 +49,18 @@ public class GitHubRemoteGitRepository extends BaseRemoteGitRepository {
 			jsonObject.put("description", description);
 		}
 
-		String labelsRequestURL = getLabelRequestURL();
+		String labelRequestURL = getLabelRequestURL();
 
 		try {
 			JenkinsResultsParserUtil.toString(
-				labelsRequestURL, jsonObject.toString());
+				labelRequestURL, jsonObject.toString());
 
-			_labelsLists.remove(labelsRequestURL);
+			_labelsLists.remove(labelRequestURL);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			System.out.println("Unable to add label " + name);
 
-			ioe.printStackTrace();
+			ioException.printStackTrace();
 
 			return false;
 		}
@@ -102,12 +102,12 @@ public class GitHubRemoteGitRepository extends BaseRemoteGitRepository {
 						labelRequestURL, "?page=", String.valueOf(page)),
 					false);
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				throw new RuntimeException(
 					JenkinsResultsParserUtil.combine(
 						"Unable to get labels for ", getName(),
 						" Git repository"),
-					ioe);
+					ioException);
 			}
 
 			if (labelsJSONArray.length() == 0) {
@@ -174,7 +174,7 @@ public class GitHubRemoteGitRepository extends BaseRemoteGitRepository {
 
 			_labelsLists.remove(getLabelRequestURL());
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (jsonObject == null) {
 				System.out.println(
 					"Unable to delete label " + oldLabel.getName());
@@ -184,7 +184,7 @@ public class GitHubRemoteGitRepository extends BaseRemoteGitRepository {
 					"Unable to update label " + oldLabel.getName());
 			}
 
-			ioe.printStackTrace();
+			ioException.printStackTrace();
 		}
 	}
 
@@ -199,16 +199,16 @@ public class GitHubRemoteGitRepository extends BaseRemoteGitRepository {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
+		public boolean equals(Object object) {
+			if (this == object) {
 				return true;
 			}
 
-			if (!(obj instanceof Label)) {
+			if (!(object instanceof Label)) {
 				return false;
 			}
 
-			Label label = (Label)obj;
+			Label label = (Label)object;
 
 			if (Objects.equals(getColor(), label.getColor()) &&
 				Objects.equals(getName(), label.getName())) {

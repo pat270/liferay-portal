@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.upgrade;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.sql.PreparedStatement;
@@ -62,7 +62,7 @@ public abstract class RenameUpgradePortalPreferences extends UpgradeProcess {
 			try {
 				runSQL(sb.toString());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				sb = new StringBundler(7);
 
 				sb.append("select ");

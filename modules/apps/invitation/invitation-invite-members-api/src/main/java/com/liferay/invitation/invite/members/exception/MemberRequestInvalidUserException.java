@@ -16,12 +16,9 @@ package com.liferay.invitation.invite.members.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class MemberRequestInvalidUserException extends PortalException {
 
 	public MemberRequestInvalidUserException() {
@@ -31,12 +28,12 @@ public class MemberRequestInvalidUserException extends PortalException {
 		super(msg);
 	}
 
-	public MemberRequestInvalidUserException(String msg, Throwable cause) {
-		super(msg, cause);
+	public MemberRequestInvalidUserException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public MemberRequestInvalidUserException(Throwable cause) {
-		super(cause);
+	public MemberRequestInvalidUserException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -16,9 +16,11 @@ package com.liferay.gradle.plugins.defaults.internal;
 
 import aQute.bnd.osgi.Constants;
 
+import com.github.jk1.license.LicenseReportExtension;
 import com.github.jk1.license.LicenseReportPlugin;
-import com.github.jk1.license.LicenseReportPlugin.LicenseReportExtension;
 import com.github.jk1.license.ModuleData;
+import com.github.jk1.license.ReportTask;
+import com.github.jk1.license.render.ReportRenderer;
 
 import com.liferay.gradle.plugins.LiferayAntPlugin;
 import com.liferay.gradle.plugins.LiferayOSGiPlugin;
@@ -26,14 +28,15 @@ import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUt
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.VersionsXmlReportRenderer;
 import com.liferay.gradle.plugins.defaults.internal.util.XMLUtil;
-import com.liferay.gradle.plugins.util.BndBuilderUtil;
+import com.liferay.gradle.plugins.extensions.BundleExtension;
+import com.liferay.gradle.plugins.util.BndUtil;
 import com.liferay.gradle.util.Validator;
 
 import java.io.File;
 import java.io.IOException;
 
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -52,8 +55,10 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.ExternalModuleDependency;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.TaskInputs;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.bundling.War;
+import org.gradle.util.GUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -144,6 +149,8 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 
 		public BaseLicenseReportConfigurator(Project project) {
 			this.project = project;
+
+			_overridePropertiesFile = _getOverridePropertiesFile();
 		}
 
 		@Override
@@ -154,21 +161,18 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 				GradleUtil.getExtension(project, LicenseReportExtension.class);
 
 			try {
-				licenseReportExtension.setConfigurations(addConfigurations());
+				licenseReportExtension.configurations = addConfigurations();
 			}
-			catch (IOException ioe) {
-				throw new UncheckedIOException(ioe);
+			catch (IOException ioException) {
+				throw new UncheckedIOException(ioException);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				throw new GradleException(
-					"Unable to configure license report for " + project, e);
+					"Unable to configure license report for " + project,
+					exception);
 			}
 
-			// We need to pass a nonexistent group to avoid excluding
-			// "com.liferay" dependencies.
-
-			licenseReportExtension.setExcludeGroups(
-				String.valueOf(System.currentTimeMillis()));
+			licenseReportExtension.excludeOwnGroup = false;
 
 			String fileName = "versions.xml";
 
@@ -177,12 +181,19 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 			if (Validator.isNotNull(outputDir)) {
 				fileName = project.getName() + ".xml";
 
-				licenseReportExtension.setOutputDir(outputDir);
+				licenseReportExtension.outputDir = outputDir;
 			}
 
-			licenseReportExtension.setRenderer(
+			Properties overrideProperties = new Properties();
+
+			if (_overridePropertiesFile != null) {
+				overrideProperties = GUtil.loadProperties(
+					_overridePropertiesFile);
+			}
+
+			licenseReportExtension.renderers = new ReportRenderer[] {
 				new ThirdPartyVersionsXmlReportRenderer(
-					fileName, licenseReportExtension,
+					fileName, overrideProperties, licenseReportExtension,
 					new Callable<String>() {
 
 						@Override
@@ -191,7 +202,17 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 								"." + getArchiveExtension();
 						}
 
-					}));
+					})
+			};
+
+			if (_overridePropertiesFile != null) {
+				ReportTask reportTask = (ReportTask)GradleUtil.getTask(
+					project, "generateLicenseReport");
+
+				TaskInputs taskInputs = reportTask.getInputs();
+
+				taskInputs.file(_overridePropertiesFile);
+			}
 		}
 
 		protected String[] addConfigurations() throws Exception {
@@ -211,6 +232,25 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 
 		protected final Project project;
 
+		private File _getOverridePropertiesFile() {
+			String overridePropertiesFileName = System.getProperty(
+				"license.report.override.properties.file");
+
+			if (Validator.isNull(overridePropertiesFileName)) {
+				return null;
+			}
+
+			File file = new File(overridePropertiesFileName);
+
+			if (!file.exists()) {
+				return null;
+			}
+
+			return file;
+		}
+
+		private final File _overridePropertiesFile;
+
 	}
 
 	private static class OSGiLicenseReportConfigurator
@@ -224,16 +264,15 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 		protected String[] addConfigurations() throws Exception {
 			super.addConfigurations();
 
+			BundleExtension bundleExtension = BndUtil.getBundleExtension(
+				project.getExtensions());
+
 			final Set<String> dependencyNames = new HashSet<>();
 
-			Map<String, Object> bundleInstructions =
-				BndBuilderUtil.getInstructions(project);
-
 			_addBundleDependencyNames(
-				dependencyNames, bundleInstructions, Constants.INCLUDERESOURCE);
+				bundleExtension, dependencyNames, Constants.INCLUDERESOURCE);
 			_addBundleDependencyNames(
-				dependencyNames, bundleInstructions,
-				Constants.INCLUDE_RESOURCE);
+				bundleExtension, dependencyNames, Constants.INCLUDE_RESOURCE);
 
 			_addDependenciesLicenseReport(
 				JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, dependencyNames);
@@ -253,10 +292,10 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 		}
 
 		private void _addBundleDependencyNames(
-			Set<String> dependencyNames, Map<String, Object> bundleInstructions,
+			BundleExtension bundleExtension, Set<String> dependencyNames,
 			String key) {
 
-			String value = GradleUtil.toString(bundleInstructions.get(key));
+			String value = bundleExtension.getInstruction(key);
 
 			if (Validator.isNull(value)) {
 				return;
@@ -310,15 +349,46 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 		extends VersionsXmlReportRenderer {
 
 		public ThirdPartyVersionsXmlReportRenderer(
-			String fileName, LicenseReportExtension licenseReportExtension,
+			String fileName, Properties overrideProperties,
+			LicenseReportExtension licenseReportExtension,
 			Callable<String> moduleFileNamePrefixCallable) {
 
 			super(
 				fileName, licenseReportExtension, moduleFileNamePrefixCallable);
+
+			_overrideProperties = overrideProperties;
 		}
 
 		@Override
-		protected boolean isExcluded(ModuleData moduleData) {
+		protected String getLicenseName(
+			String moduleFileName, ModuleData moduleData) {
+
+			String key = "license.name[" + moduleFileName + "]";
+
+			if (_overrideProperties.containsKey(key)) {
+				return _overrideProperties.getProperty(key);
+			}
+
+			return super.getLicenseName(moduleFileName, moduleData);
+		}
+
+		@Override
+		protected String getLicenseUrl(
+			String moduleFileName, ModuleData moduleData) {
+
+			String key = "license.url[" + moduleFileName + "]";
+
+			if (_overrideProperties.containsKey(key)) {
+				return _overrideProperties.getProperty(key);
+			}
+
+			return super.getLicenseUrl(moduleFileName, moduleData);
+		}
+
+		@Override
+		protected boolean isExcluded(
+			String moduleFileName, ModuleData moduleData) {
+
 			String group = moduleData.getGroup();
 			String name = moduleData.getName();
 
@@ -329,8 +399,14 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 				return true;
 			}
 
+			if (Validator.isNull(getLicenseName(moduleFileName, moduleData))) {
+				return true;
+			}
+
 			return false;
 		}
+
+		private final Properties _overrideProperties;
 
 	}
 

@@ -14,6 +14,10 @@
 
 package com.liferay.portal.kernel.security.permission;
 
+import com.liferay.petra.sql.dsl.Column;
+import com.liferay.petra.sql.dsl.Table;
+import com.liferay.petra.sql.dsl.expression.Predicate;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
@@ -22,12 +26,11 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
  */
 public class InlineSQLHelperUtil {
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static InlineSQLHelper getInlineSQLHelper() {
-		return _inlineSQLPermission;
+	public static <T extends Table<T>> Predicate getPermissionWherePredicate(
+		Class<?> modelClass, Column<T, Long> classPKColumn, long... groupIds) {
+
+		return _inlineSQLPermission.getPermissionWherePredicate(
+			modelClass, classPKColumn, groupIds);
 	}
 
 	public static boolean isEnabled() {
@@ -44,6 +47,14 @@ public class InlineSQLHelperUtil {
 
 	public static boolean isEnabled(long[] groupIds) {
 		return _inlineSQLPermission.isEnabled(groupIds);
+	}
+
+	public static <T extends Table<T>> DSLQuery replacePermissionCheck(
+		DSLQuery dslQuery, Class<?> modelClass, Column<T, Long> classPKColumn,
+		long... groupIds) {
+
+		return _inlineSQLPermission.replacePermissionCheck(
+			dslQuery, modelClass, classPKColumn, groupIds);
 	}
 
 	public static String replacePermissionCheck(
@@ -137,13 +148,6 @@ public class InlineSQLHelperUtil {
 		return _inlineSQLPermission.replacePermissionCheck(
 			sql, className, classPKField, userIdField, groupIdField, groupIds,
 			bridgeJoin);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public void setInlineSQLHelper(InlineSQLHelper inlineSQLPermission) {
 	}
 
 	private static volatile InlineSQLHelper _inlineSQLPermission =

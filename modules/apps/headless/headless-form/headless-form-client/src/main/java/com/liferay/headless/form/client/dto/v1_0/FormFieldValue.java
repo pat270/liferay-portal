@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class FormFieldValue {
+public class FormFieldValue implements Cloneable {
+
+	public static FormFieldValue toDTO(String json) {
+		return FormFieldValueSerDes.toDTO(json);
+	}
 
 	public FormDocument getFormDocument() {
 		return formDocument;
@@ -128,6 +132,11 @@ public class FormFieldValue {
 	}
 
 	protected String value;
+
+	@Override
+	public FormFieldValue clone() throws CloneNotSupportedException {
+		return (FormFieldValue)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

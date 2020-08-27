@@ -14,12 +14,12 @@
 
 package com.liferay.staging.processes.web.internal.display.context;
 
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -44,35 +44,39 @@ public class StagingProcessesWebToolbarDisplayContext {
 
 	public StagingProcessesWebToolbarDisplayContext(
 		HttpServletRequest httpServletRequest, PageContext pageContext,
-		LiferayPortletResponse portletResponse) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		_httpServletRequest = httpServletRequest;
 		_pageContext = pageContext;
 
-		_portletResponse = portletResponse;
+		_liferayPortletResponse = liferayPortletResponse;
 
-		Portlet portlet = portletResponse.getPortlet();
+		Portlet portlet = liferayPortletResponse.getPortlet();
 
 		_portletNamespace = PortalUtil.getPortletNamespace(
 			portlet.getRootPortletId());
 	}
 
-	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							"javascript:" + _portletNamespace +
-								"deleteEntries();");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "delete"));
-					});
+	public List<DropdownItem> getActionDropdownItems(boolean hasPermission) {
+		if (!hasPermission) {
+			return null;
+		}
+
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setHref(
+					"javascript:" + _portletNamespace + "deleteEntries();");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "delete"));
 			}
-		};
+		).build();
 	}
 
 	public CreationMenu getCreationMenu(boolean hasPermission) {
+		if (!hasPermission) {
+			return null;
+		}
+
 		return new CreationMenu() {
 			{
 				int configurationType = 0;
@@ -93,38 +97,15 @@ public class StagingProcessesWebToolbarDisplayContext {
 							TYPE_PUBLISH_LAYOUT_LOCAL;
 				}
 
-				if (hasPermission) {
-					List<ExportImportConfiguration> exportImportConfigurations =
-						ExportImportConfigurationLocalServiceUtil.
-							getExportImportConfigurations(
-								stagingGroupId, configurationType);
+				List<ExportImportConfiguration> exportImportConfigurations =
+					ExportImportConfigurationLocalServiceUtil.
+						getExportImportConfigurations(
+							stagingGroupId, configurationType);
 
-					for (ExportImportConfiguration exportImportConfiguration :
-							exportImportConfigurations) {
+				for (ExportImportConfiguration exportImportConfiguration :
+						exportImportConfigurations) {
 
-						addRestDropdownItem(
-							dropdownItem -> {
-								String cmd = Constants.PUBLISH_TO_LIVE;
-
-								if (stagingGroup.isStagedRemotely()) {
-									cmd = Constants.PUBLISH_TO_REMOTE;
-								}
-
-								dropdownItem.setHref(
-									_portletResponse.createRenderURL(),
-									"mvcRenderCommandName", "publishLayouts",
-									Constants.CMD, cmd,
-									"exportImportConfigurationId",
-									String.valueOf(
-										exportImportConfiguration.
-											getExportImportConfigurationId()),
-									"groupId", String.valueOf(stagingGroupId));
-								dropdownItem.setLabel(
-									exportImportConfiguration.getName());
-							});
-					}
-
-					addPrimaryDropdownItem(
+					addRestDropdownItem(
 						dropdownItem -> {
 							String cmd = Constants.PUBLISH_TO_LIVE;
 
@@ -133,41 +114,57 @@ public class StagingProcessesWebToolbarDisplayContext {
 							}
 
 							dropdownItem.setHref(
-								_portletResponse.createRenderURL(),
+								_liferayPortletResponse.createRenderURL(),
 								"mvcRenderCommandName", "publishLayouts",
-								Constants.CMD, cmd, "groupId",
-								String.valueOf(stagingGroupId), "privateLayout",
-								Boolean.FALSE.toString());
+								Constants.CMD, cmd,
+								"exportImportConfigurationId",
+								String.valueOf(
+									exportImportConfiguration.
+										getExportImportConfigurationId()),
+								"groupId", String.valueOf(stagingGroupId));
 							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest, "custom-publication"));
+								exportImportConfiguration.getName());
 						});
 				}
+
+				addPrimaryDropdownItem(
+					dropdownItem -> {
+						String cmd = Constants.PUBLISH_TO_LIVE;
+
+						if (stagingGroup.isStagedRemotely()) {
+							cmd = Constants.PUBLISH_TO_REMOTE;
+						}
+
+						dropdownItem.setHref(
+							_liferayPortletResponse.createRenderURL(),
+							"mvcRenderCommandName", "publishLayouts",
+							Constants.CMD, cmd, "groupId",
+							String.valueOf(stagingGroupId), "privateLayout",
+							Boolean.FALSE.toString());
+						dropdownItem.setLabel(
+							LanguageUtil.get(
+								_httpServletRequest, "custom-publication"));
+					});
 			}
 		};
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "filter"));
-						dropdownGroupItem.setSeparator(true);
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropDownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "filter"));
+				dropdownGroupItem.setSeparator(true);
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropDownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public String getSortingOrder() {
@@ -188,7 +185,7 @@ public class StagingProcessesWebToolbarDisplayContext {
 	}
 
 	public List<ViewTypeItem> getViewTypeItems() {
-		PortletURL portletURL = _portletResponse.createRenderURL();
+		PortletURL portletURL = _liferayPortletResponse.createRenderURL();
 
 		return new ViewTypeItemList(portletURL, getDisplayStyle()) {
 			{
@@ -203,31 +200,25 @@ public class StagingProcessesWebToolbarDisplayContext {
 	}
 
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(_getNavigationURL("all"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "all"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(_getNavigationURL("completed"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "completed"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(_getNavigationURL("in-progress"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "in-progress"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setHref(_getNavigationURL("all"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "all"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref(_getNavigationURL("completed"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "completed"));
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref(_getNavigationURL("in-progress"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "in-progress"));
+			}
+		).build();
 	}
 
 	private PortletURL _getNavigationURL(String navigation) {
@@ -239,32 +230,25 @@ public class StagingProcessesWebToolbarDisplayContext {
 	}
 
 	private List<DropdownItem> _getOrderByDropDownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(_getOrderByURL("name"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "name"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(_getOrderByURL("create-date"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "create-date"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setHref(_getOrderByURL("completion-date"));
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "completion-date"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setHref(_getOrderByURL("name"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "name"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref(_getOrderByURL("create-date"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "create-date"));
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.setHref(_getOrderByURL("completion-date"));
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "completion-date"));
+			}
+		).build();
 	}
 
 	private PortletURL _getOrderByURL(String orderByColumnName) {
@@ -276,7 +260,7 @@ public class StagingProcessesWebToolbarDisplayContext {
 	}
 
 	private PortletURL _getStagingRenderURL() {
-		PortletURL renderURL = _portletResponse.createRenderURL();
+		PortletURL renderURL = _liferayPortletResponse.createRenderURL();
 
 		renderURL.setParameter(
 			"navigation",
@@ -306,8 +290,8 @@ public class StagingProcessesWebToolbarDisplayContext {
 	}
 
 	private final HttpServletRequest _httpServletRequest;
+	private final LiferayPortletResponse _liferayPortletResponse;
 	private final PageContext _pageContext;
 	private final String _portletNamespace;
-	private final LiferayPortletResponse _portletResponse;
 
 }

@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 
 import java.sql.PreparedStatement;
@@ -65,7 +66,7 @@ public class UpgradeCheckboxFieldToCheckboxMultipleField
 		_jsonFactory = jsonFactory;
 	}
 
-	protected DDMForm deserialize(String content) {
+	protected DDMForm deserialize(String content) throws Exception {
 		DDMFormDeserializerDeserializeRequest.Builder builder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(content);
 
@@ -73,10 +74,19 @@ public class UpgradeCheckboxFieldToCheckboxMultipleField
 			ddmFormDeserializerDeserializeResponse =
 				_ddmFormDeserializer.deserialize(builder.build());
 
+		Exception exception =
+			ddmFormDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
+
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
 	}
 
-	protected DDMFormValues deserialize(String content, DDMForm ddmForm) {
+	protected DDMFormValues deserialize(String content, DDMForm ddmForm)
+		throws Exception {
+
 		DDMFormValuesDeserializerDeserializeRequest.Builder builder =
 			DDMFormValuesDeserializerDeserializeRequest.Builder.newBuilder(
 				content, ddmForm);
@@ -84,6 +94,13 @@ public class UpgradeCheckboxFieldToCheckboxMultipleField
 		DDMFormValuesDeserializerDeserializeResponse
 			ddmFormValuesDeserializerDeserializeResponse =
 				_ddmFormValuesDeserializer.deserialize(builder.build());
+
+		Exception exception =
+			ddmFormValuesDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
 
 		return ddmFormValuesDeserializerDeserializeResponse.getDDMFormValues();
 	}
@@ -173,10 +190,10 @@ public class UpgradeCheckboxFieldToCheckboxMultipleField
 		JSONObject newPredefinedValueJSONObject =
 			_jsonFactory.createJSONObject();
 
-		Iterator<String> languageKeys = oldPredefinedValueJSONObject.keys();
+		Iterator<String> iterator = oldPredefinedValueJSONObject.keys();
 
-		while (languageKeys.hasNext()) {
-			String languageKey = languageKeys.next();
+		while (iterator.hasNext()) {
+			String languageKey = iterator.next();
 
 			String predefinedValue = oldPredefinedValueJSONObject.getString(
 				languageKey);

@@ -1,4 +1,17 @@
-import Uri from 'metal-uri';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import {utils} from 'senna';
 
 import EventScreen from './EventScreen.es';
@@ -32,13 +45,13 @@ class ActionURLScreen extends EventScreen {
 	getRequestPath() {
 		let requestPath = null;
 
-		let request = this.getRequest();
+		const request = this.getRequest();
 
 		if (request) {
-			let uri = new Uri(super.getRequestPath());
+			const uri = new URL(super.getRequestPath(), window.location.origin);
 
-			if (uri.getParameterValue('p_p_lifecycle') === '1') {
-				uri.setParameterValue('p_p_lifecycle', '0');
+			if (uri.searchParams.get('p_p_lifecycle') === '1') {
+				uri.searchParams.set('p_p_lifecycle', '0');
 			}
 
 			requestPath = utils.getUrlPath(uri.toString());

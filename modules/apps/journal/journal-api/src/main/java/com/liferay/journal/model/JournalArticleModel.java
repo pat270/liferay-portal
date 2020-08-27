@@ -18,11 +18,13 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ResourcedModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -41,8 +43,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface JournalArticleModel
-	extends AttachedModel, BaseModel<JournalArticle>, ResourcedModel,
-			ShardedModel, StagedGroupedModel, TrashedModel, WorkflowedModel {
+	extends AttachedModel, BaseModel<JournalArticle>, CTModel<JournalArticle>,
+			MVCCModel, ResourcedModel, ShardedModel, StagedGroupedModel,
+			TrashedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -55,6 +58,7 @@ public interface JournalArticleModel
 	 *
 	 * @return the primary key of this journal article
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -62,7 +66,40 @@ public interface JournalArticleModel
 	 *
 	 * @param primaryKey the primary key of this journal article
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this journal article.
+	 *
+	 * @return the mvcc version of this journal article
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this journal article.
+	 *
+	 * @param mvccVersion the mvcc version of this journal article
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this journal article.
+	 *
+	 * @return the ct collection ID of this journal article
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this journal article.
+	 *
+	 * @param ctCollectionId the ct collection ID of this journal article
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this journal article.

@@ -18,6 +18,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.elasticsearch6.configuration.ElasticsearchConfiguration;
+import com.liferay.portal.search.index.IndexNameBuilder;
 
 import java.util.Map;
 

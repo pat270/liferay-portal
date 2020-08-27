@@ -18,6 +18,7 @@ import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReference
 import com.liferay.osgi.service.tracker.collections.map.ServiceReferenceMapper;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
+import com.liferay.osgi.util.StringPlus;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.field.customizer.SegmentsFieldCustomizer;
 import com.liferay.segments.field.customizer.SegmentsFieldCustomizerRegistry;
@@ -40,12 +41,24 @@ import org.osgi.service.component.annotations.Deactivate;
 public class SegmentsFieldCustomizerRegistryImpl
 	implements SegmentsFieldCustomizerRegistry {
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getSegmentsFieldCustomizerOptional(String, String)}
+	 */
+	@Deprecated
 	@Override
 	public Optional<SegmentsFieldCustomizer> getSegmentFieldCustomizerOptional(
 		String entityName, String fieldName) {
 
+		return getSegmentsFieldCustomizerOptional(entityName, fieldName);
+	}
+
+	@Override
+	public Optional<SegmentsFieldCustomizer> getSegmentsFieldCustomizerOptional(
+		String entityName, String fieldName) {
+
 		List<SegmentsFieldCustomizer> segmentsFieldCustomizers =
-			getSegmentFieldCustomizers(entityName);
+			getSegmentsFieldCustomizers(entityName);
 
 		Stream<SegmentsFieldCustomizer> stream =
 			segmentsFieldCustomizers.stream();
@@ -67,7 +80,7 @@ public class SegmentsFieldCustomizerRegistryImpl
 			"(segments.field.customizer.entity.name=*)",
 			new FieldCustomizerServiceReferenceMapper(),
 			Collections.reverseOrder(
-				new PropertyServiceReferenceComparator(
+				new PropertyServiceReferenceComparator<>(
 					"segments.field.customizer.priority")));
 	}
 
@@ -76,7 +89,7 @@ public class SegmentsFieldCustomizerRegistryImpl
 		_serviceTrackerMap.close();
 	}
 
-	protected List<SegmentsFieldCustomizer> getSegmentFieldCustomizers(
+	protected List<SegmentsFieldCustomizer> getSegmentsFieldCustomizers(
 		String name) {
 
 		if (Validator.isNull(name)) {
@@ -104,10 +117,13 @@ public class SegmentsFieldCustomizerRegistryImpl
 			ServiceReference<SegmentsFieldCustomizer> serviceReference,
 			Emitter<String> emitter) {
 
-			String entityName = (String)serviceReference.getProperty(
-				"segments.field.customizer.entity.name");
+			List<String> entityNames = StringPlus.asList(
+				serviceReference.getProperty(
+					"segments.field.customizer.entity.name"));
 
-			emitter.emit(entityName);
+			for (String entityName : entityNames) {
+				emitter.emit(entityName);
+			}
 		}
 
 	}

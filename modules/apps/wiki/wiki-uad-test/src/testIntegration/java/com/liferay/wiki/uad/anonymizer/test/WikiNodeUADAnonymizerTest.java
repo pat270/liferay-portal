@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class WikiNodeUADAnonymizerTest
 	extends BaseUADAnonymizerTestCase<WikiNode>
-	implements WhenHasStatusByUserIdField {
+	implements WhenHasStatusByUserIdField<WikiNode> {
 
 	@ClassRule
 	@Rule
@@ -93,7 +93,7 @@ public class WikiNodeUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<WikiNode> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -127,7 +127,7 @@ public class WikiNodeUADAnonymizerTest
 	}
 
 	@Inject(filter = "component.name=*.WikiNodeUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<WikiNode> _uadAnonymizer;
 
 	@Inject
 	private WikiNodeLocalService _wikiNodeLocalService;

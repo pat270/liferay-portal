@@ -17,21 +17,31 @@ package com.liferay.mobile.device.rules.service.impl;
 import com.liferay.mobile.device.rules.model.MDRRule;
 import com.liferay.mobile.device.rules.model.MDRRuleGroup;
 import com.liferay.mobile.device.rules.service.base.MDRRuleServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceMode;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Edward C. Han
  */
+@Component(
+	property = {
+		"json.web.service.context.name=mdr",
+		"json.web.service.context.path=MDRRule"
+	},
+	service = AopService.class
+)
 public class MDRRuleServiceImpl extends MDRRuleServiceBaseImpl {
 
 	@Override
@@ -54,15 +64,16 @@ public class MDRRuleServiceImpl extends MDRRuleServiceBaseImpl {
 	public MDRRule addRule(
 			long ruleGroupId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettings, ServiceContext serviceContext)
+			UnicodeProperties typeSettingsUnicodeProperties,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		_mdrRuleGroupModelResourcePermission.check(
 			getPermissionChecker(), ruleGroupId, ActionKeys.UPDATE);
 
 		return mdrRuleLocalService.addRule(
-			ruleGroupId, nameMap, descriptionMap, type, typeSettings,
-			serviceContext);
+			ruleGroupId, nameMap, descriptionMap, type,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
 	@Override
@@ -118,7 +129,7 @@ public class MDRRuleServiceImpl extends MDRRuleServiceBaseImpl {
 	public MDRRule updateRule(
 			long ruleId, Map<Locale, String> nameMap,
 			Map<Locale, String> descriptionMap, String type,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -128,14 +139,14 @@ public class MDRRuleServiceImpl extends MDRRuleServiceBaseImpl {
 			getPermissionChecker(), rule.getRuleGroupId(), ActionKeys.UPDATE);
 
 		return mdrRuleLocalService.updateRule(
-			ruleId, nameMap, descriptionMap, type, typeSettingsProperties,
-			serviceContext);
+			ruleId, nameMap, descriptionMap, type,
+			typeSettingsUnicodeProperties, serviceContext);
 	}
 
-	private static volatile ModelResourcePermission<MDRRuleGroup>
-		_mdrRuleGroupModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				MDRRuleServiceImpl.class,
-				"_mdrRuleGroupModelResourcePermission", MDRRuleGroup.class);
+	@Reference(
+		target = "(model.class.name=com.liferay.mobile.device.rules.model.MDRRuleGroup)"
+	)
+	private ModelResourcePermission<MDRRuleGroup>
+		_mdrRuleGroupModelResourcePermission;
 
 }

@@ -16,10 +16,12 @@ package com.liferay.layout.page.template.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.TypedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -38,7 +40,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface LayoutPageTemplateEntryModel
-	extends BaseModel<LayoutPageTemplateEntry>, ShardedModel,
+	extends BaseModel<LayoutPageTemplateEntry>,
+			CTModel<LayoutPageTemplateEntry>, MVCCModel, ShardedModel,
 			StagedGroupedModel, TypedModel, WorkflowedModel {
 
 	/*
@@ -52,6 +55,7 @@ public interface LayoutPageTemplateEntryModel
 	 *
 	 * @return the primary key of this layout page template entry
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -59,7 +63,40 @@ public interface LayoutPageTemplateEntryModel
 	 *
 	 * @param primaryKey the primary key of this layout page template entry
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this layout page template entry.
+	 *
+	 * @return the mvcc version of this layout page template entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this layout page template entry.
+	 *
+	 * @param mvccVersion the mvcc version of this layout page template entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this layout page template entry.
+	 *
+	 * @return the ct collection ID of this layout page template entry
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this layout page template entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this layout page template entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this layout page template entry.
@@ -219,6 +256,22 @@ public interface LayoutPageTemplateEntryModel
 	 */
 	public void setLayoutPageTemplateCollectionId(
 		long layoutPageTemplateCollectionId);
+
+	/**
+	 * Returns the layout page template entry key of this layout page template entry.
+	 *
+	 * @return the layout page template entry key of this layout page template entry
+	 */
+	@AutoEscape
+	public String getLayoutPageTemplateEntryKey();
+
+	/**
+	 * Sets the layout page template entry key of this layout page template entry.
+	 *
+	 * @param layoutPageTemplateEntryKey the layout page template entry key of this layout page template entry
+	 */
+	public void setLayoutPageTemplateEntryKey(
+		String layoutPageTemplateEntryKey);
 
 	/**
 	 * Returns the fully qualified class name of this layout page template entry.

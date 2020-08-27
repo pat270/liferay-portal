@@ -73,7 +73,7 @@
 
 		// Left list
 
-		List leftList = new ArrayList();
+		List<KeyValuePair> leftList = new ArrayList<>();
 
 		String[] currentLanguageIds = PrefsPropsUtil.getStringArray(company.getCompanyId(), PropsKeys.LOCALES, StringPool.COMMA, PropsValues.LOCALES_ENABLED);
 
@@ -83,7 +83,7 @@
 
 		// Right list
 
-		List rightList = new ArrayList();
+		List<KeyValuePair> rightList = new ArrayList<>();
 
 		for (String propsValuesLanguageId : SetUtil.fromArray(PropsValues.LOCALES)) {
 			if (!ArrayUtil.contains(availableLanguageIds, propsValuesLanguageId)) {
@@ -108,64 +108,42 @@
 	</aui:fieldset>
 </aui:fieldset>
 
-<aui:script use="aui-base,aui-alert">
+<aui:script use="aui-alert,aui-base">
 	var languageSelectInput = A.one('#<portlet:namespace />languageId');
 
 	if (languageSelectInput) {
-		languageSelectInput.on(
-			'change',
-			function() {
-				new A.Alert(
-					{
-						bodyContent: '<liferay-ui:message key="this-change-will-only-affect-the-newly-created-localized-content" />',
-						boundingBox: '#<portlet:namespace />languageWarning',
-						closeable: true,
-						cssClass: 'alert-warning',
-						destroyOnHide: false,
-						render: true
-					}
-				);
-			}
-		);
-	}
-
-	const form = document.getElementById('<portlet:namespace />fm');
-
-	form.addEventListener(
-		'submit',
-		function(event) {
-			event.preventDefault();
-
-			<portlet:namespace />saveCompany();
-		}
-	);
-
-	function <portlet:namespace />saveCompany() {
-		<portlet:namespace />saveLocales();
-
-		Liferay.Util.postForm(
-			form,
-			{
-				data: {
-					'<%= Constants.CMD %>': '<%= Constants.UPDATE %>'
-				}
-			}
-		);
+		languageSelectInput.on('change', function () {
+			new A.Alert({
+				bodyContent:
+					'<liferay-ui:message key="this-change-will-only-affect-the-newly-created-localized-content" />',
+				boundingBox: '#<portlet:namespace />languageWarning',
+				closeable: true,
+				cssClass: 'alert-warning',
+				destroyOnHide: false,
+				render: true,
+			});
+		});
 	}
 
 	function <portlet:namespace />saveLocales() {
 		var form = document.<portlet:namespace />fm;
 
-		var currentLanguageIdsElement = Liferay.Util.getFormElement(form, 'currentLanguageIds');
+		var currentLanguageIdsElement = Liferay.Util.getFormElement(
+			form,
+			'currentLanguageIds'
+		);
 
 		if (currentLanguageIdsElement) {
-			Liferay.Util.setFormValues(
-				form,
-				{
-					'<%= PropsKeys.LOCALES %>': Liferay.Util.listSelect(currentLanguageIdsElement)
-				}
-			);
+			Liferay.Util.setFormValues(form, {
+				<%= PropsKeys.LOCALES %>: Liferay.Util.listSelect(
+					currentLanguageIdsElement
+				),
+			});
 		}
 	}
 
+	Liferay.after(
+		['form:registered', 'inputmoveboxes:moveItem', 'inputmoveboxes:orderItem'],
+		<portlet:namespace />saveLocales
+	);
 </aui:script>

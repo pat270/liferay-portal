@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
@@ -61,11 +62,15 @@ public interface CompanyLocalService
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link CompanyLocalServiceUtil} to access the company local service. Add custom service methods to <code>com.liferay.portal.service.impl.CompanyLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.service.impl.CompanyLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the company local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link CompanyLocalServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**
 	 * Adds the company to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param company the company
 	 * @return the company that was added
@@ -76,6 +81,8 @@ public interface CompanyLocalService
 	/**
 	 * Adds a company.
 	 *
+	 * @param companyId the primary key of the company (<code>null</code> or
+	 <code>0</code> to generate it automatically)
 	 * @param webId the the company's web domain
 	 * @param virtualHostname the company's virtual host name
 	 * @param mx the company's mail domain
@@ -85,7 +92,30 @@ public interface CompanyLocalService
 	 <code>0</code>)
 	 * @param active whether the company is active
 	 * @return the company
+	 * @review
 	 */
+	public Company addCompany(
+			Long companyId, String webId, String virtualHostname, String mx,
+			boolean system, int maxUsers, boolean active)
+		throws PortalException;
+
+	/**
+	 * Adds a company.
+	 *
+	 * @param webId the the company's web domain
+	 * @param virtualHostname the company's virtual host name
+	 * @param mx the company's mail domain
+	 * @param system whether the company is the very first company (i.e.,
+	 the super company)
+	 * @param maxUsers the max number of company users (optionally
+	 <code>0</code>)
+	 * @param active whether the company is active
+	 * @return the company
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #addCompany(Long, String, String, String, boolean, int,
+	 boolean)}
+	 */
+	@Deprecated
 	public Company addCompany(
 			String webId, String virtualHostname, String mx, boolean system,
 			int maxUsers, boolean active)
@@ -103,8 +133,7 @@ public interface CompanyLocalService
 	public Company checkCompany(String webId) throws PortalException;
 
 	/**
-	 * Returns the company with the web domain and mail domain. If no such
-	 * company exits, the method will create a new company.
+	 * Returns the company with the web domain and mail domain.
 	 *
 	 * The method goes through a series of checks to ensure that the company
 	 * contains default users, groups, etc.
@@ -137,7 +166,17 @@ public interface CompanyLocalService
 	public Company createCompany(long companyId);
 
 	/**
+	 * @throws PortalException
+	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException;
+
+	/**
 	 * Deletes the company from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param company the company
 	 * @return the company that was removed
@@ -148,6 +187,10 @@ public interface CompanyLocalService
 
 	/**
 	 * Deletes the company with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param companyId the primary key of the company
 	 * @return the company that was removed
@@ -172,6 +215,9 @@ public interface CompanyLocalService
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> T dslQuery(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
 
 	/**
@@ -187,7 +233,7 @@ public interface CompanyLocalService
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -203,7 +249,7 @@ public interface CompanyLocalService
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -288,7 +334,7 @@ public interface CompanyLocalService
 	 * Returns a range of all the companies.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.CompanyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of companies
@@ -394,6 +440,9 @@ public interface CompanyLocalService
 	 */
 	public String getOSGiServiceIdentifier();
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
@@ -458,6 +507,10 @@ public interface CompanyLocalService
 	/**
 	 * Updates the company in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect CompanyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param company the company
 	 * @return the company that was updated
 	 */
@@ -487,7 +540,7 @@ public interface CompanyLocalService
 	 * @param virtualHostname the company's virtual host name
 	 * @param mx the company's mail domain
 	 * @param homeURL the company's home URL (optionally <code>null</code>)
-	 * @param logo whether to update the company's logo
+	 * @param hasLogo if the company has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param name the company's account name(optionally <code>null</code>)
 	 * @param legalName the company's account legal name (optionally
@@ -508,7 +561,7 @@ public interface CompanyLocalService
 	 */
 	public Company updateCompany(
 			long companyId, String virtualHostname, String mx, String homeURL,
-			boolean logo, byte[] logoBytes, String name, String legalName,
+			boolean hasLogo, byte[] logoBytes, String name, String legalName,
 			String legalId, String legalType, String sicCode,
 			String tickerSymbol, String industry, String type, String size)
 		throws PortalException;
@@ -550,10 +603,10 @@ public interface CompanyLocalService
 	 * Update the company's logo.
 	 *
 	 * @param companyId the primary key of the company
-	 * @param is the input stream of the company's logo image
+	 * @param inputStream the input stream of the company's logo image
 	 * @return the company with the primary key
 	 */
-	public Company updateLogo(long companyId, InputStream is)
+	public Company updateLogo(long companyId, InputStream inputStream)
 		throws PortalException;
 
 	/**
@@ -561,9 +614,11 @@ public interface CompanyLocalService
 	 * found in portal.properties.
 	 *
 	 * @param companyId the primary key of the company
-	 * @param properties the company's properties. See {@link UnicodeProperties}
+	 * @param unicodeProperties the company's properties. See {@link
+	 UnicodeProperties}
 	 */
-	public void updatePreferences(long companyId, UnicodeProperties properties)
+	public void updatePreferences(
+			long companyId, UnicodeProperties unicodeProperties)
 		throws PortalException;
 
 	/**

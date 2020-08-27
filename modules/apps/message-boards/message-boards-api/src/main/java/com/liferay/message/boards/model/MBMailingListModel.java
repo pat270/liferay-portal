@@ -17,8 +17,10 @@ package com.liferay.message.boards.model;
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.GroupedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedAuditedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -37,8 +39,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface MBMailingListModel
-	extends BaseModel<MBMailingList>, GroupedModel, ShardedModel,
-			StagedAuditedModel {
+	extends BaseModel<MBMailingList>, CTModel<MBMailingList>, GroupedModel,
+			MVCCModel, ShardedModel, StagedAuditedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -51,6 +53,7 @@ public interface MBMailingListModel
 	 *
 	 * @return the primary key of this message boards mailing list
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -58,7 +61,40 @@ public interface MBMailingListModel
 	 *
 	 * @param primaryKey the primary key of this message boards mailing list
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this message boards mailing list.
+	 *
+	 * @return the mvcc version of this message boards mailing list
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this message boards mailing list.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards mailing list
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this message boards mailing list.
+	 *
+	 * @return the ct collection ID of this message boards mailing list
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this message boards mailing list.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards mailing list
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this message boards mailing list.

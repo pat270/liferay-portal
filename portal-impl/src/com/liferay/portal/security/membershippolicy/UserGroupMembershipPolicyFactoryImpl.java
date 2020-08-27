@@ -36,7 +36,8 @@ public class UserGroupMembershipPolicyFactoryImpl
 
 	@Override
 	public UserGroupMembershipPolicy getUserGroupMembershipPolicy() {
-		return _instance._serviceTracker.getService();
+		return _userGroupMembershipPolicyFactoryImpl._serviceTracker.
+			getService();
 	}
 
 	private UserGroupMembershipPolicyFactoryImpl() {
@@ -52,8 +53,9 @@ public class UserGroupMembershipPolicyFactoryImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		UserGroupMembershipPolicyFactoryImpl.class);
 
-	private static final UserGroupMembershipPolicyFactoryImpl _instance =
-		new UserGroupMembershipPolicyFactoryImpl();
+	private static final UserGroupMembershipPolicyFactoryImpl
+		_userGroupMembershipPolicyFactoryImpl =
+			new UserGroupMembershipPolicyFactoryImpl();
 
 	private final ServiceTracker<?, UserGroupMembershipPolicy> _serviceTracker;
 
@@ -74,8 +76,8 @@ public class UserGroupMembershipPolicyFactoryImpl
 				try {
 					userGroupMembershipPolicy.verifyPolicy();
 				}
-				catch (PortalException pe) {
-					_log.error(pe, pe);
+				catch (PortalException portalException) {
+					_log.error(portalException, portalException);
 				}
 			}
 

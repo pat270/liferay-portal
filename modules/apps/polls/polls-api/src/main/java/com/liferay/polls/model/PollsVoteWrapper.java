@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link PollsVote}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PollsVote
  * @generated
  */
-@ProviderType
 public class PollsVoteWrapper
 	extends BaseModelWrapper<PollsVote>
-	implements PollsVote, ModelWrapper<PollsVote> {
+	implements ModelWrapper<PollsVote>, PollsVote {
 
 	public PollsVoteWrapper(PollsVote pollsVote) {
 		super(pollsVote);
@@ -46,6 +43,7 @@ public class PollsVoteWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("voteId", getVoteId());
 		attributes.put("groupId", getGroupId());
@@ -64,6 +62,12 @@ public class PollsVoteWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -202,6 +206,16 @@ public class PollsVoteWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this polls vote.
+	 *
+	 * @return the mvcc version of this polls vote
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -347,6 +361,16 @@ public class PollsVoteWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this polls vote.
+	 *
+	 * @param mvccVersion the mvcc version of this polls vote
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

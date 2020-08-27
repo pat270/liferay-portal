@@ -39,10 +39,6 @@ public class SiteNavigationAdminControlPanelEntry
 			PermissionChecker permissionChecker, Group group, Portlet portlet)
 		throws Exception {
 
-		if (group.isCompany()) {
-			return true;
-		}
-
 		if (group.isLayout()) {
 			return true;
 		}

@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBThread
  * @generated
  */
-@ProviderType
 public class MBThreadWrapper
 	extends BaseModelWrapper<MBThread>
 	implements MBThread, ModelWrapper<MBThread> {
@@ -46,6 +45,8 @@ public class MBThreadWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("threadId", getThreadId());
 		attributes.put("groupId", getGroupId());
@@ -58,8 +59,6 @@ public class MBThreadWrapper
 		attributes.put("rootMessageId", getRootMessageId());
 		attributes.put("rootMessageUserId", getRootMessageUserId());
 		attributes.put("title", getTitle());
-		attributes.put("messageCount", getMessageCount());
-		attributes.put("viewCount", getViewCount());
 		attributes.put("lastPostByUserId", getLastPostByUserId());
 		attributes.put("lastPostDate", getLastPostDate());
 		attributes.put("priority", getPriority());
@@ -75,6 +74,18 @@ public class MBThreadWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -145,18 +156,6 @@ public class MBThreadWrapper
 
 		if (title != null) {
 			setTitle(title);
-		}
-
-		Integer messageCount = (Integer)attributes.get("messageCount");
-
-		if (messageCount != null) {
-			setMessageCount(messageCount);
-		}
-
-		Integer viewCount = (Integer)attributes.get("viewCount");
-
-		if (viewCount != null) {
-			setViewCount(viewCount);
 		}
 
 		Long lastPostByUserId = (Long)attributes.get("lastPostByUserId");
@@ -285,6 +284,16 @@ public class MBThreadWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this message boards thread.
+	 *
+	 * @return the ct collection ID of this message boards thread
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this message boards thread.
 	 *
 	 * @return the group ID of this message boards thread
@@ -339,11 +348,6 @@ public class MBThreadWrapper
 		return model.getLock();
 	}
 
-	/**
-	 * Returns the message count of this message boards thread.
-	 *
-	 * @return the message count of this message boards thread
-	 */
 	@Override
 	public int getMessageCount() {
 		return model.getMessageCount();
@@ -357,6 +361,16 @@ public class MBThreadWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this message boards thread.
+	 *
+	 * @return the mvcc version of this message boards thread
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -578,13 +592,8 @@ public class MBThreadWrapper
 		return model.getUuid();
 	}
 
-	/**
-	 * Returns the view count of this message boards thread.
-	 *
-	 * @return the view count of this message boards thread
-	 */
 	@Override
-	public int getViewCount() {
+	public long getViewCount() {
 		return model.getViewCount();
 	}
 
@@ -764,6 +773,16 @@ public class MBThreadWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this message boards thread.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards thread
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this message boards thread.
 	 *
 	 * @param groupId the group ID of this message boards thread
@@ -814,16 +833,6 @@ public class MBThreadWrapper
 	}
 
 	/**
-	 * Sets the message count of this message boards thread.
-	 *
-	 * @param messageCount the message count of this message boards thread
-	 */
-	@Override
-	public void setMessageCount(int messageCount) {
-		model.setMessageCount(messageCount);
-	}
-
-	/**
 	 * Sets the modified date of this message boards thread.
 	 *
 	 * @param modifiedDate the modified date of this message boards thread
@@ -831,6 +840,16 @@ public class MBThreadWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this message boards thread.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards thread
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -1013,14 +1032,18 @@ public class MBThreadWrapper
 		model.setUuid(uuid);
 	}
 
-	/**
-	 * Sets the view count of this message boards thread.
-	 *
-	 * @param viewCount the view count of this message boards thread
-	 */
 	@Override
-	public void setViewCount(int viewCount) {
-		model.setViewCount(viewCount);
+	public Map<String, Function<MBThread, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<MBThread, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

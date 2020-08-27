@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivitySetting
  * @generated
  */
-@ProviderType
 public class SocialActivitySettingWrapper
 	extends BaseModelWrapper<SocialActivitySetting>
-	implements SocialActivitySetting, ModelWrapper<SocialActivitySetting> {
+	implements ModelWrapper<SocialActivitySetting>, SocialActivitySetting {
 
 	public SocialActivitySettingWrapper(
 		SocialActivitySetting socialActivitySetting) {
@@ -46,6 +45,8 @@ public class SocialActivitySettingWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("activitySettingId", getActivitySettingId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -59,6 +60,18 @@ public class SocialActivitySettingWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long activitySettingId = (Long)attributes.get("activitySettingId");
 
 		if (activitySettingId != null) {
@@ -153,6 +166,16 @@ public class SocialActivitySettingWrapper
 	}
 
 	/**
+	 * Returns the ct collection ID of this social activity setting.
+	 *
+	 * @return the ct collection ID of this social activity setting
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
+	/**
 	 * Returns the group ID of this social activity setting.
 	 *
 	 * @return the group ID of this social activity setting
@@ -160,6 +183,16 @@ public class SocialActivitySettingWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the mvcc version of this social activity setting.
+	 *
+	 * @return the mvcc version of this social activity setting
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -243,6 +276,16 @@ public class SocialActivitySettingWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this social activity setting.
+	 *
+	 * @param ctCollectionId the ct collection ID of this social activity setting
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the group ID of this social activity setting.
 	 *
 	 * @param groupId the group ID of this social activity setting
@@ -250,6 +293,16 @@ public class SocialActivitySettingWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this social activity setting.
+	 *
+	 * @param mvccVersion the mvcc version of this social activity setting
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -280,6 +333,20 @@ public class SocialActivitySettingWrapper
 	@Override
 	public void setValue(String value) {
 		model.setValue(value);
+	}
+
+	@Override
+	public Map<String, Function<SocialActivitySetting, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<SocialActivitySetting, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

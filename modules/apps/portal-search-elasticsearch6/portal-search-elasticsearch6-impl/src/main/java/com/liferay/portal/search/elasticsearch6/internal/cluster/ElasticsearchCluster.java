@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnection;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch6.internal.connection.OperationMode;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
+import com.liferay.portal.search.index.IndexNameBuilder;
 
 import java.util.List;
 

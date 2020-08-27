@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`document-library-preview-image renders an image previewer 1`] = `
+<DocumentFragment>
+  <div
+    class="preview-file"
+  >
+    <div
+      class="preview-file-container preview-file-max-height"
+    >
+      <img
+        class="preview-file-image"
+        src="image.jpg"
+        style="margin: auto auto;"
+      />
+    </div>
+    <div
+      class="preview-toolbar-container"
+    >
+      <div
+        class="floating-bar btn-group"
+        role="group"
+      >
+        <button
+          class="btn-floating-bar btn btn-monospaced"
+          title="zoom-out"
+          type="button"
+        >
+          <svg
+            class="lexicon-icon lexicon-icon-hr"
+            role="presentation"
+          >
+            <use
+              xlink:href="#hr"
+            />
+          </svg>
+        </button>
+        <button
+          class="btn-floating-bar btn-floating-bar-text btn"
+          title="real-size"
+          type="button"
+        >
+          <span
+            class="preview-toolbar-label-percent"
+          >
+            0%
+          </span>
+        </button>
+        <button
+          class="btn-floating-bar btn btn-monospaced"
+          title="zoom-in"
+          type="button"
+        >
+          <svg
+            class="lexicon-icon lexicon-icon-plus"
+            role="presentation"
+          >
+            <use
+              xlink:href="#plus"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -37,7 +37,9 @@ import com.liferay.site.navigation.admin.web.internal.util.SiteNavigationMenuPor
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 import com.liferay.site.navigation.service.SiteNavigationMenuService;
+import com.liferay.site.navigation.type.DefaultSiteNavigationMenuItemTypeContext;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
+import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeContext;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
@@ -56,16 +58,16 @@ import javax.servlet.http.HttpServletRequest;
 public class SiteNavigationAdminDisplayContext {
 
 	public SiteNavigationAdminDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		SiteNavigationMenuItemTypeRegistry siteNavigationMenuItemTypeRegistry,
 		SiteNavigationMenuLocalService siteNavigationMenuLocalService,
 		SiteNavigationMenuService siteNavigationMenuService) {
 
+		_httpServletRequest = httpServletRequest;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
-		_httpServletRequest = httpServletRequest;
 		_siteNavigationMenuItemTypeRegistry =
 			siteNavigationMenuItemTypeRegistry;
 		_siteNavigationMenuLocalService = siteNavigationMenuLocalService;
@@ -77,11 +79,21 @@ public class SiteNavigationAdminDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
+		SiteNavigationMenuItemTypeContext siteNavigationMenuItemTypeContext =
+			new DefaultSiteNavigationMenuItemTypeContext(
+				themeDisplay.getScopeGroup());
+
 		return new DropdownItemList() {
 			{
 				for (SiteNavigationMenuItemType siteNavigationMenuItemType :
 						_siteNavigationMenuItemTypeRegistry.
 							getSiteNavigationMenuItemTypes()) {
+
+					if (!siteNavigationMenuItemType.isAvailable(
+							siteNavigationMenuItemTypeContext)) {
+
+						continue;
+					}
 
 					add(
 						dropdownItem -> {
@@ -175,7 +187,7 @@ public class SiteNavigationAdminDisplayContext {
 			themeDisplay.getScopeGroupId());
 	}
 
-	public SearchContainer getSearchContainer() {
+	public SearchContainer<SiteNavigationMenu> getSearchContainer() {
 		if (_searchContainer != null) {
 			return _searchContainer;
 		}
@@ -184,9 +196,10 @@ public class SiteNavigationAdminDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		SearchContainer searchContainer = new SearchContainer(
-			_liferayPortletRequest, getPortletURL(), null,
-			"there-are-no-navigation-menus");
+		SearchContainer<SiteNavigationMenu> searchContainer =
+			new SearchContainer(
+				_liferayPortletRequest, getPortletURL(), null,
+				"there-are-no-navigation-menus");
 
 		OrderByComparator<SiteNavigationMenu> orderByComparator =
 			SiteNavigationMenuPortletUtil.getOrderByComparator(
@@ -336,7 +349,7 @@ public class SiteNavigationAdminDisplayContext {
 		try {
 			addURL.setWindowState(LiferayWindowState.POP_UP);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 			return StringPool.BLANK;
 		}
 
@@ -350,7 +363,7 @@ public class SiteNavigationAdminDisplayContext {
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private String _orderByCol;
 	private String _orderByType;
-	private SearchContainer _searchContainer;
+	private SearchContainer<SiteNavigationMenu> _searchContainer;
 	private Long _siteNavigationMenuId;
 	private final SiteNavigationMenuItemTypeRegistry
 		_siteNavigationMenuItemTypeRegistry;

@@ -300,10 +300,9 @@ public class DummyReferenceStagedModelRepository
 			portletDataContext.getScopeGroupId());
 
 		exportActionableDynamicQuery.setPerformActionMethod(
-			(DummyReference dummyReference) -> {
+			(DummyReference dummyReference) ->
 				StagedModelDataHandlerUtil.exportStagedModel(
-					portletDataContext, dummyReference);
-			});
+					portletDataContext, dummyReference));
 
 		exportActionableDynamicQuery.setStagedModelType(
 			new StagedModelType(
@@ -349,8 +348,10 @@ public class DummyReferenceStagedModelRepository
 		extends BaseLocalServiceImpl {
 
 		public List<DummyReference> dynamicQuery(DynamicQuery dynamicQuery) {
+			DynamicQueryImpl dynamicQueryImpl = (DynamicQueryImpl)dynamicQuery;
+
 			DetachedCriteria detachedCriteria =
-				((DynamicQueryImpl)dynamicQuery).getDetachedCriteria();
+				dynamicQueryImpl.getDetachedCriteria();
 
 			Class<?> detachedCriteriaClass = detachedCriteria.getClass();
 
@@ -365,12 +366,11 @@ public class DummyReferenceStagedModelRepository
 				CriteriaImpl detachedCriteriaImpl = (CriteriaImpl)method.invoke(
 					detachedCriteria);
 
-				Iterator iterator =
+				Iterator<CriteriaImpl.CriterionEntry> iterator =
 					detachedCriteriaImpl.iterateExpressionEntries();
 
 				while (iterator.hasNext()) {
-					CriteriaImpl.CriterionEntry criteriaImpl =
-						(CriteriaImpl.CriterionEntry)iterator.next();
+					CriteriaImpl.CriterionEntry criteriaImpl = iterator.next();
 
 					Stream<DummyReference> dummyReferenceStream =
 						result.stream();
@@ -382,8 +382,8 @@ public class DummyReferenceStagedModelRepository
 					);
 				}
 			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
 			}
 
 			return result;
@@ -398,7 +398,7 @@ public class DummyReferenceStagedModelRepository
 		public Predicate<? super DummyReference> getPredicate(
 			String expression) {
 
-			if (expression.contains("groupId=")) {
+			if (expression.startsWith("groupId=")) {
 				return d ->
 					d.getGroupId() == Long.valueOf(
 						expression.substring("groupId=".length()));
@@ -408,7 +408,7 @@ public class DummyReferenceStagedModelRepository
 				return d -> d.getId() > -1;
 			}
 
-			if (expression.contains("companyId=")) {
+			if (expression.startsWith("companyId=")) {
 				return d ->
 					d.getCompanyId() == Long.valueOf(
 						expression.substring("companyId=".length()));

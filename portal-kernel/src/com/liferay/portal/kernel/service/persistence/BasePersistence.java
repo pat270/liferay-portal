@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.dao.orm.Projection;
@@ -71,6 +72,10 @@ public interface BasePersistence<T extends BaseModel<T>> {
 	 */
 	public void clearCache(List<T> modelList);
 
+	public default void clearCache(Set<Serializable> primaryKeys) {
+		clearCache();
+	}
+
 	/**
 	 * Clears the cache for one instance of this model.
 	 *
@@ -103,6 +108,8 @@ public interface BasePersistence<T extends BaseModel<T>> {
 	 */
 	public long countWithDynamicQuery(
 		DynamicQuery dynamicQuery, Projection projection);
+
+	public <R> R dslQuery(DSLQuery dslQuery);
 
 	/**
 	 * Returns the model instance with the primary key or returns
@@ -211,7 +218,7 @@ public interface BasePersistence<T extends BaseModel<T>> {
 
 	public Session openSession() throws ORMException;
 
-	public SystemException processException(Exception e);
+	public SystemException processException(Exception exception);
 
 	/**
 	 * Registers a new listener for this model.

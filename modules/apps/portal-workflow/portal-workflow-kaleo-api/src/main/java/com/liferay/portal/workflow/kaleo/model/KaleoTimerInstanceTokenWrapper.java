@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link KaleoTimerInstanceToken}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KaleoTimerInstanceToken
  * @generated
  */
-@ProviderType
 public class KaleoTimerInstanceTokenWrapper
 	extends BaseModelWrapper<KaleoTimerInstanceToken>
 	implements KaleoTimerInstanceToken, ModelWrapper<KaleoTimerInstanceToken> {
@@ -58,6 +55,7 @@ public class KaleoTimerInstanceTokenWrapper
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("kaleoClassName", getKaleoClassName());
 		attributes.put("kaleoClassPK", getKaleoClassPK());
+		attributes.put("kaleoDefinitionId", getKaleoDefinitionId());
 		attributes.put(
 			"kaleoDefinitionVersionId", getKaleoDefinitionVersionId());
 		attributes.put("kaleoInstanceId", getKaleoInstanceId());
@@ -136,6 +134,12 @@ public class KaleoTimerInstanceTokenWrapper
 
 		if (kaleoClassPK != null) {
 			setKaleoClassPK(kaleoClassPK);
+		}
+
+		Long kaleoDefinitionId = (Long)attributes.get("kaleoDefinitionId");
+
+		if (kaleoDefinitionId != null) {
+			setKaleoDefinitionId(kaleoDefinitionId);
 		}
 
 		Long kaleoDefinitionVersionId = (Long)attributes.get(
@@ -306,6 +310,16 @@ public class KaleoTimerInstanceTokenWrapper
 	@Override
 	public long getKaleoClassPK() {
 		return model.getKaleoClassPK();
+	}
+
+	/**
+	 * Returns the kaleo definition ID of this kaleo timer instance token.
+	 *
+	 * @return the kaleo definition ID of this kaleo timer instance token
+	 */
+	@Override
+	public long getKaleoDefinitionId() {
+		return model.getKaleoDefinitionId();
 	}
 
 	/**
@@ -590,6 +604,16 @@ public class KaleoTimerInstanceTokenWrapper
 	@Override
 	public void setKaleoClassPK(long kaleoClassPK) {
 		model.setKaleoClassPK(kaleoClassPK);
+	}
+
+	/**
+	 * Sets the kaleo definition ID of this kaleo timer instance token.
+	 *
+	 * @param kaleoDefinitionId the kaleo definition ID of this kaleo timer instance token
+	 */
+	@Override
+	public void setKaleoDefinitionId(long kaleoDefinitionId) {
+		model.setKaleoDefinitionId(kaleoDefinitionId);
 	}
 
 	/**

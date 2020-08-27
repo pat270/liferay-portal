@@ -17,12 +17,9 @@ package com.liferay.source.formatter.checkstyle.checks;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checks.util.SourceUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 import com.liferay.source.formatter.util.FileUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
-import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -42,13 +39,18 @@ public class ListUtilCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.VARIABLE_DEF};
+		return new int[] {TokenTypes.METHOD_CALL, TokenTypes.VARIABLE_DEF};
 	}
 
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
-		if (!Objects.equals(
-				DetailASTUtil.getTypeName(detailAST, false), "List") ||
+		if (detailAST.getType() == TokenTypes.METHOD_CALL) {
+			_checkFromArrayCall(detailAST);
+
+			return;
+		}
+
+		if (!Objects.equals(getTypeName(detailAST, false), "List") ||
 			!_isAssignNewArrayList(detailAST)) {
 
 			return;
@@ -112,22 +114,57 @@ public class ListUtilCheck extends BaseCheck {
 			}
 		}
 
-		FileContents fileContents = getFileContents();
-
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), CharPool.BACK_SLASH, CharPool.SLASH);
-
-		String absolutePath = SourceUtil.getAbsolutePath(fileName);
+		String absolutePath = getAbsolutePath();
 
 		if (absolutePath.contains("/modules/")) {
 			String buildGradleContent = _getBuildGradleContent(absolutePath);
 
-			if (!buildGradleContent.contains("com.liferay.portal.kernel")) {
+			if ((buildGradleContent == null) ||
+				!buildGradleContent.contains("com.liferay.portal.kernel")) {
+
 				return;
 			}
 		}
 
 		log(detailAST, _MSG_USE_LIST_UTIL);
+	}
+
+	private void _checkFromArrayCall(DetailAST methodCallDetailAST) {
+		DetailAST firstChildDetailAST = methodCallDetailAST.getFirstChild();
+
+		if (firstChildDetailAST.getType() != TokenTypes.DOT) {
+			return;
+		}
+
+		FullIdent fullIdent = FullIdent.createFullIdent(firstChildDetailAST);
+
+		if (!Objects.equals(fullIdent.getText(), "ListUtil.fromArray")) {
+			return;
+		}
+
+		DetailAST elistDetailAST = methodCallDetailAST.findFirstToken(
+			TokenTypes.ELIST);
+
+		List<DetailAST> exprDetailASTList = getAllChildTokens(
+			elistDetailAST, false, TokenTypes.EXPR);
+
+		if (exprDetailASTList.size() != 1) {
+			return;
+		}
+
+		DetailAST exprDetailAST = exprDetailASTList.get(0);
+
+		firstChildDetailAST = exprDetailAST.getFirstChild();
+
+		if (firstChildDetailAST.getType() != TokenTypes.LITERAL_NEW) {
+			return;
+		}
+
+		DetailAST lastChildDetailAST = firstChildDetailAST.getLastChild();
+
+		if (lastChildDetailAST.getType() == TokenTypes.ARRAY_INIT) {
+			log(methodCallDetailAST, _MSG_UNNEEDED_ARRAY);
+		}
 	}
 
 	private String _getBuildGradleContent(String absolutePath) {
@@ -160,7 +197,7 @@ public class ListUtilCheck extends BaseCheck {
 
 					return buildGradleContent;
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					return null;
 				}
 			}
@@ -175,7 +212,7 @@ public class ListUtilCheck extends BaseCheck {
 
 		List<DetailAST> identDetailASTList = new ArrayList<>();
 
-		List<DetailAST> childDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> childDetailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.IDENT);
 
 		for (DetailAST childDetailAST : childDetailASTList) {
@@ -287,6 +324,8 @@ public class ListUtilCheck extends BaseCheck {
 
 		return false;
 	}
+
+	private static final String _MSG_UNNEEDED_ARRAY = "array.unneeded";
 
 	private static final String _MSG_USE_LIST_UTIL = "list.util.use";
 

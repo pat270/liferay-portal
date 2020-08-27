@@ -52,7 +52,9 @@ public class ItemSelectorUploadViewDisplayContext {
 		return _itemSelectedEventName;
 	}
 
-	public ItemSelectorReturnTypeResolver getItemSelectorReturnTypeResolver() {
+	public ItemSelectorReturnTypeResolver<?, ?>
+		getItemSelectorReturnTypeResolver() {
+
 		return _itemSelectorReturnTypeResolverHandler.
 			getItemSelectorReturnTypeResolver(
 				_uploadItemSelectorCriterion, _itemSelectorUploadView,
@@ -64,9 +66,7 @@ public class ItemSelectorUploadViewDisplayContext {
 	}
 
 	public String getNamespace() {
-		String portletId = _uploadItemSelectorCriterion.getPortletId();
-
-		if (Validator.isNotNull(portletId)) {
+		if (Validator.isNotNull(_uploadItemSelectorCriterion.getPortletId())) {
 			return PortalUtil.getPortletNamespace(
 				_uploadItemSelectorCriterion.getPortletId());
 		}

@@ -36,8 +36,8 @@ public class BuildUpgradeTableMojo extends AbstractMojo {
 			UpgradeTableBuilderInvoker.invoke(
 				baseDir, _upgradeTableBuilderArgs);
 		}
-		catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+		catch (Exception exception) {
+			throw new MojoExecutionException(exception.getMessage(), exception);
 		}
 	}
 
@@ -58,8 +58,8 @@ public class BuildUpgradeTableMojo extends AbstractMojo {
 	/**
 	 * @parameter
 	 */
-	public void setReleaseInfoFileName(String releaseInfoFileName) {
-		_upgradeTableBuilderArgs.setReleaseInfoFileName(releaseInfoFileName);
+	public void setReleaseInfoVersion(String releaseInfoVersion) {
+		_upgradeTableBuilderArgs.setReleaseInfoVersion(releaseInfoVersion);
 	}
 
 	/**

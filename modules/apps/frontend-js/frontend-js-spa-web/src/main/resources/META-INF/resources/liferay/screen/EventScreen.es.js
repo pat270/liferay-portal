@@ -1,6 +1,19 @@
-import {CancellablePromise} from 'metal-promise';
-import globals from 'senna/lib/globals/globals';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import {HtmlScreen} from 'senna';
+import globals from 'senna/lib/globals/globals';
 
 /**
  * EventScreen
@@ -31,13 +44,10 @@ class EventScreen extends HtmlScreen {
 	dispose() {
 		super.dispose();
 
-		Liferay.fire(
-			'screenDispose',
-			{
-				app: Liferay.SPA.app,
-				screen: this
-			}
-		);
+		Liferay.fire('screenDispose', {
+			app: Liferay.SPA.app,
+			screen: this,
+		});
 	}
 
 	/**
@@ -48,13 +58,10 @@ class EventScreen extends HtmlScreen {
 	activate() {
 		super.activate();
 
-		Liferay.fire(
-			'screenActivate',
-			{
-				app: Liferay.SPA.app,
-				screen: this
-			}
-		);
+		Liferay.fire('screenActivate', {
+			app: Liferay.SPA.app,
+			screen: this,
+		});
 	}
 
 	/**
@@ -64,7 +71,7 @@ class EventScreen extends HtmlScreen {
 	addCache(content) {
 		super.addCache(content);
 
-		this.cacheLastModified = (new Date()).getTime();
+		this.cacheLastModified = new Date().getTime();
 	}
 
 	/**
@@ -88,13 +95,10 @@ class EventScreen extends HtmlScreen {
 	deactivate() {
 		super.deactivate();
 
-		Liferay.fire(
-			'screenDeactivate',
-			{
-				app: Liferay.SPA.app,
-				screen: this
-			}
-		);
+		Liferay.fire('screenDeactivate', {
+			app: Liferay.SPA.app,
+			screen: this,
+		});
 	}
 
 	/**
@@ -102,13 +106,10 @@ class EventScreen extends HtmlScreen {
 	 */
 
 	beforeScreenFlip() {
-		Liferay.fire(
-			'beforeScreenFlip',
-			{
-				app: Liferay.SPA.app,
-				screen: this
-			}
-		);
+		Liferay.fire('beforeScreenFlip', {
+			app: Liferay.SPA.app,
+			screen: this,
+		});
 	}
 
 	/**
@@ -134,17 +135,26 @@ class EventScreen extends HtmlScreen {
 	 */
 
 	evaluateStyles(surfaces) {
-		const currentLanguageId = document.querySelector('html').lang.replace('-', '_');
+		const currentLanguageId = document
+			.querySelector('html')
+			.lang.replace('-', '_');
 		const languageId = this.virtualDocument.lang.replace('-', '_');
 
 		if (currentLanguageId !== languageId) {
-			this.stylesPermanentSelector_ = HtmlScreen.selectors.stylesPermanent;
-			this.stylesTemporarySelector_ = HtmlScreen.selectors.stylesTemporary;
+			this.stylesPermanentSelector_ =
+				HtmlScreen.selectors.stylesPermanent;
+			this.stylesTemporarySelector_ =
+				HtmlScreen.selectors.stylesTemporary;
 
-			this.makePermanentSelectorsTemporary_(currentLanguageId, languageId);
+			this.makePermanentSelectorsTemporary_(
+				currentLanguageId,
+				languageId
+			);
 		}
 
-		return super.evaluateStyles(surfaces).then(this.restoreSelectors_.bind(this));
+		return super
+			.evaluateStyles(surfaces)
+			.then(this.restoreSelectors_.bind(this));
 	}
 
 	/**
@@ -157,21 +167,16 @@ class EventScreen extends HtmlScreen {
 	flip(surfaces) {
 		this.copyBodyAttributes();
 
-		return CancellablePromise.resolve(this.beforeScreenFlip())
+		return Promise.resolve(this.beforeScreenFlip())
 			.then(super.flip(surfaces))
-			.then(
-				() => {
-					this.runBodyOnLoad();
+			.then(() => {
+				this.runBodyOnLoad();
 
-					Liferay.fire(
-						'screenFlip',
-						{
-							app: Liferay.SPA.app,
-							screen: this
-						}
-					);
-				}
-			);
+				Liferay.fire('screenFlip', {
+					app: Liferay.SPA.app,
+					screen: this,
+				});
+			});
 	}
 
 	/**
@@ -211,7 +216,10 @@ class EventScreen extends HtmlScreen {
 	isValidResponseStatusCode(statusCode) {
 		const validStatusCodes = Liferay.SPA.app.getValidStatusCodes();
 
-		return (statusCode >= 200 && statusCode <= 500) || (validStatusCodes.indexOf(statusCode) > -1);
+		return (
+			(statusCode >= 200 && statusCode <= 500) ||
+			validStatusCodes.indexOf(statusCode) > -1
+		);
 	}
 
 	/**
@@ -220,25 +228,19 @@ class EventScreen extends HtmlScreen {
 	 */
 
 	load(path) {
-		return super.load(path)
-			.then(
-				(content) => {
-					const redirectPath = this.beforeUpdateHistoryPath(path);
+		return super.load(path).then((content) => {
+			const redirectPath = this.beforeUpdateHistoryPath(path);
 
-					this.checkRedirectPath(redirectPath);
+			this.checkRedirectPath(redirectPath);
 
-					Liferay.fire(
-						'screenLoad',
-						{
-							app: Liferay.SPA.app,
-							content: content,
-							screen: this
-						}
-					);
+			Liferay.fire('screenLoad', {
+				app: Liferay.SPA.app,
+				content,
+				screen: this,
+			});
 
-					return content;
-				}
-			);
+			return content;
+		});
 	}
 
 	/**
@@ -256,17 +258,13 @@ class EventScreen extends HtmlScreen {
 			.concat(
 				HtmlScreen.selectors.stylesPermanent
 					.split(',')
-					.map(
-						item => `${item}[href*="${currentLanguageId}"]`
-					)
+					.map((item) => `${item}[href*="${currentLanguageId}"]`)
 			)
 			.join();
 
 		HtmlScreen.selectors.stylesPermanent = HtmlScreen.selectors.stylesPermanent
 			.split(',')
-			.map(
-				item => `${item}[href*="${languageId}"]`
-			)
+			.map((item) => `${item}[href*="${languageId}"]`)
 			.join();
 	}
 
@@ -277,8 +275,12 @@ class EventScreen extends HtmlScreen {
 	 */
 
 	restoreSelectors_() {
-		HtmlScreen.selectors.stylesPermanent = this.stylesPermanentSelector_ || HtmlScreen.selectors.stylesPermanent;
-		HtmlScreen.selectors.stylesTemporary = this.stylesTemporarySelector_ || HtmlScreen.selectors.stylesTemporary;
+		HtmlScreen.selectors.stylesPermanent =
+			this.stylesPermanentSelector_ ||
+			HtmlScreen.selectors.stylesPermanent;
+		HtmlScreen.selectors.stylesTemporary =
+			this.stylesTemporarySelector_ ||
+			HtmlScreen.selectors.stylesTemporary;
 	}
 
 	/**
@@ -298,23 +300,18 @@ class EventScreen extends HtmlScreen {
 	 * this ensures that it works fine in IE 11.
 	 * @param {!Array<Element>} elements
 	 * @private
-	 * @return {CancellablePromise}
+	 * @return {Promise}
 	 */
 
 	runFaviconInElement_(elements) {
-		return super.runFaviconInElement_(elements).then(
-			() => {
-				elements.forEach(
-					element => {
-						if (!element.type && element.href.indexOf('.ico') !== -1) {
-							element.type = 'image/x-icon';
-						}
-					}
-				);
-			}
-		);
+		return super.runFaviconInElement_(elements).then(() => {
+			elements.forEach((element) => {
+				if (!element.type && element.href.indexOf('.ico') !== -1) {
+					element.type = 'image/x-icon';
+				}
+			});
+		});
 	}
-
 }
 
 export default EventScreen;

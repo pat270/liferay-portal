@@ -1,0 +1,211 @@
+@component-name = "portal-questions"
+definition {
+
+	property osgi.module.configuration.file.names = "com.liferay.questions.web.internal.configuration.QuestionsConfiguration-default.config";
+	property osgi.module.configurations = "com.liferay.portlet.display-category=&quot;category.collaboration&quot;\nenableRedirectToLogin=&quot;true&quot;";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Questions";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		Navigator.openURL();
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		ContentPages.addPage(pageName = "Questions Page");
+
+		PageEditor.addWidget(portletName = "Questions");
+
+		PageEditor.clickPublish();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				portlet = "Message Boards");
+
+			if (IsElementPresent(locator1 = "Questions#QUESTIONS_LIST")) {
+				Questions.tearDown();
+			}
+
+			Page.tearDownCP();
+		}
+	}
+
+	@description = "Validate if Question portlet have one tab with all tags used in the questions"
+	@priority = "3"
+	test ListOfTagsAppearsInTheTagsTab {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Question ListOfTagsAppearsInTheTagsTab",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question ListOfTagsAppearsInTheTagsTab");
+
+		Questions.gotoTab(questionTabField = "Tags");
+
+		Questions.viewTags(noTagResults = "true");
+
+		Questions.configureTagsFilter(filterBy = "Latest Created");
+
+		Questions.viewTags(noTagResults = "true");
+
+		JSONAssettag.addTag(
+			groupName = "Guest",
+			tagName = "tag2");
+
+		Questions.addQuestionByAPI(
+			bodyField = "Body ListOfTagsAppearsInTheTagsTab",
+			categoryName = "Question ListOfTagsAppearsInTheTagsTab",
+			tagField = "tag1",
+			titleField = "Title ListOfTagsAppearsInTheTagsTab");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question ListOfTagsAppearsInTheTagsTab");
+
+		Pause(locator = "3000");
+
+		Questions.gotoTab(questionTabField = "Tags");
+
+		Questions.configureTagsFilter(filterBy = "Latest Created");
+
+		for (var tagName : list "tag1,tag2") {
+			Questions.viewTags(tagName = "${tagName}");
+		}
+	}
+
+	@description = "Validate if when the user click in the tag of the Tags tab, the user is redirected to the questions that use this tag"
+	@priority = "3"
+	test TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Question TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag",
+			userEmailAddress = "test@liferay.com");
+
+		Questions.addQuestionByAPI(
+			bodyField = "Body TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag",
+			categoryName = "Question TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag",
+			tagField = "tag1",
+			titleField = "Title TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag");
+
+		Pause(locator = "3000");
+
+		Click(
+			key_questionTabField = "Tags",
+			locator1 = "Questions#QUESTIONS_LIST_TAB_FIELD");
+
+		Click(
+			key_tagName = "tag1",
+			locator1 = "Questions#TAGS_LIST_TAB_NAMES");
+
+		AssertElementPresent(
+			key_titleField = "Title TagCardRedirectTheUserToTheQuestionsThatAreUsingThisTag",
+			locator1 = "Questions#ASK_QUESTION_SEARCH_QUESTION");
+	}
+
+	@description = "Validate if the user can search by tags in the tags search field"
+	@priority = "4"
+	test ValidateSearchByQuestionTags {
+		JSONMBMessage.addCategory(
+			categoryDescription = "Description",
+			categoryName = "Question ValidateSearchByQuestionTags",
+			userEmailAddress = "test@liferay.com");
+
+		Questions.addQuestionByAPI(
+			bodyField = "Body ValidateSearchByQuestionTags",
+			categoryName = "Question ValidateSearchByQuestionTags",
+			tagField = "tagvalidatesearchbyquestiontags",
+			titleField = "Title ValidateSearchByQuestionTags");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question ValidateSearchByQuestionTags");
+
+		Pause(locator = "3000");
+
+		Click(
+			key_questionTabField = "Tags",
+			locator1 = "Questions#QUESTIONS_LIST_TAB_FIELD");
+
+		Questions.search(
+			searchKey = "tagvalidatesearchbyquestiontags",
+			searchTag = "true");
+
+		Pause(locator = "3000");
+
+		Questions.viewTags(tagName = "tagvalidatesearchbyquestiontags");
+	}
+
+	@description = "Validate if the Tags tab of the question portlet, the tags are ordered by occurrences"
+	@priority = "4"
+	test ValidateTagsOccurrences {
+		for (var num : list "1,2") {
+			JSONMBMessage.addCategory(
+				categoryDescription = "Description",
+				categoryName = "Question ValidateTagsOccurrences${num}",
+				userEmailAddress = "test@liferay.com");
+		}
+
+		for (var num : list "1,2") {
+			Questions.addQuestionByAPI(
+				bodyField = "${num}- Body ValidateTagsOccurrences",
+				categoryName = "Question ValidateTagsOccurrences1",
+				tagField = "tag1",
+				titleField = "${num}- Title ValidateTagsOccurrences");
+		}
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question ValidateTagsOccurrences1");
+
+		Pause(locator = "3000");
+
+		Click(
+			key_questionTabField = "Tags",
+			locator1 = "Questions#QUESTIONS_LIST_TAB_FIELD");
+
+		Questions.viewTags(
+			amountOfUsedTimes = "2",
+			tagName = "tag1");
+
+		Navigator.gotoPage(pageName = "Questions Page");
+
+		Questions.gotoCategory(categoryName = "Question ValidateTagsOccurrences2");
+
+		Questions.askQuestionFillingTheMandatoryFields(
+			contentField = "Content AddQuestion",
+			titleField = "Title AddQuestion");
+
+		Questions.addTags(tagLocator = "Tag1");
+
+		Click(locator1 = "Questions#ASK_QUESTION_POST_YOUR_QUESTION_BUTTON");
+
+		Questions.gotoTab(questionTabField = "Tags");
+
+		Click(
+			key_questionTabField = "Tags",
+			locator1 = "Questions#QUESTIONS_LIST_TAB_FIELD");
+
+		Questions.viewTags(
+			amountOfUsedTimes = "3",
+			tagName = "tag1");
+	}
+
+}

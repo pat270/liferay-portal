@@ -1,5 +1,6 @@
 @component-name = "portal-acceptance"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "App Manager";
@@ -14,8 +15,7 @@ definition {
 
 	@description = "This is the description for TestA."
 	@priority = "5"
-	test TestA
-	{
+	test TestA {
 		CalendarNavigator.gotoConfiguration();
 	}
 
@@ -26,7 +26,7 @@ definition {
 	@description = "This is the description for TestC."
 	@ignore = "true"
 	@priority = "5"
-	test TestC{
+	test TestC {
 		Upgrade.resetTestUserPassword();
 	}
 
@@ -35,4 +35,5 @@ definition {
 	test TestD {
 		CalendarEvent.viewRepeatWeekStartDay(weekStartDay = "Monday");
 	}
+
 }

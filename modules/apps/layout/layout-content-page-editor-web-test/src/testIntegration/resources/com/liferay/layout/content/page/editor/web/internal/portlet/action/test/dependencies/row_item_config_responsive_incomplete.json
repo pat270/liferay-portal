@@ -1,0 +1,43 @@
+{
+	"portraitMobile": {
+		"modulesPerRow": 3,
+		"reverseOrder": true,
+		"styles": {
+		},
+		"verticalAlignment": "bottom"
+	},
+	"styles": {
+		"backgroundImage": {
+		},
+		"borderRadius": "rounded-0",
+		"borderWidth": 0,
+		"fontFamily": "sans-serif",
+		"fontSize": "medium",
+		"fontWeight": "font-weight-normal",
+		"height": "",
+		"marginBottom": "0",
+		"marginLeft": "0",
+		"marginRight": "0",
+		"marginTop": "0",
+		"maxHeight": "",
+		"maxWidth": "",
+		"minHeight": "",
+		"minWidth": "",
+		"opacity": 100,
+		"overflow": "visible",
+		"paddingBottom": "0",
+		"paddingLeft": "0",
+		"paddingRight": "0",
+		"paddingTop": "0",
+		"shadow": "shadow-none",
+		"textAlign": "none",
+		"width": ""
+	},
+	"tablet": {
+		"modulesPerRow": 2,
+		"reverseOrder": true,
+		"styles": {
+		},
+		"verticalAlignment": "middle"
+	}
+}

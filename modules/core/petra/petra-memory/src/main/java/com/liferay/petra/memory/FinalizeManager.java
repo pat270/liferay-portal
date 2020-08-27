@@ -68,12 +68,6 @@ public class FinalizeManager {
 
 		};
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final boolean THREAD_ENABLED = true;
-
 	public static final ReferenceFactory WEAK_REFERENCE_FACTORY =
 		new ReferenceFactory() {
 
@@ -140,7 +134,7 @@ public class FinalizeManager {
 						}
 					}
 				}
-				catch (InterruptedException ie) {
+				catch (InterruptedException interruptedException) {
 				}
 			}
 		}
@@ -154,8 +148,8 @@ public class FinalizeManager {
 	private static class IdentityKey {
 
 		@Override
-		public boolean equals(Object obj) {
-			IdentityKey identityKey = (IdentityKey)obj;
+		public boolean equals(Object object) {
+			IdentityKey identityKey = (IdentityKey)object;
 
 			if (_reference == identityKey._reference) {
 				return true;

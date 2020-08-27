@@ -17,11 +17,10 @@
 <%@ include file="/document_library/init.jsp" %>
 
 <%
-DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletInstanceSettingsHelper(dlRequestHelper);
-DLViewFileEntryTypesDisplayContext dlViewFileEntryTypesDisplayContext = new DLViewFileEntryTypesDisplayContext(renderRequest, renderResponse, request);
+DLViewFileEntryTypesDisplayContext dlViewFileEntryTypesDisplayContext = new DLViewFileEntryTypesDisplayContext(request, renderRequest, renderResponse);
 %>
 
-<%@ include file="/document_library/navigation.jspf" %>
+<liferay-util:include page="/document_library/navigation.jsp" servletContext="<%= application %>" />
 
 <clay:management-toolbar
 	clearResultsURL="<%= dlViewFileEntryTypesDisplayContext.getClearResultsURL() %>"
@@ -33,7 +32,13 @@ DLViewFileEntryTypesDisplayContext dlViewFileEntryTypesDisplayContext = new DLVi
 	selectable="<%= false %>"
 />
 
-<div class="container-fluid container-fluid-max-xl main-content-body">
+<clay:container-fluid
+	cssClass="main-content-body"
+>
+	<liferay-ui:breadcrumb
+		showLayout="<%= false %>"
+	/>
+
 	<liferay-ui:error exception="<%= RequiredFileEntryTypeException.class %>" message="cannot-delete-a-document-type-that-is-presently-used-by-one-or-more-documents" />
 
 	<liferay-ui:search-container
@@ -49,14 +54,20 @@ DLViewFileEntryTypesDisplayContext dlViewFileEntryTypesDisplayContext = new DLVi
 			<%
 			PortletURL rowURL = liferayPortletResponse.createRenderURL();
 
-			rowURL.setParameter("mvcRenderCommandName", "/document_library/edit_file_entry_type");
+			if (dlViewFileEntryTypesDisplayContext.useDataEngineEditor()) {
+				rowURL.setParameter("mvcRenderCommandName", "/document_library/edit_file_entry_type_data_definition");
+			}
+			else {
+				rowURL.setParameter("mvcRenderCommandName", "/document_library/edit_file_entry_type");
+			}
+
 			rowURL.setParameter("redirect", currentURL);
 			rowURL.setParameter("fileEntryTypeId", String.valueOf(fileEntryType.getFileEntryTypeId()));
 			%>
 
 			<liferay-ui:search-container-column-text
 				cssClass="table-cell-expand table-cell-minw-200 table-title"
-				href="<%= rowURL %>"
+				href="<%= DLFileEntryTypePermission.contains(permissionChecker, fileEntryType, ActionKeys.UPDATE) ? rowURL : null %>"
 				name="name"
 				value="<%= fileEntryType.getName(locale) %>"
 			/>
@@ -77,14 +88,24 @@ DLViewFileEntryTypesDisplayContext dlViewFileEntryTypesDisplayContext = new DLVi
 				value="<%= fileEntryType.getModifiedDate() %>"
 			/>
 
-			<liferay-ui:search-container-column-jsp
-				cssClass="entry-action"
-				path="/document_library/file_entry_type_action.jsp"
-			/>
+			<c:choose>
+				<c:when test="<%= dlViewFileEntryTypesDisplayContext.useDataEngineEditor() %>">
+					<liferay-ui:search-container-column-jsp
+						cssClass="entry-action"
+						path="/document_library/file_entry_type_action_data_definition.jsp"
+					/>
+				</c:when>
+				<c:otherwise>
+					<liferay-ui:search-container-column-jsp
+						cssClass="entry-action"
+						path="/document_library/file_entry_type_action.jsp"
+					/>
+				</c:otherwise>
+			</c:choose>
 		</liferay-ui:search-container-row>
 
 		<liferay-ui:search-iterator
 			markupView="lexicon"
 		/>
 	</liferay-ui:search-container>
-</div>
+</clay:container-fluid>

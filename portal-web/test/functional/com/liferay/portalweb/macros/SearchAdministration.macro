@@ -1,44 +1,113 @@
 definition {
+
 	macro assertEngineVendorAndVersions {
 		AssertTextEquals.assertPartialText(
-			locator1 = "Search#SEARCH__ENGINE_INFORMATION",
-			position = "1",
-			searchInformation = "${engineVendor}",
+			locator1 = "SearchAdmin#SEARCH_ENGINE_VENDOR",
 			value1 = "${engineVendor}");
 
 		AssertTextEquals.assertPartialText(
-			locator1 = "Search#SEARCH__ENGINE_INFORMATION",
-			position = "2",
-			searchInformation = "${clientVersion}",
+			locator1 = "SearchAdmin#CLIENT_VERSION",
 			value1 = "${clientVersion}");
 
+		Panel.expandPanel(panel = "Nodes (1)");
+
 		AssertTextEquals.assertPartialText(
-			locator1 = "Search#SEARCH__ENGINE_INFORMATION",
-			position = "3",
-			searchInformation = "${serverVersion}",
+			locator1 = "SearchAdmin#SERVER_VERSION",
 			value1 = "${serverVersion}");
 	}
 
 	macro executeSearchActions {
-		Panel.expandPanel(panel = "Index Actions");
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Search");
 
-		AssertClick(
-			key_actionsDescription = "${actionsDescription}",
-			locator1 = "Button#EXECUTE_ACTION",
-			value1 = "Execute");
+		var searchClientVersion = selenium.getText("SearchAdmin#CLIENT_VERSION");
+		var searchEngineVendor = selenium.getText("SearchAdmin#SEARCH_ENGINE_VENDOR");
 
-		var pauseCount = "0";
-
-		while ((IsElementPresent(locator1 = "ControlMenu#RELOAD_TOOLTIP")) && (!("${pauseCount}" == "24"))) {
-			Pause(locator1 = "5000");
-
-			var pauseCount = MathUtil.sum("${pauseCount}", "1");
-
-			echo("Pause count: ${pauseCount}");
+		if (contains("${searchEngineVendor}", "Elasticsearch")) {
+			if (contains("${searchEngineVendor}", "Sidecar")) {
+				var curl = "http://localhost:9201/_tasks";
+			}
+			else {
+				var curl = "http://localhost:9200/_tasks";
+			}
 		}
 
-		if ("${pauseCount}" == "24") {
-			fail("Reindex timed out after 2 minutes.");
+		var reindexElapsedTime = "0";
+
+		while ("${reindexElapsedTime}" == "0" || "${reindexElapsedTime}" == "10" || "${reindexElapsedTime}" == "120" && (maxIterations = "2")) {
+
+			Navigator.gotoNavItem(navItem = "Index Actions");
+
+			Click(
+				key_actionsDescription = "${actionsDescription}",
+				locator1 = "Button#EXECUTE_ACTION");
+
+			var reindexElapsedTime = "0";
+			var reindexStartTime = "0";
+
+			if (contains("${searchEngineVendor}", "Elasticsearch")) {
+				echo("Current Elasticsearch Tasks:");
+
+				var elasticsearchTasks = JSONCurlUtil.get("${curl}");
+
+				while ((!(contains("${elasticsearchTasks}", "indices:data/write/bulk"))) && ("${reindexStartTime}" != "60")) {
+					Pause.pauseNoSPARefresh(locator1 = "5000");
+
+					var reindexStartTime = ${reindexStartTime} + 5;
+
+					echo("Current Elasticsearch Tasks:");
+
+					elasticsearchTasks = JSONCurlUtil.get("${curl}");
+				}
+
+				if ("${reindexStartTime}" == "60") {
+					echo("Elasticsearch failed to receive reindex request after 60 seconds.");
+				}
+				else {
+					echo("Started reindexing ${reindexStartTime} second(s) after clicking 'Execute'.");
+				}
+
+				while (((contains("${elasticsearchTasks}", "indices:data/write/bulk")) || IsElementPresent(locator1 = "ControlMenu#RELOAD_TOOLTIP")) && ("${reindexElapsedTime}" != "120")) {
+					Pause.pauseNoSPARefresh(locator1 = "10000");
+
+					var reindexElapsedTime = ${reindexElapsedTime} + 10;
+
+					echo("Current Elasticsearch Tasks:");
+
+					elasticsearchTasks = JSONCurlUtil.get("${curl}");
+				}
+			}
+			else if (contains("${searchEngineVendor}", "Solr")) {
+				while ((IsElementNotPresent(locator1 = "ControlMenu#RELOAD_TOOLTIP")) && ("${reindexStartTime}" != "60")) {
+					Pause.pauseNoSPARefresh(locator1 = "5000");
+
+					var reindexStartTime = ${reindexStartTime} + 5;
+				}
+
+				if ("${reindexStartTime}" == "60") {
+					echo("Solr failed to receive reindex request after 60 seconds.");
+				}
+				else {
+					echo("Started reindexing ${reindexStartTime} second(s) after clicking 'Execute'.");
+				}
+
+				while ((IsElementPresent(locator1 = "ControlMenu#RELOAD_TOOLTIP")) && ("${reindexElapsedTime}" != "120")) {
+					Pause.pauseNoSPARefresh(locator1 = "10000");
+
+					var reindexElapsedTime = ${reindexElapsedTime} + 10;
+				}
+			}
+
+			takeScreenshot();
+
+			if ("${reindexElapsedTime}" == "120") {
+				echo("Reindex timed out after 120 seconds.");
+			}
+			else {
+				echo("Finished reindexing after ${reindexElapsedTime} seconds.");
+			}
 		}
 	}
+
 }

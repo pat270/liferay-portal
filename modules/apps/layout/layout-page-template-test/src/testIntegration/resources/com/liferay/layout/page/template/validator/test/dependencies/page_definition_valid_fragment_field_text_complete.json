@@ -1,0 +1,36 @@
+{
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"fragment": {
+						"key": "my-key"
+					},
+					"fragmentFields": [
+						{
+							"id": "element-text",
+							"value": {
+								"fragmentLink": {
+									"href": {
+										"value": "http://www.liferay.com"
+									},
+									"target": "Blank"
+								},
+								"text": {
+									"value_i18n": {
+										"en_US": "Hello Liferay!",
+										"es_ES": "Hola Liferay!"
+									}
+								}
+							}
+						}
+					]
+				},
+				"pageElements": [
+				],
+				"type": "Fragment"
+			}
+		],
+		"type": "Root"
+	}
+}

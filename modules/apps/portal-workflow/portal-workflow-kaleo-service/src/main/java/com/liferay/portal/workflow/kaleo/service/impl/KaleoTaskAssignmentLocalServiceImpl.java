@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.Role;
@@ -35,15 +36,21 @@ import com.liferay.portal.workflow.kaleo.service.base.KaleoTaskAssignmentLocalSe
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignment",
+	service = AopService.class
+)
 public class KaleoTaskAssignmentLocalServiceImpl
 	extends KaleoTaskAssignmentLocalServiceBaseImpl {
 
 	@Override
 	public KaleoTaskAssignment addKaleoTaskAssignment(
-			String kaleoClassName, long kaleoClassPK,
+			String kaleoClassName, long kaleoClassPK, long kaleoDefinitionId,
 			long kaleoDefinitionVersionId, Assignment assignment,
 			ServiceContext serviceContext)
 		throws PortalException {
@@ -63,6 +70,7 @@ public class KaleoTaskAssignmentLocalServiceImpl
 		kaleoTaskAssignment.setModifiedDate(now);
 		kaleoTaskAssignment.setKaleoClassName(kaleoClassName);
 		kaleoTaskAssignment.setKaleoClassPK(kaleoClassPK);
+		kaleoTaskAssignment.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoTaskAssignment.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoTaskAssignment.setKaleoNodeId(
@@ -70,9 +78,7 @@ public class KaleoTaskAssignmentLocalServiceImpl
 
 		setAssignee(kaleoTaskAssignment, assignment, serviceContext);
 
-		kaleoTaskAssignmentPersistence.update(kaleoTaskAssignment);
-
-		return kaleoTaskAssignment;
+		return kaleoTaskAssignmentPersistence.update(kaleoTaskAssignment);
 	}
 
 	@Override
@@ -138,9 +144,8 @@ public class KaleoTaskAssignmentLocalServiceImpl
 			ResourceActionAssignment resourceActionAssignment =
 				(ResourceActionAssignment)assignment;
 
-			String actionId = resourceActionAssignment.getActionId();
-
-			kaleoTaskAssignment.setAssigneeActionId(actionId);
+			kaleoTaskAssignment.setAssigneeActionId(
+				resourceActionAssignment.getActionId());
 		}
 		else if (assignmentType.equals(AssignmentType.ROLE)) {
 			kaleoTaskAssignment.setAssigneeClassName(Role.class.getName());

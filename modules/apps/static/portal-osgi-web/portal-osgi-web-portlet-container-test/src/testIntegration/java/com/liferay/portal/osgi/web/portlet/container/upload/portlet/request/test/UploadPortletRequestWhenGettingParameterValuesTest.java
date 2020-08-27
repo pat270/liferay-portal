@@ -20,11 +20,11 @@ import com.liferay.portal.kernel.upload.FileItem;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadPortletRequestImpl;
 import com.liferay.portal.upload.UploadServletRequestImpl;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -87,10 +87,8 @@ public class UploadPortletRequestWhenGettingParameterValuesTest {
 		for (Map.Entry<String, List<String>> entry :
 				regularParameters.entrySet()) {
 
-			String key = entry.getKey();
-
 			String[] parameterValues = uploadPortletRequest.getParameterValues(
-				key);
+				entry.getKey());
 
 			List<String> parameterValuesList = ListUtil.fromArray(
 				parameterValues);

@@ -25,9 +25,8 @@ classes {
 
 dependencies {
 	compile group: "com.liferay.portal", name: "com.liferay.util.java", version: "default"
-	compile group: "javax.portlet", name: "portlet-api", transitive: false, version: "3.0.0"
+	compile group: "javax.portlet", name: "portlet-api", transitive: false, version: "3.0.1"
 	compile project(":apps:asset:asset-entry-rel-service")
-	compile project(":apps:asset:asset-tag-stats-service")
 	compile project(":apps:blogs:blogs-api")
 	compile project(":apps:blogs:blogs-service")
 	compile project(":apps:document-library:document-library-api")
@@ -36,20 +35,36 @@ dependencies {
 	compile project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
 	compile project(":apps:dynamic-data-mapping:dynamic-data-mapping-service")
 	compile project(":apps:dynamic-data-mapping:dynamic-data-mapping-web")
+	compile project(":apps:fragment:fragment-api")
+	compile project(":apps:fragment:fragment-service")
 	compile project(":apps:friendly-url:friendly-url-api")
 	compile project(":apps:friendly-url:friendly-url-service")
+	compile project(":apps:hello-world:hello-world-web")
 	compile project(":apps:journal:journal-api")
 	compile project(":apps:journal:journal-service")
+	compile project(":apps:layout:layout-api")
+	compile project(":apps:layout:layout-page-template-api")
+	compile project(":apps:layout:layout-page-template-service")
+	compile project(":apps:login:login-web-api")
 	compile project(":apps:message-boards:message-boards-api")
 	compile project(":apps:message-boards:message-boards-service")
 	compile project(":apps:subscription:subscription-api")
 	compile project(":apps:subscription:subscription-service")
+	compile project(":apps:view-count:view-count-api")
+	compile project(":apps:view-count:view-count-service")
 	compile project(":apps:wiki:wiki-api")
 	compile project(":apps:wiki:wiki-service")
 
-	compileOnly group: "com.liferay", name: "org.freemarker", version: "2.3.23.LIFERAY-PATCHED-4"
+	compileInclude group: "com.liferay.commerce", name: "com.liferay.commerce.currency.api", version: "2.0.0"
+	compileInclude group: "com.liferay.commerce", name: "com.liferay.commerce.currency.service", version: "1.0.13"
+	compileInclude group: "com.liferay.commerce", name: "com.liferay.commerce.product.api", version: "10.0.0"
+	compileInclude group: "com.liferay.commerce", name: "com.liferay.commerce.product.service", version: "2.0.0"
+
+	compileOnly group: "com.liferay", name: "org.freemarker", version: "2.3.29.LIFERAY-PATCHED-1"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly project(":core:petra:petra-function")
+	compileOnly project(":core:petra:petra-io")
 	compileOnly project(":core:petra:petra-reflect")
 	compileOnly project(":core:petra:petra-string")
 
@@ -59,14 +74,13 @@ dependencies {
 	testCompile group: "com.liferay", name: "org.jabsorb", version: "1.3.2.LIFERAY-PATCHED-1"
 	testCompile group: "com.mchange", name: "c3p0", version: "0.9.5"
 	testCompile group: "commons-io", name: "commons-io", version: "2.5"
-	testCompile group: "easyconf", name: "easyconf", version: "0.9.5"
-	testCompile group: "log4j", name: "apache-log4j-extras", version: "1.1"
-	testCompile group: "org.apache.tika", name: "tika-core", version: "1.14"
+	testCompile group: "log4j", name: "apache-log4j-extras", version: "1.2.17"
+	testCompile group: "org.apache.tika", name: "tika-core", version: "1.24.1"
 	testCompile group: "org.apache.tomcat", name: "tomcat-jdbc", version: "8.0.32"
 	testCompile group: "org.jodd", name: "jodd-json", version: "3.6.4"
 	testCompile group: "org.json", name: "json", version: "20180813"
-	testCompile group: "org.slf4j", name: "slf4j-api", version: "1.7.2"
-	testCompile group: "org.springframework", name: "spring-context", version: "4.1.9.RELEASE"
+	testCompile group: "org.slf4j", name: "slf4j-api", version: "1.7.26"
+	testCompile group: "org.springframework", name: "spring-context", version: "5.2.2.RELEASE"
 	testCompile project(":apps:petra:petra-log4j")
 	testCompile project(":core:osgi-service-tracker-collections")
 	testCompile project(":core:petra:petra-concurrent")
@@ -82,26 +96,34 @@ writeReleases {
 	doLast {
 		File releasesTxtFile = new File(processResources.destinationDir, "com/liferay/portal/tools/sample/sql/builder/dependencies/releases.txt")
 
-		releasesTxtFile.withWriter("UTF-8") {
-			Writer writer ->
+		List<String> lines = []
 
-			configurations.compile.each {
-				println "Adding release information from ${it} into ${releasesTxtFile}"
+		(configurations.compile + configurations.compileInclude).each {
+			JarFile jarFile = new JarFile(it)
 
-				JarFile jarFile = new JarFile(it)
+			Attributes mainAttributes = jarFile.manifest.mainAttributes
 
-				Attributes mainAttributes = jarFile.manifest.mainAttributes
+			String schemaVersion = mainAttributes.getValue("Liferay-Require-SchemaVersion")
 
-				String schemaVersion = mainAttributes.getValue("Liferay-Require-SchemaVersion")
-
-				if (!schemaVersion) {
-					return
-				}
-
-				String symbolicName = mainAttributes.getValue("Bundle-SymbolicName")
-
-				writer.writeLine "${symbolicName}:${schemaVersion}"
+			if (!schemaVersion) {
+				return
 			}
+
+			logger.lifecycle "Adding release information from {} into {}.", it, releasesTxtFile
+
+			String symbolicName = mainAttributes.getValue("Bundle-SymbolicName")
+
+			lines.add("${symbolicName}:${schemaVersion}")
 		}
+
+		lines.sort()
+
+		if (!releasesTxtFile.exists()) {
+			mkdir releasesTxtFile.getParentFile()
+
+			releasesTxtFile.createNewFile()
+		}
+
+		releasesTxtFile.setText lines.join('\n'), "UTF-8"
 	}
 }

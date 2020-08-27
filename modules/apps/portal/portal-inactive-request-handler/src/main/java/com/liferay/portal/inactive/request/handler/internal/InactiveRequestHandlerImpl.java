@@ -55,6 +55,11 @@ import org.osgi.service.component.annotations.Reference;
 public class InactiveRequestHandlerImpl implements InactiveRequestHandler {
 
 	@Override
+	public boolean isShowInactiveRequestMessage() {
+		return _showInactiveRequestMessage;
+	}
+
+	@Override
 	public void processInactiveRequest(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, String messageKey)
@@ -107,9 +112,10 @@ public class InactiveRequestHandlerImpl implements InactiveRequestHandler {
 		try (InputStream inputStream = url.openStream()) {
 			_content = StringUtil.read(inputStream);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to read " + _INACTIVE_HTML_FILE_NAME, ioe);
+				_log.warn(
+					"Unable to read " + _INACTIVE_HTML_FILE_NAME, ioException);
 			}
 		}
 	}

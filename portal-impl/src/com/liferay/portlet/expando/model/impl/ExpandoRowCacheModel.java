@@ -18,6 +18,7 @@ import com.liferay.expando.kernel.model.ExpandoRow;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing ExpandoRow in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class ExpandoRowCacheModel
-	implements CacheModel<ExpandoRow>, Externalizable {
+	implements CacheModel<ExpandoRow>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ExpandoRowCacheModel)) {
+		if (!(object instanceof ExpandoRowCacheModel)) {
 			return false;
 		}
 
-		ExpandoRowCacheModel expandoRowCacheModel = (ExpandoRowCacheModel)obj;
+		ExpandoRowCacheModel expandoRowCacheModel =
+			(ExpandoRowCacheModel)object;
 
-		if (rowId == expandoRowCacheModel.rowId) {
+		if ((rowId == expandoRowCacheModel.rowId) &&
+			(mvccVersion == expandoRowCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +60,30 @@ public class ExpandoRowCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, rowId);
+		int hashCode = HashUtil.hash(0, rowId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(11);
+		StringBundler sb = new StringBundler(15);
 
-		sb.append("{rowId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", rowId=");
 		sb.append(rowId);
 		sb.append(", companyId=");
 		sb.append(companyId);
@@ -85,6 +102,8 @@ public class ExpandoRowCacheModel
 	public ExpandoRow toEntityModel() {
 		ExpandoRowImpl expandoRowImpl = new ExpandoRowImpl();
 
+		expandoRowImpl.setMvccVersion(mvccVersion);
+		expandoRowImpl.setCtCollectionId(ctCollectionId);
 		expandoRowImpl.setRowId(rowId);
 		expandoRowImpl.setCompanyId(companyId);
 
@@ -105,6 +124,10 @@ public class ExpandoRowCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
+
 		rowId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
@@ -117,6 +140,10 @@ public class ExpandoRowCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		objectOutput.writeLong(rowId);
 
 		objectOutput.writeLong(companyId);
@@ -127,6 +154,8 @@ public class ExpandoRowCacheModel
 		objectOutput.writeLong(classPK);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public long rowId;
 	public long companyId;
 	public long modifiedDate;

@@ -15,19 +15,24 @@
 package com.liferay.asset.auto.tagger.google.cloud.natural.language.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.asset.auto.tagger.google.cloud.natural.language.api.GCloudNaturalLanguageDocumentAssetAutoTagger;
+import com.liferay.asset.auto.tagger.google.cloud.natural.language.GCloudNaturalLanguageDocumentAssetAutoTagger;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.configuration.test.util.ConfigurationTemporarySwapper;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -53,7 +58,8 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerTest {
 				Collection<String> tagNames =
 					_gCloudNaturalLanguageDocumentAssetAutoTagger.getTagNames(
 						RandomTestUtil.randomLong(),
-						RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN);
+						Arrays.toString(RandomTestUtil.randomStrings(20)),
+						ContentTypes.TEXT_PLAIN);
 
 				Assert.assertEquals(
 					tagNames.toString(), Collections.emptySet(), tagNames);
@@ -64,20 +70,50 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerTest {
 	public void testGetTagNamesWithInvalidApiKey() throws Exception {
 		_testWithGCloudNaturalLanguageAutoTagEntitiesEndpointEnabledAndClassificationEndpointEnabled(
 			() -> {
+				Object originalHttp = ReflectionTestUtil.getAndSetFieldValue(
+					_gCloudNaturalLanguageDocumentAssetAutoTagger, "_http",
+					ProxyUtil.newProxyInstance(
+						Http.class.getClassLoader(),
+						new Class<?>[] {Http.class},
+						(proxy, method, args) -> {
+							if (!Objects.equals(
+									method.getName(), "URLtoString")) {
+
+								throw new UnsupportedOperationException();
+							}
+
+							Http.Options options = (Http.Options)args[0];
+
+							Http.Response response = new Http.Response();
+
+							response.setResponseCode(400);
+
+							options.setResponse(response);
+
+							return "{\"error\": {\"message\": \"API key not " +
+								"valid. Please pass a valid API key.\"}}";
+						}));
+
 				try {
 					_gCloudNaturalLanguageDocumentAssetAutoTagger.getTagNames(
 						RandomTestUtil.randomLong(),
-						RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN);
+						Arrays.toString(RandomTestUtil.randomStrings(20)),
+						ContentTypes.TEXT_PLAIN);
 
 					Assert.fail();
 				}
-				catch (Exception e) {
-					Assert.assertTrue(e instanceof PortalException);
+				catch (Exception exception) {
+					Assert.assertTrue(exception instanceof PortalException);
 					Assert.assertEquals(
 						"Unable to generate tags with the Google Natural " +
 							"Language service. Response code 400: API key " +
 								"not valid. Please pass a valid API key.",
-						e.getMessage());
+						exception.getMessage());
+				}
+				finally {
+					ReflectionTestUtil.setFieldValue(
+						_gCloudNaturalLanguageDocumentAssetAutoTagger, "_http",
+						originalHttp);
 				}
 			},
 			"invalidApiKey");
@@ -90,7 +126,8 @@ public class GCloudNaturalLanguageDocumentAssetAutoTaggerTest {
 				Collection<String> tagNames =
 					_gCloudNaturalLanguageDocumentAssetAutoTagger.getTagNames(
 						RandomTestUtil.randomLong(),
-						RandomTestUtil.randomString(), ContentTypes.IMAGE_JPEG);
+						Arrays.toString(RandomTestUtil.randomStrings(20)),
+						ContentTypes.IMAGE_JPEG);
 
 				Assert.assertEquals(
 					tagNames.toString(), Collections.emptySet(), tagNames);

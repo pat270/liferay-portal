@@ -20,6 +20,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 import com.liferay.portal.configuration.metatype.definitions.ExtendedAttributeDefinition;
 import com.liferay.portal.configuration.metatype.definitions.ExtendedObjectClassDefinition;
 import com.liferay.portal.kernel.model.CompanyConstants;
+import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -27,9 +28,7 @@ import com.liferay.portal.kernel.util.Validator;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -47,31 +46,41 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 	public static final String PROPERTY_VALUE_COMPANY_ID_DEFAULT = "0";
 
 	public ConfigurationModel(
+		String bundleLocation, String bundleSymbolicName,
+		ClassLoader classLoader, Configuration configuration,
 		ExtendedObjectClassDefinition extendedObjectClassDefinition,
-		Configuration configuration, String bundleSymbolicName,
-		String bundleLocation, boolean factory) {
+		boolean factory) {
 
-		_extendedObjectClassDefinition = extendedObjectClassDefinition;
-		_configuration = configuration;
-		_bundleSymbolicName = bundleSymbolicName;
 		_bundleLocation = bundleLocation;
+		_bundleSymbolicName = bundleSymbolicName;
+		_classLoader = classLoader;
+		_configuration = configuration;
+		_extendedObjectClassDefinition = extendedObjectClassDefinition;
 		_factory = factory;
 	}
 
+	public ConfigurationModel(
+		String bundleLocation, String bundleSymbolicName,
+		Configuration configuration,
+		ExtendedObjectClassDefinition extendedObjectClassDefinition,
+		boolean factory) {
+
+		this(
+			bundleLocation, bundleSymbolicName,
+			ConfigurationModel.class.getClassLoader(), configuration,
+			extendedObjectClassDefinition, factory);
+	}
+
 	@Override
-	public boolean equals(Object obj) {
-		ConfigurationModel configurationModel = (ConfigurationModel)obj;
+	public boolean equals(Object object) {
+		ConfigurationModel configurationModel = (ConfigurationModel)object;
 
 		return Objects.equals(getID(), configurationModel.getID());
 	}
 
 	@Override
 	public ExtendedAttributeDefinition[] getAttributeDefinitions(int filter) {
-		ExtendedAttributeDefinition[] extendedAttributeDefinitions =
-			_extendedObjectClassDefinition.getAttributeDefinitions(filter);
-
-		return removeFactoryInstanceLabelAttribute(
-			extendedAttributeDefinitions);
+		return _extendedObjectClassDefinition.getAttributeDefinitions(filter);
 	}
 
 	public String getBundleLocation() {
@@ -90,6 +99,10 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 
 		return GetterUtil.get(
 			extensionAttributes.get("category"), "third-party");
+	}
+
+	public ClassLoader getClassLoader() {
+		return _classLoader;
 	}
 
 	public Configuration getConfiguration() {
@@ -144,6 +157,13 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 	}
 
 	public String getFactoryPid() {
+		if (_extendedObjectClassDefinition instanceof ConfigurationModel) {
+			ConfigurationModel configurationModel =
+				(ConfigurationModel)_extendedObjectClassDefinition;
+
+			return configurationModel.getFactoryPid();
+		}
+
 		return _extendedObjectClassDefinition.getID();
 	}
 
@@ -229,10 +249,20 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 			return false;
 		}
 
-		Dictionary properties = _configuration.getProperties();
+		Dictionary<String, Object> properties = _configuration.getProperties();
 
 		if (properties == null) {
 			return false;
+		}
+
+		long groupId = GetterUtil.getLong(
+			properties.get(Scope.GROUP.getPropertyKey()),
+			GroupConstants.DEFAULT_PARENT_GROUP_ID);
+
+		if ((groupId != GroupConstants.DEFAULT_PARENT_GROUP_ID) &&
+			Scope.GROUP.equals(scope.getValue())) {
+
+			return true;
 		}
 
 		long companyId = GetterUtil.getLong(
@@ -304,14 +334,14 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 			Dictionary<String, Object> properties =
 				_configuration.getProperties();
 
-			Object valueObj = properties.get(factoryInstanceLabelAttribute);
+			Object valueObject = properties.get(factoryInstanceLabelAttribute);
 
-			if (valueObj instanceof Object[]) {
+			if (valueObject instanceof Object[]) {
 				value = StringUtil.merge(
-					(Object[])valueObj, StringPool.COMMA_AND_SPACE);
+					(Object[])valueObject, StringPool.COMMA_AND_SPACE);
 			}
 			else {
-				value = String.valueOf(valueObj);
+				value = String.valueOf(valueObject);
 			}
 		}
 
@@ -322,33 +352,9 @@ public class ConfigurationModel implements ExtendedObjectClassDefinition {
 		return scope.equals(getScope());
 	}
 
-	protected ExtendedAttributeDefinition[] removeFactoryInstanceLabelAttribute(
-		ExtendedAttributeDefinition[] extendedAttributeDefinitions) {
-
-		if (!isCompanyFactory()) {
-			return extendedAttributeDefinitions;
-		}
-
-		List<ExtendedAttributeDefinition>
-			filteredExtendedAttributeDefinitionsList = new ArrayList<>();
-
-		for (ExtendedAttributeDefinition extendedAttributeDefinition :
-				extendedAttributeDefinitions) {
-
-			String attributeId = extendedAttributeDefinition.getID();
-
-			if (!attributeId.equals(getLabelAttribute())) {
-				filteredExtendedAttributeDefinitionsList.add(
-					extendedAttributeDefinition);
-			}
-		}
-
-		return filteredExtendedAttributeDefinitionsList.toArray(
-			new ExtendedAttributeDefinition[0]);
-	}
-
 	private final String _bundleLocation;
 	private final String _bundleSymbolicName;
+	private final ClassLoader _classLoader;
 	private final Configuration _configuration;
 	private final ExtendedObjectClassDefinition _extendedObjectClassDefinition;
 	private final boolean _factory;

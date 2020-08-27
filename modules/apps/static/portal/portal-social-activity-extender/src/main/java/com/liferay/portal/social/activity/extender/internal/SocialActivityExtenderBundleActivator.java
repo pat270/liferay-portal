@@ -96,11 +96,11 @@ public class SocialActivityExtenderBundleActivator implements BundleActivator {
 				_readSocialActivity(
 					bundle, "META-INF/social/liferay-social-ext.xml");
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				_log.error(
 					"Unable to read social activity for bundle " +
 						bundle.getSymbolicName(),
-					e);
+					exception);
 			}
 
 			return null;
@@ -134,10 +134,8 @@ public class SocialActivityExtenderBundleActivator implements BundleActivator {
 
 			BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 
-			ClassLoader classLoader = bundleWiring.getClassLoader();
-
 			_socialConfiguration.read(
-				classLoader, configs.toArray(new String[0]));
+				bundleWiring.getClassLoader(), configs.toArray(new String[0]));
 		}
 
 		private final SocialConfiguration _socialConfiguration;

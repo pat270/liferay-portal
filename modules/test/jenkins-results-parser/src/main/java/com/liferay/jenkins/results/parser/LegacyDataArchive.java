@@ -32,8 +32,8 @@ public class LegacyDataArchive {
 		return _legacyDataArchiveFile;
 	}
 
-	public LegacyDataArchiveUtil getLegacyDataArchiveUtil() {
-		return _legacyDataArchiveUtil;
+	public LegacyDataArchiveHelper getLegacyDataArchiveHelper() {
+		return _legacyDataArchiveHelper;
 	}
 
 	public GitWorkingDirectory getLegacyGitWorkingDirectory() {
@@ -73,16 +73,15 @@ public class LegacyDataArchive {
 	}
 
 	public void stageLegacyDataArchive() throws IOException {
-		String dataArchiveType = _legacyDataArchiveGroup.getDataArchiveType();
 		File generatedArchiveDirectory =
-			_legacyDataArchiveUtil.getGeneratedArchiveDirectory();
-		String portalVersion =
-			_legacyDataArchivePortalVersion.getPortalVersion();
+			_legacyDataArchiveHelper.getGeneratedArchiveDirectory();
 
 		File generatedArchiveFile = new File(
 			JenkinsResultsParserUtil.combine(
-				generatedArchiveDirectory.toString(), "/", portalVersion, "/",
-				dataArchiveType, "-", _databaseName, ".zip"));
+				generatedArchiveDirectory.toString(), "/",
+				_legacyDataArchivePortalVersion.getPortalVersion(), "/",
+				_legacyDataArchiveGroup.getDataArchiveType(), "-",
+				_databaseName, ".zip"));
 
 		if (generatedArchiveFile.exists()) {
 			JenkinsResultsParserUtil.copy(
@@ -103,22 +102,21 @@ public class LegacyDataArchive {
 		_legacyDataArchivePortalVersion =
 			_legacyDataArchiveGroup.getLegacyDataArchivePortalVersion();
 
-		_legacyDataArchiveUtil =
-			_legacyDataArchivePortalVersion.getLegacyDataArchiveUtil();
+		_legacyDataArchiveHelper =
+			_legacyDataArchivePortalVersion.getLegacyDataArchiveHelper();
 
 		_legacyGitWorkingDirectory =
-			_legacyDataArchiveUtil.getLegacyGitWorkingDirectory();
+			_legacyDataArchiveHelper.getLegacyGitWorkingDirectory();
 
 		_dataArchiveType = _legacyDataArchiveGroup.getDataArchiveType();
 
-		String portalVersion =
-			_legacyDataArchivePortalVersion.getPortalVersion();
 		File legacyDataWorkingDirectory =
 			_legacyGitWorkingDirectory.getWorkingDirectory();
 
 		_legacyDataArchiveFile = new File(
 			JenkinsResultsParserUtil.combine(
-				legacyDataWorkingDirectory.toString(), "/", portalVersion,
+				legacyDataWorkingDirectory.toString(), "/",
+				_legacyDataArchivePortalVersion.getPortalVersion(),
 				"/data-archive/", _dataArchiveType, "-", _databaseName,
 				".zip"));
 	}
@@ -127,9 +125,9 @@ public class LegacyDataArchive {
 	private final String _databaseName;
 	private final File _legacyDataArchiveFile;
 	private final LegacyDataArchiveGroup _legacyDataArchiveGroup;
+	private final LegacyDataArchiveHelper _legacyDataArchiveHelper;
 	private final LegacyDataArchivePortalVersion
 		_legacyDataArchivePortalVersion;
-	private final LegacyDataArchiveUtil _legacyDataArchiveUtil;
 	private final GitWorkingDirectory _legacyGitWorkingDirectory;
 
 }

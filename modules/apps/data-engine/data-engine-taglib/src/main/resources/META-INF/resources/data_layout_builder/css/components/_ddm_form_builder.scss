@@ -1,0 +1,71 @@
+$baseline: 24px;
+
+.data-engine-form-builder {
+	> .sheet {
+		margin-top: 0;
+		padding: 0;
+	}
+
+	&.ddm-form-builder {
+		transition: padding ease 0.5s;
+
+		&--sidebar-open {
+			padding-left: 0;
+			padding-right: $sidebarMainWidth + $sidebarMiniWidth;
+		}
+
+		.col-ddm {
+			padding: 0 1px;
+		}
+
+		.ddm-field-types-fieldset__nested {
+			margin: 0;
+			padding: 0;
+
+			&__nested-separator,
+			.text-uppercase {
+				padding: 0;
+			}
+		}
+		.ddm-field-container {
+			background-color: #fff;
+
+			&.dragging {
+				border-radius: 0;
+			}
+		}
+	}
+
+	.ddm-form-builder.container {
+		padding: 0 24px;
+	}
+
+	.ddm-empty-page {
+		margin: $baseline !important;
+		width: calc(100% - #{$baseline * 2}) !important;
+	}
+
+	.form-builder-layout {
+		padding: 0 !important;
+
+		.ddm-form-page > .row {
+			margin: 0;
+		}
+	}
+
+	.lfr-ddm-form-container > .horizontal-line {
+		display: none;
+	}
+
+	.lfr-initial-col {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+}
+
+.data-engine-form-builder-messages {
+	.alert {
+		margin-top: 60px;
+		z-index: 1000;
+	}
+}

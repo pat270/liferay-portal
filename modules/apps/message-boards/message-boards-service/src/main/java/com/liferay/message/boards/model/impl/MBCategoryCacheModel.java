@@ -18,6 +18,7 @@ import com.liferay.message.boards.model.MBCategory;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,31 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MBCategory in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class MBCategoryCacheModel
-	implements CacheModel<MBCategory>, Externalizable {
+	implements CacheModel<MBCategory>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MBCategoryCacheModel)) {
+		if (!(object instanceof MBCategoryCacheModel)) {
 			return false;
 		}
 
-		MBCategoryCacheModel mbCategoryCacheModel = (MBCategoryCacheModel)obj;
+		MBCategoryCacheModel mbCategoryCacheModel =
+			(MBCategoryCacheModel)object;
 
-		if (categoryId == mbCategoryCacheModel.categoryId) {
+		if ((categoryId == mbCategoryCacheModel.categoryId) &&
+			(mvccVersion == mbCategoryCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +60,30 @@ public class MBCategoryCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, categoryId);
+		int hashCode = HashUtil.hash(0, categoryId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(41);
+		StringBundler sb = new StringBundler(39);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", categoryId=");
 		sb.append(categoryId);
@@ -90,12 +107,6 @@ public class MBCategoryCacheModel
 		sb.append(description);
 		sb.append(", displayStyle=");
 		sb.append(displayStyle);
-		sb.append(", threadCount=");
-		sb.append(threadCount);
-		sb.append(", messageCount=");
-		sb.append(messageCount);
-		sb.append(", lastPostDate=");
-		sb.append(lastPostDate);
 		sb.append(", lastPublishDate=");
 		sb.append(lastPublishDate);
 		sb.append(", status=");
@@ -114,6 +125,9 @@ public class MBCategoryCacheModel
 	@Override
 	public MBCategory toEntityModel() {
 		MBCategoryImpl mbCategoryImpl = new MBCategoryImpl();
+
+		mbCategoryImpl.setMvccVersion(mvccVersion);
+		mbCategoryImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			mbCategoryImpl.setUuid("");
@@ -171,16 +185,6 @@ public class MBCategoryCacheModel
 			mbCategoryImpl.setDisplayStyle(displayStyle);
 		}
 
-		mbCategoryImpl.setThreadCount(threadCount);
-		mbCategoryImpl.setMessageCount(messageCount);
-
-		if (lastPostDate == Long.MIN_VALUE) {
-			mbCategoryImpl.setLastPostDate(null);
-		}
-		else {
-			mbCategoryImpl.setLastPostDate(new Date(lastPostDate));
-		}
-
 		if (lastPublishDate == Long.MIN_VALUE) {
 			mbCategoryImpl.setLastPublishDate(null);
 		}
@@ -212,6 +216,9 @@ public class MBCategoryCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		categoryId = objectInput.readLong();
@@ -229,11 +236,6 @@ public class MBCategoryCacheModel
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		displayStyle = objectInput.readUTF();
-
-		threadCount = objectInput.readInt();
-
-		messageCount = objectInput.readInt();
-		lastPostDate = objectInput.readLong();
 		lastPublishDate = objectInput.readLong();
 
 		status = objectInput.readInt();
@@ -245,6 +247,10 @@ public class MBCategoryCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -293,10 +299,6 @@ public class MBCategoryCacheModel
 			objectOutput.writeUTF(displayStyle);
 		}
 
-		objectOutput.writeInt(threadCount);
-
-		objectOutput.writeInt(messageCount);
-		objectOutput.writeLong(lastPostDate);
 		objectOutput.writeLong(lastPublishDate);
 
 		objectOutput.writeInt(status);
@@ -313,6 +315,8 @@ public class MBCategoryCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long categoryId;
 	public long groupId;
@@ -325,9 +329,6 @@ public class MBCategoryCacheModel
 	public String name;
 	public String description;
 	public String displayStyle;
-	public int threadCount;
-	public int messageCount;
-	public long lastPostDate;
 	public long lastPublishDate;
 	public int status;
 	public long statusByUserId;

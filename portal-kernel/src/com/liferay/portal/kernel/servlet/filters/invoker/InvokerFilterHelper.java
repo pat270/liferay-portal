@@ -76,8 +76,8 @@ public class InvokerFilterHelper {
 			try {
 				filter.destroy();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -116,10 +116,10 @@ public class InvokerFilterHelper {
 
 			_serviceTracker.open();
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new ServletException(e);
+			throw new ServletException(exception);
 		}
 	}
 
@@ -145,9 +145,10 @@ public class InvokerFilterHelper {
 			}
 
 			if (newFilterMappings.length == 1) {
-				if (_filterMappingsMap.putIfAbsent(
-						filterName, newFilterMappings) == null) {
+				FilterMapping[] filterMappings = _filterMappingsMap.putIfAbsent(
+					filterName, newFilterMappings);
 
+				if (filterMappings == null) {
 					int index = _filterNames.indexOf(positionFilterName);
 
 					if (index == -1) {
@@ -211,8 +212,8 @@ public class InvokerFilterHelper {
 			try {
 				filter.destroy();
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 		}
 
@@ -322,8 +323,9 @@ public class InvokerFilterHelper {
 
 			return filter;
 		}
-		catch (Exception e) {
-			_log.error("Unable to initialize filter " + filterClassName, e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to initialize filter " + filterClassName, exception);
 
 			return null;
 		}
@@ -447,20 +449,26 @@ public class InvokerFilterHelper {
 
 			Filter filter = registry.getService(serviceReference);
 
-			String afterFilter = GetterUtil.getString(
-				serviceReference.getProperty("after-filter"));
-			String beforeFilter = GetterUtil.getString(
-				serviceReference.getProperty("before-filter"));
 			String servletContextName = GetterUtil.getString(
 				serviceReference.getProperty("servlet-context-name"));
-			String servletFilterName = GetterUtil.getString(
-				serviceReference.getProperty("servlet-filter-name"));
+
+			if (Validator.isBlank(servletContextName)) {
+				servletContextName = PortalUtil.getServletContextName();
+			}
+
+			String beforeFilter = GetterUtil.getString(
+				serviceReference.getProperty("before-filter"));
 
 			String positionFilterName = beforeFilter;
+
 			boolean after = false;
+
+			String afterFilter = GetterUtil.getString(
+				serviceReference.getProperty("after-filter"));
 
 			if (Validator.isNotNull(afterFilter)) {
 				positionFilterName = afterFilter;
+
 				after = true;
 			}
 
@@ -477,11 +485,13 @@ public class InvokerFilterHelper {
 					serviceReference.getProperty(key));
 
 				initParameterMap.put(
-					StringUtil.replace(key, "init.param.", ""), value);
+					StringUtil.removeSubstring(key, "init.param."), value);
 			}
 
 			ServletContext servletContext = ServletContextPool.get(
 				servletContextName);
+			String servletFilterName = GetterUtil.getString(
+				serviceReference.getProperty("servlet-filter-name"));
 
 			FilterConfig filterConfig = new InvokerFilterConfig(
 				servletContext, servletFilterName, initParameterMap);
@@ -489,8 +499,8 @@ public class InvokerFilterHelper {
 			try {
 				filter.init(filterConfig);
 			}
-			catch (ServletException se) {
-				_log.error(se, se);
+			catch (ServletException servletException) {
+				_log.error(servletException, servletException);
 
 				registry.ungetService(serviceReference);
 

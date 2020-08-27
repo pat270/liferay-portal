@@ -51,7 +51,7 @@ public class LPKGIndependenceTest {
 		BundleContext bundleContext = bundle.getBundleContext();
 
 		Path tempPath = Paths.get(
-			PropsValues.MODULE_FRAMEWORK_MARKETPLACE_DIR, "temp");
+			PropsValues.MODULE_FRAMEWORK_BASE_DIR, "temp");
 
 		File tempFile = tempPath.toFile();
 
@@ -106,10 +106,10 @@ public class LPKGIndependenceTest {
 		List<Bundle> bundles = new ArrayList<>();
 
 		try (ZipFile zipFile = new ZipFile(lpkgFile)) {
-			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+			Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
 
-			while (entries.hasMoreElements()) {
-				ZipEntry zipEntry = entries.nextElement();
+			while (enumeration.hasMoreElements()) {
+				ZipEntry zipEntry = enumeration.nextElement();
 
 				String name = zipEntry.getName();
 

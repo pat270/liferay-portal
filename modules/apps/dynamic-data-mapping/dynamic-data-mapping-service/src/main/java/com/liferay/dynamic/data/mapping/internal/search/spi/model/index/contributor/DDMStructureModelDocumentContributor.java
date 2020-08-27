@@ -16,17 +16,15 @@ package com.liferay.dynamic.data.mapping.internal.search.spi.model.index.contrib
 
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
+import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.dynamic.data.mapping.service.DDMStructureVersionLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
-
-import java.util.Locale;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -45,6 +43,17 @@ public class DDMStructureModelDocumentContributor
 	@Override
 	public void contribute(Document document, DDMStructure ddmStructure) {
 		document.addKeyword(Field.CLASS_NAME_ID, ddmStructure.getClassNameId());
+		document.addLocalizedText(
+			Field.DESCRIPTION,
+			LocalizationUtil.populateLocalizationMap(
+				ddmStructure.getDescriptionMap(),
+				ddmStructure.getDefaultLanguageId(),
+				ddmStructure.getGroupId()));
+		document.addLocalizedText(
+			Field.NAME,
+			LocalizationUtil.populateLocalizationMap(
+				ddmStructure.getNameMap(), ddmStructure.getDefaultLanguageId(),
+				ddmStructure.getGroupId()));
 
 		try {
 			DDMStructureVersion structureVersion =
@@ -54,39 +63,29 @@ public class DDMStructureModelDocumentContributor
 			document.addKeyword(Field.STATUS, structureVersion.getStatus());
 			document.addKeyword(Field.VERSION, structureVersion.getVersion());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 		}
 
+		try {
+			document.addKeyword(
+				"resourcePermissionName",
+				_ddmPermissionSupport.getStructureModelResourceName(
+					ddmStructure.getClassNameId()));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+		}
+
+		document.addKeyword(
+			"resourceClassNameId", ddmStructure.getClassNameId());
 		document.addKeyword("structureKey", ddmStructure.getStructureKey());
 		document.addKeyword("storageType", ddmStructure.getStorageType());
 		document.addKeyword("type", ddmStructure.getType());
-
-		Locale defaultLocale = LocaleUtil.getSiteDefault();
-
-		String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
-
-		String[] descriptionLanguageIds = getLanguageIds(
-			defaultLanguageId, ddmStructure.getDescription());
-
-		for (String descriptionLanguageId : descriptionLanguageIds) {
-			document.addText(
-				LocalizationUtil.getLocalizedName(
-					Field.DESCRIPTION, descriptionLanguageId),
-				ddmStructure.getDescription(descriptionLanguageId));
-		}
-
-		String[] nameLanguageIds = getLanguageIds(
-			defaultLanguageId, ddmStructure.getName());
-
-		for (String nameLanguageId : nameLanguageIds) {
-			document.addText(
-				LocalizationUtil.getLocalizedName(Field.NAME, nameLanguageId),
-				ddmStructure.getName(nameLanguageId));
-		}
-
 		document.addLocalizedKeyword(
 			"localized_name",
 			LocalizationUtil.populateLocalizationMap(
@@ -113,5 +112,8 @@ public class DDMStructureModelDocumentContributor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDMStructureModelDocumentContributor.class);
+
+	@Reference
+	private DDMPermissionSupport _ddmPermissionSupport;
 
 }

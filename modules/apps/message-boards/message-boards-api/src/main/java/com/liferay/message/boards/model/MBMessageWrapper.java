@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MBMessage
  * @generated
  */
-@ProviderType
 public class MBMessageWrapper
 	extends BaseModelWrapper<MBMessage>
 	implements MBMessage, ModelWrapper<MBMessage> {
@@ -46,6 +45,8 @@ public class MBMessageWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("messageId", getMessageId());
 		attributes.put("groupId", getGroupId());
@@ -60,7 +61,9 @@ public class MBMessageWrapper
 		attributes.put("threadId", getThreadId());
 		attributes.put("rootMessageId", getRootMessageId());
 		attributes.put("parentMessageId", getParentMessageId());
+		attributes.put("treePath", getTreePath());
 		attributes.put("subject", getSubject());
+		attributes.put("urlSubject", getUrlSubject());
 		attributes.put("body", getBody());
 		attributes.put("format", getFormat());
 		attributes.put("anonymous", isAnonymous());
@@ -78,6 +81,18 @@ public class MBMessageWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -162,10 +177,22 @@ public class MBMessageWrapper
 			setParentMessageId(parentMessageId);
 		}
 
+		String treePath = (String)attributes.get("treePath");
+
+		if (treePath != null) {
+			setTreePath(treePath);
+		}
+
 		String subject = (String)attributes.get("subject");
 
 		if (subject != null) {
 			setSubject(subject);
+		}
+
+		String urlSubject = (String)attributes.get("urlSubject");
+
+		if (urlSubject != null) {
+			setUrlSubject(urlSubject);
 		}
 
 		String body = (String)attributes.get("body");
@@ -241,6 +268,13 @@ public class MBMessageWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return model.addAttachmentsFolder();
+	}
+
+	@Override
+	public String buildTreePath()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.buildTreePath();
 	}
 
 	/**
@@ -390,6 +424,16 @@ public class MBMessageWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this message-boards message.
+	 *
+	 * @return the ct collection ID of this message-boards message
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry>
 			getDeletedAttachmentsFileEntries()
@@ -461,6 +505,16 @@ public class MBMessageWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this message-boards message.
+	 *
+	 * @return the mvcc version of this message-boards message
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -619,6 +673,26 @@ public class MBMessageWrapper
 	@Override
 	public com.liferay.portal.kernel.trash.TrashHandler getTrashHandler() {
 		return model.getTrashHandler();
+	}
+
+	/**
+	 * Returns the tree path of this message-boards message.
+	 *
+	 * @return the tree path of this message-boards message
+	 */
+	@Override
+	public String getTreePath() {
+		return model.getTreePath();
+	}
+
+	/**
+	 * Returns the url subject of this message-boards message.
+	 *
+	 * @return the url subject of this message-boards message
+	 */
+	@Override
+	public String getUrlSubject() {
+		return model.getUrlSubject();
 	}
 
 	/**
@@ -932,6 +1006,16 @@ public class MBMessageWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this message-boards message.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message-boards message
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the format of this message-boards message.
 	 *
 	 * @param format the format of this message-boards message
@@ -979,6 +1063,16 @@ public class MBMessageWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this message-boards message.
+	 *
+	 * @param mvccVersion the mvcc version of this message-boards message
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -1092,6 +1186,26 @@ public class MBMessageWrapper
 	}
 
 	/**
+	 * Sets the tree path of this message-boards message.
+	 *
+	 * @param treePath the tree path of this message-boards message
+	 */
+	@Override
+	public void setTreePath(String treePath) {
+		model.setTreePath(treePath);
+	}
+
+	/**
+	 * Sets the url subject of this message-boards message.
+	 *
+	 * @param urlSubject the url subject of this message-boards message
+	 */
+	@Override
+	public void setUrlSubject(String urlSubject) {
+		model.setUrlSubject(urlSubject);
+	}
+
+	/**
 	 * Sets the user ID of this message-boards message.
 	 *
 	 * @param userId the user ID of this message-boards message
@@ -1129,6 +1243,25 @@ public class MBMessageWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public void updateTreePath(String treePath) {
+		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<MBMessage, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<MBMessage, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

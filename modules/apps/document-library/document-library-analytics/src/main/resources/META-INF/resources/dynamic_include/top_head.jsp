@@ -26,66 +26,52 @@
 	var pathnameRegexp = /\/documents\/(\d+)\/(\d+)\/(.+?)\/([^&]+)/;
 
 	function handleDownloadClick(event) {
-		if (event.target.nodeName.toLowerCase() === 'a') {
-			if (window.Analytics) {
-				var anchor = event.target;
-				var match = pathnameRegexp.exec(anchor.pathname);
+		if (event.target.nodeName.toLowerCase() === 'a' && window.Analytics) {
+			var anchor = event.target;
+			var match = pathnameRegexp.exec(anchor.pathname);
 
-				if (match) {
-					var getParameterValue = function(parameterName) {
-						var result = null;
-						var tmp = [];
+			var fileEntryId =
+				anchor.dataset.analyticsFileEntryId ||
+				(anchor.parentElement &&
+					anchor.parentElement.dataset.analyticsFileEntryId);
 
-						anchor
-							.search
-							.substr(1)
-							.split("&")
-							.forEach(
-								function(item) {
-									tmp = item.split("=");
-									if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-								}
-							);
-						return result;
-					}
+			if (fileEntryId && match) {
+				var getParameterValue = function (parameterName) {
+					var result = null;
 
-					var groupId = match[1];
-					var fileEntryUUID = match[4];
+					anchor.search
+						.substr(1)
+						.split('&')
+						.forEach(function (item) {
+							var tmp = item.split('=');
 
-					fetch(
-						'<%= PortalUtil.getPortalURL(request) %><%= Portal.PATH_MODULE %><%= DocumentLibraryAnalyticsConstants.PATH_RESOLVE_FILE_ENTRY %>?groupId=' + encodeURIComponent(groupId) + '&uuid=' + encodeURIComponent(fileEntryUUID),
-						{
-							credentials: 'include',
-							method: 'GET'
-						}
-					).then(function(response) {
-						return response.json();
-					}).then(function(response) {
-						Analytics.send(
-							'documentDownloaded',
-							'Document',
-							{
-								groupId: groupId,
-								fileEntryId: response.fileEntryId,
-								preview: !!window.<%= DocumentLibraryAnalyticsConstants.JS_PREFIX %>isViewFileEntry,
-								title: decodeURIComponent(match[3].replace(/\+/ig, ' ')),
-								version: getParameterValue('version')
+							if (tmp[0] === parameterName) {
+								result = decodeURIComponent(tmp[1]);
 							}
-						);
-					}).catch(function() {
-						return;
-					});
-				}
+						});
+
+					return result;
+				};
+
+				Analytics.send('documentDownloaded', 'Document', {
+					groupId: match[1],
+					fileEntryId: fileEntryId,
+					preview: !!window.<%= DocumentLibraryAnalyticsConstants.JS_PREFIX %>isViewFileEntry,
+					title: decodeURIComponent(match[3].replace(/\+/gi, ' ')),
+					version: getParameterValue('version'),
+				});
 			}
 		}
 	}
 
-	document.body.addEventListener('click', handleDownloadClick);
+	document.addEventListener('DOMContentLoaded', function () {
+		document.body.addEventListener('click', handleDownloadClick);
+	});
 
-	var onDestroyPortlet = function() {
+	var onDestroyPortlet = function () {
 		document.body.removeEventListener('click', handleDownloadClick);
 		Liferay.detach('destroyPortlet', onDestroyPortlet);
-	}
+	};
 
 	Liferay.on('destroyPortlet', onDestroyPortlet);
 </aui:script>

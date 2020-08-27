@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing UserNotificationEvent in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class UserNotificationEventCacheModel
 	implements CacheModel<UserNotificationEvent>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof UserNotificationEventCacheModel)) {
+		if (!(object instanceof UserNotificationEventCacheModel)) {
 			return false;
 		}
 
 		UserNotificationEventCacheModel userNotificationEventCacheModel =
-			(UserNotificationEventCacheModel)obj;
+			(UserNotificationEventCacheModel)object;
 
 		if ((userNotificationEventId ==
 				userNotificationEventCacheModel.userNotificationEventId) &&
@@ -159,7 +156,9 @@ public class UserNotificationEventCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
@@ -177,7 +176,7 @@ public class UserNotificationEventCacheModel
 		deliverBy = objectInput.readLong();
 
 		delivered = objectInput.readBoolean();
-		payload = objectInput.readUTF();
+		payload = (String)objectInput.readObject();
 
 		actionRequired = objectInput.readBoolean();
 
@@ -217,10 +216,10 @@ public class UserNotificationEventCacheModel
 		objectOutput.writeBoolean(delivered);
 
 		if (payload == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(payload);
+			objectOutput.writeObject(payload);
 		}
 
 		objectOutput.writeBoolean(actionRequired);

@@ -1,0 +1,203 @@
+@component-name = "portal-calendar"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column${line.separator}company.default.time.zone=America/Los_Angeles";
+	property testray.main.component.name = "Calendar";
+	var pageName = "Calendar Page";
+	var portletName = "Calendar";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Calendar Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Calendar Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Portlet.addPG(
+			pageName = "Calendar Page",
+			portletName = "Calendar");
+
+		CalendarNavigator.gotoAddEvent();
+
+		CalendarEvent.editTitle(eventTitle = "Current Day Event");
+
+		CalendarEvent.setTimes(
+			endDateTime = "11:59 PM",
+			startDateTime = "11:58 PM");
+
+		CalendarEvent.setDatesToday();
+
+		CalendarEvent.publish();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.gotoPage(pageName = "Calendar Page");
+
+			if (IsElementPresent(locator1 = "Calendar#SCHEDULER_EVENT_GENERIC")) {
+				CalendarEvent.tearDown();
+			}
+
+			Calendar.tearDown();
+
+			CalendarConfiguration.tearDown();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@description = "This is a use case for LPS-67928."
+	@ignore = "true"
+	@priority = "3"
+	test DeleteEventAndViewFeed {
+
+		property test.name.skip.portal.instance = "CalendarRSS#DeleteEventAndViewFeed";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Calendar.chooseSiteCalendarMenulistOption(
+			menuListOption = "RSS",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewRSSFeedEventPresent(
+			calendarName = "${siteName}",
+			eventTitle = "Current Day Event",
+			pageName = "Calendar Page",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Navigator.closeWindow();
+
+		CalendarEvent.tearDown();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Calendar.chooseSiteCalendarMenulistOption(
+			menuListOption = "RSS",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewRSSFeedEventNotPresent(
+			calendarName = "${siteName}",
+			eventTitle = "Current Day Event",
+			pageName = "Calendar Page",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Navigator.closeWindow();
+	}
+
+	@description = "This is a use case for LPS-67928."
+	@ignore = "true"
+	@priority = "3"
+	test DisableFeedForSiteCalendar {
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Calendar.chooseSiteCalendarMenulistOption(
+			menuListOption = "RSS",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewRSSFeedEventPresent(
+			calendarName = "${siteName}",
+			eventTitle = "Current Day Event",
+			pageName = "Calendar Page",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		var rssURL = selenium.getLocation();
+
+		Navigator.closeWindow();
+
+		CalendarNavigator.gotoConfiguration();
+
+		CalendarConfiguration.enableRSS();
+
+		CalendarConfiguration.viewRSSOptionsDisabled();
+
+		CalendarConfiguration.save();
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Calendar.viewSiteCalendarNoMenulistOption(
+			menuListOption = "RSS",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewNoRSS(rssURL = "${rssURL}");
+	}
+
+	@description = "This is a use case for LPS-67928."
+	@ignore = "true"
+	@priority = "5"
+	test ViewSiteCalendarFeed {
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		CalendarNavigator.gotoPreviousDay();
+
+		CalendarEvent.addViaDayView(eventTitle = "Previous Day Event");
+
+		CalendarNavigator.gotoNextDay();
+
+		CalendarNavigator.gotoNextDay();
+
+		CalendarEvent.addViaDayView(eventTitle = "Future Day Event");
+
+		Navigator.gotoPage(pageName = "Calendar Page");
+
+		Calendar.chooseSiteCalendarMenulistOption(
+			menuListOption = "RSS",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewRSSFeedEventNotPresent(
+			calendarName = "${siteName}",
+			eventTitle = "Past Day Event",
+			pageName = "Calendar Page",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewRSSFeedEventPresent(
+			calendarName = "${siteName}",
+			eventTitle = "Current Day Event",
+			pageName = "Calendar Page",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Calendar.viewRSSFeedEventPresent(
+			calendarName = "${siteName}",
+			eventTitle = "Future Day Event",
+			pageName = "Calendar Page",
+			siteCalendarName = "${siteName}",
+			siteName = "${siteName}");
+
+		Navigator.closeWindow();
+	}
+
+}

@@ -1,0 +1,358 @@
+@component-name = "portal-user-management-and-portal-configuration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Users and Organizations";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONUser.tearDownNonAdminUsers();
+
+			Site.tearDownCP();
+
+			Suborganization.tearDownCP();
+
+			Organization.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test ConfigureLookAndFeelCurrentSiteAndMyDashboard {
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Personal Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel(selectOption = "Current Site");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextNotPresent(value1 = "My Dashboard");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Personal Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel(selectOption = "My Dashboard");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextPresent(value1 = "My Dashboard");
+	}
+
+	@priority = "4"
+	test ConfigureShowInControlMenu {
+		AssertElementNotPresent.assertElementNotPresent(locator1 = "UserBar#USER_AVATAR_IN_CONTROL_MENU");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UserBar#USER_AVATAR_IN_NAVIGATION_USER_PERSONAL_BAR_PORTLET");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Personal Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationUsersPersonalMenuShowInControlMenu(toggleSwitchLabel = "Show in Control Menu");
+
+		Navigator.openURL();
+
+		AssertElementPresent.assertElementPresent(locator1 = "UserBar#USER_AVATAR_IN_CONTROL_MENU");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UserBar#USER_AVATAR_IN_NAVIGATION_USER_PERSONAL_BAR_PORTLET");
+	}
+
+	@priority = "4"
+	test EnableStaging {
+		property test.name.skip.portal.instance = "Personalmenu#EnableStaging";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "${siteName}");
+
+		Navigator.gotoStagedSitePage(
+			defaultSite = "true",
+			pageName = "Home",
+			siteName = "${siteName}");
+
+		ProductMenuHelper.closeProductMenu();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Portlet.viewTitle(portletName = "My Workflow Tasks");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Organizations");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "My Organizations");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UsersAndOrganizations#MY_ORGANIZATION_PORTLET");
+	}
+
+	@priority = "4"
+	test NavigateToMySites {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Sites");
+
+		Site.viewSelectSiteViaPersonalMenuMySites(siteName = "${siteName}");
+	}
+
+	@priority = "4"
+	test RenderAppsWithCurrentTheme {
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Notifications");
+
+		Portlet.viewPG(portletName = "Notifications");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Notifications");
+
+		Portlet.viewPG(portletName = "Notifications");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Notifications");
+
+		Portlet.viewNoSpecificPG(portletName = "Notifications");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Notifications");
+
+		Portlet.viewNoSpecificPG(portletName = "Notifications");
+
+		Navigator.gotoPage(pageName = "Home");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Notifications");
+
+		Portlet.viewNoSpecificPG(portletName = "Notifications");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Notifications");
+
+		Portlet.viewNoSpecificPG(portletName = "Notifications");
+	}
+
+	@description = "This is a use case for LPS-106534."
+	@priority = "4"
+	test UpdateAddressFromUserProfile {
+		UserBar.viewUserDefaultIcon();
+
+		UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
+
+		UserNavigator.gotoContact();
+
+		User.addAddressViaMyAccount(
+			userAddressCity = "Diamond Bar",
+			userAddressCountry = "United States",
+			userAddressPostalCode = "91765",
+			userAddressRegion = "California",
+			userAddressStreet1 = "1400 Montefino Ave");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Profile");
+
+		User.editDetailsViaProfile(
+			addressType = "Personal",
+			userContact = "edit");
+	}
+
+	@description = "This is a use case for LPS-105387."
+	@priority = "5"
+	test UpdateUserPortrait {
+		UserBar.viewUserDefaultIcon();
+
+		UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
+
+		User.changeProfileImage(imageName = "marketplace_icon.png");
+
+		Button.click(button = "Save");
+
+		UserBar.viewUserPortraitMatchConfiguration();
+	}
+
+	@priority = "4"
+	test ViewMyAccountUser {
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.addCP(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.openURL();
+
+		Navigator.gotoAccountSettings();
+
+		MyAccount.view();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+	}
+
+	@description = "This is a use case for LPS-76106."
+	@priority = "5"
+	test ViewMyAccountUserViaURL {
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.openSpecificURL(url = "${portalURL}/group/control_panel/manage?p_p_id=com_liferay_my_account_web_portlet_MyAccountPortlet&p_p_lifecycle=1");
+
+		MyAccount.view();
+
+		AssertConsoleTextPresent(value1 = "not allowed to access URL ${portalURL}/group/control_panel/manage and portlet com_liferay_my_account_web_portlet_MyAccountPortlet");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+	}
+
+	@priority = "4"
+	test ViewMyAccountViaSignInPortlet {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Sign In Page",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoPage(pageName = "Sign In Page");
+
+		Portlet.addPG(portletName = "Sign In");
+
+		AssertClick(
+			locator1 = "SignIn#PORTLET_CONTENT_USER_NAME",
+			value1 = "Test Test");
+
+		MyAccount.view();
+	}
+
+	@priority = "4"
+	test ViewMyOrganizations {
+		JSONUser.addUser(
+			userEmailAddress = "user1@liferay.com",
+			userFirstName = "user1",
+			userLastName = "user1",
+			userScreenName = "user1");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "user1@liferay.com",
+			userScreenName = "user1");
+
+		JSONOrganization.addOrganization(
+			organizationName = "Organization1 Name",
+			organizationSite = "true");
+
+		JSONOrganization.addOrganization(
+			organizationName = "Organization2 Name",
+			organizationSite = "true");
+
+		JSONOrganization.assignUserToOrganization(
+			organizationName = "Organization1 Name",
+			userEmailAddress = "user1@liferay.com");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "user1@liferay.com",
+			userLoginFullName = "user1 user1");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Organizations");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UsersAndOrganizations#MY_ORGANIZATION_PORTLET");
+
+		LexiconEntry.viewEntryName(rowEntry = "Organization1 Name");
+
+		LexiconEntry.viewNoEntry(rowEntry = "Organization2 Name");
+	}
+
+}

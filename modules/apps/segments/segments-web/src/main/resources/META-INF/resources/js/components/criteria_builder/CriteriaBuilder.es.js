@@ -1,48 +1,37 @@
-import CriteriaGroup from './CriteriaGroup.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
+
+import {
+	conjunctionShape,
+	criteriaShape,
+	propertyShape,
+	propertyTypesShape,
+} from '../../utils/types.es';
 import {
 	insertAtIndex,
 	removeAtIndex,
 	replaceAtIndex,
-	sub
+	sub,
 } from '../../utils/utils.es';
-
-const CRITERIA_GROUP_SHAPE = {
-	conjunctionName: PropTypes.string,
-	groupId: PropTypes.string,
-	items: PropTypes.array
-};
-
-const CRITERION_SHAPE = {
-	displayValue: PropTypes.string,
-	operatorName: PropTypes.string,
-	propertyName: PropTypes.string,
-	value: PropTypes.oneOfType(
-		[
-			PropTypes.array,
-			PropTypes.number,
-			PropTypes.string
-		]
-	)
-};
+import CriteriaGroup from './CriteriaGroup.es';
 
 class CriteriaBuilder extends Component {
 	static propTypes = {
-		criteria: PropTypes.shape(
-			{
-				conjunctionName: PropTypes.string,
-				groupId: PropTypes.string,
-				items: PropTypes.arrayOf(
-					PropTypes.oneOfType(
-						[
-							PropTypes.shape(CRITERIA_GROUP_SHAPE),
-							PropTypes.shape(CRITERION_SHAPE)
-						]
-					)
-				)
-			}
-		),
+		criteria: criteriaShape,
 		editing: PropTypes.bool.isRequired,
 		emptyContributors: PropTypes.bool.isRequired,
 
@@ -63,27 +52,10 @@ class CriteriaBuilder extends Component {
 		modelLabel: PropTypes.string,
 		onChange: PropTypes.func,
 		propertyKey: PropTypes.string.isRequired,
-		supportedConjunctions: PropTypes.arrayOf(
-			PropTypes.shape(
-				{
-					label: PropTypes.string,
-					name: PropTypes.string.isRequired
-				}
-			)
-		),
+		supportedConjunctions: PropTypes.arrayOf(conjunctionShape),
 		supportedOperators: PropTypes.array,
-		supportedProperties: PropTypes.arrayOf(
-			PropTypes.shape(
-				{
-					entityUrl: PropTypes.string,
-					label: PropTypes.string,
-					name: PropTypes.string.isRequired,
-					options: PropTypes.array,
-					type: PropTypes.string.isRequired
-				}
-			)
-		).isRequired,
-		supportedPropertyTypes: PropTypes.object
+		supportedProperties: PropTypes.arrayOf(propertyShape).isRequired,
+		supportedPropertyTypes: propertyTypesShape,
 	};
 
 	/**
@@ -98,41 +70,39 @@ class CriteriaBuilder extends Component {
 	 */
 	_cleanCriteriaMapItems(criteriaItems, root) {
 		const criteria = criteriaItems
-			.filter(
-				({items}) => {
-					return items ? items.length : true;
-				}
-			)
-			.map(
-				item => {
-					let cleanedItem = item;
+			.filter(({items}) => {
+				return items ? items.length : true;
+			})
+			.map((item) => {
+				let cleanedItem = item;
 
-					if (item.items) {
-						if (item.items.length === 1) {
-							const soloItem = item.items[0];
+				if (item.items) {
+					if (item.items.length === 1) {
+						const soloItem = item.items[0];
 
-							if (soloItem.items) {
-								cleanedItem = {
-									conjunctionName: soloItem.conjunctionName,
-									groupId: soloItem.groupId,
-									items: this._cleanCriteriaMapItems(soloItem.items)
-								};
-							}
-							else {
-								cleanedItem = root ? item : soloItem;
-							}
-						}
-						else {
+						if (soloItem.items) {
 							cleanedItem = {
-								...item,
-								items: this._cleanCriteriaMapItems(item.items)
+								conjunctionName: soloItem.conjunctionName,
+								groupId: soloItem.groupId,
+								items: this._cleanCriteriaMapItems(
+									soloItem.items
+								),
 							};
 						}
+						else {
+							cleanedItem = root ? item : soloItem;
+						}
 					}
-
-					return cleanedItem;
+					else {
+						cleanedItem = {
+							...item,
+							items: this._cleanCriteriaMapItems(item.items),
+						};
+					}
 				}
-			);
+
+				return cleanedItem;
+			});
 
 		return criteria;
 	}
@@ -141,11 +111,11 @@ class CriteriaBuilder extends Component {
 	 * Cleans and updates the criteria with the newer criteria.
 	 * @param {Object} newCriteria The criteria with the most recent changes.
 	 */
-	_handleCriteriaChange = newCriteria => {
+	_handleCriteriaChange = (newCriteria) => {
 		const items = this._cleanCriteriaMapItems([newCriteria], true);
 
 		this.props.onChange(items[items.length - 1], this.props.propertyKey);
-	}
+	};
 
 	/**
 	 * Moves the criterion to the specified index by removing and adding, and
@@ -166,7 +136,7 @@ class CriteriaBuilder extends Component {
 		);
 
 		this._handleCriteriaChange(newCriteria);
-	}
+	};
 
 	/**
 	 * Checks if an item is a group item by checking if it contains an items
@@ -207,34 +177,27 @@ class CriteriaBuilder extends Component {
 		let updatedCriteriaItems = criteria.items;
 
 		if (criteria.groupId === destGroupId) {
-			updatedCriteriaItems = replace ?
-				replaceAtIndex(
-					addCriterion,
-					updatedCriteriaItems,
-					destIndex
-				) :
-				insertAtIndex(
-					addCriterion,
-					updatedCriteriaItems,
-					destIndex
-				);
+			updatedCriteriaItems = replace
+				? replaceAtIndex(addCriterion, updatedCriteriaItems, destIndex)
+				: insertAtIndex(addCriterion, updatedCriteriaItems, destIndex);
 		}
 
 		if (criteria.groupId === startGroupId) {
 			updatedCriteriaItems = removeAtIndex(
 				updatedCriteriaItems,
-				destGroupId === startGroupId && destIndex < startIndex && !replace ?
-					startIndex + 1 :
-					startIndex
+				destGroupId === startGroupId &&
+					destIndex < startIndex &&
+					!replace
+					? startIndex + 1
+					: startIndex
 			);
 		}
 
 		return {
 			...criteria,
-			items: updatedCriteriaItems.map(
-				item => {
-					return this._isGroupItem(item) ?
-						this._searchAndUpdateCriteria(
+			items: updatedCriteriaItems.map((item) => {
+				return this._isGroupItem(item)
+					? this._searchAndUpdateCriteria(
 							item,
 							startGroupId,
 							startIndex,
@@ -242,12 +205,11 @@ class CriteriaBuilder extends Component {
 							destIndex,
 							addCriterion,
 							replace
-						) :
-						item;
-				}
-			)
+					  )
+					: item;
+			}),
 		};
-	}
+	};
 
 	render() {
 		const {
@@ -260,7 +222,7 @@ class CriteriaBuilder extends Component {
 			supportedConjunctions,
 			supportedOperators,
 			supportedProperties,
-			supportedPropertyTypes
+			supportedPropertyTypes,
 		} = this.props;
 
 		return (
@@ -268,15 +230,12 @@ class CriteriaBuilder extends Component {
 				<h4 className="sheet-subtitle">
 					{sub(
 						Liferay.Language.get('x-with-property-x'),
-						[
-							modelLabel,
-							''
-						],
+						[modelLabel, ''],
 						false
 					)}
 				</h4>
 
-				{(!emptyContributors || editing) &&
+				{(!emptyContributors || editing) && (
 					<CriteriaGroup
 						criteria={criteria}
 						editing={editing}
@@ -293,7 +252,7 @@ class CriteriaBuilder extends Component {
 						supportedProperties={supportedProperties}
 						supportedPropertyTypes={supportedPropertyTypes}
 					/>
-				}
+				)}
 			</div>
 		);
 	}

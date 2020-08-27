@@ -62,10 +62,9 @@ public class ExportImportPortletConfigurationIcon
 	public String getOnClick(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		StringBundler sb = new StringBundler(12);
+		StringBundler sb = new StringBundler(13);
 
-		sb.append("Liferay.Portlet.openWindow({bodyCssClass: ");
-		sb.append("'dialog-with-footer', namespace: '");
+		sb.append("Liferay.Portlet.openModal({namespace: '");
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -74,13 +73,15 @@ public class ExportImportPortletConfigurationIcon
 
 		sb.append(portletDisplay.getNamespace());
 
-		sb.append("', portlet: '#p_p_id_");
+		sb.append("', onClose: function() {Liferay.Portlet.refresh('#p_p_id_");
+		sb.append(portletDisplay.getId());
+		sb.append("_')}, portletSelector: '#p_p_id_");
 		sb.append(portletDisplay.getId());
 		sb.append("_', portletId: '");
 		sb.append(portletDisplay.getId());
 		sb.append("', title: '");
 		sb.append(LanguageUtil.get(themeDisplay.getLocale(), "export-import"));
-		sb.append("', uri: '");
+		sb.append("', url: '");
 		sb.append(HtmlUtil.escapeJS(portletDisplay.getURLExportImport()));
 		sb.append("'}); return false;");
 
@@ -125,12 +126,12 @@ public class ExportImportPortletConfigurationIcon
 				themeDisplay.getScopeGroup(),
 				ActionKeys.EXPORT_IMPORT_PORTLET_INFO);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(pe, pe);
+				_log.debug(portalException, portalException);
 			}
 
 			return false;

@@ -50,7 +50,7 @@ public interface BookmarksFolderService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link BookmarksFolderServiceUtil} to access the bookmarks folder remote service. Add custom service methods to <code>com.liferay.bookmarks.service.impl.BookmarksFolderServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.bookmarks.service.impl.BookmarksFolderServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the bookmarks folder remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link BookmarksFolderServiceUtil} if injection and service tracking are not available.
 	 */
 	public BookmarksFolder addFolder(
 			long parentFolderId, String name, String description,
@@ -114,15 +114,6 @@ public interface BookmarksFolderService extends BaseService {
 	 */
 	public String getOSGiServiceIdentifier();
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getSubfolderIds(List, long, long, boolean)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public void getSubfolderIds(
-		List<Long> folderIds, long groupId, long folderId);
-
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void getSubfolderIds(
 		List<Long> folderIds, long groupId, long folderId, boolean recurse);
@@ -150,17 +141,6 @@ public interface BookmarksFolderService extends BaseService {
 		throws PortalException;
 
 	public void unsubscribeFolder(long groupId, long folderId)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateFolder(long, long, String, String, ServiceContext)}
-	 and {@link #mergeFolders(long, long)}
-	 */
-	@Deprecated
-	public BookmarksFolder updateFolder(
-			long folderId, long parentFolderId, String name, String description,
-			boolean mergeWithParentFolder, ServiceContext serviceContext)
 		throws PortalException;
 
 	public BookmarksFolder updateFolder(

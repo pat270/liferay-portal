@@ -28,7 +28,7 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -47,7 +47,7 @@ public class RepositoryServiceImpl extends RepositoryServiceBaseImpl {
 	public Repository addRepository(
 			long groupId, long classNameId, long parentFolderId, String name,
 			String description, String portletId,
-			UnicodeProperties typeSettingsProperties,
+			UnicodeProperties typeSettingsUnicodeProperties,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -56,7 +56,7 @@ public class RepositoryServiceImpl extends RepositoryServiceBaseImpl {
 
 		return repositoryLocalService.addRepository(
 			getUserId(), groupId, classNameId, parentFolderId, name,
-			description, portletId, typeSettingsProperties, false,
+			description, portletId, typeSettingsUnicodeProperties, false,
 			serviceContext);
 	}
 
@@ -70,7 +70,7 @@ public class RepositoryServiceImpl extends RepositoryServiceBaseImpl {
 		Repository repository = repositoryPersistence.findByPrimaryKey(
 			repositoryId);
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_folderModelResourcePermission, getPermissionChecker(),
 			repository.getGroupId(), repository.getDlFolderId(),
 			ActionKeys.DELETE);
@@ -83,7 +83,22 @@ public class RepositoryServiceImpl extends RepositoryServiceBaseImpl {
 		Repository repository = repositoryPersistence.findByPrimaryKey(
 			repositoryId);
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
+			_folderModelResourcePermission, getPermissionChecker(),
+			repository.getGroupId(), repository.getDlFolderId(),
+			ActionKeys.VIEW);
+
+		return repository;
+	}
+
+	@Override
+	public Repository getRepository(long groupId, String portletId)
+		throws PortalException {
+
+		Repository repository = repositoryPersistence.findByG_N_P(
+			groupId, portletId, portletId);
+
+		ModelResourcePermissionUtil.check(
 			_folderModelResourcePermission, getPermissionChecker(),
 			repository.getGroupId(), repository.getDlFolderId(),
 			ActionKeys.VIEW);
@@ -108,7 +123,7 @@ public class RepositoryServiceImpl extends RepositoryServiceBaseImpl {
 		Repository repository = repositoryPersistence.findByPrimaryKey(
 			repositoryId);
 
-		ModelResourcePermissionHelper.check(
+		ModelResourcePermissionUtil.check(
 			_folderModelResourcePermission, getPermissionChecker(),
 			repository.getGroupId(), repository.getDlFolderId(),
 			ActionKeys.UPDATE);
@@ -168,16 +183,15 @@ public class RepositoryServiceImpl extends RepositoryServiceBaseImpl {
 				repositoryId);
 
 			if (repository != null) {
-				ModelResourcePermissionHelper.check(
+				ModelResourcePermissionUtil.check(
 					_folderModelResourcePermission, getPermissionChecker(),
 					repository.getGroupId(), repository.getDlFolderId(),
 					ActionKeys.VIEW);
-
-				return;
 			}
 		}
-		catch (NoSuchRepositoryException nsre) {
-			throw new InvalidRepositoryIdException(nsre.getMessage());
+		catch (NoSuchRepositoryException noSuchRepositoryException) {
+			throw new InvalidRepositoryIdException(
+				noSuchRepositoryException.getMessage());
 		}
 	}
 

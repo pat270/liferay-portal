@@ -20,8 +20,10 @@
 DecimalFormat decimalFormat = portletConfigurationCSSPortletDisplayContext.getDecimalFormat();
 %>
 
-<aui:row>
-	<aui:col width="<%= 33 %>">
+<clay:row>
+	<clay:col
+		md="4"
+	>
 		<aui:select label="font" name="fontFamily" showEmptyOption="<%= true %>">
 			<aui:option label="Arial" selected='<%= Objects.equals(portletConfigurationCSSPortletDisplayContext.getTextDataProperty("fontFamily"), "Arial") %>' />
 			<aui:option label="Georgia" selected='<%= Objects.equals(portletConfigurationCSSPortletDisplayContext.getTextDataProperty("fontFamily"), "Georgia") %>' />
@@ -50,21 +52,11 @@ DecimalFormat decimalFormat = portletConfigurationCSSPortletDisplayContext.getDe
 
 		</aui:select>
 
-		<%
-		Map<String, Object> context = new HashMap<>();
-
-		context.put("color", portletConfigurationCSSPortletDisplayContext.getTextDataProperty("color"));
-		context.put("id", renderResponse.getNamespace() + "fontColor");
-		context.put("label", LanguageUtil.get(request, "color"));
-		context.put("name", renderResponse.getNamespace() + "fontColor");
-		%>
-
-		<soy:component-renderer
-			context="<%= context %>"
-			module="js/ColorPickerInput.es"
-			servletContext="<%= application %>"
-			templateNamespace="com.liferay.portlet.configuration.css.web.ColorPickerInput.render"
-		/>
+		<liferay-util:include page="/color_picker_input.jsp" servletContext="<%= application %>">
+			<liferay-util:param name="color" value='<%= portletConfigurationCSSPortletDisplayContext.getTextDataProperty("color") %>' />
+			<liferay-util:param name="label" value='<%= LanguageUtil.get(request, "color") %>' />
+			<liferay-util:param name="name" value='<%= liferayPortletResponse.getNamespace() + "fontColor" %>' />
+		</liferay-util:include>
 
 		<aui:select label="alignment" name="textAlign" showEmptyOption="<%= true %>">
 			<aui:option label="justify" selected='<%= Objects.equals(portletConfigurationCSSPortletDisplayContext.getTextDataProperty("textAlign"), "justify") %>' />
@@ -79,9 +71,11 @@ DecimalFormat decimalFormat = portletConfigurationCSSPortletDisplayContext.getDe
 			<aui:option label="overline" selected='<%= Objects.equals(portletConfigurationCSSPortletDisplayContext.getTextDataProperty("textDecoration"), "overline") %>' />
 			<aui:option label="strikethrough" selected='<%= Objects.equals(portletConfigurationCSSPortletDisplayContext.getTextDataProperty("textDecoration"), "line-through") %>' value="line-through" />
 		</aui:select>
-	</aui:col>
+	</clay:col>
 
-	<aui:col last="<%= true %>" width="<%= 60 %>">
+	<clay:col
+		md="8"
+	>
 		<aui:select label="word-spacing" name="wordSpacing" showEmptyOption="<%= true %>">
 
 			<%
@@ -134,5 +128,5 @@ DecimalFormat decimalFormat = portletConfigurationCSSPortletDisplayContext.getDe
 			%>
 
 		</aui:select>
-	</aui:col>
-</aui:row>
+	</clay:col>
+</clay:row>

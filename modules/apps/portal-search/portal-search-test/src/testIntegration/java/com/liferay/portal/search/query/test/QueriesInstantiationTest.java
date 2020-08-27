@@ -53,11 +53,14 @@ import com.liferay.portal.search.query.TermQuery;
 import com.liferay.portal.search.query.TermsQuery;
 import com.liferay.portal.search.query.TermsSetQuery;
 import com.liferay.portal.search.query.WildcardQuery;
+import com.liferay.portal.search.query.WrapperQuery;
 import com.liferay.portal.search.script.Script;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -130,6 +133,14 @@ public class QueriesInstantiationTest {
 		DisMaxQuery disMaxQuery = _queries.disMax();
 
 		Assert.assertNotNull(disMaxQuery);
+	}
+
+	@Test
+	public void testDocumentIdentifier() {
+		MoreLikeThisQuery.DocumentIdentifier documentIdentifier =
+			_queries.documentIdentifier("index", "type", "id");
+
+		Assert.assertNotNull(documentIdentifier);
 	}
 
 	@Test
@@ -257,17 +268,31 @@ public class QueriesInstantiationTest {
 
 	@Test
 	public void testMoreLikeThisQuery1() {
-		List<String> likeTexts = new ArrayList<>();
+		MoreLikeThisQuery.DocumentIdentifier documentIdentifier =
+			_queries.documentIdentifier("index", "type", "id");
 
-		MoreLikeThisQuery moreLikeThisQuery = _queries.moreLikeThis(likeTexts);
+		MoreLikeThisQuery moreLikeThisQuery = _queries.moreLikeThis(
+			Collections.singleton(documentIdentifier));
 
 		Assert.assertNotNull(moreLikeThisQuery);
 	}
 
 	@Test
 	public void testMoreLikeThisQuery2() {
+		String[] fields = new String[0];
+
 		MoreLikeThisQuery moreLikeThisQuery = _queries.moreLikeThis(
-			"likeTexts");
+			fields, "likeTexts");
+
+		Assert.assertNotNull(moreLikeThisQuery);
+	}
+
+	@Test
+	public void testMoreLikeThisQuery3() {
+		List<String> fields = new ArrayList<>();
+
+		MoreLikeThisQuery moreLikeThisQuery = _queries.moreLikeThis(
+			fields, "likeTexts");
 
 		Assert.assertNotNull(moreLikeThisQuery);
 	}
@@ -402,6 +427,17 @@ public class QueriesInstantiationTest {
 
 		Assert.assertNotNull(wildcardQuery);
 	}
+
+	@Test
+	public void testWrapperQuery() {
+		WrapperQuery wrapperQuery = _queries.wrapper(
+			"{\"query\":\"match_all\":{}}");
+
+		Assert.assertNotNull(wrapperQuery);
+	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	@Inject
 	private static Queries _queries;

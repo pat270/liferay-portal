@@ -40,7 +40,7 @@ public class NPMTestBatchTestClassGroup extends BatchTestClassGroup {
 
 	@Override
 	public int getAxisCount() {
-		if (testRelevantIntegrationUnitOnly) {
+		if (!isStableTestSuiteBatch() && testRelevantIntegrationUnitOnly) {
 			return 0;
 		}
 
@@ -130,8 +130,8 @@ public class NPMTestBatchTestClassGroup extends BatchTestClassGroup {
 		try {
 			JenkinsResultsParserUtil.write(csvReportFile, csvReport.toString());
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -186,10 +186,9 @@ public class NPMTestBatchTestClassGroup extends BatchTestClassGroup {
 			List<File> jsFiles = JenkinsResultsParserUtil.findFiles(
 				_moduleFile, ".*\\.js");
 
-			File workingDirectory = _gitWorkingDirectory.getWorkingDirectory();
-
 			String workingDirectoryPath =
-				JenkinsResultsParserUtil.getCanonicalPath(workingDirectory);
+				JenkinsResultsParserUtil.getCanonicalPath(
+					_gitWorkingDirectory.getWorkingDirectory());
 
 			for (File jsFile : jsFiles) {
 				try {
@@ -223,8 +222,8 @@ public class NPMTestBatchTestClassGroup extends BatchTestClassGroup {
 								this));
 					}
 				}
-				catch (IOException ioe) {
-					throw new RuntimeException(ioe);
+				catch (IOException ioException) {
+					throw new RuntimeException(ioException);
 				}
 			}
 		}
@@ -242,14 +241,17 @@ public class NPMTestBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected NPMTestBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 
 		List<File> moduleDirs;
 
 		try {
-			if (testRelevantChanges) {
+			if (testRelevantChanges &&
+				!(includeStableTestSuite && isStableTestSuiteBatch())) {
+
 				moduleDirs =
 					portalGitWorkingDirectory.
 						getModifiedNPMTestModuleDirsList();
@@ -259,8 +261,8 @@ public class NPMTestBatchTestClassGroup extends BatchTestClassGroup {
 					portalGitWorkingDirectory.getNPMTestModuleDirsList();
 			}
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 
 		if (moduleDirs.isEmpty()) {

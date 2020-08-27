@@ -64,11 +64,9 @@ public class IfPoshiElement extends PoshiElement {
 			String trimmedPoshiScriptSnippet = poshiScriptSnippet.trim();
 
 			if (trimmedPoshiScriptSnippet.startsWith(getPoshiScriptKeyword())) {
-				String blockName = getBlockName(poshiScriptSnippet);
-
 				add(
 					PoshiNodeFactory.newPoshiNode(
-						this, getCondition(blockName)));
+						this, getCondition(getBlockName(poshiScriptSnippet))));
 
 				add(new ThenPoshiElement(this, poshiScriptSnippet));
 
@@ -103,6 +101,7 @@ public class IfPoshiElement extends PoshiElement {
 	}
 
 	protected IfPoshiElement() {
+		this(_ELEMENT_NAME);
 	}
 
 	protected IfPoshiElement(Element element) {
@@ -118,6 +117,10 @@ public class IfPoshiElement extends PoshiElement {
 		throws PoshiScriptParserException {
 
 		super("if", parentPoshiElement, poshiScript);
+	}
+
+	protected IfPoshiElement(String name) {
+		super(name);
 	}
 
 	protected IfPoshiElement(String name, Element element) {
@@ -163,6 +166,7 @@ public class IfPoshiElement extends PoshiElement {
 		return getParentheticalContent(poshiScript);
 	}
 
+	@Override
 	protected String getPoshiScriptKeyword() {
 		return getName();
 	}

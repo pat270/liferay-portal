@@ -139,10 +139,9 @@ if (recurrence != null) {
 
 						<%
 						for (Weekday weekday : weekdaysArray) {
-							String weekdayLabel = "weekday." + weekday.getValue();
 						%>
 
-							<aui:input checked="<%= weekdays.contains(weekday) %>" id="<%= weekday.getValue() %>" label="<%= weekdayLabel %>" name="weekdays" type="checkbox" value="<%= weekday.getValue() %>" />
+							<aui:input checked="<%= weekdays.contains(weekday) %>" id="<%= weekday.getValue() %>" label='<%= "weekday." + weekday.getValue() %>' name="weekdays" type="checkbox" value="<%= weekday.getValue() %>" />
 
 						<%
 						}
@@ -241,51 +240,61 @@ if (recurrence != null) {
 
 <%@ include file="/calendar_booking_recurrence_language_keys.jspf" %>
 
-<aui:script use="liferay-util-window,liferay-calendar-recurrence-dialog">
+<aui:script use="liferay-calendar-recurrence-dialog,liferay-util-window">
 	var editEventFormNode = A.one('#<portlet:namespace />fm');
-	var recurrenceContainerNode = A.one('#<portlet:namespace />recurrenceContainer');
+	var recurrenceContainerNode = A.one(
+		'#<portlet:namespace />recurrenceContainer'
+	);
 	var repeatCheckboxNode = A.one('#<portlet:namespace />repeat');
 	var summaryNode = A.one('#<portlet:namespace />summary');
 
-	var recurrenceDialogController = new Liferay.RecurrenceDialogController(
-		{
-			container: '#<portlet:namespace />recurrenceContainer',
-			dayOfWeekInput: '#<portlet:namespace />weekday',
-			frequencySelect: '#<portlet:namespace />frequency',
-			intervalSelect: '#<portlet:namespace />interval',
-			lastPositionCheckbox: '#<portlet:namespace />lastPosition',
-			limitCountInput: '#<portlet:namespace />count',
-			limitCountRadioButton: '[name=<portlet:namespace />ends][value=after]',
-			limitDateDatePicker: Liferay.component('<%= renderResponse.getNamespace() + HtmlUtil.getAUICompatibleId("untilDateDatePicker") %>'),
-			limitDateRadioButton: '[name=<portlet:namespace />ends][value=on]',
-			monthlyRecurrenceOptions: '#<portlet:namespace />viewPositionInMonth',
-			namespace: '<portlet:namespace />',
-			noLimitRadioButton: '[name=<portlet:namespace />ends][value=never]',
-			positionalDayOfWeekOptions: '#<portlet:namespace />viewPositionalWeekday',
-			positionInput: '#<portlet:namespace />position',
-			repeatCheckbox: '#<portlet:namespace />repeat',
-			repeatOnDayOfMonthRadioButton: '[name=<portlet:namespace />repeatOnWeekday][value=false]',
-			repeatOnDayOfWeekRadioButton: '[name=<portlet:namespace />repeatOnWeekday][value=true]',
-			startDateDatePicker: Liferay.component('<portlet:namespace />startTimeDatePicker'),
-			summaryNode: '#<portlet:namespace />summary',
-			weeklyRecurrenceOptions: '#<portlet:namespace />view<%= Frequency.WEEKLY %>'
-		}
-	);
+	var recurrenceDialogController = new Liferay.RecurrenceDialogController({
+		container: '#<portlet:namespace />recurrenceContainer',
+		dayOfWeekInput: '#<portlet:namespace />weekday',
+		frequencySelect: '#<portlet:namespace />frequency',
+		intervalSelect: '#<portlet:namespace />interval',
+		lastPositionCheckbox: '#<portlet:namespace />lastPosition',
+		limitCountInput: '#<portlet:namespace />count',
+		limitCountRadioButton: '[name=<portlet:namespace />ends][value=after]',
+		limitDateDatePicker: Liferay.component(
+			'<%= liferayPortletResponse.getNamespace() + HtmlUtil.getAUICompatibleId("untilDateDatePicker") %>'
+		),
+		limitDateRadioButton: '[name=<portlet:namespace />ends][value=on]',
+		monthlyRecurrenceOptions: '#<portlet:namespace />viewPositionInMonth',
+		namespace: '<portlet:namespace />',
+		noLimitRadioButton: '[name=<portlet:namespace />ends][value=never]',
+		positionalDayOfWeekOptions: '#<portlet:namespace />viewPositionalWeekday',
+		positionInput: '#<portlet:namespace />position',
+		repeatCheckbox: '#<portlet:namespace />repeat',
+		repeatOnDayOfMonthRadioButton:
+			'[name=<portlet:namespace />repeatOnWeekday][value=false]',
+		repeatOnDayOfWeekRadioButton:
+			'[name=<portlet:namespace />repeatOnWeekday][value=true]',
+		startDateDatePicker: Liferay.component(
+			'<portlet:namespace />startTimeDatePicker'
+		),
+		summaryNode: '#<portlet:namespace />summary',
+		weeklyRecurrenceOptions:
+			'#<portlet:namespace />view<%= Frequency.WEEKLY %>',
+	});
 
 	recurrenceDialogController.saveState();
 
-	var getRecurrenceDialogTitle = function() {
+	var getRecurrenceDialogTitle = function () {
 		var summary = recurrenceDialogController.get('summary');
 
-		return '<liferay-ui:message key="repeat" /> ' + (summary[0].toLowerCase() + summary.slice(1));
+		return (
+			'<liferay-ui:message key="repeat" /> ' +
+			(summary[0].toLowerCase() + summary.slice(1))
+		);
 	};
 
-	window.<portlet:namespace />openRecurrenceDialog = function(visible) {
+	window.<portlet:namespace />openRecurrenceDialog = function (visible) {
 		recurrenceContainerNode.toggle(visible);
 
 		editEventFormNode.once(
 			'key',
-			function(event) {
+			function (event) {
 				if (window.<portlet:namespace />recurrenceDialog.get('visible')) {
 					event.stopPropagation();
 				}
@@ -297,7 +306,10 @@ if (recurrence != null) {
 			{
 				dialog: {
 					after: {
-						visibleChange: A.rbind('_afterVisibilityChange', recurrenceDialogController)
+						visibleChange: A.rbind(
+							'_afterVisibilityChange',
+							recurrenceDialogController
+						),
 					},
 					bodyContent: recurrenceContainerNode,
 					centered: true,
@@ -306,16 +318,16 @@ if (recurrence != null) {
 						{
 							eventName: 'key',
 							keyCode: 'esc',
-							node: editEventFormNode
-						}
+							node: editEventFormNode,
+						},
 					],
 					id: '<portlet:namespace />recurrenceDialog',
 					modal: true,
 					render: '#<portlet:namespace />fm',
 					visible: visible,
-					width: 600
+					width: 600,
 				},
-				title: getRecurrenceDialogTitle()
+				title: getRecurrenceDialogTitle(),
 			}
 		);
 
@@ -325,20 +337,24 @@ if (recurrence != null) {
 					cssClass: 'btn-primary',
 					label: '<liferay-ui:message key="done" />',
 					on: {
-						click: A.rbind('_hideModal', recurrenceDialogController, true)
-					}
+						click: A.rbind(
+							'_hideModal',
+							recurrenceDialogController,
+							true
+						),
+					},
 				},
 				{
 					label: '<liferay-ui:message key="cancel" />',
 					on: {
-						click: A.rbind('_hideModal', recurrenceDialogController)
-					}
-				}
+						click: A.rbind('_hideModal', recurrenceDialogController),
+					},
+				},
 			],
 			'footer'
 		);
 
-		var destroyRecurrenceDialog = function(event) {
+		var destroyRecurrenceDialog = function (event) {
 			if (event.portletId === '<%= portletDisplay.getId() %>') {
 				window.<portlet:namespace />recurrenceDialog.destroy();
 
@@ -351,39 +367,30 @@ if (recurrence != null) {
 		Liferay.on('destroyPortlet', destroyRecurrenceDialog);
 	};
 
-	repeatCheckboxNode.on(
-		'change',
-		function(event) {
-			var checked = event.currentTarget.get('checked');
+	repeatCheckboxNode.on('change', function (event) {
+		var checked = event.currentTarget.get('checked');
 
-			if (!checked) {
-				summaryNode.empty();
-			}
-			else {
-				window.<portlet:namespace />updateSummaries();
-			}
-
-			<portlet:namespace />openRecurrenceDialog(checked);
+		if (!checked) {
+			summaryNode.empty();
 		}
-	);
-
-	summaryNode.on(
-		'click',
-		function(event) {
-			<portlet:namespace />openRecurrenceDialog(true);
-
-			event.halt();
-		}
-	);
-
-	recurrenceDialogController.on(
-		'recurrenceChange',
-		function(event) {
+		else {
 			window.<portlet:namespace />updateSummaries();
 		}
-	);
 
-	window.<portlet:namespace />updateSummary = function(element) {
+		<portlet:namespace />openRecurrenceDialog(checked);
+	});
+
+	summaryNode.on('click', function (event) {
+		<portlet:namespace />openRecurrenceDialog(true);
+
+		event.halt();
+	});
+
+	recurrenceDialogController.on('recurrenceChange', function (event) {
+		window.<portlet:namespace />updateSummaries();
+	});
+
+	window.<portlet:namespace />updateSummary = function (element) {
 		var previewNode = A.one(element);
 
 		if (previewNode) {
@@ -391,12 +398,16 @@ if (recurrence != null) {
 		}
 	};
 
-	window.<portlet:namespace />updateSummaries = function() {
+	window.<portlet:namespace />updateSummaries = function () {
 		window.<portlet:namespace />updateSummary(summaryNode);
-		window.<portlet:namespace />updateSummary('#<portlet:namespace />summaryPreview');
+		window.<portlet:namespace />updateSummary(
+			'#<portlet:namespace />summaryPreview'
+		);
 
 		if (window.<portlet:namespace />recurrenceDialog) {
-			window.<portlet:namespace />recurrenceDialog.titleNode.html(getRecurrenceDialogTitle());
+			window.<portlet:namespace />recurrenceDialog.titleNode.html(
+				getRecurrenceDialogTitle()
+			);
 		}
 	};
 

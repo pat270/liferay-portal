@@ -55,11 +55,10 @@ public abstract class BookmarksFolderFinderBaseImpl
 
 	@Override
 	@Reference(
-		target = BookmarksPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = BookmarksPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
-		super.setConfiguration(configuration);
 	}
 
 	@Override
@@ -85,5 +84,14 @@ public abstract class BookmarksFolderFinderBaseImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BookmarksFolderFinderBaseImpl.class);
+
+	static {
+		try {
+			Class.forName(BookmarksPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new ExceptionInInitializerError(classNotFoundException);
+		}
+	}
 
 }

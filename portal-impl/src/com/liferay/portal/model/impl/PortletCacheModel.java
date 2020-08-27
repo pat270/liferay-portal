@@ -25,29 +25,26 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Portlet in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PortletCacheModel
 	implements CacheModel<Portlet>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PortletCacheModel)) {
+		if (!(object instanceof PortletCacheModel)) {
 			return false;
 		}
 
-		PortletCacheModel portletCacheModel = (PortletCacheModel)obj;
+		PortletCacheModel portletCacheModel = (PortletCacheModel)object;
 
 		if ((id == portletCacheModel.id) &&
 			(mvccVersion == portletCacheModel.mvccVersion)) {

@@ -57,10 +57,12 @@ public class FragmentEntryStagedModelRepository
 
 		return _fragmentEntryLocalService.addFragmentEntry(
 			userId, fragmentEntry.getGroupId(),
-			fragmentEntry.getFragmentCollectionId(), fragmentEntry.getName(),
+			fragmentEntry.getFragmentCollectionId(),
+			fragmentEntry.getFragmentEntryKey(), fragmentEntry.getName(),
 			fragmentEntry.getCss(), fragmentEntry.getHtml(),
-			fragmentEntry.getJs(), fragmentEntry.getPreviewFileEntryId(),
-			fragmentEntry.getType(), fragmentEntry.getStatus(), serviceContext);
+			fragmentEntry.getJs(), fragmentEntry.getConfiguration(),
+			fragmentEntry.getPreviewFileEntryId(), fragmentEntry.getType(),
+			fragmentEntry.getStatus(), serviceContext);
 	}
 
 	@Override
@@ -137,12 +139,12 @@ public class FragmentEntryStagedModelRepository
 			PortletDataContext portletDataContext, FragmentEntry fragmentEntry)
 		throws PortalException {
 
-		long userId = portletDataContext.getUserId(fragmentEntry.getUserUuid());
-
 		return _fragmentEntryLocalService.updateFragmentEntry(
-			userId, fragmentEntry.getFragmentEntryId(), fragmentEntry.getName(),
+			portletDataContext.getUserId(fragmentEntry.getUserUuid()),
+			fragmentEntry.getFragmentEntryId(), fragmentEntry.getName(),
 			fragmentEntry.getCss(), fragmentEntry.getHtml(),
-			fragmentEntry.getJs(), fragmentEntry.getStatus());
+			fragmentEntry.getJs(), fragmentEntry.getConfiguration(),
+			fragmentEntry.getStatus());
 	}
 
 	@Reference

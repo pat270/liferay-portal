@@ -143,8 +143,7 @@ public class ServiceTrackerMapModelAdapterBuilderLocator
 						emitter.emit(
 							_getKey(adapteeModelClass, adaptedModelClass));
 					}
-					catch (ClassCastException cce) {
-						return;
+					catch (ClassCastException classCastException) {
 					}
 				}
 

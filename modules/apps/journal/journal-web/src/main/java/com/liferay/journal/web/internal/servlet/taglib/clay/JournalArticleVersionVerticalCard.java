@@ -18,15 +18,13 @@ import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvide
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.BaseVerticalCard;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.web.internal.constants.JournalWebConstants;
 import com.liferay.journal.web.internal.servlet.taglib.util.JournalArticleActionDropdownItemsProvider;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.BaseModel;
-import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.trash.TrashHelper;
@@ -63,23 +61,19 @@ public class JournalArticleVersionVerticalCard extends BaseVerticalCard {
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		LiferayPortletRequest liferayPortletRequest =
-			PortalUtil.getLiferayPortletRequest(renderRequest);
-
-		LiferayPortletResponse liferayPortletResponse =
-			PortalUtil.getLiferayPortletResponse(_renderResponse);
-
 		JournalArticleActionDropdownItemsProvider
 			articleActionDropdownItemsProvider =
 				new JournalArticleActionDropdownItemsProvider(
-					_article, liferayPortletRequest, liferayPortletResponse,
+					_article,
+					PortalUtil.getLiferayPortletRequest(renderRequest),
+					PortalUtil.getLiferayPortletResponse(_renderResponse),
 					_assetDisplayPageFriendlyURLProvider, _trashHelper);
 
 		try {
 			return articleActionDropdownItemsProvider.
 				getArticleVersionActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;
@@ -102,22 +96,14 @@ public class JournalArticleVersionVerticalCard extends BaseVerticalCard {
 
 	@Override
 	public List<LabelItem> getLabels() {
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> {
-						labelItem.setLabel(
-							LanguageUtil.format(
-								_httpServletRequest, "version-x",
-								String.valueOf(_article.getVersion()), false));
-					});
-
-				add(
-					labelItem -> {
-						labelItem.setStatus(_article.getStatus());
-					});
-			}
-		};
+		return LabelItemListBuilder.add(
+			labelItem -> labelItem.setLabel(
+				LanguageUtil.format(
+					_httpServletRequest, "version-x",
+					String.valueOf(_article.getVersion()), false))
+		).add(
+			labelItem -> labelItem.setStatus(_article.getStatus())
+		).build();
 	}
 
 	@Override

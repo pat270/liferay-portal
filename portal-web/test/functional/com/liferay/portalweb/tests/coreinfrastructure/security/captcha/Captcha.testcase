@@ -1,8 +1,8 @@
 @component-name = "portal-security"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property test.assert.warning.exceptions = "true";
 	property testray.main.component.name = "CAPTCHA";
 
 	setUp {
@@ -31,7 +31,7 @@ definition {
 		User.viewCaptchaPG(captchaType = "captcha");
 	}
 
-	@description = "This test will deploy an OSGI configuration file to test LPS-84310"
+	@description = "This test will deploy an OSGI configuration file to test LPS-84310."
 	@priority = "4"
 	test ViewRecaptchaEnabled {
 		property captcha.enabled = "true";
@@ -43,7 +43,7 @@ definition {
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
@@ -52,28 +52,6 @@ definition {
 			configurationCategory = "Security Tools",
 			configurationName = "CAPTCHA",
 			configurationScope = "System Scope");
-
-		// LPS-84310
-
-		SystemSettings.resetConfiguration();
-
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "System Settings");
-
-		SystemSettings.gotoConfiguration(
-			configurationCategory = "Security Tools",
-			configurationName = "CAPTCHA",
-			configurationScope = "System Scope");
-
-		if (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
-			SystemSettings.resetConfiguration();
-		}
-
-		SystemSettings.editTextSetting(
-			settingName = "Maximum Challenges",
-			settingValue = "0");
 
 		SystemSettings.selectOptionSetting(
 			fieldName = "CAPTCHA Engine",
@@ -95,4 +73,5 @@ definition {
 
 		User.viewCaptchaPG(captchaType = "recaptcha");
 	}
+
 }

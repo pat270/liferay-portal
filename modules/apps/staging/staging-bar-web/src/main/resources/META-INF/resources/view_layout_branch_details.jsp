@@ -31,7 +31,7 @@ List<LayoutRevision> layoutRevisions = LayoutRevisionLocalServiceUtil.getChildLa
 </div>
 
 <div class="dropdown">
-	<a class="dropdown-toggle layout-branch-selector staging-variation-selector" data-toggle="dropdown" href="#1">
+	<a class="dropdown-toggle layout-branch-selector staging-variation-selector" data-toggle="liferay-dropdown" href="#1">
 		<liferay-ui:message key="<%= HtmlUtil.escape(layoutBranchDisplayContext.getLayoutBranchDisplayName(layoutBranch)) %>" localizeKey="<%= false %>" />
 
 		<aui:icon image="caret-double-l" markupView="lexicon" />
@@ -43,7 +43,7 @@ List<LayoutRevision> layoutRevisions = LayoutRevisionLocalServiceUtil.getChildLa
 		for (LayoutRevision rootLayoutRevision : layoutRevisions) {
 			LayoutBranch curLayoutBranch = rootLayoutRevision.getLayoutBranch();
 
-			boolean selected = (curLayoutBranch.getLayoutBranchId() == layoutRevision.getLayoutBranchId());
+			boolean selected = curLayoutBranch.getLayoutBranchId() == layoutRevision.getLayoutBranchId();
 		%>
 
 			<portlet:actionURL name="selectLayoutBranch" var="curLayoutBranchURL">
@@ -54,7 +54,7 @@ List<LayoutRevision> layoutRevisions = LayoutRevisionLocalServiceUtil.getChildLa
 			</portlet:actionURL>
 
 			<li>
-				<a class="<%= selected ? "disabled" : StringPool.BLANK %>" href="<%= selected ? "javascript:;" : curLayoutBranchURL %>">
+				<a class="<%= selected ? "disabled" : StringPool.BLANK %> dropdown-item" href="<%= selected ? "javascript:;" : curLayoutBranchURL %>">
 					<liferay-ui:message key="<%= HtmlUtil.escape(layoutBranchDisplayContext.getLayoutBranchDisplayName(curLayoutBranch)) %>" localizeKey="<%= false %>" />
 				</a>
 			</li>

@@ -17,8 +17,8 @@ package com.liferay.oauth2.provider.client.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.constants.OAuth2ProviderConstants;
-import com.liferay.oauth2.provider.test.internal.TestAnnotatedApplication;
-import com.liferay.oauth2.provider.test.internal.TestApplication;
+import com.liferay.oauth2.provider.internal.test.TestAnnotatedApplication;
+import com.liferay.oauth2.provider.internal.test.TestApplication;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -215,10 +215,9 @@ public class ScopeCheckerGuestAllowedTest extends BaseClientTestCase {
 
 			Response response = invocationBuilder.get();
 
-			int status = response.getStatus();
-
 			Assert.assertEquals(
-				"Token: " + invalidToken, expectedInvalidTokenStatus, status);
+				"Token: " + invalidToken, expectedInvalidTokenStatus,
+				response.getStatus());
 		}
 
 		Invocation.Builder invocationBuilder = authorize(

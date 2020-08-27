@@ -27,7 +27,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
-import com.liferay.site.navigation.language.web.configuration.SiteNavigationLanguagePortletInstanceConfiguration;
+import com.liferay.site.navigation.language.web.internal.configuration.SiteNavigationLanguagePortletInstanceConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,10 +81,8 @@ public class SiteNavigationLanguageDisplayContext {
 			}
 		}
 
-		availableLanguageIdKVPs = ListUtil.sort(
+		return ListUtil.sort(
 			availableLanguageIdKVPs, new KeyValuePairComparator(false, true));
-
-		return availableLanguageIdKVPs;
 	}
 
 	public String[] getAvailableLanguageIds() {
@@ -157,6 +155,17 @@ public class SiteNavigationLanguageDisplayContext {
 
 		if (ArrayUtil.isEmpty(_languageIds)) {
 			_languageIds = getAvailableLanguageIds();
+		}
+		else {
+			List<String> filteredLanguageIds = new ArrayList<>();
+
+			for (String languageId : _languageIds) {
+				if (ArrayUtil.contains(getAvailableLanguageIds(), languageId)) {
+					filteredLanguageIds.add(languageId);
+				}
+			}
+
+			_languageIds = ArrayUtil.toStringArray(filteredLanguageIds);
 		}
 
 		return _languageIds;

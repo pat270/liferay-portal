@@ -64,19 +64,26 @@ public class JournalDefaultTemplateProviderImpl
 			templateVariableGroup.getTemplateVariableDefinitions();
 
 		StringBundler sb = new StringBundler(
-			templateVariableDefinitions.size() * 5 + 2);
+			(templateVariableDefinitions.size() * 5) + 2);
 
 		sb.append("<dl>");
 
 		for (TemplateVariableDefinition templateVariableDefinition :
 				templateVariableDefinitions) {
 
+			if ((templateVariableDefinition == null) ||
+				(templateVariableDefinition.getTemplateVariableCodeHandler() ==
+					null)) {
+
+				continue;
+			}
+
 			String code =
 				templateVariableDefinition.generateCode(getLanguage())[0];
 
-			sb.append("<dt>");
+			sb.append("<dt class=\"text-capitalize\">");
 			sb.append(templateVariableDefinition.getLabel());
-			sb.append(":</dt><dd>");
+			sb.append("</dt><dd>");
 			sb.append(code);
 			sb.append("</dd>");
 		}
@@ -88,7 +95,7 @@ public class JournalDefaultTemplateProviderImpl
 
 	@Override
 	public boolean isCacheable() {
-		return false;
+		return true;
 	}
 
 }

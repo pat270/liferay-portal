@@ -17,8 +17,10 @@ package com.liferay.portal.kernel.util;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 
 /**
- * @author Preston Crary
+ * @author     Preston Crary
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class VerifyThreadLocal {
 
 	public static boolean isVerifyInProgress() {

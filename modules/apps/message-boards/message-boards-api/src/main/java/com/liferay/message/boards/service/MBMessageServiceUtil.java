@@ -14,7 +14,6 @@
 
 package com.liferay.message.boards.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see MBMessageService
  * @generated
  */
-@ProviderType
 public class MBMessageServiceUtil {
 
 	/*
@@ -156,6 +154,13 @@ public class MBMessageServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().emptyMessageAttachments(messageId);
+	}
+
+	public static com.liferay.message.boards.model.MBMessage
+			fetchMBMessageByUrlSubject(long groupId, String urlSubject)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchMBMessageByUrlSubject(groupId, urlSubject);
 	}
 
 	public static java.util.List<com.liferay.message.boards.model.MBMessage>
@@ -344,26 +349,6 @@ public class MBMessageServiceUtil {
 		return getService().updateMessage(
 			messageId, subject, body, inputStreamOVPs, priority, allowPingbacks,
 			serviceContext);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
-	 String, String, List, double, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.message.boards.model.MBMessage updateMessage(
-			long messageId, String subject, String body,
-			java.util.List
-				<com.liferay.portal.kernel.util.ObjectValuePair
-					<String, java.io.InputStream>> inputStreamOVPs,
-			java.util.List<String> existingFiles, double priority,
-			boolean allowPingbacks,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateMessage(
-			messageId, subject, body, inputStreamOVPs, existingFiles, priority,
-			allowPingbacks, serviceContext);
 	}
 
 	public static MBMessageService getService() {

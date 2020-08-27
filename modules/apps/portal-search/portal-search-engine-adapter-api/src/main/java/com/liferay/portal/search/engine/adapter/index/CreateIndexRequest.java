@@ -14,13 +14,13 @@
 
 package com.liferay.portal.search.engine.adapter.index;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
-public class CreateIndexRequest implements IndexRequest<CreateIndexResponse> {
+public class CreateIndexRequest
+	extends CrossClusterRequest implements IndexRequest<CreateIndexResponse> {
 
 	public CreateIndexRequest(String indexName) {
 		_indexName = indexName;
@@ -40,18 +40,6 @@ public class CreateIndexRequest implements IndexRequest<CreateIndexResponse> {
 	@Override
 	public String[] getIndexNames() {
 		return new String[] {_indexName};
-	}
-
-	/**
-	 * @return
-	 * @deprecated As of Judson (7.1.x), with no direct replacement. This method
-	 *             should not be in the parent interface.  Only certain
-	 *             IndexRequests work with mappings.
-	 */
-	@Deprecated
-	@Override
-	public String getMappingName() {
-		throw new UnsupportedOperationException();
 	}
 
 	public String getSource() {

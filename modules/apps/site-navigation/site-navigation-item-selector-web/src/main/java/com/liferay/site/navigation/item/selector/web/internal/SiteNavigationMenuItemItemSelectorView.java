@@ -17,8 +17,6 @@ package com.liferay.site.navigation.item.selector.web.internal;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.site.navigation.item.selector.criterion.SiteNavigationMenuItemItemSelectorCriterion;
 import com.liferay.site.navigation.item.selector.web.internal.constants.SiteNavigationItemSelectorWebKeys;
@@ -80,18 +78,8 @@ public class SiteNavigationMenuItemItemSelectorView
 	}
 
 	@Override
-	public boolean isShowSearch() {
-		return false;
-	}
-
-	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
-	}
-
-	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			SiteNavigationMenuItemItemSelectorCriterion
 				siteNavigationMenuItemItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
@@ -100,10 +88,10 @@ public class SiteNavigationMenuItemItemSelectorView
 		SiteNavigationMenuItemItemSelectorViewDisplayContext
 			siteNavigationMenuItemItemSelectorViewDisplayContext =
 				new SiteNavigationMenuItemItemSelectorViewDisplayContext(
-					(HttpServletRequest)request, itemSelectedEventName,
+					(HttpServletRequest)servletRequest, itemSelectedEventName,
 					_siteNavigationMenuItemTypeRegistry);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			SiteNavigationItemSelectorWebKeys.
 				SITE_NAVIGATION_MENU_ITEM_ITEM_SELECTOR_DISPLAY_CONTEXT,
 			siteNavigationMenuItemItemSelectorViewDisplayContext);
@@ -114,15 +102,12 @@ public class SiteNavigationMenuItemItemSelectorView
 			servletContext.getRequestDispatcher(
 				"/view_site_navigation_menu_items.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
-		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new UUIDItemSelectorReturnType()
-				}));
+		_supportedItemSelectorReturnTypes = Collections.singletonList(
+			new UUIDItemSelectorReturnType());
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.site.navigation.item.selector.web)"

@@ -19,22 +19,40 @@ import com.liferay.dynamic.data.mapping.constants.DDMConstants;
 import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.dynamic.data.mapping.service.base.DDMDataProviderInstanceServiceBaseImpl;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Leonardo Barros
  */
+@Component(
+	property = {
+		"json.web.service.context.name=ddm",
+		"json.web.service.context.path=DDMDataProviderInstance"
+	},
+	service = AopService.class
+)
 public class DDMDataProviderInstanceServiceImpl
 	extends DDMDataProviderInstanceServiceBaseImpl {
 
@@ -151,8 +169,34 @@ public class DDMDataProviderInstanceServiceImpl
 		long companyId, long[] groupIds, String keywords, int start, int end,
 		OrderByComparator<DDMDataProviderInstance> orderByComparator) {
 
-		return ddmDataProviderInstanceFinder.filterByKeywords(
-			companyId, groupIds, keywords, start, end, orderByComparator);
+		List<DDMDataProviderInstance> ddmDataProviderInstances =
+			ddmDataProviderInstanceFinder.filterByKeywords(
+				companyId, groupIds, keywords, start, end, orderByComparator);
+
+		Stream<DDMDataProviderInstance> ddmDataProviderInstanceStream =
+			ddmDataProviderInstances.stream();
+
+		return ddmDataProviderInstanceStream.filter(
+			ddmDataProviderInstance -> {
+				try {
+					return _ddmDataProviderInstanceModelResourcePermission.
+						contains(
+							getPermissionChecker(),
+							ddmDataProviderInstance.getDataProviderInstanceId(),
+							ActionKeys.VIEW);
+				}
+				catch (PortalException portalException) {
+					_log.error(portalException, portalException);
+
+					return false;
+				}
+			}
+		).map(
+			ddmDataProviderInstance -> _removeAuthenticationData(
+				ddmDataProviderInstance)
+		).collect(
+			Collectors.toList()
+		);
 	}
 
 	@Override
@@ -196,16 +240,78 @@ public class DDMDataProviderInstanceServiceImpl
 			ddmFormValues, serviceContext);
 	}
 
-	private static volatile ModelResourcePermission<DDMDataProviderInstance>
-		_ddmDataProviderInstanceModelResourcePermission =
-			ModelResourcePermissionFactory.getInstance(
-				DDMDataProviderInstanceServiceImpl.class,
-				"_ddmDataProviderInstanceModelResourcePermission",
-				DDMDataProviderInstance.class);
-	private static volatile PortletResourcePermission
-		_portletResourcePermission =
-			PortletResourcePermissionFactory.getInstance(
-				DDMDataProviderInstanceServiceImpl.class,
-				"_portletResourcePermission", DDMConstants.RESOURCE_NAME);
+	@Reference(unbind = "-")
+	protected void setJSONFactory(JSONFactory jsonFactory) {
+		_jsonFactory = jsonFactory;
+	}
+
+	private JSONArray _filterFieldValues(JSONArray fieldValuesJSONArray) {
+		JSONArray filteredFieldValuesJSONArray = _jsonFactory.createJSONArray();
+
+		Iterator<JSONObject> iterator = fieldValuesJSONArray.iterator();
+
+		while (iterator.hasNext()) {
+			JSONObject fieldValueJSONObject = iterator.next();
+
+			String fieldValueName = fieldValueJSONObject.getString("name");
+
+			if (StringUtil.equals(fieldValueName, "password") ||
+				StringUtil.equals(fieldValueName, "username")) {
+
+				continue;
+			}
+
+			filteredFieldValuesJSONArray.put(fieldValueJSONObject);
+		}
+
+		return filteredFieldValuesJSONArray;
+	}
+
+	private DDMDataProviderInstance _removeAuthenticationData(
+		DDMDataProviderInstance ddmDataProviderInstance) {
+
+		try {
+			JSONObject definitionJSONObject = _jsonFactory.createJSONObject(
+				ddmDataProviderInstance.getDefinition());
+
+			if (!definitionJSONObject.has("fieldValues")) {
+				return ddmDataProviderInstance;
+			}
+
+			JSONArray fieldValuesJSONArray = definitionJSONObject.getJSONArray(
+				"fieldValues");
+
+			definitionJSONObject.put(
+				"fieldValues", _filterFieldValues(fieldValuesJSONArray));
+
+			ddmDataProviderInstance.setDefinition(
+				definitionJSONObject.toJSONString());
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to remove authentication data from data " +
+						"providers search",
+					exception);
+			}
+		}
+
+		return ddmDataProviderInstance;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMDataProviderInstanceServiceImpl.class);
+
+	@Reference(
+		target = "(model.class.name=com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance)"
+	)
+	private ModelResourcePermission<DDMDataProviderInstance>
+		_ddmDataProviderInstanceModelResourcePermission;
+
+	@Reference
+	private JSONFactory _jsonFactory;
+
+	@Reference(target = "(resource.name=" + DDMConstants.RESOURCE_NAME + ")")
+	private PortletResourcePermission _portletResourcePermission;
 
 }

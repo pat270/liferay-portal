@@ -49,8 +49,8 @@ import org.dom4j.tree.DefaultElement;
 public abstract class PoshiElement
 	extends DefaultElement implements PoshiNode<Element, PoshiElement> {
 
-	public PoshiElement() {
-		super("");
+	public PoshiElement(String name) {
+		super(name);
 	}
 
 	@Override
@@ -79,6 +79,7 @@ public abstract class PoshiElement
 			PoshiElement parentPoshiElement, String poshiScript)
 		throws PoshiScriptParserException;
 
+	@Override
 	public PoshiElement clone(String poshiScript)
 		throws PoshiScriptParserException {
 
@@ -98,11 +99,8 @@ public abstract class PoshiElement
 		int poshiScriptLineNumber = PoshiNode.super.getPoshiScriptLineNumber();
 
 		if (!includeAnnotation) {
-			String poshiScript = getPoshiScript();
-
-			String blockName = getBlockName(poshiScript);
-
-			poshiScriptLineNumber += StringUtil.count(blockName, "\n");
+			poshiScriptLineNumber += StringUtil.count(
+				getBlockName(getPoshiScript()), "\n");
 		}
 
 		return poshiScriptLineNumber;
@@ -112,6 +110,33 @@ public abstract class PoshiElement
 		Matcher matcher = _poshiScriptCommentPattern.matcher(poshiScript);
 
 		return matcher.find();
+	}
+
+	public boolean isValidPoshiScript() throws PoshiScriptParserException {
+		for (PoshiElementAttribute poshiElementAttribute :
+				toPoshiElementAttributes(attributeList())) {
+
+			poshiElementAttribute.validatePoshiScript();
+		}
+
+		String originalPoshiScript = getPoshiScript();
+		String generatedPoshiScript = toPoshiScript();
+
+		originalPoshiScript = originalPoshiScript.replaceAll("\\s+", "");
+
+		generatedPoshiScript = generatedPoshiScript.replaceAll("\\s+", "");
+
+		if ((elements().size() == 0) &&
+			!originalPoshiScript.equals(generatedPoshiScript)) {
+
+			return false;
+		}
+
+		if (originalPoshiScript.length() != generatedPoshiScript.length()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
@@ -137,7 +162,7 @@ public abstract class PoshiElement
 			return super.remove(cdata);
 		}
 
-		for (PoshiNode poshiNode : toPoshiNodes(content())) {
+		for (PoshiNode<?, ?> poshiNode : toPoshiNodes(content())) {
 			if (poshiNode == cdata) {
 				return super.remove(poshiNode);
 			}
@@ -149,6 +174,20 @@ public abstract class PoshiElement
 	@Override
 	public void setPoshiScript(String poshiScript) {
 		_poshiScript = poshiScript;
+	}
+
+	public List<PoshiElement> toPoshiElements(List<?> list) {
+		if (list == null) {
+			return null;
+		}
+
+		List<PoshiElement> poshiElements = new ArrayList<>(list.size());
+
+		for (Object object : list) {
+			poshiElements.add((PoshiElement)object);
+		}
+
+		return poshiElements;
 	}
 
 	@Override
@@ -171,36 +210,11 @@ public abstract class PoshiElement
 		return sb.toString();
 	}
 
+	@Override
 	public void validatePoshiScript() throws PoshiScriptParserException {
-		for (PoshiElementAttribute poshiElementAttribute :
-				toPoshiElementAttributes(attributeList())) {
-
-			poshiElementAttribute.validatePoshiScript();
-		}
-
-		String originalPoshiScript = getPoshiScript();
-		String generatedPoshiScript = toPoshiScript();
-
-		originalPoshiScript = originalPoshiScript.replaceAll("\\s+", "");
-
-		generatedPoshiScript = generatedPoshiScript.replaceAll("\\s+", "");
-
-		if (elements().size() == 0) {
-			if (!originalPoshiScript.equals(generatedPoshiScript)) {
-				PoshiScriptParserException pspe =
-					new PoshiScriptParserException(
-						PoshiScriptParserException.TRANSLATION_LOSS_MESSAGE,
-						this);
-
-				throw pspe;
-			}
-		}
-
-		if (originalPoshiScript.length() != generatedPoshiScript.length()) {
-			PoshiScriptParserException pspe = new PoshiScriptParserException(
+		if (!isValidPoshiScript() && !isValidPoshiXML()) {
+			throw new PoshiScriptParserException(
 				PoshiScriptParserException.TRANSLATION_LOSS_MESSAGE, this);
-
-			throw pspe;
 		}
 	}
 
@@ -264,18 +278,21 @@ public abstract class PoshiElement
 		try {
 			parsePoshiScript(poshiScript.trim());
 
-			if (PropsValues.TEST_POSHI_SCRIPT_VALIDATION) {
+			if (PropsValues.TEST_POSHI_SCRIPT_VALIDATION &&
+				!PoshiNodeFactory.validationInitialized.contains(getURL())) {
+
+				PoshiNodeFactory.validationInitialized.add(getURL());
+
 				validatePoshiScript();
 			}
 		}
-		catch (PoshiScriptParserException pspe) {
-			System.out.println(pspe.getMessage());
+		catch (PoshiScriptParserException poshiScriptParserException) {
 		}
 
 		detach();
 	}
 
-	protected String createPoshiScriptBlock(List<PoshiNode> poshiNodes) {
+	protected String createPoshiScriptBlock(List<PoshiNode<?, ?>> poshiNodes) {
 		StringBuilder sb = new StringBuilder();
 
 		String pad = getPad();
@@ -285,12 +302,12 @@ public abstract class PoshiElement
 		sb.append(getBlockName());
 		sb.append(" {");
 
-		PoshiNode previousPoshiNode = null;
+		PoshiNode<?, ?> previousPoshiNode = null;
 
-		for (Iterator<PoshiNode> iterator = poshiNodes.iterator();
+		for (Iterator<PoshiNode<?, ?>> iterator = poshiNodes.iterator();
 			 iterator.hasNext();) {
 
-			PoshiNode poshiNode = iterator.next();
+			PoshiNode<?, ?> poshiNode = iterator.next();
 
 			if (poshiNode instanceof DescriptionPoshiElement) {
 				continue;
@@ -298,14 +315,13 @@ public abstract class PoshiElement
 
 			String poshiScriptSnippet = poshiNode.toPoshiScript();
 
-			if ((previousPoshiNode == null) ||
-				((previousPoshiNode instanceof VarPoshiElement) &&
-				 (poshiNode instanceof VarPoshiElement))) {
+			if (((previousPoshiNode == null) ||
+				 ((previousPoshiNode instanceof VarPoshiElement) &&
+				  (poshiNode instanceof VarPoshiElement))) &&
+				poshiScriptSnippet.startsWith("\n\n")) {
 
-				if (poshiScriptSnippet.startsWith("\n\n")) {
-					poshiScriptSnippet = poshiScriptSnippet.replaceFirst(
-						"\n\n", "\n");
-				}
+				poshiScriptSnippet = poshiScriptSnippet.replaceFirst(
+					"\n\n", "\n");
 			}
 
 			sb.append(padPoshiScriptSnippet(poshiScriptSnippet));
@@ -365,12 +381,10 @@ public abstract class PoshiElement
 		StringBuilder sb = new StringBuilder();
 
 		for (char c : poshiScriptBlock.toCharArray()) {
-			if (c == '{') {
-				if (isBalancedPoshiScript(sb.toString())) {
-					String blockName = sb.toString();
+			if ((c == '{') && isBalancedPoshiScript(sb.toString())) {
+				String blockName = sb.toString();
 
-					return blockName.trim();
-				}
+				return blockName.trim();
 			}
 
 			sb.append(c);
@@ -439,8 +453,8 @@ public abstract class PoshiElement
 		try {
 			return getMethodParameters(content, null);
 		}
-		catch (PoshiScriptParserException pspe) {
-			pspe.printStackTrace();
+		catch (PoshiScriptParserException poshiScriptParserException) {
+			poshiScriptParserException.printStackTrace();
 
 			return new ArrayList<>();
 		}
@@ -502,10 +516,10 @@ public abstract class PoshiElement
 		String name = assignment.split("=")[0];
 
 		name = name.trim();
-		name = name.replace("@", "");
-		name = name.replace("property ", "");
+		name = StringUtil.replace(name, "@", "");
+		name = StringUtil.replace(name, "property ", "");
 
-		return name.replace("var ", "");
+		return StringUtil.replace(name, "var ", "");
 	}
 
 	protected List<String> getNestedConditions(
@@ -530,16 +544,16 @@ public abstract class PoshiElement
 		for (int i = 0; i < chars.length; i++) {
 			char c = chars[i];
 
-			if (tokenIndices.contains(i)) {
-				if (isBalancedPoshiScript(sb.toString())) {
-					nestedConditions.add(sb.toString());
+			if (tokenIndices.contains(i) &&
+				isBalancedPoshiScript(sb.toString())) {
 
-					sb.setLength(0);
+				nestedConditions.add(sb.toString());
 
-					i++;
+				sb.setLength(0);
 
-					continue;
-				}
+				i++;
+
+				continue;
 			}
 
 			if (i == (chars.length - 1)) {
@@ -566,7 +580,7 @@ public abstract class PoshiElement
 		return RegexUtil.getGroup(poshiScript, ".*?\\((.*)\\)", 1);
 	}
 
-	protected List<PoshiNode> getPoshiNodes() {
+	protected List<PoshiNode<?, ?>> getPoshiNodes() {
 		return toPoshiNodes(content());
 	}
 
@@ -664,34 +678,44 @@ public abstract class PoshiElement
 				continue;
 			}
 
+			if (trimmedPoshiScriptSnippet.startsWith("var") && (c != ';')) {
+				continue;
+			}
+
 			if (isBalancedPoshiScript(poshiScriptSnippet)) {
-				if (splitElseBlocks) {
-					if (isValidPoshiScriptBlock(
-							ElseIfPoshiElement.blockNamePattern,
-							poshiScriptSnippet) ||
-						isValidPoshiScriptBlock(
-							ElsePoshiElement.blockNamePattern,
-							poshiScriptSnippet)) {
+				if (splitElseBlocks &&
+					(isValidPoshiScriptBlock(
+						ElseIfPoshiElement.blockNamePattern,
+						poshiScriptSnippet) ||
+					 isValidPoshiScriptBlock(
+						 ElsePoshiElement.blockNamePattern,
+						 poshiScriptSnippet))) {
 
-						int lastIndex = poshiScriptSnippets.size() - 1;
+					int lastIndex = poshiScriptSnippets.size() - 1;
 
-						String lastPoshiScriptSnippet = poshiScriptSnippets.get(
-							lastIndex);
+					String lastPoshiScriptSnippet = poshiScriptSnippets.get(
+						lastIndex);
 
-						poshiScriptSnippets.set(
-							lastIndex,
-							lastPoshiScriptSnippet + poshiScriptSnippet);
+					poshiScriptSnippets.set(
+						lastIndex, lastPoshiScriptSnippet + poshiScriptSnippet);
 
-						sb.setLength(0);
+					sb.setLength(0);
 
-						continue;
-					}
+					continue;
 				}
 
 				poshiScriptSnippets.add(poshiScriptSnippet);
 
 				sb.setLength(0);
 			}
+		}
+
+		String poshiScriptSnippet = sb.toString();
+
+		poshiScriptSnippet = poshiScriptSnippet.trim();
+
+		if (!poshiScriptSnippet.isEmpty()) {
+			poshiScriptSnippets.add(poshiScriptSnippet);
 		}
 
 		return poshiScriptSnippets;
@@ -721,7 +745,7 @@ public abstract class PoshiElement
 		try {
 			return isBalancedPoshiScript(poshiScript, false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 	}
@@ -823,6 +847,21 @@ public abstract class PoshiElement
 		return false;
 	}
 
+	protected boolean isNestedCondition(String poshiScript) {
+		Matcher matcher = _nestedConditionPattern.matcher(poshiScript);
+
+		if (matcher.find()) {
+			List<String> nestedConditions = getNestedConditions(
+				poshiScript, matcher.group(0));
+
+			if (nestedConditions.size() > 1) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	protected boolean isValidFunctionFileName(String poshiScriptInvocation) {
 		for (String functionFileName :
 				PoshiRunnerContext.getFunctionFileNames()) {
@@ -889,7 +928,7 @@ public abstract class PoshiElement
 				return true;
 			}
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			return false;
 		}
 
@@ -917,12 +956,13 @@ public abstract class PoshiElement
 			!poshiScriptSnippet.contains("/*") &&
 			!poshiScriptSnippet.contains("*/")) {
 
-			poshiScriptSnippet = poshiScriptSnippet.replace(
-				"\n", "\n" + getPad());
+			poshiScriptSnippet = StringUtil.replace(
+				poshiScriptSnippet, "\n", "\n" + getPad());
 
-			poshiScriptSnippet = poshiScriptSnippet.replace("\n\t\n", "\n\n");
+			poshiScriptSnippet = StringUtil.replace(
+				poshiScriptSnippet, "\n\t\n", "\n\n");
 
-			return poshiScriptSnippet.replace("\n\n\n", "\n\n");
+			return StringUtil.replace(poshiScriptSnippet, "\n\n\n", "\n\n");
 		}
 
 		Stack<String> stack = new Stack<>();
@@ -950,10 +990,8 @@ public abstract class PoshiElement
 
 			sb.append(line);
 
-			if (trimmedLine.startsWith("/*")) {
-				if (!stack.contains("/*")) {
-					stack.push("/*");
-				}
+			if (trimmedLine.startsWith("/*") && !stack.contains("/*")) {
+				stack.push("/*");
 			}
 
 			if ((StringUtil.count(trimmedLine, "'''") % 2) == 1) {
@@ -965,10 +1003,8 @@ public abstract class PoshiElement
 				}
 			}
 
-			if (trimmedLine.endsWith("*/")) {
-				if (stackPeek.equals("/*")) {
-					stack.pop();
-				}
+			if (trimmedLine.endsWith("*/") && stackPeek.equals("/*")) {
+				stack.pop();
 			}
 		}
 
@@ -999,26 +1035,12 @@ public abstract class PoshiElement
 		return poshiElementAttributes;
 	}
 
-	protected List<PoshiElement> toPoshiElements(List<?> list) {
+	protected List<PoshiNode<?, ?>> toPoshiNodes(List<?> list) {
 		if (list == null) {
 			return null;
 		}
 
-		List<PoshiElement> poshiElements = new ArrayList<>(list.size());
-
-		for (Object object : list) {
-			poshiElements.add((PoshiElement)object);
-		}
-
-		return poshiElements;
-	}
-
-	protected List<PoshiNode> toPoshiNodes(List<?> list) {
-		if (list == null) {
-			return null;
-		}
-
-		List<PoshiNode> poshiNodes = new ArrayList<>(list.size());
+		List<PoshiNode<?, ?>> poshiNodes = new ArrayList<>(list.size());
 
 		for (Object object : list) {
 			poshiNodes.add((PoshiNode)object);
@@ -1090,13 +1112,15 @@ public abstract class PoshiElement
 	private static final Map<Character, Character> _codeBoundariesMap =
 		new HashMap<Character, Character>() {
 			{
-				put('\'', '\'');
-				put('\"', '\"');
 				put('(', ')');
-				put('{', '}');
 				put('[', ']');
+				put('\"', '\"');
+				put('\'', '\'');
+				put('{', '}');
 			}
 		};
+	private static final Pattern _nestedConditionPattern = Pattern.compile(
+		"(\\|{2}|\\&{2})");
 	private static final Pattern _poshiScriptCommentPattern = Pattern.compile(
 		"^[\\s]*(\\/\\/.*?(\\n|$)|\\/\\*.*?\\*\\/)", Pattern.DOTALL);
 	private static final Pattern _varInvocationAssignmentStatementPattern;

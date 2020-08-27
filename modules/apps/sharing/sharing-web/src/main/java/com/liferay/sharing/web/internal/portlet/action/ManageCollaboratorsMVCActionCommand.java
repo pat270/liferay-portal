@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
@@ -97,7 +96,7 @@ public class ManageCollaboratorsMVCActionCommand extends BaseMVCActionCommand {
 					return null;
 				});
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			HttpServletResponse httpServletResponse =
 				_portal.getHttpServletResponse(actionResponse);
 
@@ -106,7 +105,7 @@ public class ManageCollaboratorsMVCActionCommand extends BaseMVCActionCommand {
 			String errorMessage =
 				"an-unexpected-error-occurred-while-updating-permissions";
 
-			if (t instanceof PrincipalException) {
+			if (throwable instanceof PrincipalException) {
 				errorMessage =
 					"you-do-not-have-permission-to-update-these-permissions";
 			}
@@ -268,6 +267,8 @@ public class ManageCollaboratorsMVCActionCommand extends BaseMVCActionCommand {
 				sharingEntryId, serviceContext);
 		}
 
+		hideDefaultSuccessMessage(actionRequest);
+
 		JSONObject jsonObject = JSONUtil.put(
 			"successMessage",
 			LanguageUtil.get(resourceBundle, "permissions-changed"));
@@ -291,8 +292,5 @@ public class ManageCollaboratorsMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private SharingEntryService _sharingEntryService;
-
-	@Reference
-	private UserLocalService _userLocalService;
 
 }

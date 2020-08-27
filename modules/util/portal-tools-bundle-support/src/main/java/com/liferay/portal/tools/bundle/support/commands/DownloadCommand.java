@@ -59,16 +59,21 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 			tokenContent = tokenContent.trim();
 
 			_downloadPath = HttpUtil.downloadFile(
-				uri, tokenContent, cacheDirPath, this);
+				uri, tokenContent, cacheDirPath, this, _connectionTimeout);
 		}
 		else {
 			_downloadPath = HttpUtil.downloadFile(
-				uri, _userName, _password, cacheDirPath, this);
+				uri, _userName, _password, cacheDirPath, this,
+				_connectionTimeout);
 		}
 	}
 
 	public File getCacheDir() {
 		return _cacheDir;
+	}
+
+	public int getConnectionTimeout() {
+		return _connectionTimeout;
 	}
 
 	public Path getDownloadPath() {
@@ -91,17 +96,29 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 		return _userName;
 	}
 
+	public boolean isQuiet() {
+		return _quiet;
+	}
+
 	public boolean isToken() {
 		return _token;
 	}
 
 	@Override
 	public void onCompleted() {
+		if (isQuiet()) {
+			return;
+		}
+
 		System.out.println();
 	}
 
 	@Override
 	public void onProgress(long completed, long length) {
+		if (isQuiet()) {
+			return;
+		}
+
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(FileUtil.getFileLength(completed));
@@ -118,6 +135,10 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 
 	@Override
 	public void onStarted() {
+		if (isQuiet()) {
+			return;
+		}
+
 		onStarted("Download " + _url);
 	}
 
@@ -125,8 +146,16 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 		_cacheDir = cacheDir;
 	}
 
+	public void setConnectionTimeout(int connectionTimeout) {
+		_connectionTimeout = connectionTimeout;
+	}
+
 	public void setPassword(String password) {
 		_password = password;
+	}
+
+	public void setQuiet(boolean quiet) {
+		_quiet = quiet;
 	}
 
 	public void setToken(boolean token) {
@@ -146,6 +175,10 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 	}
 
 	protected void onProgress(String message) {
+		if (isQuiet()) {
+			return;
+		}
+
 		char[] chars = new char[80];
 
 		System.arraycopy(message.toCharArray(), 0, chars, 0, message.length());
@@ -158,6 +191,10 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 	}
 
 	protected void onStarted(String message) {
+		if (isQuiet()) {
+			return;
+		}
+
 		System.out.println(message);
 	}
 
@@ -169,6 +206,12 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 		System.getProperty("user.home"),
 		BundleSupportConstants.DEFAULT_BUNDLE_CACHE_DIR_NAME);
 
+	@Parameter(
+		description = "The connection timeout.",
+		names = {"--timeout", "--connection-timeout"}
+	)
+	private int _connectionTimeout = -1;
+
 	private Path _downloadPath;
 
 	@Parameter(
@@ -176,6 +219,12 @@ public class DownloadCommand extends BaseCommand implements StreamLogger {
 		names = {"-p", "--password"}, password = true
 	)
 	private String _password;
+
+	@Parameter(
+		description = "Do not print any optional messages to the console.",
+		hidden = true, names = {"-q", "--quiet"}
+	)
+	private boolean _quiet;
 
 	@Parameter(
 		description = "Use token authentication.", names = {"-t", "--token"}

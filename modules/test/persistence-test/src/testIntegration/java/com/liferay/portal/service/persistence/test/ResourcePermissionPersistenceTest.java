@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchResourcePermissionException;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,8 @@ public class ResourcePermissionPersistenceTest {
 
 		newResourcePermission.setMvccVersion(RandomTestUtil.nextLong());
 
+		newResourcePermission.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newResourcePermission.setCompanyId(RandomTestUtil.nextLong());
 
 		newResourcePermission.setName(RandomTestUtil.randomString());
@@ -152,6 +154,9 @@ public class ResourcePermissionPersistenceTest {
 		Assert.assertEquals(
 			existingResourcePermission.getMvccVersion(),
 			newResourcePermission.getMvccVersion());
+		Assert.assertEquals(
+			existingResourcePermission.getCtCollectionId(),
+			newResourcePermission.getCtCollectionId());
 		Assert.assertEquals(
 			existingResourcePermission.getResourcePermissionId(),
 			newResourcePermission.getResourcePermissionId());
@@ -320,10 +325,10 @@ public class ResourcePermissionPersistenceTest {
 
 	protected OrderByComparator<ResourcePermission> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"ResourcePermission", "mvccVersion", true, "resourcePermissionId",
-			true, "companyId", true, "name", true, "scope", true, "primKey",
-			true, "primKeyId", true, "roleId", true, "ownerId", true,
-			"actionIds", true, "viewActionId", true);
+			"ResourcePermission", "mvccVersion", true, "ctCollectionId", true,
+			"resourcePermissionId", true, "companyId", true, "name", true,
+			"scope", true, "primKey", true, "primKeyId", true, "roleId", true,
+			"ownerId", true, "actionIds", true, "viewActionId", true);
 	}
 
 	@Test
@@ -555,37 +560,78 @@ public class ResourcePermissionPersistenceTest {
 
 		_persistence.clearCache();
 
-		ResourcePermission existingResourcePermission =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newResourcePermission.getPrimaryKey());
+				newResourcePermission.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		ResourcePermission newResourcePermission = addResourcePermission();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			ResourcePermission.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"resourcePermissionId",
+				newResourcePermission.getResourcePermissionId()));
+
+		List<ResourcePermission> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(ResourcePermission resourcePermission) {
 		Assert.assertEquals(
-			Long.valueOf(existingResourcePermission.getCompanyId()),
+			Long.valueOf(resourcePermission.getCompanyId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingResourcePermission, "getOriginalCompanyId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingResourcePermission.getName(),
-				ReflectionTestUtil.invoke(
-					existingResourcePermission, "getOriginalName",
-					new Class<?>[0])));
+				resourcePermission, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
 		Assert.assertEquals(
-			Integer.valueOf(existingResourcePermission.getScope()),
+			resourcePermission.getName(),
+			ReflectionTestUtil.invoke(
+				resourcePermission, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
+		Assert.assertEquals(
+			Integer.valueOf(resourcePermission.getScope()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingResourcePermission, "getOriginalScope",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingResourcePermission.getPrimKey(),
-				ReflectionTestUtil.invoke(
-					existingResourcePermission, "getOriginalPrimKey",
-					new Class<?>[0])));
+				resourcePermission, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "scope"));
 		Assert.assertEquals(
-			Long.valueOf(existingResourcePermission.getRoleId()),
+			resourcePermission.getPrimKey(),
+			ReflectionTestUtil.invoke(
+				resourcePermission, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "primKey"));
+		Assert.assertEquals(
+			Long.valueOf(resourcePermission.getRoleId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingResourcePermission, "getOriginalRoleId",
-				new Class<?>[0]));
+				resourcePermission, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "roleId"));
 	}
 
 	protected ResourcePermission addResourcePermission() throws Exception {
@@ -594,6 +640,8 @@ public class ResourcePermissionPersistenceTest {
 		ResourcePermission resourcePermission = _persistence.create(pk);
 
 		resourcePermission.setMvccVersion(RandomTestUtil.nextLong());
+
+		resourcePermission.setCtCollectionId(RandomTestUtil.nextLong());
 
 		resourcePermission.setCompanyId(RandomTestUtil.nextLong());
 

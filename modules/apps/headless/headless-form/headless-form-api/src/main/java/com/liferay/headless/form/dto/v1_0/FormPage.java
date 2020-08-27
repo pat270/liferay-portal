@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Generated;
+
+import javax.validation.Valid;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -45,7 +47,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "FormPage")
 public class FormPage {
 
+	public static FormPage toDTO(String json) {
+		return ObjectMapperUtil.readValue(FormPage.class, json);
+	}
+
 	@Schema
+	@Valid
 	public FormField[] getFormFields() {
 		return formFields;
 	}
@@ -102,6 +109,36 @@ public class FormPage {
 	protected String headline;
 
 	@Schema
+	@Valid
+	public Map<String, String> getHeadline_i18n() {
+		return headline_i18n;
+	}
+
+	public void setHeadline_i18n(Map<String, String> headline_i18n) {
+		this.headline_i18n = headline_i18n;
+	}
+
+	@JsonIgnore
+	public void setHeadline_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			headline_i18nUnsafeSupplier) {
+
+		try {
+			headline_i18n = headline_i18nUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, String> headline_i18n;
+
+	@Schema
 	public Long getId() {
 		return id;
 	}
@@ -152,6 +189,36 @@ public class FormPage {
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String text;
+
+	@Schema
+	@Valid
+	public Map<String, String> getText_i18n() {
+		return text_i18n;
+	}
+
+	public void setText_i18n(Map<String, String> text_i18n) {
+		this.text_i18n = text_i18n;
+	}
+
+	@JsonIgnore
+	public void setText_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			text_i18nUnsafeSupplier) {
+
+		try {
+			text_i18n = text_i18nUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, String> text_i18n;
 
 	@Override
 	public boolean equals(Object object) {
@@ -214,6 +281,16 @@ public class FormPage {
 			sb.append("\"");
 		}
 
+		if (headline_i18n != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"headline_i18n\": ");
+
+			sb.append(_toJSON(headline_i18n));
+		}
+
 		if (id != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -238,15 +315,41 @@ public class FormPage {
 			sb.append("\"");
 		}
 
+		if (text_i18n != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"text_i18n\": ");
+
+			sb.append(_toJSON(text_i18n));
+		}
+
 		sb.append("}");
 
 		return sb.toString();
 	}
 
+	@Schema(
+		defaultValue = "com.liferay.headless.form.dto.v1_0.FormPage",
+		name = "x-class-name"
+	)
+	public String xClassName;
+
 	private static String _escape(Object object) {
 		String string = String.valueOf(object);
 
 		return string.replaceAll("\"", "\\\\\"");
+	}
+
+	private static boolean _isArray(Object value) {
+		if (value == null) {
+			return false;
+		}
+
+		Class<?> clazz = value.getClass();
+
+		return clazz.isArray();
 	}
 
 	private static String _toJSON(Map<String, ?> map) {
@@ -264,9 +367,42 @@ public class FormPage {
 			sb.append("\"");
 			sb.append(entry.getKey());
 			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
+
+			Object value = entry.getValue();
+
+			if (_isArray(value)) {
+				sb.append("[");
+
+				Object[] valueArray = (Object[])value;
+
+				for (int i = 0; i < valueArray.length; i++) {
+					if (valueArray[i] instanceof String) {
+						sb.append("\"");
+						sb.append(valueArray[i]);
+						sb.append("\"");
+					}
+					else {
+						sb.append(valueArray[i]);
+					}
+
+					if ((i + 1) < valueArray.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof Map) {
+				sb.append(_toJSON((Map<String, ?>)value));
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+			else {
+				sb.append(value);
+			}
 
 			if (iterator.hasNext()) {
 				sb.append(",");

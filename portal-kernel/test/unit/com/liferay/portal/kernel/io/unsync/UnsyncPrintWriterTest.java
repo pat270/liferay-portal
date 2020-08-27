@@ -190,8 +190,8 @@ public class UnsyncPrintWriterTest {
 		try {
 			return (Writer)_writerField.get(unsyncPrintWriter);
 		}
-		catch (Throwable t) {
-			throw new RuntimeException(t);
+		catch (Throwable throwable) {
+			throw new RuntimeException(throwable);
 		}
 	}
 
@@ -206,8 +206,8 @@ public class UnsyncPrintWriterTest {
 
 			_writerField.setAccessible(true);
 		}
-		catch (Exception e) {
-			throw new LoggedExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new LoggedExceptionInInitializerError(exception);
 		}
 	}
 

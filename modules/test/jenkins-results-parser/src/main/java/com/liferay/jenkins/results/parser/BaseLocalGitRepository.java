@@ -31,17 +31,17 @@ public abstract class BaseLocalGitRepository
 	extends BaseGitRepository implements LocalGitRepository {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof BaseLocalGitRepository)) {
+		if (!(object instanceof BaseLocalGitRepository)) {
 			return false;
 		}
 
 		BaseLocalGitRepository baseLocalGitRepository =
-			(BaseLocalGitRepository)obj;
+			(BaseLocalGitRepository)object;
 
 		if (Objects.equals(
 				getDirectory(), baseLocalGitRepository.getDirectory()) &&
@@ -123,11 +123,9 @@ public abstract class BaseLocalGitRepository
 
 	@Override
 	public int hashCode() {
-		File directory = getDirectory();
-
 		String hash = JenkinsResultsParserUtil.combine(
-			JenkinsResultsParserUtil.getCanonicalPath(directory), getName(),
-			getUpstreamBranchName());
+			JenkinsResultsParserUtil.getCanonicalPath(getDirectory()),
+			getName(), getUpstreamBranchName());
 
 		return hash.hashCode();
 	}
@@ -175,14 +173,14 @@ public abstract class BaseLocalGitRepository
 				"directory",
 				JenkinsResultsParserUtil.getCanonicalPath(directory));
 		}
-		catch (RuntimeException re) {
+		catch (RuntimeException runtimeException) {
 			throw new RuntimeException(
 				JenkinsResultsParserUtil.combine(
 					"Unable to find Git repository directory.\n",
 					"Please set this location in repository.dir[", getName(),
 					"][", getUpstreamBranchName(),
 					"] in repository.properties."),
-				re);
+				runtimeException);
 		}
 	}
 

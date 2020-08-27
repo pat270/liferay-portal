@@ -15,6 +15,7 @@
 package com.liferay.document.library.web.internal.portlet.configuration.icon;
 
 import com.liferay.document.library.constants.DLPortletKeys;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
@@ -46,7 +46,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = "javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 	service = PortletConfigurationIcon.class
 )
@@ -73,23 +72,21 @@ public class PermissionsPortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		String url = StringPool.BLANK;
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		try {
-			url = PermissionsURLTag.doTag(
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			return PermissionsURLTag.doTag(
 				StringPool.BLANK, "com.liferay.document.library",
 				themeDisplay.getScopeGroupName(), null,
 				String.valueOf(themeDisplay.getScopeGroupId()),
 				LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			return ReflectionUtil.throwException(exception);
 		}
-
-		return url;
 	}
 
 	@Override
@@ -114,22 +111,9 @@ public class PermissionsPortletConfigurationIcon
 			return false;
 		}
 
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
-
-		try {
-			if (!_portletResourcePermission.contains(
-					permissionChecker, themeDisplay.getScopeGroup(),
-					ActionKeys.PERMISSIONS)) {
-
-				return false;
-			}
-		}
-		catch (Exception e) {
-			return false;
-		}
-
-		return true;
+		return _portletResourcePermission.contains(
+			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroup(),
+			ActionKeys.PERMISSIONS);
 	}
 
 	@Override

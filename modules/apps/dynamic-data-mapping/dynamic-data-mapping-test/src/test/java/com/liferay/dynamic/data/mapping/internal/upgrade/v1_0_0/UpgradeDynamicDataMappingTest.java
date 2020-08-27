@@ -14,14 +14,14 @@
 
 package com.liferay.dynamic.data.mapping.internal.upgrade.v1_0_0;
 
+import com.liferay.dynamic.data.mapping.internal.io.DDMFormValuesJSONDeserializer;
+import com.liferay.dynamic.data.mapping.internal.io.DDMFormValuesJSONSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesDeserializerDeserializeResponse;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.internal.DDMFormValuesJSONDeserializer;
-import com.liferay.dynamic.data.mapping.io.internal.DDMFormValuesJSONSerializer;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -116,8 +117,9 @@ public class UpgradeDynamicDataMappingTest extends PowerMockito {
 		setUpJSONFactoryUtil();
 
 		_upgradeDynamicDataMapping = new UpgradeDynamicDataMapping(
-			null, null, null, null, null, null, _ddmFormValuesDeserializer,
-			_ddmFormValuesSerializer, null, null, null, null, null, null,
+			null, null, null, null, null, null, null,
+			_ddmFormValuesDeserializer, _ddmFormValuesSerializer, null, null,
+			null, null, null, null,
 			(ResourceActions)ProxyUtil.newProxyInstance(
 				UpgradeDynamicDataMappingTest.class.getClassLoader(),
 				new Class<?>[] {ResourceActions.class},
@@ -152,7 +154,7 @@ public class UpgradeDynamicDataMappingTest extends PowerMockito {
 					}
 
 				}),
-			null, null, null);
+			null, null, null, null);
 	}
 
 	@Test
@@ -605,18 +607,15 @@ public class UpgradeDynamicDataMappingTest extends PowerMockito {
 
 	@Test
 	public void testToXMLWithoutLocalizedData() throws Exception {
-		Map<String, String> expandoValuesMap = new HashMap<>();
-
-		expandoValuesMap.put(
-			"Text", createLocalizationXML(new String[] {"Joe Bloggs"}));
-
 		String fieldsDisplay = "Text_INSTANCE_hcxo";
 
-		expandoValuesMap.put(
-			"_fieldsDisplay",
-			createLocalizationXML(new String[] {fieldsDisplay}));
-
-		String xml = _upgradeDynamicDataMapping.toXML(expandoValuesMap);
+		String xml = _upgradeDynamicDataMapping.toXML(
+			HashMapBuilder.put(
+				"_fieldsDisplay",
+				createLocalizationXML(new String[] {fieldsDisplay})
+			).put(
+				"Text", createLocalizationXML(new String[] {"Joe Bloggs"})
+			).build());
 
 		Document document = SAXReaderUtil.read(xml);
 
@@ -625,34 +624,30 @@ public class UpgradeDynamicDataMappingTest extends PowerMockito {
 		Map<String, List<String>> actualTextData = dataMap.get("Text");
 
 		assertEquals(
-			ListUtil.toList(new String[] {"Joe Bloggs"}),
-			actualTextData.get("en_US"));
+			ListUtil.fromArray("Joe Bloggs"), actualTextData.get("en_US"));
 
 		Map<String, List<String>> actualFieldsDisplayData = dataMap.get(
 			"_fieldsDisplay");
 
 		assertEquals(
-			ListUtil.toList(new String[] {fieldsDisplay}),
+			ListUtil.fromArray(fieldsDisplay),
 			actualFieldsDisplayData.get("en_US"));
 	}
 
 	@Test
 	public void testToXMLWithRepeatableAndLocalizedData() throws Exception {
-		Map<String, String> expandoValuesMap = new HashMap<>();
-
-		expandoValuesMap.put(
-			"Text",
-			createLocalizationXML(
-				new String[] {"A", "B", "C"}, new String[] {"D", "E", "F"}));
-
 		String fieldsDisplay =
 			"Text_INSTANCE_hcxo,Text_INSTANCE_vfqd,Text_INSTANCE_ycey";
 
-		expandoValuesMap.put(
-			"_fieldsDisplay",
-			createLocalizationXML(new String[] {fieldsDisplay}));
-
-		String xml = _upgradeDynamicDataMapping.toXML(expandoValuesMap);
+		String xml = _upgradeDynamicDataMapping.toXML(
+			HashMapBuilder.put(
+				"_fieldsDisplay",
+				createLocalizationXML(new String[] {fieldsDisplay})
+			).put(
+				"Text",
+				createLocalizationXML(
+					new String[] {"A", "B", "C"}, new String[] {"D", "E", "F"})
+			).build());
 
 		Document document = SAXReaderUtil.read(xml);
 
@@ -661,18 +656,16 @@ public class UpgradeDynamicDataMappingTest extends PowerMockito {
 		Map<String, List<String>> actualTextData = dataMap.get("Text");
 
 		assertEquals(
-			ListUtil.toList(new String[] {"A", "B", "C"}),
-			actualTextData.get("en_US"));
+			ListUtil.fromArray("A", "B", "C"), actualTextData.get("en_US"));
 
 		assertEquals(
-			ListUtil.toList(new String[] {"D", "E", "F"}),
-			actualTextData.get("pt_BR"));
+			ListUtil.fromArray("D", "E", "F"), actualTextData.get("pt_BR"));
 
 		Map<String, List<String>> actualFieldsDisplayData = dataMap.get(
 			"_fieldsDisplay");
 
 		assertEquals(
-			ListUtil.toList(new String[] {fieldsDisplay}),
+			ListUtil.fromArray(fieldsDisplay),
 			actualFieldsDisplayData.get("en_US"));
 	}
 
@@ -964,18 +957,18 @@ public class UpgradeDynamicDataMappingTest extends PowerMockito {
 	protected void setUpSAXReaderUtil() {
 		SAXReaderUtil saxReaderUtil = new SAXReaderUtil();
 
-		SAXReaderImpl secureSAXReader = new SAXReaderImpl();
+		SAXReaderImpl secureSAXReaderImpl = new SAXReaderImpl();
 
-		secureSAXReader.setSecure(true);
+		secureSAXReaderImpl.setSecure(true);
 
-		saxReaderUtil.setSAXReader(secureSAXReader);
+		saxReaderUtil.setSAXReader(secureSAXReaderImpl);
 
 		UnsecureSAXReaderUtil unsecureSAXReaderUtil =
 			new UnsecureSAXReaderUtil();
 
-		SAXReaderImpl unsecureSAXReader = new SAXReaderImpl();
+		SAXReaderImpl unsecureSAXReaderImpl = new SAXReaderImpl();
 
-		unsecureSAXReaderUtil.setSAXReader(unsecureSAXReader);
+		unsecureSAXReaderUtil.setSAXReader(unsecureSAXReaderImpl);
 	}
 
 	protected void setUpSecureXMLFactoryProviderUtil() {

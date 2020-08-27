@@ -50,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=portlet-suggestions",
 		"com.liferay.portlet.display-category=category.search",
-		"com.liferay.portlet.header-portlet-css=/suggestions/css/main.css",
+		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/search.png",
 		"com.liferay.portlet.instanceable=true",
 		"com.liferay.portlet.layout-cacheable=true",
@@ -65,8 +65,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/suggestions/view.jsp",
 		"javax.portlet.name=" + SuggestionsPortletKeys.SUGGESTIONS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=guest,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -88,6 +87,13 @@ public class SuggestionsPortlet extends MVCPortlet {
 			buildDisplayContext(
 				suggestionsPortletPreferences, portletSharedSearchResponse,
 				renderRequest);
+
+		if (!suggestionsPortletDisplayContext.hasRelatedQueriesSuggestions() &&
+			!suggestionsPortletDisplayContext.hasSpellCheckSuggestion()) {
+
+			renderRequest.setAttribute(
+				WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
+		}
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, suggestionsPortletDisplayContext);

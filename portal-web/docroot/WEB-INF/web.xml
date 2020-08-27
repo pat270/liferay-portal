@@ -122,12 +122,6 @@
 		<async-supported>true</async-supported>
 	</servlet>
 	<servlet>
-		<servlet-name>Axis Servlet</servlet-name>
-		<servlet-class>com.liferay.portal.servlet.AxisServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-		<async-supported>true</async-supported>
-	</servlet>
-	<servlet>
 		<servlet-name>Combo Servlet</servlet-name>
 		<servlet-class>com.liferay.portal.servlet.ComboServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
@@ -226,12 +220,6 @@
 	<servlet>
 		<servlet-name>Portal Delegator Servlet</servlet-name>
 		<servlet-class>com.liferay.portal.kernel.servlet.PortalDelegatorServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-		<async-supported>true</async-supported>
-	</servlet>
-	<servlet>
-		<servlet-name>Remoting Servlet</servlet-name>
-		<servlet-class>com.liferay.portal.spring.servlet.RemotingServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 		<async-supported>true</async-supported>
 	</servlet>
@@ -831,6 +819,18 @@
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>I18n Servlet</servlet-name>
+		<url-pattern>/ta/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>I18n Servlet</servlet-name>
+		<url-pattern>/ta-IN/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>I18n Servlet</servlet-name>
+		<url-pattern>/ta_IN/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>I18n Servlet</servlet-name>
 		<url-pattern>/th/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
@@ -966,20 +966,12 @@
 		<url-pattern>/api/atom/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
-		<servlet-name>Axis Servlet</servlet-name>
-		<url-pattern>/api/axis/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
 		<servlet-name>JSON Servlet</servlet-name>
 		<url-pattern>/api/json/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>JSON Web Service Servlet</servlet-name>
 		<url-pattern>/api/jsonws/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>Remoting Servlet</servlet-name>
-		<url-pattern>/api/spring/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>Tunnel Servlet</servlet-name>
@@ -1202,6 +1194,9 @@
 			<url-pattern>/sv/c/portal/protected</url-pattern>
 			<url-pattern>/sv-SE/c/portal/protected</url-pattern>
 			<url-pattern>/sv_SE/c/portal/protected</url-pattern>
+			<url-pattern>/ta/c/portal/protected</url-pattern>
+			<url-pattern>/ta-IN/c/portal/protected</url-pattern>
+			<url-pattern>/ta_IN/c/portal/protected</url-pattern>
 			<url-pattern>/th/c/portal/protected</url-pattern>
 			<url-pattern>/th-TH/c/portal/protected</url-pattern>
 			<url-pattern>/th_TH/c/portal/protected</url-pattern>

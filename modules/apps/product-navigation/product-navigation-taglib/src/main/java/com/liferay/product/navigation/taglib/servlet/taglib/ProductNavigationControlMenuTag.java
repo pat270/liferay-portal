@@ -14,10 +14,21 @@
 
 package com.liferay.product.navigation.taglib.servlet.taglib;
 
+import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.taglib.util.IncludeTag;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
 
 /**
@@ -48,12 +59,60 @@ public class ProductNavigationControlMenuTag extends IncludeTag {
 	}
 
 	@Override
+	protected void includePage(
+			String page, HttpServletResponse httpServletResponse)
+		throws IOException, ServletException {
+
+		String layoutMode = ParamUtil.getString(
+			getOriginalServletRequest(), "p_l_mode", Constants.VIEW);
+
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return;
+		}
+
+		super.includePage(page, httpServletResponse);
+	}
+
+	@Override
 	protected boolean isCleanUpSetAttributes() {
 		return false;
 	}
 
 	@Override
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
+			"liferay-product-navigation:control-menu:applicationsMenuApp",
+			_isApplicationsMenuApp(httpServletRequest));
+	}
+
+	private boolean _isApplicationsMenuApp(
+		HttpServletRequest httpServletRequest) {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		if (Validator.isNull(themeDisplay.getPpid())) {
+			return false;
+		}
+
+		PanelCategoryHelper panelCategoryHelper = new PanelCategoryHelper(
+			ServletContextUtil.getPanelAppRegistry(),
+			ServletContextUtil.getPanelCategoryRegistry());
+
+		if (!panelCategoryHelper.isApplicationsMenuApp(
+				themeDisplay.getPpid())) {
+
+			return false;
+		}
+
+		Layout layout = themeDisplay.getLayout();
+
+		if ((layout != null) && !layout.isTypeControlPanel()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	private static final String _PAGE = "/control_menu/page.jsp";

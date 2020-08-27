@@ -16,12 +16,9 @@ package com.liferay.oauth2.provider.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchOAuth2ApplicationException extends NoSuchModelException {
 
 	public NoSuchOAuth2ApplicationException() {
@@ -31,12 +28,12 @@ public class NoSuchOAuth2ApplicationException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchOAuth2ApplicationException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchOAuth2ApplicationException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchOAuth2ApplicationException(Throwable cause) {
-		super(cause);
+	public NoSuchOAuth2ApplicationException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing LayoutFriendlyURL in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutFriendlyURLCacheModel
 	implements CacheModel<LayoutFriendlyURL>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LayoutFriendlyURLCacheModel)) {
+		if (!(object instanceof LayoutFriendlyURLCacheModel)) {
 			return false;
 		}
 
 		LayoutFriendlyURLCacheModel layoutFriendlyURLCacheModel =
-			(LayoutFriendlyURLCacheModel)obj;
+			(LayoutFriendlyURLCacheModel)object;
 
 		if ((layoutFriendlyURLId ==
 				layoutFriendlyURLCacheModel.layoutFriendlyURLId) &&
@@ -81,10 +78,12 @@ public class LayoutFriendlyURLCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(29);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", layoutFriendlyURLId=");
@@ -122,6 +121,7 @@ public class LayoutFriendlyURLCacheModel
 			new LayoutFriendlyURLImpl();
 
 		layoutFriendlyURLImpl.setMvccVersion(mvccVersion);
+		layoutFriendlyURLImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			layoutFriendlyURLImpl.setUuid("");
@@ -188,6 +188,8 @@ public class LayoutFriendlyURLCacheModel
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		layoutFriendlyURLId = objectInput.readLong();
@@ -212,6 +214,8 @@ public class LayoutFriendlyURLCacheModel
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		if (uuid == null) {
 			objectOutput.writeUTF("");
@@ -260,6 +264,7 @@ public class LayoutFriendlyURLCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long layoutFriendlyURLId;
 	public long groupId;

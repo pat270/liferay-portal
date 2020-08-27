@@ -21,6 +21,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -30,11 +31,10 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.subscriptions.test.BaseSubscriptionLocalizedContentTestCase;
+import com.liferay.subscription.test.util.BaseSubscriptionLocalizedContentTestCase;
 
 import javax.portlet.PortletPreferences;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -53,14 +53,6 @@ public class JournalSubscriptionLocalizedContentTest
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(), SynchronousMailTestRule.INSTANCE);
 
-	@Before
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-
-		user = UserTestUtil.addOmniAdminUser();
-	}
-
 	@Override
 	protected long addBaseModel(long userId, long containerModelId)
 		throws Exception {
@@ -77,6 +69,11 @@ public class JournalSubscriptionLocalizedContentTest
 
 		JournalFolderLocalServiceUtil.subscribe(
 			user.getUserId(), group.getGroupId(), containerModelId);
+	}
+
+	@Override
+	protected User addUser() throws Exception {
+		return UserTestUtil.addOmniAdminUser();
 	}
 
 	@Override

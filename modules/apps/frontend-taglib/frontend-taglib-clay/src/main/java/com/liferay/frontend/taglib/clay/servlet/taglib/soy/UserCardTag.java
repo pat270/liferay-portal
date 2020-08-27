@@ -42,14 +42,6 @@ public class UserCardTag extends BaseClayCardTag {
 		putValue("imageSrc", imageSrc);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public void setInitials(String initials) {
-		putValue("initials", initials);
-	}
-
 	public void setName(String name) {
 		putValue("name", name);
 	}
@@ -64,8 +56,17 @@ public class UserCardTag extends BaseClayCardTag {
 		super.setBaseClayCard(userCard);
 	}
 
-	public void setUserColor(String userColor) {
-		putValue("userColor", userColor);
+	public void setUserColorClass(String userColorClass) {
+		putValue("userColorClass", userColorClass);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #setUserColorClass(String)}
+	 */
+	@Deprecated
+	public void setUserColorCssClass(String userColorCssClass) {
+		setUserColorClass(userColorCssClass);
 	}
 
 	private void _populateContext() {
@@ -87,8 +88,8 @@ public class UserCardTag extends BaseClayCardTag {
 			setSubtitle(_userCard.getSubtitle());
 		}
 
-		if (context.get("userColor") == null) {
-			setUserColor(_userCard.getUserColor());
+		if (context.get("userColorClass") == null) {
+			setUserColorClass(_userCard.getUserColorClass());
 		}
 	}
 

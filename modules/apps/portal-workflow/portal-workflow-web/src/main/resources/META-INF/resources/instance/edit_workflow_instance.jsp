@@ -34,8 +34,10 @@ portletDisplay.setURLBack(redirect);
 renderResponse.setTitle(workflowInstanceEditDisplayContext.getHeaderTitle());
 %>
 
-<div class="container-fluid-1280">
-	<aui:col cssClass="lfr-asset-column lfr-asset-column-details">
+<clay:container-fluid>
+	<clay:col
+		cssClass="lfr-asset-column lfr-asset-column-details"
+	>
 		<aui:fieldset-group markupView="lexicon">
 			<aui:fieldset>
 
@@ -45,21 +47,25 @@ renderResponse.setTitle(workflowInstanceEditDisplayContext.getHeaderTitle());
 
 				<liferay-util:include page="/instance/workflow_instance_action.jsp" servletContext="<%= application %>" />
 
-				<aui:col width="<%= 60 %>">
+				<clay:col
+					md="7"
+				>
 					<aui:field-wrapper label="state">
 						<aui:fieldset>
 							<%= HtmlUtil.escape(workflowInstanceEditDisplayContext.getWorkflowInstanceState()) %>
 						</aui:fieldset>
 					</aui:field-wrapper>
-				</aui:col>
+				</clay:col>
 
-				<aui:col width="<%= 33 %>">
+				<clay:col
+					md="4"
+				>
 					<aui:field-wrapper label="end-date">
 						<aui:fieldset>
 							<%= workflowInstanceEditDisplayContext.getWorkflowInstanceEndDate() %>
 						</aui:fieldset>
 					</aui:field-wrapper>
-				</aui:col>
+				</clay:col>
 			</aui:fieldset>
 
 			<liferay-ui:panel-container
@@ -118,6 +124,18 @@ renderResponse.setTitle(workflowInstanceEditDisplayContext.getHeaderTitle());
 							assetRenderer="<%= assetRenderer %>"
 							template="<%= AssetRenderer.TEMPLATE_ABSTRACT %>"
 						/>
+
+						<c:if test="<%= assetEntry != null %>">
+							<h4 class="task-content-author">
+								<liferay-ui:message key="author" />
+							</h4>
+
+							<liferay-asset:asset-metadata
+								className="<%= assetEntry.getClassName() %>"
+								classPK="<%= assetEntry.getClassPK() %>"
+								metadataFields="<%= new String[] {"author", "categories", "tags"} %>"
+							/>
+						</c:if>
 					</liferay-ui:panel>
 
 					<liferay-ui:panel
@@ -194,5 +212,5 @@ renderResponse.setTitle(workflowInstanceEditDisplayContext.getHeaderTitle());
 				</liferay-ui:panel>
 			</liferay-ui:panel-container>
 		</aui:fieldset-group>
-	</aui:col>
-</div>
+	</clay:col>
+</clay:container-fluid>

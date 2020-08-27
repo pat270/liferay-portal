@@ -21,8 +21,6 @@ import com.liferay.journal.web.internal.constants.JournalWebConstants;
 import com.liferay.journal.web.internal.servlet.taglib.util.JournalFolderActionDropdownItems;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.model.BaseModel;
-import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.trash.TrashHelper;
@@ -47,28 +45,23 @@ public class JournalFolderHorizontalCard extends BaseHorizontalCard {
 
 		_displayStyle = displayStyle;
 		_renderResponse = renderResponse;
+		_trashHelper = trashHelper;
 
 		_folder = (JournalFolder)baseModel;
-		_trashHelper = trashHelper;
 	}
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		LiferayPortletRequest liferayPortletRequest =
-			PortalUtil.getLiferayPortletRequest(renderRequest);
-
-		LiferayPortletResponse liferayPortletResponse =
-			PortalUtil.getLiferayPortletResponse(_renderResponse);
-
 		JournalFolderActionDropdownItems folderActionDropdownItems =
 			new JournalFolderActionDropdownItems(
-				_folder, liferayPortletRequest, liferayPortletResponse,
+				_folder, PortalUtil.getLiferayPortletRequest(renderRequest),
+				PortalUtil.getLiferayPortletResponse(_renderResponse),
 				_trashHelper);
 
 		try {
 			return folderActionDropdownItems.getActionDropdownItems();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;

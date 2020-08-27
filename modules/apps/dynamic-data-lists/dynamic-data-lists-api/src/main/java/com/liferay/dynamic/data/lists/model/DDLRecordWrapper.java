@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link DDLRecord}.
@@ -35,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDLRecord
  * @generated
  */
-@ProviderType
 public class DDLRecordWrapper
 	extends BaseModelWrapper<DDLRecord>
 	implements DDLRecord, ModelWrapper<DDLRecord> {
@@ -62,6 +59,8 @@ public class DDLRecordWrapper
 		attributes.put("DDMStorageId", getDDMStorageId());
 		attributes.put("recordSetId", getRecordSetId());
 		attributes.put("recordSetVersion", getRecordSetVersion());
+		attributes.put("className", getClassName());
+		attributes.put("classPK", getClassPK());
 		attributes.put("version", getVersion());
 		attributes.put("displayIndex", getDisplayIndex());
 		attributes.put("lastPublishDate", getLastPublishDate());
@@ -155,6 +154,18 @@ public class DDLRecordWrapper
 			setRecordSetVersion(recordSetVersion);
 		}
 
+		String className = (String)attributes.get("className");
+
+		if (className != null) {
+			setClassName(className);
+		}
+
+		Long classPK = (Long)attributes.get("classPK");
+
+		if (classPK != null) {
+			setClassPK(classPK);
+		}
+
 		String version = (String)attributes.get("version");
 
 		if (version != null) {
@@ -172,6 +183,26 @@ public class DDLRecordWrapper
 		if (lastPublishDate != null) {
 			setLastPublishDate(lastPublishDate);
 		}
+	}
+
+	/**
+	 * Returns the class name of this ddl record.
+	 *
+	 * @return the class name of this ddl record
+	 */
+	@Override
+	public String getClassName() {
+		return model.getClassName();
+	}
+
+	/**
+	 * Returns the class pk of this ddl record.
+	 *
+	 * @return the class pk of this ddl record
+	 */
+	@Override
+	public long getClassPK() {
+		return model.getClassPK();
 	}
 
 	/**
@@ -441,6 +472,26 @@ public class DDLRecordWrapper
 	@Override
 	public void persist() {
 		model.persist();
+	}
+
+	/**
+	 * Sets the class name of this ddl record.
+	 *
+	 * @param className the class name of this ddl record
+	 */
+	@Override
+	public void setClassName(String className) {
+		model.setClassName(className);
+	}
+
+	/**
+	 * Sets the class pk of this ddl record.
+	 *
+	 * @param classPK the class pk of this ddl record
+	 */
+	@Override
+	public void setClassPK(long classPK) {
+		model.setClassPK(classPK);
 	}
 
 	/**

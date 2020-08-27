@@ -3,7 +3,7 @@
 The WSDL Builder Gradle plugin lets you generate [Apache Axis](http://axis.apache.org/axis/)
 client stubs from Web Service Description (WSDL) files.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -12,7 +12,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.wsdl.builder", version: "2.0.3"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.wsdl.builder", version: "3.0.1"
 	}
 
 	repositories {
@@ -67,7 +67,7 @@ applied.
 
 ### BuildWSDLTask
 
-Tasks of type `FormatWSDLTask` extend [`SourceTask`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceTask.html),
+Tasks of type `BuildWSDLTask` extend [`SourceTask`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceTask.html),
 so all its properties and methods, such as [`include`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceTask.html#org.gradle.api.tasks.SourceTask:include(java.lang.Iterable))
 and [`exclude`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceTask.html#org.gradle.api.tasks.SourceTask:exclude(java.lang.Iterable)),
 are available.
@@ -121,10 +121,10 @@ following dependencies:
 
 - `axis:axis-wsdl4j:1.5.1`
 - `com.liferay:org.apache.axis:1.4.LIFERAY-PATCHED-1`
+- `com.sun.mail:javax.mail:1.6.2`
 - `commons-discovery:commons-discovery:0.2`
 - `commons-logging:commons-logging:1.0.4`
 - `javax.activation:activation:1.1`
-- `javax.mail:mail:1.4`
 - `org.apache.axis:axis-jaxrpc:1.4`
 - `org.apache.axis:axis-saaj:1.4`
 

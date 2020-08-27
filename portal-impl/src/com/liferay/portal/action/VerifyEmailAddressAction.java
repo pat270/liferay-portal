@@ -35,7 +35,7 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.struts.Action;
-import com.liferay.portal.struts.ActionConstants;
+import com.liferay.portal.struts.constants.ActionConstants;
 import com.liferay.portal.struts.model.ActionForward;
 import com.liferay.portal.struts.model.ActionMapping;
 
@@ -94,15 +94,18 @@ public class VerifyEmailAddressAction implements Action {
 			return actionMapping.getActionForward(
 				ActionConstants.COMMON_REFERER_JSP);
 		}
-		catch (Exception e) {
-			if (e instanceof PortalException || e instanceof SystemException) {
-				SessionErrors.add(httpServletRequest, e.getClass());
+		catch (Exception exception) {
+			if (exception instanceof PortalException ||
+				exception instanceof SystemException) {
+
+				SessionErrors.add(httpServletRequest, exception.getClass());
 
 				return actionMapping.getActionForward(
 					"portal.verify_email_address");
 			}
 
-			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
+			PortalUtil.sendError(
+				exception, httpServletRequest, httpServletResponse);
 
 			return null;
 		}

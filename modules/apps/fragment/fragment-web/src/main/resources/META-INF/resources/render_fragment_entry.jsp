@@ -17,39 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-long fragmentEntryId = ParamUtil.getLong(renderRequest, "fragmentEntryId");
+FragmentRendererController fragmentRendererController = (FragmentRendererController)request.getAttribute(FragmentActionKeys.FRAGMENT_RENDERER_CONTROLLER);
 
-FragmentEntry fragmentEntry = FragmentEntryLocalServiceUtil.fetchFragmentEntry(fragmentEntryId);
-
-String css = BeanParamUtil.getString(fragmentEntry, renderRequest, "css");
-String html = BeanParamUtil.getString(fragmentEntry, renderRequest, "html");
-String js = BeanParamUtil.getString(fragmentEntry, renderRequest, "js");
-
-FragmentEntryLink fragmentEntryLink = FragmentEntryLinkLocalServiceUtil.createFragmentEntryLink(0);
-
-fragmentEntryLink.setCss(css);
-fragmentEntryLink.setHtml(html);
-fragmentEntryLink.setJs(js);
-fragmentEntryLink.setFragmentEntryId(fragmentEntryId);
-
-DefaultFragmentRendererContext defaultFragmentRendererContext = new DefaultFragmentRendererContext(fragmentEntryLink);
-
-defaultFragmentRendererContext.setMode(FragmentEntryLinkConstants.VIEW);
-
-try {
+RenderFragmentEntryDisplayContext renderFragmentEntryDisplayContext = new RenderFragmentEntryDisplayContext(request);
 %>
 
-	<%= fragmentRendererController.render(defaultFragmentRendererContext, request, response) %>
-
-<%
-}
-catch (IOException ioe) {
-%>
-
-	<div class="alert alert-danger">
-		<liferay-ui:message key="<%= ioe.getMessage() %>" />
-	</div>
-
-<%
-}
-%>
+<%= fragmentRendererController.render(renderFragmentEntryDisplayContext.getDefaultFragmentRendererContext(), request, response) %>

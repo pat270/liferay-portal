@@ -14,7 +14,7 @@
 
 package com.liferay.login.web.internal.portlet.action;
 
-import com.liferay.login.web.internal.constants.LoginPortletKeys;
+import com.liferay.login.web.constants.LoginPortletKeys;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -47,7 +47,7 @@ public class ForgotPasswordMVCRenderCommand implements MVCRenderCommand {
 
 		Company company = themeDisplay.getCompany();
 
-		if (!company.isSendPassword() && !company.isSendPasswordResetLink()) {
+		if (!company.isSendPasswordResetLink()) {
 			return "/login.jsp";
 		}
 

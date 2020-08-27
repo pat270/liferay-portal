@@ -36,12 +36,13 @@ String code = BeanParamUtil.getString(calendarResource, request, "code");
 
 <liferay-ui:header
 	backURL="<%= redirect %>"
-	title='<%= (calendarResource == null) ? "new-calendar-resource" : calendarResource.getName(locale) %>'
+	localizeTitle="<%= false %>"
+	title='<%= (calendarResource == null) ? LanguageUtil.get(request, "new-calendar-resource") : calendarResource.getName(locale) %>'
 />
 
 <liferay-portlet:actionURL name="updateCalendarResource" var="updateCalendarResourceURL" />
 
-<aui:form action="<%= updateCalendarResourceURL %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "updateCalendarResource();" %>'>
+<aui:form action="<%= updateCalendarResourceURL %>" cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "updateCalendarResource();" %>'>
 	<aui:input name="mvcPath" type="hidden" value="/edit_calendar_resource.jsp" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="calendarResourceId" type="hidden" value="<%= String.valueOf(calendarResourceId) %>" />
@@ -157,10 +158,15 @@ String code = BeanParamUtil.getString(calendarResource, request, "code");
 
 	<c:choose>
 		<c:when test="<%= CalendarServiceConfigurationValues.CALENDAR_RESOURCE_FORCE_AUTOGENERATE_CODE %>">
-			Liferay.Util.focusFormField(document.<portlet:namespace />fm.<portlet:namespace />name);
+			Liferay.Util.focusFormField(
+				document.<portlet:namespace />fm.<portlet:namespace />name
+			);
 		</c:when>
 		<c:otherwise>
-			Liferay.Util.focusFormField(document.<portlet:namespace />fm.<portlet:namespace /><%= (calendarResource == null) ? "code" : "name" %>);
+			Liferay.Util.focusFormField(
+				document.<portlet:namespace />fm
+					.<portlet:namespace /><%= (calendarResource == null) ? "code" : "name" %>
+			);
 		</c:otherwise>
 	</c:choose>
 </aui:script>

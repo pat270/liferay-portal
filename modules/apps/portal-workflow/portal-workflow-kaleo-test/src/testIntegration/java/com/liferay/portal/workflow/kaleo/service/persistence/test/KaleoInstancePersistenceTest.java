@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -137,6 +139,8 @@ public class KaleoInstancePersistenceTest {
 
 		newKaleoInstance.setModifiedDate(RandomTestUtil.nextDate());
 
+		newKaleoInstance.setKaleoDefinitionId(RandomTestUtil.nextLong());
+
 		newKaleoInstance.setKaleoDefinitionVersionId(RandomTestUtil.nextLong());
 
 		newKaleoInstance.setKaleoDefinitionName(RandomTestUtil.randomString());
@@ -182,6 +186,9 @@ public class KaleoInstancePersistenceTest {
 		Assert.assertEquals(
 			Time.getShortTimestamp(existingKaleoInstance.getModifiedDate()),
 			Time.getShortTimestamp(newKaleoInstance.getModifiedDate()));
+		Assert.assertEquals(
+			existingKaleoInstance.getKaleoDefinitionId(),
+			newKaleoInstance.getKaleoDefinitionId());
 		Assert.assertEquals(
 			existingKaleoInstance.getKaleoDefinitionVersionId(),
 			newKaleoInstance.getKaleoDefinitionVersionId());
@@ -233,6 +240,14 @@ public class KaleoInstancePersistenceTest {
 	}
 
 	@Test
+	public void testCountByKDI_C() throws Exception {
+		_persistence.countByKDI_C(
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByKDI_C(0L, RandomTestUtil.randomBoolean());
+	}
+
+	@Test
 	public void testCountByKDVI_C() throws Exception {
 		_persistence.countByKDVI_C(
 			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
@@ -247,6 +262,15 @@ public class KaleoInstancePersistenceTest {
 		_persistence.countByCN_CPK("null", 0L);
 
 		_persistence.countByCN_CPK((String)null, 0L);
+	}
+
+	@Test
+	public void testCountByKII_C_U() throws Exception {
+		_persistence.countByKII_C_U(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByKII_C_U(0L, 0L, 0L);
 	}
 
 	@Test
@@ -289,8 +313,8 @@ public class KaleoInstancePersistenceTest {
 		return OrderByComparatorFactoryUtil.create(
 			"KaleoInstance", "mvccVersion", true, "kaleoInstanceId", true,
 			"groupId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true,
-			"kaleoDefinitionVersionId", true, "kaleoDefinitionName", true,
+			true, "createDate", true, "modifiedDate", true, "kaleoDefinitionId",
+			true, "kaleoDefinitionVersionId", true, "kaleoDefinitionName", true,
 			"kaleoDefinitionVersion", true, "rootKaleoInstanceTokenId", true,
 			"className", true, "classPK", true, "completed", true,
 			"completionDate", true);
@@ -509,6 +533,74 @@ public class KaleoInstancePersistenceTest {
 		Assert.assertEquals(0, result.size());
 	}
 
+	@Test
+	public void testResetOriginalValues() throws Exception {
+		KaleoInstance newKaleoInstance = addKaleoInstance();
+
+		_persistence.clearCache();
+
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newKaleoInstance.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		KaleoInstance newKaleoInstance = addKaleoInstance();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KaleoInstance.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kaleoInstanceId", newKaleoInstance.getKaleoInstanceId()));
+
+		List<KaleoInstance> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(KaleoInstance kaleoInstance) {
+		Assert.assertEquals(
+			Long.valueOf(kaleoInstance.getKaleoInstanceId()),
+			ReflectionTestUtil.<Long>invoke(
+				kaleoInstance, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "kaleoInstanceId"));
+		Assert.assertEquals(
+			Long.valueOf(kaleoInstance.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				kaleoInstance, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
+		Assert.assertEquals(
+			Long.valueOf(kaleoInstance.getUserId()),
+			ReflectionTestUtil.<Long>invoke(
+				kaleoInstance, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
+	}
+
 	protected KaleoInstance addKaleoInstance() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
@@ -527,6 +619,8 @@ public class KaleoInstancePersistenceTest {
 		kaleoInstance.setCreateDate(RandomTestUtil.nextDate());
 
 		kaleoInstance.setModifiedDate(RandomTestUtil.nextDate());
+
+		kaleoInstance.setKaleoDefinitionId(RandomTestUtil.nextLong());
 
 		kaleoInstance.setKaleoDefinitionVersionId(RandomTestUtil.nextLong());
 

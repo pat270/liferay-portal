@@ -83,7 +83,7 @@ if (displayTerms.getParentOrganizationId() > 0) {
 	<liferay-ui:message key="filter-by-organization" />: <%= HtmlUtil.escape(parentOrganization.getName()) %><br />
 </c:if>
 
-<aui:script use="liferay-address,liferay-dynamic-select">
+<script>
 	new Liferay.DynamicSelect(
 		[
 			{
@@ -103,4 +103,4 @@ if (displayTerms.getParentOrganizationId() > 0) {
 			}
 		]
 	);
-</aui:script>
+</script>

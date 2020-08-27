@@ -22,13 +22,15 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManagerUtil;
-import com.liferay.portal.workflow.task.web.configuration.WorkflowTaskWebConfiguration;
+import com.liferay.portal.workflow.task.web.internal.configuration.WorkflowTaskWebConfiguration;
+import com.liferay.portal.workflow.task.web.internal.display.context.WorkflowTaskDisplayContext;
 import com.liferay.portal.workflow.task.web.internal.permission.WorkflowTaskPermissionChecker;
 
 import java.io.IOException;
@@ -45,17 +47,17 @@ import javax.portlet.RenderResponse;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Leonardo Barros
  */
 @Component(
-	configurationPid = "com.liferay.portal.workflow.task.web.configuration.WorkflowTaskWebConfiguration",
+	configurationPid = "com.liferay.portal.workflow.task.web.internal.configuration.WorkflowTaskWebConfiguration",
 	immediate = true,
 	property = {
 		"com.liferay.portlet.css-class-wrapper=portlet-workflow-tasks",
 		"com.liferay.portlet.display-category=category.hidden",
-		"com.liferay.portlet.footer-portlet-javascript=/js/main.js",
 		"com.liferay.portlet.friendly-url-mapping=my_workflow_tasks",
 		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/my_workflow_task.png",
@@ -70,8 +72,7 @@ import org.osgi.service.component.annotations.Modified;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + PortletKeys.MY_WORKFLOW_TASK,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -98,16 +99,18 @@ public class MyWorkflowTaskPortlet extends MVCPortlet {
 		throws IOException, PortletException {
 
 		try {
+			setWorkflowTaskDisplayContextRenderRequestAttribute(
+				renderRequest, renderResponse);
 			setWorkflowTaskRenderRequestAttribute(renderRequest);
 		}
-		catch (Exception e) {
-			if (isSessionErrorException(e)) {
+		catch (Exception exception) {
+			if (isSessionErrorException(exception)) {
 				hideDefaultErrorMessage(renderRequest);
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 			}
 			else {
-				throw new PortletException(e);
+				throw new PortletException(exception);
 			}
 		}
 
@@ -129,15 +132,8 @@ public class MyWorkflowTaskPortlet extends MVCPortlet {
 			workflowTask.getOptionalAttributes(), "groupId",
 			themeDisplay.getSiteGroupId());
 
-		if (!_workflowTaskPermissionChecker.hasPermission(
-				groupId, workflowTask, themeDisplay.getPermissionChecker())) {
-
-			throw new PrincipalException(
-				String.format(
-					"User %d does not have permission to view task %d",
-					themeDisplay.getUserId(),
-					workflowTask.getWorkflowTaskId()));
-		}
+		_workflowTaskPermissionChecker.check(
+			groupId, workflowTask, themeDisplay.getPermissionChecker());
 	}
 
 	@Override
@@ -160,14 +156,25 @@ public class MyWorkflowTaskPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof PrincipalException ||
-			cause instanceof WorkflowException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof PrincipalException ||
+			throwable instanceof WorkflowException) {
 
 			return true;
 		}
 
 		return false;
+	}
+
+	protected void setWorkflowTaskDisplayContextRenderRequestAttribute(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws PortalException {
+
+		renderRequest.setAttribute(
+			WebKeys.PORTLET_DISPLAY_CONTEXT,
+			new WorkflowTaskDisplayContext(
+				_portal.getLiferayPortletRequest(renderRequest),
+				_portal.getLiferayPortletResponse(renderResponse)));
 	}
 
 	protected void setWorkflowTaskRenderRequestAttribute(
@@ -193,6 +200,9 @@ public class MyWorkflowTaskPortlet extends MVCPortlet {
 			WorkflowTaskWebConfiguration.class.getName(),
 			_workflowTaskWebConfiguration);
 	}
+
+	@Reference
+	private Portal _portal;
 
 	private final WorkflowTaskPermissionChecker _workflowTaskPermissionChecker =
 		new WorkflowTaskPermissionChecker();

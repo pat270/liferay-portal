@@ -40,22 +40,22 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.io.ByteArrayInputStream;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -100,11 +100,10 @@ public class DLFileEntryMetadataLocalServiceTest {
 			ddmFormDeserializerDeserializeResponse =
 				_ddmFormDeserializer.deserialize(builder.build());
 
-		com.liferay.dynamic.data.mapping.model.DDMForm ddmForm =
-			ddmFormDeserializerDeserializeResponse.getDDMForm();
-
 		serviceContext.setAttribute(
-			"ddmForm", DDMBeanTranslatorUtil.translate(ddmForm));
+			"ddmForm",
+			DDMBeanTranslatorUtil.translate(
+				ddmFormDeserializerDeserializeResponse.getDDMForm()));
 
 		User user = TestPropsValues.getUser();
 
@@ -153,7 +152,8 @@ public class DLFileEntryMetadataLocalServiceTest {
 
 			_ddmStructure.setCompanyId(_company.getCompanyId());
 
-			DDMStructureLocalServiceUtil.updateDDMStructure(_ddmStructure);
+			_ddmStructure = DDMStructureLocalServiceUtil.updateDDMStructure(
+				_ddmStructure);
 
 			List<DLFileEntryMetadata> dlFileEntryMetadatas =
 				DLFileEntryMetadataLocalServiceUtil.
@@ -169,7 +169,8 @@ public class DLFileEntryMetadataLocalServiceTest {
 			if (_ddmStructure != null) {
 				_ddmStructure.setCompanyId(_dlFileEntry.getCompanyId());
 
-				DDMStructureLocalServiceUtil.updateDDMStructure(_ddmStructure);
+				_ddmStructure = DDMStructureLocalServiceUtil.updateDDMStructure(
+					_ddmStructure);
 			}
 		}
 	}
@@ -206,39 +207,42 @@ public class DLFileEntryMetadataLocalServiceTest {
 	protected Map<String, DDMFormValues> setUpDDMFormValuesMap(
 		String ddmStructureKey, Locale currentLocale) {
 
-		Set<Locale> availableLocales = DDMFormTestUtil.createAvailableLocales(
-			currentLocale);
+		return HashMapBuilder.<String, DDMFormValues>put(
+			ddmStructureKey,
+			() -> {
+				Set<Locale> availableLocales =
+					DDMFormTestUtil.createAvailableLocales(currentLocale);
 
-		DDMForm ddmForm = new DDMForm();
+				DDMForm ddmForm = new DDMForm();
 
-		ddmForm.setAvailableLocales(availableLocales);
-		ddmForm.setDefaultLocale(currentLocale);
+				ddmForm.setAvailableLocales(availableLocales);
+				ddmForm.setDefaultLocale(currentLocale);
 
-		DDMFormField ddmFormField = new DDMFormField("date_an", "ddm-date");
+				DDMFormField ddmFormField = new DDMFormField(
+					"date_an", "ddm-date");
 
-		ddmFormField.setDataType("date");
+				ddmFormField.setDataType("date");
 
-		ddmForm.addDDMFormField(ddmFormField);
+				ddmForm.addDDMFormField(ddmFormField);
 
-		DDMFormValues ddmFormValues = new DDMFormValues(ddmForm);
+				DDMFormValues ddmFormValues = new DDMFormValues(ddmForm);
 
-		ddmFormValues.setAvailableLocales(availableLocales);
-		ddmFormValues.setDefaultLocale(currentLocale);
+				ddmFormValues.setAvailableLocales(availableLocales);
+				ddmFormValues.setDefaultLocale(currentLocale);
 
-		DDMFormFieldValue ddmFormFieldValue = new DDMFormFieldValue();
+				DDMFormFieldValue ddmFormFieldValue = new DDMFormFieldValue();
 
-		ddmFormFieldValue.setName("date_an");
-		ddmFormFieldValue.setValue(new UnlocalizedValue(""));
+				ddmFormFieldValue.setName("date_an");
+				ddmFormFieldValue.setValue(new UnlocalizedValue(""));
 
-		ddmFormValues.addDDMFormFieldValue(ddmFormFieldValue);
+				ddmFormValues.addDDMFormFieldValue(ddmFormFieldValue);
 
-		Map<String, DDMFormValues> ddmFormValuesMap = new HashMap<>();
-
-		ddmFormValuesMap.put(ddmStructureKey, ddmFormValues);
-
-		return ddmFormValuesMap;
+				return ddmFormValues;
+			}
+		).build();
 	}
 
+	@DeleteAfterTestRun
 	private Company _company;
 
 	@Inject(filter = "ddm.form.deserializer.type=xsd")

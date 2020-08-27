@@ -104,7 +104,7 @@ public class DeleteNodePortletConfigurationIcon
 
 			return portletURL.toString();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return StringPool.BLANK;
@@ -121,18 +121,19 @@ public class DeleteNodePortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		try {
-			WikiNode node = ActionUtil.getNode(portletRequest);
-
 			if (_wikiNodeModelResourcePermission.contains(
-					themeDisplay.getPermissionChecker(), node,
-					ActionKeys.DELETE) &&
-				(_wikiNodeService.getNodesCount(
-					themeDisplay.getScopeGroupId()) > 1)) {
+					themeDisplay.getPermissionChecker(),
+					ActionUtil.getNode(portletRequest), ActionKeys.DELETE)) {
 
-				return true;
+				int count = _wikiNodeService.getNodesCount(
+					themeDisplay.getScopeGroupId());
+
+				if (count > 1) {
+					return true;
+				}
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;
@@ -144,7 +145,7 @@ public class DeleteNodePortletConfigurationIcon
 				return true;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

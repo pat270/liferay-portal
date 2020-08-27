@@ -14,33 +14,33 @@
 
 package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 
-import com.liferay.petra.string.CharPool;
+import com.liferay.headless.common.spi.odata.entity.EntityFieldsMapFactory;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.odata.entity.CollectionEntityField;
+import com.liferay.portal.odata.entity.ComplexEntityField;
 import com.liferay.portal.odata.entity.DateTimeEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.entity.IntegerEntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
 
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Cristina González
  */
 public class BlogPostingEntityModel implements EntityModel {
 
-	public BlogPostingEntityModel() {
-		_entityFieldsMap = Stream.of(
+	public BlogPostingEntityModel(List<EntityField> entityFields) {
+		_entityFieldsMap = EntityFieldsMapFactory.create(
 			new CollectionEntityField(
 				new IntegerEntityField(
 					"taxonomyCategoryIds", locale -> "assetCategoryIds")),
 			new CollectionEntityField(
 				new StringEntityField(
 					"keywords", locale -> "assetTagNames.raw")),
+			new ComplexEntityField("customFields", entityFields),
 			new DateTimeEntityField(
 				"dateCreated",
 				locale -> Field.getSortableFieldName(Field.CREATE_DATE),
@@ -51,22 +51,15 @@ public class BlogPostingEntityModel implements EntityModel {
 				locale -> Field.MODIFIED_DATE),
 			new IntegerEntityField("creatorId", locale -> Field.USER_ID),
 			new StringEntityField(
-				"headline", locale -> Field.getSortableFieldName(Field.TITLE))
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+				"friendlyUrlPath",
+				locale -> Field.getSortableFieldName("urlTitle_String")),
+			new StringEntityField(
+				"headline", locale -> Field.getSortableFieldName(Field.TITLE)));
 	}
 
 	@Override
 	public Map<String, EntityField> getEntityFieldsMap() {
 		return _entityFieldsMap;
-	}
-
-	@Override
-	public String getName() {
-		String name = BlogPostingEntityModel.class.getName();
-
-		return name.replace(CharPool.PERIOD, CharPool.UNDERLINE);
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

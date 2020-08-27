@@ -18,11 +18,11 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.servlet.ServletInputStreamAdapter;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.upload.FileItem;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.upload.LiferayInputStream;
 import com.liferay.portal.upload.LiferayServletRequest;
 import com.liferay.portal.upload.UploadServletRequestImpl;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -60,22 +60,23 @@ public class UploadServletRequestWhenGettingInputStreamTest {
 			PortletContainerTestUtil.getMultipartRequest(
 				_fileNameParameter, _BYTES);
 
-		UploadServletRequestImpl uploadServletRequest =
+		UploadServletRequestImpl uploadServletRequestImpl =
 			new UploadServletRequestImpl(
 				(HttpServletRequest)liferayServletRequest.getRequest());
 
-		ServletInputStream inputStream = uploadServletRequest.getInputStream();
+		ServletInputStream servletInputStream =
+			uploadServletRequestImpl.getInputStream();
 
-		Assert.assertFalse(inputStream instanceof LiferayInputStream);
+		Assert.assertFalse(servletInputStream instanceof LiferayInputStream);
 
-		uploadServletRequest = new UploadServletRequestImpl(
+		uploadServletRequestImpl = new UploadServletRequestImpl(
 			(HttpServletRequest)liferayServletRequest.getRequest(),
 			new HashMap<String, FileItem[]>(),
 			new HashMap<String, List<String>>());
 
-		inputStream = uploadServletRequest.getInputStream();
+		servletInputStream = uploadServletRequestImpl.getInputStream();
 
-		Assert.assertFalse(inputStream instanceof LiferayInputStream);
+		Assert.assertFalse(servletInputStream instanceof LiferayInputStream);
 	}
 
 	@Test
@@ -84,13 +85,15 @@ public class UploadServletRequestWhenGettingInputStreamTest {
 			PortletContainerTestUtil.getMultipartRequest(
 				_fileNameParameter, _BYTES);
 
-		UploadServletRequestImpl uploadServletRequest =
+		UploadServletRequestImpl uploadServletRequestImpl =
 			new UploadServletRequestImpl(
 				(HttpServletRequest)liferayServletRequest.getRequest());
 
-		ServletInputStream inputStream = uploadServletRequest.getInputStream();
+		ServletInputStream servletInputStream =
+			uploadServletRequestImpl.getInputStream();
 
-		Assert.assertTrue(inputStream instanceof ServletInputStreamAdapter);
+		Assert.assertTrue(
+			servletInputStream instanceof ServletInputStreamAdapter);
 	}
 
 	private static final byte[] _BYTES =

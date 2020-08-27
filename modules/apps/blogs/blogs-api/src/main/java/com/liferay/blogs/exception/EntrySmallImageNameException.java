@@ -16,12 +16,9 @@ package com.liferay.blogs.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class EntrySmallImageNameException extends PortalException {
 
 	public EntrySmallImageNameException() {
@@ -31,12 +28,12 @@ public class EntrySmallImageNameException extends PortalException {
 		super(msg);
 	}
 
-	public EntrySmallImageNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public EntrySmallImageNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public EntrySmallImageNameException(Throwable cause) {
-		super(cause);
+	public EntrySmallImageNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

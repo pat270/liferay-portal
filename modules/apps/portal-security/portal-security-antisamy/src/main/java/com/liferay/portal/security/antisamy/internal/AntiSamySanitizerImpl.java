@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,8 +49,9 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 		try (InputStream inputstream = url.openStream()) {
 			_policy = Policy.getInstance(inputstream);
 		}
-		catch (Exception e) {
-			throw new IllegalStateException("Unable to initialize policy", e);
+		catch (Exception exception) {
+			throw new IllegalStateException(
+				"Unable to initialize policy", exception);
 		}
 
 		if (blacklist != null) {
@@ -75,6 +77,22 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 				}
 			}
 		}
+	}
+
+	public void addPolicy(String className, URL url) {
+		try (InputStream inputstream = url.openStream()) {
+			Policy policy = Policy.getInstance(inputstream);
+
+			_policies.put(className, policy);
+		}
+		catch (Exception exception) {
+			throw new IllegalStateException(
+				"Unable to initialize policy", exception);
+		}
+	}
+
+	public void removePolicy(String className) {
+		_policies.remove(className);
 	}
 
 	@Override
@@ -103,18 +121,39 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 			return content;
 		}
 
+		AntiSamy antiSamy = new AntiSamy();
+
 		try {
-			AntiSamy antiSamy = new AntiSamy();
+			if (isConfigured(className, classPK)) {
+				Policy policy = _policies.get(className);
+
+				CleanResults cleanResults = antiSamy.scan(
+					content, policy, AntiSamy.SAX);
+
+				return cleanResults.getCleanHTML();
+			}
 
 			CleanResults cleanResults = antiSamy.scan(content, _policy);
 
 			return cleanResults.getCleanHTML();
 		}
-		catch (Exception e) {
-			_log.error("Unable to sanitize input", e);
+		catch (Exception exception) {
+			_log.error("Unable to sanitize input", exception);
 
-			throw new SanitizerException(e);
+			throw new SanitizerException(exception);
 		}
+	}
+
+	protected boolean isConfigured(String className, long classPK) {
+		String classNameAndClassPK = className + StringPool.POUND + classPK;
+
+		for (String policyClassName : _policies.keySet()) {
+			if (classNameAndClassPK.startsWith(policyClassName)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected boolean isWhitelisted(String className, long classPK) {
@@ -157,6 +196,7 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 		AntiSamySanitizerImpl.class);
 
 	private final List<String> _blacklist = new ArrayList<>();
+	private Map<String, Policy> _policies = new HashMap<>();
 	private final Policy _policy;
 	private final List<String> _whitelist = new ArrayList<>();
 

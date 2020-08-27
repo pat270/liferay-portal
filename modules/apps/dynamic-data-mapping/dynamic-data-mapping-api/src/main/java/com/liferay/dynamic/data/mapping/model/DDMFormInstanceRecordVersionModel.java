@@ -16,8 +16,10 @@ package com.liferay.dynamic.data.mapping.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -36,7 +38,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface DDMFormInstanceRecordVersionModel
-	extends BaseModel<DDMFormInstanceRecordVersion>, ShardedModel,
+	extends BaseModel<DDMFormInstanceRecordVersion>,
+			CTModel<DDMFormInstanceRecordVersion>, MVCCModel, ShardedModel,
 			WorkflowedModel {
 
 	/*
@@ -50,6 +53,7 @@ public interface DDMFormInstanceRecordVersionModel
 	 *
 	 * @return the primary key of this ddm form instance record version
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -57,7 +61,40 @@ public interface DDMFormInstanceRecordVersionModel
 	 *
 	 * @param primaryKey the primary key of this ddm form instance record version
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this ddm form instance record version.
+	 *
+	 * @return the mvcc version of this ddm form instance record version
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this ddm form instance record version.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm form instance record version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this ddm form instance record version.
+	 *
+	 * @return the ct collection ID of this ddm form instance record version
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this ddm form instance record version.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm form instance record version
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the form instance record version ID of this ddm form instance record version.
@@ -220,6 +257,20 @@ public interface DDMFormInstanceRecordVersionModel
 	public void setVersion(String version);
 
 	/**
+	 * Returns the storage ID of this ddm form instance record version.
+	 *
+	 * @return the storage ID of this ddm form instance record version
+	 */
+	public long getStorageId();
+
+	/**
+	 * Sets the storage ID of this ddm form instance record version.
+	 *
+	 * @param storageId the storage ID of this ddm form instance record version
+	 */
+	public void setStorageId(long storageId);
+
+	/**
 	 * Returns the status of this ddm form instance record version.
 	 *
 	 * @return the status of this ddm form instance record version
@@ -299,20 +350,6 @@ public interface DDMFormInstanceRecordVersionModel
 	 */
 	@Override
 	public void setStatusDate(Date statusDate);
-
-	/**
-	 * Returns the storage ID of this ddm form instance record version.
-	 *
-	 * @return the storage ID of this ddm form instance record version
-	 */
-	public long getStorageId();
-
-	/**
-	 * Sets the storage ID of this ddm form instance record version.
-	 *
-	 * @param storageId the storage ID of this ddm form instance record version
-	 */
-	public void setStorageId(long storageId);
 
 	/**
 	 * Returns <code>true</code> if this ddm form instance record version is approved.

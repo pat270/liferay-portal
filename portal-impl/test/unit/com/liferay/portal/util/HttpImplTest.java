@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.randomizerbumpers.NumericStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.URLCodec;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.util.URLCodec;
 import java.lang.reflect.Method;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -112,19 +112,33 @@ public class HttpImplTest {
 	}
 
 	@Test
-	public void testDecodeMultipleCharacterEncodedPath() {
+	public void testDecodePathControlPanel() {
+		Assert.assertEquals(
+			"/group/guest/~/control_panel/manage",
+			_httpImpl.decodePath("/group/guest/~/control_panel/manage"));
+	}
+
+	@Test
+	public void testDecodePathMultipleCharacterEncoded() {
 		Assert.assertEquals(
 			"http://foo?p=$param",
 			_httpImpl.decodePath("http://foo%3Fp%3D%24param"));
 	}
 
 	@Test
-	public void testDecodeNoCharacterEncodedPath() {
+	public void testDecodePathNoAscii() {
+		Assert.assertEquals(
+			"/web/guest/página1",
+			_httpImpl.decodePath("/web/guest/p%C3%83%C2%A1gina1"));
+	}
+
+	@Test
+	public void testDecodePathNoCharacterEncoded() {
 		Assert.assertEquals("http://foo", _httpImpl.decodePath("http://foo"));
 	}
 
 	@Test
-	public void testDecodeSingleCharacterEncodedPath() {
+	public void testDecodePathSingleCharacterEncoded() {
 		Assert.assertEquals(
 			"http://foo#anchor", _httpImpl.decodePath("http://foo%23anchor"));
 	}
@@ -149,19 +163,33 @@ public class HttpImplTest {
 	}
 
 	@Test
-	public void testEncodeMultipleCharacterEncodedPath() {
+	public void testEncodePathControlPanel() {
+		Assert.assertEquals(
+			"/group/guest/~/control_panel/manage",
+			_httpImpl.encodePath("/group/guest/~/control_panel/manage"));
+	}
+
+	@Test
+	public void testEncodePathMultipleCharacterEncoded() {
 		Assert.assertEquals(
 			"http%3A//foo%3Fp%3D%24param",
 			_httpImpl.encodePath("http://foo?p=$param"));
 	}
 
 	@Test
-	public void testEncodeNoCharacterEncodedPath() {
+	public void testEncodePathNoAscii() {
+		Assert.assertEquals(
+			"/web/guest/p%C3%83%C2%A1gina1",
+			_httpImpl.encodePath("/web/guest/página1"));
+	}
+
+	@Test
+	public void testEncodePathNoCharacterEncoded() {
 		Assert.assertEquals("http%3A//foo", _httpImpl.encodePath("http://foo"));
 	}
 
 	@Test
-	public void testEncodeSingleCharacterEncodedPath() {
+	public void testEncodePathSingleCharacterEncoded() {
 		Assert.assertEquals(
 			"http%3A//foo%23anchor", _httpImpl.encodePath("http://foo#anchor"));
 	}
@@ -177,13 +205,11 @@ public class HttpImplTest {
 	@Test
 	public void testGetDomainWithRelativeURLs() {
 		Assert.assertEquals("", _httpImpl.getDomain("/a/b?key1=value1#anchor"));
+		Assert.assertEquals("", _httpImpl.getDomain("foo.com"));
 	}
 
 	@Test
 	public void testGetDomainWithValidURLs() {
-		Assert.assertEquals("foo.com", _httpImpl.getDomain("foo.com"));
-		Assert.assertEquals("foo.com", _httpImpl.getDomain(" foo.com"));
-		Assert.assertEquals("foo.com", _httpImpl.getDomain("foo.com "));
 		Assert.assertEquals("foo.com", _httpImpl.getDomain("https://foo.com"));
 		Assert.assertEquals(
 			"www.foo.com", _httpImpl.getDomain("https://www.foo.com"));
@@ -258,6 +284,15 @@ public class HttpImplTest {
 	}
 
 	@Test
+	public void testGetQueryString() {
+		String queryString = "doAsUserId=tUaJhZHZbDYaV0WQmKNRig%3D%3D&foo=bar";
+
+		Assert.assertEquals(
+			queryString,
+			_httpImpl.getQueryString("http://localhost:8080/?" + queryString));
+	}
+
+	@Test
 	public void testNormalizePath() {
 		Assert.assertEquals("/api/axis", _httpImpl.normalizePath("/api/axis?"));
 		Assert.assertEquals("/", _httpImpl.normalizePath("/.."));
@@ -297,10 +332,11 @@ public class HttpImplTest {
 
 	@Test
 	public void testParameterMapFromString() {
-		Map<String, String[]> expectedParameterMap = new HashMap<>();
-
-		expectedParameterMap.put("key1", new String[] {"value1", "value2"});
-		expectedParameterMap.put("key2", new String[] {"value3"});
+		Map<String, String[]> expectedParameterMap = HashMapBuilder.put(
+			"key1", new String[] {"value1", "value2"}
+		).put(
+			"key2", new String[] {"value3"}
+		).build();
 
 		StringBundler sb = new StringBundler(12);
 
@@ -392,8 +428,10 @@ public class HttpImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
-			Assert.assertEquals("Unable to handle URI: ;x=y", iae.getMessage());
+		catch (IllegalArgumentException illegalArgumentException) {
+			Assert.assertEquals(
+				"Unable to handle URI: ;x=y",
+				illegalArgumentException.getMessage());
 		}
 	}
 
@@ -435,7 +473,7 @@ public class HttpImplTest {
 		Assert.assertEquals(
 			"a:b@foo.com", _httpImpl.removeProtocol(" http://a:b@foo.com"));
 		Assert.assertEquals(
-			"a:b@foo.com", _httpImpl.removeProtocol("a:b@foo.com"));
+			"b@foo.com", _httpImpl.removeProtocol("a:b@foo.com"));
 		Assert.assertEquals(
 			":@foo.com", _httpImpl.removeProtocol("http://:@foo.com"));
 		Assert.assertEquals(":@foo.com", _httpImpl.removeProtocol(":@foo.com"));
@@ -517,30 +555,31 @@ public class HttpImplTest {
 		// Remove redirect three deep
 
 		String encodedURL2 = URLCodec.encodeURL(
+			"www.liferay.com?key1=value1&redirect=" +
+				URLCodec.encodeURL("www.liferay.com?key1=value1"));
+
+		String encodedURL3 = URLCodec.encodeURL(
 			"www.liferay.com?key1=value1&redirect=" + encodedURL);
 
 		Assert.assertEquals(
-			"www.liferay.com?key1=value1&redirect=" +
-				URLCodec.encodeURL(
-					"www.liferay.com?key1=value1&redirect=" +
-						URLCodec.encodeURL("www.liferay.com?key1=value1")),
+			"www.liferay.com?key1=value1&redirect=" + encodedURL2,
 			_httpImpl.shortenURL(
-				"www.liferay.com?redirect=" + encodedURL2 + "&key1=value1"));
+				"www.liferay.com?redirect=" + encodedURL3 + "&key1=value1"));
 
 		// Remove redirect three deep and keep _returnToFullPageURL two deep
 
-		String encodedURL3 = URLCodec.encodeURL(
+		String encodedURL4 = URLCodec.encodeURL(
+			"www.liferay.com?key1=value1&_returnToFullPageURL=test&redirect=" +
+				URLCodec.encodeURL("www.liferay.com?key1=value1"));
+
+		String encodedURL5 = URLCodec.encodeURL(
 			"www.liferay.com?_returnToFullPageURL=test&key1=value1&redirect=" +
 				encodedURL);
 
 		Assert.assertEquals(
-			"www.liferay.com?key1=value1&redirect=" +
-				URLCodec.encodeURL(
-					"www.liferay.com?key1=value1&_returnToFullPageURL=test" +
-						"&redirect=" +
-							URLCodec.encodeURL("www.liferay.com?key1=value1")),
+			"www.liferay.com?key1=value1&redirect=" + encodedURL4,
 			_httpImpl.shortenURL(
-				"www.liferay.com?redirect=" + encodedURL3 + "&key1=value1"));
+				"www.liferay.com?redirect=" + encodedURL5 + "&key1=value1"));
 	}
 
 	protected void testDecodeURLWithInvalidURLEncoding(String url) {

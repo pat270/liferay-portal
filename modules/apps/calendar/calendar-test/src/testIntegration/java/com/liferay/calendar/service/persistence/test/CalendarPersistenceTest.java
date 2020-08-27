@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,8 @@ public class CalendarPersistenceTest {
 
 		Calendar newCalendar = _persistence.create(pk);
 
+		newCalendar.setMvccVersion(RandomTestUtil.nextLong());
+
 		newCalendar.setUuid(RandomTestUtil.randomString());
 
 		newCalendar.setGroupId(RandomTestUtil.nextLong());
@@ -161,6 +163,8 @@ public class CalendarPersistenceTest {
 		Calendar existingCalendar = _persistence.findByPrimaryKey(
 			newCalendar.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingCalendar.getMvccVersion(), newCalendar.getMvccVersion());
 		Assert.assertEquals(existingCalendar.getUuid(), newCalendar.getUuid());
 		Assert.assertEquals(
 			existingCalendar.getCalendarId(), newCalendar.getCalendarId());
@@ -270,12 +274,13 @@ public class CalendarPersistenceTest {
 
 	protected OrderByComparator<Calendar> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"Calendar", "uuid", true, "calendarId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "calendarResourceId", true, "name",
-			true, "description", true, "timeZoneId", true, "color", true,
-			"defaultCalendar", true, "enableComments", true, "enableRatings",
-			true, "lastPublishDate", true);
+			"Calendar", "mvccVersion", true, "uuid", true, "calendarId", true,
+			"groupId", true, "companyId", true, "userId", true, "userName",
+			true, "createDate", true, "modifiedDate", true,
+			"calendarResourceId", true, "name", true, "description", true,
+			"timeZoneId", true, "color", true, "defaultCalendar", true,
+			"enableComments", true, "enableRatings", true, "lastPublishDate",
+			true);
 	}
 
 	@Test
@@ -491,24 +496,68 @@ public class CalendarPersistenceTest {
 
 		_persistence.clearCache();
 
-		Calendar existingCalendar = _persistence.findByPrimaryKey(
-			newCalendar.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newCalendar.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingCalendar.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingCalendar, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		Calendar newCalendar = addCalendar();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Calendar.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"calendarId", newCalendar.getCalendarId()));
+
+		List<Calendar> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(Calendar calendar) {
 		Assert.assertEquals(
-			Long.valueOf(existingCalendar.getGroupId()),
+			calendar.getUuid(),
+			ReflectionTestUtil.invoke(
+				calendar, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(calendar.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingCalendar, "getOriginalGroupId", new Class<?>[0]));
+				calendar, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected Calendar addCalendar() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		Calendar calendar = _persistence.create(pk);
+
+		calendar.setMvccVersion(RandomTestUtil.nextLong());
 
 		calendar.setUuid(RandomTestUtil.randomString());
 

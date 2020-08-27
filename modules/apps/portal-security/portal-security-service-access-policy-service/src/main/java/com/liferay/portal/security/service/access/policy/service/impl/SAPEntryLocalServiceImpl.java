@@ -16,41 +16,48 @@ package com.liferay.portal.security.service.access.policy.service.impl;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.aop.AopService;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.settings.CompanyServiceSettingsLocator;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.service.access.policy.configuration.SAPConfiguration;
-import com.liferay.portal.security.service.access.policy.constants.SAPConstants;
+import com.liferay.portal.security.service.access.policy.constants.SAPEntryConstants;
 import com.liferay.portal.security.service.access.policy.exception.DuplicateSAPEntryNameException;
 import com.liferay.portal.security.service.access.policy.exception.RequiredSAPEntryException;
 import com.liferay.portal.security.service.access.policy.exception.SAPEntryNameException;
 import com.liferay.portal.security.service.access.policy.exception.SAPEntryTitleException;
 import com.liferay.portal.security.service.access.policy.model.SAPEntry;
-import com.liferay.portal.security.service.access.policy.model.SAPEntryConstants;
 import com.liferay.portal.security.service.access.policy.service.base.SAPEntryLocalServiceBaseImpl;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	configurationPid = "com.liferay.portal.security.service.access.policy.configuration.SAPConfiguration",
+	property = "model.class.name=com.liferay.portal.security.service.access.policy.model.SAPEntry",
+	service = AopService.class
+)
 public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 
 	@Override
@@ -65,6 +72,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		User user = userLocalService.getUser(userId);
 		allowedServiceSignatures = normalizeServiceSignatures(
 			allowedServiceSignatures);
+
 		name = StringUtil.trim(name);
 
 		validate(name, titleMap);
@@ -87,7 +95,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		sapEntry.setName(name);
 		sapEntry.setTitleMap(titleMap);
 
-		sapEntryPersistence.update(sapEntry, serviceContext);
+		sapEntry = sapEntryPersistence.update(sapEntry, serviceContext);
 
 		// Resources
 
@@ -100,16 +108,10 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 
 	@Override
 	public void checkSystemSAPEntries(long companyId) throws PortalException {
-		SAPConfiguration sapConfiguration =
-			configurationProvider.getConfiguration(
-				SAPConfiguration.class,
-				new CompanyServiceSettingsLocator(
-					companyId, SAPConstants.SERVICE_NAME));
-
 		SAPEntry systemDefaultSAPEntry = sapEntryPersistence.fetchByC_N(
-			companyId, sapConfiguration.systemDefaultSAPEntryName());
+			companyId, _sapConfiguration.systemDefaultSAPEntryName());
 		SAPEntry systemUserPasswordSAPEntry = sapEntryPersistence.fetchByC_N(
-			companyId, sapConfiguration.systemUserPasswordSAPEntryName());
+			companyId, _sapConfiguration.systemUserPasswordSAPEntryName());
 
 		if ((systemDefaultSAPEntry != null) &&
 			(systemUserPasswordSAPEntry != null)) {
@@ -122,17 +124,16 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 			companyId, RoleConstants.GUEST);
 
 		if (systemDefaultSAPEntry == null) {
-			Map<Locale, String> titleMap = new HashMap<>();
-
-			titleMap.put(
+			Map<Locale, String> titleMap = HashMapBuilder.put(
 				LocaleUtil.getDefault(),
-				sapConfiguration.systemDefaultSAPEntryDescription());
+				_sapConfiguration.systemDefaultSAPEntryDescription()
+			).build();
 
 			systemDefaultSAPEntry = addSAPEntry(
 				defaultUserId,
-				sapConfiguration.systemDefaultSAPEntryServiceSignatures(), true,
-				true, sapConfiguration.systemDefaultSAPEntryName(), titleMap,
-				new ServiceContext());
+				_sapConfiguration.systemDefaultSAPEntryServiceSignatures(),
+				true, true, _sapConfiguration.systemDefaultSAPEntryName(),
+				titleMap, new ServiceContext());
 
 			resourcePermissionLocalService.setResourcePermissions(
 				systemDefaultSAPEntry.getCompanyId(), SAPEntry.class.getName(),
@@ -142,16 +143,15 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		}
 
 		if (systemUserPasswordSAPEntry == null) {
-			Map<Locale, String> titleMap = new HashMap<>();
-
-			titleMap.put(
+			Map<Locale, String> titleMap = HashMapBuilder.put(
 				LocaleUtil.getDefault(),
-				sapConfiguration.systemUserPasswordSAPEntryDescription());
+				_sapConfiguration.systemUserPasswordSAPEntryDescription()
+			).build();
 
 			systemUserPasswordSAPEntry = addSAPEntry(
 				defaultUserId,
-				sapConfiguration.systemUserPasswordSAPEntryServiceSignatures(),
-				false, true, sapConfiguration.systemUserPasswordSAPEntryName(),
+				_sapConfiguration.systemUserPasswordSAPEntryServiceSignatures(),
+				false, true, _sapConfiguration.systemUserPasswordSAPEntryName(),
 				titleMap, new ServiceContext());
 
 			resourcePermissionLocalService.setResourcePermissions(
@@ -185,9 +185,7 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 	}
 
 	@Override
-	public SAPEntry fetchSAPEntry(long companyId, String name)
-		throws PortalException {
-
+	public SAPEntry fetchSAPEntry(long companyId, String name) {
 		return sapEntryPersistence.fetchByC_N(companyId, name);
 	}
 
@@ -200,9 +198,11 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 
 	@Override
 	public List<SAPEntry> getCompanySAPEntries(
-		long companyId, int start, int end, OrderByComparator<SAPEntry> obc) {
+		long companyId, int start, int end,
+		OrderByComparator<SAPEntry> orderByComparator) {
 
-		return sapEntryPersistence.findByCompanyId(companyId, start, end, obc);
+		return sapEntryPersistence.findByCompanyId(
+			companyId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -260,9 +260,14 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		sapEntry.setName(name);
 		sapEntry.setTitleMap(titleMap);
 
-		sapEntry = sapEntryPersistence.update(sapEntry, serviceContext);
+		return sapEntryPersistence.update(sapEntry, serviceContext);
+	}
 
-		return sapEntry;
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_sapConfiguration = ConfigurableUtil.createConfigurable(
+			SAPConfiguration.class, properties);
 	}
 
 	protected String normalizeServiceSignatures(String serviceSignatures) {
@@ -346,7 +351,6 @@ public class SAPEntryLocalServiceImpl extends SAPEntryLocalServiceBaseImpl {
 		}
 	}
 
-	@ServiceReference(type = ConfigurationProvider.class)
-	protected ConfigurationProvider configurationProvider;
+	private volatile SAPConfiguration _sapConfiguration;
 
 }

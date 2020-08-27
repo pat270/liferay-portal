@@ -131,13 +131,12 @@ if (portletTitleBasedNavigation) {
 	<portlet:param name="mvcRenderCommandName" value="/wiki/edit_page" />
 </portlet:renderURL>
 
-<div <%= portletTitleBasedNavigation ? "class=\"container-fluid-1280\"" : StringPool.BLANK %> id='<%= renderResponse.getNamespace() + "wikiEditPageContainer" %>'>
+<div <%= portletTitleBasedNavigation ? "class=\"container-fluid-1280\"" : StringPool.BLANK %> id='<%= liferayPortletResponse.getNamespace() + "wikiEditPageContainer" %>'>
 	<aui:form action="<%= editPageActionURL %>" method="post" name="fm">
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="editTitle" type="hidden" value="<%= editTitle %>" />
 		<aui:input name="nodeId" type="hidden" value="<%= nodeId %>" />
-		<aui:input name="title" type="hidden" value="<%= title %>" />
 		<aui:input name="parentTitle" type="hidden" value="<%= parentTitle %>" />
 		<aui:input name="workflowAction" type="hidden" value="<%= WorkflowConstants.ACTION_SAVE_DRAFT %>" />
 
@@ -199,16 +198,16 @@ if (portletTitleBasedNavigation) {
 
 						<c:choose>
 							<c:when test="<%= editTitle %>">
-								<aui:field-wrapper required="<%= true %>">
-									<div class="entry-title">
-										<h1><liferay-ui:input-editor contents="<%= HtmlUtil.escape(title) %>" editorName="alloyeditor" name="titleEditor" placeholder="title" showSource="<%= false %>" /></h1>
-									</div>
-								</aui:field-wrapper>
+								<div class="entry-title">
+									<aui:input label='<%= LanguageUtil.get(request, "title") %>' name="title" type="text" value="<%= HtmlUtil.escape(title) %>" />
+								</div>
 							</c:when>
 							<c:otherwise>
 								<div class="entry-title">
 									<h1><%= HtmlUtil.escape(title) %></h1>
 								</div>
+
+								<aui:input name="title" type="hidden" value="<%= title %>" />
 							</c:otherwise>
 						</c:choose>
 
@@ -398,19 +397,18 @@ if (portletTitleBasedNavigation) {
 </div>
 
 <aui:script require='<%= npmResolvedPackageName + "/wiki/js/WikiPortlet.es as WikiPortletJs" %>'>
-	new WikiPortletJs.default(
-		{
-			constants: {
-				'ACTION_PUBLISH': '<%= WorkflowConstants.ACTION_PUBLISH %>',
-				'ACTION_SAVE_DRAFT': '<%= WorkflowConstants.ACTION_SAVE_DRAFT %>',
-				'CMD': '<%= Constants.CMD %>'
-			},
-			currentAction: '<%= ((wikiPage == null) || wikiPage.isNew()) ? Constants.ADD : Constants.UPDATE %>',
-			namespace: '<portlet:namespace />',
-			renderUrl: '<%= editPageRenderURL %>',
-			rootNode: '#<portlet:namespace />wikiEditPageContainer'
-		}
-	);
+	new WikiPortletJs.default({
+		constants: {
+			ACTION_PUBLISH: '<%= WorkflowConstants.ACTION_PUBLISH %>',
+			ACTION_SAVE_DRAFT: '<%= WorkflowConstants.ACTION_SAVE_DRAFT %>',
+			CMD: '<%= Constants.CMD %>',
+		},
+		currentAction:
+			'<%= ((wikiPage == null) || wikiPage.isNew()) ? Constants.ADD : Constants.UPDATE %>',
+		namespace: '<portlet:namespace />',
+		renderUrl: '<%= editPageRenderURL %>',
+		rootNode: '#<portlet:namespace />wikiEditPageContainer',
+	});
 </aui:script>
 
 <%

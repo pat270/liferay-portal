@@ -52,14 +52,14 @@ public class FormRecordUtil {
 			{
 				creator = CreatorUtil.toCreator(
 					portal,
-					userLocalService.getUser(
+					userLocalService.fetchUser(
 						ddmFormInstanceRecord.getUserId()));
-				draft =
-					ddmFormInstanceRecord.getStatus() ==
-						WorkflowConstants.STATUS_DRAFT;
 				dateCreated = ddmFormInstanceRecord.getCreateDate();
 				dateModified = ddmFormInstanceRecord.getModifiedDate();
 				datePublished = ddmFormInstanceRecord.getLastPublishDate();
+				draft =
+					ddmFormInstanceRecord.getStatus() ==
+						WorkflowConstants.STATUS_DRAFT;
 				formFieldValues = TransformUtil.transformToArray(
 					ddmFormValues.getDDMFormFieldValues(),
 					ddmFormFieldValue -> {
@@ -102,9 +102,9 @@ public class FormRecordUtil {
 				fileEntry = dlAppService.getFileEntry(fileEntryId);
 			}
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(jsone, jsone);
+				_log.warn(jsonException, jsonException);
 			}
 		}
 

@@ -49,11 +49,11 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 			PortletURL previousKBArticleURL = kbArticleURLHelper.createViewURL(previousKBArticle);
 			%>
 
-			<aui:a cssClass="hidden-xs" href="<%= previousKBArticleURL.toString() %>">
+			<aui:a cssClass="d-none d-sm-block" href="<%= previousKBArticleURL.toString() %>">
 				<i class="icon icon-circle-arrow-left"></i> <span class="title"><%= HtmlUtil.escape(previousKBArticle.getTitle()) %></span>
 			</aui:a>
 
-			<aui:a cssClass="visible-xs" href="<%= previousKBArticleURL.toString() %>">
+			<aui:a cssClass="d-block d-sm-none" href="<%= previousKBArticleURL.toString() %>">
 				<i class="icon icon-circle-arrow-left"></i> <span class="title"><liferay-ui:message key="previous" /></span>
 			</aui:a>
 		</c:if>
@@ -65,11 +65,11 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 			PortletURL nextKBArticleURL = kbArticleURLHelper.createViewURL(nextKBArticle);
 			%>
 
-			<aui:a cssClass="hidden-xs next" href="<%= nextKBArticleURL.toString() %>">
+			<aui:a cssClass="d-none d-sm-block next" href="<%= nextKBArticleURL.toString() %>">
 				<span class="title"><%= HtmlUtil.escape(nextKBArticle.getTitle()) %></span> <i class="icon icon-circle-arrow-right"></i>
 			</aui:a>
 
-			<aui:a cssClass="next visible-xs" href="<%= nextKBArticleURL.toString() %>">
+			<aui:a cssClass="d-block d-sm-none next" href="<%= nextKBArticleURL.toString() %>">
 				<span class="title"><liferay-ui:message key="next" /></span> <i class="icon icon-circle-arrow-right"></i>
 			</aui:a>
 		</c:if>

@@ -22,45 +22,6 @@
 
 <link href="<%= BrowserSnifferUtil.isIe(request) ? StringPool.BLANK : themeDisplay.getPathThemeImages() %>/<%= PropsValues.THEME_SHORTCUT_ICON %>" rel="icon" />
 
-<%-- Available Translations --%>
-
-<%
-if (!themeDisplay.isSignedIn() && layout.isPublicLayout()) {
-	String completeURL = PortalUtil.getCurrentCompleteURL(request);
-
-	String canonicalURL = PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout, false, false);
-%>
-
-	<link data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(canonicalURL) %>" rel="canonical" />
-
-	<%
-	Set<Locale> availableLocales = LanguageUtil.getAvailableLocales(themeDisplay.getSiteGroupId());
-
-	if (availableLocales.size() > 1) {
-		Map<Locale, String> alternateURLs = PortalUtil.getAlternateURLs(canonicalURL, themeDisplay, layout);
-
-		Locale defaultLocale = LocaleUtil.getDefault();
-
-		for (Map.Entry<Locale, String> entry : alternateURLs.entrySet()) {
-			Locale availableLocale = entry.getKey();
-			String alternateURL = entry.getValue();
-	%>
-
-			<c:if test="<%= availableLocale.equals(defaultLocale) %>">
-				<link data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(canonicalURL) %>" hreflang="x-default" rel="alternate" />
-			</c:if>
-
-			<link data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(alternateURL) %>" hreflang="<%= LocaleUtil.toW3cLanguageId(availableLocale) %>" rel="alternate" />
-
-	<%
-		}
-	}
-	%>
-
-<%
-}
-%>
-
 <%-- Portal CSS --%>
 
 <link class="lfr-css-file" data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getPathThemeCss() + "/clay.css")) %>" id="liferayAUICSS" rel="stylesheet" type="text/css" />
@@ -81,14 +42,12 @@ if (layoutTypePortlet != null) {
 if (layout != null) {
 	String ppid = ParamUtil.getString(request, "p_p_id");
 
-	if (layout.isTypeEmbedded() || layout.isTypePortlet()) {
-		if (themeDisplay.isStateMaximized() || themeDisplay.isStatePopUp()) {
-			if (Validator.isNotNull(ppid)) {
-				Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), ppid);
+	if ((layout.isTypeEmbedded() || layout.isTypePortlet()) && (themeDisplay.isStateMaximized() || themeDisplay.isStatePopUp() || (layout.isSystem() && Objects.equals(layout.getFriendlyURL(), PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL)))) {
+		if (Validator.isNotNull(ppid)) {
+			Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), ppid);
 
-				if ((portlet != null) && !portlets.contains(portlet)) {
-					portlets.add(portlet);
-				}
+			if ((portlet != null) && !portlets.contains(portlet)) {
+				portlets.add(portlet);
 			}
 		}
 	}

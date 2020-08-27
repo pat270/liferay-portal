@@ -21,7 +21,9 @@ import com.liferay.configuration.admin.web.internal.display.ConfigurationEntry;
 import com.liferay.configuration.admin.web.internal.display.ConfigurationModelConfigurationEntry;
 import com.liferay.configuration.admin.web.internal.display.ConfigurationScreenConfigurationEntry;
 import com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeDisplayContext;
+import com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeDisplayContextFactory;
 import com.liferay.configuration.admin.web.internal.model.ConfigurationModel;
+import com.liferay.configuration.admin.web.internal.search.ClusterConfigurationModelIndexer;
 import com.liferay.configuration.admin.web.internal.search.FieldNames;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationEntryIterator;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationEntryRetriever;
@@ -57,6 +59,7 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.INSTANCE_SETTINGS,
+		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SITE_SETTINGS,
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SYSTEM_SETTINGS,
 		"mvc.command.name=/search"
 	},
@@ -69,8 +72,10 @@ public class SearchMVCRenderCommand implements MVCRenderCommand {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortletException {
 
-		Indexer indexer = _indexerRegistry.nullSafeGetIndexer(
-			ConfigurationModel.class);
+		_clusterConfigurationModelIndexer.initialize();
+
+		Indexer<ConfigurationModel> indexer =
+			_indexerRegistry.nullSafeGetIndexer(ConfigurationModel.class);
 
 		SearchContext searchContext = new SearchContext();
 
@@ -96,7 +101,7 @@ public class SearchMVCRenderCommand implements MVCRenderCommand {
 			Document[] documents = hits.getDocs();
 
 			ConfigurationScopeDisplayContext configurationScopeDisplayContext =
-				new ConfigurationScopeDisplayContext(renderRequest);
+				ConfigurationScopeDisplayContextFactory.create(renderRequest);
 
 			Map<String, ConfigurationModel> configurationModels =
 				_configurationModelRetriever.getConfigurationModels(
@@ -170,17 +175,20 @@ public class SearchMVCRenderCommand implements MVCRenderCommand {
 				ConfigurationAdminWebKeys.RESOURCE_BUNDLE_LOADER_PROVIDER,
 				_resourceBundleLoaderProvider);
 		}
-		catch (Exception e) {
-			throw new PortletException(e);
+		catch (Exception exception) {
+			throw new PortletException(exception);
 		}
 
 		return "/search_results.jsp";
 	}
 
 	@Reference
-	private ConfigurationEntryRetriever _configurationEntryRetriever;
+	private ClusterConfigurationModelIndexer _clusterConfigurationModelIndexer;
 
 	@Reference
+	private ConfigurationEntryRetriever _configurationEntryRetriever;
+
+	@Reference(target = "(filter.visibility=*)")
 	private ConfigurationModelRetriever _configurationModelRetriever;
 
 	@Reference

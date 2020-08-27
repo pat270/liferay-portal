@@ -16,12 +16,9 @@ package com.liferay.exportimport.kernel.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchConfigurationException extends NoSuchModelException {
 
 	public NoSuchConfigurationException() {
@@ -31,12 +28,12 @@ public class NoSuchConfigurationException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchConfigurationException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchConfigurationException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchConfigurationException(Throwable cause) {
-		super(cause);
+	public NoSuchConfigurationException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

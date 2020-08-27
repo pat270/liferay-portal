@@ -16,7 +16,6 @@ package com.liferay.portal.workflow.task.web.internal.notifications;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONFactoryImpl;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -33,7 +32,6 @@ import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.kernel.workflow.BaseWorkflowHandler;
 import com.liferay.portal.kernel.workflow.DefaultWorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
-import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManagerUtil;
 import com.liferay.portal.util.HtmlImpl;
@@ -41,21 +39,35 @@ import com.liferay.portal.workflow.WorkflowTaskManagerProxyBean;
 import com.liferay.portal.workflow.task.web.internal.permission.WorkflowTaskPermissionChecker;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.collections.ServiceReferenceMapper;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerMap;
 
 import java.io.Serializable;
 
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.mockito.Mockito;
+
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Inácio Nery
  */
-public class WorkflowTaskUserNotificationHandlerTest {
+@PrepareForTest(ServiceTrackerCollections.class)
+@RunWith(PowerMockRunner.class)
+public class WorkflowTaskUserNotificationHandlerTest extends PowerMockito {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
@@ -66,6 +78,10 @@ public class WorkflowTaskUserNotificationHandlerTest {
 		_setUpUserNotificationEventLocalService();
 		_setUpWorkflowTaskManagerUtil();
 		_setUpWorkflowTaskPermissionChecker();
+	}
+
+	@Before
+	public void setUp() {
 		_setUpWorkflowHandlerRegistryUtil();
 	}
 
@@ -81,9 +97,11 @@ public class WorkflowTaskUserNotificationHandlerTest {
 	}
 
 	@Test
-	public void testInvalidWorkflowTaskIdShouldReturnLink() throws Exception {
+	public void testInvalidWorkflowTaskIdShouldReturnBlankLink()
+		throws Exception {
+
 		Assert.assertEquals(
-			_VALID_LINK,
+			StringPool.BLANK,
 			_workflowTaskUserNotificationHandler.getLink(
 				mockUserNotificationEvent(
 					_VALID_ENTRY_CLASS_NAME, _INVALID_WORKFLOW_TASK_ID),
@@ -181,45 +199,7 @@ public class WorkflowTaskUserNotificationHandlerTest {
 					UserNotificationEventLocalService.class));
 	}
 
-	private static void _setUpWorkflowHandlerRegistryUtil() throws Exception {
-		Map<String, WorkflowHandler<?>> workflowHandlerMap =
-			ReflectionTestUtil.getFieldValue(
-				WorkflowHandlerRegistryUtil.class, "_workflowHandlerMap");
-
-		workflowHandlerMap.put(
-			_VALID_ENTRY_CLASS_NAME,
-			new BaseWorkflowHandler<Object>() {
-
-				@Override
-				public String getClassName() {
-					return _VALID_ENTRY_CLASS_NAME;
-				}
-
-				@Override
-				public String getType(Locale locale) {
-					return null;
-				}
-
-				@Override
-				public String getURLEditWorkflowTask(
-					long workflowTaskId, ServiceContext serviceContext) {
-
-					if (_serviceContext == serviceContext) {
-						return _VALID_LINK;
-					}
-
-					return null;
-				}
-
-				@Override
-				public Object updateStatus(int status, Map workflowContext) {
-					return null;
-				}
-
-			});
-	}
-
-	private static void _setUpWorkflowTaskManagerUtil() throws PortalException {
+	private static void _setUpWorkflowTaskManagerUtil() throws Exception {
 		WorkflowTaskManagerUtil workflowTaskManagerUtil =
 			new WorkflowTaskManagerUtil();
 
@@ -266,6 +246,52 @@ public class WorkflowTaskUserNotificationHandlerTest {
 			});
 	}
 
+	private void _setUpWorkflowHandlerRegistryUtil() {
+		mockStatic(ServiceTrackerCollections.class, Mockito.CALLS_REAL_METHODS);
+
+		stub(
+			method(
+				ServiceTrackerCollections.class, "openSingleValueMap",
+				Class.class, String.class, ServiceReferenceMapper.class)
+		).toReturn(
+			new MockServiceTrackerMap(
+				Collections.singletonMap(
+					_VALID_ENTRY_CLASS_NAME,
+					new BaseWorkflowHandler<Object>() {
+
+						@Override
+						public String getClassName() {
+							return _VALID_ENTRY_CLASS_NAME;
+						}
+
+						@Override
+						public String getType(Locale locale) {
+							return null;
+						}
+
+						@Override
+						public String getURLEditWorkflowTask(
+							long workflowTaskId,
+							ServiceContext serviceContext) {
+
+							if (_serviceContext == serviceContext) {
+								return _VALID_LINK;
+							}
+
+							return null;
+						}
+
+						@Override
+						public Object updateStatus(
+							int status, Map workflowContext) {
+
+							return null;
+						}
+
+					}))
+		);
+	}
+
 	private static final Long _INVALID_WORKFLOW_TASK_ID =
 		RandomTestUtil.randomLong();
 
@@ -296,5 +322,37 @@ public class WorkflowTaskUserNotificationHandlerTest {
 	private static final WorkflowTaskUserNotificationHandler
 		_workflowTaskUserNotificationHandler =
 			new WorkflowTaskUserNotificationHandler();
+
+	private static class MockServiceTrackerMap
+		implements ServiceTrackerMap<String, WorkflowHandler<?>> {
+
+		public MockServiceTrackerMap(
+			Map<String, WorkflowHandler<?>> workflowHandlerMap) {
+
+			_workflowHandlerMap = workflowHandlerMap;
+		}
+
+		@Override
+		public void close() {
+		}
+
+		@Override
+		public boolean containsKey(String key) {
+			return _workflowHandlerMap.containsKey(key);
+		}
+
+		@Override
+		public WorkflowHandler<?> getService(String key) {
+			return _workflowHandlerMap.get(key);
+		}
+
+		@Override
+		public Set<String> keySet() {
+			return _workflowHandlerMap.keySet();
+		}
+
+		private final Map<String, WorkflowHandler<?>> _workflowHandlerMap;
+
+	}
 
 }

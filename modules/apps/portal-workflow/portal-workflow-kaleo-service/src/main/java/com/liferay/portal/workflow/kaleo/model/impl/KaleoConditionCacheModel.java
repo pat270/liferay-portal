@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoCondition in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoConditionCacheModel
 	implements CacheModel<KaleoCondition>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoConditionCacheModel)) {
+		if (!(object instanceof KaleoConditionCacheModel)) {
 			return false;
 		}
 
 		KaleoConditionCacheModel kaleoConditionCacheModel =
-			(KaleoConditionCacheModel)obj;
+			(KaleoConditionCacheModel)object;
 
 		if ((kaleoConditionId == kaleoConditionCacheModel.kaleoConditionId) &&
 			(mvccVersion == kaleoConditionCacheModel.mvccVersion)) {
@@ -80,7 +77,7 @@ public class KaleoConditionCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(27);
+		StringBundler sb = new StringBundler(29);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -98,6 +95,8 @@ public class KaleoConditionCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoNodeId=");
@@ -144,6 +143,7 @@ public class KaleoConditionCacheModel
 			kaleoConditionImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
+		kaleoConditionImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoConditionImpl.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoConditionImpl.setKaleoNodeId(kaleoNodeId);
@@ -176,7 +176,9 @@ public class KaleoConditionCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		kaleoConditionId = objectInput.readLong();
@@ -190,10 +192,12 @@ public class KaleoConditionCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
+		kaleoDefinitionId = objectInput.readLong();
+
 		kaleoDefinitionVersionId = objectInput.readLong();
 
 		kaleoNodeId = objectInput.readLong();
-		script = objectInput.readUTF();
+		script = (String)objectInput.readObject();
 		scriptLanguage = objectInput.readUTF();
 		scriptRequiredContexts = objectInput.readUTF();
 	}
@@ -220,15 +224,17 @@ public class KaleoConditionCacheModel
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		objectOutput.writeLong(kaleoDefinitionId);
+
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		objectOutput.writeLong(kaleoNodeId);
 
 		if (script == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(script);
+			objectOutput.writeObject(script);
 		}
 
 		if (scriptLanguage == null) {
@@ -254,6 +260,7 @@ public class KaleoConditionCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoNodeId;
 	public String script;

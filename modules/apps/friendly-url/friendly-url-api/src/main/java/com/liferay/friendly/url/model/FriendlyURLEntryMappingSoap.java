@@ -19,15 +19,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class FriendlyURLEntryMappingSoap implements Serializable {
 
 	public static FriendlyURLEntryMappingSoap toSoapModel(
@@ -37,8 +36,10 @@ public class FriendlyURLEntryMappingSoap implements Serializable {
 			new FriendlyURLEntryMappingSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setFriendlyURLEntryMappingId(
 			model.getFriendlyURLEntryMappingId());
+		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setClassNameId(model.getClassNameId());
 		soapModel.setClassPK(model.getClassPK());
 		soapModel.setFriendlyURLEntryId(model.getFriendlyURLEntryId());
@@ -113,12 +114,28 @@ public class FriendlyURLEntryMappingSoap implements Serializable {
 		_mvccVersion = mvccVersion;
 	}
 
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public long getFriendlyURLEntryMappingId() {
 		return _friendlyURLEntryMappingId;
 	}
 
 	public void setFriendlyURLEntryMappingId(long friendlyURLEntryMappingId) {
 		_friendlyURLEntryMappingId = friendlyURLEntryMappingId;
+	}
+
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
 	}
 
 	public long getClassNameId() {
@@ -146,7 +163,9 @@ public class FriendlyURLEntryMappingSoap implements Serializable {
 	}
 
 	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _friendlyURLEntryMappingId;
+	private long _companyId;
 	private long _classNameId;
 	private long _classPK;
 	private long _friendlyURLEntryId;

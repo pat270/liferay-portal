@@ -19,15 +19,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AssetEntryAssetCategoryRelSoap implements Serializable {
 
 	public static AssetEntryAssetCategoryRelSoap toSoapModel(
@@ -36,8 +35,11 @@ public class AssetEntryAssetCategoryRelSoap implements Serializable {
 		AssetEntryAssetCategoryRelSoap soapModel =
 			new AssetEntryAssetCategoryRelSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setAssetEntryAssetCategoryRelId(
 			model.getAssetEntryAssetCategoryRelId());
+		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setAssetEntryId(model.getAssetEntryId());
 		soapModel.setAssetCategoryId(model.getAssetCategoryId());
 		soapModel.setPriority(model.getPriority());
@@ -104,6 +106,22 @@ public class AssetEntryAssetCategoryRelSoap implements Serializable {
 		setAssetEntryAssetCategoryRelId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public long getAssetEntryAssetCategoryRelId() {
 		return _assetEntryAssetCategoryRelId;
 	}
@@ -112,6 +130,14 @@ public class AssetEntryAssetCategoryRelSoap implements Serializable {
 		long assetEntryAssetCategoryRelId) {
 
 		_assetEntryAssetCategoryRelId = assetEntryAssetCategoryRelId;
+	}
+
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
 	}
 
 	public long getAssetEntryId() {
@@ -138,7 +164,10 @@ public class AssetEntryAssetCategoryRelSoap implements Serializable {
 		_priority = priority;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _assetEntryAssetCategoryRelId;
+	private long _companyId;
 	private long _assetEntryId;
 	private long _assetCategoryId;
 	private int _priority;

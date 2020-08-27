@@ -86,11 +86,7 @@ public class SQLServerLimitStringUtil {
 			Matcher matcher = _selectPattern.matcher(innerSelectFrom);
 
 			innerSelectFrom = matcher.replaceAll(
-				"select top ".concat(
-					String.valueOf(limit)
-				).concat(
-					StringPool.SPACE
-				));
+				StringBundler.concat("select top ", limit, StringPool.SPACE));
 		}
 
 		return innerSelectFrom;
@@ -123,11 +119,8 @@ public class SQLServerLimitStringUtil {
 				}
 			}
 
-			String patternString = "\\Q".concat(
-				orderByColumnName
-			).concat(
-				"\\E as (\\w+)"
-			);
+			String patternString = StringBundler.concat(
+				"\\Q", orderByColumnName, "\\E as (\\w+)");
 
 			Pattern pattern = Pattern.compile(
 				patternString, Pattern.CASE_INSENSITIVE);
@@ -161,6 +154,17 @@ public class SQLServerLimitStringUtil {
 				}
 				else {
 					innerOrderBySB.append(StringPool.COMMA);
+				}
+
+				if (orderByColumnName.endsWith("ASC")) {
+					orderByColumnName = orderByColumnName.substring(
+						0, orderByColumnName.lastIndexOf("ASC"));
+					orderByType = "ASC";
+				}
+				else if (orderByColumnName.endsWith("DESC")) {
+					orderByColumnName = orderByColumnName.substring(
+						0, orderByColumnName.lastIndexOf("DESC"));
+					orderByType = "DESC";
 				}
 
 				innerOrderBySB.append(orderByColumnName);

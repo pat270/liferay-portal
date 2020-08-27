@@ -27,12 +27,12 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -165,7 +165,7 @@ public class DLDirectoryNameAndFileNameTest {
 			String name = sb.toString();
 
 			Assert.assertEquals(
-				name.replace(blacklistChar, StringPool.UNDERLINE),
+				StringUtil.replace(name, blacklistChar, StringPool.UNDERLINE),
 				DLValidatorUtil.fixName(name));
 
 			sb.append(".txt");
@@ -173,7 +173,7 @@ public class DLDirectoryNameAndFileNameTest {
 			name = sb.toString();
 
 			Assert.assertEquals(
-				name.replace(blacklistChar, StringPool.UNDERLINE),
+				StringUtil.replace(name, blacklistChar, StringPool.UNDERLINE),
 				DLValidatorUtil.fixName(name));
 		}
 	}

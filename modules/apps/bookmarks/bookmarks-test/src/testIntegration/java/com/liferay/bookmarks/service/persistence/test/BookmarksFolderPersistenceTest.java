@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,8 @@ public class BookmarksFolderPersistenceTest {
 
 		BookmarksFolder newBookmarksFolder = _persistence.create(pk);
 
+		newBookmarksFolder.setMvccVersion(RandomTestUtil.nextLong());
+
 		newBookmarksFolder.setUuid(RandomTestUtil.randomString());
 
 		newBookmarksFolder.setGroupId(RandomTestUtil.nextLong());
@@ -161,6 +163,9 @@ public class BookmarksFolderPersistenceTest {
 		BookmarksFolder existingBookmarksFolder = _persistence.findByPrimaryKey(
 			newBookmarksFolder.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingBookmarksFolder.getMvccVersion(),
+			newBookmarksFolder.getMvccVersion());
 		Assert.assertEquals(
 			existingBookmarksFolder.getUuid(), newBookmarksFolder.getUuid());
 		Assert.assertEquals(
@@ -328,12 +333,13 @@ public class BookmarksFolderPersistenceTest {
 
 	protected OrderByComparator<BookmarksFolder> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"BookmarksFolder", "uuid", true, "folderId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true, "createDate",
-			true, "modifiedDate", true, "parentFolderId", true, "treePath",
-			true, "name", true, "description", true, "lastPublishDate", true,
-			"status", true, "statusByUserId", true, "statusByUserName", true,
-			"statusDate", true);
+			"BookmarksFolder", "mvccVersion", true, "uuid", true, "folderId",
+			true, "groupId", true, "companyId", true, "userId", true,
+			"userName", true, "createDate", true, "modifiedDate", true,
+			"parentFolderId", true, "treePath", true, "name", true,
+			"description", true, "lastPublishDate", true, "status", true,
+			"statusByUserId", true, "statusByUserName", true, "statusDate",
+			true);
 	}
 
 	@Test
@@ -552,26 +558,69 @@ public class BookmarksFolderPersistenceTest {
 
 		_persistence.clearCache();
 
-		BookmarksFolder existingBookmarksFolder = _persistence.findByPrimaryKey(
-			newBookmarksFolder.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newBookmarksFolder.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingBookmarksFolder.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingBookmarksFolder, "getOriginalUuid",
-					new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		BookmarksFolder newBookmarksFolder = addBookmarksFolder();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			BookmarksFolder.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"folderId", newBookmarksFolder.getFolderId()));
+
+		List<BookmarksFolder> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(BookmarksFolder bookmarksFolder) {
 		Assert.assertEquals(
-			Long.valueOf(existingBookmarksFolder.getGroupId()),
+			bookmarksFolder.getUuid(),
+			ReflectionTestUtil.invoke(
+				bookmarksFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(bookmarksFolder.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingBookmarksFolder, "getOriginalGroupId",
-				new Class<?>[0]));
+				bookmarksFolder, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 	}
 
 	protected BookmarksFolder addBookmarksFolder() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		BookmarksFolder bookmarksFolder = _persistence.create(pk);
+
+		bookmarksFolder.setMvccVersion(RandomTestUtil.nextLong());
 
 		bookmarksFolder.setUuid(RandomTestUtil.randomString());
 

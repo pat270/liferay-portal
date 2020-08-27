@@ -71,9 +71,8 @@ public class ForPoshiElement extends PoshiElement {
 	public void parsePoshiScript(String poshiScript)
 		throws PoshiScriptParserException {
 
-		String blockName = getBlockName(poshiScript);
-
-		String parentheticalContent = getParentheticalContent(blockName);
+		String parentheticalContent = getParentheticalContent(
+			getBlockName(poshiScript));
 
 		Matcher matcher = _blockParameterPattern.matcher(parentheticalContent);
 
@@ -100,6 +99,7 @@ public class ForPoshiElement extends PoshiElement {
 	}
 
 	protected ForPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected ForPoshiElement(Element element) {
@@ -151,8 +151,9 @@ public class ForPoshiElement extends PoshiElement {
 			throw new IllegalArgumentException(
 				"Invalid 'for' element " + Dom4JUtil.format(element));
 		}
-		catch (IOException ioe) {
-			throw new IllegalArgumentException("Invalid 'for' element", ioe);
+		catch (IOException ioException) {
+			throw new IllegalArgumentException(
+				"Invalid 'for' element", ioException);
 		}
 	}
 

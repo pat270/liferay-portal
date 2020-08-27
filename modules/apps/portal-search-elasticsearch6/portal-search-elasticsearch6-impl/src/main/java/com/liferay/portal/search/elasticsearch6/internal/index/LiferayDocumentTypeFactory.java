@@ -21,6 +21,8 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.elasticsearch6.internal.index.constants.IndexSettingsConstants;
+import com.liferay.portal.search.elasticsearch6.internal.index.constants.LiferayTypeMappingsConstants;
 import com.liferay.portal.search.elasticsearch6.internal.settings.SettingsBuilder;
 import com.liferay.portal.search.elasticsearch6.internal.util.LogUtil;
 import com.liferay.portal.search.elasticsearch6.internal.util.ResourceUtil;
@@ -108,16 +110,40 @@ public class LiferayDocumentTypeFactory implements TypeMappingsHelper {
 			LiferayTypeMappingsConstants.
 				LIFERAY_DOCUMENT_TYPE_MAPPING_FILE_NAME);
 
+		JSONObject defaultJSONObject = createJSONObject(
+			requiredDefaultMappings);
+
+		String name = StringUtil.replace(
+			LiferayTypeMappingsConstants.
+				LIFERAY_DOCUMENT_TYPE_MAPPING_FILE_NAME,
+			".json", "-optional-defaults.json");
+
+		String optionalDefaultTypeMappings = ResourceUtil.getResourceAsString(
+			getClass(), name);
+
+		JSONObject optionalJSONObject = createJSONObject(
+			optionalDefaultTypeMappings);
+
+		JSONObject liferayDocumentTypeJSONObject =
+			defaultJSONObject.getJSONObject(
+				LiferayTypeMappingsConstants.LIFERAY_DOCUMENT_TYPE);
+
+		liferayDocumentTypeJSONObject.put(
+			"dynamic_templates",
+			merge(
+				liferayDocumentTypeJSONObject.getJSONArray("dynamic_templates"),
+				optionalJSONObject.getJSONArray("dynamic_templates")));
+
 		createLiferayDocumentTypeMappings(
-			createIndexRequestBuilder, requiredDefaultMappings);
+			createIndexRequestBuilder, defaultJSONObject.toString());
 	}
 
 	protected JSONObject createJSONObject(String mappings) {
 		try {
 			return _jsonFactory.createJSONObject(mappings);
 		}
-		catch (JSONException jsone) {
-			throw new RuntimeException(jsone);
+		catch (JSONException jsonException) {
+			throw new RuntimeException(jsonException);
 		}
 	}
 
@@ -174,9 +200,8 @@ public class LiferayDocumentTypeFactory implements TypeMappingsHelper {
 			return sourceJSONObject.toString();
 		}
 
-		String mappings = getMappings(indexName, typeName);
-
-		JSONObject mappingsJSONObject = createJSONObject(mappings);
+		JSONObject mappingsJSONObject = createJSONObject(
+			getMappings(indexName, typeName));
 
 		JSONObject typeJSONObject = mappingsJSONObject.getJSONObject(typeName);
 

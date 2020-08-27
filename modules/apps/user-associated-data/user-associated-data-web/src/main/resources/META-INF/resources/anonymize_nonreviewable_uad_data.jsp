@@ -31,21 +31,23 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 
 <liferay-util:include page="/uad_data_navigation_bar.jsp" servletContext="<%= application %>" />
 
-<div class="container-fluid container-fluid-max-xl container-form-lg">
+<clay:container-fluid
+	cssClass="container-form-lg"
+>
 	<aui:form method="post" name="nonreviewableUADDataForm">
-		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 		<aui:input name="p_u_i_d" type="hidden" value="<%= String.valueOf(selectedUser.getUserId()) %>" />
+		<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
 
-		<div class="sheet sheet-lg">
-			<div class="sheet-header">
+		<clay:sheet>
+			<clay:sheet-header>
 				<h2 class="sheet-title"><liferay-ui:message key="auto-anonymize-data" /></h2>
-			</div>
+			</clay:sheet-header>
 
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<div class="text-muted"><liferay-ui:message key="auto-anonymize-data-that-does-not-require-review" /></div>
-			</div>
+			</clay:sheet-section>
 
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<h3 class="sheet-subtitle">
 					<liferay-ui:message key="status-summary" />
 				</h3>
@@ -60,12 +62,12 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 					<div class="autofit-col">
 						<portlet:actionURL name="/anonymize_nonreviewable_uad_data" var="anonymizeURL" />
 
-						<aui:button cssClass="btn-sm" disabled="<%= totalReviewableUADEntitiesCount == 0 %>" onClick='<%= renderResponse.getNamespace() + "confirmAction('nonreviewableUADDataForm', '" + anonymizeURL.toString() + "', '" + UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-anonymize-the-users-personal-data") + "')" %>' primary="true" value="anonymize" />
+						<aui:button cssClass="btn-sm" disabled="<%= totalReviewableUADEntitiesCount == 0 %>" onClick='<%= liferayPortletResponse.getNamespace() + "confirmAction('nonreviewableUADDataForm', '" + anonymizeURL.toString() + "', '" + UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-anonymize-the-users-personal-data") + "')" %>' primary="true" value="anonymize" />
 					</div>
 				</div>
-			</div>
+			</clay:sheet-section>
 
-			<div class="sheet-section">
+			<clay:sheet-section>
 				<c:choose>
 					<c:when test="<%= totalReviewableUADEntitiesCount == 0 %>">
 						<liferay-ui:empty-result-message
@@ -102,8 +104,8 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 									name="status"
 								>
 									<clay:label
-										label='<%= uadApplicationSummaryDisplay.hasItems() ? StringUtil.toUpperCase(LanguageUtil.get(request, "pending"), locale) : StringUtil.toUpperCase(LanguageUtil.get(request, "done"), locale) %>'
-										style='<%= uadApplicationSummaryDisplay.hasItems() ? "warning" : "success" %>'
+										displayType='<%= uadApplicationSummaryDisplay.hasItems() ? "warning" : "success" %>'
+										label='<%= uadApplicationSummaryDisplay.hasItems() ? "pending" : "done" %>'
 									/>
 								</liferay-ui:search-container-column-text>
 							</liferay-ui:search-container-row>
@@ -115,9 +117,9 @@ renderResponse.setTitle(StringBundler.concat(selectedUser.getFullName(), " - ", 
 						</liferay-ui:search-container>
 					</c:otherwise>
 				</c:choose>
-			</div>
-		</div>
+			</clay:sheet-section>
+		</clay:sheet>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <%@ include file="/action/confirm_action_js.jspf" %>

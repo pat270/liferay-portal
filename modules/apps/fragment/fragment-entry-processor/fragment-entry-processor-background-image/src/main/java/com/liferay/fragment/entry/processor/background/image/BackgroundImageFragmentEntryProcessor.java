@@ -15,23 +15,26 @@
 package com.liferay.fragment.entry.processor.background.image;
 
 import com.liferay.fragment.constants.FragmentEntryLinkConstants;
-import com.liferay.fragment.entry.processor.util.FragmentEntryProcessorUtil;
+import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.exception.FragmentEntryContentException;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.FragmentEntryProcessor;
+import com.liferay.fragment.processor.FragmentEntryProcessorContext;
+import com.liferay.info.type.WebImage;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,10 +58,30 @@ public class BackgroundImageFragmentEntryProcessor
 	implements FragmentEntryProcessor {
 
 	@Override
+	public JSONObject getDefaultEditableValuesJSONObject(
+		String html, String configuration) {
+
+		JSONObject defaultEditableValuesJSONObject =
+			JSONFactoryUtil.createJSONObject();
+
+		Document document = _getDocument(html);
+
+		for (Element element :
+				document.select("[data-lfr-background-image-id]")) {
+
+			String id = element.attr("data-lfr-background-image-id");
+
+			defaultEditableValuesJSONObject.put(
+				id, JSONFactoryUtil.createJSONObject());
+		}
+
+		return defaultEditableValuesJSONObject;
+	}
+
+	@Override
 	public String processFragmentEntryLinkHTML(
-			FragmentEntryLink fragmentEntryLink, String html, String mode,
-			Locale locale, long[] segmentsExperienceIds, long previewClassPK,
-			int previewType)
+			FragmentEntryLink fragmentEntryLink, String html,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException {
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
@@ -90,26 +113,70 @@ public class BackgroundImageFragmentEntryProcessor
 
 			String value = StringPool.BLANK;
 
-			if (_fragmentEntryProcessorUtil.isAssetDisplayPage(mode)) {
-				value = editableValueJSONObject.getString("mappedField");
+			if (_fragmentEntryProcessorHelper.isAssetDisplayPage(
+					fragmentEntryProcessorContext.getMode())) {
+
+				String mappedField = editableValueJSONObject.getString(
+					"mappedField");
+
+				Optional<Map<String, Object>> fieldValuesOptional =
+					fragmentEntryProcessorContext.getFieldValuesOptional();
+
+				Map<String, Object> fieldValues = fieldValuesOptional.orElse(
+					new HashMap<>());
+
+				Object fieldValue = fieldValues.get(mappedField);
+
+				if (fieldValue instanceof JSONObject) {
+					JSONObject fieldValueJSONObject = (JSONObject)fieldValue;
+
+					value = fieldValueJSONObject.getString("url");
+				}
 			}
 
-			if (_fragmentEntryProcessorUtil.isMapped(editableValueJSONObject)) {
-				Object fieldValue = _fragmentEntryProcessorUtil.getMappedValue(
-					editableValueJSONObject, infoDisplaysFieldValues, mode,
-					locale, previewClassPK, previewType);
+			if (_fragmentEntryProcessorHelper.isMapped(
+					editableValueJSONObject)) {
+
+				Object fieldValue =
+					_fragmentEntryProcessorHelper.getMappedValue(
+						editableValueJSONObject, infoDisplaysFieldValues,
+						fragmentEntryProcessorContext);
 
 				if (fieldValue != null) {
-					value = String.valueOf(fieldValue);
+					if (fieldValue instanceof JSONObject) {
+						JSONObject fieldValueJSONObject =
+							(JSONObject)fieldValue;
+
+						value = fieldValueJSONObject.getString("url");
+					}
+					else if (fieldValue instanceof WebImage) {
+						WebImage webImage = (WebImage)fieldValue;
+
+						JSONObject fieldValueJSONObject =
+							webImage.toJSONObject();
+
+						value = fieldValueJSONObject.toString();
+					}
+					else {
+						value = String.valueOf(fieldValue);
+					}
 				}
 			}
 
 			if (Validator.isNull(value)) {
-				value = _fragmentEntryProcessorUtil.getEditableValue(
-					editableValueJSONObject, locale, segmentsExperienceIds);
+				value = _fragmentEntryProcessorHelper.getEditableValue(
+					editableValueJSONObject,
+					fragmentEntryProcessorContext.getLocale());
 			}
 
 			if (Validator.isNotNull(value)) {
+				if (JSONUtil.isValid(value)) {
+					JSONObject valueJSONObject =
+						JSONFactoryUtil.createJSONObject(value);
+
+					value = valueJSONObject.getString("url", value);
+				}
+
 				element.attr(
 					"style",
 					"background-image: url(" + value +
@@ -118,8 +185,11 @@ public class BackgroundImageFragmentEntryProcessor
 		}
 
 		if (Objects.equals(
-				mode, FragmentEntryLinkConstants.ASSET_DISPLAY_PAGE) ||
-			Objects.equals(mode, FragmentEntryLinkConstants.VIEW)) {
+				fragmentEntryProcessorContext.getMode(),
+				FragmentEntryLinkConstants.ASSET_DISPLAY_PAGE) ||
+			Objects.equals(
+				fragmentEntryProcessorContext.getMode(),
+				FragmentEntryLinkConstants.VIEW)) {
 
 			for (Element element :
 					document.select("[data-lfr-background-image-id]")) {
@@ -134,7 +204,9 @@ public class BackgroundImageFragmentEntryProcessor
 	}
 
 	@Override
-	public void validateFragmentEntryHTML(String html) throws PortalException {
+	public void validateFragmentEntryHTML(String html, String configuration)
+		throws PortalException {
+
 		Document document = _getDocument(html);
 
 		Elements elements = document.select("[data-lfr-background-image-id]");
@@ -177,6 +249,6 @@ public class BackgroundImageFragmentEntryProcessor
 	}
 
 	@Reference
-	private FragmentEntryProcessorUtil _fragmentEntryProcessorUtil;
+	private FragmentEntryProcessorHelper _fragmentEntryProcessorHelper;
 
 }

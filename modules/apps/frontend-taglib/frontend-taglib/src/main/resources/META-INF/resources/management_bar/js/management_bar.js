@@ -1,6 +1,20 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-management-bar',
-	function(A) {
+	(A) => {
 		var Lang = A.Lang;
 
 		var ATTR_CHECKED = 'checked';
@@ -13,249 +27,337 @@ AUI.add(
 
 		var STR_SELECT_ALL_CHECKBOXES_SELECTOR = 'selectAllCheckBoxesSelector';
 
-		var ManagementBar = A.Component.create(
-			{
-				ATTRS: {
-					checkBoxesSelector: {
-						validator: Lang.isString,
-						value: 'input[type=checkbox]'
-					},
+		var ManagementBar = A.Component.create({
+			ATTRS: {
+				checkBoxesSelector: {
+					validator: Lang.isString,
+					value: 'input[type=checkbox]',
+				},
 
-					itemsCountContainer: {
-						setter: 'all',
-						value: '.selected-items-count'
-					},
+				itemsCountContainer: {
+					setter: 'all',
+					value: '.selected-items-count',
+				},
 
-					searchContainerId: {
-						validator: Lang.isString
-					},
+				searchContainerId: {
+					validator: Lang.isString,
+				},
 
-					secondaryBar: {
-						setter: 'one'
-					},
+				secondaryBar: {
+					setter: 'one',
+				},
 
-					selectAllCheckBoxesSelector: {
-						validator: Lang.isString,
-						value: '.select-all-checkboxes'
+				selectAllCheckBoxesSelector: {
+					validator: Lang.isString,
+					value: '.select-all-checkboxes',
+				},
+			},
+
+			AUGMENTS: [Liferay.PortletBase],
+
+			EXTENDS: A.Base,
+
+			NAME: 'liferay-management-bar',
+
+			prototype: {
+				_bindUI() {
+					var instance = this;
+
+					instance._eventHandles = [
+						instance._searchContainer.on(
+							'rowToggled',
+							instance._onSearchContainerRowToggled,
+							instance
+						),
+						instance
+							.get('rootNode')
+							.delegate(
+								STR_CLICK,
+								instance._toggleSelectAll,
+								instance.get(
+									STR_SELECT_ALL_CHECKBOXES_SELECTOR
+								),
+								instance
+							),
+						Liferay.on(
+							'startNavigate',
+							instance._onSurfaceStartNavigate,
+							instance
+						),
+					];
+				},
+
+				_detachSearchContainerRegisterHandle() {
+					var instance = this;
+
+					var searchContainerRegisterHandle =
+						instance._searchContainerRegisterHandle;
+
+					if (searchContainerRegisterHandle) {
+						searchContainerRegisterHandle.detach();
+
+						instance._searchContainerRegisterHandle = null;
 					}
 				},
 
-				AUGMENTS: [Liferay.PortletBase],
+				_getSelectAllCheckBox() {
+					var instance = this;
 
-				EXTENDS: A.Base,
+					var selectAllCheckBox = instance._selectAllCheckBox;
 
-				NAME: 'liferay-management-bar',
+					if (!selectAllCheckBox) {
+						selectAllCheckBox = instance
+							.get('secondaryBar')
+							.one(
+								instance.get(STR_SELECT_ALL_CHECKBOXES_SELECTOR)
+							);
 
-				prototype: {
-					initializer: function() {
-						var instance = this;
+						instance._selectAllCheckBox = selectAllCheckBox;
+					}
 
-						instance._searchContainerRegisterHandle = Liferay.on('search-container:registered', instance._onSearchContainerRegistered, instance);
-					},
+					return selectAllCheckBox;
+				},
 
-					destructor: function() {
-						var instance = this;
+				_onSearchContainerRegistered(event) {
+					var instance = this;
+
+					var searchContainer = event.searchContainer;
+
+					if (
+						searchContainer.get('id') ===
+						instance.get('searchContainerId')
+					) {
+						instance._searchContainer = searchContainer;
 
 						instance._detachSearchContainerRegisterHandle();
 
-						(new A.EventHandle(instance._eventHandles)).detach();
-					},
+						instance._bindUI();
+					}
+				},
 
-					_bindUI: function() {
-						var instance = this;
+				_onSearchContainerRowToggled(event) {
+					var instance = this;
 
-						instance._eventHandles = [
-							instance._searchContainer.on('rowToggled', instance._onSearchContainerRowToggled, instance),
-							instance.get('rootNode').delegate(STR_CLICK, instance._toggleSelectAll, instance.get(STR_SELECT_ALL_CHECKBOXES_SELECTOR), instance),
-							Liferay.on('startNavigate', instance._onSurfaceStartNavigate, instance)
-						];
-					},
+					var elements = event.elements;
 
-					_detachSearchContainerRegisterHandle: function() {
-						var instance = this;
+					var numberAllSelectedElements = elements.allSelectedElements
+						.filter(':enabled')
+						.size();
 
-						var searchContainerRegisterHandle = instance._searchContainerRegisterHandle;
+					var numberCurrentPageSelectedElements = elements.currentPageSelectedElements
+						.filter(':enabled')
+						.size();
 
-						if (searchContainerRegisterHandle) {
-							searchContainerRegisterHandle.detach();
+					var numberCurrentPageElements = elements.currentPageElements
+						.filter(':enabled')
+						.size();
 
-							instance._searchContainerRegisterHandle = null;
-						}
-					},
+					instance._updateItemsCount(numberAllSelectedElements);
 
-					_getSelectAllCheckBox: function() {
-						var instance = this;
+					instance._toggleSelectAllCheckBox(
+						numberCurrentPageSelectedElements > 0,
+						numberCurrentPageSelectedElements <
+							numberCurrentPageElements
+					);
 
-						var selectAllCheckBox = instance._selectAllCheckBox;
+					instance._toggleSecondaryBar(numberAllSelectedElements > 0);
+				},
 
-						if (!selectAllCheckBox) {
-							selectAllCheckBox = instance.get('secondaryBar').one(instance.get(STR_SELECT_ALL_CHECKBOXES_SELECTOR));
+				_onSurfaceStartNavigate() {
+					var instance = this;
 
-							instance._selectAllCheckBox = selectAllCheckBox;
-						}
+					Liferay.DOMTaskRunner.addTask({
+						action: Liferay.ManagementBar.restoreTask,
+						condition: Liferay.ManagementBar.testRestoreTask,
+						params: {
+							checkBoxesSelector: instance.get(
+								'checkBoxesSelector'
+							),
+							id: instance.get('id'),
+							itemsCountContainerSelector: instance
+								.get('itemsCountContainer')
+								.attr('class'),
+							searchContainerNodeId:
+								instance.get('searchContainerId') +
+								'SearchContainer',
+							secondaryBarId: instance
+								.get('secondaryBar')
+								.attr('id'),
+							selectAllCheckBoxesSelector: instance.get(
+								'selectAllCheckBoxesSelector'
+							),
+						},
+					});
+				},
 
-						return selectAllCheckBox;
-					},
+				_toggleSecondaryBar(show) {
+					var instance = this;
 
-					_onSearchContainerRegistered: function(event) {
-						var instance = this;
+					var managementBarContainer = instance
+						.get('secondaryBar')
+						.ancestor('.management-bar-container');
 
-						var searchContainer = event.searchContainer;
+					managementBarContainer.toggleClass(
+						STR_SECONDARY_BAR_OPEN,
+						show
+					);
+				},
 
-						if (searchContainer.get('id') === instance.get('searchContainerId')) {
-							instance._searchContainer = searchContainer;
+				_toggleSelectAll(event) {
+					var instance = this;
 
-							instance._detachSearchContainerRegisterHandle();
+					if (
+						!instance
+							.get('secondaryBar')
+							.contains(event.currentTarget)
+					) {
+						event.preventDefault();
+					}
 
-							instance._bindUI();
-						}
-					},
+					var searchContainer = instance._searchContainer;
 
-					_onSearchContainerRowToggled: function(event) {
-						var instance = this;
+					if (searchContainer.hasPlugin('select')) {
+						var checked = event.currentTarget.attr(ATTR_CHECKED);
 
-						var elements = event.elements;
+						searchContainer.select.toggleAllRows(checked);
+					}
+				},
 
-						var numberAllSelectedElements = elements.allSelectedElements.filter(':enabled').size();
+				_toggleSelectAllCheckBox(checked, partial) {
+					var instance = this;
 
-						var numberCurrentPageSelectedElements = elements.currentPageSelectedElements.filter(':enabled').size();
+					var selectAllCheckBox = instance._getSelectAllCheckBox();
 
-						var numberCurrentPageElements = elements.currentPageElements.filter(':enabled').size();
+					if (selectAllCheckBox) {
+						selectAllCheckBox.attr(ATTR_CHECKED, checked);
+						selectAllCheckBox.attr(
+							'indeterminate',
+							partial && checked
+						);
+					}
+				},
 
-						instance._updateItemsCount(numberAllSelectedElements);
+				_updateItemsCount(itemsCount) {
+					var instance = this;
 
-						instance._toggleSelectAllCheckBox(numberCurrentPageSelectedElements > 0, numberCurrentPageSelectedElements < numberCurrentPageElements);
+					instance.get('itemsCountContainer').html(itemsCount);
+				},
 
-						instance._toggleSecondaryBar(numberAllSelectedElements > 0);
-					},
+				destructor() {
+					var instance = this;
 
-					_onSurfaceStartNavigate: function(event) {
-						var instance = this;
+					instance._detachSearchContainerRegisterHandle();
 
-						Liferay.DOMTaskRunner.addTask(
-							{
-								action: Liferay.ManagementBar.restoreTask,
-								condition: Liferay.ManagementBar.testRestoreTask,
-								params: {
-									checkBoxesSelector: instance.get('checkBoxesSelector'),
-									itemsCountContainerSelector: instance.get('itemsCountContainer').attr('class'),
-									searchContainerNodeId: instance.get('searchContainerId') + 'SearchContainer',
-									secondaryBarId: instance.get('secondaryBar').attr('id'),
-									selectAllCheckBoxesSelector: instance.get('selectAllCheckBoxesSelector')
-								}
+					new A.EventHandle(instance._eventHandles).detach();
+				},
+
+				initializer() {
+					var instance = this;
+
+					instance._searchContainerRegisterHandle = Liferay.on(
+						'search-container:registered',
+						instance._onSearchContainerRegistered,
+						instance
+					);
+				},
+			},
+
+			restoreTask(state, params, node) {
+				var totalSelectedItems = state.data.elements.length;
+
+				node = A.one(node);
+
+				if (node) {
+					var itemsCountContainer = node.all(
+						'.' + params.itemsCountContainerSelector
+					);
+
+					itemsCountContainer.html(totalSelectedItems);
+
+					var secondaryBar = node.one(
+						STR_HASH + params.secondaryBarId
+					);
+
+					var managementBarContainer = secondaryBar.ancestor(
+						'.management-bar-container'
+					);
+
+					if (secondaryBar && totalSelectedItems > 0) {
+						managementBarContainer.addClass(STR_SECONDARY_BAR_OPEN);
+					}
+
+					var searchContainerNode = node.one(
+						STR_HASH + params.searchContainerNodeId
+					);
+
+					if (searchContainerNode) {
+						var selectedElements = A.Array.partition(
+							state.data.elements,
+							(item) => {
+								var valueSelector =
+									'[value="' + item.value + '"]';
+
+								return searchContainerNode.one(
+									params.checkBoxesSelector + valueSelector
+								);
 							}
 						);
-					},
 
-					_toggleSecondaryBar: function(show) {
-						var instance = this;
+						var onscreenSelectedItems =
+							selectedElements.matches.length;
 
-						var managementBarContainer = instance.get('secondaryBar').ancestor('.management-bar-container');
+						var checkBoxes = searchContainerNode.all(
+							params.checkBoxesSelector
+						);
 
-						managementBarContainer.toggleClass(STR_SECONDARY_BAR_OPEN, show);
-					},
-
-					_toggleSelectAll: function(event) {
-						var instance = this;
-
-						if (!instance.get('secondaryBar').contains(event.currentTarget)) {
-							event.preventDefault();
-						}
-
-						var searchContainer = instance._searchContainer;
-
-						if (searchContainer.hasPlugin('select')) {
-							var checked = event.currentTarget.attr(ATTR_CHECKED);
-
-							searchContainer.select.toggleAllRows(checked);
-						}
-					},
-
-					_toggleSelectAllCheckBox: function(checked, partial) {
-						var instance = this;
-
-						var selectAllCheckBox = instance._getSelectAllCheckBox();
-
-						if (selectAllCheckBox) {
-							selectAllCheckBox.attr(ATTR_CHECKED, checked);
-							selectAllCheckBox.attr('indeterminate', partial && checked);
-						}
-					},
-
-					_updateItemsCount: function(itemsCount) {
-						var instance = this;
-
-						instance.get('itemsCountContainer').html(itemsCount);
-					}
-				},
-
-				restoreTask: function(state, params, node) {
-					var totalSelectedItems = state.data.elements.length;
-
-					node = A.one(node);
-
-					if (node) {
-						var itemsCountContainer = node.all('.' + params.itemsCountContainerSelector);
-
-						itemsCountContainer.html(totalSelectedItems);
-
-						var secondaryBar = node.one(STR_HASH + params.secondaryBarId);
-
-						var managementBarContainer = secondaryBar.ancestor('.management-bar-container');
-
-						if (secondaryBar && totalSelectedItems > 0) {
-							managementBarContainer.addClass(STR_SECONDARY_BAR_OPEN);
-						}
-
-						var searchContainerNode = node.one(STR_HASH + params.searchContainerNodeId);
-
-						if (searchContainerNode) {
-							var selectedElements = A.Array.partition(
-								state.data.elements,
-								function(item) {
-									var valueSelector = '[value="' + item.value + '"]';
-
-									return searchContainerNode.one(params.checkBoxesSelector + valueSelector);
-								}
+						if (secondaryBar) {
+							var selectAllCheckBoxesCheckBox = secondaryBar.one(
+								params.selectAllCheckBoxesSelector
 							);
 
-							var onscreenSelectedItems = selectedElements.matches.length;
+							if (selectAllCheckBoxesCheckBox) {
+								selectAllCheckBoxesCheckBox.attr(
+									ATTR_CHECKED,
+									onscreenSelectedItems
+								);
 
-							var checkBoxes = searchContainerNode.all(params.checkBoxesSelector);
-
-							if (secondaryBar) {
-								var selectAllCheckBoxesCheckBox = secondaryBar.one(params.selectAllCheckBoxesSelector);
-
-								if (selectAllCheckBoxesCheckBox) {
-									selectAllCheckBoxesCheckBox.attr(ATTR_CHECKED, onscreenSelectedItems);
-
-									if (onscreenSelectedItems !== checkBoxes.size()) {
-										selectAllCheckBoxesCheckBox.attr('indeterminate', true);
-									}
+								if (
+									onscreenSelectedItems !== checkBoxes.size()
+								) {
+									selectAllCheckBoxesCheckBox.attr(
+										'indeterminate',
+										true
+									);
 								}
 							}
 						}
 					}
-				},
-
-				testRestoreTask: function(state, params, node) {
-					var returnNode;
-
-					var currentNode = A.one(node);
-
-					if (currentNode) {
-						returnNode = currentNode.one(STR_HASH + params.searchContainerNodeId);
-					}
-
-					return returnNode;
 				}
-			}
-		);
+			},
+
+			testRestoreTask(state, params, node) {
+				if (state.owner !== params.id) {
+					return;
+				}
+
+				var returnNode;
+
+				var currentNode = A.one(node);
+
+				if (currentNode) {
+					returnNode = currentNode.one(
+						STR_HASH + params.searchContainerNodeId
+					);
+				}
+
+				return returnNode;
+			},
+		});
 
 		Liferay.ManagementBar = ManagementBar;
 	},
 	'',
 	{
-		requires: ['aui-component', 'liferay-portlet-base']
+		requires: ['aui-component', 'liferay-portlet-base'],
 	}
 );

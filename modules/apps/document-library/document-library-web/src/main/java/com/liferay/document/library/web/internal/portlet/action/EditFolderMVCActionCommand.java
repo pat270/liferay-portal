@@ -16,7 +16,6 @@ package com.liferay.document.library.web.internal.portlet.action;
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
-import com.liferay.document.library.kernel.exception.DuplicateFileException;
 import com.liferay.document.library.kernel.exception.DuplicateFolderNameException;
 import com.liferay.document.library.kernel.exception.FolderNameException;
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
@@ -38,20 +37,20 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
+import com.liferay.portal.kernel.servlet.MultiSessionMessages;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletException;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -74,8 +73,60 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 
-	protected void deleteExpiredTemporaryFileEntries(
-			ActionRequest actionRequest)
+	@Override
+	protected void doProcessAction(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws PortalException {
+
+		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
+
+		try {
+			if (cmd.equals(Constants.ADD) || cmd.equals(Constants.UPDATE)) {
+				_updateFolder(actionRequest);
+			}
+			else if (cmd.equals(Constants.DELETE)) {
+				_deleteFolders(actionRequest, false);
+			}
+			else if (cmd.equals(Constants.MOVE_TO_TRASH)) {
+				_deleteFolders(actionRequest, true);
+			}
+			else if (cmd.equals(Constants.SUBSCRIBE)) {
+				_subscribeFolder(actionRequest);
+			}
+			else if (cmd.equals(Constants.UNSUBSCRIBE)) {
+				_unsubscribeFolder(actionRequest);
+			}
+			else if (cmd.equals("deleteExpiredTemporaryFileEntries")) {
+				_deleteExpiredTemporaryFileEntries(actionRequest);
+			}
+			else if (cmd.equals("updateWorkflowDefinitions")) {
+				_updateWorkflowDefinitions(actionRequest);
+			}
+
+			String portletResource = ParamUtil.getString(
+				actionRequest, "portletResource");
+
+			if (Validator.isNotNull(portletResource)) {
+				hideDefaultSuccessMessage(actionRequest);
+
+				MultiSessionMessages.add(
+					actionRequest, portletResource + "requestProcessed");
+			}
+		}
+		catch (NoSuchFolderException | PrincipalException exception) {
+			SessionErrors.add(actionRequest, exception.getClass());
+
+			actionResponse.setRenderParameter(
+				"mvcPath", "/document_library/error.jsp");
+		}
+		catch (DuplicateFileEntryException | DuplicateFolderNameException |
+			   FolderNameException | RequiredFileEntryTypeException exception) {
+
+			SessionErrors.add(actionRequest, exception.getClass());
+		}
+	}
+
+	private void _deleteExpiredTemporaryFileEntries(ActionRequest actionRequest)
 		throws PortalException {
 
 		long repositoryId = ParamUtil.getLong(actionRequest, "repositoryId");
@@ -94,9 +145,9 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
-	protected void deleteFolders(
+	private void _deleteFolders(
 			ActionRequest actionRequest, boolean moveToTrash)
-		throws Exception {
+		throws PortalException {
 
 		long[] deleteFolderIds = null;
 
@@ -130,73 +181,16 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		if (moveToTrash && (deleteFolderIds.length > 0)) {
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("trashedModels", trashedModels);
-
-			addDeleteSuccessData(actionRequest, data);
+			addDeleteSuccessData(
+				actionRequest,
+				HashMapBuilder.<String, Object>put(
+					"trashedModels", trashedModels
+				).build());
 		}
 	}
 
-	@Override
-	protected void doProcessAction(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws Exception {
-
-		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
-
-		try {
-			if (cmd.equals(Constants.ADD) || cmd.equals(Constants.UPDATE)) {
-				updateFolder(actionRequest);
-			}
-			else if (cmd.equals(Constants.DELETE)) {
-				deleteFolders(actionRequest, false);
-			}
-			else if (cmd.equals(Constants.MOVE_TO_TRASH)) {
-				deleteFolders(actionRequest, true);
-			}
-			else if (cmd.equals(Constants.SUBSCRIBE)) {
-				subscribeFolder(actionRequest);
-			}
-			else if (cmd.equals(Constants.UNSUBSCRIBE)) {
-				unsubscribeFolder(actionRequest);
-			}
-			else if (cmd.equals("deleteExpiredTemporaryFileEntries")) {
-				deleteExpiredTemporaryFileEntries(actionRequest);
-			}
-			else if (cmd.equals("updateWorkflowDefinitions")) {
-				updateWorkflowDefinitions(actionRequest);
-			}
-		}
-		catch (NoSuchFolderException | PrincipalException e) {
-			SessionErrors.add(actionRequest, e.getClass());
-
-			actionResponse.setRenderParameter(
-				"mvcPath", "/document_library/error.jsp");
-		}
-		catch (DuplicateFileEntryException | DuplicateFileException |
-			   DuplicateFolderNameException | FolderNameException |
-			   RequiredFileEntryTypeException e) {
-
-			SessionErrors.add(actionRequest, e.getClass());
-		}
-		catch (Exception e) {
-			throw new PortletException(e);
-		}
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLAppService(DLAppService dlAppService) {
-		_dlAppService = dlAppService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLTrashService(DLTrashService dlTrashService) {
-		_dlTrashService = dlTrashService;
-	}
-
-	protected void subscribeFolder(ActionRequest actionRequest)
-		throws Exception {
+	private void _subscribeFolder(ActionRequest actionRequest)
+		throws PortalException {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -206,8 +200,8 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 		_dlAppService.subscribeFolder(themeDisplay.getScopeGroupId(), folderId);
 	}
 
-	protected void unsubscribeFolder(ActionRequest actionRequest)
-		throws Exception {
+	private void _unsubscribeFolder(ActionRequest actionRequest)
+		throws PortalException {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -218,7 +212,9 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 			themeDisplay.getScopeGroupId(), folderId);
 	}
 
-	protected void updateFolder(ActionRequest actionRequest) throws Exception {
+	private void _updateFolder(ActionRequest actionRequest)
+		throws PortalException {
+
 		long folderId = ParamUtil.getLong(actionRequest, "folderId");
 
 		String name = ParamUtil.getString(actionRequest, "name");
@@ -249,8 +245,8 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
-	protected void updateWorkflowDefinitions(ActionRequest actionRequest)
-		throws Exception {
+	private void _updateWorkflowDefinitions(ActionRequest actionRequest)
+		throws PortalException {
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DLFileEntry.class.getName(), actionRequest);
@@ -260,7 +256,10 @@ public class EditFolderMVCActionCommand extends BaseMVCActionCommand {
 			serviceContext);
 	}
 
+	@Reference
 	private DLAppService _dlAppService;
+
+	@Reference
 	private DLTrashService _dlTrashService;
 
 }

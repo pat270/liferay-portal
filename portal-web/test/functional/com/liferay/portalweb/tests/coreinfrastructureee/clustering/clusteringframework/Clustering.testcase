@@ -1,10 +1,12 @@
 @component-name = "portal-clustering"
 definition {
+
 	property app.server.bundles.size = "1";
 	property cluster.enabled = "true";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property remote.elasticsearch.enabled = "true";
+	property test.assert.warning.exceptions = "true";
 	property testray.main.component.name = "Clustering";
 
 	setUp {
@@ -26,8 +28,9 @@ definition {
 		}
 	}
 
-	@priority = "5"
+	@priority = "4"
 	test AddAndDeleteBlogEntriesOnSeparateNodes {
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "Clustering#AddAndDeleteBlogEntriesOnSeparateNodes";
 
 		Clustering.viewClusterStatusInConsole();
@@ -36,7 +39,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Page1");
@@ -70,7 +72,7 @@ definition {
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryPG(
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
 
@@ -78,7 +80,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Test Page2");
@@ -97,7 +98,7 @@ definition {
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryPG(
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
 
@@ -121,7 +122,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Recycle Bin",
-			panel = "Site Administration",
 			portlet = "Recycle Bin");
 
 		RecycleBin.emptyCP();
@@ -143,7 +143,7 @@ definition {
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
 
-		BlogsEntry.viewEntry(
+		BlogsEntry.viewEntryPG(
 			entryContent = "Blogs Entry1 Content",
 			entryTitle = "Blogs Entry1 Title");
 
@@ -156,6 +156,7 @@ definition {
 
 	@priority = "5"
 	test ShutdownAndStartupNodes {
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "Clustering#ShutdownAndStartupNodes";
 
 		Clustering.viewClusterStatusInConsole();
@@ -226,7 +227,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Documents and Media Page");
@@ -272,14 +272,14 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
-	@priority = "5"
+	@priority = "4"
 	test ValidateLiveUsers {
 		property custom.properties = "live.users.enabled=true";
 		property test.name.skip.portal.instance = "Clustering#ValidateLiveUsers";
 
 		Clustering.viewClusterStatusInConsole();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Monitoring");
@@ -291,7 +291,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Monitoring");
@@ -303,7 +303,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Monitoring");
@@ -317,7 +317,7 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
 			portlet = "Monitoring");
@@ -341,7 +341,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Staging");
 
 		Staging.activateStagingCP(siteName = "${siteName}");
@@ -352,7 +351,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "New Page Name");
@@ -404,7 +402,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
-			panel = "Site Administration",
 			portlet = "Staging");
 
 		Staging.deactivateStagingCP(siteName = "${siteName}");
@@ -418,4 +415,5 @@ definition {
 			password = "test",
 			userEmailAddress = "test@liferay.com");
 	}
+
 }

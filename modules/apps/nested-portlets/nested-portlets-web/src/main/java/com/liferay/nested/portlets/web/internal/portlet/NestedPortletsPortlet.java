@@ -102,9 +102,9 @@ public class NestedPortletsPortlet extends MVCPortlet {
 			layoutTemplateId =
 				nestedPortletsDisplayContext.getLayoutTemplateId();
 		}
-		catch (ConfigurationException ce) {
+		catch (ConfigurationException configurationException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ce, ce);
+				_log.warn(configurationException, configurationException);
 			}
 		}
 
@@ -183,17 +183,18 @@ public class NestedPortletsPortlet extends MVCPortlet {
 	}
 
 	protected void checkLayout(Layout layout, Collection<String> columnIds) {
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
 		String[] layoutColumnIds = StringUtil.split(
-			typeSettingsProperties.get(
+			typeSettingsUnicodeProperties.get(
 				LayoutTypePortletConstants.NESTED_COLUMN_IDS));
 
 		boolean updateColumnIds = false;
 
 		for (String columnId : columnIds) {
-			String portletIds = typeSettingsProperties.getProperty(columnId);
+			String portletIds = typeSettingsUnicodeProperties.getProperty(
+				columnId);
 
 			if (Validator.isNotNull(portletIds) &&
 				!ArrayUtil.contains(layoutColumnIds, columnId)) {
@@ -205,20 +206,20 @@ public class NestedPortletsPortlet extends MVCPortlet {
 		}
 
 		if (updateColumnIds) {
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				LayoutTypePortletConstants.NESTED_COLUMN_IDS,
 				StringUtil.merge(layoutColumnIds));
 
-			layout.setTypeSettingsProperties(typeSettingsProperties);
+			layout.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 			try {
 				_layoutLocalService.updateLayout(
 					layout.getGroupId(), layout.isPrivateLayout(),
 					layout.getLayoutId(), layout.getTypeSettings());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e, e);
+					_log.warn(exception, exception);
 				}
 			}
 		}
@@ -239,7 +240,7 @@ public class NestedPortletsPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.nested.portlets.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.nested.portlets.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {

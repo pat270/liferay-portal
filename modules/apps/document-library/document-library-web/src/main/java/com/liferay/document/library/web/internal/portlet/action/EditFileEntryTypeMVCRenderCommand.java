@@ -20,11 +20,20 @@ import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeService;
 import com.liferay.document.library.kernel.util.DLUtil;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
-import com.liferay.dynamic.data.mapping.kernel.DDMStructureManagerUtil;
+import com.liferay.document.library.web.internal.constants.DLWebKeys;
+import com.liferay.document.library.web.internal.display.context.DLEditFileEntryTypeDisplayContext;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.service.DDMStorageLinkLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.dynamic.data.mapping.util.DDM;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -41,6 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Sergio González
  */
 @Component(
+	configurationPid = "com.liferay.document.library.configuration.FFDocumentLibraryDDMEditorConfiguration",
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY,
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
@@ -56,67 +66,95 @@ public class EditFileEntryTypeMVCRenderCommand implements MVCRenderCommand {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws PortletException {
 
-		DLFileEntryType dlFileEntryType = null;
-
 		try {
+			renderRequest.setAttribute(
+				DLWebKeys.
+					DOCUMENT_LIBRARY_EDIT_EDIT_FILE_ENTRY_TYPE_DISPLAY_CONTEXT,
+				new DLEditFileEntryTypeDisplayContext(
+					_ddm, _ddmStorageLinkLocalService,
+					_ddmStructureLocalService, _language,
+					_portal.getLiferayPortletRequest(renderRequest),
+					_portal.getLiferayPortletResponse(renderResponse)));
+
 			long fileEntryTypeId = ParamUtil.getLong(
 				renderRequest, "fileEntryTypeId");
 
-			if (fileEntryTypeId > 0) {
-				dlFileEntryType = _dlFileEntryTypeService.getFileEntryType(
-					fileEntryTypeId);
-
-				renderRequest.setAttribute(
-					WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY_TYPE, dlFileEntryType);
-
-				DDMStructure ddmStructure =
-					DDMStructureManagerUtil.fetchStructure(
-						dlFileEntryType.getGroupId(),
-						_portal.getClassNameId(DLFileEntryMetadata.class),
-						DLUtil.getDDMStructureKey(dlFileEntryType));
-
-				if (ddmStructure == null) {
-					ddmStructure = DDMStructureManagerUtil.fetchStructure(
-						dlFileEntryType.getGroupId(),
-						_portal.getClassNameId(DLFileEntryMetadata.class),
-						DLUtil.getDeprecatedDDMStructureKey(dlFileEntryType));
-				}
-
-				if (ddmStructure == null) {
-					ddmStructure = DDMStructureManagerUtil.fetchStructure(
-						dlFileEntryType.getGroupId(),
-						_portal.getClassNameId(DLFileEntryMetadata.class),
-						dlFileEntryType.getFileEntryTypeKey());
-				}
-
-				renderRequest.setAttribute(
-					WebKeys.DOCUMENT_LIBRARY_DYNAMIC_DATA_MAPPING_STRUCTURE,
-					ddmStructure);
-			}
-		}
-		catch (Exception e) {
-			if (e instanceof NoSuchFileEntryTypeException ||
-				e instanceof PrincipalException) {
-
-				SessionErrors.add(renderRequest, e.getClass());
-
-				return "/document_library/error.jsp";
+			if (fileEntryTypeId <= 0) {
+				return "/document_library/edit_file_entry_type.jsp";
 			}
 
-			throw new PortletException(e);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)renderRequest.getAttribute(WebKeys.THEME_DISPLAY);
+
+			DLFileEntryType dlFileEntryType =
+				_dlFileEntryTypeService.getFileEntryType(fileEntryTypeId);
+
+			_dlFileEntryTypeModelResourcePermission.check(
+				themeDisplay.getPermissionChecker(), dlFileEntryType,
+				ActionKeys.UPDATE);
+
+			renderRequest.setAttribute(
+				WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY_TYPE, dlFileEntryType);
+
+			renderRequest.setAttribute(
+				WebKeys.DOCUMENT_LIBRARY_DYNAMIC_DATA_MAPPING_STRUCTURE,
+				_fetchDDMStructure(dlFileEntryType));
+
+			return "/document_library/edit_file_entry_type.jsp";
+		}
+		catch (NoSuchFileEntryTypeException | PrincipalException exception) {
+			SessionErrors.add(renderRequest, exception.getClass());
+
+			return "/document_library/error.jsp";
+		}
+		catch (PortalException portalException) {
+			throw new PortletException(portalException);
+		}
+	}
+
+	private DDMStructure _fetchDDMStructure(DLFileEntryType dlFileEntryType) {
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
+			dlFileEntryType.getGroupId(),
+			_portal.getClassNameId(DLFileEntryMetadata.class),
+			DLUtil.getDDMStructureKey(dlFileEntryType));
+
+		if (ddmStructure == null) {
+			ddmStructure = _ddmStructureLocalService.fetchStructure(
+				dlFileEntryType.getGroupId(),
+				_portal.getClassNameId(DLFileEntryMetadata.class),
+				DLUtil.getDeprecatedDDMStructureKey(dlFileEntryType));
 		}
 
-		return "/document_library/edit_file_entry_type.jsp";
+		if (ddmStructure == null) {
+			ddmStructure = _ddmStructureLocalService.fetchStructure(
+				dlFileEntryType.getGroupId(),
+				_portal.getClassNameId(DLFileEntryMetadata.class),
+				dlFileEntryType.getFileEntryTypeKey());
+		}
+
+		return ddmStructure;
 	}
 
-	@Reference(unbind = "-")
-	protected void setDLFileEntryTypeService(
-		DLFileEntryTypeService dlFileEntryTypeService) {
+	@Reference
+	private DDM _ddm;
 
-		_dlFileEntryTypeService = dlFileEntryTypeService;
-	}
+	@Reference
+	private DDMStorageLinkLocalService _ddmStorageLinkLocalService;
 
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.document.library.kernel.model.DLFileEntryType)"
+	)
+	private volatile ModelResourcePermission<DLFileEntryType>
+		_dlFileEntryTypeModelResourcePermission;
+
+	@Reference
 	private DLFileEntryTypeService _dlFileEntryTypeService;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private Portal _portal;

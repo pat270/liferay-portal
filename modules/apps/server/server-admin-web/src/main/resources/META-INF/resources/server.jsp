@@ -27,11 +27,10 @@
 		%>
 
 		<clay:navigation-bar
-			inverted="<%= true %>"
 			navigationItems="<%= serverDisplayContext.getServerNavigationItems() %>"
 		/>
 
-		<div class="container-fluid-1280">
+		<div class="<%= (tabs1.equals("log-levels") || tabs1.equals("properties")) ? StringPool.BLANK : "container-fluid-1280" %>">
 			<c:choose>
 				<c:when test='<%= tabs1.equals("log-levels") %>'>
 					<liferay-util:include page="/log_levels.jsp" servletContext="<%= application %>" />

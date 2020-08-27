@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = VersioningPolicy.class)
+@Component(service = VersioningPolicy.class)
 public class MetadataVersioningPolicy implements VersioningPolicy {
 
 	@Override
@@ -118,9 +118,9 @@ public class MetadataVersioningPolicy implements VersioningPolicy {
 
 			return false;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(pe, pe);
+				_log.warn(portalException, portalException);
 			}
 
 			return false;

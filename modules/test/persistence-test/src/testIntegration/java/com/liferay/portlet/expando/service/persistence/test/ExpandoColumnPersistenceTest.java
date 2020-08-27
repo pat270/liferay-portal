@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -122,6 +122,10 @@ public class ExpandoColumnPersistenceTest {
 
 		ExpandoColumn newExpandoColumn = _persistence.create(pk);
 
+		newExpandoColumn.setMvccVersion(RandomTestUtil.nextLong());
+
+		newExpandoColumn.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newExpandoColumn.setCompanyId(RandomTestUtil.nextLong());
 
 		newExpandoColumn.setTableId(RandomTestUtil.nextLong());
@@ -139,6 +143,12 @@ public class ExpandoColumnPersistenceTest {
 		ExpandoColumn existingExpandoColumn = _persistence.findByPrimaryKey(
 			newExpandoColumn.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingExpandoColumn.getMvccVersion(),
+			newExpandoColumn.getMvccVersion());
+		Assert.assertEquals(
+			existingExpandoColumn.getCtCollectionId(),
+			newExpandoColumn.getCtCollectionId());
 		Assert.assertEquals(
 			existingExpandoColumn.getColumnId(),
 			newExpandoColumn.getColumnId());
@@ -209,8 +219,9 @@ public class ExpandoColumnPersistenceTest {
 
 	protected OrderByComparator<ExpandoColumn> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"ExpandoColumn", "columnId", true, "companyId", true, "tableId",
-			true, "name", true, "type", true);
+			"ExpandoColumn", "mvccVersion", true, "ctCollectionId", true,
+			"columnId", true, "companyId", true, "tableId", true, "name", true,
+			"type", true);
 	}
 
 	@Test
@@ -428,25 +439,71 @@ public class ExpandoColumnPersistenceTest {
 
 		_persistence.clearCache();
 
-		ExpandoColumn existingExpandoColumn = _persistence.findByPrimaryKey(
-			newExpandoColumn.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newExpandoColumn.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		ExpandoColumn newExpandoColumn = addExpandoColumn();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			ExpandoColumn.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"columnId", newExpandoColumn.getColumnId()));
+
+		List<ExpandoColumn> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(ExpandoColumn expandoColumn) {
 		Assert.assertEquals(
-			Long.valueOf(existingExpandoColumn.getTableId()),
+			Long.valueOf(expandoColumn.getTableId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingExpandoColumn, "getOriginalTableId", new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingExpandoColumn.getName(),
-				ReflectionTestUtil.invoke(
-					existingExpandoColumn, "getOriginalName",
-					new Class<?>[0])));
+				expandoColumn, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "tableId"));
+		Assert.assertEquals(
+			expandoColumn.getName(),
+			ReflectionTestUtil.invoke(
+				expandoColumn, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
 	}
 
 	protected ExpandoColumn addExpandoColumn() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		ExpandoColumn expandoColumn = _persistence.create(pk);
+
+		expandoColumn.setMvccVersion(RandomTestUtil.nextLong());
+
+		expandoColumn.setCtCollectionId(RandomTestUtil.nextLong());
 
 		expandoColumn.setCompanyId(RandomTestUtil.nextLong());
 

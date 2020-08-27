@@ -28,13 +28,10 @@ import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Mika Koivisto
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class AuditMessageBuilder {
 
 	public static AuditMessage buildAuditMessage(
@@ -84,15 +81,14 @@ public class AuditMessageBuilder {
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
 		for (Attribute attribute : attributes) {
-			JSONObject attributeJSONObject = JSONUtil.put(
-				"name", attribute.getName()
-			).put(
-				"newValue", attribute.getNewValue()
-			).put(
-				"oldValue", attribute.getOldValue()
-			);
-
-			jsonArray.put(attributeJSONObject);
+			jsonArray.put(
+				JSONUtil.put(
+					"name", attribute.getName()
+				).put(
+					"newValue", attribute.getNewValue()
+				).put(
+					"oldValue", attribute.getOldValue()
+				));
 		}
 
 		return jsonArray;

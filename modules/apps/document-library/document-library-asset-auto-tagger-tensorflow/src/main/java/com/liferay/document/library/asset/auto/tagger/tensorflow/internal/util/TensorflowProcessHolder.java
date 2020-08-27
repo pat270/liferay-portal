@@ -99,10 +99,10 @@ public class TensorflowProcessHolder {
 		try {
 			return future.get();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_stop();
 
-			return ReflectionUtil.throwException(e);
+			return ReflectionUtil.throwException(exception);
 		}
 	}
 
@@ -202,8 +202,6 @@ public class TensorflowProcessHolder {
 	private ProcessChannel<String> _startProcess(
 		ProcessExecutor processExecutor, int maxRelaunch, long timeout) {
 
-		ProcessChannel<String> processChannel;
-
 		if (_processChannel == null) {
 			try {
 				if ((System.currentTimeMillis() - _lastLaunchTime) > timeout) {
@@ -230,14 +228,12 @@ public class TensorflowProcessHolder {
 
 				_lastLaunchTime = System.currentTimeMillis();
 			}
-			catch (ProcessException pe) {
-				ReflectionUtil.throwException(pe);
+			catch (ProcessException processException) {
+				ReflectionUtil.throwException(processException);
 			}
 		}
 
-		processChannel = _processChannel;
-
-		return processChannel;
+		return _processChannel;
 	}
 
 	private synchronized void _stop() {

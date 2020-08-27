@@ -53,14 +53,13 @@ public class TiffOrientationTransformer {
 
 			return RenderedImageUtil.readImage(inputStreamSupplier.get());
 		}
-		catch (IOException ioe) {
-			throw new AMRuntimeException.IOException(ioe);
+		catch (IOException ioException) {
+			throw new AMRuntimeException.IOException(ioException);
 		}
 	}
 
 	private static Optional<Integer> _getTiffOrientationValue(
-			Supplier<InputStream> inputStreamSupplier)
-		throws PortalException {
+		Supplier<InputStream> inputStreamSupplier) {
 
 		try (InputStream inputStream = inputStreamSupplier.get()) {
 			Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
@@ -78,9 +77,9 @@ public class TiffOrientationTransformer {
 			return Optional.of(
 				exifIFD0Directory.getInt(ExifIFD0Directory.TAG_ORIENTATION));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 		}
 
@@ -89,7 +88,7 @@ public class TiffOrientationTransformer {
 
 	private static RenderedImage _transform(
 			Supplier<InputStream> inputStreamSupplier, int tiffOrientationValue)
-		throws IOException {
+		throws IOException, PortalException {
 
 		RenderedImage renderedImage = RenderedImageUtil.readImage(
 			inputStreamSupplier.get());

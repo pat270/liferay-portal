@@ -59,10 +59,8 @@ public class DLFolderAssetRendererFactory
 	public AssetRenderer<Folder> getAssetRenderer(long classPK, int type)
 		throws PortalException {
 
-		Folder folder = _dlAppLocalService.getFolder(classPK);
-
 		DLFolderAssetRenderer dlFolderAssetRenderer = new DLFolderAssetRenderer(
-			folder, _trashHelper);
+			_dlAppLocalService.getFolder(classPK), _trashHelper);
 
 		dlFolderAssetRenderer.setAssetRendererType(type);
 
@@ -96,7 +94,7 @@ public class DLFolderAssetRendererFactory
 		try {
 			liferayPortletURL.setWindowState(windowState);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 
 		return liferayPortletURL;
@@ -111,11 +109,7 @@ public class DLFolderAssetRendererFactory
 			permissionChecker, classPK, actionId);
 	}
 
-	@Reference(unbind = "-")
-	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
-		_dlAppLocalService = dlAppLocalService;
-	}
-
+	@Reference
 	private DLAppLocalService _dlAppLocalService;
 
 	@Reference(

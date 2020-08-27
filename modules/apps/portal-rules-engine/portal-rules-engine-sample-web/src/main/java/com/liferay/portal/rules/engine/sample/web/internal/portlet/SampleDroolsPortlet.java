@@ -15,11 +15,20 @@
 package com.liferay.portal.rules.engine.sample.web.internal.portlet;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.rules.engine.sample.web.constants.SampleDroolsPortletKeys;
+import com.liferay.portal.rules.engine.RulesEngine;
+import com.liferay.portal.rules.engine.sample.web.internal.constants.SampleDroolsPortletKeys;
+
+import java.io.IOException;
 
 import javax.portlet.Portlet;
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Marcellus Tavares
@@ -42,10 +51,30 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SampleDroolsPortletKeys.SAMPLE_DROOLS,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator,guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator,guest,power-user,user"
 	},
 	service = Portlet.class
 )
 public class SampleDroolsPortlet extends MVCPortlet {
+
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		if (_rulesEngine != null) {
+			renderRequest.setAttribute(
+				RulesEngine.class.getName(), _rulesEngine);
+		}
+
+		super.render(renderRequest, renderResponse);
+	}
+
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policyOption = ReferencePolicyOption.GREEDY,
+		target = "(rules.engine.default.language=DRL)"
+	)
+	private volatile RulesEngine _rulesEngine;
+
 }

@@ -79,7 +79,7 @@
 		<liferay-ui:error key="<%= NoSuchListTypeException.class.getName() + className + ListTypeConstants.ADDRESS %>" message="please-select-a-type" />
 		<liferay-ui:error exception="<%= NoSuchRegionException.class %>" message="please-select-a-region" />
 
-		<aui:fieldset cssClass="addresses" id='<%= renderResponse.getNamespace() + "addresses" %>'>
+		<aui:fieldset cssClass="addresses" id='<%= liferayPortletResponse.getNamespace() + "addresses" %>'>
 
 			<%
 			for (int i = 0; i < addressesIndexes.length; i++) {
@@ -99,27 +99,25 @@
 					</div>
 				</div>
 
-				<aui:script use="liferay-dynamic-select">
-					new Liferay.DynamicSelect(
-						[
-							{
-								select: '<portlet:namespace />addressCountryId<%= addressesIndex %>',
-								selectData: Liferay.Address.getCountries,
-								selectDesc: 'nameCurrentValue',
-								selectId: 'countryId',
-								selectSort: '<%= true %>',
-								selectVal: '<%= countryId %>'
-							},
-							{
-								select: '<portlet:namespace />addressRegionId<%= addressesIndex %>',
-								selectData: Liferay.Address.getRegions,
-								selectDesc: 'name',
-								selectId: 'regionId',
-								selectVal: '<%= regionId %>'
-							}
-						]
-					);
-				</aui:script>
+				<script>
+					new Liferay.DynamicSelect([
+						{
+							select: '<portlet:namespace />addressCountryId<%= addressesIndex %>',
+							selectData: Liferay.Address.getCountries,
+							selectDesc: 'nameCurrentValue',
+							selectId: 'countryId',
+							selectSort: '<%= true %>',
+							selectVal: '<%= countryId %>',
+						},
+						{
+							select: '<portlet:namespace />addressRegionId<%= addressesIndex %>',
+							selectData: Liferay.Address.getRegions,
+							selectDesc: 'name',
+							selectId: 'regionId',
+							selectVal: '<%= regionId %>',
+						},
+					]);
+				</script>
 
 			<%
 			}
@@ -128,46 +126,44 @@
 			<aui:input name="addressesIndexes" type="hidden" value="<%= StringUtil.merge(addressesIndexes) %>" />
 		</aui:fieldset>
 
-		<aui:script use="liferay-auto-fields,liferay-dynamic-select">
-			new Liferay.AutoFields(
-				{
-					contentBox: '#<portlet:namespace />addresses',
-					fieldIndexes: '<portlet:namespace />addressesIndexes',
-					namespace: '<portlet:namespace />',
-					on: {
-						'clone': function(event) {
-							var guid = event.guid;
-							var row = event.row;
+		<aui:script use="liferay-auto-fields">
+			new Liferay.AutoFields({
+				contentBox: '#<portlet:namespace />addresses',
+				fieldIndexes: '<portlet:namespace />addressesIndexes',
+				namespace: '<portlet:namespace />',
+				on: {
+					clone: function (event) {
+						var guid = event.guid;
+						var row = event.row;
 
-							var dynamicSelects = row.one('select[data-componentType=dynamic_select]');
+						var dynamicSelects = row.one(
+							'select[data-componentType=dynamic_select]'
+						);
 
-							if (dynamicSelects) {
-								dynamicSelects.detach('change');
-							}
-
-							new Liferay.DynamicSelect(
-								[
-									{
-										select: '<portlet:namespace />addressCountryId' + guid,
-										selectData: Liferay.Address.getCountries,
-										selectDesc: 'nameCurrentValue',
-										selectId: 'countryId',
-										selectSort: '<%= true %>',
-										selectVal: '0'
-									},
-									{
-										select: '<portlet:namespace />addressRegionId' + guid,
-										selectData: Liferay.Address.getRegions,
-										selectDesc: 'name',
-										selectId: 'regionId',
-										selectVal: '0'
-									}
-								]
-							);
+						if (dynamicSelects) {
+							dynamicSelects.detach('change');
 						}
-					}
-				}
-			).render();
+
+						new Liferay.DynamicSelect([
+							{
+								select: '<portlet:namespace />addressCountryId' + guid,
+								selectData: Liferay.Address.getCountries,
+								selectDesc: 'nameCurrentValue',
+								selectId: 'countryId',
+								selectSort: '<%= true %>',
+								selectVal: '0',
+							},
+							{
+								select: '<portlet:namespace />addressRegionId' + guid,
+								selectData: Liferay.Address.getRegions,
+								selectDesc: 'name',
+								selectId: 'regionId',
+								selectVal: '0',
+							},
+						]);
+					},
+				},
+			}).render();
 		</aui:script>
 	</c:when>
 	<c:otherwise>

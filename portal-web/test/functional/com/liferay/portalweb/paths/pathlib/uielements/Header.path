@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>H1_TITLE</td>
+	<td>//h1[contains(.,'${key_title}')]</td>
+	<td></td>
+</tr>	
+<tr>
 	<td>H2_TITLE</td>
 	<td>//h2[contains(.,'${key_title}')]</td>
 	<td></td>
@@ -18,6 +23,17 @@
 	<td>//h3[contains(.,'${key_title}')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td>H4_TITLE</td>
+	<td>//h4[contains(.,'${key_title}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>H4_SPECIFIC_TITLE</td>
+	<td>//h4[@class='text-default' and contains(.,'${key_title}')]</td>
+	<td></td>
+</tr>
+
 </tbody>
 </table>
 </body>

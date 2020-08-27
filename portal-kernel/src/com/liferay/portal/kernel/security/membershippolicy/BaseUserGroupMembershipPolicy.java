@@ -34,7 +34,7 @@ public abstract class BaseUserGroupMembershipPolicy
 			checkMembership(
 				new long[] {userId}, new long[] {userGroupId}, null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 
@@ -49,7 +49,7 @@ public abstract class BaseUserGroupMembershipPolicy
 			checkMembership(
 				new long[] {userId}, null, new long[] {userGroupId});
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return true;
 		}
 
@@ -62,9 +62,7 @@ public abstract class BaseUserGroupMembershipPolicy
 			UserGroupLocalServiceUtil.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setPerformActionMethod(
-			(UserGroup userGroup) -> {
-				verifyPolicy(userGroup);
-			});
+			(UserGroup userGroup) -> verifyPolicy(userGroup));
 
 		actionableDynamicQuery.performActions();
 	}

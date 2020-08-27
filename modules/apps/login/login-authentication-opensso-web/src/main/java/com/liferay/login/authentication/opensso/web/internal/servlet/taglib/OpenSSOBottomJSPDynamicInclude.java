@@ -66,8 +66,8 @@ public class OpenSSOBottomJSPDynamicInclude extends BaseJSPDynamicInclude {
 				return;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return;
 		}
@@ -109,6 +109,7 @@ public class OpenSSOBottomJSPDynamicInclude extends BaseJSPDynamicInclude {
 		return _log;
 	}
 
+	@Override
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.login.authentication.opensso.web)",
 		unbind = "-"

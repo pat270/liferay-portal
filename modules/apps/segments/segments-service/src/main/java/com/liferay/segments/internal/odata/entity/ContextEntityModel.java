@@ -27,27 +27,27 @@ import com.liferay.segments.context.Context;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
- * Provides the entity data model for the Context.
+ * Provides the entity data model for the context that segments users.
  *
  * @author Eduardo García
- * @review
  */
 public class ContextEntityModel implements EntityModel {
 
 	public static final String NAME = "Context";
 
 	public ContextEntityModel(List<EntityField> customEntityFields) {
-		_entityFieldsMap = Stream.of(
+		_entityFieldsMap = EntityModel.toEntityFieldsMap(
 			new BooleanEntityField(
 				Context.SIGNED_IN, locale -> Context.SIGNED_IN),
 			new CollectionEntityField(
 				new StringEntityField(
 					Context.COOKIES, locale -> Context.COOKIES)),
+			new CollectionEntityField(
+				new StringEntityField(
+					Context.REQUEST_PARAMETERS,
+					locale -> Context.REQUEST_PARAMETERS)),
 			new ComplexEntityField("customContext", customEntityFields),
 			new DateEntityField(
 				Context.LOCAL_DATE, locale -> Context.LOCAL_DATE,
@@ -67,16 +67,14 @@ public class ContextEntityModel implements EntityModel {
 				Context.DEVICE_BRAND, locale -> Context.DEVICE_BRAND),
 			new StringEntityField(
 				Context.DEVICE_MODEL, locale -> Context.DEVICE_MODEL),
+			new StringEntityField(Context.HOSTNAME, locale -> Context.HOSTNAME),
 			new StringEntityField(
 				Context.LANGUAGE_ID, locale -> Context.LANGUAGE_ID),
 			new StringEntityField(
 				Context.REFERRER_URL, locale -> Context.REFERRER_URL),
 			new StringEntityField(Context.URL, locale -> Context.URL),
 			new StringEntityField(
-				Context.USER_AGENT, locale -> Context.USER_AGENT)
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+				Context.USER_AGENT, locale -> Context.USER_AGENT));
 	}
 
 	@Override

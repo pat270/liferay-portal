@@ -4,6 +4,8 @@ import ${apiPackagePath}.model.${entity.name};
 import ${apiPackagePath}.service.${entity.name}LocalService;
 import ${entity.UADPackagePath}.uad.constants.${entity.UADApplicationName}UADConstants;
 
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
@@ -38,6 +40,10 @@ public abstract class Base${entity.name}UADAnonymizer extends DynamicQueryUADAno
 								${entity.varName}.set${uadAnonymizableEntityColumn.methodName}(anonymousUser.get${textFormatter.format(uadAnonymizableEntityColumn.UADAnonymizeFieldName, 6)}());
 							</#list>
 						</#if>
+
+						<#if hasAssetEntry && stringUtil.equals(uadUserIdEntityColumn.name, "userId")>
+							autoAnonymizeAssetEntry(${entity.varName}, anonymousUser);
+						</#if>
 					}
 		</#list>
 
@@ -56,6 +62,19 @@ public abstract class Base${entity.name}UADAnonymizer extends DynamicQueryUADAno
 		return ${entity.name}.class;
 	}
 
+	<#if hasAssetEntry>
+		protected void autoAnonymizeAssetEntry(${entity.name} ${entity.varName}, User anonymousUser) {
+			AssetEntry assetEntry = fetchAssetEntry(${entity.varName});
+
+			if (assetEntry != null) {
+				assetEntry.setUserId(anonymousUser.getUserId());
+				assetEntry.setUserName(anonymousUser.getFullName());
+
+				assetEntryLocalService.updateAssetEntry(assetEntry);
+			}
+		}
+	</#if>
+
 	@Override
 	protected ActionableDynamicQuery doGetActionableDynamicQuery() {
 		return ${entity.varName}LocalService.getActionableDynamicQuery();
@@ -65,6 +84,15 @@ public abstract class Base${entity.name}UADAnonymizer extends DynamicQueryUADAno
 	protected String[] doGetUserIdFieldNames() {
 		return ${entity.UADApplicationName}UADConstants.USER_ID_FIELD_NAMES_${entity.constantName};
 	}
+
+	<#if hasAssetEntry>
+		protected AssetEntry fetchAssetEntry(${entity.name} ${entity.varName}) {
+			return assetEntryLocalService.fetchEntry(${entity.name}.class.getName(), ${entity.varName}.get${entity.getPKMethodName()}());
+		}
+
+		@Reference
+		protected AssetEntryLocalService assetEntryLocalService;
+	</#if>
 
 	@Reference
 	protected ${entity.name}LocalService ${entity.varName}LocalService;

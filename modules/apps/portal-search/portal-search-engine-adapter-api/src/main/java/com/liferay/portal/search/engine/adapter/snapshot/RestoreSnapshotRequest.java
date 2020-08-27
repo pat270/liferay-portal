@@ -14,13 +14,13 @@
 
 package com.liferay.portal.search.engine.adapter.snapshot;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class RestoreSnapshotRequest
+	extends CrossClusterRequest
 	implements SnapshotRequest<RestoreSnapshotResponse> {
 
 	public RestoreSnapshotRequest(String repositoryName, String snapshotName) {

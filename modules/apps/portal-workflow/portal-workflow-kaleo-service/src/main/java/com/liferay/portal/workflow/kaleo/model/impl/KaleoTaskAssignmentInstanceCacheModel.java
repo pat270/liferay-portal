@@ -27,32 +27,29 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoTaskAssignmentInstance in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoTaskAssignmentInstanceCacheModel
 	implements CacheModel<KaleoTaskAssignmentInstance>, Externalizable,
 			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoTaskAssignmentInstanceCacheModel)) {
+		if (!(object instanceof KaleoTaskAssignmentInstanceCacheModel)) {
 			return false;
 		}
 
 		KaleoTaskAssignmentInstanceCacheModel
 			kaleoTaskAssignmentInstanceCacheModel =
-				(KaleoTaskAssignmentInstanceCacheModel)obj;
+				(KaleoTaskAssignmentInstanceCacheModel)object;
 
 		if ((kaleoTaskAssignmentInstanceId ==
 				kaleoTaskAssignmentInstanceCacheModel.
@@ -85,7 +82,7 @@ public class KaleoTaskAssignmentInstanceCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(37);
+		StringBundler sb = new StringBundler(39);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -103,6 +100,8 @@ public class KaleoTaskAssignmentInstanceCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoInstanceId=");
@@ -162,6 +161,7 @@ public class KaleoTaskAssignmentInstanceCacheModel
 				new Date(modifiedDate));
 		}
 
+		kaleoTaskAssignmentInstanceImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoTaskAssignmentInstanceImpl.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoTaskAssignmentInstanceImpl.setKaleoInstanceId(kaleoInstanceId);
@@ -217,6 +217,8 @@ public class KaleoTaskAssignmentInstanceCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
+		kaleoDefinitionId = objectInput.readLong();
+
 		kaleoDefinitionVersionId = objectInput.readLong();
 
 		kaleoInstanceId = objectInput.readLong();
@@ -257,6 +259,8 @@ public class KaleoTaskAssignmentInstanceCacheModel
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		objectOutput.writeLong(kaleoDefinitionId);
+
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
 		objectOutput.writeLong(kaleoInstanceId);
@@ -295,6 +299,7 @@ public class KaleoTaskAssignmentInstanceCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoInstanceId;
 	public long kaleoInstanceTokenId;

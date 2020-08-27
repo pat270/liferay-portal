@@ -53,13 +53,12 @@ public class JavaClassParser {
 				continue;
 			}
 
-			int lineNumber = SourceUtil.getLineNumber(content, matcher.start());
-
 			anonymousClasses.add(
 				_parseJavaClass(
-					StringPool.BLANK, anonymousClassContent, lineNumber,
+					StringPool.BLANK, anonymousClassContent,
+					SourceUtil.getLineNumber(content, matcher.start()),
 					JavaTerm.ACCESS_MODIFIER_PRIVATE, false, false, false,
-					false, true));
+					false, false, true));
 		}
 
 		return anonymousClasses;
@@ -109,6 +108,13 @@ public class JavaClassParser {
 		}
 
 		boolean isEnum = false;
+
+		boolean isFinal = false;
+
+		if (matcher.group(3) != null) {
+			isFinal = true;
+		}
+
 		boolean isInterface = false;
 
 		if (matcher.group(4) != null) {
@@ -124,7 +130,7 @@ public class JavaClassParser {
 
 		JavaClass javaClass = _parseJavaClass(
 			className, classContent, lineNumber,
-			JavaTerm.ACCESS_MODIFIER_PUBLIC, isAbstract, false, isEnum,
+			JavaTerm.ACCESS_MODIFIER_PUBLIC, isAbstract, isFinal, false, isEnum,
 			isInterface, false);
 
 		javaClass.setPackageName(JavaSourceUtil.getPackageName(content));
@@ -156,9 +162,10 @@ public class JavaClassParser {
 					return null;
 				}
 
-				if (ToolsUtil.getLevel(
-						content.substring(start, x + 1), "<", ">") == 0) {
+				int level = ToolsUtil.getLevel(
+					content.substring(start, x + 1), "<", ">");
 
+				if (level == 0) {
 					break;
 				}
 			}
@@ -288,6 +295,7 @@ public class JavaClassParser {
 		boolean isAbstract = SourceUtil.containsUnquoted(
 			startLine, " abstract ");
 		boolean isEnum = SourceUtil.containsUnquoted(startLine, " enum ");
+		boolean isFinal = SourceUtil.containsUnquoted(startLine, " final ");
 		boolean isInterface = SourceUtil.containsUnquoted(
 			startLine, " interface ");
 		boolean isStatic = SourceUtil.containsUnquoted(startLine, " static ");
@@ -302,8 +310,8 @@ public class JavaClassParser {
 
 			return _parseJavaClass(
 				_getClassName(startLine), javaTermContent, lineNumber,
-				accessModifier, isAbstract, isStatic, isEnum, isInterface,
-				false);
+				accessModifier, isAbstract, isFinal, isStatic, isEnum,
+				isInterface, false);
 		}
 
 		if (((x > 0) && ((y == -1) || (y > x))) ||
@@ -311,7 +319,7 @@ public class JavaClassParser {
 
 			return new JavaVariable(
 				_getVariableName(startLine), javaTermContent, accessModifier,
-				lineNumber, isAbstract, isStatic);
+				lineNumber, isAbstract, isFinal, isStatic);
 		}
 
 		if (y == -1) {
@@ -327,7 +335,7 @@ public class JavaClassParser {
 
 			return new JavaMethod(
 				_getConstructorOrMethodName(startLine, y), javaTermContent,
-				accessModifier, lineNumber, isAbstract, isStatic);
+				accessModifier, lineNumber, isAbstract, isFinal, isStatic);
 		}
 
 		if ((spaceCount == 1) ||
@@ -336,7 +344,7 @@ public class JavaClassParser {
 
 			return new JavaConstructor(
 				_getConstructorOrMethodName(startLine, y), javaTermContent,
-				accessModifier, lineNumber, isAbstract, isStatic);
+				accessModifier, lineNumber, isAbstract, isFinal, isStatic);
 		}
 
 		return null;
@@ -371,10 +379,9 @@ public class JavaClassParser {
 		int level = 0;
 
 		while (true) {
-			String line = SourceUtil.getLine(classContent, lineNumber);
-
 			level += ToolsUtil.getLevel(
-				line, increaseLevelString, decreaseLevelString);
+				SourceUtil.getLine(classContent, lineNumber),
+				increaseLevelString, decreaseLevelString);
 
 			if (level == 0) {
 				return lineNumber;
@@ -451,13 +458,14 @@ public class JavaClassParser {
 
 	private static JavaClass _parseJavaClass(
 			String className, String classContent, int classLineNumber,
-			String accessModifier, boolean isAbstract, boolean isStatic,
-			boolean isEnum, boolean isInterface, boolean anonymous)
+			String accessModifier, boolean isAbstract, boolean isFinal,
+			boolean isStatic, boolean isEnum, boolean isInterface,
+			boolean anonymous)
 		throws IOException, ParseException {
 
 		JavaClass javaClass = new JavaClass(
 			className, classContent, accessModifier, classLineNumber,
-			isAbstract, isStatic, isInterface, anonymous);
+			isAbstract, isFinal, isStatic, isInterface, anonymous);
 
 		int lineNumber = 0;
 

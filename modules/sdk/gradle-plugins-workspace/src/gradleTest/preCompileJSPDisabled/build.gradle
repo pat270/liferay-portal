@@ -1,0 +1,15 @@
+task runGradleTest
+
+gradle.liferayWorkspace {
+	homeDir = new File(buildDir, "bundles")
+	modules.jspPrecompileEnabled = false
+}
+
+runGradleTest {
+	dependsOn ":modules:bar-web:assemble", ":modules:foo-web:assemble"
+
+	doLast {
+		assert !file("modules/bar-web/build/tmp/compileJSP/org/apache/jsp/view_jsp.class").exists()
+		assert file("modules/foo-web/build/tmp/compileJSP/org/apache/jsp/view_jsp.class").exists()
+	}
+}

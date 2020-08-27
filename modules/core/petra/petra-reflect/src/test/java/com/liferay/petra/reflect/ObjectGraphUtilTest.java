@@ -110,18 +110,27 @@ public class ObjectGraphUtilTest {
 		Assert.assertTrue(
 			_recordAnnotatedFieldMappingVisitor.isFieldTypeClass(
 				LinkedType3[][].class));
+
+		LinkedType1 linkedType1 = new LinkedType1() {
+		};
+
 		Assert.assertTrue(
 			_recordAnnotatedFieldMappingVisitor.isFieldTypeClass(
-				new LinkedType1() {
-				}.getClass()));
+				linkedType1.getClass()));
+
+		LinkedType2 linkedType2 = new LinkedType2() {
+		};
+
 		Assert.assertFalse(
 			_recordAnnotatedFieldMappingVisitor.isFieldTypeClass(
-				new LinkedType2() {
-				}.getClass()));
+				linkedType2.getClass()));
+
+		LinkedType3 linkedType3 = new LinkedType3() {
+		};
+
 		Assert.assertTrue(
 			_recordAnnotatedFieldMappingVisitor.isFieldTypeClass(
-				new LinkedType3() {
-				}.getClass()));
+				linkedType3.getClass()));
 	}
 
 	@Test
@@ -135,18 +144,27 @@ public class ObjectGraphUtilTest {
 		Assert.assertFalse(
 			_recordAnnotatedFieldMappingVisitor.isLinkedClass(
 				LinkedType3.class));
+
+		LinkedType1 linkedType1 = new LinkedType1() {
+		};
+
 		Assert.assertTrue(
 			_recordAnnotatedFieldMappingVisitor.isLinkedClass(
-				new LinkedType1() {
-				}.getClass()));
+				linkedType1.getClass()));
+
+		LinkedType2 linkedType2 = new LinkedType2() {
+		};
+
 		Assert.assertTrue(
 			_recordAnnotatedFieldMappingVisitor.isLinkedClass(
-				new LinkedType2() {
-				}.getClass()));
+				linkedType2.getClass()));
+
+		LinkedType3 linkedType3 = new LinkedType3() {
+		};
+
 		Assert.assertFalse(
 			_recordAnnotatedFieldMappingVisitor.isLinkedClass(
-				new LinkedType3() {
-				}.getClass()));
+				linkedType3.getClass()));
 	}
 
 	@Test
@@ -270,7 +288,7 @@ public class ObjectGraphUtilTest {
 
 	@Test
 	public void testWalkObjectGraphNullReferenceWithException() {
-		final Exception exception = new Exception();
+		final Exception exception1 = new Exception();
 
 		try {
 			ObjectGraphUtil.walkObjectGraph(
@@ -281,15 +299,15 @@ public class ObjectGraphUtilTest {
 					public Object visit(Field field, Object target)
 						throws Exception {
 
-						throw exception;
+						throw exception1;
 					}
 
 				});
 
 			Assert.fail();
 		}
-		catch (Exception e) {
-			Assert.assertSame(exception, e);
+		catch (Exception exception2) {
+			Assert.assertSame(exception1, exception2);
 		}
 	}
 

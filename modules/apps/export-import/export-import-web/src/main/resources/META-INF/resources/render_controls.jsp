@@ -45,8 +45,6 @@ for (int i = 0; i < controls.length; i++) {
 			<c:when test="<%= controls[i] instanceof PortletDataHandlerBoolean %>">
 
 				<%
-				Map<String, Object> data = new HashMap<String, Object>();
-
 				PortletDataHandlerBoolean control = (PortletDataHandlerBoolean)controls[i];
 
 				String controlLabel = LanguageUtil.get(request, resourceBundle, control.getControlLabel());
@@ -59,14 +57,16 @@ for (int i = 0; i < controls.length; i++) {
 					long modelAdditionCount = manifestSummary.getModelAdditionCount(stagedModelType);
 
 					if (modelAdditionCount != 0) {
-						controlLabel += modelAdditionCount > 0 ? " (" + modelAdditionCount + ")" : StringPool.BLANK;
+						controlLabel += (modelAdditionCount > 0) ? " (" + modelAdditionCount + ")" : StringPool.BLANK;
 					}
 					else {
 						continue control;
 					}
 				}
 
-				data.put("name", controlLabel);
+				Map<String, Object> data = HashMapBuilder.<String, Object>put(
+					"name", controlLabel
+				).build();
 
 				if (!childControl) {
 					data.put("root-control-id", liferayPortletResponse.getNamespace() + rootControlId);
@@ -91,7 +91,12 @@ for (int i = 0; i < controls.length; i++) {
 					</ul>
 
 					<aui:script>
-						Liferay.Util.toggleBoxes('<portlet:namespace /><%= controlName %>', '<portlet:namespace /><%= controlName %>Controls', false, true);
+						Liferay.Util.toggleBoxes(
+							'<portlet:namespace /><%= controlName %>',
+							'<portlet:namespace /><%= controlName %>Controls',
+							false,
+							true
+						);
 					</aui:script>
 				</c:if>
 			</c:when>
@@ -109,11 +114,11 @@ for (int i = 0; i < controls.length; i++) {
 
 						String controlValue = MapUtil.getString(parameterMap, control.getNamespacedControlName(), defaultChoice);
 
-						Map<String, Object> data = new HashMap<String, Object>();
-
 						String controlName = LanguageUtil.get(request, resourceBundle, choice);
 
-						data.put("name", controlName);
+						Map<String, Object> data = HashMapBuilder.<String, Object>put(
+							"name", controlName
+						).build();
 					%>
 
 						<aui:input checked="<%= controlValue.equals(choice) %>" data="<%= data %>" disabled="<%= disableInputs %>" helpMessage="<%= control.getHelpMessage(locale, action) %>" label="<%= controlName %>" name="<%= control.getNamespacedControlName() %>" type="radio" value="<%= choice %>" />

@@ -15,6 +15,7 @@
 package com.liferay.portal.upgrade.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
@@ -28,7 +29,7 @@ import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
@@ -44,16 +45,15 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.upgrade.BaseUpgradePortletId;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 
 import java.sql.Connection;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -187,13 +187,12 @@ public class BaseUpgradePortletIdTest extends BaseUpgradePortletId {
 		LayoutTypePortlet layoutTypePortlet =
 			(LayoutTypePortlet)layout.getLayoutType();
 
-		Map<Long, String[]> roleIdsToActionIds = new HashMap<>();
-
 		Role role = _roleLocalService.getRole(
 			TestPropsValues.getCompanyId(), RoleConstants.USER);
 
-		roleIdsToActionIds.put(
-			role.getRoleId(), new String[] {ActionKeys.CONFIGURATION});
+		Map<Long, String[]> roleIdsToActionIds = HashMapBuilder.put(
+			role.getRoleId(), new String[] {ActionKeys.CONFIGURATION}
+		).build();
 
 		Portlet portlet = null;
 		String[][] renamePortletIdsArray = new String[_PORTLET_IDS.length][2];
@@ -382,7 +381,7 @@ public class BaseUpgradePortletIdTest extends BaseUpgradePortletId {
 	private static final String _INSTANCE_ID = "_INSTANCE_LhZwzy867qfr";
 
 	private static final String[] _PORTLET_IDS = {
-		"47", com.liferay.portlet.util.test.PortletKeys.TEST
+		"47", "com_liferay_test_portlet_TestPortlet"
 	};
 
 	@Inject

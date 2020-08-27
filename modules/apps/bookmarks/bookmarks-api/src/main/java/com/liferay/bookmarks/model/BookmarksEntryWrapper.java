@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link BookmarksEntry}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BookmarksEntry
  * @generated
  */
-@ProviderType
 public class BookmarksEntryWrapper
 	extends BaseModelWrapper<BookmarksEntry>
 	implements BookmarksEntry, ModelWrapper<BookmarksEntry> {
@@ -46,6 +43,7 @@ public class BookmarksEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("entryId", getEntryId());
 		attributes.put("groupId", getGroupId());
@@ -59,7 +57,6 @@ public class BookmarksEntryWrapper
 		attributes.put("name", getName());
 		attributes.put("url", getUrl());
 		attributes.put("description", getDescription());
-		attributes.put("visits", getVisits());
 		attributes.put("priority", getPriority());
 		attributes.put("lastPublishDate", getLastPublishDate());
 		attributes.put("status", getStatus());
@@ -72,6 +69,12 @@ public class BookmarksEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -148,12 +151,6 @@ public class BookmarksEntryWrapper
 
 		if (description != null) {
 			setDescription(description);
-		}
-
-		Integer visits = (Integer)attributes.get("visits");
-
-		if (visits != null) {
-			setVisits(visits);
 		}
 
 		Integer priority = (Integer)attributes.get("priority");
@@ -285,6 +282,16 @@ public class BookmarksEntryWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this bookmarks entry.
+	 *
+	 * @return the mvcc version of this bookmarks entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -461,13 +468,8 @@ public class BookmarksEntryWrapper
 		return model.getUuid();
 	}
 
-	/**
-	 * Returns the visits of this bookmarks entry.
-	 *
-	 * @return the visits of this bookmarks entry
-	 */
 	@Override
-	public int getVisits() {
+	public long getVisits() {
 		return model.getVisits();
 	}
 
@@ -667,6 +669,16 @@ public class BookmarksEntryWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this bookmarks entry.
+	 *
+	 * @param mvccVersion the mvcc version of this bookmarks entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the name of this bookmarks entry.
 	 *
 	 * @param name the name of this bookmarks entry
@@ -804,16 +816,6 @@ public class BookmarksEntryWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
-	}
-
-	/**
-	 * Sets the visits of this bookmarks entry.
-	 *
-	 * @param visits the visits of this bookmarks entry
-	 */
-	@Override
-	public void setVisits(int visits) {
-		model.setVisits(visits);
 	}
 
 	@Override

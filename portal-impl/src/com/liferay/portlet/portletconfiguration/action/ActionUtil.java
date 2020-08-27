@@ -15,7 +15,6 @@
 package com.liferay.portlet.portletconfiguration.action;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
@@ -76,10 +75,8 @@ public class ActionUtil {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Layout layout = themeDisplay.getLayout();
-
 		return PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-			layout, portlet.getPortletId());
+			themeDisplay.getLayout(), portlet.getPortletId());
 	}
 
 	public static void getLayoutPublicRenderParameters(
@@ -127,10 +124,9 @@ public class ActionUtil {
 		String portletId = ParamUtil.getString(
 			portletRequest, "portletResource");
 
-		Layout layout = PortletConfigurationLayoutUtil.getLayout(themeDisplay);
-
 		if (!PortletPermissionUtil.contains(
-				permissionChecker, themeDisplay.getScopeGroupId(), layout,
+				permissionChecker, themeDisplay.getScopeGroupId(),
+				PortletConfigurationLayoutUtil.getLayout(themeDisplay),
 				portletId, ActionKeys.CONFIGURATION)) {
 
 			throw new PrincipalException.MustHavePermission(
@@ -156,10 +152,8 @@ public class ActionUtil {
 				(ThemeDisplay)portletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			Layout layout = themeDisplay.getLayout();
-
 			preferences = PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-				layout, portlet.getPortletId());
+				themeDisplay.getLayout(), portlet.getPortletId());
 		}
 
 		List<PublicRenderParameterConfiguration>
@@ -246,12 +240,9 @@ public class ActionUtil {
 			ActionRequest actionRequest, PortletPreferences portletPreferences)
 		throws PortalException {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(actionRequest);
-
 		portletPreferences = getPortletPreferences(
-			httpServletRequest, actionRequest.getPreferences(),
-			portletPreferences);
+			PortalUtil.getHttpServletRequest(actionRequest),
+			actionRequest.getPreferences(), portletPreferences);
 
 		return new ConfigurationActionRequest(
 			actionRequest, portletPreferences);
@@ -282,12 +273,9 @@ public class ActionUtil {
 			PortletPreferences portletPreferences)
 		throws PortalException {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(resourceRequest);
-
 		portletPreferences = getPortletPreferences(
-			httpServletRequest, resourceRequest.getPreferences(),
-			portletPreferences);
+			PortalUtil.getHttpServletRequest(resourceRequest),
+			resourceRequest.getPreferences(), portletPreferences);
 
 		return new ConfigurationResourceRequest(
 			resourceRequest, portletPreferences);

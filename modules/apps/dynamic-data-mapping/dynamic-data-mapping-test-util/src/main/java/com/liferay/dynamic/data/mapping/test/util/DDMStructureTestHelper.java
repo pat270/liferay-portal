@@ -14,10 +14,10 @@
 
 package com.liferay.dynamic.data.mapping.test.util;
 
+import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
@@ -74,6 +74,25 @@ public class DDMStructureTestHelper {
 	}
 
 	public DDMStructure addStructure(
+			Group group, long parentStructureId, long classNameId,
+			String structureKey, String name, String description,
+			DDMForm ddmForm, DDMFormLayout ddmFormLayout, String storageType,
+			int type, int status)
+		throws Exception {
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(group.getGroupId());
+
+		serviceContext.setAttribute("status", status);
+
+		return DDMStructureLocalServiceUtil.addStructure(
+			TestPropsValues.getUserId(), group.getGroupId(), parentStructureId,
+			classNameId, structureKey, getDefaultLocaleMap(name),
+			getDefaultLocaleMap(description), ddmForm, ddmFormLayout,
+			storageType, type, serviceContext);
+	}
+
+	public DDMStructure addStructure(
 			long parentStructureId, long classNameId, String structureKey,
 			String name, String description, DDMForm ddmForm,
 			DDMFormLayout ddmFormLayout, String storageType, int type)
@@ -92,16 +111,9 @@ public class DDMStructureTestHelper {
 			int status)
 		throws Exception {
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
-		serviceContext.setAttribute("status", status);
-
-		return DDMStructureLocalServiceUtil.addStructure(
-			TestPropsValues.getUserId(), _group.getGroupId(), parentStructureId,
-			classNameId, structureKey, getDefaultLocaleMap(name),
-			getDefaultLocaleMap(description), ddmForm, ddmFormLayout,
-			storageType, type, serviceContext);
+		return addStructure(
+			_group, parentStructureId, classNameId, structureKey, name,
+			description, ddmForm, ddmFormLayout, storageType, type, status);
 	}
 
 	public DDMStructure addStructure(
@@ -122,15 +134,12 @@ public class DDMStructureTestHelper {
 			String definition, String storageType)
 		throws Exception {
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		return DDMStructureLocalServiceUtil.addStructure(
 			TestPropsValues.getUserId(), _group.getGroupId(),
 			DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID, classNameId,
 			structureKey, getDefaultLocaleMap(name),
 			getDefaultLocaleMap(StringPool.BLANK), definition, storageType,
-			serviceContext);
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 	}
 
 	public DDMStructure updateStructure(long structureId, DDMForm ddmForm)
@@ -155,14 +164,12 @@ public class DDMStructureTestHelper {
 			DDMFormLayout ddmFormLayout)
 		throws Exception {
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
-
 		return DDMStructureLocalServiceUtil.updateStructure(
 			TestPropsValues.getUserId(), structureId,
 			DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,
 			getDefaultLocaleMap(name), getDefaultLocaleMap(description),
-			ddmForm, ddmFormLayout, serviceContext);
+			ddmForm, ddmFormLayout,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 	}
 
 	private final long _classNameId;

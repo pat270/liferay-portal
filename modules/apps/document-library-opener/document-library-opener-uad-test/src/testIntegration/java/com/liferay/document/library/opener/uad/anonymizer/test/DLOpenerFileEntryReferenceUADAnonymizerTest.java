@@ -61,7 +61,7 @@ public class DLOpenerFileEntryReferenceUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<DLOpenerFileEntryReference> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -86,9 +86,11 @@ public class DLOpenerFileEntryReferenceUADAnonymizerTest
 
 	@Override
 	protected boolean isBaseModelDeleted(long baseModelPK) {
-		if (_dlOpenerFileEntryReferenceLocalService.
-				fetchDLOpenerFileEntryReference(baseModelPK) == null) {
+		DLOpenerFileEntryReference dlOpenerFileEntryReference =
+			_dlOpenerFileEntryReferenceLocalService.
+				fetchDLOpenerFileEntryReference(baseModelPK);
 
+		if (dlOpenerFileEntryReference == null) {
 			return true;
 		}
 
@@ -104,6 +106,6 @@ public class DLOpenerFileEntryReferenceUADAnonymizerTest
 		_dlOpenerFileEntryReferences = new ArrayList<>();
 
 	@Inject(filter = "component.name=*.DLOpenerFileEntryReferenceUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<DLOpenerFileEntryReference> _uadAnonymizer;
 
 }

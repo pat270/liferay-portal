@@ -15,8 +15,11 @@
 package com.liferay.trash.model;
 
 /**
- * @author Zsolt Berentey
+ * @author     Zsolt Berentey
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.trash.constants.TrashEntryConstants}
  */
+@Deprecated
 public class TrashEntryConstants {
 
 	public static final int DEFAULT_CONTAINER_ID = -1;

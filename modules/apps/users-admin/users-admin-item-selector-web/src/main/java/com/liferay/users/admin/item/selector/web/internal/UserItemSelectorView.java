@@ -17,10 +17,8 @@ package com.liferay.users.admin.item.selector.web.internal;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
-import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.users.admin.item.selector.UserItemSelectorCriterion;
 import com.liferay.users.admin.item.selector.web.internal.constants.UserItemSelectorViewConstants;
@@ -32,7 +30,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import javax.portlet.PortletURL;
 
@@ -69,31 +66,25 @@ public class UserItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		ResourceBundle resourceBundle = _portal.getResourceBundle(locale);
-
-		return LanguageUtil.get(resourceBundle, "users");
-	}
-
-	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
+		return _language.get(_portal.getResourceBundle(locale), "users");
 	}
 
 	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			UserItemSelectorCriterion userItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
 
-		HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+		HttpServletRequest httpServletRequest =
+			(HttpServletRequest)servletRequest;
 
 		UserItemSelectorViewDisplayContext userItemSelectorViewDisplayContext =
 			new UserItemSelectorViewDisplayContext(
 				_userLocalService, _usersAdmin, httpServletRequest, portletURL,
 				itemSelectedEventName);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			UserItemSelectorViewConstants.
 				USER_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			userItemSelectorViewDisplayContext);
@@ -103,15 +94,15 @@ public class UserItemSelectorView
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher("/user_item_selector.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
-		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new UUIDItemSelectorReturnType()
-				}));
+		_supportedItemSelectorReturnTypes = Collections.singletonList(
+			new UUIDItemSelectorReturnType());
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private Portal _portal;

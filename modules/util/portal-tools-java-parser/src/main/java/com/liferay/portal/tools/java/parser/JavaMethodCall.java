@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class JavaMethodCall extends JavaExpression {
+public class JavaMethodCall extends BaseJavaExpression {
 
 	public JavaMethodCall(String methodName) {
 		_methodName = new JavaSimpleValue(methodName);
@@ -60,10 +60,6 @@ public class JavaMethodCall extends JavaExpression {
 		List<JavaExpression> parameterValueJavaExpressions) {
 
 		_parameterValueJavaExpressions = parameterValueJavaExpressions;
-	}
-
-	public void setStatementCondition(boolean statementCondition) {
-		_statementCondition = statementCondition;
 	}
 
 	public void setUseChainStyle(boolean useChainStyle) {
@@ -145,10 +141,6 @@ public class JavaMethodCall extends JavaExpression {
 	}
 
 	private boolean _isUseChainStyle() {
-		if (_statementCondition) {
-			return false;
-		}
-
 		if (_useChainStyle) {
 			return _useChainStyle;
 		}
@@ -177,7 +169,6 @@ public class JavaMethodCall extends JavaExpression {
 	private boolean _methodCallWithinClass;
 	private final JavaSimpleValue _methodName;
 	private List<JavaExpression> _parameterValueJavaExpressions;
-	private boolean _statementCondition;
 	private boolean _useChainStyle;
 
 }

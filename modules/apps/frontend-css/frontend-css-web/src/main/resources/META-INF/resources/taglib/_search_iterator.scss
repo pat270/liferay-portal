@@ -1,11 +1,8 @@
-@import "bourbon";
-@import "mixins";
-
 .lfr-search-container {
 	margin-top: 1.5em;
 	overflow: auto;
 
-	@include respond-to(phone) {
+	@include media-breakpoint-down(sm) {
 		.selector-button {
 			width: auto;
 		}
@@ -27,7 +24,7 @@
 }
 
 .touch .lfr-search-container {
-	@include experimental(overflow-scrolling, touch);
+	-webkit-overflow-scrolling: touch;
 
 	.searchcontainer-content .table {
 		max-width: none;
@@ -41,17 +38,16 @@
 .taglib-page-iterator {
 	clear: both;
 	height: auto;
-	overflow: hidden;
 	width: auto;
 
 	.lfr-pagination-buttons {
 		float: right;
 		margin: 0;
 
-		@include respond-to(phone, tablet) {
+		@include media-breakpoint-down(md) {
 			width: 100%;
 
-			@include respond-to(phone) {
+			@include media-breakpoint-down(sm) {
 				float: none;
 				margin-top: 20px;
 			}
@@ -61,7 +57,8 @@
 				float: left;
 				width: 50%;
 
-				&.first, &.last {
+				&.first,
+				&.last {
 					display: none;
 				}
 
@@ -77,7 +74,7 @@
 		float: left;
 		line-height: 46px;
 
-		@include respond-to(phone) {
+		@include media-breakpoint-down(sm) {
 			float: none;
 
 			.current-page-menu {
@@ -89,14 +86,15 @@
 			}
 		}
 
-		.lfr-pagination-delta-selector, .lfr-pagination-page-selector {
+		.lfr-pagination-delta-selector,
+		.lfr-pagination-page-selector {
 			display: inline;
 		}
 
 		.lfr-pagination-delta-selector {
 			float: none;
 
-			@include respond-to(phone, tablet) {
+			@include media-breakpoint-down(md) {
 				display: none;
 			}
 		}
@@ -107,19 +105,20 @@
 		line-height: 46px;
 		margin-left: 10px;
 
-		@include respond-to(phone, tablet) {
+		@include media-breakpoint-down(md) {
 			display: none;
 		}
 	}
 }
 
 .display-style-icon {
-	.lfr-asset-folder, .lfr-asset-item {
+	.lfr-asset-folder,
+	.lfr-asset-item {
 		float: left;
 		padding-left: 0.75rem;
 		padding-right: 0.75rem;
 
-		@include md {
+		@include media-breakpoint-up(md) {
 			width: 33.33333%;
 		}
 	}
@@ -127,11 +126,11 @@
 	.lfr-asset-folder {
 		width: 100%;
 
-		@include xs {
+		@include media-breakpoint-up(xs) {
 			width: 50%;
 		}
 
-		@include lg {
+		@include media-breakpoint-up(lg) {
 			width: 25%;
 		}
 	}
@@ -139,12 +138,12 @@
 	.lfr-asset-item {
 		width: 50%;
 
-		@include sm {
-			width: 25%;
+		@include media-breakpoint-up(sm) {
+			width: 33%;
 		}
 
-		@include lg {
-			width: 20%;
+		@include media-breakpoint-up(lg) {
+			width: 25%;
 		}
 	}
 }

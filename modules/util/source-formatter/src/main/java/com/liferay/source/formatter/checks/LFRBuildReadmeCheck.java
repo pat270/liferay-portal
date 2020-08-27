@@ -16,10 +16,8 @@ package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
-
-import java.io.IOException;
+import com.liferay.source.formatter.util.SourceFormatterUtil;
 
 /**
  * @author Peter Shin
@@ -35,14 +33,19 @@ public class LFRBuildReadmeCheck extends BaseFileCheck {
 
 		String shortFileName = fileName.substring(pos + 1);
 
-		String readmeMarkdownContent = _getModulesReadmeMarkdownContent();
+		String readmeMarkdownContent = _getModulesReadmeMarkdownContent(
+			absolutePath);
 
 		if (Validator.isNotNull(readmeMarkdownContent) &&
 			!readmeMarkdownContent.contains(shortFileName)) {
 
 			String message = StringBundler.concat(
 				"Please document the \"", shortFileName, "\" marker file in ",
-				_MODULES_README_MARKDOWN_URL);
+				"https://github.com/liferay/liferay-portal/blob/",
+				getAttributeValue(
+					SourceFormatterUtil.GIT_LIFERAY_PORTAL_BRANCH,
+					absolutePath),
+				"/", _MODULES_README_MARKDOWN_FILE_NAME, "#marker-files");
 
 			addMessage(fileName, message);
 		}
@@ -50,25 +53,22 @@ public class LFRBuildReadmeCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private synchronized String _getModulesReadmeMarkdownContent()
-		throws IOException {
+	private synchronized String _getModulesReadmeMarkdownContent(
+			String absolutePath)
+		throws Exception {
 
 		if (_modulesReadmeMarkdownContent != null) {
 			return _modulesReadmeMarkdownContent;
 		}
 
-		_modulesReadmeMarkdownContent = GetterUtil.getString(
-			getGitContent(_MODULES_README_MARKDOWN_FILE_NAME, "master"));
+		_modulesReadmeMarkdownContent = getPortalContent(
+			_MODULES_README_MARKDOWN_FILE_NAME, absolutePath);
 
 		return _modulesReadmeMarkdownContent;
 	}
 
 	private static final String _MODULES_README_MARKDOWN_FILE_NAME =
 		"modules/README.markdown";
-
-	private static final String _MODULES_README_MARKDOWN_URL =
-		"https://github.com/liferay/liferay-portal/blob/master/" +
-			_MODULES_README_MARKDOWN_FILE_NAME + "#marker-files";
 
 	private String _modulesReadmeMarkdownContent;
 

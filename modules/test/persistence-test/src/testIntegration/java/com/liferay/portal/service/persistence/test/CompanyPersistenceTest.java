@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchCompanyException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -128,8 +128,6 @@ public class CompanyPersistenceTest {
 
 		newCompany.setWebId(RandomTestUtil.randomString());
 
-		newCompany.setKey(RandomTestUtil.randomString());
-
 		newCompany.setMx(RandomTestUtil.randomString());
 
 		newCompany.setHomeURL(RandomTestUtil.randomString());
@@ -154,7 +152,6 @@ public class CompanyPersistenceTest {
 		Assert.assertEquals(
 			existingCompany.getAccountId(), newCompany.getAccountId());
 		Assert.assertEquals(existingCompany.getWebId(), newCompany.getWebId());
-		Assert.assertEquals(existingCompany.getKey(), newCompany.getKey());
 		Assert.assertEquals(existingCompany.getMx(), newCompany.getMx());
 		Assert.assertEquals(
 			existingCompany.getHomeURL(), newCompany.getHomeURL());
@@ -437,25 +434,66 @@ public class CompanyPersistenceTest {
 
 		_persistence.clearCache();
 
-		Company existingCompany = _persistence.findByPrimaryKey(
-			newCompany.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newCompany.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingCompany.getWebId(),
-				ReflectionTestUtil.invoke(
-					existingCompany, "getOriginalWebId", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingCompany.getMx(),
-				ReflectionTestUtil.invoke(
-					existingCompany, "getOriginalMx", new Class<?>[0])));
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		Company newCompany = addCompany();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Company.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("companyId", newCompany.getCompanyId()));
+
+		List<Company> result = _persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(Company company) {
+		Assert.assertEquals(
+			company.getWebId(),
+			ReflectionTestUtil.invoke(
+				company, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "webId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingCompany.getLogoId()),
+			company.getMx(),
+			ReflectionTestUtil.invoke(
+				company, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "mx"));
+
+		Assert.assertEquals(
+			Long.valueOf(company.getLogoId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingCompany, "getOriginalLogoId", new Class<?>[0]));
+				company, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "logoId"));
 	}
 
 	protected Company addCompany() throws Exception {
@@ -468,8 +506,6 @@ public class CompanyPersistenceTest {
 		company.setAccountId(RandomTestUtil.nextLong());
 
 		company.setWebId(RandomTestUtil.randomString());
-
-		company.setKey(RandomTestUtil.randomString());
 
 		company.setMx(RandomTestUtil.randomString());
 

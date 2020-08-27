@@ -74,8 +74,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SAPPortletKeys.SERVICE_ACCESS_POLICY,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -135,12 +134,9 @@ public class SAPPortlet extends MVCPortlet {
 		String mvcPath = ParamUtil.getString(renderRequest, "mvcPath");
 
 		if (mvcPath.equals("/edit_entry.jsp")) {
-			JSONArray serviceClassNamesToContextNamesJSONArray =
-				getServiceClassNamesToContextNamesJSONArray();
-
 			renderRequest.setAttribute(
 				SAPWebKeys.SERVICE_CLASS_NAMES_TO_CONTEXT_NAMES,
-				serviceClassNamesToContextNamesJSONArray);
+				getServiceClassNamesToContextNamesJSONArray());
 		}
 
 		super.render(renderRequest, renderResponse);

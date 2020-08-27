@@ -22,6 +22,9 @@ long categoryId = ParamUtil.getLong(request, "categoryId");
 AssetCategory category = AssetCategoryLocalServiceUtil.fetchCategory(categoryId);
 %>
 
+<liferay-ui:success key="categoryAdded" message='<%= GetterUtil.getString(MultiSessionMessages.get(renderRequest, "categoryAdded")) %>' />
+<liferay-ui:success key="categoryUpdated" message='<%= GetterUtil.getString(MultiSessionMessages.get(renderRequest, "categoryUpdated")) %>' />
+
 <liferay-frontend:screen-navigation
 	context="<%= category %>"
 	key="<%= AssetCategoriesConstants.CATEGORY_KEY_GENERAL %>"

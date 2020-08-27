@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SystemEvent in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SystemEventCacheModel
 	implements CacheModel<SystemEvent>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SystemEventCacheModel)) {
+		if (!(object instanceof SystemEventCacheModel)) {
 			return false;
 		}
 
 		SystemEventCacheModel systemEventCacheModel =
-			(SystemEventCacheModel)obj;
+			(SystemEventCacheModel)object;
 
 		if ((systemEventId == systemEventCacheModel.systemEventId) &&
 			(mvccVersion == systemEventCacheModel.mvccVersion)) {
@@ -80,10 +77,12 @@ public class SystemEventCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(33);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", systemEventId=");
 		sb.append(systemEventId);
 		sb.append(", groupId=");
@@ -122,6 +121,7 @@ public class SystemEventCacheModel
 		SystemEventImpl systemEventImpl = new SystemEventImpl();
 
 		systemEventImpl.setMvccVersion(mvccVersion);
+		systemEventImpl.setCtCollectionId(ctCollectionId);
 		systemEventImpl.setSystemEventId(systemEventId);
 		systemEventImpl.setGroupId(groupId);
 		systemEventImpl.setCompanyId(companyId);
@@ -169,8 +169,12 @@ public class SystemEventCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 
 		systemEventId = objectInput.readLong();
 
@@ -194,12 +198,14 @@ public class SystemEventCacheModel
 		systemEventSetKey = objectInput.readLong();
 
 		type = objectInput.readInt();
-		extraData = objectInput.readUTF();
+		extraData = (String)objectInput.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		objectOutput.writeLong(systemEventId);
 
@@ -238,14 +244,15 @@ public class SystemEventCacheModel
 		objectOutput.writeInt(type);
 
 		if (extraData == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(extraData);
+			objectOutput.writeObject(extraData);
 		}
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public long systemEventId;
 	public long groupId;
 	public long companyId;

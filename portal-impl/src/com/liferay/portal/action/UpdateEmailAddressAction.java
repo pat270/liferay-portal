@@ -27,7 +27,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.struts.Action;
-import com.liferay.portal.struts.ActionConstants;
+import com.liferay.portal.struts.constants.ActionConstants;
 import com.liferay.portal.struts.model.ActionForward;
 import com.liferay.portal.struts.model.ActionMapping;
 import com.liferay.portlet.admin.util.AdminUtil;
@@ -61,22 +61,23 @@ public class UpdateEmailAddressAction implements Action {
 			return actionMapping.getActionForward(
 				ActionConstants.COMMON_REFERER_JSP);
 		}
-		catch (Exception e) {
-			if (e instanceof UserEmailAddressException) {
-				SessionErrors.add(httpServletRequest, e.getClass());
+		catch (Exception exception) {
+			if (exception instanceof UserEmailAddressException) {
+				SessionErrors.add(httpServletRequest, exception.getClass());
 
 				return actionMapping.getActionForward(
 					"portal.update_email_address");
 			}
-			else if (e instanceof NoSuchUserException ||
-					 e instanceof PrincipalException) {
+			else if (exception instanceof NoSuchUserException ||
+					 exception instanceof PrincipalException) {
 
-				SessionErrors.add(httpServletRequest, e.getClass());
+				SessionErrors.add(httpServletRequest, exception.getClass());
 
 				return actionMapping.getActionForward("portal.error");
 			}
 
-			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
+			PortalUtil.sendError(
+				exception, httpServletRequest, httpServletResponse);
 
 			return null;
 		}

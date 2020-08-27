@@ -23,10 +23,9 @@ import com.liferay.document.library.kernel.service.DLFileShortcutLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
-import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -43,20 +42,20 @@ public class DLFileShortcutUADTestUtil {
 	public static DLFileShortcut addDLFileShortcut(
 			DLFileEntryLocalService dlFileEntryLocalService,
 			DLFileShortcutLocalService dlFileShortcutLocalService,
-			DLFolderLocalService dlFolderLocalService, long userId)
+			DLFolderLocalService dlFolderLocalService, long userId,
+			long groupId)
 		throws Exception {
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext();
 
 		DLFolder dlFolder = dlFolderLocalService.addFolder(
-			userId, TestPropsValues.getGroupId(), TestPropsValues.getGroupId(),
-			false, 0L, RandomTestUtil.randomString(),
+			userId, groupId, groupId, false, 0L, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), false, serviceContext);
 
 		byte[] bytes = TestDataConstants.TEST_BYTE_ARRAY;
 
-		InputStream is = new ByteArrayInputStream(bytes);
+		InputStream inputStream = new ByteArrayInputStream(bytes);
 
 		DLFileEntry dlFileEntry = dlFileEntryLocalService.addFileEntry(
 			userId, dlFolder.getGroupId(), dlFolder.getRepositoryId(),
@@ -64,24 +63,23 @@ public class DLFileShortcutUADTestUtil {
 			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
 			StringPool.BLANK, StringPool.BLANK,
 			DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT, null,
-			null, is, bytes.length, serviceContext);
+			null, inputStream, bytes.length, serviceContext);
 
 		return dlFileShortcutLocalService.addFileShortcut(
-			userId, TestPropsValues.getGroupId(), TestPropsValues.getGroupId(),
-			dlFolder.getFolderId(), dlFileEntry.getFileEntryId(),
-			serviceContext);
+			userId, groupId, groupId, dlFolder.getFolderId(),
+			dlFileEntry.getFileEntryId(), serviceContext);
 	}
 
 	public static DLFileShortcut addDLFileShortcutWithStatusByUserId(
 			DLFileEntryLocalService dlFileEntryLocalService,
 			DLFileShortcutLocalService dlFileShortcutLocalService,
 			DLFolderLocalService dlFolderLocalService, long userId,
-			long statusByUserId)
+			long groupId, long statusByUserId)
 		throws Exception {
 
 		DLFileShortcut dlFileShortcut = addDLFileShortcut(
 			dlFileEntryLocalService, dlFileShortcutLocalService,
-			dlFolderLocalService, userId);
+			dlFolderLocalService, userId, groupId);
 
 		return dlFileShortcutLocalService.updateStatus(
 			statusByUserId, dlFileShortcut.getFileShortcutId(),

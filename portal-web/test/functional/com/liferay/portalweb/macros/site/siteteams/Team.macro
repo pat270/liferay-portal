@@ -1,0 +1,284 @@
+definition {
+
+	macro _editCP {
+		PortletEntry.inputName(name = "${teamName}");
+
+		PortletEntry.inputDescription(description = "${teamDescription}");
+	}
+
+	macro addCP {
+		LexiconEntry.gotoAdd();
+
+		Team._editCP(
+			teamDescription = "${teamDescription}",
+			teamName = "${teamName}");
+
+		PortletEntry.save();
+	}
+
+	macro assignMembersCP {
+		var key_teamName = "${teamName}";
+		var key_userScreenName = "${userScreenName}";
+
+		Search.searchCP(searchTerm = "${teamName}");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteTeams#TEAM_TABLE_NAME",
+			value1 = "${teamName}");
+
+		AssertClick(
+			locator1 = "SiteTeams#TEAM_TABLE_NAME",
+			value1 = "${teamName}");
+
+		Navigator.gotoNavItem(navItem = "Users");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Search.searchCP(searchTerm = "${userScreenName}");
+
+		if ("${userNameIsNotFound}" == "true") {
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+		}
+		else {
+			LexiconEntry.changeDisplayStyle(displayStyle = "cards");
+
+			Pause(locator1 = "5000");
+
+			LexiconCard.checkCardCheckbox(card = "${userScreenName}");
+
+			Pause(locator1 = "5000");
+
+			SelectFrameTop();
+
+			Button.clickAdd();
+
+			Alert.viewSuccessMessage();
+
+			LexiconCard.viewCardPresent(card = "${userScreenName}");
+		}
+
+		SelectFrameTop();
+	}
+
+	macro assignUserGroups {
+		var key_teamName = "${teamName}";
+
+		Search.searchCP(searchTerm = "${teamName}");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteTeams#TEAM_TABLE_NAME",
+			value1 = "${teamName}");
+
+		AssertClick(
+			locator1 = "SiteTeams#TEAM_TABLE_NAME",
+			value1 = "${teamName}");
+
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		var key_cardText = "${userGroupName}";
+
+		Search.searchCP(searchTerm = "${userGroupName}");
+
+		if ("${userGroupsNameIsNotAvailable}" == "true") {
+			AssertTextNotPresent(
+				locator1 = "SiteTeamsAssignMembers#USER_GROUPS_TABLE_NAME",
+				value1 = "${userGroupName}");
+		}
+		else {
+			LexiconEntry.selectEntry(rowEntry = "${userGroupName}");
+
+			SelectFrameTop();
+
+			Pause(locator1 = "3000");
+
+			Button.clickAdd();
+
+			Alert.viewSuccessMessage();
+		}
+
+		SelectFrameTop();
+	}
+
+	macro definePermissionPG {
+		Check(locator1 = "//tr[contains(.,'${teamName}')]/td/input[contains(@id,'${permissionDefinitionKey}')]");
+
+		PortletEntry.save();
+
+		AssertChecked(locator1 = "//tr[contains(.,'${teamName}')]/td/input[contains(@id,'${permissionDefinitionKey}')]");
+	}
+
+	macro deleteCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		LexiconEntry.viewEntryName(rowEntry = "${teamName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${teamName}");
+
+		MenuItem.clickNoError(menuItem = "Delete");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro editCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${teamName}");
+
+		Team._editCP(
+			teamDescription = "${teamDescriptionEdit}",
+			teamName = "${teamNameEdit}");
+
+		PortletEntry.save();
+	}
+
+	macro removeMemberCP {
+		AssertClick(
+			key_rowEntry = "${teamName}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
+			value1 = "${teamName}");
+
+		Navigator.gotoNavItem(navItem = "${membershipType}s");
+
+		if ("${membershipType}" == "User") {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userLastName}");
+		}
+		else if ("${membershipType}" == "User Group") {
+			Check(
+				key_rowEntry = "${userGroupName}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+		}
+
+		ClickNoError(locator1 = "Icon#TIMES");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro removePermissionPG {
+		Uncheck(locator1 = "//tr[contains(.,'${teamName}')]/td/input[contains(@id,'${permissionDefinitionKey}')]");
+
+		PortletEntry.save();
+
+		AssertNotChecked(locator1 = "//tr[contains(.,'${teamName}')]/td/input[contains(@id,'${permissionDefinitionKey}')]");
+	}
+
+	macro searchCP {
+		Navigator.gotoNavItem(navItem = "${membershipType}s");
+
+		Search.searchCP(searchTerm = "${searchTerm}");
+
+		if ("${isEmpty}" == "true") {
+			AssertElementPresent(locator1 = "Message#EMPTY_INFO");
+		}
+		else {
+			var name = StringUtil.unquote("${searchTerm}");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_1",
+				value1 = "${name}");
+		}
+	}
+
+	macro tearDownCP {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Navigator.openSiteURL(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "People",
+			portlet = "Teams");
+
+		if (IsElementNotPresent(locator1 = "Message#EMPTY_INFO")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#DELETE");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro viewCP {
+		var key_teamName = "${teamName}";
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteTeams#TEAM_TABLE_NAME",
+			value1 = "${teamName}");
+
+		AssertTextEquals(
+			locator1 = "SiteTeams#TEAM_TABLE_DESCRIPTION",
+			value1 = "${teamDescription}");
+
+		AssertElementPresent(locator1 = "SiteTeams#TEAM_TABLE_ACTIONS");
+	}
+
+	macro viewDefaultCP {
+		var key_teamName = "${teamName}";
+
+		PortletEntry.viewEmptyMessage(entity = "teams");
+
+		AssertTextNotPresent(
+			locator1 = "SiteTeams#TEAM_TABLE_NAME",
+			value1 = "${teamName}");
+	}
+
+	macro viewMemberCP {
+		AssertClick(
+			key_rowEntry = "${teamName}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
+			value1 = "${teamName}");
+
+		Navigator.gotoNavItem(navItem = "${membershipType}s");
+
+		if ("${membershipType}" == "User") {
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${userFirstName} ${userLastName}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_1",
+				value1 = "${userFirstName} ${userLastName}");
+		}
+		else if ("${membershipType}" == "User Group") {
+			AssertTextEquals.assertPartialText(
+				key_rowEntry = "${userGroupName}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_1",
+				value1 = "${userGroupName}");
+		}
+	}
+
+	macro viewNoMembersCP {
+		AssertClick(
+			key_rowEntry = "${teamName}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
+			value1 = "${teamName}");
+
+		for (var navItem : list "Users,User Groups") {
+			Navigator.gotoNavItem(navItem = "${navItem}");
+
+			var lowercaseNavItem = StringUtil.lowerCase("${navItem}");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No ${lowercaseNavItem} were found.");
+		}
+	}
+
+}

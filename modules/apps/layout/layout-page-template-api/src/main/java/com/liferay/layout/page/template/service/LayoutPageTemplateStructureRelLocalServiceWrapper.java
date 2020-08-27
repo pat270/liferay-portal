@@ -14,9 +14,10 @@
 
 package com.liferay.layout.page.template.service;
 
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link LayoutPageTemplateStructureRelLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutPageTemplateStructureRelLocalService
  * @generated
  */
-@ProviderType
 public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	implements LayoutPageTemplateStructureRelLocalService,
 			   ServiceWrapper<LayoutPageTemplateStructureRelLocalService> {
@@ -41,25 +41,26 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	/**
 	 * Adds the layout page template structure rel to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateStructureRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutPageTemplateStructureRel the layout page template structure rel
 	 * @return the layout page template structure rel that was added
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-		addLayoutPageTemplateStructureRel(
-			com.liferay.layout.page.template.model.
-				LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
+	public LayoutPageTemplateStructureRel addLayoutPageTemplateStructureRel(
+		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			addLayoutPageTemplateStructureRel(layoutPageTemplateStructureRel);
 	}
 
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-			addLayoutPageTemplateStructureRel(
-				long userId, long groupId, long layoutPageTemplateStructureId,
-				long segmentsExperienceId, String data,
-				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public LayoutPageTemplateStructureRel addLayoutPageTemplateStructureRel(
+			long userId, long groupId, long layoutPageTemplateStructureId,
+			long segmentsExperienceId, String data,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutPageTemplateStructureRelLocalService.
@@ -75,9 +76,8 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @return the new layout page template structure rel
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-		createLayoutPageTemplateStructureRel(
-			long layoutPageTemplateStructureRelId) {
+	public LayoutPageTemplateStructureRel createLayoutPageTemplateStructureRel(
+		long layoutPageTemplateStructureRelId) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			createLayoutPageTemplateStructureRel(
@@ -85,16 +85,30 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutPageTemplateStructureRelLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the layout page template structure rel from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateStructureRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param layoutPageTemplateStructureRel the layout page template structure rel
 	 * @return the layout page template structure rel that was removed
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-		deleteLayoutPageTemplateStructureRel(
-			com.liferay.layout.page.template.model.
-				LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
+	public LayoutPageTemplateStructureRel deleteLayoutPageTemplateStructureRel(
+		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			deleteLayoutPageTemplateStructureRel(
@@ -104,14 +118,17 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	/**
 	 * Deletes the layout page template structure rel with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateStructureRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutPageTemplateStructureRelId the primary key of the layout page template structure rel
 	 * @return the layout page template structure rel that was removed
 	 * @throws PortalException if a layout page template structure rel with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-			deleteLayoutPageTemplateStructureRel(
-				long layoutPageTemplateStructureRelId)
+	public LayoutPageTemplateStructureRel deleteLayoutPageTemplateStructureRel(
+			long layoutPageTemplateStructureRelId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutPageTemplateStructureRelLocalService.
@@ -120,9 +137,8 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-			deleteLayoutPageTemplateStructureRel(
-				long layoutPageTemplateStructureId, long segmentsExperienceId)
+	public LayoutPageTemplateStructureRel deleteLayoutPageTemplateStructureRel(
+			long layoutPageTemplateStructureId, long segmentsExperienceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutPageTemplateStructureRelLocalService.
@@ -161,6 +177,11 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _layoutPageTemplateStructureRelLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _layoutPageTemplateStructureRelLocalService.dynamicQuery();
 	}
@@ -183,7 +204,7 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateStructureRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateStructureRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -204,7 +225,7 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateStructureRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateStructureRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -254,9 +275,8 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-		fetchLayoutPageTemplateStructureRel(
-			long layoutPageTemplateStructureRelId) {
+	public LayoutPageTemplateStructureRel fetchLayoutPageTemplateStructureRel(
+		long layoutPageTemplateStructureRelId) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			fetchLayoutPageTemplateStructureRel(
@@ -264,9 +284,8 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-		fetchLayoutPageTemplateStructureRel(
-			long layoutPageTemplateStructureId, long segmentsExperienceId) {
+	public LayoutPageTemplateStructureRel fetchLayoutPageTemplateStructureRel(
+		long layoutPageTemplateStructureId, long segmentsExperienceId) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			fetchLayoutPageTemplateStructureRel(
@@ -281,7 +300,7 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @return the matching layout page template structure rel, or <code>null</code> if a matching layout page template structure rel could not be found
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
+	public LayoutPageTemplateStructureRel
 		fetchLayoutPageTemplateStructureRelByUuidAndGroupId(
 			String uuid, long groupId) {
 
@@ -323,9 +342,8 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @throws PortalException if a layout page template structure rel with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-			getLayoutPageTemplateStructureRel(
-				long layoutPageTemplateStructureRelId)
+	public LayoutPageTemplateStructureRel getLayoutPageTemplateStructureRel(
+			long layoutPageTemplateStructureRelId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutPageTemplateStructureRelLocalService.
@@ -341,7 +359,7 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @throws PortalException if a matching layout page template structure rel could not be found
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
+	public LayoutPageTemplateStructureRel
 			getLayoutPageTemplateStructureRelByUuidAndGroupId(
 				String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -354,7 +372,7 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * Returns a range of all the layout page template structure rels.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateStructureRelModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.page.template.model.impl.LayoutPageTemplateStructureRelModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of layout page template structure rels
@@ -362,29 +380,25 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @return the range of layout page template structure rels
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel>
-			getLayoutPageTemplateStructureRels(int start, int end) {
+	public java.util.List<LayoutPageTemplateStructureRel>
+		getLayoutPageTemplateStructureRels(int start, int end) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			getLayoutPageTemplateStructureRels(start, end);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel>
-			getLayoutPageTemplateStructureRels(
-				long layoutPageTemplateStructureId) {
+	public java.util.List<LayoutPageTemplateStructureRel>
+		getLayoutPageTemplateStructureRels(long layoutPageTemplateStructureId) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			getLayoutPageTemplateStructureRels(layoutPageTemplateStructureId);
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel>
-			getLayoutPageTemplateStructureRelsBySegmentsExperienceId(
-				long segmentsExperienceId) {
+	public java.util.List<LayoutPageTemplateStructureRel>
+		getLayoutPageTemplateStructureRelsBySegmentsExperienceId(
+			long segmentsExperienceId) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			getLayoutPageTemplateStructureRelsBySegmentsExperienceId(
@@ -399,10 +413,9 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @return the matching layout page template structure rels, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel>
-			getLayoutPageTemplateStructureRelsByUuidAndCompanyId(
-				String uuid, long companyId) {
+	public java.util.List<LayoutPageTemplateStructureRel>
+		getLayoutPageTemplateStructureRelsByUuidAndCompanyId(
+			String uuid, long companyId) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			getLayoutPageTemplateStructureRelsByUuidAndCompanyId(
@@ -420,13 +433,11 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	 * @return the range of matching layout page template structure rels, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel>
-			getLayoutPageTemplateStructureRelsByUuidAndCompanyId(
-				String uuid, long companyId, int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.layout.page.template.model.
-						LayoutPageTemplateStructureRel> orderByComparator) {
+	public java.util.List<LayoutPageTemplateStructureRel>
+		getLayoutPageTemplateStructureRelsByUuidAndCompanyId(
+			String uuid, long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<LayoutPageTemplateStructureRel> orderByComparator) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			getLayoutPageTemplateStructureRelsByUuidAndCompanyId(
@@ -455,6 +466,9 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 			getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -467,14 +481,16 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	/**
 	 * Updates the layout page template structure rel in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect LayoutPageTemplateStructureRelLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param layoutPageTemplateStructureRel the layout page template structure rel
 	 * @return the layout page template structure rel that was updated
 	 */
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-		updateLayoutPageTemplateStructureRel(
-			com.liferay.layout.page.template.model.
-				LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
+	public LayoutPageTemplateStructureRel updateLayoutPageTemplateStructureRel(
+		LayoutPageTemplateStructureRel layoutPageTemplateStructureRel) {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			updateLayoutPageTemplateStructureRel(
@@ -482,15 +498,34 @@ public class LayoutPageTemplateStructureRelLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel
-			updateLayoutPageTemplateStructureRel(
-				long layoutPageTemplateStructureId, long segmentsExperienceId,
-				String data)
+	public LayoutPageTemplateStructureRel updateLayoutPageTemplateStructureRel(
+			long layoutPageTemplateStructureId, long segmentsExperienceId,
+			String data)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _layoutPageTemplateStructureRelLocalService.
 			updateLayoutPageTemplateStructureRel(
 				layoutPageTemplateStructureId, segmentsExperienceId, data);
+	}
+
+	@Override
+	public CTPersistence<LayoutPageTemplateStructureRel> getCTPersistence() {
+		return _layoutPageTemplateStructureRelLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<LayoutPageTemplateStructureRel> getModelClass() {
+		return _layoutPageTemplateStructureRelLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<LayoutPageTemplateStructureRel>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _layoutPageTemplateStructureRelLocalService.
+			updateWithUnsafeFunction(updateUnsafeFunction);
 	}
 
 	@Override

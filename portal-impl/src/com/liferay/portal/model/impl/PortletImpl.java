@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletFilter;
 import com.liferay.portal.kernel.model.PortletInfo;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.portlet.PortletDependency;
 import com.liferay.portal.kernel.notifications.UserNotificationHandler;
 import com.liferay.portal.kernel.plugin.PluginPackage;
@@ -65,6 +64,7 @@ import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -95,8 +95,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.portlet.PortletMode;
 import javax.portlet.WindowState;
-
-import javax.servlet.ServletContext;
 
 /**
  * @author Brian Wing Shun Chan
@@ -158,7 +156,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	public PortletImpl(
 		String portletId, Portlet rootPortlet, PluginPackage pluginPackage,
-		PluginSetting pluginSetting, long companyId, String icon,
+		PluginSetting defaultPluginSetting, long companyId, String icon,
 		String virtualPath, String strutsPath, String parentStrutsPath,
 		String portletName, String displayName, String portletClass,
 		String configurationActionClass, List<String> indexerClasses,
@@ -175,7 +173,7 @@ public class PortletImpl extends PortletBaseImpl {
 		List<String> userNotificationHandlerClasses, String webDAVStorageToken,
 		String webDAVStorageClass, String xmlRpcMethodClass,
 		String controlPanelEntryCategory, double controlPanelEntryWeight,
-		String controlPanelClass, List<String> assetRendererFactoryClasses,
+		String controlPanelEntryClass, List<String> assetRendererFactoryClasses,
 		List<String> atomCollectionAdapterClasses,
 		List<String> customAttributesDisplayClasses,
 		String permissionPropagatorClass, List<String> trashHandlerClasses,
@@ -224,7 +222,7 @@ public class PortletImpl extends PortletBaseImpl {
 
 		_rootPortlet = rootPortlet;
 		_pluginPackage = pluginPackage;
-		_defaultPluginSetting = pluginSetting;
+		_defaultPluginSetting = defaultPluginSetting;
 		_icon = icon;
 		_virtualPath = virtualPath;
 		_strutsPath = strutsPath;
@@ -256,7 +254,7 @@ public class PortletImpl extends PortletBaseImpl {
 		_xmlRpcMethodClass = xmlRpcMethodClass;
 		_controlPanelEntryCategory = controlPanelEntryCategory;
 		_controlPanelEntryWeight = controlPanelEntryWeight;
-		_controlPanelEntryClass = controlPanelClass;
+		_controlPanelEntryClass = controlPanelEntryClass;
 		_assetRendererFactoryClasses = assetRendererFactoryClasses;
 		_atomCollectionAdapterClasses = atomCollectionAdapterClasses;
 		_customAttributesDisplayClasses = customAttributesDisplayClasses;
@@ -377,11 +375,8 @@ public class PortletImpl extends PortletBaseImpl {
 		_publicRenderParametersByQName.put(
 			PortletQNameUtil.getKey(qName), publicRenderParameter);
 
-		String publicRenderParameterName =
-			PortletQNameUtil.getPublicRenderParameterName(qName);
-
 		PortletQNameUtil.setPublicRenderParameterIdentifier(
-			publicRenderParameterName, identifier);
+			PortletQNameUtil.getPublicRenderParameterName(qName), identifier);
 	}
 
 	/**
@@ -485,20 +480,20 @@ public class PortletImpl extends PortletBaseImpl {
 	/**
 	 * Checks whether this portlet is equal to the specified object.
 	 *
-	 * @param  obj the object to compare this portlet against
+	 * @param  object the object to compare this portlet against
 	 * @return <code>true</code> if the portlet is equal to the specified object
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Portlet)) {
+		if (!(object instanceof Portlet)) {
 			return false;
 		}
 
-		Portlet portlet = (Portlet)obj;
+		Portlet portlet = (Portlet)object;
 
 		String portletId = getPortletId();
 
@@ -701,6 +696,10 @@ public class PortletImpl extends PortletBaseImpl {
 	public ConfigurationAction getConfigurationActionInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
+		if (portletBag == null) {
+			return null;
+		}
+
 		List<ConfigurationAction> configurationActionInstances =
 			portletBag.getConfigurationActionInstances();
 
@@ -769,6 +768,10 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public ControlPanelEntry getControlPanelEntryInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
+
+		if (portletBag == null) {
+			return _controlPanelEntry;
+		}
 
 		List<ControlPanelEntry> controlPanelEntryInstances =
 			portletBag.getControlPanelEntryInstances();
@@ -870,18 +873,6 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public Integer getExpCache() {
 		return _expCache;
-	}
-
-	/**
-	 * Returns the Facebook integration method of the portlet.
-	 *
-	 * @return     the Facebook integration method of the portlet
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getFacebookIntegration() {
-		return _facebookIntegration;
 	}
 
 	/**
@@ -2046,10 +2037,8 @@ public class PortletImpl extends PortletBaseImpl {
 		if (_timestamp == null) {
 			PortletApp portletApp = getPortletApp();
 
-			ServletContext servletContext = portletApp.getServletContext();
-
 			_timestamp = ServletContextUtil.getLastModified(
-				servletContext, StringPool.SLASH, true);
+				portletApp.getServletContext(), StringPool.SLASH, true);
 		}
 
 		return _timestamp;
@@ -2122,6 +2111,10 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public URLEncoder getURLEncoderInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
+
+		if (portletBag == null) {
+			return null;
+		}
 
 		List<URLEncoder> urlEncoderInstances =
 			portletBag.getURLEncoderInstances();
@@ -2233,6 +2226,10 @@ public class PortletImpl extends PortletBaseImpl {
 	public WebDAVStorage getWebDAVStorageInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
+		if (portletBag == null) {
+			return null;
+		}
+
 		List<WebDAVStorage> webDAVStorageInstances =
 			portletBag.getWebDAVStorageInstances();
 
@@ -2337,9 +2334,8 @@ public class PortletImpl extends PortletBaseImpl {
 			if ((permissionChecker == null) ||
 				(permissionChecker.getUserId() != userId)) {
 
-				User user = UserLocalServiceUtil.getUser(userId);
-
-				permissionChecker = PermissionCheckerFactoryUtil.create(user);
+				permissionChecker = PermissionCheckerFactoryUtil.create(
+					UserLocalServiceUtil.getUser(userId));
 			}
 
 			if (PortletPermissionUtil.contains(
@@ -2349,8 +2345,8 @@ public class PortletImpl extends PortletBaseImpl {
 				return true;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -2756,10 +2752,14 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public boolean isReady() {
+		if (_undeployedPortlet) {
+			return true;
+		}
+
 		Readiness readiness = _readinessMap.get(getRootPortletId());
 
 		if (readiness == null) {
-			return true;
+			return false;
 		}
 
 		return readiness._ready;
@@ -3160,21 +3160,6 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public void setExpCache(Integer expCache) {
 		_expCache = expCache;
-	}
-
-	/**
-	 * Sets the Facebook integration method of the portlet.
-	 *
-	 * @param      facebookIntegration the Facebook integration method of the
-	 *             portlet
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void setFacebookIntegration(String facebookIntegration) {
-		if (Validator.isNotNull(facebookIntegration)) {
-			_facebookIntegration = facebookIntegration;
-		}
 	}
 
 	/**
@@ -3866,7 +3851,7 @@ public class PortletImpl extends PortletBaseImpl {
 			ServiceRegistrar<Portlet> serviceRegistrar =
 				readiness._serviceRegistrar;
 
-			if (ready) {
+			if (ready && !_undeployedPortlet) {
 				if (serviceRegistrar.isDestroyed()) {
 					serviceRegistrar = registry.getServiceRegistrar(
 						Portlet.class);
@@ -3874,12 +3859,11 @@ public class PortletImpl extends PortletBaseImpl {
 					readiness._serviceRegistrar = serviceRegistrar;
 				}
 
-				Map<String, Object> properties = new HashMap<>();
-
-				properties.put("javax.portlet.name", getPortletName());
-
 				serviceRegistrar.registerService(
-					Portlet.class, this, properties);
+					Portlet.class, this,
+					HashMapBuilder.<String, Object>put(
+						"javax.portlet.name", getPortletName()
+					).build());
 			}
 			else {
 				serviceRegistrar.destroy();
@@ -4440,15 +4424,6 @@ public class PortletImpl extends PortletBaseImpl {
 	 * The expiration cache of the portlet.
 	 */
 	private Integer _expCache;
-
-	/**
-	 * The Facebook integration method of the portlet.
-	 *
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	private String _facebookIntegration =
-		PortletConstants.FACEBOOK_INTEGRATION_IFRAME;
 
 	/**
 	 * A list of CSS files that will be referenced from the page's footer

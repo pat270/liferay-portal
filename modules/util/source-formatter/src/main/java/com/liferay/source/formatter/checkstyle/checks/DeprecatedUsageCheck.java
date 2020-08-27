@@ -16,13 +16,11 @@ package com.liferay.source.formatter.checkstyle.checks;
 
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.checks.util.BNDSourceUtil;
+import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
 import com.liferay.source.formatter.parser.JavaConstructor;
@@ -34,22 +32,11 @@ import com.liferay.source.formatter.parser.JavaVariable;
 import com.liferay.source.formatter.util.FileUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
-import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 
 import java.io.File;
-import java.io.IOException;
-
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,14 +55,6 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		return new int[] {TokenTypes.CLASS_DEF};
 	}
 
-	public void setAllowedFullyQualifiedClassNames(
-		String allowedFullyQualifiedClassNames) {
-
-		_allowedFullyQualifiedClassNames = ArrayUtil.append(
-			_allowedFullyQualifiedClassNames,
-			StringUtil.split(allowedFullyQualifiedClassNames));
-	}
-
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
 		DetailAST parentDetailAST = detailAST.getParent();
@@ -88,18 +67,13 @@ public class DeprecatedUsageCheck extends BaseCheck {
 			return;
 		}
 
-		FileContents fileContents = getFileContents();
-
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), CharPool.BACK_SLASH, CharPool.SLASH);
-
-		String absolutePath = SourceUtil.getAbsolutePath(fileName);
+		String absolutePath = getAbsolutePath();
 
 		int x = absolutePath.lastIndexOf("/");
 
 		String directoryPath = absolutePath.substring(0, x + 1);
 
-		List<String> importNames = DetailASTUtil.getImportNames(detailAST);
+		List<String> importNames = getImportNames(detailAST);
 		String packageName = _getPackageName(detailAST);
 
 		_checkDeprecatedConstructorsUsage(
@@ -175,9 +149,11 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		DetailAST detailAST, String packageName, List<String> importNames,
 		String directoryPath) {
 
-		List<DetailAST> literalNewDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				detailAST, true, TokenTypes.LITERAL_NEW);
+		List<String> allowedFullyQualifiedClassNames = getAttributeValues(
+			_ALLOWED_FULLY_QUALIFIED_CLASS_NAMES_KEY);
+
+		List<DetailAST> literalNewDetailASTList = getAllChildTokens(
+			detailAST, true, TokenTypes.LITERAL_NEW);
 
 		for (DetailAST literalNewDetailAST : literalNewDetailASTList) {
 			if (_hasDeprecatedParent(literalNewDetailAST) ||
@@ -213,8 +189,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 
 			if ((fullyQualifiedClassName == null) ||
 				!fullyQualifiedClassName.startsWith("com.liferay.") ||
-				ArrayUtil.contains(
-					_allowedFullyQualifiedClassNames,
+				allowedFullyQualifiedClassNames.contains(
 					fullyQualifiedClassName)) {
 
 				continue;
@@ -262,7 +237,10 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		DetailAST detailAST, String packageName, List<String> importNames,
 		String directoryPath) {
 
-		List<DetailAST> dotDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<String> allowedFullyQualifiedClassNames = getAttributeValues(
+			_ALLOWED_FULLY_QUALIFIED_CLASS_NAMES_KEY);
+
+		List<DetailAST> dotDetailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.DOT);
 
 		for (DetailAST dotDetailAST : dotDetailASTList) {
@@ -301,8 +279,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 
 			if ((fullyQualifiedClassName == null) ||
 				!fullyQualifiedClassName.startsWith("com.liferay.") ||
-				ArrayUtil.contains(
-					_allowedFullyQualifiedClassNames,
+				allowedFullyQualifiedClassNames.contains(
 					fullyQualifiedClassName)) {
 
 				continue;
@@ -338,9 +315,11 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		DetailAST detailAST, String className, String packageName,
 		List<String> importNames, String directoryPath) {
 
-		List<DetailAST> methodCallDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				detailAST, true, TokenTypes.METHOD_CALL);
+		List<String> allowedFullyQualifiedClassNames = getAttributeValues(
+			_ALLOWED_FULLY_QUALIFIED_CLASS_NAMES_KEY);
+
+		List<DetailAST> methodCallDetailASTList = getAllChildTokens(
+			detailAST, true, TokenTypes.METHOD_CALL);
 
 		for (DetailAST methodCallDetailAST : methodCallDetailASTList) {
 			if (_hasDeprecatedParent(methodCallDetailAST) ||
@@ -355,8 +334,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 
 			if ((fullyQualifiedClassName == null) ||
 				!fullyQualifiedClassName.startsWith("com.liferay.") ||
-				ArrayUtil.contains(
-					_allowedFullyQualifiedClassNames,
+				allowedFullyQualifiedClassNames.contains(
 					fullyQualifiedClassName)) {
 
 				continue;
@@ -369,8 +347,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 				continue;
 			}
 
-			String methodName = DetailASTUtil.getMethodName(
-				methodCallDetailAST);
+			String methodName = getMethodName(methodCallDetailAST);
 
 			if (classInfo.isDeprecatedClass()) {
 				log(
@@ -407,7 +384,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		DetailAST detailAST, String packageName, List<String> importNames,
 		String directoryPath) {
 
-		List<DetailAST> detailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> detailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.EXTENDS_CLAUSE,
 			TokenTypes.IMPLEMENTS_CLAUSE, TokenTypes.TYPE,
 			TokenTypes.TYPE_ARGUMENT);
@@ -417,7 +394,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 				curDetailAST, packageName, importNames, directoryPath);
 		}
 
-		detailASTList = DetailASTUtil.getAllChildTokens(
+		detailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.LITERAL_CLASS, TokenTypes.LITERAL_THIS);
 
 		for (DetailAST curDetailAST : detailASTList) {
@@ -471,10 +448,12 @@ public class DeprecatedUsageCheck extends BaseCheck {
 			fullyQualifiedClassName = className;
 		}
 
+		List<String> allowedFullyQualifiedClassNames = getAttributeValues(
+			_ALLOWED_FULLY_QUALIFIED_CLASS_NAMES_KEY);
+
 		if ((fullyQualifiedClassName == null) ||
 			!fullyQualifiedClassName.startsWith("com.liferay.") ||
-			ArrayUtil.contains(
-				_allowedFullyQualifiedClassNames, fullyQualifiedClassName)) {
+			allowedFullyQualifiedClassNames.contains(fullyQualifiedClassName)) {
 
 			return;
 		}
@@ -535,69 +514,13 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		return false;
 	}
 
-	private synchronized Map<String, String> _getBundleSymbolicNamesMap()
-		throws IOException {
-
+	private synchronized Map<String, String> _getBundleSymbolicNamesMap() {
 		if (_bundleSymbolicNamesMap != null) {
 			return _bundleSymbolicNamesMap;
 		}
 
-		_bundleSymbolicNamesMap = new HashMap<>();
-
-		String rootDirName = _getRootDirName();
-
-		if (Validator.isNull(rootDirName)) {
-			return _bundleSymbolicNamesMap;
-		}
-
-		File modulesDir = new File(rootDirName + "/modules");
-
-		final List<File> files = new ArrayList<>();
-
-		Files.walkFileTree(
-			modulesDir.toPath(),
-			new SimpleFileVisitor<Path>() {
-
-				@Override
-				public FileVisitResult preVisitDirectory(
-					Path dirPath, BasicFileAttributes basicFileAttributes) {
-
-					for (PathMatcher pathMatcher : _PATH_MATCHERS) {
-						if (pathMatcher.matches(dirPath)) {
-							return FileVisitResult.SKIP_SUBTREE;
-						}
-					}
-
-					return FileVisitResult.CONTINUE;
-				}
-
-				@Override
-				public FileVisitResult visitFile(
-					Path filePath, BasicFileAttributes basicFileAttributes) {
-
-					if (_PATH_MATCHER.matches(filePath)) {
-						files.add(filePath.toFile());
-					}
-
-					return FileVisitResult.CONTINUE;
-				}
-
-			});
-
-		for (File file : files) {
-			String content = FileUtil.read(file);
-
-			String bundleSymbolicName = BNDSourceUtil.getDefinitionValue(
-				content, "Bundle-SymbolicName");
-
-			if ((bundleSymbolicName != null) &&
-				bundleSymbolicName.startsWith("com.liferay")) {
-
-				_bundleSymbolicNamesMap.put(
-					bundleSymbolicName,
-					SourceUtil.getAbsolutePath(file.getParentFile()));
-			}
-		}
+		_bundleSymbolicNamesMap = BNDSourceUtil.getBundleSymbolicNamesMap(
+			_getRootDirName());
 
 		return _bundleSymbolicNamesMap;
 	}
@@ -650,7 +573,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 					classInfo, extendedClassInfo, deprecatedClass);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return classInfo;
@@ -691,7 +614,9 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		}
 
 		if (file == null) {
-			file = _getFile(fullyQualifiedName);
+			file = JavaSourceUtil.getJavaFile(
+				fullyQualifiedName, _getRootDirName(),
+				_getBundleSymbolicNamesMap());
 		}
 
 		if (file != null) {
@@ -730,78 +655,6 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		return null;
 	}
 
-	private File _getFile(String fullyQualifiedName) {
-		if (fullyQualifiedName.contains(".kernel.")) {
-			File file = _getFile(
-				fullyQualifiedName, "portal-kernel/src/", "portal-test/src/",
-				"portal-impl/test/integration/", "portal-impl/test/unit/");
-
-			if (file != null) {
-				return file;
-			}
-		}
-
-		if (fullyQualifiedName.startsWith("com.liferay.portal.") ||
-			fullyQualifiedName.startsWith("com.liferay.portlet.")) {
-
-			File file = _getFile(
-				fullyQualifiedName, "portal-impl/src/", "portal-test/src/",
-				"portal-test-integration/src/", "portal-impl/test/integration/",
-				"portal-impl/test/unit/");
-
-			if (file != null) {
-				return file;
-			}
-		}
-
-		if (fullyQualifiedName.contains(".taglib.")) {
-			File file = _getFile(fullyQualifiedName, "util-taglib/src/");
-
-			if (file != null) {
-				return file;
-			}
-		}
-
-		try {
-			File file = _getModuleFile(
-				fullyQualifiedName, _getBundleSymbolicNamesMap());
-
-			if (file != null) {
-				return file;
-			}
-		}
-		catch (Exception e) {
-		}
-
-		return null;
-	}
-
-	private File _getFile(String fullyQualifiedName, String... dirNames) {
-		String rootDirName = _getRootDirName();
-
-		if (Validator.isNull(rootDirName)) {
-			return null;
-		}
-
-		for (String dirName : dirNames) {
-			StringBundler sb = new StringBundler(5);
-
-			sb.append(rootDirName);
-			sb.append("/");
-			sb.append(dirName);
-			sb.append(StringUtil.replace(fullyQualifiedName, '.', '/'));
-			sb.append(".java");
-
-			File file = new File(sb.toString());
-
-			if (file.exists()) {
-				return file;
-			}
-		}
-
-		return null;
-	}
-
 	private String _getFullyQualifiedClassName(
 		DetailAST methodCallDetailAST, String className, String packageName,
 		List<String> importNames) {
@@ -828,8 +681,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		String s = firstChildDetailAST.getText();
 
 		if (s.matches("_?[a-z].*")) {
-			s = DetailASTUtil.getVariableTypeName(
-				methodCallDetailAST, s, false);
+			s = getVariableTypeName(methodCallDetailAST, s, false);
 
 			if (Validator.isNull(s)) {
 				return null;
@@ -853,51 +705,6 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		}
 
 		return packageName + "." + className;
-	}
-
-	private File _getModuleFile(
-		String fullyQualifiedName, Map<String, String> bundleSymbolicNamesMap) {
-
-		for (Map.Entry<String, String> entry :
-				bundleSymbolicNamesMap.entrySet()) {
-
-			String bundleSymbolicName = entry.getKey();
-
-			String modifiedBundleSymbolicName = bundleSymbolicName.replaceAll(
-				"\\.(api|impl|service|test)$", StringPool.BLANK);
-
-			if (!fullyQualifiedName.startsWith(modifiedBundleSymbolicName)) {
-				continue;
-			}
-
-			StringBundler sb = new StringBundler(4);
-
-			sb.append(entry.getValue());
-			sb.append("/src/main/java/");
-			sb.append(StringUtil.replace(fullyQualifiedName, '.', '/'));
-			sb.append(".java");
-
-			File file = new File(sb.toString());
-
-			if (file.exists()) {
-				return file;
-			}
-
-			sb = new StringBundler(4);
-
-			sb.append(entry.getValue());
-			sb.append("/src/testIntegration/java/");
-			sb.append(StringUtil.replace(fullyQualifiedName, '.', '/'));
-			sb.append(".java");
-
-			file = new File(sb.toString());
-
-			if (file.exists()) {
-				return file;
-			}
-		}
-
-		return null;
 	}
 
 	private String _getPackageName(DetailAST detailAST) {
@@ -943,7 +750,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 
 		DetailAST elistDetailAST = detailAST.findFirstToken(TokenTypes.ELIST);
 
-		List<DetailAST> exprDetailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> exprDetailASTList = getAllChildTokens(
 			elistDetailAST, false, TokenTypes.EXPR);
 
 		for (DetailAST exprDetailAST : exprDetailASTList) {
@@ -952,7 +759,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 			if (firstChildDetailAST.getType() == TokenTypes.IDENT) {
 				String parameterName = firstChildDetailAST.getText();
 
-				String parameterTypeName = DetailASTUtil.getVariableTypeName(
+				String parameterTypeName = getVariableTypeName(
 					detailAST, parameterName, false);
 
 				if (Validator.isNotNull(parameterTypeName)) {
@@ -980,32 +787,9 @@ public class DeprecatedUsageCheck extends BaseCheck {
 			return _rootDirName;
 		}
 
-		FileContents fileContents = getFileContents();
+		_rootDirName = SourceUtil.getRootDirName(getAbsolutePath());
 
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), CharPool.BACK_SLASH, CharPool.SLASH);
-
-		String absolutePath = SourceUtil.getAbsolutePath(fileName);
-
-		while (true) {
-			int x = absolutePath.lastIndexOf("/");
-
-			if (x == -1) {
-				_rootDirName = StringPool.BLANK;
-
-				return _rootDirName;
-			}
-
-			absolutePath = absolutePath.substring(0, x);
-
-			File file = new File(absolutePath + "/portal-impl");
-
-			if (file.exists()) {
-				_rootDirName = absolutePath;
-
-				return _rootDirName;
-			}
-		}
+		return _rootDirName;
 	}
 
 	private boolean _hasDeprecatedParent(DetailAST detailAST) {
@@ -1045,7 +829,7 @@ public class DeprecatedUsageCheck extends BaseCheck {
 
 				if (annotationDetailAST != null) {
 					List<DetailAST> literalStringDetailASTList =
-						DetailASTUtil.getAllChildTokens(
+						getAllChildTokens(
 							annotationDetailAST, true,
 							TokenTypes.STRING_LITERAL);
 
@@ -1065,7 +849,8 @@ public class DeprecatedUsageCheck extends BaseCheck {
 		}
 	}
 
-	private static final FileSystem _FILE_SYSTEM = FileSystems.getDefault();
+	private static final String _ALLOWED_FULLY_QUALIFIED_CLASS_NAMES_KEY =
+		"allowedFullyQualifiedClassNames";
 
 	private static final String _MSG_DEPRECATED_CONSTRUCTOR_CALL =
 		"constructor.call.deprecated";
@@ -1079,32 +864,11 @@ public class DeprecatedUsageCheck extends BaseCheck {
 	private static final String _MSG_DEPRECATED_TYPE_CALL =
 		"type.call.deprecated";
 
-	private static final PathMatcher _PATH_MATCHER =
-		_FILE_SYSTEM.getPathMatcher("glob:**/bnd.bnd");
-
-	private static final PathMatcher[] _PATH_MATCHERS = {
-		_FILE_SYSTEM.getPathMatcher("glob:**/.git/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/.gradle/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/.idea/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/.m2/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/.settings/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/bin/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/build/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/classes/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/sql/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/src/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/test-classes/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/test-coverage/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/test-results/**"),
-		_FILE_SYSTEM.getPathMatcher("glob:**/tmp/**")
-	};
-
 	private static final String _TYPE_UNKNOWN = "unknown";
 
 	private static final Pattern _fieldNamePattern = Pattern.compile(
 		"((.*\\.)?([A-Z]\\w+))\\.(\\w+)");
 
-	private String[] _allowedFullyQualifiedClassNames = new String[0];
 	private Map<String, String> _bundleSymbolicNamesMap;
 	private final Map<String, ClassInfo> _classInfoMap = new HashMap<>();
 	private String _rootDirName;

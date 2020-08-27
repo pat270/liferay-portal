@@ -17,7 +17,6 @@ package com.liferay.dynamic.data.lists.service.persistence.impl;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
 import com.liferay.dynamic.data.lists.model.impl.DDLRecordImpl;
 import com.liferay.dynamic.data.lists.service.persistence.DDLRecordFinder;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -65,26 +64,26 @@ public class DDLRecordFinderImpl
 			String sql = _customSQL.get(getClass(), COUNT_BY_R_S);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordVersion.status = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordVersion.status = ?) AND");
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(recordSetId);
+			queryPos.add(recordSetId);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -93,8 +92,8 @@ public class DDLRecordFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -111,27 +110,27 @@ public class DDLRecordFinderImpl
 			String sql = _customSQL.get(getClass(), COUNT_BY_C_S_S);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordVersion.status = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordVersion.status = ?) AND");
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(scope);
-			qPos.add(companyId);
+			queryPos.add(scope);
+			queryPos.add(companyId);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -140,8 +139,8 @@ public class DDLRecordFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -161,28 +160,29 @@ public class DDLRecordFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_BY_R_S);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordVersion.status = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordVersion.status = ?) AND");
 			}
 
 			sql = _customSQL.replaceOrderBy(sql, orderByComparator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("DDLRecord", DDLRecordImpl.class);
+			sqlQuery.addEntity("DDLRecord", DDLRecordImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(recordSetId);
+			queryPos.add(recordSetId);
 
-			return (List<DDLRecord>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<DDLRecord>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -202,29 +202,30 @@ public class DDLRecordFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_BY_C_S_S);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordVersion.status = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordVersion.status = ?) AND");
 			}
 
 			sql = _customSQL.replaceOrderBy(sql, orderByComparator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("DDLRecord", DDLRecordImpl.class);
+			sqlQuery.addEntity("DDLRecord", DDLRecordImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(scope);
-			qPos.add(companyId);
+			queryPos.add(scope);
+			queryPos.add(companyId);
 
-			return (List<DDLRecord>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<DDLRecord>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -246,25 +247,25 @@ public class DDLRecordFinderImpl
 					"MAX(DDLRecord.recordId) AS maxRecordId");
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordVersion.status = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordVersion.status = ?) AND");
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("minRecordId", Type.LONG);
-			q.addScalar("maxRecordId", Type.LONG);
+			sqlQuery.addScalar("minRecordId", Type.LONG);
+			sqlQuery.addScalar("maxRecordId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(scope);
-			qPos.add(companyId);
+			queryPos.add(scope);
+			queryPos.add(companyId);
 
-			Object[] array = (Object[])q.iterateNext();
+			Object[] array = (Object[])sqlQuery.iterateNext();
 
 			if (array == null) {
 				return null;
@@ -272,8 +273,8 @@ public class DDLRecordFinderImpl
 
 			return ArrayUtil.toLongArray(array);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -293,8 +294,8 @@ public class DDLRecordFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_BY_C_S_S);
 
 			if (status == WorkflowConstants.STATUS_ANY) {
-				sql = StringUtil.replace(
-					sql, "(DDLRecordVersion.status = ?) AND", StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(DDLRecordVersion.status = ?) AND");
 			}
 
 			sql = _customSQL.removeOrderBy(sql);
@@ -302,25 +303,25 @@ public class DDLRecordFinderImpl
 			sql +=
 				" AND (DDLRecord.recordId >= ?) AND (DDLRecord.recordId < ?)";
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("DDLRecord", DDLRecordImpl.class);
+			sqlQuery.addEntity("DDLRecord", DDLRecordImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			qPos.add(scope);
-			qPos.add(companyId);
-			qPos.add(minRecordId);
-			qPos.add(maxRecordId);
+			queryPos.add(scope);
+			queryPos.add(companyId);
+			queryPos.add(minRecordId);
+			queryPos.add(maxRecordId);
 
-			return q.list();
+			return sqlQuery.list();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

@@ -24,6 +24,7 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
+import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
 
@@ -31,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Rafael Praxedes
@@ -60,7 +62,15 @@ public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
 					"update DDMStructure set definition = ? where " +
-						"structureId = ?")) {
+						"structureId = ?");
+			PreparedStatement ps3 = connection.prepareStatement(
+				"select structureVersionId, definition from " +
+					"DDMStructureVersion where structureId = ?");
+			PreparedStatement ps4 =
+				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+					connection,
+					"update DDMStructureVersion set definition = ? where " +
+						"structureVersionId = ?")) {
 
 			ps1.setInt(1, _SCOPE_FORMS);
 			ps1.setString(2, "%ddmDataProviderInstanceId%");
@@ -72,6 +82,10 @@ public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 					String newDefinition = upgradeRecordSetStructure(
 						definition);
 
+					if (Objects.equals(definition, newDefinition)) {
+						continue;
+					}
+
 					ps2.setString(1, newDefinition);
 
 					long structureId = rs.getLong(1);
@@ -79,14 +93,42 @@ public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 					ps2.setLong(2, structureId);
 
 					ps2.addBatch();
+
+					ps3.setLong(1, structureId);
+
+					try (ResultSet rs2 = ps3.executeQuery()) {
+						while (rs2.next()) {
+							definition = rs2.getString("definition");
+
+							newDefinition = upgradeRecordSetStructure(
+								definition);
+
+							if (Objects.equals(definition, newDefinition)) {
+								continue;
+							}
+
+							ps4.setString(1, newDefinition);
+
+							long structureVersionId = rs2.getLong(
+								"structureVersionId");
+
+							ps4.setLong(2, structureVersionId);
+
+							ps4.addBatch();
+						}
+					}
 				}
 
 				ps2.executeBatch();
+
+				ps4.executeBatch();
 			}
 		}
 	}
 
-	protected String upgradeRecordSetStructure(String definition) {
+	protected String upgradeRecordSetStructure(String definition)
+		throws Exception {
+
 		DDMFormDeserializerDeserializeRequest.Builder deserializerBuilder =
 			DDMFormDeserializerDeserializeRequest.Builder.newBuilder(
 				definition);
@@ -94,6 +136,13 @@ public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 		DDMFormDeserializerDeserializeResponse
 			ddmFormDeserializerDeserializeResponse =
 				_ddmFormDeserializer.deserialize(deserializerBuilder.build());
+
+		Exception exception =
+			ddmFormDeserializerDeserializeResponse.getException();
+
+		if (exception != null) {
+			throw new UpgradeException(exception);
+		}
 
 		DDMForm ddmForm = ddmFormDeserializerDeserializeResponse.getDDMForm();
 
@@ -104,11 +153,11 @@ public class UpgradeDDMFormFieldSettings extends UpgradeProcess {
 				String ddmDataProviderInstanceId = GetterUtil.getString(
 					properties.get("ddmDataProviderInstanceId"));
 
-				properties.put(
+				ddmFormField.setProperty(
 					"ddmDataProviderInstanceId",
 					"[\"" + ddmDataProviderInstanceId + "\"]");
 
-				properties.put(
+				ddmFormField.setProperty(
 					"ddmDataProviderInstanceOutput", "[\"Default-Output\"]");
 			}
 		}

@@ -16,8 +16,10 @@ package com.liferay.asset.list.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -36,7 +38,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetListEntryModel
-	extends BaseModel<AssetListEntry>, ShardedModel, StagedGroupedModel {
+	extends BaseModel<AssetListEntry>, CTModel<AssetListEntry>, MVCCModel,
+			ShardedModel, StagedGroupedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -49,6 +52,7 @@ public interface AssetListEntryModel
 	 *
 	 * @return the primary key of this asset list entry
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -56,7 +60,40 @@ public interface AssetListEntryModel
 	 *
 	 * @param primaryKey the primary key of this asset list entry
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset list entry.
+	 *
+	 * @return the mvcc version of this asset list entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset list entry.
+	 *
+	 * @param mvccVersion the mvcc version of this asset list entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset list entry.
+	 *
+	 * @return the ct collection ID of this asset list entry
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset list entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset list entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this asset list entry.
@@ -245,6 +282,36 @@ public interface AssetListEntryModel
 	 * @param type the type of this asset list entry
 	 */
 	public void setType(int type);
+
+	/**
+	 * Returns the asset entry subtype of this asset list entry.
+	 *
+	 * @return the asset entry subtype of this asset list entry
+	 */
+	@AutoEscape
+	public String getAssetEntrySubtype();
+
+	/**
+	 * Sets the asset entry subtype of this asset list entry.
+	 *
+	 * @param assetEntrySubtype the asset entry subtype of this asset list entry
+	 */
+	public void setAssetEntrySubtype(String assetEntrySubtype);
+
+	/**
+	 * Returns the asset entry type of this asset list entry.
+	 *
+	 * @return the asset entry type of this asset list entry
+	 */
+	@AutoEscape
+	public String getAssetEntryType();
+
+	/**
+	 * Sets the asset entry type of this asset list entry.
+	 *
+	 * @param assetEntryType the asset entry type of this asset list entry
+	 */
+	public void setAssetEntryType(String assetEntryType);
 
 	/**
 	 * Returns the last publish date of this asset list entry.

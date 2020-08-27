@@ -18,14 +18,14 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
+import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
 
 /**
  * Converts any {@code UnrecognizedPropertyException} to a {@code 400} error.
@@ -34,11 +34,14 @@ import javax.ws.rs.ext.ExceptionMapper;
  * @review
  */
 public class UnrecognizedPropertyExceptionMapper
-	implements ExceptionMapper<UnrecognizedPropertyException> {
+	extends BaseExceptionMapper<UnrecognizedPropertyException> {
 
 	@Override
-	public Response toResponse(UnrecognizedPropertyException upe) {
-		List<JsonMappingException.Reference> references = upe.getPath();
+	protected Problem getProblem(
+		UnrecognizedPropertyException unrecognizedPropertyException) {
+
+		List<JsonMappingException.Reference> references =
+			unrecognizedPropertyException.getPath();
 
 		Stream<JsonMappingException.Reference> stream = references.stream();
 
@@ -56,13 +59,7 @@ public class UnrecognizedPropertyExceptionMapper
 			Collectors.joining(".")
 		);
 
-		return Response.status(
-			Response.Status.BAD_REQUEST
-		).entity(
-			entity
-		).type(
-			MediaType.TEXT_PLAIN
-		).build();
+		return new Problem(Response.Status.BAD_REQUEST, entity);
 	}
 
 }

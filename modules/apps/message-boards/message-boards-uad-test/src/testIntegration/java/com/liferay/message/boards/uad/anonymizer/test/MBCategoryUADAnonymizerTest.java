@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class MBCategoryUADAnonymizerTest
 	extends BaseUADAnonymizerTestCase<MBCategory>
-	implements WhenHasStatusByUserIdField {
+	implements WhenHasStatusByUserIdField<MBCategory> {
 
 	@ClassRule
 	@Rule
@@ -81,7 +81,7 @@ public class MBCategoryUADAnonymizerTest
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<MBCategory> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -122,6 +122,6 @@ public class MBCategoryUADAnonymizerTest
 	private MBCategoryLocalService _mbCategoryLocalService;
 
 	@Inject(filter = "component.name=*.MBCategoryUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<MBCategory> _uadAnonymizer;
 
 }

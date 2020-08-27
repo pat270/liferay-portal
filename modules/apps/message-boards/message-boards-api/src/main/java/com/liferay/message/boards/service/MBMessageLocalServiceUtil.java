@@ -14,7 +14,6 @@
 
 package com.liferay.message.boards.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see MBMessageLocalService
  * @generated
  */
-@ProviderType
 public class MBMessageLocalServiceUtil {
 
 	/*
@@ -64,6 +62,10 @@ public class MBMessageLocalServiceUtil {
 
 	/**
 	 * Adds the message-boards message to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param mbMessage the message-boards message
 	 * @return the message-boards message that was added
@@ -200,6 +202,16 @@ public class MBMessageLocalServiceUtil {
 		return getService().createMBMessage(messageId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
 	public static com.liferay.message.boards.model.MBMessage
 			deleteDiscussionMessage(long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -216,6 +228,10 @@ public class MBMessageLocalServiceUtil {
 	/**
 	 * Deletes the message-boards message with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param messageId the primary key of the message-boards message
 	 * @return the message-boards message that was removed
 	 * @throws PortalException if a message-boards message with the primary key could not be found
@@ -229,6 +245,10 @@ public class MBMessageLocalServiceUtil {
 
 	/**
 	 * Deletes the message-boards message from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param mbMessage the message-boards message
 	 * @return the message-boards message that was removed
@@ -284,6 +304,12 @@ public class MBMessageLocalServiceUtil {
 			groupId, userId, folderName, fileName);
 	}
 
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
 		dynamicQuery() {
 
@@ -306,7 +332,7 @@ public class MBMessageLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -325,7 +351,7 @@ public class MBMessageLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -395,6 +421,12 @@ public class MBMessageLocalServiceUtil {
 		return getService().fetchMBMessage(messageId);
 	}
 
+	public static com.liferay.message.boards.model.MBMessage
+		fetchMBMessageByUrlSubject(long groupId, String urlSubject) {
+
+		return getService().fetchMBMessageByUrlSubject(groupId, urlSubject);
+	}
+
 	/**
 	 * Returns the message-boards message matching the UUID and group.
 	 *
@@ -426,10 +458,11 @@ public class MBMessageLocalServiceUtil {
 		getCategoryMessages(
 			long groupId, long categoryId, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
 		return getService().getCategoryMessages(
-			groupId, categoryId, status, start, end, obc);
+			groupId, categoryId, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.message.boards.model.MBMessage>
@@ -472,10 +505,11 @@ public class MBMessageLocalServiceUtil {
 		getCompanyMessages(
 			long companyId, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
 		return getService().getCompanyMessages(
-			companyId, status, start, end, obc);
+			companyId, status, start, end, orderByComparator);
 	}
 
 	public static int getCompanyMessagesCount(long companyId, int status) {
@@ -556,9 +590,11 @@ public class MBMessageLocalServiceUtil {
 		getGroupMessages(
 			long groupId, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
-		return getService().getGroupMessages(groupId, status, start, end, obc);
+		return getService().getGroupMessages(
+			groupId, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.message.boards.model.MBMessage>
@@ -573,10 +609,11 @@ public class MBMessageLocalServiceUtil {
 		getGroupMessages(
 			long groupId, long userId, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
 		return getService().getGroupMessages(
-			groupId, userId, status, start, end, obc);
+			groupId, userId, status, start, end, orderByComparator);
 	}
 
 	public static int getGroupMessagesCount(long groupId, int status) {
@@ -596,9 +633,10 @@ public class MBMessageLocalServiceUtil {
 		return getService().getIndexableActionableDynamicQuery();
 	}
 
-	public static com.liferay.message.boards.model.MBMessage getLastThreadMessage(
-		long threadId, int status)
+	public static com.liferay.message.boards.model.MBMessage
+			getLastThreadMessage(long threadId, int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		return getService().getLastThreadMessage(threadId, status);
 	}
 
@@ -635,7 +673,7 @@ public class MBMessageLocalServiceUtil {
 	 * Returns a range of all the message-boards messages.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.message.boards.model.impl.MBMessageModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of message-boards messages
@@ -733,16 +771,6 @@ public class MBMessageLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.message.boards.model.MBMessage>
-		getNoAssetMessages() {
-
-		return getService().getNoAssetMessages();
-	}
-
-	/**
 	 * Returns the OSGi service identifier.
 	 *
 	 * @return the OSGi service identifier
@@ -751,6 +779,9 @@ public class MBMessageLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -787,43 +818,6 @@ public class MBMessageLocalServiceUtil {
 
 		return getService().getRootDiscussionMessagesCount(
 			className, classPK, status);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getRootDiscussionMessages(String, long, int)}
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.message.boards.model.MBMessage>
-			getRootMessages(String className, long classPK, int status)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getRootMessages(className, classPK, status);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getRootDiscussionMessages(String, long, int, int, int)}
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.message.boards.model.MBMessage>
-			getRootMessages(
-				String className, long classPK, int status, int start, int end)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getRootMessages(
-			className, classPK, status, start, end);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getRootDiscussionMessagesCount(String, long, int)}
-	 */
-	@Deprecated
-	public static int getRootMessagesCount(
-		String className, long classPK, int status) {
-
-		return getService().getRootMessagesCount(className, classPK, status);
 	}
 
 	public static String[] getTempAttachmentNames(
@@ -891,20 +885,23 @@ public class MBMessageLocalServiceUtil {
 			long userId, long classNameId, long classPK, int status, int start,
 			int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
 		return getService().getUserDiscussionMessages(
-			userId, classNameId, classPK, status, start, end, obc);
+			userId, classNameId, classPK, status, start, end,
+			orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.message.boards.model.MBMessage>
 		getUserDiscussionMessages(
 			long userId, long[] classNameIds, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
 		return getService().getUserDiscussionMessages(
-			userId, classNameIds, status, start, end, obc);
+			userId, classNameIds, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.message.boards.model.MBMessage>
@@ -912,10 +909,11 @@ public class MBMessageLocalServiceUtil {
 			long userId, String className, long classPK, int status, int start,
 			int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.message.boards.model.MBMessage> obc) {
+				<com.liferay.message.boards.model.MBMessage>
+					orderByComparator) {
 
 		return getService().getUserDiscussionMessages(
-			userId, className, classPK, status, start, end, obc);
+			userId, className, classPK, status, start, end, orderByComparator);
 	}
 
 	public static int getUserDiscussionMessagesCount(
@@ -1008,6 +1006,10 @@ public class MBMessageLocalServiceUtil {
 	/**
 	 * Updates the message-boards message in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect MBMessageLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param mbMessage the message-boards message
 	 * @return the message-boards message that was updated
 	 */
@@ -1038,26 +1040,6 @@ public class MBMessageLocalServiceUtil {
 		return getService().updateMessage(
 			userId, messageId, subject, body, inputStreamOVPs, priority,
 			allowPingbacks, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateMessage(long,
-	 long, String, String, List, double, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	public static com.liferay.message.boards.model.MBMessage updateMessage(
-			long userId, long messageId, String subject, String body,
-			java.util.List
-				<com.liferay.portal.kernel.util.ObjectValuePair
-					<String, java.io.InputStream>> inputStreamOVPs,
-			java.util.List<String> existingFiles, double priority,
-			boolean allowPingbacks,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().updateMessage(
-			userId, messageId, subject, body, inputStreamOVPs, existingFiles,
-			priority, allowPingbacks, serviceContext);
 	}
 
 	public static com.liferay.message.boards.model.MBMessage updateStatus(

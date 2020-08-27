@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMTemplate
  * @generated
  */
-@ProviderType
 public class DDMTemplateWrapper
 	extends BaseModelWrapper<DDMTemplate>
 	implements DDMTemplate, ModelWrapper<DDMTemplate> {
@@ -46,6 +45,8 @@ public class DDMTemplateWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("templateId", getTemplateId());
 		attributes.put("groupId", getGroupId());
@@ -78,6 +79,18 @@ public class DDMTemplateWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -300,6 +313,16 @@ public class DDMTemplateWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this ddm template.
+	 *
+	 * @return the ct collection ID of this ddm template
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public String getDefaultLanguageId() {
 		return model.getDefaultLanguageId();
@@ -436,6 +459,16 @@ public class DDMTemplateWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this ddm template.
+	 *
+	 * @return the mvcc version of this ddm template
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -823,6 +856,16 @@ public class DDMTemplateWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this ddm template.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm template
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this ddm template.
 	 *
 	 * @param description the description of this ddm template
@@ -937,6 +980,16 @@ public class DDMTemplateWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm template.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm template
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -1180,6 +1233,20 @@ public class DDMTemplateWrapper
 	@Override
 	public void setVersionUserUuid(String versionUserUuid) {
 		model.setVersionUserUuid(versionUserUuid);
+	}
+
+	@Override
+	public Map<String, Function<DDMTemplate, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMTemplate, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

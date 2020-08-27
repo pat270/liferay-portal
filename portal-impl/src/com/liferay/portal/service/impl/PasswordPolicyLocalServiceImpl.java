@@ -101,7 +101,7 @@ public class PasswordPolicyLocalServiceImpl
 		passwordPolicy.setResetTicketMaxAge(resetTicketMaxAge);
 		passwordPolicy.setExpandoBridgeAttributes(serviceContext);
 
-		passwordPolicyPersistence.update(passwordPolicy);
+		passwordPolicy = passwordPolicyPersistence.update(passwordPolicy);
 
 		// Resources
 
@@ -129,37 +129,37 @@ public class PasswordPolicyLocalServiceImpl
 			passwordPolicyPersistence.fetchByC_N(
 				companyId, defaultPasswordPolicyName);
 
-		if (defaultPasswordPolicy == null) {
-			long defaultUserId = userLocalService.getDefaultUserId(companyId);
-
-			addPasswordPolicy(
-				defaultUserId, true, defaultPasswordPolicyName,
-				defaultPasswordPolicyName,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_CHANGEABLE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_CHANGE_REQUIRED,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_AGE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_CHECK_SYNTAX,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_ALLOW_DICTIONARY_WORDS,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_ALPHANUMERIC,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_LENGTH,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_LOWERCASE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_NUMBERS,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_SYMBOLS,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_UPPERCASE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_REGEX,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_HISTORY,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_HISTORY_COUNT,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_EXPIREABLE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MAX_AGE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_WARNING_TIME,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_GRACE_LIMIT,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_LOCKOUT,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_MAX_FAILURE,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_LOCKOUT_DURATION,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_RESET_FAILURE_COUNT,
-				PropsValues.PASSWORDS_DEFAULT_POLICY_RESET_TICKET_MAX_AGE,
-				new ServiceContext());
+		if (defaultPasswordPolicy != null) {
+			return;
 		}
+
+		addPasswordPolicy(
+			userLocalService.getDefaultUserId(companyId), true,
+			defaultPasswordPolicyName, defaultPasswordPolicyName,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_CHANGEABLE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_CHANGE_REQUIRED,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_AGE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_CHECK_SYNTAX,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_ALLOW_DICTIONARY_WORDS,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_ALPHANUMERIC,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_LENGTH,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_LOWERCASE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_NUMBERS,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_SYMBOLS,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_UPPERCASE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_REGEX,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_HISTORY,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_HISTORY_COUNT,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_EXPIREABLE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MAX_AGE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_WARNING_TIME,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_GRACE_LIMIT,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_LOCKOUT,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_MAX_FAILURE,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_LOCKOUT_DURATION,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_RESET_FAILURE_COUNT,
+			PropsValues.PASSWORDS_DEFAULT_POLICY_RESET_TICKET_MAX_AGE,
+			new ServiceContext());
 	}
 
 	@Override
@@ -322,9 +322,10 @@ public class PasswordPolicyLocalServiceImpl
 	@Override
 	public List<PasswordPolicy> search(
 		long companyId, String name, int start, int end,
-		OrderByComparator<PasswordPolicy> obc) {
+		OrderByComparator<PasswordPolicy> orderByComparator) {
 
-		return passwordPolicyFinder.findByC_N(companyId, name, start, end, obc);
+		return passwordPolicyFinder.findByC_N(
+			companyId, name, start, end, orderByComparator);
 	}
 
 	@Override
@@ -381,9 +382,7 @@ public class PasswordPolicyLocalServiceImpl
 		passwordPolicy.setResetTicketMaxAge(resetTicketMaxAge);
 		passwordPolicy.setExpandoBridgeAttributes(serviceContext);
 
-		passwordPolicyPersistence.update(passwordPolicy);
-
-		return passwordPolicy;
+		return passwordPolicyPersistence.update(passwordPolicy);
 	}
 
 	protected void validate(long passwordPolicyId, long companyId, String name)

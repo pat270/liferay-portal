@@ -16,7 +16,9 @@ package com.liferay.document.library.web.internal.display.context;
 
 import com.liferay.document.library.kernel.versioning.VersioningStrategy;
 import com.liferay.document.library.web.internal.display.context.util.DLRequestHelper;
-import com.liferay.portal.kernel.exception.PortalException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -26,27 +28,33 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 /**
  * @author Adolfo Pérez
  */
-@Component(immediate = true, service = DLAdminDisplayContextProvider.class)
+@Component(service = DLAdminDisplayContextProvider.class)
 public class DLAdminDisplayContextProvider {
 
 	public DLAdminDisplayContext getDLAdminDisplayContext(
-		DLRequestHelper dlRequestHelper) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
+
+		DLRequestHelper dlRequestHelper = new DLRequestHelper(
+			httpServletRequest);
 
 		return new DLAdminDisplayContext(
-			dlRequestHelper.getLiferayPortletRequest(),
+			httpServletRequest, dlRequestHelper.getLiferayPortletRequest(),
 			dlRequestHelper.getLiferayPortletResponse(), _versioningStrategy);
 	}
 
 	public DLAdminManagementToolbarDisplayContext
-			getDLAdminManagementToolbarDisplayContext(
-				DLRequestHelper dlRequestHelper,
-				DLAdminDisplayContext dlAdminDisplayContext)
-		throws PortalException {
+		getDLAdminManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse) {
+
+		DLRequestHelper dlRequestHelper = new DLRequestHelper(
+			httpServletRequest);
 
 		return new DLAdminManagementToolbarDisplayContext(
-			dlRequestHelper.getLiferayPortletRequest(),
-			dlRequestHelper.getLiferayPortletResponse(), dlRequestHelper,
-			dlAdminDisplayContext);
+			httpServletRequest, dlRequestHelper.getLiferayPortletRequest(),
+			dlRequestHelper.getLiferayPortletResponse(),
+			getDLAdminDisplayContext(httpServletRequest, httpServletResponse));
 	}
 
 	@Reference(

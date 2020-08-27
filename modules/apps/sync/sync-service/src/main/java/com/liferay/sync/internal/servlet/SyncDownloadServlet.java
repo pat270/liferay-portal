@@ -14,7 +14,6 @@
 
 package com.liferay.sync.internal.servlet;
 
-import com.liferay.document.library.kernel.exception.DuplicateFileException;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.exception.NoSuchFileVersionException;
 import com.liferay.document.library.kernel.model.DLFileVersion;
@@ -28,8 +27,6 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.ImageConstants;
@@ -58,11 +55,11 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.kernel.zip.ZipWriterFactoryUtil;
 import com.liferay.sync.SyncSiteUnavailableException;
+import com.liferay.sync.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.model.SyncDLFileVersionDiff;
 import com.liferay.sync.model.SyncDevice;
 import com.liferay.sync.service.SyncDLFileVersionDiffLocalServiceUtil;
 import com.liferay.sync.service.SyncDeviceLocalServiceUtil;
-import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
 import com.liferay.sync.util.SyncHelper;
 
 import java.io.File;
@@ -199,18 +196,19 @@ public class SyncDownloadServlet extends HttpServlet {
 				}
 			}
 		}
-		catch (NoSuchFileEntryException nsfee) {
+		catch (NoSuchFileEntryException noSuchFileEntryException) {
 			_portal.sendError(
-				HttpServletResponse.SC_NOT_FOUND, nsfee, httpServletRequest,
-				httpServletResponse);
+				HttpServletResponse.SC_NOT_FOUND, noSuchFileEntryException,
+				httpServletRequest, httpServletResponse);
 		}
-		catch (NoSuchFileVersionException nsfve) {
+		catch (NoSuchFileVersionException noSuchFileVersionException) {
 			_portal.sendError(
-				HttpServletResponse.SC_NOT_FOUND, nsfve, httpServletRequest,
-				httpServletResponse);
+				HttpServletResponse.SC_NOT_FOUND, noSuchFileVersionException,
+				httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			_portal.sendError(e, httpServletRequest, httpServletResponse);
+		catch (Exception exception) {
+			_portal.sendError(
+				exception, httpServletRequest, httpServletResponse);
 		}
 	}
 
@@ -225,8 +223,8 @@ public class SyncDownloadServlet extends HttpServlet {
 		for (FileEntry fileEntry : fileEntries) {
 			try (InputStream inputStream =
 					_dlFileEntryLocalService.getFileAsStream(
-						userId, fileEntry.getFileEntryId(),
-						fileEntry.getVersion(), false)) {
+						fileEntry.getFileEntryId(), fileEntry.getVersion(),
+						false)) {
 
 				String filePath = folderPath + fileEntry.getTitle();
 
@@ -255,16 +253,25 @@ public class SyncDownloadServlet extends HttpServlet {
 		DLFileVersion sourceDLFileVersion =
 			_dlFileVersionLocalService.getDLFileVersion(sourceVersionId);
 
-		File sourceFile = _dlFileEntryLocalService.getFile(
-			fileEntryId, sourceDLFileVersion.getVersion(), false);
+		File sourceFile = FileUtil.createTempFile(
+			_dlFileEntryLocalService.getFileAsStream(
+				fileEntryId, sourceDLFileVersion.getVersion(), false));
 
 		DLFileVersion targetDLFileVersion =
 			_dlFileVersionLocalService.getDLFileVersion(targetVersionId);
 
-		File targetFile = _dlFileEntryLocalService.getFile(
-			fileEntryId, targetDLFileVersion.getVersion(), false);
+		File targetFile = FileUtil.createTempFile(
+			_dlFileEntryLocalService.getFileAsStream(
+				fileEntryId, targetDLFileVersion.getVersion(), false));
 
-		return _syncHelper.getFileDelta(sourceFile, targetFile);
+		try {
+			return _syncHelper.getFileDelta(sourceFile, targetFile);
+		}
+		finally {
+			sourceFile.delete();
+
+			targetFile.delete();
+		}
 	}
 
 	protected DownloadServletInputStream getFileDownloadServletInputStream(
@@ -281,8 +288,7 @@ public class SyncDownloadServlet extends HttpServlet {
 
 		if (Validator.isNull(version)) {
 			InputStream inputStream = _dlFileEntryLocalService.getFileAsStream(
-				userId, fileEntry.getFileEntryId(), fileEntry.getVersion(),
-				false);
+				fileEntry.getFileEntryId(), fileEntry.getVersion(), false);
 
 			return new DownloadServletInputStream(
 				inputStream, fileEntry.getFileName(), fileEntry.getMimeType(),
@@ -357,19 +363,9 @@ public class SyncDownloadServlet extends HttpServlet {
 				userId, fileEntry.getFileEntryId(), sourceVersionId,
 				targetVersionId);
 
-			try {
-				SyncDLFileVersionDiffLocalServiceUtil.addSyncDLFileVersionDiff(
-					fileEntry.getFileEntryId(), sourceVersionId,
-					targetVersionId, deltaFile);
-			}
-			catch (DuplicateFileException dfe) {
-
-				// LPS-52675
-
-				if (_log.isDebugEnabled()) {
-					_log.debug(dfe, dfe);
-				}
-			}
+			SyncDLFileVersionDiffLocalServiceUtil.addSyncDLFileVersionDiff(
+				fileEntry.getFileEntryId(), sourceVersionId, targetVersionId,
+				deltaFile);
 
 			return new DownloadServletInputStream(
 				new FileInputStream(deltaFile), deltaFile.length());
@@ -454,9 +450,9 @@ public class SyncDownloadServlet extends HttpServlet {
 		throws Exception {
 
 		long sourceVersionId = ParamUtil.getLong(
-			httpServletRequest, "sourceVersionId", 0);
+			httpServletRequest, "sourceVersionId");
 		long targetVersionId = ParamUtil.getLong(
-			httpServletRequest, "targetVersionId", 0);
+			httpServletRequest, "targetVersionId");
 
 		DownloadServletInputStream downloadServletInputStream =
 			getPatchDownloadServletInputStream(
@@ -498,8 +494,8 @@ public class SyncDownloadServlet extends HttpServlet {
 
 				zipWriter.addEntry(zipFileId, inputStream);
 			}
-			catch (Exception e) {
-				Class<?> clazz = e.getClass();
+			catch (Exception exception) {
+				Class<?> clazz = exception.getClass();
 
 				processException(zipFileId, clazz.getName(), errorsJSONObject);
 			}
@@ -585,9 +581,6 @@ public class SyncDownloadServlet extends HttpServlet {
 	}
 
 	private static final String _ERROR_HEADER = "Sync-Error";
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		SyncDownloadServlet.class);
 
 	private DLAppService _dlAppService;
 	private DLFileEntryLocalService _dlFileEntryLocalService;

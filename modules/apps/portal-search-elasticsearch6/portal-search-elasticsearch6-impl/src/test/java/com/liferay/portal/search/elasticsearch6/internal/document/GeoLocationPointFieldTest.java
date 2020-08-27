@@ -22,7 +22,7 @@ import com.liferay.portal.search.elasticsearch6.internal.ElasticsearchIndexingFi
 import com.liferay.portal.search.elasticsearch6.internal.LiferayElasticsearchIndexingFixtureFactory;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchClientResolver;
 import com.liferay.portal.search.elasticsearch6.internal.connection.IndexCreationHelper;
-import com.liferay.portal.search.elasticsearch6.internal.index.LiferayTypeMappingsConstants;
+import com.liferay.portal.search.elasticsearch6.internal.index.constants.LiferayTypeMappingsConstants;
 import com.liferay.portal.search.test.util.DocumentsAssert;
 import com.liferay.portal.search.test.util.indexing.BaseIndexingTestCase;
 import com.liferay.portal.search.test.util.indexing.DocumentCreationHelpers;
@@ -74,12 +74,10 @@ public class GeoLocationPointFieldTest extends BaseIndexingTestCase {
 				indexingTestHelper.search();
 
 				indexingTestHelper.verifyResponse(
-					searchResponse -> {
-						DocumentsAssert.assertValues(
-							searchResponse.getRequestString(),
-							searchResponse.getDocumentsStream(), fieldName,
-							"[" + expected + "]");
-					});
+					searchResponse -> DocumentsAssert.assertValues(
+						searchResponse.getRequestString(),
+						searchResponse.getDocumentsStream(), fieldName,
+						"[" + expected + "]"));
 			});
 	}
 

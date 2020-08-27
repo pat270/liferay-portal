@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalService;
+import com.liferay.document.library.security.io.InputStreamSanitizer;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructureManager;
 import com.liferay.dynamic.data.mapping.kernel.StorageEngineManager;
@@ -58,7 +59,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true,
 	property = "indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 	service = ModelDocumentContributor.class
 )
@@ -83,17 +83,18 @@ public class DLFileEntryModelDocumentContributor
 			indexContent = false;
 		}
 
-		InputStream is = null;
+		InputStream inputStream = null;
 
 		if (indexContent) {
 			try {
 				DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
-				is = dlFileVersion.getContentStream(false);
+				inputStream = _inputStreamSanitizer.sanitize(
+					dlFileVersion.getContentStream(false));
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to retrieve document stream", e);
+					_log.debug("Unable to retrieve document stream", exception);
 				}
 			}
 		}
@@ -102,7 +103,7 @@ public class DLFileEntryModelDocumentContributor
 			DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
 			if (indexContent) {
-				if (is != null) {
+				if (inputStream != null) {
 					try {
 						Locale defaultLocale = portal.getSiteDefaultLocale(
 							dlFileEntry.getGroupId());
@@ -111,12 +112,12 @@ public class DLFileEntryModelDocumentContributor
 							defaultLocale.toString(), Field.CONTENT);
 
 						document.addFile(
-							localizedField, is, dlFileEntry.getTitle(),
+							localizedField, inputStream, dlFileEntry.getTitle(),
 							PropsValues.DL_FILE_INDEXING_MAX_SIZE);
 					}
-					catch (IOException ioe) {
+					catch (IOException ioException) {
 						if (_log.isWarnEnabled()) {
-							_log.warn("Unable to index content", ioe);
+							_log.warn("Unable to index content", ioException);
 						}
 					}
 				}
@@ -150,7 +151,7 @@ public class DLFileEntryModelDocumentContributor
 
 			document.addKeyword(
 				"dataRepositoryId", dlFileEntry.getDataRepositoryId());
-			//todo is this necessary?
+			//todo inputStream this necessary?
 			document.addText(
 				"ddmContent",
 				extractDDMContent(dlFileVersion, LocaleUtil.getSiteDefault()));
@@ -196,15 +197,15 @@ public class DLFileEntryModelDocumentContributor
 				_log.debug("Document " + dlFileEntry + " indexed successfully");
 			}
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
-			if (is != null) {
+			if (inputStream != null) {
 				try {
-					is.close();
+					inputStream.close();
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 				}
 			}
 		}
@@ -230,9 +231,9 @@ public class DLFileEntryModelDocumentContributor
 						ddmFormValues);
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to retrieve metadata values", e);
+					_log.debug("Unable to retrieve metadata values", exception);
 				}
 			}
 		}
@@ -261,9 +262,9 @@ public class DLFileEntryModelDocumentContributor
 							ddmFormValues, locale));
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to retrieve metadata values", e);
+					_log.debug("Unable to retrieve metadata values", exception);
 				}
 			}
 		}
@@ -291,5 +292,8 @@ public class DLFileEntryModelDocumentContributor
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFileEntryModelDocumentContributor.class);
+
+	@Reference
+	private InputStreamSanitizer _inputStreamSanitizer;
 
 }

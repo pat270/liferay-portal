@@ -15,6 +15,7 @@
 package com.liferay.portal.osgi.web.portlet.container.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.test.util.LayoutFriendlyURLRandomizerBumper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.application.type.ApplicationType;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -32,9 +33,8 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.portal.test.randomizerbumpers.FriendlyURLRandomizerBumper;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -46,8 +46,6 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -70,7 +68,7 @@ public class PublicRenderParameterTest extends BasePortletContainerTestCase {
 	public void testWithModuleLayoutTypeController() throws Exception {
 		final String prpName = "categoryId";
 		final String prpValue = RandomTestUtil.randomString(
-			FriendlyURLRandomizerBumper.INSTANCE,
+			LayoutFriendlyURLRandomizerBumper.INSTANCE,
 			NumericStringRandomizerBumper.INSTANCE,
 			UniqueStringRandomizerBumper.INSTANCE);
 		final AtomicBoolean success = new AtomicBoolean(false);
@@ -114,7 +112,7 @@ public class PublicRenderParameterTest extends BasePortletContainerTestCase {
 		Assert.assertFalse(portlet.isUndeployedPortlet());
 
 		String name = RandomTestUtil.randomString(
-			FriendlyURLRandomizerBumper.INSTANCE,
+			LayoutFriendlyURLRandomizerBumper.INSTANCE,
 			NumericStringRandomizerBumper.INSTANCE,
 			UniqueStringRandomizerBumper.INSTANCE);
 
@@ -125,20 +123,17 @@ public class PublicRenderParameterTest extends BasePortletContainerTestCase {
 			StringPool.SLASH + FriendlyURLNormalizerUtil.normalize(name),
 			ServiceContextTestUtil.getServiceContext());
 
-		UnicodeProperties typeSettingsProperties =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			layout.getTypeSettingsProperties();
 
-		typeSettingsProperties.setProperty(
+		typeSettingsUnicodeProperties.setProperty(
 			"fullPageApplicationPortlet", TEST_PORTLET_ID);
 
 		LayoutLocalServiceUtil.updateLayout(layout);
 
-		HttpServletRequest httpServletRequest =
-			PortletContainerTestUtil.getHttpServletRequest(group, layout);
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			httpServletRequest, TEST_PORTLET_ID, layout.getPlid(),
-			PortletRequest.RENDER_PHASE);
+			PortletContainerTestUtil.getHttpServletRequest(group, layout),
+			TEST_PORTLET_ID, layout.getPlid(), PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(prpName, prpValue);
 
@@ -161,7 +156,7 @@ public class PublicRenderParameterTest extends BasePortletContainerTestCase {
 	public void testWithPortalLayoutTypeController() throws Exception {
 		final String prpName = "categoryId";
 		final String prpValue = RandomTestUtil.randomString(
-			FriendlyURLRandomizerBumper.INSTANCE,
+			LayoutFriendlyURLRandomizerBumper.INSTANCE,
 			NumericStringRandomizerBumper.INSTANCE,
 			UniqueStringRandomizerBumper.INSTANCE);
 		final AtomicBoolean success = new AtomicBoolean(false);
@@ -193,12 +188,9 @@ public class PublicRenderParameterTest extends BasePortletContainerTestCase {
 
 		setUpPortlet(testPortlet, properties, TEST_PORTLET_ID);
 
-		HttpServletRequest httpServletRequest =
-			PortletContainerTestUtil.getHttpServletRequest(group, layout);
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			httpServletRequest, TEST_PORTLET_ID, layout.getPlid(),
-			PortletRequest.RENDER_PHASE);
+			PortletContainerTestUtil.getHttpServletRequest(group, layout),
+			TEST_PORTLET_ID, layout.getPlid(), PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(prpName, prpValue);
 

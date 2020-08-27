@@ -161,7 +161,7 @@ public class PortletSessionImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -171,7 +171,7 @@ public class PortletSessionImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		Assert.assertSame(_value1, portletSessionImpl.getAttribute(_KEY_1));
@@ -278,7 +278,7 @@ public class PortletSessionImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 
 		try {
@@ -288,7 +288,7 @@ public class PortletSessionImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 
 		Assert.assertTrue(portletSessionImpl.isInvalidated());
@@ -342,7 +342,8 @@ public class PortletSessionImplTest {
 
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-		ClassNotFoundException cnfe = new ClassNotFoundException();
+		ClassNotFoundException classNotFoundException =
+			new ClassNotFoundException();
 
 		currentThread.setContextClassLoader(
 			new ClassLoader() {
@@ -352,7 +353,7 @@ public class PortletSessionImplTest {
 					throws ClassNotFoundException {
 
 					if (name.equals(TestSerializable.class.getName())) {
-						throw cnfe;
+						throw classNotFoundException;
 					}
 
 					return super.loadClass(name);
@@ -377,7 +378,7 @@ public class PortletSessionImplTest {
 
 			Assert.assertEquals(
 				"Unable to deserialize object", logRecord.getMessage());
-			Assert.assertSame(cnfe, logRecord.getThrown());
+			Assert.assertSame(classNotFoundException, logRecord.getThrown());
 		}
 		finally {
 			currentThread.setContextClassLoader(contextClassLoader);
@@ -397,7 +398,7 @@ public class PortletSessionImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		portletSessionImpl.removeAttribute(_KEY_1);
@@ -465,16 +466,29 @@ public class PortletSessionImplTest {
 
 		Assert.assertSame(httpSessionWrapper, portletSessionImpl.session);
 
-		// Set/get attribute when value class is not loaded by PortalClassLoader
+		// Set/get attribute when value class is loaded by the bootstrap class
+		// loader
 
 		String key = "key";
 		String value = "value";
 
-		PortalClassLoaderUtilAdvice.setPortalClassLoader(false);
-
 		portletSessionImpl.setAttribute(key, value);
 
 		Assert.assertSame(value, portletSessionImpl.getAttribute(key));
+		Assert.assertSame(
+			value, _mockHttpSession.getAttribute(scopePrefix.concat(key)));
+
+		// Set/get attribute when value class is not loaded by the portal class
+		// loader
+
+		TestSerializable testSerializable = new TestSerializable("name");
+
+		PortalClassLoaderUtilAdvice.setPortalClassLoader(false);
+
+		portletSessionImpl.setAttribute(key, testSerializable);
+
+		Assert.assertSame(
+			testSerializable, portletSessionImpl.getAttribute(key));
 		Assert.assertTrue(
 			_lazySerializableObjectWrapperClass.isInstance(
 				_mockHttpSession.getAttribute(scopePrefix.concat(key))));
@@ -495,11 +509,13 @@ public class PortletSessionImplTest {
 
 		PortalClassLoaderUtilAdvice.setPortalClassLoader(true);
 
-		portletSessionImpl.setAttribute(key, value);
+		portletSessionImpl.setAttribute(key, testSerializable);
 
-		Assert.assertSame(value, portletSessionImpl.getAttribute(key));
 		Assert.assertSame(
-			value, _mockHttpSession.getAttribute(scopePrefix.concat(key)));
+			testSerializable, portletSessionImpl.getAttribute(key));
+		Assert.assertSame(
+			testSerializable,
+			_mockHttpSession.getAttribute(scopePrefix.concat(key)));
 	}
 
 	@Test
@@ -515,7 +531,7 @@ public class PortletSessionImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		String key7 = "key7";

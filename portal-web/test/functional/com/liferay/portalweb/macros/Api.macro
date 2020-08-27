@@ -1,4 +1,5 @@
 definition {
+
 	var password = "test";
 	var userEmailAddress = "test@liferay.com";
 
@@ -33,9 +34,11 @@ definition {
 			locator1 = "JSONWSUser#API_EXECUTE_EMAIL_ADDRESS_FIELD",
 			value1 = "${userEmailAddress}");
 
-		Type(
-			locator1 = "JSONWSUser#API_EXECUTE_FACEBOOK_ID_FIELD",
-			value1 = "${userFacebookId}");
+		if (IsElementPresent(locator1 = "JSONWSUser#API_EXECUTE_FACEBOOK_ID_FIELD")) {
+			Type(
+				locator1 = "JSONWSUser#API_EXECUTE_FACEBOOK_ID_FIELD",
+				value1 = "${userFacebookId}");
+		}
 
 		Type(
 			locator1 = "JSONWSUser#API_EXECUTE_FIRST_NAME_FIELD",
@@ -67,6 +70,18 @@ definition {
 			locator1 = "JSONWSUser#API_EXECUTE_BIRTHDAY_YEAR_FIELD",
 			value1 = "${userBirthdayYear}");
 
+		for (var userRoleTitle : list "${userRoleTitles}") {
+			var roleId = JSONRoleAPI._getRoleIdByName(name = "${userRoleTitle}");
+
+			Type.sendKeys(
+				locator1 = "JSONWSUser#API_EXECUTE_ROLE_IDS_FIELD",
+				value1 = "${roleId},");
+		}
+
+		KeyPress(
+			locator1 = "JSONWSUser#API_EXECUTE_ROLE_IDS_FIELD",
+			value1 = "\BACK_SPACE");
+
 		AssertClick(
 			locator1 = "Button#INVOKE",
 			value1 = "Invoke");
@@ -90,4 +105,5 @@ definition {
 		var pAuth = Api.getPAuth();
 		Navigator.openSpecificURL(url = "${url}${pAuth}");
 	}
+
 }

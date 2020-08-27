@@ -29,21 +29,26 @@
 				<div class="card card-horizontal card-type-directory">
 					<div class="card-body">
 						<div class="card-row">
-							<div class="autofit-col autofit-col-expand autofit-col-gutters">
-								<section class="autofit-section">
+							<clay:content-col
+								expand="<%= true %>"
+								gutters="<%= true %>"
+							>
+								<clay:content-section
+									containerElement="section"
+								>
 									<h3 class="card-title" title="{label}">
 										<span class="text-truncate-inline">
 											<span class="text-truncate"><%= assetAddonEntry.getLabel(locale) %></span>
 										</span>
 									</h3>
-								</section>
-							</div>
+								</clay:content-section>
+							</clay:content-col>
 
-							<div class="autofit-col">
+							<clay:content-col>
 								<a class="remove-button" href="javascript:;">
 									<aui:icon image="times-circle" markupView="lexicon" />
 								</a>
-							</div>
+							</clay:content-col>
 						</div>
 					</div>
 				</div>
@@ -67,13 +72,11 @@
 	for (AssetAddonEntry assetAddonEntry : assetAddonEntries) {
 	%>
 
-		assetAddonEntries.push(
-			{
-				icon: '<%= assetAddonEntry.getIcon() %>',
-				key: '<%= assetAddonEntry.getKey() %>',
-				label: '<%= assetAddonEntry.getLabel(locale) %>'
-			}
-		);
+		assetAddonEntries.push({
+			icon: '<%= assetAddonEntry.getIcon() %>',
+			key: '<%= assetAddonEntry.getKey() %>',
+			label: '<%= assetAddonEntry.getLabel(locale) %>',
+		});
 
 	<%
 	}
@@ -91,12 +94,10 @@
 	}
 	%>
 
-	new Liferay.AssetAddonEntrySelector(
-		{
-			assetAddonEntries: assetAddonEntries,
-			dialogTitle: '<liferay-ui:message key="<%= title %>" />',
-			rootNode: '#<%= namespace + id %>assetAddonEntrySelector',
-			selectedAssetAddonEntries: selectedAssetAddonEntries
-		}
-	);
+	new Liferay.AssetAddonEntrySelector({
+		assetAddonEntries: assetAddonEntries,
+		dialogTitle: '<liferay-ui:message key="<%= title %>" />',
+		rootNode: '#<%= namespace + id %>assetAddonEntrySelector',
+		selectedAssetAddonEntries: selectedAssetAddonEntries,
+	});
 </aui:script>

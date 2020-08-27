@@ -1,4 +1,5 @@
 definition {
+
 	macro _backtoInbox {
 		AssertClick.assertPartialTextClickAt(
 			locator1 = "MockMock#MOCKMOCK_HOME_LINK",
@@ -74,6 +75,73 @@ definition {
 			value1 = "${bodyLink}");
 	}
 
+	macro deleteMail {
+		var key_columnEntry = "${asset}";
+
+		MockMock._gotoMail();
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "MockMock#MOCKMOCK_SUBJECT_FIELD_LINK",
+			value1 = "${asset}");
+
+		AssertClick(
+			locator1 = "MockMock#MOCKMOCK_DELETE_FIELD",
+			value1 = "Delete");
+
+		AssertElementNotPresent(locator1 = "MockMock#MOCKMOCK_SUBJECT_FIELD_LINK");
+	}
+
+	macro getBodySpecificText {
+		var key_asset = "${asset}";
+		var key_columnEntry = "${asset}";
+
+		MockMock._gotoMail();
+
+		MockMock._gotoMailMessage(asset = "${asset}");
+
+		MockMock._viewMailMessage(
+			content = "${content}",
+			subject = "${subject}");
+
+		if (isSet(enableOTP)) {
+			var bodyContent = selenium.getText("MockMock#MOCKMOCK_MESSAGE_BODY");
+			var bodyContent = StringUtil.extractLast("${bodyContent}", "${specificText}");
+			var bodySpecificText = StringUtil.extractFirst("${bodyContent}", "</pre>");
+
+			echo("Your one-time password is: ${bodySpecificText}");
+		}
+		else {
+			var bodyContent = selenium.getText("MockMock#MOCKMOCK_MESSAGE_BODY");
+			var bodyContent = StringUtil.extractLast("${bodyContent}", "${specificText}");
+			var bodySpecificText = StringUtil.extractFirst("${bodyContent}", "${extractFirstText}");
+			var bodySpecificText = StringUtil.trim("${bodySpecificText}");
+		}
+
+		return "${bodySpecificText}";
+
+		while (IsElementPresent(locator1 = "MockMock#MOCKMOCK_SUBJECT_FIELD_LINK")) {
+			MockMock.deleteMail(asset = "${asset}");
+		}
+	}
+
+	macro openBodyLink {
+		var key_asset = "${asset}";
+
+		MockMock._gotoMail();
+
+		MockMock._gotoMailMessage(asset = "${asset}");
+
+		MockMock._viewMailMessage(
+			content = "${content}",
+			subject = "${subject}");
+
+		var bodyContent = selenium.getText("MockMock#MOCKMOCK_MESSAGE_BODY");
+		var bodyContent = StringUtil.extractLast("${bodyContent}", " at ");
+		var bodyURL = StringUtil.extractFirst("${bodyContent}", ".");
+
+		Navigator.openSpecificURL(url = "${bodyURL}");
+	}
+
 	macro viewMail {
 		MockMock._gotoMail();
 
@@ -92,4 +160,28 @@ definition {
 
 		MockMock._backtoInbox();
 	}
+
+	macro viewMailForOTP {
+		MockMock._gotoMail();
+
+		var key_columnEntry = "${subject}";
+		var key_sender = "${sender}";
+
+		AssertTextEquals(
+			locator1 = "MockMock#MOCKMOCK_FROM_FIELD",
+			value1 = "${sender}");
+
+		AssertTextEquals(
+			locator1 = "MockMock#MOCKMOCK_SUBJECT_FIELD",
+			value1 = "${subject}");
+
+		MockMock._gotoMailMessage(asset = "${subject}");
+
+		var key_asset = "${content}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "MockMock#MOCKMOCK_MESSAGE_BODY",
+			value1 = "${content}");
+	}
+
 }

@@ -21,7 +21,7 @@ SelectThemeDisplayContext selectThemeDisplayContext = new SelectThemeDisplayCont
 %>
 
 <clay:management-toolbar
-	displayContext="<%= new SelectThemeManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectThemeDisplayContext) %>"
+	displayContext="<%= new SelectThemeManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectThemeDisplayContext) %>"
 />
 
 <c:if test="<%= permissionChecker.isOmniadmin() && PortletLocalServiceUtil.hasPortlet(themeDisplay.getCompanyId(), PortletKeys.MARKETPLACE_STORE) && PropsValues.AUTO_DEPLOY_ENABLED %>">
@@ -50,9 +50,9 @@ SelectThemeDisplayContext selectThemeDisplayContext = new SelectThemeDisplayCont
 			<%
 			PluginPackage selPluginPackage = theme.getPluginPackage();
 
-			Map<String, Object> data = new HashMap<String, Object>();
-
-			data.put("themeid", theme.getThemeId());
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"themeid", theme.getThemeId()
+			).build();
 			%>
 
 			<c:choose>
@@ -123,5 +123,8 @@ SelectThemeDisplayContext selectThemeDisplayContext = new SelectThemeDisplayCont
 </aui:form>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectThemeFm', '<%= HtmlUtil.escapeJS(selectThemeDisplayContext.getEventName()) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectThemeFm',
+		'<%= HtmlUtil.escapeJS(selectThemeDisplayContext.getEventName()) %>'
+	);
 </aui:script>

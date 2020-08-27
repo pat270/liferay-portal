@@ -1,0 +1,44 @@
+{
+	"$id": "http://example.com/root.json",
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"additionalProperties": false,
+	"properties": {
+		"contentSubtype": {
+			"properties": {
+				"subtypeId": {
+					"title": "The subtypeId Schema",
+					"type": "integer"
+				}
+			},
+			"title": "The contentSubtype Schema",
+			"type": "object"
+		},
+		"contentType": {
+			"properties": {
+				"className": {
+					"title": "The className Schema",
+					"type": "string"
+				}
+			},
+			"required": [
+				"className"
+			],
+			"title": "The contentType Schema",
+			"type": "object"
+		},
+		"key": {
+			"title": "The key Schema",
+			"type": "string"
+		},
+		"name": {
+			"title": "The name Schema",
+			"type": "string"
+		}
+	},
+	"required": [
+		"contentType",
+		"name"
+	],
+	"title": "The DisplayPageTemplate Schema",
+	"type": "object"
+}

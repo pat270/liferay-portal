@@ -67,7 +67,7 @@ if (groupIds.length == 1) {
 						List<String> localizedResourceActions = new ArrayList<String>(resourceActions.size());
 
 						for (String resourceAction : resourceActions) {
-							localizedResourceActions.add(LanguageUtil.get(request, ResourceActionsUtil.getActionNamePrefix() + resourceAction));
+							localizedResourceActions.add(ResourceActionsUtil.getAction(request, resourceAction));
 						}
 					%>
 
@@ -114,10 +114,10 @@ if (groupIds.length == 1) {
 					</portlet:actionURL>
 
 					<%
-					String setPermissions = renderResponse.getNamespace() + "setPermissions('" + setPermissionsURL + "');";
+					String taglibSetPermissions = liferayPortletResponse.getNamespace() + "setPermissions('" + setPermissionsURL + "');";
 					%>
 
-					<aui:button disabled="<%= currentPermissions == permissions %>" onClick="<%= setPermissions %>" value="choose" />
+					<aui:button disabled="<%= currentPermissions == permissions %>" onClick="<%= taglibSetPermissions %>" value="choose" />
 				</td>
 			</tr>
 
@@ -128,23 +128,18 @@ if (groupIds.length == 1) {
 	</tbody>
 </table>
 
-<aui:script use="aui-base,aui-io-request">
-	Liferay.provide(
-		window,
-		'<portlet:namespace />setPermissions',
-		function(uri) {
-			A.io.request(
-				uri,
-				{
-					method: 'post',
-					on: {
-						success: function() {
-							Liferay.Util.getWindow('<portlet:namespace />editDefaultFilePermissionsDialog').destroy();
-						}
-					}
-				}
-			);
-		},
-		['liferay-util']
-	);
+<aui:script>
+	window['<portlet:namespace />setPermissions'] = function (uri) {
+		Liferay.Util.getOpener().Liferay.fire(
+
+			<%
+			String selectEventName = ParamUtil.getString(request, "selectEventName");
+			%>
+
+			'<%= HtmlUtil.escape(selectEventName) %>',
+			{
+				uri: uri,
+			}
+		);
+	};
 </aui:script>

@@ -1,10 +1,11 @@
 Bundle-Name: Liferay Asset Auto Tagger API
 Bundle-SymbolicName: com.liferay.asset.auto.tagger.api
-Bundle-Version: 2.0.0
+Bundle-Version: 2.2.6
 Export-Package:\
 	com.liferay.asset.auto.tagger,\
 	com.liferay.asset.auto.tagger.configuration,\
 	com.liferay.asset.auto.tagger.exception,\
 	com.liferay.asset.auto.tagger.model,\
 	com.liferay.asset.auto.tagger.service,\
-	com.liferay.asset.auto.tagger.service.persistence
+	com.liferay.asset.auto.tagger.service.persistence,\
+	com.liferay.asset.auto.tagger.text.extractor

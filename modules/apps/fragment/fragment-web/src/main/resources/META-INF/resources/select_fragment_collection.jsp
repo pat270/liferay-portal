@@ -17,13 +17,11 @@
 <%@ include file="/init.jsp" %>
 
 <%
-SelectFragmentCollectionDisplayContext selectFragmentCollectionDisplayContext = new SelectFragmentCollectionDisplayContext(renderRequest, renderResponse, request);
-
-SelectFragmentCollectionManagementToolbarDisplayContext selectFragmentCollectionManagementToolbarDisplayContext = new SelectFragmentCollectionManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, selectFragmentCollectionDisplayContext.getFragmentCollectionsSearchContainer());
+SelectFragmentCollectionDisplayContext selectFragmentCollectionDisplayContext = new SelectFragmentCollectionDisplayContext(request, renderRequest, renderResponse);
 %>
 
 <clay:management-toolbar
-	displayContext="<%= selectFragmentCollectionManagementToolbarDisplayContext %>"
+	displayContext="<%= new SelectFragmentCollectionManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, selectFragmentCollectionDisplayContext.getFragmentCollectionsSearchContainer()) %>"
 />
 
 <aui:form cssClass="container-fluid-1280" name="selectFragmentCollectionFm">
@@ -56,5 +54,8 @@ SelectFragmentCollectionManagementToolbarDisplayContext selectFragmentCollection
 </aui:form>
 
 <aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectFragmentCollectionFm', '<%= HtmlUtil.escapeJS(selectFragmentCollectionDisplayContext.getEventName()) %>');
+	Liferay.Util.selectEntityHandler(
+		'#<portlet:namespace />selectFragmentCollectionFm',
+		'<%= HtmlUtil.escapeJS(selectFragmentCollectionDisplayContext.getEventName()) %>'
+	);
 </aui:script>

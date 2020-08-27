@@ -14,12 +14,12 @@
 
 package com.liferay.portal.deploy.hot;
 
+import com.liferay.petra.io.StreamUtil;
 import com.liferay.portal.kernel.deploy.hot.BaseHotDeployListener;
 import com.liferay.portal.kernel.deploy.hot.HotDeployEvent;
 import com.liferay.portal.kernel.deploy.hot.HotDeployException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.social.kernel.model.SocialAchievement;
 import com.liferay.social.kernel.model.SocialActivityCounterDefinition;
@@ -45,9 +45,9 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeDeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
-				hotDeployEvent, "Error registering social for ", t);
+				hotDeployEvent, "Error registering social for ", throwable);
 		}
 	}
 
@@ -58,9 +58,9 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeUndeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
-				hotDeployEvent, "Error unregistering social for ", t);
+				hotDeployEvent, "Error unregistering social for ", throwable);
 		}
 	}
 
@@ -76,8 +76,9 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 		}
 
 		String[] xmls = {
-			HttpUtil.URLtoString(
-				servletContext.getResource("/WEB-INF/liferay-social.xml"))
+			StreamUtil.toString(
+				servletContext.getResourceAsStream(
+					"/WEB-INF/liferay-social.xml"))
 		};
 
 		if (xmls[0] == null) {

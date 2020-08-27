@@ -10,17 +10,37 @@
 <tbody>
 <tr>
 	<td>NODE_COLLAPSED</td>
-	<td>//div[contains(@class,'treeview-node-main') and @aria-expanded='false']/div[@class='treeview-node-toggler'] | //span[contains(@class,'glyphicon-plus')]</td>
+	<td>//div[contains(@class,'treeview-node-main') and @aria-expanded='false']/div[@class='treeview-node-toggler'] | //span[contains(@class,'glyphicon-plus')] | //div[contains(@class,'treeview-node-list')]/button[contains(@class,'treeview-node-list') and @aria-expanded='false']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NODE_SELECTED</td>
-	<td>//div[contains(@class,'treeview-node-main') and contains(@class,'selected')]/div[contains(@class,'card-horizontal')]/div/div[2]/span[contains(.,'${key_nodeName}')]</td>
+	<td>//div[contains(@class,'card-type-directory') and contains(@class,'selected')]/div[contains(@class,'card-horizontal')]//span[contains(.,'${key_nodeName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NODE_UNSELECTED</td>
-	<td>//div[contains(@class,'treeview-node-main') and not(contains(@class,'selected'))]/div[contains(@class,'card-horizontal')]/div/div[2]/span[contains(.,'${key_nodeName}')]</td>
+	<td>//div[contains(@class,'card-type-directory') and not(contains(@class,'selected'))]/div[contains(@class,'card-horizontal')]//span[contains(.,'${key_nodeName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NODE_LIST</td>
+	<td>//div[contains(@class,'treeview-node-list') and contains(.,'${key_nodeListName}')]/div[contains(@class,'card')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_STRUCTURE_TREE_NODE</td>
+	<td>//div[contains(@class,'page-structure') and contains(.,'${key_nodeName}')]/button[contains(@class,'tree-node')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_STRUCTURE_TREE_NODE_DELETE</td>
+	<td>//div[contains(@class,'page-structure') and contains(.,'${key_nodeName}')]/button[contains(@class,'tree-node')][*[name()='svg'][contains(@class,'times-circle')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_STRUCTURE_TREE_NODE_ACTIVE</td>
+	<td>//div[contains(@class,'page-structure') and contains(.,'${key_nodeName}') and contains(@class,'active')]/button[contains(@class,'tree-node')]</td>
 	<td></td>
 </tr>
 </tbody>

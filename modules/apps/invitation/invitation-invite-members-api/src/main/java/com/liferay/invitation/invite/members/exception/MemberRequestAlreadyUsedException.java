@@ -16,12 +16,9 @@ package com.liferay.invitation.invite.members.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class MemberRequestAlreadyUsedException extends PortalException {
 
 	public MemberRequestAlreadyUsedException() {
@@ -31,12 +28,12 @@ public class MemberRequestAlreadyUsedException extends PortalException {
 		super(msg);
 	}
 
-	public MemberRequestAlreadyUsedException(String msg, Throwable cause) {
-		super(msg, cause);
+	public MemberRequestAlreadyUsedException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public MemberRequestAlreadyUsedException(Throwable cause) {
-		super(cause);
+	public MemberRequestAlreadyUsedException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

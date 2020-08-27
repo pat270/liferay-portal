@@ -29,7 +29,7 @@ int end = startAndEnd[1];
 
 WikiPage wikiPage = wikiAttachmentItemSelectorViewDisplayContext.getWikiPage();
 
-List portletFileEntries = null;
+List<RepositoryEntry> portletFileEntries = new ArrayList<>();
 int portletFileEntriesCount = 0;
 
 String[] mimeTypes = wikiAttachmentItemSelectorViewDisplayContext.getMimeTypes();
@@ -54,8 +54,6 @@ if (wikiPage.getAttachmentsFolderId() != DLFolderConstants.DEFAULT_PARENT_FOLDER
 
 		Document[] docs = hits.getDocs();
 
-		portletFileEntries = new ArrayList(docs.length);
-
 		for (Document doc : docs) {
 			long fileEntryId = GetterUtil.getLong(doc.get(Field.ENTRY_CLASS_PK));
 
@@ -76,17 +74,12 @@ if (wikiPage.getAttachmentsFolderId() != DLFolderConstants.DEFAULT_PARENT_FOLDER
 		}
 	}
 	else {
-		String orderByCol = ParamUtil.getString(request, "orderByCol", "title");
-		String orderByType = ParamUtil.getString(request, "orderByType", "asc");
-
-		OrderByComparator<FileEntry> orderByComparator = DLUtil.getRepositoryModelOrderByComparator(orderByCol, orderByType);
-
 		if (ArrayUtil.isNotEmpty(mimeTypes)) {
-			portletFileEntries = wikiPage.getAttachmentsFileEntries(mimeTypes, start, end, orderByComparator);
+			portletFileEntries.addAll(wikiPage.getAttachmentsFileEntries(mimeTypes, start, end, wikiAttachmentItemSelectorViewDisplayContext.getOrderByComparator()));
 			portletFileEntriesCount = wikiPage.getAttachmentsFileEntriesCount(mimeTypes);
 		}
 		else {
-			portletFileEntries = wikiPage.getAttachmentsFileEntries(start, end, orderByComparator);
+			portletFileEntries.addAll(wikiPage.getAttachmentsFileEntries(start, end, wikiAttachmentItemSelectorViewDisplayContext.getOrderByComparator()));
 			portletFileEntriesCount = wikiPage.getAttachmentsFileEntriesCount();
 		}
 	}
@@ -95,9 +88,10 @@ if (wikiPage.getAttachmentsFolderId() != DLFolderConstants.DEFAULT_PARENT_FOLDER
 
 <liferay-item-selector:repository-entry-browser
 	emptyResultsMessage='<%= LanguageUtil.get(resourceBundle, "there-are-no-wiki-attachments") %>'
+	extensions="<%= ListUtil.toList(mimeTypes) %>"
 	itemSelectedEventName="<%= wikiAttachmentItemSelectorViewDisplayContext.getItemSelectedEventName() %>"
 	itemSelectorReturnTypeResolver="<%= wikiAttachmentItemSelectorViewDisplayContext.getItemSelectorReturnTypeResolver() %>"
-	maxFileSize="<%= DLValidatorUtil.getMaxAllowableSize() %>"
+	maxFileSize="<%= wikiAttachmentItemSelectorViewDisplayContext.getWikiAttachmentMaxSize() %>"
 	portletURL="<%= wikiAttachmentItemSelectorViewDisplayContext.getPortletURL(request, liferayPortletResponse) %>"
 	repositoryEntries="<%= portletFileEntries %>"
 	repositoryEntriesCount="<%= portletFileEntriesCount %>"

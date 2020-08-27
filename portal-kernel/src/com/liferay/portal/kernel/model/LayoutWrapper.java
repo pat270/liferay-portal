@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Layout
  * @generated
  */
-@ProviderType
 public class LayoutWrapper
 	extends BaseModelWrapper<Layout> implements Layout, ModelWrapper<Layout> {
 
@@ -45,8 +44,8 @@ public class LayoutWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
-		attributes.put("headId", getHeadId());
 		attributes.put("plid", getPlid());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -73,8 +72,10 @@ public class LayoutWrapper
 		attributes.put("iconImageId", getIconImageId());
 		attributes.put("themeId", getThemeId());
 		attributes.put("colorSchemeId", getColorSchemeId());
+		attributes.put("styleBookEntryId", getStyleBookEntryId());
 		attributes.put("css", getCss());
 		attributes.put("priority", getPriority());
+		attributes.put("masterLayoutPlid", getMasterLayoutPlid());
 		attributes.put("layoutPrototypeUuid", getLayoutPrototypeUuid());
 		attributes.put(
 			"layoutPrototypeLinkEnabled", isLayoutPrototypeLinkEnabled());
@@ -82,6 +83,10 @@ public class LayoutWrapper
 			"sourcePrototypeLayoutUuid", getSourcePrototypeLayoutUuid());
 		attributes.put("publishDate", getPublishDate());
 		attributes.put("lastPublishDate", getLastPublishDate());
+		attributes.put("status", getStatus());
+		attributes.put("statusByUserId", getStatusByUserId());
+		attributes.put("statusByUserName", getStatusByUserName());
+		attributes.put("statusDate", getStatusDate());
 
 		return attributes;
 	}
@@ -94,16 +99,16 @@ public class LayoutWrapper
 			setMvccVersion(mvccVersion);
 		}
 
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
 			setUuid(uuid);
-		}
-
-		Long headId = (Long)attributes.get("headId");
-
-		if (headId != null) {
-			setHeadId(headId);
 		}
 
 		Long plid = (Long)attributes.get("plid");
@@ -262,6 +267,12 @@ public class LayoutWrapper
 			setColorSchemeId(colorSchemeId);
 		}
 
+		Long styleBookEntryId = (Long)attributes.get("styleBookEntryId");
+
+		if (styleBookEntryId != null) {
+			setStyleBookEntryId(styleBookEntryId);
+		}
+
 		String css = (String)attributes.get("css");
 
 		if (css != null) {
@@ -272,6 +283,12 @@ public class LayoutWrapper
 
 		if (priority != null) {
 			setPriority(priority);
+		}
+
+		Long masterLayoutPlid = (Long)attributes.get("masterLayoutPlid");
+
+		if (masterLayoutPlid != null) {
+			setMasterLayoutPlid(masterLayoutPlid);
 		}
 
 		String layoutPrototypeUuid = (String)attributes.get(
@@ -306,6 +323,35 @@ public class LayoutWrapper
 		if (lastPublishDate != null) {
 			setLastPublishDate(lastPublishDate);
 		}
+
+		Integer status = (Integer)attributes.get("status");
+
+		if (status != null) {
+			setStatus(status);
+		}
+
+		Long statusByUserId = (Long)attributes.get("statusByUserId");
+
+		if (statusByUserId != null) {
+			setStatusByUserId(statusByUserId);
+		}
+
+		String statusByUserName = (String)attributes.get("statusByUserName");
+
+		if (statusByUserName != null) {
+			setStatusByUserName(statusByUserName);
+		}
+
+		Date statusDate = (Date)attributes.get("statusDate");
+
+		if (statusDate != null) {
+			setStatusDate(statusDate);
+		}
+	}
+
+	@Override
+	public Layout fetchDraftLayout() {
+		return model.fetchDraftLayout();
 	}
 
 	/**
@@ -498,6 +544,16 @@ public class LayoutWrapper
 		return model.getCssText();
 	}
 
+	/**
+	 * Returns the ct collection ID of this layout.
+	 *
+	 * @return the ct collection ID of this layout
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public String getDefaultLanguageId() {
 		return model.getDefaultLanguageId();
@@ -654,16 +710,6 @@ public class LayoutWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
-	}
-
-	/**
-	 * Returns the head ID of this layout.
-	 *
-	 * @return the head ID of this layout
-	 */
-	@Override
-	public long getHeadId() {
-		return model.getHeadId();
 	}
 
 	/**
@@ -871,6 +917,16 @@ public class LayoutWrapper
 	@Override
 	public Layout getLinkedToLayout() {
 		return model.getLinkedToLayout();
+	}
+
+	/**
+	 * Returns the master layout plid of this layout.
+	 *
+	 * @return the master layout plid of this layout
+	 */
+	@Override
+	public long getMasterLayoutPlid() {
+		return model.getMasterLayoutPlid();
 	}
 
 	/**
@@ -1157,6 +1213,66 @@ public class LayoutWrapper
 	}
 
 	/**
+	 * Returns the status of this layout.
+	 *
+	 * @return the status of this layout
+	 */
+	@Override
+	public int getStatus() {
+		return model.getStatus();
+	}
+
+	/**
+	 * Returns the status by user ID of this layout.
+	 *
+	 * @return the status by user ID of this layout
+	 */
+	@Override
+	public long getStatusByUserId() {
+		return model.getStatusByUserId();
+	}
+
+	/**
+	 * Returns the status by user name of this layout.
+	 *
+	 * @return the status by user name of this layout
+	 */
+	@Override
+	public String getStatusByUserName() {
+		return model.getStatusByUserName();
+	}
+
+	/**
+	 * Returns the status by user uuid of this layout.
+	 *
+	 * @return the status by user uuid of this layout
+	 */
+	@Override
+	public String getStatusByUserUuid() {
+		return model.getStatusByUserUuid();
+	}
+
+	/**
+	 * Returns the status date of this layout.
+	 *
+	 * @return the status date of this layout
+	 */
+	@Override
+	public Date getStatusDate() {
+		return model.getStatusDate();
+	}
+
+	/**
+	 * Returns the style book entry ID of this layout.
+	 *
+	 * @return the style book entry ID of this layout
+	 */
+	@Override
+	public long getStyleBookEntryId() {
+		return model.getStyleBookEntryId();
+	}
+
+	/**
 	 * Returns the system of this layout.
 	 *
 	 * @return the system of this layout
@@ -1410,6 +1526,16 @@ public class LayoutWrapper
 			httpServletRequest, httpServletResponse);
 	}
 
+	/**
+	 * Returns <code>true</code> if this layout is approved.
+	 *
+	 * @return <code>true</code> if this layout is approved; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isApproved() {
+		return model.isApproved();
+	}
+
 	@Override
 	public boolean isChildSelected(boolean selectable, Layout layout)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -1437,6 +1563,36 @@ public class LayoutWrapper
 	@Override
 	public boolean isCustomizable() {
 		return model.isCustomizable();
+	}
+
+	/**
+	 * Returns <code>true</code> if this layout is denied.
+	 *
+	 * @return <code>true</code> if this layout is denied; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isDenied() {
+		return model.isDenied();
+	}
+
+	/**
+	 * Returns <code>true</code> if this layout is a draft.
+	 *
+	 * @return <code>true</code> if this layout is a draft; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isDraft() {
+		return model.isDraft();
+	}
+
+	/**
+	 * Returns <code>true</code> if this layout is expired.
+	 *
+	 * @return <code>true</code> if this layout is expired; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isExpired() {
+		return model.isExpired();
 	}
 
 	/**
@@ -1480,6 +1636,26 @@ public class LayoutWrapper
 	}
 
 	/**
+	 * Returns <code>true</code> if this layout is inactive.
+	 *
+	 * @return <code>true</code> if this layout is inactive; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isInactive() {
+		return model.isInactive();
+	}
+
+	/**
+	 * Returns <code>true</code> if this layout is incomplete.
+	 *
+	 * @return <code>true</code> if this layout is incomplete; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isIncomplete() {
+		return model.isIncomplete();
+	}
+
+	/**
 	 * Returns <code>true</code> if the current layout utilizes its {@link
 	 * LayoutSet}'s look and feel options (e.g. theme and color scheme).
 	 *
@@ -1512,6 +1688,16 @@ public class LayoutWrapper
 	@Override
 	public boolean isLayoutPrototypeLinkEnabled() {
 		return model.isLayoutPrototypeLinkEnabled();
+	}
+
+	/**
+	 * Returns <code>true</code> if this layout is pending.
+	 *
+	 * @return <code>true</code> if this layout is pending; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPending() {
+		return model.isPending();
 	}
 
 	@Override
@@ -1557,6 +1743,16 @@ public class LayoutWrapper
 		return model.isRootLayout();
 	}
 
+	/**
+	 * Returns <code>true</code> if this layout is scheduled.
+	 *
+	 * @return <code>true</code> if this layout is scheduled; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isScheduled() {
+		return model.isScheduled();
+	}
+
 	@Override
 	public boolean isSelected(
 		boolean selectable, Layout layout, long ancestorPlid) {
@@ -1587,6 +1783,16 @@ public class LayoutWrapper
 	}
 
 	@Override
+	public boolean isTypeAssetDisplay() {
+		return model.isTypeAssetDisplay();
+	}
+
+	@Override
+	public boolean isTypeContent() {
+		return model.isTypeContent();
+	}
+
+	@Override
 	public boolean isTypeControlPanel() {
 		return model.isTypeControlPanel();
 	}
@@ -1609,15 +1815,6 @@ public class LayoutWrapper
 	@Override
 	public boolean isTypePortlet() {
 		return model.isTypePortlet();
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public boolean isTypeSharedPortlet() {
-		return model.isTypeSharedPortlet();
 	}
 
 	@Override
@@ -1719,6 +1916,16 @@ public class LayoutWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this layout.
+	 *
+	 * @param ctCollectionId the ct collection ID of this layout
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this layout.
 	 *
 	 * @param description the description of this layout
@@ -1803,16 +2010,6 @@ public class LayoutWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
-	}
-
-	/**
-	 * Sets the head ID of this layout.
-	 *
-	 * @param headId the head ID of this layout
-	 */
-	@Override
-	public void setHeadId(long headId) {
-		model.setHeadId(headId);
 	}
 
 	/**
@@ -1945,6 +2142,16 @@ public class LayoutWrapper
 	@Override
 	public void setLayoutSet(LayoutSet layoutSet) {
 		model.setLayoutSet(layoutSet);
+	}
+
+	/**
+	 * Sets the master layout plid of this layout.
+	 *
+	 * @param masterLayoutPlid the master layout plid of this layout
+	 */
+	@Override
+	public void setMasterLayoutPlid(long masterLayoutPlid) {
+		model.setMasterLayoutPlid(masterLayoutPlid);
 	}
 
 	/**
@@ -2176,6 +2383,66 @@ public class LayoutWrapper
 	}
 
 	/**
+	 * Sets the status of this layout.
+	 *
+	 * @param status the status of this layout
+	 */
+	@Override
+	public void setStatus(int status) {
+		model.setStatus(status);
+	}
+
+	/**
+	 * Sets the status by user ID of this layout.
+	 *
+	 * @param statusByUserId the status by user ID of this layout
+	 */
+	@Override
+	public void setStatusByUserId(long statusByUserId) {
+		model.setStatusByUserId(statusByUserId);
+	}
+
+	/**
+	 * Sets the status by user name of this layout.
+	 *
+	 * @param statusByUserName the status by user name of this layout
+	 */
+	@Override
+	public void setStatusByUserName(String statusByUserName) {
+		model.setStatusByUserName(statusByUserName);
+	}
+
+	/**
+	 * Sets the status by user uuid of this layout.
+	 *
+	 * @param statusByUserUuid the status by user uuid of this layout
+	 */
+	@Override
+	public void setStatusByUserUuid(String statusByUserUuid) {
+		model.setStatusByUserUuid(statusByUserUuid);
+	}
+
+	/**
+	 * Sets the status date of this layout.
+	 *
+	 * @param statusDate the status date of this layout
+	 */
+	@Override
+	public void setStatusDate(Date statusDate) {
+		model.setStatusDate(statusDate);
+	}
+
+	/**
+	 * Sets the style book entry ID of this layout.
+	 *
+	 * @param styleBookEntryId the style book entry ID of this layout
+	 */
+	@Override
+	public void setStyleBookEntryId(long styleBookEntryId) {
+		model.setStyleBookEntryId(styleBookEntryId);
+	}
+
+	/**
 	 * Sets whether this layout is system.
 	 *
 	 * @param system the system of this layout
@@ -2282,9 +2549,9 @@ public class LayoutWrapper
 	@Override
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties) {
+			typeSettingsUnicodeProperties) {
 
-		model.setTypeSettingsProperties(typeSettingsProperties);
+		model.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 	}
 
 	/**
@@ -2328,18 +2595,20 @@ public class LayoutWrapper
 	}
 
 	@Override
+	public Map<String, Function<Layout, Object>> getAttributeGetterFunctions() {
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<Layout, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
+	}
+
+	@Override
 	public StagedModelType getStagedModelType() {
 		return model.getStagedModelType();
-	}
-
-	@Override
-	public boolean isHead() {
-		return model.isHead();
-	}
-
-	@Override
-	public void populateVersionModel(LayoutVersion layoutVersion) {
-		model.populateVersionModel(layoutVersion);
 	}
 
 	@Override

@@ -16,6 +16,7 @@ package com.liferay.journal.service;
 
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.journal.model.JournalFolder;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -42,6 +43,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
+@CTAware
 @JSONWebService
 @ProviderType
 @Transactional(
@@ -53,7 +55,7 @@ public interface JournalFolderService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link JournalFolderServiceUtil} to access the journal folder remote service. Add custom service methods to <code>com.liferay.journal.service.impl.JournalFolderServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.journal.service.impl.JournalFolderServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the journal folder remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link JournalFolderServiceUtil} if injection and service tracking are not available.
 	 */
 	public JournalFolder addFolder(
 			long groupId, long parentFolderId, String name, String description,
@@ -101,22 +103,22 @@ public interface JournalFolderService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndArticles(
 		long groupId, long folderId, int status, int start, int end,
-		OrderByComparator<?> obc);
+		OrderByComparator<?> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndArticles(
 		long groupId, long folderId, int start, int end,
-		OrderByComparator<?> obc);
+		OrderByComparator<?> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndArticles(
 		long groupId, long userId, long folderId, int status, int start,
-		int end, OrderByComparator<?> obc);
+		int end, OrderByComparator<?> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Object> getFoldersAndArticles(
 		long groupId, long userId, long folderId, int status, Locale locale,
-		int start, int end, OrderByComparator<?> obc);
+		int start, int end, OrderByComparator<?> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getFoldersAndArticlesCount(
@@ -146,15 +148,6 @@ public interface JournalFolderService extends BaseService {
 	 */
 	public String getOSGiServiceIdentifier();
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #getSubfolderIds(List, long, long, boolean)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public void getSubfolderIds(
-		List<Long> folderIds, long groupId, long folderId);
-
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void getSubfolderIds(
 		List<Long> folderIds, long groupId, long folderId, boolean recurse);
@@ -180,7 +173,7 @@ public interface JournalFolderService extends BaseService {
 	public List<DDMStructure> searchDDMStructures(
 			long companyId, long[] groupIds, long folderId, int restrictionType,
 			String keywords, int start, int end,
-			OrderByComparator<DDMStructure> obc)
+			OrderByComparator<DDMStructure> orderByComparator)
 		throws PortalException;
 
 	public void subscribe(long groupId, long folderId) throws PortalException;

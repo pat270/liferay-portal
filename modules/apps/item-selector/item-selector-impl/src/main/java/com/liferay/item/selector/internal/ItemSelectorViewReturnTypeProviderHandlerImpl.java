@@ -44,22 +44,9 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 public class ItemSelectorViewReturnTypeProviderHandlerImpl
 	implements ItemSelectorViewReturnTypeProviderHandler {
 
-	@Activate
-	public void activate(BundleContext bundleContext) {
-		_bundleContext = bundleContext;
-
-		_serviceTracker = ServiceTrackerFactory.open(
-			bundleContext, ItemSelectorView.class,
-			new ItemSelectorViewServiceTrackerCustomizer());
-
-		_serviceTrackerMap = ServiceTrackerMapFactory.openMultiValueMap(
-			bundleContext, ItemSelectorViewReturnTypeProvider.class,
-			"item.selector.view.key");
-	}
-
 	@Override
 	public List<ItemSelectorReturnType> getSupportedItemSelectorReturnTypes(
-		ItemSelectorView itemSelectorView) {
+		ItemSelectorView<?> itemSelectorView) {
 
 		Class<? extends ItemSelectorView> itemSelectorViewClass =
 			itemSelectorView.getClass();
@@ -105,6 +92,20 @@ public class ItemSelectorViewReturnTypeProviderHandlerImpl
 		return supportedItemSelectorReturnTypes;
 	}
 
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
+
+		_serviceTracker = ServiceTrackerFactory.open(
+			bundleContext,
+			(Class<ItemSelectorView<?>>)(Class<?>)ItemSelectorView.class,
+			new ItemSelectorViewServiceTrackerCustomizer());
+
+		_serviceTrackerMap = ServiceTrackerMapFactory.openMultiValueMap(
+			bundleContext, ItemSelectorViewReturnTypeProvider.class,
+			"item.selector.view.key");
+	}
+
 	@Deactivate
 	protected void deactivate() {
 		_serviceTracker.close();
@@ -115,19 +116,20 @@ public class ItemSelectorViewReturnTypeProviderHandlerImpl
 	private BundleContext _bundleContext;
 	private final Map<String, String> _itemSelectorViewKeysMap =
 		new ConcurrentHashMap<>();
-	private ServiceTracker<ItemSelectorView, ItemSelectorView> _serviceTracker;
+	private ServiceTracker<ItemSelectorView<?>, ItemSelectorView<?>>
+		_serviceTracker;
 	private ServiceTrackerMap<String, List<ItemSelectorViewReturnTypeProvider>>
 		_serviceTrackerMap;
 
 	private class ItemSelectorViewServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
-			<ItemSelectorView, ItemSelectorView> {
+			<ItemSelectorView<?>, ItemSelectorView<?>> {
 
 		@Override
-		public ItemSelectorView addingService(
-			ServiceReference<ItemSelectorView> serviceReference) {
+		public ItemSelectorView<?> addingService(
+			ServiceReference<ItemSelectorView<?>> serviceReference) {
 
-			ItemSelectorView itemSelectorView = _bundleContext.getService(
+			ItemSelectorView<?> itemSelectorView = _bundleContext.getService(
 				serviceReference);
 
 			String itemSelectorViewKey = GetterUtil.getString(
@@ -146,14 +148,14 @@ public class ItemSelectorViewReturnTypeProviderHandlerImpl
 
 		@Override
 		public void modifiedService(
-			ServiceReference<ItemSelectorView> serviceReference,
-			ItemSelectorView itemSelectorView) {
+			ServiceReference<ItemSelectorView<?>> serviceReference,
+			ItemSelectorView<?> itemSelectorView) {
 		}
 
 		@Override
 		public void removedService(
-			ServiceReference<ItemSelectorView> serviceReference,
-			ItemSelectorView itemSelectorView) {
+			ServiceReference<ItemSelectorView<?>> serviceReference,
+			ItemSelectorView<?> itemSelectorView) {
 
 			try {
 				Class<? extends ItemSelectorView> itemSelectorViewClass =

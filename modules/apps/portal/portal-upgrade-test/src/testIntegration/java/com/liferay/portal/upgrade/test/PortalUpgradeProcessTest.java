@@ -69,17 +69,66 @@ public class PortalUpgradeProcessTest {
 	}
 
 	@Test
+	public void testDefineNewMajorSchemaVersion() throws Exception {
+		Version previousMajorSchemaVersion = new Version(
+			_currentSchemaVersion.getMajor() - 1, 0, 0);
+
+		_updateSchemaVersion(previousMajorSchemaVersion);
+
+		try (Connection connection = DataAccess.getConnection()) {
+			Assert.assertFalse(
+				"Major schema version changes require the upgrade tool " +
+					"execution",
+				PortalUpgradeProcess.isInRequiredSchemaVersion(connection));
+		}
+	}
+
+	@Test
+	public void testDefineNewMicroSchemaVersion() throws Exception {
+		if (_currentSchemaVersion.getMicro() > 0) {
+			Version previousMicroSchemaVersion = new Version(
+				_currentSchemaVersion.getMajor(),
+				_currentSchemaVersion.getMinor(),
+				_currentSchemaVersion.getMicro() - 1);
+
+			_updateSchemaVersion(previousMicroSchemaVersion);
+		}
+
+		try (Connection connection = DataAccess.getConnection()) {
+			Assert.assertTrue(
+				"Micro schema version changes must be optional",
+				PortalUpgradeProcess.isInRequiredSchemaVersion(connection));
+		}
+	}
+
+	@Test
+	public void testDefineNewMinorSchemaVersion() throws Exception {
+		Version previousMinorSchemaVersion = new Version(
+			_currentSchemaVersion.getMajor(),
+			_currentSchemaVersion.getMinor() - 1, 0);
+
+		_updateSchemaVersion(previousMinorSchemaVersion);
+
+		try (Connection connection = DataAccess.getConnection()) {
+			Assert.assertFalse(
+				"Minor schema version changes require the upgrade tool " +
+					"exectution",
+				PortalUpgradeProcess.isInRequiredSchemaVersion(connection));
+		}
+	}
+
+	@Test
 	public void testGetLatestSchemaVersion() {
 		Set<Version> pendingSchemaVersions = ReflectionTestUtil.invoke(
 			_innerPortalUpgradeProcess, "getPendingSchemaVersions",
 			new Class<?>[] {Version.class}, _ORIGINAL_SCHEMA_VERSION);
 
-		Iterator<Version> itr = pendingSchemaVersions.iterator();
+		Iterator<Version> iterator = pendingSchemaVersions.iterator();
 
-		Version latestSchemaVersion = itr.next();
+		Version latestSchemaVersion = iterator.next();
 
-		while (itr.hasNext()) {
-			latestSchemaVersion = itr.next();
+		while (iterator.hasNext()) {
+			latestSchemaVersion = iterator.next();
 		}
 
 		Assert.assertEquals(
@@ -132,11 +181,45 @@ public class PortalUpgradeProcessTest {
 	}
 
 	@Test
-	public void testIsNotInRequiredSchemaVersion() throws Exception {
-		_updateSchemaVersion(_ORIGINAL_SCHEMA_VERSION);
+	public void testRevertCodeToPreviousMajorSchemaVersion() throws Exception {
+		Version nextMajorSchemaVersion = new Version(
+			_currentSchemaVersion.getMajor() + 1, 0, 0);
+
+		_updateSchemaVersion(nextMajorSchemaVersion);
 
 		try (Connection connection = DataAccess.getConnection()) {
 			Assert.assertFalse(
+				"Major schema version changes must be nonrevertible",
+				PortalUpgradeProcess.isInRequiredSchemaVersion(connection));
+		}
+	}
+
+	@Test
+	public void testRevertCodeToPreviousMicroSchemaVersion() throws Exception {
+		Version nextMicroSchemaVersion = new Version(
+			_currentSchemaVersion.getMajor(), _currentSchemaVersion.getMinor(),
+			_currentSchemaVersion.getMicro() + 1);
+
+		_updateSchemaVersion(nextMicroSchemaVersion);
+
+		try (Connection connection = DataAccess.getConnection()) {
+			Assert.assertTrue(
+				"Micro schema version changes must be revertible",
+				PortalUpgradeProcess.isInRequiredSchemaVersion(connection));
+		}
+	}
+
+	@Test
+	public void testRevertCodeToPreviousMinorSchemaVersion() throws Exception {
+		Version nextMinorSchemaVersion = new Version(
+			_currentSchemaVersion.getMajor(),
+			_currentSchemaVersion.getMinor() + 1, 0);
+
+		_updateSchemaVersion(nextMinorSchemaVersion);
+
+		try (Connection connection = DataAccess.getConnection()) {
+			Assert.assertTrue(
+				"Minor schema version changes must be revertible",
 				PortalUpgradeProcess.isInRequiredSchemaVersion(connection));
 		}
 	}
@@ -150,9 +233,9 @@ public class PortalUpgradeProcessTest {
 		try {
 			portalServiceUpgrade.upgrade();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SQLException(
-				"No upgrade processes should have been executed", e);
+				"No upgrade processes should have been executed", exception);
 		}
 
 		try (Connection connection = DataAccess.getConnection()) {
@@ -172,12 +255,12 @@ public class PortalUpgradeProcessTest {
 		try {
 			portalServiceUpgrade.upgrade();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SQLException(
 				"The execution of the upgrade process failed after being " +
 					"reexecuted. Upgrade processes must be harmless if they " +
 						"were executed previously.",
-				e);
+				exception);
 		}
 
 		try (Connection connection = DataAccess.getConnection()) {

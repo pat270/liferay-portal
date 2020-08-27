@@ -28,8 +28,9 @@ import org.apache.solr.common.util.NamedList;
 public class ReadWriteSolrClient extends SolrClient {
 
 	public ReadWriteSolrClient(SolrClient writeSolrClient) {
-		_readSolrClient = null;
 		_writeSolrClient = writeSolrClient;
+
+		_readSolrClient = null;
 	}
 
 	public ReadWriteSolrClient(
@@ -41,6 +42,13 @@ public class ReadWriteSolrClient extends SolrClient {
 
 	@Override
 	public void close() throws IOException {
+		if (_readSolrClient != null) {
+			_readSolrClient.close();
+		}
+
+		if (_writeSolrClient != null) {
+			_writeSolrClient.close();
+		}
 	}
 
 	@Override

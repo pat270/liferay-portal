@@ -14,12 +14,13 @@
 
 package com.liferay.wiki.web.internal.util;
 
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.diff.DiffVersion;
 import com.liferay.portal.kernel.diff.DiffVersionsInfo;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.servlet.PipingServletResponse;
@@ -196,16 +196,16 @@ public class WikiUtil {
 
 		Arrays.sort(hiddenNodes);
 
-		Iterator<WikiNode> itr = nodes.iterator();
+		Iterator<WikiNode> iterator = nodes.iterator();
 
-		while (itr.hasNext()) {
-			WikiNode node = itr.next();
+		while (iterator.hasNext()) {
+			WikiNode node = iterator.next();
 
 			if (!(Arrays.binarySearch(hiddenNodes, node.getName()) < 0) ||
 				!_wikiNodeModelResourcePermission.contains(
 					permissionChecker, node, ActionKeys.VIEW)) {
 
-				itr.remove();
+				iterator.remove();
 			}
 		}
 

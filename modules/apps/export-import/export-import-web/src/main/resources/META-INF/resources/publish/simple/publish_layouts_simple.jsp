@@ -42,23 +42,29 @@ GroupDisplayContextHelper groupDisplayContextHelper = new GroupDisplayContextHel
 Map<String, Serializable> settingsMap = exportImportConfiguration.getSettingsMap();
 
 Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("parameterMap");
+
+PortletURL advancedPublishURL = renderResponse.createRenderURL();
+
+advancedPublishURL.setParameter("mvcRenderCommandName", "publishLayouts");
+advancedPublishURL.setParameter(Constants.CMD, cmd);
+advancedPublishURL.setParameter("tabs1", privateLayout ? "private-pages" : "public-pages");
+advancedPublishURL.setParameter("groupId", String.valueOf(groupDisplayContextHelper.getGroupId()));
+advancedPublishURL.setParameter("layoutSetBranchId", MapUtil.getString(parameterMap, "layoutSetBranchId"));
+advancedPublishURL.setParameter("selPlid", String.valueOf(selPlid));
+advancedPublishURL.setParameter("privateLayout", String.valueOf(privateLayout));
 %>
 
-<aui:nav-bar cssClass="navbar-collapse-absolute">
-	<aui:nav cssClass="navbar-nav" id="publishConfigurationButtons">
-		<portlet:renderURL var="advancedPublishURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-			<portlet:param name="mvcRenderCommandName" value="publishLayouts" />
-			<portlet:param name="<%= Constants.CMD %>" value="<%= cmd %>" />
-			<portlet:param name="tabs1" value='<%= privateLayout ? "private-pages" : "public-pages" %>' />
-			<portlet:param name="groupId" value="<%= String.valueOf(groupDisplayContextHelper.getGroupId()) %>" />
-			<portlet:param name="layoutSetBranchId" value='<%= MapUtil.getString(parameterMap, "layoutSetBranchId") %>' />
-			<portlet:param name="selPlid" value="<%= String.valueOf(selPlid) %>" />
-			<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
-		</portlet:renderURL>
-
-		<aui:nav-item href="<%= advancedPublishURL %>" iconCssClass="icon-cog" label="switch-to-advanced-publication" selected="<%= false %>" />
-	</aui:nav>
-</aui:nav-bar>
+<clay:container-fluid
+	cssClass="mt-2 publish-navbar text-right"
+>
+	<clay:link
+		displayType="link"
+		href="<%= advancedPublishURL.toString() %>"
+		label="switch-to-advanced-publication"
+		small="<%= true %>"
+		type="button"
+	/>
+</clay:container-fluid>
 
 <portlet:actionURL name="editPublishConfiguration" var="confirmedActionURL">
 	<portlet:param name="mvcRenderCommandName" value="editPublishConfigurationSimple" />
@@ -89,7 +95,7 @@ Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("par
 		}
 		%>
 
-		<div class="container-fluid-1280">
+		<clay:container-fluid>
 			<div class="<%= (incompleteBackgroundTaskCount == 0) ? "hide" : "in-progress" %>" id="<portlet:namespace />incompleteProcessMessage">
 				<liferay-util:include page="/incomplete_processes_message.jsp" servletContext="<%= application %>">
 					<liferay-util:param name="incompleteBackgroundTaskCount" value="<%= String.valueOf(incompleteBackgroundTaskCount) %>" />
@@ -196,6 +202,12 @@ Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("par
 
 									layoutsCount = selLayoutSet.getPageCount();
 								}
+
+								DateRange dateRange = ExportImportDateUtil.getDateRange(exportImportConfiguration);
+
+								PortletDataContext portletDataContext = PortletDataContextFactoryUtil.createPreparePortletDataContext(company.getCompanyId(), groupDisplayContextHelper.getStagingGroupId(), ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE, dateRange.getStartDate(), dateRange.getEndDate());
+
+								long layoutModelDeletionCount = ExportImportHelperUtil.getLayoutModelDeletionCount(portletDataContext, privateLayout);
 								%>
 
 								<liferay-util:buffer
@@ -211,6 +223,7 @@ Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("par
 											</c:otherwise>
 										</c:choose>
 									</span>
+									<span class="badge badge-warning deletions"><%= (layoutModelDeletionCount > 0) ? (layoutModelDeletionCount + StringPool.SPACE + LanguageUtil.get(request, "deletions")) : StringPool.BLANK %></span>
 								</liferay-util:buffer>
 
 								<li class="tree-item">
@@ -225,7 +238,7 @@ Map<String, String[]> parameterMap = (Map<String, String[]>)settingsMap.get("par
 					<liferay-ui:message key="simple-publication-help" />
 				</span>
 			</ul>
-		</div>
+		</clay:container-fluid>
 	</div>
 
 	<aui:button-row>

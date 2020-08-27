@@ -14,6 +14,7 @@
 
 package com.liferay.portal.workflow.kaleo.service;
 
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
@@ -65,8 +66,9 @@ public interface KaleoLogLocalService
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link KaleoLogLocalServiceUtil} to access the kaleo log local service. Add custom service methods to <code>com.liferay.portal.workflow.kaleo.service.impl.KaleoLogLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portal.workflow.kaleo.service.impl.KaleoLogLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the kaleo log local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link KaleoLogLocalServiceUtil} if injection and service tracking are not available.
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addActionExecutionKaleoLog(
 			KaleoInstanceToken kaleoInstanceToken, KaleoAction kaleoAction,
 			long startTime, long endTime, String comment,
@@ -76,22 +78,29 @@ public interface KaleoLogLocalService
 	/**
 	 * Adds the kaleo log to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoLogLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param kaleoLog the kaleo log
 	 * @return the kaleo log that was added
 	 */
 	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addKaleoLog(KaleoLog kaleoLog);
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addNodeEntryKaleoLog(
 			KaleoInstanceToken kaleoInstanceToken, KaleoNode sourceKaleoNode,
 			KaleoNode targetKaleoNode, ServiceContext serviceContext)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addNodeExitKaleoLog(
 			KaleoInstanceToken kaleoInstanceToken, KaleoNode departingKaleoNode,
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addTaskAssignmentKaleoLog(
 			List<KaleoTaskAssignmentInstance>
 				previousKaleoTaskAssignmentInstances,
@@ -100,23 +109,27 @@ public interface KaleoLogLocalService
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addTaskCompletionKaleoLog(
 			KaleoTaskInstanceToken kaleoTaskInstanceToken, String comment,
 			Map<String, Serializable> workflowContext,
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addTaskUpdateKaleoLog(
 			KaleoTaskInstanceToken kaleoTaskInstanceToken, String comment,
 			Map<String, Serializable> workflowContext,
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addWorkflowInstanceEndKaleoLog(
 			KaleoInstanceToken kaleoInstanceToken,
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	@Indexable(type = IndexableType.REINDEX)
 	public KaleoLog addWorkflowInstanceStartKaleoLog(
 			KaleoInstanceToken kaleoInstanceToken,
 			ServiceContext serviceContext)
@@ -131,6 +144,12 @@ public interface KaleoLogLocalService
 	@Transactional(enabled = false)
 	public KaleoLog createKaleoLog(long kaleoLogId);
 
+	/**
+	 * @throws PortalException
+	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException;
+
 	public void deleteCompanyKaleoLogs(long companyId);
 
 	public void deleteKaleoDefinitionVersionKaleoLogs(
@@ -141,6 +160,10 @@ public interface KaleoLogLocalService
 	/**
 	 * Deletes the kaleo log from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoLogLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param kaleoLog the kaleo log
 	 * @return the kaleo log that was removed
 	 */
@@ -149,6 +172,10 @@ public interface KaleoLogLocalService
 
 	/**
 	 * Deletes the kaleo log with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoLogLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param kaleoLogId the primary key of the kaleo log
 	 * @return the kaleo log that was removed
@@ -163,6 +190,9 @@ public interface KaleoLogLocalService
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
@@ -180,7 +210,7 @@ public interface KaleoLogLocalService
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoLogModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoLogModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -196,7 +226,7 @@ public interface KaleoLogLocalService
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoLogModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoLogModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -239,14 +269,34 @@ public interface KaleoLogLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #getKaleoInstanceKaleoLogs(long, long, List, int, int,
+	 OrderByComparator)}
+	 */
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KaleoLog> getKaleoInstanceKaleoLogs(
 		long kaleoInstanceId, List<Integer> logTypes, int start, int end,
 		OrderByComparator<KaleoLog> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KaleoLog> getKaleoInstanceKaleoLogs(
+		long companyId, long kaleoInstanceId, List<Integer> logTypes, int start,
+		int end, OrderByComparator<KaleoLog> orderByComparator);
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #getKaleoInstanceKaleoLogsCount(long, long, List)}
+	 */
+	@Deprecated
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getKaleoInstanceKaleoLogsCount(
 		long kaleoInstanceId, List<Integer> logTypes);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKaleoInstanceKaleoLogsCount(
+		long companyId, long kaleoInstanceId, List<Integer> logTypes);
 
 	/**
 	 * Returns the kaleo log with the primary key.
@@ -262,7 +312,7 @@ public interface KaleoLogLocalService
 	 * Returns a range of all the kaleo logs.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoLogModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.workflow.kaleo.model.impl.KaleoLogModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of kaleo logs
@@ -280,14 +330,34 @@ public interface KaleoLogLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getKaleoLogsCount();
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #getKaleoTaskInstanceTokenKaleoLogs(long, long, List, int,
+	 int, OrderByComparator)}
+	 */
+	@Deprecated
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KaleoLog> getKaleoTaskInstanceTokenKaleoLogs(
 		long kaleoTaskInstanceTokenId, List<Integer> logTypes, int start,
 		int end, OrderByComparator<KaleoLog> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KaleoLog> getKaleoTaskInstanceTokenKaleoLogs(
+		long companyId, long kaleoTaskInstanceTokenId, List<Integer> logTypes,
+		int start, int end, OrderByComparator<KaleoLog> orderByComparator);
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 #getKaleoTaskInstanceTokenKaleoLogsCount(long, long, List)}
+	 */
+	@Deprecated
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getKaleoTaskInstanceTokenKaleoLogsCount(
 		long kaleoTaskInstanceTokenId, List<Integer> logTypes);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKaleoTaskInstanceTokenKaleoLogsCount(
+		long companyId, long kaleoTaskInstanceTokenId, List<Integer> logTypes);
 
 	/**
 	 * Returns the OSGi service identifier.
@@ -296,6 +366,9 @@ public interface KaleoLogLocalService
 	 */
 	public String getOSGiServiceIdentifier();
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
@@ -303,6 +376,10 @@ public interface KaleoLogLocalService
 
 	/**
 	 * Updates the kaleo log in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect KaleoLogLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param kaleoLog the kaleo log
 	 * @return the kaleo log that was updated

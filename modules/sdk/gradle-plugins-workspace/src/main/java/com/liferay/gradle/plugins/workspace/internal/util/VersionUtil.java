@@ -66,9 +66,9 @@ public class VersionUtil {
 					sb.append(labelNumber);
 				}
 			}
-			catch (NumberFormatException nfe) {
+			catch (NumberFormatException numberFormatException) {
 				throw new GradleException(
-					"Invalid version property value", nfe);
+					"Invalid version property value", numberFormatException);
 			}
 
 			normalizedTargetPlatformVersion = sb.toString();
@@ -78,7 +78,7 @@ public class VersionUtil {
 	}
 
 	private static final Pattern _dxpVersionPattern = Pattern.compile(
-		"^[0-9]\\.[0-9]\\.[1-9][0-9](\\.(fp)?[0-9]+)?$");
+		"^[0-9]\\.[0-9]\\.[1-9][0-9](\\.((e|f)p)?[0-9]+(-[0-9]+)?)?$");
 	private static final Pattern _externalVersionPattern = Pattern.compile(
 		"([0-9]+)\\.([0-9]+)-([A-Za-z]+)([0-9]+)");
 

@@ -15,12 +15,10 @@
 package com.liferay.adaptive.media;
 
 import com.liferay.adaptive.media.util.AMAttributeConverterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
-import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Represents a characteristic of an {@link AdaptiveMedia} instance (e.g., its
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Adolfo Pérez
  */
-@ProviderType
 public final class AMAttribute<T, V> {
 
 	/**
@@ -93,20 +90,16 @@ public final class AMAttribute<T, V> {
 	 * namespace.
 	 *
 	 * @param name a value that uniquely identifies the attribute
-	 * @param converter a function that converts a <code>String</code> to a
-	 *        value of the correct type; this function should throw an {@link
-	 *        com.liferay.adaptive.media.exception.AMRuntimeException.AMAttributeFormatException}
-	 *        if it cannot convert the <code>String</code>
 	 * @param amDistanceComparator the comparator to order the two arguments
 	 *        based on the distance between their values; it should return a
 	 *        value between {@link Long#MIN_VALUE} and {@link Long#MAX_VALUE}
 	 */
 	public AMAttribute(
-		String name, Function<String, V> converter,
+		String name, Function<String, V> converterFunction,
 		AMDistanceComparator<V> amDistanceComparator) {
 
 		_name = name;
-		_converterFunction = converter;
+		_converterFunction = converterFunction;
 		_amDistanceComparator = amDistanceComparator;
 	}
 
@@ -170,20 +163,16 @@ public final class AMAttribute<T, V> {
 		new AMAttribute<>("file-name", value -> value, String::compareTo);
 
 	private static final Map<String, AMAttribute<?, ?>> _allowedAMAttributes =
-		new HashMap<String, AMAttribute<?, ?>>() {
-			{
-				put(
-					_AM_ATTRIBUTE_CONFIGURATION_UUID.getName(),
-					_AM_ATTRIBUTE_CONFIGURATION_UUID);
-				put(
-					_AM_ATTRIBUTE_CONTENT_LENGTH.getName(),
-					_AM_ATTRIBUTE_CONTENT_LENGTH);
-				put(
-					_AM_ATTRIBUTE_CONTENT_TYPE.getName(),
-					_AM_ATTRIBUTE_CONTENT_TYPE);
-				put(_AM_ATTRIBUTE_FILE_NAME.getName(), _AM_ATTRIBUTE_FILE_NAME);
-			}
-		};
+		HashMapBuilder.<String, AMAttribute<?, ?>>put(
+			_AM_ATTRIBUTE_CONFIGURATION_UUID.getName(),
+			_AM_ATTRIBUTE_CONFIGURATION_UUID
+		).put(
+			_AM_ATTRIBUTE_CONTENT_LENGTH.getName(), _AM_ATTRIBUTE_CONTENT_LENGTH
+		).put(
+			_AM_ATTRIBUTE_CONTENT_TYPE.getName(), _AM_ATTRIBUTE_CONTENT_TYPE
+		).put(
+			_AM_ATTRIBUTE_FILE_NAME.getName(), _AM_ATTRIBUTE_FILE_NAME
+		).build();
 
 	private final AMDistanceComparator<V> _amDistanceComparator;
 	private final Function<String, V> _converterFunction;

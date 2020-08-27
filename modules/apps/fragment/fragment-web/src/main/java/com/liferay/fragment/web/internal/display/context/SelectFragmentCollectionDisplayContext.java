@@ -20,11 +20,13 @@ import com.liferay.fragment.util.comparator.FragmentCollectionCreateDateComparat
 import com.liferay.fragment.util.comparator.FragmentCollectionNameComparator;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.util.PortalInstances;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,12 +43,12 @@ import javax.servlet.http.HttpServletRequest;
 public class SelectFragmentCollectionDisplayContext {
 
 	public SelectFragmentCollectionDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
+		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
-		_httpServletRequest = httpServletRequest;
 	}
 
 	public String getEventName() {
@@ -61,7 +63,9 @@ public class SelectFragmentCollectionDisplayContext {
 		return _eventName;
 	}
 
-	public SearchContainer getFragmentCollectionsSearchContainer() {
+	public SearchContainer<FragmentCollection>
+		getFragmentCollectionsSearchContainer() {
+
 		if (_fragmentCollectionsSearchContainer != null) {
 			return _fragmentCollectionsSearchContainer;
 		}
@@ -70,7 +74,7 @@ public class SelectFragmentCollectionDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		SearchContainer fragmentCollectionsSearchContainer =
+		SearchContainer<FragmentCollection> fragmentCollectionsSearchContainer =
 			new SearchContainer(
 				_renderRequest, getPortletURL(), null,
 				"there-are-no-collections");
@@ -90,29 +94,42 @@ public class SelectFragmentCollectionDisplayContext {
 		List<FragmentCollection> fragmentCollections = null;
 		int fragmentCollectionsCount = 0;
 
+		boolean includeSystem = false;
+
+		Group scopeGroup = themeDisplay.getScopeGroup();
+
+		if ((themeDisplay.getCompanyId() ==
+				PortalInstances.getDefaultCompanyId()) &&
+			scopeGroup.isCompany()) {
+
+			includeSystem = true;
+		}
+
 		if (_isSearch()) {
 			fragmentCollections =
 				FragmentCollectionServiceUtil.getFragmentCollections(
 					themeDisplay.getScopeGroupId(), _getKeywords(),
+					includeSystem,
 					fragmentCollectionsSearchContainer.getStart(),
 					fragmentCollectionsSearchContainer.getEnd(),
 					orderByComparator);
 
 			fragmentCollectionsCount =
 				FragmentCollectionServiceUtil.getFragmentCollectionsCount(
-					themeDisplay.getScopeGroupId(), _getKeywords());
+					themeDisplay.getScopeGroupId(), _getKeywords(),
+					includeSystem);
 		}
 		else {
 			fragmentCollections =
 				FragmentCollectionServiceUtil.getFragmentCollections(
-					themeDisplay.getScopeGroupId(),
+					themeDisplay.getScopeGroupId(), includeSystem,
 					fragmentCollectionsSearchContainer.getStart(),
 					fragmentCollectionsSearchContainer.getEnd(),
 					orderByComparator);
 
 			fragmentCollectionsCount =
 				FragmentCollectionServiceUtil.getFragmentCollectionsCount(
-					themeDisplay.getScopeGroupId());
+					themeDisplay.getScopeGroupId(), includeSystem);
 		}
 
 		fragmentCollectionsSearchContainer.setResults(fragmentCollections);
@@ -216,7 +233,8 @@ public class SelectFragmentCollectionDisplayContext {
 	}
 
 	private String _eventName;
-	private SearchContainer _fragmentCollectionsSearchContainer;
+	private SearchContainer<FragmentCollection>
+		_fragmentCollectionsSearchContainer;
 	private final HttpServletRequest _httpServletRequest;
 	private String _keywords;
 	private String _orderByCol;

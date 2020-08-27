@@ -42,6 +42,10 @@ public class GroupPagesControlPanelEntry extends BaseControlPanelEntry {
 			PermissionChecker permissionChecker, Group group, Portlet portlet)
 		throws Exception {
 
+		if (group.isCompany()) {
+			return false;
+		}
+
 		if (group.isLayout()) {
 			return true;
 		}

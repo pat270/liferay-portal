@@ -1,0 +1,231 @@
+definition {
+
+	macro _addWidgetToTypeSettings {
+
+		// Get column # we want to set to (can only be 1-3), default is 1
+
+		if (!(isSet(column))) {
+			var column = "1";
+		}
+
+		Variables.assertDefined(parameterList = "${typeSettings}");
+
+		var widget = JSONLayoutUtil._generateWidget(
+			widgetName = "${widgetName}");
+
+		if (contains("${typeSettings}","column-${column}=")) {
+			var typeSettings = StringUtil.regexReplaceFirst("${typeSettings}","(column-${column}=[^%]*)","$1,${widget}");
+		}
+		else {
+			var typeSettings = '''${typeSettings}column-${column}''';
+			var typeSettings = '''${typeSettings}=${widget}''';
+		}
+
+		return "${typeSettings}";
+	}
+
+	@summary = "Generates a Widget to be used in typeSettings"
+	macro _generateWidget {
+		Variables.assertDefined(parameterList = "${widgetName}");
+
+		if ("${widgetName}" == "Announcements") {
+			var portletId = "com_liferay_announcements_web_portlet_AnnouncementsPortlet";
+		}
+
+		else if ("${widgetName}" == "Asset Publisher") {
+			var portletId = "com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet";
+		}
+		else if ("${widgetName}" == "Blogs") {
+			var portletId = "com_liferay_blogs_web_portlet_BlogsPortlet";
+		}
+		else if ("${widgetName}" == "Bookmarks") {
+			var portletId = "com_liferay_bookmarks_web_portlet_BookmarksPortlet";
+		}
+		else if ("${widgetName}" == "Breadcrumb") {
+			var portletId = "com_liferay_site_navigation_breadcrumb_web_portlet_SiteNavigationBreadcrumbPortlet";
+		}
+		else if ("${widgetName}" == "Categories Navigation") {
+			var portletId = "com_liferay_asset_categories_navigation_web_portlet_AssetCategoriesNavigationPortlet";
+		}
+		else if ("${widgetName}" == "Contacts Center") {
+			var portletId = "com_liferay_contacts_web_portlet_ContactsCenterPortlet";
+		}
+		else if ("${widgetName}" == "Custom Filter") {
+			var portletId = "com_liferay_portal_search_web_internal_custom_filter_portlet_CustomFilterPortlet";
+		}
+		else if ("${widgetName}" == "Documents and Media") {
+			var portletId = "com_liferay_document_library_web_portlet_DLPortlet";
+		}
+		else if ("${widgetName}" == "Highest Rated Assets") {
+			var portletId = "com_liferay_asset_publisher_web_portlet_HighestRatedAssetsPortlet";
+		}
+		else if ("${widgetName}" == "IFrame") {
+			var portletId = "com_liferay_iframe_web_portlet_IFramePortlet";
+		}
+		else if ("${widgetName}" == "Knowledge Base Article") {
+			var portletId = "com_liferay_knowledge_base_web_portlet_ArticlePortlet";
+		}
+		else if ("${widgetName}" == "Knowledge Base Display") {
+			var portletId = "com_liferay_knowledge_base_web_portlet_DisplayPortlet";
+		}
+		else if ("${widgetName}" == "Language Selector") {
+			var portletId = "com_liferay_site_navigation_language_web_portlet_SiteNavigationLanguagePortlet";
+		}
+		else if ("${widgetName}" == "Low Level Search Options") {
+			var portletId = "com_liferay_portal_search_web_low_level_search_options_portlet_LowLevelSearchOptionsPortlet";
+		}
+		else if ("${widgetName}" == "Media Gallery") {
+			var portletId = "com_liferay_document_library_web_portlet_IGDisplayPortlet";
+		}
+		else if ("${widgetName}" == "Message Boards") {
+			var portletId = "com_liferay_message_boards_web_portlet_MBPortlet";
+		}
+		else if ("${widgetName}" == "Most Viewed Assets") {
+			var portletId = "com_liferay_asset_publisher_web_portlet_MostViewedAssetsPortlet";
+		}
+		else if ("${widgetName}" == "My Sites") {
+			var portletId = "com_liferay_site_my_sites_web_portlet_MySitesPortlet";
+		}
+		else if ("${widgetName}" == "Navigation Menu") {
+			var portletId = "com_liferay_site_navigation_menu_web_portlet_SiteNavigationMenuPortlet";
+		}
+		else if ("${widgetName}" == "Nested Applications") {
+			var portletId = "com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet";
+		}
+		else if ("${widgetName}" == "Profile") {
+			var portletId = "com_liferay_contacts_web_portlet_ProfilePortlet";
+		}
+		else if ("${widgetName}" == "Related Assets") {
+			var portletId = "com_liferay_asset_publisher_web_portlet_RelatedAssetsPortlet";
+		}
+		else if ("${widgetName}" == "RSS Publisher") {
+			var portletId = "com_liferay_rss_web_portlet_RSSPortlet";
+		}
+		else if ("${widgetName}" == "Search Bar") {
+			var portletId = "com_liferay_portal_search_web_search_bar_portlet_SearchBarPortlet";
+		}
+		else if ("${widgetName}" == "Search Options") {
+			var portletId = "com_liferay_portal_search_web_search_options_portlet_SearchOptionsPortlet";
+		}
+		else if ("${widgetName}" == "Search Results") {
+			var portletId = "com_liferay_portal_search_web_search_results_portlet_SearchResultsPortlet";
+		}
+		else if ("${widgetName}" == "Sign In") {
+			var portletId = "com_liferay_login_web_portlet_LoginPortlet";
+		}
+		else if ("${widgetName}" == "Similar Results") {
+			var portletId = "com_liferay_portal_search_similar_results_web_portlet_SimilarResultsPortlet";
+		}
+		else if ("${widgetName}" == "Site Map") {
+			var portletId = "com_liferay_site_navigation_site_map_web_portlet_SiteNavigationSiteMapPortlet";
+		}
+		else if ("${widgetName}" == "Sites Directory") {
+			var portletId = "com_liferay_site_navigation_directory_web_portlet_SitesDirectoryPortlet";
+		}
+		else if ("${widgetName}" == "Tags Navigation") {
+			var portletId = "com_liferay_asset_tags_navigation_web_portlet_AssetTagsNavigationPortlet";
+		}
+		else if ("${widgetName}" == "Type Facet") {
+			var portletId = "com_liferay_portal_search_web_type_facet_portlet_TypeFacetPortlet";
+		}
+		else if ("${widgetName}" == "User Statistics") {
+			var portletId = "com_liferay_social_user_statistics_web_portlet_SocialUserStatisticsPortlet";
+		}
+		else if ("${widgetName}" == "Web Content Display") {
+			var portletId = "com_liferay_journal_content_web_portlet_JournalContentPortlet";
+		}
+		else if ("${widgetName}" == "Web Content Search") {
+			var portletId = "com_liferay_journal_content_search_web_portlet_JournalContentSearchPortlet";
+		}
+		else if ("${widgetName}" == "Wiki") {
+			var portletId = "com_liferay_wiki_web_portlet_WikiPortlet";
+		}
+		else {
+			fail("'widgetName' is either invalid or its 'portletId' is not yet set.");
+		}
+
+		var instanceId = StringUtil.randomString("12");
+
+		var nonRepeatableWidgets = "Blogs,Bookmarks,Knowledge Base Display,Language Selector,Message Boards,My Sites,Sign In,Web Content Search,Wiki";
+
+		if (contains("${nonRepeatableWidgets}", "${widgetName}")) {
+			var widget = "${portletId}";
+		}
+		else {
+			var widget = "${portletId}_INSTANCE_${instanceId}";
+		}
+
+		return "${widget}";
+	}
+
+	macro _getLayoutTemplateId {
+		if (!(isSet(layoutTemplate))) {
+			fail("layoutTemplate not set.");
+		}
+
+		if ("${layoutTemplate}" == "1 Column") {
+			layoutTemplateId = "1_column";
+		}
+		else if ("${layoutTemplate}" == "2 Columns (50/50)") {
+			layoutTemplateId = "2_columns_i";
+		}
+		else if ("${layoutTemplate}" == "2 Columns (30/70)") {
+			layoutTemplateId = "2_columns_ii";
+		}
+		else if ("${layoutTemplate}" == "2 Columns (70/30)") {
+			layoutTemplateId = "2_columns_iii";
+		}
+		else if ("${layoutTemplate}" == "3 Columns") {
+			layoutTemplateId = "3_columns";
+		}
+		else if ("${layoutTemplate}" == "1-2 Columns (30/70)") {
+			layoutTemplateId = "1_2_columns_i";
+		}
+		else if ("${layoutTemplate}" == "1-2 Columns (70/30)") {
+			layoutTemplateId = "1_2_columns_ii";
+		}
+		else if ("${layoutTemplate}" == "1-2-1 Columns (50/50)") {
+			layoutTemplateId = "1_2_1_columns_i";
+		}
+		else if ("${layoutTemplate}" == "1-2-1 Columns (70/30)") {
+			layoutTemplateId = "1_2_1_columns_ii";
+		}
+		else if ("${layoutTemplate}" == "1-3-1 Columns") {
+			layoutTemplateId = "1_3_1_columns";
+		}
+		else if ("${layoutTemplate}" == "1-3-2 Columns") {
+			layoutTemplateId = "1_3_2_columns";
+		}
+		else if ("${layoutTemplate}" == "2-1-2 Columns") {
+			layoutTemplateId = "2_1_2_columns";
+		}
+		else if ("${layoutTemplate}" == "2-2 Columns") {
+			layoutTemplateId = "2_2_columns";
+		}
+		else if ("${layoutTemplate}" == "3-2-3 Columns") {
+			layoutTemplateId = "3_2_3_columns";
+		}
+		else {
+			fail("'layoutTemplate' could not find a valid layoutTemplateId");
+		}
+
+		return "${layoutTemplateId}";
+	}
+
+	macro _updateLayoutTemplateId {
+		if (!(isSet(layoutTemplate))) {
+			fail("layoutTemplate not set.");
+		}
+
+		if (!(isSet(typeSettings))) {
+			fail("layoutTemplateId not set.");
+		}
+
+		var layoutTemplateId = JSONLayoutUtil._getLayoutTemplateId(layoutTemplate = "${layoutTemplate}");
+
+		var typeSettings = StringUtil.regexReplaceFirst("${typeSettings}","(layout-template-id=).*","$1${layoutTemplateId}");
+
+		return "${typeSettings}";
+	}
+
+}

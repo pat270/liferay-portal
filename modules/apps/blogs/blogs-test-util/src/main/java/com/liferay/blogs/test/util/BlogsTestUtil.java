@@ -18,10 +18,11 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.editor.EditorConstants;
+import com.liferay.portal.kernel.editor.constants.EditorConstants;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
@@ -29,8 +30,6 @@ import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import java.io.Serializable;
 
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Assert;
 
@@ -129,17 +128,16 @@ public class BlogsTestUtil {
 			BlogsEntry entry, ServiceContext serviceContext)
 		throws Exception {
 
-		Map<String, Serializable> workflowContext = new HashMap<>();
-
-		workflowContext.put(WorkflowConstants.CONTEXT_URL, "http://localhost");
-		workflowContext.put(
-			WorkflowConstants.CONTEXT_USER_PORTRAIT_URL, "http://localhost");
-		workflowContext.put(
-			WorkflowConstants.CONTEXT_USER_URL, "http://localhost");
-
 		return BlogsEntryLocalServiceUtil.updateStatus(
 			entry.getUserId(), entry.getEntryId(),
-			WorkflowConstants.STATUS_APPROVED, serviceContext, workflowContext);
+			WorkflowConstants.STATUS_APPROVED, serviceContext,
+			HashMapBuilder.<String, Serializable>put(
+				WorkflowConstants.CONTEXT_URL, "http://localhost"
+			).put(
+				WorkflowConstants.CONTEXT_USER_PORTRAIT_URL, "http://localhost"
+			).put(
+				WorkflowConstants.CONTEXT_USER_URL, "http://localhost"
+			).build());
 	}
 
 }

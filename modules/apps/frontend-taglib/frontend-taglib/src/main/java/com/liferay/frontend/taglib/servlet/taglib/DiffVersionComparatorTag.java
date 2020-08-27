@@ -15,28 +15,123 @@
 package com.liferay.frontend.taglib.servlet.taglib;
 
 import com.liferay.frontend.taglib.internal.servlet.ServletContextUtil;
+import com.liferay.portal.kernel.diff.DiffVersion;
 import com.liferay.portal.kernel.diff.DiffVersionsInfo;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
+import javax.portlet.PortletException;
 import javax.portlet.PortletURL;
+import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.PageContext;
 
 /**
- * @author     Eudaldo Alonso
- * @deprecated As of Judson (7.1.x), in favor of
- *             com.liferay.frontend.taglib.servlet.taglib.soy.DiffVersionComparatorTag
+ * @author Chema Balsas
  */
-@Deprecated
 public class DiffVersionComparatorTag extends IncludeTag {
 
-	@Override
-	public int doStartTag() {
-		return EVAL_BODY_INCLUDE;
+	public JSONObject createDiffVersionJSONObject(
+			DiffVersion diffVersion, PortletURL sourceURL, PortletURL targetURL)
+		throws PortalException {
+
+		Date modifiedDate = diffVersion.getModifiedDate();
+
+		String timeDescription = LanguageUtil.getTimeDescription(
+			request, System.currentTimeMillis() - modifiedDate.getTime(), true);
+
+		JSONObject diffVersionJSONObject = JSONUtil.put(
+			"displayDate",
+			LanguageUtil.format(request, "x-ago", timeDescription, false)
+		).put(
+			"inRange",
+			(diffVersion.getVersion() > _sourceVersion) &&
+			(diffVersion.getVersion() <= _targetVersion)
+		);
+
+		String diffVersionString = String.valueOf(diffVersion.getVersion());
+
+		diffVersionJSONObject.put(
+			"label",
+			LanguageUtil.format(request, "version-x", diffVersionString));
+
+		sourceURL.setParameter("sourceVersion", diffVersionString);
+
+		diffVersionJSONObject.put("sourceURL", sourceURL.toString());
+
+		if (Validator.isNotNull(_languageId)) {
+			targetURL.setParameter("languageId", _languageId);
+		}
+
+		targetURL.setParameter("targetVersion", diffVersionString);
+
+		diffVersionJSONObject.put("targetURL", targetURL.toString());
+
+		User user = UserLocalServiceUtil.getUser(diffVersion.getUserId());
+
+		diffVersionJSONObject.put(
+			"userInitials", user.getInitials()
+		).put(
+			"userName", user.getFullName()
+		).put(
+			"version", diffVersionString
+		);
+
+		return diffVersionJSONObject;
+	}
+
+	public Set<Locale> getAvailableLocales() {
+		return _availableLocales;
+	}
+
+	public String getDiffHtmlResults() {
+		return _diffHtmlResults;
+	}
+
+	public DiffVersionsInfo getDiffVersionsInfo() {
+		return _diffVersionsInfo;
+	}
+
+	public String getLanguageId() {
+		return _languageId;
+	}
+
+	public PortletURL getPortletURL() {
+		return _portletURL;
+	}
+
+	public PortletURL getResourceURL() {
+		return _resourceURL;
+	}
+
+	public double getSourceVersion() {
+		return _sourceVersion;
+	}
+
+	public double getTargetVersion() {
+		return _targetVersion;
 	}
 
 	public void setAvailableLocales(Set<Locale> availableLocales) {
@@ -98,39 +193,100 @@ public class DiffVersionComparatorTag extends IncludeTag {
 	}
 
 	@Override
-	protected boolean isCleanUpSetAttributes() {
-		return _CLEAN_UP_SET_ATTRIBUTES;
-	}
-
-	@Override
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:availableLocales",
-			_availableLocales);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:diffHtmlResults",
-			_diffHtmlResults);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:diffVersionsInfo",
-			_diffVersionsInfo);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:languageId", _languageId);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:portletURL", _portletURL);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:resourceURL",
-			_resourceURL);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:sourceVersion",
-			_sourceVersion);
-		httpServletRequest.setAttribute(
-			"liferay-frontend:diff-version-comparator:targetVersion",
-			_targetVersion);
-	}
+		if (Validator.isNotNull(_languageId)) {
+			_resourceURL.setParameter("languageId", _languageId);
+		}
 
-	private static final boolean _CLEAN_UP_SET_ATTRIBUTES = true;
+		Map<String, Object> data = new HashMap<>();
+
+		try {
+			if (_availableLocales != null) {
+				ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+				JSONArray availableLocalesJSONArray =
+					JSONFactoryUtil.createJSONArray();
+
+				for (Locale availableLocale : _availableLocales) {
+					availableLocalesJSONArray.put(
+						JSONUtil.put(
+							"displayName",
+							availableLocale.getDisplayName(
+								themeDisplay.getLocale())
+						).put(
+							"languageId",
+							LocaleUtil.toLanguageId(availableLocale)
+						));
+				}
+
+				data.put("availableLocales", availableLocalesJSONArray);
+			}
+
+			data.put("diffHtmlResults", _diffHtmlResults);
+
+			RenderResponse renderResponse =
+				(RenderResponse)request.getAttribute(
+					JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+			PortletURL sourceURL = PortletURLUtil.clone(
+				_portletURL, renderResponse);
+
+			sourceURL.setParameter(
+				"targetVersion", String.valueOf(_targetVersion));
+
+			PortletURL targetURL = PortletURLUtil.clone(
+				_portletURL, renderResponse);
+
+			targetURL.setParameter(
+				"sourceVersion", String.valueOf(_sourceVersion));
+
+			JSONArray diffVersionsJSONArray = JSONFactoryUtil.createJSONArray();
+
+			int diffVersionsCount = 0;
+
+			for (DiffVersion diffVersion :
+					_diffVersionsInfo.getDiffVersions()) {
+
+				JSONObject diffVersionJSONObject = createDiffVersionJSONObject(
+					diffVersion, sourceURL, targetURL);
+
+				if (diffVersionJSONObject.getBoolean("inRange")) {
+					diffVersionsCount++;
+				}
+
+				diffVersionsJSONArray.put(diffVersionJSONObject);
+			}
+
+			data.put("diffVersions", diffVersionsJSONArray);
+
+			data.put("diffVersionsCount", diffVersionsCount);
+			data.put("languageId", _languageId);
+			data.put(
+				"nextVersion",
+				String.valueOf(_diffVersionsInfo.getNextVersion()));
+			data.put("portletURL", _portletURL.toString());
+			data.put(
+				"previousVersion",
+				String.valueOf(_diffVersionsInfo.getPreviousVersion()));
+			data.put("resourceURL", _resourceURL.toString());
+			data.put("sourceVersion", String.valueOf(_sourceVersion));
+			data.put("targetVersion", String.valueOf(_targetVersion));
+		}
+		catch (PortalException | PortletException exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+		}
+
+		httpServletRequest.setAttribute(
+			"liferay-frontend:diff-version-comparator:data", data);
+	}
 
 	private static final String _PAGE = "/diff_version_comparator/page.jsp";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DiffVersionComparatorTag.class);
 
 	private Set<Locale> _availableLocales;
 	private String _diffHtmlResults;

@@ -100,9 +100,9 @@ public class ItemSelectorRepositoryEntryBrowserReturnTypeUtil
 		while (iterator.hasNext()) {
 			ItemSelectorReturnType itemSelectorReturnType = iterator.next();
 
-			String className = ClassUtil.getClassName(itemSelectorReturnType);
+			if (itemSelectorReturnTypeTypes.contains(
+					ClassUtil.getClassName(itemSelectorReturnType))) {
 
-			if (itemSelectorReturnTypeTypes.contains(className)) {
 				return itemSelectorReturnType;
 			}
 		}
@@ -112,9 +112,7 @@ public class ItemSelectorRepositoryEntryBrowserReturnTypeUtil
 
 	private static final List<String> _existingFileEntryReturnTypeNames =
 		ListUtil.fromArray(
-			new String[] {
-				ClassUtil.getClassName(new FileEntryItemSelectorReturnType()),
-				ClassUtil.getClassName(new URLItemSelectorReturnType())
-			});
+			ClassUtil.getClassName(new FileEntryItemSelectorReturnType()),
+			ClassUtil.getClassName(new URLItemSelectorReturnType()));
 
 }

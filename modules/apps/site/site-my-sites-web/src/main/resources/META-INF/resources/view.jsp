@@ -25,7 +25,7 @@
 />
 
 <clay:management-toolbar
-	displayContext="<%= new SiteMySitesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, siteMySitesDisplayContext) %>"
+	displayContext="<%= new SiteMySitesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, siteMySitesDisplayContext) %>"
 />
 
 <aui:form action="<%= siteMySitesDisplayContext.getPortletURL() %>" cssClass="container-fluid-1280" method="get" name="fm">
@@ -50,6 +50,8 @@
 			else if (Objects.equals(siteMySitesDisplayContext.getTabs1(), "my-sites") && (group.getPrivateLayoutsPageCount() > 0)) {
 				rowURL = group.getDisplayURL(themeDisplay, true);
 			}
+
+			List<DropdownItem> dropdownItems = siteMySitesDisplayContext.getGroupActionDropdownItems(group);
 			%>
 
 			<c:choose>
@@ -107,12 +109,14 @@
 						</c:if>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-text>
-						<clay:dropdown-actions
-							defaultEventHandler="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
-							dropdownItems="<%= siteMySitesDisplayContext.getArticleActionDropdownItems(group) %>"
-						/>
-					</liferay-ui:search-container-column-text>
+					<c:if test="<%= ListUtil.isNotEmpty(dropdownItems) %>">
+						<liferay-ui:search-container-column-text>
+							<clay:dropdown-actions
+								defaultEventHandler="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
+								dropdownItems="<%= dropdownItems %>"
+							/>
+						</liferay-ui:search-container-column-text>
+					</c:if>
 				</c:when>
 				<c:when test='<%= Objects.equals(siteMySitesDisplayContext.getDisplayStyle(), "icon") %>'>
 
@@ -171,12 +175,14 @@
 						/>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-text>
-						<clay:dropdown-actions
-							defaultEventHandler="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
-							dropdownItems="<%= siteMySitesDisplayContext.getArticleActionDropdownItems(group) %>"
-						/>
-					</liferay-ui:search-container-column-text>
+					<c:if test="<%= ListUtil.isNotEmpty(dropdownItems) %>">
+						<liferay-ui:search-container-column-text>
+							<clay:dropdown-actions
+								defaultEventHandler="<%= MySitesWebKeys.SITES_DROPDOWN_DEFAULT_EVENT_HANDLER %>"
+								dropdownItems="<%= dropdownItems %>"
+							/>
+						</liferay-ui:search-container-column-text>
+					</c:if>
 				</c:when>
 			</c:choose>
 		</liferay-ui:search-container-row>

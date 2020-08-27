@@ -16,7 +16,6 @@ package com.liferay.source.formatter.checkstyle.checks;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
@@ -45,7 +44,7 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
-		List<String> importNames = DetailASTUtil.getImportNames(detailAST);
+		List<String> importNames = getImportNames(detailAST);
 
 		if (!importNames.contains(
 				"org.osgi.service.component.annotations.Reference")) {
@@ -53,7 +52,7 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 			return;
 		}
 
-		List<DetailAST> detailASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> detailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.METHOD_DEF, TokenTypes.VARIABLE_DEF);
 
 		for (DetailAST curDetailAST : detailASTList) {
@@ -84,9 +83,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 		String variableName = matcher.group(1);
 
-		List<DetailAST> variableDefinitionDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.VARIABLE_DEF);
+		List<DetailAST> variableDefinitionDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.VARIABLE_DEF);
 
 		for (DetailAST variableDefinitionDetailAST :
 				variableDefinitionDetailASTList) {
@@ -116,19 +114,6 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		}
 	}
 
-	private void _checkGreedyOption(
-		DetailAST annotationDetailAST, String policyName) {
-
-		String policyOptionName = _getAnnotationMemberValue(
-			annotationDetailAST, "policyOption", _POLICY_OPTION_RELUCTANT);
-
-		if (policyOptionName.endsWith(_POLICY_OPTION_GREEDY) &&
-			policyName.endsWith(_POLICY_STATIC)) {
-
-			log(annotationDetailAST, _MSG_INCORRECT_GREEDY_POLICY_OPTION);
-		}
-	}
-
 	private void _checkReferenceAnnotation(DetailAST detailAST) {
 		DetailAST annotationDetailAST = AnnotationUtil.getAnnotation(
 			detailAST, "Reference");
@@ -140,17 +125,14 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		String policyName = _getAnnotationMemberValue(
 			annotationDetailAST, "policy", _POLICY_STATIC);
 
-		_checkGreedyOption(annotationDetailAST, policyName);
-
 		if (detailAST.getType() == TokenTypes.VARIABLE_DEF) {
 			_checkVolatileVariable(detailAST, policyName);
 
 			return;
 		}
 
-		DetailAST classDefinitionDetailAST =
-			DetailASTUtil.getParentWithTokenType(
-				detailAST, TokenTypes.CLASS_DEF);
+		DetailAST classDefinitionDetailAST = getParentWithTokenType(
+			detailAST, TokenTypes.CLASS_DEF);
 
 		if (classDefinitionDetailAST == null) {
 			return;
@@ -222,9 +204,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 	private boolean _containsMethod(
 		DetailAST classDefinitionDetailAST, String methodName) {
 
-		List<DetailAST> methodDefinitionDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.METHOD_DEF);
+		List<DetailAST> methodDefinitionDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.METHOD_DEF);
 
 		for (DetailAST methodDefinitionDetailAST :
 				methodDefinitionDetailASTList) {
@@ -244,7 +225,7 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		DetailAST anontationDetailAST, String name, String defaultValue) {
 
 		List<DetailAST> annotationMemberValuePairDetailASTList =
-			DetailASTUtil.getAllChildTokens(
+			getAllChildTokens(
 				anontationDetailAST, false,
 				TokenTypes.ANNOTATION_MEMBER_VALUE_PAIR);
 
@@ -290,8 +271,8 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 		DetailAST slistDetailAST = methodDefinitionDetailAST.findFirstToken(
 			TokenTypes.SLIST);
 
-		int startLineNumber = DetailASTUtil.getStartLineNumber(slistDetailAST);
-		int endLineNumber = DetailASTUtil.getEndLineNumber(slistDetailAST);
+		int startLineNumber = getStartLineNumber(slistDetailAST);
+		int endLineNumber = getEndLineNumber(slistDetailAST);
 
 		StringBundler sb = new StringBundler(
 			(endLineNumber - startLineNumber - 1) * 2);
@@ -303,9 +284,6 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 
 		return sb.toString();
 	}
-
-	private static final String _MSG_INCORRECT_GREEDY_POLICY_OPTION =
-		"greedy.policy.option.incorrect";
 
 	private static final String _MSG_MISSING_DYNAMIC_POLICY_UNBIND =
 		"unbind.dynamic.policy.missing";
@@ -323,10 +301,6 @@ public class ReferenceAnnotationCheck extends BaseCheck {
 	private static final String _NO_UNBIND = "\"-\"";
 
 	private static final String _POLICY_DYNAMIC = "DYNAMIC";
-
-	private static final String _POLICY_OPTION_GREEDY = "GREEDY";
-
-	private static final String _POLICY_OPTION_RELUCTANT = "RELUCTANT";
 
 	private static final String _POLICY_STATIC = "STATIC";
 

@@ -26,10 +26,6 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.util.MapUtil;
 
-import java.io.Serializable;
-
-import java.util.Map;
-
 /**
  * @author Akos Thurzo
  */
@@ -49,9 +45,11 @@ public abstract class BaseExportImportBackgroundTaskExecutor
 	}
 
 	@Override
-	public String handleException(BackgroundTask backgroundTask, Exception e) {
+	public String handleException(
+		BackgroundTask backgroundTask, Exception exception) {
+
 		JSONObject jsonObject = StagingUtil.getExceptionMessagesJSONObject(
-			getLocale(backgroundTask), e,
+			getLocale(backgroundTask), exception,
 			getExportImportConfiguration(backgroundTask));
 
 		return jsonObject.toString();
@@ -60,11 +58,8 @@ public abstract class BaseExportImportBackgroundTaskExecutor
 	protected ExportImportConfiguration getExportImportConfiguration(
 		BackgroundTask backgroundTask) {
 
-		Map<String, Serializable> taskContextMap =
-			backgroundTask.getTaskContextMap();
-
 		long exportImportConfigurationId = MapUtil.getLong(
-			taskContextMap, "exportImportConfigurationId");
+			backgroundTask.getTaskContextMap(), "exportImportConfigurationId");
 
 		return ExportImportConfigurationLocalServiceUtil.
 			fetchExportImportConfiguration(exportImportConfigurationId);

@@ -21,7 +21,7 @@
 >
 
 	<%
-	boolean numberInputType = ((type == ExpandoColumnConstants.DOUBLE) || (type == ExpandoColumnConstants.DOUBLE_ARRAY) || (type == ExpandoColumnConstants.FLOAT) || (type == ExpandoColumnConstants.FLOAT_ARRAY) || (type == ExpandoColumnConstants.INTEGER) || (type == ExpandoColumnConstants.INTEGER_ARRAY) || (type == ExpandoColumnConstants.LONG) || (type == ExpandoColumnConstants.LONG_ARRAY) || (type == ExpandoColumnConstants.SHORT) || (type == ExpandoColumnConstants.SHORT_ARRAY));
+	boolean numberInputType = (type == ExpandoColumnConstants.DOUBLE) || (type == ExpandoColumnConstants.DOUBLE_ARRAY) || (type == ExpandoColumnConstants.FLOAT) || (type == ExpandoColumnConstants.FLOAT_ARRAY) || (type == ExpandoColumnConstants.INTEGER) || (type == ExpandoColumnConstants.INTEGER_ARRAY) || (type == ExpandoColumnConstants.LONG) || (type == ExpandoColumnConstants.LONG_ARRAY) || (type == ExpandoColumnConstants.SHORT) || (type == ExpandoColumnConstants.SHORT_ARRAY);
 	%>
 
 	<div class="<%= numberInputType ? "" : "hide" %>" id="<portlet:namespace />precisionTypeAdvanced">
@@ -37,6 +37,14 @@
 			</div>
 		</aui:field-wrapper>
 	</div>
+
+	<aui:field-wrapper>
+		<aui:input label="localize-field-name" name="Property--localize-field-name--" type="toggle-switch" value="<%= propertyLocalizeFieldName %>" />
+
+		<div class="form-text">
+			<liferay-ui:message key="custom-field-localize-field-name-help" />
+		</div>
+	</aui:field-wrapper>
 
 	<aui:field-wrapper>
 		<aui:input label="visible-with-update-permission" name="Property--visible-with-update-permission--" type="toggle-switch" value="<%= propertyVisibleWithUpdatePermission %>" />
@@ -87,7 +95,10 @@
 			</div>
 
 			<aui:script>
-				Liferay.Util.toggleBoxes('<portlet:namespace />searchableKeyWordOrText', '<portlet:namespace />propertyIndexType');
+				Liferay.Util.toggleBoxes(
+					'<portlet:namespace />searchableKeyWordOrText',
+					'<portlet:namespace />propertyIndexType'
+				);
 			</aui:script>
 		</div>
 
@@ -102,11 +113,7 @@
 		</div>
 	</aui:field-wrapper>
 
-	<%
-	boolean textInputType = (propertyDisplayType.equals(ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_INPUT_FIELD) || propertyDisplayType.equals(ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) && ((type == ExpandoColumnConstants.STRING) || (type == ExpandoColumnConstants.STRING_LOCALIZED));
-	%>
-
-	<c:if test="<%= textInputType %>">
+	<c:if test="<%= (propertyDisplayType.equals(ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_INPUT_FIELD) || propertyDisplayType.equals(ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX)) && ((type == ExpandoColumnConstants.STRING) || (type == ExpandoColumnConstants.STRING_LOCALIZED)) %>">
 		<div id="<portlet:namespace />widthAdvancedSetting">
 			<aui:field-wrapper cssClass="form-group lfr-input-text-container">
 				<aui:input label="width" name="Property--width--" type="text" value="<%= propertyWidth %>">
@@ -137,11 +144,11 @@
 
 <script>
 	function populatePrecisionType(precisionTypeElement, numberSize) {
-		var numberSizeOptions = "";
+		var numberSizeOptions = '';
 
-		for (var bit of numberSize) {
-			numberSizeOptions += "<option value=\"" + bit + "\">" + bit + "</option>";
-		}
+		numberSize.forEach(function (bit) {
+			numberSizeOptions += '<option value="' + bit + '">' + bit + '</option>';
+		});
 
 		precisionTypeElement.innerHTML = numberSizeOptions;
 	}
@@ -151,14 +158,22 @@
 			return;
 		}
 
-		var precisionTypeElement = document.getElementById('<portlet:namespace />precisionTypeSelect');
+		var precisionTypeElement = document.getElementById(
+			'<portlet:namespace />precisionTypeSelect'
+		);
 
 		if (precisionTypeElement) {
 			precisionTypeElement.options.length = 0;
 
-			var numberSize = ['<%= ExpandoColumnConstants.PRECISION_64_BIT %>', '<%= ExpandoColumnConstants.PRECISION_32_BIT %>'];
+			var numberSize = [
+				'<%= ExpandoColumnConstants.PRECISION_64_BIT %>',
+				'<%= ExpandoColumnConstants.PRECISION_32_BIT %>',
+			];
 
-			if (currentSelectedDataType == '<%= ExpandoColumnConstants.DATA_TYPE_INTEGER %>') {
+			if (
+				currentSelectedDataType ==
+				'<%= ExpandoColumnConstants.DATA_TYPE_INTEGER %>'
+			) {
 				numberSize.push('<%= ExpandoColumnConstants.PRECISION_16_BIT %>');
 			}
 

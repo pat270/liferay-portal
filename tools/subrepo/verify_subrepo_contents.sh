@@ -108,11 +108,11 @@ fi
 #
 
 SUBREPO_SEARCH_PARAMETERS=(
-	"7.0.x:../..:modules"
-	"7.0.x-private:../../../liferay-portal-ee:modules/private"
-	"7.1.x:../..:modules"
-	"7.1.x-private:../../../liferay-portal-ee:modules/private"
-	"master-private:../../../liferay-portal-ee:modules/private"
+	"7.0.x:../../../liferay-portal-ee:modules"
+	"7.0.x-private:../../../liferay-portal-ee:modules/dxp"
+	"7.1.x:../../../liferay-portal-ee:modules"
+	"7.1.x-private:../../../liferay-portal-ee:modules/dxp"
+	"master-private:../../../liferay-portal-ee:modules/dxp"
 	"master:../..:modules"
 )
 
@@ -183,7 +183,7 @@ info
 
 BRANCH_COUNTER=0
 
-for GITREPO_BRANCH in  "${GITREPO_BRANCHES[@]}"
+for GITREPO_BRANCH in "${GITREPO_BRANCHES[@]}"
 do
 	SUBREPO_BRANCH="${GITREPO_BRANCH%%:*}"
 	GITREPO_PATH="$(echo "${GITREPO_BRANCH}" | sed 's/:[^:]*$//' | sed 's/.*://')"
@@ -191,11 +191,11 @@ do
 
 	SUBREPO_PATH="../../../${SUBREPO_NAME}"
 
-	if [[ "${SUBREPO_BRANCH}" == *-private ]]
+	if [[ "${SUBREPO_BRANCH}" == "master" ]]
 	then
-		CENTRAL_PATH="../../../liferay-portal-ee"
-	else
 		CENTRAL_PATH="../.."
+	else
+		CENTRAL_PATH="../../../liferay-portal-ee"
 	fi
 
 	if [[ ! -e "${SUBREPO_PATH}" ]]
@@ -246,7 +246,7 @@ do
 		fi
 	fi
 
-	SUBREPO_TREE=$(git -C "${SUBREPO_PATH}" ls-tree --full-tree -r "${SUBREPO_COMMIT}" . | egrep -v '\sgradlew' | egrep -v '\sgradle/wrapper' | sort -k 4)
+	SUBREPO_TREE=$(git -C "${SUBREPO_PATH}" ls-tree --full-tree -r "${SUBREPO_COMMIT}" . | egrep -v '\sgradle.properties' | egrep -v '\sgradlew' | egrep -v '\sgradle/wrapper' | sort -k 4)
 
 	if [[ "${CENTRAL_TREE}" != "${SUBREPO_TREE}" ]]
 	then

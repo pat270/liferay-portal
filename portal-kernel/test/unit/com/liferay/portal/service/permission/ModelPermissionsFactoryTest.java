@@ -15,8 +15,8 @@
 package com.liferay.portal.service.permission;
 
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.RoleWrapper;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
@@ -25,13 +25,15 @@ import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -115,28 +117,24 @@ public class ModelPermissionsFactoryTest extends PowerMockito {
 
 		Assert.assertEquals(
 			RoleConstants.PLACEHOLDER_DEFAULT_GROUP_ROLE, roleName);
-		Assert.assertEquals(
-			ListUtil.fromArray(groupPermissions),
-			modelPermissions.getActionIdsList(roleName));
+		Assert.assertArrayEquals(
+			groupPermissions, modelPermissions.getActionIds(roleName));
 	}
 
 	@Test
-	public void testCreateWithGuestAndGroupPermissions() throws Exception {
+	public void testCreateWithGuestAndGroupPermissions() {
 		String[] groupPermissions = {ActionKeys.VIEW};
 		String[] guestPermissions = {ActionKeys.VIEW};
 
 		ModelPermissions modelPermissions = ModelPermissionsFactory.create(
 			groupPermissions, guestPermissions);
 
-		Collection<String> roleNames = modelPermissions.getRoleNames();
+		Set<String> expectedRoleNames = new HashSet<>(
+			Arrays.asList(
+				RoleConstants.PLACEHOLDER_DEFAULT_GROUP_ROLE,
+				RoleConstants.GUEST));
 
-		Assert.assertEquals(roleNames.toString(), 2, roleNames.size());
-
-		Collection<String> viewActionIdRoleNames =
-			modelPermissions.getRoleNames(ActionKeys.VIEW);
-
-		Assert.assertEquals(
-			viewActionIdRoleNames.toString(), 2, viewActionIdRoleNames.size());
+		Assert.assertEquals(expectedRoleNames, modelPermissions.getRoleNames());
 	}
 
 	@Test
@@ -237,12 +235,11 @@ public class ModelPermissionsFactoryTest extends PowerMockito {
 
 	@Test
 	public void testCreateWithParameterForOneRole() throws Exception {
-		Map<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put(
+		Map<String, String[]> parameterMap = HashMapBuilder.put(
 			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
 				RoleConstants.GUEST,
-			new String[] {ActionKeys.VIEW});
+			new String[] {ActionKeys.VIEW}
+		).build();
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -267,19 +264,17 @@ public class ModelPermissionsFactoryTest extends PowerMockito {
 	public void testCreateWithParameterForOneRoleAndClassName()
 		throws Exception {
 
-		Map<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put(
-			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
-				RoleConstants.GUEST,
-			new String[] {ActionKeys.VIEW});
-
 		String className = RandomTestUtil.randomString();
 
-		parameterMap.put(
+		Map<String, String[]> parameterMap = HashMapBuilder.put(
+			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
+				RoleConstants.GUEST,
+			new String[] {ActionKeys.VIEW}
+		).put(
 			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX + className +
 				RoleConstants.GUEST,
-			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW});
+			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW}
+		).build();
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -302,16 +297,15 @@ public class ModelPermissionsFactoryTest extends PowerMockito {
 
 	@Test
 	public void testCreateWithParameterForTwoRoles() throws Exception {
-		Map<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put(
+		Map<String, String[]> parameterMap = HashMapBuilder.put(
 			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
 				RoleConstants.GUEST,
-			new String[] {ActionKeys.VIEW});
-		parameterMap.put(
+			new String[] {ActionKeys.VIEW}
+		).put(
 			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
 				RoleConstants.SITE_MEMBER,
-			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW});
+			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW}
+		).build();
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -340,27 +334,25 @@ public class ModelPermissionsFactoryTest extends PowerMockito {
 	public void testCreateWithParameterForTwoRolesAndClassName()
 		throws Exception {
 
-		Map<String, String[]> parameterMap = new HashMap<>();
-
-		parameterMap.put(
-			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
-				RoleConstants.GUEST,
-			new String[] {ActionKeys.VIEW});
-		parameterMap.put(
-			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
-				RoleConstants.SITE_MEMBER,
-			new String[] {ActionKeys.VIEW});
-
 		String className = RandomTestUtil.randomString();
 
-		parameterMap.put(
-			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX + className +
-				RoleConstants.POWER_USER,
-			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW});
-		parameterMap.put(
+		Map<String, String[]> parameterMap = HashMapBuilder.put(
+			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
+				RoleConstants.GUEST,
+			new String[] {ActionKeys.VIEW}
+		).put(
+			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX +
+				RoleConstants.SITE_MEMBER,
+			new String[] {ActionKeys.VIEW}
+		).put(
 			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX + className +
 				RoleConstants.ORGANIZATION_USER,
-			new String[] {ActionKeys.DELETE, ActionKeys.VIEW});
+			new String[] {ActionKeys.DELETE, ActionKeys.VIEW}
+		).put(
+			ModelPermissionsFactory.MODEL_PERMISSIONS_PREFIX + className +
+				RoleConstants.POWER_USER,
+			new String[] {ActionKeys.UPDATE, ActionKeys.VIEW}
+		).build();
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();

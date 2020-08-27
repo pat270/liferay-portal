@@ -65,25 +65,25 @@ public class Duration implements Cloneable, Serializable {
 	/**
 	 * Constructor Duration
 	 */
-	public Duration(int w) {
-		_weeks = w;
+	public Duration(int weeks) {
+		_weeks = weeks;
 	}
 
 	/**
 	 * Constructor Duration
 	 */
-	public Duration(int h, int m, int s) {
-		this(0, h, m, s);
+	public Duration(int hours, int minutes, int seconds) {
+		this(0, hours, minutes, seconds);
 	}
 
 	/**
 	 * Constructor Duration
 	 */
-	public Duration(int d, int h, int m, int s) {
-		_days = d;
-		_hours = h;
-		_minutes = m;
-		_seconds = s;
+	public Duration(int days, int hours, int minutes, int seconds) {
+		_days = days;
+		_hours = hours;
+		_minutes = minutes;
+		_seconds = seconds;
 	}
 
 	/**
@@ -115,7 +115,7 @@ public class Duration implements Cloneable, Serializable {
 
 			return other;
 		}
-		catch (CloneNotSupportedException cnse) {
+		catch (CloneNotSupportedException cloneNotSupportedException) {
 			throw new InternalError();
 		}
 	}
@@ -144,9 +144,9 @@ public class Duration implements Cloneable, Serializable {
 	 * @return long
 	 */
 	public long getInterval() {
-		return _seconds * _MILLIS_PER_SECOND + _minutes * _MILLIS_PER_MINUTE +
-			_hours * _MILLIS_PER_HOUR + _days * _MILLIS_PER_DAY +
-				_weeks * _MILLIS_PER_WEEK;
+		return (_seconds * _MILLIS_PER_SECOND) +
+			(_minutes * _MILLIS_PER_MINUTE) + (_hours * _MILLIS_PER_HOUR) +
+				(_days * _MILLIS_PER_DAY) + (_weeks * _MILLIS_PER_WEEK);
 	}
 
 	/**

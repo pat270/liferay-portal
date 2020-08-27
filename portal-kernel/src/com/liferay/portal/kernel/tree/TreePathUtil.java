@@ -15,18 +15,17 @@
 package com.liferay.portal.kernel.tree;
 
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.TreeModel;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.VerifyThreadLocal;
 
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -38,24 +37,6 @@ public class TreePathUtil {
 			long companyId, long parentPrimaryKey, String parentTreePath,
 			TreeModelTasks<?> treeModelTasks)
 		throws PortalException {
-
-		if (VerifyThreadLocal.isVerifyInProgress() &&
-			_VERIFY_DATABASE_TRANSACTIONS_DISABLED) {
-
-			ForkJoinPool forkJoinPool = new ForkJoinPool();
-
-			try {
-				forkJoinPool.invoke(
-					new RecursiveRebuildTreeTask(
-						treeModelTasks, companyId, parentPrimaryKey,
-						parentTreePath, 0L));
-			}
-			finally {
-				forkJoinPool.shutdown();
-			}
-
-			return;
-		}
 
 		Deque<Object[]> traces = new LinkedList<>();
 
@@ -91,11 +72,9 @@ public class TreePathUtil {
 			}
 
 			for (TreeModel treeModel : treeModels) {
-				String treePath = curParentTreePath.concat(
-					String.valueOf(treeModel.getPrimaryKeyObj())
-				).concat(
-					StringPool.SLASH
-				);
+				String treePath = StringBundler.concat(
+					curParentTreePath, treeModel.getPrimaryKeyObj(),
+					StringPool.SLASH);
 
 				if (!treePath.equals(treeModel.getTreePath())) {
 					treeModel.updateTreePath(treePath);
@@ -112,10 +91,6 @@ public class TreePathUtil {
 			PropsUtil.get(
 				PropsKeys.MODEL_TREE_REBUILD_QUERY_RESULTS_BATCH_SIZE));
 
-	private static final boolean _VERIFY_DATABASE_TRANSACTIONS_DISABLED =
-		GetterUtil.getBoolean(
-			PropsUtil.get(PropsKeys.VERIFY_DATABASE_TRANSACTIONS_DISABLED));
-
 	private static class RecursiveRebuildTreeTask extends RecursiveAction {
 
 		@Override
@@ -124,8 +99,8 @@ public class TreePathUtil {
 				_treeModelTasks.rebuildDependentModelsTreePaths(
 					_parentPrimaryKey, _parentTreePath);
 			}
-			catch (PortalException pe) {
-				ReflectionUtil.throwException(pe);
+			catch (PortalException portalException) {
+				ReflectionUtil.throwException(portalException);
 			}
 
 			List<? extends TreeModel> treeModels =
@@ -151,11 +126,9 @@ public class TreePathUtil {
 			}
 
 			for (TreeModel treeModel : treeModels) {
-				String treePath = _parentTreePath.concat(
-					String.valueOf(treeModel.getPrimaryKeyObj())
-				).concat(
-					StringPool.SLASH
-				);
+				String treePath = StringBundler.concat(
+					_parentTreePath, treeModel.getPrimaryKeyObj(),
+					StringPool.SLASH);
 
 				if (!treePath.equals(treeModel.getTreePath())) {
 					treeModel.updateTreePath(treePath);

@@ -257,12 +257,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 
 			try {
@@ -273,12 +274,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 
 			try {
@@ -289,12 +291,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 
 			try {
@@ -305,12 +308,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 
 			try {
@@ -324,12 +328,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 
 			try {
@@ -343,12 +348,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 
 			try {
@@ -358,12 +364,13 @@ public class PersistenceNestedSetsTreeManagerTest {
 
 				Assert.fail();
 			}
-			catch (SystemException se) {
-				Throwable t = se.getCause();
+			catch (SystemException systemException) {
+				Throwable throwable = systemException.getCause();
 
-				t = t.getCause();
+				throwable = throwable.getCause();
 
-				Assert.assertEquals("Unable to open session", t.getMessage());
+				Assert.assertEquals(
+					"Unable to open session", throwable.getMessage());
 			}
 		}
 		finally {
@@ -747,7 +754,8 @@ public class PersistenceNestedSetsTreeManagerTest {
 				_nestedSetsTreeEntryPersistence.remove(nestedSetsTreeEntry);
 			}
 			else {
-				_nestedSetsTreeEntryPersistence.update(nestedSetsTreeEntry);
+				nestedSetsTreeEntry = _nestedSetsTreeEntryPersistence.update(
+					nestedSetsTreeEntry);
 			}
 		}
 

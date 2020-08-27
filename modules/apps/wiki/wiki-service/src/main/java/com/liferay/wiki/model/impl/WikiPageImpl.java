@@ -110,7 +110,7 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 
 	@Override
 	public List<FileEntry> getAttachmentsFileEntries(
-			int start, int end, OrderByComparator obc)
+			int start, int end, OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		long attachmentsFolderId = getAttachmentsFolderId();
@@ -121,14 +121,13 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 
 		return PortletFileRepositoryUtil.getPortletFileEntries(
 			getGroupId(), attachmentsFolderId,
-			WorkflowConstants.STATUS_APPROVED, start, end,
-			(OrderByComparator<FileEntry>)obc);
+			WorkflowConstants.STATUS_APPROVED, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getAttachmentsFileEntries(
 			String[] mimeTypes, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		long attachmentsFolderId = getAttachmentsFolderId();
@@ -139,7 +138,7 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 
 		return PortletFileRepositoryUtil.getPortletFileEntries(
 			getGroupId(), attachmentsFolderId, mimeTypes,
-			WorkflowConstants.STATUS_APPROVED, start, end, obc);
+			WorkflowConstants.STATUS_APPROVED, start, end, orderByComparator);
 	}
 
 	@Override
@@ -203,7 +202,7 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 
 			_attachmentsFolderId = folder.getFolderId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return _attachmentsFolderId;
@@ -215,8 +214,8 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 			return WikiPageLocalServiceUtil.getChildren(
 				getNodeId(), true, getTitle());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return Collections.emptyList();
 		}
@@ -264,8 +263,8 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 		try {
 			return WikiNodeLocalServiceUtil.getNode(getNodeId());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return new WikiNodeImpl();
 		}
@@ -273,7 +272,11 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 
 	@Override
 	public long getNodeAttachmentsFolderId() {
-		WikiNode node = getNode();
+		WikiNode node = WikiNodeLocalServiceUtil.fetchWikiNode(getNodeId());
+
+		if (node == null) {
+			return 0;
+		}
 
 		return node.getAttachmentsFolderId();
 	}
@@ -324,8 +327,8 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 			return WikiPageServiceUtil.getChildren(
 				getGroupId(), getNodeId(), true, getTitle());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return Collections.emptyList();
 		}
@@ -341,8 +344,8 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 			return WikiPageServiceUtil.getPage(
 				getGroupId(), getNodeId(), getParentTitle());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return null;
 		}

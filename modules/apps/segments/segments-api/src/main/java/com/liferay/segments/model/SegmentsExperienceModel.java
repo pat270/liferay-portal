@@ -19,8 +19,10 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -41,7 +43,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface SegmentsExperienceModel
-	extends AttachedModel, BaseModel<SegmentsExperience>, LocalizedModel,
+	extends AttachedModel, BaseModel<SegmentsExperience>,
+			CTModel<SegmentsExperience>, LocalizedModel, MVCCModel,
 			ShardedModel, StagedGroupedModel {
 
 	/*
@@ -55,6 +58,7 @@ public interface SegmentsExperienceModel
 	 *
 	 * @return the primary key of this segments experience
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -62,7 +66,40 @@ public interface SegmentsExperienceModel
 	 *
 	 * @param primaryKey the primary key of this segments experience
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this segments experience.
+	 *
+	 * @return the mvcc version of this segments experience
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this segments experience.
+	 *
+	 * @param mvccVersion the mvcc version of this segments experience
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this segments experience.
+	 *
+	 * @return the ct collection ID of this segments experience
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this segments experience.
+	 *
+	 * @param ctCollectionId the ct collection ID of this segments experience
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this segments experience.
@@ -221,6 +258,21 @@ public interface SegmentsExperienceModel
 	 * @param segmentsEntryId the segments entry ID of this segments experience
 	 */
 	public void setSegmentsEntryId(long segmentsEntryId);
+
+	/**
+	 * Returns the segments experience key of this segments experience.
+	 *
+	 * @return the segments experience key of this segments experience
+	 */
+	@AutoEscape
+	public String getSegmentsExperienceKey();
+
+	/**
+	 * Sets the segments experience key of this segments experience.
+	 *
+	 * @param segmentsExperienceKey the segments experience key of this segments experience
+	 */
+	public void setSegmentsExperienceKey(String segmentsExperienceKey);
 
 	/**
 	 * Returns the fully qualified class name of this segments experience.

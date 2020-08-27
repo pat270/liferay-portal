@@ -14,15 +14,21 @@
 
 package com.liferay.portal.workflow.kaleo.definition.internal.export.builder;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.workflow.kaleo.definition.Definition;
 import com.liferay.portal.workflow.kaleo.definition.Node;
 import com.liferay.portal.workflow.kaleo.definition.Transition;
+import com.liferay.portal.workflow.kaleo.definition.export.builder.DefinitionBuilder;
 import com.liferay.portal.workflow.kaleo.model.KaleoDefinition;
+import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
 import com.liferay.portal.workflow.kaleo.model.KaleoTransition;
 import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionLocalService;
+import com.liferay.portal.workflow.kaleo.service.KaleoDefinitionVersionLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoNodeLocalService;
 import com.liferay.portal.workflow.kaleo.service.KaleoTransitionLocalService;
 
@@ -44,34 +50,36 @@ public class DefaultDefinitionBuilder implements DefinitionBuilder {
 		KaleoDefinition kaleoDefinition =
 			_kaleoDefinitionLocalService.getKaleoDefinition(kaleoDefinitionId);
 
-		return doBuildDefinition(kaleoDefinition);
+		return doBuildDefinition(
+			_kaleoDefinitionVersionLocalService.getKaleoDefinitionVersion(
+				kaleoDefinition.getCompanyId(), kaleoDefinition.getName(),
+				StringBundler.concat(
+					kaleoDefinition.getVersion(), CharPool.PERIOD, 0)));
 	}
 
 	@Override
 	public Definition buildDefinition(long companyId, String name, int version)
 		throws PortalException {
 
-		ServiceContext serviceContext = new ServiceContext();
-
-		serviceContext.setCompanyId(companyId);
-
-		KaleoDefinition kaleoDefinition =
-			_kaleoDefinitionLocalService.getKaleoDefinition(
-				name, serviceContext);
-
-		return doBuildDefinition(kaleoDefinition);
+		return doBuildDefinition(
+			_kaleoDefinitionVersionLocalService.getKaleoDefinitionVersion(
+				companyId, name,
+				StringBundler.concat(version, CharPool.PERIOD, 0)));
 	}
 
-	protected Definition doBuildDefinition(KaleoDefinition kaleoDefinition)
+	protected Definition doBuildDefinition(
+			KaleoDefinitionVersion kaleoDefinitionVersion)
 		throws PortalException {
 
 		Definition definition = new Definition(
-			kaleoDefinition.getName(), kaleoDefinition.getDescription(),
-			kaleoDefinition.getContent(), kaleoDefinition.getVersion());
+			kaleoDefinitionVersion.getName(),
+			kaleoDefinitionVersion.getDescription(),
+			kaleoDefinitionVersion.getContent(),
+			_getVersion(kaleoDefinitionVersion.getVersion()));
 
 		List<KaleoNode> kaleoNodes =
 			_kaleoNodeLocalService.getKaleoDefinitionVersionKaleoNodes(
-				kaleoDefinition.getKaleoDefinitionId());
+				kaleoDefinitionVersion.getKaleoDefinitionVersionId());
 
 		for (KaleoNode kaleoNode : kaleoNodes) {
 			NodeBuilder nodeBuilder = _nodeBuilderRegistry.getNodeBuilder(
@@ -85,7 +93,7 @@ public class DefaultDefinitionBuilder implements DefinitionBuilder {
 		List<KaleoTransition> kaleoTransitions =
 			_kaleoTransitionLocalService.
 				getKaleoDefinitionVersionKaleoTransitions(
-					kaleoDefinition.getKaleoDefinitionId());
+					kaleoDefinitionVersion.getKaleoDefinitionVersionId());
 
 		for (KaleoTransition kaleoTransition : kaleoTransitions) {
 			String sourceNodeName = kaleoTransition.getSourceKaleoNodeName();
@@ -108,8 +116,18 @@ public class DefaultDefinitionBuilder implements DefinitionBuilder {
 		return definition;
 	}
 
+	private int _getVersion(String version) {
+		int[] versionParts = StringUtil.split(version, StringPool.PERIOD, 0);
+
+		return versionParts[0];
+	}
+
 	@Reference
 	private KaleoDefinitionLocalService _kaleoDefinitionLocalService;
+
+	@Reference
+	private KaleoDefinitionVersionLocalService
+		_kaleoDefinitionVersionLocalService;
 
 	@Reference
 	private KaleoNodeLocalService _kaleoNodeLocalService;

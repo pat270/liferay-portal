@@ -1,0 +1,134 @@
+definition {
+
+	@summary = "Select a content type and subtype when adding a display page. These locators should not be needed to be reused."
+	macro _selectMappingTypes {
+		if (isSet(contentType)) {
+			Select(
+				locator1 = "//div[contains(.,'Content Type')]/select",
+				value1 = "${contentType}");
+		}
+
+		if (isSet(subType)) {
+			Select(
+				locator1 = "//div[contains(.,'Subtype')]/select",
+				value1 = "${subType}");
+		}
+	}
+
+	macro addDisplayPage {
+		LexiconEntry.gotoAdd();
+
+		if (isSet(masterLayoutName)) {
+			LexiconCard.clickCard(card = "${masterLayoutName}");
+		}
+		else {
+			LexiconCard.clickCard(card = "Blank");
+		}
+
+		PortletEntry.inputName(name = "${displayPageName}");
+
+		DisplayPageTemplatesAdmin._selectMappingTypes(
+			contentType = "${contentType}",
+			subType = "${subType}");
+
+		Button.clickSave();
+
+		PageEditor.assertFragmentSidebarLoaded();
+	}
+
+	macro deleteDisplayPage {
+		Pause(locator = "5000");
+
+		LexiconCard.delete(card = "${displayPageName}");
+	}
+
+	macro gotoDisplayPage {
+		LexiconCard.clickCardTitle(card = "${displayPageName}");
+
+		PageEditor.assertFragmentSidebarLoaded();
+	}
+
+	macro gotoDisplayPageEllipsisItem {
+		Pause(locator = "1000");
+
+		LexiconCard.clickEllipsisItem(
+			card = "${displayPageName}",
+			item = "${item}");
+	}
+
+	macro importDisplayPageTemplateFromTempFolder {
+		Click.waitForMenuToggleJSClick(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Import");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		var displayPageTemplateZipFileName = TestCase.getDownloadedTempFileName(fileNamePattern = "display-page-template-*.zip");
+
+		UploadTempFile(
+			locator1 = "TextInput#FILE",
+			value1 = "${displayPageTemplateZipFileName}");
+
+		Button.clickImport();
+
+		Alert.viewSuccessMessage();
+
+		IFrame.closeFrame();
+	}
+
+	macro markDisplayPageAsDefault {
+		DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+			displayPageName = "${displayPageName}",
+			item = "Mark As Default");
+
+		AssertVisible(
+			key_card = "${displayPageName}",
+			locator1 = "Card#CARD_STICKER");
+	}
+
+	macro openDisplayPagesAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_layout_page_template_admin_web_portlet_LayoutPageTemplatesPortlet&amp;_com_liferay_layout_page_template_admin_web_portlet_LayoutPageTemplatesPortlet_tabs1=display-page-templates");
+	}
+
+	macro renameDisplayPage {
+		DisplayPageTemplatesAdmin.gotoDisplayPageEllipsisItem(
+			displayPageName = "${displayPageName}",
+			item = "Rename");
+
+		PortletEntry.inputName(name = "${newDisplayPageName}");
+
+		Modal.save();
+	}
+
+	macro viewDisplayPageNotPresent {
+		LexiconCard.viewCardNotPresent(card = "${displayPageName}");
+	}
+
+	macro viewDisplayPagePresent {
+		LexiconCard.viewCardPresent(card = "${displayPageName}");
+	}
+
+	macro viewPGViaAP {
+		var key_assetContent = "${webContentContent}";
+		var key_assetTitle = "${webContentTitle}";
+
+		AssertTextEquals(
+			locator1 = "AP#ASSET_ABSTRACT_TITLE",
+			value1 = "${webContentTitle}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AP#ASSET_ABSTRACT_DESCRIPTION",
+			value1 = "${webContentContent}");
+
+		AssertClick(
+			locator1 = "AP#ASSET_ABSTRACT_TITLE",
+			value1 = "${webContentTitle}");
+
+		for (var content : list "${contentList}") {
+			AssertElementPresent(
+				key_text = "${content}",
+				locator1 = "Fragment#EDITABLE_FIELD_CONTENT");
+		}
+	}
+
+}

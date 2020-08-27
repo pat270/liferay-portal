@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import java.io.Serializable;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,8 +46,8 @@ public class IndexerFixture<T> {
 				_indexer.getSearchEngineId(), TestPropsValues.getCompanyId(),
 				document.getUID(), true);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -56,18 +55,17 @@ public class IndexerFixture<T> {
 		try {
 			Stream<Document> stream = Arrays.stream(docs);
 
-			List<String> uids = stream.map(
-				document -> document.getUID()
-			).collect(
-				Collectors.toList()
-			);
-
 			IndexWriterHelperUtil.deleteDocuments(
 				_indexer.getSearchEngineId(), TestPropsValues.getCompanyId(),
-				uids, true);
+				stream.map(
+					document -> document.getUID()
+				).collect(
+					Collectors.toList()
+				),
+				true);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -85,8 +83,8 @@ public class IndexerFixture<T> {
 
 			return hits.getDocs();
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -94,8 +92,8 @@ public class IndexerFixture<T> {
 		try {
 			return search(TestPropsValues.getUserId(), keywords, null);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -116,8 +114,8 @@ public class IndexerFixture<T> {
 
 			HitsAssert.assertNoHits(hits);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -136,8 +134,8 @@ public class IndexerFixture<T> {
 			searchNoOne(
 				TestPropsValues.getUserId(), keywords, locale, attributes);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -156,10 +154,11 @@ public class IndexerFixture<T> {
 
 			Hits hits = _indexer.search(searchContext);
 
-			return HitsAssert.assertOnlyOne(hits);
+			return HitsAssert.assertOnlyOne(
+				(String)searchContext.getAttribute("queryString"), hits);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 
@@ -178,8 +177,8 @@ public class IndexerFixture<T> {
 			return searchOnlyOne(
 				TestPropsValues.getUserId(), keywords, locale, attributes);
 		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new RuntimeException(portalException);
 		}
 	}
 

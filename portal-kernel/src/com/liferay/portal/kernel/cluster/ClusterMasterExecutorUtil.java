@@ -19,12 +19,9 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.concurrent.Future;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class ClusterMasterExecutorUtil {
 
 	public static void addClusterMasterTokenTransitionListener(
@@ -37,14 +34,6 @@ public class ClusterMasterExecutorUtil {
 
 	public static <T> Future<T> executeOnMaster(MethodHandler methodHandler) {
 		return _clusterMasterExecutor.executeOnMaster(methodHandler);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static ClusterMasterExecutor getClusterMasterExecutor() {
-		return _clusterMasterExecutor;
 	}
 
 	public static boolean isEnabled() {

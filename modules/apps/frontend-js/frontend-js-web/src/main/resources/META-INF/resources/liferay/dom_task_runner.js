@@ -1,25 +1,43 @@
-;(function(Liferay) {
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+(function (Liferay) {
 	var DOMTaskRunner = {
-		addTask: function(task) {
+		_scheduledTasks: [],
+
+		_taskStates: [],
+
+		addTask(task) {
 			var instance = this;
 
 			instance._scheduledTasks.push(task);
 		},
 
-		addTaskState: function(state) {
+		addTaskState(state) {
 			var instance = this;
 
 			instance._taskStates.push(state);
 		},
 
-		reset: function() {
+		reset() {
 			var instance = this;
 
 			instance._taskStates.length = 0;
 			instance._scheduledTasks.length = 0;
 		},
 
-		runTasks: function(node) {
+		runTasks(node) {
 			var instance = this;
 
 			var scheduledTasks = instance._scheduledTasks;
@@ -42,9 +60,6 @@
 				}
 			}
 		},
-
-		_scheduledTasks: [],
-		_taskStates: []
 	};
 
 	Liferay.DOMTaskRunner = DOMTaskRunner;

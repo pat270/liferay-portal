@@ -1,0 +1,418 @@
+definition {
+
+	macro activateCP {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Activate",
+			rowEntry = "${siteTemplateName}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addChildPageViaSiteTemplateCP {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage",
+			rowEntry = "${siteTemplateName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addChildPage(
+			childPageName = "${siteChildPageName}",
+			parentPageName = "${pageName}");
+	}
+
+	macro addCP {
+		SiteTemplatesNavigator.openSiteTemplatesAdmin();
+
+		LexiconEntry.gotoAdd();
+
+		PortletEntry.inputName(name = "${siteTemplateName}");
+
+		Type(
+			key_fieldLabel = "Description",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "This is a site template description");
+
+		if ("${siteTemplateActive}" == "No") {
+			Uncheck.uncheckHiddenToggleSwitch(locator1 = "ToggleSwitch#ACTIVE");
+		}
+
+		if ("${disableChanges}" == "true") {
+			Uncheck.uncheckHiddenToggleSwitch(locator1 = "ToggleSwitch#ALLOW_SITE_ADMIN_MODIFY_PAGES");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro addSitePageViaSiteTemplateCP {
+		SiteTemplatesNavigator.openSiteTemplatesAdmin();
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage",
+			rowEntry = "${siteTemplateName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		LexiconEntry.gotoAddMenuItem(menuItem = "Add Site Template Page");
+
+		if (contains("${sitePageType}", "{sitePageType}")) {
+			var sitePageType = "Widget Page";
+		}
+
+		var rowEntry = "${sitePageType}";
+
+		if (!(contains("${pageTemplateName}", "{pageTemplateName}"))) {
+			Navigator.gotoNavNested(navNested = "Global Templates");
+
+			var rowEntry = "${pageTemplateName}";
+
+			AssertClick(
+				key_rowEntry = "${rowEntry}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
+				value1 = "${rowEntry}");
+		}
+		else if ("${rowEntry}" == "Content Page") {
+			LexiconCard.clickCard(card = "Blank");
+		}
+		else {
+			LexiconCard.clickCard(card = "${rowEntry}");
+		}
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		PortletEntry.inputName(name = "${pageName}");
+
+		if ("${hideFromNavMenu}" == "true") {
+			Uncheck(locator1 = "Checkbox#ADD_TO_NAVIGATION_MENU");
+		}
+
+		Button.click(button = "Add");
+
+		SelectFrame.selectFrameTop();
+
+		if (isSet(inheritChanges)) {
+			Page.togglePageTemplateInheritChanges(toggleValue = "${inheritChanges}");
+		}
+
+		if ("${sitePageType}" != "Content Page") {
+			Button.click(button = "Save");
+		}
+	}
+
+	macro deactivateCP {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		LexiconEntry.gotoEntryMenuItemNoError(
+			menuItem = "Deactivate",
+			rowEntry = "${siteTemplateName}");
+
+		AssertConfirm(value1 = "Are you sure you want to deactivate this?");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro deleteCP {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		LexiconEntry.openEntryMenu(rowEntry = "${siteTemplateName}");
+
+		MenuItem.clickNoError(menuItem = "Delete");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		if ("${associatedToSite}" == "true") {
+			AssertElementPresent(locator1 = "Message#ERROR_DISMISSIBLE");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_DELETE_USED_SITE_TEMPLATES",
+				value1 = "You cannot delete site templates that are used by a site.");
+
+			if (IsElementPresent(locator1 = "Button#CLOSE_MESSAGE")) {
+				Click(locator1 = "Button#CLOSE_MESSAGE");
+			}
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro deletePage {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${siteTemplateName}");
+
+		MenuItem.click(menuItem = "Manage");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.deletePage(pageName = "${pageName}");
+	}
+
+	macro deleteViaDeleteIconCP {
+		Click(
+			key_siteTemplateName = "${siteTemplateName}",
+			locator1 = "Checkbox#SITE_TEMPLATE");
+
+		ClickNoError(locator1 = "Icon#DELETE");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro editCP {
+		SiteTemplates.gotoSettingsCP(siteTemplateName = "${siteTemplateName}");
+
+		PortletEntry.inputName(name = "${siteTemplateName} Edit");
+
+		if (isSet(siteTemplateDescription)) {
+			Type(
+				key_fieldLabel = "Description",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${siteTemplateDescription}");
+		}
+
+		Button.clickSave();
+	}
+
+	macro editTemplateStatusCP {
+		SiteTemplates.gotoSettingsCP(siteTemplateName = "${siteTemplateName}");
+
+		if (isSet(siteTemplateActiveEdit)) {
+			if ("${siteTemplateActiveEdit}" == "No") {
+				Uncheck.uncheckHiddenToggleSwitch(locator1 = "ToggleSwitch#ACTIVE");
+			}
+		}
+
+		Button.clickSave();
+	}
+
+	macro getSiteTemplateID {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage",
+			rowEntry = "${siteTemplateName}");
+
+		Pause(locator1 = "1000");
+
+		var currentURL = Navigator.getCurrentURL();
+		var siteTemplateURL = StringUtil.extractFirst("${currentURL}", "/~/");
+		var siteTemplateID = StringUtil.extractLast("${siteTemplateURL}", "/");
+
+		echo("siteTemplateID: ${siteTemplateID}");
+
+		return "${siteTemplateID}";
+	}
+
+	macro gotoSettingsCP {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${siteTemplateName}");
+
+		MenuItem.click(menuItem = "Manage");
+
+		ProductMenuHelper.openProductMenu();
+
+		AssertTextEquals(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_NAME",
+			value1 = "${siteTemplateName}");
+
+		ProductMenuHelper.expandCategory(category = "Configuration");
+
+		AssertClick(
+			locator1 = "SiteTemplates#CONFIGURATION_SITE_TEMPLATE_SETTINGS",
+			value1 = "Site Template Settings");
+
+		SiteAdmin.viewPortletTitle(portletTitle = "Site Template Settings");
+	}
+
+	macro gotoViewPages {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		SelectWindow(locator1 = "Home - ${siteTemplateName} - ${siteName}");
+	}
+
+	macro resetPageChanges {
+		WaitForElementPresent(locator1 = "ControlMenu#INFO");
+
+		Click(locator1 = "ControlMenu#INFO");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#CUSTOMIZED_PAGE_INFO",
+			value1 = "This page has been changed since the last update from the site template.");
+
+		AssertTextEquals(
+			locator1 = "Button#RESET_CHANGES",
+			value1 = "Reset Changes");
+
+		var key_portletTitleName = "${portletName}";
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberTo}_PORTLET_TITLE",
+			value1 = "${portletName}");
+
+		AssertClick(
+			locator1 = "Button#RESET_CHANGES",
+			value1 = "Reset Changes");
+
+		AssertElementNotPresent(locator1 = "ControlMenu#INFO");
+	}
+
+	macro tearDownCP {
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		var key_siteTemplateName = "Site Template Name";
+
+		while (IsElementPresent(locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_ACTIONS")) {
+			LexiconEntry.openEntryMenu(rowEntry = "${key_siteTemplateName}");
+
+			MenuItem.clickNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro viewCP {
+		AssertTextEquals.assertPartialText(
+			key_siteTemplateName = "${siteTemplateName}",
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		if (isSet(siteTemplateDescription)) {
+			AssertTextEquals(
+				key_siteTemplateDescription = "${siteTemplateDescription}",
+				locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_DESCRIPTION",
+				value1 = "${siteTemplateDescription}");
+		}
+	}
+
+	macro viewDefaultCP {
+		for (var siteTemplateName : list "${siteTemplateNameList}") {
+			var key_siteTemplateName = "${siteTemplateName}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+				value1 = "${siteTemplateName}");
+		}
+
+		AssertElementNotPresent(locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME_3");
+	}
+
+	macro viewDefaultDataLocalizedCP {
+		for (var siteTemplateNameTranslation : list "${siteTemplateNameList}") {
+			var key_siteTemplateName = "${siteTemplateNameTranslation}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+				value1 = "${siteTemplateNameTranslation}");
+		}
+
+		for (var DescriptionTranslation : list "${siteTemplateDescriptionList}") {
+			var key_siteTemplateDescription = "${DescriptionTranslation}";
+
+			AssertTextEquals(
+				locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_DESCRIPTION",
+				value1 = "${DescriptionTranslation}");
+		}
+	}
+
+	macro viewNoInfoMessage {
+		AssertElementNotPresent(locator1 = "ControlMenu#INFO");
+
+		AssertTextNotPresent(
+			locator1 = "Message#CUSTOMIZED_PAGE_INFO",
+			value1 = "This page has been changed since the last update from the site template.");
+	}
+
+	macro viewNoSiteOrWorkflowLinksCP {
+		LexiconEntry.viewEntryName(rowEntry = "Site Template Name");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage",
+			rowEntry = "Site Template Name");
+
+		ProductMenuHelper.openProductMenu();
+
+		ProductMenuHelper.expandCategory(category = "Configuration");
+
+		for (var portletName : list "Site Settings,Social Activities,Workflow Configuration") {
+			var key_portletName = "${portletName}";
+
+			AssertTextNotPresent(
+				locator1 = "Home#SITE_ADMINISTRATION_NAVIGATION",
+				value1 = "${portletName}");
+		}
+
+		var key_portletCategoryName = "${portletCategoryName}";
+
+		AssertElementNotPresent(locator1 = "Home#SITE_ADMINISTRATION_CATEGORY_COLLAPSED");
+	}
+
+	macro viewNoTemplatesDisplay {
+		LexiconEntry.gotoAdd();
+
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		MenuItem.viewNotPresent(menuItem = "${siteTemplateName}");
+	}
+
+	macro viewResetPageChanges {
+		AssertTextNotPresent(
+			locator1 = "Message#CUSTOMIZED_PAGE_INFO",
+			value1 = "This page has been changed since the last update from the site template.");
+
+		AssertTextNotPresent(
+			locator1 = "Button#RESET_CHANGES",
+			value1 = "Reset Changes");
+
+		var key_portletTitleName = "${portletName}";
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_TITLE",
+			value1 = "${portletName}");
+	}
+
+	macro viewTemplateStatusCP {
+		var key_siteTemplateName = "${siteTemplateName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
+
+		AssertTextEquals(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_ACTIVE",
+			value1 = "${siteTemplateActiveEdit}");
+	}
+
+}

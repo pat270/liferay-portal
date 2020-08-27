@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMDataProviderInstance;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,33 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DDMDataProviderInstance in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDMDataProviderInstanceCacheModel
-	implements CacheModel<DDMDataProviderInstance>, Externalizable {
+	implements CacheModel<DDMDataProviderInstance>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof DDMDataProviderInstanceCacheModel)) {
+		if (!(object instanceof DDMDataProviderInstanceCacheModel)) {
 			return false;
 		}
 
 		DDMDataProviderInstanceCacheModel ddmDataProviderInstanceCacheModel =
-			(DDMDataProviderInstanceCacheModel)obj;
+			(DDMDataProviderInstanceCacheModel)object;
 
-		if (dataProviderInstanceId ==
-				ddmDataProviderInstanceCacheModel.dataProviderInstanceId) {
+		if ((dataProviderInstanceId ==
+				ddmDataProviderInstanceCacheModel.dataProviderInstanceId) &&
+			(mvccVersion == ddmDataProviderInstanceCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,30 @@ public class DDMDataProviderInstanceCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, dataProviderInstanceId);
+		int hashCode = HashUtil.hash(0, dataProviderInstanceId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(31);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", dataProviderInstanceId=");
 		sb.append(dataProviderInstanceId);
@@ -93,6 +108,8 @@ public class DDMDataProviderInstanceCacheModel
 		sb.append(definition);
 		sb.append(", type=");
 		sb.append(type);
+		sb.append(", lastPublishDate=");
+		sb.append(lastPublishDate);
 		sb.append("}");
 
 		return sb.toString();
@@ -102,6 +119,9 @@ public class DDMDataProviderInstanceCacheModel
 	public DDMDataProviderInstance toEntityModel() {
 		DDMDataProviderInstanceImpl ddmDataProviderInstanceImpl =
 			new DDMDataProviderInstanceImpl();
+
+		ddmDataProviderInstanceImpl.setMvccVersion(mvccVersion);
+		ddmDataProviderInstanceImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			ddmDataProviderInstanceImpl.setUuid("");
@@ -165,13 +185,26 @@ public class DDMDataProviderInstanceCacheModel
 			ddmDataProviderInstanceImpl.setType(type);
 		}
 
+		if (lastPublishDate == Long.MIN_VALUE) {
+			ddmDataProviderInstanceImpl.setLastPublishDate(null);
+		}
+		else {
+			ddmDataProviderInstanceImpl.setLastPublishDate(
+				new Date(lastPublishDate));
+		}
+
 		ddmDataProviderInstanceImpl.resetOriginalValues();
 
 		return ddmDataProviderInstanceImpl;
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		dataProviderInstanceId = objectInput.readLong();
@@ -185,13 +218,18 @@ public class DDMDataProviderInstanceCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 		name = objectInput.readUTF();
-		description = objectInput.readUTF();
-		definition = objectInput.readUTF();
+		description = (String)objectInput.readObject();
+		definition = (String)objectInput.readObject();
 		type = objectInput.readUTF();
+		lastPublishDate = objectInput.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -225,17 +263,17 @@ public class DDMDataProviderInstanceCacheModel
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(description);
+			objectOutput.writeObject(description);
 		}
 
 		if (definition == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(definition);
+			objectOutput.writeObject(definition);
 		}
 
 		if (type == null) {
@@ -244,8 +282,12 @@ public class DDMDataProviderInstanceCacheModel
 		else {
 			objectOutput.writeUTF(type);
 		}
+
+		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long dataProviderInstanceId;
 	public long groupId;
@@ -258,5 +300,6 @@ public class DDMDataProviderInstanceCacheModel
 	public String description;
 	public String definition;
 	public String type;
+	public long lastPublishDate;
 
 }

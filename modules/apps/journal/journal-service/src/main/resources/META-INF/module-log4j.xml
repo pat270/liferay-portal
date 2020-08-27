@@ -10,7 +10,11 @@
 		<priority value="INFO" />
 	</category>
 
-	<category name="com.liferay.journal.internal.upgrade.util.JournalArticleImageUpgradeUtil">
+	<category name="com.liferay.journal.internal.upgrade.util.JournalArticleImageUpgradeHelper">
+		<priority value="WARN" />
+	</category>
+
+	<category name="com.liferay.journal.internal.upgrade.v0_0_8.UpgradeArticleAssets">
 		<priority value="WARN" />
 	</category>
 
@@ -30,6 +34,10 @@
 		<priority value="INFO" />
 	</category>
 
+	<category name="com.liferay.journal.internal.util.JournalUtil">
+		<priority value="ERROR" />
+	</category>
+
 	<category name="com.liferay.journal.lar">
 		<priority value="WARN" />
 	</category>
@@ -39,10 +47,6 @@
 	</category>
 
 	<category name="com.liferay.journal.util.JournalContent">
-		<priority value="ERROR" />
-	</category>
-
-	<category name="com.liferay.journal.util.impl.JournalUtil">
 		<priority value="ERROR" />
 	</category>
 </log4j:configuration>

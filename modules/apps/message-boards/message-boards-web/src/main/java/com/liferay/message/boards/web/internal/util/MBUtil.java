@@ -23,17 +23,23 @@ import com.liferay.message.boards.web.internal.security.permission.MBMessagePerm
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.WebKeys;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletURL;
+import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,15 +51,8 @@ public class MBUtil {
 	public static String getBBCodeQuoteBody(
 		HttpServletRequest httpServletRequest, MBMessage parentMessage) {
 
-		String parentAuthor = null;
-
-		if (parentMessage.isAnonymous()) {
-			parentAuthor = LanguageUtil.get(httpServletRequest, "anonymous");
-		}
-		else {
-			parentAuthor = HtmlUtil.escape(
-				PortalUtil.getUserName(parentMessage));
-		}
+		String parentAuthor = _getParentAuthor(
+			parentMessage, httpServletRequest);
 
 		StringBundler sb = new StringBundler(5);
 
@@ -94,10 +93,8 @@ public class MBUtil {
 			categoryId = category.getCategoryId();
 		}
 
-		categoryId = ParamUtil.getLong(
+		return ParamUtil.getLong(
 			httpServletRequest, "mbCategoryId", categoryId);
-
-		return categoryId;
 	}
 
 	public static long getCategoryId(
@@ -109,24 +106,23 @@ public class MBUtil {
 			categoryId = message.getCategoryId();
 		}
 
-		categoryId = ParamUtil.getLong(
+		return ParamUtil.getLong(
 			httpServletRequest, "mbCategoryId", categoryId);
+	}
 
-		return categoryId;
+	public static String getEditorName(String messageFormat) {
+		if (messageFormat.equals("bbcode")) {
+			return "ckeditor_bbcode";
+		}
+
+		return "ckeditor_classic";
 	}
 
 	public static String getHtmlQuoteBody(
 		HttpServletRequest httpServletRequest, MBMessage parentMessage) {
 
-		String parentAuthor = null;
-
-		if (parentMessage.isAnonymous()) {
-			parentAuthor = LanguageUtil.get(httpServletRequest, "anonymous");
-		}
-		else {
-			parentAuthor = HtmlUtil.escape(
-				PortalUtil.getUserName(parentMessage));
-		}
+		String parentAuthor = _getParentAuthor(
+			parentMessage, httpServletRequest);
 
 		StringBundler sb = new StringBundler(5);
 
@@ -155,26 +151,67 @@ public class MBUtil {
 			sb.toString(), false);
 	}
 
+	public static String getMBMessageURL(
+		long messageId, HttpServletRequest httpServletRequest) {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		PortletURL portletURL = PortletURLFactoryUtil.create(
+			httpServletRequest, portletDisplay.getId(),
+			PortletRequest.RENDER_PHASE);
+
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/message_boards/view_message");
+		portletURL.setParameter("messageId", String.valueOf(messageId));
+
+		return StringBundler.concat(
+			portletURL.toString(), StringPool.POUND,
+			portletDisplay.getNamespace(), "message_", messageId);
+	}
+
+	public static String getMBMessageURL(
+		long messageId, RenderResponse renderResponse) {
+
+		PortletURL portletURL = renderResponse.createRenderURL();
+
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/message_boards/view_message");
+		portletURL.setParameter("messageId", String.valueOf(messageId));
+
+		return StringBundler.concat(
+			portletURL.toString(), StringPool.POUND,
+			renderResponse.getNamespace(), "message_", messageId);
+	}
+
+	public static String getMBMessageURL(
+		long messageId, String layoutURL, RenderResponse renderResponse) {
+
+		return StringBundler.concat(
+			layoutURL, Portal.FRIENDLY_URL_SEPARATOR,
+			"message_boards/view_message/", messageId, StringPool.POUND,
+			renderResponse.getNamespace(), "message_", messageId);
+	}
+
 	public static String[] getThreadPriority(
-			MBGroupServiceSettings mbGroupServiceSettings, String languageId,
-			double value)
-		throws Exception {
+		MBGroupServiceSettings mbGroupServiceSettings, String languageId,
+		double value) {
 
-		String[] priorities = mbGroupServiceSettings.getPriorities(languageId);
+		String[] priorityPair = _findThreadPriority(
+			value, mbGroupServiceSettings.getPriorities(languageId));
 
-		String[] priorityPair = _findThreadPriority(value, priorities);
-
-		if (priorityPair == null) {
-			String defaultLanguageId = LocaleUtil.toLanguageId(
-				LocaleUtil.getSiteDefault());
-
-			priorities = mbGroupServiceSettings.getPriorities(
-				defaultLanguageId);
-
-			priorityPair = _findThreadPriority(value, priorities);
+		if (priorityPair != null) {
+			return priorityPair;
 		}
 
-		return priorityPair;
+		String defaultLanguageId = LocaleUtil.toLanguageId(
+			LocaleUtil.getSiteDefault());
+
+		return _findThreadPriority(
+			value, mbGroupServiceSettings.getPriorities(defaultLanguageId));
 	}
 
 	public static boolean isViewableMessage(
@@ -223,23 +260,31 @@ public class MBUtil {
 			String[] priorityArray = StringUtil.split(
 				priority, StringPool.PIPE);
 
-			try {
+			if ((priorityArray == null) || (priorityArray.length < 3)) {
+				continue;
+			}
+
+			double priorityValue = GetterUtil.getDouble(priorityArray[2]);
+
+			if (value == priorityValue) {
 				String priorityName = priorityArray[0];
 				String priorityImage = priorityArray[1];
-				double priorityValue = GetterUtil.getDouble(priorityArray[2]);
 
-				if (value == priorityValue) {
-					return new String[] {priorityName, priorityImage};
-				}
-			}
-			catch (Exception e) {
-				_log.error("Unable to determine thread priority", e);
+				return new String[] {priorityName, priorityImage};
 			}
 		}
 
 		return null;
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(MBUtil.class);
+	private static String _getParentAuthor(
+		MBMessage parentMessage, HttpServletRequest httpServletRequest) {
+
+		if (parentMessage.isAnonymous()) {
+			return LanguageUtil.get(httpServletRequest, "anonymous");
+		}
+
+		return HtmlUtil.escape(PortalUtil.getUserName(parentMessage));
+	}
 
 }

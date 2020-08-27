@@ -16,8 +16,6 @@ package com.liferay.blogs.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link BlogsEntryService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BlogsEntryService
  * @generated
  */
-@ProviderType
 public class BlogsEntryServiceWrapper
 	implements BlogsEntryService, ServiceWrapper<BlogsEntryService> {
 
@@ -39,31 +36,6 @@ public class BlogsEntryServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _blogsEntryService.addAttachmentsFolder(groupId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #addEntry(String,
-	 String, String, String, int, int, int, int, int, boolean,
-	 boolean, String[], String, ImageSelector, ImageSelector,
-	 ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.blogs.model.BlogsEntry addEntry(
-			String title, String description, String content,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, boolean allowPingbacks,
-			boolean allowTrackbacks, String[] trackbacks, boolean smallImage,
-			String smallImageURL, String smallImageFileName,
-			java.io.InputStream smallImageInputStream,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _blogsEntryService.addEntry(
-			title, description, content, displayDateMonth, displayDateDay,
-			displayDateYear, displayDateHour, displayDateMinute, allowPingbacks,
-			allowTrackbacks, trackbacks, smallImage, smallImageURL,
-			smallImageFileName, smallImageInputStream, serviceContext);
 	}
 
 	@Override
@@ -195,10 +167,10 @@ public class BlogsEntryServiceWrapper
 	public java.util.List<com.liferay.blogs.model.BlogsEntry> getGroupEntries(
 		long groupId, int status, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.blogs.model.BlogsEntry> obc) {
+			<com.liferay.blogs.model.BlogsEntry> orderByComparator) {
 
 		return _blogsEntryService.getGroupEntries(
-			groupId, status, start, end, obc);
+			groupId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -242,10 +214,10 @@ public class BlogsEntryServiceWrapper
 		getGroupUserEntries(
 			long groupId, long userId, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.blogs.model.BlogsEntry> obc) {
+				<com.liferay.blogs.model.BlogsEntry> orderByComparator) {
 
 		return _blogsEntryService.getGroupUserEntries(
-			groupId, userId, status, start, end, obc);
+			groupId, userId, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -253,10 +225,10 @@ public class BlogsEntryServiceWrapper
 		getGroupUserEntries(
 			long groupId, long userId, int[] statuses, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.blogs.model.BlogsEntry> obc) {
+				<com.liferay.blogs.model.BlogsEntry> orderByComparator) {
 
 		return _blogsEntryService.getGroupUserEntries(
-			groupId, userId, statuses, start, end, obc);
+			groupId, userId, statuses, start, end, orderByComparator);
 	}
 
 	@Override
@@ -333,32 +305,6 @@ public class BlogsEntryServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_blogsEntryService.unsubscribe(groupId);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
-	 String, String, String, String, int, int, int, int, int,
-	 boolean, boolean, String[], String, ImageSelector,
-	 ImageSelector, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.blogs.model.BlogsEntry updateEntry(
-			long entryId, String title, String description, String content,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, boolean allowPingbacks,
-			boolean allowTrackbacks, String[] trackbacks, boolean smallImage,
-			String smallImageURL, String smallImageFileName,
-			java.io.InputStream smallImageInputStream,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _blogsEntryService.updateEntry(
-			entryId, title, description, content, displayDateMonth,
-			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
-			allowPingbacks, allowTrackbacks, trackbacks, smallImage,
-			smallImageURL, smallImageFileName, smallImageInputStream,
-			serviceContext);
 	}
 
 	@Override

@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.Digester;
-import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -98,8 +97,8 @@ public class Encryptor {
 				return cipher.doFinal(encryptedBytes);
 			}
 		}
-		catch (Exception e) {
-			throw new EncryptorException(e);
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
 		}
 	}
 
@@ -113,8 +112,8 @@ public class Encryptor {
 
 			return new String(decryptedBytes, ENCODING);
 		}
-		catch (Exception e) {
-			throw new EncryptorException(e);
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
 		}
 	}
 
@@ -122,24 +121,6 @@ public class Encryptor {
 		byte[] bytes = Base64.decode(base64String);
 
 		return new SecretKeySpec(bytes, Encryptor.KEY_ALGORITHM);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             DigesterUtil#digest(String)}
-	 */
-	@Deprecated
-	public static String digest(String text) {
-		return DigesterUtil.digest(text);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             DigesterUtil#digest(String, String...)}
-	 */
-	@Deprecated
-	public static String digest(String algorithm, String text) {
-		return DigesterUtil.digest(algorithm, text);
 	}
 
 	public static String encrypt(Key key, String plainText)
@@ -184,8 +165,8 @@ public class Encryptor {
 				return cipher.doFinal(plainBytes);
 			}
 		}
-		catch (Exception e) {
-			throw new EncryptorException(e);
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
 		}
 	}
 
@@ -197,8 +178,8 @@ public class Encryptor {
 
 			return encryptUnencoded(key, decryptedBytes);
 		}
-		catch (Exception e) {
-			throw new EncryptorException(e);
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
 		}
 	}
 
@@ -214,17 +195,9 @@ public class Encryptor {
 
 			return keyGenerator.generateKey();
 		}
-		catch (Exception e) {
-			throw new EncryptorException(e);
+		catch (Exception exception) {
+			throw new EncryptorException(exception);
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static Provider getProvider() {
-		return _provider;
 	}
 
 	public static String serializeKey(Key key) {
@@ -246,20 +219,21 @@ public class Encryptor {
 			try {
 				providerClass = Class.forName(PROVIDER_CLASS);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException1) {
 				try {
 					if (PROVIDER_CLASS.equals(SUN_PROVIDER_CLASS)) {
 						providerClass = Class.forName(IBM_PROVIDER_CLASS);
 					}
 				}
-				catch (ClassNotFoundException cnfe2) {
-					cnfe.addSuppressed(cnfe2);
+				catch (ClassNotFoundException classNotFoundException2) {
+					classNotFoundException1.addSuppressed(
+						classNotFoundException2);
 				}
 
 				if (providerClass == null) {
 					throw new IllegalStateException(
 						"Unable to find provider class: " + PROVIDER_CLASS,
-						cnfe);
+						classNotFoundException1);
 				}
 			}
 
@@ -267,8 +241,8 @@ public class Encryptor {
 
 			Security.addProvider(_provider);
 		}
-		catch (ReflectiveOperationException roe) {
-			throw new ExceptionInInitializerError(roe);
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new ExceptionInInitializerError(reflectiveOperationException);
 		}
 	}
 

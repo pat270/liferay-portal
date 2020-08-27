@@ -45,9 +45,9 @@ public class AssetEntryPermission {
 			PermissionChecker permissionChecker, long entryId, String actionId)
 		throws PortalException {
 
-		AssetEntry entry = AssetEntryLocalServiceUtil.getEntry(entryId);
-
-		check(permissionChecker, entry, actionId);
+		check(
+			permissionChecker, AssetEntryLocalServiceUtil.getEntry(entryId),
+			actionId);
 	}
 
 	public static void check(
@@ -76,9 +76,10 @@ public class AssetEntryPermission {
 			return assetRendererFactory.hasPermission(
 				permissionChecker, entry.getClassPK(), actionId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new PrincipalException.MustHavePermission(
-				permissionChecker, className, entry.getClassPK(), e, actionId);
+				permissionChecker, className, entry.getClassPK(), exception,
+				actionId);
 		}
 	}
 
@@ -86,9 +87,9 @@ public class AssetEntryPermission {
 			PermissionChecker permissionChecker, long entryId, String actionId)
 		throws PortalException {
 
-		AssetEntry entry = AssetEntryLocalServiceUtil.getEntry(entryId);
-
-		return contains(permissionChecker, entry, actionId);
+		return contains(
+			permissionChecker, AssetEntryLocalServiceUtil.getEntry(entryId),
+			actionId);
 	}
 
 	public static boolean contains(
@@ -104,9 +105,9 @@ public class AssetEntryPermission {
 			return assetRendererFactory.hasPermission(
 				permissionChecker, classPK, actionId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new PrincipalException.MustHavePermission(
-				permissionChecker, className, classPK, e, actionId);
+				permissionChecker, className, classPK, exception, actionId);
 		}
 	}
 

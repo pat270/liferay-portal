@@ -17,8 +17,8 @@ package com.liferay.wiki.service.persistence.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -26,13 +26,12 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.wiki.service.WikiPageServiceUtil;
-import com.liferay.wiki.util.test.WikiTestUtil;
+import com.liferay.wiki.test.util.WikiTestUtil;
 
 import java.util.List;
 
@@ -79,7 +78,7 @@ public class WikiPageFinderTest {
 
 	@Test
 	public void testQueryByG_N_H_SApprovedStatus() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		int count = WikiPageServiceUtil.getPagesCount(
 			_group.getGroupId(), _node.getNodeId(), true, _user.getUserId(),
@@ -98,7 +97,7 @@ public class WikiPageFinderTest {
 	public void testQueryByG_N_H_SApprovedStatusIncludeOwner()
 		throws Exception {
 
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		int count = WikiPageServiceUtil.getPagesCount(
 			_group.getGroupId(), _node.getNodeId(), true,
@@ -117,7 +116,7 @@ public class WikiPageFinderTest {
 
 	@Test
 	public void testQueryByG_N_H_SDraftStatusIncludeOwner() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		int count = WikiPageServiceUtil.getPagesCount(
 			_group.getGroupId(), _node.getNodeId(), true, _user.getUserId(),

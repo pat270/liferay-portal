@@ -14,16 +14,21 @@
 
 package com.liferay.document.library.opener.google.drive.web.internal.servlet;
 
-import com.liferay.document.library.opener.google.drive.DLOpenerGoogleDriveManager;
+import com.google.api.client.auth.oauth2.TokenResponseException;
+
+import com.liferay.document.library.opener.google.drive.web.internal.DLOpenerGoogleDriveManager;
 import com.liferay.document.library.opener.google.drive.web.internal.constants.DLOpenerGoogleDriveWebConstants;
-import com.liferay.document.library.opener.google.drive.web.internal.util.OAuth2Helper;
-import com.liferay.document.library.opener.google.drive.web.internal.util.State;
+import com.liferay.document.library.opener.google.drive.web.internal.oauth.OAuth2StateUtil;
+import com.liferay.document.library.opener.oauth.OAuth2State;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
+
+import java.util.Optional;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
@@ -37,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = {
 		"osgi.http.whiteboard.servlet.name=com.liferay.document.library.opener.google.drive.web.internal.servlet.GoogleDriveOAuth2Servlet",
 		"osgi.http.whiteboard.servlet.pattern=" + DLOpenerGoogleDriveWebConstants.GOOGLE_DRIVE_SERVLET_PATH,
@@ -53,19 +57,22 @@ public class GoogleDriveOAuth2Servlet extends HttpServlet {
 			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		State state = State.get(
-			_portal.getOriginalServletRequest(httpServletRequest));
+		Optional<OAuth2State> oAuth2StateOptional =
+			OAuth2StateUtil.getOAuth2StateOptional(
+				_portal.getOriginalServletRequest(httpServletRequest));
 
-		if (state == null) {
-			throw new IllegalStateException(
-				"Authorization state not initialized");
-		}
-		else if (!state.isValid(httpServletRequest)) {
-			state.goToFailurePage(httpServletRequest, httpServletResponse);
+		OAuth2State oAuth2State = oAuth2StateOptional.orElseThrow(
+			() -> new IllegalStateException(
+				"Authorization oAuth2State not initialized"));
+
+		if (!OAuth2StateUtil.isValid(oAuth2State, httpServletRequest)) {
+			OAuth2StateUtil.cleanUp(httpServletRequest);
+
+			httpServletResponse.sendRedirect(oAuth2State.getFailureURL());
 		}
 		else {
 			_requestAuthorizationToken(
-				httpServletRequest, httpServletResponse, state);
+				httpServletRequest, httpServletResponse, oAuth2State);
 		}
 	}
 
@@ -80,25 +87,37 @@ public class GoogleDriveOAuth2Servlet extends HttpServlet {
 
 	private void _requestAuthorizationToken(
 			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, State state)
+			HttpServletResponse httpServletResponse, OAuth2State oAuth2State)
 		throws IOException {
 
 		String code = ParamUtil.getString(httpServletRequest, "code");
 
 		if (Validator.isNull(code)) {
-			state.goToFailurePage(httpServletRequest, httpServletResponse);
+			OAuth2StateUtil.cleanUp(httpServletRequest);
+			httpServletResponse.sendRedirect(oAuth2State.getFailureURL());
 		}
 		else {
 			try {
 				_dlOpenerGoogleDriveManager.requestAuthorizationToken(
-					_portal.getCompanyId(httpServletRequest), state.getUserId(),
-					code, _oAuth2Helper.getRedirectURI(httpServletRequest));
-			}
-			catch (PortalException pe) {
-				throw new IOException(pe);
-			}
+					_portal.getCompanyId(httpServletRequest),
+					oAuth2State.getUserId(), code,
+					OAuth2StateUtil.getRedirectURI(
+						_portal.getPortalURL(httpServletRequest)));
 
-			state.goToSuccessPage(httpServletRequest, httpServletResponse);
+				OAuth2StateUtil.cleanUp(httpServletRequest);
+
+				httpServletResponse.sendRedirect(oAuth2State.getSuccessURL());
+			}
+			catch (TokenResponseException tokenResponseException) {
+				OAuth2StateUtil.cleanUp(httpServletRequest);
+
+				SessionErrors.add(httpServletRequest, "externalServiceFailed");
+
+				httpServletResponse.sendRedirect(oAuth2State.getFailureURL());
+			}
+			catch (PortalException portalException) {
+				throw new IOException(portalException);
+			}
 		}
 	}
 
@@ -106,9 +125,6 @@ public class GoogleDriveOAuth2Servlet extends HttpServlet {
 
 	@Reference
 	private DLOpenerGoogleDriveManager _dlOpenerGoogleDriveManager;
-
-	@Reference
-	private OAuth2Helper _oAuth2Helper;
 
 	@Reference
 	private Portal _portal;

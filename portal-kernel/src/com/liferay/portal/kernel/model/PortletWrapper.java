@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Portlet}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Portlet
  * @generated
  */
-@ProviderType
 public class PortletWrapper
 	extends BaseModelWrapper<Portlet>
-	implements Portlet, ModelWrapper<Portlet> {
+	implements ModelWrapper<Portlet>, Portlet {
 
 	public PortletWrapper(Portlet portlet) {
 		super(portlet);
@@ -187,12 +184,12 @@ public class PortletWrapper
 	/**
 	 * Checks whether this portlet is equal to the specified object.
 	 *
-	 * @param obj the object to compare this portlet against
+	 * @param object the object to compare this portlet against
 	 * @return <code>true</code> if the portlet is equal to the specified object
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		return model.equals(obj);
+	public boolean equals(Object object) {
+		return model.equals(object);
 	}
 
 	/**
@@ -532,18 +529,6 @@ public class PortletWrapper
 	@Override
 	public Integer getExpCache() {
 		return model.getExpCache();
-	}
-
-	/**
-	 * Returns the Facebook integration method of the portlet.
-	 *
-	 * @return the Facebook integration method of the portlet
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getFacebookIntegration() {
-		return model.getFacebookIntegration();
 	}
 
 	/**
@@ -2646,19 +2631,6 @@ public class PortletWrapper
 	@Override
 	public void setExpCache(Integer expCache) {
 		model.setExpCache(expCache);
-	}
-
-	/**
-	 * Sets the Facebook integration method of the portlet.
-	 *
-	 * @param facebookIntegration the Facebook integration method of the
-	 portlet
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void setFacebookIntegration(String facebookIntegration) {
-		model.setFacebookIntegration(facebookIntegration);
 	}
 
 	/**

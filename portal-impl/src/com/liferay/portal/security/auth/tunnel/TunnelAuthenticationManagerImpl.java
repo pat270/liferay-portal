@@ -84,19 +84,21 @@ public class TunnelAuthenticationManagerImpl
 		try {
 			expectedPassword = Encryptor.encrypt(getSharedSecretKey(), login);
 		}
-		catch (EncryptorException ee) {
-			AuthException authException = new RemoteAuthException(ee);
+		catch (EncryptorException encryptorException) {
+			AuthException authException = new RemoteAuthException(
+				encryptorException);
 
 			authException.setType(AuthException.INTERNAL_SERVER_ERROR);
 
 			throw authException;
 		}
-		catch (AuthException ae) {
-			AuthException authException = new RemoteAuthException(ae);
+		catch (AuthException authException1) {
+			AuthException authException2 = new RemoteAuthException(
+				authException1);
 
-			authException.setType(ae.getType());
+			authException2.setType(authException1.getType());
 
-			throw authException;
+			throw authException2;
 		}
 
 		String password = httpAuthorizationHeader.getAuthParameter(
@@ -184,9 +186,9 @@ public class TunnelAuthenticationManagerImpl
 			try {
 				key = Hex.decodeHex(sharedSecret.toCharArray());
 			}
-			catch (DecoderException de) {
+			catch (DecoderException decoderException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(de, de);
+					_log.warn(decoderException, decoderException);
 				}
 
 				AuthException authException = new AuthException();

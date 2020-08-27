@@ -14,6 +14,7 @@
 
 package com.liferay.product.navigation.taglib.servlet.taglib;
 
+import com.liferay.portal.kernel.model.User;
 import com.liferay.product.navigation.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -29,10 +30,26 @@ public class ProductNavigationPersonalMenuTag extends IncludeTag {
 		return _label;
 	}
 
+	public String getSize() {
+		return _size;
+	}
+
+	public User getUSer() {
+		return _user;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public boolean isExpanded() {
 		return _expanded;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setExpanded(boolean expanded) {
 		_expanded = expanded;
 	}
@@ -48,12 +65,22 @@ public class ProductNavigationPersonalMenuTag extends IncludeTag {
 		setServletContext(ServletContextUtil.getServletContext());
 	}
 
+	public void setSize(String size) {
+		_size = size;
+	}
+
+	public void setUser(User user) {
+		_user = user;
+	}
+
 	@Override
 	protected void cleanUp() {
 		super.cleanUp();
 
 		_expanded = false;
 		_label = null;
+		_size = null;
+		_user = null;
 	}
 
 	@Override
@@ -63,15 +90,27 @@ public class ProductNavigationPersonalMenuTag extends IncludeTag {
 
 	@Override
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		long color = 0;
+
+		if (_user != null) {
+			color = _user.getUserId() % 10;
+		}
+
 		httpServletRequest.setAttribute(
-			"liferay-product-navigation:personal-menu:expanded", _expanded);
+			"liferay-product-navigation:personal-menu:color", color);
 		httpServletRequest.setAttribute(
 			"liferay-product-navigation:personal-menu:label", _label);
+		httpServletRequest.setAttribute(
+			"liferay-product-navigation:personal-menu:size", _size);
+		httpServletRequest.setAttribute(
+			"liferay-product-navigation:personal-menu:user", _user);
 	}
 
 	private static final String _PAGE = "/personal_menu/page.jsp";
 
 	private boolean _expanded;
 	private String _label;
+	private String _size;
+	private User _user;
 
 }

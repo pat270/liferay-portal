@@ -25,10 +25,12 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
 import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -88,6 +90,9 @@ public class ExportImportIndexedFieldsTest {
 			searchTerm);
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	protected void setUpExportImportFixture() {
 		exportImportFixture = new ExportImportFixture(_group);
 
@@ -131,72 +136,71 @@ public class ExportImportIndexedFieldsTest {
 	protected UserSearchFixture userSearchFixture;
 
 	private HashMap<String, Serializable> _addGroupAttribute() {
-		HashMap<String, Serializable> map = new HashMap<>();
-
-		map.put(Field.GROUP_ID, _group.getGroupId());
-
-		return map;
+		return HashMapBuilder.<String, Serializable>put(
+			Field.GROUP_ID, _group.getGroupId()
+		).build();
 	}
 
 	private Map<String, String> _expectedFieldValues(
 		ExportImportConfiguration exportImportConfiguration) {
 
-		Map<String, String> map = new HashMap<>();
-
-		map.put(
-			Field.COMPANY_ID,
-			String.valueOf(exportImportConfiguration.getCompanyId()));
-		map.put(Field.DESCRIPTION, exportImportConfiguration.getDescription());
-		map.put(
-			Field.ENTRY_CLASS_NAME, ExportImportConfiguration.class.getName());
-		map.put(
-			Field.ENTRY_CLASS_PK,
-			String.valueOf(
-				exportImportConfiguration.getExportImportConfigurationId()));
-		map.put(
-			Field.GROUP_ID,
-			String.valueOf(exportImportConfiguration.getGroupId()));
-		map.put(Field.NAME, exportImportConfiguration.getName());
-		map.put(
-			Field.SCOPE_GROUP_ID,
-			String.valueOf(exportImportConfiguration.getGroupId()));
-		map.put(Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup()));
-		map.put(
-			Field.STATUS,
-			String.valueOf(exportImportConfiguration.getStatus()));
-		map.put(
-			Field.TYPE, String.valueOf(exportImportConfiguration.getType()));
-		map.put(
-			Field.USER_ID,
-			String.valueOf(exportImportConfiguration.getUserId()));
-		map.put(
-			Field.USER_NAME,
-			StringUtil.lowerCase(exportImportConfiguration.getUserName()));
-		map.put(
-			"exportImportConfigurationId",
-			String.valueOf(
-				exportImportConfiguration.getExportImportConfigurationId()));
-		map.put(
-			"exportImportConfigurationId_sortable",
-			String.valueOf(
-				exportImportConfiguration.getExportImportConfigurationId()));
-		map.put(
-			"name_sortable",
-			StringUtil.lowerCase(exportImportConfiguration.getName()));
-
 		Map<String, Serializable> setttingMap =
 			exportImportConfiguration.getSettingsMap();
 
-		map.put("setting_locale", String.valueOf(setttingMap.get("locale")));
-		map.put(
+		Map<String, String> map = HashMapBuilder.put(
+			Field.COMPANY_ID,
+			String.valueOf(exportImportConfiguration.getCompanyId())
+		).put(
+			Field.DESCRIPTION, exportImportConfiguration.getDescription()
+		).put(
+			Field.ENTRY_CLASS_NAME, ExportImportConfiguration.class.getName()
+		).put(
+			Field.ENTRY_CLASS_PK,
+			String.valueOf(
+				exportImportConfiguration.getExportImportConfigurationId())
+		).put(
+			Field.GROUP_ID,
+			String.valueOf(exportImportConfiguration.getGroupId())
+		).put(
+			Field.NAME, exportImportConfiguration.getName()
+		).put(
+			Field.SCOPE_GROUP_ID,
+			String.valueOf(exportImportConfiguration.getGroupId())
+		).put(
+			Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup())
+		).put(
+			Field.STATUS, String.valueOf(exportImportConfiguration.getStatus())
+		).put(
+			Field.TYPE, String.valueOf(exportImportConfiguration.getType())
+		).put(
+			Field.USER_ID, String.valueOf(exportImportConfiguration.getUserId())
+		).put(
+			Field.USER_NAME,
+			StringUtil.lowerCase(exportImportConfiguration.getUserName())
+		).put(
+			"exportImportConfigurationId",
+			String.valueOf(
+				exportImportConfiguration.getExportImportConfigurationId())
+		).put(
+			"exportImportConfigurationId_sortable",
+			String.valueOf(
+				exportImportConfiguration.getExportImportConfigurationId())
+		).put(
+			"name_sortable",
+			StringUtil.lowerCase(exportImportConfiguration.getName())
+		).put(
+			"setting_locale", String.valueOf(setttingMap.get("locale"))
+		).put(
 			"setting_privateLayout",
-			String.valueOf(setttingMap.get("privateLayout")));
-
-		map.put("setting_sourceGroupId", String.valueOf(0));
-		map.put(
+			String.valueOf(setttingMap.get("privateLayout"))
+		).put(
+			"setting_sourceGroupId", String.valueOf(0)
+		).put(
 			"setting_targetGroupId",
-			String.valueOf(setttingMap.get("targetGroupId")));
-		map.put("setting_userId", String.valueOf(setttingMap.get("userId")));
+			String.valueOf(setttingMap.get("targetGroupId"))
+		).put(
+			"setting_userId", String.valueOf(setttingMap.get("userId"))
+		).build();
 
 		_populateDates(exportImportConfiguration, map);
 

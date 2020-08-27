@@ -33,10 +33,13 @@ import com.liferay.taglib.util.IncludeTag;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Shuyang Zhou
- * @author Roberto Díaz
+ * @author     Brian Wing Shun Chan
+ * @author     Shuyang Zhou
+ * @author     Roberto Díaz
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.ratings.taglib.servlet.taglib.RatingsTag}
  */
+@Deprecated
 public class RatingsTag extends IncludeTag {
 
 	public String getClassName() {
@@ -156,11 +159,11 @@ public class RatingsTag extends IncludeTag {
 					themeDisplay.getCompanyId(), group.getGroupId(),
 					_className);
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				_log.error(
 					"Unable to get ratings type for group " +
 						group.getGroupId(),
-					pe);
+					portalException);
 			}
 		}
 

@@ -17,7 +17,7 @@
 <%@ include file="/admin/init.jsp" %>
 
 <%
-KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayContext = new KBTemplatesManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request, templatePath);
+KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayContext = new KBTemplatesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, templatePath);
 %>
 
 <liferay-util:include page="/admin/common/top_tabs.jsp" servletContext="<%= application %>" />
@@ -37,7 +37,7 @@ KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayCo
 	sortingURL="<%= String.valueOf(kbTemplatesManagementToolbarDisplayContext.getSortingURL()) %>"
 />
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<liferay-portlet:renderURL varImpl="searchURL">
 		<portlet:param name="mvcPath" value="/admin/view_templates.jsp" />
 	</liferay-portlet:renderURL>
@@ -59,9 +59,9 @@ KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayCo
 				>
 
 					<%
-					Map<String, Object> rowData = new HashMap<String, Object>();
-
-					rowData.put("actions", String.join(StringPool.COMMA, kbTemplatesManagementToolbarDisplayContext.getAvailableActionDropdownItems(kbTemplate)));
+					Map<String, Object> rowData = HashMapBuilder.<String, Object>put(
+						"actions", StringUtil.merge(kbTemplatesManagementToolbarDisplayContext.getAvailableActions(kbTemplate))
+					).build();
 
 					row.setData(rowData);
 					%>
@@ -110,39 +110,48 @@ KBTemplatesManagementToolbarDisplayContext kbTemplatesManagementToolbarDisplayCo
 			</liferay-ui:search-container>
 		</aui:fieldset>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <aui:script>
-	var deleteKBTemplates = function() {
-		if (confirm('<liferay-ui:message key="are-you-sure-you-want-to-delete-the-selected-templates" />')) {
+	var deleteKBTemplates = function () {
+		if (
+			confirm(
+				'<liferay-ui:message key="are-you-sure-you-want-to-delete-the-selected-templates" />'
+			)
+		) {
 			var form = document.querySelector('#<portlet:namespace />fm');
 
 			if (form) {
 				form.setAttribute('method', 'post');
 
-				form.querySelector('#<portlet:namespace />kbTemplateIds').value = Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds');
+				form.querySelector(
+					'#<portlet:namespace />kbTemplateIds'
+				).value = Liferay.Util.listCheckedExcept(
+					form,
+					'<portlet:namespace />allRowIds'
+				);
 
-				submitForm(form, '<liferay-portlet:actionURL name="deleteKBTemplates"><portlet:param name="mvcPath" value="/admin/view_templates.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></liferay-portlet:actionURL>');
+				submitForm(
+					form,
+					'<liferay-portlet:actionURL name="deleteKBTemplates"><portlet:param name="mvcPath" value="/admin/view_templates.jsp" /><portlet:param name="redirect" value="<%= currentURL %>" /></liferay-portlet:actionURL>'
+				);
 			}
 		}
-	}
-
-	var ACTIONS = {
-		'deleteKBTemplates': deleteKBTemplates
 	};
 
-	Liferay.componentReady('kbTemplatesManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'actionItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	var ACTIONS = {
+		deleteKBTemplates: deleteKBTemplates,
+	};
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action]();
-					}
-				}
-			);
-		}
-	);
+	Liferay.componentReady('kbTemplatesManagementToolbar').then(function (
+		managementToolbar
+	) {
+		managementToolbar.on('actionItemClicked', function (event) {
+			var itemData = event.data.item.data;
+
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action]();
+			}
+		});
+	});
 </aui:script>

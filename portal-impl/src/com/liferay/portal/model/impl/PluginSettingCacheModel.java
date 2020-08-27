@@ -25,30 +25,27 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing PluginSetting in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PluginSettingCacheModel
 	implements CacheModel<PluginSetting>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PluginSettingCacheModel)) {
+		if (!(object instanceof PluginSettingCacheModel)) {
 			return false;
 		}
 
 		PluginSettingCacheModel pluginSettingCacheModel =
-			(PluginSettingCacheModel)obj;
+			(PluginSettingCacheModel)object;
 
 		if ((pluginSettingId == pluginSettingCacheModel.pluginSettingId) &&
 			(mvccVersion == pluginSettingCacheModel.mvccVersion)) {

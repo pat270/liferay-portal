@@ -194,7 +194,8 @@ public class DefaultWikiListPagesDisplayContext
 	}
 
 	@Override
-	public void populateResultsAndTotal(SearchContainer searchContainer)
+	public void populateResultsAndTotal(
+			SearchContainer<WikiPage> searchContainer)
 		throws PortalException {
 
 		WikiPage page = (WikiPage)_httpServletRequest.getAttribute(
@@ -223,6 +224,7 @@ public class DefaultWikiListPagesDisplayContext
 			searchContext.setEnd(searchContainer.getEnd());
 			searchContext.setIncludeAttachments(true);
 			searchContext.setIncludeDiscussions(true);
+			searchContext.setIncludeInternalAssetCategories(true);
 			searchContext.setKeywords(keywords);
 			searchContext.setNodeIds(new long[] {_wikiNode.getNodeId()});
 			searchContext.setStart(searchContainer.getStart());
@@ -250,7 +252,7 @@ public class DefaultWikiListPagesDisplayContext
 
 			searchContainer.setTotal(total);
 
-			OrderByComparator<WikiPage> obc =
+			OrderByComparator<WikiPage> orderByComparator =
 				WikiPortletUtil.getPageOrderByComparator(
 					searchContainer.getOrderByCol(),
 					searchContainer.getOrderByType());
@@ -259,7 +261,7 @@ public class DefaultWikiListPagesDisplayContext
 				themeDisplay.getScopeGroupId(), _wikiNode.getNodeId(), true,
 				themeDisplay.getUserId(), true,
 				WorkflowConstants.STATUS_APPROVED, searchContainer.getStart(),
-				searchContainer.getEnd(), obc);
+				searchContainer.getEnd(), orderByComparator);
 
 			PermissionChecker permissionChecker =
 				_wikiRequestHelper.getPermissionChecker();
@@ -281,12 +283,12 @@ public class DefaultWikiListPagesDisplayContext
 						lastPage = WikiPageLocalServiceUtil.getPage(
 							curPage.getResourcePrimKey(), false);
 					}
-					catch (PortalException pe) {
+					catch (PortalException portalException) {
 
 						// LPS-52675
 
 						if (_log.isDebugEnabled()) {
-							_log.debug(pe, pe);
+							_log.debug(portalException, portalException);
 						}
 					}
 
@@ -662,8 +664,9 @@ public class DefaultWikiListPagesDisplayContext
 				LiferayWindowState.POP_UP.toString(), null,
 				_httpServletRequest);
 		}
-		catch (Exception e) {
-			throw new SystemException("Unable to create permissions URL", e);
+		catch (Exception exception) {
+			throw new SystemException(
+				"Unable to create permissions URL", exception);
 		}
 
 		urlMenuItem.setURL(url);
@@ -698,7 +701,7 @@ public class DefaultWikiListPagesDisplayContext
 			portletURL.setParameter("viewMode", Constants.PRINT);
 			portletURL.setWindowState(LiferayWindowState.POP_UP);
 
-			sb.append(portletURL.toString());
+			sb.append(HtmlUtil.escapeJS(portletURL.toString()));
 
 			sb.append("', '', 'directories=0,height=480,left=80,location=1,");
 			sb.append("menubar=1,resizable=1,scrollbars=yes,status=0,");
@@ -708,7 +711,7 @@ public class DefaultWikiListPagesDisplayContext
 
 			menuItems.add(javaScriptMenuItem);
 		}
-		catch (WindowStateException wse) {
+		catch (WindowStateException windowStateException) {
 		}
 	}
 

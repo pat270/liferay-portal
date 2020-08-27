@@ -20,10 +20,10 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -34,6 +34,11 @@ import javax.annotation.Generated;
  */
 @Generated("")
 public abstract class BaseJSONParser<T> {
+
+	public static final String[][] JSON_ESCAPE_STRINGS = new String[][] {
+		{"\\", "\\\\"}, {"\"", "\\\""}, {"\b", "\\b"}, {"\f", "\\f"},
+		{"\n", "\\n"}, {"\r", "\\r"}, {"\t", "\\t"}
+	};
 
 	public T parseToDTO(String json) {
 		if (json == null) {
@@ -136,15 +141,15 @@ public abstract class BaseJSONParser<T> {
 
 		_assertStartsWithAndEndsWith("{", "}");
 
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new TreeMap<>();
 
 		_setCaptureStart();
 
 		_readNextChar();
 
-		_readWhileLastCharIsWhiteSpace();
-
 		_readNextChar();
+
+		_readWhileLastCharIsWhiteSpace();
 
 		if (_isLastChar('}')) {
 			return map;
@@ -163,7 +168,7 @@ public abstract class BaseJSONParser<T> {
 
 			_readWhileLastCharIsWhiteSpace();
 
-			map.put(key, _readValue());
+			map.put(key, _readValue(true));
 
 			_readWhileLastCharIsWhiteSpace();
 		}
@@ -200,9 +205,7 @@ public abstract class BaseJSONParser<T> {
 		return Stream.of(
 			objects
 		).map(
-			object -> {
-				return toDate((String)object);
-			}
+			object -> toDate((String)object)
 		).toArray(
 			size -> new Date[size]
 		);
@@ -212,9 +215,7 @@ public abstract class BaseJSONParser<T> {
 		return Stream.of(
 			objects
 		).map(
-			object -> {
-				return Integer.valueOf(object.toString());
-			}
+			object -> Integer.valueOf(object.toString())
 		).toArray(
 			size -> new Integer[size]
 		);
@@ -224,9 +225,7 @@ public abstract class BaseJSONParser<T> {
 		return Stream.of(
 			objects
 		).map(
-			object -> {
-				return Long.valueOf(object.toString());
-			}
+			object -> Long.valueOf(object.toString())
 		).toArray(
 			size -> new Long[size]
 		);
@@ -270,8 +269,12 @@ public abstract class BaseJSONParser<T> {
 		}
 	}
 
-	private String _getCapturedSubstring() {
+	private String _getCapturedJSONSubstring() {
 		return _json.substring(_captureStartStack.pop(), _index - 1);
+	}
+
+	private String _getCapturedSubstring() {
+		return _unescape(_getCapturedJSONSubstring());
 	}
 
 	private boolean _ifLastCharMatchesThenRead(char ch) {
@@ -332,6 +335,22 @@ public abstract class BaseJSONParser<T> {
 		return false;
 	}
 
+	private boolean _isLastCharNegative() {
+		if (_lastChar == '-') {
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isLastCharScientificNotation() {
+		if (_lastChar == 'E') {
+			return true;
+		}
+
+		return false;
+	}
+
 	private void _readNextChar() {
 		if (!_isEndOfJSON()) {
 			_lastChar = _json.charAt(_index++);
@@ -339,6 +358,10 @@ public abstract class BaseJSONParser<T> {
 	}
 
 	private Object _readValue() {
+		return _readValue(false);
+	}
+
+	private Object _readValue(boolean parseMaps) {
 		if (_lastChar == '[') {
 			return _readValueAsArray();
 		}
@@ -353,6 +376,19 @@ public abstract class BaseJSONParser<T> {
 		}
 		else if (_lastChar == '"') {
 			return _readValueAsString();
+		}
+		else if (parseMaps && _lastChar == '{') {
+			try {
+				Class<? extends BaseJSONParser> clazz = getClass();
+
+				BaseJSONParser baseJSONParser = clazz.newInstance();
+
+				return baseJSONParser.parseToMap(_readValueAsStringJSON());
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException(
+					"Expected JSON object or map");
+			}
 		}
 		else if (_lastChar == '{') {
 			return _readValueAsStringJSON();
@@ -485,7 +521,7 @@ public abstract class BaseJSONParser<T> {
 		if (_isLastChar('}')) {
 			_readNextChar();
 
-			return _getCapturedSubstring();
+			return _getCapturedJSONSubstring();
 		}
 
 		_readWhileLastCharIsWhiteSpace();
@@ -493,7 +529,7 @@ public abstract class BaseJSONParser<T> {
 		if (_isLastChar('}')) {
 			_readNextChar();
 
-			return _getCapturedSubstring();
+			return _getCapturedJSONSubstring();
 		}
 
 		do {
@@ -522,7 +558,7 @@ public abstract class BaseJSONParser<T> {
 				"Expected either ',' or '}', but found '" + _lastChar + "'");
 		}
 
-		return _getCapturedSubstring();
+		return _getCapturedJSONSubstring();
 	}
 
 	private String _readValueAsStringNumber() {
@@ -531,7 +567,8 @@ public abstract class BaseJSONParser<T> {
 		do {
 			_readNextChar();
 		}
-		while (_isLastCharDigit() || _isLastCharDecimalSeparator());
+		while (_isLastCharDigit() || _isLastCharDecimalSeparator() ||
+			   _isLastCharNegative() || _isLastCharScientificNotation());
 
 		return _getCapturedSubstring();
 	}
@@ -546,6 +583,14 @@ public abstract class BaseJSONParser<T> {
 
 	private void _setCaptureStart() {
 		_captureStartStack.push(_index - 1);
+	}
+
+	private String _unescape(String string) {
+		for (String[] strings : JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[1], strings[0]);
+		}
+
+		return string;
 	}
 
 	private Stack<Integer> _captureStartStack;

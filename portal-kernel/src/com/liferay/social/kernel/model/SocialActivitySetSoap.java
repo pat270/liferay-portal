@@ -19,20 +19,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class SocialActivitySetSoap implements Serializable {
 
 	public static SocialActivitySetSoap toSoapModel(SocialActivitySet model) {
 		SocialActivitySetSoap soapModel = new SocialActivitySetSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setActivitySetId(model.getActivitySetId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -103,6 +104,22 @@ public class SocialActivitySetSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setActivitySetId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public long getActivitySetId() {
@@ -193,6 +210,8 @@ public class SocialActivitySetSoap implements Serializable {
 		_activityCount = activityCount;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _activitySetId;
 	private long _groupId;
 	private long _companyId;

@@ -17,9 +17,12 @@ package com.liferay.polls.search.test;
 import com.liferay.polls.model.PollsQuestion;
 import com.liferay.polls.util.test.PollsTestUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.test.util.GroupTestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * @author Igor Fabiano Nazar
@@ -40,8 +43,27 @@ public class PollsQuestionFixture {
 		return pollsQuestion;
 	}
 
+	public PollsQuestion createPollsQuestion(
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap)
+		throws Exception {
+
+		PollsQuestion pollsQuestion = PollsTestUtil.addQuestion(
+			_group.getGroupId(), titleMap, descriptionMap);
+
+		_pollsQuestions.add(pollsQuestion);
+
+		return pollsQuestion;
+	}
+
 	public List<PollsQuestion> getPollsQuestions() {
 		return _pollsQuestions;
+	}
+
+	public void updateDisplaySettings(Locale locale) throws Exception {
+		Group group = GroupTestUtil.updateDisplaySettings(
+			_group.getGroupId(), null, locale);
+
+		_group.setModelAttributes(group.getModelAttributes());
 	}
 
 	private final Group _group;

@@ -1,10 +1,63 @@
-(function() {
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+(function () {
 	var A = AUI().use('oop');
 
 	var usedModules = {};
 
 	var Dependency = {
-		provide: function(obj, methodName, methodFn, modules, proto) {
+		_getAOP(obj, methodName) {
+			return obj._yuiaop && obj._yuiaop[methodName];
+		},
+
+		_proxy(obj, methodName, methodFn, context, guid, modules, _A) {
+			var args;
+
+			var queue = Dependency._proxyLoaders[guid];
+
+			Dependency._replaceMethod(obj, methodName, methodFn, context);
+
+			while ((args = queue.next())) {
+				methodFn.apply(context, args);
+			}
+
+			for (var i = modules.length - 1; i >= 0; i--) {
+				usedModules[modules[i]] = true;
+			}
+		},
+
+		_proxyLoaders: {},
+
+		_replaceMethod(obj, methodName, methodFn) {
+			var AOP = Dependency._getAOP(obj, methodName);
+
+			var proxy = obj[methodName];
+
+			if (AOP) {
+				proxy = AOP.method;
+
+				AOP.method = methodFn;
+			}
+			else {
+				obj[methodName] = methodFn;
+			}
+
+			A.mix(methodFn, proxy);
+		},
+
+		provide(obj, methodName, methodFn, modules, proto) {
 			if (!Array.isArray(modules)) {
 				modules = [modules];
 			}
@@ -34,7 +87,7 @@
 				delete obj._yuiaop[methodName];
 			}
 
-			var proxy = function() {
+			var proxy = function () {
 				var args = arguments;
 
 				var context = obj;
@@ -45,7 +98,12 @@
 
 				if (modules.length == 1) {
 					if (modules[0] in usedModules) {
-						Dependency._replaceMethod(obj, methodName, methodFn, context);
+						Dependency._replaceMethod(
+							obj,
+							methodName,
+							methodFn,
+							context
+						);
 
 						methodFn.apply(context, args);
 
@@ -68,61 +126,29 @@
 				queue.add(args);
 
 				if (firstLoad) {
-					modules.push(A.bind(Dependency._proxy, Liferay, obj, methodName, methodFn, context, guid, modules));
+					modules.push(
+						A.bind(
+							Dependency._proxy,
+							Liferay,
+							obj,
+							methodName,
+							methodFn,
+							context,
+							guid,
+							modules
+						)
+					);
 
 					A.use.apply(A, modules);
 				}
 			};
 
-			proxy.toString = function() {
+			proxy.toString = function () {
 				return methodFn.toString();
 			};
 
 			obj[methodName] = proxy;
 		},
-
-		_getAOP: function(obj, methodName) {
-			var instance = this;
-
-			return obj._yuiaop && obj._yuiaop[methodName];
-		},
-
-		_proxy: function(obj, methodName, methodFn, context, guid, modules, A) {
-			var args;
-
-			var queue = Dependency._proxyLoaders[guid];
-
-			Dependency._replaceMethod(obj, methodName, methodFn, context);
-
-			while ((args = queue.next())) {
-				methodFn.apply(context, args);
-			}
-
-			for (var i = modules.length - 1; i >= 0; i--) {
-				usedModules[modules[i]] = true;
-			}
-		},
-
-		_replaceMethod: function(obj, methodName, methodFn, context) {
-			var instance = this;
-
-			var AOP = Dependency._getAOP(obj, methodName);
-
-			var proxy = obj[methodName];
-
-			if (AOP) {
-				proxy = AOP.method;
-
-				AOP.method = methodFn;
-			}
-			else {
-				obj[methodName] = methodFn;
-			}
-
-			A.mix(methodFn, proxy);
-		},
-
-		_proxyLoaders: {}
 	};
 
 	Liferay.Dependency = Dependency;

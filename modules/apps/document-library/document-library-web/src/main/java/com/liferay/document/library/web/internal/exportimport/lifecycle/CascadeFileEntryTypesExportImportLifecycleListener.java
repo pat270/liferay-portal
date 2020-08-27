@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -38,7 +37,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Máté Thurzó
  */
 @Component(service = ExportImportLifecycleListener.class)
-@ProviderType
 public class CascadeFileEntryTypesExportImportLifecycleListener
 	implements EventAwareExportImportLifecycleListener {
 
@@ -49,24 +47,20 @@ public class CascadeFileEntryTypesExportImportLifecycleListener
 
 	@Override
 	public void onLayoutExportFailed(
-			PortletDataContext portletDataContext, Throwable throwable)
-		throws Exception {
+		PortletDataContext portletDataContext, Throwable throwable) {
 	}
 
 	@Override
-	public void onLayoutExportStarted(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onLayoutExportStarted(PortletDataContext portletDataContext) {
 	}
 
 	@Override
-	public void onLayoutExportSucceeded(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onLayoutExportSucceeded(PortletDataContext portletDataContext) {
 	}
 
 	@Override
 	public void onLayoutImportFailed(
-			PortletDataContext portletDataContext, Throwable throwable)
-		throws Exception {
+		PortletDataContext portletDataContext, Throwable throwable) {
 	}
 
 	@Override
@@ -88,73 +82,62 @@ public class CascadeFileEntryTypesExportImportLifecycleListener
 	}
 
 	@Override
-	public void onLayoutImportStarted(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onLayoutImportStarted(PortletDataContext portletDataContext) {
 	}
 
 	@Override
-	public void onLayoutImportSucceeded(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onLayoutImportSucceeded(PortletDataContext portletDataContext) {
 	}
 
 	@Override
 	public void onLayoutLocalPublicationFailed(
-			ExportImportConfiguration exportImportConfiguration,
-			Throwable throwable)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration,
+		Throwable throwable) {
 	}
 
 	@Override
 	public void onLayoutLocalPublicationStarted(
-			ExportImportConfiguration exportImportConfiguration)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration) {
 	}
 
 	@Override
 	public void onLayoutLocalPublicationSucceeded(
-			ExportImportConfiguration exportImportConfiguration)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration) {
 	}
 
 	@Override
 	public void onLayoutRemotePublicationFailed(
-			ExportImportConfiguration exportImportConfiguration,
-			Throwable throwable)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration,
+		Throwable throwable) {
 	}
 
 	@Override
 	public void onLayoutRemotePublicationStarted(
-			ExportImportConfiguration exportImportConfiguration)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration) {
 	}
 
 	@Override
 	public void onLayoutRemotePublicationSucceeded(
-			ExportImportConfiguration exportImportConfiguration)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration) {
 	}
 
 	@Override
 	public void onPortletExportFailed(
-			PortletDataContext portletDataContext, Throwable throwable)
-		throws Exception {
+		PortletDataContext portletDataContext, Throwable throwable) {
 	}
 
 	@Override
-	public void onPortletExportStarted(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onPortletExportStarted(PortletDataContext portletDataContext) {
 	}
 
 	@Override
-	public void onPortletExportSucceeded(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onPortletExportSucceeded(
+		PortletDataContext portletDataContext) {
 	}
 
 	@Override
 	public void onPortletImportFailed(
-			PortletDataContext portletDataContext, Throwable throwable)
-		throws Exception {
+		PortletDataContext portletDataContext, Throwable throwable) {
 	}
 
 	@Override
@@ -176,70 +159,60 @@ public class CascadeFileEntryTypesExportImportLifecycleListener
 	}
 
 	@Override
-	public void onPortletImportStarted(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onPortletImportStarted(PortletDataContext portletDataContext) {
 	}
 
 	@Override
-	public void onPortletImportSucceeded(PortletDataContext portletDataContext)
-		throws Exception {
+	public void onPortletImportSucceeded(
+		PortletDataContext portletDataContext) {
 	}
 
 	@Override
 	public void onPortletPublicationFailed(
-			ExportImportConfiguration exportImportConfiguration,
-			Throwable throwable)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration,
+		Throwable throwable) {
 	}
 
 	@Override
 	public void onPortletPublicationStarted(
-			ExportImportConfiguration exportImportConfiguration)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration) {
 	}
 
 	@Override
 	public void onPortletPublicationSucceeded(
-			ExportImportConfiguration exportImportConfiguration)
-		throws Exception {
+		ExportImportConfiguration exportImportConfiguration) {
 	}
 
 	@Override
 	public void onStagedModelExportFailed(
-			PortletDataContext portletDataContext, StagedModel stagedModel,
-			Throwable throwable)
-		throws Exception {
+		PortletDataContext portletDataContext, StagedModel stagedModel,
+		Throwable throwable) {
 	}
 
 	@Override
 	public void onStagedModelExportStarted(
-			PortletDataContext portletDataContext, StagedModel stagedModel)
-		throws Exception {
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
 	}
 
 	@Override
 	public void onStagedModelExportSucceeded(
-			PortletDataContext portletDataContext, StagedModel stagedModel)
-		throws Exception {
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
 	}
 
 	@Override
 	public void onStagedModelImportFailed(
-			PortletDataContext portletDataContext, StagedModel stagedModel,
-			Throwable throwable)
-		throws Exception {
+		PortletDataContext portletDataContext, StagedModel stagedModel,
+		Throwable throwable) {
 	}
 
 	@Override
 	public void onStagedModelImportStarted(
-			PortletDataContext portletDataContext, StagedModel stagedModel)
-		throws Exception {
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
 	}
 
 	@Override
 	public void onStagedModelImportSucceeded(
-			PortletDataContext portletDataContext, StagedModel stagedModel)
-		throws Exception {
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
 	}
 
 	protected DLFolder getProcessableRootFolder(DLFolder dlFolder)
@@ -279,22 +252,12 @@ public class CascadeFileEntryTypesExportImportLifecycleListener
 		}
 	}
 
-	@Reference(unbind = "-")
-	protected void setDLFileEntryTypeLocalService(
-		DLFileEntryTypeLocalService dlFileEntryTypeLocalService) {
-
-		_dlFileEntryTypeLocalService = dlFileEntryTypeLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDlFolderLocalService(
-		DLFolderLocalService dlFolderLocalService) {
-
-		_dlFolderLocalService = dlFolderLocalService;
-	}
-
+	@Reference
 	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
+
+	@Reference
 	private DLFolderLocalService _dlFolderLocalService;
+
 	private Map<Long, Long> _importedFolderIds;
 	private Set<Long> _processedFolderIds;
 

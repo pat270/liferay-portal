@@ -22,14 +22,17 @@ import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
 import com.liferay.message.boards.service.MBCategoryLocalServiceUtil;
 import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
+import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.Folder;
+import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.view.count.ViewCountManagerUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.HashSet;
@@ -101,7 +104,7 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 
 			_attachmentsFolderId = folder.getFolderId();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return _attachmentsFolderId;
@@ -127,10 +130,16 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 			return LockManagerUtil.getLock(
 				MBThread.class.getName(), getThreadId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;
+	}
+
+	@Override
+	public int getMessageCount() {
+		return MBThreadLocalServiceUtil.getMessageCount(
+			getThreadId(), WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@Override
@@ -148,12 +157,20 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 	}
 
 	@Override
+	public long getViewCount() {
+		return ViewCountManagerUtil.getViewCount(
+			getCompanyId(),
+			ClassNameLocalServiceUtil.getClassNameId(MBThread.class),
+			getPrimaryKey());
+	}
+
+	@Override
 	public boolean hasLock(long userId) {
 		try {
 			return LockManagerUtil.hasLock(
 				userId, MBThread.class.getName(), getThreadId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;
@@ -169,7 +186,7 @@ public class MBThreadImpl extends MBThreadBaseImpl {
 			return LockManagerUtil.isLocked(
 				MBThread.class.getName(), getThreadId());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

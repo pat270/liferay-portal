@@ -1,4 +1,5 @@
 definition {
+
 	macro add {
 		LexiconEntry.gotoAdd();
 
@@ -135,7 +136,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Documents and Media");
 
 		DMNavigator.gotoDocumentType();
@@ -158,6 +158,14 @@ definition {
 	macro viewCP {
 		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
 
+		if (isSet(dmDocumentTypeScope)) {
+			var key_dmDocumentTypeScope = "${dmDocumentTypeScope}";
+
+			AssertTextEquals(
+				locator1 = "DocumentsAndMediaDocumentTypes#DOCUMENT_TYPES_TABLE_SCOPE",
+				value1 = "${dmDocumentTypeName}");
+		}
+
 		AssertTextEquals(
 			locator1 = "DocumentsAndMediaDocumentTypes#DOCUMENT_TYPES_TABLE_NAME",
 			value1 = "${dmDocumentTypeName}");
@@ -179,4 +187,5 @@ definition {
 
 		AssertElementNotPresent(locator1 = "DocumentsAndMediaDocumentTypes#DOCUMENT_TYPES_TABLE_ACTIONS_1");
 	}
+
 }

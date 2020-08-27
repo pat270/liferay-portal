@@ -20,14 +20,15 @@ import com.liferay.portal.dao.orm.hibernate.VerifySessionFactoryWrapper;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.spring.extender.internal.jdbc.DataSourceUtil;
+import com.liferay.portal.spring.extender.internal.loader.ModuleAggregareClassLoader;
 import com.liferay.portal.spring.hibernate.PortletHibernateConfiguration;
 import com.liferay.portal.spring.hibernate.PortletTransactionManager;
+import com.liferay.portal.spring.transaction.DefaultTransactionExecutor;
 import com.liferay.portal.spring.transaction.TransactionExecutor;
-import com.liferay.portal.spring.transaction.TransactionExecutorFactory;
+import com.liferay.portal.spring.transaction.TransactionHandler;
 import com.liferay.portal.spring.transaction.TransactionManagerFactory;
 
 import java.util.ArrayList;
@@ -81,8 +82,8 @@ public class LiferayServiceExtender
 
 			return liferayServiceExtension;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return null;
@@ -134,17 +135,8 @@ public class LiferayServiceExtender
 						"origin.bundle.symbolic.name",
 						_extendeeBundle.getSymbolicName())));
 
-			BundleContext extenderBundleContext =
-				LiferayServiceExtender.this._bundleContext;
-
-			Bundle extenderBundle = extenderBundleContext.getBundle();
-
-			BundleWiring extenderBundleWiring = extenderBundle.adapt(
-				BundleWiring.class);
-
-			ClassLoader classLoader =
-				AggregateClassLoader.getAggregateClassLoader(
-					extendeeClassLoader, extenderBundleWiring.getClassLoader());
+			ClassLoader classLoader = new ModuleAggregareClassLoader(
+				extendeeClassLoader, _extendeeBundle.getSymbolicName());
 
 			PortletHibernateConfiguration portletHibernateConfiguration =
 				new PortletHibernateConfiguration(classLoader, dataSource);
@@ -170,22 +162,26 @@ public class LiferayServiceExtender
 						"origin.bundle.symbolic.name",
 						_extendeeBundle.getSymbolicName())));
 
-			TransactionExecutor transactionExecutor = _getTransactionExecutor(
-				dataSource, _sessionFactoryImplementor);
+			DefaultTransactionExecutor defaultTransactionExecutor =
+				_getTransactionExecutor(dataSource, _sessionFactoryImplementor);
 
 			_serviceRegistrations.add(
 				extendeeBundleContext.registerService(
-					TransactionExecutor.class, transactionExecutor,
+					new String[] {
+						TransactionExecutor.class.getName(),
+						TransactionHandler.class.getName()
+					},
+					defaultTransactionExecutor,
 					MapUtil.singletonDictionary(
 						"origin.bundle.symbolic.name",
 						_extendeeBundle.getSymbolicName())));
 		}
 
-		private LiferayServiceExtension(Bundle bundle) {
-			_extendeeBundle = bundle;
+		private LiferayServiceExtension(Bundle extendeeBundle) {
+			_extendeeBundle = extendeeBundle;
 		}
 
-		private TransactionExecutor _getTransactionExecutor(
+		private DefaultTransactionExecutor _getTransactionExecutor(
 			DataSource liferayDataSource,
 			SessionFactoryImplementor sessionFactoryImplementor) {
 
@@ -203,8 +199,7 @@ public class LiferayServiceExtender
 						liferayDataSource, sessionFactoryImplementor);
 			}
 
-			return TransactionExecutorFactory.createTransactionExecutor(
-				platformTransactionManager, false);
+			return new DefaultTransactionExecutor(platformTransactionManager);
 		}
 
 		private final Bundle _extendeeBundle;
@@ -216,8 +211,6 @@ public class LiferayServiceExtender
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		_bundleContext = bundleContext;
-
 		_bundleTracker = new BundleTracker<>(
 			bundleContext, Bundle.ACTIVE | Bundle.STARTING, this);
 
@@ -232,7 +225,6 @@ public class LiferayServiceExtender
 	private static final Log _log = LogFactoryUtil.getLog(
 		LiferayServiceExtender.class);
 
-	private BundleContext _bundleContext;
 	private BundleTracker<?> _bundleTracker;
 
 }

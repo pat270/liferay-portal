@@ -3,7 +3,7 @@
 The JSDoc Gradle plugin lets you run the [JSDoc](http://usejsdoc.org/) tool in
 order to generate documentation for your project's JavaScript files.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -12,7 +12,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.jsdoc", version: "2.0.29"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.jsdoc", version: "2.0.55"
 	}
 
 	repositories {
@@ -53,7 +53,7 @@ Name | Depends On | Type | Description
 `downloadJSDoc` | `downloadNode` | `DownloadNodeModuleTask` | Downloads JSDoc in the project's `node_modules` directory.
 `jsdoc` | `downloadJSDoc` | [`JSDocTask`](#jsdoctask) | Generates API documentation for the project's JavaScript code.
 
-By default, the `downloadJSDoc` task downloads version `3.5.5` of the `jsdoc`
+By default, the `downloadJSDoc` task downloads version `3.6.3` of the `jsdoc`
 package. If the project's `package.json` file, however, already lists the
 `jsdoc` package in its `dependencies` or `devDependencies`, the `downloadJSDoc`
 task is disabled.
@@ -83,7 +83,7 @@ Name | Depends On | Type | Description
 `downloadJSDoc` | `downloadNode` | `DownloadNodeModuleTask` | Downloads JSDoc in the app's `node_modules` directory.
 `jarAppJSDoc` | `appJSDoc` | [`Jar`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html) | Assembles a JAR archive containing the JavaScript documentation files for this app.
 
-By default, the `downloadJSDoc` task downloads version `3.5.5` of the `jsdoc`
+By default, the `downloadJSDoc` task downloads version `3.6.3` of the `jsdoc`
 package. If the project's `package.json` file, however, already lists the
 `jsdoc` package in its `dependencies` or `devDependencies`, the `downloadJSDoc`
 task is disabled.
@@ -129,7 +129,7 @@ Property Name | Default Value
 
 Property Name | Type | Default Value | Description
 ------------- | ---- | ------------- | -----------
-`configuration` | [`TextResource`](https://docs.gradle.org/current/dsl/org.gradle.api.resources.TextResource.html) | `null` | The JSDoc configuration file. It sets the `--configure` argument.
+`configuration` | [`TextResource`](https://docs.gradle.org/current/dsl/org.gradle.api.resources.TextResource.html) | `null` | The JSDoc configuration file. It sets the `--configure` argument.
 <a name="destinationdir"></a>`destinationDir` | `File` | `null` | The directory where the JavaScript API documentation files are saved. It sets the `--destination` argument.
 `packageJsonFile` | `File` | `"${project.projectDir}/package.json"` | The path to the project's package file. It sets the `--package` argument.
 <a name="sourcedirs"></a>`sourceDirs` | `FileCollection` | `[]` | The directories that contains the files to process.

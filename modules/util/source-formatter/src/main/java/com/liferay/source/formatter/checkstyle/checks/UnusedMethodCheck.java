@@ -14,10 +14,6 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
@@ -37,11 +33,6 @@ public class UnusedMethodCheck extends BaseCheck {
 		return new int[] {TokenTypes.CLASS_DEF};
 	}
 
-	public void setAllowedMethodNames(String allowedMethodNames) {
-		_allowedMethodNames = ArrayUtil.append(
-			_allowedMethodNames, StringUtil.split(allowedMethodNames));
-	}
-
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
 		DetailAST parentDetailAST = detailAST.getParent();
@@ -50,13 +41,15 @@ public class UnusedMethodCheck extends BaseCheck {
 			return;
 		}
 
-		List<DetailAST> methodDefinitionDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				detailAST, true, TokenTypes.METHOD_DEF);
+		List<DetailAST> methodDefinitionDetailASTList = getAllChildTokens(
+			detailAST, true, TokenTypes.METHOD_DEF);
 
 		if (methodDefinitionDetailASTList.isEmpty()) {
 			return;
 		}
+
+		List<String> allowedMethodNames = getAttributeValues(
+			_ALLOWED_METHOD_NAMES_KEY);
 
 		List<String> referencedMethodNames = _getReferencedMethodNames(
 			detailAST);
@@ -69,8 +62,7 @@ public class UnusedMethodCheck extends BaseCheck {
 
 			if (!modifiersDetailAST.branchContains(
 					TokenTypes.LITERAL_PRIVATE) ||
-				AnnotationUtil.containsAnnotation(
-					methodDefinitionDetailAST, "Reference") ||
+				AnnotationUtil.containsAnnotation(methodDefinitionDetailAST) ||
 				_hasSuppressUnusedWarningsAnnotation(
 					methodDefinitionDetailAST)) {
 
@@ -82,7 +74,7 @@ public class UnusedMethodCheck extends BaseCheck {
 
 			String name = nameDetailAST.getText();
 
-			if (!ArrayUtil.contains(_allowedMethodNames, name) &&
+			if (!allowedMethodNames.contains(name) &&
 				!referencedMethodNames.contains(nameDetailAST.getText())) {
 
 				log(methodDefinitionDetailAST, _MSG_UNUSED_METHOD, name);
@@ -95,9 +87,8 @@ public class UnusedMethodCheck extends BaseCheck {
 
 		List<String> referencedMethodNames = new ArrayList<>();
 
-		List<DetailAST> methodCallDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.METHOD_CALL);
+		List<DetailAST> methodCallDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.METHOD_CALL);
 
 		for (DetailAST methodCallDetailAST : methodCallDetailASTList) {
 			DetailAST nameDetailAST = methodCallDetailAST.getFirstChild();
@@ -109,9 +100,8 @@ public class UnusedMethodCheck extends BaseCheck {
 			referencedMethodNames.add(nameDetailAST.getText());
 		}
 
-		List<DetailAST> methodReferenceDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.METHOD_REF);
+		List<DetailAST> methodReferenceDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.METHOD_REF);
 
 		for (DetailAST methodReferenceDetailAST :
 				methodReferenceDetailASTList) {
@@ -122,9 +112,8 @@ public class UnusedMethodCheck extends BaseCheck {
 			referencedMethodNames.add(lastChildDetailAST.getText());
 		}
 
-		List<DetailAST> literalNewDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.LITERAL_NEW);
+		List<DetailAST> literalNewDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.LITERAL_NEW);
 
 		for (DetailAST literalNewDetailAST : literalNewDetailASTList) {
 			DetailAST firstChildDetailAST = literalNewDetailAST.getFirstChild();
@@ -139,7 +128,7 @@ public class UnusedMethodCheck extends BaseCheck {
 			DetailAST elistDetailAST = literalNewDetailAST.findFirstToken(
 				TokenTypes.ELIST);
 
-			List<DetailAST> exprDetailASTList = DetailASTUtil.getAllChildTokens(
+			List<DetailAST> exprDetailASTList = getAllChildTokens(
 				elistDetailAST, false, TokenTypes.EXPR);
 
 			if (exprDetailASTList.size() < 2) {
@@ -157,9 +146,8 @@ public class UnusedMethodCheck extends BaseCheck {
 			}
 		}
 
-		List<DetailAST> annotationDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				classDefinitionDetailAST, true, TokenTypes.ANNOTATION);
+		List<DetailAST> annotationDetailASTList = getAllChildTokens(
+			classDefinitionDetailAST, true, TokenTypes.ANNOTATION);
 
 		for (DetailAST annotationDetailAST : annotationDetailASTList) {
 			DetailAST atDetailAST = annotationDetailAST.findFirstToken(
@@ -175,7 +163,7 @@ public class UnusedMethodCheck extends BaseCheck {
 			}
 
 			List<DetailAST> annotationMemberValuePairDetailASTList =
-				DetailASTUtil.getAllChildTokens(
+				getAllChildTokens(
 					annotationDetailAST, false,
 					TokenTypes.ANNOTATION_MEMBER_VALUE_PAIR);
 
@@ -220,9 +208,8 @@ public class UnusedMethodCheck extends BaseCheck {
 			return false;
 		}
 
-		List<DetailAST> literalStringDetailASTList =
-			DetailASTUtil.getAllChildTokens(
-				annotationDetailAST, true, TokenTypes.STRING_LITERAL);
+		List<DetailAST> literalStringDetailASTList = getAllChildTokens(
+			annotationDetailAST, true, TokenTypes.STRING_LITERAL);
 
 		for (DetailAST literalStringDetailAST : literalStringDetailASTList) {
 			String s = literalStringDetailAST.getText();
@@ -235,8 +222,9 @@ public class UnusedMethodCheck extends BaseCheck {
 		return false;
 	}
 
-	private static final String _MSG_UNUSED_METHOD = "method.unused";
+	private static final String _ALLOWED_METHOD_NAMES_KEY =
+		"allowedMethodNames";
 
-	private String[] _allowedMethodNames = new String[0];
+	private static final String _MSG_UNUSED_METHOD = "method.unused";
 
 }

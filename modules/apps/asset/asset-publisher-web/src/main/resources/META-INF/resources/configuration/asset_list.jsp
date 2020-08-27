@@ -39,47 +39,52 @@ AssetListEntry assetListEntry = assetPublisherDisplayContext.fetchAssetListEntry
 	<aui:button name="clearAssetListButton" value="clear" />
 </div>
 
-<script>
-	var assetListEntryId = document.getElementById('<portlet:namespace />assetListEntryId');
-	var assetListTitle = document.getElementById('<portlet:namespace />assetListTitle');
+<aui:script require="frontend-js-web/liferay/ItemSelectorDialog.es as ItemSelectorDialog">
+	var assetListEntryId = document.getElementById(
+		'<portlet:namespace />assetListEntryId'
+	);
+	var assetListTitle = document.getElementById(
+		'<portlet:namespace />assetListTitle'
+	);
 
-	var selectAssetListButton = document.getElementById('<portlet:namespace />selectAssetListButton');
+	var selectAssetListButton = document.getElementById(
+		'<portlet:namespace />selectAssetListButton'
+	);
 
 	if (selectAssetListButton) {
-		selectAssetListButton.addEventListener(
-			'click',
-			function(event) {
-				Liferay.Util.selectEntity(
-					{
-						dialog: {
-						constrain: true,
-						destroyOnHide: true
-					},
-						eventName: '<%= assetPublisherDisplayContext.getSelectAssetListEventName() %>',
-						id: '<portlet:namespace />selectAssetList',
-						title: '<liferay-ui:message key="select-content-set" />',
-						uri: '<%= assetPublisherDisplayContext.getAssetListSelectorURL() %>'
-					},
-					function(event) {
-						assetListEntryId.value = event.assetlistentryid;
+		selectAssetListButton.addEventListener('click', function (event) {
+			var itemSelectorDialog = new ItemSelectorDialog.default({
+				eventName:
+					'<%= assetPublisherDisplayContext.getSelectAssetListEventName() %>',
+				singleSelect: true,
+				title: '<liferay-ui:message key="select-collection" />',
+				url:
+					'<%= assetPublisherDisplayContext.getAssetListSelectorURL() %>',
+			});
 
-						assetListTitle.innerHTML = event.assetlistentrytitle;
-					}
-				);
-			}
-		);
+			itemSelectorDialog.on('selectedItemChange', function (event) {
+				if (event.selectedItem) {
+					var itemValue = JSON.parse(event.selectedItem.value);
+
+					assetListEntryId.value = itemValue.classPK;
+
+					assetListTitle.innerHTML = itemValue.title;
+				}
+			});
+
+			itemSelectorDialog.open();
+		});
 	}
 
-	var clearAssetListButton = document.getElementById('<portlet:namespace />clearAssetListButton');
+	var clearAssetListButton = document.getElementById(
+		'<portlet:namespace />clearAssetListButton'
+	);
 
 	if (clearAssetListButton) {
-		clearAssetListButton.addEventListener(
-			'click',
-			function(event) {
-				assetListTitle.innerHTML = '<liferay-ui:message key="none" />';
+		clearAssetListButton.addEventListener('click', function (event) {
+			assetListTitle.innerHTML = '<liferay-ui:message key="none" />';
 
-				assetListEntryId.value = '';
-			}
-		);
+			assetListEntryId.value = '';
+		});
 	}
-</script>
+</aui:script>

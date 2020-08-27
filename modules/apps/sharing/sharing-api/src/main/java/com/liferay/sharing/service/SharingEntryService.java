@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.sharing.model.SharingEntry;
@@ -42,13 +41,6 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @AccessControlled
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=sharing",
-		"json.web.service.context.path=SharingEntry"
-	},
-	service = SharingEntryService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -59,7 +51,7 @@ public interface SharingEntryService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link SharingEntryServiceUtil} to access the sharing entry remote service. Add custom service methods to <code>com.liferay.sharing.service.impl.SharingEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.sharing.service.impl.SharingEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the sharing entry remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link SharingEntryServiceUtil} if injection and service tracking are not available.
 	 */
 
 	/**

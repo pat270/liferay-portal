@@ -1,3 +1,5 @@
+<#include "${templatesPath}/NAVIGATION-MACRO-FTL" />
+
 <#if !entries?has_content>
 	<#if themeDisplay.isSignedIn()>
 		<div class="alert alert-info">
@@ -16,9 +18,9 @@
 			<#assign navItems = entries />
 
 			<#list navItems as navItem>
-				<#assign showChildren = (displayDepth != 1) && navItem.hasBrowsableChildren() />
+				<#assign showChildrenNavItems = (displayDepth != 1) && navItem.hasBrowsableChildren() />
 
-				<#if navItem.isBrowsable() || showChildren>
+				<#if navItem.isBrowsable() || showChildrenNavItems>
 					<#assign
 						nav_item_attr_has_popup = ""
 						nav_item_caret = ""
@@ -27,10 +29,10 @@
 						nav_item_link_css_class = "nav-link text-truncate"
 					/>
 
-					<#if showChildren>
-						<#assign nav_item_attr_has_popup = "aria-haspopup='true'" />
-						<#assign nav_item_caret = '<span class="lfr-nav-child-toggle"><i class="icon-caret-down"></i></span>' />
+					<#if showChildrenNavItems>
 						<#assign
+							nav_item_attr_has_popup = "aria-haspopup='true'"
+							nav_item_caret = '<span class="lfr-nav-child-toggle"><i class="icon-caret-down"></i></span>'
 							nav_item_css_class = "${nav_item_css_class} dropdown"
 							nav_item_link_css_class = "${nav_item_link_css_class} dropdown-toggle"
 						/>
@@ -40,7 +42,7 @@
 						<#assign nav_item_href_link = "href='${navItem.getURL()}'" />
 					</#if>
 
-					<#if navItem.isSelected()>
+					<#if navItem.isChildSelected() || navItem.isSelected()>
 						<#assign
 							nav_item_css_class = "${nav_item_css_class} selected active"
 						/>
@@ -51,23 +53,12 @@
 							<span class="text-truncate"><@liferay_theme["layout-icon"] layout=navItem.getLayout() /> ${navItem.getName()} ${nav_item_caret}</span>
 						</a>
 
-						<#if showChildren>
+						<#if showChildrenNavItems>
 							<ul aria-expanded="false" class="child-menu dropdown-menu" role="menu">
-								<#list navItem.getBrowsableChildren() as childNavigationItem>
-									<#assign
-										nav_child_css_class = ""
-									/>
-
-									<#if childNavigationItem.isSelected()>
-										<#assign
-											nav_child_css_class = "active selected"
-										/>
-									</#if>
-
-									<li class="${nav_child_css_class}" id="layout_${portletDisplay.getId()}_${childNavigationItem.getLayoutId()}" role="presentation">
-										<a aria-labelledby="layout_${portletDisplay.getId()}_${childNavigationItem.getLayoutId()}" class="dropdown-item" href="${childNavigationItem.getURL()}" ${childNavigationItem.getTarget()} role="menuitem">${childNavigationItem.getName()}</a>
-									</li>
-								</#list>
+								<@buildChildrenNavItems
+									displayDepth=displayDepth
+									navItem=navItem
+								/>
 							</ul>
 						</#if>
 					</li>

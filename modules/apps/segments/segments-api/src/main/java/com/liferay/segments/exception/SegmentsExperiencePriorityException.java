@@ -16,12 +16,9 @@ package com.liferay.segments.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eduardo García
  */
-@ProviderType
 public class SegmentsExperiencePriorityException extends PortalException {
 
 	public SegmentsExperiencePriorityException() {
@@ -31,12 +28,14 @@ public class SegmentsExperiencePriorityException extends PortalException {
 		super(msg);
 	}
 
-	public SegmentsExperiencePriorityException(String msg, Throwable cause) {
-		super(msg, cause);
+	public SegmentsExperiencePriorityException(
+		String msg, Throwable throwable) {
+
+		super(msg, throwable);
 	}
 
-	public SegmentsExperiencePriorityException(Throwable cause) {
-		super(cause);
+	public SegmentsExperiencePriorityException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

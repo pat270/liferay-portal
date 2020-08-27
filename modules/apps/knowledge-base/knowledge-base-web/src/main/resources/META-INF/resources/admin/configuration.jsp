@@ -112,27 +112,45 @@ kbGroupServiceConfiguration = ParameterMapUtil.setParameterMap(KBGroupServiceCon
 			</liferay-ui:section>
 
 			<%
-			Map<String, String> emailDefinitionTerms = new LinkedHashMap<String, String>();
-
-			emailDefinitionTerms.put("[$ARTICLE_ATTACHMENTS$]", LanguageUtil.get(resourceBundle, "the-article-attachments-file-names"));
-			emailDefinitionTerms.put("[$ARTICLE_CONTENT$]", LanguageUtil.get(resourceBundle, "the-article-content"));
-			emailDefinitionTerms.put("[$ARTICLE_CONTENT_DIFF$]", LanguageUtil.get(resourceBundle, "the-article-content-diff"));
-			emailDefinitionTerms.put("[$ARTICLE_TITLE$]", LanguageUtil.get(resourceBundle, "the-article-title"));
-			emailDefinitionTerms.put("[$ARTICLE_TITLE_DIFF$]", LanguageUtil.get(resourceBundle, "the-article-title-diff"));
-			emailDefinitionTerms.put("[$ARTICLE_URL$]", LanguageUtil.get(resourceBundle, "the-article-url"));
-			emailDefinitionTerms.put("[$ARTICLE_USER_ADDRESS$]", LanguageUtil.get(resourceBundle, "the-email-address-of-the-user-who-added-the-article"));
-			emailDefinitionTerms.put("[$ARTICLE_USER_NAME$]", LanguageUtil.get(resourceBundle, "the-user-who-added-the-article"));
-			emailDefinitionTerms.put("[$ARTICLE_VERSION$]", LanguageUtil.get(resourceBundle, "the-article-version"));
-			emailDefinitionTerms.put("[$CATEGORY_TITLE$]", LanguageUtil.get(resourceBundle, "category.kb"));
-			emailDefinitionTerms.put("[$COMPANY_ID$]", LanguageUtil.get(resourceBundle, "the-company-id-associated-with-the-article"));
-			emailDefinitionTerms.put("[$COMPANY_MX$]", LanguageUtil.get(resourceBundle, "the-company-mx-associated-with-the-article"));
-			emailDefinitionTerms.put("[$COMPANY_NAME$]", LanguageUtil.get(resourceBundle, "the-company-name-associated-with-the-article"));
-			emailDefinitionTerms.put("[$FROM_ADDRESS$]", HtmlUtil.escape(kbGroupServiceConfiguration.emailFromAddress()));
-			emailDefinitionTerms.put("[$FROM_NAME$]", HtmlUtil.escape(kbGroupServiceConfiguration.emailFromName()));
-			emailDefinitionTerms.put("[$PORTAL_URL$]", PortalUtil.getPortalURL(themeDisplay));
-			emailDefinitionTerms.put("[$SITE_NAME$]", LanguageUtil.get(resourceBundle, "the-site-name-associated-with-the-article"));
-			emailDefinitionTerms.put("[$TO_ADDRESS$]", LanguageUtil.get(resourceBundle, "the-address-of-the-email-recipient"));
-			emailDefinitionTerms.put("[$TO_NAME$]", LanguageUtil.get(resourceBundle, "the-name-of-the-email-recipient"));
+			Map<String, String> emailDefinitionTerms = LinkedHashMapBuilder.put(
+				"[$ARTICLE_ATTACHMENTS$]", LanguageUtil.get(resourceBundle, "the-article-attachments-file-names")
+			).put(
+				"[$ARTICLE_CONTENT$]", LanguageUtil.get(resourceBundle, "the-article-content")
+			).put(
+				"[$ARTICLE_CONTENT_DIFF$]", LanguageUtil.get(resourceBundle, "the-article-content-diff")
+			).put(
+				"[$ARTICLE_TITLE$]", LanguageUtil.get(resourceBundle, "the-article-title")
+			).put(
+				"[$ARTICLE_TITLE_DIFF$]", LanguageUtil.get(resourceBundle, "the-article-title-diff")
+			).put(
+				"[$ARTICLE_URL$]", LanguageUtil.get(resourceBundle, "the-article-url")
+			).put(
+				"[$ARTICLE_USER_ADDRESS$]", LanguageUtil.get(resourceBundle, "the-email-address-of-the-user-who-added-the-article")
+			).put(
+				"[$ARTICLE_USER_NAME$]", LanguageUtil.get(resourceBundle, "the-user-who-added-the-article")
+			).put(
+				"[$ARTICLE_VERSION$]", LanguageUtil.get(resourceBundle, "the-article-version")
+			).put(
+				"[$CATEGORY_TITLE$]", LanguageUtil.get(resourceBundle, "category.kb")
+			).put(
+				"[$COMPANY_ID$]", LanguageUtil.get(resourceBundle, "the-company-id-associated-with-the-article")
+			).put(
+				"[$COMPANY_MX$]", LanguageUtil.get(resourceBundle, "the-company-mx-associated-with-the-article")
+			).put(
+				"[$COMPANY_NAME$]", LanguageUtil.get(resourceBundle, "the-company-name-associated-with-the-article")
+			).put(
+				"[$FROM_ADDRESS$]", HtmlUtil.escape(kbGroupServiceConfiguration.emailFromAddress())
+			).put(
+				"[$FROM_NAME$]", HtmlUtil.escape(kbGroupServiceConfiguration.emailFromName())
+			).put(
+				"[$PORTAL_URL$]", PortalUtil.getPortalURL(themeDisplay)
+			).put(
+				"[$SITE_NAME$]", LanguageUtil.get(resourceBundle, "the-site-name-associated-with-the-article")
+			).put(
+				"[$TO_ADDRESS$]", LanguageUtil.get(resourceBundle, "the-address-of-the-email-recipient")
+			).put(
+				"[$TO_NAME$]", LanguageUtil.get(resourceBundle, "the-name-of-the-email-recipient")
+			).build();
 			%>
 
 			<liferay-ui:section>
@@ -160,15 +178,21 @@ kbGroupServiceConfiguration = ParameterMapUtil.setParameterMap(KBGroupServiceCon
 			</liferay-ui:section>
 
 			<%
-			emailDefinitionTerms = new LinkedHashMap<String, String>();
-
-			emailDefinitionTerms.put("[$ARTICLE_CONTENT$]", LanguageUtil.get(resourceBundle, "the-article-content"));
-			emailDefinitionTerms.put("[$ARTICLE_TITLE$]", LanguageUtil.get(resourceBundle, "the-article-title"));
-			emailDefinitionTerms.put("[$ARTICLE_URL$]", LanguageUtil.get(resourceBundle, "the-article-url"));
-			emailDefinitionTerms.put("[$COMMENT_CONTENT$]", LanguageUtil.get(resourceBundle, "the-comment-content"));
-			emailDefinitionTerms.put("[$COMMENT_CREATE_DATE$]", LanguageUtil.get(resourceBundle, "the-comment-create-date"));
-			emailDefinitionTerms.put("[$TO_ADDRESS$]", LanguageUtil.get(resourceBundle, "the-address-of-the-email-recipient"));
-			emailDefinitionTerms.put("[$TO_NAME$]", LanguageUtil.get(resourceBundle, "the-name-of-the-email-recipient"));
+			emailDefinitionTerms = LinkedHashMapBuilder.put(
+				"[$ARTICLE_CONTENT$]", LanguageUtil.get(resourceBundle, "the-article-content")
+			).put(
+				"[$ARTICLE_TITLE$]", LanguageUtil.get(resourceBundle, "the-article-title")
+			).put(
+				"[$ARTICLE_URL$]", LanguageUtil.get(resourceBundle, "the-article-url")
+			).put(
+				"[$COMMENT_CONTENT$]", LanguageUtil.get(resourceBundle, "the-comment-content")
+			).put(
+				"[$COMMENT_CREATE_DATE$]", LanguageUtil.get(resourceBundle, "the-comment-create-date")
+			).put(
+				"[$TO_ADDRESS$]", LanguageUtil.get(resourceBundle, "the-address-of-the-email-recipient")
+			).put(
+				"[$TO_NAME$]", LanguageUtil.get(resourceBundle, "the-name-of-the-email-recipient")
+			).build();
 			%>
 
 			<liferay-ui:section>
@@ -225,7 +249,7 @@ kbGroupServiceConfiguration = ParameterMapUtil.setParameterMap(KBGroupServiceCon
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
-		<aui:button onClick='<%= renderResponse.getNamespace() + "save();" %>' value="save" />
+		<aui:button onClick='<%= liferayPortletResponse.getNamespace() + "save();" %>' value="save" />
 
 		<aui:button type="cancel" />
 	</liferay-frontend:edit-form-footer>
@@ -233,7 +257,7 @@ kbGroupServiceConfiguration = ParameterMapUtil.setParameterMap(KBGroupServiceCon
 
 <aui:script>
 	function <portlet:namespace />save() {
-		var form = document.querySelector('#<portlet:namespace />fm');
+		var form = document.getElementById('<portlet:namespace />fm');
 
 		if (form) {
 			var emailKBArticleAddedEditor = window.<portlet:namespace />emailKBArticleAdded.getHTML();
@@ -242,11 +266,21 @@ kbGroupServiceConfiguration = ParameterMapUtil.setParameterMap(KBGroupServiceCon
 			var emailKBArticleSuggestionResolvedEditor = window.<portlet:namespace />emailKBArticleSuggestionResolved.getHTML();
 			var emailKBArticleUpdatedEditor = window.<portlet:namespace />emailKBArticleUpdated.getHTML();
 
-			form.querySelector('#<portlet:namespace />emailKBArticleAddedBody').value = emailKBArticleAddedEditor;
-			form.querySelector('#<portlet:namespace />emailKBArticleUpdatedBody').value = emailKBArticleUpdatedEditor;
-			form.querySelector('#<portlet:namespace />emailKBArticleSuggestionReceivedBody').value = emailKBArticleSuggestionReceivedEditor;
-			form.querySelector('#<portlet:namespace />emailKBArticleSuggestionInProgressBody').value = emailKBArticleSuggestionInProgressEditor;
-			form.querySelector('#<portlet:namespace />emailKBArticleSuggestionResolvedBody').value = emailKBArticleSuggestionResolvedEditor;
+			document.getElementById(
+				'<portlet:namespace />emailKBArticleAddedBody'
+			).value = emailKBArticleAddedEditor;
+			document.getElementById(
+				'<portlet:namespace />emailKBArticleUpdatedBody'
+			).value = emailKBArticleUpdatedEditor;
+			document.getElementById(
+				'<portlet:namespace />emailKBArticleSuggestionReceivedBody'
+			).value = emailKBArticleSuggestionReceivedEditor;
+			document.getElementById(
+				'<portlet:namespace />emailKBArticleSuggestionInProgressBody'
+			).value = emailKBArticleSuggestionInProgressEditor;
+			document.getElementById(
+				'<portlet:namespace />emailKBArticleSuggestionResolvedBody'
+			).value = emailKBArticleSuggestionResolvedEditor;
 
 			submitForm(form);
 		}

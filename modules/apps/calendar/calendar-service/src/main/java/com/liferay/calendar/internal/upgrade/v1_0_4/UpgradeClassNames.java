@@ -15,8 +15,10 @@
 package com.liferay.calendar.internal.upgrade.v1_0_4;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.util.LoggingTimer;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.upgrade.v7_0_0.UpgradeKernelPackage;
 
@@ -32,6 +34,8 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 	@Override
 	public void doUpgrade() throws UpgradeException {
 		updateCalEventClassName();
+
+		deleteRelatedAssetEntries();
 
 		deleteCalEventClassName();
 		deleteDuplicateResourcePermissions();
@@ -62,8 +66,8 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 				"delete from ResourcePermission where name like '" +
 					_CLASS_NAME_CAL_EVENT + "%'");
 		}
-		catch (Exception e) {
-			throw new UpgradeException(e);
+		catch (Exception exception) {
+			throw new UpgradeException(exception);
 		}
 	}
 
@@ -96,8 +100,8 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 					runSQL(deleteSQL);
 				}
 			}
-			catch (Exception e) {
-				throw new UpgradeException(e);
+			catch (Exception exception) {
+				throw new UpgradeException(exception);
 			}
 		}
 	}
@@ -122,9 +126,46 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 							rs.getString(1), "' and name= '", oldName, "'"));
 				}
 			}
-			catch (Exception e) {
-				throw new UpgradeException(e);
+			catch (Exception exception) {
+				throw new UpgradeException(exception);
 			}
+		}
+	}
+
+	protected void deleteRelatedAssetEntries() throws UpgradeException {
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement ps = connection.prepareStatement(
+				"select entryId from AssetEntry where classNameId = ?");
+			PreparedStatement ps1 = AutoBatchPreparedStatementUtil.autoBatch(
+				connection.prepareStatement(
+					"delete from AssetLink where entryId1 = ? or entryId2 = " +
+						"?"));
+			PreparedStatement ps2 = AutoBatchPreparedStatementUtil.autoBatch(
+				connection.prepareStatement(
+					"delete from AssetEntry where entryId = ? "))) {
+
+			ps.setLong(1, PortalUtil.getClassNameId(_CLASS_NAME_CAL_EVENT));
+
+			ResultSet rs = ps.executeQuery();
+
+			while (rs.next()) {
+				long entryId = rs.getLong("entryId");
+
+				ps1.setLong(1, entryId);
+				ps1.setLong(2, entryId);
+
+				ps1.addBatch();
+
+				ps2.setLong(1, entryId);
+				ps2.addBatch();
+			}
+
+			ps1.executeBatch();
+
+			ps2.executeBatch();
+		}
+		catch (SQLException sqlException) {
+			throw new UpgradeException(sqlException);
 		}
 	}
 
@@ -194,8 +235,8 @@ public class UpgradeClassNames extends UpgradeKernelPackage {
 				ps3.execute();
 			}
 		}
-		catch (SQLException sqle) {
-			throw new UpgradeException(sqle);
+		catch (SQLException sqlException) {
+			throw new UpgradeException(sqlException);
 		}
 	}
 

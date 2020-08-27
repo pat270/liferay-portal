@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -44,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -124,6 +124,10 @@ public class SocialActivityLimitPersistenceTest {
 
 		SocialActivityLimit newSocialActivityLimit = _persistence.create(pk);
 
+		newSocialActivityLimit.setMvccVersion(RandomTestUtil.nextLong());
+
+		newSocialActivityLimit.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newSocialActivityLimit.setGroupId(RandomTestUtil.nextLong());
 
 		newSocialActivityLimit.setCompanyId(RandomTestUtil.nextLong());
@@ -147,6 +151,12 @@ public class SocialActivityLimitPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newSocialActivityLimit.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingSocialActivityLimit.getMvccVersion(),
+			newSocialActivityLimit.getMvccVersion());
+		Assert.assertEquals(
+			existingSocialActivityLimit.getCtCollectionId(),
+			newSocialActivityLimit.getCtCollectionId());
 		Assert.assertEquals(
 			existingSocialActivityLimit.getActivityLimitId(),
 			newSocialActivityLimit.getActivityLimitId());
@@ -237,10 +247,10 @@ public class SocialActivityLimitPersistenceTest {
 
 	protected OrderByComparator<SocialActivityLimit> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"SocialActivityLimit", "activityLimitId", true, "groupId", true,
-			"companyId", true, "userId", true, "classNameId", true, "classPK",
-			true, "activityType", true, "activityCounterName", true, "value",
-			true);
+			"SocialActivityLimit", "mvccVersion", true, "ctCollectionId", true,
+			"activityLimitId", true, "groupId", true, "companyId", true,
+			"userId", true, "classNameId", true, "classPK", true,
+			"activityType", true, "activityCounterName", true, "value", true);
 	}
 
 	@Test
@@ -470,47 +480,95 @@ public class SocialActivityLimitPersistenceTest {
 
 		_persistence.clearCache();
 
-		SocialActivityLimit existingSocialActivityLimit =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newSocialActivityLimit.getPrimaryKey());
+				newSocialActivityLimit.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		SocialActivityLimit newSocialActivityLimit = addSocialActivityLimit();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			SocialActivityLimit.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"activityLimitId",
+				newSocialActivityLimit.getActivityLimitId()));
+
+		List<SocialActivityLimit> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		SocialActivityLimit socialActivityLimit) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityLimit.getGroupId()),
+			Long.valueOf(socialActivityLimit.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityLimit, "getOriginalGroupId",
-				new Class<?>[0]));
+				socialActivityLimit, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityLimit.getUserId()),
+			Long.valueOf(socialActivityLimit.getUserId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityLimit, "getOriginalUserId",
-				new Class<?>[0]));
+				socialActivityLimit, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "userId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityLimit.getClassNameId()),
+			Long.valueOf(socialActivityLimit.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityLimit, "getOriginalClassNameId",
-				new Class<?>[0]));
+				socialActivityLimit, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingSocialActivityLimit.getClassPK()),
+			Long.valueOf(socialActivityLimit.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingSocialActivityLimit, "getOriginalClassPK",
-				new Class<?>[0]));
+				socialActivityLimit, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 		Assert.assertEquals(
-			Integer.valueOf(existingSocialActivityLimit.getActivityType()),
+			Integer.valueOf(socialActivityLimit.getActivityType()),
 			ReflectionTestUtil.<Integer>invoke(
-				existingSocialActivityLimit, "getOriginalActivityType",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingSocialActivityLimit.getActivityCounterName(),
-				ReflectionTestUtil.invoke(
-					existingSocialActivityLimit,
-					"getOriginalActivityCounterName", new Class<?>[0])));
+				socialActivityLimit, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "activityType"));
+		Assert.assertEquals(
+			socialActivityLimit.getActivityCounterName(),
+			ReflectionTestUtil.invoke(
+				socialActivityLimit, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "activityCounterName"));
 	}
 
 	protected SocialActivityLimit addSocialActivityLimit() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		SocialActivityLimit socialActivityLimit = _persistence.create(pk);
+
+		socialActivityLimit.setMvccVersion(RandomTestUtil.nextLong());
+
+		socialActivityLimit.setCtCollectionId(RandomTestUtil.nextLong());
 
 		socialActivityLimit.setGroupId(RandomTestUtil.nextLong());
 

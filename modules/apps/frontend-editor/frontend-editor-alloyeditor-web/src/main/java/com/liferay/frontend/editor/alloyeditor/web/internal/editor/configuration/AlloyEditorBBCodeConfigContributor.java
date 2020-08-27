@@ -63,7 +63,7 @@ public class AlloyEditorBBCodeConfigContributor
 		jsonObject.put(
 			"allowedContent", Boolean.TRUE
 		).put(
-			"enterMode", 1
+			"enterMode", 2
 		);
 
 		String extraPlugins = jsonObject.getString("extraPlugins");
@@ -72,8 +72,6 @@ public class AlloyEditorBBCodeConfigContributor
 
 		jsonObject.put(
 			"extraPlugins", extraPlugins
-		).put(
-			"forceEnterMode", Boolean.TRUE
 		).put(
 			"format_tags", "p;pre"
 		).put(
@@ -92,11 +90,7 @@ public class AlloyEditorBBCodeConfigContributor
 
 		jsonObject.put(
 			"removePlugins",
-			removePlugins.concat(
-				","
-			).concat(
-				sb.toString()
-			)
+			StringBundler.concat(removePlugins, ",", sb.toString())
 		).put(
 			"smiley_images",
 			toJSONArray(BBCodeTranslatorUtil.getEmoticonFiles())
@@ -136,7 +130,7 @@ public class AlloyEditorBBCodeConfigContributor
 		try {
 			resourceBundle = _resourceBundleLoader.loadResourceBundle(locale);
 		}
-		catch (MissingResourceException mre) {
+		catch (MissingResourceException missingResourceException) {
 			resourceBundle = ResourceBundleUtil.EMPTY_RESOURCE_BUNDLE;
 		}
 

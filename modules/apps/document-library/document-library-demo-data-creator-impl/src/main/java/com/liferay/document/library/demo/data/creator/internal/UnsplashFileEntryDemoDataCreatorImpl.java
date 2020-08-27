@@ -82,9 +82,10 @@ public class UnsplashFileEntryDemoDataCreatorImpl
 			try {
 				_dlAppLocalService.deleteFileEntry(fileEntryId);
 			}
-			catch (NoSuchFileEntryException nsfee) {
+			catch (NoSuchFileEntryException noSuchFileEntryException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nsfee, nsfee);
+					_log.warn(
+						noSuchFileEntryException, noSuchFileEntryException);
 				}
 			}
 
@@ -95,16 +96,12 @@ public class UnsplashFileEntryDemoDataCreatorImpl
 	private byte[] _getBytes() throws IOException, PortalException {
 		URL url = _getNextUrl();
 
-		InputStream inputStream = null;
-
-		try {
-			inputStream = url.openStream();
-
+		try (InputStream inputStream = url.openStream()) {
 			return FileUtil.getBytes(inputStream);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(ioe, ioe);
+				_log.warn(ioException, ioException);
 			}
 
 			String fileName = String.format(
@@ -113,13 +110,8 @@ public class UnsplashFileEntryDemoDataCreatorImpl
 			try {
 				return FileUtil.getBytes(getClass(), fileName);
 			}
-			catch (Exception e) {
-				throw new PortalException(e);
-			}
-		}
-		finally {
-			if (inputStream != null) {
-				inputStream.close();
+			catch (Exception exception) {
+				throw new PortalException(exception);
 			}
 		}
 	}

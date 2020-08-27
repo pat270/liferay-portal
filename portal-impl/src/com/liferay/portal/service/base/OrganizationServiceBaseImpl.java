@@ -67,7 +67,7 @@ import javax.sql.DataSource;
  */
 public abstract class OrganizationServiceBaseImpl
 	extends BaseServiceImpl
-	implements OrganizationService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, OrganizationService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -1361,8 +1361,8 @@ public abstract class OrganizationServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

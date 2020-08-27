@@ -22,16 +22,12 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface TransactionStatus {
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public Object getPlatformTransactionManager();
-
 	public boolean isCompleted();
 
 	public boolean isNewTransaction();
 
 	public boolean isRollbackOnly();
+
+	public void suppressLifecycleListenerThrowable(Throwable throwable);
 
 }

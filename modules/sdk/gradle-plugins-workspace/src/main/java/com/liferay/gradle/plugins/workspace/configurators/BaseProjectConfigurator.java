@@ -14,6 +14,10 @@
 
 package com.liferay.gradle.plugins.workspace.configurators;
 
+import com.liferay.gradle.plugins.LiferayBasePlugin;
+import com.liferay.gradle.plugins.extensions.AppServer;
+import com.liferay.gradle.plugins.extensions.LiferayExtension;
+import com.liferay.gradle.plugins.extensions.TomcatAppServer;
 import com.liferay.gradle.plugins.workspace.ProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.WorkspacePlugin;
@@ -28,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.NamedDomainObjectCollection;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.initialization.Settings;
@@ -35,26 +40,31 @@ import org.gradle.api.tasks.Copy;
 
 /**
  * @author Andrea Di Giorgi
+ * @author Gregory Amerson
  */
 public abstract class BaseProjectConfigurator implements ProjectConfigurator {
 
 	public BaseProjectConfigurator(Settings settings) {
 		String defaultRootDirNames = GradleUtil.getProperty(
 			settings, getDefaultRootDirPropertyName(), (String)null);
+		File rootDir = settings.getRootDir();
 
 		if (Validator.isNotNull(defaultRootDirNames)) {
-			_defaultRootDirs = new HashSet<>();
+			if (defaultRootDirNames.equals("*")) {
+				_defaultRootDirs = Collections.singleton(rootDir);
+			}
+			else {
+				_defaultRootDirs = new HashSet<>();
 
-			for (String dirName : defaultRootDirNames.split("\\s*,\\s*")) {
-				File dir = new File(settings.getRootDir(), dirName);
+				for (String dirName : defaultRootDirNames.split("\\s*,\\s*")) {
+					File dir = new File(rootDir, dirName);
 
-				_defaultRootDirs.add(dir);
+					_defaultRootDirs.add(dir);
+				}
 			}
 		}
 		else {
-			File dir = new File(settings.getRootDir(), getDefaultRootDirName());
-
-			_defaultRootDirs = Collections.singleton(dir);
+			_defaultRootDirs = Collections.singleton(rootDir);
 		}
 	}
 
@@ -77,9 +87,9 @@ public abstract class BaseProjectConfigurator implements ProjectConfigurator {
 
 			return doGetProjectDirs(rootDir);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new GradleException(
-				"Unable to get project directories from " + rootDir, e);
+				"Unable to get project directories from " + rootDir, exception);
 		}
 	}
 
@@ -111,19 +121,50 @@ public abstract class BaseProjectConfigurator implements ProjectConfigurator {
 
 		copy.setGroup(RootProjectConfigurator.DOCKER_GROUP);
 
+		Task deployTask = GradleUtil.getTask(
+			project, LiferayBasePlugin.DEPLOY_TASK_NAME);
+
+		deployTask.finalizedBy(copy);
+
 		Task buildDockerImageTask = GradleUtil.getTask(
 			project.getRootProject(),
 			RootProjectConfigurator.BUILD_DOCKER_IMAGE_TASK_NAME);
 
-		buildDockerImageTask.dependsOn(copy);
-
-		Task createDockerContainerTask = GradleUtil.getTask(
-			project.getRootProject(),
-			RootProjectConfigurator.CREATE_DOCKER_CONTAINER_TASK_NAME);
-
-		createDockerContainerTask.dependsOn(copy);
+		buildDockerImageTask.dependsOn(deployTask);
 
 		return copy;
+	}
+
+	protected void configureLiferay(
+		Project project, WorkspaceExtension workspaceExtension) {
+
+		LiferayExtension liferayExtension = GradleUtil.getExtension(
+			project, LiferayExtension.class);
+
+		liferayExtension.setAppServerParentDir(workspaceExtension.getHomeDir());
+
+		String version = GradleUtil.getProperty(
+			project, "app.server.tomcat.version", (String)null);
+
+		File dir = workspaceExtension.getHomeDir();
+
+		if ((version == null) && dir.exists()) {
+			for (String fileName : dir.list()) {
+				if (fileName.startsWith("tomcat-")) {
+					version = fileName.substring(fileName.indexOf("-") + 1);
+
+					NamedDomainObjectCollection<AppServer>
+						namedDomainObjectCollection =
+							liferayExtension.getAppServers();
+
+					TomcatAppServer tomcatAppServer =
+						(TomcatAppServer)namedDomainObjectCollection.getByName(
+							"tomcat");
+
+					tomcatAppServer.setVersion(version);
+				}
+			}
+		}
 	}
 
 	protected abstract Iterable<File> doGetProjectDirs(File rootDir)
@@ -135,6 +176,22 @@ public abstract class BaseProjectConfigurator implements ProjectConfigurator {
 
 	protected String getDefaultRootDirPropertyName() {
 		return WorkspacePlugin.PROPERTY_PREFIX + getName() + ".dir";
+	}
+
+	protected boolean isExcludedDirName(String dirName) {
+		if (dirName == null) {
+			return false;
+		}
+
+		if (dirName.equals(".gradle") || dirName.equals("build") ||
+			dirName.equals("build_gradle") || dirName.equals("dist") ||
+			dirName.equals("gradle") || dirName.equals("node_modules") ||
+			dirName.equals("node_modules_cache") || dirName.equals("src")) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private final Set<File> _defaultRootDirs;

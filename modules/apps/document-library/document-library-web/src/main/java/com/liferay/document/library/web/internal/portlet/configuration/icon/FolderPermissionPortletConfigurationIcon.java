@@ -17,7 +17,8 @@ package com.liferay.document.library.web.internal.portlet.configuration.icon;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
-import com.liferay.petra.string.StringPool;
+import com.liferay.document.library.web.internal.util.DLPortletConfigurationIconUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
@@ -25,7 +26,7 @@ import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfiguration
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -42,7 +43,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Roberto Díaz
  */
 @Component(
-	immediate = true,
 	property = {
 		"javax.portlet.name=" + DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
 		"path=/document_library/edit_folder",
@@ -63,35 +63,32 @@ public class FolderPermissionPortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		String url = StringPool.BLANK;
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		try {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
 			Folder folder = ActionUtil.getFolder(portletRequest);
 
 			if (folder != null) {
-				url = PermissionsURLTag.doTag(
+				return PermissionsURLTag.doTag(
 					null, DLFolderConstants.getClassName(),
 					HtmlUtil.unescape(folder.getName()), null,
 					String.valueOf(folder.getFolderId()),
 					LiferayWindowState.POP_UP.toString(), null,
 					themeDisplay.getRequest());
 			}
-			else {
-				url = PermissionsURLTag.doTag(
-					null, "com.liferay.document.library",
-					HtmlUtil.unescape(themeDisplay.getScopeGroupName()), null,
-					String.valueOf(themeDisplay.getScopeGroupId()),
-					LiferayWindowState.POP_UP.toString(), null,
-					themeDisplay.getRequest());
-			}
-		}
-		catch (Exception e) {
-		}
 
-		return url;
+			return PermissionsURLTag.doTag(
+				null, "com.liferay.document.library",
+				HtmlUtil.unescape(themeDisplay.getScopeGroupName()), null,
+				String.valueOf(themeDisplay.getScopeGroupId()),
+				LiferayWindowState.POP_UP.toString(), null,
+				themeDisplay.getRequest());
+		}
+		catch (Exception exception) {
+			return ReflectionUtil.throwException(exception);
+		}
 	}
 
 	@Override
@@ -101,33 +98,32 @@ public class FolderPermissionPortletConfigurationIcon
 
 	@Override
 	public boolean isShow(PortletRequest portletRequest) {
-		try {
-			Folder folder = ActionUtil.getFolder(portletRequest);
+		return DLPortletConfigurationIconUtil.runWithDefaultValueOnError(
+			false,
+			() -> {
+				Folder folder = ActionUtil.getFolder(portletRequest);
 
-			if (folder == null) {
-				return false;
-			}
+				if (folder == null) {
+					return false;
+				}
 
-			if (!folder.isMountPoint() &&
-				RepositoryUtil.isExternalRepository(folder.getRepositoryId())) {
+				if (!folder.isMountPoint() &&
+					RepositoryUtil.isExternalRepository(
+						folder.getRepositoryId())) {
 
-				return false;
-			}
+					return false;
+				}
 
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)portletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)portletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
-			return ModelResourcePermissionHelper.contains(
-				_folderModelResourcePermission,
-				themeDisplay.getPermissionChecker(),
-				themeDisplay.getScopeGroupId(), folder.getFolderId(),
-				ActionKeys.PERMISSIONS);
-		}
-		catch (Exception e) {
-		}
-
-		return false;
+				return ModelResourcePermissionUtil.contains(
+					_folderModelResourcePermission,
+					themeDisplay.getPermissionChecker(),
+					themeDisplay.getScopeGroupId(), folder.getFolderId(),
+					ActionKeys.PERMISSIONS);
+			});
 	}
 
 	@Override

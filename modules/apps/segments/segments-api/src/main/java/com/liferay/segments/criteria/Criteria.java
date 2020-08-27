@@ -26,15 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Represents a segment criteria as a composition of {@link Criterion} objects.
  *
  * @author Eduardo García
- * @review
  */
-@ProviderType
 public final class Criteria implements Serializable {
 
 	public Criteria() {
@@ -94,6 +90,10 @@ public final class Criteria implements Serializable {
 
 	public String getFilterString(Type type) {
 		return _filterStrings.get(type.getValue());
+	}
+
+	public Map<String, String> getFilterStrings() {
+		return _filterStrings;
 	}
 
 	public Conjunction getTypeConjunction(Type type) {
@@ -178,7 +178,7 @@ public final class Criteria implements Serializable {
 
 	public enum Type {
 
-		CONTEXT("context"), MODEL("model");
+		CONTEXT("context"), MODEL("model"), REFERRED("referred");
 
 		public static Type parse(String value) {
 			if (Objects.equals(CONTEXT.getValue(), value)) {
@@ -186,6 +186,9 @@ public final class Criteria implements Serializable {
 			}
 			else if (Objects.equals(MODEL.getValue(), value)) {
 				return MODEL;
+			}
+			else if (Objects.equals(REFERRED.getValue(), value)) {
+				return REFERRED;
 			}
 
 			throw new IllegalArgumentException("Invalid value " + value);
@@ -226,7 +229,7 @@ public final class Criteria implements Serializable {
 		return sb.toString();
 	}
 
-	private Map<String, Criterion> _criteria = new HashMap();
-	private Map<String, String> _filterStrings = new HashMap();
+	private Map<String, Criterion> _criteria = new HashMap<>();
+	private Map<String, String> _filterStrings = new HashMap<>();
 
 }

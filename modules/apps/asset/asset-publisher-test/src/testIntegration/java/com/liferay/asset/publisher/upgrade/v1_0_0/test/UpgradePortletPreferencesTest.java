@@ -28,12 +28,12 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.journal.model.JournalArticle;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.CacheRegistryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -41,18 +41,17 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.SAXReader;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 
 import java.lang.reflect.Constructor;
 
 import java.text.DateFormat;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -104,38 +103,35 @@ public class UpgradePortletPreferencesTest {
 
 	@Test
 	public void testUpgradeDLDateFieldsValues() throws Exception {
-		DDMStructure ddmStructure = addDDMStructure(
-			DLFileEntryMetadata.class.getName());
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext();
-
-		DLFileEntryType dlFileEntryType =
-			DLFileEntryTypeLocalServiceUtil.addFileEntryType(
-				TestPropsValues.getUserId(), _group.getGroupId(),
-				"New File Entry Type", StringPool.BLANK,
-				new long[] {ddmStructure.getStructureId()}, serviceContext);
-
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabledDLFileEntryAssetRendererFactory",
-			Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
-			"anyClassTypeDLFileEntryAssetRendererFactory",
-			String.valueOf(dlFileEntryType.getFileEntryTypeId()));
-
 		Date now = new Date();
 
 		String dateString = _oldDateFormat.format(now);
 
-		portletPreferencesMap.put("ddmStructureFieldName", "Birthday");
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
+			"anyClassTypeDLFileEntryAssetRendererFactory",
+			() -> {
+				DDMStructure ddmStructure = addDDMStructure(
+					DLFileEntryMetadata.class.getName());
 
-		portletPreferencesMap.put("ddmStructureFieldValue", dateString);
+				DLFileEntryType dlFileEntryType =
+					DLFileEntryTypeLocalServiceUtil.addFileEntryType(
+						TestPropsValues.getUserId(), _group.getGroupId(),
+						"New File Entry Type", StringPool.BLANK,
+						new long[] {ddmStructure.getStructureId()},
+						ServiceContextTestUtil.getServiceContext());
+
+				return String.valueOf(dlFileEntryType.getFileEntryTypeId());
+			}
+		).put(
+			"ddmStructureFieldName", "Birthday"
+		).put(
+			"ddmStructureFieldValue", dateString
+		).put(
+			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString()
+		).put(
+			"subtypeFieldsFilterEnabledDLFileEntryAssetRendererFactory",
+			Boolean.TRUE.toString()
+		).build();
 
 		String portletId = getPortletId();
 
@@ -162,34 +158,31 @@ public class UpgradePortletPreferencesTest {
 
 	@Test
 	public void testUpgradeDLDateFieldsValuesWithEmptyValue() throws Exception {
-		DDMStructure ddmStructure = addDDMStructure(
-			DLFileEntryMetadata.class.getName());
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext();
-
-		DLFileEntryType dlFileEntryType =
-			DLFileEntryTypeLocalServiceUtil.addFileEntryType(
-				TestPropsValues.getUserId(), _group.getGroupId(),
-				"New File Entry Type", StringPool.BLANK,
-				new long[] {ddmStructure.getStructureId()}, serviceContext);
-
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabledDLFileEntryAssetRendererFactory",
-			Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
 			"anyClassTypeDLFileEntryAssetRendererFactory",
-			String.valueOf(dlFileEntryType.getFileEntryTypeId()));
+			() -> {
+				DDMStructure ddmStructure = addDDMStructure(
+					DLFileEntryMetadata.class.getName());
 
-		portletPreferencesMap.put("ddmStructureFieldName", "Birthday");
+				DLFileEntryType dlFileEntryType =
+					DLFileEntryTypeLocalServiceUtil.addFileEntryType(
+						TestPropsValues.getUserId(), _group.getGroupId(),
+						"New File Entry Type", StringPool.BLANK,
+						new long[] {ddmStructure.getStructureId()},
+						ServiceContextTestUtil.getServiceContext());
 
-		portletPreferencesMap.put("ddmStructureFieldValue", StringPool.BLANK);
+				return String.valueOf(dlFileEntryType.getFileEntryTypeId());
+			}
+		).put(
+			"ddmStructureFieldName", "Birthday"
+		).put(
+			"ddmStructureFieldValue", StringPool.BLANK
+		).put(
+			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString()
+		).put(
+			"subtypeFieldsFilterEnabledDLFileEntryAssetRendererFactory",
+			Boolean.TRUE.toString()
+		).build();
 
 		String portletId = getPortletId();
 
@@ -209,29 +202,28 @@ public class UpgradePortletPreferencesTest {
 
 	@Test
 	public void testUpgradeJournalDateFieldValue() throws Exception {
-		DDMStructure ddmStructure = addDDMStructure(
-			JournalArticle.class.getName());
-
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabledJournalArticleAssetRendererFactory",
-			Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
-			"anyClassTypeJournalArticleAssetRendererFactory",
-			String.valueOf(ddmStructure.getStructureId()));
-
-		portletPreferencesMap.put("ddmStructureFieldName", "Birthday");
-
 		Date now = new Date();
 
 		String dateString = _oldDateFormat.format(now);
 
-		portletPreferencesMap.put("ddmStructureFieldValue", dateString);
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
+			"anyClassTypeJournalArticleAssetRendererFactory",
+			() -> {
+				DDMStructure ddmStructure = addDDMStructure(
+					JournalArticle.class.getName());
+
+				return String.valueOf(ddmStructure.getStructureId());
+			}
+		).put(
+			"ddmStructureFieldName", "Birthday"
+		).put(
+			"ddmStructureFieldValue", dateString
+		).put(
+			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString()
+		).put(
+			"subtypeFieldsFilterEnabledJournalArticleAssetRendererFactory",
+			Boolean.TRUE.toString()
+		).build();
 
 		String portletId = getPortletId();
 
@@ -260,25 +252,24 @@ public class UpgradePortletPreferencesTest {
 	public void testUpgradeJournalDateFieldValueWithEmptyValue()
 		throws Exception {
 
-		DDMStructure ddmStructure = addDDMStructure(
-			JournalArticle.class.getName());
-
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabledJournalArticleAssetRendererFactory",
-			Boolean.TRUE.toString());
-
-		portletPreferencesMap.put(
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
 			"anyClassTypeJournalArticleAssetRendererFactory",
-			String.valueOf(ddmStructure.getStructureId()));
+			() -> {
+				DDMStructure ddmStructure = addDDMStructure(
+					JournalArticle.class.getName());
 
-		portletPreferencesMap.put("ddmStructureFieldName", "Birthday");
-
-		portletPreferencesMap.put("ddmStructureFieldValue", StringPool.BLANK);
+				return String.valueOf(ddmStructure.getStructureId());
+			}
+		).put(
+			"ddmStructureFieldName", "Birthday"
+		).put(
+			"ddmStructureFieldValue", StringPool.BLANK
+		).put(
+			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString()
+		).put(
+			"subtypeFieldsFilterEnabledJournalArticleAssetRendererFactory",
+			Boolean.TRUE.toString()
+		).build();
 
 		String portletId = getPortletId();
 
@@ -303,11 +294,6 @@ public class UpgradePortletPreferencesTest {
 
 		DDMFormField ddmFormField = ddmStructure.getDDMFormField("Text");
 
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString());
-
 		StringBundler sb = new StringBundler(5);
 
 		sb.append("ddm");
@@ -316,8 +302,13 @@ public class UpgradePortletPreferencesTest {
 		sb.append(StringPool.DOUBLE_UNDERLINE);
 		sb.append(ddmFormField.getName());
 
-		portletPreferencesMap.put("orderByColumn1", sb.toString());
-		portletPreferencesMap.put("orderByColumn2", sb.toString());
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
+			"orderByColumn1", sb.toString()
+		).put(
+			"orderByColumn2", sb.toString()
+		).put(
+			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString()
+		).build();
 
 		String portletId = getPortletId();
 
@@ -349,11 +340,6 @@ public class UpgradePortletPreferencesTest {
 
 		DDMFormField ddmFormField = ddmStructure.getDDMFormField("Text");
 
-		Map<String, String> portletPreferencesMap = new HashMap<>();
-
-		portletPreferencesMap.put(
-			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString());
-
 		StringBundler sb = new StringBundler(5);
 
 		sb.append("ddm");
@@ -362,7 +348,11 @@ public class UpgradePortletPreferencesTest {
 		sb.append(StringPool.FORWARD_SLASH);
 		sb.append(ddmFormField.getName());
 
-		portletPreferencesMap.put("orderByColumn1", sb.toString());
+		Map<String, String> portletPreferencesMap = HashMapBuilder.put(
+			"orderByColumn1", sb.toString()
+		).put(
+			"subtypeFieldsFilterEnabled", Boolean.TRUE.toString()
+		).build();
 
 		sb = new StringBundler(7);
 

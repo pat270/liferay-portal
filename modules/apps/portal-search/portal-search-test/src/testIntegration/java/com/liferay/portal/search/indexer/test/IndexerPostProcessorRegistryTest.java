@@ -28,7 +28,8 @@ import com.liferay.portal.kernel.search.IndexerPostProcessor;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.util.HashMapDictionary;
-import com.liferay.portal.search.test.internal.util.TestIndexer;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.search.test.util.TestIndexer;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Arrays;
@@ -281,6 +282,9 @@ public class IndexerPostProcessorRegistryTest {
 
 		Assert.assertNotNull(contactIndexerPostProcessor);
 	}
+
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
 	protected void testQueuedIndexerPostProcessor(
 			Indexer<?> indexer, String indexerClassName)

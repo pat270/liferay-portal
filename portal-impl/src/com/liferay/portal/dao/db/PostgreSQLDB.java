@@ -18,10 +18,10 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.db.Index;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
 
@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,8 +102,7 @@ public class PostgreSQLDB extends BaseDB {
 
 	@Override
 	public String buildSQL(String template) throws IOException {
-		template = convertTimestamp(template);
-		template = replaceTemplate(template, getTemplate());
+		template = replaceTemplate(template);
 
 		template = reword(template);
 
@@ -113,21 +113,16 @@ public class PostgreSQLDB extends BaseDB {
 	public List<Index> getIndexes(Connection con) throws SQLException {
 		List<Index> indexes = new ArrayList<>();
 
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		StringBundler sb = new StringBundler(3);
 
-		try {
-			StringBundler sb = new StringBundler(3);
+		sb.append("select indexname, tablename, indexdef from pg_indexes ");
+		sb.append("where schemaname = current_schema() and (indexname like ");
+		sb.append("'liferay_%' or indexname like 'ix_%')");
 
-			sb.append("select indexname, tablename, indexdef from pg_indexes ");
-			sb.append("where indexname like 'liferay_%' or indexname like ");
-			sb.append("'ix_%'");
+		String sql = sb.toString();
 
-			String sql = sb.toString();
-
-			ps = con.prepareStatement(sql);
-
-			rs = ps.executeQuery();
+		try (PreparedStatement ps = con.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery()) {
 
 			while (rs.next()) {
 				String indexName = rs.getString("indexname");
@@ -144,24 +139,25 @@ public class PostgreSQLDB extends BaseDB {
 				indexes.add(new Index(indexName, tableName, unique));
 			}
 		}
-		finally {
-			DataAccess.cleanUp(ps, rs);
-		}
 
 		return indexes;
 	}
 
 	@Override
-	public boolean isSupportsQueryingAfterException() {
-		return _SUPPORTS_QUERYING_AFTER_EXCEPTION;
+	public String getPopulateSQL(String databaseName, String sqlContent) {
+		StringBundler sb = new StringBundler(4);
+
+		sb.append("\\c ");
+		sb.append(databaseName);
+		sb.append(";\n\n");
+		sb.append(sqlContent);
+
+		return sb.toString();
 	}
 
 	@Override
-	protected String buildCreateFileContent(
-			String sqlDir, String databaseName, int population)
-		throws IOException {
-
-		StringBundler sb = new StringBundler(14);
+	public String getRecreateSQL(String databaseName) {
+		StringBundler sb = new StringBundler(6);
 
 		sb.append("drop database ");
 		sb.append(databaseName);
@@ -170,23 +166,17 @@ public class PostgreSQLDB extends BaseDB {
 		sb.append(databaseName);
 		sb.append(" encoding = 'UNICODE';\n");
 
-		if (population != BARE) {
-			sb.append("\\c ");
-			sb.append(databaseName);
-			sb.append(";\n\n");
-			sb.append(getCreateTablesContent(sqlDir, getSuffix(population)));
-			sb.append("\n\n");
-			sb.append(readFile(sqlDir + "/indexes/indexes-postgresql.sql"));
-			sb.append("\n\n");
-			sb.append(readFile(sqlDir + "/sequences/sequences-postgresql.sql"));
-		}
-
 		return sb.toString();
 	}
 
 	@Override
-	protected String getServerName() {
-		return "postgresql";
+	public boolean isSupportsQueryingAfterException() {
+		return _SUPPORTS_QUERYING_AFTER_EXCEPTION;
+	}
+
+	@Override
+	protected int[] getSQLTypes() {
+		return _SQL_TYPES;
 	}
 
 	@Override
@@ -221,6 +211,25 @@ public class PostgreSQLDB extends BaseDB {
 						"alter table @table@ alter @old-column@ type @type@ " +
 							"using @old-column@::@type@;",
 						REWORD_TEMPLATE, template);
+
+					String nullable = template[template.length - 1];
+
+					if (!Validator.isBlank(nullable)) {
+						if (nullable.equals("not null")) {
+							line = line.concat(
+								StringUtil.replace(
+									"alter table @table@ alter column " +
+										"@old-column@ set not null;",
+									REWORD_TEMPLATE, template));
+						}
+						else {
+							line = line.concat(
+								StringUtil.replace(
+									"alter table @table@ alter column " +
+										"@old-column@ drop not null;",
+									REWORD_TEMPLATE, template));
+						}
+					}
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
@@ -272,6 +281,11 @@ public class PostgreSQLDB extends BaseDB {
 		"--", "true", "false", "'01/01/1970'", "current_timestamp", " oid",
 		" bytea", " bool", " timestamp", " double precision", " integer",
 		" bigint", " text", " text", " varchar", "", "commit"
+	};
+
+	private static final int[] _SQL_TYPES = {
+		Types.BIGINT, Types.BINARY, Types.BIT, Types.TIMESTAMP, Types.DOUBLE,
+		Types.INTEGER, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR
 	};
 
 	private static final boolean _SUPPORTS_QUERYING_AFTER_EXCEPTION = false;

@@ -18,7 +18,33 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--CUSTOM_FIELD-->
+<tr>
+	<td>CUSTOM_FIELD_NAME</td>
+	<td>//div[contains(@class,'ddm-field-group')]//span[contains(.,'${customFieldName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_FIELD_VALUE</td>
+	<td>//div[contains(@class,'ddm-field-group')]//span[contains(.,'${customFieldValue}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--DOCUMENT_INFO-->
+<tr>
+	<td>DOCUMENT_INFO_COLLABORATOR_TOOLTIP</td>
+	<td>//div[contains(@class,'lfr-portal-tooltip') and contains(@data-title,'${key_collaborator}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENT_INFO_LOCATION</td>
+	<td>//dd[contains(@class,'sidebar-dd')]//a[contains(.,'${key_dmFolderName}')]</td>
+	<td></td>
+</tr>
 <tr>
 	<td>DOCUMENT_INFO_TITLE</td>
 	<td>//div[contains(@class,'tbar-section')]/h2[contains(@title,'${key_dmDocumentTitle}')] | //h3[contains(@class,'header-title')]/span[contains(.,'${key_dmDocumentTitle}')]</td>
@@ -26,7 +52,7 @@
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_THUMBNAIL</td>
-	<td>//div[contains(@class,'preview-file-container')]/img</td>
+	<td>//div[@class='sidebar-body']//img[@alt='Thumbnail']</td>
 	<td></td>
 </tr>
 <tr>
@@ -35,13 +61,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DOCUMENT_INFO_UPLOADER_NO_PROFILE</td>
+	<td>//div[contains(@class,'username')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DOCUMENT_INFO_RATING</td>
-	<td>//dd[contains(@class,'sidebar-dd')]/div[contains(@class,'taglib-ratings')]</td>
+	<td>//dd[contains(@class,'sidebar-dd')]//div[contains(@class,'ratings-stars')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_RELATED_ASSETS_HEADER</td>
-	<td>//div[contains(@class,'sidebar-body')]//h2[contains(@class,'asset-links-title')]</td>
+	<td>//div[contains(@class,'sidebar-body')]//h2[contains(@class,'sheet-tertiary-title')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,12 +82,12 @@
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_DESCRIPTION</td>
-	<td>//dd[contains(@class,'sidebar-dd') and contains (.,'Description')]</td>
+	<td>//dd[contains(@class,'sidebar-dd') and contains (.,'Description')] | //dt[contains(@class,'sidebar-dt') and contains (.,'Description')]/following-sibling::dd[contains(.,'${key_dmDocumentDescription}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_CATEGORIES</td>
-	<td>//dt[contains(@class,'sidebar-dt') and contains (.,'Categories')]</td>
+	<td>//dd[contains(@class,'sidebar-dd')]/span[contains(@class,'categories')]/span[contains(.,'${key_categoryName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -92,7 +123,7 @@
 <!--DOCUMENT_DETAILS-->
 <tr>
 	<td>DOCUMENT_DETAILS_DOWNLOAD</td>
-	<td>//div[@class='sidebar-section']//a[@title='Download (${key_dmDocumentSize})']</td>
+	<td>//div[@class='sidebar-section']//a[@title='File Size ${key_dmDocumentSize}']</td>
 	<td></td>
 </tr>
 <tr>

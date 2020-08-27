@@ -7,7 +7,7 @@ following actions are available:
 - Cleans the Liferay database from the Service Builder tables and rows of a
 module.
 
-The plugin has been successfully tested with Gradle 4.10.2.
+The plugin has been successfully tested with Gradle 5.6.4.
 
 ## Usage
 
@@ -16,7 +16,7 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.db.support", version: "1.0.5"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.db.support", version: "1.0.7"
 	}
 
 	repositories {
@@ -55,7 +55,7 @@ plugin is applied:
 
 Property Name | Default Value
 ------------- | -------------
-[`servletContextName`](#servletcontextname) | <p>**If the `base` plugin is applied:**  The bundle symbolic name of the project inferred via the [`OsgiHelper`](https://github.com/gradle/gradle/blob/master/subprojects/osgi/src/main/java/org/gradle/api/internal/plugins/osgi/OsgiHelper.java) class.</p><p>**Otherwise:** `null`</p>
+[`servletContextName`](#servletcontextname) | <p>**If the `base` plugin is applied:** The bundle symbolic name of the project inferred via the [`OsgiHelper`](https://github.com/gradle/gradle/blob/master/subprojects/osgi/src/main/java/org/gradle/api/internal/plugins/osgi/OsgiHelper.java) class.</p><p>**Otherwise:** `null`</p>
 [`serviceXmlFile`](#servicexmlfile) | `"${project.projectDir}/service.xml"`
 
 ### CleanServiceBuilderTask

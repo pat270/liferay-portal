@@ -1,13 +1,28 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {filter as oDataFilterFn} from 'odata-v4-parser';
+
 import {
 	CONJUNCTIONS,
 	FUNCTIONAL_OPERATORS,
 	GROUP,
 	NOT_OPERATORS,
 	PROPERTY_TYPES,
-	RELATIONAL_OPERATORS
+	RELATIONAL_OPERATORS,
 } from './constants.es';
 import {generateGroupId} from './utils.es';
-import {filter as oDataFilterFn} from '../libs/odata-parser';
 
 const EXPRESSION_TYPES = {
 	AND: 'AndExpression',
@@ -24,12 +39,12 @@ const EXPRESSION_TYPES = {
 	NOT: 'NotExpression',
 	OR: 'OrExpression',
 	PAREN: 'ParenExpression',
-	PROPERTY_PATH: 'PropertyPathExpression'
+	PROPERTY_PATH: 'PropertyPathExpression',
 };
 
 const OPERATORS = {
 	...FUNCTIONAL_OPERATORS,
-	...RELATIONAL_OPERATORS
+	...RELATIONAL_OPERATORS,
 };
 
 /**
@@ -45,7 +60,7 @@ const oDataV4ParserNameMap = {
 	[EXPRESSION_TYPES.GREATER_THAN]: OPERATORS.GT,
 	[EXPRESSION_TYPES.LESSER_OR_EQUALS]: OPERATORS.LE,
 	[EXPRESSION_TYPES.LESSER_THAN]: OPERATORS.LT,
-	[EXPRESSION_TYPES.OR]: CONJUNCTIONS.OR
+	[EXPRESSION_TYPES.OR]: CONJUNCTIONS.OR,
 };
 
 /**
@@ -59,9 +74,9 @@ function addNewGroup({oDataASTNode, prevConjunction}) {
 		lastNodeWasGroup: false,
 		oDataASTNode: {
 			type: EXPRESSION_TYPES.BOOL_PAREN,
-			value: oDataASTNode
+			value: oDataASTNode,
 		},
-		prevConjunction
+		prevConjunction,
 	};
 }
 
@@ -76,7 +91,7 @@ const getTypeByPropertyName = (propertyName, properties) => {
 
 	if (propertyName && properties) {
 		const property = properties.find(
-			property => property.name === propertyName
+			(property) => property.name === propertyName
 		);
 
 		type = property ? property.type : null;
@@ -95,18 +110,18 @@ function valueParser(value, type) {
 	let parsedValue;
 
 	switch (type) {
-	case PROPERTY_TYPES.BOOLEAN:
-	case PROPERTY_TYPES.DATE:
-	case PROPERTY_TYPES.DATE_TIME:
-	case PROPERTY_TYPES.INTEGER:
-	case PROPERTY_TYPES.DOUBLE:
-		parsedValue = value;
-		break;
-	case PROPERTY_TYPES.COLLECTION:
-	case PROPERTY_TYPES.STRING:
-	default:
-		parsedValue = `'${value}'`;
-		break;
+		case PROPERTY_TYPES.BOOLEAN:
+		case PROPERTY_TYPES.DATE:
+		case PROPERTY_TYPES.DATE_TIME:
+		case PROPERTY_TYPES.INTEGER:
+		case PROPERTY_TYPES.DOUBLE:
+			parsedValue = value;
+			break;
+		case PROPERTY_TYPES.COLLECTION:
+		case PROPERTY_TYPES.STRING:
+		default:
+			parsedValue = `'${value}'`;
+			break;
 	}
 
 	return parsedValue;
@@ -124,83 +139,110 @@ function valueParser(value, type) {
  * @returns An OData query string built from the criteria object.
  */
 function buildQueryString(criteria, queryConjunction, properties) {
-	return criteria
-		.filter(Boolean)
-		.reduce(
-			(queryString, criterion, index) => {
-				const {
-					conjunctionName,
-					items,
-					operatorName,
-					propertyName,
-					value
-				} = criterion;
+	return criteria.filter(Boolean).reduce((queryString, criterion, index) => {
+		const {
+			conjunctionName,
+			items,
+			operatorName,
+			propertyName,
+			value,
+		} = criterion;
 
-				if (index > 0) {
-					queryString = queryString.concat(` ${queryConjunction} `);
-				}
+		if (index > 0) {
+			queryString = queryString.concat(` ${queryConjunction} `);
+		}
 
-				if (conjunctionName) {
+		if (conjunctionName) {
+			queryString = queryString.concat(
+				`(${buildQueryString(items, conjunctionName, properties)})`
+			);
+		}
+		else {
+			const type =
+				criterion.type ||
+				getTypeByPropertyName(propertyName, properties);
+
+			const parsedValue = valueParser(value, type);
+
+			if (isValueType(RELATIONAL_OPERATORS, operatorName)) {
+				if (type === PROPERTY_TYPES.COLLECTION) {
 					queryString = queryString.concat(
-						`(${buildQueryString(items, conjunctionName, properties)})`
+						`${propertyName}/any(c:c ${operatorName} ${parsedValue})`
 					);
 				}
 				else {
-					const type = criterion.type ||
-						getTypeByPropertyName(propertyName, properties);
-
-					const parsedValue = valueParser(value, type);
-
-					if (isValueType(RELATIONAL_OPERATORS, operatorName)) {
-						if (type === PROPERTY_TYPES.COLLECTION) {
-							queryString = queryString.concat(
-								`${propertyName}/any(c:c ${operatorName} ${parsedValue})`
-							);
-						}
-						else {
-							queryString = queryString.concat(
-								`${propertyName} ${operatorName} ${parsedValue}`
-							);
-						}
-					}
-					else if (isValueType(FUNCTIONAL_OPERATORS, operatorName)) {
-						if (type === PROPERTY_TYPES.COLLECTION) {
-							queryString = queryString.concat(
-								`${propertyName}/any(c:${operatorName}(c, ${parsedValue}))`
-							);
-						}
-						else {
-							queryString = queryString.concat(
-								`${operatorName}(${propertyName}, ${parsedValue})`
-							);
-						}
-					}
-					else if (isValueType(NOT_OPERATORS, operatorName)) {
-						const baseOperator = operatorName.replace(/not-/g, '');
-
-						const baseExpression = [{
-							operatorName: baseOperator,
-							propertyName,
-							type,
-							value
-						}];
-
-						// Not is wrapped in a group to simplify AST parsing.
-
-						queryString = queryString.concat(
-							`(not (${buildQueryString(baseExpression, conjunctionName, properties)}))`
-						);
-					}
+					queryString = queryString.concat(
+						`${propertyName} ${operatorName} ${parsedValue}`
+					);
 				}
+			}
+			else if (isValueType(FUNCTIONAL_OPERATORS, operatorName)) {
+				if (type === PROPERTY_TYPES.COLLECTION) {
+					queryString = queryString.concat(
+						`${propertyName}/any(c:${operatorName}(c, ${parsedValue}))`
+					);
+				}
+				else {
+					queryString = queryString.concat(
+						`${operatorName}(${propertyName}, ${parsedValue})`
+					);
+				}
+			}
+			else if (isValueType(NOT_OPERATORS, operatorName)) {
+				const baseOperator = operatorName.replace(/not-/g, '');
 
-				return queryString;
-			},
-			''
-		);
+				const baseExpression = [
+					{
+						operatorName: baseOperator,
+						propertyName,
+						type,
+						value,
+					},
+				];
+
+				// Not is wrapped in a group to simplify AST parsing.
+
+				queryString = queryString.concat(
+					`(not (${buildQueryString(
+						baseExpression,
+						conjunctionName,
+						properties
+					)}))`
+				);
+			}
+		}
+
+		return queryString;
+	}, '');
 }
 
 /**
- * Gets the internal name of a child expression from the oDataV4Parser name
+ * Prepares odata query by encoding special characters in string values.
+ * @param {string} queryString The odata query.
+ * @returns {string} The encoded odata query.
+ */
+function encodeQueryString(queryString) {
+	return queryString.split(' ').reduce((query, queryPartial) => {
+		const formattedPartial = queryPartial.startsWith("'")
+			? encodeURIComponent(queryPartial)
+			: queryPartial;
+
+		return `${query} ${formattedPartial}`;
+	});
+}
+
+/**
+ * Removes both single `'` and double `"` quotes from a string as well as decode
+ * special characters.
+ * @param {string} criterionValue The string to remove quotes and decode.
+ * @returns {string} The decoded string without quotes.
+ */
+function formatCriterionValue(criterionValue) {
+	return decodeURIComponent(criterionValue).replace(/['"]+/g, '');
+}
+
+/**
+ * Gets the internal name of a child expression from the oDataV4Parser name.
  * @param {object} oDataASTNode
  * @returns String value of the internal name.
  */
@@ -216,9 +258,9 @@ function getChildExpressionName(oDataASTNode) {
 function getConjunctionForGroup(oDataASTNode) {
 	const childExpressionName = getChildExpressionName(oDataASTNode);
 
-	return isValueType(CONJUNCTIONS, childExpressionName) ?
-		childExpressionName :
-		CONJUNCTIONS.AND;
+	return isValueType(CONJUNCTIONS, childExpressionName)
+		? childExpressionName
+		: CONJUNCTIONS.AND;
 }
 
 /**
@@ -247,16 +289,16 @@ function getFunctionName(oDataASTNode) {
  * @param {object} oDataASTNode
  * @returns String value of the internal name of the next expression.
  */
-const getNextNonGroupExpression = oDataASTNode => {
+const getNextNonGroupExpression = (oDataASTNode) => {
 	let returnValue;
 
 	if (oDataASTNode.value.type === EXPRESSION_TYPES.BOOL_PAREN) {
 		returnValue = getNextNonGroupExpression(oDataASTNode.value);
 	}
 	else {
-		returnValue = oDataASTNode.value.left ?
-			oDataASTNode.value.left :
-			oDataASTNode.value;
+		returnValue = oDataASTNode.value.left
+			? oDataASTNode.value.left
+			: oDataASTNode.value;
 	}
 
 	return returnValue;
@@ -270,16 +312,17 @@ const getNextNonGroupExpression = oDataASTNode => {
  * @param {object} oDataASTNode
  * @returns String value of the internal name of the next expression.
  */
-const getNextOperatorExpression = oDataASTNode => {
+const getNextOperatorExpression = (oDataASTNode) => {
 	let returnValue;
 
-	const nextNode = oDataASTNode.value.left ?
-		oDataASTNode.value.left :
-		oDataASTNode.value;
+	const nextNode = oDataASTNode.value.left
+		? oDataASTNode.value.left
+		: oDataASTNode.value;
 
 	const type = nextNode.type;
 
-	if (type === EXPRESSION_TYPES.BOOL_PAREN ||
+	if (
+		type === EXPRESSION_TYPES.BOOL_PAREN ||
 		type === EXPRESSION_TYPES.AND ||
 		type === EXPRESSION_TYPES.OR ||
 		type === EXPRESSION_TYPES.COMMON ||
@@ -303,13 +346,11 @@ const getNextOperatorExpression = oDataASTNode => {
  * @param {string} prevConjunction
  * @returns boolean of whether a grouping has different conjunctions.
  */
-function hasDifferentConjunctions(
-	{
-		lastNodeWasGroup,
-		oDataASTNode,
-		prevConjunction
-	}
-) {
+function hasDifferentConjunctions({
+	lastNodeWasGroup,
+	oDataASTNode,
+	prevConjunction,
+}) {
 	return prevConjunction !== oDataASTNode.type && !lastNodeWasGroup;
 }
 
@@ -345,18 +386,11 @@ function isRedundantGroup({lastNodeWasGroup, oDataASTNode, prevConjunction}) {
 		getNextNonGroupExpression(oDataASTNode)
 	);
 
-	return lastNodeWasGroup ||
+	return (
+		lastNodeWasGroup ||
 		oDataV4ParserNameMap[prevConjunction] === nextNodeExpressionName ||
-		!isValueType(CONJUNCTIONS, nextNodeExpressionName);
-}
-
-/**
- * Removes both single `'` and double `"` quotes from a string.
- * @param {string} text The string to remove quotes from.
- * @returns {string} The string without quotes.
- */
-function removeQuotes(text) {
-	return text.replace(/['"]+/g, '');
+		!isValueType(CONJUNCTIONS, nextNodeExpressionName)
+	);
 }
 
 /**
@@ -369,7 +403,7 @@ function skipGroup({oDataASTNode, prevConjunction}) {
 	return {
 		lastNodeWasGroup: true,
 		oDataASTNode: oDataASTNode.value,
-		prevConjunction
+		prevConjunction,
 	};
 }
 
@@ -387,13 +421,13 @@ function translateQueryToCriteria(queryString) {
 			throw 'queryString is ()';
 		}
 
-		const oDataASTNode = oDataFilterFn(queryString);
+		const oDataASTNode = oDataFilterFn(encodeQueryString(queryString));
 
 		const criteriaArray = toCriteria({oDataASTNode});
 
-		criteria = isCriteriaGroup(criteriaArray[0]) ?
-			criteriaArray[0] :
-			wrapInCriteriaGroup(criteriaArray);
+		criteria = isCriteriaGroup(criteriaArray[0])
+			? criteriaArray[0]
+			: wrapInCriteriaGroup(criteriaArray);
 	}
 	catch (e) {
 		criteria = null;
@@ -458,18 +492,18 @@ function transformCommonNode({oDataASTNode}) {
 	let value;
 
 	if (methodExpressionName == OPERATORS.CONTAINS) {
-		value = removeQuotes(methodExpression.value.parameters[1].raw);
+		value = formatCriterionValue(methodExpression.value.parameters[1].raw);
 	}
 	else if (methodExpressionName == OPERATORS.EQ) {
-		value = removeQuotes(methodExpression.value.right.raw);
+		value = formatCriterionValue(methodExpression.value.right.raw);
 	}
 
 	return [
 		{
 			operatorName: methodExpressionName,
 			propertyName: nextNodeExpression.value.current.raw,
-			value
-		}
+			value,
+		},
 	];
 }
 
@@ -489,20 +523,18 @@ function transformConjunctionNode(context) {
 	const conjunctionType = oDataASTNode.type;
 	const nextNode = oDataASTNode.value;
 
-	return hasDifferentConjunctions(context) ?
-		toCriteria(addNewGroup(context)) :
-		[...toCriteria(
-			{
-				oDataASTNode: nextNode.left,
-				prevConjunction: conjunctionType
-			}
-		),
-		...toCriteria(
-			{
-				oDataASTNode: nextNode.right,
-				prevConjunction: conjunctionType
-			}
-		)];
+	return hasDifferentConjunctions(context)
+		? toCriteria(addNewGroup(context))
+		: [
+				...toCriteria({
+					oDataASTNode: nextNode.left,
+					prevConjunction: conjunctionType,
+				}),
+				...toCriteria({
+					oDataASTNode: nextNode.right,
+					prevConjunction: conjunctionType,
+				}),
+		  ];
 }
 
 /**
@@ -517,8 +549,8 @@ function transformFunctionalNode({oDataASTNode}) {
 		{
 			operatorName: getFunctionName(oDataASTNode),
 			propertyName: oDataASTNode.value.parameters[0].raw,
-			value: removeQuotes(oDataASTNode.value.parameters[1].raw)
-		}
+			value: formatCriterionValue(oDataASTNode.value.parameters[1].raw),
+		},
 	];
 }
 
@@ -535,19 +567,19 @@ function transformFunctionalNode({oDataASTNode}) {
 function transformGroupNode(context) {
 	const {oDataASTNode, prevConjunction} = context;
 
-	return isRedundantGroup(context) ?
-		toCriteria(skipGroup(context)) :
-		[{
-			conjunctionName: getConjunctionForGroup(oDataASTNode),
-			groupId: generateGroupId(),
-			items: toCriteria(
+	return isRedundantGroup(context)
+		? toCriteria(skipGroup(context))
+		: [
 				{
-					lastNodeWasGroup: true,
-					oDataASTNode: oDataASTNode.value,
-					prevConjunction
-				}
-			)
-		}];
+					conjunctionName: getConjunctionForGroup(oDataASTNode),
+					groupId: generateGroupId(),
+					items: toCriteria({
+						lastNodeWasGroup: true,
+						oDataASTNode: oDataASTNode.value,
+						prevConjunction,
+					}),
+				},
+		  ];
 }
 
 /**
@@ -569,8 +601,10 @@ function transformNotNode({oDataASTNode}) {
 			{
 				operatorName: NOT_OPERATORS.NOT_CONTAINS,
 				propertyName: nextNodeExpression.value.parameters[0].raw,
-				value: removeQuotes(nextNodeExpression.value.parameters[1].raw)
-			}
+				value: formatCriterionValue(
+					nextNodeExpression.value.parameters[1].raw
+				),
+			},
 		];
 	}
 	else if (nextNodeExpressionName == OPERATORS.EQ) {
@@ -578,8 +612,8 @@ function transformNotNode({oDataASTNode}) {
 			{
 				operatorName: NOT_OPERATORS.NOT_EQ,
 				propertyName: nextNodeExpression.value.left.raw,
-				value: removeQuotes(nextNodeExpression.value.right.raw)
-			}
+				value: formatCriterionValue(nextNodeExpression.value.right.raw),
+			},
 		];
 	}
 	else if (nextNodeExpression.type == EXPRESSION_TYPES.PROPERTY_PATH) {
@@ -594,8 +628,10 @@ function transformNotNode({oDataASTNode}) {
 				{
 					operatorName: NOT_OPERATORS.NOT_CONTAINS,
 					propertyName: nextNodeExpression.value.current.raw,
-					value: removeQuotes(methodExpression.value.parameters[1].raw)
-				}
+					value: formatCriterionValue(
+						methodExpression.value.parameters[1].raw
+					),
+				},
 			];
 		}
 		else if (methodExpressionName == OPERATORS.EQ) {
@@ -603,8 +639,10 @@ function transformNotNode({oDataASTNode}) {
 				{
 					operatorName: NOT_OPERATORS.NOT_EQ,
 					propertyName: nextNodeExpression.value.current.raw,
-					value: removeQuotes(methodExpression.value.right.raw)
-				}
+					value: formatCriterionValue(
+						methodExpression.value.right.raw
+					),
+				},
 			];
 		}
 	}
@@ -624,8 +662,8 @@ function transformOperatorNode({oDataASTNode}) {
 		{
 			operatorName: getExpressionName(oDataASTNode),
 			propertyName: oDataASTNode.value.left.raw,
-			value: removeQuotes(oDataASTNode.value.right.raw)
-		}
+			value: formatCriterionValue(oDataASTNode.value.right.raw),
+		},
 	];
 }
 
@@ -637,11 +675,8 @@ function wrapInCriteriaGroup(criteriaArray) {
 	return {
 		conjunctionName: CONJUNCTIONS.AND,
 		groupId: generateGroupId(),
-		items: criteriaArray
+		items: criteriaArray,
 	};
 }
 
-export {
-	buildQueryString,
-	translateQueryToCriteria
-};
+export {buildQueryString, translateQueryToCriteria};

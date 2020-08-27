@@ -18,6 +18,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchCon
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.site.item.selector.display.context.SitesItemSelectorViewDisplayContext;
 
 import javax.portlet.PortletURL;
 
@@ -30,15 +31,15 @@ public class SitesItemSelectorViewManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public SitesItemSelectorViewManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			SitesItemSelectorViewDisplayContext
 				sitesItemSelectorViewDisplayContext)
 		throws Exception {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			sitesItemSelectorViewDisplayContext.getGroupSearch());
 
 		_sitesItemSelectorViewDisplayContext =

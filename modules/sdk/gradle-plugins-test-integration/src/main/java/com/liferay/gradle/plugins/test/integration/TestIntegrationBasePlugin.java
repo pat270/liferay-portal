@@ -16,6 +16,7 @@ package com.liferay.gradle.plugins.test.integration;
 
 import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.test.integration.internal.util.ReflectionUtil;
+import com.liferay.gradle.util.FileUtil;
 
 import java.io.File;
 
@@ -176,11 +177,11 @@ public class TestIntegrationBasePlugin implements Plugin<Project> {
 
 					setTestClassesDirsMethod.invoke(test, testClassesDirs);
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					throw new GradleException(
 						"Unable to set the \"testClassesDirs\" property of " +
 							test,
-						e);
+						exception);
 				}
 			}
 
@@ -203,7 +204,8 @@ public class TestIntegrationBasePlugin implements Plugin<Project> {
 
 					@Override
 					public File call() throws Exception {
-						return sourceSetOutput.getClassesDir();
+						return FileUtil.getJavaClassesDir(
+							testIntegrationSourceSet);
 					}
 
 				});
@@ -318,10 +320,8 @@ public class TestIntegrationBasePlugin implements Plugin<Project> {
 	}
 
 	private void _configureTaskCheck(Test test) {
-		Project project = test.getProject();
-
 		Task task = GradleUtil.getTask(
-			project, LifecycleBasePlugin.CHECK_TASK_NAME);
+			test.getProject(), LifecycleBasePlugin.CHECK_TASK_NAME);
 
 		task.dependsOn(test);
 	}

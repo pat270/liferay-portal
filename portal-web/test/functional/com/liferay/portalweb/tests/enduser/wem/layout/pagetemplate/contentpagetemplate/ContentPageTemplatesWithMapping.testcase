@@ -1,0 +1,74 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Layout Page Templates";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayoutpagetemplate.addLayoutPageTemplateCollection(
+			groupName = "Test Site Name",
+			layoutPageTemplateCollectionName = "Page Template Collection");
+
+		JSONLayoutpagetemplate.addLayoutPageTemplateEntry(
+			groupName = "Test Site Name",
+			layoutPageTemplateCollectionName = "Page Template Collection",
+			layoutPageTemplateEntryName = "Page Template Name",
+			layoutPageTemplateStatus = "Draft",
+			layoutPageTemplateType = "Content Page Template");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "This is a test for LPS-98031."
+	@priority = "5"
+	test MapManualURLToLinkFragment {
+		property portal.acceptance = "true";
+
+		PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name");
+
+		Navigator.gotoNavNested(navNested = "Page Template Collection");
+
+		PageTemplatesAdmin.gotoPageTemplate(pageTemplateName = "Page Template Name");
+
+		PageEditor.assertFragmentSidebarLoaded();
+
+		PageEditor.addFragment(
+			collectionName = "Featured Content",
+			fragmentName = "Banner Center");
+
+		PageEditorEditableLink.gotoEditableFieldLink(
+			fragmentName = "Banner Center",
+			id = "link");
+
+		PageEditorEditableLink.updateURL(url = "https://liferay.com");
+
+		PageEditor.clickPublish();
+
+		PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name");
+
+		Navigator.gotoNavNested(navNested = "Page Template Collection");
+
+		PageTemplatesAdmin.gotoPageTemplate(pageTemplateName = "Page Template Name");
+
+		task ("Assert editable has the specified URL mapped correctly") {
+			Click(locator1 = "//a[contains(@class,'btn')][contains(@href,'https://liferay.com')]");
+		}
+	}
+
+}

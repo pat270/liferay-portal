@@ -38,22 +38,6 @@ PortletURL sortingURL = PortletURLUtil.clone(portletURL, renderResponse);
 sortingURL.setParameter("orderByType", orderByType.equals("asc") ? "desc" : "asc");
 %>
 
-<clay:navigation-bar
-	inverted="<%= true %>"
-	navigationItems='<%=
-		new JSPNavigationItemList(pageContext) {
-			{
-				add(
-					navigationItem -> {
-						navigationItem.setActive(true);
-						navigationItem.setHref(StringPool.BLANK);
-						navigationItem.setLabel(LanguageUtil.get(request, "live-sessions"));
-					});
-			}
-		}
-	%>'
-/>
-
 <clay:management-toolbar
 	disabled="<%= ListUtil.isEmpty(userTrackers) %>"
 	selectable="<%= false %>"
@@ -62,7 +46,7 @@ sortingURL.setParameter("orderByType", orderByType.equals("asc") ? "desc" : "asc
 	sortingURL="<%= sortingURL.toString() %>"
 />
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<c:choose>
 		<c:when test="<%= userTrackers != null %>">
 			<liferay-ui:search-container
@@ -147,4 +131,4 @@ sortingURL.setParameter("orderByType", orderByType.equals("asc") ? "desc" : "asc
 			<liferay-ui:message arguments="<%= PropsKeys.SESSION_TRACKER_MEMORY_ENABLED %>" key="display-of-live-session-data-is-disabled" translateArguments="<%= false %>" />
 		</c:otherwise>
 	</c:choose>
-</div>
+</clay:container-fluid>

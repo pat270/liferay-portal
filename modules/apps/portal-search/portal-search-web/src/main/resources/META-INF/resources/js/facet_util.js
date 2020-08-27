@@ -1,8 +1,51 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-search-facet-util',
-	function(A) {
-		var FacetUtil = {
-			addURLParameter: function(key, value, parameterArray) {
+	(A) => {
+		const FACET_TERM_CLASS = 'facet-term';
+
+		const FACET_TERM_SELECTED_CLASS = 'facet-term-selected';
+
+		/**
+		 * Gets the ID by checking the `data-term-id` attribute and then `id` if
+		 * `data-term-id` is not defined.
+		 *
+		 * The default layout continues to use `data-term-id` in case the
+		 * original ID format `${namespace}_term_${index}` is expected, but
+		 * newer layouts (ADT) sometimes only use `id`.
+		 */
+		function _getTermId(term) {
+			return term.getAttribute('data-term-id') || term.id;
+		}
+
+		/**
+		 * Converts a NodeList to an array of nodes. This allows array
+		 * methods to be performed.
+		 * @param {NodeList} nodeList
+		 */
+		function _transformNodeListToArray(nodeList) {
+			const nodeArray = [];
+
+			nodeList.forEach((node) => nodeArray.push(node));
+
+			return nodeArray;
+		}
+
+		const FacetUtil = {
+			addURLParameter(key, value, parameterArray) {
 				key = encodeURIComponent(key);
 				value = encodeURIComponent(value);
 
@@ -11,30 +54,43 @@ AUI.add(
 				return parameterArray;
 			},
 
-			changeSelection: function(event) {
-				var form = event.currentTarget.form;
+			changeSelection(event) {
+				event.preventDefault();
+
+				const form = event.currentTarget.form;
 
 				if (!form) {
 					return;
 				}
 
-				var selections = [];
+				const currentSelectedTermId = _getTermId(event.currentTarget);
 
-				var formCheckboxes = document.querySelectorAll('#' + form.id + ' input.facet-term');
-
-				Array.prototype.forEach.call(
-					formCheckboxes,
-					function(checkbox, index) {
-						if (checkbox.checked) {
-							selections.push(checkbox.getAttribute('data-term-id'));
-						}
-					}
+				const facetTerms = document.querySelectorAll(
+					`#${form.id} .${FACET_TERM_CLASS}`
 				);
 
-				FacetUtil.selectTerms(form, selections);
+				const selectedTerms = _transformNodeListToArray(facetTerms)
+					.filter((term) => {
+						if (term.type === 'checkbox') {
+							return term.checked;
+						}
+
+						const isCurrentTarget =
+							_getTermId(term) === currentSelectedTermId;
+
+						const isSelected = Array.prototype.includes.call(
+							term.classList,
+							FACET_TERM_SELECTED_CLASS
+						);
+
+						return isCurrentTarget ? !isSelected : isSelected;
+					})
+					.map((term) => _getTermId(term));
+
+				FacetUtil.selectTerms(form, selectedTerms);
 			},
 
-			clearSelections: function(event) {
+			clearSelections(event) {
 				var form = A.one(event.target).ancestor('form');
 
 				if (!form) {
@@ -46,31 +102,35 @@ AUI.add(
 				FacetUtil.selectTerms(form._node, selections);
 			},
 
-			removeURLParameters: function(key, parameterArray) {
+			enableInputs(inputs) {
+				inputs.forEach((term) => {
+					Liferay.Util.toggleDisabled(term, false);
+				});
+			},
+
+			removeURLParameters(key, parameterArray) {
 				key = encodeURIComponent(key);
 
-				var newParameters = parameterArray.filter(
-					function(item) {
-						var itemSplit = item.split('=');
+				return parameterArray.filter((item) => {
+					var itemSplit = item.split('=');
 
-						if (itemSplit && (itemSplit[0] === key)) {
-							return false;
-						}
+					return !(itemSplit && itemSplit[0] === key);
+				});
+			},
 
-						return true;
-					}
+			selectTerms(form, selections) {
+				var formParameterName = document.querySelector(
+					'#' + form.id + ' input.facet-parameter-name'
 				);
 
-				return newParameters;
+				document.location.search = FacetUtil.updateQueryString(
+					formParameterName.value,
+					selections,
+					document.location.search
+				);
 			},
 
-			selectTerms: function(form, selections) {
-				var formParameterName = document.querySelector('#' + form.id + ' input.facet-parameter-name');
-
-				document.location.search = FacetUtil.updateQueryString(formParameterName.value, selections, document.location.search);
-			},
-
-			setURLParameter: function(url, name, value) {
+			setURLParameter(url, name, value) {
 				var parts = url.split('?');
 
 				var address = parts[0];
@@ -81,43 +141,60 @@ AUI.add(
 					queryString = '';
 				}
 
-				queryString = Liferay.Search.FacetUtil.updateQueryString(name, [value], queryString);
+				queryString = Liferay.Search.FacetUtil.updateQueryString(
+					name,
+					[value],
+					queryString
+				);
 
 				return address + '?' + queryString;
 			},
 
-			setURLParameters: function(key, values, parameterArray) {
-				var newParameters = FacetUtil.removeURLParameters(key, parameterArray);
-
-				values.forEach(
-					function(item) {
-						newParameters = FacetUtil.addURLParameter(key, item, newParameters);
-					}
+			setURLParameters(key, selections, parameterArray) {
+				var newParameters = FacetUtil.removeURLParameters(
+					key,
+					parameterArray
 				);
+
+				newParameters = FacetUtil.removeURLParameters(
+					key + 'From',
+					newParameters
+				);
+
+				newParameters = FacetUtil.removeURLParameters(
+					key + 'To',
+					newParameters
+				);
+
+				selections.forEach((item) => {
+					newParameters = FacetUtil.addURLParameter(
+						key,
+						item,
+						newParameters
+					);
+				});
 
 				return newParameters;
 			},
 
-			updateQueryString: function(key, selections, queryString) {
+			updateQueryString(key, selections, queryString) {
 				var search = queryString;
 
-				var hasQuestionMark = false;
-
-				if (search[0] === '?') {
-					hasQuestionMark = true;
-				}
+				var hasQuestionMark = search[0] === '?';
 
 				if (hasQuestionMark) {
 					search = search.substr(1);
 				}
 
-				var parameterArray = search.split('&').filter(
-					function(item) {
-						return item.trim() !== '';
-					}
-				);
+				var parameterArray = search.split('&').filter((item) => {
+					return item.trim() !== '';
+				});
 
-				var newParameters = FacetUtil.setURLParameters(key, selections, parameterArray);
+				var newParameters = FacetUtil.setURLParameters(
+					key,
+					selections,
+					parameterArray
+				);
 
 				search = newParameters.join('&');
 
@@ -126,13 +203,13 @@ AUI.add(
 				}
 
 				return search;
-			}
+			},
 		};
 
 		Liferay.namespace('Search').FacetUtil = FacetUtil;
 	},
 	'',
 	{
-		requires: []
+		requires: [],
 	}
 );

@@ -14,12 +14,12 @@
 
 package com.liferay.calendar.internal.util;
 
+import com.liferay.calendar.constants.CalendarBookingConstants;
 import com.liferay.calendar.exporter.CalendarDataFormat;
 import com.liferay.calendar.exporter.CalendarDataHandler;
 import com.liferay.calendar.exporter.CalendarDataHandlerFactory;
 import com.liferay.calendar.model.Calendar;
 import com.liferay.calendar.model.CalendarBooking;
-import com.liferay.calendar.model.CalendarBookingConstants;
 import com.liferay.calendar.model.CalendarResource;
 import com.liferay.calendar.notification.NotificationType;
 import com.liferay.calendar.recurrence.Recurrence;
@@ -28,11 +28,12 @@ import com.liferay.calendar.service.CalendarBookingServiceUtil;
 import com.liferay.calendar.service.CalendarLocalServiceUtil;
 import com.liferay.calendar.util.CalendarResourceUtil;
 import com.liferay.calendar.util.JCalendarUtil;
-import com.liferay.calendar.workflow.CalendarBookingWorkflowConstants;
+import com.liferay.calendar.workflow.constants.CalendarBookingWorkflowConstants;
+import com.liferay.petra.io.unsync.UnsyncStringReader;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.User;
@@ -40,6 +41,8 @@ import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -55,6 +58,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TimeZone;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
@@ -68,6 +73,9 @@ import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.Recur;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VAlarm;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
@@ -105,18 +113,6 @@ import org.osgi.service.component.annotations.Deactivate;
 )
 public class CalendarICalDataHandler implements CalendarDataHandler {
 
-	@Activate
-	public void activate() {
-		CalendarDataHandlerFactory.registerCalendarDataHandler(
-			CalendarDataFormat.ICAL, this);
-	}
-
-	@Deactivate
-	public void deactivate() {
-		CalendarDataHandlerFactory.unregisterCalendarDataHandler(
-			CalendarDataFormat.ICAL);
-	}
-
 	@Override
 	public String exportCalendar(long calendarId) throws Exception {
 		int[] statuses = {
@@ -139,16 +135,10 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 	public String exportCalendarBooking(long calendarBookingId)
 		throws Exception {
 
-		List<CalendarBooking> calendarBookings = new ArrayList<>();
-
-		CalendarBooking calendarBooking =
-			CalendarBookingLocalServiceUtil.getCalendarBooking(
-				calendarBookingId);
-
-		calendarBookings.add(calendarBooking);
-
 		net.fortuna.ical4j.model.Calendar iCalCalendar = toICalCalendar(
-			calendarBookings);
+			ListUtil.fromArray(
+				CalendarBookingLocalServiceUtil.getCalendarBooking(
+					calendarBookingId)));
 
 		return toString(iCalCalendar);
 	}
@@ -167,6 +157,18 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		for (VEvent vEvent : vEvents) {
 			importICalEvent(calendarId, vEvent);
 		}
+	}
+
+	@Activate
+	protected void activate() {
+		CalendarDataHandlerFactory.registerCalendarDataHandler(
+			CalendarDataFormat.ICAL, this);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		CalendarDataHandlerFactory.unregisterCalendarDataHandler(
+			CalendarDataFormat.ICAL);
 	}
 
 	protected void importICalEvent(long calendarId, VEvent vEvent)
@@ -459,7 +461,7 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		try {
 			NotificationType.parse(value);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			return false;
 		}
 
@@ -473,13 +475,7 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 			return false;
 		}
 
-		String value = valueParameter.getValue();
-
-		if (value.equals("DATE")) {
-			return true;
-		}
-
-		return false;
+		return Objects.equals(valueParameter.getValue(), "DATE");
 	}
 
 	protected VAlarm toICalAlarm(
@@ -566,11 +562,17 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		return iCalCalendar;
 	}
 
-	protected DateTime toICalDateTime(long time) {
+	protected DateTime toICalDateTime(long time, TimeZone timeZone) {
 		DateTime dateTime = new DateTime();
 
 		dateTime.setTime(time);
-		dateTime.setUtc(true);
+
+		if (timeZone == null) {
+			dateTime.setUtc(true);
+		}
+		else {
+			dateTime.setTimeZone(_toICalTimeZone(timeZone));
+		}
 
 		return dateTime;
 	}
@@ -641,12 +643,16 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		}
 		else {
 			DtStart dtStart = new DtStart(
-				toICalDateTime(calendarBooking.getStartTime()));
+				toICalDateTime(
+					calendarBooking.getStartTime(),
+					calendarBooking.getTimeZone()));
 
 			propertyList.add(dtStart);
 
 			DtEnd dtEnd = new DtEnd(
-				toICalDateTime(calendarBooking.getEndTime()));
+				toICalDateTime(
+					calendarBooking.getEndTime(),
+					calendarBooking.getTimeZone()));
 
 			propertyList.add(dtEnd);
 		}
@@ -665,15 +671,17 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		Company company = CompanyLocalServiceUtil.getCompany(
 			calendarBooking.getCompanyId());
 
-		String calendarBookingDescription = StringUtil.replace(
-			calendarBooking.getDescription(user.getLocale()),
-			new String[] {"href=\"/", "src=\"/"},
-			new String[] {
-				"href=\"" + company.getPortalURL(calendarBooking.getGroupId()) +
-					"/",
-				"src=\"" + company.getPortalURL(calendarBooking.getGroupId()) +
-					"/"
-			});
+		String calendarBookingDescription = HtmlUtil.stripHtml(
+			StringUtil.replace(
+				calendarBooking.getDescription(user.getLocale()),
+				new String[] {"href=\"/", "src=\"/"},
+				new String[] {
+					"href=\"" +
+						company.getPortalURL(calendarBooking.getGroupId()) +
+							"/",
+					"src=\"" +
+						company.getPortalURL(calendarBooking.getGroupId()) + "/"
+				}));
 
 		Description description = new Description(calendarBookingDescription);
 
@@ -699,20 +707,23 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		String recurrence = calendarBooking.getRecurrence();
 
 		if (Validator.isNotNull(recurrence)) {
-			int index = recurrence.indexOf(StringPool.NEW_LINE);
+			int index = recurrence.indexOf(CharPool.NEW_LINE);
 
 			if (index > 0) {
 				recurrence = recurrence.substring(0, index);
 			}
 
-			String value = StringUtil.replace(
-				recurrence, _RRULE, StringPool.BLANK);
+			recurrence = StringUtil.removeSubstring(recurrence, _RRULE);
 
-			RRule rRule = new RRule(value);
+			RRule rRule = new RRule(recurrence);
+
+			_addHourMinuteToUntilDate(rRule.getRecur());
 
 			propertyList.add(rRule);
 
-			ExDate exDate = toICalExDate(calendarBooking.getRecurrenceObj());
+			ExDate exDate = toICalExDate(
+				calendarBooking.getRecurrenceObj(),
+				calendarBooking.getStartTime(), calendarBooking.getTimeZone());
 
 			if (exDate != null) {
 				propertyList.add(exDate);
@@ -773,7 +784,9 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		return vEvent;
 	}
 
-	protected ExDate toICalExDate(Recurrence recurrence) {
+	protected ExDate toICalExDate(
+		Recurrence recurrence, long startTime, TimeZone timeZone) {
+
 		List<java.util.Calendar> exceptionJCalendars =
 			recurrence.getExceptionJCalendars();
 
@@ -783,16 +796,32 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 
 		DateList dateList = new DateList();
 
-		dateList.setUtc(true);
+		if (timeZone == null) {
+			dateList.setUtc(true);
+		}
+		else {
+			dateList.setTimeZone(_toICalTimeZone(timeZone));
+		}
 
 		for (java.util.Calendar exceptionJCalendar : exceptionJCalendars) {
+			_addHourMinuteFromTimeInMillis(startTime, exceptionJCalendar);
+
 			DateTime dateTime = toICalDateTime(
-				exceptionJCalendar.getTimeInMillis());
+				exceptionJCalendar.getTimeInMillis(), timeZone);
 
 			dateList.add(dateTime);
 		}
 
-		return new ExDate(dateList);
+		ExDate exDate = new ExDate(dateList);
+
+		if (timeZone == null) {
+			exDate.setUtc(true);
+		}
+		else {
+			exDate.setTimeZone(_toICalTimeZone(timeZone));
+		}
+
+		return exDate;
 	}
 
 	protected String toString(net.fortuna.ical4j.model.Calendar iCalCalendar)
@@ -815,11 +844,62 @@ public class CalendarICalDataHandler implements CalendarDataHandler {
 		return unsyncStringWriter.toString();
 	}
 
+	private void _addHourMinuteFromTimeInMillis(
+		long sourceTimeInMillis, java.util.Calendar targetJCalendar) {
+
+		java.util.Calendar jCalendar = java.util.Calendar.getInstance();
+
+		jCalendar.setTimeInMillis(sourceTimeInMillis);
+
+		targetJCalendar.add(
+			java.util.Calendar.HOUR_OF_DAY,
+			jCalendar.get(java.util.Calendar.HOUR_OF_DAY));
+		targetJCalendar.add(
+			java.util.Calendar.MINUTE,
+			jCalendar.get(java.util.Calendar.MINUTE));
+	}
+
+	private void _addHourMinuteToUntilDate(Recur recur) {
+		if (recur.getUntil() == null) {
+			return;
+		}
+
+		java.util.Calendar jCalendar = java.util.Calendar.getInstance();
+
+		jCalendar.setTime(recur.getUntil());
+
+		jCalendar.add(java.util.Calendar.HOUR_OF_DAY, 23);
+		jCalendar.add(java.util.Calendar.MINUTE, 59);
+
+		recur.setUntil(new DateTime(jCalendar.getTimeInMillis()));
+	}
+
+	private TimeZoneRegistry _getTimeZoneRegistry() {
+		if (_timeZoneRegistry == null) {
+			TimeZoneRegistryFactory timeZoneRegistryFactory =
+				TimeZoneRegistryFactory.getInstance();
+
+			_timeZoneRegistry = timeZoneRegistryFactory.createRegistry();
+		}
+
+		return _timeZoneRegistry;
+	}
+
+	private net.fortuna.ical4j.model.TimeZone _toICalTimeZone(
+		TimeZone timeZone) {
+
+		TimeZoneRegistry timeZoneRegistry = _getTimeZoneRegistry();
+
+		return timeZoneRegistry.getTimeZone(timeZone.getID());
+	}
+
 	private static final String _EXDATE =
 		"EXDATE;TZID=\"UTC\";VALUE=DATE-TIME:";
 
 	private static final String _EXDATE_FORMAT = "%04d%02d%02dT%02d%02d%02dZ";
 
 	private static final String _RRULE = "RRULE:";
+
+	private static TimeZoneRegistry _timeZoneRegistry;
 
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
 <service-builder auto-import-default-references="false" auto-namespace-tables="false" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.dynamic.data.lists">
 	<namespace>DDL</namespace>
@@ -28,6 +28,8 @@
 		<column name="DDMStorageId" type="long" />
 		<column name="recordSetId" type="long" />
 		<column name="recordSetVersion" type="String" />
+		<column name="className" type="String" />
+		<column name="classPK" type="long" />
 		<column name="version" type="String" />
 		<column name="displayIndex" type="int" />
 		<column name="lastPublishDate" type="Date" />
@@ -47,6 +49,10 @@
 		<finder name="R_R" return-type="Collection">
 			<finder-column name="recordSetId" />
 			<finder-column name="recordSetVersion" />
+		</finder>
+		<finder name="C_C" return-type="Collection">
+			<finder-column name="className" />
+			<finder-column name="classPK" />
 		</finder>
 
 		<!-- References -->
@@ -94,6 +100,9 @@
 
 		<finder name="GroupId" return-type="Collection">
 			<finder-column arrayable-operator="OR" name="groupId" />
+		</finder>
+		<finder name="DDMStructureId" return-type="Collection">
+			<finder-column arrayable-operator="OR" name="DDMStructureId" />
 		</finder>
 		<finder name="G_R" return-type="DDLRecordSet" unique="true">
 			<finder-column name="groupId" />

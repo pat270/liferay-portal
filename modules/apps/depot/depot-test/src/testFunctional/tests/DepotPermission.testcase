@@ -1,0 +1,563 @@
+@component-name = "portal-document-management"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Depot";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.logoutPG();
+		}
+	}
+
+	@description = "This ensures that the user can perform operations to memberships with all permissions."
+	@priority = "5"
+	test AccessMembershipWithAllPermissions {
+		JSONUser.addUser(
+			userEmailAddress = "userea1@liferay.com",
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userScreenName = "usersn1");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea2@liferay.com",
+			userFirstName = "userfn2",
+			userLastName = "userln2",
+			userScreenName = "usersn2");
+
+		for (var i : list "1,2") {
+			DepotNavigator.openDepotAdmin();
+
+			DepotNavigator.gotoDepotPortlet(
+				depotName = "Test Depot Name",
+				portlet = "Memberships");
+
+			Depot.assignUserAsMember(
+				depotName = "Test Depot Name",
+				userFirstName = "userfn${i}",
+				userLastName = "userln${i}",
+				userScreenName = "usersn${i}");
+		}
+
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea1@liferay.com",
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn1");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		for (var resourceActionIndex : list "ACCESS_IN_CONTROL_PANEL,CONFIGURATION,PERMISSIONS,PREFERENCES,VIEW") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		for (var resourceActionIndex : list "ASSIGN_MEMBERS,ASSIGN_USER_ROLES,DELETE,PERMISSIONS,UPDATE,VIEW,VIEW_MEMBERS,VIEW_SITE_ADMINISTRATION") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com.liferay.depot.model.DepotEntry",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea1@liferay.com",
+			userLoginFullName = "userfn1 userln1");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Memberships");
+
+		for (var i : list "1,2") {
+			Depot.viewMember(
+				userFirstName = "userfn${i}",
+				userLastName = "userln${i}",
+				userScreenName = "usersn${i}");
+		}
+
+		Click.waitForMenuToggleJSClick(
+			key_card = "usersn1",
+			locator1 = "Card#CARD_ELLIPSIS");
+
+		for (var item : list "Remove Membership,Assign Roles") {
+			AssertVisible(
+				key_menuItem = "${item}",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+		}
+	}
+
+	@description = "This ensures that the user can only view memberships with view permissions."
+	@priority = "5"
+	test AccessMembershipWithViewOnlyPermissions {
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea1@liferay.com",
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn1");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		for (var resourceActionIndex : list "ACCESS_IN_CONTROL_PANEL,CONFIGURATION,PERMISSIONS,PREFERENCES,VIEW") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		for (var resourceActionIndex : list "DELETE,PERMISSIONS,UPDATE,VIEW,VIEW_MEMBERS,VIEW_SITE_ADMINISTRATION") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com.liferay.depot.model.DepotEntry",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_site_memberships_web_portlet_SiteMembershipsPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Memberships");
+
+		Depot.assignUserAsMember(
+			depotName = "Test Depot Name",
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userScreenName = "usersn1");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea1@liferay.com",
+			userLoginFullName = "userfn1 userln1");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoDepotPortlet(
+			depotName = "Test Depot Name",
+			portlet = "Memberships");
+
+		Depot.viewMember(
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userScreenName = "usersn1");
+
+		Click.waitForMenuToggleJSClick(
+			key_card = "usersn1",
+			locator1 = "Card#CARD_ELLIPSIS");
+
+		for (var item : list "Remove Membership,Assign Roles") {
+			AssertElementNotPresent(
+				key_menuItem = "${item}",
+				locator1 = "MenuItem#ANY_MENU_ITEM");
+		}
+	}
+
+	@description = "This ensures that the user can only add web content to the depot that has permissions set."
+	@priority = "5"
+	test AddWebContentPermissionWithinDepot {
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name 2");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		Site.assignUserSitesCP(
+			siteName = "Site Name",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_SITE_ADMINISTRATION",
+			resourceName = "com.liferay.portal.kernel.model.Group",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com.liferay.depot.model.DepotEntry",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_journal_web_portlet_JournalPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		Role.definePermissionCP(
+			assetLibrariesScope = "true",
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_ADD_WEB_CONTENT_CHECKBOX",
+			permissionDefinitionValue = "Add Web Content",
+			roleTitle = "Depot Regrole Name",
+			siteNameScope = "Test Depot Name");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-depot-name");
+
+		Pause(locator1 = "3000");
+
+		LexiconEntry.gotoAdd();
+
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		PortletEntry.publish();
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-depot-name-2");
+
+		AssertElementNotPresent(locator1 = "Button#PLUS");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
+
+		AssertElementNotPresent(locator1 = "Button#PLUS");
+	}
+
+	@description = "This ensures that user can perform CRUD operations to depots with all permissions."
+	@priority = "5"
+	test ConfigureRoleWithAllPermissions {
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln",
+			userScreenName = "usersn");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		for (var resourceActionIndex : list "ACCESS_IN_CONTROL_PANEL,CONFIGURATION,PERMISSIONS,PREFERENCES,VIEW") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		for (var resourceActionIndex : list "ADD_DEPOT_ENTRY,PERMISSIONS") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com.liferay.depot",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		for (var resourceActionIndex : list "ASSIGN_MEMBERS,ASSIGN_USER_ROLES,DELETE,PERMISSIONS,UPDATE,VIEW,VIEW_MEMBERS,VIEW_SITE_ADMINISTRATION") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com.liferay.depot.model.DepotEntry",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		DepotNavigator.openDepotAdmin();
+
+		AssertTextEquals(
+			key_card = "Test Depot Name",
+			locator1 = "Card#CARD_TITLE",
+			value1 = "Test Depot Name");
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoLanguages(depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
+
+		DepotNavigator.gotoSites(depotName = "Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.editDepot(
+			depotDescriptionEdit = "This is an edited description of a depot",
+			depotName = "Test Depot Name",
+			depotNameEdit = "Edited Test Depot Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		Depot.deleteCP(depotName = "Edited Test Depot Name");
+
+		Depot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name 2");
+	}
+
+	@description = "This ensures that the user can only view depots with view permissions."
+	@priority = "5"
+	test ConfigureRoleWithViewOnly {
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln",
+			userScreenName = "usersn");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_SITE_ADMINISTRATION",
+			resourceName = "com.liferay.portal.kernel.model.Group",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com.liferay.depot.model.DepotEntry",
+			roleTitle = "Depot Regrole Name");
+
+		DepotNavigator.openDepotAdmin();
+
+		AssertTextEquals(
+			key_card = "Test Depot Name",
+			locator1 = "Card#CARD_TITLE",
+			value1 = "Test Depot Name");
+
+		AssertElementNotPresent(
+			key_rowEntry = "Test Depot Name",
+			locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
+
+		AssertElementNotPresent(locator1 = "Button#PLUS");
+	}
+
+	@description = "This ensures that able to select specific asset libraries scope from Collections permissions."
+	@priority = "5"
+	test SelectDepotFromCollectionsPermissions {
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCP(
+			assetLibrariesScope = "true",
+			permissionDefinitionKey = "SITE_ADMIN_BUILDER_COLLECTIONS_ASSET_LIST_ENTRY_DELETE_CHECKBOX",
+			permissionDefinitionValue = "Delete",
+			roleTitle = "Depot Regrole Name",
+			siteNameScope = "Test Depot Name");
+	}
+
+	@description = "This ensures that able to select specific asset libraries scope from DM permissions."
+	@priority = "5"
+	test SelectDepotFromDMPermissions {
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCP(
+			assetLibrariesScope = "true",
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENTS_ADD_DOCUMENT_CHECKBOX",
+			permissionDefinitionValue = "Add Document",
+			roleTitle = "Depot Regrole Name",
+			siteNameScope = "Test Depot Name");
+	}
+
+	@description = "This ensures that able to select specific asset libraries scope from WC permissions."
+	@priority = "5"
+	test SelectDepotFromWCPermissions {
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCP(
+			assetLibrariesScope = "true",
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_WEB_CONTENT_GENERAL_PERMISSIONS_VIEW_CHECKBOX",
+			permissionDefinitionValue = "View",
+			roleTitle = "Depot Regrole Name",
+			siteNameScope = "Test Depot Name");
+	}
+
+	@description = "This ensures that the user can view documents on site and library with all sites and libraries scope view permissions."
+	@priority = "5"
+	test ViewDocumentOnSiteAndLibrary {
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Depot DM Document Title",
+			groupName = "Test Depot Name");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Site DM Document Title",
+			groupName = "Site Name");
+
+		Permissions.setUpRegRoleLoginUserCP(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "test test",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		Site.assignUserSitesCP(
+			siteName = "Site Name",
+			userScreenName = "usersn");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com.liferay.depot.model.DepotEntry",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_SITE_ADMINISTRATION",
+			resourceName = "com.liferay.depot.model.DepotEntry",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_SITE_ADMINISTRATION",
+			resourceName = "com.liferay.portal.kernel.model.Group",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com.liferay.document.library.kernel.model.DLFileEntry",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com.liferay.document.library",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_document_library_web_portlet_DLAdminPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Site DM Document Title");
+
+		DMDocument.viewCP(dmDocumentTitle = "Site DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "test-depot-name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Depot DM Document Title");
+
+		DMDocument.viewCP(dmDocumentTitle = "Depot DM Document Title");
+	}
+
+}

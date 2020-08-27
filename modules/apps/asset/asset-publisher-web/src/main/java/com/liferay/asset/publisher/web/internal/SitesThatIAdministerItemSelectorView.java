@@ -19,9 +19,9 @@ import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.web.internal.display.context.SitesThatIAdministerItemSelectorViewDisplayContext;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
+import com.liferay.item.selector.criteria.GroupItemSelectorReturnType;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -31,10 +31,9 @@ import com.liferay.site.item.selector.criterion.SiteItemSelectorCriterion;
 
 import java.io.IOException;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import javax.portlet.PortletURL;
 
@@ -70,14 +69,15 @@ public class SitesThatIAdministerItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		ResourceBundle resourceBundle = _portal.getResourceBundle(locale);
-
 		return ResourceBundleUtil.getString(
-			resourceBundle, "sites-that-i-administer");
+			_portal.getResourceBundle(locale), "sites-that-i-administer");
 	}
 
 	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
+	public boolean isVisible(
+		SiteItemSelectorCriterion siteItemSelectorCriterion,
+		ThemeDisplay themeDisplay) {
+
 		Group siteGroup = themeDisplay.getSiteGroup();
 
 		if (siteGroup.isLayoutPrototype()) {
@@ -101,7 +101,7 @@ public class SitesThatIAdministerItemSelectorView
 
 	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			SiteItemSelectorCriterion siteItemSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
@@ -109,26 +109,24 @@ public class SitesThatIAdministerItemSelectorView
 		SitesThatIAdministerItemSelectorViewDisplayContext
 			sitesItemSelectorViewDisplayContext =
 				new SitesThatIAdministerItemSelectorViewDisplayContext(
-					(HttpServletRequest)request, _assetPublisherHelper,
+					(HttpServletRequest)servletRequest, _assetPublisherHelper,
 					siteItemSelectorCriterion, itemSelectedEventName,
 					portletURL);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			AssetPublisherWebKeys.ITEM_SELECTOR_DISPLAY_CONTEXT,
 			sitesItemSelectorViewDisplayContext);
 
 		RequestDispatcher requestDispatcher =
 			_servletContext.getRequestDispatcher("/view_sites.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
-		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new SiteItemSelectorReturnType()
-				}));
+		_supportedItemSelectorReturnTypes = Arrays.asList(
+			new GroupItemSelectorReturnType(),
+			new SiteItemSelectorReturnType());
 
 	@Reference
 	private AssetPublisherHelper _assetPublisherHelper;

@@ -24,7 +24,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.user.associated.data.anonymizer.UADAnonymizer;
-import com.liferay.user.associated.data.test.util.BaseUADAnonymizerTestCase;
+import com.liferay.user.associated.data.test.util.BaseHasAssetEntryUADAnonymizerTestCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,8 @@ import org.junit.runner.RunWith;
  * @author Brian Wing Shun Chan
  */
 @RunWith(Arquillian.class)
-public class LayoutUADAnonymizerTest extends BaseUADAnonymizerTestCase<Layout> {
+public class LayoutUADAnonymizerTest
+	extends BaseHasAssetEntryUADAnonymizerTestCase<Layout> {
 
 	@ClassRule
 	@Rule
@@ -64,7 +65,7 @@ public class LayoutUADAnonymizerTest extends BaseUADAnonymizerTestCase<Layout> {
 	}
 
 	@Override
-	protected UADAnonymizer getUADAnonymizer() {
+	protected UADAnonymizer<Layout> getUADAnonymizer() {
 		return _uadAnonymizer;
 	}
 
@@ -77,7 +78,9 @@ public class LayoutUADAnonymizerTest extends BaseUADAnonymizerTestCase<Layout> {
 		String userName = layout.getUserName();
 
 		if ((layout.getUserId() != user.getUserId()) &&
-			!userName.equals(user.getFullName())) {
+			!userName.equals(user.getFullName()) &&
+			isAssetEntryAutoAnonymized(
+				Layout.class.getName(), layout.getPlid(), user)) {
 
 			return true;
 		}
@@ -101,6 +104,6 @@ public class LayoutUADAnonymizerTest extends BaseUADAnonymizerTestCase<Layout> {
 	private final List<Layout> _layouts = new ArrayList<>();
 
 	@Inject(filter = "component.name=*.LayoutUADAnonymizer")
-	private UADAnonymizer _uadAnonymizer;
+	private UADAnonymizer<Layout> _uadAnonymizer;
 
 }

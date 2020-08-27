@@ -20,12 +20,12 @@ import com.liferay.configuration.admin.web.internal.display.ConfigurationCategor
 import com.liferay.configuration.admin.web.internal.display.ConfigurationEntry;
 import com.liferay.configuration.admin.web.internal.display.ConfigurationModelConfigurationEntry;
 import com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeDisplayContext;
+import com.liferay.configuration.admin.web.internal.display.context.ConfigurationScopeDisplayContextFactory;
 import com.liferay.configuration.admin.web.internal.model.ConfigurationModel;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationEntryRetriever;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationModelIterator;
 import com.liferay.configuration.admin.web.internal.util.ConfigurationModelRetriever;
 import com.liferay.configuration.admin.web.internal.util.ResourceBundleLoaderProvider;
-import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -55,6 +55,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.INSTANCE_SETTINGS,
+		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SITE_SETTINGS,
 		"javax.portlet.name=" + ConfigurationAdminPortletKeys.SYSTEM_SETTINGS,
 		"mvc.command.name=/view_factory_instances",
 		"service.ranking:Integer=" + (Integer.MAX_VALUE - 1000)
@@ -79,17 +80,18 @@ public class ViewFactoryInstancesMVCRenderCommand implements MVCRenderCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		ConfigurationScopeDisplayContext configurationScopeDisplayContext =
+			ConfigurationScopeDisplayContextFactory.create(renderRequest);
+
 		Map<String, ConfigurationModel> configurationModels =
 			_configurationModelRetriever.getConfigurationModels(
 				themeDisplay.getLanguageId(),
-				ExtendedObjectClassDefinition.Scope.SYSTEM, null);
+				configurationScopeDisplayContext.getScope(),
+				configurationScopeDisplayContext.getScopePK());
 
 		try {
 			ConfigurationModel factoryConfigurationModel =
 				configurationModels.get(factoryPid);
-
-			ConfigurationScopeDisplayContext configurationScopeDisplayContext =
-				new ConfigurationScopeDisplayContext(renderRequest);
 
 			ConfigurationCategoryMenuDisplay configurationCategoryMenuDisplay =
 				_configurationEntryRetriever.
@@ -106,7 +108,8 @@ public class ViewFactoryInstancesMVCRenderCommand implements MVCRenderCommand {
 			List<ConfigurationModel> factoryInstances =
 				_configurationModelRetriever.getFactoryInstances(
 					factoryConfigurationModel,
-					ExtendedObjectClassDefinition.Scope.SYSTEM, null);
+					configurationScopeDisplayContext.getScope(),
+					configurationScopeDisplayContext.getScopePK());
 
 			ConfigurationEntry configurationEntry =
 				new ConfigurationModelConfigurationEntry(
@@ -131,8 +134,8 @@ public class ViewFactoryInstancesMVCRenderCommand implements MVCRenderCommand {
 
 			return "/view_factory_instances.jsp";
 		}
-		catch (IOException ioe) {
-			throw new PortletException(ioe);
+		catch (IOException ioException) {
+			throw new PortletException(ioException);
 		}
 	}
 
@@ -158,7 +161,7 @@ public class ViewFactoryInstancesMVCRenderCommand implements MVCRenderCommand {
 	@Reference
 	private ConfigurationEntryRetriever _configurationEntryRetriever;
 
-	@Reference
+	@Reference(target = "(filter.visibility=*)")
 	private ConfigurationModelRetriever _configurationModelRetriever;
 
 	@Reference

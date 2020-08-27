@@ -12,10 +12,6 @@
 		display: block;
 	}
 
-	.product-menu .panel-group .panel-heading + .panel-collapse.show {
-		border-bottom: 2px solid #65B6F0;
-	}
-
 	.product-menu.sidebar {
 		.sidebar-header {
 			padding-bottom: 0.7rem;
@@ -23,8 +19,13 @@
 		}
 	}
 
-	.product-menu.sidebar .sidebar-body, .lfr-has-simulation-panel .lfr-simulation-device {
+	.product-menu.sidebar .sidebar-body,
+	.lfr-has-simulation-panel .lfr-simulation-device {
 		top: 3.5rem;
+	}
+
+	.product-menu.sidebar .lfr-applications-menu .sidebar-body {
+		top: 0;
 	}
 
 	.product-menu .add-application-panel .panel-body {
@@ -86,17 +87,17 @@
 		}
 	}
 
-	/* ---------- Modals ---------- */
+	// ---------- Modals ----------
 
 	.dialog-with-footer .button-holder.dialog-footer {
 		background-color: $modal-content-bg;
 	}
 
-	/* ---------- Friendly URL ---------- */
+	// ---------- Friendly URL ----------
 
 	.lfr-friendly-url-input-group.input-group {
 		.input-group-addon {
-			background-color: #E8E8EC;
+			background-color: #e8e8ec;
 		}
 
 		.language-value {
@@ -105,7 +106,7 @@
 		}
 	}
 
-	/* ---------- Forms builder ---------- */
+	// ---------- Forms builder ----------
 
 	#settings .lfr-ddm-form-page {
 		margin-top: 0;
@@ -147,14 +148,16 @@
 		line-height: 2;
 	}
 
-	.layout-row-container-row .layout-builder-move-cut-button.layout-builder-move-cut-row-button {
+	.layout-row-container-row
+		.layout-builder-move-cut-button.layout-builder-move-cut-row-button {
 		right: 30px;
 		top: -22px;
 	}
 
-	/* ---------- Portlet forms ---------- */
+	// ---------- Portlet forms ----------
 
-	.portal-popup, .portlet-forms-admin {
+	.portal-popup,
+	.portlet-forms-admin {
 		.asset-icon .sticker .lexicon-icon {
 			height: 100%;
 			width: 1em;

@@ -74,8 +74,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + PasswordPoliciesAdminPortletKeys.PASSWORD_POLICIES_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -267,12 +266,12 @@ public class PasswordPoliciesAdminPortlet extends MVCPortlet {
 	}
 
 	@Override
-	protected boolean isSessionErrorException(Throwable cause) {
-		if (cause instanceof DuplicatePasswordPolicyException ||
-			cause instanceof NoSuchPasswordPolicyException ||
-			cause instanceof PasswordPolicyNameException ||
-			cause instanceof PrincipalException ||
-			cause instanceof RequiredPasswordPolicyException) {
+	protected boolean isSessionErrorException(Throwable throwable) {
+		if (throwable instanceof DuplicatePasswordPolicyException ||
+			throwable instanceof NoSuchPasswordPolicyException ||
+			throwable instanceof PasswordPolicyNameException ||
+			throwable instanceof PrincipalException ||
+			throwable instanceof RequiredPasswordPolicyException) {
 
 			return true;
 		}

@@ -1,5 +1,6 @@
 @component-name = "portal-web-forms-and-data-lists"
 definition {
+
 	property custom.properties = "minifier.enabled=true";
 	property portal.release = "true";
 	property portal.upstream = "true";
@@ -9,52 +10,89 @@ definition {
 		TestCase.setUpPortalInstance();
 
 		User.firstLoginPG();
+	}
 
-		var portalURL = PropsUtil.get("portal.url");
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				portlet = "Forms");
+
+			FormsAdmin.teardownForms();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@description = "This is a use case for LPS-68227."
+	@priority = "4"
+	test ViewFormRulesSummary {
+		property test.name.skip.portal.instance = "FormsJumpToPage#ViewFormRulesSummary";
+		property portal.acceptance = "quarantine";
 
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
-			panel = "Site Administration",
 			portlet = "Forms");
 
 		FormsAdminNavigator.gotoAddForm();
 
 		Form.editName();
 
-		Form.editPageTitle(formPageName = "Page 1");
+		Form.editPageTitle(
+			formPageName = "Page 1",
+			formTitleNumber = "1");
 
-		Form.gotoAddField(fieldType = "Single Selection");
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Single Selection");
 
 		Form.editFieldLabelMetal(fieldValue = "Choose Your Destiny");
 
 		FormFields.editOptionsRow(
-			optionName = "Destiny1",
-			optionValue = "Destiny 1");
+			optionValue = "Destiny 1",
+			rowNumber = "1");
 
 		FormFields.editOptionsRow(
-			optionName = "Destiny2",
 			optionValue = "Destiny 2",
 			rowNumber = "2");
 
 		FormFields.editOptionsRow(
-			optionName = "Destiny3",
 			optionValue = "Destiny 3",
 			rowNumber = "3");
 
 		Form.closeSidebar();
 
 		for (var option : list "1,2,3") {
-			Form.addPage();
+			Form.addPage(formAddNewPageNumber = "${option}");
 
-			var pageNumber = MathUtil.sum("${option}", "1");
+			var pageNumber = ${option} + 1;
 
-			Form.editPageTitle(formPageName = "Page ${pageNumber}");
+			Form.editPageTitle(
+				formPageName = "Page ${pageNumber}",
+				formTitleNumber = "${pageNumber}");
 
-			Form.gotoAddField(fieldType = "Text Field");
+			if ("${pageNumber}" == "2") {
+				Form.addTextField(fieldPositionNumber = "3");
+			}
+			else if ("${pageNumber}" == "3") {
+				Form.addTextField(fieldPositionNumber = "5");
+			}
+			else {
+				Form.addTextField(fieldPositionNumber = "7");
+			}
 
-			Form.editFieldLabelMetal(fieldValue = "Destiny ${option}");
+			var addPageNumber = ${pageNumber} - 1;
+
+			Form.editFieldLabelMetal(fieldValue = "Destiny ${addPageNumber}");
 
 			Form.closeSidebar();
 		}
@@ -96,32 +134,13 @@ definition {
 		FormsAdminNavigator.gotoFormBuilder();
 
 		Form.save();
-	}
 
-	tearDown {
-		var testPortalInstance = PropsUtil.get("test.portal.instance");
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
 
-		if ("${testPortalInstance}" == "true") {
-			PortalInstances.tearDownCP();
-		}
-		else {
-			Navigator.openURL();
+		FormsAdminNavigator.gotoEditFormByName();
 
-			ProductMenu.gotoPortlet(
-				category = "Content &amp; Data",
-				panel = "Site Administration",
-				portlet = "Forms");
-
-			FormsAdmin.teardownForms();
-
-			Page.tearDownCP();
-		}
-	}
-
-	@description = "This is a use case for LPS-68227."
-	@priority = "4"
-	test ViewFormRulesSummary {
-		property test.name.skip.portal.instance = "FormsJumpToPage#ViewFormRulesSummary";
 		FormsAdminNavigator.gotoRules();
 
 		FormRules.viewSummary(
@@ -145,30 +164,157 @@ definition {
 	@priority = "5"
 	test ViewPagesAfterJump {
 		property test.name.skip.portal.instance = "FormsJumpToPage#ViewPagesAfterJump";
+		property portal.acceptance = "quarantine";
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editPageTitle(
+			formPageName = "Page 1",
+			formTitleNumber = "1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Single Selection");
+
+		var fieldNameChooseYourDestiny = FormFields.getFieldName();
+
+		Form.editFieldLabelMetal(fieldValue = "Choose Your Destiny");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 1",
+			rowNumber = "1");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 2",
+			rowNumber = "2");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 3",
+			rowNumber = "3");
+
+		Form.closeSidebar();
+
+		for (var option : list "1,2,3") {
+			Form.addPage(formAddNewPageNumber = "${option}");
+
+			var pageNumber = ${option} + 1;
+
+			Form.editPageTitle(
+				formPageName = "Page ${pageNumber}",
+				formTitleNumber = "${pageNumber}");
+
+			if ("${pageNumber}" == "2") {
+				Form.addTextField(fieldPositionNumber = "3");
+
+				var fieldNameDestiny1 = FormFields.getFieldName();
+			}
+			else if ("${pageNumber}" == "3") {
+				Form.addTextField(fieldPositionNumber = "5");
+
+				var fieldNameDestiny2 = FormFields.getFieldName();
+			}
+			else {
+				Form.addTextField(fieldPositionNumber = "7");
+
+				var fieldNameDestiny3 = FormFields.getFieldName();
+			}
+
+			var addPageNumber = ${pageNumber} - 1;
+
+			Form.editFieldLabelMetal(fieldValue = "Destiny ${addPageNumber}");
+
+			Form.closeSidebar();
+		}
+
+		FormsAdminNavigator.gotoRules();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 2",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "3 Page 3");
+
+		FormRules.save();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 3",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "4 Page 4");
+
+		FormRules.save();
+
+		FormsAdminNavigator.gotoFormBuilder();
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
 		Form.publishForm();
 
-		FormsAdminNavigator.openPublishURL(publishFormURL = "${publishedFormPublicURL}");
+		FormsAdminNavigator.gotoPublishedForm();
+
+		FormPortlet.waitFormRenderer(text = "Next");
 
 		for (var option : list "1,2,3") {
 			FormFields.selectRadioOption(
-				fieldName = "ChooseYourDestiny",
+				fieldName = "${fieldNameChooseYourDestiny}",
 				radioOption = "Destiny ${option}");
 
-			var pageNumber = MathUtil.sum("${option}", "1");
+			var pageNumber = ${option} + 1;
 
 			FormPortlet.nextPage(
 				formPageCurrent = "Page 1",
 				formPageNext = "Page ${pageNumber}");
 
-			FormFields.viewTextField(
-				fieldLabel = "Destiny ${option}",
-				fieldName = "Destiny${option}");
-
+			if ("${pageNumber}" == "2") {
+				FormFields.viewTextField(
+					fieldLabel = "Destiny ${option}",
+					fieldName = "${fieldNameDestiny1}");
+			}
+			else if ("${pageNumber}" == "3") {
+				FormFields.viewTextField(
+					fieldLabel = "Destiny ${option}",
+					fieldName = "${fieldNameDestiny2}");
+			}
+			else {
+				FormFields.viewTextField(
+					fieldLabel = "Destiny ${option}",
+					fieldName = "${fieldNameDestiny3}");
+			}
 			FormPortlet.previousPage();
 		}
 
 		FormFields.selectRadioOption(
-			fieldName = "ChooseYourDestiny",
+			fieldName = "${fieldNameChooseYourDestiny}",
 			radioOption = "Destiny 2");
 
 		FormPortlet.nextPage(
@@ -176,7 +322,7 @@ definition {
 			formPageNext = "Page 3");
 
 		FormFields.editText(
-			fieldName = "Destiny2",
+			fieldName = "${fieldNameDestiny2}",
 			fieldValue = "After skipping to page 3");
 
 		FormPortlet.nextPage(
@@ -184,7 +330,7 @@ definition {
 			formPageNext = "Page 4");
 
 		FormFields.editText(
-			fieldName = "Destiny3",
+			fieldName = "${fieldNameDestiny3}",
 			fieldValue = "Also fill out page 4");
 
 		FormPortlet.submitSuccessfully();
@@ -194,15 +340,126 @@ definition {
 	@priority = "4"
 	test ViewRuleAfterLabelEdit {
 		property test.name.skip.portal.instance = "FormsJumpToPage#ViewRuleAfterLabelEdit";
-		FormsAdminNavigator.gotoEditField(fieldName = "ChooseYourDestiny");
 
-		Form.editFieldLabelMetal(
-			fieldName = "ChooseYourDestiny",
-			fieldValue = "Edit Label");
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editPageTitle(
+			formPageName = "Page 1",
+			formTitleNumber = "1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Single Selection");
+
+		var fieldNameChooseYourDestiny = FormFields.getFieldName();
+
+		Form.editFieldLabelMetal(fieldValue = "Choose Your Destiny");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 1",
+			rowNumber = "1");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 2",
+			rowNumber = "2");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 3",
+			rowNumber = "3");
+
+		Form.closeSidebar();
+
+		for (var option : list "1,2,3") {
+			Form.addPage(formAddNewPageNumber = "${option}");
+
+			var pageNumber = ${option} + 1;
+
+			Form.editPageTitle(
+				formPageName = "Page ${pageNumber}",
+				formTitleNumber = "${pageNumber}");
+
+			if ("${pageNumber}" == "2") {
+				Form.addTextField(fieldPositionNumber = "3");
+			}
+			else if ("${pageNumber}" == "3") {
+				Form.addTextField(fieldPositionNumber = "5");
+			}
+			else {
+				Form.addTextField(fieldPositionNumber = "7");
+			}
+
+			var addPageNumber = ${pageNumber} - 1;
+
+			Form.editFieldLabelMetal(fieldValue = "Destiny ${addPageNumber}");
+
+			Form.closeSidebar();
+		}
+
+		FormsAdminNavigator.gotoRules();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 2",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "3 Page 3");
+
+		FormRules.save();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 3",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "4 Page 4");
+
+		FormRules.save();
+
+		FormsAdminNavigator.gotoFormBuilder();
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
+		FormsAdminNavigator.gotoEditField(fieldName = "${fieldNameChooseYourDestiny}");
+
+		Form.editFieldLabelMetal(fieldValue = "Edit Label");
 
 		Form.closeSidebar();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		FormsAdminNavigator.gotoRules();
 
@@ -219,16 +476,129 @@ definition {
 	@priority = "3"
 	test ViewRuleAfterOptionValueEdit {
 		property test.name.skip.portal.instance = "FormsJumpToPage#ViewRuleAfterOptionValueEdit";
-		FormsAdminNavigator.gotoEditField(fieldName = "ChooseYourDestiny");
+		property portal.acceptance = "quarantine";
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editPageTitle(
+			formPageName = "Page 1",
+			formTitleNumber = "1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Single Selection");
+
+		var fieldNameChooseYourDestiny = FormFields.getFieldName();
+
+		Form.editFieldLabelMetal(fieldValue = "Choose Your Destiny");
 
 		FormFields.editOptionsRow(
-			optionName = "Destiny2",
+			optionValue = "Destiny 1",
+			rowNumber = "1");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 2",
+			rowNumber = "2");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 3",
+			rowNumber = "3");
+
+		Form.closeSidebar();
+
+		for (var option : list "1,2,3") {
+			Form.addPage(formAddNewPageNumber = "${option}");
+
+			var pageNumber = ${option} + 1;
+
+			Form.editPageTitle(
+				formPageName = "Page ${pageNumber}",
+				formTitleNumber = "${pageNumber}");
+
+			if ("${pageNumber}" == "2") {
+				Form.addTextField(fieldPositionNumber = "3");
+			}
+			else if ("${pageNumber}" == "3") {
+				Form.addTextField(fieldPositionNumber = "5");
+			}
+			else {
+				Form.addTextField(fieldPositionNumber = "7");
+			}
+
+			var addPageNumber = ${pageNumber} - 1;
+
+			Form.editFieldLabelMetal(fieldValue = "Destiny ${addPageNumber}");
+
+			Form.closeSidebar();
+		}
+
+		FormsAdminNavigator.gotoRules();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 2",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "3 Page 3");
+
+		FormRules.save();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 3",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "4 Page 4");
+
+		FormRules.save();
+
+		FormsAdminNavigator.gotoFormBuilder();
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
+		FormsAdminNavigator.gotoEditField(fieldName = "${fieldNameChooseYourDestiny}");
+
+		FormFields.editOptionsRow(
 			optionValue = "Edited Destiny",
 			rowNumber = "2");
 
 		Form.closeSidebar();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		FormsAdminNavigator.gotoRules();
 
@@ -245,11 +615,123 @@ definition {
 	@priority = "4"
 	test ViewRuleAfterPageNameChange {
 		property test.name.skip.portal.instance = "FormsJumpToPage#ViewRuleAfterPageNameChange";
-		Form.gotoFormPage(formPageName = "Page 3");
+		property portal.acceptance = "quarantine";
 
-		Form.editPageTitle(formPageName = "Renamed Page");
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editPageTitle(
+			formPageName = "Page 1",
+			formTitleNumber = "1");
+
+		Form.gotoAddField(
+			fieldPositionNumber = "1",
+			fieldType = "Single Selection");
+
+		Form.editFieldLabelMetal(fieldValue = "Choose Your Destiny");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 1",
+			rowNumber = "1");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 2",
+			rowNumber = "2");
+
+		FormFields.editOptionsRow(
+			optionValue = "Destiny 3",
+			rowNumber = "3");
+
+		Form.closeSidebar();
+
+		for (var option : list "1,2,3") {
+			Form.addPage(formAddNewPageNumber = "${option}");
+
+			var pageNumber = ${option} + 1;
+
+			Form.editPageTitle(
+				formPageName = "Page ${pageNumber}",
+				formTitleNumber = "${pageNumber}");
+
+			if ("${pageNumber}" == "2") {
+				Form.addTextField(fieldPositionNumber = "3");
+			}
+			else if ("${pageNumber}" == "3") {
+				Form.addTextField(fieldPositionNumber = "5");
+			}
+			else {
+				Form.addTextField(fieldPositionNumber = "7");
+			}
+
+			var addPageNumber = ${pageNumber} - 1;
+
+			Form.editFieldLabelMetal(fieldValue = "Destiny ${addPageNumber}");
+
+			Form.closeSidebar();
+		}
+
+		FormsAdminNavigator.gotoRules();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 2",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "3 Page 3");
+
+		FormRules.save();
+
+		FormRules.addRule();
+
+		FormRules.configureConditionOptions(
+			conditionField = "Choose Your Destiny",
+			conditionOperator = "Is equal to",
+			conditionRowNumber = "1",
+			conditionValueField = "Destiny 3",
+			conditionValueType = "Value");
+
+		FormRules.configureActionOptions(
+			action = "Jump to Page",
+			actionRowNumber = "1",
+			actionTarget = "4 Page 4");
+
+		FormRules.save();
+
+		FormsAdminNavigator.gotoFormBuilder();
 
 		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
+		Form.editPageTitle(
+			formPageName = "Renamed Page",
+			formTitleNumber = "3");
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
 
 		FormsAdminNavigator.gotoRules();
 
@@ -261,4 +743,5 @@ definition {
 			locator1 = "FormRules#RULE_BUILDER_JUMP_TO_PAGE_ACTION_TARGET",
 			value1 = "3 Renamed Page");
 	}
+
 }

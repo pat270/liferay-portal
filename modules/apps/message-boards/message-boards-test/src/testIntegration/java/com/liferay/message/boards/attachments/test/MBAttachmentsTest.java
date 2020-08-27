@@ -49,7 +49,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +73,6 @@ public class MBAttachmentsTest {
 		addGroup();
 	}
 
-	@Ignore
 	@Test
 	public void testDeleteAttachmentsWhenDeletingMessage() throws Exception {
 		int initialFileEntriesCount =
@@ -209,7 +207,6 @@ public class MBAttachmentsTest {
 			initialFoldersCount, DLFolderLocalServiceUtil.getDLFoldersCount());
 	}
 
-	@Ignore
 	@Test
 	public void testFoldersCountWhenDeletingMessageWithAttachments()
 		throws Exception {
@@ -374,18 +371,9 @@ public class MBAttachmentsTest {
 				MBTestUtil.getInputStreamOVPs(
 					"OSX_Test.docx", getClass(), StringPool.BLANK);
 
-			List<String> existingFiles = new ArrayList<>();
-
-			List<FileEntry> fileEntries = _message.getAttachmentsFileEntries();
-
-			for (FileEntry fileEntry : fileEntries) {
-				existingFiles.add(String.valueOf(fileEntry.getFileEntryId()));
-			}
-
 			_message = MBMessageLocalServiceUtil.updateMessage(
 				TestPropsValues.getUserId(), _message.getMessageId(), "Subject",
-				"Body", objectValuePairs, existingFiles, 0, false,
-				serviceContext);
+				"Body", objectValuePairs, 0, false, serviceContext);
 		}
 	}
 
@@ -431,7 +419,7 @@ public class MBAttachmentsTest {
 
 		_message = MBMessageLocalServiceUtil.updateMessage(
 			TestPropsValues.getUserId(), _message.getMessageId(), "Subject",
-			"Body", objectValuePairs, existingFiles, 0, false, serviceContext);
+			"Body", objectValuePairs, 0, false, serviceContext);
 
 		Assert.assertEquals(
 			initialNotInTrashCount + 1,

@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.ProtectedServletRequest;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -112,8 +111,8 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 			try {
 				userId = HttpAuthManagerUtil.getBasicUserId(httpServletRequest);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			if (userId > 0) {
@@ -162,8 +161,8 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 				userId = HttpAuthManagerUtil.getDigestUserId(
 					httpServletRequest);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 			}
 
 			if (userId > 0) {
@@ -194,23 +193,6 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 		}
 
 		return httpServletRequest;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected void initThreadLocals(HttpServletRequest httpServletRequest)
-		throws Exception {
-
-		HttpSession session = httpServletRequest.getSession();
-
-		User user = (User)session.getAttribute(WebKeys.USER);
-
-		initThreadLocals(user);
-
-		PrincipalThreadLocal.setPassword(
-			PortalUtil.getUserPassword(httpServletRequest));
 	}
 
 	protected void initThreadLocals(User user) throws Exception {
@@ -274,7 +256,7 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 			}
 		}
 
-		if (_httpsRequired && !httpServletRequest.isSecure()) {
+		if (_httpsRequired && !PortalUtil.isSecure(httpServletRequest)) {
 			if (_log.isDebugEnabled()) {
 				String completeURL = HttpUtil.getCompleteURL(
 					httpServletRequest);
@@ -284,13 +266,11 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 
 			StringBundler sb = new StringBundler(5);
 
-			sb.append(Http.HTTPS_WITH_SLASH);
-			sb.append(httpServletRequest.getServerName());
-			sb.append(httpServletRequest.getServletPath());
+			sb.append(PortalUtil.getPortalURL(httpServletRequest, true));
+			sb.append(PortalUtil.getPathContext(httpServletRequest));
+			sb.append(httpServletRequest.getRequestURI());
 
-			String queryString = httpServletRequest.getQueryString();
-
-			if (Validator.isNotNull(queryString)) {
+			if (Validator.isNotNull(httpServletRequest.getQueryString())) {
 				sb.append(StringPool.QUESTION);
 				sb.append(httpServletRequest.getQueryString());
 			}
@@ -313,12 +293,12 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 			try {
 				user = PortalUtil.initUser(httpServletRequest);
 			}
-			catch (NoSuchUserException nsue) {
+			catch (NoSuchUserException noSuchUserException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsue, nsue);
+					_log.debug(noSuchUserException, noSuchUserException);
 				}
 
 				httpServletResponse.sendRedirect(
@@ -362,22 +342,6 @@ public abstract class BaseAuthFilter extends BasePortalFilter {
 					filterChain);
 			}
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #setCredentials(HttpServletRequest, HttpSession, User,
-	 *             String)}
-	 */
-	@Deprecated
-	protected HttpServletRequest setCredentials(
-			HttpServletRequest httpServletRequest, HttpSession session,
-			long userId, String authType)
-		throws Exception {
-
-		return setCredentials(
-			httpServletRequest, session, UserLocalServiceUtil.getUser(userId),
-			authType);
 	}
 
 	protected HttpServletRequest setCredentials(

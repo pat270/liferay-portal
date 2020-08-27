@@ -1,6 +1,7 @@
 definition {
+
 	macro _addCP {
-		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
 
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Add Subcategory",
@@ -24,7 +25,7 @@ definition {
 	}
 
 	macro addDuplicateCP {
-		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
 
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Add Subcategory",
@@ -60,9 +61,9 @@ definition {
 	}
 
 	macro deleteViaIconCP {
-		for (var rowEntry : list "${vocabularyName},${categoryName}") {
-			LexiconEntry.gotoEntry(rowEntry = "${rowEntry}");
-		}
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
+
+		LexiconEntry.gotoEntry(rowEntry = "${categoryName}");
 
 		var key_subcategoryName = "${subcategoryName}";
 
@@ -78,15 +79,15 @@ definition {
 	}
 
 	macro deleteViaMenuCP {
-		for (var rowEntry : list "${vocabularyName},${categoryName}") {
-			LexiconEntry.gotoEntry(rowEntry = "${rowEntry}");
-		}
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
+
+		LexiconEntry.gotoEntry(rowEntry = "${categoryName}");
 
 		LexiconEntry.gotoEntryMenuItemNoError(
 			menuItem = "Delete",
 			rowEntry = "${subcategoryName}");
 
-		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+		AssertConfirm(value1 = "This category might be being used in some contents. If you delete it, this category and all of its subcategories will also be deleted and removed from those contents. Do you want to continue deleting this category?");
 
 		Alert.viewSuccessMessage();
 
@@ -94,9 +95,9 @@ definition {
 	}
 
 	macro editCP {
-		for (var rowEntry : list "${vocabularyName},${categoryName}") {
-			LexiconEntry.gotoEntry(rowEntry = "${rowEntry}");
-		}
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
+
+		LexiconEntry.gotoEntry(rowEntry = "${categoryName}");
 
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Edit",
@@ -108,10 +109,7 @@ definition {
 	}
 
 	macro moveCP {
-		AssertClick(
-			key_rowEntry = "${vocabularyName}",
-			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
-			value1 = "${vocabularyName}");
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
 
 		AssertClick(
 			key_rowEntry = "${categoryName}",
@@ -126,15 +124,15 @@ definition {
 	}
 
 	macro searchCP {
-		for (var rowEntry : list "${vocabularyName},${categoryName}") {
-			LexiconEntry.gotoEntry(rowEntry = "${rowEntry}");
-		}
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
+
+		LexiconEntry.gotoEntry(rowEntry = "${categoryName}");
 
 		Search.searchCP(searchTerm = "${subcategorySearchEntry}");
 	}
 
 	macro viewCategoryPropertyCP {
-		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
 
 		var key_categoryName = "${categoryName}";
 
@@ -158,7 +156,7 @@ definition {
 	macro viewCP {
 		var key_categoryName = "${categoryName}";
 
-		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
+		Navigator.gotoNavNested(navNested = "${vocabularyName}");
 
 		AssertClick(
 			locator1 = "Categories#CATEGORY_ENTRY_LINK",
@@ -196,4 +194,5 @@ definition {
 			PortletEntry.viewEmptyMessage(entity = "Categories");
 		}
 	}
+
 }

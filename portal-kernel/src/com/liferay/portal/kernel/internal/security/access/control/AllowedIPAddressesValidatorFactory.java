@@ -58,8 +58,8 @@ public final class AllowedIPAddressesValidatorFactory {
 				return _ALLOWED_IP_ADDRESSES_VALIDATOR;
 			}
 		}
-		catch (Exception e) {
-			_log.error("Invalid configured address: ", e);
+		catch (Exception exception) {
+			_log.error("Invalid configured address: ", exception);
 
 			return _ALLOWED_IP_ADDRESSES_VALIDATOR;
 		}
@@ -86,7 +86,7 @@ public final class AllowedIPAddressesValidatorFactory {
 			try {
 				inetAddress = InetAddressUtil.getInetAddressByName(ipAddress);
 			}
-			catch (UnknownHostException uhe) {
+			catch (UnknownHostException unknownHostException) {
 				return false;
 			}
 
@@ -122,10 +122,10 @@ public final class AllowedIPAddressesValidatorFactory {
 		}
 
 		private BaseAllowedIPAddressesValidator(
-				InetAddress inetAddress, String[] ipAddressAndNetmask)
+				InetAddress allowedIpAddress, String[] ipAddressAndNetmask)
 			throws UnknownHostException {
 
-			_allowedIpAddress = inetAddress;
+			_allowedIpAddress = allowedIpAddress;
 
 			_allowedIpAddressBytes = _allowedIpAddress.getAddress();
 
@@ -152,10 +152,8 @@ public final class AllowedIPAddressesValidatorFactory {
 				bytesNetmask[i] = (byte)_BYTE[8];
 			}
 
-			int byteOffset = cidr % 8;
-
 			if (netmaskBytes < bytesNetmask.length) {
-				bytesNetmask[netmaskBytes] = (byte)_BYTE[byteOffset];
+				bytesNetmask[netmaskBytes] = (byte)_BYTE[cidr % 8];
 			}
 
 			return bytesNetmask;

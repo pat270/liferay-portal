@@ -227,6 +227,26 @@ public class PQLEntityFactoryTest extends TestCase {
 	}
 
 	@Test
+	public void testPQLQueryGetPQLResultUnbalancedSyntax() throws Exception {
+		String query = "(portal.smoke == true)( OR false";
+
+		_validateGetPQLResultError(
+			query, "Invalid PQL: Unmatched opening boundary '('\n" + query);
+
+		query = "(portal.smoke == true)) OR false";
+
+		_validateGetPQLResultError(
+			query, "Invalid PQL: Unexpected closing boundary ')'\n" + query);
+
+		query = "portal.smoke == \"string";
+
+		_validateGetPQLResultError(
+			query, "Invalid PQL: Unmatched opening boundary '\"'\n" + query);
+
+		_validateGetPQLResult("portal.smoke == \"(string\"", Boolean.FALSE);
+	}
+
+	@Test
 	public void testPQLValueGetPQLResult() throws Exception {
 		_validateGetPQLResult("false", Boolean.FALSE);
 		_validateGetPQLResult("'false'", Boolean.FALSE);
@@ -348,8 +368,8 @@ public class PQLEntityFactoryTest extends TestCase {
 
 			pqlEntity.getPQLResult(properties);
 		}
-		catch (Exception e) {
-			actualError = e.getMessage();
+		catch (Exception exception) {
+			actualError = exception.getMessage();
 
 			if (!actualError.equals(expectedError)) {
 				StringBuilder sb = new StringBuilder();
@@ -361,7 +381,7 @@ public class PQLEntityFactoryTest extends TestCase {
 				sb.append("\n* Expected: ");
 				sb.append(expectedError);
 
-				throw new Exception(sb.toString(), e);
+				throw new Exception(sb.toString(), exception);
 			}
 		}
 		finally {

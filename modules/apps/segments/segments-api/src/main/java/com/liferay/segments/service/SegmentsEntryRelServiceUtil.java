@@ -14,7 +14,6 @@
 
 package com.liferay.segments.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see SegmentsEntryRelService
  * @generated
  */
-@ProviderType
 public class SegmentsEntryRelServiceUtil {
 
 	/*
@@ -39,6 +37,13 @@ public class SegmentsEntryRelServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsEntryRelServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 SegmentsEntryService#addSegmentsEntryClassPKs(
+	 long, long[], ServiceContext)}
+	 */
+	@Deprecated
 	public static com.liferay.segments.model.SegmentsEntryRel
 			addSegmentsEntryRel(
 				long segmentsEntryId, long classNameId, long classPK,
@@ -49,12 +54,24 @@ public class SegmentsEntryRelServiceUtil {
 			segmentsEntryId, classNameId, classPK, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 SegmentsEntryService#deleteSegmentsEntryClassPKs(
+	 long, long[])}
+	 */
+	@Deprecated
 	public static void deleteSegmentsEntryRel(long segmentsEntryRelId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().deleteSegmentsEntryRel(segmentsEntryRelId);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 SegmentsEntryService#deleteSegmentsEntryClassPKs(
+	 long, long[])}
+	 */
+	@Deprecated
 	public static void deleteSegmentsEntryRel(
 			long segmentsEntryId, long classNameId, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {

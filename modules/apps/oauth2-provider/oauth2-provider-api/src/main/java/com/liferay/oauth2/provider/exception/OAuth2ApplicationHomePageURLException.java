@@ -16,12 +16,9 @@ package com.liferay.oauth2.provider.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class OAuth2ApplicationHomePageURLException extends PortalException {
 
 	public OAuth2ApplicationHomePageURLException() {
@@ -31,12 +28,14 @@ public class OAuth2ApplicationHomePageURLException extends PortalException {
 		super(msg);
 	}
 
-	public OAuth2ApplicationHomePageURLException(String msg, Throwable cause) {
-		super(msg, cause);
+	public OAuth2ApplicationHomePageURLException(
+		String msg, Throwable throwable) {
+
+		super(msg, throwable);
 	}
 
-	public OAuth2ApplicationHomePageURLException(Throwable cause) {
-		super(cause);
+	public OAuth2ApplicationHomePageURLException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

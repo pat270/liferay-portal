@@ -1,0 +1,41 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Page Templates";
+	property testray.main.component.name = "Page Templates";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			PageTemplatesAdminGlobalSite.tearDownCP();
+		}
+	}
+
+	@priority = "3"
+	test ViewNoAddPageTabViaPageTemplatesCP {
+		property test.name.skip.portal.instance = "WidgetPageTemplatesUseCase#ViewNoAddPageTabViaPageTemplatesCP";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		PageTemplatesAdminGlobalSite.openGlobalPageTemplatesAdmin();
+
+		PageTemplatesAdminGlobalSite.gotoPageTemplateViaEdit(pageTemplateName = "Wiki");
+
+		SelectWindow(locator1 = "title=Wiki - ${siteName}");
+
+		Dockbar.viewAddTabsWithNoAddPagePermission();
+	}
+
+}

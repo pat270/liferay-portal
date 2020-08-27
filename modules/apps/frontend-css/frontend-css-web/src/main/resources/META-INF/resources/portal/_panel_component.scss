@@ -1,8 +1,11 @@
-.lfr-panel-container, .lfr-floating-container {
+.lfr-panel-container,
+.lfr-floating-container {
 	clear: both;
 }
 
-.lfr-panel.lfr-extended, .lfr-panel-container, .lfr-floating-container {
+.lfr-panel.lfr-extended,
+.lfr-panel-container,
+.lfr-floating-container {
 	border: 1px solid transparent;
 }
 
@@ -10,7 +13,8 @@
 	position: relative;
 }
 
-.lfr-floating-container .lfr-form-row, .lfr-panel-container .lfr-panel {
+.lfr-floating-container .lfr-form-row,
+.lfr-panel-container .lfr-panel {
 	border-width: 0;
 }
 
@@ -85,25 +89,22 @@
 	border-top: 1px solid transparent;
 }
 
-.js {
-	.lfr-floating-container {
-		position: absolute;
-	}
-
-	.lfr-floating-trigger {
-		padding: 3px;
-		padding-right: 15px;
-	}
+.lfr-floating-trigger {
+	padding: 3px;
+	padding-right: 15px;
 }
 
 .lfr-floating-container {
+	position: absolute;
+
 	.col {
 		float: left;
 		margin-right: 10px;
 		width: auto;
 	}
 
-	.language-value, select {
+	.language-value,
+	select {
 		display: inline-block;
 		vertical-align: top;
 	}

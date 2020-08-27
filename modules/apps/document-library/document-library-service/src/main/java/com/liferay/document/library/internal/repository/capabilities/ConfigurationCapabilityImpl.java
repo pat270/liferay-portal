@@ -43,15 +43,16 @@ public class ConfigurationCapabilityImpl implements ConfigurationCapability {
 			Repository repository = _repositoryServiceAdapter.getRepository(
 				_documentRepository.getRepositoryId());
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				repository.getTypeSettingsProperties();
 
-			return typeSettingsProperties.getProperty(
+			return typeSettingsUnicodeProperties.getProperty(
 				_getUniqueKey(owner, key));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
-				"Unable to read repository configuration property", pe);
+				"Unable to read repository configuration property",
+				portalException);
 		}
 	}
 
@@ -63,19 +64,20 @@ public class ConfigurationCapabilityImpl implements ConfigurationCapability {
 			Repository repository = _repositoryServiceAdapter.getRepository(
 				_documentRepository.getRepositoryId());
 
-			UnicodeProperties typeSettingsProperties =
+			UnicodeProperties typeSettingsUnicodeProperties =
 				repository.getTypeSettingsProperties();
 
-			typeSettingsProperties.setProperty(
+			typeSettingsUnicodeProperties.setProperty(
 				_getUniqueKey(owner, key), value);
 
-			repository.setTypeSettingsProperties(typeSettingsProperties);
+			repository.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 			_repositoryServiceAdapter.updateRepository(repository);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
-				"Unable to set repository configuration property", pe);
+				"Unable to set repository configuration property",
+				portalException);
 		}
 	}
 

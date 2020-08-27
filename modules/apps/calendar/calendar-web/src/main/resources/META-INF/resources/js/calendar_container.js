@@ -1,6 +1,20 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 AUI.add(
 	'liferay-calendar-container',
-	function(A) {
+	(A) => {
 		var Lang = A.Lang;
 
 		var isObject = Lang.isObject;
@@ -11,246 +25,261 @@ AUI.add(
 
 		var STR_SPACE = ' ';
 
-		var CalendarContainer = A.Component.create(
-			{
-				ATTRS: {
-					availableCalendars: {
-						validator: isObject,
-						value: {}
-					},
-
-					defaultCalendar: {
-						validator: isObject,
-						value: null
-					},
-
-					groupCalendarResourceId: {
-						setter: toInt,
-						value: 0
-					},
-
-					userCalendarResourceId: {
-						setter: toInt,
-						value: 0
-					},
-
-					visibleCalendars: {
-						validator: isObject,
-						value: {}
-					}
+		var CalendarContainer = A.Component.create({
+			ATTRS: {
+				availableCalendars: {
+					validator: isObject,
+					value: {},
 				},
 
-				AUGMENTS: [Liferay.PortletBase],
+				defaultCalendar: {
+					validator: isObject,
+					value: null,
+				},
 
-				EXTENDS: A.Base,
+				groupCalendarResourceId: {
+					setter: toInt,
+					value: 0,
+				},
 
-				NAME: 'calendar-container',
+				userCalendarResourceId: {
+					setter: toInt,
+					value: 0,
+				},
 
-				prototype: {
-					createCalendarsAutoComplete: function(resourceURL, input, afterSelectFn) {
-						var instance = this;
+				visibleCalendars: {
+					validator: isObject,
+					value: {},
+				},
+			},
 
-						input.plug(
-							A.Plugin.AutoComplete,
-							{
-								activateFirstItem: true,
-								after: {
-									select: afterSelectFn
-								},
-								maxResults: 20,
-								requestTemplate: '&' + instance.get('namespace') + 'keywords={query}',
-								resultFilters: function(query, results) {
-									return results.filter(
-										function(item, index) {
-											return !instance.getCalendar(item.raw.calendarId);
-										}
+			AUGMENTS: [Liferay.PortletBase],
+
+			EXTENDS: A.Base,
+
+			NAME: 'calendar-container',
+
+			prototype: {
+				createCalendarsAutoComplete(resourceURL, input, afterSelectFn) {
+					var instance = this;
+
+					input.plug(A.Plugin.AutoComplete, {
+						activateFirstItem: true,
+						after: {
+							select: afterSelectFn,
+						},
+						maxResults: 20,
+						requestTemplate:
+							'&' +
+							instance.get('namespace') +
+							'keywords={query}',
+						resultFilters(_query, results) {
+							return results.filter((item) => {
+								return !instance.getCalendar(
+									item.raw.calendarId
+								);
+							});
+						},
+						resultFormatter(query, results) {
+							return results.map((result) => {
+								var calendar = result.raw;
+								var calendarResourceName =
+									calendar.calendarResourceName;
+								var name = calendar.name;
+
+								if (name !== calendarResourceName) {
+									name = [
+										calendarResourceName,
+										STR_DASH,
+										name,
+									].join(STR_SPACE);
+								}
+
+								return A.Highlight.words(name, query);
+							});
+						},
+						resultHighlighter: 'wordMatch',
+						resultTextLocator: 'calendarResourceName',
+						source: resourceURL,
+						width: 'auto',
+					});
+
+					input.ac
+						.get('boundingBox')
+						.setStyle('min-width', input.outerWidth());
+				},
+
+				getCalendar(calendarId) {
+					var instance = this;
+
+					var availableCalendars = instance.get('availableCalendars');
+
+					return availableCalendars[calendarId];
+				},
+
+				getCalendarsMenu(config) {
+					var instance = this;
+
+					var availableCalendars = instance.get('availableCalendars');
+
+					var toggler = new A.Toggler({
+						after: {
+							expandedChange(event) {
+								if (event.newVal) {
+									var activeView = config.scheduler.get(
+										'activeView'
 									);
-								},
-								resultFormatter: function(query, results) {
-									return results.map(
-										function(result) {
-											var calendar = result.raw;
-											var calendarResourceName = calendar.calendarResourceName;
-											var name = calendar.name;
 
-											if (name !== calendarResourceName) {
-												name = [calendarResourceName, STR_DASH, name].join(STR_SPACE);
-											}
+									activeView._fillHeight();
+								}
+							},
+						},
+						animated: true,
+						content: config.content,
+						expanded: false,
+						header: config.header,
+					});
 
-											return A.Highlight.words(name, query);
-										}
-									);
-								},
-								resultHighlighter: 'wordMatch',
-								resultTextLocator: 'calendarResourceName',
-								source: resourceURL,
-								width: 'auto'
-							}
-						);
+					var items = [
+						{
+							caption: Liferay.Language.get('check-availability'),
+							fn() {
+								var instance = this;
 
-						input.ac.get('boundingBox').setStyle('min-width', input.outerWidth());
-					},
+								A.each(availableCalendars, (item) => {
+									item.set('visible', false);
+								});
 
-					getCalendar: function(calendarId) {
-						var instance = this;
+								var calendarList = instance.get('host');
 
-						var availableCalendars = instance.get('availableCalendars');
+								calendarList.activeItem.set('visible', true);
 
-						return availableCalendars[calendarId];
-					},
+								toggler.expand();
+								instance.hide();
 
-					getCalendarsMenu: function(config) {
-						var instance = this;
+								return false;
+							},
+							id: 'check-availability',
+						},
+					];
 
-						var availableCalendars = instance.get('availableCalendars');
+					var calendarsMenu = {
+						items,
+					};
 
-						var toggler = new A.Toggler(
-							{
-								after: {
-									expandedChange: function(event) {
-										if (event.newVal) {
-											var activeView = config.scheduler.get('activeView');
+					if (config.invitable) {
+						items.push({
+							caption: Liferay.Language.get('remove'),
+							fn() {
+								var instance = this;
 
-											activeView._fillHeight();
-										}
-									}
-								},
-								animated: true,
-								content: config.content,
-								expanded: false,
-								header: config.header
-							}
-						);
+								var calendarList = instance.get('host');
 
-						var items = [
-							{
-								caption: Liferay.Language.get('check-availability'),
-								fn: function(event) {
-									var instance = this;
+								calendarList.remove(calendarList.activeItem);
 
-									A.each(
-										availableCalendars,
-										function(item, index) {
-											item.set('visible', false);
-										}
-									);
+								instance.hide();
+							},
+							id: 'remove',
+						});
 
+						calendarsMenu.on = {
+							visibleChange(event) {
+								var instance = this;
+
+								if (event.newVal) {
 									var calendarList = instance.get('host');
 
-									calendarList.activeItem.set('visible', true);
+									var calendar = calendarList.activeItem;
 
-									toggler.expand();
-									instance.hide();
+									var hiddenItems = [];
 
-									return false;
-								},
-								id: 'check-availability'
-							}
-						];
+									if (
+										calendar.get('calendarId') ===
+										config.defaultCalendarId
+									) {
+										hiddenItems.push('remove');
+									}
 
-						var calendarsMenu = {
-							items: items
+									instance.set('hiddenItems', hiddenItems);
+								}
+							},
 						};
-
-						if (config.invitable) {
-							items.push(
-								{
-									caption: Liferay.Language.get('remove'),
-									fn: function(event) {
-										var instance = this;
-
-										var calendarList = instance.get('host');
-
-										calendarList.remove(calendarList.activeItem);
-
-										instance.hide();
-									},
-									id: 'remove'
-								}
-							);
-
-							calendarsMenu.on = {
-								visibleChange: function(event) {
-									var instance = this;
-
-									if (event.newVal) {
-										var calendarList = instance.get('host');
-
-										var calendar = calendarList.activeItem;
-
-										var hiddenItems = [];
-
-										if (calendar.get('calendarId') === config.defaultCalendarId) {
-											hiddenItems.push('remove');
-										}
-
-										instance.set('hiddenItems', hiddenItems);
-									}
-								}
-							};
-						}
-
-						return calendarsMenu;
-					},
-
-					syncCalendarsMap: function(calendarLists) {
-						var instance = this;
-
-						var defaultCalendar = instance.get('defaultCalendar');
-
-						var availableCalendars = {};
-
-						var visibleCalendars = {};
-
-						calendarLists.forEach(
-							function(calendarList) {
-								var calendars = calendarList.get('calendars');
-
-								A.each(
-									calendars,
-									function(item, index) {
-										var calendarId = item.get('calendarId');
-
-										availableCalendars[calendarId] = item;
-
-										if (item.get('visible')) {
-											visibleCalendars[calendarId] = item;
-										}
-
-										if (item.get('defaultCalendar')) {
-											var calendarResourceId = item.get('calendarResourceId');
-
-											if (calendarResourceId == instance.get('groupCalendarResourceId') && item.get('permissions').MANAGE_BOOKINGS) {
-												defaultCalendar = item;
-											}
-
-											if (defaultCalendar == null && calendarResourceId == instance.get('userCalendarResourceId')) {
-												defaultCalendar = item;
-											}
-
-											if (defaultCalendar == null && calendarResourceId == instance.get('groupCalendarResourceId') && item.get('permissions').VIEW_BOOKING_DETAILS) {
-												defaultCalendar = item;
-											}
-										}
-									}
-								);
-							}
-						);
-
-						instance.set('availableCalendars', availableCalendars);
-						instance.set('visibleCalendars', visibleCalendars);
-						instance.set('defaultCalendar', defaultCalendar);
-
-						return availableCalendars;
 					}
-				}
-			}
-		);
+
+					return calendarsMenu;
+				},
+
+				syncCalendarsMap(calendarLists) {
+					var instance = this;
+
+					var defaultCalendar = instance.get('defaultCalendar');
+
+					var availableCalendars = {};
+
+					var visibleCalendars = {};
+
+					calendarLists.forEach((calendarList) => {
+						var calendars = calendarList.get('calendars');
+
+						A.each(calendars, (item) => {
+							var calendarId = item.get('calendarId');
+
+							availableCalendars[calendarId] = item;
+
+							if (item.get('visible')) {
+								visibleCalendars[calendarId] = item;
+							}
+
+							if (item.get('defaultCalendar')) {
+								var calendarResourceId = item.get(
+									'calendarResourceId'
+								);
+
+								if (
+									calendarResourceId ==
+										instance.get(
+											'groupCalendarResourceId'
+										) &&
+									item.get('permissions').MANAGE_BOOKINGS
+								) {
+									defaultCalendar = item;
+								}
+
+								if (
+									defaultCalendar == null &&
+									calendarResourceId ==
+										instance.get('userCalendarResourceId')
+								) {
+									defaultCalendar = item;
+								}
+
+								if (
+									defaultCalendar == null &&
+									calendarResourceId ==
+										instance.get(
+											'groupCalendarResourceId'
+										) &&
+									item.get('permissions').VIEW_BOOKING_DETAILS
+								) {
+									defaultCalendar = item;
+								}
+							}
+						});
+					});
+
+					instance.set('availableCalendars', availableCalendars);
+					instance.set('visibleCalendars', visibleCalendars);
+					instance.set('defaultCalendar', defaultCalendar);
+
+					return availableCalendars;
+				},
+			},
+		});
 
 		Liferay.CalendarContainer = CalendarContainer;
 	},
 	'',
 	{
-		requires: ['aui-base', 'aui-component', 'liferay-portlet-base']
+		requires: ['aui-base', 'aui-component', 'liferay-portlet-base'],
 	}
 );

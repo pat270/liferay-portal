@@ -50,8 +50,10 @@ else {
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
 
 	<liferay-frontend:edit-form-body>
-		<aui:row>
-			<aui:col width="<%= 50 %>">
+		<clay:row>
+			<clay:col
+				md="6"
+			>
 				<liferay-frontend:fieldset-group>
 					<liferay-frontend:fieldset
 						cssClass="p-3"
@@ -111,17 +113,21 @@ else {
 						label="menu-items-to-show"
 					>
 						<div id="<portlet:namespace />customDisplayOptions">
-							<aui:row>
-								<aui:col width="<%= 75 %>">
+							<clay:row>
+								<clay:col
+									md="9"
+								>
 									<aui:select id="rootMenuItemType" label="start-with-menu-items-in" name="preferences--rootMenuItemType--" value="<%= rootMenuItemType %>">
 										<aui:option label="level" value="absolute" />
 										<aui:option label="level-relative-to-the-current-menu-item" value="relative" />
-										<aui:option label="select" value="select" />
+										<aui:option label="select-parent" value="select" />
 									</aui:select>
-								</aui:col>
+								</clay:col>
 
-								<aui:col width="<%= 25 %>">
-									<div class="mt-4 <%= (rootMenuItemType.equals("parent-at-level") || rootMenuItemType.equals("relative-parent-up-by")) ? StringPool.BLANK : "hide" %>" id="<portlet:namespace />rootMenuItemLevel">
+								<clay:col
+									md="3"
+								>
+									<div class="mt-4 pt-1 <%= (rootMenuItemType.equals("parent-at-level") || rootMenuItemType.equals("relative-parent-up-by")) ? StringPool.BLANK : "hide" %>" id="<portlet:namespace />rootMenuItemLevel">
 										<aui:select label="" name="preferences--rootMenuItemLevel--">
 
 											<%
@@ -136,11 +142,13 @@ else {
 
 										</aui:select>
 									</div>
-								</aui:col>
-							</aui:row>
+								</clay:col>
+							</clay:row>
 
-							<aui:row>
-								<aui:col width="<%= 80 %>">
+							<clay:row>
+								<clay:col
+									md="10"
+								>
 									<div class="mb-3 <%= rootMenuItemType.equals("select") ? StringPool.BLANK : "hide" %>" id="<portlet:namespace />rootMenuItemIdPanel">
 										<aui:input id="rootMenuItemId" ignoreRequestValue="<%= true %>" name="preferences--rootMenuItemId--" type="hidden" value="<%= siteNavigationMenuDisplayContext.getRootMenuItemId() %>" />
 
@@ -158,30 +166,43 @@ else {
 										}
 										%>
 
-										<div class="card card-horizontal taglib-horizontal-card">
-											<div class="card-row card-row-padded ">
-												<div class="card-col-field">
-													<div class="sticker sticker-secondary sticker-static">
-														<aui:icon image="blogs" markupView="lexicon" />
-													</div>
-												</div>
+										<div class="card card-horizontal card-type-directory">
+											<div class="card-body">
+												<clay:content-row
+													verticalAlign="center"
+												>
+													<clay:content-col>
+														<clay:sticker
+															cssClass="sticker-static"
+															displayType="secondary"
+															icon="blogs"
+														/>
+													</clay:content-col>
 
-												<div class="card-col-content card-col-gutters">
-													<span class="lfr-card-title-text truncate-text" id="<portlet:namespace />rootMenuItemName">
-														<%= rootMenuItemName %>
-													</span>
-												</div>
+													<clay:content-col
+														expand="<%= true %>"
+														gutters="<%= true %>"
+													>
+														<h3 class="card-title">
+															<span class="text-truncate-inline">
+																<span class="text-truncate" id="<portlet:namespace />rootMenuItemName"><%= HtmlUtil.escape(rootMenuItemName) %></span>
+															</span>
+														</h3>
+													</clay:content-col>
+												</clay:content-row>
 											</div>
 										</div>
 
 										<aui:button name="chooseRootMenuItem" value="menu-item" />
 									</div>
-								</aui:col>
-							</aui:row>
+								</clay:col>
+							</clay:row>
 
-							<aui:row>
-								<aui:col width="<%= 50 %>">
-									<aui:select label="sublevels-to-display" name="preferences--displayDepth--">
+							<clay:row>
+								<clay:col
+									md="6"
+								>
+									<aui:select label="levels-to-display" name="preferences--displayDepth--">
 										<aui:option label="unlimited" value="0" />
 
 										<%
@@ -195,27 +216,31 @@ else {
 										%>
 
 									</aui:select>
-								</aui:col>
+								</clay:col>
 
-								<aui:col width="<%= 50 %>">
+								<clay:col
+									md="6"
+								>
 									<aui:select label="expand-sublevels" name="preferences--expandedLevels--" value="<%= siteNavigationMenuDisplayContext.getExpandedLevels() %>">
 										<aui:option label="auto" />
 										<aui:option label="all" />
 									</aui:select>
-								</aui:col>
-							</aui:row>
+								</clay:col>
+							</clay:row>
 						</div>
 					</liferay-frontend:fieldset>
 				</liferay-frontend:fieldset-group>
-			</aui:col>
+			</clay:col>
 
-			<aui:col width="<%= 50 %>">
+			<clay:col
+				md="6"
+			>
 				<liferay-portlet:preview
 					portletName="<%= portletResource %>"
 					showBorders="<%= true %>"
 				/>
-			</aui:col>
-		</aui:row>
+			</clay:col>
+		</clay:row>
 	</liferay-frontend:edit-form-body>
 
 	<liferay-frontend:edit-form-footer>
@@ -225,193 +250,285 @@ else {
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>
 
-<aui:script require="metal-dom/src/dom as dom">
-	AUI().use(
-		'liferay-item-selector-dialog',
-		function(A) {
-			var form = document.<portlet:namespace />fm;
+<aui:script require="metal-dom/src/dom as dom, frontend-js-web/liferay/ItemSelectorDialog.es as ItemSelectorDialog">
+	var form = document.<portlet:namespace />fm;
 
-			form.addEventListener('change', <portlet:namespace/>resetPreview);
-			form.addEventListener('select', <portlet:namespace/>resetPreview);
+	form.addEventListener('change', <portlet:namespace/>resetPreview);
+	form.addEventListener('select', <portlet:namespace/>resetPreview);
 
-			function <portlet:namespace/>resetPreview() {
-				var displayDepthSelect = Liferay.Util.getFormElement(form, 'displayDepth');
-				var displayStyleSelect = Liferay.Util.getFormElement(form, 'displayStyle');
-				var expandedLevelsSelect = Liferay.Util.getFormElement(form, 'expandedLevels');
-				var rootMenuItemIdInput = Liferay.Util.getFormElement(form, 'rootMenuItemId');
-				var rootMenuItemLevelSelect = Liferay.Util.getFormElement(form, 'rootMenuItemLevel');
-				var rootMenuItemTypeSelect = Liferay.Util.getFormElement(form, 'rootMenuItemType');
-				var siteNavigationMenuIdInput = Liferay.Util.getFormElement(form, 'siteNavigationMenuId');
-				var siteNavigationMenuTypeInput = Liferay.Util.getFormElement(form, 'siteNavigationMenuType');
+	function <portlet:namespace/>resetPreview() {
+		var displayDepthSelect = Liferay.Util.getFormElement(form, 'displayDepth');
+		var displayStyleSelect = Liferay.Util.getFormElement(form, 'displayStyle');
+		var expandedLevelsSelect = Liferay.Util.getFormElement(
+			form,
+			'expandedLevels'
+		);
+		var rootMenuItemIdInput = Liferay.Util.getFormElement(
+			form,
+			'rootMenuItemId'
+		);
+		var rootMenuItemLevelSelect = Liferay.Util.getFormElement(
+			form,
+			'rootMenuItemLevel'
+		);
+		var rootMenuItemTypeSelect = Liferay.Util.getFormElement(
+			form,
+			'rootMenuItemType'
+		);
+		var siteNavigationMenuIdInput = Liferay.Util.getFormElement(
+			form,
+			'siteNavigationMenuId'
+		);
+		var siteNavigationMenuTypeInput = Liferay.Util.getFormElement(
+			form,
+			'siteNavigationMenuType'
+		);
 
-				var data = {
-					preview: true
-				};
+		var data = {
+			preview: true,
+		};
 
-				if (displayDepthSelect && displayStyleSelect && expandedLevelsSelect && rootMenuItemIdInput && rootMenuItemLevelSelect && rootMenuItemTypeSelect && siteNavigationMenuIdInput && siteNavigationMenuTypeInput) {
-					data.displayDepth = displayDepthSelect.value;
-					data.displayStyle = displayStyleSelect.value;
-					data.expandedLevels = expandedLevelsSelect.value;
-					data.rootMenuItemLevel = rootMenuItemLevelSelect.value;
-					data.rootMenuItemType = rootMenuItemTypeSelect.value;
-					data.rootMenuItemId = rootMenuItemIdInput.value;
-					data.siteNavigationMenuId = siteNavigationMenuIdInput.value;
-					data.siteNavigationMenuType = siteNavigationMenuTypeInput.value;
+		if (
+			displayDepthSelect &&
+			displayStyleSelect &&
+			expandedLevelsSelect &&
+			rootMenuItemIdInput &&
+			rootMenuItemLevelSelect &&
+			rootMenuItemTypeSelect &&
+			siteNavigationMenuIdInput &&
+			siteNavigationMenuTypeInput
+		) {
+			data.displayDepth = displayDepthSelect.value;
+			data.displayStyle = displayStyleSelect.value;
+			data.expandedLevels = expandedLevelsSelect.value;
+			data.rootMenuItemLevel = rootMenuItemLevelSelect.value;
+			data.rootMenuItemType = rootMenuItemTypeSelect.value;
+			data.rootMenuItemId = rootMenuItemIdInput.value;
+			data.siteNavigationMenuId = siteNavigationMenuIdInput.value;
+			data.siteNavigationMenuType = siteNavigationMenuTypeInput.value;
+		}
+
+		data = Liferay.Util.ns('_<%= HtmlUtil.escapeJS(portletResource) %>_', data);
+
+		Liferay.Portlet.refresh(
+			'#p_p_id_<%= HtmlUtil.escapeJS(portletResource) %>_',
+			data
+		);
+	}
+
+	var chooseRootMenuItemButton = document.getElementById(
+		'<portlet:namespace />chooseRootMenuItem'
+	);
+	var rootMenuItemIdInput = document.getElementById(
+		'<portlet:namespace />rootMenuItemId'
+	);
+	var rootMenuItemNameSpan = document.getElementById(
+		'<portlet:namespace />rootMenuItemName'
+	);
+	var selectSiteNavigationMenuTypeSelect = document.getElementById(
+		'<portlet:namespace />selectSiteNavigationMenuType'
+	);
+	var siteNavigationMenuIdInput = document.getElementById(
+		'<portlet:namespace />siteNavigationMenuId'
+	);
+
+	if (
+		chooseRootMenuItemButton &&
+		rootMenuItemIdInput &&
+		rootMenuItemNameSpan &&
+		selectSiteNavigationMenuTypeSelect &&
+		siteNavigationMenuIdInput
+	) {
+		chooseRootMenuItemButton.addEventListener('click', function (event) {
+			event.preventDefault();
+
+			var uri =
+				'<%= siteNavigationMenuDisplayContext.getRootMenuItemSelectorURL() %>';
+
+			uri = Liferay.Util.addParams(
+				'<%= PortalUtil.getPortletNamespace(ItemSelectorPortletKeys.ITEM_SELECTOR) %>siteNavigationMenuType=' +
+					selectSiteNavigationMenuTypeSelect.value,
+				uri
+			);
+			uri = Liferay.Util.addParams(
+				'<%= PortalUtil.getPortletNamespace(ItemSelectorPortletKeys.ITEM_SELECTOR) %>siteNavigationMenuId=' +
+					siteNavigationMenuIdInput.value,
+				uri
+			);
+
+			var itemSelectorDialog = new ItemSelectorDialog.default({
+				eventName:
+					'<%= siteNavigationMenuDisplayContext.getRootMenuItemEventName() %>',
+				singleSelect: true,
+				title:
+					'<liferay-ui:message key="select-site-navigation-menu-item" />',
+				url: uri,
+			});
+
+			itemSelectorDialog.on('selectedItemChange', function (event) {
+				var selectedItem = event.selectedItem;
+
+				if (selectedItem) {
+					rootMenuItemIdInput.value =
+						selectedItem.selectSiteNavigationMenuItemId;
+					rootMenuItemNameSpan.innerText =
+						selectedItem.selectSiteNavigationMenuItemName;
+
+					<portlet:namespace/>resetPreview();
 				}
+			});
 
-				data = Liferay.Util.ns('_<%= HtmlUtil.escapeJS(portletResource) %>_', data);
+			itemSelectorDialog.open();
+		});
+	}
 
-				Liferay.Portlet.refresh('#p_p_id_<%= HtmlUtil.escapeJS(portletResource) %>_', data);
-			}
+	var chooseSiteNavigationMenuButton = document.getElementById(
+		'<portlet:namespace />chooseSiteNavigationMenu'
+	);
+	var navigationMenuName = document.getElementById(
+		'<portlet:namespace />navigationMenuName'
+	);
+	var removeSiteNavigationMenu = document.getElementById(
+		'<portlet:namespace />removeSiteNavigationMenu'
+	);
 
-			var chooseRootMenuItemButton = document.getElementById('<portlet:namespace />chooseRootMenuItem');
-			var rootMenuItemIdInput = document.getElementById('<portlet:namespace />rootMenuItemId');
-			var rootMenuItemNameSpan = document.getElementById('<portlet:namespace />rootMenuItemName');
-			var selectSiteNavigationMenuTypeSelect = document.getElementById('<portlet:namespace />selectSiteNavigationMenuType');
-			var siteNavigationMenuIdInput = document.getElementById('<portlet:namespace />siteNavigationMenuId');
-
-			if (chooseRootMenuItemButton && rootMenuItemIdInput && rootMenuItemNameSpan && selectSiteNavigationMenuTypeSelect && siteNavigationMenuIdInput) {
-				chooseRootMenuItemButton.addEventListener(
-					'click',
-					function(event) {
-						event.preventDefault();
-
-						var uri = '<%= siteNavigationMenuDisplayContext.getRootMenuItemSelectorURL() %>';
-
-						uri = Liferay.Util.addParams('<%= PortalUtil.getPortletNamespace(ItemSelectorPortletKeys.ITEM_SELECTOR) %>siteNavigationMenuType=' + selectSiteNavigationMenuTypeSelect.value, uri);
-						uri = Liferay.Util.addParams('<%= PortalUtil.getPortletNamespace(ItemSelectorPortletKeys.ITEM_SELECTOR) %>siteNavigationMenuId=' + siteNavigationMenuIdInput.value, uri);
-
-						var itemSelectorDialog = new A.LiferayItemSelectorDialog(
-							{
-								eventName: '<%= siteNavigationMenuDisplayContext.getRootMenuItemEventName() %>',
-								on: {
-									selectedItemChange: function(event) {
-										var selectedItem = event.newVal;
-
-										if (selectedItem) {
-											rootMenuItemIdInput.value = selectedItem.selectSiteNavigationMenuItemId;
-											rootMenuItemNameSpan.innerText = selectedItem.selectSiteNavigationMenuItemName;
-
-											<portlet:namespace/>resetPreview();
-										}
-									}
-								},
-								'strings.add': '<liferay-ui:message key="done" />',
-								title: '<liferay-ui:message key="select-site-navigation-menu-item" />',
-								url: uri
-							}
-						);
-
-						itemSelectorDialog.open();
-					}
-				);
-			}
-
-			var chooseSiteNavigationMenuButton = document.getElementById('<portlet:namespace />chooseSiteNavigationMenu');
-			var navigationMenuName = document.getElementById('<portlet:namespace />navigationMenuName');
-			var removeSiteNavigationMenu = document.getElementById('<portlet:namespace />removeSiteNavigationMenu');
-
-			if (chooseSiteNavigationMenuButton && navigationMenuName && removeSiteNavigationMenu && rootMenuItemIdInput && rootMenuItemNameSpan && siteNavigationMenuIdInput) {
-				chooseSiteNavigationMenuButton.addEventListener(
-					'click',
-					function(event) {
-						Liferay.Util.selectEntity(
-							{
-								dialog: {
-									constrain: true,
-									destroyOnHide: true,
-									modal: true
-								},
-								eventName: '<%= siteNavigationMenuDisplayContext.getSiteNavigationMenuEventName() %>',
-								id: '<portlet:namespace />selectSiteNavigationMenu',
-								title: '<liferay-ui:message key="select-site-navigation-menu" />',
-								uri: '<%= siteNavigationMenuDisplayContext.getSiteNavigationMenuItemSelectorURL() %>'
-							},
-							function(selectedItem) {
-								if (selectedItem) {
-									navigationMenuName.innerText = selectedItem.name;
-									rootMenuItemIdInput.value = '0';
-									rootMenuItemNameSpan.innerText = selectedItem.name;
-									siteNavigationMenuIdInput.value = selectedItem.id;
-
-									dom.toggleClasses(removeSiteNavigationMenu, 'hide');
-
-									<portlet:namespace/>resetPreview();
-								}
-							}
-						);
-					}
-				);
-			}
-
-			var removeSiteNavigationMenuButton = document.getElementById('<portlet:namespace />removeSiteNavigationMenu');
-
-			if (navigationMenuName && removeSiteNavigationMenu && removeSiteNavigationMenuButton && rootMenuItemIdInput && rootMenuItemNameSpan && siteNavigationMenuIdInput) {
-				removeSiteNavigationMenuButton.addEventListener(
-					'click',
-					function(event) {
-						navigationMenuName.innerText = '';
+	if (
+		chooseSiteNavigationMenuButton &&
+		navigationMenuName &&
+		removeSiteNavigationMenu &&
+		rootMenuItemIdInput &&
+		rootMenuItemNameSpan &&
+		siteNavigationMenuIdInput
+	) {
+		chooseSiteNavigationMenuButton.addEventListener('click', function (event) {
+			Liferay.Util.selectEntity(
+				{
+					dialog: {
+						constrain: true,
+						destroyOnHide: true,
+						modal: true,
+					},
+					eventName:
+						'<%= siteNavigationMenuDisplayContext.getSiteNavigationMenuEventName() %>',
+					id: '<portlet:namespace />selectSiteNavigationMenu',
+					title:
+						'<liferay-ui:message key="select-site-navigation-menu" />',
+					uri:
+						'<%= siteNavigationMenuDisplayContext.getSiteNavigationMenuItemSelectorURL() %>',
+				},
+				function (selectedItem) {
+					if (selectedItem) {
+						navigationMenuName.innerText = selectedItem.name;
 						rootMenuItemIdInput.value = '0';
-						rootMenuItemNameSpan.innerText = '';
-						siteNavigationMenuIdInput.value = '0';
+						rootMenuItemNameSpan.innerText = selectedItem.name;
+						siteNavigationMenuIdInput.value = selectedItem.id;
 
 						dom.toggleClasses(removeSiteNavigationMenu, 'hide');
 
 						<portlet:namespace/>resetPreview();
 					}
-				);
-			}
+				}
+			);
+		});
+	}
 
-			Liferay.Util.toggleSelectBox('<portlet:namespace />rootMenuItemType', 'select', '<portlet:namespace />rootMenuItemIdPanel');
+	var removeSiteNavigationMenuButton = document.getElementById(
+		'<portlet:namespace />removeSiteNavigationMenu'
+	);
 
-			Liferay.Util.toggleSelectBox(
-				'<portlet:namespace />rootMenuItemType',
-				function(currentValue, value) {
-					return currentValue === 'absolute' || currentValue === 'relative';
-				},
-				'<portlet:namespace />rootMenuItemLevel'
+	if (
+		navigationMenuName &&
+		removeSiteNavigationMenu &&
+		removeSiteNavigationMenuButton &&
+		rootMenuItemIdInput &&
+		rootMenuItemNameSpan &&
+		siteNavigationMenuIdInput
+	) {
+		removeSiteNavigationMenuButton.addEventListener('click', function (event) {
+			navigationMenuName.innerText = '';
+			rootMenuItemIdInput.value = '0';
+			rootMenuItemNameSpan.innerText = '';
+			siteNavigationMenuIdInput.value = '0';
+
+			dom.toggleClasses(removeSiteNavigationMenu, 'hide');
+
+			<portlet:namespace/>resetPreview();
+		});
+	}
+
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />rootMenuItemType',
+		'select',
+		'<portlet:namespace />rootMenuItemIdPanel'
+	);
+
+	Liferay.Util.toggleSelectBox(
+		'<portlet:namespace />rootMenuItemType',
+		function (currentValue, value) {
+			return currentValue === 'absolute' || currentValue === 'relative';
+		},
+		'<portlet:namespace />rootMenuItemLevel'
+	);
+
+	var siteNavigationMenuType = document.getElementById(
+		'<portlet:namespace />siteNavigationMenuType'
+	);
+
+	if (
+		rootMenuItemNameSpan &&
+		selectSiteNavigationMenuTypeSelect &&
+		siteNavigationMenuType
+	) {
+		selectSiteNavigationMenuTypeSelect.addEventListener('change', function () {
+			var selectedSelectSiteNavigationMenuType = document.querySelector(
+				'#<portlet:namespace />selectSiteNavigationMenuType option:checked'
 			);
 
-			var siteNavigationMenuType = document.getElementById('<portlet:namespace />siteNavigationMenuType');
-
-			if (rootMenuItemNameSpan && selectSiteNavigationMenuTypeSelect && siteNavigationMenuType) {
-				selectSiteNavigationMenuTypeSelect.addEventListener(
-					'change',
-					function() {
-						var selectedSelectSiteNavigationMenuType = document.querySelector('#<portlet:namespace />selectSiteNavigationMenuType option:checked');
-
-						if (selectedSelectSiteNavigationMenuType) {
-							rootMenuItemNameSpan.innerText = selectedSelectSiteNavigationMenuType.innerText;
-						}
-
-						siteNavigationMenuType.value = selectSiteNavigationMenuTypeSelect.value;
-					}
-				);
+			if (selectedSelectSiteNavigationMenuType) {
+				rootMenuItemNameSpan.innerText =
+					selectedSelectSiteNavigationMenuType.innerText;
 			}
 
-			var chooseSiteNavigationMenu = document.getElementById('<portlet:namespace />chooseSiteNavigationMenu');
+			siteNavigationMenuType.value = selectSiteNavigationMenuTypeSelect.value;
+		});
+	}
 
-			if (chooseSiteNavigationMenu && navigationMenuName && removeSiteNavigationMenu && siteNavigationMenuIdInput && siteNavigationMenuType) {
-				dom.delegate(
-					document.<portlet:namespace />fm,
-					'change',
-					'.select-navigation',
-					function() {
-						var siteNavigationDisabled = selectSiteNavigationMenuTypeSelect.disabled;
-
-						Liferay.Util.toggleDisabled(chooseSiteNavigationMenu, siteNavigationDisabled);
-						Liferay.Util.toggleDisabled(selectSiteNavigationMenuTypeSelect, !siteNavigationDisabled);
-
-						navigationMenuName.innerText = '';
-						siteNavigationMenuIdInput.value = 0;
-						siteNavigationMenuType.value = -1;
-
-						removeSiteNavigationMenu.classList.add('hide');
-
-						<portlet:namespace/>resetPreview();
-					}
-				);
-			}
-		}
+	var chooseSiteNavigationMenu = document.getElementById(
+		'<portlet:namespace />chooseSiteNavigationMenu'
 	);
+
+	if (
+		chooseSiteNavigationMenu &&
+		navigationMenuName &&
+		removeSiteNavigationMenu &&
+		siteNavigationMenuIdInput &&
+		siteNavigationMenuType
+	) {
+		dom.delegate(
+			document.<portlet:namespace />fm,
+			'change',
+			'.select-navigation',
+			function () {
+				var siteNavigationDisabled =
+					selectSiteNavigationMenuTypeSelect.disabled;
+
+				Liferay.Util.toggleDisabled(
+					chooseSiteNavigationMenu,
+					siteNavigationDisabled
+				);
+				Liferay.Util.toggleDisabled(
+					selectSiteNavigationMenuTypeSelect,
+					!siteNavigationDisabled
+				);
+
+				navigationMenuName.innerText = '';
+				siteNavigationMenuIdInput.value = 0;
+				siteNavigationMenuType.value = -1;
+
+				removeSiteNavigationMenu.classList.add('hide');
+
+				<portlet:namespace/>resetPreview();
+			}
+		);
+	}
 </aui:script>

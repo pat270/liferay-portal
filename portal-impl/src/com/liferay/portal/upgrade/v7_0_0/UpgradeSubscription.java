@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.model.WorkflowInstanceLink;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -79,9 +79,6 @@ public class UpgradeSubscription extends UpgradeProcess {
 
 		updateSubscriptionClassNames(
 			Folder.class.getName(), DLFolder.class.getName());
-		updateSubscriptionClassNames(
-			"com.liferay.portlet.journal.model.JournalArticle",
-			"com.liferay.portlet.journal.model.JournalFolder");
 
 		updateSubscriptionGroupIds();
 	}
@@ -169,15 +166,6 @@ public class UpgradeSubscription extends UpgradeProcess {
 		}
 	}
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	protected void updateSubscriptionGroupId(
-			long subscriptionId, long classNameId, long classPK)
-		throws Exception {
-	}
-
 	protected void updateSubscriptionGroupIds() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement ps1 = connection.prepareStatement(
@@ -219,48 +207,44 @@ public class UpgradeSubscription extends UpgradeProcess {
 		UpgradeSubscription.class);
 
 	private static final Map<String, String> _getGroupIdSQLPartsMap =
-		new HashMap<String, String>() {
-			{
-				put(
-					DLFileEntry.class.getName(),
-					"DLFileEntry,groupId,fileEntryId");
-				put(
-					DLFileEntryType.class.getName(),
-					"DLFileEntryType,groupId,fileEntryTypeId");
-				put(DLFolder.class.getName(), "DLFolder,groupId,folderId");
-				put(Layout.class.getName(), "Layout,groupId,plid");
-				put(
-					"com.liferay.message.boards.kernel.model.MBCategory",
-					"MBCategory,groupId,categoryId");
-				put(
-					"com.liferay.message.boards.kernel.model.MBThread",
-					"MBThread,groupId,threadId");
-				put(
-					WorkflowInstanceLink.class.getName(),
-					"WorkflowInstanceLink,groupId,workflowInstanceId");
-				put(
-					"com.liferay.blogs.kernel.model.BlogsEntry",
-					"BlogsEntry,groupId,entryId");
-				put(
-					"com.liferay.portlet.bookmarks.model.BookmarksEntry",
-					"BookmarksEntry,groupId,entryId");
-				put(
-					"com.liferay.portlet.bookmarks.model.BookmarksFolder",
-					"BookmarksFolder,groupId,folderId");
-				put(
-					"com.liferay.portlet.dynamic.data.mapping.kernel." +
-						"DDMStructure",
-					"DDMStructure,groupId,structureId");
-				put(
-					"com.liferay.portlet.journal.model.JournalFolder",
-					"JournalFolder,groupId,folderId");
-				put(
-					"com.liferay.portlet.wiki.model.WikiNode",
-					"WikiNode,groupId,nodeId");
-				put(
-					"com.liferay.portlet.wiki.model.WikiPage",
-					"WikiPage,groupId,resourcePrimKey");
-			}
-		};
+		HashMapBuilder.put(
+			DLFileEntry.class.getName(), "DLFileEntry,groupId,fileEntryId"
+		).put(
+			DLFileEntryType.class.getName(),
+			"DLFileEntryType,groupId,fileEntryTypeId"
+		).put(
+			DLFolder.class.getName(), "DLFolder,groupId,folderId"
+		).put(
+			Layout.class.getName(), "Layout,groupId,plid"
+		).put(
+			"com.liferay.message.boards.kernel.model.MBCategory",
+			"MBCategory,groupId,categoryId"
+		).put(
+			"com.liferay.message.boards.kernel.model.MBThread",
+			"MBThread,groupId,threadId"
+		).put(
+			WorkflowInstanceLink.class.getName(),
+			"WorkflowInstanceLink,groupId,workflowInstanceId"
+		).put(
+			"com.liferay.blogs.kernel.model.BlogsEntry",
+			"BlogsEntry,groupId,entryId"
+		).put(
+			"com.liferay.portlet.bookmarks.model.BookmarksEntry",
+			"BookmarksEntry,groupId,entryId"
+		).put(
+			"com.liferay.portlet.bookmarks.model.BookmarksFolder",
+			"BookmarksFolder,groupId,folderId"
+		).put(
+			"com.liferay.portlet.dynamic.data.mapping.kernel.DDMStructure",
+			"DDMStructure,groupId,structureId"
+		).put(
+			"com.liferay.portlet.journal.model.JournalFolder",
+			"JournalFolder,groupId,folderId"
+		).put(
+			"com.liferay.portlet.wiki.model.WikiNode", "WikiNode,groupId,nodeId"
+		).put(
+			"com.liferay.portlet.wiki.model.WikiPage",
+			"WikiPage,groupId,resourcePrimKey"
+		).build();
 
 }

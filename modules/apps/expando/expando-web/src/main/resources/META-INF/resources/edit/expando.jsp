@@ -20,6 +20,7 @@
 String redirect = ParamUtil.getString(request, "redirect");
 
 String modelResource = ParamUtil.getString(request, "modelResource");
+
 String modelResourceName = ResourceActionsUtil.getModelResource(request, modelResource);
 
 long columnId = ParamUtil.getLong(request, "columnId");
@@ -30,7 +31,7 @@ if (columnId > 0) {
 	expandoColumn = ExpandoColumnServiceUtil.fetchExpandoColumn(columnId);
 }
 
-int type = ParamUtil.getInteger(request, "type", 0);
+int type = ParamUtil.getInteger(request, "type");
 
 if (expandoColumn != null) {
 	type = expandoColumn.getType();
@@ -47,6 +48,7 @@ if (expandoColumn != null) {
 }
 
 boolean propertyHidden = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_HIDDEN));
+boolean propertyLocalizeFieldName = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_LOCALIZE_FIELD_NAME), true);
 boolean propertyVisibleWithUpdatePermission = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_VISIBLE_WITH_UPDATE_PERMISSION));
 int propertyIndexType = GetterUtil.getInteger(properties.get(ExpandoColumnConstants.INDEX_TYPE));
 boolean propertySecret = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_SECRET));
@@ -74,40 +76,23 @@ portletDisplay.setURLBack(redirect);
 
 renderResponse.setTitle(modelResourceName + ": " + ((expandoColumn == null) ? LanguageUtil.get(request, "new-custom-field") : expandoColumn.getName()));
 
-PortletURL customFieldURL = renderResponse.createRenderURL();
+PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "custom-field"), String.valueOf(renderResponse.createRenderURL()));
 
-customFieldURL.setParameter("mvcPath", "/view.jsp");
-customFieldURL.setParameter("redirect", redirect);
-
-PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "custom-field"), customFieldURL.toString());
-
-PortletURL viewAttributesURL = renderResponse.createRenderURL();
-
-viewAttributesURL.setParameter("mvcPath", "/view_attributes.jsp");
-viewAttributesURL.setParameter("redirect", redirect);
-viewAttributesURL.setParameter("modelResource", modelResource);
-
-PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "view-attributes"), viewAttributesURL.toString());
-
-PortletURL newCustomFieldURL = renderResponse.createRenderURL();
-
-newCustomFieldURL.setParameter("mvcPath", "/edit/select_field_type.jsp");
-newCustomFieldURL.setParameter("redirect", redirect);
-newCustomFieldURL.setParameter("modelResource", modelResource);
-
-PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "new-custom-field"), newCustomFieldURL.toString());
-
-String displayType = LanguageUtil.get(request, propertyDisplayType);
+PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "view-attributes"), portletURL.toString());
 
 if (expandoColumn != null) {
-	String editAttributeBreadcrumb = LanguageUtil.format(request, "edit-x", new Object[] {expandoColumn.getName()}, false);
-
-	PortalUtil.addPortletBreadcrumbEntry(request, editAttributeBreadcrumb, null);
+	PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.format(request, "edit-x", new Object[] {expandoColumn.getName()}, false), null);
 }
 else {
-	String newAttributeBreadcrumb = LanguageUtil.format(request, "new-x", new Object[] {displayType}, false);
+	PortletURL newCustomFieldURL = renderResponse.createRenderURL();
 
-	PortalUtil.addPortletBreadcrumbEntry(request, newAttributeBreadcrumb, null);
+	newCustomFieldURL.setParameter("mvcPath", "/edit/select_field_type.jsp");
+	newCustomFieldURL.setParameter("redirect", redirect);
+	newCustomFieldURL.setParameter("modelResource", modelResource);
+
+	PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "new-custom-field"), newCustomFieldURL.toString());
+
+	PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.format(request, "new-x", new Object[] {propertyDisplayType}), null);
 }
 %>
 
@@ -130,19 +115,19 @@ else {
 	<portlet:param name="mvcPath" value="/edit/expando.jsp" />
 </portlet:actionURL>
 
-<div class="container-fluid container-fluid-max-xl">
+<clay:container-fluid>
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
 		showLayout="<%= false %>"
 		showPortletBreadcrumb="<%= true %>"
 	/>
-</div>
+</clay:container-fluid>
 
 <liferay-frontend:edit-form
 	action="<%= editExpandoURL %>"
 >
-	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
+	<aui:input name="redirect" type="hidden" value="<%= portletURL %>" />
 	<aui:input name="columnId" type="hidden" value="<%= columnId %>" />
 	<aui:input name="modelResource" type="hidden" value="<%= modelResource %>" />
 	<aui:input name="type" type="hidden" value="<%= type %>" />
@@ -151,12 +136,7 @@ else {
 
 	<liferay-frontend:edit-form-body>
 		<h2 class="sheet-title">
-
-			<%
-			String displayTypeLabel = LanguageUtil.get(request, propertyDisplayType);
-			%>
-
-			<%= LanguageUtil.format(request, expandoColumn != null ? "edit-x" : "new-x", new Object[] {displayTypeLabel}, false) %>
+			<%= LanguageUtil.format(request, expandoColumn != null ? "edit-x" : "new-x", new Object[] {propertyDisplayType}) %>
 		</h2>
 
 		<liferay-frontend:fieldset-group>
@@ -168,7 +148,7 @@ else {
 						<aui:input label="field-name" name="key" type="resource" value="<%= expandoColumn.getName() %>" />
 					</c:when>
 					<c:otherwise>
-						<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" label="field-name" name="name" required="<%= true %>" />
+						<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" label="field-name" maxlength='<%= ModelHintsUtil.getMaxLength(ExpandoColumn.class.getName(), "name") %>' name="name" required="<%= true %>" />
 					</c:otherwise>
 				</c:choose>
 
@@ -189,13 +169,3 @@ else {
 		<aui:button href="<%= redirect %>" type="cancel" />
 	</liferay-frontend:edit-form-footer>
 </liferay-frontend:edit-form>
-
-<%
-PortalUtil.addPortletBreadcrumbEntry(request, modelResourceName, portletURL.toString());
-
-if (expandoColumn != null) {
-	PortalUtil.addPortletBreadcrumbEntry(request, expandoColumn.getName(), null);
-}
-
-PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, ((expandoColumn == null) ? "add-attribute" : "edit")), currentURL);
-%>

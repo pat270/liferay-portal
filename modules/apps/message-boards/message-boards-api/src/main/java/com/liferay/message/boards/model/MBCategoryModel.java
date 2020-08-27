@@ -18,10 +18,12 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.ContainerModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -40,8 +42,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface MBCategoryModel
-	extends BaseModel<MBCategory>, ContainerModel, ShardedModel,
-			StagedGroupedModel, TrashedModel, WorkflowedModel {
+	extends BaseModel<MBCategory>, ContainerModel, CTModel<MBCategory>,
+			MVCCModel, ShardedModel, StagedGroupedModel, TrashedModel,
+			WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -54,6 +57,7 @@ public interface MBCategoryModel
 	 *
 	 * @return the primary key of this message boards category
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -61,7 +65,40 @@ public interface MBCategoryModel
 	 *
 	 * @param primaryKey the primary key of this message boards category
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this message boards category.
+	 *
+	 * @return the mvcc version of this message boards category
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this message boards category.
+	 *
+	 * @param mvccVersion the mvcc version of this message boards category
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this message boards category.
+	 *
+	 * @return the ct collection ID of this message boards category
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this message boards category.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message boards category
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this message boards category.
@@ -265,48 +302,6 @@ public interface MBCategoryModel
 	 * @param displayStyle the display style of this message boards category
 	 */
 	public void setDisplayStyle(String displayStyle);
-
-	/**
-	 * Returns the thread count of this message boards category.
-	 *
-	 * @return the thread count of this message boards category
-	 */
-	public int getThreadCount();
-
-	/**
-	 * Sets the thread count of this message boards category.
-	 *
-	 * @param threadCount the thread count of this message boards category
-	 */
-	public void setThreadCount(int threadCount);
-
-	/**
-	 * Returns the message count of this message boards category.
-	 *
-	 * @return the message count of this message boards category
-	 */
-	public int getMessageCount();
-
-	/**
-	 * Sets the message count of this message boards category.
-	 *
-	 * @param messageCount the message count of this message boards category
-	 */
-	public void setMessageCount(int messageCount);
-
-	/**
-	 * Returns the last post date of this message boards category.
-	 *
-	 * @return the last post date of this message boards category
-	 */
-	public Date getLastPostDate();
-
-	/**
-	 * Sets the last post date of this message boards category.
-	 *
-	 * @param lastPostDate the last post date of this message boards category
-	 */
-	public void setLastPostDate(Date lastPostDate);
 
 	/**
 	 * Returns the last publish date of this message boards category.

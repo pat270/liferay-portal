@@ -17,6 +17,8 @@
 <%@ include file="/init.jsp" %>
 
 <%
+String randomNamespace = PortalUtil.generateRandomKey(request, "portlet_dynamic_data_lists_view_records") + StringPool.UNDERLINE;
+
 long formDDMTemplateId = ParamUtil.getLong(request, "formDDMTemplateId");
 
 DDLViewRecordsDisplayContext ddlViewRecordsDisplayContext = new DDLViewRecordsDisplayContext(liferayPortletRequest, liferayPortletResponse, formDDMTemplateId);
@@ -40,12 +42,12 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 <clay:management-toolbar
 	actionDropdownItems="<%= ddlViewRecordsDisplayContext.getActionItemsDropdownItems() %>"
 	clearResultsURL="<%= ddlViewRecordsDisplayContext.getClearResultsURL() %>"
-	componentId="ddlViewRecordsManagementToolbar"
+	componentId='<%= randomNamespace + "ddlViewRecordsManagementToolbar" %>'
 	creationMenu="<%= ddlViewRecordsDisplayContext.getCreationMenu() %>"
 	disabled="<%= ddlViewRecordsDisplayContext.isDisabledManagementBar() %>"
 	filterDropdownItems="<%= ddlViewRecordsDisplayContext.getFilterItemsDropdownItems() %>"
 	itemsTotal="<%= ddlViewRecordsDisplayContext.getTotalItems() %>"
-	namespace="<%= renderResponse.getNamespace() %>"
+	namespace="<%= liferayPortletResponse.getNamespace() %>"
 	searchActionURL="<%= ddlViewRecordsDisplayContext.getSearchActionURL() %>"
 	searchContainerId="<%= ddlViewRecordsDisplayContext.getSearchContainerId() %>"
 	searchFormName="fm1"
@@ -54,7 +56,10 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 	sortingURL="<%= ddlViewRecordsDisplayContext.getSortingURL() %>"
 />
 
-<div class="container-fluid-1280 view-records-container" id="<portlet:namespace />formContainer">
+<clay:container-fluid
+	cssClass="view-records-container"
+	id='<%= liferayPortletResponse.getNamespace() + "formContainer" %>'
+>
 	<aui:form action="<%= portletURL.toString() %>" method="post" name="fm">
 		<aui:input name="recordIds" type="hidden" />
 
@@ -63,66 +68,92 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 			rowChecker="<%= new EmptyOnClickRowChecker(renderResponse) %>"
 			searchContainer="<%= ddlViewRecordsDisplayContext.getSearch() %>"
 		>
+			<liferay-ui:search-container-row
+				className="com.liferay.dynamic.data.lists.model.DDLRecord"
+				keyProperty="recordId"
+				modelVar="record"
+			>
 
-			<%
-			List results = searchContainer.getResults();
-			List resultRows = searchContainer.getResultRows();
-
-			for (int i = 0; i < results.size(); i++) {
-				DDLRecord record = (DDLRecord)results.get(i);
-				List<DDMFormField> ddmFormfields = ddlViewRecordsDisplayContext.getDDMFormFields();
-
+				<%
 				DDLRecordVersion recordVersion = record.getRecordVersion();
 
 				if (ddlViewRecordsDisplayContext.isEditable()) {
 					recordVersion = record.getLatestRecordVersion();
 				}
 
-				Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap = ddlViewRecordsDisplayContext.getDDMFormFieldValuesMap(recordVersion);
-
-				ResultRow row = new ResultRow(record, record.getRecordId(), i);
-
-				row.setCssClass("entry-display-style");
-
 				row.setParameter("editable", String.valueOf(ddlViewRecordsDisplayContext.isEditable()));
 				row.setParameter("formDDMTemplateId", String.valueOf(formDDMTemplateId));
 				row.setParameter("hasDeletePermission", String.valueOf(ddlViewRecordsDisplayContext.hasDeletePermission()));
 				row.setParameter("hasUpdatePermission", String.valueOf(ddlViewRecordsDisplayContext.hasUpdatePermission()));
 
-				PortletURL rowURL = renderResponse.createRenderURL();
+				String href = StringPool.BLANK;
 
-				rowURL.setParameter("mvcPath", "/view_record.jsp");
-				rowURL.setParameter("redirect", currentURL);
-				rowURL.setParameter("recordId", String.valueOf(record.getRecordId()));
-				rowURL.setParameter("version", recordVersion.getVersion());
-				rowURL.setParameter("editable", String.valueOf(ddlViewRecordsDisplayContext.isEditable()));
-				rowURL.setParameter("formDDMTemplateId", String.valueOf(formDDMTemplateId));
+				if (ddlViewRecordsDisplayContext.isEditable()) {
+					PortletURL rowURL = renderResponse.createRenderURL();
 
-				// Columns
+					rowURL.setParameter("mvcPath", "/view_record.jsp");
+					rowURL.setParameter("redirect", currentURL);
+					rowURL.setParameter("recordId", String.valueOf(record.getRecordId()));
+					rowURL.setParameter("version", recordVersion.getVersion());
+					rowURL.setParameter("editable", String.valueOf(ddlViewRecordsDisplayContext.isEditable()));
+					rowURL.setParameter("formDDMTemplateId", String.valueOf(formDDMTemplateId));
 
-				for (DDMFormField ddmFormField : ddmFormfields) {
-			%>
-
-					<%@ include file="/record_row_value.jspf" %>
-
-			<%
+					href = rowURL.toString();
 				}
 
-				if (ddlViewRecordsDisplayContext.hasUpdatePermission()) {
-					row.addStatus(recordVersion.getStatus(), recordVersion.getStatusByUserId(), recordVersion.getStatusDate(), rowURL);
-					row.addDate(record.getModifiedDate(), rowURL);
-					row.addText(HtmlUtil.escape(PortalUtil.getUserName(recordVersion)), rowURL);
+				Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap = ddlViewRecordsDisplayContext.getDDMFormFieldValuesMap(recordVersion);
+
+				for (DDMFormField ddmFormField : ddlViewRecordsDisplayContext.getDDMFormFields()) {
+					LocalizedValue label = ddmFormField.getLabel();
+
+					String value = StringPool.BLANK;
+
+					List<DDMFormFieldValue> ddmFormFieldValues = ddmFormFieldValuesMap.get(ddmFormField.getName());
+
+					if (ddmFormFieldValues != null) {
+						DDMFormFieldValueRenderer ddmFormFieldValueRenderer = DDMFormFieldValueRendererRegistryUtil.getDDMFormFieldValueRenderer(ddmFormField.getType());
+
+						value = ddmFormFieldValueRenderer.render(ddmFormFieldValues, themeDisplay.getLocale());
+					}
+				%>
+
+					<liferay-ui:search-container-column-text
+						cssClass="table-cell-content"
+						href="<%= href %>"
+						name="<%= label.getString(themeDisplay.getLocale()) %>"
+						value="<%= value %>"
+					/>
+
+				<%
 				}
+				%>
 
-				// Action
+				<c:if test="<%= ddlViewRecordsDisplayContext.hasUpdatePermission() %>">
+					<liferay-ui:search-container-column-status
+						href="<%= href %>"
+						name="status"
+						status="<%= recordVersion.getStatus() %>"
+						statusByUserId="<%= recordVersion.getStatusByUserId() %>"
+						statusDate="<%= recordVersion.getStatusDate() %>"
+					/>
 
-				row.addJSP("/record_action.jsp", "entry-action", application, request, response);
+					<liferay-ui:search-container-column-date
+						href="<%= href %>"
+						name="modified-date"
+						value="<%= record.getModifiedDate() %>"
+					/>
 
-				// Add result row
+					<liferay-ui:search-container-column-text
+						href="<%= href %>"
+						name="author"
+						value="<%= HtmlUtil.escape(PortalUtil.getUserName(recordVersion)) %>"
+					/>
+				</c:if>
 
-				resultRows.add(row);
-			}
-			%>
+				<liferay-ui:search-container-column-jsp
+					path="/record_action.jsp"
+				/>
+			</liferay-ui:search-container-row>
 
 			<liferay-ui:search-iterator
 				displayStyle="<%= ddlViewRecordsDisplayContext.getDisplayStyle() %>"
@@ -130,16 +161,22 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
+</clay:container-fluid>
 
 <%@ include file="/export_record_set.jspf" %>
 
 <aui:script use="liferay-portlet-dynamic-data-lists">
-	var deleteRecords = function() {
-		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>')) {
+	var deleteRecords = function () {
+		if (
+			confirm(
+				'<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-this") %>'
+			)
+		) {
 			var form = document.<portlet:namespace />fm;
 
-			var searchContainer = form.querySelector('#<portlet:namespace />ddlRecord');
+			var searchContainer = form.querySelector(
+				'#<portlet:namespace />ddlRecord'
+			);
 
 			if (searchContainer) {
 				<portlet:actionURL name="deleteRecord" var="deleteRecordURL">
@@ -147,35 +184,32 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 					<portlet:param name="redirect" value="<%= currentURL %>" />
 				</portlet:actionURL>
 
-				Liferay.Util.postForm(
-					form,
-					{
-						data: {
-							recordIds: Liferay.Util.listCheckedExcept(searchContainer, '<portlet:namespace />allRowIds')
-						},
-						url: '<%= deleteRecordURL %>'
-					}
-				);
+				Liferay.Util.postForm(form, {
+					data: {
+						recordIds: Liferay.Util.listCheckedExcept(
+							searchContainer,
+							'<portlet:namespace />allRowIds'
+						),
+					},
+					url: '<%= deleteRecordURL %>',
+				});
 			}
 		}
 	};
 
 	var ACTIONS = {
-		'deleteRecords': deleteRecords
+		deleteRecords: deleteRecords,
 	};
 
-	Liferay.componentReady('ddlViewRecordsManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'actionItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	Liferay.componentReady(
+		'<%= randomNamespace + "ddlViewRecordsManagementToolbar" %>'
+	).then(function (managementToolbar) {
+		managementToolbar.on('actionItemClicked', function (event) {
+			var itemData = event.data.item.data;
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action]();
-					}
-				}
-			);
-		}
-	);
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action]();
+			}
+		});
+	});
 </aui:script>

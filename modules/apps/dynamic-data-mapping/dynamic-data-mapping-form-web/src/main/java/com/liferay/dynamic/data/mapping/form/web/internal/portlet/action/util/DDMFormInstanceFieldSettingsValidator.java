@@ -21,7 +21,7 @@ import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluatorEvaluateR
 import com.liferay.dynamic.data.mapping.form.evaluator.DDMFormEvaluatorFieldContextKey;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
-import com.liferay.dynamic.data.mapping.form.web.FormInstanceFieldSettingsException;
+import com.liferay.dynamic.data.mapping.form.web.internal.FormInstanceFieldSettingsException;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
@@ -74,19 +74,14 @@ public class DDMFormInstanceFieldSettingsValidator {
 	}
 
 	protected DDMFormValues createDDMFormFieldFormValues(
-		JSONObject jsonObject, DDMForm fieldSettingsDDMForm) {
+		JSONObject jsonObject, DDMForm fieldSettingsDDMForm,
+		Set<Locale> availableLocales, Locale defaultLocale) {
 
 		DDMFormValues fieldSettingsDDMFormValues = new DDMFormValues(
 			fieldSettingsDDMForm);
 
-		Locale defaultLocale = fieldSettingsDDMForm.getDefaultLocale();
-
-		fieldSettingsDDMFormValues.setDefaultLocale(defaultLocale);
-
-		Set<Locale> availableLocales =
-			fieldSettingsDDMForm.getAvailableLocales();
-
 		fieldSettingsDDMFormValues.setAvailableLocales(availableLocales);
+		fieldSettingsDDMFormValues.setDefaultLocale(defaultLocale);
 
 		DDMFormContextVisitor ddmFormContextVisitor = new DDMFormContextVisitor(
 			jsonObject.getJSONArray("pages"));
@@ -135,7 +130,7 @@ public class DDMFormInstanceFieldSettingsValidator {
 								availableLocale, valueString);
 						}
 					}
-					catch (Exception e) {
+					catch (Exception exception) {
 					}
 
 					return localizedValue;
@@ -203,12 +198,16 @@ public class DDMFormInstanceFieldSettingsValidator {
 
 				@Override
 				public void accept(JSONObject jsonObject) {
-					DDMFormField field = ddmFormFieldsMap.get(
+					DDMFormField ddmFormField = ddmFormFieldsMap.get(
 						jsonObject.getString("fieldName"));
+
+					if (ddmFormField == null) {
+						return;
+					}
 
 					DDMFormFieldType ddmFormFieldType =
 						_ddmFormFieldTypeServicesTracker.getDDMFormFieldType(
-							field.getType());
+							ddmFormField.getType());
 
 					DDMForm fieldDDMForm = DDMFormFactory.create(
 						ddmFormFieldType.getDDMFormFieldTypeSettings());
@@ -216,7 +215,8 @@ public class DDMFormInstanceFieldSettingsValidator {
 					DDMFormValues fieldDDMFormValues =
 						createDDMFormFieldFormValues(
 							jsonObject.getJSONObject("settingsContext"),
-							fieldDDMForm);
+							fieldDDMForm, ddmForm.getAvailableLocales(),
+							ddmForm.getDefaultLocale());
 
 					DDMFormEvaluatorEvaluateResponse
 						ddmFormEvaluatorEvaluateResponse = doEvaluate(
@@ -227,11 +227,13 @@ public class DDMFormInstanceFieldSettingsValidator {
 						fieldDDMForm, ddmFormEvaluatorEvaluateResponse,
 						fieldDDMForm.getDefaultLocale());
 
-					if (!invalidDDMFormFields.isEmpty()) {
-						fieldNamePropertiesMap.put(
-							getFieldLabel(field, ddmForm.getDefaultLocale()),
-							invalidDDMFormFields);
+					if (invalidDDMFormFields.isEmpty()) {
+						return;
 					}
+
+					fieldNamePropertiesMap.put(
+						getFieldLabel(ddmFormField, ddmForm.getDefaultLocale()),
+						invalidDDMFormFields);
 				}
 
 			});

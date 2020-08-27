@@ -14,7 +14,10 @@
 
 package com.liferay.sharing.security.permission;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 import java.util.Collection;
@@ -34,6 +37,18 @@ public interface SharingPermission {
 			long groupId)
 		throws PortalException;
 
+	public default void checkSharePermission(
+			PermissionChecker permissionChecker, long classNameId, long classPK,
+			long groupId)
+		throws PortalException {
+
+		throw new PrincipalException(
+			StringBundler.concat(
+				"User ", permissionChecker.getUserId(),
+				" does not have permission to share ", classNameId,
+				StringPool.SPACE, classPK));
+	}
+
 	public boolean contains(
 			PermissionChecker permissionChecker, long classNameId, long classPK,
 			long groupId, Collection<SharingEntryAction> sharingEntryActions)
@@ -43,5 +58,13 @@ public interface SharingPermission {
 			PermissionChecker permissionChecker, long classNameId, long classPK,
 			long groupId)
 		throws PortalException;
+
+	public default boolean containsSharePermission(
+			PermissionChecker permissionChecker, long classNameId, long classPK,
+			long groupId)
+		throws PortalException {
+
+		return false;
+	}
 
 }

@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutFriendlyURLComposite;
 import com.liferay.portal.kernel.model.LayoutQueryStringComposite;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
@@ -51,6 +50,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -63,8 +63,6 @@ import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 import javax.portlet.PreferencesValidator;
 import javax.portlet.RenderRequest;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
 import javax.portlet.ValidatorException;
 import javax.portlet.WindowState;
 
@@ -74,14 +72,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Eduardo Lundgren
  * @author Juan Fernández
  */
-@ProviderType
 public class PortalUtil {
 
 	/**
@@ -260,6 +255,10 @@ public class PortalUtil {
 			themeDisplay, url, typeControlPanel, doAsUser);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static void addUserLocaleOptionsMessage(
 		HttpServletRequest httpServletRequest) {
 
@@ -933,19 +932,6 @@ public class PortalUtil {
 			uploadPortletRequest, name, type, displayType);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String getFacebookURL(
-			Portlet portlet, String facebookCanvasPageURL,
-			ThemeDisplay themeDisplay)
-		throws PortalException {
-
-		return getPortal().getFacebookURL(
-			portlet, facebookCanvasPageURL, themeDisplay);
-	}
-
 	public static String getFirstPageLayoutTypes(
 		HttpServletRequest httpServletRequest) {
 
@@ -995,82 +981,6 @@ public class PortalUtil {
 
 	public static int[] getGroupFriendlyURLIndex(String requestURI) {
 		return getPortal().getGroupFriendlyURLIndex(requestURI);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGroupPermissions(
-		HttpServletRequest httpServletRequest) {
-
-		return getPortal().getGroupPermissions(httpServletRequest);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGroupPermissions(
-		HttpServletRequest httpServletRequest, String className) {
-
-		return getPortal().getGroupPermissions(httpServletRequest, className);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGroupPermissions(PortletRequest portletRequest) {
-		return getPortal().getGroupPermissions(portletRequest);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGroupPermissions(
-		PortletRequest portletRequest, String className) {
-
-		return getPortal().getGroupPermissions(portletRequest, className);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGuestPermissions(
-		HttpServletRequest httpServletRequest) {
-
-		return getPortal().getGuestPermissions(httpServletRequest);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGuestPermissions(
-		HttpServletRequest httpServletRequest, String className) {
-
-		return getPortal().getGuestPermissions(httpServletRequest, className);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGuestPermissions(PortletRequest portletRequest) {
-		return getPortal().getGuestPermissions(portletRequest);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static String[] getGuestPermissions(
-		PortletRequest portletRequest, String className) {
-
-		return getPortal().getGuestPermissions(portletRequest, className);
 	}
 
 	public static String getHomeURL(HttpServletRequest httpServletRequest)
@@ -1156,21 +1066,6 @@ public class PortalUtil {
 		throws PortalException {
 
 		return getPortal().getLayoutFriendlyURL(themeDisplay);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getLayoutFriendlyURLSeparatorComposite(long, boolean,
-	 *             String, Map<String, String[]>, Map<String, Object>)}
-	 */
-	@Deprecated
-	public static LayoutFriendlyURLComposite getLayoutFriendlyURLComposite(
-			long groupId, boolean privateLayout, String friendlyURL,
-			Map<String, String[]> params, Map<String, Object> requestContext)
-		throws PortalException {
-
-		return getPortal().getLayoutFriendlyURLComposite(
-			groupId, privateLayout, friendlyURL, params, requestContext);
 	}
 
 	public static LayoutFriendlyURLSeparatorComposite
@@ -1718,31 +1613,6 @@ public class PortalUtil {
 			companyId, groupId, userId);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getSiteAdminURL(ThemeDisplay, String, Map)}
-	 */
-	@Deprecated
-	public static String getSiteAdminURL(
-			Company company, Group group, String ppid,
-			Map<String, String[]> params)
-		throws PortalException {
-
-		return getPortal().getSiteAdminURL(company, group, ppid, params);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #getSiteAdminURL(ThemeDisplay, String, Map)}
-	 */
-	@Deprecated
-	public static String getSiteAdminURL(
-			Group group, String ppid, Map<String, String[]> params)
-		throws PortalException {
-
-		return getPortal().getSiteAdminURL(group, ppid, params);
-	}
-
 	public static String getSiteAdminURL(
 			ThemeDisplay themeDisplay, String ppid,
 			Map<String, String[]> params)
@@ -1943,8 +1813,19 @@ public class PortalUtil {
 		return getPortal().getValidUserId(companyId, userId);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #getVirtualHostnames(LayoutSet)}
+	 */
+	@Deprecated
 	public static String getVirtualHostname(LayoutSet layoutSet) {
 		return getPortal().getVirtualHostname(layoutSet);
+	}
+
+	public static TreeMap<String, String> getVirtualHostnames(
+		LayoutSet layoutSet) {
+
+		return getPortal().getVirtualHostnames(layoutSet);
 	}
 
 	public static String getWidgetURL(
@@ -1962,19 +1843,6 @@ public class PortalUtil {
 		throws Exception {
 
 		return getPortal().initUser(httpServletRequest);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public static void invokeTaglibDiscussionPagination(
-			PortletConfig portletConfig, ResourceRequest resourceRequest,
-			ResourceResponse resourceResponse)
-		throws IOException, PortletException {
-
-		getPortal().invokeTaglibDiscussionPagination(
-			portletConfig, resourceRequest, resourceResponse);
 	}
 
 	public static boolean isCDNDynamicResourcesEnabled(
@@ -2104,23 +1972,6 @@ public class PortalUtil {
 		return getPortal().isSecure(httpServletRequest);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #isSkipPortletContentRendering(Group, LayoutTypePortlet,
-	 *             PortletDisplay, String)}
-	 */
-	@Deprecated
-	public static boolean isSkipPortletContentProcesssing(
-			Group group, HttpServletRequest httpServletRequest,
-			LayoutTypePortlet layoutTypePortlet, PortletDisplay portletDisplay,
-			String portletName)
-		throws Exception {
-
-		return getPortal().isSkipPortletContentProcessing(
-			group, httpServletRequest, layoutTypePortlet, portletDisplay,
-			portletName);
-	}
-
 	public static boolean isSkipPortletContentRendering(
 		Group group, LayoutTypePortlet layoutTypePortlet,
 		PortletDisplay portletDisplay, String portletName) {
@@ -2162,36 +2013,38 @@ public class PortalUtil {
 	}
 
 	public static void sendError(
-			Exception e, ActionRequest actionRequest,
+			Exception exception, ActionRequest actionRequest,
 			ActionResponse actionResponse)
 		throws IOException {
 
-		getPortal().sendError(e, actionRequest, actionResponse);
+		getPortal().sendError(exception, actionRequest, actionResponse);
 	}
 
 	public static void sendError(
-			Exception e, HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse)
-		throws IOException, ServletException {
-
-		getPortal().sendError(e, httpServletRequest, httpServletResponse);
-	}
-
-	public static void sendError(
-			int status, Exception e, ActionRequest actionRequest,
-			ActionResponse actionResponse)
-		throws IOException {
-
-		getPortal().sendError(status, e, actionRequest, actionResponse);
-	}
-
-	public static void sendError(
-			int status, Exception e, HttpServletRequest httpServletRequest,
+			Exception exception, HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
 		getPortal().sendError(
-			status, e, httpServletRequest, httpServletResponse);
+			exception, httpServletRequest, httpServletResponse);
+	}
+
+	public static void sendError(
+			int status, Exception exception, ActionRequest actionRequest,
+			ActionResponse actionResponse)
+		throws IOException {
+
+		getPortal().sendError(status, exception, actionRequest, actionResponse);
+	}
+
+	public static void sendError(
+			int status, Exception exception,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
+		throws IOException, ServletException {
+
+		getPortal().sendError(
+			status, exception, httpServletRequest, httpServletResponse);
 	}
 
 	public static void sendRSSFeedsDisabledError(

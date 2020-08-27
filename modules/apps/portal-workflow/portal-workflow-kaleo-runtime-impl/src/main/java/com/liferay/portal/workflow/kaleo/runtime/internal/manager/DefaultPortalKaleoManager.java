@@ -16,23 +16,32 @@ package com.liferay.portal.workflow.kaleo.runtime.internal.manager;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowDefinitionManager;
 import com.liferay.portal.kernel.workflow.comparator.WorkflowComparatorFactory;
@@ -45,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -67,38 +77,64 @@ public class DefaultPortalKaleoManager
 	public void deployDefaultDefinitionLink(String assetClassName)
 		throws Exception {
 
-		List<Company> companies = companyLocalService.getCompanies();
+		ActionableDynamicQuery actionableDynamicQuery =
+			companyLocalService.getActionableDynamicQuery();
 
-		for (Company company : companies) {
-			long companyId = company.getCompanyId();
+		actionableDynamicQuery.setPerformActionMethod(
+			(Company company) -> {
+				try {
+					long companyId = company.getCompanyId();
 
-			User defaultUser = userLocalService.getDefaultUser(companyId);
+					User defaultUser = userLocalService.getDefaultUser(
+						companyId);
 
-			Group companyGroup = groupLocalService.getCompanyGroup(companyId);
+					Group companyGroup = groupLocalService.getCompanyGroup(
+						companyId);
 
-			String definitionName = _DEFINITION_NAME;
+					String definitionName = _DEFINITION_NAME;
 
-			if (_definitionAssets.containsKey(assetClassName)) {
-				definitionName = _definitionAssets.get(assetClassName);
-			}
+					if (_definitionAssets.containsKey(assetClassName)) {
+						definitionName = _definitionAssets.get(assetClassName);
+					}
 
-			ServiceContext serviceContext = new ServiceContext();
+					ServiceContext serviceContext = new ServiceContext();
 
-			serviceContext.setCompanyId(companyId);
+					serviceContext.setCompanyId(companyId);
 
-			deployDefaultDefinitionLink(
-				defaultUser, companyId, companyGroup, assetClassName,
-				definitionName);
-		}
+					deployDefaultDefinitionLink(
+						defaultUser, companyId, companyGroup, assetClassName,
+						definitionName);
+				}
+				catch (Exception exception) {
+					throw new SystemException(exception);
+				}
+			});
+
+		actionableDynamicQuery.performActions();
 	}
 
 	@Override
 	public void deployDefaultDefinitionLinks() throws Exception {
-		List<Company> companies = companyLocalService.getCompanies(false);
+		ActionableDynamicQuery actionableDynamicQuery =
+			companyLocalService.getActionableDynamicQuery();
 
-		for (Company company : companies) {
-			deployDefaultDefinitionLinks(company.getCompanyId());
-		}
+		actionableDynamicQuery.setAddCriteriaMethod(
+			dynamicQuery -> {
+				Property systemProperty = PropertyFactoryUtil.forName("system");
+
+				dynamicQuery.add(systemProperty.eq(Boolean.FALSE));
+			});
+		actionableDynamicQuery.setPerformActionMethod(
+			(Company company) -> {
+				try {
+					deployDefaultDefinitionLinks(company.getCompanyId());
+				}
+				catch (Exception exception) {
+					throw new SystemException(exception);
+				}
+			});
+
+		actionableDynamicQuery.performActions();
 	}
 
 	@Override
@@ -123,11 +159,20 @@ public class DefaultPortalKaleoManager
 
 	@Override
 	public void deployDefaultDefinitions() throws Exception {
-		List<Company> companies = companyLocalService.getCompanies();
+		ActionableDynamicQuery actionableDynamicQuery =
+			companyLocalService.getActionableDynamicQuery();
 
-		for (Company company : companies) {
-			deployDefaultDefinitions(company.getCompanyId());
-		}
+		actionableDynamicQuery.setPerformActionMethod(
+			(Company company) -> {
+				try {
+					deployDefaultDefinitions(company.getCompanyId());
+				}
+				catch (Exception exception) {
+					throw new SystemException(exception);
+				}
+			});
+
+		actionableDynamicQuery.performActions();
 	}
 
 	@Override
@@ -167,23 +212,30 @@ public class DefaultPortalKaleoManager
 			}
 
 			User defaultUser = userLocalService.getDefaultUser(companyId);
-			String localizedTitle = LocalizationUtil.updateLocalization(
-				StringPool.BLANK, "title", definitionName,
-				LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				serviceContext.getCompanyId(), defaultUser.getUserId(),
-				localizedTitle, definitionName, FileUtil.getBytes(inputStream));
+				_getLocalizedTitle(companyId, definitionName), definitionName,
+				FileUtil.getBytes(inputStream));
 		}
 	}
 
 	@Override
 	public void deployDefaultRoles() throws Exception {
-		List<Company> companies = companyLocalService.getCompanies();
+		ActionableDynamicQuery actionableDynamicQuery =
+			companyLocalService.getActionableDynamicQuery();
 
-		for (Company company : companies) {
-			deployDefaultRoles(company.getCompanyId());
-		}
+		actionableDynamicQuery.setPerformActionMethod(
+			(Company company) -> {
+				try {
+					deployDefaultRoles(company.getCompanyId());
+				}
+				catch (Exception exception) {
+					throw new SystemException(exception);
+				}
+			});
+
+		actionableDynamicQuery.performActions();
 	}
 
 	@Override
@@ -199,12 +251,11 @@ public class DefaultPortalKaleoManager
 				continue;
 			}
 
-			Map<Locale, String> descriptionMap = new HashMap<>();
-
-			descriptionMap.put(LocaleUtil.getDefault(), entry.getValue());
-
 			roleLocalService.addRole(
-				defaultUser.getUserId(), null, 0, name, null, descriptionMap,
+				defaultUser.getUserId(), null, 0, name, null,
+				HashMapBuilder.put(
+					LocaleUtil.getDefault(), entry.getValue()
+				).build(),
 				RoleConstants.TYPE_REGULAR, null, null);
 		}
 	}
@@ -287,6 +338,33 @@ public class DefaultPortalKaleoManager
 	@Reference(target = "(proxy.bean=false)")
 	protected WorkflowComparatorFactory workflowComparatorFactory;
 
+	private String _getLocalizedTitle(long companyId, String definitionName)
+		throws Exception {
+
+		if (!Objects.equals(_DEFINITION_NAME, definitionName)) {
+			return LocalizationUtil.updateLocalization(
+				StringPool.BLANK, "title", definitionName,
+				LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
+		}
+
+		LocalizedValuesMap localizedValuesMap = new LocalizedValuesMap();
+
+		Group companyGroup = groupLocalService.getCompanyGroup(companyId);
+
+		for (Locale availableLocale :
+				LanguageUtil.getAvailableLocales(companyGroup.getGroupId())) {
+
+			localizedValuesMap.put(
+				availableLocale,
+				_language.get(
+					ResourceBundleUtil.getModuleAndPortalResourceBundle(
+						availableLocale, DefaultPortalKaleoManager.class),
+					"single-approver"));
+		}
+
+		return LocalizationUtil.getXml(localizedValuesMap, "title");
+	}
+
 	private static final String _DEFINITION_NAME = "Single Approver";
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -294,14 +372,12 @@ public class DefaultPortalKaleoManager
 
 	private final Map<String, String> _defaultRoles = new HashMap<>();
 	private final Map<String, String> _definitionAssets = new HashMap<>();
-	private final Map<String, String> _definitionFiles =
-		new HashMap<String, String>() {
-			{
-				put(
-					_DEFINITION_NAME,
-					"META-INF/definitions/single-approver-definition.xml");
-			}
-		};
+	private final Map<String, String> _definitionFiles = HashMapBuilder.put(
+		_DEFINITION_NAME, "META-INF/definitions/single-approver-definition.xml"
+	).build();
+
+	@Reference
+	private Language _language;
 
 	@Reference(target = "(proxy.bean=false)")
 	private WorkflowDefinitionManager _workflowDefinitionManager;

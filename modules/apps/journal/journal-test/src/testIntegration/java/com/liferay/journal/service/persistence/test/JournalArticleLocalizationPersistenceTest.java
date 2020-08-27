@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -41,7 +42,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,11 @@ public class JournalArticleLocalizationPersistenceTest {
 		JournalArticleLocalization newJournalArticleLocalization =
 			_persistence.create(pk);
 
+		newJournalArticleLocalization.setMvccVersion(RandomTestUtil.nextLong());
+
+		newJournalArticleLocalization.setCtCollectionId(
+			RandomTestUtil.nextLong());
+
 		newJournalArticleLocalization.setCompanyId(RandomTestUtil.nextLong());
 
 		newJournalArticleLocalization.setArticlePK(RandomTestUtil.nextLong());
@@ -144,6 +149,12 @@ public class JournalArticleLocalizationPersistenceTest {
 			_persistence.findByPrimaryKey(
 				newJournalArticleLocalization.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingJournalArticleLocalization.getMvccVersion(),
+			newJournalArticleLocalization.getMvccVersion());
+		Assert.assertEquals(
+			existingJournalArticleLocalization.getCtCollectionId(),
+			newJournalArticleLocalization.getCtCollectionId());
 		Assert.assertEquals(
 			existingJournalArticleLocalization.getArticleLocalizationId(),
 			newJournalArticleLocalization.getArticleLocalizationId());
@@ -181,6 +192,26 @@ public class JournalArticleLocalizationPersistenceTest {
 	}
 
 	@Test
+	public void testCountByC_A_L() throws Exception {
+		_persistence.countByC_A_L(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "");
+
+		_persistence.countByC_A_L(0L, 0L, "null");
+
+		_persistence.countByC_A_L(0L, 0L, (String)null);
+	}
+
+	@Test
+	public void testCountByC_A_T_L() throws Exception {
+		_persistence.countByC_A_T_L(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "", "");
+
+		_persistence.countByC_A_T_L(0L, 0L, "null", "null");
+
+		_persistence.countByC_A_T_L(0L, 0L, (String)null, (String)null);
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		JournalArticleLocalization newJournalArticleLocalization =
 			addJournalArticleLocalization();
@@ -210,9 +241,9 @@ public class JournalArticleLocalizationPersistenceTest {
 		getOrderByComparator() {
 
 		return OrderByComparatorFactoryUtil.create(
-			"JournalArticleLocalization", "articleLocalizationId", true,
-			"companyId", true, "articlePK", true, "title", true, "description",
-			true, "languageId", true);
+			"JournalArticleLocalization", "mvccVersion", true, "ctCollectionId",
+			true, "articleLocalizationId", true, "companyId", true, "articlePK",
+			true, "title", true, "description", true, "languageId", true);
 	}
 
 	@Test
@@ -437,21 +468,103 @@ public class JournalArticleLocalizationPersistenceTest {
 
 		_persistence.clearCache();
 
-		JournalArticleLocalization existingJournalArticleLocalization =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newJournalArticleLocalization.getPrimaryKey());
+				newJournalArticleLocalization.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		JournalArticleLocalization newJournalArticleLocalization =
+			addJournalArticleLocalization();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			JournalArticleLocalization.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"articleLocalizationId",
+				newJournalArticleLocalization.getArticleLocalizationId()));
+
+		List<JournalArticleLocalization> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		JournalArticleLocalization journalArticleLocalization) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingJournalArticleLocalization.getArticlePK()),
+			Long.valueOf(journalArticleLocalization.getArticlePK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingJournalArticleLocalization, "getOriginalArticlePK",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingJournalArticleLocalization.getLanguageId(),
-				ReflectionTestUtil.invoke(
-					existingJournalArticleLocalization, "getOriginalLanguageId",
-					new Class<?>[0])));
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "articlePK"));
+		Assert.assertEquals(
+			journalArticleLocalization.getLanguageId(),
+			ReflectionTestUtil.invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "languageId"));
+
+		Assert.assertEquals(
+			Long.valueOf(journalArticleLocalization.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
+		Assert.assertEquals(
+			Long.valueOf(journalArticleLocalization.getArticlePK()),
+			ReflectionTestUtil.<Long>invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "articlePK"));
+		Assert.assertEquals(
+			journalArticleLocalization.getLanguageId(),
+			ReflectionTestUtil.invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "languageId"));
+
+		Assert.assertEquals(
+			Long.valueOf(journalArticleLocalization.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "companyId"));
+		Assert.assertEquals(
+			Long.valueOf(journalArticleLocalization.getArticlePK()),
+			ReflectionTestUtil.<Long>invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "articlePK"));
+		Assert.assertEquals(
+			journalArticleLocalization.getTitle(),
+			ReflectionTestUtil.invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "title"));
+		Assert.assertEquals(
+			journalArticleLocalization.getLanguageId(),
+			ReflectionTestUtil.invoke(
+				journalArticleLocalization, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "languageId"));
 	}
 
 	protected JournalArticleLocalization addJournalArticleLocalization()
@@ -461,6 +574,10 @@ public class JournalArticleLocalizationPersistenceTest {
 
 		JournalArticleLocalization journalArticleLocalization =
 			_persistence.create(pk);
+
+		journalArticleLocalization.setMvccVersion(RandomTestUtil.nextLong());
+
+		journalArticleLocalization.setCtCollectionId(RandomTestUtil.nextLong());
 
 		journalArticleLocalization.setCompanyId(RandomTestUtil.nextLong());
 

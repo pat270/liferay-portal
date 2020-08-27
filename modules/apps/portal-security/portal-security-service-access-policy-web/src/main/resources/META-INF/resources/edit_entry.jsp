@@ -108,13 +108,17 @@ renderResponse.setTitle((sapEntry == null) ? LanguageUtil.get(request, "new-serv
 
 					<div class="lfr-form-row">
 						<div class="row-fields">
-							<aui:col md="6">
+							<clay:col
+								md="6"
+							>
 								<aui:input cssClass="service-class-name" data-service-class-name="<%= serviceClassName %>" id='<%= "serviceClassName" + i %>' label="service-class" name="serviceClassName" type="text" value="<%= serviceClassName %>" />
-							</aui:col>
+							</clay:col>
 
-							<aui:col md="6">
+							<clay:col
+								md="6"
+							>
 								<aui:input cssClass="action-method-name" id='<%= "actionMethodName" + i %>' label="method-name" name="actionMethodName" type="text" value="<%= actionMethodName %>" />
-							</aui:col>
+							</clay:col>
 						</div>
 					</div>
 
@@ -136,19 +140,18 @@ renderResponse.setTitle((sapEntry == null) ? LanguageUtil.get(request, "new-serv
 </aui:form>
 
 <aui:script require="metal-dom/src/dom as dom">
-	var alternatingElements = document.querySelectorAll('#<portlet:namespace />advancedMode, #<portlet:namespace />friendlyMode, #<portlet:namespace />allowedServiceSignatures, #<portlet:namespace />allowedServiceSignaturesFriendlyContentBox');
+	var alternatingElements = document.querySelectorAll(
+		'#<portlet:namespace />advancedMode, #<portlet:namespace />friendlyMode, #<portlet:namespace />allowedServiceSignatures, #<portlet:namespace />allowedServiceSignaturesFriendlyContentBox'
+	);
 
 	dom.delegate(
 		document.<portlet:namespace />fm,
 		'click',
 		'#<portlet:namespace />advancedMode, #<portlet:namespace />friendlyMode',
-		function(event) {
-			Array.prototype.forEach.call(
-				alternatingElements,
-				function(element) {
-					dom.toggleClasses(element, 'hide');
-				}
-			);
+		function (event) {
+			Array.prototype.forEach.call(alternatingElements, function (element) {
+				dom.toggleClasses(element, 'hide');
+			});
 		}
 	);
 </aui:script>
@@ -162,13 +165,18 @@ renderResponse.setTitle((sapEntry == null) ? LanguageUtil.get(request, "new-serv
 		<portlet:param name="<%= ActionRequest.ACTION_NAME %>" value="getActionMethodNames" />
 	</liferay-portlet:resourceURL>
 
-	var getActionMethodNamesURL = Liferay.PortletURL.createURL('<%= getActionMethodNamesURL %>');
+	var getActionMethodNamesURL = Liferay.PortletURL.createURL(
+		'<%= getActionMethodNamesURL %>'
+	);
 
 	var serviceClassNamesToContextNames = <%= request.getAttribute(SAPWebKeys.SERVICE_CLASS_NAMES_TO_CONTEXT_NAMES) %>;
 
-	var getActionMethodNames = function(contextName, serviceClassName, callback) {
+	var getActionMethodNames = function (contextName, serviceClassName, callback) {
 		if (contextName && serviceClassName && callback) {
-			var namespace = contextName.replace(REGEX_DOT, '_') + '.' + serviceClassName.replace(REGEX_DOT, '_');
+			var namespace =
+				contextName.replace(REGEX_DOT, '_') +
+				'.' +
+				serviceClassName.replace(REGEX_DOT, '_');
 
 			var methodObj = A.namespace.call(actionMethodNamesCache, namespace);
 
@@ -180,24 +188,19 @@ renderResponse.setTitle((sapEntry == null) ? LanguageUtil.get(request, "new-serv
 				}
 
 				getActionMethodNamesURL.setParameter('contextName', contextName);
-				getActionMethodNamesURL.setParameter('serviceClassName', serviceClassName);
-
-				A.io.request(
-					getActionMethodNamesURL.toString(),
-					{
-						dataType: 'JSON',
-						method: 'GET',
-						on: {
-							success: function(event, id, xhr) {
-								actionMethodNames = this.get('responseData');
-
-								methodObj.actionMethodNames = actionMethodNames;
-
-								callback(actionMethodNames);
-							}
-						}
-					}
+				getActionMethodNamesURL.setParameter(
+					'serviceClassName',
+					serviceClassName
 				);
+
+				Liferay.Util.fetch(getActionMethodNamesURL.toString())
+					.then(function (response) {
+						return response.json();
+					})
+					.then(function (data) {
+						methodObj.actionMethodNames = data;
+						callback(actionMethodNames);
+					});
 			}
 			else {
 				callback(actionMethodNames);
@@ -205,149 +208,158 @@ renderResponse.setTitle((sapEntry == null) ? LanguageUtil.get(request, "new-serv
 		}
 	};
 
-	var getContextName = function(serviceClassName) {
+	var getContextName = function (serviceClassName) {
 		var serviceClassNameToContextName = A.Array.find(
 			serviceClassNamesToContextNames,
-			function(item, index) {
+			function (item, index) {
 				return item.serviceClassName === serviceClassName;
 			}
 		);
 
-		return serviceClassNameToContextName && serviceClassNameToContextName.contextName || 'portal';
+		return (
+			(serviceClassNameToContextName &&
+				serviceClassNameToContextName.contextName) ||
+			'portal'
+		);
 	};
 
-	var initAutoCompleteRow = function(rowNode) {
+	var initAutoCompleteRow = function (rowNode) {
 		var actionMethodNameInput = rowNode.one('.action-method-name');
 		var serviceClassNameInput = rowNode.one('.service-class-name');
 
-		new A.AutoComplete(
-			{
-				inputNode: serviceClassNameInput,
-				on: {
-					select: function(event) {
-						var result = event.result.raw;
+		new A.AutoComplete({
+			inputNode: serviceClassNameInput,
+			on: {
+				select: function (event) {
+					var result = event.result.raw;
 
-						serviceClassNameInput.attr('data-service-class-name', result.serviceClassName);
-						serviceClassNameInput.attr('data-context-name', result.contextName);
+					serviceClassNameInput.attr(
+						'data-service-class-name',
+						result.serviceClassName
+					);
+					serviceClassNameInput.attr(
+						'data-context-name',
+						result.contextName
+					);
 
-						actionMethodNameInput.attr('disabled', false);
-					}
+					actionMethodNameInput.attr('disabled', false);
 				},
-				resultFilters: 'phraseMatch',
-				resultTextLocator: 'serviceClassName',
-				source: serviceClassNamesToContextNames
-			}
-		).render();
+			},
+			resultFilters: 'phraseMatch',
+			resultTextLocator: 'serviceClassName',
+			source: serviceClassNamesToContextNames,
+		}).render();
 
-		new A.AutoComplete(
-			{
-				inputNode: actionMethodNameInput,
-				resultFilters: 'phraseMatch',
-				resultTextLocator: 'actionMethodName',
-				source: function(query, callback) {
-					var contextName = serviceClassNameInput.attr('data-context-name');
-					var serviceClassName = serviceClassNameInput.attr('data-service-class-name');
+		new A.AutoComplete({
+			inputNode: actionMethodNameInput,
+			resultFilters: 'phraseMatch',
+			resultTextLocator: 'actionMethodName',
+			source: function (query, callback) {
+				var contextName = serviceClassNameInput.attr('data-context-name');
+				var serviceClassName = serviceClassNameInput.attr(
+					'data-service-class-name'
+				);
 
-					if (!contextName) {
-						contextName = getContextName(serviceClassName);
+				if (!contextName) {
+					contextName = getContextName(serviceClassName);
 
-						serviceClassNameInput.attr('data-context-name', contextName);
-					}
-
-					getActionMethodNames(contextName, serviceClassName, callback);
+					serviceClassNameInput.attr('data-context-name', contextName);
 				}
-			}
-		).render();
+
+				getActionMethodNames(contextName, serviceClassName, callback);
+			},
+		}).render();
 	};
 
-	var updateAdvancedModeTextarea = function() {
+	var updateAdvancedModeTextarea = function () {
 		var updatedInput = '';
 
-		A.all('#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox .lfr-form-row:not(.hide)').each(
-			function(item, index) {
-				var actionMethodName = item.one('.action-method-name').val();
-				var serviceClassName = item.one('.service-class-name').val();
+		A.all(
+			'#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox .lfr-form-row:not(.hide)'
+		).each(function (item, index) {
+			var actionMethodName = item.one('.action-method-name').val();
+			var serviceClassName = item.one('.service-class-name').val();
 
-				updatedInput += serviceClassName;
+			updatedInput += serviceClassName;
 
-				if (actionMethodName) {
-					updatedInput += '#' + actionMethodName;
-				}
-
-				updatedInput += '\n';
+			if (actionMethodName) {
+				updatedInput += '#' + actionMethodName;
 			}
-		);
+
+			updatedInput += '\n';
+		});
 
 		A.one('#<portlet:namespace />allowedServiceSignatures').val(updatedInput);
 	};
 
-	var updateFriendlyModeInputs = function() {
-		var contentBox = A.one('#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox');
+	var updateFriendlyModeInputs = function () {
+		var contentBox = A.one(
+			'#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox'
+		);
 
 		contentBox.all('.lfr-form-row:not(.hide)').remove();
 
-		var advancedInput = A.one('#<portlet:namespace />allowedServiceSignatures').val();
+		var advancedInput = A.one(
+			'#<portlet:namespace />allowedServiceSignatures'
+		).val();
 
 		var entries = advancedInput.split('\n');
 
 		entries = A.Array.dedupe(entries);
 
-		entries.forEach(
-			function(item, index) {
-				var row = rowTemplate.clone();
+		entries.forEach(function (item, index) {
+			var row = rowTemplate.clone();
 
-				var actionMethodNameInput = row.one('.action-method-name');
-				var serviceClassNameInput = row.one('.service-class-name');
+			var actionMethodNameInput = row.one('.action-method-name');
+			var serviceClassNameInput = row.one('.service-class-name');
 
-				item = item.split('#');
+			item = item.split('#');
 
-				var serviceClassName = item[0];
+			var serviceClassName = item[0];
 
-				serviceClassNameInput.val(serviceClassName);
+			serviceClassNameInput.val(serviceClassName);
 
-				serviceClassNameInput.attr('data-service-class-name', serviceClassName);
+			serviceClassNameInput.attr('data-service-class-name', serviceClassName);
 
-				var actionMethodName = item[1];
+			var actionMethodName = item[1];
 
-				if (actionMethodName) {
-					actionMethodNameInput.val(actionMethodName);
-				}
-
-				initAutoCompleteRow(row);
-
-				contentBox.append(row);
+			if (actionMethodName) {
+				actionMethodNameInput.val(actionMethodName);
 			}
-		);
+
+			initAutoCompleteRow(row);
+
+			contentBox.append(row);
+		});
 	};
 
-	new Liferay.AutoFields(
-		{
-			contentBox: '#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox',
-			namespace: '<portlet:namespace />',
-			on: {
-				clone: function(event) {
-					var rowNode = event.row;
+	new Liferay.AutoFields({
+		contentBox:
+			'#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox',
+		namespace: '<portlet:namespace />',
+		on: {
+			clone: function (event) {
+				var rowNode = event.row;
 
-					var actionMethodNameInput = rowNode.one('.action-method-name');
-					var serviceClassNameInput = rowNode.one('.service-class-name');
+				var actionMethodNameInput = rowNode.one('.action-method-name');
+				var serviceClassNameInput = rowNode.one('.service-class-name');
 
-					actionMethodNameInput.attr('disabled', true);
+				actionMethodNameInput.attr('disabled', true);
 
-					serviceClassNameInput.attr(
-						{
-							'data-context-name': '',
-							'data-service-class-name': ''
-						}
-					);
+				serviceClassNameInput.attr({
+					'data-context-name': '',
+					'data-service-class-name': '',
+				});
 
-					initAutoCompleteRow(rowNode);
-				},
-				delete: updateAdvancedModeTextarea
-			}
-		}
-	).render();
+				initAutoCompleteRow(rowNode);
+			},
+			delete: updateAdvancedModeTextarea,
+		},
+	}).render();
 
-	var rows = A.all('#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox .lfr-form-row');
+	var rows = A.all(
+		'#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox .lfr-form-row'
+	);
 
 	var rowTemplate = rows.first().clone();
 
@@ -355,6 +367,15 @@ renderResponse.setTitle((sapEntry == null) ? LanguageUtil.get(request, "new-serv
 
 	A.each(rows, initAutoCompleteRow);
 
-	A.one('#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox').delegate('blur', updateAdvancedModeTextarea, '.service-class-name, .action-method-name');
-	A.one('#<portlet:namespace />allowedServiceSignatures').on('blur', updateFriendlyModeInputs);
+	A.one(
+		'#<portlet:namespace />allowedServiceSignaturesFriendlyContentBox'
+	).delegate(
+		'blur',
+		updateAdvancedModeTextarea,
+		'.service-class-name, .action-method-name'
+	);
+	A.one('#<portlet:namespace />allowedServiceSignatures').on(
+		'blur',
+		updateFriendlyModeInputs
+	);
 </aui:script>

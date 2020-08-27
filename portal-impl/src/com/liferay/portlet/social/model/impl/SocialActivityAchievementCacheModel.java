@@ -17,6 +17,7 @@ package com.liferay.portlet.social.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.social.kernel.model.SocialActivityAchievement;
 
 import java.io.Externalizable;
@@ -24,34 +25,33 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SocialActivityAchievement in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SocialActivityAchievementCacheModel
-	implements CacheModel<SocialActivityAchievement>, Externalizable {
+	implements CacheModel<SocialActivityAchievement>, Externalizable,
+			   MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SocialActivityAchievementCacheModel)) {
+		if (!(object instanceof SocialActivityAchievementCacheModel)) {
 			return false;
 		}
 
 		SocialActivityAchievementCacheModel
 			socialActivityAchievementCacheModel =
-				(SocialActivityAchievementCacheModel)obj;
+				(SocialActivityAchievementCacheModel)object;
 
-		if (activityAchievementId ==
-				socialActivityAchievementCacheModel.activityAchievementId) {
+		if ((activityAchievementId ==
+				socialActivityAchievementCacheModel.activityAchievementId) &&
+			(mvccVersion == socialActivityAchievementCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -61,14 +61,30 @@ public class SocialActivityAchievementCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, activityAchievementId);
+		int hashCode = HashUtil.hash(0, activityAchievementId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(15);
+		StringBundler sb = new StringBundler(19);
 
-		sb.append("{activityAchievementId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", activityAchievementId=");
 		sb.append(activityAchievementId);
 		sb.append(", groupId=");
 		sb.append(groupId);
@@ -92,6 +108,8 @@ public class SocialActivityAchievementCacheModel
 		SocialActivityAchievementImpl socialActivityAchievementImpl =
 			new SocialActivityAchievementImpl();
 
+		socialActivityAchievementImpl.setMvccVersion(mvccVersion);
+		socialActivityAchievementImpl.setCtCollectionId(ctCollectionId);
 		socialActivityAchievementImpl.setActivityAchievementId(
 			activityAchievementId);
 		socialActivityAchievementImpl.setGroupId(groupId);
@@ -115,6 +133,10 @@ public class SocialActivityAchievementCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
+
 		activityAchievementId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -131,6 +153,10 @@ public class SocialActivityAchievementCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		objectOutput.writeLong(activityAchievementId);
 
 		objectOutput.writeLong(groupId);
@@ -151,6 +177,8 @@ public class SocialActivityAchievementCacheModel
 		objectOutput.writeBoolean(firstInGroup);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public long activityAchievementId;
 	public long groupId;
 	public long companyId;

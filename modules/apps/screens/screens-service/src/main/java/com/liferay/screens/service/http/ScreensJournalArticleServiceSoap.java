@@ -21,8 +21,6 @@ import com.liferay.screens.service.ScreensJournalArticleServiceUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>ScreensJournalArticleServiceUtil</code> service
@@ -49,9 +47,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author José Manuel Navarro
  * @see ScreensJournalArticleServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class ScreensJournalArticleServiceSoap {
 
 	public static String getJournalArticleContent(long classPK, String locale)
@@ -64,10 +63,10 @@ public class ScreensJournalArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -82,10 +81,10 @@ public class ScreensJournalArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -101,10 +100,10 @@ public class ScreensJournalArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

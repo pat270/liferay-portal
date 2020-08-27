@@ -72,7 +72,7 @@ public class NodePermissionsPortletConfigurationIcon
 				LiferayWindowState.POP_UP.toString(), null,
 				themeDisplay.getRequest());
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return url;
@@ -89,13 +89,11 @@ public class NodePermissionsPortletConfigurationIcon
 			WebKeys.THEME_DISPLAY);
 
 		try {
-			WikiNode node = ActionUtil.getNode(portletRequest);
-
 			return _wikiNodeModelResourcePermission.contains(
-				themeDisplay.getPermissionChecker(), node,
-				ActionKeys.PERMISSIONS);
+				themeDisplay.getPermissionChecker(),
+				ActionUtil.getNode(portletRequest), ActionKeys.PERMISSIONS);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return false;

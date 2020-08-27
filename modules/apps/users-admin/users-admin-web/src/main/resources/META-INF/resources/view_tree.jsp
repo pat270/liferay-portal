@@ -71,7 +71,7 @@ if (organization != null) {
 		<%
 		ViewTreeManagementToolbarDisplayContext viewTreeManagementToolbarDisplayContext = new ViewTreeManagementToolbarDisplayContext(request, renderRequest, renderResponse, organization, displayStyle);
 
-		SearchContainer searchContainer = viewTreeManagementToolbarDisplayContext.getSearchContainer();
+		SearchContainer<Object> searchContainer = viewTreeManagementToolbarDisplayContext.getSearchContainer();
 		%>
 
 		<clay:management-toolbar
@@ -93,13 +93,15 @@ if (organization != null) {
 			viewTypeItems="<%= viewTreeManagementToolbarDisplayContext.getViewTypeItems() %>"
 		/>
 
-		<aui:form cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "search();" %>'>
+		<aui:form cssClass="container-fluid-1280" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "search();" %>'>
 			<aui:input name="<%= Constants.CMD %>" type="hidden" />
 			<aui:input name="toolbarItem" type="hidden" value="<%= toolbarItem %>" />
 			<aui:input name="redirect" type="hidden" value="<%= viewTreeManagementToolbarDisplayContext.getPortletURL().toString() %>" />
 			<aui:input name="onErrorRedirect" type="hidden" value="<%= currentURL %>" />
 			<aui:input name="deleteOrganizationIds" type="hidden" />
 			<aui:input name="deleteUserIds" type="hidden" />
+			<aui:input name="removeOrganizationIds" type="hidden" />
+			<aui:input name="removeUserIds" type="hidden" />
 
 			<liferay-ui:error exception="<%= RequiredOrganizationException.class %>" message="you-cannot-delete-organizations-that-have-suborganizations-or-users" />
 			<liferay-ui:error exception="<%= RequiredUserException.class %>" message="you-cannot-delete-or-deactivate-yourself" />
@@ -144,12 +146,12 @@ if (organization != null) {
 					if (result instanceof Organization) {
 						curOrganization = (Organization)result;
 
-						rowData.put("actions", String.join(StringPool.COMMA, viewTreeManagementToolbarDisplayContext.getAvailableActionDropdownItems(curOrganization)));
+						rowData.put("actions", StringUtil.merge(viewTreeManagementToolbarDisplayContext.getAvailableActions(curOrganization)));
 					}
 					else {
 						user2 = (User)result;
 
-						rowData.put("actions", String.join(StringPool.COMMA, viewTreeManagementToolbarDisplayContext.getAvailableActionDropdownItems(user2)));
+						rowData.put("actions", StringUtil.merge(viewTreeManagementToolbarDisplayContext.getAvailableActions(user2)));
 					}
 
 					row.setData(rowData);
@@ -168,9 +170,7 @@ if (organization != null) {
 	</c:when>
 	<c:otherwise>
 		<clay:alert
-			message='<%= LanguageUtil.get(request, "you-do-not-belong-to-an-organization-and-are-not-allowed-to-view-other-organizations") %>'
-			style="info"
-			title='<%= LanguageUtil.get(request, "info") + ":" %>'
+			message="you-do-not-belong-to-an-organization-and-are-not-allowed-to-view-other-organizations"
 		/>
 	</c:otherwise>
 </c:choose>
@@ -180,50 +180,74 @@ if (organization != null) {
 		<portlet:namespace />deleteOrganizations(organizationsRedirect);
 	}
 
-	<portlet:namespace />doDeleteOrganizations = function(organizationIds, organizationsRedirect) {
+	<portlet:namespace />doDeleteOrganizations = function (
+		organizationIds,
+		organizationsRedirect
+	) {
 		var form = document.<portlet:namespace />fm;
 
 		if (organizationsRedirect) {
-			Liferay.Util.setFormValues(
-				form,
-				{
-					redirect: organizationsRedirect
-				}
-			);
+			Liferay.Util.setFormValues(form, {
+				redirect: organizationsRedirect,
+			});
 		}
 
-		Liferay.Util.postForm(
-			form,
-			{
-				data: {
-					deleteOrganizationIds: organizationIds,
-					deleteUserIds: Liferay.Util.listCheckedExcept(form, '<portlet:namespace />allRowIds', '<portlet:namespace />rowIdsUser')
-				},
-				url: '<portlet:actionURL name="/users_admin/delete_organizations_and_users" />'
-			}
-		);
+		Liferay.Util.postForm(form, {
+			data: {
+				deleteOrganizationIds: organizationIds,
+				deleteUserIds: Liferay.Util.listCheckedExcept(
+					form,
+					'<portlet:namespace />allRowIds',
+					'<portlet:namespace />rowIdsUser'
+				),
+			},
+			url:
+				'<portlet:actionURL name="/users_admin/delete_organizations_and_users" />',
+		});
 	};
 
-	var selectUsers = function(organizationId) {
+	<portlet:actionURL name="/users_admin/edit_organization_assignments" var="removeOrganizationsAndUsersURL">
+		<portlet:param name="assignmentsRedirect" value="<%= currentURL %>" />
+		<portlet:param name="organizationId" value="<%= String.valueOf(organizationId) %>" />
+	</portlet:actionURL>
+
+	function <portlet:namespace />removeOrganizationsAndUsers() {
+		var form = document.<portlet:namespace />fm;
+
+		Liferay.Util.postForm(form, {
+			data: {
+				removeOrganizationIds: Liferay.Util.listCheckedExcept(
+					form,
+					'<portlet:namespace />allRowIds',
+					'<portlet:namespace />rowIdsOrganization'
+				),
+				removeUserIds: Liferay.Util.listCheckedExcept(
+					form,
+					'<portlet:namespace />allRowIds',
+					'<portlet:namespace />rowIdsUser'
+				),
+			},
+			url: '<%= removeOrganizationsAndUsersURL.toString() %>',
+		});
+	}
+
+	var selectUsers = function (organizationId) {
 		<portlet:namespace />openSelectUsersDialog(organizationId);
 	};
 
 	var ACTIONS = {
-		'selectUsers': selectUsers
+		selectUsers: selectUsers,
 	};
 
-	Liferay.componentReady('viewTreeManagementToolbar').then(
-		function(managementToolbar) {
-			managementToolbar.on(
-				'creationMenuItemClicked',
-				function(event) {
-					var itemData = event.data.item.data;
+	Liferay.componentReady('viewTreeManagementToolbar').then(function (
+		managementToolbar
+	) {
+		managementToolbar.on('creationMenuItemClicked', function (event) {
+			var itemData = event.data.item.data;
 
-					if (itemData && itemData.action && ACTIONS[itemData.action]) {
-						ACTIONS[itemData.action](itemData.organizationId);
-					}
-				}
-			);
-		}
-	);
+			if (itemData && itemData.action && ACTIONS[itemData.action]) {
+				ACTIONS[itemData.action](itemData.organizationId);
+			}
+		});
+	});
 </aui:script>

@@ -15,8 +15,11 @@
 package com.liferay.microblogs.model;
 
 /**
- * @author Jonathan Lee
+ * @author     Jonathan Lee
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.microblogs.constants.MicroblogsEntryConstants}
  */
+@Deprecated
 public class MicroblogsEntryConstants {
 
 	public static final int NOTIFICATION_TYPE_REPLY = 0;

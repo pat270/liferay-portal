@@ -314,21 +314,15 @@ public class ScopeLocatorImplTest extends PowerMockito {
 
 		ScopeLocatorImpl scopeLocatorImpl = builder.withPrefixHandlerFactories(
 			propertyAccessor -> PrefixHandler.PASS_THROUGH_PREFIX_HANDLER,
-			registrator -> {
-				registrator.register(
-					_COMPANY_ID, _APPLICATION_NAME, testPrefixHandlerFactory);
-			}
+			registrator -> registrator.register(
+				_COMPANY_ID, _APPLICATION_NAME, testPrefixHandlerFactory)
 		).withScopeMatcherFactories(
 			scopeAlias -> scopeAlias::equals,
-			registrator -> {
-				registrator.register(
-					String.valueOf(_COMPANY_ID), scopeMatcherFactory);
-			}
+			registrator -> registrator.register(
+				String.valueOf(_COMPANY_ID), scopeMatcherFactory)
 		).withScopeFinders(
-			registrator -> {
-				registrator.register(
-					_COMPANY_ID, _APPLICATION_NAME, () -> scopesSet1);
-			}
+			registrator -> registrator.register(
+				_COMPANY_ID, _APPLICATION_NAME, () -> scopesSet1)
 		).build();
 
 		Collection<LiferayOAuth2Scope> matchedLiferayOAuth2Scopes =
@@ -361,8 +355,8 @@ public class ScopeLocatorImplTest extends PowerMockito {
 
 			field.set(object, value);
 		}
-		catch (Exception e) {
-			throw new IllegalArgumentException(e);
+		catch (Exception exception) {
+			throw new IllegalArgumentException(exception);
 		}
 	}
 
@@ -372,9 +366,12 @@ public class ScopeLocatorImplTest extends PowerMockito {
 		Stream<LiferayOAuth2Scope> stream = liferayOAuth2Scopes.stream();
 
 		return stream.flatMap(
-			liferayOAuth2Scope -> Collections.singleton(
-				liferayOAuth2Scope.getScope()
-			).stream()
+			liferayOAuth2Scope -> {
+				Set<String> singletonSet = Collections.singleton(
+					liferayOAuth2Scope.getScope());
+
+				return singletonSet.stream();
+			}
 		).collect(
 			Collectors.toSet()
 		);
@@ -553,14 +550,11 @@ public class ScopeLocatorImplTest extends PowerMockito {
 				scopeMatcherFactoriesServiceTrackerMap);
 
 			configurator.configure(
-				(companyId, service) -> {
-					when(
-						scopeMatcherFactoriesServiceTrackerMap.getService(
-							companyId)
-					).thenReturn(
-						service
-					);
-				});
+				(companyId, service) -> when(
+					scopeMatcherFactoriesServiceTrackerMap.getService(companyId)
+				).thenReturn(
+					service
+				));
 
 			_scopeMatcherFactoriesInitialized = true;
 

@@ -24,6 +24,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>CONFIGURATION_CHECKBOX</td>
+	<td>//label[contains(.,'${key_fieldName}')]/input[contains(@id,'PortletConfiguration')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ERROR</td>
 	<td>//div[contains(@class,'alert-error') or contains(@class,'alert-danger')]</td>
 	<td></td>
@@ -35,22 +40,17 @@
 </tr>
 <tr>
 	<td>H2_HEADER</td>
-	<td>//h2</td>
+	<td>//div[contains(@class,'portlet-header')]//h2</td>
 	<td></td>
 </tr>
 <tr>
 	<td>H2_HEADER_2</td>
-	<td>xpath=(//h2)[2]</td>
+	<td>xpath=(//div[contains(@class,'portlet-header')]//h2)[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>H3_HEADER</td>
 	<td>//h3[@class='header-title']/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>H3_MODAL_TITLE</td>
-	<td>//h3[@class='modal-title']</td>
 	<td></td>
 </tr>
 <tr>
@@ -64,6 +64,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>HEADER_DUPLICATE</td>
+	<td>//*[@data-qa-id='headerTitle'][2]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ICON_PLUS_SIGN</td>
 	<td>//header[div/span[.='${key_portletName}']]//*[@data-qa-id='addButton']//a/span</td>
 	<td></td>
@@ -71,6 +76,11 @@
 <tr>
 	<td>LOADED</td>
 	<td>//div[@data-qa-id='app-loaded']//span[contains(.,'${key_portletName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODAL_TITLE</td>
+	<td>//div[contains(@class,'modal-content')]//*[@class='modal-title']</td>
 	<td></td>
 </tr>
 <tr>
@@ -119,6 +129,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SPECIFIC_PORTLET_BORDER_DECORATOR</td>
+	<td>//div[@id='main-content']//div[contains(@class,'portlet-${key_decorator}')]//h2[contains(@class,'portlet-title') and (.='${key_portletTitleName}')] | //div[@id='main-content']//div[contains(@class,'portlet-${key_decorator}')]//section[contains(@id,'${key_portletTitleName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SPECIFIC_TITLE</td>
 	<td>//div[@id='main-content']//h2[contains(@class,'portlet-title') and (.='${key_portletTitleName}')]</td>
 	<td></td>
@@ -135,7 +150,7 @@
 </tr>
 <tr>
 	<td>TITLE</td>
-	<td>//h2[contains(@class,'portlet-title') and contains(.,'${key_portletName}')]</td>
+	<td>//h2[contains(@class,'portlet-title') and contains(.,'${key_portletName}')] | //h1[contains(text(), '${key_portletName}')]</td>
 	<td></td>
 </tr>
 </tbody>

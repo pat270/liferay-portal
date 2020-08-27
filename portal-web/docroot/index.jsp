@@ -14,17 +14,7 @@
  */
 --%>
 
-<%@ page import="com.liferay.portal.events.ServicePreAction" %><%@
-page import="com.liferay.portal.kernel.model.Layout" %><%@
-page import="com.liferay.portal.kernel.model.LayoutConstants" %><%@
-page import="com.liferay.portal.kernel.model.LayoutSet" %><%@
-page import="com.liferay.portal.kernel.service.LayoutLocalServiceUtil" %><%@
-page import="com.liferay.portal.kernel.servlet.HttpHeaders" %><%@
-page import="com.liferay.portal.kernel.theme.ThemeDisplay" %><%@
-page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
-page import="com.liferay.portal.kernel.util.InstancePool" %><%@
-page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
-page import="com.liferay.portal.kernel.util.WebKeys" %>
+<%@ include file="/init.jsp" %>
 
 <%
 
@@ -60,6 +50,17 @@ else {
 
 if (!request.isRequestedSessionIdFromCookie()) {
 	redirect = PortalUtil.getURLWithSessionId(redirect, session.getId());
+}
+
+String queryString = request.getQueryString();
+
+if (Validator.isNotNull(queryString)) {
+	if (redirect.indexOf(CharPool.QUESTION) == -1) {
+		redirect = redirect + StringPool.QUESTION + queryString;
+	}
+	else {
+		redirect = redirect + StringPool.AMPERSAND + queryString;
+	}
 }
 
 response.setHeader(HttpHeaders.LOCATION, redirect);

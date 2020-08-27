@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.liferay.layout.seo.model.LayoutSEOEntry">
+		<field name="mvccVersion" type="long" />
+		<field name="uuid" type="String" />
+		<field name="layoutSEOEntryId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="privateLayout" type="boolean" />
+		<field name="layoutId" type="long" />
+		<field localized="true" name="canonicalURL" type="String" />
+		<field name="canonicalURLEnabled" type="boolean" />
+		<field name="DDMStorageId" type="long" />
+		<field localized="true" name="openGraphDescription" type="String">
+			<hint-collection name="TEXTAREA" />
+			<hint name="display-width">350</hint>
+		</field>
+		<field name="openGraphDescriptionEnabled" type="boolean" />
+		<field localized="true" name="openGraphImageAlt" type="String" />
+		<field name="openGraphImageFileEntryId" type="long" />
+		<field localized="true" name="openGraphTitle" type="String" />
+		<field name="openGraphTitleEnabled" type="boolean" />
+		<field name="lastPublishDate" type="Date" />
+	</model>
+	<model name="com.liferay.layout.seo.model.LayoutSEOSite">
+		<field name="mvccVersion" type="long" />
+		<field name="uuid" type="String" />
+		<field name="layoutSEOSiteId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="openGraphEnabled" type="boolean" />
+		<field localized="true" name="openGraphImageAlt" type="String" />
+		<field name="openGraphImageFileEntryId" type="long" />
+	</model>
+</model-hints>

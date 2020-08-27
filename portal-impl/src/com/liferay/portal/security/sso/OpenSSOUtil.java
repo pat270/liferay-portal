@@ -25,8 +25,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * See https://issues.liferay.com/browse/LEP-5943.
@@ -36,7 +34,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @author Wesley Gong
  */
-@ProviderType
 public class OpenSSOUtil {
 
 	public static Map<String, String> getAttributes(
@@ -71,7 +68,7 @@ public class OpenSSOUtil {
 	}
 
 	private static OpenSSO _getOpenSSO() {
-		return _instance._serviceTracker.getService();
+		return _openSSOUtil._serviceTracker.getService();
 	}
 
 	private OpenSSOUtil() {
@@ -82,7 +79,7 @@ public class OpenSSOUtil {
 		_serviceTracker.open();
 	}
 
-	private static final OpenSSOUtil _instance = new OpenSSOUtil();
+	private static final OpenSSOUtil _openSSOUtil = new OpenSSOUtil();
 
 	private final ServiceTracker<OpenSSO, OpenSSO> _serviceTracker;
 

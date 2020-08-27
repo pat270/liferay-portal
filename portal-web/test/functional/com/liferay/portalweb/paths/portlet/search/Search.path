@@ -9,13 +9,23 @@
 </thead>
 <tbody>
 <tr>
+	<td>CATEGORY_FACET_CLOUD_LAYOUT</td>
+	<td>//ul[contains(@class,'tag-cloud')]//button[contains(.,'${categoryName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CLASSIC_SEARCH_BAR</td>
-	<td>//input[contains(@id,'templateSearch') and @type='text']</td>
+	<td>//input[contains(@id,'SearchPortlet') and @type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_RANGE_FROM</td>
+	<td>//div[contains(@id,'customRangeFrom')]//input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>EMBEDDED_SEARCH_BAR</td>
-	<td>//header[@id='banner']//input[contains(@data-qa-id,'searchInput')]</td>
+	<td>//input[contains(@data-qa-id,'searchInput')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -29,8 +39,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FACET_DISPLAY_FREQUENCIES</td>
+	<td>//small[contains(@class,'term-count')]/preceding-sibling::span[contains(.,'${facetValueName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>FIELD_MAPPINGS_EDITOR</td>
 	<td>//div[contains(@class,'ace_editor')]//span[contains(.,'${indexName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODIFIED_FACET_CONFIG_EMPTY_FIELD</td>
+	<td>//div[contains(@class,'form-row')][2]//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MODIFIED_FACET_SELECTION</td>
+	<td>//li[contains(@name,'ModifiedFacet')]//span[contains(.,'${range}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -49,18 +74,48 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SEARCH__ENGINE_INFORMATION</td>
-	<td>//div[contains(@class,'alert alert-info') and not(contains(@class,'hide'))]//strong[${position}][contains(.,'${searchInformation}')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>SEARCH_INFO</td>
-	<td>//span[contains(@class,'text-truncate')]/span</td>
+	<td>//div[contains(@class,'container-fluid')]//span[contains(@class,'text-truncate')]/span</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SEARCH_PORTLET_OPTIONS_WRENCH</td>
 	<td>//div[contains(@class,'portlet-options')]/a[contains(@id,'_SearchPortlet') and @title='Options']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEARCH_SUGGESTED_SPELLING</td>
+	<td>//div[contains(@class,'search-suggested-spelling')]//li[contains(.,'Did you mean:')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEARCH_TYPE_FACET_TERM_COUNT</td>
+	<td>//li[@class='facet-value']//small[@class='term-count']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIMILAR_RESULTS_CARD_TITLE</td>
+	<td>//h3[@class='card-title']/a[contains(.,'${key_cardResultTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIMILAR_RESULTS_LINK_TITLE</td>
+	<td>//li/a[contains(.,'${key_linkResultTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIMILAR_RESULTS_LIST_TITLE</td>
+	<td>//div[@class='list-group-title']/a[contains(.,'${key_listResultTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIMILAR_RESULTS_MAXIMUM_ITEM_DISPLAY</td>
+	<td>//div[label[contains(.,'${key_maximumItems}')]]//input[@type='number']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIMILAR_RESULTS_SPECIFIC_POSITION</td>
+	<td>//div[contains(@id,'SimilarResultsPortlet')]//div[@class='display-compact']//li[${key_resultPosition}]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -71,6 +126,26 @@
 <tr>
 	<td>SORT_PORTLET_SORT_OPTION</td>
 	<td>//div/select[contains(@id, "SortPortlet")]/option[contains(., "${sortOption}")]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SUGGESTION_WIDGET_ELLIPSIS_ICON</td>
+	<td>//div[contains(@class,'portlet-borderless')]//header[@class='portlet-topper' and contains(.,'Suggestions')]//div[contains(@class,'portlet-options')]/a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TAG_FACET_CLOUD_LAYOUT</td>
+	<td>//ul[contains(@class,'tag-cloud')]//button[contains(.,'${tagName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TYPE_FACET_AVAILABLE_ASSET_TYPE</td>
+	<td>//select[contains(@id, "availableAssetTypes")]/option[contains(., "${assetType}")]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TYPE_FACET_CURRENT_ASSET_TYPE</td>
+	<td>//select[contains(@id, "currentAssetTypes")]/option[contains(., "${assetType}")]</td>
 	<td></td>
 </tr>
 </tbody>

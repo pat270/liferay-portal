@@ -14,14 +14,13 @@
 
 package com.liferay.sync.internal.upgrade.v1_0_2;
 
+import com.liferay.counter.kernel.service.CounterLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.sync.service.DLSyncEventLocalService;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
-import com.liferay.portal.kernel.dao.db.DB;
-import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -40,7 +39,7 @@ import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.sync.constants.SyncDLObjectConstants;
-import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
+import com.liferay.sync.internal.configuration.SyncServiceConfigurationValues;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,9 +51,11 @@ import java.sql.Timestamp;
 public class UpgradeSyncDLObject extends UpgradeProcess {
 
 	public UpgradeSyncDLObject(
+		CounterLocalService counterLocalService,
 		DLSyncEventLocalService dlSyncEventLocalService,
 		GroupLocalService groupLocalService) {
 
+		_counterLocalService = counterLocalService;
 		_dlSyncEventLocalService = dlSyncEventLocalService;
 		_groupLocalService = groupLocalService;
 	}
@@ -89,8 +90,8 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 						verifyLocks(group.getGroupId());
 						verifyMacPackages(group.getGroupId());
 					}
-					catch (Exception e) {
-						throw new PortalException(e);
+					catch (Exception exception) {
+						throw new PortalException(exception);
 					}
 				});
 
@@ -186,7 +187,7 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 					event = SyncDLObjectConstants.EVENT_ADD;
 				}
 
-				ps2.setLong(1, _increment());
+				ps2.setLong(1, _counterLocalService.increment());
 				ps2.setLong(2, rs.getLong("companyId"));
 				ps2.setLong(3, rs.getLong("userId"));
 				ps2.setString(4, rs.getString("userName"));
@@ -284,12 +285,10 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 			while (rs.next()) {
 				String name = rs.getString("name");
 
-				String extension = FileUtil.getExtension(name);
-
 				if (!ArrayUtil.contains(
 						SyncServiceConfigurationValues.
 							SYNC_MAC_PACKAGE_FOLDER_EXTENSIONS,
-						extension)) {
+						FileUtil.getExtension(name))) {
 
 					continue;
 				}
@@ -308,12 +307,7 @@ public class UpgradeSyncDLObject extends UpgradeProcess {
 		}
 	}
 
-	private static long _increment() {
-		DB db = DBManagerUtil.getDB();
-
-		return db.increment();
-	}
-
+	private final CounterLocalService _counterLocalService;
 	private final DLSyncEventLocalService _dlSyncEventLocalService;
 	private final GroupLocalService _groupLocalService;
 

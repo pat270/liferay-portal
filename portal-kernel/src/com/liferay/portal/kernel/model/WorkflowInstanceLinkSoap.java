@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class WorkflowInstanceLinkSoap implements Serializable {
 
 	public static WorkflowInstanceLinkSoap toSoapModel(
@@ -37,6 +36,7 @@ public class WorkflowInstanceLinkSoap implements Serializable {
 		WorkflowInstanceLinkSoap soapModel = new WorkflowInstanceLinkSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setWorkflowInstanceLinkId(model.getWorkflowInstanceLinkId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -115,6 +115,14 @@ public class WorkflowInstanceLinkSoap implements Serializable {
 
 	public void setMvccVersion(long mvccVersion) {
 		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
 	}
 
 	public long getWorkflowInstanceLinkId() {
@@ -198,6 +206,7 @@ public class WorkflowInstanceLinkSoap implements Serializable {
 	}
 
 	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _workflowInstanceLinkId;
 	private long _groupId;
 	private long _companyId;

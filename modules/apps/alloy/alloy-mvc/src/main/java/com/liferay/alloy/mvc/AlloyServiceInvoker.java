@@ -91,12 +91,12 @@ public class AlloyServiceInvoker {
 			updateModelMethod = serviceClass.getMethod(
 				"update" + simpleClassName, new Class<?>[] {modelClass});
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
-	public BaseModel addModel(BaseModel baseModel) throws Exception {
+	public BaseModel<?> addModel(BaseModel<?> baseModel) throws Exception {
 		return (BaseModel<?>)addModelMethod.invoke(
 			identifiableOSGiService, baseModel);
 	}
@@ -129,7 +129,7 @@ public class AlloyServiceInvoker {
 		return dynamicQuery;
 	}
 
-	public BaseModel createModel(long id) throws Exception {
+	public BaseModel<?> createModel(long id) throws Exception {
 		return (BaseModel<?>)createModelMethod.invoke(
 			identifiableOSGiService, id);
 	}
@@ -142,25 +142,6 @@ public class AlloyServiceInvoker {
 	public BaseModel<?> deleteModel(long classPK) throws Exception {
 		return (BaseModel<?>)deleteModelMethod.invoke(
 			identifiableOSGiService, classPK);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #executeDynamicQuery(DynamicQuery)}
-	 */
-	@Deprecated
-	@SuppressWarnings("rawtypes")
-	public List dynamicQuery(DynamicQuery dynamicQuery) throws Exception {
-		return executeDynamicQuery(dynamicQuery);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #executeDynamicQueryCount(DynamicQuery)}
-	 */
-	@Deprecated
-	public long dynamicQueryCount(DynamicQuery dynamicQuery) throws Exception {
-		return executeDynamicQueryCount(dynamicQuery);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -183,11 +164,12 @@ public class AlloyServiceInvoker {
 	@SuppressWarnings("rawtypes")
 	public List executeDynamicQuery(
 			DynamicQuery dynamicQuery, int start, int end,
-			OrderByComparator<?> obc)
+			OrderByComparator<?> orderByComparator)
 		throws Exception {
 
 		return (List)dynamicQueryMethod4.invoke(
-			identifiableOSGiService, dynamicQuery, start, end, obc);
+			identifiableOSGiService, dynamicQuery, start, end,
+			orderByComparator);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -204,11 +186,12 @@ public class AlloyServiceInvoker {
 
 	@SuppressWarnings("rawtypes")
 	public List executeDynamicQuery(
-			Object[] properties, int start, int end, OrderByComparator<?> obc)
+			Object[] properties, int start, int end,
+			OrderByComparator<?> orderByComparator)
 		throws Exception {
 
 		return executeDynamicQuery(
-			buildDynamicQuery(properties), start, end, obc);
+			buildDynamicQuery(properties), start, end, orderByComparator);
 	}
 
 	public long executeDynamicQueryCount(DynamicQuery dynamicQuery)
@@ -250,7 +233,7 @@ public class AlloyServiceInvoker {
 		return (Integer)getModelsCountMethod.invoke(identifiableOSGiService);
 	}
 
-	public BaseModel<?> updateModel(BaseModel baseModel) throws Exception {
+	public BaseModel<?> updateModel(BaseModel<?> baseModel) throws Exception {
 		return (BaseModel<?>)updateModelMethod.invoke(
 			identifiableOSGiService, baseModel);
 	}

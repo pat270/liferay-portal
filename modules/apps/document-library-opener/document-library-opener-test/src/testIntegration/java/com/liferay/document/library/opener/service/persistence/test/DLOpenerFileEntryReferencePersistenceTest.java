@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -146,6 +147,9 @@ public class DLOpenerFileEntryReferencePersistenceTest {
 		newDLOpenerFileEntryReference.setReferenceKey(
 			RandomTestUtil.randomString());
 
+		newDLOpenerFileEntryReference.setReferenceType(
+			RandomTestUtil.randomString());
+
 		newDLOpenerFileEntryReference.setFileEntryId(RandomTestUtil.nextLong());
 
 		newDLOpenerFileEntryReference.setType(RandomTestUtil.nextInt());
@@ -187,6 +191,9 @@ public class DLOpenerFileEntryReferencePersistenceTest {
 			existingDLOpenerFileEntryReference.getReferenceKey(),
 			newDLOpenerFileEntryReference.getReferenceKey());
 		Assert.assertEquals(
+			existingDLOpenerFileEntryReference.getReferenceType(),
+			newDLOpenerFileEntryReference.getReferenceType());
+		Assert.assertEquals(
 			existingDLOpenerFileEntryReference.getFileEntryId(),
 			newDLOpenerFileEntryReference.getFileEntryId());
 		Assert.assertEquals(
@@ -199,6 +206,15 @@ public class DLOpenerFileEntryReferencePersistenceTest {
 		_persistence.countByFileEntryId(RandomTestUtil.nextLong());
 
 		_persistence.countByFileEntryId(0L);
+	}
+
+	@Test
+	public void testCountByR_F() throws Exception {
+		_persistence.countByR_F("", RandomTestUtil.nextLong());
+
+		_persistence.countByR_F("null", 0L);
+
+		_persistence.countByR_F((String)null, 0L);
 	}
 
 	@Test
@@ -234,7 +250,7 @@ public class DLOpenerFileEntryReferencePersistenceTest {
 			"DLOpenerFileEntryReference", "dlOpenerFileEntryReferenceId", true,
 			"groupId", true, "companyId", true, "userId", true, "userName",
 			true, "createDate", true, "modifiedDate", true, "referenceKey",
-			true, "fileEntryId", true, "type", true);
+			true, "referenceType", true, "fileEntryId", true, "type", true);
 	}
 
 	@Test
@@ -489,15 +505,73 @@ public class DLOpenerFileEntryReferencePersistenceTest {
 
 		_persistence.clearCache();
 
-		DLOpenerFileEntryReference existingDLOpenerFileEntryReference =
+		_assertOriginalValues(
 			_persistence.findByPrimaryKey(
-				newDLOpenerFileEntryReference.getPrimaryKey());
+				newDLOpenerFileEntryReference.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DLOpenerFileEntryReference newDLOpenerFileEntryReference =
+			addDLOpenerFileEntryReference();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLOpenerFileEntryReference.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"dlOpenerFileEntryReferenceId",
+				newDLOpenerFileEntryReference.
+					getDlOpenerFileEntryReferenceId()));
+
+		List<DLOpenerFileEntryReference> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(
+		DLOpenerFileEntryReference dlOpenerFileEntryReference) {
 
 		Assert.assertEquals(
-			Long.valueOf(existingDLOpenerFileEntryReference.getFileEntryId()),
+			Long.valueOf(dlOpenerFileEntryReference.getFileEntryId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDLOpenerFileEntryReference, "getOriginalFileEntryId",
-				new Class<?>[0]));
+				dlOpenerFileEntryReference, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "fileEntryId"));
+
+		Assert.assertEquals(
+			dlOpenerFileEntryReference.getReferenceType(),
+			ReflectionTestUtil.invoke(
+				dlOpenerFileEntryReference, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "referenceType"));
+		Assert.assertEquals(
+			Long.valueOf(dlOpenerFileEntryReference.getFileEntryId()),
+			ReflectionTestUtil.<Long>invoke(
+				dlOpenerFileEntryReference, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "fileEntryId"));
 	}
 
 	protected DLOpenerFileEntryReference addDLOpenerFileEntryReference()
@@ -521,6 +595,9 @@ public class DLOpenerFileEntryReferencePersistenceTest {
 		dlOpenerFileEntryReference.setModifiedDate(RandomTestUtil.nextDate());
 
 		dlOpenerFileEntryReference.setReferenceKey(
+			RandomTestUtil.randomString());
+
+		dlOpenerFileEntryReference.setReferenceType(
 			RandomTestUtil.randomString());
 
 		dlOpenerFileEntryReference.setFileEntryId(RandomTestUtil.nextLong());

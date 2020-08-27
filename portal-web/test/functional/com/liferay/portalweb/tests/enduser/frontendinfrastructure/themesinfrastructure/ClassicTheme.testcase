@@ -1,5 +1,6 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Theme";
@@ -21,12 +22,17 @@ definition {
 
 	@priority = "5"
 	test ConfigureLookAndFeelSettingsSinglePage {
+		property portal.acceptance = "true";
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Classic Theme Page");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
 
 		SitePages.gotoPageMenuItem(
 			menuItem = "Configure",
@@ -40,7 +46,13 @@ definition {
 
 		Theme.configureLookAndFeelShowMaxMinAppLinks(showMaxMinAppLinks = "true");
 
+		Theme.configureLookAndFeelCustomCSS(cssText = '''body{background-color:#42f4c5}''');
+
 		PortletEntry.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
 
 		SitePages.gotoPageMenuItem(
 			menuItem = "Configure",
@@ -50,7 +62,13 @@ definition {
 
 		Navigator.gotoPage(pageName = "Classic Theme Page");
 
-		SearchPortlets.viewSearchHidden();
+		var htmlSourceText = '''body{background-color:#42f4c5}''';
+
+		AssertHTMLSourceTextPresent(value1 = "${htmlSourceText}");
+
+		takeScreenshot();
+
+		AssertElementNotPresent(locator1 = "Search#EMBEDDED_SEARCH_BAR");
 
 		Portlet.addPG(portletName = "Hello World");
 
@@ -74,4 +92,5 @@ definition {
 
 		Smoke.viewWelcomePage();
 	}
+
 }

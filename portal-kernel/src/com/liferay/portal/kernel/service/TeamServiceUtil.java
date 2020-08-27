@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for Team. This utility wraps
  * <code>com.liferay.portal.service.impl.TeamServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TeamService
  * @generated
  */
-@ProviderType
 public class TeamServiceUtil {
 
 	/*
@@ -105,10 +102,10 @@ public class TeamServiceUtil {
 		long groupId, String name, String description,
 		java.util.LinkedHashMap<String, Object> params, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.portal.kernel.model.Team> obc) {
+			<com.liferay.portal.kernel.model.Team> orderByComparator) {
 
 		return getService().search(
-			groupId, name, description, params, start, end, obc);
+			groupId, name, description, params, start, end, orderByComparator);
 	}
 
 	public static int searchCount(

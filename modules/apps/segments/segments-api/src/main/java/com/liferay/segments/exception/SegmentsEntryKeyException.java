@@ -16,12 +16,9 @@ package com.liferay.segments.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eduardo García
  */
-@ProviderType
 public class SegmentsEntryKeyException extends PortalException {
 
 	public SegmentsEntryKeyException() {
@@ -31,12 +28,12 @@ public class SegmentsEntryKeyException extends PortalException {
 		super(msg);
 	}
 
-	public SegmentsEntryKeyException(String msg, Throwable cause) {
-		super(msg, cause);
+	public SegmentsEntryKeyException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public SegmentsEntryKeyException(Throwable cause) {
-		super(cause);
+	public SegmentsEntryKeyException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -126,8 +126,8 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertSame(
 				TerminationProcessException.class, throwable.getClass());
@@ -155,8 +155,8 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertEquals(ProcessException.class, throwable.getClass());
 			Assert.assertEquals(
@@ -172,8 +172,8 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertEquals(ProcessException.class, throwable.getClass());
 			Assert.assertEquals(
@@ -200,7 +200,7 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (TimeoutException te) {
+		catch (TimeoutException timeoutException) {
 		}
 
 		future.cancel(true);
@@ -230,7 +230,7 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (TimeoutException te) {
+		catch (TimeoutException timeoutException) {
 		}
 
 		future.cancel(true);
@@ -245,11 +245,12 @@ public class ProcessUtilTest {
 
 	@Test
 	public void testInterruptPause() throws Exception {
-		String threadName =
-			ReflectionTestUtil.invoke(
-				ProcessUtil.class, "_buildThreadNamePrefix",
-				new Class<?>[] {List.class},
-				Arrays.asList(_buildArguments(Pause.class))) + "StdOut";
+		String threadNamePrefix = ReflectionTestUtil.invoke(
+			ProcessUtil.class, "_buildThreadNamePrefix",
+			new Class<?>[] {List.class},
+			Arrays.asList(_buildArguments(Pause.class)));
+
+		String threadName = threadNamePrefix + "StdOut";
 
 		SyncThrowableThread<Void> syncThrowableThread =
 			new SyncThrowableThread<>(
@@ -290,8 +291,8 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertSame(ProcessException.class, throwable.getClass());
 			Assert.assertEquals(
@@ -310,8 +311,9 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Output processor is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Output processor is null", nullPointerException.getMessage());
 		}
 
 		try {
@@ -320,8 +322,9 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Arguments is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Arguments is null", nullPointerException.getMessage());
 		}
 
 		try {
@@ -330,8 +333,8 @@ public class ProcessUtilTest {
 
 			Assert.fail();
 		}
-		catch (ProcessException pe) {
-			Throwable throwable = pe.getCause();
+		catch (ProcessException processException) {
+			Throwable throwable = processException.getCause();
 
 			Assert.assertSame(IOException.class, throwable.getClass());
 		}

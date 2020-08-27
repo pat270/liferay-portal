@@ -14,11 +14,11 @@
 
 package com.liferay.portal.background.task.internal.messaging;
 
+import com.liferay.petra.lang.SafeClosable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.background.task.internal.SerialBackgroundTaskExecutor;
 import com.liferay.portal.background.task.internal.ThreadLocalAwareBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutorRegistry;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusRegistry;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocalManager;
 import com.liferay.portal.kernel.backgroundtask.ClassLoaderAwareBackgroundTaskExecutor;
+import com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.lock.DuplicateLockException;
 import com.liferay.portal.kernel.lock.LockManager;
@@ -74,137 +75,147 @@ public class BackgroundTaskMessageListener extends BaseMessageListener {
 		long backgroundTaskId = (Long)message.get(
 			BackgroundTaskConstants.BACKGROUND_TASK_ID);
 
-		BackgroundTaskThreadLocal.setBackgroundTaskId(backgroundTaskId);
+		try (SafeClosable safeClosable =
+				BackgroundTaskThreadLocal.setBackgroundTaskIdWithSafeClosable(
+					backgroundTaskId)) {
 
-		ServiceContext serviceContext = new ServiceContext();
+			ServiceContext serviceContext = new ServiceContext();
 
-		BackgroundTask backgroundTask =
-			_backgroundTaskManager.amendBackgroundTask(
-				backgroundTaskId, null,
-				BackgroundTaskConstants.STATUS_IN_PROGRESS, serviceContext);
+			BackgroundTask backgroundTask =
+				_backgroundTaskManager.amendBackgroundTask(
+					backgroundTaskId, null,
+					BackgroundTaskConstants.STATUS_IN_PROGRESS, serviceContext);
 
-		if (backgroundTask == null) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Unable to find background task " + backgroundTaskId);
+			if (backgroundTask == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Unable to find background task " + backgroundTaskId);
+				}
+
+				return;
 			}
 
-			return;
-		}
+			BackgroundTaskExecutor backgroundTaskExecutor = null;
+			BackgroundTaskStatusMessageListener
+				backgroundTaskStatusMessageListener = null;
 
-		BackgroundTaskExecutor backgroundTaskExecutor = null;
-		BackgroundTaskStatusMessageListener
-			backgroundTaskStatusMessageListener = null;
+			int status = backgroundTask.getStatus();
+			String statusMessage = null;
 
-		int status = backgroundTask.getStatus();
-		String statusMessage = null;
+			try {
+				ClassLoader classLoader = getBackgroundTaskExecutorClassLoader(
+					backgroundTask);
 
-		try {
-			ClassLoader classLoader = getBackgroundTaskExecutorClassLoader(
-				backgroundTask);
+				backgroundTaskExecutor = wrapBackgroundTaskExecutor(
+					backgroundTask, classLoader);
 
-			backgroundTaskExecutor = wrapBackgroundTaskExecutor(
-				backgroundTask, classLoader);
+				_backgroundTaskStatusRegistry.registerBackgroundTaskStatus(
+					backgroundTaskId);
 
-			_backgroundTaskStatusRegistry.registerBackgroundTaskStatus(
-				backgroundTaskId);
+				BackgroundTaskStatusMessageTranslator
+					backgroundTaskStatusMessageTranslator =
+						backgroundTaskExecutor.
+							getBackgroundTaskStatusMessageTranslator();
 
-			BackgroundTaskStatusMessageTranslator
-				backgroundTaskStatusMessageTranslator =
-					backgroundTaskExecutor.
-						getBackgroundTaskStatusMessageTranslator();
+				if (backgroundTaskStatusMessageTranslator != null) {
+					backgroundTaskStatusMessageListener =
+						new BackgroundTaskStatusMessageListener(
+							backgroundTaskId,
+							backgroundTaskStatusMessageTranslator,
+							_backgroundTaskStatusRegistry);
 
-			if (backgroundTaskStatusMessageTranslator != null) {
-				backgroundTaskStatusMessageListener =
-					new BackgroundTaskStatusMessageListener(
-						backgroundTaskId, backgroundTaskStatusMessageTranslator,
-						_backgroundTaskStatusRegistry);
+					_messageBus.registerMessageListener(
+						DestinationNames.BACKGROUND_TASK_STATUS,
+						backgroundTaskStatusMessageListener);
+				}
 
-				_messageBus.registerMessageListener(
-					DestinationNames.BACKGROUND_TASK_STATUS,
-					backgroundTaskStatusMessageListener);
+				backgroundTask = _backgroundTaskManager.fetchBackgroundTask(
+					backgroundTask.getBackgroundTaskId());
+
+				BackgroundTaskResult backgroundTaskResult =
+					backgroundTaskExecutor.execute(backgroundTask);
+
+				status = backgroundTaskResult.getStatus();
+				statusMessage = backgroundTaskResult.getStatusMessage();
 			}
+			catch (DuplicateLockException duplicateLockException) {
+				status = BackgroundTaskConstants.STATUS_QUEUED;
 
-			backgroundTask = _backgroundTaskManager.fetchBackgroundTask(
-				backgroundTask.getBackgroundTaskId());
-
-			BackgroundTaskResult backgroundTaskResult =
-				backgroundTaskExecutor.execute(backgroundTask);
-
-			status = backgroundTaskResult.getStatus();
-			statusMessage = backgroundTaskResult.getStatusMessage();
-		}
-		catch (DuplicateLockException dle) {
-			status = BackgroundTaskConstants.STATUS_QUEUED;
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Unable to acquire lock, queuing background task " +
-						backgroundTaskId,
-					dle);
-			}
-		}
-		catch (Exception e) {
-			status = BackgroundTaskConstants.STATUS_FAILED;
-
-			if (e instanceof SystemException) {
-				Throwable cause = e.getCause();
-
-				if (cause instanceof Exception) {
-					e = (Exception)cause;
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Unable to acquire lock, queuing background task " +
+							backgroundTaskId,
+						duplicateLockException);
+				}
+				else if (_log.isInfoEnabled()) {
+					_log.info(
+						"Unable to acquire lock, queuing background task " +
+							backgroundTaskId);
 				}
 			}
+			catch (Exception exception) {
+				status = BackgroundTaskConstants.STATUS_FAILED;
 
-			if (backgroundTaskExecutor != null) {
-				statusMessage = backgroundTaskExecutor.handleException(
-					backgroundTask, e);
-			}
+				if (exception instanceof SystemException) {
+					Throwable throwable = exception.getCause();
 
-			if (_log.isInfoEnabled()) {
-				if (statusMessage != null) {
-					statusMessage = statusMessage.concat(
-						StackTraceUtil.getStackTrace(e));
+					if (throwable instanceof Exception) {
+						exception = (Exception)throwable;
+					}
 				}
-				else {
-					statusMessage = StackTraceUtil.getStackTrace(e);
+
+				if (backgroundTaskExecutor != null) {
+					statusMessage = backgroundTaskExecutor.handleException(
+						backgroundTask, exception);
 				}
+
+				if (_log.isInfoEnabled()) {
+					if (statusMessage != null) {
+						statusMessage = statusMessage.concat(
+							StackTraceUtil.getStackTrace(exception));
+					}
+					else {
+						statusMessage = StackTraceUtil.getStackTrace(exception);
+					}
+				}
+
+				_log.error("Unable to execute background task", exception);
 			}
+			finally {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Completing background task ", backgroundTaskId,
+							" with status: ", status));
+				}
 
-			_log.error("Unable to execute background task", e);
-		}
-		finally {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					StringBundler.concat(
-						"Completing background task ", backgroundTaskId,
-						" with status: ", status));
+				_backgroundTaskManager.amendBackgroundTask(
+					backgroundTaskId, null, status, statusMessage,
+					serviceContext);
+
+				_backgroundTaskStatusRegistry.unregisterBackgroundTaskStatus(
+					backgroundTaskId);
+
+				if (backgroundTaskStatusMessageListener != null) {
+					_messageBus.unregisterMessageListener(
+						DestinationNames.BACKGROUND_TASK_STATUS,
+						backgroundTaskStatusMessageListener);
+				}
+
+				Message responseMessage = new Message();
+
+				responseMessage.put(
+					BackgroundTaskConstants.BACKGROUND_TASK_ID,
+					backgroundTask.getBackgroundTaskId());
+				responseMessage.put("name", backgroundTask.getName());
+				responseMessage.put("status", status);
+				responseMessage.put(
+					"taskExecutorClassName",
+					backgroundTask.getTaskExecutorClassName());
+
+				_messageBus.sendMessage(
+					DestinationNames.BACKGROUND_TASK_STATUS, responseMessage);
 			}
-
-			_backgroundTaskManager.amendBackgroundTask(
-				backgroundTaskId, null, status, statusMessage, serviceContext);
-
-			_backgroundTaskStatusRegistry.unregisterBackgroundTaskStatus(
-				backgroundTaskId);
-
-			if (backgroundTaskStatusMessageListener != null) {
-				_messageBus.unregisterMessageListener(
-					DestinationNames.BACKGROUND_TASK_STATUS,
-					backgroundTaskStatusMessageListener);
-			}
-
-			Message responseMessage = new Message();
-
-			responseMessage.put(
-				BackgroundTaskConstants.BACKGROUND_TASK_ID,
-				backgroundTask.getBackgroundTaskId());
-			responseMessage.put("name", backgroundTask.getName());
-			responseMessage.put("status", status);
-			responseMessage.put(
-				"taskExecutorClassName",
-				backgroundTask.getTaskExecutorClassName());
-
-			_messageBus.sendMessage(
-				DestinationNames.BACKGROUND_TASK_STATUS, responseMessage);
 		}
 	}
 
@@ -241,11 +252,11 @@ public class BackgroundTaskMessageListener extends BaseMessageListener {
 					(BackgroundTaskExecutor)InstanceFactory.newInstance(
 						classLoader, backgroundTask.getTaskExecutorClassName());
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				throw new IllegalStateException(
 					"Cannot instantiate BackgroundTaskExecutor: " +
 						backgroundTask.getTaskExecutorClassName(),
-					e);
+					exception);
 			}
 		}
 
@@ -286,10 +297,8 @@ public class BackgroundTaskMessageListener extends BaseMessageListener {
 				backgroundTaskExecutor, _lockManager);
 		}
 
-		backgroundTaskExecutor = new ThreadLocalAwareBackgroundTaskExecutor(
+		return new ThreadLocalAwareBackgroundTaskExecutor(
 			backgroundTaskExecutor, _backgroundTaskThreadLocalManager);
-
-		return backgroundTaskExecutor;
 	}
 
 	private ClassLoader _getAggregatePluginsClassLoader(

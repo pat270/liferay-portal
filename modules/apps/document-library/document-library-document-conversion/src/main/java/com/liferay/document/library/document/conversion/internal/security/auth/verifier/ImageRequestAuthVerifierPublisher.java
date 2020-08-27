@@ -58,7 +58,7 @@ public class ImageRequestAuthVerifierPublisher {
 		Dictionary<String, Object> authVerifierProperties = new Hashtable<>();
 
 		for (Map.Entry<String, Object> entry : properties.entrySet()) {
-			String key = translateKey(authVerifierPropertyName, entry.getKey());
+			String key = _translate(authVerifierPropertyName, entry.getKey());
 
 			authVerifierProperties.put(key, entry.getValue());
 		}
@@ -76,7 +76,7 @@ public class ImageRequestAuthVerifierPublisher {
 		}
 	}
 
-	protected String translateKey(String authVerifierPropertyName, String key) {
+	private String _translate(String authVerifierPropertyName, String key) {
 		if (key.equals("hostsAllowed")) {
 			key = "hosts.allowed";
 		}

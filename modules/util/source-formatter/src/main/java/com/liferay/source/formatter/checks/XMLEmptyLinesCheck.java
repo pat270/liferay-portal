@@ -22,10 +22,10 @@ import java.util.regex.Pattern;
 /**
  * @author Hugo Huijser
  */
-public class XMLEmptyLinesCheck extends EmptyLinesCheck {
+public class XMLEmptyLinesCheck extends BaseEmptyLinesCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -116,7 +116,7 @@ public class XMLEmptyLinesCheck extends EmptyLinesCheck {
 	private static final Pattern _missingEmptyLineBeforeCommentPattern =
 		Pattern.compile(">\n\t+<!--[\n ]");
 	private static final Pattern _missingEmptyLinePattern = Pattern.compile(
-		"<\\?xml .*\\?>\n<\\w");
+		"^(<\\?xml .*\\?>|<\\!DOCTYPE .*>)\n<\\w", Pattern.MULTILINE);
 	private static final Pattern _redundantEmptyLinePattern = Pattern.compile(
 		"<\\?xml .*\\?>\n\n<\\!DOCTYPE");
 

@@ -29,10 +29,10 @@ public class RootCauseAnalysisToolJob
 		super(jobName);
 
 		_jenkinsGitWorkingDirectory =
-			JenkinsResultsParserUtil.getJenkinsGitWorkingDirectory();
+			GitWorkingDirectoryFactory.newJenkinsGitWorkingDirectory();
 
 		_portalGitWorkingDirectory =
-			JenkinsResultsParserUtil.getPortalGitWorkingDirectory(
+			GitWorkingDirectoryFactory.newPortalGitWorkingDirectory(
 				portalBranchName);
 
 		jobPropertiesFiles.add(

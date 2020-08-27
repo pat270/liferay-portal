@@ -21,7 +21,7 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -121,28 +121,27 @@ public class ViewEntryMVCRenderCommand implements MVCRenderCommand {
 
 			httpServletRequest.setAttribute(WebKeys.BLOGS_ENTRY, entry);
 
-			if (PropsValues.BLOGS_PINGBACK_ENABLED) {
-				if ((entry != null) && entry.isAllowPingbacks()) {
-					HttpServletResponse httpServletResponse =
-						_portal.getHttpServletResponse(renderResponse);
+			if (PropsValues.BLOGS_PINGBACK_ENABLED && (entry != null) &&
+				entry.isAllowPingbacks()) {
 
-					httpServletResponse.addHeader(
-						"X-Pingback",
-						_portal.getPortalURL(renderRequest) +
-							"/xmlrpc/pingback");
-				}
+				HttpServletResponse httpServletResponse =
+					_portal.getHttpServletResponse(renderResponse);
+
+				httpServletResponse.addHeader(
+					"X-Pingback",
+					_portal.getPortalURL(renderRequest) + "/xmlrpc/pingback");
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchEntryException ||
-				e instanceof PrincipalException) {
+		catch (Exception exception) {
+			if (exception instanceof NoSuchEntryException ||
+				exception instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass());
+				SessionErrors.add(renderRequest, exception.getClass());
 
 				return "/blogs/error.jsp";
 			}
 
-			throw new PortletException(e);
+			throw new PortletException(exception);
 		}
 
 		return "/blogs/view_entry.jsp";

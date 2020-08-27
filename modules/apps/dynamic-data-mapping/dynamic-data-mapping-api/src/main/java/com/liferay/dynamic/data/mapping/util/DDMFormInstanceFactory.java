@@ -70,9 +70,10 @@ public class DDMFormInstanceFactory {
 		public DDMFormInstanceInvocationHandler(
 			Class<T> clazz, DDMFormValues ddmFormValues, Locale locale) {
 
-			_ddmFormFactoryHelper = new DDMFormFactoryHelper(clazz);
 			_ddmFormValues = ddmFormValues;
 			_locale = locale;
+
+			_ddmFormFactoryHelper = new DDMFormFactoryHelper(clazz);
 
 			_ddmFormFieldValuesMap = ddmFormValues.getDDMFormFieldValuesMap();
 		}
@@ -187,9 +188,9 @@ public class DDMFormInstanceFactory {
 
 				return sb.toString();
 			}
-			catch (JSONException jsone) {
+			catch (JSONException jsonException) {
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to parse JSON", jsone);
+					_log.debug("Unable to parse JSON", jsonException);
 				}
 
 				return valueString;

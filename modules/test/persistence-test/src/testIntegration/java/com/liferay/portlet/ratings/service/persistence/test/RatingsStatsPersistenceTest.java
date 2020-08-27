@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
 import com.liferay.portal.test.rule.TransactionalTestRule;
@@ -122,7 +124,15 @@ public class RatingsStatsPersistenceTest {
 
 		RatingsStats newRatingsStats = _persistence.create(pk);
 
+		newRatingsStats.setMvccVersion(RandomTestUtil.nextLong());
+
+		newRatingsStats.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newRatingsStats.setCompanyId(RandomTestUtil.nextLong());
+
+		newRatingsStats.setCreateDate(RandomTestUtil.nextDate());
+
+		newRatingsStats.setModifiedDate(RandomTestUtil.nextDate());
 
 		newRatingsStats.setClassNameId(RandomTestUtil.nextLong());
 
@@ -140,10 +150,22 @@ public class RatingsStatsPersistenceTest {
 			newRatingsStats.getPrimaryKey());
 
 		Assert.assertEquals(
+			existingRatingsStats.getMvccVersion(),
+			newRatingsStats.getMvccVersion());
+		Assert.assertEquals(
+			existingRatingsStats.getCtCollectionId(),
+			newRatingsStats.getCtCollectionId());
+		Assert.assertEquals(
 			existingRatingsStats.getStatsId(), newRatingsStats.getStatsId());
 		Assert.assertEquals(
 			existingRatingsStats.getCompanyId(),
 			newRatingsStats.getCompanyId());
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingRatingsStats.getCreateDate()),
+			Time.getShortTimestamp(newRatingsStats.getCreateDate()));
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingRatingsStats.getModifiedDate()),
+			Time.getShortTimestamp(newRatingsStats.getModifiedDate()));
 		Assert.assertEquals(
 			existingRatingsStats.getClassNameId(),
 			newRatingsStats.getClassNameId());
@@ -200,9 +222,10 @@ public class RatingsStatsPersistenceTest {
 
 	protected OrderByComparator<RatingsStats> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"RatingsStats", "statsId", true, "companyId", true, "classNameId",
-			true, "classPK", true, "totalEntries", true, "totalScore", true,
-			"averageScore", true);
+			"RatingsStats", "mvccVersion", true, "ctCollectionId", true,
+			"statsId", true, "companyId", true, "createDate", true,
+			"modifiedDate", true, "classNameId", true, "classPK", true,
+			"totalEntries", true, "totalScore", true, "averageScore", true);
 	}
 
 	@Test
@@ -420,18 +443,61 @@ public class RatingsStatsPersistenceTest {
 
 		_persistence.clearCache();
 
-		RatingsStats existingRatingsStats = _persistence.findByPrimaryKey(
-			newRatingsStats.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newRatingsStats.getPrimaryKey()));
+	}
 
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		RatingsStats newRatingsStats = addRatingsStats();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			RatingsStats.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"statsId", newRatingsStats.getStatsId()));
+
+		List<RatingsStats> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(RatingsStats ratingsStats) {
 		Assert.assertEquals(
-			Long.valueOf(existingRatingsStats.getClassNameId()),
+			Long.valueOf(ratingsStats.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRatingsStats, "getOriginalClassNameId",
-				new Class<?>[0]));
+				ratingsStats, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
 		Assert.assertEquals(
-			Long.valueOf(existingRatingsStats.getClassPK()),
+			Long.valueOf(ratingsStats.getClassPK()),
 			ReflectionTestUtil.<Long>invoke(
-				existingRatingsStats, "getOriginalClassPK", new Class<?>[0]));
+				ratingsStats, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classPK"));
 	}
 
 	protected RatingsStats addRatingsStats() throws Exception {
@@ -439,7 +505,15 @@ public class RatingsStatsPersistenceTest {
 
 		RatingsStats ratingsStats = _persistence.create(pk);
 
+		ratingsStats.setMvccVersion(RandomTestUtil.nextLong());
+
+		ratingsStats.setCtCollectionId(RandomTestUtil.nextLong());
+
 		ratingsStats.setCompanyId(RandomTestUtil.nextLong());
+
+		ratingsStats.setCreateDate(RandomTestUtil.nextDate());
+
+		ratingsStats.setModifiedDate(RandomTestUtil.nextDate());
 
 		ratingsStats.setClassNameId(RandomTestUtil.nextLong());
 

@@ -46,7 +46,7 @@ public interface ItemSelectorView<T extends ItemSelectorCriterion> {
 	 *
 	 * @return the item selector criterion associated to this item selector view
 	 */
-	public Class<T> getItemSelectorCriterionClass();
+	public Class<? extends T> getItemSelectorCriterionClass();
 
 	/**
 	 * Returns the item selector return types that this view supports.
@@ -65,16 +65,25 @@ public interface ItemSelectorView<T extends ItemSelectorCriterion> {
 	public String getTitle(Locale locale);
 
 	/**
-	 * Returns whether the item selector view should show the search field. If
-	 * the view supports search, this method should return <code>true</code>.
+	 * Returns whether the item selector view is visible.
 	 *
-	 * @return     <code>true</code> if the item selector view should show the
-	 *             search field
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 * <p>
+	 * Most of the implementations of this method will return <code>true</code>.
+	 * However, there are certain cases where the view should not be displayed:
+	 * the view isn't ready, the view needs some additional third-party
+	 * configuration, etc.
+	 * </p>
+	 *
+	 * @param  itemSelectorCriterion the item selector criterion that was used
+	 *         to render this view
+	 * @param  themeDisplay the current page {@link ThemeDisplay}
+	 * @return <code>true</code> if the view is visible
+	 * @review
 	 */
-	@Deprecated
-	public default boolean isShowSearch() {
-		return true;
+	public default boolean isVisible(
+		T itemSelectorCriterion, ThemeDisplay themeDisplay) {
+
+		return isVisible(themeDisplay);
 	}
 
 	/**
@@ -87,10 +96,14 @@ public interface ItemSelectorView<T extends ItemSelectorCriterion> {
 	 * configuration, etc.
 	 * </p>
 	 *
-	 * @param  themeDisplay the current page {@link ThemeDisplay}
-	 * @return <code>true</code> if the view is visible
+	 * @param      themeDisplay the current page {@link ThemeDisplay}
+	 * @return     <code>true</code> if the view is visible
+	 * @deprecated As of Athanasius (7.3.x)
 	 */
-	public boolean isVisible(ThemeDisplay themeDisplay);
+	@Deprecated
+	public default boolean isVisible(ThemeDisplay themeDisplay) {
+		return true;
+	}
 
 	/**
 	 * Renders the HTML code for the item selector view.

@@ -23,13 +23,14 @@ import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.trash.TrashActionKeys;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.trash.TrashHelper;
+import com.liferay.trash.constants.TrashActionKeys;
 
 import javax.portlet.PortletRequest;
 
@@ -129,7 +130,7 @@ public class BookmarksFolderTrashHandler extends BookmarksBaseTrashHandler {
 		throws PortalException {
 
 		if (trashActionId.equals(TrashActionKeys.MOVE)) {
-			return ModelResourcePermissionHelper.contains(
+			return ModelResourcePermissionUtil.contains(
 				_bookmarksFolderModelResourcePermission, permissionChecker,
 				groupId, classPK, ActionKeys.ADD_FOLDER);
 		}
@@ -144,12 +145,39 @@ public class BookmarksFolderTrashHandler extends BookmarksBaseTrashHandler {
 	}
 
 	@Override
+	public boolean isMovable(long classPK) throws PortalException {
+		BookmarksFolder folder = getBookmarksFolder(classPK);
+
+		if (folder.getParentFolderId() > 0) {
+			BookmarksFolder parentFolder =
+				_bookmarksFolderLocalService.fetchBookmarksFolder(
+					folder.getParentFolderId());
+
+			if ((parentFolder == null) || parentFolder.isInTrash()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isRestorable(long classPK) throws PortalException {
 		BookmarksFolder folder = getBookmarksFolder(classPK);
 
-		if ((folder.getParentFolderId() > 0) &&
-			(_bookmarksFolderLocalService.fetchBookmarksFolder(
-				folder.getParentFolderId()) == null)) {
+		if (folder.getParentFolderId() > 0) {
+			BookmarksFolder parentFolder =
+				_bookmarksFolderLocalService.fetchBookmarksFolder(
+					folder.getParentFolderId());
+
+			if (parentFolder == null) {
+				return false;
+			}
+		}
+
+		if (!hasTrashPermission(
+				PermissionThreadLocal.getPermissionChecker(),
+				folder.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}

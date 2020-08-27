@@ -26,7 +26,7 @@ String wrapperCssClass = (String)request.getAttribute("liferay-journal:journal-a
 
 <div class="journal-content-article <%= Validator.isNotNull(wrapperCssClass) ? wrapperCssClass : StringPool.BLANK %>" data-analytics-asset-id="<%= articleDisplay.getArticleId() %>" data-analytics-asset-title="<%= HtmlUtil.escapeAttribute(articleDisplay.getTitle()) %>" data-analytics-asset-type="web-content">
 	<c:if test="<%= showTitle %>">
-		<%= articleDisplay.getTitle() %>
+		<%= HtmlUtil.escape(articleDisplay.getTitle()) %>
 	</c:if>
 
 	<%= articleDisplay.getContent() %>

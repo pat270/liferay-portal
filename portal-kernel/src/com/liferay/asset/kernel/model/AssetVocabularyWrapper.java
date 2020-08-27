@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetVocabulary
  * @generated
  */
-@ProviderType
 public class AssetVocabularyWrapper
 	extends BaseModelWrapper<AssetVocabulary>
 	implements AssetVocabulary, ModelWrapper<AssetVocabulary> {
@@ -46,6 +45,8 @@ public class AssetVocabularyWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("vocabularyId", getVocabularyId());
@@ -59,6 +60,7 @@ public class AssetVocabularyWrapper
 		attributes.put("title", getTitle());
 		attributes.put("description", getDescription());
 		attributes.put("settings", getSettings());
+		attributes.put("visibilityType", getVisibilityType());
 		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
@@ -66,6 +68,18 @@ public class AssetVocabularyWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -145,6 +159,12 @@ public class AssetVocabularyWrapper
 			setSettings(settings);
 		}
 
+		Integer visibilityType = (Integer)attributes.get("visibilityType");
+
+		if (visibilityType != null) {
+			setVisibilityType(visibilityType);
+		}
+
 		Date lastPublishDate = (Date)attributes.get("lastPublishDate");
 
 		if (lastPublishDate != null) {
@@ -185,6 +205,16 @@ public class AssetVocabularyWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this asset vocabulary.
+	 *
+	 * @return the ct collection ID of this asset vocabulary
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	@Override
@@ -309,6 +339,16 @@ public class AssetVocabularyWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset vocabulary.
+	 *
+	 * @return the mvcc version of this asset vocabulary
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this asset vocabulary.
 	 *
 	 * @return the name of this asset vocabulary
@@ -351,17 +391,6 @@ public class AssetVocabularyWrapper
 	@Override
 	public String getSettings() {
 		return model.getSettings();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public com.liferay.portal.kernel.util.UnicodeProperties
-		getSettingsProperties() {
-
-		return model.getSettingsProperties();
 	}
 
 	/**
@@ -490,6 +519,16 @@ public class AssetVocabularyWrapper
 	}
 
 	/**
+	 * Returns the visibility type of this asset vocabulary.
+	 *
+	 * @return the visibility type of this asset vocabulary
+	 */
+	@Override
+	public int getVisibilityType() {
+		return model.getVisibilityType();
+	}
+
+	/**
 	 * Returns the vocabulary ID of this asset vocabulary.
 	 *
 	 * @return the vocabulary ID of this asset vocabulary
@@ -528,16 +567,6 @@ public class AssetVocabularyWrapper
 	@Override
 	public boolean isMultiValued() {
 		return model.isMultiValued();
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #isRequired(long, long)}
-	 */
-	@Deprecated
-	@Override
-	public boolean isRequired(long classNameId) {
-		return model.isRequired(classNameId);
 	}
 
 	@Override
@@ -583,6 +612,16 @@ public class AssetVocabularyWrapper
 	@Override
 	public void setCreateDate(Date createDate) {
 		model.setCreateDate(createDate);
+	}
+
+	/**
+	 * Sets the ct collection ID of this asset vocabulary.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset vocabulary
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -693,6 +732,16 @@ public class AssetVocabularyWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this asset vocabulary.
+	 *
+	 * @param mvccVersion the mvcc version of this asset vocabulary
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the name of this asset vocabulary.
 	 *
 	 * @param name the name of this asset vocabulary
@@ -720,17 +769,6 @@ public class AssetVocabularyWrapper
 	@Override
 	public void setSettings(String settings) {
 		model.setSettings(settings);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void setSettingsProperties(
-		com.liferay.portal.kernel.util.UnicodeProperties settingsProperties) {
-
-		model.setSettingsProperties(settingsProperties);
 	}
 
 	/**
@@ -838,6 +876,16 @@ public class AssetVocabularyWrapper
 	}
 
 	/**
+	 * Sets the visibility type of this asset vocabulary.
+	 *
+	 * @param visibilityType the visibility type of this asset vocabulary
+	 */
+	@Override
+	public void setVisibilityType(int visibilityType) {
+		model.setVisibilityType(visibilityType);
+	}
+
+	/**
 	 * Sets the vocabulary ID of this asset vocabulary.
 	 *
 	 * @param vocabularyId the vocabulary ID of this asset vocabulary
@@ -845,6 +893,20 @@ public class AssetVocabularyWrapper
 	@Override
 	public void setVocabularyId(long vocabularyId) {
 		model.setVocabularyId(vocabularyId);
+	}
+
+	@Override
+	public Map<String, Function<AssetVocabulary, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<AssetVocabulary, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

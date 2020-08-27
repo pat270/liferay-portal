@@ -75,18 +75,14 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 	@Override
 	public List<Capability> getExportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {
-				_journalContentMetadataExporterImporterCapability
-			});
+		return ListUtil.fromArray(
+			_journalContentMetadataExporterImporterCapability);
 	}
 
 	@Override
 	public List<Capability> getImportCapabilities() {
-		return ListUtil.toList(
-			new Capability[] {
-				_journalContentMetadataExporterImporterCapability, _capability
-			});
+		return ListUtil.fromArray(
+			_journalContentMetadataExporterImporterCapability, _capability);
 	}
 
 	@Override
@@ -101,13 +97,16 @@ public class JournalContentExportImportPortletPreferencesProcessor
 			portletDataContext.addPortletPermissions(
 				JournalConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(JournalContentPortletKeys.JOURNAL_CONTENT);
-			pde.setType(PortletDataException.EXPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(
+				JournalContentPortletKeys.JOURNAL_CONTENT);
+			portletDataException.setType(
+				PortletDataException.EXPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		String articleId = portletPreferences.getValue("articleId", null);
@@ -240,13 +239,16 @@ public class JournalContentExportImportPortletPreferencesProcessor
 					portletDataContext, article, ddmTemplate,
 					PortletDataContext.REFERENCE_TYPE_STRONG);
 			}
-			catch (PortalException | ReadOnlyException e) {
-				PortletDataException pde = new PortletDataException(e);
+			catch (PortalException | ReadOnlyException exception) {
+				PortletDataException portletDataException =
+					new PortletDataException(exception);
 
-				pde.setPortletId(JournalContentPortletKeys.JOURNAL_CONTENT);
-				pde.setType(PortletDataException.EXPORT_REFERENCED_TEMPLATE);
+				portletDataException.setPortletId(
+					JournalContentPortletKeys.JOURNAL_CONTENT);
+				portletDataException.setType(
+					PortletDataException.EXPORT_REFERENCED_TEMPLATE);
 
-				throw pde;
+				throw portletDataException;
 			}
 		}
 
@@ -265,13 +267,16 @@ public class JournalContentExportImportPortletPreferencesProcessor
 			portletDataContext.importPortletPermissions(
 				JournalConstants.RESOURCE_NAME);
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(JournalContentPortletKeys.JOURNAL_CONTENT);
-			pde.setType(PortletDataException.IMPORT_PORTLET_PERMISSIONS);
+			portletDataException.setPortletId(
+				JournalContentPortletKeys.JOURNAL_CONTENT);
+			portletDataException.setType(
+				PortletDataException.IMPORT_PORTLET_PERMISSIONS);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		long previousScopeGroupId = portletDataContext.getScopeGroupId();
@@ -353,9 +358,10 @@ public class JournalContentExportImportPortletPreferencesProcessor
 					int prefOwnerType = -1;
 
 					if (portletPreferences instanceof PortletPreferencesImpl) {
-						prefOwnerType =
-							((PortletPreferencesImpl)portletPreferences).
-								getOwnerType();
+						PortletPreferencesImpl portletPreferencesImpl =
+							(PortletPreferencesImpl)portletPreferences;
+
+						prefOwnerType = portletPreferencesImpl.getOwnerType();
 					}
 
 					if ((portletDataContext.getPlid() > 0) &&
@@ -388,22 +394,27 @@ public class JournalContentExportImportPortletPreferencesProcessor
 				portletPreferences.setValue("ddmTemplateKey", ddmTemplateKey);
 			}
 		}
-		catch (PortalException pe) {
-			PortletDataException pde = new PortletDataException(pe);
+		catch (PortalException portalException) {
+			PortletDataException portletDataException =
+				new PortletDataException(portalException);
 
-			pde.setPortletId(JournalContentPortletKeys.JOURNAL_CONTENT);
-			pde.setType(
+			portletDataException.setPortletId(
+				JournalContentPortletKeys.JOURNAL_CONTENT);
+			portletDataException.setType(
 				PortletDataException.UPDATE_JOURNAL_CONTENT_SEARCH_DATA);
 
-			throw pde;
+			throw portletDataException;
 		}
-		catch (ReadOnlyException roe) {
-			PortletDataException pde = new PortletDataException(roe);
+		catch (ReadOnlyException readOnlyException) {
+			PortletDataException portletDataException =
+				new PortletDataException(readOnlyException);
 
-			pde.setPortletId(JournalContentPortletKeys.JOURNAL_CONTENT);
-			pde.setType(PortletDataException.UPDATE_PORTLET_PREFERENCES);
+			portletDataException.setPortletId(
+				JournalContentPortletKeys.JOURNAL_CONTENT);
+			portletDataException.setType(
+				PortletDataException.UPDATE_PORTLET_PREFERENCES);
 
-			throw pde;
+			throw portletDataException;
 		}
 
 		portletDataContext.setScopeGroupId(previousScopeGroupId);

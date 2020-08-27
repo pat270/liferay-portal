@@ -30,14 +30,14 @@ import java.lang.reflect.Method;
  */
 public class ClassLoaderProxy {
 
-	public ClassLoaderProxy(Object obj, ClassLoader classLoader) {
-		this(obj, obj.getClass().getName(), classLoader);
+	public ClassLoaderProxy(Object object, ClassLoader classLoader) {
+		this(object, object.getClass().getName(), classLoader);
 	}
 
 	public ClassLoaderProxy(
-		Object obj, String className, ClassLoader classLoader) {
+		Object object, String className, ClassLoader classLoader) {
 
-		_obj = obj;
+		_obj = object;
 		_className = className;
 		_classLoader = classLoader;
 	}
@@ -60,13 +60,14 @@ public class ClassLoaderProxy {
 
 			return _invoke(methodHandler);
 		}
-		catch (InvocationTargetException ite) {
-			throw translateThrowable(ite.getCause(), contextClassLoader);
+		catch (InvocationTargetException invocationTargetException) {
+			throw translateThrowable(
+				invocationTargetException.getCause(), contextClassLoader);
 		}
-		catch (Throwable t) {
-			_log.error(t, t);
+		catch (Throwable throwable) {
+			_log.error(throwable, throwable);
 
-			throw t;
+			throw throwable;
 		}
 		finally {
 			currentThread.setContextClassLoader(contextClassLoader);
@@ -111,7 +112,7 @@ public class ClassLoaderProxy {
 		try {
 			return methodHandler.invoke(_obj);
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
 			MethodKey methodKey = methodHandler.getMethodKey();
 
 			String name = methodKey.getMethodName();
@@ -148,7 +149,7 @@ public class ClassLoaderProxy {
 				}
 			}
 
-			throw nsme;
+			throw noSuchMethodException;
 		}
 	}
 

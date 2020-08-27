@@ -16,9 +16,13 @@ package com.liferay.site.item.selector.web.internal.servlet.taglib.clay;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.soy.VerticalCard;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
+import com.liferay.portal.kernel.service.GroupServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -26,6 +30,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.constants.SiteWebKeys;
 import com.liferay.site.util.GroupURLProvider;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -76,7 +81,19 @@ public class SiteVerticalCard implements VerticalCard {
 			return StringPool.DASH;
 		}
 
-		List<Group> childSites = _group.getChildren(true);
+		List<Group> childSites = null;
+
+		try {
+			childSites = GroupServiceUtil.getGroups(
+				_group.getCompanyId(), _group.getGroupId(), true);
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+
+			childSites = Collections.emptyList();
+		}
 
 		return LanguageUtil.format(
 			_httpServletRequest, "x-child-sites", childSites.size());
@@ -88,7 +105,10 @@ public class SiteVerticalCard implements VerticalCard {
 			return HtmlUtil.escape(
 				_group.getDescriptiveName(_themeDisplay.getLocale()));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		return HtmlUtil.escape(_group.getName(_themeDisplay.getLocale()));
@@ -98,6 +118,9 @@ public class SiteVerticalCard implements VerticalCard {
 	public boolean isSelectable() {
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SiteVerticalCard.class);
 
 	private final Group _group;
 	private final GroupURLProvider _groupURLProvider;

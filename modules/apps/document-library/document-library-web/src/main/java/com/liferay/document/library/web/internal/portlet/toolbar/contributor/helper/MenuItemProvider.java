@@ -14,6 +14,9 @@
 
 package com.liferay.document.library.web.internal.portlet.toolbar.contributor.helper;
 
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalServiceUtil;
+import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLFolder;
@@ -21,11 +24,11 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeServiceUtil;
 import com.liferay.document.library.web.internal.security.permission.resource.DLFolderPermission;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -33,7 +36,9 @@ import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.ArrayList;
@@ -97,10 +102,9 @@ public class MenuItemProvider {
 				PortalUtil.getHttpServletRequest(portletRequest),
 				"file-upload"));
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, portletDisplay.getId(),
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			portletRequest, themeDisplay.getScopeGroup(),
+			DLPortletKeys.DOCUMENT_LIBRARY_ADMIN, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
@@ -108,10 +112,18 @@ public class MenuItemProvider {
 		portletURL.setParameter(Constants.CMD, Constants.ADD);
 		portletURL.setParameter(
 			"redirect", PortalUtil.getCurrentURL(portletRequest));
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		portletURL.setParameter("portletResource", portletDisplay.getId());
+
 		portletURL.setParameter(
 			"repositoryId",
 			String.valueOf(_getRepositoryId(folder, themeDisplay)));
 		portletURL.setParameter("folderId", String.valueOf(folderId));
+		portletURL.setParameter(
+			"fileEntryTypeId",
+			String.valueOf(DLFileEntryTypeConstants.COMPANY_ID_BASIC_DOCUMENT));
 
 		urlMenuItem.setURL(portletURL.toString());
 
@@ -139,16 +151,20 @@ public class MenuItemProvider {
 			LanguageUtil.get(
 				PortalUtil.getHttpServletRequest(portletRequest), "folder"));
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, portletDisplay.getId(),
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			portletRequest, themeDisplay.getScopeGroup(),
+			DLPortletKeys.DOCUMENT_LIBRARY_ADMIN, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
 			"mvcRenderCommandName", "/document_library/edit_folder");
 		portletURL.setParameter(
 			"redirect", PortalUtil.getCurrentURL(portletRequest));
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		portletURL.setParameter("portletResource", portletDisplay.getId());
+
 		portletURL.setParameter(
 			"repositoryId",
 			String.valueOf(_getRepositoryId(folder, themeDisplay)));
@@ -186,10 +202,9 @@ public class MenuItemProvider {
 				PortalUtil.getHttpServletRequest(portletRequest),
 				"multiple-files-upload"));
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, portletDisplay.getId(),
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			portletRequest, themeDisplay.getScopeGroup(),
+			DLPortletKeys.DOCUMENT_LIBRARY_ADMIN, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
@@ -197,6 +212,11 @@ public class MenuItemProvider {
 			"/document_library/upload_multiple_file_entries");
 		portletURL.setParameter(
 			"redirect", PortalUtil.getCurrentURL(portletRequest));
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		portletURL.setParameter("portletResource", portletDisplay.getId());
+
 		portletURL.setParameter(
 			"repositoryId",
 			String.valueOf(_getRepositoryId(folder, themeDisplay)));
@@ -232,10 +252,9 @@ public class MenuItemProvider {
 				PortalUtil.getHttpServletRequest(portletRequest),
 				"repository"));
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, portletDisplay.getId(),
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			portletRequest, themeDisplay.getScopeGroup(),
+			DLPortletKeys.DOCUMENT_LIBRARY_ADMIN, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
@@ -273,10 +292,9 @@ public class MenuItemProvider {
 			LanguageUtil.get(
 				PortalUtil.getHttpServletRequest(portletRequest), "shortcut"));
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, portletDisplay.getId(),
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			portletRequest, themeDisplay.getScopeGroup(),
+			DLPortletKeys.DOCUMENT_LIBRARY_ADMIN, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
@@ -291,6 +309,17 @@ public class MenuItemProvider {
 		urlMenuItem.setURL(portletURL.toString());
 
 		return urlMenuItem;
+	}
+
+	private long[] _getCurrentAndAncestorSiteAndDepotGroupIds(long groupId)
+		throws PortalException {
+
+		return ArrayUtil.append(
+			PortalUtil.getCurrentAndAncestorSiteGroupIds(groupId),
+			ListUtil.toLongArray(
+				DepotEntryLocalServiceUtil.getGroupConnectedDepotEntries(
+					groupId, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
+				DepotEntry::getGroupId));
 	}
 
 	private MenuItem _getFileEntryTypeMenuItem(
@@ -309,10 +338,9 @@ public class MenuItemProvider {
 
 		urlMenuItem.setLabel(label);
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, portletDisplay.getId(),
+		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			portletRequest, themeDisplay.getScopeGroup(),
+			DLPortletKeys.DOCUMENT_LIBRARY_ADMIN, 0, 0,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter(
@@ -358,15 +386,15 @@ public class MenuItemProvider {
 
 		try {
 			return DLFileEntryTypeServiceUtil.getFolderFileEntryTypes(
-				PortalUtil.getCurrentAndAncestorSiteGroupIds(groupId), folderId,
+				_getCurrentAndAncestorSiteAndDepotGroupIds(groupId), folderId,
 				inherited);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				StringBundler.concat(
 					"Unable to get file entry types for group ", groupId,
 					" and folder ", folderId),
-				pe);
+				portalException);
 
 			return Collections.emptyList();
 		}
@@ -401,11 +429,11 @@ public class MenuItemProvider {
 					menuItems.add(urlMenuItem);
 				}
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				_log.error(
 					"Unable to add menu item for file entry type " +
 						fileEntryType.getName(),
-					pe);
+					portalException);
 			}
 		}
 
@@ -428,8 +456,8 @@ public class MenuItemProvider {
 			return DLFolderPermission.contains(
 				permissionChecker, groupId, folderId, actionId);
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 
 			return false;
 		}

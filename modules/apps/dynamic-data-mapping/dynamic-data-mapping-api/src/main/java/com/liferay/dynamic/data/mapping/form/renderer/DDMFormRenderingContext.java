@@ -37,12 +37,20 @@ public class DDMFormRenderingContext {
 		_properties.put(key, value);
 	}
 
+	public String getCancelLabel() {
+		return _cancelLabel;
+	}
+
 	public String getContainerId() {
 		return _containerId;
 	}
 
 	public DDMFormValues getDDMFormValues() {
 		return _ddmFormValues;
+	}
+
+	public long getDDMStructureLayoutId() {
+		return _ddmStructureLayoutId;
 	}
 
 	public long getGroupId() {
@@ -69,6 +77,10 @@ public class DDMFormRenderingContext {
 		return (T)_properties.get(key);
 	}
 
+	public String getRedirectURL() {
+		return _redirectURL;
+	}
+
 	public String getSubmitLabel() {
 		return _submitLabel;
 	}
@@ -85,6 +97,10 @@ public class DDMFormRenderingContext {
 		return MapUtil.getBoolean(_properties, "sharedURL");
 	}
 
+	public boolean isShowCancelButton() {
+		return _showCancelButton;
+	}
+
 	public boolean isShowRequiredFieldsWarning() {
 		return _showRequiredFieldsWarning;
 	}
@@ -97,12 +113,20 @@ public class DDMFormRenderingContext {
 		return MapUtil.getBoolean(_properties, "viewMode");
 	}
 
+	public void setCancelLabel(String cancelLabel) {
+		_cancelLabel = cancelLabel;
+	}
+
 	public void setContainerId(String containerId) {
 		_containerId = containerId;
 	}
 
 	public void setDDMFormValues(DDMFormValues ddmFormValues) {
 		_ddmFormValues = ddmFormValues;
+	}
+
+	public void setDDMStructureLayoutId(long ddmStructureLayoutId) {
+		_ddmStructureLayoutId = ddmStructureLayoutId;
 	}
 
 	public void setGroupId(long groupId) {
@@ -131,12 +155,20 @@ public class DDMFormRenderingContext {
 		_readOnly = readOnly;
 	}
 
+	public void setRedirectURL(String redirectURL) {
+		_redirectURL = redirectURL;
+	}
+
 	public void setReturnFullContext(boolean fullContext) {
 		_properties.put("returnFullContext", fullContext);
 	}
 
 	public void setSharedURL(boolean sharedURL) {
 		_properties.put("sharedURL", sharedURL);
+	}
+
+	public void setShowCancelButton(boolean showCancelButton) {
+		_showCancelButton = showCancelButton;
 	}
 
 	public void setShowRequiredFieldsWarning(
@@ -157,8 +189,10 @@ public class DDMFormRenderingContext {
 		_properties.put("viewMode", viewMode);
 	}
 
+	private String _cancelLabel;
 	private String _containerId;
 	private DDMFormValues _ddmFormValues;
+	private long _ddmStructureLayoutId;
 	private long _groupId;
 	private HttpServletRequest _httpServletRequest;
 	private HttpServletResponse _httpServletResponse;
@@ -166,8 +200,10 @@ public class DDMFormRenderingContext {
 	private String _portletNamespace;
 	private final Map<String, Object> _properties = new HashMap<>();
 	private boolean _readOnly;
+	private String _redirectURL;
+	private boolean _showCancelButton = true;
 	private boolean _showRequiredFieldsWarning = true;
-	private boolean _showSubmitButton;
+	private boolean _showSubmitButton = true;
 	private String _submitLabel;
 
 }

@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class MessageBoardAttachment {
+public class MessageBoardAttachment implements Cloneable {
+
+	public static MessageBoardAttachment toDTO(String json) {
+		return MessageBoardAttachmentSerDes.toDTO(json);
+	}
 
 	public String getContentUrl() {
 		return contentUrl;
@@ -48,6 +52,27 @@ public class MessageBoardAttachment {
 	}
 
 	protected String contentUrl;
+
+	public String getContentValue() {
+		return contentValue;
+	}
+
+	public void setContentValue(String contentValue) {
+		this.contentValue = contentValue;
+	}
+
+	public void setContentValue(
+		UnsafeSupplier<String, Exception> contentValueUnsafeSupplier) {
+
+		try {
+			contentValue = contentValueUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String contentValue;
 
 	public String getEncodingFormat() {
 		return encodingFormat;
@@ -151,6 +176,11 @@ public class MessageBoardAttachment {
 	}
 
 	protected String title;
+
+	@Override
+	public MessageBoardAttachment clone() throws CloneNotSupportedException {
+		return (MessageBoardAttachment)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

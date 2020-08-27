@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing RepositoryEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class RepositoryEntryCacheModel
 	implements CacheModel<RepositoryEntry>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RepositoryEntryCacheModel)) {
+		if (!(object instanceof RepositoryEntryCacheModel)) {
 			return false;
 		}
 
 		RepositoryEntryCacheModel repositoryEntryCacheModel =
-			(RepositoryEntryCacheModel)obj;
+			(RepositoryEntryCacheModel)object;
 
 		if ((repositoryEntryId ==
 				repositoryEntryCacheModel.repositoryEntryId) &&

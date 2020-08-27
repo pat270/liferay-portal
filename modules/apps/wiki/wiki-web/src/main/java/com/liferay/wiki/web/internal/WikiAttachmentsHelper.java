@@ -69,10 +69,10 @@ public class WikiAttachmentsHelper {
 					"file");
 
 				if (inputStream != null) {
-					String fileName = uploadPortletRequest.getFileName("file");
-
 					ObjectValuePair<String, InputStream> inputStreamOVP =
-						new ObjectValuePair<>(fileName, inputStream);
+						new ObjectValuePair<>(
+							uploadPortletRequest.getFileName("file"),
+							inputStream);
 
 					inputStreamOVPs.add(inputStreamOVP);
 				}
@@ -121,9 +121,9 @@ public class WikiAttachmentsHelper {
 
 				try (InputStream inputStream = inputStreamOVP.getValue()) {
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
+						_log.warn(ioException, ioException);
 					}
 				}
 			}

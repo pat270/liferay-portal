@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
+import com.liferay.portal.kernel.workflow.search.WorkflowModelSearchResult;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -44,16 +45,11 @@ public interface WorkflowEngine {
 		throws WorkflowException;
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #deployWorkflowDefinition(String, String, InputStream,
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #deployWorkflowDefinition(String, String, String, byte[],
 	 *             ServiceContext)}
 	 */
 	@Deprecated
-	public WorkflowDefinition deployWorkflowDefinition(
-			String title, InputStream inputStream,
-			ServiceContext serviceContext)
-		throws WorkflowException;
-
 	public default WorkflowDefinition deployWorkflowDefinition(
 			String title, String name, InputStream inputStream,
 			ServiceContext serviceContext)
@@ -61,6 +57,11 @@ public interface WorkflowEngine {
 
 		throw new UnsupportedOperationException();
 	}
+
+	public WorkflowDefinition deployWorkflowDefinition(
+			String title, String name, String scope, InputStream inputStream,
+			ServiceContext serviceContext)
+		throws WorkflowException;
 
 	public ExecutionContext executeTimerWorkflowInstance(
 			long kaleoTimerInstanceTokenId, ServiceContext serviceContext,
@@ -110,6 +111,12 @@ public interface WorkflowEngine {
 			ServiceContext serviceContext)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #saveWorkflowDefinition(String, String, String, byte[],
+	 *             ServiceContext)}
+	 */
+	@Deprecated
 	public default WorkflowDefinition saveWorkflowDefinition(
 			String title, String name, byte[] bytes,
 			ServiceContext serviceContext)
@@ -118,18 +125,26 @@ public interface WorkflowEngine {
 		throw new UnsupportedOperationException();
 	}
 
+	public WorkflowDefinition saveWorkflowDefinition(
+			String title, String name, String scope, byte[] bytes,
+			ServiceContext serviceContext)
+		throws WorkflowException;
+
 	/**
 	 * @deprecated As of Mueller (7.2.x), replaced by {@link #search(Long,
 	 *             String, String, String, String, String, Boolean, int, int,
 	 *             OrderByComparator, ServiceContext)}
 	 */
 	@Deprecated
-	public List<WorkflowInstance> search(
+	public default List<WorkflowInstance> search(
 			Long userId, String assetClassName, String nodeName,
 			String kaleoDefinitionName, Boolean completed, int start, int end,
 			OrderByComparator<WorkflowInstance> orderByComparator,
 			ServiceContext serviceContext)
-		throws WorkflowException;
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
 
 	public default List<WorkflowInstance> search(
 			Long userId, String assetClassName, String assetTitle,
@@ -148,17 +163,32 @@ public interface WorkflowEngine {
 	 *             ServiceContext)}
 	 */
 	@Deprecated
-	public int searchCount(
+	public default int searchCount(
 			Long userId, String assetClassName, String nodeName,
 			String kaleoDefinitionName, Boolean completed,
 			ServiceContext serviceContext)
-		throws WorkflowException;
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
 
 	public default int searchCount(
 			Long userId, String assetClassName, String assetTitle,
 			String assetDescription, String nodeName,
 			String kaleoDefinitionName, Boolean completed,
 			ServiceContext serviceContext)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	public default WorkflowModelSearchResult<WorkflowInstance>
+			searchWorkflowInstances(
+				Long userId, String assetClassName, String assetTitle,
+				String assetDescription, String nodeName,
+				String kaleoDefinitionName, Boolean completed, int start,
+				int end, OrderByComparator<WorkflowInstance> orderByComparator,
+				ServiceContext serviceContext)
 		throws WorkflowException {
 
 		throw new UnsupportedOperationException();

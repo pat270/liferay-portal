@@ -42,7 +42,7 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class RegionServiceBaseImpl
-	extends BaseServiceImpl implements RegionService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, RegionService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -192,8 +192,8 @@ public abstract class RegionServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

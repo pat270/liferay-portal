@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -45,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -125,6 +125,10 @@ public class DDMStructurePersistenceTest {
 
 		DDMStructure newDDMStructure = _persistence.create(pk);
 
+		newDDMStructure.setMvccVersion(RandomTestUtil.nextLong());
+
+		newDDMStructure.setCtCollectionId(RandomTestUtil.nextLong());
+
 		newDDMStructure.setUuid(RandomTestUtil.randomString());
 
 		newDDMStructure.setGroupId(RandomTestUtil.nextLong());
@@ -168,6 +172,12 @@ public class DDMStructurePersistenceTest {
 		DDMStructure existingDDMStructure = _persistence.findByPrimaryKey(
 			newDDMStructure.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingDDMStructure.getMvccVersion(),
+			newDDMStructure.getMvccVersion());
+		Assert.assertEquals(
+			existingDDMStructure.getCtCollectionId(),
+			newDDMStructure.getCtCollectionId());
 		Assert.assertEquals(
 			existingDDMStructure.getUuid(), newDDMStructure.getUuid());
 		Assert.assertEquals(
@@ -267,13 +277,6 @@ public class DDMStructurePersistenceTest {
 		_persistence.countByParentStructureId(RandomTestUtil.nextLong());
 
 		_persistence.countByParentStructureId(0L);
-	}
-
-	@Test
-	public void testCountByClassNameId() throws Exception {
-		_persistence.countByClassNameId(RandomTestUtil.nextLong());
-
-		_persistence.countByClassNameId(0L);
 	}
 
 	@Test
@@ -384,12 +387,13 @@ public class DDMStructurePersistenceTest {
 
 	protected OrderByComparator<DDMStructure> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"DDMStructure", "uuid", true, "structureId", true, "groupId", true,
-			"companyId", true, "userId", true, "userName", true,
-			"versionUserId", true, "versionUserName", true, "createDate", true,
-			"modifiedDate", true, "parentStructureId", true, "classNameId",
-			true, "structureKey", true, "version", true, "name", true,
-			"storageType", true, "type", true, "lastPublishDate", true);
+			"DDMStructure", "mvccVersion", true, "ctCollectionId", true, "uuid",
+			true, "structureId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "versionUserId", true,
+			"versionUserName", true, "createDate", true, "modifiedDate", true,
+			"parentStructureId", true, "classNameId", true, "structureKey",
+			true, "version", true, "name", true, "storageType", true, "type",
+			true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -611,40 +615,87 @@ public class DDMStructurePersistenceTest {
 
 		_persistence.clearCache();
 
-		DDMStructure existingDDMStructure = _persistence.findByPrimaryKey(
-			newDDMStructure.getPrimaryKey());
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(newDDMStructure.getPrimaryKey()));
+	}
 
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMStructure.getUuid(),
-				ReflectionTestUtil.invoke(
-					existingDDMStructure, "getOriginalUuid", new Class<?>[0])));
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		DDMStructure newDDMStructure = addDDMStructure();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DDMStructure.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"structureId", newDDMStructure.getStructureId()));
+
+		List<DDMStructure> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(DDMStructure ddmStructure) {
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructure.getGroupId()),
+			ddmStructure.getUuid(),
+			ReflectionTestUtil.invoke(
+				ddmStructure, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "uuid_"));
+		Assert.assertEquals(
+			Long.valueOf(ddmStructure.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructure, "getOriginalGroupId", new Class<?>[0]));
+				ddmStructure, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructure.getGroupId()),
+			Long.valueOf(ddmStructure.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructure, "getOriginalGroupId", new Class<?>[0]));
+				ddmStructure, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "groupId"));
 		Assert.assertEquals(
-			Long.valueOf(existingDDMStructure.getClassNameId()),
+			Long.valueOf(ddmStructure.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(
-				existingDDMStructure, "getOriginalClassNameId",
-				new Class<?>[0]));
-		Assert.assertTrue(
-			Objects.equals(
-				existingDDMStructure.getStructureKey(),
-				ReflectionTestUtil.invoke(
-					existingDDMStructure, "getOriginalStructureKey",
-					new Class<?>[0])));
+				ddmStructure, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "classNameId"));
+		Assert.assertEquals(
+			ddmStructure.getStructureKey(),
+			ReflectionTestUtil.invoke(
+				ddmStructure, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "structureKey"));
 	}
 
 	protected DDMStructure addDDMStructure() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
 		DDMStructure ddmStructure = _persistence.create(pk);
+
+		ddmStructure.setMvccVersion(RandomTestUtil.nextLong());
+
+		ddmStructure.setCtCollectionId(RandomTestUtil.nextLong());
 
 		ddmStructure.setUuid(RandomTestUtil.randomString());
 

@@ -16,12 +16,9 @@ package com.liferay.oauth2.provider.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class DuplicateOAuth2ApplicationClientIdException
 	extends PortalException {
 
@@ -33,13 +30,13 @@ public class DuplicateOAuth2ApplicationClientIdException
 	}
 
 	public DuplicateOAuth2ApplicationClientIdException(
-		String msg, Throwable cause) {
+		String msg, Throwable throwable) {
 
-		super(msg, cause);
+		super(msg, throwable);
 	}
 
-	public DuplicateOAuth2ApplicationClientIdException(Throwable cause) {
-		super(cause);
+	public DuplicateOAuth2ApplicationClientIdException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

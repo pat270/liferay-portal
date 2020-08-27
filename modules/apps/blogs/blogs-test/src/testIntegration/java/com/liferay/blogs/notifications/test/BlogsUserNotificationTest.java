@@ -26,9 +26,9 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.notifications.test.util.BaseUserNotificationTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
-import com.liferay.portlet.notifications.test.BaseUserNotificationTestCase;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -85,8 +85,10 @@ public class BlogsUserNotificationTest extends BaseUserNotificationTestCase {
 
 		serviceContext.setAttribute("sendEmailEntryUpdated", Boolean.TRUE);
 
+		BlogsEntry blogsEntry = (BlogsEntry)baseModel;
+
 		return BlogsEntryLocalServiceUtil.updateEntry(
-			TestPropsValues.getUserId(), ((BlogsEntry)baseModel).getEntryId(),
+			TestPropsValues.getUserId(), blogsEntry.getEntryId(),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			serviceContext);
 	}

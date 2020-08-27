@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Generated;
+
+import javax.validation.Valid;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -44,6 +46,103 @@ import javax.xml.bind.annotation.XmlRootElement;
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "RenderedContent")
 public class RenderedContent {
+
+	public static RenderedContent toDTO(String json) {
+		return ObjectMapperUtil.readValue(RenderedContent.class, json);
+	}
+
+	@Schema
+	public String getContentTemplateId() {
+		return contentTemplateId;
+	}
+
+	public void setContentTemplateId(String contentTemplateId) {
+		this.contentTemplateId = contentTemplateId;
+	}
+
+	@JsonIgnore
+	public void setContentTemplateId(
+		UnsafeSupplier<String, Exception> contentTemplateIdUnsafeSupplier) {
+
+		try {
+			contentTemplateId = contentTemplateIdUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String contentTemplateId;
+
+	@Schema(
+		description = "The name of the template used to render the content."
+	)
+	public String getContentTemplateName() {
+		return contentTemplateName;
+	}
+
+	public void setContentTemplateName(String contentTemplateName) {
+		this.contentTemplateName = contentTemplateName;
+	}
+
+	@JsonIgnore
+	public void setContentTemplateName(
+		UnsafeSupplier<String, Exception> contentTemplateNameUnsafeSupplier) {
+
+		try {
+			contentTemplateName = contentTemplateNameUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField(
+		description = "The name of the template used to render the content."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String contentTemplateName;
+
+	@Schema
+	@Valid
+	public Map<String, String> getContentTemplateName_i18n() {
+		return contentTemplateName_i18n;
+	}
+
+	public void setContentTemplateName_i18n(
+		Map<String, String> contentTemplateName_i18n) {
+
+		this.contentTemplateName_i18n = contentTemplateName_i18n;
+	}
+
+	@JsonIgnore
+	public void setContentTemplateName_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			contentTemplateName_i18nUnsafeSupplier) {
+
+		try {
+			contentTemplateName_i18n =
+				contentTemplateName_i18nUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, String> contentTemplateName_i18n;
 
 	@Schema(description = "An absolute URL to the rendered content.")
 	public String getRenderedContentURL() {
@@ -69,27 +168,27 @@ public class RenderedContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "An absolute URL to the rendered content.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String renderedContentURL;
 
 	@Schema(
-		description = "The name of the template used to render the content."
+		description = "optional field with the rendered content, can be embedded with nestedFields"
 	)
-	public String getTemplateName() {
-		return templateName;
+	public String getRenderedContentValue() {
+		return renderedContentValue;
 	}
 
-	public void setTemplateName(String templateName) {
-		this.templateName = templateName;
+	public void setRenderedContentValue(String renderedContentValue) {
+		this.renderedContentValue = renderedContentValue;
 	}
 
 	@JsonIgnore
-	public void setTemplateName(
-		UnsafeSupplier<String, Exception> templateNameUnsafeSupplier) {
+	public void setRenderedContentValue(
+		UnsafeSupplier<String, Exception> renderedContentValueUnsafeSupplier) {
 
 		try {
-			templateName = templateNameUnsafeSupplier.get();
+			renderedContentValue = renderedContentValueUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -99,9 +198,11 @@ public class RenderedContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "optional field with the rendered content, can be embedded with nestedFields"
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String templateName;
+	protected String renderedContentValue;
 
 	@Override
 	public boolean equals(Object object) {
@@ -130,6 +231,44 @@ public class RenderedContent {
 
 		sb.append("{");
 
+		if (contentTemplateId != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"contentTemplateId\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(contentTemplateId));
+
+			sb.append("\"");
+		}
+
+		if (contentTemplateName != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"contentTemplateName\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(contentTemplateName));
+
+			sb.append("\"");
+		}
+
+		if (contentTemplateName_i18n != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"contentTemplateName_i18n\": ");
+
+			sb.append(_toJSON(contentTemplateName_i18n));
+		}
+
 		if (renderedContentURL != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -144,16 +283,16 @@ public class RenderedContent {
 			sb.append("\"");
 		}
 
-		if (templateName != null) {
+		if (renderedContentValue != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"templateName\": ");
+			sb.append("\"renderedContentValue\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(templateName));
+			sb.append(_escape(renderedContentValue));
 
 			sb.append("\"");
 		}
@@ -163,10 +302,26 @@ public class RenderedContent {
 		return sb.toString();
 	}
 
+	@Schema(
+		defaultValue = "com.liferay.headless.delivery.dto.v1_0.RenderedContent",
+		name = "x-class-name"
+	)
+	public String xClassName;
+
 	private static String _escape(Object object) {
 		String string = String.valueOf(object);
 
 		return string.replaceAll("\"", "\\\\\"");
+	}
+
+	private static boolean _isArray(Object value) {
+		if (value == null) {
+			return false;
+		}
+
+		Class<?> clazz = value.getClass();
+
+		return clazz.isArray();
 	}
 
 	private static String _toJSON(Map<String, ?> map) {
@@ -184,9 +339,42 @@ public class RenderedContent {
 			sb.append("\"");
 			sb.append(entry.getKey());
 			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
+
+			Object value = entry.getValue();
+
+			if (_isArray(value)) {
+				sb.append("[");
+
+				Object[] valueArray = (Object[])value;
+
+				for (int i = 0; i < valueArray.length; i++) {
+					if (valueArray[i] instanceof String) {
+						sb.append("\"");
+						sb.append(valueArray[i]);
+						sb.append("\"");
+					}
+					else {
+						sb.append(valueArray[i]);
+					}
+
+					if ((i + 1) < valueArray.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof Map) {
+				sb.append(_toJSON((Map<String, ?>)value));
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+			else {
+				sb.append(value);
+			}
 
 			if (iterator.hasNext()) {
 				sb.append(",");

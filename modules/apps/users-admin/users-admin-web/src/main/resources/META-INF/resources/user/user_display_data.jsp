@@ -22,8 +22,10 @@ User selUser = (User)request.getAttribute(UsersAdminWebKeys.SELECTED_USER);
 
 <aui:model-context bean="<%= selUser %>" model="<%= User.class %>" />
 
-<div class="row">
-	<div class="col-md-6">
+<clay:row>
+	<clay:col
+		md="6"
+	>
 		<liferay-ui:success key="verificationEmailSent" message="your-email-verification-code-has-been-sent-and-the-new-email-address-will-be-applied-to-your-account-once-it-has-been-verified" />
 
 		<liferay-ui:error exception="<%= CompanyMaxUsersException.class %>" message="unable-to-create-user-account-because-the-maximum-number-of-users-has-been-reached" />
@@ -46,7 +48,7 @@ User selUser = (User)request.getAttribute(UsersAdminWebKeys.SELECTED_USER);
 
 			List<String> fields = ufe.getFields();
 
-			StringBundler sb = new StringBundler(2 * fields.size() - 1);
+			StringBundler sb = new StringBundler((2 * fields.size()) - 1);
 
 			for (int i = 0; i < fields.size(); i++) {
 				String field = fields.get(i);
@@ -136,11 +138,13 @@ User selUser = (User)request.getAttribute(UsersAdminWebKeys.SELECTED_USER);
 			<liferay-ui:error exception="<%= UserIdException.MustNotBeNull.class %>" message="please-enter-a-user-id" />
 			<liferay-ui:error exception="<%= UserIdException.MustNotBeReserved.class %>" message="the-user-id-you-requested-is-reserved" />
 
-			<aui:input name="userId" type="resource" value="<%= String.valueOf(selUser.getUserId()) %>" />
+			<aui:input cssClass="disabled" name="userId" readonly="true" type="text" value="<%= String.valueOf(selUser.getUserId()) %>" />
 		</c:if>
-	</div>
+	</clay:col>
 
-	<div class="col-md-5">
+	<clay:col
+		md="5"
+	>
 		<div align="middle">
 			<c:if test="<%= selUser != null %>">
 				<c:choose>
@@ -169,5 +173,48 @@ User selUser = (User)request.getAttribute(UsersAdminWebKeys.SELECTED_USER);
 				</c:choose>
 			</c:if>
 		</div>
-	</div>
-</div>
+	</clay:col>
+</clay:row>
+
+<portlet:renderURL var="verifyPasswordURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+	<portlet:param name="mvcPath" value="/user/password_verification.jsp" />
+</portlet:renderURL>
+
+<c:if test="<%= selUser != null %>">
+	<aui:script use="liferay-form">
+		Liferay.once('<portlet:namespace/>formReady', function () {
+			var form = Liferay.Form.get('<portlet:namespace/>fm');
+
+			form.set('onSubmit', function (event) {
+				event.preventDefault();
+
+				var emailAddressInput = document.getElementById(
+					'<portlet:namespace/>emailAddress'
+				);
+				var screenNameInput = document.getElementById(
+					'<portlet:namespace/>screenName'
+				);
+
+				if (
+					emailAddressInput.value != '<%= selUser.getEmailAddress() %>' ||
+					screenNameInput.value != '<%= selUser.getScreenName() %>'
+				) {
+					Liferay.Util.openModal({
+						height: '320px',
+						id: 'password-verification-dialog',
+						onSelect: function () {
+							submitForm(form.form);
+						},
+						selectEventName: '<portlet:namespace/>verifyPassword',
+						size: 'md',
+						title: '<%= LanguageUtil.get(request, "confirm-password") %>',
+						url: '<%= verifyPasswordURL %>',
+					});
+				}
+				else {
+					submitForm(form.form);
+				}
+			});
+		});
+	</aui:script>
+</c:if>

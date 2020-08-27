@@ -14,39 +14,24 @@
 
 package com.liferay.change.tracking.model.impl;
 
-import com.liferay.change.tracking.model.CTEntryAggregate;
-import com.liferay.change.tracking.service.CTEntryAggregateLocalServiceUtil;
-
-import java.util.List;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 
 /**
  * @author Daniel Kocsis
  */
-@ProviderType
 public class CTEntryImpl extends CTEntryBaseImpl {
 
-	public CTEntryImpl() {
-	}
-
 	@Override
-	public List<CTEntryAggregate> getCTEntryAggregates() {
-		return CTEntryAggregateLocalServiceUtil.getCTEntryCTEntryAggregates(
-			getCtEntryId());
-	}
+	public String getUserName() {
+		User user = UserLocalServiceUtil.fetchUser(getUserId());
 
-	@Override
-	public boolean hasCTEntryAggregate() {
-		int ctEntryCTEntryAggregatesCount =
-			CTEntryAggregateLocalServiceUtil.getCTEntryCTEntryAggregatesCount(
-				getCtEntryId());
-
-		if (ctEntryCTEntryAggregatesCount == 0) {
-			return false;
+		if (user == null) {
+			return StringPool.BLANK;
 		}
 
-		return true;
+		return user.getFullName();
 	}
 
 }

@@ -21,12 +21,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class IndexerRequestBuffer {
 
 	public static IndexerRequestBuffer create() {
@@ -60,16 +57,6 @@ public class IndexerRequestBuffer {
 		}
 
 		return indexerRequestBuffers.remove(indexerRequestBuffers.size() - 1);
-	}
-
-	/**
-	 * @param      indexerRequest
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #add(IndexerRequest,
-	 *             IndexerRequestBufferOverflowHandler, int)}
-	 */
-	@Deprecated
-	public void add(IndexerRequest indexerRequest) {
-		_indexerRequests.put(indexerRequest, indexerRequest);
 	}
 
 	public void add(

@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link UserNotificationDelivery}.
@@ -30,11 +28,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserNotificationDelivery
  * @generated
  */
-@ProviderType
 public class UserNotificationDeliveryWrapper
 	extends BaseModelWrapper<UserNotificationDelivery>
-	implements UserNotificationDelivery,
-			   ModelWrapper<UserNotificationDelivery> {
+	implements ModelWrapper<UserNotificationDelivery>,
+			   UserNotificationDelivery {
 
 	public UserNotificationDeliveryWrapper(
 		UserNotificationDelivery userNotificationDelivery) {

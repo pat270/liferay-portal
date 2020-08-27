@@ -21,8 +21,9 @@ import com.liferay.asset.list.web.internal.security.permission.resource.AssetLis
 import com.liferay.asset.list.web.internal.security.permission.resource.AssetListPermission;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -46,31 +47,27 @@ public class AssetListManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public AssetListManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		AssetListDisplayContext assetListDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			assetListDisplayContext.getAssetListEntriesSearchContainer());
 	}
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData(
-							"action", "deleteSelectedAssetListEntries");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData(
+					"action", "deleteSelectedAssetListEntries");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getAvailableActions(AssetListEntry assetListEntry)
@@ -105,8 +102,8 @@ public class AssetListManagementToolbarDisplayContext
 
 	@Override
 	public CreationMenu getCreationMenu() {
-		return new CreationMenu() {
-			{
+		return CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
 				PortletURL addManualAssetListEntryURL =
 					liferayPortletResponse.createActionURL();
 
@@ -117,23 +114,21 @@ public class AssetListManagementToolbarDisplayContext
 					"type",
 					String.valueOf(AssetListEntryTypeConstants.TYPE_MANUAL));
 
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.putData("action", "addAssetListEntry");
-						dropdownItem.putData(
-							"addAssetListEntryURL",
-							addManualAssetListEntryURL.toString());
-						dropdownItem.putData(
-							"title",
-							LanguageUtil.format(
-								request, "add-x-content-set",
-								AssetListEntryTypeConstants.TYPE_MANUAL_LABEL,
-								true));
-						dropdownItem.setHref("#");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "manual-selection"));
-					});
-
+				dropdownItem.putData("action", "addAssetListEntry");
+				dropdownItem.putData(
+					"addAssetListEntryURL",
+					addManualAssetListEntryURL.toString());
+				dropdownItem.putData(
+					"title",
+					LanguageUtil.format(
+						request, "add-x-collection",
+						AssetListEntryTypeConstants.TYPE_MANUAL_LABEL, true));
+				dropdownItem.setHref("#");
+				dropdownItem.setLabel(
+					LanguageUtil.get(request, "manual-selection"));
+			}
+		).addPrimaryDropdownItem(
+			dropdownItem -> {
 				PortletURL addDynamicAssetListEntryURL =
 					liferayPortletResponse.createActionURL();
 
@@ -144,24 +139,20 @@ public class AssetListManagementToolbarDisplayContext
 					"type",
 					String.valueOf(AssetListEntryTypeConstants.TYPE_DYNAMIC));
 
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.putData("action", "addAssetListEntry");
-						dropdownItem.putData(
-							"addAssetListEntryURL",
-							addDynamicAssetListEntryURL.toString());
-						dropdownItem.putData(
-							"title",
-							LanguageUtil.format(
-								request, "add-x-content-set",
-								AssetListEntryTypeConstants.TYPE_DYNAMIC_LABEL,
-								true));
-						dropdownItem.setHref("#");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "dynamic-selection"));
-					});
+				dropdownItem.putData("action", "addAssetListEntry");
+				dropdownItem.putData(
+					"addAssetListEntryURL",
+					addDynamicAssetListEntryURL.toString());
+				dropdownItem.putData(
+					"title",
+					LanguageUtil.format(
+						request, "add-x-collection",
+						AssetListEntryTypeConstants.TYPE_DYNAMIC_LABEL, true));
+				dropdownItem.setHref("#");
+				dropdownItem.setLabel(
+					LanguageUtil.get(request, "dynamic-selection"));
 			}
-		};
+		).build();
 	}
 
 	@Override

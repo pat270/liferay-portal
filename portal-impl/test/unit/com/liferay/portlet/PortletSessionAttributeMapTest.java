@@ -15,10 +15,10 @@
 package com.liferay.portlet;
 
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -178,7 +178,7 @@ public class PortletSessionAttributeMapTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -186,7 +186,7 @@ public class PortletSessionAttributeMapTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -194,7 +194,7 @@ public class PortletSessionAttributeMapTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -202,7 +202,7 @@ public class PortletSessionAttributeMapTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		Set<String> keySet = portletSessionAttributeMap.keySet();
@@ -212,7 +212,7 @@ public class PortletSessionAttributeMapTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		Set<Map.Entry<String, Object>> entrySet =
@@ -223,7 +223,7 @@ public class PortletSessionAttributeMapTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 	}
 
@@ -316,11 +316,13 @@ public class PortletSessionAttributeMapTest {
 			new PortletSessionAttributeMap(
 				_session, getScopePrefix(portletScope));
 
-		Map<String, Object> map = new HashMap<>();
-
-		map.put(encodeKey(portletScope, _KEY_1), _value1);
-		map.put(encodeKey(portletScope, _KEY_2), _value2);
-		map.put(encodeKey(portletScope, _KEY_3), _value3);
+		Map<String, Object> map = HashMapBuilder.<String, Object>put(
+			encodeKey(portletScope, _KEY_1), _value1
+		).put(
+			encodeKey(portletScope, _KEY_2), _value2
+		).put(
+			encodeKey(portletScope, _KEY_3), _value3
+		).build();
 
 		Assert.assertEquals(map, portletSessionAttributeMap);
 		Assert.assertEquals(

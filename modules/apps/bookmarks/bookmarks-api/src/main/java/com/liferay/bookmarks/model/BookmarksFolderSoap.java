@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.bookmarks.service.http.BookmarksFolderServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class BookmarksFolderSoap implements Serializable {
 
 	public static BookmarksFolderSoap toSoapModel(BookmarksFolder model) {
 		BookmarksFolderSoap soapModel = new BookmarksFolderSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setFolderId(model.getFolderId());
 		soapModel.setGroupId(model.getGroupId());
@@ -108,6 +108,14 @@ public class BookmarksFolderSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setFolderId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -246,6 +254,7 @@ public class BookmarksFolderSoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _folderId;
 	private long _groupId;

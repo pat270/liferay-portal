@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -98,14 +97,15 @@ public class CustomAttributesAvailableTag extends TagSupport {
 					continue;
 				}
 
-				UnicodeProperties properties =
+				UnicodeProperties unicodeProperties =
 					expandoBridge.getAttributeProperties(attributeName);
 
 				boolean propertyHidden = GetterUtil.getBoolean(
-					properties.get(ExpandoColumnConstants.PROPERTY_HIDDEN));
+					unicodeProperties.get(
+						ExpandoColumnConstants.PROPERTY_HIDDEN));
 				boolean propertyVisibleWithUpdatePermission =
 					GetterUtil.getBoolean(
-						properties.get(
+						unicodeProperties.get(
 							ExpandoColumnConstants.
 								PROPERTY_VISIBLE_WITH_UPDATE_PERMISSION));
 
@@ -134,17 +134,15 @@ public class CustomAttributesAvailableTag extends TagSupport {
 
 			return SKIP_BODY;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_className = null;
-				_classPK = 0;
-				_companyId = 0;
-				_editable = false;
-				_ignoreAttributeNames = null;
-			}
+			_className = null;
+			_classPK = 0;
+			_companyId = 0;
+			_editable = false;
+			_ignoreAttributeNames = null;
 		}
 	}
 

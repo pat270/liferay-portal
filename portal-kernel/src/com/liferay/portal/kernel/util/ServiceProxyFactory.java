@@ -17,7 +17,9 @@ package com.liferay.portal.kernel.util;
 import com.liferay.petra.memory.FinalizeAction;
 import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.internal.util.SystemCheckerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.registry.Registry;
@@ -86,8 +88,8 @@ public class ServiceProxyFactory {
 				serviceClass, null, field, filterString, blocking,
 				useNullAsDummyService);
 		}
-		catch (ReflectiveOperationException roe) {
-			return ReflectionUtil.throwException(roe);
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			return ReflectionUtil.throwException(reflectiveOperationException);
 		}
 	}
 
@@ -124,8 +126,8 @@ public class ServiceProxyFactory {
 
 			return serviceInstance;
 		}
-		catch (ReflectiveOperationException roe) {
-			return ReflectionUtil.throwException(roe);
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			return ReflectionUtil.throwException(reflectiveOperationException);
 		}
 	}
 
@@ -227,6 +229,8 @@ public class ServiceProxyFactory {
 		public Object invoke(Object proxy, Method method, Object[] arguments)
 			throws Throwable {
 
+			boolean calledSystemCheckers = false;
+
 			while (true) {
 				_lock.lock();
 
@@ -239,8 +243,10 @@ public class ServiceProxyFactory {
 						try {
 							return method.invoke(service, arguments);
 						}
-						catch (InvocationTargetException ite) {
-							throw ite.getCause();
+						catch (InvocationTargetException
+									invocationTargetException) {
+
+							throw invocationTargetException.getCause();
 						}
 					}
 
@@ -271,6 +277,12 @@ public class ServiceProxyFactory {
 						sb.append("\", will retry...");
 
 						_log.error(sb.toString());
+
+						if (!calledSystemCheckers) {
+							SystemCheckerUtil.runSystemCheckers(_log);
+
+							calledSystemCheckers = true;
+						}
 					}
 				}
 				finally {

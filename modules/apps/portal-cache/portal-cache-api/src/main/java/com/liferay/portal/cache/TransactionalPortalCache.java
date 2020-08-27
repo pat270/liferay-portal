@@ -15,7 +15,7 @@
 package com.liferay.portal.cache;
 
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.transactional.TransactionalPortalCacheHelper;
+import com.liferay.portal.kernel.cache.transactional.TransactionalPortalCacheUtil;
 
 import java.io.Serializable;
 
@@ -25,15 +25,6 @@ import java.io.Serializable;
  */
 public class TransactionalPortalCache<K extends Serializable, V>
 	extends PortalCacheWrapper<K, V> {
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #TransactionalPortalCache(PortalCache, boolean)}
-	 */
-	@Deprecated
-	public TransactionalPortalCache(PortalCache<K, V> portalCache) {
-		this(portalCache, false);
-	}
 
 	public TransactionalPortalCache(
 		PortalCache<K, V> portalCache, boolean mvcc) {
@@ -47,14 +38,14 @@ public class TransactionalPortalCache<K extends Serializable, V>
 	public V get(K key) {
 		V result = null;
 
-		if (TransactionalPortalCacheHelper.isEnabled()) {
+		if (TransactionalPortalCacheUtil.isEnabled()) {
 			if (key == null) {
 				throw new NullPointerException("Key is null");
 			}
 
-			result = TransactionalPortalCacheHelper.get(portalCache, key);
+			result = TransactionalPortalCacheUtil.get(portalCache, key);
 
-			if (result == TransactionalPortalCacheHelper.getNullHolder()) {
+			if (result == TransactionalPortalCacheUtil.getNullHolder()) {
 				return null;
 			}
 		}
@@ -73,7 +64,7 @@ public class TransactionalPortalCache<K extends Serializable, V>
 
 	@Override
 	public void put(K key, V value, int timeToLive) {
-		if (TransactionalPortalCacheHelper.isEnabled()) {
+		if (TransactionalPortalCacheUtil.isEnabled()) {
 			if (key == null) {
 				throw new NullPointerException("Key is null");
 			}
@@ -86,7 +77,7 @@ public class TransactionalPortalCache<K extends Serializable, V>
 				throw new IllegalArgumentException("Time to live is negative");
 			}
 
-			TransactionalPortalCacheHelper.put(
+			TransactionalPortalCacheUtil.put(
 				portalCache, key, value, timeToLive, _mvcc);
 		}
 		else {
@@ -96,14 +87,14 @@ public class TransactionalPortalCache<K extends Serializable, V>
 
 	@Override
 	public void remove(K key) {
-		if (TransactionalPortalCacheHelper.isEnabled()) {
+		if (TransactionalPortalCacheUtil.isEnabled()) {
 			if (key == null) {
 				throw new NullPointerException("Key is null");
 			}
 
-			TransactionalPortalCacheHelper.put(
+			TransactionalPortalCacheUtil.put(
 				portalCache, key,
-				(V)TransactionalPortalCacheHelper.getNullHolder(),
+				(V)TransactionalPortalCacheUtil.getNullHolder(),
 				DEFAULT_TIME_TO_LIVE, _mvcc);
 		}
 		else {
@@ -113,8 +104,8 @@ public class TransactionalPortalCache<K extends Serializable, V>
 
 	@Override
 	public void removeAll() {
-		if (TransactionalPortalCacheHelper.isEnabled()) {
-			TransactionalPortalCacheHelper.removeAll(portalCache, _mvcc);
+		if (TransactionalPortalCacheUtil.isEnabled()) {
+			TransactionalPortalCacheUtil.removeAll(portalCache, _mvcc);
 		}
 		else {
 			portalCache.removeAll();

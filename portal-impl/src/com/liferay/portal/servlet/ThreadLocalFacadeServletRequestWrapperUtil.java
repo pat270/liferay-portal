@@ -26,8 +26,10 @@ import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class ThreadLocalFacadeServletRequestWrapperUtil {
 
 	public static <T extends ServletRequest> ObjectValuePair<T, Closeable>

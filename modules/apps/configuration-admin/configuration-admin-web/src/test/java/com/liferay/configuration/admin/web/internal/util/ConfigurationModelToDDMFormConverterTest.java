@@ -82,7 +82,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedAttributeDefinition, ExtendedAttributeDefinition.BOOLEAN);
 
 		ConfigurationModel configurationModel = new ConfigurationModel(
-			extendedObjectClassDefinition, null, null, null, false);
+			null, null, null, extendedObjectClassDefinition, false);
 
 		ConfigurationModelToDDMFormConverter
 			configurationModelToDDMFormConverter = spy(
@@ -135,7 +135,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedAttributeDefinition, ExtendedAttributeDefinition.INTEGER);
 
 		ConfigurationModel configurationModel = new ConfigurationModel(
-			extendedObjectClassDefinition, null, null, null, false);
+			null, null, null, extendedObjectClassDefinition, false);
 
 		ConfigurationModelToDDMFormConverter
 			configurationModelToDDMFormConverter = spy(
@@ -164,6 +164,58 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 	}
 
 	@Test
+	public void testGetWithLocalizableTextField() {
+		ExtendedObjectClassDefinition extendedObjectClassDefinition = mock(
+			ExtendedObjectClassDefinition.class);
+
+		ExtendedAttributeDefinition extendedAttributeDefinition = mock(
+			ExtendedAttributeDefinition.class);
+
+		whenGetAttributeDefinitions(
+			extendedObjectClassDefinition,
+			new ExtendedAttributeDefinition[] {extendedAttributeDefinition},
+			ExtendedObjectClassDefinition.ALL);
+		whenGetAttributeDefinitions(
+			extendedObjectClassDefinition,
+			new ExtendedAttributeDefinition[] {extendedAttributeDefinition},
+			ExtendedObjectClassDefinition.OPTIONAL);
+
+		whenGetAttributeDefinitions(
+			extendedObjectClassDefinition, new ExtendedAttributeDefinition[0],
+			ExtendedObjectClassDefinition.REQUIRED);
+		whenGetCardinality(extendedAttributeDefinition, 0);
+		whenGetID(extendedAttributeDefinition, "LocalizableText");
+		whenGetRequiredInput(extendedAttributeDefinition, true);
+		whenGetType(
+			extendedAttributeDefinition,
+			ExtendedAttributeDefinition.LOCALIZED_VALUES_MAP);
+
+		ConfigurationModel configurationModel = new ConfigurationModel(
+			null, null, null, extendedObjectClassDefinition, false);
+
+		ConfigurationModelToDDMFormConverter
+			configurationModelToDDMFormConverter = spy(
+				new ConfigurationModelToDDMFormConverter(
+					configurationModel, _enLocale, new EmptyResourceBundle()));
+
+		whenGetConfigurationDDMForm(configurationModelToDDMFormConverter, null);
+
+		DDMForm ddmForm = configurationModelToDDMFormConverter.getDDMForm();
+
+		Map<String, DDMFormField> ddmFormFieldsMap =
+			ddmForm.getDDMFormFieldsMap(false);
+
+		DDMFormField ddmFormField = ddmFormFieldsMap.get("LocalizableText");
+
+		Assert.assertNotNull(ddmFormField);
+		Assert.assertEquals(
+			DDMFormFieldType.LOCALIZABLE_TEXT, ddmFormField.getType());
+		Assert.assertEquals("string", ddmFormField.getDataType());
+		Assert.assertFalse(ddmFormField.isRepeatable());
+		Assert.assertTrue(ddmFormField.isRequired());
+	}
+
+	@Test
 	public void testGetWithPasswordField() {
 		ExtendedObjectClassDefinition extendedObjectClassDefinition = mock(
 			ExtendedObjectClassDefinition.class);
@@ -189,7 +241,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedAttributeDefinition, ExtendedAttributeDefinition.PASSWORD);
 
 		ConfigurationModel configurationModel = new ConfigurationModel(
-			extendedObjectClassDefinition, null, null, null, false);
+			null, null, null, extendedObjectClassDefinition, false);
 
 		ConfigurationModelToDDMFormConverter
 			configurationModelToDDMFormConverter = spy(
@@ -242,7 +294,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedAttributeDefinition, new String[] {"Value 1", "Value 2"});
 
 		ConfigurationModel configurationModel = new ConfigurationModel(
-			extendedObjectClassDefinition, null, null, null, false);
+			null, null, null, extendedObjectClassDefinition, false);
 
 		ConfigurationModelToDDMFormConverter
 			configurationModelToDDMFormConverter = spy(
@@ -269,12 +321,12 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 
 		Assert.assertEquals(_enLocale, ddmFormFieldOptions.getDefaultLocale());
 
-		Set<String> optionValues = ddmFormFieldOptions.getOptionsValues();
+		Set<String> optionsValues = ddmFormFieldOptions.getOptionsValues();
 
 		Assert.assertTrue(
-			optionValues.toString(), optionValues.contains("Value 1"));
+			optionsValues.toString(), optionsValues.contains("Value 1"));
 		Assert.assertTrue(
-			optionValues.toString(), optionValues.contains("Value 2"));
+			optionsValues.toString(), optionsValues.contains("Value 2"));
 
 		LocalizedValue value1Labels = ddmFormFieldOptions.getOptionLabels(
 			"Value 1");
@@ -315,7 +367,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedAttributeDefinition, ExtendedAttributeDefinition.STRING);
 
 		ConfigurationModel configurationModel = new ConfigurationModel(
-			extendedObjectClassDefinition, null, null, null, false);
+			null, null, null, extendedObjectClassDefinition, false);
 
 		ConfigurationModelToDDMFormConverter
 			configurationModelToDDMFormConverter = spy(
@@ -365,7 +417,7 @@ public class ConfigurationModelToDDMFormConverterTest extends Mockito {
 			extendedAttributeDefinition, ExtendedAttributeDefinition.STRING);
 
 		ConfigurationModel configurationModel = new ConfigurationModel(
-			extendedObjectClassDefinition, null, null, null, false);
+			null, null, null, extendedObjectClassDefinition, false);
 
 		ConfigurationModelToDDMFormConverter
 			configurationModelToDDMFormConverter = spy(

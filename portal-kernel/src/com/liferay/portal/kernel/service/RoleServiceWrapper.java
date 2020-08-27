@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.model.Role;
 
 /**
  * Provides a wrapper for {@link RoleService}.
@@ -23,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see RoleService
  * @generated
  */
-@ProviderType
 public class RoleServiceWrapper
 	implements RoleService, ServiceWrapper<RoleService> {
 
@@ -50,7 +49,7 @@ public class RoleServiceWrapper
 	 * @return the role
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Role addRole(
+	public Role addRole(
 			String className, long classPK, String name,
 			java.util.Map<java.util.Locale, String> titleMap,
 			java.util.Map<java.util.Locale, String> descriptionMap, int type,
@@ -89,7 +88,7 @@ public class RoleServiceWrapper
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Role fetchRole(long roleId)
+	public Role fetchRole(long roleId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.fetchRole(roleId);
@@ -102,19 +101,17 @@ public class RoleServiceWrapper
 	 * @return the roles associated with the group
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role> getGroupRoles(
-			long groupId)
+	public java.util.List<Role> getGroupRoles(long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getGroupRoles(groupId);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role>
-		getGroupRolesAndTeamRoles(
-			long companyId, String keywords,
-			java.util.List<String> excludedNames, int[] types,
-			long excludedTeamRoleId, long teamGroupId, int start, int end) {
+	public java.util.List<Role> getGroupRolesAndTeamRoles(
+		long companyId, String keywords, java.util.List<String> excludedNames,
+		int[] types, long excludedTeamRoleId, long teamGroupId, int start,
+		int end) {
 
 		return _roleService.getGroupRolesAndTeamRoles(
 			companyId, keywords, excludedNames, types, excludedTeamRoleId,
@@ -148,7 +145,7 @@ public class RoleServiceWrapper
 	 * @return the role with the primary key
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Role getRole(long roleId)
+	public Role getRole(long roleId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getRole(roleId);
@@ -167,24 +164,21 @@ public class RoleServiceWrapper
 	 * @return the role with the name
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Role getRole(
-			long companyId, String name)
+	public Role getRole(long companyId, String name)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getRole(companyId, name);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role> getRoles(
-			int type, String subtype)
+	public java.util.List<Role> getRoles(int type, String subtype)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getRoles(type, subtype);
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role> getRoles(
-			long companyId, int[] types)
+	public java.util.List<Role> getRoles(long companyId, int[] types)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getRoles(companyId, types);
@@ -198,8 +192,8 @@ public class RoleServiceWrapper
 	 * @return the user's roles within the user group
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role>
-			getUserGroupGroupRoles(long userId, long groupId)
+	public java.util.List<Role> getUserGroupGroupRoles(
+			long userId, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getUserGroupGroupRoles(userId, groupId);
@@ -213,8 +207,7 @@ public class RoleServiceWrapper
 	 * @return the user's roles within the user group
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role>
-			getUserGroupRoles(long userId, long groupId)
+	public java.util.List<Role> getUserGroupRoles(long userId, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getUserGroupRoles(userId, groupId);
@@ -228,10 +221,9 @@ public class RoleServiceWrapper
 	 * @return the union of all the user's roles within the groups
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role>
-			getUserRelatedRoles(
-				long userId,
-				java.util.List<com.liferay.portal.kernel.model.Group> groups)
+	public java.util.List<Role> getUserRelatedRoles(
+			long userId,
+			java.util.List<com.liferay.portal.kernel.model.Group> groups)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getUserRelatedRoles(userId, groups);
@@ -244,8 +236,7 @@ public class RoleServiceWrapper
 	 * @return the roles associated with the user
 	 */
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role> getUserRoles(
-			long userId)
+	public java.util.List<Role> getUserRoles(long userId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _roleService.getUserRoles(userId);
@@ -292,14 +283,14 @@ public class RoleServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.portal.kernel.model.Role> search(
+	public java.util.List<Role> search(
 		long companyId, String keywords, Integer[] types,
 		java.util.LinkedHashMap<String, Object> params, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.portal.kernel.model.Role> obc) {
+		com.liferay.portal.kernel.util.OrderByComparator<Role>
+			orderByComparator) {
 
 		return _roleService.search(
-			companyId, keywords, types, params, start, end, obc);
+			companyId, keywords, types, params, start, end, orderByComparator);
 	}
 
 	@Override
@@ -340,7 +331,7 @@ public class RoleServiceWrapper
 	 * @return the role with the primary key
 	 */
 	@Override
-	public com.liferay.portal.kernel.model.Role updateRole(
+	public Role updateRole(
 			long roleId, String name,
 			java.util.Map<java.util.Locale, String> titleMap,
 			java.util.Map<java.util.Locale, String> descriptionMap,

@@ -16,10 +16,11 @@ package com.liferay.portal.search.web.internal.layout.prototype;
 
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.util.DefaultLayoutPrototypesUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.search.web.constants.SearchBarPortletKeys;
 import com.liferay.portal.search.web.internal.category.facet.constants.CategoryFacetPortletKeys;
 import com.liferay.portal.search.web.internal.folder.facet.constants.FolderFacetPortletKeys;
 import com.liferay.portal.search.web.internal.modified.facet.constants.ModifiedFacetPortletKeys;
-import com.liferay.portal.search.web.internal.search.bar.constants.SearchBarPortletKeys;
 import com.liferay.portal.search.web.internal.search.options.constants.SearchOptionsPortletKeys;
 import com.liferay.portal.search.web.internal.search.results.constants.SearchResultsPortletKeys;
 import com.liferay.portal.search.web.internal.site.facet.constants.SiteFacetPortletKeys;
@@ -28,9 +29,6 @@ import com.liferay.portal.search.web.internal.tag.facet.constants.TagFacetPortle
 import com.liferay.portal.search.web.internal.type.facet.constants.TypeFacetPortletKeys;
 import com.liferay.portal.search.web.internal.user.facet.constants.UserFacetPortletKeys;
 import com.liferay.portal.search.web.layout.prototype.SearchLayoutPrototypeCustomizer;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author André de Oliveira
@@ -86,12 +84,11 @@ public class DefaultSearchLayoutPrototypeCustomizer
 		String portletId = DefaultLayoutPrototypesUtil.addPortletId(
 			layout, portletKey, columnId);
 
-		Map<String, String> preferences = new HashMap<>();
-
-		preferences.put("portletSetupPortletDecoratorId", "barebone");
-
 		DefaultLayoutPrototypesUtil.updatePortletSetup(
-			layout, portletId, preferences);
+			layout, portletId,
+			HashMapBuilder.put(
+				"portletSetupPortletDecoratorId", "barebone"
+			).build());
 	}
 
 }

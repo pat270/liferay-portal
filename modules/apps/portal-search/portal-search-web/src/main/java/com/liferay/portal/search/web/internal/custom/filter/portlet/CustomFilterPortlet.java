@@ -14,10 +14,13 @@
 
 package com.liferay.portal.search.web.internal.custom.filter.portlet;
 
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.searcher.SearchRequest;
+import com.liferay.portal.search.searcher.SearchResponse;
 import com.liferay.portal.search.web.internal.custom.filter.constants.CustomFilterPortletKeys;
 import com.liferay.portal.search.web.internal.custom.filter.display.context.CustomFilterDisplayBuilder;
 import com.liferay.portal.search.web.internal.custom.filter.display.context.CustomFilterDisplayContext;
@@ -58,8 +61,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/custom/filter/view.jsp",
 		"javax.portlet.name=" + CustomFilterPortletKeys.CUSTOM_FILTER,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=guest,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -73,13 +75,23 @@ public class CustomFilterPortlet extends MVCPortlet {
 		PortletSharedSearchResponse portletSharedSearchResponse =
 			portletSharedSearchRequest.search(renderRequest);
 
+		CustomFilterPortletPreferences customFilterPortletPreferences =
+			new CustomFilterPortletPreferencesImpl(
+				portletSharedSearchResponse.getPortletPreferences(
+					renderRequest));
+
 		CustomFilterDisplayContext customFilterDisplayContext =
-			buildDisplayContext(portletSharedSearchResponse, renderRequest);
+			createCustomFilterDisplayContext(
+				customFilterPortletPreferences, portletSharedSearchResponse,
+				renderRequest);
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, customFilterDisplayContext);
 
-		if (customFilterDisplayContext.isRenderNothing()) {
+		if (customFilterDisplayContext.isRenderNothing() ||
+			customFilterPortletPreferences.isImmutable() ||
+			customFilterPortletPreferences.isInvisible()) {
+
 			renderRequest.setAttribute(
 				WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, Boolean.TRUE);
 		}
@@ -88,26 +100,28 @@ public class CustomFilterPortlet extends MVCPortlet {
 	}
 
 	protected CustomFilterDisplayContext buildDisplayContext(
-		PortletSharedSearchResponse portletSharedSearchResponse,
-		RenderRequest renderRequest) {
-
-		CustomFilterPortletPreferences customFilterPortletPreferences =
-			new CustomFilterPortletPreferencesImpl(
-				portletSharedSearchResponse.getPortletPreferences(
-					renderRequest));
+			CustomFilterPortletPreferences customFilterPortletPreferences,
+			PortletSharedSearchResponse portletSharedSearchResponse,
+			RenderRequest renderRequest)
+		throws ConfigurationException {
 
 		String parameterName = CustomFilterPortletUtil.getParameterName(
 			customFilterPortletPreferences);
 
+		SearchResponse searchResponse = getSearchResponse(
+			portletSharedSearchResponse, customFilterPortletPreferences);
+
+		SearchRequest searchRequest = searchResponse.getRequest();
+
 		return CustomFilterDisplayBuilder.builder(
 		).customHeadingOptional(
 			customFilterPortletPreferences.getCustomHeadingOptional()
+		).disabled(
+			customFilterPortletPreferences.isDisabled()
 		).filterFieldOptional(
 			customFilterPortletPreferences.getFilterFieldOptional()
 		).http(
 			http
-		).invisible(
-			customFilterPortletPreferences.isInvisible()
 		).immutable(
 			customFilterPortletPreferences.isImmutable()
 		).filterValueOptional(
@@ -119,13 +133,48 @@ public class CustomFilterPortlet extends MVCPortlet {
 				parameterName, renderRequest)
 		).queryNameOptional(
 			customFilterPortletPreferences.getQueryNameOptional()
+		).renderNothing(
+			isRenderNothing(searchRequest)
 		).themeDisplay(
 			portletSharedSearchResponse.getThemeDisplay(renderRequest)
 		).build();
 	}
 
+	protected CustomFilterDisplayContext createCustomFilterDisplayContext(
+		CustomFilterPortletPreferences customFilterPortletPreferences,
+		PortletSharedSearchResponse portletSharedSearchResponse,
+		RenderRequest renderRequest) {
+
+		try {
+			return buildDisplayContext(
+				customFilterPortletPreferences, portletSharedSearchResponse,
+				renderRequest);
+		}
+		catch (ConfigurationException configurationException) {
+			throw new RuntimeException(configurationException);
+		}
+	}
+
 	protected String getPortletId(RenderRequest renderRequest) {
 		return portal.getPortletId(renderRequest);
+	}
+
+	protected SearchResponse getSearchResponse(
+		PortletSharedSearchResponse portletSharedSearchResponse,
+		CustomFilterPortletPreferences customFilterPortletPreferences) {
+
+		return portletSharedSearchResponse.getFederatedSearchResponse(
+			customFilterPortletPreferences.getFederatedSearchKeyOptional());
+	}
+
+	protected boolean isRenderNothing(SearchRequest searchRequest) {
+		if ((searchRequest.getQueryString() == null) &&
+			!searchRequest.isEmptySearchEnabled()) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Reference

@@ -28,10 +28,27 @@ import javax.ws.rs.core.UriInfo;
  */
 public interface OpenAPIResource {
 
-	public Response getOpenAPI(
+	public default Response getOpenAPI(
 			Application application, HttpHeaders httpHeaders,
 			Set<Class<?>> resourceClasses, ServletConfig servletConfig,
 			String type, UriInfo uriInfo)
-		throws Exception;
+		throws Exception {
+
+		return getOpenAPI(resourceClasses, type);
+	}
+
+	public default Response getOpenAPI(
+			Set<Class<?>> resourceClasses, String type)
+		throws Exception {
+
+		return null;
+	}
+
+	public default Response getOpenAPI(
+			Set<Class<?>> resourceClasses, String type, UriInfo uriInfo)
+		throws Exception {
+
+		return getOpenAPI(resourceClasses, type, uriInfo);
+	}
 
 }

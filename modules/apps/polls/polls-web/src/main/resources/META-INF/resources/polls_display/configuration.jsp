@@ -19,6 +19,12 @@
 <%
 questionId = ParamUtil.getLong(request, "questionId", questionId);
 
+Group scopeGroup = themeDisplay.getScopeGroup();
+
+if (scopeGroup.isStagingGroup() && !scopeGroup.isInStagingPortlet(PollsPortletKeys.POLLS)) {
+	scopeGroupId = scopeGroup.getLiveGroupId();
+}
+
 List<PollsQuestion> questions = PollsQuestionLocalServiceUtil.getQuestions(scopeGroupId);
 
 if (scopeGroupId != themeDisplay.getCompanyGroupId()) {
@@ -37,7 +43,7 @@ if (scopeGroupId != themeDisplay.getCompanyGroupId()) {
 	<aui:input name="redirect" type="hidden" value="<%= configurationRenderURL %>" />
 
 	<div class="portlet-configuration-body-content">
-		<div class="container-fluid-1280">
+		<clay:container-fluid>
 			<liferay-ui:error exception="<%= NoSuchQuestionException.class %>" message="the-question-could-not-be-found" />
 
 			<c:choose>
@@ -68,7 +74,7 @@ if (scopeGroupId != themeDisplay.getCompanyGroupId()) {
 					</div>
 				</c:otherwise>
 			</c:choose>
-		</div>
+		</clay:container-fluid>
 	</div>
 
 	<aui:button-row>

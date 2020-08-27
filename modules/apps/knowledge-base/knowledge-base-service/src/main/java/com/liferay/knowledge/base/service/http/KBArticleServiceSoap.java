@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>KBArticleServiceUtil</code> service
@@ -59,9 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  * @author Brian Wing Shun Chan
  * @see KBArticleServiceHttp
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class KBArticleServiceSoap {
 
 	public static com.liferay.knowledge.base.model.KBArticleSoap addKBArticle(
@@ -82,10 +81,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -100,10 +99,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -113,10 +112,10 @@ public class KBArticleServiceSoap {
 		try {
 			KBArticleServiceUtil.deleteKBArticles(groupId, resourcePrimKeys);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -129,10 +128,10 @@ public class KBArticleServiceSoap {
 			KBArticleServiceUtil.deleteTempAttachment(
 				groupId, resourcePrimKey, fileName, tempFolderName);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -148,10 +147,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -168,10 +167,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -188,10 +187,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -207,10 +206,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -227,39 +226,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getAllDescendantKBArticles(long, long, int,
-	 OrderByComparator)}
-	 */
-	@Deprecated
-	public static com.liferay.knowledge.base.model.KBArticleSoap[]
-			getAllDescendantKBArticles(
-				long resourcePrimKey, int status,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBArticle>
-						orderByComparator)
-		throws RemoteException {
-
-		try {
-			java.util.List<com.liferay.knowledge.base.model.KBArticle>
-				returnValue = KBArticleServiceUtil.getAllDescendantKBArticles(
-					resourcePrimKey, status, orderByComparator);
-
-			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
-				returnValue);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -279,10 +249,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -302,10 +272,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -318,10 +288,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -336,10 +306,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -360,40 +330,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getKBArticleAndAllDescendantKBArticles(long, int,
-	 OrderByComparator)}
-	 */
-	@Deprecated
-	public static com.liferay.knowledge.base.model.KBArticleSoap[]
-			getKBArticleAndAllDescendants(
-				long groupId, long resourcePrimKey, int status,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBArticle>
-						orderByComparator)
-		throws RemoteException {
-
-		try {
-			java.util.List<com.liferay.knowledge.base.model.KBArticle>
-				returnValue =
-					KBArticleServiceUtil.getKBArticleAndAllDescendants(
-						groupId, resourcePrimKey, status, orderByComparator);
-
-			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
-				returnValue);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -415,10 +355,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -440,10 +380,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -463,10 +403,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -480,10 +420,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -497,10 +437,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -522,10 +462,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -547,10 +487,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -564,10 +504,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -583,10 +523,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -601,10 +541,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -624,10 +564,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -641,62 +581,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #getKBArticles(long,
-	 long, int, int, int, OrderByComparator)}
-	 */
-	@Deprecated
-	public static com.liferay.knowledge.base.model.KBArticleSoap[]
-			getSiblingKBArticles(
-				long groupId, long parentResourcePrimKey, int status, int start,
-				int end,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBArticle>
-						orderByComparator)
-		throws RemoteException {
-
-		try {
-			java.util.List<com.liferay.knowledge.base.model.KBArticle>
-				returnValue = KBArticleServiceUtil.getSiblingKBArticles(
-					groupId, parentResourcePrimKey, status, start, end,
-					orderByComparator);
-
-			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModels(
-				returnValue);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getKBArticlesCount(long, long, int)}
-	 */
-	@Deprecated
-	public static int getSiblingKBArticlesCount(
-			long groupId, long parentResourcePrimKey, int status)
-		throws RemoteException {
-
-		try {
-			int returnValue = KBArticleServiceUtil.getSiblingKBArticlesCount(
-				groupId, parentResourcePrimKey, status);
-
-			return returnValue;
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -710,10 +598,10 @@ public class KBArticleServiceSoap {
 
 			return returnValue;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -727,10 +615,10 @@ public class KBArticleServiceSoap {
 				resourcePrimKey, parentResourceClassNameId,
 				parentResourcePrimKey, priority);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -748,10 +636,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -761,10 +649,10 @@ public class KBArticleServiceSoap {
 		try {
 			KBArticleServiceUtil.subscribeGroupKBArticles(groupId, portletId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -774,10 +662,10 @@ public class KBArticleServiceSoap {
 		try {
 			KBArticleServiceUtil.subscribeKBArticle(groupId, resourcePrimKey);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -788,10 +676,10 @@ public class KBArticleServiceSoap {
 		try {
 			KBArticleServiceUtil.unsubscribeGroupKBArticles(groupId, portletId);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -801,10 +689,10 @@ public class KBArticleServiceSoap {
 		try {
 			KBArticleServiceUtil.unsubscribeKBArticle(resourcePrimKey);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 
@@ -826,10 +714,10 @@ public class KBArticleServiceSoap {
 			return com.liferay.knowledge.base.model.KBArticleSoap.toSoapModel(
 				returnValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
-			throw new RemoteException(e.getMessage());
+			throw new RemoteException(exception.getMessage());
 		}
 	}
 

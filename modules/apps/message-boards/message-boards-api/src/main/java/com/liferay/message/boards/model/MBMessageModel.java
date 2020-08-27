@@ -18,10 +18,12 @@ import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.WorkflowedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 
@@ -40,8 +42,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface MBMessageModel
-	extends AttachedModel, BaseModel<MBMessage>, ShardedModel,
-			StagedGroupedModel, TrashedModel, WorkflowedModel {
+	extends AttachedModel, BaseModel<MBMessage>, CTModel<MBMessage>, MVCCModel,
+			ShardedModel, StagedGroupedModel, TrashedModel, WorkflowedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -54,6 +56,7 @@ public interface MBMessageModel
 	 *
 	 * @return the primary key of this message-boards message
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -61,7 +64,40 @@ public interface MBMessageModel
 	 *
 	 * @param primaryKey the primary key of this message-boards message
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this message-boards message.
+	 *
+	 * @return the mvcc version of this message-boards message
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this message-boards message.
+	 *
+	 * @param mvccVersion the mvcc version of this message-boards message
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this message-boards message.
+	 *
+	 * @return the ct collection ID of this message-boards message
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this message-boards message.
+	 *
+	 * @param ctCollectionId the ct collection ID of this message-boards message
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the uuid of this message-boards message.
@@ -306,6 +342,21 @@ public interface MBMessageModel
 	public void setParentMessageId(long parentMessageId);
 
 	/**
+	 * Returns the tree path of this message-boards message.
+	 *
+	 * @return the tree path of this message-boards message
+	 */
+	@AutoEscape
+	public String getTreePath();
+
+	/**
+	 * Sets the tree path of this message-boards message.
+	 *
+	 * @param treePath the tree path of this message-boards message
+	 */
+	public void setTreePath(String treePath);
+
+	/**
 	 * Returns the subject of this message-boards message.
 	 *
 	 * @return the subject of this message-boards message
@@ -319,6 +370,21 @@ public interface MBMessageModel
 	 * @param subject the subject of this message-boards message
 	 */
 	public void setSubject(String subject);
+
+	/**
+	 * Returns the url subject of this message-boards message.
+	 *
+	 * @return the url subject of this message-boards message
+	 */
+	@AutoEscape
+	public String getUrlSubject();
+
+	/**
+	 * Sets the url subject of this message-boards message.
+	 *
+	 * @param urlSubject the url subject of this message-boards message
+	 */
+	public void setUrlSubject(String urlSubject);
 
 	/**
 	 * Returns the body of this message-boards message.

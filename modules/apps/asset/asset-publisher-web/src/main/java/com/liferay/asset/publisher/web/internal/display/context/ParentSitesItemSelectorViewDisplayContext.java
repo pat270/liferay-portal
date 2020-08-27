@@ -48,8 +48,9 @@ public class ParentSitesItemSelectorViewDisplayContext
 
 	@Override
 	public GroupSearch getGroupSearch() throws Exception {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		GroupSearch groupSearch = new GroupSearch(
 			getPortletRequest(), getPortletURL());
@@ -73,7 +74,7 @@ public class ParentSitesItemSelectorViewDisplayContext
 	}
 
 	private List<Group> _filterParentSitesGroups(List<Group> groups) {
-		List<Group> filteredGroups = new ArrayList();
+		List<Group> filteredGroups = new ArrayList<>();
 
 		for (Group group : groups) {
 			if (SitesUtil.isContentSharingWithChildrenEnabled(group)) {

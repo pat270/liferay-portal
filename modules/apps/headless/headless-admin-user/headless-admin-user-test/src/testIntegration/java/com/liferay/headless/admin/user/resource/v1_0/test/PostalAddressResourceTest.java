@@ -29,10 +29,13 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.test.rule.SynchronousMailTestRule;
 
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 
 /**
@@ -41,6 +44,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class PostalAddressResourceTest
 	extends BasePostalAddressResourceTestCase {
+
+	@ClassRule
+	@Rule
+	public static final SynchronousMailTestRule synchronousMailTestRule =
+		SynchronousMailTestRule.INSTANCE;
 
 	@Before
 	@Override
@@ -71,7 +79,7 @@ public class PostalAddressResourceTest
 	@Override
 	protected PostalAddress
 			testGetOrganizationPostalAddressesPage_addPostalAddress(
-				Long organizationId, PostalAddress postalAddress)
+				String organizationId, PostalAddress postalAddress)
 		throws Exception {
 
 		return _addPostalAddress(
@@ -81,8 +89,10 @@ public class PostalAddressResourceTest
 	}
 
 	@Override
-	protected Long testGetOrganizationPostalAddressesPage_getOrganizationId() {
-		return _organization.getOrganizationId();
+	protected String
+		testGetOrganizationPostalAddressesPage_getOrganizationId() {
+
+		return String.valueOf(_organization.getOrganizationId());
 	}
 
 	@Override
@@ -108,6 +118,13 @@ public class PostalAddressResourceTest
 	@Override
 	protected Long testGetUserAccountPostalAddressesPage_getUserAccountId() {
 		return _user.getUserId();
+	}
+
+	@Override
+	protected PostalAddress testGraphQLPostalAddress_addPostalAddress()
+		throws Exception {
+
+		return testGetPostalAddress_addPostalAddress();
 	}
 
 	private PostalAddress _addPostalAddress(

@@ -51,13 +51,14 @@ import org.osgi.service.component.annotations.Reference;
 public class WikiPageModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put("model.class.name", WikiPage.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<WikiPage>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				WikiPage.class, WikiPage::getResourcePrimKey,
 				(Long resourcePrimKey) -> {
@@ -96,13 +97,14 @@ public class WikiPageModelResourcePermissionRegistrar {
 
 							return null;
 						});
-					consumer.accept(new RedirectPageDynamicInheritanceLogic());
+					consumer.accept(
+						new RedirectPageDynamicInheritanceModelResourcePermissionLogic());
 				}),
 			properties);
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -112,7 +114,8 @@ public class WikiPageModelResourcePermissionRegistrar {
 	@Reference(target = "(resource.name=" + WikiConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration<ModelResourcePermission<WikiPage>>
+		_serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;
@@ -129,7 +132,7 @@ public class WikiPageModelResourcePermissionRegistrar {
 	@Reference
 	private WorkflowPermission _workflowPermission;
 
-	private class RedirectPageDynamicInheritanceLogic
+	private class RedirectPageDynamicInheritanceModelResourcePermissionLogic
 		implements ModelResourcePermissionLogic<WikiPage> {
 
 		@Override

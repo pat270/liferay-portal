@@ -30,7 +30,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"panel.category.key=" + PanelCategoryKeys.SITE_ADMINISTRATION,
-		"panel.category.order:Integer=100"
+		"panel.category.order:Integer=200"
 	},
 	service = PanelCategory.class
 )
@@ -44,11 +44,6 @@ public class BuildPanelCategory extends BasePanelCategory {
 	@Override
 	public String getLabel(Locale locale) {
 		return LanguageUtil.get(locale, "category.site_administration.build");
-	}
-
-	@Override
-	public boolean isPersistState() {
-		return true;
 	}
 
 }

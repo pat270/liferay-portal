@@ -19,6 +19,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.xml.SAXReaderFactory;
 
@@ -32,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -107,8 +107,8 @@ public class XSLTBuilder {
 				new DocumentSource(document),
 				new StreamResult(new FileOutputStream(html)));
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
@@ -134,12 +134,13 @@ public class XSLTBuilder {
 		File xslFile = new File(xsl);
 
 		if (xslFile.exists()) {
-			Map<String, String> args = new HashMap<>();
-
-			args.put("href", xslFile.getName());
-			args.put("type", "text/xsl");
-
-			document.addProcessingInstruction("xml-stylesheet", args);
+			document.addProcessingInstruction(
+				"xml-stylesheet",
+				HashMapBuilder.put(
+					"href", xslFile.getName()
+				).put(
+					"type", "text/xsl"
+				).build());
 		}
 
 		Element versionsElement = document.addElement("versions");

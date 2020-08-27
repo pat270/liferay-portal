@@ -52,16 +52,18 @@ public class XPathImpl implements XPath {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof XPathImpl)) {
+		if (!(object instanceof XPathImpl)) {
 			return false;
 		}
 
-		org.dom4j.XPath xPath = ((XPathImpl)obj).getWrappedXPath();
+		XPathImpl xPathImpl = (XPathImpl)object;
+
+		org.dom4j.XPath xPath = xPathImpl.getWrappedXPath();
 
 		return _xPath.equals(xPath);
 	}

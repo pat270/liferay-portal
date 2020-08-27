@@ -62,13 +62,15 @@ public class VerifyGroup extends VerifyProcess {
 					continue;
 				}
 
-				UnicodeProperties typeSettingsProperties =
+				UnicodeProperties typeSettingsUnicodeProperties =
 					group.getTypeSettingsProperties();
 
-				verifyStagingTypeSettingsProperties(typeSettingsProperties);
+				verifyStagingTypeSettingsProperties(
+					typeSettingsUnicodeProperties);
 
 				GroupLocalServiceUtil.updateGroup(
-					group.getGroupId(), typeSettingsProperties.toString());
+					group.getGroupId(),
+					typeSettingsUnicodeProperties.toString());
 
 				Group stagingGroup = group.getStagingGroup();
 
@@ -177,9 +179,9 @@ public class VerifyGroup extends VerifyProcess {
 	}
 
 	protected void verifyStagingTypeSettingsProperties(
-		UnicodeProperties typeSettingsProperties) {
+		UnicodeProperties typeSettingsUnicodeProperties) {
 
-		Set<String> keys = typeSettingsProperties.keySet();
+		Set<String> keys = typeSettingsUnicodeProperties.keySet();
 
 		Iterator<String> iterator = keys.iterator();
 
@@ -205,8 +207,7 @@ public class VerifyGroup extends VerifyProcess {
 			UserGroupGroupRoleLocalServiceUtil.dynamicQuery();
 
 		dynamicQuery.add(
-			RestrictionsFactoryUtil.eq(
-				"id.groupId", stagingGroup.getGroupId()));
+			RestrictionsFactoryUtil.eq("groupId", stagingGroup.getGroupId()));
 
 		List<UserGroupGroupRole> stagingUserGroupGroupRoles =
 			UserGroupGroupRoleLocalServiceUtil.dynamicQuery(dynamicQuery);
@@ -219,7 +220,7 @@ public class VerifyGroup extends VerifyProcess {
 
 		dynamicQuery.add(
 			RestrictionsFactoryUtil.eq(
-				"id.groupId", stagingGroup.getLiveGroupId()));
+				"groupId", stagingGroup.getLiveGroupId()));
 
 		List<UserGroupGroupRole> liveUserGroupGroupRoles =
 			UserGroupGroupRoleLocalServiceUtil.dynamicQuery(dynamicQuery);

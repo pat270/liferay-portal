@@ -1,0 +1,211 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Content Pages";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Content Page Name",
+			type = "content");
+
+		FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+
+		FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+		}
+	}
+
+	@description = "Add a content page and edit its fragment immediately. This is a variation of the steps from LPS-85872."
+	@priority = "5"
+	test AddContentPageWithEditedFragmentText {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Content");
+
+		PageEditor.editFragmentText(
+			contributed = "false",
+			fragmentName = "Content",
+			id = "content",
+			text = "New editable fragment text");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert the Content fragment has the updated editable text") {
+			AssertVisible(
+				key_content = "New editable fragment text",
+				key_fragmentClass = "body",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+	@description = "This is a test for LPS-101333. Freemarker code should not be executed in an html fragment."
+	@priority = "5"
+	test AddContentPageWithHTMLFragment {
+		property portal.acceptance = "true";
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Basic Components",
+			fragmentName = "HTML");
+
+		PageEditor.editFragmentHTML(
+			editableId = "element-html",
+			fileName = "fragment_freemarker_basic.html",
+			fragmentName = "HTML");
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert the freemarker code was not executed") {
+			AssertTextNotEquals(
+				locator1 = "//div[contains(@class,'fragment-html-test')]",
+				value1 = "Basic Test");
+		}
+	}
+
+	@description = "This is a test for LPS-95045. A user should be able to add an image fragment and change the image in the fragment."
+	@priority = "5"
+	test AddContentPageWithImageFragment {
+		property portal.acceptance = "true";
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Image");
+
+		PageEditor.editFragmentImage(
+			contributed = "false",
+			fileName = "Document_1.png",
+			fragmentName = "Image",
+			id = "image");
+
+		task ("Assert the Image fragment's image was changed") {
+			AssertVisible(
+				key_fragmentClass = "image",
+				key_image = "Document_1.png",
+				key_position = "1",
+				locator1 = "Fragment#PAGE_EDITOR_FRAGMENT_IMAGE");
+		}
+
+		PageEditor.clickPublish();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Content Page Name",
+			siteName = "Test Site Name");
+
+		task ("Assert the Image fragment appears with the image") {
+			AssertVisible(
+				key_fragmentClass = "image",
+				key_image = "Document_1.png",
+				key_position = "1",
+				locator1 = "Fragment#PAGE_EDITOR_FRAGMENT_IMAGE");
+		}
+
+		ContentPages.clickPencil();
+
+		task ("Assert the Image fragment's image has persisted") {
+			AssertVisible(
+				key_fragmentClass = "image",
+				key_image = "Document_1.png",
+				key_position = "1",
+				locator1 = "Fragment#PAGE_EDITOR_FRAGMENT_IMAGE");
+		}
+	}
+
+	@description = "This is a test for LPS-106776. Add a translation to editable text."
+	@priority = "5"
+	test AddTraslationtoRichText {
+		property portal.acceptance = "true";
+
+		task ("Add a Rich Text fragment to the content page") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Content Page Name",
+				siteName = "Test Site Name");
+
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Rich Text");
+		}
+
+		task ("Edit Rich Text text") {
+			PageEditor.editFragmentText(
+				contributed = "false",
+				fragmentName = "Rich Text",
+				id = "rich-text",
+				text = "New editable fragment en-US text");
+
+			Click(locator1 = "PageEditor#DROPDOWN");
+
+			MenuItem.click(menuItem = "ca-ES");
+
+			PageEditor.editFragmentText(
+				contributed = "false",
+				fragmentName = "Rich Text",
+				id = "rich-text",
+				text = "New editable fragment ca-ES text");
+
+			PageEditor.clickPublish();
+		}
+
+		task ("Navigate to the content page in Edit mode") {
+			ContentPagesNavigator.openEditContentPage(
+				pageName = "Content Page Name",
+				siteName = "Test Site Name");
+		}
+
+		task ("Assert translation is added") {
+			AssertVisible(
+				key_content = "New editable fragment en-US text",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+
+			Click(locator1 = "PageEditor#DROPDOWN");
+
+			MenuItem.click(menuItem = "ca-ES");
+
+			AssertVisible(
+				key_content = "New editable fragment ca-ES text",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+}

@@ -68,22 +68,24 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
- * @author Michael Young
- * @author Brian Wing Shun Chan
- * @author Jerry Niu
- * @author Scott Lee
- * @author Hervé Ménage
- * @author Samuel Kong
- * @author Ryan Park
- * @author Wesley Gong
- * @author Marcellus Tavares
- * @author Hugo Huijser
- * @author Edward Han
+ * @author     Michael Young
+ * @author     Brian Wing Shun Chan
+ * @author     Jerry Niu
+ * @author     Scott Lee
+ * @author     Hervé Ménage
+ * @author     Samuel Kong
+ * @author     Ryan Park
+ * @author     Wesley Gong
+ * @author     Marcellus Tavares
+ * @author     Hugo Huijser
+ * @author     Edward Han
+ * @deprecated As of Mueller (7.2.x), replaced by {@link SafePortalLDAPImpl}
  */
 @Component(
 	configurationPid = "com.liferay.portal.security.ldap.configuration.LDAPConfiguration",
 	immediate = true, service = PortalLDAP.class
 )
+@Deprecated
 public class DefaultPortalLDAP implements PortalLDAP {
 
 	@Override
@@ -179,9 +181,9 @@ public class DefaultPortalLDAP implements PortalLDAP {
 		try {
 			ldapContext = new InitialLdapContext(environmentProperties, null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to bind to the LDAP server", e);
+				_log.warn("Unable to bind to the LDAP server", exception);
 			}
 		}
 
@@ -198,7 +200,7 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 		LdapContext ldapContext = getContext(ldapServerId, companyId);
 
-		NamingEnumeration<SearchResult> enu = null;
+		NamingEnumeration<SearchResult> enumeration = null;
 
 		try {
 			if (ldapContext == null) {
@@ -239,17 +241,18 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			SearchControls searchControls = new SearchControls(
 				SearchControls.SUBTREE_SCOPE, 1, 0, null, false, false);
 
-			enu = ldapContext.search(groupsDN, sb.toString(), searchControls);
+			enumeration = ldapContext.search(
+				groupsDN, sb.toString(), searchControls);
 
-			if (enu.hasMoreElements()) {
-				return enu.nextElement();
+			if (enumeration.hasMoreElements()) {
+				return enumeration.nextElement();
 			}
 
 			return null;
 		}
 		finally {
-			if (enu != null) {
-				enu.close();
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			if (ldapContext != null) {
@@ -459,16 +462,16 @@ public class DefaultPortalLDAP implements PortalLDAP {
 				break;
 			}
 
-			NamingEnumeration<? extends Attribute> enu = null;
+			NamingEnumeration<? extends Attribute> enumeration = null;
 
 			try {
-				enu = attributes.getAll();
+				enumeration = attributes.getAll();
 
-				if (!enu.hasMoreElements()) {
+				if (!enumeration.hasMoreElements()) {
 					break;
 				}
 
-				Attribute curAttribute = enu.nextElement();
+				Attribute curAttribute = enumeration.nextElement();
 
 				for (int i = 0; i < curAttribute.size(); i++) {
 					attribute.add(curAttribute.get(i));
@@ -483,8 +486,8 @@ public class DefaultPortalLDAP implements PortalLDAP {
 				}
 			}
 			finally {
-				if (enu != null) {
-					enu.close();
+				if (enumeration != null) {
+					enumeration.close();
 				}
 			}
 
@@ -493,40 +496,6 @@ public class DefaultPortalLDAP implements PortalLDAP {
 		}
 
 		return attribute;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x)
-	 */
-	@Deprecated
-	@Override
-	public String getNameInNamespace(
-			long ldapServerId, long companyId, Binding binding)
-		throws Exception {
-
-		LDAPServerConfiguration ldapServerConfiguration =
-			_ldapServerConfigurationProvider.getConfiguration(
-				companyId, ldapServerId);
-
-		String baseDN = ldapServerConfiguration.baseDN();
-
-		String name = binding.getName();
-
-		if (name.startsWith(StringPool.QUOTE) &&
-			name.endsWith(StringPool.QUOTE)) {
-
-			name = name.substring(1, name.length() - 1);
-		}
-
-		if (Validator.isNull(baseDN)) {
-			return name;
-		}
-
-		return name.concat(
-			StringPool.COMMA
-		).concat(
-			baseDN
-		);
 	}
 
 	@Override
@@ -547,7 +516,7 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 		LdapContext ldapContext = getContext(ldapServerId, companyId);
 
-		NamingEnumeration<SearchResult> enu = null;
+		NamingEnumeration<SearchResult> enumeration = null;
 
 		try {
 			if (ldapContext == null) {
@@ -621,10 +590,11 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			SearchControls searchControls = new SearchControls(
 				SearchControls.SUBTREE_SCOPE, 1, 0, null, false, false);
 
-			enu = ldapContext.search(baseDN, sb.toString(), searchControls);
+			enumeration = ldapContext.search(
+				baseDN, sb.toString(), searchControls);
 
-			if (enu.hasMoreElements()) {
-				return enu.nextElement();
+			if (enumeration.hasMoreElements()) {
+				return enumeration.nextElement();
 			}
 
 			if (checkOriginalEmail) {
@@ -652,8 +622,8 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			return null;
 		}
 		finally {
-			if (enu != null) {
-				enu.close();
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			if (ldapContext != null) {
@@ -677,10 +647,10 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 		Properties contactMappings = _ldapSettings.getContactMappings(
 			ldapServerId, companyId);
-		Properties contactExpandoMappings =
-			_ldapSettings.getContactExpandoMappings(ldapServerId, companyId);
 
-		PropertiesUtil.merge(contactMappings, contactExpandoMappings);
+		PropertiesUtil.merge(
+			contactMappings,
+			_ldapSettings.getContactExpandoMappings(ldapServerId, companyId));
 
 		PropertiesUtil.merge(userMappings, contactMappings);
 
@@ -828,7 +798,7 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 		LdapContext ldapContext = getContext(ldapServerId, companyId);
 
-		NamingEnumeration<SearchResult> enu = null;
+		NamingEnumeration<SearchResult> enumeration = null;
 
 		try {
 			if (ldapContext == null) {
@@ -855,24 +825,25 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 			name.add(groupDN);
 
-			enu = ldapContext.search(name, sb.toString(), searchControls);
+			enumeration = ldapContext.search(
+				name, sb.toString(), searchControls);
 
-			if (enu.hasMoreElements()) {
+			if (enumeration.hasMoreElements()) {
 				return true;
 			}
 		}
-		catch (NameNotFoundException nnfe) {
+		catch (NameNotFoundException nameNotFoundException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
 						"Unable to determine if user DN ", userDN,
 						" is a member of group DN ", groupDN),
-					nnfe);
+					nameNotFoundException);
 			}
 		}
 		finally {
-			if (enu != null) {
-				enu.close();
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			if (ldapContext != null) {
@@ -890,7 +861,7 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 		LdapContext ldapContext = getContext(ldapServerId, companyId);
 
-		NamingEnumeration<SearchResult> enu = null;
+		NamingEnumeration<SearchResult> enumeration = null;
 
 		try {
 			if (ldapContext == null) {
@@ -913,24 +884,25 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			SearchControls searchControls = new SearchControls(
 				SearchControls.SUBTREE_SCOPE, 1, 0, null, false, false);
 
-			enu = ldapContext.search(userDN, sb.toString(), searchControls);
+			enumeration = ldapContext.search(
+				userDN, sb.toString(), searchControls);
 
-			if (enu.hasMoreElements()) {
+			if (enumeration.hasMoreElements()) {
 				return true;
 			}
 		}
-		catch (NameNotFoundException nnfe) {
+		catch (NameNotFoundException nameNotFoundException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
 						"Unable to determine if group DN ", groupDN,
 						" is a member of user DN ", userDN),
-					nnfe);
+					nameNotFoundException);
 			}
 		}
 		finally {
-			if (enu != null) {
-				enu.close();
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			if (ldapContext != null) {
@@ -954,7 +926,7 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			SearchControls.SUBTREE_SCOPE, maxResults, 0, attributeIds, false,
 			false);
 
-		NamingEnumeration<SearchResult> enu = null;
+		NamingEnumeration<SearchResult> enumeration = null;
 
 		try {
 			if (cookie != null) {
@@ -979,31 +951,32 @@ public class DefaultPortalLDAP implements PortalLDAP {
 						});
 				}
 
-				enu = ldapContext.search(baseDN, filter, searchControls);
+				enumeration = ldapContext.search(
+					baseDN, filter, searchControls);
 
-				while (enu.hasMoreElements()) {
-					searchResults.add(enu.nextElement());
+				while (enumeration.hasMoreElements()) {
+					searchResults.add(enumeration.nextElement());
 				}
 
 				return _getCookie(ldapContext.getResponseControls());
 			}
 		}
-		catch (OperationNotSupportedException onse) {
-			if (enu != null) {
-				enu.close();
+		catch (OperationNotSupportedException operationNotSupportedException) {
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			ldapContext.setRequestControls(null);
 
-			enu = ldapContext.search(baseDN, filter, searchControls);
+			enumeration = ldapContext.search(baseDN, filter, searchControls);
 
-			while (enu.hasMoreElements()) {
-				searchResults.add(enu.nextElement());
+			while (enumeration.hasMoreElements()) {
+				searchResults.add(enumeration.nextElement());
 			}
 		}
 		finally {
-			if (enu != null) {
-				enu.close();
+			if (enumeration != null) {
+				enumeration.close();
 			}
 
 			ldapContext.setRequestControls(null);
@@ -1050,7 +1023,9 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			String[] attributeIds)
 		throws Exception {
 
-		Name fullDN = new CompositeName().add(fullDistinguishedName);
+		Name name = new CompositeName();
+
+		Name fullDN = name.add(fullDistinguishedName);
 
 		Attributes attributes = null;
 
@@ -1065,21 +1040,21 @@ public class DefaultPortalLDAP implements PortalLDAP {
 
 			attributes = ldapContext.getAttributes(fullDN);
 
-			NamingEnumeration<? extends Attribute> enu = null;
+			NamingEnumeration<? extends Attribute> enumeration = null;
 
 			try {
 				Attributes auditAttributes = ldapContext.getAttributes(
 					fullDN, auditAttributeIds);
 
-				enu = auditAttributes.getAll();
+				enumeration = auditAttributes.getAll();
 
-				while (enu.hasMoreElements()) {
-					attributes.put(enu.nextElement());
+				while (enumeration.hasMoreElements()) {
+					attributes.put(enumeration.nextElement());
 				}
 			}
 			finally {
-				if (enu != null) {
-					enu.close();
+				if (enumeration != null) {
+					enumeration.close();
 				}
 			}
 		}
@@ -1139,10 +1114,13 @@ public class DefaultPortalLDAP implements PortalLDAP {
 			int z = attributeId.indexOf(CharPool.DASH, y);
 
 			originalAttributeId = attributeId.substring(0, x);
+
 			start = GetterUtil.getInteger(attributeId.substring(y + 1, z));
-			end = GetterUtil.getInteger(attributeId.substring(z + 1));
 
 			start += systemLDAPConfiguration.rangeSize();
+
+			end = GetterUtil.getInteger(attributeId.substring(z + 1));
+
 			end += systemLDAPConfiguration.rangeSize();
 		}
 

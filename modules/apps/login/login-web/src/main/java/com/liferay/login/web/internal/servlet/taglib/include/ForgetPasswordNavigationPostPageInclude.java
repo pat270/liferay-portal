@@ -61,7 +61,7 @@ public class ForgetPasswordNavigationPostPageInclude implements PageInclude {
 
 		Company company = themeDisplay.getCompany();
 
-		if (!company.isSendPassword() && !company.isSendPasswordResetLink()) {
+		if (!company.isSendPasswordResetLink()) {
 			return;
 		}
 
@@ -69,6 +69,7 @@ public class ForgetPasswordNavigationPostPageInclude implements PageInclude {
 
 		renderURLTag.setPageContext(pageContext);
 
+		renderURLTag.addParam("saveLastPath", Boolean.FALSE.toString());
 		renderURLTag.addParam("mvcRenderCommandName", "/login/forgot_password");
 		renderURLTag.setVar("forgotPasswordURL");
 		renderURLTag.setWindowState(WindowState.MAXIMIZED.toString());
@@ -80,7 +81,6 @@ public class ForgetPasswordNavigationPostPageInclude implements PageInclude {
 
 		IconTag iconTag = new IconTag();
 
-		iconTag.setIconCssClass("icon-question-sign");
 		iconTag.setMessage("forgot-password");
 		iconTag.setUrl(forgetPasswordURL);
 

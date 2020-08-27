@@ -65,7 +65,8 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 
 			@Override
 			public String build() {
-				return _build(_pathImage, relativeURL);
+				return _build(
+					_ignoreCDNHost, _ignorePathProxy, _pathImage, relativeURL);
 			}
 
 		};
@@ -77,7 +78,7 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 
 			@Override
 			public String build() {
-				return _build(_pathMain, relativeURL);
+				return _build(true, _ignorePathProxy, _pathMain, relativeURL);
 			}
 
 		};
@@ -100,7 +101,9 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 					webContextPath += StringPool.SLASH;
 				}
 
-				return _build(_pathModule + webContextPath, relativeURL);
+				return _build(
+					_ignoreCDNHost, _ignorePathProxy,
+					_pathModule + webContextPath, relativeURL);
 			}
 
 		};
@@ -178,7 +181,9 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 
 			@Override
 			public String build() {
-				return _build(_pathContext, relativeURL);
+				return _build(
+					_ignoreCDNHost, _ignorePathProxy, _pathContext,
+					relativeURL);
 			}
 
 		};
@@ -192,7 +197,8 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 
 			@Override
 			public String build() {
-				return _build(_pathModule, servletPattern);
+				return _build(
+					true, _ignorePathProxy, _pathModule, servletPattern);
 			}
 
 		};
@@ -218,8 +224,10 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 
 		StringBundler sb = new StringBundler(6);
 
-		if (!ignoreCDNHost) {
-			sb.append(_getCDNHost(_httpServletRequest));
+		String cdnHost = _getCDNHost(_httpServletRequest);
+
+		if (!ignoreCDNHost && !Validator.isBlank(cdnHost)) {
+			sb.append(cdnHost);
 		}
 
 		if (!ignorePathProxy) {
@@ -248,22 +256,19 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 		return sb.toString();
 	}
 
-	private String _build(String pathPrefix, String relativeURL) {
-		return _build(
-			_ignoreCDNHost, _ignorePathProxy, pathPrefix, relativeURL);
-	}
-
 	private String _getCDNHost(HttpServletRequest httpServletRequest) {
 		String cdnHost;
 
 		try {
 			cdnHost = _portal.getCDNHost(httpServletRequest);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			cdnHost = StringPool.BLANK;
 
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to retrieve CDN host from request", pe);
+				_log.warn(
+					"Unable to retrieve CDN host from request",
+					portalException);
 			}
 		}
 
@@ -296,7 +301,15 @@ public class AbsolutePortalURLBuilderImpl implements AbsolutePortalURLBuilder {
 	private final HttpServletRequest _httpServletRequest;
 	private boolean _ignoreCDNHost;
 	private boolean _ignorePathProxy;
+
+	/**
+	 * Points to the web context path of the Portal's webapp (doesn't contain
+	 * the proxy, CDN, or any other kind of configurable path.
+	 *
+	 * @review
+	 */
 	private final String _pathContext;
+
 	private final String _pathImage;
 	private final String _pathMain;
 	private final String _pathModule;

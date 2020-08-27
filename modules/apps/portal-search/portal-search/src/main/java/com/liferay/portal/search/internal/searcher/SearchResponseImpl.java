@@ -21,8 +21,12 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.aggregation.AggregationResult;
 import com.liferay.portal.search.document.Document;
+import com.liferay.portal.search.groupby.GroupByResponse;
 import com.liferay.portal.search.hits.SearchHit;
 import com.liferay.portal.search.hits.SearchHits;
+import com.liferay.portal.search.hits.SearchHitsBuilder;
+import com.liferay.portal.search.hits.SearchHitsBuilderFactory;
+import com.liferay.portal.search.internal.hits.SearchHitsBuilderFactoryImpl;
 import com.liferay.portal.search.internal.legacy.searcher.FacetContextImpl;
 import com.liferay.portal.search.searcher.FacetContext;
 import com.liferay.portal.search.searcher.SearchRequest;
@@ -31,7 +35,9 @@ import com.liferay.portal.search.stats.StatsResponse;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,7 +52,7 @@ import java.util.stream.Stream;
 public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	public SearchResponseImpl(SearchContext searchContext) {
-		_facetContext = new FacetContextImpl(searchContext);
+		_facetContextImpl = new FacetContextImpl(searchContext);
 		_searchContext = searchContext;
 	}
 
@@ -72,11 +78,19 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public List<com.liferay.portal.kernel.search.Document> getDocuments71() {
+		if (_hits == null) {
+			return Collections.emptyList();
+		}
+
 		return Arrays.asList(_hits.getDocs());
 	}
 
 	@Override
 	public Stream<Document> getDocumentsStream() {
+		if (_searchHits == null) {
+			return Stream.empty();
+		}
+
 		List<SearchHit> list = _searchHits.getSearchHits();
 
 		return list.stream(
@@ -101,8 +115,15 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public Stream<SearchResponse> getFederatedSearchResponsesStream() {
-		return _federatedSearchResponsesMap.values(
-		).stream();
+		Collection<SearchResponse> searchResponses =
+			_federatedSearchResponsesMap.values();
+
+		return searchResponses.stream();
+	}
+
+	@Override
+	public List<GroupByResponse> getGroupByResponses() {
+		return Collections.unmodifiableList(_groupByResponses);
 	}
 
 	@Override
@@ -122,6 +143,13 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public SearchHits getSearchHits() {
+		if (_searchHits == null) {
+			SearchHitsBuilder searchHitsBuilder =
+				_searchHitsBuilderFactory.getSearchHitsBuilder();
+
+			return searchHitsBuilder.build();
+		}
+
 		return _searchHits;
 	}
 
@@ -132,6 +160,10 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public int getTotalHits() {
+		if (_hits == null) {
+			return 0;
+		}
+
 		return _hits.getLength();
 	}
 
@@ -149,6 +181,12 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	public void setFederatedSearchKey(String federatedSearchKey) {
 		_federatedSearchKey = federatedSearchKey;
+	}
+
+	public void setGroupByResponses(List<GroupByResponse> groupByResponses) {
+		_groupByResponses.clear();
+
+		_groupByResponses.addAll(groupByResponses);
 	}
 
 	public void setHits(Hits hits) {
@@ -179,14 +217,14 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public void withFacetContext(Consumer<FacetContext> facetContextConsumer) {
-		facetContextConsumer.accept(_facetContext);
+		facetContextConsumer.accept(_facetContextImpl);
 	}
 
 	@Override
 	public <T> T withFacetContextGet(
 		Function<FacetContext, T> facetContextFunction) {
 
-		return facetContextFunction.apply(_facetContext);
+		return facetContextFunction.apply(_facetContextImpl);
 	}
 
 	@Override
@@ -214,15 +252,18 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 	private final Map<String, AggregationResult> _aggregationResultsMap =
 		new LinkedHashMap<>();
 	private long _count;
-	private final FacetContextImpl _facetContext;
-	private String _federatedSearchKey;
+	private final FacetContextImpl _facetContextImpl;
+	private String _federatedSearchKey = StringPool.BLANK;
 	private final Map<String, SearchResponse> _federatedSearchResponsesMap =
 		new LinkedHashMap<>();
+	private final List<GroupByResponse> _groupByResponses = new ArrayList<>();
 	private Hits _hits;
 	private String _requestString = StringPool.BLANK;
 	private String _responseString = StringPool.BLANK;
 	private final SearchContext _searchContext;
 	private SearchHits _searchHits;
+	private SearchHitsBuilderFactory _searchHitsBuilderFactory =
+		new SearchHitsBuilderFactoryImpl();
 	private SearchRequest _searchRequest;
 	private final Map<String, StatsResponse> _statsResponseMap =
 		new LinkedHashMap<>();

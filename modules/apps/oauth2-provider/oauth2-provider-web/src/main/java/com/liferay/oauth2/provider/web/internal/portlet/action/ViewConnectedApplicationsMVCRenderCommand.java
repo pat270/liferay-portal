@@ -17,9 +17,9 @@ package com.liferay.oauth2.provider.web.internal.portlet.action;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
 import com.liferay.oauth2.provider.model.OAuth2ScopeGrant;
-import com.liferay.oauth2.provider.scope.liferay.ApplicationDescriptorLocator;
-import com.liferay.oauth2.provider.scope.liferay.ScopeDescriptorLocator;
 import com.liferay.oauth2.provider.scope.liferay.ScopeLocator;
+import com.liferay.oauth2.provider.scope.liferay.spi.ApplicationDescriptorLocator;
+import com.liferay.oauth2.provider.scope.liferay.spi.ScopeDescriptorLocator;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationScopeAliasesLocalService;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationService;
 import com.liferay.oauth2.provider.service.OAuth2AuthorizationService;
@@ -78,8 +78,9 @@ public class ViewConnectedApplicationsMVCRenderCommand
 				_oAuth2AuthorizationService.getUserOAuth2Authorizations(
 					QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to load user OAuth 2 authorizations", pe);
+		catch (PortalException portalException) {
+			_log.error(
+				"Unable to load user OAuth 2 authorizations", portalException);
 		}
 
 		long oAuth2AuthorizationId = ParamUtil.getLong(
@@ -94,7 +95,7 @@ public class ViewConnectedApplicationsMVCRenderCommand
 			OAuth2ConnectedApplicationsPortletDisplayContext
 				oAuth2ConnectedApplicationsPortletDisplayContext =
 					new OAuth2ConnectedApplicationsPortletDisplayContext(
-						renderRequest, _dlURLHelper);
+						_dlURLHelper, _oAuth2ApplicationService, renderRequest);
 
 			renderRequest.setAttribute(
 				OAuth2ProviderWebKeys.
@@ -141,8 +142,8 @@ public class ViewConnectedApplicationsMVCRenderCommand
 		OAuth2ConnectedApplicationsPortletDisplayContext
 			oAuth2ConnectedApplicationsPortletDisplayContext =
 				new OAuth2ConnectedApplicationsPortletDisplayContext(
-					assignableScopes, renderRequest, _oAuth2ApplicationService,
-					oAuth2Authorization, _dlURLHelper);
+					assignableScopes, _dlURLHelper, _oAuth2ApplicationService,
+					oAuth2Authorization, renderRequest);
 
 		renderRequest.setAttribute(
 			OAuth2ProviderWebKeys.

@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.util;
 
 import com.liferay.dynamic.data.mapping.BaseDDMTestCase;
+import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.internal.util.DDMFormTemplateSynchonizer;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializerDeserializeResponse;
@@ -24,11 +25,9 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
-import com.liferay.dynamic.data.mapping.model.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.impl.DDMTemplateImpl;
 import com.liferay.dynamic.data.mapping.service.impl.DDMTemplateLocalServiceImpl;
-import com.liferay.dynamic.data.mapping.service.util.ServiceProps;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -58,7 +57,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * @author Marcellus Tavares
  */
-@PrepareForTest({LocaleUtil.class, PropsValues.class, ServiceProps.class})
+@PrepareForTest({LocaleUtil.class, PropsValues.class})
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor(
 	{
@@ -84,7 +83,6 @@ public class DDMFormTemplateSynchonizerTest extends BaseDDMTestCase {
 		setUpPortalUtil();
 		setUpPropsValues();
 		setUpSAXReaderUtil();
-		setUpServiceProps();
 	}
 
 	@Test
@@ -322,13 +320,13 @@ public class DDMFormTemplateSynchonizerTest extends BaseDDMTestCase {
 	protected void removeDDMFormField(DDMForm ddmForm, String fieldName) {
 		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
 
-		Iterator<DDMFormField> itr = ddmFormFields.iterator();
+		Iterator<DDMFormField> iterator = ddmFormFields.iterator();
 
-		while (itr.hasNext()) {
-			DDMFormField ddmFormField = itr.next();
+		while (iterator.hasNext()) {
+			DDMFormField ddmFormField = iterator.next();
 
 			if (fieldName.equals(ddmFormField.getName())) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 	}
@@ -347,10 +345,6 @@ public class DDMFormTemplateSynchonizerTest extends BaseDDMTestCase {
 		);
 
 		portalUtil.setPortal(portal);
-	}
-
-	protected void setUpServiceProps() {
-		mockStatic(ServiceProps.class);
 	}
 
 	protected void testFormTemplatesAfterAddRequiredFields() throws Exception {

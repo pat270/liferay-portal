@@ -47,7 +47,7 @@ MDRRuleGroupInstance ruleGroupInstance = (MDRRuleGroupInstance)renderRequest.get
 	<aui:model-context bean="<%= action %>" model="<%= MDRAction.class %>" />
 
 	<div class="portlet-configuration-body-content">
-		<div class="container-fluid-1280">
+		<clay:container-fluid>
 			<aui:fieldset-group markupView="lexicon">
 				<aui:fieldset>
 					<c:if test="<%= action == null %>">
@@ -60,7 +60,7 @@ MDRRuleGroupInstance ruleGroupInstance = (MDRRuleGroupInstance)renderRequest.get
 
 					<aui:input name="description" placeholder="description" />
 
-					<aui:select changesContext="<%= true %>" name="type" onChange='<%= renderResponse.getNamespace() + "changeType();" %>' required="<%= true %>" showEmptyOption="<%= true %>">
+					<aui:select changesContext="<%= true %>" name="type" onChange='<%= liferayPortletResponse.getNamespace() + "changeType();" %>' required="<%= true %>" showEmptyOption="<%= true %>">
 
 						<%
 						for (ActionHandler actionHandler : ActionHandlerManagerUtil.getActionHandlers()) {
@@ -74,14 +74,14 @@ MDRRuleGroupInstance ruleGroupInstance = (MDRRuleGroupInstance)renderRequest.get
 
 					</aui:select>
 
-					<div id="<%= renderResponse.getNamespace() %>typeSettings">
+					<div id="<%= liferayPortletResponse.getNamespace() %>typeSettings">
 						<c:if test="<%= Validator.isNotNull(editorJSP) %>">
 							<liferay-util:include page="<%= editorJSP %>" servletContext="<%= application %>" />
 						</c:if>
 					</div>
 				</aui:fieldset>
 			</aui:fieldset-group>
-		</div>
+		</clay:container-fluid>
 	</div>
 
 	<aui:button-row>
@@ -103,30 +103,32 @@ MDRRuleGroupInstance ruleGroupInstance = (MDRRuleGroupInstance)renderRequest.get
 		var actionPlid = Liferay.Util.getFormElement(form, 'actionPlid');
 
 		if (actionGroupId && actionPlid) {
-			formData.append('<portlet:namespace />actionGroupId', actionGroupId.value);
+			formData.append(
+				'<portlet:namespace />actionGroupId',
+				actionGroupId.value
+			);
 			formData.append('<portlet:namespace />actionPlid', actionPlid.value);
 		}
 
-		fetch(
+		Liferay.Util.fetch(
 			'<%= HtmlUtil.escapeJS(siteURLLayoutsURL.toString()) %>',
 			{
 				body: formData,
-				credentials: 'include',
-				method: 'POST'
+				method: 'POST',
 			}
-		).then(
-			function(response) {
+		)
+			.then(function (response) {
 				return response.text();
-			}
-		).then(
-			function(response) {
-				var layouts = document.getElementById('<portlet:namespace />layouts');
+			})
+			.then(function (response) {
+				var layouts = document.getElementById(
+					'<portlet:namespace />layouts'
+				);
 
 				if (layouts) {
 					layouts.innerHTML = response;
 				}
-			}
-		);
+			});
 	}
 
 	function <portlet:namespace />changeType() {
@@ -144,27 +146,23 @@ MDRRuleGroupInstance ruleGroupInstance = (MDRRuleGroupInstance)renderRequest.get
 			formData.append('<portlet:namespace />type', type.value);
 		}
 
-		formData.append('<portlet:namespace /><%= actionId %>', '<%= actionId %>');
+		formData.append('<portlet:namespace />actionId', '<%= actionId %>');
 
-		fetch(
-			'<%= HtmlUtil.escapeJS(editorURL.toString()) %>',
-			{
-				credentials: 'include',
-				data: formData,
-				method: 'POST'
-			}
-		).then(
-			function(response) {
+		Liferay.Util.fetch('<%= HtmlUtil.escapeJS(editorURL.toString()) %>', {
+			body: formData,
+			method: 'POST',
+		})
+			.then(function (response) {
 				return response.text();
-			}
-		).then(
-			function(response) {
-				var typeSettings = document.getElementById('<portlet:namespace />typeSettings');
+			})
+			.then(function (response) {
+				var typeSettings = document.getElementById(
+					'<portlet:namespace />typeSettings'
+				);
 
 				if (typeSettings) {
 					typeSettings.innerHTML = response;
 				}
-			}
-		);
+			});
 	}
 </aui:script>

@@ -35,7 +35,7 @@ long entryId = ParamUtil.getLong(request, "entryId", entry.getEntryId());
 
 String entryTitle = BlogsEntryUtil.getDisplayTitle(resourceBundle, entry);
 
-AssetEntry assetEntry = AssetEntryLocalServiceUtil.getEntry(BlogsEntry.class.getName(), entry.getEntryId());
+AssetEntry assetEntry = BlogsEntryAssetEntryUtil.getAssetEntry(request, entry);
 
 AssetEntryServiceUtil.incrementViewCounter(assetEntry);
 
@@ -59,19 +59,21 @@ request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
 request.setAttribute("view_entry_content.jsp-ratingsEntry", ratingsEntry);
 request.setAttribute("view_entry_content.jsp-ratingsStats", ratingsStats);
 
+portletDisplay.setShowBackIcon(true);
+portletDisplay.setURLBack(redirect);
+
 boolean portletTitleBasedNavigation = GetterUtil.getBoolean(portletConfig.getInitParameter("portlet-title-based-navigation"));
 
 if (portletTitleBasedNavigation) {
-	portletDisplay.setShowBackIcon(true);
-	portletDisplay.setURLBack(redirect);
-
 	renderResponse.setTitle(entryTitle);
 }
+
+BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortletInstanceConfigurationUtil.getBlogsPortletInstanceConfiguration(themeDisplay);
 %>
 
 <portlet:actionURL name="/blogs/edit_entry" var="editEntryURL" />
 
-<aui:form action="<%= editEntryURL %>" method="post" name="fm1" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveEntry();" %>'>
+<aui:form action="<%= editEntryURL %>" method="post" name="fm1" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveEntry();" %>'>
 	<aui:input name="<%= Constants.CMD %>" type="hidden" />
 	<aui:input name="entryId" type="hidden" value="<%= String.valueOf(entryId) %>" />
 
@@ -80,7 +82,7 @@ if (portletTitleBasedNavigation) {
 	</div>
 </aui:form>
 
-<div class="container-fluid">
+<clay:container-fluid>
 	<c:if test="<%= PropsValues.BLOGS_ENTRY_PREVIOUS_AND_NEXT_NAVIGATION_ENABLED %>">
 
 		<%
@@ -91,11 +93,18 @@ if (portletTitleBasedNavigation) {
 		%>
 
 		<c:if test="<%= (previousEntry != null) || (nextEntry != null) %>">
-			<div class="row">
-				<div class="col-md-10 col-md-offset-1 entry-navigation">
-					<h2><strong><liferay-ui:message key="more-blog-entries" /></strong></h2>
+			<clay:row>
+				<clay:col
+					cssClass="col-md-offset-1 entry-navigation"
+					md="10"
+				>
+					<h2>
+						<strong><liferay-ui:message key="more-blog-entries" /></strong>
+					</h2>
 
-					<div class="row widget-mode-card">
+					<clay:row
+						cssClass="widget-mode-card"
+					>
 
 						<%
 						request.setAttribute("view_entry_related.jsp-blogs_entry", previousEntry);
@@ -108,14 +117,17 @@ if (portletTitleBasedNavigation) {
 						%>
 
 						<liferay-util:include page="/blogs/view_entry_related.jsp" servletContext="<%= application %>" />
-					</div>
-				</div>
-			</div>
+					</clay:row>
+				</clay:col>
+			</clay:row>
 		</c:if>
 	</c:if>
 
-	<div class="row">
-		<div class="col-md-8 col-md-offset-2">
+	<clay:row>
+		<clay:col
+			cssClass="col-md-offset-2"
+			md="8"
+		>
 			<c:if test="<%= blogsPortletInstanceConfiguration.enableComments() %>">
 
 				<%
@@ -138,9 +150,9 @@ if (portletTitleBasedNavigation) {
 					/>
 				</c:if>
 			</c:if>
-		</div>
-	</div>
-</div>
+		</clay:col>
+	</clay:row>
+</clay:container-fluid>
 
 <%
 PortalUtil.setPageTitle(BlogsEntryUtil.getDisplayTitle(resourceBundle, entry), request);
@@ -148,7 +160,7 @@ PortalUtil.setPageTitle(BlogsEntryUtil.getDisplayTitle(resourceBundle, entry), r
 String description = entry.getDescription();
 
 if (Validator.isNull(description)) {
-	description = HtmlUtil.stripHtml(StringUtil.shorten(entry.getContent(), pageAbstractLength));
+	description = HtmlUtil.stripHtml(StringUtil.shorten(entry.getContent(), PropsValues.BLOGS_PAGE_ABSTRACT_LENGTH));
 }
 
 PortalUtil.setPageDescription(description, request);

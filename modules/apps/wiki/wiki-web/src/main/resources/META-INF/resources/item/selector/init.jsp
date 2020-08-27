@@ -26,8 +26,6 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <%@ page import="com.liferay.document.library.kernel.model.DLFolderConstants" %><%@
-page import="com.liferay.document.library.kernel.util.DLUtil" %><%@
-page import="com.liferay.document.library.kernel.util.DLValidatorUtil" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.dao.search.SearchPaginationUtil" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
@@ -37,6 +35,7 @@ page import="com.liferay.portal.kernel.portlet.PortletURLUtil" %><%@
 page import="com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil" %><%@
 page import="com.liferay.portal.kernel.repository.model.FileEntry" %><%@
 page import="com.liferay.portal.kernel.repository.model.Folder" %><%@
+page import="com.liferay.portal.kernel.repository.model.RepositoryEntry" %><%@
 page import="com.liferay.portal.kernel.search.Document" %><%@
 page import="com.liferay.portal.kernel.search.Field" %><%@
 page import="com.liferay.portal.kernel.search.Hits" %><%@
@@ -50,14 +49,14 @@ page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.HttpUtil" %><%@
-page import="com.liferay.portal.kernel.util.OrderByComparator" %><%@
+page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.wiki.model.WikiNode" %><%@
 page import="com.liferay.wiki.model.WikiPage" %><%@
 page import="com.liferay.wiki.service.WikiPageLocalServiceUtil" %><%@
+page import="com.liferay.wiki.web.internal.item.selector.WikiPageItemSelectorReturnTypeResolver" %><%@
 page import="com.liferay.wiki.web.internal.item.selector.constants.WikiItemSelectorWebKeys" %><%@
-page import="com.liferay.wiki.web.internal.item.selector.resolver.WikiPageItemSelectorReturnTypeResolver" %><%@
 page import="com.liferay.wiki.web.internal.item.selector.view.display.context.WikiAttachmentItemSelectorViewDisplayContext" %><%@
 page import="com.liferay.wiki.web.internal.item.selector.view.display.context.WikiPageItemSelectorViewDisplayContext" %>
 

@@ -14,9 +14,10 @@
 
 package com.liferay.asset.list.service;
 
+import com.liferay.asset.list.model.AssetListEntry;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetListEntryLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetListEntryLocalService
  * @generated
  */
-@ProviderType
 public class AssetListEntryLocalServiceWrapper
 	implements AssetListEntryLocalService,
 			   ServiceWrapper<AssetListEntryLocalService> {
@@ -59,18 +59,20 @@ public class AssetListEntryLocalServiceWrapper
 	/**
 	 * Adds the asset list entry to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntry the asset list entry
 	 * @return the asset list entry that was added
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry addAssetListEntry(
-		com.liferay.asset.list.model.AssetListEntry assetListEntry) {
-
+	public AssetListEntry addAssetListEntry(AssetListEntry assetListEntry) {
 		return _assetListEntryLocalService.addAssetListEntry(assetListEntry);
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry addAssetListEntry(
+	public AssetListEntry addAssetListEntry(
 			long userId, long groupId, String title, int type,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -80,7 +82,7 @@ public class AssetListEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry addAssetListEntry(
+	public AssetListEntry addAssetListEntry(
 			long userId, long groupId, String title, int type,
 			String typeSettings,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
@@ -91,7 +93,7 @@ public class AssetListEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry addDynamicAssetListEntry(
+	public AssetListEntry addDynamicAssetListEntry(
 			long userId, long groupId, String title, String typeSettings,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -101,7 +103,7 @@ public class AssetListEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry addManualAssetListEntry(
+	public AssetListEntry addManualAssetListEntry(
 			long userId, long groupId, String title, long[] assetEntryIds,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -117,11 +119,20 @@ public class AssetListEntryLocalServiceWrapper
 	 * @return the new asset list entry
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry createAssetListEntry(
-		long assetListEntryId) {
-
+	public AssetListEntry createAssetListEntry(long assetListEntryId) {
 		return _assetListEntryLocalService.createAssetListEntry(
 			assetListEntryId);
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetListEntryLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	@Override
@@ -136,12 +147,17 @@ public class AssetListEntryLocalServiceWrapper
 	/**
 	 * Deletes the asset list entry from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntry the asset list entry
 	 * @return the asset list entry that was removed
+	 * @throws PortalException
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry deleteAssetListEntry(
-		com.liferay.asset.list.model.AssetListEntry assetListEntry) {
+	public AssetListEntry deleteAssetListEntry(AssetListEntry assetListEntry)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntryLocalService.deleteAssetListEntry(assetListEntry);
 	}
@@ -149,13 +165,16 @@ public class AssetListEntryLocalServiceWrapper
 	/**
 	 * Deletes the asset list entry with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntryId the primary key of the asset list entry
 	 * @return the asset list entry that was removed
 	 * @throws PortalException if a asset list entry with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry deleteAssetListEntry(
-			long assetListEntryId)
+	public AssetListEntry deleteAssetListEntry(long assetListEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntryLocalService.deleteAssetListEntry(
@@ -163,7 +182,7 @@ public class AssetListEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry deleteAssetListEntry(
+	public AssetListEntry deleteAssetListEntry(
 			long assetListEntryId, long segmentsEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -180,6 +199,11 @@ public class AssetListEntryLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntryLocalService.deletePersistedModel(persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetListEntryLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -204,7 +228,7 @@ public class AssetListEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -225,7 +249,7 @@ public class AssetListEntryLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -274,9 +298,7 @@ public class AssetListEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry fetchAssetListEntry(
-		long assetListEntryId) {
-
+	public AssetListEntry fetchAssetListEntry(long assetListEntryId) {
 		return _assetListEntryLocalService.fetchAssetListEntry(
 			assetListEntryId);
 	}
@@ -289,8 +311,8 @@ public class AssetListEntryLocalServiceWrapper
 	 * @return the matching asset list entry, or <code>null</code> if a matching asset list entry could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry
-		fetchAssetListEntryByUuidAndGroupId(String uuid, long groupId) {
+	public AssetListEntry fetchAssetListEntryByUuidAndGroupId(
+		String uuid, long groupId) {
 
 		return _assetListEntryLocalService.fetchAssetListEntryByUuidAndGroupId(
 			uuid, groupId);
@@ -307,7 +329,7 @@ public class AssetListEntryLocalServiceWrapper
 	 * Returns a range of all the asset list entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.list.model.impl.AssetListEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset list entries
@@ -315,16 +337,14 @@ public class AssetListEntryLocalServiceWrapper
 	 * @return the range of asset list entries
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.list.model.AssetListEntry>
-		getAssetListEntries(int start, int end) {
+	public java.util.List<AssetListEntry> getAssetListEntries(
+		int start, int end) {
 
 		return _assetListEntryLocalService.getAssetListEntries(start, end);
 	}
 
 	@Override
-	public java.util.List<com.liferay.asset.list.model.AssetListEntry>
-		getAssetListEntries(long groupId) {
-
+	public java.util.List<AssetListEntry> getAssetListEntries(long groupId) {
 		return _assetListEntryLocalService.getAssetListEntries(groupId);
 	}
 
@@ -336,8 +356,8 @@ public class AssetListEntryLocalServiceWrapper
 	 * @return the matching asset list entries, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.list.model.AssetListEntry>
-		getAssetListEntriesByUuidAndCompanyId(String uuid, long companyId) {
+	public java.util.List<AssetListEntry> getAssetListEntriesByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _assetListEntryLocalService.
 			getAssetListEntriesByUuidAndCompanyId(uuid, companyId);
@@ -354,12 +374,10 @@ public class AssetListEntryLocalServiceWrapper
 	 * @return the range of matching asset list entries, or an empty list if no matches were found
 	 */
 	@Override
-	public java.util.List<com.liferay.asset.list.model.AssetListEntry>
-		getAssetListEntriesByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.asset.list.model.AssetListEntry>
-					orderByComparator) {
+	public java.util.List<AssetListEntry> getAssetListEntriesByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<AssetListEntry>
+			orderByComparator) {
 
 		return _assetListEntryLocalService.
 			getAssetListEntriesByUuidAndCompanyId(
@@ -384,15 +402,14 @@ public class AssetListEntryLocalServiceWrapper
 	 * @throws PortalException if a asset list entry with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry getAssetListEntry(
-			long assetListEntryId)
+	public AssetListEntry getAssetListEntry(long assetListEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntryLocalService.getAssetListEntry(assetListEntryId);
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry getAssetListEntry(
+	public AssetListEntry getAssetListEntry(
 			long groupId, String assetListEntryKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -409,8 +426,8 @@ public class AssetListEntryLocalServiceWrapper
 	 * @throws PortalException if a matching asset list entry could not be found
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry
-			getAssetListEntryByUuidAndGroupId(String uuid, long groupId)
+	public AssetListEntry getAssetListEntryByUuidAndGroupId(
+			String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetListEntryLocalService.getAssetListEntryByUuidAndGroupId(
@@ -444,6 +461,9 @@ public class AssetListEntryLocalServiceWrapper
 		return _assetListEntryLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -465,18 +485,20 @@ public class AssetListEntryLocalServiceWrapper
 	/**
 	 * Updates the asset list entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetListEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetListEntry the asset list entry
 	 * @return the asset list entry that was updated
 	 */
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry updateAssetListEntry(
-		com.liferay.asset.list.model.AssetListEntry assetListEntry) {
-
+	public AssetListEntry updateAssetListEntry(AssetListEntry assetListEntry) {
 		return _assetListEntryLocalService.updateAssetListEntry(assetListEntry);
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry updateAssetListEntry(
+	public AssetListEntry updateAssetListEntry(
 			long assetListEntryId, long segmentsEntryId, String typeSettings,
 			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -486,7 +508,7 @@ public class AssetListEntryLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.list.model.AssetListEntry updateAssetListEntry(
+	public AssetListEntry updateAssetListEntry(
 			long assetListEntryId, String title)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
@@ -501,6 +523,26 @@ public class AssetListEntryLocalServiceWrapper
 
 		_assetListEntryLocalService.updateAssetListEntryTypeSettings(
 			assetListEntryId, segmentsEntryId, typeSettings);
+	}
+
+	@Override
+	public CTPersistence<AssetListEntry> getCTPersistence() {
+		return _assetListEntryLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetListEntry> getModelClass() {
+		return _assetListEntryLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetListEntry>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _assetListEntryLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

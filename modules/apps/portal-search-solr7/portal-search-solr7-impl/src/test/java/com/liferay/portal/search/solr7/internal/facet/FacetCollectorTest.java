@@ -35,26 +35,26 @@ public class FacetCollectorTest {
 
 	@Test
 	public void testSolrFacetFieldCollectorCountType() {
-		NamedList namedList1 = new NamedList();
+		NamedList<Object> namedList1 = new NamedList();
 
 		namedList1.add("count", Long.valueOf(3));
 		namedList1.add("val", "alpha");
 
-		NamedList namedList2 = new NamedList();
+		NamedList<Object> namedList2 = new NamedList();
 
 		namedList2.add("count", Integer.valueOf(7));
 		namedList2.add("val", "bravo");
 
-		List<NamedList> bucketNamedList = new ArrayList<>();
+		List<NamedList<Object>> bucketNamedList = new ArrayList<>();
 
 		bucketNamedList.add(namedList1);
 		bucketNamedList.add(namedList2);
 
-		NamedList fieldNamedList = new NamedList();
+		NamedList<Object> fieldNamedList = new NamedList();
 
 		fieldNamedList.add("buckets", bucketNamedList);
 
-		NamedList namedList = new NamedList();
+		NamedList<Object> namedList = new NamedList();
 
 		namedList.add("field", fieldNamedList);
 
@@ -75,28 +75,28 @@ public class FacetCollectorTest {
 
 	@Test
 	public void testSolrFacetQueryCollector() {
-		NamedList namedListMap = new NamedList();
+		NamedList<Object> namedList1 = new NamedList();
 
 		String bucket1 = "field_alpha";
 
-		NamedList namedList1 = new NamedList();
+		NamedList<Object> namedList2 = new NamedList();
 
-		namedList1.add("count", Long.valueOf(3));
+		namedList2.add("count", Long.valueOf(3));
 
-		namedListMap.add(bucket1, namedList1);
+		namedList1.add(bucket1, namedList2);
 
 		String bucket2 = "field_bravo";
 
-		NamedList namedList2 = new NamedList();
+		NamedList<Object> namedList3 = new NamedList();
 
-		namedList2.add("count", Integer.valueOf(7));
+		namedList3.add("count", Integer.valueOf(7));
 
-		namedListMap.add(bucket2, namedList2);
+		namedList1.add(bucket2, namedList3);
 
 		Facet facet = new FacetImpl("field", new SearchContext());
 
 		SolrFacetQueryCollector solrFacetFieldCollector =
-			new SolrFacetQueryCollector(facet, namedListMap);
+			new SolrFacetQueryCollector(facet, namedList1);
 
 		TermCollector termCollector = solrFacetFieldCollector.getTermCollector(
 			"alpha");

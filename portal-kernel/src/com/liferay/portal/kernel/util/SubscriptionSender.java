@@ -23,6 +23,8 @@ import com.liferay.mail.kernel.template.MailTemplateContext;
 import com.liferay.mail.kernel.template.MailTemplateContextBuilder;
 import com.liferay.mail.kernel.template.MailTemplateFactoryUtil;
 import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -103,10 +105,14 @@ public class SubscriptionSender implements Serializable {
 	}
 
 	public void addPersistedSubscribers(String className, long classPK) {
-		ObjectValuePair<String, Long> ovp = new ObjectValuePair<>(
-			className, classPK);
+		addPersistedSubscribers(className, classPK, true);
+	}
 
-		_persistestedSubscribersOVPs.add(ovp);
+	public void addPersistedSubscribers(
+		String className, long classPK, boolean notifyImmediately) {
+
+		_persistedSubscribersTuples.add(
+			new Tuple(className, classPK, notifyImmediately));
 	}
 
 	public void addRuntimeSubscribers(String toAddress, String toName) {
@@ -130,11 +136,10 @@ public class SubscriptionSender implements Serializable {
 				currentThread.setContextClassLoader(_classLoader);
 			}
 
-			for (ObjectValuePair<String, Long> ovp :
-					_persistestedSubscribersOVPs) {
-
-				String className = ovp.getKey();
-				long classPK = ovp.getValue();
+			for (Tuple tuple : _persistedSubscribersTuples) {
+				String className = (String)tuple.getObject(0);
+				long classPK = (long)tuple.getObject(1);
+				boolean notifyImmediately = (boolean)tuple.getObject(2);
 
 				List<Subscription> subscriptions =
 					SubscriptionLocalServiceUtil.getSubscriptions(
@@ -142,17 +147,18 @@ public class SubscriptionSender implements Serializable {
 
 				for (Subscription subscription : subscriptions) {
 					try {
-						notifyPersistedSubscriber(subscription);
+						notifyPersistedSubscriber(
+							subscription, notifyImmediately);
 					}
-					catch (Exception e) {
+					catch (Exception exception) {
 						_log.error(
 							"Unable to process subscription: " + subscription,
-							e);
+							exception);
 					}
 				}
 			}
 
-			_persistestedSubscribersOVPs.clear();
+			_persistedSubscribersTuples.clear();
 
 			for (ObjectValuePair<String, String> ovp :
 					_runtimeSubscribersOVPs) {
@@ -191,15 +197,20 @@ public class SubscriptionSender implements Serializable {
 
 			_runtimeSubscribersOVPs.clear();
 
-			if (bulk) {
+			if (bulk && (_bulkAddresses != null)) {
 				Locale locale = LocaleUtil.getDefault();
 
 				MailTemplateContext mailTemplateContext =
 					_getBasicMailTemplateContext(locale);
 
+				String template = replyToAddress;
+
+				if (Validator.isNull(template)) {
+					template = fromAddress;
+				}
+
 				MailTemplate replyToAddressMailTemplate =
-					MailTemplateFactoryUtil.createMailTemplate(
-						replyToAddress, false);
+					MailTemplateFactoryUtil.createMailTemplate(template, false);
 
 				String processedReplyToAddress =
 					replyToAddressMailTemplate.renderAsString(
@@ -255,6 +266,27 @@ public class SubscriptionSender implements Serializable {
 		return serviceContext;
 	}
 
+	public boolean hasSubscribers() {
+		if (!_runtimeSubscribersOVPs.isEmpty()) {
+			return true;
+		}
+
+		for (Tuple tuple : _persistedSubscribersTuples) {
+			String className = (String)tuple.getObject(0);
+			long classPK = (long)tuple.getObject(1);
+
+			List<Subscription> subscriptions =
+				SubscriptionLocalServiceUtil.getSubscriptions(
+					companyId, className, classPK);
+
+			if (!subscriptions.isEmpty()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public void initialize() throws Exception {
 		if (_initialized) {
 			return;
@@ -271,7 +303,40 @@ public class SubscriptionSender implements Serializable {
 		setContextAttribute("[$COMPANY_ID$]", company.getCompanyId());
 		setContextAttribute("[$COMPANY_MX$]", company.getMx());
 		setContextAttribute("[$COMPANY_NAME$]", company.getName());
-		setContextAttribute("[$PORTAL_URL$]", company.getPortalURL(groupId));
+
+		if (Validator.isNotNull(_entryURL)) {
+			boolean secureConnection = HttpUtil.isSecure(_entryURL);
+
+			String portalURL = PortalUtil.getPortalURL(
+				company.getVirtualHostname(),
+				PortalUtil.getPortalServerPort(secureConnection),
+				secureConnection);
+
+			if (_entryURL.startsWith(portalURL)) {
+				setContextAttribute(
+					"[$PORTAL_URL$]",
+					company.getPortalURL(
+						groupId,
+						_entryURL.contains(
+							_LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING)));
+			}
+			else {
+				int endIndex = _entryURL.indexOf(
+					CharPool.FORWARD_SLASH, Http.HTTPS_WITH_SLASH.length());
+
+				if (endIndex == -1) {
+					setContextAttribute("[$PORTAL_URL$]", _entryURL);
+				}
+				else {
+					setContextAttribute(
+						"[$PORTAL_URL$]", _entryURL.substring(0, endIndex));
+				}
+			}
+		}
+		else {
+			setContextAttribute(
+				"[$PORTAL_URL$]", company.getPortalURL(groupId));
+		}
 
 		if (groupId > 0) {
 			Group group = GroupLocalServiceUtil.getGroup(groupId);
@@ -303,6 +368,10 @@ public class SubscriptionSender implements Serializable {
 		return bulk;
 	}
 
+	public void sendEmailNotification(long userId) throws Exception {
+		sendEmailNotification(UserLocalServiceUtil.getUser(userId));
+	}
+
 	public void setBody(String body) {
 		this.body = body;
 	}
@@ -325,6 +394,16 @@ public class SubscriptionSender implements Serializable {
 
 	public void setContextAttribute(String key, EscapableObject<String> value) {
 		_context.put(key, value);
+
+		_context.put(
+			_getFilterKey(key, "attr"),
+			new HTMLAtributeEscapableObject<>(value.getOriginalValue(), true));
+		_context.put(
+			_getFilterKey(key, "html"),
+			new HtmlEscapableObject<>(value.getOriginalValue(), true));
+		_context.put(
+			_getFilterKey(key, "uri"),
+			new URIEscapableObject<>(value.getOriginalValue(), true));
 	}
 
 	public void setContextAttribute(String key, Object value) {
@@ -465,10 +544,14 @@ public class SubscriptionSender implements Serializable {
 				groupId = scopeGroupId;
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		this.scopeGroupId = scopeGroupId;
+	}
+
+	public void setSendToCurrentUser(boolean sendToCurrentUser) {
+		_sendToCurrentUser = sendToCurrentUser;
 	}
 
 	public void setServiceContext(ServiceContext serviceContext) {
@@ -572,14 +655,38 @@ public class SubscriptionSender implements Serializable {
 		return Boolean.TRUE;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	protected void notifyPersistedSubscriber(Subscription subscription)
 		throws Exception {
 
-		notifyPersistedSubscriber(subscription, _className, _classPK);
+		notifyPersistedSubscriber(subscription, true);
 	}
 
 	protected void notifyPersistedSubscriber(
+			Subscription subscription, boolean notifyImmediately)
+		throws Exception {
+
+		notifyPersistedSubscriber(
+			subscription, _className, _classPK, notifyImmediately);
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
+	protected void notifyPersistedSubscriber(
 			Subscription subscription, String className, long classPK)
+		throws Exception {
+
+		notifyPersistedSubscriber(subscription, _className, _classPK, true);
+	}
+
+	protected void notifyPersistedSubscriber(
+			Subscription subscription, String className, long classPK,
+			boolean notifyImmediately)
 		throws Exception {
 
 		User user = UserLocalServiceUtil.fetchUserById(
@@ -599,21 +706,42 @@ public class SubscriptionSender implements Serializable {
 
 		String emailAddress = user.getEmailAddress();
 
-		if (_sentEmailAddresses.contains(emailAddress)) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Do not send a duplicate email to " + emailAddress);
+		if (notifyImmediately) {
+			if (_sentEmailAddresses.contains(emailAddress)) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Do not send a duplicate email to " + emailAddress);
+				}
+
+				return;
 			}
 
-			return;
-		}
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Add " + emailAddress +
+						" to the list of users who have received an email");
+			}
 
-		if (_log.isDebugEnabled()) {
-			_log.debug(
-				"Add " + emailAddress +
-					" to the list of users who have received an email");
+			_sentEmailAddresses.add(emailAddress);
 		}
+		else {
+			if (_delayedSentEmailAddresses.contains(emailAddress)) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Do not send a duplicate email to " + emailAddress);
+				}
 
-		_sentEmailAddresses.add(emailAddress);
+				return;
+			}
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Add " + emailAddress +
+						" to the list of users who will receive an email");
+			}
+
+			_delayedSentEmailAddresses.add(emailAddress);
+		}
 
 		if (!user.isActive()) {
 			if (_log.isDebugEnabled()) {
@@ -632,15 +760,15 @@ public class SubscriptionSender implements Serializable {
 				return;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return;
 		}
 
 		_notifyHooks(Hook.Event.PERSISTED_SUBSCRIBER_FOUND, subscription);
 
-		sendNotification(user);
+		sendNotification(user, notifyImmediately);
 	}
 
 	protected void notifyRuntimeSubscriber(InternetAddress to, Locale locale)
@@ -656,8 +784,7 @@ public class SubscriptionSender implements Serializable {
 				_log.info(
 					StringBundler.concat(
 						"User with email address ", emailAddress,
-						" does not exist for company ",
-						String.valueOf(companyId)));
+						" does not exist for company ", companyId));
 			}
 
 			if (bulk) {
@@ -681,11 +808,23 @@ public class SubscriptionSender implements Serializable {
 		).put(
 			"classPK", _classPK
 		).put(
+			"context", _context
+		).put(
 			"entryTitle", _entryTitle
 		).put(
 			"entryURL", _entryURL
 		).put(
+			"localizedBodyMap", localizedBodyMap
+		).put(
+			"localizedContext", _localizedContext
+		).put(
+			"localizedSubjectMap", localizedSubjectMap
+		).put(
+			"mailId", mailId
+		).put(
 			"notificationType", _notificationType
+		).put(
+			"portletId", portletId
 		).put(
 			"userId", currentUserId
 		);
@@ -694,11 +833,10 @@ public class SubscriptionSender implements Serializable {
 	protected void processMailMessage(MailMessage mailMessage, Locale locale)
 		throws Exception {
 
-		InternetAddress from = mailMessage.getFrom();
 		InternetAddress to = mailMessage.getTo()[0];
 
 		MailTemplateContext mailTemplateContext = _getBodyMailTemplateContext(
-			locale, from, to);
+			locale, mailMessage.getFrom(), to);
 
 		MailTemplate subjectMailTemplate =
 			MailTemplateFactoryUtil.createMailTemplate(
@@ -719,33 +857,6 @@ public class SubscriptionSender implements Serializable {
 		mailMessage.setBody(processedBody);
 
 		_notifyHooks(Hook.Event.MAIL_MESSAGE_CREATED, mailMessage);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected String replaceContent(String content, Locale locale)
-		throws Exception {
-
-		return replaceContent(content, locale, true);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	protected String replaceContent(
-			String content, Locale locale, boolean escape)
-		throws Exception {
-
-		MailTemplateContext mailTemplateContext = _getBasicMailTemplateContext(
-			locale);
-
-		MailTemplate mailTemplate = MailTemplateFactoryUtil.createMailTemplate(
-			content, escape);
-
-		return mailTemplate.renderAsString(locale, mailTemplateContext);
 	}
 
 	protected void sendEmail(InternetAddress to, Locale locale)
@@ -836,8 +947,18 @@ public class SubscriptionSender implements Serializable {
 		}
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	protected void sendNotification(User user) throws Exception {
-		if (currentUserId == user.getUserId()) {
+		sendNotification(user, true);
+	}
+
+	protected void sendNotification(User user, boolean notifyImmediately)
+		throws Exception {
+
+		if (!_sendToCurrentUser && (currentUserId == user.getUserId())) {
 			if (_log.isDebugEnabled()) {
 				_log.debug("Skip user " + currentUserId);
 			}
@@ -845,11 +966,24 @@ public class SubscriptionSender implements Serializable {
 			return;
 		}
 
-		sendEmailNotification(user);
-		sendUserNotification(user);
+		if (notifyImmediately) {
+			sendEmailNotification(user);
+		}
+
+		sendUserNotification(user, notifyImmediately);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	protected void sendUserNotification(User user) throws Exception {
+		sendNotification(user, true);
+	}
+
+	protected void sendUserNotification(User user, boolean notifyImmediately)
+		throws Exception {
+
 		JSONObject notificationEventJSONObject =
 			JSONFactoryUtil.createJSONObject();
 
@@ -862,8 +996,8 @@ public class SubscriptionSender implements Serializable {
 
 			UserNotificationEventLocalServiceUtil.sendUserNotificationEvents(
 				user.getUserId(), portletId,
-				UserNotificationDeliveryConstants.TYPE_PUSH,
-				notificationEventJSONObject);
+				UserNotificationDeliveryConstants.TYPE_PUSH, notifyImmediately,
+				false, notificationEventJSONObject);
 		}
 
 		if (UserNotificationManagerUtil.isDeliver(
@@ -874,7 +1008,7 @@ public class SubscriptionSender implements Serializable {
 			UserNotificationEventLocalServiceUtil.sendUserNotificationEvents(
 				user.getUserId(), portletId,
 				UserNotificationDeliveryConstants.TYPE_WEBSITE,
-				notificationEventJSONObject);
+				notifyImmediately, false, notificationEventJSONObject);
 		}
 	}
 
@@ -950,6 +1084,19 @@ public class SubscriptionSender implements Serializable {
 			_getBasicMailTemplateContext(locale));
 	}
 
+	private String _getFilterKey(String key, String escapeMode) {
+		int i = key.lastIndexOf("$]");
+
+		if (i != (key.length() - 2)) {
+			throw new IllegalArgumentException(
+				"Subscription template key is not syntactically correct: " +
+					key);
+		}
+
+		return StringBundler.concat(
+			key.substring(0, i), StringPool.PIPE, escapeMode, "$]");
+	}
+
 	private <T> List<Hook<T>> _getHooks(Hook.Event<T> event) {
 		return (List)_hooks.computeIfAbsent(event, key -> new ArrayList<>());
 	}
@@ -1009,6 +1156,10 @@ public class SubscriptionSender implements Serializable {
 		objectOutputStream.writeUTF(contextName);
 	}
 
+	private static final String
+		_LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING = PropsUtil.get(
+			PropsKeys.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING);
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		SubscriptionSender.class);
 
@@ -1019,6 +1170,7 @@ public class SubscriptionSender implements Serializable {
 	private final Map<String, EscapableObject<String>> _context =
 		new HashMap<>();
 	private String _contextCreatorUserPrefix;
+	private final Set<String> _delayedSentEmailAddresses = new HashSet<>();
 	private String _entryTitle;
 	private String _entryURL;
 	private final Map<Hook.Event<?>, List<Hook<?>>> _hooks = new HashMap<>();
@@ -1029,10 +1181,45 @@ public class SubscriptionSender implements Serializable {
 	private String _mailIdPopPortletPrefix;
 	private long _notificationClassNameId;
 	private int _notificationType;
-	private final List<ObjectValuePair<String, Long>>
-		_persistestedSubscribersOVPs = new ArrayList<>();
+	private final List<Tuple> _persistedSubscribersTuples = new ArrayList<>();
 	private final List<ObjectValuePair<String, String>>
 		_runtimeSubscribersOVPs = new ArrayList<>();
+	private boolean _sendToCurrentUser;
 	private final Set<String> _sentEmailAddresses = new HashSet<>();
+
+	private static class HTMLAtributeEscapableObject<T>
+		extends EscapableObject<T> {
+
+		public HTMLAtributeEscapableObject(T originalValue) {
+			super(originalValue);
+		}
+
+		public HTMLAtributeEscapableObject(T originalValue, boolean escape) {
+			super(originalValue, escape);
+		}
+
+		@Override
+		protected String escape(T value) {
+			return HtmlUtil.escapeAttribute(String.valueOf(value));
+		}
+
+	}
+
+	private static class URIEscapableObject<T> extends EscapableObject<T> {
+
+		public URIEscapableObject(T originalValue) {
+			super(originalValue);
+		}
+
+		public URIEscapableObject(T originalValue, boolean escape) {
+			super(originalValue, escape);
+		}
+
+		@Override
+		protected String escape(T value) {
+			return URLCodec.encodeURL(String.valueOf(value));
+		}
+
+	}
 
 }

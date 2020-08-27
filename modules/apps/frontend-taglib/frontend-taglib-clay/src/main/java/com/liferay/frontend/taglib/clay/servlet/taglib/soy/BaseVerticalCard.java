@@ -15,7 +15,7 @@
 package com.liferay.frontend.taglib.clay.servlet.taglib.soy;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.model.AuditedModel;
@@ -56,16 +56,13 @@ public abstract class BaseVerticalCard
 			return Collections.emptyList();
 		}
 
-		WorkflowedModel workflowedModel = (WorkflowedModel)baseModel;
+		return LabelItemListBuilder.add(
+			labelItem -> {
+				WorkflowedModel workflowedModel = (WorkflowedModel)baseModel;
 
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> {
-						labelItem.setStatus(workflowedModel.getStatus());
-					});
+				labelItem.setStatus(workflowedModel.getStatus());
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -128,7 +125,7 @@ public abstract class BaseVerticalCard
 
 			return user.getPortraitURL(themeDisplay);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return StringPool.BLANK;
 		}
 	}

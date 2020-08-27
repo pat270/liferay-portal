@@ -19,8 +19,10 @@ import com.liferay.expando.kernel.util.ExpandoBridgeFactory;
 import com.liferay.portlet.expando.model.impl.ExpandoBridgeImpl;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Athanasius (7.3.x)
  */
+@Deprecated
 public class ExpandoBridgeFactoryImpl implements ExpandoBridgeFactory {
 
 	@Override

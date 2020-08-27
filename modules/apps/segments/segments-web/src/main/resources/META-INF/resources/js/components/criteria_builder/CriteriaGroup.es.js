@@ -1,21 +1,36 @@
-import ClayIcon from '../shared/ClayIcon.es';
-import Conjunction from './Conjunction.es';
-import CriteriaRow from './CriteriaRow.es';
-import DropZone from './DropZone.es';
-import EmptyDropZone from './EmptyDropZone.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import ClayIcon from '@clayui/icon';
 import getCN from 'classnames';
+import {PropTypes} from 'prop-types';
 import React, {Component, Fragment} from 'react';
-import {CONJUNCTIONS} from '../../utils/constants.es';
 import {DragSource as dragSource} from 'react-dnd';
+
+import {CONJUNCTIONS} from '../../utils/constants.es';
 import {DragTypes} from '../../utils/drag-types.es';
 import {
 	generateGroupId,
 	getChildGroupIds,
 	getSupportedOperatorsFromType,
 	insertAtIndex,
-	replaceAtIndex
+	replaceAtIndex,
 } from '../../utils/utils.es';
-import {PropTypes} from 'prop-types';
+import Conjunction from './Conjunction.es';
+import CriteriaRow from './CriteriaRow.es';
+import DropZone from './DropZone.es';
+import EmptyDropZone from './EmptyDropZone.es';
 
 /**
  * Passes the required values to the drop target.
@@ -30,7 +45,7 @@ function beginDrag({criteria, index, parentGroupId}) {
 		childGroupIds,
 		criterion: criteria,
 		groupId: parentGroupId,
-		index
+		index,
 	};
 }
 
@@ -43,12 +58,12 @@ function beginDrag({criteria, index, parentGroupId}) {
 const withDragSource = dragSource(
 	DragTypes.CRITERIA_GROUP,
 	{
-		beginDrag
+		beginDrag,
 	},
 	(connect, monitor) => ({
 		connectDragPreview: connect.dragPreview(),
 		connectDragSource: connect.dragSource(),
-		dragging: monitor.isDragging()
+		dragging: monitor.isDragging(),
 	})
 );
 
@@ -72,11 +87,11 @@ class CriteriaGroup extends Component {
 		supportedConjunctions: PropTypes.array,
 		supportedOperators: PropTypes.array,
 		supportedProperties: PropTypes.array,
-		supportedPropertyTypes: PropTypes.object
+		supportedPropertyTypes: PropTypes.object,
 	};
 
 	static defaultProps = {
-		root: false
+		root: false,
 	};
 
 	constructor(props) {
@@ -85,26 +100,14 @@ class CriteriaGroup extends Component {
 		this.NestedCriteriaGroupWithDrag = withDragSource(CriteriaGroup);
 	}
 
-	_handleConjunctionClick = event => {
-		event.preventDefault();
+	_handleConjunctionSelect = (conjunctionName) => {
+		const {criteria, onChange} = this.props;
 
-		const {criteria, onChange, supportedConjunctions} = this.props;
-
-		const index = supportedConjunctions.findIndex(
-			item => item.name === criteria.conjunctionName
-		);
-
-		const conjunctionSelected = index === supportedConjunctions.length - 1 ?
-			supportedConjunctions[0].name :
-			supportedConjunctions[index + 1].name;
-
-		onChange(
-			{
-				...criteria,
-				conjunctionName: conjunctionSelected
-			}
-		);
-	}
+		onChange({
+			...criteria,
+			conjunctionName,
+		});
+	};
 
 	/**
 	 * Adds a new criterion in a group at the specified index. If the criteria
@@ -120,7 +123,7 @@ class CriteriaGroup extends Component {
 			onChange,
 			root,
 			supportedOperators,
-			supportedPropertyTypes
+			supportedPropertyTypes,
 		} = this.props;
 
 		const {
@@ -128,7 +131,7 @@ class CriteriaGroup extends Component {
 			operatorName,
 			propertyName,
 			type,
-			value
+			value,
 		} = criterion;
 
 		const criterionValue = value || defaultValue;
@@ -140,79 +143,63 @@ class CriteriaGroup extends Component {
 		);
 
 		const newCriterion = {
-			operatorName: operatorName ?
-				operatorName :
-				operators[0].name,
+			operatorName: operatorName ? operatorName : operators[0].name,
 			propertyName,
 			type,
-			value: criterionValue
+			value: criterionValue,
 		};
 
 		if (root && !criteria) {
-			onChange(
-				{
-					conjunctionName: CONJUNCTIONS.AND,
-					groupId: generateGroupId(),
-					items: [newCriterion]
-				}
-			);
+			onChange({
+				conjunctionName: CONJUNCTIONS.AND,
+				groupId: generateGroupId(),
+				items: [newCriterion],
+			});
 		}
 		else {
-			onChange(
-				{
-					...criteria,
-					items: insertAtIndex(
-						newCriterion,
-						criteria.items,
-						index
-					)
-				}
-			);
+			onChange({
+				...criteria,
+				items: insertAtIndex(newCriterion, criteria.items, index),
+			});
 		}
-	}
+	};
 
-	_handleCriterionChange = index => newCriterion => {
+	_handleCriterionChange = (index) => (newCriterion) => {
 		const {criteria, onChange} = this.props;
 
-		onChange(
-			{
-				...criteria,
-				items: replaceAtIndex(newCriterion, criteria.items, index)
-			}
-		);
-	}
+		onChange({
+			...criteria,
+			items: replaceAtIndex(newCriterion, criteria.items, index),
+		});
+	};
 
-	_handleCriterionDelete = index => {
+	_handleCriterionDelete = (index) => {
 		const {criteria, onChange} = this.props;
 
-		onChange(
-			{
-				...criteria,
-				items: criteria.items.filter(
-					(fItem, fIndex) => fIndex !== index
-				)
-			}
-		);
-	}
+		onChange({
+			...criteria,
+			items: criteria.items.filter((fItem, fIndex) => fIndex !== index),
+		});
+	};
 
 	_isCriteriaEmpty = () => {
 		const {criteria} = this.props;
 
 		return criteria ? !criteria.items.length : true;
-	}
+	};
 
-	_renderConjunction = index => {
+	_renderConjunction = (index) => {
 		const {
 			criteria,
 			editing,
 			groupId,
 			onMove,
 			propertyKey,
-			supportedConjunctions
+			supportedConjunctions,
 		} = this.props;
 
 		return (
-			<Fragment>
+			<>
 				<DropZone
 					dropIndex={index}
 					groupId={groupId}
@@ -224,7 +211,7 @@ class CriteriaGroup extends Component {
 				<Conjunction
 					conjunctionName={criteria.conjunctionName}
 					editing={editing}
-					onClick={this._handleConjunctionClick}
+					onSelect={this._handleConjunctionSelect}
 					supportedConjunctions={supportedConjunctions}
 				/>
 
@@ -236,9 +223,9 @@ class CriteriaGroup extends Component {
 					onMove={onMove}
 					propertyKey={propertyKey}
 				/>
-			</Fragment>
+			</>
 		);
-	}
+	};
 
 	_renderCriterion = (criterion, index) => {
 		const {
@@ -252,15 +239,12 @@ class CriteriaGroup extends Component {
 			supportedConjunctions,
 			supportedOperators,
 			supportedProperties,
-			supportedPropertyTypes
+			supportedPropertyTypes,
 		} = this.props;
 
-		const classes = getCN(
-			'criterion',
-			{
-				'criterion-group': criterion.items
-			}
-		);
+		const classes = getCN('criterion', {
+			'criterion-group': criterion.items,
+		});
 
 		return (
 			<div className={classes}>
@@ -310,7 +294,7 @@ class CriteriaGroup extends Component {
 				/>
 			</div>
 		);
-	}
+	};
 
 	render() {
 		const {
@@ -323,32 +307,32 @@ class CriteriaGroup extends Component {
 			groupId,
 			onMove,
 			propertyKey,
-			root
+			root,
 		} = this.props;
 
 		const classes = getCN(
 			{
-				'criteria-group-root': criteria
+				'criteria-group-root': criteria,
 			},
 			`criteria-group-item${root ? '-root' : ''}`,
 			`color--${propertyKey}`,
 			{
-				'dnd-drag': dragging
+				'dnd-drag': dragging,
 			}
 		);
-		const singleRow = criteria && criteria.items && criteria.items.length === 1;
+		const singleRow =
+			criteria && criteria.items && criteria.items.length === 1;
 
 		return connectDragPreview(
-			<div
-				className={classes}
-			>
-				{this._isCriteriaEmpty() ?
+			<div className={classes}>
+				{this._isCriteriaEmpty() ? (
 					<EmptyDropZone
 						emptyContributors={emptyContributors}
 						onCriterionAdd={this._handleCriterionAdd}
 						propertyKey={propertyKey}
-					/> :
-					<Fragment>
+					/>
+				) : (
+					<>
 						<DropZone
 							before
 							dropIndex={0}
@@ -358,14 +342,17 @@ class CriteriaGroup extends Component {
 							propertyKey={propertyKey}
 						/>
 
-						{editing && singleRow && !root && connectDragSource(
-							<div className="criteria-group-drag-icon drag-icon">
-								<ClayIcon iconName="drag" />
-							</div>
-						)}
+						{editing &&
+							singleRow &&
+							!root &&
+							connectDragSource(
+								<div className="criteria-group-drag-icon drag-icon">
+									<ClayIcon symbol="drag" />
+								</div>
+							)}
 
-						{criteria.items && criteria.items.map(
-							(criterion, index) => {
+						{criteria.items &&
+							criteria.items.map((criterion, index) => {
 								return (
 									<Fragment key={index}>
 										{index !== 0 &&
@@ -377,10 +364,9 @@ class CriteriaGroup extends Component {
 										)}
 									</Fragment>
 								);
-							}
-						)}
-					</Fragment>
-				}
+							})}
+					</>
+				)}
 			</div>
 		);
 	}

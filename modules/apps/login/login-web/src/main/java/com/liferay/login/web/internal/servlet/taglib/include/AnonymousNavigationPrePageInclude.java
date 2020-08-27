@@ -81,7 +81,6 @@ public class AnonymousNavigationPrePageInclude implements PageInclude {
 
 		IconTag iconTag = new IconTag();
 
-		iconTag.setIconCssClass("icon-user");
 		iconTag.setMessage("guest");
 		iconTag.setUrl(anonymousURL);
 

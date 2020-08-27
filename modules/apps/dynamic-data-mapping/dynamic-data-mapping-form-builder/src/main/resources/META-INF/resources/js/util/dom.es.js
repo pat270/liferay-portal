@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
 export function selectText(node) {
 	if (node.select) {
 		node.select();
@@ -23,9 +37,6 @@ const KeyMap = {
 	ESC: 27,
 	F: 70,
 	F1: 112,
-	F10: 121,
-	F11: 122,
-	F12: 123,
 	F2: 113,
 	F3: 114,
 	F4: 115,
@@ -34,6 +45,9 @@ const KeyMap = {
 	F7: 118,
 	F8: 119,
 	F9: 120,
+	F10: 121,
+	F11: 122,
+	F12: 123,
 	FIVE: 53,
 	FOUR: 52,
 	G: 71,
@@ -94,7 +108,7 @@ const KeyMap = {
 	X: 88,
 	Y: 89,
 	Z: 90,
-	ZERO: 48
+	ZERO: 48,
 };
 
 const NON_MODIFYING_KEYS = [
@@ -127,7 +141,7 @@ const NON_MODIFYING_KEYS = [
 	'SHIFT',
 	'SPACE',
 	'UP',
-	'WIN_KEY'
+	'WIN_KEY',
 ];
 
 export function isModifyingKey(keyCode) {
@@ -144,7 +158,9 @@ export function isKeyInSet(keyCode, array) {
 
 	while (i--) {
 		keyName = array[i];
-		key = keyName && (KeyMap[keyName] || KeyMap[String(keyName).toUpperCase()]);
+		key =
+			keyName &&
+			(KeyMap[keyName] || KeyMap[String(keyName).toUpperCase()]);
 
 		if (keyCode === key) {
 			result = true;

@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
 
-import java.io.IOException;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -160,20 +158,23 @@ public class MetaTagsTag extends IncludeTag {
 				WebKeys.PAGE_KEYWORDS);
 
 		if (pageKeywordsListMergeable != null) {
-			if (Validator.isNotNull(metaKeywords)) {
+			String pageKeywords = pageKeywordsListMergeable.mergeToString(
+				StringPool.COMMA);
+
+			if (Validator.isNotNull(pageKeywords) &&
+				Validator.isNotNull(metaKeywords)) {
+
 				StringBundler sb = new StringBundler(4);
 
-				sb.append(
-					pageKeywordsListMergeable.mergeToString(StringPool.COMMA));
+				sb.append(pageKeywords);
 				sb.append(StringPool.COMMA);
 				sb.append(StringPool.SPACE);
 				sb.append(metaKeywords);
 
 				metaKeywords = sb.toString();
 			}
-			else {
-				metaKeywords = pageKeywordsListMergeable.mergeToString(
-					StringPool.COMMA);
+			else if (Validator.isNull(metaKeywords)) {
+				metaKeywords = pageKeywords;
 			}
 		}
 
@@ -187,7 +188,7 @@ public class MetaTagsTag extends IncludeTag {
 	}
 
 	private void _writeMeta(String content, String lang, String name)
-		throws IOException {
+		throws Exception {
 
 		JspWriter jspWriter = pageContext.getOut();
 

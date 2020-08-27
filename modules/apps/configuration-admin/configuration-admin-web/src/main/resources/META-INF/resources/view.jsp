@@ -19,6 +19,7 @@
 <%
 List<ConfigurationCategorySectionDisplay> configurationCategorySectionDisplays = (List<ConfigurationCategorySectionDisplay>)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_CATEGORY_SECTION_DISPLAYS);
 ConfigurationEntryRetriever configurationEntryRetriever = (ConfigurationEntryRetriever)request.getAttribute(ConfigurationAdminWebKeys.CONFIGURATION_ENTRY_RETRIEVER);
+ConfigurationScopeDisplayContext configurationScopeDisplayContext = ConfigurationScopeDisplayContextFactory.create(renderRequest);
 %>
 
 <portlet:renderURL var="redirectURL" />
@@ -34,8 +35,16 @@ ConfigurationEntryRetriever configurationEntryRetriever = (ConfigurationEntryRet
 	showSearch="<%= true %>"
 />
 
-<div class="container-fluid container-fluid-max-xl container-view">
-	<ul class="list-group">
+<clay:container-fluid
+	cssClass="container-view"
+>
+	<c:if test="<%= configurationCategorySectionDisplays.isEmpty() %>">
+		<liferay-ui:empty-result-message
+			message="no-configurations-were-found"
+		/>
+	</c:if>
+
+	<ul class="list-group <%= configurationCategorySectionDisplays.isEmpty() ? "hide" : StringPool.BLANK %>">
 
 		<%
 		for (ConfigurationCategorySectionDisplay configurationCategorySectionDisplay : configurationCategorySectionDisplays) {
@@ -50,8 +59,6 @@ ConfigurationEntryRetriever configurationEntryRetriever = (ConfigurationEntryRet
 				<ul class="list-group">
 
 					<%
-					ConfigurationScopeDisplayContext configurationScopeDisplayContext = new ConfigurationScopeDisplayContext(renderRequest);
-
 					for (ConfigurationCategoryDisplay configurationCategoryDisplay : configurationCategorySectionDisplay.getConfigurationCategoryDisplays()) {
 						ConfigurationCategoryMenuDisplay configurationCategoryMenuDisplay = configurationEntryRetriever.getConfigurationCategoryMenuDisplay(configurationCategoryDisplay.getCategoryKey(), themeDisplay.getLanguageId(), configurationScopeDisplayContext.getScope(), configurationScopeDisplayContext.getScopePK());
 
@@ -65,7 +72,6 @@ ConfigurationEntryRetriever configurationEntryRetriever = (ConfigurationEntryRet
 						<li class="list-group-card-item">
 							<a href="<%= viewCategoryHREF %>">
 								<clay:icon
-									elementClasses="user-icon-sm"
 									symbol="<%= configurationCategoryDisplay.getCategoryIcon() %>"
 								/>
 
@@ -87,4 +93,4 @@ ConfigurationEntryRetriever configurationEntryRetriever = (ConfigurationEntryRet
 		%>
 
 	</ul>
-</div>
+</clay:container-fluid>

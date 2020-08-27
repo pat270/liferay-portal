@@ -14,59 +14,58 @@
 
 package com.liferay.headless.form.resource.v1_0.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import com.liferay.headless.form.client.dto.v1_0.FormRecord;
+import com.liferay.headless.form.client.http.HttpInvoker;
 import com.liferay.headless.form.client.pagination.Page;
+import com.liferay.headless.form.client.pagination.Pagination;
+import com.liferay.headless.form.client.resource.v1_0.FormRecordResource;
 import com.liferay.headless.form.client.serdes.v1_0.FormRecordSerDes;
-import com.liferay.headless.form.resource.v1_0.FormRecordResource;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
-import java.net.URL;
 
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
@@ -101,9 +100,19 @@ public abstract class BaseFormRecordResourceTestCase {
 	public void setUp() throws Exception {
 		irrelevantGroup = GroupTestUtil.addGroup();
 		testGroup = GroupTestUtil.addGroup();
-		testLocale = LocaleUtil.getDefault();
 
-		_resourceURL = new URL("http://localhost:8080/o/headless-form/v1.0");
+		testCompany = CompanyLocalServiceUtil.getCompany(
+			testGroup.getCompanyId());
+
+		_formRecordResource.setContextCompany(testCompany);
+
+		FormRecordResource.Builder builder = FormRecordResource.builder();
+
+		formRecordResource = builder.authentication(
+			"test@liferay.com", "test"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
 	}
 
 	@After
@@ -117,10 +126,16 @@ public abstract class BaseFormRecordResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				enable(SerializationFeature.INDENT_OUTPUT);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -138,9 +153,15 @@ public abstract class BaseFormRecordResourceTestCase {
 		ObjectMapper objectMapper = new ObjectMapper() {
 			{
 				configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+				configure(
+					SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
 				setDateFormat(new ISO8601DateFormat());
 				setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 				setSerializationInclusion(JsonInclude.Include.NON_NULL);
+				setVisibility(
+					PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+				setVisibility(
+					PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
 			}
 		};
 
@@ -154,10 +175,24 @@ public abstract class BaseFormRecordResourceTestCase {
 	}
 
 	@Test
+	public void testEscapeRegexInStringFields() throws Exception {
+		String regex = "^[0-9]+(\\.[0-9]{1,2})\"?";
+
+		FormRecord formRecord = randomFormRecord();
+
+		String json = FormRecordSerDes.toJSON(formRecord);
+
+		Assert.assertFalse(json.contains(regex));
+
+		formRecord = FormRecordSerDes.toDTO(json);
+	}
+
+	@Test
 	public void testGetFormRecord() throws Exception {
 		FormRecord postFormRecord = testGetFormRecord_addFormRecord();
 
-		FormRecord getFormRecord = invokeGetFormRecord(postFormRecord.getId());
+		FormRecord getFormRecord = formRecordResource.getFormRecord(
+			postFormRecord.getId());
 
 		assertEquals(postFormRecord, getFormRecord);
 		assertValid(getFormRecord);
@@ -168,49 +203,45 @@ public abstract class BaseFormRecordResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected FormRecord invokeGetFormRecord(Long formRecordId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetFormRecord() throws Exception {
+		FormRecord formRecord = testGraphQLFormRecord_addFormRecord();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/form-records/{formRecordId}", formRecordId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return FormRecordSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				formRecord,
+				FormRecordSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"formRecord",
+								new HashMap<String, Object>() {
+									{
+										put("formRecordId", formRecord.getId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data", "Object/formRecord"))));
 	}
 
-	protected Http.Response invokeGetFormRecordResponse(Long formRecordId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetFormRecordNotFound() throws Exception {
+		Long irrelevantFormRecordId = RandomTestUtil.randomLong();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/form-records/{formRecordId}", formRecordId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
+		Assert.assertEquals(
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"formRecord",
+						new HashMap<String, Object>() {
+							{
+								put("formRecordId", irrelevantFormRecordId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
 	}
 
 	@Test
@@ -219,13 +250,14 @@ public abstract class BaseFormRecordResourceTestCase {
 
 		FormRecord randomFormRecord = randomFormRecord();
 
-		FormRecord putFormRecord = invokePutFormRecord(
+		FormRecord putFormRecord = formRecordResource.putFormRecord(
 			postFormRecord.getId(), randomFormRecord);
 
 		assertEquals(randomFormRecord, putFormRecord);
 		assertValid(putFormRecord);
 
-		FormRecord getFormRecord = invokeGetFormRecord(putFormRecord.getId());
+		FormRecord getFormRecord = formRecordResource.getFormRecord(
+			putFormRecord.getId());
 
 		assertEquals(randomFormRecord, getFormRecord);
 		assertValid(getFormRecord);
@@ -236,67 +268,13 @@ public abstract class BaseFormRecordResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected FormRecord invokePutFormRecord(
-			Long formRecordId, FormRecord formRecord)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			FormRecordSerDes.toJSON(formRecord), ContentTypes.APPLICATION_JSON,
-			StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath("/form-records/{formRecordId}", formRecordId);
-
-		options.setLocation(location);
-
-		options.setPut(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return FormRecordSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePutFormRecordResponse(
-			Long formRecordId, FormRecord formRecord)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			FormRecordSerDes.toJSON(formRecord), ContentTypes.APPLICATION_JSON,
-			StringPool.UTF8);
-
-		String location =
-			_resourceURL +
-				_toPath("/form-records/{formRecordId}", formRecordId);
-
-		options.setLocation(location);
-
-		options.setPut(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
 	@Test
 	public void testGetFormFormRecordsPage() throws Exception {
+		Page<FormRecord> page = formRecordResource.getFormFormRecordsPage(
+			testGetFormFormRecordsPage_getFormId(), Pagination.of(1, 2));
+
+		Assert.assertEquals(0, page.getTotalCount());
+
 		Long formId = testGetFormFormRecordsPage_getFormId();
 		Long irrelevantFormId =
 			testGetFormFormRecordsPage_getIrrelevantFormId();
@@ -306,7 +284,7 @@ public abstract class BaseFormRecordResourceTestCase {
 				testGetFormFormRecordsPage_addFormRecord(
 					irrelevantFormId, randomIrrelevantFormRecord());
 
-			Page<FormRecord> page = invokeGetFormFormRecordsPage(
+			page = formRecordResource.getFormFormRecordsPage(
 				irrelevantFormId, Pagination.of(1, 2));
 
 			Assert.assertEquals(1, page.getTotalCount());
@@ -323,7 +301,7 @@ public abstract class BaseFormRecordResourceTestCase {
 		FormRecord formRecord2 = testGetFormFormRecordsPage_addFormRecord(
 			formId, randomFormRecord());
 
-		Page<FormRecord> page = invokeGetFormFormRecordsPage(
+		page = formRecordResource.getFormFormRecordsPage(
 			formId, Pagination.of(1, 2));
 
 		Assert.assertEquals(2, page.getTotalCount());
@@ -347,14 +325,14 @@ public abstract class BaseFormRecordResourceTestCase {
 		FormRecord formRecord3 = testGetFormFormRecordsPage_addFormRecord(
 			formId, randomFormRecord());
 
-		Page<FormRecord> page1 = invokeGetFormFormRecordsPage(
+		Page<FormRecord> page1 = formRecordResource.getFormFormRecordsPage(
 			formId, Pagination.of(1, 2));
 
 		List<FormRecord> formRecords1 = (List<FormRecord>)page1.getItems();
 
 		Assert.assertEquals(formRecords1.toString(), 2, formRecords1.size());
 
-		Page<FormRecord> page2 = invokeGetFormFormRecordsPage(
+		Page<FormRecord> page2 = formRecordResource.getFormFormRecordsPage(
 			formId, Pagination.of(2, 2));
 
 		Assert.assertEquals(3, page2.getTotalCount());
@@ -363,21 +341,19 @@ public abstract class BaseFormRecordResourceTestCase {
 
 		Assert.assertEquals(formRecords2.toString(), 1, formRecords2.size());
 
+		Page<FormRecord> page3 = formRecordResource.getFormFormRecordsPage(
+			formId, Pagination.of(1, 3));
+
 		assertEqualsIgnoringOrder(
 			Arrays.asList(formRecord1, formRecord2, formRecord3),
-			new ArrayList<FormRecord>() {
-				{
-					addAll(formRecords1);
-					addAll(formRecords2);
-				}
-			});
+			(List<FormRecord>)page3.getItems());
 	}
 
 	protected FormRecord testGetFormFormRecordsPage_addFormRecord(
 			Long formId, FormRecord formRecord)
 		throws Exception {
 
-		return invokePostFormFormRecord(formId, formRecord);
+		return formRecordResource.postFormFormRecord(formId, formRecord);
 	}
 
 	protected Long testGetFormFormRecordsPage_getFormId() throws Exception {
@@ -389,56 +365,6 @@ public abstract class BaseFormRecordResourceTestCase {
 		throws Exception {
 
 		return null;
-	}
-
-	protected Page<FormRecord> invokeGetFormFormRecordsPage(
-			Long formId, Pagination pagination)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL + _toPath("/forms/{formId}/form-records", formId);
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		return Page.of(string, FormRecordSerDes::toDTO);
-	}
-
-	protected Http.Response invokeGetFormFormRecordsPageResponse(
-			Long formId, Pagination pagination)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL + _toPath("/forms/{formId}/form-records", formId);
-
-		if (pagination != null) {
-			location = HttpUtil.addParameter(
-				location, "page", pagination.getPage());
-			location = HttpUtil.addParameter(
-				location, "pageSize", pagination.getPageSize());
-		}
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
@@ -456,65 +382,8 @@ public abstract class BaseFormRecordResourceTestCase {
 			FormRecord formRecord)
 		throws Exception {
 
-		return invokePostFormFormRecord(
+		return formRecordResource.postFormFormRecord(
 			testGetFormFormRecordsPage_getFormId(), formRecord);
-	}
-
-	protected FormRecord invokePostFormFormRecord(
-			Long formId, FormRecord formRecord)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			FormRecordSerDes.toJSON(formRecord), ContentTypes.APPLICATION_JSON,
-			StringPool.UTF8);
-
-		String location =
-			_resourceURL + _toPath("/forms/{formId}/form-records", formId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return FormRecordSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
-	}
-
-	protected Http.Response invokePostFormFormRecordResponse(
-			Long formId, FormRecord formRecord)
-		throws Exception {
-
-		Http.Options options = _createHttpOptions();
-
-		options.setBody(
-			FormRecordSerDes.toJSON(formRecord), ContentTypes.APPLICATION_JSON,
-			StringPool.UTF8);
-
-		String location =
-			_resourceURL + _toPath("/forms/{formId}/form-records", formId);
-
-		options.setLocation(location);
-
-		options.setPost(true);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
 	}
 
 	@Test
@@ -522,8 +391,9 @@ public abstract class BaseFormRecordResourceTestCase {
 		FormRecord postFormRecord =
 			testGetFormFormRecordByLatestDraft_addFormRecord();
 
-		FormRecord getFormRecord = invokeGetFormFormRecordByLatestDraft(
-			postFormRecord.getFormId());
+		FormRecord getFormRecord =
+			formRecordResource.getFormFormRecordByLatestDraft(
+				postFormRecord.getFormId());
 
 		assertEquals(postFormRecord, getFormRecord);
 		assertValid(getFormRecord);
@@ -536,57 +406,63 @@ public abstract class BaseFormRecordResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected FormRecord invokeGetFormFormRecordByLatestDraft(Long formId)
-		throws Exception {
+	@Test
+	public void testGraphQLGetFormFormRecordByLatestDraft() throws Exception {
+		FormRecord formRecord = testGraphQLFormRecord_addFormRecord();
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/forms/{formId}/form-records/by-latest-draft", formId);
-
-		options.setLocation(location);
-
-		String string = HttpUtil.URLtoString(options);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("HTTP response: " + string);
-		}
-
-		try {
-			return FormRecordSerDes.toDTO(string);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to process HTTP response: " + string, e);
-			}
-
-			throw e;
-		}
+		Assert.assertTrue(
+			equals(
+				formRecord,
+				FormRecordSerDes.toDTO(
+					JSONUtil.getValueAsString(
+						invokeGraphQLQuery(
+							new GraphQLField(
+								"formFormRecordByLatestDraft",
+								new HashMap<String, Object>() {
+									{
+										put("formId", formRecord.getFormId());
+									}
+								},
+								getGraphQLFields())),
+						"JSONObject/data",
+						"Object/formFormRecordByLatestDraft"))));
 	}
 
-	protected Http.Response invokeGetFormFormRecordByLatestDraftResponse(
-			Long formId)
+	@Test
+	public void testGraphQLGetFormFormRecordByLatestDraftNotFound()
 		throws Exception {
 
-		Http.Options options = _createHttpOptions();
-
-		String location =
-			_resourceURL +
-				_toPath("/forms/{formId}/form-records/by-latest-draft", formId);
-
-		options.setLocation(location);
-
-		HttpUtil.URLtoByteArray(options);
-
-		return options.getResponse();
-	}
-
-	protected void assertResponseCode(
-		int expectedResponseCode, Http.Response actualResponse) {
+		Long irrelevantFormId = RandomTestUtil.randomLong();
 
 		Assert.assertEquals(
-			expectedResponseCode, actualResponse.getResponseCode());
+			"Not Found",
+			JSONUtil.getValueAsString(
+				invokeGraphQLQuery(
+					new GraphQLField(
+						"formFormRecordByLatestDraft",
+						new HashMap<String, Object>() {
+							{
+								put("formId", irrelevantFormId);
+							}
+						},
+						getGraphQLFields())),
+				"JSONArray/errors", "Object/0", "JSONObject/extensions",
+				"Object/code"));
+	}
+
+	protected FormRecord testGraphQLFormRecord_addFormRecord()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected void assertHttpResponseStatusCode(
+		int expectedHttpResponseStatusCode,
+		HttpInvoker.HttpResponse actualHttpResponse) {
+
+		Assert.assertEquals(
+			expectedHttpResponseStatusCode, actualHttpResponse.getStatusCode());
 	}
 
 	protected void assertEquals(
@@ -631,7 +507,7 @@ public abstract class BaseFormRecordResourceTestCase {
 		}
 	}
 
-	protected void assertValid(FormRecord formRecord) {
+	protected void assertValid(FormRecord formRecord) throws Exception {
 		boolean valid = true;
 
 		if (formRecord.getDateCreated() == null) {
@@ -673,14 +549,6 @@ public abstract class BaseFormRecordResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("form", additionalAssertFieldName)) {
-				if (formRecord.getForm() == null) {
-					valid = false;
-				}
-
-				continue;
-			}
-
 			if (Objects.equals("formFieldValues", additionalAssertFieldName)) {
 				if (formRecord.getFormFieldValues() == null) {
 					valid = false;
@@ -708,7 +576,7 @@ public abstract class BaseFormRecordResourceTestCase {
 	protected void assertValid(Page<FormRecord> page) {
 		boolean valid = false;
 
-		Collection<FormRecord> formRecords = page.getItems();
+		java.util.Collection<FormRecord> formRecords = page.getItems();
 
 		int size = formRecords.size();
 
@@ -723,6 +591,58 @@ public abstract class BaseFormRecordResourceTestCase {
 	}
 
 	protected String[] getAdditionalAssertFieldNames() {
+		return new String[0];
+	}
+
+	protected List<GraphQLField> getGraphQLFields() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field :
+				ReflectionUtil.getDeclaredFields(
+					com.liferay.headless.form.dto.v1_0.FormRecord.class)) {
+
+			if (!ArrayUtil.contains(
+					getAdditionalAssertFieldNames(), field.getName())) {
+
+				continue;
+			}
+
+			graphQLFields.addAll(getGraphQLFields(field));
+		}
+
+		return graphQLFields;
+	}
+
+	protected List<GraphQLField> getGraphQLFields(Field... fields)
+		throws Exception {
+
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (Field field : fields) {
+			com.liferay.portal.vulcan.graphql.annotation.GraphQLField
+				vulcanGraphQLField = field.getAnnotation(
+					com.liferay.portal.vulcan.graphql.annotation.GraphQLField.
+						class);
+
+			if (vulcanGraphQLField != null) {
+				Class<?> clazz = field.getType();
+
+				if (clazz.isArray()) {
+					clazz = clazz.getComponentType();
+				}
+
+				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
+					ReflectionUtil.getDeclaredFields(clazz));
+
+				graphQLFields.add(
+					new GraphQLField(field.getName(), childrenGraphQLFields));
+			}
+		}
+
+		return graphQLFields;
+	}
+
+	protected String[] getIgnoredEntityFieldNames() {
 		return new String[0];
 	}
 
@@ -787,16 +707,6 @@ public abstract class BaseFormRecordResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals("form", additionalAssertFieldName)) {
-				if (!Objects.deepEquals(
-						formRecord1.getForm(), formRecord2.getForm())) {
-
-					return false;
-				}
-
-				continue;
-			}
-
 			if (Objects.equals("formFieldValues", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						formRecord1.getFormFieldValues(),
@@ -836,7 +746,33 @@ public abstract class BaseFormRecordResourceTestCase {
 		return true;
 	}
 
-	protected Collection<EntityField> getEntityFields() throws Exception {
+	protected boolean equals(
+		Map<String, Object> map1, Map<String, Object> map2) {
+
+		if (Objects.equals(map1.keySet(), map2.keySet())) {
+			for (Map.Entry<String, Object> entry : map1.entrySet()) {
+				if (entry.getValue() instanceof Map) {
+					if (!equals(
+							(Map)entry.getValue(),
+							(Map)map2.get(entry.getKey()))) {
+
+						return false;
+					}
+				}
+				else if (!Objects.deepEquals(
+							entry.getValue(), map2.get(entry.getKey()))) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	protected java.util.Collection<EntityField> getEntityFields()
+		throws Exception {
+
 		if (!(_formRecordResource instanceof EntityModelResource)) {
 			throw new UnsupportedOperationException(
 				"Resource is not an instance of EntityModelResource");
@@ -857,12 +793,15 @@ public abstract class BaseFormRecordResourceTestCase {
 	protected List<EntityField> getEntityFields(EntityField.Type type)
 		throws Exception {
 
-		Collection<EntityField> entityFields = getEntityFields();
+		java.util.Collection<EntityField> entityFields = getEntityFields();
 
 		Stream<EntityField> stream = entityFields.stream();
 
 		return stream.filter(
-			entityField -> Objects.equals(entityField.getType(), type)
+			entityField ->
+				Objects.equals(entityField.getType(), type) &&
+				!ArrayUtil.contains(
+					getIgnoredEntityFieldNames(), entityField.getName())
 		).collect(
 			Collectors.toList()
 		);
@@ -987,11 +926,6 @@ public abstract class BaseFormRecordResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
-		if (entityFieldName.equals("form")) {
-			throw new IllegalArgumentException(
-				"Invalid entity field " + entityFieldName);
-		}
-
 		if (entityFieldName.equals("formFieldValues")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -1009,6 +943,43 @@ public abstract class BaseFormRecordResourceTestCase {
 
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
+	}
+
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
+	protected JSONObject invokeGraphQLMutation(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField mutationGraphQLField = new GraphQLField(
+			"mutation", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(mutationGraphQLField.toString()));
+	}
+
+	protected JSONObject invokeGraphQLQuery(GraphQLField graphQLField)
+		throws Exception {
+
+		GraphQLField queryGraphQLField = new GraphQLField(
+			"query", graphQLField);
+
+		return JSONFactoryUtil.createJSONObject(
+			invoke(queryGraphQLField.toString()));
 	}
 
 	protected FormRecord randomFormRecord() throws Exception {
@@ -1034,76 +1005,80 @@ public abstract class BaseFormRecordResourceTestCase {
 		return randomFormRecord();
 	}
 
+	protected FormRecordResource formRecordResource;
 	protected Group irrelevantGroup;
-	protected String testContentType = "application/json";
+	protected Company testCompany;
 	protected Group testGroup;
-	protected Locale testLocale;
-	protected String testUserNameAndPassword = "test@liferay.com:test";
 
-	private Http.Options _createHttpOptions() {
-		Http.Options options = new Http.Options();
+	protected class GraphQLField {
 
-		options.addHeader("Accept", "application/json");
-		options.addHeader(
-			"Accept-Language", LocaleUtil.toW3cLanguageId(testLocale));
-
-		String encodedTestUserNameAndPassword = Base64.encode(
-			testUserNameAndPassword.getBytes());
-
-		options.addHeader(
-			"Authorization", "Basic " + encodedTestUserNameAndPassword);
-
-		options.addHeader("Content-Type", testContentType);
-
-		return options;
-	}
-
-	private String _toJSON(Map<String, String> map) {
-		if (map == null) {
-			return "null";
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
 		}
 
-		StringBuilder sb = new StringBuilder();
+		public GraphQLField(String key, List<GraphQLField> graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
 
-		sb.append("{");
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
 
-		Set<Map.Entry<String, String>> set = map.entrySet();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = Arrays.asList(graphQLFields);
+		}
 
-		Iterator<Map.Entry<String, String>> iterator = set.iterator();
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			List<GraphQLField> graphQLFields) {
 
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
 
-			sb.append("\"" + entry.getKey() + "\": ");
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
 
-			if (entry.getValue() == null) {
-				sb.append("null");
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
 			}
-			else {
-				sb.append("\"" + entry.getValue() + "\"");
+
+			if (!_graphQLFields.isEmpty()) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
 			}
 
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+			return sb.toString();
 		}
 
-		sb.append("}");
+		private final List<GraphQLField> _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
 
-		return sb.toString();
-	}
-
-	private String _toPath(String template, Object... values) {
-		if (ArrayUtil.isEmpty(values)) {
-			return template;
-		}
-
-		for (int i = 0; i < values.length; i++) {
-			template = template.replaceFirst(
-				"\\{.*?\\}", String.valueOf(values[i]));
-		}
-
-		return template;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -1124,8 +1099,7 @@ public abstract class BaseFormRecordResourceTestCase {
 	private static DateFormat _dateFormat;
 
 	@Inject
-	private FormRecordResource _formRecordResource;
-
-	private URL _resourceURL;
+	private com.liferay.headless.form.resource.v1_0.FormRecordResource
+		_formRecordResource;
 
 }

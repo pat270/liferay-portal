@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link LayoutRevision}.
@@ -31,7 +29,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutRevision
  * @generated
  */
-@ProviderType
 public class LayoutRevisionWrapper
 	extends BaseModelWrapper<LayoutRevision>
 	implements LayoutRevision, ModelWrapper<LayoutRevision> {
@@ -1025,6 +1022,13 @@ public class LayoutRevisionWrapper
 		return model.isContentDisplayPage();
 	}
 
+	@Override
+	public boolean isCustomizable()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.isCustomizable();
+	}
+
 	/**
 	 * Returns <code>true</code> if this layout revision is denied.
 	 *
@@ -1722,9 +1726,9 @@ public class LayoutRevisionWrapper
 	@Override
 	public void setTypeSettingsProperties(
 		com.liferay.portal.kernel.util.UnicodeProperties
-			typeSettingsProperties) {
+			typeSettingsUnicodeProperties) {
 
-		model.setTypeSettingsProperties(typeSettingsProperties);
+		model.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 	}
 
 	/**

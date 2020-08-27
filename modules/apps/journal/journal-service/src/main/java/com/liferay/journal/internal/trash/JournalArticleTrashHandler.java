@@ -18,6 +18,7 @@ import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.journal.internal.util.JournalUtil;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFolder;
@@ -25,7 +26,6 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.journal.util.JournalHelper;
-import com.liferay.journal.util.impl.JournalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.TrashedModel;
@@ -35,14 +35,15 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.trash.TrashActionKeys;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.trash.constants.TrashActionKeys;
 import com.liferay.trash.kernel.exception.RestoreEntryException;
 import com.liferay.trash.kernel.model.TrashEntry;
 import com.liferay.trash.kernel.model.TrashEntryConstants;
@@ -187,13 +188,30 @@ public class JournalArticleTrashHandler extends JournalBaseTrashHandler {
 		throws PortalException {
 
 		if (trashActionId.equals(TrashActionKeys.MOVE)) {
-			return ModelResourcePermissionHelper.contains(
+			return ModelResourcePermissionUtil.contains(
 				_journalFolderModelResourcePermission, permissionChecker,
 				groupId, classPK, ActionKeys.ADD_ARTICLE);
 		}
 
 		return super.hasTrashPermission(
 			permissionChecker, groupId, classPK, trashActionId);
+	}
+
+	@Override
+	public boolean isMovable(long classPK) throws PortalException {
+		JournalArticle article = _journalArticleLocalService.getLatestArticle(
+			classPK);
+
+		if (article.getFolderId() > 0) {
+			JournalFolder parentFolder = _journalFolderLocalService.fetchFolder(
+				article.getFolderId());
+
+			if ((parentFolder == null) || parentFolder.isInTrash()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
@@ -204,6 +222,13 @@ public class JournalArticleTrashHandler extends JournalBaseTrashHandler {
 		if ((article.getFolderId() > 0) &&
 			(_journalFolderLocalService.fetchFolder(article.getFolderId()) ==
 				null)) {
+
+			return false;
+		}
+
+		if (!hasTrashPermission(
+				PermissionThreadLocal.getPermissionChecker(),
+				article.getGroupId(), classPK, TrashActionKeys.RESTORE)) {
 
 			return false;
 		}
@@ -290,19 +315,20 @@ public class JournalArticleTrashHandler extends JournalBaseTrashHandler {
 			(journalArticleResource.getPrimaryKey() !=
 				originalArticleResource.getPrimaryKey())) {
 
-			RestoreEntryException ree = new RestoreEntryException(
-				RestoreEntryException.DUPLICATE);
+			RestoreEntryException restoreEntryException =
+				new RestoreEntryException(RestoreEntryException.DUPLICATE);
 
 			JournalArticle duplicateArticle =
 				_journalArticleLocalService.getArticle(
 					originalArticleResource.getGroupId(), originalTitle);
 
-			ree.setDuplicateEntryId(duplicateArticle.getResourcePrimKey());
-			ree.setOldName(duplicateArticle.getArticleId());
+			restoreEntryException.setDuplicateEntryId(
+				duplicateArticle.getResourcePrimKey());
+			restoreEntryException.setOldName(duplicateArticle.getArticleId());
 
-			ree.setTrashEntryId(trashEntryId);
+			restoreEntryException.setTrashEntryId(trashEntryId);
 
-			throw ree;
+			throw restoreEntryException;
 		}
 	}
 
@@ -322,22 +348,24 @@ public class JournalArticleTrashHandler extends JournalBaseTrashHandler {
 		JournalArticle article = _journalArticleLocalService.getLatestArticle(
 			classPK);
 
-		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
 			_portal.getSiteGroupId(article.getGroupId()),
 			_portal.getClassNameId(JournalArticle.class),
 			article.getDDMStructureKey(), true);
+
+		if (ddmStructure == null) {
+			return;
+		}
 
 		if (containerModelId == TrashEntryConstants.DEFAULT_CONTAINER_ID) {
 			containerModelId = article.getFolderId();
 		}
 
-		int restrictionType = _journalHelper.getRestrictionType(
-			containerModelId);
-
 		List<DDMStructure> folderDDMStructures =
 			_journalFolderLocalService.getDDMStructures(
 				_portal.getCurrentAndAncestorSiteGroupIds(article.getGroupId()),
-				containerModelId, restrictionType);
+				containerModelId,
+				_journalHelper.getRestrictionType(containerModelId));
 
 		for (DDMStructure folderDDMStructure : folderDDMStructures) {
 			if (folderDDMStructure.getStructureId() ==

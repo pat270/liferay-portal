@@ -17,9 +17,12 @@ package com.liferay.portal.kernel.backgroundtask;
 import com.liferay.petra.string.StringPool;
 
 /**
- * @author Daniel Kocsis
- * @author Eduardo García
+ * @author     Daniel Kocsis
+ * @author     Eduardo García
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.kernel.backgroundtask.constants.BackgroundTaskConstants}
  */
+@Deprecated
 public class BackgroundTaskConstants {
 
 	public static final String BACKGROUND_TASK_ID = "backgroundTaskId";

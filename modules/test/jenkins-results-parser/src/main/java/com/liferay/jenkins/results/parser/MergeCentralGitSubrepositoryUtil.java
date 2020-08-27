@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +36,8 @@ public class MergeCentralGitSubrepositoryUtil {
 
 	public static void createGitSubrepositoryMergePullRequests(
 			String centralWorkingDirectory, String centralUpstreamBranchName,
-			String receiverUserName, String topLevelBranchName)
+			String receiverUserName, String senderUserName,
+			String topLevelBranchName)
 		throws IOException {
 
 		GitWorkingDirectory centralGitWorkingDirectory =
@@ -68,12 +68,11 @@ public class MergeCentralGitSubrepositoryUtil {
 
 				Matcher matcher = _githubRemotePattern.matcher(remote);
 
-				if (matcher.find() && !subrepoMergeBlacklist.isEmpty()) {
-					if (subrepoMergeBlacklist.contains(
-							matcher.group("gitSubrepositoryName"))) {
+				if (matcher.find() && !subrepoMergeBlacklist.isEmpty() &&
+					subrepoMergeBlacklist.contains(
+						matcher.group("gitSubrepositoryName"))) {
 
-						continue;
-					}
+					continue;
 				}
 
 				CentralGitSubrepository centralGitSubrepository =
@@ -112,12 +111,12 @@ public class MergeCentralGitSubrepositoryUtil {
 
 						_pushMergeLocalGitBranchToRemote(
 							centralGitWorkingDirectory, mergeLocalGitBranch,
-							receiverUserName);
+							senderUserName);
 					}
 
 					_createMergePullRequest(
 						centralGitWorkingDirectory, centralGitSubrepository,
-						mergeBranchName, receiverUserName);
+						mergeBranchName, receiverUserName, senderUserName);
 				}
 
 				_deleteStalePulls(
@@ -128,12 +127,10 @@ public class MergeCentralGitSubrepositoryUtil {
 					centralGitWorkingDirectory, centralGitSubrepository,
 					mergeBranchName);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
 				failedGitrepoPaths.add(gitrepoFile.getParent());
 
-				e.printStackTrace();
-
-				continue;
+				exception.printStackTrace();
 			}
 		}
 
@@ -145,14 +142,10 @@ public class MergeCentralGitSubrepositoryUtil {
 			Properties buildProperties =
 				JenkinsResultsParserUtil.getBuildProperties();
 
-			try {
-				JenkinsResultsParserUtil.sendEmail(
-					message, "jenkins", "Merge Central Git Subrepository",
-					buildProperties.getProperty(
-						"email.list[merge-central-subrepository]"));
-			}
-			catch (TimeoutException te) {
-			}
+			NotificationUtil.sendEmail(
+				message, "jenkins", "Merge Central Git Subrepository",
+				buildProperties.getProperty(
+					"email.list[merge-central-subrepository]"));
 
 			throw new RuntimeException(message);
 		}
@@ -210,7 +203,8 @@ public class MergeCentralGitSubrepositoryUtil {
 	private static void _createMergePullRequest(
 			GitWorkingDirectory centralGitWorkingDirectory,
 			CentralGitSubrepository centralGitSubrepository,
-			String mergeBranchName, String receiverUserName)
+			String mergeBranchName, String receiverUserName,
+			String senderUserName)
 		throws IOException {
 
 		String gitSubrepositoryName =
@@ -219,7 +213,7 @@ public class MergeCentralGitSubrepositoryUtil {
 			centralGitSubrepository.getGitSubrepositoryUpstreamCommit();
 
 		String url = JenkinsResultsParserUtil.getGitHubApiUrl(
-			gitSubrepositoryName, receiverUserName,
+			gitSubrepositoryName, senderUserName,
 			"statuses/" + gitSubrepositoryUpstreamCommit);
 
 		JSONObject requestJSONObject = new JSONObject();
@@ -233,7 +227,7 @@ public class MergeCentralGitSubrepositoryUtil {
 		sb.append("Merging the following commit: [");
 		sb.append(gitSubrepositoryUpstreamCommit);
 		sb.append("](https://github.com/");
-		sb.append(receiverUserName);
+		sb.append(senderUserName);
 		sb.append("/");
 		sb.append(gitSubrepositoryName);
 		sb.append("/commit/");
@@ -243,7 +237,8 @@ public class MergeCentralGitSubrepositoryUtil {
 		String title = gitSubrepositoryName + " - Central Merge Pull Request";
 
 		String pullRequestURL = centralGitWorkingDirectory.createPullRequest(
-			sb.toString(), mergeBranchName, receiverUserName, title);
+			sb.toString(), mergeBranchName, receiverUserName, senderUserName,
+			title);
 
 		requestJSONObject.put("target_url", pullRequestURL);
 
@@ -413,13 +408,13 @@ public class MergeCentralGitSubrepositoryUtil {
 
 	private static void _pushMergeLocalGitBranchToRemote(
 		GitWorkingDirectory centralGitWorkingDirectory,
-		LocalGitBranch mergeLocalGitBranch, String receiverUserName) {
+		LocalGitBranch mergeLocalGitBranch, String senderUserName) {
 
 		String centralGitRepositoryName =
 			centralGitWorkingDirectory.getGitRepositoryName();
 
 		String originRemoteURL = JenkinsResultsParserUtil.combine(
-			"git@github.com:", receiverUserName, "/", centralGitRepositoryName,
+			"git@github.com:", senderUserName, "/", centralGitRepositoryName,
 			".git");
 
 		GitRemote originGitRemote = centralGitWorkingDirectory.addGitRemote(

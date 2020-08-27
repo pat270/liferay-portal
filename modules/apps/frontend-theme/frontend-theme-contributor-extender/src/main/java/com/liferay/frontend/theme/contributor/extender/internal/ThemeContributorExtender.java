@@ -75,20 +75,21 @@ public class ThemeContributorExtender
 			return null;
 		}
 
-		int themeContributorWeight = GetterUtil.getInteger(
-			headers.get("Liferay-Theme-Contributor-Weight"));
-
 		Collection<ServiceRegistration<?>> serviceRegistrations =
 			new ArrayList<>();
 
 		ServletContext servletContext = _bundleContext.getService(
 			serviceReference);
+		Dictionary<String, Integer> properties = MapUtil.singletonDictionary(
+			"service.ranking",
+			GetterUtil.getInteger(
+				headers.get("Liferay-Theme-Contributor-Weight")));
 
 		serviceRegistrations.add(
 			_bundleContext.registerService(
 				PortalWebResources.class.getName(),
 				new ThemeContributorPortalWebResources(bundle, servletContext),
-				null));
+				properties));
 
 		serviceRegistrations.add(
 			_bundleContext.registerService(
@@ -96,8 +97,7 @@ public class ThemeContributorExtender
 				new BundleWebResourcesImpl(
 					servletContext.getContextPath(), entry.getKey(),
 					entry.getValue()),
-				MapUtil.singletonDictionary(
-					"service.ranking", themeContributorWeight)));
+				properties));
 
 		return serviceRegistrations;
 	}
@@ -127,6 +127,7 @@ public class ThemeContributorExtender
 		throws InvalidSyntaxException {
 
 		_bundleContext = bundleContext;
+
 		_serviceTracker = new ServiceTracker<>(
 			bundleContext,
 			bundleContext.createFilter(
@@ -148,12 +149,12 @@ public class ThemeContributorExtender
 
 		List<String> cssResourcePaths = new ArrayList<>();
 
-		Enumeration<URL> cssEntries = bundle.findEntries(
+		Enumeration<URL> enumeration = bundle.findEntries(
 			"/META-INF/resources", "*.css", true);
 
-		if (cssEntries != null) {
-			while (cssEntries.hasMoreElements()) {
-				URL url = cssEntries.nextElement();
+		if (enumeration != null) {
+			while (enumeration.hasMoreElements()) {
+				URL url = enumeration.nextElement();
 
 				String path = url.getFile();
 
@@ -171,12 +172,11 @@ public class ThemeContributorExtender
 
 		List<String> jsResourcePaths = new ArrayList<>();
 
-		Enumeration<URL> jsEntries = bundle.findEntries(
-			"/META-INF/resources", "*.js", true);
+		enumeration = bundle.findEntries("/META-INF/resources", "*.js", true);
 
-		if (jsEntries != null) {
-			while (jsEntries.hasMoreElements()) {
-				URL url = jsEntries.nextElement();
+		if (enumeration != null) {
+			while (enumeration.hasMoreElements()) {
+				URL url = enumeration.nextElement();
 
 				String path = url.getFile();
 

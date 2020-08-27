@@ -16,9 +16,9 @@ package com.liferay.knowledge.base.service.persistence.impl;
 
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
-import com.liferay.knowledge.base.service.persistence.KBArticleUtil;
+import com.liferay.knowledge.base.service.persistence.KBArticlePersistence;
 import com.liferay.knowledge.base.service.persistence.KBFolderFinder;
-import com.liferay.knowledge.base.service.persistence.KBFolderUtil;
+import com.liferay.knowledge.base.service.persistence.KBFolderPersistence;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
@@ -29,16 +29,22 @@ import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
+import com.liferay.portal.kernel.security.permission.InlineSQLHelper;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Roberto Díaz
  */
+@Component(service = KBFolderFinder.class)
 public class KBFolderFinderImpl
 	extends KBFolderFinderBaseImpl implements KBFolderFinder {
 
@@ -50,6 +56,9 @@ public class KBFolderFinderImpl
 
 	public static final String FIND_A_BY_G_P =
 		KBFolderFinder.class.getName() + ".findA_ByG_P";
+
+	public static final String FIND_A_BY_G_P_VC =
+		KBFolderFinder.class.getName() + ".findA_ByG_P_VC";
 
 	public static final String FIND_F_BY_G_P =
 		KBFolderFinder.class.getName() + ".findF_ByG_P";
@@ -107,7 +116,7 @@ public class KBFolderFinderImpl
 				getClass(), COUNT_A_BY_G_P, queryDefinition);
 
 			if (inlineSQLHelper) {
-				sql = InlineSQLHelperUtil.replacePermissionCheck(
+				sql = _inlineSQLHelper.replacePermissionCheck(
 					sql, KBArticle.class.getName(), "KBArticle.kbArticleId",
 					groupId);
 			}
@@ -118,7 +127,7 @@ public class KBFolderFinderImpl
 			sql = _customSQL.get(getClass(), COUNT_F_BY_G_P, queryDefinition);
 
 			if (inlineSQLHelper) {
-				sql = InlineSQLHelperUtil.replacePermissionCheck(
+				sql = _inlineSQLHelper.replacePermissionCheck(
 					sql, KBFolder.class.getName(), "KBFolder.kbFolderId",
 					groupId);
 			}
@@ -126,25 +135,26 @@ public class KBFolderFinderImpl
 			sb.append(sql);
 			sb.append(StringPool.CLOSE_PARENTHESIS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sb.toString());
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(
+				sb.toString());
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(parentResourcePrimKey);
-			qPos.add(true);
-			qPos.add(queryDefinition.getStatus());
-			qPos.add(groupId);
-			qPos.add(parentResourcePrimKey);
+			queryPos.add(groupId);
+			queryPos.add(parentResourcePrimKey);
+			queryPos.add(true);
+			queryPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(parentResourcePrimKey);
 
 			int count = 0;
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			while (itr.hasNext()) {
-				Long l = itr.next();
+			while (iterator.hasNext()) {
+				Long l = iterator.next();
 
 				if (l != null) {
 					count += l.intValue();
@@ -153,8 +163,8 @@ public class KBFolderFinderImpl
 
 			return count;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -165,6 +175,18 @@ public class KBFolderFinderImpl
 		long groupId, long parentResourcePrimKey,
 		QueryDefinition<?> queryDefinition, boolean inlineSQLHelper) {
 
+		boolean orderByViewCount = false;
+
+		OrderByComparator<?> orderByComparator =
+			queryDefinition.getOrderByComparator();
+
+		if ((orderByComparator != null) &&
+			ArrayUtil.contains(
+				orderByComparator.getOrderByFields(), "viewCount")) {
+
+			orderByViewCount = true;
+		}
+
 		Session session = null;
 
 		try {
@@ -174,11 +196,19 @@ public class KBFolderFinderImpl
 
 			sb.append("SELECT * FROM (");
 
-			String sql = _customSQL.get(
-				getClass(), FIND_A_BY_G_P, queryDefinition);
+			String sql = null;
+
+			if (orderByViewCount) {
+				sql = _customSQL.get(
+					getClass(), FIND_A_BY_G_P_VC, queryDefinition);
+			}
+			else {
+				sql = _customSQL.get(
+					getClass(), FIND_A_BY_G_P, queryDefinition);
+			}
 
 			if (inlineSQLHelper) {
-				sql = InlineSQLHelperUtil.replacePermissionCheck(
+				sql = _inlineSQLHelper.replacePermissionCheck(
 					sql, KBArticle.class.getName(), "KBArticle.kbArticleId",
 					groupId);
 			}
@@ -189,7 +219,7 @@ public class KBFolderFinderImpl
 			sql = _customSQL.get(getClass(), FIND_F_BY_G_P, queryDefinition);
 
 			if (inlineSQLHelper) {
-				sql = InlineSQLHelperUtil.replacePermissionCheck(
+				sql = _inlineSQLHelper.replacePermissionCheck(
 					sql, KBFolder.class.getName(), "KBFolder.kbFolderId",
 					groupId);
 			}
@@ -199,62 +229,86 @@ public class KBFolderFinderImpl
 
 			sql = sb.toString();
 
-			sql = _customSQL.replaceOrderBy(
-				sql, queryDefinition.getOrderByComparator());
+			sql = _customSQL.replaceOrderBy(sql, orderByComparator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("modelId", Type.LONG);
-			q.addScalar("modelFolder", Type.LONG);
-			q.addScalar("modifiedDate", Type.DATE);
-			q.addScalar("priority", Type.DOUBLE);
-			q.addScalar("title", Type.STRING);
-			q.addScalar("viewCount", Type.INTEGER);
+			sqlQuery.addScalar("modelId", Type.LONG);
+			sqlQuery.addScalar("modelFolder", Type.LONG);
+			sqlQuery.addScalar("modifiedDate", Type.DATE);
+			sqlQuery.addScalar("priority", Type.DOUBLE);
+			sqlQuery.addScalar("title", Type.STRING);
+			sqlQuery.addScalar("viewCount", Type.INTEGER);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(parentResourcePrimKey);
-			qPos.add(true);
-			qPos.add(queryDefinition.getStatus());
-			qPos.add(groupId);
-			qPos.add(parentResourcePrimKey);
+			if (orderByViewCount) {
+				long classNameId = _classNameLocalService.getClassNameId(
+					KBArticle.class);
+
+				queryPos.add(classNameId);
+
+				queryPos.add(groupId);
+				queryPos.add(parentResourcePrimKey);
+				queryPos.add(true);
+				queryPos.add(queryDefinition.getStatus());
+				queryPos.add(classNameId);
+			}
+
+			queryPos.add(groupId);
+			queryPos.add(parentResourcePrimKey);
+			queryPos.add(true);
+			queryPos.add(queryDefinition.getStatus());
+			queryPos.add(groupId);
+			queryPos.add(parentResourcePrimKey);
 
 			List<Object> models = new ArrayList<>();
 
-			Iterator<Object[]> itr = (Iterator<Object[]>)QueryUtil.iterate(
-				q, getDialect(), queryDefinition.getStart(),
+			Iterator<Object[]> iterator = (Iterator<Object[]>)QueryUtil.iterate(
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 
-			while (itr.hasNext()) {
-				Object[] array = itr.next();
+			while (iterator.hasNext()) {
+				Object[] array = iterator.next();
 
 				long modelId = (Long)array[0];
 				long modelFolder = (Long)array[1];
 
-				Object obj = null;
+				Object object = null;
 
 				if (modelFolder == 1) {
-					obj = KBFolderUtil.findByPrimaryKey(modelId);
+					object = _kBFolderPersistence.findByPrimaryKey(modelId);
 				}
 				else {
-					obj = KBArticleUtil.findByPrimaryKey(modelId);
+					object = _kBArticlePersistence.findByPrimaryKey(modelId);
 				}
 
-				models.add(obj);
+				models.add(object);
 			}
 
 			return models;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
 	private CustomSQL _customSQL;
+
+	@Reference
+	private InlineSQLHelper _inlineSQLHelper;
+
+	@Reference
+	private KBArticlePersistence _kBArticlePersistence;
+
+	@Reference
+	private KBFolderPersistence _kBFolderPersistence;
 
 }

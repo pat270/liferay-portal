@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.security.auth;
 
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.registry.Registry;
@@ -30,9 +31,7 @@ import com.liferay.registry.util.StringPlus;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -95,14 +94,14 @@ public abstract class BaseAuthTokenWhitelist implements AuthTokenWhitelist {
 	protected void registerPortalProperty(String key) {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Map<String, Object> properties = new HashMap<>();
-
 		String[] values = PropsUtil.getArray(key);
 
-		properties.put(key, values);
-
 		ServiceRegistration<Object> serviceRegistration =
-			registry.registerService(Object.class, new Object(), properties);
+			registry.registerService(
+				Object.class, new Object(),
+				HashMapBuilder.<String, Object>put(
+					key, values
+				).build());
 
 		serviceRegistrations.put(StringUtil.merge(values), serviceRegistration);
 	}

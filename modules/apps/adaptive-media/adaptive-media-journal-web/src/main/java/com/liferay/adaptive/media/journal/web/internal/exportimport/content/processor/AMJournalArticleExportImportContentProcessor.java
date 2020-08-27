@@ -14,10 +14,17 @@
 
 package com.liferay.adaptive.media.journal.web.internal.exportimport.content.processor;
 
+import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.journal.model.JournalArticle;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.StagedModel;
+
+import java.util.List;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -48,6 +55,10 @@ public class AMJournalArticleExportImportContentProcessor
 					portletDataContext, stagedModel, content,
 					exportReferencedContent, escapeContent);
 
+		if (!_hasTextHTMLDDMFormField(stagedModel)) {
+			return replacedContent;
+		}
+
 		return _amJournalArticleContentHTMLReplacer.replace(
 			replacedContent,
 			html ->
@@ -67,6 +78,10 @@ public class AMJournalArticleExportImportContentProcessor
 			_journalArticleExportImportContentProcessor.
 				replaceImportContentReferences(
 					portletDataContext, stagedModel, content);
+
+		if (!_hasTextHTMLDDMFormField(stagedModel)) {
+			return replacedContent;
+		}
 
 		return _amJournalArticleContentHTMLReplacer.replace(
 			replacedContent,
@@ -93,9 +108,32 @@ public class AMJournalArticleExportImportContentProcessor
 					return html;
 				});
 		}
-		catch (Exception e) {
-			throw new PortalException(e);
+		catch (Exception exception) {
+			throw new PortalException(exception);
 		}
+	}
+
+	private boolean _hasTextHTMLDDMFormField(StagedModel stagedModel) {
+		JournalArticle journalArticle = (JournalArticle)stagedModel;
+
+		DDMStructure ddmStructure = journalArticle.getDDMStructure();
+
+		if (ddmStructure == null) {
+			return true;
+		}
+
+		List<DDMFormField> ddmFormFields = ddmStructure.getDDMFormFields(false);
+
+		for (DDMFormField ddmFormField : ddmFormFields) {
+			if (Objects.equals(
+					ddmFormField.getType(), DDMFormFieldType.TEXT_HTML) ||
+				Objects.equals(ddmFormField.getType(), "text_area")) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Reference

@@ -1,0 +1,438 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Pages Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Test Site Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name");
+
+			Site.tearDownCP();
+
+			JSONUser.tearDownNonAdminUsers();
+		}
+	}
+
+	@priority = "5"
+	test AddPageFromExistingPage {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.addPublicPage(
+			pageName = "Site Page Name",
+			pageTemplateName = "Wiki");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Test Site Name");
+
+		for (var portletName : list "Tags Navigation,Categories Navigation,Wiki") {
+			Portlet.viewSpecificPG(portletName = "${portletName}");
+		}
+	}
+
+	@priority = "4"
+	test AddPagesFullPageApplication {
+		property osgi.app.includes = "hello-soy";
+		property portal.release = "false";
+		property testray.component.names = "Site Pages Administration";
+
+		for (var portlet : list "Blogs,Documents and Media,Wiki,Media Gallery,Message Boards,Form,Application Authorization Request,RSS Publisher,Application Authorization Request") {
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+			SitePages.addPublicPage(
+				pageName = "${portlet} Full Page Application",
+				sitePageType = "Full Page Application");
+
+			SitePages.configurePage(
+				pageName = "${portlet} Full Page Application",
+				portlet = "${portlet}",
+				privacy = "Public Pages",
+				sitePageType = "Full Page Application");
+
+			Navigator.gotoSitePage(
+				pageName = "${portlet} Full Page Application",
+				siteName = "Test Site Name");
+
+			AssertTextEquals(
+				key_portletTitleName = "${portlet}",
+				locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_1_PORTLET_TITLE",
+				value1 = "${portlet}");
+
+			AssertElementNotPresent(locator1 = "ControlMenu#ADD");
+		}
+	}
+
+	@priority = "4"
+	test AddPagesFullPageApplicationForRelease {
+		property portal.upstream = "false";
+		property testray.component.names = "Site Pages Administration";
+
+		for (var portlet : list "Blogs,Documents and Media,Form,Wiki,Media Gallery,Message Boards,RSS Publisher,Application Authorization Request") {
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+			SitePages.addPublicPage(
+				pageName = "${portlet} Full Page Application",
+				sitePageType = "Full Page Application");
+
+			SitePages.configurePage(
+				pageName = "${portlet} Full Page Application",
+				portlet = "${portlet}",
+				privacy = "Public Pages",
+				sitePageType = "Full Page Application");
+
+			Navigator.gotoSitePage(
+				pageName = "${portlet} Full Page Application",
+				siteName = "Test Site Name");
+
+			AssertTextEquals.assertText(
+				key_portletTitleName = "${portlet}",
+				locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_1_PORTLET_TITLE",
+				value1 = "${portlet}");
+
+			AssertElementNotPresent(locator1 = "ControlMenu#ADD");
+		}
+	}
+
+	@priority = "3"
+	test AddPageWithEscapeCharacter {
+		property testray.component.names = "Site Pages Administration";
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.addPublicPage(pageName = "Tester&apos;s Page");
+	}
+
+	@priority = "3"
+	test AddPageWithMultipleChildPagesToSite {
+		property testray.component.names = "Site Pages Administration";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page");
+
+		for (var childPageName : list "Site Child Page 1,Site Child Page 2,Site Child Page 3") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "${childPageName}",
+				parentLayoutName = "Site Page");
+		}
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		for (var childPageName : list "Site Child Page 1,Site Child Page 2,Site Child Page 3") {
+			Page.view(
+				depth = "2",
+				pageName = "${childPageName}",
+				privacy = "Public Pages");
+		}
+	}
+
+	@priority = "4"
+	test AddSitePrivateChildPage {
+		property testray.component.names = "Site Pages Administration";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPrivateLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page");
+
+		JSONLayout.addPrivateLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Child Page",
+			parentLayoutName = "Site Page");
+
+		Navigator.gotoSpecificURLPage(
+			pageName = "Site Page",
+			url = "${portalURL}/group/test-site-name/site-child-page");
+
+		Page.view(
+			depth = "2",
+			pageName = "Site Child Page",
+			privacy = "Private Pages");
+	}
+
+	@priority = "4"
+	test AddSitePrivatePagePortlet {
+		property testray.component.names = "Site Pages Administration";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPrivateLayout(
+			groupName = "Test Site Name",
+			layoutName = "Blogs Page");
+
+		Navigator.gotoSpecificURLPage(
+			pageName = "Blogs Page",
+			url = "${portalURL}/group/test-site-name");
+
+		Portlet.addPG(
+			pageAccess = "Private",
+			pageName = "Blogs Page",
+			portletName = "Blogs",
+			siteName = "Test Site Name",
+			siteURL = "true");
+	}
+
+	@priority = "4"
+	test AddSitePublicPage {
+		property testray.component.names = "Site Pages Administration";
+		var portalURL = PropsUtil.get("portal.url");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page");
+
+		Navigator.gotoSpecificURLPage(
+			pageName = "Site Page",
+			url = "${portalURL}/web/test-site-name/site-page");
+
+		Page.view(
+			pageName = "Site Page",
+			privacy = "Public Pages");
+	}
+
+	@priority = "4"
+	test AddSitePublicPagePortlet {
+		property testray.component.names = "Site Pages Administration";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Blogs Page");
+
+		Navigator.gotoSitePage(
+			pageName = "Blogs Page",
+			siteName = "Test Site Name");
+
+		Portlet.addPG(portletName = "Blogs");
+	}
+
+	@priority = "5"
+	test ChangePageLayout {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Pages Administration,Training";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Test Site Name");
+
+		Page.viewPageLayout(pageLayout = "2 Column (30/70)");
+
+		for (var layoutTemplate : list "1 Column,2 Columns (50/50),2 Columns (70/30),3 Columns,1-2 Columns (30/70),1-2 Columns (70/30),1-2-1 Columns (50/50),1-2-1 Columns (70/30),1-3-1 Columns,1-3-2 Columns,2-1-2 Columns,2-2 Columns,3-2-3 Columns") {
+			JSONLayout.updateLayoutTemplateOfPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Site Page Name",
+				layoutTemplate = "${layoutTemplate}");
+
+			Navigator.gotoSitePage(
+				pageName = "Site Page Name",
+				siteName = "Test Site Name");
+
+			Pause(locator1 = "3000");
+
+			Navigator.gotoEditPageViaControlMenu(pageName = "Site Page Name");
+
+			Page.viewSelectedLayoutColumn(columnName = "${layoutTemplate}");
+		}
+	}
+
+	@priority = "5"
+	test DeleteSitePages {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Pages Administration";
+
+		for (var pageName : list "Site Page 1,Site Page 2,Site Page 3") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "${pageName}");
+		}
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.deletePage(pageName = "Site Page 2");
+	}
+
+	@priority = "5"
+	test EditSitePage {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "WidgetPages#EditSitePage";
+		property testray.component.names = "Site Pages Administration,Training";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Test Site Name",
+			layoutName = "Site Page");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Site Page");
+
+		Page.editName(pageNameEdit = "Site Page Edit");
+
+		Page.view(
+			pageName = "Site Page Edit",
+			privacy = "Public Pages");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Test Page");
+
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Guest",
+			layoutName = "Test Page",
+			layoutTemplate = "1 Column");
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page");
+
+		Page.viewSelectedLayoutColumn(columnName = "1 Column");
+
+		Page.editName(pageNameEdit = "Test Page Edit");
+
+		Navigator.gotoPage(pageName = "Test Page Edit");
+
+		Page.view(
+			pageName = "Test Page Edit",
+			privacy = "Public Pages");
+	}
+
+	@priority = "4"
+	test SaveEmbeddedPageType {
+		property testray.component.names = "Site Pages Administration";
+		var portalURL = PropsUtil.get("portal.url");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.addPublicPage(
+			pageName = "Site Page",
+			pageTypeURL = "https://www.google.com",
+			sitePageType = "Embedded");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Test Site Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.configurePage(
+			pageName = "Site Page",
+			pageTypeURL = "https://www.liferay.com",
+			privacy = "Public Pages",
+			sitePageType = "Embedded");
+
+		Navigator.gotoSpecificURLPage(
+			pageName = "Site Page",
+			url = "${portalURL}/web/test-site-name");
+
+		Page.viewEmbeddedPagePG();
+	}
+
+	@priority = "4"
+	test SavePortletPageType {
+		property testray.component.names = "Site Pages Administration";
+
+		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+
+		SitePages.addPublicPage(
+			pageName = "Site Page",
+			pageTemplateName = "Blog");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Test Site Name");
+
+		Blogs.viewControlsPG();
+	}
+
+	@priority = "3"
+	test ViewNoInfoMessageWhenChangingSiteTemplateAsUser {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property testray.component.names = "Site and Page Templates,Site Pages Administration";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCommunityCP(siteName = "Site Name");
+
+		JSONUser.addUserToSite(
+			groupName = "Site Name",
+			userEmailAddress = "userea@liferay.com");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Page.viewDefaultSiteTemplatePagesPG(
+			pageName = "Home",
+			siteName = "Site Name",
+			siteTemplate = "Community",
+			siteURL = "true");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Home",
+			widgetName = "Blogs");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Navigator.gotoSitePage(
+			pageName = "Home",
+			siteName = "Site Name");
+
+		SiteTemplates.viewNoInfoMessage();
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+	}
+
+}

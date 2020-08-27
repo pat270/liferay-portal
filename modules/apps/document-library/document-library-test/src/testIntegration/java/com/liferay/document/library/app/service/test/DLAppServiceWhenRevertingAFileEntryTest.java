@@ -18,14 +18,13 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
 import com.liferay.document.library.kernel.service.DLAppServiceUtil;
 import com.liferay.document.library.sync.constants.DLSyncConstants;
+import com.liferay.document.library.test.util.BaseDLAppTestCase;
 import com.liferay.document.library.workflow.WorkflowHandlerInvocationCounter;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.service.test.BaseDLAppTestCase;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,11 +72,9 @@ public class DLAppServiceWhenRevertingAFileEntryTest extends BaseDLAppTestCase {
 				workflowHandlerInvocationCounter.getCount(
 					"updateStatus", int.class, Map.class));
 
-			ServiceContext serviceContext =
-				ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
 			DLAppServiceUtil.revertFileEntry(
-				fileEntry.getFileEntryId(), version, serviceContext);
+				fileEntry.getFileEntryId(), version,
+				ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 			Assert.assertEquals(
 				3,

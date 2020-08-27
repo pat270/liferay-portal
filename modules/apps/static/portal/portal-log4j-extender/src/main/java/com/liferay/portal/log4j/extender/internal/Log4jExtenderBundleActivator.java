@@ -20,6 +20,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -34,7 +35,6 @@ import java.net.URI;
 import java.net.URL;
 
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.LogManager;
@@ -60,15 +60,15 @@ public class Log4jExtenderBundleActivator implements BundleActivator {
 			@Override
 			public Bundle addingBundle(Bundle bundle, BundleEvent bundleEvent) {
 				try {
-					_configureLog4j(bundle, "META-INF/module-log4j.xml");
-					_configureLog4j(bundle, "META-INF/module-log4j-ext.xml");
+					_configureLog4j(bundle, "module-log4j.xml");
+					_configureLog4j(bundle, "module-log4j-ext.xml");
 					_configureLog4j(bundle.getSymbolicName());
 				}
-				catch (IOException ioe) {
+				catch (IOException ioException) {
 					_logger.error(
 						"Unable to configure Log4j for bundle " +
 							bundle.getSymbolicName(),
-						ioe);
+						ioException);
 				}
 
 				return bundle;
@@ -104,17 +104,20 @@ public class Log4jExtenderBundleActivator implements BundleActivator {
 	}
 
 	private static String _getURLContent(URL url) {
-		Map<String, String> variables = new HashMap<>();
+		Map<String, String> variables = HashMapBuilder.put(
+			"@liferay.home@", _getLiferayHome()
+		).put(
+			"@spi.id@",
+			() -> {
+				String spiId = System.getProperty("spi.id");
 
-		variables.put("@liferay.home@", _getLiferayHome());
+				if (spiId != null) {
+					return spiId;
+				}
 
-		String spiId = System.getProperty("spi.id");
-
-		if (spiId == null) {
-			spiId = StringPool.BLANK;
-		}
-
-		variables.put("@spi.id@", spiId);
+				return StringPool.BLANK;
+			}
+		).build();
 
 		String urlContent = null;
 
@@ -129,8 +132,8 @@ public class Log4jExtenderBundleActivator implements BundleActivator {
 
 			urlContent = new String(bytes, StringPool.UTF8);
 		}
-		catch (Exception e) {
-			_logger.error(e, e);
+		catch (Exception exception) {
+			_logger.error(exception, exception);
 
 			return null;
 		}
@@ -146,7 +149,8 @@ public class Log4jExtenderBundleActivator implements BundleActivator {
 	private void _configureLog4j(Bundle bundle, String resourcePath)
 		throws IOException {
 
-		Enumeration<URL> enumeration = bundle.getResources(resourcePath);
+		Enumeration<URL> enumeration = bundle.findEntries(
+			"META-INF", resourcePath, false);
 
 		if (enumeration != null) {
 			while (enumeration.hasMoreElements()) {

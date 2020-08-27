@@ -14,10 +14,9 @@
 
 package com.liferay.microblogs.service.persistence.impl;
 
+import com.liferay.microblogs.constants.MicroblogsEntryConstants;
 import com.liferay.microblogs.model.MicroblogsEntry;
-import com.liferay.microblogs.model.MicroblogsEntryConstants;
 import com.liferay.microblogs.model.impl.MicroblogsEntryImpl;
-import com.liferay.microblogs.service.MicroblogsEntryLocalServiceUtil;
 import com.liferay.microblogs.service.persistence.MicroblogsEntryFinder;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
@@ -26,16 +25,19 @@ import com.liferay.portal.kernel.dao.orm.SQLQuery;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.social.kernel.model.SocialRelationConstants;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Jonathan Lee
  */
+@Component(service = MicroblogsEntryFinder.class)
 public class MicroblogsEntryFinderImpl
 	extends MicroblogsEntryFinderBaseImpl implements MicroblogsEntryFinder {
 
@@ -99,53 +101,6 @@ public class MicroblogsEntryFinderImpl
 	public static final String FIND_BY_C_CCNI_CCPK_ATN =
 		MicroblogsEntryFinder.class.getName() + ".findByC_CCNI_CCPK_ATN";
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #countByC_U(long,
-	 *             long)}
-	 */
-	@Deprecated
-	@Override
-	public int countByUserId(long userId) {
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), COUNT_BY_USER_ID);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(SocialRelationConstants.TYPE_UNI_ENEMY);
-			qPos.add(userId);
-			qPos.add(userId);
-			qPos.add(MicroblogsEntryConstants.TYPE_REPLY);
-
-			Iterator<Long> itr = q.iterate();
-
-			if (itr.hasNext()) {
-				Long count = itr.next();
-
-				if (count != null) {
-					return count.intValue();
-				}
-			}
-
-			return 0;
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
 	@Override
 	public int countByC_U(long companyId, long userId) {
 		Session session = null;
@@ -155,24 +110,24 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_C_U);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(SocialRelationConstants.TYPE_UNI_ENEMY);
-			qPos.add(userId);
-			qPos.add(userId);
-			qPos.add(MicroblogsEntryConstants.TYPE_REPLY);
+			queryPos.add(companyId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(SocialRelationConstants.TYPE_UNI_ENEMY);
+			queryPos.add(userId);
+			queryPos.add(userId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_REPLY);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -181,8 +136,8 @@ public class MicroblogsEntryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -198,67 +153,21 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_U_MU);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(microblogsEntryUserId);
-			qPos.add(MicroblogsEntryConstants.TYPE_REPLY);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(microblogsEntryUserId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_REPLY);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
-
-				if (count != null) {
-					return count.intValue();
-				}
-			}
-
-			return 0;
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #countByC_U_ATN(long, long, String)}
-	 */
-	@Deprecated
-	@Override
-	public int countByU_ATN(long userId, String assetTagName) {
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), COUNT_BY_U_ATN);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(assetTagName);
-			qPos.add(userId);
-			qPos.add(assetTagName);
-
-			Iterator<Long> itr = q.iterate();
-
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -267,51 +176,8 @@ public class MicroblogsEntryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #countByC_CCNI_ATN(long, long, String)}
-	 */
-	@Deprecated
-	@Override
-	public int countByCCNI_ATN(long creatorClassNameId, String assetTagName) {
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), COUNT_BY_CCNI_ATN);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(creatorClassNameId);
-			qPos.add(assetTagName);
-
-			Iterator<Long> itr = q.iterate();
-
-			if (itr.hasNext()) {
-				Long count = itr.next();
-
-				if (count != null) {
-					return count.intValue();
-				}
-			}
-
-			return 0;
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -329,23 +195,23 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_C_U_ATN);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(assetTagName);
-			qPos.add(userId);
-			qPos.add(assetTagName);
+			queryPos.add(companyId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(assetTagName);
+			queryPos.add(userId);
+			queryPos.add(assetTagName);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -354,8 +220,8 @@ public class MicroblogsEntryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -373,20 +239,20 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_C_CCNI_ATN);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(creatorClassNameId);
-			qPos.add(assetTagName);
+			queryPos.add(companyId);
+			queryPos.add(creatorClassNameId);
+			queryPos.add(assetTagName);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -395,8 +261,8 @@ public class MicroblogsEntryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -414,70 +280,21 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_U_T_MU);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(type);
-			qPos.add(microblogsEntryUserId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(type);
+			queryPos.add(microblogsEntryUserId);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
-
-				if (count != null) {
-					return count.intValue();
-				}
-			}
-
-			return 0;
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #countByC_CCNI_CCPK_ATN(long, long, long, String, boolean)}
-	 */
-	@Deprecated
-	@Override
-	public int countByCCNI_CCPK_ATN(
-		long creatorClassNameId, long creatorClassPK, String assetTagName,
-		boolean andOperator) {
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), COUNT_BY_CCNI_CCPK_ATN);
-
-			sql = _customSQL.replaceAndOperator(sql, andOperator);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(creatorClassNameId);
-			qPos.add(creatorClassPK);
-			qPos.add(assetTagName);
-
-			Iterator<Long> itr = q.iterate();
-
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -486,8 +303,8 @@ public class MicroblogsEntryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -508,21 +325,21 @@ public class MicroblogsEntryFinderImpl
 
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(creatorClassNameId);
-			qPos.add(creatorClassPK);
-			qPos.add(assetTagName);
+			queryPos.add(companyId);
+			queryPos.add(creatorClassNameId);
+			queryPos.add(creatorClassPK);
+			queryPos.add(assetTagName);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -531,56 +348,8 @@ public class MicroblogsEntryFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #findByC_U(long,
-	 *             long, int, int)}
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> findByUserId(long userId, int start, int end) {
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), FIND_BY_USER_ID);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addScalar("microblogsEntryId", Type.LONG);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(SocialRelationConstants.TYPE_UNI_ENEMY);
-			qPos.add(userId);
-			qPos.add(userId);
-			qPos.add(MicroblogsEntryConstants.TYPE_REPLY);
-
-			Iterator<Long> itr = (Iterator<Long>)QueryUtil.iterate(
-				q, getDialect(), start, end);
-
-			List<MicroblogsEntry> microblogsEntries = new ArrayList<>();
-
-			while (itr.hasNext()) {
-				microblogsEntries.add(
-					MicroblogsEntryLocalServiceUtil.fetchMicroblogsEntry(
-						(Long)itr.next()));
-			}
-
-			return microblogsEntries;
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -598,35 +367,35 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_C_U);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("microblogsEntryId", Type.LONG);
+			sqlQuery.addScalar("microblogsEntryId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(SocialRelationConstants.TYPE_UNI_ENEMY);
-			qPos.add(userId);
-			qPos.add(userId);
-			qPos.add(MicroblogsEntryConstants.TYPE_REPLY);
+			queryPos.add(companyId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(SocialRelationConstants.TYPE_UNI_ENEMY);
+			queryPos.add(userId);
+			queryPos.add(userId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_REPLY);
 
-			Iterator<Long> itr = (Iterator<Long>)QueryUtil.iterate(
-				q, getDialect(), start, end);
+			Iterator<Long> iterator = (Iterator<Long>)QueryUtil.iterate(
+				sqlQuery, getDialect(), start, end);
 
 			List<MicroblogsEntry> microblogsEntries = new ArrayList<>();
 
-			while (itr.hasNext()) {
+			while (iterator.hasNext()) {
 				microblogsEntries.add(
-					MicroblogsEntryLocalServiceUtil.fetchMicroblogsEntry(
-						(Long)itr.next()));
+					microblogsEntryPersistence.fetchByPrimaryKey(
+						(Long)iterator.next()));
 			}
 
 			return microblogsEntries;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -644,97 +413,22 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_U_MU);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
+			sqlQuery.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(microblogsEntryUserId);
-			qPos.add(MicroblogsEntryConstants.TYPE_REPLY);
-
-			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #findByC_U_ATN(long,
-	 *             long, String, int, int)}
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> findByU_ATN(
-		long userId, String assetTagName, int start, int end) {
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), FIND_BY_U_ATN);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(assetTagName);
-			qPos.add(userId);
-			qPos.add(assetTagName);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(microblogsEntryUserId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_REPLY);
 
 			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #findByC_CCNI_ATN(long, long, String, int, int)}
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> findByCCNI_ATN(
-		long creatorClassNameId, String assetTagName, int start, int end) {
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), FIND_BY_CCNI_ATN);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(creatorClassNameId);
-			qPos.add(assetTagName);
-
-			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -752,24 +446,24 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_C_U_ATN);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
+			sqlQuery.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(assetTagName);
-			qPos.add(userId);
-			qPos.add(assetTagName);
+			queryPos.add(companyId);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(assetTagName);
+			queryPos.add(userId);
+			queryPos.add(assetTagName);
 
 			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -788,21 +482,21 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_C_CCNI_ATN);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
+			sqlQuery.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(creatorClassNameId);
-			qPos.add(assetTagName);
+			queryPos.add(companyId);
+			queryPos.add(creatorClassNameId);
+			queryPos.add(assetTagName);
 
 			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -820,63 +514,22 @@ public class MicroblogsEntryFinderImpl
 
 			String sql = _customSQL.get(getClass(), FIND_BY_U_T_MU);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
+			sqlQuery.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
-			qPos.add(userId);
-			qPos.add(type);
-			qPos.add(microblogsEntryUserId);
-
-			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #findByC_CCNI_CCPK_ATN(long, long, long, String, boolean,
-	 *             int, int)}
-	 */
-	@Deprecated
-	@Override
-	public List<MicroblogsEntry> findByCCNI_CCPK_ATN(
-		long creatorClassNameId, long creatorClassPK, String assetTagName,
-		boolean andOperator, int start, int end) {
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), FIND_BY_CCNI_CCPK_ATN);
-
-			sql = _customSQL.replaceAndOperator(sql, andOperator);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(creatorClassNameId);
-			qPos.add(creatorClassPK);
-			qPos.add(assetTagName);
+			queryPos.add(MicroblogsEntryConstants.TYPE_EVERYONE);
+			queryPos.add(userId);
+			queryPos.add(type);
+			queryPos.add(microblogsEntryUserId);
 
 			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -897,29 +550,29 @@ public class MicroblogsEntryFinderImpl
 
 			sql = _customSQL.replaceAndOperator(sql, andOperator);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
+			sqlQuery.addEntity("MicroblogsEntry", MicroblogsEntryImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(companyId);
-			qPos.add(creatorClassNameId);
-			qPos.add(creatorClassPK);
-			qPos.add(assetTagName);
+			queryPos.add(companyId);
+			queryPos.add(creatorClassNameId);
+			queryPos.add(creatorClassPK);
+			queryPos.add(assetTagName);
 
 			return (List<MicroblogsEntry>)QueryUtil.list(
-				q, getDialect(), start, end);
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
 
 }

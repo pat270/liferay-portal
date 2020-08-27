@@ -18,6 +18,7 @@ import com.liferay.message.boards.model.MBStatsUser;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,32 +27,31 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing MBStatsUser in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class MBStatsUserCacheModel
-	implements CacheModel<MBStatsUser>, Externalizable {
+	implements CacheModel<MBStatsUser>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof MBStatsUserCacheModel)) {
+		if (!(object instanceof MBStatsUserCacheModel)) {
 			return false;
 		}
 
 		MBStatsUserCacheModel mbStatsUserCacheModel =
-			(MBStatsUserCacheModel)obj;
+			(MBStatsUserCacheModel)object;
 
-		if (statsUserId == mbStatsUserCacheModel.statsUserId) {
+		if ((statsUserId == mbStatsUserCacheModel.statsUserId) &&
+			(mvccVersion == mbStatsUserCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,30 @@ public class MBStatsUserCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, statsUserId);
+		int hashCode = HashUtil.hash(0, statsUserId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(13);
+		StringBundler sb = new StringBundler(17);
 
-		sb.append("{statsUserId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
+		sb.append(", statsUserId=");
 		sb.append(statsUserId);
 		sb.append(", groupId=");
 		sb.append(groupId);
@@ -88,6 +104,8 @@ public class MBStatsUserCacheModel
 	public MBStatsUser toEntityModel() {
 		MBStatsUserImpl mbStatsUserImpl = new MBStatsUserImpl();
 
+		mbStatsUserImpl.setMvccVersion(mvccVersion);
+		mbStatsUserImpl.setCtCollectionId(ctCollectionId);
 		mbStatsUserImpl.setStatsUserId(statsUserId);
 		mbStatsUserImpl.setGroupId(groupId);
 		mbStatsUserImpl.setCompanyId(companyId);
@@ -108,6 +126,10 @@ public class MBStatsUserCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
+
 		statsUserId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -122,6 +144,10 @@ public class MBStatsUserCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
+
 		objectOutput.writeLong(statsUserId);
 
 		objectOutput.writeLong(groupId);
@@ -134,6 +160,8 @@ public class MBStatsUserCacheModel
 		objectOutput.writeLong(lastPostDate);
 	}
 
+	public long mvccVersion;
+	public long ctCollectionId;
 	public long statsUserId;
 	public long groupId;
 	public long companyId;

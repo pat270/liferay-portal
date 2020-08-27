@@ -26,9 +26,11 @@ if (ddmDisplay.getDescription(locale) != null) {
 if (ddmDisplay.getTitle(locale) != null) {
 	renderResponse.setTitle(ddmDisplay.getTitle(locale));
 }
+
+List<DDMDisplayTabItem> ddmDisplayTabItems = ddmDisplay.getTabItems();
 %>
 
-<c:if test="<%= ListUtil.isEmpty(ddmDisplay.getTabItems()) && ddmDisplay.isShowBackURLInTitleBar() && showBackURL %>">
+<c:if test="<%= (ddmDisplayTabItems.size() < 2) && ddmDisplay.isShowBackURLInTitleBar() && showBackURL %>">
 
 	<%
 	portletDisplay.setShowBackIcon(true);
@@ -51,7 +53,9 @@ if (ddmDisplay.getTitle(locale) != null) {
 	<aui:input name="redirect" type="hidden" value="<%= ddmDisplayContext.getStructureSearchActionURL() %>" />
 	<aui:input name="deleteStructureIds" type="hidden" />
 
-	<div class="container-fluid container-fluid-max-xl" id="<portlet:namespace />entriesContainer">
+	<clay:container-fluid
+		id='<%= liferayPortletResponse.getNamespace() + "entriesContainer" %>'
+	>
 		<liferay-ui:search-container
 			id="ddmStructures"
 			rowChecker="<%= new DDMStructureRowChecker(renderResponse) %>"
@@ -146,5 +150,5 @@ if (ddmDisplay.getTitle(locale) != null) {
 				markupView="lexicon"
 			/>
 		</liferay-ui:search-container>
-	</div>
+	</clay:container-fluid>
 </aui:form>

@@ -27,30 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing KaleoTaskFormInstance in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KaleoTaskFormInstanceCacheModel
 	implements CacheModel<KaleoTaskFormInstance>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KaleoTaskFormInstanceCacheModel)) {
+		if (!(object instanceof KaleoTaskFormInstanceCacheModel)) {
 			return false;
 		}
 
 		KaleoTaskFormInstanceCacheModel kaleoTaskFormInstanceCacheModel =
-			(KaleoTaskFormInstanceCacheModel)obj;
+			(KaleoTaskFormInstanceCacheModel)object;
 
 		if ((kaleoTaskFormInstanceId ==
 				kaleoTaskFormInstanceCacheModel.kaleoTaskFormInstanceId) &&
@@ -81,7 +78,7 @@ public class KaleoTaskFormInstanceCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(37);
+		StringBundler sb = new StringBundler(39);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
@@ -99,6 +96,8 @@ public class KaleoTaskFormInstanceCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", kaleoDefinitionId=");
+		sb.append(kaleoDefinitionId);
 		sb.append(", kaleoDefinitionVersionId=");
 		sb.append(kaleoDefinitionVersionId);
 		sb.append(", kaleoInstanceId=");
@@ -157,6 +156,7 @@ public class KaleoTaskFormInstanceCacheModel
 			kaleoTaskFormInstanceImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
+		kaleoTaskFormInstanceImpl.setKaleoDefinitionId(kaleoDefinitionId);
 		kaleoTaskFormInstanceImpl.setKaleoDefinitionVersionId(
 			kaleoDefinitionVersionId);
 		kaleoTaskFormInstanceImpl.setKaleoInstanceId(kaleoInstanceId);
@@ -210,6 +210,8 @@ public class KaleoTaskFormInstanceCacheModel
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
 
+		kaleoDefinitionId = objectInput.readLong();
+
 		kaleoDefinitionVersionId = objectInput.readLong();
 
 		kaleoInstanceId = objectInput.readLong();
@@ -249,6 +251,8 @@ public class KaleoTaskFormInstanceCacheModel
 
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
+
+		objectOutput.writeLong(kaleoDefinitionId);
 
 		objectOutput.writeLong(kaleoDefinitionVersionId);
 
@@ -294,6 +298,7 @@ public class KaleoTaskFormInstanceCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public long kaleoDefinitionId;
 	public long kaleoDefinitionVersionId;
 	public long kaleoInstanceId;
 	public long kaleoTaskId;

@@ -14,7 +14,6 @@
 
 package com.liferay.knowledge.base.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see KBArticleService
  * @generated
  */
-@ProviderType
 public class KBArticleServiceUtil {
 
 	/*
@@ -138,24 +136,6 @@ public class KBArticleServiceUtil {
 			groupId, kbFolderId, urlTitle, status);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getAllDescendantKBArticles(long, long, int,
-	 OrderByComparator)}
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.knowledge.base.model.KBArticle>
-			getAllDescendantKBArticles(
-				long resourcePrimKey, int status,
-				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.knowledge.base.model.KBArticle>
-						orderByComparator)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return getService().getAllDescendantKBArticles(
-			resourcePrimKey, status, orderByComparator);
-	}
-
 	public static java.util.List<com.liferay.knowledge.base.model.KBArticle>
 			getAllDescendantKBArticles(
 				long groupId, long resourcePrimKey, int status,
@@ -209,23 +189,6 @@ public class KBArticleServiceUtil {
 
 		return getService().getKBArticleAndAllDescendantKBArticles(
 			resourcePrimKey, status, orderByComparator);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getKBArticleAndAllDescendantKBArticles(long, int,
-	 OrderByComparator)}
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.knowledge.base.model.KBArticle>
-		getKBArticleAndAllDescendants(
-			long groupId, long resourcePrimKey, int status,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.knowledge.base.model.KBArticle>
-					orderByComparator) {
-
-		return getService().getKBArticleAndAllDescendants(
-			groupId, resourcePrimKey, status, orderByComparator);
 	}
 
 	public static String getKBArticleRSS(
@@ -361,36 +324,6 @@ public class KBArticleServiceUtil {
 
 		return getService().getSectionsKBArticlesCount(
 			groupId, sections, status);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #getKBArticles(long,
-	 long, int, int, int, OrderByComparator)}
-	 */
-	@Deprecated
-	public static java.util.List<com.liferay.knowledge.base.model.KBArticle>
-		getSiblingKBArticles(
-			long groupId, long parentResourcePrimKey, int status, int start,
-			int end,
-			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.knowledge.base.model.KBArticle>
-					orderByComparator) {
-
-		return getService().getSiblingKBArticles(
-			groupId, parentResourcePrimKey, status, start, end,
-			orderByComparator);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getKBArticlesCount(long, long, int)}
-	 */
-	@Deprecated
-	public static int getSiblingKBArticlesCount(
-		long groupId, long parentResourcePrimKey, int status) {
-
-		return getService().getSiblingKBArticlesCount(
-			groupId, parentResourcePrimKey, status);
 	}
 
 	public static String[] getTempAttachmentNames(

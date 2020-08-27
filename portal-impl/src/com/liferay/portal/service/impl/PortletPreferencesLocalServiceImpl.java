@@ -34,7 +34,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.service.ExceptionRetryAcceptor;
+import com.liferay.portal.kernel.service.SQLStateAcceptor;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator;
@@ -111,9 +111,10 @@ public class PortletPreferencesLocalServiceImpl
 		}
 
 		try {
-			portletPreferencesPersistence.update(portletPreferences);
+			portletPreferences = portletPreferencesPersistence.update(
+				portletPreferences);
 		}
-		catch (SystemException se) {
+		catch (SystemException systemException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
@@ -126,7 +127,7 @@ public class PortletPreferencesLocalServiceImpl
 				ownerId, ownerType, plid, portletId, false);
 
 			if (portletPreferences == null) {
-				throw se;
+				throw systemException;
 			}
 		}
 
@@ -187,6 +188,8 @@ public class PortletPreferencesLocalServiceImpl
 	public javax.portlet.PortletPreferences fetchPreferences(
 		long companyId, long ownerId, int ownerType, long plid,
 		String portletId) {
+
+		plid = _swapPlidForPortletPreferences(plid);
 
 		PortletPreferences portletPreferences =
 			portletPreferencesPersistence.fetchByO_O_P_P(
@@ -409,11 +412,11 @@ public class PortletPreferencesLocalServiceImpl
 
 	@Override
 	@Retry(
-		acceptor = ExceptionRetryAcceptor.class,
+		acceptor = SQLStateAcceptor.class,
 		properties = {
 			@Property(
-				name = ExceptionRetryAcceptor.EXCEPTION_NAME,
-				value = "org.springframework.dao.DataIntegrityViolationException"
+				name = SQLStateAcceptor.SQLSTATE,
+				value = SQLStateAcceptor.SQLSTATE_INTEGRITY_CONSTRAINT_VIOLATION
 			)
 		}
 	)
@@ -427,11 +430,11 @@ public class PortletPreferencesLocalServiceImpl
 
 	@Override
 	@Retry(
-		acceptor = ExceptionRetryAcceptor.class,
+		acceptor = SQLStateAcceptor.class,
 		properties = {
 			@Property(
-				name = ExceptionRetryAcceptor.EXCEPTION_NAME,
-				value = "org.springframework.dao.DataIntegrityViolationException"
+				name = SQLStateAcceptor.SQLSTATE,
+				value = SQLStateAcceptor.SQLSTATE_INTEGRITY_CONSTRAINT_VIOLATION
 			)
 		}
 	)
@@ -462,11 +465,11 @@ public class PortletPreferencesLocalServiceImpl
 
 	@Override
 	@Retry(
-		acceptor = ExceptionRetryAcceptor.class,
+		acceptor = SQLStateAcceptor.class,
 		properties = {
 			@Property(
-				name = ExceptionRetryAcceptor.EXCEPTION_NAME,
-				value = "org.springframework.dao.DataIntegrityViolationException"
+				name = SQLStateAcceptor.SQLSTATE,
+				value = SQLStateAcceptor.SQLSTATE_INTEGRITY_CONSTRAINT_VIOLATION
 			)
 		}
 	)
@@ -639,9 +642,7 @@ public class PortletPreferencesLocalServiceImpl
 
 		portletPreferences.setPreferences(xml);
 
-		portletPreferencesPersistence.update(portletPreferences);
-
-		return portletPreferences;
+		return portletPreferencesPersistence.update(portletPreferences);
 	}
 
 	private boolean _exists(long plid, long companyId, String portletId) {
@@ -756,8 +757,8 @@ public class PortletPreferencesLocalServiceImpl
 				user, layoutRevision.getLayoutSetBranchId(),
 				layoutRevision.getPlid());
 		}
-		catch (PortalException pe) {
-			return ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			return ReflectionUtil.throwException(portalException);
 		}
 	}
 
@@ -807,8 +808,8 @@ public class PortletPreferencesLocalServiceImpl
 				layoutRevision.getColorSchemeId(), layoutRevision.getCss(),
 				serviceContext);
 		}
-		catch (PortalException pe) {
-			ReflectionUtil.throwException(pe);
+		catch (PortalException portalException) {
+			ReflectionUtil.throwException(portalException);
 		}
 
 		plid = layoutRevision.getLayoutRevisionId();

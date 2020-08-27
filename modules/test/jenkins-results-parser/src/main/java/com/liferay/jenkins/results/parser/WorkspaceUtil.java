@@ -58,12 +58,10 @@ public class WorkspaceUtil {
 					upstreamBranchName);
 		}
 		else if (GitUtil.isValidGitHubRefURL(gitHubURL)) {
-			RemoteGitRef remoteGitRef = GitUtil.getRemoteGitRef(gitHubURL);
-
 			dependencyWorkspaceGitRepository =
 				GitRepositoryFactory.getDependencyWorkspaceGitRepository(
-					repositoryType, workspaceGitRepository, remoteGitRef,
-					upstreamBranchName);
+					repositoryType, workspaceGitRepository,
+					GitUtil.getRemoteGitRef(gitHubURL), upstreamBranchName);
 		}
 
 		if (dependencyWorkspaceGitRepository == null) {
@@ -106,11 +104,10 @@ public class WorkspaceUtil {
 					gitHubURL, pullRequest, upstreamBranchName);
 		}
 		else if (GitUtil.isValidGitHubRefURL(gitHubURL)) {
-			RemoteGitRef remoteGitRef = GitUtil.getRemoteGitRef(gitHubURL);
-
 			workspaceGitRepository =
 				GitRepositoryFactory.getWorkspaceGitRepository(
-					gitHubURL, remoteGitRef, upstreamBranchName);
+					gitHubURL, GitUtil.getRemoteGitRef(gitHubURL),
+					upstreamBranchName);
 		}
 
 		if (workspaceGitRepository == null) {
@@ -137,7 +134,7 @@ public class WorkspaceUtil {
 					JenkinsResultsParserUtil.toString(
 						_URL_WORKSPACE_PROPERTIES, false)));
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			System.out.println(
 				"Skipped downloading " + _URL_WORKSPACE_PROPERTIES);
 		}

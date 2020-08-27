@@ -27,13 +27,11 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * @author William Newbury
@@ -42,7 +40,7 @@ public class DLFileEntryTypeUADTestUtil {
 
 	public static DLFileEntryType addDLFileEntryType(
 			DLFileEntryTypeLocalService dlFileEntryTypeLocalService,
-			Portal portal, long userId)
+			Portal portal, long userId, long groupId)
 		throws Exception {
 
 		ServiceContext serviceContext =
@@ -57,25 +55,22 @@ public class DLFileEntryTypeUADTestUtil {
 
 		ddmForm.addDDMFormField(ddmFormField);
 
-		Map<Locale, String> nameMap = new HashMap<>();
-
-		nameMap.put(LocaleUtil.US, "Test Structure Name");
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(LocaleUtil.US, "Test Structure Description");
-
-		long classNameId = portal.getClassNameId(
-			"com.liferay.dynamic.data.lists.model.DDLRecordSet");
-
 		DDMStructure ddmStructure = DDMStructureManagerUtil.addStructure(
-			TestPropsValues.getUserId(), TestPropsValues.getGroupId(), null,
-			classNameId, RandomTestUtil.randomString(), nameMap, descriptionMap,
+			TestPropsValues.getUserId(), groupId, null,
+			portal.getClassNameId(
+				"com.liferay.dynamic.data.lists.model.DDLRecordSet"),
+			RandomTestUtil.randomString(),
+			HashMapBuilder.put(
+				LocaleUtil.US, "Test Structure Name"
+			).build(),
+			HashMapBuilder.put(
+				LocaleUtil.US, "Test Structure Description"
+			).build(),
 			ddmForm, StorageEngineManager.STORAGE_TYPE_DEFAULT,
 			DDMStructureManager.STRUCTURE_TYPE_DEFAULT, serviceContext);
 
 		return dlFileEntryTypeLocalService.addFileEntryType(
-			userId, TestPropsValues.getGroupId(), RandomTestUtil.randomString(),
+			userId, groupId, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(),
 			new long[] {ddmStructure.getStructureId()}, serviceContext);
 	}

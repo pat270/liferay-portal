@@ -17,19 +17,29 @@ package com.liferay.message.boards.service.impl;
 import com.liferay.message.boards.model.MBDiscussion;
 import com.liferay.message.boards.service.base.MBDiscussionLocalServiceBaseImpl;
 import com.liferay.message.boards.util.MBUtil;
+import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.spring.extender.service.ServiceReference;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	property = "model.class.name=com.liferay.message.boards.model.MBDiscussion",
+	service = AopService.class
+)
 public class MBDiscussionLocalServiceImpl
 	extends MBDiscussionLocalServiceBaseImpl {
 
@@ -42,7 +52,7 @@ public class MBDiscussionLocalServiceImpl
 		Group group = groupLocalService.getGroup(groupId);
 
 		User user = userLocalService.fetchUser(
-			PortalUtil.getValidUserId(group.getCompanyId(), userId));
+			_portal.getValidUserId(group.getCompanyId(), userId));
 
 		long discussionId = counterLocalService.increment();
 
@@ -57,9 +67,7 @@ public class MBDiscussionLocalServiceImpl
 		discussion.setClassPK(classPK);
 		discussion.setThreadId(threadId);
 
-		mbDiscussionPersistence.update(discussion);
-
-		return discussion;
+		return mbDiscussionPersistence.update(discussion);
 	}
 
 	@Override
@@ -74,9 +82,8 @@ public class MBDiscussionLocalServiceImpl
 
 	@Override
 	public MBDiscussion fetchDiscussion(String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return mbDiscussionPersistence.fetchByC_C(classNameId, classPK);
+		return mbDiscussionPersistence.fetchByC_C(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -95,16 +102,26 @@ public class MBDiscussionLocalServiceImpl
 	public MBDiscussion getDiscussion(String className, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return mbDiscussionPersistence.findByC_C(classNameId, classPK);
+		return mbDiscussionPersistence.findByC_C(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<MBDiscussion> getDiscussions(String className) {
-		long classNameId = classNameLocalService.getClassNameId(className);
+		DynamicQuery dynamicQuery = dynamicQuery();
 
-		return mbDiscussionPersistence.findByClassNameId(classNameId);
+		Property classNameIdProperty = PropertyFactoryUtil.forName(
+			"classNameId");
+
+		dynamicQuery.add(
+			classNameIdProperty.eq(
+				classNameLocalService.getClassNameId(className)));
+
+		return dynamicQuery(dynamicQuery);
 	}
 
 	@Override
@@ -119,7 +136,7 @@ public class MBDiscussionLocalServiceImpl
 			long userId, long groupId, String className, long classPK)
 		throws PortalException {
 
-		subscriptionLocalService.addSubscription(
+		_subscriptionLocalService.addSubscription(
 			userId, groupId, MBUtil.getSubscriptionClassName(className),
 			classPK);
 	}
@@ -129,11 +146,14 @@ public class MBDiscussionLocalServiceImpl
 			long userId, String className, long classPK)
 		throws PortalException {
 
-		subscriptionLocalService.deleteSubscription(
+		_subscriptionLocalService.deleteSubscription(
 			userId, MBUtil.getSubscriptionClassName(className), classPK);
 	}
 
-	@ServiceReference(type = SubscriptionLocalService.class)
-	protected SubscriptionLocalService subscriptionLocalService;
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private SubscriptionLocalService _subscriptionLocalService;
 
 }

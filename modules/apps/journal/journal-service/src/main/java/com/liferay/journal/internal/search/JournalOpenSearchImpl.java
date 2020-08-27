@@ -16,11 +16,12 @@ package com.liferay.journal.internal.search;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalContentSearch;
 import com.liferay.journal.service.JournalArticleService;
 import com.liferay.journal.service.JournalContentSearchLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.search.Document;
@@ -49,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Brian Wing Shun Chan
  * @author Wesley Gong
  */
-@Component(immediate = true, service = OpenSearch.class)
+@Component(service = OpenSearch.class)
 public class JournalOpenSearchImpl extends HitsOpenSearchImpl {
 
 	public static final String TITLE = "Liferay Journal Search: ";
@@ -90,13 +91,11 @@ public class JournalOpenSearchImpl extends HitsOpenSearchImpl {
 					contentSearch.isPrivateLayout(),
 					contentSearch.getLayoutId(), ActionKeys.VIEW)) {
 
-				if (contentSearch.isPrivateLayout()) {
-					if (!_groupLocalService.hasUserGroup(
-							themeDisplay.getUserId(),
-							contentSearch.getGroupId())) {
+				if (contentSearch.isPrivateLayout() &&
+					!_groupLocalService.hasUserGroup(
+						themeDisplay.getUserId(), contentSearch.getGroupId())) {
 
-						continue;
-					}
+					continue;
 				}
 
 				Layout hitLayout = _layoutLocalService.getLayout(
@@ -127,11 +126,10 @@ public class JournalOpenSearchImpl extends HitsOpenSearchImpl {
 					article.getGroupId(), false),
 				themeDisplay);
 
-			return groupFriendlyURL.concat(
-				JournalArticleConstants.CANONICAL_URL_SEPARATOR
-			).concat(
-				article.getUrlTitle()
-			);
+			return StringBundler.concat(
+				groupFriendlyURL,
+				JournalArticleConstants.CANONICAL_URL_SEPARATOR,
+				article.getUrlTitle());
 		}
 
 		Layout layout = themeDisplay.getLayout();
@@ -141,11 +139,8 @@ public class JournalOpenSearchImpl extends HitsOpenSearchImpl {
 				layout.getGroupId(), layout.isPrivateLayout(), articleId);
 
 		for (Long hitLayoutId : hitLayoutIds) {
-			PermissionChecker permissionChecker =
-				themeDisplay.getPermissionChecker();
-
 			if (LayoutPermissionUtil.contains(
-					permissionChecker, layout.getGroupId(),
+					themeDisplay.getPermissionChecker(), layout.getGroupId(),
 					layout.isPrivateLayout(), hitLayoutId, ActionKeys.VIEW)) {
 
 				Layout hitLayout = _layoutLocalService.getLayout(

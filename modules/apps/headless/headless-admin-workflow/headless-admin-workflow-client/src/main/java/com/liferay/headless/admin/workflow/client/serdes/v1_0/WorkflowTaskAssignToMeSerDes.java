@@ -20,11 +20,11 @@ import com.liferay.headless.admin.workflow.client.json.BaseJSONParser;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.Generated;
 
@@ -91,6 +91,16 @@ public class WorkflowTaskAssignToMeSerDes {
 			sb.append("\"");
 		}
 
+		if (workflowTaskAssignToMe.getWorkflowTaskId() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"workflowTaskId\": ");
+
+			sb.append(workflowTaskAssignToMe.getWorkflowTaskId());
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -110,7 +120,7 @@ public class WorkflowTaskAssignToMeSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -123,50 +133,29 @@ public class WorkflowTaskAssignToMeSerDes {
 				"comment", String.valueOf(workflowTaskAssignToMe.getComment()));
 		}
 
-		map.put(
-			"dueDate",
-			liferayToJSONDateFormat.format(
-				workflowTaskAssignToMe.getDueDate()));
+		if (workflowTaskAssignToMe.getDueDate() == null) {
+			map.put("dueDate", null);
+		}
+		else {
+			map.put(
+				"dueDate",
+				liferayToJSONDateFormat.format(
+					workflowTaskAssignToMe.getDueDate()));
+		}
+
+		if (workflowTaskAssignToMe.getWorkflowTaskId() == null) {
+			map.put("workflowTaskId", null);
+		}
+		else {
+			map.put(
+				"workflowTaskId",
+				String.valueOf(workflowTaskAssignToMe.getWorkflowTaskId()));
+		}
 
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class WorkflowTaskAssignToMeJSONParser
+	public static class WorkflowTaskAssignToMeJSONParser
 		extends BaseJSONParser<WorkflowTaskAssignToMe> {
 
 		@Override
@@ -196,12 +185,87 @@ public class WorkflowTaskAssignToMeSerDes {
 						toDate((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "workflowTaskId")) {
+				if (jsonParserFieldValue != null) {
+					workflowTaskAssignToMe.setWorkflowTaskId(
+						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
 			else {
 				throw new IllegalArgumentException(
 					"Unsupported field name " + jsonParserFieldName);
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

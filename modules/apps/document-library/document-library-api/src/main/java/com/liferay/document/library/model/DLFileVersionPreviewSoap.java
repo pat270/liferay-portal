@@ -19,15 +19,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DLFileVersionPreviewSoap implements Serializable {
 
 	public static DLFileVersionPreviewSoap toSoapModel(
@@ -35,8 +34,11 @@ public class DLFileVersionPreviewSoap implements Serializable {
 
 		DLFileVersionPreviewSoap soapModel = new DLFileVersionPreviewSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setDlFileVersionPreviewId(model.getDlFileVersionPreviewId());
 		soapModel.setGroupId(model.getGroupId());
+		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setFileEntryId(model.getFileEntryId());
 		soapModel.setFileVersionId(model.getFileVersionId());
 		soapModel.setPreviewStatus(model.getPreviewStatus());
@@ -102,6 +104,22 @@ public class DLFileVersionPreviewSoap implements Serializable {
 		setDlFileVersionPreviewId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public long getDlFileVersionPreviewId() {
 		return _dlFileVersionPreviewId;
 	}
@@ -116,6 +134,14 @@ public class DLFileVersionPreviewSoap implements Serializable {
 
 	public void setGroupId(long groupId) {
 		_groupId = groupId;
+	}
+
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
 	}
 
 	public long getFileEntryId() {
@@ -142,8 +168,11 @@ public class DLFileVersionPreviewSoap implements Serializable {
 		_previewStatus = previewStatus;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _dlFileVersionPreviewId;
 	private long _groupId;
+	private long _companyId;
 	private long _fileEntryId;
 	private long _fileVersionId;
 	private int _previewStatus;

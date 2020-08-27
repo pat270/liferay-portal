@@ -18,6 +18,7 @@ import com.liferay.oauth2.provider.configuration.OAuth2ProviderConfiguration;
 import com.liferay.oauth2.provider.constants.GrantType;
 import com.liferay.oauth2.provider.constants.OAuth2ProviderConstants;
 import com.liferay.oauth2.provider.model.OAuth2Application;
+import com.liferay.oauth2.provider.model.OAuth2ApplicationScopeAliases;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
 import com.liferay.oauth2.provider.model.OAuth2ScopeGrant;
 import com.liferay.oauth2.provider.rest.internal.endpoint.authorize.configuration.OAuth2AuthorizationFlowConfiguration;
@@ -291,10 +292,10 @@ public class LiferayOAuthDataProvider
 		try {
 			return populateAccessToken(oAuth2Authorization);
 		}
-		catch (PortalException pe) {
-			_log.error("Unable to populate access token", pe);
+		catch (PortalException portalException) {
+			_log.error("Unable to populate access token", portalException);
 
-			throw new OAuthServiceException(pe);
+			throw new OAuthServiceException(portalException);
 		}
 	}
 
@@ -417,8 +418,8 @@ public class LiferayOAuthDataProvider
 
 			return refreshToken;
 		}
-		catch (PortalException pe) {
-			throw new OAuthServiceException(pe);
+		catch (PortalException portalException) {
+			throw new OAuthServiceException(portalException);
 		}
 	}
 
@@ -681,11 +682,9 @@ public class LiferayOAuthDataProvider
 
 	@Override
 	protected Client doGetClient(String clientId) {
-		long companyId = CompanyThreadLocal.getCompanyId();
-
 		OAuth2Application oAuth2Application =
 			_oAuth2ApplicationLocalService.fetchOAuth2Application(
-				companyId, clientId);
+				CompanyThreadLocal.getCompanyId(), clientId);
 
 		if (oAuth2Application == null) {
 			if (_log.isWarnEnabled()) {
@@ -908,10 +907,10 @@ public class LiferayOAuthDataProvider
 	}
 
 	protected UserSubject populateUserSubject(
-		long companyId, long userId, String username) {
+		long companyId, long userId, String userName) {
 
 		UserSubject userSubject = new UserSubject(
-			username, String.valueOf(userId));
+			userName, String.valueOf(userId));
 
 		Map<String, String> properties = userSubject.getProperties();
 
@@ -992,6 +991,18 @@ public class LiferayOAuthDataProvider
 
 		Stream<OAuth2ScopeGrant> stream = oAuth2ScopeGrants.stream();
 
+		OAuth2ApplicationScopeAliases oAuth2ApplicationScopeAliases =
+			_oAuth2ApplicationScopeAliasesLocalService.
+				fetchOAuth2ApplicationScopeAliases(
+					oAuth2ApplicationScopeAliasesId);
+
+		Collection<LiferayOAuth2Scope> liferayOAuth2Scopes = new ArrayList<>();
+
+		if (oAuth2ApplicationScopeAliases != null) {
+			liferayOAuth2Scopes = _scopeLocator.getLiferayOAuth2Scopes(
+				oAuth2ApplicationScopeAliases.getCompanyId());
+		}
+
 		return stream.filter(
 			oAuth2ScopeGrant -> !Collections.disjoint(
 				oAuth2ScopeGrant.getScopeAliasesList(), scopeAliases)
@@ -1002,6 +1013,8 @@ public class LiferayOAuthDataProvider
 				oAuth2ScopeGrant.getScope())
 		).filter(
 			Objects::nonNull
+		).filter(
+			liferayOAuth2Scopes::contains
 		).collect(
 			Collectors.toList()
 		);
@@ -1058,10 +1071,11 @@ public class LiferayOAuthDataProvider
 
 				userName = user.getFullName();
 			}
-			catch (Exception e) {
-				_log.error("Unable to load user " + userSubject.getId(), e);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to load user " + userSubject.getId(), exception);
 
-				throw new RuntimeException(e);
+				throw new RuntimeException(exception);
 			}
 		}
 
@@ -1093,11 +1107,11 @@ public class LiferayOAuthDataProvider
 					oAuth2Authorization.getOAuth2ApplicationScopeAliasesId(),
 					scopeAliasesList));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error("Unable to find authorization " + oAuth2Authorization);
 
 			throw new OAuthServiceException(
-				"Unable to grant scope for token", pe);
+				"Unable to grant scope for token", portalException);
 		}
 	}
 

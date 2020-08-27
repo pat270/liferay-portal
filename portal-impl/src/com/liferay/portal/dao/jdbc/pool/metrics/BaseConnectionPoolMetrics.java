@@ -85,29 +85,32 @@ public abstract class BaseConnectionPoolMetrics
 					DefaultDynamicDataSourceTargetSource) {
 
 				try {
-					Object readDataSource =
-						((DefaultDynamicDataSourceTargetSource)
-							targetDataSource).getReadDataSource();
+					DefaultDynamicDataSourceTargetSource
+						defaultDynamicDataSourceTargetSource =
+							(DefaultDynamicDataSourceTargetSource)
+								targetDataSource;
 
-					if (dataSource.equals(readDataSource)) {
+					if (dataSource.equals(
+							defaultDynamicDataSourceTargetSource.
+								getReadDataSource())) {
+
 						_name = "readDataSource";
 
 						return;
 					}
 
-					Object writeDataSource =
-						((DefaultDynamicDataSourceTargetSource)
-							targetDataSource).getWriteDataSource();
+					if (dataSource.equals(
+							defaultDynamicDataSourceTargetSource.
+								getWriteDataSource())) {
 
-					if (dataSource.equals(writeDataSource)) {
 						_name = "writeDataSource";
 
 						return;
 					}
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
 					if (_log.isDebugEnabled()) {
-						_log.debug(e.getMessage());
+						_log.debug(exception.getMessage());
 					}
 				}
 			}

@@ -108,23 +108,23 @@ public class UpgradeLayout extends UpgradeProcess {
 							LayoutPageTemplateEntry.class),
 						layoutPageTemplateEntryId);
 
-				Layout draftLayout = _layoutLocalService.fetchLayout(
-					PortalUtil.getClassNameId(Layout.class), plid);
+				Layout draftLayout = _layoutLocalService.fetchDraftLayout(plid);
 
 				for (FragmentEntryLink fragmentEntryLink : fragmentEntryLinks) {
 					fragmentEntryLink.setClassNameId(
 						PortalUtil.getClassNameId(Layout.class));
 					fragmentEntryLink.setClassPK(plid);
+					fragmentEntryLink.setPlid(plid);
 
 					_fragmentEntryLinkLocalService.updateFragmentEntryLink(
 						fragmentEntryLink);
 
 					_fragmentEntryLinkLocalService.addFragmentEntryLink(
 						draftLayout.getUserId(), draftLayout.getGroupId(), 0,
-						fragmentEntryLink.getFragmentEntryId(),
-						PortalUtil.getClassNameId(Layout.class),
+						fragmentEntryLink.getFragmentEntryId(), 0,
 						draftLayout.getPlid(), fragmentEntryLink.getCss(),
 						fragmentEntryLink.getHtml(), fragmentEntryLink.getJs(),
+						fragmentEntryLink.getConfiguration(),
 						fragmentEntryLink.getEditableValues(), StringPool.BLANK,
 						fragmentEntryLink.getPosition(), null, serviceContext);
 				}
@@ -137,7 +137,7 @@ public class UpgradeLayout extends UpgradeProcess {
 	protected void upgradeSchema() throws Exception {
 		alter(
 			LayoutPageTemplateEntryTable.class,
-			new AlterTableAddColumn("plid LONG"));
+			new AlterTableAddColumn("plid", "LONG"));
 	}
 
 	private long _getPlid(
@@ -157,25 +157,27 @@ public class UpgradeLayout extends UpgradeProcess {
 			return layout.getPlid();
 		}
 
-		Map<Locale, String> titleMap = Collections.singletonMap(
-			LocaleUtil.getSiteDefault(), name);
-
+		boolean privateLayout = false;
 		String layoutType = LayoutConstants.TYPE_ASSET_DISPLAY;
 
 		if (type == LayoutPageTemplateEntryTypeConstants.TYPE_BASIC) {
 			layoutType = LayoutConstants.TYPE_CONTENT;
+			privateLayout = true;
 		}
+
+		Map<Locale, String> titleMap = Collections.singletonMap(
+			LocaleUtil.getSiteDefault(), name);
 
 		serviceContext.setAttribute(
 			"layout.instanceable.allowed", Boolean.TRUE);
 
 		Layout layout = _layoutLocalService.addLayout(
-			userId, groupId, false, 0, titleMap, titleMap, null, null, null,
-			layoutType, StringPool.BLANK, true, true, new HashMap<>(),
+			userId, groupId, privateLayout, 0, titleMap, titleMap, null, null,
+			null, layoutType, StringPool.BLANK, true, true, new HashMap<>(),
 			serviceContext);
 
 		_layoutLocalService.addLayout(
-			layout.getUserId(), layout.getGroupId(), layout.isPrivateLayout(),
+			layout.getUserId(), layout.getGroupId(), privateLayout,
 			layout.getParentLayoutId(), PortalUtil.getClassNameId(Layout.class),
 			layout.getPlid(), layout.getNameMap(), layout.getTitleMap(),
 			layout.getDescriptionMap(), layout.getKeywordsMap(),

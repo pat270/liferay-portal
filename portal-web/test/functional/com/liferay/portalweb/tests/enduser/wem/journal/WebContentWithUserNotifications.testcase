@@ -1,0 +1,167 @@
+@component-name = "portal-wcm"
+definition {
+
+	property custom.properties = "jsonws.web.service.paths.excludes=";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Web Content Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "userea@liferay.com");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.firstLoginPG();
+
+			WebContent.tearDownCP();
+
+			WebContentTemplates.tearDownCP();
+
+			WebContentStructures.tearDownCP();
+
+			WebContentStructures.tearDownCP(siteScopeName = "${globalSiteName}");
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test ViewArticleEmailNotification {
+		property test.smtp.server.enabled = "true";
+		property testray.component.names = "Web Content Administration";
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		WebContent.subscribeToCurrentFolderCP();
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		WebContent.addArticleCP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		MockMock.viewMail(
+			asset = "Web Content",
+			content = "WC WebContent Content",
+			recipient = "userfn userln",
+			sender = "Joe Bloggs",
+			subject = "WC WebContent Title");
+	}
+
+	@priority = "4"
+	test ViewEditArticleEmailNotification {
+		property test.smtp.server.enabled = "true";
+		property testray.component.names = "Web Content Administration";
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		WebContent.subscribeToSpecificArticle(webContentTitle = "WC WebContent Title");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
+
+		WebContent.editCP(
+			webContentTitle = "WC WebContent Title",
+			webContentTitleEdit = "WC WebContent Title Edit");
+
+		MockMock.viewMail(
+			asset = "Web Content",
+			content = "WC WebContent Content",
+			recipient = "userfn userln",
+			sender = "Joe Bloggs",
+			subject = "WC WebContent Title Edit");
+	}
+
+	@priority = "4"
+	test ViewMoveArticleEmailNotification {
+		property test.smtp.server.enabled = "true";
+		property testray.component.names = "Web Content Administration";
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		WebContent.subscribeToSpecificArticle(webContentTitle = "WC WebContent Title");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		JSONWebcontent.addFolder(
+			folderDescription = "WC Folder Description",
+			folderName = "WC Folder Name",
+			groupName = "Guest");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "guest");
+
+		WebContent.moveToFolderCP(
+			folderName = "WC Folder Name",
+			webContentTitle = "WC WebContent Title");
+
+		MockMock.viewMail(
+			asset = "Web Content",
+			content = "WC WebContent Content",
+			recipient = "userfn userln",
+			sender = "Joe Bloggs",
+			subject = "WC WebContent Title was moved");
+	}
+
+}

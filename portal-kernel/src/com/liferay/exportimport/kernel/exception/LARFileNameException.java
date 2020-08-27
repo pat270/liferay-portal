@@ -16,12 +16,9 @@ package com.liferay.exportimport.kernel.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Eric Min
  */
-@ProviderType
 public class LARFileNameException extends PortalException {
 
 	public LARFileNameException() {
@@ -31,12 +28,12 @@ public class LARFileNameException extends PortalException {
 		super(msg);
 	}
 
-	public LARFileNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public LARFileNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public LARFileNameException(Throwable cause) {
-		super(cause);
+	public LARFileNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

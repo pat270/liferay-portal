@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -42,13 +41,6 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @AccessControlled
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=kb",
-		"json.web.service.context.path=KBComment"
-	},
-	service = KBCommentService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -59,7 +51,7 @@ public interface KBCommentService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link KBCommentServiceUtil} to access the kb comment remote service. Add custom service methods to <code>com.liferay.knowledge.base.service.impl.KBCommentServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.knowledge.base.service.impl.KBCommentServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the kb comment remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link KBCommentServiceUtil} if injection and service tracking are not available.
 	 */
 	public KBComment deleteKBComment(KBComment kbComment)
 		throws PortalException;
@@ -77,12 +69,13 @@ public interface KBCommentService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KBComment> getKBComments(
 			long groupId, int status, int start, int end,
-			OrderByComparator<KBComment> obc)
+			OrderByComparator<KBComment> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KBComment> getKBComments(
-			long groupId, int start, int end, OrderByComparator<KBComment> obc)
+			long groupId, int start, int end,
+			OrderByComparator<KBComment> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -94,13 +87,13 @@ public interface KBCommentService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KBComment> getKBComments(
 			long groupId, String className, long classPK, int status, int start,
-			int end, OrderByComparator<KBComment> obc)
+			int end, OrderByComparator<KBComment> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KBComment> getKBComments(
 			long groupId, String className, long classPK, int start, int end,
-			OrderByComparator<KBComment> obc)
+			OrderByComparator<KBComment> orderByComparator)
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

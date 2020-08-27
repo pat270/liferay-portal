@@ -193,6 +193,7 @@ public class ScreenNavigationTag extends IncludeTag {
 		_modelBean = null;
 		_navCssClass = "col-md-3";
 		_portletURL = null;
+		_screenNavigationCategories = null;
 	}
 
 	@Override
@@ -280,24 +281,32 @@ public class ScreenNavigationTag extends IncludeTag {
 	}
 
 	private String _getDefaultScreenNavigationEntryKey() {
-		List<ScreenNavigationEntry> screenNavigationEntries =
+		List<ScreenNavigationEntry<Object>> screenNavigationEntries =
 			_getScreenNavigationEntries();
 
-		ScreenNavigationEntry screenNavigationEntry =
+		if (ListUtil.isEmpty(screenNavigationEntries)) {
+			return null;
+		}
+
+		ScreenNavigationEntry<Object> screenNavigationEntry =
 			screenNavigationEntries.get(0);
 
 		return screenNavigationEntry.getEntryKey();
 	}
 
-	private List<ScreenNavigationEntry> _getScreenNavigationEntries() {
+	private List<ScreenNavigationEntry<Object>> _getScreenNavigationEntries() {
+		ScreenNavigationCategory selectedScreenNavigationCategory =
+			_getSelectedScreenNavigationCategory();
+
+		if (selectedScreenNavigationCategory == null) {
+			return null;
+		}
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		ScreenNavigationRegistry screenNavigationRegistry =
 			ServletContextUtil.getScreenNavigationRegistry();
-
-		ScreenNavigationCategory selectedScreenNavigationCategory =
-			_getSelectedScreenNavigationCategory();
 
 		return screenNavigationRegistry.getScreenNavigationEntries(
 			selectedScreenNavigationCategory, themeDisplay.getUser(),
@@ -323,7 +332,7 @@ public class ScreenNavigationTag extends IncludeTag {
 		return null;
 	}
 
-	private ScreenNavigationEntry _getSelectedScreenNavigationEntry() {
+	private ScreenNavigationEntry<?> _getSelectedScreenNavigationEntry() {
 		String screenNavigationEntryKey = ParamUtil.getString(
 			request, "screenNavigationEntryKey");
 
@@ -331,10 +340,14 @@ public class ScreenNavigationTag extends IncludeTag {
 			screenNavigationEntryKey = _getDefaultScreenNavigationEntryKey();
 		}
 
-		List<ScreenNavigationEntry> screenNavigationEntries =
+		List<ScreenNavigationEntry<Object>> screenNavigationEntries =
 			_getScreenNavigationEntries();
 
-		for (ScreenNavigationEntry screenNavigationEntry :
+		if (ListUtil.isEmpty(screenNavigationEntries)) {
+			return null;
+		}
+
+		for (ScreenNavigationEntry<Object> screenNavigationEntry :
 				screenNavigationEntries) {
 
 			if (Objects.equals(

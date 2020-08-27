@@ -1,26 +1,34 @@
 $admin-panel-width: 320px;
 $admin-panel-zindex: 990 !default;
 
-$control-menu-focus-box-shadow: 0 0 0 2px #FFF, 0 0 0 4px #80ACFF !default;
+$control-menu-focus-box-shadow: 0 0 0 2px $white, 0 0 0 4px $primary-l1 !default;
 
 $control-menu-css-transition: all 0.5s ease !default;
 
-$control-menu-level-1-active-border: #65B6F0 !default;
-$control-menu-level-1-active-border-width: 2px !default;
-$control-menu-level-1-bg: #30313F !default;
-$control-menu-level-1-color: #869CAD !default;
-$control-menu-level-1-link-color: #FFF !default;
-$control-menu-level-1-link-hover-color: $control-menu-level-1-link-color !default;
+$control-menu-level-1-padding: 8px;
+$control-menu-level-1-padding-desktop: 12px;
 
-$control-menu-level-2-bg: #FFF !default;
-$control-menu-level-2-color: #272834 !default;
-$control-menu-level-2-label-color: #272834 !default;
-$control-menu-level-2-link-color: #6B6C7E !default;
+$control-menu-level-1-active-border: $primary-l1 !default;
+$control-menu-level-1-active-border-width: 2px !default;
+$control-menu-level-1-bg: $dark-l1 !default;
+$control-menu-level-1-color: $gray-400 !default;
+$control-menu-level-1-link-color: $gray-400 !default;
+$control-menu-level-1-link-hover-color: $white !default;
+$control-menu-level-1-link-background-color: fade_out($white, 0.97) !default;
+
+$control-menu-level-1-light-bg: $white !default;
+$control-menu-level-1-light-border: 1px solid $light;
+$control-menu-level-1-light-color: $gray-600 !default;
+$control-menu-level-1-light-link-color: $gray-600 !default;
+$control-menu-level-1-light-link-hover-color: $gray-800 !default;
+$control-menu-level-1-light-link-background-color: $gray-200 !default;
+
+$control-menu-level-2-bg: $white !default;
+$control-menu-level-2-color: $dark !default;
+$control-menu-level-2-label-color: $dark !default;
+$control-menu-level-2-link-color: $secondary !default;
 
 $control-menu-zindex: $admin-panel-zindex - 1 !default;
 
 $has-control-menu-margin-top-desktop: 56px;
 $has-control-menu-margin-top-mobile: 48px;
-
-$has-customization-menu-margin-top-desktop: 56px;
-$has-customization-menu-margin-top-mobile: 48px;

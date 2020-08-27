@@ -41,10 +41,10 @@ import org.osgi.service.component.annotations.Reference;
 @Component(immediate = true, service = UADApplicationSummaryHelper.class)
 public class UADApplicationSummaryHelper {
 
-	public List<UADAnonymizer> getApplicationUADAnonymizers(
+	public List<UADAnonymizer<?>> getApplicationUADAnonymizers(
 		String applicationKey) {
 
-		Stream<UADDisplay> uadDisplayStream =
+		Stream<UADDisplay<?>> uadDisplayStream =
 			_uadRegistry.getApplicationUADDisplayStream(applicationKey);
 
 		return uadDisplayStream.map(
@@ -59,10 +59,18 @@ public class UADApplicationSummaryHelper {
 	}
 
 	public String getDefaultUADRegistryKey(String applicationKey) {
-		List<UADDisplay> uadDisplays = _uadRegistry.getApplicationUADDisplays(
-			applicationKey);
+		List<UADDisplay<?>> uadDisplays;
 
-		UADDisplay uadDisplay = uadDisplays.get(0);
+		if (applicationKey.equals("all-applications")) {
+			uadDisplays = ListUtil.fromCollection(
+				_uadRegistry.getUADDisplays());
+		}
+		else {
+			uadDisplays = _uadRegistry.getApplicationUADDisplays(
+				applicationKey);
+		}
+
+		UADDisplay<?> uadDisplay = uadDisplays.get(0);
 
 		if (uadDisplay == null) {
 			return null;
@@ -84,8 +92,8 @@ public class UADApplicationSummaryHelper {
 	}
 
 	public UADApplicationSummaryDisplay getUADApplicationSummaryDisplay(
-		String applicationKey, List<UADDisplay> uadDisplayStream, long userId,
-		long[] groupIds) {
+		String applicationKey, List<UADDisplay<?>> uadDisplayStream,
+		long userId, long[] groupIds) {
 
 		UADApplicationSummaryDisplay uadApplicationSummaryDisplay =
 			new UADApplicationSummaryDisplay();
@@ -116,25 +124,27 @@ public class UADApplicationSummaryHelper {
 		List<UADApplicationSummaryDisplay>
 			generatedUADApplicationSummaryDisplays = new ArrayList<>();
 
-		Set<String> applicationUADDisplayKeySet =
+		Set<String> applicationUADDisplaysKeySet =
 			_uadRegistry.getApplicationUADDisplaysKeySet();
 
 		int count = 0;
 
-		Iterator<String> iterator = applicationUADDisplayKeySet.iterator();
+		Iterator<String> iterator = applicationUADDisplaysKeySet.iterator();
 
 		while (iterator.hasNext()) {
 			String applicationKey = iterator.next();
 
-			Stream<UADDisplay> uadDisplayStream =
+			Stream<UADDisplay<?>> uadDisplayStream =
 				_uadRegistry.getApplicationUADDisplayStream(applicationKey);
 
-			List<UADDisplay> applicationUADDisplays = uadDisplayStream.filter(
-				uadDisplay ->
-					ArrayUtil.isNotEmpty(groupIds) == uadDisplay.isSiteScoped()
-			).collect(
-				Collectors.toList()
-			);
+			List<UADDisplay<?>> applicationUADDisplays =
+				uadDisplayStream.filter(
+					uadDisplay ->
+						ArrayUtil.isNotEmpty(groupIds) ==
+							uadDisplay.isSiteScoped()
+				).collect(
+					Collectors.toList()
+				);
 
 			if (!ListUtil.isEmpty(applicationUADDisplays)) {
 				UADApplicationSummaryDisplay uadApplicationSummaryDisplay =
@@ -170,22 +180,22 @@ public class UADApplicationSummaryHelper {
 	}
 
 	private int _getNonreviewableUADEntitiesCount(
-		Stream<UADAnonymizer> uadAnonymizerStream, long userId) {
+		Stream<UADAnonymizer<?>> uadAnonymizerStream, long userId) {
 
 		return uadAnonymizerStream.mapToInt(
 			uadAnonymizer -> {
 				try {
 					return (int)uadAnonymizer.count(userId);
 				}
-				catch (PortalException pe) {
-					throw new SystemException(pe);
+				catch (PortalException portalException) {
+					throw new SystemException(portalException);
 				}
 			}
 		).sum();
 	}
 
 	private int _getReviewableUADEntitiesCount(
-		Stream<UADDisplay> uadDisplayStream, long userId) {
+		Stream<UADDisplay<?>> uadDisplayStream, long userId) {
 
 		return uadDisplayStream.mapToInt(
 			uadDisplay -> (int)uadDisplay.count(userId)
@@ -193,7 +203,7 @@ public class UADApplicationSummaryHelper {
 	}
 
 	private int _getReviewableUADEntitiesCount(
-		Stream<UADDisplay> uadDisplayStream, long userId, long[] groupIds) {
+		Stream<UADDisplay<?>> uadDisplayStream, long userId, long[] groupIds) {
 
 		return uadDisplayStream.mapToInt(
 			uadDisplay -> (int)uadDisplay.searchCount(userId, groupIds, null)

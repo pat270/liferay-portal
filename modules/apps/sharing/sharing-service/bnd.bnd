@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Sharing Service
 Bundle-SymbolicName: com.liferay.sharing.service
-Bundle-Version: 2.0.0
+Bundle-Version: 2.0.15
 Liferay-Require-SchemaVersion: 1.0.0
 Liferay-Service: true
 Provide-Capability:\
@@ -11,3 +11,4 @@ Provide-Capability:\
 Require-Capability:\
 	liferay.resource.bundle;\
 		filter:="(bundle.symbolic.name=com.liferay.sharing.lang)"
+-dsannotations-options: inherit

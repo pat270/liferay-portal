@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.wiki.configuration.WikiGroupServiceConfiguration;
+import com.liferay.wiki.constants.WikiPageConstants;
 import com.liferay.wiki.model.WikiPage;
-import com.liferay.wiki.model.WikiPageConstants;
 import com.liferay.wiki.service.WikiPageLocalService;
 
 import java.util.Map;
@@ -45,17 +45,10 @@ import org.osgi.service.component.annotations.Reference;
 public class FrontPageAssetEntryValidatorExclusionRule
 	implements AssetEntryValidatorExclusionRule {
 
-	@Activate
-	@Modified
-	public void activate(Map<String, Object> properties) {
-		_wikiGroupServiceConfiguration = ConfigurableUtil.createConfigurable(
-			WikiGroupServiceConfiguration.class, properties);
-	}
-
 	@Override
 	public boolean isValidationExcluded(
 		long groupId, String className, long classPK, long classTypePK,
-		long[] categoryIds, String[] tagNames) {
+		long[] assetCategoryIds, String[] assetTagNames) {
 
 		WikiPage wikiPage = _wikiPageLocalService.fetchWikiPage(classPK);
 
@@ -67,9 +60,9 @@ public class FrontPageAssetEntryValidatorExclusionRule
 			try {
 				wikiPage = _wikiPageLocalService.getPage(classPK, false);
 			}
-			catch (PortalException pe) {
+			catch (PortalException portalException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(pe, pe);
+					_log.warn(portalException, portalException);
 				}
 
 				return false;
@@ -85,6 +78,13 @@ public class FrontPageAssetEntryValidatorExclusionRule
 		}
 
 		return false;
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_wikiGroupServiceConfiguration = ConfigurableUtil.createConfigurable(
+			WikiGroupServiceConfiguration.class, properties);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

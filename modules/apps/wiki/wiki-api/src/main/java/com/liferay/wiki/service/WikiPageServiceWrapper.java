@@ -16,8 +16,6 @@ package com.liferay.wiki.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link WikiPageService}.
  *
@@ -25,9 +23,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WikiPageService
  * @generated
  */
-@ProviderType
 public class WikiPageServiceWrapper
-	implements WikiPageService, ServiceWrapper<WikiPageService> {
+	implements ServiceWrapper<WikiPageService>, WikiPageService {
 
 	public WikiPageServiceWrapper(WikiPageService wikiPageService) {
 		_wikiPageService = wikiPageService;
@@ -101,21 +98,6 @@ public class WikiPageServiceWrapper
 
 		return _wikiPageService.addTempFileEntry(
 			nodeId, folderName, fileName, inputStream, mimeType);
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #addTempFileEntry(long, String, String, InputStream, String)}
-	 */
-	@Deprecated
-	@Override
-	public void addTempPageAttachment(
-			long nodeId, String fileName, String tempFolderName,
-			java.io.InputStream inputStream, String mimeType)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		_wikiPageService.addTempPageAttachment(
-			nodeId, fileName, tempFolderName, inputStream, mimeType);
 	}
 
 	@Override
@@ -225,19 +207,6 @@ public class WikiPageServiceWrapper
 			attachmentURLPrefix);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getOrphans(WikiNode)}
-	 */
-	@Deprecated
-	@Override
-	public java.util.List<com.liferay.wiki.model.WikiPage> getOrphans(
-			long groupId, long nodeId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _wikiPageService.getOrphans(groupId, nodeId);
-	}
-
 	@Override
 	public java.util.List<com.liferay.wiki.model.WikiPage> getOrphans(
 			com.liferay.wiki.model.WikiNode node)
@@ -299,11 +268,11 @@ public class WikiPageServiceWrapper
 			long groupId, long nodeId, boolean head, int status, int start,
 			int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.wiki.model.WikiPage> obc)
+				<com.liferay.wiki.model.WikiPage> orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _wikiPageService.getPages(
-			groupId, nodeId, head, status, start, end, obc);
+			groupId, nodeId, head, status, start, end, orderByComparator);
 	}
 
 	@Override
@@ -311,12 +280,12 @@ public class WikiPageServiceWrapper
 			long groupId, long nodeId, boolean head, long userId,
 			boolean includeOwner, int status, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.wiki.model.WikiPage> obc)
+				<com.liferay.wiki.model.WikiPage> orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _wikiPageService.getPages(
 			groupId, nodeId, head, userId, includeOwner, status, start, end,
-			obc);
+			orderByComparator);
 	}
 
 	@Override

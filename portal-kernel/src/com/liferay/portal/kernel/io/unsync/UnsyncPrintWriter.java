@@ -122,7 +122,7 @@ public class UnsyncPrintWriter extends PrintWriter {
 
 			_writer = null;
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			_hasError = true;
 		}
 	}
@@ -136,7 +136,7 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.flush();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_hasError = true;
 			}
 		}
@@ -240,12 +240,12 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(_LINE_SEPARATOR);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_hasError = true;
 			}
 		}
@@ -308,6 +308,7 @@ public class UnsyncPrintWriter extends PrintWriter {
 	public void reset(Writer writer) {
 		_formatter = null;
 		_hasError = false;
+
 		_writer = writer;
 
 		lock = _writer;
@@ -328,12 +329,12 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(chars, offset, length);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_hasError = true;
 			}
 		}
@@ -348,12 +349,12 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(c);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_hasError = true;
 			}
 		}
@@ -368,12 +369,12 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(string);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_hasError = true;
 			}
 		}
@@ -388,12 +389,12 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(string, offset, length);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_hasError = true;
 			}
 		}

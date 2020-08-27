@@ -87,7 +87,7 @@ public class RTLServlet extends HttpServlet {
 
 			return super.getLastModified(httpServletRequest);
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return super.getLastModified(httpServletRequest);
 		}
 	}
@@ -146,8 +146,6 @@ public class RTLServlet extends HttpServlet {
 		InputStream inputStream = new ByteArrayInputStream(
 			rtl.getBytes(StringPool.UTF8));
 
-		OutputStream outputStream = null;
-
 		try {
 			File parentFile = dataFile.getParentFile();
 
@@ -155,18 +153,13 @@ public class RTLServlet extends HttpServlet {
 
 			dataFile.createNewFile();
 
-			outputStream = new FileOutputStream(dataFile);
-
-			StreamUtil.transfer(inputStream, outputStream, false);
-		}
-		catch (IOException ioe) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to cache RTL CSS", ioe);
+			try (OutputStream outputStream = new FileOutputStream(dataFile)) {
+				StreamUtil.transfer(inputStream, outputStream, false);
 			}
 		}
-		finally {
-			if (outputStream != null) {
-				outputStream.close();
+		catch (IOException ioException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to cache RTL CSS", ioException);
 			}
 		}
 
@@ -184,7 +177,7 @@ public class RTLServlet extends HttpServlet {
 
 		httpServletResponse.setContentLength(urlConnection.getContentLength());
 
-		httpServletResponse.setContentType(ContentTypes.TEXT_CSS);
+		httpServletResponse.setContentType(ContentTypes.TEXT_CSS_UTF8);
 		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 
 		StreamUtil.transfer(

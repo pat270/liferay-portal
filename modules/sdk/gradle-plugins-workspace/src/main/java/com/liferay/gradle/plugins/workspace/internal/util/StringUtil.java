@@ -14,12 +14,48 @@
 
 package com.liferay.gradle.plugins.workspace.internal.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Gregory Amerson
  */
 public class StringUtil {
+
+	public static String read(InputStream inputStream) throws IOException {
+		byte[] buffer = new byte[8192];
+		int offset = 0;
+
+		while (true) {
+			int count = inputStream.read(
+				buffer, offset, buffer.length - offset);
+
+			if (count == -1) {
+				break;
+			}
+
+			offset += count;
+
+			if (offset == buffer.length) {
+				byte[] newBuffer = new byte[buffer.length << 1];
+
+				System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+
+				buffer = newBuffer;
+			}
+		}
+
+		if (offset == 0) {
+			return "";
+		}
+
+		return new String(buffer, 0, offset, "UTF-8");
+	}
 
 	public static String toLowerCase(String s) {
 		if (s == null) {
@@ -52,6 +88,12 @@ public class StringUtil {
 		}
 
 		return sb.toString();
+	}
+
+	public static String toString(List<String> strings) {
+		Stream<String> stream = strings.stream();
+
+		return stream.collect(Collectors.joining(", "));
 	}
 
 }

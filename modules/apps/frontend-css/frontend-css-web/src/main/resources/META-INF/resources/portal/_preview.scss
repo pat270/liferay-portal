@@ -1,5 +1,3 @@
-@import "mixins";
-
 .lfr-preview-file {
 	position: relative;
 }
@@ -14,21 +12,26 @@
 	text-align: center;
 }
 
-.lfr-preview-audio-content, .lfr-preview-image-content, .lfr-preview-video-content {
+.lfr-preview-audio-content,
+.lfr-preview-image-content,
+.lfr-preview-video-content {
 	padding-left: 0;
 }
 
-.lfr-preview-image-content img, .lfr-preview-video-content .video-node {
+.lfr-preview-image-content img,
+.lfr-preview-video-content .video-node {
 	max-height: 440px;
 	max-width: 100%;
 }
 
-.lfr-preview-file-image-current-column, .lfr-preview-file-video-current-column {
+.lfr-preview-file-image-current-column,
+.lfr-preview-file-video-current-column {
 	padding: 20px;
 	position: relative;
 }
 
-.lfr-preview-file-image-container, .lfr-preview-video-content .video-content {
+.lfr-preview-file-image-container,
+.lfr-preview-video-content .video-content {
 	text-align: center;
 	vertical-align: middle;
 }
@@ -46,12 +49,10 @@
 	height: 52px;
 	line-height: 48px;
 	top: 50%;
-
-	@include transform(translateY(-50%));
-
+	transform: translateY(-50%);
 	width: 52px;
 
-	@include sm {
+	@include media-breakpoint-up(sm) {
 		height: 64px;
 		line-height: 60px;
 		width: 64px;
@@ -88,7 +89,7 @@
 	max-width: 100%;
 	vertical-align: middle;
 
-	@include respond-to(phone) {
+	@include media-breakpoint-down(sm) {
 		max-height: 65%;
 	}
 }
@@ -109,7 +110,7 @@
 
 .lfr-preview-file-images-content {
 	position: absolute;
-	width: 100%
+	width: 100%;
 }
 
 .lfr-preview-file-image {

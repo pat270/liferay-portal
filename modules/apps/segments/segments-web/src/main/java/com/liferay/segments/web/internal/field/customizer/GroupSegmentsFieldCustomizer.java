@@ -80,9 +80,11 @@ public class GroupSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 		try {
 			return group.getDescriptiveName(locale);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get name for group " + fieldValue, pe);
+				_log.warn(
+					"Unable to get name for group " + fieldValue,
+					portalException);
 			}
 
 			return fieldValue;
@@ -114,9 +116,9 @@ public class GroupSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 					_portal.getLocale(portletRequest), Group.class.getName()),
 				portletURL.toString(), false);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get select entity", e);
+				_log.warn("Unable to get select entity", exception);
 			}
 
 			return null;
@@ -137,7 +139,7 @@ public class GroupSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 		GroupSegmentsFieldCustomizer.class);
 
 	private static final List<String> _fieldNames = ListUtil.fromArray(
-		new String[] {"groupIds"});
+		"groupIds");
 
 	@Reference
 	private GroupLocalService _groupLocalService;

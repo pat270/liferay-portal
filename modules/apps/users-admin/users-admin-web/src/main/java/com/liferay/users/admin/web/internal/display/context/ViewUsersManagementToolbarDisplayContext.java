@@ -14,11 +14,14 @@
 
 package com.liferay.users.admin.web.internal.display.context;
 
+import com.liferay.account.constants.AccountConstants;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.ViewTypeItemList;
 import com.liferay.petra.string.StringBundler;
@@ -60,13 +63,14 @@ public class ViewUsersManagementToolbarDisplayContext {
 
 	public ViewUsersManagementToolbarDisplayContext(
 		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
-		RenderResponse renderResponse, String displayStyle, String navigation,
-		int status) {
+		RenderResponse renderResponse, String displayStyle, String domain,
+		String navigation, int status) {
 
 		_httpServletRequest = httpServletRequest;
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 		_displayStyle = displayStyle;
+		_domain = domain;
 		_navigation = navigation;
 		_status = status;
 
@@ -75,56 +79,48 @@ public class ViewUsersManagementToolbarDisplayContext {
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				if (isShowRestoreButton()) {
-					add(
-						dropdownItem -> {
-							dropdownItem.setHref(
-								StringBundler.concat(
-									"javascript:",
-									_renderResponse.getNamespace(),
-									"deleteUsers('", Constants.RESTORE, "');"));
-							dropdownItem.setIcon("undo");
-							dropdownItem.setLabel(
-								LanguageUtil.get(
-									_httpServletRequest, "activate"));
-							dropdownItem.setQuickAction(true);
-						});
-				}
-
-				if (isShowDeleteButton()) {
-					add(
-						dropdownItem -> {
-							UserSearchTerms userSearchTerms =
-								(UserSearchTerms)_userSearch.getSearchTerms();
-
-							String action = Constants.DELETE;
-							String icon = "times-circle";
-
-							if (userSearchTerms.isActive()) {
-								action = Constants.DEACTIVATE;
-								icon = "hidden";
-							}
-
-							dropdownItem.setHref(
-								StringBundler.concat(
-									"javascript:",
-									_renderResponse.getNamespace(),
-									"deleteUsers('", action, "');"));
-							dropdownItem.setIcon(icon);
-							dropdownItem.setLabel(
-								LanguageUtil.get(_httpServletRequest, action));
-							dropdownItem.setQuickAction(true);
-						});
-				}
+		return DropdownItemListBuilder.add(
+			() -> isShowRestoreButton(),
+			dropdownItem -> {
+				dropdownItem.setHref(
+					StringBundler.concat(
+						"javascript:", _renderResponse.getNamespace(),
+						"deleteUsers('", Constants.RESTORE, "');"));
+				dropdownItem.setIcon("undo");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "activate"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).add(
+			() -> isShowDeleteButton(),
+			dropdownItem -> {
+				UserSearchTerms userSearchTerms =
+					(UserSearchTerms)_userSearch.getSearchTerms();
+
+				String action = Constants.DELETE;
+				String icon = "times-circle";
+
+				if (userSearchTerms.isActive()) {
+					action = Constants.DEACTIVATE;
+					icon = "hidden";
+				}
+
+				dropdownItem.setHref(
+					StringBundler.concat(
+						"javascript:", _renderResponse.getNamespace(),
+						"deleteUsers('", action, "');"));
+				dropdownItem.setIcon(icon);
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, action));
+				dropdownItem.setQuickAction(true);
+			}
+		).build();
 	}
 
 	public String getClearResultsURL() {
 		PortletURL clearResultsURL = getPortletURL();
 
+		clearResultsURL.setParameter("domain", (String)null);
 		clearResultsURL.setParameter("keywords", StringPool.BLANK);
 		clearResultsURL.setParameter("navigation", (String)null);
 
@@ -132,70 +128,94 @@ public class ViewUsersManagementToolbarDisplayContext {
 	}
 
 	public CreationMenu getCreationMenu() throws PortalException {
-		return new CreationMenu() {
-			{
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						dropdownItem.setHref(
-							_renderResponse.createRenderURL(),
-							"mvcRenderCommandName", "/users_admin/edit_user");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "add-user"));
-					});
+		return CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
+				dropdownItem.setHref(
+					_renderResponse.createRenderURL(), "mvcRenderCommandName",
+					"/users_admin/edit_user");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "add-user"));
 			}
-		};
+		).build();
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getFilterNavigationDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "filter-by-navigation"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							_getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterNavigationDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "filter-by-status"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					_getFilterDomainDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "filter-by-domain"));
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(_getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "order-by"));
+			}
+		).build();
 	}
 
 	public List<LabelItem> getFilterLabelItems() {
-		return new LabelItemList() {
-			{
-				if (!_navigation.equals("active")) {
-					add(
-						labelItem -> {
-							PortletURL removeLabelURL = getPortletURL();
+		return LabelItemListBuilder.add(
+			() -> _domain.equals("account-users"),
+			labelItem -> {
+				PortletURL removeLabelURL = getPortletURL();
 
-							removeLabelURL.setParameter(
-								"navigation", (String)null);
+				removeLabelURL.setParameter("domain", (String)null);
 
-							labelItem.putData(
-								"removeLabelURL", removeLabelURL.toString());
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
 
-							labelItem.setCloseable(true);
+				labelItem.setCloseable(true);
 
-							String label = String.format(
-								"%s: %s",
-								LanguageUtil.get(_httpServletRequest, "status"),
-								LanguageUtil.get(
-									_httpServletRequest, _navigation));
+				String label = String.format(
+					"%s: %s", LanguageUtil.get(_httpServletRequest, "domain"),
+					LanguageUtil.get(_httpServletRequest, _domain));
 
-							labelItem.setLabel(label);
-						});
-				}
+				labelItem.setLabel(label);
 			}
-		};
+		).add(
+			() -> _domain.equals("all"),
+			labelItem -> {
+				PortletURL removeLabelURL = getPortletURL();
+
+				removeLabelURL.setParameter("domain", (String)null);
+
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
+
+				labelItem.setCloseable(true);
+
+				String label = String.format(
+					"%s: %s", LanguageUtil.get(_httpServletRequest, "domain"),
+					LanguageUtil.get(_httpServletRequest, _domain));
+
+				labelItem.setLabel(label);
+			}
+		).add(
+			() -> !_navigation.equals("active"),
+			labelItem -> {
+				PortletURL removeLabelURL = getPortletURL();
+
+				removeLabelURL.setParameter("navigation", (String)null);
+
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
+
+				labelItem.setCloseable(true);
+
+				String label = String.format(
+					"%s: %s", LanguageUtil.get(_httpServletRequest, "status"),
+					LanguageUtil.get(_httpServletRequest, _navigation));
+
+				labelItem.setLabel(label);
+			}
+		).build();
 	}
 
 	public String getOrderByCol() {
@@ -216,9 +236,9 @@ public class ViewUsersManagementToolbarDisplayContext {
 
 			return portletURL;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
 			return _renderResponse.createRenderURL();
@@ -231,7 +251,7 @@ public class ViewUsersManagementToolbarDisplayContext {
 		return searchActionURL.toString();
 	}
 
-	public SearchContainer getSearchContainer() {
+	public SearchContainer<User> getSearchContainer() {
 		if (_userSearch != null) {
 			return _userSearch;
 		}
@@ -264,17 +284,27 @@ public class ViewUsersManagementToolbarDisplayContext {
 			searchTerms.setStatus(WorkflowConstants.STATUS_INACTIVE);
 		}
 
+		LinkedHashMap<String, Object> params = new LinkedHashMap<>();
+
+		if (_domain.equals("company-users")) {
+			params.put("accountEntryIds", new Long[0]);
+		}
+		else if (_domain.equals("account-users")) {
+			params.put(
+				"accountEntryIds",
+				new Long[] {AccountConstants.ACCOUNT_ENTRY_ID_ANY});
+		}
+
 		int total = UserLocalServiceUtil.searchCount(
 			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
-			searchTerms.getStatus(), new LinkedHashMap<String, Object>());
+			searchTerms.getStatus(), params);
 
 		userSearch.setTotal(total);
 
 		List<User> results = UserLocalServiceUtil.search(
 			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
-			searchTerms.getStatus(), new LinkedHashMap<String, Object>(),
-			userSearch.getStart(), userSearch.getEnd(),
-			userSearch.getOrderByComparator());
+			searchTerms.getStatus(), params, userSearch.getStart(),
+			userSearch.getEnd(), userSearch.getOrderByComparator());
 
 		userSearch.setResults(results);
 
@@ -339,6 +369,24 @@ public class ViewUsersManagementToolbarDisplayContext {
 			themeDisplay.getPermissionChecker(), ActionKeys.ADD_USER);
 	}
 
+	private List<DropdownItem> _getFilterDomainDropdownItems() {
+		DropdownItemList domainDropdownitems = new DropdownItemList();
+
+		for (String domain :
+				new String[] {"all", "company-users", "account-users"}) {
+
+			domainDropdownitems.add(
+				dropdownItem -> {
+					dropdownItem.setActive(domain.equals(_domain));
+					dropdownItem.setHref(getPortletURL(), "domain", domain);
+					dropdownItem.setLabel(
+						LanguageUtil.get(_httpServletRequest, domain));
+				});
+		}
+
+		return domainDropdownitems;
+	}
+
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {
 		DropdownItemList navigationDropdownitems = new DropdownItemList();
 
@@ -357,41 +405,34 @@ public class ViewUsersManagementToolbarDisplayContext {
 	}
 
 	private List<DropdownItem> _getOrderByDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "first-name"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "first-name");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "first-name"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "last-name"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "last-name");
-						dropdownItem.setLabel(
-							LanguageUtil.get(_httpServletRequest, "last-name"));
-					});
-
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(
-							Objects.equals(getOrderByCol(), "screen-name"));
-						dropdownItem.setHref(
-							getPortletURL(), "orderByCol", "screen-name");
-						dropdownItem.setLabel(
-							LanguageUtil.get(
-								_httpServletRequest, "screen-name"));
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "first-name"));
+				dropdownItem.setHref(
+					getPortletURL(), "orderByCol", "first-name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "first-name"));
 			}
-		};
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "last-name"));
+				dropdownItem.setHref(
+					getPortletURL(), "orderByCol", "last-name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "last-name"));
+			}
+		).add(
+			dropdownItem -> {
+				dropdownItem.setActive(
+					Objects.equals(getOrderByCol(), "screen-name"));
+				dropdownItem.setHref(
+					getPortletURL(), "orderByCol", "screen-name");
+				dropdownItem.setLabel(
+					LanguageUtil.get(_httpServletRequest, "screen-name"));
+			}
+		).build();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -399,6 +440,7 @@ public class ViewUsersManagementToolbarDisplayContext {
 
 	private final PortletURL _currentURL;
 	private final String _displayStyle;
+	private final String _domain;
 	private final HttpServletRequest _httpServletRequest;
 	private final String _navigation;
 	private final RenderRequest _renderRequest;

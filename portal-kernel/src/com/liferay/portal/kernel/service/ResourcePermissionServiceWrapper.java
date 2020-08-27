@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link ResourcePermissionService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ResourcePermissionService
  * @generated
  */
-@ProviderType
 public class ResourcePermissionServiceWrapper
 	implements ResourcePermissionService,
 			   ServiceWrapper<ResourcePermissionService> {
@@ -72,8 +69,8 @@ public class ResourcePermissionServiceWrapper
 	 */
 	@Override
 	public void addResourcePermission(
-			long groupId, long companyId, String name, int scope,
-			String primKey, long roleId, String actionId)
+			long groupId, long companyId, java.lang.String name, int scope,
+			java.lang.String primKey, long roleId, java.lang.String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_resourcePermissionService.addResourcePermission(
@@ -86,7 +83,7 @@ public class ResourcePermissionServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _resourcePermissionService.getOSGiServiceIdentifier();
 	}
 
@@ -112,8 +109,8 @@ public class ResourcePermissionServiceWrapper
 	 */
 	@Override
 	public void removeResourcePermission(
-			long groupId, long companyId, String name, int scope,
-			String primKey, long roleId, String actionId)
+			long groupId, long companyId, java.lang.String name, int scope,
+			java.lang.String primKey, long roleId, java.lang.String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_resourcePermissionService.removeResourcePermission(
@@ -136,8 +133,8 @@ public class ResourcePermissionServiceWrapper
 	 */
 	@Override
 	public void removeResourcePermissions(
-			long groupId, long companyId, String name, int scope, long roleId,
-			String actionId)
+			long groupId, long companyId, java.lang.String name, int scope,
+			long roleId, java.lang.String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_resourcePermissionService.removeResourcePermissions(
@@ -170,8 +167,8 @@ public class ResourcePermissionServiceWrapper
 	 */
 	@Override
 	public void setIndividualResourcePermissions(
-			long groupId, long companyId, String name, String primKey,
-			long roleId, String[] actionIds)
+			long groupId, long companyId, java.lang.String name,
+			java.lang.String primKey, long roleId, java.lang.String[] actionIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_resourcePermissionService.setIndividualResourcePermissions(
@@ -203,8 +200,10 @@ public class ResourcePermissionServiceWrapper
 	 */
 	@Override
 	public void setIndividualResourcePermissions(
-			long groupId, long companyId, String name, String primKey,
-			java.util.Map<Long, String[]> roleIdsToActionIds)
+			long groupId, long companyId, java.lang.String name,
+			java.lang.String primKey,
+			java.util.Map<java.lang.Long, java.lang.String[]>
+				roleIdsToActionIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_resourcePermissionService.setIndividualResourcePermissions(

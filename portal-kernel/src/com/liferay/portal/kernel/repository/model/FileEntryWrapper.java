@@ -53,16 +53,16 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof FileEntryWrapper)) {
+		if (!(object instanceof FileEntryWrapper)) {
 			return false;
 		}
 
-		FileEntryWrapper fileEntryWrapper = (FileEntryWrapper)obj;
+		FileEntryWrapper fileEntryWrapper = (FileEntryWrapper)object;
 
 		if (Objects.equals(_fileEntry, fileEntryWrapper._fileEntry)) {
 			return true;
@@ -241,7 +241,7 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	}
 
 	@Override
-	public int getReadCount() {
+	public long getReadCount() {
 		return _fileEntry.getReadCount();
 	}
 
@@ -295,21 +295,6 @@ public class FileEntryWrapper implements FileEntry, ModelWrapper<FileEntry> {
 	@Override
 	public String getVersion() {
 		return _fileEntry.getVersion();
-	}
-
-	@Override
-	public long getVersionUserId() {
-		return _fileEntry.getVersionUserId();
-	}
-
-	@Override
-	public String getVersionUserName() {
-		return _fileEntry.getVersionUserName();
-	}
-
-	@Override
-	public String getVersionUserUuid() {
-		return _fileEntry.getVersionUserUuid();
 	}
 
 	@Override

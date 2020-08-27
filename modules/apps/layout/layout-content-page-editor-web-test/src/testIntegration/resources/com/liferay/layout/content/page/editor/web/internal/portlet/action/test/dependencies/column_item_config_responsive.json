@@ -1,0 +1,11 @@
+{
+	"landscapeMobile": {
+		"size": 4
+	},
+	"portraitMobile": {
+	},
+	"size": 12,
+	"tablet": {
+		"size": 6
+	}
+}

@@ -27,20 +27,15 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 	localization = "content/Language",
 	name = "advanced-file-system-store-configuration-name"
 )
-public interface AdvancedFileSystemStoreConfiguration {
+public interface AdvancedFileSystemStoreConfiguration
+	extends FileSystemStoreConfiguration {
 
 	@Meta.AD(
 		deflt = "data/document_library",
 		description = "file-system-store-configuration-root-dir-description",
 		name = "root-dir"
 	)
+	@Override
 	public String rootDir();
-
-	@Meta.AD(
-		deflt = "false",
-		description = "file-system-store-configuration-use-hard-links-description",
-		name = "use-hard-links", required = false
-	)
-	public boolean useHardLinks();
 
 }

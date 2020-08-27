@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link EmailAddressLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see EmailAddressLocalService
  * @generated
  */
-@ProviderType
 public class EmailAddressLocalServiceWrapper
 	implements EmailAddressLocalService,
 			   ServiceWrapper<EmailAddressLocalService> {
@@ -37,6 +34,10 @@ public class EmailAddressLocalServiceWrapper
 	/**
 	 * Adds the email address to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect EmailAddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param emailAddress the email address
 	 * @return the email address that was added
 	 */
@@ -49,8 +50,9 @@ public class EmailAddressLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.EmailAddress addEmailAddress(
-			long userId, String className, long classPK, String address,
-			long typeId, boolean primary, ServiceContext serviceContext)
+			long userId, java.lang.String className, long classPK,
+			java.lang.String address, long typeId, boolean primary,
+			ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _emailAddressLocalService.addEmailAddress(
@@ -72,7 +74,22 @@ public class EmailAddressLocalServiceWrapper
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _emailAddressLocalService.createPersistedModel(primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the email address from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect EmailAddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param emailAddress the email address
 	 * @return the email address that was removed
@@ -86,6 +103,10 @@ public class EmailAddressLocalServiceWrapper
 
 	/**
 	 * Deletes the email address with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect EmailAddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param emailAddressId the primary key of the email address
 	 * @return the email address that was removed
@@ -101,7 +122,7 @@ public class EmailAddressLocalServiceWrapper
 
 	@Override
 	public void deleteEmailAddresses(
-		long companyId, String className, long classPK) {
+		long companyId, java.lang.String className, long classPK) {
 
 		_emailAddressLocalService.deleteEmailAddresses(
 			companyId, className, classPK);
@@ -116,6 +137,11 @@ public class EmailAddressLocalServiceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _emailAddressLocalService.deletePersistedModel(persistedModel);
+	}
+
+	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _emailAddressLocalService.dslQuery(dslQuery);
 	}
 
 	@Override
@@ -140,7 +166,7 @@ public class EmailAddressLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.EmailAddressModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.EmailAddressModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -160,7 +186,7 @@ public class EmailAddressLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.EmailAddressModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.EmailAddressModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -224,7 +250,8 @@ public class EmailAddressLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.EmailAddress
-		fetchEmailAddressByUuidAndCompanyId(String uuid, long companyId) {
+		fetchEmailAddressByUuidAndCompanyId(
+			java.lang.String uuid, long companyId) {
 
 		return _emailAddressLocalService.fetchEmailAddressByUuidAndCompanyId(
 			uuid, companyId);
@@ -262,7 +289,8 @@ public class EmailAddressLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.EmailAddress
-			getEmailAddressByUuidAndCompanyId(String uuid, long companyId)
+			getEmailAddressByUuidAndCompanyId(
+				java.lang.String uuid, long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _emailAddressLocalService.getEmailAddressByUuidAndCompanyId(
@@ -280,7 +308,7 @@ public class EmailAddressLocalServiceWrapper
 	 * Returns a range of all the email addresses.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.EmailAddressModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.EmailAddressModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of email addresses
@@ -296,7 +324,8 @@ public class EmailAddressLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.EmailAddress>
-		getEmailAddresses(long companyId, String className, long classPK) {
+		getEmailAddresses(
+			long companyId, java.lang.String className, long classPK) {
 
 		return _emailAddressLocalService.getEmailAddresses(
 			companyId, className, classPK);
@@ -335,10 +364,13 @@ public class EmailAddressLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _emailAddressLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -349,6 +381,10 @@ public class EmailAddressLocalServiceWrapper
 
 	/**
 	 * Updates the email address in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect EmailAddressLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param emailAddress the email address
 	 * @return the email address that was updated
@@ -362,7 +398,8 @@ public class EmailAddressLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.EmailAddress updateEmailAddress(
-			long emailAddressId, String address, long typeId, boolean primary)
+			long emailAddressId, java.lang.String address, long typeId,
+			boolean primary)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _emailAddressLocalService.updateEmailAddress(

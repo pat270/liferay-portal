@@ -1,18 +1,32 @@
+<#assign hasCategories = false />
+
 <#if entries?has_content>
 	<@liferay_aui.row>
 		<#list entries as entry>
-			<@liferay_aui.col width=25>
-				<div class="results-header">
-					<h3>
-						${entry.getUnambiguousTitle(entries, themeDisplay.getSiteGroupId(), themeDisplay.getLocale())}
-					</h3>
-				</div>
+			<#assign categories = entry.getCategories() />
 
-				<#assign categories = entry.getCategories() />
+			<#if categories?has_content>
+				<#assign hasCategories = true />
 
-				<@displayCategories categories=categories />
-			</@liferay_aui.col>
+				<@liferay_aui.col width=25>
+					<div class="results-header">
+						<h3>
+							${entry.getUnambiguousTitle(entries, themeDisplay.getSiteGroupId(), themeDisplay.getLocale())}
+						</h3>
+					</div>
+
+					<@displayCategories categories=categories />
+				</@liferay_aui.col>
+			</#if>
 		</#list>
+
+		<#if !hasCategories>
+			${renderRequest.setAttribute("PORTLET_CONFIGURATOR_VISIBILITY", true)}
+
+			<div class="alert alert-info w-100">
+				<@liferay_ui.message key="there-are-no-categories" />
+			</div>
+		</#if>
 	</@liferay_aui.row>
 </#if>
 

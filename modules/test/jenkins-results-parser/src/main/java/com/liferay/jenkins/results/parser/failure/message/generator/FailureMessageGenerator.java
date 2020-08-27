@@ -27,4 +27,6 @@ public interface FailureMessageGenerator {
 
 	public Element getMessageElement(String consoleText);
 
+	public boolean isGenericCIFailure();
+
 }

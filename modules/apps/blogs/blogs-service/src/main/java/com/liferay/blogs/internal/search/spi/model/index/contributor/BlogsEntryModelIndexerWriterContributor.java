@@ -18,8 +18,6 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
-import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.batch.BatchIndexingActionable;
 import com.liferay.portal.search.batch.DynamicQueryBatchIndexingActionableFactory;
 import com.liferay.portal.search.spi.model.index.contributor.ModelIndexerWriterContributor;
@@ -53,23 +51,10 @@ public class BlogsEntryModelIndexerWriterContributor
 					"displayDate");
 
 				dynamicQuery.add(displayDateProperty.lt(new Date()));
-
-				Property statusProperty = PropertyFactoryUtil.forName("status");
-
-				Integer[] statuses = {
-					WorkflowConstants.STATUS_APPROVED,
-					WorkflowConstants.STATUS_IN_TRASH
-				};
-
-				dynamicQuery.add(statusProperty.in(statuses));
 			});
 		batchIndexingActionable.setPerformActionMethod(
-			(BlogsEntry blogsEntry) -> {
-				Document document =
-					modelIndexerWriterDocumentHelper.getDocument(blogsEntry);
-
-				batchIndexingActionable.addDocuments(document);
-			});
+			(BlogsEntry blogsEntry) -> batchIndexingActionable.addDocuments(
+				modelIndexerWriterDocumentHelper.getDocument(blogsEntry)));
 	}
 
 	@Override
@@ -86,13 +71,14 @@ public class BlogsEntryModelIndexerWriterContributor
 
 	@Override
 	public IndexerWriterMode getIndexerWriterMode(BlogsEntry blogsEntry) {
-		int status = blogsEntry.getStatus();
-
-		if ((status == WorkflowConstants.STATUS_APPROVED) ||
-			(status == WorkflowConstants.STATUS_IN_TRASH) ||
-			(status == WorkflowConstants.STATUS_DRAFT)) {
+		if (blogsEntry.isApproved() || blogsEntry.isDraft() ||
+			blogsEntry.isInTrash() || blogsEntry.isPending()) {
 
 			return IndexerWriterMode.UPDATE;
+		}
+
+		if (!blogsEntry.isApproved() && !blogsEntry.isInTrash()) {
+			return IndexerWriterMode.SKIP;
 		}
 
 		return IndexerWriterMode.DELETE;

@@ -100,9 +100,9 @@ public class UserSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 					_portal.getLocale(portletRequest), User.class.getName()),
 				portletURL.toString(), true);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get select entity", e);
+				_log.warn("Unable to get select entity", exception);
 			}
 
 			return null;
@@ -123,7 +123,7 @@ public class UserSegmentsFieldCustomizer extends BaseSegmentsFieldCustomizer {
 		UserSegmentsFieldCustomizer.class);
 
 	private static final List<String> _fieldNames = ListUtil.fromArray(
-		new String[] {"userId"});
+		"userId");
 
 	@Reference
 	private Portal _portal;

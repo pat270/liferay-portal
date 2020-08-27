@@ -23,7 +23,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
-import com.liferay.journal.web.util.JournalUtil;
+import com.liferay.journal.web.internal.util.JournalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -138,12 +138,12 @@ public class PublishFolderMVCActionCommand extends BaseMVCActionCommand {
 				}
 			}
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to get folders and articles for folder " +
 						journalFolder.getFolderId(),
-					pe);
+					portalException);
 			}
 		}
 

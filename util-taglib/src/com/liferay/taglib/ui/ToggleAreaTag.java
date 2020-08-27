@@ -14,7 +14,6 @@
 
 package com.liferay.taglib.ui;
 
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.FileAvailabilityUtil;
 import com.liferay.taglib.util.IncludeTag;
@@ -32,7 +31,7 @@ public class ToggleAreaTag extends IncludeTag {
 	public int doEndTag() throws JspException {
 		try {
 			if (!FileAvailabilityUtil.isAvailable(
-					servletContext, getEndPage())) {
+					getServletContext(), getEndPage())) {
 
 				JspWriter jspWriter = pageContext.getOut();
 
@@ -44,20 +43,18 @@ public class ToggleAreaTag extends IncludeTag {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_startPage = null;
-				_endPage = null;
-				_id = null;
-				_showMessage = null;
-				_hideMessage = null;
-				_defaultShowContent = true;
-				_stateVar = null;
-				_align = "left";
-			}
+			_startPage = null;
+			_endPage = null;
+			_id = null;
+			_showMessage = null;
+			_hideMessage = null;
+			_defaultShowContent = true;
+			_stateVar = null;
+			_align = "left";
 		}
 	}
 
@@ -88,8 +85,8 @@ public class ToggleAreaTag extends IncludeTag {
 
 			return EVAL_BODY_INCLUDE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

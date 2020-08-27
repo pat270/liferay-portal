@@ -23,8 +23,11 @@ MBMessage message = (MBMessage)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_
 MBCategory category = (MBCategory)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_CATEGORY);
 MBThread thread = (MBThread)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_THREAD);
 MBThreadFlag threadFlag = (MBThreadFlag)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_THREAD_FLAG);
-boolean lastNode = ((Boolean)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_LAST_NODE)).booleanValue();
-int depth = ((Integer)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_DEPTH)).intValue();
+Boolean lastNodeBoolean = (Boolean)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_LAST_NODE);
+
+boolean lastNode = lastNodeBoolean.booleanValue();
+
+int depth = (Integer)request.getAttribute(WebKeys.MESSAGE_BOARDS_TREE_WALKER_DEPTH);
 
 long threadFlagModifiedTime = 0;
 
@@ -50,29 +53,14 @@ if (threadFlag != null) {
 			</c:if>
 
 			<%
-			String messageURL = null;
+			String rowHREF = null;
 
 			if (portletName.equals(MBPortletKeys.MESSAGE_BOARDS_ADMIN)) {
-				PortletURL selMessageURL = renderResponse.createRenderURL();
-
-				selMessageURL.setParameter("mvcRenderCommandName", "/message_boards/view_message");
-				selMessageURL.setParameter("messageId", String.valueOf(selMessage.getMessageId()));
-
-				messageURL = selMessageURL.toString();
+				rowHREF = MBUtil.getMBMessageURL(selMessage.getMessageId(), renderResponse);
 			}
 			else {
-				String layoutFullURL = PortalUtil.getLayoutFullURL(themeDisplay);
-
-				messageURL = layoutFullURL + Portal.FRIENDLY_URL_SEPARATOR + "message_boards/view_message/" + selMessage.getMessageId();
-
-				if (windowState.equals(WindowState.MAXIMIZED)) {
-					messageURL += "/maximized";
-				}
+				rowHREF = MBUtil.getMBMessageURL(selMessage.getMessageId(), PortalUtil.getLayoutFullURL(themeDisplay), renderResponse);
 			}
-
-			String rowHREF = "#" + renderResponse.getNamespace() + "message_" + message.getMessageId();
-
-			rowHREF = messageURL + rowHREF;
 
 			boolean readThread = true;
 
@@ -124,13 +112,13 @@ if (threadFlag != null) {
 </c:if>
 
 <%
-List messages = treeWalker.getMessages();
+List<MBMessage> messages = treeWalker.getMessages();
 int[] range = treeWalker.getChildrenRange(message);
 
 depth++;
 
 for (int i = range[0]; i < range[1]; i++) {
-	MBMessage curMessage = (MBMessage)messages.get(i);
+	MBMessage curMessage = messages.get(i);
 
 	if (!MBUtil.isViewableMessage(themeDisplay, curMessage, message)) {
 		continue;

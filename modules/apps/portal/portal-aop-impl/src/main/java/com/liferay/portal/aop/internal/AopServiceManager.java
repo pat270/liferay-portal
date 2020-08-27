@@ -17,7 +17,7 @@ package com.liferay.portal.aop.internal;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.spring.transaction.TransactionExecutor;
+import com.liferay.portal.spring.transaction.TransactionHandler;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -28,11 +28,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -46,40 +46,38 @@ public class AopServiceManager {
 	protected void activate(BundleContext bundleContext) {
 		_bundleContext = bundleContext;
 
+		_synchronousBundleListener = bundleEvent -> {
+			if (bundleEvent.getType() == BundleEvent.STOPPING) {
+				Bundle bundle = bundleEvent.getBundle();
+
+				_aopDependencyResolvers.remove(bundle.getBundleId());
+			}
+		};
+
+		_bundleContext.addBundleListener(_synchronousBundleListener);
+
 		_aopServiceServiceTracker = new ServiceTracker<>(
 			bundleContext, AopService.class,
 			new AopServiceServiceTrackerCustomizer());
 
 		_aopServiceServiceTracker.open();
 
-		_transactionExecutorServiceTracker = new ServiceTracker<>(
-			bundleContext, TransactionExecutor.class,
-			new TransactionExecutorServiceTrackerCustomizer());
+		_transactionHandlerServiceTracker = new ServiceTracker<>(
+			bundleContext, TransactionHandler.class,
+			new TransactionHandlerServiceTrackerCustomizer());
 
-		_transactionExecutorServiceTracker.open(true);
-
-		_bundleTracker = new BundleTracker<Object>(
-			bundleContext, Bundle.ACTIVE, null) {
-
-			@Override
-			public void removedBundle(
-				Bundle bundle, BundleEvent bundleEvent, Object object) {
-
-				_aopDependencyResolvers.remove(bundle.getBundleId());
-			}
-
-		};
-
-		_bundleTracker.open();
+		_transactionHandlerServiceTracker.open(true);
 	}
 
 	@Deactivate
 	protected void deactivate() {
 		_aopServiceServiceTracker.close();
 
-		_transactionExecutorServiceTracker.close();
+		_transactionHandlerServiceTracker.close();
 
-		_bundleTracker.close();
+		_bundleContext.removeBundleListener(_synchronousBundleListener);
+
+		_aopDependencyResolvers.clear();
 	}
 
 	private final Map<Object, AopServiceResolver> _aopDependencyResolvers =
@@ -87,13 +85,13 @@ public class AopServiceManager {
 	private ServiceTracker<AopService, AopServiceRegistrar>
 		_aopServiceServiceTracker;
 	private BundleContext _bundleContext;
-	private BundleTracker<?> _bundleTracker;
 
 	@Reference(target = "(original.bean=true)")
-	private TransactionExecutor _portalTransactionExecutor;
+	private TransactionHandler _portalTransactionHandler;
 
-	private ServiceTracker<TransactionExecutor, TransactionExecutorHolder>
-		_transactionExecutorServiceTracker;
+	private SynchronousBundleListener _synchronousBundleListener;
+	private ServiceTracker<TransactionHandler, TransactionHandlerHolder>
+		_transactionHandlerServiceTracker;
 
 	private class AopServiceServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<AopService, AopServiceRegistrar> {
@@ -126,7 +124,7 @@ public class AopServiceManager {
 				aopServiceResolver.addAopServiceRegistrar(aopServiceRegistrar);
 			}
 			else {
-				aopServiceRegistrar.register(_portalTransactionExecutor);
+				aopServiceRegistrar.register(_portalTransactionHandler);
 			}
 
 			return aopServiceRegistrar;
@@ -210,49 +208,49 @@ public class AopServiceManager {
 
 	}
 
-	private class TransactionExecutorServiceTrackerCustomizer
+	private class TransactionHandlerServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
-			<TransactionExecutor, TransactionExecutorHolder> {
+			<TransactionHandler, TransactionHandlerHolder> {
 
 		@Override
-		public TransactionExecutorHolder addingService(
-			ServiceReference<TransactionExecutor> serviceReference) {
+		public TransactionHandlerHolder addingService(
+			ServiceReference<TransactionHandler> serviceReference) {
 
-			TransactionExecutor transactionExecutor = _bundleContext.getService(
+			TransactionHandler transactionHandler = _bundleContext.getService(
 				serviceReference);
 
-			TransactionExecutorHolder transactionExecutorHolder =
-				new TransactionExecutorHolder(
-					serviceReference, transactionExecutor);
+			TransactionHandlerHolder transactionHandlerHolder =
+				new TransactionHandlerHolder(
+					serviceReference, transactionHandler);
 
 			AopServiceResolver aopServiceResolver =
 				_aopDependencyResolvers.computeIfAbsent(
 					serviceReference.getProperty(Constants.SERVICE_BUNDLEID),
 					bundleId -> new AopServiceResolver());
 
-			aopServiceResolver.addTransactionExecutorHolder(
-				transactionExecutorHolder);
+			aopServiceResolver.addTransactionHandlerHolder(
+				transactionHandlerHolder);
 
-			return transactionExecutorHolder;
+			return transactionHandlerHolder;
 		}
 
 		@Override
 		public void modifiedService(
-			ServiceReference<TransactionExecutor> serviceReference,
-			TransactionExecutorHolder transactionExecutorHolder) {
+			ServiceReference<TransactionHandler> serviceReference,
+			TransactionHandlerHolder transactionHandlerHolder) {
 		}
 
 		@Override
 		public void removedService(
-			ServiceReference<TransactionExecutor> serviceReference,
-			TransactionExecutorHolder transactionExecutorHolder) {
+			ServiceReference<TransactionHandler> serviceReference,
+			TransactionHandlerHolder transactionHandlerHolder) {
 
 			AopServiceResolver aopServiceResolver = _aopDependencyResolvers.get(
 				serviceReference.getProperty(Constants.SERVICE_BUNDLEID));
 
 			if (aopServiceResolver != null) {
-				aopServiceResolver.removeTransactionExecutorHolder(
-					transactionExecutorHolder);
+				aopServiceResolver.removeTransactionHandlerHolder(
+					transactionHandlerHolder);
 			}
 
 			_bundleContext.ungetService(serviceReference);

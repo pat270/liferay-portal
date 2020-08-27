@@ -1,0 +1,189 @@
+definition {
+
+	macro _selectCard {
+		if (isSet(collectionName)) {
+			Navigator.gotoNavNested(navNested = "${collectionName}");
+
+			LexiconCard.clickCard(card = "${pageTemplateName}");
+		}
+		else {
+			Navigator.gotoNavNested(navNested = "Basic Templates");
+
+			if (isSet(masterLayoutName)) {
+				LexiconCard.clickCard(card = "${masterLayoutName}");
+			}
+			else {
+				LexiconCard.clickCard(card = "Blank");
+			}
+		}
+	}
+
+	macro addChildPage {
+		MouseOver(
+			key_itemName = "${parentPageName}",
+			locator1 = "SitePages#LIST_GROUP_ITEM");
+
+		Click(
+			key_pageName = "${parentPageName}",
+			locator1 = "SitePages#LIST_GROUP_ITEM_PLUS_ICON");
+
+		ContentPages._selectCard(
+			basicTemplate = "${basicTemplate}",
+			collectionName = "${collectionName}",
+			masterLayoutName = "${masterLayoutName}",
+			pageTemplateName = "${pageTemplateName}");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		PortletEntry.inputName(name = "${childPageName}");
+
+		if (isSet(categoryName)) {
+			AssetCategorization.addCategory(
+				categoryName = "${categoryName}",
+				vocabularyName = "${vocabularyName}");
+		}
+
+		if (isSet(categoryNameList)) {
+			AssetCategorization.addMultipleCategories(
+				categoryNameList = "${categoryNameList}",
+				vocabularyName = "${vocabularyName}");
+		}
+
+		Button.clickAdd();
+
+		SelectFrame.selectFrameTop();
+
+		PageEditor.assertFragmentSidebarLoaded();
+	}
+
+	macro addCollectionItemInCollectionPage {
+		if (isSet(itemSubtype)) {
+			Click(
+				key_title = "${title}",
+				locator1 = "ControlMenu#NEW_COLLECTION_PAGE_ITEM_BUTTON");
+
+			MenuItem.click(menuItem = "${itemSubtype}");
+		}
+		else {
+			Click(
+				key_title = "${title}",
+				locator1 = "ControlMenu#NEW_COLLECTION_PAGE_ITEM_BUTTON");
+		}
+	}
+
+	macro addPage {
+		var key_breadcrumbName="Pages";
+
+		Pause(locator1 = "3000");
+
+		if (IsElementPresent(locator1 = "Message#EMPTY_INFO_TAGLIB")) {
+			SitePages.gotoAddFirstPage(pageType = "Public Page");
+		}
+		else {
+			AssertClick(
+				locator1 = "Breadcrumb#BREADCRUMB_ENTRY",
+				value1 = "Pages");
+
+			LexiconEntry.gotoAddMenuItem(menuItem = "Public Page");
+		}
+
+		ContentPages._selectCard(
+			basicTemplate = "${basicTemplate}",
+			collectionName = "${collectionName}",
+			masterLayoutName = "${masterLayoutName}",
+			pageTemplateName = "${pageTemplateName}");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		PortletEntry.inputName(name = "${pageName}");
+
+		if (isSet(categoryName)) {
+			AssetCategorization.addCategory(
+				categoryName = "${categoryName}",
+				vocabularyName = "${vocabularyName}");
+		}
+
+		if (isSet(categoryNameList)) {
+			AssetCategorization.addMultipleCategories(
+				categoryNameList = "${categoryNameList}",
+				vocabularyName = "${vocabularyName}");
+		}
+
+		Button.clickAdd();
+
+		SelectFrame.selectFrameTop();
+
+		PageEditor.assertFragmentSidebarLoaded();
+	}
+
+	macro addPublicCollectionPage {
+		Pause(locator1 = "3000");
+
+		LexiconEntry.gotoAdd();
+
+		MenuItem.click(menuItem = "Public Collection Page");
+
+		Navigator.gotoNavTab(navTab = "${tabName}");
+
+		if (isSet(menuItem)) {
+			AssetListsAdmin.addSelection(
+				collectionName = "${collectionName}",
+				menuItem = "${menuItem}",
+				selectedAsset = "${selectedAsset}");
+
+			Click(locator1 = "Icon#BACK");
+		}
+
+		LexiconCard.clickCardTitle(card = "${collectionName}");
+
+		if (isSet(masterLayoutName)) {
+			LexiconCard.clickCard(card = "${masterLayoutName}");
+		}
+		else {
+			LexiconCard.clickCard(card = "Blank");
+		}
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		PortletEntry.inputName(name = "${pageName}");
+
+		if (isSet(categoryName)) {
+			AssetCategorization.addCategory(
+				categoryName = "${categoryName}",
+				vocabularyName = "${vocabularyName}");
+		}
+
+		if (isSet(categoryNameList)) {
+			AssetCategorization.addMultipleCategories(
+				categoryNameList = "${categoryNameList}",
+				vocabularyName = "${vocabularyName}");
+		}
+
+		Button.clickAdd();
+
+		SelectFrame.selectFrameTop();
+
+		PageEditor.assertFragmentSidebarLoaded();
+
+		AssertTextEquals(
+			locator1 = "ControlMenu#HEADING",
+			value1 = "${pageName}");
+
+		AssertTextEquals(
+			id = "element-text",
+			key_fragmentName = "Heading",
+			locator1 = "Fragment#CONTRIBUTED_FRAGMENT_EDITABLE_FIELD",
+			value1 = "${collectionName}");
+
+		AssertElementPresent(
+			key_fragmentName = "Collection Display",
+			locator1 = "Fragment#FRAGMENT_HEADER");
+	}
+
+	macro clickPencil {
+		Click(locator1 = "Icon#EDIT_PENCIL");
+
+		PageEditor.assertFragmentSidebarLoaded();
+	}
+
+}

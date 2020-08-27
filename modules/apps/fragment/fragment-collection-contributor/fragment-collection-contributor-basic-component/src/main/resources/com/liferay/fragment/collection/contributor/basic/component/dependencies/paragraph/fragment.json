@@ -1,9 +1,8 @@
 {
-	"cssPath": "index.css",
+	"cacheable": true,
 	"fragmentEntryKey": "paragraph",
-	"htmlPath": "index.html",
-	"jsPath": "index.js",
-	"name": "Text",
+	"icon": "paragraph",
+	"name": "paragraph",
 	"thumbnail": "paragraph.png",
 	"type": "component"
 }

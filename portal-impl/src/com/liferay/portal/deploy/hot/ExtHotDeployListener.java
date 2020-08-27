@@ -14,6 +14,7 @@
 
 package com.liferay.portal.deploy.hot;
 
+import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.deploy.hot.BaseHotDeployListener;
@@ -23,10 +24,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.WebDirDetector;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.tools.WebXMLBuilder;
 import com.liferay.portal.util.ExtRegistry;
@@ -47,12 +46,9 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class ExtHotDeployListener extends BaseHotDeployListener {
 
 	@Override
@@ -62,10 +58,10 @@ public class ExtHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeDeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
 				hotDeployEvent, "Error registering extension environment for ",
-				t);
+				throwable);
 		}
 	}
 
@@ -76,10 +72,10 @@ public class ExtHotDeployListener extends BaseHotDeployListener {
 		try {
 			doInvokeUndeploy(hotDeployEvent);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			throwHotDeployException(
 				hotDeployEvent,
-				"Error unregistering extension environment for ", t);
+				"Error unregistering extension environment for ", throwable);
 		}
 	}
 
@@ -92,16 +88,18 @@ public class ExtHotDeployListener extends BaseHotDeployListener {
 		String jarFullName = StringBundler.concat(
 			"/WEB-INF/", jarName, "/", jarName, ".jar");
 
-		InputStream is = servletContext.getResourceAsStream(jarFullName);
+		InputStream inputStream = servletContext.getResourceAsStream(
+			jarFullName);
 
-		if (is == null) {
+		if (inputStream == null) {
 			throw new HotDeployException(jarFullName + " does not exist");
 		}
 
 		String newJarFullName = StringBundler.concat(
 			dir, "ext-", servletContextName, jarName.substring(3), ".jar");
 
-		StreamUtil.transfer(is, new FileOutputStream(new File(newJarFullName)));
+		StreamUtil.transfer(
+			inputStream, new FileOutputStream(new File(newJarFullName)));
 	}
 
 	protected void doInvokeDeploy(HotDeployEvent hotDeployEvent)
@@ -115,8 +113,8 @@ public class ExtHotDeployListener extends BaseHotDeployListener {
 			_log.debug("Invoking deploy for " + servletContextName);
 		}
 
-		String xml = HttpUtil.URLtoString(
-			servletContext.getResource(
+		String xml = StreamUtil.toString(
+			servletContext.getResourceAsStream(
 				"/WEB-INF/ext-" + servletContextName + ".xml"));
 
 		if (xml == null) {
@@ -191,8 +189,8 @@ public class ExtHotDeployListener extends BaseHotDeployListener {
 			_log.debug("Invoking undeploy for " + servletContextName);
 		}
 
-		String xml = HttpUtil.URLtoString(
-			servletContext.getResource(
+		String xml = StreamUtil.toString(
+			servletContext.getResourceAsStream(
 				"/WEB-INF/ext-" + servletContextName + ".xml"));
 
 		if (xml == null) {
@@ -204,14 +202,6 @@ public class ExtHotDeployListener extends BaseHotDeployListener {
 				"Extension environment for " + servletContextName +
 					" will not be undeployed");
 		}
-	}
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x)
-	 */
-	@Deprecated
-	protected void installExt(ServletContext servletContext) throws Exception {
-		installExt(servletContext, servletContext.getClassLoader());
 	}
 
 	protected void installExt(

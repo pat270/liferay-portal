@@ -1,0 +1,1434 @@
+@component-name = "portal-workflow"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Workflow";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.firstLoginPG();
+
+			JSONUser.tearDownNonAdminUsers();
+
+			BlogsEntry.tearDownCP();
+
+			WebContent.tearDownCP();
+
+			WikiNode.tearDownCP();
+
+			WikiPage.tearDownCP();
+
+			Page.tearDownPG();
+
+			Workflow.tearDownPortalWorkflow();
+
+			Workflow.tearDownSiteWorkflow();
+
+			Workflow.tearDownSpecificWorkflowDefinition(workflowDefinitionTitle = "Single Approver Edited");
+
+			Workflow.tearDownWorkflowDefinitions();
+
+			Site.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AddBlogsEntriesWithPortalScopeWorkflowAndAssertWorkflowScope {
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Navigator.gotoNavItem(navItem = "Configuration");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "Site Name");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Blogs.addWithWorkflow(
+			entryContent = "Blogs Entry Content - Liferay",
+			entrySubtitle = "Subtitle",
+			entryTitle = "Blogs Entry Title - Liferay");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		BlogsEntry.viewWithWorkflowCP(
+			entryContent = "Blogs Entry Content - Liferay",
+			entryTitle = "Blogs Entry Title - Liferay");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title - Liferay",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		BlogsEntry.viewWithWorkflowCP(
+			entryContent = "Blogs Entry Content - Liferay",
+			entryTitle = "Blogs Entry Title - Liferay");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title - Liferay",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		BlogsEntry.viewEntryTable(entryTitle = "Blogs Entry Title - Liferay");
+
+		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title - Liferay");
+
+		BlogsEntry.viewEntryCP(
+			entryContent = "Blogs Entry Content - Liferay",
+			entryTitle = "Blogs Entry Title - Liferay");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Blogs.addWithWorkflow(
+			entryContent = "Blogs Entry Content - Site Name",
+			entrySubtitle = "Subtitle",
+			entryTitle = "Blogs Entry Title - Site Name");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		BlogsEntry.viewWithWorkflowCP(
+			entryContent = "Blogs Entry Content - Site Name",
+			entryTitle = "Blogs Entry Title - Site Name");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title - Site Name",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		BlogsEntry.viewWithWorkflowCP(
+			entryContent = "Blogs Entry Content - Site Name",
+			entryTitle = "Blogs Entry Title - Site Name");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title - Site Name",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		BlogsEntry.viewEntryTable(entryTitle = "Blogs Entry Title - Site Name");
+
+		BlogsNavigator.gotoEntryCP(entryTitle = "Blogs Entry Title - Site Name");
+
+		BlogsEntry.viewEntryCP(
+			entryContent = "Blogs Entry Content - Site Name",
+			entryTitle = "Blogs Entry Title - Site Name");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewCompletedTask(
+			workflowAssetTitle = "Blogs Entry Title - Liferay",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Workflow.viewCompletedTask(
+			workflowAssetTitle = "Blogs Entry Title - Site Name",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+	}
+
+	@priority = "4"
+	test AddBlogsEntriesWithSiteScopeWorkflowAndAssertWorkflowScope {
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "Site Name");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Blogs.addWithWorkflow(
+			entryContent = "Blogs Entry Content - Liferay",
+			entrySubtitle = "Subtitle",
+			entryTitle = "Blogs Entry Title - Liferay");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title - Liferay",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "Blogs Entry Title - Liferay",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewCompletedTask(
+			workflowAssetTitle = "Blogs Entry Title - Liferay",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Workflow.viewCompletedTasksTaskNotPresentCP(workflowAssetTitle = "Blogs Entry Title - Site Name");
+	}
+
+	@priority = "5"
+	test AddDDLRecordWithDoubleApproverDefinition {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "WorkflowUsecase#AddDDLRecordWithDoubleApproverDefinition";
+		property testray.component.names = "Training";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.uploadDefinition(
+			workflowDefinitionFile = "workflow_definition_legal_marketing.xml",
+			workflowDefinitionTitle = "Double Approver Definition");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.viewDefinition(
+			workflowDefinitionTitle = "Double Approver Definition",
+			workflowDefinitionVersionNumber = "1");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP();
+
+		DynamicDataMapping.addField(
+			field = "Boolean",
+			fieldFieldLabel = "Boolean",
+			fieldName = "Boolean");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(workflowDefinition = "Double Approver Definition");
+
+		DDLDataDefinition.selectCP();
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP();
+
+		DDLRecord.populateFieldBoolean(
+			ddlRecordFieldData = "Yes",
+			fieldFieldLabel = "Boolean",
+			fieldName = "Boolean");
+
+		DDLRecord.submitForPublication();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetTitle = "List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "marketing-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords();
+
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Yes",
+			field = "Boolean",
+			fieldFieldLabel = "Boolean",
+			fieldName = "Boolean",
+			workflowStatus = "marketing-review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetTitle = "List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowDefinitionTask = "Marketing Approved",
+			workflowTask = "marketing-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords();
+
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Yes",
+			field = "Boolean",
+			fieldFieldLabel = "Boolean",
+			fieldName = "Boolean",
+			workflowStatus = "legal-review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetTitle = "List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "legal-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords();
+
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Yes",
+			field = "Boolean",
+			fieldFieldLabel = "Boolean",
+			fieldName = "Boolean",
+			workflowStatus = "legal-review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			ddlDataDefinitionName = "Data Definition Name",
+			workflowAssetTitle = "List Name",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowDefinitionTask = "Legal Approval",
+			workflowTask = "legal-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords(ddlListName = "${ddlListName}");
+
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Yes",
+			field = "Boolean",
+			fieldFieldLabel = "Boolean",
+			fieldName = "Boolean");
+	}
+
+	@priority = "4"
+	test AddWebContentWithCategorySpecificDefinition {
+		property test.name.skip.portal.instance = "WorkflowUsecase#AddWebContentWithCategorySpecificDefinition";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.uploadDefinition(
+			workflowDefinitionFile = "workflow_definition_category_specific.xml",
+			workflowDefinitionTitle = "Category Specific");
+
+		Workflow.viewDefinition(
+			workflowDefinitionTitle = "Category Specific",
+			workflowDefinitionVersionNumber = "1");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Categorization",
+			panel = "Site Administration",
+			portlet = "Categories");
+
+		Vocabulary.addCP(vocabularyName = "Vocabulary Name");
+
+		Category.addCP(
+			categoryName = "legal",
+			vocabularyName = "Vocabulary Name");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Categorization",
+			panel = "Site Administration",
+			portlet = "Categories");
+
+		Category.addCP(
+			categoryName = "other",
+			vocabularyName = "Vocabulary Name");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.configureWCWorkflowViaFolderInfo(workflowDefinition = "Category Specific");
+
+		Workflow.webContentGoToAddCP();
+
+		WebContent.addCP(
+			webContentContent = "legal category",
+			webContentTitle = "WC With Legal Category");
+
+		WebContent.selectCategory(
+			categoryName = "legal",
+			vocabularyName = "Vocabulary Name");
+
+		Button.clickSubmitForPublication();
+
+		Alert.viewSuccessMessage();
+
+		WebContent.viewWithWorkflowCP(
+			webContentContent = "legal category",
+			webContentTitle = "WC With Legal Category",
+			workflowTask = "legal-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.webContentGoToAddCP();
+
+		WebContent.addCP(
+			webContentContent = "both categories",
+			webContentTitle = "WC With Multiple Categories");
+
+		WebContent.selectCategory(
+			categoryName = "legal",
+			vocabularyName = "Vocabulary Name");
+
+		WebContent.selectCategory(
+			categoryName = "other",
+			vocabularyName = "Vocabulary Name");
+
+		Button.clickSubmitForPublication();
+
+		Alert.viewSuccessMessage();
+
+		WebContent.viewWithWorkflowCP(
+			webContentContent = "legal category",
+			webContentTitle = "WC With Legal Category",
+			workflowTask = "legal-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.webContentGoToAddCP();
+
+		WebContent.addCP(
+			webContentContent = "other category",
+			webContentTitle = "WC With Other Category");
+
+		WebContent.selectCategory(
+			categoryName = "other",
+			vocabularyName = "Vocabulary Name");
+
+		Button.clickSubmitForPublication();
+
+		Alert.viewSuccessMessage();
+
+		WebContent.viewWithWorkflowCP(
+			webContentContent = "other category",
+			webContentTitle = "WC With Other Category",
+			workflowTask = "content-review");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.webContentGoToAddCP();
+
+		WebContent.addWithWorkflowCP(
+			webContentContent = "no category",
+			webContentTitle = "WC With No Category");
+
+		WebContent.viewWithWorkflowCP(
+			webContentContent = "no category",
+			webContentTitle = "WC With No Category",
+			workflowTask = "content-review");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewTaskAssignedToMyRoles(
+			workflowAssetTitle = "WC With Legal Category",
+			workflowAssetType = "Web Content Article",
+			workflowTask = "legal-review");
+
+		Workflow.viewTaskAssignedToMyRoles(
+			workflowAssetTitle = "WC With Multiple Categories",
+			workflowAssetType = "Web Content Article",
+			workflowTask = "legal-review");
+
+		Workflow.viewTaskAssignedToMyRoles(
+			workflowAssetTitle = "WC With Other Category",
+			workflowAssetType = "Web Content Article",
+			workflowTask = "content-review");
+
+		Workflow.viewTaskAssignedToMyRoles(
+			workflowAssetTitle = "WC With No Category",
+			workflowAssetType = "Web Content Article",
+			workflowTask = "content-review");
+	}
+
+	@priority = "4"
+	test AddWikiPageAsSiteUser {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Wiki Page");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Wiki Page");
+
+		Navigator.gotoPage(pageName = "Wiki Page");
+
+		Portlet.addPG(portletName = "Wiki");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.addCP(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editUserSiteCP(
+			siteName = "${siteName}",
+			userScreenName = "usersn");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Navigator.gotoPage(pageName = "Wiki Page");
+
+		WikiNavigator.gotoAllPagesPG();
+
+		WikiPage.addPageWithWorkflowPG(
+			wikiPageContent = "Wiki Page Content",
+			wikiPageTitle = "Wiki Page Title",
+			wikiPageUsername = "userfn userln");
+
+		Navigator.gotoPage(pageName = "Wiki Page");
+
+		WikiNavigator.gotoDraftPagesPG();
+
+		WikiPage.viewPageWithWorkflowPG(
+			wikiPageStatus = "PENDING",
+			wikiPageTitle = "Wiki Page Title",
+			wikiPageUsername = "userfn userln");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Submissions");
+
+		var key_workflowAssetTitle = "Wiki Page Title";
+
+		AssertTextEquals(
+			locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_LAST_ACTIVITY_DATE",
+			value1 = "Single Approver");
+
+		AssertTextEquals(
+			locator1 = "MyWorkflowTasks#TABLE_GENERIC_ASSET_TITLE",
+			value1 = "Wiki Page Title");
+
+		AssertTextEquals(
+			locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_ASSET_TYPE",
+			value1 = "Wiki Page");
+
+		AssertTextEquals(
+			locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_TASK",
+			value1 = "Review");
+
+		AssertElementPresent(locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_DUE_DATE");
+
+		AssertElementPresent(locator1 = "MyWorkflowTasks#ASSIGNED_TO_ME_TABLE_END_DATE");
+
+		User.logoutPG();
+
+		User.loginPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com",
+			userScreenName = "usersn");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "Wiki Page Title",
+			workflowAssetType = "Wiki Page",
+			workflowTask = "Review");
+
+		Navigator.gotoPage(pageName = "Wiki Page");
+
+		WikiNavigator.gotoDraftPagesPG();
+
+		WikiPage.viewPageWithWorkflowPG(
+			wikiPageStatus = "Pending",
+			wikiPageTitle = "Wiki Page Title",
+			wikiPageUsername = "userfn userln");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "Wiki Page Title",
+			workflowAssetType = "Wiki Page",
+			workflowTask = "Review");
+
+		Navigator.gotoPage(pageName = "Wiki Page");
+
+		WikiNavigator.gotoPG(
+			wikiPageContent = "Wiki Page Content",
+			wikiPageRevision = "1.0",
+			wikiPageTitle = "Wiki Page Title",
+			wikiPageUsername = "userfn userln");
+
+		WikiPage.viewPG(
+			wikiPageContent = "Wiki Page Content",
+			wikiPageTitle = "Wiki Page Title");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Navigator.gotoPage(pageName = "Wiki Page");
+
+		WikiNavigator.gotoPG(
+			wikiPageContent = "Wiki Page Content",
+			wikiPageRevision = "1.0",
+			wikiPageTitle = "Wiki Page Title",
+			wikiPageUsername = "userfn userln");
+
+		WikiPage.viewPG(
+			wikiPageContent = "Wiki Page Content",
+			wikiPageTitle = "Wiki Page Title");
+	}
+
+	@priority = "5"
+	test UnpublishAndDeleteUploadedDefinition {
+		property test.name.skip.portal.instance = "WorkflowUsecase#UnpublishAndDeleteUploadedDefinition";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.uploadDefinition(
+			workflowDefinitionFile = "workflow_definition_1.xml",
+			workflowDefinitionTitle = "New Uploaded Definition");
+
+		Workflow.viewDefinitionPublished(workflowDefinitionTitle = "New Uploaded Definition");
+
+		Workflow.unpublishWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.viewDefinitionUnpublished(workflowDefinitionTitle = "New Uploaded Definition");
+
+		Workflow.publishExistingWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
+
+		Navigator.gotoBack();
+
+		Workflow.viewDefinitionPublished(workflowDefinitionTitle = "New Uploaded Definition");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.unpublishWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Workflow.viewDefinitionUnpublished(workflowDefinitionTitle = "New Uploaded Definition");
+
+		Workflow.deleteWorkflowDefinition(workflowDefinitionTitle = "New Uploaded Definition");
+	}
+
+	@priority = "3"
+	test ViewBlogsEntryWorkflowViaNotifications {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Blogs Page");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Portlet.addPG(portletName = "Blogs");
+
+		Blogs.addWithWorkflow(
+			entryContent = "Blogs Entry Content",
+			entrySubtitle = "Subtitle",
+			entryTitle = "Blogs Entry Title");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Notifications.viewBadgeCount(notificationCount = "1");
+
+		WorkflowAsset.gotoViaNotification(
+			assetType = "Blogs Entry",
+			user = "Test Test");
+
+		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Assign to Me");
+
+		Workflow.confirmWorkflowAction();
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Notifications.viewBadgeCount(notificationCount = "0");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.viewTaskAssignedToMeDetails(
+			workflowAssetContent = "Blogs Entry Content",
+			workflowAssetTitle = "Blogs Entry Title",
+			workflowAssignedTo = "Test Test",
+			workflowTask = "Review");
+
+		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Approve");
+
+		Button.clickDone();
+
+		Alert.viewSuccessMessage();
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewPG(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		Notifications.viewBadgeCount(notificationCount = "0");
+	}
+
+	@priority = "4"
+	test ViewInvalidDefinitionAlert {
+		property test.name.skip.portal.instance = "WorkflowUsecase#ViewInvalidDefinitionAlert";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Click(locator1 = "Button#PLUS");
+
+		PortletEntry.inputTitle(title = "Invalid Definition");
+
+		if (IsElementPresent(locator1 = "KaleoDesignerEditWorkflow#SOURCE_KALEO_XML_TAB")) {
+			KaleoDesigner.viewSourceXMLTab();
+		}
+
+		UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+			locator1 = "WorkflowUpload#FILE_UPLOAD",
+			value1 = "Document_1.txt");
+
+		Button.clickPublish();
+
+		if (IsElementPresent(locator1 = "KaleoDesignerEditWorkflow#SOURCE_KALEO_XML_TAB")) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "Please enter valid content.");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "Please enter a valid definition before publishing.");
+		}
+	}
+
+	@priority = "3"
+	test ViewTaskCount {
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.configureWCWorkflowViaFolderInfo(workflowDefinition = "Single Approver");
+
+		for (var number : list "1,2,3") {
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				panel = "Site Administration",
+				portlet = "Web Content");
+
+			Workflow.webContentGoToAddCP();
+
+			WebContent.addWithWorkflowCP(
+				webContentContent = "WC WebContent Content ${number}",
+				webContentTitle = "WC WebContent Title ${number}");
+
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				panel = "Site Administration",
+				portlet = "Blogs");
+
+			Blogs.addWithWorkflow(
+				entryContent = "Blogs Entry Content ${number}",
+				entrySubtitle = "Subtitle ${number}",
+				entryTitle = "Blogs Entry Title ${number}");
+		}
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		for (var number : list "1,2,3") {
+			Workflow.viewTaskAssignedToMyRoles(
+				workflowAssetTitle = "WC WebContent Title ${number}",
+				workflowAssetType = "Web Content Article",
+				workflowTask = "Review");
+
+			Workflow.viewTaskAssignedToMyRoles(
+				workflowAssetTitle = "Blogs Entry Title ${number}",
+				workflowAssetType = "Blogs Entry",
+				workflowTask = "Review");
+		}
+
+		Pagination.viewResults(results = "Showing 1 to 6 of 6 entries.");
+
+		AssertElementPresent(locator1 = "xpath=(//div[contains(@id,'workflowTasksSearchContainer')]//tr[contains(@class,'entry-display-style')])[6]");
+
+		Pagination.changePagination(itemsPerPage = "4");
+
+		Pagination.viewResults(results = "Showing 1 to 4 of 6 entries.");
+
+		AssertElementNotPresent(locator1 = "xpath=(//div[contains(@id,'workflowTasksSearchContainer')]//tr[contains(@class,'entry-display-style')])[6]");
+	}
+
+	@priority = "3"
+	test ViewWebContentConfigurationCP {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		WebContent.viewEmailConfigurationCP(webContentWorkflowEnabled = "false");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.configureWCWorkflowViaFolderInfo(workflowDefinition = "Single Approver");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		WebContent.viewEmailConfigurationCP(webContentWorkflowEnabled = "true");
+	}
+
+	@description = "This is a use case for LPS-59108."
+	@priority = "4"
+	test ViewWorkflowConfigurationScope {
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "New Site");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Calendar Event");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.viewConfigurationSelected(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Calendar Event");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Navigator.gotoNavItem(navItem = "Configuration");
+
+		Workflow.viewConfigurationSelected(
+			workflowDefinition = "No Workflow",
+			workflowResourceValue = "Calendar Event");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.viewConfigurationSelected(
+			workflowDefinition = "Default: Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		Workflow.viewConfigurationSelected(
+			workflowDefinition = "No Workflow",
+			workflowResourceValue = "Calendar Event");
+
+		ProductMenu.gotoSite(site = "New Site");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Workflow");
+
+		Workflow.viewConfigurationSelected(
+			workflowDefinition = "Default: Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		Workflow.viewConfigurationSelected(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Calendar Event");
+	}
+
+	@description = "This is a use case for LRQA-13519."
+	@priority = "5"
+	test ViewWorkflowSubmissionsFromDifferentUsers {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Applications",
+			portlet = "Process Builder");
+
+		Navigator.gotoNavItem(navItem = "Configuration");
+
+		Workflow.configureWorkflow(
+			workflowDefinition = "Single Approver",
+			workflowResourceValue = "Blogs Entry");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCP(
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_BLOGS_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX",
+			permissionDefinitionValue = "Access in Site and Asset Library Administration",
+			roleTitle = "Site Member",
+			roleType = "Site");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCP(
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_BLOGS_RESOURCE_PERMISSIONS_BLOGS_ENTRIES_ADD_ENTRY_CHECKBOX",
+			permissionDefinitionValue = "Add Entry",
+			roleTitle = "Site Member",
+			roleType = "Site");
+
+		for (var n : list "1,2") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Users",
+				panel = "Control Panel",
+				portlet = "Users and Organizations");
+
+			User.addCP(
+				userEmailAddress = "usersn${n}@liferay.com",
+				userFirstName = "userfn${n}",
+				userLastName = "userln${n}",
+				userScreenName = "usersn${n}");
+
+			ApplicationsMenu.gotoPortlet(
+				category = "Users",
+				panel = "Control Panel",
+				portlet = "Users and Organizations");
+
+			User.editUserSiteCP(
+				siteName = "${siteName}",
+				userScreenName = "usersn${n}");
+
+			ApplicationsMenu.gotoPortlet(
+				category = "Users",
+				panel = "Control Panel",
+				portlet = "Users and Organizations");
+
+			User.editPasswordCP(
+				userEmailAddress = "usersn${n}@liferay.com",
+				userScreenName = "usersn${n}");
+
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "usersn${n}@liferay.com",
+				userScreenName = "usersn${n}");
+
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				panel = "Site Administration",
+				portlet = "Blogs");
+
+			Blogs.addWithWorkflow(
+				entryContent = "User ${n} Blog Content Approved",
+				entrySubtitle = "User ${n} Blog Subtitle Approved",
+				entryTitle = "User ${n} Blog Title Approved");
+
+			Navigator.openURL();
+
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				panel = "Site Administration",
+				portlet = "Blogs");
+
+			Blogs.addWithWorkflow(
+				entryContent = "User ${n} Blog Content Pending",
+				entrySubtitle = "User ${n} Blog Subtitle Pending",
+				entryTitle = "User ${n} Blog Title Pending");
+
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "test@liferay.com",
+				userScreenName = "Test Test");
+
+			Navigator.openURL();
+
+			UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+			Workflow.assignToMeTaskByActions(
+				workflowAssetTitle = "User ${n} Blog Title Approved",
+				workflowAssetType = "Blogs Entry",
+				workflowTask = "Review");
+
+			Workflow.approveTaskByActions(
+				workflowAssetTitle = "User ${n} Blog Title Approved",
+				workflowAssetType = "Blogs Entry",
+				workflowTask = "Review");
+		}
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "usersn1@liferay.com",
+			userScreenName = "usersn1");
+
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Submissions");
+
+		Workflow.viewMySubmissions(
+			workflowAssetTitle = "User 1 Blog Title Pending",
+			workflowAssetType = "Blogs Entry",
+			workflowDefinition = "Single Approver",
+			workflowTask = "Review");
+
+		Workflow.viewSubmissionNotPresent(workflowAssetTitle = "User 2 Blog Title Pending");
+
+		Workflow.viewCompletedSubmission(
+			workflowAssetTitle = "User 1 Blog Title Approved",
+			workflowAssetType = "Blogs Entry",
+			workflowDefinition = "Single Approver",
+			workflowStatus = "Approved");
+
+		Workflow.viewSubmissionNotPresent(workflowAssetTitle = "User 2 Blog Title Approved");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "usersn2@liferay.com",
+			userScreenName = "usersn2");
+
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Submissions");
+
+		Workflow.viewMySubmissions(
+			workflowAssetTitle = "User 2 Blog Title Pending",
+			workflowAssetType = "Blogs Entry",
+			workflowDefinition = "Single Approver",
+			workflowTask = "Review");
+
+		Workflow.viewSubmissionNotPresent(workflowAssetTitle = "User 1 Blog Title Pending");
+
+		Workflow.viewCompletedSubmission(
+			workflowAssetTitle = "User 2 Blog Title Approved",
+			workflowAssetType = "Blogs Entry",
+			workflowDefinition = "Single Approver",
+			workflowStatus = "Approved");
+
+		Workflow.viewSubmissionNotPresent(workflowAssetTitle = "User 1 Blog Title Approved");
+	}
+
+	@priority = "4"
+	test XSSScriptWebContent {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.configureWCWorkflowViaFolderInfo(workflowDefinition = "Single Approver");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		Workflow.webContentGoToAddCP();
+
+		WebContent.addWithWorkflowCP(
+			webContentContent = '''&lt;script&gt;alert(123);&lt;/script&gt;''',
+			webContentTitle = "WC WebContent Title");
+
+		WebContent.viewWithWorkflowCP(
+			webContentContent = '''<script>alert(123);</script>''',
+			webContentTitle = "WC WebContent Title",
+			workflowStatus = "Pending",
+			workflowTask = "Review");
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowActivityComment = '''<script>alert(123);</script>''',
+			workflowAssetTitle = "WC WebContent Title",
+			workflowAssetType = "Web Content Article",
+			workflowTask = "Review");
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.approveTaskByActions(
+			workflowActivityComment = '''<script>alert(123);</script>''',
+			workflowAssetTitle = "WC WebContent Title",
+			workflowAssetType = "Web Content Article",
+			workflowTask = "Review");
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "WC WebContent Title");
+
+		WebContent.viewCP(
+			webContentContent = '''<script>alert(123);</script>''',
+			webContentTitle = "WC WebContent Title");
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites",
+			site = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages",
+			site = "${siteName}");
+
+		SitePages.addPublicPage(pageName = "Asset Publisher Test Page");
+
+		Navigator.gotoPage(
+			pageName = "Asset Publisher Test Page",
+			siteName = "${siteName}");
+
+		Navigator.gotoPage(pageName = "Asset Publisher Test Page");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		WebContent.viewPGViaAP(
+			webContentContent = '''<script>alert(123);</script>''',
+			webContentTitle = "WC WebContent Title");
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+	}
+
+}

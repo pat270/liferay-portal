@@ -40,14 +40,15 @@ import org.osgi.service.component.annotations.Reference;
 public class DDMDataProviderInstanceModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put(
 			"model.class.name", DDMDataProviderInstance.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<DDMDataProviderInstance>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				DDMDataProviderInstance.class,
 				DDMDataProviderInstance::getDataProviderInstanceId,
@@ -60,7 +61,7 @@ public class DDMDataProviderInstanceModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -74,7 +75,8 @@ public class DDMDataProviderInstanceModelResourcePermissionRegistrar {
 	@Reference(target = "(resource.name=" + DDMConstants.RESOURCE_NAME + ")")
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration
+		<ModelResourcePermission<DDMDataProviderInstance>> _serviceRegistration;
 
 	@Reference
 	private StagingPermission _stagingPermission;

@@ -90,21 +90,25 @@ public class StagedGroupStagedModelRepository
 
 		LayoutSet layoutSet = null;
 
+		Group group = stagedGroup.getGroup();
+
+		long groupId = group.getGroupId();
+
 		try {
 			layoutSet = _layoutSetLocalService.getLayoutSet(
-				stagedGroup.getGroupId(), portletDataContext.isPrivateLayout());
+				groupId, portletDataContext.isPrivateLayout());
 
 			childrenStagedModels.add(
 				ModelAdapterUtil.adapt(
 					layoutSet, LayoutSet.class, StagedLayoutSet.class));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				StringBundler.concat(
-					"Unable to fetch Layout Set with groupId ",
-					stagedGroup.getGroupId(), " and private layout ",
+					"Unable to fetch Layout Set with groupId ", groupId,
+					" and private layout ",
 					portletDataContext.isPrivateLayout()),
-				pe);
+				portalException);
 		}
 
 		return childrenStagedModels;
@@ -208,7 +212,9 @@ public class StagedGroupStagedModelRepository
 	public StagedGroup saveStagedModel(StagedGroup stagedGroup)
 		throws PortalException {
 
-		Group group = _groupLocalService.updateGroup(stagedGroup);
+		Group group = stagedGroup.getGroup();
+
+		group = _groupLocalService.updateGroup(group);
 
 		return ModelAdapterUtil.adapt(group, Group.class, StagedGroup.class);
 	}
@@ -221,13 +227,14 @@ public class StagedGroupStagedModelRepository
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			stagedGroup);
 
-		Group group = _groupLocalService.updateGroup(
-			stagedGroup.getGroupId(), stagedGroup.getParentGroupId(),
-			stagedGroup.getNameMap(), stagedGroup.getDescriptionMap(),
-			stagedGroup.getType(), stagedGroup.getManualMembership(),
-			stagedGroup.getMembershipRestriction(),
-			stagedGroup.getFriendlyURL(), stagedGroup.isInheritContent(),
-			stagedGroup.isActive(), serviceContext);
+		Group group = stagedGroup.getGroup();
+
+		group = _groupLocalService.updateGroup(
+			group.getGroupId(), group.getParentGroupId(), group.getNameMap(),
+			group.getDescriptionMap(), group.getType(),
+			group.isManualMembership(), group.getMembershipRestriction(),
+			group.getFriendlyURL(), group.isInheritContent(), group.isActive(),
+			serviceContext);
 
 		return ModelAdapterUtil.adapt(group, Group.class, StagedGroup.class);
 	}

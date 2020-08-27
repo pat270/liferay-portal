@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the local service utility for Organization. This utility wraps
  * <code>com.liferay.portal.service.impl.OrganizationLocalServiceImpl</code> and
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OrganizationLocalService
  * @generated
  */
-@ProviderType
 public class OrganizationLocalServiceUtil {
 
 	/*
@@ -129,6 +126,10 @@ public class OrganizationLocalServiceUtil {
 	/**
 	 * Adds the organization to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect OrganizationLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param organization the organization
 	 * @return the organization that was added
 	 */
@@ -212,6 +213,16 @@ public class OrganizationLocalServiceUtil {
 		return getService().createOrganization(organizationId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
+	}
+
 	public static void deleteGroupOrganization(
 		long groupId, long organizationId) {
 
@@ -253,6 +264,10 @@ public class OrganizationLocalServiceUtil {
 	/**
 	 * Deletes the organization with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect OrganizationLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param organizationId the primary key of the organization
 	 * @return the organization that was removed
 	 * @throws PortalException if a organization with the primary key could not be found
@@ -266,6 +281,10 @@ public class OrganizationLocalServiceUtil {
 
 	/**
 	 * Deletes the organization from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect OrganizationLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param organization the organization
 	 * @return the organization that was removed
@@ -317,6 +336,12 @@ public class OrganizationLocalServiceUtil {
 		getService().deleteUserOrganizations(userId, organizationIds);
 	}
 
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
 		dynamicQuery() {
 
@@ -339,7 +364,7 @@ public class OrganizationLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.OrganizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.OrganizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -358,7 +383,7 @@ public class OrganizationLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.OrganizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.OrganizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -585,7 +610,7 @@ public class OrganizationLocalServiceUtil {
 	 * Returns a range of all the organizations.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.OrganizationModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.OrganizationModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of organizations
@@ -602,10 +627,12 @@ public class OrganizationLocalServiceUtil {
 			getOrganizations(
 				long userId, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.portal.kernel.model.Organization> obc)
+					<com.liferay.portal.kernel.model.Organization>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return getService().getOrganizations(userId, start, end, obc);
+		return getService().getOrganizations(
+			userId, start, end, orderByComparator);
 	}
 
 	/**
@@ -693,16 +720,18 @@ public class OrganizationLocalServiceUtil {
 	 return
 	 * @param end the upper bound of the range of organizations and users to
 	 return (not inclusive)
-	 * @param obc the comparator to order the organizations and users
-	 (optionally <code>null</code>)
+	 * @param orderByComparator the comparator to order the organizations and
+	 users (optionally <code>null</code>)
 	 * @return the organizations and users belonging to the parent organization
 	 */
 	public static java.util.List<Object> getOrganizationsAndUsers(
 		long companyId, long parentOrganizationId, int status, int start,
-		int end, com.liferay.portal.kernel.util.OrderByComparator<?> obc) {
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<?> orderByComparator) {
 
 		return getService().getOrganizationsAndUsers(
-			companyId, parentOrganizationId, status, start, end, obc);
+			companyId, parentOrganizationId, status, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -777,6 +806,9 @@ public class OrganizationLocalServiceUtil {
 		return getService().getParentOrganizations(organizationId);
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -1080,16 +1112,13 @@ public class OrganizationLocalServiceUtil {
 	 * @param keywords the keywords (space separated), which may occur in the
 	 organization's name, street, city, zipcode, type, region or
 	 country (optionally <code>null</code>)
-	 * @param params the finder parameters (optionally <code>null</code>). For
-	 more information see {@link
-	 com.liferay.portlet.usersadmin.util.OrganizationIndexer}
+	 * @param params the finder parameters (optionally <code>null</code>).
 	 * @param start the lower bound of the range of organizations to return
 	 * @param end the upper bound of the range of organizations to return (not
 	 inclusive)
 	 * @param sort the field and direction by which to sort (optionally
 	 <code>null</code>)
 	 * @return the matching organizations ordered by name
-	 * @see com.liferay.portlet.usersadmin.util.OrganizationIndexer
 	 */
 	public static com.liferay.portal.kernel.search.Hits search(
 		long companyId, long parentOrganizationId, String keywords,
@@ -1181,9 +1210,10 @@ public class OrganizationLocalServiceUtil {
 	 * @param start the lower bound of the range of organizations to return
 	 * @param end the upper bound of the range of organizations to return (not
 	 inclusive)
-	 * @param obc the comparator to order the organizations (optionally
-	 <code>null</code>)
-	 * @return the matching organizations ordered by comparator <code>obc</code>
+	 * @param orderByComparator the comparator to order the organizations
+	 (optionally <code>null</code>)
+	 * @return the matching organizations ordered by comparator
+	 <code>orderByComparator</code>
 	 * @see com.liferay.portal.kernel.service.persistence.OrganizationFinder
 	 */
 	public static java.util.List<com.liferay.portal.kernel.model.Organization>
@@ -1192,11 +1222,12 @@ public class OrganizationLocalServiceUtil {
 			String type, Long regionId, Long countryId,
 			java.util.LinkedHashMap<String, Object> params, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Organization> obc) {
+				<com.liferay.portal.kernel.model.Organization>
+					orderByComparator) {
 
 		return getService().search(
 			companyId, parentOrganizationId, keywords, type, regionId,
-			countryId, params, start, end, obc);
+			countryId, params, start, end, orderByComparator);
 	}
 
 	/**
@@ -1293,9 +1324,10 @@ public class OrganizationLocalServiceUtil {
 	 * @param start the lower bound of the range of organizations to return
 	 * @param end the upper bound of the range of organizations to return (not
 	 inclusive)
-	 * @param obc the comparator to order the organizations (optionally
-	 <code>null</code>)
-	 * @return the matching organizations ordered by comparator <code>obc</code>
+	 * @param orderByComparator the comparator to order the organizations
+	 (optionally <code>null</code>)
+	 * @return the matching organizations ordered by comparator
+	 <code>orderByComparator</code>
 	 * @see com.liferay.portal.kernel.service.persistence.OrganizationFinder
 	 */
 	public static java.util.List<com.liferay.portal.kernel.model.Organization>
@@ -1305,11 +1337,13 @@ public class OrganizationLocalServiceUtil {
 			Long countryId, java.util.LinkedHashMap<String, Object> params,
 			boolean andOperator, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Organization> obc) {
+				<com.liferay.portal.kernel.model.Organization>
+					orderByComparator) {
 
 		return getService().search(
 			companyId, parentOrganizationId, name, type, street, city, zip,
-			regionId, countryId, params, andOperator, start, end, obc);
+			regionId, countryId, params, andOperator, start, end,
+			orderByComparator);
 	}
 
 	/**
@@ -1338,9 +1372,7 @@ public class OrganizationLocalServiceUtil {
 	 * @param zip the zipcode keywords (optionally <code>null</code>)
 	 * @param region the region keywords (optionally <code>null</code>)
 	 * @param country the country keywords (optionally <code>null</code>)
-	 * @param params the finder parameters (optionally <code>null</code>). For
-	 more information see {@link
-	 com.liferay.portlet.usersadmin.util.OrganizationIndexer}.
+	 * @param params the finder parameters (optionally <code>null</code>).
 	 * @param andSearch whether every field must match its keywords or just one
 	 field
 	 * @param start the lower bound of the range of organizations to return
@@ -1349,7 +1381,6 @@ public class OrganizationLocalServiceUtil {
 	 * @param sort the field and direction by which to sort (optionally
 	 <code>null</code>)
 	 * @return the matching organizations ordered by <code>sort</code>
-	 * @see com.liferay.portlet.usersadmin.util.OrganizationIndexer
 	 */
 	public static com.liferay.portal.kernel.search.Hits search(
 		long companyId, long parentOrganizationId, String name, String type,
@@ -1583,7 +1614,7 @@ public class OrganizationLocalServiceUtil {
 	 * @param countryId the primary key of the organization's country
 	 * @param statusId the organization's workflow status
 	 * @param comments the comments about the organization
-	 * @param logo whether to update the ogranization's logo
+	 * @param hasLogo if the organization has a custom logo
 	 * @param logoBytes the new logo image data
 	 * @param site whether the organization is to be associated with a main
 	 site
@@ -1597,18 +1628,22 @@ public class OrganizationLocalServiceUtil {
 			updateOrganization(
 				long companyId, long organizationId, long parentOrganizationId,
 				String name, String type, long regionId, long countryId,
-				long statusId, String comments, boolean logo, byte[] logoBytes,
-				boolean site, ServiceContext serviceContext)
+				long statusId, String comments, boolean hasLogo,
+				byte[] logoBytes, boolean site, ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().updateOrganization(
 			companyId, organizationId, parentOrganizationId, name, type,
-			regionId, countryId, statusId, comments, logo, logoBytes, site,
+			regionId, countryId, statusId, comments, hasLogo, logoBytes, site,
 			serviceContext);
 	}
 
 	/**
 	 * Updates the organization in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect OrganizationLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param organization the organization
 	 * @return the organization that was updated

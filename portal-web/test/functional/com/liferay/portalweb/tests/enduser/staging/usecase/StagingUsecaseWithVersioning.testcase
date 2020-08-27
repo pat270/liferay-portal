@@ -1,5 +1,6 @@
 @component-name = "portal-staging"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Staging";
@@ -11,29 +12,17 @@ definition {
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
-		ProductMenu.gotoSite(site = "Site Name");
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Staging Test Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
-
-		SitePages.addPublicPage(pageName = "Staging Test Page");
-
-		Navigator.openSiteURL(siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Publishing",
-			panel = "Site Administration",
-			portlet = "Staging");
+		Staging.openStagingAdmin(siteURLKey = "site-name");
 
 		Staging.activateStagingCP(
 			pageVersioningEnabled = "true",
 			siteName = "Site Name");
 
-		Navigator.gotoStagedSitePage(
-			pageName = "Staging Test Page",
-			siteName = "Site Name");
+		Navigator.openStagingSiteURL(siteName = "Site Name");
 	}
 
 	tearDown {
@@ -47,20 +36,55 @@ definition {
 		}
 	}
 
+	@description = "This is a use case for LPS-113740."
+	@priority = "4"
+	test ChangeSitePageVariationInPagesAdmin {
+		Staging.addSitePagesVariationPG(
+			copySitePagesVariationName = "Main Variation",
+			sitePagesVariationName = "Summer");
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
+
+		Staging.viewSitePagesVariationActiveCP(sitePagesVariationName = "Summer");
+
+		SitePages.addPublicPageUnderSitePagesVariation(pageName = "Test Page Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
+
+		Staging.changeSitePageVariationCP(sitePagesVariationName = "Main Variation");
+
+		Refresh();
+
+		AssertElementNotPresent(
+			key_itemName = "Test Page Name",
+			locator1 = "SitePages#LIST_GROUP_ITEM");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.viewSitePagesVariationPG(sitePagesVariationName = "Summer");
+
+		Staging.changeSitePageVariationPG(
+			sitePagesVariationMenulistName = "Main Variation",
+			sitePagesVariationName = "Summer");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Test Page Name",
+			siteName = "Site Name");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#STAGING_BAR_PAGE_VARIATIONS_ALERT",
+			value1 = "The page Test Page Name is not enabled in Main Variation, but is available for other pages variations.");
+	}
+
 	@priority = "4"
 	test DeleteChildPageFromVariationWhereNotEnabled {
 		Staging.addSitePagesVariationPG(
 			copySitePagesVariationName = "Main Variation",
 			sitePagesVariationName = "Summer");
 
-		Navigator.gotoStagedSitePage(
-			pageName = "Staging Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicChildPage(
 			childPageName = "Page 1",
@@ -94,14 +118,7 @@ definition {
 			copySitePagesVariationName = "Main Variation",
 			sitePagesVariationName = "Test Site Pages Variation");
 
-		ProductMenu.gotoSite(site = "Site Name");
-
-		Navigator.gotoStagedView();
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicPage(pageName = "Test Page Name");
 
@@ -120,20 +137,12 @@ definition {
 			privacy = "Public Pages",
 			sitePagesVariationName = "Main Variation");
 
-		Navigator.gotoStagedSitePage(
-			pageName = "Staging Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.deletePage(pageName = "Test Page Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		Page.viewNoPage(
@@ -144,10 +153,7 @@ definition {
 	@description = "This is a use case for LPS-78292."
 	@priority = "4"
 	test PublicationWithoutReadyForPublication {
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicPage(pageName = "Staging Test Page 2");
 
@@ -160,11 +166,6 @@ definition {
 		Staging.gotoPublishToLive(pleaseDoNotMarkAsReady = "true");
 
 		Staging.publishToLive();
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -306,7 +307,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging Test Page",
@@ -340,7 +341,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Portlet.viewSpecificPG(portletName = "Web Content Display");
 
@@ -367,7 +368,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging Test Page",
@@ -389,7 +390,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Portlet.viewSpecificPG(portletName = "Web Content Display");
 
@@ -414,10 +415,7 @@ definition {
 			sitePagesVariationMenulistName = "Main Variation",
 			sitePagesVariationName = "Summer");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicPage(pageName = "Page 2");
 
@@ -441,7 +439,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Navigator.gotoSitePage(
 			pageName = "Page 2",
@@ -474,10 +472,7 @@ definition {
 			sitePagesVariationMenulistName = "Main Variation",
 			sitePagesVariationName = "Summer");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicPage(pageName = "Page 2");
 
@@ -530,7 +525,7 @@ definition {
 
 		Staging.publishToLive();
 
-		ProductMenu.gotoLiveSite();
+		ProductMenu.gotoLiveSite(site = "Site Name");
 
 		Navigator.gotoSitePage(
 			pageName = "Staging Test Page",
@@ -598,10 +593,7 @@ definition {
 
 	@priority = "4"
 	test StagingPortletPublishContentCount {
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
 		WebContentNavigator.gotoAddCP();
 
@@ -613,46 +605,25 @@ definition {
 
 		WebContent.viewTitle(webContentTitle = "Web Content Title");
 
-		Navigator.openSiteURL(siteName = "Site Name");
-
-		Navigator.gotoStagedView();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
 		Staging.viewPublishContentCountViaPortletStagingCP(
 			contentCount = "1",
 			contentInformation = "Web Content (1)",
 			stagingDateRange = "From Last Publish Date");
 
-		Navigator.openSiteURL(siteName = "Site Name");
-
-		Navigator.gotoStagedView();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
 		Staging.publishToLiveNowViaPortletCP();
 
-		Navigator.openSiteURL(siteName = "Site Name");
-
-		Navigator.gotoStagedView();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
 		Staging.viewNoPublishContentCountViaPortletStagingCP(stagingDateRange = "From Last Publish Date");
 	}
 
 	@priority = "4"
 	test StagingPublishLast {
-		property app.server.types = "jboss,resin,tcserver,tomcat,weblogic,websphere,wildfly";
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property environment.acceptance = "true";
 
@@ -664,10 +635,7 @@ definition {
 
 		Staging.viewSitePagesVariationPG(sitePagesVariationName = "Main Variation");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
 		WebContentNavigator.gotoAddCP();
 
@@ -692,14 +660,7 @@ definition {
 
 		Staging.publishToLive();
 
-		Navigator.gotoSitePage(
-			pageName = "Staging Test Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			panel = "Site Administration",
-			portlet = "Web Content");
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name");
 
 		WebContent.viewTitle(
 			onLive = "true",
@@ -759,14 +720,7 @@ definition {
 	test StagingSiteVariationIncompletePage {
 		Staging.addSitePagesVariationPG(sitePagesVariationName = "Site Pages Variation Name");
 
-		ProductMenu.gotoSite(site = "Site Name");
-
-		Navigator.gotoStagedView();
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicPage(pageName = "Test Page Name");
 
@@ -799,12 +753,7 @@ definition {
 
 		PageTemplatesAdmin.configureWidgetPageTemplateLayout(columnName = "1 Column");
 
-		Navigator.openStagingSiteURL(siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			panel = "Site Administration",
-			portlet = "Pages");
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
 
 		SitePages.addPublicPage(
 			collectionName = "Page Template Collection",
@@ -823,11 +772,7 @@ definition {
 
 	@priority = "4"
 	test StagingVersionHistory {
-		Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
-
-		Click(locator1 = "Staging#HISTORY_BUTTON");
-
-		SelectFrame(locator1 = "IFrame#METADATA_SETS_IFRAME");
+		Staging.gotoHistory();
 
 		AssertElementPresent(locator1 = "Staging#HISTORY_VERSION");
 
@@ -889,4 +834,51 @@ definition {
 
 		Staging.publishToLive();
 	}
+
+	@description = "This is a use case for LPS-84809."
+	@priority = "3"
+	test ViewChildPageNameViaLocalizedPage {
+		property test.name.skip.portal.instance = "StagingUsecaseWithVersioning#ViewChildPageNameViaLocalizedPage";
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
+
+		SitePages.addPublicPage(pageName = "Page1");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Page1");
+
+		Page.addPageTranslations(
+			page = "Page1",
+			pageTranslation = "es_ES",
+			pageTranslationName = "Página1");
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
+
+		SitePages.addPublicChildPage(
+			childPageName = "Page2",
+			parentPageName = "Page1");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Page2",
+			parentPagesHierarchy = "Page1");
+
+		Page.addPageTranslations(
+			page = "Page2",
+			pageTranslation = "es_ES",
+			pageTranslationName = "Página2");
+
+		Navigator.openStagingSiteURL(siteName = "Site Name");
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		Page.viewTranslationsPG(
+			defaultLanguageLocalizationMessage = "Display the page in English (United States).",
+			pageName = "Página2",
+			preferredLanguageLocalizationMessage = "Establecer español (España) como su idioma preferido.",
+			sitePageURL = "${portalURL}/es/web/site-name-staging/page2",
+			translationLanguageLocalizationMessage = "This page is displayed in Spanish (Spain).");
+	}
+
 }

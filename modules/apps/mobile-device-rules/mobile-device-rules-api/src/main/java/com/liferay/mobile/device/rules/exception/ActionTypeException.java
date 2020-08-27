@@ -16,12 +16,9 @@ package com.liferay.mobile.device.rules.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Edward C. Han
  */
-@ProviderType
 public class ActionTypeException extends PortalException {
 
 	public ActionTypeException() {
@@ -31,12 +28,12 @@ public class ActionTypeException extends PortalException {
 		super(msg);
 	}
 
-	public ActionTypeException(String msg, Throwable cause) {
-		super(msg, cause);
+	public ActionTypeException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public ActionTypeException(Throwable cause) {
-		super(cause);
+	public ActionTypeException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

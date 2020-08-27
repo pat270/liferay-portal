@@ -68,18 +68,16 @@ public class FIFOUtil {
 				createFIFO(tempFIFOFile);
 			}
 			finally {
-				if (!tempFIFOFile.delete()) {
-					if (tempFIFOFile.exists()) {
-						tempFIFOFile.deleteOnExit();
-					}
+				if (!tempFIFOFile.delete() && tempFIFOFile.exists()) {
+					tempFIFOFile.deleteOnExit();
 				}
 			}
 
 			fifoSupport = true;
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to detect FIFO support", t);
+				_log.warn("Unable to detect FIFO support", throwable);
 			}
 		}
 

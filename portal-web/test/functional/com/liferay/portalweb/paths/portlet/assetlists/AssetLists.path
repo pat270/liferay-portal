@@ -9,13 +9,48 @@
 </thead>
 <tbody>
 <tr>
+	<td>ASSET_LIST_ELLIPSIS</td>
+	<td>//div[contains(@class,'dropdown')]//a[span/*[name()='svg'][contains(@class,'lexicon-icon-ellipsis')]]</td>
+	<td></td>
+</tr>	
+<tr>
 	<td>ASSET_LIST_ENTRY_TITLE</td>
-	<td>//li[contains(@class,'list-group-item')]//a[contains(.,'${key_title}')]</td>
+	<td>//li[contains(@class,'list-group-item')]//a[contains(.,'${key_title}')] | //li[contains(@class,'list-group-item')]//p[contains(.,'${key_title}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_ENTRY_TITLE_CARD</td>
+	<td>//div[contains(@class,'card-row')]//div[contains(.,'${key_title}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_LIST_ENTRY_TYPE</td>
 	<td>//li[contains(@class,'list-group-item')]//h6[contains(.,'${key_type}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_ENTRY_TYPE_SELECTED</td>
+	<td>//select[contains(@class,'left-selector')]/option[contains(.,'${key_type}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_KEYWORDS_FIELD</td>
+	<td>//div[contains(@class,'form-group') and label[contains(.,'Keywords')]]/input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_REMOVE_SCOPE</td>
+	<td>//tr[contains(@data-qa-id,'row')][contains(.,'${key_scopeName}')]//span/*[name()='svg'][contains(@class,'lexicon-icon-times-circle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_SCOPE_ITEM</td>
+	<td>//span[contains(@class,'taglib-text-icon') and contains(.,'${key_menuItem}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASSET_LIST_SCOPE_NAME</td>
+	<td>//tr[contains(@data-qa-id,'row')][contains(.,'${key_scopeName}')]//td[contains(@class,'lfr-name-column')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -36,12 +71,12 @@
 <!--VIEW_CONTENT-->
 <tr>
 	<td>ASSET_TITLE_ROW</td>
-	<td>//tr[contains(@data-qa-id,'row')]//td[contains(@class,'lfr-title-column')]</td>
+	<td>//tr[contains(@data-qa-id,'row')][contains(.,'${key_assetTitle}')]//td[contains(@class,'lfr-title-column')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_TYPE_ROW</td>
-	<td>//tr[contains(@data-qa-id,'row')]//td[contains(@class,'lfr-type-column')]</td>
+	<td>//tr[contains(@data-qa-id,'row')][contains(.,'${key_assetTitle}')]//td[contains(@class,'lfr-type-column')]</td>
 	<td></td>
 </tr>
 <tr>

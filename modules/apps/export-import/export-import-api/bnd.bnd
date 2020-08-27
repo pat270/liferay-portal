@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Export Import API
 Bundle-SymbolicName: com.liferay.exportimport.api
-Bundle-Version: 5.0.0
+Bundle-Version: 5.3.4
 Export-Package:\
 	com.liferay.exportimport.configuration,\
 	com.liferay.exportimport.constants,\
@@ -10,10 +10,14 @@ Export-Package:\
 	com.liferay.exportimport.lar,\
 	com.liferay.exportimport.portlet.data.handler.helper,\
 	com.liferay.exportimport.portlet.data.handler.provider,\
+	com.liferay.exportimport.portlet.data.handler.util,\
 	com.liferay.exportimport.portlet.preferences.processor,\
 	com.liferay.exportimport.portlet.preferences.processor.base,\
 	com.liferay.exportimport.resources.importer.portlet.preferences,\
 	com.liferay.exportimport.resources.importer.provider,\
 	com.liferay.exportimport.staged.model.repository,\
 	com.liferay.exportimport.util.comparator
--includeresource: content=../../staging/staging-lang/src/main/resources/content
+Provide-Capability:\
+	liferay.resource.bundle;\
+		resource.bundle.aggregate:String="(bundle.symbolic.name=com.liferay.staging.lang)";\
+		resource.bundle.base.name="content.Language"

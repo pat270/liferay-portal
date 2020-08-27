@@ -16,14 +16,11 @@ package com.liferay.dynamic.data.lists.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Thrown when the system is unable to find a required DDL Record Version.
  *
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchRecordVersionException extends NoSuchModelException {
 
 	public NoSuchRecordVersionException() {
@@ -33,12 +30,12 @@ public class NoSuchRecordVersionException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchRecordVersionException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchRecordVersionException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchRecordVersionException(Throwable cause) {
-		super(cause);
+	public NoSuchRecordVersionException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

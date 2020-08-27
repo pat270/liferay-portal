@@ -66,9 +66,7 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 		phone.setTypeId(typeId);
 		phone.setPrimary(primary);
 
-		phonePersistence.update(phone);
-
-		return phone;
+		return phonePersistence.update(phone);
 	}
 
 	@Override
@@ -91,10 +89,9 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 
 	@Override
 	public void deletePhones(long companyId, String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		List<Phone> phones = phonePersistence.findByC_C_C(
-			companyId, classNameId, classPK);
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 
 		for (Phone phone : phones) {
 			phoneLocalService.deletePhone(phone);
@@ -110,9 +107,9 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 	public List<Phone> getPhones(
 		long companyId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return phonePersistence.findByC_C_C(companyId, classNameId, classPK);
+		return phonePersistence.findByC_C_C(
+			companyId, classNameLocalService.getClassNameId(className),
+			classPK);
 	}
 
 	@Override
@@ -130,9 +127,7 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 		phone.setTypeId(typeId);
 		phone.setPrimary(primary);
 
-		phonePersistence.update(phone);
-
-		return phone;
+		return phonePersistence.update(phone);
 	}
 
 	protected void validate(

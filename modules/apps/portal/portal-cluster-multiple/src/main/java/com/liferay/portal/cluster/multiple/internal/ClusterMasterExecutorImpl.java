@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.concurrent.NoticeableFutureConverter;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -46,7 +45,9 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Michael C. Han
  */
-@Component(immediate = true, service = ClusterMasterExecutor.class)
+@Component(
+	enabled = false, immediate = true, service = ClusterMasterExecutor.class
+)
 public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 
 	@Override
@@ -77,8 +78,8 @@ public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 
 				return defaultNoticeableFuture;
 			}
-			catch (Exception e) {
-				throw new SystemException(e);
+			catch (Exception exception) {
+				throw new SystemException(exception);
 			}
 		}
 
@@ -104,9 +105,10 @@ public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 
 			};
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			throw new SystemException(
-				"Unable to execute on master " + masterClusterNodeId, e);
+				"Unable to execute on master " + masterClusterNodeId,
+				exception);
 		}
 	}
 
@@ -135,7 +137,7 @@ public class ClusterMasterExecutorImpl implements ClusterMasterExecutor {
 
 	@Activate
 	protected synchronized void activate() {
-		if (!_clusterExecutorImpl.isEnabled() || SPIUtil.isSPI()) {
+		if (!_clusterExecutorImpl.isEnabled()) {
 			return;
 		}
 

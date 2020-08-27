@@ -60,9 +60,10 @@ public class VerifyProperties extends VerifyProcess {
 		try {
 			return classLoader.getResourceAsStream(resourceName);
 		}
-		catch (RuntimeException re) {
+		catch (RuntimeException runtimeException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get resource " + resourceName, re);
+				_log.warn(
+					"Unable to get resource " + resourceName, runtimeException);
 			}
 
 			return null;
@@ -91,9 +92,10 @@ public class VerifyProperties extends VerifyProcess {
 					properties.load(inputStream);
 				}
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				_log.error(
-					"Unable to load property " + propertyResourceName, ioe);
+					"Unable to load property " + propertyResourceName,
+					ioException);
 			}
 		}
 
@@ -544,6 +546,16 @@ public class VerifyProperties extends VerifyProcess {
 		},
 
 		{
+			"blogs.image.max.size", "blogs.image.max.size",
+			"com.liferay.blogs.api"
+		},
+
+		{
+			"blogs.image.extensions", "blogs.image.extensions",
+			"com.liferay.blogs.api"
+		},
+
+		{
 			"blogs.linkback.job.interval", "linkback.job.interval",
 			"com.liferay.blogs.web"
 		},
@@ -707,22 +719,6 @@ public class VerifyProperties extends VerifyProcess {
 		{
 			"dl.store.advanced.file.system.root.dir", "root.dir",
 			"com.liferay.portal.store.filesystem"
-		},
-		{
-			"dl.store.cmis.credentials.username", "credentials.username",
-			"com.liferay.portal.store.cmis"
-		},
-		{
-			"dl.store.cmis.credentials.password", "credentials.password",
-			"com.liferay.portal.store.cmis"
-		},
-		{
-			"dl.store.cmis.repository.url", "repository.url",
-			"com.liferay.portal.store.cmis"
-		},
-		{
-			"dl.store.cmis.system.root.dir", "system.root.dir",
-			"com.liferay.portal.store.cmis"
 		},
 		{
 			"dl.store.file.system.root.dir", "root.dir",
@@ -1609,7 +1605,8 @@ public class VerifyProperties extends VerifyProcess {
 		"auth.max.failures.limit", "auto.deploy.blacklist.threshold",
 		"blogs.image.small.max.size", "breadcrumb.display.style.options",
 		"buffered.increment.parallel.queue.size",
-		"buffered.increment.serial.queue.size", "captcha.max.challenges",
+		"buffered.increment.serial.queue.size",
+		"cache.clear.on.context.initialization", "captcha.max.challenges",
 		"captcha.check.portal.create_account",
 		"captcha.check.portal.send_password",
 		"captcha.check.portlet.message_boards.edit_category",
@@ -1654,8 +1651,13 @@ public class VerifyProperties extends VerifyProcess {
 		"dl.file.entry.read.count.enabled",
 		"dl.file.entry.type.ig.image.auto.create.on.upgrade",
 		"dl.file.extensions", "dl.file.max.size", "dl.file.rank.enabled",
-		"dl.folder.menu.visible", "dl.hook.jcr.fetch.delay",
-		"dl.hook.jcr.fetch.max.failures", "dl.hook.jcr.move.version.labels",
+		"dl.folder.menu.visible", "dl.hook.cmis.credentials.password",
+		"dl.hook.cmis.credentials.username", "dl.hook.cmis.repository.url",
+		"dl.hook.cmis.system.root.dir", "dl.hook.file.system.root.dir",
+		"dl.hook.jcr.fetch.delay", "dl.hook.jcr.fetch.max.failures",
+		"dl.hook.jcr.move.version.labels", "dl.store.cmis.credentials.username",
+		"dl.store.cmis.credentials.password", "dl.store.cmis.repository.url",
+		"dl.store.cmis.system.root.dir", "dl.store.file.system.root.dir",
 		"dl.store.jcr.fetch.delay", "dl.store.jcr.fetch.max.failures",
 		"dl.store.jcr.move.version.labels", "dl.tabs.visible",
 		"dockbar.add.portlets", "dockbar.administrative.links.show.in.pop.up",
@@ -1685,9 +1687,17 @@ public class VerifyProperties extends VerifyProcess {
 			"jsp",
 		"editor.wysiwyg.portal-web.docroot.html.portlet.message_boards." +
 			"configuration.jsp",
+		"editor.wysiwyg.portal-web.docroot.html.portlet.message_boards." +
+			"edit_message.bb_code.jsp",
+		"editor.wysiwyg.portal-web.docroot.html.portlet.message_boards." +
+			"edit_message.html.jsp",
 		"editor.wysiwyg.portal-web.docroot.html.portlet.portal_settings." +
 			"email_notifications.jsp",
+		"ehcache.blocking.cache.allowed",
+		"ehcache.bootstrap.cache.loader.enabled",
 		"ehcache.bootstrap.cache.loader.factory",
+		"ehcache.bootstrap.cache.loader.properties",
+		"ehcache.bootstrap.cache.loader.properties.default",
 		"ehcache.cache.event.listener.factory",
 		"ehcache.cache.manager.peer.listener.factory",
 		"ehcache.cache.manager.peer.provider.factory",
@@ -1703,7 +1713,7 @@ public class VerifyProperties extends VerifyProcess {
 		"hibernate.cache.use_minimal_puts", "hibernate.cache.use_query_cache",
 		"hibernate.cache.use_second_level_cache",
 		"hibernate.cache.use_structured_entries", "icq.jar", "icq.login",
-		"icq.password", "index.filter.search.limit",
+		"icq.password", "index.filter.search.limit", "index.on.upgrade",
 		"index.portal.field.analyzer.enabled", "index.search.highlight.enabled",
 		"index.read.only", "invitation.email.max.recipients",
 		"invitation.email.message.body", "invitation.email.message.subject",
@@ -1730,24 +1740,43 @@ public class VerifyProperties extends VerifyProcess {
 		"jpa.provider.property.eclipselink.logging.level",
 		"jpa.provider.property.eclipselink.logging.timestamp",
 		"language.display.style.options",
+		"layout.configuration.action.update[embedded]",
 		"layout.configuration.action.update[link_to_layout]",
+		"layout.configuration.action.update[url]",
+		"layout.configuration.action.delete[embedded]",
 		"layout.configuration.action.delete[link_to_layout]",
-		"layout.edit.page[control_panel]", "layout.edit.page[link_to_layout]",
-		"layout.first.pageable[control_panel]",
-		"layout.first.pageable[link_to_layout]", "layout.form.add",
-		"layout.form.update",
+		"layout.configuration.action.delete[url]",
+		"layout.edit.page[control_panel]", "layout.edit.page[embedded]",
+		"layout.edit.page[link_to_layout]", "layout.edit.page[panel]",
+		"layout.edit.page[url]", "layout.first.pageable[control_panel]",
+		"layout.first.pageable[embedded]",
+		"layout.first.pageable[link_to_layout]", "layout.first.pageable[panel]",
+		"layout.first.pageable[url]", "layout.form.add", "layout.form.update",
+		"layout.parallel.render.enable",
 		"layout.parallel.render.thread.pool.allow.core.thread.timeout",
-		"layout.parentable[control_panel]", "layout.parentable[link_to_layout]",
+		"layout.parallel.render.thread.pool.core.thread.count",
+		"layout.parallel.render.thread.pool.keep.alive.time",
+		"layout.parallel.render.thread.pool.max.queue.size",
+		"layout.parallel.render.thread.pool.max.thread.count",
+		"layout.parallel.render.timeout", "layout.parentable[control_panel]",
+		"layout.parentable[embedded]", "layout.parentable[link_to_layout]",
+		"layout.parentable[panel]", "layout.parentable[url]",
 		"layout.reset.portlet.ids", "layout.set.form.update",
-		"layout.sitemapable[link_to_layout]", "layout.types",
-		"layout.url[control_panel]", "layout.url[link_to_layout]",
+		"layout.sitemapable[embedded]", "layout.sitemapable[link_to_layout]",
+		"layout.sitemapable[url]", "layout.types", "layout.url[control_panel]",
+		"layout.url[embedded]", "layout.url[link_to_layout]",
+		"layout.url[panel]", "layout.url[url]",
 		"layout.url.friendliable[control_panel]",
+		"layout.url.friendliable[embedded]",
 		"layout.url.friendliable[link_to_layout]",
-		"layout.view.page[control_panel]", "layout.view.page[link_to_layout]",
-		"library.download.url.resin.jar", "library.download.url.script-10.jar",
-		"lucene.analyzer", "lucene.cluster.index.loading.sync.timeout",
-		"lucene.file.extractor", "lucene.file.extractor.regexp.strip",
-		"lucene.replicate.write", "lucene.store.jdbc.auto.clean.up",
+		"layout.url.friendliable[panel]", "layout.url.friendliable[url]",
+		"layout.view.page[control_panel]", "layout.view.page[embedded]",
+		"layout.view.page[link_to_layout]", "layout.view.page[panel]",
+		"layout.view.page[url]", "library.download.url.resin.jar",
+		"library.download.url.script-10.jar", "lucene.analyzer",
+		"lucene.cluster.index.loading.sync.timeout", "lucene.file.extractor",
+		"lucene.file.extractor.regexp.strip", "lucene.replicate.write",
+		"lucene.store.jdbc.auto.clean.up",
 		"lucene.store.jdbc.auto.clean.up.enabled",
 		"lucene.store.jdbc.auto.clean.up.interval",
 		"lucene.store.jdbc.dialect.db2", "lucene.store.jdbc.dialect.derby",
@@ -1784,8 +1813,11 @@ public class VerifyProperties extends VerifyProcess {
 		"organizations.form.update.main",
 		"organizations.form.update.miscellaneous",
 		"organizations.indexer.enabled", "organizations.rootable",
-		"organizations.types", "portal.cache.manager.type.multi.vm",
+		"organizations.types", "permissions.object.blocking.cache",
+		"portal.cache.manager.type.multi.vm",
 		"portal.cache.manager.type.single.vm", "portal.ctx",
+		"portal.resiliency.enabled", "portal.resiliency.portlet.show.footer",
+		"portal.resiliency.spi.agent.client.pool.max.size",
 		"portal.security.manager.enable",
 		"permissions.inline.sql.resource.block.query.threshold",
 		"permissions.list.filter", "permissions.thread.local.cache.max.size",
@@ -1807,22 +1839,27 @@ public class VerifyProperties extends VerifyProcess {
 		"social.activity.sets.bundling.enabled", "social.activity.sets.enabled",
 		"social.bookmark.display.styles", "social.bookmark.types",
 		"spring.hibernate.data.source", "spring.hibernate.session.factory",
-		"spring.portlet.configs", "staging.delete.temp.lar.on.failure",
+		"spring.portlet.configs", "spring.remoting.servlet.hosts.allowed",
+		"spring.remoting.servlet.https.required",
+		"staging.delete.temp.lar.on.failure",
 		"staging.delete.temp.lar.on.success",
 		"struts.portlet.ignored.parameters.regexp",
 		"struts.portlet.request.processor",
 		"table.mapper.cache.mapping.table.names", "tck.url",
-		"transaction.manager.impl", "user.groups.indexer.enabled",
-		"users.form.add.identification", "users.indexer.enabled",
-		"users.form.add.main", "users.form.add.miscellaneous",
-		"users.form.my.account.identification", "users.form.my.account.main",
-		"users.form.my.account.miscellaneous",
+		"transaction.manager.impl",
+		"user.groups.copy.layouts.to.user.personal.site",
+		"user.groups.indexer.enabled", "users.form.add.identification",
+		"users.indexer.enabled", "users.form.add.main",
+		"users.form.add.miscellaneous", "users.form.my.account.identification",
+		"users.form.my.account.main", "users.form.my.account.miscellaneous",
 		"users.form.update.identification", "users.form.update.main",
 		"users.form.update.miscellaneous", "users.image.check.token",
 		"users.image.default.use.initials", "users.image.max.height",
 		"users.image.max.size", "users.image.max.width",
 		"vaadin.resources.path", "vaadin.theme", "vaadin.widgetset",
-		"value.object.finder.blocking.cache", "webdav.storage.class",
+		"value.object.entity.blocking.cache",
+		"value.object.finder.blocking.cache", "verify.database.transactions",
+		"verify.frequency", "verify.processes", "webdav.storage.class",
 		"webdav.storage.show.edit.url", "webdav.storage.show.view.url",
 		"webdav.storage.tokens", "wiki.email.page.added.signature",
 		"wiki.email.page.updated.signature", "xss.allow", "ym.login",
@@ -1866,17 +1903,6 @@ public class VerifyProperties extends VerifyProcess {
 		},
 		{"default.user.private.layout.lar", "default.user.private.layouts.lar"},
 		{"default.user.public.layout.lar", "default.user.public.layouts.lar"},
-		{
-			"dl.hook.cmis.credentials.password",
-			"dl.store.cmis.credentials.password"
-		},
-		{
-			"dl.hook.cmis.credentials.username",
-			"dl.store.cmis.credentials.username"
-		},
-		{"dl.hook.cmis.repository.url", "dl.store.cmis.repository.url"},
-		{"dl.hook.cmis.system.root.dir", "dl.store.cmis.system.root.dir"},
-		{"dl.hook.file.system.root.dir", "dl.store.file.system.root.dir"},
 		{"dl.hook.impl", "dl.store.impl"},
 		{"dl.hook.s3.access.key", "dl.store.s3.access.key"},
 		{"dl.hook.s3.bucket.name", "dl.store.s3.bucket.name"},
@@ -1928,6 +1954,43 @@ public class VerifyProperties extends VerifyProcess {
 		{
 			"journal.template.velocity.restricted.variables",
 			"velocity.engine.restricted.variables"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.bundles.new.start",
+			"module.framework.properties.file.install.bundles.new.start"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.bundles." +
+				"startActivationPolicy",
+			"module.framework.properties.file.install.bundles." +
+				"startActivationPolicy"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.bundles." +
+				"startTransient",
+			"module.framework.properties.file.install.bundles.startTransient"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.disableNio2",
+			"module.framework.properties.file.install.disableNio2"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.log.level",
+			"module.framework.properties.file.install.log.level"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.noInitialDelay",
+			"module.framework.properties.file.install.noInitialDelay"
+		},
+		{
+			"module.framework.properties.felix.fileinstall." +
+				"optionalImportRefreshScope",
+			"module.framework.properties.file.install." +
+				"optionalImportRefreshScope"
+		},
+		{
+			"module.framework.properties.felix.fileinstall.subdir.mode",
+			"module.framework.properties.file.install.subdir.mode"
 		},
 		{
 			"passwords.passwordpolicytoolkit.charset.lowercase",

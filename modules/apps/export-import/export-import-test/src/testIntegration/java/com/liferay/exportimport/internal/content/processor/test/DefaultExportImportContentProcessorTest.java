@@ -21,8 +21,8 @@ import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessorRegistryUtil;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
+import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.exception.ExportImportContentValidationException;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
@@ -35,6 +35,8 @@ import com.liferay.exportimport.test.util.TestReaderWriter;
 import com.liferay.exportimport.test.util.TestUserIdStrategy;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.layout.test.util.LayoutFriendlyURLRandomizerBumper;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -53,6 +55,7 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.randomizerbumpers.NumericStringRandomizerBumper;
 import com.liferay.portal.kernel.test.randomizerbumpers.UniqueStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -60,8 +63,8 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -73,12 +76,10 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
-import com.liferay.portal.test.randomizerbumpers.FriendlyURLRandomizerBumper;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PortalImpl;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.util.test.LayoutTestUtil;
-import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
@@ -121,7 +122,9 @@ public class DefaultExportImportContentProcessorTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@BeforeClass
 	public static void setUpClass() {
@@ -133,9 +136,8 @@ public class DefaultExportImportContentProcessorTest {
 		sb.append(ExportImportContentProcessor.class.getName());
 		sb.append("))");
 
-		Filter filter = registry.getFilter(sb.toString());
-
-		_serviceTracker = registry.trackServices(filter);
+		_serviceTracker = registry.trackServices(
+			registry.getFilter(sb.toString()));
 
 		_serviceTracker.open();
 	}
@@ -145,10 +147,14 @@ public class DefaultExportImportContentProcessorTest {
 		_defaultLocale = LocaleUtil.getDefault();
 		_nondefaultLocale = getNondefaultLocale();
 
+		UserTestUtil.setUser(TestPropsValues.getUser());
+
 		_externalGroup = GroupTestUtil.addGroup();
+
 		_liveGroup = GroupTestUtil.addGroup();
 
-		GroupTestUtil.enableLocalStaging(_liveGroup);
+		GroupTestUtil.enableLocalStaging(
+			_liveGroup, TestPropsValues.getUserId());
 
 		_stagingGroup = _liveGroup.getStagingGroup();
 
@@ -190,6 +196,7 @@ public class DefaultExportImportContentProcessorTest {
 		_portletDataContextExport.setExportDataRootElement(rootElement);
 
 		_stagingPrivateLayout = addMultiLocaleLayout(_stagingGroup, true);
+
 		_stagingPublicLayout = addMultiLocaleLayout(_stagingGroup, false);
 
 		_portletDataContextExport.setPlid(_stagingPublicLayout.getPlid());
@@ -302,17 +309,13 @@ public class DefaultExportImportContentProcessorTest {
 		TestReaderWriter testReaderWriter =
 			(TestReaderWriter)_portletDataContextExport.getZipWriter();
 
-		List<String> entries = testReaderWriter.getEntries();
-
 		_assertContainsReference(
-			entries, DLFileEntryConstants.getClassName(),
+			testReaderWriter.getEntries(), DLFileEntryConstants.getClassName(),
 			_fileEntry.getFileEntryId());
-
-		List<String> binaryEntries = testReaderWriter.getBinaryEntries();
 
 		_assertContainsBinary(
-			binaryEntries, DLFileEntryConstants.getClassName(),
-			_fileEntry.getFileEntryId());
+			testReaderWriter.getBinaryEntries(),
+			DLFileEntryConstants.getClassName(), _fileEntry.getFileEntryId());
 
 		int count = 0;
 
@@ -644,9 +647,10 @@ public class DefaultExportImportContentProcessorTest {
 			_portletDataContextImport, _referrerStagedModel, content);
 
 		Assert.assertTrue(
-			"The imported content should contain the friendly URL of the " +
-				"external group (\"" + _externalGroup.getFriendlyURL() +
-					"\"), but it does not:\n" + content,
+			StringBundler.concat(
+				"The imported content should contain the friendly URL of the ",
+				"external group (\"", _externalGroup.getFriendlyURL(),
+				"\"), but it does not:\n", content),
 			content.contains(_externalGroup.getFriendlyURL()));
 
 		Assert.assertFalse(
@@ -809,11 +813,14 @@ public class DefaultExportImportContentProcessorTest {
 				_exportImportContentProcessor.validateContentReferences(
 					_stagingGroup.getGroupId(), layoutReference);
 			}
-			catch (ExportImportContentValidationException eicve) {
-				Throwable cause = eicve.getCause();
+			catch (ExportImportContentValidationException
+						exportImportContentValidationException) {
 
-				if ((cause instanceof NoSuchLayoutException) ||
-					(eicve.getType() ==
+				Throwable throwable =
+					exportImportContentValidationException.getCause();
+
+				if ((throwable instanceof NoSuchLayoutException) ||
+					(exportImportContentValidationException.getType() ==
 						ExportImportContentValidationException.
 							LAYOUT_GROUP_NOT_FOUND)) {
 
@@ -837,7 +844,7 @@ public class DefaultExportImportContentProcessorTest {
 
 		for (Locale locale : new Locale[] {_defaultLocale, _nondefaultLocale}) {
 			String name = RandomTestUtil.randomString(
-				FriendlyURLRandomizerBumper.INSTANCE,
+				LayoutFriendlyURLRandomizerBumper.INSTANCE,
 				NumericStringRandomizerBumper.INSTANCE,
 				UniqueStringRandomizerBumper.INSTANCE);
 
@@ -960,7 +967,7 @@ public class DefaultExportImportContentProcessorTest {
 			return content;
 		}
 
-		List<String> urls = ListUtil.toList(StringUtil.splitLines(content));
+		List<String> urls = ListUtil.fromArray(StringUtil.splitLines(content));
 
 		List<String> outURLs = new ArrayList<>();
 
@@ -1089,7 +1096,7 @@ public class DefaultExportImportContentProcessorTest {
 	protected String replaceMultiLocaleLayoutFriendlyURLs(String content) {
 		return duplicateLinesWithParamNames(
 			content, _MULTI_LOCALE_LAYOUT_VARIABLES,
-			_NON_DEFAULT_MULTI_LOCALE_LAYOUT_VARIABLES);
+			_NONDEFAULT_MULTI_LOCALE_LAYOUT_VARIABLES);
 	}
 
 	protected String replaceParameters(String content, FileEntry fileEntry) {
@@ -1160,16 +1167,16 @@ public class DefaultExportImportContentProcessorTest {
 	}
 
 	protected String replaceTimestampParameters(String content) {
-		List<String> urls = ListUtil.toList(StringUtil.splitLines(content));
+		List<String> urls = ListUtil.fromArray(StringUtil.splitLines(content));
 
 		String timestampParameter = "t=123456789";
 
 		String parameters1 = timestampParameter + "&width=100&height=100";
 		String parameters2 = "width=100&" + timestampParameter + "&height=100";
 		String parameters3 = "width=100&height=100&" + timestampParameter;
-		String parameters4 =
-			timestampParameter + "?" + timestampParameter +
-				"&width=100&height=100";
+		String parameters4 = StringBundler.concat(
+			timestampParameter, "?", timestampParameter,
+			"&width=100&height=100");
 
 		List<String> outURLs = new ArrayList<>();
 
@@ -1282,7 +1289,7 @@ public class DefaultExportImportContentProcessorTest {
 		"[$PRIVATE_LAYOUT_FRIENDLY_URL$]", "[$PUBLIC_LAYOUT_FRIENDLY_URL$]"
 	};
 
-	private static final String[] _NON_DEFAULT_MULTI_LOCALE_LAYOUT_VARIABLES = {
+	private static final String[] _NONDEFAULT_MULTI_LOCALE_LAYOUT_VARIABLES = {
 		"[$NON_DEFAULT_LIVE_PUBLIC_LAYOUT_FRIENDLY_URL$]",
 		"[$NON_DEFAULT_PRIVATE_LAYOUT_FRIENDLY_URL$]",
 		"[$NON_DEFAULT_PUBLIC_LAYOUT_FRIENDLY_URL$]"
@@ -1294,8 +1301,8 @@ public class DefaultExportImportContentProcessorTest {
 	private static String _oldLayoutFriendlyURLPrivateUserServletMapping;
 	private static final Pattern _pattern = Pattern.compile("href=|\\{|\\[");
 	private static ServiceTracker
-		<ExportImportContentProcessor, ExportImportContentProcessor>
-			_serviceTracker;
+		<ExportImportContentProcessor<String>,
+		 ExportImportContentProcessor<String>> _serviceTracker;
 
 	private Locale _defaultLocale;
 	private ExportImportContentProcessor<String> _exportImportContentProcessor;

@@ -33,12 +33,12 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.IOException;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -87,34 +87,39 @@ public class AMImageRequestHandler
 			FileVersion fileVersion)
 		throws PortalException {
 
-		Map<String, String> properties = new HashMap<>();
+		Map<String, String> properties = HashMapBuilder.put(
+			() -> {
+				AMAttribute<Object, Long> contentLengthAMAttribute =
+					AMAttribute.getContentLengthAMAttribute();
 
-		AMAttribute<Object, String> fileNameAMAttribute =
-			AMAttribute.getFileNameAMAttribute();
+				return contentLengthAMAttribute.getName();
+			},
+			String.valueOf(fileVersion.getSize())
+		).put(
+			() -> {
+				AMAttribute<Object, String> contentTypeAMAttribute =
+					AMAttribute.getContentTypeAMAttribute();
 
-		properties.put(
-			fileNameAMAttribute.getName(), fileVersion.getFileName());
+				return contentTypeAMAttribute.getName();
+			},
+			fileVersion.getMimeType()
+		).put(
+			() -> {
+				AMAttribute<Object, String> fileNameAMAttribute =
+					AMAttribute.getFileNameAMAttribute();
 
-		AMAttribute<Object, String> contentTypeAMAttribute =
-			AMAttribute.getContentTypeAMAttribute();
-
-		properties.put(
-			contentTypeAMAttribute.getName(), fileVersion.getMimeType());
-
-		AMAttribute<Object, Long> contentLengthAMAttribute =
-			AMAttribute.getContentLengthAMAttribute();
-
-		properties.put(
-			contentLengthAMAttribute.getName(),
-			String.valueOf(fileVersion.getSize()));
+				return fileNameAMAttribute.getName();
+			},
+			fileVersion.getFileName()
+		).build();
 
 		return new AMImage(
 			() -> {
 				try {
 					return fileVersion.getContentStream(false);
 				}
-				catch (PortalException pe) {
-					throw new AMRuntimeException(pe);
+				catch (PortalException portalException) {
+					throw new AMRuntimeException(portalException);
 				}
 			},
 			AMImageAttributeMapping.fromProperties(properties), null);
@@ -159,8 +164,8 @@ public class AMImageRequestHandler
 
 			return Optional.of(_createRawAdaptiveMedia(fileVersion));
 		}
-		catch (PortalException pe) {
-			throw new AMRuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new AMRuntimeException(portalException);
 		}
 	}
 
@@ -194,8 +199,8 @@ public class AMImageRequestHandler
 				_getComparator(configurationWidth)
 			).findFirst();
 		}
-		catch (PortalException pe) {
-			throw new AMRuntimeException(pe);
+		catch (PortalException portalException) {
+			throw new AMRuntimeException(portalException);
 		}
 	}
 
@@ -281,8 +286,8 @@ public class AMImageRequestHandler
 
 			return Optional.of(Tuple.of(fileVersion, amImageAttributeMapping));
 		}
-		catch (AMRuntimeException | NumberFormatException e) {
-			_log.error(e, e);
+		catch (AMRuntimeException | NumberFormatException exception) {
+			_log.error(exception, exception);
 
 			return Optional.empty();
 		}
@@ -313,11 +318,11 @@ public class AMImageRequestHandler
 			amAsyncProcessor.triggerProcess(
 				fileVersion, String.valueOf(fileVersion.getFileVersionId()));
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			_log.error(
 				"Unable to create lazy adaptive media for file version " +
 					fileVersion.getFileVersionId(),
-				pe);
+				portalException);
 		}
 	}
 

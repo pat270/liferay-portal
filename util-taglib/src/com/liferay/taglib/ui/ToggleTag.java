@@ -137,14 +137,14 @@ public class ToggleTag extends IncludeTag {
 		try {
 			doTag(
 				getPage(), _id, _showImage, _hideImage, _showMessage,
-				_hideMessage, _defaultShowContent, _stateVar, servletContext,
-				request,
+				_hideMessage, _defaultShowContent, _stateVar,
+				getServletContext(), getRequest(),
 				PipingServletResponse.createPipingServletResponse(pageContext));
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

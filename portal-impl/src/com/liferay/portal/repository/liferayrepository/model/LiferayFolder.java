@@ -73,16 +73,16 @@ public class LiferayFolder extends LiferayModel implements Folder {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof LiferayFolder)) {
+		if (!(object instanceof LiferayFolder)) {
 			return false;
 		}
 
-		LiferayFolder liferayFolder = (LiferayFolder)obj;
+		LiferayFolder liferayFolder = (LiferayFolder)object;
 
 		if (Objects.equals(_dlFolder, liferayFolder._dlFolder)) {
 			return true;
@@ -433,9 +433,10 @@ public class LiferayFolder extends LiferayModel implements Folder {
 		try {
 			return RepositoryProviderUtil.getRepository(getRepositoryId());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
-				"Unable to get repository for folder " + getFolderId(), pe);
+				"Unable to get repository for folder " + getFolderId(),
+				portalException);
 		}
 	}
 

@@ -31,7 +31,7 @@
 </tr>
 <tr>
 	<td>ALL_PAGES_USER</td>
-	<td>//tr[contains(.,'${key_wikiPageTitle}')]/td[4]</td>
+	<td>//tr[contains(.,'${key_wikiPageTitle}')]/td[contains(.,'${key_wikiPageUsername}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -47,6 +47,12 @@
 <tr>
 	<td></td>
 	<td></td>
+	<td></td>
+</tr>
+<!--DRAFT_PAGES-->
+<tr>
+	<td>DRAFT_PAGES_PENDING_HEADER</td>
+	<td>//h2[contains(text(),'Pending Approval')]</td>
 	<td></td>
 </tr>
 <!--DRAFT_PAGES_TABLE-->
@@ -83,7 +89,7 @@
 <!--NAVIGATION-->
 <tr>
 	<td>NAVIGATION_ACTIVE_TAB</td>
-	<td>//a[contains(@class,'active')]/span[contains(.,'${key_tabName}')]</td>
+	<td>//a[contains(@class,'active') and contains(.,'${key_tabName}')]</td>
 	<td></td>
 </tr>
 <tr>

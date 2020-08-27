@@ -30,13 +30,17 @@ import com.liferay.blogs.exception.NoSuchEntryException;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.blogs.service.BlogsEntryService;
+import com.liferay.blogs.web.internal.bulk.selection.BlogsEntryBulkSelectionFactory;
 import com.liferay.blogs.web.internal.util.BlogsEntryImageSelectorHelper;
+import com.liferay.bulk.selection.BulkSelection;
 import com.liferay.document.library.kernel.exception.FileSizeException;
 import com.liferay.friendly.url.exception.DuplicateFriendlyURLEntryException;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.editor.EditorConstants;
+import com.liferay.portal.kernel.change.tracking.CTTransactionException;
+import com.liferay.portal.kernel.editor.constants.EditorConstants;
+import com.liferay.portal.kernel.exception.ImageResolutionException;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -46,7 +50,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.sanitizer.SanitizerException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -63,6 +67,7 @@ import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -109,49 +114,9 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 
-	protected void deleteEntries(
-			ActionRequest actionRequest, boolean moveToTrash)
-		throws Exception {
-
-		long[] deleteEntryIds = null;
-
-		long entryId = ParamUtil.getLong(actionRequest, "entryId");
-
-		if (entryId > 0) {
-			deleteEntryIds = new long[] {entryId};
-		}
-		else {
-			deleteEntryIds = StringUtil.split(
-				ParamUtil.getString(actionRequest, "deleteEntryIds"), 0L);
-		}
-
-		List<TrashedModel> trashedModels = new ArrayList<>();
-
-		for (long deleteEntryId : deleteEntryIds) {
-			if (moveToTrash) {
-				BlogsEntry entry = _blogsEntryService.moveEntryToTrash(
-					deleteEntryId);
-
-				trashedModels.add(entry);
-			}
-			else {
-				_blogsEntryService.deleteEntry(deleteEntryId);
-			}
-		}
-
-		if (moveToTrash && !trashedModels.isEmpty()) {
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("trashedModels", trashedModels);
-
-			addDeleteSuccessData(actionRequest, data);
-		}
-	}
-
 	@Override
 	protected void doProcessAction(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws Exception {
+		ActionRequest actionRequest, ActionResponse actionResponse) {
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
@@ -163,21 +128,21 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 					WebKeys.UPLOAD_EXCEPTION);
 
 			if (uploadException != null) {
-				Throwable cause = uploadException.getCause();
+				Throwable throwable = uploadException.getCause();
 
 				if (uploadException.isExceededFileSizeLimit()) {
-					throw new FileSizeException(cause);
+					throw new FileSizeException(throwable);
 				}
 
 				if (uploadException.isExceededLiferayFileItemSizeLimit()) {
-					throw new LiferayFileItemException(cause);
+					throw new LiferayFileItemException(throwable);
 				}
 
 				if (uploadException.isExceededUploadRequestSizeLimit()) {
-					throw new UploadRequestSizeException(cause);
+					throw new UploadRequestSizeException(throwable);
 				}
 
-				throw new PortalException(cause);
+				throw new PortalException(throwable);
 			}
 			else if (cmd.equals(Constants.ADD) ||
 					 cmd.equals(Constants.UPDATE)) {
@@ -189,122 +154,110 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 					_transactionConfig, updateEntryCallable);
 			}
 			else if (cmd.equals(Constants.DELETE)) {
-				deleteEntries(actionRequest, false);
+				_deleteEntries(actionRequest, false);
 			}
 			else if (cmd.equals(Constants.MOVE_TO_TRASH)) {
-				deleteEntries(actionRequest, true);
+				_deleteEntries(actionRequest, true);
 			}
 			else if (cmd.equals(Constants.RESTORE)) {
-				restoreTrashEntries(actionRequest);
+				_restoreTrashEntries(actionRequest);
 			}
 			else if (cmd.equals(Constants.SUBSCRIBE)) {
-				subscribe(actionRequest);
+				_subscribe(actionRequest);
 			}
 			else if (cmd.equals(Constants.UNSUBSCRIBE)) {
-				unsubscribe(actionRequest);
+				_unsubscribe(actionRequest);
 			}
 
 			boolean ajax = ParamUtil.getBoolean(actionRequest, "ajax");
 
 			if (ajax) {
-				JSONObject jsonObject = JSONUtil.put(
-					"attributeDataImageId",
-					EditorConstants.ATTRIBUTE_DATA_IMAGE_ID
-				).put(
-					"content", entry.getContent()
-				).put(
-					"coverImageFileEntryId", entry.getCoverImageFileEntryId()
-				).put(
-					"entryId", entry.getEntryId()
-				);
-
 				JSONPortletResponseUtil.writeJSON(
-					actionRequest, actionResponse, jsonObject);
+					actionRequest, actionResponse,
+					JSONUtil.put(
+						"attributeDataImageId",
+						EditorConstants.ATTRIBUTE_DATA_IMAGE_ID
+					).put(
+						"content", entry.getContent()
+					).put(
+						"coverImageFileEntryId",
+						entry.getCoverImageFileEntryId()
+					).put(
+						"entryId", entry.getEntryId()
+					));
 
 				return;
 			}
 
-			String redirect = ParamUtil.getString(actionRequest, "redirect");
-
+			String portletResource = ParamUtil.getString(
+				actionRequest, "portletResource");
 			int workflowAction = ParamUtil.getInteger(
 				actionRequest, "workflowAction",
 				WorkflowConstants.ACTION_SAVE_DRAFT);
 
+			if (Validator.isNotNull(portletResource) &&
+				(workflowAction != WorkflowConstants.ACTION_SAVE_DRAFT)) {
+
+				hideDefaultSuccessMessage(actionRequest);
+
+				MultiSessionMessages.add(
+					actionRequest, portletResource + "requestProcessed");
+			}
+
+			String redirect = ParamUtil.getString(actionRequest, "redirect");
+
 			if ((entry != null) &&
 				(workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT)) {
 
-				redirect = getSaveAndContinueRedirect(
-					actionRequest, entry, redirect);
-
-				sendRedirect(actionRequest, actionResponse, redirect);
+				_sendDraftRedirect(actionRequest, actionResponse, entry);
 			}
-			else {
-				if (Validator.isNotNull(redirect) &&
-					cmd.equals(Constants.UPDATE)) {
+			else if (Validator.isNotNull(redirect) &&
+					 cmd.equals(Constants.UPDATE)) {
 
-					String namespace = actionResponse.getNamespace();
+				_sendUpdateRedirect(actionRequest, actionResponse);
+			}
+			else if (Validator.isNotNull(redirect) &&
+					 cmd.equals(Constants.ADD) && (entry != null)) {
 
-					redirect = _http.setParameter(
-						redirect, namespace + "redirectToLastFriendlyURL",
-						false);
-				}
-
-				redirect = _portal.escapeRedirect(redirect);
-
-				if (Validator.isNotNull(redirect)) {
-					if (cmd.equals(Constants.ADD) && (entry != null)) {
-						String portletResource = _http.getParameter(
-							redirect, "portletResource", false);
-
-						String namespace = _portal.getPortletNamespace(
-							portletResource);
-
-						if (Validator.isNotNull(portletResource)) {
-							redirect = _http.addParameter(
-								redirect, namespace + "className",
-								BlogsEntry.class.getName());
-							redirect = _http.addParameter(
-								redirect, namespace + "classPK",
-								entry.getEntryId());
-						}
-					}
-
-					actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
-				}
+				_sendAddRedirect(
+					actionRequest, actionResponse, entry.getEntryId());
 			}
 		}
-		catch (AssetCategoryException | AssetTagException e) {
-			SessionErrors.add(actionRequest, e.getClass(), e);
+		catch (AssetCategoryException | AssetTagException exception) {
+			SessionErrors.add(actionRequest, exception.getClass(), exception);
 
 			actionResponse.setRenderParameter(
 				"mvcRenderCommandName", "/blogs/edit_entry");
 
 			hideDefaultSuccessMessage(actionRequest);
+		}
+		catch (CTTransactionException ctTransactionException) {
+			throw ctTransactionException;
 		}
 		catch (DuplicateFriendlyURLEntryException | EntryContentException |
 			   EntryCoverImageCropException | EntryDescriptionException |
 			   EntryDisplayDateException | EntrySmallImageNameException |
 			   EntrySmallImageScaleException | EntryTitleException |
 			   EntryUrlTitleException | FileSizeException |
-			   LiferayFileItemException | SanitizerException |
-			   UploadRequestSizeException e) {
+			   ImageResolutionException | LiferayFileItemException |
+			   SanitizerException | UploadRequestSizeException exception) {
 
-			SessionErrors.add(actionRequest, e.getClass());
+			SessionErrors.add(actionRequest, exception.getClass());
 
 			actionResponse.setRenderParameter(
 				"mvcRenderCommandName", "/blogs/edit_entry");
 
 			hideDefaultSuccessMessage(actionRequest);
 		}
-		catch (NoSuchEntryException | PrincipalException e) {
-			SessionErrors.add(actionRequest, e.getClass());
+		catch (NoSuchEntryException | PrincipalException exception) {
+			SessionErrors.add(actionRequest, exception.getClass());
 
 			actionResponse.setRenderParameter("mvcPath", "/blogs/error.jsp");
 
 			hideDefaultSuccessMessage(actionRequest);
 		}
-		catch (Throwable t) {
-			_log.error(t, t);
+		catch (Throwable throwable) {
+			_log.error(throwable, throwable);
 
 			actionResponse.setRenderParameter("mvcPath", "/blogs/error.jsp");
 
@@ -312,7 +265,62 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
-	protected String getSaveAndContinueRedirect(
+	private void _deleteEntries(
+			ActionRequest actionRequest, boolean moveToTrash)
+		throws Exception {
+
+		List<TrashedModel> trashedModels = new ArrayList<>();
+
+		BulkSelection<BlogsEntry> blogsEntryBulkSelection =
+			_blogsEntryBulkSelectionFactory.create(
+				_getParameterMap(actionRequest));
+
+		blogsEntryBulkSelection.forEach(
+			blogsEntry -> _deleteEntry(blogsEntry, moveToTrash, trashedModels));
+
+		if (moveToTrash && !trashedModels.isEmpty()) {
+			addDeleteSuccessData(
+				actionRequest,
+				HashMapBuilder.<String, Object>put(
+					"trashedModels", trashedModels
+				).build());
+		}
+	}
+
+	private void _deleteEntry(
+		BlogsEntry entry, boolean moveToTrash,
+		List<TrashedModel> trashedModels) {
+
+		try {
+			if (moveToTrash) {
+				trashedModels.add(
+					_blogsEntryService.moveEntryToTrash(entry.getEntryId()));
+			}
+			else {
+				_blogsEntryService.deleteEntry(entry.getEntryId());
+			}
+		}
+		catch (PortalException portalException) {
+			ReflectionUtil.throwException(portalException);
+		}
+	}
+
+	private Map<String, String[]> _getParameterMap(ActionRequest actionRequest)
+		throws Exception {
+
+		Map<String, String[]> parameterMap = new HashMap<>(
+			actionRequest.getParameterMap());
+
+		parameterMap.put(
+			"groupId",
+			new String[] {
+				String.valueOf(_portal.getScopeGroupId(actionRequest))
+			});
+
+		return parameterMap;
+	}
+
+	private String _getSaveAndContinueRedirect(
 			ActionRequest actionRequest, BlogsEntry entry, String redirect)
 		throws Exception {
 
@@ -336,7 +344,7 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 		return portletURL.toString();
 	}
 
-	protected void restoreTrashEntries(ActionRequest actionRequest)
+	private void _restoreTrashEntries(ActionRequest actionRequest)
 		throws Exception {
 
 		long[] restoreTrashEntryIds = StringUtil.split(
@@ -347,21 +355,82 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
-	protected void subscribe(ActionRequest actionRequest) throws Exception {
+	private void _sendAddRedirect(
+			ActionRequest actionRequest, ActionResponse actionResponse,
+			long entryId)
+		throws Exception {
+
+		String redirect = ParamUtil.getString(actionRequest, "redirect");
+
+		String portletResource = _http.getParameter(
+			redirect, "portletResource", false);
+
+		if (Validator.isNotNull(portletResource)) {
+			String namespace = _portal.getPortletNamespace(portletResource);
+
+			redirect = _http.addParameter(
+				redirect, namespace + "className", BlogsEntry.class.getName());
+			redirect = _http.addParameter(
+				redirect, namespace + "classPK", entryId);
+		}
+
+		sendRedirect(
+			actionRequest, actionResponse, _portal.escapeRedirect(redirect));
+	}
+
+	private void _sendDraftRedirect(
+			ActionRequest actionRequest, ActionResponse actionResponse,
+			BlogsEntry entry)
+		throws Exception {
+
+		String redirect = ParamUtil.getString(actionRequest, "redirect");
+
+		sendRedirect(
+			actionRequest, actionResponse,
+			_getSaveAndContinueRedirect(actionRequest, entry, redirect));
+	}
+
+	private void _sendUpdateRedirect(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
+
+		String redirect = ParamUtil.getString(actionRequest, "redirect");
+
+		String namespace = actionResponse.getNamespace();
+
+		redirect = _http.setParameter(
+			redirect, namespace + "redirectToLastFriendlyURL", false);
+
+		sendRedirect(
+			actionRequest, actionResponse, _portal.escapeRedirect(redirect));
+	}
+
+	private void _subscribe(ActionRequest actionRequest) throws Exception {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		_blogsEntryService.subscribe(themeDisplay.getScopeGroupId());
 	}
 
-	protected void unsubscribe(ActionRequest actionRequest) throws Exception {
+	private void _unsubscribe(ActionRequest actionRequest) throws Exception {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		_blogsEntryService.unsubscribe(themeDisplay.getScopeGroupId());
 	}
 
-	protected BlogsEntry updateEntry(ActionRequest actionRequest)
+	private String _updateContent(
+			BlogsEntry entry, String content, ThemeDisplay themeDisplay)
+		throws Exception {
+
+		return _attachmentContentUpdater.updateContent(
+			content, ContentTypes.TEXT_HTML,
+			tempFileEntry -> _blogsEntryLocalService.addAttachmentFileEntry(
+				entry, themeDisplay.getUserId(), tempFileEntry.getTitle(),
+				tempFileEntry.getMimeType(), tempFileEntry.getContentStream()));
+	}
+
+	private BlogsEntry _updateEntry(ActionRequest actionRequest)
 		throws Exception {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
@@ -520,7 +589,7 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 				themeDisplay.getUserId(), entry.getGroupId(),
 				entry.getEntryId(), coverImageImageSelector);
 
-			PortletFileRepositoryUtil.deletePortletFileEntry(
+			_portletFileRepository.deletePortletFileEntry(
 				coverImageFileEntryId);
 		}
 
@@ -529,7 +598,7 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 				themeDisplay.getUserId(), entry.getGroupId(),
 				entry.getEntryId(), smallImageImageSelector);
 
-			PortletFileRepositoryUtil.deletePortletFileEntry(
+			_portletFileRepository.deletePortletFileEntry(
 				smallImageFileEntryId);
 		}
 
@@ -547,17 +616,6 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 		return entry;
 	}
 
-	private String _updateContent(
-			BlogsEntry entry, String content, ThemeDisplay themeDisplay)
-		throws PortalException {
-
-		return _attachmentContentUpdater.updateContent(
-			content, ContentTypes.TEXT_HTML,
-			tempFileEntry -> _blogsEntryLocalService.addAttachmentFileEntry(
-				entry, themeDisplay.getUserId(), tempFileEntry.getTitle(),
-				tempFileEntry.getMimeType(), tempFileEntry.getContentStream()));
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		EditEntryMVCActionCommand.class);
 
@@ -573,6 +631,9 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 	private AttachmentContentUpdater _attachmentContentUpdater;
 
 	@Reference
+	private BlogsEntryBulkSelectionFactory _blogsEntryBulkSelectionFactory;
+
+	@Reference
 	private BlogsEntryLocalService _blogsEntryLocalService;
 
 	@Reference
@@ -585,13 +646,16 @@ public class EditEntryMVCActionCommand extends BaseMVCActionCommand {
 	private Portal _portal;
 
 	@Reference
+	private PortletFileRepository _portletFileRepository;
+
+	@Reference
 	private TrashEntryService _trashEntryService;
 
 	private class UpdateEntryCallable implements Callable<BlogsEntry> {
 
 		@Override
 		public BlogsEntry call() throws Exception {
-			return updateEntry(_actionRequest);
+			return _updateEntry(_actionRequest);
 		}
 
 		private UpdateEntryCallable(ActionRequest actionRequest) {

@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class SelectionScope {
+public class SelectionScope implements Cloneable {
+
+	public static SelectionScope toDTO(String json) {
+		return SelectionScopeSerDes.toDTO(json);
+	}
 
 	public Long getFolderId() {
 		return folderId;
@@ -90,6 +94,11 @@ public class SelectionScope {
 	}
 
 	protected Boolean selectAll;
+
+	@Override
+	public SelectionScope clone() throws CloneNotSupportedException {
+		return (SelectionScope)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

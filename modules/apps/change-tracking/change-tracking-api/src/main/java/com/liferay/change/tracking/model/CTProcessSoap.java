@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * This class is used by SOAP remote services.
+ * This class is used by SOAP remote services, specifically {@link com.liferay.change.tracking.service.http.CTProcessServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class CTProcessSoap implements Serializable {
 
 	public static CTProcessSoap toSoapModel(CTProcess model) {
 		CTProcessSoap soapModel = new CTProcessSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setCtProcessId(model.getCtProcessId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
@@ -93,6 +93,14 @@ public class CTProcessSoap implements Serializable {
 		setCtProcessId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
 	public long getCtProcessId() {
 		return _ctProcessId;
 	}
@@ -141,6 +149,7 @@ public class CTProcessSoap implements Serializable {
 		_backgroundTaskId = backgroundTaskId;
 	}
 
+	private long _mvccVersion;
 	private long _ctProcessId;
 	private long _companyId;
 	private long _userId;

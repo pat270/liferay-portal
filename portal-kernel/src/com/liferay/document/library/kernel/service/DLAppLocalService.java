@@ -15,6 +15,7 @@
 package com.liferay.document.library.kernel.service;
 
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -42,6 +43,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLAppLocalServiceUtil
  * @generated
  */
+@CTAware
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -52,7 +54,7 @@ public interface DLAppLocalService extends BaseLocalService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DLAppLocalServiceUtil} to access the dl app local service. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLAppLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLAppLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the dl app local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link DLAppLocalServiceUtil} if injection and service tracking are not available.
 	 */
 	public FileEntry addFileEntry(
 			long userId, long repositoryId, long folderId,
@@ -158,7 +160,7 @@ public interface DLAppLocalService extends BaseLocalService {
 	 </code>)
 	 * @param description the file's description
 	 * @param changeLog the file's version change log
-	 * @param is the file's data (optionally <code>null</code>)
+	 * @param inputStream the file's data (optionally <code>null</code>)
 	 * @param size the file's size (optionally <code>0</code>)
 	 * @param serviceContext the service context to be applied. Can set the
 	 asset category IDs, asset tag names, and expando bridge
@@ -172,8 +174,8 @@ public interface DLAppLocalService extends BaseLocalService {
 	public FileEntry addFileEntry(
 			long userId, long repositoryId, long folderId,
 			String sourceFileName, String mimeType, String title,
-			String description, String changeLog, InputStream is, long size,
-			ServiceContext serviceContext)
+			String description, String changeLog, InputStream inputStream,
+			long size, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -233,28 +235,6 @@ public interface DLAppLocalService extends BaseLocalService {
 	 * @throws PortalException if a portal exception occurred
 	 */
 	public void deleteFileEntry(long fileEntryId) throws PortalException;
-
-	/**
-	 * Deletes the file ranks associated to a given file entry. This method is
-	 * only supported by the Liferay repository.
-	 *
-	 * @param fileEntryId the primary key of the file entry
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 com.liferay.document.library.file.rank.service.DLFileRankLocalService#deleteFileRanksByFileEntryId}
-	 */
-	@Deprecated
-	public void deleteFileRanksByFileEntryId(long fileEntryId);
-
-	/**
-	 * Deletes the file ranks associated to a given user. This method is only
-	 * supported by the Liferay repository.
-	 *
-	 * @param userId the primary key of the user
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 com.liferay.document.library.file.rank.service.DLFileRankLocalService#deleteFileRanksByUserId}
-	 */
-	@Deprecated
-	public void deleteFileRanksByUserId(long userId);
 
 	/**
 	 * Deletes the file shortcut. This method is only supported by the Liferay
@@ -489,43 +469,6 @@ public interface DLAppLocalService extends BaseLocalService {
 		throws PortalException;
 
 	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, long, String, String, String, String,
-	 String, DLVersionNumberIncrease, byte[], ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, byte[] bytes, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, long, String, String, String, String,
-	 String, DLVersionNumberIncrease, File, ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #updateFileEntry(long, long, String, String, String, String,
-	 String, boolean, InputStream, long, ServiceContext)}
-	 */
-	@Deprecated
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
 	 * Updates a file entry and associated metadata based on a byte array
 	 * object. If the file data is <code>null</code>, then only the associated
 	 * metadata (i.e., <code>title</code>, <code>description</code>, and
@@ -637,7 +580,7 @@ public interface DLAppLocalService extends BaseLocalService {
 	 <code>null</code>)
 	 * @param dlVersionNumberIncrease the kind of version number increase to
 	 apply for these changes.
-	 * @param is the file's data (optionally <code>null</code>)
+	 * @param inputStream the file's data (optionally <code>null</code>)
 	 * @param size the file's size (optionally <code>0</code>)
 	 * @param serviceContext the service context to be applied. Can set the
 	 asset category IDs, asset tag names, and expando bridge
@@ -651,8 +594,8 @@ public interface DLAppLocalService extends BaseLocalService {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -685,15 +628,6 @@ public interface DLAppLocalService extends BaseLocalService {
 	 */
 	public void updateFileShortcuts(
 			long oldToFileEntryId, long newToFileEntryId)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #updateFileShortcuts(long, long)}
-	 */
-	@Deprecated
-	public void updateFileShortcuts(
-			long toRepositoryId, long oldToFileEntryId, long newToFileEntryId)
 		throws PortalException;
 
 	/**

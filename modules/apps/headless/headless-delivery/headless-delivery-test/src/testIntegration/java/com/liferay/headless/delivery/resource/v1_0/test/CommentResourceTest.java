@@ -17,16 +17,16 @@ package com.liferay.headless.delivery.resource.v1_0.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalServiceUtil;
+import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.headless.delivery.client.dto.v1_0.Comment;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portlet.documentlibrary.util.test.DLAppTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HtmlUtil;
 
 import java.util.Objects;
 
@@ -53,10 +53,15 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 	}
 
 	@Override
+	protected String[] getIgnoredEntityFieldNames() {
+		return new String[] {"creatorId"};
+	}
+
+	@Override
 	protected Comment testDeleteComment_addComment() throws Exception {
 		BlogsEntry blogsEntry = _addBlogsEntry();
 
-		return invokePostBlogPostingComment(
+		return commentResource.postBlogPostingComment(
 			blogsEntry.getEntryId(), randomComment());
 	}
 
@@ -73,7 +78,7 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 	protected Comment testGetComment_addComment() throws Exception {
 		BlogsEntry blogsEntry = _addBlogsEntry();
 
-		return invokePostBlogPostingComment(
+		return commentResource.postBlogPostingComment(
 			blogsEntry.getEntryId(), randomComment());
 	}
 
@@ -83,7 +88,7 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 
 		BlogsEntry blogsEntry = _addBlogsEntry();
 
-		Comment comment = invokePostBlogPostingComment(
+		Comment comment = commentResource.postBlogPostingComment(
 			blogsEntry.getEntryId(), randomComment());
 
 		return comment.getId();
@@ -108,31 +113,36 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 	}
 
 	@Override
+	protected Comment testGraphQLComment_addComment() throws Exception {
+		return testGetComment_addComment();
+	}
+
+	@Override
 	protected Comment testPutComment_addComment() throws Exception {
 		BlogsEntry blogsEntry = _addBlogsEntry();
 
-		Comment comment = invokePostBlogPostingComment(
+		Comment comment = commentResource.postBlogPostingComment(
 			blogsEntry.getEntryId(), randomComment());
 
-		return invokePostCommentComment(comment.getId(), randomComment());
+		return commentResource.postCommentComment(
+			comment.getId(), randomComment());
 	}
 
-	private BlogsEntry _addBlogsEntry() throws PortalException {
+	private BlogsEntry _addBlogsEntry() throws Exception {
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setScopeGroupId(testGroup.getGroupId());
 
 		return BlogsEntryLocalServiceUtil.addEntry(
-			UserLocalServiceUtil.getDefaultUserId(testGroup.getCompanyId()),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
-			serviceContext);
+			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), serviceContext);
 	}
 
 	private FileEntry _addFileEntry() throws Exception {
 		return DLAppTestUtil.addFileEntryWithWorkflow(
-			UserLocalServiceUtil.getDefaultUserId(testGroup.getCompanyId()),
-			testGroup.getGroupId(), 0, RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), true, new ServiceContext());
+			TestPropsValues.getUserId(), testGroup.getGroupId(), 0,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(), true,
+			new ServiceContext());
 	}
 
 	private JournalArticle _addJournalArticle() throws Exception {
@@ -140,7 +150,7 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 	}
 
 	private String _formatHTML(Comment comment) {
-		String text = comment.getText();
+		String text = HtmlUtil.stripHtml(comment.getText());
 
 		if (!text.startsWith("<p>")) {
 			return StringBundler.concat("<p>", text, "</p>");

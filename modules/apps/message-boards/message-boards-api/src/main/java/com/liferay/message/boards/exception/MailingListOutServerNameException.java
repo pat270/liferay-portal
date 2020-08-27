@@ -16,12 +16,9 @@ package com.liferay.message.boards.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class MailingListOutServerNameException extends PortalException {
 
 	public MailingListOutServerNameException() {
@@ -31,12 +28,12 @@ public class MailingListOutServerNameException extends PortalException {
 		super(msg);
 	}
 
-	public MailingListOutServerNameException(String msg, Throwable cause) {
-		super(msg, cause);
+	public MailingListOutServerNameException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public MailingListOutServerNameException(Throwable cause) {
-		super(cause);
+	public MailingListOutServerNameException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

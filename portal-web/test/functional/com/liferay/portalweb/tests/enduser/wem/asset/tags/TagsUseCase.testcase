@@ -1,0 +1,649 @@
+@component-name = "portal-tags"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Tags";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Tag.tearDownCP();
+
+			Site.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AddAutoAssertionTagViaBlogs {
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		for (var tagName : list "tag name 1,tag name 2,tag name 3") {
+			JSONAssettag.addTag(
+				groupName = "Site Name",
+				tagName = "${tagName}");
+		}
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		Tag.addAutoAssertionTagViaBlogsPG(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagName = "tag name 3");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title");
+
+		BlogsEntry.viewTagPG(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagName = "tag name 3");
+	}
+
+	@priority = "4"
+	test AddFrontPageTag {
+		property testray.component.names = "Tags,Wiki";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Wiki");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		WikiPage.addFrontPagePG(
+			pageAddTag = "true",
+			tagNameList = "wiki tag name",
+			wikiPageContent = "Wiki FrontPage Content");
+	}
+
+	@priority = "4"
+	test AddMultipleTagsViaBlogs {
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		Blogs.addEntryWithTags(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagNameList = "tag name 1,tag name 2,tag name 3");
+
+		for (var tagName : list "tag name 1,tag name 2,tag name 3") {
+			Navigator.gotoSitePage(
+				pageName = "Page Name",
+				siteName = "Site Name");
+
+			BlogsNavigator.gotoEntryPG(
+				entryContent = "Entry Content",
+				entryTitle = "Entry Title");
+
+			BlogsEntry.viewTagPG(
+				entryContent = "Entry Content",
+				entryTitle = "Entry Title",
+				tagName = "${tagName}");
+		}
+	}
+
+	@priority = "5"
+	test AddSelectTagViaBlogs {
+		property portal.acceptance = "true";
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		for (var tagName : list "tag1,tag2,tag3") {
+			JSONAssettag.addTag(
+				groupName = "Site Name",
+				tagName = "${tagName}");
+		}
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		Blogs.addEntryWithTags(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagNameList = "tag1,tag3");
+
+		for (var tagName : list "tag1,tag3") {
+			Navigator.gotoSitePage(
+				pageName = "Page Name",
+				siteName = "Site Name");
+
+			var key_entryTitle = "Entry Title";
+
+			AssertClick(
+				locator1 = "BlogsEntry#TITLE_LINK",
+				value1 = "Entry Title");
+
+			BlogsEntry.viewTagPG(
+				entryTitle = "Entry Title",
+				tagName = "${tagName}");
+		}
+	}
+
+	@priority = "5"
+	test AddTagViaBlogs {
+		property portal.acceptance = "true";
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		Blogs.addEntryWithTag(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			tagName = "tag name");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title");
+
+		BlogsEntry.viewTagPG(
+			entryTitle = "Entry Title",
+			tagName = "tag name");
+	}
+
+	@priority = "5"
+	test DisplayTagCloud {
+		property portal.acceptance = "true";
+		property testray.component.names = "Tags";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Tags Navigation");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureFlaggableSettingsPG(
+			showAssetCount = "true",
+			showUnusedTags = "true");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureDisplayStylePG(displayTemplate = "Cloud");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Asset Publisher");
+
+		for (var tagName : list "first tag,second tag,third tag") {
+			JSONAssettag.addTag(
+				groupName = "Guest",
+				tagName = "${tagName}");
+		}
+
+		var serviceContext = '''{"assetTagNames": ["first tag","second tag"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content",
+			groupName = "Guest",
+			serviceContext = "${serviceContext}",
+			title = "Web Content Title");
+
+		var serviceContext = '''{"assetTagNames": ["first tag"]}''';
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			serviceContext = "${serviceContext}",
+			sourceFileName = "Document_1.txt");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "first tag (2)",
+			tagPopularityLevel = "6");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "second tag (1)",
+			tagPopularityLevel = "3");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "third tag (0)",
+			tagPopularityLevel = "1");
+	}
+
+	@priority = "3"
+	test DisplayTagUsageStatistics {
+		property testray.component.names = "Tags";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Tags Navigation");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureDisplayStylePG(displayTemplate = "Number");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureFlaggableSettingsPG(showAssetCount = "true");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Asset Publisher");
+
+		var serviceContext = '''{"assetTagNames": ["first tag","second tag"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content",
+			groupName = "Guest",
+			serviceContext = "${serviceContext}",
+			title = "Web Content Title");
+
+		var serviceContext = '''{"assetTagNames": ["first tag"]}''';
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			serviceContext = "${serviceContext}",
+			sourceFileName = "Document_1.txt");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.clickTagView(
+			tagAssetCount = "first tag (2)",
+			tagName = "first tag");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.clickTagView(
+			tagAssetCount = "second tag (1)",
+			tagName = "second tag");
+	}
+
+	@priority = "3"
+	test DisplayUnusedTags {
+		property testray.component.names = "Tags";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Tags Navigation");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		for (var tagName : list "tag name 1,tag name 2,tag name 3") {
+			JSONAssettag.addTag(
+				groupName = "Guest",
+				tagName = "${tagName}");
+		}
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureFlaggableSettingsPG(showUnusedTags = "true");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.viewDefaultPG(tagNameList = "tag name 1,tag name 2,tag name 3");
+	}
+
+	@priority = "3"
+	test RemoveSelectTagViaBlogs {
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		JSONBlog.addEntry(
+			assetTagNames = "tag name 1,tag name 2,tag name 3",
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			groupName = "Site Name");
+
+		for (var tagName : list "tag name 1,tag name 2,tag name 3") {
+			Navigator.gotoSitePage(
+				pageName = "Page Name",
+				siteName = "Site Name");
+
+			BlogsNavigator.gotoEntryPG(
+				entryContent = "Entry Content",
+				entryTitle = "Entry Title");
+
+			BlogsEntry.viewTagPG(
+				entryContent = "Entry Content",
+				entryTitle = "Entry Title",
+				tagName = "${tagName}");
+		}
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		BlogsNavigator.gotoEditPG(entryTitle = "Entry Title");
+
+		Panel.expandPanel(panel = "Categorization");
+
+		for (var tagName : list "tag name 1,tag name 3") {
+			AssetCategorization.removeTag(tagName = "${tagName}");
+		}
+
+		PortletEntry.publish();
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title");
+
+		AssertTextNotPresent(value1 = "tag name 1");
+
+		AssertTextNotPresent(value1 = "tag name 3");
+	}
+
+	@priority = "5"
+	test RemoveTagViaBlogs {
+		property portal.acceptance = "true";
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		JSONBlog.addEntry(
+			assetTagNames = "tag name 1,tag name 2,tag name 3",
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title",
+			groupName = "Site Name");
+
+		for (var tagName : list "tag name 1,tag name 2,tag name 3") {
+			Navigator.gotoSitePage(
+				pageName = "Page Name",
+				siteName = "Site Name");
+
+			BlogsNavigator.gotoEntryPG(
+				entryContent = "Entry Content",
+				entryTitle = "Entry Title");
+
+			BlogsEntry.viewTagPG(
+				entryContent = "Entry Content",
+				entryTitle = "Entry Title",
+				tagName = "${tagName}");
+		}
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		BlogsNavigator.gotoEditPG(entryTitle = "Entry Title");
+
+		Panel.expandPanel(panel = "Categorization");
+
+		AssetCategorization.removeTag(tagName = "tag name 1");
+
+		PortletEntry.publish();
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = "Entry Content",
+			entryTitle = "Entry Title");
+
+		AssertTextNotPresent(value1 = "tag name 1");
+	}
+
+	@priority = "3"
+	test SearchMultipleTagsViaBlogs {
+		property testray.component.names = "Blogs,Tags";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Page Name",
+			widgetName = "Blogs");
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name");
+
+		SitePages.addPublicPage(
+			pageName = "search",
+			pageTemplateName = "Search");
+
+		JSONBlog.addEntry(
+			assetTagNames = "blue",
+			entryContent = "Entry Content 1",
+			entryTitle = "Entry Title 1",
+			groupName = "Site Name");
+
+		JSONBlog.addEntry(
+			assetTagNames = "blue green",
+			entryContent = "Entry Content 2",
+			entryTitle = "Entry Title 2",
+			groupName = "Site Name");
+
+		JSONBlog.addEntry(
+			assetTagNames = "yellow",
+			entryContent = "Entry Content 3",
+			entryTitle = "Entry Title 3",
+			groupName = "Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Page Name",
+			siteName = "Site Name");
+
+		SearchPortlets.searchEmbedded(searchTerm = "blue");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Entry Title 1",
+			searchAssetType = "Blogs Entry");
+
+		SearchPortlets.searchEmbedded(searchTerm = "yellow");
+
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Entry Title 3",
+			searchAssetType = "Blogs Entry");
+	}
+
+	@priority = "5"
+	test ViewTagCloudDisplayConfiguration {
+		property portal.acceptance = "true";
+		property testray.component.names = "Tags";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tag Cloud Page");
+
+		Navigator.gotoPage(pageName = "Tag Cloud Page");
+
+		Portlet.addPG(portletName = "Tag Cloud");
+
+		Navigator.gotoPage(pageName = "Tag Cloud Page");
+
+		TagsNavigationPortlet.viewTagCloudConfiguration(displayTemplate = "Cloud");
+	}
+
+	@priority = "5"
+	test ViewTagCloudIncrease {
+		property portal.acceptance = "true";
+		property testray.component.names = "Tags";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Tags Navigation");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureFlaggableSettingsPG(
+			showAssetCount = "true",
+			showUnusedTags = "true");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.configureDisplayStylePG(displayTemplate = "Cloud");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Guest",
+			layoutName = "Tags Navigation Page",
+			widgetName = "Asset Publisher");
+
+		for (var tagName : list "first tag,second tag,third tag") {
+			JSONAssettag.addTag(
+				groupName = "Guest",
+				tagName = "${tagName}");
+		}
+
+		var serviceContext = '''{"assetTagNames": ["first tag","second tag"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content",
+			groupName = "Guest",
+			serviceContext = "${serviceContext}",
+			title = "Web Content Title");
+
+		var serviceContext = '''{"assetTagNames": ["first tag"]}''';
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			serviceContext = "${serviceContext}",
+			sourceFileName = "Document_1.txt");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "first tag (2)",
+			tagPopularityLevel = "6");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "second tag (1)",
+			tagPopularityLevel = "3");
+
+		var serviceContext = '''{"assetTagNames": ["first tag","second tag"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content2 Content",
+			groupName = "Guest",
+			serviceContext = "${serviceContext}",
+			title = "Web Content2 Title");
+
+		Navigator.gotoPage(pageName = "Tags Navigation Page");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "first tag (3)",
+			tagPopularityLevel = "6");
+
+		TagsNavigationPortlet.viewTagCloud(
+			tagName = "second tag (2)",
+			tagPopularityLevel = "4");
+	}
+
+}

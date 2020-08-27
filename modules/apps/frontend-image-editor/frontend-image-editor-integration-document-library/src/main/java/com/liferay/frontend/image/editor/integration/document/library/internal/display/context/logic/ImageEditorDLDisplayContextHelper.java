@@ -16,11 +16,11 @@ package com.liferay.frontend.image.editor.integration.document.library.internal.
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.util.DLURLHelper;
+import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.template.URLTemplateResource;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -83,11 +84,11 @@ public class ImageEditorDLDisplayContextHelper {
 
 			_fileEntry = fileEntry;
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			throw new SystemException(
 				"Unable to create image editor document library display " +
 					"context helper for file version " + fileVersion,
-				pe);
+				portalException);
 		}
 	}
 
@@ -218,8 +219,8 @@ public class ImageEditorDLDisplayContextHelper {
 		try {
 			imageEditorURL.setWindowState(LiferayWindowState.POP_UP);
 		}
-		catch (Exception e) {
-			throw new SystemException("Unable to set window state", e);
+		catch (Exception exception) {
+			throw new SystemException("Unable to set window state", exception);
 		}
 
 		LiferayPortletResponse liferayPortletResponse =
@@ -241,15 +242,15 @@ public class ImageEditorDLDisplayContextHelper {
 
 		sb.append(liferayPortletResponse.getNamespace());
 		sb.append("editWithImageEditor('");
-		sb.append(imageEditorURL.toString());
+		sb.append(HtmlUtil.escapeJS(imageEditorURL.toString()));
 		sb.append("', '");
-		sb.append(editURL.toString());
+		sb.append(HtmlUtil.escapeJS(editURL.toString()));
 		sb.append("', '");
-		sb.append(_fileEntry.getFileName());
+		sb.append(HtmlUtil.escapeJS(_fileEntry.getFileName()));
 		sb.append("', '");
-		sb.append(fileEntryPreviewURL);
+		sb.append(HtmlUtil.escapeJS(fileEntryPreviewURL));
 		sb.append("', '");
-		sb.append(_fileEntry.getMimeType());
+		sb.append(HtmlUtil.escapeJS(_fileEntry.getMimeType()));
 		sb.append("');");
 
 		return sb.toString();

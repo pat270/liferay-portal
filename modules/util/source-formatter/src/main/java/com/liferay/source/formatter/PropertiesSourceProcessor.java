@@ -25,13 +25,15 @@ public class PropertiesSourceProcessor extends BaseSourceProcessor {
 
 	@Override
 	protected List<String> doGetFileNames() throws IOException {
-		return getFileNames(new String[] {"**/docroot/dtd/**"}, getIncludes());
+		return getFileNames(
+			new String[] {"**/docroot/dtd/**", "**/lportal.properties"},
+			getIncludes());
 	}
 
 	@Override
 	protected String[] doGetIncludes() {
 		if (isPortalSource() || isSubrepository()) {
-			return new String[] {"**/*.properties"};
+			return _INCLUDES;
 		}
 
 		return new String[] {
@@ -40,5 +42,9 @@ public class PropertiesSourceProcessor extends BaseSourceProcessor {
 			"**/service.properties", "**/source-formatter.properties"
 		};
 	}
+
+	private static final String[] _INCLUDES = {
+		"**/*.properties", "**/*.prettierignore"
+	};
 
 }

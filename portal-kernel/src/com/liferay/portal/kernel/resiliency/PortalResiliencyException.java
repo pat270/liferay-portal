@@ -15,20 +15,22 @@
 package com.liferay.portal.kernel.resiliency;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
+@Deprecated
 public class PortalResiliencyException extends Exception {
 
 	public PortalResiliencyException(String message) {
 		super(message);
 	}
 
-	public PortalResiliencyException(String message, Throwable cause) {
-		super(message, cause);
+	public PortalResiliencyException(String message, Throwable throwable) {
+		super(message, throwable);
 	}
 
-	public PortalResiliencyException(Throwable cause) {
-		super(cause);
+	public PortalResiliencyException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

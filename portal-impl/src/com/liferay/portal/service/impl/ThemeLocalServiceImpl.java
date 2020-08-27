@@ -159,13 +159,13 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		themes = PluginUtil.restrictPlugins(themes, companyId, userId);
 
-		Iterator<Theme> itr = themes.iterator();
+		Iterator<Theme> iterator = themes.iterator();
 
-		while (itr.hasNext()) {
-			Theme theme = itr.next();
+		while (iterator.hasNext()) {
+			Theme theme = iterator.next();
 
 			if (!theme.isControlPanelTheme()) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -180,13 +180,13 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		themes = PluginUtil.restrictPlugins(themes, companyId, userId);
 
-		Iterator<Theme> itr = themes.iterator();
+		Iterator<Theme> iterator = themes.iterator();
 
-		while (itr.hasNext()) {
-			Theme theme = itr.next();
+		while (iterator.hasNext()) {
+			Theme theme = iterator.next();
 
 			if (!theme.isPageTheme() || !theme.isGroupAvailable(groupId)) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -280,13 +280,13 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 	public List<Theme> getWARThemes() {
 		List<Theme> themes = ListUtil.fromMapValues(_themes);
 
-		Iterator<Theme> itr = themes.iterator();
+		Iterator<Theme> iterator = themes.iterator();
 
-		while (itr.hasNext()) {
-			Theme theme = itr.next();
+		while (iterator.hasNext()) {
+			Theme theme = iterator.next();
 
 			if (!theme.isWARFile()) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -320,8 +320,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 						loadFromServletContext, xml, pluginPackage));
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		_themesPool.clear();
@@ -581,13 +581,13 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		Element rootElement = document.getRootElement();
 
-		Version portalVersion = _getVersion(ReleaseInfo.getVersion());
-
 		boolean compatible = false;
 
 		Element compatibilityElement = rootElement.element("compatibility");
 
 		if (compatibilityElement != null) {
+			Version portalVersion = _getVersion(ReleaseInfo.getVersion());
+
 			List<Element> versionElements = compatibilityElement.elements(
 				"version");
 
@@ -848,7 +848,9 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				}
 			}
 
-			_setSpriteImages(servletContext, theme, imagesPath);
+			if (PropsValues.SPRITE_ENABLED) {
+				_setSpriteImages(servletContext, theme, imagesPath);
+			}
 
 			if (!_themes.containsKey(themeId)) {
 				_themes.put(themeId, theme);
@@ -916,13 +918,9 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			return;
 		}
 
-		String contextPath = servletContext.getContextPath();
-
-		spriteFileName = contextPath.concat(
-			SpriteProcessor.PATH
-		).concat(
-			spriteFileName
-		);
+		spriteFileName = StringBundler.concat(
+			servletContext.getContextPath(), SpriteProcessor.PATH,
+			spriteFileName);
 
 		theme.setSpriteImages(spriteFileName, spriteProperties);
 	}

@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import java.io.Serializable;
 
 import java.util.List;
-import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -53,7 +52,7 @@ public interface StagingService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link StagingServiceUtil} to access the staging remote service. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.StagingServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.StagingServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the staging remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link StagingServiceUtil} if injection and service tracking are not available.
 	 */
 	public void cleanUpStagingRequest(long stagingRequestId)
 		throws PortalException;
@@ -78,15 +77,6 @@ public interface StagingService extends BaseService {
 			List<Serializable> arguments)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
-	 */
-	@Deprecated
-	public MissingReferences publishStagingRequest(
-			long stagingRequestId, boolean privateLayout,
-			Map<String, String[]> parameterMap)
-		throws PortalException;
-
 	public MissingReferences publishStagingRequest(
 			long stagingRequestId,
 			ExportImportConfiguration exportImportConfiguration)
@@ -94,16 +84,6 @@ public interface StagingService extends BaseService {
 
 	public void updateStagingRequest(
 			long stagingRequestId, String fileName, byte[] bytes)
-		throws PortalException;
-
-	/**
-	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
-	 #publishStagingRequest(long, boolean, Map)}
-	 */
-	@Deprecated
-	public MissingReferences validateStagingRequest(
-			long stagingRequestId, boolean privateLayout,
-			Map<String, String[]> parameterMap)
 		throws PortalException;
 
 }

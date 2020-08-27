@@ -35,18 +35,9 @@ public class MethodParameter {
 		try {
 			_genericTypes = _getGenericTypes(classLoader, signatures);
 		}
-		catch (ClassNotFoundException cnfe) {
-			throw new IllegalArgumentException(cnfe);
+		catch (ClassNotFoundException classNotFoundException) {
+			throw new IllegalArgumentException(classNotFoundException);
 		}
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #MethodParameter(ClassLoader, String, String, Class)}
-	 */
-	@Deprecated
-	public MethodParameter(String name, String signatures, Class<?> type) {
-		this(_getContextClassLoader(), name, signatures, type);
 	}
 
 	public Class<?>[] getGenericTypes() {
@@ -59,12 +50,6 @@ public class MethodParameter {
 
 	public Class<?> getType() {
 		return _type;
-	}
-
-	private static ClassLoader _getContextClassLoader() {
-		Thread currentThread = Thread.currentThread();
-
-		return currentThread.getContextClassLoader();
 	}
 
 	private String _getClassName(String signature) {
@@ -80,10 +65,12 @@ public class MethodParameter {
 		}
 		else if (c == 'L') {
 			className = className.substring(1, className.length() - 1);
-			className = className.replace(CharPool.SLASH, CharPool.PERIOD);
+			className = StringUtil.replace(
+				className, CharPool.SLASH, CharPool.PERIOD);
 		}
 		else if (c == '[') {
-			className = className.replace(CharPool.SLASH, CharPool.PERIOD);
+			className = StringUtil.replace(
+				className, CharPool.SLASH, CharPool.PERIOD);
 		}
 		else {
 			throw new IllegalArgumentException(
@@ -117,7 +104,7 @@ public class MethodParameter {
 			try {
 				return Class.forName(className, true, contextClassLoader);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 			}
 		}
 

@@ -15,9 +15,9 @@
 package com.liferay.marketplace.app.manager.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.marketplace.app.manager.web.internal.constants.BundleStateConstants;
 import com.liferay.marketplace.app.manager.web.internal.util.AppDisplay;
 import com.liferay.marketplace.app.manager.web.internal.util.AppDisplayFactoryUtil;
@@ -30,13 +30,12 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.util.ListUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
-
-import org.osgi.framework.Bundle;
 
 /**
  * @author Pei-Jung Lan
@@ -45,16 +44,17 @@ public class ViewAppsManagerManagementToolbarDisplayContext
 	extends BaseAppManagerManagementToolbarDisplayContext {
 
 	public ViewAppsManagerManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest) {
+		LiferayPortletResponse liferayPortletResponse) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest);
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse);
 
 		_searchContainer = _createSearchContainer(liferayPortletRequest);
 	}
 
+	@Override
 	public String getClearResultsURL() {
 		PortletURL removeLabelURL = getPortletURL();
 
@@ -66,84 +66,66 @@ public class ViewAppsManagerManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getCategoryDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(request, "categories"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getStatusDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(request, "status"));
-					});
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getOrderByDropdownItems());
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(request, "order-by"));
-					});
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(getCategoryDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(request, "categories"));
 			}
-		};
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(getStatusDropdownItems());
+				dropdownGroupItem.setLabel(LanguageUtil.get(request, "status"));
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(getOrderByDropdownItems());
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(request, "order-by"));
+			}
+		).build();
 	}
 
+	@Override
 	public List<LabelItem> getFilterLabelItems() {
-		return new LabelItemList() {
-			{
-				String category = getCategory();
+		String category = getCategory();
+		String state = getState();
 
-				if (!category.equals("all-categories")) {
-					add(
-						labelItem -> {
-							PortletURL removeLabelURL = getPortletURL();
+		return LabelItemListBuilder.add(
+			() -> !category.equals("all-categories"),
+			labelItem -> {
+				PortletURL removeLabelURL = getPortletURL();
 
-							removeLabelURL.setParameter(
-								"category", (String)null);
+				removeLabelURL.setParameter("category", (String)null);
 
-							labelItem.putData(
-								"removeLabelURL", removeLabelURL.toString());
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
 
-							labelItem.setCloseable(true);
+				labelItem.setCloseable(true);
 
-							String label = String.format(
-								"%s: %s", LanguageUtil.get(request, "category"),
-								LanguageUtil.get(request, category));
+				String label = String.format(
+					"%s: %s", LanguageUtil.get(request, "category"),
+					LanguageUtil.get(request, category));
 
-							labelItem.setLabel(label);
-						});
-				}
-
-				String state = getState();
-
-				if (!state.equals("all-statuses")) {
-					add(
-						labelItem -> {
-							PortletURL removeLabelURL = getPortletURL();
-
-							removeLabelURL.setParameter("state", (String)null);
-
-							labelItem.putData(
-								"removeLabelURL", removeLabelURL.toString());
-
-							labelItem.setCloseable(true);
-
-							String label = String.format(
-								"%s: %s", LanguageUtil.get(request, "state"),
-								LanguageUtil.get(request, state));
-
-							labelItem.setLabel(label);
-						});
-				}
+				labelItem.setLabel(label);
 			}
-		};
+		).add(
+			() -> !state.equals("all-statuses"),
+			labelItem -> {
+				PortletURL removeLabelURL = getPortletURL();
+
+				removeLabelURL.setParameter("state", (String)null);
+
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
+
+				labelItem.setCloseable(true);
+
+				String label = String.format(
+					"%s: %s", LanguageUtil.get(request, "state"),
+					LanguageUtil.get(request, state));
+
+				labelItem.setLabel(label);
+			}
+		).build();
 	}
 
 	@Override
@@ -172,14 +154,14 @@ public class ViewAppsManagerManagementToolbarDisplayContext
 	}
 
 	@Override
-	public SearchContainer getSearchContainer() {
+	public SearchContainer<Object> getSearchContainer() {
 		return _searchContainer;
 	}
 
-	private SearchContainer _createSearchContainer(
+	private SearchContainer<Object> _createSearchContainer(
 		LiferayPortletRequest liferayPortletRequest) {
 
-		SearchContainer searchContainer = new SearchContainer(
+		SearchContainer<Object> searchContainer = new SearchContainer(
 			liferayPortletRequest, getPortletURL(), null, "no-apps-were-found");
 
 		searchContainer.setOrderByCol(getOrderByCol());
@@ -191,10 +173,9 @@ public class ViewAppsManagerManagementToolbarDisplayContext
 			category = StringPool.BLANK;
 		}
 
-		List<Bundle> bundles = BundleManagerUtil.getBundles();
-
 		List<AppDisplay> appDisplays = AppDisplayFactoryUtil.getAppDisplays(
-			bundles, category, BundleStateConstants.getState(getState()),
+			BundleManagerUtil.getBundles(), category,
+			BundleStateConstants.getState(getState()),
 			liferayPortletRequest.getLocale());
 
 		appDisplays = ListUtil.sort(
@@ -206,14 +187,16 @@ public class ViewAppsManagerManagementToolbarDisplayContext
 			end = appDisplays.size();
 		}
 
+		List<Object> results = new ArrayList<>(appDisplays);
+
 		searchContainer.setResults(
-			appDisplays.subList(searchContainer.getStart(), end));
+			results.subList(searchContainer.getStart(), end));
 
 		searchContainer.setTotal(appDisplays.size());
 
 		return searchContainer;
 	}
 
-	private final SearchContainer _searchContainer;
+	private final SearchContainer<Object> _searchContainer;
 
 }

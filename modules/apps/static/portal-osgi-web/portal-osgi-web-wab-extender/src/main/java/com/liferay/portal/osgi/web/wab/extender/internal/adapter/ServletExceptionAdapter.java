@@ -63,8 +63,8 @@ public class ServletExceptionAdapter implements Servlet {
 				new ServletConfigWrapper(
 					servletConfig, _modifiableServletContext));
 		}
-		catch (Exception e) {
-			_exception = e;
+		catch (Exception exception) {
+			_exception = exception;
 		}
 	}
 
@@ -94,7 +94,7 @@ public class ServletExceptionAdapter implements Servlet {
 			return _wrappedServletConfig.getInitParameter(name);
 		}
 
-		public Enumeration getInitParameterNames() {
+		public Enumeration<String> getInitParameterNames() {
 			return _wrappedServletConfig.getInitParameterNames();
 		}
 

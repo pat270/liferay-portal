@@ -14,6 +14,7 @@
 
 package com.liferay.portal.template.freemarker.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.template.freemarker.configuration.FreeMarkerEngineConfiguration;
@@ -74,11 +75,12 @@ public class LiferayTemplateClassResolverTest {
 
 			Assert.fail();
 		}
-		catch (TemplateException te) {
-			ClassNotFoundException cnfe = (ClassNotFoundException)te.getCause();
+		catch (TemplateException templateException) {
+			ClassNotFoundException classNotFoundException =
+				(ClassNotFoundException)templateException.getCause();
 
 			Assert.assertEquals(
-				"Unable to load class invalidClass", cnfe.getMessage());
+				"invalidClass", classNotFoundException.getMessage());
 		}
 	}
 
@@ -146,11 +148,12 @@ public class LiferayTemplateClassResolverTest {
 
 			Assert.fail();
 		}
-		catch (TemplateException te) {
+		catch (TemplateException templateException) {
 			Assert.assertEquals(
-				"Instantiating " + className + " is not allowed in the " +
-					"template for security reasons",
-				te.getMessage());
+				StringBundler.concat(
+					"Instantiating ", className, " is not allowed in the ",
+					"template for security reasons"),
+				templateException.getMessage());
 		}
 	}
 

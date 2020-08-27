@@ -1,6 +1,10 @@
 apply plugin: "com.liferay.js.transpiler"
 apply plugin: "java"
 
+node {
+	useNpm = true
+}
+
 task runGradleTest
 
 dependencies {

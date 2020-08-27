@@ -14,21 +14,17 @@
 
 package com.liferay.portlet;
 
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.servlet.ServletInputStreamAdapter;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.internal.PortletRequestDispatcherImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import java.lang.reflect.Constructor;
@@ -221,10 +217,8 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 
 			ClientDataRequest clientDataRequest = _getClientDataRequest();
 
-			InputStream portletInputStream =
-				clientDataRequest.getPortletInputStream();
-
-			return new ServletInputStreamAdapter(portletInputStream);
+			return new ServletInputStreamAdapter(
+				clientDataRequest.getPortletInputStream());
 		}
 
 		return null;
@@ -436,18 +430,7 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 			return null;
 		}
 
-		session = new PortletServletSession(session, _liferayPortletRequest);
-
-		if (ServerDetector.isJetty()) {
-			try {
-				session = wrapJettySession(session);
-			}
-			catch (Exception e) {
-				_log.error(e, e);
-			}
-		}
-
-		return session;
+		return new PortletServletSession(session, _liferayPortletRequest);
 	}
 
 	@Override
@@ -486,8 +469,8 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 	}
 
 	@Override
-	public void setAttribute(String name, Object obj) {
-		_portletRequest.setAttribute(name, obj);
+	public void setAttribute(String name, Object object) {
+		_portletRequest.setAttribute(name, object);
 	}
 
 	@Override
@@ -503,6 +486,10 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 		}
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	protected HttpSession wrapJettySession(HttpSession session)
 		throws Exception {
 
@@ -528,9 +515,6 @@ public class PortletServletRequest extends HttpServletRequestWrapper {
 	private EventRequest _getEventRequest() {
 		return (EventRequest)_portletRequest;
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		PortletServletRequest.class);
 
 	private final HttpServletRequest _httpServletRequest;
 	private final boolean _include;

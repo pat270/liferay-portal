@@ -14,9 +14,10 @@
 
 package com.liferay.document.library.kernel.service;
 
+import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link DLFileEntryMetadataLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileEntryMetadataLocalService
  * @generated
  */
-@ProviderType
 public class DLFileEntryMetadataLocalServiceWrapper
 	implements DLFileEntryMetadataLocalService,
 			   ServiceWrapper<DLFileEntryMetadataLocalService> {
@@ -39,14 +39,16 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	/**
 	 * Adds the document library file entry metadata to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryMetadataLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlFileEntryMetadata the document library file entry metadata
 	 * @return the document library file entry metadata that was added
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		addDLFileEntryMetadata(
-			com.liferay.document.library.kernel.model.DLFileEntryMetadata
-				dlFileEntryMetadata) {
+	public DLFileEntryMetadata addDLFileEntryMetadata(
+		DLFileEntryMetadata dlFileEntryMetadata) {
 
 		return _dlFileEntryMetadataLocalService.addDLFileEntryMetadata(
 			dlFileEntryMetadata);
@@ -59,24 +61,38 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * @return the new document library file entry metadata
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		createDLFileEntryMetadata(long fileEntryMetadataId) {
+	public DLFileEntryMetadata createDLFileEntryMetadata(
+		long fileEntryMetadataId) {
 
 		return _dlFileEntryMetadataLocalService.createDLFileEntryMetadata(
 			fileEntryMetadataId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _dlFileEntryMetadataLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the document library file entry metadata from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryMetadataLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param dlFileEntryMetadata the document library file entry metadata
 	 * @return the document library file entry metadata that was removed
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		deleteDLFileEntryMetadata(
-			com.liferay.document.library.kernel.model.DLFileEntryMetadata
-				dlFileEntryMetadata) {
+	public DLFileEntryMetadata deleteDLFileEntryMetadata(
+		DLFileEntryMetadata dlFileEntryMetadata) {
 
 		return _dlFileEntryMetadataLocalService.deleteDLFileEntryMetadata(
 			dlFileEntryMetadata);
@@ -85,13 +101,17 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	/**
 	 * Deletes the document library file entry metadata with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryMetadataLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param fileEntryMetadataId the primary key of the document library file entry metadata
 	 * @return the document library file entry metadata that was removed
 	 * @throws PortalException if a document library file entry metadata with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-			deleteDLFileEntryMetadata(long fileEntryMetadataId)
+	public DLFileEntryMetadata deleteDLFileEntryMetadata(
+			long fileEntryMetadataId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryMetadataLocalService.deleteDLFileEntryMetadata(
@@ -99,9 +119,7 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
-	public void deleteFileEntryMetadata(
-			com.liferay.document.library.kernel.model.DLFileEntryMetadata
-				fileEntryMetadata)
+	public void deleteFileEntryMetadata(DLFileEntryMetadata fileEntryMetadata)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		_dlFileEntryMetadataLocalService.deleteFileEntryMetadata(
@@ -136,6 +154,11 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _dlFileEntryMetadataLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _dlFileEntryMetadataLocalService.dynamicQuery();
 	}
@@ -157,7 +180,7 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -178,7 +201,7 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -227,8 +250,8 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		fetchDLFileEntryMetadata(long fileEntryMetadataId) {
+	public DLFileEntryMetadata fetchDLFileEntryMetadata(
+		long fileEntryMetadataId) {
 
 		return _dlFileEntryMetadataLocalService.fetchDLFileEntryMetadata(
 			fileEntryMetadataId);
@@ -242,25 +265,24 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * @return the matching document library file entry metadata, or <code>null</code> if a matching document library file entry metadata could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		fetchDLFileEntryMetadataByUuidAndCompanyId(
-			String uuid, long companyId) {
+	public DLFileEntryMetadata fetchDLFileEntryMetadataByUuidAndCompanyId(
+		String uuid, long companyId) {
 
 		return _dlFileEntryMetadataLocalService.
 			fetchDLFileEntryMetadataByUuidAndCompanyId(uuid, companyId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		fetchFileEntryMetadata(long fileEntryMetadataId) {
+	public DLFileEntryMetadata fetchFileEntryMetadata(
+		long fileEntryMetadataId) {
 
 		return _dlFileEntryMetadataLocalService.fetchFileEntryMetadata(
 			fileEntryMetadataId);
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		fetchFileEntryMetadata(long ddmStructureId, long fileVersionId) {
+	public DLFileEntryMetadata fetchFileEntryMetadata(
+		long ddmStructureId, long fileVersionId) {
 
 		return _dlFileEntryMetadataLocalService.fetchFileEntryMetadata(
 			ddmStructureId, fileVersionId);
@@ -281,8 +303,7 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * @throws PortalException if a document library file entry metadata with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-			getDLFileEntryMetadata(long fileEntryMetadataId)
+	public DLFileEntryMetadata getDLFileEntryMetadata(long fileEntryMetadataId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryMetadataLocalService.getDLFileEntryMetadata(
@@ -298,9 +319,8 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * @throws PortalException if a matching document library file entry metadata could not be found
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-			getDLFileEntryMetadataByUuidAndCompanyId(
-				String uuid, long companyId)
+	public DLFileEntryMetadata getDLFileEntryMetadataByUuidAndCompanyId(
+			String uuid, long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryMetadataLocalService.
@@ -311,7 +331,7 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * Returns a range of all the document library file entry metadatas.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of document library file entry metadatas
@@ -319,9 +339,8 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	 * @return the range of document library file entry metadatas
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
-			getDLFileEntryMetadatas(int start, int end) {
+	public java.util.List<DLFileEntryMetadata> getDLFileEntryMetadatas(
+		int start, int end) {
 
 		return _dlFileEntryMetadataLocalService.getDLFileEntryMetadatas(
 			start, end);
@@ -338,8 +357,7 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-			getFileEntryMetadata(long fileEntryMetadataId)
+	public DLFileEntryMetadata getFileEntryMetadata(long fileEntryMetadataId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryMetadataLocalService.getFileEntryMetadata(
@@ -347,8 +365,8 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-			getFileEntryMetadata(long ddmStructureId, long fileVersionId)
+	public DLFileEntryMetadata getFileEntryMetadata(
+			long ddmStructureId, long fileVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _dlFileEntryMetadataLocalService.getFileEntryMetadata(
@@ -356,9 +374,8 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
-			getFileVersionFileEntryMetadatas(long fileVersionId) {
+	public java.util.List<DLFileEntryMetadata> getFileVersionFileEntryMetadatas(
+		long fileVersionId) {
 
 		return _dlFileEntryMetadataLocalService.
 			getFileVersionFileEntryMetadatas(fileVersionId);
@@ -379,18 +396,16 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
-			getMismatchedCompanyIdFileEntryMetadatas() {
+	public java.util.List<DLFileEntryMetadata>
+		getMismatchedCompanyIdFileEntryMetadatas() {
 
 		return _dlFileEntryMetadataLocalService.
 			getMismatchedCompanyIdFileEntryMetadatas();
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
-			getNoStructuresFileEntryMetadatas() {
+	public java.util.List<DLFileEntryMetadata>
+		getNoStructuresFileEntryMetadatas() {
 
 		return _dlFileEntryMetadataLocalService.
 			getNoStructuresFileEntryMetadatas();
@@ -406,6 +421,9 @@ public class DLFileEntryMetadataLocalServiceWrapper
 		return _dlFileEntryMetadataLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -418,14 +436,16 @@ public class DLFileEntryMetadataLocalServiceWrapper
 	/**
 	 * Updates the document library file entry metadata in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect DLFileEntryMetadataLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param dlFileEntryMetadata the document library file entry metadata
 	 * @return the document library file entry metadata that was updated
 	 */
 	@Override
-	public com.liferay.document.library.kernel.model.DLFileEntryMetadata
-		updateDLFileEntryMetadata(
-			com.liferay.document.library.kernel.model.DLFileEntryMetadata
-				dlFileEntryMetadata) {
+	public DLFileEntryMetadata updateDLFileEntryMetadata(
+		DLFileEntryMetadata dlFileEntryMetadata) {
 
 		return _dlFileEntryMetadataLocalService.updateDLFileEntryMetadata(
 			dlFileEntryMetadata);
@@ -460,6 +480,26 @@ public class DLFileEntryMetadataLocalServiceWrapper
 		_dlFileEntryMetadataLocalService.updateFileEntryMetadata(
 			fileEntryTypeId, fileEntryId, fileVersionId, ddmFormValuesMap,
 			serviceContext);
+	}
+
+	@Override
+	public CTPersistence<DLFileEntryMetadata> getCTPersistence() {
+		return _dlFileEntryMetadataLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<DLFileEntryMetadata> getModelClass() {
+		return _dlFileEntryMetadataLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<DLFileEntryMetadata>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _dlFileEntryMetadataLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

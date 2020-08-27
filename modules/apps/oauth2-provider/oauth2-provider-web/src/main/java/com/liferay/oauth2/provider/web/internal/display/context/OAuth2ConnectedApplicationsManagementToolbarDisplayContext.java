@@ -15,18 +15,17 @@
 package com.liferay.oauth2.provider.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.portlet.PortletURL;
 
@@ -47,9 +46,7 @@ public class OAuth2ConnectedApplicationsManagementToolbarDisplayContext
 	}
 
 	public List<DropdownItem> getActionDropdownItems() {
-		DropdownItemList dropdownItems = new DropdownItemList();
-
-		dropdownItems.add(
+		return DropdownItemListBuilder.add(
 			dropdownItem -> {
 				dropdownItem.setHref(
 					StringBundler.concat(
@@ -59,28 +56,25 @@ public class OAuth2ConnectedApplicationsManagementToolbarDisplayContext
 				dropdownItem.setLabel(
 					LanguageUtil.get(httpServletRequest, "remove-access"));
 				dropdownItem.setQuickAction(true);
-			});
-
-		return dropdownItems;
+			}
+		).build();
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
-		return new DropdownItemList() {
-			{
-				Map<String, String> orderColumnsMap = new HashMap<>();
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					getOrderByDropdownItems(
+						HashMapBuilder.put(
+							"createDate", "authorization"
+						).put(
+							"oAuth2ApplicationId", "application-id"
+						).build()));
 
-				orderColumnsMap.put("createDate", "authorization");
-				orderColumnsMap.put("oAuth2ApplicationId", "application-id");
-
-				addGroup(
-					dropdownGroupItem -> {
-						dropdownGroupItem.setDropdownItems(
-							getOrderByDropdownItems(orderColumnsMap));
-						dropdownGroupItem.setLabel(
-							LanguageUtil.get(httpServletRequest, "order-by"));
-					});
+				dropdownGroupItem.setLabel(
+					LanguageUtil.get(httpServletRequest, "order-by"));
 			}
-		};
+		).build();
 	}
 
 	public OrderByComparator<OAuth2Authorization> getOrderByComparator() {

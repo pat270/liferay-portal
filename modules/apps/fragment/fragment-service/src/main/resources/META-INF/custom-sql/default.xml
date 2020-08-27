@@ -1,6 +1,126 @@
 <?xml version="1.0"?>
 
 <custom-sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.countFC_ByG_FCI">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT FragmentComposition.fragmentCompositionId) AS COUNT_VALUE
+			FROM
+				FragmentComposition
+			WHERE
+				(FragmentComposition.groupId = ?) AND
+				(FragmentComposition.fragmentCollectionId = ?) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.countFC_ByG_FCI_N">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT FragmentComposition.fragmentCompositionId) AS COUNT_VALUE
+			FROM
+				FragmentComposition
+			WHERE
+				(FragmentComposition.groupId = ?) AND
+				(FragmentComposition.fragmentCollectionId = ?) AND
+				(FragmentComposition.name LIKE ?) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.countFE_ByG_FCI">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT FragmentEntry.fragmentEntryId) AS COUNT_VALUE
+			FROM
+				FragmentEntry
+			WHERE
+				(FragmentEntry.groupId = ?) AND
+				(FragmentEntry.fragmentCollectionId = ?) AND
+				(
+					(FragmentEntry.head = [$TRUE$]) OR
+					(FragmentEntry.headId = FragmentEntry.fragmentEntryId)
+				) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.countFE_ByG_FCI_N">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT FragmentEntry.fragmentEntryId) AS COUNT_VALUE
+			FROM
+				FragmentEntry
+			WHERE
+				(FragmentEntry.groupId = ?) AND
+				(FragmentEntry.fragmentCollectionId = ?) AND
+				(
+					(FragmentEntry.head = [$TRUE$]) OR
+					(FragmentEntry.headId = FragmentEntry.fragmentEntryId)
+				) AND
+				(FragmentEntry.name LIKE ?) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.findFC_ByG_FCI">
+		<![CDATA[
+			SELECT
+				DISTINCT FragmentComposition.fragmentCompositionId AS fragmentCompositionId, 0 AS fragmentEntryId,
+				FragmentComposition.createDate AS createDate, FragmentComposition.name AS name
+			FROM
+				FragmentComposition
+			WHERE
+				(FragmentComposition.groupId = ?) AND
+				(FragmentComposition.fragmentCollectionId = ?) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.findFC_ByG_FCI_N">
+		<![CDATA[
+			SELECT
+				DISTINCT FragmentComposition.fragmentCompositionId AS fragmentCompositionId, 0 AS fragmentEntryId,
+				FragmentComposition.createDate AS createDate, FragmentComposition.name AS name
+			FROM
+				FragmentComposition
+			WHERE
+				(FragmentComposition.groupId = ?) AND
+				(FragmentComposition.fragmentCollectionId = ?) AND
+				(FragmentComposition.name LIKE ?) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.findFE_ByG_FCI">
+		<![CDATA[
+			SELECT
+				DISTINCT 0 AS fragmentCompositionId, FragmentEntry.fragmentEntryId AS fragmentEntryId,
+				FragmentEntry.createDate AS createDate, FragmentEntry.name AS name
+			FROM
+				FragmentEntry
+			WHERE
+				(FragmentEntry.groupId = ?) AND
+				(FragmentEntry.fragmentCollectionId = ?) AND
+				(
+					(FragmentEntry.head = [$TRUE$]) OR
+					(FragmentEntry.headId = FragmentEntry.fragmentEntryId)
+				) AND
+				([$STATUS$])
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryFinder.findFE_ByG_FCI_N">
+		<![CDATA[
+			SELECT
+				DISTINCT 0 AS fragmentCompositionId, FragmentEntry.fragmentEntryId AS fragmentEntryId,
+				FragmentEntry.createDate AS createDate, FragmentEntry.name AS name
+			FROM
+				FragmentEntry
+			WHERE
+				(FragmentEntry.groupId = ?) AND
+				(FragmentEntry.fragmentCollectionId = ?) AND
+				(
+					(FragmentEntry.head = [$TRUE$]) OR
+					(FragmentEntry.headId = FragmentEntry.fragmentEntryId)
+				) AND
+				(FragmentEntry.name LIKE ?) AND
+				([$STATUS$])
+		]]>
+	</sql>
 	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.countByG_F">
 		<![CDATA[
 			SELECT
@@ -28,6 +148,32 @@
 				(FragmentEntryLink.classNameId = ?)
 		]]>
 	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.countByG_F_P">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT FragmentEntryLink.plid) AS COUNT_VALUE
+			FROM
+			(
+				SELECT
+					Layout.plid
+				FROM
+					Layout
+				LEFT JOIN
+					LayoutPageTemplateEntry ON
+						(Layout.plid = LayoutPageTemplateEntry.plid) OR
+						(Layout.classPK = LayoutPageTemplateEntry.plid)
+				WHERE
+					LayoutPageTemplateEntry.plid IS NULL
+			)
+			TEMP_TABLE
+				INNER JOIN
+					FragmentEntryLink ON
+						TEMP_TABLE.plid = FragmentEntryLink.plid
+			WHERE
+				(groupId = ?) AND
+				(fragmentEntryId = ?)
+		]]>
+	</sql>
 	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.countByG_F_C_L">
 		<![CDATA[
 			SELECT
@@ -43,6 +189,32 @@
 				(FragmentEntryLink.fragmentEntryId = ?) AND
 				(FragmentEntryLink.classNameId = ?) AND
 				(LayoutPageTemplateEntry.type_ = ?)
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.countByG_F_P_L">
+		<![CDATA[
+			SELECT
+				COUNT(DISTINCT FragmentEntryLink.plid) AS COUNT_VALUE
+			FROM
+			(
+				SELECT
+					Layout.plid
+				FROM
+					LayoutPageTemplateEntry
+				INNER JOIN
+					Layout ON
+						(Layout.plid = LayoutPageTemplateEntry.plid) OR
+						(Layout.classPK = LayoutPageTemplateEntry.plid)
+				WHERE
+					LayoutPageTemplateEntry.type_ = ?
+			)
+			TEMP_TABLE
+				INNER JOIN
+					FragmentEntryLink ON
+						TEMP_TABLE.plid = FragmentEntryLink.plid
+			WHERE
+				(FragmentEntryLink.groupId = ?) AND
+				(FragmentEntryLink.fragmentEntryId = ?)
 		]]>
 	</sql>
 	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.findByG_F">
@@ -98,6 +270,45 @@
 				)
 		]]>
 	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.findByG_F_P">
+		<![CDATA[
+			SELECT
+				FragmentEntryLink.*
+			FROM
+			(
+				SELECT
+					Layout.plid
+				FROM
+					Layout
+				LEFT JOIN
+					LayoutPageTemplateEntry ON
+						(Layout.plid = LayoutPageTemplateEntry.plid) OR
+						(Layout.classPK = LayoutPageTemplateEntry.plid)
+				WHERE
+					LayoutPageTemplateEntry.plid IS NULL
+			)
+			TEMP_TABLE
+				INNER JOIN
+					FragmentEntryLink ON
+						TEMP_TABLE.plid = FragmentEntryLink.plid
+			WHERE
+				(groupId = ?) AND
+				(fragmentEntryId = ?) AND
+				(
+					FragmentEntryLink.createDate =
+						(
+							SELECT
+								MAX(tempFragmentEntryLink.createDate)
+							FROM
+								FragmentEntryLink tempFragmentEntryLink
+							WHERE
+								(tempFragmentEntryLink.groupId = FragmentEntryLink.groupId) AND
+								(tempFragmentEntryLink.plid = FragmentEntryLink.plid) AND
+								(tempFragmentEntryLink.fragmentEntryId = FragmentEntryLink.fragmentEntryId)
+						)
+				)
+		]]>
+	</sql>
 	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.findByG_F_C_L">
 		<![CDATA[
 			SELECT
@@ -123,6 +334,46 @@
 							WHERE
 								(tempFragmentEntryLink.groupId = FragmentEntryLink.groupId) AND
 								(tempFragmentEntryLink.classPK = FragmentEntryLink.classPK) AND
+								(tempFragmentEntryLink.fragmentEntryId = FragmentEntryLink.fragmentEntryId)
+						)
+				)
+		]]>
+	</sql>
+	<sql id="com.liferay.fragment.service.persistence.FragmentEntryLinkFinder.findByG_F_P_L">
+		<![CDATA[
+			SELECT
+				FragmentEntryLink.*
+			FROM
+			(
+				SELECT
+					Layout.plid
+				FROM
+					LayoutPageTemplateEntry
+				INNER JOIN
+					Layout ON
+						(Layout.plid = LayoutPageTemplateEntry.plid) OR
+						(Layout.classPK = LayoutPageTemplateEntry.plid)
+				WHERE
+					LayoutPageTemplateEntry.type_ = ?
+			)
+			TEMP_TABLE
+				INNER JOIN
+					FragmentEntryLink ON
+						TEMP_TABLE.plid = FragmentEntryLink.plid
+
+			WHERE
+				(FragmentEntryLink.groupId = ?) AND
+				(FragmentEntryLink.fragmentEntryId = ?) AND
+				(
+					FragmentEntryLink.createDate =
+						(
+							SELECT
+								MAX(tempFragmentEntryLink.createDate)
+							FROM
+								FragmentEntryLink tempFragmentEntryLink
+							WHERE
+								(tempFragmentEntryLink.groupId = FragmentEntryLink.groupId) AND
+								(tempFragmentEntryLink.plid = FragmentEntryLink.plid) AND
 								(tempFragmentEntryLink.fragmentEntryId = FragmentEntryLink.fragmentEntryId)
 						)
 				)

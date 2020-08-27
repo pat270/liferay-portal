@@ -81,8 +81,8 @@ public class RatingsEntryModelListener extends BaseModelListener<RatingsEntry> {
 					ratingsAverageScore);
 			}
 		}
-		catch (PortalException pe) {
-			throw new ModelListenerException(pe);
+		catch (PortalException portalException) {
+			throw new ModelListenerException(portalException);
 		}
 	}
 
@@ -116,12 +116,16 @@ public class RatingsEntryModelListener extends BaseModelListener<RatingsEntry> {
 			RatingsEntryModelImpl ratingsEntryModelImpl =
 				(RatingsEntryModelImpl)ratingsEntry;
 
-			double originalScore = ratingsEntryModelImpl.getOriginalScore();
-
-			ratingsTotalScore += ratingsEntry.getScore() - originalScore;
-
 			if (ratingsEntry.isNew()) {
+				ratingsTotalScore += ratingsEntry.getScore();
+
 				ratingsTotalEntries++;
+			}
+			else {
+				double originalScore =
+					ratingsEntryModelImpl.getColumnOriginalValue("score");
+
+				ratingsTotalScore += ratingsEntry.getScore() - originalScore;
 			}
 
 			double ratingsAverageScore =
@@ -131,8 +135,8 @@ public class RatingsEntryModelListener extends BaseModelListener<RatingsEntry> {
 				blogsEntry.getGroupId(), blogsEntry.getUserId(),
 				ratingsTotalEntries, ratingsTotalScore, ratingsAverageScore);
 		}
-		catch (PortalException pe) {
-			throw new ModelListenerException(pe);
+		catch (PortalException portalException) {
+			throw new ModelListenerException(portalException);
 		}
 	}
 

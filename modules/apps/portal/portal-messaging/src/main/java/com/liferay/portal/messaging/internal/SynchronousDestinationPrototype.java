@@ -16,7 +16,6 @@ package com.liferay.portal.messaging.internal;
 
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
-import com.liferay.portal.kernel.messaging.SynchronousDestination;
 
 /**
  * @author Michael C. Han
@@ -30,6 +29,8 @@ public class SynchronousDestinationPrototype implements DestinationPrototype {
 		SynchronousDestination synchronousDestination =
 			new SynchronousDestination();
 
+		synchronousDestination.setDestinationType(
+			destinationConfiguration.getDestinationType());
 		synchronousDestination.setName(
 			destinationConfiguration.getDestinationName());
 

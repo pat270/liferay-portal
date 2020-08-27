@@ -25,10 +25,13 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.model.uid.UIDFactory;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
 import com.liferay.portal.search.test.util.IndexerFixture;
@@ -37,7 +40,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -109,7 +111,8 @@ public class LayoutIndexerIndexedFieldsTest {
 
 	protected void setUpIndexedFieldsFixture() {
 		indexedFieldsFixture = new IndexedFieldsFixture(
-			resourcePermissionLocalService, searchEngineHelper);
+			resourcePermissionLocalService, searchEngineHelper, uidFactory,
+			documentBuilderFactory);
 	}
 
 	protected void setUpLayoutFixture() {
@@ -135,6 +138,10 @@ public class LayoutIndexerIndexedFieldsTest {
 	}
 
 	protected Locale defaultLocale;
+
+	@Inject
+	protected DocumentBuilderFactory documentBuilderFactory;
+
 	protected IndexedFieldsFixture indexedFieldsFixture;
 	protected LayoutFixture layoutFixture;
 	protected IndexerFixture<Layout> layoutIndexerFixture;
@@ -145,30 +152,47 @@ public class LayoutIndexerIndexedFieldsTest {
 	@Inject
 	protected SearchEngineHelper searchEngineHelper;
 
+	@Inject
+	protected UIDFactory uidFactory;
+
 	protected UserSearchFixture userSearchFixture;
 
 	private Map<String, String> _expectedFieldValues(Layout layout)
 		throws Exception {
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = HashMapBuilder.put(
+			Field.CLASS_NAME_ID, String.valueOf(layout.getClassNameId())
+		).put(
+			Field.CLASS_PK, String.valueOf(layout.getClassPK())
+		).put(
+			Field.COMPANY_ID, String.valueOf(layout.getCompanyId())
+		).put(
+			Field.DEFAULT_LANGUAGE_ID, layout.getDefaultLanguageId()
+		).put(
+			Field.ENTRY_CLASS_NAME, Layout.class.getName()
+		).put(
+			Field.ENTRY_CLASS_PK, String.valueOf(layout.getPrimaryKey())
+		).put(
+			Field.GROUP_ID, String.valueOf(layout.getGroupId())
+		).put(
+			Field.SCOPE_GROUP_ID, String.valueOf(layout.getGroupId())
+		).put(
+			Field.STAGING_GROUP, "false"
+		).put(
+			Field.STATUS, String.valueOf(layout.getStatus())
+		).put(
+			Field.TYPE, layout.getType()
+		).put(
+			Field.USER_ID, String.valueOf(layout.getUserId())
+		).put(
+			Field.USER_NAME, StringUtil.toLowerCase(layout.getUserName())
+		).put(
+			"privateLayout", "false"
+		).put(
+			"title_ja_JP", layout.getName(LocaleUtil.JAPAN)
+		).build();
 
-		map.put(Field.CLASS_NAME_ID, String.valueOf(layout.getClassNameId()));
-		map.put(Field.CLASS_PK, String.valueOf(layout.getClassPK()));
-		map.put(Field.COMPANY_ID, String.valueOf(layout.getCompanyId()));
-		map.put(Field.DEFAULT_LANGUAGE_ID, layout.getDefaultLanguageId());
-		map.put(Field.ENTRY_CLASS_NAME, Layout.class.getName());
-		map.put(Field.ENTRY_CLASS_PK, String.valueOf(layout.getPrimaryKey()));
-		map.put(Field.GROUP_ID, String.valueOf(layout.getGroupId()));
-		map.put(Field.SCOPE_GROUP_ID, String.valueOf(layout.getGroupId()));
-		map.put(Field.STAGING_GROUP, "false");
-		map.put(Field.TYPE, layout.getType());
-		map.put(Field.USER_ID, String.valueOf(layout.getUserId()));
-		map.put(Field.USER_NAME, StringUtil.toLowerCase(layout.getUserName()));
-		map.put("privateLayout", "false");
-		map.put("title_ja_JP", layout.getName(LocaleUtil.JAPAN));
-
-		indexedFieldsFixture.populateUID(
-			Layout.class.getName(), layout.getPrimaryKey(), map);
+		indexedFieldsFixture.populateUID(layout, map);
 
 		_populateName(layout, map);
 		_populateDates(layout, map);

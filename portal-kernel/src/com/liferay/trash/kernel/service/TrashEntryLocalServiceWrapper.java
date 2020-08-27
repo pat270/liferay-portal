@@ -28,7 +28,6 @@ com.liferay.trash.service.impl.TrashEntryLocalServiceImpl}
  * @generated
  */
 @Deprecated
-@ProviderType
 public class TrashEntryLocalServiceWrapper implements TrashEntryLocalService,
 	ServiceWrapper<TrashEntryLocalService> {
 	public TrashEntryLocalServiceWrapper(
@@ -49,6 +48,13 @@ public class TrashEntryLocalServiceWrapper implements TrashEntryLocalService,
 	@Override
 	public com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
 		return _trashEntryLocalService.getIndexableActionableDynamicQuery();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+		java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _trashEntryLocalService.createPersistedModel(primaryKeyObj);
 	}
 
 	/**

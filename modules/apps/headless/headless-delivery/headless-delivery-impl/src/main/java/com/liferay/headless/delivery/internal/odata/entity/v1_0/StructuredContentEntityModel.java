@@ -14,7 +14,8 @@
 
 package com.liferay.headless.delivery.internal.odata.entity.v1_0;
 
-import com.liferay.petra.string.CharPool;
+import com.liferay.headless.common.spi.odata.entity.EntityFieldsMapFactory;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.odata.entity.CollectionEntityField;
@@ -27,9 +28,6 @@ import com.liferay.portal.odata.entity.StringEntityField;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Julio Camarero
@@ -38,15 +36,18 @@ import java.util.stream.Stream;
  */
 public class StructuredContentEntityModel implements EntityModel {
 
-	public StructuredContentEntityModel(List<EntityField> entityFields) {
-		_entityFieldsMap = Stream.of(
+	public StructuredContentEntityModel(
+		List<EntityField> entityFields, List<EntityField> customEntityFields) {
+
+		_entityFieldsMap = EntityFieldsMapFactory.create(
 			new CollectionEntityField(
 				new IntegerEntityField(
 					"taxonomyCategoryIds", locale -> "assetCategoryIds")),
 			new CollectionEntityField(
 				new StringEntityField(
 					"keywords", locale -> "assetTagNames.raw")),
-			new ComplexEntityField("values", entityFields),
+			new ComplexEntityField("contentFields", entityFields),
+			new ComplexEntityField("customFields", customEntityFields),
 			new DateTimeEntityField(
 				"dateCreated",
 				locale -> Field.getSortableFieldName(Field.CREATE_DATE),
@@ -63,24 +64,21 @@ public class StructuredContentEntityModel implements EntityModel {
 				"contentStructureId", locale -> Field.CLASS_TYPE_ID),
 			new IntegerEntityField("creatorId", locale -> Field.USER_ID),
 			new StringEntityField(
+				"friendlyUrlPath",
+				locale -> Field.getSortableFieldName(
+					StringBundler.concat(
+						"urlTitle_", LocaleUtil.toLanguageId(locale),
+						"_String"))),
+			new StringEntityField(
 				"title",
 				locale -> Field.getSortableFieldName(
-					"localized_title_".concat(LocaleUtil.toLanguageId(locale))))
-		).collect(
-			Collectors.toMap(EntityField::getName, Function.identity())
-		);
+					"localized_title_".concat(
+						LocaleUtil.toLanguageId(locale)))));
 	}
 
 	@Override
 	public Map<String, EntityField> getEntityFieldsMap() {
 		return _entityFieldsMap;
-	}
-
-	@Override
-	public String getName() {
-		String name = StructuredContentEntityModel.class.getName();
-
-		return name.replace(CharPool.PERIOD, CharPool.UNDERLINE);
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

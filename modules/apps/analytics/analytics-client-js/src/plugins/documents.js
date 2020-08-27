@@ -1,25 +1,39 @@
-import {closest, getClosestAssetElement} from '../utils/assets.js';
-import {onReady} from '../utils/events.js';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import {closest, getClosestAssetElement} from '../utils/assets';
+import {onReady} from '../utils/events';
 
 const applicationId = 'Document';
 
 /**
  * Returns analytics payload with Document information.
- * @param {object} documentElement The document DOM element
- * @return {object} The payload with document information
+ * @param {Object} documentElement The document DOM element
+ * @returns {Object} The payload with document information
  */
 function getDocumentPayload(documentElement) {
 	const {dataset} = documentElement;
 
 	let payload = {
 		fileEntryId: dataset.analyticsAssetId,
-		fileEntryVersion: dataset.analyticsAssetVersion
+		fileEntryVersion: dataset.analyticsAssetVersion,
 	};
 
 	if (dataset.analyticsAssetTitle) {
 		payload = {
 			...payload,
-			title: dataset.analyticsAssetTitle
+			title: dataset.analyticsAssetTitle,
 		};
 	}
 
@@ -28,8 +42,8 @@ function getDocumentPayload(documentElement) {
 
 /**
  * Wether a Document is trackable or not.
- * @param {object} element The Document DOM element
- * @return {boolean} True if the element is trackable.
+ * @param {Object} element The Document DOM element
+ * @returns {boolean} True if the element is trackable.
  */
 function isTrackableDocument(documentElement) {
 	return documentElement && 'analyticsAssetId' in documentElement.dataset;
@@ -37,7 +51,7 @@ function isTrackableDocument(documentElement) {
 
 /**
  * Sends information when user clicks on a Document.
- * @param {object} The Analytics client instance
+ * @param {Object} The Analytics client instance
  */
 function trackDocumentDownloaded(analytics) {
 	const onClick = ({target}) => {
@@ -64,32 +78,30 @@ function trackDocumentDownloaded(analytics) {
 
 /**
  * Sends information when user scrolls on a Document.
- * @param {object} The Analytics client instance
+ * @param {Object} The Analytics client instance
  */
 function trackDocumentPreviewed(analytics) {
-	const stopTrackingOnReady = onReady(
-		() => {
-			Array.prototype.slice.call(
+	const stopTrackingOnReady = onReady(() => {
+		Array.prototype.slice
+			.call(
 				document.querySelectorAll(
 					'[data-analytics-asset-action="preview"]'
 				)
-			).filter(
-				element => isTrackableDocument(element)
-			).forEach(
-				element => {
-					const payload = getDocumentPayload(element);
+			)
+			.filter((element) => isTrackableDocument(element))
+			.forEach((element) => {
+				const payload = getDocumentPayload(element);
 
-					analytics.send('documentPreviewed', applicationId, payload);
-				}
-			);
-		}
-	);
+				analytics.send('documentPreviewed', applicationId, payload);
+			});
+	});
+
 	return () => stopTrackingOnReady();
 }
 
 /**
  * Plugin function that registers listeners for Document events
- * @param {object} analytics The Analytics client
+ * @param {Object} analytics The Analytics client
  */
 function documents(analytics) {
 	const stopTrackingDocumentDownloaded = trackDocumentDownloaded(analytics);

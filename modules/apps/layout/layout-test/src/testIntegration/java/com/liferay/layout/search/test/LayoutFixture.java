@@ -21,11 +21,13 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,14 +47,42 @@ public class LayoutFixture {
 		return createLayout(RandomTestUtil.randomString());
 	}
 
+	public Layout createLayout(
+			LocalizedValuesMap nameMap, LocalizedValuesMap titleMap)
+		throws PortalException {
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext();
+
+		LocalizedValuesMap friendlyUrlMap = new LocalizedValuesMap() {
+			{
+				String randomString = FriendlyURLNormalizerUtil.normalize(
+					RandomTestUtil.randomString());
+
+				put(LocaleUtil.US, StringPool.SLASH + randomString);
+			}
+		};
+
+		Layout layout = LayoutLocalServiceUtil.addLayout(
+			TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, nameMap.getValues(),
+			titleMap.getValues(), null, null, null,
+			LayoutConstants.TYPE_CONTENT, null, false,
+			friendlyUrlMap.getValues(), serviceContext);
+
+		_layouts.add(layout);
+
+		return layout;
+	}
+
 	public Layout createLayout(String name) throws PortalException {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext();
 
-		String friendlyURL =
-			StringPool.SLASH +
-				FriendlyURLNormalizerUtil.normalize(
-					RandomTestUtil.randomString());
+		String randomString = FriendlyURLNormalizerUtil.normalize(
+			RandomTestUtil.randomString());
+
+		String friendlyURL = StringPool.SLASH + randomString;
 
 		Layout layout = LayoutLocalServiceUtil.addLayout(
 			TestPropsValues.getUserId(), _group.getGroupId(), false,

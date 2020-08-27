@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 public class LanguageKeysCheck extends BaseFileCheck {
 
 	@Override
-	public boolean isPortalCheck() {
+	public boolean isLiferaySourceCheck() {
 		return true;
 	}
 
@@ -266,10 +266,7 @@ public class LanguageKeysCheck extends BaseFileCheck {
 
 			fileLocation = fileLocation.substring(0, x);
 
-			if (fileLocation.endsWith("/modules") ||
-				(isSubrepository() &&
-				 FileUtil.exists(fileLocation + "/gradle.properties"))) {
-
+			if (fileLocation.endsWith("/modules")) {
 				return null;
 			}
 
@@ -283,6 +280,12 @@ public class LanguageKeysCheck extends BaseFileCheck {
 
 					break outerLoop;
 				}
+			}
+
+			if (isSubrepository() &&
+				FileUtil.exists(fileLocation + "/gradle.properties")) {
+
+				return null;
 			}
 		}
 
@@ -409,6 +412,12 @@ public class LanguageKeysCheck extends BaseFileCheck {
 
 		moduleLangDirNames.add(moduleLangDirName);
 
+		if (moduleLangDirName.contains("/modules/dxp/apps/")) {
+			moduleLangDirNames.add(
+				StringUtil.replace(
+					moduleLangDirName, "/modules/dxp/apps/", "/modules/apps/"));
+		}
+
 		String projectName = getProjectName();
 
 		if (Validator.isNotNull(projectName)) {
@@ -468,7 +477,7 @@ public class LanguageKeysCheck extends BaseFileCheck {
 
 			return properties;
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return null;

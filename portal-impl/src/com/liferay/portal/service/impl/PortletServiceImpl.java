@@ -17,13 +17,12 @@ package com.liferay.portal.service.impl;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceMode;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.service.base.PortletServiceBaseImpl;
 
@@ -45,13 +44,13 @@ public class PortletServiceImpl extends PortletServiceBaseImpl {
 			PortletApp portletApp = portlet.getPortletApp();
 
 			if (portletApp.isWARFile()) {
-				JSONObject jsonObject = JSONUtil.put(
-					"portlet_name", portlet.getPortletName()
-				).put(
-					"servlet_context_name", portletApp.getServletContextName()
-				);
-
-				jsonArray.put(jsonObject);
+				jsonArray.put(
+					JSONUtil.put(
+						"portlet_name", portlet.getPortletName()
+					).put(
+						"servlet_context_name",
+						portletApp.getServletContextName()
+					));
 			}
 		}
 

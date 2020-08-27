@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.util.PortalImpl;
 import com.liferay.portal.util.PropsImpl;
+import com.liferay.portletmvc4spring.test.mock.web.portlet.MockPortletRequest;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -38,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.portlet.MockPortletRequest;
 
 /**
  * @author Leon Chi

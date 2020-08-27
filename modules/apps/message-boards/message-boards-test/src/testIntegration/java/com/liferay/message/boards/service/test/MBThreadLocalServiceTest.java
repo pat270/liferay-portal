@@ -15,6 +15,12 @@
 package com.liferay.message.boards.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.expando.kernel.model.ExpandoBridge;
+import com.liferay.expando.kernel.model.ExpandoColumnConstants;
+import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.service.ExpandoColumnLocalServiceUtil;
+import com.liferay.expando.kernel.service.ExpandoTableLocalServiceUtil;
+import com.liferay.expando.kernel.service.ExpandoValueLocalServiceUtil;
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBMessage;
@@ -23,6 +29,7 @@ import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
 import com.liferay.message.boards.service.MBThreadLocalServiceUtil;
 import com.liferay.message.boards.test.util.MBTestUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -31,12 +38,17 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.InputStream;
+import java.io.Serializable;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,7 +68,9 @@ public class MBThreadLocalServiceTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -65,25 +79,25 @@ public class MBThreadLocalServiceTest {
 
 	@Test
 	public void testAddThreadTitleWhenAddingRootMessage() throws Exception {
-		MBMessage rootMessage = addMessage(null, true);
+		MBMessage rootMessage = _addMessage(null);
 
 		MBThread thread = MBThreadLocalServiceUtil.getThread(
 			rootMessage.getThreadId());
 
 		Assert.assertEquals(rootMessage.getSubject(), thread.getTitle());
 
-		MBMessage childMessage = addMessage(rootMessage, true);
+		MBMessage childMessage = _addMessage(rootMessage);
 
 		Assert.assertNotEquals(childMessage.getSubject(), thread.getTitle());
 	}
 
 	@Test
 	public void testAttachmentsWhenSplittingThread() throws Exception {
-		MBMessage rootMessage = addMessage(null, true);
+		MBMessage rootMessage = _addMessage(null);
 
-		MBMessage splitMessage = addMessage(rootMessage, true);
+		MBMessage splitMessage = _addMessage(rootMessage);
 
-		MBMessage childMessage = addMessage(splitMessage, true);
+		MBMessage childMessage = _addMessage(splitMessage);
 
 		Assert.assertEquals(
 			rootMessage.getThreadId(), splitMessage.getThreadId());
@@ -117,12 +131,41 @@ public class MBThreadLocalServiceTest {
 	}
 
 	@Test
+	public void testDeleteThreadWithExpandoMessages() throws Exception {
+		int expandoCount = ExpandoValueLocalServiceUtil.getExpandoValuesCount();
+
+		String expandoName = StringUtil.randomString();
+		String expandoValue = StringUtil.randomString();
+
+		MBMessage message = _addMessageWithExpando(expandoName, expandoValue);
+
+		ExpandoBridge expandoBridge = message.getExpandoBridge();
+
+		String attributeValue = GetterUtil.getString(
+			expandoBridge.getAttribute(expandoName));
+
+		Assert.assertEquals(expandoValue, attributeValue);
+
+		Assert.assertEquals(
+			expandoCount + 1,
+			ExpandoValueLocalServiceUtil.getExpandoValuesCount());
+
+		MBThreadLocalServiceUtil.deleteThread(message.getThreadId());
+
+		Assert.assertEquals(
+			expandoCount, ExpandoValueLocalServiceUtil.getExpandoValuesCount());
+
+		ExpandoTableLocalServiceUtil.deleteTables(
+			PortalUtil.getDefaultCompanyId(), MBMessage.class.getName());
+	}
+
+	@Test
 	public void testNotUpdateThreadTitleWhenUpdatingChildMessage()
 		throws Exception {
 
-		MBMessage rootMessage = addMessage(null, true);
+		MBMessage rootMessage = _addMessage(null);
 
-		MBMessage childMessage = addMessage(rootMessage, true);
+		MBMessage childMessage = _addMessage(rootMessage);
 
 		MBThread thread = MBThreadLocalServiceUtil.getThread(
 			rootMessage.getThreadId());
@@ -140,8 +183,8 @@ public class MBThreadLocalServiceTest {
 
 		MBMessageLocalServiceUtil.updateMessage(
 			TestPropsValues.getUserId(), childMessage.getMessageId(),
-			newSubject, RandomTestUtil.randomString(), inputStreamOVPs,
-			new ArrayList<String>(), 0.0, false, serviceContext);
+			newSubject, RandomTestUtil.randomString(), inputStreamOVPs, 0.0,
+			false, serviceContext);
 
 		thread = MBThreadLocalServiceUtil.getThread(rootMessage.getThreadId());
 
@@ -151,9 +194,9 @@ public class MBThreadLocalServiceTest {
 
 	@Test
 	public void testUpdateThreadTitleWhenSplittingMessage() throws Exception {
-		MBMessage rootMessage = addMessage(null, true);
+		MBMessage rootMessage = _addMessage(null);
 
-		MBMessage splitMessage = addMessage(rootMessage, true);
+		MBMessage splitMessage = _addMessage(rootMessage);
 
 		MBThread thread = MBThreadLocalServiceUtil.getThread(
 			rootMessage.getThreadId());
@@ -190,7 +233,7 @@ public class MBThreadLocalServiceTest {
 	public void testUpdateThreadTitleWhenUpdatingRootMessage()
 		throws Exception {
 
-		MBMessage rootMessage = addMessage(null, true);
+		MBMessage rootMessage = _addMessage(null);
 
 		MBThread thread = MBThreadLocalServiceUtil.getThread(
 			rootMessage.getThreadId());
@@ -208,39 +251,28 @@ public class MBThreadLocalServiceTest {
 
 		MBMessageLocalServiceUtil.updateMessage(
 			TestPropsValues.getUserId(), rootMessage.getMessageId(), newSubject,
-			RandomTestUtil.randomString(), inputStreamOVPs,
-			new ArrayList<String>(), 0.0, false, serviceContext);
+			RandomTestUtil.randomString(), inputStreamOVPs, 0.0, false,
+			serviceContext);
 
 		thread = MBThreadLocalServiceUtil.getThread(rootMessage.getThreadId());
 
 		Assert.assertEquals(newSubject, thread.getTitle());
 	}
 
-	protected MBMessage addMessage(
-			MBMessage parentMessage, boolean addAttachments)
-		throws Exception {
-
+	private MBMessage _addMessage(MBMessage parentMessage) throws Exception {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId());
 
-		long categoryId = MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID;
-		long threadId = 0;
-		long parentMessageId = MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID;
-
-		if (parentMessage != null) {
-			categoryId = parentMessage.getCategoryId();
-			threadId = parentMessage.getThreadId();
-			parentMessageId = parentMessage.getMessageId();
-		}
+		long categoryId = BeanPropertiesUtil.getLong(
+			parentMessage, "categoryId");
+		long threadId = BeanPropertiesUtil.getLong(parentMessage, "threadId");
+		long parentMessageId = BeanPropertiesUtil.getLong(
+			parentMessage, "messageId");
 
 		List<ObjectValuePair<String, InputStream>> inputStreamOVPs =
-			Collections.emptyList();
-
-		if (addAttachments) {
-			inputStreamOVPs = MBTestUtil.getInputStreamOVPs(
+			MBTestUtil.getInputStreamOVPs(
 				"attachment.txt", getClass(), StringPool.BLANK);
-		}
 
 		return MBMessageLocalServiceUtil.addMessage(
 			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
@@ -248,6 +280,35 @@ public class MBThreadLocalServiceTest {
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			MBMessageConstants.DEFAULT_FORMAT, inputStreamOVPs, false, 0.0,
 			false, serviceContext);
+	}
+
+	private MBMessage _addMessageWithExpando(String name, String value)
+		throws Exception {
+
+		ExpandoTable expandoTable =
+			ExpandoTableLocalServiceUtil.addDefaultTable(
+				PortalUtil.getDefaultCompanyId(), MBMessage.class.getName());
+
+		ExpandoColumnLocalServiceUtil.addColumn(
+			expandoTable.getTableId(), name, ExpandoColumnConstants.STRING,
+			StringPool.BLANK);
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId());
+
+		serviceContext.setExpandoBridgeAttributes(
+			HashMapBuilder.<String, Serializable>put(
+				name, value
+			).build());
+
+		return MBMessageLocalServiceUtil.addMessage(
+			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+			_group.getGroupId(), MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID,
+			0L, MBMessageConstants.DEFAULT_PARENT_MESSAGE_ID,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			MBMessageConstants.DEFAULT_FORMAT, null, false, 0.0, false,
+			serviceContext);
 	}
 
 	@DeleteAfterTestRun

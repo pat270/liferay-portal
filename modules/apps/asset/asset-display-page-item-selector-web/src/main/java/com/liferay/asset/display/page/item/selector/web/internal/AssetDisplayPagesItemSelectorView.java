@@ -22,8 +22,6 @@ import com.liferay.info.display.contributor.InfoDisplayContributorTracker;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 
 import java.io.IOException;
@@ -74,18 +72,14 @@ public class AssetDisplayPagesItemSelectorView
 	}
 
 	@Override
-	public boolean isVisible(ThemeDisplay themeDisplay) {
-		return true;
-	}
-
-	@Override
 	public void renderHTML(
-			ServletRequest request, ServletResponse response,
+			ServletRequest servletRequest, ServletResponse servletResponse,
 			AssetDisplayPageSelectorCriterion assetDisplayPageSelectorCriterion,
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
 
-		HttpServletRequest httpServletRequest = (HttpServletRequest)request;
+		HttpServletRequest httpServletRequest =
+			(HttpServletRequest)servletRequest;
 
 		AssetDisplayPagesItemSelectorViewDisplayContext
 			assetDisplayPagesItemSelectorViewDisplayContext =
@@ -93,12 +87,12 @@ public class AssetDisplayPagesItemSelectorView
 					httpServletRequest, assetDisplayPageSelectorCriterion,
 					itemSelectedEventName, portletURL);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			AssetDisplayPageItemSelectorWebKeys.
 				ASSET_DISPLAY_PAGES_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			assetDisplayPagesItemSelectorViewDisplayContext);
 
-		request.setAttribute(
+		servletRequest.setAttribute(
 			InfoDisplayWebKeys.INFO_DISPLAY_CONTRIBUTOR_TRACKER,
 			_infoDisplayContributorTracker);
 
@@ -107,15 +101,12 @@ public class AssetDisplayPagesItemSelectorView
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher("/display_pages.jsp");
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(servletRequest, servletResponse);
 	}
 
 	private static final List<ItemSelectorReturnType>
-		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
-			ListUtil.fromArray(
-				new ItemSelectorReturnType[] {
-					new UUIDItemSelectorReturnType()
-				}));
+		_supportedItemSelectorReturnTypes = Collections.singletonList(
+			new UUIDItemSelectorReturnType());
 
 	@Reference
 	private InfoDisplayContributorTracker _infoDisplayContributorTracker;

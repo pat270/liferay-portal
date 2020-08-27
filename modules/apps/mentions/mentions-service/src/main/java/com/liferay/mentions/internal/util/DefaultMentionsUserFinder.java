@@ -19,13 +19,13 @@ import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.comparator.UserScreenNameComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.social.kernel.model.SocialRelationConstants;
 import com.liferay.social.kernel.util.SocialInteractionsConfiguration;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -46,13 +46,12 @@ public class DefaultMentionsUserFinder implements MentionsUserFinder {
 		if (socialInteractionsConfiguration.
 				isSocialInteractionsAnyUserEnabled()) {
 
-			LinkedHashMap<String, Object> params = new LinkedHashMap<>();
-
-			params.put("wildcardMode", WildcardMode.TRAILING);
-
 			return _userLocalService.search(
-				companyId, query, WorkflowConstants.STATUS_APPROVED, params, 0,
-				_MAX_USERS, new UserScreenNameComparator());
+				companyId, query, WorkflowConstants.STATUS_APPROVED,
+				LinkedHashMapBuilder.<String, Object>put(
+					"wildcardMode", WildcardMode.TRAILING
+				).build(),
+				0, _MAX_USERS, new UserScreenNameComparator());
 		}
 
 		User user = _userLocalService.getUser(userId);

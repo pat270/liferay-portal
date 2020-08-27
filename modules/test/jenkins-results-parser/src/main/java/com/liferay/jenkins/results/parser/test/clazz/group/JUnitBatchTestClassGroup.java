@@ -118,8 +118,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		try {
 			JenkinsResultsParserUtil.write(csvReportFile, csvReport.toString());
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 	}
 
@@ -142,7 +142,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				return null;
 			}
 
-			String packagePath = fullClassName.replace(".", "/");
+			String packagePath = fullClassName.replace('.', '/');
 
 			packagePath = packagePath + ".class";
 
@@ -201,8 +201,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 				_initTestClassMethods();
 			}
-			catch (IOException ioe) {
-				throw new RuntimeException(ioe);
+			catch (IOException ioException) {
+				throw new RuntimeException(ioException);
 			}
 		}
 
@@ -226,7 +226,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		private String _getParentClassName() {
 			Pattern classHeaderPattern = Pattern.compile(
 				JenkinsResultsParserUtil.combine(
-					"public\\s+(abstract\\s+)?class\\s+", _className,
+					"public\\s+(abstract\\s+)?(class|interface)\\s+",
+					_className,
 					"(\\<[^\\<]+\\>)?(?<classHeaderEntities>[^\\{]+)\\{"));
 
 			Matcher classHeaderMatcher = classHeaderPattern.matcher(
@@ -376,9 +377,10 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	}
 
 	protected JUnitBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 
 		if (portalTestClassJob instanceof CentralMergePullRequestJob) {
 			_includeUnstagedTestClassFiles = true;
@@ -407,7 +409,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		_setAutoBalanceTestFiles();
 
-		_setTestClassNamesExcludesRelativeGlobs();
+		setTestClassNamesExcludesRelativeGlobs();
 		_setTestClassNamesIncludesRelativeGlobs();
 
 		setTestClasses();
@@ -417,23 +419,28 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		setAxisTestClassGroups();
 	}
 
-	protected List<String> getReleaseTestClassNamesRelativeGlobs(
-		List<String> testClassNamesRelativeGlobs) {
+	protected List<String> getReleaseTestClassNamesRelativeIncludesGlobs(
+		List<String> testClassNamesRelativeIncludesGlobs) {
 
-		return testClassNamesRelativeGlobs;
+		return testClassNamesRelativeIncludesGlobs;
 	}
 
-	protected List<String> getRelevantTestClassNamesRelativeGlobs(
-		List<String> testClassNamesRelativeGlobs) {
+	protected List<String> getRelevantTestClassNamesRelativeExcludesGlobs() {
+		return new ArrayList();
+	}
 
-		List<String> relevantTestClassNameRelativeGlobs = new ArrayList<>();
+	protected List<String> getRelevantTestClassNamesRelativeIncludesGlobs(
+		List<String> testClassNamesRelativeIncludesGlobs) {
+
+		List<String> relevantTestClassNameRelativeIncludesGlobs =
+			new ArrayList<>();
 
 		List<File> moduleDirsList = null;
 
 		try {
 			moduleDirsList = portalGitWorkingDirectory.getModuleDirsList();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			File workingDirectory =
 				portalGitWorkingDirectory.getWorkingDirectory();
 
@@ -441,7 +448,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				JenkinsResultsParserUtil.combine(
 					"Unable to get module directories in ",
 					workingDirectory.getPath()),
-				ioe);
+				ioException);
 		}
 
 		List<File> modifiedFilesList =
@@ -464,13 +471,13 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				continue;
 			}
 
-			relevantTestClassNameRelativeGlobs.addAll(
-				testClassNamesRelativeGlobs);
+			relevantTestClassNameRelativeIncludesGlobs.addAll(
+				testClassNamesRelativeIncludesGlobs);
 
-			return relevantTestClassNameRelativeGlobs;
+			return relevantTestClassNameRelativeIncludesGlobs;
 		}
 
-		return relevantTestClassNameRelativeGlobs;
+		return relevantTestClassNameRelativeIncludesGlobs;
 	}
 
 	@Override
@@ -594,14 +601,58 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 				});
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			throw new RuntimeException(
 				"Unable to search for test file names in " +
 					_rootWorkingDirectory.getPath(),
-				ioe);
+				ioException);
 		}
 
 		Collections.sort(testClasses);
+	}
+
+	protected void setTestClassNamesExcludesRelativeGlobs() {
+		String testClassNamesExcludesPropertyValue =
+			_getTestClassNamesExcludesPropertyValue(testSuiteName, false);
+
+		List<String> testClassNamesExcludesRelativeGlobs = new ArrayList<>();
+
+		if ((testClassNamesExcludesPropertyValue != null) &&
+			!testClassNamesExcludesPropertyValue.isEmpty()) {
+
+			Collections.addAll(
+				testClassNamesExcludesRelativeGlobs,
+				JenkinsResultsParserUtil.getGlobsFromProperty(
+					testClassNamesExcludesPropertyValue));
+		}
+
+		if (testRelevantChanges) {
+			testClassNamesExcludesRelativeGlobs.addAll(
+				getRelevantTestClassNamesRelativeExcludesGlobs());
+		}
+
+		if (includeStableTestSuite && isStableTestSuiteBatch()) {
+			String stableTestClassNamesExcludesPropertyValue =
+				_getTestClassNamesExcludesPropertyValue(
+					NAME_STABLE_TEST_SUITE, false);
+
+			if ((stableTestClassNamesExcludesPropertyValue != null) &&
+				!stableTestClassNamesExcludesPropertyValue.isEmpty()) {
+
+				Collections.addAll(
+					testClassNamesExcludesRelativeGlobs,
+					JenkinsResultsParserUtil.getGlobsFromProperty(
+						stableTestClassNamesExcludesPropertyValue));
+			}
+		}
+
+		testClassNamesExcludesPathMatchers.addAll(
+			JenkinsResultsParserUtil.toPathMatchers(
+				JenkinsResultsParserUtil.combine(
+					JenkinsResultsParserUtil.getCanonicalPath(
+						_rootWorkingDirectory),
+					File.separator),
+				testClassNamesExcludesRelativeGlobs.toArray(new String[0])));
 	}
 
 	protected final List<PathMatcher> testClassNamesExcludesPathMatchers =
@@ -609,37 +660,60 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 	protected final List<PathMatcher> testClassNamesIncludesPathMatchers =
 		new ArrayList<>();
 
-	private String _getTestClassNamesExcludesPropertyValue() {
+	private String _getTestClassNamesExcludesPropertyValue(
+		String testSuiteName, boolean useRequiredVariant) {
+
+		String propertyName = "test.batch.class.names.excludes";
+
+		if (useRequiredVariant) {
+			propertyName += ".required";
+		}
+
+		List<String> propertyValues = new ArrayList<>();
+
 		String propertyValue = getFirstPropertyValue(
-			"test.batch.class.names.excludes");
-
-		if (propertyValue == null) {
-			propertyValue = JenkinsResultsParserUtil.getProperty(
-				jobProperties, "test.class.names.excludes");
-		}
-
-		if (testPrivatePortalBranch) {
-			return propertyValue;
-		}
-
-		if ((propertyValue == null) || propertyValue.isEmpty()) {
-			return _GLOB_MODULES_PRIVATE;
-		}
-
-		return JenkinsResultsParserUtil.combine(
-			propertyValue, ",", _GLOB_MODULES_PRIVATE);
-	}
-
-	private String _getTestClassNamesIncludesPropertyValue() {
-		String propertyValue = getFirstPropertyValue(
-			"test.batch.class.names.includes");
+			propertyName, batchName, testSuiteName);
 
 		if (propertyValue != null) {
-			return propertyValue;
+			propertyValues.add(propertyValue);
+		}
+		else {
+			propertyValues.add(
+				JenkinsResultsParserUtil.getProperty(
+					jobProperties, propertyName));
 		}
 
-		return JenkinsResultsParserUtil.getProperty(
-			jobProperties, "test.class.names.includes");
+		if (!testPrivatePortalBranch) {
+			propertyValues.add(_GLOB_MODULES_PRIVATE);
+		}
+
+		return JenkinsResultsParserUtil.join(",", propertyValues);
+	}
+
+	private String _getTestClassNamesIncludesPropertyValue(
+		String testSuiteName, boolean useRequiredVariant) {
+
+		String propertyName = "test.batch.class.names.includes";
+
+		if (useRequiredVariant) {
+			propertyName += ".required";
+		}
+
+		List<String> propertyValues = new ArrayList<>();
+
+		String propertyValue = getFirstPropertyValue(
+			propertyName, batchName, testSuiteName);
+
+		if (propertyValue != null) {
+			propertyValues.add(propertyValue);
+		}
+		else {
+			propertyValues.add(
+				JenkinsResultsParserUtil.getProperty(
+					jobProperties, propertyName));
+		}
+
+		return JenkinsResultsParserUtil.join(",", propertyValues);
 	}
 
 	private void _setAutoBalanceTestFiles() {
@@ -681,16 +755,9 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		_includeAutoBalanceTests = _ENABLE_INCLUDE_AUTO_BALANCE_TESTS_DEFAULT;
 	}
 
-	private void _setTestClassNamesExcludesRelativeGlobs() {
-		testClassNamesExcludesPathMatchers.addAll(
-			getPathMatchers(
-				_getTestClassNamesExcludesPropertyValue(),
-				portalGitWorkingDirectory.getWorkingDirectory()));
-	}
-
 	private void _setTestClassNamesIncludesRelativeGlobs() {
 		String testClassNamesIncludesPropertyValue =
-			_getTestClassNamesIncludesPropertyValue();
+			_getTestClassNamesIncludesPropertyValue(testSuiteName, false);
 
 		if ((testClassNamesIncludesPropertyValue == null) ||
 			testClassNamesIncludesPropertyValue.isEmpty()) {
@@ -707,17 +774,17 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 
 		if (testReleaseBundle) {
 			testClassNamesIncludesRelativeGlobs =
-				getReleaseTestClassNamesRelativeGlobs(
+				getReleaseTestClassNamesRelativeIncludesGlobs(
 					testClassNamesIncludesRelativeGlobs);
 		}
 		else if (testRelevantChanges) {
 			testClassNamesIncludesRelativeGlobs =
-				getRelevantTestClassNamesRelativeGlobs(
+				getRelevantTestClassNamesRelativeIncludesGlobs(
 					testClassNamesIncludesRelativeGlobs);
 		}
 
 		String testBatchClassNamesIncludesRequiredPropertyValue =
-			getFirstPropertyValue("test.batch.class.names.includes.required");
+			_getTestClassNamesIncludesPropertyValue(testSuiteName, true);
 
 		if ((testBatchClassNamesIncludesRequiredPropertyValue != null) &&
 			!testBatchClassNamesIncludesRequiredPropertyValue.isEmpty()) {
@@ -726,6 +793,27 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				testClassNamesIncludesRelativeGlobs,
 				JenkinsResultsParserUtil.getGlobsFromProperty(
 					testBatchClassNamesIncludesRequiredPropertyValue));
+		}
+
+		if (includeStableTestSuite && isStableTestSuiteBatch()) {
+			Collections.addAll(
+				testClassNamesIncludesRelativeGlobs,
+				JenkinsResultsParserUtil.getGlobsFromProperty(
+					_getTestClassNamesIncludesPropertyValue(
+						NAME_STABLE_TEST_SUITE, false)));
+
+			testBatchClassNamesIncludesRequiredPropertyValue =
+				_getTestClassNamesIncludesPropertyValue(
+					NAME_STABLE_TEST_SUITE, true);
+
+			if ((testBatchClassNamesIncludesRequiredPropertyValue != null) &&
+				!testBatchClassNamesIncludesRequiredPropertyValue.isEmpty()) {
+
+				Collections.addAll(
+					testClassNamesIncludesRelativeGlobs,
+					JenkinsResultsParserUtil.getGlobsFromProperty(
+						testBatchClassNamesIncludesRequiredPropertyValue));
+			}
 		}
 
 		testClassNamesIncludesPathMatchers.addAll(

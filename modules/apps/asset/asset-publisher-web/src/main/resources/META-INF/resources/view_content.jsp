@@ -41,9 +41,11 @@ if (Validator.isNotNull(assetPublisherViewContentDisplayContext.getReturnToFullP
 
 		PortalUtil.addPortletBreadcrumbEntry(request, assetRenderer.getTitle(locale), currentURL);
 
-		String summary = StringUtil.shorten(assetRenderer.getSummary(liferayPortletRequest, liferayPortletResponse), assetPublisherDisplayContext.getAbstractLength());
+		if (Validator.isNull(request.getAttribute(WebKeys.PAGE_DESCRIPTION))) {
+			String summary = StringUtil.shorten(assetRenderer.getSummary(liferayPortletRequest, liferayPortletResponse), assetPublisherDisplayContext.getAbstractLength());
 
-		PortalUtil.setPageDescription(summary, request);
+			PortalUtil.setPageDescription(summary, request);
+		}
 
 		PortalUtil.setPageKeywords(assetHelper.getAssetKeywords(assetEntry.getClassName(), assetEntry.getClassPK()), request);
 		PortalUtil.setPageTitle(assetRenderer.getTitle(locale), request);
@@ -56,13 +58,14 @@ if (Validator.isNotNull(assetPublisherViewContentDisplayContext.getReturnToFullP
 	</c:otherwise>
 </c:choose>
 
-<aui:script use="aui-base">
-	Liferay.once(
-		'allPortletsReady',
-		function() {
-			A.one('#p_p_id_<%= portletDisplay.getId() %>_').scrollIntoView();
+<aui:script>
+	Liferay.once('allPortletsReady', function () {
+		if (!Liferay.Browser.isIe()) {
+			document
+				.getElementById('p_p_id_<%= portletDisplay.getId() %>_')
+				.scrollIntoView();
 		}
-	);
+	});
 </aui:script>
 
 <liferay-util:dynamic-include key="com.liferay.asset.publisher.web#/view_content.jsp#post" />

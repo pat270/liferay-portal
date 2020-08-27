@@ -16,8 +16,9 @@ package com.liferay.site.teams.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -39,14 +40,14 @@ public class EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext(
+		HttpServletRequest httpServletRequest,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
-		HttpServletRequest httpServletRequest,
 		EditSiteTeamAssignmentsUsersDisplayContext
 			editSiteTeamAssignmentsUsersDisplayContext) {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			editSiteTeamAssignmentsUsersDisplayContext.
 				getUserSearchContainer());
 
@@ -56,18 +57,14 @@ public class EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData("action", "deleteUsers");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteUsers");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -87,39 +84,42 @@ public class EditSiteTeamAssignmentsUsersManagementToolbarDisplayContext
 	@Override
 	public CreationMenu getCreationMenu() {
 		try {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			return CreationMenuBuilder.addDropdownItem(
+				dropdownItem -> {
+					dropdownItem.putData("action", "selectUser");
 
-			PortletURL selectUserURL = liferayPortletResponse.createRenderURL();
+					ThemeDisplay themeDisplay =
+						(ThemeDisplay)request.getAttribute(
+							WebKeys.THEME_DISPLAY);
 
-			selectUserURL.setParameter("mvcPath", "/select_users.jsp");
-			selectUserURL.setParameter(
-				"redirect", themeDisplay.getURLCurrent());
-			selectUserURL.setParameter(
-				"teamId",
-				String.valueOf(
-					_editSiteTeamAssignmentsUsersDisplayContext.getTeamId()));
-			selectUserURL.setWindowState(LiferayWindowState.POP_UP);
+					PortletURL selectUserURL =
+						liferayPortletResponse.createRenderURL();
 
-			String title = LanguageUtil.format(
-				request, "add-new-user-to-x",
-				_editSiteTeamAssignmentsUsersDisplayContext.getTeamName());
+					selectUserURL.setParameter("mvcPath", "/select_users.jsp");
+					selectUserURL.setParameter(
+						"redirect", themeDisplay.getURLCurrent());
+					selectUserURL.setParameter(
+						"teamId",
+						String.valueOf(
+							_editSiteTeamAssignmentsUsersDisplayContext.
+								getTeamId()));
+					selectUserURL.setWindowState(LiferayWindowState.POP_UP);
 
-			return new CreationMenu() {
-				{
-					addDropdownItem(
-						dropdownItem -> {
-							dropdownItem.putData("action", "selectUser");
-							dropdownItem.putData(
-								"selectUserURL", selectUserURL.toString());
-							dropdownItem.putData("title", title);
-							dropdownItem.setLabel(
-								LanguageUtil.get(request, "add"));
-						});
+					dropdownItem.putData(
+						"selectUserURL", selectUserURL.toString());
+
+					String title = LanguageUtil.format(
+						request, "add-new-user-to-x",
+						_editSiteTeamAssignmentsUsersDisplayContext.
+							getTeamName());
+
+					dropdownItem.putData("title", title);
+
+					dropdownItem.setLabel(LanguageUtil.get(request, "add"));
 				}
-			};
+			).build();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}

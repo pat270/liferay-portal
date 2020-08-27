@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.model.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
@@ -49,7 +50,7 @@ public class DefaultLayoutTypeAccessPolicyImpl
 	implements LayoutTypeAccessPolicy {
 
 	public static LayoutTypeAccessPolicy create() {
-		return _instance;
+		return _layoutTypeAccessPolicy;
 	}
 
 	@Override
@@ -57,6 +58,26 @@ public class DefaultLayoutTypeAccessPolicyImpl
 			HttpServletRequest httpServletRequest, Layout layout,
 			Portlet portlet)
 		throws PortalException {
+
+		String checkAccessAllowedToPortletCacheKey = StringBundler.concat(
+			DefaultLayoutTypeAccessPolicyImpl.class.getName(), "#",
+			layout.getPlid(), "#", portlet.getPortletId());
+
+		Boolean allowed = (Boolean)httpServletRequest.getAttribute(
+			checkAccessAllowedToPortletCacheKey);
+
+		if (allowed != null) {
+			if (allowed) {
+				return;
+			}
+
+			throw new PrincipalException.MustHavePermission(
+				PortalUtil.getUserId(httpServletRequest),
+				StringBundler.concat(
+					portlet.getDisplayName(), StringPool.SPACE,
+					portlet.getPortletId()),
+				0, ActionKeys.ACCESS);
+		}
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
@@ -73,6 +94,9 @@ public class DefaultLayoutTypeAccessPolicyImpl
 			PortletPermissionUtil.hasControlPanelAccessPermission(
 				permissionChecker, themeDisplay.getScopeGroupId(), portlet)) {
 
+			httpServletRequest.setAttribute(
+				checkAccessAllowedToPortletCacheKey, Boolean.TRUE);
+
 			return;
 		}
 
@@ -82,19 +106,22 @@ public class DefaultLayoutTypeAccessPolicyImpl
 			PortalUtil.addPortletDefaultResource(httpServletRequest, portlet);
 
 			if (hasAccessPermission(httpServletRequest, layout, portlet)) {
+				httpServletRequest.setAttribute(
+					checkAccessAllowedToPortletCacheKey, Boolean.TRUE);
+
 				return;
 			}
 		}
 
-		String resourceName = portlet.getDisplayName();
-
-		resourceName = resourceName.concat(StringPool.SPACE);
-
-		resourceName = resourceName.concat(portlet.getPortletId());
+		httpServletRequest.setAttribute(
+			checkAccessAllowedToPortletCacheKey, Boolean.FALSE);
 
 		throw new PrincipalException.MustHavePermission(
-			PortalUtil.getUserId(httpServletRequest), resourceName, 0,
-			ActionKeys.ACCESS);
+			PortalUtil.getUserId(httpServletRequest),
+			StringBundler.concat(
+				portlet.getDisplayName(), StringPool.SPACE,
+				portlet.getPortletId()),
+			0, ActionKeys.ACCESS);
 	}
 
 	@Override
@@ -263,7 +290,7 @@ public class DefaultLayoutTypeAccessPolicyImpl
 			PropsUtil.get(
 				PropsKeys.PORTLET_ADD_DEFAULT_RESOURCE_CHECK_ENABLED));
 
-	private static final LayoutTypeAccessPolicy _instance =
+	private static final LayoutTypeAccessPolicy _layoutTypeAccessPolicy =
 		new DefaultLayoutTypeAccessPolicyImpl();
 
 }

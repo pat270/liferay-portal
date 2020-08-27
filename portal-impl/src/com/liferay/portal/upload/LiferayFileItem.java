@@ -70,7 +70,7 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 			return MimeTypesUtil.getContentType(
 				getInputStream(), getFileName());
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			return ContentTypes.APPLICATION_OCTET_STREAM;
 		}
 	}
@@ -113,10 +113,10 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 	public String getHeader(String name) {
 		FileItemHeaders fileItemHeaders = getHeaders();
 
-		Iterator<String> itr = fileItemHeaders.getHeaders(name);
+		Iterator<String> iterator = fileItemHeaders.getHeaders(name);
 
-		if (itr.hasNext()) {
-			return itr.next();
+		if (iterator.hasNext()) {
+			return iterator.next();
 		}
 
 		return null;
@@ -128,9 +128,9 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 
 		FileItemHeaders fileItemHeaders = getHeaders();
 
-		Iterator<String> itr = fileItemHeaders.getHeaderNames();
+		Iterator<String> iterator = fileItemHeaders.getHeaderNames();
 
-		itr.forEachRemaining(headerNames::add);
+		iterator.forEachRemaining(headerNames::add);
 
 		return headerNames;
 	}
@@ -141,9 +141,9 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 
 		FileItemHeaders fileItemHeaders = getHeaders();
 
-		Iterator<String> itr = fileItemHeaders.getHeaders(name);
+		Iterator<String> iterator = fileItemHeaders.getHeaders(name);
 
-		itr.forEachRemaining(headers::add);
+		iterator.forEachRemaining(headers::add);
 
 		return headers;
 	}
@@ -194,13 +194,13 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 		}
 
 		try {
-			DeferredFileOutputStream dfos =
+			DeferredFileOutputStream deferredFileOutputStream =
 				(DeferredFileOutputStream)getOutputStream();
 
-			return dfos.getFile();
+			return deferredFileOutputStream.getFile();
 		}
-		catch (IOException ioe) {
-			_log.error(ioe, ioe);
+		catch (IOException ioException) {
+			_log.error(ioException, ioException);
 
 			return null;
 		}
@@ -227,8 +227,9 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 		try {
 			_encodedString = getString(encode);
 		}
-		catch (UnsupportedEncodingException uee) {
-			_log.error(uee, uee);
+		catch (UnsupportedEncodingException unsupportedEncodingException) {
+			_log.error(
+				unsupportedEncodingException, unsupportedEncodingException);
 		}
 	}
 
@@ -261,7 +262,7 @@ public class LiferayFileItem extends DiskFileItem implements FileItem {
 		String id = String.valueOf(current);
 
 		if (current < 100000000) {
-			id = ("00000000" + id).substring(id.length());
+			return "00000000".substring(id.length()) + id;
 		}
 
 		return id;

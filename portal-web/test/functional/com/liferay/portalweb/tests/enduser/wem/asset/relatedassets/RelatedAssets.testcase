@@ -1,0 +1,312 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Related Assets";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+	}
+
+	@priority = "4"
+	test AssertRelatedAssetsDisplayWithCategory {
+		property testray.component.names = "Categories,Staging,Related Assets,Web Content Administration";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Web Content Display Page");
+
+		Staging.openStagingAdmin(siteURLKey = "site-name");
+
+		Staging.activateStagingCP(
+			pageVersioningEnabled = "true",
+			siteName = "Site Name");
+
+		JSONCategory.addVocabulary(
+			groupName = "Site Name (Staging)",
+			site = "false",
+			title = "Vocabulary Name");
+
+		JSONCategory.addCategory(
+			groupName = "Site Name (Staging)",
+			site = "false",
+			title = "Category Name",
+			vocabularyName = "Vocabulary Name");
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content 1",
+			groupName = "Site Name (Staging)",
+			site = "false",
+			title = "Web Content Title 1");
+
+		var categoryId = JSONCategory.getCategoryId(
+			categoryName = "Category Name",
+			groupName = "Site Name (Staging)",
+			site = "false",
+			vocabularyName = "Vocabulary Name");
+
+		var serviceContext = '''{"assetCategoryIds": ["${categoryId}"]}''';
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content 2",
+			groupName = "Site Name (Staging)",
+			serviceContext = "${serviceContext}",
+			site = "false",
+			title = "Web Content Title 2");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title 2");
+
+		WebContent.viewCategorizationCategoryCP(
+			categoryNameList = "Category Name",
+			vocabularyName = "Vocabulary Name");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title 2");
+
+		WebContent.addExistingRelatedAssetCP(
+			assetTitle = "Web Content Title 1",
+			assetType = "Basic Web Content",
+			siteName = "Site Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "site-name-staging");
+
+		SitePages.addPrivatePage(pageName = "Private Page Name");
+
+		Navigator.gotoPrivateStagedSitePage(
+			pageName = "Private Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		AssetPublisherPortlet.configureManualAssetSelectionPG(
+			assetTitle = "Web Content Title 1",
+			assetType = "Basic Web Content");
+
+		Navigator.gotoPrivateStagedSitePage(
+			pageName = "Private Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Asset Publisher",
+			portletOption = "Configuration");
+
+		AssetPublisherPortlet.configureDisplayTemplatePG(displayTemplate = "Full Content");
+
+		Navigator.gotoPrivateStagedSitePage(
+			pageName = "Private Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Related Assets");
+
+		AssetPublisherPortlet.configureCategoriesFilterPG(
+			categoryName = "Category Name",
+			portletName = "Related Assets");
+
+		Navigator.gotoPrivateStagedSitePage(
+			pageName = "Private Page Name",
+			siteName = "Site Name");
+
+		RelatedAssets.viewPG(relatedAssetTitle = "Web Content Title 2");
+	}
+
+	@description = "This is a use case for LPS-72472."
+	@priority = "4"
+	test AssertRelatedAssetsWithGlobalWebContent {
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(
+			pageVersioningEnabled = "true",
+			siteName = "Site Name");
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content 1",
+			groupName = "Global",
+			title = "Web Content Title 1");
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content 2",
+			groupName = "Site Name (Staging)",
+			site = "false",
+			title = "Web Content Title 2");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title 2");
+
+		WebContent.addExistingRelatedAssetCP(
+			assetTitle = "Web Content Title 1",
+			assetType = "Basic Web Content",
+			scopeSite = "Global",
+			siteName = "Global",
+			webContentTitle = "Web Content Title 2");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Test Page",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		AssetPublisherPortlet.configureDisplaySettings(displaySettings = "Related Assets");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Web Content Content 2",
+			assetTitle = "Web Content Title 2",
+			relatedAssetTitles = "Web Content Title 1");
+
+		Staging.gotoPublishToLive();
+
+		Staging.configurePublishToLive(
+			checkContentNameList = "Web Content",
+			checkPageName = "Test Page");
+
+		Staging.publishToLive();
+
+		ProductMenu.gotoLiveSite(site = "Site Name");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Web Content Content 2",
+			assetTitle = "Web Content Title 2",
+			relatedAssetTitles = "Web Content Title 1");
+	}
+
+	@priority = "3"
+	test ViewNoFolders {
+		property portal.release = "false";
+		property testray.component.names = "Related Assets";
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page 1");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page 2");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page 1",
+			widgetName = "Web Content Display");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page 1",
+			widgetName = "Asset Publisher");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.configureAssetLinkBehaviorPG(assetLinkBehavior = "Show Full Content");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page 1",
+			widgetName = "Related Assets");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		WebContent.addPGViaWCD(
+			webContentContent = "Web Content Content",
+			webContentTitle = "Web Content Title");
+
+		WebContent.viewPGViaWCD(webContentContent = "Web Content Content");
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Test Page 2",
+			widgetName = "Blogs");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 2",
+			siteName = "Site Name");
+
+		Blogs.addEntry(
+			assetTitle = "Web Content Title",
+			assetType = "Basic Web Content",
+			entryAddRelatedAsset = "true",
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		JSONBookmarks.addFolder(
+			folderDescription = "Bookmarks Folder Description",
+			folderName = "Bookmarks Folder Name",
+			groupName = "Guest");
+
+		JSONDocument.addFolder(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name",
+			groupName = "Guest");
+
+		JSONWebcontent.addFolder(
+			folderDescription = "WC Folder Description",
+			folderName = "WC Folder Name",
+			groupName = "Guest");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetPG(
+			assetContent = "Blogs Entry Content",
+			assetTitle = "Blogs Entry Title");
+
+		AssetPublisherPortlet.viewAssetPG(
+			assetContent = "Web Content Content",
+			assetTitle = "Web Content Title");
+
+		RelatedAssets.viewNoPG(assetTitleList = "Blogs Entry Title,Web Content Title,DM Folder Name,WC Folder Name,Bookmarks Folder Name");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
+
+		WebContent.addExistingRelatedAssetCP(
+			assetTitle = "Blogs Entry Title",
+			assetType = "Blogs Entry",
+			siteName = "Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Blogs Entry Content",
+			assetTitle = "Blogs Entry Title");
+
+		RelatedAssets.viewPG(relatedAssetTitle = "Web Content Title");
+	}
+
+}

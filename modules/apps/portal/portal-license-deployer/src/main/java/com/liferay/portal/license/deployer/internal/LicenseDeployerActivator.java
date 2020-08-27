@@ -14,11 +14,9 @@
 
 package com.liferay.portal.license.deployer.internal;
 
+import com.liferay.portal.file.install.FileInstaller;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.license.deployer.internal.installer.LicenseInstaller;
-
-import org.apache.felix.fileinstall.ArtifactInstaller;
-import org.apache.felix.fileinstall.ArtifactListener;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -37,14 +35,14 @@ public class LicenseDeployerActivator {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
-		ArtifactInstaller artifactInstaller = new LicenseInstaller();
+		FileInstaller fileInstaller = new LicenseInstaller();
 
 		_artifactListenerServiceRegistration = registerArtifactListener(
-			bundleContext, artifactInstaller);
+			bundleContext, fileInstaller);
 
 		_lpkgLicensedBundleTracker = new BundleTracker<>(
 			bundleContext, ~Bundle.UNINSTALLED,
-			new LPKGLicensedBundleTrackerCustomizer(artifactInstaller));
+			new LPKGLicensedBundleTrackerCustomizer(fileInstaller));
 
 		_lpkgLicensedBundleTracker.open();
 	}
@@ -55,14 +53,10 @@ public class LicenseDeployerActivator {
 	}
 
 	protected ServiceRegistration<?> registerArtifactListener(
-		BundleContext bundleContext, ArtifactInstaller artifactInstaller) {
+		BundleContext bundleContext, FileInstaller fileInstaller) {
 
 		return bundleContext.registerService(
-			new String[] {
-				ArtifactInstaller.class.getName(),
-				ArtifactListener.class.getName()
-			},
-			artifactInstaller, null);
+			FileInstaller.class, fileInstaller, null);
 	}
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")

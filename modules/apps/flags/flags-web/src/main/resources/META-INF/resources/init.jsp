@@ -14,7 +14,8 @@
  */
 --%>
 
-<%@ taglib uri="http://liferay.com/tld/flags" prefix="liferay-flags" %><%@
+<%@ taglib uri="http://liferay.com/tld/captcha" prefix="liferay-captcha" %><%@
+taglib uri="http://liferay.com/tld/flags" prefix="liferay-flags" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 

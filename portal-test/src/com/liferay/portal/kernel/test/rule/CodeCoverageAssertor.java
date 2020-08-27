@@ -123,8 +123,8 @@ public class CodeCoverageAssertor implements TestRule {
 			_ASSERT_COVERAGE_METHOD.invoke(
 				null, _includeInnerClasses, assertClasses, getAssertMethods());
 		}
-		catch (InvocationTargetException ite) {
-			throw ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			throw invocationTargetException.getCause();
 		}
 	}
 
@@ -135,16 +135,15 @@ public class CodeCoverageAssertor implements TestRule {
 			className = className.substring(0, className.length() - 4);
 		}
 
-		String jvmClassPath = ClassPathUtil.getJVMClassPath(false);
-
-		URL[] urls = ClassPathUtil.getClassPathURLs(jvmClassPath);
+		URL[] urls = ClassPathUtil.getClassPathURLs(
+			ClassPathUtil.getJVMClassPath(false));
 
 		ClassLoader classLoader = new URLClassLoader(urls, null);
 
 		try {
 			classLoader.loadClass(className);
 		}
-		catch (ClassNotFoundException cnfe) {
+		catch (ClassNotFoundException classNotFoundException) {
 			className = null;
 		}
 
@@ -157,8 +156,8 @@ public class CodeCoverageAssertor implements TestRule {
 		try {
 			_DYNAMICALLY_INSTRUMENT_METHOD.invoke(null, includes, _excludes);
 		}
-		catch (InvocationTargetException ite) {
-			throw ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			throw invocationTargetException.getCause();
 		}
 
 		return className;
@@ -252,8 +251,8 @@ public class CodeCoverageAssertor implements TestRule {
 				instrumentationAgentClass.getMethod(
 					"dynamicallyInstrument", String[].class, String[].class);
 		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
 		}
 	}
 

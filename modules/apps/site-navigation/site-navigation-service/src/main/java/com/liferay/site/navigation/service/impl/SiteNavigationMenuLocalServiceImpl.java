@@ -14,6 +14,7 @@
 
 package com.liferay.site.navigation.service.impl;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -25,22 +26,28 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.site.navigation.constants.SiteNavigationConstants;
 import com.liferay.site.navigation.exception.DuplicateSiteNavigationMenuException;
 import com.liferay.site.navigation.exception.SiteNavigationMenuNameException;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
 import com.liferay.site.navigation.service.base.SiteNavigationMenuLocalServiceBaseImpl;
-import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Pavel Savinov
  */
+@Component(
+	property = "model.class.name=com.liferay.site.navigation.model.SiteNavigationMenu",
+	service = AopService.class
+)
 public class SiteNavigationMenuLocalServiceImpl
 	extends SiteNavigationMenuLocalServiceBaseImpl {
 
@@ -70,7 +77,8 @@ public class SiteNavigationMenuLocalServiceImpl
 		siteNavigationMenu.setType(type);
 		siteNavigationMenu.setAuto(auto);
 
-		siteNavigationMenuPersistence.update(siteNavigationMenu);
+		siteNavigationMenu = siteNavigationMenuPersistence.update(
+			siteNavigationMenu);
 
 		// Resources
 
@@ -110,11 +118,8 @@ public class SiteNavigationMenuLocalServiceImpl
 			long siteNavigationMenuId)
 		throws PortalException {
 
-		SiteNavigationMenu siteNavigationMenu = getSiteNavigationMenu(
-			siteNavigationMenuId);
-
 		return siteNavigationMenuLocalService.deleteSiteNavigationMenu(
-			siteNavigationMenu);
+			getSiteNavigationMenu(siteNavigationMenuId));
 	}
 
 	@Override
@@ -139,13 +144,13 @@ public class SiteNavigationMenuLocalServiceImpl
 		// Site navigation menu items
 
 		List<SiteNavigationMenuItem> siteNavigationMenuItems =
-			siteNavigationMenuItemLocalService.getSiteNavigationMenuItems(
+			_siteNavigationMenuItemLocalService.getSiteNavigationMenuItems(
 				siteNavigationMenu.getSiteNavigationMenuId());
 
 		for (SiteNavigationMenuItem siteNavigationMenuItem :
 				siteNavigationMenuItems) {
 
-			siteNavigationMenuItemLocalService.deleteSiteNavigationMenuItem(
+			_siteNavigationMenuItemLocalService.deleteSiteNavigationMenuItem(
 				siteNavigationMenuItem.getSiteNavigationMenuItemId());
 		}
 
@@ -187,7 +192,8 @@ public class SiteNavigationMenuLocalServiceImpl
 
 	@Override
 	public List<SiteNavigationMenu> getSiteNavigationMenus(
-		long groupId, int start, int end, OrderByComparator orderByComparator) {
+		long groupId, int start, int end,
+		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
 		return siteNavigationMenuPersistence.findByGroupId(
 			groupId, start, end, orderByComparator);
@@ -196,7 +202,7 @@ public class SiteNavigationMenuLocalServiceImpl
 	@Override
 	public List<SiteNavigationMenu> getSiteNavigationMenus(
 		long groupId, String keywords, int start, int end,
-		OrderByComparator orderByComparator) {
+		OrderByComparator<SiteNavigationMenu> orderByComparator) {
 
 		return siteNavigationMenuPersistence.findByG_LikeN(
 			groupId,
@@ -336,11 +342,11 @@ public class SiteNavigationMenuLocalServiceImpl
 		siteNavigationMenuPersistence.update(actualTypeSiteNavigationMenu);
 	}
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
 
-	@ServiceReference(type = SiteNavigationMenuItemTypeRegistry.class)
-	private SiteNavigationMenuItemTypeRegistry
-		_siteNavigationMenuItemTypeRegistry;
+	@Reference
+	private SiteNavigationMenuItemLocalService
+		_siteNavigationMenuItemLocalService;
 
 }

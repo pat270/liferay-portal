@@ -18,11 +18,11 @@ import com.liferay.headless.form.client.dto.v1_0.FormField;
 import com.liferay.headless.form.client.dto.v1_0.FormFieldOption;
 import com.liferay.headless.form.client.json.BaseJSONParser;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -205,6 +205,16 @@ public class FormFieldSerDes {
 			sb.append("\"");
 		}
 
+		if (formField.getLabel_i18n() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"label_i18n\": ");
+
+			sb.append(_toJSON(formField.getLabel_i18n()));
+		}
+
 		if (formField.getLocalizable() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -265,6 +275,16 @@ public class FormFieldSerDes {
 			sb.append(_escape(formField.getPredefinedValue()));
 
 			sb.append("\"");
+		}
+
+		if (formField.getPredefinedValue_i18n() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"predefinedValue_i18n\": ");
+
+			sb.append(_toJSON(formField.getPredefinedValue_i18n()));
 		}
 
 		if (formField.getReadOnly() != null) {
@@ -345,6 +365,16 @@ public class FormFieldSerDes {
 			sb.append("\"");
 		}
 
+		if (formField.getText_i18n() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"text_i18n\": ");
+
+			sb.append(_toJSON(formField.getText_i18n()));
+		}
+
 		if (formField.getTooltip() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -385,7 +415,7 @@ public class FormFieldSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		if (formField.getAutocomplete() == null) {
 			map.put("autocomplete", null);
@@ -479,6 +509,13 @@ public class FormFieldSerDes {
 			map.put("label", String.valueOf(formField.getLabel()));
 		}
 
+		if (formField.getLabel_i18n() == null) {
+			map.put("label_i18n", null);
+		}
+		else {
+			map.put("label_i18n", String.valueOf(formField.getLabel_i18n()));
+		}
+
 		if (formField.getLocalizable() == null) {
 			map.put("localizable", null);
 		}
@@ -514,6 +551,15 @@ public class FormFieldSerDes {
 			map.put(
 				"predefinedValue",
 				String.valueOf(formField.getPredefinedValue()));
+		}
+
+		if (formField.getPredefinedValue_i18n() == null) {
+			map.put("predefinedValue_i18n", null);
+		}
+		else {
+			map.put(
+				"predefinedValue_i18n",
+				String.valueOf(formField.getPredefinedValue_i18n()));
 		}
 
 		if (formField.getReadOnly() == null) {
@@ -567,6 +613,13 @@ public class FormFieldSerDes {
 			map.put("text", String.valueOf(formField.getText()));
 		}
 
+		if (formField.getText_i18n() == null) {
+			map.put("text_i18n", null);
+		}
+		else {
+			map.put("text_i18n", String.valueOf(formField.getText_i18n()));
+		}
+
 		if (formField.getTooltip() == null) {
 			map.put("tooltip", null);
 		}
@@ -584,42 +637,7 @@ public class FormFieldSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class FormFieldJSONParser extends BaseJSONParser<FormField> {
+	public static class FormFieldJSONParser extends BaseJSONParser<FormField> {
 
 		@Override
 		protected FormField createDTO() {
@@ -705,6 +723,13 @@ public class FormFieldSerDes {
 					formField.setLabel((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "label_i18n")) {
+				if (jsonParserFieldValue != null) {
+					formField.setLabel_i18n(
+						(Map)FormFieldSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "localizable")) {
 				if (jsonParserFieldValue != null) {
 					formField.setLocalizable((Boolean)jsonParserFieldValue);
@@ -728,6 +753,15 @@ public class FormFieldSerDes {
 			else if (Objects.equals(jsonParserFieldName, "predefinedValue")) {
 				if (jsonParserFieldValue != null) {
 					formField.setPredefinedValue((String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(
+						jsonParserFieldName, "predefinedValue_i18n")) {
+
+				if (jsonParserFieldValue != null) {
+					formField.setPredefinedValue_i18n(
+						(Map)FormFieldSerDes.toMap(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "readOnly")) {
@@ -765,6 +799,13 @@ public class FormFieldSerDes {
 					formField.setText((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "text_i18n")) {
+				if (jsonParserFieldValue != null) {
+					formField.setText_i18n(
+						(Map)FormFieldSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "tooltip")) {
 				if (jsonParserFieldValue != null) {
 					formField.setTooltip((String)jsonParserFieldValue);
@@ -782,6 +823,75 @@ public class FormFieldSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

@@ -32,15 +32,15 @@ public class ObjectMapperContextResolver
 
 	@Override
 	public ObjectMapper getContext(Class<?> clazz) {
-		return _OBJECT_MAPPER;
+		return _objectMapper;
 	}
 
-	private static final ObjectMapper _OBJECT_MAPPER = new ObjectMapper() {
+	private static final ObjectMapper _objectMapper = new ObjectMapper() {
 		{
 			configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 			enable(SerializationFeature.INDENT_OUTPUT);
 			setDateFormat(new ISO8601DateFormat());
-			setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+			setSerializationInclusion(JsonInclude.Include.NON_ABSENT);
 		}
 	};
 

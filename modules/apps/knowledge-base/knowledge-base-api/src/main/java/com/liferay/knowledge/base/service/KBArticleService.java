@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -48,13 +47,6 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @AccessControlled
 @JSONWebService
-@OSGiBeanProperties(
-	property = {
-		"json.web.service.context.name=kb",
-		"json.web.service.context.path=KBArticle"
-	},
-	service = KBArticleService.class
-)
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -65,7 +57,7 @@ public interface KBArticleService extends BaseService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link KBArticleServiceUtil} to access the kb article remote service. Add custom service methods to <code>com.liferay.knowledge.base.service.impl.KBArticleServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.knowledge.base.service.impl.KBArticleServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the kb article remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link KBArticleServiceUtil} if injection and service tracking are not available.
 	 */
 	public KBArticle addKBArticle(
 			String portletId, long parentResourceClassNameId,
@@ -119,18 +111,6 @@ public interface KBArticleService extends BaseService {
 			long groupId, long kbFolderId, String urlTitle, int status)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getAllDescendantKBArticles(long, long, int,
-	 OrderByComparator)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBArticle> getAllDescendantKBArticles(
-			long resourcePrimKey, int status,
-			OrderByComparator<KBArticle> orderByComparator)
-		throws PortalException;
-
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<KBArticle> getAllDescendantKBArticles(
 			long groupId, long resourcePrimKey, int status,
@@ -160,17 +140,6 @@ public interface KBArticleService extends BaseService {
 			long resourcePrimKey, int status,
 			OrderByComparator<KBArticle> orderByComparator)
 		throws PortalException;
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getKBArticleAndAllDescendantKBArticles(long, int,
-	 OrderByComparator)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBArticle> getKBArticleAndAllDescendants(
-		long groupId, long resourcePrimKey, int status,
-		OrderByComparator<KBArticle> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public String getKBArticleRSS(
@@ -241,25 +210,6 @@ public interface KBArticleService extends BaseService {
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getSectionsKBArticlesCount(
 		long groupId, String[] sections, int status);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #getKBArticles(long,
-	 long, int, int, int, OrderByComparator)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBArticle> getSiblingKBArticles(
-		long groupId, long parentResourcePrimKey, int status, int start,
-		int end, OrderByComparator<KBArticle> orderByComparator);
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 #getKBArticlesCount(long, long, int)}
-	 */
-	@Deprecated
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getSiblingKBArticlesCount(
-		long groupId, long parentResourcePrimKey, int status);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public String[] getTempAttachmentNames(long groupId, String tempFolderName)

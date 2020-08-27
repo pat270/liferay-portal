@@ -112,7 +112,7 @@ public class RegistryImpl implements Registry {
 				try {
 					serviceTracker.close();
 				}
-				catch (Throwable t) {
+				catch (Throwable throwable) {
 				}
 			}
 		}
@@ -144,30 +144,14 @@ public class RegistryImpl implements Registry {
 		try {
 			return new FilterWrapper(_bundleContext.createFilter(filterString));
 		}
-		catch (InvalidSyntaxException ise) {
-			throw new RuntimeException(ise);
+		catch (InvalidSyntaxException invalidSyntaxException) {
+			throw new RuntimeException(invalidSyntaxException);
 		}
 	}
 
 	@Override
 	public Registry getRegistry() throws SecurityException {
 		return this;
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public <T> T getService(Class<T> clazz) {
-		org.osgi.framework.ServiceReference<T> serviceReference =
-			_bundleContext.getServiceReference(clazz);
-
-		if (serviceReference == null) {
-			return null;
-		}
-
-		return _bundleContext.getService(serviceReference);
 	}
 
 	@Override
@@ -181,22 +165,6 @@ public class RegistryImpl implements Registry {
 
 		return _bundleContext.getService(
 			serviceReferenceWrapper.getServiceReference());
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public <T> T getService(String className) {
-		org.osgi.framework.ServiceReference<?> serviceReference =
-			_bundleContext.getServiceReference(className);
-
-		if (serviceReference == null) {
-			return null;
-		}
-
-		return (T)_bundleContext.getService(serviceReference);
 	}
 
 	@Override

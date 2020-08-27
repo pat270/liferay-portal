@@ -38,7 +38,7 @@ public class ModulesCompileBatchTestClassGroup
 
 	@Override
 	public int getAxisCount() {
-		if (testRelevantIntegrationUnitOnly) {
+		if (!isStableTestSuiteBatch() && testRelevantIntegrationUnitOnly) {
 			return 0;
 		}
 
@@ -108,12 +108,12 @@ public class ModulesCompileBatchTestClassGroup
 
 							buildFile = new File(currentDirectory, "build.xml");
 
-							if (directoryName.endsWith("-hook")) {
-								if (buildFile.exists()) {
-									modulesProjectDirs.add(currentDirectory);
+							if (directoryName.endsWith("-hook") &&
+								buildFile.exists()) {
 
-									return FileVisitResult.SKIP_SUBTREE;
-								}
+								modulesProjectDirs.add(currentDirectory);
+
+								return FileVisitResult.SKIP_SUBTREE;
 							}
 
 							if (directoryName.endsWith("-portlet")) {
@@ -132,11 +132,11 @@ public class ModulesCompileBatchTestClassGroup
 
 					});
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				throw new RuntimeException(
 					"Unable to get module marker files from " +
 						moduleBaseDir.getPath(),
-					ioe);
+					ioException);
 			}
 
 			initTestClassMethods(modulesProjectDirs, modulesDir, "assemble");
@@ -145,9 +145,10 @@ public class ModulesCompileBatchTestClassGroup
 	}
 
 	protected ModulesCompileBatchTestClassGroup(
-		String batchName, PortalTestClassJob portalTestClassJob) {
+		String batchName, BuildProfile buildProfile,
+		PortalTestClassJob portalTestClassJob) {
 
-		super(batchName, portalTestClassJob);
+		super(batchName, buildProfile, portalTestClassJob);
 	}
 
 	@Override
@@ -155,7 +156,9 @@ public class ModulesCompileBatchTestClassGroup
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
 
-		if (testRelevantChanges) {
+		if (testRelevantChanges &&
+			!(includeStableTestSuite && isStableTestSuiteBatch())) {
+
 			List<File> modifiedModuleDirsList =
 				portalGitWorkingDirectory.getModifiedModuleDirsList(
 					excludesPathMatchers, includesPathMatchers);

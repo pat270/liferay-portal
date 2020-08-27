@@ -1,18 +1,25 @@
-@import "mixins";
-
 .taglib-ratings {
-	&.stars {
+	&.stacked-stars {
+		.rating-element {
+			color: $primary;
+		}
+
 		.liferay-rating-score {
-			padding-left: 15px;
+			> div {
+				display: flex;
+			}
+
+			.rating-element {
+				color: $yellow;
+				padding-top: 3px;
+			}
+
+			.rating-label {
+				margin-left: 8px;
+			}
 		}
 
-		.liferay-rating-vote, .liferay-rating-score {
-			display: inline-block;
-		}
-	}
-
-	&.like, &.thumbs {
-		.rating-element * {
+		.lexicon-icon {
 			pointer-events: none;
 		}
 	}
@@ -23,5 +30,13 @@
 		.rating-input {
 			margin-left: 1px;
 		}
+	}
+
+	.icon-star-off svg.lexicon-icon-star {
+		display: none;
+	}
+
+	.icon-star-on svg.lexicon-icon-star-o {
+		display: none;
 	}
 }

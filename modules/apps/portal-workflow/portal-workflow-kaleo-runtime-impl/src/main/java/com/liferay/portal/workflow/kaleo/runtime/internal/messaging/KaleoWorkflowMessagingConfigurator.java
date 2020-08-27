@@ -14,9 +14,6 @@
 
 package com.liferay.portal.workflow.kaleo.runtime.internal.messaging;
 
-import com.liferay.portal.kernel.concurrent.CallerRunsPolicy;
-import com.liferay.portal.kernel.concurrent.RejectedExecutionHandler;
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
@@ -41,6 +38,8 @@ import com.liferay.portal.workflow.kaleo.runtime.internal.timer.messaging.TimerM
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -109,7 +108,7 @@ public class KaleoWorkflowMessagingConfigurator {
 		destinationConfiguration.setMaximumQueueSize(_MAXIMUM_QUEUE_SIZE);
 
 		RejectedExecutionHandler rejectedExecutionHandler =
-			new CallerRunsPolicy() {
+			new ThreadPoolExecutor.CallerRunsPolicy() {
 
 				@Override
 				public void rejectedExecution(
@@ -220,7 +219,7 @@ public class KaleoWorkflowMessagingConfigurator {
 
 		MessageListener workflowLogManagerProxyMessageListener =
 			registerProxyMessageListener(
-				_workflowLogManagerk, DestinationNames.WORKFLOW_LOG);
+				_workflowLogManager, DestinationNames.WORKFLOW_LOG);
 
 		_defaultWorkflowDestinationEventListener.setWorkflowLogManagerListener(
 			workflowLogManagerProxyMessageListener);
@@ -245,7 +244,7 @@ public class KaleoWorkflowMessagingConfigurator {
 		destinationConfiguration.setMaximumQueueSize(_MAXIMUM_QUEUE_SIZE);
 
 		RejectedExecutionHandler rejectedExecutionHandler =
-			new CallerRunsPolicy() {
+			new ThreadPoolExecutor.CallerRunsPolicy() {
 
 				@Override
 				public void rejectedExecution(
@@ -353,7 +352,7 @@ public class KaleoWorkflowMessagingConfigurator {
 	private WorkflowInstanceManager _workflowInstanceManager;
 
 	@Reference(target = "(proxy.bean=false)")
-	private WorkflowLogManager _workflowLogManagerk;
+	private WorkflowLogManager _workflowLogManager;
 
 	@Reference(target = "(proxy.bean=false)")
 	private WorkflowTaskManager _workflowTaskManager;

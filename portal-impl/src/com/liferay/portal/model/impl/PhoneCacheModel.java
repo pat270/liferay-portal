@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Phone in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PhoneCacheModel
 	implements CacheModel<Phone>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof PhoneCacheModel)) {
+		if (!(object instanceof PhoneCacheModel)) {
 			return false;
 		}
 
-		PhoneCacheModel phoneCacheModel = (PhoneCacheModel)obj;
+		PhoneCacheModel phoneCacheModel = (PhoneCacheModel)object;
 
 		if ((phoneId == phoneCacheModel.phoneId) &&
 			(mvccVersion == phoneCacheModel.mvccVersion)) {

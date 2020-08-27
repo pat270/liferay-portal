@@ -14,16 +14,18 @@
 
 package com.liferay.segments.model.impl;
 
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.criteria.Criteria;
 import com.liferay.segments.criteria.CriteriaSerializer;
+import com.liferay.segments.model.SegmentsEntryRole;
+import com.liferay.segments.service.SegmentsEntryRoleLocalServiceUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.List;
 
 /**
  * @author Eduardo García
  */
-@ProviderType
 public class SegmentsEntryImpl extends SegmentsEntryBaseImpl {
 
 	public SegmentsEntryImpl() {
@@ -36,6 +38,16 @@ public class SegmentsEntryImpl extends SegmentsEntryBaseImpl {
 		}
 
 		return _criteria;
+	}
+
+	@Override
+	public long[] getRoleIds() {
+		List<SegmentsEntryRole> segmentsEntryRoles =
+			SegmentsEntryRoleLocalServiceUtil.getSegmentsEntryRoles(
+				getSegmentsEntryId());
+
+		return ListUtil.toLongArray(
+			segmentsEntryRoles, SegmentsEntryRole::getRoleId);
 	}
 
 	private Criteria _criteria;

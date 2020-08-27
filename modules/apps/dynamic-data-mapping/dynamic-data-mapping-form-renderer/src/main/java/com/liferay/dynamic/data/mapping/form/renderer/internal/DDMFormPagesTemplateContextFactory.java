@@ -26,10 +26,14 @@ import com.liferay.dynamic.data.mapping.model.DDMFormLayoutColumn;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayoutPage;
 import com.liferay.dynamic.data.mapping.model.DDMFormLayoutRow;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -50,11 +54,17 @@ public class DDMFormPagesTemplateContextFactory {
 
 	public DDMFormPagesTemplateContextFactory(
 		DDMForm ddmForm, DDMFormLayout ddmFormLayout,
-		DDMFormRenderingContext ddmFormRenderingContext) {
+		DDMFormRenderingContext ddmFormRenderingContext,
+		DDMStructureLayoutLocalService ddmStructureLayoutLocalService,
+		DDMStructureLocalService ddmStructureLocalService,
+		JSONFactory jsonFactory) {
 
 		_ddmForm = ddmForm;
 		_ddmFormLayout = ddmFormLayout;
 		_ddmFormRenderingContext = ddmFormRenderingContext;
+		_ddmStructureLayoutLocalService = ddmStructureLayoutLocalService;
+		_ddmStructureLocalService = ddmStructureLocalService;
+		_jsonFactory = jsonFactory;
 
 		DDMFormValues ddmFormValues =
 			ddmFormRenderingContext.getDDMFormValues();
@@ -68,16 +78,11 @@ public class DDMFormPagesTemplateContextFactory {
 
 			ddmFormValues = defaultDDMFormValuesFactory.create();
 		}
-		else {
-			removeStaleDDMFormFieldValues(
-				ddmForm.getDDMFormFieldsMap(true),
-				ddmFormValues.getDDMFormFieldValues());
-		}
 
 		_ddmFormValues = ddmFormValues;
 
 		_ddmFormFieldsMap = ddmForm.getDDMFormFieldsMap(true);
-		_ddmFormFieldValuesMap = ddmFormValues.getDDMFormFieldValuesMap();
+		_ddmFormFieldValuesMap = ddmFormValues.getDDMFormFieldValuesMap(true);
 		_locale = ddmFormRenderingContext.getLocale();
 	}
 
@@ -126,15 +131,13 @@ public class DDMFormPagesTemplateContextFactory {
 	protected Map<String, Object> createColumnTemplateContext(
 		DDMFormLayoutColumn ddmFormLayoutColumn) {
 
-		Map<String, Object> columnTemplateContext = new HashMap<>();
-
-		columnTemplateContext.put(
+		return HashMapBuilder.<String, Object>put(
 			"fields",
 			createFieldsTemplateContext(
-				ddmFormLayoutColumn.getDDMFormFieldNames()));
-		columnTemplateContext.put("size", ddmFormLayoutColumn.getSize());
-
-		return columnTemplateContext;
+				ddmFormLayoutColumn.getDDMFormFieldNames())
+		).put(
+			"size", ddmFormLayoutColumn.getSize()
+		).build();
 	}
 
 	protected List<Object> createFieldsTemplateContext(
@@ -157,11 +160,13 @@ public class DDMFormPagesTemplateContextFactory {
 	protected List<Object> createFieldTemplateContext(String ddmFormFieldName) {
 		DDMFormFieldTemplateContextFactory ddmFormFieldTemplateContextFactory =
 			new DDMFormFieldTemplateContextFactory(
-				_ddmFormFieldsMap,
+				_ddmFormEvaluator, ddmFormFieldName, _ddmFormFieldsMap,
 				_ddmFormEvaluatorEvaluateResponse.
 					getDDMFormFieldsPropertyChanges(),
 				_ddmFormFieldValuesMap.get(ddmFormFieldName),
-				_ddmFormRenderingContext, _pageEnabled);
+				_ddmFormRenderingContext, _ddmStructureLayoutLocalService,
+				_ddmStructureLocalService, _jsonFactory, _pageEnabled,
+				_ddmFormLayout);
 
 		ddmFormFieldTemplateContextFactory.setDDMFormFieldTypeServicesTracker(
 			_ddmFormFieldTypeServicesTracker);
@@ -191,9 +196,7 @@ public class DDMFormPagesTemplateContextFactory {
 
 		LocalizedValue description = ddmFormLayoutPage.getDescription();
 
-		pageTemplateContext.put(
-			"description",
-			getValue(_ddmFormRenderingContext, description.getString(_locale)));
+		pageTemplateContext.put("description", description.getString(_locale));
 
 		_pageEnabled = isPageEnabled(pageIndex);
 
@@ -220,9 +223,7 @@ public class DDMFormPagesTemplateContextFactory {
 		pageTemplateContext.put(
 			"showRequiredFieldsWarning", showRequiredFieldsWarning);
 
-		pageTemplateContext.put(
-			"title",
-			getValue(_ddmFormRenderingContext, title.getString(_locale)));
+		pageTemplateContext.put("title", title.getString(_locale));
 
 		return pageTemplateContext;
 	}
@@ -242,14 +243,11 @@ public class DDMFormPagesTemplateContextFactory {
 	protected Map<String, Object> createRowTemplateContext(
 		DDMFormLayoutRow ddmFormLayoutRow) {
 
-		Map<String, Object> rowTemplateContext = new HashMap<>();
-
-		rowTemplateContext.put(
+		return HashMapBuilder.<String, Object>put(
 			"columns",
 			createColumnsTemplateContext(
-				ddmFormLayoutRow.getDDMFormLayoutColumns()));
-
-		return rowTemplateContext;
+				ddmFormLayoutRow.getDDMFormLayoutColumns())
+		).build();
 	}
 
 	protected Map<String, String> getLocalizedValueMap(
@@ -344,6 +342,8 @@ public class DDMFormPagesTemplateContextFactory {
 			formEvaluatorEvaluateRequestBuilder.withCompanyId(
 				PortalUtil.getCompanyId(
 					_ddmFormRenderingContext.getHttpServletRequest()));
+			formEvaluatorEvaluateRequestBuilder.withDDMFormLayout(
+				_ddmFormLayout);
 			formEvaluatorEvaluateRequestBuilder.withGroupId(
 				_ddmFormRenderingContext.getGroupId());
 			formEvaluatorEvaluateRequestBuilder.withUserId(
@@ -353,11 +353,11 @@ public class DDMFormPagesTemplateContextFactory {
 			_ddmFormEvaluatorEvaluateResponse = _ddmFormEvaluator.evaluate(
 				formEvaluatorEvaluateRequestBuilder.build());
 		}
-		catch (Exception e) {
-			_log.error("Unable to evaluate the form", e);
+		catch (Exception exception) {
+			_log.error("Unable to evaluate the form", exception);
 
 			throw new IllegalStateException(
-				"Unexpected error occurred during form evaluation", e);
+				"Unexpected error occurred during form evaluation", exception);
 		}
 	}
 
@@ -373,6 +373,10 @@ public class DDMFormPagesTemplateContextFactory {
 	private final DDMFormLayout _ddmFormLayout;
 	private final DDMFormRenderingContext _ddmFormRenderingContext;
 	private final DDMFormValues _ddmFormValues;
+	private final DDMStructureLayoutLocalService
+		_ddmStructureLayoutLocalService;
+	private final DDMStructureLocalService _ddmStructureLocalService;
+	private final JSONFactory _jsonFactory;
 	private final Locale _locale;
 	private boolean _pageEnabled;
 

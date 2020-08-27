@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link WikiPage}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WikiPage
  * @generated
  */
-@ProviderType
 public class WikiPageWrapper
 	extends BaseModelWrapper<WikiPage>
-	implements WikiPage, ModelWrapper<WikiPage> {
+	implements ModelWrapper<WikiPage>, WikiPage {
 
 	public WikiPageWrapper(WikiPage wikiPage) {
 		super(wikiPage);
@@ -46,6 +43,7 @@ public class WikiPageWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("pageId", getPageId());
 		attributes.put("resourcePrimKey", getResourcePrimKey());
@@ -76,6 +74,12 @@ public class WikiPageWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -259,10 +263,12 @@ public class WikiPageWrapper
 	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry>
 			getAttachmentsFileEntries(
 				int start, int end,
-				com.liferay.portal.kernel.util.OrderByComparator obc)
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.portal.kernel.repository.model.FileEntry>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return model.getAttachmentsFileEntries(start, end, obc);
+		return model.getAttachmentsFileEntries(start, end, orderByComparator);
 	}
 
 	@Override
@@ -270,10 +276,12 @@ public class WikiPageWrapper
 			getAttachmentsFileEntries(
 				String[] mimeTypes, int start, int end,
 				com.liferay.portal.kernel.util.OrderByComparator
-					<com.liferay.portal.kernel.repository.model.FileEntry> obc)
+					<com.liferay.portal.kernel.repository.model.FileEntry>
+						orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return model.getAttachmentsFileEntries(mimeTypes, start, end, obc);
+		return model.getAttachmentsFileEntries(
+			mimeTypes, start, end, orderByComparator);
 	}
 
 	@Override
@@ -431,6 +439,16 @@ public class WikiPageWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this wiki page.
+	 *
+	 * @return the mvcc version of this wiki page
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	@Override
@@ -944,6 +962,16 @@ public class WikiPageWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this wiki page.
+	 *
+	 * @param mvccVersion the mvcc version of this wiki page
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -52,8 +52,9 @@ public class LoggingAuditMessageProcessor implements AuditMessageProcessor {
 		try {
 			doProcess(auditMessage);
 		}
-		catch (Exception e) {
-			_log.fatal("Unable to process audit message " + auditMessage, e);
+		catch (Exception exception) {
+			_log.fatal(
+				"Unable to process audit message " + auditMessage, exception);
 		}
 	}
 
@@ -94,11 +95,13 @@ public class LoggingAuditMessageProcessor implements AuditMessageProcessor {
 
 			if (logMessageFormatter == null) {
 				if (_log.isWarnEnabled()) {
+					String logMessageFormat =
+						_loggingAuditMessageProcessorConfiguration.
+							logMessageFormat();
+
 					_log.warn(
 						"No log message formatter found for log message " +
-							"format " +
-								_loggingAuditMessageProcessorConfiguration.
-									logMessageFormat());
+							"format " + logMessageFormat);
 				}
 
 				return;

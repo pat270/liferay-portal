@@ -20,12 +20,11 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * @author Máté Thurzó
+ * @author     Máté Thurzó
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  */
-@ProviderType
+@Deprecated
 public class ChangesetEnvironment {
 
 	public static Builder create(long groupId, String portletId) {

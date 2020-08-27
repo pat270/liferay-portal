@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfiguration
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowDefinition;
-import com.liferay.portal.workflow.web.internal.constants.WorkflowPortletKeys;
+import com.liferay.portal.workflow.constants.WorkflowPortletKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
@@ -56,9 +56,8 @@ public class DeleteDefinitionPortletConfigurationIcon
 	public String getOnClick(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		String portletId = _portal.getPortletId(portletRequest);
-
-		String portletNamespace = _portal.getPortletNamespace(portletId);
+		String portletNamespace = _portal.getPortletNamespace(
+			_portal.getPortletId(portletRequest));
 
 		String deleteURL = getURL(portletRequest, portletResponse);
 
@@ -103,13 +102,11 @@ public class DeleteDefinitionPortletConfigurationIcon
 			(WorkflowDefinition)portletRequest.getAttribute(
 				WebKeys.WORKFLOW_DEFINITION);
 
-		boolean unpublished = false;
-
 		if ((workflowDefinition != null) && !workflowDefinition.isActive()) {
-			unpublished = true;
+			return true;
 		}
 
-		return unpublished;
+		return false;
 	}
 
 	@Reference

@@ -14,10 +14,6 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.resiliency.spi.agent.annotation.Direction;
-import com.liferay.portal.kernel.resiliency.spi.agent.annotation.Distributed;
-import com.liferay.portal.kernel.resiliency.spi.agent.annotation.MatchType;
-
 /**
  * @author Brian Wing Shun Chan
  */
@@ -56,7 +52,6 @@ public interface WebKeys {
 
 	public static final String ASSET_VOCABULARY = "ASSET_VOCABULARY";
 
-	@Distributed(direction = Direction.RESPONSE)
 	public static final String AUI_SCRIPT_DATA =
 		"LIFERAY_SHARED_AUI_SCRIPT_DATA";
 
@@ -117,17 +112,10 @@ public interface WebKeys {
 
 	public static final String CTX = "CTX";
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String CTX_PATH = "CTX_PATH";
-
 	public static final String CURRENT_COMPLETE_URL = "CURRENT_COMPLETE_URL";
 
 	public static final String CURRENT_PORTLET_URL = "CURRENT_PORTLET_URL";
 
-	@Distributed(direction = Direction.REQUEST)
 	public static final String CURRENT_URL = "CURRENT_URL";
 
 	public static final String DEVICE = "DEVICE";
@@ -204,14 +192,6 @@ public interface WebKeys {
 		"FORM_NAVIGATOR_SECTION_SHOW_";
 
 	public static final String FORWARD_URL = "FORWARD_URL";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             com.liferay.taglib.util.FriendlyURLUtil.getFriendlyURL(
-	 *             HttpServletRequest, javax.servlet.jsp.PageContext)}
-	 */
-	@Deprecated
-	public static final String FRIENDLY_URL = "FRIENDLY_URL";
 
 	public static final String FTL_VARIABLES = "FTL_VARIABLES";
 
@@ -324,7 +304,6 @@ public interface WebKeys {
 
 	public static final String LAYOUT = "LAYOUT";
 
-	@Distributed
 	public static final String LAYOUT_ASSET_ENTRY =
 		"LIFERAY_SHARED_LAYOUT_ASSET_ENTRY";
 
@@ -420,8 +399,16 @@ public interface WebKeys {
 
 	public static final String NOTES_LIST = "NOTES_LIST";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String OPEN_ID_LOGIN = "OPEN_ID_LOGIN";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String OPEN_ID_LOGIN_PENDING = "OPEN_ID_LOGIN_PENDING";
 
 	public static final String ORG_LABOR = "ORG_LABOR";
@@ -432,7 +419,6 @@ public interface WebKeys {
 
 	public static final String OUTER_PORTLET_ID = "OUTER_PORTLET_ID";
 
-	@Distributed(direction = Direction.RESPONSE)
 	public static final String OUTPUT_DATA = "LIFERAY_SHARED_OUTPUT_DATA";
 
 	public static final String PAGE_BODY_BOTTOM = "PAGE_BODY_BOTTOM";
@@ -441,24 +427,28 @@ public interface WebKeys {
 
 	public static final String PAGE_BOTTOM = "PAGE_BOTTOM";
 
-	@Distributed(direction = Direction.RESPONSE)
 	public static final String PAGE_DESCRIPTION =
 		"LIFERAY_SHARED_PAGE_DESCRIPTION";
 
-	@Distributed(direction = Direction.RESPONSE)
 	public static final String PAGE_KEYWORDS = "LIFERAY_SHARED_PAGE_KEYWORDS";
 
-	@Distributed(direction = Direction.RESPONSE)
 	public static final String PAGE_SUBTITLE = "LIFERAY_SHARED_PAGE_SUBTITLE";
 
-	@Distributed(direction = Direction.RESPONSE)
 	public static final String PAGE_TITLE = "LIFERAY_SHARED_PAGE_TITLE";
 
 	public static final String PAGE_TOP = "PAGE_TOP";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PARALLEL_RENDERING_MERGE_LOCK =
 		"PARALLEL_RENDERING_MERGE_LOCK";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PARALLEL_RENDERING_TIMEOUT_ERROR =
 		"PARALLEL_RENDERING_TIMEOUT_ERROR";
 
@@ -481,6 +471,10 @@ public interface WebKeys {
 
 	public static final String PORTAL_PREFERENCES = "PORTAL_PREFERENCES";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PORTAL_RESILIENCY_ACTION =
 		"PORTAL_RESILIENCY_ACTION";
 
@@ -513,6 +507,10 @@ public interface WebKeys {
 
 	public static final String PORTLET_ID = "PORTLET_ID";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String PORTLET_PARALLEL_RENDER =
 		"PORTLET_PARALLEL_RENDER";
 
@@ -532,48 +530,6 @@ public interface WebKeys {
 
 	public static final String PORTLET_SESSION_ATTRIBUTES =
 		"PORTLET_SESSION_ATTRIBUTES_";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PORTLET_STRUTS_ACTION = "PORTLET_STRUTS_ACTION";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PORTLET_STRUTS_ATTRIBUTES =
-		"PORTLET_STRUTS_ATTRIBUTES";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PORTLET_STRUTS_EXCEPTION =
-		"PORTLET_STRUTS_EXCEPTION";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PORTLET_STRUTS_EXECUTE =
-		"PORTLET_STRUTS_EXECUTE";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Distributed(direction = Direction.DUPLEX, matchType = MatchType.POSTFIX)
-	public static final String PORTLET_STRUTS_FORWARD =
-		"PORTLET_STRUTS_FORWARD";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String PORTLET_STRUTS_PROCESSOR =
-		"PORTLET_STRUTS_PROCESSOR";
 
 	public static final String PREVIOUS_LAYOUT_PLID = "PREVIOUS_LAYOUT_PLID";
 
@@ -625,13 +581,6 @@ public interface WebKeys {
 	public static final String ROLE = "ROLE";
 
 	public static final String SEARCH_CONTAINER = "SEARCH_CONTAINER";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String SEARCH_CONTAINER_REFERENCE =
-		"LIFERAY_SHARED_SEARCH_CONTAINER_REFERENCE";
 
 	public static final String SEARCH_CONTAINER_RESULT_ROW =
 		"SEARCH_CONTAINER_RESULT_ROW";
@@ -689,6 +638,8 @@ public interface WebKeys {
 
 	public static final String SHOPPING_ORDER = "SHOPPING_ORDER";
 
+	public static final String SHOW_PORTLET_TOPPER = "SHOW_PORTLET_TOPPER";
+
 	public static final String SINGLE_PAGE_APPLICATION_CLEAR_CACHE =
 		"LIFERAY_SHARED_SINGLE_PAGE_APPLICATION_CLEAR_CACHE";
 
@@ -702,47 +653,73 @@ public interface WebKeys {
 
 	public static final String SOURCE_VERSION = "SOURCE_VERSION";
 
-	@Distributed(direction = Direction.RESPONSE)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_ACTION_RESULT =
 		"SPI_AGENT_ACTION_RESULT";
 
-	@Distributed(direction = Direction.REQUEST)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_EVENT = "SPI_AGENT_EVENT";
 
-	@Distributed(direction = Direction.RESPONSE)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_EVENT_RESULT =
 		"SPI_AGENT_EVENT_RESULT";
 
-	@Distributed(direction = Direction.REQUEST)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_LAYOUT = "SPI_AGENT_LAYOUT";
 
-	@Distributed(direction = Direction.RESPONSE)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_LAYOUT_TYPE_SETTINGS =
 		"SPI_AGENT_LAYOUT_TYPE_SETTINGS";
 
-	@Distributed(direction = Direction.REQUEST)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_LIFECYCLE = "SPI_AGENT_LIFECYCLE";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_ORIGINAL_RESPONSE =
 		"SPI_AGENT_ORIGINAL_RESPONSE";
 
-	@Distributed(direction = Direction.REQUEST)
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_PORTLET = "SPI_AGENT_PORTLET";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_REQUEST = "SPI_AGENT_REQUEST";
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SPI_AGENT_RESPONSE = "SPI_AGENT_RESPONSE";
 
 	public static final String STALE_SESSION = "STALE_SESSION";
 
 	public static final String STARTUP_FINISHED = "STARTUP_FINISHED";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String STRUTS_BRIDGES_ATTRIBUTES =
-		"STRUTS_BRIDGES_ATTRIBUTES";
 
 	public static final String SUBJECT = "SUBJECT";
 
@@ -797,21 +774,13 @@ public interface WebKeys {
 
 	public static final String UPLOAD_EXCEPTION = "UPLOAD_EXCEPTION";
 
-	@Distributed(direction = Direction.REQUEST)
 	public static final String USER = "USER";
 
 	public static final String USER_GROUP = "USER_GROUP";
 
-	@Distributed(direction = Direction.REQUEST)
 	public static final String USER_ID = "USER_ID";
 
 	public static final String USER_PASSWORD = "USER_PASSWORD";
-
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static final String USER_UUID = "USER_UUID";
 
 	public static final String USERS_NOTIFIED = "USERS_NOTIFIED";
 

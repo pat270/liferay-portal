@@ -17,7 +17,6 @@ package com.liferay.taglib.ui;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.PortalIncludeUtil;
 
@@ -56,8 +55,8 @@ public class TableIteratorTag extends TagSupport {
 
 			return SKIP_BODY;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 
@@ -70,21 +69,19 @@ public class TableIteratorTag extends TagSupport {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_startPage = null;
-				_bodyPage = null;
-				_endPage = null;
-				_list = null;
-				_listPos = 0;
-				_rowLength = 0;
-				_rowPadding = "0";
-				_rowValign = "middle";
-				_rowBreak = null;
-			}
+			_startPage = null;
+			_bodyPage = null;
+			_endPage = null;
+			_list = null;
+			_listPos = 0;
+			_rowLength = 0;
+			_rowPadding = "0";
+			_rowValign = "middle";
+			_rowBreak = null;
 		}
 	}
 
@@ -121,8 +118,8 @@ public class TableIteratorTag extends TagSupport {
 
 			return SKIP_BODY;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

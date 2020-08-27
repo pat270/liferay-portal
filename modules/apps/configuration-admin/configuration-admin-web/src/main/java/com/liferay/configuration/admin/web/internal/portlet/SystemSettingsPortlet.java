@@ -43,6 +43,7 @@ import org.osgi.service.component.annotations.Component;
 		"com.liferay.portlet.css-class-wrapper=portlet-system-settings",
 		"com.liferay.portlet.display-category=category.hidden",
 		"com.liferay.portlet.instanceable=false",
+		"com.liferay.portlet.private-request-attributes=false",
 		"javax.portlet.display-name=System Settings",
 		"javax.portlet.info.keywords=osgi,system,settings",
 		"javax.portlet.init-param.template-path=/META-INF/resources/",

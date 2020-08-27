@@ -14,7 +14,6 @@
 
 package com.liferay.trash.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,7 +30,6 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see TrashEntryLocalService
  * @generated
  */
-@ProviderType
 public class TrashEntryLocalServiceUtil {
 
 	/*
@@ -54,7 +52,7 @@ public class TrashEntryLocalServiceUtil {
 	 * @param statusOVPs the primary keys and statuses of any of the entry's
 	 versions (e.g., {@link
 	 com.liferay.portlet.documentlibrary.model.DLFileVersion})
-	 * @param typeSettingsProperties the type settings properties
+	 * @param typeSettingsUnicodeProperties the type settings properties
 	 * @return the trashEntry
 	 */
 	public static com.liferay.trash.model.TrashEntry addTrashEntry(
@@ -64,16 +62,20 @@ public class TrashEntryLocalServiceUtil {
 				<com.liferay.portal.kernel.util.ObjectValuePair<Long, Integer>>
 					statusOVPs,
 			com.liferay.portal.kernel.util.UnicodeProperties
-				typeSettingsProperties)
+				typeSettingsUnicodeProperties)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().addTrashEntry(
 			userId, groupId, className, classPK, classUuid, referrerClassName,
-			status, statusOVPs, typeSettingsProperties);
+			status, statusOVPs, typeSettingsUnicodeProperties);
 	}
 
 	/**
 	 * Adds the trash entry to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TrashEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param trashEntry the trash entry
 	 * @return the trash entry that was added
@@ -88,6 +90,16 @@ public class TrashEntryLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		getService().checkEntries();
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	public static com.liferay.portal.kernel.model.PersistedModel
+			createPersistedModel(java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().createPersistedModel(primaryKeyObj);
 	}
 
 	/**
@@ -155,6 +167,10 @@ public class TrashEntryLocalServiceUtil {
 	/**
 	 * Deletes the trash entry with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TrashEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param entryId the primary key of the trash entry
 	 * @return the trash entry that was removed
 	 * @throws PortalException if a trash entry with the primary key could not be found
@@ -169,6 +185,10 @@ public class TrashEntryLocalServiceUtil {
 	/**
 	 * Deletes the trash entry from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TrashEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param trashEntry the trash entry
 	 * @return the trash entry that was removed
 	 */
@@ -176,6 +196,12 @@ public class TrashEntryLocalServiceUtil {
 		com.liferay.trash.model.TrashEntry trashEntry) {
 
 		return getService().deleteTrashEntry(trashEntry);
+	}
+
+	public static <T> T dslQuery(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return getService().dslQuery(dslQuery);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -200,7 +226,7 @@ public class TrashEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.trash.model.impl.TrashEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.trash.model.impl.TrashEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -219,7 +245,7 @@ public class TrashEntryLocalServiceUtil {
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.trash.model.impl.TrashEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.trash.model.impl.TrashEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -332,17 +358,17 @@ public class TrashEntryLocalServiceUtil {
 	 * @param start the lower bound of the range of trash entries to return
 	 * @param end the upper bound of the range of trash entries to return (not
 	 inclusive)
-	 * @param obc the comparator to order the trash entries (optionally
-	 <code>null</code>)
+	 * @param orderByComparator the comparator to order the trash entries
+	 (optionally <code>null</code>)
 	 * @return the range of matching trash entries ordered by comparator
-	 <code>obc</code>
+	 <code>orderByComparator</code>
 	 */
 	public static java.util.List<com.liferay.trash.model.TrashEntry> getEntries(
 		long groupId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
-			<com.liferay.trash.model.TrashEntry> obc) {
+			<com.liferay.trash.model.TrashEntry> orderByComparator) {
 
-		return getService().getEntries(groupId, start, end, obc);
+		return getService().getEntries(groupId, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.trash.model.TrashEntry> getEntries(
@@ -403,6 +429,9 @@ public class TrashEntryLocalServiceUtil {
 		return getService().getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	public static com.liferay.portal.kernel.model.PersistedModel
 			getPersistedModel(java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -414,7 +443,7 @@ public class TrashEntryLocalServiceUtil {
 	 * Returns a range of all the trash entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.trash.model.impl.TrashEntryModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.trash.model.impl.TrashEntryModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of trash entries
@@ -468,6 +497,10 @@ public class TrashEntryLocalServiceUtil {
 
 	/**
 	 * Updates the trash entry in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect TrashEntryLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param trashEntry the trash entry
 	 * @return the trash entry that was updated

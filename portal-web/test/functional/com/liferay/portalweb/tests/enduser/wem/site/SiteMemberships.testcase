@@ -1,0 +1,765 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Administration";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Organization.tearDownCP();
+
+			Site.tearDownCP();
+
+			UserGroup.tearDownCP();
+
+			JSONUser.tearDownNonAdminUsers();
+		}
+	}
+
+	@priority = "4"
+	test AddMember {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+	}
+
+	@priority = "5"
+	test AddMemberAssignSiteRole {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Administration,Training,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignSiteRoleCP(
+			resourceName = "userfn userln",
+			roleTitle = "Site Content Reviewer");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.viewSiteRoleViaSiteMembershipsCP(
+			resourceName = "userfn userln",
+			roleTitle = "Site Content Reviewer");
+	}
+
+	@priority = "4"
+	test AddMemberOrganization {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONOrganization.addOrganization(organizationName = "Organization Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignOrganizationAsMemberCP(orgName = "Organization Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.viewMemberOrganizationCP(orgName = "Organization Name");
+	}
+
+	@priority = "5"
+	test AddMembersSiteUser {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "SiteMemberships#AddMembersSiteUser";
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		// This is a workarond for managment bar is temporarily unavailable, this error only fail in this case and there is still other case just use Site.assignUserAsMemberCP after adding a user and site.
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#ADD_USERS_TO_SITE");
+
+		if (IsElementNotPresent(locator1 = "ManagementBar#FILTER_AND_ORDER")) {
+			ApplicationsMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "Search");
+
+			SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+		}
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.viewMemberCP(
+			siteName = "Site Name",
+			siteScopeName = "Site Name",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+	}
+
+	@priority = "4"
+	test AddMemberUserGroup {
+		property testray.component.names = "Site Administration,User Groups";
+
+		UserGroup.openUserGroupsAdmin();
+
+		UserGroup.addCP(userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.viewMemberUserGroupCP(userGroupName = "User Group Name");
+	}
+
+	@priority = "4"
+	test AddMemberUserGroupAssignSiteRole {
+		property testray.component.names = "Site Administration,User Groups";
+
+		UserGroup.openUserGroupsAdmin();
+
+		UserGroup.addCP(userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		NavItem.gotoUserGroups();
+
+		Site.assignSiteRoleToUserGroup(
+			roleName = "Site Content Reviewer",
+			userGroupName = "User Group Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		NavItem.gotoUserGroups();
+
+		Site.viewUserGroupSiteRoleViaSiteMembershipsCP(
+			resourceName = "User Group Name",
+			roleTitle = "Site Content Reviewer");
+	}
+
+	@priority = "4"
+	test LimitMembershipParentSite {
+		property testray.component.names = "Site Administration";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONGroup.addChildSite(
+			groupName = "Child SiteName",
+			parentGroupName = "Site Name");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "child-sitename");
+
+		Site.limitMembership(siteLimitMembership = "Yes");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.viewMemberCP(
+			siteName = "Site Name",
+			siteScopeName = "Site Name",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "child-sitename");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "child-sitename");
+
+		Site.viewMemberCP(
+			childSiteName = "Site Name",
+			siteScopeName = "Child SiteName",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "child-sitename");
+
+		Site.removeMemberCP(
+			siteName = "Child SiteName",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.removeMemberCP(
+			siteName = "Site Name",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "child-sitename");
+
+		Site.viewLimitMembershipParentSiteCP(
+			siteName = "Site Name",
+			siteScopeName = "Child SiteName",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+	}
+
+	@priority = "5"
+	test OrganizationsView {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "SiteMemberships#OrganizationsView";
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+
+		JSONOrganization.addOrganization(
+			organizationName = "Organization Name 1",
+			organizationSite = "true");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Organization Name 1 LFR_ORGANIZATION",
+			layoutName = "Site Page");
+
+		User.openUsersAdmin();
+
+		User.addCP(
+			allowManualMembershipManagement = "true",
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		User.openUsersAdmin();
+
+		UsersAndOrganizationsNavigator.gotoOrganizations();
+
+		Organization.addMemberCP(
+			orgName = "Organization Name 1",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userName = "userfn userln",
+			userScreenName = "usersn");
+
+		User.openUsersAdmin();
+
+		UsersAndOrganizationsNavigator.gotoOrganizations();
+
+		Organization.addMemberCP(
+			orgName = "Organization Name 1",
+			userFirstName = "Test",
+			userLastName = "Test",
+			userName = "Test Test",
+			userScreenName = "test");
+
+		Site.openSiteSettingsAdmin(siteURLKey = "organization-name-1");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "organization-name-1");
+
+		Site.viewMemberOrganizationCP(orgName = "Organization Name 1");
+
+		JSONOrganization.addOrganization(organizationName = "Organization Name 2");
+
+		JSONOrganization.addOrganization(organizationName = "Organization Name 3");
+
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name 1");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "organization-name-1");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "organization-name-1");
+
+		Site.assignOrganizationAsMemberCP(orgName = "Organization Name 2");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "organization-name-1");
+
+		Site.viewMemberOrganizationCP(orgName = "Organization Name 2");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "organization-name-1");
+
+		Site.assignOrganizationAsMemberCP(orgName = "Organization Name 3");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "organization-name-1");
+
+		Site.viewMemberOrganizationCP(orgName = "Organization Name 3");
+	}
+
+	@priority = "5"
+	test RemoveMember {
+		property portal.acceptance = "true";
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONUser.addUserToSite(
+			groupName = "Site Name",
+			userEmailAddress = "userea@liferay.com");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.removeMemberCP(
+			siteName = "Site Name",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+	}
+
+	@priority = "3"
+	test SiteMembershipSearchOrganization {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		for (var n : list "1,2") {
+			JSONOrganization.addOrganization(organizationName = "Organization Name ${n}");
+		}
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignOrganizationAsMemberCP(orgName = "Organization Name 1");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		NavItem.gotoOrganizations();
+
+		Site.searchMembershipCP(
+			emptyResults = "true",
+			searchValue = "&quot;Organization Name 2&quot;");
+
+		Site.searchMembershipCP(searchValue = "&quot;Organization Name 1&quot;");
+	}
+
+	@priority = "3"
+	test SiteMembershipSearchUserGroup {
+		property testray.component.names = "Site Administration,User Groups";
+
+		for (var n : list "1,2") {
+			UserGroup.openUserGroupsAdmin();
+
+			UserGroup.addCP(userGroupName = "User Group Name ${n}");
+		}
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.assignUserGroupAsMemberCP(userGroupName = "User Group Name 1");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		NavItem.gotoUserGroups();
+
+		Site.searchMembershipCP(
+			emptyResults = "true",
+			searchValue = "&quot;User Group Name 2&quot;");
+
+		Site.searchMembershipCP(searchValue = "&quot;User Group Name 1&quot;");
+	}
+
+	@priority = "3"
+	test SiteMembershipsPagination {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		for (var screenName : list "userfn1,userfn2,userfn3,userfn4,userfn5,userfn6,userfn7,userfn8,userfn9,userfn10") {
+			JSONUser.addUser(
+				userEmailAddress = "${screenName}@liferay.com",
+				userFirstName = "${screenName}",
+				userLastName = "${screenName}",
+				userScreenName = "${screenName}");
+		}
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.addAllMembersCP();
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name");
+
+		Site.viewMemberListCP(usersEmailsList = "userfn1@liferay.com,userfn2@liferay.com,userfn3@liferay.com,userfn4@liferay.com,userfn5@liferay.com,userfn6@liferay.com,userfn7@liferay.com,userfn8@liferay.com,userfn9@liferay.com,userfn10@liferay.com");
+
+		Site.viewMemberCP(
+			userFirstName = "Test",
+			userLastName = "Test",
+			userScreenName = "test");
+
+		NavItem.gotoUsers();
+
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "Pagination#ITEMS_PER_PAGE_SELECT",
+			value1 = "20 Entries");
+
+		MenuItem.click(menuItem = "4");
+
+		AssertTextEquals(
+			locator1 = "Pagination#CURRENT_PAGE_SELECT",
+			value1 = "Showing 1 to 4 of 11 entries.");
+
+		Click(locator1 = "Pagination#NEXT_LINK");
+
+		AssertTextEquals(
+			locator1 = "Pagination#CURRENT_PAGE_SELECT",
+			value1 = "Showing 5 to 8 of 11 entries.");
+
+		Site.assertMemberListNotVisibleCP(usersEmailsList = "userfn1@liferay.com,userfn2@liferay.com,userfn7@liferay.com,userfn8@liferay.com,userfn9@liferay.com,userfn10@liferay.com");
+
+		Site.viewMemberListCP(usersEmailsList = "userfn3@liferay.com,userfn4@liferay.com,userfn5@liferay.com,userfn6@liferay.com");
+
+		Click(locator1 = "Pagination#FIRST_LINK");
+
+		AssertTextEquals(
+			locator1 = "Pagination#CURRENT_PAGE_SELECT",
+			value1 = "Showing 1 to 4 of 11 entries.");
+
+		Site.viewMemberListCP(usersEmailsList = "userfn1@liferay.com,userfn2@liferay.com,userfn10@liferay.com");
+
+		Site.assertMemberListNotVisibleCP(usersEmailsList = "userfn3@liferay.com,userfn4@liferay.com,userfn5@liferay.com,userfn6@liferay.com,userfn7@liferay.com,userfn8@liferay.com,userfn9@liferay.com");
+
+		Site.viewMemberCP(
+			userFirstName = "Test",
+			userLastName = "Test",
+			userScreenName = "test");
+
+		Click(locator1 = "Pagination#LAST_LINK");
+
+		AssertTextEquals(
+			locator1 = "Pagination#CURRENT_PAGE_SELECT",
+			value1 = "Showing 9 to 11 of 11 entries.");
+
+		Site.assertMemberListNotVisibleCP(usersEmailsList = "userfn1@liferay.com,userfn2@liferay.com,userfn3@liferay.com,userfn4@liferay.com,userfn5@liferay.com,userfn6@liferay.com,userfn10@liferay.com");
+
+		Site.viewMemberListCP(usersEmailsList = "userfn7@liferay.com,userfn8@liferay.com,userfn9@liferay.com");
+
+		Click(locator1 = "Pagination#PREVIOUS_LINK");
+
+		AssertTextEquals(
+			locator1 = "Pagination#CURRENT_PAGE_SELECT",
+			value1 = "Showing 5 to 8 of 11 entries.");
+
+		Site.assertMemberListNotVisibleCP(usersEmailsList = "userfn1@liferay.com,userfn2@liferay.com,userfn7@liferay.com,userfn8@liferay.com,userfn9@liferay.com,userfn10@liferay.com");
+
+		Site.viewMemberListCP(usersEmailsList = "userfn3@liferay.com,userfn4@liferay.com,userfn5@liferay.com,userfn6@liferay.com");
+	}
+
+	@priority = "4"
+	test SiteMembershipsSearch {
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		JSONUser.addUser(
+			userEmailAddress = "4568@liferay.com",
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		JSONUser.addUser(
+			userEmailAddress = "5670@liferay.com",
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		JSONUser.addUser(
+			userEmailAddress = "9758@liferay.com",
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "guest");
+
+		Site.addAllMembersCP();
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest1",
+			userFirstNameSearchValue = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest2",
+			userFirstNameSearchValue = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest3",
+			userFirstNameSearchValue = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest1",
+			userFirstNameSearchValue = "Test",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1",
+			userScreenNameSearchValue = "user1");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2",
+			userScreenNameSearchValue = "screen");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3",
+			userScreenNameSearchValue = "member");
+
+		Site.searchMemberCP(
+			userEmailAddress = "4568@liferay.com",
+			userEmailAddressSearchValue = "4",
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		Site.searchMemberCP(
+			userEmailAddress = "4568@liferay.com",
+			userEmailAddressSearchValue = "5",
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.searchMemberCP(
+			userEmailAddress = "4568@liferay.com",
+			userEmailAddressSearchValue = "6",
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		Site.searchMemberCP(
+			userEmailAddress = "5670@liferay.com",
+			userEmailAddressSearchValue = "7",
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.searchMemberCP(
+			userEmailAddress = "4568@liferay.com",
+			userEmailAddressSearchValue = "8",
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userScreenName = "user1");
+
+		Site.viewMemberCP(
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.searchMemberCP(
+			userEmailAddress = "5670@liferay.com",
+			userEmailAddressSearchValue = "0",
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userScreenName = "screen2");
+
+		Site.searchMemberCP(
+			userEmailAddress = "4568@liferay.com",
+			userEmailAddressSearchValue = "9",
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userScreenName = "member3");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest1",
+			userLastName = "One",
+			userLastNameSearchValue = "One",
+			userScreenName = "user1");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest2",
+			userLastName = "Two",
+			userLastNameSearchValue = "Two",
+			userScreenName = "screen2");
+
+		Site.searchMemberCP(
+			userFirstName = "userfnTest3",
+			userLastName = "Three",
+			userLastNameSearchValue = "Three",
+			userScreenName = "member3");
+	}
+
+	@priority = "3"
+	test ViewMembershipRequestWithSiteMembershipScope {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property testray.component.names = "Site Administration,Users and Organizations";
+
+		for (var i : list "1,2") {
+			JSONGroup.addGroup(
+				groupName = "Site Name ${i}",
+				type = "Restricted");
+		}
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "Userfn Userln",
+			userScreenName = "usersn");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Dashboard");
+
+		Site.joinViaMySitesPG(
+			membershipType = "Restricted",
+			siteName = "Site Name 1",
+			userRole = "Guest");
+
+		User.logoutAndLoginPG(userLoginFullName = "Test Test");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name-1");
+
+		Site.viewSiteMembershipsRequest(
+			userFirstName = "userfn",
+			userLastName = "userln");
+
+		Site.openSiteMembershipsAdmin(siteURLKey = "site-name-2");
+
+		Site.viewNoSiteMembershipsRequest();
+	}
+
+	@priority = "3"
+	test ViewNoManualMembershipManagement {
+		property testray.component.names = "Site Administration";
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "true");
+
+		Navigator.openURL();
+
+		ProductMenuHelper.openProductMenu();
+
+		ProductMenuHelper.expandCategory(category = "People");
+
+		AssertVisible(
+			key_portlet = "Memberships",
+			locator1 = "ProductMenu#PORTLET");
+
+		Site.manageMembershipOptions(allowManualMembershipManagement = "false");
+
+		Navigator.openURL();
+
+		ProductMenuHelper.openProductMenu();
+
+		ProductMenuHelper.expandCategory(category = "People");
+
+		AssertElementNotPresent(
+			key_portlet = "Memberships",
+			locator1 = "ProductMenu#PORTLET");
+	}
+
+}

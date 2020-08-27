@@ -17,17 +17,13 @@ package com.liferay.portal.verify.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.reflect.ReflectionUtil;
-import com.liferay.portal.kernel.concurrent.ThrowableAwareRunnable;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.verify.model.VerifiableUUIDModel;
-import com.liferay.portal.test.rule.ExpectedDBType;
-import com.liferay.portal.test.rule.ExpectedLog;
-import com.liferay.portal.test.rule.ExpectedLogs;
-import com.liferay.portal.test.rule.ExpectedType;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.verify.VerifyProcess;
@@ -35,9 +31,8 @@ import com.liferay.portal.verify.VerifyUUID;
 import com.liferay.portal.verify.model.AssetTagVerifiableModel;
 import com.liferay.portal.verify.test.util.BaseVerifyProcessTestCase;
 
-import java.lang.reflect.Method;
-
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.junit.Assert;
@@ -62,48 +57,8 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 		_testDoVerify(new AssetTagVerifiableModel());
 	}
 
-	@ExpectedLogs(
-		expectedLogs = {
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.DB2,
-				expectedLog = "DB2 SQL Error: SQLCODE=",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.HYPERSONIC,
-				expectedLog = "user lacks privilege or object not found:",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.MARIADB,
-				expectedLog = "Unknown column 'Unknown' in 'field list'",
-				expectedType = ExpectedType.EXACT
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.MYSQL,
-				expectedLog = "Unknown column 'Unknown' in 'field list'",
-				expectedType = ExpectedType.EXACT
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.ORACLE,
-				expectedLog = "ORA-00904: \"UNKNOWN\": invalid identifier",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.POSTGRESQL,
-				expectedLog = "ERROR: column \"unknown\" does not exist",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.SYBASE,
-				expectedLog = "Invalid column name 'Unknown'.",
-				expectedType = ExpectedType.PREFIX
-			)
-		},
-		level = "ERROR", loggerClass = ThrowableAwareRunnable.class
-	)
 	@Test
-	public void testVerifyModelWithUnknownPKColumnName() {
+	public void testVerifyModelWithUnknownPKColumnName() throws Exception {
 		try {
 			ReflectionTestUtil.invoke(
 				_verifyUUID, "verifyUUID",
@@ -122,51 +77,27 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 
 				});
 		}
-		catch (Exception e) {
-			_verifyException("testVerifyModelWithUnknownPKColumnName", e);
+		catch (Exception exception) {
+			_verifyException(
+				exception,
+				HashMapBuilder.put(
+					DBType.DB2, "DB2 SQL Error: SQLCODE="
+				).put(
+					DBType.HYPERSONIC,
+					"user lacks privilege or object not found:"
+				).put(
+					DBType.ORACLE, "ORA-00904: \"UNKNOWN\": invalid identifier"
+				).put(
+					DBType.POSTGRESQL,
+					"ERROR: column \"unknown\" does not exist"
+				).build());
 		}
 	}
 
-	@ExpectedLogs(
-		expectedLogs = {
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.DB2,
-				expectedLog = "DB2 SQL Error: SQLCODE=",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.HYPERSONIC,
-				expectedLog = "user lacks privilege or object not found:",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.MARIADB, expectedLog = "Table ",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.MYSQL, expectedLog = "Table ",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.ORACLE,
-				expectedLog = "ORA-00942: table or view does not exist",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.POSTGRESQL,
-				expectedLog = "ERROR: relation \"unknown\" does not exist",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.SYBASE,
-				expectedLog = "Unknown not found.",
-				expectedType = ExpectedType.PREFIX
-			)
-		},
-		level = "ERROR", loggerClass = ThrowableAwareRunnable.class
-	)
 	@Test
-	public void testVerifyParallelUnknownModelWithUnknownPKColumnName() {
+	public void testVerifyParallelUnknownModelWithUnknownPKColumnName()
+		throws Exception {
+
 		VerifiableUUIDModel[] verifiableUUIDModels = new VerifiableUUIDModel
 			[PropsValues.VERIFY_PROCESS_CONCURRENCY_THRESHOLD];
 
@@ -191,52 +122,35 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 		try {
 			_testDoVerify(verifiableUUIDModels);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_verifyException(
-				"testVerifyParallelUnknownModelWithUnknownPKColumnName", e);
+				exception,
+				HashMapBuilder.put(
+					DBType.DB2, "DB2 SQL Error: SQLCODE="
+				).put(
+					DBType.HYPERSONIC,
+					"user lacks privilege or object not found:"
+				).put(
+					DBType.MARIADB, "Table "
+				).put(
+					DBType.MYSQL, "Table "
+				).put(
+					DBType.ORACLE, "ORA-00942: table or view does not exist"
+				).put(
+					DBType.POSTGRESQL,
+					"ERROR: relation \"unknown\" does not exist"
+				).put(
+					DBType.SQLSERVER, "Invalid object name 'Unknown'"
+				).put(
+					DBType.SYBASE, "Unknown not found."
+				).build());
 		}
 	}
 
-	@ExpectedLogs(
-		expectedLogs = {
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.DB2,
-				expectedLog = "DB2 SQL Error: SQLCODE=",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.HYPERSONIC,
-				expectedLog = "user lacks privilege or object not found:",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.MARIADB, expectedLog = "Table ",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.MYSQL, expectedLog = "Table ",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.ORACLE,
-				expectedLog = "ORA-00942: table or view does not exist",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.POSTGRESQL,
-				expectedLog = "ERROR: relation \"unknown\" does not exist",
-				expectedType = ExpectedType.PREFIX
-			),
-			@ExpectedLog(
-				expectedDBType = ExpectedDBType.SYBASE,
-				expectedLog = "Unknown not found.",
-				expectedType = ExpectedType.PREFIX
-			)
-		},
-		level = "ERROR", loggerClass = ThrowableAwareRunnable.class
-	)
 	@Test
-	public void testVerifyUnknownModelWithUnknownPKColumnName() {
+	public void testVerifyUnknownModelWithUnknownPKColumnName()
+		throws Exception {
+
 		try {
 			_testDoVerify(
 				new VerifiableUUIDModel() {
@@ -253,9 +167,28 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 
 				});
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			_verifyException(
-				"testVerifyUnknownModelWithUnknownPKColumnName", e);
+				exception,
+				HashMapBuilder.put(
+					DBType.DB2, "DB2 SQL Error: SQLCODE="
+				).put(
+					DBType.HYPERSONIC,
+					"user lacks privilege or object not found:"
+				).put(
+					DBType.MARIADB, "Table "
+				).put(
+					DBType.MYSQL, "Table "
+				).put(
+					DBType.ORACLE, "ORA-00942: table or view does not exist"
+				).put(
+					DBType.POSTGRESQL,
+					"ERROR: relation \"unknown\" does not exist"
+				).put(
+					DBType.SQLSERVER, "Invalid object name 'Unknown'"
+				).put(
+					DBType.SYBASE, "Unknown not found."
+				).build());
 		}
 	}
 
@@ -264,60 +197,23 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 		return _verifyUUID;
 	}
 
-	private static void _verifyException(String methodName, Exception e) {
-		Method method = null;
-
-		try {
-			method = VerifyUUIDTest.class.getMethod(methodName);
-		}
-		catch (NoSuchMethodException nsme) {
-			ReflectionUtil.throwException(nsme);
-
-			return;
-		}
-
-		ExpectedLogs expectedLogs = method.getAnnotation(ExpectedLogs.class);
-
-		String message = e.getMessage();
+	private static void _verifyException(
+			Exception exception, Map<DBType, String> expectedMessages)
+		throws Exception {
 
 		DB db = DBManagerUtil.getDB();
 
-		DBType dbType = db.getDBType();
+		String expectedMessagePrefix = expectedMessages.get(db.getDBType());
 
-		for (ExpectedLog expectedLog : expectedLogs.expectedLogs()) {
-			ExpectedDBType expectedDBType = expectedLog.expectedDBType();
-
-			if (dbType != expectedDBType.getDBType()) {
-				continue;
-			}
-
-			String logMessage = expectedLog.expectedLog();
-
-			ExpectedType expectedType = expectedLog.expectedType();
-
-			if (expectedType == ExpectedType.CONTAINS) {
-				Assert.assertTrue(
-					message + " does not contain " + logMessage,
-					message.contains(logMessage));
-			}
-			else if (expectedType == ExpectedType.EXACT) {
-				Assert.assertEquals(message, logMessage);
-			}
-			else if (expectedType == ExpectedType.POSTFIX) {
-				Assert.assertTrue(
-					message + " does not end " + logMessage,
-					message.endsWith(logMessage));
-			}
-			else if (expectedType == ExpectedType.PREFIX) {
-				Assert.assertTrue(
-					message + " does not start " + logMessage,
-					message.startsWith(logMessage));
-			}
-			else {
-				throw new IllegalStateException(
-					"Unknown ExpectedType" + expectedLog.expectedType(), e);
-			}
+		if (expectedMessagePrefix == null) {
+			throw exception;
 		}
+
+		String message = exception.getMessage();
+
+		Assert.assertTrue(
+			message + " does not start " + expectedMessagePrefix,
+			message.startsWith(expectedMessagePrefix));
 	}
 
 	private void _testDoVerify(VerifiableUUIDModel... verifiableUUIDModels) {
@@ -338,8 +234,8 @@ public class VerifyUUIDTest extends BaseVerifyProcessTestCase {
 			try {
 				UnsafeConsumer.accept(callables, Callable<Void>::call);
 			}
-			catch (Throwable t) {
-				ReflectionUtil.throwException(t);
+			catch (Throwable throwable) {
+				ReflectionUtil.throwException(throwable);
 			}
 		}
 

@@ -14,9 +14,9 @@
 
 package com.liferay.exportimport.internal.lifecycle;
 
-import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleListener;
+import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.StagingURLHelper;
@@ -100,13 +100,12 @@ public class EventRemotePropagatorExportImportLifecycleListener
 				exportImportConfiguration ->
 					exportImportConfiguration.getSettingsMap());
 
-		Serializable sourceGroupIdSerializable = settingsMapOptional.map(
-			settingsMap -> settingsMap.get("sourceGroupId")
-		).orElse(
-			GroupConstants.ANY_PARENT_GROUP_ID
-		);
-
-		long sourceGroupId = GetterUtil.getLong(sourceGroupIdSerializable);
+		long sourceGroupId = GetterUtil.getLong(
+			settingsMapOptional.map(
+				settingsMap -> settingsMap.get("sourceGroupId")
+			).orElse(
+				GroupConstants.ANY_PARENT_GROUP_ID
+			));
 
 		Group sourceGroup = _groupLocalService.fetchGroup(sourceGroupId);
 
@@ -114,20 +113,20 @@ public class EventRemotePropagatorExportImportLifecycleListener
 			return false;
 		}
 
-		Serializable targetGroupIdSerializable = settingsMapOptional.map(
-			settingsMap -> settingsMap.get("targetGroupId")
-		).orElse(
-			GroupConstants.ANY_PARENT_GROUP_ID
-		);
-
-		long targetGroupId = GetterUtil.getLong(targetGroupIdSerializable);
+		long targetGroupId = GetterUtil.getLong(
+			settingsMapOptional.map(
+				settingsMap -> settingsMap.get("targetGroupId")
+			).orElse(
+				GroupConstants.ANY_PARENT_GROUP_ID
+			));
 
 		Group targetGroup = _groupLocalService.fetchGroup(targetGroupId);
 
-		UnicodeProperties typeSettings =
+		UnicodeProperties typeSettingsUnicodeProperties =
 			sourceGroup.getTypeSettingsProperties();
 
-		String remoteGroupUUID = typeSettings.getProperty("remoteGroupUUID");
+		String remoteGroupUUID = typeSettingsUnicodeProperties.getProperty(
+			"remoteGroupUUID");
 
 		// If the target group can be found and the UUID's also match, then we
 		// must not propagate the event because it means remote staging is
@@ -181,12 +180,12 @@ public class EventRemotePropagatorExportImportLifecycleListener
 				remoteURL, user.getLogin(), user.getPassword(),
 				user.isPasswordEncrypted());
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to generate HttpPrincipal for user " +
 						user.getFullName(),
-					pe);
+					portalException);
 			}
 		}
 
@@ -219,11 +218,11 @@ public class EventRemotePropagatorExportImportLifecycleListener
 						exportImportLifecycleEvent.getProcessId(),
 						exportImportLifecycleEvent.getAttributes());
 				}
-				catch (PortalException pe) {
+				catch (PortalException portalException) {
 					_log.error(
 						"Unable to propagate staging lifecycle event to the " +
 							"remote live site",
-						pe);
+						portalException);
 				}
 			}
 		);

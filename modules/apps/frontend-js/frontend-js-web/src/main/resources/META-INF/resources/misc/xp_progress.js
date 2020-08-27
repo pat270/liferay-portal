@@ -1,3 +1,5 @@
+/* eslint-disable notice/notice */
+
 // xp_progressbar
 // Copyright 2004 Brian Gosselin of ScriptAsylum.com
 //
@@ -22,23 +24,56 @@
 // action_to_perform_after_scrolled_n_times
 // )
 
-var w3c = !!(document.getElementById);
-var ie = !!(document.all);
+var w3c = !!document.getElementById;
+var ie = !!document.all;
 var N = -1;
 
 function createBar(w, h, bgc, brdW, brdC, blkC, speed, blocks, count, action) {
 	if (ie || w3c) {
-		var t = '<div id="_xpbar' + (++N) + '" style="visibility:visible; position:relative; overflow:hidden; width:' + w + 'px; height:' + h + 'px; background-color:' + bgc + '; border-color:' + brdC + '; border-width:' + brdW + 'px; border-style:solid; font-size:1px;">';
-		t += '<span id="blocks' + N + '" style="left:-' + (h * 2 + 1) + 'px; position:absolute; font-size:1px">';
+		var t =
+			'<div id="_xpbar' +
+			++N +
+			'" style="visibility:visible; position:relative; overflow:hidden; width:' +
+			w +
+			'px; height:' +
+			h +
+			'px; background-color:' +
+			bgc +
+			'; border-color:' +
+			brdC +
+			'; border-width:' +
+			brdW +
+			'px; border-style:solid; font-size:1px;">';
+		t +=
+			'<span id="blocks' +
+			N +
+			'" style="left:-' +
+			(h * 2 + 1) +
+			'px; position:absolute; font-size:1px">';
 		for (i = 0; i < blocks; i++) {
-			t += '<span style="background-color:' + blkC + '; left:-' + ((h * i) + i) + 'px; font-size:1px; position:absolute; width:' + h + 'px; height:' + h + 'px; ';
-			t += (ie) ? 'filter:alpha(opacity=' + (100 - i * (100 / blocks)) + ')' : '-Moz-opacity:' + ((100 - i * (100 / blocks)) / 100);
+			t +=
+				'<span style="background-color:' +
+				blkC +
+				'; left:-' +
+				(h * i + i) +
+				'px; font-size:1px; position:absolute; width:' +
+				h +
+				'px; height:' +
+				h +
+				'px; ';
+			t += ie
+				? 'filter:alpha(opacity=' + (100 - i * (100 / blocks)) + ')'
+				: '-Moz-opacity:' + (100 - i * (100 / blocks)) / 100;
 			t += '"></span>';
 		}
 		t += '</span></div>';
 		document.write(t);
-		var bA = (ie) ? document.all['blocks' + N] : document.getElementById('blocks' + N);
-		bA.bar = (ie) ? document.all['_xpbar' + N] : document.getElementById('_xpbar' + N);
+		var bA = ie
+			? document.all['blocks' + N]
+			: document.getElementById('blocks' + N);
+		bA.bar = ie
+			? document.all['_xpbar' + N]
+			: document.getElementById('_xpbar' + N);
 		bA.blocks = blocks;
 		bA.N = N;
 		bA.w = w;
@@ -48,10 +83,10 @@ function createBar(w, h, bgc, brdW, brdC, blkC, speed, blocks, count, action) {
 		bA.count = count;
 		bA.action = action;
 		bA.togglePause = togglePause;
-		bA.showBar = function() {
+		bA.showBar = function () {
 			this.bar.style.visibility = 'visible';
 		};
-		bA.hideBar = function() {
+		bA.hideBar = function () {
 			this.bar.style.visibility = 'hidden';
 		};
 		bA.tid = setInterval('startBar(' + N + ')', speed);
@@ -60,7 +95,9 @@ function createBar(w, h, bgc, brdW, brdC, blkC, speed, blocks, count, action) {
 }
 
 function startBar(bn) {
-	var t = (ie) ? document.all['blocks' + bn] : document.getElementById('blocks' + bn);
+	var t = ie
+		? document.all['blocks' + bn]
+		: document.getElementById('blocks' + bn);
 	if (parseInt(t.style.left) + t.h + 1 - (t.blocks * t.h + t.blocks) > t.w) {
 		t.style.left = -(t.h * 2 + 1) + 'px';
 		t.ctr++;
@@ -70,7 +107,7 @@ function startBar(bn) {
 		}
 	}
 	else {
-		t.style.left = (parseInt(t.style.left) + t.h + 1) + 'px';
+		t.style.left = parseInt(t.style.left) + t.h + 1 + 'px';
 	}
 }
 

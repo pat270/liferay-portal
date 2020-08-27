@@ -1,4 +1,5 @@
 definition {
+
 	macro addCP {
 		LexiconEntry.gotoEntryMenuItem(
 			menuItem = "Add Organization",
@@ -13,6 +14,18 @@ definition {
 		AssertTextEquals(
 			locator1 = "TextInput#NAME",
 			value1 = "${suborgName}");
+	}
+
+	macro removeCP {
+		var key_orgName = "${orgName}";
+
+		AssertClick(
+			locator1 = "UsersAndOrganizations#ORGANIZATION_TABLE_NAME",
+			value1 = "${orgName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${subOrgName}");
+
+		MenuItem.click(menuItem = "Remove");
 	}
 
 	macro tearDownCP {
@@ -54,4 +67,5 @@ definition {
 			locator1 = "UsersAndOrganizationsEditOrganization#PARENT_ORGANIZATION_TABLE_TYPE",
 			value1 = "${orgType}");
 	}
+
 }

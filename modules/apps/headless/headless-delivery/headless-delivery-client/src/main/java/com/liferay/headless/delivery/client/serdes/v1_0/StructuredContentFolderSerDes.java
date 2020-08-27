@@ -14,17 +14,19 @@
 
 package com.liferay.headless.delivery.client.serdes.v1_0;
 
+import com.liferay.headless.delivery.client.dto.v1_0.CustomField;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContentFolder;
 import com.liferay.headless.delivery.client.json.BaseJSONParser;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -63,6 +65,30 @@ public class StructuredContentFolderSerDes {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+		if (structuredContentFolder.getActions() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(structuredContentFolder.getActions()));
+		}
+
+		if (structuredContentFolder.getAssetLibraryKey() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assetLibraryKey\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(structuredContentFolder.getAssetLibraryKey()));
+
+			sb.append("\"");
+		}
+
 		if (structuredContentFolder.getCreator() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -71,6 +97,32 @@ public class StructuredContentFolderSerDes {
 			sb.append("\"creator\": ");
 
 			sb.append(String.valueOf(structuredContentFolder.getCreator()));
+		}
+
+		if (structuredContentFolder.getCustomFields() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"customFields\": ");
+
+			sb.append("[");
+
+			for (int i = 0;
+				 i < structuredContentFolder.getCustomFields().length; i++) {
+
+				sb.append(
+					String.valueOf(
+						structuredContentFolder.getCustomFields()[i]));
+
+				if ((i + 1) <
+						structuredContentFolder.getCustomFields().length) {
+
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (structuredContentFolder.getDateCreated() != null) {
@@ -166,6 +218,19 @@ public class StructuredContentFolderSerDes {
 			sb.append(structuredContentFolder.getNumberOfStructuredContents());
 		}
 
+		if (structuredContentFolder.getParentStructuredContentFolderId() !=
+				null) {
+
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"parentStructuredContentFolderId\": ");
+
+			sb.append(
+				structuredContentFolder.getParentStructuredContentFolderId());
+		}
+
 		if (structuredContentFolder.getSiteId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -174,6 +239,16 @@ public class StructuredContentFolderSerDes {
 			sb.append("\"siteId\": ");
 
 			sb.append(structuredContentFolder.getSiteId());
+		}
+
+		if (structuredContentFolder.getSubscribed() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"subscribed\": ");
+
+			sb.append(structuredContentFolder.getSubscribed());
 		}
 
 		if (structuredContentFolder.getViewableBy() != null) {
@@ -209,10 +284,28 @@ public class StructuredContentFolderSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		if (structuredContentFolder.getActions() == null) {
+			map.put("actions", null);
+		}
+		else {
+			map.put(
+				"actions",
+				String.valueOf(structuredContentFolder.getActions()));
+		}
+
+		if (structuredContentFolder.getAssetLibraryKey() == null) {
+			map.put("assetLibraryKey", null);
+		}
+		else {
+			map.put(
+				"assetLibraryKey",
+				String.valueOf(structuredContentFolder.getAssetLibraryKey()));
+		}
 
 		if (structuredContentFolder.getCreator() == null) {
 			map.put("creator", null);
@@ -223,15 +316,34 @@ public class StructuredContentFolderSerDes {
 				String.valueOf(structuredContentFolder.getCreator()));
 		}
 
-		map.put(
-			"dateCreated",
-			liferayToJSONDateFormat.format(
-				structuredContentFolder.getDateCreated()));
+		if (structuredContentFolder.getCustomFields() == null) {
+			map.put("customFields", null);
+		}
+		else {
+			map.put(
+				"customFields",
+				String.valueOf(structuredContentFolder.getCustomFields()));
+		}
 
-		map.put(
-			"dateModified",
-			liferayToJSONDateFormat.format(
-				structuredContentFolder.getDateModified()));
+		if (structuredContentFolder.getDateCreated() == null) {
+			map.put("dateCreated", null);
+		}
+		else {
+			map.put(
+				"dateCreated",
+				liferayToJSONDateFormat.format(
+					structuredContentFolder.getDateCreated()));
+		}
+
+		if (structuredContentFolder.getDateModified() == null) {
+			map.put("dateModified", null);
+		}
+		else {
+			map.put(
+				"dateModified",
+				liferayToJSONDateFormat.format(
+					structuredContentFolder.getDateModified()));
+		}
 
 		if (structuredContentFolder.getDescription() == null) {
 			map.put("description", null);
@@ -279,12 +391,34 @@ public class StructuredContentFolderSerDes {
 					structuredContentFolder.getNumberOfStructuredContents()));
 		}
 
+		if (structuredContentFolder.getParentStructuredContentFolderId() ==
+				null) {
+
+			map.put("parentStructuredContentFolderId", null);
+		}
+		else {
+			map.put(
+				"parentStructuredContentFolderId",
+				String.valueOf(
+					structuredContentFolder.
+						getParentStructuredContentFolderId()));
+		}
+
 		if (structuredContentFolder.getSiteId() == null) {
 			map.put("siteId", null);
 		}
 		else {
 			map.put(
 				"siteId", String.valueOf(structuredContentFolder.getSiteId()));
+		}
+
+		if (structuredContentFolder.getSubscribed() == null) {
+			map.put("subscribed", null);
+		}
+		else {
+			map.put(
+				"subscribed",
+				String.valueOf(structuredContentFolder.getSubscribed()));
 		}
 
 		if (structuredContentFolder.getViewableBy() == null) {
@@ -299,42 +433,7 @@ public class StructuredContentFolderSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		return string.replaceAll("\"", "\\\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class StructuredContentFolderJSONParser
+	public static class StructuredContentFolderJSONParser
 		extends BaseJSONParser<StructuredContentFolder> {
 
 		@Override
@@ -352,10 +451,35 @@ public class StructuredContentFolderSerDes {
 			StructuredContentFolder structuredContentFolder,
 			String jsonParserFieldName, Object jsonParserFieldValue) {
 
-			if (Objects.equals(jsonParserFieldName, "creator")) {
+			if (Objects.equals(jsonParserFieldName, "actions")) {
+				if (jsonParserFieldValue != null) {
+					structuredContentFolder.setActions(
+						(Map)StructuredContentFolderSerDes.toMap(
+							(String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "assetLibraryKey")) {
+				if (jsonParserFieldValue != null) {
+					structuredContentFolder.setAssetLibraryKey(
+						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "creator")) {
 				if (jsonParserFieldValue != null) {
 					structuredContentFolder.setCreator(
 						CreatorSerDes.toDTO((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "customFields")) {
+				if (jsonParserFieldValue != null) {
+					structuredContentFolder.setCustomFields(
+						Stream.of(
+							toStrings((Object[])jsonParserFieldValue)
+						).map(
+							object -> CustomFieldSerDes.toDTO((String)object)
+						).toArray(
+							size -> new CustomField[size]
+						));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "dateCreated")) {
@@ -405,10 +529,25 @@ public class StructuredContentFolderSerDes {
 						Integer.valueOf((String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(
+						jsonParserFieldName,
+						"parentStructuredContentFolderId")) {
+
+				if (jsonParserFieldValue != null) {
+					structuredContentFolder.setParentStructuredContentFolderId(
+						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "siteId")) {
 				if (jsonParserFieldValue != null) {
 					structuredContentFolder.setSiteId(
 						Long.valueOf((String)jsonParserFieldValue));
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "subscribed")) {
+				if (jsonParserFieldValue != null) {
+					structuredContentFolder.setSubscribed(
+						(Boolean)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "viewableBy")) {
@@ -424,6 +563,75 @@ public class StructuredContentFolderSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		for (String[] strings : BaseJSONParser.JSON_ESCAPE_STRINGS) {
+			string = string.replace(strings[0], strings[1]);
+		}
+
+		return string;
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+			else {
+				sb.append(String.valueOf(entry.getValue()));
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

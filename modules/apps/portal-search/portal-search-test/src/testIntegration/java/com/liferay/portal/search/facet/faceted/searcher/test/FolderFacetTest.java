@@ -20,6 +20,7 @@ import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
+import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.document.library.test.util.search.DLFolderSearchFixture;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
@@ -40,9 +41,9 @@ import com.liferay.portal.search.facet.Facet;
 import com.liferay.portal.search.facet.custom.CustomFacetFactory;
 import com.liferay.portal.search.facet.folder.FolderFacetFactory;
 import com.liferay.portal.search.test.util.DocumentsAssert;
+import com.liferay.portal.search.test.util.FacetsAssert;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.util.test.DLAppTestUtil;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,8 +115,41 @@ public class FolderFacetTest extends BaseFacetedSearcherTestCase {
 		List<String> dlFolderIds = Arrays.asList(
 			ArrayUtil.append(getFolderIds(_dlFolders), "0"));
 
-		assertFrequencies(
-			facet.getFieldName(), searchContext, toMap(dlFolderIds, 1));
+		FacetsAssert.assertFrequencies(
+			facet.getFieldName(), searchContext, hits, toMap(dlFolderIds, 1));
+	}
+
+	@Test
+	public void testAvoidResidualDataFromDDMStructureLocalServiceTest()
+		throws Exception {
+
+		// See LPS-58543
+
+		String keyword = "To Do";
+
+		index(keyword);
+
+		SearchContext searchContext = getSearchContext(keyword);
+
+		Facet facet = folderFacetFactory.newInstance(searchContext);
+
+		searchContext.addFacet(facet);
+
+		Hits hits = search(searchContext);
+
+		Assert.assertEquals(hits.toString(), 3, hits.getLength());
+
+		List<String> entryClassNames = Arrays.asList(
+			DLFolder.class.getName(), DLFileEntry.class.getName(),
+			User.class.getName());
+
+		assertEntryClassNames(entryClassNames, hits, facet, searchContext);
+
+		List<String> dlFolderIds = Arrays.asList(
+			ArrayUtil.append(getFolderIds(_dlFolders), "0"));
+
+		FacetsAssert.assertFrequencies(
+			facet.getFieldName(), searchContext, hits, toMap(dlFolderIds, 1));
 	}
 
 	@Test
@@ -143,8 +177,8 @@ public class FolderFacetTest extends BaseFacetedSearcherTestCase {
 		List<String> dlFolderIds = Arrays.asList(
 			ArrayUtil.append(getFolderIds(_dlFolders), "0"));
 
-		assertFrequencies(
-			facet.getFieldName(), searchContext, toMap(dlFolderIds, 1));
+		FacetsAssert.assertFrequencies(
+			facet.getFieldName(), searchContext, hits, toMap(dlFolderIds, 1));
 	}
 
 	@Test
@@ -175,8 +209,8 @@ public class FolderFacetTest extends BaseFacetedSearcherTestCase {
 		List<String> dlFolderIds = Arrays.asList(
 			ArrayUtil.append(getFolderIds(_dlFolders), StringPool.BLANK));
 
-		assertFrequencies(
-			facet.getFieldName(), searchContext, toMap(dlFolderIds, 2));
+		FacetsAssert.assertFrequencies(
+			facet.getFieldName(), searchContext, hits, toMap(dlFolderIds, 2));
 	}
 
 	protected void assertEntryClassNames(
@@ -236,10 +270,9 @@ public class FolderFacetTest extends BaseFacetedSearcherTestCase {
 	protected Map<String, Integer> toMap(
 		Collection<String> strings, int value) {
 
-		return strings.stream(
-		).collect(
-			Collectors.toMap(s -> s, s -> value)
-		);
+		Stream<String> stream = strings.stream();
+
+		return stream.collect(Collectors.toMap(s -> s, s -> value));
 	}
 
 	@Inject

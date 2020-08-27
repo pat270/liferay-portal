@@ -22,13 +22,12 @@ import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.search.test.util.BaseSearchTestCase;
-import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,78 +46,66 @@ public class BlogsEntrySearchTest extends BaseSearchTestCase {
 	@Before
 	@Override
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		super.setUp();
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testLocalizedSearch() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testParentBaseModelUserPermissions() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchAttachments() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchByDDMStructureField() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchByKeywordsInsideParentBaseModel() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireAllVersions() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchExpireLatestVersion() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchMyEntries() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchRecentEntries() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchStatus() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchVersions() {
 	}
 
-	@Ignore
 	@Override
 	@Test
 	public void testSearchWithinDDMStructure() {

@@ -26,30 +26,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SyncDLFileVersionDiff in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class SyncDLFileVersionDiffCacheModel
 	implements CacheModel<SyncDLFileVersionDiff>, Externalizable {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof SyncDLFileVersionDiffCacheModel)) {
+		if (!(object instanceof SyncDLFileVersionDiffCacheModel)) {
 			return false;
 		}
 
 		SyncDLFileVersionDiffCacheModel syncDLFileVersionDiffCacheModel =
-			(SyncDLFileVersionDiffCacheModel)obj;
+			(SyncDLFileVersionDiffCacheModel)object;
 
 		if (syncDLFileVersionDiffId ==
 				syncDLFileVersionDiffCacheModel.syncDLFileVersionDiffId) {
@@ -67,10 +64,12 @@ public class SyncDLFileVersionDiffCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(15);
+		StringBundler sb = new StringBundler(17);
 
 		sb.append("{syncDLFileVersionDiffId=");
 		sb.append(syncDLFileVersionDiffId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 		sb.append(", fileEntryId=");
 		sb.append(fileEntryId);
 		sb.append(", sourceFileVersionId=");
@@ -95,6 +94,7 @@ public class SyncDLFileVersionDiffCacheModel
 
 		syncDLFileVersionDiffImpl.setSyncDLFileVersionDiffId(
 			syncDLFileVersionDiffId);
+		syncDLFileVersionDiffImpl.setCompanyId(companyId);
 		syncDLFileVersionDiffImpl.setFileEntryId(fileEntryId);
 		syncDLFileVersionDiffImpl.setSourceFileVersionId(sourceFileVersionId);
 		syncDLFileVersionDiffImpl.setTargetFileVersionId(targetFileVersionId);
@@ -118,6 +118,8 @@ public class SyncDLFileVersionDiffCacheModel
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		syncDLFileVersionDiffId = objectInput.readLong();
 
+		companyId = objectInput.readLong();
+
 		fileEntryId = objectInput.readLong();
 
 		sourceFileVersionId = objectInput.readLong();
@@ -134,6 +136,8 @@ public class SyncDLFileVersionDiffCacheModel
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(syncDLFileVersionDiffId);
 
+		objectOutput.writeLong(companyId);
+
 		objectOutput.writeLong(fileEntryId);
 
 		objectOutput.writeLong(sourceFileVersionId);
@@ -147,6 +151,7 @@ public class SyncDLFileVersionDiffCacheModel
 	}
 
 	public long syncDLFileVersionDiffId;
+	public long companyId;
 	public long fileEntryId;
 	public long sourceFileVersionId;
 	public long targetFileVersionId;

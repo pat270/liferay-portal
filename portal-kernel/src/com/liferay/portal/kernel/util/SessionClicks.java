@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -49,8 +50,8 @@ public class SessionClicks {
 
 			return portalPreferences.getValue(namespace, key, defaultValue);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return null;
 		}
@@ -66,11 +67,8 @@ public class SessionClicks {
 		HttpSession session, String namespace, String key,
 		String defaultValue) {
 
-		String sessionKey = namespace.concat(
-			StringPool.COLON
-		).concat(
-			key
-		);
+		String sessionKey = StringBundler.concat(
+			namespace, StringPool.COLON, key);
 
 		return GetterUtil.getString(
 			session.getAttribute(sessionKey), defaultValue);
@@ -123,11 +121,11 @@ public class SessionClicks {
 
 				break;
 			}
-			catch (ConcurrentModificationException cme) {
-				continue;
+			catch (ConcurrentModificationException
+						concurrentModificationException) {
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 
 				break;
 			}
@@ -141,11 +139,8 @@ public class SessionClicks {
 	public static void put(
 		HttpSession session, String namespace, String key, String value) {
 
-		String sessionKey = namespace.concat(
-			StringPool.COLON
-		).concat(
-			key
-		);
+		String sessionKey = StringBundler.concat(
+			namespace, StringPool.COLON, key);
 
 		session.setAttribute(sessionKey, value);
 	}

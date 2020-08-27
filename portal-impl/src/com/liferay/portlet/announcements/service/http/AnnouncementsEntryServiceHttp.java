@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>AnnouncementsEntryServiceUtil</code> service
@@ -51,59 +49,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsEntryServiceSoap
  * @generated
  */
-@ProviderType
 public class AnnouncementsEntryServiceHttp {
-
-	public static com.liferay.announcements.kernel.model.AnnouncementsEntry
-			addEntry(
-				HttpPrincipal httpPrincipal, long plid, long classNameId,
-				long classPK, String title, String content, String url,
-				String type, int displayDateMonth, int displayDateDay,
-				int displayDateYear, int displayDateHour, int displayDateMinute,
-				boolean displayImmediately, int expirationDateMonth,
-				int expirationDateDay, int expirationDateYear,
-				int expirationDateHour, int expirationDateMinute, int priority,
-				boolean alert)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		try {
-			MethodKey methodKey = new MethodKey(
-				AnnouncementsEntryServiceUtil.class, "addEntry",
-				_addEntryParameterTypes0);
-
-			MethodHandler methodHandler = new MethodHandler(
-				methodKey, plid, classNameId, classPK, title, content, url,
-				type, displayDateMonth, displayDateDay, displayDateYear,
-				displayDateHour, displayDateMinute, displayImmediately,
-				expirationDateMonth, expirationDateDay, expirationDateYear,
-				expirationDateHour, expirationDateMinute, priority, alert);
-
-			Object returnObj = null;
-
-			try {
-				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
-			}
-			catch (Exception e) {
-				if (e instanceof
-						com.liferay.portal.kernel.exception.PortalException) {
-
-					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
-				}
-
-				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
-			}
-
-			return (com.liferay.announcements.kernel.model.AnnouncementsEntry)
-				returnObj;
-		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
-
-			throw se;
-		}
-	}
 
 	public static com.liferay.announcements.kernel.model.AnnouncementsEntry
 			addEntry(
@@ -116,7 +62,7 @@ public class AnnouncementsEntryServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				AnnouncementsEntryServiceUtil.class, "addEntry",
-				_addEntryParameterTypes1);
+				_addEntryParameterTypes0);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, classNameId, classPK, title, content, url, type,
@@ -127,25 +73,27 @@ public class AnnouncementsEntryServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.announcements.kernel.model.AnnouncementsEntry)
 				returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -155,29 +103,31 @@ public class AnnouncementsEntryServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				AnnouncementsEntryServiceUtil.class, "deleteEntry",
-				_deleteEntryParameterTypes2);
+				_deleteEntryParameterTypes1);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, entryId);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -188,7 +138,7 @@ public class AnnouncementsEntryServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				AnnouncementsEntryServiceUtil.class, "getEntry",
-				_getEntryParameterTypes3);
+				_getEntryParameterTypes2);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, entryId);
 
@@ -197,25 +147,27 @@ public class AnnouncementsEntryServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.announcements.kernel.model.AnnouncementsEntry)
 				returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
+			_log.error(systemException, systemException);
+
+			throw systemException;
 		}
 	}
 
@@ -230,7 +182,7 @@ public class AnnouncementsEntryServiceHttp {
 		try {
 			MethodKey methodKey = new MethodKey(
 				AnnouncementsEntryServiceUtil.class, "updateEntry",
-				_updateEntryParameterTypes4);
+				_updateEntryParameterTypes3);
 
 			MethodHandler methodHandler = new MethodHandler(
 				methodKey, entryId, title, content, url, type, displayDate,
@@ -241,75 +193,27 @@ public class AnnouncementsEntryServiceHttp {
 			try {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
-			catch (Exception e) {
-				if (e instanceof
+			catch (Exception exception) {
+				if (exception instanceof
 						com.liferay.portal.kernel.exception.PortalException) {
 
 					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
+						exception;
 				}
 
 				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
+					exception);
 			}
 
 			return (com.liferay.announcements.kernel.model.AnnouncementsEntry)
 				returnObj;
 		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
 
-			throw se;
-		}
-	}
+			_log.error(systemException, systemException);
 
-	public static com.liferay.announcements.kernel.model.AnnouncementsEntry
-			updateEntry(
-				HttpPrincipal httpPrincipal, long entryId, String title,
-				String content, String url, String type, int displayDateMonth,
-				int displayDateDay, int displayDateYear, int displayDateHour,
-				int displayDateMinute, boolean displayImmediately,
-				int expirationDateMonth, int expirationDateDay,
-				int expirationDateYear, int expirationDateHour,
-				int expirationDateMinute, int priority)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		try {
-			MethodKey methodKey = new MethodKey(
-				AnnouncementsEntryServiceUtil.class, "updateEntry",
-				_updateEntryParameterTypes5);
-
-			MethodHandler methodHandler = new MethodHandler(
-				methodKey, entryId, title, content, url, type, displayDateMonth,
-				displayDateDay, displayDateYear, displayDateHour,
-				displayDateMinute, displayImmediately, expirationDateMonth,
-				expirationDateDay, expirationDateYear, expirationDateHour,
-				expirationDateMinute, priority);
-
-			Object returnObj = null;
-
-			try {
-				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
-			}
-			catch (Exception e) {
-				if (e instanceof
-						com.liferay.portal.kernel.exception.PortalException) {
-
-					throw (com.liferay.portal.kernel.exception.PortalException)
-						e;
-				}
-
-				throw new com.liferay.portal.kernel.exception.SystemException(
-					e);
-			}
-
-			return (com.liferay.announcements.kernel.model.AnnouncementsEntry)
-				returnObj;
-		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
-
-			throw se;
+			throw systemException;
 		}
 	}
 
@@ -317,30 +221,19 @@ public class AnnouncementsEntryServiceHttp {
 		AnnouncementsEntryServiceHttp.class);
 
 	private static final Class<?>[] _addEntryParameterTypes0 = new Class[] {
-		long.class, long.class, long.class, String.class, String.class,
-		String.class, String.class, int.class, int.class, int.class, int.class,
-		int.class, boolean.class, int.class, int.class, int.class, int.class,
-		int.class, int.class, boolean.class
-	};
-	private static final Class<?>[] _addEntryParameterTypes1 = new Class[] {
 		long.class, long.class, String.class, String.class, String.class,
 		String.class, java.util.Date.class, java.util.Date.class, int.class,
 		boolean.class
 	};
-	private static final Class<?>[] _deleteEntryParameterTypes2 = new Class[] {
+	private static final Class<?>[] _deleteEntryParameterTypes1 = new Class[] {
 		long.class
 	};
-	private static final Class<?>[] _getEntryParameterTypes3 = new Class[] {
+	private static final Class<?>[] _getEntryParameterTypes2 = new Class[] {
 		long.class
 	};
-	private static final Class<?>[] _updateEntryParameterTypes4 = new Class[] {
+	private static final Class<?>[] _updateEntryParameterTypes3 = new Class[] {
 		long.class, String.class, String.class, String.class, String.class,
 		java.util.Date.class, java.util.Date.class, int.class
-	};
-	private static final Class<?>[] _updateEntryParameterTypes5 = new Class[] {
-		long.class, String.class, String.class, String.class, String.class,
-		int.class, int.class, int.class, int.class, int.class, boolean.class,
-		int.class, int.class, int.class, int.class, int.class, int.class
 	};
 
 }

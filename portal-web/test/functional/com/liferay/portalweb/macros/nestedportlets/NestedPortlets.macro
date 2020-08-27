@@ -1,0 +1,44 @@
+definition {
+
+	macro dragAndDropPortletToPortletColumnPG {
+		var key_portletTitleName = "${portletName}";
+
+		MouseOver.mouseOverNotVisible(locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_HEADER");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_HEADER",
+			value1 = "${portletName}");
+
+		DragAndDrop.dragAndDropPortletToObject(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_HEADER",
+			locator2 = "Home#PORTLET_COLUMN_${portletColumnNumberTo}",
+			value1 = "${portletName}");
+
+		AssertTextEquals(
+			locator1 = "Home#PORTLET_COLUMN_${portletColumnNumberTo}_NESTED_PORTLET_TITLE",
+			value1 = "${portletName}");
+	}
+
+	macro viewConfigurationDefaultLayoutTemplate {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertChecked(
+			key_card = "${defaultColumnName}",
+			locator1 = "Card#CARD_RADIO");
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro viewPG {
+		var key_portletTitleName = "${portletName}";
+
+		AssertTextEquals(
+			locator1 = "Home#PORTLET_COLUMN_${portletColumnNumberTo}_NESTED_PORTLET_TITLE",
+			value1 = "${portletName}");
+	}
+
+}

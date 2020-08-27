@@ -14,9 +14,10 @@
 
 package com.liferay.asset.category.property.service;
 
+import com.liferay.asset.category.property.model.AssetCategoryProperty;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.service.ServiceWrapper;
-
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 
 /**
  * Provides a wrapper for {@link AssetCategoryPropertyLocalService}.
@@ -25,7 +26,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetCategoryPropertyLocalService
  * @generated
  */
-@ProviderType
 public class AssetCategoryPropertyLocalServiceWrapper
 	implements AssetCategoryPropertyLocalService,
 			   ServiceWrapper<AssetCategoryPropertyLocalService> {
@@ -39,23 +39,24 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	/**
 	 * Adds the asset category property to the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryPropertyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetCategoryProperty the asset category property
 	 * @return the asset category property that was added
 	 */
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-		addAssetCategoryProperty(
-			com.liferay.asset.category.property.model.AssetCategoryProperty
-				assetCategoryProperty) {
+	public AssetCategoryProperty addAssetCategoryProperty(
+		AssetCategoryProperty assetCategoryProperty) {
 
 		return _assetCategoryPropertyLocalService.addAssetCategoryProperty(
 			assetCategoryProperty);
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			addCategoryProperty(
-				long userId, long categoryId, String key, String value)
+	public AssetCategoryProperty addCategoryProperty(
+			long userId, long categoryId, String key, String value)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.addCategoryProperty(
@@ -69,24 +70,38 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	 * @return the new asset category property
 	 */
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-		createAssetCategoryProperty(long categoryPropertyId) {
+	public AssetCategoryProperty createAssetCategoryProperty(
+		long categoryPropertyId) {
 
 		return _assetCategoryPropertyLocalService.createAssetCategoryProperty(
 			categoryPropertyId);
 	}
 
 	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public com.liferay.portal.kernel.model.PersistedModel createPersistedModel(
+			java.io.Serializable primaryKeyObj)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _assetCategoryPropertyLocalService.createPersistedModel(
+			primaryKeyObj);
+	}
+
+	/**
 	 * Deletes the asset category property from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryPropertyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param assetCategoryProperty the asset category property
 	 * @return the asset category property that was removed
 	 */
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-		deleteAssetCategoryProperty(
-			com.liferay.asset.category.property.model.AssetCategoryProperty
-				assetCategoryProperty) {
+	public AssetCategoryProperty deleteAssetCategoryProperty(
+		AssetCategoryProperty assetCategoryProperty) {
 
 		return _assetCategoryPropertyLocalService.deleteAssetCategoryProperty(
 			assetCategoryProperty);
@@ -95,13 +110,17 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	/**
 	 * Deletes the asset category property with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryPropertyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param categoryPropertyId the primary key of the asset category property
 	 * @return the asset category property that was removed
 	 * @throws PortalException if a asset category property with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			deleteAssetCategoryProperty(long categoryPropertyId)
+	public AssetCategoryProperty deleteAssetCategoryProperty(
+			long categoryPropertyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.deleteAssetCategoryProperty(
@@ -114,10 +133,7 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
-	public void deleteCategoryProperty(
-		com.liferay.asset.category.property.model.AssetCategoryProperty
-			categoryProperty) {
-
+	public void deleteCategoryProperty(AssetCategoryProperty categoryProperty) {
 		_assetCategoryPropertyLocalService.deleteCategoryProperty(
 			categoryProperty);
 	}
@@ -143,6 +159,11 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
+	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+		return _assetCategoryPropertyLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _assetCategoryPropertyLocalService.dynamicQuery();
 	}
@@ -164,7 +185,7 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.category.property.model.impl.AssetCategoryPropertyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.category.property.model.impl.AssetCategoryPropertyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -185,7 +206,7 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.category.property.model.impl.AssetCategoryPropertyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.category.property.model.impl.AssetCategoryPropertyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -235,16 +256,16 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-		fetchAssetCategoryProperty(long categoryPropertyId) {
+	public AssetCategoryProperty fetchAssetCategoryProperty(
+		long categoryPropertyId) {
 
 		return _assetCategoryPropertyLocalService.fetchAssetCategoryProperty(
 			categoryPropertyId);
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-		fetchCategoryProperty(long categoryId, String key) {
+	public AssetCategoryProperty fetchCategoryProperty(
+		long categoryId, String key) {
 
 		return _assetCategoryPropertyLocalService.fetchCategoryProperty(
 			categoryId, key);
@@ -261,7 +282,7 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	 * Returns a range of all the asset category properties.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.asset.category.property.model.impl.AssetCategoryPropertyModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.asset.category.property.model.impl.AssetCategoryPropertyModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset category properties
@@ -269,9 +290,8 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	 * @return the range of asset category properties
 	 */
 	@Override
-	public java.util.List
-		<com.liferay.asset.category.property.model.AssetCategoryProperty>
-			getAssetCategoryProperties(int start, int end) {
+	public java.util.List<AssetCategoryProperty> getAssetCategoryProperties(
+		int start, int end) {
 
 		return _assetCategoryPropertyLocalService.getAssetCategoryProperties(
 			start, end);
@@ -296,8 +316,8 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	 * @throws PortalException if a asset category property with the primary key could not be found
 	 */
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			getAssetCategoryProperty(long categoryPropertyId)
+	public AssetCategoryProperty getAssetCategoryProperty(
+			long categoryPropertyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.getAssetCategoryProperty(
@@ -305,25 +325,20 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.asset.category.property.model.AssetCategoryProperty>
-			getCategoryProperties() {
-
+	public java.util.List<AssetCategoryProperty> getCategoryProperties() {
 		return _assetCategoryPropertyLocalService.getCategoryProperties();
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.asset.category.property.model.AssetCategoryProperty>
-			getCategoryProperties(long entryId) {
+	public java.util.List<AssetCategoryProperty> getCategoryProperties(
+		long entryId) {
 
 		return _assetCategoryPropertyLocalService.getCategoryProperties(
 			entryId);
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			getCategoryProperty(long categoryPropertyId)
+	public AssetCategoryProperty getCategoryProperty(long categoryPropertyId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.getCategoryProperty(
@@ -331,8 +346,8 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			getCategoryProperty(long categoryId, String key)
+	public AssetCategoryProperty getCategoryProperty(
+			long categoryId, String key)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.getCategoryProperty(
@@ -340,9 +355,8 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List
-		<com.liferay.asset.category.property.model.AssetCategoryProperty>
-			getCategoryPropertyValues(long groupId, String key) {
+	public java.util.List<AssetCategoryProperty> getCategoryPropertyValues(
+		long groupId, String key) {
 
 		return _assetCategoryPropertyLocalService.getCategoryPropertyValues(
 			groupId, key);
@@ -366,6 +380,9 @@ public class AssetCategoryPropertyLocalServiceWrapper
 		return _assetCategoryPropertyLocalService.getOSGiServiceIdentifier();
 	}
 
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.PersistedModel getPersistedModel(
 			java.io.Serializable primaryKeyObj)
@@ -378,23 +395,24 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	/**
 	 * Updates the asset category property in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect AssetCategoryPropertyLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param assetCategoryProperty the asset category property
 	 * @return the asset category property that was updated
 	 */
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-		updateAssetCategoryProperty(
-			com.liferay.asset.category.property.model.AssetCategoryProperty
-				assetCategoryProperty) {
+	public AssetCategoryProperty updateAssetCategoryProperty(
+		AssetCategoryProperty assetCategoryProperty) {
 
 		return _assetCategoryPropertyLocalService.updateAssetCategoryProperty(
 			assetCategoryProperty);
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			updateCategoryProperty(
-				long userId, long categoryPropertyId, String key, String value)
+	public AssetCategoryProperty updateCategoryProperty(
+			long userId, long categoryPropertyId, String key, String value)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.updateCategoryProperty(
@@ -402,13 +420,32 @@ public class AssetCategoryPropertyLocalServiceWrapper
 	}
 
 	@Override
-	public com.liferay.asset.category.property.model.AssetCategoryProperty
-			updateCategoryProperty(
-				long categoryPropertyId, String key, String value)
+	public AssetCategoryProperty updateCategoryProperty(
+			long categoryPropertyId, String key, String value)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _assetCategoryPropertyLocalService.updateCategoryProperty(
 			categoryPropertyId, key, value);
+	}
+
+	@Override
+	public CTPersistence<AssetCategoryProperty> getCTPersistence() {
+		return _assetCategoryPropertyLocalService.getCTPersistence();
+	}
+
+	@Override
+	public Class<AssetCategoryProperty> getModelClass() {
+		return _assetCategoryPropertyLocalService.getModelClass();
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<AssetCategoryProperty>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return _assetCategoryPropertyLocalService.updateWithUnsafeFunction(
+			updateUnsafeFunction);
 	}
 
 	@Override

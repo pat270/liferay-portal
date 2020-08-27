@@ -15,6 +15,7 @@
 package com.liferay.headless.delivery.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.headless.delivery.client.dto.v1_0.KnowledgeBaseArticle;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
@@ -25,6 +26,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -52,8 +54,34 @@ public class KnowledgeBaseArticleResourceTest
 	}
 
 	@Override
+	@Test
+	public void testPutSiteKnowledgeBaseArticleSubscribe() throws Exception {
+		KnowledgeBaseArticle knowledgeBaseArticle =
+			testPutSiteKnowledgeBaseArticleSubscribe_addKnowledgeBaseArticle();
+
+		assertHttpResponseStatusCode(
+			204,
+			knowledgeBaseArticleResource.
+				putSiteKnowledgeBaseArticleSubscribeHttpResponse(
+					knowledgeBaseArticle.getSiteId()));
+	}
+
+	@Override
+	@Test
+	public void testPutSiteKnowledgeBaseArticleUnsubscribe() throws Exception {
+		KnowledgeBaseArticle knowledgeBaseArticle =
+			testPutSiteKnowledgeBaseArticleUnsubscribe_addKnowledgeBaseArticle();
+
+		assertHttpResponseStatusCode(
+			204,
+			knowledgeBaseArticleResource.
+				putSiteKnowledgeBaseArticleUnsubscribeHttpResponse(
+					knowledgeBaseArticle.getSiteId()));
+	}
+
+	@Override
 	protected String[] getAdditionalAssertFieldNames() {
-		return new String[] {"description", "title"};
+		return new String[] {"articleBody", "description", "title"};
 	}
 
 	@Override

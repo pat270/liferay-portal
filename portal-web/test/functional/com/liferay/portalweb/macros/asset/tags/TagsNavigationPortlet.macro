@@ -1,0 +1,108 @@
+definition {
+
+	macro clickTagView {
+		var key_tagName = "${tagName}";
+
+		if (isSet(tagAssetCount)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "TagsNavigation#TAG_NAME",
+				value1 = "${tagAssetCount}");
+		}
+
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "TagsNavigation#TAG_NAME",
+			value1 = "${tagName}");
+	}
+
+	macro configureDisplayStylePG {
+		Portlet.gotoPortletOptions(
+			portletName = "Tags Navigation",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		if (isSet(displayTemplate)) {
+			Select(
+				locator1 = "Select#DISPLAY_TEMPLATE",
+				value1 = "${displayTemplate}");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro configureFlaggableSettingsPG {
+		Portlet.gotoPortletOptions(
+			portletName = "Tags Navigation",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		if ("${showUnusedTags}" == "true") {
+			Check.checkToggleSwitch(
+				locator1 = "TagsNavigationConfiguration#SHOW_UNUSED_TAGS_CHECKBOX",
+				value1 = "Show Unused Tags");
+		}
+
+		if ("${showAssetCount}" == "true") {
+			Check.checkToggleSwitch(
+				locator1 = "TagsNavigationConfiguration#SHOW_ASSET_COUNT_CHECKBOX",
+				value1 = "Show Asset Count");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro viewADTColorByPopularityPG {
+		var key_adtTagColor = "${adtTagColor}";
+		var key_tagName = "${tagName}";
+
+		AssertTextEquals(
+			locator1 = "TagsNavigation#ADT_COLOR_BY_POPULARITY_TAG",
+			value1 = "${tagName}");
+	}
+
+	macro viewDefaultPG {
+		for (var tagName : list "${tagNameList}") {
+			var key_tagName = "${tagName}";
+
+			AssertTextEquals(
+				locator1 = "TagsNavigation#TAG_NAME",
+				value1 = "${tagName}");
+		}
+	}
+
+	macro viewTagCloud {
+		var key_tagPopularityLevel = "${tagPopularityLevel}";
+
+		AssertTextEquals(
+			locator1 = "TagsNavigation#TAG_CLOUD_POPULARITY",
+			value1 = "${tagName}");
+	}
+
+	macro viewTagCloudConfiguration {
+		Portlet.gotoPortletOptions(
+			portletName = "Tag Cloud",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		if (isSet(displayTemplate)) {
+			AssertSelectedLabel(
+				locator1 = "Select#DISPLAY_TEMPLATE",
+				value1 = "${displayTemplate}");
+		}
+
+		if ("${showUnusedTags}" == "true") {
+			AssertChecked(
+				locator1 = "TagsNavigationConfiguration#SHOW_UNUSED_TAGS_CHECKBOX",
+				value1 = "Show Unused Tags");
+		}
+
+		if ("${showAssetCount}" == "true") {
+			AssertChecked(
+				locator1 = "TagsNavigationConfiguration#SHOW_ASSET_COUNT_CHECKBOX",
+				value1 = "Show Asset Count");
+		}
+	}
+
+}

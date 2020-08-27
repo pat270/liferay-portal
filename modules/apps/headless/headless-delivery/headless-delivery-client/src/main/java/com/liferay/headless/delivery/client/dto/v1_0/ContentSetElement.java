@@ -17,6 +17,7 @@ package com.liferay.headless.delivery.client.dto.v1_0;
 import com.liferay.headless.delivery.client.function.UnsafeSupplier;
 import com.liferay.headless.delivery.client.serdes.v1_0.ContentSetElementSerDes;
 
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Generated;
@@ -26,7 +27,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class ContentSetElement {
+public class ContentSetElement implements Cloneable {
+
+	public static ContentSetElement toDTO(String json) {
+		return ContentSetElementSerDes.toDTO(json);
+	}
 
 	public Object getContent() {
 		return content;
@@ -109,6 +114,33 @@ public class ContentSetElement {
 	}
 
 	protected String title;
+
+	public Map<String, String> getTitle_i18n() {
+		return title_i18n;
+	}
+
+	public void setTitle_i18n(Map<String, String> title_i18n) {
+		this.title_i18n = title_i18n;
+	}
+
+	public void setTitle_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			title_i18nUnsafeSupplier) {
+
+		try {
+			title_i18n = title_i18nUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Map<String, String> title_i18n;
+
+	@Override
+	public ContentSetElement clone() throws CloneNotSupportedException {
+		return (ContentSetElement)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

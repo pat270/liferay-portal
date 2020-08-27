@@ -1,11 +1,51 @@
 @component-name = "portal-security"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Login";
 
 	setUp {
 		TestCase.setUpPortalInstance();
+	}
+
+	@priority = "5"
+	test CASSSOSmoke {
+		property cas.enabled = "true";
+		property dummy.socket.proxy.disabled = "true";
+		property test.name.skip.portal.instance = "Login#CASSSOSmoke";
+
+		User.firstLoginPG();
+
+		var liferayHome = PropsUtil.get("liferay.home.dir.name");
+		var fileContent = FileUtil.read("${liferayHome}/tomcat-9.0.33/bin/cas.log");
+
+		if (contains("${fileContent}", "org.jasig.cas")) {
+			echo("CAS server started.");
+		}
+		else {
+			fail("FAIL! CAS server didn't start.");
+		}
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "CAS Server",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationAuthenticationCAS();
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "User Authentication",
+			configurationName = "General",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationAuthenticationGeneral(authenticationMethod = "By Screen Name");
+
+		User.logoutPG();
+
+		User.loginUserWithCASEnabledPG(
+			userPassword = "test",
+			userScreenName = "test");
 	}
 
 	@priority = "5"
@@ -21,18 +61,17 @@ definition {
 
 		PortalSettings.editDefaultLandingPageCP(defaultLandingPage = "/web/guest/landing");
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Sites",
 			panel = "Control Panel",
 			portlet = "Sites");
 
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
-		ProductMenu.gotoSite(site = "${siteName}");
+		Navigator.openSiteURL(siteName = "${siteName}");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "landing");
@@ -58,7 +97,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "landing");
@@ -72,6 +110,77 @@ definition {
 		var portalURL = PropsUtil.get("portal.url");
 
 		AssertLocation(value1 = "${portalURL}/web/guest/landing");
+	}
+
+	@description = "This is a use case for LPS-105151."
+	@priority = "4"
+	test EnabledOpenIDConnectOnSystemLevel {
+		property dummy.socket.proxy.disabled = "true";
+		property test.name.skip.portal.instance = "Login#EnabledOpenIDConnectOnSystemLevel";
+
+		var openIDConnectClientID = PropsUtil.get("google.client.id.2");
+		var openIDConnectClientSecret = PropsUtil.get("google.client.secret.2");
+		var userEmailAddress = PropsUtil.get("email.address.2");
+		var userPassword = PropsUtil.get("email.password.2");
+
+		User.firstLoginPG();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
+
+		PortalInstances.addCP(
+			mailDomain = "www.able.com",
+			virtualHost = "www.able.com",
+			webId = "www.able.com");
+
+		PortalInstances.viewCP(virtualHost = "www.able.com");
+
+		Navigator.openSpecificURL(url = "http://www.able.com:8080/");
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		AssertElementNotPresent(locator1 = "Icon#OPENID_CONNECT");
+
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect",
+			configurationScope = "System Scope");
+
+		PortalSettings.enableOpenIDConnectCP(systemLevel = "true");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect Provider",
+			configurationScope = "Virtual Instance Scope");
+
+		OpenIDConnect.addProvider(
+			openIDConnectClientID = "${openIDConnectClientID}",
+			openIDConnectClientSecret = "${openIDConnectClientSecret}",
+			providerName = "Google");
+
+		Navigator.openSpecificURL(url = "http://www.able.com:8080/");
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		AssertElementPresent(locator1 = "Icon#OPENID_CONNECT");
 	}
 
 	@priority = "4"
@@ -116,11 +225,10 @@ definition {
 		property dummy.socket.proxy.disabled = "true";
 		property osgi.app.includes = "portal-security-sso-google";
 		property test.name.skip.portal.instance = "Login#GoogleSSOSmoke";
-		var googlePropertiesSet = MathUtil.randomNumber("3");
-		var googleClientID = PropsUtil.get("google.client.id.${googlePropertiesSet}");
-		var googleClientSecret = PropsUtil.get("google.client.secret.${googlePropertiesSet}");
-		var userEmailAddress = PropsUtil.get("email.address.1");
-		var userPassword = PropsUtil.get("email.password.1");
+		var googleClientID = PropsUtil.get("google.client.id.2");
+		var googleClientSecret = PropsUtil.get("google.client.secret.2");
+		var userEmailAddress = PropsUtil.get("email.address.2");
+		var userPassword = PropsUtil.get("email.password.2");
 
 		User.firstLoginPG();
 
@@ -176,6 +284,192 @@ definition {
 			userEmailAddress = "test@liferay.com");
 	}
 
+	@description = "This is a use case for LPS-105151."
+	@priority = "4"
+	test MultipleOpenIDConnectProvider {
+		property dummy.socket.proxy.disabled = "true";
+		property test.name.skip.portal.instance = "Login#MultipleOpenIDConnectProvider";
+
+		var openIDConnectClientID = PropsUtil.get("google.client.id.2");
+		var openIDConnectClientSecret = PropsUtil.get("google.client.secret.2");
+		var openIDConnectClientID1 = PropsUtil.get("google.client.id.3");
+		var openIDConnectClientSecret1 = PropsUtil.get("google.client.secret.3");
+		var userEmailAddress = PropsUtil.get("email.address.2");
+		var userPassword = PropsUtil.get("email.password.2");
+
+		User.firstLoginPG();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
+
+		PortalInstances.addCP(
+			mailDomain = "www.able.com",
+			virtualHost = "www.able.com",
+			webId = "www.able.com");
+
+		PortalInstances.viewCP(virtualHost = "www.able.com");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
+
+		PortalInstances.addCP(
+			mailDomain = "www.baker.com",
+			virtualHost = "www.baker.com",
+			webId = "www.baker.com");
+
+		PortalInstances.viewCP(virtualHost = "www.baker.com");
+
+		Navigator.openURL();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect",
+			configurationScope = "System Scope");
+
+		PortalSettings.enableOpenIDConnectCP(systemLevel = "true");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect Provider",
+			configurationScope = "Virtual Instance Scope");
+
+		OpenIDConnect.addProvider(
+			openIDConnectClientID = "${openIDConnectClientID}",
+			openIDConnectClientSecret = "${openIDConnectClientSecret}",
+			providerName = "Google");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@www.able.com",
+			virtualHostsURL = "http://www.able.com:8080");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect Provider",
+			configurationScope = "Virtual Instance Scope");
+
+		OpenIDConnect.addProvider(
+			openIDConnectClientID = "${openIDConnectClientID1}",
+			openIDConnectClientSecret = "${openIDConnectClientSecret1}",
+			providerName = "Test Google");
+
+		UserBar.signOut();
+
+		Navigator.openSpecificURL(url = "http://www.able.com:8080/");
+
+		OpenIDConnect.viewProvider();
+
+		AssertElementPresent(
+			key_providerNname = "Test Google",
+			locator1 = "OpenIDConnectLogin#OPENID_CONNECT_DROPDOWN_OPTION");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@www.baker.com",
+			virtualHostsURL = "http://www.baker.com:8080");
+
+		UserBar.signOut();
+
+		Navigator.openSpecificURL(url = "http://www.baker.com:8080/");
+
+		OpenIDConnect.viewProvider();
+	}
+
+	@description = "This is a use case for LPS-105151."
+	@priority = "4"
+	test OpenIDConnectOnInstanceLevelSmoke {
+		property dummy.socket.proxy.disabled = "true";
+		property test.name.skip.portal.instance = "Login#OpenIDConnectOnInstanceLevelSmoke";
+
+		var openIDConnectClientID = PropsUtil.get("google.client.id.1");
+		var openIDConnectClientSecret = PropsUtil.get("google.client.secret.1");
+		var userEmailAddress = PropsUtil.get("email.address.2");
+		var userPassword = PropsUtil.get("email.password.2");
+
+		User.firstLoginPG();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
+
+		PortalInstances.addCP(
+			mailDomain = "www.able.com",
+			virtualHost = "www.able.com",
+			webId = "www.able.com");
+
+		PortalInstances.viewCP(virtualHost = "www.able.com");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@www.able.com",
+			virtualHostsURL = "http://www.able.com:8080");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.enableOpenIDConnectCP();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect Provider",
+			configurationScope = "Virtual Instance Scope");
+
+		OpenIDConnect.addProvider(
+			openIDConnectClientID = "${openIDConnectClientID}",
+			openIDConnectClientSecret = "${openIDConnectClientSecret}",
+			providerName = "Google");
+
+		UserBar.signOut();
+
+		OpenIDConnect.accountSignIn(
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
+
+		OpenIDConnect.acceptConditions();
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		UserBar.signOut();
+
+		User.loginPG(
+			password = "test",
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
+	}
+
 	@priority = "4"
 	test OpenIDConnectSmoke {
 		property dummy.socket.proxy.disabled = "true";
@@ -183,11 +477,10 @@ definition {
 
 		// LRQA-43729
 
-		var googlePropertiesSet = MathUtil.randomNumber("3");
-		var openIDConnectClientID = PropsUtil.get("google.client.id.${googlePropertiesSet}");
-		var openIDConnectClientSecret = PropsUtil.get("google.client.secret.${googlePropertiesSet}");
-		var userEmailAddress = PropsUtil.get("email.address.1");
-		var userPassword = PropsUtil.get("email.password.1");
+		var openIDConnectClientID = PropsUtil.get("google.client.id.3");
+		var openIDConnectClientSecret = PropsUtil.get("google.client.secret.3");
+		var userEmailAddress = PropsUtil.get("email.address.2");
+		var userPassword = PropsUtil.get("email.password.2");
 
 		User.firstLoginPG();
 
@@ -200,9 +493,20 @@ definition {
 
 		PortalSettings.enableOpenIDConnectCP();
 
-		OpenIDConnect.addProviderInSystemSettings(
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "OpenID Connect Provider",
+			configurationScope = "Virtual Instance Scope");
+
+		OpenIDConnect.addProvider(
 			openIDConnectClientID = "${openIDConnectClientID}",
-			openIDConnectClientSecret = "${openIDConnectClientSecret}");
+			openIDConnectClientSecret = "${openIDConnectClientSecret}",
+			providerName = "Google");
 
 		User.logoutPG();
 
@@ -216,57 +520,6 @@ definition {
 		User.loginUserPG(
 			password = "test",
 			userEmailAddress = "test@liferay.com");
-	}
-
-	@ignore = "true"
-	@priority = "4"
-	test OpenIDSmoke {
-		property dummy.socket.proxy.disabled = "true";
-		property osgi.app.includes = "portal-security-sso-openid";
-		property osgi.module.configuration.file.names = "com.liferay.captcha.configuration.CaptchaConfiguration.config";
-		property osgi.module.configurations = "createAccountCaptchaEnabled=&quot;false&quot;";
-		property test.name.skip.portal.instance = "Login#OpenIDSmoke";
-		var openIDPassword = PropsUtil.get("email.password.1");
-		var openIDUsername = PropsUtil.get("email.address.1");
-
-		User.firstLoginPG();
-
-		PortalSettings.gotoConfiguration(
-			configurationCategory = "SSO",
-			configurationName = "OpenID",
-			configurationScope = "Virtual Instance Scope");
-
-		PortalSettings.enableOpenIDCP();
-
-		User.logoutPG();
-
-		User.createUserViaOpenID(
-			openIDPassword = "${openIDPassword}",
-			openIDURL = "https://me.yahoo.com/liferayqa",
-			openIDUsername = "${openIDUsername}",
-			userEmailAddress = "userea@liferay.com",
-			userFirstName = "userfn",
-			userLastName = "userln",
-			userScreenName = "usersn");
-
-		User.loginUserPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
-
-		ProductMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
-
-		User.logoutPG();
-
-		User.loginUserWithOpenIDEnabledPG(
-			openIDURL = "https://me.yahoo.com/liferayqa",
-			userFirstName = "userfn");
 	}
 
 	@ignore = "true"
@@ -286,12 +539,12 @@ definition {
 
 		var pauseCount = "0";
 
-		while ((IsElementNotPresent(locator1 = "TextInput#TEXT")) && (!("${pauseCount}" == "20"))) {
+		while ((IsElementNotPresent(locator1 = "TextInput#TEXT")) && ("${pauseCount}" != "20")) {
 			Refresh();
 
 			Pause(locator1 = "30000");
 
-			var pauseCount = MathUtil.sum("${pauseCount}", "1");
+			var pauseCount = ${pauseCount} + 1;
 
 			echo("Pause count: ${pauseCount}");
 		}
@@ -335,10 +588,47 @@ definition {
 
 		User.firstLoginPG();
 
-		ProductMenu.gotoPortlet(
+		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
 			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "SSO",
+			configurationName = "Token Based SSO",
+			configurationScope = "System Scope");
+
+		FormFields.enableCheckbox(fieldName = "Enabled");
+
+		PortletEntry.save();
+
+		AntCommand(
+			locator1 = "build-test-authentication.xml",
+			value1 = "verify-token-based-login -Dportal.url=localhost:8080/web/guest -Duser.token=test@liferay.com");
+
+		FormFields.disableCheckbox(fieldName = "Enabled");
+
+		PortletEntry.update();
+
+		ApplicationsMenu.gotoPortlet(
+			category = "System",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
+
+		PortalInstances.addCP(
+			mailDomain = "www.able.com",
+			virtualHost = "www.able.com",
+			webId = "www.able.com");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "test@www.able.com",
+			virtualHostsURL = "http://www.able.com:8080");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
 
 		SystemSettings.gotoConfiguration(
 			configurationCategory = "SSO",
@@ -349,11 +639,9 @@ definition {
 
 		PortletEntry.save();
 
-		User.logoutPG();
-
 		AntCommand(
 			locator1 = "build-test-authentication.xml",
-			value1 = "verify-token-based-login");
+			value1 = "verify-token-based-login -Dportal.url=www.able.com:8080/web/guest -Duser.token=test@www.able.com");
 	}
 
 	@priority = "3"
@@ -366,12 +654,11 @@ definition {
 
 		PortalSettings.viewAuthenticationLDAPCP();
 
-		PortalSettings.viewAuthenticationOpenIDCP();
-
 		PortalSettings.viewAuthenticationOpenSSOCP();
 
 		PortalSettings.viewAuthenticationCASCP();
 
 		PortalSettings.viewAuthenticationNTLMCP();
 	}
+
 }

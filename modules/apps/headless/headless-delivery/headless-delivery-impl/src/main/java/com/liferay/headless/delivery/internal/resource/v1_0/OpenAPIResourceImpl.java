@@ -18,21 +18,18 @@ import com.liferay.portal.vulcan.resource.OpenAPIResource;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Generated;
 
-import javax.servlet.ServletConfig;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -50,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
 )
 @Generated("")
 @OpenAPIDefinition(
-	info = @Info(description = "", title = "Headless Delivery", version = "v1.0")
+	info = @Info(description = "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID 'com.liferay.headless.delivery.client', and version '3.0.2'.", license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0.html"), title = "Headless Delivery", version = "v1.0")
 )
 @Path("/v1.0")
 public class OpenAPIResourceImpl {
@@ -58,21 +55,28 @@ public class OpenAPIResourceImpl {
 	@GET
 	@Path("/openapi.{type:json|yaml}")
 	@Produces({MediaType.APPLICATION_JSON, "application/yaml"})
-	public Response getOpenAPI(
-			@Context HttpHeaders httpHeaders, @Context UriInfo uriInfo,
-			@PathParam("type") String type)
+	public Response getOpenAPI(@PathParam("type") String type)
 		throws Exception {
 
-		return _openAPIResource.getOpenAPI(
-			_application, httpHeaders, _resourceClasses, _servletConfig, type,
-			uriInfo);
-	}
+		try {
+			Class<? extends OpenAPIResource> clazz =
+				_openAPIResource.getClass();
 
-	@Context
-	private Application _application;
+			clazz.getMethod(
+				"getOpenAPI", Set.class, String.class, UriInfo.class);
+		}
+		catch (NoSuchMethodException noSuchMethodException) {
+			return _openAPIResource.getOpenAPI(_resourceClasses, type);
+		}
+
+		return _openAPIResource.getOpenAPI(_resourceClasses, type, _uriInfo);
+	}
 
 	@Reference
 	private OpenAPIResource _openAPIResource;
+
+	@Context
+	private UriInfo _uriInfo;
 
 	private final Set<Class<?>> _resourceClasses = new HashSet<Class<?>>() {
 		{
@@ -82,9 +86,13 @@ public class OpenAPIResourceImpl {
 
 			add(CommentResourceImpl.class);
 
+			add(ContentElementResourceImpl.class);
+
 			add(ContentSetElementResourceImpl.class);
 
 			add(ContentStructureResourceImpl.class);
+
+			add(ContentTemplateResourceImpl.class);
 
 			add(DocumentResourceImpl.class);
 
@@ -104,15 +112,20 @@ public class OpenAPIResourceImpl {
 
 			add(MessageBoardThreadResourceImpl.class);
 
+			add(NavigationMenuResourceImpl.class);
+
 			add(StructuredContentResourceImpl.class);
 
 			add(StructuredContentFolderResourceImpl.class);
 
+			add(WikiNodeResourceImpl.class);
+
+			add(WikiPageResourceImpl.class);
+
+			add(WikiPageAttachmentResourceImpl.class);
+
 			add(OpenAPIResourceImpl.class);
 		}
 	};
-
-	@Context
-	private ServletConfig _servletConfig;
 
 }

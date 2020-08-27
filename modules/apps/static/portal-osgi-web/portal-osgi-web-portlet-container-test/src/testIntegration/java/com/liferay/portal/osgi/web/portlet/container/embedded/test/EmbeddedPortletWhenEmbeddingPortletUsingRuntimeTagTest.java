@@ -24,9 +24,9 @@ import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.osgi.web.portlet.container.test.BasePortletContainerTestCase;
 import com.liferay.portal.osgi.web.portlet.container.test.TestPortlet;
+import com.liferay.portal.osgi.web.portlet.container.test.util.PortletContainerTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.util.test.PortletContainerTestUtil;
 
 import java.io.IOException;
 
@@ -39,8 +39,6 @@ import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletURL;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -103,12 +101,9 @@ public class EmbeddedPortletWhenEmbeddingPortletUsingRuntimeTagTest
 			PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid(),
 			TEST_PORTLET_ID, null, null);
 
-		HttpServletRequest httpServletRequest =
-			PortletContainerTestUtil.getHttpServletRequest(group, layout);
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			httpServletRequest, TEST_PORTLET_ID, layout.getPlid(),
-			PortletRequest.RESOURCE_PHASE);
+			PortletContainerTestUtil.getHttpServletRequest(group, layout),
+			TEST_PORTLET_ID, layout.getPlid(), PortletRequest.RESOURCE_PHASE);
 
 		TestRuntimePortlet testRuntimePortlet = new TestRuntimePortlet();
 		String testRuntimePortletId = "testRuntimePortletId";

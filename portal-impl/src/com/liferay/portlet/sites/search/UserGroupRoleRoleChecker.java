@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 
@@ -42,32 +41,30 @@ public class UserGroupRoleRoleChecker extends EmptyOnClickRowChecker {
 	}
 
 	@Override
-	public boolean isChecked(Object obj) {
-		Role role = (Role)obj;
+	public boolean isChecked(Object object) {
+		Role role = (Role)object;
 
 		try {
 			return UserGroupRoleLocalServiceUtil.hasUserGroupRole(
 				_user.getUserId(), _group.getGroupId(), role.getRoleId());
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 
 			return false;
 		}
 	}
 
 	@Override
-	public boolean isDisabled(Object obj) {
-		Role role = (Role)obj;
+	public boolean isDisabled(Object object) {
+		Role role = (Role)object;
 
 		try {
 			if (isChecked(role)) {
-				PermissionChecker permissionChecker =
-					PermissionThreadLocal.getPermissionChecker();
-
 				if (SiteMembershipPolicyUtil.isRoleProtected(
-						permissionChecker, _user.getUserId(),
-						_group.getGroupId(), role.getRoleId()) ||
+						PermissionThreadLocal.getPermissionChecker(),
+						_user.getUserId(), _group.getGroupId(),
+						role.getRoleId()) ||
 					SiteMembershipPolicyUtil.isRoleRequired(
 						_user.getUserId(), _group.getGroupId(),
 						role.getRoleId())) {
@@ -84,11 +81,11 @@ public class UserGroupRoleRoleChecker extends EmptyOnClickRowChecker {
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
-		return super.isDisabled(obj);
+		return super.isDisabled(object);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

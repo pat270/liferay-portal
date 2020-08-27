@@ -24,15 +24,15 @@ import org.openqa.selenium.WebDriver;
 public class SeleniumUtil extends PropsValues {
 
 	public static LiferaySelenium getSelenium() {
-		return _instance._getSelenium();
+		return _seleniumUtil._getSelenium();
 	}
 
 	public static void startSelenium() {
-		_instance._startSelenium();
+		_seleniumUtil._startSelenium();
 	}
 
 	public static void stopSelenium() {
-		_instance._stopSelenium();
+		_seleniumUtil._stopSelenium();
 	}
 
 	private LiferaySelenium _getSelenium() {
@@ -115,7 +115,7 @@ public class SeleniumUtil extends PropsValues {
 		_selenium = null;
 	}
 
-	private static final SeleniumUtil _instance = new SeleniumUtil();
+	private static final SeleniumUtil _seleniumUtil = new SeleniumUtil();
 
 	private LiferaySelenium _selenium;
 

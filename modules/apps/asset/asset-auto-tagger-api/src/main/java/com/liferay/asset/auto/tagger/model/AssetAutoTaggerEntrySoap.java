@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class AssetAutoTaggerEntrySoap implements Serializable {
 
 	public static AssetAutoTaggerEntrySoap toSoapModel(
@@ -36,6 +35,8 @@ public class AssetAutoTaggerEntrySoap implements Serializable {
 
 		AssetAutoTaggerEntrySoap soapModel = new AssetAutoTaggerEntrySoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setAssetAutoTaggerEntryId(model.getAssetAutoTaggerEntryId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -105,6 +106,22 @@ public class AssetAutoTaggerEntrySoap implements Serializable {
 		setAssetAutoTaggerEntryId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public long getAssetAutoTaggerEntryId() {
 		return _assetAutoTaggerEntryId;
 	}
@@ -161,6 +178,8 @@ public class AssetAutoTaggerEntrySoap implements Serializable {
 		_assetTagId = assetTagId;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private long _assetAutoTaggerEntryId;
 	private long _groupId;
 	private long _companyId;

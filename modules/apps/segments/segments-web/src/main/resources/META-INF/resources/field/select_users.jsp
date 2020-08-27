@@ -21,23 +21,12 @@ SelectUsersDisplayContext selectUsersDisplayContext = (SelectUsersDisplayContext
 %>
 
 <clay:management-toolbar
-	clearResultsURL="<%= selectUsersDisplayContext.getClearResultsURL() %>"
-	componentId="selectSegmentsEntryUsersManagementToolbar"
-	disabled="<%= selectUsersDisplayContext.isDisabledManagementBar() %>"
-	filterDropdownItems="<%= selectUsersDisplayContext.getFilterDropdownItems() %>"
-	itemsTotal="<%= selectUsersDisplayContext.getTotalItems() %>"
-	searchActionURL="<%= selectUsersDisplayContext.getSearchActionURL() %>"
-	searchContainerId="selectSegmentsEntryUsers"
-	searchFormName="searchFm"
-	showSearch="<%= selectUsersDisplayContext.isShowSearch() %>"
-	sortingOrder="<%= selectUsersDisplayContext.getOrderByType() %>"
-	sortingURL="<%= selectUsersDisplayContext.getSortingURL() %>"
-	viewTypeItems="<%= selectUsersDisplayContext.getViewTypeItems() %>"
+	displayContext="<%= (SelectUsersManagementToolbarDisplayContext)request.getAttribute(SegmentsWebKeys.SEGMENTS_SELECT_USER_MANAGEMENT_TOOLBAL_DISPLAY_CONTEXT) %>"
 />
 
 <aui:form cssClass="container-fluid-1280" name="fm">
 	<liferay-ui:search-container
-		id="selectSegmentsEntryUsers"
+		id="<%= selectUsersDisplayContext.getSearchContainerId() %>"
 		searchContainer="<%= selectUsersDisplayContext.getUserSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row
@@ -49,26 +38,59 @@ SelectUsersDisplayContext selectUsersDisplayContext = (SelectUsersDisplayContext
 		>
 
 			<%
-			Map<String, Object> data = new HashMap<>();
-
-			data.put("id", user2.getUserId());
-			data.put("name", user2.getFullName());
+			Map<String, Object> data = HashMapBuilder.<String, Object>put(
+				"id", user2.getUserId()
+			).put(
+				"name", user2.getFullName()
+			).build();
 
 			row.setData(data);
 			%>
 
-			<liferay-ui:search-container-column-text
-				cssClass="table-cell-expand table-cell-minw-200 table-title"
-				name="name"
-				value="<%= user2.getFullName() %>"
-			/>
+			<c:choose>
+				<c:when test='<%= Objects.equals(selectUsersDisplayContext.getDisplayStyle(), "icon") %>'>
 
-			<liferay-ui:search-container-column-text
-				cssClass="table-cell-expand table-cell-minw-200"
-				name="screen-name"
-				orderable="<%= true %>"
-				property="screenName"
-			/>
+					<%
+					row.setCssClass("entry-card lfr-asset-item selectable");
+					%>
+
+					<liferay-ui:search-container-column-text>
+						<clay:user-card
+							userCard="<%= new SelectUserUserCard(user2, renderRequest, searchContainer.getRowChecker()) %>"
+						/>
+					</liferay-ui:search-container-column-text>
+				</c:when>
+				<c:when test='<%= Objects.equals(selectUsersDisplayContext.getDisplayStyle(), "descriptive") %>'>
+					<liferay-ui:search-container-column-text>
+						<liferay-ui:user-portrait
+							userId="<%= user2.getUserId() %>"
+						/>
+					</liferay-ui:search-container-column-text>
+
+					<liferay-ui:search-container-column-text
+						colspan="<%= 2 %>"
+					>
+						<h5 class="table-title"><%= user2.getFullName() %></h5>
+
+						<h6 class="text-default">
+							<span><%= user2.getScreenName() %></span>
+						</h6>
+					</liferay-ui:search-container-column-text>
+				</c:when>
+				<c:otherwise>
+					<liferay-ui:search-container-column-text
+						cssClass="table-cell-content table-title"
+						name="name"
+						property="fullName"
+					/>
+
+					<liferay-ui:search-container-column-text
+						cssClass="table-cell-content"
+						name="screen-name"
+						property="screenName"
+					/>
+				</c:otherwise>
+			</c:choose>
 		</liferay-ui:search-container-row>
 
 		<liferay-ui:search-iterator
@@ -79,6 +101,7 @@ SelectUsersDisplayContext selectUsersDisplayContext = (SelectUsersDisplayContext
 </aui:form>
 
 <liferay-util:include page="/field/select_js.jsp" servletContext="<%= application %>">
+	<liferay-util:param name="displayStyle" value="<%= selectUsersDisplayContext.getDisplayStyle() %>" />
 	<liferay-util:param name="searchContainerId" value="selectSegmentsEntryUsers" />
 	<liferay-util:param name="selectEventName" value="<%= selectUsersDisplayContext.getEventName() %>" />
 </liferay-util:include>

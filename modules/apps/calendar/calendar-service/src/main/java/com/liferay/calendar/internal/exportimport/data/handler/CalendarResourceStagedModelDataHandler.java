@@ -34,12 +34,13 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.xml.Element;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,7 +55,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = "javax.portlet.name=" + CalendarPortletKeys.CALENDAR,
+	property = "javax.portlet.name=" + CalendarPortletKeys.CALENDAR_ADMIN,
 	service = StagedModelDataHandler.class
 )
 public class CalendarResourceStagedModelDataHandler
@@ -153,7 +154,7 @@ public class CalendarResourceStagedModelDataHandler
 		}
 
 		String calendarResourceName = calendarResource.getName(
-			LocaleUtil.getDefault());
+			LocaleUtil.getSiteDefault());
 
 		Group group = _groupLocalService.getGroup(
 			calendarResource.getGroupId());
@@ -238,7 +239,8 @@ public class CalendarResourceStagedModelDataHandler
 						calendarResource.getDescriptionMap(),
 						calendarResource.isActive(), serviceContext);
 			}
-			catch (DuplicateCalendarResourceException dcre) {
+			catch (DuplicateCalendarResourceException
+						duplicateCalendarResourceException) {
 
 				// The calendar resource for the site's default calendar is
 				// always generated beforehand, so we only want to add it once
@@ -271,15 +273,15 @@ public class CalendarResourceStagedModelDataHandler
 			return calendarResource.getNameMap();
 		}
 
-		Map<Locale, String> calendarResourceNameMap = new HashMap<>();
-
 		Group scopeGroup = _groupLocalService.getGroup(
 			portletDataContext.getScopeGroupId());
 
-		calendarResourceNameMap.put(
-			LocaleUtil.getDefault(), scopeGroup.getDescriptiveName());
-
-		return calendarResourceNameMap;
+		return LocalizationUtil.populateLocalizationMap(
+			HashMapBuilder.put(
+				LocaleUtil.getSiteDefault(), scopeGroup.getDescriptiveName()
+			).build(),
+			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()),
+			scopeGroup.getGroupId());
 	}
 
 	protected long getClassPK(

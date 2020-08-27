@@ -16,6 +16,7 @@ package com.liferay.taglib.ui;
 
 import com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateManagerUtil;
 import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry;
+import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntryContributorUtil;
 import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -134,7 +135,7 @@ public class BreadcrumbTag extends IncludeTag {
 			breadcrumbEntries = BreadcrumbUtil.getBreadcrumbEntries(
 				httpServletRequest, ArrayUtil.toIntArray(breadcrumbEntryTypes));
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 		}
 
 		return breadcrumbEntries;
@@ -154,8 +155,11 @@ public class BreadcrumbTag extends IncludeTag {
 			return _ddmTemplateGroupId;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return themeDisplay.getScopeGroupId();
 	}
@@ -169,7 +173,8 @@ public class BreadcrumbTag extends IncludeTag {
 	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		httpServletRequest.setAttribute(
 			"liferay-ui:breadcrumb:breadcrumbEntries",
-			getBreadcrumbEntries(httpServletRequest));
+			BreadcrumbEntryContributorUtil.contribute(
+				getBreadcrumbEntries(httpServletRequest), httpServletRequest));
 		httpServletRequest.setAttribute(
 			"liferay-ui:breadcrumb:displayStyle", getDisplayStyle());
 		httpServletRequest.setAttribute(

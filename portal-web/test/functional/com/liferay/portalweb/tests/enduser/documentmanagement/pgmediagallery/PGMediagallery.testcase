@@ -1,5 +1,6 @@
 @component-name = "portal-document-management"
 definition {
+
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Documents Management";
@@ -13,7 +14,6 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(pageName = "Media Gallery Page");
@@ -167,6 +167,52 @@ definition {
 		DMFolder.viewPGViaMG(mgFolderName = "DM Subfolder3 Name");
 	}
 
+	@priority = "3"
+	test ADTDMMediaGallery {
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		DMFolder.addPGViaMG(
+			mgFolderDescription = "DM Folder Description",
+			mgFolderName = "DM Folder Name");
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		DMFolder.gotoPGViaMG(mgFolderName = "DM Folder Name");
+
+		DMDocument.addPGViaMG(
+			mgDocumentDescription = "DM Document Description",
+			mgDocumentFile = "Document_1.jpg",
+			mgDocumentTitle = "DM Document Title",
+			mgFolderName = "DM Folder Name");
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		DMFolder.gotoPGViaMG(mgFolderName = "DM Folder Name");
+
+		DMDocument.addPGViaMG(
+			mgDocumentDescription = "DM Document Description 2",
+			mgDocumentFile = "Document_2.jpeg",
+			mgDocumentTitle = "DM Document Title 2",
+			mgFolderName = "DM Folder Name");
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		ApplicationDisplayTemplates.addPG(
+			adtFile = "adt_media_gallery_carousel.ftl",
+			adtType = "Documents and Media",
+			siteName = "Test Site Name");
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		MGPortlet.viewShowAllPG();
+
+		ApplicationDisplayTemplates.selectPortletADT(templateName = "Documents and Media Test ADT");
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		MGPortlet.viewCustomADTCarouselPG();
+	}
+
 	@priority = "5"
 	test DeleteFolderDocument {
 		property portal.acceptance = "true";
@@ -275,4 +321,47 @@ definition {
 
 		SearchResultPortlet.viewNoSearchResults(searchTerm = "asdf");
 	}
+
+	@description = "This test covers LPS-89361. It ensures that video can be played via media gallery."
+	@priority = "4"
+	test ViewVideoViaMediaGallery {
+		property custom.properties = "xuggler.enabled=true";
+		property dummy.socket.proxy.disabled = "true";
+		property test.assert.warning.exceptions = "false";
+		property test.name.skip.portal.instance = "PGMediagallery#ViewVideoViaMediaGallery";
+
+		ServerAdministration.openServerAdmin();
+
+		ServerAdministration.configureExternalServices(installXuggler = "true");
+
+		Portlet.shutdownServer();
+
+		Portlet.startServer(deleteLiferayHome = "false");
+
+		ServerAdministration.openServerAdmin();
+
+		ServerAdministration.configureExternalServices(enableXuggler = "true");
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		DMDocument.addPGViaMG(
+			mgDocumentDescription = "DM Document Description",
+			mgDocumentFile = "Document_1.mp4",
+			mgDocumentTitle = "DM Document Title");
+
+		Pause(locator1 = "120000");
+
+		Refresh();
+
+		Navigator.gotoPage(pageName = "Media Gallery Page");
+
+		Click(
+			key_mgDocumentTitle = "DM Document Title",
+			locator1 = "MediaGallery#ENTRY_THUMBNAIL");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#SELECT_MEDIA_GALLERY_VIDEO");
+
+		AssertElementPresent(locator1 = "MediaGallery#ENTRY_VIDEO_PLAYED");
+	}
+
 }

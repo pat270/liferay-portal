@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class HoursAvailable {
+public class HoursAvailable implements Cloneable {
+
+	public static HoursAvailable toDTO(String json) {
+		return HoursAvailableSerDes.toDTO(json);
+	}
 
 	public String getCloses() {
 		return closes;
@@ -90,6 +94,11 @@ public class HoursAvailable {
 	}
 
 	protected String opens;
+
+	@Override
+	public HoursAvailable clone() throws CloneNotSupportedException {
+		return (HoursAvailable)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

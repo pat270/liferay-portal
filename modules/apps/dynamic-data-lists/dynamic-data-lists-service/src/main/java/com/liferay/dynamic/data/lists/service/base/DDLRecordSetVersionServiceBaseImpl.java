@@ -44,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class DDLRecordSetVersionServiceBaseImpl
 	extends BaseServiceImpl
-	implements DDLRecordSetVersionService, AopService, IdentifiableOSGiService {
+	implements AopService, DDLRecordSetVersionService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -101,8 +101,8 @@ public abstract class DDLRecordSetVersionServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

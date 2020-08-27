@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<suppressions>
+	<checkstyle>
+		<suppress checks="MapBuilderCheck" files="frontend-taglib/src/main/java/com/liferay/frontend/taglib/servlet/taglib/TranslationManagerTag\.java" />
+	</checkstyle>
+</suppressions>

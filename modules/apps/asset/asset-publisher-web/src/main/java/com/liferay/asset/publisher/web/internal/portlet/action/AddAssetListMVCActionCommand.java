@@ -101,11 +101,11 @@ public class AddAssetListMVCActionCommand extends BaseMVCActionCommand {
 			JSONPortletResponseUtil.writeJSON(
 				actionRequest, actionResponse, jsonObject);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
 			hideDefaultErrorMessage(actionRequest);
 
 			_assetListExceptionRequestHandler.handlePortalException(
-				actionRequest, actionResponse, pe);
+				actionRequest, actionResponse, portalException);
 		}
 	}
 
@@ -120,12 +120,12 @@ public class AddAssetListMVCActionCommand extends BaseMVCActionCommand {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			actionRequest);
 
-		UnicodeProperties properties = new UnicodeProperties(true);
+		UnicodeProperties unicodeProperties = new UnicodeProperties(true);
 
-		Enumeration<String> names = portletPreferences.getNames();
+		Enumeration<String> enumeration = portletPreferences.getNames();
 
-		while (names.hasMoreElements()) {
-			String name = names.nextElement();
+		while (enumeration.hasMoreElements()) {
+			String name = enumeration.nextElement();
 
 			String value = StringUtil.merge(
 				portletPreferences.getValues(name, null));
@@ -134,12 +134,12 @@ public class AddAssetListMVCActionCommand extends BaseMVCActionCommand {
 				continue;
 			}
 
-			properties.put(name, value);
+			unicodeProperties.put(name, value);
 		}
 
 		_assetListEntryService.addDynamicAssetListEntry(
 			themeDisplay.getUserId(), themeDisplay.getScopeGroupId(), title,
-			properties.toString(), serviceContext);
+			unicodeProperties.toString(), serviceContext);
 	}
 
 	private void _saveManualAssetList(

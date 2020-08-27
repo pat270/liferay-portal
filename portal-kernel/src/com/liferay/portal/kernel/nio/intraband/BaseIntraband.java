@@ -433,14 +433,14 @@ public abstract class BaseIntraband implements Intraband {
 								channelContext.getRegistrationReference(),
 								datagram);
 						}
-						catch (Throwable t) {
-							_log.error("Unable to dispatch", t);
+						catch (Throwable throwable) {
+							_log.error("Unable to dispatch", throwable);
 						}
 					}
 				}
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			RegistrationReference registrationReference =
 				channelContext.getRegistrationReference();
 
@@ -449,7 +449,7 @@ public abstract class BaseIntraband implements Intraband {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Broken read channel, unregister " + registrationReference,
-					ioe);
+					ioException);
 			}
 			else if (_log.isInfoEnabled()) {
 				_log.info(
@@ -471,15 +471,14 @@ public abstract class BaseIntraband implements Intraband {
 				EnumSet<CompletionHandler.CompletionType> completionTypes =
 					datagram.completionTypes;
 
-				if (completionTypes != null) {
-					if (completionTypes.contains(
-							CompletionHandler.CompletionType.SUBMITTED)) {
+				if ((completionTypes != null) &&
+					completionTypes.contains(
+						CompletionHandler.CompletionType.SUBMITTED)) {
 
-						CompletionHandler<Object> completeHandler =
-							datagram.completionHandler;
+					CompletionHandler<Object> completeHandler =
+						datagram.completionHandler;
 
-						completeHandler.submitted(datagram.attachment);
-					}
+					completeHandler.submitted(datagram.attachment);
 				}
 
 				return true;
@@ -487,7 +486,7 @@ public abstract class BaseIntraband implements Intraband {
 
 			return false;
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 			RegistrationReference registrationReference =
 				channelContext.getRegistrationReference();
 
@@ -497,13 +496,13 @@ public abstract class BaseIntraband implements Intraband {
 				datagram.completionHandler;
 
 			if (completionHandler != null) {
-				completionHandler.failed(datagram.attachment, ioe);
+				completionHandler.failed(datagram.attachment, ioException);
 			}
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
 					"Broken write channel, unregister " + registrationReference,
-					ioe);
+					ioException);
 			}
 			else if (_log.isInfoEnabled()) {
 				_log.info(
@@ -518,9 +517,8 @@ public abstract class BaseIntraband implements Intraband {
 	protected Datagram removeResponseWaitingDatagram(
 		Datagram responseDatagram) {
 
-		long sequenceId = responseDatagram.getSequenceId();
-
-		Datagram requestDatagram = responseWaitingMap.remove(sequenceId);
+		Datagram requestDatagram = responseWaitingMap.remove(
+			responseDatagram.getSequenceId());
 
 		if (requestDatagram != null) {
 			timeoutMap.remove(requestDatagram.expireTime);
@@ -551,11 +549,11 @@ public abstract class BaseIntraband implements Intraband {
 		}
 
 		@Override
-		public void failed(Object attachment, IOException ioe) {
+		public void failed(Object attachment, IOException ioException) {
 
 			// Must set before count down to ensure memory visibility
 
-			_ioe = ioe;
+			_ioe = ioException;
 
 			_countDownLatch.countDown();
 		}

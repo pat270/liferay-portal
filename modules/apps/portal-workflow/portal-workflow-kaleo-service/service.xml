@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
-<service-builder auto-namespace-tables="false" mvcc-enabled="true" package-path="com.liferay.portal.workflow.kaleo">
+<service-builder auto-namespace-tables="false" dependency-injector="ds" mvcc-enabled="true" package-path="com.liferay.portal.workflow.kaleo">
 	<namespace>Kaleo</namespace>
 	<entity local-service="true" name="KaleoAction" remote-service="false">
 
@@ -25,6 +25,7 @@
 
 		<column name="kaleoClassName" type="String" />
 		<column name="kaleoClassPK" type="long" />
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeName" type="String" />
 		<column name="name" type="String" />
@@ -53,7 +54,18 @@
 			<finder-column name="kaleoClassName" />
 			<finder-column name="kaleoClassPK" />
 		</finder>
+		<finder name="C_KCN_KCPK" return-type="Collection">
+			<finder-column name="companyId" />
+			<finder-column name="kaleoClassName" />
+			<finder-column name="kaleoClassPK" />
+		</finder>
 		<finder name="KCN_KCPK_ET" return-type="Collection">
+			<finder-column name="kaleoClassName" />
+			<finder-column name="kaleoClassPK" />
+			<finder-column name="executionType" />
+		</finder>
+		<finder name="C_KCN_KCPK_ET" return-type="Collection">
+			<finder-column name="companyId" />
 			<finder-column name="kaleoClassName" />
 			<finder-column name="kaleoClassPK" />
 			<finder-column name="executionType" />
@@ -79,6 +91,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeId" type="long" />
 		<column name="script" type="String" />
@@ -103,7 +116,7 @@
 			<finder-column name="kaleoNodeId" />
 		</finder>
 	</entity>
-	<entity local-service="true" name="KaleoDefinition" remote-service="true">
+	<entity local-service="true" name="KaleoDefinition" remote-service="false">
 
 		<!-- PK fields -->
 
@@ -127,6 +140,7 @@
 		<column localized="true" name="title" type="String" />
 		<column name="description" type="String" />
 		<column name="content" type="String" />
+		<column name="scope" type="String" />
 		<column name="version" type="int" />
 		<column name="active" type="boolean" />
 
@@ -183,6 +197,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="name" type="String" />
 		<column localized="true" name="title" type="String" />
 		<column name="description" type="String" />
@@ -226,6 +241,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoDefinitionName" type="String" />
 		<column name="kaleoDefinitionVersion" type="int" />
@@ -254,6 +270,10 @@
 			<finder-column name="companyId" />
 			<finder-column name="userId" />
 		</finder>
+		<finder name="KDI_C" return-type="Collection">
+			<finder-column name="kaleoDefinitionId" />
+			<finder-column name="completed" />
+		</finder>
 		<finder name="KDVI_C" return-type="Collection">
 			<finder-column name="kaleoDefinitionVersionId" />
 			<finder-column name="completed" />
@@ -261,6 +281,11 @@
 		<finder name="CN_CPK" return-type="Collection">
 			<finder-column name="className" />
 			<finder-column name="classPK" />
+		</finder>
+		<finder name="KII_C_U" return-type="KaleoInstance">
+			<finder-column name="kaleoInstanceId" />
+			<finder-column name="companyId" />
+			<finder-column name="userId" />
 		</finder>
 		<finder name="C_KDN_KDV_CD" return-type="Collection">
 			<finder-column name="companyId" />
@@ -289,6 +314,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoInstanceId" type="long" />
 		<column name="parentKaleoInstanceTokenId" type="long" />
@@ -348,6 +374,7 @@
 
 		<column name="kaleoClassName" type="String" />
 		<column name="kaleoClassPK" type="long" />
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoInstanceId" type="long" />
 		<column name="kaleoInstanceTokenId" type="long" />
@@ -421,6 +448,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="name" type="String" />
 		<column name="metadata" type="String" />
@@ -470,6 +498,7 @@
 
 		<column name="kaleoClassName" type="String" />
 		<column name="kaleoClassPK" type="long" />
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeName" type="String" />
 		<column name="name" type="String" />
@@ -523,6 +552,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNotificationId" type="long" />
 		<column name="recipientClassName" type="String" />
@@ -576,6 +606,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeId" type="long" />
 		<column name="name" type="String" />
@@ -621,6 +652,7 @@
 
 		<column name="kaleoClassName" type="String" />
 		<column name="kaleoClassPK" type="long" />
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeId" type="long" />
 		<column name="assigneeClassName" type="String" />
@@ -678,6 +710,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoInstanceId" type="long" />
 		<column name="kaleoInstanceTokenId" type="long" />
@@ -716,6 +749,10 @@
 			<finder-column name="groupId" />
 			<finder-column name="assigneeClassPK" />
 		</finder>
+		<finder name="KTITI_ACN" return-type="Collection">
+			<finder-column name="kaleoTaskInstanceTokenId" />
+			<finder-column name="assigneeClassName" />
+		</finder>
 		<finder name="ACN_ACPK" return-type="Collection">
 			<finder-column name="assigneeClassName" />
 			<finder-column name="assigneeClassPK" />
@@ -741,6 +778,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeId" type="long" />
 		<column name="kaleoTaskId" type="long" />
@@ -800,6 +838,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoInstanceId" type="long" />
 		<column name="kaleoTaskId" type="long" />
@@ -858,6 +897,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoInstanceId" type="long" />
 		<column name="kaleoInstanceTokenId" type="long" />
@@ -919,6 +959,7 @@
 
 		<column name="kaleoClassName" type="String" />
 		<column name="kaleoClassPK" type="long" />
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="name" type="String" />
 		<column name="blocking" type="boolean" />
@@ -968,6 +1009,7 @@
 
 		<column name="kaleoClassName" type="String" />
 		<column name="kaleoClassPK" type="long" />
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoInstanceId" type="long" />
 		<column name="kaleoInstanceTokenId" type="long" />
@@ -1025,6 +1067,7 @@
 
 		<!-- Other fields -->
 
+		<column name="kaleoDefinitionId" type="long" />
 		<column name="kaleoDefinitionVersionId" type="long" />
 		<column name="kaleoNodeId" type="long" />
 		<column name="name" type="String" />

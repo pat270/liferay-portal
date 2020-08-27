@@ -1,0 +1,329 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Site Administration";
+
+	setUp {
+		task ("Set up instance and sign in") {
+			TestCase.setUpPortalInstance();
+
+			User.firstLoginPG();
+		}
+
+		task ("Add a site via JSON") {
+			JSONGroup.addGroup(groupName = "Test Site Name 1");
+		}
+
+		task ("Activate local live staging for the first site") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-1");
+
+			Staging.activateStagingCP(siteName = "Test Site Name 1");
+		}
+
+		task ("Add a second site via JSON") {
+			JSONGroup.addGroup(groupName = "Test Site Name 2");
+		}
+
+		task ("Activate local live staging for the second site") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-2");
+
+			Staging.activateStagingCP(siteName = "Test Site Name 2");
+		}
+
+		task ("Import test fragments from dependencies folder to the first site") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name-1-staging");
+
+			FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+		}
+
+		task ("Add a page template collection and content page template to the first site") {
+			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name-1-staging");
+
+			PageTemplatesAdmin.addCollection(collectionName = "Page Template Collection");
+
+			Navigator.gotoNavNested(navNested = "Page Template Collection");
+
+			PageTemplatesAdmin.addPageTemplate(pageTemplateName = "Page Template Name");
+
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Button");
+
+			Button.clickPublish();
+		}
+
+		task ("Add a content page from the page template to the first site") {
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name-1-staging");
+
+			ContentPages.addPage(
+				collectionName = "Page Template Collection",
+				pageName = "Test Template Content Page",
+				pageTemplateName = "Page Template Name");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Add a content page with a Title fragment to the first site") {
+			SitePages.openPagesAdmin(siteURLKey = "test-site-name-1-staging");
+
+			ContentPages.addPage(pageName = "Test Regular Content Page");
+
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Title");
+		}
+
+		task ("Publish the content page") {
+			PageEditor.clickPublish();
+		}
+
+		task ("Add a navigation menu to the first site") {
+			NavigationMenusAdmin.openNavigationMenusAdmin(siteURLKey = "test-site-name-1-staging");
+
+			NavigationMenusAdmin.addMenu(menuName = "Test Navigation Menu Name");
+		}
+
+		task ("Add both content pages to the navigation menu") {
+			NavigationMenusAdmin.addItem(
+				item = "Page",
+				pageNames = "Test Template Content Page,Test Regular Content Page");
+		}
+
+		task ("Add a URL item to the navigation menu") {
+			NavigationMenusAdmin.addItem(
+				item = "URL",
+				url = "https://www.liferay.com/",
+				urlName = "Liferay");
+		}
+
+		task ("Navigate to the Navigation Menu widget for the first site") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name-1-staging");
+		}
+
+		task ("Configure the Navigation Menu widget to use the navigation menu") {
+			NavigationMenusWidget.gotoNavigationMenuWidgetConfig();
+
+			NavigationMenusWidget.chooseMenu(menuName = "Test Navigation Menu Name");
+
+			Portlet.saveAndCloseConfig();
+		}
+
+		task ("Add a display page to the first site") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name-1-staging");
+
+			DisplayPageTemplatesAdmin.addDisplayPage(
+				contentType = "Web Content Article",
+				displayPageName = "Display Page Name",
+				subType = "Basic Web Content");
+		}
+
+		task ("Add a Title Fragment to the display page") {
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Title");
+		}
+
+		task ("Add a Rich Text fragment to the display page") {
+			PageEditor.addFragment(
+				collectionName = "Collection Name",
+				fragmentName = "Rich Text",
+				targetFragmentName = "Title");
+		}
+
+		task ("Map the Title fragment to the Title field") {
+			PageEditorMapping.mapEditableTextToField(
+				contributed = "false",
+				field = "Title",
+				fragmentName = "Title",
+				id = "title",
+				source = "Basic Web Content (Default)");
+		}
+
+		task ("Map the Rich Text fragment to the Content field") {
+			PageEditorMapping.mapEditableTextToField(
+				contributed = "false",
+				field = "Content",
+				fragmentName = "Rich Text",
+				id = "rich-text",
+				source = "Basic Web Content (Default)");
+		}
+
+		task ("Publish the display page") {
+			Button.clickPublish();
+		}
+
+		task ("Add a web content article that uses the display page to the first site") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name-1-staging");
+
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(
+				webContentContent = "Webcontent Content",
+				webContentTitle = "Webcontent Title");
+
+			WebContent.editDisplayPage(
+				pageName = "Display Page Name",
+				pageType = "Display Page Templates");
+
+			PortletEntry.publish();
+		}
+
+		task ("Publish the first site to live") {
+			Staging.openStagingAdmin(siteURLKey = "test-site-name-1-staging");
+
+			Staging.publishCustomPublication();
+		}
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name 1");
+
+			JSONGroup.deleteGroupByName(groupName = "Test Site Name 2");
+		}
+	}
+
+	@description = "Export a live site into a different staging site. This test is focused on modern site building features. The high level steps of this test are outlined in LRQA-44517."
+	@priority = "5"
+	test ImportLiveSiteToStagingSite {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "SitesExportImportWithStaging#ImportLiveSiteToStagingSite";
+
+		task ("Export the first site") {
+			LAR.openExportAdmin(siteScopeName = "test-site-name-1");
+
+			LexiconEntry.gotoAdd();
+
+			LAR.exportWithAssertionOnSuccess();
+
+			LAR.downloadLar();
+		}
+
+		task ("Import the first site's lar into the staging site for the second site") {
+			LAR.openImportAdmin(siteName = "test-site-name-2-staging");
+
+			LexiconEntry.gotoAdd();
+
+			Site.importSiteFromTempFolder();
+		}
+
+		task ("Assert the fragments from the first site survived the import") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name-2-staging");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Content");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Button");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Multiple Editables");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Static Text");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Image 2");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Rich Text");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Title 2");
+
+			FragmentsAdmin.viewEntryPresent(entry = "Title");
+
+			FragmentsAdminNavigator.gotoEntryEllipsisItem(
+				entry = "Button",
+				item = "Edit");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "FragmentEditor#PREVIEW_IFRAME");
+
+			AssertElementPresent(locator1 = "Button#SUBMIT");
+
+			AssertElementPresent(locator1 = "Button#CANCEL");
+
+			SelectFrameTop();
+		}
+
+		task ("Assert the content page template survived the import") {
+			PageTemplatesAdmin.openPageTemplatesAdmin(siteURLKey = "test-site-name-2-staging");
+
+			PageTemplatesAdmin.gotoPageTemplate(pageTemplateName = "Page Template Name");
+
+			AssertVisible(
+				key_content = "Submit",
+				key_fragmentClass = "footer",
+				key_position = "1",
+				locator1 = "Fragment#PAGE_EDITOR_FRAGMENT");
+
+			for (var button : list "Submit,Cancel") {
+				Button.viewPresent(button = "${button}");
+			}
+		}
+
+		task ("Assert the content pages and Navigation Menu widget configuration survived the import") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name-2-staging");
+
+			Click(
+				key_pageName = "Test Template Content Page",
+				locator1 = "Home#PAGE");
+
+			AssertVisible(
+				key_content = "Submit",
+				key_fragmentClass = "footer",
+				locator1 = "Fragment#FRAGMENT");
+
+			for (var button : list "Submit,Cancel") {
+				Button.viewPresent(button = "${button}");
+			}
+
+			Click(
+				key_pageName = "Test Regular Content Page",
+				locator1 = "Home#PAGE");
+
+			AssertVisible(
+				key_content = "Lorem ipsum dolor sit amet",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+
+			AssertVisible(
+				key_href = "https://www.liferay.com/",
+				key_pageName = "Liferay",
+				locator1 = "Home#PAGE_HREF");
+		}
+
+		task ("Assert the navigation menu survived the import") {
+			NavigationMenusAdmin.openNavigationMenusAdmin(siteURLKey = "test-site-name-2-staging");
+
+			AssertVisible(
+				key_rowEntry = "Test Navigation Menu Name",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK");
+		}
+
+		task ("Assert the display page survived the import") {
+			DisplayPageTemplatesAdmin.openDisplayPagesAdmin(siteURLKey = "test-site-name-2-staging");
+
+			DisplayPageTemplatesAdmin.viewDisplayPagePresent(displayPageName = "Display Page Name");
+		}
+
+		task ("Assert the web content article and its reference to its display page survived the import") {
+			Navigator.openWithAppendToBaseURL(urlAppend = "web/test-site-name-2-staging/w/webcontent-title");
+
+			AssertVisible(
+				key_content = "Webcontent Title",
+				key_fragmentClass = "header",
+				locator1 = "Fragment#FRAGMENT");
+
+			AssertVisible(
+				key_content = "Webcontent Content",
+				key_fragmentClass = "rich-text",
+				locator1 = "Fragment#FRAGMENT");
+		}
+	}
+
+}

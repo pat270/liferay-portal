@@ -20,7 +20,9 @@ import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
+import com.liferay.portal.kernel.model.change.tracking.CTModel;
 
 import java.util.Date;
 import java.util.Locale;
@@ -41,8 +43,8 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetEntryModel
-	extends AttachedModel, BaseModel<AssetEntry>, GroupedModel, LocalizedModel,
-			ShardedModel {
+	extends AttachedModel, BaseModel<AssetEntry>, CTModel<AssetEntry>,
+			GroupedModel, LocalizedModel, MVCCModel, ShardedModel {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -55,6 +57,7 @@ public interface AssetEntryModel
 	 *
 	 * @return the primary key of this asset entry
 	 */
+	@Override
 	public long getPrimaryKey();
 
 	/**
@@ -62,7 +65,40 @@ public interface AssetEntryModel
 	 *
 	 * @param primaryKey the primary key of this asset entry
 	 */
+	@Override
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset entry.
+	 *
+	 * @return the mvcc version of this asset entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset entry.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
+
+	/**
+	 * Returns the ct collection ID of this asset entry.
+	 *
+	 * @return the ct collection ID of this asset entry
+	 */
+	@Override
+	public long getCtCollectionId();
+
+	/**
+	 * Sets the ct collection ID of this asset entry.
+	 *
+	 * @param ctCollectionId the ct collection ID of this asset entry
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId);
 
 	/**
 	 * Returns the entry ID of this asset entry.
@@ -746,20 +782,6 @@ public interface AssetEntryModel
 	 * @param priority the priority of this asset entry
 	 */
 	public void setPriority(double priority);
-
-	/**
-	 * Returns the view count of this asset entry.
-	 *
-	 * @return the view count of this asset entry
-	 */
-	public int getViewCount();
-
-	/**
-	 * Sets the view count of this asset entry.
-	 *
-	 * @param viewCount the view count of this asset entry
-	 */
-	public void setViewCount(int viewCount);
 
 	@Override
 	public String[] getAvailableLanguageIds();

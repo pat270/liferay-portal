@@ -16,7 +16,6 @@ package com.liferay.bookmarks.service.base;
 
 import com.liferay.bookmarks.model.BookmarksFolder;
 import com.liferay.bookmarks.service.BookmarksFolderService;
-import com.liferay.bookmarks.service.persistence.BookmarksEntryFinder;
 import com.liferay.bookmarks.service.persistence.BookmarksEntryPersistence;
 import com.liferay.bookmarks.service.persistence.BookmarksFolderFinder;
 import com.liferay.bookmarks.service.persistence.BookmarksFolderPersistence;
@@ -47,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class BookmarksFolderServiceBaseImpl
 	extends BaseServiceImpl
-	implements BookmarksFolderService, AopService, IdentifiableOSGiService {
+	implements AopService, BookmarksFolderService, IdentifiableOSGiService {
 
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -103,16 +102,13 @@ public abstract class BookmarksFolderServiceBaseImpl
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 
 	@Reference
 	protected BookmarksEntryPersistence bookmarksEntryPersistence;
-
-	@Reference
-	protected BookmarksEntryFinder bookmarksEntryFinder;
 
 	@Reference
 	protected com.liferay.bookmarks.service.BookmarksFolderLocalService

@@ -20,10 +20,10 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.exception.NoSuchArticleException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
-import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.kernel.exception.LocaleException;
@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.xml.Document;
@@ -48,7 +49,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.lang.reflect.Method;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -196,13 +196,13 @@ public class JournalTestUtilTest {
 
 	@Test
 	public void testAddDynamicContent() throws Exception {
-		Map<Locale, String> contents = new HashMap<>();
-
-		contents.put(LocaleUtil.BRAZIL, "Joe Bloggs");
-		contents.put(LocaleUtil.US, "Joe Bloggs");
-
 		String xml = DDMStructureTestUtil.getSampleStructuredContent(
-			contents, LanguageUtil.getLanguageId(LocaleUtil.US));
+			HashMapBuilder.put(
+				LocaleUtil.BRAZIL, "Joe Bloggs"
+			).put(
+				LocaleUtil.US, "Joe Bloggs"
+			).build(),
+			LanguageUtil.getLanguageId(LocaleUtil.US));
 
 		String content = (String)_transformMethod.invoke(
 			null, null, getTokens(), Constants.VIEW, "en_US",
@@ -254,7 +254,7 @@ public class JournalTestUtilTest {
 					ddmStructure.getGroupId(), DDMStructure.class.getName(),
 					ddmStructure.getStructureId()));
 		}
-		catch (NoSuchArticleException nsae) {
+		catch (NoSuchArticleException noSuchArticleException) {
 		}
 	}
 
@@ -288,9 +288,9 @@ public class JournalTestUtilTest {
 		JournalArticle article = JournalTestUtil.addArticle(
 			_group.getGroupId(), "Test Article", "This is a test article.");
 
-		Map<Locale, String> contents = new HashMap<>();
-
-		contents.put(LocaleUtil.US, "This is an updated test article.");
+		Map<Locale, String> contents = HashMapBuilder.put(
+			LocaleUtil.US, "This is an updated test article."
+		).build();
 
 		String defaultLanguageId = LanguageUtil.getLanguageId(
 			LocaleUtil.getSiteDefault());

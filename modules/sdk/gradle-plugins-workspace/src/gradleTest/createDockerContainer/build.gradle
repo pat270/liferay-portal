@@ -1,41 +1,58 @@
-import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer
-
-task runGradleTest(type: DockerRemoveContainer)
+task runGradleTest
+task untarOverrideTestScript(type: Copy)
 
 runGradleTest {
-	dependsOn createDockerContainer
+	dependsOn createDockerContainer, untarOverrideTestScript
 
 	doLast {
+		File overrideTestScript = new File(buildDir, "override_test.sh");
+
+		assert overrideTestScript.text.contains("local");
+
 		File inputDir = new File(buildDir, "docker")
 
 		String[] inputDirFileNames = inputDir.list()
 
-		assert inputDirFileNames.length == 2
+		assert inputDirFileNames.length == 7
 
+		assert inputDirFileNames.contains("100_liferay_image_setup.sh")
+		assert inputDirFileNames.contains("Dockerfile")
+		assert inputDirFileNames.contains("configs")
 		assert inputDirFileNames.contains("deploy")
-		assert !inputDirFileNames.contains("Dockerfile")
-		assert inputDirFileNames.contains("files")
+		assert inputDirFileNames.contains("patching")
+		assert inputDirFileNames.contains("scripts")
+		assert inputDirFileNames.contains("work")
 
-		File filesDir = new File(inputDir, "files")
+		File configsDir = new File(inputDir, "configs")
 
-		String[] filesDirFileNames = filesDir.list()
+		String[] configsDirFileNames = configsDir.list()
 
-		assert filesDirFileNames.length == 1
+		assert configsDirFileNames.length == 1
 
-		assert !filesDirFileNames.contains(".touch")
-		assert filesDirFileNames.contains("portal-ext.properties")
+		assert configsDirFileNames.contains("local")
+
+		File localDir = new File(configsDir, "local")
+
+		String[] localDirFileNames = localDir.list()
+
+		assert localDirFileNames.length == 3
+
+		assert localDirFileNames.contains("local_file")
+		assert localDirFileNames.contains("portal-ext.properties")
+		assert localDirFileNames.contains("scripts")
 
 		File deployDir = new File(inputDir, "deploy")
 
 		String[] deployDirFileNames = deployDir.list()
 
-		assert deployDirFileNames.length == 1
-
-		assert !deployDirFileNames.contains(".touch")
 		assert deployDirFileNames.contains("com.liferay.foo.web-1.0.0.jar")
 	}
 
-	targetContainerId {
-		createDockerContainer.containerId
-	}
+	finalizedBy removeDockerContainer
+}
+
+untarOverrideTestScript {
+	dependsOn "copyOverrideTestScript"
+	from tarTree(rootProject.buildDir.path + "/override_test.sh.tar")
+	into buildDir
 }

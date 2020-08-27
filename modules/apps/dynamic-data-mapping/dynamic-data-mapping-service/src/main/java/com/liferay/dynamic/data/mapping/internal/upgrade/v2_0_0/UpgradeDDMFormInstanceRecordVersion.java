@@ -83,7 +83,7 @@ public class UpgradeDDMFormInstanceRecordVersion extends UpgradeProcess {
 				ps2.setLong(12, rs.getLong("statusByUserId"));
 				ps2.setString(13, rs.getString("statusByUserName"));
 				ps2.setTimestamp(14, rs.getTimestamp("statusDate"));
-				ps2.setInt(15, rs.getInt("DDMStorageId"));
+				ps2.setLong(15, rs.getLong("DDMStorageId"));
 
 				deleteDDLRecordVersion(recordVersionId);
 

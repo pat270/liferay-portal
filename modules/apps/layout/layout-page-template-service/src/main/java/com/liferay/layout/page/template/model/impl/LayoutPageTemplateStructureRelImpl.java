@@ -14,16 +14,9 @@
 
 package com.liferay.layout.page.template.model.impl;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * @author Brian Wing Shun Chan
+ * @author Eudaldo Alonso
  */
-@ProviderType
 public class LayoutPageTemplateStructureRelImpl
 	extends LayoutPageTemplateStructureRelBaseImpl {
-
-	public LayoutPageTemplateStructureRelImpl() {
-	}
-
 }

@@ -14,17 +14,19 @@
 
 package com.liferay.portal.search.engine.adapter.cluster;
 
-import org.osgi.annotation.versioning.ProviderType;
+import com.liferay.portal.search.engine.adapter.ccr.CrossClusterRequest;
 
 /**
  * @author Dylan Rebelak
  */
-@ProviderType
 public class StatsClusterRequest
+	extends CrossClusterRequest
 	implements ClusterRequest<StatsClusterResponse> {
 
-	public StatsClusterRequest(String[] indexNames) {
-		_indexNames = indexNames;
+	public StatsClusterRequest(String[] nodeIds) {
+		_nodeIds = nodeIds;
+
+		setPreferLocalCluster(true);
 	}
 
 	@Override
@@ -34,11 +36,19 @@ public class StatsClusterRequest
 		return clusterRequestExecutor.executeClusterRequest(this);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getNodeIds()}
+	 */
+	@Deprecated
 	@Override
 	public String[] getIndexNames() {
-		return _indexNames;
+		return _nodeIds;
 	}
 
-	private final String[] _indexNames;
+	public String[] getNodeIds() {
+		return _nodeIds;
+	}
+
+	private final String[] _nodeIds;
 
 }

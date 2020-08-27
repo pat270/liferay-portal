@@ -30,16 +30,15 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * @author Igor Fabiano Nazar
@@ -50,11 +49,11 @@ public class DLFileEntryMetadataDDMStructureFixture {
 	public DLFileEntryMetadataDDMStructureFixture(
 		DLFixture dlFixture, DLAppLocalService dlAppLocalService,
 		DDMStructureLocalService ddmStructureLocalService,
-		DLFileEntryTypeLocalService dlFileEntryTypeService) {
+		DLFileEntryTypeLocalService dlFileEntryTypeLocalService) {
 
 		_dlFixture = dlFixture;
 		_ddmStructureLocalService = ddmStructureLocalService;
-		_dlFileEntryTypeLocalService = dlFileEntryTypeService;
+		_dlFileEntryTypeLocalService = dlFileEntryTypeLocalService;
 
 		_fileEntrySearchFixture = new FileEntrySearchFixture(dlAppLocalService);
 
@@ -98,14 +97,13 @@ public class DLFileEntryMetadataDDMStructureFixture {
 		try (InputStream inputStream = clazz.getResourceAsStream(
 				"dependencies/" + fileName)) {
 
-			Map<String, Serializable> fileAttributes = new HashMap<>();
-
-			fileAttributes.put("fileEntryTypeId", fileEntryTypeId);
-
 			return _fileEntrySearchFixture.addFileEntry(
 				new FileEntryBlueprint() {
 					{
-						addAttributes(fileAttributes);
+						addAttributes(
+							HashMapBuilder.<String, Serializable>put(
+								"fileEntryTypeId", fileEntryTypeId
+							).build());
 						setFileName(fileName);
 						setGroupId(_dlFixture.getGroupId());
 						setInputStream(inputStream);

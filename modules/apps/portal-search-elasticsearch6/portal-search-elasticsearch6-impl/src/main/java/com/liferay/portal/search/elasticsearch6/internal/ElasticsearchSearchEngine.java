@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.elasticsearch6.internal.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch6.internal.index.IndexFactory;
-import com.liferay.portal.search.elasticsearch6.internal.index.IndexNameBuilder;
 import com.liferay.portal.search.engine.adapter.SearchEngineAdapter;
 import com.liferay.portal.search.engine.adapter.cluster.ClusterHealthStatus;
 import com.liferay.portal.search.engine.adapter.cluster.HealthClusterRequest;
@@ -47,6 +46,7 @@ import com.liferay.portal.search.engine.adapter.snapshot.RestoreSnapshotRequest;
 import com.liferay.portal.search.engine.adapter.snapshot.SnapshotDetails;
 import com.liferay.portal.search.engine.adapter.snapshot.SnapshotRepositoryDetails;
 import com.liferay.portal.search.engine.adapter.snapshot.SnapshotState;
+import com.liferay.portal.search.index.IndexNameBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -138,9 +138,9 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 
 			_elasticsearchConnectionManager.unregisterCompanyId(companyId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to delete index for " + companyId, e);
+				_log.warn("Unable to delete index for " + companyId, exception);
 			}
 		}
 	}
@@ -230,8 +230,8 @@ public class ElasticsearchSearchEngine extends BaseSearchEngine {
 				return false;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return true;

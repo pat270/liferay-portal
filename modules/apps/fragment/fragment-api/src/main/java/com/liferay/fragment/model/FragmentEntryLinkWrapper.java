@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentEntryLink
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkWrapper
 	extends BaseModelWrapper<FragmentEntryLink>
 	implements FragmentEntryLink, ModelWrapper<FragmentEntryLink> {
@@ -46,6 +45,8 @@ public class FragmentEntryLinkWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("fragmentEntryLinkId", getFragmentEntryLinkId());
 		attributes.put("groupId", getGroupId());
@@ -57,11 +58,14 @@ public class FragmentEntryLinkWrapper
 		attributes.put(
 			"originalFragmentEntryLinkId", getOriginalFragmentEntryLinkId());
 		attributes.put("fragmentEntryId", getFragmentEntryId());
+		attributes.put("segmentsExperienceId", getSegmentsExperienceId());
 		attributes.put("classNameId", getClassNameId());
 		attributes.put("classPK", getClassPK());
+		attributes.put("plid", getPlid());
 		attributes.put("css", getCss());
 		attributes.put("html", getHtml());
 		attributes.put("js", getJs());
+		attributes.put("configuration", getConfiguration());
 		attributes.put("editableValues", getEditableValues());
 		attributes.put("namespace", getNamespace());
 		attributes.put("position", getPosition());
@@ -74,6 +78,18 @@ public class FragmentEntryLinkWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -135,6 +151,13 @@ public class FragmentEntryLinkWrapper
 			setFragmentEntryId(fragmentEntryId);
 		}
 
+		Long segmentsExperienceId = (Long)attributes.get(
+			"segmentsExperienceId");
+
+		if (segmentsExperienceId != null) {
+			setSegmentsExperienceId(segmentsExperienceId);
+		}
+
 		Long classNameId = (Long)attributes.get("classNameId");
 
 		if (classNameId != null) {
@@ -145,6 +168,12 @@ public class FragmentEntryLinkWrapper
 
 		if (classPK != null) {
 			setClassPK(classPK);
+		}
+
+		Long plid = (Long)attributes.get("plid");
+
+		if (plid != null) {
+			setPlid(plid);
 		}
 
 		String css = (String)attributes.get("css");
@@ -163,6 +192,12 @@ public class FragmentEntryLinkWrapper
 
 		if (js != null) {
 			setJs(js);
+		}
+
+		String configuration = (String)attributes.get("configuration");
+
+		if (configuration != null) {
+			setConfiguration(configuration);
 		}
 
 		String editableValues = (String)attributes.get("editableValues");
@@ -243,6 +278,16 @@ public class FragmentEntryLinkWrapper
 	}
 
 	/**
+	 * Returns the configuration of this fragment entry link.
+	 *
+	 * @return the configuration of this fragment entry link
+	 */
+	@Override
+	public String getConfiguration() {
+		return model.getConfiguration();
+	}
+
+	/**
 	 * Returns the create date of this fragment entry link.
 	 *
 	 * @return the create date of this fragment entry link
@@ -260,6 +305,16 @@ public class FragmentEntryLinkWrapper
 	@Override
 	public String getCss() {
 		return model.getCss();
+	}
+
+	/**
+	 * Returns the ct collection ID of this fragment entry link.
+	 *
+	 * @return the ct collection ID of this fragment entry link
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	/**
@@ -353,6 +408,16 @@ public class FragmentEntryLinkWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this fragment entry link.
+	 *
+	 * @return the mvcc version of this fragment entry link
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the namespace of this fragment entry link.
 	 *
 	 * @return the namespace of this fragment entry link
@@ -370,6 +435,16 @@ public class FragmentEntryLinkWrapper
 	@Override
 	public long getOriginalFragmentEntryLinkId() {
 		return model.getOriginalFragmentEntryLinkId();
+	}
+
+	/**
+	 * Returns the plid of this fragment entry link.
+	 *
+	 * @return the plid of this fragment entry link
+	 */
+	@Override
+	public long getPlid() {
+		return model.getPlid();
 	}
 
 	/**
@@ -400,6 +475,16 @@ public class FragmentEntryLinkWrapper
 	@Override
 	public String getRendererKey() {
 		return model.getRendererKey();
+	}
+
+	/**
+	 * Returns the segments experience ID of this fragment entry link.
+	 *
+	 * @return the segments experience ID of this fragment entry link
+	 */
+	@Override
+	public long getSegmentsExperienceId() {
+		return model.getSegmentsExperienceId();
 	}
 
 	/**
@@ -443,10 +528,22 @@ public class FragmentEntryLinkWrapper
 	}
 
 	@Override
+	public boolean isCacheable() {
+		return model.isCacheable();
+	}
+
+	@Override
 	public boolean isLatestVersion()
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return model.isLatestVersion();
+	}
+
+	@Override
+	public boolean isSystem()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.isSystem();
 	}
 
 	@Override
@@ -490,6 +587,16 @@ public class FragmentEntryLinkWrapper
 	}
 
 	/**
+	 * Sets the configuration of this fragment entry link.
+	 *
+	 * @param configuration the configuration of this fragment entry link
+	 */
+	@Override
+	public void setConfiguration(String configuration) {
+		model.setConfiguration(configuration);
+	}
+
+	/**
 	 * Sets the create date of this fragment entry link.
 	 *
 	 * @param createDate the create date of this fragment entry link
@@ -507,6 +614,16 @@ public class FragmentEntryLinkWrapper
 	@Override
 	public void setCss(String css) {
 		model.setCss(css);
+	}
+
+	/**
+	 * Sets the ct collection ID of this fragment entry link.
+	 *
+	 * @param ctCollectionId the ct collection ID of this fragment entry link
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -600,6 +717,16 @@ public class FragmentEntryLinkWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this fragment entry link.
+	 *
+	 * @param mvccVersion the mvcc version of this fragment entry link
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the namespace of this fragment entry link.
 	 *
 	 * @param namespace the namespace of this fragment entry link
@@ -619,6 +746,16 @@ public class FragmentEntryLinkWrapper
 		long originalFragmentEntryLinkId) {
 
 		model.setOriginalFragmentEntryLinkId(originalFragmentEntryLinkId);
+	}
+
+	/**
+	 * Sets the plid of this fragment entry link.
+	 *
+	 * @param plid the plid of this fragment entry link
+	 */
+	@Override
+	public void setPlid(long plid) {
+		model.setPlid(plid);
 	}
 
 	/**
@@ -649,6 +786,16 @@ public class FragmentEntryLinkWrapper
 	@Override
 	public void setRendererKey(String rendererKey) {
 		model.setRendererKey(rendererKey);
+	}
+
+	/**
+	 * Sets the segments experience ID of this fragment entry link.
+	 *
+	 * @param segmentsExperienceId the segments experience ID of this fragment entry link
+	 */
+	@Override
+	public void setSegmentsExperienceId(long segmentsExperienceId) {
+		model.setSegmentsExperienceId(segmentsExperienceId);
 	}
 
 	/**
@@ -689,6 +836,20 @@ public class FragmentEntryLinkWrapper
 	@Override
 	public void setUuid(String uuid) {
 		model.setUuid(uuid);
+	}
+
+	@Override
+	public Map<String, Function<FragmentEntryLink, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<FragmentEntryLink, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

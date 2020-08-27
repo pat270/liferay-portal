@@ -38,14 +38,15 @@ import org.osgi.service.component.annotations.Reference;
 public class LayoutPageTemplateCollectionModelResourcePermissionRegistrar {
 
 	@Activate
-	public void activate(BundleContext bundleContext) {
+	protected void activate(BundleContext bundleContext) {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put(
 			"model.class.name", LayoutPageTemplateCollection.class.getName());
 
 		_serviceRegistration = bundleContext.registerService(
-			ModelResourcePermission.class,
+			(Class<ModelResourcePermission<LayoutPageTemplateCollection>>)
+				(Class<?>)ModelResourcePermission.class,
 			ModelResourcePermissionFactory.create(
 				LayoutPageTemplateCollection.class,
 				LayoutPageTemplateCollection::getLayoutPageTemplateCollectionId,
@@ -58,7 +59,7 @@ public class LayoutPageTemplateCollectionModelResourcePermissionRegistrar {
 	}
 
 	@Deactivate
-	public void deactivate() {
+	protected void deactivate() {
 		_serviceRegistration.unregister();
 	}
 
@@ -71,6 +72,8 @@ public class LayoutPageTemplateCollectionModelResourcePermissionRegistrar {
 	)
 	private PortletResourcePermission _portletResourcePermission;
 
-	private ServiceRegistration<ModelResourcePermission> _serviceRegistration;
+	private ServiceRegistration
+		<ModelResourcePermission<LayoutPageTemplateCollection>>
+			_serviceRegistration;
 
 }

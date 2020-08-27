@@ -62,13 +62,13 @@ public class LocalRepositoryProxyBean
 	@Override
 	public FileEntry addFileEntry(
 			long userId, long folderId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog, InputStream is,
-			long size, ServiceContext serviceContext)
+			String title, String description, String changeLog,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = _localRepository.addFileEntry(
 			userId, folderId, sourceFileName, mimeType, title, description,
-			changeLog, is, size, serviceContext);
+			changeLog, inputStream, size, serviceContext);
 
 		return newFileEntryProxyBean(fileEntry);
 	}
@@ -95,24 +95,6 @@ public class LocalRepositoryProxyBean
 			userId, parentFolderId, name, description, serviceContext);
 
 		return newFolderProxyBean(folder);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #checkInFileEntry(long, long, DLVersionNumberIncrease,
-	 *             String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public void checkInFileEntry(
-			long userId, long fileEntryId, boolean majorVersion,
-			String changeLog, ServiceContext serviceContext)
-		throws PortalException {
-
-		checkInFileEntry(
-			userId, fileEntryId,
-			DLVersionNumberIncrease.fromMajorVersion(majorVersion), changeLog,
-			serviceContext);
 	}
 
 	@Override
@@ -187,19 +169,21 @@ public class LocalRepositoryProxyBean
 	@Override
 	public List<FileEntry> getFileEntries(
 			long folderId, int status, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return _localRepository.getFileEntries(
-			folderId, status, start, end, obc);
+			folderId, status, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<FileEntry> getFileEntries(
-			long folderId, int start, int end, OrderByComparator<FileEntry> obc)
+			long folderId, int start, int end,
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
-		return _localRepository.getFileEntries(folderId, start, end, obc);
+		return _localRepository.getFileEntries(
+			folderId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -233,18 +217,16 @@ public class LocalRepositoryProxyBean
 
 	@Override
 	public FileEntry getFileEntry(long fileEntryId) throws PortalException {
-		FileEntry fileEntry = _localRepository.getFileEntry(fileEntryId);
-
-		return newFileEntryProxyBean(fileEntry);
+		return newFileEntryProxyBean(
+			_localRepository.getFileEntry(fileEntryId));
 	}
 
 	@Override
 	public FileEntry getFileEntry(long folderId, String title)
 		throws PortalException {
 
-		FileEntry fileEntry = _localRepository.getFileEntry(folderId, title);
-
-		return newFileEntryProxyBean(fileEntry);
+		return newFileEntryProxyBean(
+			_localRepository.getFileEntry(folderId, title));
 	}
 
 	@Override
@@ -258,27 +240,21 @@ public class LocalRepositoryProxyBean
 	public FileShortcut getFileShortcut(long fileShortcutId)
 		throws PortalException {
 
-		FileShortcut fileShortcut = _localRepository.getFileShortcut(
-			fileShortcutId);
-
-		return newFileShortcutProxyBean(fileShortcut);
+		return newFileShortcutProxyBean(
+			_localRepository.getFileShortcut(fileShortcutId));
 	}
 
 	@Override
 	public FileVersion getFileVersion(long fileVersionId)
 		throws PortalException {
 
-		FileVersion fileVersion = _localRepository.getFileVersion(
-			fileVersionId);
-
-		return newFileVersionProxyBean(fileVersion);
+		return newFileVersionProxyBean(
+			_localRepository.getFileVersion(fileVersionId));
 	}
 
 	@Override
 	public Folder getFolder(long folderId) throws PortalException {
-		Folder folder = _localRepository.getFolder(folderId);
-
-		return newFolderProxyBean(folder);
+		return newFolderProxyBean(_localRepository.getFolder(folderId));
 	}
 
 	@Override
@@ -291,31 +267,33 @@ public class LocalRepositoryProxyBean
 	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountFolders, int start,
-			int end, OrderByComparator<Folder> obc)
+			int end, OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
 		return _localRepository.getFolders(
-			parentFolderId, includeMountFolders, start, end, obc);
+			parentFolderId, includeMountFolders, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, int status, boolean includeMountFolders,
-			int start, int end, OrderByComparator<Folder> obc)
+			int start, int end, OrderByComparator<Folder> orderByComparator)
 		throws PortalException {
 
 		return _localRepository.getFolders(
-			parentFolderId, status, includeMountFolders, start, end, obc);
+			parentFolderId, status, includeMountFolders, start, end,
+			orderByComparator);
 	}
 
 	@Override
 	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
-			int end, OrderByComparator<?> obc)
+			int end, OrderByComparator<?> orderByComparator)
 		throws PortalException {
 
 		return _localRepository.getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, includeMountFolders, start, end, obc);
+			folderId, status, includeMountFolders, start, end,
+			orderByComparator);
 	}
 
 	@Override
@@ -347,11 +325,11 @@ public class LocalRepositoryProxyBean
 	@Override
 	public List<FileEntry> getRepositoryFileEntries(
 			long userId, long rootFolderId, int start, int end,
-			OrderByComparator<FileEntry> obc)
+			OrderByComparator<FileEntry> orderByComparator)
 		throws PortalException {
 
 		return _localRepository.getRepositoryFileEntries(
-			userId, rootFolderId, start, end, obc);
+			userId, rootFolderId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -400,46 +378,6 @@ public class LocalRepositoryProxyBean
 			userId, fileEntryId, version, serviceContext);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #updateFileEntry(long, long, String, String, String, String,
-	 *             String, DLVersionNumberIncrease, File, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
-		throws PortalException {
-
-		return updateFileEntry(
-			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
-			file, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             #updateFileEntry(long, long, String, String, String, String,
-	 *             String, DLVersionNumberIncrease, InputStream, long,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return updateFileEntry(
-			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
-			is, size, serviceContext);
-	}
-
 	@Override
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
@@ -459,13 +397,14 @@ public class LocalRepositoryProxyBean
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
-			long size, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = _localRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, inputStream, size,
+			serviceContext);
 
 		return newFileEntryProxyBean(fileEntry);
 	}

@@ -77,8 +77,8 @@ public class ApplicationDisplayTemplateWebDAVStorageImpl
 
 			return new ArrayList<>();
 		}
-		catch (Exception e) {
-			throw new WebDAVException(e);
+		catch (Exception exception) {
+			throw new WebDAVException(exception);
 		}
 	}
 
@@ -91,7 +91,7 @@ public class ApplicationDisplayTemplateWebDAVStorageImpl
 	protected List<Resource> getFolders(WebDAVRequest webDAVRequest)
 		throws Exception {
 
-		return ListUtil.toList(
+		return ListUtil.fromArray(
 			_ddmWebDAV.toResource(
 				webDAVRequest, DDMWebDAV.TYPE_TEMPLATES, getRootPath(), true));
 	}

@@ -15,17 +15,18 @@
 package com.liferay.dynamic.data.mapping.model.impl;
 
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.service.DDMStructureVersionLocalServiceUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.cache.CacheField;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Marcellus Tavares
  */
-@ProviderType
 public class DDMStructureLayoutImpl extends DDMStructureLayoutBaseImpl {
 
 	@Override
@@ -36,14 +37,30 @@ public class DDMStructureLayoutImpl extends DDMStructureLayoutBaseImpl {
 					DDMStructureLayoutLocalServiceUtil.
 						getStructureLayoutDDMFormLayout(this);
 			}
-			catch (Exception e) {
-				_log.error(e, e);
+			catch (Exception exception) {
+				_log.error(exception, exception);
 
 				return new DDMFormLayout();
 			}
 		}
 
 		return new DDMFormLayout(_ddmFormLayout);
+	}
+
+	@Override
+	public DDMStructure getDDMStructure() throws PortalException {
+		DDMStructureVersion ddmStructureVersion =
+			DDMStructureVersionLocalServiceUtil.getDDMStructureVersion(
+				getStructureVersionId());
+
+		return ddmStructureVersion.getStructure();
+	}
+
+	@Override
+	public long getDDMStructureId() throws PortalException {
+		DDMStructure ddmStructure = getDDMStructure();
+
+		return ddmStructure.getStructureId();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -10,7 +10,7 @@
 <tbody>
 <tr>
 	<td>ITEM_SELECTOR_IFRAME</td>
-	<td>//iframe[contains(@src,'ItemSelectorPortlet')]</td>
+	<td>//div[contains(@class,'modal-body')]/iframe</td>
 	<td></td>
 </tr>
 <tr>
@@ -20,23 +20,44 @@
 </tr>
 <tr>
 	<td>ADD_BUTTON</td>
-	<td>//div[contains(@class,'modal-footer')]//button[@id='addButton' and not(contains(@class,' disabled'))]</td>
+	<td>//button[contains(.,'Add') and not(contains(@class,' disabled'))]</td>
 	<td></td>
 </tr>
 <tr>
 	<td></td>
 	<td></td>
+	<td></td>
+</tr>
+<!--LOCATION_INFO-->
+<tr>
+	<td>LOCATION_INFO_CARDS</td>
+	<td>//div[contains(@class,'card-row') and contains(.,'${key_title}')]//span[contains(.,'${key_locationName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LOCATION_INFO_CARDS_2</td>
+	<td>//div[contains(@class,'card-row') and contains(.,'${key_title}')]//div[contains(@class,'card-subtitle') and contains(.,'${key_locationName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LOCATION_INFO_LIST</td>
+	<td>//div[contains(@data-qa-id,'rowItemContent') and contains(.,'${key_title}')]//span[contains(.,'${key_locationName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LOCATION_INFO_TABLE</td>
+	<td>//tr[contains(@data-qa-id,'row') and contains(.,'${key_title}')]//td[contains(@class,'lfr-location-column') and contains(.,'${key_locationName}')]</td>
 	<td></td>
 </tr>
 <!--NAVIGATION-->
 <tr>
-	<td>NAVIGATION_SPECIFIC_TAB</td>
-	<td>//ul[contains(@class,'navbar')]/li/a[contains(.,'${key_navTab}')]</td>
+	<td>NAVIGATION_GROUP_TAB</td>
+	<td>//div[contains(@class,'btn-group')]//a[contains(.,'${key_groupTab}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SITES_NAVIGATION</td>
-	<td>//a[contains(.,'sites')]</td>
+	<td>NAVIGATION_SPECIFIC_TAB</td>
+	<td>//ul[contains(@class,'navbar')]/li/a[contains(.,'${key_navTab}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,13 +72,23 @@
 </tr>
 <!--SELECT_FILE-->
 <tr>
-	<td>SELECT_FILE_IMAGE_PREVIEW</td>
+	<td>SELECT_FILE_IMAGE_CARD</td>
 	<td>//div[contains(@class,'card')]//span[contains(@title,'${key_imageFileName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_FILE_IMAGE_VIEW_BUTTON</td>
+	<td>//div[contains(@class,'card')]//span[contains(@title,'${key_imageFileName}')]/..//following-sibling::*//button[contains(@class,"icon-view")]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_FILE_UPLOAD_IMAGE</td>
 	<td>//div[@id='itemSelectorUploadContainer']//label[contains(.,'Select File')] | //div[contains(@id,'ItemSelectorContainer')]//label[contains(.,'Select File')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_FILE_WEB_CONTENT</td>
+	<td>//li[@data-qa-id='row']/*[@data-qa-id='rowItemContent']/p[contains(.,'${key_contentName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -67,13 +98,43 @@
 </tr>
 <!--VIEWER-->
 <tr>
-	<td>CAPTION</td>
+	<td>FOOTER</td>
+	<td>//div[contains(@class,"item-selector-preview")]//div[@class="footer"]//span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILE_UPLOAD_CAPTION</td>
 	<td>//div[@class='image-viewer-footer-content']/p[@class='image-viewer-caption' and contains(.,'${key_uploadFileName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FILE_INFO_ICON</td>
 	<td>//div[contains(@class,'image-viewer-focused')]//span[contains(@class,'item-viewer-icon-info')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VIEWER_FOOTER</td>
+	<td>//div[contains(@class,'footer')]/div[contains(.,'${key_footer}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VIEWER_FOOTER_IMAGE</td>
+	<td>//div[contains(@class,'footer')]/span[contains(.,'${key_imageFileName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VIEWER_INFO</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-info-panel-open')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VIEWER_LEFT</td>
+	<td>//div[contains(@class,'pull-left')]/button[*[name()='svg'][contains(@class,'lexicon-icon-angle-left')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VIEWER_RIGHT</td>
+	<td>//div[contains(@class,'pull-right')]/button[*[name()='svg'][contains(@class,'lexicon-icon-angle-right')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -84,22 +145,22 @@
 <!--SIDEBAR_FILE_INFO-->
 <tr>
 	<td>SIDEBAR_FILE_INFO_FORMAT</td>
-	<td>//div[contains(@class,'image-viewer-sidenav-body')]//dt[contains(.,'Format')]/following-sibling::dd[1]</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Format')]/following-sibling::dd[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SIDEBAR_FILE_INFO_MODIFIED</td>
-	<td>//div[contains(@class,'image-viewer-sidenav-body')]//dt[contains(.,'Modified')]/following-sibling::dd[1]</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Modified')]/following-sibling::dd[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SIDEBAR_FILE_INFO_NAME</td>
-	<td>//div[contains(@class,'image-viewer-sidenav-body')]//dt[contains(.,'Name')]/following-sibling::dd[1]</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Name')]/following-sibling::dd[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SIDEBAR_FILE_INFO_SIZE</td>
-	<td>//div[contains(@class,'image-viewer-sidenav-body')]//dt[contains(.,'Size')]/following-sibling::dd[1]</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Size')]/following-sibling::dd[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -110,12 +171,12 @@
 <!--SIDEBAR_VERSION-->
 <tr>
 	<td>SIDEBAR_VERSION_STATUS</td>
-	<td>//div[contains(@class,'image-viewer-sidenav-body')]//dt[contains(.,'Status')]/following-sibling::dd[1]</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Status')]/following-sibling::dd[1]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SIDEBAR_VERSION_VERSION</td>
-	<td>//div[contains(@class,'image-viewer-sidenav-body')]//dt[contains(.,'Version')]/following-sibling::dd[1]</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Version')]/following-sibling::dd[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -126,7 +187,7 @@
 <!--SELECT_IMAGE_PREVIEW-->
 <tr>
 	<td>SELECT_IMAGE_PREVIEW</td>
-	<td>//div[@class='image-viewer-base-image-list-inner']//img</td>
+	<td>//div[contains(@class,'item-selector-preview')]//img</td>
 	<td></td>
 </tr>
 <tr>
@@ -137,12 +198,22 @@
 <!--URL-->
 <tr>
 	<td>URL_LABEL</td>
-	<td>//label[contains(.,'Image URL')]</td>
+	<td>//label[contains(.,'URL')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>URL_IMAGE_EXAMPLE</td>
+	<td>//p[contains(@class,'form-text')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>URL_IMAGE_PREVIEW</td>
+	<td>//div[contains(@class,'aspect-ratio')]//img</td>
 	<td></td>
 </tr>
 <tr>
 	<td>URL_IMAGE_SOURCE</td>
-	<td>//div[@class='image-viewer-base-image-list']//img[contains(@src,'${imageSourceURL}')]</td>
+	<td>//div[contains(@class,'aspect-ratio')]//img[contains(@src,'${imageSourceURL}')]</td>
 	<td></td>
 </tr>
 </tbody>

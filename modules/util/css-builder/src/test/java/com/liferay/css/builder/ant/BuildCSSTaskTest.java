@@ -14,8 +14,7 @@
 
 package com.liferay.css.builder.ant;
 
-import com.liferay.css.builder.BaseCSSBuilderTestCase;
-import com.liferay.css.builder.util.StringTestUtil;
+import com.liferay.css.builder.BaseCSSBuilderJniTestCase;
 
 import java.io.File;
 
@@ -24,7 +23,6 @@ import java.net.URL;
 import java.nio.file.Path;
 
 import org.apache.tools.ant.BuildFileRule;
-import org.apache.tools.ant.Project;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,7 +31,7 @@ import org.junit.Rule;
 /**
  * @author Andrea Di Giorgi
  */
-public class BuildCSSTaskTest extends BaseCSSBuilderTestCase {
+public class BuildCSSTaskTest extends BaseCSSBuilderJniTestCase {
 
 	@Before
 	@Override
@@ -53,33 +51,17 @@ public class BuildCSSTaskTest extends BaseCSSBuilderTestCase {
 	public final BuildFileRule buildFileRule = new BuildFileRule();
 
 	@Override
-	protected void executeCSSBuilder(
-			Path baseDirPath, String dirName, boolean generateSourceMap,
-			Path importDirPath, String outputDirName, int precision,
-			String[] rtlExcludedPathRegexps, String sassCompilerClassName)
+	protected String executeCSSBuilder(
+			Path baseDirPath, String dirName, String[] excludes,
+			boolean generateSourceMap, Path importDirPath, String outputDirName,
+			int precision, String[] rtlExcludedPathRegexps,
+			String sassCompilerClassName)
 		throws Exception {
 
-		Project project = buildFileRule.getProject();
-
-		project.setProperty(
-			"build.css.base.dir", String.valueOf(baseDirPath.toAbsolutePath()));
-		project.setProperty("build.css.dir.names", dirName);
-		project.setProperty(
-			"build.css.generate.source.maps",
-			String.valueOf(generateSourceMap));
-		project.setProperty(
-			"build.css.import.dir",
-			String.valueOf(importDirPath.toAbsolutePath()));
-		project.setProperty(
-			"build.css.output.dir.name", String.valueOf(outputDirName));
-		project.setProperty("build.css.precision", String.valueOf(precision));
-		project.setProperty(
-			"build.css.rtl.excluded.path.regexps",
-			StringTestUtil.merge(rtlExcludedPathRegexps));
-		project.setProperty(
-			"build.css.sass.compiler.class.name", sassCompilerClassName);
-
-		project.executeTarget("build-css");
+		return BuildCSSTaskTestUtil.executeCSSBuilder(
+			buildFileRule, baseDirPath, dirName, excludes, generateSourceMap,
+			importDirPath, outputDirName, precision, rtlExcludedPathRegexps,
+			sassCompilerClassName);
 	}
 
 }

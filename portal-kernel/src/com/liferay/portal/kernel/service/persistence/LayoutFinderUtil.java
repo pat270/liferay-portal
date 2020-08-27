@@ -16,20 +16,11 @@ package com.liferay.portal.kernel.service.persistence;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutFinderUtil {
-
-	public static java.util.List<com.liferay.portal.kernel.model.Layout>
-		findByNoPermissions(long roleId) {
-
-		return getFinder().findByNoPermissions(roleId);
-	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.Layout>
 		findByNullFriendlyURL() {

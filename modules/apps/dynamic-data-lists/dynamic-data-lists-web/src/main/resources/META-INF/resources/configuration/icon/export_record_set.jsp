@@ -17,7 +17,7 @@
 <%@ include file="/init.jsp" %>
 
 <%
-long recordSetId = ParamUtil.getLong(request, renderResponse.getNamespace() + "recordSetId");
+long recordSetId = ParamUtil.getLong(request, liferayPortletResponse.getNamespace() + "recordSetId");
 %>
 
 <liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" id="exportRecordSet" var="exportRecordSetURL">
@@ -25,12 +25,11 @@ long recordSetId = ParamUtil.getLong(request, renderResponse.getNamespace() + "r
 </liferay-portlet:resourceURL>
 
 <%
-StringBundler sb = new StringBundler(6);
+StringBundler sb = new StringBundler(5);
 
 sb.append("javascript:");
-sb.append(renderResponse.getNamespace());
-sb.append("exportRecordSet");
-sb.append("('");
+sb.append(liferayPortletResponse.getNamespace());
+sb.append("exportRecordSet('");
 sb.append(exportRecordSetURL);
 sb.append("');");
 %>

@@ -1,46 +1,169 @@
-import * as FormSupport from '../../Form/FormSupport.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-export const handleResizeRight = (state, {pageIndex, rowIndex, columnIndex}, targetColumn) => {
+import {FormSupport} from 'dynamic-data-mapping-form-renderer';
+
+import {updateField} from '../util/settingsContext.es';
+
+const getColumn = (pages, nestedIndexes = []) => {
+	let column;
+	let context = pages;
+
+	nestedIndexes.forEach((indexes) => {
+		const {columnIndex, pageIndex, rowIndex} = indexes;
+
+		column = FormSupport.getColumn(
+			context,
+			column ? 0 : pageIndex,
+			rowIndex,
+			columnIndex
+		);
+
+		if (column && context[0].nestedFields) {
+			context = context[0].nestedFields.filter((nestedField) =>
+				column.fields.includes(nestedField.fieldName)
+			);
+		}
+		else {
+			context = column && column.fields;
+		}
+	});
+
+	return column;
+};
+
+const getContext = (context, nestedIndexes = []) => {
+	if (nestedIndexes.length) {
+		nestedIndexes.forEach((indexes, i) => {
+			const {columnIndex, pageIndex, rowIndex} = indexes;
+
+			let fields =
+				context[i > 0 ? 0 : pageIndex].rows[rowIndex].columns[
+					columnIndex
+				].fields;
+
+			if (context[0].nestedFields) {
+				fields = fields.map((field) =>
+					context[0].nestedFields.find(
+						(nestedField) => nestedField.fieldName === field
+					)
+				);
+			}
+
+			context = fields;
+		});
+	}
+
+	return context;
+};
+
+const getColumnPosition = (context, indexes) => {
+	const {columnIndex, pageIndex, rowIndex} = indexes;
+
+	return FormSupport.getColumnPosition(
+		context,
+		pageIndex,
+		rowIndex,
+		columnIndex
+	);
+};
+
+export const handleResizeRight = (
+	props,
+	state,
+	source,
+	indexes,
+	columnTarget
+) => {
 	const {pages} = state;
 
-	let newPages = [
-		...pages
-	];
+	const {columnIndex, pageIndex, rowIndex} = indexes[indexes.length - 1];
 
-	const currentColumn = FormSupport.getColumn(pages, pageIndex, rowIndex, columnIndex);
-	const currentPosition = FormSupport.getColumnPosition(pages, pageIndex, rowIndex, columnIndex);
-	const nextColumn = FormSupport.getColumn(newPages, pageIndex, rowIndex, columnIndex + 1);
+	const currentContext = getContext(pages, indexes.slice(0, -1));
 
+	const currentColumn = getColumn(currentContext, [
+		indexes[indexes.length - 1],
+	]);
+
+	const nextColumn = getColumn(currentContext, [
+		{
+			columnIndex: columnIndex + 1,
+			pageIndex,
+			rowIndex,
+		},
+	]);
+
+	const currentColumnPosition = getColumnPosition(currentContext, {
+		columnIndex,
+		pageIndex: indexes.length > 1 ? 0 : pageIndex,
+		rowIndex,
+	});
+
+	let newContext = currentContext;
 	let newCurrentColumn;
+	let newNextColumn;
 
-	if (nextColumn) {
-		const newSize = Math.abs(currentPosition - targetColumn);
-		let newNextColumn;
+	if (
+		!nextColumn &&
+		currentColumn.size > currentColumnPosition - columnTarget &&
+		columnTarget < currentColumnPosition
+	) {
+		const newSize = currentColumnPosition - columnTarget;
 
-		if (targetColumn < currentPosition && currentColumn.size > newSize) {
+		newCurrentColumn = {
+			...currentColumn,
+			size: currentColumn.size - newSize,
+		};
+
+		newContext = FormSupport.addColumn(
+			newContext,
+			columnIndex + 1,
+			indexes.length > 1 ? 0 : pageIndex,
+			rowIndex,
+			{
+				fields: [],
+				size: newSize,
+			}
+		);
+	}
+	else if (nextColumn) {
+		const newSize = Math.abs(currentColumnPosition - columnTarget);
+
+		if (
+			columnTarget < currentColumnPosition &&
+			currentColumn.size > newSize
+		) {
 			newCurrentColumn = {
 				...currentColumn,
-				size: Math.max(currentColumn.size - newSize, 1)
+				size: Math.max(currentColumn.size - newSize, 1),
 			};
 
 			newNextColumn = {
 				...nextColumn,
-				size: Math.min(nextColumn.size + newSize, 12)
+				size: Math.min(nextColumn.size + newSize, 12),
 			};
 		}
-		else if (targetColumn > currentPosition) {
-			if (
-				nextColumn.size === 1 &&
-				nextColumn.fields.length === 0
-			) {
+		else if (columnTarget > currentColumnPosition) {
+			if (nextColumn.size === 1 && nextColumn.fields.length === 0) {
 				newCurrentColumn = {
 					...currentColumn,
-					size: currentColumn.size + newSize
+					size: currentColumn.size + newSize,
 				};
 
-				newPages = FormSupport.removeColumn(
-					newPages,
-					pageIndex,
+				newContext = FormSupport.removeColumn(
+					newContext,
+					indexes.length > 1 ? 0 : pageIndex,
 					rowIndex,
 					columnIndex + 1
 				);
@@ -48,189 +171,209 @@ export const handleResizeRight = (state, {pageIndex, rowIndex, columnIndex}, tar
 			else if (nextColumn.size > newSize) {
 				newCurrentColumn = {
 					...currentColumn,
-					size: currentColumn.size + newSize
+					size: currentColumn.size + newSize,
 				};
 
 				newNextColumn = {
 					...nextColumn,
-					size: nextColumn.size - newSize
+					size: nextColumn.size - newSize,
 				};
 			}
 		}
-
-		if (newNextColumn) {
-			newPages = FormSupport.updateColumn(
-				newPages,
-				pageIndex,
-				rowIndex,
-				columnIndex + 1,
-				newNextColumn
-			);
-		}
-	}
-	else if (
-		currentColumn.size > currentPosition - targetColumn &&
-		targetColumn < currentPosition
-	) {
-		const newSize = currentPosition - targetColumn;
-
-		newCurrentColumn = {
-			...currentColumn,
-			size: currentColumn.size - newSize
-		};
-
-		newPages = FormSupport.addColumn(
-			newPages,
-			columnIndex + 1,
-			pageIndex,
-			rowIndex,
-			{
-				fields: [],
-				size: newSize
-			}
-		);
 	}
 
 	if (newCurrentColumn) {
-		newPages = FormSupport.updateColumn(
-			newPages,
-			pageIndex,
+		newContext = FormSupport.updateColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
 			rowIndex,
 			columnIndex,
 			newCurrentColumn
 		);
 	}
 
-	return newPages;
+	if (newNextColumn) {
+		newContext = FormSupport.updateColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
+			rowIndex,
+			columnIndex + 1,
+			newNextColumn
+		);
+	}
+
+	if (indexes.length > 1) {
+		newContext = [
+			updateField(props, newContext[0], 'rows', newContext[0].rows),
+		];
+
+		currentContext[0].settingsContext = newContext[0].settingsContext;
+	}
+
+	currentContext[indexes.length > 1 ? 0 : pageIndex].rows =
+		newContext[indexes.length > 1 ? 0 : pageIndex].rows;
+
+	return pages;
 };
 
-export const handleResizeLeft = (state, source, targetColumn) => {
-	const {
-		columnIndex,
-		pageIndex,
-		rowIndex
-	} = FormSupport.getIndexes(source);
+const handleResizeLeft = (props, state, source, indexes, columnTarget) => {
 	const {pages} = state;
 
-	let newPages = [
-		...pages
-	];
+	const {columnIndex, pageIndex, rowIndex} = indexes[indexes.length - 1];
 
-	const currentColumn = FormSupport.getColumn(pages, pageIndex, rowIndex, columnIndex);
-	const previousColumn = FormSupport.getColumn(pages, pageIndex, rowIndex, columnIndex - 1);
-	const previousColumnPosition = FormSupport.getColumnPosition(pages, pageIndex, rowIndex, columnIndex - 1);
+	const currentContext = getContext(pages, indexes.slice(0, -1));
 
-	if (
-		previousColumn &&
-		previousColumn.fields.length == 0 &&
-		previousColumn.size === 1 &&
-		targetColumn <= previousColumnPosition
-	) {
-		newPages = FormSupport.removeColumn(
-			newPages,
+	const currentColumn = getColumn(currentContext, [
+		indexes[indexes.length - 1],
+	]);
+
+	const previousColumn = getColumn(currentContext, [
+		{
+			columnIndex: columnIndex - 1,
 			pageIndex,
+			rowIndex,
+		},
+	]);
+
+	const previousColumnPosition = getColumnPosition(currentContext, {
+		columnIndex: columnIndex - 1,
+		pageIndex: indexes.length > 1 ? 0 : pageIndex,
+		rowIndex,
+	});
+
+	let newContext = currentContext;
+
+	if (columnIndex === 0 && columnTarget > 0) {
+		newContext = FormSupport.addColumn(
+			newContext,
+			columnIndex,
+			indexes.length > 1 ? 0 : pageIndex,
+			rowIndex,
+			{
+				fields: [],
+				size: columnTarget,
+			}
+		);
+
+		newContext = FormSupport.updateColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
+			rowIndex,
+			columnIndex + 1,
+			{
+				...currentColumn,
+				size: currentColumn.size - columnTarget,
+			}
+		);
+
+		source.dataset.ddmFieldColumn = columnIndex + 1;
+	}
+	else if (
+		previousColumn &&
+		previousColumn.size === 1 &&
+		previousColumn.fields.length === 0 &&
+		columnTarget <= previousColumnPosition
+	) {
+		newContext = FormSupport.removeColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
 			rowIndex,
 			columnIndex - 1
 		);
 
 		source.dataset.ddmFieldColumn = columnIndex - 1;
 
-		newPages = FormSupport.updateColumn(
-			newPages,
-			pageIndex,
+		newContext = FormSupport.updateColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
 			rowIndex,
 			columnIndex - 1,
 			{
 				...currentColumn,
-				size: currentColumn.size + 1
+				size: currentColumn.size + 1,
 			}
 		);
 	}
 	else if (previousColumn) {
-		const newSize = Math.abs(previousColumnPosition - targetColumn);
+		const newSize = Math.abs(previousColumnPosition - columnTarget);
 
 		if (
-			previousColumnPosition >= targetColumn &&
+			previousColumnPosition >= columnTarget &&
 			previousColumn.size > newSize
 		) {
 			currentColumn.size += newSize;
 			previousColumn.size -= newSize;
 		}
 		else if (
-			previousColumnPosition < targetColumn &&
+			previousColumnPosition < columnTarget &&
 			currentColumn.size > newSize
 		) {
 			currentColumn.size -= newSize;
 			previousColumn.size += newSize;
 		}
 
-		newPages = FormSupport.updateColumn(
-			newPages,
-			pageIndex,
+		newContext = FormSupport.updateColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
 			rowIndex,
 			columnIndex,
 			currentColumn
 		);
 
-		newPages = FormSupport.updateColumn(
-			newPages,
-			pageIndex,
+		newContext = FormSupport.updateColumn(
+			newContext,
+			indexes.length > 1 ? 0 : pageIndex,
 			rowIndex,
 			columnIndex - 1,
 			previousColumn
 		);
 	}
-	else if (columnIndex === 0 && targetColumn > 0) {
-		newPages = FormSupport.addColumn(
-			newPages,
-			columnIndex,
-			pageIndex,
-			rowIndex,
-			{
-				fields: [],
-				size: targetColumn
-			}
-		);
 
-		newPages = FormSupport.updateColumn(
-			newPages,
-			pageIndex,
-			rowIndex,
-			columnIndex + 1,
-			{
-				...currentColumn,
-				size: currentColumn.size - targetColumn
-			}
-		);
+	if (indexes.length > 1) {
+		newContext = [
+			updateField(props, newContext[0], 'rows', newContext[0].rows),
+		];
 
-		source.dataset.ddmFieldColumn = columnIndex + 1;
+		currentContext[0].settingsContext = newContext[0].settingsContext;
 	}
 
-	return newPages;
+	currentContext[indexes.length > 1 ? 0 : pageIndex].rows =
+		newContext[indexes.length > 1 ? 0 : pageIndex].rows;
+
+	return pages;
 };
 
-export const handleColumnResized = (state, source, column, direction) => {
-	const sourceIndexes = FormSupport.getIndexes(source);
-	const {columnIndex, pageIndex, rowIndex} = sourceIndexes;
+export default (props, state, source, container, column, direction) => {
+	const {pages} = state;
 
-	let newPages = [...state.pages];
+	let newPages = [...pages];
 
-	const currentColumn = FormSupport.getColumn(newPages, pageIndex, rowIndex, columnIndex);
+	const sourceIndexes = FormSupport.getNestedIndexes(container);
+
+	const currentColumn = getColumn(pages, sourceIndexes);
 
 	if (currentColumn) {
 		if (direction === 'left') {
-			newPages = handleResizeLeft(state, source, column);
+			newPages = handleResizeLeft(
+				props,
+				state,
+				source,
+				sourceIndexes,
+				column
+			);
 		}
 		else {
-			newPages = handleResizeRight(state, sourceIndexes, column + 1);
+			newPages = handleResizeRight(
+				props,
+				state,
+				source,
+				sourceIndexes,
+				column + 1
+			);
 		}
 	}
 
-	newPages[pageIndex].rows = FormSupport.removeEmptyRows(newPages, pageIndex);
-
 	return {
-		pages: newPages
+		pages: newPages,
 	};
 };
-
-export default handleColumnResized;

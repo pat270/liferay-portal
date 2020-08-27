@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMFormInstance
  * @generated
  */
-@ProviderType
 public class DDMFormInstanceWrapper
 	extends BaseModelWrapper<DDMFormInstance>
 	implements DDMFormInstance, ModelWrapper<DDMFormInstance> {
@@ -46,6 +45,8 @@ public class DDMFormInstanceWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("formInstanceId", getFormInstanceId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +69,18 @@ public class DDMFormInstanceWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -188,6 +201,16 @@ public class DDMFormInstanceWrapper
 	@Override
 	public Date getCreateDate() {
 		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the ct collection ID of this ddm form instance.
+	 *
+	 * @return the ct collection ID of this ddm form instance
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	@Override
@@ -331,6 +354,16 @@ public class DDMFormInstanceWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this ddm form instance.
+	 *
+	 * @return the mvcc version of this ddm form instance
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this ddm form instance.
 	 *
 	 * @return the name of this ddm form instance
@@ -439,6 +472,13 @@ public class DDMFormInstanceWrapper
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return model.getSettingsModel();
+	}
+
+	@Override
+	public String getStorageType()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getStorageType();
 	}
 
 	@Override
@@ -579,6 +619,16 @@ public class DDMFormInstanceWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this ddm form instance.
+	 *
+	 * @param ctCollectionId the ct collection ID of this ddm form instance
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the description of this ddm form instance.
 	 *
 	 * @param description the description of this ddm form instance
@@ -683,6 +733,16 @@ public class DDMFormInstanceWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm form instance.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm form instance
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -856,6 +916,20 @@ public class DDMFormInstanceWrapper
 	@Override
 	public void setVersionUserUuid(String versionUserUuid) {
 		model.setVersionUserUuid(versionUserUuid);
+	}
+
+	@Override
+	public Map<String, Function<DDMFormInstance, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DDMFormInstance, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

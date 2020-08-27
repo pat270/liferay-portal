@@ -33,10 +33,10 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,18 +70,20 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testDeleteAllConfigurationEntries() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -129,10 +131,11 @@ public class AMImageDeleteConfigurationTest
 	public void testDeleteConfigurationEntryWithExistingDisabledConfiguration()
 		throws Exception {
 
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
@@ -140,10 +143,11 @@ public class AMImageDeleteConfigurationTest
 		_amImageConfigurationHelper.disableAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "1");
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -169,14 +173,14 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testDeleteConfigurationEntryWithImages() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		AMImageConfigurationEntry amImageConfigurationEntry =
 			_amImageConfigurationHelper.addAMImageConfigurationEntry(
-				TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+				TestPropsValues.getCompanyId(), "one", "desc", "1",
+				HashMapBuilder.put(
+					"max-height", "100"
+				).put(
+					"max-width", "100"
+				).build());
 
 		FileEntry fileEntry = _addFileEntry();
 
@@ -203,13 +207,13 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testDeleteDeletedConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
-			TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+			TestPropsValues.getCompanyId(), "one", "desc", "1",
+			HashMapBuilder.put(
+				"max-height", "100"
+			).put(
+				"max-width", "100"
+			).build());
 
 		Optional<AMImageConfigurationEntry> amImageConfigurationEntryOptional =
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
@@ -241,13 +245,13 @@ public class AMImageDeleteConfigurationTest
 
 	@Test(expected = InvalidStateAMImageConfigurationException.class)
 	public void testDeleteEnabledConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
-			TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+			TestPropsValues.getCompanyId(), "one", "desc", "1",
+			HashMapBuilder.put(
+				"max-height", "100"
+			).put(
+				"max-width", "100"
+			).build());
 
 		Optional<AMImageConfigurationEntry> amImageConfigurationEntryOptional =
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
@@ -261,18 +265,20 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testDeleteFirstConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -312,18 +318,20 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testDeleteSecondConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -363,13 +371,13 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testDeleteUniqueConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
-			TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+			TestPropsValues.getCompanyId(), "one", "desc", "1",
+			HashMapBuilder.put(
+				"max-height", "100"
+			).put(
+				"max-width", "100"
+			).build());
 
 		Optional<AMImageConfigurationEntry> amImageConfigurationEntryOptional =
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
@@ -392,18 +400,20 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testForceDeleteAllConfigurationEntries() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -445,10 +455,11 @@ public class AMImageDeleteConfigurationTest
 	public void testForceDeleteConfigurationEntryWithExistingDisabledConfiguration()
 		throws Exception {
 
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
@@ -456,10 +467,11 @@ public class AMImageDeleteConfigurationTest
 		_amImageConfigurationHelper.disableAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "1");
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -482,14 +494,14 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testForceDeleteConfigurationEntryWithImages() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		AMImageConfigurationEntry amImageConfigurationEntry =
 			_amImageConfigurationHelper.addAMImageConfigurationEntry(
-				TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+				TestPropsValues.getCompanyId(), "one", "desc", "1",
+				HashMapBuilder.put(
+					"max-height", "100"
+				).put(
+					"max-width", "100"
+				).build());
 
 		FileEntry fileEntry = _addFileEntry();
 
@@ -512,13 +524,13 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testForceDeleteDeletedConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
-			TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+			TestPropsValues.getCompanyId(), "one", "desc", "1",
+			HashMapBuilder.put(
+				"max-height", "100"
+			).put(
+				"max-width", "100"
+			).build());
 
 		Optional<AMImageConfigurationEntry> amImageConfigurationEntryOptional =
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
@@ -547,13 +559,13 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testForceDeleteEnabledConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
-			TestPropsValues.getCompanyId(), "one", "desc", "1", properties);
+			TestPropsValues.getCompanyId(), "one", "desc", "1",
+			HashMapBuilder.put(
+				"max-height", "100"
+			).put(
+				"max-width", "100"
+			).build());
 
 		Optional<AMImageConfigurationEntry> amImageConfigurationEntryOptional =
 			_amImageConfigurationHelper.getAMImageConfigurationEntry(
@@ -573,18 +585,20 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testForceDeleteFirstConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -621,18 +635,20 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testForceDeleteSecondConfigurationEntry() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", "100"
+		).put(
+			"max-width", "100"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "one", "onedesc", "1", properties);
 
-		properties = new HashMap<>();
-
-		properties.put("max-height", "200");
-		properties.put("max-width", "200");
+		properties = HashMapBuilder.put(
+			"max-height", "200"
+		).put(
+			"max-width", "200"
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "two", "twodesc", "2", properties);
@@ -669,15 +685,14 @@ public class AMImageDeleteConfigurationTest
 
 	@Test
 	public void testSendsAMessageToTheMessageBus() throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", "100");
-		properties.put("max-width", "100");
-
 		AMImageConfigurationEntry amImageConfigurationEntry =
 			_amImageConfigurationHelper.addAMImageConfigurationEntry(
 				TestPropsValues.getCompanyId(), "one", "onedesc", "1",
-				properties);
+				HashMapBuilder.put(
+					"max-height", "100"
+				).put(
+					"max-width", "100"
+				).build());
 
 		_amImageConfigurationHelper.disableAMImageConfigurationEntry(
 			TestPropsValues.getCompanyId(), "1");

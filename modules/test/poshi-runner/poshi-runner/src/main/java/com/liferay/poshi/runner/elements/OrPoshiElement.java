@@ -54,7 +54,13 @@ public class OrPoshiElement extends PoshiElement {
 		throws PoshiScriptParserException {
 
 		for (String nestedCondition : getNestedConditions(poshiScript, "||")) {
-			nestedCondition = getParentheticalContent(nestedCondition);
+			nestedCondition = nestedCondition.trim();
+
+			if (nestedCondition.endsWith(")") &&
+				nestedCondition.startsWith("(")) {
+
+				nestedCondition = getParentheticalContent(nestedCondition);
+			}
 
 			add(PoshiNodeFactory.newPoshiNode(this, nestedCondition));
 		}
@@ -76,6 +82,7 @@ public class OrPoshiElement extends PoshiElement {
 	}
 
 	protected OrPoshiElement() {
+		super(_ELEMENT_NAME);
 	}
 
 	protected OrPoshiElement(Element element) {

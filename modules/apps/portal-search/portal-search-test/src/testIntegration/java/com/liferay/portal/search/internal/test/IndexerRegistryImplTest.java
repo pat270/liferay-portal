@@ -20,7 +20,8 @@ import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
-import com.liferay.portal.search.test.internal.util.TestIndexer;
+import com.liferay.portal.search.test.util.SearchTestRule;
+import com.liferay.portal.search.test.util.TestIndexer;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -55,8 +56,8 @@ public class IndexerRegistryImplTest {
 		BundleContext bundleContext = bundle.getBundleContext();
 
 		_serviceRegistration = bundleContext.registerService(
-			Indexer.class, new TestIndexer(_CLASS_NAME),
-			new HashMapDictionary<>());
+			(Class<Indexer<?>>)(Class<?>)Indexer.class,
+			new TestIndexer(_CLASS_NAME), new HashMapDictionary<>());
 	}
 
 	@AfterClass
@@ -83,9 +84,12 @@ public class IndexerRegistryImplTest {
 		Assert.assertEquals(_CLASS_NAME, testIndexer.getClassName());
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	private static final String _CLASS_NAME = RandomTestUtil.randomString();
 
-	private static ServiceRegistration<Indexer> _serviceRegistration;
+	private static ServiceRegistration<Indexer<?>> _serviceRegistration;
 
 	@Inject
 	private IndexerRegistry _indexerRegistry;

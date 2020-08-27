@@ -38,20 +38,21 @@ public class MissingEmptyLines {
 		themeDisplay.setSignedIn(true);
 	}
 
-	public void method3() {
+	public String method3() {
 		String s1 = "Hello World";
 		String s2 = "World Hello";
 
 		if ((StringUtil.toLowerCase(s1) == null) ||
 			(StringUtil.toLowerCase(s2) == null)) {
-			return;
+			return s1;
 		}
+		return s2;
 	}
 
 	public String method4() {
-		String s1 = null;
+		String s1 = "Hello";
 
-		s1 = "Hello World";
-		return s1;
+		s1 = StringUtil.toLowerCase(s1);
+		return s1 + "World";
 	}
 }

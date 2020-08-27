@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.knowledge.base.service.http.KBArticleServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class KBArticleSoap implements Serializable {
 
 	public static KBArticleSoap toSoapModel(KBArticle model) {
 		KBArticleSoap soapModel = new KBArticleSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setKbArticleId(model.getKbArticleId());
 		soapModel.setResourcePrimKey(model.getResourcePrimKey());
@@ -55,7 +55,6 @@ public class KBArticleSoap implements Serializable {
 		soapModel.setDescription(model.getDescription());
 		soapModel.setPriority(model.getPriority());
 		soapModel.setSections(model.getSections());
-		soapModel.setViewCount(model.getViewCount());
 		soapModel.setLatest(model.isLatest());
 		soapModel.setMain(model.isMain());
 		soapModel.setSourceURL(model.getSourceURL());
@@ -115,6 +114,14 @@ public class KBArticleSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setKbArticleId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -277,14 +284,6 @@ public class KBArticleSoap implements Serializable {
 		_sections = sections;
 	}
 
-	public int getViewCount() {
-		return _viewCount;
-	}
-
-	public void setViewCount(int viewCount) {
-		_viewCount = viewCount;
-	}
-
 	public boolean getLatest() {
 		return _latest;
 	}
@@ -357,6 +356,7 @@ public class KBArticleSoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _kbArticleId;
 	private long _resourcePrimKey;
@@ -377,7 +377,6 @@ public class KBArticleSoap implements Serializable {
 	private String _description;
 	private double _priority;
 	private String _sections;
-	private int _viewCount;
 	private boolean _latest;
 	private boolean _main;
 	private String _sourceURL;

@@ -18,13 +18,21 @@ import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.message.boards.constants.MBMessageConstants;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.service.RepositoryLocalService;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.user.associated.data.display.UADDisplay;
 
 import java.io.Serializable;
@@ -43,9 +51,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Brian Wing Shun Chan
  */
-@Component(
-	immediate = true, service = {DLFolderUADDisplay.class, UADDisplay.class}
-)
+@Component(service = {DLFolderUADDisplay.class, UADDisplay.class})
 public class DLFolderUADDisplay extends BaseDLFolderUADDisplay {
 
 	@Override
@@ -53,6 +59,10 @@ public class DLFolderUADDisplay extends BaseDLFolderUADDisplay {
 			DLFolder dlFolder, LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse)
 		throws Exception {
+
+		if (dlFolder.isInTrash()) {
+			return StringPool.BLANK;
+		}
 
 		PortletURL portletURL = liferayPortletResponse.createLiferayPortletURL(
 			portal.getControlPanelPlid(liferayPortletRequest),
@@ -146,8 +156,8 @@ public class DLFolderUADDisplay extends BaseDLFolderUADDisplay {
 						ancestorFolderIds.indexOf(parentFolderId) - 1));
 			}
 		}
-		catch (PortalException pe) {
-			_log.error(pe, pe);
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
 		}
 
 		return null;
@@ -162,10 +172,43 @@ public class DLFolderUADDisplay extends BaseDLFolderUADDisplay {
 		return false;
 	}
 
+	@Override
+	protected DynamicQuery doGetDynamicQuery() {
+		DynamicQuery dlFolderDynamicQuery = super.doGetDynamicQuery();
+
+		DynamicQuery repositoryDynamicQuery =
+			_repositoryLocalService.dynamicQuery();
+
+		repositoryDynamicQuery.add(
+			RestrictionsFactoryUtil.in(
+				"name",
+				new String[] {
+					MBMessageConstants.TEMP_FOLDER_NAME,
+					TempFileEntryUtil.class.getName()
+				}));
+
+		List<Repository> repositories = _repositoryLocalService.dynamicQuery(
+			repositoryDynamicQuery);
+
+		if (ListUtil.isNotEmpty(repositories)) {
+			dlFolderDynamicQuery.add(
+				RestrictionsFactoryUtil.not(
+					RestrictionsFactoryUtil.in(
+						"repositoryId",
+						ListUtil.toList(
+							repositories, Repository.REPOSITORY_ID_ACCESSOR))));
+		}
+
+		return dlFolderDynamicQuery;
+	}
+
 	@Reference
 	protected Portal portal;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFolderUADDisplay.class);
+
+	@Reference
+	private RepositoryLocalService _repositoryLocalService;
 
 }

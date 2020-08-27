@@ -27,13 +27,10 @@ import javax.portlet.filter.EventRequestWrapper;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Neil Griffin
  */
-@ProviderType
 public class EventResponseFactory {
 
 	public static LiferayEventResponse create(
@@ -42,7 +39,10 @@ public class EventResponseFactory {
 		throws PortletModeException, WindowStateException {
 
 		while (eventRequest instanceof EventRequestWrapper) {
-			eventRequest = ((EventRequestWrapper)eventRequest).getRequest();
+			EventRequestWrapper eventRequestWrapper =
+				(EventRequestWrapper)eventRequest;
+
+			eventRequest = eventRequestWrapper.getRequest();
 		}
 
 		EventResponseImpl eventResponseImpl = new EventResponseImpl();

@@ -17,6 +17,7 @@ package com.liferay.portal.kernel.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.net.URI;
 import java.net.URL;
 
 import java.util.Map;
@@ -70,24 +71,6 @@ public class HttpUtil {
 
 	public static String encodePath(String path) {
 		return getHttp().encodePath(path);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             URLCodec#encodeURL(String)}
-	 */
-	@Deprecated
-	public static String encodeURL(String url) {
-		return getHttp().encodeURL(url);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link
-	 *             URLCodec#encodeURL(String, boolean)}
-	 */
-	@Deprecated
-	public static String encodeURL(String url, boolean escapeSpaces) {
-		return getHttp().encodeURL(url, escapeSpaces);
 	}
 
 	public static String fixPath(String path) {
@@ -164,6 +147,10 @@ public class HttpUtil {
 
 	public static String getRequestURL(HttpServletRequest httpServletRequest) {
 		return getHttp().getRequestURL(httpServletRequest);
+	}
+
+	public static URI getURI(String uriString) {
+		return getHttp().getURI(uriString);
 	}
 
 	public static boolean hasDomain(String url) {
@@ -280,14 +267,6 @@ public class HttpUtil {
 
 	public static String shortenURL(String url) {
 		return getHttp().shortenURL(url);
-	}
-
-	/**
-	 * @deprecated As of Judson (7.1.x), replaced by {@link #shortenURL(String)}
-	 */
-	@Deprecated
-	public static String shortenURL(String url, int count) {
-		return getHttp().shortenURL(url, count);
 	}
 
 	public static byte[] URLtoByteArray(Http.Options options)

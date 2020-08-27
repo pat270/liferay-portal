@@ -1,0 +1,60 @@
+<html>
+<head>
+<title>OneDrive</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">OneDrive</td></tr>
+</thead>
+<tbody>
+<tr>
+	<td>DELETE</td>
+	<td>//button[@name='Delete']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DELETE_CONFIRMATION</td>
+	<td>//button[@data-automationid='confirmbutton']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILES_CHECKBOX</td>
+	<td>//div[contains(@aria-label,'${key_documentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FILES_TITLE</td>
+	<td>//button[contains(.,'${key_documentTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_TITLE</td>
+	<td>title=Documents - OneDrive</td>
+	<td></td>
+</tr>
+<!--DOCUMENTS-->
+<tr>
+	<td>DOCUMENTS_SAVE_STATUS</td>
+	<td>//span[@id='BreadcrumbSaveStatus']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENTS_TITLE</td>
+	<td>//div[@id='BreadcrumbTitle'] | //button[@id='documentTitle']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENTS_TITLE_RENAME</td>
+	<td>//input[@id='CommitNewDocumentTitle']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENTS_CONTENT</td>
+	<td>//div[@id='WACViewPanel_EditingElement']</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

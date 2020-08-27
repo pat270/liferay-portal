@@ -20,31 +20,29 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
- * This class is used by SOAP remote services.
+ * This class is used by SOAP remote services, specifically {@link com.liferay.change.tracking.service.http.CTCollectionServiceSoap}.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class CTCollectionSoap implements Serializable {
 
 	public static CTCollectionSoap toSoapModel(CTCollection model) {
 		CTCollectionSoap soapModel = new CTCollectionSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
-		soapModel.setUserName(model.getUserName());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
 		soapModel.setName(model.getName());
 		soapModel.setDescription(model.getDescription());
 		soapModel.setStatus(model.getStatus());
 		soapModel.setStatusByUserId(model.getStatusByUserId());
-		soapModel.setStatusByUserName(model.getStatusByUserName());
 		soapModel.setStatusDate(model.getStatusDate());
 
 		return soapModel;
@@ -99,6 +97,14 @@ public class CTCollectionSoap implements Serializable {
 		setCtCollectionId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
 	public long getCtCollectionId() {
 		return _ctCollectionId;
 	}
@@ -121,14 +127,6 @@ public class CTCollectionSoap implements Serializable {
 
 	public void setUserId(long userId) {
 		_userId = userId;
-	}
-
-	public String getUserName() {
-		return _userName;
-	}
-
-	public void setUserName(String userName) {
-		_userName = userName;
 	}
 
 	public Date getCreateDate() {
@@ -179,14 +177,6 @@ public class CTCollectionSoap implements Serializable {
 		_statusByUserId = statusByUserId;
 	}
 
-	public String getStatusByUserName() {
-		return _statusByUserName;
-	}
-
-	public void setStatusByUserName(String statusByUserName) {
-		_statusByUserName = statusByUserName;
-	}
-
 	public Date getStatusDate() {
 		return _statusDate;
 	}
@@ -195,17 +185,16 @@ public class CTCollectionSoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
 	private long _ctCollectionId;
 	private long _companyId;
 	private long _userId;
-	private String _userName;
 	private Date _createDate;
 	private Date _modifiedDate;
 	private String _name;
 	private String _description;
 	private int _status;
 	private long _statusByUserId;
-	private String _statusByUserName;
 	private Date _statusDate;
 
 }

@@ -34,10 +34,21 @@ public class AntUtil {
 	public static void callMacrodef(
 		Project project, String name, Map<String, String> attributes) {
 
+		callMacrodef(project, name, attributes, null);
+	}
+
+	public static void callMacrodef(
+		Project project, String name, Map<String, String> attributes,
+		String text) {
+
 		Task task = project.createTask(name);
 
 		RuntimeConfigurable runtimeConfigurable =
 			task.getRuntimeConfigurableWrapper();
+
+		if (text != null) {
+			runtimeConfigurable.addText(text);
+		}
 
 		for (Map.Entry<String, String> attribute : attributes.entrySet()) {
 			runtimeConfigurable.setAttribute(
@@ -164,8 +175,8 @@ public class AntUtil {
 							line = bufferedReader.readLine();
 						}
 					}
-					catch (IOException ioe) {
-						ioe.printStackTrace();
+					catch (IOException ioException) {
+						ioException.printStackTrace();
 					}
 				}
 
@@ -185,10 +196,10 @@ public class AntUtil {
 				throw new AntException();
 			}
 		}
-		catch (InterruptedException | IOException e) {
-			e.printStackTrace();
+		catch (InterruptedException | IOException exception) {
+			exception.printStackTrace();
 
-			throw new AntException(e);
+			throw new AntException(exception);
 		}
 	}
 

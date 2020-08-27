@@ -19,6 +19,7 @@ import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
 import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.bean.ConstantsBeanFactory;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
@@ -62,7 +63,7 @@ public class ConstantsBeanFactoryImpl implements ConstantsBeanFactory {
 				constantsBeanClass = classLoader.loadClass(
 					constantsBeanClassName);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 			}
 
 			try {
@@ -77,8 +78,8 @@ public class ConstantsBeanFactoryImpl implements ConstantsBeanFactory {
 
 				return constantsBeanClass.newInstance();
 			}
-			catch (Throwable t) {
-				throw new RuntimeException(t);
+			catch (Throwable throwable) {
+				throw new RuntimeException(throwable);
 			}
 		}
 	}
@@ -176,7 +177,7 @@ public class ConstantsBeanFactoryImpl implements ConstantsBeanFactory {
 	protected static String getClassBinaryName(Class<?> clazz) {
 		String className = clazz.getName();
 
-		return className.replace('.', '/');
+		return StringUtil.replace(className, '.', '/');
 	}
 
 	protected static ConcurrentMap<Class<?>, Object> constantsBeans =
@@ -193,8 +194,8 @@ public class ConstantsBeanFactoryImpl implements ConstantsBeanFactory {
 				ClassLoader.class, "defineClass", String.class, byte[].class,
 				int.class, int.class);
 		}
-		catch (Throwable t) {
-			throw new ExceptionInInitializerError(t);
+		catch (Throwable throwable) {
+			throw new ExceptionInInitializerError(throwable);
 		}
 	}
 

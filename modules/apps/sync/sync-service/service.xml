@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.3.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_3_0.dtd">
 
-<service-builder auto-namespace-tables="false" package-path="com.liferay.sync">
+<service-builder auto-namespace-tables="false" dependency-injector="ds" package-path="com.liferay.sync">
 	<namespace>Sync</namespace>
 	<entity local-service="true" name="SyncDevice" remote-service="true" uuid="true">
 
@@ -40,6 +40,10 @@
 		<!-- PK fields -->
 
 		<column name="syncDLFileVersionDiffId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="companyId" type="long" />
 
 		<!-- Other fields -->
 

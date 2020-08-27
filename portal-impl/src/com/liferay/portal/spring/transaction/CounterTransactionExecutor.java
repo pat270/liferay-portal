@@ -14,15 +14,12 @@
 
 package com.liferay.portal.spring.transaction;
 
-import com.liferay.petra.function.UnsafeSupplier;
-
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Shuyang Zhou
  */
-public class CounterTransactionExecutor
-	implements TransactionExecutor, TransactionHandler {
+public class CounterTransactionExecutor extends BaseTransactionExecutor {
 
 	public CounterTransactionExecutor(
 		PlatformTransactionManager platformTransactionManager) {
@@ -35,18 +32,8 @@ public class CounterTransactionExecutor
 		TransactionAttributeAdapter transactionAttributeAdapter,
 		TransactionStatusAdapter transactionStatusAdapter) {
 
-		_commit(_platformTransactionManager, transactionStatusAdapter);
-	}
-
-	@Override
-	public <T> T execute(
-			TransactionAttributeAdapter transactionAttributeAdapter,
-			UnsafeSupplier<T, Throwable> unsafeSupplier)
-		throws Throwable {
-
-		return _execute(
-			_platformTransactionManager, transactionAttributeAdapter,
-			unsafeSupplier);
+		_platformTransactionManager.commit(
+			transactionStatusAdapter.getTransactionStatus());
 	}
 
 	@Override
@@ -56,94 +43,43 @@ public class CounterTransactionExecutor
 
 	@Override
 	public void rollback(
-			Throwable throwable,
+			Throwable throwable1,
 			TransactionAttributeAdapter transactionAttributeAdapter,
 			TransactionStatusAdapter transactionStatusAdapter)
 		throws Throwable {
 
-		throw _rollback(
-			_platformTransactionManager, throwable, transactionAttributeAdapter,
-			transactionStatusAdapter);
+		if (transactionAttributeAdapter.rollbackOn(throwable1)) {
+			try {
+				_platformTransactionManager.rollback(
+					transactionStatusAdapter.getTransactionStatus());
+			}
+			catch (Throwable throwable2) {
+				throwable2.addSuppressed(throwable1);
+
+				throw throwable2;
+			}
+		}
+		else {
+			try {
+				_platformTransactionManager.commit(
+					transactionStatusAdapter.getTransactionStatus());
+			}
+			catch (Throwable throwable2) {
+				throwable2.addSuppressed(throwable1);
+
+				throw throwable2;
+			}
+		}
+
+		throw throwable1;
 	}
 
 	@Override
 	public TransactionStatusAdapter start(
 		TransactionAttributeAdapter transactionAttributeAdapter) {
 
-		return _start(_platformTransactionManager, transactionAttributeAdapter);
-	}
-
-	private void _commit(
-		PlatformTransactionManager platformTransactionManager,
-		TransactionStatusAdapter transactionStatusAdapter) {
-
-		platformTransactionManager.commit(
-			transactionStatusAdapter.getTransactionStatus());
-	}
-
-	private <T> T _execute(
-			PlatformTransactionManager platformTransactionManager,
-			TransactionAttributeAdapter transactionAttributeAdapter,
-			UnsafeSupplier<T, Throwable> unsafeSupplier)
-		throws Throwable {
-
-		TransactionStatusAdapter transactionStatusAdapter = _start(
-			platformTransactionManager, transactionAttributeAdapter);
-
-		T returnValue = null;
-
-		try {
-			returnValue = unsafeSupplier.get();
-		}
-		catch (Throwable throwable) {
-			throw _rollback(
-				platformTransactionManager, throwable,
-				transactionAttributeAdapter, transactionStatusAdapter);
-		}
-
-		_commit(platformTransactionManager, transactionStatusAdapter);
-
-		return returnValue;
-	}
-
-	private Throwable _rollback(
-		PlatformTransactionManager platformTransactionManager,
-		Throwable throwable,
-		TransactionAttributeAdapter transactionAttributeAdapter,
-		TransactionStatusAdapter transactionStatusAdapter) {
-
-		if (transactionAttributeAdapter.rollbackOn(throwable)) {
-			try {
-				platformTransactionManager.rollback(
-					transactionStatusAdapter.getTransactionStatus());
-			}
-			catch (Throwable t) {
-				t.addSuppressed(throwable);
-
-				throw t;
-			}
-		}
-		else {
-			try {
-				platformTransactionManager.commit(
-					transactionStatusAdapter.getTransactionStatus());
-			}
-			catch (Throwable t) {
-				t.addSuppressed(throwable);
-
-				throw t;
-			}
-		}
-
-		return throwable;
-	}
-
-	private TransactionStatusAdapter _start(
-		PlatformTransactionManager platformTransactionManager,
-		TransactionAttributeAdapter transactionAttributeAdapter) {
-
 		return new TransactionStatusAdapter(
-			platformTransactionManager.getTransaction(
+			_platformTransactionManager.getTransaction(
 				transactionAttributeAdapter));
 	}
 

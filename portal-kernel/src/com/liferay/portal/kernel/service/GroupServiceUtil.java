@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the remote service utility for Group. This utility wraps
  * <code>com.liferay.portal.service.impl.GroupServiceImpl</code> and is an
@@ -30,7 +28,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see GroupService
  * @generated
  */
-@ProviderType
 public class GroupServiceUtil {
 
 	/*
@@ -398,6 +395,13 @@ public class GroupServiceUtil {
 		return getService().getUserSitesGroups();
 	}
 
+	public static java.util.List<com.liferay.portal.kernel.model.Group>
+			getUserSitesGroups(long userId, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getUserSitesGroups(userId, start, end);
+	}
+
 	/**
 	 * Returns the user's groups &quot;sites&quot; associated with the group
 	 * entity class names, including the Control Panel group if the user is
@@ -513,11 +517,12 @@ public class GroupServiceUtil {
 			long companyId, long[] classNameIds, String keywords,
 			java.util.LinkedHashMap<String, Object> params, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Group> obc)
+				<com.liferay.portal.kernel.model.Group> orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().search(
-			companyId, classNameIds, keywords, params, start, end, obc);
+			companyId, classNameIds, keywords, params, start, end,
+			orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.Group> search(
@@ -525,12 +530,12 @@ public class GroupServiceUtil {
 			String description, java.util.LinkedHashMap<String, Object> params,
 			boolean andOperator, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
-				<com.liferay.portal.kernel.model.Group> obc)
+				<com.liferay.portal.kernel.model.Group> orderByComparator)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().search(
 			companyId, classNameIds, name, description, params, andOperator,
-			start, end, obc);
+			start, end, orderByComparator);
 	}
 
 	/**
@@ -571,6 +576,14 @@ public class GroupServiceUtil {
 
 		return getService().search(
 			companyId, name, description, params, start, end);
+	}
+
+	public static int searchCount(
+		long companyId, long[] classNameIds, String keywords,
+		java.util.LinkedHashMap<String, Object> params) {
+
+		return getService().searchCount(
+			companyId, classNameIds, keywords, params);
 	}
 
 	/**

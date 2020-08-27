@@ -22,8 +22,7 @@ page import="com.liferay.exportimport.web.internal.display.context.ProcessSummar
 page import="com.liferay.portal.kernel.model.LayoutSetBranch" %><%@
 page import="com.liferay.portal.kernel.service.LayoutSetBranchLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatConstants" %><%@
-page import="com.liferay.portal.kernel.util.LongWrapper" %><%@
-page import="com.liferay.portlet.layoutsadmin.util.LayoutsTreeUtil" %>
+page import="com.liferay.portal.kernel.util.LongWrapper" %>
 
 <liferay-staging:defineObjects />
 
@@ -34,7 +33,7 @@ BackgroundTask backgroundTask = BackgroundTaskManagerUtil.fetchBackgroundTask(ba
 
 Map<String, ?> taskContextMap = backgroundTask.getTaskContextMap();
 
-long exportImportConfigurationId = Long.parseLong(taskContextMap.get("exportImportConfigurationId").toString());
+long exportImportConfigurationId = GetterUtil.getLong(String.valueOf(taskContextMap.get("exportImportConfigurationId")));
 
 ExportImportConfiguration exportImportConfiguration = ExportImportConfigurationLocalServiceUtil.getExportImportConfiguration(exportImportConfigurationId);
 
@@ -43,4 +42,6 @@ Map<String, Serializable> exportImportConfigurationSettingsMap = exportImportCon
 Map<String, Serializable> parameterMap = (Map<String, Serializable>)exportImportConfigurationSettingsMap.get("parameterMap");
 
 String processCmd = MapUtil.getString(parameterMap, "cmd");
+
+Map<String, LongWrapper> modelDeletionCounters = (Map<String, LongWrapper>)taskContextMap.get(ExportImportBackgroundTaskContextMapConstants.MODEL_DELETION_COUNTERS);
 %>

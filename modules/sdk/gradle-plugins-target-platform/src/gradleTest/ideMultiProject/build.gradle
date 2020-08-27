@@ -3,7 +3,13 @@ apply plugin: "com.liferay.target.platform.ide"
 task runGradleTest
 
 dependencies {
-	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom", version: "7.1.3"
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.compile.only", version: "7.2.1"
+}
+
+repositories {
+	maven {
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
+	}
 }
 
 runGradleTest {
@@ -14,9 +20,9 @@ runGradleTest {
 
 		List eclipseDependencies = eclipse.classpath.resolveDependencies()
 
-		assert eclipseDependencies.size() == 879
-		assert eclipseDependencies[3].path.contains("com.liferay.portal.security.sso.cas.api")
-		assert eclipseDependencies[4].path.contains("com.liferay.push.notifications.sender.firebase")
+		assert eclipseDependencies.size() == 14
+		assert eclipseDependencies[3].path.contains("org.osgi.service.component.annotations")
+		assert eclipseDependencies[4].path.contains("portlet-api")
 
 		assert eclipse.project.natures[0] == "org.eclipse.jdt.core.javanature"
 	}

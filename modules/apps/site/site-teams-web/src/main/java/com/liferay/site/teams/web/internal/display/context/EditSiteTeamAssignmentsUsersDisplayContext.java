@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -43,10 +44,10 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 	extends EditSiteTeamAssignmentsDisplayContext {
 
 	public EditSiteTeamAssignmentsUsersDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		HttpServletRequest httpServletRequest) {
+		HttpServletRequest httpServletRequest, RenderRequest renderRequest,
+		RenderResponse renderResponse) {
 
-		super(renderRequest, renderResponse, httpServletRequest);
+		super(httpServletRequest, renderRequest, renderResponse);
 	}
 
 	public String getDisplayStyle() {
@@ -54,7 +55,8 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 			return _displayStyle;
 		}
 
-		_displayStyle = ParamUtil.getString(request, "displayStyle", "icon");
+		_displayStyle = ParamUtil.getString(
+			httpServletRequest, "displayStyle", "icon");
 
 		return _displayStyle;
 	}
@@ -89,7 +91,7 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 			return _keywords;
 		}
 
-		_keywords = ParamUtil.getString(request, "keywords");
+		_keywords = ParamUtil.getString(httpServletRequest, "keywords");
 
 		return _keywords;
 	}
@@ -99,7 +101,8 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 			return _orderByCol;
 		}
 
-		_orderByCol = ParamUtil.getString(request, "orderByCol", "first-name");
+		_orderByCol = ParamUtil.getString(
+			httpServletRequest, "orderByCol", "first-name");
 
 		return _orderByCol;
 	}
@@ -109,20 +112,22 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 			return _orderByType;
 		}
 
-		_orderByType = ParamUtil.getString(request, "orderByType", "asc");
+		_orderByType = ParamUtil.getString(
+			httpServletRequest, "orderByType", "asc");
 
 		return _orderByType;
 	}
 
-	public SearchContainer getUserSearchContainer() {
+	public SearchContainer<User> getUserSearchContainer() {
 		if (_userSearchContainer != null) {
 			return _userSearchContainer;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-		SearchContainer userSearchContainer = new UserSearch(
+		SearchContainer<User> userSearchContainer = new UserSearch(
 			renderRequest, getEditTeamAssignmentsURL());
 
 		OrderByComparator<User> orderByComparator =
@@ -139,10 +144,12 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 		UserSearchTerms searchTerms =
 			(UserSearchTerms)userSearchContainer.getSearchTerms();
 
-		LinkedHashMap<String, Object> userParams = new LinkedHashMap<>();
-
-		userParams.put("inherit", Boolean.TRUE);
-		userParams.put("usersTeams", getTeamId());
+		LinkedHashMap<String, Object> userParams =
+			LinkedHashMapBuilder.<String, Object>put(
+				"inherit", Boolean.TRUE
+			).put(
+				"usersTeams", getTeamId()
+			).build();
 
 		int usersCount = UserLocalServiceUtil.searchCount(
 			themeDisplay.getCompanyId(), searchTerms.getKeywords(),
@@ -167,6 +174,6 @@ public class EditSiteTeamAssignmentsUsersDisplayContext
 	private String _keywords;
 	private String _orderByCol;
 	private String _orderByType;
-	private SearchContainer _userSearchContainer;
+	private SearchContainer<User> _userSearchContainer;
 
 }

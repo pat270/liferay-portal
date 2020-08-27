@@ -31,12 +31,12 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,109 +66,108 @@ public class BlogsUtil {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Map<String, String> definitionTerms = new LinkedHashMap<>();
-
-		definitionTerms.put(
+		return LinkedHashMapBuilder.put(
 			"[$BLOGS_ENTRY_CONTENT$]",
-			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-blog-entry-content"));
-		definitionTerms.put(
+			LanguageUtil.get(themeDisplay.getLocale(), "the-blog-entry-content")
+		).put(
 			"[$BLOGS_ENTRY_CREATE_DATE$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(),
-				"the-date-the-blog-entry-was-created"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-date-the-blog-entry-was-created")
+		).put(
 			"[$BLOGS_ENTRY_DESCRIPTION$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-blog-entry-description"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-blog-entry-description")
+		).put(
 			"[$BLOGS_ENTRY_SITE_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-name-of-the-site-where-the-blog-entry-was-created"));
-		definitionTerms.put(
+				"the-name-of-the-site-where-the-blog-entry-was-created")
+		).put(
 			"[$BLOGS_ENTRY_STATUS_BY_USER_NAME$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(),
-				"the-user-who-updated-the-blog-entry"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-user-who-updated-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_TITLE$]",
-			LanguageUtil.get(themeDisplay.getLocale(), "the-blog-entry-title"));
-		definitionTerms.put(
+			LanguageUtil.get(themeDisplay.getLocale(), "the-blog-entry-title")
+		).put(
 			"[$BLOGS_ENTRY_UPDATE_COMMENT$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-comment-of-the-user-who-updated-the-blog-entry"));
-		definitionTerms.put(
+				"the-comment-of-the-user-who-updated-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_USER_ADDRESS$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-email-address-of-the-user-who-added-the-blog-entry"));
-		definitionTerms.put(
+				"the-email-address-of-the-user-who-added-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_USER_PORTRAIT_URL$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-portrait-url-of-the-user-who-added-the-blog-entry"));
-		definitionTerms.put(
+				"the-portrait-url-of-the-user-who-added-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_USER_NAME$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-user-who-added-the-blog-entry"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-user-who-added-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_USER_URL$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-public-site-url-of-the-user-who-added-the-blog-entry"));
-		definitionTerms.put(
+				"the-public-site-url-of-the-user-who-added-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_URL$]",
-			LanguageUtil.get(themeDisplay.getLocale(), "the-blog-entry-url"));
-		definitionTerms.put(
+			LanguageUtil.get(themeDisplay.getLocale(), "the-blog-entry-url")
+		).put(
 			"[$COMPANY_ID$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-company-id-associated-with-the-blog"));
-		definitionTerms.put(
+				"the-company-id-associated-with-the-blog")
+		).put(
 			"[$COMPANY_MX$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-company-mx-associated-with-the-blog"));
-		definitionTerms.put(
+				"the-company-mx-associated-with-the-blog")
+		).put(
 			"[$COMPANY_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-company-name-associated-with-the-blog"));
-		definitionTerms.put(
-			"[$FROM_ADDRESS$]", HtmlUtil.escape(emailFromAddress));
-		definitionTerms.put("[$FROM_NAME$]", HtmlUtil.escape(emailFromName));
+				"the-company-name-associated-with-the-blog")
+		).put(
+			"[$FROM_ADDRESS$]", HtmlUtil.escape(emailFromAddress)
+		).put(
+			"[$FROM_NAME$]", HtmlUtil.escape(emailFromName)
+		).put(
+			"[$PORTAL_URL$]",
+			() -> {
+				Company company = themeDisplay.getCompany();
 
-		Company company = themeDisplay.getCompany();
+				return company.getVirtualHostname();
+			}
+		).put(
+			"[$PORTLET_NAME$]",
+			() -> {
+				PortletDisplay portletDisplay =
+					themeDisplay.getPortletDisplay();
 
-		definitionTerms.put("[$PORTAL_URL$]", company.getVirtualHostname());
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		definitionTerms.put(
-			"[$PORTLET_NAME$]", HtmlUtil.escape(portletDisplay.getTitle()));
-
-		definitionTerms.put(
+				return HtmlUtil.escape(portletDisplay.getTitle());
+			}
+		).put(
 			"[$SITE_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-site-name-associated-with-the-blog"));
-		definitionTerms.put(
+				"the-site-name-associated-with-the-blog")
+		).put(
 			"[$TO_ADDRESS$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(),
-				"the-address-of-the-email-recipient"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-address-of-the-email-recipient")
+		).put(
 			"[$TO_NAME$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-name-of-the-email-recipient"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-name-of-the-email-recipient")
+		).put(
 			"[$UNSUBSCRIBE_URL$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-url-to-unsubscribe-the-user"));
-
-		return definitionTerms;
+				themeDisplay.getLocale(), "the-url-to-unsubscribe-the-user")
+		).build();
 	}
 
 	public static Map<String, String> getEmailFromDefinitionTerms(
@@ -178,45 +177,44 @@ public class BlogsUtil {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		Map<String, String> definitionTerms = new LinkedHashMap<>();
-
-		definitionTerms.put(
+		return LinkedHashMapBuilder.put(
 			"[$BLOGS_ENTRY_USER_ADDRESS$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-email-address-of-the-user-who-added-the-blog-entry"));
-		definitionTerms.put(
+				"the-email-address-of-the-user-who-added-the-blog-entry")
+		).put(
 			"[$BLOGS_ENTRY_USER_NAME$]",
 			LanguageUtil.get(
-				themeDisplay.getLocale(), "the-user-who-added-the-blog-entry"));
-		definitionTerms.put(
+				themeDisplay.getLocale(), "the-user-who-added-the-blog-entry")
+		).put(
 			"[$COMPANY_ID$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-company-id-associated-with-the-blog"));
-		definitionTerms.put(
+				"the-company-id-associated-with-the-blog")
+		).put(
 			"[$COMPANY_MX$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-company-mx-associated-with-the-blog"));
-		definitionTerms.put(
+				"the-company-mx-associated-with-the-blog")
+		).put(
 			"[$COMPANY_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-company-name-associated-with-the-blog"));
+				"the-company-name-associated-with-the-blog")
+		).put(
+			"[$PORTLET_NAME$]",
+			() -> {
+				PortletDisplay portletDisplay =
+					themeDisplay.getPortletDisplay();
 
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		definitionTerms.put(
-			"[$PORTLET_NAME$]", HtmlUtil.escape(portletDisplay.getTitle()));
-
-		definitionTerms.put(
+				return HtmlUtil.escape(portletDisplay.getTitle());
+			}
+		).put(
 			"[$SITE_NAME$]",
 			LanguageUtil.get(
 				themeDisplay.getLocale(),
-				"the-site-name-associated-with-the-blog"));
-
-		return definitionTerms;
+				"the-site-name-associated-with-the-blog")
+		).build();
 	}
 
 	public static OrderByComparator<BlogsEntry> getOrderByComparator(
@@ -247,6 +245,7 @@ public class BlogsUtil {
 		AssetEntryQuery assetEntryQuery = new AssetEntryQuery(
 			BlogsEntry.class.getName(), searchContainer);
 
+		assetEntryQuery.setEnablePermissions(true);
 		assetEntryQuery.setExcludeZeroViewCount(false);
 		assetEntryQuery.setOrderByCol1("publishDate");
 		assetEntryQuery.setVisible(Boolean.TRUE);

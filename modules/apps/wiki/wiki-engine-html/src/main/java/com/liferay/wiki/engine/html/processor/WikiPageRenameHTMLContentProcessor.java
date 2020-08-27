@@ -41,7 +41,7 @@ public class WikiPageRenameHTMLContentProcessor
 
 	@Activate
 	@Modified
-	public void activate() {
+	protected void activate() {
 		regexps.put(
 			"(<img [^s]*src=\"[^g]+get_page_attachment\\?[^t]+title=)" +
 				"@old_title@&",
@@ -59,9 +59,10 @@ public class WikiPageRenameHTMLContentProcessor
 				content, URLEncoder.encode(title, StringPool.UTF8),
 				URLEncoder.encode(newTitle, StringPool.UTF8));
 		}
-		catch (UnsupportedEncodingException uee) {
+		catch (UnsupportedEncodingException unsupportedEncodingException) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(uee, uee);
+				_log.warn(
+					unsupportedEncodingException, unsupportedEncodingException);
 			}
 		}
 

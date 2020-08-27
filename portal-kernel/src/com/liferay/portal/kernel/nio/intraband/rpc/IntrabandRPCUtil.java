@@ -71,8 +71,8 @@ public class IntrabandRPCUtil {
 		}
 
 		@Override
-		public void failed(Object attachment, IOException ioe) {
-			_defaultNoticeableFuture.setException(ioe);
+		public void failed(Object attachment, IOException ioException) {
+			_defaultNoticeableFuture.setException(ioException);
 		}
 
 		@Override
@@ -92,8 +92,8 @@ public class IntrabandRPCUtil {
 					_defaultNoticeableFuture.set((V)rpcResponse.getResult());
 				}
 			}
-			catch (ClassNotFoundException cnfe) {
-				_defaultNoticeableFuture.setException(cnfe);
+			catch (ClassNotFoundException classNotFoundException) {
+				_defaultNoticeableFuture.setException(classNotFoundException);
 			}
 		}
 

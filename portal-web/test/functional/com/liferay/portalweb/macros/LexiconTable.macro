@@ -1,6 +1,7 @@
 definition {
+
 	macro clickEllipsisItem {
-		Click(
+		Click.waitForMenuToggleJSClick(
 			key_tableEntry = "${tableEntry}",
 			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
 
@@ -56,4 +57,5 @@ definition {
 			locator1 = "LexiconTable#TABLE_ENTRY_TITLE_LINK",
 			value1 = "${tableEntry}");
 	}
+
 }

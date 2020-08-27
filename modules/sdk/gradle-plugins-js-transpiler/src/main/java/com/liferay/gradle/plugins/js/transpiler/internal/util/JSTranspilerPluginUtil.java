@@ -32,17 +32,18 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.TaskDependency;
 
 /**
- * @author Andrea Di Giorgi
+ * @author     Andrea Di Giorgi
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class JSTranspilerPluginUtil {
 
 	public static Copy addTaskExpandCompileDependency(
 		Project project, File file, File destinationDir, String taskNamePrefix,
 		RenameDependencyClosure renameDependencyClosure) {
 
-		String taskName = GradleUtil.getTaskName(taskNamePrefix, file);
-
-		Copy copy = GradleUtil.addTask(project, taskName, Copy.class);
+		Copy copy = GradleUtil.addTask(
+			project, GradleUtil.getTaskName(taskNamePrefix, file), Copy.class);
 
 		copy.doFirst(
 			new Action<Task>() {

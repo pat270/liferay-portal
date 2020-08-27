@@ -27,29 +27,27 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Repository in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class RepositoryCacheModel
 	implements CacheModel<Repository>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof RepositoryCacheModel)) {
+		if (!(object instanceof RepositoryCacheModel)) {
 			return false;
 		}
 
-		RepositoryCacheModel repositoryCacheModel = (RepositoryCacheModel)obj;
+		RepositoryCacheModel repositoryCacheModel =
+			(RepositoryCacheModel)object;
 
 		if ((repositoryId == repositoryCacheModel.repositoryId) &&
 			(mvccVersion == repositoryCacheModel.mvccVersion)) {
@@ -202,7 +200,9 @@ public class RepositoryCacheModel
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
@@ -221,7 +221,7 @@ public class RepositoryCacheModel
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
 		portletId = objectInput.readUTF();
-		typeSettings = objectInput.readUTF();
+		typeSettings = (String)objectInput.readObject();
 
 		dlFolderId = objectInput.readLong();
 		lastPublishDate = objectInput.readLong();
@@ -280,10 +280,10 @@ public class RepositoryCacheModel
 		}
 
 		if (typeSettings == null) {
-			objectOutput.writeUTF("");
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(typeSettings);
+			objectOutput.writeObject(typeSettings);
 		}
 
 		objectOutput.writeLong(dlFolderId);

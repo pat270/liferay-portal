@@ -27,7 +27,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	immediate = true,
 	property = {
 		"model.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 		"model.class.name=com.liferay.portal.kernel.repository.model.FileEntry"
@@ -40,7 +39,7 @@ public class ExternalRepositoryAssetEntryValidatorExclusionRule
 	@Override
 	public boolean isValidationExcluded(
 		long groupId, String className, long classPK, long classTypePK,
-		long[] categoryIds, String[] tagNames) {
+		long[] assetCategoryIds, String[] assetTagNames) {
 
 		DLFileEntry dlFileEntry = _getDLFileEntry(classPK);
 

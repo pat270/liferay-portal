@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
 import com.liferay.portal.kernel.cluster.ClusterMasterExecutorUtil;
 import com.liferay.portal.kernel.cluster.Clusterable;
 import com.liferay.portal.kernel.cluster.ClusterableInvokerUtil;
-import com.liferay.portal.kernel.cluster.NullClusterable;
 import com.liferay.portal.kernel.util.MethodKey;
+import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.lang.reflect.InvocationHandler;
@@ -42,6 +42,9 @@ public class ClusterableProxyFactory {
 			new ClusterableInvocationHandler<>(targetObject));
 	}
 
+	private static final Clusterable _NULL_CLUSTERABLE =
+		ProxyFactory.newDummyInstance(Clusterable.class);
+
 	private static class ClusterableInvocationHandler<T>
 		implements InvocationHandler {
 
@@ -56,7 +59,7 @@ public class ClusterableProxyFactory {
 			Clusterable clusterable = _getClusterable(
 				method, _targetObject.getClass());
 
-			if (clusterable == NullClusterable.NULL_CLUSTERABLE) {
+			if (clusterable == _NULL_CLUSTERABLE) {
 				return method.invoke(_targetObject, arguments);
 			}
 
@@ -97,7 +100,7 @@ public class ClusterableProxyFactory {
 				method, _targetObject.getClass(), Clusterable.class);
 
 			if (clusterable == null) {
-				clusterable = NullClusterable.NULL_CLUSTERABLE;
+				clusterable = _NULL_CLUSTERABLE;
 			}
 
 			_clusterables.put(methodKey, clusterable);

@@ -28,7 +28,7 @@
 			name="fm"
 		>
 			<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
-			<aui:input name="portletId" type="hidden" value="<%= portletConfigurationCSSPortletDisplayContext.getPortletResource() %>" />
+			<aui:input name="portletId" type="hidden" value="<%= HtmlUtil.escapeJS(portletConfigurationCSSPortletDisplayContext.getPortletResource()) %>" />
 
 			<liferay-frontend:edit-form-body>
 				<liferay-frontend:form-navigator
@@ -43,6 +43,28 @@
 				<aui:button type="cancel" />
 			</liferay-frontend:edit-form-footer>
 		</liferay-frontend:edit-form>
+
+		<aui:script require="metal-dom/src/dom as dom">
+			dom.delegate(
+				document.getElementById('<portlet:namespace />fm'),
+				'change',
+				'input[type=checkbox]',
+				function (event) {
+					var toggle = event.delegateTarget;
+
+					var disableOnChecked = toggle.dataset.disableonchecked;
+					var inputs = document.querySelectorAll(toggle.dataset.inputselector);
+
+					for (var i = 0; i < inputs.length; i++) {
+						var input = inputs[i];
+
+						input.disabled = disableOnChecked
+							? !toggle.checked
+							: toggle.checked;
+					}
+				}
+			);
+		</aui:script>
 	</c:when>
 	<c:otherwise>
 		<liferay-util:include page="/html/portal/portlet_access_denied.jsp" />

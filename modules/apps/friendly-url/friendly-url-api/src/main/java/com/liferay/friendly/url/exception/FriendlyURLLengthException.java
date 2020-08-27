@@ -16,12 +16,9 @@ package com.liferay.friendly.url.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class FriendlyURLLengthException extends PortalException {
 
 	public FriendlyURLLengthException() {
@@ -31,12 +28,12 @@ public class FriendlyURLLengthException extends PortalException {
 		super(msg);
 	}
 
-	public FriendlyURLLengthException(String msg, Throwable cause) {
-		super(msg, cause);
+	public FriendlyURLLengthException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public FriendlyURLLengthException(Throwable cause) {
-		super(cause);
+	public FriendlyURLLengthException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

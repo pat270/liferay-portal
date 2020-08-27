@@ -17,8 +17,8 @@ package com.liferay.portal.cache.ehcache.internal.configurator;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.cache.configuration.PortalCacheConfiguration;
 import com.liferay.portal.cache.configuration.PortalCacheManagerConfiguration;
-import com.liferay.portal.cache.ehcache.internal.EhcacheConstants;
 import com.liferay.portal.cache.ehcache.internal.EhcachePortalCacheConfiguration;
+import com.liferay.portal.cache.ehcache.internal.constants.EhcacheConstants;
 import com.liferay.portal.kernel.cache.PortalCacheListenerScope;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.ObjectValuePair;
@@ -82,8 +82,6 @@ public abstract class BaseEhcachePortalCacheManagerConfigurator {
 		if (cacheConfiguration == null) {
 			return;
 		}
-
-		cacheConfiguration.bootstrapCacheLoaderFactory(null);
 
 		List<?> factoryConfigurations =
 			cacheConfiguration.getCacheEventListenerConfigurations();
@@ -215,7 +213,7 @@ public abstract class BaseEhcachePortalCacheManagerConfigurator {
 
 		return new EhcachePortalCacheConfiguration(
 			cacheConfiguration.getName(), portalCacheListenerPropertiesSet,
-			null, requireSerialization);
+			requireSerialization);
 	}
 
 	protected Set<Properties> parseCacheManagerEventListenerConfigurations(
@@ -301,8 +299,8 @@ public abstract class BaseEhcachePortalCacheManagerConfigurator {
 		try {
 			properties.load(new UnsyncStringReader(propertyLines));
 		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
 		}
 
 		return properties;

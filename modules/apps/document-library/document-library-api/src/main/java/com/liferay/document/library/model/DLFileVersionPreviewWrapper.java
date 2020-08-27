@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -31,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileVersionPreview
  * @generated
  */
-@ProviderType
 public class DLFileVersionPreviewWrapper
 	extends BaseModelWrapper<DLFileVersionPreview>
 	implements DLFileVersionPreview, ModelWrapper<DLFileVersionPreview> {
@@ -46,8 +45,11 @@ public class DLFileVersionPreviewWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("dlFileVersionPreviewId", getDlFileVersionPreviewId());
 		attributes.put("groupId", getGroupId());
+		attributes.put("companyId", getCompanyId());
 		attributes.put("fileEntryId", getFileEntryId());
 		attributes.put("fileVersionId", getFileVersionId());
 		attributes.put("previewStatus", getPreviewStatus());
@@ -57,6 +59,18 @@ public class DLFileVersionPreviewWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		Long dlFileVersionPreviewId = (Long)attributes.get(
 			"dlFileVersionPreviewId");
 
@@ -68,6 +82,12 @@ public class DLFileVersionPreviewWrapper
 
 		if (groupId != null) {
 			setGroupId(groupId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
 		}
 
 		Long fileEntryId = (Long)attributes.get("fileEntryId");
@@ -87,6 +107,26 @@ public class DLFileVersionPreviewWrapper
 		if (previewStatus != null) {
 			setPreviewStatus(previewStatus);
 		}
+	}
+
+	/**
+	 * Returns the company ID of this dl file version preview.
+	 *
+	 * @return the company ID of this dl file version preview
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the ct collection ID of this dl file version preview.
+	 *
+	 * @return the ct collection ID of this dl file version preview
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
 	}
 
 	/**
@@ -130,6 +170,16 @@ public class DLFileVersionPreviewWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this dl file version preview.
+	 *
+	 * @return the mvcc version of this dl file version preview
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the preview status of this dl file version preview.
 	 *
 	 * @return the preview status of this dl file version preview
@@ -152,6 +202,26 @@ public class DLFileVersionPreviewWrapper
 	@Override
 	public void persist() {
 		model.persist();
+	}
+
+	/**
+	 * Sets the company ID of this dl file version preview.
+	 *
+	 * @param companyId the company ID of this dl file version preview
+	 */
+	@Override
+	public void setCompanyId(long companyId) {
+		model.setCompanyId(companyId);
+	}
+
+	/**
+	 * Sets the ct collection ID of this dl file version preview.
+	 *
+	 * @param ctCollectionId the ct collection ID of this dl file version preview
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -195,6 +265,16 @@ public class DLFileVersionPreviewWrapper
 	}
 
 	/**
+	 * Sets the mvcc version of this dl file version preview.
+	 *
+	 * @param mvccVersion the mvcc version of this dl file version preview
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
+	}
+
+	/**
 	 * Sets the preview status of this dl file version preview.
 	 *
 	 * @param previewStatus the preview status of this dl file version preview
@@ -212,6 +292,20 @@ public class DLFileVersionPreviewWrapper
 	@Override
 	public void setPrimaryKey(long primaryKey) {
 		model.setPrimaryKey(primaryKey);
+	}
+
+	@Override
+	public Map<String, Function<DLFileVersionPreview, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DLFileVersionPreview, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override

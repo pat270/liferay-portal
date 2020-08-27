@@ -14,7 +14,9 @@
 
 package com.liferay.gradle.plugins.service.builder;
 
-import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.plugins.service.builder.internal.util.GradleUtil;
+import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.util.OSGiUtil;
 
 import java.io.File;
 
@@ -25,9 +27,11 @@ import java.util.concurrent.Callable;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.internal.plugins.osgi.OsgiHelper;
+import org.gradle.api.internal.GradleInternal;
+import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
@@ -35,6 +39,8 @@ import org.gradle.api.plugins.WarPlugin;
 import org.gradle.api.plugins.WarPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.execution.ProjectConfigurer;
+import org.gradle.internal.service.ServiceRegistry;
 
 /**
  * @author Andrea Di Giorgi
@@ -52,9 +58,19 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 		Configuration serviceBuilderConfiguration =
 			addConfigurationServiceBuilder(project);
 
-		addTaskBuildService(project);
+		final BuildServiceTask buildServiceTask = addTaskBuildService(project);
 
 		configureTasksBuildService(project, serviceBuilderConfiguration);
+
+		project.afterEvaluate(
+			new Action<Project>() {
+
+				@Override
+				public void execute(Project project) {
+					configureTaskBuildService(buildServiceTask);
+				}
+
+			});
 	}
 
 	protected Configuration addConfigurationServiceBuilder(
@@ -129,10 +145,9 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(project);
-
 					return new File(
-						resourcesDir, "META-INF/portlet-model-hints.xml");
+						getResourcesDir(project),
+						"META-INF/portlet-model-hints.xml");
 				}
 
 			});
@@ -158,7 +173,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 				public String call() throws Exception {
 					if (buildServiceTask.isOsgiModule()) {
 						String bundleSymbolicName =
-							_osgiHelper.getBundleSymbolicName(project);
+							OSGiUtil.getBundleSymbolicName(project);
 
 						return bundleSymbolicName + ".util.ServiceProps";
 					}
@@ -201,9 +216,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(project);
-
-					return new File(resourcesDir, "META-INF/sql");
+					return new File(getResourcesDir(project), "META-INF/sql");
 				}
 
 			});
@@ -224,11 +237,91 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 		return buildServiceTask;
 	}
 
+	@SuppressWarnings("rawtypes")
+	protected void configureTaskBuildService(
+		final BuildServiceTask buildServiceTask) {
+
+		Project project = buildServiceTask.getProject();
+
+		PluginContainer pluginContainer = project.getPlugins();
+
+		pluginContainer.withId(
+			"com.liferay.defaults.plugin",
+			new Action<Plugin>() {
+
+				@Override
+				public void execute(Plugin plugin) {
+					configureTaskBuildServiceForLiferayDefaultsPlugin(
+						buildServiceTask);
+				}
+
+			});
+	}
+
 	protected void configureTaskBuildServiceClasspath(
 		BuildServiceTask buildServiceTask,
 		Configuration serviceBuilderConfiguration) {
 
 		buildServiceTask.setClasspath(serviceBuilderConfiguration);
+	}
+
+	protected void configureTaskBuildServiceForLiferayDefaultsPlugin(
+		BuildServiceTask buildServiceTask) {
+
+		File apiDir = buildServiceTask.getApiDir();
+
+		if (apiDir == null) {
+			return;
+		}
+
+		Project project = buildServiceTask.getProject();
+
+		File apiProjectDir = GradleUtil.getRootDir(
+			project.file(apiDir), "bnd.bnd");
+
+		if (apiProjectDir == null) {
+			return;
+		}
+
+		Project rootProject = project.getRootProject();
+
+		String relativePath = FileUtil.relativize(
+			apiProjectDir, rootProject.getProjectDir());
+
+		relativePath = relativePath.replace(File.separatorChar, '/');
+
+		String apiProjectPath = ':' + relativePath.replace('/', ':');
+
+		Project apiProject = rootProject.findProject(apiProjectPath);
+
+		if (apiProject == null) {
+			String apiProjectName = apiProjectDir.getName();
+
+			apiProject = GradleUtil.findProject(rootProject, apiProjectName);
+		}
+
+		if (apiProject == null) {
+			return;
+		}
+
+		GradleInternal gradleInternal = (GradleInternal)project.getGradle();
+
+		ServiceRegistry serviceRegistry = gradleInternal.getServices();
+
+		ProjectConfigurer projectConfigurer = serviceRegistry.get(
+			ProjectConfigurer.class);
+
+		projectConfigurer.configure((ProjectInternal)apiProject);
+
+		TaskContainer taskContainer = apiProject.getTasks();
+
+		Task task = taskContainer.findByName("baseline");
+
+		if (task != null) {
+			task.setProperty("ignoreFailures", Boolean.TRUE);
+
+			buildServiceTask.finalizedBy(task);
+		}
 	}
 
 	protected void configureTaskBuildServiceForWarPlugin(
@@ -317,7 +410,5 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 		return warPluginConvention.getWebAppDir();
 	}
-
-	private static final OsgiHelper _osgiHelper = new OsgiHelper();
 
 }

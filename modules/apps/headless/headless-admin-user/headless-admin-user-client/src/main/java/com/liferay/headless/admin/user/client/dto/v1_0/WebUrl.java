@@ -26,7 +26,11 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class WebUrl {
+public class WebUrl implements Cloneable {
+
+	public static WebUrl toDTO(String json) {
+		return WebUrlSerDes.toDTO(json);
+	}
 
 	public Long getId() {
 		return id;
@@ -46,6 +50,27 @@ public class WebUrl {
 	}
 
 	protected Long id;
+
+	public Boolean getPrimary() {
+		return primary;
+	}
+
+	public void setPrimary(Boolean primary) {
+		this.primary = primary;
+	}
+
+	public void setPrimary(
+		UnsafeSupplier<Boolean, Exception> primaryUnsafeSupplier) {
+
+		try {
+			primary = primaryUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean primary;
 
 	public String getUrl() {
 		return url;
@@ -86,6 +111,11 @@ public class WebUrl {
 	}
 
 	protected String urlType;
+
+	@Override
+	public WebUrl clone() throws CloneNotSupportedException {
+		return (WebUrl)super.clone();
+	}
 
 	@Override
 	public boolean equals(Object object) {

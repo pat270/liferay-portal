@@ -19,12 +19,21 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.security.ldap.SafeLdapFilter;
+import com.liferay.portal.security.ldap.SafeLdapFilterFactory;
+import com.liferay.portal.security.ldap.SafeLdapFilterTemplate;
+import com.liferay.portal.security.ldap.SafeLdapName;
+import com.liferay.portal.security.ldap.SafeLdapNameFactory;
+import com.liferay.portal.security.ldap.configuration.LDAPServerConfiguration;
+import com.liferay.portal.security.ldap.validator.LDAPFilterException;
+import com.liferay.portal.security.ldap.validator.LDAPFilterValidator;
 
 import java.text.DateFormat;
 
 import java.util.Date;
 import java.util.Properties;
 
+import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -40,13 +49,17 @@ import org.apache.commons.lang.StringEscapeUtils;
  */
 public class LDAPUtil {
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link SafeLdapFilter}
+	 */
+	@Deprecated
 	public static String escapeCharacters(String attribute) {
 		if (attribute.contains(StringPool.BACK_SLASH)) {
 			String escapedSingleBackSlash = StringPool.DOUBLE_BACK_SLASH.concat(
 				StringPool.BACK_SLASH);
 
-			attribute = attribute.replace(
-				StringPool.BACK_SLASH, escapedSingleBackSlash);
+			attribute = StringUtil.replace(
+				attribute, CharPool.BACK_SLASH, escapedSingleBackSlash);
 		}
 		else {
 			attribute = StringEscapeUtils.escapeJava(attribute);
@@ -197,8 +210,104 @@ public class LDAPUtil {
 		return array;
 	}
 
+	public static SafeLdapFilterTemplate getAuthSearchSafeLdapFilterTemplate(
+			LDAPServerConfiguration ldapServerConfiguration,
+			LDAPFilterValidator ldapFilterValidator)
+		throws LDAPFilterException {
+
+		if (ldapServerConfiguration.authSearchFilter() == null) {
+			return null;
+		}
+
+		try {
+			return new SafeLdapFilterTemplate(
+				ldapServerConfiguration.authSearchFilter(),
+				new String[] {
+					"@company_id@", "@email_address@", "@screen_name@",
+					"@user_id@"
+				},
+				ldapFilterValidator);
+		}
+		catch (LDAPFilterException ldapFilterException) {
+			throw new LDAPFilterException(
+				"Invalid filter " +
+					LDAPServerConfiguration.class.getSimpleName() +
+						".authSearchFilter",
+				ldapFilterException);
+		}
+	}
+
+	public static SafeLdapName getBaseDNSafeLdapName(
+			LDAPServerConfiguration ldapServerConfiguration)
+		throws InvalidNameException {
+
+		return SafeLdapNameFactory.fromUnsafe(ldapServerConfiguration.baseDN());
+	}
+
 	public static String getFullProviderURL(String baseURL, String baseDN) {
 		return baseURL + StringPool.SLASH + baseDN;
+	}
+
+	public static SafeLdapName getGroupsDNSafeLdapName(
+			LDAPServerConfiguration ldapServerConfiguration)
+		throws InvalidNameException {
+
+		return SafeLdapNameFactory.fromUnsafe(
+			ldapServerConfiguration.groupsDN());
+	}
+
+	public static SafeLdapFilter getGroupSearchSafeLdapFilter(
+			LDAPServerConfiguration ldapServerConfiguration,
+			LDAPFilterValidator ldapFilterValidator)
+		throws LDAPFilterException {
+
+		if (ldapServerConfiguration.groupSearchFilter() == null) {
+			return null;
+		}
+
+		try {
+			return SafeLdapFilterFactory.fromUnsafeFilter(
+				ldapServerConfiguration.groupSearchFilter(),
+				ldapFilterValidator);
+		}
+		catch (LDAPFilterException ldapFilterException) {
+			throw new LDAPFilterException(
+				"Invalid filter " +
+					LDAPServerConfiguration.class.getSimpleName() +
+						".groupSearchFilter",
+				ldapFilterException);
+		}
+	}
+
+	public static SafeLdapName getUsersDNSafeLdapName(
+			LDAPServerConfiguration ldapServerConfiguration)
+		throws InvalidNameException {
+
+		return SafeLdapNameFactory.fromUnsafe(
+			ldapServerConfiguration.usersDN());
+	}
+
+	public static SafeLdapFilter getUserSearchSafeLdapFilter(
+			LDAPServerConfiguration ldapServerConfiguration,
+			LDAPFilterValidator ldapFilterValidator)
+		throws LDAPFilterException {
+
+		if (ldapServerConfiguration.userSearchFilter() == null) {
+			return null;
+		}
+
+		try {
+			return SafeLdapFilterFactory.fromUnsafeFilter(
+				ldapServerConfiguration.userSearchFilter(),
+				ldapFilterValidator);
+		}
+		catch (LDAPFilterException ldapFilterException) {
+			throw new LDAPFilterException(
+				"Invalid filter " +
+					LDAPServerConfiguration.class.getSimpleName() +
+						".userSearchFilter",
+				ldapFilterException);
+		}
 	}
 
 	public static Date parseDate(String date) throws Exception {

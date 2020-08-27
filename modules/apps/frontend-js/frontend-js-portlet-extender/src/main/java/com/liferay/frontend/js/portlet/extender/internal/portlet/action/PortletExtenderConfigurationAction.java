@@ -157,10 +157,10 @@ public class PortletExtenderConfigurationAction
 						value.getDefaultLocale());
 
 					if (ddmFormFieldType.equals(DDMFormFieldType.SELECT)) {
-						stringValue = stringValue.replace(
-							"[\"", StringPool.BLANK);
-						stringValue = stringValue.replace(
-							"\"]", StringPool.BLANK);
+						stringValue = StringUtil.removeSubstring(
+							stringValue, "[\"");
+						stringValue = StringUtil.removeSubstring(
+							stringValue, "\"]");
 					}
 
 					return stringValue;
@@ -182,8 +182,8 @@ public class PortletExtenderConfigurationAction
 
 			return StringUtil.read(inputStream);
 		}
-		catch (Exception e) {
-			_log.error("Unable to read template " + name, e);
+		catch (Exception exception) {
+			_log.error("Unable to read template " + name, exception);
 		}
 
 		return StringPool.BLANK;
@@ -192,7 +192,7 @@ public class PortletExtenderConfigurationAction
 	private DDMFormRenderingContext _createDDMFormRenderingContext(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse)
-		throws PortalException {
+		throws Exception {
 
 		DDMFormRenderingContext ddmFormRenderingContext =
 			new DDMFormRenderingContext();
@@ -284,7 +284,7 @@ public class PortletExtenderConfigurationAction
 	private void _setDDMFormValues(
 			DDMFormRenderingContext ddmFormRenderingContext,
 			ThemeDisplay themeDisplay)
-		throws PortalException {
+		throws Exception {
 
 		DDMFormValues ddmFormValues = new DDMFormValues(_ddmForm);
 
@@ -306,6 +306,10 @@ public class PortletExtenderConfigurationAction
 				portletPreferencesMap.entrySet()) {
 
 			String fieldName = entry.getKey();
+
+			if (!_ddmFormFieldsMap.containsKey(fieldName)) {
+				continue;
+			}
 
 			for (String value : entry.getValue()) {
 				DDMFormFieldValue ddmFormFieldValue = new DDMFormFieldValue();

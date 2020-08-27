@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Liferay.Util.ns should return an object 1`] = `
+exports[`Liferay.Util.ns returns an object 1`] = `
 Object {
   "_ns_arr1": Array [
     1,

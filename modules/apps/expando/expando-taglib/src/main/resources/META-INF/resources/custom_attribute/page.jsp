@@ -19,6 +19,7 @@
 <%
 String randomNamespace = PortalUtil.generateRandomKey(request, "taglib_ui_custom_attribute_page") + StringPool.UNDERLINE;
 
+Set<Locale> availableLocales = (Set<Locale>)request.getAttribute("liferay-expando:custom-attribute:availableLocales");
 String className = (String)request.getAttribute("liferay-expando:custom-attribute:className");
 long classPK = GetterUtil.getLong((String)request.getAttribute("liferay-expando:custom-attribute:classPK"));
 boolean editable = GetterUtil.getBoolean((String)request.getAttribute("liferay-expando:custom-attribute:editable"));
@@ -38,6 +39,7 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 	UnicodeProperties properties = expandoBridge.getAttributeProperties(name);
 
 	boolean propertyHidden = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_HIDDEN));
+	boolean propertyLocalizeFieldName = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_LOCALIZE_FIELD_NAME), true);
 	boolean propertyVisibleWithUpdatePermission = GetterUtil.getBoolean(properties.get(ExpandoColumnConstants.PROPERTY_VISIBLE_WITH_UPDATE_PERMISSION));
 	boolean propertySecret = GetterUtil.getBoolean(properties.getProperty(ExpandoColumnConstants.PROPERTY_SECRET));
 	int propertyHeight = GetterUtil.getInteger(properties.getProperty(ExpandoColumnConstants.PROPERTY_HEIGHT));
@@ -48,10 +50,14 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 		propertyHidden = !ExpandoColumnPermissionUtil.contains(permissionChecker, company.getCompanyId(), className, ExpandoTableConstants.DEFAULT_TABLE_NAME, name, ActionKeys.UPDATE);
 	}
 
-	String localizedName = LanguageUtil.get(resourceBundle, name);
+	String localizedName = name;
 
-	if (name.equals(localizedName)) {
-		localizedName = HtmlUtil.escape(TextFormatter.format(name, TextFormatter.J));
+	if (propertyLocalizeFieldName) {
+		localizedName = LanguageUtil.get(resourceBundle, name);
+
+		if (name.equals(localizedName)) {
+			localizedName = HtmlUtil.escape(TextFormatter.format(name, TextFormatter.J));
+		}
 	}
 
 	Format dateFormatDateTime = FastDateFormatFactoryUtil.getDateTime(locale, timeZone);
@@ -60,7 +66,7 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 	<c:if test="<%= !propertyHidden && ExpandoColumnPermissionUtil.contains(permissionChecker, company.getCompanyId(), className, ExpandoTableConstants.DEFAULT_TABLE_NAME, name, ActionKeys.VIEW) %>">
 		<c:choose>
 			<c:when test="<%= editable && ExpandoColumnPermissionUtil.contains(permissionChecker, company.getCompanyId(), className, ExpandoTableConstants.DEFAULT_TABLE_NAME, name, ActionKeys.UPDATE) %>">
-				<aui:field-wrapper label="<%= label ? localizedName : StringPool.BLANK %>" name="<%= randomNamespace + name %>">
+				<aui:field-wrapper label="<%= label ? localizedName : StringPool.BLANK %>" localizeLabel="<%= propertyLocalizeFieldName %>" name="<%= randomNamespace + name %>">
 					<input name="<portlet:namespace />ExpandoAttributeName--<%= HtmlUtil.escapeAttribute(name) %>--" type="hidden" value="<%= HtmlUtil.escapeAttribute(name) %>" />
 
 					<c:choose>
@@ -312,16 +318,21 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 
 							<aui:script require="map-common/js/MapBase.es as MapBase">
 								var geolocationField = {
-									init: function() {
+									init: function () {
 										Liferay.MapBase.get(
-											"<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + mapDisplayName + "--" %>",
-											function(map) {
-												map.on('positionChange', geolocationField.onPositionChange, geolocationField);
+											'<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + mapDisplayName + "--" %>',
+											function (map) {
+												map.on(
+													'positionChange',
+													geolocationField.onPositionChange,
+													geolocationField
+												);
 											}
 										);
 									},
-									onPositionChange: function(event) {
-										var inputName = "<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + HtmlUtil.escapeJS(name) + "--" %>";
+									onPositionChange: function (event) {
+										var inputName =
+											'<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + HtmlUtil.escapeJS(name) + "--" %>';
 										var inputNode = document.querySelector('[name="' + inputName + '"]');
 
 										var location = event.newVal.location;
@@ -329,12 +340,10 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 										if (inputNode) {
 											inputNode.setAttribute(
 												'value',
-												JSON.stringify(
-													{
-														latitude: location.lat,
-														longitude: location.lng
-													}
-												)
+												JSON.stringify({
+													latitude: location.lat,
+													longitude: location.lng,
+												})
 											);
 										}
 
@@ -343,7 +352,7 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 										if (locationNode) {
 											locationNode.innerHTML = event.newVal.address;
 										}
-									}
+									},
 								};
 
 								geolocationField.init();
@@ -625,19 +634,19 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 
 								</c:when>
 								<c:when test="<%= propertyDisplayType.equals(ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_SELECTION_LIST) %>">
-									<select class="form-control" id="<portlet:namespace /><%= randomNamespace %><%= HtmlUtil.getAUICompatibleId(name) %>" name="<portlet:namespace />ExpandoAttribute--<%= HtmlUtil.escapeAttribute(name) %>--">
+									<aui:select id="<%= randomNamespace + HtmlUtil.escapeAttribute(name) %>" label="" name='<%= "ExpandoAttribute--" + HtmlUtil.escapeAttribute(name) + "--" %>'>
 
 										<%
 										for (String curDefaultValue : (String[])defaultValue) {
 										%>
 
-											<option <%= ((curValue.length > 0) && ArrayUtil.contains(curValue, curDefaultValue)) ? "selected" : "" %> value="<%= HtmlUtil.escape(curDefaultValue) %>"><%= HtmlUtil.escape(curDefaultValue) %></option>
+											<aui:option label="<%= HtmlUtil.escape(curDefaultValue) %>" selected="<%= (curValue.length > 0) && ArrayUtil.contains(curValue, curDefaultValue) %>" value="<%= HtmlUtil.escape(curDefaultValue) %>" />
 
 										<%
 										}
 										%>
 
-									</select>
+									</aui:select>
 								</c:when>
 								<c:when test="<%= propertyDisplayType.equals(ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_TEXT_BOX) %>">
 
@@ -666,6 +675,7 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 							%>
 
 							<liferay-ui:input-localized
+								availableLocales="<%= availableLocales %>"
 								cssClass="lfr-input-text"
 								id="<%= randomNamespace + name %>"
 								name='<%= "ExpandoAttribute--" + name + "--" %>'
@@ -822,20 +832,18 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 
 						<aui:script require="map-common/js/MapBase.es as MapBase">
 							Liferay.MapBase.get(
-								"<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + mapDisplayName + "--" %>",
-								function(map) {
-									map.once(
-										'positionChange',
-										function(event) {
-											var inputName = "<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + HtmlUtil.escapeJS(name) + "--" %>";
+								'<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + mapDisplayName + "--" %>',
+								function (map) {
+									map.once('positionChange', function (event) {
+										var inputName =
+											'<%= portletDisplay.getNamespace()+"ExpandoAttribute--" + HtmlUtil.escapeJS(name) + "--" %>';
 
-											var locationNode = document.getElementById(inputName + 'Location');
+										var locationNode = document.getElementById(inputName + 'Location');
 
-											if (locationNode) {
-												locationNode.innerHTML = event.newVal.address;
-											}
+										if (locationNode) {
+											locationNode.innerHTML = event.newVal.address;
 										}
-									);
+									});
 								}
 							);
 						</aui:script>

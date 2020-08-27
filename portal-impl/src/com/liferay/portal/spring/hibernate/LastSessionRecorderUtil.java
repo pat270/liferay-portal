@@ -47,10 +47,11 @@ public class LastSessionRecorderUtil {
 		if ((session != null) && session.isOpen()) {
 			try {
 				session.flush();
+
 				session.clear();
 			}
-			catch (Exception e) {
-				throw new SystemException(e);
+			catch (Exception exception) {
+				throw new SystemException(exception);
 			}
 		}
 	}

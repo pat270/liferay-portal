@@ -1,8 +1,9 @@
 Bundle-Name: Liferay Document Library Content API
 Bundle-SymbolicName: com.liferay.document.library.content.api
-Bundle-Version: 3.0.0
+Bundle-Version: 3.2.5
 Export-Package:\
 	com.liferay.document.library.content.exception,\
 	com.liferay.document.library.content.model,\
 	com.liferay.document.library.content.service,\
-	com.liferay.document.library.content.service.persistence
+	com.liferay.document.library.content.service.persistence,\
+	com.liferay.document.library.content.util.comparator

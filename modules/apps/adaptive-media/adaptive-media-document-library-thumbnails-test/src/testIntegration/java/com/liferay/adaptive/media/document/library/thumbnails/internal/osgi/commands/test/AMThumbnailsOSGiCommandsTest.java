@@ -45,7 +45,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.service.test.ServiceTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -54,7 +54,6 @@ import com.liferay.registry.ServiceReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -64,13 +63,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.runtime.ServiceComponentRuntime;
 import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
@@ -117,7 +116,7 @@ public class AMThumbnailsOSGiCommandsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ServiceTestUtil.setUser(TestPropsValues.getUser());
+		UserTestUtil.setUser(TestPropsValues.getUser());
 
 		_company = CompanyTestUtil.addCompany();
 
@@ -201,6 +200,7 @@ public class AMThumbnailsOSGiCommandsTest {
 		Assert.assertEquals(count + 2, _getThumbnailCount());
 	}
 
+	@Ignore
 	@Test
 	public void testMigrateOnlyProcessesImages() throws Exception {
 		try (PropsValuesReplacer propsValuesReplacer1 = new PropsValuesReplacer(
@@ -237,15 +237,15 @@ public class AMThumbnailsOSGiCommandsTest {
 		Registry registry = RegistryUtil.getRegistry();
 
 		ServiceComponentRuntime serviceComponentRuntime = registry.getService(
-			ServiceComponentRuntime.class);
+			registry.getServiceReference(ServiceComponentRuntime.class));
 
-		Object service = registry.getService(_CLASS_NAME_PROCESSOR);
-
-		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
+		Object service = registry.getService(
+			registry.getServiceReference(_CLASS_NAME_PROCESSOR));
 
 		ComponentDescriptionDTO componentDescriptionDTO =
 			serviceComponentRuntime.getComponentDescriptionDTO(
-				bundle, _CLASS_NAME_PROCESSOR);
+				FrameworkUtil.getBundle(service.getClass()),
+				_CLASS_NAME_PROCESSOR);
 
 		if (componentDescriptionDTO == null) {
 			return;
@@ -257,7 +257,7 @@ public class AMThumbnailsOSGiCommandsTest {
 		promise.getValue();
 	}
 
-	private static void _disableDocumentLibraryAM() throws BundleException {
+	private static void _disableDocumentLibraryAM() throws Exception {
 		Bundle bundle = FrameworkUtil.getBundle(
 			AMThumbnailsOSGiCommandsTest.class);
 
@@ -278,15 +278,15 @@ public class AMThumbnailsOSGiCommandsTest {
 		Registry registry = RegistryUtil.getRegistry();
 
 		ServiceComponentRuntime serviceComponentRuntime = registry.getService(
-			ServiceComponentRuntime.class);
+			registry.getServiceReference(ServiceComponentRuntime.class));
 
-		Object service = registry.getService(_CLASS_NAME_OSGI_COMMAND);
-
-		Bundle bundle = FrameworkUtil.getBundle(service.getClass());
+		Object service = registry.getService(
+			registry.getServiceReference(_CLASS_NAME_OSGI_COMMAND));
 
 		ComponentDescriptionDTO componentDescriptionDTO =
 			serviceComponentRuntime.getComponentDescriptionDTO(
-				bundle, _CLASS_NAME_PROCESSOR);
+				FrameworkUtil.getBundle(service.getClass()),
+				_CLASS_NAME_PROCESSOR);
 
 		if (componentDescriptionDTO == null) {
 			return;
@@ -298,7 +298,7 @@ public class AMThumbnailsOSGiCommandsTest {
 		promise.getValue();
 	}
 
-	private static void _enableDocumentLibraryAM() throws BundleException {
+	private static void _enableDocumentLibraryAM() throws Exception {
 		Bundle bundle = FrameworkUtil.getBundle(
 			AMThumbnailsOSGiCommandsTest.class);
 
@@ -316,10 +316,11 @@ public class AMThumbnailsOSGiCommandsTest {
 	}
 
 	private void _addConfiguration(int width, int height) throws Exception {
-		Map<String, String> properties = new HashMap<>();
-
-		properties.put("max-height", String.valueOf(height));
-		properties.put("max-width", String.valueOf(width));
+		Map<String, String> properties = HashMapBuilder.put(
+			"max-height", String.valueOf(height)
+		).put(
+			"max-width", String.valueOf(width)
+		).build();
 
 		_amImageConfigurationHelper.addAMImageConfigurationEntry(
 			_company.getCompanyId(), _THUMBNAIL_CONFIGURATION + width,
@@ -331,8 +332,7 @@ public class AMThumbnailsOSGiCommandsTest {
 			_user.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + ".pdf",
-			ContentTypes.APPLICATION_PDF, _getFileContents("sample.pdf"),
-			_serviceContext);
+			ContentTypes.APPLICATION_PDF, _read("sample.pdf"), _serviceContext);
 	}
 
 	private FileEntry _addPNGFileEntry() throws Exception {
@@ -340,7 +340,7 @@ public class AMThumbnailsOSGiCommandsTest {
 			_user.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + ".png", ContentTypes.IMAGE_PNG,
-			_getFileContents("sample.png"), _serviceContext);
+			_read("sample.png"), _serviceContext);
 
 		return _pngFileEntry;
 	}
@@ -359,10 +359,6 @@ public class AMThumbnailsOSGiCommandsTest {
 		return adaptiveMediaStream.count();
 	}
 
-	private byte[] _getFileContents(String fileName) throws Exception {
-		return FileUtil.getBytes(AMThumbnailsOSGiCommandsTest.class, fileName);
-	}
-
 	private int _getThumbnailCount() throws Exception {
 		String[] fileNames = DLStoreUtil.getFileNames(
 			_company.getCompanyId(), DLPreviewableProcessor.REPOSITORY_ID,
@@ -375,10 +371,15 @@ public class AMThumbnailsOSGiCommandsTest {
 		_run("migrate");
 	}
 
+	private byte[] _read(String fileName) throws Exception {
+		return FileUtil.getBytes(AMThumbnailsOSGiCommandsTest.class, fileName);
+	}
+
 	private void _run(String functionName) throws Exception {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Object service = registry.getService(_CLASS_NAME_OSGI_COMMAND);
+		Object service = registry.getService(
+			registry.getServiceReference(_CLASS_NAME_OSGI_COMMAND));
 
 		Class<?> clazz = service.getClass();
 

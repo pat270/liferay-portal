@@ -17,19 +17,27 @@ package com.liferay.frontend.js.loader.modules.extender.internal.npm;
 import com.github.yuchi.semver.Range;
 import com.github.yuchi.semver.Version;
 
+import com.liferay.frontend.js.loader.modules.extender.internal.config.generator.JSConfigGeneratorPackage;
+import com.liferay.frontend.js.loader.modules.extender.internal.configuration.Details;
 import com.liferay.frontend.js.loader.modules.extender.npm.JSBundle;
 import com.liferay.frontend.js.loader.modules.extender.npm.JSBundleProcessor;
 import com.liferay.frontend.js.loader.modules.extender.npm.JSBundleTracker;
 import com.liferay.frontend.js.loader.modules.extender.npm.JSModule;
+import com.liferay.frontend.js.loader.modules.extender.npm.JSModuleAlias;
 import com.liferay.frontend.js.loader.modules.extender.npm.JSPackage;
 import com.liferay.frontend.js.loader.modules.extender.npm.JSPackageDependency;
+import com.liferay.frontend.js.loader.modules.extender.npm.JavaScriptAwarePortalWebResources;
+import com.liferay.frontend.js.loader.modules.extender.npm.ModuleNameUtil;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMRegistry;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
+import com.liferay.osgi.util.ServiceTrackerFactory;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -46,21 +54,23 @@ import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
+
+import javax.servlet.ServletContext;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 /**
  * Provides the central class for the NPM package support of Liferay Portal.
@@ -69,26 +79,18 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
  *
  * @author Iván Zaera
  */
-@Component(immediate = true, service = NPMRegistry.class)
+@Component(
+	configurationPid = "com.liferay.frontend.js.loader.modules.extender.internal.configuration.Details",
+	immediate = true, service = NPMRegistry.class
+)
 public class NPMRegistryImpl implements NPMRegistry {
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC
-	)
 	public void addJSBundleTracker(JSBundleTracker jsBundleTracker) {
-		_jsBundleTrackers.add(jsBundleTracker);
-
-		for (Map.Entry<JSBundle, Bundle> entry : _jsBundles.entrySet()) {
-			try {
-				jsBundleTracker.addedJSBundle(
-					entry.getKey(), entry.getValue(), this);
-			}
-			catch (Exception e) {
-				_log.error("Unable to add JS bundle", e);
-			}
-		}
 	}
 
 	@Override
@@ -103,7 +105,9 @@ public class NPMRegistryImpl implements NPMRegistry {
 	 * @return the OSGi bundles
 	 */
 	public Collection<JSBundle> getJSBundles() {
-		return _jsBundles.keySet();
+		Map<Bundle, JSBundle> tracked = _bundleTracker.getTracked();
+
+		return tracked.values();
 	}
 
 	/**
@@ -176,8 +180,46 @@ public class NPMRegistryImpl implements NPMRegistry {
 	}
 
 	@Override
+	public String mapModuleName(String moduleName) {
+		String mappedModuleName = _exactMatchMap.get(moduleName);
+
+		if (Validator.isNotNull(mappedModuleName)) {
+			return mapModuleName(mappedModuleName);
+		}
+
+		for (Map.Entry<String, String> entry : _globalAliases.entrySet()) {
+			String resolvedId = entry.getKey();
+
+			if (resolvedId.equals(moduleName) ||
+				moduleName.startsWith(resolvedId + StringPool.SLASH)) {
+
+				return mapModuleName(
+					entry.getValue() +
+						moduleName.substring(resolvedId.length()));
+			}
+		}
+
+		for (Map.Entry<String, String> entry : _partialMatchMap.entrySet()) {
+			String resolvedId = entry.getKey();
+
+			if (resolvedId.equals(moduleName) ||
+				moduleName.startsWith(resolvedId + StringPool.SLASH)) {
+
+				return mapModuleName(
+					entry.getValue() +
+						moduleName.substring(resolvedId.length()));
+			}
+		}
+
+		return moduleName;
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
+	@Override
 	public void removeJSBundleTracker(JSBundleTracker jsBundleTracker) {
-		_jsBundleTrackers.remove(jsBundleTracker);
 	}
 
 	@Override
@@ -227,12 +269,7 @@ public class NPMRegistryImpl implements NPMRegistry {
 
 	@Activate
 	protected void activate(
-			BundleContext bundleContext, Map<String, Object> properties)
-		throws Exception {
-
-		if (_bundleTracker != null) {
-			_bundleTracker.close();
-		}
+		BundleContext bundleContext, Map<String, Object> properties) {
 
 		_bundleContext = bundleContext;
 
@@ -240,39 +277,53 @@ public class NPMRegistryImpl implements NPMRegistry {
 			_bundleContext, Bundle.ACTIVE,
 			new NPMRegistryBundleTrackerCustomizer());
 
+		_activationThreadLocal.set(Boolean.TRUE);
+
 		_bundleTracker.open();
-	}
 
-	@Reference(
-		cardinality = ReferenceCardinality.MULTIPLE,
-		policy = ReferencePolicy.DYNAMIC
-	)
-	protected synchronized void bindBundleProcessor(
-		JSBundleProcessor jsBundleProcessor) {
+		_activationThreadLocal.set(Boolean.FALSE);
 
-		_jsBundleProcessors.add(jsBundleProcessor);
+		Map<Bundle, JSBundle> tracked = _bundleTracker.getTracked();
 
-		_reopenBundleTracker();
+		_refreshJSModuleCaches(tracked.values());
+
+		Details details = ConfigurableUtil.createConfigurable(
+			Details.class, properties);
+
+		_applyVersioning = details.applyVersioning();
+
+		_serviceTracker = _openServiceTracker();
+
+		_serviceTrackerList = ServiceTrackerListFactory.open(
+			bundleContext, JavaScriptAwarePortalWebResources.class);
 	}
 
 	@Deactivate
-	protected synchronized void deactivate() {
-		_bundleTracker.close();
+	protected void deactivate() {
+		_serviceTrackerList.close();
 
-		_bundleTracker = null;
+		_serviceTracker.close();
+
+		_bundleTracker.close();
 	}
 
-	protected synchronized void unbindBundleProcessor(
-		JSBundleProcessor jsBundleProcessor) {
+	@Modified
+	protected void modified(Map<String, Object> properties) {
+		Details details = ConfigurableUtil.createConfigurable(
+			Details.class, properties);
 
-		_jsBundleProcessors.remove(jsBundleProcessor);
+		if (details.applyVersioning() != _applyVersioning) {
+			_applyVersioning = details.applyVersioning();
 
-		_reopenBundleTracker();
+			_serviceTracker.close();
+
+			_serviceTracker = _openServiceTracker();
+		}
 	}
 
 	private JSONObject _getPackageJSONObject(Bundle bundle) {
 		try {
-			URL url = bundle.getResource("package.json");
+			URL url = bundle.getEntry("package.json");
 
 			if (url == null) {
 				return null;
@@ -283,7 +334,7 @@ public class NPMRegistryImpl implements NPMRegistry {
 			try {
 				content = StringUtil.read(url.openStream());
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
 				return null;
 			}
 
@@ -293,41 +344,65 @@ public class NPMRegistryImpl implements NPMRegistry {
 
 			return _jsonFactory.createJSONObject(content);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return null;
 		}
 	}
 
-	private synchronized JSBundle _processBundle(Bundle bundle) {
-		for (JSBundleProcessor jsBundleProcessor : _jsBundleProcessors) {
-			JSBundle jsBundle = jsBundleProcessor.process(bundle);
+	private ServiceTracker<ServletContext, JSConfigGeneratorPackage>
+		_openServiceTracker() {
 
-			if (jsBundle == null) {
-				continue;
-			}
+		return ServiceTrackerFactory.open(
+			_bundleContext,
+			"(&(objectClass=" + ServletContext.class.getName() +
+				")(osgi.web.contextpath=*))",
+			new ServiceTrackerCustomizer
+				<ServletContext, JSConfigGeneratorPackage>() {
 
-			_jsBundles.put(jsBundle, bundle);
+				@Override
+				public JSConfigGeneratorPackage addingService(
+					ServiceReference<ServletContext> serviceReference) {
 
-			_processLegacyBridges(bundle);
+					Bundle bundle = serviceReference.getBundle();
 
-			_refreshJSModuleCaches();
+					URL url = bundle.getEntry(Details.CONFIG_JSON);
 
-			if (jsBundle != null) {
-				for (JSBundleTracker jsBundleTracker : _jsBundleTrackers) {
-					try {
-						jsBundleTracker.addedJSBundle(
-							jsBundle, bundle, NPMRegistryImpl.this);
+					if (url == null) {
+						return null;
 					}
-					catch (Exception e) {
-						_log.error("Unable to add JS bundle", e);
-					}
+
+					JSConfigGeneratorPackage jsConfigGeneratorPackage =
+						new JSConfigGeneratorPackage(
+							_applyVersioning, serviceReference.getBundle(),
+							(String)serviceReference.getProperty(
+								"osgi.web.contextpath"));
+
+					String jsConfigGeneratorPackageResolvedId =
+						jsConfigGeneratorPackage.getName() + StringPool.AT +
+							jsConfigGeneratorPackage.getVersion();
+
+					_partialMatchMap.put(
+						jsConfigGeneratorPackage.getName(),
+						jsConfigGeneratorPackageResolvedId);
+
+					return jsConfigGeneratorPackage;
 				}
-			}
 
-			return jsBundle;
-		}
+				@Override
+				public void modifiedService(
+					ServiceReference<ServletContext> serviceReference,
+					JSConfigGeneratorPackage jsConfigGeneratorPackage) {
+				}
 
-		return null;
+				@Override
+				public void removedService(
+					ServiceReference<ServletContext> serviceReference,
+					JSConfigGeneratorPackage jsConfigGeneratorPackage) {
+
+					_partialMatchMap.remove(jsConfigGeneratorPackage.getName());
+				}
+
+			});
 	}
 
 	private void _processLegacyBridges(Bundle bundle) {
@@ -358,7 +433,7 @@ public class NPMRegistryImpl implements NPMRegistry {
 		}
 	}
 
-	private synchronized void _refreshJSModuleCaches() {
+	private void _refreshJSModuleCaches(Collection<JSBundle> jsBundles) {
 		_dependencyJSPackages.clear();
 
 		Map<String, JSModule> jsModules = new HashMap<>();
@@ -366,12 +441,33 @@ public class NPMRegistryImpl implements NPMRegistry {
 		List<JSPackageVersion> jsPackageVersions = new ArrayList<>();
 		Map<String, JSModule> resolvedJSModules = new HashMap<>();
 		Map<String, JSPackage> resolvedJSPackages = new HashMap<>();
+		Map<String, String> exactMatchMap = new HashMap<>();
 
-		for (JSBundle jsBundle : _jsBundles.keySet()) {
+		for (JSBundle jsBundle : jsBundles) {
 			for (JSPackage jsPackage : jsBundle.getJSPackages()) {
 				jsPackages.put(jsPackage.getId(), jsPackage);
 				jsPackageVersions.add(new JSPackageVersion(jsPackage));
-				resolvedJSPackages.put(jsPackage.getResolvedId(), jsPackage);
+
+				String resolvedId = jsPackage.getResolvedId();
+
+				resolvedJSPackages.put(resolvedId, jsPackage);
+
+				exactMatchMap.put(
+					resolvedId,
+					ModuleNameUtil.getModuleResolvedId(
+						jsPackage, jsPackage.getMainModuleName()));
+
+				for (JSModuleAlias jsModuleAlias :
+						jsPackage.getJSModuleAliases()) {
+
+					String aliasResolvedId = ModuleNameUtil.getModuleResolvedId(
+						jsPackage, jsModuleAlias.getAlias());
+					String moduleResolvedId =
+						ModuleNameUtil.getModuleResolvedId(
+							jsPackage, jsModuleAlias.getModuleName());
+
+					exactMatchMap.put(aliasResolvedId, moduleResolvedId);
+				}
 
 				for (JSModule jsModule : jsPackage.getJSModules()) {
 					jsModules.put(jsModule.getId(), jsModule);
@@ -390,55 +486,28 @@ public class NPMRegistryImpl implements NPMRegistry {
 		_jsPackageVersions = jsPackageVersions;
 		_resolvedJSModules = resolvedJSModules;
 		_resolvedJSPackages = resolvedJSPackages;
-	}
-
-	private synchronized boolean _removeBundle(JSBundle jsBundle) {
-		Bundle bundle = _jsBundles.get(jsBundle);
-
-		if (bundle == null) {
-			return false;
-		}
-
-		_jsBundles.remove(jsBundle);
-
-		_refreshJSModuleCaches();
-
-		for (JSBundleTracker jsBundleTracker : _jsBundleTrackers) {
-			try {
-				jsBundleTracker.removedJSBundle(
-					jsBundle, bundle, NPMRegistryImpl.this);
-			}
-			catch (Exception e) {
-				_log.error("Unable to remove JS bundle", e);
-			}
-		}
-
-		return true;
-	}
-
-	private synchronized void _reopenBundleTracker() {
-		if (_bundleTracker != null) {
-			_bundleTracker.close();
-			_bundleTracker.open();
-		}
+		_exactMatchMap = exactMatchMap;
 	}
 
 	private static final JSPackage _NULL_JS_PACKAGE =
 		ProxyFactory.newDummyInstance(JSPackage.class);
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		NPMRegistryImpl.class);
+	private static final ThreadLocal<Boolean> _activationThreadLocal =
+		new CentralizedThreadLocal<>(
+			NPMRegistryImpl.class.getName() + "._activationThreadLocal",
+			() -> Boolean.FALSE);
 
+	private Boolean _applyVersioning;
 	private BundleContext _bundleContext;
 	private BundleTracker<JSBundle> _bundleTracker;
 	private final Map<String, JSPackage> _dependencyJSPackages =
 		new ConcurrentHashMap<>();
+	private Map<String, String> _exactMatchMap;
 	private final Map<String, String> _globalAliases = new HashMap<>();
-	private final List<JSBundleProcessor> _jsBundleProcessors =
-		new ArrayList<>();
-	private final Map<JSBundle, Bundle> _jsBundles = new ConcurrentHashMap<>();
-	private final Set<JSBundleTracker> _jsBundleTrackers =
-		new ConcurrentSkipListSet<>(Comparator.comparingInt(Object::hashCode));
+
+	@Reference
+	private JSBundleProcessor _jsBundleProcessor;
+
 	private Map<String, JSModule> _jsModules = new HashMap<>();
 
 	@Reference
@@ -446,8 +515,15 @@ public class NPMRegistryImpl implements NPMRegistry {
 
 	private Map<String, JSPackage> _jsPackages = new HashMap<>();
 	private List<JSPackageVersion> _jsPackageVersions = new ArrayList<>();
+	private final Map<String, String> _partialMatchMap =
+		new ConcurrentHashMap<>();
 	private Map<String, JSModule> _resolvedJSModules = new HashMap<>();
 	private Map<String, JSPackage> _resolvedJSPackages = new HashMap<>();
+	private ServiceTracker<ServletContext, JSConfigGeneratorPackage>
+		_serviceTracker;
+	private ServiceTrackerList
+		<JavaScriptAwarePortalWebResources, JavaScriptAwarePortalWebResources>
+			_serviceTrackerList;
 
 	private static class JSPackageVersion {
 
@@ -471,7 +547,34 @@ public class NPMRegistryImpl implements NPMRegistry {
 
 		@Override
 		public JSBundle addingBundle(Bundle bundle, BundleEvent bundleEvent) {
-			return _processBundle(bundle);
+			JSBundle jsBundle = _jsBundleProcessor.process(bundle);
+
+			if (jsBundle == null) {
+				return null;
+			}
+
+			_processLegacyBridges(bundle);
+
+			if (!_activationThreadLocal.get()) {
+				Map<Bundle, JSBundle> tracked = _bundleTracker.getTracked();
+
+				Collection<JSBundle> jsBundles = new ArrayList<>(
+					tracked.values());
+
+				jsBundles.add(jsBundle);
+
+				_refreshJSModuleCaches(jsBundles);
+
+				for (JavaScriptAwarePortalWebResources
+						javaScriptAwarePortalWebResources :
+							_serviceTrackerList) {
+
+					javaScriptAwarePortalWebResources.updateLastModifed(
+						bundle.getLastModified());
+				}
+			}
+
+			return jsBundle;
 		}
 
 		@Override
@@ -483,7 +586,11 @@ public class NPMRegistryImpl implements NPMRegistry {
 		public void removedBundle(
 			Bundle bundle, BundleEvent bundleEvent, JSBundle jsBundle) {
 
-			_removeBundle(jsBundle);
+			if (!_activationThreadLocal.get()) {
+				Map<Bundle, JSBundle> tracked = _bundleTracker.getTracked();
+
+				_refreshJSModuleCaches(tracked.values());
+			}
 		}
 
 	}

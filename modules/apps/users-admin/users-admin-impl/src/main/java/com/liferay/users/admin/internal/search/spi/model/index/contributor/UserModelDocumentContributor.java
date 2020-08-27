@@ -76,6 +76,7 @@ public class UserModelDocumentContributor
 			document.addKeyword(
 				"ancestorOrganizationIds",
 				getAncestorOrganizationIds(user.getOrganizationIds()));
+			document.addDate("birthDate", user.getBirthday());
 			document.addKeyword("defaultUser", user.isDefaultUser());
 			document.addText("emailAddress", user.getEmailAddress());
 			document.addText("firstName", user.getFirstName());
@@ -94,9 +95,10 @@ public class UserModelDocumentContributor
 
 			populateAddresses(document, user.getAddresses(), 0, 0);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to index user " + user.getUserId(), e);
+				_log.warn(
+					"Unable to index user " + user.getUserId(), exception);
 			}
 		}
 	}
@@ -167,13 +169,13 @@ public class UserModelDocumentContributor
 
 		if (countryId > 0) {
 			try {
-				Country country = countryService.getCountry(countryId);
-
-				countries.addAll(getLocalizedCountryNames(country));
+				countries.addAll(
+					getLocalizedCountryNames(
+						countryService.getCountry(countryId)));
 			}
-			catch (NoSuchCountryException nsce) {
+			catch (NoSuchCountryException noSuchCountryException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nsce.getMessage());
+					_log.warn(noSuchCountryException.getMessage());
 				}
 			}
 		}
@@ -186,9 +188,9 @@ public class UserModelDocumentContributor
 
 				regions.add(StringUtil.toLowerCase(region.getName()));
 			}
-			catch (NoSuchRegionException nsre) {
+			catch (NoSuchRegionException noSuchRegionException) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(nsre.getMessage());
+					_log.warn(noSuchRegionException.getMessage());
 				}
 			}
 		}

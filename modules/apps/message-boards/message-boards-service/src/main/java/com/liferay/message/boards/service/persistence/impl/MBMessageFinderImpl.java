@@ -17,7 +17,6 @@ package com.liferay.message.boards.service.persistence.impl;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.impl.MBMessageImpl;
 import com.liferay.message.boards.service.persistence.MBMessageFinder;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.custom.sql.CustomSQL;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
@@ -29,10 +28,9 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.sql.Timestamp;
 
@@ -40,9 +38,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(service = MBMessageFinder.class)
 public class MBMessageFinderImpl
 	extends MBMessageFinderBaseImpl implements MBMessageFinder {
 
@@ -57,9 +59,6 @@ public class MBMessageFinderImpl
 
 	public static final String COUNT_BY_G_U_MD_C_A_S =
 		MBMessageFinder.class.getName() + ".countByG_U_MD_C_A_S";
-
-	public static final String FIND_BY_NO_ASSETS =
-		MBMessageFinder.class.getName() + ".findByNoAssets";
 
 	public static final String FIND_BY_THREAD_ID =
 		MBMessageFinder.class.getName() + ".findByThreadId";
@@ -84,19 +83,19 @@ public class MBMessageFinderImpl
 
 			String sql = _customSQL.get(getClass(), COUNT_BY_C_T);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(createDate_TS);
-			qPos.add(threadId);
+			queryPos.add(createDate_TS);
+			queryPos.add(threadId);
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -105,8 +104,8 @@ public class MBMessageFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -202,37 +201,6 @@ public class MBMessageFinderImpl
 			start, end, true);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public List<MBMessage> findByNoAssets() {
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			String sql = _customSQL.get(getClass(), FIND_BY_NO_ASSETS);
-
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
-
-			q.addEntity("MBMessage", MBMessageImpl.class);
-
-			QueryPos qPos = QueryPos.getInstance(q);
-
-			qPos.add(PortalUtil.getClassNameId(MBMessage.class));
-
-			return q.list(true);
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-	}
-
 	@Override
 	public List<MBMessage> findByThreadId(
 		long threadId, QueryDefinition<MBMessage> queryDefinition) {
@@ -246,25 +214,25 @@ public class MBMessageFinderImpl
 				getClass(), FIND_BY_THREAD_ID, queryDefinition,
 				MBMessageImpl.TABLE_NAME);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity(MBMessageImpl.TABLE_NAME, MBMessageImpl.class);
+			sqlQuery.addEntity(MBMessageImpl.TABLE_NAME, MBMessageImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(threadId);
-			qPos.add(queryDefinition.getStatus());
+			queryPos.add(threadId);
+			queryPos.add(queryDefinition.getStatus());
 
 			if (queryDefinition.getOwnerUserId() > 0) {
-				qPos.add(queryDefinition.getOwnerUserId());
+				queryPos.add(queryDefinition.getOwnerUserId());
 
 				if (queryDefinition.isIncludeOwner()) {
-					qPos.add(WorkflowConstants.STATUS_IN_TRASH);
+					queryPos.add(WorkflowConstants.STATUS_IN_TRASH);
 				}
 			}
 
 			return (List<MBMessage>)QueryUtil.list(
-				q, getDialect(), queryDefinition.getStart(),
+				sqlQuery, getDialect(), queryDefinition.getStart(),
 				queryDefinition.getEnd());
 		}
 		finally {
@@ -302,20 +270,20 @@ public class MBMessageFinderImpl
 			String sql = _customSQL.get(getClass(), COUNT_BY_G_U_C_S);
 
 			if (userId <= 0) {
-				sql = StringUtil.replace(sql, _USER_ID_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _USER_ID_SQL);
 			}
 
 			if (ArrayUtil.isEmpty(categoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(currentMessage.categoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(currentMessage.categoryId = ?) AND");
 			}
 			else {
+				String mergedCategoryIds = StringUtil.merge(
+					categoryIds, " OR currentMessage.categoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "currentMessage.categoryId = ?",
-					"currentMessage.categoryId = " +
-						StringUtil.merge(
-							categoryIds, " OR currentMessage.categoryId = "));
+					"currentMessage.categoryId = " + mergedCategoryIds);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
@@ -329,26 +297,26 @@ public class MBMessageFinderImpl
 					"currentMessage.rootMessageId", groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
+			queryPos.add(groupId);
 
 			if (userId > 0) {
-				qPos.add(userId);
+				queryPos.add(userId);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -357,8 +325,8 @@ public class MBMessageFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -377,16 +345,16 @@ public class MBMessageFinderImpl
 			String sql = _customSQL.get(getClass(), COUNT_BY_G_U_C_A_S);
 
 			if (ArrayUtil.isEmpty(categoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(currentMessage.categoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(currentMessage.categoryId = ?) AND");
 			}
 			else {
+				String mergedCategoryIds = StringUtil.merge(
+					categoryIds, " OR currentMessage.categoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "currentMessage.categoryId = ?",
-					"currentMessage.categoryId = " +
-						StringUtil.merge(
-							categoryIds, " OR currentMessage.categoryId = "));
+					"currentMessage.categoryId = " + mergedCategoryIds);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
@@ -400,24 +368,24 @@ public class MBMessageFinderImpl
 					"currentMessage.rootMessageId", groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(userId);
-			qPos.add(anonymous);
+			queryPos.add(groupId);
+			queryPos.add(userId);
+			queryPos.add(anonymous);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -426,8 +394,8 @@ public class MBMessageFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -455,20 +423,20 @@ public class MBMessageFinderImpl
 			String sql = _customSQL.get(getClass(), COUNT_BY_G_U_MD_C_A_S);
 
 			if (userId <= 0) {
-				sql = StringUtil.replace(sql, _USER_ID_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _USER_ID_SQL);
 			}
 
 			if (ArrayUtil.isEmpty(categoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(currentMessage.categoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(currentMessage.categoryId = ?) AND");
 			}
 			else {
+				String mergedCategoryIds = StringUtil.merge(
+					categoryIds, " OR currentMessage.categoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "currentMessage.categoryId = ?",
-					"currentMessage.categoryId = " +
-						StringUtil.merge(
-							categoryIds, " OR currentMessage.categoryId = "));
+					"currentMessage.categoryId = " + mergedCategoryIds);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
@@ -487,28 +455,28 @@ public class MBMessageFinderImpl
 					"currentMessage.rootMessageId", groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
+			queryPos.add(groupId);
 
 			if (userId > 0) {
-				qPos.add(userId);
+				queryPos.add(userId);
 			}
 
-			qPos.add(modifiedDate);
+			queryPos.add(modifiedDate);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			Iterator<Long> itr = q.iterate();
+			Iterator<Long> iterator = sqlQuery.iterate();
 
-			if (itr.hasNext()) {
-				Long count = itr.next();
+			if (iterator.hasNext()) {
+				Long count = iterator.next();
 
 				if (count != null) {
 					return count.intValue();
@@ -517,8 +485,8 @@ public class MBMessageFinderImpl
 
 			return 0;
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -537,20 +505,20 @@ public class MBMessageFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_BY_G_U_C_S);
 
 			if (userId <= 0) {
-				sql = StringUtil.replace(sql, _USER_ID_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _USER_ID_SQL);
 			}
 
 			if (ArrayUtil.isEmpty(categoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(currentMessage.categoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(currentMessage.categoryId = ?) AND");
 			}
 			else {
+				String mergedCategoryIds = StringUtil.merge(
+					categoryIds, " OR currentMessage.categoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "currentMessage.categoryId = ?",
-					"currentMessage.categoryId = " +
-						StringUtil.merge(
-							categoryIds, " OR currentMessage.categoryId = "));
+					"currentMessage.categoryId = " + mergedCategoryIds);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
@@ -564,26 +532,27 @@ public class MBMessageFinderImpl
 					"currentMessage.rootMessageId", groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("threadId", Type.LONG);
+			sqlQuery.addScalar("threadId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
+			queryPos.add(groupId);
 
 			if (userId > 0) {
-				qPos.add(userId);
+				queryPos.add(userId);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			return (List<Long>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<Long>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -602,16 +571,16 @@ public class MBMessageFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_BY_G_U_C_A_S);
 
 			if (ArrayUtil.isEmpty(categoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(currentMessage.categoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(currentMessage.categoryId = ?) AND");
 			}
 			else {
+				String mergedCategoryIds = StringUtil.merge(
+					categoryIds, " OR currentMessage.categoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "currentMessage.categoryId = ?",
-					"currentMessage.categoryId = " +
-						StringUtil.merge(
-							categoryIds, " OR currentMessage.categoryId = "));
+					"currentMessage.categoryId = " + mergedCategoryIds);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
@@ -625,24 +594,25 @@ public class MBMessageFinderImpl
 					"currentMessage.rootMessageId", groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("threadId", Type.LONG);
+			sqlQuery.addScalar("threadId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(userId);
-			qPos.add(anonymous);
+			queryPos.add(groupId);
+			queryPos.add(userId);
+			queryPos.add(anonymous);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			return (List<Long>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<Long>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -671,20 +641,20 @@ public class MBMessageFinderImpl
 			String sql = _customSQL.get(getClass(), FIND_BY_G_U_MD_C_A_S);
 
 			if (userId <= 0) {
-				sql = StringUtil.replace(sql, _USER_ID_SQL, StringPool.BLANK);
+				sql = StringUtil.removeSubstring(sql, _USER_ID_SQL);
 			}
 
 			if (ArrayUtil.isEmpty(categoryIds)) {
-				sql = StringUtil.replace(
-					sql, "(currentMessage.categoryId = ?) AND",
-					StringPool.BLANK);
+				sql = StringUtil.removeSubstring(
+					sql, "(currentMessage.categoryId = ?) AND");
 			}
 			else {
+				String mergedCategoryIds = StringUtil.merge(
+					categoryIds, " OR currentMessage.categoryId = ");
+
 				sql = StringUtil.replace(
 					sql, "currentMessage.categoryId = ?",
-					"currentMessage.categoryId = " +
-						StringUtil.merge(
-							categoryIds, " OR currentMessage.categoryId = "));
+					"currentMessage.categoryId = " + mergedCategoryIds);
 			}
 
 			if (status != WorkflowConstants.STATUS_ANY) {
@@ -703,28 +673,29 @@ public class MBMessageFinderImpl
 					"currentMessage.rootMessageId", groupId);
 			}
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addScalar("threadId", Type.LONG);
+			sqlQuery.addScalar("threadId", Type.LONG);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
+			queryPos.add(groupId);
 
 			if (userId > 0) {
-				qPos.add(userId);
+				queryPos.add(userId);
 			}
 
-			qPos.add(modifiedDate);
+			queryPos.add(modifiedDate);
 
 			if (status != WorkflowConstants.STATUS_ANY) {
-				qPos.add(status);
+				queryPos.add(status);
 			}
 
-			return (List<Long>)QueryUtil.list(q, getDialect(), start, end);
+			return (List<Long>)QueryUtil.list(
+				sqlQuery, getDialect(), start, end);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -734,7 +705,10 @@ public class MBMessageFinderImpl
 	private static final String _USER_ID_SQL =
 		"AND (currentMessage.userId = ?)";
 
-	@ServiceReference(type = CustomSQL.class)
+	@Reference
 	private CustomSQL _customSQL;
+
+	@Reference
+	private Portal _portal;
 
 }

@@ -1,0 +1,40 @@
+{
+	"fieldSets": [
+		{
+			"configurationRole": "style",
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "py-3",
+					"label": "height",
+					"name": "height",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "1",
+								"value": "py-1"
+							},
+							{
+								"label": "2",
+								"value": "py-2"
+							},
+							{
+								"label": "3",
+								"value": "py-3"
+							},
+							{
+								"label": "4",
+								"value": "py-4"
+							},
+							{
+								"label": "5",
+								"value": "py-5"
+							}
+						]
+					}
+				}
+			]
+		}
+	]
+}

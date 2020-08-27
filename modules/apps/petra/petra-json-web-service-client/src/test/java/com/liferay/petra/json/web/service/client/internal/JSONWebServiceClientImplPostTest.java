@@ -18,10 +18,9 @@ import com.liferay.petra.json.web.service.client.JSONWebServiceInvocationExcepti
 import com.liferay.petra.json.web.service.client.JSONWebServiceTransportException;
 import com.liferay.petra.json.web.service.client.model.ResponseBody;
 import com.liferay.petra.json.web.service.client.server.simulator.HTTPServerSimulator;
-import com.liferay.petra.json.web.service.client.server.simulator.SimulatorConstants;
+import com.liferay.petra.json.web.service.client.server.simulator.constants.SimulatorConstants;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.After;
@@ -33,7 +32,7 @@ import org.junit.Test;
  * @author Igor Beslic
  */
 public class JSONWebServiceClientImplPostTest
-	extends JSONWebServiceClientBaseTest {
+	extends BaseJSONWebServiceClientTestCase {
 
 	@Before
 	public void setUp() throws Exception {
@@ -58,14 +57,8 @@ public class JSONWebServiceClientImplPostTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doPost("/testPost/", params);
+		String json = jsonWebServiceClientImpl.doPost(
+			"/testPost/", getParameters("200"));
 
 		Assert.assertTrue(
 			json,
@@ -87,16 +80,6 @@ public class JSONWebServiceClientImplPostTest
 		properties.put("protocol", "http");
 
 		jsonWebServiceClientImpl.activate(properties);
-
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "200");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-		params.put("parameter1", "parameter1");
-		params.put("parameter2", "parameter2");
-		params.put("parameter3", "parameter3");
 
 		ResponseBody responseBody = jsonWebServiceClientImpl.doPutToObject(
 			ResponseBody.class, "/testPut/",
@@ -123,14 +106,8 @@ public class JSONWebServiceClientImplPostTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "201");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doPost("/testPost/", params);
+		String json = jsonWebServiceClientImpl.doPost(
+			"/testPost/", getParameters("201"));
 
 		Assert.assertTrue(
 			json,
@@ -151,16 +128,10 @@ public class JSONWebServiceClientImplPostTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "202");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doPost("/testPost/", params);
-
-		Assert.assertEquals(SimulatorConstants.RESPONSE_SUCCESS_IN_JSON, json);
+		Assert.assertEquals(
+			SimulatorConstants.RESPONSE_SUCCESS_IN_JSON,
+			jsonWebServiceClientImpl.doPost(
+				"/testPost/", getParameters("202")));
 	}
 
 	@Test
@@ -176,16 +147,9 @@ public class JSONWebServiceClientImplPostTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "204");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		String json = jsonWebServiceClientImpl.doPost("/testPost/", params);
-
-		Assert.assertNull(json);
+		Assert.assertNull(
+			jsonWebServiceClientImpl.doPost(
+				"/testPost/", getParameters("204")));
 	}
 
 	@Test(expected = JSONWebServiceInvocationException.class)
@@ -199,8 +163,7 @@ public class JSONWebServiceClientImplPostTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		jsonWebServiceClientImpl.doPost(
-			"/", Collections.<String, String>emptyMap());
+		jsonWebServiceClientImpl.doPost("/", Collections.emptyList());
 	}
 
 	@Test(
@@ -218,14 +181,7 @@ public class JSONWebServiceClientImplPostTest
 
 		jsonWebServiceClientImpl.activate(properties);
 
-		Map<String, String> params = new HashMap<String, String>();
-
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RESPOND_WITH_STATUS, "401");
-		params.put(
-			SimulatorConstants.HTTP_PARAMETER_RETURN_PARMS_IN_JSON, "true");
-
-		jsonWebServiceClientImpl.doPost("/testPost/", params);
+		jsonWebServiceClientImpl.doPost("/testPost/", getParameters("401"));
 	}
 
 }

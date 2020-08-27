@@ -16,7 +16,10 @@ package com.liferay.segments.internal.odata.filter.expression;
 
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -25,10 +28,12 @@ import com.liferay.portal.odata.entity.ComplexEntityField;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.odata.filter.expression.BinaryExpression;
+import com.liferay.portal.odata.filter.expression.CollectionPropertyExpression;
 import com.liferay.portal.odata.filter.expression.ComplexPropertyExpression;
 import com.liferay.portal.odata.filter.expression.Expression;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitException;
 import com.liferay.portal.odata.filter.expression.ExpressionVisitor;
+import com.liferay.portal.odata.filter.expression.ListExpression;
 import com.liferay.portal.odata.filter.expression.LiteralExpression;
 import com.liferay.portal.odata.filter.expression.MemberExpression;
 import com.liferay.portal.odata.filter.expression.MethodExpression;
@@ -85,6 +90,13 @@ public class ExportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 	}
 
 	@Override
+	public Object visitCollectionPropertyExpression(
+		CollectionPropertyExpression collectionPropertyExpression) {
+
+		return null;
+	}
+
+	@Override
 	public Object visitComplexPropertyExpression(
 		ComplexPropertyExpression complexPropertyExpression) {
 
@@ -103,6 +115,27 @@ public class ExportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 
 		return complexEntityFieldEntityFieldsMap.get(
 			propertyExpression.getName());
+	}
+
+	@Override
+	public Object visitListExpressionOperation(
+			ListExpression.Operation operation, Object left,
+			List<Object> rights)
+		throws ExpressionVisitException {
+
+		if (!Objects.equals(ListExpression.Operation.IN, operation)) {
+			return null;
+		}
+
+		EntityField entityField = (EntityField)left;
+
+		if (Objects.equals(EntityField.Type.ID, entityField.getType())) {
+			for (Object right : rights) {
+				_exportEntityFieldIDReferences(entityField, right);
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -170,7 +203,7 @@ public class ExportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 		}
 
 		Optional<SegmentsFieldCustomizer> segmentsFieldCustomizerOptional =
-			_segmentsFieldCustomizerRegistry.getSegmentFieldCustomizerOptional(
+			_segmentsFieldCustomizerRegistry.getSegmentsFieldCustomizerOptional(
 				_entityModel.getName(), entityField.getName());
 
 		if (!segmentsFieldCustomizerOptional.isPresent()) {
@@ -187,13 +220,23 @@ public class ExportExpressionVisitorImpl implements ExpressionVisitor<Object> {
 			return;
 		}
 
-		Element entityElement = _portletDataContext.getExportDataElement(
-			_stagedModel);
-
-		_portletDataContext.addReferenceElement(
-			_stagedModel, entityElement, classedModel,
-			PortletDataContext.REFERENCE_TYPE_DEPENDENCY, false);
+		try {
+			StagedModelDataHandlerUtil.exportReferenceStagedModel(
+				_portletDataContext, _stagedModel, (StagedModel)classedModel,
+				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to export classed model " +
+						classedModel.getModelClassName(),
+					exception);
+			}
+		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ExportExpressionVisitorImpl.class);
 
 	private final Map<String, EntityField> _customFieldEntityFields;
 	private final EntityModel _entityModel;

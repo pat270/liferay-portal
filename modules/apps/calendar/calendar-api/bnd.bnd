@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Calendar API
 Bundle-SymbolicName: com.liferay.calendar.api
-Bundle-Version: 5.0.0
+Bundle-Version: 5.4.2
 Export-Package:\
 	com.liferay.calendar.configuration,\
 	com.liferay.calendar.constants,\
@@ -14,7 +14,8 @@ Export-Package:\
 	com.liferay.calendar.social,\
 	com.liferay.calendar.util,\
 	com.liferay.calendar.util.comparator,\
-	com.liferay.calendar.workflow
+	com.liferay.calendar.workflow,\
+	com.liferay.calendar.workflow.constants
 Import-Package:\
 	!org.joda.*,\
 	\

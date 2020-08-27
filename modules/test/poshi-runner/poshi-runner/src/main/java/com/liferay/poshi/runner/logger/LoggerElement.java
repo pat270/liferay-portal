@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 
@@ -191,7 +190,7 @@ public class LoggerElement {
 		sb.append("<");
 		sb.append(_name);
 
-		for (Entry<String, String> entry : _attributes.entrySet()) {
+		for (Map.Entry<String, String> entry : _attributes.entrySet()) {
 			sb.append(" ");
 			sb.append(entry.getKey());
 			sb.append("=\"");

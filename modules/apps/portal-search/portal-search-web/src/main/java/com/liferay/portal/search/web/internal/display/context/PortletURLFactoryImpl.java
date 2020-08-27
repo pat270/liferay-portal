@@ -14,7 +14,13 @@
 
 package com.liferay.portal.search.web.internal.display.context;
 
-import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.web.internal.portlet.shared.search.NullPortletURL;
+
+import java.util.Map;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletException;
@@ -30,18 +36,41 @@ public class PortletURLFactoryImpl implements PortletURLFactory {
 		PortletRequest portletRequest, MimeResponse mimeResponse) {
 
 		_portletRequest = portletRequest;
-		_mimeResponse = mimeResponse;
 	}
 
 	@Override
 	public PortletURL getPortletURL() throws PortletException {
-		PortletURL portletURL = PortletURLUtil.getCurrent(
-			_portletRequest, _mimeResponse);
+		return new NullPortletURL() {
 
-		return PortletURLUtil.clone(portletURL, _mimeResponse);
+			@Override
+			public void setParameter(String name, String value) {
+				String portalURL = PortalUtil.getPortalURL(
+					PortalUtil.getHttpServletRequest(_portletRequest));
+				String currentURL = (String)_portletRequest.getAttribute(
+					WebKeys.CURRENT_URL);
+
+				_url = portalURL.concat(currentURL);
+
+				Map<String, String[]> parameterMap = HttpUtil.getParameterMap(
+					_url);
+
+				String[] values = parameterMap.get(name);
+
+				if (!ArrayUtil.contains(values, value)) {
+					_url = HttpUtil.addParameter(_url, name, value);
+				}
+			}
+
+			@Override
+			public String toString() {
+				return _url;
+			}
+
+			private String _url;
+
+		};
 	}
 
-	private final MimeResponse _mimeResponse;
 	private final PortletRequest _portletRequest;
 
 }

@@ -20,30 +20,39 @@ import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Region;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CountryService;
 import com.liferay.portal.kernel.service.OrganizationService;
 import com.liferay.portal.kernel.service.RegionService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.document.DocumentBuilderFactory;
+import com.liferay.portal.search.model.uid.UIDFactory;
+import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
+import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.portal.search.test.util.ExpandoTableSearchFixture;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
-import com.liferay.portal.search.test.util.IndexerFixture;
+import com.liferay.portal.search.test.util.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.users.admin.test.util.search.UserSearchFixture;
+import com.liferay.users.admin.test.util.search.GroupBlueprint;
+import com.liferay.users.admin.test.util.search.GroupSearchFixture;
 
 import java.io.Serializable;
 
@@ -74,29 +83,45 @@ public class OrganizationIndexerIndexedFieldsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setUpExpandoTableSearchFixture();
-		setUpIndexedFieldsFixture();
-		setUpOrganizationIndexerFixture();
+		ExpandoTableSearchFixture expandoTableSearchFixture =
+			new ExpandoTableSearchFixture(
+				classNameLocalService, expandoColumnLocalService,
+				expandoTableLocalService);
 
-		setUpUserSearchFixture();
+		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
-		setUpOrganizationFixture();
+		Group group = groupSearchFixture.addGroup(new GroupBlueprint());
+
+		OrganizationFixture organizationFixture = new OrganizationFixture(
+			organizationService, countryService, regionService, language);
+
+		organizationFixture.setUp();
+
+		organizationFixture.setGroup(group);
+
+		_expandoColumns = expandoTableSearchFixture.getExpandoColumns();
+		_expandoTables = expandoTableSearchFixture.getExpandoTables();
+		_expandoTableSearchFixture = expandoTableSearchFixture;
+
+		_group = group;
+		_groups = groupSearchFixture.getGroups();
+
+		_indexedFieldsFixture = new IndexedFieldsFixture(
+			resourcePermissionLocalService, searchEngineHelper, uidFactory,
+			documentBuilderFactory);
+
+		_organizationFixture = organizationFixture;
+		_organizations = organizationFixture.getOrganizations();
 	}
 
 	@Test
 	public void testIndexedFields() throws Exception {
-		Organization organization = organizationFixture.createOrganization(
+		Organization organization = _organizationFixture.createOrganization(
 			"abcd efgh");
 
 		String searchTerm = "abcd";
 
-		Document document = organizationIndexerFixture.searchOnlyOne(
-			searchTerm);
-
-		indexedFieldsFixture.postProcessDocument(document);
-
-		FieldValuesAssert.assertFieldValues(
-			_expectedFieldValues(organization), document, searchTerm);
+		assertFieldValues(_expectedFieldValues(organization), searchTerm);
 	}
 
 	@Test
@@ -104,68 +129,41 @@ public class OrganizationIndexerIndexedFieldsTest {
 		String expandoColumnName = "expandoColumnName";
 		String expandoColumnObs = "expandoColumnObs";
 
-		expandoTableSearchFixture.addExpandoColumn(
+		_expandoTableSearchFixture.addExpandoColumn(
 			Organization.class, ExpandoColumnConstants.INDEX_TYPE_KEYWORD,
 			expandoColumnObs, expandoColumnName);
 
-		Map<String, Serializable> expandoValues = new HashMap<>();
-
-		expandoValues.put(expandoColumnName, "Software Developer");
-		expandoValues.put(expandoColumnObs, "Software Engineer");
-
-		Organization organization = organizationFixture.createOrganization(
-			"My Organization", expandoValues);
+		Organization organization = _organizationFixture.createOrganization(
+			"My Organization",
+			HashMapBuilder.<String, Serializable>put(
+				expandoColumnName, "Software Developer"
+			).put(
+				expandoColumnObs, "Software Engineer"
+			).build());
 
 		String searchTerm = "Developer";
 
-		Document document = organizationIndexerFixture.searchOnlyOne(
-			searchTerm);
+		assertFieldValues(
+			_expectedFieldValuesWithExpando(organization), searchTerm);
+	}
 
-		indexedFieldsFixture.postProcessDocument(document);
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
 
+	protected void assertFieldValues(Map<String, ?> map, String searchTerm) {
 		FieldValuesAssert.assertFieldValues(
-			_expectedFieldValuesWithExpando(organization), document,
-			searchTerm);
-	}
-
-	protected void setUpExpandoTableSearchFixture() {
-		expandoTableSearchFixture = new ExpandoTableSearchFixture(
-			classNameLocalService, expandoColumnLocalService,
-			expandoTableLocalService);
-
-		_expandoColumns = expandoTableSearchFixture.getExpandoColumns();
-		_expandoTables = expandoTableSearchFixture.getExpandoTables();
-	}
-
-	protected void setUpIndexedFieldsFixture() {
-		indexedFieldsFixture = new IndexedFieldsFixture(
-			resourcePermissionLocalService, searchEngineHelper);
-	}
-
-	protected void setUpOrganizationFixture() throws Exception {
-		organizationFixture = new OrganizationFixture(
-			organizationService, countryService, regionService);
-
-		organizationFixture.setUp();
-
-		organizationFixture.setGroup(group);
-
-		_organizations = organizationFixture.getOrganizations();
-	}
-
-	protected void setUpOrganizationIndexerFixture() {
-		organizationIndexerFixture = new IndexerFixture<>(Organization.class);
-	}
-
-	protected void setUpUserSearchFixture() throws Exception {
-		userSearchFixture = new UserSearchFixture();
-
-		userSearchFixture.setUp();
-
-		_groups = userSearchFixture.getGroups();
-		_users = userSearchFixture.getUsers();
-
-		group = userSearchFixture.addGroup();
+			map, name -> !name.equals("score"),
+			searcher.search(
+				searchRequestBuilderFactory.builder(
+				).companyId(
+					_group.getCompanyId()
+				).fields(
+					StringPool.STAR
+				).modelIndexerClasses(
+					Organization.class
+				).queryString(
+					searchTerm
+				).build()));
 	}
 
 	@Inject
@@ -175,16 +173,21 @@ public class OrganizationIndexerIndexedFieldsTest {
 	protected CountryService countryService;
 
 	@Inject
+	protected DocumentBuilderFactory documentBuilderFactory;
+
+	@Inject
 	protected ExpandoColumnLocalService expandoColumnLocalService;
 
 	@Inject
 	protected ExpandoTableLocalService expandoTableLocalService;
 
-	protected ExpandoTableSearchFixture expandoTableSearchFixture;
-	protected Group group;
-	protected IndexedFieldsFixture indexedFieldsFixture;
-	protected OrganizationFixture organizationFixture;
-	protected IndexerFixture<Organization> organizationIndexerFixture;
+	@Inject(
+		filter = "indexer.class.name=com.liferay.portal.kernel.model.Organization"
+	)
+	protected Indexer<Organization> indexer;
+
+	@Inject
+	protected Language language;
 
 	@Inject
 	protected OrganizationService organizationService;
@@ -198,63 +201,83 @@ public class OrganizationIndexerIndexedFieldsTest {
 	@Inject
 	protected SearchEngineHelper searchEngineHelper;
 
-	protected UserSearchFixture userSearchFixture;
+	@Inject
+	protected Searcher searcher;
 
-	private Map<String, String> _expectedFieldValues(Organization organization)
+	@Inject
+	protected SearchRequestBuilderFactory searchRequestBuilderFactory;
+
+	@Inject
+	protected UIDFactory uidFactory;
+
+	@Inject
+	protected UserLocalService userLocalService;
+
+	private Map<String, Object> _expectedFieldValues(Organization organization)
 		throws Exception {
 
 		Map<String, String> map = new HashMap<>();
 
-		String countryName = organizationFixture.getCountryNames(organization);
-
-		Region region = regionService.getRegion(organization.getRegionId());
-
-		String regionName = StringUtil.toLowerCase(region.getName());
-
-		map.put("country", countryName);
-		map.put("region", regionName);
-		map.put(
-			Field.NAME + "_sortable",
-			StringUtil.toLowerCase(organization.getName()));
-		map.put(
-			Field.ENTRY_CLASS_PK,
-			String.valueOf(organization.getOrganizationId()));
-		map.put(
-			"nameTreePath_String_sortable",
-			StringUtil.toLowerCase(organization.getName()));
-		map.put(Field.ENTRY_CLASS_NAME, Organization.class.getName());
-		map.put(
-			Field.USER_NAME,
-			StringUtil.toLowerCase(organization.getUserName()));
-		map.put(
-			"parentOrganizationId",
-			String.valueOf(organization.getParentOrganizationId()));
-		map.put(
-			Field.ORGANIZATION_ID,
-			String.valueOf(organization.getOrganizationId()));
-		map.put(Field.USER_ID, String.valueOf(organization.getUserId()));
-		map.put(Field.COMPANY_ID, String.valueOf(organization.getCompanyId()));
-		map.put("nameTreePath", organization.getName());
-		map.put(Field.NAME, organization.getName());
-		map.put(Field.TREE_PATH, organization.getTreePath());
-
-		indexedFieldsFixture.populateUID(
-			Organization.class.getName(), organization.getOrganizationId(),
-			map);
-
-		map.put(Field.TYPE, organization.getType());
+		_indexedFieldsFixture.populateUID(organization, map);
 
 		_populateDates(organization, map);
 		_populateRoles(organization, map);
 
-		return map;
+		return HashMapBuilder.<String, Object>putAll(
+			map
+		).put(
+			Field.COMPANY_ID, String.valueOf(organization.getCompanyId())
+		).put(
+			Field.ENTRY_CLASS_NAME, Organization.class.getName()
+		).put(
+			Field.ENTRY_CLASS_PK,
+			String.valueOf(organization.getOrganizationId())
+		).put(
+			Field.NAME, organization.getName()
+		).put(
+			Field.NAME + "_sortable",
+			StringUtil.toLowerCase(organization.getName())
+		).put(
+			Field.ORGANIZATION_ID,
+			String.valueOf(organization.getOrganizationId())
+		).put(
+			Field.TREE_PATH, organization.getTreePath()
+		).put(
+			Field.TYPE, organization.getType()
+		).put(
+			Field.USER_ID, String.valueOf(organization.getUserId())
+		).put(
+			Field.USER_NAME, StringUtil.toLowerCase(organization.getUserName())
+		).put(
+			"country", _organizationFixture.getCountryNames(organization)
+		).put(
+			"nameTreePath", organization.getName()
+		).put(
+			"nameTreePath_String_sortable",
+			StringUtil.toLowerCase(organization.getName())
+		).put(
+			"parentOrganizationId",
+			String.valueOf(organization.getParentOrganizationId())
+		).put(
+			"region",
+			() -> {
+				Region region = regionService.getRegion(
+					organization.getRegionId());
+
+				return StringUtil.toLowerCase(region.getName());
+			}
+		).put(
+			Field.getSortableFieldName(
+				StringBundler.concat("type", StringPool.UNDERLINE, "String")),
+			organization.getType()
+		).build();
 	}
 
-	private Map<String, String> _expectedFieldValuesWithExpando(
+	private Map<String, Object> _expectedFieldValuesWithExpando(
 			Organization organization)
 		throws Exception {
 
-		Map<String, String> expectedFieldValues = _expectedFieldValues(
+		Map<String, Object> expectedFieldValues = _expectedFieldValues(
 			organization);
 
 		expectedFieldValues.put(
@@ -270,9 +293,9 @@ public class OrganizationIndexerIndexedFieldsTest {
 	private void _populateDates(
 		Organization organization, Map<String, String> map) {
 
-		indexedFieldsFixture.populateDate(
+		_indexedFieldsFixture.populateDate(
 			Field.CREATE_DATE, organization.getCreateDate(), map);
-		indexedFieldsFixture.populateDate(
+		_indexedFieldsFixture.populateDate(
 			Field.MODIFIED_DATE, organization.getModifiedDate(), map);
 	}
 
@@ -280,7 +303,7 @@ public class OrganizationIndexerIndexedFieldsTest {
 			Organization organization, Map<String, String> map)
 		throws Exception {
 
-		indexedFieldsFixture.populateRoleIdFields(
+		_indexedFieldsFixture.populateRoleIdFields(
 			organization.getCompanyId(), Organization.class.getName(),
 			organization.getOrganizationId(), organization.getGroupId(), null,
 			map);
@@ -292,13 +315,16 @@ public class OrganizationIndexerIndexedFieldsTest {
 	@DeleteAfterTestRun
 	private List<ExpandoTable> _expandoTables;
 
+	private ExpandoTableSearchFixture _expandoTableSearchFixture;
+	private Group _group;
+
 	@DeleteAfterTestRun
 	private List<Group> _groups;
 
-	@DeleteAfterTestRun
-	private List<Organization> _organizations;
+	private IndexedFieldsFixture _indexedFieldsFixture;
+	private OrganizationFixture _organizationFixture;
 
 	@DeleteAfterTestRun
-	private List<User> _users;
+	private List<Organization> _organizations;
 
 }

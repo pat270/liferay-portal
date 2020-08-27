@@ -1,5 +1,6 @@
 @component-name = "portal-collaboration"
 definition {
+
 	property portal.release = "false";
 	property portal.upstream = "true";
 	property custom.properties = "default.layout.template.id=1_column";
@@ -14,17 +15,10 @@ definition {
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
-			panel = "Site Administration",
 			portlet = "Pages");
 
 		SitePages.addPublicPage(
 			pageName = "Bookmarks Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Bookmarks Page",
-			privacy = "Public Pages",
 			sitePageType = "Widget Page");
 
 		Navigator.gotoPage(pageName = "Bookmarks Page");
@@ -202,7 +196,7 @@ definition {
 			bookmarkName = "Test Bookmark Name",
 			bookmarkNameEdit = "Test Bookmark Name Edit",
 			bookmarkURL = "https://www.liferay.com",
-			bookmarkURLEdit = "https://dev.liferay.com");
+			bookmarkURLEdit = "https://portal.liferay.dev");
 	}
 
 	@priority = "4"
@@ -303,4 +297,5 @@ definition {
 			searchAssetType = "Bookmarks Entry",
 			searchTerm = '''"Test Bookmark Name"''');
 	}
+
 }

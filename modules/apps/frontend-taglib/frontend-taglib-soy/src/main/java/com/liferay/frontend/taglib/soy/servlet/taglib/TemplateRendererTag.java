@@ -19,7 +19,6 @@ import com.liferay.frontend.taglib.soy.internal.util.SoyComponentRendererProvide
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.template.soy.renderer.ComponentDescriptor;
@@ -61,8 +60,8 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 			soyComponentRenderer.renderSoyComponent(
 				request, jspWriter, componentDescriptor, context);
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 		finally {
 			cleanUp();
@@ -128,7 +127,9 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 		Map<String, Object> context = getContext();
 
 		if (context instanceof SoyContext) {
-			((SoyContext)context).putHTML(key, value);
+			SoyContext soyContext = (SoyContext)context;
+
+			soyContext.putHTML(key, value);
 		}
 		else {
 			putValue(key, value);
@@ -193,16 +194,15 @@ public class TemplateRendererTag extends ParamAndPropertyAncestorTagImpl {
 	}
 
 	protected void cleanUp() {
-		if (!ServerDetector.isResin()) {
-			_componentId = null;
-			_context = null;
-			_dependencies = null;
-			_hydrate = null;
-			_module = null;
-			_templateNamespace = null;
-			_useNamespace = true;
-			_wrapper = null;
-		}
+		_componentId = null;
+		_context = null;
+		_dependencies = null;
+		_hydrate = null;
+		_module = null;
+		_setServletContext = false;
+		_templateNamespace = null;
+		_useNamespace = true;
+		_wrapper = null;
 	}
 
 	protected Map<String, Object> getContext() {

@@ -36,7 +36,7 @@ public class AuthPipeline {
 			Map<String, String[]> headerMap, Map<String, String[]> parameterMap)
 		throws AuthException {
 
-		return _instance._authenticate(
+		return _authPipeline._authenticate(
 			key, companyId, emailAddress, password,
 			CompanyConstants.AUTH_TYPE_EA, headerMap, parameterMap);
 	}
@@ -46,7 +46,7 @@ public class AuthPipeline {
 			Map<String, String[]> headerMap, Map<String, String[]> parameterMap)
 		throws AuthException {
 
-		return _instance._authenticate(
+		return _authPipeline._authenticate(
 			key, companyId, screenName, password, CompanyConstants.AUTH_TYPE_SN,
 			headerMap, parameterMap);
 	}
@@ -56,7 +56,7 @@ public class AuthPipeline {
 			Map<String, String[]> headerMap, Map<String, String[]> parameterMap)
 		throws AuthException {
 
-		return _instance._authenticate(
+		return _authPipeline._authenticate(
 			key, companyId, String.valueOf(userId), password,
 			CompanyConstants.AUTH_TYPE_ID, headerMap, parameterMap);
 	}
@@ -66,7 +66,7 @@ public class AuthPipeline {
 			Map<String, String[]> headerMap, Map<String, String[]> parameterMap)
 		throws AuthException {
 
-		_instance._onFailure(
+		_authPipeline._onFailure(
 			key, companyId, emailAddress, CompanyConstants.AUTH_TYPE_EA,
 			headerMap, parameterMap);
 	}
@@ -76,7 +76,7 @@ public class AuthPipeline {
 			Map<String, String[]> headerMap, Map<String, String[]> parameterMap)
 		throws AuthException {
 
-		_instance._onFailure(
+		_authPipeline._onFailure(
 			key, companyId, screenName, CompanyConstants.AUTH_TYPE_SN,
 			headerMap, parameterMap);
 	}
@@ -86,7 +86,7 @@ public class AuthPipeline {
 			Map<String, String[]> headerMap, Map<String, String[]> parameterMap)
 		throws AuthException {
 
-		_instance._onFailure(
+		_authPipeline._onFailure(
 			key, companyId, String.valueOf(userId),
 			CompanyConstants.AUTH_TYPE_ID, headerMap, parameterMap);
 	}
@@ -164,11 +164,11 @@ public class AuthPipeline {
 					return authResult;
 				}
 			}
-			catch (AuthException ae) {
-				throw ae;
+			catch (AuthException authException) {
+				throw authException;
 			}
-			catch (Exception e) {
-				throw new AuthException(e);
+			catch (Exception exception) {
+				throw new AuthException(exception);
 			}
 		}
 
@@ -207,16 +207,16 @@ public class AuthPipeline {
 						companyId, userId, headerMap, parameterMap);
 				}
 			}
-			catch (AuthException ae) {
-				throw ae;
+			catch (AuthException authException) {
+				throw authException;
 			}
-			catch (Exception e) {
-				throw new AuthException(e);
+			catch (Exception exception) {
+				throw new AuthException(exception);
 			}
 		}
 	}
 
-	private static final AuthPipeline _instance = new AuthPipeline();
+	private static final AuthPipeline _authPipeline = new AuthPipeline();
 
 	private final ServiceTrackerMap<String, List<Authenticator>>
 		_authenticators;

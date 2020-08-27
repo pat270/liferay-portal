@@ -22,9 +22,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -39,6 +39,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -51,44 +52,49 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Generated("")
 @GraphQLName("StructuredContent")
 @JsonFilter("Liferay.Vulcan")
-@Schema(requiredProperties = {"contentStructureId", "title"})
+@Schema(
+	requiredProperties = {"contentStructureId", "title"},
+	description = "Represents content that has fields and is rendered by a template backed by a `ContentStructure`. This is modeled internally as a `JournalArticle`."
+)
 @XmlRootElement(name = "StructuredContent")
 public class StructuredContent {
 
-	public static enum ViewableBy {
-
-		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
-
-		@JsonCreator
-		public static ViewableBy create(String value) {
-			for (ViewableBy viewableBy : values()) {
-				if (Objects.equals(viewableBy.getValue(), value)) {
-					return viewableBy;
-				}
-			}
-
-			return null;
-		}
-
-		@JsonValue
-		public String getValue() {
-			return _value;
-		}
-
-		@Override
-		public String toString() {
-			return _value;
-		}
-
-		private ViewableBy(String value) {
-			_value = value;
-		}
-
-		private final String _value;
-
+	public static StructuredContent toDTO(String json) {
+		return ObjectMapperUtil.readValue(StructuredContent.class, json);
 	}
 
+	@Schema
+	@Valid
+	public Map<String, Map<String, String>> getActions() {
+		return actions;
+	}
+
+	public void setActions(Map<String, Map<String, String>> actions) {
+		this.actions = actions;
+	}
+
+	@JsonIgnore
+	public void setActions(
+		UnsafeSupplier<Map<String, Map<String, String>>, Exception>
+			actionsUnsafeSupplier) {
+
+		try {
+			actions = actionsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Map<String, Map<String, String>> actions;
+
 	@Schema(description = "The structured content's average rating.")
+	@Valid
 	public AggregateRating getAggregateRating() {
 		return aggregateRating;
 	}
@@ -113,9 +119,37 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The structured content's average rating.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected AggregateRating aggregateRating;
+
+	@Schema
+	public String getAssetLibraryKey() {
+		return assetLibraryKey;
+	}
+
+	public void setAssetLibraryKey(String assetLibraryKey) {
+		this.assetLibraryKey = assetLibraryKey;
+	}
+
+	@JsonIgnore
+	public void setAssetLibraryKey(
+		UnsafeSupplier<String, Exception> assetLibraryKeyUnsafeSupplier) {
+
+		try {
+			assetLibraryKey = assetLibraryKeyUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected String assetLibraryKey;
 
 	@Schema(
 		description = "The list of languages the structured content has a translation for."
@@ -143,13 +177,16 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The list of languages the structured content has a translation for."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String[] availableLanguages;
 
 	@Schema(
 		description = "The list of fields that store the structured content's information."
 	)
+	@Valid
 	public ContentField[] getContentFields() {
 		return contentFields;
 	}
@@ -173,7 +210,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The list of fields that store the structured content's information."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected ContentField[] contentFields;
 
@@ -201,12 +240,13 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The ID of the `ContentStructure`.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotNull
 	protected Long contentStructureId;
 
 	@Schema(description = "The structured content's creator.")
+	@Valid
 	public Creator getCreator() {
 		return creator;
 	}
@@ -230,9 +270,38 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The structured content's creator.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Creator creator;
+
+	@Schema
+	@Valid
+	public CustomField[] getCustomFields() {
+		return customFields;
+	}
+
+	public void setCustomFields(CustomField[] customFields) {
+		this.customFields = customFields;
+	}
+
+	@JsonIgnore
+	public void setCustomFields(
+		UnsafeSupplier<CustomField[], Exception> customFieldsUnsafeSupplier) {
+
+		try {
+			customFields = customFieldsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected CustomField[] customFields;
 
 	@Schema(description = "The structured content's creation date.")
 	public Date getDateCreated() {
@@ -258,7 +327,7 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The structured content's creation date.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateCreated;
 
@@ -288,7 +357,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The last time any field of the structured content was changed."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateModified;
 
@@ -318,7 +389,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The structured content's most recent publication date."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Date datePublished;
 
@@ -346,9 +419,39 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The structured content's description.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String description;
+
+	@Schema
+	@Valid
+	public Map<String, String> getDescription_i18n() {
+		return description_i18n;
+	}
+
+	public void setDescription_i18n(Map<String, String> description_i18n) {
+		this.description_i18n = description_i18n;
+	}
+
+	@JsonIgnore
+	public void setDescription_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			description_i18nUnsafeSupplier) {
+
+		try {
+			description_i18n = description_i18nUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, String> description_i18n;
 
 	@Schema(
 		description = "A relative URL to the structured content's rendered content."
@@ -376,9 +479,43 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A relative URL to the structured content's rendered content."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String friendlyUrlPath;
+
+	@Schema
+	@Valid
+	public Map<String, String> getFriendlyUrlPath_i18n() {
+		return friendlyUrlPath_i18n;
+	}
+
+	public void setFriendlyUrlPath_i18n(
+		Map<String, String> friendlyUrlPath_i18n) {
+
+		this.friendlyUrlPath_i18n = friendlyUrlPath_i18n;
+	}
+
+	@JsonIgnore
+	public void setFriendlyUrlPath_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			friendlyUrlPath_i18nUnsafeSupplier) {
+
+		try {
+			friendlyUrlPath_i18n = friendlyUrlPath_i18nUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, String> friendlyUrlPath_i18n;
 
 	@Schema(description = "The structured content's ID.")
 	public Long getId() {
@@ -402,7 +539,7 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The structured content's ID.")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long id;
 
@@ -430,7 +567,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "An identifier, independent of the database, that can be used to reference the structured content."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String key;
 
@@ -460,7 +599,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A list of keywords describing the structured content."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String[] keywords;
 
@@ -490,11 +631,14 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The number of comments the structured content has received."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Integer numberOfComments;
 
 	@Schema
+	@Valid
 	public RelatedContent[] getRelatedContents() {
 		return relatedContents;
 	}
@@ -526,6 +670,7 @@ public class StructuredContent {
 	@Schema(
 		description = "A list of rendered structured content, which results from using a template to process the content and return HTML."
 	)
+	@Valid
 	public RenderedContent[] getRenderedContents() {
 		return renderedContents;
 	}
@@ -550,7 +695,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A list of rendered structured content, which results from using a template to process the content and return HTML."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected RenderedContent[] renderedContents;
 
@@ -580,28 +727,27 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The ID of the site to which this structured content is scoped."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Long siteId;
 
-	@Schema(
-		description = "The categories associated with this structured content."
-	)
-	public TaxonomyCategory[] getTaxonomyCategories() {
-		return taxonomyCategories;
+	@Schema
+	public Boolean getSubscribed() {
+		return subscribed;
 	}
 
-	public void setTaxonomyCategories(TaxonomyCategory[] taxonomyCategories) {
-		this.taxonomyCategories = taxonomyCategories;
+	public void setSubscribed(Boolean subscribed) {
+		this.subscribed = subscribed;
 	}
 
 	@JsonIgnore
-	public void setTaxonomyCategories(
-		UnsafeSupplier<TaxonomyCategory[], Exception>
-			taxonomyCategoriesUnsafeSupplier) {
+	public void setSubscribed(
+		UnsafeSupplier<Boolean, Exception> subscribedUnsafeSupplier) {
 
 		try {
-			taxonomyCategories = taxonomyCategoriesUnsafeSupplier.get();
+			subscribed = subscribedUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -613,7 +759,43 @@ public class StructuredContent {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	protected TaxonomyCategory[] taxonomyCategories;
+	protected Boolean subscribed;
+
+	@Schema(
+		description = "The categories associated with this structured content."
+	)
+	@Valid
+	public TaxonomyCategoryBrief[] getTaxonomyCategoryBriefs() {
+		return taxonomyCategoryBriefs;
+	}
+
+	public void setTaxonomyCategoryBriefs(
+		TaxonomyCategoryBrief[] taxonomyCategoryBriefs) {
+
+		this.taxonomyCategoryBriefs = taxonomyCategoryBriefs;
+	}
+
+	@JsonIgnore
+	public void setTaxonomyCategoryBriefs(
+		UnsafeSupplier<TaxonomyCategoryBrief[], Exception>
+			taxonomyCategoryBriefsUnsafeSupplier) {
+
+		try {
+			taxonomyCategoryBriefs = taxonomyCategoryBriefsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField(
+		description = "The categories associated with this structured content."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected TaxonomyCategoryBrief[] taxonomyCategoryBriefs;
 
 	@Schema(
 		description = "A write-only field to add a category to this structured content."
@@ -641,7 +823,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A write-only field to add a category to this structured content."
+	)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	protected Long[] taxonomyCategoryIds;
 
@@ -669,10 +853,40 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The structured content's main title.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotEmpty
 	protected String title;
+
+	@Schema
+	@Valid
+	public Map<String, String> getTitle_i18n() {
+		return title_i18n;
+	}
+
+	public void setTitle_i18n(Map<String, String> title_i18n) {
+		this.title_i18n = title_i18n;
+	}
+
+	@JsonIgnore
+	public void setTitle_i18n(
+		UnsafeSupplier<Map<String, String>, Exception>
+			title_i18nUnsafeSupplier) {
+
+		try {
+			title_i18n = title_i18nUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Map<String, String> title_i18n;
 
 	@Schema(
 		description = "A valid external identifier to reference this structured content."
@@ -698,13 +912,16 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A valid external identifier to reference this structured content."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected String uuid;
 
 	@Schema(
 		description = "A write-only property that specifies the structured content's default permissions."
 	)
+	@Valid
 	public ViewableBy getViewableBy() {
 		return viewableBy;
 	}
@@ -737,7 +954,9 @@ public class StructuredContent {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "A write-only property that specifies the structured content's default permissions."
+	)
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	protected ViewableBy viewableBy;
 
@@ -771,6 +990,16 @@ public class StructuredContent {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+		if (actions != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"actions\": ");
+
+			sb.append(_toJSON(actions));
+		}
+
 		if (aggregateRating != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -779,6 +1008,20 @@ public class StructuredContent {
 			sb.append("\"aggregateRating\": ");
 
 			sb.append(String.valueOf(aggregateRating));
+		}
+
+		if (assetLibraryKey != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"assetLibraryKey\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(assetLibraryKey));
+
+			sb.append("\"");
 		}
 
 		if (availableLanguages != null) {
@@ -845,6 +1088,26 @@ public class StructuredContent {
 			sb.append(String.valueOf(creator));
 		}
 
+		if (customFields != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"customFields\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < customFields.length; i++) {
+				sb.append(String.valueOf(customFields[i]));
+
+				if ((i + 1) < customFields.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		if (dateCreated != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -901,6 +1164,16 @@ public class StructuredContent {
 			sb.append("\"");
 		}
 
+		if (description_i18n != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"description_i18n\": ");
+
+			sb.append(_toJSON(description_i18n));
+		}
+
 		if (friendlyUrlPath != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -913,6 +1186,16 @@ public class StructuredContent {
 			sb.append(_escape(friendlyUrlPath));
 
 			sb.append("\"");
+		}
+
+		if (friendlyUrlPath_i18n != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"friendlyUrlPath_i18n\": ");
+
+			sb.append(_toJSON(friendlyUrlPath_i18n));
 		}
 
 		if (id != null) {
@@ -1023,19 +1306,29 @@ public class StructuredContent {
 			sb.append(siteId);
 		}
 
-		if (taxonomyCategories != null) {
+		if (subscribed != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"taxonomyCategories\": ");
+			sb.append("\"subscribed\": ");
+
+			sb.append(subscribed);
+		}
+
+		if (taxonomyCategoryBriefs != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"taxonomyCategoryBriefs\": ");
 
 			sb.append("[");
 
-			for (int i = 0; i < taxonomyCategories.length; i++) {
-				sb.append(String.valueOf(taxonomyCategories[i]));
+			for (int i = 0; i < taxonomyCategoryBriefs.length; i++) {
+				sb.append(String.valueOf(taxonomyCategoryBriefs[i]));
 
-				if ((i + 1) < taxonomyCategories.length) {
+				if ((i + 1) < taxonomyCategoryBriefs.length) {
 					sb.append(", ");
 				}
 			}
@@ -1077,6 +1370,16 @@ public class StructuredContent {
 			sb.append("\"");
 		}
 
+		if (title_i18n != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"title_i18n\": ");
+
+			sb.append(_toJSON(title_i18n));
+		}
+
 		if (uuid != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -1110,10 +1413,60 @@ public class StructuredContent {
 		return sb.toString();
 	}
 
+	@Schema(
+		defaultValue = "com.liferay.headless.delivery.dto.v1_0.StructuredContent",
+		name = "x-class-name"
+	)
+	public String xClassName;
+
+	@GraphQLName("ViewableBy")
+	public static enum ViewableBy {
+
+		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
+
+		@JsonCreator
+		public static ViewableBy create(String value) {
+			for (ViewableBy viewableBy : values()) {
+				if (Objects.equals(viewableBy.getValue(), value)) {
+					return viewableBy;
+				}
+			}
+
+			return null;
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private ViewableBy(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
 	private static String _escape(Object object) {
 		String string = String.valueOf(object);
 
 		return string.replaceAll("\"", "\\\\\"");
+	}
+
+	private static boolean _isArray(Object value) {
+		if (value == null) {
+			return false;
+		}
+
+		Class<?> clazz = value.getClass();
+
+		return clazz.isArray();
 	}
 
 	private static String _toJSON(Map<String, ?> map) {
@@ -1131,9 +1484,42 @@ public class StructuredContent {
 			sb.append("\"");
 			sb.append(entry.getKey());
 			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
+
+			Object value = entry.getValue();
+
+			if (_isArray(value)) {
+				sb.append("[");
+
+				Object[] valueArray = (Object[])value;
+
+				for (int i = 0; i < valueArray.length; i++) {
+					if (valueArray[i] instanceof String) {
+						sb.append("\"");
+						sb.append(valueArray[i]);
+						sb.append("\"");
+					}
+					else {
+						sb.append(valueArray[i]);
+					}
+
+					if ((i + 1) < valueArray.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else if (value instanceof Map) {
+				sb.append(_toJSON((Map<String, ?>)value));
+			}
+			else if (value instanceof String) {
+				sb.append("\"");
+				sb.append(value);
+				sb.append("\"");
+			}
+			else {
+				sb.append(value);
+			}
 
 			if (iterator.hasNext()) {
 				sb.append(",");

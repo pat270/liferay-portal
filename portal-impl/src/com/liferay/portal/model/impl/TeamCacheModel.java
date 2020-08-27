@@ -27,29 +27,26 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Team in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class TeamCacheModel
 	implements CacheModel<Team>, Externalizable, MVCCModel {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof TeamCacheModel)) {
+		if (!(object instanceof TeamCacheModel)) {
 			return false;
 		}
 
-		TeamCacheModel teamCacheModel = (TeamCacheModel)obj;
+		TeamCacheModel teamCacheModel = (TeamCacheModel)object;
 
 		if ((teamId == teamCacheModel.teamId) &&
 			(mvccVersion == teamCacheModel.mvccVersion)) {
@@ -79,10 +76,12 @@ public class TeamCacheModel
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(27);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", teamId=");
@@ -115,6 +114,7 @@ public class TeamCacheModel
 		TeamImpl teamImpl = new TeamImpl();
 
 		teamImpl.setMvccVersion(mvccVersion);
+		teamImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			teamImpl.setUuid("");
@@ -179,6 +179,8 @@ public class TeamCacheModel
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		teamId = objectInput.readLong();
@@ -199,6 +201,8 @@ public class TeamCacheModel
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(ctCollectionId);
 
 		if (uuid == null) {
 			objectOutput.writeUTF("");
@@ -243,6 +247,7 @@ public class TeamCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
 	public long teamId;
 	public long companyId;

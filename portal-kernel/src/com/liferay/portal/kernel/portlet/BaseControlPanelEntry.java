@@ -77,7 +77,7 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 			return true;
 		}
 
-		if (category.equals(PortletCategoryKeys.SITE_ADMINISTRATION_CONTENT) &&
+		if (category.startsWith(PortletCategoryKeys.SITE_ADMINISTRATION) &&
 			group.isLayout() && !portlet.isScopeable()) {
 
 			return true;
@@ -100,12 +100,11 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 			category = StringPool.BLANK;
 		}
 
-		if (category.startsWith(PortletCategoryKeys.SITE_ADMINISTRATION)) {
-			if (permissionChecker.isGroupAdmin(group.getGroupId()) &&
-				!group.isUser()) {
+		if (category.startsWith(PortletCategoryKeys.SITE_ADMINISTRATION) &&
+			permissionChecker.isGroupAdmin(group.getGroupId()) &&
+			!group.isUser()) {
 
-				return true;
-			}
+			return true;
 		}
 
 		long groupId = group.getGroupId();
@@ -120,10 +119,10 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 			groupId = 0;
 		}
 
-		List<String> actions = ResourceActionsUtil.getResourceActions(
+		List<String> resourceActions = ResourceActionsUtil.getResourceActions(
 			portlet.getPortletId());
 
-		if (actions.contains(ActionKeys.ACCESS_IN_CONTROL_PANEL) &&
+		if (resourceActions.contains(ActionKeys.ACCESS_IN_CONTROL_PANEL) &&
 			PortletPermissionUtil.contains(
 				permissionChecker, groupId, 0, portlet.getRootPortletId(),
 				ActionKeys.ACCESS_IN_CONTROL_PANEL, true)) {

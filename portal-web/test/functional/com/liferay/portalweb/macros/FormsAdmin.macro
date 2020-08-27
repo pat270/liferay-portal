@@ -1,4 +1,5 @@
 definition {
+
 	var formDescription = "Created Form Description";
 	var formName = "Created Form Name";
 
@@ -83,6 +84,28 @@ definition {
 
 	macro saveDataProvider {
 		PortletEntry.save();
+
+		Pause(locator1 = "5000");
+	}
+
+	macro teardownDataProviders {
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro teardownElementSets {
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
 	}
 
 	macro teardownForms {
@@ -96,19 +119,25 @@ definition {
 	}
 
 	macro viewCannotEditFormEntries {
-		AssertElementNotPresent(locator1 = "Button#SUBMIT");
+		if ("${onSitePage}" == "true") {
+			AssertElementNotPresent(locator1 = "FormFields#FIELD_ADD");
+		}
+		else {
+			AssertElementNotPresent(locator1 = "Button#SUBMIT");
 
-		AssertElementNotPresent(locator1 = "FormFields#FIELD_ADD");
+			AssertElementNotPresent(locator1 = "FormFields#FIELD_ADD");
+		}
 	}
 
 	macro viewCheckboxEntry {
 		FormsAdmin.viewCannotEditFormEntries();
 
 		var key_fieldName = "${fieldName}";
+		var key_fieldValue = "${fieldValue}";
 
-		FormFields.viewCheckboxLabel(
-			fieldLabel = "${fieldLabel}",
-			fieldName = "${fieldName}");
+		FormFields.viewCheckboxEntry(
+			fieldName = "${fieldName}",
+			fieldValue = "${fieldValue}");
 
 		AssertElementPresent(locator1 = "FormFields#CHECKBOX");
 	}
@@ -135,7 +164,7 @@ definition {
 
 		var key_formDescription = "${formDescription}";
 
-		if(IsVisible(locator1 = "FormsAdmin#FORMS_TABLE_DESCRIPTION")){
+		if (IsVisible(locator1 = "FormsAdmin#FORMS_TABLE_DESCRIPTION")) {
 			AssertTextEquals(
 				locator1 = "FormsAdmin#FORMS_TABLE_DESCRIPTION",
 				value1 = "${formDescription}");
@@ -160,6 +189,10 @@ definition {
 		var key_fieldValue = "${fieldValue}";
 
 		AssertElementNotPresent(locator1 = "FormsAdmin#FORM_ENTRY_TABLE_ENTRY");
+	}
+
+	macro viewImageTableEntry {
+		AssertElementPresent(locator1 = "FormFields#IMAGE_TABLE_ENTRY");
 	}
 
 	macro viewMultilineTextEntry {
@@ -193,13 +226,11 @@ definition {
 	}
 
 	macro viewNoForms {
-		AssertTextEquals(
-			locator1 = "Message#EMPTY_INFO",
-			value1 = "There are no forms. Click on the plus button to add the first one.");
+		AssertElementPresent(locator1 = "Message#EMPTY_INFO_TAGLIB");
 	}
 
 	macro viewRadioEntry {
-		FormsAdmin.viewCannotEditFormEntries();
+		FormsAdmin.viewCannotEditFormEntries(onSitePage = "${onSitePage}");
 
 		FormFields.viewRadioLabel(
 			fieldLabel = "${fieldLabel}",
@@ -211,7 +242,7 @@ definition {
 	}
 
 	macro viewSelectEntry {
-		FormsAdmin.viewCannotEditFormEntries();
+		FormsAdmin.viewCannotEditFormEntries(onSitePage = "${onSitePage}");
 
 		FormFields.viewSelectLabel(
 			fieldLabel = "${fieldLabel}",
@@ -228,7 +259,7 @@ definition {
 	}
 
 	macro viewTextEntry {
-		FormsAdmin.viewCannotEditFormEntries();
+		FormsAdmin.viewCannotEditFormEntries(onSitePage = "${onSitePage}");
 
 		FormFields.viewTextLabel(
 			fieldLabel = "${fieldLabel}",
@@ -253,4 +284,5 @@ definition {
 
 		AssertElementPresent(locator1 = "FormFields#UPLOAD_DOWNLOAD_ICON");
 	}
+
 }

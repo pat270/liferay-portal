@@ -1,41 +1,135 @@
-import * as FormSupport from '../../Form/FormSupport.es';
-import {updateFocusedField} from '../util/focusedField.es';
-import {updateRulesFieldName} from '../util/rules.es';
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
 
-export const updatePages = (pages, oldFieldProperties, newFieldProperties) => {
-	const {fieldName} = oldFieldProperties;
+import {PagesVisitor} from 'dynamic-data-mapping-form-renderer/js/util/visitors.es';
 
-	return FormSupport.updateField(
-		pages,
-		fieldName,
-		newFieldProperties
+import {getField} from '../../../util/fieldSupport.es';
+import {updateRulesReferences} from '../util/rules.es';
+import {
+	updateField,
+	updateSettingsContextProperty,
+} from '../util/settingsContext.es';
+
+export const updatePages = (props, pages, previousFieldName, newField) => {
+	let parentFieldName;
+	const visitor = new PagesVisitor(pages);
+
+	const {fieldName: newFieldName} = newField;
+
+	let newPages = visitor.mapFields(
+		(field, fieldIndex, columnIndex, rowIndex, pageIndex, parentField) => {
+			if (field.fieldName === previousFieldName) {
+				if (parentField) {
+					parentFieldName = parentField.fieldName;
+				}
+
+				return newField;
+			}
+
+			return field;
+		},
+		true,
+		true
 	);
+
+	if (parentFieldName && previousFieldName !== newFieldName) {
+		visitor.setPages(newPages);
+
+		newPages = visitor.mapFields(
+			(field) => {
+				if (parentFieldName === field.fieldName) {
+					const visitor = new PagesVisitor([
+						{
+							rows: field.rows || [],
+						},
+					]);
+					const layout = visitor.mapColumns((column) => {
+						return {
+							...column,
+							fields: column.fields.map((fieldName) => {
+								if (fieldName === previousFieldName) {
+									return newFieldName;
+								}
+
+								return fieldName;
+							}),
+						};
+					});
+					const {rows} = layout[0];
+
+					return {
+						...field,
+						rows,
+						settingsContext: updateSettingsContextProperty(
+							props.editingLanguageId,
+							field.settingsContext,
+							'rows',
+							rows
+						),
+					};
+				}
+
+				return field;
+			},
+			true,
+			true
+		);
+	}
+
+	return newPages;
 };
 
-export const updateRules = (rules, oldFieldProperties, newFieldProperties) => {
-	const {fieldName} = oldFieldProperties;
-	const newFieldName = newFieldProperties.fieldName;
+export const updateState = (props, state, propertyName, propertyValue) => {
+	const {activePage, focusedField, pages, rules} = state;
+	const {fieldName: previousFocusedFieldName} = focusedField;
+	const newFocusedField = updateField(
+		props,
+		focusedField,
+		propertyName,
+		propertyValue
+	);
 
-	return updateRulesFieldName(rules, fieldName, newFieldName);
-};
-
-export const updateField = (state, defaultLanguageId, editingLanguageId, fieldName, fieldValue) => {
-	const {focusedField, pages, rules} = state;
-	const updatedFocusedField = updateFocusedField(state, defaultLanguageId, editingLanguageId, fieldName, fieldValue);
+	const newPages = updatePages(
+		props,
+		pages,
+		previousFocusedFieldName,
+		newFocusedField
+	);
 
 	return {
-		focusedField: updatedFocusedField,
-		pages: updatePages(pages, focusedField, updatedFocusedField),
-		rules: updateRules(rules, focusedField, updatedFocusedField)
+		activePage,
+		focusedField: newFocusedField,
+		pages: newPages,
+		rules: updateRulesReferences(
+			rules || [],
+			focusedField,
+			newFocusedField
+		),
 	};
 };
 
-export const handleFieldEdited = (state, defaultLanguageId, editingLanguageId, event) => {
-	const {propertyName, propertyValue} = event;
+export const handleFieldEdited = (props, state, event) => {
+	const {fieldName, propertyName, propertyValue} = event;
 	let newState = {};
 
 	if (propertyName !== 'name' || propertyValue !== '') {
-		newState = updateField(state, defaultLanguageId, editingLanguageId, propertyName, propertyValue);
+		state = {
+			...state,
+			...(fieldName && {focusedField: getField(state.pages, fieldName)}),
+		};
+
+		newState = updateState(props, state, propertyName, propertyValue);
 	}
 
 	return newState;

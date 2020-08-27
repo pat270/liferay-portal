@@ -17,10 +17,11 @@ package com.liferay.asset.categories.admin.web.internal.display.context;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemListBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -47,14 +49,14 @@ public class AssetCategoriesManagementToolbarDisplayContext
 	extends SearchContainerManagementToolbarDisplayContext {
 
 	public AssetCategoriesManagementToolbarDisplayContext(
+			HttpServletRequest httpServletRequest,
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse,
-			HttpServletRequest httpServletRequest,
 			AssetCategoriesDisplayContext assetCategoriesDisplayContext)
 		throws PortalException {
 
 		super(
-			liferayPortletRequest, liferayPortletResponse, httpServletRequest,
+			httpServletRequest, liferayPortletRequest, liferayPortletResponse,
 			assetCategoriesDisplayContext.getCategoriesSearchContainer());
 
 		_assetCategoriesDisplayContext = assetCategoriesDisplayContext;
@@ -62,19 +64,14 @@ public class AssetCategoriesManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.putData(
-							"action", "deleteSelectedCategories");
-						dropdownItem.setIcon("times-circle");
-						dropdownItem.setLabel(
-							LanguageUtil.get(request, "delete"));
-						dropdownItem.setQuickAction(true);
-					});
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.putData("action", "deleteSelectedCategories");
+				dropdownItem.setIcon("times-circle");
+				dropdownItem.setLabel(LanguageUtil.get(request, "delete"));
+				dropdownItem.setQuickAction(true);
 			}
-		};
+		).build();
 	}
 
 	public String getAvailableActions(AssetCategory category)
@@ -107,46 +104,36 @@ public class AssetCategoriesManagementToolbarDisplayContext
 
 	@Override
 	public CreationMenu getCreationMenu() {
-		return new CreationMenu() {
-			{
-				addPrimaryDropdownItem(
-					dropdownItem -> {
-						PortletURL addCategoryURL =
-							liferayPortletResponse.createRenderURL();
+		return CreationMenuBuilder.addPrimaryDropdownItem(
+			dropdownItem -> {
+				PortletURL addCategoryURL =
+					liferayPortletResponse.createRenderURL();
 
-						addCategoryURL.setParameter(
-							"mvcPath", "/edit_category.jsp");
+				addCategoryURL.setParameter("mvcPath", "/edit_category.jsp");
 
-						if (_assetCategoriesDisplayContext.getCategoryId() >
-								0) {
+				if (_assetCategoriesDisplayContext.getCategoryId() > 0) {
+					addCategoryURL.setParameter(
+						"parentCategoryId",
+						String.valueOf(
+							_assetCategoriesDisplayContext.getCategoryId()));
+				}
 
-							addCategoryURL.setParameter(
-								"parentCategoryId",
-								String.valueOf(
-									_assetCategoriesDisplayContext.
-										getCategoryId()));
-						}
+				addCategoryURL.setParameter(
+					"vocabularyId",
+					String.valueOf(
+						_assetCategoriesDisplayContext.getVocabularyId()));
 
-						addCategoryURL.setParameter(
-							"vocabularyId",
-							String.valueOf(
-								_assetCategoriesDisplayContext.
-									getVocabularyId()));
+				dropdownItem.setHref(addCategoryURL);
 
-						dropdownItem.setHref(addCategoryURL);
+				String label = "add-category";
 
-						String label = "add-category";
+				if (_assetCategoriesDisplayContext.getCategoryId() > 0) {
+					label = "add-subcategory";
+				}
 
-						if (_assetCategoriesDisplayContext.getCategoryId() >
-								0) {
-
-							label = "add-subcategory";
-						}
-
-						dropdownItem.setLabel(LanguageUtil.get(request, label));
-					});
+				dropdownItem.setLabel(LanguageUtil.get(request, label));
 			}
-		};
+		).build();
 	}
 
 	@Override
@@ -166,50 +153,46 @@ public class AssetCategoriesManagementToolbarDisplayContext
 			return null;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		return LabelItemListBuilder.add(
+			labelItem -> {
+				PortletURL removeLabelURL = PortletURLUtil.clone(
+					currentURLObj, liferayPortletResponse);
 
-		return new LabelItemList() {
-			{
-				add(
-					labelItem -> {
-						labelItem.setLabel(
-							category.getTitle(themeDisplay.getLocale()));
-					});
+				removeLabelURL.setParameter("navigation", (String)null);
+				removeLabelURL.setParameter("categoryId", "0");
+
+				labelItem.putData("removeLabelURL", removeLabelURL.toString());
+
+				labelItem.setCloseable(true);
+
+				ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+				labelItem.setLabel(category.getTitle(themeDisplay.getLocale()));
 			}
-		};
+		).build();
 	}
 
 	@Override
 	public List<DropdownItem> getFilterNavigationDropdownItems() {
-		return new DropdownItemList() {
-			{
-				add(
-					dropdownItem -> {
-						dropdownItem.setActive(_isNavigationAll());
-						dropdownItem.setHref(
-							getPortletURL(), "navigation", "all");
-						dropdownItem.setLabel(LanguageUtil.get(request, "all"));
-					});
-
-				if (_assetCategoriesDisplayContext.
-						isFlattenedNavigationAllowed()) {
-
-					add(
-						dropdownItem -> {
-							dropdownItem.setActive(_isNavigationCategory());
-							dropdownItem.putData("action", "selectCategory");
-							dropdownItem.putData(
-								"categoriesSelectorURL",
-								_getCategoriesSelectorURL());
-							dropdownItem.putData(
-								"viewCategoriesURL", _getViewCategoriesURL());
-							dropdownItem.setLabel(
-								LanguageUtil.get(request, "category"));
-						});
-				}
+		return DropdownItemListBuilder.add(
+			dropdownItem -> {
+				dropdownItem.setActive(_isNavigationAll());
+				dropdownItem.setHref(getPortletURL(), "navigation", "all");
+				dropdownItem.setLabel(LanguageUtil.get(request, "all"));
 			}
-		};
+		).add(
+			_assetCategoriesDisplayContext::isFlattenedNavigationAllowed,
+			dropdownItem -> {
+				dropdownItem.setActive(_isNavigationCategory());
+				dropdownItem.putData("action", "selectCategory");
+				dropdownItem.putData(
+					"categoriesSelectorURL", _getCategoriesSelectorURL());
+				dropdownItem.putData(
+					"viewCategoriesURL", _getViewCategoriesURL());
+				dropdownItem.setLabel(LanguageUtil.get(request, "category"));
+			}
+		).build();
 	}
 
 	@Override
@@ -264,10 +247,10 @@ public class AssetCategoriesManagementToolbarDisplayContext
 		return portletURL.toString();
 	}
 
-	private String _getViewCategoriesURL() {
+	private String _getViewCategoriesURL() throws PortalException {
 		PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
-		portletURL.setParameter("mvcPath", "/view_categories.jsp");
+		portletURL.setParameter("mvcPath", "/view.jsp");
 		portletURL.setParameter("navigation", "category");
 		portletURL.setParameter(
 			"vocabularyId",

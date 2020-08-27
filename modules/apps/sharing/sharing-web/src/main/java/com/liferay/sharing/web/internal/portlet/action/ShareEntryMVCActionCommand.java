@@ -117,6 +117,8 @@ public class ShareEntryMVCActionCommand extends BaseMVCActionCommand {
 					return null;
 				});
 
+			hideDefaultSuccessMessage(actionRequest);
+
 			JSONObject jsonObject = JSONUtil.put(
 				"successMessage",
 				LanguageUtil.get(
@@ -125,7 +127,7 @@ public class ShareEntryMVCActionCommand extends BaseMVCActionCommand {
 			JSONPortletResponseUtil.writeJSON(
 				actionRequest, actionResponse, jsonObject);
 		}
-		catch (Throwable t) {
+		catch (Throwable throwable) {
 			HttpServletResponse httpServletResponse =
 				_portal.getHttpServletResponse(actionResponse);
 
@@ -134,7 +136,7 @@ public class ShareEntryMVCActionCommand extends BaseMVCActionCommand {
 			String errorMessage =
 				"an-unexpected-error-occurred-while-sharing-the-item";
 
-			if (t instanceof PrincipalException) {
+			if (throwable instanceof PrincipalException) {
 				errorMessage = "you-do-not-have-permission-to-share-this-item";
 			}
 
@@ -143,8 +145,6 @@ public class ShareEntryMVCActionCommand extends BaseMVCActionCommand {
 
 			JSONPortletResponseUtil.writeJSON(
 				actionRequest, actionResponse, jsonObject);
-
-			return;
 		}
 	}
 

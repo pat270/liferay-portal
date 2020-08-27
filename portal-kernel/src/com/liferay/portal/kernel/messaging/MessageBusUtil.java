@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.messaging;
 
-import com.liferay.portal.kernel.messaging.sender.SingleDestinationMessageSenderFactoryUtil;
 import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
@@ -24,6 +23,10 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
  */
 public class MessageBusUtil {
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static void addDestination(Destination destination) {
 		_messageBus.addDestination(destination);
 	}
@@ -52,14 +55,6 @@ public class MessageBusUtil {
 		return _messageBus.getDestination(destinationName);
 	}
 
-	/**
-	 * @deprecated As of Judson (7.1.x), with no direct replacement
-	 */
-	@Deprecated
-	public static MessageBusUtil getInstance() {
-		return new MessageBusUtil();
-	}
-
 	public static MessageBus getMessageBus() {
 		return _messageBus;
 	}
@@ -74,6 +69,10 @@ public class MessageBusUtil {
 		_messageBus.registerMessageListener(destinationName, messageListener);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
 	public static void removeDestination(String destinationName) {
 		_messageBus.removeDestination(destinationName);
 	}
@@ -95,8 +94,7 @@ public class MessageBusUtil {
 		throws MessageBusException {
 
 		SynchronousMessageSender synchronousMessageSender =
-			SingleDestinationMessageSenderFactoryUtil.
-				getSynchronousMessageSender(_synchronousMessageSenderMode);
+			_getSynchronousMessageSender();
 
 		return synchronousMessageSender.send(destinationName, message);
 	}
@@ -106,8 +104,7 @@ public class MessageBusUtil {
 		throws MessageBusException {
 
 		SynchronousMessageSender synchronousMessageSender =
-			SingleDestinationMessageSenderFactoryUtil.
-				getSynchronousMessageSender(_synchronousMessageSenderMode);
+			_getSynchronousMessageSender();
 
 		return synchronousMessageSender.send(destinationName, message, timeout);
 	}
@@ -173,6 +170,26 @@ public class MessageBusUtil {
 		_synchronousMessageSenderMode = synchronousMessageSenderMode;
 	}
 
+	private static SynchronousMessageSender _getSynchronousMessageSender() {
+		if (_synchronousMessageSenderMode ==
+				SynchronousMessageSender.Mode.DEFAULT) {
+
+			return _defaultSynchronousMessageSender;
+		}
+
+		return _directSynchronousMessageSender;
+	}
+
+	private static volatile SynchronousMessageSender
+		_defaultSynchronousMessageSender =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				SynchronousMessageSender.class, MessageBusUtil.class,
+				"_defaultSynchronousMessageSender", "(mode=DEFAULT)", true);
+	private static volatile SynchronousMessageSender
+		_directSynchronousMessageSender =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				SynchronousMessageSender.class, MessageBusUtil.class,
+				"_directSynchronousMessageSender", "(mode=DIRECT)", true);
 	private static volatile MessageBus _messageBus =
 		ServiceProxyFactory.newServiceTrackedInstance(
 			MessageBus.class, MessageBusUtil.class, "_messageBus", true);

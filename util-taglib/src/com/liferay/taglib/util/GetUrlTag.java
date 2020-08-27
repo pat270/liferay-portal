@@ -26,7 +26,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of Mueller (7.2.x), since 7.2, unused
+ * @deprecated As of Mueller (7.2.x)
  */
 @Deprecated
 public class GetUrlTag extends TagSupport {
@@ -50,8 +50,8 @@ public class GetUrlTag extends TagSupport {
 
 			return EVAL_PAGE;
 		}
-		catch (Exception e) {
-			throw new JspException(e);
+		catch (Exception exception) {
+			throw new JspException(exception);
 		}
 	}
 

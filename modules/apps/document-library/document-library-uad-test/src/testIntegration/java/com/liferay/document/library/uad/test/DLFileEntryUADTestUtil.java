@@ -23,10 +23,9 @@ import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.kernel.test.util.TestDataConstants;
-import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ContentTypes;
 
 import java.io.ByteArrayInputStream;
@@ -42,26 +41,24 @@ public class DLFileEntryUADTestUtil {
 	public static DLFileEntry addDLFileEntry(
 			DLAppLocalService dlAppLocalService,
 			DLFileEntryLocalService dlFileEntryLocalService,
-			DLFolderLocalService dlFolderLocalService, long userId)
+			DLFolderLocalService dlFolderLocalService, long userId,
+			long groupId)
 		throws Exception {
 
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext();
-
 		DLFolder dlFolder = dlFolderLocalService.addFolder(
-			userId, TestPropsValues.getGroupId(), TestPropsValues.getGroupId(),
-			false, 0L, RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), false, serviceContext);
+			userId, groupId, groupId, false, 0L, RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), false,
+			ServiceContextTestUtil.getServiceContext());
 
 		return addDLFileEntry(
 			dlAppLocalService, dlFileEntryLocalService, dlFolder.getFolderId(),
-			userId);
+			userId, groupId);
 	}
 
 	public static DLFileEntry addDLFileEntry(
 			DLAppLocalService dlAppLocalService,
 			DLFileEntryLocalService dlFileEntryLocalService, long dlFolderId,
-			long userId)
+			long userId, long groupId)
 		throws Exception {
 
 		ServiceContext serviceContext =
@@ -69,13 +66,13 @@ public class DLFileEntryUADTestUtil {
 
 		byte[] bytes = TestDataConstants.TEST_BYTE_ARRAY;
 
-		InputStream is = new ByteArrayInputStream(bytes);
+		InputStream inputStream = new ByteArrayInputStream(bytes);
 
 		FileEntry fileEntry = dlAppLocalService.addFileEntry(
-			userId, TestPropsValues.getGroupId(), dlFolderId,
-			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN,
-			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
-			is, bytes.length, serviceContext);
+			userId, groupId, dlFolderId, RandomTestUtil.randomString(),
+			ContentTypes.TEXT_PLAIN, RandomTestUtil.randomString(),
+			StringPool.BLANK, StringPool.BLANK, inputStream, bytes.length,
+			serviceContext);
 
 		return dlFileEntryLocalService.getFileEntry(fileEntry.getFileEntryId());
 	}
@@ -88,9 +85,11 @@ public class DLFileEntryUADTestUtil {
 		throws Exception {
 
 		for (DLFileEntry dlFileEntry : dlFileEntries) {
-			if (dlFileEntryLocalService.fetchDLFileEntry(
-					dlFileEntry.getFileEntryId()) != null) {
+			DLFileEntry existingDLFileEntry =
+				dlFileEntryLocalService.fetchDLFileEntry(
+					dlFileEntry.getFileEntryId());
 
+			if (existingDLFileEntry != null) {
 				dlAppLocalService.deleteFileEntry(dlFileEntry.getFileEntryId());
 			}
 

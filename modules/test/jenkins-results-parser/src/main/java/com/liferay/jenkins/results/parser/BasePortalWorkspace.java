@@ -14,6 +14,8 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.io.IOException;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -89,13 +91,16 @@ public abstract class BasePortalWorkspace
 
 		_primaryPortalWorkspaceGitRepository.setUp();
 
-		_companionPortalWorkspaceGitRepository =
-			WorkspaceUtil.getDependencyWorkspaceGitRepository(
-				CompanionPortalWorkspaceGitRepository.TYPE,
-				_primaryPortalWorkspaceGitRepository);
+		if (portalUpstreamBranchName.endsWith("private")) {
+			_companionPortalWorkspaceGitRepository =
+				WorkspaceUtil.getDependencyWorkspaceGitRepository(
+					CompanionPortalWorkspaceGitRepository.TYPE,
+					_primaryPortalWorkspaceGitRepository);
 
-		if (_companionPortalWorkspaceGitRepository != null) {
 			_companionPortalWorkspaceGitRepository.setUp();
+		}
+		else {
+			_companionPortalWorkspaceGitRepository = null;
 		}
 
 		workspaceGitRepository = WorkspaceUtil.getWorkspaceGitRepository(
@@ -166,6 +171,69 @@ public abstract class BasePortalWorkspace
 			}
 		}
 
+		if (Boolean.valueOf(System.getenv("DOCKER_ENABLED")) &&
+			topLevelBuildParameters.containsKey("PORTAL_BATCH_NAME")) {
+
+			String portalBatchName = topLevelBuildParameters.get(
+				"PORTAL_BATCH_NAME");
+
+			Matcher matcher = _portalBatchNamePattern.matcher(portalBatchName);
+
+			String databaseType = "mysql";
+
+			if (matcher.find()) {
+				Properties buildProperties = null;
+
+				try {
+					buildProperties =
+						JenkinsResultsParserUtil.getBuildProperties();
+				}
+				catch (IOException ioException) {
+					throw new RuntimeException(ioException);
+				}
+
+				String databaseName = matcher.group("databaseName");
+
+				databaseType = matcher.group("databaseType");
+
+				portalTestProperties.setProperty(
+					JenkinsResultsParserUtil.combine(
+						"database.", databaseType, ".docker.image"),
+					JenkinsResultsParserUtil.getProperty(
+						buildProperties,
+						JenkinsResultsParserUtil.combine(
+							"database.docker.image[", databaseName, "]")));
+
+				portalTestProperties.setProperty(
+					JenkinsResultsParserUtil.combine(
+						"database.", databaseType, ".docker.run.options"),
+					JenkinsResultsParserUtil.getProperty(
+						buildProperties,
+						JenkinsResultsParserUtil.combine(
+							"database.docker.run.options[", databaseName,
+							"]")));
+			}
+
+			String databaseHost = JenkinsResultsParserUtil.combine(
+				System.getenv("HOSTNAME"), "_", databaseType);
+
+			portalTestProperties.setProperty(
+				JenkinsResultsParserUtil.combine(
+					"database.", databaseType, ".host"),
+				databaseHost);
+
+			if (databaseType.equals("mariadb")) {
+				portalTestProperties.setProperty(
+					"database.mariadb.port", "3306");
+			}
+			else if (databaseType.equals("oracle")) {
+				portalTestProperties.setProperty(
+					"database.oracle.url",
+					JenkinsResultsParserUtil.combine(
+						"jdbc:oracle:thin:@", databaseHost, ":1521/oracl"));
+			}
+		}
+
 		_primaryPortalWorkspaceGitRepository.setPortalTestProperties(
 			portalTestProperties);
 	}
@@ -184,7 +252,6 @@ public abstract class BasePortalWorkspace
 		Properties portalBuildProperties = new Properties();
 
 		portalBuildProperties.put("jsp.precompile", "off");
-		portalBuildProperties.put("jsp.precompile.parallel", "off");
 		portalBuildProperties.put(
 			"liferay.home",
 			_primaryPortalWorkspaceGitRepository.getDirectory() + "/bundles");
@@ -253,6 +320,9 @@ public abstract class BasePortalWorkspace
 	private static final String _URL_GITHUB_PORTAL_LEGACY_EE_REPOSITORY =
 		"https://github.com/liferay/liferay-qa-portal-legacy-ee/tree/master";
 
+	private static final Pattern _portalBatchNamePattern = Pattern.compile(
+		".*-(?<databaseName>(?<databaseType>db2|mariadb|mysql|oracle|" +
+			"postgresql|sybase)\\d+)(-.*|$)");
 	private static final Pattern _portalGitHubURLPattern = Pattern.compile(
 		"https://github.com/[^/]+/(?<gitRepositoryName>" +
 			"liferay-portal(-ee)?)/.*");

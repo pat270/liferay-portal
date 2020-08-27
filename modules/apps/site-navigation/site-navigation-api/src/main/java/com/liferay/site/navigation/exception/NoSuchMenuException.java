@@ -16,12 +16,9 @@ package com.liferay.site.navigation.exception;
 
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class NoSuchMenuException extends NoSuchModelException {
 
 	public NoSuchMenuException() {
@@ -31,12 +28,12 @@ public class NoSuchMenuException extends NoSuchModelException {
 		super(msg);
 	}
 
-	public NoSuchMenuException(String msg, Throwable cause) {
-		super(msg, cause);
+	public NoSuchMenuException(String msg, Throwable throwable) {
+		super(msg, throwable);
 	}
 
-	public NoSuchMenuException(Throwable cause) {
-		super(cause);
+	public NoSuchMenuException(Throwable throwable) {
+		super(throwable);
 	}
 
 }

@@ -334,27 +334,29 @@ public class ElementImpl extends BranchImpl implements Element {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (obj instanceof NodeImpl) {
-			NodeImpl nodeImpl = (NodeImpl)obj;
+		if (object instanceof NodeImpl) {
+			NodeImpl nodeImpl = (NodeImpl)object;
 
 			if (nodeImpl.getWrappedNode() instanceof org.dom4j.Element) {
-				obj = new ElementImpl(
+				object = new ElementImpl(
 					(org.dom4j.Element)nodeImpl.getWrappedNode());
 			}
 			else {
 				return false;
 			}
 		}
-		else if (!(obj instanceof ElementImpl)) {
+		else if (!(object instanceof ElementImpl)) {
 			return false;
 		}
 
-		org.dom4j.Element element = ((ElementImpl)obj).getWrappedElement();
+		ElementImpl elementImpl = (ElementImpl)object;
+
+		org.dom4j.Element element = elementImpl.getWrappedElement();
 
 		return _element.equals(element);
 	}
@@ -615,13 +617,13 @@ public class ElementImpl extends BranchImpl implements Element {
 			Element element = elements.get(i);
 
 			if (!foundLastElementWithElementName) {
-				if (elementName.equals(element.getName())) {
-					if ((i + 1) < elements.size()) {
-						Element nextElement = elements.get(i + 1);
+				if (elementName.equals(element.getName()) &&
+					((i + 1) < elements.size())) {
 
-						if (!elementName.equals(nextElement.getName())) {
-							foundLastElementWithElementName = true;
-						}
+					Element nextElement = elements.get(i + 1);
+
+					if (!elementName.equals(nextElement.getName())) {
+						foundLastElementWithElementName = true;
 					}
 				}
 			}
@@ -670,13 +672,13 @@ public class ElementImpl extends BranchImpl implements Element {
 			Element element = elements.get(i);
 
 			if (!foundLastElementWithElementName) {
-				if (elementName.equals(element.getName())) {
-					if ((i + 1) < elements.size()) {
-						Element nextElement = elements.get(i + 1);
+				if (elementName.equals(element.getName()) &&
+					((i + 1) < elements.size())) {
 
-						if (!elementName.equals(nextElement.getName())) {
-							foundLastElementWithElementName = true;
-						}
+					Element nextElement = elements.get(i + 1);
+
+					if (!elementName.equals(nextElement.getName())) {
+						foundLastElementWithElementName = true;
 					}
 				}
 			}

@@ -43,10 +43,8 @@ if (categoryId > 0) {
 	mailingList = MBMailingListLocalServiceUtil.fetchCategoryMailingList(scopeGroupId, categoryId);
 }
 
-if ((category == null) && (mailingList == null)) {
-	if (parentCategoryId > 0) {
-		mailingList = MBMailingListLocalServiceUtil.fetchCategoryMailingList(scopeGroupId, parentCategoryId);
-	}
+if ((category == null) && (mailingList == null) && (parentCategoryId > 0)) {
+	mailingList = MBMailingListLocalServiceUtil.fetchCategoryMailingList(scopeGroupId, parentCategoryId);
 }
 
 if (category != null) {
@@ -85,13 +83,14 @@ if (portletTitleBasedNavigation) {
 		<portlet:param name="mvcRenderCommandName" value="/message_boards/edit_category" />
 	</portlet:actionURL>
 
-	<aui:form action="<%= editCategoryURL %>" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveCategory();" %>'>
+	<aui:form action="<%= editCategoryURL %>" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveCategory();" %>'>
 		<aui:input name="<%= Constants.CMD %>" type="hidden" />
 		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="mbCategoryId" type="hidden" value="<%= categoryId %>" />
 		<aui:input name="parentCategoryId" type="hidden" value="<%= parentCategoryId %>" />
 
 		<liferay-ui:error exception="<%= CaptchaConfigurationException.class %>" message="a-captcha-error-occurred-please-contact-an-administrator" />
+		<liferay-ui:error exception="<%= CaptchaException.class %>" message="captcha-verification-failed" />
 		<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 		<liferay-ui:error exception="<%= CategoryNameException.class %>" message="please-enter-a-valid-name" />
 		<liferay-ui:error exception="<%= MailingListEmailAddressException.class %>" message="please-enter-a-valid-email-address" />
@@ -199,11 +198,7 @@ if (portletTitleBasedNavigation) {
 				</div>
 
 				<c:if test="<%= (category == null) && captchaConfiguration.messageBoardsEditCategoryCaptchaEnabled() %>">
-					<portlet:resourceURL id="/message_boards/captcha" var="captchaURL" />
-
-					<liferay-captcha:captcha
-						url="<%= captchaURL %>"
-					/>
+					<liferay-captcha:captcha />
 				</c:if>
 			</aui:fieldset>
 
@@ -239,11 +234,18 @@ if (portletTitleBasedNavigation) {
 
 <aui:script>
 	function <portlet:namespace />saveCategory() {
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = '<%= (category == null) ? Constants.ADD : Constants.UPDATE %>';
+		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value =
+			'<%= (category == null) ? Constants.ADD : Constants.UPDATE %>';
 
 		submitForm(document.<portlet:namespace />fm);
 	}
 
-	Liferay.Util.toggleBoxes('<portlet:namespace />mailingListActive', '<portlet:namespace />mailingListSettings');
-	Liferay.Util.toggleBoxes('<portlet:namespace />outCustom', '<portlet:namespace />outCustomSettings');
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />mailingListActive',
+		'<portlet:namespace />mailingListSettings'
+	);
+	Liferay.Util.toggleBoxes(
+		'<portlet:namespace />outCustom',
+		'<portlet:namespace />outCustomSettings'
+	);
 </aui:script>

@@ -21,8 +21,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -33,7 +33,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileShortcut
  * @generated
  */
-@ProviderType
 public class DLFileShortcutWrapper
 	extends BaseModelWrapper<DLFileShortcut>
 	implements DLFileShortcut, ModelWrapper<DLFileShortcut> {
@@ -46,6 +45,8 @@ public class DLFileShortcutWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
 		attributes.put("fileShortcutId", getFileShortcutId());
 		attributes.put("groupId", getGroupId());
@@ -70,6 +71,18 @@ public class DLFileShortcutWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -216,6 +229,16 @@ public class DLFileShortcutWrapper
 		return model.getCreateDate();
 	}
 
+	/**
+	 * Returns the ct collection ID of this document library file shortcut.
+	 *
+	 * @return the ct collection ID of this document library file shortcut
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public DLFolder getDLFolder()
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -286,6 +309,16 @@ public class DLFileShortcutWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this document library file shortcut.
+	 *
+	 * @return the mvcc version of this document library file shortcut
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -618,6 +651,16 @@ public class DLFileShortcutWrapper
 	}
 
 	/**
+	 * Sets the ct collection ID of this document library file shortcut.
+	 *
+	 * @param ctCollectionId the ct collection ID of this document library file shortcut
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
+	}
+
+	/**
 	 * Sets the file shortcut ID of this document library file shortcut.
 	 *
 	 * @param fileShortcutId the file shortcut ID of this document library file shortcut
@@ -665,6 +708,16 @@ public class DLFileShortcutWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this document library file shortcut.
+	 *
+	 * @param mvccVersion the mvcc version of this document library file shortcut
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -800,6 +853,20 @@ public class DLFileShortcutWrapper
 	@Override
 	public void updateTreePath(String treePath) {
 		model.updateTreePath(treePath);
+	}
+
+	@Override
+	public Map<String, Function<DLFileShortcut, Object>>
+		getAttributeGetterFunctions() {
+
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<DLFileShortcut, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
 	}
 
 	@Override
